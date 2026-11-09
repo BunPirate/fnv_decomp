@@ -22,6 +22,9 @@ class RefPtrArray
 
 // Finds pObj in m_items, removes it by moving the last element into its slot, decrements the count and releases a reference to pObj.
 // @fnv 0x00e426b0
+// pdb: hkpVehicleManager::removeVehicle | hkpVehicleManager.obj | debug, vtable slot, medium
+// pdb params: vehicle
+// pdb locals: assertBuf, ostr
 void RefPtrArray::Remove(FUN_00d1df70* pObj)
 {
     int count = m_uiItemCount;
@@ -64,7 +67,7 @@ struct E426F0MemoryRouter
 };
 
 extern "C" E426F0MemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct E426F0Object
 {
@@ -92,14 +95,17 @@ struct E426F0Container
     int unk04;
     hkArrayBase<E426F0Object*> m_kTrackedObjects;
 
-    void AddObject(E426F0Object* object);
+    void AddObject(E426F0Object* vehicle);
 };
 
 // @fnv 0x00e426f0
-void E426F0Container::AddObject(E426F0Object* object)
+// pdb: hkpVehicleManager::addVehicle | hkpVehicleManager.obj | retail, vtable slot, high
+// pdb params: vehicle
+// pdb locals: assertBuf, ostr
+void E426F0Container::AddObject(E426F0Object* vehicle)
 {
-    object->RetainReference();
-    E426F0ObjectArray_AddBack(m_kTrackedObjects, object);
+    vehicle->RetainReference();
+    E426F0ObjectArray_AddBack(m_kTrackedObjects, vehicle);
 }
 
 namespace fnv_00e42740 {
@@ -165,6 +171,7 @@ class FUN_00e42740 : public E42740ReferencedObject
 
 // Destructor releases the reference held on each object in the array before the array is destroyed.
 // @fnv 0x00e42740
+// pdb: hkpVehicleManager::~hkpVehicleManager | hkpVehicleManager.obj | retail, object-file gap fill, high
 FUN_00e42740::~FUN_00e42740() throw()
 {
     int numObjects = m_kTrackedObjects.m_iElementCount;
@@ -182,7 +189,7 @@ struct E426F0Allocator
     virtual void Free(void* p, unsigned int size);
 };
 
-void __cdecl hkArrayUtil__reserve(E426F0Allocator* alloc, void* list, unsigned int newCap, unsigned int elemSize);
+void __cdecl hkArrayUtil__reserve(E426F0Allocator* mem, void* array, unsigned int numElem, unsigned int sizeElem);
 
 struct ParamObj
 {
@@ -233,7 +240,7 @@ struct ItemRec
     ObjBase* m_3c;
 
     void hkpVehicleInstance_updateBeforeCollisionDetection();
-    void hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(ParamObj* p, void* buf);
+    void hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(ParamObj* p, void* cdInfo);
 };
 
 struct LocalArray
@@ -251,12 +258,15 @@ struct FUN_00e427b0_cls
     ItemRec** m_items;
     int m_uiItemCount;
 
-    void ProcessItems(ParamObj* p);
+    void ProcessItems(ParamObj* stepInfo);
 };
 
 // Iterates m_items, resizing a temporary buffer to each item's m_1c->m_20, calls sub_e37940, v10 and sub_e39030, then frees the buffer.
 // @fnv 0x00e427b0
-void FUN_00e427b0_cls::ProcessItems(ParamObj* p)
+// pdb: hkpVehicleManager::stepVehicles | hkpVehicleManager.obj | retail, vtable slot, high
+// pdb params: stepInfo
+// pdb locals: cdInfo
+void FUN_00e427b0_cls::ProcessItems(ParamObj* stepInfo)
 {
     LocalArray buffer;
     buffer.m_data = 0;
@@ -292,8 +302,8 @@ void FUN_00e427b0_cls::ProcessItems(ParamObj* p)
             buffer.m_iElementCount = flag;
             item->hkpVehicleInstance_updateBeforeCollisionDetection();
             ObjBase* pObj = item->m_3c;
-            pObj->v10(p->m_08, item, buffer.m_data);
-            item->hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(p, buffer.m_data);
+            pObj->v10(stepInfo->m_08, item, buffer.m_data);
+            item->hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(stepInfo, buffer.m_data);
             i++;
         } while (i < count);
     }

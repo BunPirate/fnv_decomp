@@ -94,28 +94,32 @@ struct FUN_00527e30
 };
 
 // @fnv 0x00527e30
+// pdb: ExteriorCellLoader::ExteriorCellLoader | ExteriorCellLoader.obj | debug, object-file gap fill, medium
 FUN_00527e30::FUN_00527e30() : m(2, 0x25, 0xc)
 {}
 
 // @fnv 0x00528540
 // src: XBOX_PDB 0x00528540
-void TESQueuedCellManager::ExteriorCellLoader_CancelAllCellLoads()
+// pdb: ExteriorCellLoader::CancelAllCellLoads | ExteriorCellLoader.obj | debug, upstream name already matches, high
+void ExteriorCellLoader::ExteriorCellLoader_CancelAllCellLoads()
 {
-    SubmitQueuedItems();
+    ExteriorCellLoader_ClearData();
 }
 
 extern "C" int __cdecl sprintf_s(char*, int, const char*, ...);
 
 struct FUN_0052a980_Class
 {
-    int __thiscall ImageSpaceModifierInstanceTemp_PrintInfo(char* dst);
+    int __thiscall ImageSpaceModifierInstanceTemp_PrintInfo(char* apBuffer);
 };
 
 // @fnv 0x0052a980
 // src: XBOX_PDB 0x0052a980
-int __thiscall FUN_0052a980_Class::ImageSpaceModifierInstanceTemp_PrintInfo(char* pcBuffer)
+// pdb: ImageSpaceModifierInstanceTemp::PrintInfo | ImageSpaceModifierInstance.obj | debug, upstream name already matches, high
+// pdb params: apBuffer
+int __thiscall FUN_0052a980_Class::ImageSpaceModifierInstanceTemp_PrintInfo(char* apBuffer)
 {
-    return sprintf_s(pcBuffer, 0x800, "  Temp");
+    return sprintf_s(apBuffer, 0x800, "  Temp");
 }
 
 struct FUN_0052d180_cls
@@ -133,6 +137,7 @@ struct FUN_0052d160_cls
 
 // @fnv 0x0052d160
 // src: COMMUNITY 0x0052d160
+// pdb: NiLinColorKey::NiLinColorKey | TESImageSpaceModifier.obj | debug, object-file run extension, low
 void* __thiscall FUN_0052d160_cls::NiColorKey_Init()
 {
     ((FUN_0052d180_cls*)this)->FUN_0052d180();
@@ -149,6 +154,7 @@ struct FUN_0052d200
 };
 
 // @fnv 0x0052d200
+// pdb: NiLinFloatKey::NiLinFloatKey | TESImageSpaceModifier.obj | debug, object-file run extension, low
 FUN_0052d200::FUN_0052d200()
 {}
 
@@ -170,9 +176,11 @@ void FUN_0052d220_obj::DestroyBase()
 
 // @fnv 0x00533fb0
 // src: COMMUNITY 0x00533fb0
-void NiObjectNET::NiStencilProperty_SetStencilFailAction(unsigned short a)
+// pdb: NiStencilProperty::SetStencilFailAction | BGSAutoWater.obj | debug, upstream name already matches, high
+// pdb params: eAct
+void NiObjectNET::NiStencilProperty_SetStencilFailAction(unsigned short eAct)
 {
-    SetField_00439360(a, 0xe, 1);
+    SetField_00439360(eAct, 0xe, 1);
 }
 
 struct FUN_008256d0_shell_base
@@ -186,6 +194,7 @@ struct FUN_00537b50_shell
 // Returns the negation of the result of calling FUN_008256d0 on the object at this+0xac.
 // @fnv 0x00537b50
 // src: COMMUNITY 0x00537b50
+// pdb: TESObjectCELL::HasReferences | TESLand.obj | debug, object-file gap fill, medium
 bool FUN_00537b50_shell::TESObjectCELL_HasObjects()
 {
     return !reinterpret_cast<FUN_008256d0_shell_base*>(reinterpret_cast<char*>(this) + 0xac)->FUN_008256d0();
@@ -193,8 +202,8 @@ bool FUN_00537b50_shell::TESObjectCELL_HasObjects()
 
 struct Base537
 {
-    void hkUnaryActionCinfo_hkUnaryActionCinfo();
-    Base537* hkMoppBvTreeShapeCinfo_hkMoppBvTreeShapeCinfo();
+    void hkUnaryActionCinfo_ctor();
+    Base537* hkMoppBvTreeShapeCinfo_ctor();
     int m_iWordAt00;
     int m_iWordAt04;
     int m_8;
@@ -202,10 +211,11 @@ struct Base537
 };
 
 // @fnv 0x00537b80
-// src: COMMUNITY 0x00537b80
-Base537* Base537::hkMoppBvTreeShapeCinfo_hkMoppBvTreeShapeCinfo()
+// src: XBOX_DEBUG_PDB 0x00537b80
+// pdb: hkMoppBvTreeShapeCinfo::hkMoppBvTreeShapeCinfo | TESLand.obj | debug, upstream name already matches, high
+Base537* Base537::hkMoppBvTreeShapeCinfo_ctor()
 {
-    hkUnaryActionCinfo_hkUnaryActionCinfo();
+    hkUnaryActionCinfo_ctor();
     m_8 = 0;
     m_iThirdValue = 1.0f;
     return this;
@@ -220,9 +230,11 @@ struct FUN_00539f20_Class
 
 // @fnv 0x00539f20
 // src: COMMUNITY 0x00539f20
-void FUN_00539f20_Class::BSShaderPPLightingProperty_StoreExtraDataPointers(void* p)
+// pdb: BSShaderPPLightingProperty::StoreExtraDataPointers | TESLand.obj | debug, upstream name already matches, high
+// pdb params: aspTangentSpaceData
+void FUN_00539f20_Class::BSShaderPPLightingProperty_StoreExtraDataPointers(void* aspTangentSpaceData)
 {
-    ((GO*)((char*)this + 0xd0))->operator=(p);
+    ((GO*)((char*)this + 0xd0))->operator=(aspTangentSpaceData);
 }
 
 extern "C" void* __cdecl NiFreeAlias(void*);
@@ -233,12 +245,14 @@ struct FUN_005278a0
     void* vtbl;
     void* a;
     void* b;
-    void DoIt();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_TESObjectREFR_unsigned_int_TESObjectREFR_dtor();
 };
 
 // Sets the vtable to DAT_0102cfa0, clears the map via RemoveAll, then frees b with NiFreeAlias.
 // @fnv 0x005278a0
-void FUN_005278a0::DoIt()
+// src: XBOX_DEBUG_PDB 0x005278a0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,TESObjectREFR *> >,unsigned int,TESObjectREFR *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,TESObjectREFR *> >,unsigned int,TESObjectREFR *> | BGSLoadedReferenceCollection.obj | debug, call graph (shared callers), high
+void FUN_005278a0::NiTMapBase_DFALL_NiTMapItem_unsigned_int_TESObjectREFR_unsigned_int_TESObjectREFR_dtor()
 {
     vtbl = &DAT_0102cfa0;
     ((NiTPointerMap<int, int>*)this)->RemoveAll();
@@ -253,11 +267,13 @@ class IOManagerTaskCalls : public IOManager
 {
   public:
     void __thiscall WaitForTask(void* p);
-    bool RunQueuedTask(void*, int);
+    bool BSTaskManager_int64_TryCancelTask(void*, int);
 };
 
 // Loops calling FUN_0040fca0(0) while the task state at offset 0x0c is 3 or 5.
 // @fnv 0x005289b0
+// pdb: BSTaskManager<__int64>::WaitForTask | ExteriorCellLoader.obj | debug, object-file run extension, low
+// pdb params: apTask
 void __thiscall IOManagerTaskCalls::WaitForTask(void* pObject)
 {
     while (*(int*)((char*)pObject + 0x0c) == 3 || *(int*)((char*)pObject + 0x0c) == 5)
@@ -272,6 +288,7 @@ struct FUN_00526ef0_Class
 };
 // Calls FUN_00526d50, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00526ef0
+// pdb: BGSLoadedReferenceCollection::`scalar deleting destructor' | BGSLoadedReferenceCollection.obj | debug, object-file gap fill, medium
 void* FUN_00526ef0_Class::Destroy(unsigned int flags)
 {
     FUN_00526d50();
@@ -288,6 +305,7 @@ struct FUN_005277a0_Class
 
 // Calls FUN_00527840, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x005277a0
+// pdb: NiTMap<unsigned int,TESObjectREFR *>::`scalar deleting destructor' | BGSLoadedReferenceCollection.obj | retail, vtable slot, high
 void* FUN_005277a0_Class::FUN_005277a0(unsigned int flags)
 {
     FUN_00527840();
@@ -357,9 +375,11 @@ struct FUN_00526c40_Class
     bool RemoveSound(TESSound*);
 };
 // @fnv 0x00526c40
-bool FUN_00526c40_Class::RemoveSound(TESSound* apSound)
+// pdb: LoadedReferenceMap::RemoveReference | BGSLoadedReferenceCollection.obj | retail, object-file run extension, high
+// pdb params: apRef
+bool FUN_00526c40_Class::RemoveSound(TESSound* apRef)
 {
-    if (((MapH*)this)->RemoveAt(apSound->Deallocate()))
+    if (((MapH*)this)->RemoveAt(apRef->Deallocate()))
     {
         --(*(unsigned int*)((char*)this + 0x10));
         *(int*)((char*)this + 0x14) = g_timeGlobal.GetSection();
@@ -372,6 +392,7 @@ struct BGSLoadedReferenceCollection;
 extern BGSLoadedReferenceCollection* DAT_011c95c8;
 // @fnv 0x00526eb0
 // src: COMMUNITY 0x00526eb0
+// pdb: BGSLoadedReferenceCollection::Destroy | BGSLoadedReferenceCollection.obj | retail, upstream name already matches, high
 void BGSLoadedReferenceCollection_Destroy()
 {
     FUN_00526ef0_Class* b;
@@ -396,6 +417,8 @@ struct FUN_005271b0_Class
 
 // Returns a pointer to the member at offset 0x48 for type 0x29 or at offset 0x30 for type 0x28, otherwise null.
 // @fnv 0x005271b0
+// pdb: BGSLoadedReferenceCollection::FindObject | BGSLoadedReferenceCollection.obj | debug, object-file run extension, low
+// pdb params: aeFormType, apCallback, apData, aiFindFlags
 char* __thiscall FUN_005271b0_Class::GetFieldByType(unsigned int type)
 {
     switch (type)
@@ -417,6 +440,7 @@ struct FUN_00527270 : public InventoryStackRecord
     FUN_00527270();
 };
 // @fnv 0x00527270
+// pdb: InventoryIterator::InventoryIterator | BGSLoadedReferenceCollection.obj | debug, call graph, medium
 FUN_00527270::FUN_00527270()
 {
     m_iThirdValue = 0;
@@ -461,6 +485,7 @@ struct FUN_00527350
 // Clears f10, f14 and f34, resolves fc from DAT_011c95c8 (falling back to GetDefaultBucket), then stores GetFirstPos() into f18.
 // @fnv 0x00527350
 // src: GUESS 0x00527350 (confidence: medium)
+// pdb: FindObjectIterator::Reset | BGSLoadedReferenceCollection.obj | debug, object-file run extension, low
 void FUN_00527350::ResetAndResolveBucketIterator()
 {
     f10 = 0;
@@ -485,6 +510,9 @@ void* __cdecl NiMalloc(unsigned int size);
 void* __cdecl memset(void* dst, int value, unsigned int count);
 // Sets the vtable, stores size, clears next, allocates size*4 bytes with NiMalloc, zeroes them, and returns this.
 // @fnv 0x005277d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,TESObjectREFR *> >,unsigned int,TESObjectREFR *>::NiTMapBase<DFALL<NiTMapItem<unsigned int,TESObjectREFR *> >,unsigned int,TESObjectREFR *> | BGSLoadedReferenceCollection.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_005277d0_Class* __thiscall FUN_005277d0_Class::InitBuffer(unsigned int size)
 {
     vtbl = &DAT_0102cfa0;
@@ -503,9 +531,10 @@ struct FUN_005278d0_Class
 };
 // Calls DoIt on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x005278d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,TESObjectREFR *> >,unsigned int,TESObjectREFR *>::`scalar deleting destructor' | BGSLoadedReferenceCollection.obj | retail, vtable slot, high
 void* __thiscall FUN_005278d0_Class::FUN_005278d0(unsigned int flags)
 {
-    ((FUN_005278a0*)this)->DoIt();
+    ((FUN_005278a0*)this)->NiTMapBase_DFALL_NiTMapItem_unsigned_int_TESObjectREFR_unsigned_int_TESObjectREFR_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -519,6 +548,8 @@ struct FUN_00527c00 : public IOTask
 };
 // Initializes the IOTask base with 0 and stores the two constructor arguments into m_18 and m_1c.
 // @fnv 0x00527c00
+// pdb: ExteriorCellLoaderTask::ExteriorCellLoaderTask | ExteriorCellLoader.obj | debug, object-file run extension, low
+// pdb params: apLoader, apCellData
 FUN_00527c00::FUN_00527c00(int aiValue18, int aiValue1c) : IOTask(0)
 {
     m_18 = aiValue18;
@@ -529,14 +560,15 @@ struct Caller27f90
 {
     void* __thiscall FUN_00527f90(unsigned int flags);
 };
-extern TESQueuedCellManager* DAT_011c9618;
+extern ExteriorCellLoader* DAT_011c9618;
 // If the global TESQueuedCellManager exists, calls its FUN_00527f90 with flags 1 and clears the global pointer.
 // @fnv 0x00527f40
 // src: XBOX_PDB 0x00527f40
+// pdb: ExteriorCellLoader::Release | ExteriorCellLoader.obj | retail, upstream name already matches, high
 void __cdecl ExteriorCellLoader_Release()
 {
-    TESQueuedCellManager* pManager;
-    TESQueuedCellManager* pManagerCopy;
+    ExteriorCellLoader* pManager;
+    ExteriorCellLoader* pManagerCopy;
     if (DAT_011c9618)
     {
         void* r;
@@ -558,6 +590,7 @@ struct FUN_00527f90_Holder
 void __cdecl _Deallocate(void*);
 // Calls FUN_00527e50, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x00527f90
+// pdb: ExteriorCellLoader::`scalar deleting destructor' | ExteriorCellLoader.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_00527f90_Holder::FUN_00527f90(unsigned int flags)
 {
     FUN_00527e50();
@@ -624,6 +657,7 @@ struct FUN_0052cfc0_Class
 // Copies the four ints of the passed rect into this object's rect field.
 // @fnv 0x0052cfc0
 // src: XBOX_PDB 0x0052cfc0
+// pdb: TESImageSpaceModifier::MakeDefaultGetHit | TESImageSpaceModifier.obj | retail, object-file run extension, low
 void __thiscall FUN_0052cfc0_Class::NiColorKey_SetColor(FUN_0052cfc0_Rect* apRect)
 {
     rect = *apRect;
@@ -643,6 +677,7 @@ struct FUN_00535aa0_Class
 
 // @fnv 0x00535aa0
 // src: XBOX_PDB 0x00535aa0
+// pdb: OBJ_WEAP_CRITICAL::Endian | TESObjectWEAP.obj | debug, upstream name already matches, high
 void __thiscall FUN_00535aa0_Class::OBJ_WEAP_CRITICAL_Endian()
 {
     BSEndian((unsigned char*)this, EndianSizeTag<0>());
@@ -651,19 +686,20 @@ void __thiscall FUN_00535aa0_Class::OBJ_WEAP_CRITICAL_Endian()
 
 struct CallCls537
 {
-    void __thiscall hkActionCinfo_hkActionCinfo();
+    void __thiscall hkActionCinfo_ctor();
 };
 struct Cl537
 {
     int m_iWordAt00;
     int m_iWordAt04;
-    Cl537* __thiscall hkUnaryActionCinfo_hkUnaryActionCinfo();
+    Cl537* __thiscall hkUnaryActionCinfo_ctor();
 };
 // @fnv 0x00537bb0
-// src: XBOX_PDB 0x00537bb0
-Cl537* __thiscall Cl537::hkUnaryActionCinfo_hkUnaryActionCinfo()
+// src: XBOX_DEBUG_PDB 0x00537bb0
+// pdb: hkUnaryActionCinfo::hkUnaryActionCinfo | GlobalFunc.obj | debug, upstream name already matches, high
+Cl537* __thiscall Cl537::hkUnaryActionCinfo_ctor()
 {
-    ((CallCls537*)this)->hkActionCinfo_hkActionCinfo();
+    ((CallCls537*)this)->hkActionCinfo_ctor();
     m_iWordAt04 = 0;
     return this;
 }
@@ -674,29 +710,34 @@ struct FUN_00527e30_Alloc
     FUN_00527e30_Alloc();
 };
 // @fnv 0x00527eb0
-void __cdecl InitQueuedCellManager()
+// src: XBOX_RETAIL_PDB 0x00527eb0
+// pdb: ExteriorCellLoader::Initialize | ExteriorCellLoader.obj | retail, object-file run extension, high
+void __cdecl ExteriorCellLoader_Initialize()
 {
     if (!DAT_011c9618)
-        DAT_011c9618 = (TESQueuedCellManager*)new FUN_00527e30_Alloc;
+        DAT_011c9618 = (ExteriorCellLoader*)new FUN_00527e30_Alloc;
 }
 
 struct FUN_005285c0_Class
 {
-    void* __thiscall ExteriorCellLoader_PreLoadCellData(void* a, void* b, void* c);
+    void* __thiscall ExteriorCellLoader_PreLoadCellData(void* apWorld, void* aiCellX, void* aiCellY);
 };
 // Allocates a 0x14-byte object storing a, b and c in its first three fields, zeroing the byte at 0x10 and the int at 0xC, and returns it or null if a is null.
 // @fnv 0x005285c0
 // src: COMMUNITY 0x005285c0
-void* FUN_005285c0_Class::ExteriorCellLoader_PreLoadCellData(void* a, void* b, void* c)
+// pdb: ExteriorCellLoader::PreLoadCellData | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// pdb params: apWorld, aiCellX, aiCellY
+// pdb locals: pcell
+void* FUN_005285c0_Class::ExteriorCellLoader_PreLoadCellData(void* apWorld, void* aiCellX, void* aiCellY)
 {
     void* p = 0;
-    if (a)
+    if (apWorld)
     {
         void* t = operator new(0x14);
         p = t;
-        ((void**)p)[2] = a;
-        ((void**)p)[0] = b;
-        ((void**)p)[1] = c;
+        ((void**)p)[2] = apWorld;
+        ((void**)p)[0] = aiCellX;
+        ((void**)p)[1] = aiCellY;
         ((char*)p)[0x10] = 0;
         ((int*)p)[3] = 0;
     }
@@ -716,6 +757,8 @@ void* __cdecl operator new(unsigned int);
 
 // @fnv 0x00526e10
 // src: COMMUNITY 0x00526e10
+// pdb: BGSLoadedReferenceCollection::Create | BGSLoadedReferenceCollection.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void BGSLoadedReferenceCollection_Create()
 {
     AutoMemHelper context(
@@ -735,6 +778,7 @@ struct FUN_005272b0_Class
 };
 
 // @fnv 0x005272b0
+// pdb: InventoryIterator::~InventoryIterator | PlayerCharacter.obj | debug, call graph, medium
 void FUN_005272b0_Class::ClearAndDestroy()
 {
     *(void**)this = 0;
@@ -742,7 +786,9 @@ void FUN_005272b0_Class::ClearAndDestroy()
 }
 
 // @fnv 0x005285a0
-int __thiscall TESQueuedCellManager::CallVirtual17()
+// src: XBOX_DEBUG_PDB 0x005285a0
+// pdb: ExteriorCellLoader::QueuedCellCount | ExteriorCellLoader.obj | debug, call graph, high
+int __thiscall ExteriorCellLoader::QueuedCellCount()
 {
     return ((int(__thiscall*)(void*))(*(void***)this)[17])(this);
 }
@@ -775,6 +821,7 @@ class FUN_00526d50_cls
 
 // Destructor for the class; destroys its eight Sub24_b5481 members in reverse order.
 // @fnv 0x00526d50
+// pdb: BGSLoadedReferenceCollection::~BGSLoadedReferenceCollection | BGSLoadedReferenceCollection.obj | debug, object-file gap fill, medium
 FUN_00526d50_cls::~FUN_00526d50_cls()
 {}
 
@@ -854,6 +901,8 @@ struct FUN_005272d0_Class
 
 // Constructor initializes m_00 from p->GetFormType(), stores p and q, then calls FUN_00527350.
 // @fnv 0x005272d0
+// pdb: FindObjectIterator::FindObjectIterator | BGSLoadedReferenceCollection.obj | debug, object-file run extension, low
+// pdb params: apBoundObject, apActivatingRef
 FUN_005272d0_Class::FUN_005272d0_Class(FNV_FormType* apForm, int q) : m_00(apForm->GetFormType()), m_04(apForm), m_08(q)
 {
     FUN_00527350();
@@ -882,6 +931,7 @@ class FUN_00527840 : public Base_b9015
 
 // Destructor for FUN_00527840 that calls DoCleanup().
 // @fnv 0x00527840
+// pdb: NiTMap<unsigned int,TESObjectREFR *>::~NiTMap<unsigned int,TESObjectREFR *> | BGSLoadedReferenceCollection.obj | debug, call graph (shared callers), high
 FUN_00527840::~FUN_00527840()
 {
     DoCleanup();
@@ -894,14 +944,16 @@ struct FUN_00528be0
 
 struct FUN_00527e50 : FUN_00528be0
 {
-    void SubmitQueuedItems();
+    void ExteriorCellLoader_ClearData();
     ~FUN_00527e50();
 };
 
 // @fnv 0x00527e50
+// pdb: LockFreeMap<unsigned int,NiPointer<ExteriorCellLoaderTask> >::`scalar deleting destructor' | ExteriorCellLoader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ExteriorCellLoader::~ExteriorCellLoader
 FUN_00527e50::~FUN_00527e50()
 {
-    SubmitQueuedItems();
+    ExteriorCellLoader_ClearData();
 }
 
 struct FUN_005287e0_Class
@@ -938,7 +990,7 @@ struct Head175;
 
 // The shared manager does not yet declare the request iterator overloads.
 // This adapter supplies declarations without duplicating its layout.
-struct TESQueuedCellManagerRequestCalls : TESQueuedCellManager
+struct TESQueuedCellManagerRequestCalls : ExteriorCellLoader
 {
     unsigned char AdvanceRequest(Query*, unsigned int*, Handle*, unsigned int);
     bool AdvanceRequest(Local_cls*, int*, Obj20_cls*, int);
@@ -946,7 +998,10 @@ struct TESQueuedCellManagerRequestCalls : TESQueuedCellManager
 };
 // Loops over queries until one finishes, and for each successful query whose handle value passes a check, calls its v5 method.
 // @fnv 0x00528110
-void TESQueuedCellManager::ProcessQueries()
+// src: XBOX_RETAIL_PDB 0x00528110
+// pdb: ExteriorCellLoader::PostProcessCompletedTasks | ExteriorCellLoader.obj | retail, object-file run extension, high
+// pdb locals: iterator, ikey, sptask
+void ExteriorCellLoader::PostProcessCompletedTasks()
 {
     Query query;
     while (!query.LockFreeMap_char_const_Model_LockFreeMapIterator_GetFinished())
@@ -996,8 +1051,10 @@ struct Obj20_cls
 extern IOManager* DAT_01202d98;
 
 // @fnv 0x005282d0
-// src: COMMUNITY 0x005282d0
-void TESQueuedCellManager::ExteriorCellLoader_WaitForTasks()
+// src: XBOX_RETAIL_PDB 0x005282d0
+// pdb: ExteriorCellLoader::WaitForTasks | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// pdb locals: iterator, ikey, sptask
+void ExteriorCellLoader::WaitForTasks()
 {
     Local_cls a;
     while (!a.LockFreeMap_char_const_Model_LockFreeMapIterator_GetFinished())
@@ -1062,29 +1119,32 @@ struct QCellQueue
     virtual void v3();
     virtual bool Insert(int key, QTaskPtr* ptr, int flag);
     bool IsQueuedQ(int x, int y);
-    void* MakeEntryQ(QWorldSpace* ws, int x, int y);
-    void ExteriorCellLoader_QueueCellLoad(QWorldSpace* ws, int x, int y);
+    void* MakeEntryQ(QWorldSpace* apWorld, int aiCellX, int aiCellY);
+    void ExteriorCellLoader_QueueCellLoad(QWorldSpace* apWorld, int aiCellX, int aiCellY);
 };
 
 // @fnv 0x005283c0
 // src: COMMUNITY 0x005283c0
-void QCellQueue::ExteriorCellLoader_QueueCellLoad(QWorldSpace* ws, int x, int y)
+// pdb: ExteriorCellLoader::QueueCellLoad | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// pdb params: apWorld, aiCellX, aiCellY
+// pdb locals: pcell, pcelldata, ikey, bresult, sptask
+void QCellQueue::ExteriorCellLoader_QueueCellLoad(QWorldSpace* apWorld, int aiCellX, int aiCellY)
 {
-    if (!ws)
+    if (!apWorld)
         return;
-    TESObjectCELL* cellVal = ws->GetCellAt(x, y);
+    TESObjectCELL* cellVal = apWorld->GetCellAt(aiCellX, aiCellY);
     if (cellVal && g_TES->IsCellLoadedQ(cellVal))
     {
         g_TES->HandleLoadedCellQ(cellVal);
         return;
     }
-    if (IsQueuedQ(x, y))
+    if (IsQueuedQ(aiCellX, aiCellY))
         return;
-    void* entry7 = MakeEntryQ(ws, x, y);
+    void* entry7 = MakeEntryQ(apWorld, aiCellX, aiCellY);
     if (entry7)
     {
         QTaskPtr ptr(new QCellTask((int)this, (int)entry7));
-        int key = TESWorldSpace_GetKeyForCellCoord((unsigned short)x, (unsigned short)y);
+        int key = TESWorldSpace_GetKeyForCellCoord((unsigned short)aiCellX, (unsigned short)aiCellY);
         bool ok6 = Insert(key, &ptr, 1);
         DAT_01202d98->AddTask(reinterpret_cast<::QIOTask*>(static_cast<QIOTask*>(ptr)));
     }
@@ -1263,7 +1323,7 @@ class FUN_00537bf0_base
 class FUN_00537bf0_sub
 {
   public:
-    FUN_00537bf0_sub(int a, int b);
+    FUN_00537bf0_sub(int uiMaxSize, int uiGrowBy);
     ~FUN_00537bf0_sub();
     void Init();
     unsigned int m_unk00;
@@ -1336,6 +1396,7 @@ struct FUN_00526c90
 
 // Default constructor; the eight C90List members are constructed implicitly.
 // @fnv 0x00526c90
+// pdb: BGSLoadedReferenceCollection::BGSLoadedReferenceCollection | BGSLoadedReferenceCollection.obj | debug, call graph, medium
 FUN_00526c90::FUN_00526c90()
 {}
 }  // namespace fnv_00526c90
@@ -1384,7 +1445,7 @@ struct Form
     virtual void v36();
     virtual bool IsSpecial();
     int FNV_GetFormType();
-    bool Accept(Ref*, int, int);
+    bool TESObjectCONT_CanActivate(Ref*, int, int);
 };
 struct Ref
 {
@@ -1591,96 +1652,100 @@ struct Collection
     BlkMapView third;
     BlkMapView fourth;
     BlkMapView fifth;
-    bool FindNextRef(State*, Ref**, Ref**, unsigned int);
+    bool BGSLoadedReferenceCollection_GetNextObject(State*, Ref**, Ref**, unsigned int);
 };
 // Walks the collection's maps by stage and flags, skipping disabled, deleted, excluded or filtered refs, and returns the next matching ref and its item.
 // @fnv 0x005273c0
-bool Collection::FindNextRef(State* state, Ref** result, Ref** item, unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x005273c0
+// pdb: BGSLoadedReferenceCollection::GetNextObject | BGSLoadedReferenceCollection.obj | debug, call graph, high
+// pdb params: arIterator, arpRef, arpItemChange, aiFindFlags
+// pdb locals: bspecificMap, bcontainerMap, pitemChange, iformID, pref, ballowActors, ballowCorpses, pcontainer
+bool Collection::BGSLoadedReferenceCollection_GetNextObject(State* arIterator, Ref** arpRef, Ref** arpItemChange, unsigned int aiFindFlags)
 {
-    while (state->map)
+    while (arIterator->map)
     {
-        if (state->current)
+        if (arIterator->current)
         {
             Ref* entry7 = 0;
-            while (state->entries->Next(&state->state, &entry7, 1))
+            while (arIterator->entries->Next(&arIterator->state, &entry7, 1))
             {
-                if (state->filter)
+                if (arIterator->filter)
                 {
-                    if (entry7->CallGetFlags() != state->filter)
+                    if (entry7->CallGetFlags() != arIterator->filter)
                         continue;
                 }
                 else
                 {
-                    if (entry7->CallGetFlags()->FNV_GetFormType() != state->type)
+                    if (entry7->CallGetFlags()->FNV_GetFormType() != arIterator->type)
                         continue;
                 }
                 if (!entry7->FUN_00726070())
                     continue;
-                *result = state->current;
-                *item = entry7;
+                *arpRef = arIterator->current;
+                *arpItemChange = entry7;
                 return true;
             }
-            state->state.InventoryIterator_Reset();
-            state->entries = 0;
-            state->current = 0;
+            arIterator->state.InventoryIterator_Reset();
+            arIterator->entries = 0;
+            arIterator->current = 0;
         }
-        while (!state->pos)
+        while (!arIterator->pos)
         {
-            switch (state->stage)
+            switch (arIterator->stage)
             {
             case 0:
-                if (flags & 1)
-                    state->map = &fourth;
+                if (aiFindFlags & 1)
+                    arIterator->map = &fourth;
                 break;
             case 1:
-                if (flags & 6)
-                    state->map = &fifth;
+                if (aiFindFlags & 6)
+                    arIterator->map = &fifth;
                 break;
             case 2:
-                state->map = 0;
+                arIterator->map = 0;
                 return false;
             }
-            state->stage++;
-            if (state->map)
-                state->pos = state->map->GetFirstPos();
+            arIterator->stage++;
+            if (arIterator->map)
+                arIterator->pos = arIterator->map->GetFirstPos();
         }
-        bool tempSwap6 = state->stage > 0;
+        bool tempSwap6 = arIterator->stage > 0;
         bool container7 = true;
-        if (state->map == &first)
+        if (arIterator->map == &first)
             container7 = false;
-        while (state->pos)
+        while (arIterator->pos)
         {
             unsigned int key = 0;
             Ref* ref = 0;
-            state->map->GetNext(state->pos, key, ref);
+            arIterator->map->GetNext(arIterator->pos, key, ref);
             if (ref->GetDisabled() || ref->GetDeleted())
                 continue;
             if (ref->IsExcluded() || ref->GetAcousticSpace()->IsSpecial())
                 continue;
-            if (ref->HasFlag() && !(flags & 8))
+            if (ref->HasFlag() && !(aiFindFlags & 8))
                 continue;
             if (!tempSwap6)
             {
-                if (state->filter)
+                if (arIterator->filter)
                 {
-                    if (state->filter != ref->GetAcousticSpace())
+                    if (arIterator->filter != ref->GetAcousticSpace())
                         continue;
                 }
                 else if (!container7)
                 {
-                    if (state->type != ref->GetAcousticSpace()->FNV_GetFormType())
+                    if (arIterator->type != ref->GetAcousticSpace()->FNV_GetFormType())
                         continue;
                 }
-                *result = ref;
-                *item = 0;
+                *arpRef = ref;
+                *arpItemChange = 0;
                 return true;
             }
             else
             {
-                if (state->map == &fifth)
+                if (arIterator->map == &fifth)
                 {
-                    bool actors = (flags & 2) ? true : false;
-                    bool others = (flags & 4) ? true : false;
+                    bool actors = (aiFindFlags & 2) ? true : false;
+                    bool others = (aiFindFlags & 4) ? true : false;
                     if (actors != others)
                     {
                         if (ref->IsActor(0) == !actors)
@@ -1690,12 +1755,12 @@ bool Collection::FindNextRef(State* state, Ref** result, Ref** item, unsigned in
                 else if (ref->GetAcousticSpace()->FNV_GetFormType() == 0x1b)
                 {
                     Form* baseTmp = ref->GetAcousticSpace();
-                    if (!baseTmp->Accept(ref, state->context, 0))
+                    if (!baseTmp->TESObjectCONT_CanActivate(ref, arIterator->context, 0))
                         continue;
                 }
-                state->entries = ref->BSFile_GetDevice()->GetEntries();
-                if (state->entries)
-                    state->current = ref;
+                arIterator->entries = ref->BSFile_GetDevice()->GetEntries();
+                if (arIterator->entries)
+                    arIterator->current = ref;
                 break;
             }
         }
@@ -1761,23 +1826,27 @@ struct TerrainOwner
     void TESObjectLAND_GetNormal(unsigned int, unsigned int, NiPoint3&);
     float TESObjectLAND_GetWorldCellY();
     float TESObjectLAND_GetWorldCellX();
-    bool ComputeTerrainNormalAndTangent(TerrainInput*, NiPoint3*, NiPoint3*);
+    bool TESObjectLAND_GetLandNormal(TerrainInput*, NiPoint3*, NiPoint3*);
 };
 // Computes a terrain normal and tangent at input->position, blending edge/u/c samples by flip flags, and returns true.
 // @fnv 0x0053caf0
-bool TerrainOwner::ComputeTerrainNormalAndTangent(TerrainInput* input, NiPoint3* normal, NiPoint3* tangent)
+// src: XBOX_RETAIL_PDB 0x0053caf0
+// pdb: TESObjectLAND::GetLandNormal | TESLand.obj | retail, call graph, high
+// pdb params: cdata, aNormal, aFaceNormal
+// pdb locals: v0, worldshift, aCoord, shiftedvert, fpx, n2, v2b, v2a, n0, n1, v1a, n, fpy, v1b
+bool TerrainOwner::TESObjectLAND_GetLandNormal(TerrainInput* cdata, NiPoint3* aNormal, NiPoint3* aFaceNormal)
 {
     NiPoint3 origin;
-    NiPoint3 position = TESObjectLAND_GetVertexLocation((unsigned char)input->region, (unsigned short)input->position, 0, 0);
-    TESObjectLAND_GetVertex(input->region, input->position, origin);
+    NiPoint3 position = TESObjectLAND_GetVertexLocation((unsigned char)cdata->region, (unsigned short)cdata->position, 0, 0);
+    TESObjectLAND_GetVertex(cdata->region, cdata->position, origin);
     NiPoint3 location;
     location = NiPoint3(TESObjectLAND_GetWorldCellX() + 2048.0, TESObjectLAND_GetWorldCellY() + 2048.0, 0.0f);
     NiPoint3 center = origin + location;
     center.z = 0.0f;
     if (center.HasEqualComponents(position))
     {
-        TESObjectLAND_GetNormal(input->region, input->position, *normal);
-        *tangent = *normal;
+        TESObjectLAND_GetNormal(cdata->region, cdata->position, *aNormal);
+        *aFaceNormal = *aNormal;
     }
     else
     {
@@ -1787,33 +1856,33 @@ bool TerrainOwner::ComputeTerrainNormalAndTangent(TerrainInput* input, NiPoint3*
         NiPoint3 u;
         NiPoint3 c;
         NiPoint3 v = DAT_011a9484;
-        TESObjectLAND_GetNormal(input->region, input->edgeA, edgeA);
-        TESObjectLAND_GetNormal(input->region, input->u, u);
-        TESObjectLAND_GetNormal(input->region, input->c, c);
-        if (!input->flipA && !input->flipB)
+        TESObjectLAND_GetNormal(cdata->region, cdata->edgeA, edgeA);
+        TESObjectLAND_GetNormal(cdata->region, cdata->u, u);
+        TESObjectLAND_GetNormal(cdata->region, cdata->c, c);
+        if (!cdata->flipA && !cdata->flipB)
             v = ((1.0f - blended) * u + blended * edgeA) * (1.0f - pointB) + pointB * c;
-        if (!input->flipA && input->flipB)
+        if (!cdata->flipA && cdata->flipB)
             v = ((1.0f - blended) * edgeA + blended * c) * pointB + (1.0f - pointB) * u;
-        if (input->flipA && !input->flipB)
+        if (cdata->flipA && !cdata->flipB)
             v = ((1.0f - blended) * edgeA + blended * u) * (1.0f - pointB) + pointB * c;
-        if (input->flipA && input->flipB)
+        if (cdata->flipA && cdata->flipB)
             v = ((1.0f - blended) * c + blended * edgeA) * pointB + (1.0f - pointB) * u;
-        *normal = v;
-        normal->Unitize_004a0c10();
+        *aNormal = v;
+        aNormal->Unitize_004a0c10();
         NiPoint3 a;
         NiPoint3 pointC;
         NiPoint3 edgeB;
         NiPoint3 b;
-        TESObjectLAND_GetVertex(input->region, input->edgeA, a);
-        TESObjectLAND_GetVertex(input->region, input->u, pointC);
+        TESObjectLAND_GetVertex(cdata->region, cdata->edgeA, a);
+        TESObjectLAND_GetVertex(cdata->region, cdata->u, pointC);
         a.Subtract(pointC);
-        TESObjectLAND_GetVertex(input->region, input->edgeA, edgeB);
-        TESObjectLAND_GetVertex(input->region, input->c, b);
+        TESObjectLAND_GetVertex(cdata->region, cdata->edgeA, edgeB);
+        TESObjectLAND_GetVertex(cdata->region, cdata->c, b);
         edgeB.Subtract(b);
-        if ((input->flipA && !input->flipB) || (!input->flipA && input->flipB))
-            *tangent = a.FUN_0053d1a0(edgeB);
+        if ((cdata->flipA && !cdata->flipB) || (!cdata->flipA && cdata->flipB))
+            *aFaceNormal = a.FUN_0053d1a0(edgeB);
         else
-            *tangent = edgeB.FUN_0053d1a0(a);
+            *aFaceNormal = edgeB.FUN_0053d1a0(a);
     }
     return true;
 }
@@ -1836,8 +1905,10 @@ struct Head175
     void* Modelloader_GetReferencedThis();
 };
 // @fnv 0x005281f0
-// src: COMMUNITY 0x005281f0
-int TESQueuedCellManager::ExteriorCellLoader_TryCancelTasks()
+// src: XBOX_RETAIL_PDB 0x005281f0
+// pdb: ExteriorCellLoader::TryCancelTasks | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// pdb locals: iterator, iuncanceledTasks, ikey, sptask
+int ExteriorCellLoader::TryCancelTasks()
 {
     int count = 0;
     QueryState175 query;
@@ -1847,7 +1918,7 @@ int TESQueuedCellManager::ExteriorCellLoader_TryCancelTasks()
         Head175 itemHead(0);
         if (static_cast<TESQueuedCellManagerRequestCalls*>(this)->AdvanceRequest(&query, &currentValue, &itemHead, 1))
         {
-            if (!static_cast<IOManagerTaskCalls*>(DAT_01202d98)->RunQueuedTask(itemHead.Modelloader_GetReferencedThis(), 0))
+            if (!static_cast<IOManagerTaskCalls*>(DAT_01202d98)->BSTaskManager_int64_TryCancelTask(itemHead.Modelloader_GetReferencedThis(), 0))
                 ++count;
         }
     }
@@ -1904,6 +1975,7 @@ struct FUN_00528be0 : QueueBase528be0
 
 // Calls FUN_00528e40(true), then passes m_buckets and unk04 to FUN_00401030.
 // @fnv 0x00528be0
+// pdb: LockFreeMap<unsigned int,NiPointer<ExteriorCellLoaderTask> >::~LockFreeMap<unsigned int,NiPointer<ExteriorCellLoaderTask> > | ExteriorCellLoader.obj | debug, call graph, medium
 FUN_00528be0::~FUN_00528be0()
 {
     LockFreeMap_RemoveAll(true);
@@ -2054,17 +2126,20 @@ struct AmmoOwner
     int unk9c;
     int unka0;
     BGSAmmoForm ammo;
-    Form* TESObjectWEAP_GetCurrentAmmo(AmmoActor* actor);
+    Form* TESObjectWEAP_GetCurrentAmmo(AmmoActor* apWeaponHolder);
 };
 // Returns the right-hand Form if it differs from the left one and passes the dynamic cast; otherwise returns the ammo helper's result.
 // @fnv 0x00525980
 // src: XBOX_PDB 0x00525980
-Form* AmmoOwner::TESObjectWEAP_GetCurrentAmmo(AmmoActor* actor)
+// pdb: TESObjectWEAP::GetCurrentAmmo | TESObjectWEAP.obj | retail, upstream name already matches, high
+// pdb params: apWeaponHolder
+// pdb locals: pWeap, pAmmo, pAmmoForm
+Form* AmmoOwner::TESObjectWEAP_GetCurrentAmmo(AmmoActor* apWeaponHolder)
 {
-    if (actor && actor->FUN_008d8520() && actor->FUN_008d8520()->GetRight())
+    if (apWeaponHolder && apWeaponHolder->FUN_008d8520() && apWeaponHolder->FUN_008d8520()->GetRight())
     {
-        Form* right3 = actor->FUN_008d8520()->GetRight()->CallGetFlags();
-        Form* left5 = actor->FUN_008d8520()->GetLeft() ? actor->FUN_008d8520()->GetLeft()->CallGetFlags() : 0;
+        Form* right3 = apWeaponHolder->FUN_008d8520()->GetRight()->CallGetFlags();
+        Form* left5 = apWeaponHolder->FUN_008d8520()->GetLeft() ? apWeaponHolder->FUN_008d8520()->GetLeft()->CallGetFlags() : 0;
         if (right3 != left5)
         {
             void* casted = _FNV_DynamicCast(right3, 0, &DAT_01183108, &DAT_011840c4, 0);
@@ -2083,13 +2158,16 @@ struct Thing
 {
     char pad[0x118];
     int m_uiFilterValue;
-    Obj* TESObjectWEAP_GetCurrentAmmo(int arg);
-    int GetOrFallback(int arg);
+    Obj* TESObjectWEAP_GetCurrentAmmo(int apWeaponHolder);
+    int GetOrFallback(int apWeaponHolder);
 };
 // @fnv 0x00525a90
-int Thing::GetOrFallback(int arg)
+// pdb: TESObjectWEAP::GetProjectile | TESObjectWEAP.obj | retail, call graph, high
+// pdb params: apWeaponHolder
+// pdb locals: pAmmo, pProjectile
+int Thing::GetOrFallback(int apWeaponHolder)
 {
-    Obj* result = TESObjectWEAP_GetCurrentAmmo(arg);
+    Obj* result = TESObjectWEAP_GetCurrentAmmo(apWeaponHolder);
     if (result != 0)
     {
         int value = result->FUN_008d80e0();
@@ -2111,5 +2189,6 @@ struct FUN_0052d180 : _ref_006815c0
     FUN_0052d180();
 };
 // @fnv 0x0052d180
+// pdb: NiColorKey::NiColorKey | TESImageSpaceModifier.obj | debug, object-file run extension, low
 FUN_0052d180::FUN_0052d180() : c(0.0f, 0.0f, 0.0f, 0.0f)
 {}

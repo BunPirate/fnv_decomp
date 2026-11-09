@@ -4,6 +4,7 @@
 #include "hkpWheelConstraintDataAtoms.h"
 #include "hkVector4.h"
 
+// pdb: class hkpWheelConstraintData, size 0x160, bases: hkpConstraintData, 3 members
 class hkpWheelConstraintData : public hkpConstraintData
 {
 public:
@@ -22,7 +23,7 @@ public:
     virtual void vf15();
 
     char padC[0x4];
-    hkpWheelConstraintDataAtoms m_kBridgeAtoms;
-    hkVector4 m_kAxleDirectionInBodyB;
-    hkVector4 m_kSteeringDirectionInBodyB;
+    hkpWheelConstraintDataAtoms m_atoms;
+    hkVector4 m_initialAxleInB;
+    hkVector4 m_initialSteeringAxisInB;
 };

@@ -31,7 +31,7 @@ class SaveLoadFile
     SaveLoadFile(const char*, bool, unsigned int);
     unsigned int Read(void*, unsigned int);
     unsigned int GetFilePosition();
-    void SetFilePosition(int);
+    void SeekSet(int);
 };
 #pragma pack(pop)
 FNV_STATIC_ASSERT(sizeof(SaveLoadFile) == 272);

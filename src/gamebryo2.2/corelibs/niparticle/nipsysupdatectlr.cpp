@@ -6,13 +6,13 @@
 
 struct GlobalObjectO2_00a7b610;
 
-extern GlobalObjectO2_00a7b610 g_01202690;
+extern GlobalObjectO2_00a7b610 NiPSysUpdateCtlr_ms_RTTI;
 
 // @fnv 0x00c27130
 // src: COMMUNITY 0x00c27130
 GlobalObjectO2_00a7b610* __cdecl NiPSysUpdateCtlr_GetRTTI()
 {
-    return &g_01202690;
+    return &NiPSysUpdateCtlr_ms_RTTI;
 }
 
 extern char const* const g_011dfe40_arg1;
@@ -32,6 +32,7 @@ struct S00c27140
 };
 // Calls FUN_00a6d290, then deletes this with size 0x34 when bit 0 of a1 is set, and returns this.
 // @fnv 0x00c27140
+// pdb: NiPSysUpdateCtlr::TargetIsRequiredType | NiPSysUpdateCtlr.obj | debug, object-file run extension, low
 void* S00c27140::DestroyIfFlagged(unsigned int auiFlags)
 {
     FUN_00a6d290();
@@ -58,13 +59,16 @@ struct FUN_00c27160_cls
     float m_14;
     float m_18;
     void FUN_00a6cfe0(void* obj, unsigned int a1);
-    void* NiPSysUpdateCtlr_CreateClone(unsigned int a1);
+    void* NiPSysUpdateCtlr_CreateClone(unsigned int kCloning);
 };
 
 // Allocates a 0x34-byte object, runs its base constructor, zeroes m_14/m_18, sets its vtable, then passes it to FUN_00a6cfe0 with a1 and returns it.
 // @fnv 0x00c27160
 // src: XBOX_PDB 0x00c27160
-void* FUN_00c27160_cls::NiPSysUpdateCtlr_CreateClone(unsigned int a1)
+// pdb: NiPSysUpdateCtlr::CreateClone | NiPSysUpdateCtlr.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
+void* FUN_00c27160_cls::NiPSysUpdateCtlr_CreateClone(unsigned int kCloning)
 {
     FUN_00c27160_cls* p = (FUN_00c27160_cls*)Object_DispatchCommandFour(0x34);
     if (p != 0)
@@ -78,7 +82,7 @@ void* FUN_00c27160_cls::NiPSysUpdateCtlr_CreateClone(unsigned int a1)
     {
         p = 0;
     }
-    this->FUN_00a6cfe0(p, a1);
+    this->FUN_00a6cfe0(p, kCloning);
     return p;
 }
 
@@ -136,16 +140,19 @@ struct FnvNode
     FnvNode* f30;   // +0x30
     virtual void v0();
     virtual void v1();
-    void __thiscall NiPSysUpdateCtlr_SetTarget(FnvNode* arg);
+    void __thiscall NiPSysUpdateCtlr_SetTarget(FnvNode* pkTarget);
 };
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* addend);
 
 // @fnv 0x00c27290
 // src: GAMEBRYO_LIB 0x00c27290
-void FnvNode::NiPSysUpdateCtlr_SetTarget(FnvNode* pTarget)
+// pdb: NiPSysUpdateCtlr::SetTarget | NiPSysUpdateCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkTarget
+// pdb locals: pkCtlr
+void FnvNode::NiPSysUpdateCtlr_SetTarget(FnvNode* pkTarget)
 {
-    ((FnvTarget*)this)->SetTarget(pTarget);
+    ((FnvTarget*)this)->SetTarget(pkTarget);
 
     if (!f2c)
         return;
@@ -180,10 +187,12 @@ struct GlobalObjectO2_00a7b610
 // Appends the string returned by FUN_00a7d330(g_01202690.m_pcName) to pkStrings, growing it via SetSize when full and storing at index m_usSize.
 // @fnv 0x00c27300
 // src: XBOX_PDB 0x00c27300
+// pdb: NiPSysUpdateCtlr::GetViewerStrings | NiPSysUpdateCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysUpdateCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     FUN_00a6d830(pkStrings);
-    char* str = NiViewerStrings_NiGetViewerString_Title(g_01202690.m_pcName);
+    char* str = NiViewerStrings_NiGetViewerString_Title(NiPSysUpdateCtlr_ms_RTTI.m_pcName);
     unsigned int size = pkStrings->m_usSize;
     if (size >= pkStrings->m_usMaxSize)
     {
@@ -463,7 +472,7 @@ struct SpawnedController
     float m_24;
     float m_28;
     SpawnedOwner* m_2C;
-    void NiPSysUpdateCtlr_Update(const float* pos);
+    void NiPSysUpdateCtlr_Update(const float* UpdateData);
 };
 
 struct KindRtti
@@ -501,7 +510,10 @@ __forceinline bool StaticIsKindOf(const KindRtti* rtti, SpawnedItem* obj)
 
 // @fnv 0x00c271c0
 // src: XBOX_PDB 0x00c271c0
-void SpawnedController::NiPSysUpdateCtlr_Update(const float* apPosition)
+// pdb: NiPSysUpdateCtlr::Update | NiPSysUpdateCtlr.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: pemitterCtlr, pemitter, pparticleSystem, ptc, bDontDoUpdate
+void SpawnedController::NiPSysUpdateCtlr_Update(const float* UpdateData)
 {
     unsigned short flags = m_08;
     m_14 = g_01015f5c;
@@ -524,13 +536,13 @@ void SpawnedController::NiPSysUpdateCtlr_Update(const float* apPosition)
     {
         if (pHitItem != 0 && (pHitItem->m_08 & 6) == 0)
         {
-            if (*apPosition - m_20 > pTarget->m_48)
+            if (*UpdateData - m_20 > pTarget->m_48)
             {
-                m_20 = *apPosition;
+                m_20 = *UpdateData;
             }
         }
     }
-    bool handled = reinterpret_cast<S00a36250*>(this)->DontDoUpdate(*apPosition);
+    bool handled = reinterpret_cast<S00a36250*>(this)->DontDoUpdate(*UpdateData);
     m_18 = 0.0f;
     m_14 = 0.0f;
     SpawnedOwner* owner = m_2C;

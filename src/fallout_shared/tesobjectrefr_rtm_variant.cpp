@@ -11,14 +11,14 @@ void FalloutRadio_NewCellEntered();
 void TESWaterSystem_SetPlayerForceUnderwater(unsigned char value);
 float BSAudio_GetMinDialogDist();
 float BSAudio_GetMaxDialogDist();
-void CheckWithinMultiBoundTask_CancelAttachment(unsigned int index);
+void CheckWithinMultiBoundTask_CancelAttachment(unsigned int apMoribundRef);
 
 struct ExtraList
 {
     BSExtraData* BaseExtraList_GetExtraData(int type);
     void BaseExtraList_AddExtra(BSExtraData* p);
 };
-bool __cdecl TESMagicTargetForm_CanBeMagicTarget(int x);
+bool __cdecl TESMagicTargetForm_CanBeMagicTarget(int apForm);
 class Owner
 {
   public:
@@ -47,6 +47,8 @@ class Owner
 };
 // @fnv 0x00575f30
 // src: COMMUNITY 0x00575f30
+// pdb: TESObjectREFR::GetMagicTarget | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: ptarget
 MagicTarget* Owner::TESObjectREFR_GetMagicTarget()
 {
     NonActorMagicTarget* p = 0;

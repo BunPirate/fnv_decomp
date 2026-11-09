@@ -4,6 +4,7 @@
 
 class LinkedReferencePair;
 
+// pdb: class ExtraPortalRefData, size 0x10, bases: BSExtraData, 1 members
 class ExtraPortalRefData : public BSExtraData
 {
 public:

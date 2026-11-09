@@ -14,6 +14,7 @@ class bhkTTNode<TESObjectREFR> : public bhkTTNode_TESObjectREFR_
 {
 };
 
+// pdb: class TargetEntry, size 0x50 (here 0x4), bases: bhkTTNode<TESObjectREFR>, 3 members
 class TargetEntry : public bhkTTNode<TESObjectREFR>
 {
 public:

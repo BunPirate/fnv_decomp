@@ -5,6 +5,8 @@
 #include "bgsmovieplayer_decls.h"
 
 // @fnv 0x00867290
+// pdb: BGSMoviePlayer::GetDevice | BGSMoviePlayer.obj | debug, upstream name already matches, high
+// pdb locals: pDXRenderer
 Direct3DDeviceInterface* BGSMoviePlayer::GetDevice()
 {
     NiRenderer* renderer = Renderer_GetNIRenderer();
@@ -12,6 +14,8 @@ Direct3DDeviceInterface* BGSMoviePlayer::GetDevice()
 }
 
 // @fnv 0x008672b0
+// pdb: BGSMoviePlayer::LockRenderer | BGSMoviePlayer.obj | debug, vtable slot, medium
+// pdb locals: pDXRenderer
 void BGSMoviePlayer::StartScene()
 {
     NiRenderer* renderer = Renderer_GetNIRenderer();
@@ -19,6 +23,8 @@ void BGSMoviePlayer::StartScene()
 }
 
 // @fnv 0x008672d0
+// pdb: BGSMoviePlayer::UnlockRenderer | BGSMoviePlayer.obj | debug, vtable slot, medium
+// pdb locals: pDXRenderer
 void BGSMoviePlayer::FinishScene()
 {
     NiRenderer* renderer = Renderer_GetNIRenderer();
@@ -26,6 +32,7 @@ void BGSMoviePlayer::FinishScene()
 }
 
 // @fnv 0x00867410
+// pdb: BGSMoviePlayer::GetMainThreadID | BGSMoviePlayer.obj | debug, vtable slot, medium
 unsigned int BGSMoviePlayer::GetUptimeMilliseconds()
 {
     if (g_osGlobals)
@@ -35,6 +42,8 @@ unsigned int BGSMoviePlayer::GetUptimeMilliseconds()
 
 // Returns whether the current NiRenderer reports a value of 1 from FUN_004e9530.
 // @fnv 0x008673e0
+// pdb: BGSMoviePlayer::IsRendererInsideFrame | BGSMoviePlayer.obj | debug, vtable slot, medium
+// pdb locals: pDXRenderer
 bool BGSMoviePlayer::IsDeviceReady()
 {
     NiRenderer* renderer = Renderer_GetNIRenderer();
@@ -42,6 +51,7 @@ bool BGSMoviePlayer::IsDeviceReady()
 }
 
 // @fnv 0x00867220
+// pdb: BGSMoviePlayer::UnmuteAudio | BGSMoviePlayer.obj | retail, vtable slot, high
 void BGSMoviePlayer::EndMoviePlayback()
 {
     if (DAT_011de714 && BSAudio_QInstance()->TESRegionData_GetPriority())
@@ -49,11 +59,12 @@ void BGSMoviePlayer::EndMoviePlayback()
         BSAudio_QInstance()->SetUseMultipleThreads(false);
         DAT_011de714 = 0;
     }
-    BSAudio_QInstance()->DisableAudioPlayback();
+    BSAudio_QInstance()->UnPauseWorldSounds();
 }
 
 // Returns the result of FUN_004de0e0 when FUN_004de070 and FUN_004de080 both succeed, otherwise returns FUN_004dc1f0.
 // @fnv 0x008672f0
+// pdb: BGSMoviePlayer::GetScreenWidth | BGSMoviePlayer.obj | debug, vtable slot, medium
 unsigned int BGSMoviePlayer::UpdateInterfaceState()
 {
     if (is_bEyeFinity() && IsEyefinity())
@@ -63,6 +74,7 @@ unsigned int BGSMoviePlayer::UpdateInterfaceState()
 
 // Returns the result of FUN_004de0f0 when FUN_004de070 and FUN_004de080 both succeed, otherwise returns FUN_004dc200.
 // @fnv 0x00867340
+// pdb: BGSMoviePlayer::GetScreenHeight | BGSMoviePlayer.obj | debug, vtable slot, medium
 unsigned int BGSMoviePlayer::GetFirstInterfaceFloat()
 {
     if (is_bEyeFinity() && IsEyefinity())
@@ -71,6 +83,7 @@ unsigned int BGSMoviePlayer::GetFirstInterfaceFloat()
 }
 
 // @fnv 0x008671a0
+// pdb: BGSMoviePlayer::MuteAudio | BGSMoviePlayer.obj | retail, vtable slot, high
 void BGSMoviePlayer::BeginMoviePlayback()
 {
     if (!BSAudio_QInstance()->TESRegionData_GetPriority())
@@ -88,18 +101,21 @@ void BGSMoviePlayer::BeginMoviePlayback()
 }
 
 // @fnv 0x00867440
-bool BGSMoviePlayer::UpdateMoviePlayback(bool continuePlaying)
+// pdb: BGSMoviePlayer::CheckContinuePlaying | BGSMoviePlayer.obj | retail, vtable slot, high
+// pdb params: abAllowInterruption
+// pdb locals: pControls, igamePad, icurrentController
+bool BGSMoviePlayer::UpdateMoviePlayback(bool abAllowInterruption)
 {
     int deviceStatus;
 
-    if (!FUN_00ec1840(continuePlaying))
+    if (!FUN_00ec1840(abAllowInterruption))
         return false;
 
     deviceStatus = NiXenonRenderer_GetRenderer()->NiXenonRenderer_GetD3DDevice()->TestCooperativeLevel();
     if (deviceStatus < 0)
         return false;
 
-    if (continuePlaying || field_20)
+    if (abAllowInterruption || field_20)
     {
         InputManager* wheel = g_osGlobals->Main_GetControls();
         wheel->Controls_UpdateValues();
@@ -135,6 +151,7 @@ float Get_1280_()
 void __cdecl FalloutAudioMedia_MediaPause(void);
 // @fnv 0x00867270
 // src: XBOX_PDB 0x00867270
+// pdb: BGSMoviePlayer::PauseMusic | BGSMoviePlayer.obj | debug, upstream name already matches, high
 void __thiscall BGSMoviePlayer::PauseMusic()
 {
     FalloutAudioMedia_MediaPause();
@@ -143,6 +160,7 @@ void __thiscall BGSMoviePlayer::PauseMusic()
 void _Deallocate(void*);
 // Calls FUN_00867180, then deallocates this if the low bit of flags is set, and returns this.
 // @fnv 0x00867150
+// pdb: BGSMoviePlayer::`scalar deleting destructor' | BGSMoviePlayer.obj | retail, vtable slot, high
 void* __thiscall BGSMoviePlayer::FUN_00867150(unsigned int flags)
 {
     UpdateFields_00867180();
@@ -154,6 +172,7 @@ void* __thiscall BGSMoviePlayer::FUN_00867150(unsigned int flags)
 void __cdecl ResetThreadFlags(void);
 // @fnv 0x00867280
 // src: XBOX_PDB 0x00867280
+// pdb: BGSMoviePlayer::UnPauseMusic | BGSMoviePlayer.obj | debug, upstream name already matches, high
 void __thiscall BGSMoviePlayer::UnPauseMusic()
 {
     ResetThreadFlags();
@@ -167,6 +186,7 @@ struct FUN_00ec15e0_shell
 
 // @fnv 0x00867180
 // src: GUESS 0x00867180 (confidence: low)
+// pdb: BGSMoviePlayer::~BGSMoviePlayer | BGSMoviePlayer.obj | debug, object-file gap fill, medium
 void __thiscall BGSMoviePlayer::UpdateFields_00867180()
 {
     *(void**)this = &DAT_01082564;

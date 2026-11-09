@@ -7,13 +7,15 @@
 #include "../../../../include/NiLight.h"
 #include "../../../../include/NiLightDimmerController.h"
 
-extern "C" char __stdcall FUN_00a57c10(void* a);
+extern "C" char __stdcall FUN_00a57c10(void* pkObject);
 
 // @fnv 0x00a4cf50
 // src: XBOX_PDB 0x00a4cf50
-char __stdcall NiLightDimmerController_IsEqual(void* pThis)
+// pdb: NiLightDimmerController::IsEqual | NiLightDimmerController.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+char __stdcall NiLightDimmerController_IsEqual(void* pkObject)
 {
-    return FUN_00a57c10(pThis) != 0;
+    return FUN_00a57c10(pkObject) != 0;
 }
 
 // @fnv 0x00a4cf70
@@ -28,13 +30,13 @@ void NiLightDimmerController::GetLightDimmer(float& fValue)
 
 struct GlobalObjectO2_00a7b610;
 
-extern GlobalObjectO2_00a7b610 g_011f3fa0;
+extern GlobalObjectO2_00a7b610 NiLightDimmerController_ms_RTTI;
 
 // @fnv 0x00a4cf90
 // src: COMMUNITY 0x00a4cf90
 GlobalObjectO2_00a7b610* __cdecl NiLightDimmerController_GetRTTI()
 {
-    return &g_011f3fa0;
+    return &NiLightDimmerController_ms_RTTI;
 }
 
 extern int DAT_01098ccc;
@@ -44,6 +46,8 @@ inline void* __cdecl operator new(unsigned int, void* p)
 }
 // @fnv 0x00a4d0d0
 // src: EXE 0x00a4d0d0
+// pdb: NiLightDimmerController::CreateObject | NiLightDimmerController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* NiLightDimmerController_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x38);
@@ -61,10 +65,12 @@ void __stdcall NiFloatInterpController_GetViewerStrings(NiTPrimitiveArray<char*>
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 // @fnv 0x00a4d100
 // src: XBOX_PDB 0x00a4d100
+// pdb: NiLightDimmerController::GetViewerStrings | NiLightDimmerController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiLightDimmerController_GetViewerStrings(NiTPrimitiveArray<char*>* pkStrings)
 {
     NiFloatInterpController_GetViewerStrings(pkStrings);
-    char* pszStr = NiViewerStrings_NiGetViewerString_Title(*(const char**)&g_011f3fa0);
+    char* pszStr = NiViewerStrings_NiGetViewerString_Title(*(const char**)&NiLightDimmerController_ms_RTTI);
     unsigned int uIdx = pkStrings->m_usSize;
     if (uIdx >= pkStrings->m_usMaxSize)
         pkStrings->SetSize(uIdx + pkStrings->m_usGrowBy);
@@ -80,6 +86,10 @@ struct FloatInterpOwner
 };
 
 // @fnv 0x00a4d080
+// pdb: NiLightDimmerController::CreateClone | NiLightDimmerController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiLightDimmerController::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 void* FloatInterpOwner::CreateFloatInterpController(int arg)
 {
     NiFloatInterpController* obj = (NiFloatInterpController*)Object_DispatchCommandFour(0x38);
@@ -97,7 +107,7 @@ void* FloatInterpOwner::CreateFloatInterpController(int arg)
 }
 
 extern NiRTTI DAT_011f4a28;
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME;
 
 inline bool GetManagerControlled(const NiLightDimmerController* controller)
 {
@@ -105,21 +115,24 @@ inline bool GetManagerControlled(const NiLightDimmerController* controller)
 }
 
 // @fnv 0x00a4cfa0
+// pdb: NiLightDimmerController::Update | NiLightDimmerController.obj | retail, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: fValue, pLight
 void __fastcall UpdateDimmer(NiLightDimmerController* controller, void*, const float& fTime)
 {
     if (GetManagerControlled(controller))
     {
-        controller->m_fControllerTime = DAT_01096324;
+        controller->m_fScaledTime = NiInterpController_INVALID_TIME;
     }
-    else if (controller->DontDoUpdate(fTime) && (!controller->m_spControllerInterpolator.m_pObject || !controller->m_spControllerInterpolator.m_pObject->AlwaysUpdate()))
+    else if (controller->DontDoUpdate(fTime) && (!controller->m_spInterpolator.m_pObject || !controller->m_spInterpolator.m_pObject->AlwaysUpdate()))
     {
         return;
     }
 
-    if (controller->m_spControllerInterpolator.m_pObject)
+    if (controller->m_spInterpolator.m_pObject)
     {
         float fValue;
-        if (controller->m_spControllerInterpolator.m_pObject->UpdateFloat(controller->m_fControllerTime, controller->m_pkTarget, fValue))
+        if (controller->m_spInterpolator.m_pObject->UpdateFloat(controller->m_fScaledTime, controller->m_pkTarget, fValue))
         {
             if (controller->m_pkTarget)
             {
@@ -135,6 +148,8 @@ extern void FUN_00a57c70();
 
 // @fnv 0x00a4cf40
 // src: XBOX_PDB 0x00a4cf40
+// pdb: NiLightDimmerController::LoadBinary | NiLightDimmerController.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiLightDimmerController_LoadBinary()
 {
     FUN_00a57c70();
@@ -148,10 +163,12 @@ extern void BaseCleanup();
 
 // Releases the interpolator, cleans up the base, and frees the controller when bit 0 is set.
 // @fnv 0x00a4d030
+// pdb: NiLightDimmerController::`scalar deleting destructor' | NiLightDimmerController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiLightDimmerController::CreateClone
 NiLightDimmerController* __fastcall FUN_00a4d030(NiLightDimmerController* controller, void*, unsigned char acFlags)
 {
     *(volatile int*)controller = (int)&DAT_01098ccc;
-    NiInterpolator* pCounted = *(NiInterpolator* volatile*)&controller->m_spControllerInterpolator.m_pObject;
+    NiInterpolator* pCounted = *(NiInterpolator* volatile*)&controller->m_spInterpolator.m_pObject;
     if (pCounted != 0)
     {
         if (InterlockedDecrement((long volatile*)&pCounted->m_uiRefCount) == 0)

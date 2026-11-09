@@ -15,6 +15,7 @@ class CellPoint3;
 class NiPoint2;
 class PortalEntry;
 
+// pdb: class BSPortal, size 0x120 (here 0x108), bases: BSOcclusionPlane, 2 members
 class BSPortal : public BSOcclusionPlane
 {
 public:

@@ -5,6 +5,7 @@
 
 class NiNode;
 
+// pdb: class ExtraSecuritronFace, size 0x1c, bases: BSExtraData, 2 members
 class ExtraSecuritronFace : public BSExtraData
 {
 public:
@@ -19,6 +20,6 @@ public:
 
     static char* GetPersonality();
 
-    BSStringT<char> m_0c;
-    BSStringT<char> m_14;
+    BSStringT<char> msPersonality;
+    BSStringT<char> msMood;
 };

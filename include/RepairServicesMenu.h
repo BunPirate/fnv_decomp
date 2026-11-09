@@ -9,6 +9,7 @@ class Holder;
 class RepairTile;
 class StatTile;
 
+// pdb: class RepairServicesMenu, size 0xa0, bases: Menu, 4 members
 class RepairServicesMenu : public Menu
 {
 public:
@@ -66,9 +67,9 @@ public:
     bool CompanionWheelMenu_IsWellFormedMenu();
     void UpdateRepairServiceTiles(int aiID, Tile* apTarget);
     void RefreshRepairMenu();
-    void ApplyRepair(void*);
-    void ApplyRepair(RepairEntry* apEntry);
-    void HandleRepairAction(int id, RepairTile* tile);
-    void UpdateItemComparison(int event, StatTile* tile);
+    void RepairItem(void*);
+    void RepairItem(RepairEntry* apBrokenItem);
+    void HandleRepairAction(int aiID, RepairTile* apTarget);
+    void UpdateItemComparison(int aiID, StatTile* apTarget);
 };
 

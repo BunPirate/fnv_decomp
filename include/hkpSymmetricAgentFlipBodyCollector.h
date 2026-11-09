@@ -2,6 +2,7 @@
 
 #include "hkpCdBodyPairCollector.h"
 
+// pdb: class hkpSymmetricAgentFlipBodyCollector, size 0xc, bases: hkpCdBodyPairCollector, 1 members
 class hkpSymmetricAgentFlipBodyCollector : public hkpCdBodyPairCollector
 {
 public:
@@ -9,5 +10,5 @@ public:
     void reset();
 
     unsigned char unk04[4];
-    void* payload;
+    void* m_collector;
 };

@@ -20,6 +20,7 @@ class TESObjectREFR;
 class TESWorldSpace;
 template <class T, unsigned int N> class BSSimpleArray;
 
+// pdb: class PathingLocation, size 0x28, 8 members
 class PathingLocation
 {
 public:
@@ -27,12 +28,12 @@ public:
     virtual void LoadGame(BGSLoadFormBuffer*);
 
     NiPoint3 Location;
-    const NavMeshInfo* m_pLocationNavMesh;
-    const BSSimpleArray<const NavMeshInfo*, 1024>* pNavMeshInfoArray;
+    const NavMeshInfo* pNavMesh;
+    const BSSimpleArray<const NavMeshInfo*, 1024>* pNavMeshes;
     TESObjectCELL* pCell;
-    TESWorldSpace* m_pContainingWorldspace;
-    unsigned int m_uiPathingFlags;
-    unsigned short m_usTriangleID;
+    TESWorldSpace* pWorldSpace;
+    unsigned int iCellKey;
+    unsigned short usTriangle;
     unsigned char uiFlags;
     union
     {
@@ -109,8 +110,8 @@ public:
     void ClearUnused();
     bool QValid();
     void ResetLocation();
-    void WriteDebugString(char*, int);
-    bool IsDistanceBelowThreshold(float);
+    void PrintDebugText(char*, int);
+    bool IsValidLocation(float);
     bool IsCloseTo(void*, float);
     void SetLocationData(void*, TESObjectCELL*, TESWorldSpace*);
     void SetLocationData(const NiPoint3&, TESObjectCELL*, TESWorldSpace*);

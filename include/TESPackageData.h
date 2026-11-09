@@ -5,6 +5,7 @@ class BGSLoadFormBuffer;
 class TESForm;
 class TESPatrolPackageData;
 
+// pdb: class TESPackageData, size 0x4, 0 members
 class TESPackageData
 {
 public:

@@ -12,6 +12,6 @@ class NiShader;
 
 class ShaderBufferRecord;
 void __cdecl NiFree(void*);
-int NiStricmp(const char* a, const char* b);
+int NiStricmp(const char* s1, const char* s2);
 bool __stdcall Object_ProcessAndTransformResult_00b7fce0(const char* left, const char* right);
 #endif

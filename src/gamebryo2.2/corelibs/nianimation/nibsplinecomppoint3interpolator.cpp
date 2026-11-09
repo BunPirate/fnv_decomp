@@ -36,23 +36,28 @@ inline void NiBinaryStream::Write(void* buffer, unsigned int bytes)
 
 // Calls the base LoadBinary, then reads 8 bytes from the stream's input into the interpolator's data.
 // @fnv 0x00a51400
-void NiBSplineCompPoint3Interpolator::LoadBinary(NiStream& stream)
+// pdb: NiBSplineCompPoint3Interpolator::LoadBinary | NiBSplineCompPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiBSplineCompPoint3Interpolator::LoadBinary(NiStream& kStream)
 {
-    NiBSplinePoint3Interpolator::LoadBinary(stream);
-    NiBinaryStream* input = stream.m_pkIstr;
-    input->Read(&m_fSequenceOffset, 8);
+    NiBSplinePoint3Interpolator::LoadBinary(kStream);
+    NiBinaryStream* input = kStream.m_pkIstr;
+    input->Read(&m_afCompScalars, 8);
 }
 
-extern "C" void* g_011f4014;
+extern "C" void* NiBSplineCompPoint3Interpolator_ms_RTTI;
 
 // @fnv 0x00a51270
 // src: COMMUNITY 0x00a51270
 void* __cdecl NiBSplineCompPoint3Interpolator_GetRTTI()
 {
-    return &g_011f4014;
+    return &NiBSplineCompPoint3Interpolator_ms_RTTI;
 }
 
 // @fnv 0x00a51230
+// pdb: NiBSplineCompPoint3Interpolator::IsEqual | NiBSplineCompPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest, ui
 bool __fastcall NiBSplineCompPoint3Interpolator_IsEqual(NiBSplineCompPoint3Interpolator* self, void*, NiObject* pkObject)
 {
     NiBSplineCompPoint3Interpolator* pkDest;
@@ -62,7 +67,7 @@ bool __fastcall NiBSplineCompPoint3Interpolator_IsEqual(NiBSplineCompPoint3Inter
     pkDest = (NiBSplineCompPoint3Interpolator*)pkObject;
     for (iIndex = 0; iIndex < 2; iIndex++)
     {
-        if ((&self->m_fSequenceOffset)[iIndex] != (&pkDest->m_fSequenceOffset)[iIndex])
+        if ((&self->m_afCompScalars)[iIndex] != (&pkDest->m_afCompScalars)[iIndex])
             return false;
     }
     return true;
@@ -73,10 +78,12 @@ char* __cdecl _FUN_00a7d330(const char*);
 // Grows the string array if it is full, then appends the string returned by _FUN_00a7d330(g_011f4014) at the current size index.
 // @fnv 0x00a51480
 // src: XBOX_PDB 0x00a51480
+// pdb: NiBSplineCompPoint3Interpolator::GetViewerStrings | NiBSplineCompPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiBSplineCompPoint3Interpolator_GetViewerStrings(StrArr* pkStrings)
 {
     FUN_00a50960(pkStrings);
-    char* pszStr = _FUN_00a7d330((const char*)g_011f4014);
+    char* pszStr = _FUN_00a7d330((const char*)NiBSplineCompPoint3Interpolator_ms_RTTI);
     unsigned int uiSize = pkStrings->m_usSize;
     unsigned int uiMax = pkStrings->m_usMaxSize;
     if (uiSize >= uiMax)
@@ -99,9 +106,9 @@ bool __fastcall NiBSplineCompPoint3Interpolator_EvaluateSplineAtTime(NiBSplineCo
     {
         float samples[4];
         float normalized = (time - self->m_fStartTime) / (self->m_fEndTime - self->m_fStartTime);
-        self->m_spTransformData.m_pObject->CalculateSplineValue(
-            normalized, samples, 3, self->m_spSplineBasisData.m_pObject,
-            self->m_kPoint3CPHandle, self->m_fSequenceOffset, self->m_fDecodeScale);
+        self->m_spData.m_pObject->CalculateSplineValue(
+            normalized, samples, 3, self->m_spBasisData.m_pObject,
+            self->m_kPoint3CPHandle, self->m_afCompScalars, self->m_fDecodeScale);
         NiPoint3 updatedValue(samples[0], samples[1], samples[2]);
         memcpy(&lastValue, &updatedValue, sizeof(NiPoint3));
     }
@@ -112,11 +119,13 @@ bool __fastcall NiBSplineCompPoint3Interpolator_EvaluateSplineAtTime(NiBSplineCo
 
 // Saves the base point3 interpolator and the two compression parameters.
 // @fnv 0x00a51440
+// pdb: NiBSplineCompPoint3Interpolator::SaveBinary | NiBSplineCompPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void __fastcall NiBSplineCompPoint3Interpolator_SaveBinary(NiBSplineCompPoint3Interpolator* self, void*, NiStream& stream)
 {
     reinterpret_cast<BSplinePoint3Operations*>(self)->SaveBinary(stream);
     NiBinaryStream* pBinaryStream = stream.m_pkOstr;
-    pBinaryStream->Write(&self->m_fSequenceOffset, 8);
+    pBinaryStream->Write(&self->m_afCompScalars, 8);
 }
 
 const float DAT_01099a1c = 3.402823466e+38f;
@@ -139,14 +148,14 @@ NiBSplineCompPoint3Interpolator* __fastcall NiBSplineCompPoint3Interpolator_Clon
     }
     if (pNew)
     {
-        pNew->m_fDecodeScale = pNew->m_fSequenceOffset = DAT_01099a1c;
+        pNew->m_fDecodeScale = pNew->m_afCompScalars = DAT_01099a1c;
     }
     else
     {
         pNew = 0;
     }
     reinterpret_cast<BSplinePoint3Operations*>(self)->CopyUnknownFields(pNew, cloning);
-    pNew->m_fSequenceOffset = self->m_fSequenceOffset;
+    pNew->m_afCompScalars = self->m_afCompScalars;
     pNew->m_fDecodeScale = self->m_fDecodeScale;
     return pNew;
 }
@@ -170,7 +179,7 @@ void* __cdecl NiBSplineCompPoint3Interpolator_Create()
     }
     if (result)
     {
-        result->m_fDecodeScale = result->m_fSequenceOffset = 3.4028234663852886e+038f;
+        result->m_fDecodeScale = result->m_afCompScalars = 3.4028234663852886e+038f;
         return result;
     }
     return 0;

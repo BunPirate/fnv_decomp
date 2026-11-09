@@ -37,9 +37,9 @@ template <> class BSTCommonLLMessageQueue<ActorPathingMessage>
     virtual bool RemoveMessage(ActorPathingMessage& arMessage);
 
     LockPrimitive kLock;
-    BSTFreeList<ActorPathingMessage>* pSizeClassFreeList;
+    BSTFreeList<ActorPathingMessage>* pFreeList;
     BSTFreeListElem<ActorPathingMessage>* pHead;
-    BSTFreeListElem<ActorPathingMessage>** m_ppTailLink;
+    BSTFreeListElem<ActorPathingMessage>** ppTail;
 };
 
 class MobileObjectTaskletContext;

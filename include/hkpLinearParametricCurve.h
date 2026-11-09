@@ -6,6 +6,7 @@
 #include "hkArray.h"
 #include "hkaAnimation.h"
 
+// pdb: class hkpLinearParametricCurve, size 0x40, bases: hkpParametricCurve, 5 members
 class hkpLinearParametricCurve : public hkpParametricCurve
 {
 public:
@@ -16,11 +17,11 @@ public:
     virtual void vf12();
     virtual void vf13();
 
-    hkReal m_fSmoothingValue;
-    hkBool m_bClosedLoop;
+    hkReal m_smoothingFactor;
+    hkBool m_closedLoop;
     char padD[0x3];
-    hkVector4 m_kVector4;
-    hkArray<hkVector4> m_kPoints;
-    hkArray<hkReal> m_fClosestPointDistanceSquared;
+    hkVector4 m_dirNotParallelToTangentAlongWholePath;
+    hkArray<hkVector4> m_points;
+    hkArray<hkReal> m_distance;
     char pad38[0x8];
 };

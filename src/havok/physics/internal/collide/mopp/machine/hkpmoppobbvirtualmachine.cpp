@@ -45,6 +45,7 @@ struct __declspec(align(16)) GridScratch {
     int f34;
 };
 
+// pdb: structure GridCell, size 0x4 (here 0x38), 1 members
 struct GridCell {
     int m00;
     int unk04;
@@ -91,25 +92,28 @@ struct GridCell {
     void* m30;
     int m34;
 
-    void hkpMoppObbVirtualMachine_queryAabb(GridSource* a1, GridBounds* a2, int a3);
-    void Execute(GridScratch* s, unsigned char* p, int z);
+    void hkpMoppObbVirtualMachine_queryAabb(GridSource* code, GridBounds* aabb, int primitives_out);
+    void hkpMoppObbVirtualMachine_queryAabbOnTree(GridScratch* query, unsigned char* PC, int chunkOffset);
 };
 
 // @fnv 0x00dd1da0
 // src: HAVOK_LIB 0x00dd1da0
-void GridCell::hkpMoppObbVirtualMachine_queryAabb(GridSource* a1, GridBounds* a2, int a3) {
-    m30 = a1;
-    m00 = a3;
-    float s = a1->f1c;
-    float p10 = a1->f10;
-    m20 = fnv_FloatToInt((a2->f00 - p10) * s) - 1;
-    m10 = fnv_FloatToInt((a2->f10 - p10) * s) + 1;
-    float p14 = a1->f14;
-    m24 = fnv_FloatToInt((a2->f04 - p14) * s) - 1;
-    m14 = fnv_FloatToInt((a2->f14 - p14) * s) + 1;
-    float p18 = a1->f18;
-    m28 = fnv_FloatToInt((a2->f08 - p18) * s) - 1;
-    m18 = fnv_FloatToInt((a2->f18 - p18) * s) + 1;
+// pdb: hkpMoppObbVirtualMachine::queryAabb | hkpMoppObbVirtualMachine.obj | retail, upstream name already matches, high
+// pdb params: code, aabb, primitives_out
+// pdb locals: query
+void GridCell::hkpMoppObbVirtualMachine_queryAabb(GridSource* code, GridBounds* aabb, int primitives_out) {
+    m30 = code;
+    m00 = primitives_out;
+    float s = code->f1c;
+    float p10 = code->f10;
+    m20 = fnv_FloatToInt((aabb->f00 - p10) * s) - 1;
+    m10 = fnv_FloatToInt((aabb->f10 - p10) * s) + 1;
+    float p14 = code->f14;
+    m24 = fnv_FloatToInt((aabb->f04 - p14) * s) - 1;
+    m14 = fnv_FloatToInt((aabb->f14 - p14) * s) + 1;
+    float p18 = code->f18;
+    m28 = fnv_FloatToInt((aabb->f08 - p18) * s) - 1;
+    m18 = fnv_FloatToInt((aabb->f18 - p18) * s) + 1;
 
     GridScratch loc;
     loc.f10 = m22;
@@ -125,9 +129,9 @@ void GridCell::hkpMoppObbVirtualMachine_queryAabb(GridSource* a1, GridBounds* a2
     loc.f30 = 0;
     loc.f34 = 0;
 
-    unsigned char* p = a1->p20;
+    unsigned char* p = code->p20;
     m34 = ((*p != 0xd) ? 1 : 0) - 1;
-    Execute(&loc, p, 0);
+    hkpMoppObbVirtualMachine_queryAabbOnTree(&loc, p, 0);
 }
 
 extern "C" void _ReadWriteBarrier();
@@ -169,7 +173,7 @@ struct VirtualMachine {
  };};
  union {CodeData* data;void* m30;};
  union {int primitiveMask;int m34;};
- void Execute(const QueryState*,unsigned char*,int);
+ void hkpMoppObbVirtualMachine_queryAabbOnTree(const QueryState*,unsigned char*,int);
  __forceinline void AddHit(int value) {
   HitArray* out=hits;AllocatorContext* context=hkMemoryRouter_getInstance();
   if(out->size==(out->capacity&0x3fffffff)) ResizeAudioStream(context->allocator,out,4);
@@ -177,7 +181,11 @@ struct VirtualMachine {
 };
 // Executes a MOPP BVH tree traversal from a QueryState, recursing on diagonal and axial branches, and emits a hit via AddHit on a leaf.
 // @fnv 0x00dd1400
-void VirtualMachine::Execute(const QueryState* apQueryState,unsigned char* __restrict pc,int codeOffset) {
+// src: XBOX_RETAIL_PDB 0x00dd1400
+// pdb: hkpMoppObbVirtualMachine::queryAabbOnTree | hkpMoppObbVirtualMachine.obj | retail, string-set bridge, high
+// pdb params: query, PC, chunkOffset
+// pdb locals: scaledQuery, assertBuf, ostr
+void VirtualMachine::hkpMoppObbVirtualMachine_queryAabbOnTree(const QueryState* query,unsigned char* __restrict PC,int chunkOffset) {
     int by;(void)by;
     QueryState localQueryState;
     if (!DAT_01269cbc) {
@@ -185,71 +193,71 @@ void VirtualMachine::Execute(const QueryState* apQueryState,unsigned char* __res
         if (!DAT_01269cbc) return;
     }
     for (;;) {
-        unsigned op=*pc;
+        unsigned op=*PC;
         int high,low,left,right,length;
         int term;
         switch(op) {
         case 0: return;
-        case 0x13: left=pc[1]*2;right=pc[2]*2;high=apQueryState->upper[1]+apQueryState->upper[2];low=apQueryState->lower[1]+apQueryState->lower[2];goto diagonal;
-        case 0x14: left=pc[1]*2-255;right=pc[2]*2-255;high=apQueryState->upper[1]-apQueryState->lower[2];low=apQueryState->lower[1]-apQueryState->upper[2];goto diagonal;
-        case 0x15: left=pc[1]*2;right=pc[2]*2;high=apQueryState->upper[0]+apQueryState->upper[2];low=apQueryState->lower[0]+apQueryState->lower[2];goto diagonal;
-        case 0x16: left=pc[1]*2-255;right=pc[2]*2-255;high=apQueryState->upper[0]-apQueryState->lower[2];low=apQueryState->lower[0]-apQueryState->upper[2];goto diagonal;
-        case 0x17: left=pc[1]*2;right=pc[2]*2;high=apQueryState->upper[0]+apQueryState->upper[1];low=apQueryState->lower[0]+apQueryState->lower[1];goto diagonal;
-        case 0x18: left=pc[1]*2-255;right=pc[2]*2-255;high=apQueryState->upper[0]-apQueryState->lower[1];low=apQueryState->lower[0]-apQueryState->upper[1];goto diagonal;
-        case 0x19: left=pc[1]*3;right=pc[2]*3;high=apQueryState->upper[2]+apQueryState->upper[1]+apQueryState->upper[0];low=apQueryState->lower[2]+apQueryState->lower[1]+apQueryState->lower[0];goto diagonal;
-        case 0x1a: left=(pc[1]-85)*3;right=(pc[2]-85)*3;high=apQueryState->upper[1]-apQueryState->lower[2]+apQueryState->upper[0];low=apQueryState->lower[1]-apQueryState->upper[2]+apQueryState->lower[0];goto diagonal;
-        case 0x1b: left=(pc[1]-85)*3;right=(pc[2]-85)*3;high=apQueryState->upper[2]-apQueryState->lower[1]+apQueryState->upper[0];low=apQueryState->lower[2]-apQueryState->upper[1]+apQueryState->lower[0];goto diagonal;
-        case 0x1c: left=(pc[1]-170)*3;right=(pc[2]-170)*3;high=apQueryState->upper[0]-apQueryState->lower[2]-apQueryState->lower[1];low=apQueryState->lower[0]-apQueryState->upper[2]-apQueryState->upper[1];
+        case 0x13: left=PC[1]*2;right=PC[2]*2;high=query->upper[1]+query->upper[2];low=query->lower[1]+query->lower[2];goto diagonal;
+        case 0x14: left=PC[1]*2-255;right=PC[2]*2-255;high=query->upper[1]-query->lower[2];low=query->lower[1]-query->upper[2];goto diagonal;
+        case 0x15: left=PC[1]*2;right=PC[2]*2;high=query->upper[0]+query->upper[2];low=query->lower[0]+query->lower[2];goto diagonal;
+        case 0x16: left=PC[1]*2-255;right=PC[2]*2-255;high=query->upper[0]-query->lower[2];low=query->lower[0]-query->upper[2];goto diagonal;
+        case 0x17: left=PC[1]*2;right=PC[2]*2;high=query->upper[0]+query->upper[1];low=query->lower[0]+query->lower[1];goto diagonal;
+        case 0x18: left=PC[1]*2-255;right=PC[2]*2-255;high=query->upper[0]-query->lower[1];low=query->lower[0]-query->upper[1];goto diagonal;
+        case 0x19: left=PC[1]*3;right=PC[2]*3;high=query->upper[2]+query->upper[1]+query->upper[0];low=query->lower[2]+query->lower[1]+query->lower[0];goto diagonal;
+        case 0x1a: left=(PC[1]-85)*3;right=(PC[2]-85)*3;high=query->upper[1]-query->lower[2]+query->upper[0];low=query->lower[1]-query->upper[2]+query->lower[0];goto diagonal;
+        case 0x1b: left=(PC[1]-85)*3;right=(PC[2]-85)*3;high=query->upper[2]-query->lower[1]+query->upper[0];low=query->lower[2]-query->upper[1]+query->lower[0];goto diagonal;
+        case 0x1c: left=(PC[1]-170)*3;right=(PC[2]-170)*3;high=query->upper[0]-query->lower[2]-query->lower[1];low=query->lower[0]-query->upper[2]-query->upper[1];
         diagonal:
-            pc+=4;
+            PC+=4;
             if(low<=right) {if(high<left) break;return;}
-            length=pc[-1];
-            if(high>=left) {pc+=length;break;}
-            Execute(apQueryState,pc,codeOffset);
-            pc+=length;break;
+            length=PC[-1];
+            if(high>=left) {PC+=length;break;}
+            hkpMoppObbVirtualMachine_queryAabbOnTree(query,PC,chunkOffset);
+            PC+=length;break;
         case 0x10:case 0x11:case 0x12:
-            left=pc[1];right=pc[2];high=apQueryState->upper[op-0x10];pc+=4;
-            if(apQueryState->lower[op-0x10]<=right) {if(high<left) break;return;}
-            length=pc[-1]; pc+=length;
+            left=PC[1];right=PC[2];high=query->upper[op-0x10];PC+=4;
+            if(query->lower[op-0x10]<=right) {if(high<left) break;return;}
+            length=PC[-1]; PC+=length;
             if(high<left) goto recurseAxial;
             break;
         case 0x20:case 0x21:case 0x22:
-            right=pc[1];pc+=3;
-            if(apQueryState->lower[op-0x20]<=right) break;
-            length=pc[-1];pc+=length;
-            if(apQueryState->upper[op-0x20]>right) break;
-        recurseAxial: Execute(apQueryState,pc-length,codeOffset);
+            right=PC[1];PC+=3;
+            if(query->lower[op-0x20]<=right) break;
+            length=PC[-1];PC+=length;
+            if(query->upper[op-0x20]>right) break;
+        recurseAxial: hkpMoppObbVirtualMachine_queryAabbOnTree(query,PC-length,chunkOffset);
             break;
         case 0x23:case 0x24:case 0x25:
-            left=pc[1];right=pc[2];high=apQueryState->upper[op-0x23];length=(pc[3]<<8)+pc[4];pc+=7;
-            if(apQueryState->lower[op-0x23]<=right) {if(high>=left)return;pc+=length;break;}
-            {int other=(pc[-2]<<8)+pc[-1];pc+=other;
-            if(high<left) Execute(apQueryState,pc+length-other,codeOffset);}
+            left=PC[1];right=PC[2];high=query->upper[op-0x23];length=(PC[3]<<8)+PC[4];PC+=7;
+            if(query->lower[op-0x23]<=right) {if(high>=left)return;PC+=length;break;}
+            {int other=(PC[-2]<<8)+PC[-1];PC+=other;
+            if(high<left) hkpMoppObbVirtualMachine_queryAabbOnTree(query,PC+length-other,chunkOffset);}
             break;
         case 0x26:case 0x27:case 0x28:
-            if(apQueryState->lower[op-0x26]<pc[1])return;
-            if(apQueryState->upper[op-0x26]>=pc[2])return;
-            pc+=3;break;
+            if(query->lower[op-0x26]<PC[1])return;
+            if(query->upper[op-0x26]>=PC[2])return;
+            PC+=3;break;
         case 0x29:case 0x2a:case 0x2b:
-            left=(((pc[1]<<8)+pc[2])<<8)+pc[3];
+            left=(((PC[1]<<8)+PC[2])<<8)+PC[3];
             if(lower[op-0x29]<left)return;
-            right=(((pc[4]<<8)+pc[5])<<8)+pc[6];
+            right=(((PC[4]<<8)+PC[5])<<8)+PC[6];
             if(upper[op-0x29]>right)return;
-            pc+=7;break;
-        case 5: pc+=2; length=pc[-1];pc+=length; break;
-        case 6: {int a=pc[1];int b=pc[2];pc+=3;a<<=8;a+=b;pc+=a;break;}
-        case 7: {int a=pc[1];int b=pc[2];int c=pc[3];pc+=4;a<<=8;a+=b;a<<=8;a+=c;pc+=a;break;}
+            PC+=7;break;
+        case 5: PC+=2; length=PC[-1];PC+=length; break;
+        case 6: {int a=PC[1];int b=PC[2];PC+=3;a<<=8;a+=b;PC+=a;break;}
+        case 7: {int a=PC[1];int b=PC[2];int c=PC[3];PC+=4;a<<=8;a+=b;a<<=8;a+=c;PC+=a;break;}
         case 12:
-            codeOffset=((pc[1]<<8)|pc[2])<<9;goto changePage;
+            chunkOffset=((PC[1]<<8)|PC[2])<<9;goto changePage;
         case 0x70:
-            codeOffset=(((((pc[1]<<8)+pc[2])<<8)+pc[3])<<8)+pc[4];
-        changePage: pc=data->code+codeOffset;break;
+            chunkOffset=(((((PC[1]<<8)+PC[2])<<8)+PC[3])<<8)+PC[4];
+        changePage: PC=data->code+chunkOffset;break;
         case 1: case 2: case 3: case 4:
             {volatile QueryState& q=localQueryState;
-            q.origin[0]=(pc[1]+apQueryState->origin[0])<<op;
-            q.origin[1]=(pc[2]+apQueryState->origin[1])<<op;
-            q.origin[2]=(pc[3]+apQueryState->origin[2])<<op;
-            q.shift=apQueryState->shift+op;
+            q.origin[0]=(PC[1]+query->origin[0])<<op;
+            q.origin[1]=(PC[2]+query->origin[1])<<op;
+            q.origin[2]=(PC[3]+query->origin[2])<<op;
+            q.shift=query->shift+op;
             int inverseShift=16-localQueryState.shift;
             q.upper[0]=(upper[0]>>inverseShift)-q.origin[0];
             q.upper[1]=(upper[1]>>inverseShift)-q.origin[1];
@@ -257,32 +265,32 @@ void VirtualMachine::Execute(const QueryState* apQueryState,unsigned char* __res
             q.lower[0]=(lower[0]>>inverseShift)-q.origin[0]+1;
             int iOriginY=q.origin[1];by=((volatile int&)lower[1])>>inverseShift;q.lower[1]=by-iOriginY+1;
             q.lower[2]=(lower[2]>>inverseShift)-q.origin[2]+1;
-            q.properties[0]=apQueryState->properties[0];
-            q.primitiveOffset=apQueryState->primitiveOffset;
-            apQueryState=&localQueryState; pc+=4; break;}
+            q.properties[0]=query->properties[0];
+            q.primitiveOffset=query->primitiveOffset;
+            query=&localQueryState; PC+=4; break;}
         case 9:
-            length=pc[1]; if(apQueryState!=&localQueryState) {localQueryState=*apQueryState;apQueryState=&localQueryState;}
-            localQueryState.primitiveOffset+=length;pc+=2;break;
+            length=PC[1]; if(query!=&localQueryState) {localQueryState=*query;query=&localQueryState;}
+            localQueryState.primitiveOffset+=length;PC+=2;break;
         case 10:
-            length=(pc[1]<<8)+pc[2]; if(apQueryState!=&localQueryState) {localQueryState=*apQueryState;apQueryState=&localQueryState;}
-            localQueryState.primitiveOffset+=length;pc+=3;break;
+            length=(PC[1]<<8)+PC[2]; if(query!=&localQueryState) {localQueryState=*query;query=&localQueryState;}
+            localQueryState.primitiveOffset+=length;PC+=3;break;
         case 11:
-            length=((((pc[1]<<8)+pc[2])<<8)+pc[3]<<8)+pc[4];
-            if(apQueryState!=&localQueryState) {localQueryState=*apQueryState;apQueryState=&localQueryState;}
-            localQueryState.primitiveOffset=length;pc+=5;break;
-        case 13: pc+=5;break;
+            length=((((PC[1]<<8)+PC[2])<<8)+PC[3]<<8)+PC[4];
+            if(query!=&localQueryState) {localQueryState=*query;query=&localQueryState;}
+            localQueryState.primitiveOffset=length;PC+=5;break;
+        case 13: PC+=5;break;
         case 0x60:case 0x61:case 0x62:case 0x63:
-            {int propertyValue=pc[1];pc+=2;localQueryState.properties[op-0x60]=propertyValue;}goto property;
+            {int propertyValue=PC[1];PC+=2;localQueryState.properties[op-0x60]=propertyValue;}goto property;
         case 0x64:case 0x65:case 0x66:case 0x67:
-            {int propertyValue=(pc[1]<<8)+pc[2];localQueryState.properties[op-0x64]=propertyValue;pc+=3;}goto property;
+            {int propertyValue=(PC[1]<<8)+PC[2];localQueryState.properties[op-0x64]=propertyValue;PC+=3;}goto property;
         case 0x68:case 0x69:case 0x6a:case 0x6b:
-            {int propertyValue=(((((pc[1]<<8)+pc[2])<<8)+pc[3])<<8)+pc[4];localQueryState.properties[op-0x68]=propertyValue;pc+=5;}
+            {int propertyValue=(((((PC[1]<<8)+PC[2])<<8)+PC[3])<<8)+PC[4];localQueryState.properties[op-0x68]=propertyValue;PC+=5;}
         property:
-            {int value=localQueryState.properties[0];if(apQueryState!=&localQueryState){localQueryState=*apQueryState;apQueryState=&localQueryState;}localQueryState.properties[0]=value;}break;
-        case 0x50: term=pc[1];goto emit;
-        case 0x51: term=(pc[1]<<8)+pc[2];goto emit;
-        case 0x52: term=(((pc[1]<<8)+pc[2])<<8)+pc[3];goto emit;
-        case 0x53: term=(((((pc[1]<<8)+pc[2])<<8)+pc[3])<<8)+pc[4];goto emit;
+            {int value=localQueryState.properties[0];if(query!=&localQueryState){localQueryState=*query;query=&localQueryState;}localQueryState.properties[0]=value;}break;
+        case 0x50: term=PC[1];goto emit;
+        case 0x51: term=(PC[1]<<8)+PC[2];goto emit;
+        case 0x52: term=(((PC[1]<<8)+PC[2])<<8)+PC[3];goto emit;
+        case 0x53: term=(((((PC[1]<<8)+PC[2])<<8)+PC[3])<<8)+PC[4];goto emit;
         case 0x30:case 0x31:case 0x32:case 0x33:case 0x34:case 0x35:case 0x36:case 0x37:case 0x38:case 0x39:case 0x3a:case 0x3b:case 0x3c:case 0x3d:case 0x3e:case 0x3f:case 0x40:case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:case 0x4a:case 0x4b:case 0x4c:case 0x4d:case 0x4e:case 0x4f:
             term=op-0x30;goto emit;
         default:
@@ -292,7 +300,7 @@ void VirtualMachine::Execute(const QueryState* apQueryState,unsigned char* __res
             if(DAT_01268360->report(3,0x1298fedd,reinterpret_cast<char*>(errorBuffer),".\\Collide\\Mopp\\Machine\\hkpMoppObbVirtualMachine.cpp",459)) __debugbreak();
             errorText.FUN_00cc00e0();}break;
         emit:
-            {unsigned key=apQueryState->primitiveOffset+term; unsigned value=((((unsigned)(codeOffset>>9))<<8)&primitiveMask)|key;
+            {unsigned key=query->primitiveOffset+term; unsigned value=((((unsigned)(chunkOffset>>9))<<8)&primitiveMask)|key;
             AddHit(value);return;}
         }
     }

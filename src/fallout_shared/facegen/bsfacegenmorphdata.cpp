@@ -55,7 +55,7 @@ class StatisticalEntry : public MorphName
 class DifferentialArray
 {
   public:
-    unsigned int GetEntryCount();
+    unsigned int NiD3DShaderConstantMap_GetEntryCount();
     DifferentialEntry* GetCheckedElement_00662860(unsigned int);
     unsigned int data[6];
 };
@@ -78,13 +78,16 @@ class FaceGenTriData
 
 // Builds differential and statistical morph arrays for expressions, modifiers, phonemes and custom morphs from the given tri data.
 // @fnv 0x00660ba0
-BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
+// pdb: BSFaceGenMorphDataHead::BSFaceGenMorphDataHead | BSFaceGenMorphData.obj | retail, string-set bridge, high
+// pdb params: apFaceGenTri
+// pdb locals: pmorphStat, iphon, imorph, pmorphStatTri, imod, ivert, pwhich, bfoundMorph, pverts, icust, ivertCount, pmorphDiff, iexp
+BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* apFaceGenTri)
 {
-    expressions = 0;
-    modifiers = 0;
-    phonemes = 0;
-    custom = 0;
-    if (!tri)
+    ppExpressionMorphs = 0;
+    ppModifierMorphs = 0;
+    ppPhonemeMorphs = 0;
+    ppCustomMorphs = 0;
+    if (!apFaceGenTri)
         return;
     // Preserve the original unoptimized stack layout for the shared loop state.
     struct MorphLocals
@@ -104,32 +107,32 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
         unsigned int expression;
     } local;
     // Load differential morphs by matching the four sets of names.
-    for (local.i = 0; local.i < tri->differential.GetEntryCount(); local.i++)
+    for (local.i = 0; local.i < apFaceGenTri->differential.NiD3DShaderConstantMap_GetEntryCount(); local.i++)
     {
         local.found = false;
         for (local.expression = 0; local.expression < 15; local.expression++)
         {
-            if (!BSstricmp(BSFaceGenManager_GetFaceGenExpressionText(local.expression), tri->differential.GetCheckedElement_00662860(local.i)->std_string_debug_c_str()))
+            if (!BSstricmp(BSFaceGenManager_GetFaceGenExpressionText(local.expression), apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->std_string_debug_c_str()))
             {
-                if (!expressions)
+                if (!ppExpressionMorphs)
                 {
-                    expressions = new BSFaceGenMorph*[15];
-                    memset(expressions, 0, 60);
+                    ppExpressionMorphs = new BSFaceGenMorph*[15];
+                    memset(ppExpressionMorphs, 0, 60);
                 }
-                local.count = ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
-                expressions[local.expression] = new BSFaceGenMorphDifferential(local.count);
-                local.differentialMorph = expressions[local.expression];
+                local.count = ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
+                ppExpressionMorphs[local.expression] = new BSFaceGenMorphDifferential(local.count);
+                local.differentialMorph = ppExpressionMorphs[local.expression];
                 local.points = (NiPoint3*)((BSSimpleList<BGSPerkEntry*>*)local.differentialMorph)->GetNext();
                 for (local.j = 0; local.j < local.count; local.j++)
                 {
                     local.points[local.j] =
-                        NiPoint3(((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                        NiPoint3(((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .x,
-                                 ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                                 ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .y,
-                                 ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                                 ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .z);
                 }
@@ -141,27 +144,27 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
             continue;
         for (local.modifier = 0; local.modifier < 17; local.modifier++)
         {
-            if (!BSstricmp(BSFaceGenManager_GetFaceGenModifierText(local.modifier), tri->differential.GetCheckedElement_00662860(local.i)->std_string_debug_c_str()))
+            if (!BSstricmp(BSFaceGenManager_GetFaceGenModifierText(local.modifier), apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->std_string_debug_c_str()))
             {
-                if (!modifiers)
+                if (!ppModifierMorphs)
                 {
-                    modifiers = new BSFaceGenMorph*[17];
-                    memset(modifiers, 0, 68);
+                    ppModifierMorphs = new BSFaceGenMorph*[17];
+                    memset(ppModifierMorphs, 0, 68);
                 }
-                local.count = ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
-                modifiers[local.modifier] = new BSFaceGenMorphDifferential(local.count);
-                local.differentialMorph = modifiers[local.modifier];
+                local.count = ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
+                ppModifierMorphs[local.modifier] = new BSFaceGenMorphDifferential(local.count);
+                local.differentialMorph = ppModifierMorphs[local.modifier];
                 local.points = (NiPoint3*)((BSSimpleList<BGSPerkEntry*>*)local.differentialMorph)->GetNext();
                 for (local.j = 0; local.j < local.count; local.j++)
                 {
                     local.points[local.j] =
-                        NiPoint3(((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                        NiPoint3(((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .x,
-                                 ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                                 ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .y,
-                                 ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                                 ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .z);
                 }
@@ -173,27 +176,27 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
             continue;
         for (local.phoneme = 0; local.phoneme < 16; local.phoneme++)
         {
-            if (!BSstricmp(BSFaceGenManager_GetFaceGenPhonemeText(local.phoneme), tri->differential.GetCheckedElement_00662860(local.i)->std_string_debug_c_str()))
+            if (!BSstricmp(BSFaceGenManager_GetFaceGenPhonemeText(local.phoneme), apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->std_string_debug_c_str()))
             {
-                if (!phonemes)
+                if (!ppPhonemeMorphs)
                 {
-                    phonemes = new BSFaceGenMorph*[16];
-                    memset(phonemes, 0, 64);
+                    ppPhonemeMorphs = new BSFaceGenMorph*[16];
+                    memset(ppPhonemeMorphs, 0, 64);
                 }
-                local.count = ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
-                phonemes[local.phoneme] = new BSFaceGenMorphDifferential(local.count);
-                local.differentialMorph = phonemes[local.phoneme];
+                local.count = ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
+                ppPhonemeMorphs[local.phoneme] = new BSFaceGenMorphDifferential(local.count);
+                local.differentialMorph = ppPhonemeMorphs[local.phoneme];
                 local.points = (NiPoint3*)((BSSimpleList<BGSPerkEntry*>*)local.differentialMorph)->GetNext();
                 for (local.j = 0; local.j < local.count; local.j++)
                 {
                     local.points[local.j] =
-                        NiPoint3(((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                        NiPoint3(((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .x,
-                                 ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                                 ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .y,
-                                 ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                                 ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .z);
                 }
@@ -205,27 +208,27 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
             continue;
         for (local.customIndex = 0; local.customIndex < 1; local.customIndex++)
         {
-            if (!BSstricmp(BSFaceGenManager_GetCustomMorphText(local.customIndex), tri->differential.GetCheckedElement_00662860(local.i)->std_string_debug_c_str()))
+            if (!BSstricmp(BSFaceGenManager_GetCustomMorphText(local.customIndex), apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->std_string_debug_c_str()))
             {
-                if (!custom)
+                if (!ppCustomMorphs)
                 {
-                    custom = new BSFaceGenMorph*[1];
-                    memset(custom, 0, 4);
+                    ppCustomMorphs = new BSFaceGenMorph*[1];
+                    memset(ppCustomMorphs, 0, 4);
                 }
-                local.count = ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
-                custom[local.customIndex] = new BSFaceGenMorphDifferential(local.count);
-                local.differentialMorph = custom[local.customIndex];
+                local.count = ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
+                ppCustomMorphs[local.customIndex] = new BSFaceGenMorphDifferential(local.count);
+                local.differentialMorph = ppCustomMorphs[local.customIndex];
                 local.points = (NiPoint3*)((BSSimpleList<BGSPerkEntry*>*)local.differentialMorph)->GetNext();
                 for (local.j = 0; local.j < local.count; local.j++)
                 {
                     local.points[local.j] =
-                        NiPoint3(((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                        NiPoint3(((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .x,
-                                 ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                                 ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .y,
-                                 ((FaceGenTriData*)&tri->differential.GetCheckedElement_00662860(local.i)->vertexData)
+                                 ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(local.i)->vertexData)
                                      ->GetCheckedElement(local.j)
                                      .z);
                 }
@@ -237,28 +240,28 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
             continue;
     }
     // Statistical morphs replace differential morphs with the same name.
-    for (local.i = 0; local.i < tri->statistical.EvaluateValue_0065cc30(); local.i++)
+    for (local.i = 0; local.i < apFaceGenTri->statistical.EvaluateValue_0065cc30(); local.i++)
     {
         local.found = false;
         for (local.expression = 0; local.expression < 15; local.expression++)
         {
-            if (!BSstricmp(BSFaceGenManager_GetFaceGenExpressionText(local.expression), tri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str()))
+            if (!BSstricmp(BSFaceGenManager_GetFaceGenExpressionText(local.expression), apFaceGenTri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str()))
             {
-                if (!expressions)
+                if (!ppExpressionMorphs)
                 {
-                    expressions = new BSFaceGenMorph*[15];
-                    memset(expressions, 0, 60);
+                    ppExpressionMorphs = new BSFaceGenMorph*[15];
+                    memset(ppExpressionMorphs, 0, 60);
                 }
-                if (expressions[local.expression])
+                if (ppExpressionMorphs[local.expression])
                 {
                     Warning(DAT_01065e40,
-                            PrepareScriptMessage(tri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str(), false));
-                    delete expressions[local.expression];
+                            PrepareScriptMessage(apFaceGenTri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str(), false));
+                    delete ppExpressionMorphs[local.expression];
                 }
-                local.entry = tri->statistical.GetElementChecked_00662890(local.i);
+                local.entry = apFaceGenTri->statistical.GetElementChecked_00662890(local.i);
                 local.count = local.entry->matrix.std_vector_float_std_allocator_float_size();
-                expressions[local.expression] = new BSFaceGenMorphStatistical(local.count, local.entry->columns);
-                local.statisticalMorph = expressions[local.expression];
+                ppExpressionMorphs[local.expression] = new BSFaceGenMorphStatistical(local.count, local.entry->columns);
+                local.statisticalMorph = ppExpressionMorphs[local.expression];
                 local.values = (float*)((BSSimpleList<BGSPerkEntry*>*)local.statisticalMorph)->GetNext();
                 for (local.j = 0; local.j < local.count; local.j++)
                 {
@@ -272,23 +275,23 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
             continue;
         for (local.modifier = 0; local.modifier < 17; local.modifier++)
         {
-            if (!BSstricmp(BSFaceGenManager_GetFaceGenModifierText(local.modifier), tri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str()))
+            if (!BSstricmp(BSFaceGenManager_GetFaceGenModifierText(local.modifier), apFaceGenTri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str()))
             {
-                if (!modifiers)
+                if (!ppModifierMorphs)
                 {
-                    modifiers = new BSFaceGenMorph*[17];
-                    memset(modifiers, 0, 68);
+                    ppModifierMorphs = new BSFaceGenMorph*[17];
+                    memset(ppModifierMorphs, 0, 68);
                 }
-                if (modifiers[local.modifier])
+                if (ppModifierMorphs[local.modifier])
                 {
                     Warning(DAT_01065dd0,
-                            PrepareScriptMessage(tri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str(), false));
-                    delete modifiers[local.modifier];
+                            PrepareScriptMessage(apFaceGenTri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str(), false));
+                    delete ppModifierMorphs[local.modifier];
                 }
-                local.entry = tri->statistical.GetElementChecked_00662890(local.i);
+                local.entry = apFaceGenTri->statistical.GetElementChecked_00662890(local.i);
                 local.count = local.entry->matrix.std_vector_float_std_allocator_float_size();
-                modifiers[local.modifier] = new BSFaceGenMorphStatistical(local.count, local.entry->columns);
-                local.statisticalMorph = modifiers[local.modifier];
+                ppModifierMorphs[local.modifier] = new BSFaceGenMorphStatistical(local.count, local.entry->columns);
+                local.statisticalMorph = ppModifierMorphs[local.modifier];
                 local.values = (float*)((BSSimpleList<BGSPerkEntry*>*)local.statisticalMorph)->GetNext();
                 for (local.j = 0; local.j < local.count; local.j++)
                 {
@@ -302,23 +305,23 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
             continue;
         for (local.phoneme = 0; local.phoneme < 16; local.phoneme++)
         {
-            if (!BSstricmp(BSFaceGenManager_GetFaceGenPhonemeText(local.phoneme), tri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str()))
+            if (!BSstricmp(BSFaceGenManager_GetFaceGenPhonemeText(local.phoneme), apFaceGenTri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str()))
             {
-                if (!phonemes)
+                if (!ppPhonemeMorphs)
                 {
-                    phonemes = new BSFaceGenMorph*[16];
-                    memset(phonemes, 0, 64);
+                    ppPhonemeMorphs = new BSFaceGenMorph*[16];
+                    memset(ppPhonemeMorphs, 0, 64);
                 }
-                if (phonemes[local.phoneme])
+                if (ppPhonemeMorphs[local.phoneme])
                 {
                     Warning(DAT_01065d60,
-                            PrepareScriptMessage(tri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str(), false));
-                    delete phonemes[local.phoneme];
+                            PrepareScriptMessage(apFaceGenTri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str(), false));
+                    delete ppPhonemeMorphs[local.phoneme];
                 }
-                local.entry = tri->statistical.GetElementChecked_00662890(local.i);
+                local.entry = apFaceGenTri->statistical.GetElementChecked_00662890(local.i);
                 local.count = local.entry->matrix.std_vector_float_std_allocator_float_size();
-                phonemes[local.phoneme] = new BSFaceGenMorphStatistical(local.count, local.entry->columns);
-                local.statisticalMorph = phonemes[local.phoneme];
+                ppPhonemeMorphs[local.phoneme] = new BSFaceGenMorphStatistical(local.count, local.entry->columns);
+                local.statisticalMorph = ppPhonemeMorphs[local.phoneme];
                 local.values = (float*)((BSSimpleList<BGSPerkEntry*>*)local.statisticalMorph)->GetNext();
                 for (local.j = 0; local.j < local.count; local.j++)
                 {
@@ -332,23 +335,23 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* tri)
             continue;
         for (local.customIndex = 0; local.customIndex < 1; local.customIndex++)
         {
-            if (!BSstricmp(BSFaceGenManager_GetCustomMorphText(local.customIndex), tri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str()))
+            if (!BSstricmp(BSFaceGenManager_GetCustomMorphText(local.customIndex), apFaceGenTri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str()))
             {
-                if (!custom)
+                if (!ppCustomMorphs)
                 {
-                    custom = new BSFaceGenMorph*[1];
-                    memset(custom, 0, 4);
+                    ppCustomMorphs = new BSFaceGenMorph*[1];
+                    memset(ppCustomMorphs, 0, 4);
                 }
-                if (custom[local.customIndex])
+                if (ppCustomMorphs[local.customIndex])
                 {
                     Warning(DAT_01065ce8,
-                            PrepareScriptMessage(tri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str(), false));
-                    delete custom[local.customIndex];
+                            PrepareScriptMessage(apFaceGenTri->statistical.GetElementChecked_00662890(local.i)->std_string_debug_c_str(), false));
+                    delete ppCustomMorphs[local.customIndex];
                 }
-                local.entry = tri->statistical.GetElementChecked_00662890(local.i);
+                local.entry = apFaceGenTri->statistical.GetElementChecked_00662890(local.i);
                 local.count = local.entry->matrix.std_vector_float_std_allocator_float_size();
-                custom[local.customIndex] = new BSFaceGenMorphStatistical(local.count, local.entry->columns);
-                local.statisticalMorph = custom[local.customIndex];
+                ppCustomMorphs[local.customIndex] = new BSFaceGenMorphStatistical(local.count, local.entry->columns);
+                local.statisticalMorph = ppCustomMorphs[local.customIndex];
                 local.values = (float*)((BSSimpleList<BGSPerkEntry*>*)local.statisticalMorph)->GetNext();
                 for (local.j = 0; local.j < local.count; local.j++)
                 {
@@ -367,6 +370,8 @@ void __cdecl FUN_00ec7c56();
 // Bounds-checks _Pos against the container size and returns a pointer to the element at that position.
 // @fnv 0x006578b0
 // src: GUESS 0x006578b0 (confidence: high)
+// pdb: std::vector<float,std::allocator<float> >::operator[] | BSFaceGenManager.obj | debug, call graph, medium
+// pdb params: _Pos
 template <> float* FaceGenMatrix<float>::GetElementPointerChecked(unsigned int _Pos)
 {
     if (_Pos >= std_vector_float_std_allocator_float_size())
@@ -395,8 +400,9 @@ extern char const* const g_011d37c8_arg1;
 extern NiFixedString* DAT_011d5b8c;
 
 // @fnv 0x00662760
-// src: COMMUNITY 0x00662760
-void __cdecl BSFaceGenBaseMorphExtraData_InitTag()
+// src: XBOX_RETAIL_PDB 0x00662760
+// pdb: BSFaceGenBaseMorphExtraData::InitSDM | BSFaceGenMorphData.obj | retail, call graph, high
+void __cdecl BSFaceGenBaseMorphExtraData_InitSDM()
 {
     DAT_011d5b8c = new NiFixedString((char const*)&g_011d37c8_arg1);
 }
@@ -406,9 +412,11 @@ void __cdecl FUN_00ec7c56();
 // Bounds-checks _Pos against the array size, then returns the DifferentialEntry at data[3] + _Pos * 0x34.
 // @fnv 0x00662860
 // src: GUESS 0x00662860 (confidence: medium)
+// pdb: std::vector<FffTriDiffMorphS,std::allocator<FffTriDiffMorphS> >::operator[] | BSFaceGenMorphData.obj | debug, call graph, medium
+// pdb params: _Pos
 DifferentialEntry* DifferentialArray::GetCheckedElement_00662860(unsigned int _Pos)
 {
-    if (_Pos >= GetEntryCount())
+    if (_Pos >= NiD3DShaderConstantMap_GetEntryCount())
         FUN_00ec7c56();
     do
     {
@@ -432,18 +440,23 @@ struct FUN_006626e0_shell
 };
 
 // @fnv 0x006626e0
+// pdb: GPU_CONVERT_CPU_TO_CPU_CACHED_READONLY_ADDRESS | BSFaceGenMorphData.obj | debug, object-file gap fill, medium
+// pdb params: CpuAddress
 NiRTTI* FUN_006626e0_shell::GetRTTI()
 {
     return &g_011d5ba0;
 }
 
 // @fnv 0x00662840
-int __fastcall GetEntryCount(int* thisPtr)
+// src: XBOX_DEBUG_PDB 0x00662840
+// pdb: NiD3DShaderConstantMap::GetEntryCount | NiD3DShader.obj | debug, upstream name already matches, high
+int __fastcall NiD3DShaderConstantMap_GetEntryCount(int* thisPtr)
 {
     return (*(thisPtr + 4) - *(thisPtr + 3)) / 0x34;
 }
 
 // @fnv 0x00661d40
+// pdb: BSFaceGenMorphData::~BSFaceGenMorphData | BSFaceGenMorphData.obj | debug, upstream name already matches, high
 BSFaceGenMorphData::~BSFaceGenMorphData()
 {
 }
@@ -458,6 +471,7 @@ template <> unsigned int FaceGenMatrix<float>::std_vector_float_std_allocator_fl
 void __cdecl _delete(void*, unsigned int);
 // Destroys this head morph data, frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x00661db0
+// pdb: BSFaceGenMorphDataHead::`scalar deleting destructor' | BSFaceGenMorphData.obj | retail, vtable slot, high
 void* BSFaceGenMorphDataHead::FUN_00661db0(unsigned int flags)
 {
     BSFaceGenMorphDataHead::~BSFaceGenMorphDataHead();
@@ -471,7 +485,7 @@ void* BSFaceGenMorphDataHead::FUN_00661db0(unsigned int flags)
 // src: COMMUNITY 0x00662110
 int BSFaceGenMorphDataHead::GetModifierMorph(int aiIndex)
 {
-    return modifiers && aiIndex > -1 && aiIndex < 0x11 ? (int)modifiers[aiIndex] : 0;
+    return ppModifierMorphs && aiIndex > -1 && aiIndex < 0x11 ? (int)ppModifierMorphs[aiIndex] : 0;
 }
 
 // Returns phonemes[idx] when phonemes is set and idx is in [0, 16), otherwise returns 0.
@@ -479,7 +493,7 @@ int BSFaceGenMorphDataHead::GetModifierMorph(int aiIndex)
 // src: COMMUNITY 0x00662150
 int BSFaceGenMorphDataHead::GetPhonemeMorph(int aiIndex)
 {
-    return phonemes && aiIndex > -1 && aiIndex < 0x10 ? (int)phonemes[aiIndex] : 0;
+    return ppPhonemeMorphs && aiIndex > -1 && aiIndex < 0x10 ? (int)ppPhonemeMorphs[aiIndex] : 0;
 }
 
 // Returns custom[a] when custom is non-null and a is in [0,1), otherwise returns 0.
@@ -487,11 +501,12 @@ int BSFaceGenMorphDataHead::GetPhonemeMorph(int aiIndex)
 // src: COMMUNITY 0x00662190
 int BSFaceGenMorphDataHead::GetCustomMorph(int aiIndex)
 {
-    return custom && aiIndex > -1 && aiIndex < 1 ? (int)custom[aiIndex] : 0;
+    return ppCustomMorphs && aiIndex > -1 && aiIndex < 1 ? (int)ppCustomMorphs[aiIndex] : 0;
 }
 
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x006623a0
+// pdb: BSFaceGenMorphDataHair::`scalar deleting destructor' | BSFaceGenMorphData.obj | retail, vtable slot, high
 void* BSFaceGenMorphDataHair::FUN_006623a0(unsigned int flags)
 {
     BSFaceGenMorphDataHair::~BSFaceGenMorphDataHair();
@@ -508,6 +523,7 @@ struct Host006626f0
 };
 // Calls FUN_00662720, then deletes this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x006626f0
+// pdb: BSFaceGenBaseMorphExtraData::`scalar deleting destructor' | BSFaceGenMorphData.obj | retail, vtable slot, high
 void* Host006626f0::FUN_006626f0(unsigned int flags)
 {
     this->UpdateFields_00662720();
@@ -528,6 +544,7 @@ struct FUN_00662720_shell
 };
 // @fnv 0x00662720
 // src: GUESS 0x00662720 (confidence: low)
+// pdb: BSFaceGenBaseMorphExtraData::~BSFaceGenBaseMorphExtraData | BSFaceGenMorphData.obj | debug, call graph, medium
 void FUN_00662720_shell::UpdateFields_00662720()
 {
     *(void**)this = (void*)&DAT_01065fac;
@@ -544,6 +561,7 @@ extern NiFixedString* DAT_011d5b8c;
 // Calls FUN_004b9900(1) on DAT_011d5b8c if non-null, then sets DAT_011d5b8c to null.
 // @fnv 0x006627e0
 // src: GUESS 0x006627e0 (confidence: low)
+// pdb: BSFaceGenBaseMorphExtraData::KillSDM | BSFaceGenMorphData.obj | debug, call graph, medium
 void Object_UpdateFields_006627e0()
 {
     NiFixedString* p2;
@@ -553,7 +571,7 @@ void Object_UpdateFields_006627e0()
         {
             int v;
             if (p2)
-                v = (int)p2->FUN_004b9900(1);
+                v = (int)p2->NiFixedString_ScalarDtor(1);
             else
                 v = 0;
         }
@@ -563,6 +581,7 @@ void Object_UpdateFields_006627e0()
 }  // namespace fnv_006627e0
 
 // @fnv 0x00661d10
+// pdb: BSFaceGenMorphData::BSFaceGenMorphData | BSFaceGenMorphData.obj | debug, upstream name already matches, high
 BSFaceGenMorphData::BSFaceGenMorphData()
 {
 }
@@ -572,7 +591,7 @@ BSFaceGenMorphData::BSFaceGenMorphData()
 // src: COMMUNITY 0x006620d0
 int __thiscall BSFaceGenMorphDataHead::GetExpressionMorph(int aiIndex)
 {
-    return expressions == 0 || aiIndex <= -1 || aiIndex >= 0xf ? 0 : (int)expressions[aiIndex];
+    return ppExpressionMorphs == 0 || aiIndex <= -1 || aiIndex >= 0xf ? 0 : (int)ppExpressionMorphs[aiIndex];
 }
 
 extern double _gModifierZero;
@@ -584,51 +603,56 @@ struct FUN_00662460_iface
 // Forwards a, b and c to the hair morph when it and a are set and c is not below _gModifierZero.
 // @fnv 0x00662460
 // src: COMMUNITY 0x00662460
+// pdb: BSFaceGenMorphDataHair::ApplyMorph | BSFaceGenMorphData.obj | debug, object-file gap fill, medium
+// pdb params: apGeom, apExtraData, afModifierValue
 void BSFaceGenMorphDataHair::ApplyMorph_00662460(int aiArg1, int aiArg2, float c)
 {
-    if (!hairMorph || !aiArg1 || c < _gModifierZero)
+    if (!pHairMorph || !aiArg1 || c < _gModifierZero)
         return;
-    ((FUN_00662460_iface*)hairMorph)->ApplyMorph_00662460(aiArg1, aiArg2, c);
+    ((FUN_00662460_iface*)pHairMorph)->ApplyMorph_00662460(aiArg1, aiArg2, c);
 }
 
 // @fnv 0x006623d0
+// pdb: BSFaceGenMorphDataHair::~BSFaceGenMorphDataHair | BSFaceGenMorphData.obj | retail, upstream name already matches, high
 BSFaceGenMorphDataHair::~BSFaceGenMorphDataHair()
 {
-    if (hairMorph)
-        delete (BSFaceGenMorph*)hairMorph;
+    if (pHairMorph)
+        delete (BSFaceGenMorph*)pHairMorph;
 }
 
 // Frees each non-null entry in the expressions, modifiers, phonemes and custom arrays, then deletes the arrays themselves.
 // @fnv 0x00661de0
+// pdb: BSFaceGenMorphDataHead::~BSFaceGenMorphDataHead | BSFaceGenMorphData.obj | retail, upstream name already matches, high
+// pdb locals: iexp, imod, iphon, icust
 BSFaceGenMorphDataHead::~BSFaceGenMorphDataHead()
 {
-    if (expressions)
+    if (ppExpressionMorphs)
     {
         for (unsigned int expr = 0; expr < 15; ++expr)
-            if (expressions[expr])
-                delete expressions[expr];
-        delete[] expressions;
+            if (ppExpressionMorphs[expr])
+                delete ppExpressionMorphs[expr];
+        delete[] ppExpressionMorphs;
     }
-    if (modifiers)
+    if (ppModifierMorphs)
     {
         for (unsigned int mod = 0; mod < 17; ++mod)
-            if (modifiers[mod])
-                delete modifiers[mod];
-        delete[] modifiers;
+            if (ppModifierMorphs[mod])
+                delete ppModifierMorphs[mod];
+        delete[] ppModifierMorphs;
     }
-    if (phonemes)
+    if (ppPhonemeMorphs)
     {
         for (unsigned int phon = 0; phon < 16; ++phon)
-            if (phonemes[phon])
-                delete phonemes[phon];
-        delete[] phonemes;
+            if (ppPhonemeMorphs[phon])
+                delete ppPhonemeMorphs[phon];
+        delete[] ppPhonemeMorphs;
     }
-    if (custom)
+    if (ppCustomMorphs)
     {
         for (unsigned int cust = 0; cust < 1; ++cust)
-            if (custom[cust])
-                delete custom[cust];
-        delete[] custom;
+            if (ppCustomMorphs[cust])
+                delete ppCustomMorphs[cust];
+        delete[] ppCustomMorphs;
     }
 }
 
@@ -636,10 +660,13 @@ typedef void (__thiscall* MorphApplyFunction)(BSFaceGenMorph*, int, int, float);
 // Dispatches on sel to one of four lookup functions with p2, then if the result is non-null calls v1(p3, p4, p5) on it.
 // @fnv 0x00662030
 // src: COMMUNITY 0x00662030
-void BSFaceGenMorphDataHead::ApplyMorph(int aiSelector, int aiIndex, int aiArg1, int aiArg2, float p5)
+// pdb: BSFaceGenMorphDataHead::ApplyMorph | BSFaceGenMorphData.obj | debug, upstream name already matches, high
+// pdb params: aeType, aiIndex, apGeom, apBaseMorph, afModifier
+// pdb locals: pmorph
+void BSFaceGenMorphDataHead::ApplyMorph(int aeType, int aiIndex, int apGeom, int apBaseMorph, float afModifier)
 {
     int pMorph = 0;
-    switch (aiSelector)
+    switch (aeType)
     {
     case 1:
         pMorph = GetExpressionMorph(aiIndex);
@@ -655,26 +682,29 @@ void BSFaceGenMorphDataHead::ApplyMorph(int aiSelector, int aiIndex, int aiArg1,
         break;
     }
     if (pMorph != 0)
-        ((MorphApplyFunction*)*(void**)pMorph)[1]((BSFaceGenMorph*)pMorph, aiArg1, aiArg2, p5);
+        ((MorphApplyFunction*)*(void**)pMorph)[1]((BSFaceGenMorph*)pMorph, apGeom, apBaseMorph, afModifier);
 }
 
 // @fnv 0x006621d0
-BSFaceGenMorphDataHair::BSFaceGenMorphDataHair(FaceGenTriData* pkTriData)
+// pdb: BSFaceGenMorphDataHair::BSFaceGenMorphDataHair | BSFaceGenMorphData.obj | retail, upstream name already matches, high
+// pdb params: apFaceGenTri
+// pdb locals: pverts, ivertCount, ivert
+BSFaceGenMorphDataHair::BSFaceGenMorphDataHair(FaceGenTriData* apFaceGenTri)
 {
-    hairMorph = 0;
-    if (!pkTriData)
+    pHairMorph = 0;
+    if (!apFaceGenTri)
         return;
-    if (!BSstricmp("HairMorph", pkTriData->differential.GetCheckedElement_00662860(0)->std_string_debug_c_str()))
+    if (!BSstricmp("HairMorph", apFaceGenTri->differential.GetCheckedElement_00662860(0)->std_string_debug_c_str()))
     {
         unsigned int uiCountCur =
-            ((FaceGenTriData*)&pkTriData->differential.GetCheckedElement_00662860(0)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
-        hairMorph = new BSFaceGenMorphDifferential(uiCountCur);
-        NiPoint3* pkPointsTmp = (NiPoint3*)((BSSimpleList<BGSPerkEntry*>*)hairMorph)->GetNext();
+            ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(0)->vertexData)->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
+        pHairMorph = new BSFaceGenMorphDifferential(uiCountCur);
+        NiPoint3* pkPointsTmp = (NiPoint3*)((BSSimpleList<BGSPerkEntry*>*)pHairMorph)->GetNext();
         for (unsigned int i = 0; i < uiCountCur; i++)
             pkPointsTmp[i] =
-                NiPoint3(((FaceGenTriData*)&pkTriData->differential.GetCheckedElement_00662860(0)->vertexData)->GetCheckedElement(i).x,
-                         ((FaceGenTriData*)&pkTriData->differential.GetCheckedElement_00662860(0)->vertexData)->GetCheckedElement(i).y,
-                         ((FaceGenTriData*)&pkTriData->differential.GetCheckedElement_00662860(0)->vertexData)->GetCheckedElement(i).z);
+                NiPoint3(((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(0)->vertexData)->GetCheckedElement(i).x,
+                         ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(0)->vertexData)->GetCheckedElement(i).y,
+                         ((FaceGenTriData*)&apFaceGenTri->differential.GetCheckedElement_00662860(0)->vertexData)->GetCheckedElement(i).z);
     }
 }
 
@@ -692,18 +722,21 @@ void* __cdecl _memcpy(void*, const void*, unsigned int);
 
 // Copies the geometry's vertex stream into a new NiPoint3 array, appending extra vertices when provided, and stores the counts.
 // @fnv 0x006624c0
-BSFaceGenBaseMorphExtraData::BSFaceGenBaseMorphExtraData(NiGeometry* geometry, NiPoint3* apExtraVertices, unsigned int extraCount)
+// pdb: BSFaceGenBaseMorphExtraData::BSFaceGenBaseMorphExtraData | BSFaceGenMorphData.obj | retail, upstream name already matches, high
+// pdb params: apMesh, apAdditionalVertices, aiAdditionalVerticesCount
+// pdb locals: istride, psrc, iter, pdest, i, pskinInstance, pskinPartition, uipartitionCount, ppartitions, ipartition, vvertexData, point
+BSFaceGenBaseMorphExtraData::BSFaceGenBaseMorphExtraData(NiGeometry* apMesh, NiPoint3* apAdditionalVertices, unsigned int aiAdditionalVerticesCount)
     : NiExtraData(BSFaceGenBaseMorphExtraData_GetTag())
 {
     GeometryBufferView geometryStream;
-    if (geometry && geometry->GetModelData() && geometry->GetModelData()->IsGeometryDataStreamable(true))
-        geometry->GetModelData()->NiGeometryData_GetVerticesIterator(geometryStream);
+    if (apMesh && apMesh->GetModelData() && apMesh->GetModelData()->IsGeometryDataStreamable(true))
+        apMesh->GetModelData()->NiGeometryData_GetVerticesIterator(geometryStream);
     if (geometryStream.Modelloader_GetReferencedThis())
     {
-        originalCount = geometry->GetVertexCount();
+        originalCount = apMesh->GetVertexCount();
         count = originalCount;
-        if (apExtraVertices && extraCount)
-            count += extraCount;
+        if (apAdditionalVertices && aiAdditionalVerticesCount)
+            count += aiAdditionalVerticesCount;
         vertices = new NiPoint3[count];
         unsigned int i = 0;
         NiPoint3* dest = vertices;
@@ -715,9 +748,9 @@ BSFaceGenBaseMorphExtraData::BSFaceGenBaseMorphExtraData(NiGeometry* geometry, N
             dest++;
             geometryStream.AddToA();
         }
-        if (apExtraVertices && extraCount)
-            _memcpy(vertices + originalCount, apExtraVertices, extraCount * sizeof(NiPoint3));
-        geometry->GetModelData()->NiGeometryData_UnlockPackedVertexData();
+        if (apAdditionalVertices && aiAdditionalVerticesCount)
+            _memcpy(vertices + originalCount, apAdditionalVertices, aiAdditionalVerticesCount * sizeof(NiPoint3));
+        apMesh->GetModelData()->NiGeometryData_UnlockPackedVertexData();
     }
     else
     {

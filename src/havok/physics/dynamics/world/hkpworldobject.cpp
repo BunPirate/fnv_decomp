@@ -19,7 +19,10 @@
 
 // @fnv 0x00cd2930
 // src: COMMUNITY 0x00cd2930
-int __stdcall hkpWorldObject_setShape(int a1)
+// pdb: hkpWorldObject::setShape | hkpWorldObject.obj | debug, upstream name already matches, high
+// pdb params: shape
+// pdb locals: assertBuf, ostr
+int __stdcall hkpWorldObject_setShape(int shape)
 {
     return 1;
 }
@@ -56,19 +59,22 @@ __forceinline T& hkArrayBase<T>::_expandOne(hkMemoryAllocator& alloc)
 struct FNVWorldObject : hkpWorldObject
 {
     void AddEntry(void* key, WorldObjectProperty::Value v);
-    void WriteToStream(hkStreamWriter* writer, int unused);
+    void WriteToStream(hkStreamWriter* collector, int cls);
 };
 
 // Returns if the property key already exists; otherwise appends an entry storing the key and value.
 // @fnv 0x00cd2be0
+// pdb: hkpWorldObject::addProperty | hkpWorldObject.obj | retail, call graph, high
+// pdb params: key, value
+// pdb locals: assertBuf, ostr
 void FNVWorldObject::AddEntry(void* key, WorldObjectProperty::Value v)
 {
-    for (int i = 0; i < m_kProperties.m_iElementCount; i++)
+    for (int i = 0; i < m_properties.m_iElementCount; i++)
     {
-        if (reinterpret_cast<WorldObjectProperty*>(m_kProperties.m_data)[i].m_key == key)
+        if (reinterpret_cast<WorldObjectProperty*>(m_properties.m_data)[i].m_key == key)
             return;
     }
-    WorldObjectProperty& e = reinterpret_cast<hkArray<WorldObjectProperty>&>(m_kProperties).expandOne();
+    WorldObjectProperty& e = reinterpret_cast<hkArray<WorldObjectProperty>&>(m_properties).expandOne();
     e.m_uiFilterValue = v;
     e.m_key = key;
 }
@@ -77,7 +83,7 @@ extern char DAT_0105c390;
 extern char DAT_010cb2d8;
 extern char DAT_01020e44;
 extern char DAT_010cb2c8;
-void* __cdecl hkStatisticsCollector_getAllocatedSize(void* data, int bytes);
+void* __cdecl hkStatisticsCollector_getAllocatedSize(void* p, int size);
 
 // The serialization mode byte is not declared by the shared writer interface.
 static inline unsigned char includesOwnedAllocations(const hkStreamWriter* writer)
@@ -87,33 +93,35 @@ static inline unsigned char includesOwnedAllocations(const hkStreamWriter* write
 
 // Writes collision shape, collision entries, properties, and bounding volume child shape data to the stream writer.
 // @fnv 0x00cd2b00
-void FNVWorldObject::WriteToStream(hkStreamWriter* writer, int unused)
+// pdb: hkpWorldObject::calcContentStatistics | hkpWorldObject.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void FNVWorldObject::WriteToStream(hkStreamWriter* collector, int cls)
 {
-    writer->WriteField(&DAT_0105c390, m_kCollidable.m_pCollisionShape, 0);
+    collector->WriteField(&DAT_0105c390, m_kCollidable.m_pCollisionShape, 0);
 
-    hkArray<char>& collisionEntries = m_kCollidable.m_kCollisionEntries;
+    hkArray<char>& collisionEntries = m_kCollidable.m_collisionEntries;
     int entryCap = collisionEntries.m_iCapacityState;
-    if ((entryCap & 0x80000000) == 0 || includesOwnedAllocations(writer))
+    if ((entryCap & 0x80000000) == 0 || includesOwnedAllocations(collector))
     {
         void* entryData = collisionEntries.m_data;
         void* copy = hkStatisticsCollector_getAllocatedSize(entryData, (entryCap & 0x3fffffff) * 8);
-        writer->WriteArray(3, &DAT_010cb2d8, collisionEntries.m_data, collisionEntries.m_iElementCount * 8, copy);
+        collector->WriteArray(3, &DAT_010cb2d8, collisionEntries.m_data, collisionEntries.m_iElementCount * 8, copy);
     }
 
-    int propCap = m_kProperties.m_iCapacityState;
-    if ((propCap & 0x80000000) == 0 || includesOwnedAllocations(writer))
+    int propCap = m_properties.m_iCapacityState;
+    if ((propCap & 0x80000000) == 0 || includesOwnedAllocations(collector))
     {
-        void* propData = m_kProperties.m_data;
+        void* propData = m_properties.m_data;
         void* copy = hkStatisticsCollector_getAllocatedSize(propData, (propCap & 0x3fffffff) * 16);
-        writer->WriteArray(3, &DAT_01020e44, m_kProperties.m_data, m_kProperties.m_iElementCount * 16, copy);
+        collector->WriteArray(3, &DAT_01020e44, m_properties.m_data, m_properties.m_iElementCount * 16, copy);
     }
 
-    hkpCollidableBoundingVolumeData& bounds = m_kCollidable.m_kBoundingVolumeData;
+    hkpCollidableBoundingVolumeData& bounds = m_kCollidable.m_boundingVolumeData;
     void* firstChild = bounds.m_pChildShapeAabbs;
     if (firstChild)
     {
-        writer->DispatchWithMode(&DAT_010cb2c8, firstChild, (unsigned int)bounds.m_uiCapacityChildShapeAabbs * 32, 0);
-        writer->DispatchWithMode(&DAT_010cb2c8, bounds.m_pChildShapeKeys,
+        collector->hkStatisticsCollector_addNormalChunk(&DAT_010cb2c8, firstChild, (unsigned int)bounds.m_uiCapacityChildShapeAabbs * 32, 0);
+        collector->hkStatisticsCollector_addNormalChunk(&DAT_010cb2c8, bounds.m_pChildShapeKeys,
                                  (unsigned int)bounds.m_uiCapacityChildShapeAabbs * 4, 0);
     }
 }
@@ -123,7 +131,7 @@ void FNVWorldObject::WriteToStream(hkStreamWriter* writer, int unused)
 
 inline void hkpTypedBroadPhaseHandle::SetOwnerPointer(void* owner)
 {
-    m_iOwnerOffset = (signed char)((char*)owner - (char*)this);
+    m_ownerOffset = (signed char)((char*)owner - (char*)this);
 }
 
 inline void hkpCollidableBoundingVolumeData::invalidate()
@@ -134,7 +142,7 @@ inline void hkpCollidableBoundingVolumeData::invalidate()
 
 inline void hkpCollidable::SetOwnerPointer(void* owner)
 {
-    m_iOwnerOffset = (signed char)((char*)owner - (char*)this);
+    m_ownerOffset = (signed char)((char*)owner - (char*)this);
 }
 
 inline hkpLinkedCollidable::hkpLinkedCollidable(const void* shape, const void* motionState, int type)
@@ -144,8 +152,8 @@ inline hkpLinkedCollidable::hkpLinkedCollidable(const void* shape, const void* m
 
 inline hkMultiThreadCheck::hkMultiThreadCheck()
 {
-    m_uiThreadId = 0xfffffff1;
-    m_usMarkedForWrite = 0x8000;
+    m_threadId = 0xfffffff1;
+    m_markCount = 0x8000;
 }
 
 // The shared constructors still use an incomplete flag type; initialize their shared members here.
@@ -162,29 +170,32 @@ inline void finishLinkedCollidable(hkpLinkedCollidable& collidable, FinishingFla
 {
     if (flag.m_bFinishing)
     {
-        hkpCollidableBoundingVolumeData& bounds = collidable.m_kBoundingVolumeData;
+        hkpCollidableBoundingVolumeData& bounds = collidable.m_boundingVolumeData;
         bounds.m_uiNumChildShapeAabbs = 0;
         bounds.m_uiCapacityChildShapeAabbs = 0;
         bounds.m_pChildShapeAabbs = 0;
         bounds.m_pChildShapeKeys = 0;
         bounds.invalidate();
-        collidable.m_kBroadPhaseHandle.SetOwnerPointer(&collidable);
+        collidable.m_broadPhaseHandle.SetOwnerPointer(&collidable);
     }
-    collidable.m_kCollisionEntries.m_data = 0;
-    collidable.m_kCollisionEntries.m_iElementCount = 0;
-    collidable.m_kCollisionEntries.m_iCapacityState = 0x80000000;
+    collidable.m_collisionEntries.m_data = 0;
+    collidable.m_collisionEntries.m_iElementCount = 0;
+    collidable.m_collisionEntries.m_iCapacityState = 0x80000000;
 }
 
 // Constructs hkpWorldObject and, when finishing a load, sets the collidable's owner pointer to this object.
 // @fnv 0x00cd2c50
-hkpWorldObject* __fastcall finishWorldObject(hkpWorldObject* self, int, FinishingFlag flag)
+// src: XBOX_RETAIL_PDB 0x00cd2c50
+// pdb: hkpWorldObject::hkpWorldObject | hkpWorldObject.obj | retail, object-file gap fill, high
+// pdb params: flag
+hkpWorldObject* __fastcall hkpWorldObject_ctor(hkpWorldObject* self, int, FinishingFlag flag)
 {
     hkpWorldObject* volatile result = self;
     *reinterpret_cast<const void***>(self) = worldObjectVtable;
     hkpLinkedCollidable* collidable = &self->m_kCollidable;
     finishLinkedCollidable(*collidable, flag);
-    self->m_kMultiThreadCheck.m_uiThreadId = 0xfffffff1;
-    self->m_kMultiThreadCheck.m_usMarkedForWrite = 0x8000;
+    self->m_multiThreadCheck.m_threadId = 0xfffffff1;
+    self->m_multiThreadCheck.m_markCount = 0x8000;
     reinterpret_cast<StringPtrFinish*>(&self->m_name)->Finish(flag);
     hkpWorldObject* object = result;
     if (flag.m_bFinishing)
@@ -194,10 +205,12 @@ hkpWorldObject* __fastcall finishWorldObject(hkpWorldObject* self, int, Finishin
 
 // Initializes members, sets the collidable's owner pointer, and retains shape when it is non-null.
 // @fnv 0x00cd2ce0
+// pdb: hkpWorldObject::hkpWorldObject | hkpWorldObject.obj | retail, call graph (shared callers), high
+// pdb params: flag
 hkpWorldObject::hkpWorldObject(const void* shape, int type)
-    : m_pOwningWorld(0), m_ulUserData(0), m_kCollidable(shape, 0, type),
-      m_kNextStreamField(0),
-      m_pWorldObjectOwner(reinterpret_cast<void*>(-1))
+    : m_world(0), m_userData(0), m_kCollidable(shape, 0, type),
+      m_aiData(0),
+      m_treeData(reinterpret_cast<void*>(-1))
 {
     m_kCollidable.SetOwnerPointer(this);
     if (shape)

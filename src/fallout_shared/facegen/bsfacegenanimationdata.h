@@ -14,7 +14,7 @@
 // @fnv 0x00649b80
 bool MiddleHighProcess::BeginIdleAnimation() const
 {
-    return m_bFourthStateFlag;
+    return bSummonedCreature;
 }
 // @fnv 0x00649bc0
 bool BSFaceGenAnimationData::GetDead()
@@ -32,16 +32,22 @@ void BSFaceGenAnimationData::SetModified(bool value)
     p18c = value;
 }
 // @fnv 0x006499e0
+// pdb: BSFaceGenAnimationData::GetExpressionValue | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: aeExpression
 float BSFaceGenAnimationData::GetExpressionWeight(BS_FACEGEN_EXPRESSION expression)
 {
     return expression < BS_FACEGEN_EXPRESSION_BS_FG_EXPRESSION_COUNT ? reinterpret_cast<BSFaceGenKeyframeMultiple*>(reinterpret_cast<char*>(this) + 0x74)->BSFaceGenKeyframeMultiple_GetQuantity(expression) : 0.0f;
 }
 // @fnv 0x00649aa0
+// pdb: BSFaceGenAnimationData::GetPhonemeValue | BSFaceGenAnimationData.obj | debug, object-file gap fill, medium
+// pdb params: aePhoneme
 float BSFaceGenAnimationData::GetPhonemeWeight(BS_FACEGEN_PHONEME phoneme)
 {
     return phoneme < BS_FACEGEN_PHONEME_BS_FG_PHONEME_COUNT ? reinterpret_cast<BSFaceGenKeyframeMultiple*>(reinterpret_cast<char*>(this) + 0xDC)->BSFaceGenKeyframeMultiple_GetQuantity(phoneme) : 0.0f;
 }
 // @fnv 0x00649b10
+// pdb: BSFaceGenAnimationData::GetCustomMorphValue | BSFaceGenAnimationData.obj | debug, object-file gap fill, medium
+// pdb params: aeCustomMorph
 float BSFaceGenAnimationData::GetCustomMorphWeight(BS_FACEGEN_CUSTOM_MORPH morph)
 {
     return morph < BS_FACEGEN_CUSTOM_MORPH_BS_FG_CUSTOM_MORPH_COUNT ? reinterpret_cast<BSFaceGenKeyframeMultiple*>(reinterpret_cast<char*>(this) + 0x110)->BSFaceGenKeyframeMultiple_GetQuantity(morph) : 0.0f;

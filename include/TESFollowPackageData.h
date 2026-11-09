@@ -4,6 +4,7 @@
 
 class FollowPackageField;
 
+// pdb: class TESFollowPackageData, size 0xc, bases: TESPackageData, 2 members
 class TESFollowPackageData : public TESPackageData
 {
 public:
@@ -17,13 +18,13 @@ public:
     virtual void vf06(BGSLoadFormBuffer* buffer);
     virtual void vf07(BGSLoadFormBuffer* buffer);
 
-    FollowPackageField* m_04;
-    float m_08;
+    FollowPackageField* pStartLocation;
+    float fTriggerRadius;
 
     TESFollowPackageData* Construct(float afValue);
     void* DestroyIfFlagged(unsigned int flags);
     void SaveFloatRecord();
     void FUN_0067c080();
-    void Copy_0067c110(TESPackageData* other);
-    bool Compare_0067c220(TESPackageData* arg);
+    void Copy_0067c110(TESPackageData* apCopy);
+    bool Compare_0067c220(TESPackageData* apCompare);
 };

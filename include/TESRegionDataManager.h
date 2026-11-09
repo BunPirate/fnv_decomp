@@ -12,13 +12,14 @@ class TESRegionDataImposter;
 class TESFile;
 enum REGION_DATA_ID;
 
+// pdb: class TESRegionDataManager, size 0x8, 1 members
 class TESRegionDataManager
 {
 public:
     TESRegion* m_pLastLoadedRegion;
 
     virtual TESRegion* GetLastLoadedRegion();
-    virtual TESRegionData* GetRegionDataForID(REGION_DATA_ID aeID);
+    virtual TESRegionData* GetRegionDataForID(REGION_DATA_ID aType);
     virtual RegionDataBlock* GetRegionDataBlock(TESRegionData* apData);
     virtual TESRegionDataWeather* GetRegionDataWeather(TESRegionData* apData);
     virtual TESRegionDataMap* GetRegionDataMap(TESRegionData* apData);

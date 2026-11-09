@@ -8,6 +8,7 @@
 class GeometrySkinInstancePair;
 class NiTriBasedGeom;
 
+// pdb: class NiBoneLODController, size 0x68, bases: NiTimeController, 5 members
 class NiBoneLODController : public NiTimeController
 {
 public:
@@ -48,11 +49,11 @@ public:
     bool IsEqual_00a53ea0(NiObject* object);
     void SaveBinary_00a549d0(NiStream& stream);
     void FUN_00a6d0c0(CloningProcess* process);
-    void FUN_00a6d5e0(NiStream* stream);
+    void FUN_00a6d5e0(NiStream* kStream);
 
     int m_iLOD;
     unsigned int m_uiNumLODs;
-    NiTPrimitiveArray<BoneSet*> m_kBoneSetArray;
-    NiTPrimitiveArray<SkinInfoSet*> m_kSkinInfoSets;
-    NiTPrimitiveSet<NiTriBasedGeom*> m_kShapeGroups;
+    NiTPrimitiveArray<BoneSet*> m_kBoneArray;
+    NiTPrimitiveArray<SkinInfoSet*> m_kSkinArray;
+    NiTPrimitiveSet<NiTriBasedGeom*> m_kSkinSet;
 };

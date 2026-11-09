@@ -18,23 +18,24 @@ void* __fastcall DestroyIfFlagged(NiD3DShaderDeclaration* self, void*, unsigned 
 
 // @fnv 0x00e942d0
 // src: COMMUNITY 0x00e942d0
+// pdb: NiVBBlock::ClearAllData | NiVBSet.obj | debug, upstream name already matches, high
 void NiVBBlock::ClearAllData()
 {
     unsigned int zero = 0;
     m_00 = zero;
-    m_08 = zero;
+    m_pkVB = zero;
     m_0c = zero;
-    m_10 = zero;
-    m_14 = zero;
-    m_04 = zero;
-    m_18 = zero;
+    m_uiFVF = zero;
+    m_uiFlags = zero;
+    m_uiIndex = zero;
+    m_uiUsage = zero;
     m_1c = zero;
     m_20 = zero;
     m_24 = zero;
     m_28 = zero;
 
-    m_chips.RemoveAll(zero);
+    m_apkChips.RemoveAll(zero);
 
-    m_3c = zero;
-    m_40 = zero;
+    m_pkNextBlock = zero;
+    m_pkPrevBlock = zero;
 }

@@ -14,12 +14,16 @@ float Tile__FloatAction::GetStoredFloatValue()
 }
 
 // @fnv 0x00a0d180
+// pdb: Tile::MenuStringMap::IsKeysEqual | Tile.obj | debug, vtable slot, medium
+// pdb params: apKey1, apKey2
 bool Tile__MenuStringMap::IsKeysEqual(const char* left, const char* right)
 {
     return _stricmp(left, right) == 0;
 }
 
 // @fnv 0x00a0bb00
+// pdb: Tile::IsValidUserTraitName | Tile.obj | debug, call graph, medium
+// pdb params: apTraitName
 bool Tile::IsSpecialTileName(const char* name)
 {
     int result;

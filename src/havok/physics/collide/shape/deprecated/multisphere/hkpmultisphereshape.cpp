@@ -134,6 +134,9 @@ extern LocalM128 DAT_010ec7f0;
 // Finds the smallest fraction in fracs, writes the interpolated and scaled normal and sphere id into out, and returns the best index or -1.
 // @fnv 0x00d2a610
 // src: XBOX_PDB 0x00d2a610
+// pdb: getBestHit | hkpMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: m_spheres, m_numSpheres, dist, sphereIndex, nhit, input, results
+// pdb locals: bestDist
 static __declspec(noinline) int getBestHit(Out* out, const Sph* spheres, const float* fracs, const int* ids,
                                              int count, const Ray* ray)
 
@@ -306,8 +309,10 @@ static inline LocalM128 Sph_sum3(LocalM128 t)
 // Finds all spheres in an array that the segment intersects, storing their indices and normalized hit parameters, and returns the count.
 // @fnv 0x00d2a960
 // src: XBOX_PDB 0x00d2a960
-static __declspec(noinline) int castRayInternal(const Sph_Seg* seg, const Sph_V* spheres, int n, int* apHitIndices,
-                                             float* apHitParams)
+// pdb: castRayInternal | hkpMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: input, m_spheres, m_numSpheres, distOut, indexOut
+static __declspec(noinline) int castRayInternal(const Sph_Seg* input, const Sph_V* m_spheres, int m_numSpheres, int* distOut,
+                                             float* indexOut)
 {
     union
     {
@@ -332,12 +337,12 @@ static __declspec(noinline) int castRayInternal(const Sph_Seg* seg, const Sph_V*
         volatile unsigned int tick;
     } scratch;
     hitCounter.count = 0;
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < m_numSpheres; i++)
     {
         Sph_U e, s, c;
-        e.v = seg->b;
-        s.v = seg->a;
-        c.q = *(const LocalM128*)&spheres[i];
+        e.v = input->b;
+        s.v = input->a;
+        c.q = *(const LocalM128*)&m_spheres[i];
         LocalM128 d2 = _mm_sub_ps(e.q, c.q);
         s.q = _mm_sub_ps(s.q, c.q);
         c.q = _mm_mul_ps(s.q, s.q);
@@ -350,7 +355,7 @@ static __declspec(noinline) int castRayInternal(const Sph_Seg* seg, const Sph_V*
         if (B2 >= 0.0f)
             continue;
         _mm_store_ss(&scratch.A, Sph_sum3(_mm_mul_ps(d1, d1)));
-        float q = spheres[i].w * spheres[i].w;
+        float q = m_spheres[i].w * m_spheres[i].w;
         float cc = C - q;
         float disc = B2 * B2 - cc * (scratch.A * 4.0f);
         if (disc <= 0.0f)
@@ -362,8 +367,8 @@ static __declspec(noinline) int castRayInternal(const Sph_Seg* seg, const Sph_V*
             continue;
         if (t < 0.0f)
             continue;
-        apHitParams[hitCounter.count] = t / scratch.A;
-        apHitIndices[hitCounter.count] = i;
+        indexOut[hitCounter.count] = t / scratch.A;
+        distOut[hitCounter.count] = i;
         hitCounter.count++;
     }
     {
@@ -384,6 +389,9 @@ static __declspec(noinline) int castRayInternal(const Sph_Seg* seg, const Sph_V*
 // Performs a raycast against m_kSpheres using in and p3, storing whether a hit was found in *ok and returning ok.
 // @fnv 0x00d2ab90
 // src: XBOX_PDB 0x00d2ab90
+// pdb: hkpMultiSphereShape::castRayImpl | hkpMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: input, results
+// pdb locals: dist, idx
 char* S00d2ab90_Shape::hkpMultiSphereShape_castRayImpl(char* ok, RayCtx* in, void* p3)
 {
     int hitKeys[8];
@@ -441,21 +449,24 @@ struct ShapeRayCastOutput
 
 struct DummyMultiSphere : hkpMultiSphereShape
 {
-    void hkpMultiSphereShape_castRayWithCollectorImpl(const ShapeRayCastQuery& input, const hkpCdBody& cdBody, hkpRayHitCollector& collector) const;
+    void hkpMultiSphereShape_castRayWithCollectorImpl(const ShapeRayCastQuery& inputLocal, const hkpCdBody& cdBody, hkpRayHitCollector& collector) const;
 };
 
 // Ray-casts against the multi-sphere shape, transforms each hit normal into world space, and reports hits to the collector.
 // @fnv 0x00d2abe0
 // src: XBOX_PDB 0x00d2abe0
-void DummyMultiSphere::hkpMultiSphereShape_castRayWithCollectorImpl(const ShapeRayCastQuery& input, const hkpCdBody& cdBody,
+// pdb: hkpMultiSphereShape::castRayWithCollectorImpl | hkpMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: inputLocal, cdBody, collector
+// pdb locals: dist, idx, results, assertBuf, ostr
+void DummyMultiSphere::hkpMultiSphereShape_castRayWithCollectorImpl(const ShapeRayCastQuery& inputLocal, const hkpCdBody& cdBody,
                                     hkpRayHitCollector& collector) const
 {
     hkReal hitFractions[8];
     hkUint32 hitKeys[8];
-    const hkVector4* spheres = m_kSpheres;
+    const hkVector4* spheres = m_spheres;
 
     int numHits =
-        castRayInternal((const Sph_Seg*)&input, (const Sph_V*)spheres, m_iSphereCount, (int*)hitKeys, hitFractions);
+        castRayInternal((const Sph_Seg*)&inputLocal, (const Sph_V*)spheres, m_numSpheres, (int*)hitKeys, hitFractions);
 
     ShapeRayCastOutput output;
     if (numHits == 0)
@@ -468,9 +479,9 @@ void DummyMultiSphere::hkpMultiSphereShape_castRayWithCollectorImpl(const ShapeR
         output.reset();
 
         int hitIndex = getBestHit((Out*)&output, (const Sph*)spheres, hitFractions, (const int*)hitKeys, numHits,
-                                    (const Ray*)&input);
+                                    (const Ray*)&inputLocal);
 
-        const hkTransform& transform = static_cast<const hkMotionState*>(cdBody.m_pMotionState)->m_kMotionTransform;
+        const hkTransform& transform = static_cast<const hkMotionState*>(cdBody.m_motion)->m_transform;
 
         LocalM128 v = output.m_vComponents;
         LocalM128 v0 = _mm_mul_ps(_mm_shuffle_ps(v, v, 0x55), transform.m_row1);
@@ -559,6 +570,9 @@ struct MultiSphereShape
 // Transforms the sphere centers by localToWorld, expands by each radius, and writes the min/max corners, widened by tolerance, into out.
 // @fnv 0x00d2a7c0
 // src: XBOX_PDB 0x00d2a7c0
+// pdb: hkpMultiSphereShape::getAabbImpl | hkpMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: absMin, absMax, tol4, worldSpheres, assertBuf, ostr
 void MultiSphereShape::hkpMultiSphereShape_getAabbImpl(const hkTransformSimd& localToWorld, float tolerance, hkAabbSimd& out) const
 {
     LocalM128 tmp[8];

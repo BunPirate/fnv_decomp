@@ -35,18 +35,20 @@ inline NiPoint3 operator*(float scalar, const NiPoint3& point)
 
 // If the location has a valid timestamp that has passed, follows its linked reference and stores it as the new location, resetting the timestamp.
 // @fnv 0x009f3c10
+// pdb: SandBoxActorPackageData::MoveToNextLocation | SandBoxPackage.obj | debug, object-file run extension, low
+// pdb locals: inow, plinkedRef
 bool SandBoxActorPackageData::IsLocationCheckDue()
 {
-    if (pLocation != NULL && m_uiLastProcedureCheckDay != 0xFFFFFFFF)
+    if (pLocation != NULL && iNextTimeToChangeLocations != 0xFFFFFFFF)
     {
         unsigned int uiNow = g_timeGlobal.GetTimeStamp();
-        if (uiNow > m_uiLastProcedureCheckDay)
+        if (uiNow > iNextTimeToChangeLocations)
         {
             TESObjectREFR* pNext = ((ExtraDataListHelper*)pLocation->GetExtraData())->GetLinkedRef();
             if (pNext != NULL && pNext != pLocation)
             {
                 pLocation = pNext;
-                m_uiLastProcedureCheckDay = 0xFFFFFFFF;
+                iNextTimeToChangeLocations = 0xFFFFFFFF;
                 return true;
             }
         }
@@ -56,6 +58,8 @@ bool SandBoxActorPackageData::IsLocationCheckDue()
 
 // Checks whether the sandbox activity is currently active by comparing the current day and hour against the activity's start day/hour and computed end day/hour.
 // @fnv 0x009f3d50
+// pdb: SandBoxActorPackageData::IsActivityActive | SandBoxPackage.obj | debug, object-file run extension, low
+// pdb locals: iactivityEndDay, bjustEndedToday, fthisHour, ithisDay, factivityEndHour
 bool SandBoxActorPackageData::IsActivityTime()
 {
     float fEndHour;
@@ -65,20 +69,20 @@ bool SandBoxActorPackageData::IsActivityTime()
             float fHour = g_calendar.GetGameTime();
             {
                 bool bLastDay = false;
-                if (m_eSandboxActivity == SANDBOX_ACTIVITY_NONE)
+                if (eActivity == SANDBOX_ACTIVITY_NONE)
                     return true;
                 {
                     unsigned int uiEndDay;
-                    uiEndDay = m_uiActivityEndDay;
-                    fEndHour = m_fActivityStartHour + m_fActivityEndHour;
+                    uiEndDay = iActivityStartDay;
+                    fEndHour = fActivityStartHour + fActivityDuration;
                     while (fEndHour >= 24.0)
                     {
                         fEndHour -= 24.0;
                         uiEndDay++;
                     }
-                    if (uiDay < m_uiActivityEndDay || uiDay > uiEndDay)
+                    if (uiDay < iActivityStartDay || uiDay > uiEndDay)
                         return false;
-                    if (uiDay == m_uiActivityEndDay && fHour < m_fActivityStartHour)
+                    if (uiDay == iActivityStartDay && fHour < fActivityStartHour)
                         return false;
                     if (uiDay == uiEndDay && fHour >= fEndHour)
                         return false;
@@ -90,9 +94,12 @@ bool SandBoxActorPackageData::IsActivityTime()
 }
 
 // @fnv 0x009f40c0
-void SandBoxActorPackageData::SetReferenceTarget(TESObjectREFR* apDeletedRef)
+// pdb: SandBoxActorPackageData::HandleDeletedReference | SandBoxPackage.obj | retail, vtable slot, high
+// pdb params: pDeletedObj
+// pdb locals: breset, i, count
+void SandBoxActorPackageData::SetReferenceTarget(TESObjectREFR* pDeletedObj)
 {
-    if (apDeletedRef == NULL)
+    if (pDeletedObj == NULL)
         return;
     {
         int iCount;
@@ -100,20 +107,20 @@ void SandBoxActorPackageData::SetReferenceTarget(TESObjectREFR* apDeletedRef)
             int iIndex;
             {
                 bool bReset = false;
-                if (pLocation == apDeletedRef)
+                if (pLocation == pDeletedObj)
                     pLocation = NULL;
-                if (m_pCurrentFurniture == apDeletedRef)
-                    m_pCurrentFurniture = NULL;
-                if (m_pCurrentTarget == apDeletedRef)
+                if (pPrevTargetObject == pDeletedObj)
+                    pPrevTargetObject = NULL;
+                if (pCurrentTargetObject == pDeletedObj)
                     bReset = true;
-                iCount = m_kProcedureList.GetSize();
+                iCount = PotentialTargets.GetSize();
                 iIndex = 0;
                 while (iIndex < iCount)
                 {
-                    if (m_kProcedureList.GetAt(iIndex).GetTarget() == apDeletedRef)
+                    if (PotentialTargets.GetAt(iIndex).GetTarget() == pDeletedObj)
                     {
                         bReset = true;
-                        m_kProcedureList.RemoveAt(static_cast<unsigned int>(iIndex), 1u);
+                        PotentialTargets.RemoveAt(static_cast<unsigned int>(iIndex), 1u);
                         iCount--;
                     }
                     else
@@ -124,12 +131,12 @@ void SandBoxActorPackageData::SetReferenceTarget(TESObjectREFR* apDeletedRef)
                 if (bReset)
                 {
                     eProcedure = SANDBOX_PROCEDURE_NONE;
-                    m_fProcedureTime = 0.0F;
-                    m_pCurrentTarget = NULL;
-                    m_pCurrentFurniture = NULL;
-                    m_ucProcedureIndex = 0x7F;
-                    m_bNeedsSandboxUpdate = true;
-                    m_uiProcedureIndex = 0;
+                    fProcedureDuration = 0.0F;
+                    pCurrentTargetObject = NULL;
+                    pPrevTargetObject = NULL;
+                    cCurrentTargetMarker = 0x7F;
+                    bShouldPickNewProcedure = true;
+                    iNextTimeToScanWorld = 0;
                 }
             }
         }
@@ -150,55 +157,55 @@ bool SandBoxActorPackageData::HasProcessTarget(Actor* apActor)
                 {
                     {
                         bool bChanged = false;
-                        if (m_bHasBedMarker && !pTargetInfo->CheckBedMarker())
+                        if (bBed && !pTargetInfo->CheckBedMarker())
                         {
-                            m_bHasBedMarker = false;
+                            bBed = false;
                             bChanged = true;
                         }
-                        if (m_bHasFoodMarker && !pTargetInfo->CheckFoodMarker())
+                        if (bFood && !pTargetInfo->CheckFoodMarker())
                         {
-                            m_bHasFoodMarker = false;
+                            bFood = false;
                             bChanged = true;
                         }
-                        if (m_bHasChairMarker && !pTargetInfo->CheckChairMarker())
+                        if (bChair && !pTargetInfo->CheckChairMarker())
                         {
-                            m_bHasChairMarker = false;
+                            bChair = false;
                             bChanged = true;
                         }
                         if (bChanged)
                         {
-                            m_uiProcedureIndex = g_timeGlobal.GetTimeStamp();
+                            iNextTimeToScanWorld = g_timeGlobal.GetTimeStamp();
                             return true;
                         }
                     }
                 }
                 if (pLocation != NULL && eProcedure != SANDBOX_PROCEDURE_USE_IDLE_MARKER &&
-                    m_uiLastProcedureCheckDay != 0xFFFFFFFF)
+                    iNextTimeToChangeLocations != 0xFFFFFFFF)
                 {
-                    if (g_timeGlobal.GetTimeStamp() > m_uiLastProcedureCheckDay)
+                    if (g_timeGlobal.GetTimeStamp() > iNextTimeToChangeLocations)
                         return true;
                 }
                 if (!IsActorWithinLocationRadius(apActor, true))
                     return false;
-                if (m_bNeedsSandboxUpdate)
+                if (bShouldPickNewProcedure)
                     return true;
-                if (eProcedure == SANDBOX_PROCEDURE_NONE || m_fProcedureTime <= 0.0)
+                if (eProcedure == SANDBOX_PROCEDURE_NONE || fProcedureDuration <= 0.0)
                     return true;
-                if (m_fNextProcedureCheckHour == 0.0)
+                if (fTotalTime == 0.0)
                     return true;
                 if (eState != SANDBOX_STATE_DOINGSTUFF &&
-                    m_pCurrentTarget != NULL)
+                    pCurrentTargetObject != NULL)
                 {
-                    if (((TESObjectREFRHelper*)m_pCurrentTarget)->IsMarkerAvailable(m_ucProcedureIndex, true))
+                    if (((TESObjectREFRHelper*)pCurrentTargetObject)->IsMarkerAvailable(cCurrentTargetMarker, true))
                         return true;
                 }
                 if (HasActivityEnded(NULL))
                     return true;
                 if (IsActivityTime() && IsActivityProcedure())
-                    return eProcedure != g_procedureForActivity[m_eSandboxActivity];
+                    return eProcedure != g_procedureForActivity[eActivity];
                 bPickNew = false;
-                fValue = GetHourDifference(m_fLastProcedureCheckHour, g_calendar.GetGameTime());
-                if (fValue > m_fProcedureTime)
+                fValue = GetHourDifference(fLastTimeChanged, g_calendar.GetGameTime());
+                if (fValue > fProcedureDuration)
                     bPickNew = true;
                 return bPickNew;
             }
@@ -208,57 +215,63 @@ bool SandBoxActorPackageData::HasProcessTarget(Actor* apActor)
 
 // Reads the sandbox actor package data fields from the load buffer, adjusts the timestamp against g_timeGlobal, and loads the choice array entries.
 // @fnv 0x009f5ca0
-void SandBoxActorPackageData::LoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: SandBoxActorPackageData::LoadGame | SandBoxPackage.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: iprevTargetDelta, isaveGameCount, i, potentialTarget
+void SandBoxActorPackageData::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     int iSavedTimeStamp;
     unsigned int ItemUpdateArray;
-    apBuffer->ReadTypedData(static_cast<void*>(&eState), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&eProcedure), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_fProcedureTime), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_fLastProcedureCheckHour), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_fNextProcedureCheckHour), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_uiLastProcedureCheckDay), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_fProcedureTime), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_uiProcedureIndex), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_bNeedsSandboxUpdate), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_bHasFoodMarker), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_bHasChairMarker), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_bHasBedMarker), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_iSerializedValue), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_ucProcedureIndex), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&eState), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&eProcedure), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fProcedureDuration), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fLastTimeChanged), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fTotalTime), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iNextTimeToChangeLocations), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fProcedureDuration), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iNextTimeToScanWorld), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bShouldPickNewProcedure), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bFood), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bChair), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bBed), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iIdleMarkers), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&cCurrentTargetMarker), 1u);
     iSavedTimeStamp = 0;
-    apBuffer->ReadTypedData(static_cast<void*>(&iSavedTimeStamp), 4u);
-    m_uiActivityStartDay = g_timeGlobal.GetTimeStamp() - iSavedTimeStamp;
-    apBuffer->ReadTypedData(static_cast<void*>(&m_uiActivityEndDay), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_fActivityStartHour), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_fActivityEndHour), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_eSandboxActivity), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(m_ucProcedureFlags), 6u);
-    apBuffer->ReadFormIdentifier(&pLocation);
-    apBuffer->ReadFormIdentifier(&m_pCurrentTarget);
-    apBuffer->ReadFormIdentifier(&m_pCurrentFurniture);
-    ItemUpdateArray = apBuffer->ReadElementCount();
-    m_kProcedureList.SetSize(ItemUpdateArray, true);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iSavedTimeStamp), 4u);
+    iPrevTargetChangedTimeStamp = g_timeGlobal.GetTimeStamp() - iSavedTimeStamp;
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iActivityStartDay), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fActivityStartHour), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fActivityDuration), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&eActivity), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(cProcedureWeight), 6u);
+    apLoadGameBuffer->ReadFormIdentifier(&pLocation);
+    apLoadGameBuffer->ReadFormIdentifier(&pCurrentTargetObject);
+    apLoadGameBuffer->ReadFormIdentifier(&pPrevTargetObject);
+    ItemUpdateArray = apLoadGameBuffer->ReadElementCount();
+    PotentialTargets.SetSize(ItemUpdateArray, true);
     for (unsigned int uiIndex = 0; uiIndex < ItemUpdateArray; uiIndex++)
     {
-        SandboxProcedureData* pItem = &m_kProcedureList.GetAt(uiIndex);
-        pItem->LoadGame(apBuffer);
+        SandboxProcedureData* pItem = &PotentialTargets.GetAt(uiIndex);
+        pItem->LoadGame(apLoadGameBuffer);
     }
 }
 
 // @fnv 0x009f5ea0
-void SandBoxActorPackageData::InitLoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: SandBoxActorPackageData::InitLoadGame | SandBoxPackage.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: breset, i, count, isaveGameCount, potentialTarget, item, prefData
+void SandBoxActorPackageData::InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     pLocation = pLocation ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)pLocation)) : NULL;
-    m_pCurrentTarget =
-        m_pCurrentTarget ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)m_pCurrentTarget)) : NULL;
-    if (m_pCurrentTarget != NULL)
-        ((TESObjectREFRHelper*)m_pCurrentTarget)->SetTargetingState(true);
-    m_pCurrentFurniture = m_pCurrentFurniture
-                              ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)m_pCurrentFurniture))
+    pCurrentTargetObject =
+        pCurrentTargetObject ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)pCurrentTargetObject)) : NULL;
+    if (pCurrentTargetObject != NULL)
+        ((TESObjectREFRHelper*)pCurrentTargetObject)->SetTargetingState(true);
+    pPrevTargetObject = pPrevTargetObject
+                              ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)pPrevTargetObject))
                               : NULL;
-    if (m_pCurrentFurniture != NULL)
-        ((TESObjectREFRHelper*)m_pCurrentFurniture)->SetTargetingState(true);
+    if (pPrevTargetObject != NULL)
+        ((TESObjectREFRHelper*)pPrevTargetObject)->SetTargetingState(true);
     {
         int iCount;
         {
@@ -269,24 +282,24 @@ void SandBoxActorPackageData::InitLoadGame(BGSLoadFormBuffer* apBuffer)
                     unsigned int uiNumTargets;
                     {
                         unsigned int uiTargetIndex;
-                        uiNumTargets = m_kProcedureList.GetSize();
+                        uiNumTargets = PotentialTargets.GetSize();
                         for (uiTargetIndex = 0; uiTargetIndex < uiNumTargets; uiTargetIndex++)
                         {
                             {
-                                SandboxProcedureData* pItem = &m_kProcedureList.GetAt(uiTargetIndex);
-                                pItem->InitLoadGame(apBuffer);
+                                SandboxProcedureData* pItem = &PotentialTargets.GetAt(uiTargetIndex);
+                                pItem->InitLoadGame(apLoadGameBuffer);
                             }
                         }
-                        iCount = m_kProcedureList.GetSize();
+                        iCount = PotentialTargets.GetSize();
                         iIndex = 0;
                         bResetState = false;
                         while (iIndex < iCount)
                         {
                             {
-                                SandboxProcedureData* pChoice = &m_kProcedureList.GetAt(iIndex);
+                                SandboxProcedureData* pChoice = &PotentialTargets.GetAt(iIndex);
                                 if (pChoice->GetTarget() == NULL && IsValidSandboxProcedure(pChoice->GetProcedure()))
                                 {
-                                    m_kProcedureList.RemoveAt(static_cast<unsigned int>(iIndex), 1u);
+                                    PotentialTargets.RemoveAt(static_cast<unsigned int>(iIndex), 1u);
                                     iCount--;
                                     bResetState = true;
                                 }
@@ -296,34 +309,34 @@ void SandBoxActorPackageData::InitLoadGame(BGSLoadFormBuffer* apBuffer)
                                 }
                             }
                         }
-                        if (m_pCurrentTarget != NULL)
+                        if (pCurrentTargetObject != NULL)
                         {
-                            if (((TESObjectREFRHelper*)m_pCurrentTarget)->IsReferenceActive(false))
-                                ((TESObjectREFRHelper*)m_pCurrentTarget)->SetMarkerState(m_ucProcedureIndex, true);
+                            if (((TESObjectREFRHelper*)pCurrentTargetObject)->IsReferenceActive(false))
+                                ((TESObjectREFRHelper*)pCurrentTargetObject)->SetMarkerState(cCurrentTargetMarker, true);
                             else
                                 bResetState = true;
                         }
-                        if (bResetState || m_pCurrentTarget == NULL)
+                        if (bResetState || pCurrentTargetObject == NULL)
                         {
                             eProcedure = SANDBOX_PROCEDURE_NONE;
-                            m_fProcedureTime = 0.0F;
-                            m_pCurrentTarget = NULL;
-                            m_ucProcedureIndex = 0x7F;
-                            m_bNeedsSandboxUpdate = true;
-                            m_uiProcedureIndex = 0;
+                            fProcedureDuration = 0.0F;
+                            pCurrentTargetObject = NULL;
+                            cCurrentTargetMarker = 0x7F;
+                            bShouldPickNewProcedure = true;
+                            iNextTimeToScanWorld = 0;
                         }
-                        if (pLocation != NULL && m_uiLastProcedureCheckDay == 0)
+                        if (pLocation != NULL && iNextTimeToChangeLocations == 0)
                         {
-                            m_uiLastProcedureCheckDay = 0xFFFFFFFF;
+                            iNextTimeToChangeLocations = 0xFFFFFFFF;
                             if (((ExtraDataListHelper*)pLocation->GetExtraData())->GetLinkedRef() != NULL)
                             {
-                                m_uiLastProcedureCheckDay = 0;
+                                iNextTimeToChangeLocations = 0;
                                 {
                                     RegionPoint* pPatrolRefData =
                                         pLocation->GetExtraData()->GetStartingPositionData();
                                     if (pPatrolRefData != NULL)
                                     {
-                                        m_uiLastProcedureCheckDay = g_timeGlobal.GetTimeStamp() +
+                                        iNextTimeToChangeLocations = g_timeGlobal.GetTimeStamp() +
                                                                     (unsigned int)(pPatrolRefData->GetX() * 1000.0);
                                     }
                                 }
@@ -378,6 +391,9 @@ bool SandBoxActorPackageData::IsActorWithinLocationRadius(Actor* actor, bool upd
 }
 
 // @fnv 0x009f56b0
+// pdb: SandBoxActorPackageData::UpdateIsActorAtLocation | SandBoxPackage.obj | debug, object-file run extension, low
+// pdb params: apMobileObject, afRadius
+// pdb locals: apActor, bsamespace, fradius, pactorintcell, plocintcell, plocworld, loccoord, pactorworld, bexactpos, ppack, pact, ffudge, prefData, iactorEnergy
 bool SandboxPackageOperations::IsObjectWithinLocationRadius(MobileObject* object, float afRadius)
 {
     // Keep the related location query results and radius policy together.
@@ -479,17 +495,17 @@ bool SandboxPackageOperations::IsObjectWithinLocationRadius(MobileObject* object
         state.radius = (float)g_011cde98.Int()->i;
     if (object->IsWithinDistance(state.position, state.radius, !state.special, true))
     {
-        if (m_uiLastProcedureCheckDay == 0xffffffff && pLocation->GetExtraData() &&
+        if (iNextTimeToChangeLocations == 0xffffffff && pLocation->GetExtraData() &&
             ((ExtraDataListHelper*)pLocation->GetExtraData())->GetLinkedRef())
         {
-            m_uiLastProcedureCheckDay = 0;
+            iNextTimeToChangeLocations = 0;
             state.patrol = pLocation->GetExtraData()->GetStartingPositionData();
             if (state.patrol)
-                m_uiLastProcedureCheckDay = g_timeGlobal.GetTimeStamp() + (unsigned int)(state.patrol->GetX() * 1000.0);
+                iNextTimeToChangeLocations = g_timeGlobal.GetTimeStamp() + (unsigned int)(state.patrol->GetX() * 1000.0);
             if (eProcedure > -1 && eProcedure < 6)
             {
                 state.helper = static_cast<SandboxActorEnergySource*>(state.actor)->Actor_GetActorBaseEnergyLevel();
-                m_fProcedureTime = AiFormulas_ComputeRandomSandboxSubProcessDuration(state.helper, eProcedure);
+                fProcedureDuration = AiFormulas_ComputeRandomSandboxSubProcessDuration(state.helper, eProcedure);
             }
         }
         return true;
@@ -499,10 +515,11 @@ bool SandboxPackageOperations::IsObjectWithinLocationRadius(MobileObject* object
 
 // Releases the current target and starts the getting-up state.
 // @fnv 0x009f41c0
+// pdb: SandBoxActorPackageData::HandleSubprocessFinished | SandBoxPackage.obj | debug, object-file run extension, low
 void __thiscall SandboxPackageOperations::BeginGettingUp()
 {
-    ResetReference();
-    m_bNeedsSandboxUpdate = true;
+    SandBoxActorPackageData_ReleaseTargetObject();
+    bShouldPickNewProcedure = true;
     eState = SANDBOX_STATE_GETTING_UP;
 }
 
@@ -554,33 +571,33 @@ void SandboxPackageOperations::SelectSandboxActivity(Actor* apActor, TESPackage*
     int itotalProb;
     TESPackage* ppack;
 
-    m_bNeedsSandboxUpdate = false;
+    bShouldPickNewProcedure = false;
     SelectActivity();
-    if (m_fNextProcedureCheckHour == 0.0)
+    if (fTotalTime == 0.0)
     {
         if (apOriginalPackage && apOriginalPackage->TESPackage_GetPackageSchedule())
-            m_fNextProcedureCheckHour = (float)reinterpret_cast<fnv_009f4700::DurationData*>(apOriginalPackage->TESPackage_GetPackageSchedule())->FUN_00726070();
-        if (m_fNextProcedureCheckHour == 0.0)
-            m_fNextProcedureCheckHour = 24.0f;
+            fTotalTime = (float)reinterpret_cast<fnv_009f4700::DurationData*>(apOriginalPackage->TESPackage_GetPackageSchedule())->FUN_00726070();
+        if (fTotalTime == 0.0)
+            fTotalTime = 24.0f;
     }
-    if (m_pCurrentTarget && m_pCurrentFurniture != m_pCurrentTarget)
+    if (pCurrentTargetObject && pPrevTargetObject != pCurrentTargetObject)
     {
-        m_uiActivityStartDay = g_timeGlobal.GetTimeStamp() + Setting_Int(&g_011cdb3c) * 1000;
-        m_pCurrentFurniture = m_pCurrentTarget;
+        iPrevTargetChangedTimeStamp = g_timeGlobal.GetTimeStamp() + Setting_Int(&g_011cdb3c) * 1000;
+        pPrevTargetObject = pCurrentTargetObject;
     }
-    if (m_pCurrentFurniture && g_timeGlobal.GetTimeStamp() > m_uiActivityStartDay)
-        m_pCurrentFurniture = 0;
-    if (m_pCurrentTarget)
-        static_cast<TESObjectREFRHelper*>(m_pCurrentTarget)->SetMarkerState(m_ucProcedureIndex, false);
-    m_pCurrentTarget = 0;
-    m_ucProcedureIndex = 127;
+    if (pPrevTargetObject && g_timeGlobal.GetTimeStamp() > iPrevTargetChangedTimeStamp)
+        pPrevTargetObject = 0;
+    if (pCurrentTargetObject)
+        static_cast<TESObjectREFRHelper*>(pCurrentTargetObject)->SetMarkerState(cCurrentTargetMarker, false);
+    pCurrentTargetObject = 0;
+    cCurrentTargetMarker = 127;
     eProcedure = SANDBOX_PROCEDURE_NONE;
-    m_fProcedureTime = 0.0f;
-    if (g_timeGlobal.GetTimeStamp() >= m_uiProcedureIndex)
+    fProcedureDuration = 0.0f;
+    if (g_timeGlobal.GetTimeStamp() >= iNextTimeToScanWorld)
     {
-        ResetReference();
+        SandBoxActorPackageData_ReleaseTargetObject();
         ScanSandboxTargets(apActor);
-        m_uiProcedureIndex = g_timeGlobal.GetTimeStamp() +
+        iNextTimeToScanWorld = g_timeGlobal.GetTimeStamp() +
                              GetRandomNumberInRange(Setting_Int(&g_011cd0a4) * 1000, Setting_Int(&g_011cdf60) * 1000);
     }
     bcanPerformActivity = IsActivityTime() && IsActivityProcedure();
@@ -588,23 +605,23 @@ void SandboxPackageOperations::SelectSandboxActivity(Actor* apActor, TESPackage*
     {
         for (i = 0; i < 6; i++)
             isandboxProceduresProbabilities[i] = 0;
-        isandboxProceduresProbabilities[g_procedureForActivity[m_eSandboxActivity]] = 10;
+        isandboxProceduresProbabilities[g_procedureForActivity[eActivity]] = 10;
     }
     else
     {
         for (i = 0; i < 6; i++)
-            isandboxProceduresProbabilities[i] = m_ucProcedureFlags[i];
+            isandboxProceduresProbabilities[i] = cProcedureWeight[i];
         isandboxProceduresProbabilities[SANDBOX_PROCEDURE_SLEEP] = 0;
-        if (m_bHasFoodMarker)
+        if (bFood)
             isandboxProceduresProbabilities[SANDBOX_PROCEDURE_EAT] += 20;
-        if (!m_bHasChairMarker)
+        if (!bChair)
             isandboxProceduresProbabilities[SANDBOX_PROCEDURE_EAT] -= 15;
         if (apActor->GetProcess() &&
             apActor->GetProcess()->GetFirstProcessFloat() > 0.0)
             isandboxProceduresProbabilities[SANDBOX_PROCEDURE_DIALOGUE] = 0;
     }
     itotalProb = 0;
-    inumTargets = reinterpret_cast<SandBoxChoiceListItem_ext*>(&m_kProcedureList)->FUN_0044ddc0();
+    inumTargets = reinterpret_cast<SandBoxChoiceListItem_ext*>(&PotentialTargets)->FUN_0044ddc0();
     process = apActor->GetProcess();
     fsearchDist = *originalRuntimeFloatSetting255.Float();
     memcpy(packageLoc, static_cast<const TESObjectREFR*>(apActor)->GetPos(), sizeof(packageLoc));
@@ -634,7 +651,7 @@ void SandboxPackageOperations::SelectSandboxActivity(Actor* apActor, TESPackage*
         TESObjectREFR* ptargObject;
         int score;
         TESPackage* ppack;
-        item = static_cast<SandBoxChoiceListItem_ext*>(&m_kProcedureList.GetAt(i));
+        item = static_cast<SandBoxChoiceListItem_ext*>(&PotentialTargets.GetAt(i));
         score = item->FUN_0044ddc0() * isandboxProceduresProbabilities[item->GetProcedure()];
         score = BSMAX_00647b70(score, 0);
         ppack = reinterpret_cast<TESPackage*>(apActor->GetCurrentPackage());
@@ -645,7 +662,7 @@ void SandboxPackageOperations::SelectSandboxActivity(Actor* apActor, TESPackage*
             TESObjectCELL* ptargetCell;
             bool bisDialogue;
             bool binterior;
-            if (ptargObject == m_pCurrentFurniture)
+            if (ptargObject == pPrevTargetObject)
             {
                 item->FUN_0041fd00(0);
                 continue;
@@ -714,35 +731,35 @@ void SandboxPackageOperations::SelectSandboxActivity(Actor* apActor, TESPackage*
         irandom = GetRandomNumber() % itotalProb;
         for (i = 0; i < inumTargets; i++)
         {
-            SandBoxChoiceListItem_ext* item = static_cast<SandBoxChoiceListItem_ext*>(&m_kProcedureList.GetAt(i));
+            SandBoxChoiceListItem_ext* item = static_cast<SandBoxChoiceListItem_ext*>(&PotentialTargets.GetAt(i));
             if ((irandom -= item->GetHavokWorldObjectCountInSceneGraph_0084e3a0()) < 0)
                 break;
         }
-        ritem = m_kProcedureList.GetAt(i);
+        ritem = PotentialTargets.GetAt(i);
         eProcedure = ritem.GetProcedure();
-        m_pCurrentTarget = ritem.GetTarget();
-        iIndex = m_pCurrentTarget ? reinterpret_cast<FUN_005682c0_caller*>(m_pCurrentTarget)->TESObjectREFR_GetFirstFreeMarkerIndex(false) : -1;
-        m_ucProcedureIndex = iIndex < 0 ? 0 : (unsigned char)iIndex;
+        pCurrentTargetObject = ritem.GetTarget();
+        iIndex = pCurrentTargetObject ? reinterpret_cast<FUN_005682c0_caller*>(pCurrentTargetObject)->TESObjectREFR_GetFirstFreeMarkerIndex(false) : -1;
+        cCurrentTargetMarker = iIndex < 0 ? 0 : (unsigned char)iIndex;
         iactorEnergy = reinterpret_cast<int>(static_cast<SandboxActorEnergySource*>(apActor)->Actor_GetActorBaseEnergyLevel());
-        m_fProcedureTime = AiFormulas_ComputeRandomSandboxSubProcessDuration((void*)iactorEnergy, eProcedure);
+        fProcedureDuration = AiFormulas_ComputeRandomSandboxSubProcessDuration((void*)iactorEnergy, eProcedure);
         for (i = 0; i < 6; i++)
         {
-            unsigned char cweight = m_ucProcedureFlags[i];
+            unsigned char cweight = cProcedureWeight[i];
             cweight = cweight < 255 ? cweight + 1 : cweight;
-            m_ucProcedureFlags[i] = cweight;
+            cProcedureWeight[i] = cweight;
         }
-        m_ucProcedureFlags[eProcedure] = 1;
-        if (m_pCurrentTarget)
-            static_cast<TESObjectREFRHelper*>(m_pCurrentTarget)->SetMarkerState(m_ucProcedureIndex, true);
+        cProcedureWeight[eProcedure] = 1;
+        if (pCurrentTargetObject)
+            static_cast<TESObjectREFRHelper*>(pCurrentTargetObject)->SetMarkerState(cCurrentTargetMarker, true);
     }
     else
     {
         eProcedure = SANDBOX_PROCEDURE_NONE;
-        m_fProcedureTime = 0.0f;
-        m_pCurrentTarget = 0;
-        m_ucProcedureIndex = 127;
+        fProcedureDuration = 0.0f;
+        pCurrentTargetObject = 0;
+        cCurrentTargetMarker = 127;
     }
-    m_fLastProcedureCheckHour = g_calendar.GetGameTime();
+    fLastTimeChanged = g_calendar.GetGameTime();
 }
 
 struct FUN_009f3800
@@ -755,6 +772,8 @@ struct FUN_009f3800
 };
 // Stores the helper pointer and two ints, zeroes the third field, and if the helper is non-null calls its method with true.
 // @fnv 0x009f3800
+// pdb: SandBoxChoiceListItem::SandBoxChoiceListItem | SandBoxPackage.obj | debug, object-file run extension, low
+// pdb params: aptarget, aeProcedure, aiScore
 FUN_009f3800::FUN_009f3800(TESObjectREFRHelper* pHelper, int b, int c)
 {
     f0 = pHelper;
@@ -773,17 +792,19 @@ struct DH
 };
 extern DH* g_dataHandler;
 // @fnv 0x009f4060
-void SandboxPackageOperations::ResetReference()
+// src: XBOX_DEBUG_PDB 0x009f4060
+// pdb: SandBoxActorPackageData::ReleaseTargetObject | SandBoxPackage.obj | debug, call graph, high
+void SandboxPackageOperations::SandBoxActorPackageData_ReleaseTargetObject()
 {
     if (g_dataHandler == 0 || !g_dataHandler->TESDataHandler_GetClearingData())
     {
-        if (m_pCurrentTarget != 0)
+        if (pCurrentTargetObject != 0)
         {
-            static_cast<TESObjectREFRHelper*>(m_pCurrentTarget)->SetMarkerState(m_ucProcedureIndex, false);
+            static_cast<TESObjectREFRHelper*>(pCurrentTargetObject)->SetMarkerState(cCurrentTargetMarker, false);
         }
     }
-    m_pCurrentTarget = 0;
-    m_ucProcedureIndex = 0x7f;
+    pCurrentTargetObject = 0;
+    cCurrentTargetMarker = 0x7f;
 }
 
 struct TESObjectREFR_GetFlags_Helper
@@ -818,14 +839,17 @@ struct Host9f6340
 {
     int f00;
     Elem9f6340* f04;
-    void __thiscall BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(Elem9f6340* p, int v);
+    void __thiscall BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(Elem9f6340* apFirstAddr, int aiCount);
     unsigned int __thiscall AppendElement(Elem9f6340* p);
 };
 // @fnv 0x009f6340
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::Add | SandBoxPackage.obj | debug, object-file gap fill, medium
+// pdb params: aValue
+// pdb locals: iindex
 unsigned int __thiscall Host9f6340::AppendElement(Elem9f6340* apElement)
 {
     unsigned int uiIndex = ((Arr16*)this)->BSSimpleArray_TeleportLink_1024_AddUninitialized();
-    BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(f04 + uiIndex, 1);
+    BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(f04 + uiIndex, 1);
     f04[uiIndex] = *apElement;
     return uiIndex;
 }
@@ -845,14 +869,14 @@ bool __fastcall IsSandboxFlag10Clear(TESPackage* package)
 // @fnv 0x009f4680
 void __thiscall SandboxPackageOperations::ClearTargetReferences(void* apArg1, void* apArg2)
 {
-    if (m_pCurrentTarget)
+    if (pCurrentTargetObject)
     {
-        int count = reinterpret_cast<TESObjectREFR_GetFlags_Helper*>(&m_kProcedureList)->CallGetFlags();
+        int count = reinterpret_cast<TESObjectREFR_GetFlags_Helper*>(&PotentialTargets)->CallGetFlags();
         for (int i = 0; i < count; ++i)
         {
             SandboxProcedureData* item =
-                &m_kProcedureList.GetAt(i);
-            if (item->GetTarget() == m_pCurrentTarget)
+                &PotentialTargets.GetAt(i);
+            if (item->GetTarget() == pCurrentTargetObject)
                 item->m_iActivityState = 0;
         }
     }
@@ -875,6 +899,8 @@ struct FUN_009f6190_shell : S006949d0
 };
 // @fnv 0x009f6190
 // src: XBOX_PDB 0x009f6190
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::GetAt | SandBoxPackage.obj | debug, call graph, medium
+// pdb params: aiIndex
 void* __thiscall FUN_009f6190_shell::BSSimpleArray_SandBoxChoiceListItem_1024_GetAt(int aiIndex)
 {
     return GetAt(aiIndex);
@@ -893,6 +919,9 @@ struct FUN_00693d30_shell
 };
 
 // @fnv 0x00693d30
+// pdb: NavMesh::GetEdge | NavMesh.obj | debug, upstream name already matches, high
+// pdb params: ausTriIndex, aiEdgeIndex
+// pdb locals: edge, otherEdgeVertexIndex
 char* FUN_00693d30_shell::GetEdge(unsigned short index)
 {
     return m_kEdges.Object_GetIndexedValue_006a1440(index);
@@ -901,16 +930,16 @@ char* FUN_00693d30_shell::GetEdge(unsigned short index)
 // @fnv 0x009f3e20
 bool __thiscall SandBoxActorPackageData::IsActivityProcedure()
 {
-    switch (m_eSandboxActivity)
+    switch (eActivity)
     {
     case -1:
         return false;
     case 1:
     case 2:
     case 3:
-        return m_bHasFoodMarker;
+        return bFood;
     case 0:
-        return m_bHasBedMarker;
+        return bBed;
     default:
         return true;
     }
@@ -934,6 +963,10 @@ struct FUN_009f63a0_shell
 };
 // @fnv 0x009f63a0
 // src: XBOX_PDB 0x009f63a0
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::_MoveItems | SandBoxPackage.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSSimpleArray<SandBoxChoiceListItem,1024>::RemoveFast
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void __thiscall FUN_009f63a0_shell::BSSimpleArray_SandBoxChoiceListItem_1024_RemoveFast(char* apSrcAddr, unsigned int aiCount)
 {
     unsigned int i = FUN_0042f5a0(f08 - (unsigned int)apSrcAddr - aiCount, aiCount);
@@ -949,6 +982,9 @@ struct FUN_009f3850_shell
 
 // Serializes sandbox state, target references and procedure entries into the save buffer.
 // @fnv 0x009f5a60
+// pdb: SandBoxActorPackageData::SaveGame | SandBoxPackage.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: iprevTargetDelta, isaveGameCount, i, potentialTarget
 void __thiscall SandBoxActorPackageData::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned int i;
@@ -958,43 +994,43 @@ void __thiscall SandBoxActorPackageData::SaveGame(BGSSaveFormBuffer* apSaveGameB
 
     apSaveGameBuffer->SaveData(static_cast<void*>(&eState), 4, 0);
     apSaveGameBuffer->SaveData(static_cast<void*>(&eProcedure), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_fProcedureTime), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_fLastProcedureCheckHour), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_fNextProcedureCheckHour), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_uiLastProcedureCheckDay), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_fProcedureTime), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_uiProcedureIndex), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_bNeedsSandboxUpdate), 1, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_bHasFoodMarker), 1, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_bHasChairMarker), 1, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_bHasBedMarker), 1, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_iSerializedValue), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_ucProcedureIndex), 1, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&fProcedureDuration), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&fLastTimeChanged), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&fTotalTime), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&iNextTimeToChangeLocations), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&fProcedureDuration), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&iNextTimeToScanWorld), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&bShouldPickNewProcedure), 1, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&bFood), 1, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&bChair), 1, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&bBed), 1, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&iIdleMarkers), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&cCurrentTargetMarker), 1, 0);
 
     iprevTargetDelta3 =
-        g_timeGlobal.GetTimeStamp() - m_uiActivityStartDay;
+        g_timeGlobal.GetTimeStamp() - iPrevTargetChangedTimeStamp;
 
     apSaveGameBuffer->SaveData(&iprevTargetDelta3, 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_uiActivityEndDay), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_fActivityStartHour), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_fActivityEndHour), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_eSandboxActivity), 4, 0);
-    apSaveGameBuffer->SaveData(static_cast<void*>(&m_ucProcedureFlags), 6, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&iActivityStartDay), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&fActivityStartHour), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&fActivityDuration), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&eActivity), 4, 0);
+    apSaveGameBuffer->SaveData(static_cast<void*>(&cProcedureWeight), 6, 0);
 
     apSaveGameBuffer->SerializeFormData(pLocation, 0);
-    apSaveGameBuffer->SerializeFormData(m_pCurrentTarget, 0);
-    apSaveGameBuffer->SerializeFormData(m_pCurrentFurniture, 0);
+    apSaveGameBuffer->SerializeFormData(pCurrentTargetObject, 0);
+    apSaveGameBuffer->SerializeFormData(pPrevTargetObject, 0);
 
     isaveGameCount_2 =
-        &m_kProcedureList
-            ? m_kProcedureList.GetSize()
+        &PotentialTargets
+            ? PotentialTargets.GetSize()
             : 0;
 
     static_cast<BGSSaveGameBuffer*>(apSaveGameBuffer)->SaveVariableSizedValue(isaveGameCount_2);
 
     for (i = 0; i < isaveGameCount_2; ++i)
     {
-        potentialTarget = &m_kProcedureList.GetAt(i);
+        potentialTarget = &PotentialTargets.GetAt(i);
         reinterpret_cast<FUN_009f3850_shell*>(potentialTarget)->SandBoxChoiceListItem_SaveGame(apSaveGameBuffer);
     }
 }
@@ -1025,6 +1061,9 @@ extern float __cdecl FUN_004e44d0(float);
 extern float __cdecl cosf_004e4490(float);
 // Computes a position from the object's parts and elevation provider, writing it into result and overriding z with the provider's height.
 // @fnv 0x006d33c0
+// pdb: Pathing::FindClosePoint | Pathfind.obj | debug, object-file run extension, low
+// pdb params: apRequest, apRetPt
+// pdb locals: cell, height, fRandomRadius, offset, fRandAzimuth
 void __cdecl GetObjectPosition(Object* object, NiPoint3* result)
 {
     if (Pathing_FindClosePointViaNavMesh(object, result))
@@ -1115,6 +1154,9 @@ extern SandboxTimerGlobal g_sandboxTimerGlobal;
 extern const double DAT_010356d8;
 
 // @fnv 0x009f3c90
+// pdb: SandBoxActorPackageData::IsActivityFinished | SandBoxPackage.obj | debug, object-file run extension, low
+// pdb params: abJustEndedTodayOut
+// pdb locals: iactivityEndDay, bjustEndedToday, fthisHour, ithisDay, factivityEndHour
 bool SandBoxActorPackageData::HasActivityEnded(bool* pucOut)
 {
     float count;
@@ -1122,12 +1164,12 @@ bool SandBoxActorPackageData::HasActivityEnded(bool* pucOut)
     ratio = (unsigned int)g_sandboxTimerGlobal.GetCount();
     count = g_sandboxTimerGlobal.GetLimit();
     unsigned char rem = 0;
-    if (m_eSandboxActivity == -1)
+    if (eActivity == -1)
     {
         return true;
     }
-    unsigned int k = m_uiActivityEndDay;
-    float lim = m_fActivityStartHour + m_fActivityEndHour;
+    unsigned int k = iActivityStartDay;
+    float lim = fActivityStartHour + fActivityDuration;
     while (lim >= DAT_010356d8)
     {
         lim -= DAT_010356d8;
@@ -1169,12 +1211,16 @@ int __fastcall GetSandboxActionRefHandle(TESPackage* package);
 TESObjectREFR* __fastcall GetSandboxTargetRef(TESPackage* package);
 
 // @fnv 0x009f3af0
-void SandboxPackageOperations::InitializeLocation(Actor* apActor, TESPackage* apPackage)
+// src: XBOX_DEBUG_PDB 0x009f3af0
+// pdb: SandBoxActorPackageData::InitLocation | SandBoxPackage.obj | debug, call graph, high
+// pdb params: apActor, apPackloc
+// pdb locals: proc, prefData
+void SandboxPackageOperations::SandBoxActorPackageData_InitLocation(Actor* apActor, TESPackage* apPackloc)
 {
-    switch (GetSandboxActionRefHandle(apPackage))
+    switch (GetSandboxActionRefHandle(apPackloc))
     {
     case 0:
-        pLocation = GetSandboxTargetRef(apPackage);
+        pLocation = GetSandboxTargetRef(apPackloc);
         break;
     case 4:
     case 5: {
@@ -1192,16 +1238,18 @@ void SandboxPackageOperations::InitializeLocation(Actor* apActor, TESPackage* ap
     }
     if (pLocation && static_cast<ExtraDataListHelper*>(pLocation->GetExtraData())->GetLinkedRef())
     {
-        m_uiLastProcedureCheckDay = 0;
+        iNextTimeToChangeLocations = 0;
         RegionPoint* pPatrol = pLocation->GetExtraData()->GetStartingPositionData();
         if (pPatrol)
-            m_uiLastProcedureCheckDay = g_timeGlobal.GetTimeStamp() + (unsigned int)(pPatrol->GetX() * 1000.0);
+            iNextTimeToChangeLocations = g_timeGlobal.GetTimeStamp() + (unsigned int)(pPatrol->GetX() * 1000.0);
     }
 }
 
 void __cdecl GetSettingPairValues(int activity, float* start, float* duration);
 // Picks the next sandbox activity by comparing each activity's start window against the current day, storing the chosen activity, hour, day and duration.
 // @fnv 0x009f3e80
+// pdb: SandBoxActorPackageData::SetUpNextActivity | SandBoxPackage.obj | debug, object-file run extension, low
+// pdb locals: ibestActivity, fbestDuration, ibestDay, fbestStart, bjustEndedToday, fbestHoursFromNow, fthisHour, ithisDay, fduration, bresultFound, fstart, iactivity, fadjustedStart, fhoursFromNow, bwouldStartTomorrow, bshouldOccurNow
 void SandboxPackageOperations::SelectActivity()
 {
     bool start = false;
@@ -1225,7 +1273,7 @@ void SandboxPackageOperations::SelectActivity()
         bool alreadyStarted;
         bool tomorrow;
         alreadyStarted = endedToday >= found + bestStart;
-        if (start && !alreadyStarted && activity == m_eSandboxActivity)
+        if (start && !alreadyStarted && activity == eActivity)
             continue;
         {
             float nextStart = alreadyStarted ? found + 24.0 : found;
@@ -1246,10 +1294,10 @@ void SandboxPackageOperations::SelectActivity()
     }
     if (bestDifference)
     {
-        m_eSandboxActivity = (SANDBOX_ACTIVITY)currentDay;
-        m_fActivityStartHour = currentHour;
-        m_uiActivityEndDay = duration;
-        m_fActivityEndHour = bestDay;
+        eActivity = (SANDBOX_ACTIVITY)currentDay;
+        fActivityStartHour = currentHour;
+        iActivityStartDay = duration;
+        fActivityDuration = bestDay;
     }
 }
 
@@ -1282,18 +1330,18 @@ bool __cdecl SandboxScanCallback(TESObjectREFR* apRef, void* apContext);
 class SbDataHandler
 {
   public:
-    void ForEachRefInRange(TESObjectCELL* apCell, NiPoint3* apPos1, float afRadius1, NiPoint3* apPos2, float afRadius2,
-                           SandboxScanFunc apFunc, void* apContext);
+    void ForEachRefInRange(TESObjectCELL* apPoint1Cell, NiPoint3* aPoint1, float afRadius1, NiPoint3* aPoint2, float afRadius2,
+                           SandboxScanFunc apfnEnumFunc, void* aiEnumData);
 };
 
 // Clears the target array and flags, then scans refs in range around the package or location position and appends food and bed targets.
 // @fnv 0x009f54d0
 void SandboxPackageOperations::ScanSandboxTargets(Actor* apActor)
 {
-    reinterpret_cast<SandboxTargetArray*>(&m_kProcedureList)->Clear(true);
-    m_bHasBedMarker = false;
-    m_bHasChairMarker = false;
-    m_bHasFoodMarker = false;
+    reinterpret_cast<SandboxTargetArray*>(&PotentialTargets)->Clear(true);
+    bBed = false;
+    bChair = false;
+    bFood = false;
     float fRadius = *originalRuntimeFloatSetting255.Float();
     TESObjectCELL* pCell = apActor->GetParentCell();
     NiPoint3 kPos7 = *static_cast<const TESObjectREFR*>(apActor)->GetPos();
@@ -1317,13 +1365,13 @@ void SandboxPackageOperations::ScanSandboxTargets(Actor* apActor)
         TESObjectREFR* pUsed = static_cast<SandboxActorUsedReference*>(apActor)->GetUsedRef();
         if (pUsed && pUsed->GetFlags())
         {
-            reinterpret_cast<SandboxTargetArray*>(&m_kProcedureList)->Append(SandboxTarget(0, 2, 1));
-            m_bHasFoodMarker = true;
+            reinterpret_cast<SandboxTargetArray*>(&PotentialTargets)->Append(SandboxTarget(0, 2, 1));
+            bFood = true;
         }
     }
     if (IsSandboxFlag20Clear(pPackage9))
     {
-        reinterpret_cast<SandboxTargetArray*>(&m_kProcedureList)->Append(SandboxTarget(0, 3, 1));
+        reinterpret_cast<SandboxTargetArray*>(&PotentialTargets)->Append(SandboxTarget(0, 3, 1));
     }
 }
 
@@ -1560,13 +1608,13 @@ bool __cdecl AddActivationChoice(ChoiceTargetRef* target, ChoiceContext* pContex
             unsigned markerFlags = markerBase->markers.FUN_00479e80();
             bool markerUsed = false;
             if (markerBase->markers.BGSIdleCollection_HasIdleForActor(actor, target))
-                reinterpret_cast<ChoiceCollection*>(&planner->m_kProcedureList)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 4, 1));
+                reinterpret_cast<ChoiceCollection*>(&planner->PotentialTargets)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 4, 1));
         }
         break;
     case 42:
     case 43:
         if (permissions->IsFlag4Clear() && target->IsActorSlot() && target != DAT_011dea3c && target != actor)
-            reinterpret_cast<ChoiceCollection*>(&planner->m_kProcedureList)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 5, 1));
+            reinterpret_cast<ChoiceCollection*>(&planner->PotentialTargets)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 5, 1));
         break;
     case 39: {
         void* object8 = target->GetFurnitureSlot();
@@ -1582,20 +1630,20 @@ bool __cdecl AddActivationChoice(ChoiceTargetRef* target, ChoiceContext* pContex
         if (IsSandboxFlag2Clear(permissions) && furnitureBase2->FUN_00509420() &&
             (!target->TESObjectREFR_GetOwner() || target->TESObjectREFR_IsAnOwner(actor, 1)))
         {
-            reinterpret_cast<ChoiceCollection*>(&planner->m_kProcedureList)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 1, 1));
-            planner->m_bHasBedMarker = true;
+            reinterpret_cast<ChoiceCollection*>(&planner->PotentialTargets)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 1, 1));
+            planner->bBed = true;
         }
         else if (IsSandboxFlag10Clear(permissions) && furnitureBase2->FUN_005093f0() &&
                  (!target->TESObjectREFR_GetOwner() || target->TESObjectREFR_IsAnOwner(actor, 1)))
         {
-            reinterpret_cast<ChoiceCollection*>(&planner->m_kProcedureList)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 0, 1));
-            planner->m_bHasChairMarker = true;
+            reinterpret_cast<ChoiceCollection*>(&planner->PotentialTargets)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 0, 1));
+            planner->bChair = true;
         }
         else if (IsSandboxFlag10Clear(permissions) && !furnitureBase2->FUN_005093f0() && !furnitureBase2->FUN_00509420() &&
                  (!target->TESObjectREFR_GetOwner() || target->TESObjectREFR_IsAnOwner(actor, 1)))
         {
-            reinterpret_cast<ChoiceCollection*>(&planner->m_kProcedureList)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 0, 1));
-            planner->m_bHasChairMarker = true;
+            reinterpret_cast<ChoiceCollection*>(&planner->PotentialTargets)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 0, 1));
+            planner->bChair = true;
         }
         break;
     }
@@ -1603,8 +1651,8 @@ bool __cdecl AddActivationChoice(ChoiceTargetRef* target, ChoiceContext* pContex
     case 47:
         if (IsSandboxFlag1Clear(permissions) && (!target->TESObjectREFR_GetOwner() || target->TESObjectREFR_IsAnOwner(actor, 1)))
         {
-            reinterpret_cast<ChoiceCollection*>(&planner->m_kProcedureList)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 2, 1));
-            planner->m_bHasFoodMarker = true;
+            reinterpret_cast<ChoiceCollection*>(&planner->PotentialTargets)->AppendElement(FUN_009f3800(reinterpret_cast<TESObjectREFRHelper*>(target), 2, 1));
+            planner->bFood = true;
         }
         break;
     }
@@ -1613,9 +1661,10 @@ bool __cdecl AddActivationChoice(ChoiceTargetRef* target, ChoiceContext* pContex
 
 // Releases the current target and clears the procedure list before member destruction.
 // @fnv 0x009f3a70
+// pdb: SandBoxActorPackageData::~SandBoxActorPackageData | SandBoxPackage.obj | retail, upstream name already matches, high
 SandBoxActorPackageData::~SandBoxActorPackageData()
 {
-    static_cast<SandboxPackageOperations*>(this)->ResetReference();
-    m_kProcedureList.Clear(true);
+    static_cast<SandboxPackageOperations*>(this)->SandBoxActorPackageData_ReleaseTargetObject();
+    PotentialTargets.Clear(true);
 }
 

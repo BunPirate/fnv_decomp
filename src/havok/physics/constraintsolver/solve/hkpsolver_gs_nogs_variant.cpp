@@ -307,7 +307,7 @@ class hkpBallChainSchema : public SolverSchemaHeader { public: unsigned char unk
 class hkpPoweredChainSchema : public SolverSchemaHeader { public: unsigned char flags; unsigned short m_numTemps, m_pBodyA, m_pBodyB; int unk08, unk0c, m_nextOffset; };
 void __cdecl Object_ProcessEntries_00d893a0(const ConstraintSolverInfo*, const SolverStepInfo*, QuantizedBoundsData*, const hkpStiffChainSchema*, FloatRecord*);
 void __cdecl hkpSolverInfo_ProcessEntries_00d89690(const ConstraintSolverInfo*, const SolverStepInfo*, QuantizedBoundsData*, const hkpBallChainSchema*, FloatRecord*);
-void __cdecl Object_ProcessEntries_00d8a3a0(const ConstraintSolverInfo*, const SolverStepInfo*, QuantizedBoundsData*, const hkpPoweredChainSchema*, FloatRecord*);
+void __cdecl hkSolver_solvePoweredChain(const ConstraintSolverInfo*, const SolverStepInfo*, QuantizedBoundsData*, const hkpPoweredChainSchema*, FloatRecord*);
 __forceinline void loadFixedRegisters() {}
 struct FloatRecord;
 __forceinline void storeDelayedResult(FloatRecord*) {}
@@ -1290,7 +1290,7 @@ case_1D_LINEAR_MOTOR:
         case SCHEMA_TYPE_POWERED_CHAIN:
             {
                 const hkpPoweredChainSchema* chain = reinterpret_cast<const hkpPoweredChainSchema*>(com);
-                Object_ProcessEntries_00d8a3a0(&info, &temp, accums, chain, sr);
+                hkSolver_solvePoweredChain(&info, &temp, accums, chain, sr);
                 sr += 6 * chain->m_pBodyA;
                 com = hkAddByteOffsetConst(com, chain->m_nextOffset);
                 break;
@@ -1302,14 +1302,17 @@ case_1D_LINEAR_MOTOR:
     }
 }
 // @fnv 0x00d8aac0
-// src: GUESS 0x00d8aac0 (confidence: low)
-extern "C" void __cdecl Object_UpdateFields_00d8aac0(const ConstraintSolverInfo& info, const SolverSchemaHeader* schemas, QuantizedBoundsData* accumulators, FloatRecord* elemTemp)
+// src: XBOX_RETAIL_PDB 0x00d8aac0
+// pdb: hkSolveStepJacobians | hkpSolver.obj | retail, object-file gap fill, high
+// pdb params: info, schemas, accumulators, tmp
+// pdb locals: temp
+extern "C" void __cdecl hkSolveStepJacobians(const ConstraintSolverInfo& info, const SolverSchemaHeader* schemas, QuantizedBoundsData* accumulators, FloatRecord* tmp)
 {
     loadFixedRegisters();
     SolverStepInfo temp;
     temp.m_intStep = 0;
     temp.m_stepFactor = 0.0f;
-    stepJacobian(info, temp, schemas, accumulators, elemTemp);
+    stepJacobian(info, temp, schemas, accumulators, tmp);
 }
 
 using ::_mm_add_ps;
@@ -1420,6 +1423,9 @@ _mm_store_ss(output,_mm_add_ss(oldOutput,scalar));
 }
 // @fnv 0x00d893a0
 // src: GUESS 0x00d893a0 (confidence: low)
+// pdb: hkSolver_solveStiffSpringChain | hkpSolver.obj | debug, object-file run extension, low
+// pdb params: info, temp, accums, chain, sr
+// pdb locals: imp
 void __cdecl Object_ProcessEntries_00d893a0(unsigned int settingsAddress, void* unused, unsigned int bodies, ProbeHeader* header, float* output)
 {
     ProbeRow* rowData;
@@ -1467,7 +1473,7 @@ __forceinline float& hkVector4::operator()(int i) { return reinterpret_cast<floa
 __forceinline const float& hkVector4::operator()(int i) const { return reinterpret_cast<const float*>(&m_vComponents)[i]; }
 __forceinline void hkVector4::add3clobberW(const hkVector4& v) { m_vComponents = _mm_add_ps(m_vComponents, v.m_vComponents); }
 __forceinline void hkVector4::sub3clobberW(const hkVector4& v) { m_vComponents = _mm_sub_ps(m_vComponents, v.m_vComponents); }
-__forceinline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& v) { m_vComponents = _mm_mul_ps(r.broadcast(), v.m_vComponents); }
+__forceinline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& x) { m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents); }
 __forceinline void hkVector4::mul4(const float& scalar) { mul4(hkSimdReal(scalar)); }
 __forceinline void hkVector4::setBroadcast(const hkVector4& v, int i) {
     if (i == 0) m_vComponents = _mm_shuffle_ps(v.m_vComponents, v.m_vComponents, 0);
@@ -1505,31 +1511,34 @@ __forceinline void hkVector4::_setMul3(const hkMatrix3& a, const hkVector4& b) {
 template <class T> __forceinline T* hkAddByteOffsetQ(T* base, long offset) { return reinterpret_cast<T*>(reinterpret_cast<char*>(base) + offset); }
 
 // Local definition retained: include/hkpVelocityAccumulatorOffset.h is not available.
+// pdb: class hkpVelocityAccumulatorOffset, size 0x4, 1 members
 class hkpVelocityAccumulatorOffset {
 public:
     __forceinline hkpVelocityAccumulator& getAccumulator(hkpVelocityAccumulator* base) { return *hkAddByteOffsetQ(base, m_offset); }
     int m_offset;
 };
 // Local definition retained: include/hkp1Lin2AngJacobian.h is not available.
+// pdb: class hkp1Lin2AngJacobian, size 0x30, 2 members
 class hkp1Lin2AngJacobian {
 public:
-    __forceinline const float& getRHS() const { return m_kLinearJacobian(3); }
-    hkVector4 m_kLinearJacobian;
-    hkVector4 m_kAngularVelocity[2];
+    __forceinline const float& getRHS() const { return m_linear0(3); }
+    hkVector4 m_linear0;
+    hkVector4 m_angular[2];
 };
 // Local definition retained: include/hkpConstraintChainMatrixTriple.h is not available.
-struct hkpConstraintChainMatrixTriple { hkMatrix3 m_lower, m_kMiddle, m_upper; };
+struct hkpConstraintChainMatrixTriple { hkMatrix3 m_lower, m_diagonalInv, m_upper; };
 // Local definition retained: include/hkpJacobianBallSocketChainSchema.h is not available.
+// pdb: class hkpJacobianBallSocketChainSchema, size 0x10, 5 members
 struct hkpJacobianBallSocketChainSchema {
     __forceinline static hkp1Lin2AngJacobian* getJacobians(hkpJacobianBallSocketChainSchema* s) { return reinterpret_cast<hkp1Lin2AngJacobian*>(reinterpret_cast<char*>(s) + sizeof(hkpJacobianBallSocketChainSchema)); }
-    __forceinline hkpConstraintChainMatrixTriple* getMatrixBuffer() { return reinterpret_cast<hkpConstraintChainMatrixTriple*>(hkAddByteOffsetQ(getJacobians(this), m_iConstraintCount * 3 * sizeof(hkp1Lin2AngJacobian))); }
-    __forceinline hkVector4* getTempBuffer() { return reinterpret_cast<hkVector4*>(hkAddByteOffsetQ(getMatrixBuffer(), m_iConstraintCount * sizeof(hkpConstraintChainMatrixTriple))); }
-    __forceinline hkpVelocityAccumulatorOffset* getAccumulatorOffsetsBase() { return reinterpret_cast<hkpVelocityAccumulatorOffset*>(hkAddByteOffsetQ(getTempBuffer(), (m_iConstraintCount + 1) * sizeof(hkVector4))); }
-    short m_schemaType;
-    unsigned short m_iConstraintCount;
-    int m_iElementCount;
-    float m_fTau;
-    float m_fMotorDamping;
+    __forceinline hkpConstraintChainMatrixTriple* getMatrixBuffer() { return reinterpret_cast<hkpConstraintChainMatrixTriple*>(hkAddByteOffsetQ(getJacobians(this), m_padding * 3 * sizeof(hkp1Lin2AngJacobian))); }
+    __forceinline hkVector4* getTempBuffer() { return reinterpret_cast<hkVector4*>(hkAddByteOffsetQ(getMatrixBuffer(), m_padding * sizeof(hkpConstraintChainMatrixTriple))); }
+    __forceinline hkpVelocityAccumulatorOffset* getAccumulatorOffsetsBase() { return reinterpret_cast<hkpVelocityAccumulatorOffset*>(hkAddByteOffsetQ(getTempBuffer(), (m_padding + 1) * sizeof(hkVector4))); }
+    short m_numConstraints;
+    unsigned short m_padding;
+    int m_size;
+    float m_tau;
+    float m_damping;
 };
 // Local definition retained: include/hkpSolverInfo.h is not available.
 struct hkpSolverInfo { int u00,u04,u08,u0c,u10,u14,u18,u1c,u20,u24,u28,u2c,u30,u34,u38,u3c; hkVector4 GetTimeStepFactor; };
@@ -1552,9 +1561,9 @@ static __forceinline hkSimdReal getLinearDv0UserTauWithCustomRhs(const hkp1Lin2A
         hkVector4 linVelB; linVelB.setSub4(mB.m_vLinearVelocity, mB.getSumLinearVel());
         hkVector4 angVelB; angVelB.setSub4(mB.m_vAngularVelocity, mB.getScratch1());
         hkVector4 c; c.setSub4(linVelA, linVelB);
-        hkVector4 a; a.setMul4(angVelA, jac.m_kAngularVelocity[0]);
-        hkVector4 b; b.setMul4(angVelB, jac.m_kAngularVelocity[1]);
-        c.mul4(jac.m_kLinearJacobian);
+        hkVector4 a; a.setMul4(angVelA, jac.m_angular[0]);
+        hkVector4 b; b.setMul4(angVelB, jac.m_angular[1]);
+        c.mul4(jac.m_linear0);
         a.add4(b);
         vel4.setAdd4(a, c);
     }
@@ -1565,9 +1574,9 @@ static __forceinline hkSimdReal getLinearDv0UserTauWithCustomRhs(const hkp1Lin2A
         hkVector4 linVelB = mB.getSumLinearVel();
         hkVector4 angVelB = mB.getScratch1();
         hkVector4 c; c.setSub4(linVelA, linVelB);
-        hkVector4 a; a.setMul4(angVelA, jac.m_kAngularVelocity[0]);
-        hkVector4 b; b.setMul4(angVelB, jac.m_kAngularVelocity[1]);
-        c.mul4(jac.m_kLinearJacobian);
+        hkVector4 a; a.setMul4(angVelA, jac.m_angular[0]);
+        hkVector4 b; b.setMul4(angVelB, jac.m_angular[1]);
+        c.mul4(jac.m_linear0);
         a.add4(b);
         svel4.setAdd4(a, c);
     }
@@ -1588,12 +1597,12 @@ static __forceinline void applyImpulse(hkSimdRealParameter imp, const hkp1Lin2An
     hkVector4 impB; impB.setMul4(imp, mB.m_vInverseInertiaAndMass);
     hkVector4 impLinA; impLinA.setBroadcast3clobberW(impA, 3);
     hkVector4 negImpLinB; negImpLinB.setBroadcast3clobberW(impB, 3);
-    impLinA.mul4(jac.m_kLinearJacobian);
-    negImpLinB.mul4(jac.m_kLinearJacobian);
+    impLinA.mul4(jac.m_linear0);
+    negImpLinB.mul4(jac.m_linear0);
     mA.m_vLinearVelocity.add3clobberW(impLinA);
     mB.m_vLinearVelocity.sub3clobberW(negImpLinB);
-    impA.mul4(jac.m_kAngularVelocity[0]);
-    impB.mul4(jac.m_kAngularVelocity[1]);
+    impA.mul4(jac.m_angular[0]);
+    impB.mul4(jac.m_angular[1]);
     hkSimdReal s = sr.m_fAccumulatedImpulse;
     mA.m_vAngularVelocity.add3clobberW(impA);
     mB.m_vAngularVelocity.add3clobberW(impB);
@@ -1604,9 +1613,12 @@ static __forceinline void applyImpulse(hkSimdRealParameter imp, const hkp1Lin2An
 
 // @fnv 0x00d89690
 // src: GUESS 0x00d89690 (confidence: low)
+// pdb: hkSolver_solveBallAndSocketChain | hkpSolver.obj | debug, object-file run extension, low
+// pdb params: info, temp, accums, chain, sr
+// pdb locals: numConstraints, g, triple, va, dv
 void __cdecl hkpSolverInfo_ProcessEntries_00d89690(const hkpSolverInfo& info, const hkSolverQ::SolverStepInfo& temp, hkpVelocityAccumulator* accums, hkpJacobianBallSocketChainSchema* chain, hkpSolverElemTemp* sr)
 {
-    int numConstraints = chain->m_iConstraintCount;
+    int numConstraints = chain->m_padding;
     hkp1Lin2AngJacobian* j = hkpJacobianBallSocketChainSchema::getJacobians(chain);
     hkpVelocityAccumulatorOffset* va = chain->getAccumulatorOffsetsBase();
     hkpConstraintChainMatrixTriple* triple = chain->getMatrixBuffer();
@@ -1619,15 +1631,15 @@ void __cdecl hkpSolverInfo_ProcessEntries_00d89690(const hkpSolverInfo& info, co
             hkpVelocityAccumulator* __restrict raB = &va[gi + 1].getAccumulator(accums);
             hkSolverQ::loadVelocityAccumulators(*raA, *raB);
             hkVector4 dv;
-            dv(0) = hkSolverQ::getLinearDv0UserTau(j[0], *raA, *raB, info, chain->m_fTau, chain->m_fMotorDamping);
-            dv(1) = hkSolverQ::getLinearDv0UserTau(j[1], *raA, *raB, info, chain->m_fTau, chain->m_fMotorDamping);
-            dv(2) = hkSolverQ::getLinearDv0UserTau(j[2], *raA, *raB, info, chain->m_fTau, chain->m_fMotorDamping);
+            dv(0) = hkSolverQ::getLinearDv0UserTau(j[0], *raA, *raB, info, chain->m_tau, chain->m_damping);
+            dv(1) = hkSolverQ::getLinearDv0UserTau(j[1], *raA, *raB, info, chain->m_tau, chain->m_damping);
+            dv(2) = hkSolverQ::getLinearDv0UserTau(j[2], *raA, *raB, info, chain->m_tau, chain->m_damping);
             dv(3) = 0.0f;
             hkSolverQ::popVelocityAccumulators();
             hkVector4 tmp;
             tmp._setMul3(triple[gi].m_lower, g[gi - 1]);
             tmp.setSub4(dv, tmp);
-            g[gi]._setMul3(triple[gi].m_kMiddle, tmp);
+            g[gi]._setMul3(triple[gi].m_diagonalInv, tmp);
         }
     }
     {
@@ -1917,21 +1929,24 @@ void __cdecl Object_ProcessEntries_00df2040(int link, int count, PoweredChainMot
 void __cdecl Object_UpdateFields_00df1060(int link, int axis, const PoweredChainContext& info, PoweredChainVector8* velocities);
 
 // @fnv 0x00d8a3a0
-// src: GUESS 0x00d8a3a0 (confidence: low)
-void __cdecl Object_ProcessEntries_00d8a3a0(const PoweredChainSettings& info, const PoweredChainSolver::PoweredChainStepTemp& temp, PoweredChainAccumulator* accums, PoweredChainSchema* schema, PoweredChainResult* sr)
+// src: XBOX_RETAIL_PDB 0x00d8a3a0
+// pdb: hkSolver_solvePoweredChain | hkpSolver.obj | retail, object-file gap fill, high
+// pdb params: solverInfo, temp, accums, chain, sr
+// pdb locals: info, impulse, modifiedCoordinateIndex, modifiedConstraintIndex
+void __cdecl hkSolver_solvePoweredChain(const PoweredChainSettings& solverInfo, const PoweredChainSolver::PoweredChainStepTemp& temp, PoweredChainAccumulator* accums, PoweredChainSchema* chain, PoweredChainResult* sr)
 {
-    PoweredChainContext chainInfo(info);
-    chainInfo.m_iConstraintCount = schema->m_iConstraintCount;
-    chainInfo.m_fTau = schema->m_fTau;
-    chainInfo.m_fMotorDamping = schema->m_fMotorDamping;
-    chainInfo.m_jacobians = PoweredChainSchema::getLinearJacobians(schema);
-    chainInfo.m_angularJacobians = PoweredChainSchema::getAngularJacobians(schema, schema->m_iConstraintCount);
-    chainInfo.m_accumulatorOffsets = schema->getAccumulatorOffsetsBase();
+    PoweredChainContext chainInfo(solverInfo);
+    chainInfo.m_iConstraintCount = chain->m_iConstraintCount;
+    chainInfo.m_fTau = chain->m_fTau;
+    chainInfo.m_fMotorDamping = chain->m_fMotorDamping;
+    chainInfo.m_jacobians = PoweredChainSchema::getLinearJacobians(chain);
+    chainInfo.m_angularJacobians = PoweredChainSchema::getAngularJacobians(chain, chain->m_iConstraintCount);
+    chainInfo.m_accumulatorOffsets = chain->getAccumulatorOffsetsBase();
     chainInfo.m_pVelocityAccumulatorA = accums;
-    chainInfo.m_kMatrices = schema->getMatrixBuffer();
-    chainInfo.m_kAngularMotors = schema->getChildConstraintStatusBase();
-    chainInfo.m_tempBuffer = schema->getTempBuffer();
-    chainInfo.m_velocities = schema->getVelocityBuffer();
+    chainInfo.m_kMatrices = chain->getMatrixBuffer();
+    chainInfo.m_kAngularMotors = chain->getChildConstraintStatusBase();
+    chainInfo.m_tempBuffer = chain->getTempBuffer();
+    chainInfo.m_velocities = chain->getVelocityBuffer();
 
     {
         PoweredChainAngularRow* jac = chainInfo.m_angularJacobians;
@@ -2288,7 +2303,7 @@ class hkpBallChainSchema : public SolverSchemaHeader { public: unsigned char unk
 class hkpPoweredChainSchema : public SolverSchemaHeader { public: unsigned char flags; unsigned short m_numTemps, m_pBodyA, m_pBodyB; int unk08, unk0c, m_nextOffset; };
 void __cdecl Object_ProcessEntries_00d893a0(const ConstraintSolverInfo*, const SolverStepInfo*, ConstraintStepAccumulator*, const hkpStiffChainSchema*, FloatRecord*);
 void __cdecl hkpSolverInfo_ProcessEntries_00d89690(const ConstraintSolverInfo*, const SolverStepInfo*, ConstraintStepAccumulator*, const hkpBallChainSchema*, FloatRecord*);
-void __cdecl Object_ProcessEntries_00d8a3a0(const ConstraintSolverInfo*, const SolverStepInfo*, ConstraintStepAccumulator*, const hkpPoweredChainSchema*, FloatRecord*);
+void __cdecl hkSolver_solvePoweredChain(const ConstraintSolverInfo*, const SolverStepInfo*, ConstraintStepAccumulator*, const hkpPoweredChainSchema*, FloatRecord*);
 __forceinline void loadFixedRegisters() {}
 struct FloatRecord;
 __forceinline void storeDelayedResult(FloatRecord*) {}
@@ -3195,7 +3210,7 @@ case_1D_LINEAR_MOTOR:
         case SCHEMA_TYPE_POWERED_CHAIN:
             {
                 const hkpPoweredChainSchema* chain = reinterpret_cast<const hkpPoweredChainSchema*>(com);
-                Object_ProcessEntries_00d8a3a0(&info, &temp, accums, chain, sr);
+                hkSolver_solvePoweredChain(&info, &temp, accums, chain, sr);
                 sr += 6 * chain->m_pBodyA;
                 com = hkAddByteOffsetConst(com, chain->m_nextOffset);
                 break;
@@ -3207,8 +3222,11 @@ case_1D_LINEAR_MOTOR:
     }
 }
 // @fnv 0x00d8fb70
-// src: GUESS 0x00d8fb70 (confidence: low)
-int __cdecl HkpsolverGsNogs_UpdateState_00d8fb70(const ConstraintSolverInfo& info, int currentSolverStep, int currentSolverMicroStep, const SolverSchemaHeader* schemas, ConstraintStepAccumulator* accumulators, FloatRecord* elemTemp)
+// src: XBOX_RETAIL_PDB 0x00d8fb70
+// pdb: hkSolveConstraintsByTheSteps | hkpSolver.obj | retail, call graph, high
+// pdb params: info, currentSolverStep, currentSolverMicroStep, schemas, accumulators, elemTemp
+// pdb locals: temp
+int __cdecl hkSolveConstraintsByTheSteps(const ConstraintSolverInfo& info, int currentSolverStep, int currentSolverMicroStep, const SolverSchemaHeader* schemas, ConstraintStepAccumulator* accumulators, FloatRecord* elemTemp)
 {
     if (!DAT_01269204)
     {

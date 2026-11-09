@@ -6,6 +6,7 @@
 
 class Obj;
 
+// pdb: class TESSound, size 0x6c, bases: TESBoundAnimObject, TESSoundFile, 3 members
 class TESSound : public TESBoundAnimObject, public TESSoundFile
 {
 public:
@@ -26,7 +27,7 @@ public:
     virtual ~TESSound();
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     SoundPlaybackParameters CopyBig();
     unsigned char GetHighByteOfField4E();
     unsigned char GetField45();
@@ -42,13 +43,13 @@ public:
     bool Projectile_IsEditorCreated();
     Obj* FUN_00586170();
     void TESForm_CopyAllComponents(TESForm* form);
-    void CopyFromSound(TESForm* form);
+    void CopyFromSound(TESForm* apCopy);
 
-    static void InitializeMagicSystem();
+    static void GenerateDefaultObjects();
     static unsigned int GetPlaybackFlags(unsigned int flags);
-    static TESSound* FindSoundByFilename(const char* filename);
+    static TESSound* FindSoundByFilename(const char* apFilename);
 
-    BSStringT<char> cFileName;
+    BSStringT<char> cFormEditorID;
     union
     {
         TESSound__SOUND_DATA data;

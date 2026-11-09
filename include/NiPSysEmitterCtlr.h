@@ -3,6 +3,7 @@
 #include "NiPSysModifierCtlr.h"
 #include "NiTPrimitiveSet_float_.h"
 
+// pdb: class NiPSysEmitterCtlr, size 0x5c, bases: NiPSysModifierCtlr, 5 members
 class NiPSysEmitterCtlr : public NiPSysModifierCtlr
 {
 public:
@@ -11,10 +12,10 @@ public:
     virtual ~NiPSysEmitterCtlr();
 
 
-    virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
-    virtual void ProcessClone(CloningProcess& process);
-    virtual NiObject* MakeClone(CloningProcess& process);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void LinkObject(NiStream& kStream);
+    virtual void ProcessClone(CloningProcess& kCloning);
+    virtual NiObject* MakeClone(CloningProcess& kCloning);
     virtual void SetInterpolator(NiInterpolator* interpolator, unsigned short index);
     virtual void vf60();
 
@@ -22,10 +23,10 @@ public:
     void BSPSysMultiTargetEmitterCtlr_CopyMembers(NiPSysEmitterCtlr* destination, void* process);
     NiPSysEmitterCtlr* BSPSysMultiTargetEmitterCtlr_CreateClone(void* process);
 
-    NiPointer<NiInterpolator> m_spVisibilityInterpolator;
-    NiInterpolator* m_pEmitterActiveInterpolator;
-    float m_fScaledLastTime;
-    bool m_bIsInitialized;
+    NiPointer<NiInterpolator> m_spEmitterActiveInterpolator;
+    NiInterpolator* m_pkLastBirthRateInterpolator;
+    float m_fLastScaledTime;
+    bool m_bLastActive;
     unsigned char layoutPadding4D[3];
-    NiTPrimitiveSet_float_ m_kBirthRateKeys;
+    NiTPrimitiveSet_float_ m_kParticleAges;
 };

@@ -8,7 +8,7 @@ class BSFaceGenModel;
 class __declspec(novtable) BSFaceGenModelExtraData : public NiExtraData
 {
 public:
-    BSFaceGenModelExtraData(int model);
+    BSFaceGenModelExtraData(int apModel);
     virtual ~BSFaceGenModelExtraData();
 
     virtual void vf37();

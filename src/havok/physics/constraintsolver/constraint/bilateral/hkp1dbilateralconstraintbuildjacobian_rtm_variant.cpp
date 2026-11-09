@@ -223,10 +223,10 @@ static __forceinline LocalM128 S_Rot(LocalM128 v, const S_00dcf100_Body* b)
                           _mm_mul_ps(_mm_shuffle_ps(v, v, 0x00), S_Ld(b->col0)));
     return _mm_add_ps(r, _mm_mul_ps(_mm_shuffle_ps(v, v, 0xaa), S_Ld(b->col2)));
 }
-void __cdecl hk1dLinearFrictionBuildJacobian(S_00dcf100_In* pInput, S_00dcf100_Cfg* pConfig, S_00dcf100_Out** ppOut);
+void __cdecl hk1dLinearFrictionBuildJacobian(S_00dcf100_In* info, S_00dcf100_Cfg* pConfig, S_00dcf100_Out** ppOut);
 void __cdecl hkLoadVelocityAccumulators();
 extern double DAT_010c9300;
-static void Object_BuildLinearAngularJacobianRow(Jac_dcf880* out, const Info_dcf880* info, const QueryIn_dcf880* in, float scale);
+static void hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema_inline(Jac_dcf880* out, const Info_dcf880* in, const QueryIn_dcf880* jac, float customRhs);
 extern Jac_dcf880* volatile g_out_dcf460;
 extern const Info_dcf880* volatile g_info_dcf460;
 extern const QueryIn_dcf880* volatile g_in_dcf460;
@@ -245,9 +245,9 @@ struct Jacobian_dcf5b0
     hkVector4 angularB;
 };
 extern double DAT_010c9300;
-void __cdecl Hkp1dbilateralconstraintbuildjacobian_BuildJacobianAndAdvance(Input_dcf5b0* a1, S_00dcf100_Cfg* a2, Jacobian_dcf5b0** a3, float k);
+void __cdecl hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs(Input_dcf5b0* info, S_00dcf100_Cfg* a2, Jacobian_dcf5b0** a3, float customRhs);
 extern double DAT_010c9300;
-void __cdecl hk1dLinearLimitBuildJacobian(Info_dcf880* a1, S_00dcf100_Cfg* a2, Jac_dcf880** a3);
+void __cdecl hk1dLinearLimitBuildJacobian(Info_dcf880* info, S_00dcf100_Cfg* a2, Jac_dcf880** a3);
 extern double DAT_010c9300;
 extern LocalM128 DAT_010c44d0;
 struct Src
@@ -272,7 +272,7 @@ struct JOut
     float c20;
     int unk24, unk28, unk2c;
 };
-void __cdecl Hkp1dbilateralconstraintbuildjacobian_BuildRotatedVertexJacobianPairs(Src* s, Cfg* cfg, JOut** a3);
+void __cdecl Hkp1dbilateralconstraintbuildjacobian_BuildRotatedVertexJacobianPairs(Src* info, Cfg* cfg, JOut** a3);
 struct Input_dcf280
 {
     LocalM128 pivot;
@@ -286,7 +286,7 @@ struct Jacobian_dcf280
     hkVector4 angularB;
 };
 extern double DAT_010c9300;
-void __cdecl hk1dLinearBilateralConstraintBuildJacobian(Input_dcf280* a1, S_00dcf100_Cfg* a2, Jacobian_dcf280** a3);
+void __cdecl hk1dLinearBilateralConstraintBuildJacobian(Input_dcf280* info, S_00dcf100_Cfg* a2, Jacobian_dcf280** a3);
 static __forceinline LocalM128 S_00dcf720_cross(const LocalM128& a, const LocalM128& b)
 {
     const LocalM128 cross0 = _mm_mul_ps(_mm_shuffle_ps(a, a, 0xc9), _mm_shuffle_ps(b, b, 0xd2));
@@ -359,7 +359,7 @@ struct S_00dcf720_Jacobian
         return r;
     }
 };
-void hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema(const S_00dcf720_Info& info, const S_00dcf720_QueryIn& in, S_00dcf720_Jacobian* jac, float rhsFactor);
+void hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema(const S_00dcf720_Info& info, const S_00dcf720_QueryIn& in, S_00dcf720_Jacobian* jac, float customRhs);
 // Adapted from an earlier contributor's 2026-10-21 WIP; retain prior credit.
 static const double S00dcee80_kEps = 1.1920928955078125e-07;
 static inline void S_00dcee80_setRotatedDir(hkVector4& out, const hkMatrix3& a, const LocalM128 b)
@@ -490,16 +490,19 @@ static void RotateCols(hkVector4& out, const hkVector4& c0, const hkVector4& c1,
 }
 // @fnv 0x00dcfc00
 // src: XBOX_PDB 0x00dcfc00
-void hkStabilizedBallSocketConstraintBuildJacobian_noSchema(const hkVector4* pivotA, const hkVector4* pivotB, float maxForce, const Input102* in, Row102* jac)
+// pdb: hkStabilizedBallSocketConstraintBuildJacobian_noSchema | hkp1dBilateralConstraintBuildJacobian.obj | retail, upstream name already matches, high
+// pdb params: posA, posB, maxAllowedErrorDistance, in, jac
+// pdb locals: rhs, f
+void hkStabilizedBallSocketConstraintBuildJacobian_noSchema(const hkVector4* posA, const hkVector4* posB, float maxAllowedErrorDistance, const Input102* in, Row102* jac)
 {
     Accum_dcf880* bodyA = in->bodyA;
     Accum_dcf880* bodyB = in->bodyB;
-    Hkpbuildjacobianfromatoms_BuildThreeConstraintRows(pivotA, pivotB, in, jac);
+    Hkpbuildjacobianfromatoms_BuildThreeConstraintRows(posA, posB, in, jac);
     hkVector4 velocity;
     velocity.component(0) = jac[0].linear.m_vComponents.m128_f32[3];
     velocity.component(1) = jac[1].linear.m_vComponents.m128_f32[3];
     velocity.component(2) = jac[2].linear.m_vComponents.m128_f32[3];
-    float limit = in->factor * maxForce;
+    float limit = in->factor * maxAllowedErrorDistance;
     LocalM128 squared = _mm_mul_ps(velocity.m_vComponents, velocity.m_vComponents);
     LocalM128 sum =
         _mm_add_ss(_mm_shuffle_ps(squared, squared, 0xaa), _mm_add_ss(_mm_shuffle_ps(squared, squared, 0x55), squared));
@@ -516,12 +519,12 @@ void hkStabilizedBallSocketConstraintBuildJacobian_noSchema(const hkVector4* piv
         LocalM128 sa = _mm_shuffle_ps(t, t, 0);
         hkVector4 a;
         a.m_vComponents = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(ones, sa), bodyA->m_kCenterPosition.m_vComponents),
-                                     _mm_mul_ps(pivotA->m_vComponents, sa));
+                                     _mm_mul_ps(posA->m_vComponents, sa));
         LocalM128 t2 = _mm_load_ss(&scale);
         LocalM128 sb = _mm_shuffle_ps(t2, t2, 0);
         hkVector4 b;
         b.m_vComponents = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(ones, sb), bodyB->m_kCenterPosition.m_vComponents),
-                                     _mm_mul_ps(pivotB->m_vComponents, sb));
+                                     _mm_mul_ps(posB->m_vComponents, sb));
         Row102* row = jac;
         hkVector4* axis = DAT_01268370;
         int n = 0;

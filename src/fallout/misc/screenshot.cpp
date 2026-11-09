@@ -8,7 +8,7 @@
 struct S_00878f60_AutoMem
 {
     int unk00;
-    S_00878f60_AutoMem(int context, bool push, const char* file, int line);
+    S_00878f60_AutoMem(int memContext, bool overridable, const char* file, int aiLine);
     ~S_00878f60_AutoMem();
 };
 
@@ -59,7 +59,7 @@ struct S_00878f60_RenderedTexture;
 struct S_00878f60_MTRender
 {
     void MTRenderingSystem_StartThreads();
-    void MTRenderingSystem_SetThreadStage(int a, int b);
+    void MTRenderingSystem_SetThreadStage(int aiThreadIndex, int aiStage);
     void MTRenderingSystem_WaitOnThreadStage(int a, int b);
     void MTRenderingSystem_WaitForThreads();
 };
@@ -74,17 +74,17 @@ struct S_00878f60_ImageSpaceManager
 struct S_00878f60_Player
 {
     void PlayerCharacter_UpdateCamera(bool a, bool b);
-    void PlayerCharacter_UpdateFlyCamera(float f, int b);
+    void PlayerCharacter_UpdateFlyCamera(float afDelta, int abFreezeTime);
 };
 
 struct S_00878f60_Mgr
 {
-    void Main_DrawWorld(S_00878f60_Texture* tex, int a, int b);
+    void Main_DrawWorld(S_00878f60_Texture* apDestination, int abRenderedMenuMode, int abSkipFirstPerson);
     bool TESRegionData_GetPriority();
 };
 
-S_00878f60_Texture* FUN_00b6b610(const S_00878f60_FixedString& name, unsigned int w, unsigned int h,
-                                 S_00878f60_FormatPrefs* prefs, int a, int b, int c, int d, int e);
+S_00878f60_Texture* BSRenderedTexture_Create(const S_00878f60_FixedString& aName, unsigned int aiWidth, unsigned int aiHeight,
+                                 S_00878f60_FormatPrefs* arPrefs, int aeMultiSamplePreference, int abDepthBuffer, int apSharedDepthBuffer, int apAliasTex, int uiAliasOffset);
 S_00878f60_MTRender* FUN_004ea970();
 int Renderer_GetScreenHeight();
 int Renderer_GetScreenWidth();
@@ -358,8 +358,8 @@ struct S_00878f60_PixelData
     int unk68;
     int unk6C;
     int unk70;
-    S_00878f60_PixelData(unsigned int w, unsigned int h, const S_00878f60_PixelFormat& fmt, unsigned int mips,
-                         unsigned int faces);
+    S_00878f60_PixelData(unsigned int uiWidth, unsigned int uiHeight, const S_00878f60_PixelFormat& kFormat, unsigned int uiMipmapLevels,
+                         unsigned int uiFaces);
     static void* operator new(unsigned int size);
     static void operator delete(void* p);
     unsigned char* NiPixelData_GetPixels(int mip, int face);
@@ -371,7 +371,10 @@ S_00878f60_Renderer* Renderer_GetNIRenderer();
 // Captures the current render target to a pixel buffer, optionally writes a BMP file, and returns the pixel data.
 // @fnv 0x00878f60
 // src: XBOX_PDB 0x00878f60
-S_00878f60_PixelData* ScreenShot_TakeSaveGameScreenShot(int* pWidth, int* pHeight, const char* filename)
+// pdb: ScreenShot::TakeSaveGameScreenShot | ScreenShot.obj | retail, upstream name already matches, high
+// pdb params: aiWidth, aiHeight, apScreenshotFileName
+// pdb locals: inewHeight, kprefs, sptexture, puntiledTexture, destinationSurfaceDesc, kPixFmt, pDXRenderer, pdataOut, pLocalSurf, destinationLockRect, ipitch, prenderedTextureCopy, offset, tempMemContext, d3dTextureSurfaceDesc, textureData, ptextureBufferData, ppixelData, dxPixelFormat, ptiledSurface, lockRect, sourceSurfaceDesc, sourceLockRect, pdataIn ...
+S_00878f60_PixelData* ScreenShot_TakeSaveGameScreenShot(int* aiWidth, int* aiHeight, const char* apScreenshotFileName)
 {
     S_00878f60_AutoMem theMemContext(0x11, true,
                                      "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\ScreenShot.cpp", 0x139);
@@ -383,7 +386,7 @@ S_00878f60_PixelData* ScreenShot_TakeSaveGameScreenShot(int* pWidth, int* pHeigh
     prefs2.m_eMipFlag = 0;
     prefs2.m_eAlphaFormat = 0;
     S_00878f60_TexPtr eTex(
-        FUN_00b6b610(S_00878f60_FixedString("Screenshot RT"), *pWidth, *pHeight, &prefs2, 0, 1, 0, 0, 0));
+        BSRenderedTexture_Create(S_00878f60_FixedString("Screenshot RT"), *aiWidth, *aiHeight, &prefs2, 0, 1, 0, 0, 0));
     if (!eTex)
     {
         Warning_005b5e40("DEFAULT: (ScreenShot) Unable to create render texture.");
@@ -391,7 +394,7 @@ S_00878f60_PixelData* ScreenShot_TakeSaveGameScreenShot(int* pWidth, int* pHeigh
     }
 
     float aspect = (double)Renderer_GetScreenHeight() / Renderer_GetScreenWidth();
-    int outHeight = (int)(*pHeight * aspect);
+    int outHeight = (int)(*aiHeight * aspect);
     DAT_011dea3c->PlayerCharacter_UpdateCamera(false, false);
     S_00878f60_ImageSpaceManager::BSShaderManager_GetImageSpaceManager()->ImageSpaceManager_SetCustomViewPort(0.0f, 1.0f, 1.0f, 1.0f - aspect);
     DAT_011dea0c->Main_DrawWorld(eTex, 0, 0);
@@ -410,7 +413,7 @@ S_00878f60_PixelData* ScreenShot_TakeSaveGameScreenShot(int* pWidth, int* pHeigh
     IDirect3DSurface9* rtSurface;
     d3dTexture->GetSurfaceLevel(0, &rtSurface);
     IDirect3DSurface9* destSurface;
-    if (pDevice->CreateOffscreenPlainSurface(*pHeight, *pWidth, d3dDesc.Format, D3DPOOL_SYSTEMMEM, &destSurface, 0))
+    if (pDevice->CreateOffscreenPlainSurface(*aiHeight, *aiWidth, d3dDesc.Format, D3DPOOL_SYSTEMMEM, &destSurface, 0))
     {
         Warning_005b5e40("DEFAULT: (ScreenShot) Unable to create image surface.");
         return 0;
@@ -420,12 +423,12 @@ S_00878f60_PixelData* ScreenShot_TakeSaveGameScreenShot(int* pWidth, int* pHeigh
     D3DLOCKED_RECT locked;
     destSurface->LockRect(&locked, 0, D3DLOCK_NOSYSLOCK);
     const S_00878f60_PixelFormat* pFormat = &DAT_011aa2e8;
-    *pHeight = outHeight;
-    S_00878f60_PixelData* thePixelData = new S_00878f60_PixelData(*pWidth, *pHeight, *pFormat, 1, 1);
+    *aiHeight = outHeight;
+    S_00878f60_PixelData* thePixelData = new S_00878f60_PixelData(*aiWidth, *aiHeight, *pFormat, 1, 1);
     unsigned char* in = (unsigned char*)locked.pBits;
     unsigned char* dst_ = thePixelData->NiPixelData_GetPixels(0, 0);
     int jVal = 0;
-    for (int i = 0; i < *pWidth * *pHeight * 4; i += 4)
+    for (int i = 0; i < *aiWidth * *aiHeight * 4; i += 4)
     {
         dst_[jVal] = in[i + 2];
         jVal++;
@@ -438,14 +441,14 @@ S_00878f60_PixelData* ScreenShot_TakeSaveGameScreenShot(int* pWidth, int* pHeigh
     destSurface->Release();
     eTex = 0;
 
-    if (filename && BSstrlen(filename))
+    if (apScreenshotFileName && BSstrlen(apScreenshotFileName))
     {
-        BSSystemFile_DeleteFileA(filename);
-        S_00878f60_File* file = new S_00878f60_File(filename, 1, 0x4000, false);
+        BSSystemFile_DeleteFileA(apScreenshotFileName);
+        S_00878f60_File* file = new S_00878f60_File(apScreenshotFileName, 1, 0x4000, false);
         if (file->vf20(0, 0))
         {
-            unsigned int width = *pWidth;
-            unsigned int height = *pHeight;
+            unsigned int width = *aiWidth;
+            unsigned int height = *aiHeight;
             int bpp = thePixelData->DetailedActorPathHandler_GetCurrentNodeIndex();
             unsigned char* pix = thePixelData->NiPixelData_GetPixels(0, 0);
             unsigned char* buffer = (unsigned char*)operator new(width * height * 3);
@@ -486,7 +489,7 @@ S_00878f60_PixelData* ScreenShot_TakeSaveGameScreenShot(int* pWidth, int* pHeigh
         }
         else
         {
-            Warning_005b5e40("SAVELOAD: (ScreenShot) Unable to create file '%s'.", filename);
+            Warning_005b5e40("SAVELOAD: (ScreenShot) Unable to create file '%s'.", apScreenshotFileName);
         }
         delete file;
     }

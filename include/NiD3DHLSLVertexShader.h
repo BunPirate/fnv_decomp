@@ -4,6 +4,7 @@
 
 class ID3DXConstantTable;
 
+// pdb: class NiD3DHLSLVertexShader, size 0x48, bases: NiD3DVertexShader, 3 members
 class NiD3DHLSLVertexShader : public NiD3DVertexShader
 {
 public:
@@ -27,7 +28,7 @@ public:
     void __thiscall SetVtableAndProcessState_00e971d0();
     void* __thiscall DestroyVertexShader(unsigned int flags);
 
-    char* m_pcShaderEntryPoint;
-    char* m_pcShaderProfile;
-    ID3DXConstantTable* m_pShaderConstantTable;
+    char* m_pcEntryPoint;
+    char* m_pcShaderTarget;
+    ID3DXConstantTable* m_pkConstantTable;
 };

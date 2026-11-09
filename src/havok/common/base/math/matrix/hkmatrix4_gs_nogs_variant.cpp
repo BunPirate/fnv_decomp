@@ -9,7 +9,7 @@
 
 struct CB20B0_Class
 {
-    void hkTransform_set4x4ColumnMajor(void* src);
+    void hkTransform_set4x4ColumnMajor(void* p);
 };
 struct SourceBlockCDF
 {
@@ -36,7 +36,7 @@ struct SourceBlockCDF
 };
 struct TargetBlockCDF
 {
-    void hkMatrix3_setMul(SourceBlockCDF* pkSource, int iArg);
+    void hkMatrix3_setMul(SourceBlockCDF* aTb, int bTc);
 };
 struct FUN_00cdf230_cls
 {

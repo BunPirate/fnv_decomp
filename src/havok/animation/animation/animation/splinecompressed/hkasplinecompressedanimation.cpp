@@ -14,8 +14,8 @@ typedef unsigned long hkUlong;
 int hkaSplineCompressedAnimation::getSizeInBytes() const
 {
     return m_data.m_iElementCount + sizeof(hkUint32) *
-        (m_kFloatOffsets.m_iElementCount + m_kTransformOffsets.m_iElementCount +
-         m_kFirstUInt32Array.m_iElementCount) + sizeof(hkaSplineCompressedAnimation);
+        (m_floatOffsets.m_iElementCount + m_transformOffsets.m_iElementCount +
+         m_blockOffsets.m_iElementCount) + sizeof(hkaSplineCompressedAnimation);
 }
 
 extern bool DAT_0126efb8;
@@ -61,25 +61,27 @@ extern int DAT_010eb3b8[];
 extern int DAT_010eb3d0[];
 extern SplineDecodeFn DAT_011be4b8[];
 // @fnv 0x00e33030
-void __cdecl DecodeSplineFrames(int* cursor, int type, int lastFrame, int firstFrame, int endFrame, void* output)
+// pdb: hkaSplineCompressedAnimation::readPackedQuaternions | hkaSplineCompressedAnimation.obj | retail, object-file gap fill, high
+// pdb params: dataInOut, type, n, p, span, P
+void __cdecl DecodeSplineFrames(int* dataInOut, int type, int n, int p, int span, void* P)
 {
     int alignment = DAT_010eb3b8[type];
-    *cursor = (*cursor + alignment - 1) & ~(alignment - 1);
+    *dataInOut = (*dataInOut + alignment - 1) & ~(alignment - 1);
     int stride = DAT_010eb3d0[type];
-    if (firstFrame >= 0)
+    if (p >= 0)
     {
-        int byteOffset = (endFrame - firstFrame) * stride;
+        int byteOffset = (span - p) * stride;
         SplineDecodeFn* volatile decodeSlot = &DAT_011be4b8[type];
-        int remaining = firstFrame + 1;
-        char* destination = static_cast<char*>(output);
+        int remaining = p + 1;
+        char* destination = static_cast<char*>(P);
         do
         {
-            (*decodeSlot)(*cursor + byteOffset, destination);
+            (*decodeSlot)(*dataInOut + byteOffset, destination);
             byteOffset += stride;
             destination += 16;
         } while (--remaining != 0);
     }
-    *cursor += (lastFrame + 1) * stride;
+    *dataInOut += (n + 1) * stride;
 }
 
 struct hkaAnimationDataChunk
@@ -98,6 +100,9 @@ struct hkaAnimationDataChunk
 };
 
 // @fnv 0x00e33350
+// pdb: hkaSplineCompressedAnimation::getDataChunks | hkaSplineCompressedAnimation.obj | retail, vtable slot, high
+// pdb params: frame, delta, dataChunks, numDataChunks
+// pdb locals: assertBuf, ostr, block, blockTime, quantizedTime
 void hkaSplineCompressedAnimation::GetDataChunks(unsigned int frame, float delta,
                                                      hkaAnimationDataChunk* dataChunks, int numDataChunks) const
     throw()
@@ -111,12 +116,12 @@ void hkaSplineCompressedAnimation::GetDataChunks(unsigned int frame, float delta
     unsigned char quantizedTime;
     GetBlockAndTime(frame, delta, block, blockTime, quantizedTime);
 
-    const int blockEnd = (block == m_iBlockCount - 1) ? m_data.GetLogicalSize() : m_kFirstUInt32Array.m_data[block + 1];
-    const int blockSize = (blockEnd - m_kFirstUInt32Array.m_data[block] + 15) & ~15;
+    const int blockEnd = (block == m_numBlocks - 1) ? m_data.GetLogicalSize() : m_blockOffsets.m_data[block + 1];
+    const int blockSize = (blockEnd - m_blockOffsets.m_data[block] + 15) & ~15;
 
-    dataChunks[1].set(m_data.begin() + m_kFirstUInt32Array.m_data[block], blockSize);
+    dataChunks[1].set(m_data.begin() + m_blockOffsets.m_data[block], blockSize);
     {
-        const void* p = m_kFloatBlockOffsets.begin() + block;
+        const void* p = m_floatBlockOffsets.begin() + block;
         unsigned char offset = static_cast<unsigned char>(reinterpret_cast<unsigned long>(p) & 15);
         dataChunks[2].m_offset = offset;
         dataChunks[2].m_data = reinterpret_cast<const char*>(reinterpret_cast<unsigned long>(p) & ~15);
@@ -135,13 +140,14 @@ struct hkMathE334
 // The shared header has no declaration for this ECX-receiver query.
 // @fnv 0x00e33400
 // src: HAVOK_LIB 0x00e33400
+// pdb: hkaSplineCompressedAnimation::getMaxSizeOfCombinedDataChunks | hkaSplineCompressedAnimation.obj | debug, upstream name already matches, high
 int __fastcall hkaSplineCompressedAnimation_getMaxSizeOfCombinedDataChunks(const hkaSplineCompressedAnimation* animation)
 {
     int iMaxGap = 0;
     int iPrev = animation->m_data.m_iElementCount;
-    for (int i = animation->m_kFirstUInt32Array.m_iElementCount - 1; i >= 0; i--)
+    for (int i = animation->m_blockOffsets.m_iElementCount - 1; i >= 0; i--)
     {
-        int iCurOffset = animation->m_kFirstUInt32Array.m_data[i];
+        int iCurOffset = animation->m_blockOffsets.m_data[i];
         iMaxGap = hkMathE334::max2(iMaxGap, iPrev - iCurOffset);
         iPrev = iCurOffset;
     }
@@ -164,14 +170,14 @@ __declspec(noinline) void hkaSplineCompressedAnimation::GetBlockAndTime(unsigned
                                                        float& blockTimeOut, unsigned char& quantizedTimeOut) const
     throw()
 {
-    blockOut = frame / (m_iMaxFramesPerBlock - 1);
+    blockOut = frame / (m_maxFramesPerBlock - 1);
     blockOut = max2E347(blockOut, 0);
-    blockOut = min2E347(blockOut, m_iBlockCount - 1);
-    const unsigned int firstFrameOfBlock = blockOut * (m_iMaxFramesPerBlock - 1);
+    blockOut = min2E347(blockOut, m_numBlocks - 1);
+    const unsigned int firstFrameOfBlock = blockOut * (m_maxFramesPerBlock - 1);
     const float fLocalFrame = (frame - firstFrameOfBlock) + delta;
-    blockTimeOut = fLocalFrame * m_fPerFrameDuration;
+    blockTimeOut = fLocalFrame * m_frameDuration;
     quantizedTimeOut =
-        static_cast<unsigned char>((blockTimeOut * m_fBlockInverseDuration) * (m_iMaxFramesPerBlock - 1));
+        static_cast<unsigned char>((blockTimeOut * m_blockInverseDuration) * (m_maxFramesPerBlock - 1));
 }
 
 void __cdecl DecodeSplineFrame(const unsigned char*& dataInOut, int quantization, float frameDuration, float time,
@@ -179,10 +185,12 @@ void __cdecl DecodeSplineFrame(const unsigned char*& dataInOut, int quantization
 
 // Passes the inputs to DecodeSplineFrame, then aligns dataInOut to a 4-byte boundary.
 // @fnv 0x00e33dc0
-void hkaSplineCompressedAnimation::ExtractFrame(float time, int quantization, int numItems, void* out,
+// pdb: hkaSplineCompressedAnimation::sampleRotation | hkaSplineCompressedAnimation.obj | retail, object-file gap fill, high
+// pdb params: time, quantizedTime, mask, rotationQuantizationType, dataInOut, out
+void hkaSplineCompressedAnimation::ExtractFrame(float time, int quantizedTime, int mask, void* rotationQuantizationType,
                                     const unsigned char*& dataInOut, int stride)
 {
-    DecodeSplineFrame(dataInOut, quantization, m_fPerFrameDuration, time, numItems, out, stride);
+    DecodeSplineFrame(dataInOut, quantizedTime, m_frameDuration, time, mask, rotationQuantizationType, stride);
     dataInOut = (const unsigned char*)(((unsigned long)dataInOut + 3) & ~3);
 }
 
@@ -234,25 +242,27 @@ __declspec(noinline) int __cdecl FindKeyInterval(int n, int p, int u, const hkUi
 // Reads n and p, scales 2*p knots around the selected span into pfU, advances pDataInOut, and returns the span index.
 // @fnv 0x00e32f10
 // src: HAVOK_LIB 0x00e32f10
-int __cdecl hkaSplineCompressedAnimation_readKnots(const hkUint8*& pDataInOut, int& iNOut, int& iPOut, int iU, hkReal fScale, hkReal* pfU)
+// pdb: hkaSplineCompressedAnimation::readKnots | hkaSplineCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: dataInOut, _n, _p, quantizedTime, frameDuration, U
+int __cdecl hkaSplineCompressedAnimation_readKnots(const hkUint8*& dataInOut, int& _n, int& _p, int quantizedTime, hkReal frameDuration, hkReal* U)
 {
-    hkUint16 iN16 = *reinterpret_cast<const hkUint16*>(pDataInOut);
-    pDataInOut += sizeof(hkUint16);
+    hkUint16 iN16 = *reinterpret_cast<const hkUint16*>(dataInOut);
+    dataInOut += sizeof(hkUint16);
     int iN = iN16;
-    hkUint8 iP8 = *pDataInOut;
-    pDataInOut += sizeof(hkUint8);
+    hkUint8 iP8 = *dataInOut;
+    dataInOut += sizeof(hkUint8);
     int iP = iP8;
-    const hkUint8* pKnots = pDataInOut;
+    const hkUint8* pKnots = dataInOut;
     int iNumKnots = iN + iP + 1;
-    int iSpan = FindKeyInterval(iN, iP, iU, pKnots);
+    int iSpan = FindKeyInterval(iN, iP, quantizedTime, pKnots);
     for (int i = 0; i < 2 * iP; i++)
     {
-        hkReal fKnot = pDataInOut[iSpan - iP + 1 + i];
-        pfU[i] = fKnot * fScale;
+        hkReal fKnot = dataInOut[iSpan - iP + 1 + i];
+        U[i] = fKnot * frameDuration;
     }
-    pDataInOut = pKnots + iNumKnots + 1;
-    iNOut = iN;
-    iPOut = iP;
+    dataInOut = pKnots + iNumKnots + 1;
+    _n = iN;
+    _p = iP;
     return iSpan;
 }
 
@@ -269,6 +279,9 @@ extern const hkVector4 DAT_01268700;
 void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(unsigned int*, int, float, float, int, int, const hkVector4*, hkVector4*);
 // Writes a constant vector when enabled is zero; otherwise calls FUN_00e33a30, then aligns cursor to a 4-byte boundary.
 // @fnv 0x00e33e10
+// pdb: hkaSplineCompressedAnimation::sampleTranslation | hkaSplineCompressedAnimation.obj | retail, object-file gap fill, high
+// pdb params: u, quantizedTime, mask, scalarQuantizationType, dataInOut, out
+// pdb locals: I
 // The unused EDX argument preserves the thiscall entry point while using the shared receiver type.
 void __fastcall EvaluateSpline(const hkaSplineCompressedAnimation* animation, void*, float time, int track,
                                int enabled, int block, unsigned int* cursor, ResultArg result)
@@ -282,7 +295,7 @@ void __fastcall EvaluateSpline(const hkaSplineCompressedAnimation* animation, vo
     }
     hkVector4 vDefaults;
     _mm_store_ps(&vDefaults.x, constant);
-    hkaSplineCompressedAnimation_readNURBSCurve(cursor, track, animation->m_fPerFrameDuration, time, enabled, block, &vDefaults, result.get());
+    hkaSplineCompressedAnimation_readNURBSCurve(cursor, track, animation->m_frameDuration, time, enabled, block, &vDefaults, result.get());
     *cursor = (*cursor + 3) & ~3u;
 }
 
@@ -295,6 +308,9 @@ void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(const hkUint8*& dataInO
 // Keep the original out-of-line calls from both track samplers.
 // @fnv 0x00e33e90
 // src: XBOX_PDB 0x00e33e90
+// pdb: hkaSplineCompressedAnimation::sampleScale | hkaSplineCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: u, quantizedTime, mask, scalarQuantizationType, dataInOut, out
+// pdb locals: I
 __declspec(noinline) void hkaSplineCompressedAnimation::sampleScale(hkReal blockTime, hkUint8 quantizedTime, hkUint8 mask,
                                                     int quantization, const hkUint8*& dataInOut,
                                                     hkVector4& out) const
@@ -305,7 +321,7 @@ __declspec(noinline) void hkaSplineCompressedAnimation::sampleScale(hkReal block
     }
     else
     {
-        hkaSplineCompressedAnimation_readNURBSCurve(dataInOut, quantizedTime, m_fPerFrameDuration, blockTime, mask, quantization,
+        hkaSplineCompressedAnimation_readNURBSCurve(dataInOut, quantizedTime, m_frameDuration, blockTime, mask, quantization,
                      hkVector4(DAT_01268720), out);
     }
     dataInOut = reinterpret_cast<const hkUint8*>((reinterpret_cast<hkUlong>(dataInOut) + 3) & ~3);
@@ -314,8 +330,11 @@ __declspec(noinline) void hkaSplineCompressedAnimation::sampleScale(hkReal block
 // Samples transform and float tracks from a spline animation at the given frame and delta, writing results to the output arrays.
 // @fnv 0x00e33f90
 // src: HAVOK_LIB 0x00e33f90
-void hkaSplineCompressedAnimation_samplePartialWithDataChunks(unsigned int frameIndex, float delta, unsigned int maxNumTransformTracks,
-                  hkQsTransform* transformsOut, unsigned int maxNumFloatTracks, float* floatsOut,
+// pdb: hkaSplineCompressedAnimation::samplePartialWithDataChunks | hkaSplineCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: frameIndex, frameDelta, maxNumTransformTracks, transformTracksOut, maxNumFloatTracks, floatTracksOut, dataChunks, numDataChunks
+// pdb locals: block, translationQuantization, rotationQuantization, scaleQuantization, mask, floatData, blockTime, floatQuantization, transformData, quantizedTime
+void hkaSplineCompressedAnimation_samplePartialWithDataChunks(unsigned int frameIndex, float frameDelta, unsigned int maxNumTransformTracks,
+                  hkQsTransform* transformsOut, unsigned int maxNumFloatTracks, float* floatTracksOut,
                   const hkaAnimationDataChunk* dataChunks, int numDataChunks)
 {
     const hkaSplineCompressedAnimation* anim = reinterpret_cast<const hkaSplineCompressedAnimation*>(dataChunks[0].m_data);
@@ -323,12 +342,12 @@ void hkaSplineCompressedAnimation_samplePartialWithDataChunks(unsigned int frame
     unsigned char quantizedTime;
     {
         int block;
-        anim->GetBlockAndTime(frameIndex, delta, block, blockTime, quantizedTime);
+        anim->GetBlockAndTime(frameIndex, frameDelta, block, blockTime, quantizedTime);
     }
     {
         const unsigned char* mask =
             reinterpret_cast<const unsigned char*>(dataChunks[1].m_data) + dataChunks[1].m_offset;
-        const unsigned char* dataPtr = mask + anim->m_iMaskAndQuantizationSize;
+        const unsigned char* dataPtr = mask + anim->m_maskAndQuantizationSize;
         for (unsigned int i = 0; i < maxNumTransformTracks; i++)
         {
             unsigned char quantizationTypes = *mask++;
@@ -351,7 +370,7 @@ void hkaSplineCompressedAnimation_samplePartialWithDataChunks(unsigned int frame
         {
             unsigned char ucFloatMask = *floatMask++;
             anim->hkaSplineCompressedAnimation_sampleFloat(blockTime, quantizedTime, ucFloatMask & 0xf9, (ucFloatMask >> 1) & 3, floatData,
-                               floatsOut[uiFloatIndex]);
+                               floatTracksOut[uiFloatIndex]);
         }
     }
 }
@@ -388,6 +407,9 @@ const hkUint8* __cdecl GetIndexedValueWithOffset(const hkUint8* base, const hkUi
 // Evaluates spline-compressed transform tracks at the given time, writing translation, rotation, and scale into transformTracksOut for each valid track index.
 // @fnv 0x00e34310
 // src: HAVOK_SRC 0x00e34310
+// pdb: hkaSplineCompressedAnimation::sampleIndividualTransformTracks | hkaSplineCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: time, tracks, numTracks, transformTracksOut
+// pdb locals: block, blockTime, quantizedTime, assertBuf, ostr, frame, delta, data, translationQuantization, rotationQuantization, scaleQuantization
 void hkaSplineCompressedAnimation::sampleIndividualTransformTracks(hkReal time, const hkInt16* tracks, hkUint32 numTracks,
                                                     hkQsTransform* transformTracksOut) const
 {
@@ -407,10 +429,10 @@ void hkaSplineCompressedAnimation::sampleIndividualTransformTracks(hkReal time, 
         if (track >= 0 && track < m_iNumTransformTracks)
         {
             const hkUint8* dataStream =
-                GetIndexedValueWithOffset(&hkArrayAtE343(m_data, 0), &hkArrayAtE343(m_kFirstUInt32Array, 0), block,
-                                          hkArrayAtE343(m_kTransformOffsets, block * m_iNumTransformTracks + track));
+                GetIndexedValueWithOffset(&hkArrayAtE343(m_data, 0), &hkArrayAtE343(m_blockOffsets, 0), block,
+                                          hkArrayAtE343(m_transformOffsets, block * m_iNumTransformTracks + track));
             const hkUint8* mask = GetIndexedValueWithOffset(&hkArrayAtE343(m_data, 0),
-                                                            &hkArrayAtE343(m_kFirstUInt32Array, 0), block, 4 * track);
+                                                            &hkArrayAtE343(m_blockOffsets, 0), block, 4 * track);
             const hkUint8 quantizationTypes = mask[0];
             EvaluateSpline(blockTime, quantizedTime, mask[1], quantizationTypes & 3, dataStream,
                            transformTracksOut[i].m_vTranslation);
@@ -442,6 +464,9 @@ const hkUint8* __cdecl GetIndexedValueWithOffset(const hkUint8* base, const hkUi
 
 // @fnv 0x00e34490
 // src: HAVOK_LIB 0x00e34490
+// pdb: hkaSplineCompressedAnimation::sampleIndividualFloatTracks | hkaSplineCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: time, tracks, numTracks, floatTracksOut
+// pdb locals: block, blockTime, quantizedTime, assertBuf, ostr, frame, delta, data, quantization, mask
 void hkaSplineCompressedAnimation::sampleIndividualFloatTracks(hkReal time, const hkInt16* tracks, hkUint32 numTracks,
                                                     hkReal* floatTracksOut) const
 {
@@ -460,10 +485,10 @@ void hkaSplineCompressedAnimation::sampleIndividualFloatTracks(hkReal time, cons
         if (track >= 0 && track < m_iNumberOfFloatTracks)
         {
             const hkUint8* dataStream =
-                GetIndexedValueWithOffset(&hkArrayAtE344(m_data, 0), &hkArrayAtE344(m_kFirstUInt32Array, 0), block,
-                                          hkArrayAtE344(m_kFloatOffsets, block * m_iNumberOfFloatTracks + track));
+                GetIndexedValueWithOffset(&hkArrayAtE344(m_data, 0), &hkArrayAtE344(m_blockOffsets, 0), block,
+                                          hkArrayAtE344(m_floatOffsets, block * m_iNumberOfFloatTracks + track));
             const hkUint8 mask =
-                *GetIndexedValueWithOffset(&hkArrayAtE344(m_data, 0), &hkArrayAtE344(m_kFirstUInt32Array, 0), block,
+                *GetIndexedValueWithOffset(&hkArrayAtE344(m_data, 0), &hkArrayAtE344(m_blockOffsets, 0), block,
                                            4 * m_iNumTransformTracks + track);
             hkaSplineCompressedAnimation_sampleFloat(blockTime, quantizedTime, mask & 0xf9, (mask >> 1) & 3, dataStream, *floatTracksOut);
         }
@@ -495,6 +520,7 @@ struct SplineMemoryRouter
 void __fastcall DestroyAnimationBase(hkaAnimation* animation);
 
 // @fnv 0x00e345a0
+// pdb: hkaSplineCompressedAnimation::~hkaSplineCompressedAnimation | hkaSplineCompressedAnimation.obj | retail, object-file run extension, low
 void __fastcall DestroySplineCompressedAnimation(hkaSplineCompressedAnimation* animation)
 {
     int zero = 0;
@@ -520,56 +546,56 @@ void __fastcall DestroySplineCompressedAnimation(hkaSplineCompressedAnimation* a
         SplineMemoryRouter* manager = static_cast<SplineMemoryRouter*>(hkMemoryRouter_getInstance());
         hkMemoryAllocator* track = manager->m_heap;
 
-        int val = animation->m_kFloatOffsets.m_iCapacityState;
-        animation->m_kFloatOffsets.m_iElementCount = zero;
+        int val = animation->m_floatOffsets.m_iCapacityState;
+        animation->m_floatOffsets.m_iElementCount = zero;
         if ((val & flag) == 0)
         {
-            track->bufFree(animation->m_kFloatOffsets.m_data, (val & 0x3FFFFFFF) * 4);
+            track->bufFree(animation->m_floatOffsets.m_data, (val & 0x3FFFFFFF) * 4);
         }
-        animation->m_kFloatOffsets.m_data = 0;
-        animation->m_kFloatOffsets.m_iCapacityState = flag;
+        animation->m_floatOffsets.m_data = 0;
+        animation->m_floatOffsets.m_iCapacityState = flag;
     }
 
     {
         SplineMemoryRouter* manager = static_cast<SplineMemoryRouter*>(hkMemoryRouter_getInstance());
         hkMemoryAllocator* track = manager->m_heap;
 
-        int val = animation->m_kTransformOffsets.m_iCapacityState;
-        animation->m_kTransformOffsets.m_iElementCount = zero;
+        int val = animation->m_transformOffsets.m_iCapacityState;
+        animation->m_transformOffsets.m_iElementCount = zero;
         if ((val & flag) == 0)
         {
-            track->bufFree(animation->m_kTransformOffsets.m_data, (val & 0x3FFFFFFF) * 4);
+            track->bufFree(animation->m_transformOffsets.m_data, (val & 0x3FFFFFFF) * 4);
         }
-        animation->m_kTransformOffsets.m_data = 0;
-        animation->m_kTransformOffsets.m_iCapacityState = flag;
+        animation->m_transformOffsets.m_data = 0;
+        animation->m_transformOffsets.m_iCapacityState = flag;
     }
 
     {
         SplineMemoryRouter* manager = static_cast<SplineMemoryRouter*>(hkMemoryRouter_getInstance());
         hkMemoryAllocator* track = manager->m_heap;
 
-        int val = animation->m_kFloatBlockOffsets.m_iCapacityState;
-        animation->m_kFloatBlockOffsets.m_iElementCount = zero;
+        int val = animation->m_floatBlockOffsets.m_iCapacityState;
+        animation->m_floatBlockOffsets.m_iElementCount = zero;
         if ((val & flag) == 0)
         {
-            track->bufFree(animation->m_kFloatBlockOffsets.m_data, (val & 0x3FFFFFFF) * 4);
+            track->bufFree(animation->m_floatBlockOffsets.m_data, (val & 0x3FFFFFFF) * 4);
         }
-        animation->m_kFloatBlockOffsets.m_data = 0;
-        animation->m_kFloatBlockOffsets.m_iCapacityState = flag;
+        animation->m_floatBlockOffsets.m_data = 0;
+        animation->m_floatBlockOffsets.m_iCapacityState = flag;
     }
 
     {
         SplineMemoryRouter* manager = static_cast<SplineMemoryRouter*>(hkMemoryRouter_getInstance());
         hkMemoryAllocator* track = manager->m_heap;
 
-        int val = animation->m_kFirstUInt32Array.m_iCapacityState;
-        animation->m_kFirstUInt32Array.m_iElementCount = zero;
+        int val = animation->m_blockOffsets.m_iCapacityState;
+        animation->m_blockOffsets.m_iElementCount = zero;
         if ((val & flag) == 0)
         {
-            track->bufFree(animation->m_kFirstUInt32Array.m_data, (val & 0x3FFFFFFF) * 4);
+            track->bufFree(animation->m_blockOffsets.m_data, (val & 0x3FFFFFFF) * 4);
         }
-        animation->m_kFirstUInt32Array.m_data = 0;
-        animation->m_kFirstUInt32Array.m_iCapacityState = flag;
+        animation->m_blockOffsets.m_data = 0;
+        animation->m_blockOffsets.m_iCapacityState = flag;
     }
 
     DestroyAnimationBase(animation);
@@ -588,7 +614,7 @@ extern const SplineEvalFunc DAT_011be4d0[];
 
 extern const __m128 DAT_010c71b0;
 
-int __cdecl hkaSplineCompressedAnimation_readKnots(const unsigned char** data, int* b, int* a, int a2, float a3, void* knots);
+int __cdecl hkaSplineCompressedAnimation_readKnots(const unsigned char** dataInOut, int* _n, int* _p, int quantizedTime, float frameDuration, void* U);
 void __cdecl DecodeSplineFrames(const unsigned char** data, int type, int b, int a, int result,
                                 hkVector4* controlPoints);
 
@@ -599,6 +625,9 @@ struct SplineKnots
 
 // Uses mask bits to spline-evaluate, type-specifically unpack, or load a constant vector.
 // @fnv 0x00e33960
+// pdb: hkaSplineCompressedAnimation::readNURBSQuaternion | hkaSplineCompressedAnimation.obj | retail, object-file run extension, low
+// pdb params: dataInOut, quantizedTime, frameDuration, u, mask, type, out
+// pdb locals: U, n, P, p
 void __cdecl DecodeSplineFrame(const unsigned char** data, int a2, float a3, float a4, unsigned char mask, int type,
                                hkVector4* out)
 {
@@ -636,5 +665,5 @@ void __cdecl DecodeSplineFrame(const unsigned char** data, int a2, float a3, flo
 // src: GUESS 0x00e32ec0 (confidence: medium)
 int __fastcall hkaSplineCompressedAnimation_GetFrameCount(const hkaSplineCompressedAnimation* animation)
 {
-    return animation->m_iFrameCount;
+    return animation->m_numFrames;
 }

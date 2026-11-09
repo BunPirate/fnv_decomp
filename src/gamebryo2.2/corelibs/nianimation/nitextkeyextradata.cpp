@@ -22,6 +22,8 @@ extern void* DAT_0109827c;
 
 // @fnv 0x00a46b70
 // src: EXE 0x00a46b70
+// pdb: NiTextKeyExtraData::CreateObject | NiTextKeyExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiTextKeyExtraData_CreateObject()
 {
     NiTextKeyExtraData* p = static_cast<NiTextKeyExtraData*>(BSFadeNode::operator new(sizeof(NiTextKeyExtraData)));
@@ -36,13 +38,14 @@ void* __cdecl NiTextKeyExtraData_CreateObject()
     return 0;
 }
 
-void __fastcall DestroyTextKeyList(NiTextKeyExtraData* self, void*);
+void __fastcall NiTextKeyExtraData_dtor(NiTextKeyExtraData* self, void*);
 extern "C" void __cdecl __Dummy_00b6fef0(void* p, unsigned int flags);
 
 // @fnv 0x00a46ed0
+// pdb: NiTextKeyExtraData::`scalar deleting destructor' | NiTextKeyExtraData.obj | retail, object-file gap fill, high
 void* __fastcall DeleteTextKeyExtraData(NiTextKeyExtraData* self, void*, unsigned int flags)
 {
-    reinterpret_cast<void (__thiscall*)(NiTextKeyExtraData*)>(&DestroyTextKeyList)(self);
+    reinterpret_cast<void (__thiscall*)(NiTextKeyExtraData*)>(&NiTextKeyExtraData_dtor)(self);
     if (flags & 1)
         __Dummy_00b6fef0(self, 0x14);
     return self;
@@ -54,7 +57,7 @@ class TimedTextEntry
     float m_fTime;
     const char* m_kText;
     void __thiscall RegisterStreamables(NiStream*);
-    void __thiscall ReadBinary(NiStream&);
+    void __thiscall NiTextKey_SaveBinary(NiStream&);
     void __thiscall ReleaseString();
     float GetTime() const { return m_fTime; }
     const char* GetText() const { return m_kText; }
@@ -65,6 +68,7 @@ bool __cdecl RegisterExtraData();
 
 // Registers the base extra data and each text key with the stream.
 // @fnv 0x00a46b10
+// pdb: NiTextureTransformController::`scalar deleting destructor' | NiTextureTransformController.obj | debug, object-file run extension, low
 bool __fastcall LoadFromStream(NiTextKeyExtraData* _this, void* _edx, NiStream* stream)
 {
     if (!reinterpret_cast<bool (__thiscall*)(NiExtraData*, NiStream*)>(&RegisterExtraData)(_this, stream))
@@ -77,6 +81,9 @@ bool __fastcall LoadFromStream(NiTextKeyExtraData* _this, void* _edx, NiStream* 
 
 // Checks that pkObject is non-null, base-equal, has the same key count, and that every key's time and value match; returns true if so.
 // @fnv 0x00a46bb0
+// pdb: NiTextKeyExtraData::IsEqual | NiTextKeyExtraData.obj | retail, object-file gap fill, high
+// pdb params: pObject
+// pdb locals: pExtra, uiI
 bool __fastcall IsTextKeyExtraDataEqual(NiTextKeyExtraData* self, void*, NiObject* pkObject)
 {
     if (!pkObject)
@@ -101,7 +108,9 @@ struct MM
 };
 extern MM g_memoryManager;
 // @fnv 0x00a46d50
-void __fastcall DestroyTextKeyList(NiTextKeyExtraData* self, void*)
+// src: XBOX_RETAIL_PDB 0x00a46d50
+// pdb: NiTextKeyExtraData::~NiTextKeyExtraData | NiTextKeyExtraData.obj | retail, object-file gap fill, high
+void __fastcall NiTextKeyExtraData_dtor(NiTextKeyExtraData* self, void*)
 {
     *(void**)self = &DAT_0109827c;
     void* keys = self->m_pKeys;
@@ -184,7 +193,7 @@ struct StrArray
 char* NiViewerStrings_NiGetViewerString_Title(const char* s);
 char* NiGetViewerString_00a7d510(const char* s, unsigned int v);
 char* NiGetViewerString_00a7d550(const char* s, float v);
-char* NiGetViewerString_00a7d5e0(const char* s, const char* v);
+char* NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 void* NiMalloc(unsigned int size);
 void NiFree(void* p);
 int NiSprintf(char* buf, unsigned int size, const char* fmt, ...);
@@ -193,6 +202,9 @@ void __cdecl GetExtraDataViewerStrings();
 
 // Appends the base strings, the key count, and one formatted "Time : Text" entry per text key to pkStrings.
 // @fnv 0x00a46ef0
+// pdb: NiTextKeyExtraData::GetViewerStrings | NiTextKeyExtraData.obj | retail, unique string literal, high
+// pdb params: pStrings
+// pdb locals: uiLoop, pcTime, pcTextString, pcText, uiLen
 void __fastcall WriteTextKeyStrings(NiTextKeyExtraData* self, void*, StrArray* pkStrings)
 {
     reinterpret_cast<void (__thiscall*)(NiExtraData*, StrArray*)>(&GetExtraDataViewerStrings)(self, pkStrings);
@@ -214,7 +226,7 @@ void __fastcall WriteTextKeyStrings(NiTextKeyExtraData* self, void*, StrArray* p
     }
 }
 
-void __cdecl CopyTextKeyMemberData();
+void __cdecl NiTextKeyExtraData_CopyMembers();
 
 __forceinline NiTextKeyExtraData* __fastcall InitializeTextKeyExtraData(NiTextKeyExtraData* self) throw()
 {
@@ -226,12 +238,15 @@ __forceinline NiTextKeyExtraData* __fastcall InitializeTextKeyExtraData(NiTextKe
 }
 
 // @fnv 0x00a46da0
+// pdb: NiTextKeyExtraData::CreateClone | NiTextKeyExtraData.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiExtraData* __fastcall CloneTextKeyExtraData(NiTextKeyExtraData* self, void*, void* pvProcess)
 {
     // The shared class has no constructor for this original initialization path.
     void* memory = BSFadeNode::operator new(sizeof(NiTextKeyExtraData));
     NiTextKeyExtraData* pkClone = memory ? InitializeTextKeyExtraData(static_cast<NiTextKeyExtraData*>(memory)) : 0;
-    reinterpret_cast<void (__thiscall*)(NiTextKeyExtraData*, NiTextKeyExtraData*, void*)>(&CopyTextKeyMemberData)(self, pkClone, pvProcess);
+    reinterpret_cast<void (__thiscall*)(NiTextKeyExtraData*, NiTextKeyExtraData*, void*)>(&NiTextKeyExtraData_CopyMembers)(self, pkClone, pvProcess);
     return pkClone;
 }
 
@@ -271,10 +286,13 @@ void __cdecl LoadExtraDataBinary();
 
 // Loads the base extra data, the key count, and each text key from the stream.
 // @fnv 0x00a46cf0
+// pdb: NiTextKeyExtraData::SaveBinary | NiTextKeyExtraData.obj | retail, object-file gap fill, high
+// pdb params: stream
+// pdb locals: uiI
 void __fastcall LoadTextKeyBinary(NiTextKeyExtraData* self, void*, NiStream& kStream)
 {
     reinterpret_cast<void (__thiscall*)(NiExtraData*, NiStream&)>(&LoadExtraDataBinary)(self, kStream);
     ReadBinaryValue(kStream, self->m_uiNumKeys);
     for (unsigned int i = 0; i < self->m_uiNumKeys; i++)
-        self->m_pKeys[i].ReadBinary(kStream);
+        self->m_pKeys[i].NiTextKey_SaveBinary(kStream);
 }

@@ -95,6 +95,9 @@ struct SortPair {
 };
 // @fnv 0x00d36520
 // src: GUESS 0x00d36520 (confidence: low)
+// pdb: hkAlgorithm::quickSortRecursive<hkShapeKeyPair,hkAlgorithm::less<hkShapeKeyPair> > | hkpCollectionCollectionAgent3.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str
 extern "C" void Object_ProcessEntries_00d36520(SortPair* arr, int lo, int hi, unsigned int extra)
 {
     int i;
@@ -263,16 +266,16 @@ __forceinline ~ScopedTimer(){{hkMonitorStream&mStream=hkMonitorStream::getInstan
 };typedef hkUint16 hkContactPointId;
 inline hkVector4&hkContactPoint::getPosition()
 {
-return m_vContactPosition;
+return m_position;
 }
 inline hkVector4&hkContactPoint::getSeparatingNormal()
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 inline void hkContactPoint::setSeparatingNormal(const hkVector4&normal,hkReal dist)
 {
-reinterpret_cast<hkVec4X&>(m_vSeparatingNormal)=reinterpret_cast<const hkVec4X&>(normal);
-reinterpret_cast<hkVec4X&>(m_vSeparatingNormal)(3)=dist;
+reinterpret_cast<hkVec4X&>(m_separatingNormal)=reinterpret_cast<const hkVec4X&>(normal);
+reinterpret_cast<hkVec4X&>(m_separatingNormal)(3)=dist;
 }
 class Vector4WithInt24W:public hkVec4X
 {
@@ -291,11 +294,11 @@ typedef hkUint32 hkpShapeKey;
 __forceinline const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 __forceinline const hkpShape*hkpCdBody::getShape()const
 {
-return m_pCollisionShape;
+return m_shape;
 }
 struct GskAgentInput;
 class hkpContactMgr;
@@ -370,6 +373,7 @@ HIT_TRIANGLE_EDGE
 };
 static ClosestPointTriangleStatus __cdecl GetClosestPointOnTriangle(hkVector4Parameter position,const hkVec4X*tri,const FourRealValueRecord&cache,CollisionDistanceInfo&result,MaterialIndexedTriangle*featureOutput=0);protected:
 TriangleDistanceUtility();};
+// pdb: class hkpSphereTriangleAgent, size 0x20, bases: hkpIterativeLinearCastAgent, 2 members
 class hkpSphereTriangleAgent:public hkpIterativeLinearCastAgent
 {
 public:
@@ -396,8 +400,8 @@ ST_CP_EDGE
 };
 static ClosestPointResult __cdecl ComputeClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,TriangleDistanceUtility::FourRealValueRecord&m_pAccessManager,hkContactPoint&cpoint);
 static __forceinline ClosestPointResult getClosestPointInl(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,TriangleDistanceUtility::FourRealValueRecord&m_pAccessManager,hkContactPoint&cpoint,MaterialIndexedTriangle*featureOutput=0);
-hkContactPointId m_usContactPointId;
-TriangleDistanceUtility::FourRealValueRecord m_kTriangleAccessData;
+hkContactPointId m_contactPointId;
+TriangleDistanceUtility::FourRealValueRecord m_closestPointTriangleCache;
 };
 
 __forceinline const hkVector4_S* hkpTriangleShape::GetIndexedVertices() const
@@ -414,10 +418,10 @@ hkVec4X triVertices[3];
 hkVector4Util_S::TransformPointArray(bodyB.getTransform(),reinterpret_cast<const hkVec4X*>(triB->GetIndexedVertices()),3,triVertices);
 TriangleDistanceUtility::CollisionDistanceInfo cptr;
 TriangleDistanceUtility::ClosestPointTriangleStatus res=TriangleDistanceUtility::GetClosestPointOnTriangle(posA,triVertices,cache,cptr,featureOutput);
-const hkReal radiusSum=sphereA->getRadius()+triB->m_fSphereRadius;
+const hkReal radiusSum=sphereA->getRadius()+triB->m_radius;
 if(cptr.distance<radiusSum+input.getTolerance())
 {
-const float scalar = triB->m_fSphereRadius-cptr.distance;
+const float scalar = triB->m_radius-cptr.distance;
 hkSimdReal value;
 value.m_vValue = _mm_load_ss(&scalar);
 reinterpret_cast<hkVec4X&>(cpoint.getPosition()).setAddMul4(posA,cptr.m_kNearestPoint,value);
@@ -434,6 +438,9 @@ return ST_CP_EDGE;
 return ST_CP_MISS;}
 // @fnv 0x00d3d8c0
 // src: GUESS 0x00d3d8c0 (confidence: low)
+// pdb: hkpSphereTriangleAgent::staticGetClosestPoints | hkpSphereTriangleAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: featureOutput, event, cache, numFeatures, weldedNormal, pointPos
 void __cdecl hkpCdBody_ProcessAndReturnValue_00d3d8c0(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpCdPointCollector&collector)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){::hkMonitorStream::TimerCommand*h=reinterpret_cast<::hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "SphereTri";h->setTime();mStream.setEnd((char*)(h+1));}};ScopedTimer timeblock47;
@@ -504,11 +511,13 @@ public:
     FUN_00d37d30();
 
     static void operator delete(void* p) {
-        HeapD37D30(hkMemoryRouter_getInstance()).blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+        HeapD37D30(hkMemoryRouter_getInstance()).blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
     }
 };
 
 // @fnv 0x00d37d30
+// pdb: hkpMultiRayConvexAgent::`scalar deleting destructor' | hkpMultiRayConvexAgent.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00d37d30::FUN_00d37d30() {
 }
 }  // namespace fnv_00d37d30

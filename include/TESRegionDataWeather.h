@@ -6,6 +6,7 @@
 class TESFile;
 class TESRegion;
 
+// pdb: class TESRegionDataWeather, size 0x10, bases: TESRegionData, 1 members
 class TESRegionDataWeather : public TESRegionData
 {
 public:
@@ -18,6 +19,6 @@ public:
     virtual void Save();
     virtual TESRegionData* Clone();
     virtual TESRegionData* CopyFrom(const TESRegionData* apSrc);
-    virtual void SetFromData(const TESRegionData* apSrc, unsigned int auFlags);
+    virtual void SetFromData(const TESRegionData* apRegionData, unsigned int aiTotalBlending);
     virtual bool IsValid();
 };

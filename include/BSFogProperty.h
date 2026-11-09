@@ -2,6 +2,7 @@
 
 #include "NiColor.h"
 
+// pdb: class BSFogProperty, size 0x64, bases: NiFogProperty, 9 members
 class BSFogProperty
 {
 public:
@@ -15,15 +16,15 @@ public:
     int unk1c;
     NiColor color;
     float nearDepth;
-    float farDepth;
-    int unk34;
-    int unk38;
-    int unk3c;
+    float fEndDistance;
+    int fStartWaterDistance;
+    int fEndWaterDistance;
+    int kPlane;
     int unk40;
     int unk44;
     int unk48;
-    int unk4c;
-    int unk50;
+    int fFalloff;
+    int fHeight;
     int unk54;
     int unk58;
     int unk5c;
@@ -36,7 +37,7 @@ public:
     static void operator delete(void*, unsigned int);
     void IncRefCount();
     void DecRefCount();
-    BSFogProperty* __thiscall FUN_00bb8250(unsigned char flags);
+    BSFogProperty* __thiscall BSFogProperty_ScalarDtor(unsigned char flags);
 
     void SetFog(float start, float end);
     void SetPower(float power);

@@ -178,12 +178,12 @@ struct hkContainerAllocHolder
 };
 
 hkContainerAllocHolder* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* alloc, void* array, int elemSize);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 class hkErrStreamData
 {
   public:
-    hkErrStreamData(void* buf, int size) throw();
+    hkErrStreamData(void* buf, int bufSize) throw();
     ~hkErrStreamData() throw();
     hkErrStreamData& operator<<(const char* str) throw();
     void* unk00;
@@ -213,32 +213,35 @@ static inline void PushBackTriangle(hkArray<hkGeometryTriangle>& arr, const hkGe
 class hkxMeshSectionImpl : public hkxMeshSection
 {
   public:
-    void hkxMeshSection_collectVertexPositions(hkGeometryData& geometry);
-    void hkxMeshSection_appendGeometry(hkGeometryData& geometry, int materialIndex);
+    void hkxMeshSection_collectVertexPositions(hkGeometryData& verticesInOut);
+    void hkxMeshSection_appendGeometry(hkGeometryData& geometryInOut, int materialIndex);
 };
 
 // @fnv 0x00e61530
 // src: XBOX_PDB 0x00e61530
-void hkxMeshSectionImpl::hkxMeshSection_appendGeometry(hkGeometryData& geometry, int materialIndex)
+// pdb: hkxMeshSection::appendGeometry | hkxMeshSection.obj | retail, string-set bridge, high
+// pdb params: geometryInOut, materialIndex
+// pdb locals: newTriangle, assertBuf, ostr
+void hkxMeshSectionImpl::hkxMeshSection_appendGeometry(hkGeometryData& geometryInOut, int materialIndex)
 {
-    hkxMeshSection_collectVertexPositions(geometry);
+    hkxMeshSection_collectVertexPositions(geometryInOut);
 
-    for (int ib = 0; ib < m_kIndexBuffers.m_iElementCount; ib++)
+    for (int ib = 0; ib < m_indexBuffers.m_iElementCount; ib++)
     {
-        hkxIndexBuffer* ibuffer = m_kIndexBuffers.m_data[ib];
-        int numIndices = ibuffer->m_kIndices16.m_iElementCount | ibuffer->m_kIndices32.m_iElementCount;
-        bool is16 = ibuffer->m_kIndices16.m_iElementCount > 0;
+        hkxIndexBuffer* ibuffer = m_indexBuffers.m_data[ib];
+        int numIndices = ibuffer->m_indices16.m_iElementCount | ibuffer->m_indices32.m_iElementCount;
+        bool is16 = ibuffer->m_indices16.m_iElementCount > 0;
 
         int ci = 0;
         while (ci < numIndices)
         {
             hkGeometryTriangle tri;
-            switch (ibuffer->m_eIndexType)
+            switch (ibuffer->m_indexType)
             {
             case 1:
-                tri.m_kPointA = is16 ? ibuffer->m_kIndices16.m_data[ci] : ibuffer->m_kIndices32.m_data[ci];
-                tri.m_kPointB = is16 ? ibuffer->m_kIndices16.m_data[ci + 1] : ibuffer->m_kIndices32.m_data[ci + 1];
-                tri.m_iThirdValue = is16 ? ibuffer->m_kIndices16.m_data[ci + 2] : ibuffer->m_kIndices32.m_data[ci + 2];
+                tri.m_kPointA = is16 ? ibuffer->m_indices16.m_data[ci] : ibuffer->m_indices32.m_data[ci];
+                tri.m_kPointB = is16 ? ibuffer->m_indices16.m_data[ci + 1] : ibuffer->m_indices32.m_data[ci + 1];
+                tri.m_iThirdValue = is16 ? ibuffer->m_indices16.m_data[ci + 2] : ibuffer->m_indices32.m_data[ci + 2];
                 ci += 3;
                 break;
             case 2:
@@ -249,17 +252,17 @@ void hkxMeshSectionImpl::hkxMeshSection_appendGeometry(hkGeometryData& geometry,
                 }
                 if (ci == 2)
                 {
-                    tri.m_kPointA = is16 ? ibuffer->m_kIndices16.m_data[0] : ibuffer->m_kIndices32.m_data[0];
-                    tri.m_kPointB = is16 ? ibuffer->m_kIndices16.m_data[1] : ibuffer->m_kIndices32.m_data[1];
-                    tri.m_iThirdValue = is16 ? ibuffer->m_kIndices16.m_data[2] : ibuffer->m_kIndices32.m_data[2];
+                    tri.m_kPointA = is16 ? ibuffer->m_indices16.m_data[0] : ibuffer->m_indices32.m_data[0];
+                    tri.m_kPointB = is16 ? ibuffer->m_indices16.m_data[1] : ibuffer->m_indices32.m_data[1];
+                    tri.m_iThirdValue = is16 ? ibuffer->m_indices16.m_data[2] : ibuffer->m_indices32.m_data[2];
                     ci = 3;
                 }
                 else
                 {
-                    hkGeometryTriangle& last = geometry.m_uiTriangleCount.m_data[geometry.m_uiTriangleCount.m_iElementCount - 1];
+                    hkGeometryTriangle& last = geometryInOut.m_uiTriangleCount.m_data[geometryInOut.m_uiTriangleCount.m_iElementCount - 1];
                     tri.m_kPointA = last.m_iThirdValue;
                     tri.m_kPointB = last.m_kPointB;
-                    tri.m_iThirdValue = is16 ? ibuffer->m_kIndices16.m_data[ci] : ibuffer->m_kIndices32.m_data[ci];
+                    tri.m_iThirdValue = is16 ? ibuffer->m_indices16.m_data[ci] : ibuffer->m_indices32.m_data[ci];
                     ci++;
                 }
                 break;
@@ -274,7 +277,7 @@ void hkxMeshSectionImpl::hkxMeshSection_appendGeometry(hkGeometryData& geometry,
             }
 
             tri.m_iMaterialIndex = materialIndex;
-            PushBackTriangle(geometry.m_uiTriangleCount, tri);
+            PushBackTriangle(geometryInOut.m_uiTriangleCount, tri);
         }
     }
 }

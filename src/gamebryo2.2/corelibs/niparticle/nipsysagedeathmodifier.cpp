@@ -33,6 +33,7 @@ struct FUN_00c2f3f0Target
     float unk64;
 };
 
+// pdb: class NiPSysAirFieldSpreadCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysAirFieldSpreadCtlr
 {
     char _pad[0x3c];
@@ -53,10 +54,11 @@ void __thiscall NiPSysAirFieldSpreadCtlr::GetTargetFloatValue_00c2f3e0(float& fV
 
 // No shared NiPSysAgeDeathModifier header is available yet; keep one local definition.
 struct ParticleSystem;
+// pdb: class NiPSysAgeDeathModifier, size 0x20, bases: NiPSysModifier, 2 members
 struct NiPSysAgeDeathModifier : NiPSysModifier
 {
     bool m_bSpawnOnDeath;
-    NiPSysSpawnModifier* m_pSpawnModifier;
+    NiPSysSpawnModifier* m_pkSpawnModifier;
     void LinkObject_00c2ef60(NiStream&);
     void __thiscall ProcessClone_00c2f1a0(CloningProcess&);
     void* __thiscall Destroy(unsigned int);
@@ -78,7 +80,7 @@ void NiPSysAgeDeathModifier::LinkObject_00c2ef60(NiStream& kStream)
 {
     NiPSysModifier::LinkObject(kStream);
     typedef NiObject*(__thiscall * GetLoadedObjectProc)(NiStream*);
-    m_pSpawnModifier = (NiPSysSpawnModifier*)reinterpret_cast<GetLoadedObjectProc>(&FUN_00a63430)(&kStream);
+    m_pkSpawnModifier = (NiPSysSpawnModifier*)reinterpret_cast<GetLoadedObjectProc>(&FUN_00a63430)(&kStream);
 }
 
 namespace fnv_00c2eff0 {
@@ -114,6 +116,9 @@ typedef char _sizecheck_NiCloningProcess[sizeof(CloningProcess) == 16 ? 1 : -1];
 // Calls the base ProcessClone, looks up the clone in the cloning map, and remaps the spawn modifier pointer to its cloned counterpart.
 // @fnv 0x00c2f1a0
 // src: XBOX_PDB 0x00c2f1a0
+// pdb: NiPSysAgeDeathModifier::ProcessClone | NiPSysAgeDeathModifier.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, pkDest
 void __thiscall NiPSysAgeDeathModifier::ProcessClone_00c2f1a0(CloningProcess& kCloning)
 {
     bool bFound;
@@ -123,15 +128,15 @@ void __thiscall NiPSysAgeDeathModifier::ProcessClone_00c2f1a0(CloningProcess& kC
     pkClone = 0;
     kCloning.m_pCloneMap->GetAt(this, pkClone);
     pkDest = (NiPSysAgeDeathModifier*)pkClone;
-    if (m_pSpawnModifier)
+    if (m_pkSpawnModifier)
     {
-        bFound = kCloning.m_pCloneMap->GetAt(m_pSpawnModifier, pkClone);
+        bFound = kCloning.m_pCloneMap->GetAt(m_pkSpawnModifier, pkClone);
         if (bFound)
         {
-            pkDest->m_pSpawnModifier = (NiPSysSpawnModifier*)pkClone;
+            pkDest->m_pkSpawnModifier = (NiPSysSpawnModifier*)pkClone;
             return;
         }
-        pkDest->m_pSpawnModifier = m_pSpawnModifier;
+        pkDest->m_pkSpawnModifier = m_pkSpawnModifier;
     }
 }
 
@@ -146,6 +151,8 @@ inline void* __cdecl operator new(unsigned int, void* p)
 }
 // @fnv 0x00c2f3a0
 // src: EXE 0x00c2f3a0
+// pdb: NiPSysAirFieldSpreadCtlr::CreateObject | NiPSysAirFieldSpreadCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 FUN_00c32d80* __cdecl NiPSysAirFieldSpreadCtlr_CreateObject()
 {
     FUN_00c32d80* p = (FUN_00c32d80*)BSFadeNode::operator new(0x40);
@@ -165,6 +172,9 @@ char* __cdecl NiGetViewerString_00a7d5e0(char const*, char const*);
 extern char const* const g_011d1f8c_arg1;
 // @fnv 0x00c2f2c0
 // src: XBOX_PDB 0x00c2f2c0
+// pdb: NiPSysAgeDeathModifier::GetViewerStrings | NiPSysAgeDeathModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: pcSpawnModifierName
 void NiPSysAgeDeathModifier::GetViewerStrings_00c2f2c0(StrArr* pkStrings)
 {
     typedef void(__thiscall * ViewerStringsProc)(NiPSysModifier*, StrArr*);
@@ -180,7 +190,7 @@ void NiPSysAgeDeathModifier::GetViewerStrings_00c2f2c0(StrArr* pkStrings)
         pkStrings->SetSize(((unsigned short*)pkStrings)[7] + uiIndex);
     pkStrings->SetAt(uiIndex, pcString);
     char const* pcModifierName =
-        m_pSpawnModifier ? m_pSpawnModifier->m_kName.m_kHandle : (char const*)&g_011d1f8c_arg1;
+        m_pkSpawnModifier ? m_pkSpawnModifier->m_kName.m_kHandle : (char const*)&g_011d1f8c_arg1;
     pcString = NiGetViewerString_00a7d5e0("Spawn Modifier", pcModifierName);
     uiIndex = ((unsigned short*)pkStrings)[5];
     if (uiIndex >= ((unsigned short*)pkStrings)[4])
@@ -191,6 +201,9 @@ void NiPSysAgeDeathModifier::GetViewerStrings_00c2f2c0(StrArr* pkStrings)
 extern int DAT_010c0304;
 // @fnv 0x00c2f150
 // src: XBOX_PDB 0x00c2f150
+// pdb: NiPSysAgeDeathModifier::CreateClone | NiPSysAgeDeathModifier.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysAgeDeathModifier* NiPSysAgeDeathModifier::CreateClone_00c2f150(CloningProcess& kCloning)
 {
     NiPSysAgeDeathModifier* pkObject = (NiPSysAgeDeathModifier*)BSFadeNode::operator new(0x20);
@@ -199,13 +212,13 @@ NiPSysAgeDeathModifier* NiPSysAgeDeathModifier::CreateClone_00c2f150(CloningProc
         pkObject->NiPSysModifier::NiPSysModifier();
         *reinterpret_cast<void**>(pkObject) = &DAT_010c0304;
         pkObject->m_bSpawnOnDeath = false;
-        pkObject->m_pSpawnModifier = 0;
+        pkObject->m_pkSpawnModifier = 0;
     }
     else
     {
         pkObject = 0;
     }
-    CopyMemberData((NiPSysModifier*)pkObject, kCloning);
+    CopyMembers((NiPSysModifier*)pkObject, kCloning);
     pkObject->m_bSpawnOnDeath = m_bSpawnOnDeath;
     return pkObject;
 }
@@ -222,10 +235,10 @@ bool NiPSysAgeDeathModifier::IsEqual_00c2ef80(NiObject* pkObject)
     if (pkOther->m_bSpawnOnDeath != m_bSpawnOnDeath)
         return false;
 
-    if ((pkOther->m_pSpawnModifier && !m_pSpawnModifier) || (!pkOther->m_pSpawnModifier && m_pSpawnModifier))
+    if ((pkOther->m_pkSpawnModifier && !m_pkSpawnModifier) || (!pkOther->m_pkSpawnModifier && m_pkSpawnModifier))
         return false;
 
-    if (pkOther->m_pSpawnModifier && m_pSpawnModifier && !static_cast<const NiObject*>(pkOther->m_pSpawnModifier)->IsEqual(m_pSpawnModifier))
+    if (pkOther->m_pkSpawnModifier && m_pkSpawnModifier && !static_cast<const NiObject*>(pkOther->m_pkSpawnModifier)->IsEqual(m_pkSpawnModifier))
         return false;
 
     return true;
@@ -313,9 +326,12 @@ struct ParticleSystem
 };
 // Advances each particle's age by the elapsed time and removes particles whose age exceeds their lifespan, optionally spawning on death.
 // @fnv 0x00c2f010
+// pdb: NiPSysAgeDeathModifier::Update | NiPSysAgeDeathModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: us, pkCurrentParticle, usParticleIdx
 void NiPSysAgeDeathModifier::UpdateAges(float time, ParticleSystem* particles)
 {
-    if (m_bSpawnOnDeath && m_pSpawnModifier)
+    if (m_bSpawnOnDeath && m_pkSpawnModifier)
     {
         unsigned short info = particles->count;
         while (info > 0)
@@ -330,8 +346,8 @@ void NiPSysAgeDeathModifier::UpdateAges(float time, ParticleSystem* particles)
                 // The shared overload takes an unsigned int; this call uses the original unsigned-short ABI.
                 typedef void(__thiscall * SpawnChildProc)(NiPSysSpawnModifier*, float, float,
                                                          unsigned short, ParticleSystem*);
-                SpawnChildProc* vtable = *reinterpret_cast<SpawnChildProc**>(m_pSpawnModifier);
-                vtable[41](m_pSpawnModifier, time, age->lifespan + time - r, index,
+                SpawnChildProc* vtable = *reinterpret_cast<SpawnChildProc**>(m_pkSpawnModifier);
+                vtable[41](m_pkSpawnModifier, time, age->lifespan + time - r, index,
                            reinterpret_cast<ParticleSystem*>(m_pkTarget));
                 particles->SetParticleCount(index);
             }
@@ -365,6 +381,9 @@ inline void NiBinaryStream::ReadScalar(void* pvValue, unsigned int uiSize)
 
 // @fnv 0x00c2f200
 // src: XBOX_PDB 0x00c2f200
+// pdb: NiPSysAgeDeathModifier::LoadBinary | NiPSysAgeDeathModifier.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: bSpawnOnDeath
 void NiPSysAgeDeathModifier::LoadBinary_00c2f200(NiStream& kStream)
 {
     NiPSysModifier::LoadBinary(kStream);
@@ -384,6 +403,8 @@ inline void NiBinaryStream::WriteSpawnFlag(const bool& onDeath)
 }
 // Calls the base modifier save, writes the spawn-on-death flag to the stream's binary output, then writes the spawn modifier link.
 // @fnv 0x00c2f260
+// pdb: NiPSysAgeDeathModifier::SaveBinary | NiPSysAgeDeathModifier.obj | retail, object-file run extension, low
+// pdb params: kStream
 void NiPSysAgeDeathModifier::SaveAgeDeathModifier(NiStream* stream)
 {
     reinterpret_cast<NiPSysModifier*>(this)->FUN_00c31950(*stream);
@@ -393,7 +414,7 @@ void NiPSysAgeDeathModifier::SaveAgeDeathModifier(NiStream* stream)
     output->WriteSpawnFlag(spawnOnDeath);
     typedef void(__thiscall * WriteLinkProc)(NiStream*, NiPSysSpawnModifier*);
     WriteLinkProc* pVtbl = *reinterpret_cast<WriteLinkProc**>(stream);
-    pVtbl[12](stream, modifier->m_pSpawnModifier);
+    pVtbl[12](stream, modifier->m_pkSpawnModifier);
 }
 
 double g_01012060 = 0.0;
@@ -447,6 +468,8 @@ void __cdecl FUN_00c31670();
 
 // @fnv 0x00c28b60
 // src: XBOX_PDB 0x00c28b60
+// pdb: NiPSysAgeDeathModifier::RegisterStreamables | NiPSysAgeDeathModifier.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysAgeDeathModifier_RegisterStreamables()
 {
     FUN_00c31670();

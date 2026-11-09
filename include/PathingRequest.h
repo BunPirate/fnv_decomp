@@ -19,6 +19,7 @@ class NiMatrix3;
 template <class T, unsigned int N> class BSSimpleArray;
 enum PATHING_REQUEST_TYPE;
 
+// pdb: class PathingRequest, size 0xb0, bases: NiRefObject, 29 members
 class PathingRequest : public NiRefObject
 {
 public:
@@ -35,13 +36,13 @@ public:
     virtual void LoadGame(BGSLoadFormBuffer*);
     virtual void InitLoadGame(BGSLoadFormBuffer*);
 
-    static PathingRequest* CreateRequestForType(PATHING_REQUEST_TYPE);
+    static PathingRequest* CreatePathingRequest(PATHING_REQUEST_TYPE);
 
     void SetUseSoft(bool);
     void SetTargetAngle(float);
-    void InitFromActor(Actor*);
-    void InitFromActor(EvadeActor*);
-    void InitFromActor(MoveActor454*);
+    void PathingRequest_SetOrigin(Actor*);
+    void PathingRequest_SetOrigin(EvadeActor*);
+    void PathingRequest_SetOrigin(MoveActor454*);
     void SetInitialPathHeading(float);
     void SetCantOpenDoors(bool);
     void SetCanSwim(bool);
@@ -131,28 +132,28 @@ public:
             PathingActorData PathingActorState;
         };
     };
-    float m_fFirstValueAfterActorData;
-    float m_fSecondValueAfterActorData;
-    float PathingActorSpatialData;
-    float fWeaponSpread;
-    float m_fCenterRadius;
+    float fActorRadius;
+    float fActorHeight;
+    float fGoalZDelta;
+    float fTargetRadius;
+    float fCenterRadius;
     NiPoint3 Center;
-    float m_fFloatAfterCenter;
-    float m_fPathingRadius;
-    float m_fAvoidanceRadius;
-    NiPointer<PathingAvoidNodeArray> m_pPathingAvoidNodeArray;
+    float fSmoothingRandomness;
+    float fGoalAngle;
+    float fInitialPathHeading;
+    NiPointer<PathingAvoidNodeArray> spAvoidNodeArray;
     bool bCantOpenDoors;
     bool bFaceTargetAtGoal;
-    bool PathingOptions;
+    bool bDrawDebugGeometry;
     bool bAllowIncompletePath;
-    bool m_bAllowDoorTraversal;
+    bool bSoftGoalRadius;
     bool bCanSwim;
     bool bCanFly;
-    bool m_bCanWalk;
-    bool m_bCanJump;
-    bool m_bCanClimb;
-    bool m_bCanUseDoors;
-    bool m_bCanRun;
+    bool bWaitIfPlayerWaits;
+    bool bFirstTangentUsesHeading;
+    bool bGoDirectIfPathingFails;
+    bool bTryToUseCurvedPath;
+    bool bIgnoreSmoothingIfFails;
     bool bIgnoreLocks;
     struct
     {
@@ -160,8 +161,8 @@ public:
         unsigned char byte1;
         unsigned char byte2;
     } layoutPaddingA5;
-    int m_iRequestType;
-    bool m_bCanOpenDoors;
+    int iRetryCount;
+    bool bFailIfGoalOccupied;
     struct
     {
         unsigned char byte0;

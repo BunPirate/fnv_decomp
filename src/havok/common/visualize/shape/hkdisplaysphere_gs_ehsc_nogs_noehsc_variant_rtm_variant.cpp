@@ -60,7 +60,7 @@ void __stdcall nullsub_91(int a, int b);
 
 extern "C" void _ReadBarrier();
 void* hkMemoryRouter_getInstance(void);
-void __cdecl hkArrayUtil__reserve(void* allocator, void* self, unsigned int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, unsigned int numElem, int sizeElem);
 
 struct AllocatorHolder
 {
@@ -157,33 +157,35 @@ template <class Array> static __forceinline void SubdivExpand(Array* array, int 
 
 // @fnv 0x00e0afe0
 // src: XBOX_PDB 0x00e0afe0
-void __cdecl _subdivideRecursive(SubdivMesh* self, int idx, float w, float t)
+// pdb: _subdivideRecursive | hkDisplaySphere.obj | retail, upstream name already matches, high
+// pdb params: geometry, triIndex, radius, recursionsLeft
+void __cdecl _subdivideRecursive(SubdivMesh* geometry, int triIndex, float radius, float recursionsLeft)
 {
-    if (t == 0.0f)
+    if (recursionsLeft == 0.0f)
     {
         return;
     }
 
     for (;;)
     {
-        int oldV = self->m_verts.m_uiItemCount;
-        int oldT = self->m_tris.m_uiItemCount;
-        SubdivExpand(&self->m_verts, 3);
-        SubdivExpand(&self->m_tris, 3);
+        int oldV = geometry->m_verts.m_uiItemCount;
+        int oldT = geometry->m_tris.m_uiItemCount;
+        SubdivExpand(&geometry->m_verts, 3);
+        SubdivExpand(&geometry->m_tris, 3);
 
-        SubdivTri* original = &self->m_tris.m_data[idx];
-        hkVector4* V = self->m_verts.m_data;
+        SubdivTri* original = &geometry->m_tris.m_data[triIndex];
+        hkVector4* V = geometry->m_verts.m_data;
         const __m128& p0 = V[original->a].m_vComponents;
         const __m128& p1 = V[original->b].m_vComponents;
         const __m128& p2 = V[original->c].m_vComponents;
 
         __m128* mid = &V[oldV].m_vComponents;
         __m128* mid2 = &V[oldV + 2].m_vComponents;
-        SubdivMidpoint(mid, _mm_add_ps(p1, p0), &w);
-        SecondMidpoint((OutputPair*)mid, _mm_add_ps(p2, p1), &w);
-        SubdivMidpoint(mid2, _mm_add_ps(p2, p0), &w);
+        SubdivMidpoint(mid, _mm_add_ps(p1, p0), &radius);
+        SecondMidpoint((OutputPair*)mid, _mm_add_ps(p2, p1), &radius);
+        SubdivMidpoint(mid2, _mm_add_ps(p2, p0), &radius);
 
-        SubdivTri* T = self->m_tris.m_data;
+        SubdivTri* T = geometry->m_tris.m_data;
         SubdivTri* T0 = &T[oldT];
         SubdivTri* T2 = &T[oldT + 2];
         T0->a = original->a;
@@ -199,12 +201,12 @@ void __cdecl _subdivideRecursive(SubdivMesh* self, int idx, float w, float t)
         original->b = oldV + 1;
         original->c = oldV + 2;
 
-        double t1 = t - 1.0;
-        _subdivideRecursive(self, oldT, w, t1);
-        _subdivideRecursive(self, oldT + 1, w, t1);
-        _subdivideRecursive(self, oldT + 2, w, t1);
-        t = t1;
-        if (t == 0.0f)
+        double t1 = recursionsLeft - 1.0;
+        _subdivideRecursive(geometry, oldT, radius, t1);
+        _subdivideRecursive(geometry, oldT + 1, radius, t1);
+        _subdivideRecursive(geometry, oldT + 2, radius, t1);
+        recursionsLeft = t1;
+        if (recursionsLeft == 0.0f)
         {
             break;
         }

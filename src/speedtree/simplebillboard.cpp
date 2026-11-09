@@ -2,6 +2,9 @@
 
 #include "simplebillboard_decls.h"
 // @fnv 0x00b27080
+// pdb: CSimpleBillboard::ComputeUnitBillboard | SimpleBillboard.obj | retail, call graph, medium
+// pdb params: pCameraDir
+// pdb locals: cTrans, cAdjustedDirection, fAzimuth
 void SimpleBillboard::CalculateBillboardTransform(const float* afPosition)
 {
     struct Camera

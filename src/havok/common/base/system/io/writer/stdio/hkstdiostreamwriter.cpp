@@ -19,6 +19,8 @@ struct FUN_00d2bf00_class
 };
 
 // @fnv 0x00d2bf00
+// pdb: hkStdioStreamWriter::seek | hkStdioStreamWriter.obj | retail, vtable slot, high
+// pdb params: offset, whence
 bool FUN_00d2bf00_class::Seek(long offset, int whence)
 {
     return _fseek(m8, offset, whence) != 0;
@@ -79,6 +81,7 @@ struct FUN_00d2bf30
 extern void* __cdecl FUN_00ecdf44();
 // Sets the vtable and flags, then stores a pointer into the block returned by FUN_00ecdf44, offset by 0x40 when mode is 2 and 0x20 otherwise.
 // @fnv 0x00d2bf30
+// pdb: hkStdioStreamWriter::~hkStdioStreamWriter | hkStdioStreamWriter.obj | debug, object-file run extension, low
 FUN_00d2bf30::FUN_00d2bf30(int mode)
 {
     unk06 = 1;
@@ -113,6 +116,8 @@ struct Candidate : FUN_00d2be30
 };
 // Sets flags to 1, installs the vtable, clears file, marks opened, and if fileName is non-null calls SetFile with DAT_0106e798 as mode; returns this.
 // @fnv 0x00d2bf70
+// pdb: hkStdioStreamWriter::hkStdioStreamWriter | hkStdioStreamWriter.obj | debug, call graph, medium
+// pdb params: nameIn
 void* Candidate::OpenFile(const char* fileName)
 {
     flags = 1;
@@ -132,17 +137,19 @@ struct FUN_00d2be80_cls
     unsigned int unk04;
     void* m8;
     void FUN_00d2be50();
-    int ReadBytes(char* p, int n);
+    int ReadBytes(char* buf, int nbytes);
 };
 
 // Reads n bytes from m8 into p via FUN_00ecb086; if the read returns <= 0, calls FUN_00d2be50, and returns the byte count (0 when m8 is null).
 // @fnv 0x00d2be80
-int FUN_00d2be80_cls::ReadBytes(char* apBuffer, int aiCount)
+// pdb: hkStdioStreamWriter::write | hkStdioStreamWriter.obj | retail, vtable slot, high
+// pdb params: buf, nbytes
+int FUN_00d2be80_cls::ReadBytes(char* buf, int nbytes)
 {
     void* stream = m8;
     if (stream != 0)
     {
-        int result = FUN_00ecb086(apBuffer, 1, aiCount, stream);
+        int result = FUN_00ecb086(buf, 1, nbytes, stream);
         if (result <= 0)
         {
             FUN_00d2be50();
@@ -211,5 +218,6 @@ struct FUN_00d2bfd0 : S_00d2bfd0_RefObj
 };
 // Default constructor for FUN_00d2bfd0; its body is empty.
 // @fnv 0x00d2bfd0
+// pdb: hkStdioStreamWriter::`scalar deleting destructor' | hkStdioStreamWriter.obj | retail, vtable slot, high
 FUN_00d2bfd0::FUN_00d2bfd0()
 {}

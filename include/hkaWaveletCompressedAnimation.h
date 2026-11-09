@@ -3,22 +3,23 @@
 #include "hkaAnimation.h"
 #include "hkaWaveletCompressedAnimationQuantizationFormat.h"
 
+// pdb: class hkaWaveletCompressedAnimation, size 0x70, bases: hkaAnimation, 12 members
 class hkaWaveletCompressedAnimation : public hkaAnimation
 {
 public:
     virtual hkUint32 getBlockKey(int block) const; // RTTI slot 16.
     virtual void vf16();
 
-    hkInt32 m_iFrameCount;
-    hkInt32 m_iDofCount;
-    hkaWaveletCompressedAnimationQuantizationFormat m_eQuantizationFormat;
-    hkUint32 m_uiFramesPerBlock;
-    hkUint32 m_uiNumBlocks;
-    hkUint32 m_uiOffsetDataOffset;
-    hkUint32 m_uiScaleDataOffset;
-    hkUint32 m_uiIndexDataOffset;
-    hkUint32 m_uiNumIndices;
-    hkUint32 m_uiNumDynamicDofs;
-    hkUint32 m_uiNumDynamicTracks;
-    hkArray<hkUint8> m_kCompressedData;
+    hkInt32 m_numberOfPoses;
+    hkInt32 m_blockSize;
+    hkaWaveletCompressedAnimationQuantizationFormat m_qFormat;
+    hkUint32 m_staticMaskIdx;
+    hkUint32 m_staticDOFsIdx;
+    hkUint32 m_numStaticTransformDOFs;
+    hkUint32 m_numDynamicTransformDOFs;
+    hkUint32 m_blockIndexIdx;
+    hkUint32 m_blockIndexSize;
+    hkUint32 m_quantizedDataIdx;
+    hkUint32 m_quantizedDataSize;
+    hkArray<hkUint8> m_dataBuffer;
 };

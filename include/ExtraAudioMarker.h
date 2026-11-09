@@ -4,6 +4,7 @@
 
 class MediaLocation;
 
+// pdb: class ExtraAudioMarker, size 0x10, bases: BSExtraData, 1 members
 class ExtraAudioMarker : public BSExtraData
 {
 public:

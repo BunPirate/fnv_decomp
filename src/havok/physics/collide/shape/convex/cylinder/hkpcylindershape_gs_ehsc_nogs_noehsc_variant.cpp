@@ -8,7 +8,7 @@
 #include "../../../../../../../include/hkpCylinderShape.h"
 int __cdecl hkpCylinderShape_ReturnConstant_0x12();
 extern char DAT_01268940[];
-void __cdecl hkReferencedObject_calcContentStatistics(void* item, const char* type);
+void __cdecl hkReferencedObject_calcContentStatistics(void* collector, const char* cls);
 void __cdecl hkpCylinderShape_calcContentStatistics(void* item, const char*);
 struct C00d573e0 {
     char  pad00[0x10];
@@ -89,6 +89,8 @@ struct S00d57aa0_Obj {
 
 // @fnv 0x00d57aa0
 // src: XBOX_PDB 0x00d57aa0
+// pdb: hkpCylinderShape::hkpCylinderShape | hkpCylinderShape.obj | retail, object-file run extension, low
+// pdb params: flag
 void* __thiscall S00d57aa0_Obj::hkpCylinderShape_hkpCylinderShape(
     const float* a,
     const float* b,

@@ -31,6 +31,9 @@ unsigned int __fastcall GetTerrainReferenceID(TESObjectREFR* reference);
 
 // Returns null if path is missing or not found, otherwise opens the file and returns the result of ReadAnimationFromStream on it.
 // @fnv 0x004d52f0
+// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | debug, object-file run extension, low
+// pdb params: apFilename
+// pdb locals: pfile
 BGSTerrainManager* LoadBGSTerrainManager(const char* path)
 {
     BSFile* file = 0;
@@ -46,9 +49,10 @@ void __cdecl BGSTerrainChunk_ResetCullResults();
 void __cdecl BGSDistantObjectBlock_ResetCullResults();
 
 // @fnv 0x006fd130
+// pdb: BGSTerrainManager::ResetMultiBoundResults | BGSTerrainManager.obj | retail, upstream name already matches, high
 void BGSTerrainManager::ResetMultiBoundResults()
 {
-    if (pRootTerrainNode)
+    if (pRootNode)
     {
         BGSTerrainChunk_ResetCullResults();
         BGSDistantObjectBlock_ResetCullResults();
@@ -59,6 +63,8 @@ void __cdecl SetSoundListFlag(bool);
 
 // @fnv 0x006fd1f0
 // src: XBOX_PDB 0x006fd1f0
+// pdb: BGSTerrainManager::EnableLODWaterProcessing | BGSTerrainManager.obj | debug, upstream name already matches, high
+// pdb params: abEnable
 void __cdecl BGSTerrainManager_EnableLODWaterProcessing(bool abEnable)
 {
     SetSoundListFlag(abEnable);
@@ -81,22 +87,27 @@ struct FUN_006fd980_shell
 // If the root node is non-null, calls FUN_006fd980(7) on it.
 // @fnv 0x006fce00
 // src: XBOX_PDB 0x006fce00
+// pdb: BGSDistantObjectBlock::QBlocksAreLoaded | BGSTerrainManager.obj | debug, object-file run extension, low
 void __thiscall BGSTerrainManager::UnloadAll_006fce00()
 {
-    if (pRootTerrainNode != 0)
-        ((FUN_006fd980_shell*)pRootTerrainNode)->BGSTerrainNode_UnloadDataRecurse(7);
+    if (pRootNode != 0)
+        ((FUN_006fd980_shell*)pRootNode)->BGSTerrainNode_UnloadDataRecurse(7);
 }
 
+// pdb: class BGSTerrainChunk, size 0x30 (here 0x1), 14 members
 struct BGSTerrainChunk
 {
     int __thiscall BGSTerrainChunk_GetTexture(int);
 };
 
 // @fnv 0x006fce30
-NiTexture* BGSTerrainManager::GetDiffuseTextureForPoint(void* point)
+// pdb: BGSTerrainManager::GetDiffuseTextureForPoint | BGSTerrainManager.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: ptex, pchunk
+NiTexture* BGSTerrainManager::GetDiffuseTextureForPoint(void* aPoint)
 {
     NiTexture* result = 0;
-    BGSTerrainChunk* obj = GetChunkForPoint(point);
+    BGSTerrainChunk* obj = GetChunkForPoint(aPoint);
     if (obj)
     {
         result = (NiTexture*)obj->BGSTerrainChunk_GetTexture(0);
@@ -111,15 +122,19 @@ struct GlobalObject_00869f00
 
 // Scans the array at offset 0x2c for entries equal to apTreeRef and removes each match, decrementing the count.
 // @fnv 0x006fcf30
-void BGSTerrainManager::RemoveTerrainReference(TESObjectREFR* apTreeRef)
+// src: XBOX_RETAIL_PDB 0x006fcf30
+// pdb: BGSTerrainManager::ReleaseTree | BGSTerrainManager.obj | retail, call graph (shared callers), high
+// pdb params: apTreeRef
+// pdb locals: icount, i
+void BGSTerrainManager::ReleaseTree(TESObjectREFR* apTreeRef)
 {
-    unsigned int icount = ((BSSimpleArray<unsigned int>*)(&kTerrainReferences))->GetSize();
+    unsigned int icount = ((BSSimpleArray<unsigned int>*)(&TreesQueuedToHide))->GetSize();
     unsigned int i = 0;
     while (i < icount)
     {
-        if (*((BSSimpleArray<TESObjectREFR*>*)(&kTerrainReferences))->GetAtPointer((int)i) == apTreeRef)
+        if (*((BSSimpleArray<TESObjectREFR*>*)(&TreesQueuedToHide))->GetAtPointer((int)i) == apTreeRef)
         {
-            ((GlobalObject_00869f00*)(&kTerrainReferences))->Remove(i, true);
+            ((GlobalObject_00869f00*)(&TreesQueuedToHide))->Remove(i, true);
             icount--;
         }
         else
@@ -132,9 +147,10 @@ void BGSTerrainManager::RemoveTerrainReference(TESObjectREFR* apTreeRef)
 
 // @fnv 0x006fd060
 // src: COMMUNITY 0x006fd060
+// pdb: BGSTerrainManager::TriggerApocalypse | BGSTerrainManager.obj | debug, object-file run extension, low
 void __thiscall BGSTerrainManager::TriggerLODApocalypse()
 {
-    pRootTerrainNode->ProcessBlock();
+    pRootNode->ProcessBlock();
 }
 
 struct GlobalObject_0045cf30
@@ -148,17 +164,22 @@ struct FUN_006fea70_obj
     void SetValue(int);
 };
 // @fnv 0x006fcdb0
-void BGSTerrainManager::UpdateMorphParameters(void* a1)
+// pdb: BGSTerrainManager::UpdateMorphParameters | BGSTerrainManager.obj | debug, upstream name already matches, high
+// pdb params: aViewPosition
+void BGSTerrainManager::UpdateMorphParameters(void* aViewPosition)
 {
-    if (DAT_0119f188 && *g_011d86ac.Bool() && pRootTerrainNode)
-        ((FUN_006fea70_obj*)pRootTerrainNode)->SetValue((int)a1);
+    if (DAT_0119f188 && *g_011d86ac.Bool() && pRootNode)
+        ((FUN_006fea70_obj*)pRootNode)->SetValue((int)aViewPosition);
 }
 
 // @fnv 0x006fce70
-NiTexture* BGSTerrainManager::GetNormalTextureForPoint(void* a1)
+// pdb: BGSTerrainManager::GetNormalTextureForPoint | BGSTerrainManager.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: ptex, pchunk
+NiTexture* BGSTerrainManager::GetNormalTextureForPoint(void* aPoint)
 {
     NiTexture* result = 0;
-    BGSTerrainChunk* chunk = GetChunkForPoint(a1);
+    BGSTerrainChunk* chunk = GetChunkForPoint(aPoint);
     if (chunk)
         result = (NiTexture*)chunk->BGSTerrainChunk_GetTexture(1);
     return result;
@@ -166,14 +187,17 @@ NiTexture* BGSTerrainManager::GetNormalTextureForPoint(void* a1)
 
 struct Unk006fec90
 {
-    int __thiscall GetActiveMenu(int);
+    int __thiscall BGSTerrainNode_GetChunkForPoint(int);
 };
 // @fnv 0x006fceb0
-BGSTerrainChunk* BGSTerrainManager::GetChunkForPoint(void* a1)
+// pdb: BGSTerrainManager::GetChunkForPoint | BGSTerrainManager.obj | debug, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: pchunk
+BGSTerrainChunk* BGSTerrainManager::GetChunkForPoint(void* aPoint)
 {
     int unused = 0;
-    if (pRootTerrainNode)
-        return (BGSTerrainChunk*)((Unk006fec90*)pRootTerrainNode)->GetActiveMenu((int)a1);
+    if (pRootNode)
+        return (BGSTerrainChunk*)((Unk006fec90*)pRootNode)->BGSTerrainNode_GetChunkForPoint((int)aPoint);
     return 0;
 }
 
@@ -182,15 +206,21 @@ struct FUN_006fed30_Callee
     int __thiscall BGSTerrainNode_GetTreeBlockForPoint(int);
 };
 // @fnv 0x006fcef0
+// pdb: BGSTerrainManager::GetTreeBlockForPoint | BGSTerrainManager.obj | debug, call graph, medium
+// pdb params: aPoint
+// pdb locals: pchunk
 BGSDistantTreeBlock* BGSTerrainManager::GetDistantTreeBlockForPoint(void* a)
 {
     int unused = 0;
-    if (pRootTerrainNode)
-        return (BGSDistantTreeBlock*)((FUN_006fed30_Callee*)pRootTerrainNode)->BGSTerrainNode_GetTreeBlockForPoint((int)a);
+    if (pRootNode)
+        return (BGSDistantTreeBlock*)((FUN_006fed30_Callee*)pRootNode)->BGSTerrainNode_GetTreeBlockForPoint((int)a);
     return 0;
 }
 
 // @fnv 0x006fd010
+// pdb: BGSTerrainManager::ShowTree | BGSTerrainManager.obj | debug, object-file run extension, low
+// pdb params: apTreeRef
+// pdb locals: ptrees, id
 void BGSTerrainManager::AddTerrainReference(TESObjectREFR* a1)
 {
     unsigned int tmp = GetTerrainReferenceID(a1);
@@ -203,7 +233,7 @@ void BGSTerrainManager::AddTerrainReference(TESObjectREFR* a1)
 
 struct S_00587f40_Lock
 {
-    void BSCriticalSection_Enter(int a);
+    void BSCriticalSection_Enter(int apName);
     void FUN_004538c0();
 };
 extern S_00587f40_Lock DAT_011ca60c;
@@ -250,11 +280,14 @@ struct S_00587f40
     int unk58;
     int unk5C;
     S_00587f40_List m_kNode;
-    void ClearAllLists();
+    void TESWorldSpace_ClearPersistentRefData();
 };
 
 // @fnv 0x00587f40
-void S_00587f40::ClearAllLists()
+// src: XBOX_RETAIL_PDB 0x00587f40
+// pdb: TESWorldSpace::ClearPersistentRefData | TESWorldSpace.obj | retail, call graph, high
+// pdb locals: iter, preflist, iignore
+void S_00587f40::TESWorldSpace_ClearPersistentRefData()
 {
     DAT_011ca60c.BSCriticalSection_Enter(0);
     m_kNode.RemoveAll();
@@ -275,20 +308,25 @@ void S_00587f40::ClearAllLists()
 }
 
 // @fnv 0x006fcfa0
-void BGSTerrainManager::UpdateTerrainReference(TESObjectREFR* ref, bool addIfMissing)
+// src: XBOX_RETAIL_PDB 0x006fcfa0
+// pdb: BGSTerrainManager::HideTree | BGSTerrainManager.obj | retail, call graph (shared callers), high
+// pdb params: apTreeRef, abQueue
+// pdb locals: ptrees, id
+void BGSTerrainManager::HideTree(TESObjectREFR* apTreeRef, bool abQueue)
 {
-    unsigned int formId = GetTerrainReferenceID(ref);
-    BGSDistantTreeBlock* block = GetDistantTreeBlockForPoint((void*)((const TESObjectREFR*)ref)->GetPos());
+    unsigned int formId = GetTerrainReferenceID(apTreeRef);
+    BGSDistantTreeBlock* block = GetDistantTreeBlockForPoint((void*)((const TESObjectREFR*)apTreeRef)->GetPos());
     if (block)
     {
         block->MarkTreeInstance(formId, true);
     }
-    else if (addIfMissing)
+    else if (abQueue)
     {
-        kTerrainReferences.Add((TESObjectREFR* const&)ref);
+        TreesQueuedToHide.Add((TESObjectREFR* const&)apTreeRef);
     }
 }
 
+// pdb: structure tagRECT, size 0x10, 4 members
 struct tagRECT
 {
     long left, top, right, bottom;
@@ -339,12 +377,15 @@ extern BGSTerrainManager* DAT_011d8670;
 
 // @fnv 0x006fca90
 // src: XBOX_PDB 0x006fca90
-void BGSTerrainManager::Update_006fca90(const NiPoint3& arPos, int aiFlags)
+// pdb: BGSTerrainManager::Update | BGSTerrainManager.obj | debug, call graph, high
+// pdb params: aViewPosition, aWhatToUpdate
+// pdb locals: viewPos, kloadedrect, poldManager, bupdateLandAndBlocks, bupdateWaterVisibility, bupdateTrees, bupdateBlockVisibility, tempTreeList, uisize, i, ptrees, id
+void BGSTerrainManager::Update_006fca90(const NiPoint3& aViewPosition, int aWhatToUpdate)
 {
     if (DAT_0119f188 && *g_011d86ac.Bool())
     {
-        NiPoint3 pos = arPos;
-        aiFlags |= 1;
+        NiPoint3 pos = aViewPosition;
+        aWhatToUpdate |= 1;
         tagRECT rect;
         g_TES->FUN_00451020(&rect, 0.0f);
         SetRectCenterAndHalfExtents(&rect);
@@ -359,50 +400,50 @@ void BGSTerrainManager::Update_006fca90(const NiPoint3& arPos, int aiFlags)
             }
         }
         DAT_011d8670 = this;
-        if (pRootTerrainNode)
+        if (pRootNode)
         {
-            bool b1 = (aiFlags & 1) != 0;
-            bool b2 = (aiFlags & 2) != 0;
-            bool b4 = (aiFlags & 4) != 0;
-            bool m_bShaderFeatureActive = (aiFlags & 8) != 0;
+            bool b1 = (aWhatToUpdate & 1) != 0;
+            bool b2 = (aWhatToUpdate & 2) != 0;
+            bool b4 = (aWhatToUpdate & 4) != 0;
+            bool m_bShaderFeatureActive = (aWhatToUpdate & 8) != 0;
             if (b1)
             {
-                ((LodNode*)pRootTerrainNode)->UpdateTerrainNode(pos, b4);
+                ((LodNode*)pRootNode)->UpdateTerrainNode(pos, b4);
                 g_TES->TES_InitDistantTextureBlending();
                 if (*DAT_011d869c.Bool())
                 {
-                    ((LodNode*)pRootTerrainNode)->UpdateBlock(pos, b2);
+                    ((LodNode*)pRootNode)->UpdateBlock(pos, b2);
                 }
             }
             if (m_bShaderFeatureActive && *DAT_011d8680.Bool())
             {
                 unsigned int count;
-                ((LodNode*)pRootTerrainNode)->BGSTerrainNode_UpdateTrees(pos);
-                if (BGSDistantTreeBlock_GetBlockCount() > 0u && ((RefArray*)&kTerrainReferences)->FUN_0044ddc0() > 0)
+                ((LodNode*)pRootNode)->BGSTerrainNode_UpdateTrees(pos);
+                if (BGSDistantTreeBlock_GetBlockCount() > 0u && ((RefArray*)&TreesQueuedToHide)->FUN_0044ddc0() > 0)
                 {
                     LocalRefArray kept;
-                    count = ((RefArray*)&kTerrainReferences)->FUN_0044ddc0();
+                    count = ((RefArray*)&TreesQueuedToHide)->FUN_0044ddc0();
                     for (unsigned int i = 0; i < count; i++)
                     {
-                        unsigned int val = GetTerrainReferenceID(((RefArray*)&kTerrainReferences)->FUN_00877a30(i));
-                        BGSDistantTreeBlock* pBlock = GetDistantTreeBlockForPoint((void*)((const TESObjectREFR*)((RefArray*)&kTerrainReferences)->FUN_00877a30(i))->GetPos());
+                        unsigned int val = GetTerrainReferenceID(((RefArray*)&TreesQueuedToHide)->FUN_00877a30(i));
+                        BGSDistantTreeBlock* pBlock = GetDistantTreeBlockForPoint((void*)((const TESObjectREFR*)((RefArray*)&TreesQueuedToHide)->FUN_00877a30(i))->GetPos());
                         if (pBlock)
                         {
                             pBlock->MarkTreeInstance(val, true);
                         }
                         else
                         {
-                            kept.FUN_007cb2e0(((RefArray*)&kTerrainReferences)->FUN_00877a30(i));
+                            kept.FUN_007cb2e0(((RefArray*)&TreesQueuedToHide)->FUN_00877a30(i));
                         }
                     }
-                    ((RefArray*)&kTerrainReferences)->FUN_008454f0(true);
+                    ((RefArray*)&TreesQueuedToHide)->FUN_008454f0(true);
                     if (kept.FUN_0044ddc0() > 0)
                     {
                         unsigned int keptCount = kept.FUN_0044ddc0();
-                        ((RefArray*)&kTerrainReferences)->FUN_006f2290(keptCount, true);
+                        ((RefArray*)&TreesQueuedToHide)->FUN_006f2290(keptCount, true);
                         for (unsigned int j = 0; j < keptCount; j++)
                         {
-                            ((RefArray*)&kTerrainReferences)->BSSimpleArray_TESAmmo_1024_SetAt(j, kept.BSSimpleArray_NiAVObject_1024_GetAt(j));
+                            ((RefArray*)&TreesQueuedToHide)->BSSimpleArray_TESAmmo_1024_SetAt(j, kept.BSSimpleArray_NiAVObject_1024_GetAt(j));
                         }
                     }
                 }
@@ -424,7 +465,7 @@ class TerrainTempBuffer
     TerrainTempBuffer(int aInit);
     ~TerrainTempBuffer();
     void Push(TerrainRefProxy* apRef);
-    void Assign(unsigned int aValue);
+    void Assign(unsigned int kFrustum);
 
     unsigned int m_00, m_04, m_08, m_0C, m_10, m_14, m_18, m_1C, m_20;
     unsigned int m_24, m_28, m_2C, m_30, m_34, m_38, m_3C, m_40, m_44;
@@ -436,12 +477,15 @@ void __cdecl UpdateSceneEntryRadii(TerrainRefProxy* apRef, TerrainTempBuffer* ap
 void __cdecl BGSDistantObjectBlock_ResetCullResults();
 
 // @fnv 0x006fd080
+// pdb: ShadowSceneNode::UpdateMultiboundVisibility | ShadowSceneNode.obj | debug, call graph, medium
+// pdb params: apMultibound, akViewPoint, akCuller
+// pdb locals: pbsculler, kresult, bshapewithinfrustum, kiter, poccluder
 void BGSTerrainManager::UpdateMultiBoundResults(NiCamera* apCamera)
 {
     TerrainTempBuffer tempBuffer(0);
     tempBuffer.Push((TerrainRefProxy*)apCamera);
     tempBuffer.Assign(((TerrainRefProxy*)apCamera)->GetRawId());
-    if (pRootTerrainNode != 0)
+    if (pRootNode != 0)
     {
         UpdateSceneEntryRadii((TerrainRefProxy*)apCamera, &tempBuffer);
         BGSDistantObjectBlock_ResetCullResults();

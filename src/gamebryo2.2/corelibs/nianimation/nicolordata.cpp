@@ -10,24 +10,28 @@
 
 // Preserve the original out-of-line, nonthrowing setter call in the range-copy entry below.
 // @fnv 0x00a3d210
-__declspec(noinline) __declspec(nothrow) void NiColorData::SetColorKeys(
-    ColorAnimationKey* keys, unsigned int count, NiAnimationKey::KeyType type)
+// src: XBOX_RETAIL_PDB 0x00a3d210
+// pdb: NiColorData::ReplaceAnim | NiColorData.obj | retail, call graph (shared callers), high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+__declspec(noinline) __declspec(nothrow) void NiColorData::ReplaceAnim(
+    ColorAnimationKey* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eType)
 {
-    if (m_pKeyArray)
-        DAT_011f38e8[m_eRequestType](m_pKeyArray);
-    if (keys && count)
+    if (m_pkKeys)
+        DAT_011f38e8[m_eType](m_pkKeys);
+    if (pkKeys && uiNumKeys)
     {
-        m_ucKeyDataSize = DAT_011f376a[type];
-        m_pKeyArray = keys;
-        m_uiNumKeys = count;
-        m_eRequestType = type;
+        m_ucKeySize = DAT_011f376a[eType];
+        m_pkKeys = pkKeys;
+        m_uiNumKeys = uiNumKeys;
+        m_eType = eType;
     }
     else
     {
         m_uiNumKeys = 0;
-        m_pKeyArray = 0;
-        m_eRequestType = NiAnimationKey::NOINTERP;
-        m_ucKeyDataSize = 0;
+        m_pkKeys = 0;
+        m_eType = NiAnimationKey::NOINTERP;
+        m_ucKeySize = 0;
     }
 }
 
@@ -40,17 +44,19 @@ struct ColorDataDestruction : public NiColorData
 };
 
 // @fnv 0x00a3d120
+// pdb: NiColorData::~NiColorData | NiColorData.obj | debug, call graph, medium
+// pdb locals: pfnDeleteFunc
 void ColorDataDestruction::DestroyColorData()
 {
     *(const void**)this = &vftable_NiColorData;
-    if (m_pKeyArray)
+    if (m_pkKeys)
     {
-        DAT_011f38e8[m_eRequestType](m_pKeyArray);
+        DAT_011f38e8[m_eType](m_pkKeys);
     }
     this->NiObject::~NiObject();
 }
 
-void __cdecl UpdateSlotStates(int, int, void*, unsigned int*, float, float);
+void __cdecl NiAnimationKey_GuaranteeKeyAtStartAndEnd(int, int, void*, unsigned int*, float, float);
 // NiColorData.h lacks GuaranteeKeysAtStartAndEnd; the shared class supplies all of this adapter's storage.
 struct ColorDataKeyRange : public NiColorData
 {
@@ -59,9 +65,9 @@ struct ColorDataKeyRange : public NiColorData
 // @fnv 0x00a3d0e0
 void ColorDataKeyRange::GuaranteeKeysAtStartAndEnd(float afValue1, float afValue2)
 {
-    void* pkKeys = m_pKeyArray;
-    UpdateSlotStates(3, m_eRequestType, &pkKeys, &m_uiNumKeys, afValue1, afValue2);
-    m_pKeyArray = (ColorAnimationKey*)pkKeys;
+    void* pkKeys = m_pkKeys;
+    NiAnimationKey_GuaranteeKeyAtStartAndEnd(3, m_eType, &pkKeys, &m_uiNumKeys, afValue1, afValue2);
+    m_pkKeys = (ColorAnimationKey*)pkKeys;
 }
 
 namespace fnv_00a3d150 {
@@ -69,6 +75,8 @@ extern int vftable_NiColorData;
 
 // Allocates a 0x18-byte object, runs its constructor, installs the NiColorData vtable and zeroes three int fields at offsets 8, 0xc and 0x10.
 // @fnv 0x00a3d150
+// pdb: NiColorData::CreateObject | NiColorData.obj | retail, object-file run extension, low
+// pdb locals: pkObject
 void* CreateNiColorData()
 {
     NiColorData* p = (NiColorData*)NiMemObject::operator new(sizeof(NiColorData));
@@ -77,8 +85,8 @@ void* CreateNiColorData()
         new (p) NiObject;
         *(void**)p = (void*)&vftable_NiColorData;
         p->m_uiNumKeys = 0;
-        p->m_pKeyArray = 0;
-        p->m_eRequestType = NiAnimationKey::NOINTERP;
+        p->m_pkKeys = 0;
+        p->m_eType = NiAnimationKey::NOINTERP;
         return p;
     }
     return 0;
@@ -90,25 +98,28 @@ extern bool(__cdecl* DAT_011f3b28[])(ColorAnimationKey*, ColorAnimationKey*);
 // NiColorData.h lacks the key-comparison override; this adapter adds no storage.
 struct ColorDataEquality : public NiColorData
 {
-    bool CompareKeys(NiColorData* other);
+    bool CompareKeys(NiColorData* pkObject);
 };
 
 // @fnv 0x00a3d190
-bool ColorDataEquality::CompareKeys(NiColorData* other)
+// pdb: NiColorData::IsEqual | NiColorData.obj | retail, vtable slot, high
+// pdb params: pkObject
+// pdb locals: equal, pkData, uiI
+bool ColorDataEquality::CompareKeys(NiColorData* pkObject)
 {
-    if (!IsSameAs(other))
+    if (!IsSameAs(pkObject))
         return false;
-    if (m_uiNumKeys != other->m_uiNumKeys)
+    if (m_uiNumKeys != pkObject->m_uiNumKeys)
         return false;
-    if (m_eRequestType != other->m_eRequestType)
+    if (m_eType != pkObject->m_eType)
         return false;
-    if (m_ucKeyDataSize != other->m_ucKeyDataSize)
+    if (m_ucKeySize != pkObject->m_ucKeySize)
         return false;
-    bool(__cdecl * pfnKeyCompare)(ColorAnimationKey*, ColorAnimationKey*) = DAT_011f3b28[m_eRequestType];
+    bool(__cdecl * pfnKeyCompare)(ColorAnimationKey*, ColorAnimationKey*) = DAT_011f3b28[m_eType];
     for (unsigned int i = 0; i < m_uiNumKeys; ++i)
     {
-        ColorAnimationKey* kOther = (ColorAnimationKey*)((char*)other->m_pKeyArray + m_ucKeyDataSize * i);
-        ColorAnimationKey* kThis = (ColorAnimationKey*)((char*)m_pKeyArray + m_ucKeyDataSize * i);
+        ColorAnimationKey* kOther = (ColorAnimationKey*)((char*)pkObject->m_pkKeys + m_ucKeySize * i);
+        ColorAnimationKey* kThis = (ColorAnimationKey*)((char*)m_pkKeys + m_ucKeySize * i);
         if (!pfnKeyCompare(kThis, kOther))
             return false;
     }
@@ -148,24 +159,27 @@ extern ColorKeyCreateFunction g_apfnColorKeyCreateA3D[];
 class ColorDataBinaryLoader : public NiColorData
 {
   public:
-    void LoadColorKeys(NiStream& kStream);
+    void LoadColorKeys(NiStream& stream);
 };
 
 // Loads the base object, reads the key count, and if nonzero reads the key type and creates and stores the color keys via the matching create function.
 // @fnv 0x00a3d370
-void ColorDataBinaryLoader::LoadColorKeys(NiStream& kStream)
+// pdb: NiColorData::LoadBinary | NiColorData.obj | retail, vtable slot, high
+// pdb params: stream
+// pdb locals: uiNumKeys, eColorType, pkColorKeys, cf
+void ColorDataBinaryLoader::LoadColorKeys(NiStream& stream)
 {
-    NiObject::LoadBinary(kStream);
+    NiObject::LoadBinary(stream);
 
     unsigned int uiNumKeys;
-    LoadColorDataScalar(kStream, uiNumKeys);
+    LoadColorDataScalar(stream, uiNumKeys);
     if (uiNumKeys > 0)
     {
         NiAnimationKey::KeyType eType;
-        LoadColorDataEnum(kStream, eType);
+        LoadColorDataEnum(stream, eType);
         ColorKeyCreateFunction cf = g_apfnColorKeyCreateA3D[eType];
-        ColorAnimationKey* pkKeys = cf(kStream, uiNumKeys);
-        SetColorKeys(pkKeys, uiNumKeys, eType);
+        ColorAnimationKey* pkKeys = cf(stream, uiNumKeys);
+        ReplaceAnim(pkKeys, uiNumKeys, eType);
     }
 }
 
@@ -190,19 +204,22 @@ struct ColorDataBinarySaver : NiColorData
 
 // Writes the key count and, when nonzero, the key type and key array through the matching save function.
 // @fnv 0x00a3d410
-void ColorDataBinarySaver::SaveColorKeys(NiStream* pStream)
+// pdb: NiColorData::SaveBinary | NiColorData.obj | retail, vtable slot, high
+// pdb params: stream
+// pdb locals: sf
+void ColorDataBinarySaver::SaveColorKeys(NiStream* stream)
 {
-    NiObject::SaveBinary(*pStream);
+    NiObject::SaveBinary(*stream);
     unsigned& n = m_uiNumKeys;
-    SaveColorDataScalar(pStream, n);
+    SaveColorDataScalar(stream, n);
     if (n > 0)
     {
-        SaveColorDataScalar(pStream, m_eRequestType);
-        DAT_011f3a98[m_eRequestType](pStream, m_pKeyArray, n);
+        SaveColorDataScalar(stream, m_eType);
+        DAT_011f3a98[m_eType](stream, m_pkKeys, n);
     }
 }
 
-extern void* DAT_011f3750;
+extern void* NiColorData_ms_RTTI;
 
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* p);
 void* __cdecl NiGetViewerString_00a7d510(const char* s, unsigned int count);
@@ -223,28 +240,30 @@ struct FUN_00a3d490_arr
 class ColorDataViewerStrings : public NiColorData
 {
   public:
-    void CollectViewerStrings(FUN_00a3d490_arr* arr);
+    void CollectViewerStrings(FUN_00a3d490_arr* pStrings);
 };
 
 // @fnv 0x00a3d490
-void ColorDataViewerStrings::CollectViewerStrings(FUN_00a3d490_arr* arr)
+// pdb: NiColorData::GetViewerStrings | NiColorData.obj | retail, vtable slot, high
+// pdb params: pStrings
+void ColorDataViewerStrings::CollectViewerStrings(FUN_00a3d490_arr* pStrings)
 {
-    NiObject::AddViewerStrings((NiViewerStringsArray*)arr);
-    void* item = NiViewerStrings_NiGetViewerString_Title(DAT_011f3750);
-    unsigned int index = arr->m_usElementCount;
-    if (index >= arr->m_usCap)
+    NiObject::AddViewerStrings((NiViewerStringsArray*)pStrings);
+    void* item = NiViewerStrings_NiGetViewerString_Title(NiColorData_ms_RTTI);
+    unsigned int index = pStrings->m_usElementCount;
+    if (index >= pStrings->m_usCap)
     {
-        arr->FUN_0096ad30(index + arr->m_usGrow);
+        pStrings->FUN_0096ad30(index + pStrings->m_usGrow);
     }
-    arr->FUN_0096ae90(index, &item);
+    pStrings->FUN_0096ae90(index, &item);
 
     item = NiGetViewerString_00a7d510("m_uiNumKeys", m_uiNumKeys);
-    index = arr->m_usElementCount;
-    if (index >= arr->m_usCap)
+    index = pStrings->m_usElementCount;
+    if (index >= pStrings->m_usCap)
     {
-        arr->FUN_0096ad30(index + arr->m_usGrow);
+        pStrings->FUN_0096ad30(index + pStrings->m_usGrow);
     }
-    arr->FUN_0096ae90(index, &item);
+    pStrings->FUN_0096ae90(index, &item);
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile* plAddend);
@@ -297,21 +316,25 @@ template <class T> __declspec(nothrow) inline T* NiPointer<T>::operator->() cons
     return m_pObject;
 }
 
-void __cdecl BuildColorKeyRange(NiAnimationKey::KeyContent content, NiAnimationKey::KeyType type,
-                                ColorAnimationKey* source, unsigned int count, float first, float second,
-                                ColorAnimationKey** keys, unsigned int* keyCount) throw();
+void __cdecl BuildColorKeyRange(NiAnimationKey::KeyContent eContent, NiAnimationKey::KeyType eType,
+                                ColorAnimationKey* pkOrigKeys, unsigned int uiOrigNumKeys, float fStartTime, float fEndTime,
+                                ColorAnimationKey** pkNewKeys, unsigned int* uiNewNumKeys) throw();
 
 // NiColorData.h lacks the range-copy method; the adapter inherits all object storage from NiColorData.
 class ColorDataRangeCopy : public NiColorData
 {
   public:
-    void CreateData(NiPointer<NiColorData>& spScreenData) throw();
-    void BuildAndSetData(float fFirst, float fSecond, NiPointer<NiColorData>& spResult);
+    void CreateData(NiPointer<NiColorData>& aspObject) throw();
+    void NiColorData_GetSequenceData(float fStartTime, float fEndTime, NiPointer<NiColorData>& aspColorData);
 };
 
 // Creates color data, fills its keys for the requested range, and assigns it to spResult.
 // @fnv 0x00a3d270
-void ColorDataRangeCopy::BuildAndSetData(float fFirst, float fSecond, NiPointer<NiColorData>& spResult)
+// src: XBOX_RETAIL_PDB 0x00a3d270
+// pdb: NiColorData::GetSequenceData | NiColorData.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime, aspColorData
+// pdb locals: spDeepCopy, spNewData, pkNewKeys, uiNewNumKeys
+void ColorDataRangeCopy::NiColorData_GetSequenceData(float fStartTime, float fEndTime, NiPointer<NiColorData>& aspColorData)
 {
     NiPointer<NiColorData> spCreated;
     CreateData(spCreated);
@@ -320,9 +343,9 @@ void ColorDataRangeCopy::BuildAndSetData(float fFirst, float fSecond, NiPointer<
     {
         ColorAnimationKey* keys = 0;
         unsigned int count = 0;
-        BuildColorKeyRange(NiAnimationKey::COLORKEY, m_eRequestType, m_pKeyArray, m_uiNumKeys,
-                           fFirst, fSecond, &keys, &count);
-        spScreenData->SetColorKeys(keys, count, m_eRequestType);
+        BuildColorKeyRange(NiAnimationKey::COLORKEY, m_eType, m_pkKeys, m_uiNumKeys,
+                           fStartTime, fEndTime, &keys, &count);
+        spScreenData->ReplaceAnim(keys, count, m_eType);
     }
-    spResult = spScreenData;
+    aspColorData = spScreenData;
 }

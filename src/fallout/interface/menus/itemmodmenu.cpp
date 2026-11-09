@@ -11,6 +11,8 @@ static const int kGetClassValue = 1061;
 
 // Loads the item mod menu tile from file, validates its menu ID, initializes the list box and child tiles, and returns the tile or 0 on failure.
 // @fnv 0x00783440
+// pdb: ItemModMenu::Create | ItemModMenu.obj | retail, upstream name already matches, high
+// pdb locals: pin, ptile, pold_menu_tile
 Tile* __cdecl ItemModMenu::Create()
 {
     struct CreateLocals
@@ -61,10 +63,10 @@ Tile* __cdecl ItemModMenu::Create()
         }
 
         ((ListBox_ItemChange___*)((char*)DAT_011d9f54 + 0x60))
-            ->Initialize(((ItemModMenu*)DAT_011d9f54)->m_pTiles[1], DAT_01073bc4);
+            ->Initialize(((ItemModMenu*)DAT_011d9f54)->pTiles[1], DAT_01073bc4);
         ((ListBox_ItemChange___*)((char*)DAT_011d9f54 + 0x60))->FUN_007a1930(false);
-        ((ItemModMenu*)DAT_011d9f54)->m_pTiles[5]->SetTraitFloat(DAT_011d9f44, 1.0f);
-        ((ItemModMenu*)DAT_011d9f54)->m_pTiles[10]->SetTraitFloat(DAT_011d9f44, 1.0f);
+        ((ItemModMenu*)DAT_011d9f54)->pTiles[5]->SetTraitFloat(DAT_011d9f44, 1.0f);
+        ((ItemModMenu*)DAT_011d9f54)->pTiles[10]->SetTraitFloat(DAT_011d9f44, 1.0f);
         DAT_011d9f54->SetMenuVisibility(true);
         return state.fileTile;
     }
@@ -89,6 +91,7 @@ Tile* __cdecl ItemModMenu::Create()
 }
 
 // @fnv 0x00783310
+// pdb: ItemModMenu::ItemModMenu | ItemModMenu.obj | retail, string-set bridge, high
 ItemModMenu::ItemModMenu()
 {
     DAT_011d9f3c = Tile::GetTraitID(DAT_0106ed20);
@@ -99,6 +102,7 @@ ItemModMenu::ItemModMenu()
 }
 
 // @fnv 0x007b5400
+// pdb: RepairMenu::RepairMenu | RepairMenu.obj | retail, string-set bridge, high
 RepairMenu::RepairMenu()
 {
     DAT_011da74c = Tile::GetTraitID(DAT_0106ed20);
@@ -136,6 +140,7 @@ int __cdecl ItemModMenu_GetClassStatic()
 void _Deallocate(void*);
 // Calls FUN_00783650, deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x00783410
+// pdb: ItemModMenu::`scalar deleting destructor' | ItemModMenu.obj | retail, vtable slot, high
 void* ItemModMenu::DestroyIfFlagged(unsigned int flags)
 {
     this->~ItemModMenu();
@@ -146,20 +151,25 @@ void* ItemModMenu::DestroyIfFlagged(unsigned int flags)
 
 // For ID 15, sets tile 0xFA3 to 0 on _4C and, when the list box count exceeds 1, also on _48.
 // @fnv 0x00784050
+// pdb: ItemModMenu::DoLeave | ItemModMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void ItemModMenu::UpdateItemModTile(int aiID, Tile* apTarget)
 {
     if (aiID == 15)
     {
-        m_pTiles[9]->Set(0xFA3, 0);
-        if (reinterpret_cast<MenuList*>(&m_kItemList)->ListBox_ItemChange_NumUnfiltered() > 1)
+        pTiles[9]->Set(0xFA3, 0);
+        if (reinterpret_cast<MenuList*>(&lbItemModList)->ListBox_ItemChange_NumUnfiltered() > 1)
         {
-            m_pTiles[8]->Set(0xFA3, 0);
+            pTiles[8]->Set(0xFA3, 0);
         }
     }
 }
 
 void __cdecl PlayItemModUISound(int);
 // @fnv 0x007840a0
+// pdb: ItemModMenu::DoGamepadUpEvent | ItemModMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
 bool ItemModMenu::HandleMenuInput(int aiButton, float afValue)
 {
     bool bhandled = false;
@@ -177,9 +187,10 @@ bool ItemModMenu::HandleMenuInput(int aiButton, float afValue)
 extern int _DAT_011d9f54;
 
 // @fnv 0x00783650
+// pdb: ItemModMenu::~ItemModMenu | ItemModMenu.obj | retail, upstream name already matches, high
 ItemModMenu::~ItemModMenu()
 {
-    m_pTiles[8]->UpdateTrait(0xfa9);
+    pTiles[8]->UpdateTrait(0xfa9);
     _DAT_011d9f54 = 0;
 }
 
@@ -205,6 +216,9 @@ template <class T> struct ListBoxItem
 
 // Compares the visibility of the objects referenced by two list box items, returning -1, 1, or 0.
 // @fnv 0x00783810
+// pdb: ItemModMenu::SortFunc | ItemModMenu.obj | debug, object-file gap fill, medium
+// pdb params: apItem1, apItem2
+// pdb locals: bisModEquipped1, iresult, bisModEquipped2
 int CompareItemVisibility(ListBoxItem<FUN_00783810_ListItem*>* apItem1, ListBoxItem<FUN_00783810_ListItem*>* apItem2)
 {
     bool bVisibleA;
@@ -227,7 +241,7 @@ struct ModObject
 {
     float ItemChange_GetItemHealth(int);
     ModEntry* FUN_0044ddc0();
-    unsigned char FUN_004bd820();
+    unsigned char ItemChange_GetModSlots();
 };
 struct ModEntry
 {
@@ -242,6 +256,9 @@ extern ModObject* DAT_011d9f58;
 extern double DAT_01012060;
 extern float DAT_01073c54;
 // @fnv 0x007836d0
+// pdb: ItemModMenu::InitFunc | ItemModMenu.obj | debug, object-file gap fill, medium
+// pdb params: apTile, apItem
+// pdb locals: pweap, fitemHealth, mod
 void __cdecl UpdateTileFromObject(Tile* tile, ModObject* object)
 {
     if (!tile || !object)
@@ -251,14 +268,14 @@ void __cdecl UpdateTileFromObject(Tile* tile, ModObject* object)
     tile->FUN_00700320(0xfa3, tile->FUN_00a011b0(0xfac) >= DAT_01012060 ? 1 : 0);
     tile->Tile_Set(0xfa3, 1.0f, true);
     ModEntry* entry = DAT_011d9f58->FUN_0044ddc0();
-    if (DAT_011d9f58->FUN_004bd820())
+    if (DAT_011d9f58->ItemChange_GetModSlots())
     {
         ModEntry* other = object->FUN_0044ddc0();
-        if (((DAT_011d9f58->FUN_004bd820() & 1) && other == entry->FUN_004bd570(1)) ||
-            ((DAT_011d9f58->FUN_004bd820() & 2) && other == entry->FUN_004bd570(2)) ||
-            ((DAT_011d9f58->FUN_004bd820() & 4) && other == entry->FUN_004bd570(4)))
+        if (((DAT_011d9f58->ItemChange_GetModSlots() & 1) && other == entry->FUN_004bd570(1)) ||
+            ((DAT_011d9f58->ItemChange_GetModSlots() & 2) && other == entry->FUN_004bd570(2)) ||
+            ((DAT_011d9f58->ItemChange_GetModSlots() & 4) && other == entry->FUN_004bd570(4)))
         {
-            (*reinterpret_cast<ModTileList*>(&tile->m_kChildTileList)->FUN_007b5370())->Tile_Set(0xfa9, DAT_01073c54, true);
+            (*reinterpret_cast<ModTileList*>(&tile->xChildren)->FUN_007b5370())->Tile_Set(0xfa9, DAT_01073c54, true);
         }
     }
 }
@@ -278,13 +295,15 @@ struct ItemListBoxCalls
 extern "C" int DAT_011d9f58;
 
 // @fnv 0x007846a0
+// pdb: RepairMenu::ResetMenu | RepairMenu.obj | retail, call graph, low
+// pdb note: debug build links it to ItemModMenu::ResetMenu
 void __cdecl ResetItemModMenu()
 {
-    reinterpret_cast<ItemListBoxCalls*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->m_kItemList)->Method7();
+    reinterpret_cast<ItemListBoxCalls*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->lbItemModList)->Method7();
     DAT_011d9f58 = 0;
     DAT_011d9f54->HandleMouseoverTileAlt(0x0f, 0);
-    static_cast<ItemModMenu*>(DAT_011d9f54)->m_pTiles[8]->UpdateTrait(0xfa9);
-    static_cast<ItemModMenu*>(DAT_011d9f54)->m_pTiles[8]->FUN_00700320(0xfa3, 0);
+    static_cast<ItemModMenu*>(DAT_011d9f54)->pTiles[8]->UpdateTrait(0xfa9);
+    static_cast<ItemModMenu*>(DAT_011d9f54)->pTiles[8]->FUN_00700320(0xfa3, 0);
 }
 }  // namespace fnv_007846a0
 
@@ -355,7 +374,10 @@ extern int g_iEqUnused;
 // Merges the current entry's extra data into the player's inventory, equips it to a free hand slot, and returns whether it was equipped.
 // @fnv 0x00783af0
 // src: XBOX_PDB 0x00783af0
-bool ItemModMenu::ItemModItem(EqEntry* apTarget)
+// pdb: ItemModMenu::ItemModItem | ItemModMenu.obj | retail, upstream name already matches, high
+// pdb params: apSparePart
+// pdb locals: pbrokenExtra, pweap, pmoddedExtra, bfoundMatchingExtra, pitemGroup, pInv, imod, iorigStackCount, bReturn, mSlot, cSlot, pcurrExtraObj
+bool ItemModMenu::ItemModItem(EqEntry* apSparePart)
 {
     EqEntry* pPlayerEntry =
         EqInventoryChanges::GetOrAddInventoryChanges(g_pEqPlayer)->FindEntry(g_pEqCurrentEntry->GetType(), 1, 0);
@@ -366,7 +388,7 @@ bool ItemModMenu::ItemModItem(EqEntry* apTarget)
     bool bEquipped = false;
     EqForm* pType3 = g_pEqCurrentEntry->GetType();
     bool bUnused3 = true;
-    EqForm* pTargetType = apTarget->GetType();
+    EqForm* pTargetType = apSparePart->GetType();
     int iUnused2 = g_iEqUnused;
 
     _iCount = pExtra->GetCount();
@@ -460,7 +482,7 @@ struct ModStr
 struct ModListEntry
 {
     Tile* pTile;
-    int Next();
+    int RaceSexMenu_MenuOption_GetVisibility();
 };
 
 struct ModListOwner
@@ -477,12 +499,14 @@ struct ModListOwner
 
     bool IsEmpty() const;
     ModListEntry** GetFirst();
-    void Advance(int count);
+    void Advance(int aiDelta);
     void RaceSexMenu_MenuOptionList_SetActive();
 };
 
 // @fnv 0x007b4410
 // src: XBOX_PDB 0x007b4410
+// pdb: RaceSexMenu::MenuOptionList::SetActive | RaceSexMenu.obj | retail, upstream name already matches, high
+// pdb locals: strsaveSound, ivis
 void ModListOwner::RaceSexMenu_MenuOptionList_SetActive()
 {
     if (InterfaceManager_Has360Controller())
@@ -497,7 +521,7 @@ void ModListOwner::RaceSexMenu_MenuOptionList_SetActive()
             pEntry->pTile->SetString(0xfe8, savedTraitString, true);
             while (true)
             {
-                int count = pEntry->Next();
+                int count = pEntry->RaceSexMenu_MenuOption_GetVisibility();
                 if (count)
                 {
                     Advance(-count);
@@ -792,7 +816,7 @@ class ItemModListW
     virtual void v0();
     virtual int v1();
     ItemEntry* FUN_007a1910();
-    void RemoveTile(int);
+    void ListBox_ItemChange_RemoveItem(int);
 };
 void InterfaceManager_PlayMenuSound(int);
 void ItemModMenu_InitItemModMenu(ItemEntry*, int);
@@ -800,9 +824,12 @@ void InventoryMenu_UpdateInventoryMenu();
 void Interface_SetInventoryMenuVisible(int, int, int);
 
 // @fnv 0x007838a0
+// pdb: ItemModMenu::DoClick | ItemModMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: bsearch, pspareExtra, psparePart
 }  // namespace fnv_007838a0
 
-void ItemModMenu::HandleSelection(int tileID, Tile* clickedTile)
+void ItemModMenu::HandleSelection(int aiID, Tile* apTarget)
 {
     using namespace fnv_007838a0;
     using fnv_007838a0::DAT_011d9f58;
@@ -810,19 +837,19 @@ void ItemModMenu::HandleSelection(int tileID, Tile* clickedTile)
     using fnv_007838a0::ItemModMenu_InitItemModMenu;
     using fnv_007838a0::BSAudio_QInstance;
     bool bHandled = false;
-    if (!clickedTile && tileID >= 0 && tileID < 14)
-        clickedTile = m_pTiles[tileID];
-    switch (tileID)
+    if (!apTarget && aiID >= 0 && aiID < 14)
+        apTarget = pTiles[aiID];
+    switch (aiID)
     {
     case 15:
-        if ((*((TileValueList*)((char*)clickedTile + 4))->FUN_007b5370(0xfa9))->FUN_00a011b0() < 255.0)
+        if ((*((TileValueList*)((char*)apTarget + 4))->FUN_007b5370(0xfa9))->FUN_00a011b0() < 255.0)
         {
         }
         else
         {
-            if (((ItemModListW*)&m_kItemList)->FUN_007a1910() != DAT_011d9f58)
+            if (((ItemModListW*)&lbItemModList)->FUN_007a1910() != DAT_011d9f58)
             {
-                ItemEntry* pEntry = ((ItemModListW*)&m_kItemList)->FUN_007a1910();
+                ItemEntry* pEntry = ((ItemModListW*)&lbItemModList)->FUN_007a1910();
                 TESForm* pForm =
                     (const char*)*pEntry ? *(TESForm**)&((B006815c0*)(const char*)*pEntry)->B006815c0::B006815c0() : 0;
                 if (ItemModItem(reinterpret_cast<EqEntry*>(pEntry)))
@@ -830,7 +857,7 @@ void ItemModMenu::HandleSelection(int tileID, Tile* clickedTile)
                     _g_thePlayer->SendItemModEvent(((TESObjectREFR_GetFlags_Helper*)pEntry)->CallGetFlags(), pForm,
                                                    true, false, false, false, false, false, true, false);
                     BSAudio_QInstance()->GetSoundHandleByEditorID("UIItemGunsSmallUp ", 0x121).Play(false);
-                    ((ItemModListW*)&m_kItemList)->RemoveTile(((ItemModListW*)&m_kItemList)->v1());
+                    ((ItemModListW*)&lbItemModList)->ListBox_ItemChange_RemoveItem(((ItemModListW*)&lbItemModList)->v1());
                     ItemModMenu_InitItemModMenu(DAT_011d9f58, 0);
                     if (pEntry->ItemChange_GetWorn(false))
                     {
@@ -908,7 +935,7 @@ float GetWeaponDamage(Form78*, float, Entry78*, int);
 float FUN_004bd510(float, float);
 float FUN_00646360(int, float);
 float FUN_00476b20(float);
-void PopulateModListScreen();
+void ItemModMenu_Update();
 void UpdateTileFromObject(void*, void*);
 void CompareItemVisibility(void*, void*);
 bool InterfaceManager_Has360Controller();
@@ -1233,15 +1260,18 @@ struct Manager78
 void Interface_SetItemModMenuVisible(int, int, int);
 // @fnv 0x00784710
 // src: XBOX_PDB 0x00784710
-void ItemModMenu_InitItemModMenu(Entry78* pEntry, bool b)
+// pdb: ItemModMenu::InitItemModMenu | ItemModMenu.obj | retail, upstream name already matches, high
+// pdb params: apBrokenItem, bCheckEquip
+// pdb locals: fcondition
+void ItemModMenu_InitItemModMenu(Entry78* apBrokenItem, bool bCheckEquip)
 {
-    if (b)
+    if (bCheckEquip)
         DAT_011d9f40 = 0;
     if (DAT_011d9f54)
     {
-        if (pEntry)
-            g_011d9f58 = pEntry;
-        if (g_011d9f58 && b && g_011d9f58->ItemChange_GetWorn(false))
+        if (apBrokenItem)
+            g_011d9f58 = apBrokenItem;
+        if (g_011d9f58 && bCheckEquip && g_011d9f58->ItemChange_GetWorn(false))
         {
             g_011d9f58->ItemChange_SetIsModding();
             _g_thePlayer->QueueUnEquipObject(g_011d9f58->FUN_0044ddc0(), g_011d9f58->FUN_00726070(),
@@ -1249,37 +1279,37 @@ void ItemModMenu_InitItemModMenu(Entry78* pEntry, bool b)
             DAT_011d9f40 = 1;
         }
         float condition = g_011d9f58->ItemChange_GetItemHealth(1) / 100.0;
-        ((ItemModMenu*)DAT_011d9f54)->m_pTiles[4]->Set(0x1004, condition, true);
-        ((ItemModMenu*)DAT_011d9f54)->m_pTiles[4]->Set(0xfa3, 1);
+        ((ItemModMenu*)DAT_011d9f54)->pTiles[4]->Set(0x1004, condition, true);
+        ((ItemModMenu*)DAT_011d9f54)->pTiles[4]->Set(0xfa3, 1);
         if (g_011d9f58->FUN_0044ddc0()->FUN_00401170() == 40)
         {
-            ((ItemModMenu*)DAT_011d9f54)->m_pTiles[5]->Set(DAT_011d9f3c, g_011d2c7c.FUN_00403df0(), true);
+            ((ItemModMenu*)DAT_011d9f54)->pTiles[5]->Set(DAT_011d9f3c, g_011d2c7c.FUN_00403df0(), true);
             ((ItemModMenu*)DAT_011d9f54)
-                ->m_pTiles[5]->Set(
+                ->pTiles[5]->Set(
                     DAT_011d9f44,
-                    (int)FUN_004bd510(GetWeaponDamage(g_011d9f58->FUN_0044ddc0(), condition, pEntry, 0), 1.0f));
+                    (int)FUN_004bd510(GetWeaponDamage(g_011d9f58->FUN_0044ddc0(), condition, apBrokenItem, 0), 1.0f));
             ((ItemModMenu*)DAT_011d9f54)
-                ->m_pTiles[0]->Set(0xfc4, ((Name78*)((char*)g_011d9f58->FUN_0044ddc0() + 0x30))->TESModel_GetModel(), true);
+                ->pTiles[0]->Set(0xfc4, ((Name78*)((char*)g_011d9f58->FUN_0044ddc0() + 0x30))->TESModel_GetModel(), true);
         }
         else
         {
-            ((ItemModMenu*)DAT_011d9f54)->m_pTiles[5]->Set(DAT_011d9f3c, g_011d20c4.FUN_00403df0(), true);
+            ((ItemModMenu*)DAT_011d9f54)->pTiles[5]->Set(DAT_011d9f3c, g_011d20c4.FUN_00403df0(), true);
             ((ItemModMenu*)DAT_011d9f54)
-                ->m_pTiles[5]->Set(DAT_011d9f44, (int)FUN_00476b20(FUN_00646360(
+                ->pTiles[5]->Set(DAT_011d9f44, (int)FUN_00476b20(FUN_00646360(
                                                (int)g_011d9f58->FUN_0044ddc0()->TESObjectARMO_GetArmorRating(), condition)));
         }
-        if (pEntry)
+        if (apBrokenItem)
         {
-            (*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->m_kItemList)).clear();
-            ((ItemModMenu*)DAT_011d9f54)->m_pTiles[3]->Set(0xfcc, g_011d9f58->GetIconFilename(0), true);
-            PopulateModListScreen();
+            (*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->lbItemModList)).clear();
+            ((ItemModMenu*)DAT_011d9f54)->pTiles[3]->Set(0xfcc, g_011d9f58->GetIconFilename(0), true);
+            ItemModMenu_Update();
         }
-        (*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->m_kItemList)).ListBox_ItemChange_Traverse(UpdateTileFromObject, 0, 0x7fffffff);
-        (*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->m_kItemList)).sort(CompareItemVisibility);
-        if (pEntry && InterfaceManager_Has360Controller())
-            ((Manager78*)InterfaceManager_GetSingleton())->InterfaceManager_SetCurrentFocusTarget((*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->m_kItemList)).selected(1, 0, 0xfc3, 1));
-        ((ItemModMenu*)DAT_011d9f54)->HandleMouseover(15, reinterpret_cast<Tile*>((*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->m_kItemList)).count()));
-        if (pEntry)
+        (*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->lbItemModList)).ListBox_ItemChange_Traverse(UpdateTileFromObject, 0, 0x7fffffff);
+        (*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->lbItemModList)).sort(CompareItemVisibility);
+        if (apBrokenItem && InterfaceManager_Has360Controller())
+            ((Manager78*)InterfaceManager_GetSingleton())->InterfaceManager_SetCurrentFocusTarget((*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->lbItemModList)).selected(1, 0, 0xfc3, 1));
+        ((ItemModMenu*)DAT_011d9f54)->HandleMouseover(15, reinterpret_cast<Tile*>((*reinterpret_cast<Box78*>(&static_cast<ItemModMenu*>(DAT_011d9f54)->lbItemModList)).count()));
+        if (apBrokenItem)
         {
             Interface_SetItemModMenuVisible(1, 0, 0);
             ((Manager78*)InterfaceManager_GetSingleton())->unk4d4.InterfaceManager_TutorialManager_ShowMessage(6, ItemModMenu_GetClassStatic(), 500);
@@ -1346,27 +1376,30 @@ int xTraitID(const char* p);
 // Updates the selected entry's display, shakes the pip manager when the queried value changes, and sets description and icon tiles when available.
 // @fnv 0x00783ed0
 // src: XBOX_PDB 0x00783ed0
-void ItemModMenu::DoEnter(int m_uiSoundID, int iUnused)
+// pdb: ItemModMenu::DoEnter | ItemModMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
+// pdb locals: inewHighlightIndex, pcurrItem, strtemp, pImod
+void ItemModMenu::DoEnter(int aiID, int apTarget)
 {
-    switch (m_uiSoundID)
+    switch (aiID)
     {
     case 15: {
         float qfTOqo[18];
-        xEntryT* qsSDDgz = reinterpret_cast<xListT*>(&m_kItemList)->GetSelected();
-        int qrEZrs = qsSDDgz ? (int)reinterpret_cast<xListT*>(&m_kItemList)->GetValue(0xfac)->GetFloat() : 0;
+        xEntryT* qsSDDgz = reinterpret_cast<xListT*>(&lbItemModList)->GetSelected();
+        int qrEZrs = qsSDDgz ? (int)reinterpret_cast<xListT*>(&lbItemModList)->GetValue(0xfac)->GetFloat() : 0;
         if (xLastValue != qrEZrs)
         {
             xGetProxy()->GetPipboyManagerInstance()->Shake(
                 0, xLastValue < qrEZrs ? *xS_b2f0.Float() : -*xS_b2f0.Float(), *xS_b358.Float(), true);
             xLastValue = qrEZrs;
         }
-        m_pTiles[13]->Set(0xfc4, "", true);
+        pTiles[13]->Set(0xfc4, "", true);
         if (qsSDDgz && xShowDesc)
         {
             xFormT* qxQHW = qsSDDgz->GetForm();
-            m_pTiles[13]->Set(0xfc4, qxQHW->m_kDesc.GetText(0, 0x43534544), true);
+            pTiles[13]->Set(0xfc4, qxQHW->m_kDesc.GetText(0, 0x43534544), true);
             xIconHolder->m_pTile->Set(0xfcc, qsSDDgz->GetIcon(0), true);
-            m_pTiles[11]->Set(xTraitID("_line_alpha"), 255.0f, true);
+            pTiles[11]->Set(xTraitID("_line_alpha"), 255.0f, true);
         }
     }
     break;
@@ -1419,7 +1452,10 @@ int Compare(const char*, const char*);
 
 // Adds rows for flagged entries and collected inventory items, then updates several labels when the locale comparison is nonzero.
 // @fnv 0x007840f0
-void __cdecl PopulateModListScreen()
+// src: XBOX_RETAIL_PDB 0x007840f0
+// pdb: ItemModMenu::Update | ItemModMenu.obj | retail, unique string literal, high
+// pdb locals: pimodOne, pinventory, pweap, pnewItemGroup, pimodTwo, cSlots, pimodThree, pnewItem, pnewTile, pcurrItemObj, iitemCt, pcurrExtraObj
+void __cdecl ItemModMenu_Update()
 {
     if (!DAT_011d9f58)
         return;
@@ -1427,7 +1463,7 @@ void __cdecl PopulateModListScreen()
     ModEntry* mod4 = 0;
     ModEntry* kMod2_2 = 0;
     ModEntry* mod5 = 0;
-    char aFlags = DAT_011d9f58->FUN_004bd820();
+    char aFlags = DAT_011d9f58->ItemChange_GetModSlots();
     if (aFlags)
     {
         Tile* row = 0;
@@ -1436,28 +1472,28 @@ void __cdecl PopulateModListScreen()
         {
             mod4 = base3->FUN_004bd570(1);
             entry = new Entry(mod4, 1);
-            row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_kItemList)).Add(entry, entry->Name(), 0, 0);
+            row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->lbItemModList)).Add(entry, entry->Name(), 0, 0);
             row->Set(DAT_011d9f4c, 1);
-            reinterpret_cast<Tile*>(reinterpret_cast<TileWorkList*>(&row->m_kChildTileList)->At(
-                reinterpret_cast<TileWorkList*>(&row->m_kChildTileList)->First()))->Set(4003, 1);
+            reinterpret_cast<Tile*>(reinterpret_cast<TileWorkList*>(&row->xChildren)->At(
+                reinterpret_cast<TileWorkList*>(&row->xChildren)->First()))->Set(4003, 1);
         }
         if (aFlags & 2)
         {
             kMod2_2 = base3->FUN_004bd570(2);
             entry = new Entry(kMod2_2, 1);
-            row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_kItemList)).Add(entry, entry->Name(), 0, 0);
+            row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->lbItemModList)).Add(entry, entry->Name(), 0, 0);
             row->Set(DAT_011d9f4c, 1);
-            reinterpret_cast<Tile*>(reinterpret_cast<TileWorkList*>(&row->m_kChildTileList)->At(
-                reinterpret_cast<TileWorkList*>(&row->m_kChildTileList)->First()))->Set(4003, 1);
+            reinterpret_cast<Tile*>(reinterpret_cast<TileWorkList*>(&row->xChildren)->At(
+                reinterpret_cast<TileWorkList*>(&row->xChildren)->First()))->Set(4003, 1);
         }
         if (aFlags & 4)
         {
             mod5 = base3->FUN_004bd570(4);
             entry = new Entry(mod5, 1);
-            row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_kItemList)).Add(entry, entry->Name(), 0, 0);
+            row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->lbItemModList)).Add(entry, entry->Name(), 0, 0);
             row->Set(DAT_011d9f4c, 1);
-            reinterpret_cast<Tile*>(reinterpret_cast<TileWorkList*>(&row->m_kChildTileList)->At(
-                reinterpret_cast<TileWorkList*>(&row->m_kChildTileList)->First()))->Set(4003, 1);
+            reinterpret_cast<Tile*>(reinterpret_cast<TileWorkList*>(&row->xChildren)->At(
+                reinterpret_cast<TileWorkList*>(&row->xChildren)->First()))->Set(4003, 1);
         }
     }
     EntryNode listVal;
@@ -1474,7 +1510,7 @@ void __cdecl PopulateModListScreen()
             {
                 if (entry->Object() != mod4 && entry->Object() != kMod2_2 && entry->Object() != mod5)
                 {
-                    row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_kItemList)).Add(entry, entry->Name(), 0, 0);
+                    row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->lbItemModList)).Add(entry, entry->Name(), 0, 0);
                     row->Set(DAT_011d9f4c, 1);
                 }
             }
@@ -1486,7 +1522,7 @@ void __cdecl PopulateModListScreen()
                 {
                     entry->ExtraList()->Add(extra6->Value());
                 }
-                row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_kItemList)).Add(entry, entry->Name(), 0, 0);
+                row = (*reinterpret_cast<Rows*>(&reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->lbItemModList)).Add(entry, entry->Name(), 0, 0);
                 row->Set(DAT_011d9f4c, 1);
             }
         }
@@ -1494,9 +1530,9 @@ void __cdecl PopulateModListScreen()
     if (Compare(localeSetting.String(), "ENGLISH"))
     {
         reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->FUN_00726070()->GetNamedChild("IMM_Headline_Title")->Set(4036, labelSetting.String(), true);
-        reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_pTiles[4]->Set(DAT_011d9f3c, otherSetting.String(), true);
-        reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_pTiles[9]->Set(DAT_011d9f3c, otherSetting.String(), true);
-        reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_pTiles[11]->Set(4036, thirdSetting.String(), true);
-        reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->m_pTiles[12]->Set(4036, fourthSetting.String(), true);
+        reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->pTiles[4]->Set(DAT_011d9f3c, otherSetting.String(), true);
+        reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->pTiles[9]->Set(DAT_011d9f3c, otherSetting.String(), true);
+        reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->pTiles[11]->Set(4036, thirdSetting.String(), true);
+        reinterpret_cast<ItemModMenu*>(_DAT_011d9f54)->pTiles[12]->Set(4036, fourthSetting.String(), true);
     }
 }

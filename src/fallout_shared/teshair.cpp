@@ -9,6 +9,7 @@
 #include <malloc.h>
 
 // @fnv 0x005fdaa0
+// pdb: TESHair::TESHair | TESHair.obj | retail, upstream name already matches, high
 TESHair::TESHair() : TESForm(), TESFullName(), TESModel(), TESTexture()
 {
     SetFormType((ENUM_FORM_ID)10);
@@ -17,40 +18,43 @@ TESHair::TESHair() : TESForm(), TESFullName(), TESModel(), TESTexture()
 
 // Loads a hair record: verifies form type 10, reads the record header, then dispatches EDID, OBND, FULL, MODL/MODD, ICON and DATA chunks until no chunks remain.
 // @fnv 0x005fdcb0
-bool TESHair::LoadForm(TESFile* file)
+// pdb: TESHair::Load | TESHair.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage
+bool TESHair::LoadForm(TESFile* apFile)
 {
-    if (((TESFileFormInt_teshair_decls*)file)->GetTESForm() != 10)
+    if (((TESFileFormInt_teshair_decls*)apFile)->GetTESForm() != 10)
         return false;
-    TESForm::LoadRecordHeader(file);
+    TESForm::LoadRecordHeader(apFile);
     unsigned int chunkID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
         switch ((int)chunkID)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullNameLoader::LoadFullNameChunk(this, file);
+            TESFullNameLoader::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x4e4f4349:
-            TESTextureLoader::ReadTextureData(this, file);
+            TESTextureLoader::ReadTextureData(this, apFile);
             break;
         case 0x41544144:
-            file->GetChunkData(&cFlags, 1);
+            apFile->GetChunkData(&cFlags, 1);
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -77,6 +81,9 @@ struct FUN_005fdfa0_shell : public TESHair
 };
 
 // @fnv 0x005fdfa0
+// pdb: TESHair::CanBeHairForNPC | TESHair.obj | retail, call graph (shared callers), medium
+// pdb params: apNPC
+// pdb locals: bretval
 bool FUN_005fdfa0_shell::IsHairValidForNPC(TESNPC* apNPC)
 {
     bool bretval = false;
@@ -144,6 +151,9 @@ struct FUN_005fde80_shell
 };
 
 // @fnv 0x005fde80
+// pdb: TESHair::Copy | TESHair.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void __thiscall FUN_005fde80_shell::CopyFromHair(TESForm* apCopy)
 {
     TESHair* pcopy = dynamic_cast<TESHair*>(apCopy);
@@ -161,6 +171,7 @@ struct S
 void _Deallocate(void*);
 // Calls FUN_005fdb90, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x005fdb60
+// pdb: TESHair::`scalar deleting destructor' | TESHair.obj | retail, vtable slot, high
 void* S::FUN_005fdb60(unsigned int flags)
 {
     FUN_005fdb90();
@@ -187,7 +198,7 @@ struct FUN_0048e370_obj
 };
 struct FUN_004891d0_holder
 {
-    void __thiscall WriteToBuffer(unsigned int a, unsigned int b);
+    void __thiscall BSSendSceneGraphCommand_WriteToBuffer(unsigned int a, unsigned int b);
 };
 void __cdecl TESForm_AddChunk_3(unsigned int, unsigned char);
 
@@ -198,11 +209,12 @@ struct FUN_005fdc50_shell
 
 // @fnv 0x005fdc50
 // src: XBOX_PDB 0x005fdc50
+// pdb: TESHair::Save | TESHair.obj | retail, upstream name already matches, high
 void FUN_005fdc50_shell::TESHair_Save()
 {
     reinterpret_cast<FUN_004855a0*>(this)->M();
     reinterpret_cast<S_00487010*>(reinterpret_cast<char*>(this) + 0x18)->Save_00487010();
-    reinterpret_cast<FUN_004891d0_holder*>(reinterpret_cast<char*>(this) + 0x24)->WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    reinterpret_cast<FUN_004891d0_holder*>(reinterpret_cast<char*>(this) + 0x24)->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
     reinterpret_cast<FUN_0048e370_obj*>(reinterpret_cast<char*>(this) + 0x3c)->TESTexture_Save(0x4e4f4349);
     TESForm_AddChunk_3(0x41544144, reinterpret_cast<char*>(this)[0x48]);
     reinterpret_cast<FUN_00485680*>(this)->M();
@@ -216,6 +228,9 @@ struct HairComparisonEntry : public TESHair
 // Returns true if apCompare is not a TESHair, differs per FUN_00485270, or has a different cFlags value.
 // @fnv 0x005fded0
 // src: XBOX_PDB 0x005fded0
+// pdb: TESHair::Compare | TESHair.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool HairComparisonEntry::TESHair_Compare(TESForm* apCompare)
 {
     TESHair* pCompare = dynamic_cast<TESHair*>(apCompare);

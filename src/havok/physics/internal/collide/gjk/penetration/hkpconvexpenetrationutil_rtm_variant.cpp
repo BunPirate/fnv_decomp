@@ -253,7 +253,7 @@ struct __declspec(align(16)) S_00dfaac0_Penetration
     int unk6C;
 };
 int __cdecl Geometry_RefineClosestPointsByDirectionSampling(int a, int b, const hkTransform& t, int c, int d, int out);
-int __cdecl TestPenetration(int a, int b, const hkTransform& t, float f, int c, int d, int e, int g, int out);
+int __cdecl hkCalculatePenetrationDepth(int shapeA, int shapeB, const hkTransform& btoa, float epsTol, int pointsAinA, int pointsBinB, int simplex, int simplexSize, int output);
 extern "C" void _mm_store_ps(float*, __m128);
 extern "C" __m128 _mm_load_ps(const float*);
 extern "C"
@@ -453,6 +453,9 @@ struct S_00df9d90_This
 
 // @fnv 0x00df9d90
 // src: GUESS 0x00df9d90 (confidence: low)
+// pdb: hkpConvexPenetrationUtil::convertResultToFeature | hkpConvexPenetrationUtil.obj | retail, object-file run extension, low
+// pdb params: polytope, nearestTriangle, output
+// pdb locals: lambda
 S_00df9d90_Out* S_00df9d90_This::ProcessEntries_00df9d90(S_00df9d90_OwnerP owner, S_00df9d90_Src* s, S_00df9d90_OutP outp)
 {
     S_00df9d90_Bary bary;

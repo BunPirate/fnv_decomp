@@ -26,6 +26,8 @@ template <typename T> inline void hkDeallocateChunk(T* p, int n)
 
 // The former 32-byte hkEntryD01A elements are child-shape AABBs, paired with the shape-key array below.
 // @fnv 0x00d01a80
+// pdb: hkpCollidable::BoundingVolumeData::deallocate | hkpCollidable.obj | retail, call graph, medium
+// pdb locals: assertBuf, ostr
 void hkpCollidable::BoundingVolumeData_S::deallocate()
 {
     hkDeallocateChunk(m_pChildShapeAabbs, m_uiCapacityChildShapeAabbs);

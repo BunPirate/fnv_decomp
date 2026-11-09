@@ -10,6 +10,7 @@ typedef unsigned char hkUint8;
 typedef short hkInt16;
 typedef unsigned short hkUint16;
 
+// pdb: class hkClassMember, size 0x18, 9 members
 class hkClassMember
 {
 public:
@@ -85,11 +86,11 @@ public:
 
     char* m_name;
     hkClass* m_class;
-    hkClassEnum* m_pClassEnum;
+    hkClassEnum* m_enum;
     hkUint8 m_type;
-    hkUint8 m_eSubtype;
-    hkInt16 m_iArraySize;
+    hkUint8 m_subtype;
+    hkInt16 m_cArraySize;
     hkUint16 m_flags;
     hkUint16 m_offset;
-    hkCustomAttributes* m_pCustomAttributes;
+    hkCustomAttributes* m_attributes;
 };

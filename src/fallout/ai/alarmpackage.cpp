@@ -36,6 +36,9 @@ public:
 
 // If the buffer's change flags include 0x10, clears both spell lists and re-adds each SpellItem and TESLevSpell read from the buffer.
 // @fnv 0x0048e140
+// pdb: TESSpellList::LoadGame | TESSpellList.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, iloop, pspell
 void TESSpellList::LoadGame(BGSLoadFormBuffer* buffer)
 {
     if (buffer->GetChangeFlags(0x10u).operator bool())
@@ -75,19 +78,23 @@ public:
     void DeleteFormById(unsigned int id);
 };
 // @fnv 0x0085a290
+// pdb: TESSaveLoadGame::ClearFormID | TESSaveLoadGame.obj | debug, call graph, medium
+// pdb params: aiFormID
+// pdb locals: pform
 void TESSaveLoadGameUnitOperations::DeleteFormById(unsigned int uiFormId)
 {
     TESForm* pForm = GetFormByID(uiFormId);
     if (pForm)
         DeleteForm(pForm);
     else
-        m_pChangesMap->RemoveChanges(uiFormId, true);
+        m_pChanges->RemoveChanges(uiFormId, true);
 }
 
 struct LH
 {
     bool IsInList(Actor*&);
 };
+// pdb: class Crime, size 0x3c (here 0x1d), 14 members
 struct Crime
 {
     unsigned char _pad[0x1c];
@@ -103,11 +110,13 @@ bool Crime::IsActorInList(Actor* apActor)
 struct FUN_009eba00_t
 {
     int m_uiItemCount;
-    void RemoveActorAndDecrementCount(Actor* a);
+    void Crime_RemoveActorKnowList(Actor* a);
 };
 // @fnv 0x009eba00
-// src: GUESS 0x009eba00 (confidence: medium)
-void FUN_009eba00_t::RemoveActorAndDecrementCount(Actor* apActor)
+// src: XBOX_RETAIL_PDB 0x009eba00
+// pdb: Crime::RemoveActorKnowList | AlarmPackage.obj | retail, call graph (shared callers), high
+// pdb params: apActor
+void FUN_009eba00_t::Crime_RemoveActorKnowList(Actor* apActor)
 {
     reinterpret_cast<BSSimpleList<Actor*>*>(reinterpret_cast<char*>(this) + 0x1c)->Remove(apActor);
     m_uiItemCount = m_uiItemCount - 1;
@@ -126,6 +135,7 @@ struct FUN_009ebab0_host
 };
 // Returns 0 if the race list reference check succeeds, otherwise returns the list size.
 // @fnv 0x009ebab0
+// pdb: Crime::GetRefCount | AlarmPackage.obj | debug, object-file gap fill, medium
 int FUN_009ebab0_host::GetRaceListSize()
 {
     if (_list._ref_008256d0())
@@ -136,6 +146,7 @@ int FUN_009ebab0_host::GetRaceListSize()
 
 void __cdecl Deallocate(void*);
 // @fnv 0x009ec640
+// pdb: AlarmPackage::`scalar deleting destructor' | AlarmPackage.obj | retail, vtable slot, high
 AlarmPackage* AlarmPackage::Destroy(unsigned int flags)
 {
     AlarmPackage::~AlarmPackage();
@@ -151,9 +162,11 @@ struct LH
 };
 }  // namespace fnv_009ec810
 // @fnv 0x009ec810
+// pdb: AlarmPackage::IsCrimeInList | AlarmPackage.obj | debug, object-file gap fill, medium
+// pdb params: apCrime
 bool AlarmPackageUnitOperations::IsSpellInList(SpellItem* pSpell)
 {
-    return reinterpret_cast<fnv_009ec810::LH*>(&list)->IsInList(pSpell);
+    return reinterpret_cast<fnv_009ec810::LH*>(&Crimes)->IsInList(pSpell);
 }
 
 struct G2
@@ -161,9 +174,11 @@ struct G2
     void AddHead(int* const& a);
 };
 // @fnv 0x009ec830
+// pdb: AlarmPackage::AddCrime | AlarmPackage.obj | debug, object-file gap fill, medium
+// pdb params: apcrime
 void AlarmPackageUnitOperations::AddHeadAtOffset(int* a)
 {
-    reinterpret_cast<G2*>(&list)->AddHead(a);
+    reinterpret_cast<G2*>(&Crimes)->AddHead(a);
 }
 
 namespace fnv_009ec850 {
@@ -174,10 +189,12 @@ struct MyList
 };
 }  // namespace fnv_009ec850
 // @fnv 0x009ec850
+// pdb: AlarmPackage::RemoveCrime | AlarmPackage.obj | debug, object-file gap fill, medium
+// pdb params: apcrime, apActor
 void AlarmPackageUnitOperations::RemoveCrime(unsigned int a, Actor* pActor)
 {
-    reinterpret_cast<fnv_009ec850::MyList*>(&list)->_ref_00905330(a);
-    if (reinterpret_cast<fnv_009ec850::MyList*>(&list)->_ref_008256d0())
+    reinterpret_cast<fnv_009ec850::MyList*>(&Crimes)->_ref_00905330(a);
+    if (reinterpret_cast<fnv_009ec850::MyList*>(&Crimes)->_ref_008256d0())
         pActor->SetSpeakingState(0);
 }
 
@@ -192,11 +209,13 @@ struct FactionReputationOperations : TESFaction
     void ModifyReputation(int, bool);
 };
 // @fnv 0x005fda50
+// pdb: TESHair::~TESHair | TESHair.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESFaction::AddMajorCrime
 void FactionReputationOperations::ModifyReputation(int aiAmount, bool b)
 {
-    m_iFirstFactionValue += aiAmount;
-    if (pReputationData && b)
-        reinterpret_cast<ReputationChangeNotifier*>(pReputationData)->TESReputation_CommitCrime(1);
+    iMajorCrime += aiAmount;
+    if (pReputation && b)
+        reinterpret_cast<ReputationChangeNotifier*>(pReputation)->TESReputation_CommitCrime(1);
     MarkAsModified(0x80000000);
 }
 
@@ -211,10 +230,14 @@ struct Crime
     int BackgroundTask;
     char pad[0x18];
     FUN_009eb9c0_list actors;
-    void AddActor(Actor* apActor);
+    void ProcessArray_AddActor(Actor* apActor);
 };
 // @fnv 0x009eb9c0
-void Crime::AddActor(Actor* apActor)
+// src: XBOX_RETAIL_PDB 0x009eb9c0
+// pdb: ProcessArray::AddActor | ProcessArray.obj | retail, upstream name already matches, high
+// pdb params: apActor, aWhichList
+// pdb locals: NextList
+void Crime::ProcessArray_AddActor(Actor* apActor)
 {
     if (!actors.IsInList(apActor))
     {
@@ -247,6 +270,8 @@ struct FUN_009eba30_t
 };
 // @fnv 0x009eba30
 // src: COMMUNITY 0x009eba30
+// pdb: Crime::ClearActorKnowList | AlarmPackage.obj | retail, upstream name already matches, high
+// pdb locals: plist, pact, pcrimelist
 void FUN_009eba30_t::Crime_ClearActorKnowList()
 {
     FUN_009eba30_node* pnode = &list;
@@ -263,40 +288,48 @@ void FUN_009eba30_t::Crime_ClearActorKnowList()
 
 // Constructs the object: initializes the base subobject and the embedded list member.
 // @fnv 0x009ec5d0
+// pdb: AlarmPackage::AlarmPackage | AlarmPackage.obj | retail, upstream name already matches, high
 AlarmPackage::AlarmPackage()
 {}
 
 // Constructs the object and, if apActor is non-null, adds it to the head of the list.
 // @fnv 0x009ec670
+// pdb: AlarmPackage::RemoveCrime | AlarmPackage.obj | retail, object-file run extension, low
+// pdb note: debug build links it to AlarmPackage::AlarmPackage
+// pdb params: apcrime, apActor
 AlarmPackage::AlarmPackage(Actor* apActor)
 {
     if (apActor)
-        list.AddHead(apActor);
+        Crimes.AddHead(apActor);
 }
 
 // Destructor that removes all entries from the list member before the base package destructor runs.
 // @fnv 0x009ec700
+// pdb: AlarmPackage::~AlarmPackage | AlarmPackage.obj | debug, upstream name already matches, high
 AlarmPackage::~AlarmPackage()
 {
-    list.RemoveAll();
+    Crimes.RemoveAll();
 }
 
 void* __cdecl operator new(unsigned int);
 
 struct FUN_009ebae0_shell
 {
-    void AddActorToList(Actor* a);
+    void Crime_AddEnemyFactions(Actor* apFaction);
 };
 
 // Creates the BSSimpleList at offset 0x38 if null, then adds the given Actor to its head.
 // @fnv 0x009ebae0
-void FUN_009ebae0_shell::AddActorToList(Actor* apActor)
+// src: XBOX_DEBUG_PDB 0x009ebae0
+// pdb: Crime::AddEnemyFactions | AlarmPackage.obj | debug, call graph, high
+// pdb params: apFaction
+void FUN_009ebae0_shell::Crime_AddEnemyFactions(Actor* apFaction)
 {
     if (!*(BSSimpleList<Actor*>**)((char*)this + 0x38))
     {
         *(BSSimpleList<Actor*>**)((char*)this + 0x38) = new BSSimpleList<Actor*>;
     }
-    (*(BSSimpleList<Actor*>**)((char*)this + 0x38))->AddHead(apActor);
+    (*(BSSimpleList<Actor*>**)((char*)this + 0x38))->AddHead(apFaction);
 }
 
 
@@ -314,6 +347,9 @@ struct CrimeList
 
 
 // @fnv 0x009ec780
+// pdb: AlarmPackage::Copy | AlarmPackage.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy, plist
 void AlarmPackage::CopyFromPackage(TESForm* apCopy)
 {
     AlarmPackage* pAlarmSource;
@@ -437,6 +473,8 @@ struct FormWithID
 
 
 // @fnv 0x009ec890
+// pdb: AlarmPackage::GetSaveSize | AlarmPackage.obj | retail, upstream name already matches, high
+// pdb locals: isize, itempStartSize, pheader, pform
 unsigned short AlarmPackage::GetSaveSize()
 {
     unsigned short isaveGameCount = 0;
@@ -482,6 +520,8 @@ struct CrimeNode : public BSSimpleList<Crime*>
 
 // Iterates the crime list, saving each crime's type byte and index, then writes the count and buffer position.
 // @fnv 0x009ecec0
+// pdb: AlarmPackage::SaveGame | AlarmPackage.obj | retail, vtable slot, high
+// pdb locals: icount, plist, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, pcrime, ccrimeType, icrimeIndex, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void AlarmPackage::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned int isaveGameCount = 0;
@@ -508,6 +548,8 @@ void AlarmPackage::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 
 // Loads the base package, then reads a count and for each entry reads a crime type and index, resolving each crime and adding it to the list at offset 0x80.
 // @fnv 0x009ecf70
+// pdb: AlarmPackage::LoadGame | AlarmPackage.obj | retail, vtable slot, high
+// pdb locals: icount, istartBufferPosition, iblockSize, i, iblockHeader, pheader, pform, ccrimeType, pcrime, icrimeIndex, icurrentBufferPosition
 void AlarmPackage::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     TESPackage::LoadGame(static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer));
@@ -708,6 +750,8 @@ struct FUN_009ebb80_shell
 
 // @fnv 0x009ebb80
 // src: COMMUNITY 0x009ebb80
+// pdb: Crime::GetSaveSize | AlarmPackage.obj | retail, upstream name already matches, high
+// pdb locals: isize, itempStartSize, pheader, pform
 unsigned short FUN_009ebb80_shell::Crime_GetSaveSize()
 {
     unsigned short usTotalSize = 0;
@@ -785,6 +829,8 @@ struct Candidate
 };
 // Writes the candidate's scalar fields, aux34, four forms and both linked lists of forms to the save buffer, patching each list's count.
 // @fnv 0x009ebfe0
+// pdb: Crime::SaveGame | AlarmPackage.obj | retail, object-file run extension, low
+// pdb locals: icount, plist, itempStartPosition, iblockSize, pcount, icriminalID, icrimetargetID, iownershipID, iobjectStolenID, pblockSize, iblockHeader, iactorID, pactor, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void Candidate::SaveToStream(SaveLocal* buffer)
 {
     buffer->FUN_00865e50(&unk00, 4, 0);
@@ -1033,13 +1079,16 @@ extern "C" Actor* g_thePlayer;
 struct Cls
 {
     char pad00[4];
-    Actor* ProcessLists_GetActorRefInHigh_00970b30(TESFaction* fac, bool a2, bool a3);
+    Actor* ProcessLists_GetActorRefInHigh(TESFaction* apFaction, bool abDetection, bool abClosetoPlayer);
 };
 
 // Scans the actor array for a faction member passing the rank and process checks, optionally picking the one with the lowest value from FUN_005723b0.
 // @fnv 0x00970b30
-// src: XBOX_PDB 0x00970b30
-Actor* Cls::ProcessLists_GetActorRefInHigh_00970b30(TESFaction* pFaction, bool bRequireProcess, bool bPickBest)
+// src: XBOX_RETAIL_PDB 0x00970b30
+// pdb: ProcessLists::GetActorRefInHigh | ProcessLists.obj | retail, call graph (shared callers), high
+// pdb params: apNpc, abDetection
+// pdb locals: pmob, pretactor, i, pactor, pnpc
+Actor* Cls::ProcessLists_GetActorRefInHigh(TESFaction* apFaction, bool abDetection, bool abClosetoPlayer)
 {
     Actor* pB = 0;
     Actor* g4 = 0;
@@ -1047,7 +1096,7 @@ Actor* Cls::ProcessLists_GetActorRefInHigh_00970b30(TESFaction* pFaction, bool b
     Actor* e8 = 0;
     Actor* d4 = 0;
     Actor* c4 = 0;
-    for (unsigned int i = 0; !(pB && bPickBest) && i < ((Arr*)((char*)this + 4))->GetCount(0); i++)
+    for (unsigned int i = 0; !(pB && abClosetoPlayer) && i < ((Arr*)((char*)this + 4))->GetCount(0); i++)
     {
         Actor* v20 = 0;
         float f24 = 0.0f;
@@ -1055,12 +1104,12 @@ Actor* Cls::ProcessLists_GetActorRefInHigh_00970b30(TESFaction* pFaction, bool b
         if (g4 && g4->IsActor())
             v20 = g4;
         if (v20 && !v20->HasHealth(0) && !v20->Actor_IsUnConscious() &&
-            ((TESActorBaseData*)((char*)v20->GetActorBase() + 0x30))->GetFactionRank(pFaction, v20 == g_thePlayer) >
+            ((TESActorBaseData*)((char*)v20->GetActorBase() + 0x30))->GetFactionRank(apFaction, v20 == g_thePlayer) >
                 -1 &&
-            (!bRequireProcess || ((ProcVt*)v20->GetProcess())->v181(g_thePlayer, 0) > 0))
+            (!abDetection || ((ProcVt*)v20->GetProcess())->v181(g_thePlayer, 0) > 0))
         {
             pB = v20;
-            if (bPickBest)
+            if (abClosetoPlayer)
             {
                 f24 = v20->TESObjectREFR_GetDistanceFromReference(g_thePlayer, 0, 0);
                 if (f24 < pE)
@@ -1084,7 +1133,7 @@ Actor* Cls::ProcessLists_GetActorRefInHigh_00970b30(TESFaction* pFaction, bool b
     if (!pB && d4)
     {
         pB = d4;
-        if (bPickBest)
+        if (abClosetoPlayer)
         {
             e8 = c4;
             pB = e8;
@@ -1092,7 +1141,7 @@ Actor* Cls::ProcessLists_GetActorRefInHigh_00970b30(TESFaction* pFaction, bool b
     }
     else
     {
-        if (bPickBest && e8)
+        if (abClosetoPlayer && e8)
             pB = e8;
     }
     return pB;
@@ -1152,6 +1201,8 @@ struct MyCand
 
 // Serializes the candidate's flags, form IDs and linked-list form IDs to the save stream, with optional block header and size patching.
 // @fnv 0x009ebca0
+// pdb: Crime::SaveGame | AlarmPackage.obj | retail, object-file run extension, low
+// pdb locals: icount, plist, itempStartPosition, iblockSize, pcount, icriminalID, icrimetargetID, iownershipID, iobjectStolenID, pblockSize, iblockHeader, iactorID, pactor, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void MyCand::WriteToSave()
 {
     unsigned short a7 = 0;
@@ -1272,6 +1323,9 @@ struct Host009
 };
 // Reads fields, a nested field, form references and two lists from the stream, then discards the faction list if it is empty.
 // @fnv 0x009ec1a0
+// pdb: Crime::LoadGame | AlarmPackage.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, iloop, pForm
 void Host009::ReadFromStream(BGSLoadFormBuffer* apReader)
 {
     apReader->LoadData(&a, 4);
@@ -1323,6 +1377,8 @@ extern "C" void Warn9EC990(const char* fmt, ...);
 
 
 // @fnv 0x009ec990
+// pdb: AlarmPackage::SaveGame | AlarmPackage.obj | retail, vtable slot, high
+// pdb locals: icount, plist, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, pcrime, ccrimeType, icrimeIndex, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void AlarmPackageUnitOperations::SaveGameLegacy()
 {
     ((S00679120*)this)->SavePackage();
@@ -1411,12 +1467,15 @@ struct AlarmPackageData
     int unk18;
     AlarmActorList actors;
     TESForm* other;
-    void Crime_InitLoadGame(void* unused);
+    void Crime_InitLoadGame(void* apLoadGameBuffer);
 };
 
 // @fnv 0x009ec400
 // src: XBOX_PDB 0x009ec400
-void AlarmPackageData::Crime_InitLoadGame(void* unused)
+// pdb: Crime::InitLoadGame | AlarmPackage.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: plist, plastList, pForm, bremove
+void AlarmPackageData::Crime_InitLoadGame(void* apLoadGameBuffer)
 {
     ref = ref ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)ref)) : 0;
     actor = actor ? dynamic_cast<Actor*>(GetFormByID((unsigned int)actor)) : 0;

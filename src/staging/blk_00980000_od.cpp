@@ -68,7 +68,7 @@ public:
     PodPoint3* FUN_00439e90(PodPoint3* output, const PodPoint3* other) const;
     PodPoint3 SubtractIntoVector(const PodPoint3& other) const;
     void SubtractIntoVector();
-    PodPoint3 FUN_004b3800(const PodPoint3& axis) const;
+    PodPoint3 FUN_004b3800(const PodPoint3& pt) const;
     void Unitize_004a0c10();
     float FUN_00457910();
     float FUN_00457990() const;
@@ -118,6 +118,7 @@ struct FUN_00982460
 };
 
 // @fnv 0x00982460
+// pdb: BSSimpleArray<CombatProcedure *,1024>::~BSSimpleArray<CombatProcedure *,1024> | CombatController.obj | debug, call graph, medium
 void FUN_00982460::Init()
 {
     m_p = &DAT_0108cff4;
@@ -197,6 +198,8 @@ void FUN_00982f10::Set(const char* src)
 
 // The reservation map vtable at 0x0108d104 identifies NiTMap<unsigned int, ReservedCoverLocation*>.
 // @fnv 0x00983670
+// pdb: NiTMap<unsigned int,ReservedCoverLocation *>::NiTMap<unsigned int,ReservedCoverLocation *> | CombatCoverMap.obj | debug, call graph, medium
+// pdb params: uiHashSize
 template <>
 NiTMap<unsigned int, ReservedCoverLocation*>::NiTMap(unsigned int arg) : CoverReservationMapBase(arg)
 {
@@ -218,6 +221,7 @@ struct FUN_009836d0_class
 // Sets the vtable pointer to DAT_0108d124, calls FUN_006dc440 with 0 and 0, and returns this.
 // @fnv 0x009836d0
 // src: COMMUNITY 0x009836d0
+// pdb: BSSimpleArray<CoverReservation,1024>::BSSimpleArray<CoverReservation,1024> | CombatCoverMap.obj | debug, object-file run extension, low
 FUN_009836d0_class* FUN_009836d0_class::BSSimpleArray_CoverReservation_1024_BSSimpleArray_CoverReservation_1024()
 {
     vtable = &DAT_0108d124;
@@ -230,11 +234,12 @@ extern int DAT_0108d124;
 struct GlobalObject_00869f00
 {
     void Clear(bool);
-    void __thiscall ResetVirtualTableAndClear_00983700();
+    void __thiscall BSSimpleArray_CoverReservation_1024_dtor();
 };
 // @fnv 0x00983700
-// src: GUESS 0x00983700 (confidence: medium)
-void __thiscall GlobalObject_00869f00::ResetVirtualTableAndClear_00983700()
+// src: XBOX_DEBUG_PDB 0x00983700
+// pdb: BSSimpleArray<CoverReservation,1024>::~BSSimpleArray<CoverReservation,1024> | CombatCoverMap.obj | debug, call graph, high
+void __thiscall GlobalObject_00869f00::BSSimpleArray_CoverReservation_1024_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_0108d124;
     this->Clear(true);
@@ -246,6 +251,7 @@ extern void* DAT_011f1708;
 
 // If DAT_011f1708 is null, allocates one byte with operator new and stores the pointer in DAT_011f1708.
 // @fnv 0x00983910
+// pdb: CombatDialogueManager::Create | CombatDialogueManager.obj | debug, call graph, medium
 void __fastcall EnsureGlobalAllocated(void)
 {
     if (DAT_011f1708)
@@ -259,6 +265,7 @@ extern void* DAT_011f1708;
 
 // Deallocates the pointer stored in DAT_011f1708 and sets it to null.
 // @fnv 0x00983940
+// pdb: CombatDialogueManager::Destroy | CombatDialogueManager.obj | debug, object-file gap fill, medium
 void __cdecl FreeGlobalPointer()
 {
     void* ptr = DAT_011f1708;
@@ -290,9 +297,11 @@ struct FUN_0098de30_class
 // Calls Find on the LS3de0 sub-object at offset 0x138 with out, 0 and FUN_009a3830, returning its result.
 // @fnv 0x0098de30
 // src: COMMUNITY 0x0098de30
-unsigned int FUN_0098de30_class::CombatGroup_GetClusterIndex(unsigned int* out)
+// pdb: CombatGroup::GetClusterIndex | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apCluster
+unsigned int FUN_0098de30_class::CombatGroup_GetClusterIndex(unsigned int* apCluster)
 {
-    return ((LS3de0*)((char*)this + 0x138))->Find(out, 0, Actor_AreReferencedValuesEqual);
+    return ((LS3de0*)((char*)this + 0x138))->Find(apCluster, 0, Actor_AreReferencedValuesEqual);
 }
 
 void* __cdecl Reallocate(void* p, int n);
@@ -310,16 +319,17 @@ void* __thiscall FUN_0098f280_Class::BSSimpleArray_NavMeshSearchNode_1024_Reallo
 }
 
 // Element type identified by the BSSimpleArray RTTI at 0x0108d71c.
+// pdb: class CombatSearchLocation, size 0x1c, 4 members
 class CombatSearchLocation
 {
 public:
-    int m_00;
+    int WorldLoc;
     int m_04;
     int m_08;
     int m_0c;
-    int m_10;
-    int m_14;
-    int m_18;
+    int fTimeStamp;
+    int iTargetID;
+    int fScore;
     CombatSearchLocation();
 };
 
@@ -328,6 +338,7 @@ template <> void BSSimpleArray<CombatSearchLocation>::InitializeItems(CombatSear
 template <> void BSSimpleArray<CombatSearchLocation>::_InitialSetup(unsigned int, unsigned int);
 
 // @fnv 0x0098f2a0
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::BSSimpleArray<CombatSearchLocation,1024> | CombatGroup.obj | debug, object-file run extension, low
 template <>
 BSSimpleArray<CombatSearchLocation>::BSSimpleArray()
 {
@@ -335,6 +346,7 @@ BSSimpleArray<CombatSearchLocation>::BSSimpleArray()
 }
 
 // @fnv 0x0098f2d0
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::~BSSimpleArray<CombatSearchLocation,1024> | CombatGroup.obj | debug, call graph, high
 template <>
 BSSimpleArray<CombatSearchLocation>::~BSSimpleArray()
 {
@@ -354,6 +366,7 @@ struct FUN_0098f4c0 : Dummy_0061bf20
 };
 
 // @fnv 0x0098f4c0
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::BSSimpleArray<CombatSearchDoor,1024> | CombatGroup.obj | debug, object-file run extension, low
 FUN_0098f4c0* FUN_0098f4c0::Init()
 {
     *(void**)this = &DAT_0108d730;
@@ -369,11 +382,12 @@ struct GlobalObject_00869f00
 };
 struct FUN_0098f4f0_class
 {
-    void SetVtableAndProcessState_0098f4f0();
+    void BSSimpleArray_CombatSearchDoor_1024_dtor();
 };
 // @fnv 0x0098f4f0
-// src: GUESS 0x0098f4f0 (confidence: low)
-void FUN_0098f4f0_class::SetVtableAndProcessState_0098f4f0()
+// src: XBOX_DEBUG_PDB 0x0098f4f0
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::~BSSimpleArray<CombatSearchDoor,1024> | CombatGroup.obj | debug, call graph, high
+void FUN_0098f4f0_class::BSSimpleArray_CombatSearchDoor_1024_dtor()
 {
     *(int*)this = (int)&DAT_0108d730;
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -393,6 +407,7 @@ struct FUN_0098f510 : AX
 };
 
 // @fnv 0x0098f510
+// pdb: BSSimpleArray<CombatGroupCluster *,1024>::BSSimpleArray<CombatGroupCluster *,1024> | CombatGroup.obj | debug, object-file run extension, low
 AX* FUN_0098f510::Set()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_0108d744);
@@ -417,6 +432,7 @@ struct FUN_0098f540
 };
 
 // @fnv 0x0098f540
+// pdb: BSSimpleArray<CombatGroupCluster *,1024>::~BSSimpleArray<CombatGroupCluster *,1024> | CombatGroup.obj | debug, call graph, high
 void FUN_0098f540::Init()
 {
     *(int*)this = (int)&DAT_0108d744;
@@ -435,12 +451,13 @@ struct GlobalObject_00869f00
 struct FUN_0098f560_Class
 {
     int* p;
-    void ResetVirtualTableAndClear_0098f560();
+    void BSSimpleArray_GroupMemberData_1024_dtor();
 };
 
 // @fnv 0x0098f560
-// src: GUESS 0x0098f560 (confidence: medium)
-void FUN_0098f560_Class::ResetVirtualTableAndClear_0098f560()
+// src: XBOX_DEBUG_PDB 0x0098f560
+// pdb: BSSimpleArray<GroupMemberData,1024>::~BSSimpleArray<GroupMemberData,1024> | CombatGroup.obj | debug, call graph (shared callers), high
+void FUN_0098f560_Class::BSSimpleArray_GroupMemberData_1024_dtor()
 {
     p = &DAT_0108d758;
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -455,12 +472,13 @@ struct Inner097
 CombatTargetTimestamp* __fastcall CombatTargetTimestamp_ClearTimeStamp(CombatTargetTimestamp*);
 struct FUN_0098fda0_Class
 {
-    Inner097* __thiscall UnreachableLocation_UnreachableLocation();
+    Inner097* __thiscall UnreachableLocation_ctor();
 };
 // Calls FUN_0097ede0 on this, then FUN_004300a0 on the object at this+0x10, and returns this.
 // @fnv 0x0098fda0
-// src: COMMUNITY 0x0098fda0
-Inner097* __thiscall FUN_0098fda0_Class::UnreachableLocation_UnreachableLocation()
+// src: XBOX_DEBUG_PDB 0x0098fda0
+// pdb: UnreachableLocation::UnreachableLocation | CombatState.obj | debug, upstream name already matches, high
+Inner097* __thiscall FUN_0098fda0_Class::UnreachableLocation_ctor()
 {
     ((Inner097*)this)->BGSWorldLocation_BGSWorldLocation();
     CombatTargetTimestamp_ClearTimeStamp((CombatTargetTimestamp*)((char*)this + 0x10));
@@ -473,13 +491,15 @@ struct FUN_0098ff80_class
 {
     int* vfn;
     void __thiscall FUN_0098ffb0(int arg);
-    int* __thiscall CombatGroupStrategyFlank_CombatGroupStrategyFlank(int arg);
+    int* __thiscall CombatGroupStrategyFlank_ctor(int aeType);
 };
 // @fnv 0x0098ff80
-// src: EXE 0x0098ff80
-int* __thiscall FUN_0098ff80_class::CombatGroupStrategyFlank_CombatGroupStrategyFlank(int arg)
+// src: XBOX_DEBUG_PDB 0x0098ff80
+// pdb: CombatGroupStrategyFlank::CombatGroupStrategyFlank | CombatGroupStrategy.obj | debug, upstream name already matches, high
+// pdb params: aeType
+int* __thiscall FUN_0098ff80_class::CombatGroupStrategyFlank_ctor(int aeType)
 {
-    FUN_0098ffb0(arg);
+    FUN_0098ffb0(aeType);
     *reinterpret_cast<int**>(this) = &DAT_0108d93c;
     return reinterpret_cast<int*>(this);
 }
@@ -506,14 +526,16 @@ struct FUN_0098ffe0_class
 {
     int* m_p;
     void FUN_0098ffb0(int arg);
-    FUN_0098ffe0_class* CombatGroupStrategyFallBack_CombatGroupStrategyFallBack(int arg);
+    FUN_0098ffe0_class* CombatGroupStrategyFallBack_ctor(int aeType);
 };
 // Calls FUN_0098ffb0 with arg, sets m_p to the address of DAT_0108d95c, and returns this.
 // @fnv 0x0098ffe0
-// src: EXE 0x0098ffe0
-FUN_0098ffe0_class* FUN_0098ffe0_class::CombatGroupStrategyFallBack_CombatGroupStrategyFallBack(int arg)
+// src: XBOX_DEBUG_PDB 0x0098ffe0
+// pdb: CombatGroupStrategyFallBack::CombatGroupStrategyFallBack | CombatGroupStrategy.obj | debug, upstream name already matches, high
+// pdb params: aeType
+FUN_0098ffe0_class* FUN_0098ffe0_class::CombatGroupStrategyFallBack_ctor(int aeType)
 {
-    FUN_0098ffb0(arg);
+    FUN_0098ffb0(aeType);
     m_p = &DAT_0108d95c;
     return this;
 }
@@ -529,6 +551,8 @@ struct FUN_00990010_class
 
 // Calls FUN_0098ffb0 with arg, then sets the vfn field to point at DAT_0108d96c.
 // @fnv 0x00990010
+// pdb: CombatGroupStrategyAmbush::CombatGroupStrategyAmbush | CombatGroupStrategy.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00990010_class::FUN_00990010_class(int arg)
 {
     FUN_0098ffb0(arg);
@@ -537,7 +561,7 @@ FUN_00990010_class::FUN_00990010_class(int arg)
 
 struct FUN_009905a0_shell
 {
-    void UpdateMinProgress();
+    void CombatGroupData_ComputeMinMaxTargetDetection();
 };
 
 struct FUN_00990540_shell
@@ -551,10 +575,11 @@ struct FUN_00990540_shell
 
 // @fnv 0x00990540
 // src: XBOX_PDB 0x00990540
+// pdb: CombatGroupData::GetMemberMinimumTargetDetection | CombatGroupStrategy.obj | debug, upstream name already matches, high
 int __thiscall FUN_00990540_shell::CombatGroupData_GetMemberMinimumTargetDetection()
 {
     if (m_0c == 0x7fffffff)
-        reinterpret_cast<FUN_009905a0_shell*>(this)->UpdateMinProgress();
+        reinterpret_cast<FUN_009905a0_shell*>(this)->CombatGroupData_ComputeMinMaxTargetDetection();
     return m_0c;
 }
 
@@ -574,6 +599,7 @@ struct FUN_00990ef0_class
 
 // Sets the vtable pointer to DAT_0108d758, calls FUN_006dc440 with 0, 0, and returns this.
 // @fnv 0x00990ef0
+// pdb: BSSimpleArray<GroupMemberData,1024>::BSSimpleArray<GroupMemberData,1024> | CombatGroupStrategy.obj | debug, call graph, medium
 FUN_00990ef0_class* FUN_00990ef0_class::InitializeVtable()
 {
     vtable = &DAT_0108d758;
@@ -590,6 +616,7 @@ struct FUN_00991130_class
 
 // @fnv 0x00991130
 // src: GUESS 0x00991130 (confidence: low)
+// pdb: CombatManager::~CombatManager | CombatManager.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00991130_class::ForwardCall_00991130()
 {
     UpdateFields_00993880();
@@ -605,6 +632,8 @@ void CombatTimer_UpdateTimer(float afDelta)
 }
 
 // @fnv 0x00993800
+// pdb: CombatManager::Revert | CombatManager.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void __thiscall CombatThreatMap::ResetThreatObjects(int)
 {
     ClearAndDestroy(1);
@@ -623,6 +652,8 @@ struct FUN_00993820_class
 // Calls FUN_00993990 with arg, sets m_vfn to the address of DAT_0108db2c, and returns this.
 // @fnv 0x00993820
 // src: EXE 0x00993820
+// pdb: NiTMap<Actor *,__int64>::NiTMap<Actor *,__int64> | CombatManager.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 FUN_00993820_class* FUN_00993820_class::NiTMap_Actor_int64_NiTMap(int arg)
 {
     FUN_00993990(arg);
@@ -654,6 +685,7 @@ struct FUN_00993bf0_class
 
 // @fnv 0x00993bf0
 // src: GUESS 0x00993bf0 (confidence: low)
+// pdb: NiTMap<Actor *,__int64>::NewItem | CombatManager.obj | debug, vtable slot, medium
 void __thiscall FUN_00993bf0_class::ForwardCall_00993bf0()
 {
     reinterpret_cast<FUN_00993bf0_class*>(reinterpret_cast<char*>(this) + 0xc)->FUN_00993cd0();
@@ -667,6 +699,7 @@ struct FUN_00993cd0
 };
 
 // @fnv 0x00993cd0
+// pdb: DFALL<NiTMapItem<Actor *,__int64> >::Allocate | CombatManager.obj | debug, object-file run extension, low
 void* FUN_00993cd0::GetPtr()
 {
     void* p = operator new(0x10);
@@ -697,6 +730,7 @@ struct FUN_00995890_shell
 
 // @fnv 0x00995890
 // src: XBOX_PDB 0x00995890
+// pdb: CombatCoverMap::UnlockForWrite | CombatPlanner.obj | debug, upstream name already matches, high
 void FUN_00995890_shell::CombatCoverMap_UnlockForWrite()
 {
     ((FUN_00aa62e0_shell*)((char*)this + 0x14))->BSReadWriteLock_UnlockWrite();
@@ -708,15 +742,17 @@ struct QuantityData
 };
 struct FUN_009959c0Class
 {
-    void CombatPlannerData_SetCombatCoverLocation(int a, int b);
+    void CombatPlannerData_SetCombatCoverLocation(int aiLocation, int apCombatCoverLocation);
 };
 // Stores b into the int array at offset 0x60 indexed by a, then calls SetQuantity(a) on the object pointed to by the second pointer field.
 // @fnv 0x009959c0
 // src: COMMUNITY 0x009959c0
-void FUN_009959c0Class::CombatPlannerData_SetCombatCoverLocation(int iIndex, int iValue)
+// pdb: CombatPlannerData::SetCombatCoverLocation | CombatPlanner.obj | debug, upstream name already matches, high
+// pdb params: aiLocation, apCombatCoverLocation
+void FUN_009959c0Class::CombatPlannerData_SetCombatCoverLocation(int aiLocation, int apCombatCoverLocation)
 {
-    reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x60)[iIndex] = iValue;
-    reinterpret_cast<QuantityData*>(*(reinterpret_cast<int**>(this) + 1))->SetQuantity(iIndex);
+    reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x60)[aiLocation] = apCombatCoverLocation;
+    reinterpret_cast<QuantityData*>(*(reinterpret_cast<int**>(this) + 1))->SetQuantity(aiLocation);
 }
 
 struct FUN_00995db0_Class
@@ -755,6 +791,7 @@ struct FUN_00996540
 };
 
 // @fnv 0x00996540
+// pdb: BSSimpleArray<CombatPlanNode *,1024>::~BSSimpleArray<CombatPlanNode *,1024> | CombatPlanner.obj | debug, call graph (shared callers), low
 void FUN_00996540::Init()
 {
     *reinterpret_cast<int**>(this) = &DAT_0108dc80;
@@ -774,6 +811,7 @@ struct FUN_00996640
     void Init();
 };
 // @fnv 0x00996640
+// pdb: BSSimpleArray<CombatPlanLink *,1024>::~BSSimpleArray<CombatPlanLink *,1024> | CombatPlanner.obj | debug, call graph (shared callers), low
 void FUN_00996640::Init()
 {
     p = &DAT_0108dca8;
@@ -834,6 +872,7 @@ struct FUN_00996ba0
 
 // Sets the vtable to DAT_0108dc80, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x00996ba0
+// pdb: AStarNodeHeap<NavMeshInfo const *,TESObjectREFR *,512>::AStarNodeHeap<NavMeshInfo const *,TESObjectREFR *,512> | NavMeshInfoSearch.obj | debug, object-file run extension, low
 FUN_00996ba0* __thiscall FUN_00996ba0::DeserializeFromFile()
 {
     vtable = (int)&DAT_0108dc80;
@@ -854,6 +893,7 @@ struct FUN_00996bd0_class : public AX
 // Sets the object's vtable pointer to DAT_0108dca8, calls FUN_006b3eb0 with 0 and 0, and returns this.
 // @fnv 0x00996bd0
 // src: GUESS 0x00996bd0 (confidence: low)
+// pdb: AStarNodeHeap<NavMeshInfo const *,TESObjectREFR *,512>::~AStarNodeHeap<NavMeshInfo const *,TESObjectREFR *,512> | NavMeshInfoSearch.obj | debug, object-file run extension, low
 AX* FUN_00996bd0_class::SetVtableAndProcessState_00996bd0()
 {
     *reinterpret_cast<void**>(this) = &DAT_0108dca8;
@@ -877,6 +917,7 @@ struct FUN_00996db0 : public AX
 
 // Sets the object's vtable pointer to DAT_0108dcbc, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x00996db0
+// pdb: BSSimpleArray<AStarNode<CombatPlanNode *,CombatPlanLink *> *,1024>::BSSimpleArray<AStarNode<CombatPlanNode *,CombatPlanLink *> *,1024> | CombatPlanner.obj | debug, object-file run extension, low
 FUN_00996db0* FUN_00996db0::Init()
 {
     *reinterpret_cast<int**>(this) = &DAT_0108dcbc;
@@ -900,6 +941,7 @@ void FUN_0099e010_Class::PathingRequestCover_SetActorLocation(const NiPoint3& ak
 extern "C" void __cdecl NiFreeAlias(void*);
 // The vtable at 0x0108d138 identifies the DFALL-backed NiTMapBase specialization.
 // @fnv 0x00983880
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,ReservedCoverLocation *> >,unsigned int,ReservedCoverLocation *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,ReservedCoverLocation *> >,unsigned int,ReservedCoverLocation *> | CombatCoverMap.obj | debug, call graph (shared callers), high
 template <>
 NiTMapBase<DFALL<NiTMapItem<unsigned int, ReservedCoverLocation*> >, unsigned int, ReservedCoverLocation*>::~NiTMapBase()
 {
@@ -909,7 +951,7 @@ NiTMapBase<DFALL<NiTMapItem<unsigned int, ReservedCoverLocation*> >, unsigned in
 
 struct FUN_0098c590_shell
 {
-    CombatSearchDoor* FindParentSpaceNode(int);
+    CombatSearchDoor* CombatGroup_GetCombatSearchDoor(int);
 };
 struct FUN_0098c6e0_class
 {
@@ -917,27 +959,33 @@ struct FUN_0098c6e0_class
 };
 // @fnv 0x0098c6e0
 // src: XBOX_PDB 0x0098c6e0
-void FUN_0098c6e0_class::CombatGroup_InvestigatedSearchDoor(int arg)
+// pdb: CombatGroup::InvestigatedSearchDoor | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apDoor
+// pdb locals: psearchDoor
+void FUN_0098c6e0_class::CombatGroup_InvestigatedSearchDoor(int apDoor)
 {
-    CombatSearchDoor* result = ((FUN_0098c590_shell*)this)->FindParentSpaceNode(arg);
+    CombatSearchDoor* result = ((FUN_0098c590_shell*)this)->CombatGroup_GetCombatSearchDoor(apDoor);
     if (result)
-        result->pad[9] = 1;
+        result->pDoor[9] = 1;
 }
 
 namespace fnv_0098c750 {
 struct FUN_0098c590_shell
 {
-    CombatSearchDoor* FindParentSpaceNode(int);
+    CombatSearchDoor* CombatGroup_GetCombatSearchDoor(int);
 };
 struct FUN_0098c750_class
 {
-    void CombatGroup_ReserveSearchDoor(int arg);
+    void CombatGroup_ReserveSearchDoor(int apDoor);
 };
 // @fnv 0x0098c750
 // src: XBOX_PDB 0x0098c750
-void __thiscall FUN_0098c750_class::CombatGroup_ReserveSearchDoor(int arg)
+// pdb: CombatGroup::ReserveSearchDoor | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apDoor
+// pdb locals: psearchDoor
+void __thiscall FUN_0098c750_class::CombatGroup_ReserveSearchDoor(int apDoor)
 {
-    CombatSearchDoor* p = ((FUN_0098c590_shell*)this)->FindParentSpaceNode(arg);
+    CombatSearchDoor* p = ((FUN_0098c590_shell*)this)->CombatGroup_GetCombatSearchDoor(apDoor);
     if (p)
         p->bReserved = true;
 }
@@ -955,6 +1003,7 @@ struct FUN_009825e0_class
 };
 // Calls FUN_00982530, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x009825e0
+// pdb: AStarSearch<CombatPlanNode *,CombatPlanLink *>::`scalar deleting destructor' | CombatController.obj | retail, vtable slot, high
 FUN_009825e0_class* FUN_009825e0_class::FUN_009825e0(unsigned int flags)
 {
     FUN_00982530();
@@ -970,6 +1019,9 @@ struct FUN_00982750_Class
 };
 // @fnv 0x00982750
 // src: GUESS 0x00982750 (confidence: low)
+// pdb: CoverReservationInfo::CalculateActorWidth | CombatCoverMap.obj | debug, object-file run extension, low
+// pdb params: afActorRadius
+// pdb locals: cwidth
 unsigned char FUN_00982750_Class::UpdateState_00982750(float afValue)
 {
     afValue *= DAT_01016ff0;
@@ -985,6 +1037,8 @@ struct FUN_00982c20
     void Save(BGSSaveFormBuffer* buffer);
 };
 // @fnv 0x00982c20
+// pdb: CoverReservationInfo::SaveGame | CombatCoverMap.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void __thiscall FUN_00982c20::Save(BGSSaveFormBuffer* buffer)
 {
     buffer->SaveData(this, 1, 0);
@@ -1012,15 +1066,16 @@ NiTMapBase<DFALL<NiTMapItem<unsigned int, ReservedCoverLocation*> >, unsigned in
 
 struct FUN_009838b0_class
 {
-    void __thiscall ResetVirtualTableAndClear_00983700();
+    void __thiscall BSSimpleArray_CoverReservation_1024_dtor();
     FUN_009838b0_class* FUN_009838b0(unsigned int flags);
 };
 
 // Calls FUN_00983700, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x009838b0
+// pdb: BSSimpleArray<CoverReservation,1024>::`scalar deleting destructor' | CombatCoverMap.obj | retail, vtable slot, high
 FUN_009838b0_class* FUN_009838b0_class::FUN_009838b0(unsigned int flags)
 {
-    ResetVirtualTableAndClear_00983700();
+    BSSimpleArray_CoverReservation_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1053,12 +1108,16 @@ struct BSSimpleArray_ParentSpaceNode
 
 // Scans the array at offset 0x120 for a node whose a or b equals formID and returns it, otherwise returns 0.
 // @fnv 0x0098c590
-CombatSearchDoor* FUN_0098c590_shell::FindParentSpaceNode(int formID)
+// src: XBOX_DEBUG_PDB 0x0098c590
+// pdb: CombatGroup::GetCombatSearchDoor | CombatGroup.obj | debug, call graph (shared callers), high
+// pdb params: apDoor
+// pdb locals: i, searchDoor
+CombatSearchDoor* FUN_0098c590_shell::CombatGroup_GetCombatSearchDoor(int apDoor)
 {
     for (unsigned int i = 0; i < ((BSSimpleArray_ParentSpaceNode*)((char*)this + 0x120))->GetFlags(); ++i)
     {
         CombatSearchDoor* node = &((BSSimpleArray_ParentSpaceNode*)((char*)this + 0x120))->GetAt(i);
-        if (((int*)node)[0] == formID || ((int*)node)[1] == formID)
+        if (((int*)node)[0] == apDoor || ((int*)node)[1] == apDoor)
             return node;
     }
     return 0;
@@ -1066,7 +1125,7 @@ CombatSearchDoor* FUN_0098c590_shell::FindParentSpaceNode(int formID)
 
 struct FUN_009865f0_shell
 {
-    void* __thiscall CombatGroup_GetCombatMemberForActor(int arg);
+    void* __thiscall CombatGroup_GetCombatMemberForActor(int apActor);
 };
 struct FUN_0098de00_class
 {
@@ -1074,6 +1133,9 @@ struct FUN_0098de00_class
 };
 // Calls FUN_009865f0 with arg and returns the int at offset 16 of the result, or 0 if the result is null.
 // @fnv 0x0098de00
+// pdb: CombatGroup::GetClusterForMember | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: apMember
+// pdb locals: pcombatMember
 int __thiscall FUN_0098de00_class::GetFieldAtOffset16(int arg)
 {
     void* result = reinterpret_cast<FUN_009865f0_shell*>(this)->CombatGroup_GetCombatMemberForActor(arg);
@@ -1084,15 +1146,16 @@ int __thiscall FUN_0098de00_class::GetFieldAtOffset16(int arg)
 
 struct FUN_0098ed60_shell
 {
-    void ResetVirtualTableAndClear_0098ed60();
+    void BSSimpleArray_CombatTarget_1024_dtor();
     void* __thiscall FUN_0098f690(unsigned int flags);
 };
 
 // Calls FUN_0098ed60, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x0098f690
+// pdb: BSSimpleArray<CombatTarget,1024>::`scalar deleting destructor' | CombatGroup.obj | retail, vtable slot, high
 void* __thiscall FUN_0098ed60_shell::FUN_0098f690(unsigned int flags)
 {
-    ResetVirtualTableAndClear_0098ed60();
+    BSSimpleArray_CombatTarget_1024_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -1101,16 +1164,17 @@ void* __thiscall FUN_0098ed60_shell::FUN_0098f690(unsigned int flags)
 extern "C" void Deallocate(void*);
 struct FUN_0098f020_shell
 {
-    void __thiscall ResetGlobalObject();
+    void __thiscall BSSimpleArray_CombatMember_1024_dtor();
 };
 struct FUN_0098f6c0_class
 {
     void* __thiscall FUN_0098f6c0(unsigned int flags);
 };
 // @fnv 0x0098f6c0
+// pdb: BSSimpleArray<CombatMember,1024>::`scalar deleting destructor' | CombatGroup.obj | retail, vtable slot, high
 void* __thiscall FUN_0098f6c0_class::FUN_0098f6c0(unsigned int flags)
 {
-    ((FUN_0098f020_shell*)this)->ResetGlobalObject();
+    ((FUN_0098f020_shell*)this)->BSSimpleArray_CombatMember_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1120,7 +1184,7 @@ void __cdecl Deallocate(void*);
 extern "C" void __cdecl Deallocate(void*);
 struct FUN_0098f4f0_class
 {
-    void __thiscall SetVtableAndProcessState_0098f4f0();
+    void __thiscall BSSimpleArray_CombatSearchDoor_1024_dtor();
 };
 struct FUN_0098f720_class
 {
@@ -1128,9 +1192,10 @@ struct FUN_0098f720_class
 };
 // Calls FUN_0098f4f0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0098f720
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::`scalar deleting destructor' | CombatGroup.obj | retail, vtable slot, high
 void* __thiscall FUN_0098f720_class::FUN_0098f720(unsigned int flags)
 {
-    ((FUN_0098f4f0_class*)this)->SetVtableAndProcessState_0098f4f0();
+    ((FUN_0098f4f0_class*)this)->BSSimpleArray_CombatSearchDoor_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1144,6 +1209,7 @@ struct FUN_0098f510_class
 };
 // Calls FUN_0098f540, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0098f750
+// pdb: BSSimpleArray<CombatGroupCluster *,1024>::`scalar deleting destructor' | CombatGroup.obj | retail, vtable slot, high
 void* __thiscall FUN_0098f510_class::FUN_0098f750(unsigned int flags)
 {
     FUN_0098f540();
@@ -1159,7 +1225,7 @@ struct S5460
 };
 struct FUN_0098fa00_shell
 {
-    void __thiscall BSSimpleArray_CombatTarget_1024_ReallocateBuffer(unsigned int a, unsigned int b);
+    void __thiscall BSSimpleArray_CombatTarget_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
 };
 struct FUN_0098f7b0_Class
 {
@@ -1171,6 +1237,8 @@ struct FUN_0098f7b0_Class
 };
 // @fnv 0x0098f7b0
 // src: XBOX_PDB 0x0098f7b0
+// pdb: BSSimpleArray<CombatTarget,1024>::AddUninitialized | CombatGroup.obj | retail, object-file run extension, high
+// pdb locals: inewSize
 unsigned int FUN_0098f7b0_Class::BSSimpleArray_CombatTarget_1024_AddUninitialized()
 {
     if (((S5460*)this)->BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -1192,16 +1260,18 @@ unsigned int FUN_0098f7b0_Class::BSSimpleArray_CombatTarget_1024_AddUninitialize
     return m_08 - 1;
 }
 
-extern "C" int __cdecl CreateCombatGroupStrategy(int a);
+extern "C" int __cdecl CombatGroupStrategy_CreateCombatGroupStrategy(int aeCombatGroupStrategy);
 extern int DAT_011f18b4[4];
 // Calls CreateCombatGroupStrategy for each index 0..3 and stores the results into DAT_011f18b4.
 // @fnv 0x00990070
 // src: COMMUNITY 0x00990070
+// pdb: CombatGroupStrategy::InitGroupStrategies | CombatGroupStrategy.obj | retail, upstream name already matches, high
+// pdb locals: i, pstrategy
 void __cdecl CombatGroupStrategy_InitGroupStrategies()
 {
     for (unsigned int i = 0; i < 4; ++i)
     {
-        int v = CreateCombatGroupStrategy(i);
+        int v = CombatGroupStrategy_CreateCombatGroupStrategy(i);
         DAT_011f18b4[i] = v;
     }
 }
@@ -1215,6 +1285,7 @@ struct FUN_00991050_class
     void* __thiscall FUN_00991050(unsigned int flags);
 };
 // @fnv 0x00991050
+// pdb: CombatManager::`scalar deleting destructor' | CombatManager.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_00991050_class::FUN_00991050(unsigned int flags)
 {
     ((FUN_00991150_class*)this)->FUN_00991150();
@@ -1237,6 +1308,7 @@ struct FUN_009914d0_Class
 
 // Calls FUN_00985f90 on this, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009914d0
+// pdb: CombatGroup::`scalar deleting destructor' | CombatManager.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_009914d0_Class::FUN_009914d0(unsigned int flags)
 {
     ((FUN_00985f90_Class*)this)->FUN_00985f90();
@@ -1256,6 +1328,7 @@ struct FUN_00993850_class
     void* __thiscall FUN_00993850(unsigned int flags);
 };
 // @fnv 0x00993850
+// pdb: NiTMap<Actor *,__int64>::`scalar deleting destructor' | CombatManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00993850_class::FUN_00993850(unsigned int flags)
 {
     ((FUN_00993b60_class*)this)->FUN_00993b60();
@@ -1287,6 +1360,7 @@ struct FUN_00993ca0_class
 };
 // Calls FUN_00993bc0, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00993ca0
+// pdb: NiTMapBase<DFALL<NiTMapItem<Actor *,__int64> >,Actor *,__int64>::`scalar deleting destructor' | CombatManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00993ca0_class::FUN_00993ca0(unsigned int flags)
 {
     SetVirtualTableAndProcessState_00993bc0();
@@ -1302,6 +1376,8 @@ struct FUN_00993f70
     void Clear();
 };
 // @fnv 0x00993f70
+// pdb: CombatPlan::~CombatPlan | CombatPlan.obj | debug, object-file run extension, low
+// pdb locals: i
 void FUN_00993f70::Clear()
 {
     for (unsigned int i = 0; i < m_uiItemCount; ++i)
@@ -1320,18 +1396,21 @@ struct FUN_00994270
 {
     int* m_items;
     int m_uiItemCount;
-    unsigned int __thiscall FindIndex(unsigned int key);
+    unsigned int __thiscall FindIndex(unsigned int apStep);
 };
 // Searches m_items for key and returns its index, warning via FNV_Warning and returning 0 if not found.
 // @fnv 0x00994270
-unsigned int FUN_00994270::FindIndex(unsigned int key)
+// pdb: CombatPlan::GetIndexForStep | CombatPlan.obj | retail, string-set bridge, high
+// pdb params: apStep
+// pdb locals: i
+unsigned int FUN_00994270::FindIndex(unsigned int apStep)
 {
     for (unsigned int i = 0; i < (unsigned int)m_uiItemCount; ++i)
     {
-        if ((unsigned int)m_items[i] == key)
+        if ((unsigned int)m_items[i] == apStep)
             return i;
     }
-    FNV_Warning("COMBAT: Could not find plan step %08X in CombatPlan::GetIndexForStep()", key);
+    FNV_Warning("COMBAT: Could not find plan step %08X in CombatPlan::GetIndexForStep()", apStep);
     return 0;
 }
 
@@ -1351,6 +1430,8 @@ struct FUN_00994e60_class
     CombatWorldStateArray* __thiscall ResetState(CombatWorldStateArray* a);
 };
 // @fnv 0x00994e60
+// pdb: CombatPlanNode::CombatPlanNode | CombatPlanner.obj | debug, object-file run extension, low
+// pdb params: apWorldStateArray
 CombatWorldStateArray* FUN_00994e60_class::ResetState(CombatWorldStateArray* a)
 {
     ((CombatWorldStateArray*)this)->CombatWorldStateArray_0(a);
@@ -1365,6 +1446,8 @@ struct FUN_00994ea0_class
 };
 // Stores a and b into the two int slots at this+0x5c/0x60 indexed by the counter at this+0xdc, then increments that counter.
 // @fnv 0x00994ea0
+// pdb: CombatPlanNode::AddUnsatisfiedState | CombatPlanner.obj | debug, call graph (shared callers), low
+// pdb params: apWorldState, apParent
 void __thiscall FUN_00994ea0_class::AppendPair(int aiFirst, int aiSecond)
 {
     *(int*)((char*)this + 0x5c + *(unsigned int*)((char*)this + 0xdc) * 8) = aiFirst;
@@ -1387,6 +1470,7 @@ struct FUN_009958b0_Class
 // Zeroes m_00 and clears the three 0x58-byte blocks at m_08, m_60 and m_b8, then returns this.
 // @fnv 0x009958b0
 // src: COMMUNITY 0x009958b0
+// pdb: CombatPlannerData::CombatPlannerData | CombatPlanner.obj | retail, upstream name already matches, high
 FUN_009958b0_Class* FUN_009958b0_Class::CombatPlannerData_CombatPlannerData()
 {
     m_00 = 0;
@@ -1405,6 +1489,8 @@ struct FUN_00995980_class
 
 // Stores value and amount into the arrays at offsets 8 and 0xb8 for index, then calls SetQuantity on the object at this+4.
 // @fnv 0x00995980
+// pdb: CombatPlannerData::SetCombatLocation | CombatPlanner.obj | debug, call graph, medium
+// pdb params: aiLocation, apCombatLocation, afCost
 void __thiscall FUN_00995980_class::SetEntry(int index, int value, float amount)
 {
     *(int*)((char*)this + index * 4 + 8) = value;
@@ -1418,6 +1504,8 @@ struct FUN_00996320_Class
     unsigned int __thiscall FindFirstNonZero();
 };
 // @fnv 0x00996320
+// pdb: BSSimpleArray<WeaponData,1024>::operator[] | CombatState.obj | debug, object-file run extension, low
+// pdb params: aiIndex
 unsigned int FUN_00996320_Class::FindFirstNonZero()
 {
     for (unsigned int i = 0; i < 2039; ++i)
@@ -1482,6 +1570,7 @@ struct FUN_00996560 : public FUN_00996540
 };
 // Destructor that calls Clear(true) on the object.
 // @fnv 0x00996560
+// pdb: BSScrapArray<CombatPlanNode *,1024>::~BSScrapArray<CombatPlanNode *,1024> | CombatPlanner.obj | debug, call graph (shared callers), low
 FUN_00996560::~FUN_00996560()
 {
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -1499,6 +1588,7 @@ struct FUN_00996710_class : FUN_00996540_shell
 };
 
 // @fnv 0x00996710
+// pdb: BSSimpleArray<CombatPlanNode *,1024>::`scalar deleting destructor' | CombatPlanner.obj | retail, vtable slot, high
 void* __thiscall FUN_00996710_class::FUN_00996710(unsigned int flags)
 {
     FUN_00996540();
@@ -1520,6 +1610,7 @@ struct FUN_00996740_class
 };
 
 // @fnv 0x00996740
+// pdb: BSScrapArray<CombatPlanNode *,1024>::`scalar deleting destructor' | CombatPlanner.obj | retail, vtable slot, high
 void* __thiscall FUN_00996740_class::FUN_00996740(unsigned int flags)
 {
     ((FUN_00996560_class*)this)->FUN_00996560();
@@ -1539,6 +1630,7 @@ struct FUN_00996770_class : FUN_00996640_shell
 };
 // Calls FUN_00996640, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00996770
+// pdb: BSSimpleArray<CombatPlanLink *,1024>::`scalar deleting destructor' | CombatPlanner.obj | retail, vtable slot, high
 void* __thiscall FUN_00996770_class::FUN_00996770(unsigned int flags)
 {
     FUN_00996640();
@@ -1555,6 +1647,7 @@ struct FUN_009967a0_class
 };
 // Calls FUN_00996660, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009967a0
+// pdb: BSScrapArray<CombatPlanLink *,1024>::`scalar deleting destructor' | CombatPlanner.obj | retail, vtable slot, high
 void* __thiscall FUN_009967a0_class::FUN_009967a0(unsigned int flags)
 {
     FUN_00996660();
@@ -1571,6 +1664,7 @@ struct FUN_009966f0_class
 };
 // Calls FUN_009966f0, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009967d0
+// pdb: BSSimpleArray<AStarNode<CombatPlanNode *,CombatPlanLink *> *,1024>::`scalar deleting destructor' | CombatPlanner.obj | retail, vtable slot, high
 FUN_009966f0_class* __thiscall FUN_009966f0_class::FUN_009967d0(unsigned int flags)
 {
     UpdateState_009966f0();
@@ -1589,6 +1683,9 @@ struct FUN_00996c80 : FUN_009966f0
 };
 // Destructor that calls Clear(true) on the object at this address.
 // @fnv 0x00996c80
+// pdb: BSSimpleArray<CombatPlanLink *,1024>::_DestructItems | CombatPlanner.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 FUN_00996c80::~FUN_00996c80()
 {
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -1601,6 +1698,7 @@ struct FUN_00996d80_Class
     void* __thiscall FUN_00996d80(unsigned int flags);
 };
 // @fnv 0x00996d80
+// pdb: BSScrapArray<AStarNode<CombatPlanNode *,CombatPlanLink *> *,1024>::`scalar deleting destructor' | CombatPlanner.obj | retail, vtable slot, high
 void* __thiscall FUN_00996d80_Class::FUN_00996d80(unsigned int flags)
 {
     FUN_00996c80();
@@ -1622,6 +1720,8 @@ struct FUN_00982ca0_Class
 // Reads six single bytes from the load buffer into this object's fields m_000 through m_005.
 // @fnv 0x00982ca0
 // src: COMMUNITY 0x00982ca0
+// pdb: CoverReservationInfo::LoadGame | CombatCoverMap.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void __thiscall FUN_00982ca0_Class::CoverReservationInfo_LoadGameBGS(BGSLoadFormBuffer* buffer)
 {
     buffer->ReadTypedData(this, 1);
@@ -1638,7 +1738,7 @@ struct FUN_006cf180
 {
     FUN_006cf180();
     ~FUN_006cf180();
-    void ResizeAndConstruct(int, int);
+    void BSSimpleArray_PathingLocation_1024__InitialSetup(int, int);
 };
 struct FUN_0098f5f0 : FUN_006cf180
 {
@@ -1651,21 +1751,27 @@ struct FUN_0098f5f0 : FUN_006cf180
 };
 // Sets m_04 to "P0o", stores c (or a MemoryManager-provided pointer) in m_14, then calls ResizeAndConstruct with a and b.
 // @fnv 0x0098f5f0
+// pdb: BSSimpleArray<CombatTarget,1024>::CopyTo<1024> | CombatGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSScrapArray<PathingLocation,1024>::BSScrapArray<PathingLocation,1024>
+// pdb params: aDestArray
+// pdb locals: i
 FUN_0098f5f0::FUN_0098f5f0(int a, int b, void* c)
 {
     m_04 = "P0o";
     m_14 = c ? c : MemoryManager_Instance()->GetGeneralAllocator();
-    ResizeAndConstruct(a, b);
+    BSSimpleArray_PathingLocation_1024__InitialSetup(a, b);
 }
 
 struct FUN_0098f8e0_Class : FUN_0098fda0_Class
 {
-    FUN_0098f8e0_Class* __thiscall CombatTarget_CombatTarget();
+    FUN_0098f8e0_Class* __thiscall CombatTarget_ctor();
 };
 // Calls FUN_0097ede0 on four embedded Inner097 members and FUN_004300a0 on six members at offsets 0x4c-0x60, then returns this.
 // @fnv 0x0098f8e0
-// src: XBOX_PDB 0x0098f8e0
-FUN_0098f8e0_Class* __thiscall FUN_0098f8e0_Class::CombatTarget_CombatTarget()
+// src: XBOX_RETAIL_PDB 0x0098f8e0
+// pdb: CombatTarget::CombatTarget | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiSearch
+FUN_0098f8e0_Class* __thiscall FUN_0098f8e0_Class::CombatTarget_ctor()
 {
     ((Inner097*)((char*)this + 8))->BGSWorldLocation_BGSWorldLocation();
     ((Inner097*)((char*)this + 0x18))->BGSWorldLocation_BGSWorldLocation();
@@ -1683,23 +1789,26 @@ FUN_0098f8e0_Class* __thiscall FUN_0098f8e0_Class::CombatTarget_CombatTarget()
 extern "C" void* __cdecl FUN_00ec7230(char* dst, const char* src, unsigned int size);
 struct FUN_0098f960_class
 {
-    void __thiscall BSSimpleArray_CombatTarget_1024_MoveItems(char* dst, char* src, unsigned int count);
+    void __thiscall BSSimpleArray_CombatTarget_1024_MoveItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount);
 };
 // @fnv 0x0098f960
 // src: COMMUNITY 0x0098f960
-void __thiscall FUN_0098f960_class::BSSimpleArray_CombatTarget_1024_MoveItems(char* dst, char* src, unsigned int count)
+// pdb: BSSimpleArray<CombatTarget,1024>::_MoveItems | CombatGroup.obj | debug, call graph (shared callers), high
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
+void __thiscall FUN_0098f960_class::BSSimpleArray_CombatTarget_1024_MoveItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount)
 {
-    if (count <= 0)
+    if (aiCount <= 0)
         return;
-    if (dst < src)
+    if (apDestAddr < apSrcAddr)
     {
-        for (unsigned int i = 0; i < count; ++i)
-            FUN_00ec7230(dst + i * 0x68, src + i * 0x68, 0x68);
+        for (unsigned int i = 0; i < aiCount; ++i)
+            FUN_00ec7230(apDestAddr + i * 0x68, apSrcAddr + i * 0x68, 0x68);
     }
-    else if (dst > src)
+    else if (apDestAddr > apSrcAddr)
     {
-        for (int i = (int)count - 1; i >= 0; --i)
-            FUN_00ec7230(dst + i * 0x68, src + i * 0x68, 0x68);
+        for (int i = (int)aiCount - 1; i >= 0; --i)
+            FUN_00ec7230(apDestAddr + i * 0x68, apSrcAddr + i * 0x68, 0x68);
     }
 }
 
@@ -1789,21 +1898,24 @@ struct TESAmmoInitCalls
 
 struct FUN_00982df0_class
 {
-    bool ReservedCoverLocation_CanReserveCoverLocation(unsigned int arg);
+    bool ReservedCoverLocation_CanReserveCoverLocation(unsigned int apCombatController);
 };
 
 // @fnv 0x00982df0
 // src: XBOX_PDB 0x00982df0
-bool FUN_00982df0_class::ReservedCoverLocation_CanReserveCoverLocation(unsigned int arg)
+// pdb: ReservedCoverLocation::CanReserveCoverLocation | CombatCoverMap.obj | retail, upstream name already matches, high
+// pdb params: apCombatController
+// pdb locals: i, coverReservation
+bool FUN_00982df0_class::ReservedCoverLocation_CanReserveCoverLocation(unsigned int apCombatController)
 {
-    if (arg)
+    if (apCombatController)
     {
         for (unsigned int i = 0; i < ((BlkOffset08View*)this)->GetFlags(); ++i)
         {
             unsigned int e = ((FUN_00844160_shell*)this)->BSSimpleArray_GroupMemberData_1024_GetAt(i);
-            if (*(unsigned int*)e == arg)
+            if (*(unsigned int*)e == apCombatController)
                 return false;
-            if (((ActorCombatGroup*)((const EffectSetting*)arg)->GetCastSound())
+            if (((ActorCombatGroup*)((const EffectSetting*)apCombatController)->GetCastSound())
                     ->ContainsActor((Actor*)((TESAmmoInitCalls*)*(void**)e)->GetFieldBC()))
                 return false;
         }
@@ -1830,6 +1942,9 @@ struct FUN_0098f430_Class
 // Removes b elements starting at index a from the array at m_04, shifting the tail down and decreasing m_08 by b.
 // @fnv 0x0098f430
 // src: XBOX_PDB 0x0098f430
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::RemoveFast | CombatGroup.obj | debug, call graph, medium
+// pdb params: aiIndex, aiHowMany
+// pdb locals: iitemsToMove
 void FUN_0098f430_Class::BSSimpleArray_CombatSearchLocation_1024_RemoveFast(unsigned int uiStartIndex, unsigned int b)
 {
     unsigned int c = FUN_0042f5a0(m_08 - uiStartIndex - b, b);
@@ -1841,16 +1956,17 @@ void FUN_0098f430_Class::BSSimpleArray_CombatSearchLocation_1024_RemoveFast(unsi
 
 void __cdecl DestroyCombatActionTables();
 void __cdecl CombatGoal_DestroyGlobalCombatGoals();
-void __cdecl DeallocateAll();
+void __cdecl CombatGroupStrategy_DeleteGroupStrategies();
 void __cdecl FreeGlobalPointer();
 extern void* BGSSaveLoadGlobalDataWorldspacePtr;
 // @fnv 0x00990ff0
 // src: COMMUNITY 0x00990ff0
+// pdb: CombatManager::Destroy | CombatManager.obj | debug, object-file gap fill, medium
 void __cdecl CombatManager_FreeAll()
 {
     DestroyCombatActionTables();
     CombatGoal_DestroyGlobalCombatGoals();
-    DeallocateAll();
+    CombatGroupStrategy_DeleteGroupStrategies();
     FreeGlobalPointer();
     FUN_00991050_class* tmp = (FUN_00991050_class*)BGSSaveLoadGlobalDataWorldspacePtr;
     FUN_00991050_class* ptr = tmp;
@@ -1903,6 +2019,7 @@ struct FUN_00996ce0_Class
 };
 // Scans the 20 slots for the first occupied one, unlinks its node (advancing to m_18 or clearing the slot) and returns it with m_14 and m_18 reset.
 // @fnv 0x00996ce0
+// pdb: BSSimpleArray<CombatPlanLink *,1024>::_DeallocateBuffer | CombatPlanner.obj | debug, object-file run extension, low
 FUN_00996ce0_Node* FUN_00996ce0_Class::PopNode()
 {
     FUN_00996ce0_Node* result = 0;
@@ -1953,10 +2070,12 @@ float FUN_00980090_t::GetPointY(const void* ap)
 
 struct FUN_00981920_Class
 {
-    unsigned int GetPackageRefCount();
+    unsigned int CombatController_GetTargetSegmentInView();
 };
 // @fnv 0x00981920
-unsigned int FUN_00981920_Class::GetPackageRefCount()
+// src: XBOX_DEBUG_PDB 0x00981920
+// pdb: CombatController::GetTargetSegmentInView | CombatController.obj | debug, call graph, high
+unsigned int FUN_00981920_Class::CombatController_GetTargetSegmentInView()
 {
     return ((TESPackage*)*(unsigned int**)((char*)this + 0x9c))->GetRefCount();
 }
@@ -1982,6 +2101,7 @@ struct FUN_009825b0_shell : FUN_00982460
 };
 // Calls Init, then if the low bit of flags is set calls Deallocate on this, and returns this.
 // @fnv 0x009825b0
+// pdb: BSSimpleArray<CombatProcedure *,1024>::`scalar deleting destructor' | CombatController.obj | retail, vtable slot, high
 void* FUN_009825b0_shell::FUN_009825b0(unsigned int flags)
 {
     Init();
@@ -1990,6 +2110,7 @@ void* FUN_009825b0_shell::FUN_009825b0(unsigned int flags)
     return this;
 }
 
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x1), 2 members
 struct ScrapHeapBuffer
 {
     ~ScrapHeapBuffer();
@@ -1998,6 +2119,7 @@ struct ScrapHeapBuffer
 
 // @fnv 0x00982610
 // src: GUESS 0x00982610 (confidence: low)
+// pdb: AStarDefaultHeap::~AStarDefaultHeap | NavMeshObstacleCutter.obj | debug, call graph, medium
 void ScrapHeapBuffer::DestroySubobject_00982610()
 {
     this->ScrapHeapBuffer::~ScrapHeapBuffer();
@@ -2023,6 +2145,9 @@ struct FUN_00982630_class
 
 // @fnv 0x00982630
 // src: GUESS 0x00982630 (confidence: low)
+// pdb: CoverReservationInfo::CalculateSegmentInfo | CombatCoverMap.obj | debug, object-file run extension, low
+// pdb params: apCoverLocation
+// pdb locals: fcoverEdgeLength, coverEdgeVector, fsegmentLength
 void FUN_00982630_class::UpdateState_00982630(FUN_00982630_arg* arg)
 {
     NiPoint3 distanceVector = arg->a - arg->b;
@@ -2111,17 +2236,21 @@ struct FUN_0098bfb0_Record
 
 struct FUN_0098bfb0_Class
 {
-    void __thiscall StoreRecord(void* header, float value, int extra);
+    void __thiscall CombatGroup_AddSearchLocation(void* arLocation, float afScore, int aiTargetID);
 };
 
 // @fnv 0x0098bfb0
-void __thiscall FUN_0098bfb0_Class::StoreRecord(void* header, float value, int extra)
+// src: XBOX_DEBUG_PDB 0x0098bfb0
+// pdb: CombatGroup::AddSearchLocation | CombatGroup.obj | debug, call graph, high
+// pdb params: arLocation, afScore, aiTargetID
+// pdb locals: iindex
+void __thiscall FUN_0098bfb0_Class::CombatGroup_AddSearchLocation(void* arLocation, float afScore, int aiTargetID)
 {
     unsigned int index = reinterpret_cast<S006bfd40*>(reinterpret_cast<char*>(this) + 0x110)->BSSimpleArray_CombatSearchLocation_1024_AddUninitialized();
 
     reinterpret_cast<FUN_0098bfb0_Record*>(
         reinterpret_cast<FUN_006bf670_Class*>(reinterpret_cast<char*>(this) + 0x110)->GetElementAddress_006bf670(index))
-        ->m_kHeader = *reinterpret_cast<const FUN_0098bfb0_Header*>(header);
+        ->m_kHeader = *reinterpret_cast<const FUN_0098bfb0_Header*>(arLocation);
 
     {
         CombatTargetTimestamp timestamp(GetActorScale());
@@ -2132,11 +2261,11 @@ void __thiscall FUN_0098bfb0_Class::StoreRecord(void* header, float value, int e
 
         reinterpret_cast<FUN_0098bfb0_Record*>(
             reinterpret_cast<FUN_006bf670_Class*>(reinterpret_cast<char*>(this) + 0x110)->GetElementAddress_006bf670(index))
-            ->m_uiFilterValue = extra;
+            ->m_uiFilterValue = aiTargetID;
 
         reinterpret_cast<FUN_0098bfb0_Record*>(
             reinterpret_cast<FUN_006bf670_Class*>(reinterpret_cast<char*>(this) + 0x110)->GetElementAddress_006bf670(index))
-            ->m_float = value;
+            ->m_float = afScore;
     }
 }
 
@@ -2165,9 +2294,13 @@ struct FUN_0098c600_class
 };
 
 // @fnv 0x0098c600
+// pdb: CombatGroup::FindSearchDoor | CombatGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatGroup::AddSearchDoor
+// pdb params: apMember, afMaxDistance, abCheckExist
+// pdb locals: pcombatController, memberWorldLoc, fclosestDoorDistanceSquared, pclosestDoor, i, fdistanceSquared, searchDoor, doorWorldLoc, pteleportData, teleportWorldLoc
 void __thiscall FUN_0098c600_class::AddRadioReference(TESObjectREFR* pRef)
 {
-    if (reinterpret_cast<FUN_0098c590_shell*>(this)->FindParentSpaceNode(reinterpret_cast<int>(pRef)) != 0)
+    if (reinterpret_cast<FUN_0098c590_shell*>(this)->CombatGroup_GetCombatSearchDoor(reinterpret_cast<int>(pRef)) != 0)
     {
         return;
     }
@@ -2209,6 +2342,7 @@ struct FUN_0098dc20 : Inner097
 };
 
 // @fnv 0x0098dc20
+// pdb: ClusterData::ClusterData | CombatGroup.obj | debug, object-file gap fill, medium
 FUN_0098dc20* FUN_0098dc20::Method()
 {
     ((Inner097*)((char*)this + 4))->BGSWorldLocation_BGSWorldLocation();
@@ -2236,6 +2370,10 @@ struct FUN_0098f1f0_Class
 
 // Removes count entries at index from the array, shifts the tail down, and decrements the stored count.
 // @fnv 0x0098f1f0
+// pdb: BSSimpleArray<UnreachableLocation,1024>::_MoveItems | CombatState.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSSimpleArray<WeaponData,1024>::RemoveFast
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void FUN_0098f1f0_Class::RemoveEntries(unsigned int index, unsigned int count)
 {
     unsigned int result = FUN_0042f5a0(m_uiItemCount - index - count, count);
@@ -2250,6 +2388,8 @@ void FUN_0098f1f0_Class::RemoveEntries(unsigned int index, unsigned int count)
 }
 
 // @fnv 0x0098f2f0
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::SetSize | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, abFreeMemory
 template <>
 void BSSimpleArray<CombatSearchLocation>::SetSize(unsigned int count, bool clear)
 {
@@ -2302,6 +2442,7 @@ struct FUN_0098f560
 };
 // Runs the destructor and, if bit 0 of flags is set, deallocates this, then returns this.
 // @fnv 0x0098f780
+// pdb: BSSimpleArray<GroupMemberData,1024>::`scalar deleting destructor' | CombatGroup.obj | retail, vtable slot, high
 FUN_0098f560* FUN_0098f560::FUN_0098f780(unsigned int flags)
 {
     this->FUN_0098f560::~FUN_0098f560();
@@ -2327,6 +2468,8 @@ struct BSSimpleArray_CombatTarget_1024
 // Resets the array, allocates capacity for max(requested, savedSize) elements, then copies savedSize elements into it.
 // @fnv 0x0098fab0
 // src: XBOX_PDB 0x0098fab0
+// pdb: BSSimpleArray<CombatTarget,1024>::_InitialSetup | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 void __thiscall BSSimpleArray_CombatTarget_1024::BSSimpleArray_CombatTarget_1024_InitialSetup(unsigned int requested, unsigned int savedSize)
 {
     m_p = 0;
@@ -2369,6 +2512,9 @@ typedef CombatClusterMember*(__thiscall* BSSimpleArray_CombatMember_1024_Virtual
 
 // @fnv 0x0098fbe0
 // src: XBOX_PDB 0x0098fbe0
+// pdb: BSSimpleArray<CombatMember,1024>::_ConstructItems | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void BSSimpleArray_CombatMember_1024::BSSimpleArray_CombatMember_1024_InitialSetup(unsigned int aiCapacity, unsigned int aiCount)
 {
     m_04 = 0;
@@ -2402,6 +2548,7 @@ struct FUN_0098fdd0_class : BSSimpleList<int>
 
 // @fnv 0x0098fdd0
 // src: COMMUNITY 0x0098fdd0
+// pdb: CombatGroupStrategy::GetName | CombatGroupStrategy.obj | debug, upstream name already matches, high
 int __thiscall FUN_0098fdd0_class::CombatGroupStrategy_GetName()
 {
     return DAT_011a4ed0[reinterpret_cast<unsigned int>(GetNext())];
@@ -2414,6 +2561,8 @@ struct FUN_00990040 : public FUN_0098ffb0
 };
 // Constructs the object by forwarding arg to the base constructor and setting mVtbl to DAT_0108d97c.
 // @fnv 0x00990040
+// pdb: CombatGroupStrategyAdvance::CombatGroupStrategyAdvance | CombatGroupStrategy.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00990040::FUN_00990040(int arg) : FUN_0098ffb0(arg)
 {
     mVtbl = &DAT_0108d97c;
@@ -2424,7 +2573,10 @@ void __cdecl Deallocate(void*);
 
 // Iterates over the four entries of DAT_011f18b4 and calls Deallocate on each one.
 // @fnv 0x009900b0
-void DeallocateAll()
+// src: XBOX_RETAIL_PDB 0x009900b0
+// pdb: CombatGroupStrategy::DeleteGroupStrategies | CombatGroupStrategy.obj | retail, object-file run extension, high
+// pdb locals: i
+void CombatGroupStrategy_DeleteGroupStrategies()
 {
     for (unsigned int i = 0; i < 4; i++)
     {
@@ -2459,7 +2611,10 @@ struct FUN_009905a0_fields
 
 // Iterates the combat group's actors and keeps the smallest target detection level in m_00c and m_010.
 // @fnv 0x009905a0
-void FUN_009905a0_shell::UpdateMinProgress()
+// src: XBOX_DEBUG_PDB 0x009905a0
+// pdb: CombatGroupData::ComputeMinMaxTargetDetection | CombatGroupStrategy.obj | debug, call graph (shared callers), high
+// pdb locals: imemberCount, i, pmember, pcombatController, itargetDetection
+void FUN_009905a0_shell::CombatGroupData_ComputeMinMaxTargetDetection()
 {
     unsigned int count =
         reinterpret_cast<CombatGroup_GetCount*>(reinterpret_cast<FUN_009905a0_fields*>(this)->m_000)->GetCount();
@@ -2509,6 +2664,7 @@ struct FUN_00993c40_shell
     void* FUN_00993c40(unsigned int flags);
 };
 // @fnv 0x00993c40
+// pdb: NiTArray<CombatGroup *,NiTMallocInterface<CombatGroup *> >::`scalar deleting destructor' | CombatManager.obj | debug, vtable slot, medium
 void* FUN_00993c40_shell::FUN_00993c40(unsigned int flags)
 {
     ((FUN_00991130_class*)this)->UpdateFields_00993880();
@@ -2523,6 +2679,7 @@ struct FUN_00993c70 : FUN_00991130_class
     void* __thiscall DeleteThis(unsigned int flags);
 };
 // @fnv 0x00993c70
+// pdb: NiTPrimitiveArray<CombatGroup *>::`scalar deleting destructor' | CombatManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_00993c70::DeleteThis(unsigned int flags)
 {
     ForwardCall_00991130();
@@ -2578,6 +2735,9 @@ struct FUN_00993fd0_class
 
 // Stores arg as the count, allocates an array of that many pointers, and fills each with a new item.
 // @fnv 0x00993fd0
+// pdb: CombatPlan::AllocateSteps | CombatPlan.obj | debug, object-file run extension, low
+// pdb params: aiLength
+// pdb locals: i
 void __thiscall FUN_00993fd0_class::AllocateItemArray(int aiCount)
 {
     m_uiItemCount = aiCount;
@@ -2675,6 +2835,8 @@ struct FUN_009957c0_Class
 // Calls HasMatchingEntry on the list's first value and its next value, returning the result.
 // @fnv 0x009957c0
 // src: COMMUNITY 0x009957c0
+// pdb: CombatAction::HasMatchingEffect | CombatPlanner.obj | debug, object-file run extension, low
+// pdb params: apWorldState
 bool FUN_009957c0_Class::CombatAction_HasTargetState(BSSimpleList<int>* pList)
 {
     return ((FUN_009aa3b0_Class*)((char*)this + 0x14))
@@ -2694,6 +2856,7 @@ struct FUN_00995870_shell
 };
 // @fnv 0x00995870
 // src: XBOX_PDB 0x00995870
+// pdb: CombatCoverMap::IsCurrentThreadWriting | CombatPlanner.obj | debug, upstream name already matches, high
 void FUN_00995870_shell::CombatCoverMap_IsCurrentThreadWriting()
 {
     m_14.IsCurrentThread();
@@ -2725,6 +2888,9 @@ struct FUN_00996ae0_class
 
 // Walks the linked list from node, sizes array1 to the node count and array2 to count-1, then fills them with each node's m_08 and m_0c values.
 // @fnv 0x00996ae0
+// pdb: AStarSearch<NavMeshInfo const *,TESObjectREFR *>::GetPathToNode | NavMeshInfoSearch.obj | debug, call graph, low
+// pdb params: apFinalNode, apReturnArray, apReturnLinkArray
+// pdb locals: icount, iindex, pcurrent
 bool FUN_00996ae0_class::ExtractNodeValues(FUN_00996ae0_node* node, Arr* pValues, Arr* array2)
 {
     if (node == 0)
@@ -2770,15 +2936,18 @@ struct FUN_009800e0_cls
 {
     int m_00;
     unsigned int GetFieldBC();
-    void CombatController_GetPowerAttackDelta(unsigned int a1, unsigned int a2);
+    void CombatController_GetPowerAttackDelta(unsigned int aePowerAttack, unsigned int aNewPos);
 };
 
 // Calls GetActorSlotExtent with the result of GetFieldBC() and the two arguments.
 // @fnv 0x009800e0
 // src: XBOX_PDB 0x009800e0
-void FUN_009800e0_cls::CombatController_GetPowerAttackDelta(unsigned int a1, unsigned int a2)
+// pdb: CombatController::GetPowerAttackDelta | CombatController.obj | retail, upstream name already matches, high
+// pdb params: apActor, aePowerAttack, aNewPos
+// pdb locals: eanimGroup, bresult, panimSeq, panim, pos, panimGroup
+void FUN_009800e0_cls::CombatController_GetPowerAttackDelta(unsigned int aePowerAttack, unsigned int aNewPos)
 {
-    GetActorSlotExtent(this->GetFieldBC(), a1, a2);
+    GetActorSlotExtent(this->GetFieldBC(), aePowerAttack, aNewPos);
 }
 
 class FUN_00982480_A
@@ -3077,6 +3246,7 @@ class FUN_00982480_cls
 
 // Initializes m_2048, m_204c, m_2050 and m_2054 to zero.
 // @fnv 0x00982480
+// pdb: AStarSearch<CombatPlanNode *,CombatPlanLink *>::AStarSearch<CombatPlanNode *,CombatPlanLink *> | CombatController.obj | retail, call graph, high
 FUN_00982480_cls::FUN_00982480_cls()
 {
     m_2048 = 0;
@@ -3267,6 +3437,7 @@ class FUN_00982530_cls : public FUN_00982530_base
 
 // Destructor for the class; the body is empty and member destructors run implicitly.
 // @fnv 0x00982530
+// pdb: AStarSearch<CombatPlanNode *,CombatPlanLink *>::~AStarSearch<CombatPlanNode *,CombatPlanLink *> | CombatController.obj | debug, call graph, medium
 FUN_00982530_cls::~FUN_00982530_cls()
 {}
 
@@ -3300,6 +3471,7 @@ struct FUN_00982be0_cls
 // Returns 1 when m_4E is non-zero and FUN_006e4820 returns 0, otherwise 0.
 // @fnv 0x00982be0
 // src: XBOX_PDB 0x00982be0
+// pdb: PathingCoverLocation::IsStandCover | CombatCoverMap.obj | debug, upstream name already matches, high
 unsigned char FUN_00982be0_cls::PathingCoverLocation_IsStandCover()
 {
     return (this->m_4E != 0 && IsLedgeCover_006e4820() == 0) ? 1 : 0;
@@ -3452,18 +3624,21 @@ class FUN_00982ff0_cls
     FUN_00982ff0_Item* GetItem(unsigned int index);
     void FUN_00983720(unsigned int index, int flag);
 
-    bool ReservedCoverLocation_UnreserveCoverLocation(unsigned int id, void* arg);
+    bool ReservedCoverLocation_UnreserveCoverLocation(unsigned int apCombatController, void* apCombatCoverLocation);
 };
 
 // @fnv 0x00982ff0
 // src: COMMUNITY 0x00982ff0
-bool FUN_00982ff0_cls::ReservedCoverLocation_UnreserveCoverLocation(unsigned int id, void* arg)
+// pdb: ReservedCoverLocation::UnreserveCoverLocation | CombatCoverMap.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, apCombatCoverLocation
+// pdb locals: isize, i, coverReservation
+bool FUN_00982ff0_cls::ReservedCoverLocation_UnreserveCoverLocation(unsigned int apCombatController, void* apCombatCoverLocation)
 {
     unsigned int count = GetCount();
     for (unsigned int i = 0; i < count; i++)
     {
         FUN_00982ff0_Item* item = GetItem(i);
-        if (item->m_000 == id)
+        if (item->m_000 == apCombatController)
         {
             if (count == 1)
             {
@@ -3471,7 +3646,7 @@ bool FUN_00982ff0_cls::ReservedCoverLocation_UnreserveCoverLocation(unsigned int
             }
             else
             {
-                m_010 &= ~reinterpret_cast<FUN_00982b90_class*>((char*)arg + 0x70)->ComputeBitMask();
+                m_010 &= ~reinterpret_cast<FUN_00982b90_class*>((char*)apCombatCoverLocation + 0x70)->ComputeBitMask();
                 FUN_00983720(i, 1);
             }
             return false;
@@ -3517,6 +3692,7 @@ class FUN_00983080 : public B83080Base
 
 // Constructs the object: initializes the B83080Base base with type 0x25 and the m_kHandle member with 0.
 // @fnv 0x00983080
+// pdb: CombatCoverMap::CombatCoverMap | CombatCoverMap.obj | debug, call graph, medium
 FUN_00983080::FUN_00983080() : B83080Base(0x25), m_kHandle(0)
 {}
 
@@ -3538,7 +3714,7 @@ struct GroupSetting
 extern GroupSetting g_011cf870, g_011ce35c, g_011cf24c;
 extern float DAT_01016248, DAT_0108d540;
 float CombatTimer_GetTimer();
-float RandomFloat(float low, float high);
+float RandomFloat(float afMin, float afMax);
 struct GroupMember
 {
     void* actor;
@@ -3620,20 +3796,22 @@ struct GroupReset
     GroupTimer timerd8, timere0;
     GroupStamp stamp;
     unsigned int PathingSolution_GetVirtualNodeCount();
-    void UpdateExpiringPositions();
-    void UpdateCenter();
-    void CollectNearbyRefs();
-    GroupMember* CombatGroup_GetCombatTarget(unsigned int index);
+    void CombatGroup_UpdateSearchLocations();
+    void CombatGroup_ComputeSearchArea();
+    void CombatGroup_BuildSearchTeleportDoorArray();
+    GroupMember* CombatGroup_GetCombatTarget(unsigned int aiIndex);
     void CombatGroup_StartSearch();
 };
 // @fnv 0x0098add0
 // src: XBOX_PDB 0x0098add0
+// pdb: CombatGroup::StartSearch | CombatGroup.obj | retail, upstream name already matches, high
+// pdb locals: plastNoticedTarget, flastNoticedTargetTimeStamp, itargetCount, plastDetectedTarget, flastDetectedTargetTimeStamp, i, pcombatTarget
 void GroupReset::CombatGroup_StartSearch()
 {
     unsigned int memberCount16 = PathingSolution_GetVirtualNodeCount();
-    UpdateExpiringPositions();
-    UpdateCenter();
-    CollectNearbyRefs();
+    CombatGroup_UpdateSearchLocations();
+    CombatGroup_ComputeSearchArea();
+    CombatGroup_BuildSearchTeleportDoorArray();
     state = 1;
     timerd8.FUN_008d7f40(DAT_01016248);
     timere0.FUN_008d7f40(*g_011cf870.Setting_Float_00403e20());
@@ -3731,19 +3909,23 @@ struct FNVHost_b9027
     int unkC8;
     int unkCC;
     unsigned int m_d0;
-    void GetParamValues(FNVParamOwner* owner, float* outA, float* outB);
+    void CombatGroup_GetMinMaxSearchRadius(FNVParamOwner* arSearchLocation, float* arfMinRadius, float* arfMaxRadius);
 };
 
 extern FNVSettingValue* DAT_011a4d38[][3];
 
 // Selects a setting row from DAT_011a4d38 based on the owner's target kind and m_d0, then writes two setting values to outA and outB.
 // @fnv 0x0098b070
-void FNVHost_b9027::GetParamValues(FNVParamOwner* owner, float* outA, float* outB)
+// src: XBOX_DEBUG_PDB 0x0098b070
+// pdb: CombatGroup::GetMinMaxSearchRadius | CombatGroup.obj | debug, call graph, high
+// pdb params: arSearchLocation, arfMinRadius, arfMaxRadius
+// pdb locals: iindex, iindex2
+void FNVHost_b9027::CombatGroup_GetMinMaxSearchRadius(FNVParamOwner* arSearchLocation, float* arfMinRadius, float* arfMaxRadius)
 {
-    int idx = (owner->GetTarget() != 0 && owner->GetTarget()->GetKind() == 0x39) ? 0 : 1;
+    int idx = (arSearchLocation->GetTarget() != 0 && arSearchLocation->GetTarget()->GetKind() == 0x39) ? 0 : 1;
     int col = (m_d0 >= 2) ? 1 : 0;
-    *outA = *DAT_011a4d38[idx][col]->GetValue();
-    *outB = *DAT_011a4d38[idx][col + 1]->GetValue();
+    *arfMinRadius = *DAT_011a4d38[idx][col]->GetValue();
+    *arfMaxRadius = *DAT_011a4d38[idx][col + 1]->GetValue();
 }
 
 extern float _DAT_0108d540;
@@ -3852,6 +4034,7 @@ struct FUN_0098bae0_cls
 
 // @fnv 0x0098bae0
 // src: XBOX_PDB 0x0098bae0
+// pdb: CombatGroup::ClearSearch | CombatGroup.obj | retail, upstream name already matches, high
 void FUN_0098bae0_cls::CombatGroup_ClearSearch()
 {
     m_d4.FUN_0066b0d0(0);
@@ -3900,16 +4083,18 @@ extern double DAT_0101db88;
 extern int DAT_011ce528;
 struct FUN_0098c060_cls
 {
-    void CombatGroup_CalculateTargetSearchLocationScores(char* p, float* a, float* b, float* c);
+    void CombatGroup_CalculateTargetSearchLocationScores(char* apCombatTarget, float* arfDetectedScore, float* arfNoticedScore, float* arfAttackedScore);
 };
 // @fnv 0x0098c060
 // src: XBOX_PDB 0x0098c060
-void FUN_0098c060_cls::CombatGroup_CalculateTargetSearchLocationScores(char* pObject, float* pfOutA, float* pfOutB, float* pfOutC)
+// pdb: CombatGroup::CalculateTargetSearchLocationScores | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apCombatTarget, arfDetectedScore, arfNoticedScore, arfAttackedScore
+void FUN_0098c060_cls::CombatGroup_CalculateTargetSearchLocationScores(char* apCombatTarget, float* arfDetectedScore, float* arfNoticedScore, float* arfAttackedScore)
 {
-    *pfOutA =
-        (float)((DAT_01073568 - ((FnvStubSub*)(pObject + 0x50))->GetScale()) + *((FnvStubPtr*)&DAT_011ce528)->GetPtr());
-    *pfOutB = (float)(DAT_0101db88 - ((FnvStubSub*)(pObject + 0x58))->GetScale());
-    *pfOutC = (float)(DAT_01073568 - ((FnvStubSub*)(pObject + 0x60))->GetScale());
+    *arfDetectedScore =
+        (float)((DAT_01073568 - ((FnvStubSub*)(apCombatTarget + 0x50))->GetScale()) + *((FnvStubPtr*)&DAT_011ce528)->GetPtr());
+    *arfNoticedScore = (float)(DAT_0101db88 - ((FnvStubSub*)(apCombatTarget + 0x58))->GetScale());
+    *arfAttackedScore = (float)(DAT_01073568 - ((FnvStubSub*)(apCombatTarget + 0x60))->GetScale());
 }
 
 struct DoorExtraFields
@@ -3923,14 +4108,17 @@ struct DoorExtraFields
 
 struct CombatSearchMgr : FUN_0098c590_shell
 {
-    void CombatGroup_FailedToInvestigateSearchDoor(int arg);
+    void CombatGroup_FailedToInvestigateSearchDoor(int apDoor);
 };
 
 // @fnv 0x0098c710
 // src: XBOX_PDB 0x0098c710
-void CombatSearchMgr::CombatGroup_FailedToInvestigateSearchDoor(int arg)
+// pdb: CombatGroup::FailedToInvestigateSearchDoor | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apDoor
+// pdb locals: psearchDoor
+void CombatSearchMgr::CombatGroup_FailedToInvestigateSearchDoor(int apDoor)
 {
-    DoorExtraFields* door = (DoorExtraFields*)FindParentSpaceNode(arg);
+    DoorExtraFields* door = (DoorExtraFields*)CombatGroup_GetCombatSearchDoor(apDoor);
     if (door != 0)
     {
         door->unk0a = 0;
@@ -3975,26 +4163,30 @@ extern double DAT_0108d6e8;
 
 struct SearchGroup : CombatGroup_GetCount
 {
-    OutputActor* FindNearestActor(InputActor* source, OutputActor* priority, float radius);
+    OutputActor* CombatGroup_FindClusterPartner(InputActor* apMember, OutputActor* apCurrentPartner, float afMaxDistance);
 };
 
 // @fnv 0x0098cd50
-OutputActor* SearchGroup::FindNearestActor(InputActor* source, OutputActor* priority, float radius)
+// src: XBOX_RETAIL_PDB 0x0098cd50
+// pdb: CombatGroup::FindClusterPartner | CombatGroup.obj | retail, object-file run extension, high
+// pdb params: apMember, apCurrentPartner, afMaxDistance
+// pdb locals: memberLoc, ppartner, fpartnerMemberRadiusSquared, imemberCount, i, pmember, vec, fsquaredLength, ppartnerCombatController, plocationTarget
+OutputActor* SearchGroup::CombatGroup_FindClusterPartner(InputActor* apMember, OutputActor* apCurrentPartner, float afMaxDistance)
 {
-    float bestDistance = radius * radius;
+    float bestDistance = afMaxDistance * afMaxDistance;
     OutputActor* bestActor = 0;
-    PodPoint3 center2 = *source->GetPosition();
+    PodPoint3 center2 = *apMember->GetPosition();
     unsigned int numberOfActors3 = GetCount();
     for (unsigned int index = 0; index < numberOfActors3; ++index)
     {
         OutputActor* actor4 =
             reinterpret_cast<OutputActor*>(reinterpret_cast<FUN_00986b70_helper*>(this)->GetIntAt(index));
-        if (actor4 == reinterpret_cast<OutputActor*>(source))
+        if (actor4 == reinterpret_cast<OutputActor*>(apMember))
             continue;
         PodPoint3 delta;
         actor4->ComputePosition(&delta, &center2)->SubtractIntoVector();
         float squaredDistance = delta.FUN_004a7290();
-        if (actor4 == priority)
+        if (actor4 == apCurrentPartner)
             squaredDistance = (float)(squaredDistance / DAT_0108d6e8);
         if (squaredDistance < bestDistance)
         {
@@ -4008,7 +4200,7 @@ OutputActor* SearchGroup::FindNearestActor(InputActor* source, OutputActor* prio
         if (handle)
         {
             RelevantTarget* target = reinterpret_cast<RelevantTarget*>(handle->CombatController_GetCombatState()->GetCoverLocation());
-            if (target && target->originalActor == source)
+            if (target && target->originalActor == apMember)
                 bestActor = 0;
         }
     }
@@ -4031,7 +4223,7 @@ struct Choice_98d1a0
     int FUN_00726070();
 };
 float __cdecl CombatTimer_GetTimer();
-Choice_98d1a0* __cdecl SelectCombatStyleHandler(FUN_0098d1a0_shell*);
+Choice_98d1a0* __cdecl CombatGroupStrategy_FindCombatGroupStrategy(FUN_0098d1a0_shell*);
 struct FUN_0098d1a0_shell
 {
     int unk00;
@@ -4051,17 +4243,19 @@ struct FUN_0098d1a0_shell
     int unk40;
     CombatTargetTimestamp stamp;
     unsigned int CombatGroup_GetMemberCount();
-    void UpdateChoiceSelection();
+    void CombatGroup_UpdateGroupStrategy();
 };
 // When more than one entry exists, picks a choice on the select timer, validates it on the validate timer, and clears it otherwise.
 // @fnv 0x0098d1a0
-void FUN_0098d1a0_shell::UpdateChoiceSelection()
+// src: XBOX_DEBUG_PDB 0x0098d1a0
+// pdb: CombatGroup::UpdateGroupStrategy | CombatGroup.obj | debug, call graph, high
+void FUN_0098d1a0_shell::CombatGroup_UpdateGroupStrategy()
 {
     if (CombatGroup_GetMemberCount() > 1)
     {
         if (!flag && selectTimer.FUN_008d7f80())
         {
-            choice = SelectCombatStyleHandler(this);
+            choice = CombatGroupStrategy_FindCombatGroupStrategy(this);
             selectTimer.FUN_008d7f40(5.0f);
             if (choice)
             {
@@ -4231,6 +4425,8 @@ struct ClusterWork
 };
 // Rebuilds spatial groups: drops members whose group is too far, merges mutual nearest neighbours, then merges overlapping groups.
 // @fnv 0x0098d2c0
+// pdb: CombatGroup::UpdateClusters | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: imemberCount, fclusterDistanceSquared, clusterData, fdistanceSqrArray, i, pcluster, cclosestMember, fclosestDistSqr, j, fdistSqr, center, pcluster1, pcluster2, k, iclosestMember
 void ClusterWork::UpdateGroups()
 {
     if (DAT_011a4d34)
@@ -4368,6 +4564,7 @@ struct FUN_0098dc00_cls
 // Calls Reset(), sets m_10 to 0, and returns this.
 // @fnv 0x0098dc00
 // src: GUESS 0x0098dc00 (confidence: low)
+// pdb: CombatGroupCluster::CombatGroupCluster | CombatGroup.obj | debug, object-file gap fill, medium
 FUN_0098dc00_cls* FUN_0098dc00_cls::InitializeFields_0098dc00()
 {
     Reset();
@@ -4389,13 +4586,14 @@ struct CombatClusterStub
 };
 
 // Actor at +0 and cluster at +0x10 identify CombatMember; no shared CombatMember.h is available yet.
+// pdb: class CombatMember, size 0x14, 5 members
 struct CombatMember
 {
-    Actor* actor;
-    int unk04;
-    int unk08;
-    int unk0C;
-    CombatClusterStub* cluster;
+    Actor* pActor;
+    int iGroupStrategyAssignment;
+    int fDamagePerSecond;
+    int fCombatStrength;
+    CombatClusterStub* pCluster;
 };
 
 struct ClusterArrayStub
@@ -4405,6 +4603,7 @@ struct ClusterArrayStub
 };
 
 // Member accessors bind to 0x00990890/0x00988790 and clusters start at +0x138; shared CombatGroup.h is unavailable.
+// pdb: class CombatGroup, size 0x15c (here 0x13c), 39 members
 struct CombatGroup
 {
     int unk000;
@@ -4488,11 +4687,13 @@ struct CombatGroup
     ClusterArrayStub clusters;
 
     unsigned int GetMemberCount();
-    CombatMember* GetMember(unsigned int i);
+    CombatMember* GetMember(unsigned int aiIndex);
     void RecenterClusters();
 };
 
 // @fnv 0x0098dc40
+// pdb: CombatGroup::UpdateClusterCenters | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: imemberCount, i, pcluster, pcombatMember, centerPoint
 void CombatGroup::RecenterClusters()
 {
     for (unsigned int i = 0; i < clusters.GetSize(); i++)
@@ -4505,13 +4706,13 @@ void CombatGroup::RecenterClusters()
     for (unsigned int j = 0; j < count; j++)
     {
         CombatMember* member = GetMember(j);
-        if (member->cluster)
+        if (member->pCluster)
         {
-            NiPoint3 pos = *member->cluster->GetNavMeshData();
+            NiPoint3 pos = *member->pCluster->GetNavMeshData();
             // Reference position is virtual slot 0x7D (0x1F4), not the nonvirtual GetPos overload.
-            pos += reinterpret_cast<const NiPoint3&>(*static_cast<const TESObjectREFR*>(member->actor)->GetPos());
-            member->cluster->SetGridPosition(pos);
-            member->cluster->memberCount++;
+            pos += reinterpret_cast<const NiPoint3&>(*static_cast<const TESObjectREFR*>(member->pActor)->GetPos());
+            member->pCluster->SetGridPosition(pos);
+            member->pCluster->memberCount++;
         }
     }
     for (unsigned int k = 0; k < clusters.GetSize(); k++)
@@ -4569,6 +4770,9 @@ struct FUN_0098f580_class
 };
 
 // @fnv 0x0098f580
+// pdb: BSSimpleArray<GroupMemberData,1024>::_Allocate | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void __thiscall FUN_0098f580_class::CopyItemsTo(FUN_0096a330_class* destination)
 {
     destination->FUN_0098ed80(m_uiItemCount, 1);
@@ -4586,33 +4790,36 @@ struct FUN_0098fa00_cls
     virtual int v1(int a);
     virtual int v2();
     virtual int v3(int a, int b);
-    void Helper0(int a, int b, int c);
+    void Helper0(int apDestAddr, int apSrcAddr, int aiCount);
     void Helper1();
-    void BSSimpleArray_CombatTarget_1024_ReallocateBuffer(int a1, int a2);
+    void BSSimpleArray_CombatTarget_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount);
 };
 
 // @fnv 0x0098fa00
 // src: XBOX_PDB 0x0098fa00
-void FUN_0098fa00_cls::BSSimpleArray_CombatTarget_1024_ReallocateBuffer(int a1, int a2)
+// pdb: BSSimpleArray<CombatTarget,1024>::_ReallocateBuffer | CombatGroup.obj | debug, call graph, high
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
+void FUN_0098fa00_cls::BSSimpleArray_CombatTarget_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount)
 {
     if (m_04 != 0)
     {
-        if (a2 == m_0c)
+        if (aiCopyCount == m_0c)
         {
-            m_04 = v3(m_04, a1);
+            m_04 = v3(m_04, aiNewSize);
         }
         else
         {
-            int t = v1(a1);
-            Helper0(t, m_04, a2);
+            int t = v1(aiNewSize);
+            Helper0(t, m_04, aiCopyCount);
             Helper1();
             m_04 = t;
         }
     }
     else
     {
-        m_04 = v1(a1);
-        m_0c = a1;
+        m_04 = v1(aiNewSize);
+        m_0c = aiNewSize;
     }
 }
 
@@ -4620,6 +4827,9 @@ void* operator new(unsigned int size, void* place);
 void operator delete(void* object, void* place);
 
 // @fnv 0x0098fc70
+// pdb: BSSimpleArray<CombatMember,1024>::_DestructItems | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 template <>
 void BSSimpleArray<CombatSearchLocation>::InitializeItems(CombatSearchLocation* data, unsigned int count)
 {
@@ -4657,11 +4867,11 @@ void FNV_Warning(const char* fmt, ...);
 
 struct CombatGroupStrategy0 : CombatGroupStrategy
 {
-    CombatGroupStrategy0(int type);
+    CombatGroupStrategy0(int aeType);
 };
 struct CombatGroupStrategy2 : CombatGroupStrategy
 {
-    CombatGroupStrategy2(int type);
+    CombatGroupStrategy2(int aeType);
 };
 struct CombatGroupStrategy3 : CombatGroupStrategy
 {
@@ -4674,20 +4884,23 @@ struct CombatGroupStrategy1 : CombatGroupStrategy
 
 // Creates and returns a combat group strategy object for the given type, warning and returning 0 for unknown types.
 // @fnv 0x0098fdf0
-int __cdecl CreateCombatGroupStrategy(unsigned int type)
+// src: XBOX_DEBUG_PDB 0x0098fdf0
+// pdb: CombatGroupStrategy::CreateCombatGroupStrategy | CombatGroupStrategy.obj | debug, upstream name already matches, high
+// pdb params: aeCombatGroupStrategy
+int __cdecl CombatGroupStrategy_CreateCombatGroupStrategy(unsigned int aeCombatGroupStrategy)
 {
-    switch (type)
+    switch (aeCombatGroupStrategy)
     {
     case 0:
-        return (int)new CombatGroupStrategy0(type);
+        return (int)new CombatGroupStrategy0(aeCombatGroupStrategy);
     case 2:
-        return (int)new CombatGroupStrategy2(type);
+        return (int)new CombatGroupStrategy2(aeCombatGroupStrategy);
     case 3:
-        return (int)new CombatGroupStrategy3(type);
+        return (int)new CombatGroupStrategy3(aeCombatGroupStrategy);
     case 1:
-        return (int)new CombatGroupStrategy1(type);
+        return (int)new CombatGroupStrategy1(aeCombatGroupStrategy);
     default:
-        FNV_Warning("COMBAT: Could not create combat group strategy of type %i", type);
+        FNV_Warning("COMBAT: Could not create combat group strategy of type %i", aeCombatGroupStrategy);
         return 0;
     }
 }
@@ -4715,7 +4928,7 @@ struct CombatContext
     int unk2c;
     int unk30;
     int unk34;
-    CombatContext(CombatActor* actor);
+    CombatContext(CombatActor* apCombatGroup);
     ~CombatContext();
     int GetCount();
 };
@@ -4730,12 +4943,16 @@ struct CombatStyleHandler
 CombatStyleHandler* __cdecl CombatGroupStrategies_GetStrategy(unsigned int index);
 
 // @fnv 0x009900f0
-CombatStyleHandler* __cdecl SelectCombatStyleHandler(CombatActor* actor)
+// src: XBOX_DEBUG_PDB 0x009900f0
+// pdb: CombatGroupStrategy::FindCombatGroupStrategy | CombatGroupStrategy.obj | debug, call graph, high
+// pdb params: apGroup
+// pdb locals: pcurrentStrategy, groupData, i, pstrategy
+CombatStyleHandler* __cdecl CombatGroupStrategy_FindCombatGroupStrategy(CombatActor* apGroup)
 {
     if (*g_011f18d8.Bool())
         return 0;
-    CombatContext ctx(actor);
-    CombatStyleHandler* pCurrentHandler = actor->GetCurrentHandler();
+    CombatContext ctx(apGroup);
+    CombatStyleHandler* pCurrentHandler = apGroup->GetCurrentHandler();
     if (ctx.GetCount() < 2)
         return 0;
     for (unsigned int uiIndex = 0; uiIndex < 4; uiIndex++)
@@ -4745,10 +4962,10 @@ CombatStyleHandler* __cdecl SelectCombatStyleHandler(CombatActor* actor)
         {
             if (pHandler == pCurrentHandler)
                 return pCurrentHandler;
-            if (pHandler->Check(actor, &ctx))
+            if (pHandler->Check(apGroup, &ctx))
             {
-                actor->ResetHandler();
-                pHandler->Apply(actor, &ctx);
+                apGroup->ResetHandler();
+                pHandler->Apply(apGroup, &ctx);
                 return pHandler;
             }
         }
@@ -4798,6 +5015,7 @@ class FUN_00991150 : public B1150ThreatMapBase
 
 // Destructor that calls Clear(0) to reset the threat map.
 // @fnv 0x00991150
+// pdb: NiTPrimitiveArray<CombatGroup *>::~NiTPrimitiveArray<CombatGroup *> | CombatManager.obj | debug, object-file gap fill, medium
 FUN_00991150::~FUN_00991150()
 {
     Clear(0);
@@ -4809,6 +5027,7 @@ void __cdecl NiTMallocInterface_unsigned_int_Deallocate(void*);
 
 // @fnv 0x00993880
 // src: GUESS 0x00993880 (confidence: low)
+// pdb: NiTArray<CombatGroup *,NiTMallocInterface<CombatGroup *> >::~NiTArray<CombatGroup *,NiTMallocInterface<CombatGroup *> > | CombatManager.obj | debug, object-file run extension, low
 void FUN_00991130_class::UpdateFields_00993880()
 {
     *(int*)this = (int)&DAT_0108db4c;
@@ -4839,6 +5058,8 @@ struct TargetOwner
 // Clears data->unk08 to zero, then passes data to member0c.FreeMemory.
 // @fnv 0x00993c10
 // src: GUESS 0x00993c10 (confidence: medium)
+// pdb: NiTMap<Actor *,__int64>::DeleteItem | CombatManager.obj | debug, vtable slot, medium
+// pdb params: pkItem
 void TargetOwner::ClearAndFreeEntry(TargetData* data)
 {
     data->unk08 = 0;
@@ -4879,6 +5100,9 @@ struct Target
     bool __thiscall AdvanceActions(Context* context);
 };
 // @fnv 0x00994050
+// pdb: CombatPlan::ExecuteNextAction | CombatPlan.obj | debug, call graph, low
+// pdb params: apCombatController
+// pdb locals: bexecuteNextAction
 bool Target::AdvanceActions(Context* context)
 {
     while (!CombatPlan_IsFinished() && m_00[m_08]->m_00->HasFlags(2))
@@ -4933,6 +5157,10 @@ class C9942D0List
 
 // Iterates over the list, calling UpdateItem for each entry and re-checking the same index when UpdateItem returns false.
 // @fnv 0x009942d0
+// pdb: CombatPlan::SaveGame | CombatPlan.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatPlan::ValidatePlan
+// pdb params: apSaveGameBuffer
+// pdb locals: cgoalType, i, pstep, cactionType
 void C9942D0List::UpdateAllItems(int iArg)
 {
     for (unsigned int i = 0; i < m_uiCount; i++)
@@ -4979,10 +5207,13 @@ struct Arr994350
 {
     Elem** m_items;
     int m_uiItemCount;
-    unsigned int FUN_00994270(unsigned int key);
+    unsigned int FUN_00994270(unsigned int apStep);
     bool InsertSortedEntry(int p0, KeyObj* p1, int p2, CtxObj* p3);
 };
 // @fnv 0x00994350
+// pdb: CombatPlan::ValidatePlanStep | CombatPlan.obj | debug, object-file run extension, low
+// pdb params: aiStep, apAction, aiActionValue, apWorldStateArray
+// pdb locals: j, peffectedAction, peffects, ieffectedActionValue, ballEffectsContained, peffectState, peffects2, beffectContained, peffectState2, iparentIndex, ptemp, ieffectValue, ppreconditions, ppreconditionState, ipreconditionvalue, bsameBranch, pparent, ishiftIndex, pcurrentSteps, icurrentLength
 bool Arr994350::InsertSortedEntry(int aiStartIndex, KeyObj* apKey, int aiValue, CtxObj* apCtx)
 {
     unsigned int i;
@@ -5206,6 +5437,8 @@ struct CombatStateHash
 };
 // If hash is unset, computes an FNV-style hash over 20 slots, the count, and each entry's object values, caching it in hash.
 // @fnv 0x00994a90
+// pdb: CombatPlanNode::GetKey | CombatPlanner.obj | debug, call graph (shared callers), low
+// pdb locals: i, punsatisfiedState
 unsigned int CombatStateHash::ComputeHash()
 {
     if (hash != -1)
@@ -5259,17 +5492,19 @@ struct FUN_00995780_cls
     int m_08;
     FUN_00995760_cls m_0c;
 
-    FUN_00995780_cls* CombatPlanLink_CombatPlanLink(int a, int b, int c);
+    FUN_00995780_cls* CombatPlanLink_ctor(int apAction, int aiDesiredValue, int apParentNode);
 };
 
 // Stores a, c and b into m_00, m_04 and m_08, calls FUN_00995760 on m_0c, and returns this.
 // @fnv 0x00995780
-// src: COMMUNITY 0x00995780
-FUN_00995780_cls* FUN_00995780_cls::CombatPlanLink_CombatPlanLink(int a, int b, int c)
+// src: XBOX_DEBUG_PDB 0x00995780
+// pdb: CombatPlanLink::CombatPlanLink | CombatPlanner.obj | debug, upstream name already matches, high
+// pdb params: apAction, aiDesiredValue, apParentNode
+FUN_00995780_cls* FUN_00995780_cls::CombatPlanLink_ctor(int apAction, int aiDesiredValue, int apParentNode)
 {
-    m_00 = a;
-    m_04 = c;
-    m_08 = b;
+    m_00 = apAction;
+    m_04 = apParentNode;
+    m_08 = aiDesiredValue;
     m_0c.FUN_00995760();
     return this;
 }
@@ -5285,13 +5520,15 @@ struct FUN_00995910_shell
     int unk04;
     void* array1[22];
     FUN_006d3370_s* array2[22];
-    void ReleaseStorage_00995910();
+    void CombatPlannerData_dtor();
 };
 
 // Frees each of the 22 array1 pointers and releases each array2 item via FUN_006d3370(1).
 // @fnv 0x00995910
-// src: GUESS 0x00995910 (confidence: low)
-void FUN_00995910_shell::ReleaseStorage_00995910()
+// src: XBOX_RETAIL_PDB 0x00995910
+// pdb: CombatPlannerData::~CombatPlannerData | CombatPlanner.obj | retail, call graph, high
+// pdb locals: i
+void FUN_00995910_shell::CombatPlannerData_dtor()
 {
     for (unsigned int i = 0; i < 22; i++)
     {
@@ -5396,6 +5633,7 @@ class FUN_00996660_cls : public FUN_00996660_base
 };
 
 // @fnv 0x00996660
+// pdb: BSScrapArray<CombatPlanLink *,1024>::~BSScrapArray<CombatPlanLink *,1024> | CombatPlanner.obj | debug, call graph (shared callers), low
 FUN_00996660_cls::~FUN_00996660_cls()
 {
     this->Cleanup(1);
@@ -5679,8 +5917,11 @@ struct P029Manager
 };
 // Checks cooldown and actor state, picks a nearby actor and topic, then either plays a sound or makes the actor speak or say the topic.
 // @fnv 0x009839b0
-bool P029Manager::TryStartDialogue(P029Actor* apSpeaker, void* other, int type, int subtype, bool force,
-                                   P029Input* context)
+// pdb: CombatDialogueManager::StartDialogue | CombatDialogueManager.obj | debug, unique string literal, high
+// pdb params: apSpeaker, apTarget, aiDialogueType, aiDialogueTopic, abInterrupt, apCombatController
+// pdb locals: buseDialoguePackage, ptopic, ptimer, pdialogueTarget, pspeaker, pcombatGroup, pcombatState, ppack, ftime, pgroup, imemberCount, speakerWorldLoc, fmaxDistanceSquared, i, pmember, memberWorldLoc, fdistanceSquared, pvoice, presponse, pSoundHandlePointer
+bool P029Manager::TryStartDialogue(P029Actor* apSpeaker, void* apTarget, int aiDialogueType, int aiDialogueTopic, bool abInterrupt,
+                                   P029Input* apCombatController)
 {
     if (*DAT_011f1764.FUN_00408d60())
         return false;
@@ -5691,16 +5932,16 @@ bool P029Manager::TryStartDialogue(P029Actor* apSpeaker, void* other, int type, 
         return false;
     DAT_011f170c = e;
     P029Actor* a = apSpeaker;
-    if (!context)
-        context = a->GetInput();
+    if (!apCombatController)
+        apCombatController = a->GetInput();
     P029Timer* b = 0;
-    if (context)
+    if (apCombatController)
     {
-        P029Combat* group = context->CombatController_GetCombatState();
-        P029Group* combat = context->FUN_004fb070();
-        if (type == 2)
+        P029Combat* group = apCombatController->CombatController_GetCombatState();
+        P029Group* combat = apCombatController->FUN_004fb070();
+        if (aiDialogueType == 2)
         {
-            switch (subtype)
+            switch (aiDialogueTopic)
             {
             case 0:
             case 1:
@@ -5717,17 +5958,17 @@ bool P029Manager::TryStartDialogue(P029Actor* apSpeaker, void* other, int type, 
                 break;
             }
         }
-        else if (type == 4)
-            b = combat->GetSlotPtr(subtype);
+        else if (aiDialogueType == 4)
+            b = combat->GetSlotPtr(aiDialogueTopic);
         else
-            FNV_Warning(DAT_0108d250, type);
+            FNV_Warning(DAT_0108d250, aiDialogueType);
     }
     if (b && !b->FUN_008d7f80())
         return false;
     if (a->Actor_IsUnConscious() || a->FUN_00931850())
         return false;
     bool c = true;
-    if (!force)
+    if (!abInterrupt)
     {
         if (a->FUN_008d8520()->IsBlocked() || a->FUN_008d8520()->GetAction())
             return false;
@@ -5754,9 +5995,9 @@ bool P029Manager::TryStartDialogue(P029Actor* apSpeaker, void* other, int type, 
     if (b)
     {
         float delay = 0.0f;
-        if (type == 2)
+        if (aiDialogueType == 2)
         {
-            switch (subtype)
+            switch (aiDialogueTopic)
             {
             case 0:
             case 1:
@@ -5773,9 +6014,9 @@ bool P029Manager::TryStartDialogue(P029Actor* apSpeaker, void* other, int type, 
                 break;
             }
         }
-        else if (type == 4)
+        else if (aiDialogueType == 4)
         {
-            switch (subtype)
+            switch (aiDialogueTopic)
             {
             case 0:
             case 1:
@@ -5787,13 +6028,13 @@ bool P029Manager::TryStartDialogue(P029Actor* apSpeaker, void* other, int type, 
             }
         }
         else
-            FNV_Warning(DAT_0108d250, type);
+            FNV_Warning(DAT_0108d250, aiDialogueType);
         b->FUN_008d7f40(delay);
     }
     P029Actor* f = 0;
-    if (c && context)
+    if (c && apCombatController)
     {
-        P029Group* combat = context->FUN_004fb070();
+        P029Group* combat = apCombatController->FUN_004fb070();
         float count = DAT_0108d24c;
         unsigned nearest = combat->CombatGroup_GetMemberCount();
         P029Position position = a->TESObjectREFR_GetWorldLocation();
@@ -5821,12 +6062,12 @@ bool P029Manager::TryStartDialogue(P029Actor* apSpeaker, void* other, int type, 
     }
     if (!f)
         f = a;
-    P029Topic* d = GetTopicSubTypeName(type, subtype);
+    P029Topic* d = GetTopicSubTypeName(aiDialogueType, aiDialogueTopic);
     if (!d)
         return false;
     if (a == DAT_011dea3c)
     {
-        P029Item* item = d->TESTopic_CreateDialogueItem(apSpeaker, other, d, 0, true);
+        P029Item* item = d->TESTopic_CreateDialogueItem(apSpeaker, apTarget, d, 0, true);
         if (item)
         {
             if (item->FUN_0083c7b0())
@@ -5916,19 +6157,21 @@ struct GroupReset_98afb0 : public GroupReset
 };
 
 // @fnv 0x0098afb0
+// pdb: CombatGroup::UpdateSearchArea | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: oldCenter, bsearchAreaChanged, foldRadius
 bool GroupReset_98afb0::UpdateAndCheckChanged()
 {
-    UpdateExpiringPositions();
+    CombatGroup_UpdateSearchLocations();
     ClusterPosition kOldPosVal = kPos;
     float fOldValue = fValue;
-    UpdateCenter();
+    CombatGroup_ComputeSearchArea();
     bool bChanged = false;
     if (fValue + 128.0 < fOldValue || fValue - 128.0 > fOldValue)
         bChanged = true;
     else if (kOldPosVal.BGSWorldLocation_GetDistanceSquared(kPos) > 4096.0)
         bChanged = true;
     if (bChanged)
-        CollectNearbyRefs();
+        CombatGroup_BuildSearchTeleportDoorArray();
     return bChanged;
 }
 
@@ -6021,14 +6264,17 @@ struct Center
     float radius;
     unsigned int FUN_00988750();
     Threat* ForwardToMember(unsigned int);
-    void GetParamValues(Position*, float&, float&);
+    void CombatGroup_GetMinMaxSearchRadius(Position*, float&, float&);
     unsigned int CombatGroup_GetMemberCount();
     Actor* GetIntAt(unsigned int);
-    void UpdateCenter();
+    void CombatGroup_ComputeSearchArea();
 };
 // Recomputes the center from the highest-priority threat or lowest-rank actor, averaging positions within range and setting radius from the farthest distance.
 // @fnv 0x0098b100
-void Center::UpdateCenter()
+// src: XBOX_DEBUG_PDB 0x0098b100
+// pdb: CombatGroup::ComputeSearchArea | CombatGroup.obj | debug, call graph, high
+// pdb locals: isearchLocationCount, fsearchMinRadius, fsearchMaxRadius, fbestScore, ftotalScore, bestSearchLoc, ibestIndex, fmaxDistanceFromCenterSquared, center, i, fscore, searchLoc, fdistanceSquared, imemberCount, highestMemberWorldLoc, itotalMembers, phighestMember, ehighestProcessLevel, pmember, elevel, memberWorldLoc
+void Center::CombatGroup_ComputeSearchArea()
 {
     float minimum = 0.0f;
     float maximumSlot1 = 0.0f;
@@ -6052,7 +6298,7 @@ void Center::UpdateCenter()
             Threat* strongestSlot10 = ForwardToMember(best);
             NiPoint3 weightedSlot17 = DAT_011f426c;
             float total = 0.0f;
-            GetParamValues(strongestSlot10, minimum, maximumSlot1);
+            CombatGroup_GetMinMaxSearchRadius(strongestSlot10, minimum, maximumSlot1);
             for (unsigned int j = 0; j < countSlot11; j++)
             {
                 Threat* nearbySlot9 = ForwardToMember(j);
@@ -6094,7 +6340,7 @@ void Center::UpdateCenter()
             priority = only->CombatSearchLocation_GetScore();
             center = *only;
             origin = only->FUN_006815c0();
-            GetParamValues(only, minimum, maximumSlot1);
+            CombatGroup_GetMinMaxSearchRadius(only, minimum, maximumSlot1);
             radius = minimum;
         }
     }
@@ -6120,7 +6366,7 @@ void Center::UpdateCenter()
             Position seedSlot0 = selectedSlot46->TESObjectREFR_GetWorldLocation<Position>();
             NiPoint3 sumSlot20 = DAT_011f426c;
             unsigned int includedSlot1 = 0;
-            GetParamValues(&seedSlot0, minimum, maximumSlot1);
+            CombatGroup_GetMinMaxSearchRadius(&seedSlot0, minimum, maximumSlot1);
             for (unsigned int b = 0; b < actors; b++)
             {
                 Actor* subjectBSlot11 = GetIntAt(b);
@@ -6162,7 +6408,7 @@ void Center::UpdateCenter()
             Actor* lone = GetIntAt(0);
             center = lone->TESObjectREFR_GetWorldLocation<Position>();
             origin = center.FUN_006815c0();
-            GetParamValues(&center, minimum, maximumSlot1);
+            CombatGroup_GetMinMaxSearchRadius(&center, minimum, maximumSlot1);
             radius = minimum;
         }
     }
@@ -6171,7 +6417,7 @@ void Center::UpdateCenter()
 
 struct NearbyPosition : ClusterPosition
 {
-    float DistanceTo(const NearbyPosition& other);
+    float BGSWorldLocation_GetDistance(const NearbyPosition& arWorldLocation);
 };
 struct NearbyActor
 {
@@ -6187,11 +6433,11 @@ struct NearbyArray
     ~NearbyArray();
     unsigned int FUN_0044ddc0();
     TESObjectREFR*& BSSimpleArray_NiAVObject_1024_GetAt(unsigned int index);
-    void BSSimpleArray_Sort(int(__cdecl* compare)(const void*, const void*));
+    void BSSimpleArray_Sort(int(__cdecl* apFunc)(const void*, const void*));
     void RemoveArrayTail_0098ebe0(unsigned int first, unsigned int count, bool release);
 };
 int __cdecl Runtime_CompareUnsignedValues(const void*, const void*);
-bool __cdecl Pathing_FindTeleportDoorsForLocation(unsigned int cell, const ClusterVec& position, float radius, NearbyArray* out);
+bool __cdecl Pathing_FindTeleportDoorsForLocation(unsigned int apSpace, const ClusterVec& arLocation, float afRadius, NearbyArray* apRetDoors);
 struct NearbyGroup : GroupReset
 {
     unsigned int unkec;
@@ -6200,15 +6446,18 @@ struct NearbyGroup : GroupReset
     unsigned int unk104;
     unsigned int unk108;
     float radius;
-    void GetParamValues(NearbyPosition*, float*, float*);
+    void CombatGroup_GetMinMaxSearchRadius(NearbyPosition*, float*, float*);
     unsigned int CombatGroup_GetMemberCount();
     NearbyActor* GetIntAt(unsigned int index);
     void AddRadioReference(TESObjectREFR* ref);
-    void CollectNearbyRefs();
+    void CombatGroup_BuildSearchTeleportDoorArray();
 };
 // Computes a search radius and member radius from position, gathers refs around the group and each member, sorts and dedups them, then adds each to the group.
 // @fnv 0x0098b8c0
-void NearbyGroup::CollectNearbyRefs()
+// src: XBOX_DEBUG_PDB 0x0098b8c0
+// pdb: CombatGroup::BuildSearchTeleportDoorArray | CombatGroup.obj | debug, call graph, high
+// pdb locals: doorArray, fsearchMinRadius, imemberCount, fsearchMaxRadius, i, pmember, memberWorldLoc, pdoor, inumDuplicates, j, pdoor2
+void NearbyGroup::CombatGroup_BuildSearchTeleportDoorArray()
 {
     float memberRadius;
     {
@@ -6219,14 +6468,14 @@ void NearbyGroup::CollectNearbyRefs()
                 NearbyArray entries;
                 searchRadius = 0.0f;
                 memberRadius = 0.0f;
-                GetParamValues(&position, &searchRadius, &memberRadius);
+                CombatGroup_GetMinMaxSearchRadius(&position, &searchRadius, &memberRadius);
                 Pathing_FindTeleportDoorsForLocation(position.GetHavokWorldObjectCountInSceneGraph_0084e3a0(), position.FUN_006815c0(), radius, &entries);
                 count = CombatGroup_GetMemberCount();
                 for (unsigned int i = 0; i < count; ++i)
                 {
                     NearbyActor* actor = GetIntAt(i);
                     NearbyPosition point = actor->TESObjectREFR_GetWorldLocation();
-                    if (position.DistanceTo(point) < memberRadius * memberRadius)
+                    if (position.BGSWorldLocation_GetDistance(point) < memberRadius * memberRadius)
                         continue;
                     Pathing_FindTeleportDoorsForLocation(point.GetHavokWorldObjectCountInSceneGraph_0084e3a0(), point.FUN_006815c0(), searchRadius, &entries);
                 }
@@ -6262,7 +6511,7 @@ struct ProximityPoint
 };
 struct ProximityPosition
 {
-    float Distance(void*, ProximityPoint*);
+    float BGSWorldLocation_GetModifiedDistanceSquared(void*, ProximityPoint*);
 };
 struct ProximityStamp
 {
@@ -6303,10 +6552,14 @@ struct ProximityGroup
     ProximityEntry* Entry(unsigned);
     ProximityTarget* Target(void*);
     void Times(ProximityTarget*, float*, float*, float*);
-    void UpdateProximityTimers(void*);
+    void CombatGroup_InvestigatedSearchLocation(void*);
 };
 // @fnv 0x0098bd70
-void ProximityGroup::UpdateProximityTimers(void* position)
+// src: XBOX_DEBUG_PDB 0x0098bd70
+// pdb: CombatGroup::InvestigatedSearchLocation | CombatGroup.obj | debug, call graph, high
+// pdb params: arLocation
+// pdb locals: isearchLocationCount, coordMult, fremoveDistanceSquared, i, searchLoc, fscore, pcombatTarget, fdetectedScore, fattackedScore, fnoticedScore
+void ProximityGroup::CombatGroup_InvestigatedSearchLocation(void* arLocation)
 {
     float radius5 = *proximitySetting.Value() * *proximitySetting.Value();
     ProximityPoint scale2(1.0f, 1.0f, 0.25f);
@@ -6314,7 +6567,7 @@ void ProximityGroup::UpdateProximityTimers(void* position)
     for (unsigned index3 = 0; index3 < count2; ++index3)
     {
         ProximityEntry* entryB = Entry(index3);
-        if (entryB->Distance(position, &scale2) < radius5)
+        if (entryB->BGSWorldLocation_GetModifiedDistanceSquared(arLocation, &scale2) < radius5)
         {
             float age = entryB->Age();
             if (age > 30.0)
@@ -6326,17 +6579,17 @@ void ProximityGroup::UpdateProximityTimers(void* position)
                 {
                     float first2, second3, third6;
                     Times(targetVal, &first2, &second3, &third6);
-                    if (first2 > 30.0 && targetVal->pos18.Distance(position, &scale2) < radius5)
+                    if (first2 > 30.0 && targetVal->pos18.BGSWorldLocation_GetModifiedDistanceSquared(arLocation, &scale2) < radius5)
                     {
                         ProximityStamp stamp3(targetVal->stamp50.Seconds() - (first2 - 30.0));
                         targetVal->stamp50.value = stamp3.value;
                     }
-                    if (second3 > 30.0 && targetVal->pos08.Distance(position, &scale2) < radius5)
+                    if (second3 > 30.0 && targetVal->pos08.BGSWorldLocation_GetModifiedDistanceSquared(arLocation, &scale2) < radius5)
                     {
                         ProximityStamp stampA(targetVal->stamp58.Seconds() - (second3 - 30.0));
                         targetVal->stamp58.value = stampA.value;
                     }
-                    if (third6 > 30.0 && targetVal->pos38.Distance(position, &scale2) < radius5)
+                    if (third6 > 30.0 && targetVal->pos38.BGSWorldLocation_GetModifiedDistanceSquared(arLocation, &scale2) < radius5)
                     {
                         ProximityStamp stamp5(targetVal->stamp60.Seconds() - (third6 - 30.0));
                         targetVal->stamp60.value = stamp5.value;
@@ -6390,14 +6643,17 @@ struct PositionGroup : GroupReset
     unsigned unk10c;
     ExpiringPositions positions;
     void CombatGroup_CalculateTargetSearchLocationScores(WeightedMember*, float*, float*, float*);
-    void StoreRecord(WeightedPosition*, float, unsigned);
-    void UpdateExpiringPositions();
+    void CombatGroup_AddSearchLocation(WeightedPosition*, float, unsigned);
+    void CombatGroup_UpdateSearchLocations();
 };
 float __cdecl BSMAX_00404010(float, float);
 
 // Removes expired or active entries from positions, then recomputes and stores weighted positions for each member based on its weights.
 // @fnv 0x0098c0d0
-void PositionGroup::UpdateExpiringPositions()
+// src: XBOX_DEBUG_PDB 0x0098c0d0
+// pdb: CombatGroup::UpdateSearchLocations | CombatGroup.obj | debug, call graph, high
+// pdb locals: itargetCount, i, searchLocation, fscore, fdetectedScore, pcombatTarget, fattackedScore, fnoticedScore, otherLoc, fotherScore, interpolatedPoint, interpolatedLocation
+void PositionGroup::CombatGroup_UpdateSearchLocations()
 {
     for (unsigned i = 0; i < positions.FUN_0044ddc0(); ++i)
     {
@@ -6420,9 +6676,9 @@ void PositionGroup::UpdateExpiringPositions()
             if (member > firstWeight || secondWeight > firstWeight)
             {
                 if (member >= secondWeight)
-                    StoreRecord(&currentWeight->first, member, currentWeight->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                    CombatGroup_AddSearchLocation(&currentWeight->first, member, currentWeight->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                 else
-                    StoreRecord(&currentWeight->second, secondWeight, currentWeight->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                    CombatGroup_AddSearchLocation(&currentWeight->second, secondWeight, currentWeight->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
             }
             else if (firstWeight > 0.0)
             {
@@ -6443,11 +6699,11 @@ void PositionGroup::UpdateExpiringPositions()
                     combinedVector.ScaleByInverse(closest + firstWeight);
                     WeightedPosition position;
                     position.FUN_0043a3c0(combinedVector, currentWeight->current.GetHavokWorldObjectCountInSceneGraph_0084e3a0());
-                    StoreRecord(&position, firstWeight, currentWeight->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                    CombatGroup_AddSearchLocation(&position, firstWeight, currentWeight->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                 }
                 else
                 {
-                    StoreRecord(&currentWeight->current, firstWeight, currentWeight->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                    CombatGroup_AddSearchLocation(&currentWeight->current, firstWeight, currentWeight->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                 }
             }
         }
@@ -6794,12 +7050,16 @@ struct GroupScore
     float cached;
     unsigned int CombatGroup_GetMemberCount();
     GroupScoreRecord* CombatGroup_GetCombatMember(unsigned int);
-    float GetAverageScore(GroupActor*);
+    float CombatGroup_GetAverageMemberDamagePerSecond(GroupActor*);
 };
 // @fnv 0x0098cc20
-float GroupScore::GetAverageScore(GroupActor* requested)
+// src: XBOX_RETAIL_PDB 0x0098cc20
+// pdb: CombatGroup::GetAverageMemberDamagePerSecond | CombatGroup.obj | retail, object-file run extension, high
+// pdb params: apMember
+// pdb locals: faverageDPS, inonFleeingMemberCount, imemberCount, i, pcombatController, pcombatMember, fmemberDPS
+float GroupScore::CombatGroup_GetAverageMemberDamagePerSecond(GroupActor* apMember)
 {
-    if (!requested)
+    if (!apMember)
         return cached;
     float total = 0.0f;
     unsigned int size = CombatGroup_GetMemberCount();
@@ -6808,7 +7068,7 @@ float GroupScore::GetAverageScore(GroupActor* requested)
     {
         GroupScoreRecord* memberX = CombatGroup_GetCombatMember(indexX);
         GroupController* controller = memberX->actor->Controller();
-        if (requested == memberX->actor && controller)
+        if (apMember == memberX->actor && controller)
         {
             float score2 = controller->CombatController_GetCombatState()->GetFirstLightParameter();
             if (score2 > 0.0)
@@ -6842,23 +7102,25 @@ struct Member_98d030
 struct Target_98d030;
 struct Manager_98d030
 {
-    void Notify(Target_98d030* target, Actor* actor, int a, int b, int c, int d);
+    void Notify(Target_98d030* target, Actor* apTarget, int aiDialogueType, int aiDialogueTopic, int abInterrupt, int apCombatController);
 };
 extern Actor* g_thePlayer;
 extern float DAT_0108cb00;
 struct Group_98d030
 {
     unsigned int PathingSolution_GetVirtualNodeCount();
-    Member_98d030* GetMember(unsigned int index);
-    bool ShouldRemove(Member_98d030* member);
-    Target_98d030* FindTarget(Actor* actor, float radius);
-    void RemoveMemberAt(unsigned int index);
+    Member_98d030* GetMember(unsigned int aiIndex);
+    bool ShouldRemove(Member_98d030* apCombatTarget);
+    Target_98d030* FindTarget(Actor* apActor, float afMaxDistance);
+    void RemoveMemberAt(unsigned int apActor);
     void CombatGroup_UpdateTargets();
 };
 
 // Iterates members, removes those ShouldRemove; for a sole member finds a target and notifies the manager with code 4 before removal.
 // @fnv 0x0098d030
 // src: XBOX_PDB 0x0098d030
+// pdb: CombatGroup::UpdateClusterCenters | CombatGroup.obj | retail, object-file run extension, low
+// pdb locals: imemberCount, i, pcluster, pcombatMember, centerPoint
 void Group_98d030::CombatGroup_UpdateTargets()
 {
     unsigned int count = PathingSolution_GetVirtualNodeCount();
@@ -6988,6 +7250,9 @@ struct SavedCombatState
 };
 // Serializes the combat state to the writer: task, target and action arrays, mode, flags, pairs, values, and optional path/items/edges when fieldd0 > 0.
 // @fnv 0x0098de90
+// pdb: CombatGroup::SaveGame | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
+// pdb locals: cgroupStrategyType, isaveGameCount, i, pcluster, combatTarget, combatMember, bhasPathingLOSGridMap, searchLoc, searchDoor
 void SavedCombatState::WriteToStream(CombatWriter* writer)
 {
     {
@@ -7118,6 +7383,7 @@ struct ThreatObjD
 
 // Allocates and stores a ThreatObjA, ThreatObjB, ThreatObjC and a ThreatObjD constructed with 0x25 into the map's fields.
 // @fnv 0x009911c0
+// pdb: CombatManager::InitializeData | CombatManager.obj | debug, object-file gap fill, medium
 void CombatThreatMap::InitThreatObjects()
 {
     *reinterpret_cast<ThreatObjA**>(&unk18[0]) = new ThreatObjA();
@@ -7241,6 +7507,9 @@ struct FUN_00991310_shell : ThreatArray991
 
 // Deletes each array entry (optionally resetting it first), clears the array, deletes the owned pointers, and releases the name string.
 // @fnv 0x00991310
+// pdb: CombatManager::ClearData | CombatManager.obj | debug, object-file gap fill, medium
+// pdb params: abNotifyGroupMembers
+// pdb locals: i, pgroup
 void FUN_00991310_shell::ClearAndDestroy(bool bReset)
 {
     for (unsigned int i = 0; i < GetShortAtOffsetA(); i++)
@@ -7310,6 +7579,9 @@ struct CM993List
 
 // Initializes the list from srcs and keys, copies each source's fields and key value into items, links parents by key, then calls UpdateAllItems(a5).
 // @fnv 0x00993db0
+// pdb: CombatPlan::CombatPlan | CombatPlan.obj | debug, object-file run extension, low
+// pdb params: apCombatController, apGoal, apPlanNodes, apPlanLinks, apWorldStateArray
+// pdb locals: i, plink, pnode, iparentKey, j
 CM993List* CM993List::InitFromSources(int a1, int a2, CM993DstArray* keys, CM993SrcArray* srcs, int a5)
 {
     m_08 = 0;
@@ -7967,7 +8239,7 @@ struct BuildOwner
     int unk2040, unk2044, unk2048, unk204c;
     int unk2050, unk2054, unk2058;
     BuildContext context;
-    void FUN_006a7c40();
+    void AStarSearch_NavMeshSearchNode_NavMeshSearchLink_ClearSearchData();
     int CombatPlanner_GetNodeKey(BuildInput**);
     void AStarSearch_NavMeshInfo_const_TESObjectREFR_AddStartNode(int, BuildInput**, float);
     void SetThreadTasklet(BuildFirst*, BuildSecond*, int);
@@ -7976,11 +8248,14 @@ struct BuildOwner
 void* __cdecl operator new(unsigned int);
 // Validates input, builds entries and objects, creates a BuildResult when objects exist, and optionally a BuildMonitor, then returns the result.
 // @fnv 0x00994f10
+// pdb: CombatPlanner::CreatePlan | CombatPlanner.obj | debug, object-file run extension, low
+// pdb params: apCombatController, apGoal, apStartNode, abDebugPlan
+// pdb locals: NodeArray, pplan, LinkArray
 BuildResult* BuildOwner::BuildResultForInput(int first, int second, BuildInput* input, bool monitor)
 {
     if (!input->valid)
         return 0;
-    FUN_006a7c40();
+    AStarSearch_NavMeshSearchNode_NavMeshSearchLink_ClearSearchData();
     AStarSearch_NavMeshInfo_const_TESObjectREFR_AddStartNode(CombatPlanner_GetNodeKey(&input), &input, 0.0f);
     BuildFirst entries;
     BuildSecond objects4;
@@ -7993,7 +8268,7 @@ BuildResult* BuildOwner::BuildResultForInput(int first, int second, BuildInput* 
     BuildMonitor* tracking3 = 0;
     if (monitor)
         tracking3 = new BuildMonitor(this, result3, &entries);
-    FUN_006a7c40();
+    AStarSearch_NavMeshSearchNode_NavMeshSearchLink_ClearSearchData();
     return result3;
 }
 
@@ -8018,7 +8293,7 @@ struct Node995
 };
 struct State995
 {
-    void Describe(char*, int, unsigned);
+    void CombatWorldStateArray_GetDebugText(char*, int, unsigned);
 };
 struct Owner995
 {
@@ -8078,7 +8353,7 @@ void View995::PopulateTree()
         index = detail5;
         entry7.parent = stateRoot;
         char text[2600];
-        state6->Describe(text, 2600, index);
+        state6->CombatWorldStateArray_GetDebugText(text, 2600, index);
         entry7.text = PrepareScriptMessage(text, false);
         DAT_00fdf28c(tree, 0x1100, 0, &entry7);
     }
@@ -8186,6 +8461,9 @@ class FUN_00996c00_cls : public B996C00Base
 
 // Initializes the base by storing the memory manager's default allocator and calling Init with zero size and growth.
 // @fnv 0x00996c00
+// pdb: BSSimpleArray<CombatPlanLink *,1024>::_ConstructItems | CombatPlanner.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 FUN_00996c00_cls::FUN_00996c00_cls()
 {
     m_pHeapAllocator = B996C00GetMemoryManager()->GetDefaultAllocator();
@@ -8231,7 +8509,7 @@ struct Location
     unsigned int unk24;
     Location(const NiPoint3&, Actor*);
     ~Location();
-    bool FUN_006ded70(float);
+    bool IsValidLocation(float);
 };
 
 struct PathPoint
@@ -8443,36 +8721,40 @@ extern float DAT_010236e0, DAT_01018bfc, DAT_01017718;
 extern double DAT_01011590, DAT_0106b9e8, DAT_01012060, DAT_0106cd60;
 
 bool Pathing_ComputeApproximatePathingDistance(const void*, const void*, Path*, float*, List*);
-int FindNearbyTriangles(Search*, Nodes*);
+int Pathing_GetCoverPoints(Search*, Nodes*);
 void Actor_AreReferencedValuesEqual();
 void CombatUtilities_CalculateCoverPositions_009a93e0(float, Node*, Params*, NiPoint3*, int);
 bool CombatState_CheckTargetsCoverLOS_0099cb00(Location*, History*);
 bool CombatState_CheckCoverLOS(Location*, const NiPoint3&, int);
 
 // @fnv 0x0099d480
-bool FindCombatPosition(Actor* owner, float range, bool quiet)
+// src: XBOX_DEBUG_PDB 0x0099d480
+// pdb: CombatState::FindBestAdvanceLocation | CombatState.obj | debug, call graph (shared callers), high
+// pdb params: apCoveredMoveRequest, afMinDistance, abBackgroundThread
+// pdb locals: pcombatCoverLocation, fcombinedMultiplier, destinationPathingLocation, foriginDestinationLength, coverRequest, fadvancePathingDistance, originPathingLocation, centerPathingLocation, ffullPathDistance, fmaxCombinedPathingDistance, fradius, busingTargetLocation, iMaxCoverLocations, bfullPathingResult, targetLocation, pavoidNodeArray, fMaxDist, fMaxHeightChange, originDestinationVector, pcombatCoverSearchInfo, foriginDestinationLengthSquared, center, i, coverLoc ...
+bool CombatState_FindBestAdvanceLocation(Actor* apCoveredMoveRequest, float afMinDistance, bool abBackgroundThread)
 {
 
     float extentSlot0 = DAT_010236e0;
     float widthSlot19 = DAT_01018bfc;
     int limitSlot0 = 200;
-    Actor* actorSlot12 = owner->GetOffsetC();
-    Actor* target = owner->NiAVObject_GetRotate_006a9540();
-    Path* pathSlot25 = reinterpret_cast<Path*>(owner->GetString());
-    Context* context = reinterpret_cast<Context*>(owner->GetNavMeshInfo_0068efb0());
-    State* stateSlot21 = GameSettingCollection_File(owner);
+    Actor* actorSlot12 = apCoveredMoveRequest->GetOffsetC();
+    Actor* target = apCoveredMoveRequest->NiAVObject_GetRotate_006a9540();
+    Path* pathSlot25 = reinterpret_cast<Path*>(apCoveredMoveRequest->GetString());
+    Context* context = reinterpret_cast<Context*>(apCoveredMoveRequest->GetNavMeshInfo_0068efb0());
+    State* stateSlot21 = GameSettingCollection_File(apCoveredMoveRequest);
     NiPoint3 deltaSlot18 = target->FUN_005c3420().SubtractIntoVector(actorSlot12->FUN_005c3420());
     float squareSlot52 = deltaSlot18.FUN_004a7290();
-    if (squareSlot52 < range * range)
+    if (squareSlot52 < afMinDistance * afMinDistance)
         return false;
 
     float distance = 0;
     bool initialSlot2 = Pathing_ComputeApproximatePathingDistance(actorSlot12, target, pathSlot25, &distance, 0);
     float scaleSlot13 = 1;
-    if (owner->FUN_007058c0() == 6)
+    if (apCoveredMoveRequest->FUN_007058c0() == 6)
         scaleSlot13 = DAT_01017718;
-    float minimumSlot14 = distance - range / 2.0f;
-    float maximumSlot21 = distance + range * scaleSlot13;
+    float minimumSlot14 = distance - afMinDistance / 2.0f;
+    float maximumSlot21 = distance + afMinDistance * scaleSlot13;
     if (distance < widthSlot19)
         widthSlot19 = distance;
     float lengthSlot10 = deltaSlot18.FUN_00457910();
@@ -8484,9 +8766,9 @@ bool FindCombatPosition(Actor* owner, float range, bool quiet)
     Location locationSlot24(originSlot32, actorSlot12);
     NiPoint3 targetPositionSlot21 = target->FUN_005c3420();
     bool overridePositionSlot12 = false;
-    if (owner->GetByteAtE0())
+    if (apCoveredMoveRequest->GetByteAtE0())
     {
-        targetPositionSlot21 = *owner->TESAmmo_GetAmmoEffectList();
+        targetPositionSlot21 = *apCoveredMoveRequest->TESAmmo_GetAmmoEffectList();
         overridePositionSlot12 = true;
     }
 
@@ -8497,14 +8779,14 @@ bool FindCombatPosition(Actor* owner, float range, bool quiet)
     searchSlot20.PathingRequestLOS_SetIgnoreLocationRadius(extentSlot0);
     searchSlot20.PathingRequestCoveredMove_SetAttackerSneakHeight(widthSlot19);
     searchSlot20.SetSound(200);
-    searchSlot20.FUN_0051b840(owner->GetFieldB8Float());
-    searchSlot20.PathingRequestCoveredMove_SetAttackerHealth(owner->BSSceneGraph_GetCameraFOV());
-    searchSlot20.Animation_SkipUpdate(owner->BSSceneGraph_GetCameraFOV() != DAT_01012060);
+    searchSlot20.FUN_0051b840(apCoveredMoveRequest->GetFieldB8Float());
+    searchSlot20.PathingRequestCoveredMove_SetAttackerHealth(apCoveredMoveRequest->BSSceneGraph_GetCameraFOV());
+    searchSlot20.Animation_SkipUpdate(apCoveredMoveRequest->BSSceneGraph_GetCameraFOV() != DAT_01012060);
     searchSlot20.SetFlag(true);
     if (overridePositionSlot12)
         searchSlot20.SetByteAtOffsetCD(true);
 
-    context->mode = owner->FUN_007058c0();
+    context->mode = apCoveredMoveRequest->FUN_007058c0();
     context->target = targetPositionSlot21;
     stateSlot21->time = CombatTimer_GetTimer();
     stateSlot21->origin = originSlot32;
@@ -8512,23 +8794,23 @@ bool FindCombatPosition(Actor* owner, float range, bool quiet)
     stateSlot21->target = context->target;
     stateSlot21->nodes.FUN_006dbde0(0);
 
-    if (FindNearbyTriangles(&searchSlot20, &stateSlot21->nodes))
+    if (Pathing_GetCoverPoints(&searchSlot20, &stateSlot21->nodes))
     {
-        if (!quiet)
+        if (!abBackgroundThread)
             DAT_011f1958->NiAVObject_GetParent()->LockCombatTargetMap();
         for (unsigned int i = 0; i < stateSlot21->nodes.FUN_0044ddc0(); i++)
         {
 
             Node* node = stateSlot21->nodes.FUN_009052c0(i);
             unsigned int idSlot31 = node->GetKey_006e4570();
-            if (reinterpret_cast<History*>(owner->PathingRequestCoveredMove_GetUnreachableCoverLocations())->FUN_00719b20(&idSlot31, 0, (void*)Actor_AreReferencedValuesEqual) != -1)
+            if (reinterpret_cast<History*>(apCoveredMoveRequest->PathingRequestCoveredMove_GetUnreachableCoverLocations())->FUN_00719b20(&idSlot31, 0, (void*)Actor_AreReferencedValuesEqual) != -1)
             {
                 node->status = 3;
                 continue;
             }
 
             Params params;
-            if (!DAT_011f1958->NiAVObject_GetParent()->TryUseCoverItem(idSlot31, node, 0, owner->GetFloatAtOffset68(), &params,
+            if (!DAT_011f1958->NiAVObject_GetParent()->TryUseCoverItem(idSlot31, node, 0, apCoveredMoveRequest->GetFloatAtOffset68(), &params,
                                                                1, 0))
             {
                 node->status = 9;
@@ -8536,9 +8818,9 @@ bool FindCombatPosition(Actor* owner, float range, bool quiet)
             }
 
             NiPoint3 positionSlot42 = node->FUN_005c3420();
-            CombatUtilities_CalculateCoverPositions_009a93e0(owner->GetFloatAtOffset68(), node, &params, &positionSlot42, 0);
+            CombatUtilities_CalculateCoverPositions_009a93e0(apCoveredMoveRequest->GetFloatAtOffset68(), node, &params, &positionSlot42, 0);
             Location candidateSlot0(positionSlot42, (Actor*)node);
-            if (!candidateSlot0.FUN_006ded70(owner->GetFloatAtOffsetB0()))
+            if (!candidateSlot0.IsValidLocation(apCoveredMoveRequest->GetFloatAtOffsetB0()))
             {
                 node->status = 4;
                 continue;
@@ -8552,7 +8834,7 @@ bool FindCombatPosition(Actor* owner, float range, bool quiet)
             }
 
             NiPoint3 fromActorSlot3 = actorSlot12->FUN_005c3420().SubtractIntoVector(positionSlot42);
-            if (fromActorSlot3.FUN_004a7290() < range * range)
+            if (fromActorSlot3.FUN_004a7290() < afMinDistance * afMinDistance)
             {
                 node->status = 8;
                 continue;
@@ -8568,17 +8850,17 @@ bool FindCombatPosition(Actor* owner, float range, bool quiet)
                 }
             }
 
-            float travelSlot13 = fromActorSlot3.FUN_00457990() / owner->GetFieldB4Float();
+            float travelSlot13 = fromActorSlot3.FUN_00457990() / apCoveredMoveRequest->GetFieldB4Float();
             if (DAT_011f1958->FUN_00825c00()->EvaluateThreats(positionSlot42, 0, travelSlot13, 0.0f, Time(0.0f),
-                                                              owner->PathingRequestCoveredMove_GetAttackerHealth()) > DAT_01012060)
+                                                              apCoveredMoveRequest->PathingRequestCoveredMove_GetAttackerHealth()) > DAT_01012060)
             {
                 node->status = 11;
                 continue;
             }
 
             bool blockedSlot62 = false;
-            if (reinterpret_cast<History*>(owner->GetOffsetF4())->FUN_0044ddc0())
-                blockedSlot62 = CombatState_CheckTargetsCoverLOS_0099cb00(&candidateSlot0, reinterpret_cast<History*>(owner->GetOffsetF4()));
+            if (reinterpret_cast<History*>(apCoveredMoveRequest->GetOffsetF4())->FUN_0044ddc0())
+                blockedSlot62 = CombatState_CheckTargetsCoverLOS_0099cb00(&candidateSlot0, reinterpret_cast<History*>(apCoveredMoveRequest->GetOffsetF4()));
             else
                 blockedSlot62 = CombatState_CheckCoverLOS(&candidateSlot0, target->FUN_005c3420(), 0);
             if (blockedSlot62)
@@ -8636,10 +8918,10 @@ bool FindCombatPosition(Actor* owner, float range, bool quiet)
                     context->params.modeHigh = 1;
             }
 
-            owner->PathingRequestCoveredMove_SetCoverLocation(positionSlot42);
+            apCoveredMoveRequest->PathingRequestCoveredMove_SetCoverLocation(positionSlot42);
             return true;
         }
-        if (!quiet)
+        if (!abBackgroundThread)
             DAT_011f1958->NiAVObject_GetParent()->CombatCoverMap_UnlockForWrite();
     }
 
@@ -8901,7 +9183,7 @@ struct Context99
 };
 struct Out99
 {
-    void CombatLocation_SetTarget(Ref99*);
+    void CombatLocation_SetRef(Ref99*);
     void CombatLocation_SetRadius(float);
     void CombatLocation_SetPoint(void*, void*);
     void AssignV4(Pos99*);
@@ -9044,7 +9326,10 @@ struct Self99
 };
 // @fnv 0x0099ebe0
 // src: XBOX_PDB 0x0099ebe0
-bool Self99::CombatState_FindBestFleeLocation(void* arg, Out99* output, int mode)
+// pdb: CombatState::FindBestFleeLocation | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apCombatCoverLocation, apRetLocation, aiLocation
+// pdb locals: ptarget, attackerWorldLoc, pactorBase, pattacker, fclosestHelperDistanceSquared, pclosestHelper, targetWorldLoc, pactorMap, it, phelper, iformID, ereaction, helperWorldLoc, fsquaredDistance, ftargetAttackerDistanceSquared, pref, ftargetHelperDistanceSquared, fclosestDoorDistanceSquared, doorArray, fclosestDoorDistance, attackerLoc, pclosestDoor, i, doorLoc ...
+bool Self99::CombatState_FindBestFleeLocation(void* apCombatCoverLocation, Out99* apRetLocation, int aiLocation)
 {
     Ref99* actor15 = context->GetFieldBC();
     Ref99* target0 = context->CombatController_GetTarget();
@@ -9092,14 +9377,14 @@ bool Self99::CombatState_FindBestFleeLocation(void* arg, Out99* output, int mode
         }
         if (best20)
         {
-            output->CombatLocation_SetTarget(best20);
-            output->CombatLocation_SetRadius(best20->FUN_008be1b0() + actor15->FUN_008be1b0() +
+            apRetLocation->CombatLocation_SetRef(best20);
+            apRetLocation->CombatLocation_SetRadius(best20->FUN_008be1b0() + actor15->FUN_008be1b0() +
                                  *originalRuntimeFloatSetting430.Setting_Float_00403e20());
             return true;
         }
     }
     Base99* base5 = actor15->FUN_004181e0();
-    if (base5->data.TESActorBaseData_GetRunsInLow() && (!actor15->Special() || !base5->data.v10()) && mode != 10)
+    if (base5->data.TESActorBaseData_GetRunsInLow() && (!actor15->Special() || !base5->data.v10()) && aiLocation != 10)
     {
         if (!active && FUN_004dff00(*originalRuntimeFloatSetting445.Setting_Float_00403e20()))
         {
@@ -9160,30 +9445,30 @@ bool Self99::CombatState_FindBestFleeLocation(void* arg, Out99* output, int mode
                 void* handle2 = bestLink6->FUN_0043a320();
                 if (!handle2)
                     handle2 = bestLink6->DoorTeleportData_GetTeleportCell();
-                output->CombatLocation_SetPoint(bestLink6->FUN_00717e50(), handle2);
+                apRetLocation->CombatLocation_SetPoint(bestLink6->FUN_00717e50(), handle2);
                 return true;
             }
         }
     }
-    if (arg && CombatState_FindBestCoverLocation(0, &unk0ec, arg, output, mode))
+    if (apCombatCoverLocation && CombatState_FindBestCoverLocation(0, &unk0ec, apCombatCoverLocation, apRetLocation, aiLocation))
         return true;
     if (fallback && fallback->type == 1)
     {
         if (fallback->ref)
         {
-            output->CombatLocation_SetTarget(fallback->ref);
+            apRetLocation->CombatLocation_SetRef(fallback->ref);
             if (fallback->ref->IsActor())
             {
                 Ref99* other = fallback->ref;
-                output->CombatLocation_SetRadius(other->FUN_008be1b0() + actor15->FUN_008be1b0() +
+                apRetLocation->CombatLocation_SetRadius(other->FUN_008be1b0() + actor15->FUN_008be1b0() +
                                      *originalRuntimeFloatSetting430.Setting_Float_00403e20());
             }
         }
         else
-            output->AssignV4(&fallback->point);
+            apRetLocation->AssignV4(&fallback->point);
         return true;
     }
-    output->SetFlags(1, 1);
+    apRetLocation->SetFlags(1, 1);
     return true;
 }
 
@@ -9233,45 +9518,48 @@ struct Slot_009827c0_This
     unsigned char UpdateState_00982750(float a);
     int ComputeBitMask();
     void ClearFields_00982b50();
-    bool CoverReservationInfo_FindCoverReservation(Slot_009827c0_Arg* arg, int unused, float time, Slot_009827c0_Src* src, unsigned char a5,
-                      unsigned char a6);
+    bool CoverReservationInfo_FindCoverReservation(Slot_009827c0_Arg* apCoverLocation, int apCombatController, float afActorRadius, Slot_009827c0_Src* apReservedCoverLocation, unsigned char abHideCover,
+                      unsigned char abLeftEdge);
 };
 
 // @fnv 0x009827c0
 // src: XBOX_PDB 0x009827c0
-bool Slot_009827c0_This::CoverReservationInfo_FindCoverReservation(Slot_009827c0_Arg* arg, int unused, float time, Slot_009827c0_Src* src,
-                                      unsigned char a5, unsigned char a6)
+// pdb: CoverReservationInfo::FindCoverReservation | CombatCoverMap.obj | retail, upstream name already matches, high
+// pdb params: apCoverLocation, apCombatController, afActorRadius, apReservedCoverLocation, abHideCover, abLeftEdge
+// pdb locals: icoverMask, ireservations, cunbufferedActorWidth, ishiftedCoverMask, cshift, buseMiddle, ioffset, ishiftMax, imiddle, bdone, i, ishift
+bool Slot_009827c0_This::CoverReservationInfo_FindCoverReservation(Slot_009827c0_Arg* apCoverLocation, int apCombatController, float afActorRadius, Slot_009827c0_Src* apReservedCoverLocation,
+                                      unsigned char abHideCover, unsigned char abLeftEdge)
 {
     int used2 = 0;
-    if (src)
+    if (apReservedCoverLocation)
     {
-        m_01 = src->GetByte15();
-        m_00 = src->InterfaceManager_GetMagicPageNumber();
-        used2 = src->TESMain_GetThread();
+        m_01 = apReservedCoverLocation->GetByte15();
+        m_00 = apReservedCoverLocation->InterfaceManager_GetMagicPageNumber();
+        used2 = apReservedCoverLocation->TESMain_GetThread();
     }
     else
     {
-        UpdateState_00982630(arg);
+        UpdateState_00982630(apCoverLocation);
     }
     if (!m_00 || !m_01)
         return false;
     if (!m_02)
-        m_02 = UpdateState_00982750(time);
+        m_02 = UpdateState_00982750(afActorRadius);
     unsigned char kNeed = (unsigned char)(m_02 / DAT_01016ff0);
     if (kNeed > m_01)
         return false;
     m_02 = MinByte(m_02, m_01);
     if (m_03)
     {
-        m_04 = a5;
-        if ((ComputeBitMask() & used2) == 0 && m_05 == a6)
+        m_04 = abHideCover;
+        if ((ComputeBitMask() & used2) == 0 && m_05 == abLeftEdge)
             return true;
     }
-    m_04 = a5;
-    m_05 = a6;
+    m_04 = abHideCover;
+    m_05 = abLeftEdge;
     m_03 = 0;
     int mask5 = ComputeBitMask();
-    if (arg->PathingCoverLocation_IsStandCover() && !m_04)
+    if (apCoverLocation->PathingCoverLocation_IsStandCover() && !m_04)
     {
         unsigned char shift2 = 0;
         if (m_05)
@@ -9318,7 +9606,7 @@ bool Slot_009827c0_This::CoverReservationInfo_FindCoverReservation(Slot_009827c0
                 step7 += 1;
             }
         }
-        else if (arg->unk4f)
+        else if (apCoverLocation->unk4f)
         {
             for (int i = m_01 - m_02; i >= 0; i -= 1)
             {
@@ -9437,6 +9725,7 @@ struct FUN_00982d10 : FUN_00983700
     ~FUN_00982d10();
 };
 // @fnv 0x00982d10
+// pdb: ReservedCoverLocation::~ReservedCoverLocation | CombatCoverMap.obj | debug, object-file gap fill, medium
 FUN_00982d10::~FUN_00982d10()
 {
     if (pSceneObject.Modelloader_GetReferencedThis() && pSceneObject.Modelloader_GetReferencedThis()->NiAVObject_GetParent())
@@ -9449,6 +9738,7 @@ FUN_00982d10::~FUN_00982d10()
 }
 
 // @fnv 0x00983820
+// pdb: NiTMap<unsigned int,ReservedCoverLocation *>::~NiTMap<unsigned int,ReservedCoverLocation *> | CombatCoverMap.obj | debug, call graph (shared callers), high
 template <>
 NiTMap<unsigned int, ReservedCoverLocation*>::~NiTMap()
 {

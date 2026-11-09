@@ -10,6 +10,7 @@ class TESObjectREFR;
 
 #include "FIGHT_REACTION.h"
 
+// pdb: class MediaLocationController, size 0xb8, bases: TESForm, TESFullName, 32 members
 struct MediaLocationController : public TESForm, public TESFullName
 {
 public:
@@ -30,8 +31,8 @@ public:
     virtual void ClearData();
 
     bool Load(TESFile* apFile);
-    void ProcessMediaSetList(BSSimpleList<MediaSet*>* apList);
-    MediaSet* GetMediaSetFromList(BSSimpleList<MediaSet*>* apList);
+    void InitItemList(BSSimpleList<MediaSet*>* plist);
+    MediaSet* GetRandomListItem(BSSimpleList<MediaSet*>* list);
     bool Update(bool abInCombat);
     bool IsMediaLocationActive();
     DEADREPFLAGS GetDeadRep();
@@ -39,38 +40,38 @@ public:
     int GetLoop();
     bool GetByteAtOffset55();
 
-    unsigned int m_fUpdateCooldown;
-    unsigned int m_uiFirstCounter;
-    unsigned int m_uiSecondCounter;
-    unsigned int m_uiThirdCounter;
+    unsigned int uiLocationDelay;
+    unsigned int uiLayerTime;
+    unsigned int uiLoopTime;
+    unsigned int uiMediaStartTime;
     bool bIsActive;
-    bool m_bCountWasNonzero;
-    bool m_bActorStateFlag;
-    bool m_bConditionWasTrue;
-    bool m_bConditionActive;
+    bool bInTension;
+    bool bInCombat;
+    bool bIsDay;
+    bool bIsConditional;
     unsigned char layoutPadding39[3];
-    float m_fLocationDistance;
-    unsigned int m_uiPerceivedActorCount;
-    unsigned int m_uiPreviousPerceivedActorCount;
-    FIGHT_REACTION m_eCurrentFightReaction;
-    char m_cMediaState;
+    float fCurrentPlayerRadius;
+    unsigned int uiFoundHostileActors;
+    unsigned int uiFoundFactionActors;
+    FIGHT_REACTION eCurrentFactionReaction;
+    char cCurrentLayer;
     unsigned char layoutPadding4D[3];
-    MediaSet* m_pMediaSet;
-    TESFullName m_kLocationName;
+    MediaSet* pCurrentMediaSet;
+    TESFullName MediaLocationControllerName;
     TESFaction* pFaction;
-    FIGHT_REACTION m_eRequiredFightReaction;
-    TESObjectREFR* m_pReference;
+    FIGHT_REACTION rFactionConditional;
+    TESObjectREFR* pAudioMarker;
     int iFlags;
-    float m_fLowerWeightThreshold;
-    float m_fUpperWeightThreshold;
-    float m_fMediaSelectionValue;
-    float m_fUpdateInterval;
-    unsigned int m_uiShortDelay;
-    unsigned int m_uiLongDelay;
-    BSSimpleList<MediaSet*> m_kMediaSetList1;
-    BSSimpleList<MediaSet*> m_kMediaSetList2;
-    BSSimpleList<MediaSet*> m_kMediaSetList3;
-    BSSimpleList<MediaSet*> m_kMediaSetList4;
-    BSSimpleList<MediaSet*> m_kMediaSetList5;
-    BSSimpleList<MediaSet*> m_kMediaSetList6;
+    float fLayerTwoPercent;
+    float fLayerThreePercent;
+    float fRetriggerDelay;
+    float fLocationDelay;
+    unsigned int uiDayStart;
+    unsigned int uiNightStart;
+    BSSimpleList<MediaSet*> lConditionalNeutralList;
+    BSSimpleList<MediaSet*> lConditionalAllyList;
+    BSSimpleList<MediaSet*> lConditionalFriendList;
+    BSSimpleList<MediaSet*> lConditionalEnemyList;
+    BSSimpleList<MediaSet*> lLocationList;
+    BSSimpleList<MediaSet*> lBattleList;
 };

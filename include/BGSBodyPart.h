@@ -11,6 +11,7 @@ class QueuedFile;
 class BGSImpactDataSet;
 enum IO_TASK_PRIORITY;
 
+// pdb: class BGSBodyPart, size 0xb0, 8 members
 class BGSBodyPart
 {
 public:
@@ -38,11 +39,11 @@ public:
     BGSBodyPart();
     ~BGSBodyPart();
 
-    virtual void QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* file);
+    virtual void QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent);
 
     void vfn_00();
-    bool Load(TESFile* file);
-    void InitItem(TESForm* parent);
+    bool Load(TESFile* apFile);
+    void InitItem(TESForm* apParentForm);
     int GetLimb();
     const char* GetPartName();
     char GetByte63();
@@ -54,10 +55,10 @@ public:
 
     BSStringT<char> NodeName;
     BSStringT<char> TargetName;
-    BSStringT<char> m_kVATSNodeName;
-    BSStringT<char> m_kPartName;
-    BSStringT<char> m_kGoreName;
-    TESModel m_kModel;
-    TESModelPSA m_kRagdollModel;
+    BSStringT<char> IKStartNodeName;
+    BSStringT<char> PartName;
+    BSStringT<char> GoreObjectName;
+    TESModel ExplosionSpecialDebris;
+    TESModelPSA PSAModel;
     BodyPartInfo Data;
 };

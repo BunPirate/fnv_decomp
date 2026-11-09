@@ -11,7 +11,7 @@ class BSShaderRenderUtility_bsshadersdm
 {
 public:
     bool IsRenderTargetId(unsigned int value);
-    static void InitializeMultiBounds();
+    static void InitSDM();
     static void SetRenderCamera(NiCamera* camera, BSShaderAccumulator* accumulator, bool unused);
     static void SetRenderCamera(AnimIdle* camera, AnimIdle* accumulator, bool unused);
     static void SetRenderCamera(void* camera, unsigned int accumulator, bool unused);
@@ -25,7 +25,7 @@ void BSShaderInitializer::InitializeMultiBounds()
     if (!DAT_01201f70)
     {
         BSFadeNode::InitializeMultiBounds();
-        BSShaderRenderUtility_bsshadersdm::InitializeMultiBounds();
+        BSShaderRenderUtility_bsshadersdm::InitSDM();
         DAT_01201f70 = true;
     }
 }
@@ -34,6 +34,8 @@ void __stdcall BoltShaderProperty_ExtendBolt(float, float);
 void __stdcall BoltShaderProperty_CleanupBolt(float, float);
 // Calls FUN_00bc2660 with a and b when flag is false, otherwise calls FUN_00bc1cc0 with a and c.
 // @fnv 0x00bc28b0
+// pdb: BoltShaderProperty::UpdateBolt | BoltShaderProperty.obj | debug, call graph (shared callers), medium
+// pdb params: afTimeDelta, afDesiredBoltDistance, afSpeed, abCleanup
 void __stdcall DispatchFloatPair(float afFirst, float afSecond, float afThird, bool abUseThird)
 {
     if (!abUseThird)
@@ -50,18 +52,20 @@ struct GlobalObjectO2_00a7b610
 {
     const char* f0;
 };
-extern GlobalObjectO2_00a7b610 g_01201f68;
+extern GlobalObjectO2_00a7b610 BoltShaderProperty_ms_RTTI;
 // @fnv 0x00bc28f0
 // src: XBOX_PDB 0x00bc28f0
-void __stdcall BoltShaderProperty_GetViewerStrings(StrArr* pStrArr)
+// pdb: BoltShaderProperty::GetViewerStrings | BoltShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+void __stdcall BoltShaderProperty_GetViewerStrings(StrArr* apStrings)
 {
-    WriteToSettingArray(pStrArr);
-    char* pStr = _FUN_00a7d330(g_01201f68.f0);
-    unsigned int uiIndex = pStrArr->m_usSize;
-    unsigned int cnt = pStrArr->m_usMaxSize;
+    WriteToSettingArray(apStrings);
+    char* pStr = _FUN_00a7d330(BoltShaderProperty_ms_RTTI.f0);
+    unsigned int uiIndex = apStrings->m_usSize;
+    unsigned int cnt = apStrings->m_usMaxSize;
     if (uiIndex >= cnt)
     {
-        pStrArr->SetSize(pStrArr->m_usGrowBy + uiIndex);
+        apStrings->SetSize(apStrings->m_usGrowBy + uiIndex);
     }
-    pStrArr->SetAt(uiIndex, pStr);
+    apStrings->SetAt(uiIndex, pStr);
 }

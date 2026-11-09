@@ -72,7 +72,10 @@ extern const char DAT_010793e0[];
 void FNV_Warning(const char*, ...);
 // @fnv 0x00805920
 // src: XBOX_PDB 0x00805920
-ActiveEffect* ActiveEffect_LoadActiveEffect(BGSLoadFormBuffer* buffer)
+// pdb: ActiveEffect::LoadActiveEffect | ActiveEffect.obj | retail, call graph, high
+// pdb params: apActor
+// pdb locals: ieffectIndex, isize, ispellID, pspell, peffect, pactiveEffect
+ActiveEffect* ActiveEffect_LoadActiveEffect(BGSLoadFormBuffer* apActor)
 {
     unsigned short effectSize = 28;
     unsigned int magicItemID;
@@ -82,16 +85,16 @@ ActiveEffect* ActiveEffect_LoadActiveEffect(BGSLoadFormBuffer* buffer)
         g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&effectSize, 2);
     g_TESSaveLoadGame->FUN_00857aa0(&magicItemID, 4);
     g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&recordIndex, 1);
-    magicItem = MagicItem::GetMagicItemByID(magicItemID);
+    magicItem = MagicItem::GetMagicItemByNumericID(magicItemID);
     if (magicItem)
     {
-        EffectItem* effect = magicItem->GetEffectItemAtIndex(recordIndex);
+        EffectItem* effect = magicItem->GetEffectItemByIndex(recordIndex);
         if (effect)
         {
             ActiveEffect* active = MagicEffectSystem_activeeffect_decl_variant::Activate(0, magicItem, effect, 0);
             // This save-load variant dispatches through slot 0x20, which the shared
             // ActiveEffect declaration exposes as the Actor* overload.
-            active->LoadGame(reinterpret_cast<Actor*>(buffer));
+            active->LoadGame(reinterpret_cast<Actor*>(apActor));
             return active;
         }
     }

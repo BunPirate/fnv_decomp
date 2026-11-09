@@ -4,6 +4,7 @@
 
 class Q449;
 
+// pdb: class BackgroundCloneThread, size 0x3c, bases: BSTaskThread, 3 members
 class BackgroundCloneThread : public BSTaskThread
 {
 public:
@@ -13,7 +14,7 @@ public:
 
     void* __thiscall FUN_00442290(unsigned int flags);
 
-    bool m_bThirdThreadFlag;
-    int m_iState;
-    Q449* m_pCloneQueue;
+    bool bExit;
+    int iRunningCount;
+    Q449* pCloneReferencesQueue;
 };

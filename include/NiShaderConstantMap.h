@@ -11,6 +11,7 @@ enum NiGPUProgram__ProgramType
     NiGPUProgram__ProgramType_PROGRAM_MAX = 3
 };
 
+// pdb: class NiShaderConstantMap, size 0xc, bases: NiRefObject, 1 members
 class NiShaderConstantMap : public NiRefObject
 {
 public:
@@ -49,5 +50,5 @@ public:
     static ShaderConstantMapEntry* ms_pkConstantMap;
     static unsigned int ms_uiConstantMapEntryCount;
 
-    NiGPUProgram__ProgramType m_iProgramType;
+    NiGPUProgram__ProgramType m_eProgramType;
 };

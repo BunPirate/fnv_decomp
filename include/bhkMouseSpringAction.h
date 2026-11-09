@@ -2,6 +2,7 @@
 
 #include "bhkUnaryAction.h"
 
+// pdb: class bhkMouseSpringAction, size 0x10, bases: bhkUnaryAction, 0 members
 class bhkMouseSpringAction : public bhkUnaryAction
 {
 public:

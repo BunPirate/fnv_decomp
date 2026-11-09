@@ -5,6 +5,7 @@
 
 class NiBlendInterpolator__InterpArrayItem;
 
+// pdb: class NiBlendInterpolator, size 0x30, bases: NiInterpolator, 13 members
 class NiBlendInterpolator : public NiInterpolator
 {
   public:
@@ -13,18 +14,18 @@ class NiBlendInterpolator : public NiInterpolator
     NiBlendInterpolator(bool onlyUseHighestWeight, float weightThreshold, unsigned char arraySize);
     virtual ~NiBlendInterpolator();
 
-    virtual void LoadBinary(NiStream& stream);
-    virtual void ProcessClone(CloningProcess& process);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void ProcessClone(CloningProcess& kCloning);
 
     virtual unsigned char AddInterpolatorItem(NiInterpolator* interpolator, float weight, char priority,
                                               float easeSpinner);
-    virtual void RemoveInterpolatorAt(unsigned char index);
+    virtual void RemoveInterpolatorAt(unsigned char ucIndex);
     virtual bool ControlsTransform(NiInterpolator* interpolator);
     virtual bool GrowInterpolatorArray();
 
-    virtual void SaveBinary(NiStream& stream);
-    void CopyMembers(void* object, void* process);
-    void AppendInterpolatorStrings(StrArr* strings);
+    virtual void SaveBinary(NiStream& kStream);
+    void CopyMembers(void* pkDest, void* kCloning);
+    void AppendInterpolatorStrings(StrArr* pkStrings);
     bool Probe(void* object);
     bool GetUpdateTimeForItem(float& time, unsigned char index);
 
@@ -34,20 +35,20 @@ class NiBlendInterpolator : public NiInterpolator
     bool GetBlendUpdateTime(float& time, NiBlendInterpolator__InterpArrayItem& item);
     void GetTimeRange(float* minTime, float* maxTime);
 
-    unsigned char m_uiObjectFlags;
+    unsigned char m_uFlags;
     unsigned char m_ucArraySize;
     unsigned char m_ucInterpCount;
     unsigned char m_ucSingleIdx;
     char m_cHighPriority;
     char m_cNextHighPriority;
     unsigned char unk12[2];
-    NiBlendInterpolator__InterpArrayItem* m_pInterpArray;
-    NiInterpolator* m_pSingleInterpolator;
+    NiBlendInterpolator__InterpArrayItem* m_pkInterpArray;
+    NiInterpolator* m_pkSingleInterpolator;
     float m_fWeightThreshold;
-    float m_fSingleInterpolatorTime;
+    float m_fSingleTime;
     float m_fHighSumOfWeights;
     float m_fNextHighSumOfWeights;
-    float m_fTrailingValue;
+    float m_fHighEaseSpinner;
 
     static const float INVALID_TIME;
 };

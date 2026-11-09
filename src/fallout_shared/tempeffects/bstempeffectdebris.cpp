@@ -25,19 +25,22 @@ void BSTempEffectDebris::SetIsForegroundEffect(bool foregroundElement)
 struct FUN_0050e620_S
 {
     void IOTask_SetPriority(unsigned char);
-    void IOTask_SetPriority_Thunk(unsigned char p);
+    void IOTask_SetPriority_Thunk(unsigned char abRef);
 };
 // @fnv 0x0050e620
 // src: GUESS 0x0050e620 (confidence: medium)
-void FUN_0050e620_S::IOTask_SetPriority_Thunk(unsigned char p)
+// pdb: SettingT<INISettingCollection>::operator== | TESLight.obj | debug, call graph, high
+// pdb params: abRef
+void FUN_0050e620_S::IOTask_SetPriority_Thunk(unsigned char abRef)
 {
-    IOTask_SetPriority(p);
+    IOTask_SetPriority(abRef);
 }
 
 void __fastcall UpdateState_0061bcf0(void* param_1);
 
 // @fnv 0x00618940
 // src: GUESS 0x00618940 (confidence: low)
+// pdb: NiTLargePrimitiveArray<TESTopicInfo *>::~NiTLargePrimitiveArray<TESTopicInfo *> | TESTopic.obj | debug, object-file run extension, low
 void __fastcall Object_ForwardCall_00618940(void* thisPtr)
 {
     UpdateState_0061bcf0(thisPtr);
@@ -80,10 +83,12 @@ extern GlobalObject_006836f0 g_011d6a74;
 
 // @fnv 0x00683310
 // src: COMMUNITY 0x00683310
-void BSTempEffectDebris_AddtoDebrisCounter(void* p)
+// pdb: BSTempEffectDebris::AddtoDebrisCounter | BSTempEffectDebris.obj | debug, upstream name already matches, high
+// pdb params: abDebrisObject
+void BSTempEffectDebris_AddtoDebrisCounter(void* abDebrisObject)
 {
-    if (p)
-        g_011d6a74.BSPointerListBase_BSTempEffectDebris_AddHead(&p);
+    if (abDebrisObject)
+        g_011d6a74.BSPointerListBase_BSTempEffectDebris_AddHead(&abDebrisObject);
 }
 
 struct FUN_00683460_shell
@@ -93,6 +98,8 @@ struct FUN_00683460_shell
 };
 
 // @fnv 0x00683460
+// pdb: SettingT<INISettingCollection>::operator== | BSTempEffectDebris.obj | debug, object-file run extension, low
+// pdb params: aiRef
 void FUN_00683460_shell::SetFlag(unsigned char aFlag)
 {
     m[0x21] = aFlag;
@@ -133,6 +140,7 @@ struct StandIn
 void _delete(void*, unsigned int);
 // Calls FUN_00682f40, then if the low bit of flags is set frees this with _delete and returns this.
 // @fnv 0x00682ad0
+// pdb: BSTempEffectDebris::`scalar deleting destructor' | BSTempEffectDebris.obj | debug, object-file run extension, low
 void* StandIn::FUN_00682ad0(unsigned int flags)
 {
     this->FUN_00682f40();
@@ -157,6 +165,9 @@ struct Holder
 // Gets a Limit via f1(), stores the int pointed to by a into its f2 field, then passes it to AppendBlock.
 // @fnv 0x006834e0
 // src: COMMUNITY 0x006834e0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::GetNext | Interface.obj | debug, object-file run extension, low
+// pdb params: kPos
+// pdb locals: element
 void Holder::BSPointerListBase_BSTempEffectDebris_AddHead(int* aiValue)
 {
     Limit* p = f1();
@@ -167,7 +178,7 @@ void Holder::BSPointerListBase_BSTempEffectDebris_AddHead(int* aiValue)
 class EffectBase
 {
   public:
-    EffectBase(int iArg, float fArg);
+    EffectBase(int apCell, float afLifetime);
     ~EffectBase();
     virtual void v0();
     char m_04[0x14];
@@ -197,6 +208,8 @@ class FUN_00682c40 : public EffectBase
 
 // Constructs the effect: initialises the base and member pointer, stores iVal and c11, clears m_21, then calls SpawnDebris with the remaining arguments.
 // @fnv 0x00682c40
+// pdb: BSTempEffectDebris::BSTempEffectDebris | BSTempEffectDebris.obj | debug, object-file run extension, low
+// pdb params: apCell, afLifetime, apFilename, apSourceRef, aPosition, aRotation, aStartLinearVelocity, aStartAngularVelocity, afScale, bUseCache, abAddDebrisCount
 FUN_00682c40::FUN_00682c40(int iArg, float fArg, int iVal, int a4, int a5, int a6, int a7, int a8, float f9, bool b10,
                            char c11)
     : EffectBase(iArg, fArg), m_18(0)
@@ -224,6 +237,9 @@ extern B83330List g_kB83330Menus;
 
 // Removes pkItem from g_kB83330Menus by scanning the list until the matching entry is found and erased.
 // @fnv 0x00683330
+// pdb: BSTempEffectDebris::RemoveFromDebrisCounter | BSTempEffectDebris.obj | debug, object-file gap fill, medium
+// pdb params: abDebrisObject
+// pdb locals: bfound, iter
 void __cdecl RemoveMenuEntry(B83330Item* pkItem)
 {
     if (pkItem && !g_kB83330Menus.IsEmpty())
@@ -338,6 +354,9 @@ struct FUN_00682b00 : FUN_006827b0
     FUN_00682b00(TESObjectCELL*, float, const char*, void*, void*, Vec682*, void*, void*, float, unsigned char, bool);
 };
 // @fnv 0x00682b00
+// pdb: BSTempEffectDebris::BSTempEffectDebris | BSTempEffectDebris.obj | debug, object-file run extension, low
+// pdb params: apCell, afLifetime, apFilename, apSourceRef, aPosition, aDirection, aStartLinearVelocity, aStartAngularVelocity, afScale, bUseCache, abAddDebrisCount
+// pdb locals: dir, fz, particleRot, fxy
 FUN_00682b00::FUN_00682b00(TESObjectCELL* cell, float duration, const char* name, void* p4, void* p5, Vec682* direction,
                            void* p7, void* p8, float f, unsigned char flag, bool abUseCounter)
     : FUN_006827b0(cell, duration), node(0)
@@ -470,7 +489,7 @@ extern ModelService* g_011c3b3c;
 extern QueueService* g_011dea10;
 extern EffectRegistry g_011e0e80;
 extern float DAT_011c3c08;
-void ProcessPropertyTree(SceneObject*, int);
+void BSShaderManager_SetObjectTypeRecurse(SceneObject*, int);
 void TESHavokUtilities_AddVelocity(SceneObject*, int, bool);
 void TESHavokUtilities_AddAngularVelocity(SceneObject*, int, bool);
 void BSTempEffectDebris_LimitDebrisObjects();
@@ -482,6 +501,9 @@ struct DebrisEffect : FUN_00682c40
     void SpawnDebris(int a4, int a5, int a6, int a7, int a8, float f9, bool b10);
 };
 // @fnv 0x00682d10
+// pdb: BSTempEffectDebris::Init | BSTempEffectDebris.obj | debug, object-file run extension, low
+// pdb params: apSourceRef, aPosition, aRotation, aStartLinearVelocity, aStartAngularVelocity, afScale, bUseCache
+// pdb locals: UpdateData, pmodel, psceneParent, tempAutoEvent, cloneProcess
 void DebrisEffect::SpawnDebris(int a4, int a5, int a6, int a7, int a8, float f9, bool abUseQueue)
 {
     FUN_007e6580(false);
@@ -506,7 +528,7 @@ void DebrisEffect::SpawnDebris(int a4, int a5, int a6, int a7, int a8, float f9,
     static_cast<ScenePointer&>(m_18).Modelloader_GetReferencedThis()->NiAVObject_SetTranslate(a5);
     static_cast<ScenePointer&>(m_18).Modelloader_GetReferencedThis()->SetRotate_0043fa80(a6);
     static_cast<ScenePointer&>(m_18).Modelloader_GetReferencedThis()->NiAVObject_SetScale(f9);
-    ProcessPropertyTree(static_cast<ScenePointer&>(m_18).Modelloader_GetReferencedThis(), 5);
+    BSShaderManager_SetObjectTypeRecurse(static_cast<ScenePointer&>(m_18).Modelloader_GetReferencedThis(), 5);
     AttachCollisionObject(a4);
     static_cast<ScenePointer&>(m_18).Modelloader_GetReferencedThis()->UpdateProperties();
     UpdateContext node(DAT_011c3c08, true, false);
@@ -601,6 +623,7 @@ template <class T> class DebrisPtr
     T* m_pObject;
 };
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void QueueModelLoad(char* name, bool flag, unsigned int count);
@@ -613,14 +636,15 @@ struct DebrisCounter
 };
 extern DebrisCounter g_011c3ea4;
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static TaskQueueInterface* GetInstance();
-    void QueueDetach(NiAVObject* obj);
+    void TaskQueueInterface_QueueHavokRemove(NiAVObject* ap3D);
 };
 
-void bhkWorld_Activate(NiAVObject* obj, bool a, bool b, int c);
-void bhkWorld_RemoveObjects(NiAVObject* obj, bool a, int b);
+void bhkWorld_Activate(NiAVObject* apObject, bool abActivate, bool abRecurse, int c);
+void bhkWorld_RemoveObjects(NiAVObject* apObject, bool abRecurse, int abForce);
 
 class FUN_00682f40 : public BSTempEffect
 {
@@ -635,6 +659,7 @@ class FUN_00682f40 : public BSTempEffect
 };
 
 // @fnv 0x00682f40
+// pdb: BSTempEffectDebris::~BSTempEffectDebris | BSTempEffectDebris.obj | debug, object-file run extension, low
 FUN_00682f40::~FUN_00682f40()
 {
     if (pFilename)
@@ -650,7 +675,7 @@ FUN_00682f40::~FUN_00682f40()
     }
     else
     {
-        TaskQueueInterface::GetInstance()->QueueDetach(m_pSceneObject);
+        TaskQueueInterface::GetInstance()->TaskQueueInterface_QueueHavokRemove(m_pSceneObject);
     }
     if (m_bForegroundEffect)
         RemoveMenuEntry((B83330Item*)this);
@@ -672,7 +697,7 @@ struct FaceGenForm
     virtual void* GetForm();
 };
 
-void __cdecl FUN_00b6bb30(void* pForm, float fValue);
+void __cdecl RecursiveSetPropertyFadeAlpha(void* apNode, float afAlpha);
 
 struct WorldObj;
 struct WorldNode
@@ -682,11 +707,11 @@ struct WorldNode
     virtual void v002();
     virtual WorldNode* IsSceneNode();
     unsigned int FUN_0043b480();
-    WorldObj* FUN_0043b4a0(int iIndex);
+    WorldObj* FUN_0043b4a0(int i);
 };
 struct WorldFade
 {
-    WorldObj* NiNode_GetAtChecked(bool bArg);
+    WorldObj* NiNode_GetAtChecked(bool i);
 };
 struct WorldFilter
 {
@@ -825,7 +850,7 @@ extern const void* const DAT_011f9140;
 WorldFade* NiObject_DynamicCast(const void* pkRTTI, WorldNode* pkObj);
 unsigned int bhkNiCollisionObject_GetbhkNiCollisionObject(WorldObj* pkObj);
 WorldHavok* __fastcall TESObjectCELL_GetbhkWorld(WorldCell* pkCell);
-void bhkWorld_SetGroup(WorldObj* pkObj, int iFilter, int a, int b);
+void bhkWorld_SetGroup(WorldObj* apObject, int aiGroup, int abRecurse, int b);
 struct FUN_00683190_shell
 {
     virtual void v000();
@@ -872,9 +897,12 @@ struct FUN_00683190_shell
 };
 // @fnv 0x006830a0
 // src: COMMUNITY 0x006830a0
-bool BSFaceGenKeyframe::BSTempEffectDebris_Update(float fArg)
+// pdb: BSTempEffectDebris::Update | BSTempEffectDebris.obj | retail, upstream name already matches, high
+// pdb params: afTimeDelta
+// pdb locals: bactive, ftimer, pnode, p3d, falpha
+bool BSFaceGenKeyframe::BSTempEffectDebris_Update(float afTimeDelta)
 {
-    bool result5 = FUN_006828a0(fArg);
+    bool result5 = FUN_006828a0(afTimeDelta);
     if (reinterpret_cast<BSTempEffectDebris*>(this)->bForceDelete)
     {
         result5 = false;
@@ -891,7 +919,7 @@ bool BSFaceGenKeyframe::BSTempEffectDebris_Update(float fArg)
                 if (b)
                 {
                     float v_ = delta8 / *g_011cfbfc.Float();
-                    FUN_00b6bb30(b, v_);
+                    RecursiveSetPropertyFadeAlpha(b, v_);
                 }
             }
         }
@@ -901,6 +929,9 @@ bool BSFaceGenKeyframe::BSTempEffectDebris_Update(float fArg)
 
 // Resolves the object from the 3D node (via fade or child nodes), then adds it to the cell's havok world with the actor's collision filter.
 // @fnv 0x00683190
+// pdb: BSTempEffectDebris::InitHavok | BSTempEffectDebris.obj | debug, object-file gap fill, medium
+// pdb params: apSourceRef
+// pdb locals: pav, tempAutoEvent, proot, pn, pcol, pcell, pw, pactor
 void FUN_00683190_shell::AttachCollisionObject(WorldActor* pkActor)
 {
     WorldNode* pk3D = Get3D();
@@ -967,6 +998,8 @@ struct FUN_006833b0_item
 
 // @fnv 0x006833b0
 // src: COMMUNITY 0x006833b0
+// pdb: BSTempEffectDebris::LimitDebrisObjects | BSTempEffectDebris.obj | debug, upstream name already matches, high
+// pdb locals: ikill, iter, pdebris
 void BSTempEffectDebris_LimitDebrisObjects()
 {
     int n;

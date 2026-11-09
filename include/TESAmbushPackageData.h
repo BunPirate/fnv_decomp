@@ -4,6 +4,7 @@
 
 class AF50Location;
 
+// pdb: class TESAmbushPackageData, size 0x8, bases: TESPackageData, 1 members
 class TESAmbushPackageData : public TESPackageData
 {
 public:
@@ -13,8 +14,8 @@ public:
 
     void* Destroy(unsigned int flags);
     void SaveWithTag();
-    void SetLocationFromPackage(int aiPackageId);
-    bool Compare_0067af50(TESPackageData* pkOtherData);
+    void SetLocationFromPackage(int apCopy);
+    bool Compare_0067af50(TESPackageData* apCompare);
 
-    AF50Location* m_pkLocation;
+    AF50Location* pAmbushLocation;
 };

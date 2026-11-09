@@ -29,6 +29,7 @@ inline NiRefObject::NiRefObject() : m_uiRefCount(0)
 }
 // Initialises the object by storing the vtable pointer DAT_0109b4f4 into its first field.
 // @fnv 0x00a5d3a0
+// pdb: NiObject::NiObject | NiObject.obj | debug, upstream name already matches, high
 NiObject::NiObject()
 {
     *(void**)this = (void*)&DAT_0109b4f4;

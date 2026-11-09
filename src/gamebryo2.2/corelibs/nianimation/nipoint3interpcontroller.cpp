@@ -12,6 +12,9 @@ typedef void(__thiscall* GetPoint3Fn)(void*, NiPoint3*);
 
 // @fnv 0x00a57c20
 // src: XBOX_PDB 0x00a57c20
+// pdb: NiPoint3InterpController::CreatePoseInterpolator | NiPoint3InterpController.obj | retail, upstream name already matches, high
+// pdb params: usIndex
+// pdb locals: kValue
 void* __fastcall NiPoint3InterpController_CreatePoseInterpolator(void* self, int, unsigned short usIndex)
 {
     NiPoint3 kValue;
@@ -37,6 +40,9 @@ typedef void(__thiscall* GetPoint3Fn)(void*, NiPoint3*);
 // Casts pkInterp to a NiPoint3 interpolator, reads a NiPoint3 from self via a virtual call, and passes it to the interpolator.
 // @fnv 0x00a57cb0
 // src: XBOX_PDB 0x00a57cb0
+// pdb: NiPoint3InterpController::SynchronizePoseInterpolator | NiPoint3InterpController.obj | retail, upstream name already matches, high
+// pdb params: pkInterp, usIndex
+// pdb locals: kValue, pkPoint3Interp
 void __fastcall NiPoint3InterpController_SynchronizePoseInterpolator(void* self, int, NiObject* pkInterp, int)
 {
     NiPoint3Interpolator* pkPoint3Interp =
@@ -57,14 +63,16 @@ ActorCombatGroup* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* s)
 
 // @fnv 0x00a57d10
 // src: XBOX_PDB 0x00a57d10
-void __stdcall NiPoint3InterpController_GetViewerStrings(CombatGroupArray* pCombatGroups)
+// pdb: NiPoint3InterpController::GetViewerStrings | NiPoint3InterpController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall NiPoint3InterpController_GetViewerStrings(CombatGroupArray* pkStrings)
 {
-    FUN_00a390a0(pCombatGroups);
+    FUN_00a390a0(pkStrings);
     ActorCombatGroup* pGroup = NiViewerStrings_NiGetViewerString_Title(g_011f3f88_arg1);
-    unsigned int uiIndex = *(unsigned short*)((char*)pCombatGroups + 0xa);
-    if (uiIndex >= *(unsigned short*)((char*)pCombatGroups + 8))
-        pCombatGroups->SetSize(*(unsigned short*)((char*)pCombatGroups + 0xe) + uiIndex);
-    pCombatGroups->SetAt(uiIndex, pGroup);
+    unsigned int uiIndex = *(unsigned short*)((char*)pkStrings + 0xa);
+    if (uiIndex >= *(unsigned short*)((char*)pkStrings + 8))
+        pkStrings->SetSize(*(unsigned short*)((char*)pkStrings + 0xe) + uiIndex);
+    pkStrings->SetAt(uiIndex, pGroup);
 }
 
 extern unsigned int DAT_011f404c;
@@ -86,24 +94,26 @@ struct S_00a53280_Foo
     int unk14;
 
     void FUN_00a3ca10();
-    void* NiBoolInterpolator_NiBoolInterpolator(void* arg);
+    void* NiBoolInterpolator_ctor(void* pkBoolData);
 };
 
 extern void(__stdcall* FUN_00fdf1c0)(void*);
 
 // @fnv 0x00a53280
-// src: GAMEBRYO_LIB 0x00a53280
-void* S_00a53280_Foo::NiBoolInterpolator_NiBoolInterpolator(void* arg)
+// src: XBOX_RETAIL_PDB 0x00a53280
+// pdb: NiBoolInterpolator::NiBoolInterpolator | NiBoolInterpolator.obj | retail, call graph (shared callers), high
+// pdb params: pkBoolData
+void* S_00a53280_Foo::NiBoolInterpolator_ctor(void* pkBoolData)
 {
     FUN_00a3ca10();
 
     unk00 = (void*)&DAT_0109a0b4;
     unk0c = DAT_0109a914;
-    unk10 = arg;
+    unk10 = pkBoolData;
 
-    if (arg)
+    if (pkBoolData)
     {
-        FUN_00fdf1c0((void*)((unsigned char*)arg + 4));
+        FUN_00fdf1c0((void*)((unsigned char*)pkBoolData + 4));
     }
 
     unk14 = 0;

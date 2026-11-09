@@ -13,6 +13,7 @@ class V4;
 struct QueryInput;
 struct QueryOutput;
 
+// pdb: class hkpPoweredChainData, size 0x40, bases: hkpConstraintChainData, 9 members
 class hkpPoweredChainData : public hkpConstraintChainData
 {
 public:
@@ -43,25 +44,25 @@ public:
 
     int ReturnConstant_102();
     void getRuntimeInfo_00e3b770(int unused, RuntimeInfo* result);
-    void buildJacobian_00e3ba40(const QueryInput& input, QueryOutput& output);
+    void buildJacobian_00e3ba40(const QueryInput& inNotValid, QueryOutput& out);
     void getConstraintInfo_00e3b720(int* info) const;
 
     hkMemoryRouter* hkMemoryRouter_getInstance();
-    void addConstraintInfoInBodySpace(const __m128* frameA, const __m128* frameB,
-                    const __m128* frameC, Motor* motorA, Motor* motorB,
-                    Motor* motorC);
+    void addConstraintInfoInBodySpace(const __m128* pivotInA, const __m128* pivotInB,
+                    const __m128* aTc, Motor* xMotor, Motor* yMotor,
+                    Motor* zMotor);
     void addConstraintInfoInBodySpace(void* frameA, void* frameB, void* frameC,
                     int motorA, int motorB, int motorC);
     void addConstraintInfoInBodySpace(const V4* frameA, const V4* frameB, const V4* frameC,
                     Body* motorA, Body* motorB, Body* motorC);
 
-    hkpBridgeAtoms m_kBridgeAtoms;
-    hkArray<hkpPoweredChainDataConstraintInfo> m_pConstraintInfo;
-    hkReal m_fTau;
-    hkReal m_fMotorDamping;
-    hkReal m_fMaximumErrorDistance;
-    hkReal m_fMaximumLinearImpulse;
-    hkReal m_fBreachImpulse;
-    hkReal m_fInertiaStabilizationFactor;
-    hkReal m_fMaximumAngularImpulse;
+    hkpBridgeAtoms m_atoms;
+    hkArray<hkpPoweredChainDataConstraintInfo> m_infos;
+    hkReal m_tau;
+    hkReal m_damping;
+    hkReal m_cfmLinAdd;
+    hkReal m_cfmLinMul;
+    hkReal m_cfmAngAdd;
+    hkReal m_cfmAngMul;
+    hkReal m_maxErrorDistance;
 };

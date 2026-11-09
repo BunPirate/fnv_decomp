@@ -2,6 +2,7 @@
 
 struct GenericConstraintAtomScheme;
 
+// pdb: structure hkpModifierConstraintAtom, size 0x20 (here 0x18), bases: hkpConstraintAtom, 4 members
 class hkpModifierConstraintAtom
 {
 public:

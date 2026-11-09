@@ -4,7 +4,11 @@
 #include "imagespaceeffectmenubg_decls.h"
 
 // @fnv 0x00c04730
-void ImageSpaceEffectMenuBackground::Setup(ImageSpaceManager* manager, MenuBgEffectParamLocalForm* parameters)
+// src: XBOX_RETAIL_PDB 0x00c04730
+// pdb: ImageSpaceEffectMenuBG::Setup | ImageSpaceEffectMenuBG.obj | retail, string-set bridge, high
+// pdb params: apManager, apParam
+// pdb locals: pparam, spSepiaTexture
+void ImageSpaceEffectMenuBackground::ImageSpaceEffectMenuBG_Setup(ImageSpaceManager* apManager, MenuBgEffectParamLocalForm* apParam)
 {
     SetTextureArrayCount(1);
     pTextures.SetSize(3);
@@ -21,5 +25,5 @@ void ImageSpaceEffectMenuBackground::Setup(ImageSpaceManager* manager, MenuBgEff
     shaderParameters->SetShaderConstantVector4(0, 0.0f, 0.0f, 0.0f, 0.0f);
     pEffectParamList.SetAt(0, shaderParameters);
     SetTextureArrayAt(0, 1, 2, NiTexturingProperty::FILTER_BILERP, NiTexturingProperty::FILTER_NEAREST);
-    SetEffectAt(0, reinterpret_cast<NiTPrimitiveArray<ImageSpaceEffect*>*>(manager->pEffectList)->m_pBase[ImageSpaceManager::EFFECT_SHADER_MENUBG], shaderParameters, 0);
+    SetEffectAt(0, reinterpret_cast<NiTPrimitiveArray<ImageSpaceEffect*>*>(apManager->pEffectList)->m_pBase[ImageSpaceManager::EFFECT_SHADER_MENUBG], shaderParameters, 0);
 }

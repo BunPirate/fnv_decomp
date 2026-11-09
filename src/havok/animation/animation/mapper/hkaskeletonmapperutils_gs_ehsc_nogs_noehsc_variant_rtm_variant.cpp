@@ -12,7 +12,7 @@ typedef ::__m128 LocalM128;
 // Keep the original inline behavior while using the shared class declarations.
 inline const char* hkStringPtr::cString() const
 {
-    return reinterpret_cast<char*>((unsigned long)(m_pcText) & ~1);
+    return reinterpret_cast<char*>((unsigned long)(m_stringAndFlag) & ~1);
 }
 
 // src/havok/animation/animation/mapper/hkaskeletonmapperutils_gs_ehsc_nogs_noehsc_variant_rtm_variant.cpp - RTM variant unit created 2026-11-01 by rtm_route.py: community reworks of src/havok/animation/animation/mapper/hkaskeletonmapperutils_gs_ehsc_nogs_noehsc_variant.cpp that match byte for byte only
@@ -579,8 +579,8 @@ class HkArrUtil
     template <typename T> static __forceinline void destruct(T* t, int n, HkClassTag);
     template <typename T> static __forceinline void constructWithArray(T* t, int n, const T* tcopy, HkPodTag);
     template <typename T> static __forceinline void constructWithArray(T* t, int n, const T* tcopy, HkClassTag);
-    __declspec(nothrow) static void __cdecl hkArrayUtil__reserve(HkHeap& a, void* array, int reqElem, int sizeElem) throw();
-    __declspec(nothrow) static void __cdecl FUN_00c90940(HkHeap& a, void* array, int sizeElem) throw();
+    __declspec(nothrow) static void __cdecl hkArrayUtil__reserve(HkHeap& mem, void* array, int numElem, int sizeElem) throw();
+    __declspec(nothrow) static void __cdecl FUN_00c90940(HkHeap& mem, void* array, int sizeElem) throw();
 };
 
 template <typename T> __forceinline void HkArrUtil::construct(T* t, int n, HkPodTag)
@@ -995,10 +995,11 @@ struct HkMapperParams
     HkMotionParams m_kMotionParams;
 };
 
+// pdb: structure Match, size 0x8, 2 members
 struct Match
 {
-    int m_sBoneA;
-    int m_sBoneB;
+    int m_indexA;
+    int m_indexB;
 };
 
 __declspec(nothrow) short __cdecl FUN_00cdd390(const HkSkeleton& skeleton, const char* name,
@@ -1023,6 +1024,9 @@ __forceinline bool __cdecl checkRotation(const HkMapperParams& params, short bon
 
 // @fnv 0x00ce61c0
 // src: COMMUNITY 0x00ce61c0
+// pdb: hkaSkeletonMapperUtils::createMapping | hkaSkeletonMapperUtils.obj | retail, upstream name already matches, high
+// pdb params: originalParams, originalAToB, originalBToA
+// pdb locals: modelPoseB, map_AtoB, numBonesB, modelPoseA, poseB, poseA, params, map_BtoA, numBonesA, assertBuf, ostr, simpleMapping, numChains, i, chainAok, chainB, startChainB, chainA, chainBok, endChainA, reportBuf, chainMappingAtoB, chainMappingBtoA, chainBBones ...
 __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMapperParams& originalParams, hkaSkeletonMapperData& originalAToB,
                                               hkaSkeletonMapperData& originalBToA) throw()
 {
@@ -1075,11 +1079,11 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
     aToB.m_eMappingType = params.m_eMappingType;
     bToA.m_eMappingType = params.m_eMappingType;
 
-    reinterpret_cast<HkRef<const HkSkeleton>&>(aToB.m_pSkeletonA) = params.m_pSkeletonA;
-    reinterpret_cast<HkRef<const HkSkeleton>&>(aToB.m_pSkeletonB) = params.m_pSkeletonB;
+    reinterpret_cast<HkRef<const HkSkeleton>&>(aToB.m_skeletonA) = params.m_pSkeletonA;
+    reinterpret_cast<HkRef<const HkSkeleton>&>(aToB.m_skeletonB) = params.m_pSkeletonB;
 
-    reinterpret_cast<HkRef<const HkSkeleton>&>(bToA.m_pSkeletonA) = params.m_pSkeletonB;
-    reinterpret_cast<HkRef<const HkSkeleton>&>(bToA.m_pSkeletonB) = params.m_pSkeletonA;
+    reinterpret_cast<HkRef<const HkSkeleton>&>(bToA.m_skeletonA) = params.m_pSkeletonB;
+    reinterpret_cast<HkRef<const HkSkeleton>&>(bToA.m_skeletonB) = params.m_pSkeletonA;
 
     {
         const int numMappings = params.m_kFirstUserMappingList.GetLogicalSize();
@@ -1099,7 +1103,7 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                 hkaSkeletonMapperUtils_computeMappingTransform_00ce5f90(params.m_eMappingType, poseA, boneIn, poseB, boneOut, simpleMapping.m_kAFromBTransform,
                              params.m_fFirstMappingTolerance, params.m_fSecondMappingTolerance);
 
-                reinterpret_cast<HkArr<HkSimpleMapping>&>(aToB.m_kSimpleMappings).AddBack(simpleMapping);
+                reinterpret_cast<HkArr<HkSimpleMapping>&>(aToB.m_simpleMappings).AddBack(simpleMapping);
 
                 map_BtoA[boneOut] = boneIn;
             }
@@ -1139,7 +1143,7 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
 
                 hkaSkeletonMapperUtils_computeMappingTransform_00ce5f90(params.m_eMappingType, poseB, boneIn, poseA, boneOut, simpleMapping.m_kAFromBTransform);
 
-                reinterpret_cast<HkArr<HkSimpleMapping>&>(bToA.m_kSimpleMappings).AddBack(simpleMapping);
+                reinterpret_cast<HkArr<HkSimpleMapping>&>(bToA.m_simpleMappings).AddBack(simpleMapping);
 
                 map_AtoB[boneOut] = boneIn;
             }
@@ -1337,7 +1341,7 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                     chainMappingAtoB.m_kEndAFromBTransform.SetMulInverse(transformEndA, transformEndB);
                     chainMappingAtoB.m_kStartAFromBTransform.SetMulInverse(transformStartA, transformStartB);
 
-                    reinterpret_cast<HkArr<HkChainMapping>&>(aToB.m_kChainMappings).AddBack(chainMappingAtoB);
+                    reinterpret_cast<HkArr<HkChainMapping>&>(aToB.m_chainMappings).AddBack(chainMappingAtoB);
                 }
 
                 {
@@ -1350,7 +1354,7 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                     chainMappingBtoA.m_kEndAFromBTransform.SetMulInverse(transformEndB, transformEndA);
                     chainMappingBtoA.m_kStartAFromBTransform.SetMulInverse(transformStartB, transformStartA);
 
-                    reinterpret_cast<HkArr<HkChainMapping>&>(bToA.m_kChainMappings).AddBack(chainMappingBtoA);
+                    reinterpret_cast<HkArr<HkChainMapping>&>(bToA.m_chainMappings).AddBack(chainMappingBtoA);
                 }
 
                 for (int a = 1; a < chainLengthA - 1; a++)
@@ -1568,8 +1572,8 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                 Object_BuildBonePairMapping(params.m_eMappingType, params.m_pSkeletonB, poseB, startChainB, endChainB,
                              params.m_pSkeletonA, poseA, startChainA, endChainA, chainMappingBFromA);
 
-                reinterpret_cast<HkArr<HkChainMapping>&>(bToA.m_kChainMappings).AddBack(chainMappingBFromA);
-                reinterpret_cast<HkArr<HkChainMapping>&>(aToB.m_kChainMappings).AddBack(chainMappingAFromB);
+                reinterpret_cast<HkArr<HkChainMapping>&>(bToA.m_chainMappings).AddBack(chainMappingBFromA);
+                reinterpret_cast<HkArr<HkChainMapping>&>(aToB.m_chainMappings).AddBack(chainMappingAFromB);
 
                 for (int a = 0; a < chainLengthA; a++)
                 {
@@ -1618,8 +1622,8 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                     if (compare(nameA, nameB) == 0)
                     {
                         Match& match = matches.AllocatePair();
-                        match.m_sBoneA = idxA;
-                        match.m_sBoneB = idxB;
+                        match.m_indexA = idxA;
+                        match.m_indexB = idxB;
                     }
                 }
             }
@@ -1644,8 +1648,8 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                 if (shortest < tolSqrd)
                 {
                     Match& match = matches.AllocatePair();
-                    match.m_sBoneA = idxA;
-                    match.m_sBoneB = shortestIndex;
+                    match.m_indexA = idxA;
+                    match.m_indexB = shortestIndex;
                 }
             }
         }
@@ -1654,8 +1658,8 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
 
         for (int i = 0; i < numMatches; i++)
         {
-            const short boneA = (short)matches[i].m_sBoneA;
-            const short boneB = (short)matches[i].m_sBoneB;
+            const short boneA = (short)matches[i].m_indexA;
+            const short boneB = (short)matches[i].m_indexB;
 
             if (map_AtoB[boneA] != UNMATCHED || map_BtoA[boneB] != UNMATCHED)
             {
@@ -1673,7 +1677,7 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                 hkaSkeletonMapperUtils_computeMappingTransform_00ce5f90(params.m_eMappingType, poseA, boneA, poseB, boneB, simpleMappingAtoB.m_kAFromBTransform,
                              params.m_fFirstMappingTolerance, 1.0f);
 
-                reinterpret_cast<HkArr<HkSimpleMapping>&>(aToB.m_kSimpleMappings).AddBack(simpleMappingAtoB);
+                reinterpret_cast<HkArr<HkSimpleMapping>&>(aToB.m_simpleMappings).AddBack(simpleMappingAtoB);
             }
 
             {
@@ -1687,11 +1691,11 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                 hkaSkeletonMapperUtils_computeMappingTransform_00ce5f90(params.m_eMappingType, poseB, boneB, poseA, boneA, simpleMappingBtoA.m_kAFromBTransform,
                              params.m_fFirstMappingTolerance, 1.0f);
 
-                reinterpret_cast<HkArr<HkSimpleMapping>&>(bToA.m_kSimpleMappings).AddBack(simpleMappingBtoA);
+                reinterpret_cast<HkArr<HkSimpleMapping>&>(bToA.m_simpleMappings).AddBack(simpleMappingBtoA);
             }
 
-            checkRotation(params, boneA, boneB, reinterpret_cast<HkArr<HkSimpleMapping>&>(aToB.m_kSimpleMappings).back().m_kAFromBTransform,
-                          reinterpret_cast<HkArr<HkSimpleMapping>&>(bToA.m_kSimpleMappings).back().m_kAFromBTransform);
+            checkRotation(params, boneA, boneB, reinterpret_cast<HkArr<HkSimpleMapping>&>(aToB.m_simpleMappings).back().m_kAFromBTransform,
+                          reinterpret_cast<HkArr<HkSimpleMapping>&>(bToA.m_simpleMappings).back().m_kAFromBTransform);
 
             map_AtoB[boneA] = boneB;
             map_BtoA[boneB] = boneA;
@@ -1797,7 +1801,7 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                     chainMappingAtoB.m_kEndAFromBTransform.SetMulInverse(transformEndA, transformEndB);
                     chainMappingAtoB.m_kStartAFromBTransform.SetMulInverse(transformStartA, transformStartB);
 
-                    reinterpret_cast<HkArr<HkChainMapping>&>(aToB.m_kChainMappings).AddBack(chainMappingAtoB);
+                    reinterpret_cast<HkArr<HkChainMapping>&>(aToB.m_chainMappings).AddBack(chainMappingAtoB);
                 }
 
                 {
@@ -1810,7 +1814,7 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
                     chainMappingBtoA.m_kEndAFromBTransform.SetMulInverse(transformEndB, transformEndA);
                     chainMappingBtoA.m_kStartAFromBTransform.SetMulInverse(transformStartB, transformStartA);
 
-                    reinterpret_cast<HkArr<HkChainMapping>&>(bToA.m_kChainMappings).AddBack(chainMappingBtoA);
+                    reinterpret_cast<HkArr<HkChainMapping>&>(bToA.m_chainMappings).AddBack(chainMappingBtoA);
                 }
 
                 for (int a = 1; a < chainLengthA - 1; a++)
@@ -1829,7 +1833,7 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
     {
         if (UNMATCHED == map_BtoA[b])
         {
-            reinterpret_cast<HkArr<short>&>(aToB.m_kUnmappedBones).AddBack((short)b);
+            reinterpret_cast<HkArr<short>&>(aToB.m_unmappedBones).AddBack((short)b);
         }
     }
 
@@ -1837,21 +1841,21 @@ __declspec(nothrow) void __cdecl hkaSkeletonMapperUtils_createMapping(const HkMa
     {
         if (UNMATCHED == map_AtoB[a])
         {
-            reinterpret_cast<HkArr<short>&>(bToA.m_kUnmappedBones).AddBack((short)a);
+            reinterpret_cast<HkArr<short>&>(bToA.m_unmappedBones).AddBack((short)a);
         }
     }
 
     aToB.m_bKeepUnmappedLocal.m_cBooleanValue = true;
     bToA.m_bKeepUnmappedLocal.m_cBooleanValue = true;
 
-    reinterpret_cast<HkQs&>(originalAToB.m_kExtractedMotionMapping).setIdentity();
-    reinterpret_cast<HkQs&>(originalBToA.m_kExtractedMotionMapping).setIdentity();
+    reinterpret_cast<HkQs&>(originalAToB.m_extractedMotionMapping).setIdentity();
+    reinterpret_cast<HkQs&>(originalBToA.m_extractedMotionMapping).setIdentity();
 
     if (params.m_eMappingType == HK_RETARGETING_MAPPING)
     {
         params.m_kMotionParams.hkQsTransform_ComputePoseScaleFactors(params.m_eMappingType, modelPoseA.begin(), numBonesA, modelPoseB.begin(),
-                                           numBonesB, reinterpret_cast<HkQs&>(originalAToB.m_kExtractedMotionMapping),
-                                           reinterpret_cast<HkQs&>(originalBToA.m_kExtractedMotionMapping));
+                                           numBonesB, reinterpret_cast<HkQs&>(originalAToB.m_extractedMotionMapping),
+                                           reinterpret_cast<HkQs&>(originalBToA.m_extractedMotionMapping));
     }
 
     hkErrorInstance().endSection();
@@ -1897,7 +1901,7 @@ struct HkQuat
 {
     HkVec v;
     void setMul(const HkQuat& a, const HkQuat& b) throw();
-    void setMulInverse(const HkQuat& a, const HkQuat& b) throw();
+    void setMulInverse(const HkQuat& q0, const HkQuat& q1) throw();
 };
 // local form of hkQsTransform: 0x00ce5a70 needs inline SetConjugate/SetProduct and original scalar aliases; shared form gives 667 bytes vs exe 999.
 struct HkQs
@@ -2037,8 +2041,11 @@ static __forceinline void warnAlways(int id, const char* text, int line)
 }
 
 // @fnv 0x00ce5a70
-// src: COMMUNITY 0x00ce5a70
-void __cdecl hkaSkeletonMapperUtils_computeMappingTransform(CE5F90QsTransform* mappingType, const CE5F90QsTransform* poseA,
+// src: XBOX_DEBUG_PDB 0x00ce5a70
+// pdb: hkaSkeletonMapper::setMulWithScaling | hkaSkeletonMapper.obj | debug, unique string literal, high
+// pdb params: type, dst, map, src
+// pdb locals: assertBuf, ostr
+void __cdecl hkaSkeletonMapper_setMulWithScaling(CE5F90QsTransform* mappingType, const CE5F90QsTransform* poseA,
                           const CE5F90QsTransform* poseB, int outputAddress, float tolerance, float defaultScale)
 {
     int type = reinterpret_cast<int>(mappingType);

@@ -74,6 +74,7 @@ extern "C" void* __cdecl memset(void*, int, unsigned int);
 // at AStarSearch construction: the receiver is this + 0x1ff4.
 // Default-constructs the AStarOpenList, initializing m_fValue to -1.0f and zeroing the m_ppNodes array.
 // @fnv 0x006b9470
+// pdb: AStarQueue<CombatPlanNode *,CombatPlanLink *>::AStarQueue<CombatPlanNode *,CombatPlanLink *> | CombatController.obj | debug, call graph, medium
 template <> AStarOpenList<const NavMeshInfo*, TESObjectREFR*>::AStarOpenList()
 {
     m_fValue = -1.0f;
@@ -88,22 +89,25 @@ bool NavMeshInfoSearch::HasReachedGoal(const AStarNodeType* pNode)
 
 // Builds the A* connection list for pNode from its mesh's connections, preferred connections and door portals, computing costs and adding nodes to pConnections.
 // @fnv 0x006b8490
-bool NavMeshInfoSearch::CollectConnections(const AStarNodeType* pNode,
-                                           BSSimpleArray<AStarNodeType*, 1024>* pConnections)
+// pdb: NavMeshInfoSearch::GetNodeConnections | NavMeshInfoSearch.obj | retail, vtable slot, high
+// pdb params: apNode, apRetNodes
+// pdb locals: fcostFactor, isize, fparentCost, ipreferredSize, pparentInfo, i, end, fcost, pnode, pportal, begin, pextraPortal, bcanOpenLock, bmustPick, potherDoor, pdoor, fdoorAdditionalCost, pinfo
+bool NavMeshInfoSearch::CollectConnections(const AStarNodeType* apNode,
+                                           BSSimpleArray<AStarNodeType*, 1024>* apRetNodes)
 {
-    float fInitialCost = pNode->m_fPathingCostCur;
-    const NavMeshInfo* m_pNavigationMesh = pNode->ObjectResolver;
+    float fInitialCost = apNode->m_fPathingCostCur;
+    const NavMeshInfo* m_pNavigationMesh = apNode->ObjectResolver;
     float fCostMultiplier = 1.0f - m_pNavigationMesh->FUN_007df1f0() * 100.0;
     BSClamp_float(fCostMultiplier, 0.1f, 1.0f);
-    unsigned int ItemUpdateArray = const_cast<NavMeshInfo*>(m_pNavigationMesh)->m_kConnectedNavMeshInfos.GetSize();
+    unsigned int ItemUpdateArray = const_cast<NavMeshInfo*>(m_pNavigationMesh)->AdjacentNavMeshes.GetSize();
     for (unsigned int i = 0; i < ItemUpdateArray; ++i)
     {
-        const NavMeshInfo* pNextMesh = const_cast<NavMeshInfo*>(m_pNavigationMesh)->m_kConnectedNavMeshInfos.GetAt(i);
+        const NavMeshInfo* pNextMesh = const_cast<NavMeshInfo*>(m_pNavigationMesh)->AdjacentNavMeshes.GetAt(i);
         if (!pNextMesh)
             continue;
         NiPoint3 Start =
-            m_pNavigationMesh == m_pStartNavMeshInfo ? m_kPathStartPosition : m_pNavigationMesh->m_kNavMeshPosition;
-        NiPoint3 Goal = pNextMesh == m_pGoalNavMeshInfo ? m_kGoalPosition : pNextMesh->m_kNavMeshPosition;
+            m_pNavigationMesh == m_pStartNavMeshInfo ? m_kPathStartPosition : m_pNavigationMesh->ApproxLocation;
+        NiPoint3 Goal = pNextMesh == m_pGoalNavMeshInfo ? m_kGoalPosition : pNextMesh->ApproxLocation;
         float fConnectionCost = (Goal - Start).Length() * fCostMultiplier * 3.0 + fInitialCost;
         AStarNodeType* pNewAStarNode;
         switch (CreateOrUpdateNode(reinterpret_cast<unsigned int>(pNextMesh), fConnectionCost, pNewAStarNode))
@@ -111,24 +115,24 @@ bool NavMeshInfoSearch::CollectConnections(const AStarNodeType* pNode,
         case ASTARNODE_CREATED:
             pNewAStarNode->ObjectResolver = pNextMesh;
             if (m_bUseGoalDistanceHeuristic)
-                pNewAStarNode->m_fCost = (m_kGoalPosition - pNextMesh->m_kNavMeshPosition).Length() * 0.1f;
+                pNewAStarNode->m_fCost = (m_kGoalPosition - pNextMesh->ApproxLocation).Length() * 0.1f;
             else
                 pNewAStarNode->m_fCost = 1.0f;
         case ASTARNODE_UPDATED:
             pNewAStarNode->m_kOpenListLink = 0;
-            pConnections->Add(pNewAStarNode);
+            apRetNodes->Add(pNewAStarNode);
             break;
         }
     }
-    unsigned int uiPreferredConnections = const_cast<NavMeshInfo*>(m_pNavigationMesh)->m_kPreferredConnections.GetSize();
+    unsigned int uiPreferredConnections = const_cast<NavMeshInfo*>(m_pNavigationMesh)->PreferredAdjacentNavMeshes.GetSize();
     for (unsigned int i = 0; i < uiPreferredConnections; ++i)
     {
-        const NavMeshInfo* pNextMesh = const_cast<NavMeshInfo*>(m_pNavigationMesh)->m_kPreferredConnections.GetAt(i);
+        const NavMeshInfo* pNextMesh = const_cast<NavMeshInfo*>(m_pNavigationMesh)->PreferredAdjacentNavMeshes.GetAt(i);
         if (!pNextMesh)
             continue;
         NiPoint3 Start =
-            m_pNavigationMesh == m_pStartNavMeshInfo ? m_kPathStartPosition : m_pNavigationMesh->m_kNavMeshPosition;
-        NiPoint3 Goal = pNextMesh == m_pGoalNavMeshInfo ? m_kGoalPosition : pNextMesh->m_kNavMeshPosition;
+            m_pNavigationMesh == m_pStartNavMeshInfo ? m_kPathStartPosition : m_pNavigationMesh->ApproxLocation;
+        NiPoint3 Goal = pNextMesh == m_pGoalNavMeshInfo ? m_kGoalPosition : pNextMesh->ApproxLocation;
         float fConnectionCost = (Goal - Start).Length() * fCostMultiplier + fInitialCost;
         AStarNodeType* pNewAStarNode;
         switch (CreateOrUpdateNode(reinterpret_cast<unsigned int>(pNextMesh), fConnectionCost, pNewAStarNode))
@@ -136,21 +140,21 @@ bool NavMeshInfoSearch::CollectConnections(const AStarNodeType* pNode,
         case ASTARNODE_CREATED:
             pNewAStarNode->ObjectResolver = pNextMesh;
             if (m_bUseGoalDistanceHeuristic)
-                pNewAStarNode->m_fCost = (m_kGoalPosition - pNextMesh->m_kNavMeshPosition).Length() * 0.1f;
+                pNewAStarNode->m_fCost = (m_kGoalPosition - pNextMesh->ApproxLocation).Length() * 0.1f;
             else
                 pNewAStarNode->m_fCost = 1.0f;
         case ASTARNODE_UPDATED:
             pNewAStarNode->m_kOpenListLink = 0;
-            pConnections->Add(pNewAStarNode);
+            apRetNodes->Add(pNewAStarNode);
             break;
         }
     }
     if (m_pPathingActorData || m_eDoorLockDisposition == Pathing::IGNORE_LOCKS)
     {
-        ItemUpdateArray = const_cast<NavMeshInfo*>(m_pNavigationMesh)->m_kDoorReferences.GetSize();
+        ItemUpdateArray = const_cast<NavMeshInfo*>(m_pNavigationMesh)->ConnectedDoors.GetSize();
         for (unsigned int i = 0; i < ItemUpdateArray; ++i)
         {
-            TESObjectREFR* pPathNodeDoor = const_cast<NavMeshInfo*>(m_pNavigationMesh)->m_kDoorReferences.GetAt(i);
+            TESObjectREFR* pPathNodeDoor = const_cast<NavMeshInfo*>(m_pNavigationMesh)->ConnectedDoors.GetAt(i);
             if (!pPathNodeDoor)
                 continue;
             if (pPathNodeDoor->GetDisabled())
@@ -181,7 +185,7 @@ bool NavMeshInfoSearch::CollectConnections(const AStarNodeType* pNode,
             TESObjectREFR* m_pLinkedDoorReference = pPathNodeDoor->Set3DObject()->GetLinkedDoor();
             if (!m_pLinkedDoorReference)
                 continue;
-            NavMeshPortalData* pExtraNavMeshPortal = m_pLinkedDoorReference->GetExtraData()->GetExtraNavMeshPortal();
+            NavMeshPortalData* pExtraNavMeshPortal = m_pLinkedDoorReference->GetExtraData()->ExtraDataList_GetNavMeshPortal();
             if (pExtraNavMeshPortal)
             {
                 const NavMeshInfo* pNextMesh =
@@ -189,8 +193,8 @@ bool NavMeshInfoSearch::CollectConnections(const AStarNodeType* pNode,
                 if (pNextMesh && !pNextMesh->NavMeshInfo_GetDisabled())
                 {
                     NiPoint3 Start = m_pNavigationMesh == m_pStartNavMeshInfo ? m_kPathStartPosition
-                                                                              : m_pNavigationMesh->m_kNavMeshPosition;
-                    NiPoint3 Goal = pNextMesh == m_pGoalNavMeshInfo ? m_kGoalPosition : pNextMesh->m_kNavMeshPosition;
+                                                                              : m_pNavigationMesh->ApproxLocation;
+                    NiPoint3 Goal = pNextMesh == m_pGoalNavMeshInfo ? m_kGoalPosition : pNextMesh->ApproxLocation;
                     float fConnectionCost = (m_pLinkedDoorReference->Set3DObject()->GetPosition() - Start).Length() +
                                             (Goal - pPathNodeDoor->Set3DObject()->GetPosition()).Length();
                     fConnectionCost *= fCostMultiplier;
@@ -204,12 +208,12 @@ bool NavMeshInfoSearch::CollectConnections(const AStarNodeType* pNode,
                     case ASTARNODE_CREATED:
                         pNewAStarNode->ObjectResolver = pNextMesh;
                         if (m_bUseGoalDistanceHeuristic)
-                            pNewAStarNode->m_fCost = pNode->GetHeuristic() * 2;
+                            pNewAStarNode->m_fCost = apNode->GetHeuristic() * 2;
                         else
                             pNewAStarNode->m_fCost = 1.0f;
                     case ASTARNODE_UPDATED:
                         pNewAStarNode->m_kOpenListLink = pPathNodeDoor;
-                        pConnections->Add(pNewAStarNode);
+                        apRetNodes->Add(pNewAStarNode);
                         break;
                     }
                 }
@@ -249,6 +253,7 @@ FNV_STATIC_ASSERT(offsetof(NavMeshInfoSearchConstruction, c) == offsetof(NavMesh
 // The shared headers lack the out-of-line default constructors used here.
 // Initializes the three integer members i1, i2 and i3 to zero.
 // @fnv 0x006b8340
+// pdb: NavMeshInfoSearch::NavMeshInfoSearch | NavMeshInfoSearch.obj | debug, call graph, high
 NavMeshInfoSearchConstruction::NavMeshInfoSearchConstruction()
 {
     i3 = 0;
@@ -258,6 +263,7 @@ NavMeshInfoSearchConstruction::NavMeshInfoSearchConstruction()
 
 // Destroys the shared door-access state and the A* search base.
 // @fnv 0x006b8420
+// pdb: NavMeshInfoSearch::~NavMeshInfoSearch | NavMeshInfoSearch.obj | retail, upstream name already matches, high
 NavMeshInfoSearch::~NavMeshInfoSearch()
 {}
 
@@ -265,6 +271,7 @@ extern "C" void __cdecl Deallocate(void*);
 
 // Runs the base destructor, then frees this object with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006b83f0
+// pdb: NavMeshInfoSearch::`scalar deleting destructor' | NavMeshInfoSearch.obj | retail, vtable slot, high
 void* NavMeshInfoSearch::DestroyAndFree(unsigned int flags)
 {
     NavMeshInfoSearch::~NavMeshInfoSearch();
@@ -274,15 +281,20 @@ void* NavMeshInfoSearch::DestroyAndFree(unsigned int flags)
 }
 
 // @fnv 0x006b6940
+// pdb: NavMeshInfoMap::AddNavMeshInfo | NavMeshInfoMap.obj | retail, call graph, medium
+// pdb params: apNavMeshInfo
 void NavMeshInfoMap::RegisterNavMeshInfo(TeleportableReference* pInfo)
 {
-    m_kNavMeshInfosByFormID.SetAt((unsigned int)pInfo->GetLinkedDoor(), (NavMeshInfo*)pInfo);
-    InsertNavMeshInfo((NavMeshInfo*)pInfo);
+    InfoMap.SetAt((unsigned int)pInfo->GetLinkedDoor(), (NavMeshInfo*)pInfo);
+    AddInfoToCellKeyMap((NavMeshInfo*)pInfo);
     SetAltered(true);
 }
 
 TESWorldSpace* __fastcall NavMeshInfo_GetWorldSpace(const NavMeshInfo*);
 // @fnv 0x006b8c50
+// pdb: NavMeshInfoSearch::Pathfind | NavMeshInfoSearch.obj | debug, call graph (shared callers), medium
+// pdb params: apActorLockData, aStartLocation, apStartMesh, aGoalLocation, apGoalMesh, apReturnNodes, apReturnLinks, aeDoorLockDisposition
+// pdb locals: fstartheuristic
 bool NavMeshInfoSearch::SetupNavMeshSearch(PathingActorData* apActorLockData, void* aStartLocation, void* apStartMesh,
                                            void* aGoalLocation, void* apGoalMesh, void* apReturnNodes,
                                            void* apReturnLinks, int aeDoorLockDisposition)
@@ -299,7 +311,7 @@ bool NavMeshInfoSearch::SetupNavMeshSearch(PathingActorData* apActorLockData, vo
         m_bUseGoalDistanceHeuristic = true;
     float fstartheuristic = 3.402823466e+38F;
     if (m_bUseGoalDistanceHeuristic)
-        fstartheuristic = m_kGoalPosition.operator-(m_pStartNavMeshInfo->m_kNavMeshPosition).Length() * (double)0.1f;
+        fstartheuristic = m_kGoalPosition.operator-(m_pStartNavMeshInfo->ApproxLocation).Length() * (double)0.1f;
     else
         fstartheuristic = 1.0f;
     FindOrCreateSearchNode(reinterpret_cast<unsigned int>(apStartMesh),

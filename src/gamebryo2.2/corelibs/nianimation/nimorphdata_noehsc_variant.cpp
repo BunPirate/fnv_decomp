@@ -67,7 +67,7 @@ template <class T> inline NiPointer<T>& NiPointer<T>::operator=(T* pObject)
 }
 inline void NiMorphData::MorphTarget::SetTargetInterpolator(NiInterpolator* pkInterp)
 {
-    m_spTargetInterpolator = pkInterp;
+    m_spLegacyInterpolator = pkInterp;
 }
 inline NiFixedString& NiFixedString::operator=(const NiFixedString& kString)
 {
@@ -86,8 +86,8 @@ inline void SetMorphTargetName(NiMorphData::MorphTarget* target, const NiFixedSt
 }
 inline void ReplaceTargetVerts(NiMorphData::MorphTarget* target, NiPoint3* vertices)
 {
-    _g_memoryManager.Deallocate(target->m_pkVertexPositions);
-    target->m_pkVertexPositions = vertices;
+    _g_memoryManager.Deallocate(target->m_aTargetVerts);
+    target->m_aTargetVerts = vertices;
 }
 inline void* __cdecl operator new[](size_t size)
 {
@@ -116,13 +116,16 @@ struct MorphKeyHelpers
 };
 
 // @fnv 0x00a41a40
+// pdb: NiMorphData::LoadBinary | NiMorphData.obj | retail, string-set bridge, high
+// pdb params: stream
+// pdb locals: bRelativeTargets, uiI, uiNumKeys, aTargetVerts, acString, eType, pkMorphKeys, cf, ucSize, pkInterp, derived, uiJ
 void __fastcall LoadMorphData(NiMorphData* self, int, NiStream& kStream)
 {
     self->NiObject::LoadBinary(kStream);
     ReadBinaryValue(kStream, self->m_uiNumTargets);
     ReadBinaryValue(kStream, self->m_uiNumVertsPerTarget);
-    ReadBinaryValue(kStream, self->m_bTargetsAreRelative);
-    self->m_pMorphTargets = new NiMorphData::MorphTarget[self->m_uiNumTargets];
+    ReadBinaryValue(kStream, self->m_bRelativeTargets);
+    self->m_aMorphTargets = new NiMorphData::MorphTarget[self->m_uiNumTargets];
     for (unsigned int i = 0; i < self->m_uiNumTargets; i++)
     {
         if (kStream.m_uiNifFileVersion < 0x0a010068)
@@ -137,20 +140,20 @@ void __fastcall LoadMorphData(NiMorphData* self, int, NiStream& kStream)
                 MorphKeyHelpers::GetFill(eType)(pkKeys, uiNumKeys, ucSize);
                 NiFloatInterpolator* pkInterp = new NiFloatInterpolator(0);
                 pkInterp->SetKeyData(pkKeys, uiNumKeys, eType);
-                self->m_pMorphTargets[i].SetTargetInterpolator(pkInterp);
+                self->m_aMorphTargets[i].SetTargetInterpolator(pkInterp);
                 pkInterp->Collapse();
             }
             char acName[256];
             FUN_00a305b0(acName, 256, "MT %d", i);
-            SetMorphTargetName(&self->m_pMorphTargets[i], static_cast<const char*>(acName));
+            SetMorphTargetName(&self->m_aMorphTargets[i], static_cast<const char*>(acName));
             NiPoint3* pkVerts = new NiPoint3[self->m_uiNumVertsPerTarget];
             for (unsigned int j = 0; j < self->m_uiNumVertsPerTarget; ++j)
                 pkVerts[j].LoadBinary(kStream);
-            ReplaceTargetVerts(&self->m_pMorphTargets[i], pkVerts);
+            ReplaceTargetVerts(&self->m_aMorphTargets[i], pkVerts);
         }
         else
         {
-            ((LoadMorphTargetFn)LoadMorphTarget)(&self->m_pMorphTargets[i], kStream, self->m_uiNumVertsPerTarget);
+            ((LoadMorphTargetFn)LoadMorphTarget)(&self->m_aMorphTargets[i], kStream, self->m_uiNumVertsPerTarget);
         }
     }
 }

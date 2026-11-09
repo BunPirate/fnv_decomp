@@ -5,6 +5,7 @@
 #include "hkBase.h"
 #include "hkpShape.h"
 #pragma pack(push, 1)
+// pdb: class hkpPhantomCallbackShape, size 0x10, bases: hkpShape, 0 members
 class hkpPhantomCallbackShape : public hkpShape
 {
   public:

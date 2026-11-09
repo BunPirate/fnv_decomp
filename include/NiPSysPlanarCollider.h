@@ -6,27 +6,28 @@
 #include "NiMatrix3.h"
 #include "NiTransform.h"
 
+// pdb: class NiPSysPlanarCollider, size 0x130, bases: NiPSysCollider, 12 members
 class NiPSysPlanarCollider : public NiPSysCollider
 {
 public:
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
 
     void CopyMemberData(NiPSysPlanarCollider* destination, CloningProcess& cloning);
 
-    NiAVObject* m_pkColliderObject;
-    float m_fOriginX;
-    float m_fOriginZ;
-    NiPoint3 m_kFirstVector;
-    NiPoint3 m_kSecondPlaneVector;
-    float m_fWidthSquared;
-    float m_fHeightSquared;
-    NiPlane m_kHalfSpacePlane;
-    NiPoint3 m_kPathOffset;
+    NiAVObject* m_pkColliderObj;
+    float m_fWidth;
+    float m_fHeight;
+    NiPoint3 m_kXAxis;
+    NiPoint3 m_kYAxis;
+    float m_fHalfSqScaledWidth;
+    float m_fHalfSqScaledHeight;
+    NiPlane m_kPlane;
+    NiPoint3 m_kPosition;
     unsigned char layoutPadding74[12];
-    NiMatrix3 m_kRotationMatrix;
+    NiMatrix3 m_kRotation;
     unsigned char unkA4[12];
-    NiTransform m_kFirstTransform;
+    NiTransform m_kLastColliderTransform;
     unsigned char unkE4[12];
-    NiTransform m_kSecondTransform;
+    NiTransform m_kLastPSysTransform;
     unsigned char unk124[12];
 };

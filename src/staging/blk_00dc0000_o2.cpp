@@ -127,7 +127,7 @@ void FUN_00ddf050_cls::ClearContainer()
     *(unsigned long*)((char*)this + 0x18) = 0;
 }
 
-extern "C" void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(int* p1, int* p2);
+extern "C" void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(int* commands, int* info);
 struct FUN_00dd0420_Class
 {
     int m_00;
@@ -138,14 +138,16 @@ struct FUN_00dd0420_Class
     int m_14;
     int m_18;
     int m_1c;
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int arg);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_ctor(int f);
 };
 // If arg is nonzero, zeroes m_00/m_08/m_0c, sets m_04 to 0x10, calls FUN_00d51760 on m_1c and this, then sets m_00 to m_04; returns this.
 // @fnv 0x00dd0420
-// src: HAVOK_LIB 0x00dd0420
-FUN_00dd0420_Class* __thiscall FUN_00dd0420_Class::hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int aiFlag)
+// src: XBOX_RETAIL_PDB 0x00dd0420
+// pdb: hkpGenericConstraintDataScheme::hkpGenericConstraintDataScheme | hkpGenericConstraintScheme.obj | retail, upstream name already matches, high
+// pdb params: f
+FUN_00dd0420_Class* __thiscall FUN_00dd0420_Class::hkpGenericConstraintDataScheme_ctor(int f)
 {
-    if (aiFlag)
+    if (f)
     {
         m_00 = 0;
         m_08 = 0;
@@ -209,6 +211,9 @@ struct FUN_00dccb70_Class
 };
 
 // @fnv 0x00dccb70
+// pdb: hkpMeshShape::setWeldingInfo | hkpMeshShape.obj | debug, vtable slot, medium
+// pdb params: key, weldingInfo
+// pdb locals: assertBuf, ostr
 void FUN_00dccb70_Class::SetTableValue(int uiKey, unsigned short value)
 {
     unsigned char* p = (unsigned char*)this;
@@ -246,6 +251,8 @@ struct FUN_00dc9e70_Class
 // Initializes the object's fields to zero/defaults, sets up the embedded CountArray at m_0c, and returns this.
 // @fnv 0x00dc9e70
 // src: GUESS 0x00dc9e70 (confidence: low)
+// pdb: hkMapBase<unsigned long,unsigned long,hkMapOperations<unsigned long> >::reserve | hkMap.obj | debug, call graph, medium
+// pdb params: alloc, numElements
 FUN_00dc9e70_Class* FUN_00dc9e70_Class::InitializeFields_00dc9e70()
 {
     m_00 = 0;
@@ -320,6 +327,8 @@ struct FUN_00dcd4b0_Class
 };
 
 // @fnv 0x00dcd4b0
+// pdb: hkpSaveContactPointsUtil::EntitySelector::`scalar deleting destructor' | hkpSaveContactPointsUtil.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00dcd4b0_Class* __thiscall FUN_00dcd4b0_Class::InitializeAndMaybeFree(int flags)
 {
     m_ppVirtualMethodTable = DAT_010d77b4;
@@ -426,10 +435,12 @@ FUN_00dc1670_cls* FUN_00dc1670_cls::hkStructureLayout_hkStructureLayout()
     return this;
 }
 
-void __stdcall hkIArchive_readArrayGeneric(float* out, int a, int b);
+void __stdcall hkIArchive_readArrayGeneric(float* array, int elemsize, int arraySize);
 
 // @fnv 0x00dc5bb0
 // src: HAVOK_LIB 0x00dc5bb0
+// pdb: hkIArchive::readFloat32 | hkDisplaySerializeIStream.obj | debug, upstream name already matches, high
+// pdb locals: t
 float hkIArchive_readFloat32()
 {
     float value;
@@ -449,30 +460,32 @@ struct ArrayHost
 {
     int unk00, unk04, unk08;
     ArrayBlock array;
-    void ResizeArray(int desired);
+    void ResizeArray(int n);
 };
 // Grows the array's capacity to at least desired if needed, zero-fills the new elements, and sets the size to desired.
 // @fnv 0x00dc9bd0
-void ArrayHost::ResizeArray(int desired)
+// pdb: BasicArrayImplementation<hkDataObjectImpl *,8>::setSize | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
+void ArrayHost::ResizeArray(int n)
 {
     ArrayBlock* values = &array;
     void* pool = (&hkMemoryRouter_getInstance()->heap());
     int capacity = values->reservedAndFlags & 0x3fffffff;
-    if (capacity < desired)
+    if (capacity < n)
     {
         int nextCapacity = capacity * 2;
-        if (desired >= nextCapacity)
-            nextCapacity = desired;
+        if (n >= nextCapacity)
+            nextCapacity = n;
         hkArrayUtil__reserve(pool, values, nextCapacity, 4);
     }
-    int extra = desired - values->size;
+    int extra = n - values->size;
     unsigned int* next = values->values + values->size;
     while (extra > 0)
     {
         *next++ = 0;
         --extra;
     }
-    values->size = desired;
+    values->size = n;
 }
 
 namespace fnv_00dc9e20 {
@@ -486,7 +499,7 @@ struct AllocatorIface
 };
 
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void hkArrayUtil__reserve(AllocatorIface* alloc, void* arr, unsigned int newCap, int elemSize);
+void hkArrayUtil__reserve(AllocatorIface* mem, void* array, unsigned int numElem, int sizeElem);
 
 struct DwordArray
 {
@@ -503,23 +516,25 @@ class FUN_00dc9e20_cls
     int unk08;
     DwordArray m_aiIndexedValues;
 
-    void ReserveDwordArray(int count);
+    void ReserveDwordArray(int n);
 };
 
 // Grows the DwordArray member to hold at least count elements, doubling capacity or using count if larger.
 // @fnv 0x00dc9e20
-void FUN_00dc9e20_cls::ReserveDwordArray(int count)
+// pdb: BasicArrayImplementation<hkDataObjectImpl *,8>::reserve | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
+void FUN_00dc9e20_cls::ReserveDwordArray(int n)
 {
     DwordArray* arr = &m_aiIndexedValues;
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     AllocatorIface* alloc = reinterpret_cast<AllocatorIface*>(holder->m_heap);
     int cap = arr->m_iReserved & 0x3fffffff;
-    if (cap < count)
+    if (cap < n)
     {
         int newCap = cap * 2;
-        if (count >= newCap)
+        if (n >= newCap)
         {
-            newCap = count;
+            newCap = n;
         }
         hkArrayUtil__reserve(alloc, arr, (unsigned int)newCap, 4);
     }
@@ -546,6 +561,7 @@ struct FUN_00dcc180_Class
 // If unk08 is set, forwards value to its virtual method; otherwise writes 0 to *value and returns value.
 // @fnv 0x00dcc180
 // src: HAVOK_LIB 0x00dcc180
+// pdb: hkIstream::isOk | hkIStream.obj | retail, upstream name already matches, high
 unsigned char* __thiscall FUN_00dcc180_Class::hkIstream_isOk(unsigned char* pucValue)
 {
     if (unk08)
@@ -595,7 +611,7 @@ struct FUN_00dcc670_Class
     unsigned short unk06;
     int unk08;
 
-    int* __thiscall InitFromValue(int* value);
+    int* __thiscall hkIstream_ctor(int* fname);
 };
 
 extern int DAT_010d7540;
@@ -603,9 +619,12 @@ extern FUN_00dcc670_Manager* DAT_01268364;
 
 // Sets unk06 to 1, unk00 to &DAT_010d7540, and unk08 to the result of DAT_01268364->FUN_00dcc670_v3(value), then returns this.
 // @fnv 0x00dcc670
-int* __thiscall FUN_00dcc670_Class::InitFromValue(int* value)
+// src: XBOX_RETAIL_PDB 0x00dcc670
+// pdb: hkIstream::hkIstream | hkIStream.obj | retail, call graph, high
+// pdb params: sb
+int* __thiscall FUN_00dcc670_Class::hkIstream_ctor(int* fname)
 {
-    int* local_value = value;
+    int* local_value = fname;
 
     unk06 = 1;
     unk00 = &DAT_010d7540;
@@ -629,7 +648,7 @@ struct SpawnedBlob
     int unk00;
     unsigned short m_w04;
     unsigned short unk06;
-    void* Init(int a1, int a2, int a3);
+    void* Init(int mem, int memSize, int mt);
 };
 
 struct FUN_00dcc6a0_cls
@@ -639,20 +658,22 @@ struct FUN_00dcc6a0_cls
     unsigned short m_w06;
     void* m_p08;
 
-    FUN_00dcc6a0_cls* hkIstream_hkIstream_00dcc6a0(int a1, int a2);
+    FUN_00dcc6a0_cls* hkIstream_ctor(int mem, int memSize);
 };
 
 // Sets m_w06 to 1 and the vtable, allocates a 0x1c-byte blob via the allocator, stores its Init result in m_p08, and returns this.
 // @fnv 0x00dcc6a0
-// src: HAVOK_LIB 0x00dcc6a0
-FUN_00dcc6a0_cls* FUN_00dcc6a0_cls::hkIstream_hkIstream_00dcc6a0(int a1, int a2)
+// src: XBOX_RETAIL_PDB 0x00dcc6a0
+// pdb: hkIstream::hkIstream | hkIStream.obj | retail, call graph, high
+// pdb params: sb
+FUN_00dcc6a0_cls* FUN_00dcc6a0_cls::hkIstream_ctor(int mem, int memSize)
 {
     m_w06 = 1;
     m_vptr = DAT_010d7540;
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     SpawnedBlob* blob = (SpawnedBlob*)reinterpret_cast<AllocIface*>(holder->m_heap)->Alloc(0x1c);
     blob->m_w04 = 0x1c;
-    m_p08 = blob->Init(a1, a2, 2);
+    m_p08 = blob->Init(mem, memSize, 2);
     return this;
 }
 }  // namespace fnv_00dcc6a0
@@ -689,6 +710,8 @@ struct FUN_00dcc6f0_cls
 // Sets m_w06 to 1 and the vtable, allocates a 0x14-byte blob via the allocator, sets its m_w04 to 0x14, stores blob->Init(a1, 2) in m_p08 and returns this.
 // @fnv 0x00dcc6f0
 // src: HAVOK_LIB 0x00dcc6f0
+// pdb: hkIstream::hkIstream | hkIStream.obj | retail, object-file run extension, low
+// pdb params: sb
 FUN_00dcc6f0_cls* FUN_00dcc6f0_cls::hkIstream_hkIstream_00dcc6f0(int a1)
 {
     m_w06 = 1;
@@ -748,6 +771,9 @@ struct S_00dcc9c0_Class
 
 // @fnv 0x00dcc9c0
 // src: GUESS 0x00dcc9c0 (confidence: low)
+// pdb: hkIstream::operator>> | hkIStream.obj | retail, object-file run extension, low
+// pdb params: b
+// pdb locals: buf
 S_00dcc9c0_Class* S_00dcc9c0_Class::ProcessAndReturnValue_00dcc9c0(S_00dcc9c0_Target* target) throw()
 {
     S_00dcc9c0_StringBuf buf;
@@ -757,13 +783,13 @@ S_00dcc9c0_Class* S_00dcc9c0_Class::ProcessAndReturnValue_00dcc9c0(S_00dcc9c0_Ta
 }
 }  // namespace fnv_00dcc9c0
 
-extern int g_unk01269bb4;
+extern int hkpNamedMeshMaterialClass;
 
 // @fnv 0x00dccb00
 // src: GUESS 0x00dccb00 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dccb00()
 {
-    return &g_unk01269bb4;
+    return &hkpNamedMeshMaterialClass;
 }
 
 extern int DAT_01269be4;
@@ -792,6 +818,8 @@ struct FnvCpu_FUN_00dcd480_CpuObject
 };
 // @fnv 0x00dcd480
 // src: COMMUNITY 0x00dcd480
+// pdb: hkpMeshShape::`scalar deleting destructor' | hkpMeshShape.obj | retail, vtable slot, high
+// pdb params: this
 FnvCpu_FUN_00dcd480_CpuObject* FnvCpu_FUN_00dcd480_CpuObject::hkpMeshShape_Destroy(unsigned int flags)
 {
     FUN_00d4bd60();
@@ -816,13 +844,13 @@ void __cdecl Object_ForwardCall_00dced30(FUN_00dced30_cls* pObject)
     pObject->m_v00(0);
 }
 
-extern int DAT_01269c44;
+extern int hkpBreakableConstraintDataClass;
 
 // @fnv 0x00dced40
 // src: GUESS 0x00dced40 (confidence: low)
 int __cdecl Object_ComputeValue_00dced40()
 {
-    return reinterpret_cast<int>(&DAT_01269c44);
+    return reinterpret_cast<int>(&hkpBreakableConstraintDataClass);
 }
 
 struct FUN_00d4dfc0_class
@@ -1245,22 +1273,25 @@ struct RecArray
 };
 
 extern "C" hkMemoryRouter* hkMemoryRouter_getInstance();
-extern "C" void ResizeAudioStream(void* pAllocator, RecArray* pArray, int iElementSize);
+extern "C" void ResizeAudioStream(void* mem, RecArray* array, int sizeElem);
 
 // Grows the array via the allocator when full, writes uiValue at the count index, and increments the count.
 // @fnv 0x00dd8db0
-void AppendToRecArray(unsigned int uiValue, unsigned int uiUnused, RecArray* pArray)
+// src: XBOX_RETAIL_PDB 0x00dd8db0
+// pdb: hkLargeBlockAllocator::_addAlloc | hkLargeBlockAllocator.obj | retail, object-file gap fill, high
+// pdb params: data, size, param
+void hkLargeBlockAllocator__addAlloc(unsigned int data, unsigned int size, RecArray* param)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
 
-    if (pArray->m_uiCount == (pArray->m_uiCapacity & 0x3fffffff))
+    if (param->m_uiCount == (param->m_uiCapacity & 0x3fffffff))
     {
-        ResizeAudioStream(pHolder->m_heap, pArray, 4);
+        ResizeAudioStream(pHolder->m_heap, param, 4);
     }
 
-    unsigned int* pSlot = (unsigned int*)((unsigned int)pArray->m_pData + *(volatile int*)&pArray->m_uiCount * 4);
-    *pSlot = uiValue;
-    pArray->m_uiCount++;
+    unsigned int* pSlot = (unsigned int*)((unsigned int)param->m_pData + *(volatile int*)&param->m_uiCount * 4);
+    *pSlot = data;
+    param->m_uiCount++;
 }
 }  // namespace fnv_00dd8db0
 
@@ -1286,6 +1317,7 @@ extern "C" S_00dd8fa0_Vtable DAT_010d7c58;
 // Gets a caller, calls its object's vtable method with 8, then sets m_04 to 8, m_06 to 1 and the vtable to DAT_010d7c58.
 // @fnv 0x00dd8fa0
 // src: GUESS 0x00dd8fa0 (confidence: low)
+// pdb: hkSystemClockcreate | hkSystemClock.obj | retail, object-file run extension, low
 void __cdecl Object_UpdateFields_00dd8fa0()
 {
     hkMemoryRouter* caller = hkMemoryRouter_getInstance();
@@ -1374,7 +1406,7 @@ class DD91A0ReferencedObject
 class DD91A0Shape : public DD91A0ReferencedObject
 {
   public:
-    DD91A0Shape(int a, int b, int type) throw();
+    DD91A0Shape(int mem, int memSize, int mt) throw();
 
     int unk08;
     int unk0C;
@@ -1460,6 +1492,8 @@ class DDC160Impl : public DDC160ReferencedObject, public DDC160Interface
 };
 
 // @fnv 0x00ddc160
+// pdb: hkStatisticsProcess::create | hkStatisticsProcess.obj | retail, object-file run extension, low
+// pdb params: contexts
 DDC160Interface* __cdecl CreateImpl(void* pvInfo)
 {
     return new DDC160Impl(pvInfo);
@@ -1532,6 +1566,9 @@ static __declspec(noinline) unsigned short readInteger64(IniTokenStream* stream,
 }
 
 // @fnv 0x00dcc740
+// pdb: hkIstream::operator>> | hkIStream.obj | retail, object-file run extension, low
+// pdb params: b
+// pdb locals: buf
 S_00dcc740_Cls* S_00dcc740_Cls::ReadSignedShort(unsigned short* out)
 {
     unsigned char flag;
@@ -1552,23 +1589,26 @@ struct Lock_dd9
     int uNewnk;
     int uTmpnk;
     int* m_pkCriticalSection;
-    int FindEntry(int iKey);
-    int InvokeRecord(int iIndex, int iArg);
-    int hkProcessFactory_createProcess(int iKey, int iArg);
+    int hkProcessFactory_getProcessId(int name);
+    int InvokeRecord(int tag, int contexts);
+    int hkProcessFactory_createProcess(int iKey, int contexts);
 };
 
 // @fnv 0x00dd9330
 // src: HAVOK_LIB 0x00dd9330
-int Lock_dd9::hkProcessFactory_createProcess(int iKey, int iArg)
+// pdb: hkProcessFactory::createProcess | hkProcessFactory.obj | retail, object-file gap fill, high
+// pdb params: tag, contexts
+// pdb locals: assertBuf, ostr
+int Lock_dd9::hkProcessFactory_createProcess(int iKey, int contexts)
 {
     int* pkCS = m_pkCriticalSection;
     DAT_00fdf05c(pkCS);
-    int iIndex = FindEntry(iKey);
+    int iIndex = hkProcessFactory_getProcessId(iKey);
     int iResult;
     if (iIndex < 0)
         iResult = 0;
     else
-        iResult = InvokeRecord(iIndex, iArg);
+        iResult = InvokeRecord(iIndex, contexts);
     DAT_00fdf100(pkCS);
     return iResult;
 }
@@ -1628,6 +1668,9 @@ static __declspec(noinline) unsigned short readInteger64(unsigned char* ok, S_00
 
 // Reads a 16-bit value via FUN_00dcc240 and stores it negated into result when ok is set, otherwise as-is; returns this.
 // @fnv 0x00dcc790
+// pdb: hkIstream::operator>> | hkIStream.obj | retail, object-file run extension, low
+// pdb params: b
+// pdb locals: buf
 S_00dcc790_Class* __thiscall S_00dcc790_Class::ReadSignedValue(unsigned short* result)
 {
     unsigned char ok;
@@ -1671,6 +1714,9 @@ static __declspec(noinline) FNVInt64 S_00dcc8a0_ParseInt(S_00dcc8a0_Handle h, un
 
 // Parses an integer from the handle's reader, negates it if the sign flag is set, stores it in out and returns this.
 // @fnv 0x00dcc8a0
+// pdb: hkIstream::operator>> | hkIStream.obj | retail, object-file run extension, low
+// pdb params: b
+// pdb locals: buf
 FUN_00dcc8a0_Class* FUN_00dcc8a0_Class::ParseSignedInt(FNVInt64* out)
 {
     unsigned char neg;
@@ -1719,6 +1765,8 @@ class hkOwnerDCB1
 };
 
 // @fnv 0x00dcb1a0
+// pdb: StructArrayImplementation::Object::getMemberValue | hkDataObjectDict.obj | debug, vtable slot, medium
+// pdb params: it
 hkRefDCB1 hkOwnerDCB1::GetEntryRef(int iIndex) const
 {
     return hkRefDCB1(this, m_table->m_entries[iIndex].m_uiFilterValue);
@@ -1917,6 +1965,9 @@ class hkOwnerDDFB
 
 // Scans m_pairs for an entry whose m_key equals key and returns if found; otherwise appends a new hkPairDDFB(object, key).
 // @fnv 0x00ddfbc0
+// pdb: hkpUserShapeDisplayBuilder::registerUserShapeDisplayBuilder | hkpShapeDisplayBuilder.obj | retail, object-file run extension, low
+// pdb params: f, type
+// pdb locals: b, assertBuf, ostr
 void hkOwnerDDFB::AddPairIfKeyAbsent(void* object, void* key)
 {
     for (int i = 0; i < m_pairs.m_iElementCount; i++)
@@ -1967,9 +2018,12 @@ extern "C" int stub_val(void);
 // Placeholder body for the unsolved 0x00dcc3b0 (models its call for 0x00dcc5c0); annotated so the target pack drops it.
 // @fnv 0x00dcc3b0
 // src: HAVOK_LIB 0x00dcc3b0
-static __declspec(noinline) float readFloat(int arg)
+// pdb: readFloat | hkIStream.obj | retail, upstream name already matches, high
+// pdb params: reader
+// pdb locals: storage
+static __declspec(noinline) float readFloat(int reader)
 {
-    g_stub_out = arg;
+    g_stub_out = reader;
     stub_cls* s = g_stub_self;
     s->unk00 = s->unk04 + g_stub_v;
     return (float)s->unk00;
@@ -2029,6 +2083,9 @@ struct FUN_00dcc7e0_Class
 
 // Reads a signed integer from the stream at m_08 via FUN_00dcc240, applies the sign flag, stores the result in out, and returns this.
 // @fnv 0x00dcc7e0
+// pdb: hkIstream::operator>> | hkIStream.obj | retail, object-file run extension, low
+// pdb params: b
+// pdb locals: buf
 FUN_00dcc7e0_Class* FUN_00dcc7e0_Class::ReadSignedInt(int* out)
 {
     unsigned char flag;
@@ -2071,6 +2128,9 @@ static __declspec(noinline) FNVInt64 S_dcc860_ParseInt(S_dcc860_Handle h, unsign
 
 // Parses a signed 64-bit integer from the reader handle, applies the sign, stores it in out, and returns this.
 // @fnv 0x00dcc860
+// pdb: hkIstream::operator>> | hkIStream.obj | retail, object-file run extension, low
+// pdb params: b
+// pdb locals: buf
 FUN_00dcc860_Class* FUN_00dcc860_Class::ReadInt64(FNVInt64* out)
 {
     unsigned char neg;
@@ -2110,18 +2170,21 @@ struct S00dcd1b0_Obj
     int unk3C;
     ArrayBlock m_40;
     unsigned char m_4c;
-    void hkpMeshShape_initWeldingInfo(int value);
+    void hkpMeshShape_initWeldingInfo(int weldingType);
 };
 
 // Sets m_4c to value; if value is 6, frees the m_40 array block, otherwise computes cumulative offsets and resizes the block to fit total.
 // @fnv 0x00dcd1b0
 // src: HAVOK_LIB 0x00dcd1b0
-void S00dcd1b0_Obj::hkpMeshShape_initWeldingInfo(int value)
+// pdb: hkpMeshShape::initWeldingInfo | hkpMeshShape.obj | retail, upstream name already matches, high
+// pdb params: weldingType
+// pdb locals: assertBuf, ostr
+void S00dcd1b0_Obj::hkpMeshShape_initWeldingInfo(int weldingType)
 {
     int total;
 
-    m_4c = (unsigned char)value;
-    if (value != 6)
+    m_4c = (unsigned char)weldingType;
+    if (weldingType != 6)
     {
         total = 0;
         for (int i = 0; i < m_38; i++)
@@ -2209,12 +2272,15 @@ struct S00dcd270_cls
     int unk2c;
     int unk30;
     S00dcd270_Arr arr;
-    S00dcd270_Rec* AddRecord(const S00dcd270_Rec* a0);
+    S00dcd270_Rec* AddRecord(const S00dcd270_Rec* part);
 };
 
 // Grows the arr buffer if needed, initializes a new slot, copies a0 into it, and returns a pointer to the added record.
 // @fnv 0x00dcd270
-S00dcd270_Rec* S00dcd270_cls::AddRecord(const S00dcd270_Rec* apRecord)
+// pdb: hkpMeshShape::addSubpart | hkpMeshShape.obj | retail, vtable slot, high
+// pdb params: part
+// pdb locals: assertBuf, ostr
+S00dcd270_Rec* S00dcd270_cls::AddRecord(const S00dcd270_Rec* part)
 {
     S00dcd270_Arr* a = &arr;
     hkMemoryRouter* h = hkMemoryRouter_getInstance();
@@ -2234,7 +2300,7 @@ S00dcd270_Rec* S00dcd270_cls::AddRecord(const S00dcd270_Rec* apRecord)
     }
     r = &a->m_data[a->m_iElementCount];
     a->m_iElementCount++;
-    *r = *apRecord;
+    *r = *part;
     if (r->unk20 == 0)
     {
         r->unk30 = 1;
@@ -2318,6 +2384,7 @@ struct S_00dc6fc0_Class
 
 // @fnv 0x00dc6fc0
 // src: GUESS 0x00dc6fc0 (confidence: low)
+// pdb: ArrayOfTuplesImplementation::View::getType | hkDataObjectDict.obj | retail, vtable slot, high
 int S_00dc6fc0_Class::ProcessAndTransformResult_00dc6fc0()
 {
     return m_0c->v01() ^ 0x20;
@@ -2338,6 +2405,7 @@ struct TokenReader
 
 // Reads 64-byte chunks from stream, skipping whitespace until a non-space character is found, then resets and skips to that position.
 // @fnv 0x00dcc1b0
+// pdb: D3DXShader::CTokenize::SkipWhitespace | ctokenize.obj | retail, upstream name already matches, high
 static __declspec(noinline) void SkipWhitespace(TokenReader* stream)
 {
     int buffer[16];
@@ -2369,12 +2437,12 @@ void MatchCaller()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_01269c14;
+extern CpuOpaque hkpWeldingUtilityClass;
 // @fnv 0x00dccb50
 // src: GUESS 0x00dccb50 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT01269c14Address()
 {
-    return &DAT_01269c14;
+    return &hkpWeldingUtilityClass;
 }
 
 struct RefObj
@@ -2420,6 +2488,8 @@ struct FUN_00dceb90_Class
 
 // Calls FUN_00c905b0 on the RefObj at index, then removes that slot from m_refs.
 // @fnv 0x00dceb90
+// pdb: hkpPhysicsSystemWithContacts::removeContact | hkpPhysicsSystemWithContacts.obj | retail, object-file run extension, low
+// pdb params: i
 void FUN_00dceb90_Class::RemoveRef(int index)
 {
     m_refs[index]->FUN_00c905b0();
@@ -2591,6 +2661,8 @@ struct OW
 };
 // @fnv 0x00dd3120
 // src: XBOX_PDB 0x00dd3120
+// pdb: hkpProcessFlyingColors | hkpSolverCheck.obj | retail, upstream name already matches, high
+// pdb params: flyingColors
 static __declspec(noinline) int hkpProcessFlyingColors(const LocalM128* self, OW other, const LocalM128* a)
 {
     LocalM128 k = DAT_010c7170;
@@ -2658,6 +2730,8 @@ void be_store_caller(BEStoreTarget* self)
 
 // Looks up the table entry for i with FUN_00dcb2b0 and calls its forward method with the owner's context value.
 // @fnv 0x00dcb460
+// pdb: StructArrayImplementation::Object::asObject | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
 struct DispatchTarget
 {
     virtual void v00();
@@ -2705,9 +2779,9 @@ struct Owner
     void StructArrayImplementation_Object_asObject(unsigned int);
 };
 // src: XBOX_PDB 0x00dcb460
-void Owner::StructArrayImplementation_Object_asObject(unsigned int i)
+void Owner::StructArrayImplementation_Object_asObject(unsigned int name)
 {
-    table->entryAt(table->StructArrayImplementation__find(i))->forward(context);
+    table->entryAt(table->StructArrayImplementation__find(name))->forward(context);
 }
 
 #include <stdlib.h>
@@ -2729,9 +2803,9 @@ class DCC5E0Stream
 };
 
 // File-static helper (reconstructed separately); MSVC passes the stream to it in a register.
-static __declspec(noinline) double DCC5E0ReadNumber(DCC5E0Stream* pkStream)
+static __declspec(noinline) double DCC5E0ReadNumber(DCC5E0Stream* reader)
 {
-    double dValue = strtod(pkStream->m_pcCursor, &pkStream->m_pcCursor);
+    double dValue = strtod(reader->m_pcCursor, &reader->m_pcCursor);
     return dValue;
 }
 
@@ -2794,16 +2868,18 @@ class FUN_00dd9240_cls
     int m_unk14;
     CRITICAL_SECTION* m_pCrit;
 
-    int hkProcessFactory_getProcessName(int index);
+    int hkProcessFactory_getProcessName(int id);
 };
 
 // Reads the entry at index from m_pEntryData under m_pCrit, clears the lowest bit, and returns the result.
 // @fnv 0x00dd9240
 // src: HAVOK_LIB 0x00dd9240
-int FUN_00dd9240_cls::hkProcessFactory_getProcessName(int index)
+// pdb: hkProcessFactory::getProcessName | hkProcessFactory.obj | retail, upstream name already matches, high
+// pdb params: id
+int FUN_00dd9240_cls::hkProcessFactory_getProcessName(int id)
 {
     EnterCriticalSection(this->m_pCrit);
-    int value = this->m_pEntryData[index * 3] & 0xfffffffe;
+    int value = this->m_pEntryData[id * 3] & 0xfffffffe;
     LeaveCriticalSection(this->m_pCrit);
     return value;
 }
@@ -2825,12 +2901,15 @@ class FUN_00dd9270_cls
     int m_unk14;
     CRITICAL_SECTION* m_pCrit;
 
-    int FindEntry(unsigned int flag);
+    int hkProcessFactory_getProcessId(unsigned int name);
 };
 
 // Under m_pCrit, returns the first index whose entry makes FUN_00cb0fa0(entry, flag) return 0 (or is null with flag 0), else -1.
 // @fnv 0x00dd9270
-int FUN_00dd9270_cls::FindEntry(unsigned int flag)
+// src: XBOX_RETAIL_PDB 0x00dd9270
+// pdb: hkProcessFactory::getProcessId | hkProcessFactory.obj | retail, object-file gap fill, high
+// pdb params: name
+int FUN_00dd9270_cls::hkProcessFactory_getProcessId(unsigned int name)
 {
     EnterCriticalSection(this->m_pCrit);
     int index = 0;
@@ -2842,13 +2921,13 @@ int FUN_00dd9270_cls::FindEntry(unsigned int flag)
             int result;
             if (entry != 0)
             {
-                if (flag == 0)
+                if (name == 0)
                     goto next;
-                result = hkString_strCmp(entry, flag);
+                result = hkString_strCmp(entry, name);
             }
             else
             {
-                result = (flag != 0) ? -1 : 0;
+                result = (name != 0) ? -1 : 0;
             }
             if (result == 0)
                 goto found;
@@ -2887,17 +2966,20 @@ class FUN_00dd92f0_cls
     int m_i14;
     CRITICAL_SECTION* m_pCrit;
 
-    int InvokeRecord(int index, int arg);
+    int InvokeRecord(int tag, int contexts);
 };
 
 // Locks m_pCrit, calls the function pointer in the Record at m_pRecords[index] with arg, unlocks, and returns the result.
 // @fnv 0x00dd92f0
-int FUN_00dd92f0_cls::InvokeRecord(int index, int arg)
+// pdb: hkProcessFactory::createProcess | hkProcessFactory.obj | retail, object-file gap fill, high
+// pdb params: tag, contexts
+// pdb locals: assertBuf, ostr
+int FUN_00dd92f0_cls::InvokeRecord(int tag, int contexts)
 {
     CRITICAL_SECTION* crit = this->m_pCrit;
     EnterCriticalSection(crit);
-    Record* rec = &this->m_pRecords[index];
-    int result = rec->m_pFn(arg);
+    Record* rec = &this->m_pRecords[tag];
+    int result = rec->m_pFn(contexts);
     LeaveCriticalSection(crit);
     return result;
 }
@@ -2922,13 +3004,14 @@ struct FUN_00dd9d20_Object
     int unk0C;
     void* unk10;
 
-    void __thiscall UpdateFields_00dd9d20();
+    void __thiscall hkServerDebugDisplayHandler_dtor();
 };
 
 // Sets unk00 and unk08 to data pointers, and if unk10 is set deletes that critical section and frees it via vf08 of the object at offset 0x10 of FUN_00c85750().
 // @fnv 0x00dd9d20
-// src: GUESS 0x00dd9d20 (confidence: low)
-void __thiscall FUN_00dd9d20_Object::UpdateFields_00dd9d20()
+// src: XBOX_RETAIL_PDB 0x00dd9d20
+// pdb: hkServerDebugDisplayHandler::~hkServerDebugDisplayHandler | hkServerDebugDisplayHandler.obj | retail, object-file gap fill, high
+void __thiscall FUN_00dd9d20_Object::hkServerDebugDisplayHandler_dtor()
 {
     void* criticalSection = unk10;
 
@@ -2954,17 +3037,20 @@ double FUN_00ecdf2d(const char* s, char** end);
 // Skips whitespace, reads a numeric token from the stream with commas turned into dots, and returns it as a float, or -1.0f if no token starts.
 // @fnv 0x00dcc3b0
 // src: HAVOK_LIB 0x00dcc3b0
-static float readFloat(TokenReader* stream)
+// pdb: readFloat | hkIStream.obj | retail, upstream name already matches, high
+// pdb params: reader
+// pdb locals: storage
+static float readFloat(TokenReader* reader)
 {
     struct Buf256
     {
         int w[64];
     };
     Buf256 buf;
-    SkipWhitespace(stream);
+    SkipWhitespace(reader);
     int n = 0;
-    stream->prepare(255);
-    int len = stream->read(buf.w, 255);
+    reader->prepare(255);
+    int len = reader->read(buf.w, 255);
     if (len != 0)
     {
         char c = ((char*)buf.w)[0];
@@ -2982,8 +3068,8 @@ static float readFloat(TokenReader* stream)
             }
         }
     }
-    stream->reset();
-    stream->skip(n);
+    reader->reset();
+    reader->skip(n);
     ((char*)buf.w)[n] = 0;
     if (n > 0)
         return (float)FUN_00ecdf2d((char*)buf.w, 0);
@@ -3005,7 +3091,7 @@ struct TokenBuffer
 struct TokenOwner
 {
     int unk00;
-    void FUN_00d61cc0();
+    void hkStringBuf_clear();
     TokenBuffer* ReturnSelf();
 };
 
@@ -3024,7 +3110,7 @@ struct TokenStream
 };
 
 extern "C" void _ReadWriteBarrier(void);
-void __cdecl ResizeAudioStream(int alloc, TokenBuffer* buf, int n);
+void __cdecl ResizeAudioStream(int mem, TokenBuffer* array, int sizeElem);
 namespace TokenParsing {
 static __declspec(noinline) void SkipWhitespace(TokenStream* stream)
 {
@@ -3068,10 +3154,13 @@ struct TokenReader
 
 // Reads a whitespace-delimited token from the stream into the owner's buffer, appending a null terminator, and returns this.
 // @fnv 0x00dcc8e0
+// pdb: hkIstream::operator>> | hkIStream.obj | retail, object-file run extension, low
+// pdb params: b
+// pdb locals: buf
 TokenReader* TokenReader::ReadToken(TokenOwner* owner)
 {
     const int one = 1;
-    owner->FUN_00d61cc0();
+    owner->hkStringBuf_clear();
     TokenBuffer* buf = owner->ReturnSelf();
     TokenParsing::SkipWhitespace(m_08);
     m_08->v07(one);
@@ -3275,23 +3364,27 @@ inline float S00dd0ff0_max2(float a, float b)
 
 // Factors a tridiagonal system by computing diagonal and off-diagonal terms from Jacobians and velocity accumulators, storing results in triple.
 // @fnv 0x00dd0ff0
-static __declspec(noinline) void FactorTridiagonal(int numConstraints, float cfm, S00dd0ff0_Jacobian* jac,
-                                                   S00dd0ff0_AccumulatorOffset* accumsOffsets,
-                                                   const S00dd0ff0_VelocityAccumulator* accumsBase,
+// src: XBOX_RETAIL_PDB 0x00dd0ff0
+// pdb: buildConstraintMatrixLuDecompositionForStiffSpringChain | hkpChainBuildJacobian.obj | retail, object-file gap fill, high
+// pdb params: numConstraints, cfm, j, va, accumBase, triple, bufferSize
+// pdb locals: assertBuf, ostr
+static __declspec(noinline) void buildConstraintMatrixLuDecompositionForStiffSpringChain(int numConstraints, float cfm, S00dd0ff0_Jacobian* j,
+                                                   S00dd0ff0_AccumulatorOffset* va,
+                                                   const S00dd0ff0_VelocityAccumulator* accumBase,
                                                    S00dd0ff0_Triple* triple, int bufferSize)
 {
     float prevNonDiag = 0.0f;
     float prevUpper = 0.0f;
     for (int row = 0; row < numConstraints; row++)
     {
-        float diag = jac[row].getDiag(accumsOffsets[row].getAccumulator(accumsBase),
-                                      accumsOffsets[row + 1].getAccumulator(accumsBase)) +
+        float diag = j[row].getDiag(va[row].getAccumulator(accumBase),
+                                      va[row + 1].getAccumulator(accumBase)) +
                      cfm;
         float nonDiag = 0.0f;
         if (row < numConstraints - 1)
         {
-            nonDiag = jac[row].getNonDiagDifferentObjects_With2ndBodyFromFirstObject(
-                accumsOffsets[row + 1].getAccumulator(accumsBase), jac[row + 1]);
+            nonDiag = j[row].getNonDiagDifferentObjects_With2ndBodyFromFirstObject(
+                va[row + 1].getAccumulator(accumBase), j[row + 1]);
         }
         triple[row].m_lower = prevNonDiag;
         triple[row].m_diag = diag - prevNonDiag * prevUpper;
@@ -3312,7 +3405,7 @@ volatile int g_S00dd0ff0_triple;
 volatile int g_S00dd0ff0_size;
 void S00dd0ff0_Caller()
 {
-    FactorTridiagonal(g_S00dd0ff0_n, g_S00dd0ff0_cfm, (S00dd0ff0_Jacobian*)g_S00dd0ff0_jac,
+    buildConstraintMatrixLuDecompositionForStiffSpringChain(g_S00dd0ff0_n, g_S00dd0ff0_cfm, (S00dd0ff0_Jacobian*)g_S00dd0ff0_jac,
                       (S00dd0ff0_AccumulatorOffset*)g_S00dd0ff0_offs,
                       (const S00dd0ff0_VelocityAccumulator*)g_S00dd0ff0_base, (S00dd0ff0_Triple*)g_S00dd0ff0_triple,
                       g_S00dd0ff0_size);
@@ -3338,22 +3431,25 @@ struct S_00dd1180_Hdr
 // Writes a type 0x1d header and n triples of floats into the buffer at *pp, copies n+1 pointers, and advances *pp by the block size.
 // @fnv 0x00dd1180
 // src: XBOX_PDB 0x00dd1180
-void hkStiffSpringChainBuildJacobian(int n, float a, float b, float c, char** src, int stride, int u1, int u2, char** pp)
+// pdb: hkStiffSpringChainBuildJacobian | hkpChainBuildJacobian.obj | retail, upstream name already matches, high
+// pdb params: numConstraints, tau, damping, cfm, accumulators, accumBase, jacobiansEnd, in, out
+// pdb locals: triplesSize, va, triples, assertBuf, ostr
+void hkStiffSpringChainBuildJacobian(int numConstraints, float tau, float damping, float cfm, char** accumulators, int accumBase, int jacobiansEnd, int in, char** pp)
 {
-    char** s = src;
+    char** s = accumulators;
     char* cmd = *pp;
     S_00dd1180_Hdr* h = (S_00dd1180_Hdr*)cmd;
     h->f00 = (float)(h->f00 + 1.1920928955078125e-07);
 
-    unsigned short u = (unsigned short)n;
-    h->f08 = a;
-    h->f0c = b;
+    unsigned short u = (unsigned short)numConstraints;
+    h->f08 = tau;
+    h->f0c = damping;
     h->size = (u * 0x44 + 0x27) & 0xfffffff0;
     h->type = 0x1d;
-    h->n = (unsigned short)n;
+    h->n = (unsigned short)numConstraints;
 
     char** d = (char**)(cmd + 0x14 + ((int)u << 6));
-    int count = n + 1;
+    int count = numConstraints + 1;
     if (count > 0)
     {
         unsigned adj = (unsigned)((char*)d - (char*)s);
@@ -3371,10 +3467,10 @@ void hkStiffSpringChainBuildJacobian(int n, float a, float b, float c, char** sr
     const LocalM128* v = (const LocalM128*)(*pp + 0x10);
     char** ptrs = (char**)(cmd + 0x14 + (u3 << 6));
     float* out = (float*)(cmd + 0x10 + u3 * 0x30);
-    for (int i = 0; i < n; ++i)
+    for (int i = 0; i < numConstraints; ++i)
     {
-        char* q1 = ptrs[i + 1] + stride;
-        char* q0 = ptrs[i] + stride;
+        char* q1 = ptrs[i + 1] + accumBase;
+        char* q0 = ptrs[i] + accumBase;
         LocalM128 t = _mm_add_ps(_mm_mul_ps(_mm_mul_ps(v[3 * i + 2], v[3 * i + 2]), *(const LocalM128*)(q1 + 0x30)),
                               _mm_mul_ps(_mm_mul_ps(v[3 * i + 1], v[3 * i + 1]), *(const LocalM128*)(q0 + 0x30)));
         LocalM128 sum = _mm_add_ps(*(const LocalM128*)(q0 + 0x30), *(const LocalM128*)(q1 + 0x30));
@@ -3383,11 +3479,11 @@ void hkStiffSpringChainBuildJacobian(int n, float a, float b, float c, char** sr
         hs = _mm_add_ps(_mm_shuffle_ps(hs, hs, 0xb1), hs);
         float r;
         _mm_store_ss(&r, hs);
-        float x = (float)(r + 1.1920928955078125e-07) + c;
+        float x = (float)(r + 1.1920928955078125e-07) + cfm;
         float y = zero;
-        if (i < n - 1)
+        if (i < numConstraints - 1)
         {
-            char* q1 = ptrs[i + 1] + stride;
+            char* q1 = ptrs[i + 1] + accumBase;
             LocalM128 eq = _mm_mul_ps(_mm_mul_ps(v[3 * i + 3], v[3 * i]),
                                    _mm_shuffle_ps(*(const LocalM128*)(q1 + 0x30), *(const LocalM128*)(q1 + 0x30), 0xff));
             LocalM128 f = _mm_mul_ps(_mm_mul_ps(v[3 * i + 4], v[3 * i + 2]), *(const LocalM128*)(q1 + 0x30));

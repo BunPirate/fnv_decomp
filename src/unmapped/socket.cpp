@@ -18,6 +18,9 @@ struct FUN_00aca1e0
     void* __thiscall GetPointer();
 };
 // @fnv 0x00aca1e0
+// pdb: ExtraDataList::GetPointer | ExtraDataList.obj | debug, upstream name already matches, high
+// pdb params: aeType
+// pdb locals: pextra
 void* __thiscall FUN_00aca1e0::GetPointer()
 {
     struct X

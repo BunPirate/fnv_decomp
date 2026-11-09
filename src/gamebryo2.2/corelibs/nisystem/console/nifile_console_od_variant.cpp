@@ -10,13 +10,15 @@ struct MersenneTwister
     char _8[0x9C0];
     int _9C8;
     void BSRandom_Init(unsigned int);
-    void Seed(unsigned int);
+    void BSRandom_Seed(unsigned int);
 };
 // @fnv 0x00aa5170
 // src: COMMUNITY 0x00aa5170
-void MersenneTwister::BSRandom_Init(unsigned int a)
+// pdb: BSRandom::Init | BSRandom.obj | debug, upstream name already matches, high
+// pdb params: aiSeed
+void MersenneTwister::BSRandom_Init(unsigned int aiSeed)
 {
     _4 = 0;
     _9C8 = 0x271;
-    Seed(a);
+    BSRandom_Seed(aiSeed);
 }

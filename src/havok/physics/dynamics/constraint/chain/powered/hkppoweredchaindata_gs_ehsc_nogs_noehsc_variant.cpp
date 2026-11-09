@@ -43,7 +43,7 @@ struct FUN_00e3b7d0_object
     int pad1[8];
     FUN_00e3b7d0_second* second;
 };
-void hkpPoweredChainData_disableMotor(FUN_00e3b7d0_object* object, int index, int bit);
+void hkpPoweredChainData_disableMotor(FUN_00e3b7d0_object* instance, int constraintIndex, int motorIndex);
 int __cdecl ReturnConstant_102();
 class hkRefObjE3B8
 {
@@ -403,7 +403,7 @@ __forceinline char* angularAndKeep(char* lin, QueryOutput& out, int n, char*& ke
 }
 static __forceinline ConstraintInfo& getInfo(hkpPoweredChainData& chain, int i)
 {
-    return reinterpret_cast<ConstraintInfo*>(chain.m_pConstraintInfo.m_data)[i];
+    return reinterpret_cast<ConstraintInfo*>(chain.m_infos.m_data)[i];
 }
 // This unit calls the runtime accessor at vtable byte offset 0x28; the shared
 // header currently declares that slot as v0A(), without its typed signature.
@@ -414,15 +414,18 @@ static __forceinline void* motorStep(hkpPoweredChainData* chain, char* solverRes
 }
 // @fnv 0x00e3ba40
 // src: XBOX_PDB 0x00e3ba40
-void hkpPoweredChainData::buildJacobian_00e3ba40(const QueryInput& input, QueryOutput& output)
+// pdb: hkpPoweredChainData::buildJacobian | hkpPoweredChainData.obj | retail, vtable slot, high
+// pdb params: inNotValid, out
+// pdb locals: newIn, accumulators, angularJacobiansBase, numConstraints, linearJacobians, motorsState, baseAccum, chainInstance, assertBuf, ostr, posA, posB, positionError, target_wTnb, constraintSpace, rotB, deltaTarget, rotA, target_wTob, constrainedDofW, motorIn, motorOut, params
+void hkpPoweredChainData::buildJacobian_00e3ba40(const QueryInput& inNotValid, QueryOutput& out)
 {
-    AppendEventRecord(&input, &output, input.runtime, 8);
-    QueryInput query = input;
+    AppendEventRecord(&inNotValid, &out, inNotValid.runtime, 8);
+    QueryInput query = inNotValid;
     query.chain = 0;
     query.runtime = 0;
     InplaceArray<int, 32> offsets;
-    ChainInstance* chain = input.chain;
-    int baseOffset = input.offsetA - chain->master->unka4;
+    ChainInstance* chain = inNotValid.chain;
+    int baseOffset = inNotValid.offsetA - chain->master->unka4;
     int count = chain->entityCount - 1;
     InplaceArray<ChainMatrix, 32> matrices;
     matrices.SetSizeAndGrow(count);
@@ -432,9 +435,9 @@ void hkpPoweredChainData::buildJacobian_00e3ba40(const QueryInput& input, QueryO
     reinterpret_cast<int&>(query.virtualMass) = reinterpret_cast<const int&>(query.unk08);
     query.rhsFactor = 1.0f;
     query.transformB = &first->transform;
-    char* schema = output.jacobian;
+    char* schema = out.jacobian;
     char* jacobian;
-    char* states = angularAndKeep(_tolower_00dd13d0(schema), output, count, jacobian);
+    char* states = angularAndKeep(_tolower_00dd13d0(schema), out, count, jacobian);
     for (int i = 0; i < count; ++i)
     {
         query.offsetA = query.offsetB;
@@ -449,7 +452,7 @@ void hkpPoweredChainData::buildJacobian_00e3ba40(const QueryInput& input, QueryO
             transformPoint(pivotA, *query.transformA, getInfo(*this, i).pivotA);
             transformPoint(pivotB, *query.transformB, getInfo(*this, i).pivotB);
             hkLoadVelocityAccumulators(&query);
-            hkStabilizedBallSocketConstraintBuildJacobian_noSchema(&pivotA, &pivotB, m_fMaximumAngularImpulse, &query, jacobian);
+            hkStabilizedBallSocketConstraintBuildJacobian_noSchema(&pivotA, &pivotB, m_maxErrorDistance, &query, jacobian);
             jacobian += 0x90;
         }
         hkVector4 rotationA, rotationB;
@@ -468,8 +471,8 @@ void hkpPoweredChainData::buildJacobian_00e3ba40(const QueryInput& input, QueryO
             rotationB.m_vComponents = product.m_vComponents;
         }
         hkVector4& target = getInfo(*this, i).target;
-        int n = m_pConstraintInfo.m_iElementCount;
-        hkVector4* previous = reinterpret_cast<hkVector4*>(input.runtime + ((n + 3) & ~3) + (3 * n + i) * 16);
+        int n = m_infos.m_iElementCount;
+        hkVector4* previous = reinterpret_cast<hkVector4*>(inNotValid.runtime + ((n + 3) & ~3) + (3 * n + i) * 16);
         hkVector4 previousTarget;
         previousTarget.m_vComponents = _mm_setr_ps(previous->x, previous->y, previous->z, previous->w);
         __m128 sq = _mm_mul_ps(previousTarget.m_vComponents, previousTarget.m_vComponents);
@@ -525,25 +528,25 @@ void hkpPoweredChainData::buildJacobian_00e3ba40(const QueryInput& input, QueryO
             states += 0x20;
         }
     }
-    char* status = chain->runtime->solverResults + m_pConstraintInfo.m_iElementCount * 0x30;
+    char* status = chain->runtime->solverResults + m_infos.m_iElementCount * 0x30;
     for (int i = 0; i < count; ++i)
         matrices.data[i].status = status[i];
     {
         BuildInfo build;
         build.count = count;
-        build.tau = m_fTau;
-        build.damping = m_fMotorDamping;
-        build.linAdd = m_fMaximumErrorDistance;
-        build.linMul = m_fMaximumLinearImpulse;
-        build.angAdd = m_fBreachImpulse;
-        build.angMul = m_fInertiaStabilizationFactor;
+        build.tau = m_tau;
+        build.damping = m_damping;
+        build.linAdd = m_cfmLinAdd;
+        build.linMul = m_cfmLinMul;
+        build.angAdd = m_cfmAngAdd;
+        build.angMul = m_cfmAngMul;
         build.offsets = offsets.data;
         build.offset = baseOffset;
         build.matrices = matrices.data;
         build.zero = 0.0f;
         build.states = status;
         build.jacobian = states;
-        WriteInputHeader(&build, &input, &output);
+        WriteInputHeader(&build, &inNotValid, &out);
     }
     matrices.clear();
     offsets.clear();

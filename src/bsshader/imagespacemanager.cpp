@@ -138,11 +138,14 @@ ImageSpaceManager* ImageSpaceManager::BSShaderManager_GetImageSpaceManager()
 
 // Creates a NiScreenElementsData and NiScreenElements, configures its data, names it "Imagespace Effect Geometry", and updates it with zero time.
 // @fnv 0x00b8c170
-void ImageSpaceManager::CreateMenuBackgroundGeometry()
+// src: XBOX_RETAIL_PDB 0x00b8c170
+// pdb: ImageSpaceManager::InitGeometry | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: UpdateData
+void ImageSpaceManager::InitGeometry()
 {
     (*reinterpret_cast<NiPointer<NiScreenElementsData>*>(spScreenTriShapeData)) = new NiScreenElementsData(false, false, 1, 1, 1, 4, 1, 2, 1);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape)) = new NiScreenElements((*reinterpret_cast<NiPointer<NiScreenElementsData>*>(spScreenTriShapeData)));
-    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->FUN_00a87ae0(4, 0, 0);
+    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->NiScreenElementsData_Insert(4, 0, 0);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->SetRectangleBounds(0, DAT_01012054, 1.0f, DAT_010162c0, DAT_0104a494);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->FUN_00a88130(0, 0, 0.0f, 0.0f, 1.0f, 1.0f);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->NiScreenElementsData_UpdateBound();
@@ -179,75 +182,87 @@ void ImageSpaceManager::ApplyDepthOfFieldParamModifierWeather(float strength, un
 
 // Adds the r, g, b and a components of color to the tint color stored in the manager.
 // @fnv 0x00b8b5c0
-void ImageSpaceManager::ApplyTintColorParamModifierWeather(NiColorA& color)
+// pdb: ImageSpaceManager::ApplyTintColorParamModifierWeather | ImageSpaceManager.obj | debug, upstream name already matches, high
+// pdb params: akColor
+void ImageSpaceManager::ApplyTintColorParamModifierWeather(NiColorA& akColor)
 {
     NiColorA& tint = kWeatherTintColor;
-    tint.r += color.r;
-    tint.g += color.g;
-    tint.b += color.b;
-    tint.a += color.a;
+    tint.r += akColor.r;
+    tint.g += akColor.g;
+    tint.b += akColor.b;
+    tint.a += akColor.a;
 }
 
 // Adds the r, g, b and a components of color to the fade color stored in the manager.
 // @fnv 0x00b8b690
-void ImageSpaceManager::ApplyFadeColorParamModifierWeather(NiColorA& color)
+// pdb: ImageSpaceManager::ApplyFadeColorParamModifierWeather | ImageSpaceManager.obj | debug, upstream name already matches, high
+// pdb params: akColor
+void ImageSpaceManager::ApplyFadeColorParamModifierWeather(NiColorA& akColor)
 {
     NiColorA* fade = &kWeatherFadeColor;
-    fade->r += color.r;
-    fade->g += color.g;
-    fade->b += color.b;
-    fade->a += color.a;
+    fade->r += akColor.r;
+    fade->g += akColor.g;
+    fade->b += akColor.b;
+    fade->a += akColor.a;
 }
 
 // Accumulates the alpha-weighted RGB of color into a running tint sum and tracks the maximum alpha seen.
 // @fnv 0x00b8b540
-void ImageSpaceManager::ApplyTintColorParamModifier(NiColorA& color)
+// pdb: ImageSpaceManager::ApplyTintColorParamModifier | ImageSpaceManager.obj | debug, upstream name already matches, high
+// pdb params: akColor
+void ImageSpaceManager::ApplyTintColorParamModifier(NiColorA& akColor)
 {
-    if (color.a > fHighestTintValue)
-        fHighestTintValue = color.a;
-    float r = color.r * color.a;
-    color.r = r;
-    color.g = color.g * color.a;
-    color.b = color.b * color.a;
+    if (akColor.a > fHighestTintValue)
+        fHighestTintValue = akColor.a;
+    float r = akColor.r * akColor.a;
+    akColor.r = r;
+    akColor.g = akColor.g * akColor.a;
+    akColor.b = akColor.b * akColor.a;
     kTintColor.r += r;
-    kTintColor.g += color.g;
-    kTintColor.b += color.b;
-    kTintColor.a += color.a;
+    kTintColor.g += akColor.g;
+    kTintColor.b += akColor.b;
+    kTintColor.a += akColor.a;
 }
 
 // Tracks the maximum alpha seen and adds the alpha-premultiplied color into the accumulator, scaling r, g and b by a.
 // @fnv 0x00b8b610
-void ImageSpaceManager::SetFadeColorParamModifier(NiColorA& color)
+// pdb: ImageSpaceManager::ApplyFadeColorParamModifier | ImageSpaceManager.obj | debug, call graph, high
+// pdb params: akColor
+void ImageSpaceManager::SetFadeColorParamModifier(NiColorA& akColor)
 {
-    if (color.a > fHighestFadeValue)
-        fHighestFadeValue = color.a;
-    float r = color.r * color.a;
-    color.r = r;
-    color.g = color.g * color.a;
-    color.b = color.b * color.a;
+    if (akColor.a > fHighestFadeValue)
+        fHighestFadeValue = akColor.a;
+    float r = akColor.r * akColor.a;
+    akColor.r = r;
+    akColor.g = akColor.g * akColor.a;
+    akColor.b = akColor.b * akColor.a;
     kFadeColor.r += r;
-    kFadeColor.g += color.g;
-    kFadeColor.b += color.b;
-    kFadeColor.a += color.a;
+    kFadeColor.g += akColor.g;
+    kFadeColor.b += akColor.b;
+    kFadeColor.a += akColor.a;
 }
 
 // Adds the given radial blur parameters and center offset into the manager's accumulated weather values.
 // @fnv 0x00b8b6e0
-void ImageSpaceManager::ApplyRadialBlurParamModifierWeather(float strength, float rampUp, float start, float rampDown,
-                                                            float downStart, const NiPoint2& center)
+// pdb: ImageSpaceManager::ApplyRadialBlurParamModifierWeather | ImageSpaceManager.obj | debug, upstream name already matches, high
+// pdb params: afStrength, afRampup, afStart, afRampDown, afDownStart, aCenter
+void ImageSpaceManager::ApplyRadialBlurParamModifierWeather(float afStrength, float afRampup, float afStart, float afRampDown,
+                                                            float afDownStart, const NiPoint2& aCenter)
 {
-    fWeatherRadialBlurStrengthValue += strength;
-    fWeatherRadialBlurRampupValue += rampUp;
-    fWeatherRadialBlurStartValue += start;
-    fWeatherRadialBlurRampDownValue += rampDown;
-    fWeatherRadialBlurDownStartValue += downStart;
+    fWeatherRadialBlurStrengthValue += afStrength;
+    fWeatherRadialBlurRampupValue += afRampup;
+    fWeatherRadialBlurStartValue += afStart;
+    fWeatherRadialBlurRampDownValue += afRampDown;
+    fWeatherRadialBlurDownStartValue += afDownStart;
     NiPoint2& weather = fWeatherRadialBlurCenter;
-    weather.x += center.x;
-    weather.y += center.y;
+    weather.x += aCenter.x;
+    weather.y += aCenter.y;
 }
 
 // Iterates the effect list up to EFFECT_TOP_LEVEL_END and calls Setup(this, 0) on each non-null ImageSpaceEffect.
 // @fnv 0x00b8b360
+// pdb: ImageSpaceManager::SetupEffects | ImageSpaceManager.obj | retail, upstream name already matches, high
+// pdb locals: i, peffect
 void ImageSpaceManager::SetupEffects()
 {
     for (int i = 0; i < ImageSpaceManager__ImageSpaceEffectEnum_EFFECT_TOP_LEVEL_END; i++)
@@ -259,9 +274,12 @@ void ImageSpaceManager::SetupEffects()
 }
 
 // @fnv 0x00b8b390
-bool ImageSpaceManager::IsEffectActive(ImageSpaceManager__ImageSpaceEffectEnum index)
+// pdb: ImageSpaceManager::IsEffectActive | ImageSpaceManager.obj | debug, upstream name already matches, high
+// pdb params: aiEffect
+// pdb locals: peffect
+bool ImageSpaceManager::IsEffectActive(ImageSpaceManager__ImageSpaceEffectEnum aiEffect)
 {
-    ImageSpaceEffect* effect = (*reinterpret_cast<NiTPrimitiveArray<ImageSpaceEffect*>*>(pEffectList)).m_pBase[index];
+    ImageSpaceEffect* effect = (*reinterpret_cast<NiTPrimitiveArray<ImageSpaceEffect*>*>(pEffectList)).m_pBase[aiEffect];
     if (effect)
         return effect->IsActive();
     return false;
@@ -269,6 +287,8 @@ bool ImageSpaceManager::IsEffectActive(ImageSpaceManager__ImageSpaceEffectEnum i
 
 // Scans the effect list up to EFFECT_ENDOFFRAME_END, counts active effects and records the last active effect's enum index.
 // @fnv 0x00b8b3f0
+// pdb: ImageSpaceManager::PrepareEndOfFrameEffects | ImageSpaceManager.obj | retail, upstream name already matches, high
+// pdb locals: i, peffect
 void ImageSpaceManager::PrepareEndOfFrameEffects()
 {
     iLastEffect = ImageSpaceManager__ImageSpaceEffectEnum_EFFECT_NONE;
@@ -291,6 +311,8 @@ void ImageSpaceManager::PrepareEndOfFrameEffects()
 #include "imagespacemanager_array.h"
 
 // @fnv 0x00b8b270
+// pdb: NiTArray<bool,NiTMallocInterface<bool> >::SetAt | ImageSpaceManager.obj | debug, call graph, medium
+// pdb params: uiIndex, element
 template <>
 void NiTArray<bool, NiTMallocInterface<bool> >::SetAt(unsigned int index, const bool& value)
 {
@@ -314,6 +336,7 @@ void NiTArray<bool, NiTMallocInterface<bool> >::SetAt(unsigned int index, const 
 }
 
 // @fnv 0x00b8b190
+// pdb: ImageSpaceManager::GetDepthRenderedTexture | ImageSpaceManager.obj | retail, upstream name already matches, high
 BSRenderedTexture* ImageSpaceManager::GetDepthRenderedTexture()
 {
     const ImageSpaceTexture& depth = (*reinterpret_cast<ImageSpaceTexture*>(DepthTexture));
@@ -325,6 +348,7 @@ BSRenderedTexture* ImageSpaceManager::GetDepthRenderedTexture()
 extern "C" void* __cdecl fnv_zlib_memset(void*, int, unsigned int);
 
 // @fnv 0x00b8b9a0
+// pdb: ImageSpaceManager::BeginParamModifiers | ImageSpaceManager.obj | retail, upstream name already matches, high
 void ImageSpaceManager::BeginParamModifiers()
 {
     float alpha = (*reinterpret_cast<ImageSpaceModifierParameterData*>(CurrentParameterData)).m_afColorAndAlphaParameters[7];
@@ -489,7 +513,9 @@ struct PtrTable
 };
 
 // @fnv 0x00b8b440
-void ImageSpaceManager::ApplyCurrentParameterData(bool bFlag)
+// pdb: ImageSpaceManager::ApplyCurrentParameterData | ImageSpaceManager.obj | retail, upstream name already matches, high
+// pdb params: abSkyTransition
+void ImageSpaceManager::ApplyCurrentParameterData(bool abSkyTransition)
 {
     char* pThis = reinterpret_cast<char*>(this);
     PtrTable** ppTable = (PtrTable**)(pThis + 8);
@@ -510,7 +536,7 @@ void ImageSpaceManager::ApplyCurrentParameterData(bool bFlag)
         (*ppTable)->p0c->v9(pThis + 0x78, *(int*)(pThis + 0xa8));
         (*ppTable)->p0c->v10(pThis + 0x68);
     }
-    if (!bFlag)
+    if (!abSkyTransition)
     {
         DAT_011ad87c = *(float*)(pThis + 0x34);
         DAT_011ad880 = 1.0f;
@@ -528,6 +554,7 @@ void ImageSpaceManager::ApplyCurrentParameterData(bool bFlag)
 // Sets the first three entries of the bool array at self+0x58 to true and the fourth to false.
 // @fnv 0x00b8bc20
 // src: COMMUNITY 0x00b8bc20
+// pdb: ImageSpaceEffectDepthOfField::DoStandard | ImageSpaceManager.obj | retail, upstream name already matches, high
 void __fastcall ImageSpaceEffectDepthOfField_DoStandard(char* self, int)
 {
     NiTArray<bool, NiTMallocInterface<bool> >* arr =
@@ -599,7 +626,10 @@ struct Obj_00b8c0e0
 
 // Fills vertex and pixel shader init blocks with the TV shader paths, calls the vtable init with "TV", "vs_1_1", "ps_2_0", then the vtable finalize.
 // @fnv 0x00b8c0e0
-void __fastcall InitTVShader(Obj_00b8c0e0* pObj, int)
+// src: XBOX_RETAIL_PDB 0x00b8c0e0
+// pdb: ImageSpaceShaderTV::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname
+void __fastcall ImageSpaceShaderTV_ReloadShaders(Obj_00b8c0e0* pObj, int)
 {
     ShaderInitBlock_00b8c0e0 vsBlock;
     ShaderInitBlock_00b8c0e0 psBlock;
@@ -616,6 +646,9 @@ void __fastcall InitTVShader(Obj_00b8c0e0* pObj, int)
 int __cdecl ImageSpaceEffectRadialBlur_GetBoundParams(int, int, int*);
 // @fnv 0x00b8b1c0
 // src: GUESS 0x00b8b1c0 (confidence: medium)
+// pdb: ImageSpaceManager::GetRadialBlurCenterFromWorldBound | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb params: aWorldBound, aCenter
+// pdb locals: ftemp
 int __stdcall Object_ImageSpaceEffectRadialBlur_GetBoundParams_Thunk(int a, int b)
 {
     return ImageSpaceEffectRadialBlur_GetBoundParams(a, b, &b);
@@ -644,6 +677,7 @@ extern float _DAT_01202400;
 
 // Copies 0x98 bytes from the object's source pointer at 0xb0 or 0xac into offset 0x14, falling back to DAT_011ff940, then zeroes two floats.
 // @fnv 0x00b8b500
+// pdb: ImageSpaceManager::ResetToBaseParameterData | ImageSpaceManager.obj | retail, upstream name already matches, high
 void ImageSpaceManager::ResetToBaseParameterData()
 {
     void* thisPtr = this;
@@ -671,12 +705,13 @@ void ImageSpaceManager::ResetToBaseParameterData()
 struct FUN_00b8bc80_shell
 {
     NiTArray<bool, NiTMallocInterface<bool> > m_aiIndexedValues;  // at offset 0x58
-    void __thiscall ImageSpaceEffectDepthOfField_DoMasked();
+    void __thiscall ImageSpaceEffectDepthOfField_DoStandardMask();
 };
 // Sets the bool array at offset 0x58: index 0, 1 and 3 to true and index 2 to false.
 // @fnv 0x00b8bc80
-// src: COMMUNITY 0x00b8bc80
-void __thiscall FUN_00b8bc80_shell::ImageSpaceEffectDepthOfField_DoMasked()
+// src: XBOX_RETAIL_PDB 0x00b8bc80
+// pdb: ImageSpaceEffectDepthOfField::DoStandardMask | ImageSpaceManager.obj | retail, call graph, high
+void __thiscall FUN_00b8bc80_shell::ImageSpaceEffectDepthOfField_DoStandardMask()
 {
     NiTArray<bool, NiTMallocInterface<bool> >* p = (NiTArray<bool, NiTMallocInterface<bool> >*)((char*)this + 0x58);
     p->SetAt(0, true);
@@ -715,6 +750,8 @@ struct FUN_00b8bce0 : ImageSpaceEffectShader
 };
 
 // @fnv 0x00b8bce0
+// pdb: ImageSpaceShaderVATSScanlinesBlend::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPointer<NiD3DTextureStage>::operator=
 FUN_00b8bce0::FUN_00b8bce0()
 {
     m_vtbl = &DAT_010affc0;
@@ -774,7 +811,10 @@ struct FUN_00b8bf10_Obj
 };
 // Registers the Sunbeams shader with vertex shader base.v.hlsl and pixel shader sunbeams.p.hlsl, then finalizes it.
 // @fnv 0x00b8bf10
-void __fastcall RegisterSunbeamsShader(FUN_00b8bf10_Obj* self, int unused)
+// src: XBOX_RETAIL_PDB 0x00b8bf10
+// pdb: ImageSpaceShaderSunbeams::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname
+void __fastcall ImageSpaceShaderSunbeams_ReloadShaders(FUN_00b8bf10_Obj* self, int unused)
 {
     FUN_00b8bf10_Desc a;
     FUN_00b8bf10_Desc b;
@@ -807,6 +847,7 @@ struct FUN_00b8c070 : ImageSpaceEffectShader
 };
 
 // @fnv 0x00b8c070
+// pdb: ImageSpaceShaderTV::ImageSpaceShaderTV | ImageSpaceManager.obj | debug, object-file run extension, low
 FUN_00b8c070::FUN_00b8c070()
 {
     *(int**)this = &DAT_010b0338;
@@ -827,6 +868,7 @@ struct S_00b8bd50
     void* __thiscall FUN_00b8bd50(unsigned int);
 };
 // @fnv 0x00b8bd50
+// pdb: NiTArray<ImageSpaceEffect *,NiTMallocInterface<ImageSpaceEffect *> >::~NiTArray<ImageSpaceEffect *,NiTMallocInterface<ImageSpaceEffect *> > | ImageSpaceManager.obj | debug, object-file run extension, low
 void* __thiscall S_00b8bd50::FUN_00b8bd50(unsigned int flags)
 {
     *(int*)this = (int)&DAT_010affc0;
@@ -914,6 +956,8 @@ struct Obj
     virtual void f72();
 };
 // @fnv 0x00b8b3b0
+// pdb: ImageSpaceManager::ReloadShaders | ImageSpaceManager.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void ImageSpaceManager::SetupShader()
 {
     for (unsigned int i = 0x88; i < 0x1D0; i += 4)
@@ -948,6 +992,8 @@ void* UnkClass::DestroyIfFlagged(unsigned int auiFlags)
 }
 
 // @fnv 0x00b8aea0
+// pdb: BSTextureManager::BorrowRenderedTexture | BSTextureManager.obj | debug, object-file run extension, low
+// pdb params: apRenderer, auiTexSize, auFlags, aiD3DFormat, aiEDRAMFormat, aeType, aeMSAAType, apAliasTex, uiAliasOffset
 void ImageSpaceManager::ResetWeatherData()
 {
     char* self = reinterpret_cast<char*>(this);
@@ -979,6 +1025,8 @@ extern "C" unsigned long __cdecl _byteswap_ulong(unsigned long ulValue);
 
 // Swap the header from big-endian.
 // @fnv 0x00b8ad00
+// pdb: ImageSpaceParameterData::Endian | ImageSpaceManager.obj | debug, call graph (shared callers), medium
+// pdb locals: j
 void ImageSpaceModifierParameterData::Endian()
 {
     for (int i = 0; i < 15; i++)
@@ -996,6 +1044,9 @@ extern ImageSpaceModifierParameterData DAT_011ff940;
 
 // @fnv 0x00b8ad70
 // src: COMMUNITY 0x00b8ad70
+// pdb: BSTextureManager::BorrowRenderedTexture | BSTextureManager.obj | debug, call graph, high
+// pdb params: apRenderer, aeType, alAdditionalFlags, apAliasTex, uiAliasOffset
+// pdb locals: uflags, uiheight, iEDRAMFormat, iD3DFormat, uiwidth, eMSAAType, pbsrtex
 void __cdecl ImageSpaceManager_InitDefaultImagespaceValues()
 {
     DAT_011ff940.m_afFirstParameterSet[0] = 0.5f;
@@ -1061,6 +1112,9 @@ int __cdecl ImageSpaceEffectRadialBlur_GetBoundParams(int, int, int*);
 
 
 // @fnv 0x00b8b7d0
+// pdb: ImageSpaceManager::ApplyDepthRadialBlurParamModifier | ImageSpaceManager.obj | debug, object-file gap fill, medium
+// pdb params: afStrength, auiMode, afRampup, afStart, aBound
+// pdb locals: lookat, fstartbias, fdistance, frange, apCamera, eye, center
 void ImageSpaceManager::ApplyDepthOfFieldModifier(float afParam0, unsigned int aiParam1, float afParam2, float afParam3,
                                                  const NiBound& bound)
 {
@@ -1216,12 +1270,15 @@ struct FUN_00b8bdb0_cls
     unsigned int unk54;
     unsigned int unk58;
     ISPassHolder* m_5c;
-    void InitScanBlendPass();
+    void ImageSpaceShaderVATSScanlinesBlend_ReloadShaders();
 };
 
 // Sets up the IFVATSSCANBLEND shader with its vertex/pixel sources and configures three pass core entries on m_5c.
 // @fnv 0x00b8bdb0
-void FUN_00b8bdb0_cls::InitScanBlendPass()
+// src: XBOX_RETAIL_PDB 0x00b8bdb0
+// pdb: ImageSpaceShaderVATSScanlinesBlend::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname
+void FUN_00b8bdb0_cls::ImageSpaceShaderVATSScanlinesBlend_ReloadShaders()
 {
     unsigned int f[0x26];
     f[0x13] = (unsigned int)"imagespace\\1x\\v\\base.v.hlsl";
@@ -1302,13 +1359,16 @@ class CachedEntryMap
 };
 
 CachedEntryMap* __cdecl GetCachedEntryMap();
-void __cdecl ClearOtherCachedMap();
+void __cdecl DistantLODShaderProperty_RemoveAllDistantLOD();
 
 // Clears another cached map, then walks the cached entry map releasing each entry's pointers and data, and removes all entries.
 // @fnv 0x00b59940
-void __cdecl ClearCachedEntryMap()
+// src: XBOX_RETAIL_PDB 0x00b59940
+// pdb: DistantLODShaderProperty::ClearStaticMaps | DistantLODShaderProperty.obj | retail, call graph, high
+// pdb locals: pcache, kiter, iignore
+void __cdecl DistantLODShaderProperty_ClearStaticMaps()
 {
-    ClearOtherCachedMap();
+    DistantLODShaderProperty_RemoveAllDistantLOD();
     void* pos = GetCachedEntryMap()->GetFirstPos();
     const char* key;
     NiPointer<CachedEntry> spEntry;
@@ -1337,6 +1397,8 @@ typedef NiTArray<ImageSpaceEffectParam*, NiTMallocInterface<ImageSpaceEffectPara
 
 // Shuts down and destroys each effect, clears the array entries, and resets its size counters.
 // @fnv 0x00b8b2e0
+// pdb: ImageSpaceManager::ShutdownEffects | ImageSpaceManager.obj | retail, upstream name already matches, high
+// pdb locals: i, peffect
 void ImageSpaceManager::ShutdownEffects()
 {
     for (int i = 0; i < ImageSpaceManager__ImageSpaceEffectEnum_EFFECT_COUNT; i++)
@@ -1368,13 +1430,15 @@ extern int DAT_011f4748;
 
 // Initializes shaders, textures, effects, params and a rendered texture once, guarded by a TLS alloc-state guard and a one-time flag.
 // @fnv 0x00b977d0
+// pdb: ImageSpaceManager::Initialize | ImageSpaceManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void ImageSpaceManager::Initialize()
 {
     ::AutoMemContext kGuard(0x27);
     if (!bIsReady)
     {
         InitEffects();
-        CreateMenuBackgroundGeometry();
+        InitGeometry();
         bIsReady = true;
         SetupEffects();
         g_01202410.Init(0, 0);
@@ -1409,19 +1473,21 @@ unsigned char C00b8bda0::ImageSpaceEffect_IsActive()
 }
 
 
-__declspec(noinline) void ImageSpaceManager::FUN_00b8b540(NiColorA& color)
+__declspec(noinline) void ImageSpaceManager::FUN_00b8b540(NiColorA& akColor)
 {
-    fHighestTintValue = color.a;
+    fHighestTintValue = akColor.a;
 }
 
-__declspec(noinline) void ImageSpaceManager::FUN_00b8b610(NiColorA& color)
+__declspec(noinline) void ImageSpaceManager::FUN_00b8b610(NiColorA& akColor)
 {
-    fHighestFadeValue = color.a;
+    fHighestFadeValue = akColor.a;
 }
 
 
 // Blends weather values into image-space settings and raises blur, radial blur, depth-of-field and motion-blur strengths to their maxima.
 // @fnv 0x00b8ccb0
+// pdb: ImageSpaceManager::EndWeatherModifiers | ImageSpaceManager.obj | retail, upstream name already matches, high
+// pdb locals: i, fval
 void ImageSpaceManager::EndWeatherModifiers()
 {
     for (int i = 0; i < 15; i++)
@@ -1663,7 +1729,7 @@ struct ImageSpaceEffectDepthOfFieldParams
             eMode = mode;
         }
     }
-    void ImageSpaceEffectDepthOfField_DoMasked();
+    void ImageSpaceEffectDepthOfField_DoStandardMask();
     void ImageSpaceEffectDepthOfField_DoStandard();
 };
 
@@ -1784,6 +1850,8 @@ struct ImageSpaceModifierStrengthState
 
 
 // @fnv 0x00b8d020
+// pdb: ImageSpaceManager::EndParamModifiers | ImageSpaceManager.obj | retail, upstream name already matches, high
+// pdb locals: pmbeffect, pdofeffect, pdrbeffect, prbeffect
 void ImageSpaceManager::EndParamModifiers()
 {
     if (kTintColor.a > 0.0f)
@@ -1834,7 +1902,7 @@ void ImageSpaceManager::EndParamModifiers()
     pDOF->SetMode(static_cast<ImageSpaceEffectDepthOfField__DepthOfFieldMode>(fCurrentDOFMode));
     if (bCurrentDOFUseMask)
     {
-        pDOF->ImageSpaceEffectDepthOfField_DoMasked();
+        pDOF->ImageSpaceEffectDepthOfField_DoStandardMask();
     }
     else
     {
@@ -1890,10 +1958,13 @@ extern ::NiCamera* DAT_011f9684;
 // Transforms a 3D position with the camera matrix, maps it through the viewport, and computes a capped radius from the input r offset.
 // @fnv 0x00b59d30
 // src: COMMUNITY 0x00b59d30
-NiPoint2* ImageSpaceEffectRadialBlur_GetBoundParams(::Vec4* apPoint, NiPoint2* apScreenPos, float* radius)
+// pdb: ImageSpaceEffectRadialBlur::GetBoundParams | ImageSpaceEffectRadialBlur.obj | retail, upstream name already matches, high
+// pdb params: aBound, aCenter, afStartBias
+// pdb locals: m_aafWorldToCam, buseedge, fInvW, apCamera, kPt, fBy, fBx, fW, m_kPort, center, between, fW2, fBx2, kcenter, fBy2, kfar
+NiPoint2* ImageSpaceEffectRadialBlur_GetBoundParams(::Vec4* aBound, NiPoint2* aCenter, float* afStartBias)
 {
     ::NiCamera* camera = DAT_011f9684;
-    ::NiPoint3 position = *(::NiPoint3*)apPoint;
+    ::NiPoint3 position = *(::NiPoint3*)aBound;
     NiRect<float> vViewport = camera->m_kPort;
     bool bBehindCamera = false;
     Matrix matrix;
@@ -1909,7 +1980,7 @@ NiPoint2* ImageSpaceEffectRadialBlur_GetBoundParams(::Vec4* apPoint, NiPoint2* a
     y *= fInvW;
     if ((x >= -1.0f && x <= 1.0f && y >= -1.0f && y <= 1.0f) || !bBehindCamera)
     {
-        position.z += apPoint->w;
+        position.z += aBound->w;
         float newW =
             position.x * matrix.m[3][0] + position.y * matrix.m[3][1] + position.z * matrix.m[3][2] + matrix.m[3][3];
         Vec2 vInitial(x, 1.0f - y);
@@ -1924,13 +1995,13 @@ NiPoint2* ImageSpaceEffectRadialBlur_GetBoundParams(::Vec4* apPoint, NiPoint2* a
         vDifference -= vNext;
         float size = vDifference.Length();
         size = size * 0.5;
-        *radius = size;
-        if (*radius > 0.5f)
-            *radius = 0.5f;
+        *afStartBias = size;
+        if (*afStartBias > 0.5f)
+            *afStartBias = 0.5f;
     }
     else
     {
-        *radius = 0.3f;
+        *afStartBias = 0.3f;
     }
     position.x = (vViewport.m_fMaximumU - vViewport.m_fMinimumU) * 0.5 * x;
     NiPoint2 result;
@@ -1953,26 +2024,32 @@ NiPoint2* ImageSpaceEffectRadialBlur_GetBoundParams(::Vec4* apPoint, NiPoint2* a
         else if (result.x > 0.0f)
             result.x = 1.0f;
     }
-    *apScreenPos = result;
-    return apScreenPos;
+    *aCenter = result;
+    return aCenter;
 }
 
-void __cdecl ImageSpaceEffectRadialBlur_GetBoundParams(int a1, int* a2, float* a3);
+void __cdecl ImageSpaceEffectRadialBlur_GetBoundParams(int aBound, int* aCenter, float* afStartBias);
 // Projects the bound and applies its projected radius to the radial-blur start and down-start.
 // The original reuses the bound argument slot for the radius output.
 // @fnv 0x00b8b760
 // src: XBOX_PDB 0x00b8b760
-void ImageSpaceManager::ApplyRadialBlurParamModifier(float a1, float a2, float a3, float a4, float a5, const NiBound& bound)
+// pdb: ImageSpaceManager::ApplyRadialBlurParamModifier | ImageSpaceManager.obj | retail, upstream name already matches, high
+// pdb params: afStrength, afRampup, afStart, afRampDown, afDownStart, aBound
+// pdb locals: fstartbias, center
+void ImageSpaceManager::ApplyRadialBlurParamModifier(float afStrength, float afRampup, float afStart, float afRampDown, float afDownStart, const NiBound& aBound)
 {
     int local[2];
-    ImageSpaceEffectRadialBlur_GetBoundParams(reinterpret_cast<int>(&bound), local, &a5 + 1);
-    SetRadialBlurParameters(a1, a2, *(&a5 + 1) + a3, a4, *(&a5 + 1) + a5,
+    ImageSpaceEffectRadialBlur_GetBoundParams(reinterpret_cast<int>(&aBound), local, &afDownStart + 1);
+    SetRadialBlurParameters(afStrength, afRampup, *(&afDownStart + 1) + afStart, afRampDown, *(&afDownStart + 1) + afDownStart,
                             *reinterpret_cast<const NiPoint2*>(local));
 }
 
 extern ::NiCamera* DAT_011f917c;
 // Computes the distance from the camera world position and passes it as both depth-of-field bounds.
 // @fnv 0x00b8b8d0
+// pdb: ImageSpaceManager::ApplyDepthOfFieldParamModifier | ImageSpaceManager.obj | debug, object-file gap fill, medium
+// pdb params: afStrength, auiMode, afMaskConst, aBound
+// pdb locals: lookat, fdistance, frange, apCamera, eye
 void ImageSpaceManager::SetDistanceEffect(float strength, unsigned int mode, float duration, const NiBound& bound)
 {
     const ::NiPoint3* position = reinterpret_cast<const ::NiPoint3*>(&bound);
@@ -2012,6 +2089,7 @@ void __stdcall ImageSpaceManager_GetDepthOfFieldParamsFromPoint(::NiPoint3* apPo
 // Sets BSAudioThreadContext to 0x27, selects a float by mode, applies two operations from arr and blends toward the result using w, then restores the context.
 // @fnv 0x00b8cb30
 // src: COMMUNITY 0x00b8cb30
+// pdb: ImageSpaceManager::ShutdownGeometry | ImageSpaceManager.obj | retail, object-file run extension, low
 void ImageSpaceManager::ApplyParamModifier_00b8cb30(int mode, int aiIndex, float* apValues, float afWeight)
 {
     int iSavedContext = BSAudioThreadContext;
@@ -2354,31 +2432,35 @@ extern __declspec(thread) TLSData g_tlsData;
 
 inline AutoMemContext::AutoMemContext(int newTag)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(g_tlsData.currentHeap);
+    iOldMemContext = static_cast<MEM_CONTEXT>(g_tlsData.currentHeap);
     g_tlsData.currentHeap = newTag;
 }
 
 inline AutoMemContext::~AutoMemContext()
 {
-    g_tlsData.currentHeap = m_eMemoryContext;
+    g_tlsData.currentHeap = iOldMemContext;
 }
 
 
 // Creates NiScreenElements, sets rectangle bounds and data using a1 and a2, then assigns the elements to a3.
 // @fnv 0x00b8c3b0
-void ImageSpaceManager::SetMenuBackgroundBlend(float afWidth, float afHeight,
-                                                 void* screenElements)
+// src: XBOX_RETAIL_PDB 0x00b8c3b0
+// pdb: ImageSpaceManager::CreatePartialScreenGeometry | ImageSpaceManager.obj | retail, unique string literal, high
+// pdb params: afWidthRatio, afHeightRatio, aspScreenElement
+// pdb locals: u1, v0, UpdateData, tempMemContext, spPartialScreenTriShapeData, v1, u0, y, h, w
+void ImageSpaceManager::CreatePartialScreenGeometry(float afWidthRatio, float afHeightRatio,
+                                                 void* aspScreenElement)
 {
-    NiPointer<NiScreenElements>& apScreenElements = *static_cast<NiPointer<NiScreenElements>*>(screenElements);
+    NiPointer<NiScreenElements>& apScreenElements = *static_cast<NiPointer<NiScreenElements>*>(aspScreenElement);
     ::AutoMemContext memContext(0x27);
     NiPointer<NiScreenElementsData> spScreenData(new NiScreenElementsData(false, false, 1, 1, 1, 4, 1, 2, 1));
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape)) = ::new NiScreenElements(spScreenData);
-    float width = afWidth * 2.0f;
-    float height = afHeight * -2.0;
-    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->FUN_00a87ae0(4, 0, 0);
+    float width = afWidthRatio * 2.0f;
+    float height = afHeightRatio * -2.0;
+    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->NiScreenElementsData_Insert(4, 0, 0);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->SetRectangleBounds(0, DAT_01012054, 1.0f, width, height);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->NiScreenElementsData_UpdateBound();
-    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->FUN_00a88130(0, 0, 0.0f, 0.0f, afWidth, afHeight);
+    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->FUN_00a88130(0, 0, 0.0f, 0.0f, afWidthRatio, afHeightRatio);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->UpdateSceneObject();
     NiUpdateData updateData(0.0f);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->NiAVObject::Update(updateData);

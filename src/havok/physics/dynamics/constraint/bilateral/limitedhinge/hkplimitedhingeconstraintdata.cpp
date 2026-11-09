@@ -14,12 +14,15 @@
 typedef float hkReal;
 
 // @fnv 0x00cb8a90
+// pdb: hkpLimitedHingeConstraintData::setBodyToNotify | hkpLimitedHingeConstraintData.obj | debug, vtable slot, medium
+// pdb params: bodyIdx
+// pdb locals: assertBuf, ostr
 void __thiscall hkpLimitedHingeConstraintData::SetConstraintFlag(int aiBitIndex)
 {
     ((char*)this)[0xd6] = (char)(1 << aiBitIndex);
 }
 
-extern "C" void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* self, int a, int b);
+extern "C" void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* self, int a, int infoOut);
 
 // @fnv 0x00cb8af0
 void* __thiscall hkpLimitedHingeConstraintData::vf15(int arg)
@@ -42,6 +45,8 @@ void __thiscall hkpLimitedHingeConstraintData::vf03(float v)
 
 // The shared header has no motor setter; keep its implementation as a local helper.
 // @fnv 0x00cb8ac0
+// pdb: hkpLimitedHingeConstraintData::setMotor | hkpLimitedHingeConstraintData.obj | debug, call graph, medium
+// pdb params: motor
 void __fastcall SetLimitedHingeMotor(hkpLimitedHingeConstraintData* self, void*, hkReferencedObject* pObject)
 {
     if (pObject)
@@ -68,6 +73,8 @@ void __fastcall DestroyLimitedHingeMotor(hkpLimitedHingeConstraintData* self, vo
 // Stores b at self+0xa2 and its negation at self+0xb6; if a is non-null, zeroes four floats at a->0x30->0x1c.
 // @fnv 0x00cb8fe0
 // src: HAVOK_LIB 0x00cb8fe0
+// pdb: hkpLimitedHingeConstraintData::setMotorActive | hkpLimitedHingeConstraintData.obj | debug, upstream name already matches, high
+// pdb params: instance, toBeEnabled
 void __fastcall hkpLimitedHingeConstraintData_setMotorActive(char* self, int, int a, bool b)
 {
     self[0xa2] = b;
@@ -96,6 +103,8 @@ float hkpLimitedHingeConstraintData::vf04()
 }
 
 // @fnv 0x00cb8ab0
+// pdb: hkpLimitedHingeConstraintData::getNotifiedBodyIndex | hkpLimitedHingeConstraintData.obj | debug, vtable slot, medium
+// pdb locals: assertBuf, ostr
 unsigned char __thiscall hkpLimitedHingeConstraintData::vf06()
 {
     return reinterpret_cast<const unsigned char*>(this)[0xd6] >> 1;
@@ -108,10 +117,11 @@ int hkpLimitedHingeConstraintData::vf08()
 }
 
 // @fnv 0x00cb9020
+// pdb: hkpLimitedHingeConstraintData::isValid | hkpLimitedHingeConstraintData.obj | retail, vtable slot, high
 hkBool hkpLimitedHingeConstraintData::vf07() const
 {
-    const hkTransform& frameA = *reinterpret_cast<const hkTransform*>(m_kBridgeAtoms.pad0 + 0x10);
-    const hkTransform& frameB = *reinterpret_cast<const hkTransform*>(m_kBridgeAtoms.pad0 + 0x50);
+    const hkTransform& frameA = *reinterpret_cast<const hkTransform*>(m_atoms.pad0 + 0x10);
+    const hkTransform& frameB = *reinterpret_cast<const hkTransform*>(m_atoms.pad0 + 0x50);
     return frameA.m_rotation.IsOrthonormal(1e-3f) &&
            frameB.m_rotation.IsOrthonormal(1e-3f) &&
            (!reinterpret_cast<const bool*>(this)[0xa2] || reinterpret_cast<const bool*>(this)[0xc2]);
@@ -135,13 +145,14 @@ FnvCpu_FUN_00cb9220_CpuAllocatorHolder* __cdecl hkMemoryRouter_getInstance();
 
 // Destroys the hinge and, when requested, frees its recorded allocation size through the Havok allocator.
 // @fnv 0x00cb9220
+// pdb: hkpLimitedHingeConstraintData::`scalar deleting destructor' | hkpLimitedHingeConstraintData.obj | retail, vtable slot, high
 hkpLimitedHingeConstraintData* __fastcall DeleteLimitedHinge(hkpLimitedHingeConstraintData* self, void*, unsigned int flags)
 {
     reinterpret_cast<void (__thiscall*)(hkpLimitedHingeConstraintData*)>(DestroyLimitedHingeMotor)(self);
     if (flags & 1)
     {
         FnvCpu_FUN_00cb9220_CpuAllocatorHolder* pAllocatorHolder = hkMemoryRouter_getInstance();
-        pAllocatorHolder->allocator->Invoke(self, self->m_usMemSizeAndFlags);
+        pAllocatorHolder->allocator->Invoke(self, self->m_memSizeAndFlags);
     }
     return self;
 }
@@ -229,7 +240,7 @@ __forceinline void hkTransform::setIdentity()
 
 __forceinline hkpConstraintData::hkpConstraintData() throw()
 {
-    m_ulUserData = 0;
+    m_userData = 0;
 }
 
 class __declspec(align(16)) PrismaticAtomConstruction
@@ -282,6 +293,7 @@ class PrismaticConstraintConstruction : public hkpConstraintData
 };
 
 // @fnv 0x00d4fe80
+// pdb: hkpPrismaticConstraintData::hkpPrismaticConstraintData | hkpPrismaticConstraintData.obj | retail, call graph (shared callers), medium
 PrismaticConstraintConstruction::PrismaticConstraintConstruction() throw()
 {
     m_kBridgeAtoms.m_kBodyALocalFrame.setIdentity();
@@ -424,7 +436,7 @@ void __fastcall SetLimitedHingeInWorldSpace(hkpLimitedHingeConstraintData* self,
     hkVector4 perpToAxle2;
     hkSetCross(perpToAxle2, axisN, perpToAxle1);
 
-    LimitedHingeLocalFrames& t = *reinterpret_cast<LimitedHingeLocalFrames*>(&self->m_kBridgeAtoms);
+    LimitedHingeLocalFrames& t = *reinterpret_cast<LimitedHingeLocalFrames*>(&self->m_atoms);
 
     static_cast<hkVector4&>(t.m_kBodyALocalFrame.m_rotation.m_kColumn0)
         .setRotatedInverseDir(bodyATransform.m_rotation, axisN);
@@ -491,7 +503,7 @@ void __fastcall SetLimitedHingeInBodySpace(hkpLimitedHingeConstraintData* self, 
                                          const hkVector4& axisA, const hkVector4& axisB,
                                          const hkVector4& axisAPerp, const hkVector4& axisBPerp)
 {
-    LimitedHingeLocalFrames& frames = *reinterpret_cast<LimitedHingeLocalFrames*>(&self->m_kBridgeAtoms);
+    LimitedHingeLocalFrames& frames = *reinterpret_cast<LimitedHingeLocalFrames*>(&self->m_atoms);
     frames.m_kBodyALocalFrame.m_rotation.m_kColumn0 = axisA;
     frames.m_kBodyALocalFrame.m_rotation.m_kColumn0.normalize3();
     frames.m_kBodyALocalFrame.m_rotation.m_kColumn1 = axisAPerp;

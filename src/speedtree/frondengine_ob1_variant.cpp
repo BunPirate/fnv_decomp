@@ -27,9 +27,10 @@ struct FUN_0064df10_helper
     void* p;
     void __thiscall deallocate(void* a, unsigned int b);
 };
+// pdb: class Date, size 0x4, 2 members
 struct Date
 {
-    void* p;
+    void* sDate;
     ~Date();
 };
 struct FUN_0065d6e0_class : Date
@@ -298,6 +299,8 @@ struct Host
 
 // @fnv 0x00b18f60
 // src: GUESS 0x00b18f60 (confidence: low)
+// pdb: CFrondEngine::SetProfile | FrondEngine.obj | debug, object-file gap fill, medium
+// pdb params: pProfile
 void Host::UpdateFields_00b18f60(FUN_00b37880* arg)
 {
     if (this->unk40 != arg)
@@ -513,7 +516,7 @@ struct FrondOutput
     void UpdateFields_00b300c0(const FrondPoint&);
     void CIndexedGeometry_AddVertexTexCoord0(const float*, unsigned short);
     void UpdateFields_00b30020(const float*);
-    void AppendThreeFloatComponents(const float*);
+    void CIndexedGeometry_AddVertexNormal(const float*);
     void UpdateState_00b305f0(const FrondPoint&);
     void UpdateFields_00b30660(const FrondPoint&);
     void AppendInvertedValueAndDispatchIndex(float, unsigned char);
@@ -551,6 +554,9 @@ struct FrondBuilder
 
 // @fnv 0x00b19ad0
 // src: GUESS 0x00b19ad0 (confidence: low)
+// pdb: CFrondEngine::BuildBladeVertices | FrondEngine.obj | debug, object-file run extension, low
+// pdb params: sGuide
+// pdb locals: fAngleBetween, k, fRightLength, vRightLengths, afColor, nLocalStart, vLeftLengths, fLeftLength, vRightDirections, cBinormal, nSize, i, cRight, afTexCoords, cTrans, cRightDir, fLengthPercent, cNormal, cLeft, cTemp, pThisCoord, cNext, pNextCoord, cThis ...
 void FrondBuilder::ProcessEntries_00b19ad0(FrondInput* input)
 {
     if (output && required)
@@ -609,7 +615,7 @@ void FrondBuilder::ProcessEntries_00b19ad0(FrondInput* input)
                 output->CIndexedGeometry_AddVertexTexCoord0(uv1, (unsigned short)input->layer);
                 colorAlloc2[0] = colorAlloc2[1] = colorAlloc2[2] = colorAlloc2[3] = 1.0f;
                 output->UpdateFields_00b30020(colorAlloc2);
-                output->AppendThreeFloatComponents(&tangentVal.x);
+                output->CIndexedGeometry_AddVertexNormal(&tangentVal.x);
                 output->UpdateState_00b305f0(direction);
                 normalChild3 = direction.FUN_00b12810(tangentVal);
                 if (static_cast<const FrondPoint&>(normalChild3).FastSqrt() < DAT_010a54ec)
@@ -625,7 +631,7 @@ void FrondBuilder::ProcessEntries_00b19ad0(FrondInput* input)
                 output->CIndexedGeometry_AddVertexTexCoord0(uv1, (unsigned short)input->layer);
                 colorAlloc2[0] = colorAlloc2[1] = colorAlloc2[2] = colorAlloc2[3] = 1.0f;
                 output->UpdateFields_00b30020(colorAlloc2);
-                output->AppendThreeFloatComponents(&tangentVal.x);
+                output->CIndexedGeometry_AddVertexNormal(&tangentVal.x);
                 output->UpdateState_00b305f0(direction);
                 normalChild3 = direction.FUN_00b12810(tangentVal);
                 if (normalChild3.FastSqrt() < DAT_010a54ec)
@@ -2274,6 +2280,7 @@ struct FUN_00b181b0
     ~FUN_00b181b0();
 };
 // @fnv 0x00b181b0
+// pdb: CFrondEngine::~CFrondEngine | FrondEngine.obj | retail, object-file run extension, low
 FUN_00b181b0::~FUN_00b181b0()
 {
     delete pObj;
@@ -2323,7 +2330,7 @@ struct FUN_00b09480 : FUN_00b096a0
 struct RQ : FUN_0044a4c0
 {
 };
-FUN_0044a4c0 IdvFormatString(const char* fmt, ...);
+FUN_0044a4c0 IdvFormatString(const char* pField, ...);
 struct RQ;
 struct ByteVec
 {
@@ -2390,92 +2397,95 @@ struct Frond
     float f6c, f70, f74, f78;
     int i7c, i80;
     void UpdateFields_00b18f60(int);
-    void CFrondEngine_Parse(Parser* p);
+    void CFrondEngine_Parse(Parser* cFile);
 };
 // @fnv 0x00b18340
 // src: COMMUNITY 0x00b18340
-void Frond::CFrondEngine_Parse(Parser* p)
+// pdb: CFrondEngine::Parse | FrondEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken, nNumTextures, i, sFrond
+void Frond::CFrondEngine_Parse(Parser* cFile)
 {
     DeadTop();
-    int iToken = p->GetNextElement();
+    int iToken = cFile->GetNextElement();
     do
     {
         switch (iToken)
         {
         case 0x32ca:
-            i48 = p->GetNextElement();
+            i48 = cFile->GetNextElement();
             break;
         case 0x32cb:
-            i38 = p->GetNextElement();
+            i38 = cFile->GetNextElement();
             break;
         case 0x32cc:
-            i3c = p->GetNextElement();
+            i3c = cFile->GetNextElement();
             break;
         case 0x32cd:
-            UpdateFields_00b18f60(p->CTreeFileAccess_ParseBranchParameter());
+            UpdateFields_00b18f60(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x32ce:
-            i44 = p->GetNextElement();
+            i44 = cFile->GetNextElement();
             break;
         case 0x32cf:
-            b4c = p->ProcessAndTransformResult_00b06180();
+            b4c = cFile->ProcessAndTransformResult_00b06180();
             break;
         case 0x32d1:
-            i68 = p->GetNextElement();
+            i68 = cFile->GetNextElement();
             break;
         case 0x32d2:
-            f6c = p->CTreeFileAccess_ParseFloat();
+            f6c = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x32d3:
-            f70 = p->CTreeFileAccess_ParseFloat();
+            f70 = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x32d4:
-            f74 = p->CTreeFileAccess_ParseFloat();
+            f74 = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x32d5:
-            f78 = p->CTreeFileAccess_ParseFloat();
+            f78 = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x36b7:
-            i7c = p->GetNextElement();
+            i7c = cFile->GetNextElement();
             break;
         case 0x36b8:
-            i80 = p->GetNextElement();
+            i80 = cFile->GetNextElement();
             break;
         case 0x32d0: {
             kTex.ClearAllElements();
-            int iCount = p->GetNextElement();
+            int iCount = cFile->GetNextElement();
             for (int i = 0; i < iCount; i++)
             {
                 TexQ kInfo;
-                iToken = p->GetNextElement();
-                iToken = p->GetNextElement();
+                iToken = cFile->GetNextElement();
+                iToken = cFile->GetNextElement();
                 do
                 {
                     switch (iToken)
                     {
                     case 0x36b2: {
-                        PQ kName(p->CTreeFileAccess_ParseString());
+                        PQ kName(cFile->CTreeFileAccess_ParseString());
                         (FUN_0044a4c0&)kInfo.strName = kName;
                     }
                         (FUN_0044a4c0&)kInfo.strName = kInfo.strName.ProcessEntries_00b09f90();
                         break;
                     case 0x36b3:
-                        kInfo.fA = p->CTreeFileAccess_ParseFloat();
+                        kInfo.fA = cFile->CTreeFileAccess_ParseFloat();
                         break;
                     case 0x36b4:
-                        kInfo.fB = p->CTreeFileAccess_ParseFloat();
+                        kInfo.fB = cFile->CTreeFileAccess_ParseFloat();
                         break;
                     case 0x36b5:
-                        kInfo.fC = p->CTreeFileAccess_ParseFloat();
+                        kInfo.fC = cFile->CTreeFileAccess_ParseFloat();
                         break;
                     case 0x36b6:
-                        kInfo.fD = p->CTreeFileAccess_ParseFloat();
+                        kInfo.fD = cFile->CTreeFileAccess_ParseFloat();
                         break;
                     default:
                         throw FUN_00b09480(IdvFormatString("malformed frond texture information (token %d)", iToken),
                                            false);
                     }
-                    iToken = p->GetNextElement();
+                    iToken = cFile->GetNextElement();
                 } while (iToken != 0x36b1);
                 kTex.UpdateFields_00b1e1e0(kInfo);
             }
@@ -2484,7 +2494,7 @@ void Frond::CFrondEngine_Parse(Parser* p)
         default:
             throw FUN_00b09480(IdvFormatString("malformed frond info (token %d)", iToken), false);
         }
-        iToken = p->GetNextElement();
+        iToken = cFile->GetNextElement();
     } while (iToken != 0x32c9);
     DeadEnd();
 }
@@ -2533,7 +2543,7 @@ struct TargetS
     {
         m_usBatches++;
     }
-    void CIndexedGeometry_AddStrip(unsigned short usId, unsigned short* pusIdx, unsigned short usNum);
+    void CIndexedGeometry_AddStrip(unsigned short nLodLevel, unsigned short* pStrip, unsigned short nStripLength);
 };
 struct MeshS
 {
@@ -2557,6 +2567,9 @@ struct MeshS
 };
 // @fnv 0x00b1aed0
 // src: GUESS 0x00b1aed0 (confidence: low)
+// pdb: CFrondEngine::ComputeBlade | FrondEngine.obj | debug, object-file run extension, low
+// pdb params: nLod, nStart, sGuide
+// pdb locals: k, pStrip, usIndexCount, nVertexIndex, i
 void MeshS::AllocateStorage_00b1aed0(unsigned short usId, int iBase, VecS* pkVec)
 {
     if (m_pkTarget)
@@ -2586,7 +2599,7 @@ struct FUN_00b2fdc0_obj
     {
         w26++;
     }
-    void CIndexedGeometry_AddStrip(unsigned short a, unsigned short* p, unsigned short n);
+    void CIndexedGeometry_AddStrip(unsigned short nLodLevel, unsigned short* pStrip, unsigned short nStripLength);
 };
 struct LodVert
 {
@@ -2620,6 +2633,9 @@ struct FUN_00b1b960_class
 };
 // @fnv 0x00b1b960
 // src: GUESS 0x00b1b960 (confidence: low)
+// pdb: CFrondEngine::ComputeExtrusion | FrondEngine.obj | debug, object-file run extension, low
+// pdb params: nLod, nStart, sGuide
+// pdb locals: fLodPercent, fCrossStep, pStrip, nIndexCount, fLengthStep, nNumCrossVertices, nNumLengthVertices, nSegments, nVertexIndex, i, nSkipFactor, nNextLengthIndex, nThisLengthIndex, nBase, j, nThisCrossVertex
 void FUN_00b1b960_class::ProcessEntries_00b1b960(unsigned int uiLod, int iOffset, LodGrid* pGrid)
 {
     if (m_pEntryObject)
@@ -2839,6 +2855,9 @@ struct VecQ
 };
 // @fnv 0x00b1d130
 // src: GUESS 0x00b1d130 (confidence: low)
+// pdb: std::vector<CVec,std::allocator<CVec> >::operator= | FrondEngine.obj | debug, call graph, medium
+// pdb params: _Right
+// pdb locals: _Ptr
 VecQ& VecQ::UpdateState_00b1d130(const VecQ& _Right)
 {
     if (this != &_Right)
@@ -3877,6 +3896,9 @@ struct FUN_00b1d8a0 : GvVectorStore<GvRow38>
     FUN_00b1d8a0();
 };
 // @fnv 0x00b1d8a0
+// pdb: std::vector<float,std::allocator<float> >::push_back | FrondEngine.obj | debug, object-file run extension, low
+// pdb params: _Val
+// pdb locals: _Idx
 FUN_00b1d8a0::FUN_00b1d8a0() : GvVectorStore<GvRow38>()
 {
     _Buy(0);
@@ -4031,6 +4053,7 @@ struct FUN_00b1da90 : public VdVectorImpl<VdElemV>
 };
 
 // @fnv 0x00b1da90
+// pdb: std::vector<SFrondGuide,std::allocator<SFrondGuide> >::begin | FrondEngine.obj | debug, object-file run extension, low
 FUN_00b1da90::~FUN_00b1da90()
 {
     _Tidy();
@@ -4053,6 +4076,7 @@ struct FUN_00b1df10_obj : FUN_00b1f650_class
 
 // @fnv 0x00b1df10
 // src: GUESS 0x00b1df10 (confidence: low)
+// pdb: std::vector<std::vector<SFrondGuide,std::allocator<SFrondGuide> >,std::allocator<std::vector<SFrondGuide,std::allocator<SFrondGuide> > > >::vector<std::vector<SFrondGuide,std::allocator<SFrondGuide> >,std::allocator<std::vector<SFrondGuide,std::allocator<SFrondGuide> > > > | FrondEngine.obj | debug, object-file run extension, low
 void __thiscall FUN_00b1df10_obj::UpdateState_00b1df10()
 {
     int u1;
@@ -6394,6 +6418,8 @@ struct FUN_00b1e3e0 : GvVectorStore<GvVec3>
     FUN_00b1e3e0();
 };
 // @fnv 0x00b1e3e0
+// pdb: std::vector<CVec3,std::allocator<CVec3> >::operator[] | FrondEngine.obj | debug, object-file run extension, low
+// pdb params: _Pos
 FUN_00b1e3e0::FUN_00b1e3e0() : GvVectorStore<GvVec3>()
 {
     _Buy(0);
@@ -6413,6 +6439,7 @@ struct S00b1e5d0_Obj : FUN_00b1fe80_helper
 
 // @fnv 0x00b1e5d0
 // src: GUESS 0x00b1e5d0 (confidence: low)
+// pdb: std::vector<std::vector<float,std::allocator<float> >,std::allocator<std::vector<float,std::allocator<float> > > >::vector<std::vector<float,std::allocator<float> >,std::allocator<std::vector<float,std::allocator<float> > > > | FrondEngine.obj | debug, object-file run extension, low
 void __thiscall S00b1e5d0_Obj::UpdateState_00b1e5d0()
 {
     int u1;
@@ -6655,6 +6682,7 @@ using namespace vecb1e;
 
 // @fnv 0x00b1e750
 // src: GUESS 0x00b1e750 (confidence: high)
+// pdb: std::vector<CVec,std::allocator<CVec> >::clear | FrondEngine.obj | debug, call graph (shared callers), medium
 void VcVector::ClearAllElements()
 {
     erase(begin(), end());
@@ -7650,6 +7678,8 @@ using namespace buyElement24;
 
 // @fnv 0x00b1f590
 // src: GUESS 0x00b1f590 (confidence: low)
+// pdb: std::vector<CVec,std::allocator<CVec> >::_Buy | FrondEngine.obj | debug, call graph, medium
+// pdb params: _Capacity
 bool BxVector::UpdateState_00b1f590(unsigned int _Capacity)
 {
     _Myfirst = 0, _Mylast = 0, _Myend = 0;
@@ -23417,13 +23447,16 @@ struct GvOwner
     int unk00;
     int unk04;
     GvVector<GvElem> kElems;
-    void ProcessState_00b188d0();
+    void CFrondEngine_AddGuideVertex();
 };
 }
 using namespace addb18;
 // @fnv 0x00b188d0
-// src: GUESS 0x00b188d0 (confidence: low)
-void GvOwner::ProcessState_00b188d0()
+// src: XBOX_DEBUG_PDB 0x00b188d0
+// pdb: CFrondEngine::AddGuideVertex | FrondEngine.obj | debug, call graph, high
+// pdb params: cPos, cTrans, fCrossSectionWeight, nWindGroup
+// pdb locals: sVertex
+void GvOwner::CFrondEngine_AddGuideVertex()
 {
     GvElem kElem;
     kElems.push_back(kElem);
@@ -24346,7 +24379,7 @@ struct PointVecQ
 };
 struct CurveQ
 {
-    float CIdvBezierSpline_Evaluate(float t);
+    float CIdvBezierSpline_Evaluate(float fPercent);
 };
 struct ScaleQ
 {
@@ -24384,6 +24417,10 @@ struct FUN_00b1be50_Owner
 
 // @fnv 0x00b1be50
 // src: GUESS 0x00b1be50 (confidence: low)
+// pdb: CFrondEngine::ComputeExtrusion | FrondEngine.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CFrondEngine::BuildProfileVectors
+// pdb params: nLod, nStart, sGuide
+// pdb locals: fLodPercent, fCrossStep, pStrip, nIndexCount, fLengthStep, nNumCrossVertices, nNumLengthVertices, nSegments, nVertexIndex, i, nSkipFactor, nNextLengthIndex, nThisLengthIndex, nBase, j, nThisCrossVertex
 void FUN_00b1be50_Owner::ProcessEntries_00b1be50(ScaleQ* scale, PointVecQ& points, PointVecQ& normals)
 {
     float base = m_profile->CIdvBezierSpline_Evaluate(0.0f) * scale->m_height;
@@ -27873,20 +27910,22 @@ struct AppendGuideVector : addb18::GvVector<AppendGuide>
         return begin() + offset;
     }
 
-    void UpdateFields_00b1db40(const AppendGuide& value);
+    void UpdateFields_00b1db40(const AppendGuide& _Pos);
 };
 
 // @fnv 0x00b1db40
 // src: GUESS 0x00b1db40 (confidence: low)
-void AppendGuideVector::UpdateFields_00b1db40(const AppendGuide& value)
+// pdb: std::vector<SFrondGuide,std::allocator<SFrondGuide> >::operator[] | FrondEngine.obj | debug, call graph (shared callers), high
+// pdb params: _Pos
+void AppendGuideVector::UpdateFields_00b1db40(const AppendGuide& _Pos)
 {
     if (size() < capacity())
     {
-        _Mylast = FillEnd(_Mylast, 1, value);
+        _Mylast = FillEnd(_Mylast, 1, _Pos);
     }
     else
     {
-        UpdateState_00b1dc50(end(), value);
+        UpdateState_00b1dc50(end(), _Pos);
     }
 }
 
@@ -27955,6 +27994,9 @@ struct FrondPointAppend : dtorb181::GvVector<FrondPoint>
 
 // @fnv 0x00b1e4c0
 // src: GUESS 0x00b1e4c0 (confidence: medium)
+// pdb: std::vector<CVec3,std::allocator<CVec3> >::push_back | FrondEngine.obj | debug, call graph, low
+// pdb params: _Val
+// pdb locals: _Idx
 void FrondPointAppend::AppendElementWithGrowth(const FrondPoint& value)
 {
     if (size() < capacity())
@@ -28645,7 +28687,7 @@ struct Geometry
         unsigned int packed = GetIndexedValue_00b30060(color);
         colors.UpdateState_00b32210(packed);
     }
-    void AppendThreeFloatComponents(const CVec3&);
+    void CIndexedGeometry_AddVertexNormal(const CVec3&);
     void UpdateState_00b305f0(const CVec3&);
     void UpdateFields_00b30660(const CVec3&);
     void AppendInvertedValueAndDispatchIndex(float, unsigned char);
@@ -28683,6 +28725,9 @@ struct B1FrondBuilder
 };
 // @fnv 0x00b1b000
 // src: GUESS 0x00b1b000 (confidence: low)
+// pdb: CFrondEngine::BuildExtrusionVertices | FrondEngine.obj | debug, object-file run extension, low
+// pdb params: sGuide
+// pdb locals: vNormals, vRunningLengths, vLengths, vProfile, i, fT, j, cPreviousTrans, cTangent, afTexCoords, cTrans, cNormal1, cPos, afColor, cPos2, cNormal2, cPos1, cNormal, fS, cBinormal, vRunning, fLength, pThisCoord, pPrevCoord ...
 void B1FrondBuilder::ProcessEntries_00b1b000(FrondInput* frond)
 {
     if (geometry && configuration)
@@ -28720,7 +28765,7 @@ void B1FrondBuilder::ProcessEntries_00b1b000(FrondInput* frond)
                 Color4 colorSlot5;
                 colorSlot5.r = colorSlot5.g = colorSlot5.b = colorSlot5.a = 1.0f;
                 geometry->UpdateFields_00b30020(colorSlot5);
-                geometry->AppendThreeFloatComponents(localA);
+                geometry->CIndexedGeometry_AddVertexNormal(localA);
                 geometry->UpdateState_00b305f0(tangentsB);
                 CVec3 binormalVal = localA.FUN_00b12810(tangentsB);
                 binormalVal.Normalize_00b12790();
@@ -28803,6 +28848,10 @@ struct FUN_00b1c7a0_cls
 
 // @fnv 0x00b1c7a0
 // src: GUESS 0x00b1c7a0 (confidence: low)
+// pdb: std::vector<std::vector<SFrondGuide,std::allocator<SFrondGuide> >,std::allocator<std::vector<SFrondGuide,std::allocator<SFrondGuide> > > >::push_back | FrondEngine.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CIdvBezierSpline::operator=
+// pdb params: _Val
+// pdb locals: _Idx
 FUN_00b1c7a0_cls& FUN_00b1c7a0_cls::ProcessAndReturnValue_00b1c7a0(const FUN_00b1c7a0_cls& that)
 {
     DeadN();
@@ -29012,6 +29061,8 @@ struct Processor
 
 // @fnv 0x00b1c850
 // src: COMMUNITY 0x00b1c850
+// pdb: CFrondEngine::BuildGuideLods | FrondEngine.obj | retail, upstream name already matches, high
+// pdb locals: fTotalArea, fSavePercent, fLargestArea, cRandom, vSavedFronds, fSquaredArea, i, fArea, fFuzziness, fOneMinusFuzziness, fPercent, fTargetVolume, fLodArea, vLodLevel, j
 void Processor::CFrondEngine_BuildGuideLods()
 {
     float sum;
@@ -29161,6 +29212,9 @@ struct FrondInsertVector : dtorb181::GvVector<ElemX23460>
 
 // @fnv 0x00b1dc50
 // src: GUESS 0x00b1dc50 (confidence: low)
+// pdb: std::vector<SFrondGuide,std::allocator<SFrondGuide> >::push_back | FrondEngine.obj | debug, object-file run extension, low
+// pdb params: _Val
+// pdb locals: _Idx
 FrondInsertIterator FrondInsertVector::UpdateState_00b1dc50(dtorb181::GvConstIterator<ElemX23460> where,
                                                     const ElemX23460& value)
 {
@@ -29238,6 +29292,7 @@ inline void ScratchFrame_b1de20()
 
 // @fnv 0x00b1de20
 // src: GUESS 0x00b1de20 (confidence: low)
+// pdb: std::vector<SFrondGuide,std::allocator<SFrondGuide> >::clear | FrondEngine.obj | debug, object-file run extension, low
 void VecB1de20::ProcessState_00b1de20()
 {
     ProcessAndReturnValue_00b1ea20(begin(), end());
@@ -30001,14 +30056,14 @@ template <typename T> struct MyVector
 struct FinalizerGuidePoint : FrondGuidePoint
 {
 // src: COMMUNITY 0x00b04d40
-    inline float CVec3_Distance(const FrondPoint& other) const
+    inline float CVec3_Distance(const FrondPoint& cVec) const
     {
         union FloatBits
         {
             float f;
             int i;
         } squared, root;
-        squared.f = (other.z - z) * (other.z - z) + ((other.y - y) * (other.y - y) + (other.x - x) * (other.x - x));
+        squared.f = (cVec.z - z) * (cVec.z - z) + ((cVec.y - y) * (cVec.y - y) + (cVec.x - x) * (cVec.x - x));
         root.i = (squared.i >> 1) + 0x1fc00000;
         return root.f;
     }
@@ -30050,7 +30105,7 @@ struct FUN_00aa7830
 struct FUN_00b3f100 : FUN_00aa7830
 {
     FUN_00b3f100();
-    float FUN_00b3f130(float a, float b);
+    float FUN_00b3f130(float a, float fMax);
     inline ~FUN_00b3f100()
     {}
 };
@@ -30074,12 +30129,15 @@ struct FrondGuideFinalizer
     int unk4c;
     MyVector<Field50Item> m_field50;
 
-    void CFrondEngine_EndGuide(float a1);
+    void CFrondEngine_EndGuide(float fLodSizeScalar);
 };
 
 // @fnv 0x00b18b70
 // src: COMMUNITY 0x00b18b70
-void FrondGuideFinalizer::CFrondEngine_EndGuide(float a1)
+// pdb: CFrondEngine::EndGuide | FrondEngine.obj | retail, upstream name already matches, high
+// pdb params: fLodSizeScalar
+// pdb locals: sGuide, cRandom, i
+void FrondGuideFinalizer::CFrondEngine_EndGuide(float fLodSizeScalar)
 {
     MyFrondGuide* guide = &m_guides[m_guides.size() - 1];
     unsigned int i;
@@ -30105,7 +30163,7 @@ void FrondGuideFinalizer::CFrondEngine_EndGuide(float a1)
             guide->f24 = guide->f24 * -1.0;
         }
     }
-    guide->f28 = guide->f18 * a1;
+    guide->f28 = guide->f18 * fLodSizeScalar;
 }
 
 namespace dtorb181 {
@@ -30359,10 +30417,13 @@ static const char vertexLimitMessage[] = "frond vertices exceed %d";
 static const char invalidModeMessage[] = "default reached in CFrondEngine::Compute()";
 // @fnv 0x00b18fd0
 // src: EXE 0x00b18fd0
-void FrondEngine::CFrondEngine_Compute(FrondGeometry* output, void* context)
+// pdb: CFrondEngine::Compute | FrondEngine.obj | retail, string-set bridge, high
+// pdb params: pGeometry, pLightingEngine
+// pdb locals: nVertices, j, i, m, k, l
+void FrondEngine::CFrondEngine_Compute(FrondGeometry* pGeometry, void* pLightingEngine)
 {
-    geometry = output;
-    auxiliary = context;
+    geometry = pGeometry;
+    auxiliary = pLightingEngine;
     int vertexCount = 0;
     CFrondEngine_BuildGuideLods();
     for (unsigned i = 0; i < guides[0].size(); ++i)

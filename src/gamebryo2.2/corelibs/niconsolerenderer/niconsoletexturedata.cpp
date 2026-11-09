@@ -34,13 +34,13 @@ struct S_00a981d0_Mem
     S_00a981d0_Mem() throw();
     char b[0x44];
 };
-struct S_00a981d0_Mid : S_00a981d0_Base
+struct RendererData : S_00a981d0_Base
 {
     int unk08, unk0c, unk10;
     S_00a981d0_Mem m14;
     unsigned char c58, c59, c5a, c5b;
     int unk5c, u60, u64, u68, u6c, u70, u74, u78, u7c, u80, u84, u88, u8c;
-    __forceinline S_00a981d0_Mid() throw()
+    __forceinline RendererData() throw()
     {
         c58 = 0xff;
         c59 = 0xff;
@@ -59,7 +59,7 @@ struct S_00a981d0_Mid : S_00a981d0_Base
         u88 = 0;
         u8c = 0;
     }
-    virtual ~S_00a981d0_Mid() throw();
+    virtual ~RendererData() throw();
 };
 struct S_00a981d0_P
 {
@@ -69,7 +69,7 @@ struct S_00a981d0_P
         v = 0;
     }
 };
-struct FUN_00a981d0 : S_00a981d0_Mid
+struct FUN_00a981d0 : RendererData
 {
     S_00a981d0_P u90;
     FUN_00a981d0() throw();
@@ -77,6 +77,7 @@ struct FUN_00a981d0 : S_00a981d0_Mid
 };
 // Initializes the three base integer fields unk08, unk0c and unk10 to zero.
 // @fnv 0x00a981d0
+// pdb: NiPersistentSrcTextureRendererData::NiPersistentSrcTextureRendererData | NiPersistentSrcTextureRendererData.obj | retail, call graph, high
 FUN_00a981d0::FUN_00a981d0() throw()
 {
     unk08 = 0;

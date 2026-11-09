@@ -6,17 +6,19 @@
 
 
 
+// pdb: class Main, size 0xac (here 0x1), 25 members
 class Main
 {
   public:
     void RunFrame();
-    void RefreshAfterSave();
+    void Main_KillMenuBGTexture();
 };
 
+// pdb: class NiParallelUpdateTaskManager, size 0x200 (here 0x1), bases: NiTaskManager, 8 members
 class NiParallelUpdateTaskManager
 {
   public:
-    void DispatchParallelUpdates();
+    void Main_OnIdle_HandleMenuBackground();
 };
 
 // The packet has no identities for these menu-state globals and helper.

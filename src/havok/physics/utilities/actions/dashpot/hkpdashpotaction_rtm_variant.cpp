@@ -26,6 +26,9 @@ static inline __m128 dashpotApplyBroadcast(float f) { __m128 t = _mm_load_ss(&f)
 
 // @fnv 0x00d4da60
 // src: HAVOK_SRC 0x00d4da60
+// pdb: hkpDashpotAction::applyAction | hkpDashpotAction.obj | retail, string-set bridge, high
+// pdb params: stepInfo
+// pdb locals: pb, pa, assertBuf, ostr, negImpulse
 void hkpDashpotAction::applyAction_00d4da60(hkPadSpu<const hkStepInfo*> stepInfo)
 {
     DashpotApplyTlsGetter pfnTls = TlsGetValue;
@@ -47,22 +50,22 @@ void hkpDashpotAction::applyAction_00d4da60(hkPadSpu<const hkStepInfo*> stepInfo
         }
     }
 
-    float dt = stepInfo->m_fTimeStep * DAT_010d09b8;
+    float dt = stepInfo->m_deltaTime * DAT_010d09b8;
 
-    hkpEntity* entityA = m_pEntityA;
-    hkpEntity* entityB = m_pEntityB;
+    hkpEntity* entityA = m_entityA;
+    hkpEntity* entityB = m_entityB;
 
     struct DashpotScratch { hkVector4 points[2]; hkVector4 opposite; } scratch;
-    scratch.points[1].setTransformedPos_00c7f640(entityA->m_pMotionState.m_kMotionState.m_kMotionTransform, m_kPoint[0]);
-    scratch.points[0].setTransformedPos_00c7f640(entityB->m_pMotionState.m_kMotionState.m_kMotionTransform, m_kPoint[1]);
+    scratch.points[1].setTransformedPos_00c7f640(entityA->m_motion.m_kMotionState.m_transform, m_point[0]);
+    scratch.points[0].setTransformedPos_00c7f640(entityB->m_motion.m_kMotionState.m_transform, m_point[1]);
 
-    __m128 relVel = _mm_sub_ps(entityA->m_pMotionState.m_kTranslationalVelocity.m_vComponents, entityB->m_pMotionState.m_kTranslationalVelocity.m_vComponents);
+    __m128 relVel = _mm_sub_ps(entityA->m_motion.m_kTranslationalVelocity.m_vComponents, entityB->m_motion.m_kTranslationalVelocity.m_vComponents);
     __m128 dir = _mm_sub_ps(scratch.points[1].m_vComponents, scratch.points[0].m_vComponents);
-    hkVector4* impulse = &m_fContactImpulse;
-    float factor = m_fSpringStrength * dt;
+    hkVector4* impulse = &m_impulse;
+    float factor = m_strength * dt;
     __m128 strength = _mm_load_ss(&factor);
     __m128 strengthVec = _mm_shuffle_ps(strength,strength,0);
-    factor = dt * m_fMotorDamping;
+    factor = dt * m_damping;
     _mm_store_ps(&impulse->x, _mm_mul_ps(strengthVec, dir));
     __m128 damping = _mm_load_ss(&factor);
     __m128 dampingVec = _mm_shuffle_ps(damping,damping,0);
@@ -70,9 +73,9 @@ void hkpDashpotAction::applyAction_00d4da60(hkPadSpu<const hkStepInfo*> stepInfo
     _ReadWriteBarrier();
     _mm_store_ps(&scratch.opposite.x, _mm_mul_ps(dashpotApplyBroadcast(DAT_01012054), impulse->m_vComponents));
     entityA->activate_00c9c1d0();
-    entityA->m_pMotionState.ApplyImpulseAtPoint(scratch.opposite, scratch.points[1]);
+    entityA->m_motion.ApplyImpulseAtPoint(scratch.opposite, scratch.points[1]);
     entityB->activate_00c9c1d0();
-    entityB->m_pMotionState.ApplyImpulseAtPoint(*impulse, scratch.points[0]);
+    entityB->m_motion.ApplyImpulseAtPoint(*impulse, scratch.points[0]);
 
     {
         hkMonitorStream* pBuf = (hkMonitorStream*)pfnTls(DAT_0126835c);

@@ -20,7 +20,7 @@ struct FUN_00af30a0_Class
     int m_iValueAt90;
     char m_cValueAt94;
     char m_cValueAt95;
-    void* BSSystemUtility_BSSystemUtility();
+    void* BSSystemUtility_ctor();
 };
 struct FUN_00ae8dc0_Class
 {
@@ -92,7 +92,7 @@ struct FUN_00af38d0_Class
     void* vtbl;
     char bVisible;
     void* m_pObjectAt84;
-    void* BSCacheDriveSystemUtility_BSCacheDriveSystemUtility();
+    void* BSCacheDriveSystemUtility_ctor();
 };
 extern int DAT_010a42fc;
 struct FUN_00af39c0_Class
@@ -111,7 +111,7 @@ struct FUN_00af3b20_Class
 {
     void* vtbl;
     int i;
-    void* __thiscall BSSysInfoSystemUtility_BSSysInfoSystemUtility();
+    void* __thiscall BSSysInfoSystemUtility_ctor();
 };
 extern int DAT_010a4328;
 struct FUN_00af3b50_Class
@@ -125,6 +125,7 @@ struct FUN_00afd960_Class
     int iField;
     void ProcessState_00afd960();
 };
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 struct FileFinder
 {
     static NiFile* __cdecl GetFile(const char*, int, unsigned int, unsigned int);
@@ -168,7 +169,7 @@ struct FUN_00af1d20_Class
 int __cdecl CloseAndDeleteFile(BSFile* apFile);
 struct DownloadableContentManager
 {
-    static void __cdecl GetRandomGenerator();
+    static void __cdecl BSDLCSystemUtility_QInstance();
 };
 char __cdecl Runtime_EvaluateValue_00af2750();
 struct FUN_00af2c50_Class
@@ -180,14 +181,14 @@ struct FUN_00af3570_Class
 {
     void* vtbl;
     int a[8];
-    void* __thiscall BSSystemUtilitiesStrings_BSSystemUtilitiesStrings();
+    void* __thiscall BSSystemUtilitiesStrings_ctor();
 };
 void __cdecl _sprintf_s(char* dst, unsigned int size, const char* fmt, ...);
 struct FUN_00afd860_Class
 {
     unsigned char m_acCharacterBuffer[4];
     int iValue;
-    void __thiscall BSHash_MakeHashString(char* dst);
+    void __thiscall BSHash_MakeHashString(char* apString);
 };
 struct FUN_00afdbc0_Class
 {
@@ -226,7 +227,7 @@ struct FUN_00ae7c40_Class
 size_t __cdecl _strlen(const char* s);
 int __cdecl _strnicmp(const char* s1, const char* s2, size_t n);
 int __cdecl _strcpy_s(char* dst, size_t size, const char* src);
-void CopyRelativeDataPath(const char* source, char* destination, size_t size);
+void StandardizeDataPath(const char* apFileName, char* apStandardizedFileName, size_t aiOutSize);
 struct FUN_00afd8b0_Class
 {
     unsigned int uiMagic;
@@ -238,7 +239,7 @@ struct FUN_00afd8b0_Class
     unsigned int uiHash;
     unsigned int uiCRC;
     unsigned short m_usPassCountLocal;
-    void* __thiscall BSArchiveHeader_BSArchiveHeader();
+    void* __thiscall BSArchiveHeader_ctor();
 };
 extern BSAudio* DAT_011f6d98;
 struct FUN_00af1ba0_Class
@@ -273,7 +274,7 @@ struct FUN_00af2ed0_Class
     int i2;
     char pad2[0x14];
     int i3;
-    FUN_00af2ed0_Class* BSSaveDataSystemUtility_BSSaveDataSystemUtility();
+    FUN_00af2ed0_Class* BSSaveDataSystemUtility_ctor();
 };
 extern int DAT_010a42ec;
 struct FUN_00af3900_Class
@@ -1056,7 +1057,7 @@ struct SndStream
 struct SndHeap
 {
     void* Allocate(unsigned int size);
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 struct SndFloatHolder
 {
@@ -2321,7 +2322,7 @@ struct FUN_00af2db0_cls
 };
 extern "C" int __cdecl toupper(int c);
 extern unsigned int g_uiMatchFlags;
-int __cdecl WildcardMatch(const char* pcString, const char* pcPattern);
+int __cdecl WildCard_RecMatch(const char* apString, const char* apPattern);
 bool HasWildcardChars(const char* pcString);
 int __cdecl FUN_00ec3bad(int value);
 struct AllocatorToken
@@ -2372,7 +2373,7 @@ class FUN_00afdc00_cls
     unsigned int unk1C;
     unsigned int unk20;
     FUN_00afdc00_Item* m_pItems;
-    bool BSArchive_IsFileEntryInArchive(int a1);
+    bool BSArchive_IsFileEntryInArchive(int apFileEntry);
 };
 struct S_00aff060_Class
 {
@@ -3018,7 +3019,7 @@ struct S_008785e0
     unsigned char m_unk0f;
     void* m_unk10;
 
-    int BSSystemFile_DoSeek(int a1, int a2, int a3, int a4);
+    int BSSystemFile_DoSeek(int auiOffset, int aeWhence, int auiPos, int a4);
     int OpenFile(const char* lpFileName);
 };
 extern "C" __declspec(dllimport) int __stdcall ReadFile(void* hFile, void* lpBuffer, unsigned long nNumberOfBytesToRead,
@@ -4115,7 +4116,7 @@ extern "C" int __cdecl _splitpath_s(const char* source, char* drive, unsigned in
 extern "C" int __cdecl _makepath_s(char* result, unsigned int resultSize, const char* drive, const char* directory,
                                    const char* filename, const char* extension);
 extern unsigned int DAT_011f804c;
-void __cdecl WildCard_MakeString(char* result, const char* source);
+void __cdecl WildCard_MakeString(char* apDest, const char* apSrc);
 extern "C" __declspec(dllimport) int __stdcall WriteFile(void*, const void*, unsigned long, unsigned long*, void*);
 struct SystemFileWriter : Win32ReadFile
 {

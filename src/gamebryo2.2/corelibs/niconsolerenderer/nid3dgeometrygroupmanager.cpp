@@ -39,26 +39,29 @@ extern void* DAT_010ef718[];
 
 // Allocates and initialises a NiD3DGeometryGroupManager, stores the device and buffers, and AddRefs the device.
 // @fnv 0x00e88eb0
-NiD3DGeometryGroupManager* NiD3DGeometryGroupManager::Create(Direct3DDeviceInterface* device,
-                                                             VertexDeclarationLayout* buffers)
+// pdb: NiD3DGeometryGroupManager::Create | NiD3DGeometryGroupManager.obj | retail, upstream name already matches, high
+// pdb params: pkD3DDevice, pkVBManager
+// pdb locals: pkManager
+NiD3DGeometryGroupManager* NiD3DGeometryGroupManager::Create(Direct3DDeviceInterface* pkD3DDevice,
+                                                             VertexDeclarationLayout* pkVBManager)
 {
     NiD3DGeometryGroupManager* p = (NiD3DGeometryGroupManager*)NiMemObject::operator new(28);
     if (p)
     {
         p->Initialize();
         *(void***)p = DAT_010ef718;
-        p->m_04 = 0;
+        p->m_kGroups = 0;
         p->m_08 = 0;
         p->m_0c = 0;
-        p->m_10 = 0;
-        p->m_14 = 0;
-        p->m_18 = false;
+        p->m_pkD3DDevice = 0;
+        p->m_pkVBManager = 0;
+        p->m_bHWSkinning = false;
     }
     else
         p = 0;
-    p->m_10 = device;
-    device->AddRef();
-    p->m_14 = buffers;
+    p->m_pkD3DDevice = pkD3DDevice;
+    pkD3DDevice->AddRef();
+    p->m_pkVBManager = pkVBManager;
     return p;
 }
 
@@ -74,10 +77,12 @@ bool __fastcall NiD3DGeometryGroupManager_AddObjectToGroup(NiD3DGeometryGroupMan
 {
     typedef bool(__thiscall * Fn)(void*, NiGeometryGroup*, NiGeometryData*, NiSkinInstance*, bool, unsigned int,
                                   unsigned int);
-    return ((Fn)&ProcessCollector)(pThis, pkGroup, pkData, pkSkinInstance, pThis->m_18, 0, 0);
+    return ((Fn)&ProcessCollector)(pThis, pkGroup, pkData, pkSkinInstance, pThis->m_bHWSkinning, 0, 0);
 }
 
 // @fnv 0x00e88c90
+// pdb: NiD3DGeometryGroupManager::IsGroupEmpty | NiD3DGeometryGroupManager.obj | debug, upstream name already matches, high
+// pdb params: pkGroup
 bool __fastcall IsGroupEmpty(NiD3DGeometryGroupManager*, int, NiGeometryGroup* pkGroup)
 {
     return pkGroup->m_uiRefCount == 0;
@@ -117,6 +122,7 @@ void __fastcall DestroyGeometryGroupManagerBase(NiD3DGeometryGroupManager*, int)
 void __cdecl NiVBSet_DeleteBlocks();
 void __cdecl _NiFreeAlias(void*);
 // @fnv 0x00e88d60
+// pdb: NiD3DGeometryGroupManager::`scalar deleting destructor' | NiD3DGeometryGroupManager.obj | debug, object-file run extension, low
 void __fastcall DestroyGeometryGroupManager(NiD3DGeometryGroupManager* manager, int)
 {
     unsigned int n = manager->m_0c;
@@ -124,14 +130,14 @@ void __fastcall DestroyGeometryGroupManager(NiD3DGeometryGroupManager* manager, 
     *(void***)manager = DAT_010ef718;
     for (; i < n; ++i)
     {
-        NiGeometryGroup* e = reinterpret_cast<NiGeometryGroup**>(manager->m_04)[i];
+        NiGeometryGroup* e = reinterpret_cast<NiGeometryGroup**>(manager->m_kGroups)[i];
         if (e)
             delete e;
     }
     NiVBSet_DeleteBlocks();
-    if (manager->m_10)
-        manager->m_10->Release();
-    _NiFreeAlias(manager->m_04);
+    if (manager->m_pkD3DDevice)
+        manager->m_pkD3DDevice->Release();
+    _NiFreeAlias(manager->m_kGroups);
     typedef void (__thiscall* DestroyBase)(NiD3DGeometryGroupManager*);
     ((DestroyBase)&DestroyGeometryGroupManagerBase)(manager);
 }
@@ -162,10 +168,13 @@ struct FUN_P
 };
 // @fnv 0x00e88d00
 // src: XBOX_PDB 0x00e88d00
-bool __stdcall NiD3DGeometryGroupManager_RemoveSkinPartitionFromGroup(FUN_P* p)
+// pdb: NiD3DGeometryGroupManager::RemoveSkinPartitionFromGroup | NiD3DGeometryGroupManager.obj | retail, upstream name already matches, high
+// pdb params: pkSkinPartition
+// pdb locals: pkPartitions, uiPartitionCount, pkGroup, bReturn, pkBuffData, ui, kPartition, pkPartitionGroup
+bool __stdcall NiD3DGeometryGroupManager_RemoveSkinPartitionFromGroup(FUN_P* pkSkinPartition)
 {
-    unsigned int cnt = p->m_08;
-    FUN_Elem* e = p->m_0C;
+    unsigned int cnt = pkSkinPartition->m_08;
+    FUN_Elem* e = pkSkinPartition->m_0C;
     NiGeometryGroup* b = e->m_28->m_pkOwnerGroup;
     bool flag = false;
     if (cnt > 0)
@@ -198,7 +207,7 @@ bool __fastcall RemoveElement(NiD3DGeometryGroupManager* manager, int, NiGeometr
         unsigned int n = manager->m_0c;
         if (n > 0)
         {
-            NiGeometryGroup** cur = reinterpret_cast<NiGeometryGroup**>(manager->m_04);
+            NiGeometryGroup** cur = reinterpret_cast<NiGeometryGroup**>(manager->m_kGroups);
             do
             {
                 if (*cur == pElement)
@@ -214,7 +223,7 @@ bool __fastcall RemoveElement(NiD3DGeometryGroupManager* manager, int, NiGeometr
 
         unsigned int& cnt = manager->m_0c;
         --cnt;
-        NiGeometryGroup** arr = reinterpret_cast<NiGeometryGroup**>(manager->m_04);
+        NiGeometryGroup** arr = reinterpret_cast<NiGeometryGroup**>(manager->m_kGroups);
         arr[uiIndex] = arr[cnt];
         delete pElement;
         return true;
@@ -263,7 +272,7 @@ owner:
 }
 
 NiGeometryGroup* CreateStaticGroup();
-NiGeometryGroup* CreateDynamicGroup();
+NiGeometryGroup* NiDynamicGeometryGroup_Create();
 
 inline int NiStreamLinkIDSet_nid3dgeometrygroupmanager::Find(unsigned int value)
 {
@@ -292,21 +301,24 @@ static inline void AppendGroup(NiStreamLinkIDSet_nid3dgeometrygroupmanager* grou
 
 static inline void SetDevice(NiGeometryGroup* group, Direct3DDeviceInterface* device)
 {
-    group->m_pD3DDevice = device;
+    group->m_pkD3DDevice = device;
     device->AddRef();
 }
 
 static __forceinline void AddGroup(NiD3DGeometryGroupManager* manager, NiGeometryGroup* group)
 {
-    NiStreamLinkIDSet_nid3dgeometrygroupmanager* groups = reinterpret_cast<NiStreamLinkIDSet_nid3dgeometrygroupmanager*>(&manager->m_04);
+    NiStreamLinkIDSet_nid3dgeometrygroupmanager* groups = reinterpret_cast<NiStreamLinkIDSet_nid3dgeometrygroupmanager*>(&manager->m_kGroups);
     if (groups->Find(reinterpret_cast<unsigned int>(group)) >= 0)
         return;
     AppendGroup(groups, group);
-    SetDevice(group, manager->m_10);
+    SetDevice(group, manager->m_pkD3DDevice);
 }
 
 // Creates a geometry group for the given repacking behavior, adds it to the manager's set, and returns it (or null for an unknown behavior).
 // @fnv 0x00e88f10
+// pdb: NiD3DGeometryGroupManager::CreateGroup | NiD3DGeometryGroupManager.obj | retail, upstream name already matches, high
+// pdb params: eBehavior
+// pdb locals: pkGroup
 NiGeometryGroup* NiD3DGeometryGroupManager::CreateGroup(NiGeometryGroupManager::RepackingBehavior eBehavior)
 {
     NiGeometryGroup* pkGroup = 0;
@@ -319,7 +331,7 @@ NiGeometryGroup* NiD3DGeometryGroupManager::CreateGroup(NiGeometryGroupManager::
         pkGroup = NiUnsharedGeometryGroup::Create();
         break;
     case DYNAMIC:
-        pkGroup = CreateDynamicGroup();
+        pkGroup = NiDynamicGeometryGroup_Create();
         break;
     }
     if (pkGroup)
@@ -374,6 +386,8 @@ struct HkBody
 };
 // Processes each element of the info array when enabled; otherwise calls Process once with null if body->unk34 is zero.
 // @fnv 0x00e88dc0
+// pdb: NiD3DGeometryGroupManager::AddObjectToGroup | NiD3DGeometryGroupManager.obj | retail, call graph (shared callers), medium
+// pdb params: pkGroup, pkData, pkSkinInstance
 bool __stdcall ProcessCollector(NiGeometryGroup* collector, HkBody* body, HkInput* input, bool flag, int unused1,
                                 int unused2)
 {

@@ -11,12 +11,13 @@
 
 class TESWeather;
 
+// pdb: structure WeatherEntry, size 0xc, 3 members
 class WeatherEntry
 {
   public:
-    TESWeather* m_weather;
-    unsigned int m_uiFilterValue;
-    TESGlobal* m_otherWeather;
+    TESWeather* pWeather;
+    unsigned int uiChance;
+    TESGlobal* pChanceVar;
     WeatherEntry();
 };
 

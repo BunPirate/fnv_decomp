@@ -2,6 +2,7 @@
 
 #include "ActiveEffect.h"
 
+// pdb: class VampirismEffect, size 0x48, bases: ActiveEffect, 0 members
 class VampirismEffect : public ActiveEffect
 {
 public:

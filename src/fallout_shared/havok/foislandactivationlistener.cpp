@@ -10,6 +10,7 @@ extern "C" void __cdecl _Deallocate(void*);
 
 // Calls InitPtr, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006241e0
+// pdb: hkpIslandActivationListener::`scalar deleting destructor' | FOIslandActivationListener.obj | retail, vtable slot, high
 void* hkpIslandActivationListener::vf00(unsigned int flags)
 {
     InitPtr();
@@ -47,10 +48,12 @@ NiPoint3& SetNiPoint3FromHkVector4(NiPoint3&, const hkVector4&);
 
 // @fnv 0x00624ad0
 // src: COMMUNITY 0x00624ad0
-NiTransform* HK2NI_00624ad0(NiTransform* arNiTran, TopicH* arTopicH)
+// pdb: HK2NI | FOIslandActivationListener.obj | retail, call graph, high
+// pdb params: arNiTran, arhkTran
+NiTransform* HK2NI_00624ad0(NiTransform* arNiTran, TopicH* arhkTran)
 {
-    HK2NI_00624b10(arNiTran, &arTopicH->_ref_006815c0());
-    SetNiPoint3FromHkVector4(*(NiPoint3*)((char*)arNiTran + 0x24), *(const hkVector4*)arTopicH->GetAddTopicList());
+    HK2NI_00624b10(arNiTran, &arhkTran->_ref_006815c0());
+    SetNiPoint3FromHkVector4(*(NiPoint3*)((char*)arNiTran + 0x24), *(const hkVector4*)arhkTran->GetAddTopicList());
     return arNiTran;
 }
 
@@ -84,6 +87,7 @@ struct FUN_00624190_shell
 };
 // Calls FUN_00624230, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00624190
+// pdb: FOIslandActivationListener::`scalar deleting destructor' | FOIslandActivationListener.obj | retail, vtable slot, high
 void* FUN_00624190_shell::FUN_00624190(unsigned int flags)
 {
     FUN_00624230();
@@ -102,15 +106,18 @@ hkpIslandActivationListener* __fastcall InitializeIslandActivationListener(hkpIs
 extern "C" int __cdecl bhkUtilFunctions_GetNiAVObject(int);
 struct FUN_00807730_shell
 {
-    TESObjectREFR* bhkCharacterListenerSpell_GetObjectREFR(void* p);
+    TESObjectREFR* bhkCharacterListenerSpell_GetObjectREFR(void* apCollidable);
 };
 // Calls FUN_00c7fa90 on p; if it returns non-zero, resolves that value to a TESObjectREFR and returns it, otherwise returns null.
 // @fnv 0x00807730
 // src: XBOX_PDB 0x00807730
-TESObjectREFR* FUN_00807730_shell::bhkCharacterListenerSpell_GetObjectREFR(void* p)
+// pdb: bhkCharacterListenerSpell::GetObjectREFR | bhkCharacterListenerSpell.obj | debug, upstream name already matches, high
+// pdb params: apCollidable
+// pdb locals: pav, pref
+TESObjectREFR* FUN_00807730_shell::bhkCharacterListenerSpell_GetObjectREFR(void* apCollidable)
 {
     TESObjectREFR* result = 0;
-    int blood = bhkUtilFunctions_GetNiAVObject((int)p);
+    int blood = bhkUtilFunctions_GetNiAVObject((int)apCollidable);
     if (blood)
         result = TESObjectREFR::GetReferenceFromNiAVObject((void*)blood);
     return result;
@@ -139,6 +146,7 @@ int FUN_00573eb0_Class::NiPathInterpolator_GetBit(int)
 
 // @fnv 0x00624bb0
 // src: COMMUNITY 0x00624bb0
+// pdb: bhkNiCollisionObject::QSetLocal | FOIslandActivationListener.obj | debug, call graph, medium
 int FUN_00573eb0_Class::bhkNiCollisionObject_GSetLocal()
 {
     return NiPathInterpolator_GetBit(8);
@@ -166,12 +174,14 @@ struct FUN_006242f0_shell
 };
 // If listener is non-null, calls its RemovePointer with this and its FUN_00c917a0 with this+4.
 // @fnv 0x006242f0
-void FUN_006242f0_shell::NotifyListener(void* listener)
+// pdb: FOIslandActivationListener::RemoveFromWorld | FOIslandActivationListener.obj | retail, call graph (shared callers), high
+// pdb params: apWorld
+void FUN_006242f0_shell::NotifyListener(void* apWorld)
 {
-    if (listener)
+    if (apWorld)
     {
-        ((FUN_00c91840_shell*)listener)->RemovePointer(this);
-        ((FUN_00c917a0_shell*)listener)->hkpWorld_removeEntityListener(this ? (char*)this + 4 : 0);
+        ((FUN_00c91840_shell*)apWorld)->RemovePointer(this);
+        ((FUN_00c917a0_shell*)apWorld)->hkpWorld_removeEntityListener(this ? (char*)this + 4 : 0);
     }
 }
 
@@ -194,10 +204,11 @@ struct FUN_00624230 : BaseDtor_b4091, MemberDtor_b4091
 };
 
 // @fnv 0x00624230
+// pdb: FOIslandActivationListener::~FOIslandActivationListener | FOIslandActivationListener.obj | debug, object-file run extension, low
 FUN_00624230::~FUN_00624230()
 {}
 
-NiPoint3& SetNiPoint3FromHkVector4_004a3970(NiPoint3& dest, const hkVector4& src);
+NiPoint3& SetNiPoint3FromHkVector4_004a3970(NiPoint3& arNiP, const hkVector4& arhkV);
 
 struct FUN_004b4cf0_shell
 {
@@ -211,6 +222,8 @@ struct FUN_004769c0_shell
 
 // @fnv 0x00624b10
 // src: COMMUNITY 0x00624b10
+// pdb: bhkTransformShape::GethkTransform | bhkTransformShape.obj | debug, call graph, medium
+// pdb locals: ps
 FUN_004769c0_shell* HK2NI_00624b10(FUN_004769c0_shell* dest, FUN_004b4cf0_shell* src)
 {
     NiPoint3 vec;
@@ -234,21 +247,23 @@ struct ActivationBaseB
 };
 struct ActivationListener
 {
-    void hkpWorld_addIslandActivationListener(void* owner);
-    void hkpWorld_addEntityListener(ActivationBaseB* owner);
+    void hkpWorld_addIslandActivationListener(void* worldListener);
+    void hkpWorld_addEntityListener(ActivationBaseB* worldListener);
 };
 struct FUN_006242a0_cls : ActivationBaseA, ActivationBaseB
 {
-    void NotifyActivation(ActivationListener* listener);
+    void NotifyActivation(ActivationListener* apWorld);
 };
 // If listener is non-null, calls its FUN_00c938a0 with this and its FUN_00c93820 with this cast to ActivationBaseB.
 // @fnv 0x006242a0
-void FUN_006242a0_cls::NotifyActivation(ActivationListener* listener)
+// pdb: FOIslandActivationListener::AddToWorld | FOIslandActivationListener.obj | retail, object-file run extension, high
+// pdb params: apWorld
+void FUN_006242a0_cls::NotifyActivation(ActivationListener* apWorld)
 {
-    if (listener)
+    if (apWorld)
     {
-        listener->hkpWorld_addIslandActivationListener(this);
-        listener->hkpWorld_addEntityListener(static_cast<ActivationBaseB*>(this));
+        apWorld->hkpWorld_addIslandActivationListener(this);
+        apWorld->hkpWorld_addEntityListener(static_cast<ActivationBaseB*>(this));
     }
 }
 
@@ -547,13 +562,16 @@ bool __cdecl NiObject_IsKindOf(const NiRTTI*, void*);
 
 struct FUN_00624340_shell
 {
-    void ProcessArgType(ArgType* arg1);
+    void ProcessArgType(ArgType* apEntity);
 };
 
 // @fnv 0x00624340
-void FUN_00624340_shell::ProcessArgType(ArgType* apArg)
+// pdb: FOIslandActivationListener::entityAddedCallback | FOIslandActivationListener.obj | retail, vtable slot, high
+// pdb params: apEntity
+// pdb locals: pniColObject, pavObject, pobjectRef, pdynamicnode, pcell, pbhkentity, pbody
+void FUN_00624340_shell::ProcessArgType(ArgType* apEntity)
 {
-    if (apArg)
+    if (apEntity)
     {
         Type3* kVar4;
         Type2* _var8;
@@ -566,9 +584,9 @@ void FUN_00624340_shell::ProcessArgType(ArgType* apArg)
         void* varVal;
         Type7* var3;
 
-        if (apArg->isActive_00c9bff0().FUN_005609f0())
+        if (apEntity->isActive_00c9bff0().FUN_005609f0())
         {
-            varC6 = FUN_004b5a50(apArg);
+            varC6 = FUN_004b5a50(apEntity);
             _var8 = varC6 ? varC6->FUN_0044ddc0() : 0;
             kVar4 = _var8 ? TESObjectREFR_FindReferenceFor3D(_var8) : 0;
             if (kVar4 && !kVar4->vfunc_100())
@@ -594,14 +612,14 @@ void FUN_00624340_shell::ProcessArgType(ArgType* apArg)
         }
         else
         {
-            if (CF845(apArg->TESDataHandler_GetWorldSpaceList()->hkpCollidable_getCollisionFilterInfo()).CFilter_GetLayer() == 0x14)
+            if (CF845(apEntity->TESDataHandler_GetWorldSpaceList()->hkpCollidable_getCollisionFilterInfo()).CFilter_GetLayer() == 0x14)
             {
-                var2 = FUN_004b5a50(apArg);
+                var2 = FUN_004b5a50(apEntity);
                 var1C8 = var2 ? var2->FUN_0044ddc0() : 0;
                 var18 = var1C8 ? TESObjectREFR_FindReferenceFor3D(var1C8) : 0;
                 if (var18 && !var18->vfunc_100())
                 {
-                    varVal = bhkEntity_Getbhk(apArg);
+                    varVal = bhkEntity_Getbhk(apEntity);
                     if (varVal && NiObject_IsKindOf(&DAT_012681c0, varVal))
                     {
                         var3 = (Type7*)varVal;
@@ -636,15 +654,18 @@ void __cdecl TESObjectCELL_QueueAttachChild(SceneObject* object, Geometry* geome
 void __cdecl BSShaderManager_AddMotionBluredObject();
 struct FUN_00624580_Class
 {
-    void __thiscall FOIslandActivationListener_islandActivatedCallback(SceneList* object);
+    void __thiscall FOIslandActivationListener_islandActivatedCallback(SceneList* apIsland);
 };
 // @fnv 0x00624580
 // src: COMMUNITY 0x00624580
-void FUN_00624580_Class::FOIslandActivationListener_islandActivatedCallback(SceneList* pSceneList)
+// pdb: FOIslandActivationListener::islandActivatedCallback | FOIslandActivationListener.obj | retail, upstream name already matches, high
+// pdb params: apIsland
+// pdb locals: iarraySize, pentity, pentityArray, ientityIdx, pniColObject, pavObject, pobjectRef, pdynamicnode, pcell
+void FUN_00624580_Class::FOIslandActivationListener_islandActivatedCallback(SceneList* apIsland)
 {
-    if (!pSceneList)
+    if (!apIsland)
         return;
-    SceneList* count = pSceneList->GetExtraPartList();
+    SceneList* count = apIsland->GetExtraPartList();
     int iItemCount = count->FUN_00726070();
     void* pEntry;
     for (int sceneObject = 0; sceneObject < iItemCount; ++sceneObject)

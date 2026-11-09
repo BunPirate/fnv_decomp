@@ -18,6 +18,8 @@ extern const char* g_iconNames[14];
 extern BGSMenuIcon* DAT_011c4b54[14];
 // @fnv 0x00479570
 // src: XBOX_PDB 0x00479570
+// pdb: BGSEquipType::GenerateDefaultMenuIcons | BGSEquipType.obj | retail, string-set bridge, high
+// pdb locals: i, iid, picon, ptemp
 void BGSEquipType_GenerateDefaultMenuIcons()
 {
     static unsigned int prefixLength = BSstrlen("MenuIconEquipType");

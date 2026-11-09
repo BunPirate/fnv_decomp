@@ -2,6 +2,7 @@
 
 #include "hkVector4.h"
 
+// pdb: structure hkpWorldRayCastOutput, size 0x60, bases: hkpShapeRayCastOutput, 1 members
 class hkpWorldRayCastOutput
 {
 public:
@@ -15,7 +16,7 @@ public:
     unsigned int unk44;
     unsigned int unk48;
     unsigned int unk4C;
-    const void* m_pRootCollidable;
+    const void* m_rootCollidable;
 
     hkpWorldRayCastOutput()
     {
@@ -28,11 +29,11 @@ public:
         m_iExtraInfo = -1;
         m_uiShapeKeys[0] = static_cast<unsigned int>(-1);
         m_uiShapeKeyIndex = 0;
-        m_pRootCollidable = 0;
+        m_rootCollidable = 0;
     }
 
     bool DidHit() const
     {
-        return m_pRootCollidable != 0;
+        return m_rootCollidable != 0;
     }
 };

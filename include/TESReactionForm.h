@@ -8,6 +8,7 @@ class BGSSaveFormBuffer;
 class ReactionInfo;
 class TESForm;
 
+// pdb: class TESReactionForm, size 0x10, bases: BaseFormComponent, 2 members
 class TESReactionForm : public BaseFormComponent
 {
 public:
@@ -22,14 +23,14 @@ public:
     void InitializeComponent();
     void ClearComponent();
     void Save();
-    void BaseFormRecord(BaseFormComponent* component);
-    bool IsEqualToBase(BaseFormComponent* component);
-    void InitItem(TESForm* form);
-    void ClearReactionList();
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
+    bool IsEqualToBase(BaseFormComponent* apCompareFC);
+    void InitItem(TESForm* apOwner);
+    void FreeReactionList();
     int GetLowestReaction(TESForm**, int*, long);
     int GetHighestReaction(TESForm**, int*, long);
     void SetReactionValue(TESForm*, int);
-    int GetReactionValue(TESForm*);
+    int TESReactionForm_GetReaction(TESForm*);
     void ModReaction(TESForm*, int);
     int GetFactionCombatRelation(TESForm*);
     void SetFightReaction(TESForm*, int);

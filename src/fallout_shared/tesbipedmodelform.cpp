@@ -9,6 +9,7 @@
 #include "tesbipedmodelform_types_BGSBipedModelList.h"
 
 // @fnv 0x004802f0
+// pdb: TESBipedModelForm::TESBipedModelForm | TESBipedModelForm.obj | retail, upstream name already matches, high
 TESBipedModelForm::TESBipedModelForm()
 {
     InitializeComponent();
@@ -25,25 +26,30 @@ bool TESBipedModelForm::IsPowerArmor()
 
 // Initializes both biped and world model slots (indices 0 and 1) of the form.
 // @fnv 0x00480750
-void TESBipedModelForm::InitItem(TESForm* form)
+// pdb: TESBipedModelForm::InitItem | TESBipedModelForm.obj | retail, upstream name already matches, high
+// pdb params: apOwner
+void TESBipedModelForm::InitItem(TESForm* apOwner)
 {
-    bipedModel[0].InitItem(form);
-    groundModel[0].InitItem(form);
-    bipedModel[1].InitItem(form);
-    groundModel[1].InitItem(form);
+    bipedModel[0].InitItem(apOwner);
+    groundModel[0].InitItem(apOwner);
+    bipedModel[1].InitItem(apOwner);
+    groundModel[1].InitItem(apOwner);
 }
 
 // Checks whether this form or a form in modelList fills the given biped slot, recursing into biped model forms found in the list.
 // @fnv 0x00480af0
-bool TESBipedModelForm::HasBipedModel(BIPED_OBJECT slot, bool hair, BGSBipedModelList* modelList)
+// pdb: TESBipedModelForm::FillsBipedSlot | TESBipedModelForm.obj | retail, call graph (shared callers), high
+// pdb params: aeBipedSlot, abHairTest, apBipedModelList
+// pdb locals: bretVal, pbgsFormList, pformList, pbiped, pform
+bool TESBipedModelForm::HasBipedModel(BIPED_OBJECT aeBipedSlot, bool abHairTest, BGSBipedModelList* apBipedModelList)
 {
-    if (hair && slot == BIPED_OBJECT_BO_HAIR && (partMask & 1))
+    if (abHairTest && aeBipedSlot == BIPED_OBJECT_BO_HAIR && (partMask & 1))
         return false;
 
-    bool fillsSlot = partMask & (1 << slot);
-    if (!fillsSlot && modelList)
+    bool fillsSlot = partMask & (1 << aeBipedSlot);
+    if (!fillsSlot && apBipedModelList)
     {
-        BGSListForm* listForm = modelList->GetList();
+        BGSListForm* listForm = apBipedModelList->GetList();
         if (listForm)
         {
             BSSimpleList<TESForm*>* itemList = listForm->GetList();
@@ -57,7 +63,7 @@ bool TESBipedModelForm::HasBipedModel(BIPED_OBJECT slot, bool hair, BGSBipedMode
                 locals.form = itemList->GetItem();
                 locals.bipedForm = TESBipedModelForm::GetFormAsBipedModel(locals.form);
                 if (locals.bipedForm)
-                    fillsSlot = locals.bipedForm->HasBipedModel(slot, hair, 0);
+                    fillsSlot = locals.bipedForm->HasBipedModel(aeBipedSlot, abHairTest, 0);
                 itemList = itemList->GetNext();
             }
         }
@@ -67,12 +73,16 @@ bool TESBipedModelForm::HasBipedModel(BIPED_OBJECT slot, bool hair, BGSBipedMode
 
 // Falls back to the male model when the female model is empty, applies the model to the biped anim, and loads face gen extra data if present.
 // @fnv 0x00480bd0
-void TESBipedModelForm::SetBipedModel(BipedAnim* anim, SEX sex, BIPED_OBJECT slot)
+// src: XBOX_RETAIL_PDB 0x00480bd0
+// pdb: TESBipedModelForm::AddToBiped | TESBipedModelForm.obj | retail, call graph, high
+// pdb params: apBiped, aeSex, aeBipedObject
+// pdb locals: pconstaint, spmodel
+void TESBipedModelForm::AddToBiped(BipedAnim* apBiped, SEX aeSex, BIPED_OBJECT aeBipedObject)
 {
-    if (sex == SEX_SEX_FEMALE && !bipedModel[sex].GetModelLength())
-        sex = SEX_SEX_MALE;
+    if (aeSex == SEX_SEX_FEMALE && !bipedModel[aeSex].GetModelLength())
+        aeSex = SEX_SEX_MALE;
 
-    anim->SetBipedObject(dynamic_cast<TESForm*>(this), &bipedModel[sex], slot);
+    apBiped->SetBipedPart(dynamic_cast<TESForm*>(this), &bipedModel[aeSex], aeBipedObject);
 
     if (modelRDT.GetModelLength())
     {
@@ -80,19 +90,21 @@ void TESBipedModelForm::SetBipedModel(BipedAnim* anim, SEX sex, BIPED_OBJECT slo
         NiPointer<BSFaceGenModelExtraData> extra(0);
         g_modelLoader->ModelLoader_FindModel(model, &extra);
         if (extra.operator->())
-            anim->FUN_0043f010(extra.operator->()->GetModelFilePath())->ApplyRDTNodeScales();
+            apBiped->FUN_0043f010(extra.operator->()->GetModelFilePath())->ApplyRDTNodeScales();
     }
 }
 
 // Returns the face gen model obtained through the member TESModelRDT's vtable slot 5.
 // @fnv 0x00480ce0
 // src: XBOX_PDB 0x00480ce0
+// pdb: TESBipedModelForm::GetBipedConstraint | TESBipedModelForm.obj | debug, upstream name already matches, high
 BSFaceGenModel* TESBipedModelForm::GetBipedConstraint()
 {
     return (BSFaceGenModel*)modelRDT.GetModelFilePath();
 }
 
 // @fnv 0x004803e0
+// pdb: TESModelRDT::TESModelRDT | TESBipedModelForm.obj | debug, upstream name already matches, high
 TESModelRDT::TESModelRDT()
 {}
 
@@ -148,6 +160,10 @@ struct FUN_00481110_shell : public TESBipedModelForm
 };
 
 // @fnv 0x00481110
+// pdb: TESBipedModelForm::GetWorldModel | TESBipedModelForm.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to TESBipedModelForm::GetWorldTESModel
+// pdb params: apObj, apRef
+// pdb locals: powner, pbipedModel, esex
 TESModelTextureSwap* FUN_00481110_shell::GetWorldModel(int aeSex)
 {
     if (groundModel[aeSex].GetModelLength() == 0 && aeSex == 1)
@@ -174,12 +190,15 @@ struct FUN_00481150_shell
 {
     unsigned char layoutPadding0c[0xc];
     TESModelTextureSwap bipedModel[2];
-    TESModelTextureSwap* GetBipedModel(SEX aeSex);
+    TESModelTextureSwap* TESBipedModelForm_GetBipedModel(SEX aeSex);
 };
 
 // Returns the biped model for the given sex, falling back to the first model when the requested one is empty and the sex is 1.
 // @fnv 0x00481150
-TESModelTextureSwap* FUN_00481150_shell::GetBipedModel(SEX aeSex)
+// src: XBOX_DEBUG_PDB 0x00481150
+// pdb: TESBipedModelForm::GetBipedModel | TESBipedModelForm.obj | debug, upstream name already matches, high
+// pdb params: aeSex
+TESModelTextureSwap* FUN_00481150_shell::TESBipedModelForm_GetBipedModel(SEX aeSex)
 {
     if (bipedModel[aeSex].GetModelLength() == 0 && aeSex == 1)
     {
@@ -231,7 +250,7 @@ struct FUN_0047a240_shell
 
 struct FUN_004891d0_obj
 {
-    void WriteToBuffer(unsigned int, unsigned int);
+    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int, unsigned int);
 };
 
 struct FUN_00489240_Class
@@ -259,11 +278,13 @@ void _FUN_00485990(int, void*, int);
 
 struct FUN_00480610_shell
 {
-    void InitBipedModel();
+    void TESBipedModelForm_Save();
 };
 
 // @fnv 0x00480610
-void FUN_00480610_shell::InitBipedModel()
+// src: XBOX_RETAIL_PDB 0x00480610
+// pdb: TESBipedModelForm::Save | TESBipedModelForm.obj | retail, call graph, high
+void FUN_00480610_shell::TESBipedModelForm_Save()
 {
     if (_FUN_00401500())
     {
@@ -297,7 +318,7 @@ void FUN_00480610_shell::InitBipedModel()
     reinterpret_cast<FUN_0048e370_obj*>(reinterpret_cast<char*>(this) + 0x98)->TESTexture_Save(0x324f4349);
     reinterpret_cast<FUN_0047a240_shell*>(reinterpret_cast<char*>(this) + 0xb4)->FUN_0047a240(0x3243494d);
 
-    reinterpret_cast<FUN_004891d0_obj*>(reinterpret_cast<char*>(this) + 0xc4)->WriteToBuffer(0x54434d42, 0);
+    reinterpret_cast<FUN_004891d0_obj*>(reinterpret_cast<char*>(this) + 0xc4)->BSSendSceneGraphCommand_WriteToBuffer(0x54434d42, 0);
 }
 
 struct FUN_00480570_cls : public TESBipedModelForm
@@ -306,6 +327,7 @@ struct FUN_00480570_cls : public TESBipedModelForm
 };
 
 // @fnv 0x00480570
+// pdb: TESBipedModelForm::ClearDataComponent | TESBipedModelForm.obj | retail, vtable slot, high
 void FUN_00480570_cls::FreeModels()
 {
     bipedModel[0].Free();
@@ -516,6 +538,7 @@ struct FUN_004804d0_shell
 // Clears unk04 and unk08, then calls Call on the seven embedded objects at unk0c, unk4c, unk8c, unk2c, unk6c, unk98 and unkC4.
 // @fnv 0x004804d0
 // src: XBOX_PDB 0x004804d0
+// pdb: TESBipedModelForm::InitializeDataComponent | TESBipedModelForm.obj | retail, upstream name already matches, high
 void FUN_004804d0_shell::TESBipedModelForm_InitializeDataComponent()
 {
     unk04 = 0;
@@ -534,15 +557,18 @@ void FUN_004804d0_shell::TESBipedModelForm_InitializeDataComponent()
 class BipedComparison : public TESBipedModelForm
 {
   public:
-    bool TESBipedModelForm_CompareComponent(BaseFormComponent* other);
+    bool TESBipedModelForm_CompareComponent(BaseFormComponent* apCompareFC);
 };
 
 // Compares this BipedComparison against another BaseFormComponent, returning true if the cast fails or any biped model, icon, or facegen field differs.
 // @fnv 0x004808f0
 // src: XBOX_PDB 0x004808f0
-bool BipedComparison::TESBipedModelForm_CompareComponent(BaseFormComponent* other)
+// pdb: TESBipedModelForm::CompareComponent | TESBipedModelForm.obj | retail, upstream name already matches, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool BipedComparison::TESBipedModelForm_CompareComponent(BaseFormComponent* apCompareFC)
 {
-    TESBipedModelForm* compared = dynamic_cast<TESBipedModelForm*>(other);
+    TESBipedModelForm* compared = dynamic_cast<TESBipedModelForm*>(apCompareFC);
     if (!compared)
         return true;
     if (memcmp(&partMask, &compared->partMask, sizeof(BipedModelForm)))
@@ -571,16 +597,19 @@ bool BipedComparison::TESBipedModelForm_CompareComponent(BaseFormComponent* othe
 class BipedModelCopy : public TESBipedModelForm
 {
   public:
-    void TESBipedModelForm_CopyComponent(BaseFormComponent* component);
+    void TESBipedModelForm_CopyComponent(BaseFormComponent* apCopyFC);
 };
 
 // Copies all biped model fields from a source TESBipedModelForm into this BipedModelCopy after casting the component.
 // @fnv 0x004807a0
 // src: XBOX_PDB 0x004807a0
-void BipedModelCopy::TESBipedModelForm_CopyComponent(BaseFormComponent* component)
+// pdb: TESBipedModelForm::CopyComponent | TESBipedModelForm.obj | retail, upstream name already matches, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
+void BipedModelCopy::TESBipedModelForm_CopyComponent(BaseFormComponent* apCopyFC)
 {
     TESBipedModelForm* source;
-    source = dynamic_cast<TESBipedModelForm*>(component);
+    source = dynamic_cast<TESBipedModelForm*>(apCopyFC);
     if (source == 0)
     {
     }

@@ -178,7 +178,7 @@ struct GameObject
     float accumulated;
     float step;
 
-    void ImageSpaceEffectWaterDisplacement_Render(void* arg1, void* arg2, int arg3, int arg4);
+    void ImageSpaceEffectWaterDisplacement_Render(void* apGeometry, void* apRenderer, int apParam, int abEndFrame);
 };
 
 extern float DAT_010313d4;
@@ -214,7 +214,10 @@ static HolderForAccum* GetNode(HolderForAccum* p)
 
 // @fnv 0x00ba0900
 // src: XBOX_PDB 0x00ba0900
-void GameObject::ImageSpaceEffectWaterDisplacement_Render(void* arg1, void* arg2, int arg3, int arg4)
+// pdb: ImageSpaceEffectWaterDisplacement::Render | ImageSpaceEffectWaterDisplacement.obj | retail, string-set bridge, high
+// pdb params: apGeometry, apRenderer, apParam, abEndFrame
+// pdb locals: pparam, tempviewport, peffect, UpdateData, spPartialScreenTriShapeData, i, tmp
+void GameObject::ImageSpaceEffectWaterDisplacement_Render(void* apGeometry, void* apRenderer, int apParam, int abEndFrame)
 {
     if (DAT_011fffed)
     {
@@ -249,7 +252,7 @@ void GameObject::ImageSpaceEffectWaterDisplacement_Render(void* arg1, void* arg2
 
         node->SetAccumulatorAt(0, &tex34, 0);
         node->SetAccumulatorAt(1, assets[1], 1);
-        node->Dispatch(arg1, arg2, pEmitter, 1);
+        node->Dispatch(apGeometry, apRenderer, pEmitter, 1);
 
         tex44.InitializeFields_00ba3940(assets[1]);
         tex54.InitializeFields_00ba3940(&tex34);
@@ -270,7 +273,7 @@ void GameObject::ImageSpaceEffectWaterDisplacement_Render(void* arg1, void* arg2
 
         node->SetAccumulatorAt(0, &tex34, 0);
         node->SetAccumulatorAt(1, assets[1], 0);
-        node->Dispatch(arg1, arg2, pEmitter, 1);
+        node->Dispatch(apGeometry, apRenderer, pEmitter, 1);
 
         if (DAT_011fffed)
         {
@@ -288,7 +291,7 @@ void GameObject::ImageSpaceEffectWaterDisplacement_Render(void* arg1, void* arg2
                     widget = ::new NiScreenElements(spScreenData);
 
                     NiScreenElementsData* localData0 = (NiScreenElementsData*)widget->m_spModelData.m_pObject;
-                    localData0->FUN_00a87ae0(4, 0, 0);
+                    localData0->NiScreenElementsData_Insert(4, 0, 0);
                     NiScreenElementsData* localData1 = (NiScreenElementsData*)widget->m_spModelData.m_pObject;
                     localData1->SetRectangle(0, 0.0f, DAT_01013ea4, 1.0f, DAT_010542a4);
                     ((NiScreenElementsData*)widget->m_spModelData.m_pObject)->NiScreenElementsData_UpdateBound();
@@ -317,7 +320,7 @@ void GameObject::ImageSpaceEffectWaterDisplacement_Render(void* arg1, void* arg2
                     DAT_0120003c.z = endpoint->y;
                     secondary->SetFloat4At(0, DAT_0120002c.x, DAT_0120002c.y, DAT_0120002c.z, DAT_0120002c.w);
                     secondary->SetFloat4At(1, DAT_0120003c.x, DAT_0120003c.y, DAT_0120003c.z, DAT_0120003c.w);
-                    handler->Dispatch(widget, arg2, secondary, 1);
+                    handler->Dispatch(widget, apRenderer, secondary, 1);
                     ++DAT_011ffffc;
                 }
 
@@ -362,7 +365,7 @@ void GameObject::ImageSpaceEffectWaterDisplacement_Render(void* arg1, void* arg2
             pEmitter->FUN_00b8a790(5, DAT_01200014.x, DAT_01200014.y, DAT_01200014.z, DAT_01200014.w);
             node->SetAccumulatorAt(0, &tex34, 0);
             node->SetAccumulatorAt(1, &tex54, 1);
-            node->Dispatch(arg1, arg2, pEmitter, 1);
+            node->Dispatch(apGeometry, apRenderer, pEmitter, 1);
             DAT_01200000 = 1;
             tex44.InitializeFields_00ba3940(&tex54);
             tex54.InitializeFields_00ba3940(&tex34);
@@ -387,6 +390,7 @@ extern MemoryManager _g_memoryManager;
 
 extern const float DAT_011add48[];
 
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam
 {
   public:
@@ -399,31 +403,31 @@ class ImageSpaceShaderParam
     int unk18;
     int unk1C;
     int unk20;
-    int unk24;
-    int unk28;
-    int unk2C;
+    int iFiltermode;
+    int iClearFlags;
+    int fClearColor;
     int unk30;
     int unk34;
     int unk38;
-    int unk3C;
-    int unk40;
-    int unk44;
-    int unk48;
-    int unk4C;
-    int unk50;
-    char unk54;
+    int pfVertexConstantGroup;
+    int iVSize;
+    int pfPixelConstantGroup;
+    int iPSize;
+    int spVertexConstantMap;
+    int spPixelConstantMap;
+    char bUseTexOffset;
     char unk55;
     char unk56;
     char unk57;
-    int unk58;
+    int pInputTextures;
     int unk5C;
     int unk60;
     int unk64;
-    int unk68;
+    int pInputFilterModes;
     int unk6C;
     int unk70;
     int unk74;
-    int unk78;
+    int pRenderStates;
     int unk7C;
     int unk80;
     int unk84;
@@ -433,7 +437,7 @@ class ImageSpaceShaderParam
         return _g_memoryManager.Allocate(size);
     }
     ImageSpaceShaderParam();
-    void FUN_00b8ab10(int a1, int a2);
+    void FUN_00b8ab10(int aiVSize, int aiPSize);
     void CopyParamData(int a1, const float* a2, unsigned int a3);
 };
 
@@ -525,6 +529,7 @@ template <class T> class NiTPrimitiveArray_waterdisplacement
 };
 }
 
+// pdb: class ImageSpaceEffect, size 0x58 (here 0x1c), 7 members
 struct ImageSpaceEffect
 {
     int unk00;
@@ -535,7 +540,7 @@ struct ImageSpaceEffect
     int unk14;
     waterdisplacement::NiTPrimitiveArray_waterdisplacement<ImageSpaceShaderParam*> m_params;
 
-    void SetTextureArraySize(int count);
+    void SetTextureArraySize(int aiCount);
     void FUN_00ba3c70(int index, ImageSpaceTexture* tex, ImageSpaceShaderParam* param, int flag);
     void SetEffectParamAt(int index, int a2, int a3);
     void SetArrayEntry(int index, int a2, int a3, int a4, int a5);
@@ -664,7 +669,7 @@ class ImageSpaceShaderParam : public ImageSpaceEffectParam
     int m_80;
     int m_84;
     ImageSpaceShaderParam();
-    void FUN_00b8ab10(int a, int b);
+    void FUN_00b8ab10(int aiVSize, int aiPSize);
     void SetBlurClearMode();
 };
 struct Sub
@@ -819,12 +824,15 @@ class ImageSpaceEffect
     int m_14;
     Arr18 m_18;
     Arr28 m_28;
-    void SetTextureArraySize(int n);
+    void SetTextureArraySize(int aiCount);
     void FUN_00ba3c70(int idx, int value, ImageSpaceShaderParam* param, int arg);
     void InitFromConfig(Src* config, int unused);
 };
 // Initializes nine ImageSpaceShaderParam entries with values from config->m_08 fields f1a4 through f1c4, setting texture array size to 9.
 // @fnv 0x00ba04c0
+// pdb: ImageSpaceEffectWaterDisplacement::Setup | ImageSpaceEffectWaterDisplacement.obj | retail, object-file run extension, low
+// pdb params: apManager, apParam
+// pdb locals: pparam
 void ImageSpaceEffect::InitFromConfig(Src* config, int unused)
 {
     SetTextureArraySize(9);
@@ -934,8 +942,8 @@ extern char DAT_012003cc;
 extern char DAT_011f94a9;
 extern int DAT_011ff9f0;
 
-void __cdecl FUN_00b97fa0(int a, int b);
-void __cdecl AddToTwoCounters(int a, int b, int c);
+void __cdecl FUN_00b97fa0(int abEnabled, int aeLock);
+void __cdecl BSRenderState_SetAlphaBlendFunc(int aeSrcRGB, int aeDestRGB, int aeLock);
 
 // Image-space effects share this virtual render interface (slot 4).
 struct DrawOwner384
@@ -990,7 +998,7 @@ void DrawOwner384::Draw(void* apArg1, void* apArg2, void* a3, bool abFlag)
         {
             iFinalIndex = 9;
             FUN_00b97fa0(1, 1);
-            AddToTwoCounters(6, 7, 0);
+            BSRenderState_SetAlphaBlendFunc(6, 7, 0);
         }
         else
         {

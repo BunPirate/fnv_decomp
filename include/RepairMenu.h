@@ -5,14 +5,15 @@
 
 class RepairTile;
 
+// pdb: class RepairMenu, size 0x8c, bases: Menu, 2 members
 class RepairMenu : public Menu
 {
 public:
-    Tile* m_pTiles[13];
-    ListBox_ItemChange___ m_kItemList;
+    Tile* pTiles[13];
+    ListBox_ItemChange___ lbRepairList;
 
     __declspec(property(get=GetRepairList)) ListBox_ItemChange___& m_kRepairList;
-    ListBox_ItemChange___& GetRepairList() { return m_kItemList; }
+    ListBox_ItemChange___& GetRepairList() { return lbRepairList; }
 
     RepairMenu();
     virtual ~RepairMenu();
@@ -23,8 +24,8 @@ public:
     bool IsWellFormedMenu_007b5730();
     void ApplyRepair(void*);
     void RefreshRepairMenu();
-    void HandleRepairAction(int id, RepairTile* tile);
-    void SetRepairMenuText(const char* text);
+    void HandleRepairAction(int aiID, RepairTile* apTarget);
+    void SetRepairMenuText(const char* astrMessage);
 
     static Tile* Create();
 };

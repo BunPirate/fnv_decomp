@@ -18,6 +18,8 @@ struct FUN_00c85690_Header
 
 // Allocates size plus a header from allocator, stores size and allocator in the header, and returns the pointer past the header.
 // @fnv 0x00c85690
+// pdb: hkMemoryRouter::easyAlloc | hkMemoryRouter.obj | retail, call graph (shared callers), medium
+// pdb params: b, nbytes
 void* __cdecl AllocateWithHeader(FUN_00c85690_Allocator* allocator, unsigned int size)
 {
     FUN_00c85690_Header* header = (FUN_00c85690_Header*)allocator->Allocate(size + sizeof(FUN_00c85690_Header));

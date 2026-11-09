@@ -18,6 +18,7 @@ enum FILE_CACHE_STATE
     FILE_CACHING_FINISHED = 4
 };
 
+// pdb: class BSFileCache, size 0x64, 27 members
 class BSFileCache
 {
 public:
@@ -44,31 +45,31 @@ public:
     static const char* sEssentialFileCacheList;
     static const char* sUnessentialFileCacheList;
 
-    FileCache* m_pActiveFileCache;
-    unsigned int m_uiCacheEntryCount;
-    unsigned int m_uiCachedBytes;
-    unsigned int m_uiCacheLimit;
-    unsigned int m_uiCacheByteCount;
-    unsigned int m_uiCacheCapacity;
-    unsigned int m_uiCacheRequestCount;
-    unsigned int m_uiCacheFlags;
-    unsigned int m_uiCacheIndex;
-    int m_iCacheEntryIndex;
-    unsigned int m_uiReferenceCount;
-    int m_iCacheCount;
-    int m_iFileSize;
-    int m_iFilePosition;
-    int m_iCachePosition;
-    DVD_LAYER m_eDVDLayer;
-    bool m_bCacheEnabled;
-    bool m_bCacheReadPending;
-    bool m_bCacheWritePending;
-    bool m_bCacheInitialized;
-    unsigned int m_uiCacheOffset;
-    unsigned int m_uiCacheBufferCount;
-    BSSimpleArray<FileCache*, 1024>* m_pFileCacheArray;
-    void (__cdecl* m_pfnCacheProgress)(const char*);
-    void (__cdecl* m_pfnCacheStatus)(bool);
-    volatile FILE_CACHE_STATE m_eCacheState;
-    void* m_pCacheSyncObject;
+    FileCache* pCurrentlyCachingFile;
+    unsigned int iCurrentWritten;
+    unsigned int iCurrentFileSize;
+    unsigned int iTotalWritten;
+    unsigned int iTotalDiskSpaceAvailable;
+    unsigned int iFreeDiskSpaceAvailable;
+    unsigned int iTotalAlreadyCached;
+    unsigned int iTotalSizeToCache;
+    unsigned int iNumCachedFiles;
+    int iCurrentThreadPriority;
+    unsigned int iThreadTime;
+    int iCurrentPriority;
+    int iPrecachePriority;
+    int iEssentialPriority;
+    int iUnessentialPriority;
+    DVD_LAYER eCurrentLayer;
+    bool bArraySorted;
+    bool bCacheDriveAvailable;
+    bool bRunningFromDVD;
+    bool bInPauseLoop;
+    unsigned int iFileCacheLoadScreenTime;
+    unsigned int iFileCacheLoadScreenEssentialTime;
+    BSSimpleArray<FileCache*, 1024>* pCachedFiles;
+    void (__cdecl* pFileCacheCompletionCallback)(const char*);
+    void (__cdecl* pForceFileCacheCallback)(bool);
+    volatile FILE_CACHE_STATE eFileCacheState;
+    void* hFileCachingThreadHandle;
 };

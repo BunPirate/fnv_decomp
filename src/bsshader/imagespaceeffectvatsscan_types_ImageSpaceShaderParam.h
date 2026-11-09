@@ -108,6 +108,7 @@ FNV_STATIC_ASSERT(offsetof(NiTMapBase_DFALL_NiTMapItem_unsigned_int_unsigned_int
 #pragma pack(pop)
 FNV_STATIC_ASSERT(sizeof(NiTMap<unsigned int, unsigned int>) == 16);
 #pragma pack(push, 4)
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public VatsScanEffectParamLocalForm
 {
   public:
@@ -131,7 +132,7 @@ class ImageSpaceShaderParam : public VatsScanEffectParamLocalForm
         return g_memoryManager.Allocate(size);
     }
     ImageSpaceShaderParam();
-    void AllocateShaderConstants(int vertexSize, int pixelSize);
+    void AllocateShaderConstants(int aiVSize, int aiPSize);
     void SetShaderConstantVector4(int index, float x, float y, float z, float w);
     // ImageSpaceShaderParam
     // void __cdecl ImageSpaceShaderParam::*()

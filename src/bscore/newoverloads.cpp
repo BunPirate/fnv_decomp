@@ -6,8 +6,11 @@
 
 // Allocates size bytes by calling the plain Allocate overload, ignoring the file, line and function arguments.
 // @fnv 0x00aa4030
-void* MemoryManager::Allocate(unsigned int size, const char* file, const int line, const char* function)
+// pdb: MemoryManager::Allocate | MemoryManager.obj | retail, upstream name already matches, high
+// pdb params: aSize
+// pdb locals: imemoryPass, pheap, pdefaultHeap, econtext, bfromSystem, pcontextHeap, ballowSystemAlloc, original_size, pmem, ppool
+void* MemoryManager::Allocate(unsigned int aSize, const char* apFile, const int aiLine, const char* apFunction)
 {
-    void* result = Allocate(size);
+    void* result = Allocate(aSize);
     return result;
 }

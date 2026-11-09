@@ -35,6 +35,7 @@ class TESObjectWEAP;
 class bhkCharacterController;
 
 #include "../../../include/BIPED_BONE.h"
+// pdb: class BipedAnim, size 0x2b4 (here 0x1), 6 members
 class BipedAnim
 {
   public:

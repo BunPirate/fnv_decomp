@@ -8,13 +8,13 @@
 // src/gamebryo2.2/corelibs/niparticle/nipsysinitialrotanglectlr.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/niparticle/nipsysinitialrotanglectlr.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern NiRTTI g_012026f0;
+extern NiRTTI NiPSysInitialRotAngleCtlr_ms_RTTI;
 
 // @fnv 0x00c2a1a0
 // src: COMMUNITY 0x00c2a1a0
 const NiRTTI* __cdecl NiPSysInitialRotAngleCtlr_GetRTTI()
 {
-    return &g_012026f0;
+    return &NiPSysInitialRotAngleCtlr_ms_RTTI;
 }
 
 extern NiRTTI _g_01202528;
@@ -25,7 +25,7 @@ inline bool NiObject::IsKindOfType(const NiRTTI* pkRTTI) const
     {
         if (pkMy == pkRTTI)
             return true;
-        pkMy = pkMy->m_pBaseRTTI;
+        pkMy = pkMy->m_pkBaseRTTI;
     }
     return false;
 }
@@ -34,11 +34,16 @@ struct BaseStandIn
 {
     bool IsTargetParticleSystem(NiObjectNET*);
 };
+// pdb: class NiPSysInitialRotAngleCtlr, size 0x40 (here 0x1), bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysInitialRotAngleCtlr : BaseStandIn
 {
     bool IsModifierOfType(NiObjectNET*);
 };
 // @fnv 0x00c2a210
+// pdb: NiPSysInitialRotAngleCtlr::InterpTargetIsCorrectType | NiPSysInitialRotAngleCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysInitialRotAngleCtlr::IsEqual
+// pdb params: pkTarget
+// pdb locals: pkModifier
 bool NiPSysInitialRotAngleCtlr::IsModifierOfType(NiObjectNET* pkTarget)
 {
     if (!BaseStandIn::IsTargetParticleSystem(pkTarget))
@@ -54,10 +59,12 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr*);
 // @fnv 0x00c2a260
 // src: XBOX_PDB 0x00c2a260
+// pdb: NiPSysInitialRotAngleCtlr::GetViewerStrings | NiPSysInitialRotAngleCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysInitialRotAngleCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
-    char* pStr = NiViewerStrings_NiGetViewerString_Title(g_012026f0.m_pcName);
+    char* pStr = NiViewerStrings_NiGetViewerString_Title(NiPSysInitialRotAngleCtlr_ms_RTTI.m_pcName);
     unsigned int iCount = *(unsigned short*)((char*)pkStrings + 10);
     unsigned int iSize = *(unsigned short*)((char*)pkStrings + 8);
     if (iCount >= iSize)
@@ -81,6 +88,10 @@ struct SpawnedCtlr
 
 // Allocates a 0x40-byte SpawnedObject, initialises it, passes it to FUN_00c32de0 with pArg, and returns it (or null on allocation failure).
 // @fnv 0x00c2a1c0
+// pdb: NiPSysInitialRotAngleCtlr::CreateClone | NiPSysInitialRotAngleCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysInitialRotAngleCtlr::SaveBinary
+// pdb params: kCloning
+// pdb locals: pkObject
 SpawnedObject* SpawnedCtlr::CreateSpawnedObject(void* pArg)
 {
     SpawnedObject* pkObj = (SpawnedObject*)Object_DispatchCommandFour(0x40);

@@ -4,6 +4,7 @@
 
 class Archive;
 
+// pdb: class ArchiveFile, size 0x1a8 (here 0x160), bases: BSFile, 2 members
 class ArchiveFile : public BSFile
 {
 public:
@@ -12,7 +13,7 @@ public:
     ArchiveFile(unsigned int name, Archive* archive, unsigned int offset,
                 unsigned int size, unsigned int mode);
     virtual ~ArchiveFile();
-    virtual void SetEndianSwap(bool doSwap);
+    virtual void SetEndianSwap(bool bDoSwap);
 
     Archive* GetArchive() { return m_pArchive; }
     void LockArchive(char* name);

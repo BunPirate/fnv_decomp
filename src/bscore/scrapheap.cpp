@@ -7,12 +7,14 @@
 const char kScrapHeapManagerReleaseBufferLabel[] = "ScrapHeapManager::ReleaseBuffer()";
 
 // @fnv 0x00AA53F0
+// pdb: ScrapHeap::ScrapHeap | ScrapHeap.obj | retail, call graph, medium
 ScrapHeapBuffer::ScrapHeapBuffer()
 {
     Init(0x10000);
 }
 
 // @fnv 0x00AA5460
+// pdb: ScrapHeap::~ScrapHeap | ScrapHeap.obj | retail, call graph, high
 ScrapHeapBuffer::~ScrapHeapBuffer()
 {
     unsigned int unused[2];
@@ -22,6 +24,8 @@ ScrapHeapBuffer::~ScrapHeapBuffer()
 }
 
 // @fnv 0x00AA57B0
+// pdb: ScrapHeap::Init | ScrapHeap.obj | debug, object-file gap fill, medium
+// pdb params: aiInitialSize
 void ScrapHeapBuffer::Init(unsigned int size)
 {
     unsigned int unused[2];
@@ -40,6 +44,8 @@ struct FUN_00aa5410_Helper
 
 // Rounds size up to a 64KB multiple when the low 16 bits are set, then calls Init(size) and returns this.
 // @fnv 0x00aa5410
+// pdb: ScrapHeap::ScrapHeap | ScrapHeap.obj | debug, object-file gap fill, medium
+// pdb params: aiInitialSize
 ScrapHeapBuffer* FUN_00aa5410_Helper::InitWithAlignedSize(unsigned int size)
 {
     size = (size & 0xFFFF) ? ((size + 0x10000) & 0xFFFF0000) : size;
@@ -50,6 +56,7 @@ ScrapHeapBuffer* FUN_00aa5410_Helper::InitWithAlignedSize(unsigned int size)
 // Zeroes the int fields at offsets 0x200, 0x204 and 0x220/0x224 of pThis and returns pThis.
 // @fnv 0x00aa5860
 // src: GUESS 0x00aa5860 (confidence: low)
+// pdb: ScrapHeapManager::ScrapHeapManager | ScrapHeap.obj | debug, object-file gap fill, medium
 void* __fastcall Object_InitializeFields_00aa5860(char* pThis)
 {
     *(int*)(pThis + 0x200) = 0;
@@ -82,6 +89,9 @@ struct Args12
 
 // Frees the trailing portion of a memory block with VirtualFree using MEM_DECOMMIT.
 // @fnv 0x00aa5e90
+// pdb: ScrapHeapManager::ShrinkBuffer | ScrapHeap.obj | debug, object-file gap fill, medium
+// pdb params: apBuffer, aiBufferSize, aiShrinkSize
+// pdb locals: bdecommitOk
 void __fastcall FreeTailOfBlock(void* pThis, Args12 args)
 {
     VirtualFree(args.a + args.b - args.c, args.c, 0x4000);
@@ -103,6 +113,9 @@ struct FUN_00aa54a0_s
 
 // @fnv 0x00aa54a0
 // src: XBOX_PDB 0x00aa54a0
+// pdb: ScrapHeap::Allocate | ScrapHeap.obj | retail, upstream name already matches, high
+// pdb params: aiSize, aAlignment
+// pdb locals: pnextStackLoc, pmemLoc, uialignmentOffset, pheader, pmem, imemAllocated, itotalMemoryAfterCommit, imemNeeded, imemToCommit
 void* FUN_00aa54a0_s::ScrapHeap_Allocate(unsigned int aiSize, unsigned int aAlignment)
 {
     void* pmem = 0;
@@ -165,6 +178,9 @@ struct SHStub
 // Marks the block header before apMem as freed, advances pCur past the last live block, and releases half the committed memory when free space exceeds it.
 // @fnv 0x00aa5610
 // src: XBOX_PDB 0x00aa5610
+// pdb: ScrapHeap::Deallocate | ScrapHeap.obj | retail, upstream name already matches, high
+// pdb params: apMem
+// pdb locals: pheader, imemToFree, imemFree, imemCommited, uideallocated, pbaseLoc, pprevHeader
 void SHStub::ScrapHeap_Deallocate(void* apMem)
 {
     SHHeader* pheader;
@@ -216,11 +232,14 @@ struct FUN_00aa59b0_shell : public ScrapHeapManager
 
 // @fnv 0x00aa59b0
 // src: EXE 0x00aa59b0
-char* FUN_00aa59b0_shell::ScrapHeapManager_RequestBuffer(unsigned int* auiRequestedSize)
+// pdb: ScrapHeapManager::RequestBuffer | ScrapHeap.obj | retail, string-set bridge, high
+// pdb params: ariRequestedInitialSize
+// pdb locals: pbuffer, ilargestBufferIndex, ilargestBufferSize, i
+char* FUN_00aa59b0_shell::ScrapHeapManager_RequestBuffer(unsigned int* ariRequestedInitialSize)
 {
     if (count == 0)
     {
-        return AllocateBuffer(*auiRequestedSize);
+        return AllocateBuffer(*ariRequestedInitialSize);
     }
     char* ilargestBufferSize;
     int ilargestBufferIndex;
@@ -236,7 +255,7 @@ char* FUN_00aa59b0_shell::ScrapHeapManager_RequestBuffer(unsigned int* auiReques
     bufferLock.Lock(kScrapHeapManagerRequestBufferLabel);
     if (count == 0)
     {
-        i = AllocateBuffer(*auiRequestedSize);
+        i = AllocateBuffer(*ariRequestedInitialSize);
         pbuffer2 = &bufferLock;
         pbuffer2->m_uiRecursionCount--;
         if (pbuffer2->m_uiRecursionCount == 0)
@@ -249,9 +268,9 @@ char* FUN_00aa59b0_shell::ScrapHeapManager_RequestBuffer(unsigned int* auiReques
     pLockC = 0;
     for (iUnused1 = 0; iUnused1 < count; iUnused1++)
     {
-        if (entries[iUnused1].size >= *auiRequestedSize)
+        if (entries[iUnused1].size >= *ariRequestedInitialSize)
         {
-            *auiRequestedSize = entries[iUnused1].size;
+            *ariRequestedInitialSize = entries[iUnused1].size;
             ilargestBufferSize = entries[iUnused1].buffer;
             RemoveEntry(iUnused1);
             pbuffer1 = &bufferLock;
@@ -270,7 +289,7 @@ char* FUN_00aa59b0_shell::ScrapHeapManager_RequestBuffer(unsigned int* auiReques
     }
     iUnused0 = entries[pLockA].buffer;
     RemoveEntry(pLockA);
-    ReleaseBufferContents(iUnused0, pLockC, *auiRequestedSize - pLockC);
+    ReleaseBufferContents(iUnused0, pLockC, *ariRequestedInitialSize - pLockC);
     pbuffer = &bufferLock;
     pbuffer->m_uiRecursionCount--;
     if (pbuffer->m_uiRecursionCount == 0)
@@ -287,6 +306,8 @@ struct FUN_00aa5b70_shell : public ScrapHeapManager
 
 // @fnv 0x00aa5b70
 // src: EXE 0x00aa5b70
+// pdb: ScrapHeapManager::ReleaseBuffer | ScrapHeap.obj | retail, string-set bridge, high
+// pdb params: apBuffer, aiCommittedSize
 void FUN_00aa5b70_shell::ScrapHeapManager_ReleaseBuffer(char* apBuffer, unsigned int aiCommittedSize)
 {
     int iUnused0;
@@ -329,13 +350,16 @@ struct FUN_00aa5e30_shell : public ScrapHeapManager
 __declspec(dllimport) void* __stdcall VirtualAlloc(void*, unsigned long, unsigned long, unsigned long);
 
 // @fnv 0x00aa5e30
+// pdb: ScrapHeapManager::ExpandBuffer | ScrapHeap.obj | retail, call graph, high
+// pdb params: apBuffer, aiBufferSize, aiAdditionalSize
+// pdb locals: imemoryPass, ballowSystemAlloc
 void FUN_00aa5e30_shell::CommitMemory(char* apBuffer, unsigned int aiBufferSize, unsigned int aiAdditionalSize)
 {
     int imemoryPass = 0;
     while (!(bool)(int)(VirtualAlloc(apBuffer + aiBufferSize, aiAdditionalSize, 0x1000, 4) != 0))
     {
         bool ballowSystemAlloc = true;
-        imemoryPass = g_memoryManager.HandleAllocationFailure(0, imemoryPass, &ballowSystemAlloc);
+        imemoryPass = g_memoryManager.MemoryManager_ProcessMemoryProblem(0, imemoryPass, &ballowSystemAlloc);
     }
 }
 
@@ -346,6 +370,7 @@ struct FUN_00aa5860
     FUN_00aa5860();
     // Overloaded operator new that forwards the requested size to the memory manager's Allocate method and returns the allocated pointer.
 // @fnv 0x00aa58d0
+// pdb: ScrapHeapManager::Init | ScrapHeap.obj | retail, upstream name already matches, high
     void* operator new(unsigned int uiSize)
     {
         return g_memoryManager.Allocate(uiSize);
@@ -369,6 +394,9 @@ struct FUN_00aa55e0_s : ScrapHeapBuffer
 
 // Allocates a block using the first and fourth arguments and returns the resulting pointer.
 // @fnv 0x00aa55e0
+// pdb: ScrapHeap::Allocate | ScrapHeap.obj | debug, object-file gap fill, medium
+// pdb params: aiSize, pcFile, aiLine, aAlignment
+// pdb locals: pmem
 void* FUN_00aa55e0_s::AllocateWithSize(unsigned int a, unsigned int uiUnused2, unsigned int uiUnused3, unsigned int d)
 {
     void* result = Allocate(a, d);
@@ -377,16 +405,19 @@ void* FUN_00aa55e0_s::AllocateWithSize(unsigned int a, unsigned int uiUnused2, u
 
 struct FUN_00aa5710_shell
 {
-    int __thiscall ScrapHeap_Size(int param);
+    int __thiscall ScrapHeap_Size(int apMem);
 };
 
 // @fnv 0x00aa5710
 // src: COMMUNITY 0x00aa5710
-int __thiscall FUN_00aa5710_shell::ScrapHeap_Size(int param)
+// pdb: ScrapHeap::Size | ScrapHeap.obj | debug, upstream name already matches, high
+// pdb params: apMem
+// pdb locals: pheader
+int __thiscall FUN_00aa5710_shell::ScrapHeap_Size(int apMem)
 {
-    if (param == 0)
+    if (apMem == 0)
         return 0;
-    int* p = (int*)(param - 8);
+    int* p = (int*)(apMem - 8);
     return *p & 0x7fffffff;
 }
 
@@ -401,6 +432,8 @@ struct FUN_00aa5740_holder
 
 // Resets the holder by pointing cur at start and clearing used.
 // @fnv 0x00aa5740
+// pdb: ScrapHeap::Clean | ScrapHeap.obj | debug, object-file gap fill, medium
+// pdb params: abCheck
 void FUN_00aa5740_holder::Reset(unsigned int size)
 {
     cur = start;
@@ -420,6 +453,8 @@ struct FUN_00aa5800_s : ScrapHeapBuffer
 
 // @fnv 0x00aa5800
 // src: COMMUNITY 0x00aa5800
+// pdb: ScrapHeap::GetAllocationCount | ScrapHeap.obj | debug, upstream name already matches, high
+// pdb locals: icount, pheader
 unsigned int FUN_00aa5800_s::ScrapHeap_GetAllocationCount()
 {
     unsigned int count = 0;
@@ -444,6 +479,7 @@ struct FUN_00aa58b0_holder
 
 // @fnv 0x00aa58b0
 // src: GUESS 0x00aa58b0 (confidence: medium)
+// pdb: ScrapHeapManager::~ScrapHeapManager | ScrapHeap.obj | debug, object-file gap fill, medium
 void FUN_00aa58b0_holder::ScrapHeapManager_FreeAllBuffers_Thunk()
 {
     ScrapHeapManager_FreeAllBuffers();
@@ -456,6 +492,9 @@ struct FUN_00aa5f30_holder
 
 // @fnv 0x00aa5f30
 // src: XBOX_PDB 0x00aa5f30
+// pdb: VirtualFree | virtualfree.obj | retail, call graph, low
+// pdb note: debug build links it to ScrapHeapManager::FreeBuffer
+// pdb params: lpAddress, dwSize, dwFreeType
 void FUN_00aa5f30_holder::ScrapHeapManager_FreeBuffer(char* apBuffer, unsigned int aiCommittedSize)
 {
     VirtualFree(apBuffer, 0, 0x8000);
@@ -473,6 +512,7 @@ extern FUN_00aa5950_s* DAT_011f63b4;
 // Deletes the object pointed to by DAT_011f63b4 and sets the pointer to null.
 // @fnv 0x00aa5950
 // src: COMMUNITY 0x00aa5950
+// pdb: ScrapHeapManager::Shutdown | ScrapHeap.obj | retail, upstream name already matches, high
 void ScrapHeapManager_Shutdown()
 {
     delete DAT_011f63b4;
@@ -487,6 +527,7 @@ struct FUN_00aa5860 : public ScrapHeapManager
 extern ScrapHeapManager* DAT_011f63b4;
 // Returns the global ScrapHeapManager singleton, allocating a FUN_00aa5860 instance on first call if DAT_011f63b4 is null.
 // @fnv 0x00866d10
+// pdb: ScrapHeapManager::Instance | AppMemory.obj | retail, call graph, high
 ScrapHeapManager* GetScrapHeapManager()
 {
     if (DAT_011f63b4 == 0)
@@ -503,6 +544,8 @@ struct FUN_00aa5c80_shell : ScrapHeapManager
 // Frees every buffer in the entries array, then resets count and totalSize to zero and unlocks bufferLock.
 // @fnv 0x00aa5c80
 // src: EXE 0x00aa5c80
+// pdb: ScrapHeapManager::FreeAllBuffers | ScrapHeap.obj | retail, string-set bridge, high
+// pdb locals: i
 void FUN_00aa5c80_shell::ScrapHeapManager_FreeAllBuffers()
 {
     if (!count)
@@ -538,6 +581,9 @@ struct FUN_00aa5d40_shell : ScrapHeapManager
 // Frees buffers from the end of the entry list until at least aiSize bytes are freed, updating count and totalSize, and returns the freed size.
 // @fnv 0x00aa5d40
 // src: EXE 0x00aa5d40
+// pdb: ScrapHeapManager::FreeBuffers | ScrapHeap.obj | retail, upstream name already matches, high
+// pdb params: aiSize
+// pdb locals: ifreedSize, tempAutoEvent, iindex
 unsigned int FUN_00aa5d40_shell::ScrapHeapManager_FreeBuffers(unsigned int aiSize)
 {
     if (!count)
@@ -567,6 +613,7 @@ unsigned int FUN_00aa5d40_shell::ScrapHeapManager_FreeBuffers(unsigned int aiSiz
 }  // namespace fnv_00aa5d40
 
 // ScrapHeap has this five-field, 0x14-byte layout; the shared header is not available yet.
+// pdb: class ScrapHeap, size 0x10 (here 0x14), 4 members
 class ScrapHeap
 {
 public:
@@ -582,6 +629,8 @@ public:
 // Walks the m_pBufferHeader linked list of ScrapBlock entries when m_pCurrentPosition differs from m_pHeapBase.
 // @fnv 0x00aa5770
 // src: COMMUNITY 0x00aa5770
+// pdb: ScrapHeap::CheckForLeaks | ScrapHeap.obj | debug, object-file gap fill, medium
+// pdb locals: pheader
 void ScrapHeap::CheckForLeaks_00aa5770()
 {
     if (this->m_pCurrentPosition != this->m_pHeapBase)
@@ -608,6 +657,9 @@ struct FUN_00aa5ec0_shell : public ScrapHeapManager
 // Allocates a 8MB buffer via VirtualAlloc, then retries with aiInitialSize on failure, calling g_memoryManager.HandleAllocationFailure each time.
 // @fnv 0x00aa5ec0
 // src: XBOX_PDB 0x00aa5ec0
+// pdb: ScrapHeapManager::AllocateBuffer | ScrapHeap.obj | retail, upstream name already matches, high
+// pdb params: aiInitialSize
+// pdb locals: imemoryPass, pbuffer, ballowSystemAlloc
 char* FUN_00aa5ec0_shell::ScrapHeapManager_AllocateBuffer(unsigned int aiInitialSize)
 {
     char* pbuffer = (char*)VirtualAlloc(0, 0x800000u, 0x2000u, 4);
@@ -615,7 +667,7 @@ char* FUN_00aa5ec0_shell::ScrapHeapManager_AllocateBuffer(unsigned int aiInitial
     while (!(bool)(int)(VirtualAlloc(pbuffer, aiInitialSize, 0x1000u, 4) != 0))
     {
         bool ballowSystemAlloc = true;
-        imemoryPass = g_memoryManager.HandleAllocationFailure(0, imemoryPass, &ballowSystemAlloc);
+        imemoryPass = g_memoryManager.MemoryManager_ProcessMemoryProblem(0, imemoryPass, &ballowSystemAlloc);
     }
     return pbuffer;
 }

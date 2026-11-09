@@ -10,6 +10,7 @@
 class TESObjectREFR;
 class NiNode;
 
+// pdb: class BGSCameraShot, size 0x78, bases: TESForm, TESModel, TESImageSpaceModifiableForm, 9 members
 class BGSCameraShot : public TESForm, public TESModel, public TESImageSpaceModifiableForm
 {
 public:
@@ -21,24 +22,24 @@ public:
     virtual void CopyFrom(const TESForm* form);
     virtual bool Compare(TESForm* form);
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void ResetCameraShot();
     void ResetFormData();
-    void SetupCamera(void* reference, int mode);
-    void UpdateCamera(float time);
-    NiPoint3 GetCameraPosition();
+    void InitCamera(void* apTargetRef, int aeZoom);
+    void Update(float time);
+    NiPoint3 GetTargetPos();
     bool IsNotFlag4Set();
     bool IsInitialized();
     float TESCombatStyle_GetTargetingFOV();
 
     BGSCameraShot__CAMERA_SHOT_DATA Data;
-    NiPointer<NiAVObject> m_pLocationNode;
-    NiPointer<NiAVObject> m_pTargetNode;
-    TESObjectREFR* m_pReference;
-    NiPointer<NiNode> m_spPositionNode;
-    NiPointer<NiAVObject> m_pSceneObject;
-    char m_bUpdateNodePosition;
-    bool m_bFlag74;
-    bool m_bFlag75;
+    NiPointer<NiAVObject> spLocationNode;
+    NiPointer<NiAVObject> spTargetNode;
+    TESObjectREFR* pTargetRef;
+    NiPointer<NiNode> spCameraNode;
+    NiPointer<NiAVObject> spImagespaceTarget;
+    char cCameraHasRotation;
+    bool bCameraTooClose;
+    bool bCameraIsKillCam;
     unsigned char layoutPadding77[1];
 };

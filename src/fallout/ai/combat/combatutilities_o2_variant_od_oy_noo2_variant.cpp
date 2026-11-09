@@ -16,7 +16,7 @@
 extern "C" float __cdecl NiCos(float);
 float __cdecl CombatUtilities_ComputeProjectileTime(float a, float b, float c);
 extern int DAT_011a558c;
-char RotateSlot(char a1, char a2);
+char RotateSlot(char acSlot, char acAmount);
 extern "C" double DAT_0103c348;
 extern "C" int DAT_011a558c;
 float ScaleCharToFloat(char arg);
@@ -100,18 +100,21 @@ extern float DAT_011f1c00;
 extern const double DAT_01011590;
 extern "C" double gModifierZero;
 
-float __cdecl NiASin_004b54c0(float a);
+float __cdecl NiASin_004b54c0(float fValue);
 float __cdecl sin_004e44b0(float a);
-float __cdecl tan_0057dd70(float a);
+float __cdecl tan_0057dd70(float _X);
 float cos(float a);
 float __cdecl FUN_004b1550(NiPoint3* p);
 int __cdecl TESObjectREFR_FindReferenceFor3D(int a);
-int __cdecl Projectile_ProcessTargetPick(void* input, int a1, void* a2, float* frac, int a4, float maxFrac);
+int __cdecl Projectile_ProcessTargetPick(void* apPickData, int apProjectile, void* apProjectileBase, float* apHitFraction, int bUseCharacterController, float afWaterHitRatio);
 
 void __cdecl DrawDebugLine(NiPoint3* from, NiPoint3* to, int hit, float frac, int a4, int a5);
 
 // @fnv 0x009a6e90
 // src: XBOX_PDB 0x009a6e90
+// pdb: CombatUtilities::CalculateProjectileLOS | CombatUtilities.obj | retail, upstream name already matches, high
+// pdb params: apActor, apProjectile, afProjectileSpeed, aStartLocation, aTargetedPoint, apHitLocation, apRefHit, apDistanceFraction
+// pdb locals: collector, startLoc, endLoc, isegment, fhitFraction, pobjHit, inumSegments, pinitialObjHit, pickData, fgravity, filter, ftanLooking, fcosLooking, faimLooking, fsegmentY, fsegmentX, fsegmentLength, frange, fspeed, targetVector, faimHeading, i, fdist, fheight
 bool __cdecl CombatUtilities_CalculateProjectileLOS(void* a0, void* a1, float a2, float s0, float s1, float s2, float e0, float e1, float e2,
                           NiPoint3* outPt, int* outInt, float* outFrac)
 {
@@ -125,7 +128,7 @@ bool __cdecl CombatUtilities_CalculateProjectileLOS(void* a0, void* a1, float a2
     double d28;
     if (a1)
     {
-        d28 = (double)(((BGSProjectile*)a1)->GetGravity_00966980() * DAT_011f1c00);
+        d28 = (double)(((BGSProjectile*)a1)->GetGravity() * DAT_011f1c00);
     }
     else
     {

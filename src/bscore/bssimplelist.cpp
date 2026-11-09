@@ -26,10 +26,15 @@ template <class T> BSSimpleList<T>::BSSimpleList() : m_item(0), m_pkNext(0)
 
 // Initializes m_item from item and sets m_pkNext to null.
 // @fnv 0x00470440
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,TESForm *,bool>::`scalar deleting destructor' | TESDataHandler.obj | debug, object-file run extension, low
 template <class T> BSSimpleList<T>::BSSimpleList(T& item) : m_item(item), m_pkNext(0)
 {}
 
 // @fnv 0x00905820
+// pdb: BSSimpleList<VATS_COMMAND *>::AddTail | VATS.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleList<ExtraFollowerSwimBreadcrumb *>::AddTail
+// pdb params: item
+// pdb locals: pkCur
 template <class T> void BSSimpleList<T>::AddTail(T& item)
 {
     if (!item)
@@ -50,6 +55,8 @@ template <class T> T& BSSimpleList<T>::GetItem()
 }
 
 // @fnv 0x00726070
+// pdb: BSstrcat | EffectItemList.obj | debug, call graph, medium
+// pdb params: apString1, aiSize, apString2
 template <class T> BSSimpleList<T>* BSSimpleList<T>::GetNext()
 {
     return m_pkNext;
@@ -57,6 +64,7 @@ template <class T> BSSimpleList<T>* BSSimpleList<T>::GetNext()
 
 // Returns true when the BSSimpleList has no next node and no item.
 // @fnv 0x008256d0
+// pdb: BSSimpleList<SpellDispelData *>::~BSSimpleList<SpellDispelData *> | MagicTarget.obj | debug, object-file run extension, low
 template <class T> bool BSSimpleList<T>::IsEmpty()
 {
     return !m_pkNext && !m_item;
@@ -64,6 +72,8 @@ template <class T> bool BSSimpleList<T>::IsEmpty()
 
 // Deletes every node after this one, then clears this node's m_item and next pointer.
 // @fnv 0x00470470
+// pdb: BSSimpleList<VATS_COMMAND *>::RemoveAll | VATS.obj | retail, call graph, medium
+// pdb locals: pkSave
 template <class T> void BSSimpleList<T>::RemoveAll()
 {
     while (m_pkNext)
@@ -144,6 +154,7 @@ struct FUN_004818b0
     FUN_004818b0();
 };
 // @fnv 0x004818b0
+// pdb: TESContainer::GetFirstContainerObject | TESContainer.obj | debug, object-file gap fill, medium
 FUN_004818b0::FUN_004818b0()
 {
     a = 1;
@@ -207,17 +218,19 @@ struct FUN_004bc550_t
     void* m_04;
     int m_08;
 
-    FUN_004bc550_t* InitializeFields_004bc550(int a1, void* a2);
+    FUN_004bc550_t* ItemChange_ctor(int apObject, void* aiNumber);
 };
 
 // Initialises the object by storing a1 in m_08, allocating a new SL into m_00, and storing a2 in m_04.
 // @fnv 0x004bc550
-// src: GUESS 0x004bc550 (confidence: low)
-FUN_004bc550_t* FUN_004bc550_t::InitializeFields_004bc550(int aiValue, void* a2)
+// src: XBOX_RETAIL_PDB 0x004bc550
+// pdb: ItemChange::ItemChange | InventoryChanges.obj | retail, call graph, high
+// pdb params: apObject, aiNumber
+FUN_004bc550_t* FUN_004bc550_t::ItemChange_ctor(int apObject, void* aiNumber)
 {
-    m_08 = aiValue;
+    m_08 = apObject;
     m_00 = new SL();
-    m_04 = a2;
+    m_04 = aiNumber;
     return this;
 }
 
@@ -236,6 +249,7 @@ struct FUN_004d9330
 };
 // Initializes c to 0, p to null, and v to _NiPoint3_ZERO.
 // @fnv 0x004d9330
+// pdb: RagDollData::RagDollData | RagDollData.obj | debug, call graph, medium
 FUN_004d9330::FUN_004d9330()
 {
     c = 0;
@@ -251,19 +265,22 @@ struct GNode
 };
 struct GList
 {
-    GObj* TESRegionDataList_Find(int key);
+    GObj* TESRegionDataList_Find(int aFind);
 };
 // Walks nodes from this pointer and returns the first object whose vtable slot 4 returns key, or null if none match.
 // @fnv 0x004f35b0
 // src: COMMUNITY 0x004f35b0
-GObj* GList::TESRegionDataList_Find(int key)
+// pdb: TESRegionDataList::Find | TESRegionDataList.obj | retail, upstream name already matches, high
+// pdb params: aFind
+// pdb locals: pcurrent, pcheck
+GObj* GList::TESRegionDataList_Find(int aFind)
 {
     GNode* node = reinterpret_cast<GNode*>(this);
     GObj* pObj = 0;
     while (node)
     {
         pObj = *node->_ref_006815c0();
-        if (pObj && reinterpret_cast<int(__thiscall*)(GObj*)>((*reinterpret_cast<void***>(pObj))[4])(pObj) == key)
+        if (pObj && reinterpret_cast<int(__thiscall*)(GObj*)>((*reinterpret_cast<void***>(pObj))[4])(pObj) == aFind)
             return pObj;
         node = node->_ref_00726070();
     }
@@ -312,6 +329,7 @@ struct FUN_00500910 : StrMem
 };
 // Constructor for FUN_00500910 that zero-initializes the two unsigned int members a and b.
 // @fnv 0x00500910
+// pdb: SCRIPT_REFERENCED_OBJECT::SCRIPT_REFERENCED_OBJECT | BGSTerminal.obj | debug, call graph, high
 FUN_00500910::FUN_00500910()
 {
     a = 0;
@@ -320,6 +338,7 @@ FUN_00500910::FUN_00500910()
 
 // Calls two script methods, clears header byte 0x10, and sets m_pNote, m_pTerminal, and cFlags to zero.
 // @fnv 0x00500960
+// pdb: TERMINAL_MENU_ITEM::TERMINAL_MENU_ITEM | BGSTerminal.obj | debug, call graph, medium
 FUN_00500960::FUN_00500960()
 {
     m_kScript.SetInitializationState(false);
@@ -339,6 +358,7 @@ struct FUN_00513d60
 };
 // Initializes the struct's pointer and boolean members to null and false.
 // @fnv 0x00513d60
+// pdb: OLD_OBJ_ARMO::Endian | TESObjectARMO.obj | debug, object-file gap fill, medium
 FUN_00513d60::FUN_00513d60()
 {
     a = 0;
@@ -365,6 +385,9 @@ struct TargetClass
 // Appends a NiNode reference to the end of the linked list, reusing an empty slot or allocating a new node.
 // @fnv 0x0052a9b0
 // src: COMMUNITY 0x0052a9b0
+// pdb: BSSimpleList<NiPointer<BSTempEffect> >::AddTail | BSTempEffectSimpleDecal.obj | retail, call graph (shared callers), medium
+// pdb params: item
+// pdb locals: pkCur
 void TargetClass::BSSimpleList_NiRefObjectPtr_AddTail(const NiPointer<NiNode>& item)
 {
     if (item == 0)
@@ -391,6 +414,7 @@ struct FUN_00590b60
     FUN_00590b60();
 };
 // @fnv 0x00590b60
+// pdb: MESSAGEBOX_BUTTON::MESSAGEBOX_BUTTON | BGSMessage.obj | debug, call graph, high
 FUN_00590b60::FUN_00590b60()
 {}
 
@@ -417,6 +441,10 @@ struct ActList
 // Returns a matching entry, or the last visited entry with a null form when create is true.
 // @fnv 0x005a90b0
 // src: XBOX_PDB 0x005a90b0
+// pdb: ourCalloc | TESScript.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ScriptLocals::GetActionObject
+// pdb params: aNum, aSize
+// pdb locals: lpV
 FormFlagRecord* ActList::ScriptLocals_GetActionObject(TESForm* form, bool create)
 {
     if (!head)
@@ -464,6 +492,7 @@ struct FUN_005fcf10
     FUN_005fcf10();
 };
 // @fnv 0x005fcf10
+// pdb: RANK_DATA::RANK_DATA | TESFaction.obj | debug, object-file gap fill, medium
 FUN_005fcf10::FUN_005fcf10()
 {}
 
@@ -483,6 +512,7 @@ struct FUN_00619740
 };
 // Constructs the embedded dummy, sets both quest pointers to null, and clears the initialized flag.
 // @fnv 0x00619740
+// pdb: QUEST_INFO::QUEST_INFO | TESTopic.obj | debug, object-file gap fill, medium
 FUN_00619740::FUN_00619740()
 {
     ConstructDummy(&d);
@@ -510,6 +540,9 @@ struct TargetClass
 
 // @fnv 0x00631540
 // src: XBOX_PDB 0x00631540
+// pdb: BSSimpleList<NiPointer<bhkEntity> >::AddHead | TESWaterListener.obj | debug, call graph, medium
+// pdb params: item
+// pdb locals: pkTmp
 void TargetClass::BSSimpleList_NiPointer_bhkAction_AddHead(const NiPointer<NiNode>& item)
 {
     if (item == 0)
@@ -583,6 +616,7 @@ struct FUN_006317f0 : NiPointer<NiNode>
     FUN_006317f0(const NiPointer<NiNode>&);
 };
 // @fnv 0x006317f0
+// pdb: BSSimpleArray<hkpCollidable const *,1024>::~BSSimpleArray<hkpCollidable const *,1024> | TESWaterListener.obj | debug, object-file run extension, low
 FUN_006317f0::FUN_006317f0(const NiPointer<NiNode>& p) : NiPointer<NiNode>(p)
 {
     next = 0;
@@ -619,6 +653,10 @@ struct FUN_0066e590
 
 // Initializes actor reference, position, detection flags, and sets the timestamp to negative global time.
 // @fnv 0x0066e590
+// pdb: ActorCause::SaveGame | ActorCause.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DetectionState::DetectionState
+// pdb params: apSaveGameBuffer
+// pdb locals: plist, isaveGameBufferPos, isaveGameCount, pdetectionState
 FUN_0066e590::FUN_0066e590()
 {
     CombatTargetTimestamp_ClearTimeStamp((CombatTargetTimestamp*)m_abyActorState);
@@ -679,6 +717,8 @@ struct FlagS
 // Sets or clears the bit at position bit in the flags field depending on the on parameter.
 // @fnv 0x007a1950
 // src: XBOX_PDB 0x007a1950
+// pdb: ListBox<BGSQuestObjective *>::SetAutoUpdate | MapMenu.obj | debug, object-file run extension, low
+// pdb params: abVal
 void FlagS::ListBox_ItemChange_SetFlag(unsigned int bit, bool on)
 {
     if (on)
@@ -687,6 +727,7 @@ void FlagS::ListBox_ItemChange_SetFlag(unsigned int bit, bool on)
         flags &= ~(1 << bit);
 }
 
+// pdb: class Date, size 0x4, 2 members
 struct Date
 {
     virtual ~Date();
@@ -715,6 +756,7 @@ struct TopicS
 };
 // Sets cur to the address at offset 0xC and returns whether it and its referenced integer are nonzero.
 // @fnv 0x0083e0c0
+// pdb: MenuTopic::FirstResponse | MenuTopic.obj | debug, call graph, medium
 bool TopicS::HasCur()
 {
     cur = reinterpret_cast<Cur*>(reinterpret_cast<char*>(this) + 0xc);
@@ -737,6 +779,10 @@ struct ItemChangeList : BSSimpleList<InventoryStackRecord*>
 
 // Copies the list items into a stack buffer, sorts them with the given compare function, then rebuilds the linked list in sorted order.
 // @fnv 0x0083fd60
+// pdb: BSSimpleList<TESObjectREFR *>::Sort | ProcessLists.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleList<ListBoxItem<BGSSaveLoadFileEntry *> *>::Sort
+// pdb params: apCompareFn
+// pdb locals: icount, parray, pkPrev, pkCur, i
 void ItemChangeList::SortItems(int(__cdecl* compare)(InventoryStackRecord*, InventoryStackRecord*))
 {
 
@@ -808,6 +854,9 @@ struct ItemChangeListNode
 // Removes a matching node; when it is the head, copies its successor into the head or clears the head, and otherwise unlinks and deletes it.
 // @fnv 0x00905330
 // src: GUESS 0x00905330 (confidence: medium)
+// pdb: BSSimpleList<VATS_COMMAND *>::Remove | VATS.obj | retail, call graph, medium
+// pdb params: item
+// pdb locals: pkSecond, pkFirst
 void ItemChangeListNode::RemoveMatchingItem(InventoryStackRecord* const& item)
 {
     if (!item || IsEmpty())
@@ -864,6 +913,8 @@ struct FUN_00967290_struct
 
 // @fnv 0x00967290
 // src: COMMUNITY 0x00967290
+// pdb: PlayerCharacter::ClearListofPerceivedActors | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb locals: pact
 void FUN_00967290_struct::PlayerCharacter_FreeCompassTargets()
 {
     if (m_kNode)
@@ -969,7 +1020,7 @@ struct ModifierActorValueView
 struct ModifierRoutingList : BSSimpleList<ModifierEntryView*>
 {
     void FUN_00937280(char, ModifierEntryView*);
-    void ModifierList_AddModifier(ModifierEntryView* mod);
+    void ModifierList_AddModifier(ModifierEntryView* apModifier);
 };
 
 namespace ActorValue {
@@ -979,14 +1030,17 @@ ActorValueInfo* __cdecl GetActorValueInfo(Index);
 // Looks up the modifier key; calls the other routing method when info has bit 0 set, otherwise adds the entry at the head.
 // @fnv 0x00937380
 // src: XBOX_PDB 0x00937380
-void ModifierRoutingList::ModifierList_AddModifier(ModifierEntryView* apEntry)
+// pdb: ModifierList::AddModifier | ModifierList.obj | retail, upstream name already matches, high
+// pdb params: apModifier
+// pdb locals: pavInfo, ckey
+void ModifierRoutingList::ModifierList_AddModifier(ModifierEntryView* apModifier)
 {
-    if (!apEntry)
+    if (!apModifier)
         return;
-    char key = apEntry->TESTextureList_GetTextureCount();
+    char key = apModifier->TESTextureList_GetTextureCount();
     ActorValueInfo* info = ActorValue::GetActorValueInfo(static_cast<ActorValue::Index>(key));
     if (info && (reinterpret_cast<ModifierActorValueView*>(info)->flags & 1))
-        FUN_00937280(key, apEntry);
+        FUN_00937280(key, apModifier);
     else
-        AddHead(apEntry);
+        AddHead(apModifier);
 }

@@ -84,6 +84,7 @@ class FUN_00de1f50 : public DE1F50Shape
 
 // Constructor that stores the given DE1F50Vector4 into m_vector.
 // @fnv 0x00de1f50
+// pdb: hkDisplayConvex::`scalar deleting destructor' | hkDisplayConvex.obj | debug, object-file run extension, low
 FUN_00de1f50::FUN_00de1f50(const DE1F50Vector4& v) : m_vector(v)
 {
     m_vector = v;

@@ -28,7 +28,7 @@ struct StartMenuVideoRes
     unsigned short height;
 
     StartMenuVideoRes();
-    void* Destroy(unsigned int flags);
+    void* SCRIPT_REFERENCED_OBJECT_ScalarDtor(unsigned int flags);
 };
 
 template <> void BSSimpleArray<StartMenu::Option*>::_InitialSetup(unsigned int, unsigned int);
@@ -44,6 +44,8 @@ BSSimpleArray<StartMenu::Option*>::~BSSimpleArray()
 }
 
 // @fnv 0x007da010
+// pdb: BSSimpleArray<StartMenu::UserOption *,1024>::_Reallocate | StartMenu.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 template <>
 BSSimpleArray<StartMenu::UserOption*>::BSSimpleArray()
 {
@@ -51,6 +53,7 @@ BSSimpleArray<StartMenu::UserOption*>::BSSimpleArray()
 }
 
 // @fnv 0x007da070
+// pdb: BSSimpleArray<StartMenu::UserOption *,1024>::~BSSimpleArray<StartMenu::UserOption *,1024> | StartMenu.obj | debug, object-file run extension, low
 template <>
 BSSimpleArray<StartMenu::UserOption*>::~BSSimpleArray()
 {
@@ -82,6 +85,7 @@ extern "C" void __cdecl SPECIALBookMenu_Create(int);
 
 // @fnv 0x007c5fb0
 // src: COMMUNITY 0x007c5fb0
+// pdb: SPECIALBookMenu::Create | SPECIALBookMenu.obj | debug, call graph, low
 void __cdecl SPECIALBookMenu_Create35()
 {
     SPECIALBookMenu_Create(0x23);
@@ -96,7 +100,7 @@ void Runtime_TurnPageForwardAndInvokeCallbacks()
     if (DAT_011daa38 && *(unsigned char*)((unsigned char*)DAT_011daa38 + 0x54))
     {
         ((BookMenu*)DAT_011daa38)->TurnPage(1);
-        ((BookMenu*)DAT_011daa38)->InvokeCallbacksForSlot();
+        ((BookMenu*)DAT_011daa38)->SPECIALBookMenu_RefreshPage();
     }
 }
 
@@ -110,7 +114,7 @@ void Runtime_TurnPageBackwardAndInvokeCallbacks()
     if (DAT_011daa38 && *(unsigned char*)((char*)DAT_011daa38 + 0x54))
     {
         ((BookMenu*)DAT_011daa38)->TurnPage(0);
-        ((BookMenu*)DAT_011daa38)->InvokeCallbacksForSlot();
+        ((BookMenu*)DAT_011daa38)->SPECIALBookMenu_RefreshPage();
     }
 }
 }  // namespace fnv_007cabf0
@@ -141,6 +145,9 @@ struct FUN_007d6bd0_Class : FUN_00570f40_Class
 // Calls FUN_00570f40, then sets or clears bit 0 at offset 0x244 based on abValue, returning the earlier result.
 // @fnv 0x007d6bd0
 // src: COMMUNITY 0x007d6bd0
+// pdb: BGSSaveLoadGame::SetGlobalAllowChanges | TES.obj | debug, upstream name already matches, high
+// pdb params: abValue
+// pdb locals: bret
 bool FUN_007d6bd0_Class::BGSSaveLoadGame_SetGlobalAllowChanges(bool abValue)
 {
     bool bret = BGSSaveLoadGame_GetGlobalAllowChanges();
@@ -177,12 +184,12 @@ void BSSimpleArray<StartMenuVideoRes>::_InitialSetup(unsigned int uiRequestedSiz
 extern StartMenu* DAT_011daac0;
 bool __cdecl InterfaceManager_Has360Controller();
 void __cdecl Controls_EnableRumble(char);
-void __cdecl HandleBackAction();
+void __cdecl StartMenu_ChooseBack();
 
 int __cdecl BSstrcmp(char const* a, char const* b);
 struct AVH
 {
-    static char const* GetActorValueName(ActorValue::Index index);
+    static char const* ActorValue_GetActorValueName(ActorValue::Index aiIndex);
 };
 struct FUN_007da270_T
 {
@@ -191,10 +198,13 @@ struct FUN_007da270_T
 };
 // Looks up the actor value names for both structs' index fields and returns the result of comparing those names.
 // @fnv 0x007da270
+// pdb: SortStatsSkillsFunc | StatsMenu.obj | debug, object-file run extension, low
+// pdb params: av1, av2
+// pdb locals: avName2, iresult, avName1
 int CompareActorValueNames(FUN_007da270_T* apLeft, FUN_007da270_T* apRight)
 {
-    char const* nameA = AVH::GetActorValueName(apLeft->index);
-    char const* nameB6 = AVH::GetActorValueName(apRight->index);
+    char const* nameA = AVH::ActorValue_GetActorValueName(apLeft->index);
+    char const* nameB6 = AVH::ActorValue_GetActorValueName(apRight->index);
     int result = BSstrcmp(nameA, nameB6);
     return result;
 }
@@ -342,6 +352,9 @@ struct FUN_007ca530_Params
 
 // Computes a state from DAT_011daa38 and calls one of the callback's virtual methods with a value from the matching offset.
 // @fnv 0x007ca530
+// pdb: SPECIALBookMenu::RefreshTotalPointsText | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apTextItem
+// pdb locals: ipoints
 void DispatchStateCallback(FUN_007ca530_Params* params)
 {
     int state = *reinterpret_cast<int*>(reinterpret_cast<unsigned char*>(DAT_011daa38) + 0x58) -
@@ -521,6 +534,9 @@ struct FUN_007ca5f0_Argument
 int __fastcall SPECIALBookMenu_GetTotalPointsUsed(void*);
 
 // @fnv 0x007ca5f0
+// pdb: SPECIALBookMenu::RefreshTotalPointsValue | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apTextItem
+// pdb locals: ipoints, idigit2, idigit1
 void UpdateLodVisibility(FUN_007ca5f0_Argument* p)
 {
     if (!p->field4 || !p->field8)
@@ -581,10 +597,12 @@ template <>
 void BSSimpleArray<StartMenuVideoRes>::ReleaseElements(StartMenuVideoRes* apArray, unsigned int aiCount)
 {
     for (unsigned int i = 0; i < aiCount; ++i)
-        apArray[i].Destroy(0);
+        apArray[i].SCRIPT_REFERENCED_OBJECT_ScalarDtor(0);
 }
 
 // @fnv 0x007d9f90
+// pdb: BSSimpleArray<StartMenu::Option *,1024>::_Reallocate | StartMenu.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 template <>
 BSSimpleArray<StartMenu::Option*>::BSSimpleArray()
 {
@@ -627,6 +645,9 @@ bool __cdecl InterfaceManager_Has360Controller();
 
 // @fnv 0x007ca700
 // src: GUESS 0x007ca700 (confidence: low)
+// pdb: SPECIALBookMenu::RefreshLeftAVButton | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apButton
+// pdb locals: eav
 void __cdecl Object_UpdateFields_007ca700(void* pObject)
 {
     int iValue = *(int*)((char*)pObject + 0x24);
@@ -729,6 +750,8 @@ extern int* DAT_011daa38;
 
 // Calls vfunc60 on arg->unk0C with (0, 0, result of FUN_00559450 on DAT_011daa38 + 0x1c0).
 // @fnv 0x007ca860
+// pdb: SPECIALBookMenu::RefreshNextPageButton | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apButton
 void __cdecl CallVfunc60WithGlobalOffset(FUN_007ca860_Arg* arg)
 {
     arg->unk0C->vfunc60(
@@ -748,6 +771,8 @@ struct FUN_007ca8e0_Params
 };
 // Calls the callback with a value from one of two source objects on DAT_011daa38, chosen by comparing FUN_00794d80's result against the field at offset 0x58.
 // @fnv 0x007ca8e0
+// pdb: SPECIALBookMenu::RefreshAllDoneButton | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apButton
 void __cdecl DispatchSourceCallback(FUN_007ca8e0_Params* params)
 {
     if (SPECIALBookMenu_GetTotalPointsUsed(DAT_011daa38) < *(int*)((char*)DAT_011daa38 + 0x58))
@@ -771,7 +796,10 @@ struct CallbackCollection
     Callback** BSSimpleArray_NiAVObject_1024_GetAt(unsigned int index);
 };
 // @fnv 0x007cacd0
-void BookMenu::InvokeCallbacksForSlot()
+// src: XBOX_DEBUG_PDB 0x007cacd0
+// pdb: SPECIALBookMenu::RefreshPage | SPECIALBookMenu.obj | debug, call graph, high
+// pdb locals: i
+void BookMenu::SPECIALBookMenu_RefreshPage()
 {
     if (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x48) < 9)
     {
@@ -814,6 +842,7 @@ extern char DAT_01070244;
 void* __cdecl Tile_AddUserTrait(const char*, int);
 void __cdecl ourMemset(void*, int, unsigned);
 // @fnv 0x007cb330
+// pdb: StartMenu::StartMenu | StartMenu.obj | retail, upstream name already matches, high
 StartMenu::StartMenu() : unk1b8(0)
 {
     unk1d0 = Tile_AddUserTrait(&DAT_01070244, -1);
@@ -841,7 +870,7 @@ void __cdecl UpdateStartMenuTile()
         ((Tile*)DAT_011daac0->FUN_00726070())->Set(0x1009, InterfaceManager_Has360Controller());
         Controls_EnableRumble(InterfaceManager_Has360Controller());
         if (DAT_011daac0->IsFlagSet(0x1000))
-            HandleBackAction();
+            StartMenu_ChooseBack();
     }
 }
 
@@ -893,6 +922,8 @@ class B7CE970Object
 // Deletes the object passed in pkObject.
 // @fnv 0x007ce970
 // src: GUESS 0x007ce970 (confidence: low)
+// pdb: StartMenu::DeleteOption | StartMenu.obj | debug, object-file gap fill, medium
+// pdb params: apTile, apOption
 void Runtime_ReleaseStorage_007ce970(void* pvContext, B7CE970Object* pkObject)
 {
     delete pkObject;
@@ -914,6 +945,7 @@ class C7D8EE0List
 
 // Selects the last entry by calling SetSelection with GetCount(0) minus one.
 // @fnv 0x007d8ee0
+// pdb: ListBox<BGSSaveLoadFileEntry *>::GetLastItem | StartMenu.obj | debug, call graph, medium
 void C7D8EE0List::SelectLast()
 {
     SetSelection(GetCount(0) - 1);
@@ -934,7 +966,7 @@ void BSSimpleArray<StartMenuVideoRes>::InitializeItems(StartMenuVideoRes* record
 
 struct FUN_00501c10_Class
 {
-    void CallAndReturnSelf(int a);
+    void CallAndReturnSelf(int arString);
 };
 struct FUN_007df120_Class
 {
@@ -1038,6 +1070,7 @@ struct FUN_00a712f0
     void NiCamera_SetMinNearPlaneDist(float);
     void AssignFixedString(const NiFixedString&);
 };
+// pdb: class Renderer, size 0x1 (here 0x4), 0 members
 struct Renderer
 {
     virtual void slot00();
@@ -1122,7 +1155,10 @@ float tan_0057dd70(float);
 
 // Allocates a camera object, configures its viewport, frustum, aspect ratio, transform and name, and returns it.
 // @fnv 0x007c99c0
-void* BookMenu::CreateSurgery3DCamera()
+// src: XBOX_RETAIL_PDB 0x007c99c0
+// pdb: SPECIALBookMenu::InitCamera | SPECIALBookMenu.obj | retail, object-file run extension, high
+// pdb locals: theta, faspectDelta, fr, fHeightByWidth, pcam, port, UpdateData2
+void* BookMenu::SPECIALBookMenu_InitCamera()
 {
     // Local identifiers and declaration order preserve the MSVC9 /Od stack layout.
     float frustum;                              // Viewport aspect ratio.
@@ -1405,6 +1441,9 @@ struct CA4D0Entry
 
 // Gets the player's rank for the entry's actor value and sets the entry tile's text to that rank's title.
 // @fnv 0x007ca4d0
+// pdb: SPECIALBookMenu::RefreshActorValue | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apTextItem
+// pdb locals: iav
 void __cdecl UpdateEntryRankText(CA4D0Entry* pkEntry)
 {
     int m_iRank = g_pkCA4D0Player->m_kAVOwner.GetRank(pkEntry->m_iActorValue);
@@ -1447,6 +1486,9 @@ extern char* DAT_011dea3c;
 
 // @fnv 0x007ca7a0
 // src: GUESS 0x007ca7a0 (confidence: low)
+// pdb: SPECIALBookMenu::RefreshRightAVButton | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apButton
+// pdb locals: eav
 void __cdecl Object_UpdateFields_007ca7a0(CsParam* param_1)
 {
     int iValue = param_1->unk24;
@@ -1678,6 +1720,8 @@ class Event7CA
 // Calls Apply on the event's target with first and second set to 0 and the owner's handle object.
 // @fnv 0x007ca8a0
 // src: GUESS 0x007ca8a0 (confidence: low)
+// pdb: SPECIALBookMenu::RefreshPreviousPageButton | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apButton
 void __cdecl Object_ProcessState_007ca8a0(Event7CA* pkEvent)
 {
     pkEvent->m_pkTarget->Apply(0, 0, g_pkOwner7CA->m_kHandle.Get());
@@ -1687,8 +1731,8 @@ class Mgr
 {
   public:
     int Modelloader_GetReferencedThis();
-    void FUN_004037f0(int v);
-    void BSStringT_MakeUpper();
+    void FUN_004037f0(int apString);
+    void BSStringT_char_MakeUpper();
     int FUN_00403df0(int v);
     int FUN_00403df0();
     char* FUN_004c69f0();
@@ -1749,7 +1793,7 @@ class FUN_007d6350
     int state;
     FUN_007d6350(char*, char*, int, ...);
 };
-void __cdecl ClearStartMenuEntries();
+void __cdecl StartMenu_DestroyMenuElements();
 void* __cdecl FormHeap_Allocate(int size);
 extern char DAT_007d0440[];
 extern char DAT_007d0490[];
@@ -1860,16 +1904,17 @@ extern Mgr DAT_011d4e40;
 extern Mgr DAT_011d5074;
 // @fnv 0x007cc6e0
 // src: COMMUNITY 0x007cc6e0
+// pdb: StartMenu::CreateMenuElements | StartMenu.obj | retail, upstream name already matches, high
 void __cdecl StartMenu_CreateMenuElements()
 {
     if (!DAT_011dabcc.Modelloader_GetReferencedThis())
     {
         DAT_011dabcc.FUN_004037f0(DAT_011d4630.FUN_00403df0(0));
-        DAT_011dabcc.BSStringT_MakeUpper();
+        DAT_011dabcc.BSStringT_char_MakeUpper();
         DAT_011daad0.FUN_004037f0(DAT_011d4354.FUN_00403df0(0));
-        DAT_011daad0.BSStringT_MakeUpper();
+        DAT_011daad0.BSStringT_char_MakeUpper();
     }
-    ClearStartMenuEntries();
+    StartMenu_DestroyMenuElements();
     DAT_011dab88.FUN_007cb2e0(new FUN_007ce620(DAT_011d3564.FUN_004c69f0(), DAT_007d0440, 3));
     DAT_011dab88.FUN_007cb2e0(new FUN_007ce620(DAT_011d216c.FUN_004c69f0(), DAT_007d0490, 1));
     DAT_011dab88.FUN_007cb2e0(new FUN_007ce620(DAT_011d3b8c.FUN_004c69f0(), DAT_007d06c0, 2));
@@ -1970,7 +2015,8 @@ extern BookNodePointer DAT_011daa9c;
 // Creates the SPECIAL book menu from its XML, checks its ID, stores the value, and reports a missing index on failure.
 // @fnv 0x007c5fc0
 // src: COMMUNITY 0x007c5fc0
-extern "C" void SPECIALBookMenu_Create(int value)
+// pdb: SPECIALBookMenu::Create | SPECIALBookMenu.obj | retail, upstream name already matches, high
+extern "C" void SPECIALBookMenu_Create(int aiTotalPoints)
 {
     Tile* menu = InterfaceManager_GetSingleton()->CombatController_GetCombatState()->Tile_ReadFile("Data\\Menus\\CharGen\\SPECIALBookMenu.xml");
     BookMenu* tile = static_cast<BookMenu*>(menu->Tile_GetMenu());
@@ -1987,9 +2033,9 @@ extern "C" void SPECIALBookMenu_Create(int value)
             return;
         }
         // The SPECIAL book menu extends BookMenu with its value at 0x58.
-        *reinterpret_cast<int*>(reinterpret_cast<char*>(DAT_011daa38) + 0x58) = value;
-        reinterpret_cast<BookMenu*>(DAT_011daa38)->InitMenu();
-        DAT_011daa9c.FUN_0066b0d0(reinterpret_cast<BookMenu*>(DAT_011daa38)->CreateSurgery3DCamera());
+        *reinterpret_cast<int*>(reinterpret_cast<char*>(DAT_011daa38) + 0x58) = aiTotalPoints;
+        reinterpret_cast<BookMenu*>(DAT_011daa38)->InitBook();
+        DAT_011daa9c.FUN_0066b0d0(reinterpret_cast<BookMenu*>(DAT_011daa38)->SPECIALBookMenu_InitCamera());
         HUDMainMenu_SetAutoDisplayObjectives(true);
         tile->FUN_00a1dc20(false);
     }
@@ -2010,6 +2056,9 @@ struct FUN_007ca960_Owner
 
 // @fnv 0x007ca960
 // src: GUESS 0x007ca960 (confidence: low)
+// pdb: SPECIALBookMenu::DecreaseActorValue | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apAVButton, eav
+// pdb locals: ioldValue, psoundHand
 void __cdecl Object_ProcessAndReturnValue_007ca960(void* apSelf)
 {
     if (!DAT_011daa38)
@@ -2026,7 +2075,7 @@ void __cdecl Object_ProcessAndReturnValue_007ca960(void* apSelf)
         }
         ((FUN_007ca960_Owner*)DAT_011dea3c)->PlayerCharacter_SetActorBaseValue(m_uiSoundID, BSMAX_00647b70(iCount - 1, 1));
     }
-    ((BookMenu*)DAT_011daa38)->InvokeCallbacksForSlot();
+    ((BookMenu*)DAT_011daa38)->SPECIALBookMenu_RefreshPage();
 }
 
 // @fnv 0x007da240

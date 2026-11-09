@@ -29,53 +29,54 @@ class TESPackage;
 class TESWorldSpace;
 template <class T> class NiTLargePrimitiveArray;
 
+// pdb: class TESSaveLoadGame, size 0x1c8, 44 members
 class TESSaveLoadGame
 {
 public:
-    ChangesMap* m_pChangesMap;                                         // 0x000 new ChangesMap (0x00854ea0)
-    ChangesMap* m_pAlternateChangesMap;                                // 0x004
-    InteriorCellNewReferencesMap* m_pInteriorCellNewReferencesMap;     // 0x008
-    ExteriorCellNewReferencesMap* m_pExteriorCellNewReferencesMap1;    // 0x00c
-    ExteriorCellNewReferencesMap* m_pExteriorCellNewReferencesMap2;    // 0x010
+    ChangesMap* m_pChanges;                                         // 0x000 new ChangesMap (0x00854ea0)
+    ChangesMap* m_pNewChanges;                                // 0x004
+    InteriorCellNewReferencesMap* m_pInteriorCellMap;     // 0x008
+    ExteriorCellNewReferencesMap* m_pExteriorCellMap;    // 0x00c
+    ExteriorCellNewReferencesMap* m_pCreatedExteriorCells;    // 0x010
     char* m_pBuffer;                                                   // 0x014
-    unsigned int m_uiBufferSize;                                       // 0x018
-    bool m_bLoading;                                                   // 0x01c
-    void* m_pInitFormArray;                                            // 0x020
-    BSSimpleList<unsigned int> m_kChangedReferenceIDList;              // 0x024 CreateChangedReference removes its form id
-    BSSimpleList<TESForm*> m_kCreatedBaseObjectList;                   // 0x02c AddCreatedBaseObject
-    BSSimpleList<TESForm*> m_kDeferredDeletionList;                    // 0x034 AddFormToDeferredDeletionsList
-    BSSimpleList<void*> m_kList3C;                                     // 0x03c element type unknown (ctor/dtor only)
-    void* m_pSaveGameEntry;                                            // 0x044
+    unsigned int m_iSaveLoadStates;                                       // 0x018
+    bool m_bAllowChanges;                                                   // 0x01c
+    void* m_pInitArray;                                            // 0x020
+    BSSimpleList<unsigned int> m_MovedReferencesList;              // 0x024 CreateChangedReference removes its form id
+    BSSimpleList<TESForm*> m_CreatedBaseObjectsList;                   // 0x02c AddCreatedBaseObject
+    BSSimpleList<TESForm*> m_DeferredDeleteList;                    // 0x034 AddFormToDeferredDeletionsList
+    BSSimpleList<void*> m_DeferredInitActorPackageList;                                     // 0x03c element type unknown (ctor/dtor only)
+    void* m_pSaveLoadStats;                                            // 0x044
     int m_iRevertState;                                                // 0x048
-    unsigned char m_ucSaveVersion;                                     // 0x04c
-    unsigned char* m_pNumericIDBuffer;                                 // 0x050 freed by the destructor
-    unsigned int m_uiQueuedRemoveChange;                               // 0x054 QueueRemoveChange 0x0060e680
-    NumericIDBufferMap* m_pAnimationBufferMap;                         // 0x058
-    NumericIDBufferMap* m_pAttachedAnimationBufferMap;                 // 0x05c QueueAttachedAnimationLoad
-    NumericIDBufferMap* m_pCharControllerBufferMap;                    // 0x060 QueueCharControllerLoad
-    NumericIDBufferMap* m_pHavokDataBufferMap;                         // 0x064 QueueHavokDataLoad
-    BSSimpleList<TESForm*> m_kQueuedFinalizeForms;                     // 0x068 QueueFormForFinalization
+    unsigned char m_iSavedPluginCount;                                     // 0x04c
+    unsigned char* m_pFileIndexArray;                                 // 0x050 freed by the destructor
+    unsigned int m_iQueuedRemoveChanges;                               // 0x054 QueueRemoveChange 0x0060e680
+    NumericIDBufferMap* m_pAnimationMap;                         // 0x058
+    NumericIDBufferMap* m_pAttachedAnimationMap;                 // 0x05c QueueAttachedAnimationLoad
+    NumericIDBufferMap* m_pCharControllerMap;                    // 0x060 QueueCharControllerLoad
+    NumericIDBufferMap* m_pHavokDataMap;                         // 0x064 QueueHavokDataLoad
+    BSSimpleList<TESForm*> m_QueuedFormList;                     // 0x068 QueueFormForFinalization
     void* m_pSaveGameList;                                             // 0x070
-    unsigned char m_ucMinimumVersion;                                  // 0x074 ResetVersions: 0
-    unsigned char m_ucVersion;                                         // 0x075 ResetVersions: 0x7d
-    NiTLargePrimitiveArray<unsigned int>* m_pFormIDArray;              // 0x078 new (100, 50)
+    unsigned char m_cMajorVersion;                                  // 0x074 ResetVersions: 0
+    unsigned char m_cMinorVersion;                                         // 0x075 ResetVersions: 0x7d
+    NiTLargePrimitiveArray<unsigned int>* m_pNumericIDArray;              // 0x078 new (100, 50)
     NiTLargePrimitiveArray<unsigned int>* m_pWorldSpaceIDArray;        // 0x07c new (5, 1)
-    unsigned char m_ucCurrentVersion;                                  // 0x080 ResetCurrentVersion copies +0x75
-    bool m_bUseSaveGameBlocks;                                         // 0x081 ctor: 1
-    unsigned int m_uiValue84;                                          // 0x084
-    unsigned int m_uiValue88;                                          // 0x088
-    unsigned int m_uiNextSaveNumber;                                   // 0x08c GetNextSaveNumber
-    unsigned int m_uiValue90;                                          // 0x090
-    unsigned int m_uiValue94;                                          // 0x094
-    char m_acSaveGameSignature[16];                                    // 0x098 ctor memset 0x10
-    unsigned int m_uiCurrentFormRecordCount;                           // 0x0a8
-    bool m_bSaveGameLoaded;                                            // 0x0ac
-    bool m_bSaveGameCorrupt;                                           // 0x0ad
-    bool m_bHasPendingChanges;                                         // 0x0ae
-    bool m_bNeedsReferenceReconstruction;                              // 0x0af
-    void* m_pSaveGameListData;                                         // 0x0b0
-    char m_acSaveGamePath[272];                                        // 0x0b4
-    _FILETIME* m_pMostRecentSaveTime;                                  // 0x1c4 GetMostRecentSaveGame; freed by the dtor
+    unsigned char m_cCurrentVersion;                                  // 0x080 ResetCurrentVersion copies +0x75
+    bool m_bUseNumericIDArray;                                         // 0x081 ctor: 1
+    unsigned int m_pCurrentlyLoadingFormHeader;                                          // 0x084
+    unsigned int m_pCurrentlySavingFormHeader;                                          // 0x088
+    unsigned int m_iNextSaveNumber;                                   // 0x08c GetNextSaveNumber
+    unsigned int m_iFileStartPosition;                                          // 0x090
+    unsigned int m_iSimulationFileSize;                                          // 0x094
+    char m_OriginalSaveTime[16];                                    // 0x098 ctor memset 0x10
+    unsigned int m_iOriginalSaveVersion;                           // 0x0a8
+    bool m_bReconstructedAllObjects;                                            // 0x0ac
+    bool m_bLoadingFromMainMenu;                                           // 0x0ad
+    bool m_bAutosaveDisabledDueToLackOfSpace;                                         // 0x0ae
+    bool m_bQuickloading;                              // 0x0af
+    void* m_pInitItemArray;                                         // 0x0b0
+    char m_SavedPlayerData[272];                                        // 0x0b4
+    _FILETIME* m_pMostRecentSaveGame;                                  // 0x1c4 GetMostRecentSaveGame; freed by the dtor
 
     TESSaveLoadGame();
     ~TESSaveLoadGame();
@@ -282,7 +283,7 @@ public:
     void ReadFile(BSFile*, unsigned int*, unsigned int);
     void ReadFile(BSFile*, unsigned long*, unsigned int);
     void ReadFile(BSFile*, unsigned short*, unsigned int);
-    unsigned int ReadFile(BSFile*, void*, unsigned int);
+    unsigned int TESSaveLoadGame_ReadFile(BSFile*, void*, unsigned int);
     void ReadFileEndian(BSFile*, void*, unsigned int, unsigned int);
     char* ReadFileName(char*);
     void ReadSaveGameMetadata(BSFile*, unsigned int*, char*, char*, _FILETIME*, char*);

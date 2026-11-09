@@ -4,6 +4,7 @@
 #include "hkBool.h"
 #include "hkVector4.h"
 
+// pdb: class hkpPulleyConstraintData, size 0x80, bases: hkpConstraintData, 1 members
 class hkpPulleyConstraintData : public hkpConstraintData
 {
 public:
@@ -22,7 +23,7 @@ public:
     virtual void vf15(int a);
 
     int unk0c;
-    int unk10;
+    int m_atoms;
     int unk14;
     int unk18;
     int unk1c;

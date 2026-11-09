@@ -38,15 +38,18 @@ struct S00c365f0_Box
     NiPoint3 center;
     NiPoint3 extents;
     S00c365f0_Mat rotation;
-    int BSMultiBoundOBB_CheckBound(const NiBound& sphere);
+    int BSMultiBoundOBB_CheckBound(const NiBound& aTargetBound);
 };
 
 // @fnv 0x00c365f0
 // src: XBOX_PDB 0x00c365f0
-int S00c365f0_Box::BSMultiBoundOBB_CheckBound(const NiBound& sphere)
+// pdb: BSMultiBoundOBB::CheckBound | BSMultiBoundOBB.obj | retail, upstream name already matches, high
+// pdb params: aTargetBound
+// pdb locals: r, bintersect, fDx, Bz, bwithin, P, Bx, By, fDy, fDz
+int S00c365f0_Box::BSMultiBoundOBB_CheckBound(const NiBound& aTargetBound)
 {
-    NiPoint3 c2 = sphere.m_kCenter;
-    float r = sphere.m_fBoundRadius;
+    NiPoint3 c2 = aTargetBound.m_kCenter;
+    float r = aTargetBound.m_fBoundRadius;
     bool inside = true;
     bool outside2 = true;
     NiPoint3 ax = NiPoint3::ZERO;

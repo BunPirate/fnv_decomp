@@ -10,6 +10,7 @@ void __cdecl _Deallocate(void*);
 
 // Calls FUN_004b0530, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x004b0550
+// pdb: IBSAnimNoteReceiver::`scalar deleting destructor' | BSAnimNoteReceiver.obj | retail, vtable slot, high
 void* IBSAnimNoteReceiver::FUN_004b0550(unsigned int flags)
 {
     SetVtableAndProcessState_004b0530();
@@ -20,6 +21,7 @@ void* IBSAnimNoteReceiver::FUN_004b0550(unsigned int flags)
 
 // Calls FUN_004b0480, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004b0580
+// pdb: BSAnimNoteReceiver::`scalar deleting destructor' | BSAnimNoteReceiver.obj | retail, vtable slot, high
 void* __thiscall BSAnimNoteReceiver::FUN_004b0580(unsigned int flags)
 {
     FUN_004b0480();
@@ -39,13 +41,16 @@ struct ReceiverEntry
     void(__cdecl* callback)(void*, void*);
 };
 // @fnv 0x004b0730
-void BSAnimNoteReceiver::DispatchNoteToReceivers(void* note)
+// pdb: BSAnimNoteReceiver::Update | BSAnimNoteReceiver.obj | retail, vtable slot, high
+// pdb params: apNote
+// pdb locals: ui
+void BSAnimNoteReceiver::DispatchNoteToReceivers(void* apNote)
 {
     for (int i = 0; i < ((FUN_00658930_class*)((char*)this + 8))->GetShortAtOffsetA(); ++i)
     {
-        if (((ReceiverEntry*)((NiFormArray*)((char*)this + 8))->FUN_00877a30(i))->type == FUN_0044ddc0(note))
+        if (((ReceiverEntry*)((NiFormArray*)((char*)this + 8))->FUN_00877a30(i))->type == FUN_0044ddc0(apNote))
         {
-            ((ReceiverEntry*)((NiFormArray*)((char*)this + 8))->FUN_00877a30(i))->callback(unk04, note);
+            ((ReceiverEntry*)((NiFormArray*)((char*)this + 8))->FUN_00877a30(i))->callback(unk04, apNote);
         }
     }
 }

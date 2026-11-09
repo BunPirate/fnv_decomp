@@ -4,7 +4,10 @@
 #include "../../../../include/NiD3DDefaultShader.h"
 
 // @fnv 0x00e69460
-unsigned int ShaderPassRenderer::Create(unsigned int useEx)
+// src: XBOX_DEBUG_PDB 0x00e69460
+// pdb: NiXenonRenderer::CreateDirect3D9 | NiXenonRenderer.obj | debug, unique string literal, high
+// pdb locals: iRet
+unsigned int ShaderPassRenderer::NiXenonRenderer_CreateDirect3D9(unsigned int useEx)
 {
     unsigned int result = 0;
     if (!DAT_0126f0d8)
@@ -50,6 +53,7 @@ struct FUN_00a77960_shell
 };
 
 // @fnv 0x00a77960
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiImageReader *>::NewItem | NiDevImageConverter.obj | debug, object-file run extension, low
 int __thiscall FUN_00a77960_shell::IsField4InRange()
 {
     if (field4 >= 4 && field4 <= 6)

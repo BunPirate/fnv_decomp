@@ -29,6 +29,7 @@ public:
 
 // @fnv 0x007e8e20
 // src: GUESS 0x007e8e20 (confidence: low)
+// pdb: TutorialMenu::NextPage | TutorialMenu.obj | debug, object-file run extension, low
 void TutorialMenu::ProcessAndTransformResult_007e8e20()
 {
     ShowPageByIndex(static_cast<int>(uiCurrentPage) + 1);
@@ -43,6 +44,7 @@ bool TutorialMenu::DoGamepad_007e8e60(int aiButton, float afValue)
 }
 
 // @fnv 0x007e8e40
+// pdb: TutorialMenu::PrevPage | TutorialMenu.obj | debug, object-file run extension, low
 void TutorialMenu::DecrementAndDispatch()
 {
     ShowPageByIndex(static_cast<int>(uiCurrentPage) - 1);
@@ -51,11 +53,12 @@ void TutorialMenu::DecrementAndDispatch()
 
 struct FORenderedMenu;
 FORenderedMenu* __cdecl Interface_GetCurrentRenderedMenu();
-void __cdecl HandleBackAction();
+void __cdecl StartMenu_ChooseBack();
 extern Menu* DAT_011db088;
 
 // @fnv 0x007e8d60
 // src: XBOX_PDB 0x007e8d60
+// pdb: TutorialMenu::Close | TutorialMenu.obj | retail, upstream name already matches, high
 void TutorialMenu_Close()
 {
     if (DAT_011db088)
@@ -65,7 +68,7 @@ void TutorialMenu_Close()
             DAT_011db088->InstantFadeOut();
         else
             DAT_011db088->LoadMenuData();
-        HandleBackAction();
+        StartMenu_ChooseBack();
     }
 }
 
@@ -73,6 +76,8 @@ void TutorialMenu_Close()
 void* __cdecl InterfaceManager_GetSingleton();
 void __cdecl TutorialMenu_Close();
 // @fnv 0x007e8e80
+// pdb: TutorialMenu::DoGamepadUpEvent | TutorialMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
 bool TutorialMenu::HandleGamepadButton(int aiButton, float afValue)
 {
     if (InterfaceH_tutorialmenu::GetSelectedTargetIndex(GetClass()) && aiButton == 10)
@@ -90,6 +95,7 @@ bool TutorialMenu::HandleGamepadButton(int aiButton, float afValue)
 
 // @fnv 0x007e9010
 // src: XBOX_PDB 0x007e9010
+// pdb: TutorialMenu::UpdatePrevNext | TutorialMenu.obj | retail, upstream name already matches, high
 void TutorialMenu::UpdatePrevNext()
 {
     m_pTiles[2]->Set(0xFAF, 0 < uiCurrentPage);
@@ -99,6 +105,8 @@ void TutorialMenu::UpdatePrevNext()
 // Resolves apTarget from the tile array at offset 0x28 when null and aiID is 0-7, then dispatches on aiID to one of three handlers.
 // @fnv 0x007e8db0
 // src: XBOX_PDB 0x007e8db0
+// pdb: TutorialMenu::DoClick | TutorialMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void TutorialMenu::DoClick_007e8db0(int aiID, Tile* apTarget)
 {
     if (!apTarget && aiID >= 0 && aiID < 8)
@@ -119,26 +127,29 @@ void TutorialMenu::DoClick_007e8db0(int aiID, Tile* apTarget)
 
 struct MenuTileField
 {
-    void __thiscall Tile_Set_00a01350(unsigned int property, const char* text, int forceUpdate);
+    void __thiscall Tile_Set_00a01350(unsigned int property, const char* apString, int forceUpdate);
     void __thiscall FUN_00700320(unsigned int property, int matched);
     void __thiscall Tile_Set(void* value, float fade, int flags);
 };
 extern char str_010702d8[];
 extern "C" void* __cdecl Tile_AddUserTrait(const char* descriptor, int index);
 // @fnv 0x007e9060
-void TutorialMenu::ApplyRecordToTiles(BGSMessage* record)
+// pdb: TutorialMenu::SetTitleAndText | TutorialMenu.obj | retail, object-file run extension, high
+// pdb params: apMessage
+// pdb locals: pmsgtxt
+void TutorialMenu::ApplyRecordToTiles(BGSMessage* apMessage)
 {
     const char* description;
-    if (!record)
+    if (!apMessage)
         return;
     if (reinterpret_cast<MenuTileField*>(m_pTiles[4]) != 0)
     {
-        reinterpret_cast<MenuTileField*>(m_pTiles[4])->Tile_Set_00a01350(0xFC4, record->GetFullName(), 1);
+        reinterpret_cast<MenuTileField*>(m_pTiles[4])->Tile_Set_00a01350(0xFC4, apMessage->GetFullName(), 1);
     }
     if (reinterpret_cast<MenuTileField*>(m_pTiles[0]) != 0)
     {
         // Avoid the null-adjusting base conversion emitted by the original compiler.
-        description = reinterpret_cast<TESDescription*>(reinterpret_cast<char*>(record) + sizeof(TESForm) + sizeof(TESFullName))
+        description = reinterpret_cast<TESDescription*>(reinterpret_cast<char*>(apMessage) + sizeof(TESForm) + sizeof(TESFullName))
                           ->GetDescription(0, static_cast<CHUNK_ID>(0x43534544));
         if (description != 0)
         {
@@ -223,7 +234,11 @@ float __cdecl FUN_00a01530();
 bool __cdecl InterfaceManager_Has360Controller();
 
 // @fnv 0x007e8890
-bool InitTutorialMenu(TESForm* apMsg, bool aFlag)
+// src: XBOX_RETAIL_PDB 0x007e8890
+// pdb: TutorialMenu::Create | TutorialMenu.obj | retail, call graph, high
+// pdb params: apMessage, abHelpManual
+// pdb locals: ptile, pold_menu_tile, bfound, pformlist, plistform, strtmp
+bool TutorialMenu_Create(TESForm* apMessage, bool abHelpManual)
 {
     AA* p = Tile_GetMenuByClass(TutorialMenu_GetClassStatic());
     if (p)
@@ -242,15 +257,15 @@ bool InitTutorialMenu(TESForm* apMsg, bool aFlag)
 
         ((TutorialMenu*)DAT_011db088)->m_pTiles[7]->SetString(0xfc4, DAT_011d2340.String(), 1);
 
-        if (aFlag)
+        if (abHelpManual)
         {
             BGSListForm* pForm = InterfaceManager_Has360Controller() ? dynamic_cast<BGSListForm*>(TESForm_GetFormByNumericID(0x165u))
                                                 : dynamic_cast<BGSListForm*>(TESForm_GetFormByNumericID(0x163u));
             if (pForm)
             {
                 ((TutorialMenu*)DAT_011db088)->pPages = reinterpret_cast<HelpListNode*>(pForm->GetList());
-                if (apMsg == 0)
-                    apMsg = dynamic_cast<BGSMessage*>(*((TutorialMenu*)DAT_011db088)->pPages->Item());
+                if (apMessage == 0)
+                    apMessage = dynamic_cast<BGSMessage*>(*((TutorialMenu*)DAT_011db088)->pPages->Item());
             }
             ((TutorialMenu*)DAT_011db088)->m_pTiles[1]->SetString(0xfc4, DAT_011d34b0.String(), 1);
             ((TutorialMenu*)DAT_011db088)->m_pTiles[2]->SetString(0xfc4, DAT_011d4468.String(), 1);
@@ -263,7 +278,7 @@ bool InitTutorialMenu(TESForm* apMsg, bool aFlag)
 
         ((TutorialMenu*)DAT_011db088)->m_pTiles[3]->SetString(0xfc4, DAT_011d22b0.String(), 1);
 
-        if (apMsg == 0)
+        if (apMessage == 0)
             FNV_Warning(0x12, "Warning:  Unable to find valid starting message for Tutorial Menu.");
 
         ((TutorialMenu*)DAT_011db088)->uiPageCount = 0;
@@ -273,7 +288,7 @@ bool InitTutorialMenu(TESForm* apMsg, bool aFlag)
         node5 = ((TutorialMenu*)DAT_011db088)->pPages;
         while (node5 != 0 && *node5->Item() != 0)
         {
-            if (!found2 && *node5->Item() == apMsg)
+            if (!found2 && *node5->Item() == apMessage)
             {
                 ((TutorialMenu*)DAT_011db088)->uiCurrentPage = ((TutorialMenu*)DAT_011db088)->uiPageCount;
                 found2 = true;
@@ -294,9 +309,9 @@ bool InitTutorialMenu(TESForm* apMsg, bool aFlag)
             ((TutorialMenu*)DAT_011db088)->uiPageCount = 0;
         }
 
-        if (apMsg != 0)
+        if (apMessage != 0)
         {
-            ((TutorialMenu*)DAT_011db088)->ApplyRecordToTiles(reinterpret_cast<BGSMessage*>(apMsg));
+            ((TutorialMenu*)DAT_011db088)->ApplyRecordToTiles(reinterpret_cast<BGSMessage*>(apMessage));
             ((TutorialMenu*)DAT_011db088)->UpdatePrevNext();
             ((TForm2*)DAT_011db088)->IsInCombat();
             ((IMF*)InterfaceManager_GetSingleton())->FUN_0045cd60()->Set(0xfa9, DAT_01023cd8, 1);

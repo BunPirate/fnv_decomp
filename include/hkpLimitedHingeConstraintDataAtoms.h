@@ -5,19 +5,20 @@
 #include "hkpBallSocketConstraintAtom.h"
 #include "hkBool.h"
 
+// pdb: structure hkpAngMotorConstraintAtom, size 0x14, bases: hkpConstraintAtom, 7 members
 class hkpAngMotorConstraintAtom : public hkpConstraintAtom
 {
 public:
     hkpAngMotorConstraintAtom() : hkpConstraintAtom(FinishingFlag()) {}
 
-    hkBool m_bLimitEnabled;
-    unsigned char m_ucMotorAxis;
-    short m_iInitializedOffset;
-    short m_iPreviousTargetAngleOffset;
-    short m_iCorrespondingAngLimitSolverResultOffset;
+    hkBool m_isEnabled;
+    unsigned char m_motorAxis;
+    short m_initializedOffset;
+    short m_previousTargetAngleOffset;
+    short m_correspondingAngLimitSolverResultOffset;
     char unk0A[2];
-    float m_fTargetAngle;
-    void* m_pMotor;
+    float m_targetAngle;
+    void* m_motor;
 };
 
 #include "hkpAngLimitConstraintAtom.h"

@@ -1,6 +1,8 @@
 
 #include "bspackedtaskqueue_decls.h"
 // @fnv 0x0087a7d0
+// pdb: BSPackedTaskQueue::Process | TaskQueueInterface.obj | debug, object-file run extension, low
+// pdb locals: bResult, task
 bool PackedTaskQueueProcessor::Process()
 {
     m_bIsProcessing = true;

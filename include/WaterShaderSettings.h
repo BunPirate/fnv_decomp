@@ -57,5 +57,5 @@ public:
     float m_fWaterParameter6;
 
     void Initialize();
-    void Endian();
+    void WaterShaderData_Endian();
 };

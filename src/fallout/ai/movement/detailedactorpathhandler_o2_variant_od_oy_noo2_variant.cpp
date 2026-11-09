@@ -566,28 +566,31 @@ void __cdecl Collect75(void*, Request75*, int, const Point75*, Handler75*, List7
 
 // @fnv 0x009e71b0
 // src: XBOX_PDB 0x009e71b0
-void __cdecl DetailedActorPathHandler_UpdateAvoidNodesForPath(void* context, Request75* request, Handler75* handler)
+// pdb: DetailedActorPathHandler::UpdateAvoidNodesForPath | DetailedActorPathHandler.obj | retail, upstream name already matches, high
+// pdb params: apActor, apRequest, apHandler
+// pdb locals: pavoidActor, fnodeRadius, avoidActors, ffudge, pavoidNodes, fourRadius, i, pavoidCon, targetWorldSpaceMoveDir, OneSecondDelta, nodeType, targetRot, avoidCenter, pconPos, pconPosNi
+void __cdecl DetailedActorPathHandler_UpdateAvoidNodesForPath(void* apActor, Request75* apRequest, Handler75* apHandler)
 {
-    if (handler && handler->state == 3)
+    if (apHandler && apHandler->state == 3)
         return;
     float factor = g_factor75;
     unsigned int scanCount = 0;
     List75 actors;
-    Collect75(context, request, 0x101, &g_zero75, handler, &actors);
+    Collect75(apActor, apRequest, 0x101, &g_zero75, apHandler, &actors);
     if (!actors.Empty())
     {
-        float radius = request->Radius();
-        AvoidArray75* avoid = request->GetAvoid();
+        float radius = apRequest->Radius();
+        AvoidArray75* avoid = apRequest->GetAvoid();
         if (!avoid)
         {
             avoid = new AvoidArray75;
-            request->SetAvoid(avoid);
+            apRequest->SetAvoid(avoid);
         }
         for (unsigned int i = 0; i < actors.Size(); ++i)
         {
             Actor75* actor = *actors.At(i);
-            if (handler)
-                handler->filter.Refine(&actor);
+            if (apHandler)
+                apHandler->filter.Refine(&actor);
             float weight;
             int kind;
             if (actor->Kind() == 4 || actor->Kind() == 9)
@@ -619,8 +622,8 @@ void __cdecl DetailedActorPathHandler_UpdateAvoidNodesForPath(void* context, Req
                 position.y = converted.y;
             }
             avoid->Add(Area75(position, weight, 2.0f, kind));
-            if (handler)
-                handler->state = 3;
+            if (apHandler)
+                apHandler->state = 3;
         }
     }
 }

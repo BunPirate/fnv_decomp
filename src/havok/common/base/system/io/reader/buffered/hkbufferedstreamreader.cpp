@@ -21,6 +21,9 @@ struct FUN_00d2bb20_cls
 };
 
 // @fnv 0x00d2bb20
+// pdb: hkBufferedStreamReader::setMark | hkBufferedStreamReader.obj | debug, vtable slot, medium
+// pdb params: markLimit
+// pdb locals: assertBuf, ostr
 int FUN_00d2bb20_cls::SetValueAndCompare(int iValue)
 {
     m_1c = m_10;
@@ -54,6 +57,7 @@ int FUN_00d2bb40_cls::hkBufferedStreamReader_rewindToMark()
 
 extern int DAT_0102e388;
 extern int DAT_010ce688;
+// pdb: class hkBufferedStreamReader, size 0x24 (here 0x14), bases: hkStreamReader, 2 members
 struct hkBufferedStreamReader
 {
     int* m_pVTable;
@@ -61,15 +65,17 @@ struct hkBufferedStreamReader
     hkReferencedObject* m_pObject;
     int m_iValueAfterStandIn;
     int m_pAuxiliaryObject;
-    void UpdateState_00d2bc10();
-    void Destroy();
+    void hkBufferedStreamReader_Buffer_dtor();
+    void hkBufferedStreamReader_dtor();
 };
 // @fnv 0x00d2bc70
-void hkBufferedStreamReader::Destroy()
+// src: XBOX_RETAIL_PDB 0x00d2bc70
+// pdb: hkBufferedStreamReader::~hkBufferedStreamReader | hkBufferedStreamReader.obj | retail, object-file gap fill, high
+void hkBufferedStreamReader::hkBufferedStreamReader_dtor()
 {
     m_pVTable = &DAT_010ce688;
     m_pObject->removeReference();
-    ((hkBufferedStreamReader*)((char*)this + 0xc))->UpdateState_00d2bc10();
+    ((hkBufferedStreamReader*)((char*)this + 0xc))->hkBufferedStreamReader_Buffer_dtor();
     m_pVTable = &DAT_0102e388;
 }
 
@@ -92,19 +98,21 @@ struct FUN_00d2ba80_cls
 };
 // Advances the read position by n bytes, refilling the buffer via v12() when the remaining bytes are insufficient, and returns the number of bytes consumed.
 // @fnv 0x00d2ba80
-int FUN_00d2ba80_cls::SkipBytes(int aiByteCount)
+// pdb: hkBufferedStreamReader::skip | hkBufferedStreamReader.obj | retail, vtable slot, high
+// pdb params: nbytes
+int FUN_00d2ba80_cls::SkipBytes(int nbytes)
 {
-    int iRemaining = aiByteCount;
+    int iRemaining = nbytes;
     int iAvailable = ((int*)this)[5] - ((int*)this)[4];
     while (iRemaining > iAvailable)
     {
         iRemaining -= iAvailable;
         if (v12())
-            return aiByteCount - iRemaining;
+            return nbytes - iRemaining;
         iAvailable = ((int*)this)[5] - ((int*)this)[4];
     }
     ((int*)this)[4] += iRemaining;
-    return aiByteCount;
+    return nbytes;
 }
 
 struct FUN_00d2bb10_this
@@ -137,16 +145,18 @@ struct FUN_00d2ba00_cls : FUN_00d2ba80_cls
     int m_vContactPosition;
     int m_kRayEnd;
 
-    int hkBufferedStreamReader_read(char* pBuffer, int nSize);
+    int hkBufferedStreamReader_read(char* buf, int nbytes);
 };
 
 // Copies up to nSize bytes from the internal buffer into pBuffer, refilling via v12 when exhausted, and returns the number of bytes read.
 // @fnv 0x00d2ba00
 // src: HAVOK_LIB 0x00d2ba00
-int FUN_00d2ba00_cls::hkBufferedStreamReader_read(char* apDest, int nSize)
+// pdb: hkBufferedStreamReader::read | hkBufferedStreamReader.obj | retail, upstream name already matches, high
+// pdb params: buf, nbytes
+int FUN_00d2ba00_cls::hkBufferedStreamReader_read(char* buf, int nbytes)
 {
-    char* pDest = apDest;
-    int nRemaining = nSize;
+    char* pDest = buf;
+    int nRemaining = nbytes;
     int nAvailable = m_kRayEnd - m_vContactPosition;
 
     while (nRemaining > nAvailable)
@@ -157,14 +167,14 @@ int FUN_00d2ba00_cls::hkBufferedStreamReader_read(char* apDest, int nSize)
         nRemaining -= nAvailable;
 
         if (v12() != 0)
-            return nSize - nRemaining;
+            return nbytes - nRemaining;
 
         nAvailable = m_kRayEnd - m_vContactPosition;
     }
 
     _FUN_00cb1260(pDest, m_pBuffer + m_vContactPosition, nRemaining);
     m_vContactPosition += nRemaining;
-    return nSize;
+    return nbytes;
 }
 
 struct FUN_00d2bb60_object
@@ -202,6 +212,7 @@ struct FUN_00d2bb60_cls
 
 // @fnv 0x00d2bb60
 // src: HAVOK_LIB 0x00d2bb60
+// pdb: hkBufferedStreamReader::seekTellSupported | hkBufferedStreamReader.obj | retail, upstream name already matches, high
 int __fastcall hkBufferedStreamReader_seekTellSupported(FUN_00d2bb60_cls* self, int unused, int value)
 {
     self->m_pObject->v9(value);
@@ -218,16 +229,20 @@ struct FUN_00d2bbd0_cls
     int m_0c;
     int m_10;
     int m_14;
-    FUN_00d2bbd0_cls* Init(int p);
+    FUN_00d2bbd0_cls* hkBufferedStreamReader_Buffer_ctor(int cap);
 };
 // @fnv 0x00d2bbd0
-FUN_00d2bbd0_cls* FUN_00d2bbd0_cls::Init(int p)
+// src: XBOX_RETAIL_PDB 0x00d2bbd0
+// pdb: hkBufferedStreamReader::Buffer::Buffer | hkBufferedStreamReader.obj | retail, object-file gap fill, high
+// pdb params: cap
+// pdb locals: assertBuf, ostr
+FUN_00d2bbd0_cls* FUN_00d2bbd0_cls::hkBufferedStreamReader_Buffer_ctor(int cap)
 {
     void* a = hkMemoryRouter_getInstance()->allocator;
-    m_00 = hkMemoryRouter_alignedAlloc(a, (void*)p, 0x40);
+    m_00 = hkMemoryRouter_alignedAlloc(a, (void*)cap, 0x40);
     m_04 = 0;
     m_08 = 0;
-    m_0c = p;
+    m_0c = cap;
     m_10 = -1;
     m_14 = -1;
     return this;
@@ -263,6 +278,7 @@ class BufferedReaderBuffer
 };
 
 // @fnv 0x00d2b990
+// pdb: hkBufferedStreamReader::refillBuffer | hkBufferedStreamReader.obj | retail, vtable slot, high
 int BufferedReaderBuffer::RefillBuffer()
 {
     if (!m_stream->IsStreamValid().m_cBooleanValue)
@@ -281,6 +297,7 @@ int BufferedReaderBuffer::RefillBuffer()
     return 0;
 }
 
+// pdb: structure Reader, size 0x3c (here 0x4), 6 members
 struct Reader
 {
     virtual void v0();
@@ -297,6 +314,7 @@ struct Stream
 };
 // @fnv 0x00d2bad0
 // src: HAVOK_LIB 0x00d2bad0
+// pdb: hkBufferedStreamReader::isOk | hkBufferedStreamReader.obj | retail, upstream name already matches, high
 hkBool Stream::hkBufferedStreamReader_isOk()
 {
     unsigned char byte;
@@ -331,6 +349,7 @@ struct FUN_00d2bba0_cls
 };
 // Returns the stream's Tell() offset adjusted by (m_10 - m_14), or -1 if Tell() is negative.
 // @fnv 0x00d2bba0
+// pdb: hkBufferedStreamReader::tell | hkBufferedStreamReader.obj | retail, vtable slot, high
 int FUN_00d2bba0_cls::GetCurrentPosition()
 {
     int r = m_stream->Tell();
@@ -384,6 +403,7 @@ void hkTrackerD2BB::Reset(int flags)
 
 extern "C" void __cdecl hkString_memMove(void*, const void*, int);
 // @fnv 0x00d2b900
+// pdb: hkBufferedStreamReader::prepareBufferForRefill | hkBufferedStreamReader.obj | retail, object-file run extension, low
 void BufferedReaderBuffer::CompactBuffer() throw()
 {
     if (m_markPos < 0)
@@ -418,7 +438,7 @@ struct CC9F10Shape
 };
 struct V_00d2bbd0 : FUN_00d2bbd0_cls
 {
-    FUN_00d2bbd0_cls* Init(int);
+    FUN_00d2bbd0_cls* hkBufferedStreamReader_Buffer_ctor(int);
 };
 struct FUN_00d2bc30_cls
 {
@@ -427,17 +447,19 @@ struct FUN_00d2bc30_cls
     unsigned short m_06;
     int m_08;
     FUN_00d2bbd0_cls* Init(int);
-    FUN_00d2bc30_cls* hkBufferedStreamReader_hkBufferedStreamReader(int, int);
+    FUN_00d2bc30_cls* hkBufferedStreamReader_ctor(int, int);
 };
 // Sets m_06 to 1, stores a in m_08, sets vtable, calls FUN_00d2bbd0 with b, and calls Refresh on m_08.
 // @fnv 0x00d2bc30
-// src: HAVOK_LIB 0x00d2bc30
-FUN_00d2bc30_cls* FUN_00d2bc30_cls::hkBufferedStreamReader_hkBufferedStreamReader(int aiShape, int b)
+// src: XBOX_RETAIL_PDB 0x00d2bc30
+// pdb: hkBufferedStreamReader::hkBufferedStreamReader | hkBufferedStreamReader.obj | retail, upstream name already matches, high
+// pdb params: s, bufSize
+FUN_00d2bc30_cls* FUN_00d2bc30_cls::hkBufferedStreamReader_ctor(int s, int bufSize)
 {
     m_06 = 1;
-    m_08 = aiShape;
+    m_08 = s;
     m_pVTable = &DAT_010ce688;
-    ((V_00d2bbd0*)((char*)this + 0xc))->Init(b);
+    ((V_00d2bbd0*)((char*)this + 0xc))->hkBufferedStreamReader_Buffer_ctor(bufSize);
     ((CC9F10Shape*)m_08)->Refresh();
     return this;
 }
@@ -451,15 +473,16 @@ struct BufferedReaderHeap
 
 struct BufferedReaderDeletionView : hkBufferedStreamReader
 {
-    void Destroy();
+    void hkBufferedStreamReader_dtor();
     hkBufferedStreamReader* FUN_00d2bca0(unsigned int);
 };
 
 // Calls FUN_00d2bc70, and if flags has bit 0 set, releases this block via the memory router's heap ReleaseBlock, then returns this.
 // @fnv 0x00d2bca0
+// pdb: hkBufferedStreamReader::`scalar deleting destructor' | hkBufferedStreamReader.obj | retail, vtable slot, high
 hkBufferedStreamReader* BufferedReaderDeletionView::FUN_00d2bca0(unsigned int flags)
 {
-    Destroy();
+    hkBufferedStreamReader_dtor();
     if (flags & 1)
     {
         MemoryManager* router = hkMemoryRouter_getInstance();
@@ -472,8 +495,9 @@ hkBufferedStreamReader* BufferedReaderDeletionView::FUN_00d2bca0(unsigned int fl
 void __cdecl hkMemoryRouter_alignedFree(void* allocator, void* buffer);
 
 // @fnv 0x00d2bc10
-// src: GUESS 0x00d2bc10 (confidence: low)
-__declspec(noinline) void hkBufferedStreamReader::UpdateState_00d2bc10()
+// src: XBOX_RETAIL_PDB 0x00d2bc10
+// pdb: hkBufferedStreamReader::Buffer::~Buffer | hkBufferedStreamReader.obj | retail, object-file gap fill, high
+__declspec(noinline) void hkBufferedStreamReader::hkBufferedStreamReader_Buffer_dtor()
 {
     void* buffer = m_pVTable;
     MemoryManager* memory = hkMemoryRouter_getInstance();

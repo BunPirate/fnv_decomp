@@ -16,5 +16,5 @@
 // @fnv 0x009ba510
 const NiRTTI* bhkHingeConstraint::GetRTTI() const
 {
-    return &ms_kRTTI;
+    return &bhkHingeConstraint_ms_RTTI;
 }

@@ -3,6 +3,7 @@
 #include "AssociatedItemEffect.h"
 #include "InventoryStackRecord.h"
 
+// pdb: class BoundItemEffect, size 0xac, bases: AssociatedItemEffect, 8 members
 class BoundItemEffect : public AssociatedItemEffect
 {
 public:
@@ -10,7 +11,7 @@ public:
     virtual ~BoundItemEffect();
 
     virtual ActiveEffect* Copy();
-    virtual void Update(float afElapsedSeconds);
+    virtual void Update(float afSecondsElapsed);
     virtual unsigned short GetSaveSize(Actor* apActor);
     virtual void SaveGame(Actor* apActor);
     virtual void LoadGame(Actor* apActor);
@@ -22,12 +23,12 @@ public:
     bool __thiscall IsTargetCharacter(MagicTarget* apTarget);
     void DoSummon();
 
-    InventoryStackRecord* m_pkWeaponEntry;
-    InventoryStackRecord* m_apArmorEntries[20];
-    float unka0;
-    bool m_bModifierActive;
-    bool m_bShowShader;
-    bool m_bLoadWeaponModel;
-    bool m_bLoadArmorModel;
-    bool pending;
+    InventoryStackRecord* pDisplacedWeapon;
+    InventoryStackRecord* pDisplacedItems[20];
+    float fAppearTime;
+    bool bItemSummoned;
+    bool bSpellModelCached;
+    bool bWeaponCached;
+    bool bWornCached;
+    bool bSetupItem;
 };

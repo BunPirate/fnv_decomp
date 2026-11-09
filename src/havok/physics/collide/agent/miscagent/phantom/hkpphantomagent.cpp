@@ -61,6 +61,8 @@ struct Owner
 // If selectorA or selectorB equals 0x1D, dispatches argA/argB to first or second respectively, then calls First(1).
 // @fnv 0x00d426b0
 // src: HAVOK_SRC 0x00d426b0
+// pdb: hkpPhantomAgent::cleanup | hkpPhantomAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
 void Owner::hkpPhantomAgent_cleanup(int)
 {
     if (selectorA == 0x1D)
@@ -114,28 +116,29 @@ struct __declspec(novtable) S_00d42790_Agent : S_00d42790_RefObj
     {}
 };
 
-struct FUN_00d42790 : S_00d42790_Agent
+// pdb: class hkpPhantomAgent, size 0x24, bases: hkpCollisionAgent, 6 members
+struct hkpPhantomAgent : S_00d42790_Agent
 {
-    const S_00d42790_CdBody* m_pBodyA;
-    const S_00d42790_CdBody* m_pBodyB;
-    int unk14;
-    int unk18;
-    int m_iAgentTypeA;
-    int m_iAgentTypeB;
+    const S_00d42790_CdBody* m_collidableA;
+    const S_00d42790_CdBody* m_collidableB;
+    int m_shapeA;
+    int m_shapeB;
+    int m_bodyTypeA;
+    int m_bodyTypeB;
 
-    FUN_00d42790(const S_00d42790_CdBody& bodyA, const S_00d42790_CdBody& bodyB, void* mgr);
+    hkpPhantomAgent(const S_00d42790_CdBody& bodyA, const S_00d42790_CdBody& bodyB, void* mgr);
     virtual void v00();
 };
 
 // Stores the root bodies and shape types of two collision bodies in a new agent.
 // @fnv 0x00d42790
-FUN_00d42790::FUN_00d42790(const S_00d42790_CdBody& bodyA, const S_00d42790_CdBody& bodyB, void* mgr)
+hkpPhantomAgent::hkpPhantomAgent(const S_00d42790_CdBody& bodyA, const S_00d42790_CdBody& bodyB, void* mgr)
     : S_00d42790_Agent(mgr)
 {
-    m_pBodyA = bodyA.getRootCdBody();
-    m_pBodyB = bodyB.getRootCdBody();
-    m_iAgentTypeA = bodyA.m_pCollisionShape->m_type;
-    m_iAgentTypeB = bodyB.m_pCollisionShape->m_type;
+    m_collidableA = bodyA.getRootCdBody();
+    m_collidableB = bodyB.getRootCdBody();
+    m_bodyTypeA = bodyA.m_pCollisionShape->m_type;
+    m_bodyTypeB = bodyB.m_pCollisionShape->m_type;
 }
 
 struct Dispatch

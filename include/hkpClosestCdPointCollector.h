@@ -4,6 +4,7 @@
 #include "hkContactPoint.h"
 #include "hkpRootCdPoint.h"
 
+// pdb: class hkpClosestCdPointCollector, size 0x80, bases: hkpCdPointCollector, 1 members
 class hkpClosestCdPointCollector : public hkpCdPointCollector
 {
 public:
@@ -16,7 +17,7 @@ public:
 
     int unk08;
     int unk0C;
-    hkpRootCdPoint m_kHitPoint;
+    hkpRootCdPoint m_hitPoint;
     hkpRootCdPoint m_unweldedHitPoint;
     int unk70;
     int unk74;

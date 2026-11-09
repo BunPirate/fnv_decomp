@@ -44,18 +44,20 @@ inline NiObject** NiObject::Children() const
 // src/gamebryo2.2/corelibs/niparticle/nimeshparticlesystem.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/niparticle/nimeshparticlesystem.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* g_01202538;
+extern "C" void* NiMeshParticleSystem_ms_RTTI;
 
 // @fnv 0x00c21e10
 // src: COMMUNITY 0x00c21e10
 void* __cdecl NiMeshParticleSystem_GetRTTI()
 {
-    return &g_01202538;
+    return &NiMeshParticleSystem_ms_RTTI;
 }
 
 extern int DAT_010bdd84;
 // @fnv 0x00c21e90
 // src: XBOX_PDB 0x00c21e90
+// pdb: NiMeshParticleSystem::CreateObject | NiMeshParticleSystem.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiMeshParticleSystem_CreateObject()
 {
     void* p = NiParticleSystem::operator new(0x118);
@@ -70,6 +72,7 @@ void* __cdecl NiMeshParticleSystem_CreateObject()
     return 0;
 }
 
+// pdb: class NiMeshParticleSystem, size 0x160 (here 0x114), bases: NiParticleSystem, 2 members
 struct NiMeshParticleSystem : NiParticleSystem
 {
     float m_f110;
@@ -96,6 +99,9 @@ class NiMeshParticleSystem : public NiGeometry
 };
 // @fnv 0x00c21b60
 // src: XBOX_PDB 0x00c21b60
+// pdb: NiMeshParticleSystem::UpdatePropertiesDownward | NiMeshParticleSystem.obj | retail, object-file run extension, low
+// pdb params: pkParentState
+// pdb locals: pkData
 void __thiscall NiMeshParticleSystem::UpdatePropertiesDownward(NiPropertyState* pkParentState)
 {
     NiGeometry::UpdatePropertiesDownwardPass(pkParentState);
@@ -109,6 +115,9 @@ struct NiMeshParticleSystem : NiParticleSystem
     void __thiscall UpdateSelective(bool&, bool, bool&);
 };
 // @fnv 0x00c21bb0
+// pdb: NiMeshParticleSystem::SetSelectiveUpdateFlags | NiMeshParticleSystem.obj | retail, object-file run extension, low
+// pdb params: bSelectiveUpdate, bSelectiveUpdateTransforms, bRigid
+// pdb locals: pkData
 void __thiscall NiMeshParticleSystem::UpdateSelective(bool& bSelectiveUpdate, bool bSelectiveUpdateTransforms,
                                                       bool& bRigid)
 {
@@ -128,10 +137,12 @@ struct NiMeshParticleSystem : NiParticleSystem
 };
 // Calls the base particle system handler, then appends the string returned by _FUN_00a7d330 to pkStrings, growing it if full.
 // @fnv 0x00c21dc0
+// pdb: NiMeshParticleSystem::GetViewerStrings | NiMeshParticleSystem.obj | retail, object-file run extension, low
+// pdb params: pkStrings
 void __thiscall NiMeshParticleSystem::AppendString(StrArr* pkStrings)
 {
     NiParticleSystem::WriteParticleSystemInfo(pkStrings);
-    char* pcString = _FUN_00a7d330(g_01202538);
+    char* pcString = _FUN_00a7d330(NiMeshParticleSystem_ms_RTTI);
     unsigned int uiSize = pkStrings->m_usSize;
     if (uiSize >= pkStrings->m_usMaxSize)
         pkStrings->SetSize(uiSize + pkStrings->m_usGrowBy);
@@ -154,6 +165,7 @@ struct NiMeshParticleSystem
     void* __thiscall Destroy(unsigned int);
 };
 // @fnv 0x00c21ed0
+// pdb: NiMeshParticleSystem::`scalar deleting destructor' | NiMeshParticleSystem.obj | retail, object-file run extension, low
 void* __thiscall NiMeshParticleSystem::Destroy(unsigned int flags)
 {
     m_kNode.RemoveAll();
@@ -195,7 +207,10 @@ struct NiMeshParticleSystemClone : NiMeshParticleSystem
 // Allocates and constructs a NiMeshParticleSystemClone, copies m_f110 and the byte at offset 0x114 from this, and returns it.
 // @fnv 0x00c21e20
 // src: XBOX_PDB 0x00c21e20
-NiMeshParticleSystemClone* __thiscall NiMeshParticleSystemClone::NiMeshParticleSystem_CreateClone(CloningProcess& process)
+// pdb: NiMeshParticleSystem::CreateClone | NiMeshParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
+NiMeshParticleSystemClone* __thiscall NiMeshParticleSystemClone::NiMeshParticleSystem_CreateClone(CloningProcess& kCloning)
 {
     NiMeshParticleSystemClone* result = static_cast<NiMeshParticleSystemClone*>(operator new(sizeof(NiMeshParticleSystemClone)));
     if (result)
@@ -207,27 +222,30 @@ NiMeshParticleSystemClone* __thiscall NiMeshParticleSystemClone::NiMeshParticleS
     }
     else
         result = 0;
-    CopyMembers_00c1b6f0(result, process);
+    CopyMembers(result, kCloning);
     result->m_f110 = m_f110;
     *(unsigned char*)((char*)result + 0x114) = *(unsigned char*)((char*)this + 0x114);
     return result;
 }
 
 
-int __cdecl _NiStricmp(const char* string1, const char* string2);
+int __cdecl _NiStricmp(const char* s1, const char* s2);
 int __cdecl sprintf(char* buffer, const char* format, ...);
 extern void(__cdecl* DAT_011ac2ac)(char* buffer, const char* message, int value);
 
 struct FUN_00c21960_shell
 {
-    void __thiscall CheckUnsupportedMeshParticle(void* stream);
-    void __thiscall FUN_00c1b3a0(void* stream);
+    void __thiscall CheckUnsupportedMeshParticle(void* kStream);
+    void __thiscall FUN_00c1b3a0(void* kStream);
 };
 
 // @fnv 0x00c21960
-void __thiscall FUN_00c21960_shell::CheckUnsupportedMeshParticle(void* stream)
+// pdb: NiMeshParticleSystem::LoadBinary | NiMeshParticleSystem.obj | retail, string-set bridge, high
+// pdb params: kStream
+// pdb locals: pname, bshowMessage, pdude, string
+void __thiscall FUN_00c21960_shell::CheckUnsupportedMeshParticle(void* kStream)
 {
-    const char* pname = reinterpret_cast<char*>(stream) + 0xE0;
+    const char* pname = reinterpret_cast<char*>(kStream) + 0xE0;
     bool bWarn = true;
     char* pdude;
     char acMessage[260];
@@ -246,7 +264,7 @@ void __thiscall FUN_00c21960_shell::CheckUnsupportedMeshParticle(void* stream)
 
     if (bWarn)
     {
-        pdude = reinterpret_cast<char*>(stream) + 8;
+        pdude = reinterpret_cast<char*>(kStream) + 8;
         if (!pdude[0])
         {
             pdude = "Please";
@@ -260,7 +278,7 @@ void __thiscall FUN_00c21960_shell::CheckUnsupportedMeshParticle(void* stream)
         }
     }
 
-    FUN_00c1b3a0(stream);
+    FUN_00c1b3a0(kStream);
 }
 
 
@@ -277,12 +295,16 @@ struct MeshGeometryGroup
 class MeshPSysDataGroups : public NiMeshPSysData
 {
   public:
-    void ApplyToAllObjects(void* pvArg);
+    void NiMeshPSysData_PurgeRendererDataForPools(void* pkRenderer);
 };
 
 // Iterates every group and its objects, calling Apply(pvArg) on each non-null object.
 // @fnv 0x00c21a10
-void MeshPSysDataGroups::ApplyToAllObjects(void* pvArg)
+// src: XBOX_RETAIL_PDB 0x00c21a10
+// pdb: NiMeshPSysData::PurgeRendererDataForPools | NiMeshParticleSystem.obj | retail, object-file gap fill, high
+// pdb params: pkRenderer
+// pdb locals: uiPools, ui, uiObjs, pkArray, uj
+void MeshPSysDataGroups::NiMeshPSysData_PurgeRendererDataForPools(void* pkRenderer)
 {
     unsigned int uiGroups = *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(this) + 0x92);
     for (unsigned int i = 0; i < uiGroups; i++)
@@ -295,7 +317,7 @@ void MeshPSysDataGroups::ApplyToAllObjects(void* pvArg)
             {
                 NiGeometry* pkObject = pkGroup->m_ppGeometries[j];
                 if (pkObject)
-                    pkObject->PurgeRendererData(static_cast<NiRenderer*>(pvArg));
+                    pkObject->PurgeRendererData(static_cast<NiRenderer*>(pkRenderer));
             }
         }
     }
@@ -423,6 +445,8 @@ struct FUN_00c21c60_cls
 };
 // Calls Refresh, then copies m_00, m_04, m_08 and m_0c from the source record (or DAT_011f4288 if null) into m_20.
 // @fnv 0x00c21c60
+// pdb: NiMeshParticleSystem::UpdateWorldBound | NiMeshParticleSystem.obj | retail, object-file run extension, low
+// pdb locals: pkData
 void FUN_00c21c60_cls::CopySourceToOutput()
 {
     Refresh();
@@ -439,7 +463,7 @@ void FUN_00c21c60_cls::CopySourceToOutput()
 }
 
 extern "C" NiRTTI DAT_01202500;
-extern "C" NiRTTI DAT_01202530;
+extern "C" NiRTTI NiPSysMeshUpdateModifier_ms_RTTI;
 struct NiObjectNode
 {
     NiObjectNode* next;
@@ -454,23 +478,26 @@ struct NiObjectNode
 };
 // @fnv 0x00c21cb0
 // src: XBOX_PDB 0x00c21cb0
-void __thiscall NiObject::NiMeshParticleSystem_PurgeRendererData(unsigned int value)
+// pdb: NiMeshParticleSystem::PurgeRendererData | NiMeshParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: pkRenderer
+// pdb locals: pkData, kIter, pkModifier, pkPSME, uiNumGeoms, i, pkGeom, pkPSMUM, pkMesh
+void __thiscall NiObject::NiMeshParticleSystem_PurgeRendererData(unsigned int pkRenderer)
 {
-    FUN_00a809b0(value);
+    FUN_00a809b0(pkRenderer);
     NiObject* pLinkedObject = *(NiObject**)((char*)this + 0xb8);
     if (pLinkedObject)
     {
         NiObject* child = *(NiObject**)((char*)pLinkedObject + 0x7c);
         if (child)
-            child->Update(value);
-        pLinkedObject->ApplyToAllObjects(value);
+            child->Update(pkRenderer);
+        pLinkedObject->NiMeshPSysData_PurgeRendererDataForPools(pkRenderer);
     }
     for (NiObjectNode* node = *(NiObjectNode**)((char*)this + 0xc8); node;)
     {
         NiObject* object = NiObjectNode::GetNext(node);
         if (!object)
             continue;
-        for (const NiRTTI* type = object->QueryRTTI(); type; type = type->m_pBaseRTTI)
+        for (const NiRTTI* type = object->QueryRTTI(); type; type = type->m_pkBaseRTTI)
         {
             if (type == &DAT_01202500)
             {
@@ -481,15 +508,15 @@ void __thiscall NiObject::NiMeshParticleSystem_PurgeRendererData(unsigned int va
                     {
                         NiObject* child = object->MeshChildren()[i];
                         if (child)
-                            child->Update(value);
+                            child->Update(pkRenderer);
                     }
                 }
                 goto next_object;
             }
         }
-        for (const NiRTTI* type = object->QueryRTTI(); type; type = type->m_pBaseRTTI)
+        for (const NiRTTI* type = object->QueryRTTI(); type; type = type->m_pkBaseRTTI)
         {
-            if (type == &DAT_01202530)
+            if (type == &NiPSysMeshUpdateModifier_ms_RTTI)
             {
                 unsigned int count = object->ChildCount();
                 for (unsigned int i = 0; i < count; ++i)
@@ -498,7 +525,7 @@ void __thiscall NiObject::NiMeshParticleSystem_PurgeRendererData(unsigned int va
                     {
                         NiObject* child = object->Children()[i];
                         if (child)
-                            child->Update(value);
+                            child->Update(pkRenderer);
                     }
                 }
                 goto next_object;
@@ -519,6 +546,8 @@ extern const void* NiParticleSystemVtable;
 // currently declares a different base-construction call.
 // @fnv 0x00c1b5c0
 // src: EXE 0x00c1b5c0
+// pdb: NiParticleSystem::NiParticleSystem | NiParticleSystem.obj | retail, call graph, medium
+// pdb params: usMaxNumParticles, bHasColors, bHasRotations, bWorldSpace
 NiParticleSystem* NiParticleSystem::NiParticleSystem_00c1b5c0()
 {
     // Keep the list and time writes in the original construction order.
@@ -535,7 +564,7 @@ NiParticleSystem* NiParticleSystem::NiParticleSystem_00c1b5c0()
     return this;
 }
 
-extern "C" NiRTTI DAT_01202690;
+extern "C" NiRTTI NiPSysUpdateCtlr_ms_RTTI;
 struct FUN_00c21a80_obj;
 struct FUN_00c21a80_node
 {
@@ -730,15 +759,18 @@ struct FUN_00c21a80_cls
 // Runs update callbacks over the node and object lists, defers the found object's v37, then stores the update time and flag.
 // @fnv 0x00c21a80
 // src: XBOX_PDB 0x00c21a80
-void FUN_00c21a80_cls::NiMeshParticleSystem_UpdateDownwardPass(NiUpdateData& aUpdateData, unsigned int arg2)
+// pdb: NiMeshParticleSystem::UpdateDownwardPass | NiMeshParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+// pdb locals: pkUpdateController, kPos, pkControl, pkProperty
+void FUN_00c21a80_cls::NiMeshParticleSystem_UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    if (aUpdateData.pad2)
+    if (UpdateData.pad2)
     {
-        aUpdateData.pad3 = true;
+        UpdateData.pad3 = true;
         return;
     }
     FUN_00c21a80_obj* pDeferredObj = 0;
-    if (aUpdateData.pad1 != 0)
+    if (UpdateData.pad1 != 0)
     {
         FUN_00c21a80_node* node = m_pList24;
         while (node)
@@ -747,7 +779,7 @@ void FUN_00c21a80_cls::NiMeshParticleSystem_UpdateDownwardPass(NiUpdateData& aUp
             node = node->m_pNext;
             if (ref && ref->m_0c != 0)
             {
-                ref->v36(aUpdateData);
+                ref->v36(UpdateData);
             }
         }
         FUN_00c21a80_obj* obj = (FUN_00c21a80_obj*)m_pList0C;
@@ -758,35 +790,37 @@ void FUN_00c21a80_cls::NiMeshParticleSystem_UpdateDownwardPass(NiUpdateData& aUp
             {
                 do
                 {
-                    if ((void*)pEntry == (void*)&DAT_01202690)
+                    if ((void*)pEntry == (void*)&NiPSysUpdateCtlr_ms_RTTI)
                     {
                         pDeferredObj = obj;
                         goto next;
                     }
-                    pEntry = pEntry->m_pBaseRTTI;
+                    pEntry = pEntry->m_pkBaseRTTI;
                 } while (pEntry);
             }
-            obj->v37(aUpdateData);
+            obj->v37(UpdateData);
         next:
             obj = obj->m_pNext30;
         }
-        v46(aUpdateData);
+        v46(UpdateData);
         if (pDeferredObj)
-            pDeferredObj->v37(aUpdateData);
+            pDeferredObj->v37(UpdateData);
     }
     else
     {
-        v46(aUpdateData);
+        v46(UpdateData);
     }
     v47();
-    m_f110 = aUpdateData.fTime;
-    m_b114 = aUpdateData.pad1;
+    m_f110 = UpdateData.fTime;
+    m_b114 = UpdateData.pad1;
 }
 
 extern "C" __declspec(noreturn) void __cdecl NiParticleSystem_SetModelData();
 
 // @fnv 0x00c21900
 // src: XBOX_PDB 0x00c21900
+// pdb: NiMeshParticleSystem::SetModelData | NiMeshParticleSystem.obj | debug, upstream name already matches, high
+// pdb params: pkModelData
 __declspec(noreturn) void __cdecl NiMeshParticleSystem_SetModelData()
 {
     NiParticleSystem_SetModelData();
@@ -811,12 +845,15 @@ struct Ps21Node
     char _pad9c[0x1c];
     NiMeshPSysData* m_b8;
 
-    void FUN_00c1add0(unsigned int a1);
+    void FUN_00c1add0(unsigned int UpdateData);
     void CopyFromNode(unsigned int a1);
 };
 
 // Copies several fields and the absolute value of m_98 to the owner's target, then calls its virtual method.
 // @fnv 0x00c21bf0
+// pdb: NiMeshParticleSystem::UpdateWorldData | NiMeshParticleSystem.obj | retail, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: pkData
 void Ps21Node::CopyFromNode(unsigned int a1)
 {
     FUN_00c1add0(a1);

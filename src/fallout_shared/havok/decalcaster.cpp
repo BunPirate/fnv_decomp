@@ -13,6 +13,7 @@ struct DecalcasterOffset08View
     unsigned int GetFlags();
 };
 const void* __fastcall hkpCollidable_getOwner(const char*);
+// pdb: class DecalCaster, size 0x3b0 (here 0x1), 2 members
 struct DecalCaster
 {
     const RootContactPoint* DecalCaster_GetCollision(unsigned int);
@@ -20,6 +21,9 @@ struct DecalCaster
 };
 // Looks up the entry at aiIndex, resolves its name to a collision object, casts it to NiAVObject and returns its flags, or 0 if absent.
 // @fnv 0x00623290
+// pdb: DecalCaster::GetAVObject | DecalCaster.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex
+// pdb locals: rpoint, pobj, pcol, pwo
 unsigned int DecalCaster::GetCollisionFlags(unsigned int aiIndex)
 {
     unsigned int uiFlags;

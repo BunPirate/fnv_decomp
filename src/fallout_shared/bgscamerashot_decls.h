@@ -12,6 +12,7 @@ class ValidBip01Names;
 class ScriptLocals;
 class NiAVObject;
 int __cdecl Warning(const char*, ...);
+// pdb: class VATS, size 0x48 (here 0x1), 17 members
 class VATS
 {
   public:
@@ -20,7 +21,7 @@ class VATS
 class StateNode
 {
   public:
-    void ResetCameraState();
+    void BGSCameraShot_FreeCamera();
 };
 class ImageSpaceModifierInstanceDOF;
 void ImageSpaceModifierInstance_Stop(ImageSpaceModifierInstanceDOF*);

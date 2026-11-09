@@ -3,6 +3,7 @@
 #include "BSThread.h"
 #include "ThreadSemaphore.h"
 
+// pdb: class BSLinearTaskThread, size 0x50 (here 0x4c), bases: BSThread, 3 members
 class BSLinearTaskThread : public BSThread
 {
 public:

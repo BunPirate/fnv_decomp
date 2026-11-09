@@ -9,6 +9,7 @@ class TESForm;
 class BGSSaveGameBuffer;
 class BGSLoadGameBuffer;
 
+// pdb: class BSTempEffect, size 0x18, bases: NiObject, 4 members
 class BSTempEffect : public NiObject
 {
   public:
@@ -62,7 +63,7 @@ class BSTempEffect : public NiObject
 
     float m_fParticleParameter5;
     TESObjectCELL* pCell;
-    float m_fFirstFloatValue;
+    float fAge;
     bool bInitialized;
     unsigned char layoutPadding15[3];
 };

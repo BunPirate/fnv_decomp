@@ -5,7 +5,8 @@ void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
 // @fnv 0x005fe770
+// pdb: TESIdleForm::CreateChildArray | TESIdleForm.obj | retail, call graph (shared callers), high
 NiFormArray* TESIdleForm::AssignParentPath()
 {
-    return m_pParentPath ? m_pParentPath : (m_pParentPath = new NiFormArray);
+    return pChildIdles ? pChildIdles : (pChildIdles = new NiFormArray);
 }

@@ -2,6 +2,7 @@
 #include "../../../../include/NiTSet.h"
 
 
+// pdb: class NiMaterialResource, size 0x2c (here 0x8), bases: NiRefObject, 9 members
 class NiMaterialResource
 {
 public:
@@ -39,6 +40,9 @@ typedef NiTSet<NiPointer<NiMaterialResource>,
 
 template <>
 // @fnv 0x00e8ea60
+// pdb: NiTSet<NiPointer<NiMaterialResource>,NiTNewInterface<NiPointer<NiMaterialResource> > >::Realloc | NiD3DGPUProgramCache.obj | retail, call graph, medium
+// pdb params: uiNewSize
+// pdb locals: pNewBase, i
 void NiMaterialResourceSet::Add(
     const NiPointer<NiMaterialResource>& value)
 {

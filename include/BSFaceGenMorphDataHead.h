@@ -6,6 +6,7 @@
 
 class FaceGenTriData;
 
+// pdb: class BSFaceGenMorphDataHead, size 0x18, bases: BSFaceGenMorphData, 4 members
 class BSFaceGenMorphDataHead : public BSFaceGenMorphData
 {
 public:
@@ -16,7 +17,7 @@ public:
     virtual const NiRTTI* GetRTTI() const;
 
     void* FUN_00661db0(unsigned int flags);
-    void ApplyMorph(int aiSelector, int aiIndex, int aiArg1, int aiArg2, float weight);
+    void ApplyMorph(int aeType, int aiIndex, int apGeom, int apBaseMorph, float afModifier);
     int GetExpressionMorph(int aiIndex);
     int GetModifierMorph(int aiIndex);
     int GetPhonemeMorph(int aiIndex);
@@ -24,8 +25,8 @@ public:
 
     static const NiRTTI ms_kRTTI;
 
-    BSFaceGenMorph** expressions;
-    BSFaceGenMorph** modifiers;
-    BSFaceGenMorph** phonemes;
-    BSFaceGenMorph** custom;
+    BSFaceGenMorph** ppExpressionMorphs;
+    BSFaceGenMorph** ppModifierMorphs;
+    BSFaceGenMorph** ppPhonemeMorphs;
+    BSFaceGenMorph** ppCustomMorphs;
 };

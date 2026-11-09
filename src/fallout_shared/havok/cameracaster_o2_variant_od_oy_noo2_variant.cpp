@@ -184,11 +184,14 @@ struct xPtr
 struct xCaster
 {
     xPtr m_iWordAt00;
-    bool CameraCaster_Pick(const xP3& akFrom, xP3& akTo, xOutHit* apOut);
+    bool CameraCaster_Pick(const xP3& arFrom, xP3& arTo, xOutHit* arPoint);
 };
 // @fnv 0x00620bc0
 // src: XBOX_PDB 0x00620bc0
-bool xCaster::CameraCaster_Pick(const xP3& akFrom, xP3& akTo, xOutHit* apOut)
+// pdb: CameraCaster::Pick | CameraCaster.obj | retail, upstream name already matches, high
+// pdb params: arFrom, arTo, arPoint
+// pdb locals: bres, hkTo, hkFrom, input, col, bvatsPlayback, ipoint, pvatsTarget, buse, pcurrentVATSAction, elayer, pcollide, pav, filter, pref, pmob, pcon
+bool xCaster::CameraCaster_Pick(const xP3& arFrom, xP3& arTo, xOutHit* arPoint)
 {
     bool RESULT = false;
     if (m_iWordAt00.Modelloader_GetReferencedThis())
@@ -196,8 +199,8 @@ bool xCaster::CameraCaster_Pick(const xP3& akFrom, xP3& akTo, xOutHit* apOut)
         xVec4 FROM;
         xCollector COL;
         xVec4b TO;
-        xFUN_004a3e00(&FROM, akFrom);
-        xFUN_004a3e00(&TO, akTo);
+        xFUN_004a3e00(&FROM, arFrom);
+        xFUN_004a3e00(&TO, arTo);
         m_iWordAt00.Modelloader_GetReferencedThis()->InvokeInterfaceCall(&FROM, &TO, &COL, 0);
         RESULT = COL.hkpAllCdPointCollector_hasHit().FUN_005609f0();
         if (RESULT)
@@ -266,8 +269,8 @@ bool xCaster::CameraCaster_Pick(const xP3& akFrom, xP3& akTo, xOutHit* apOut)
             }
             if (FOUND)
             {
-                apOut->InitializeFields_006212c0(COL.TESDataHandler_GetWorldSpaceList()->EvaluateValue_00807770(I));
-                xFUN_00458620(akTo, apOut->FUN_006815c0());
+                arPoint->InitializeFields_006212c0(COL.TESDataHandler_GetWorldSpaceList()->EvaluateValue_00807770(I));
+                xFUN_00458620(arTo, arPoint->FUN_006815c0());
             }
             else
                 RESULT = false;

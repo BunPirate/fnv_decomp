@@ -76,13 +76,14 @@ struct FUN_00843190_class
 {
     void* vtbl;
     void FUN_00844f00(int, int, int);
-    void* BGSOffsetDataArray_BGSOffsetDataArray();
+    void* BGSOffsetDataArray_ctor();
 };
 
 // Calls FUN_00844f00 with (0x20, 0, 0), sets vtbl to &DAT_0107ea60, and returns this.
 // @fnv 0x00843190
-// src: EXE 0x00843190
-void* FUN_00843190_class::BGSOffsetDataArray_BGSOffsetDataArray()
+// src: XBOX_RETAIL_PDB 0x00843190
+// pdb: BGSOffsetDataArray::BGSOffsetDataArray | BGSReconstructFormsInAllFilesMap.obj | retail, upstream name already matches, high
+void* FUN_00843190_class::BGSOffsetDataArray_ctor()
 {
     FUN_00844f00(0x20, 0, 0);
     vtbl = &DAT_0107ea60;
@@ -92,12 +93,13 @@ void* FUN_00843190_class::BGSOffsetDataArray_BGSOffsetDataArray()
 struct FUN_00843220_Class
 {
     void __thiscall FUN_00844ff0();
-    void __thiscall ForwardCall_00843220();
+    void __thiscall BGSOffsetDataArray_dtor();
 };
 
 // @fnv 0x00843220
-// src: GUESS 0x00843220 (confidence: low)
-void __thiscall FUN_00843220_Class::ForwardCall_00843220()
+// src: XBOX_DEBUG_PDB 0x00843220
+// pdb: BGSOffsetDataArray::~BGSOffsetDataArray | BGSReconstructFormsInAllFilesMap.obj | debug, call graph (shared callers), high
+void __thiscall FUN_00843220_Class::BGSOffsetDataArray_dtor()
 {
     FUN_00844ff0();
 }
@@ -140,6 +142,7 @@ struct FUN_00702220_Class
 
 // @fnv 0x008456c0
 // src: GUESS 0x008456c0 (confidence: low)
+// pdb: BGSFormChanges::~BGSFormChanges | BGSSaveLoadChangesMap.obj | debug, object-file run extension, low
 void __fastcall Object_ForwardCall_008456c0(void* self)
 {
     ((FUN_00702220_Class*)((char*)self + 4))->FUN_00702220();
@@ -159,9 +162,11 @@ extern "C" void __cdecl ScanRefsInRange(int, int, int);
 
 // @fnv 0x00847d90
 // src: COMMUNITY 0x00847d90
-void __cdecl BGSSaveLoadGlobalData_SaveFinalGlobalData(int a)
+// pdb: BGSSaveLoadGlobalData::SaveFinalGlobalData | BGSSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apFile
+void __cdecl BGSSaveLoadGlobalData_SaveFinalGlobalData(int apFile)
 {
-    ScanRefsInRange(a, 0x3e8, 0x3e9);
+    ScanRefsInRange(apFile, 0x3e8, 0x3e9);
 }
 }  // namespace fnv_00847d90
 
@@ -171,6 +176,7 @@ struct FUN_00848cf0_Class
 };
 
 // @fnv 0x00848cf0
+// pdb: BGSSaveLoadGlobalData::FinishLoadGlobalData | BGSSaveLoadGame.obj | debug, object-file run extension, low
 bool FUN_00848cf0_Class::IsFlag80Set() const
 {
     return (*(const int*)((const char*)this + 0x244) & 0x80) ? true : false;
@@ -223,14 +229,16 @@ unsigned char FUN_0084b450_Class::BGSUnloadedFormBuffer_GetVersion()
 struct MapH
 {
     bool RemoveAt(unsigned int);
-    bool BGSSaveLoadReferencesMap_RemoveMovedReference(unsigned int index);
+    bool BGSSaveLoadReferencesMap_RemoveMovedReference(unsigned int aiFormID);
 };
 
 // @fnv 0x0084b470
 // src: XBOX_PDB 0x0084b470
-bool MapH::BGSSaveLoadReferencesMap_RemoveMovedReference(unsigned int index)
+// pdb: BGSSaveLoadReferencesMap::RemoveMovedReference | BGSSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: aiFormID
+bool MapH::BGSSaveLoadReferencesMap_RemoveMovedReference(unsigned int aiFormID)
 {
-    return RemoveAt(index);
+    return RemoveAt(aiFormID);
 }
 
 struct FUN_00852a10_shell
@@ -240,15 +248,18 @@ struct FUN_00852a10_shell
 
 struct FUN_0084b490_class
 {
-    void BGSSaveLoadReferencesMap_RemoveReference(unsigned int a, unsigned int b);
+    void BGSSaveLoadReferencesMap_RemoveReference(unsigned int aiCellID, unsigned int aiReferenceID);
 };
 
 // Forwards the two arguments to RemoveReference on the object at offset 0x10 of this instance.
 // @fnv 0x0084b490
 // src: XBOX_PDB 0x0084b490
-void __thiscall FUN_0084b490_class::BGSSaveLoadReferencesMap_RemoveReference(unsigned int a, unsigned int b)
+// pdb: BGSSaveLoadReferencesMap::RemoveReference | BGSSaveLoadReferencesMap.obj | retail, upstream name already matches, high
+// pdb params: aiWorldSpaceID, aiReferenceID, arReferenceLocation
+// pdb locals: pcellNumericIDArrayMap, icellKey
+void __thiscall FUN_0084b490_class::BGSSaveLoadReferencesMap_RemoveReference(unsigned int aiCellID, unsigned int aiReferenceID)
 {
-    ((FUN_00852a10_shell*)((char*)this + 0x10))->RemoveReference(a, b);
+    ((FUN_00852a10_shell*)((char*)this + 0x10))->RemoveReference(aiCellID, aiReferenceID);
 }
 
 extern int DAT_0107f474;
@@ -260,6 +271,8 @@ struct FUN_0084b4b0_class
 };
 // Calls FUN_0084b650 with a, sets vtbl to the address of DAT_0107f474, and returns &vtbl.
 // @fnv 0x0084b4b0
+// pdb: NiTMap<unsigned int,Actor *>::NiTMap<unsigned int,Actor *> | BGSSaveLoadGame.obj | debug, call graph, medium
+// pdb params: uiHashSize
 int* FUN_0084b4b0_class::InitializeVtbl(int a)
 {
     NiTMapBase_DFALL_NiTMapItem_unsigned_int_Actor_unsigned_int_Actor_NiTMapBase_DFALL_NiTMapItem_unsigned_int_Actor_unsigned_int_Actor(a);
@@ -278,6 +291,7 @@ struct AX
 
 // @fnv 0x0084b570
 // src: COMMUNITY 0x0084b570
+// pdb: BSSimpleArray<BGSLoadFormBuffer *,1024>::BSSimpleArray<BGSLoadFormBuffer *,1024> | BGSSaveLoadGame.obj | debug, call graph, medium
 AX* AX::BSSimpleArray_BGSLoadFormBuffer_1024_BSSimpleArray_BGSLoadFormBuffer_1024()
 {
     this->vfn = &DAT_0107f4b4;
@@ -297,6 +311,7 @@ struct GlobalObject_00869f00
 
 // @fnv 0x0084b5a0
 // src: GUESS 0x0084b5a0 (confidence: medium)
+// pdb: BSSimpleArray<BGSLoadFormBuffer *,1024>::~BSSimpleArray<BGSLoadFormBuffer *,1024> | BGSSaveLoadGame.obj | debug, call graph, medium
 void GlobalObject_00869f00::ResetVirtualTableAndClear_0084b5a0()
 {
     m_p = &DAT_0107f4b4;
@@ -324,6 +339,7 @@ struct FUN_0084ba50_Class
 };
 // @fnv 0x0084ba50
 // src: XBOX_PDB 0x0084ba50
+// pdb: NiTMap<__int64,int>::NewItem | BGSSaveLoadGame.obj | debug, vtable slot, medium
 void __thiscall FUN_0084ba50_Class::NiTMap_int64_int_NewItem()
 {
     ((FUN_0084ba50_Class*)((char*)this + 0xc))->AllocateObject();
@@ -342,6 +358,8 @@ struct FUN_0084ba70_Cls
 // Sets the int at offset 0x10 of arg to 0, then calls FreeMemory on the object at this+0xc with arg.
 // @fnv 0x0084ba70
 // src: XBOX_PDB 0x0084ba70
+// pdb: NiTMap<__int64,int>::DeleteItem | BGSSaveLoadGame.obj | debug, vtable slot, medium
+// pdb params: pkItem
 void FUN_0084ba70_Cls::NiTMap_int64_int_DeleteItem(void* arg)
 {
     *reinterpret_cast<int*>(reinterpret_cast<char*>(arg) + 0x10) = 0;
@@ -356,6 +374,7 @@ struct FUN_0084bb30_class
 };
 
 // @fnv 0x0084bb30
+// pdb: DFALL<NiTMapItem<unsigned int,Actor *> >::Allocate | BGSSaveLoadGame.obj | debug, object-file run extension, low
 void* __thiscall FUN_0084bb30_class::AllocateObject()
 {
     void* result = operator new(0x18);
@@ -372,6 +391,8 @@ struct FUN_0084d240_class
 // Calls InitBuffer with a, sets m_p to &DAT_0107f714, and returns this.
 // @fnv 0x0084d240
 // src: EXE 0x0084d240
+// pdb: NiTMap<TESGlobal *,bool>::NiTMap<TESGlobal *,bool> | BGSSaveLoadGlobalData.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 void* __thiscall FUN_0084d240_class::NiTMap_TESGlobal_bool_NiTMap(int a)
 {
     InitBuffer(a);
@@ -385,6 +406,7 @@ int __fastcall GetCombinedValue(int this_)
     return *(int*)(this_ + 4) + *(int*)(this_ + 0xc);
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, const char*);
@@ -396,6 +418,8 @@ struct WeaponQueue
 };
 
 // @fnv 0x0084dd70
+// pdb: BGSSaveLoadFileEntry::SetLanguage | BGSSaveLoadHeader.obj | debug, object-file run extension, low
+// pdb params: language
 void __thiscall WeaponQueue::QueueWeapon(unsigned int param_2)
 {
     TaskQueueInterface::CopyStringToBuffer((char*)this + 0x3c, 0x40, (const char*)param_2);
@@ -418,6 +442,8 @@ struct FUN_0084e320_Class
 };
 
 // @fnv 0x0084e320
+// pdb: BGSSaveLoadHistory::GetNote | BGSSaveLoadHistory.obj | debug, object-file run extension, low
+// pdb params: aiIndex
 unsigned int FUN_0084e320_Class::GetArrayElement(int index)
 {
     return m_Array.GetAt(index);
@@ -441,25 +467,28 @@ int FUN_0084e3a0_Class::GetHavokWorldObjectCountInSceneGraph_0084e3a0()
 
 // @fnv 0x00851ef0
 // src: COMMUNITY 0x00851ef0
+// pdb: BGSSaveLoadFileEntry::GetScreenshotWidth | BGSSaveLoadManager.obj | debug, upstream name already matches, high
 void* BGSSaveLoadFileEntry::GetScreenshotWidth()
 {
-    ReadTypedData();
+    LoadData();
     return reinterpret_cast<void*>(m_uiHeaderRecordValue);
 }
 
 // @fnv 0x00851f10
 // src: COMMUNITY 0x00851f10
+// pdb: BGSSaveLoadFileEntry::GetScreenshotHeight | BGSSaveLoadManager.obj | debug, upstream name already matches, high
 void* BGSSaveLoadFileEntry::GetScreenshotHeight()
 {
-    ReadTypedData();
+    LoadData();
     return reinterpret_cast<void*>(m_uiFileSize);
 }
 
 // @fnv 0x00851f30
 // src: COMMUNITY 0x00851f30
+// pdb: BGSSaveLoadFileEntry::GetScreenshotOffset | BGSSaveLoadManager.obj | debug, upstream name already matches, high
 void* BGSSaveLoadFileEntry::GetScreenshotOffset()
 {
-    ReadTypedData();
+    LoadData();
     return reinterpret_cast<void*>(SaveFileMetadata);
 }
 
@@ -467,12 +496,13 @@ extern "C" void* __cdecl BSSaveDataSystemUtility_GetSingleton(void);
 
 struct FUN_00851f50_class
 {
-    void* __thiscall BSSystemUtility_GetSaveDataUtility();
+    void* __thiscall BSSystemUtility_QSaveDataUtility();
 };
 
 // @fnv 0x00851f50
-// src: COMMUNITY 0x00851f50
-void* __thiscall FUN_00851f50_class::BSSystemUtility_GetSaveDataUtility()
+// src: XBOX_DEBUG_PDB 0x00851f50
+// pdb: BSSystemUtility::QSaveDataUtility | BGSSaveLoadManager.obj | debug, call graph, high
+void* __thiscall FUN_00851f50_class::BSSystemUtility_QSaveDataUtility()
 {
     return BSSaveDataSystemUtility_GetSingleton();
 }
@@ -485,14 +515,16 @@ struct TaskQueueInterface
 
 struct FUN_00851f60_Class
 {
-    void __thiscall BSSaveDataSystemUtilityFile_SetDirectoryName(unsigned int a);
+    void __thiscall BSSaveDataSystemUtilityFile_SetDirectoryName(unsigned int apcName);
 };
 
 // @fnv 0x00851f60
 // src: COMMUNITY 0x00851f60
-void __thiscall FUN_00851f60_Class::BSSaveDataSystemUtilityFile_SetDirectoryName(unsigned int apSource)
+// pdb: BSSaveDataSystemUtilityFile::SetDirectoryName | BGSSaveLoadManager.obj | debug, upstream name already matches, high
+// pdb params: apcName
+void __thiscall FUN_00851f60_Class::BSSaveDataSystemUtilityFile_SetDirectoryName(unsigned int apcName)
 {
-    TaskQueueInterface::CopyStringToBuffer((char*)this + 0x164, 0x100, (const char*)apSource);
+    TaskQueueInterface::CopyStringToBuffer((char*)this + 0x164, 0x100, (const char*)apcName);
 }
 }  // namespace fnv_00851f60
 
@@ -504,14 +536,16 @@ struct TaskQueueInterface
 
 struct FUN_00851f90_class
 {
-    void __thiscall BSSaveDataSystemUtilityFile_SetSubTitle(unsigned int a);
+    void __thiscall BSSaveDataSystemUtilityFile_SetSubTitle(unsigned int apcSubTitle);
 };
 
 // @fnv 0x00851f90
 // src: COMMUNITY 0x00851f90
-void __thiscall FUN_00851f90_class::BSSaveDataSystemUtilityFile_SetSubTitle(unsigned int apSource)
+// pdb: BSSaveDataSystemUtilityFile::SetSubTitle | BGSSaveLoadManager.obj | debug, upstream name already matches, high
+// pdb params: apcSubTitle
+void __thiscall FUN_00851f90_class::BSSaveDataSystemUtilityFile_SetSubTitle(unsigned int apcSubTitle)
 {
-    TaskQueueInterface::CopyStringToBuffer((char*)this + 0x265, 0x80, (const char*)apSource);
+    TaskQueueInterface::CopyStringToBuffer((char*)this + 0x265, 0x80, (const char*)apcSubTitle);
 }
 }  // namespace fnv_00851f90
 
@@ -523,14 +557,16 @@ struct TaskQueueInterface
 
 struct FUN_00852030_Class
 {
-    void BSSaveDataSystemUtilityFile_SetBackgroundImagePath(int a);
+    void BSSaveDataSystemUtilityFile_SetBackgroundImagePath(int apcPath);
 };
 
 // @fnv 0x00852030
 // src: COMMUNITY 0x00852030
-void FUN_00852030_Class::BSSaveDataSystemUtilityFile_SetBackgroundImagePath(int apSource)
+// pdb: BSSaveDataSystemUtilityFile::SetBackgroundImagePath | BGSSaveLoadManager.obj | debug, upstream name already matches, high
+// pdb params: apcPath
+void FUN_00852030_Class::BSSaveDataSystemUtilityFile_SetBackgroundImagePath(int apcPath)
 {
-    TaskQueueInterface::CopyStringToBuffer((char*)this + 0x8f4, 0x100, (const char*)apSource);
+    TaskQueueInterface::CopyStringToBuffer((char*)this + 0x8f4, 0x100, (const char*)apcPath);
 }
 }  // namespace fnv_00852030
 
@@ -549,6 +585,7 @@ extern "C" void __cdecl BSMsgDialogSystemUtility_QInstance();
 
 // @fnv 0x008526c0
 // src: COMMUNITY 0x008526c0
+// pdb: BSSystemUtility::QMsgDialogUtility | BGSSaveLoadManager.obj | debug, object-file gap fill, medium
 void __fastcall BSSystemUtility_GetMsgDialogUtility(void* thisPtr)
 {
     BSMsgDialogSystemUtility_QInstance();
@@ -565,6 +602,8 @@ struct FUN_00852fa0_class
 // Calls FUN_008530c0 with arg, stores the address of DAT_01080028 into this, and returns this.
 // @fnv 0x00852fa0
 // src: EXE 0x00852fa0
+// pdb: NiTMap<unsigned int,BSSimpleArray<unsigned int,1024> *>::NiTMap<unsigned int,BSSimpleArray<unsigned int,1024> *> | BGSSaveLoadReferencesMap.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 int __thiscall FUN_00852fa0_class::NiTMap_unsigned_int_BSSimpleArray_unsigned_int_1024_NiTMap(int arg)
 {
     NiTMapBase_DFALL_NiTMapItem_unsigned_int_BSSimpleArray_unsigned_int_1024_unsigned_int_BSSimpleArray_unsigned_int_1024_NiTMapBase(arg);
@@ -584,6 +623,8 @@ struct FUN_00852fd0_cls
 // Calls InitializeBuffer with arg, stores the address of DAT_01080048 in m_p, and returns this.
 // @fnv 0x00852fd0
 // src: EXE 0x00852fd0
+// pdb: NiTPointerMap<unsigned int,unsigned int>::NiTPointerMap<unsigned int,unsigned int> | BGSSaveLoadReferencesMap.obj | debug, call graph, medium
+// pdb params: uiHashSize
 void* __thiscall FUN_00852fd0_cls::NiTPointerMap_unsigned_int_unsigned_int_NiTPointerMap(void* arg)
 {
     this->InitializeBuffer(arg);
@@ -606,6 +647,8 @@ struct FUN_00853000_class
 // Calls FUN_00853370 with arg, sets p to point at DAT_01080068, and returns this.
 // @fnv 0x00853000
 // src: EXE 0x00853000
+// pdb: NiTPointerMap<unsigned int,BGSCellNumericIDArrayMap *>::NiTPointerMap<unsigned int,BGSCellNumericIDArrayMap *> | BGSSaveLoadReferencesMap.obj | debug, call graph, medium
+// pdb params: uiHashSize
 FUN_00853000_class* __thiscall FUN_00853000_class::NiTPointerMap_unsigned_int_BGSCellNumericIDArrayMap_NiTPointerMap(int arg)
 {
     ((FUN_00853370_class*)this)->FUN_00853370(arg);
@@ -646,6 +689,7 @@ struct FUN_00854af0
     FUN_00854af0();
 };
 // @fnv 0x00854af0
+// pdb: SavedFormData::SavedFormData | BGSSaveLoadStructs.obj | debug, object-file gap fill, medium
 FUN_00854af0::FUN_00854af0()
 {}
 
@@ -659,6 +703,8 @@ struct FUN_00854c80_class
 // Calls FUN_00854ce0 with a, sets m_vf_00 to the address of DAT_01080434, and returns this.
 // @fnv 0x00854c80
 // src: EXE 0x00854c80
+// pdb: NiTMap<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *>::NiTMap<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> | BGSSaveLoadStructs.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 int* FUN_00854c80_class::NiTMap_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData_NiTMap(int a)
 {
     NiTMapBase_DFALL_NiTMapItem_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData_NiTMapBase_DFALL_NiTMapItem_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData(a);
@@ -677,6 +723,7 @@ struct FUN_00854e10
 
 // @fnv 0x00854e10
 // src: GUESS 0x00854e10 (confidence: low)
+// pdb: DFALL<NiTMapItem<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> >::Allocate | BGSSaveLoadStructs.obj | debug, object-file run extension, low
 void FUN_00854e10::ReleaseStorage_00854e10()
 {
     if (b)
@@ -693,6 +740,8 @@ struct FUN_00854e40_Class
 // If m_04 is zero, ORs a1 into m_00; otherwise does nothing.
 // @fnv 0x00854e40
 // src: COMMUNITY 0x00854e40
+// pdb: DFALL<NiTMapItem<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> >::Deallocate | BGSSaveLoadStructs.obj | debug, object-file run extension, low
+// pdb params: p
 void FUN_00854e40_Class::ChangeData_AddChange(int a1)
 {
     if (m_04 == 0)
@@ -709,6 +758,7 @@ struct FUN_00854e70_class
 // If b is zero, clears the bits of auMode in a.
 // @fnv 0x00854e70
 // src: COMMUNITY 0x00854e70
+// pdb: ChangeData::~ChangeData | TESSaveLoadGame.obj | debug, object-file run extension, low
 void FUN_00854e70_class::ChangeData_RemoveChange(unsigned int auMode)
 {
     if (b == 0)
@@ -721,13 +771,14 @@ struct FUN_00854ea0_class
 {
     void* m;
     void __thiscall FUN_00863360(int);
-    void* ChangesMap_ChangesMap();
+    void* ChangesMap_ctor();
 };
 
 // Calls FUN_00863360 with 0x13af, sets m to point at DAT_010804a8, and returns this.
 // @fnv 0x00854ea0
-// src: EXE 0x00854ea0
-void* FUN_00854ea0_class::ChangesMap_ChangesMap()
+// src: XBOX_RETAIL_PDB 0x00854ea0
+// pdb: ChangesMap::ChangesMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
+void* FUN_00854ea0_class::ChangesMap_ctor()
 {
     FUN_00863360(0x13af);
     m = &DAT_010804a8;
@@ -754,24 +805,31 @@ void FUN_00857350_obj::ForwardCall_00857350()
 
 
 // @fnv 0x00857ba0
-unsigned int TESSaveLoadGame::ReadFile(BSFile* stream, void* buffer, unsigned int size)
+// src: XBOX_RETAIL_PDB 0x00857ba0
+// pdb: TESSaveLoadGame::ReadFile | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apFile, apData, aiSize
+unsigned int TESSaveLoadGame::TESSaveLoadGame_ReadFile(BSFile* apFile, void* apData, unsigned int aiSize)
 {
-    unsigned int result = static_cast<NiBinaryStream*>(stream)->Read(buffer, size);
+    unsigned int result = static_cast<NiBinaryStream*>(apFile)->Read(apData, aiSize);
     return result;
 }
 
 
 // Queues the attached-animation buffer using the shared map member.
 // @fnv 0x0085f2b0
-void TESSaveLoadGame::QueueAttachedAnimationLoad(TESObjectREFR* sound, unsigned short flag)
+// pdb: TESSaveLoadGame::QueueAttachedAnimationLoad | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apRef, aiSize
+void TESSaveLoadGame::QueueAttachedAnimationLoad(TESObjectREFR* apRef, unsigned short aiSize)
 {
-    QueueBufferLoad(m_pAttachedAnimationBufferMap, reinterpret_cast<TESSound*>(sound)->Deallocate(), flag);
+    QueueBufferLoad(m_pAttachedAnimationMap, reinterpret_cast<TESSound*>(apRef)->Deallocate(), aiSize);
 }
 
 // @fnv 0x0085f420
-void TESSaveLoadGame::QueueCharControllerLoad(TESObjectREFR* SoundAssetTmp, unsigned short wParam)
+// pdb: TESSaveLoadGame::QueueCharControllerLoad | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apRef, aiSize
+void TESSaveLoadGame::QueueCharControllerLoad(TESObjectREFR* apRef, unsigned short aiSize)
 {
-    QueueBufferLoad(m_pCharControllerBufferMap, reinterpret_cast<TESSound*>(SoundAssetTmp)->Deallocate(), wParam);
+    QueueBufferLoad(m_pCharControllerMap, reinterpret_cast<TESSound*>(apRef)->Deallocate(), aiSize);
 }
 
 struct FUN_0085feb0_class
@@ -793,13 +851,14 @@ struct FUN_00844660_Class
     int m_auiShapeKeys;
     int m_data;
     void NiTPointerMap_RemoveAll();
-    void ReleaseStorage_00844660();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructFormsMap_unsigned_int_BGSReconstructFormsMap_dtor();
 };
 
 // Sets the vtable pointer, clears the pointer map, and frees m_data.
 // @fnv 0x00844660
-// src: GUESS 0x00844660 (confidence: medium)
-void FUN_00844660_Class::ReleaseStorage_00844660()
+// src: XBOX_DEBUG_PDB 0x00844660
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructFormsMap *> >,unsigned int,BGSReconstructFormsMap *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructFormsMap *> >,unsigned int,BGSReconstructFormsMap *> | BGSReconstructFormsInAllFilesMap.obj | debug, call graph (shared callers), high
+void FUN_00844660_Class::NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructFormsMap_unsigned_int_BGSReconstructFormsMap_dtor()
 {
     m_vtbl = (int)&DAT_0107ec88;
     NiTPointerMap_RemoveAll();
@@ -816,13 +875,14 @@ struct FUN_00844840_
     void* p;
     void* q;
     void RemoveAll();
-    void ReleaseStorage_00844840();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructCellsMap_unsigned_int_BGSReconstructCellsMap_dtor();
 };
 
 // Sets the vtable to DAT_0107eca8, calls RemoveAll, then frees q via _NiFreeAlias.
 // @fnv 0x00844840
-// src: GUESS 0x00844840 (confidence: medium)
-void FUN_00844840_::ReleaseStorage_00844840()
+// src: XBOX_DEBUG_PDB 0x00844840
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellsMap *> >,unsigned int,BGSReconstructCellsMap *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellsMap *> >,unsigned int,BGSReconstructCellsMap *> | BGSReconstructFormsInAllFilesMap.obj | debug, call graph (shared callers), high
+void FUN_00844840_::NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructCellsMap_unsigned_int_BGSReconstructCellsMap_dtor()
 {
     vtbl = &DAT_0107eca8;
     RemoveAll();
@@ -833,6 +893,7 @@ void FUN_00844840_::ReleaseStorage_00844840()
 // Vftable 0x0107ecc8 identifies the DFALL map base for cell-subblock reconstruction maps.
 template <>
 // @fnv 0x00844940
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellSubBlocksMap *> >,unsigned int,BGSReconstructCellSubBlocksMap *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellSubBlocksMap *> >,unsigned int,BGSReconstructCellSubBlocksMap *> | BGSReconstructFormsInAllFilesMap.obj | debug, call graph (shared callers), high
 NiTMapBase<DFALL<NiTMapItem<unsigned int, BGSReconstructCellSubBlocksMap*> >,
            unsigned int, BGSReconstructCellSubBlocksMap*>::~NiTMapBase()
 {
@@ -848,11 +909,13 @@ struct FUN_00844a40
     void* vtbl;
     int a;
     int b;
-    void RemoveAll();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructCellBlocksMap_unsigned_int_BGSReconstructCellBlocksMap_dtor();
 };
 
 // @fnv 0x00844a40
-void FUN_00844a40::RemoveAll()
+// src: XBOX_DEBUG_PDB 0x00844a40
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellBlocksMap *> >,unsigned int,BGSReconstructCellBlocksMap *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellBlocksMap *> >,unsigned int,BGSReconstructCellBlocksMap *> | BGSReconstructFormsInAllFilesMap.obj | debug, call graph (shared callers), high
+void FUN_00844a40::NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructCellBlocksMap_unsigned_int_BGSReconstructCellBlocksMap_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_0107ece8;
     reinterpret_cast<NiTPointerMap<int, int>*>(this)->RemoveAll();
@@ -871,6 +934,7 @@ struct FUN_0084b720
 };
 // Sets the vtable pointer, clears the pointer map, and frees the b pointer via _NiFreeAlias.
 // @fnv 0x0084b720
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,Actor *> >,unsigned int,Actor *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,Actor *> >,unsigned int,Actor *> | BGSSaveLoadGame.obj | debug, call graph (shared callers), high
 void __thiscall FUN_0084b720::Init()
 {
     *(void**)(void*)this = (void*)&DAT_0107f4c8;
@@ -888,12 +952,14 @@ struct FUN_0084ba20
     void* m_auiShapeKeys;
     void* m_data;
     void NiTPointerMapRemoveAll();
-    void Init();
+    void NiTMapBase_DFALL_NiTMapItem_int64_int_int64_int_dtor();
 };
 
 // Sets the vtable pointer, clears the pointer map, and frees m_data.
 // @fnv 0x0084ba20
-void FUN_0084ba20::Init()
+// src: XBOX_DEBUG_PDB 0x0084ba20
+// pdb: NiTMapBase<DFALL<NiTMapItem<__int64,int> >,__int64,int>::~NiTMapBase<DFALL<NiTMapItem<__int64,int> >,__int64,int> | BGSSaveLoadGame.obj | debug, call graph (shared callers), high
+void FUN_0084ba20::NiTMapBase_DFALL_NiTMapItem_int64_int_int64_int_dtor()
 {
     m_vft = (void*)&DAT_0107f4e8;
     NiTPointerMapRemoveAll();
@@ -906,13 +972,14 @@ extern int DAT_01080088;
 
 struct FUN_00853210_cls : NiTPointerMap<int, int>
 {
-    void SetVtableAndProcessState_00853210();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_BSSimpleArray_unsigned_int_1024_unsigned_int_BSSimpleArray_unsigned_int_1024_dtor();
 };
 
 // Sets the vtable pointer, removes all entries from the map, and frees the pointer stored at offset 8.
 // @fnv 0x00853210
-// src: GUESS 0x00853210 (confidence: low)
-void __thiscall FUN_00853210_cls::SetVtableAndProcessState_00853210()
+// src: XBOX_DEBUG_PDB 0x00853210
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BSSimpleArray<unsigned int,1024> *> >,unsigned int,BSSimpleArray<unsigned int,1024> *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,BSSimpleArray<unsigned int,1024> *> >,unsigned int,BSSimpleArray<unsigned int,1024> *> | BGSSaveLoadReferencesMap.obj | debug, call graph (shared callers), high
+void __thiscall FUN_00853210_cls::NiTMapBase_DFALL_NiTMapItem_unsigned_int_BSSimpleArray_unsigned_int_1024_unsigned_int_BSSimpleArray_unsigned_int_1024_dtor()
 {
     *(void**)(void*)this = (void*)&DAT_01080088;
     ((NiTPointerMap<int, int>*)this)->RemoveAll();
@@ -930,6 +997,7 @@ struct FUN_00853340 : NiTPointerMap<int, int>
 
 // Sets the vtable pointer, clears all entries with RemoveAll, then frees the pointer stored at offset 8 via _NiFreeAlias.
 // @fnv 0x00853340
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,unsigned int>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,unsigned int> | BGSSaveLoadReferencesMap.obj | debug, call graph (shared callers), high
 void FUN_00853340::Init()
 {
     *(void**)this = (void*)&DAT_010800a8;
@@ -978,6 +1046,9 @@ struct FUN_00844690_class
 // Sets the vtable, stores the element count, allocates count*4 bytes, zeroes them, and returns this.
 // @fnv 0x00844690
 // src: EXE 0x00844690
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellsMap *> >,unsigned int,BGSReconstructCellsMap *>::GetAt | BGSReconstructFormsInAllFilesMap.obj | debug, object-file run extension, low
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 FUN_00844690_class* __thiscall FUN_00844690_class::NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructCellsMap_unsigned_int_BGSReconstructCellsMap_NiTMapBase(int aiCount)
 {
     vtbl = &DAT_0107eca8;
@@ -1028,16 +1099,17 @@ FUN_00844970_class::FUN_00844970_class(int size)
 extern "C" void __cdecl Deallocate(void*);
 struct Unk008444d0
 {
-    void __thiscall SetVtableAndProcessState_008444d0();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_unsigned_int_ReconstructFormData_unsigned_int_ReconstructFormData_dtor();
 };
 struct FUN_008450b0_class
 {
     void* __thiscall FUN_008450b0(unsigned int flags);
 };
 // @fnv 0x008450b0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,ReconstructFormData> >,unsigned int,ReconstructFormData>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | retail, vtable slot, high
 void* __thiscall FUN_008450b0_class::FUN_008450b0(unsigned int flags)
 {
-    ((Unk008444d0*)this)->SetVtableAndProcessState_008444d0();
+    ((Unk008444d0*)this)->NiTMapBase_DFALL_NiTMapItem_unsigned_int_ReconstructFormData_unsigned_int_ReconstructFormData_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1046,13 +1118,14 @@ void* __thiscall FUN_008450b0_class::FUN_008450b0(unsigned int flags)
 extern "C" void __cdecl Deallocate(void*);
 struct FUN_00845110_class
 {
-    void* __thiscall ReleaseStorage_00844840();
+    void* __thiscall NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructCellsMap_unsigned_int_BGSReconstructCellsMap_dtor();
     void* __thiscall FUN_00845110(unsigned int flags);
 };
 // @fnv 0x00845110
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellsMap *> >,unsigned int,BGSReconstructCellsMap *>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | retail, vtable slot, high
 void* __thiscall FUN_00845110_class::FUN_00845110(unsigned int flags)
 {
-    ReleaseStorage_00844840();
+    NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructCellsMap_unsigned_int_BGSReconstructCellsMap_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1066,9 +1139,10 @@ struct FUN_00845170_class
 };
 // Removes all entries from this object, optionally deallocates it when flags has bit 0 set, and returns this.
 // @fnv 0x00845170
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructCellBlocksMap *> >,unsigned int,BGSReconstructCellBlocksMap *>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | retail, vtable slot, high
 void* __thiscall FUN_00845170_class::FUN_00845170(unsigned int flags)
 {
-    reinterpret_cast<FUN_00844a40*>(this)->RemoveAll();
+    reinterpret_cast<FUN_00844a40*>(this)->NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructCellBlocksMap_unsigned_int_BGSReconstructCellBlocksMap_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1078,15 +1152,16 @@ extern "C" void __cdecl Deallocate(void*);
 
 struct S_00844e80
 {
-    void ReleaseStorage_00844e80();
+    void NiTMapBase_DFALL_NiTMapItem_TESFile_BGSReconstructFormsInFileMap_TESFile_BGSReconstructFormsInFileMap_dtor();
     void* FUN_008451d0(unsigned int flags);
 };
 
 // Calls FUN_00844e80, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x008451d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESFile *,BGSReconstructFormsInFileMap *> >,TESFile *,BGSReconstructFormsInFileMap *>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | retail, vtable slot, high
 void* S_00844e80::FUN_008451d0(unsigned int flags)
 {
-    ReleaseStorage_00844e80();
+    NiTMapBase_DFALL_NiTMapItem_TESFile_BGSReconstructFormsInFileMap_TESFile_BGSReconstructFormsInFileMap_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1106,6 +1181,7 @@ struct FUN_00845200_class
 
 // Calls InitGlobalObject on this, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00845200
+// pdb: BSSimpleArray<OffsetData,1024>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | retail, vtable slot, high
 void* __thiscall FUN_00845200_class::FUN_00845200(unsigned int flags)
 {
     ((FUN_00844fa0_class*)this)->InitGlobalObject();
@@ -1123,6 +1199,7 @@ struct FUN_00845230_Class
 
 // Calls FUN_00844ff0 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00845230
+// pdb: BSScrapArray<OffsetData,1024>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | debug, vtable slot, medium
 void* FUN_00845230_Class::FUN_00845230(unsigned int flags)
 {
     ((FUN_00843220_Class*)this)->FUN_00844ff0();
@@ -1131,6 +1208,7 @@ void* FUN_00845230_Class::FUN_00845230(unsigned int flags)
     return this;
 }
 
+// pdb: class BGSSaveLoadReferencesMap, size 0x30 (here 0x1), 3 members
 struct BGSSaveLoadReferencesMap
 {
     BGSSaveLoadReferencesMap();
@@ -1140,6 +1218,7 @@ struct BGSSaveLoadReferencesMap
 
 // Calls FUN_00852ae0, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x008473f0
+// pdb: BGSSaveLoadReferencesMap::`scalar deleting destructor' | BGSSaveLoadGame.obj | debug, object-file gap fill, medium
 void* BGSSaveLoadReferencesMap::FUN_008473f0(unsigned int flags)
 {
     FUN_00852ae0();
@@ -1155,6 +1234,7 @@ struct FUN_00865220_class
     void* __thiscall FUN_00847420(unsigned int flags);
 };
 // @fnv 0x00847420
+// pdb: BGSSaveLoadQueuedSubBufferMap::`scalar deleting destructor' | BGSSaveLoadGame.obj | debug, object-file gap fill, medium
 void* FUN_00865220_class::FUN_00847420(unsigned int flags)
 {
     FUN_00865220();
@@ -1184,6 +1264,7 @@ struct FUN_0084b510_class
     void* __thiscall FUN_0084b510(unsigned int flags);
 };
 // @fnv 0x0084b510
+// pdb: NiTMap<unsigned int,Actor *>::`scalar deleting destructor' | BGSSaveLoadGame.obj | retail, vtable slot, high
 void* __thiscall FUN_0084b510_class::FUN_0084b510(unsigned int flags)
 {
     FUN_0084b6c0();
@@ -1248,6 +1329,7 @@ struct FUN_0084baa0_Class
 };
 void __cdecl Deallocate(void*);
 // @fnv 0x0084baa0
+// pdb: BSSimpleArray<BGSLoadFormBuffer *,1024>::`scalar deleting destructor' | BGSSaveLoadGame.obj | retail, vtable slot, high
 void* __thiscall FUN_0084baa0_Class::FUN_0084baa0(unsigned int flags)
 {
     ResetVirtualTableAndClear_0084b5a0();
@@ -1265,6 +1347,7 @@ struct FUN_0084bad0_class
 };
 
 // @fnv 0x0084bad0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,Actor *> >,unsigned int,Actor *>::`scalar deleting destructor' | BGSSaveLoadGame.obj | retail, vtable slot, high
 void* FUN_0084bad0_class::FUN_0084bad0(unsigned int flags)
 {
     FUN_0084b720();
@@ -1283,6 +1366,7 @@ struct FUN_0084d270_class
 
 // Calls FUN_0084d3f0, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0084d270
+// pdb: NiTMap<TESGlobal *,bool>::`scalar deleting destructor' | BGSSaveLoadGlobalData.obj | retail, vtable slot, high
 void* __thiscall FUN_0084d270_class::FUN_0084d270(unsigned int flags)
 {
     FUN_0084d3f0();
@@ -1305,6 +1389,9 @@ struct FUN_0084d2a0_t
 };
 // Sets the vtable, stores the element count, allocates count*4 bytes, zeroes them, and returns this.
 // @fnv 0x0084d2a0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESGlobal *,bool> >,TESGlobal *,bool>::NiTMapBase<DFALL<NiTMapItem<TESGlobal *,bool> >,TESGlobal *,bool> | BGSSaveLoadGlobalData.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_0084d2a0_t* __thiscall FUN_0084d2a0_t::InitBuffer(unsigned int n)
 {
     unsigned int size;
@@ -1321,14 +1408,15 @@ FUN_0084d2a0_t* __thiscall FUN_0084d2a0_t::InitBuffer(unsigned int n)
 extern "C" void __cdecl Deallocate(void*);
 struct FUN_0084d480_Class
 {
-    void __thiscall SetVtableAndProcessState_0084d450();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_TESGlobal_bool_TESGlobal_bool_dtor();
     void* __thiscall FUN_0084d480(unsigned int flags);
 };
 // Calls FUN_0084d450, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0084d480
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESGlobal *,bool> >,TESGlobal *,bool>::`scalar deleting destructor' | BGSSaveLoadGlobalData.obj | retail, vtable slot, high
 void* __thiscall FUN_0084d480_Class::FUN_0084d480(unsigned int flags)
 {
-    SetVtableAndProcessState_0084d450();
+    NiTMapBase_DFALL_NiTMapItem_TESGlobal_bool_TESGlobal_bool_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1336,7 +1424,7 @@ void* __thiscall FUN_0084d480_Class::FUN_0084d480(unsigned int flags)
 
 struct FUN_00846d20_shell
 {
-    unsigned int BGSSaveLoadFormIDMap_GetFormID(unsigned int a);
+    unsigned int BGSSaveLoadFormIDMap_GetFormID(unsigned int aiFormIDIndex);
 };
 extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 
@@ -1368,6 +1456,8 @@ struct FUN_0084e420_class
     void __thiscall ResetFromValue(int* arg);
 };
 // @fnv 0x0084e420
+// pdb: CellInitialData::Initialize | BGSSaveLoadInitialData.obj | retail, object-file run extension, low
+// pdb params: apExteriorCellInitialDataChar
 void __thiscall FUN_0084e420_class::ResetFromValue(int* piValue)
 {
     m_iWordAt04 = 0;
@@ -1380,11 +1470,13 @@ void __fastcall Object_ProcessState_008462c0(char*);
 extern void __cdecl Deallocate(void*);
 struct FUN_00850330_class
 {
-    char* __thiscall FUN_00850330(unsigned int flags);
+    char* __thiscall BGSSaveLoadFile_ScalarDtor(unsigned int flags);
 };
 // Calls FUN_008462c0 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00850330
-char* __thiscall FUN_00850330_class::FUN_00850330(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x00850330
+// pdb: BGSSaveLoadFile::`scalar deleting destructor' | BGSSaveLoadManager.obj | debug, call graph (shared callers), high
+char* __thiscall FUN_00850330_class::BGSSaveLoadFile_ScalarDtor(unsigned int flags)
 {
     Object_ProcessState_008462c0(reinterpret_cast<char*>(this));
     if (flags & 1)
@@ -1400,6 +1492,8 @@ struct FUN_008515f0_class
 };
 // Calls FUN_00846690 on this, frees this when bit 0 of flags is set, and returns this.
 // @fnv 0x008515f0
+// pdb: BGSSaveLoadFileEntry::~BGSSaveLoadFileEntry | BGSSaveLoadFile.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BGSSaveLoadFileEntry::`scalar deleting destructor'
 void* FUN_008515f0_class::FUN_008515f0(unsigned int flags)
 {
     Bgssaveloadfile_ReleaseStorage_00846690((void**)this);
@@ -1416,6 +1510,8 @@ struct FUN_00851ff0_class
 // Stores the three int arguments at offsets 0x7e8, 0x7ec and 0x7f0 of this object.
 // @fnv 0x00851ff0
 // src: COMMUNITY 0x00851ff0
+// pdb: BSSaveDataSystemUtilityFile::SetCreateIconImagePath | BGSSaveLoadManager.obj | debug, object-file gap fill, medium
+// pdb params: apcPath
 void __thiscall FUN_00851ff0_class::BSSaveDataSystemUtilityFile_SetIconImage(int a, int b, int c)
 {
     *(int*)((char*)this + 0x7e8) = a;
@@ -1444,6 +1540,7 @@ struct FUN_008531b0_class
 
 // Calls FUN_008531b0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00853030
+// pdb: NiTMap<unsigned int,BSSimpleArray<unsigned int,1024> *>::`scalar deleting destructor' | BGSSaveLoadReferencesMap.obj | retail, vtable slot, high
 void* __thiscall FUN_008531b0_class::FUN_00853030(unsigned int flags)
 {
     FUN_008531b0();
@@ -1459,6 +1556,7 @@ struct FUN_008532e0_class
     void* __thiscall FUN_00853060(unsigned int flags);
 };
 // @fnv 0x00853060
+// pdb: NiTPointerMap<unsigned int,unsigned int>::`scalar deleting destructor' | BGSSaveLoadReferencesMap.obj | retail, vtable slot, high
 void* __thiscall FUN_008532e0_class::FUN_00853060(unsigned int flags)
 {
     FUN_008532e0();
@@ -1476,6 +1574,7 @@ struct FUN_00853090_class
 };
 // Calls FUN_008533e0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00853090
+// pdb: NiTPointerMap<unsigned int,BGSCellNumericIDArrayMap *>::`scalar deleting destructor' | BGSSaveLoadReferencesMap.obj | retail, vtable slot, high
 void* FUN_00853090_class::FUN_00853090(unsigned int flags)
 {
     FUN_008533e0();
@@ -1496,6 +1595,9 @@ struct FUN_008530c0_obj
 };
 // @fnv 0x008530c0
 // src: EXE 0x008530c0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BSSimpleArray<unsigned int,1024> *> >,unsigned int,BSSimpleArray<unsigned int,1024> *>::NiTMapBase<DFALL<NiTMapItem<unsigned int,BSSimpleArray<unsigned int,1024> *> >,unsigned int,BSSimpleArray<unsigned int,1024> *> | BGSSaveLoadReferencesMap.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_008530c0_obj* __thiscall FUN_008530c0_obj::NiTMapBase_DFALL_NiTMapItem_unsigned_int_BSSimpleArray_unsigned_int_1024_unsigned_int_BSSimpleArray_unsigned_int_1024_NiTMapBase(unsigned int auiSize)
 {
     unsigned int tmp;
@@ -1519,6 +1621,7 @@ struct FUN_008533e0 : FUN_00853440
 };
 // Destructor that clears all entries from the underlying NiTPointerMap by calling RemoveAll.
 // @fnv 0x008533e0
+// pdb: NiTPointerMap<unsigned int,BGSCellNumericIDArrayMap *>::~NiTPointerMap<unsigned int,BGSCellNumericIDArrayMap *> | BGSSaveLoadReferencesMap.obj | debug, call graph, medium
 FUN_008533e0::~FUN_008533e0()
 {
     ((NiTPointerMap<int, int>*)this)->RemoveAll();
@@ -1535,6 +1638,7 @@ struct FUN_008534a0_shell
 };
 // Calls FUN_00853340 on this, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x008534a0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,unsigned int>::`scalar deleting destructor' | BGSSaveLoadReferencesMap.obj | retail, vtable slot, high
 void* __thiscall FUN_008534a0_shell::FUN_008534a0(unsigned int flags)
 {
     ((FUN_00853340_shell*)this)->FUN_00853340();
@@ -1546,14 +1650,15 @@ void* __thiscall FUN_008534a0_shell::FUN_008534a0(unsigned int flags)
 void __cdecl Deallocate(void*);
 struct FUN_00853440_class
 {
-    void __thiscall UpdateFields_00853440();
+    void __thiscall NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BGSCellNumericIDArrayMap_dtor();
     void* __thiscall FUN_008534d0(unsigned int flags);
 };
 // Calls FUN_00853440, frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x008534d0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BGSCellNumericIDArrayMap *>::`scalar deleting destructor' | BGSSaveLoadReferencesMap.obj | retail, vtable slot, high
 void* FUN_00853440_class::FUN_008534d0(unsigned int flags)
 {
-    UpdateFields_00853440();
+    NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BGSCellNumericIDArrayMap_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1562,14 +1667,16 @@ void* FUN_00853440_class::FUN_008534d0(unsigned int flags)
 
 struct FUN_00854b80_class
 {
-    void __thiscall BGSSaveLoadStatsMap_WriteFile(const char* p);
+    void __thiscall BGSSaveLoadStatsMap_WriteFile(const char* apString);
 };
 // @fnv 0x00854b80
 // src: XBOX_PDB 0x00854b80
-void __thiscall FUN_00854b80_class::BGSSaveLoadStatsMap_WriteFile(const char* pcString)
+// pdb: BGSSaveLoadStatsMap::WriteFile | BGSSaveLoadStructs.obj | retail, upstream name already matches, high
+// pdb params: apString
+void __thiscall FUN_00854b80_class::BGSSaveLoadStatsMap_WriteFile(const char* apString)
 {
     if (*(int*)((char*)this + 0x18))
-        ((BSFile*)*(int*)((char*)this + 0x18))->NiBinaryStream_Write(pcString, BSStringLength(pcString));
+        ((BSFile*)*(int*)((char*)this + 0x18))->NiBinaryStream_Write(apString, BSStringLength(apString));
 }
 
 extern "C" void __cdecl Deallocate(void*);
@@ -1580,6 +1687,7 @@ struct FUN_00854cb0_class
 };
 // Calls FUN_00854d50 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x00854cb0
+// pdb: NiTMap<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *>::`scalar deleting destructor' | BGSSaveLoadStructs.obj | retail, vtable slot, high
 void* __thiscall FUN_00854cb0_class::FUN_00854cb0(unsigned int flags)
 {
     FUN_00854d50(this);
@@ -1602,6 +1710,9 @@ struct FUN_00854ce0_class
 // Sets the vtable, stores the element count, allocates count*4 bytes, zeroes them, and returns this.
 // @fnv 0x00854ce0
 // src: COMMUNITY 0x00854ce0
+// pdb: NiTMapBase<DFALL<NiTMapItem<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> >,enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *>::NiTMapBase<DFALL<NiTMapItem<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> >,enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> | BGSSaveLoadStructs.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 void* __thiscall FUN_00854ce0_class::NiTMapBase_DFALL_NiTMapItem_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData_NiTMapBase_DFALL_NiTMapItem_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData_enum_ENUM_FORM_ID_BSSimpleList_SavedFormData(int aiCount)
 {
     unsigned int size;
@@ -1621,6 +1732,7 @@ struct FUN_00854de0_class
 };
 // Calls ClearAndFree, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00854de0
+// pdb: NiTMapBase<DFALL<NiTMapItem<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> >,enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *>::`scalar deleting destructor' | BGSSaveLoadStructs.obj | retail, vtable slot, high
 void* __thiscall FUN_00854de0_class::FUN_00854de0(unsigned int flags)
 {
     ClearAndFree();
@@ -1645,20 +1757,25 @@ void* __thiscall FUN_00855730_Class::FUN_00857250(unsigned int flags)
 }
 
 // @fnv 0x0085efc0
-void TESSaveLoadGame::QueueBufferLoad(NumericIDBufferMap* pMap, unsigned int uiKey, unsigned short usIndex)
+// pdb: TESSaveLoadGame::QueueBufferLoad | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apMap, aiFormID, aiSize
+// pdb locals: pbuffer, ptempBuffer
+void TESSaveLoadGame::QueueBufferLoad(NumericIDBufferMap* apMap, unsigned int aiFormID, unsigned short aiSize)
 {
-    void* q = CreateQueuedBuffer(usIndex);
+    void* q = CreateQueuedBuffer(aiSize);
     char* p = (char*)q + 2;
-    ReadTypedData((void*)p, usIndex);
-    pMap->SetAt(uiKey, q);
+    ReadTypedData((void*)p, aiSize);
+    apMap->SetAt(aiFormID, q);
 }
 
 // If actor is not already in list, adds it to the head of the list.
 // @fnv 0x0085f710
-void TESSaveLoadGame::QueueFormForFinalization(TESForm* actor)
+// pdb: TESSaveLoadGame::QueueFormForFinalization | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apForm
+void TESSaveLoadGame::QueueFormForFinalization(TESForm* apForm)
 {
-    if (!m_kQueuedFinalizeForms.IsInList(actor))
-        m_kQueuedFinalizeForms.AddHead(actor);
+    if (!m_QueuedFormList.IsInList(apForm))
+        m_QueuedFormList.AddHead(apForm);
 }
 
 extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
@@ -1681,6 +1798,8 @@ struct FUN_0084e460_t
 // Reads a value from arg via FUN_00853500, zeroes b-e, copies two Vec3s from arg+3 and arg+15, and clears flag.
 // @fnv 0x0084e460
 // src: COMMUNITY 0x0084e460
+// pdb: ReferenceInitialData::Initialize | BGSSaveLoadInitialData.obj | retail, object-file run extension, low
+// pdb params: apReferenceLocationInitialData
 void FUN_0084e460_t::ReferenceInitialData_Initialize_LOCATION(unsigned int auiData)
 {
     a = BGSNumericIDIndex_GetNumericID((void*)auiData);
@@ -1716,6 +1835,8 @@ struct FUN_0084e580_class
 // Reads fields from p into this: two values via FUN_00853500, two shorts, two NiPoint3s, and zeroes b and h.
 // @fnv 0x0084e580
 // src: COMMUNITY 0x0084e580
+// pdb: ReferenceInitialData::Initialize | BGSSaveLoadInitialData.obj | retail, object-file run extension, low
+// pdb params: apReferenceLocationInitialData
 void __thiscall FUN_0084e580_class::ReferenceInitialData_Initialize_MOVED(void* p)
 {
     ((FUN_0084e580_t*)this)->a = BGSNumericIDIndex_GetNumericID(p);
@@ -1760,7 +1881,7 @@ FUN_0084fe50_class::~FUN_0084fe50_class()
 
 struct FUN_0084fec0_shell
 {
-    void EnsureFosExtension(char* a, char* b);
+    void GetFullFileName(char* a, char* b);
 };
 struct FUN_0084ff30_shell
 {
@@ -1775,11 +1896,14 @@ struct FUN_0084ff90_shell : FUN_0084fec0_shell
 
 // Builds a path from the weapon and this object, copies it into name, appends the buffer, and adds ".tmp" when tmp is set.
 // @fnv 0x0084ff90
+// pdb: BGSSaveLoadManager::GetFullPath | BGSSaveLoadManager.obj | debug, call graph, medium
+// pdb params: apFileName, apFullPath, abWrite
+// pdb locals: pfileName
 void FUN_0084ff90_shell::BuildWeaponPath(char* weapon, char* name, bool tmp)
 {
     char buffer[260];
     char path[260];
-    EnsureFosExtension(weapon, buffer);
+    GetFullFileName(weapon, buffer);
     ((FUN_0084ff30_shell*)this)->CreateScriptMessageDirectory(path);
     TaskQueueInterface::CopyStringToBuffer(name, 260, path);
     strcat_s(name, 260, buffer);
@@ -1790,6 +1914,8 @@ void FUN_0084ff90_shell::BuildWeaponPath(char* weapon, char* name, bool tmp)
 extern int DAT_010800a8;
 // Sets the vtable, stores arg as the element count, allocates a zeroed count*4 byte buffer via NiMalloc, and returns this.
 // @fnv 0x00853270
+// pdb: NiTMap<unsigned int,BSSimpleArray<unsigned int,1024> *>::DeleteItem | BGSSaveLoadReferencesMap.obj | debug, object-file run extension, low
+// pdb params: pkItem
 void* FUN_00852fd0_cls::InitializeBuffer(void* aiCount)
 {
     *(void**)this = &DAT_010800a8;
@@ -1808,12 +1934,12 @@ int __cdecl DAT_00ffffff;
 unsigned int TESSaveLoadGame::ConvertNumericID(unsigned int auiPacked)
 {
     unsigned char b = (auiPacked & 0xff000000) >> 24;
-    if (!m_pNumericIDBuffer || b == 0xff)
+    if (!m_pFileIndexArray || b == 0xff)
         return auiPacked;
     unsigned char c = 0;
-    if (b < m_ucSaveVersion)
+    if (b < m_iSavedPluginCount)
     {
-        c = ((unsigned char*)m_pNumericIDBuffer)[b];
+        c = ((unsigned char*)m_pFileIndexArray)[b];
         if (c != 0xff)
             return (auiPacked & (int)&DAT_00ffffff) + (c << 24);
     }
@@ -1827,15 +1953,17 @@ extern "C" TESForm* __cdecl TESForm_GetFormByNumericID(unsigned int);
 void __cdecl Deallocate(void*);
 extern TESObjectREFR* g_thePlayer;
 // @fnv 0x0085f070
+// pdb: TESSaveLoadGame::LoadAnimations | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb locals: it, pbuffer, iformID, pref
 void TESSaveLoadGame::LoadAnimations()
 {
-    void* pos2 = reinterpret_cast<NiTMap<unsigned int, void*>*>(m_pAnimationBufferMap)->GetFirstPos();
+    void* pos2 = reinterpret_cast<NiTMap<unsigned int, void*>*>(m_pAnimationMap)->GetFirstPos();
     while (pos2)
     {
         TESObjectREFR* ref;
         unsigned int key;
         void* value2;
-        reinterpret_cast<NiTMap<unsigned int, void*>*>(m_pAnimationBufferMap)->GetNext(pos2, key, value2);
+        reinterpret_cast<NiTMap<unsigned int, void*>*>(m_pAnimationMap)->GetNext(pos2, key, value2);
         if (key)
             ref = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(key));
         else
@@ -1845,13 +1973,13 @@ void TESSaveLoadGame::LoadAnimations()
             if (!ref->GetReferenceType())
             {
                 Deallocate(value2);
-                reinterpret_cast<MapH*>(m_pAnimationBufferMap)->RemoveAt(key);
+                reinterpret_cast<MapH*>(m_pAnimationMap)->RemoveAt(key);
                 continue;
             }
             LoadAnimationForReference(ref, key, value2);
         }
         Deallocate(value2);
-        reinterpret_cast<MapH*>(m_pAnimationBufferMap)->RemoveAt(key);
+        reinterpret_cast<MapH*>(m_pAnimationMap)->RemoveAt(key);
     }
 }
 
@@ -1859,13 +1987,16 @@ namespace fnv_0085f3d0 {
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 }
 // @fnv 0x0085f3d0
-void TESSaveLoadGame::LoadAttachedAnimationForReference(TESObjectREFR* form, void* value)
+// pdb: TESSaveLoadGame::LoadAttachedAnimationForReference | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apRef, apBuffer
+// pdb locals: header, ptempBuffer
+void TESSaveLoadGame::LoadAttachedAnimationForReference(TESObjectREFR* apRef, void* apBuffer)
 {
     void* old = m_pBuffer;
-    m_pBuffer = (char*)value;
+    m_pBuffer = (char*)apBuffer;
     unsigned int ui;
     fnv_0085f3d0::g_TESSaveLoadGame->ReadTypedData(&ui, 2);
-    static_cast<TESForm*>(form)->Revert(0u);
+    static_cast<TESForm*>(apRef)->Revert(0u);
     m_pBuffer = (char*)old;
 }
 
@@ -1894,9 +2025,10 @@ struct FUN_008431f0_Class : FUN_00843220_Class
 };
 // Calls the base constructor, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x008431f0
+// pdb: BGSOffsetDataArray::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | debug, vtable slot, medium
 void* __thiscall FUN_008431f0_Class::FUN_008431f0(unsigned int flags)
 {
-    FUN_00843220_Class::ForwardCall_00843220();
+    FUN_00843220_Class::BGSOffsetDataArray_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1909,9 +2041,10 @@ struct FUN_008450e0_Class : FUN_00844660_Class
 
 // Calls the base cleanup, deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x008450e0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BGSReconstructFormsMap *> >,unsigned int,BGSReconstructFormsMap *>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | retail, vtable slot, high
 void* FUN_008450e0_Class::FUN_008450e0(unsigned int flags)
 {
-    ReleaseStorage_00844660();
+    NiTMapBase_DFALL_NiTMapItem_unsigned_int_BGSReconstructFormsMap_unsigned_int_BGSReconstructFormsMap_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1942,12 +2075,13 @@ struct FUN_00845c60
     unsigned int count;
     void* data;
     void __thiscall NiTPointerMap_RemoveAll();
-    void SetVirtualTable_00845c60();
+    void NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BGSFormChanges_dtor();
 };
 // Sets the vtable pointer, removes all entries from the map, and frees the data buffer.
 // @fnv 0x00845c60
-// src: GUESS 0x00845c60 (confidence: low)
-void FUN_00845c60::SetVirtualTable_00845c60()
+// src: XBOX_DEBUG_PDB 0x00845c60
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BGSFormChanges *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BGSFormChanges *> | BGSSaveLoadChangesMap.obj | debug, call graph (shared callers), high
+void FUN_00845c60::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BGSFormChanges_dtor()
 {
     vtbl = (int*)&DAT_0107eda8;
     NiTPointerMap_RemoveAll();
@@ -1964,6 +2098,7 @@ struct FUN_00845c90 : FUN_009a5df0
 };
 // Runs the base destructor, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x00845c90
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BGSFormChanges *>::`scalar deleting destructor' | BGSSaveLoadChangesMap.obj | retail, vtable slot, high
 void* FUN_00845c90::DeleteThis(unsigned int flags)
 {
     FUN_009a5df0::~FUN_009a5df0();
@@ -1980,6 +2115,7 @@ struct FormIDConverter
 };
 // Destructs the object, frees it with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x008473c0
+// pdb: BGSSaveLoadFormIDMap::`scalar deleting destructor' | BGSSaveLoadGame.obj | debug, object-file gap fill, medium
 void* FormIDConverter::FUN_008473c0(unsigned int flags)
 {
     this->FormIDConverter::~FormIDConverter();
@@ -1996,6 +2132,7 @@ struct FUN_0084b9c0
 
 // Runs the destructor and, when bit 0 of flags is set, deallocates this object; returns this.
 // @fnv 0x0084b540
+// pdb: NiTMap<__int64,int>::`scalar deleting destructor' | BGSSaveLoadGame.obj | retail, vtable slot, high
 FUN_0084b9c0* FUN_0084b9c0::FUN_0084b540(unsigned int flags)
 {
     this->FUN_0084b9c0::~FUN_0084b9c0();
@@ -2022,6 +2159,7 @@ struct FUN_0084ba20
 };
 // Calls the destructor, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x0084bb00
+// pdb: NiTMapBase<DFALL<NiTMapItem<__int64,int> >,__int64,int>::`scalar deleting destructor' | BGSSaveLoadGame.obj | retail, vtable slot, high
 void* FUN_0084ba20::DestroySelf(unsigned int flags)
 {
     this->FUN_0084ba20::~FUN_0084ba20();
@@ -2033,12 +2171,13 @@ void* FUN_0084ba20::DestroySelf(unsigned int flags)
 extern int DAT_0107f734;
 struct FUN_0084d450_class : NiTPointerMap<int, int>
 {
-    void __thiscall SetVtableAndProcessState_0084d450();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_TESGlobal_bool_TESGlobal_bool_dtor();
 };
 // Sets the vtable pointer, removes all entries from the map, and frees the pointer stored at offset 8.
 // @fnv 0x0084d450
-// src: GUESS 0x0084d450 (confidence: low)
-void __thiscall FUN_0084d450_class::SetVtableAndProcessState_0084d450()
+// src: XBOX_DEBUG_PDB 0x0084d450
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESGlobal *,bool> >,TESGlobal *,bool>::~NiTMapBase<DFALL<NiTMapItem<TESGlobal *,bool> >,TESGlobal *,bool> | BGSSaveLoadGlobalData.obj | debug, call graph (shared callers), high
+void __thiscall FUN_0084d450_class::NiTMapBase_DFALL_NiTMapItem_TESGlobal_bool_TESGlobal_bool_dtor()
 {
     *(int**)this = (int*)&DAT_0107f734;
     NiTPointerMap::RemoveAll();
@@ -2071,6 +2210,7 @@ void __cdecl UpdateHasSaves()
 
 // Allocates a FUN_0084fda0, sets its byte at offset 0x1C from the save utility's slot 3 ("-SAVE-",0,0) > 0, and sets its result callback to UpdateHasSaves.
 // @fnv 0x0084fc70
+// pdb: BGSSaveLoadManager::Create | BGSSaveLoadManager.obj | debug, object-file run extension, low
 void InitAcousticSpace()
 {
     DAT_011de134 = new FUN_0084fda0;
@@ -2088,6 +2228,7 @@ struct FUN_0084fd70_class : FUN_0084fe50_class
 };
 // Runs the base destructor and, when bit 0 of flags is set, deallocates this object; returns this.
 // @fnv 0x0084fd70
+// pdb: BGSSaveLoadManager::`scalar deleting destructor' | BGSSaveLoadManager.obj | debug, object-file run extension, low
 void* FUN_0084fd70_class::DestroyAndFree(unsigned int flags)
 {
     this->FUN_0084fe50_class::~FUN_0084fe50_class();
@@ -2105,6 +2246,8 @@ extern bool DAT_011de23c;
 // Calls ConsumeByteAtE4 and, if it returns 1, invokes DAT_011de134->LoadGame with DAT_011de138, DAT_011a224c, DAT_011de23c and true.
 // @fnv 0x00850720
 // src: COMMUNITY 0x00850720
+// pdb: LoadGameMissingContentCallBack | BGSSaveLoadManager.obj | retail, upstream name already matches, high
+// pdb locals: cresult
 void __cdecl LoadGameMissingContentCallBack()
 {
     signed char c;
@@ -2116,13 +2259,15 @@ void __cdecl LoadGameMissingContentCallBack()
 
 struct FUN_00851fc0_shell
 {
-    void BSSaveDataSystemUtilityFile_SetDetail(unsigned int a);
+    void BSSaveDataSystemUtilityFile_SetDetail(unsigned int apcDetail);
 };
 // @fnv 0x00851fc0
 // src: COMMUNITY 0x00851fc0
-void FUN_00851fc0_shell::BSSaveDataSystemUtilityFile_SetDetail(unsigned int pData)
+// pdb: BSSaveDataSystemUtilityFile::SetDetail | BGSSaveLoadManager.obj | debug, upstream name already matches, high
+// pdb params: apcDetail
+void FUN_00851fc0_shell::BSSaveDataSystemUtilityFile_SetDetail(unsigned int apcDetail)
 {
-    TaskQueueInterface::CopyStringToBuffer((char*)((char*)this + 0x2e5), 0x400, (const char*)pData);
+    TaskQueueInterface::CopyStringToBuffer((char*)((char*)this + 0x2e5), 0x400, (const char*)apcDetail);
 }
 
 struct FUN_00853470 : FUN_00853210_cls
@@ -2131,9 +2276,10 @@ struct FUN_00853470 : FUN_00853210_cls
 };
 
 // @fnv 0x00853470
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BSSimpleArray<unsigned int,1024> *> >,unsigned int,BSSimpleArray<unsigned int,1024> *>::`scalar deleting destructor' | BGSSaveLoadReferencesMap.obj | retail, vtable slot, high
 void* FUN_00853470::DeleteThis(unsigned int flags)
 {
-    SetVtableAndProcessState_00853210();
+    NiTMapBase_DFALL_NiTMapItem_unsigned_int_BSSimpleArray_unsigned_int_1024_unsigned_int_BSSimpleArray_unsigned_int_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -2150,21 +2296,24 @@ struct FUN_00854c10_Class
 {
     char pad[0x10];
     AEList list;
-    void BGSSaveLoadStatsMap_AddMiscSaveStat(int a1, int a2, int a3);
+    void BGSSaveLoadStatsMap_AddMiscSaveStat(int apName, int aiSize, int aiDebugOverhead);
 };
 
 // @fnv 0x00854c10
 // src: COMMUNITY 0x00854c10
-void FUN_00854c10_Class::BGSSaveLoadStatsMap_AddMiscSaveStat(int a1, int a2, int a3)
+// pdb: BGSSaveLoadStatsMap::AddMiscSaveStat | BGSSaveLoadStructs.obj | debug, upstream name already matches, high
+// pdb params: apName, aiSize, aiDebugOverhead
+// pdb locals: pmiscStat
+void FUN_00854c10_Class::BGSSaveLoadStatsMap_AddMiscSaveStat(int apName, int aiSize, int aiDebugOverhead)
 {
     char* buf;
     {
         char* tmp = (char*)operator new(0x10c);
         buf = tmp;
     }
-    TaskQueueInterface::CopyStringToBuffer(buf, 0x104, (const char*)a1);
-    *(int*)(buf + 0x104) = a2;
-    *(int*)(buf + 0x108) = a3;
+    TaskQueueInterface::CopyStringToBuffer(buf, 0x104, (const char*)apName);
+    *(int*)(buf + 0x104) = aiSize;
+    *(int*)(buf + 0x108) = aiDebugOverhead;
     list.Insert(buf, (int(__cdecl*)(void*, void*))CompareByPriority);
 }
 
@@ -2177,6 +2326,7 @@ struct FUN_00854db0_class : NiTPointerMap<int, int>
 
 // Sets the vtable pointer, removes all entries from the map, and frees the pointer stored at offset 8.
 // @fnv 0x00854db0
+// pdb: NiTMapBase<DFALL<NiTMapItem<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> >,enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *>::~NiTMapBase<DFALL<NiTMapItem<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> >,enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> | BGSSaveLoadStructs.obj | debug, call graph (shared callers), low
 void __thiscall FUN_00854db0_class::ClearAndFree()
 {
     *(int**)this = &DAT_01080454;
@@ -2191,6 +2341,7 @@ struct FUN_00857210_shell
 };
 // @fnv 0x00857210
 // src: COMMUNITY 0x00857210
+// pdb: BSFile::Flush | TESSaveLoadGame.obj | debug, upstream name already matches, high
 void FUN_00857210_shell::BSFile_Flush()
 {
     Flush();
@@ -2218,11 +2369,14 @@ void* __cdecl operator new(unsigned int size);
 void* __cdecl __memcpy(void* dst, const void* src, unsigned int count);
 // Allocates value + 2 bytes, copies the 2-byte value to the start of the block, and returns the block.
 // @fnv 0x0085ef80
-void* TESSaveLoadGame::CreateQueuedBuffer(unsigned short value)
+// pdb: TESSaveLoadGame::CreateQueuedBuffer | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: aiSize
+// pdb locals: header, pbuffer
+void* TESSaveLoadGame::CreateQueuedBuffer(unsigned short aiSize)
 {
     unsigned short local;
-    local = value;
-    void* result2 = operator new(value + 2);
+    local = aiSize;
+    void* result2 = operator new(aiSize + 2);
     __memcpy(result2, &local, 2);
     return result2;
 }
@@ -2230,27 +2384,32 @@ void* TESSaveLoadGame::CreateQueuedBuffer(unsigned short value)
 
 // Queues the Havok buffer using the shared map member.
 // @fnv 0x0085f5a0
-void TESSaveLoadGame::QueueHavokDataLoad(TESObjectREFR* sound, unsigned short flag)
+// pdb: TESSaveLoadGame::QueueHavokDataLoad | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apRef, aiSize
+void TESSaveLoadGame::QueueHavokDataLoad(TESObjectREFR* apRef, unsigned short aiSize)
 {
-    QueueBufferLoad(m_pHavokDataBufferMap, reinterpret_cast<TESSound*>(sound)->Deallocate(), flag);
+    QueueBufferLoad(m_pHavokDataMap, reinterpret_cast<TESSound*>(apRef)->Deallocate(), aiSize);
 }
 
 extern void* DAT_011de45c;
 
 struct FUN_00560530_Class
 {
-    void TESObjectREFR_LoadHavokDataTES(unsigned short arg);
+    void TESObjectREFR_LoadHavokData(unsigned short aiSaveSize);
 };
 
 
 // @fnv 0x0085f6c0
-void TESSaveLoadGame::LoadHavokDataForReference(TESObjectREFR* apTarget, void* aiValue)
+// pdb: TESSaveLoadGame::LoadHavokDataForReference | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apRef, apBuffer
+// pdb locals: header, ptempBuffer
+void TESSaveLoadGame::LoadHavokDataForReference(TESObjectREFR* apRef, void* apBuffer)
 {
     int saved = (int)m_pBuffer;
-    m_pBuffer = (char*)aiValue;
+    m_pBuffer = (char*)apBuffer;
     unsigned short buf;
     ((TESSaveLoadGame*)DAT_011de45c)->ReadTypedData(&buf, 2);
-    ((FUN_00560530_Class*)apTarget)->TESObjectREFR_LoadHavokDataTES(buf);
+    ((FUN_00560530_Class*)apRef)->TESObjectREFR_LoadHavokData(buf);
     m_pBuffer = (char*)saved;
 }
 
@@ -2272,7 +2431,7 @@ void* FUN_0085f810_shell::ArrowProjectile_GetAttachedRef()
 
 struct FUN_00978420_class
 {
-    void ProcessLists_LoadUpdateAnimation(float, int);
+    void ProcessLists_UpdateHighListAnimation(float, int);
 };
 
 struct Zt5TES
@@ -2293,7 +2452,10 @@ extern FUN_00978420_class DAT_011e0e80;
 
 
 // @fnv 0x0085f850
-void TESSaveLoadGame::LoadQueuedData(bool arg)
+// pdb: TESSaveLoadGame::LoadQueuedData | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: abUpdateWorld
+// pdb locals: pcell, pworld
+void TESSaveLoadGame::LoadQueuedData(bool abUpdateWorld)
 {
     if (!GetLoading())
         return;
@@ -2302,9 +2464,9 @@ void TESSaveLoadGame::LoadQueuedData(bool arg)
     LoadAttachedAnimations();
     LoadCharControllers();
 
-    if (arg)
+    if (abUpdateWorld)
     {
-        DAT_011e0e80.ProcessLists_LoadUpdateAnimation(0.0f, 0);
+        DAT_011e0e80.ProcessLists_UpdateHighListAnimation(0.0f, 0);
         g_TES->TES_UpdateCellAnimations(0.0f);
 
         int cullResult = _g_thePlayer->GetCullResult();
@@ -2353,6 +2515,8 @@ class B844520Queue
 
 // @fnv 0x00844520
 // src: XBOX_PDB 0x00844520
+// pdb: NiTMap<unsigned int,ReconstructFormData>::DeleteItem | BGSReconstructFormsInAllFilesMap.obj | debug, vtable slot, medium
+// pdb params: pkItem
 void B844520Queue::NiTMap_unsigned_int_ReconstructFormData_DeleteItem(B844520Item* pkItem)
 {
     B844520Stamp kStamp(0);
@@ -2362,15 +2526,16 @@ void B844520Queue::NiTMap_unsigned_int_ReconstructFormData_DeleteItem(B844520Ite
 
 struct SaveLoadCleanup
 {
-    void Cleanup();
+    void BSSimpleArray_ReconstructFormData_1024_dtor();
     void* FUN_008451a0(unsigned int flags);
 };
 
 // Calls Cleanup, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x008451a0
+// pdb: BSSimpleArray<ReconstructFormData,1024>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | retail, vtable slot, high
 void* SaveLoadCleanup::FUN_008451a0(unsigned int flags)
 {
-    Cleanup();
+    BSSimpleArray_ReconstructFormData_1024_dtor();
     if (flags & 1)
     {
         Deallocate(this);
@@ -2400,6 +2565,7 @@ struct FUN_0069b8a0_cls
 
 // Allocates and constructs a new Obj_b9971 and returns its pointer.
 // @fnv 0x00845260
+// pdb: DFALL<NiTMapItem<unsigned int,ReconstructFormData> >::Allocate | BGSReconstructFormsInAllFilesMap.obj | debug, object-file run extension, low
 Obj_b9971* FUN_0069b8a0_cls::CreateObj()
 {
     return new Obj_b9971();
@@ -2422,6 +2588,7 @@ class FUN_0084b6c0_Map : public B4B6C0MapBase
 };
 
 // @fnv 0x0084b6c0
+// pdb: NiTMap<unsigned int,Actor *>::~NiTMap<unsigned int,Actor *> | BGSSaveLoadGame.obj | debug, call graph, medium
 FUN_0084b6c0_Map::~FUN_0084b6c0_Map()
 {
     RemoveAll();
@@ -2536,10 +2703,13 @@ class RefScanBuffer
     void Reset();
 };
 
-bool __cdecl ProbeRefAt(unsigned int index, RefScanBuffer* buf);
+bool __cdecl ProbeRefAt(unsigned int aiGlobalDataType, RefScanBuffer* apSaveGameBuffer);
 void __cdecl CopyRefAt(void* owner, unsigned int* index, unsigned int size);
 
 // @fnv 0x0084bb50
+// pdb: BGSSaveLoadGlobalData::SaveGlobalDataRange | BGSSaveLoadGlobalData.obj | debug, object-file run extension, low
+// pdb params: apFile, aiStart, aiEnd
+// pdb locals: icount, saveGameBuffer, i
 int ScanRefsInRange(void* owner, unsigned int begin, unsigned int end)
 {
     int iHits = 0;
@@ -2584,6 +2754,9 @@ struct FUN_0084d310_entry
 
 // @fnv 0x0084d310
 // src: XBOX_PDB 0x0084d310
+// pdb: NiTMapBase<DFALL<NiTMapItem<hkpRigidBody *,bool> >,hkpRigidBody *,bool>::SetAt | TESWaterListener.obj | debug, call graph, medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void FUN_0084d310_class::NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_SetAt(int key, unsigned char value)
 {
     int index = FUN_0084d310_lookup(key);
@@ -2621,6 +2794,7 @@ struct FUN_0084d3f0 : FUN_0084d450
 };
 
 // @fnv 0x0084d3f0
+// pdb: NiTMap<TESGlobal *,bool>::~NiTMap<TESGlobal *,bool> | BGSSaveLoadGlobalData.obj | debug, call graph, high
 FUN_0084d3f0::~FUN_0084d3f0()
 {
     FUN_00438af0();
@@ -2652,6 +2826,8 @@ struct FUN_0084e3c0_Class
 };
 // Copies row, column and flags from the save entry, then resolves the resource id to a handle via the item manager.
 // @fnv 0x0084e3c0
+// pdb: CellInitialData::Initialize | BGSSaveLoadInitialData.obj | retail, object-file run extension, low
+// pdb params: apExteriorCellInitialDataChar
 void FUN_0084e3c0_Class::LoadFromSaveEntry(const SaveEntryData* pEntry)
 {
     row = pEntry->row;
@@ -2684,6 +2860,8 @@ class FUN_0084e4f0_cls
 // Reads two values via FUN_00853500 from src and src+0x1c, zeroes m_08/m_0c/m_10, copies two triples from src+3 and src+0xf, and stores the byte at src+0x1b.
 // @fnv 0x0084e4f0
 // src: COMMUNITY 0x0084e4f0
+// pdb: ReferenceInitialData::Initialize | BGSSaveLoadInitialData.obj | retail, object-file run extension, low
+// pdb params: apReferenceLocationInitialData
 void FUN_0084e4f0_cls::ReferenceInitialData_Initialize_CREATED(void* pSource)
 {
     m_00 = BGSNumericIDIndex_GetNumericID(pSource);
@@ -2775,6 +2953,9 @@ struct FUN_00850360_class : public FUN_0084ff90_shell
 
 // Builds a file path from weapon via BuildWeaponPath and deletes that file with DeleteFileA.
 // @fnv 0x00850360
+// pdb: BGSSaveLoadManager::DeleteSaveFile | BGSSaveLoadManager.obj | debug, call graph, medium
+// pdb params: apFileName, aiDeviceID
+// pdb locals: pfullFileName, dwresult, contentData
 void FUN_00850360_class::DeleteWeaponFile(char* weapon, int flags)
 {
     char path[260];
@@ -2790,6 +2971,9 @@ struct BC0Item
 
 // Compares two BC0Item objects by their GetPriority() values, returning -1 if the first has higher priority, otherwise 0 or 1.
 // @fnv 0x00854bc0
+// pdb: MiscSaveStatCompare | BGSSaveLoadStructs.obj | debug, object-file gap fill, medium
+// pdb params: apCompare1, apCompare2
+// pdb locals: isize1, isize2
 int __cdecl CompareByPriority(BC0Item* pkA, BC0Item* pkB)
 {
     unsigned int uiA = pkA->GetPriority();
@@ -2810,6 +2994,9 @@ class FUN_008562c0_cls
 // Clears m_00, m_04 and m_0a to zero, sets m_08 to 0xffff, and returns this.
 // @fnv 0x008562c0
 // src: GUESS 0x008562c0 (confidence: low)
+// pdb: SaveStats::WriteFile | TESSaveLoadGame.obj | debug, object-file gap fill, medium
+// pdb params: aFileHandle, apBuffer
+// pdb locals: bytesWritten, bres, isize
 FUN_008562c0_cls* FUN_008562c0_cls::InitializeFields_008562c0()
 {
     m_0a = 0;
@@ -2823,11 +3010,14 @@ extern int DAT_00ffffff;
 
 
 // @fnv 0x00857c70
+// pdb: TESSaveLoadGame::ReadFileEndian | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: apFile, apData, aiSize, aiElementSize
+// pdb locals: icount, i
 unsigned int TESSaveLoadGame::ReverseConvertNumericID(unsigned int value)
 {
     unsigned char code = static_cast<unsigned char>((value & 0xFF000000u) >> 24);
 
-    if (this->m_pNumericIDBuffer == 0 || code == 0xFF)
+    if (this->m_pFileIndexArray == 0 || code == 0xFF)
         return value;
 
     {
@@ -2837,9 +3027,9 @@ unsigned int TESSaveLoadGame::ReverseConvertNumericID(unsigned int value)
         foundIndex = 0xFF;
         index = 0;
 
-        for (; index < this->m_ucSaveVersion; ++index)
+        for (; index < this->m_iSavedPluginCount; ++index)
         {
-            if (this->m_pNumericIDBuffer[index] == code)
+            if (this->m_pFileIndexArray[index] == code)
                 foundIndex = static_cast<unsigned char>(index);
         }
 
@@ -2863,30 +3053,34 @@ extern StaticFlagMgr* DAT_011c3f2c;
 class FUN_00859120_cls
 {
   public:
-    unsigned int __thiscall ClearRefrFlag(TESForm* arg1, unsigned int flags);
+    unsigned int __thiscall TESSaveLoadGame_CheckNewReference(TESForm* apForm, unsigned int aiFlags);
 };
 
 // Clears bit 1 of flags when the form is a TESObjectREFR and the static flag manager reports nonzero for its probe value.
 // @fnv 0x00859120
-unsigned int __thiscall FUN_00859120_cls::ClearRefrFlag(TESForm* pForm, unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x00859120
+// pdb: TESSaveLoadGame::CheckNewReference | TESSaveLoadGame.obj | retail, object-file run extension, high
+// pdb params: apForm, aiFlags
+// pdb locals: pcell, pref
+unsigned int __thiscall FUN_00859120_cls::TESSaveLoadGame_CheckNewReference(TESForm* apForm, unsigned int aiFlags)
 {
     TESObjectREFR* a;
     TESObjectCELL* b;
-    if (DAT_011c3f2c->FUN_00469860(pForm->GetHavokWorldObjectCountInSceneGraph_0084e3a0()) != 0)
+    if (DAT_011c3f2c->FUN_00469860(apForm->GetHavokWorldObjectCountInSceneGraph_0084e3a0()) != 0)
     {
-        a = dynamic_cast<TESObjectREFR*>(pForm);
+        a = dynamic_cast<TESObjectREFR*>(apForm);
         if (a != 0)
         {
-            flags = flags;
-            flags &= 0xfffffffd;
+            aiFlags = aiFlags;
+            aiFlags &= 0xfffffffd;
         }
-        b = dynamic_cast<TESObjectCELL*>(pForm);
+        b = dynamic_cast<TESObjectCELL*>(apForm);
         if (b != 0)
         {
-            flags = flags;
+            aiFlags = aiFlags;
         }
     }
-    return flags;
+    return aiFlags;
 }
 
 extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
@@ -2899,7 +3093,7 @@ struct BinaryRecord36
     void* value04;
     void* value08;
     unsigned int value0c, value10, value14, value18, value1c, value20;
-    void CreatedReferenceData_CreatedReferenceData();
+    void CreatedReferenceData_ctor();
 };
 struct BinaryRecord44
 {
@@ -2918,7 +3112,7 @@ struct SourceItem
 };
 struct SourceItemMap
 {
-    SourceItem* FUN_00855100(unsigned int key);
+    SourceItem* FUN_00855100(unsigned int aiFormID);
 };
 struct SourceTracker
 {
@@ -2928,15 +3122,19 @@ struct SourceTracker
 struct SaveGameReferenceReconstruction : public TESSaveLoadGame
 {
     void* FUN_00861c00(void*);
-    TESForm* TESSaveLoadGame_CreateReference(unsigned int key, BinaryRecord36* data);
-    TESForm* TESSaveLoadGame_CreateReferenceFromFile(unsigned int key, BinaryRecord44* data);
+    TESForm* TESSaveLoadGame_CreateReference(unsigned int aiFormID, BinaryRecord36* apCreatedData);
+    TESForm* TESSaveLoadGame_CreateReferenceFromFile(unsigned int aiFormID, BinaryRecord44* apMovedData);
     void TESSaveLoadGame_LoadForm(TESForm*);
-    void ProcessSourceItem(unsigned int key);
+    void TESSaveLoadGame_CreateChangedReference(unsigned int aiReferenceID);
 };
 // @fnv 0x008598d0
-void SaveGameReferenceReconstruction::ProcessSourceItem(unsigned int key)
+// src: XBOX_DEBUG_PDB 0x008598d0
+// pdb: TESSaveLoadGame::CreateChangedReference | TESSaveLoadGame.obj | debug, unique string literal, high
+// pdb params: aiReferenceID
+// pdb locals: pchange, iflags, pbuffer, createdData, pform, pmagicProjectile, movedData
+void SaveGameReferenceReconstruction::TESSaveLoadGame_CreateChangedReference(unsigned int aiReferenceID)
 {
-    SourceItem* item = reinterpret_cast<SourceItemMap*>(m_pChangesMap)->FUN_00855100(key);
+    SourceItem* item = reinterpret_cast<SourceItemMap*>(m_pChanges)->FUN_00855100(aiReferenceID);
     if (item != 0)
     {
         unsigned int flags = item->Modelloader_GetReferencedThis();
@@ -2947,12 +3145,12 @@ void SaveGameReferenceReconstruction::ProcessSourceItem(unsigned int key)
             {
                 TESForm* pCreated;
                 BinaryRecord36 record;
-                record.CreatedReferenceData_CreatedReferenceData();
+                record.CreatedReferenceData_ctor();
                 bytes += 4;
                 memcpy(&record, bytes, sizeof(record));
                 record.value04 = FUN_00861c00(record.value04);
                 record.value08 = FUN_00861c00(record.value08);
-                pCreated = TESSaveLoadGame_CreateReference(key, &record);
+                pCreated = TESSaveLoadGame_CreateReference(aiReferenceID, &record);
                 if (pCreated != 0)
                 {
                     MagicProjectile* asSpecial = dynamic_cast<MagicProjectile*>(pCreated);
@@ -2976,10 +3174,10 @@ void SaveGameReferenceReconstruction::ProcessSourceItem(unsigned int key)
                 memcpy(&record2, bytes2, sizeof(record2));
                 record2.value00 = FUN_00861c00(record2.value00);
                 record2.value10 = FUN_00861c00(record2.value10);
-                TESForm* newObject2 = TESSaveLoadGame_CreateReferenceFromFile(key, &record2);
+                TESForm* newObject2 = TESSaveLoadGame_CreateReferenceFromFile(aiReferenceID, &record2);
                 if (newObject2 != 0)
                     TESSaveLoadGame_LoadForm(newObject2);
-                reinterpret_cast<SourceTracker*>(&m_kChangedReferenceIDList)->RemoveMatchingItem(&key);
+                reinterpret_cast<SourceTracker*>(&m_MovedReferencesList)->RemoveMatchingItem(&aiReferenceID);
             }
         }
         else
@@ -3004,25 +3202,28 @@ extern PlayerSaveAccess* DAT_011dea3c;
 
 // Saves the reference's data, temporarily sets mode, and restores the high process saved state and token for first-person references.
 // @fnv 0x0085f150
-void TESSaveLoadGame::LoadAnimationForReference(TESObjectREFR* reference, unsigned int firstPerson, void* newMode)
+// pdb: TESSaveLoadGame::LoadAnimationForReference | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apRef, aiFormID, apBuffer
+// pdb locals: phighProcess, header, sanimAction, ptempBuffer, pmob, pseq, panimation, iSeqIndex
+void TESSaveLoadGame::LoadAnimationForReference(TESObjectREFR* apRef, unsigned int aiFormID, void* apBuffer)
 {
     SavedReferenceData* dataB;
-    if (reference == DAT_011dea3c)
+    if (apRef == DAT_011dea3c)
     {
-        if (firstPerson)
+        if (aiFormID)
             dataB = DAT_011dea3c->FUN_00950a60(false);
         else
             dataB = DAT_011dea3c->FUN_00950a60(true);
     }
     else
     {
-        dataB = reinterpret_cast<SavedReferenceData*>(reference->GetAnimData());
+        dataB = reinterpret_cast<SavedReferenceData*>(apRef->GetAnimData());
     }
-    MobileObject* _mobile = dynamic_cast<MobileObject*>(reference);
+    MobileObject* _mobile = dynamic_cast<MobileObject*>(apRef);
     HighProcess* process = 0;
     int savedState4 = -1;
     char* token = 0;
-    if (_mobile && firstPerson)
+    if (_mobile && aiFormID)
     {
         process = dynamic_cast<HighProcess*>(_mobile->FUN_008d8520());
         if (process)
@@ -3032,11 +3233,11 @@ void TESSaveLoadGame::LoadAnimationForReference(TESObjectREFR* reference, unsign
         }
     }
     int oldMode = (int)m_pBuffer;
-    m_pBuffer = (char*)newMode;
+    m_pBuffer = (char*)apBuffer;
     int index;
     static_cast<TESSaveLoadGame*>(DAT_011de45c)->TESSaveLoadGame_LoadGameDataOLD(&index, 2);
     if (dataB)
-        dataB->LoadFromSave(reference);
+        dataB->LoadFromSave(apRef);
     m_pBuffer = (char*)oldMode;
     if (process)
     {
@@ -3058,37 +3259,39 @@ struct FnvMap
 };
 struct FnvQueue
 {
-    void GetOrCreateNode(TESObjectREFR* ref, unsigned int flag);
+    void ChangesMap_AddChange(TESObjectREFR* ref, unsigned int aiChange);
 };
 struct FnvRefMethod
 {
     int TESObjectREFR_Get3D();
 };
 // @fnv 0x0085f5d0
+// pdb: TESSaveLoadGame::LoadHavokData | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb locals: it, pbuffer, iformID, pref
 void TESSaveLoadGame::LoadHavokData()
 {
-    void* cursor = reinterpret_cast<FnvMap*>(m_pHavokDataBufferMap)->FUN_004b9ba0();
+    void* cursor = reinterpret_cast<FnvMap*>(m_pHavokDataMap)->FUN_004b9ba0();
     while (cursor)
     {
         unsigned int key;
         void* data;
-        reinterpret_cast<FnvMap*>(m_pHavokDataBufferMap)->FUN_006b7f20(cursor, key, data);
+        reinterpret_cast<FnvMap*>(m_pHavokDataMap)->FUN_006b7f20(cursor, key, data);
         TESObjectREFR* refObject = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(key));
         if (refObject)
         {
             if (!reinterpret_cast<FnvRefMethod*>(refObject)->TESObjectREFR_Get3D())
             {
-                if (reinterpret_cast<FnvQueue*>(m_pAlternateChangesMap))
-                    reinterpret_cast<FnvQueue*>(m_pAlternateChangesMap)->GetOrCreateNode(refObject, 0);
+                if (reinterpret_cast<FnvQueue*>(m_pNewChanges))
+                    reinterpret_cast<FnvQueue*>(m_pNewChanges)->ChangesMap_AddChange(refObject, 0);
                 else
-                    reinterpret_cast<FnvQueue*>(m_pChangesMap)->GetOrCreateNode(refObject, 0);
-                reinterpret_cast<FnvMap*>(m_pHavokDataBufferMap)->RemoveKey(key);
+                    reinterpret_cast<FnvQueue*>(m_pChanges)->ChangesMap_AddChange(refObject, 0);
+                reinterpret_cast<FnvMap*>(m_pHavokDataMap)->RemoveKey(key);
                 continue;
             }
             LoadHavokDataForReference(refObject, data);
         }
         FormHeapFreeAndLog_00401030(data);
-        reinterpret_cast<FnvMap*>(m_pHavokDataBufferMap)->RemoveKey(key);
+        reinterpret_cast<FnvMap*>(m_pHavokDataMap)->RemoveKey(key);
     }
 }
 
@@ -3129,9 +3332,11 @@ class B5F750List
 
 
 // @fnv 0x0085f750
+// pdb: TESSaveLoadGame::FinalizeQueuedForms | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb locals: plist, pform, parrow, pref, pobj3D, UpdateData
 void TESSaveLoadGame::FinalizeQueuedForms()
 {
-    B5F750List* pkNode = reinterpret_cast<B5F750List*>(&m_kQueuedFinalizeForms);
+    B5F750List* pkNode = reinterpret_cast<B5F750List*>(&m_QueuedFormList);
     while (pkNode)
     {
         TESForm* pkForm = *pkNode->GetItem();
@@ -3155,7 +3360,7 @@ void TESSaveLoadGame::FinalizeQueuedForms()
         }
         pkNode = pkNode->GetNext();
     }
-    m_kQueuedFinalizeForms.RemoveAll();
+    m_QueuedFormList.RemoveAll();
 }
 
 // FUN_0085fe50 - 0x0085fe50, 39 bytes.  The unit 0x0085xxxx is an
@@ -3944,6 +4149,7 @@ struct FUN_00846f30
     FUN_00846f30();
 };
 // @fnv 0x00846f30
+// pdb: BGSSaveLoadGame::BGSSaveLoadGame | BGSSaveLoadGame.obj | retail, call graph, high
 FUN_00846f30::FUN_00846f30() : flag(0), memberB(0x25), field244(0), field248(0xff)
 {
     SetMode(false);
@@ -4011,6 +4217,7 @@ struct FUN_008471f0
 
 // Destructor that deletes the eight owned objects held by the struct's pointer members.
 // @fnv 0x008471f0
+// pdb: BGSSaveLoadGame::~BGSSaveLoadGame | BGSSaveLoadGame.obj | retail, object-file run extension, high
 FUN_008471f0::~FUN_008471f0()
 {
     delete pObj00;
@@ -4043,6 +4250,8 @@ extern FUN_00852740_mgr* DAT_011de134;
 
 // @fnv 0x00852740
 // src: COMMUNITY 0x00852740
+// pdb: BGSSaveLoadManager::SysUtilSaveCompleteCallback | BGSSaveLoadManager.obj | retail, upstream name already matches, high
+// pdb params: aeResult, apSaveDataFile
 void __cdecl BGSSaveLoadManager_SysUtilSaveCompleteCallback(int a1, int a2)
 {
     if (DAT_011de134 != 0)
@@ -4053,7 +4262,7 @@ void __cdecl BGSSaveLoadManager_SysUtilSaveCompleteCallback(int a1, int a2)
     {
         FUN_00850330_class* src = DAT_011de134->m_20;
         FUN_00850330_class* p = src;
-        p != 0 ? p->FUN_00850330(1) : 0;
+        p != 0 ? p->BGSSaveLoadFile_ScalarDtor(1) : 0;
         DAT_011de134->m_20 = 0;
     }
     if (DAT_011de134 != 0 && DAT_011de134->m_28 != 0)
@@ -4103,18 +4312,21 @@ struct FUN_00856300_cls
 {
     int unk00;
 
-    bool SaveDataDebugInfo_Write(ProbeTarget* target, int value);
+    bool SaveStats_WriteFile(ProbeTarget* aFile, int apBuffer);
 };
 
 // Computes a key from value, calls target->Probe with it, and returns true when Probe returns zero.
 // @fnv 0x00856300
-// src: COMMUNITY 0x00856300
-bool FUN_00856300_cls::SaveDataDebugInfo_Write(ProbeTarget* target, int value)
+// src: XBOX_DEBUG_PDB 0x00856300
+// pdb: SaveStats::WriteFile | TESSaveLoadGame.obj | debug, call graph, high
+// pdb params: aFile, apBuffer
+// pdb locals: bytesWritten, bres, uisize
+bool FUN_00856300_cls::SaveStats_WriteFile(ProbeTarget* aFile, int apBuffer)
 {
     bool result = false;
-    unsigned __int64 key = BSstrlen(value);
+    unsigned __int64 key = BSstrlen(apBuffer);
     int out[3];
-    result = !target->Probe(value, key, out);
+    result = !aFile->Probe(apBuffer, key, out);
     return result;
 }
 
@@ -4163,7 +4375,10 @@ class SaveGamePositionAccess : public TESSaveLoadGame
 };
 // Restores the reference's saved location or extra-data position, updates its 3D and controller, and returns whether anything changed.
 // @fnv 0x00857d10
-bool TESSaveLoadGame::ResetReferencePosition(TESObjectREFR* ref, bool process)
+// pdb: TESSaveLoadGame::ResetReferencePosition | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apRef, abTemporaryMove
+// pdb locals: brestore, bresult, pactor, pcell, pworld, pstartingWorldOrCell, loc, angle, obj3D, UpdateData, pmob, pcon
+bool TESSaveLoadGame::ResetReferencePosition(TESObjectREFR* ref, bool abTemporaryMove)
 {
     unsigned char version3 = static_cast<SaveGamePositionAccess*>(this)->GetVersion();
     static_cast<SaveGamePositionAccess*>(this)->ExtraDismemberedLimbs_SetEaten(0);
@@ -4179,10 +4394,10 @@ bool TESSaveLoadGame::ResetReferencePosition(TESObjectREFR* ref, bool process)
         {
             ref->SetLocationOnReference(reinterpret_cast<const NiPoint3&>(mobileX->GetEditorPosition()));
             ref->SetReferenceAngle(mobileX->vfn_16c().z);
-            if (process)
+            if (abTemporaryMove)
                 static_cast<SaveGamePositionAccess*>(this)->FUN_004534f0(1);
             TESObjectREFR_MoveRefToNewSpace(ref, cell6, world);
-            if (process)
+            if (abTemporaryMove)
                 static_cast<SaveGamePositionAccess*>(this)->FUN_004534f0(0);
             changed = true;
         }
@@ -4267,21 +4482,24 @@ struct SaveGameCellReconstruction : public TESSaveLoadGame
 {
     bool FUN_0047c850();
     bool TESSaveLoadGame_LoadForm(Cell859*);
-    void ProcessSourceItem(unsigned);
-    bool TESSaveLoadGame_LoadCell(Cell859* cell);
+    void TESSaveLoadGame_CreateChangedReference(unsigned);
+    bool TESSaveLoadGame_LoadCell(Cell859* apCell);
 };
 // @fnv 0x00859690
 // src: XBOX_PDB 0x00859690
-bool SaveGameCellReconstruction::TESSaveLoadGame_LoadCell(Cell859* cell)
+// pdb: TESSaveLoadGame::LoadCell | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apCell
+// pdb locals: bneedtoinit, bfound, plist, pformIDList, ireferenceID, icellX, icellY, pdataList, plastlist, pdata
+bool SaveGameCellReconstruction::TESSaveLoadGame_LoadCell(Cell859* apCell)
 {
     bool result5 = false;
     if (!FUN_0047c850())
         return result5;
-    result5 = TESSaveLoadGame_LoadForm(cell);
-    if (cell->FUN_00425fd0())
+    result5 = TESSaveLoadGame_LoadForm(apCell);
+    if (apCell->FUN_00425fd0())
     {
         List859* list8;
-        bool found8 = reinterpret_cast<Map859*>(m_pInteriorCellNewReferencesMap)->FUN_00853130(cell->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), list8);
+        bool found8 = reinterpret_cast<Map859*>(m_pInteriorCellMap)->FUN_00853130(apCell->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), list8);
         if (!found8)
             return result5;
         List859* node2 = list8;
@@ -4290,31 +4508,31 @@ bool SaveGameCellReconstruction::TESSaveLoadGame_LoadCell(Cell859* cell)
             Entry859* entry7 = *node2->FUN_006815c0();
             if (entry7)
             {
-                ProcessSourceItem((unsigned)entry7);
+                TESSaveLoadGame_CreateChangedReference((unsigned)entry7);
                 result5 = true;
             }
             node2 = node2->FUN_00726070();
         }
-        reinterpret_cast<Map859*>(m_pInteriorCellNewReferencesMap)->RemoveKey(cell->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+        reinterpret_cast<Map859*>(m_pInteriorCellMap)->RemoveKey(apCell->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
         list8->FUN_00470470();
         delete list8;
     }
     else
     {
         List859* listExterior;
-        bool foundExterior = reinterpret_cast<Map859*>(m_pExteriorCellNewReferencesMap1)->FUN_00853130(cell->FUN_0054ddd0()->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), listExterior);
+        bool foundExterior = reinterpret_cast<Map859*>(m_pExteriorCellMap)->FUN_00853130(apCell->FUN_0054ddd0()->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), listExterior);
         if (!foundExterior)
             return result5;
         List859* nodeExterior8 = listExterior;
         List859* _previous = 0;
-        int x7 = cell->FUN_00544c30();
-        int y7 = cell->FUN_00544c60();
+        int x7 = apCell->FUN_00544c30();
+        int y7 = apCell->FUN_00544c60();
         while (nodeExterior8)
         {
             Entry859* entryExterior2 = *nodeExterior8->FUN_006815c0();
             if (entryExterior2 && x7 == entryExterior2->x && y7 == entryExterior2->y)
             {
-                ProcessSourceItem(entryExterior2->key);
+                TESSaveLoadGame_CreateChangedReference(entryExterior2->key);
                 result5 = true;
                 if (_previous)
                 {
@@ -4333,7 +4551,7 @@ bool SaveGameCellReconstruction::TESSaveLoadGame_LoadCell(Cell859* cell)
         }
         if (listExterior->FUN_008256d0())
         {
-            reinterpret_cast<Map859*>(m_pExteriorCellNewReferencesMap1)->RemoveKey(cell->FUN_0054ddd0()->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            reinterpret_cast<Map859*>(m_pExteriorCellMap)->RemoveKey(apCell->FUN_0054ddd0()->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
             delete listExterior;
         }
     }
@@ -4349,7 +4567,7 @@ struct RestoreAction
 {
     unsigned int x, y, z;
     void SetPositionExtraData();
-    void SetStartingPosition();
+    void TESObjectREFR_SetStartingPosition();
 };
 struct RestoredObject
 {
@@ -4512,7 +4730,7 @@ extern char DAT_01183028, DAT_01183fb4, DAT_01183fd0, DAT_011841cc, DAT_011846d4
 extern const char DAT_01080958[], DAT_01080900[];
 extern void* __cdecl FUN_00ec43fb(void*, int, void*, void*, int);
 
-extern bool __cdecl HasFormInGroup(RestoreRef*, unsigned int);
+extern bool __cdecl TESObjectCELL_FindReferenceInFile(RestoreRef*, unsigned int);
 extern RestoredObject* __cdecl TESObjectREFR_CreateReference(unsigned char, int);
 extern void __cdecl FUN_004601d0(RestoredObject*, RestoreRef*);
 extern int __cdecl FloatToInt(float);
@@ -4523,12 +4741,15 @@ struct ObjectRestorer
 };
 // @fnv 0x00859f20
 // src: XBOX_PDB 0x00859f20
-RestoredObject* ObjectRestorer::TESSaveLoadGame_CreateReferenceFromFile(unsigned int id, RestoreLocation* location)
+// pdb: TESSaveLoadGame::CreateReferenceFromFile | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: aiFormID, apMovedData
+// pdb locals: icount, icellX, plocation, pcell, icellY, ilocationID, pref, pworld, pactor, i, pfile, eformID
+RestoredObject* ObjectRestorer::TESSaveLoadGame_CreateReferenceFromFile(unsigned int aiFormID, RestoreLocation* apMovedData)
 {
     RestoredObject* object5 = 0;
-    unsigned int parent = location->id;
+    unsigned int parent = apMovedData->id;
     if (!parent)
-        parent = location->alternate;
+        parent = apMovedData->alternate;
     void* form2 = TESForm_GetFormByNumericID(parent);
     RestoreForm* cellTmp = (RestoreForm*)FUN_00ec43fb(form2, 0, &DAT_01183028, &DAT_01183fb4, 0);
     RestoreForm* world = (RestoreForm*)FUN_00ec43fb(form2, 0, &DAT_01183028, &DAT_01183fd0, 0);
@@ -4541,7 +4762,7 @@ RestoredObject* ObjectRestorer::TESSaveLoadGame_CreateReferenceFromFile(unsigned
         for (i = 0; i < count9; ++i)
         {
             RestoreRef* reference = cellTmp->FUN_00484e60(i)->FUN_004739b0();
-            if (reference->FindForm(cellTmp) && HasFormInGroup(reference, id))
+            if (reference->FindForm(cellTmp) && TESObjectCELL_FindReferenceInFile(reference, aiFormID))
             {
                 unsigned int type = reference->FUN_00472660();
                 object5 = TESObjectREFR_CreateReference((unsigned char)type, 1);
@@ -4552,12 +4773,12 @@ RestoredObject* ObjectRestorer::TESSaveLoadGame_CreateReferenceFromFile(unsigned
     else if (world)
     {
         count9 = world->GetSourceFileCount();
-        x6 = FloatToInt(location->x) >> 12;
-        y4 = FloatToInt(location->y) >> 12;
+        x6 = FloatToInt(apMovedData->x) >> 12;
+        y4 = FloatToInt(apMovedData->y) >> 12;
         for (i = 0; i < count9; ++i)
         {
             RestoreRef* reference = world->FUN_00484e60(i)->FUN_004739b0();
-            if (world->SeekToCellInWorld(reference, x6, y4) && HasFormInGroup(reference, id))
+            if (world->SeekToCellInWorld(reference, x6, y4) && TESObjectCELL_FindReferenceInFile(reference, aiFormID))
             {
                 unsigned int type = reference->FUN_00472660();
                 object5 = TESObjectREFR_CreateReference((unsigned char)type, 1);
@@ -4571,7 +4792,7 @@ RestoredObject* ObjectRestorer::TESSaveLoadGame_CreateReferenceFromFile(unsigned
     }
     if (!object5)
     {
-        Warning_005b5e40(DAT_01080900, id, parent, x6, y4);
+        Warning_005b5e40(DAT_01080900, aiFormID, parent, x6, y4);
         return 0;
     }
     object5->Reset();
@@ -4581,7 +4802,7 @@ RestoredObject* ObjectRestorer::TESSaveLoadGame_CreateReferenceFromFile(unsigned
     else
     {
         object5->BSFile_GetDevice(object5, *object5->Position()).SetPositionExtraData();
-        object5->BSFile_GetDevice(object5, *object5->FUN_00430830()).SetStartingPosition();
+        object5->BSFile_GetDevice(object5, *object5->FUN_00430830()).TESObjectREFR_SetStartingPosition();
     }
     return object5;
 }
@@ -4626,6 +4847,9 @@ struct TimedFile
 
 // Compares the cached last-write timestamps of two files, querying the filesystem when uncached, and returns -1, 1 or 0.
 // @fnv 0x0085fc90
+// pdb: TESSaveLoadGame::SaveGameCompare | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: apCompare1, apCompare2
+// pdb locals: time2, time1
 int CompareFileWriteTimes(TimedFile* apFirstFile, TimedFile* apSecondFile)
 {
     FileTimeStamp firstTime9;
@@ -4726,6 +4950,9 @@ int __cdecl strcpy_s(char* dst, unsigned int size, const char* src);
 int __cdecl _stricmp(const char* a, const char* b);
 
 // @fnv 0x00851680
+// pdb: BGSSaveLoadFileEntry::GetScreenshot | BGSSaveLoadFile.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSSaveLoadManager::AddSaveGame
+// pdb locals: ptexture, pfile
 void FUN_00851680_class::AddFileToList(const char* path, int flag, int unused)
 {
     char buf[260];
@@ -4756,6 +4983,7 @@ struct FUN_00854d50 : FUN_00854d50_Base
 
 // Destructor that clears all entries from the underlying NiTPointerMap before destruction.
 // @fnv 0x00854d50
+// pdb: NiTMap<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *>::~NiTMap<enum ENUM_FORM_ID,BSSimpleList<SavedFormData *> *> | BGSSaveLoadStructs.obj | debug, call graph (shared callers), low
 FUN_00854d50::~FUN_00854d50()
 {
     ((NiTPointerMap<int, int>*)this)->RemoveAll();
@@ -4779,30 +5007,32 @@ void* FUN_00858aa0_shell::LoadFormHeader_LoadFormHeader(unsigned short* a, unsig
 }
 
 // @fnv 0x0085f2e0
+// pdb: TESSaveLoadGame::LoadAttachedAnimations | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb locals: it, pbuffer, iformID, pref
 void TESSaveLoadGame::LoadAttachedAnimations()
 {
-    void* pIterator = reinterpret_cast<FnvMap*>(m_pAttachedAnimationBufferMap)->FUN_004b9ba0();
+    void* pIterator = reinterpret_cast<FnvMap*>(m_pAttachedAnimationMap)->FUN_004b9ba0();
     while (pIterator)
     {
         unsigned int uiID;
         void* pData_zbax;
-        reinterpret_cast<FnvMap*>(m_pAttachedAnimationBufferMap)->FUN_006b7f20(pIterator, uiID, pData_zbax);
+        reinterpret_cast<FnvMap*>(m_pAttachedAnimationMap)->FUN_006b7f20(pIterator, uiID, pData_zbax);
         TESObjectREFR* pRef_zaxvzc = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(uiID));
         if (pRef_zaxvzc)
         {
             if (!((FnvRefMethod*)pRef_zaxvzc)->TESObjectREFR_Get3D())
             {
-                if (reinterpret_cast<FnvQueue*>(m_pAlternateChangesMap))
-                    reinterpret_cast<FnvQueue*>(m_pAlternateChangesMap)->GetOrCreateNode(pRef_zaxvzc, 0);
+                if (reinterpret_cast<FnvQueue*>(m_pNewChanges))
+                    reinterpret_cast<FnvQueue*>(m_pNewChanges)->ChangesMap_AddChange(pRef_zaxvzc, 0);
                 else
-                    reinterpret_cast<FnvQueue*>(m_pChangesMap)->GetOrCreateNode(pRef_zaxvzc, 0);
-                reinterpret_cast<FnvMap*>(m_pAttachedAnimationBufferMap)->RemoveKey(uiID);
+                    reinterpret_cast<FnvQueue*>(m_pChanges)->ChangesMap_AddChange(pRef_zaxvzc, 0);
+                reinterpret_cast<FnvMap*>(m_pAttachedAnimationMap)->RemoveKey(uiID);
                 continue;
             }
             LoadAttachedAnimationForReference(pRef_zaxvzc, pData_zbax);
         }
         FormHeapFreeAndLog_00401030(pData_zbax);
-        reinterpret_cast<FnvMap*>(m_pAttachedAnimationBufferMap)->RemoveKey(uiID);
+        reinterpret_cast<FnvMap*>(m_pAttachedAnimationMap)->RemoveKey(uiID);
     }
 }
 
@@ -5062,7 +5292,7 @@ struct DataHandler
 // DAT_011c3b3c is a pointer global, not the ProcessLists singleton object at 0x011e0e80; only its 0x00445570 call is known
 struct RefQueueView_00445570
 {
-    void ModelLoader_CancelReference(TESObjectREFR* pkRef);
+    void ModelLoader_CancelReference(TESObjectREFR* apRef);
 };
 
 extern TESSaveLoadGame* DAT_011de45c;
@@ -5071,44 +5301,48 @@ extern RefQueueView_00445570* DAT_011c3b3c;
 extern TESObjectREFR* DAT_011dea3c;
 
 int FloatToInt(float fValue);
-void TESObjectREFR_MoveRefToNewSpace(TESObjectREFR* pkRef, TESObjectCELL* pkCell, TESWorldSpace* pkWorld);
+void TESObjectREFR_MoveRefToNewSpace(TESObjectREFR* pkRef, TESObjectCELL* apInterior, TESWorldSpace* apWorld);
 void Warning_005b5e40(const char* pcFormat, ...);
 
 struct RefLoader
 {
     void FUN_00857bd0(unsigned int uiState);
-    unsigned int FUN_00861c00(unsigned int uiID);
-    void TESSaveLoadGame_SafetyCheckReferencePositionAndAngle(TESObjectREFR* pkRef);
-    void LoadChange(TESForm* pkForm, unsigned int uiChangeFlags);
+    unsigned int FUN_00861c00(unsigned int aiFormIDIndex);
+    void TESSaveLoadGame_SafetyCheckReferencePositionAndAngle(TESObjectREFR* apRef);
+    void TESSaveLoadGame_LoadInitialData(TESForm* apForm, unsigned int aiFlags);
 };
 
 // Applies a saved change record to a form, handling move, position, and cell updates via the save game stream and data handler.
 // @fnv 0x0085ac30
-void RefLoader::LoadChange(TESForm* pkForm, unsigned int uiChangeFlags)
+// src: XBOX_DEBUG_PDB 0x0085ac30
+// pdb: TESSaveLoadGame::LoadInitialData | TESSaveLoadGame.obj | debug, unique string literal, high
+// pdb params: apForm, aiFlags
+// pdb locals: pref, pcell, plocation, pworld, createdData, pbound, icellX, icellY, refData, movedData
+void RefLoader::TESSaveLoadGame_LoadInitialData(TESForm* apForm, unsigned int aiFlags)
 {
-    TESObjectREFR* pkRef = dynamic_cast<TESObjectREFR*>(pkForm);
+    TESObjectREFR* pkRef = dynamic_cast<TESObjectREFR*>(apForm);
     if (!pkRef)
     {
-        TESObjectCELL* pkCellForm = dynamic_cast<TESObjectCELL*>(pkForm);
+        TESObjectCELL* pkCellForm = dynamic_cast<TESObjectCELL*>(apForm);
         if (pkCellForm)
         {
             if (DAT_011de45c->FUN_008df040() >= 0x5b)
             {
-                if (uiChangeFlags & kChange_Move)
+                if (aiFlags & kChange_Move)
                     FUN_00857bd0(4);
-                else if (uiChangeFlags & kChange_Cell)
+                else if (aiFlags & kChange_Cell)
                     FUN_00857bd0(6);
             }
             if (DAT_011de45c->FUN_008df040() < 0x5b)
             {
-                if ((uiChangeFlags & kChange_Move) && (uiChangeFlags & kChange_Cell))
+                if ((aiFlags & kChange_Move) && (aiFlags & kChange_Cell))
                     FUN_00857bd0(0xc);
                 else
                     FUN_00857bd0(2);
             }
         }
     }
-    else if (uiChangeFlags & kChange_Move)
+    else if (aiFlags & kChange_Move)
     {
         MoveRecord kMoveData;
         DAT_011de45c->TESSaveLoadGame_LoadGameDataOLD(&kMoveData, 0x24);
@@ -5139,10 +5373,10 @@ void RefLoader::LoadChange(TESForm* pkForm, unsigned int uiChangeFlags)
             TESSaveLoadGame_SafetyCheckReferencePositionAndAngle(pkRef);
         }
     }
-    else if (uiChangeFlags & kChange_Position)
+    else if (aiFlags & kChange_Position)
     {
         PositionRecord kPosition;
-        if (uiChangeFlags & kChange_Persistent)
+        if (aiFlags & kChange_Persistent)
         {
             FullPositionRecord kFull;
             DAT_011de45c->TESSaveLoadGame_LoadGameDataOLD(&kFull, 0x2c);
@@ -5197,7 +5431,7 @@ void RefLoader::LoadChange(TESForm* pkForm, unsigned int uiChangeFlags)
             }
         }
     }
-    else if (uiChangeFlags & kChange_Move)
+    else if (aiFlags & kChange_Move)
     {
         FUN_00857bd0(4);
     }
@@ -5287,6 +5521,8 @@ extern B8527D0Settings* g_pkB8527D0Settings;
 
 // Queries the file system for files matching "-SAVE-" and stores whether any exist in g_pkB8527D0Settings->m_ucHasSaves.
 // @fnv 0x008527d0
+// pdb: BGSSaveLoadManager::SysUtilDeleteCompleteCallback | BGSSaveLoadManager.obj | retail, object-file run extension, low
+// pdb params: aeResult
 void UpdateHasSaves()
 {
     B8527D0FileSystem* pkFileSystem = static_cast<B8527D0FileSystem*>(BSSaveDataSystemUtility_GetSingleton());
@@ -5310,6 +5546,7 @@ class FUN_008531b0_cls : public FUN_008531b0_base
 
 // Calls Body() and then invokes the base class destructor.
 // @fnv 0x008531b0
+// pdb: NiTMap<unsigned int,BSSimpleArray<unsigned int,1024> *>::~NiTMap<unsigned int,BSSimpleArray<unsigned int,1024> *> | BGSSaveLoadReferencesMap.obj | debug, call graph, medium
 FUN_008531b0_cls::~FUN_008531b0_cls()
 {
     Body();
@@ -5335,6 +5572,7 @@ class FUN_008532e0 : public C8532E0MapBase
 
 // Destructor: calls RemoveAll.
 // @fnv 0x008532e0
+// pdb: NiTPointerMap<unsigned int,unsigned int>::~NiTPointerMap<unsigned int,unsigned int> | BGSSaveLoadReferencesMap.obj | debug, call graph, medium
 FUN_008532e0::~FUN_008532e0()
 {
     RemoveAll();
@@ -5343,12 +5581,13 @@ FUN_008532e0::~FUN_008532e0()
 extern int DAT_010800c8;
 struct FUN_00853440_shell : NiTPointerMap<int, int>
 {
-    void UpdateFields_00853440();
+    void NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BGSCellNumericIDArrayMap_dtor();
 };
 // Sets the vtable pointer to DAT_010800c8, clears the map with RemoveAll, and frees the internal pointer at offset 8.
 // @fnv 0x00853440
-// src: GUESS 0x00853440 (confidence: low)
-void FUN_00853440_shell::UpdateFields_00853440()
+// src: XBOX_DEBUG_PDB 0x00853440
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BGSCellNumericIDArrayMap *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BGSCellNumericIDArrayMap *> | BGSSaveLoadReferencesMap.obj | debug, call graph (shared callers), high
+void FUN_00853440_shell::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BGSCellNumericIDArrayMap_dtor()
 {
     *(int*)this = (int)&DAT_010800c8;
     RemoveAll();
@@ -5370,9 +5609,9 @@ struct FUN_0085fed0_Object
 struct FUN_0085fed0_Class
 {
     bool ParseSaveName(FUN_0085fed0_Object* object, int value, char const* suffix, unsigned int flag);
-    void ReadSaveMetadata(FUN_0085fed0_Object* object, int value, int unused1, char const* suffix, int unused2,
-                          int FlushUsageData, int unused4, unsigned int flag, int unused5, int unused6);
-    void TESSaveLoadGame_GetSaveGameDisplayData(FUN_0085fed0_Object* object, int value, char* buffer, char const* suffix, unsigned int flag);
+    void TESSaveLoadGame_GetSaveGameDataOLD(FUN_0085fed0_Object* apFile, int apSaveGameNumber, int apPlayerName, char const* apLevel, int apLocationName,
+                          int apDay, int apFileDate, unsigned int apTotalPlayingTime, int apScreenShotHeight, int abSkipPrep);
+    void TESSaveLoadGame_GetSaveGameDisplayData(FUN_0085fed0_Object* apFile, int apSaveGameNumber, char* apFileName, char const* apLevel, unsigned int apTotalPlayingTime);
 };
 
 char* __cdecl strrchr_0040ab30(char*, int);
@@ -5391,49 +5630,51 @@ extern const StartMenu g_011d3ed4;
 // After ParseSaveName and ReadSaveMetadata, fills buffer with a menu title plus suffix for two special save names, else the file name with its last 4 chars cut.
 // @fnv 0x0085fed0
 // src: COMMUNITY 0x0085fed0
-void FUN_0085fed0_Class::TESSaveLoadGame_GetSaveGameDisplayData(FUN_0085fed0_Object* object, int value, char* buffer, char const* suffix,
-                                      unsigned int flag)
+// pdb: TESSaveLoadGame::GetSaveGameDisplayData | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apFile, apSaveGameNumber, apFileName, apLevel, apTotalPlayingTime
+void FUN_0085fed0_Class::TESSaveLoadGame_GetSaveGameDisplayData(FUN_0085fed0_Object* apFile, int apSaveGameNumber, char* apFileName, char const* apLevel,
+                                      unsigned int apTotalPlayingTime)
 {
-    if (buffer)
-        TaskQueueInterface::CopyStringToBuffer(buffer, 0xff, $SG3295);
+    if (apFileName)
+        TaskQueueInterface::CopyStringToBuffer(apFileName, 0xff, $SG3295);
 
-    if (ParseSaveName(object, value, suffix, flag))
+    if (ParseSaveName(apFile, apSaveGameNumber, apLevel, apTotalPlayingTime))
         return;
 
-    ReadSaveMetadata(object, value, 0, suffix, 0, 0, 0, flag, 0, 0);
+    TESSaveLoadGame_GetSaveGameDataOLD(apFile, apSaveGameNumber, 0, apLevel, 0, 0, 0, apTotalPlayingTime, 0, 0);
 
-    if (buffer)
+    if (apFileName)
     {
-        if (FUN_004812f0(object->GetName(), _g_quicksaveName))
+        if (FUN_004812f0(apFile->GetName(), _g_quicksaveName))
         {
-            TaskQueueInterface::CopyStringToBuffer(buffer, 0xff, g_011d327c.GetMenuTitle());
-            strcat_s(buffer, 0xff, str_01081aa8);
-            strcat_s(buffer, 0xff, suffix);
+            TaskQueueInterface::CopyStringToBuffer(apFileName, 0xff, g_011d327c.GetMenuTitle());
+            strcat_s(apFileName, 0xff, str_01081aa8);
+            strcat_s(apFileName, 0xff, apLevel);
         }
-        else if (FUN_004812f0(object->GetName(), DAT_0107fae0))
+        else if (FUN_004812f0(apFile->GetName(), DAT_0107fae0))
         {
-            TaskQueueInterface::CopyStringToBuffer(buffer, 0xff, g_011d3ed4.GetMenuTitle());
-            strcat_s(buffer, 0xff, str_01081aa8);
-            strcat_s(buffer, 0xff, suffix);
+            TaskQueueInterface::CopyStringToBuffer(apFileName, 0xff, g_011d3ed4.GetMenuTitle());
+            strcat_s(apFileName, 0xff, str_01081aa8);
+            strcat_s(apFileName, 0xff, apLevel);
         }
         else
         {
             bool isSave = false;
-            char* name = strrchr_0040ab30(object->GetName(), 0x5c) + 1;
+            char* name = strrchr_0040ab30(apFile->GetName(), 0x5c) + 1;
 
             if (__strnicmp(name, str_010806a8, 5))
                 isSave = true;
 
             if (isSave)
             {
-                TaskQueueInterface::CopyStringToBuffer(buffer, 0xff, name);
-                unsigned int length = _BSStringLength(buffer);
+                TaskQueueInterface::CopyStringToBuffer(apFileName, 0xff, name);
+                unsigned int length = _BSStringLength(apFileName);
 
                 if (length > 4)
-                    buffer[length - 4] = 0;
+                    apFileName[length - 4] = 0;
 
                 if (length > 0x12)
-                    buffer[0x12] = 0;
+                    apFileName[0x12] = 0;
             }
         }
     }
@@ -5457,6 +5698,7 @@ extern FUN_0084fd30_cls* DAT_011de134;
 // Calls FUN_0084fd70(1) on the global DAT_011de134 object if it is not null, then nulls the global pointer.
 // @fnv 0x0084fd30
 // src: COMMUNITY 0x0084fd30
+// pdb: BGSSaveLoadManager::Destroy | BGSSaveLoadManager.obj | debug, call graph, low
 void SaveGameManager_Shutdown()
 {
     FUN_0084fd30_cls* tmp = DAT_011de134;
@@ -5484,14 +5726,16 @@ public:
 
 // Iterates the character-controller buffer map and loads each MobileObject through its HighProcess.
 // @fnv 0x0085f450
+// pdb: TESSaveLoadGame::LoadCharControllers | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb locals: it, pbuffer, iformID, pmob, phighProcess, header, ptempBuffer
 void TESSaveLoadGame::LoadCharControllers()
 {
-    void* pos = reinterpret_cast<FnvMap*>(m_pCharControllerBufferMap)->FUN_004b9ba0();
+    void* pos = reinterpret_cast<FnvMap*>(m_pCharControllerMap)->FUN_004b9ba0();
     while (pos)
     {
         unsigned int data;
         void* object;
-        reinterpret_cast<FnvMap*>(m_pCharControllerBufferMap)->FUN_006b7f20(pos, data, object);
+        reinterpret_cast<FnvMap*>(m_pCharControllerMap)->FUN_006b7f20(pos, data, object);
         MobileObject* id = dynamic_cast<MobileObject*>(TESForm_GetFormByNumericID(data));
         if (id)
         {
@@ -5514,7 +5758,7 @@ void TESSaveLoadGame::LoadCharControllers()
             }
         }
         Deallocate(object);
-        reinterpret_cast<FnvMap*>(m_pCharControllerBufferMap)->RemoveKey(data);
+        reinterpret_cast<FnvMap*>(m_pCharControllerMap)->RemoveKey(data);
     }
 }
 
@@ -5704,7 +5948,7 @@ struct Mgr3c
 };
 struct Owner
 {
-    void GetOrCreateNode(Actor*, int);
+    void ChangesMap_AddChange(Actor*, int);
 };
 extern Mgr98* DAT_01202d98;
 extern Mgr10* DAT_011dea10;
@@ -5737,34 +5981,37 @@ struct SaveGameInitForms : public TESSaveLoadGame
     void FUN_004534f0(int);
     void TESSaveLoadGame_SetCurrentVersion(unsigned char);
     void CopyByteToOffset80();
-    void TESSaveLoadGame_InitForms(EntryListNode* list, Entry* ctx, bool reset);
+    void TESSaveLoadGame_InitForms(EntryListNode* apInitArray, Entry* apPlayerFlags, bool abForceLoadModels);
 };
 
 // Calls Enter on ctx and each listed form, repositions the owned actors, optionally resets scene nodes and camera, then calls Leave and frees the list.
 // @fnv 0x00858af0
 // src: XBOX_PDB 0x00858af0
-void SaveGameInitForms::TESSaveLoadGame_InitForms(EntryListNode* list, Entry* ctx, bool reset)
+// pdb: TESSaveLoadGame::InitForms | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apInitArray, apPlayerFlags, abForceLoadModels
+// pdb locals: ActorsWithNoCellOrWorldspace, bloadingSaveGame, isize, i, ptemp, pactor, plist, pcell, isafeCellID, pos, rot, kPlayerPos, pinteriorWorld
+void SaveGameInitForms::TESSaveLoadGame_InitForms(EntryListNode* apInitArray, Entry* apPlayerFlags, bool abForceLoadModels)
 {
     if (!FUN_0047c850())
         return;
     FUN_004534f0(1);
-    if (reset)
+    if (abForceLoadModels)
         DAT_01202d98->IOManager_ForceHighestPriority();
     bool own = true;
-    if (!list)
+    if (!apInitArray)
     {
-        list = reinterpret_cast<EntryListNode*>(m_pInitFormArray);
+        apInitArray = reinterpret_cast<EntryListNode*>(m_pInitArray);
         own = false;
     }
-    if (ctx)
-        ((VObj*)DAT_011dea3c)->Enter(ctx->a, ctx->b);
+    if (apPlayerFlags)
+        ((VObj*)DAT_011dea3c)->Enter(apPlayerFlags->a, apPlayerFlags->b);
     ActorList2 actors;
-    if (list)
+    if (apInitArray)
     {
-        unsigned int n = list->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+        unsigned int n = apInitArray->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
         for (unsigned int i = 0; i < n; i++)
         {
-            Entry* e = *list->FUN_00877a30(i);
+            Entry* e = *apInitArray->FUN_00877a30(i);
             if (e && e->form != (TESForm*)DAT_011dea3c)
             {
                 TESSaveLoadGame_SetCurrentVersion(e->flag);
@@ -5786,7 +6033,7 @@ void SaveGameInitForms::TESSaveLoadGame_InitForms(EntryListNode* list, Entry* ct
         {
             Actor* a = *it->FUN_006815c0();
             a->Actor_InitPackageLocations(0);
-            reinterpret_cast<Owner*>(m_pChangesMap)->GetOrCreateNode(a, 2);
+            reinterpret_cast<Owner*>(m_pChanges)->ChangesMap_AddChange(a, 2);
             if (!a->FUN_008d6f30() && !a->TESObjectREFR_GetWorldSpace())
             {
                 unsigned int id = 0;
@@ -5809,7 +6056,7 @@ void SaveGameInitForms::TESSaveLoadGame_InitForms(EntryListNode* list, Entry* ct
         }
         actors.list.FUN_00470470();
     }
-    if (reset)
+    if (abForceLoadModels)
     {
         // The saved camera position has no default-constructor call in the original.
         float cameraPositionStorage[3];
@@ -5832,16 +6079,16 @@ void SaveGameInitForms::TESSaveLoadGame_InitForms(EntryListNode* list, Entry* ct
         TESTerrainLODManager_UpdateGrass(reinterpret_cast<NiPoint3&>(cameraPositionStorage), DAT_011a9478, 1.0f);
         TallGrassShaderProperty_SetUseBackgroundLoading(1);
     }
-    if (ctx && ((Actor*)DAT_011dea3c)->FUN_008d6f30())
+    if (apPlayerFlags && ((Actor*)DAT_011dea3c)->FUN_008d6f30())
         ((Actor*)DAT_011dea3c)->FUN_00483710();
-    if (ctx)
-        ((VObj*)DAT_011dea3c)->Leave(ctx->a, ctx->b);
-    if (list)
+    if (apPlayerFlags)
+        ((VObj*)DAT_011dea3c)->Leave(apPlayerFlags->a, apPlayerFlags->b);
+    if (apInitArray)
     {
-        unsigned int n = list->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+        unsigned int n = apInitArray->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
         for (unsigned int i = 0; i < n; i++)
         {
-            Entry* e = *list->FUN_00877a30(i);
+            Entry* e = *apInitArray->FUN_00877a30(i);
             if (e)
             {
                 TESSaveLoadGame_SetCurrentVersion(e->flag);
@@ -5851,13 +6098,13 @@ void SaveGameInitForms::TESSaveLoadGame_InitForms(EntryListNode* list, Entry* ct
             }
         }
     }
-    if (m_pInitFormArray)
+    if (m_pInitArray)
     {
-        reinterpret_cast<EntryListNode*>(m_pInitFormArray)->ClearItems();
-        delete reinterpret_cast<EntryListNode*>(m_pInitFormArray);
-        m_pInitFormArray = 0;
+        reinterpret_cast<EntryListNode*>(m_pInitArray)->ClearItems();
+        delete reinterpret_cast<EntryListNode*>(m_pInitArray);
+        m_pInitArray = 0;
     }
-    if (reset)
+    if (abForceLoadModels)
     {
         Node3d* node1 = DAT_011dea10->FUN_005f36f0() ? DAT_011dea10->FUN_005f36f0()->TESObjectCELL_GetbhkWorld() : 0;
         if (node1)

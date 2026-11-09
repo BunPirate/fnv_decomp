@@ -9,6 +9,9 @@
 
 // @fnv 0x00a7d730
 // src: XBOX_PDB 0x00a7d730
+// pdb: NiPointLight::IsEqual | NiPointLight.obj | retail, object-file run extension, low
+// pdb params: pObject
+// pdb locals: pLight
 bool NiPointLight::IsEqual_00a7d730(NiObject* pObject)
 {
     NiPointLight* pOtherLight = static_cast<NiPointLight*>(pObject);
@@ -56,6 +59,9 @@ struct FUN_00a71ec0_helper
 };
 extern const unsigned int DAT_0109dd0c;
 // @fnv 0x00a7d7c0
+// pdb: NiPointLight::CreateClone | NiPointLight.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiPointLight::MakeClone(CloningProcess& process)
 {
     NiPointLight* clone;
@@ -120,10 +126,12 @@ struct NiRenderTarget
 struct NiLightBaseOperations
 {
     void SaveBinary(NiStream& stream);
-    void GetViewerStrings(NiViewerStringsArray* strings);
+    void GetViewerStrings(NiViewerStringsArray* pStrings);
 };
 
 // @fnv 0x00a7d840
+// pdb: NiPointLight::LoadBinary | NiPointLight.obj | retail, upstream name already matches, high
+// pdb params: stream
 void NiPointLight::LoadBinary(NiStream& stream)
 {
     NiLight::LoadBinary(stream);
@@ -158,6 +166,8 @@ void NiPointLight::LoadBinary(NiStream& stream)
 
 // Calls FUN_00a720f0 then writes the three 4-byte values at unkF0, unkF4 and unkF8 to the output stream at offset 0x250, accumulating the byte counts into its unk04.
 // @fnv 0x00a7d8d0
+// pdb: NiPointLight::SaveBinary | NiPointLight.obj | retail, upstream name already matches, high
+// pdb params: stream
 void NiPointLight::SaveBinary(NiStream& stream)
 {
     reinterpret_cast<NiLightBaseOperations*>(this)->SaveBinary(stream);
@@ -220,10 +230,12 @@ inline void S_Push(S_00a7d960_arg* p, char* s)
 }
 
 // @fnv 0x00a7d960
-void NiPointLight::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiPointLight::GetViewerStrings | NiPointLight.obj | retail, string-set bridge, high
+// pdb params: pStrings
+void NiPointLight::GetViewerStrings(NiViewerStringsArray* pStrings)
 {
-    S_00a7d960_arg* pBuffer = reinterpret_cast<S_00a7d960_arg*>(strings);
-    reinterpret_cast<NiLightBaseOperations*>(this)->GetViewerStrings(strings);
+    S_00a7d960_arg* pBuffer = reinterpret_cast<S_00a7d960_arg*>(pStrings);
+    reinterpret_cast<NiLightBaseOperations*>(this)->GetViewerStrings(pStrings);
     S_Push(pBuffer, NiViewerStrings_NiGetViewerString_Title(DAT_011f4a98));
     S_Push(pBuffer, NiGetViewerString_00a7d550(str_0109de00, reinterpret_cast<float*>(storage)[0]));
     S_Push(pBuffer, NiGetViewerString_00a7d550(str_0109ddf4, reinterpret_cast<float*>(storage)[1]));
@@ -234,6 +246,8 @@ void __cdecl FUN_00a71f50();
 
 // @fnv 0x00a9b360
 // src: XBOX_PDB 0x00a9b360
+// pdb: NiAmbientLight::LinkObject | NiAmbientLight.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiAmbientLight_LinkObject()
 {
     FUN_00a71f50();
@@ -243,6 +257,8 @@ void __cdecl FUN_00a720f0(int param1, int param2);
 
 // @fnv 0x00a9b370
 // src: XBOX_PDB 0x00a9b370
+// pdb: NiAmbientLight::SaveBinary | NiAmbientLight.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiAmbientLight_SaveBinary(int param1, int param2)
 {
     FUN_00a720f0(param1, param2);
@@ -252,6 +268,8 @@ extern void __cdecl FUN_00a72160();
 
 // @fnv 0x00a9b380
 // src: XBOX_PDB 0x00a9b380
+// pdb: NiAmbientLight::IsEqual | NiAmbientLight.obj | debug, upstream name already matches, high
+// pdb params: pObject
 void __cdecl NiAmbientLight_IsEqual()
 {
     FUN_00a72160();

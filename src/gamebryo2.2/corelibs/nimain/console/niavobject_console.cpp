@@ -2,11 +2,13 @@
 #include "../../../../../include/NiAVObject.h"
 #include "../../../../../include/NiCollisionObject.h"
 // @fnv 0x00a68c60
-void NiAVObject::UpdateWorldData(NiUpdateData& aUpdateData)
+// pdb: NiAVObject::UpdateWorldData | NiAVObject_Xenon.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+void NiAVObject::UpdateWorldData(NiUpdateData& UpdateData)
 {
     NiCollisionObject* pCollisionObject = m_spCollisionObject.m_pObject;
     if (pCollisionObject)
-        pCollisionObject->Unk_24(aUpdateData);
+        pCollisionObject->Unk_24(UpdateData);
     else
         UpdateWorldLoc();
 }

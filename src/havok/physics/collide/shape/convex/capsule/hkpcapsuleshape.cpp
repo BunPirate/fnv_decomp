@@ -34,7 +34,7 @@ extern "C" LocalM128 _mm_set_ps1(float);
 
 
 extern char const* const g_01268970_arg1;
-void __cdecl hkReferencedObject_calcContentStatistics(char const* const* arg1, char const* const* arg2);
+void __cdecl hkReferencedObject_calcContentStatistics(char const* const* collector, char const* const* cls);
 
 // @fnv 0x00d22360
 // src: XBOX_PDB 0x00d22360
@@ -81,15 +81,15 @@ void hkpCapsuleShape::GetVerticesFromIds(const hkpVertexId* indices, int count, 
 // @fnv 0x00d22480
 void hkpCapsuleShape::GetFirstVertex(hkVector4& out) const
 {
-    out = m_kVertexB;
+    out = m_vertexB;
 }
 
 // @fnv 0x00d224a0
 const hkSphere* hkpCapsuleShape::GetCollisionSpheres(hkSphere* sphereBuffer) const
 {
     LocalM128* result = reinterpret_cast<LocalM128*>(sphereBuffer);
-    result[0] = m_kVertexA.m_vComponents;
-    result[1] = m_kVertexB.m_vComponents;
+    result[0] = m_vertexA.m_vComponents;
+    result[1] = m_vertexB.m_vComponents;
     return sphereBuffer;
 }
 
@@ -102,29 +102,32 @@ __forceinline hkEnum<ENUM, STORAGE>::hkEnum()
 
 __forceinline hkpShape::hkpShape()
 {
-    m_ulUserData = 0;
+    m_userData = 0;
 }
 
 __forceinline hkpConvexShape::hkpConvexShape(hkpShapeType type, hkReal radius)
 {
-    m_fSphereRadius = radius;
+    m_radius = radius;
     *reinterpret_cast<unsigned int*>(&m_type) = type;
 }
 
 // Initializes a capsule shape from two points and a radius, storing the radius in both endpoints' w components and setting the type to 5.
 // @fnv 0x00d22590
-hkpCapsuleShape::hkpCapsuleShape(const hkVector4& first, const hkVector4& second, hkReal radius)
+// pdb: hkpCapsuleShape::hkpCapsuleShape | hkpCapsuleShape.obj | debug, upstream name already matches, high
+// pdb params: vertexA, vertexB, radius
+// pdb locals: assertBuf, ostr
+hkpCapsuleShape::hkpCapsuleShape(const hkVector4& vertexA, const hkVector4& vertexB, hkReal radius)
     : hkpConvexShape(HK_SHAPE_CAPSULE, radius)
 {
-    m_fSphereRadius = radius;
-    m_sReferenceCount = 1;
-    m_ulUserData = 0;
+    m_radius = radius;
+    m_referenceCount = 1;
+    m_userData = 0;
     *reinterpret_cast<unsigned int*>(&m_type) = 5;
     *reinterpret_cast<void**>(this) = &DAT_010ce25c;
-    m_kVertexA.m_vComponents = first.m_vComponents;
-    m_kVertexB.m_vComponents = second.m_vComponents;
-    *reinterpret_cast<volatile float*>(&m_kVertexA.w) = radius;
-    *reinterpret_cast<volatile float*>(&m_kVertexB.w) = radius;
+    m_vertexA.m_vComponents = vertexA.m_vComponents;
+    m_vertexB.m_vComponents = vertexB.m_vComponents;
+    *reinterpret_cast<volatile float*>(&m_vertexA.w) = radius;
+    *reinterpret_cast<volatile float*>(&m_vertexB.w) = radius;
 }
 
 struct __declspec(align(16)) Point4
@@ -143,6 +146,9 @@ struct ClosestLineResult
 void __cdecl hkLineSegmentUtil_closestPointInfLineInfLine(const Point4& a, const Point4& b, const Point4& c, const Point4& d, ClosestLineResult* out);
 // Calls FUN_00d231b0 to compute the closest points between two lines and writes the points, fractions and distance to the output pointers.
 // @fnv 0x00d22700
+// pdb: hkpCapsuleShape::closestInfLineSegInfLineSeg | hkpCapsuleShape.obj | retail, object-file run extension, low
+// pdb params: A, dA, B, dB, distSquared, t, u, p, q
+// pdb locals: result
 void __cdecl GetClosestLinePoints(const Point4& aLineAStart, const Point4& aLineAEnd, const Point4& aLineBStart,
                                   const Point4& aLineBEnd, float* pfDistance, float* pfFractionA, float* pfFractionB,
                                   Point4* pointA, Point4* pointB)
@@ -163,7 +169,7 @@ extern float DAT_01016248;
 void hkpCapsuleShape::GetCentre(hkVector4& centreOut) const
 {
     LocalM128* pkCenter = &centreOut.m_vComponents;
-    LocalM128 sum = _mm_add_ps(m_kVertexB.m_vComponents, m_kVertexA.m_vComponents);
+    LocalM128 sum = _mm_add_ps(m_vertexB.m_vComponents, m_vertexA.m_vComponents);
     *pkCenter = sum;
     LocalM128 kHalf = _mm_load_ss(&DAT_01016248);
     kHalf = _mm_shuffle_ps(kHalf, kHalf, 0);
@@ -174,11 +180,14 @@ void hkpCapsuleShape::GetCentre(hkVector4& centreOut) const
 // Projects a point onto a line segment defined by two endpoints, clamping the result to the segment bounds and writing it to out.
 // @fnv 0x00d224c0
 // src: XBOX_PDB 0x00d224c0
-void __cdecl hkpCapsuleShape_closestPointLineSeg(float* apPoint, float* apStart, float* apEnd, float* out)
+// pdb: hkpCapsuleShape::closestPointLineSeg | hkpCapsuleShape.obj | debug, upstream name already matches, high
+// pdb params: A, B, B2, pt
+// pdb locals: u, assertBuf, ostr
+void __cdecl hkpCapsuleShape_closestPointLineSeg(float* A, float* B, float* B2, float* pt)
 {
-    LocalM128 vStart = _mm_load_ps(apStart);
-    LocalM128 vEnd = _mm_load_ps(apEnd);
-    LocalM128 vPoint = _mm_load_ps(apPoint);
+    LocalM128 vStart = _mm_load_ps(B);
+    LocalM128 vEnd = _mm_load_ps(B2);
+    LocalM128 vPoint = _mm_load_ps(A);
 
     LocalM128 xmm2 = vStart;
     LocalM128 xmm3 = vEnd;
@@ -213,13 +222,13 @@ void __cdecl hkpCapsuleShape_closestPointLineSeg(float* apPoint, float* apStart,
 
     if (negDot <= 0.0f)
     {
-        _mm_store_ps(out, vStart);
+        _mm_store_ps(pt, vStart);
         return;
     }
 
     if (lenSq <= negDot)
     {
-        _mm_store_ps(out, vEnd);
+        _mm_store_ps(pt, vEnd);
         return;
     }
 
@@ -230,7 +239,7 @@ void __cdecl hkpCapsuleShape_closestPointLineSeg(float* apPoint, float* apStart,
     LocalM128 scaledDiff = _mm_mul_ps(xmm1, tBroadcast);
     LocalM128 result = _mm_add_ps(vStart, scaledDiff);
 
-    _mm_store_ps(out, result);
+    _mm_store_ps(pt, result);
 }
 
 __forceinline hkSimdReal::hkSimdReal(const LocalM128& x) : m_vValue(x)
@@ -243,9 +252,9 @@ __forceinline hkSimdReal::operator float() const
     return s;
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const LocalM128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    const LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const LocalM128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), sum);
 }
@@ -256,17 +265,17 @@ void hkpCapsuleShape::GetSupportVertex(const hkVector4& kDirection, Vector4WithI
 {
     hkVector4& kSupportingVertexOut = reinterpret_cast<hkVector4&>(supportingVertexOut);
     hkVector4 kDelta;
-    kDelta.setSub4(m_kVertexB, m_kVertexA);
+    kDelta.setSub4(m_vertexB, m_vertexA);
     const float fDot = kDelta.dot3(kDirection);
     int iVertexId;
     if (fDot < 0.0f)
     {
-        kSupportingVertexOut = m_kVertexA;
+        kSupportingVertexOut = m_vertexA;
         iVertexId = 0;
     }
     else
     {
-        kSupportingVertexOut = m_kVertexB;
+        kSupportingVertexOut = m_vertexB;
         iVertexId = sizeof(hkVector4);
     }
     reinterpret_cast<int*>(&kSupportingVertexOut.m_vComponents)[3] = iVertexId | 0x3f000000;
@@ -348,10 +357,10 @@ static __forceinline void hkTransformPoints(const hkTransform& t, const hkVector
 void hkpCapsuleShape::CalculateAabb(const hkTransform& localToWorld, hkReal tolerance, hkAabb& out) const
 {
     LocalM128 tol4;
-    (reinterpret_cast<hkVector4q&>(tol4).*static_cast<void (hkVector4q::*)(float)>(&hkVector4q::SetAllComponents))(m_fSphereRadius + tolerance);
+    (reinterpret_cast<hkVector4q&>(tol4).*static_cast<void (hkVector4q::*)(float)>(&hkVector4q::SetAllComponents))(m_radius + tolerance);
 
     LocalM128 obj[2];
-    hkTransformPoints(localToWorld, reinterpret_cast<const hkVector4q*>(&m_kVertexA), 2, reinterpret_cast<hkVector4q*>(obj));
+    hkTransformPoints(localToWorld, reinterpret_cast<const hkVector4q*>(&m_vertexA), 2, reinterpret_cast<hkVector4q*>(obj));
 
     reinterpret_cast<hkVector4q&>(out.m_kMinimumCorner).setMin4(reinterpret_cast<const hkVector4q&>(obj[0]), reinterpret_cast<const hkVector4q&>(obj[1]));
     reinterpret_cast<hkVector4q&>(out.m_kMinimumCorner).sub4(reinterpret_cast<const hkVector4q&>(tol4));

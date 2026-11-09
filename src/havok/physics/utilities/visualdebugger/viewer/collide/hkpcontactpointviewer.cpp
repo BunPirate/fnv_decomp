@@ -12,7 +12,7 @@
 
 struct Context
 {
-    void hkpWorld_addWorldPostSimulationListener(void* value);
+    void hkpWorld_addWorldPostSimulationListener(void* worldListener);
 };
 
 // @fnv 0x00de2950
@@ -47,8 +47,10 @@ __declspec(noinline) void hkpPhysicsContextWorldListener::UpdateFields_00de2980(
 
 // Initializes the base with owner, sets the float member to 0.0f and stores userData in the pointer member.
 // @fnv 0x00de29b0
-hkpContactPointViewer::hkpContactPointViewer(void* owner, void* userData)
-    : hkpWorldViewerBase(owner), m_uiFilterValue(0.0f), m_ulUserData(userData)
+// pdb: hkpContactPointViewer::hkpContactPointViewer | hkpContactPointViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts, color
+hkpContactPointViewer::hkpContactPointViewer(void* contexts, void* color)
+    : hkpWorldViewerBase(contexts), m_limit(0.0f), m_color(color)
 {}
 
 struct ContactArray
@@ -92,13 +94,16 @@ __forceinline hkpContactPointViewer::~hkpContactPointViewer() throw()
         this->hkpPhysicsContextWorldListener::UpdateFields_00de2980(this->contacts->data[i]);
 }
 // @fnv 0x00de2a40
-void hkpContactPointViewer::DestroyContactPointViewer() throw()
+// src: XBOX_RETAIL_PDB 0x00de2a40
+// pdb: hkpContactPointViewer::~hkpContactPointViewer | hkpContactPointViewer.obj | retail, object-file gap fill, high
+void hkpContactPointViewer::hkpContactPointViewer_dtor() throw()
 {
     this->hkpContactPointViewer::~hkpContactPointViewer();
 }
 
 // Iterates the context worlds and registers this viewer with each one.
 // @fnv 0x00de2a00
+// pdb: hkpContactPointViewer::init | hkpContactPointViewer.obj | retail, upstream name already matches, high
 void hkpContactPointViewer::init()
 {
     ContactArray* list = contacts;
@@ -156,13 +161,15 @@ struct S_00de2fa0_Listener
 
 struct S_00de2fa0 : S_00de2fa0_Base0, S_00de2fa0_Listener
 {
-    virtual void PostSimulationCallback(S_00de2fa0_Arg* a);
-    void drawAllContactPointsInIsland_00de2da0(void* elem);
+    virtual void PostSimulationCallback(S_00de2fa0_Arg* world);
+    void drawAllContactPointsInIsland_00de2da0(void* island);
 };
 
 // Writes profiler markers to the TLS stream, then iterates the array returned by vfn_0c and calls FUN_00de2da0 on each element.
 // @fnv 0x00de2fa0
-void S_00de2fa0::PostSimulationCallback(S_00de2fa0_Arg* apArg)
+// pdb: hkpContactPointViewer::postSimulationCallback | hkpContactPointViewer.obj | retail, vtable slot, high
+// pdb params: world
+void S_00de2fa0::PostSimulationCallback(S_00de2fa0_Arg* world)
 {
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* p = stream->m_end.m_storage;
@@ -175,7 +182,7 @@ void S_00de2fa0::PostSimulationCallback(S_00de2fa0_Arg* apArg)
         stream->m_end.m_storage = p + 12;
     }
 
-    S_00de2fa0_Array* arr = vfn_0c(apArg);
+    S_00de2fa0_Array* arr = vfn_0c(world);
     for (int i = 0; i < arr->m_iElementCount; ++i)
     {
         drawAllContactPointsInIsland_00de2da0(arr->m_data[i]);
@@ -231,7 +238,7 @@ struct HkDisplayConvexObj
 };
 
 HkAllocHolder* __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl ResizeAudioStream(HkAllocator* a1, HkArrayRaw* a2, int a3);
+void __cdecl ResizeAudioStream(HkAllocator* mem, HkArrayRaw* array, int sizeElem);
 
 struct FUN_00de4340_cls
 {
@@ -245,6 +252,8 @@ struct FUN_00de4340_cls
 
 // Lazily allocates a pair block and a convex object, stores the convex in m_pConvex, appends it to a1, and returns m_pConvex.
 // @fnv 0x00de4340
+// pdb: hkpConvexRadiusBuilder::getCurrentRawGeometry | hkpConvexRadiusBuilder.obj | retail, object-file run extension, low
+// pdb params: displayGeometries
 HkDisplayConvexObj* FUN_00de4340_cls::GetOrCreateConvex(HkArrayRaw* a1)
 {
     int zero = 0;
@@ -366,7 +375,7 @@ extern "C" LocalM128 _mm_add_ss(LocalM128, LocalM128);
 extern "C" float _mm_cvtss_f32(LocalM128);
 extern "C" void _mm_store_ps(float*, LocalM128);
 // src: XBOX_PDB 0x00de2aa0
-static __declspec(noinline) void hkContactPointViewer_displayArrow(Target* context, Contact67* volatile contact, const Vec67* normal,
+static __declspec(noinline) void hkContactPointViewer_displayArrow(Target* handler, Contact67* volatile contact, const Vec67* normal,
                                               int color, void* body, int tag)
 {
     LocalM128 n = _mm_load_ps(&normal->x);
@@ -376,7 +385,7 @@ static __declspec(noinline) void hkContactPointViewer_displayArrow(Target* conte
         return;
     Vec67 endpoint;
     _mm_store_ps(&endpoint.x, _mm_add_ps(_mm_load_ps(&contact->position.x), n));
-    context->Draw(&contact->position, &endpoint, color, body, tag);
+    handler->Draw(&contact->position, &endpoint, color, body, tag);
 }
 
 struct ContactIdStackArray : hkArrayBase<unsigned short>
@@ -569,7 +578,10 @@ struct Cont
 // Iterates contact records in c, and for each unskipped object whose float value is at least unk2c, draws a point via FUN_00de2aa0.
 // @fnv 0x00de2da0
 // src: EXE 0x00de2da0
-void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* apCont)
+// pdb: hkpContactPointViewer::drawAllContactPointsInIsland | hkpContactPointViewer.obj | retail, string-set bridge, high
+// pdb params: island
+// pdb locals: HKLOOP_sectorIndex, contactPoints
+void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* island)
 
 {
 
@@ -602,17 +614,17 @@ void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* apCont)
             {
                 int cnt = 0;
 
-                while (cnt < apCont->unk60)
+                while (cnt < island->unk60)
                 {
 
-                    char* pEntry = apCont->unk5c[cnt];
+                    char* pEntry = island->unk5c[cnt];
 
                     cnt += 1;
                     _ReadWriteBarrier();
 
-                    if (cnt == apCont->unk60)
+                    if (cnt == island->unk60)
                     {
-                        f = pEntry + apCont->unk58;
+                        f = pEntry + island->unk58;
                         _ReadWriteBarrier();
                     }
                     else
@@ -659,7 +671,7 @@ void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* apCont)
 
                                         value = pObj->GetFloat(m[i]);
 
-                                        if (!(*value < m_uiFilterValue))
+                                        if (!(*value < m_limit))
                                         {
 
                                             PointContext67* volatile v = pObj->unk74->slot[pObj->unk74->index];
@@ -667,8 +679,8 @@ void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* apCont)
                                             {
                                                 int h = GetOperationType();
 
-                                                int color = reinterpret_cast<int>(m_ulUserData);
-                                                hkContactPointViewer_displayArrow(reinterpret_cast<Target*>(hkProcess::unk10), y, &y->normal, color, &v->value10, h);
+                                                int color = reinterpret_cast<int>(m_color);
+                                                hkContactPointViewer_displayArrow(reinterpret_cast<Target*>(hkProcess::m_displayHandler), y, &y->normal, color, &v->value10, h);
                                             }
                                         }
                                     }

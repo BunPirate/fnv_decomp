@@ -38,18 +38,21 @@ class hkpPoweredChainMapperTarget
 class hkpConstraintChainInstance;
 // @fnv 0x00e3a440
 // src: HAVOK_LIB 0x00e3a440
-void hkpPoweredChainMapper::setMotors(int linkIndex, int motorIndex, hkpConstraintMotor* motor)
+// pdb: hkpPoweredChainMapper::setMotors | hkpPoweredChainMapper.obj | retail, upstream name already matches, high
+// pdb params: linkIndex, coordinateIndex, newMotor
+// pdb locals: assertBuf, ostr
+void hkpPoweredChainMapper::setMotors(int linkIndex, int coordinateIndex, hkpConstraintMotor* newMotor)
 {
-    hkpPoweredChainMapperLinkInfo* link = &m_ppLinks.m_data[linkIndex];
+    hkpPoweredChainMapperLinkInfo* link = &m_links.m_data[linkIndex];
     for (int i = 0; i < link->targetCount; ++i)
     {
-        hkpPoweredChainMapperTarget& target = m_kTargets.m_data[link->firstTarget + i];
+        hkpPoweredChainMapperTarget& target = m_targets.m_data[link->firstTarget + i];
         hkpPoweredChainData* data = target.chainData;
-        hkpConstraintMotor* oldMotor = data->m_pConstraintInfo.m_data[target.infoIndex].m_ppMotors[motorIndex];
+        hkpConstraintMotor* oldMotor = data->m_infos.m_data[target.infoIndex].m_ppMotors[coordinateIndex];
         if (oldMotor)
             static_cast<const hkpConstraintMotor*>(oldMotor)->removeReference();
-        data->m_pConstraintInfo.m_data[target.infoIndex].m_ppMotors[motorIndex] = motor;
-        if (motor)
-            static_cast<const hkpConstraintMotor*>(motor)->addReference();
+        data->m_infos.m_data[target.infoIndex].m_ppMotors[coordinateIndex] = newMotor;
+        if (newMotor)
+            static_cast<const hkpConstraintMotor*>(newMotor)->addReference();
     }
 }

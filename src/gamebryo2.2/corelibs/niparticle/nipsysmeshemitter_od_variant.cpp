@@ -15,6 +15,7 @@ extern double DAT_01029790;
 
 // @fnv 0x00639780
 // src: GUESS 0x00639780 (confidence: low)
+// pdb: NiUnitRandom | Precipitation.obj | debug, call graph, medium
 float __cdecl Object_ProcessAndReturnValue_00639780()
 {
     int v;

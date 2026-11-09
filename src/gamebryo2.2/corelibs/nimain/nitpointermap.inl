@@ -1,4 +1,7 @@
 // @fnv 0x00a11db0
+// pdb: LEAPCORE::CGraphManager::Initialize | graphmgr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTPointerListBase<NiTPointerAllocator<unsigned int>,BSSoundMessage *>::GetNext
+// pdb locals: _ScopeTrace, hr
 template <class K, class V>
 void LocalPointerList<K, V>::NewItem(LocalPointerListItem<K, V>* pkItem)
 {

@@ -26,6 +26,7 @@ struct Record
 };
 // Calls FUN_00dffca0, and if flags has bit 0 set, notifies the manager from FUN_00c85750 with this record and value; returns this.
 // @fnv 0x00dffd50
+// pdb: hkpConvexPieceStreamData::`scalar deleting destructor' | hkpConvexPieceStreamDataClass.obj | retail, vtable slot, high
 Record* Record::FUN_00dffd50(unsigned int flags)
 {
     DestroyFields_00dffca0();
@@ -86,6 +87,7 @@ static void ReleaseOwnedBuffer(OwnedBuffer& buf)
 // Releases the three owned buffers and then calls the base class destructor.
 // @fnv 0x00dffca0
 // src: GUESS 0x00dffca0 (confidence: medium)
+// pdb: hkpConvexPieceStreamData::~hkpConvexPieceStreamData | hkpConvexPieceStreamDataClass.obj | retail, object-file run extension, low
 void FUN_00dffca0_cls::DestroyFields_00dffca0()
 {
     ReleaseOwnedBuffer(m_buf2);

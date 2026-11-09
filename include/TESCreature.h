@@ -14,6 +14,7 @@ class TESCombatStyle;
 class SoundOps;
 enum BGSImpactDataSet__IMPACT_MATERIAL_TYPE;
 
+// pdb: class TESCreature, size 0x160, bases: TESActorBase, TESAttackDamageForm, TESModelList, 15 members
 class TESCreature : public TESActorBase, public TESAttackDamageForm, public TESModelList
 {
 public:
@@ -23,16 +24,16 @@ public:
 
     virtual void InitializeComponent();
     virtual void ClearData();
-    virtual bool LoadForm(TESFile* file);
+    virtual bool LoadForm(TESFile* apFile);
     virtual void SaveForm();
     virtual void InitItem();
-    virtual void CopyFrom(const TESForm* form);
+    virtual void CopyFrom(const TESForm* apCopy);
     virtual bool Compare(TESForm* form);
-    virtual void SaveGame(BGSSaveFormBuffer* buffer);
-    virtual void SaveGameLegacy(unsigned int changedFlags);
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void SaveGameLegacy(unsigned int aiFlags);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void LoadGameLegacy(unsigned int changedFlags, unsigned int currentFlags);
-    virtual void Revert(BGSLoadFormBuffer* buffer);
+    virtual void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual BGSBodyPartData* GetBodyPartData() const;
     virtual void SetBodyPartData(BGSBodyPartData* bodyPartData);
     virtual TESCombatStyle* GetCombatStyle() const;
@@ -41,13 +42,13 @@ public:
     virtual void SetActorValueI(ActorValue::Index index, int value);
     virtual void ModActorValueF(ActorValue::Index index, float value);
     virtual void ModActorValueI(ActorValue::Index index, int value);
-    virtual void CopyFromTemplateForm(TESActorBase* form);
+    virtual void CopyFromTemplateForm(TESActorBase* apForceTemplate);
 
     void ResetFormData();
     CreatureSounds* GetCreatureSounds();
-    CreatureSounds* GetMutableCreatureSounds();
+    CreatureSounds* CreateCreatureSounds();
     TESCreature* GetSoundCreature();
-    void SetCreatureSoundsFrom(TESCreature* soundCreature);
+    void SetSoundCreature(TESCreature* apCreature);
     BGSImpactDataSet* GetImpactDataSet();
     void SetImpactDataSet(BGSImpactDataSet* impactDataSet);
     BGSListForm* GetField158();
@@ -60,16 +61,16 @@ public:
     void SetBoltSmallWidth(float value);
     const void* GetOffset12C();
     void InitWornForm(Actor* actor, bool weapon, bool armor, bool update);
-    NiNode* Create3DModel(TESObjectREFR* reference);
+    NiNode* Create3DModel(TESObjectREFR* apRef);
     void UpdateModel3D(TESObjectREFR* reference, bool weapon, bool armor, bool update);
 
-    bool Compare_005f9b90(TESForm* otherForm);
-    bool TESForm_CompareAllComponents(TESCreature* other);
+    bool Compare_005f9b90(TESForm* apCompare);
+    bool TESForm_CompareAllComponents(TESCreature* apCompare);
     unsigned char ShadowSceneNode_GetDisableLightUpdate();
     float TESObjectWEAP_GetShotsPerSecond();
     float TESEffectShader_GetAddOnScaleStart();
     float GetFootWeight();
-    SOUND_LEVEL FUN_009c0070();
+    SOUND_LEVEL BGSSaveLoadFile_GetFilePosition();
     void TESBoundObject_CopyBoundData(TESCreature* other);
     unsigned char FUN_0059f3a0();
     void SetTypeAtOffset12C(unsigned char value);
@@ -96,19 +97,19 @@ public:
             unsigned char m_ucField02;
         };
     };
-    unsigned char m_ucCreatureType;
+    unsigned char cHandReach;
     unsigned char layoutPadding131[3];
-    float m_fFirstCreatureStat;
-    float m_fSecondCreatureStat;
-    float m_fThirdCreatureStatCur;
-    TESCombatStyle* m_pCombatStyle;
-    BGSBodyPartData* m_pBodyPartDataCur;
-    BGSImpactDataSet__IMPACT_MATERIAL_TYPE m_eImpactMaterial;
-    BGSImpactDataSet* m_pImpactDataSet;
-    bool m_bHasImpactDataSet;
+    float fTurnSpeed;
+    float fFootWeight;
+    float fBaseScale;
+    TESCombatStyle* pCombatStyle;
+    BGSBodyPartData* pBodyPartData;
+    BGSImpactDataSet__IMPACT_MATERIAL_TYPE eBloodImpactMaterial;
+    BGSImpactDataSet* pImpactDataSet;
+    bool bEmbeddedWeaponChecked;
     unsigned char layoutPadding151[3];
-    SOUND_LEVEL m_eSoundLevel;
-    BGSListForm* m_pCreatureListForm;
-    char m_cCreatureDataFlag;
+    SOUND_LEVEL eSoundLevel;
+    BGSListForm* pWeaponList;
+    char cCanUseHandToHand;
     unsigned char layoutPadding15D[3];
 };

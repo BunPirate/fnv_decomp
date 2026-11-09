@@ -12,7 +12,7 @@
 unsigned short MaxUnsignedShort(unsigned short a, unsigned short b);
 void __cdecl ResizeAudioStream(void*, void*, int);
 struct UnkRet { int x; int y; };
-void __fastcall AppendPairToBuffer(UnkRet* a, UnkRet* b, void* c);
+void __fastcall hkp3AxisSweep_beginOverlap(UnkRet* a, UnkRet* b, void* newPairsOut);
 void __fastcall ToggleBit(int a, void* b);
 struct Entry {
     unsigned short key;
@@ -22,7 +22,7 @@ Entry* __stdcall LowerBoundEntry(Entry* first, Entry* last, unsigned short key);
 struct FUN_00d11960_cls {
     int* m_pEntryData;
     int m_iArrayLength;
-    void hkp3AxisSweep_hkpBpAxis_remove(int aiFirst, int aiSecond);
+    void hkp3AxisSweep_hkpBpAxis_remove(int minPosition, int maxPosition);
 };
 struct D1A0E0Allocator;
 void __cdecl hkArrayUtil__reserve(D1A0E0Allocator* alloc, void* array, int numElements, int sizeElem);
@@ -169,7 +169,7 @@ struct SweepEntry { // 16-byte entry, matches shl eax,4 stride
 };
 // Tail-call target observed forwarding (this, handle, entry) with edx = handle kept live:
 // __fastcall helper taking (self in ecx, handle in edx, entry on stack).
-void __fastcall getAabbFromNode(void* self, UnkHandle* handle, SweepEntry* entry);
+void __fastcall getAabbFromNode(void* self, UnkHandle* aabb, SweepEntry* entry);
 // Stand-in owner class for the __thiscall thunk; fnvcheck matches the name FUN_00d119c0.
 struct FUN_00d119c0_owner {
     int unk00;
@@ -231,10 +231,10 @@ struct FUN_00d11c10_cls {
     int unk08;
     int m_0C;
 };
-void __fastcall AppendPairEntry(FUN_00d11c10_cls* self, FUN_00d11c10_cls* other, PairArray* arr);
+void __fastcall hkp3AxisSweep_endOverlap(FUN_00d11c10_cls* self, FUN_00d11c10_cls* b, PairArray* deletedPairsOut);
 unsigned short MaxUnsignedShort(unsigned short a, unsigned short b);
 void __cdecl ResizeAudioStream(void*, void*, int);
-void __fastcall AppendPairToBuffer(UnkRet* a, UnkRet* b, void* c);
+void __fastcall hkp3AxisSweep_beginOverlap(UnkRet* a, UnkRet* b, void* newPairsOut);
 struct FnvNode {
     unsigned int m_00;
     unsigned int m_04;
@@ -250,20 +250,20 @@ struct FnvPair8 {
     unsigned int first;
     unsigned int second;
 };
-void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(void* base, FnvNode* p, unsigned short a1, FnvNode* q, FnvArr* a3);
+void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(void* markers, FnvNode* p, unsigned short nodeIndexA, FnvNode* b, FnvArr* newPairsOut);
 struct FUN_00d11da0_cls;
 struct FUN_00d11da0_entry {
     unsigned short key;
     unsigned short value;
 };
-void __cdecl hkArrayUtil__reserve(void* allocator, FUN_00d11da0_cls* self, unsigned int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, FUN_00d11da0_cls* array, unsigned int numElem, int sizeElem);
 struct FUN_00d11da0_cls {
     FUN_00d11da0_entry* m_data;
     int m_uiItemCount;
     unsigned int m_capFlags;
 
-    void InsertPair(unsigned int a1, unsigned int a2, unsigned short a3,
-                      unsigned short a4, unsigned short* outIndex2, unsigned short* outIndex);
+    void hkp3AxisSweep_hkpBpAxis_insert(unsigned int nodes, unsigned int nodeIndex, unsigned short minPosition,
+                      unsigned short maxPosition, unsigned short* minInsertPositionOut, unsigned short* maxInsertPositionOut);
 };
 struct S_00d138a0_Pair {
     int unk00;
@@ -285,9 +285,9 @@ struct SpawnedObject {
     int unk00;
     unsigned short m_wSize;
 
-    SpawnedObject* Init(int a, int b, int c);
+    SpawnedObject* Init(int worldMin, int worldMax, int numMarkers);
 };
-SpawnedObject* hk3AxisSweep16CreateBroadPhase(int a, int b, int c);
+SpawnedObject* hk3AxisSweep16CreateBroadPhase(int worldMin, int worldMax, int numMarkers);
 int __cdecl getMinComponent(const float* v, float* out);
 extern int DAT_011b37a4[];
 struct hkp3AxisSweep;
@@ -316,7 +316,7 @@ extern int DAT_011b37a4[];
 class FUN_00d11120_cls {
 public:
     Endpoint* m_endpoints;
-    void MergeEndpoints(char* cells, int n, int m,
+    void hkp3AxisSweep_hkpBpAxis_mergeBatch(char* nodes, int indexOfNewEps, int newNum,
                       unsigned int axis, Endpoint* scratch);
 };
 // Adapted from an unverified prior attempt by another contributor; original author/model unknown.
@@ -391,9 +391,9 @@ struct S_d11790_Sweep {
     int unkbc;
     int unkc0;
     S_d11790_Edge* axis2;
-    void FixNodeEdges(unsigned h);
+    void _fixDeterministicOrderAfterNodeIdWasDecreased(unsigned nodeIndex);
 };
-extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const void* ptr, int size);
+extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size);
 struct FourIntegerBlock {
     int unk00;
     int unk04;
@@ -605,7 +605,7 @@ struct C_00d13620 {
     int unkD4;
     void* m_unkD8;
 
-    void BuildBroadPhasePairs(S_00d138a0_Node* nodesA, int numNodesA, S_00d138a0_Node* nodesB, int numNodesB, int mode, BroadPhasePairArray& pairs);
+    void collide1Axis(S_00d138a0_Node* pa, int numA, S_00d138a0_Node* pb, int numB, int markerHandlingForNodesB, BroadPhasePairArray& pairsOut);
 };
 #include "fnv_asm_helpers.h"   // project x87 helpers (fnv_SinCos, fnv_FloatToInt), kept last so earlier code is unchanged
 #include "../../../../../../include/hkMemoryRouter.h"
@@ -812,13 +812,13 @@ struct S00d11470_Object {
 struct S00d11470_Owner {
     bool __thiscall areAabbsOverlapping(int* first, int* second);
 };
-void __cdecl hkArrayUtil__reserve(void* alloc, void* self, int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 struct FUN_00d11e80_cls {
     S_00d1a180_EndPoint* m_data;
     int m_iElementCount;
     int m_iCapacityState;
 
-    int InsertEndpoints(char* nodes, int axis, S_00d1a180_EndPoint* newEndpoints, int numNew);
+    int hkp3AxisSweep_hkpBpAxis_insertTail(char* nodes, int axis, S_00d1a180_EndPoint* newNodes, int numNewEndPoints);
 };
 extern "C" void _ReadWriteBarrier(void);
 struct d11Out {
@@ -1063,7 +1063,7 @@ struct Sweep {
     Sub* m_d8;
 
     void defragment();
-    void FixNodeEdges(int) throw();
+    void _fixDeterministicOrderAfterNodeIdWasDecreased(int) throw();
     __forceinline void setNodeIndex(Elem& node, int i) throw() {
         int* const& h = node.h;
         if (((unsigned)h & 1) == 0) {
@@ -1291,7 +1291,7 @@ struct SweepNodesX {
 };
 struct SweepAxisX {
  Endpoint* data; int size; int capacity;
- void hkp3AxisSweep_hkpBpAxis_remove(int a,int b);
+ void hkp3AxisSweep_hkpBpAxis_remove(int minPosition,int maxPosition);
 };
 struct SweepOwnerX {
  int unk00;
@@ -1341,7 +1341,7 @@ struct SweepOwnerX {
  SweepGroupX* groups;
  void hkp3AxisSweep_setBitsBasedOnXInterval(int count,int key,SweepNodeX* node,unsigned int index,unsigned int* bits);
  void hkp3AxisSweep_updateNodesAfterDelete(SweepNodeX* base,int count,SweepNodeX* node);
- void FixNodeEdges(unsigned int index);
+ void _fixDeterministicOrderAfterNodeIdWasDecreased(unsigned int nodeIndex);
  void removeObject(unsigned int* handle,SweepPairsX* pairs);
 };
 
@@ -1467,12 +1467,15 @@ struct SweepSpace {
     hkArray<SweepEndpointD16300> axes[3];
     unsigned int unkD0, unkD4, unkD8;
     float tolerance;
-    void hkp3AxisSweep_castRay(const SweepScan& scan, SweepRayCast* rays, int rayStride) const;
+    void hkp3AxisSweep_castRay(const SweepScan& rayInput, SweepRayCast* collectorBase, int collectorStriding) const;
 };
 
 // @fnv 0x00d16300
 // src: XBOX_PDB 0x00d16300
-void SweepSpace::hkp3AxisSweep_castRay(const SweepScan& scan, SweepRayCast* rays, int rayStride) const
+// pdb: hkp3AxisSweep::castRay | hkp3AxisSweep.obj | retail, upstream name already matches, high
+// pdb params: rayInput, collectorBase, collectorStriding
+// pdb locals: collector, aabb, numNodes, startEp, assertBuf, ostr, invScale, ep, curDistance, invOffset, direction, tolerence, dir, debugAabb, to, minComponent, endPt
+void SweepSpace::hkp3AxisSweep_castRay(const SweepScan& rayInput, SweepRayCast* collectorBase, int collectorStriding) const
 {
     __declspec(align(16)) unsigned int sweepKeys[4];
     SweepEndpointD16300* c[3];
@@ -1487,7 +1490,7 @@ void SweepSpace::hkp3AxisSweep_castRay(const SweepScan& scan, SweepRayCast* rays
     unsigned int handle;
     (void)handle;
     __m128 node3;
-    node3 = _mm_mul_ps(_mm_add_ps(_mm_load_ps(centerOffset), _mm_load_ps(scan.origin)), _mm_load_ps(reciprocalExtent));
+    node3 = _mm_mul_ps(_mm_add_ps(_mm_load_ps(centerOffset), _mm_load_ps(rayInput.origin)), _mm_load_ps(reciprocalExtent));
     __m128 dist = _mm_setzero_ps();
     node3 = _mm_min_ps(node3, DAT_011b3790);
     node3 = _mm_max_ps(node3, dist);
@@ -1521,18 +1524,18 @@ void SweepSpace::hkp3AxisSweep_castRay(const SweepScan& scan, SweepRayCast* rays
         _mm_store_ps(scaled, dist);
     }
 
-    const hkArray<SweepEndpointD16300>* axesToScan = scan.axes ? scan.axes : axes;
+    const hkArray<SweepEndpointD16300>* axesToScan = rayInput.axes ? rayInput.axes : axes;
     int idx = 0x11;
     for (int axisIndex = 0; axisIndex < 3; ++axisIndex, idx += idx) {
         nextEndpoint[axisIndex] = searchEndpoints(axesToScan[axisIndex],sweepKeys,axisIndex,a,idx);
     }
 
-    unsigned int n = scan.rayCount;
+    unsigned int n = rayInput.rayCount;
     hkMemoryRouter* b0;
     b0 = (&hkMemoryRouter::getInstance());
     float* cnt = (float*)b0->m_stack.m_next.m_storage;
     b0->m_stack.m_next.m_storage = (char*)b0->m_stack.m_next.m_storage + ((4 * n + 0x7f) & ~0x7f);
-    for (int q = 0; q < scan.rayCount; ++q) {
+    for (int q = 0; q < rayInput.rayCount; ++q) {
         cnt[q] = 1.0f;
     }
 
@@ -1558,44 +1561,44 @@ void SweepSpace::hkp3AxisSweep_castRay(const SweepScan& scan, SweepRayCast* rays
 
         const unsigned char* f = (const unsigned char*)p;
         if (f[0] == 0x77 && !node[0].isMarker()) {
-            scratch.collector = rays;
-            for (int r = 0; r < scan.rayCount; ++r) {
+            scratch.collector = collectorBase;
+            for (int r = 0; r < rayInput.rayCount; ++r) {
                 float bestDistance = cnt[r];
                 float zero = scratch.collector->intersect(node[0].handle, r);
                 float selectedDistance = sweepMin(bestDistance, zero);
                 cnt[r] = selectedDistance;
-                scratch.collector = (SweepRayCast*)((char*)scratch.collector + rayStride);
+                scratch.collector = (SweepRayCast*)((char*)scratch.collector + collectorStriding);
             }
         }
         if (f[1] == 0x77 && !node[1].isMarker()) {
-            scratch.collector = rays;
-            for (int r = 0; r < scan.rayCount; ++r) {
+            scratch.collector = collectorBase;
+            for (int r = 0; r < rayInput.rayCount; ++r) {
                 float bestDistance = cnt[r];
                 float zero = scratch.collector->intersect(node[1].handle, r);
                 float selectedDistance;
                 selectedDistance = sweepMin(bestDistance, zero);
                 cnt[r] = selectedDistance;
-                scratch.collector = (SweepRayCast*)((char*)scratch.collector + rayStride);
+                scratch.collector = (SweepRayCast*)((char*)scratch.collector + collectorStriding);
             }
         }
         if (f[2] == 0x77 && !node[2].isMarker()) {
-            scratch.collector = rays;
-            for (int r = 0; r < scan.rayCount; ++r) {
+            scratch.collector = collectorBase;
+            for (int r = 0; r < rayInput.rayCount; ++r) {
                 float bestDistance = cnt[r];
                 float zero = scratch.collector->intersect(node[2].handle, r);
                 float selectedDistance = sweepMin(bestDistance, zero);
                 cnt[r] = selectedDistance;
-                scratch.collector = (SweepRayCast*)((char*)scratch.collector + rayStride);
+                scratch.collector = (SweepRayCast*)((char*)scratch.collector + collectorStriding);
             }
         }
         if (f[3] == 0x77 && !node[3].isMarker()) {
-            scratch.collector = rays;
-            for (int r = 0; r < scan.rayCount; ++r) {
+            scratch.collector = collectorBase;
+            for (int r = 0; r < rayInput.rayCount; ++r) {
                 float bestDistance = cnt[r];
                 float zero = scratch.collector->intersect(node[3].handle, r);
                 float selectedDistance = sweepMin(bestDistance, zero);
                 cnt[r] = selectedDistance;
-                scratch.collector = (SweepRayCast*)((char*)scratch.collector + rayStride);
+                scratch.collector = (SweepRayCast*)((char*)scratch.collector + collectorStriding);
             }
         }
 
@@ -1604,27 +1607,27 @@ void SweepSpace::hkp3AxisSweep_castRay(const SweepScan& scan, SweepRayCast* rays
     }
 
     a[0] = 0x88;
-    SweepRayCast* in = rays;
+    SweepRayCast* in = collectorBase;
     int nodeCount = numNodes;
     {
-        for (int ray = 0; ray < scan.rayCount; ++ray) {
+        for (int ray = 0; ray < rayInput.rayCount; ++ray) {
             float scaledDiff = cnt[ray];
             c[0] = nextEndpoint[0];
             c[1] = nextEndpoint[1];
             c[2] = nextEndpoint[2];
-            unsigned int* res = (unsigned int*)((char*)scan.positions + ray * scan.positionStride);
+            unsigned int* res = (unsigned int*)((char*)rayInput.positions + ray * rayInput.positionStride);
             sweepKeys[0] = res[0];
             sweepKeys[1] = res[1];
             sweepKeys[2] = res[2];
             sweepKeys[3] = res[3];
             direction.value = _mm_load_ps((float*)sweepKeys);
-            direction.subtract(*(const RayDirection*)scan.origin);
+            direction.subtract(*(const RayDirection*)rayInput.origin);
 
 
             for (int k = 0; 3 > k; ++k) {
                 float zeroOut = direction.component(k) * reciprocalExtent[k];
                 float s = fabsf(zeroOut);
-                scratch.cursorSteps = (scan.origin[k] + centerOffset[k]) * reciprocalExtent[k];
+                scratch.cursorSteps = (rayInput.origin[k] + centerOffset[k]) * reciprocalExtent[k];
                 if (s < scratch.cursorSteps * 1.1920928955078125e-07 ||
                     s < sweepBound(((float*)sweepKeys)[k], centerOffset[k], reciprocalExtent[k]) * 1.1920928955078125e-07) {
                     inverse[k] = 0.0f;
@@ -1699,7 +1702,7 @@ void SweepSpace::hkp3AxisSweep_castRay(const SweepScan& scan, SweepRayCast* rays
                 } while (true);
             }
 
-            if (ray < scan.rayCount - 1) {
+            if (ray < rayInput.rayCount - 1) {
                 unsigned int* flagEnd;
                 flagEnd = (unsigned int*)a;
                 unsigned int* end = (unsigned int*)(a + ((nodeCount >> 2) * 4) + 4);
@@ -1711,7 +1714,7 @@ void SweepSpace::hkp3AxisSweep_castRay(const SweepScan& scan, SweepRayCast* rays
                     flagEnd[1] = (val << 4) | val;
                 }
             }
-            in = (SweepRayCast*)((char*)in + rayStride);
+            in = (SweepRayCast*)((char*)in + collectorStriding);
         }
     }
 

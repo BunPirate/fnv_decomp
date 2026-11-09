@@ -22,12 +22,15 @@ struct SkillData
     int m8;
     int m12;
     int m16;
-    void __thiscall SwapEndian();
+    void __thiscall SKILL_DATA_Endian();
 };
 
 // Byte-swaps the five int fields m0, m4, m8 and the two ints at m12 via BSEndian.
 // @fnv 0x006180a0
-void __thiscall SkillData::SwapEndian()
+// src: XBOX_DEBUG_PDB 0x006180a0
+// pdb: SKILL_DATA::Endian | TESSkill.obj | debug, call graph (shared callers), high
+// pdb locals: n
+void __thiscall SkillData::SKILL_DATA_Endian()
 {
     BSEndian(&m0, EndianSizeTag<3>());
     BSEndian(&m4, EndianSizeTag<3>());
@@ -42,6 +45,8 @@ bool __cdecl TESForm_QEndianSwapOnSave();
 void __cdecl AppendChunk(unsigned int, void*, unsigned int);
 // @fnv 0x00485910
 // src: XBOX_PDB 0x00485910
+// pdb: TESForm::AddChunk | TESForm.obj | debug, call graph, medium
+// pdb params: aeChunkID, afData
 void __cdecl TESForm_AddChunk_00485910(unsigned int a, int aiValue)
 {
     if (TESForm_QEndianSwapOnSave())
@@ -53,6 +58,7 @@ void __cdecl Deallocate(void*);
 
 // Calls FUN_00617f40, then if flags has bit 1 set deallocates this and returns this.
 // @fnv 0x00617e50
+// pdb: TESSkill::`scalar deleting destructor' | TESSkill.obj | retail, vtable slot, high
 void* __thiscall TESSkill::DeleteThis(unsigned int flags)
 {
     TESSkill::~TESSkill();
@@ -62,6 +68,8 @@ void* __thiscall TESSkill::DeleteThis(unsigned int flags)
 }
 
 // @fnv 0x00617ea0
+// pdb: TESSkill::ResetData | TESSkill.obj | debug, object-file gap fill, medium
+// pdb locals: n, i
 void __thiscall TESSkill::InitializeComponent()
 {
     *(int*)((char*)this + 0x2c) = -1;
@@ -79,11 +87,12 @@ void __thiscall TESSkill::InitializeComponent()
 
 namespace fnv_00617fc0 {
 void __cdecl TESForm_AddChunk_00485910(int, int);
-void __cdecl WriteDescChunk(void*, int);
+void __cdecl TESDescription_SaveDescriptionData(void*, int);
 int __cdecl TESForm_QEndianSwapOnSave();
 }  // namespace fnv_00617fc0
 
 // @fnv 0x00617fc0
+// pdb: TESSkill::Save | TESSkill.obj | retail, vtable slot, high
 void __thiscall TESSkill::SaveForm()
 {
     ((TESForm*)this)->BeginFormRecord();
@@ -91,14 +100,14 @@ void __thiscall TESSkill::SaveForm()
     ((TESDescription*)((char*)this + 0x18))->Save();
     ((TESTexture*)((char*)this + 0x20))->Save(0x4e4f4349);
     if ((unsigned char)fnv_00617fc0::TESForm_QEndianSwapOnSave())
-        ((SkillData*)((char*)this + 0x2c))->SwapEndian();
+        ((SkillData*)((char*)this + 0x2c))->SKILL_DATA_Endian();
     ((TESForm*)this)->TESForm___SaveData((char*)this + 0x2c, 0x14);
     if ((unsigned char)fnv_00617fc0::TESForm_QEndianSwapOnSave())
-        ((SkillData*)((char*)this + 0x2c))->SwapEndian();
-    fnv_00617fc0::WriteDescChunk((char*)this + 0x40, 0x4d414e41);
-    fnv_00617fc0::WriteDescChunk((char*)this + 0x48, 0x4d414e4a);
-    fnv_00617fc0::WriteDescChunk((char*)this + 0x50, 0x4d414e45);
-    fnv_00617fc0::WriteDescChunk((char*)this + 0x58, 0x4d414e4d);
+        ((SkillData*)((char*)this + 0x2c))->SKILL_DATA_Endian();
+    fnv_00617fc0::TESDescription_SaveDescriptionData((char*)this + 0x40, 0x4d414e41);
+    fnv_00617fc0::TESDescription_SaveDescriptionData((char*)this + 0x48, 0x4d414e4a);
+    fnv_00617fc0::TESDescription_SaveDescriptionData((char*)this + 0x50, 0x4d414e45);
+    fnv_00617fc0::TESDescription_SaveDescriptionData((char*)this + 0x58, 0x4d414e4d);
     ((TESForm*)this)->FinishFormRecord();
 }
 
@@ -106,6 +115,9 @@ extern "C" void* __cdecl _alloca(unsigned int);
 
 // Reads a skill record from apFile: checks the record type, loads the base form, then dispatches each chunk to its handler until the file ends.
 // @fnv 0x00618130
+// pdb: TESSkill::Load | TESSkill.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage
 bool TESSkill::LoadForm(TESFile* apFile)
 {
     int chunkID;
@@ -171,7 +183,7 @@ bool TESSkill::LoadForm(TESFile* apFile)
 
         if (chunkID == 0x41544144 && apFile->GetChunkData())
         {
-            reinterpret_cast<SkillData*>(reinterpret_cast<char*>(this) + 0x2C)->SwapEndian();
+            reinterpret_cast<SkillData*>(reinterpret_cast<char*>(this) + 0x2C)->SKILL_DATA_Endian();
         }
 
         if (!apFile->FUN_004726f0())
@@ -186,21 +198,27 @@ void* FUN_00ec43fb(void*, int, void*, void*, int);
 void FUN_00401460(void*, const void*, unsigned int);
 // Copies skill data and descriptions after resolving pOther.
 // @fnv 0x00618390
-void TESSkill::CopyFrom(const TESForm* pOther)
+// pdb: TESSkill::Copy | TESSkill.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pSk, i
+void TESSkill::CopyFrom(const TESForm* apCopy)
 {
-    TESSkill* pSource = (TESSkill*)FUN_00ec43fb((void*)pOther, 0, &DAT_01183028, &DAT_01186518, 0);
+    TESSkill* pSource = (TESSkill*)FUN_00ec43fb((void*)apCopy, 0, &DAT_01183028, &DAT_01186518, 0);
     if (!pSource)
         return;
-    TESForm::CopyFrom(pOther);
-    FUN_00401460(formData, pSource->formData, 0x14);
+    TESForm::CopyFrom(apCopy);
+    FUN_00401460(data, pSource->data, 0x14);
     for (int i = 0; i < 4; i++)
-        reinterpret_cast<TESDescription*>(formData + 0x14)[i].CopyFromBase(
-            static_cast<BaseFormComponent*>(&reinterpret_cast<TESDescription*>(pSource->formData + 0x14)[i]));
+        reinterpret_cast<TESDescription*>(data + 0x14)[i].CopyFromBase(
+            static_cast<BaseFormComponent*>(&reinterpret_cast<TESDescription*>(pSource->data + 0x14)[i]));
 }
 
 int __cdecl _memcmp(const void*, const void*, unsigned int);
 
 // @fnv 0x00618430
+// pdb: TESSkill::Compare | TESSkill.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp, i
 bool TESSkill::Compare(TESForm* apCompare)
 {
     TESSkill* pOther = dynamic_cast<TESSkill*>(apCompare);
@@ -214,7 +232,7 @@ bool TESSkill::Compare(TESForm* apCompare)
         return true;
     }
 
-    if (_memcmp(formData, reinterpret_cast<TESRegion*>(pOther)->GetDiffuseColor(), 0x14) != 0)
+    if (_memcmp(data, reinterpret_cast<TESRegion*>(pOther)->GetDiffuseColor(), 0x14) != 0)
     {
         return true;
     }
@@ -223,8 +241,8 @@ bool TESSkill::Compare(TESForm* apCompare)
         int i;
         for (i = 0; i < 4; ++i)
         {
-            if (reinterpret_cast<TESDescription*>(formData + 0x14)[i].CompareWithBase(
-                    static_cast<BaseFormComponent*>(&reinterpret_cast<TESDescription*>(pOther->formData + 0x14)[i])))
+            if (reinterpret_cast<TESDescription*>(data + 0x14)[i].CompareWithBase(
+                    static_cast<BaseFormComponent*>(&reinterpret_cast<TESDescription*>(pOther->data + 0x14)[i])))
             {
                 return true;
             }

@@ -82,9 +82,12 @@ class CircularArc
 #include "../../../include/NiPoint2.h"
 
 // @fnv 0x006971e0
-NiPoint3 NavMesh::GetPlaneNormal(unsigned short triangleIndex)
+// pdb: NavMesh::GetNormal | NavMesh_Util.obj | debug, call graph (shared callers), high
+// pdb params: apTriangle
+// pdb locals: edge1, edge2, ptri
+NiPoint3 NavMesh::GetPlaneNormal(unsigned short apTriangle)
 {
-    NavMeshTriangle* triangle = GetTriangle(triangleIndex);
+    NavMeshTriangle* triangle = GetTriangle(apTriangle);
     struct LineSegment
     {
         NiPoint3 first, second;
@@ -95,19 +98,25 @@ NiPoint3 NavMesh::GetPlaneNormal(unsigned short triangleIndex)
 
 // Wraps a NavMesh pointer in a NiPointer<NavMesh> and returns it.
 // @fnv 0x00464fc0
-NiPointer<NavMesh> MakeNavMeshPointer(NavMesh* mesh)
+// pdb: NavMeshPtr::MakeNavMeshPtr | TESDataHandler.obj | debug, call graph, high
+// pdb params: apNavMesh
+NiPointer<NavMesh> MakeNavMeshPointer(NavMesh* apNavMesh)
 {
-    return NiPointer<NavMesh>(mesh);
+    return NiPointer<NavMesh>(apNavMesh);
 }
 
 // Scans the closed-door info list for an entry whose triangle index matches triangleIndex and returns a pointer to it, or null if none matches.
 // @fnv 0x00699af0
+// pdb: NavMesh::RemoveObstacle | NavMesh_Util.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMesh::GetClosedDoorInfoForTriangle
+// pdb params: apObstacle, aPortalSwaps
+// pdb locals: pundoData, undoDataIndex
 NavMeshClosedDoorInfo* NavMesh::GetClosedDoorInfo(unsigned short triangleIndex)
 {
-    for (unsigned int i = 0; i < m_kClosedDoorInfo.GetSize(); i++)
+    for (unsigned int i = 0; i < ClosedDoors.GetSize(); i++)
     {
-        if (m_kClosedDoorInfo.GetElement(i).m_usDoorTriangleIndex == triangleIndex)
-            return &m_kClosedDoorInfo.GetElement(i);
+        if (ClosedDoors.GetElement(i).iTriangleIndex == triangleIndex)
+            return &ClosedDoors.GetElement(i);
     }
     return 0;
 }
@@ -136,20 +145,26 @@ float CircularArc::GetLength(float radius)
 
 // Gets the triangle's three vertices, converts them, and tests the point against them to compute height within the above/below range.
 // @fnv 0x00697730
-bool NavMesh::FindHeightOnTriangle(unsigned short triangleIndex, const NiPoint3& point, float& height, float above,
-                                   float below)
+// pdb: NavMesh::IsPointInsideTriangle | NavMesh_Util.obj | debug, call graph, high
+// pdb params: asTriangleIndex, aLocation, afZDiff, afMaxZdistAbove, afMaxZdistBelow
+// pdb locals: V1, ptri, V2, V0
+bool NavMesh::FindHeightOnTriangle(unsigned short asTriangleIndex, const NiPoint3& aLocation, float& afZDiff, float afMaxZdistAbove,
+                                   float afMaxZdistBelow)
 {
     NiPoint3 first, second, third;
     NavMeshTriangle* pNavTriangle;
-    pNavTriangle = GetTriangle(triangleIndex);
+    pNavTriangle = GetTriangle(asTriangleIndex);
     first = GetVertex_0068f0a0(pNavTriangle->GetVert_005582d0(0));
     second = GetVertex_0068f0a0(pNavTriangle->GetVert_005582d0(1));
     third = GetVertex_0068f0a0(pNavTriangle->GetVert_005582d0(2));
-    return NavMeshMath_IsPointInsideTriangle(first, second, third, point, height, above, below);
+    return NavMeshMath_IsPointInsideTriangle(first, second, third, aLocation, afZDiff, afMaxZdistAbove, afMaxZdistBelow);
 }
 
 // Computes an offset from the obstacle extent, gathers triangles via FUN_006987d0, and marks each triangle closed for the given door unless already recorded.
 // @fnv 0x006997e0
+// pdb: NavMesh::AddClosedDoor | NavMesh_Util.obj | debug, object-file gap fill, medium
+// pdb params: aiDoorID, apData
+// pdb locals: size, fudge, overlappedTriangles, i, pdoorInfo, doorInfo
 bool NavMesh::AddDoorObstacle(unsigned int doorID, ObstacleData* obstacle)
 {
     struct DoorBounds
@@ -175,15 +190,15 @@ bool NavMesh::AddDoorObstacle(unsigned int doorID, ObstacleData* obstacle)
     for (unsigned int i = 0; i < triangles.GetSize(); i++)
     {
         NavMeshClosedDoorInfo* existing = GetClosedDoorInfo(triangles.GetBufferEntry(i));
-        if (!existing || existing->m_uiDoorFormID != doorID)
+        if (!existing || existing->DoorFormID != doorID)
         {
             GetTriangle(triangles.GetBufferEntry(i))->SetFlag_00691570(0x1000);
             // Scalar storage avoids /GS instrumentation for the shared type's padding array.
             unsigned __int64 entryStorage;
             reinterpret_cast<NavMeshClosedDoorInfo*>(&entryStorage)->NavMeshClosedDoorInfo::NavMeshClosedDoorInfo();
-            reinterpret_cast<NavMeshClosedDoorInfo*>(&entryStorage)->m_uiDoorFormID = doorID;
-            reinterpret_cast<NavMeshClosedDoorInfo*>(&entryStorage)->m_usDoorTriangleIndex = triangles.GetBufferEntry(i);
-            m_kClosedDoorInfo.Append(*reinterpret_cast<NavMeshClosedDoorInfo*>(&entryStorage));
+            reinterpret_cast<NavMeshClosedDoorInfo*>(&entryStorage)->DoorFormID = doorID;
+            reinterpret_cast<NavMeshClosedDoorInfo*>(&entryStorage)->iTriangleIndex = triangles.GetBufferEntry(i);
+            ClosedDoors.Append(*reinterpret_cast<NavMeshClosedDoorInfo*>(&entryStorage));
         }
     }
     return true;
@@ -193,8 +208,9 @@ void __fastcall hkpShapeRayCastCollectorOutput_hkpShapeRayCastCollectorOutput(vo
 void __fastcall hkpShapeRayCastOutput__reset(void* pThis);
 
 // @fnv 0x004a3d20
-// src: XBOX_PDB 0x004a3d20
-void* __fastcall hkpShapeRayCastOutput_hkpShapeRayCastOutput(void* pThis)
+// src: XBOX_DEBUG_PDB 0x004a3d20
+// pdb: hkpShapeRayCastOutput::hkpShapeRayCastOutput | BGSDecalManager.obj | debug, call graph, high
+void* __fastcall hkpShapeRayCastOutput_ctor(void* pThis)
 {
     hkpShapeRayCastCollectorOutput_hkpShapeRayCastCollectorOutput(pThis);
     hkpShapeRayCastOutput__reset(pThis);
@@ -223,6 +239,7 @@ struct Dummy0042f800
 
 // @fnv 0x006917d0
 // src: EXE 0x006917d0
+// pdb: BSSimpleArray<unsigned short,1024>::BSSimpleArray<unsigned short,1024> | NavMesh.obj | debug, call graph, medium
 void* __fastcall BSSimpleArray_unsigned_short_1024_BSSimpleArray(int** pThis)
 {
     *pThis = &DAT_010159d4;
@@ -239,7 +256,7 @@ struct DummyA8
 // src: COMMUNITY 0x006969e0
 bool NavMesh::GetBounds_006969e0(NiPoint3* aRetMin, NiPoint3* aRetMax)
 {
-    reinterpret_cast<DummyA8*>(&m_kGrid)->GetVectors(aRetMin, aRetMax);
+    reinterpret_cast<DummyA8*>(&MeshGrid)->GetVectors(aRetMin, aRetMax);
     return true;
 }
 
@@ -291,6 +308,9 @@ struct ASC
 };
 // Computes the product of this ASC and another ASC into out, combining s and c with the given formulas, and returns out.
 // @fnv 0x00698620
+// pdb: AngleSinCos::operator- | NavMesh_Util.obj | debug, call graph, medium
+// pdb params: aSinCos
+// pdb locals: ret
 ASC* ASC::Multiply(ASC* out, const ASC* apOther)
 {
     ASC ret;
@@ -302,6 +322,9 @@ ASC* ASC::Multiply(ASC* out, const ASC* apOther)
 }
 
 // @fnv 0x00698680
+// pdb: NavMesh::DoesSegmentCrossEdge | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: aiTriangle, aiEdge, aSegmentStart, aSegmentEnd
+// pdb locals: vert2, verts, vert1
 int __fastcall GetSignFlags(float* afValues)
 {
     int res = 0;
@@ -326,6 +349,7 @@ struct FUN_00699450_S
 };
 // Constructs the object by default-constructing its two Sub members.
 // @fnv 0x00699450
+// pdb: TaskPortalSwap::TaskPortalSwap | NavMesh_Util.obj | debug, object-file gap fill, medium
 FUN_00699450_S::FUN_00699450_S()
 {}
 
@@ -343,6 +367,7 @@ struct FUN_006994b0
 };
 
 // @fnv 0x006994b0
+// pdb: TaskPortalSwap::~TaskPortalSwap | NavMesh_Util.obj | debug, call graph, medium
 FUN_006994b0::~FUN_006994b0()
 {}
 
@@ -356,12 +381,14 @@ TwoIntRecord::TwoIntRecord(NavMesh* apMesh, unsigned short ausVertex)
 void __fastcall InitializeNavMeshEdgeBase(NavMeshEdgeData*);
 
 // @fnv 0x0069a6c0
-NavMeshEdgeData::NavMeshEdgeData(NavMesh* apNav, unsigned short ausTri, int aiEdge)
+// pdb: FastNavMeshEdgeHandle::FastNavMeshEdgeHandle | NavMesh_Util.obj | debug, call graph, high
+// pdb params: apNavMesh, ausTriangle, aiEdgeIndex
+NavMeshEdgeData::NavMeshEdgeData(NavMesh* apNavMesh, unsigned short ausTriangle, int aiEdgeIndex)
 {
     InitializeNavMeshEdgeBase(this);
-    m_pLocationNavMesh = apNav;
-    m_usTriangleID = ausTri;
-    m_iEdgeIndex = aiEdge;
+    m_pLocationNavMesh = apNavMesh;
+    m_usTriangleID = ausTriangle;
+    m_iEdgeIndex = aiEdgeIndex;
 }
 
 struct FUN_0069a700_shell : public NavMeshTriangleHandle
@@ -372,6 +399,8 @@ struct FUN_0069a700_shell : public NavMeshTriangleHandle
 // Builds a 16-bit value from bits 0-13 of the word at aEdge+4 and bits 0-1 of the word at aEdge+8 shifted left 14, storing it at this.
 // @fnv 0x0069a700
 // src: COMMUNITY 0x0069a700
+// pdb: NavMeshPOVEdge::Set | NavMesh_Util.obj | debug, upstream name already matches, high
+// pdb params: aEdge
 void FUN_0069a700_shell::NavMeshPOVEdge_Set(void* aEdge)
 {
     *(unsigned short*)this =
@@ -389,6 +418,7 @@ struct Dummy_0069af30
 // Sets the vtable pointer and calls ResetAndWrite with 0, 0, then returns pThis.
 // @fnv 0x0069af30
 // src: XBOX_PDB 0x0069af30
+// pdb: BSSimpleArray<NavMeshEdgeHandle,1024>::BSSimpleArray<NavMeshEdgeHandle,1024> | NavMesh_Util.obj | debug, object-file run extension, low
 Dummy_0069af30* __fastcall BSSimpleArray_NavMeshEdgeHandle_1024_BSSimpleArray_NavMeshEdgeHandle_1024(Dummy_0069af30* pThis)
 {
     pThis->vtable = &DAT_0106b1b8;
@@ -405,8 +435,9 @@ class GlobalObject_00869f00
 };
 
 // @fnv 0x0069af60
-// src: GUESS 0x0069af60 (confidence: medium)
-void __fastcall Object_ResetVirtualTableAndClear_0069af60(GlobalObject_00869f00* apObject)
+// src: XBOX_DEBUG_PDB 0x0069af60
+// pdb: BSSimpleArray<NavMeshEdgeHandle,1024>::~BSSimpleArray<NavMeshEdgeHandle,1024> | NavMesh_Util.obj | debug, call graph (shared callers), high
+void __fastcall BSSimpleArray_NavMeshEdgeHandle_1024_dtor(GlobalObject_00869f00* apObject)
 {
     *(int**)apObject = &DAT_0106b1b8;
     apObject->Clear(true);
@@ -418,14 +449,17 @@ struct FUN_0069b030_S
     TwoIntRecord* data;
     unsigned int BSSimpleArray_NiPoint2_1024_AddUninitialized();
     void ConstructPairCells(TwoIntRecord*, int);
-    unsigned int Append(const TwoIntRecord* v);
+    unsigned int Append(const TwoIntRecord* aValue);
 };
 // @fnv 0x0069b030
-unsigned int FUN_0069b030_S::Append(const TwoIntRecord* apValue)
+// pdb: BSSimpleArray<NavMeshClosedDoorInfo,1024>::Add | NavMesh_Util.obj | debug, call graph, high
+// pdb params: aValue
+// pdb locals: iindex
+unsigned int FUN_0069b030_S::Append(const TwoIntRecord* aValue)
 {
     unsigned int i = BSSimpleArray_NiPoint2_1024_AddUninitialized();
     ConstructPairCells(&data[i], 1);
-    data[i] = *apValue;
+    data[i] = *aValue;
     return i;
 }
 
@@ -439,6 +473,9 @@ struct FUN_0069b310_S
 };
 // Gets the current count, grows the data array by one element, copies the given element into the new slot, and returns its index.
 // @fnv 0x0069b310
+// pdb: BSSimpleArray<FastNavMeshEdgeHandle,1024>::Add | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 unsigned int FUN_0069b310_S::AppendElement(const NavMeshEdgeData* apElement)
 {
     unsigned int i = BSSimpleArray_NiPoint3_1024_AddUninitialized();
@@ -457,6 +494,8 @@ struct FUN_006a04e0_helper : public SineCosine
 
 // Stores cos(afAngle) and FUN_004e44b0(afAngle) into the first two floats of this object and returns this.
 // @fnv 0x006a04e0
+// pdb: AngleSinCos::AngleSinCos | NavMeshPOVSearch.obj | debug, call graph (shared callers), medium
+// pdb params: afAngle
 void* FUN_006a04e0_helper::SetFromAngle(float afAngle)
 {
     ((float*)this)[0] = cos(afAngle);
@@ -489,6 +528,9 @@ struct IW
 bool __cdecl NavMeshMath_Find2DIntersection_006b9e90(NiP2*, NiP2*, int, int, int);
 // Builds the triangle's three 2D vertices and returns the first edge index (skipping edge) for which FUN_006b9e90 succeeds, else -1.
 // @fnv 0x00698060
+// pdb: NavMesh::FindInterectingEdge | NavMesh_Util.obj | debug, object-file gap fill, medium
+// pdb params: ausTri, aIgnoreEdge, aStartPoint, aEndPoint, apReturnIntersection
+// pdb locals: edgeVerts2D, vert, i, j
 int __fastcall FindTriangleEdge(NavMesh* self, USW usTri, IW iSkipEdge, IW a3, IW a4, IW a5)
 {
     NiP2 verts[3];
@@ -513,6 +555,7 @@ int __fastcall FindTriangleEdge(NavMesh* self, USW usTri, IW iSkipEdge, IW a3, I
 }
 
 // @fnv 0x0069a690
+// pdb: FastNavMeshEdgeHandle::FastNavMeshEdgeHandle | NavMesh_Util.obj | debug, object-file run extension, low
 TwoIntRecord::TwoIntRecord(const TwoIntRecord& other)
 {
     a = other.a;
@@ -521,6 +564,7 @@ TwoIntRecord::TwoIntRecord(const TwoIntRecord& other)
 
 extern unsigned int _data_011c16bc;
 // @fnv 0x0069a730
+// pdb: POVVertexData::POVVertexData | NavMesh_Util.obj | debug, object-file gap fill, medium
 NavMeshVertexEdgeData::NavMeshVertexEdgeData()
 {}
 
@@ -595,6 +639,7 @@ struct DelStandIn
 };
 // Calls the destructor on this object, frees it with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0069a7a0
+// pdb: POVVertexData::`scalar deleting destructor' | NavMesh_Util.obj | debug, object-file gap fill, medium
 void* DelStandIn::FUN_0069a7a0(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -619,12 +664,15 @@ float __cdecl BSMIN(float a, float b);
 float __cdecl BSMAX_00404010(float a, float b);
 NiPoint3 __cdecl NiPoint3_TransformByMatrix3(const NiPoint3& arPt, const float* apRot);
 bool __cdecl DoBoundsOverlap(const NiPoint3& a, const NiPoint3& b, const NiPoint3& c, const NiPoint3& d);
-bool __cdecl NavMeshObstacleManager_IsPointInBox(const NiPoint3& arCenter, const NiPointer<ObstacleData>& arObstacle, float afHeight, float afFudge);
+bool __cdecl NavMeshObstacleManager_IsPointInBox(const NiPoint3& aPoint, const NiPointer<ObstacleData>& aBox, float afMaxHeightAbove, float afMaxHeightBelow);
 bool __cdecl NavMeshMath_Find2DIntersection(const NiPoint3& a, const NiPoint3& b, const NiPoint3& c, const NiPoint3& d);
 extern const float DAT_01015f5c;
 
 // @fnv 0x006987d0
 // src: COMMUNITY 0x006987d0
+// pdb: NavMesh::GetOverlappedTriangleList | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: apObstacle, afFudge, apRetTriangles
+// pdb locals: istartRow, iendRow, fzheight, istartCol, cornersLocalSpace, iendCol, r, c, parray, i, ptri, bOverlap, wtriMin, fdontCare, wtriMax, v, vertLocation, triv, triw, vert2, vert1, boxv, box1, box2 ...
 void NavMesh::GetOverlappedTriangleList(const NiPointer<ObstacleData>& apObstacle, const NiPoint3& afFudge,
                                   NavMeshTriList* apRetTriangles)
 {
@@ -633,8 +681,8 @@ void NavMesh::GetOverlappedTriangleList(const NiPointer<ObstacleData>& apObstacl
     unsigned int iendRow = 0;
     unsigned int iendCol = 0;
 
-    m_kGrid.GetCellCoords(reinterpret_cast<const NiPoint3*>(apObstacle->pad58)[0], istartRow, istartCol);
-    m_kGrid.GetCellCoords(reinterpret_cast<const NiPoint3*>(apObstacle->pad58)[1], iendRow, iendCol);
+    MeshGrid.GetCellCoords(reinterpret_cast<const NiPoint3*>(apObstacle->pad58)[0], istartRow, istartCol);
+    MeshGrid.GetCellCoords(reinterpret_cast<const NiPoint3*>(apObstacle->pad58)[1], iendRow, iendCol);
 
     NiPoint3 cornersLocalSpace[4];
     cornersLocalSpace[0] = NiPoint3(apObstacle->kMinBoundsCur.x - afFudge.x, apObstacle->kMinBoundsCur.y - afFudge.y,
@@ -652,7 +700,7 @@ void NavMesh::GetOverlappedTriangleList(const NiPointer<ObstacleData>& apObstacl
     {
         for (unsigned int c = istartCol; c <= iendCol; c++)
         {
-            NavMeshTriList* parray = m_kGrid.NavMeshGrid_GetTriangleArray(c, r);
+            NavMeshTriList* parray = MeshGrid.NavMeshGrid_GetTriangleArray(c, r);
             if (parray)
             {
                 for (unsigned int i = 0; i < parray->GetSize(); i++)
@@ -771,9 +819,13 @@ struct FUN_0069b120_stub
 
 // Calls FUN_0069b120 on the stub at this+0xd0 with arg and 1.
 // @fnv 0x00699590
+// pdb: BSSimpleArray<NiPointer<ObstacleUndoData>,1024>::RemoveFast | NavMesh_Util.obj | retail, call graph, low
+// pdb note: debug build links it to NavMesh::RemoveObstacleUndoData
+// pdb params: aiIndex, aiHowMany
+// pdb locals: iitemsToMove
 void NavMesh::ForwardToStub(int arg)
 {
-    reinterpret_cast<FUN_0069b120_stub*>(&m_kObstacleUndoData)->RemoveArrayRange(arg, 1);
+    reinterpret_cast<FUN_0069b120_stub*>(&Obstacles)->RemoveArrayRange(arg, 1);
 }
 
 struct Flt
@@ -788,12 +840,15 @@ struct Arr
 
 // @fnv 0x00699630
 // src: COMMUNITY 0x00699630
+// pdb: NavMesh::GetUndoDataIndexForObstacle | NavMesh_Util.obj | debug, upstream name already matches, high
+// pdb params: aBox
+// pdb locals: i
 int NavMesh::GetUndoDataIndexForObstacle(int param1, unsigned int* apuiValue)
 {
     int idx = this->FindEntryIndex(param1);
     if (idx != -1)
     {
-        *apuiValue = reinterpret_cast<Arr*>(&m_kObstacleUndoData)->GetAt(idx)->operator unsigned int();
+        *apuiValue = reinterpret_cast<Arr*>(&Obstacles)->GetAt(idx)->operator unsigned int();
         return idx;
     }
     *apuiValue = 0;
@@ -810,6 +865,8 @@ struct FUN_00699790_shell
 };
 
 // @fnv 0x00699790
+// pdb: BSSimpleArray<BoundsTriangleInfo,1024>::operator[] | NavMesh_Util.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 int FUN_00699790_shell::GetBits13To15()
 {
     return (m_iFourthElementInteger & 0xe000) >> 13;
@@ -835,10 +892,12 @@ extern double _gModifierZero;
 
 // Builds per-vertex edge lists from triangle edges, pairs edges into portals, and assigns each triangle the nearest portal vertex within a radius.
 // @fnv 0x00699b60
+// pdb: NavMesh::CreatePOVs | NavMesh_Util.obj | retail, call graph, high
+// pdb locals: itriCount, tempAutoEvent, VertexMap, fMaxDist, it, i, ptri, e, hvert1, hedge, pdata1, pdata2, hvert2, iedgeCount, iportalEdgeCount, pdata, hvert, hdataEdge0, edge1, edge2, cross, verts2, badd, verts1 ...
 void NavMesh::BuildPortalPOVs()
 {
-    reinterpret_cast<NavMeshPOVMap&>(POVPointerArray).RemoveAll();
-    m_kAdditionalIndexList.Clear(true);
+    reinterpret_cast<NavMeshPOVMap&>(POVs).RemoveAll();
+    ClosestPOVs.Clear(true);
     NavMeshVertexMap_navmesh_util kNavMeshVertexLookup(37);
     unsigned int itriCount = NavMesh_GetTriangleCount();
     void* it;
@@ -974,9 +1033,9 @@ void NavMesh::BuildPortalPOVs()
             if (badd || iedgeCount == 1)
             {
                 NavMeshPOVData pov;
-                pov.m_kFirstEdge.Set(hedge1);
-                pov.m_kSecondEdge.Set(hedge2);
-                reinterpret_cast<NavMeshPOVMap&>(POVPointerArray).SetAt(*reinterpret_cast<const unsigned short*>(&hvert.b), pov);
+                pov.Edge1.Set(hedge1);
+                pov.Edge2.Set(hedge2);
+                reinterpret_cast<NavMeshPOVMap&>(POVs).SetAt(*reinterpret_cast<const unsigned short*>(&hvert.b), pov);
             }
         }
     }
@@ -1000,12 +1059,12 @@ void NavMesh::BuildPortalPOVs()
         float fmaxRadiusSqr = fmaxRadius * fmaxRadius;
         unsigned short iClosestPOV = 0xFFFF;
         float fclosestPOVSqrDist = fmaxRadiusSqr * fmaxRadiusSqr;
-        void* it = reinterpret_cast<NavMeshPOVMap&>(POVPointerArray).GetFirstPos();
+        void* it = reinterpret_cast<NavMeshPOVMap&>(POVs).GetFirstPos();
         while (it)
         {
             unsigned short usCurrentVertexIndex;
             NavMeshPOVData data;
-            reinterpret_cast<NavMeshPOVMap&>(POVPointerArray).GetNext(it, usCurrentVertexIndex, data);
+            reinterpret_cast<NavMeshPOVMap&>(POVs).GetNext(it, usCurrentVertexIndex, data);
             NiPoint3 delta = GetVertex_0068f0a0(usCurrentVertexIndex) - circumCenter;
             float fsqrDist = delta.GetSquaredXYLength();
             if (fsqrDist < fclosestPOVSqrDist && std::abs(delta.z) < 180.0)
@@ -1014,7 +1073,7 @@ void NavMesh::BuildPortalPOVs()
                 iClosestPOV = usCurrentVertexIndex;
             }
         }
-        m_kAdditionalIndexList.ReserveIndex(iClosestPOV);
+        ClosestPOVs.ReserveIndex(iClosestPOV);
     }
 }
 
@@ -1022,6 +1081,9 @@ extern "C" void __cdecl NavMeshMath_Find2DIntersection_006ba010(const NiPoint2& 
 
 // @fnv 0x00696540
 // src: XBOX_PDB 0x00696540
+// pdb: NavMeshMath::Find2DIntersection | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: aSegment1Start, aSegment1End, aSegment2Start, aSegment2End, apReturnIntersection
+// pdb locals: fa2, fa1, fa3, fa4, t
 void NavMeshMath_Find2DIntersection(const NiPoint3* aSegment1Start, const NiPoint3* aSegment2Start, const NiPoint3* aSegment1End,
                   const NiPoint3* aSegment2End)
 {
@@ -1073,6 +1135,8 @@ struct Holder
 // Copies the float at offset 0x10, the int at 0x14 and the 64-bit value at 0x18 from p into this after calling FUN_004a3c90, then returns this.
 // @fnv 0x00696ca0
 // src: XBOX_PDB 0x00696ca0
+// pdb: hkpShapeRayCastCollectorOutput::hkpShapeRayCastCollectorOutput | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: __that
 Holder* Holder::hkpShapeRayCastCollectorOutput_hkpShapeRayCastCollectorOutput_00696ca0(Holder* apSource)
 {
     this->FUN_004a3c90(apSource);
@@ -1084,6 +1148,8 @@ Holder* Holder::hkpShapeRayCastCollectorOutput_hkpShapeRayCastCollectorOutput_00
 
 // Returns true if FindTriangleForLocation finds a triangle (result not 0xFFFF) for the given position and filter.
 // @fnv 0x00697670
+// pdb: NavMesh::IsPointInsideNavmesh | NavMesh_Util.obj | debug, call graph (shared callers), medium
+// pdb params: aPoint, apFilter
 bool NavMesh::IsLocationOnNavMesh(const NiPoint3& aPos, FindTriangleForLocationFilter* apFilter)
 {
     if (FindTriangleForLocation(aPos, apFilter) != 0xFFFF)
@@ -1096,16 +1162,19 @@ struct Dummy698030
 {
     int _p[3];
     unsigned int f12;
-    unsigned int NavMeshTriangle_GetEdgeCover(unsigned short a1);
+    unsigned int NavMeshTriangle_GetEdgeCover(unsigned short aiEdge);
 };
 // Shifts f12 right by a1*6+0x10 and returns the low 4 bits of the result.
 // @fnv 0x00698030
 // src: XBOX_PDB 0x00698030
-unsigned int Dummy698030::NavMeshTriangle_GetEdgeCover(unsigned short ausIndex)
+// pdb: NavMeshTriangle::GetEdgeCover | NavMesh_Util.obj | debug, upstream name already matches, high
+// pdb params: aiEdge
+// pdb locals: ioffset, ishifted
+unsigned int Dummy698030::NavMeshTriangle_GetEdgeCover(unsigned short aiEdge)
 {
     unsigned int result;
     {
-        unsigned int shift = ausIndex * 6 + 0x10;
+        unsigned int shift = aiEdge * 6 + 0x10;
         result = f12 >> shift;
     }
     return result & 0xF;
@@ -1114,11 +1183,12 @@ unsigned int Dummy698030::NavMeshTriangle_GetEdgeCover(unsigned short ausIndex)
 struct FUN_00698300_shell
 {
     void _ref_006815c0();
-    FUN_00698300_shell* ProcessAndReturnValue_00698300();
+    FUN_00698300_shell* NavMesh_FIEResult_ctor();
 };
 // @fnv 0x00698300
-// src: GUESS 0x00698300 (confidence: low)
-FUN_00698300_shell* FUN_00698300_shell::ProcessAndReturnValue_00698300()
+// src: XBOX_DEBUG_PDB 0x00698300
+// pdb: NavMesh::FIEResult::FIEResult | NavMesh_Util.obj | debug, call graph, high
+FUN_00698300_shell* FUN_00698300_shell::NavMesh_FIEResult_ctor()
 {
     ((FUN_00698300_shell*)((char*)this + 8))->_ref_006815c0();
     return this;
@@ -1128,16 +1198,19 @@ FUN_00698300_shell* FUN_00698300_shell::ProcessAndReturnValue_00698300()
 
 // @fnv 0x00698fc0
 // src: COMMUNITY 0x00698fc0
-bool NavMesh::RemoveObstacle(int a, int b)
+// pdb: NavMesh::FindPortalTriangles | NavMesh_Util.obj | retail, object-file gap fill, high
+// pdb params: apNavMeshInfo, apReturnArray
+// pdb locals: i, pTri, j
+bool NavMesh::RemoveObstacle(int apNavMeshInfo, int apReturnArray)
 {
     int idx;
     {
         unsigned int tmp;
-        idx = GetUndoDataIndexForObstacle(a, &tmp);
+        idx = GetUndoDataIndexForObstacle(apNavMeshInfo, &tmp);
     }
     if (idx == -1)
         return false;
-    return UndoToPosition(idx, b);
+    return UndoToPosition(idx, apReturnArray);
 }
 
 // Returns the larger of the two unsigned arguments.
@@ -1154,14 +1227,17 @@ unsigned int MaxUnsigned(unsigned int auiValue, unsigned short ausValue)
 
 struct S0069afb0
 {
-    int ProcessEntries_0069afb0(unsigned short, int);
+    int NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_GetAt(unsigned short, int);
 };
 
 // The shared one-argument bool overload cannot represent this two-argument integer entry.
 // @fnv 0x006997b0
-int __fastcall ForwardTriangleObstacle(NavMesh* self, USW a, IW b)
+// src: XBOX_DEBUG_PDB 0x006997b0
+// pdb: NavMesh::GetObstacleForTriangle | NavMesh_Util.obj | debug, call graph (shared callers), high
+// pdb params: ausTriangle, spRetObstacle
+int __fastcall NavMesh_GetObstacleForTriangle(NavMesh* self, USW a, IW b)
 {
-    return reinterpret_cast<S0069afb0*>(self->pTriangleToObstacleMap)->ProcessEntries_0069afb0(a.v, b.v);
+    return reinterpret_cast<S0069afb0*>(self->pTriangleToObstacleMap)->NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_GetAt(a.v, b.v);
 }
 
 // Exe 0x00699a30: local storage view; GetFlags binds the folded DWORD-at-+8 accessor 0x0044ddc0.
@@ -1184,19 +1260,22 @@ struct S006950d0
 
 // @fnv 0x00699a30
 // src: COMMUNITY 0x00699a30
+// pdb: NavMesh::RemoveClosedDoor | NavMesh_Util.obj | debug, object-file gap fill, medium
+// pdb params: aiDoorID
+// pdb locals: i
 bool NavMesh::Navmesh_RemoveClosedDoor(unsigned int doorID)
 {
     unsigned int i = 0;
-    for (; i < reinterpret_cast<NavmeshOffset08View*>(&m_kClosedDoorInfo)->GetFlags(); ++i)
+    for (; i < reinterpret_cast<NavmeshOffset08View*>(&ClosedDoors)->GetFlags(); ++i)
     {
-        if (reinterpret_cast<S006950d0*>(&m_kClosedDoorInfo)->GetElement(i)->m_uiDoorFormID == doorID)
+        if (reinterpret_cast<S006950d0*>(&ClosedDoors)->GetElement(i)->DoorFormID == doorID)
         {
-            if (reinterpret_cast<S006950d0*>(&m_kClosedDoorInfo)->GetElement(i)->m_usDoorTriangleIndex < NavMesh_GetTriangleCount())
+            if (reinterpret_cast<S006950d0*>(&ClosedDoors)->GetElement(i)->iTriangleIndex < NavMesh_GetTriangleCount())
             {
-                ((BSXFlags_shell*)GetTriangle(reinterpret_cast<S006950d0*>(&m_kClosedDoorInfo)->GetElement(i)->m_usDoorTriangleIndex))
+                ((BSXFlags_shell*)GetTriangle(reinterpret_cast<S006950d0*>(&ClosedDoors)->GetElement(i)->iTriangleIndex))
                     ->ClearFlags(0x1000);
             }
-            reinterpret_cast<ActorAvoidanceDataArray*>(&m_kClosedDoorInfo)->FUN_00983720(i, 1);
+            reinterpret_cast<ActorAvoidanceDataArray*>(&ClosedDoors)->FUN_00983720(i, 1);
             --i;
         }
     }
@@ -1217,6 +1296,7 @@ struct FUN_0069a7d0
 };
 // Destructor for the object; it destroys the two embedded members and returns.
 // @fnv 0x0069a7d0
+// pdb: POVVertexData::~POVVertexData | NavMesh_Util.obj | debug, object-file gap fill, medium
 FUN_0069a7d0::~FUN_0069a7d0()
 {}
 
@@ -1248,7 +1328,7 @@ unsigned int NavMesh::AppendTriangleVerticesInList(unsigned short triangle, BSSi
     for (int i3 = 0; i3 < 3; ++i3)
     {
         unsigned short vertex3 = navMeshTriangle->GetVert_005582d0(i3);
-        if (reinterpret_cast<fnv_0069a940::NavMeshTriList*>(&m_kAdditionalData)
+        if (reinterpret_cast<fnv_0069a940::NavMeshTriList*>(&ObstaclePOVs)
                 ->FindMatchingIndex(vertex3, 0, fnv_0069a940::AreWideCharsEqual) != -1)
         {
             object->ReserveIndex(vertex3);
@@ -1265,11 +1345,13 @@ struct FUN_0069b0a0_shell
 
 // @fnv 0x0069a9d0
 // src: GUESS 0x0069a9d0 (confidence: medium)
+// pdb: NavMesh::GetPOVForVertex | NavMesh_Util.obj | debug, object-file gap fill, medium
+// pdb params: ausVertex, aRetData
 void NavMesh::LookupPOVValueWithInitialization(unsigned short a1, unsigned int a2)
 {
-    if (reinterpret_cast<NavMeshPOVMap*>(&POVPointerArray)->IsEmpty())
+    if (reinterpret_cast<NavMeshPOVMap*>(&POVs)->IsEmpty())
         InitializeNavMeshData();
-    reinterpret_cast<FUN_0069b0a0_shell*>(&POVPointerArray)->LookupValue(a1, a2);
+    reinterpret_cast<FUN_0069b0a0_shell*>(&POVs)->LookupValue(a1, a2);
 }
 
 struct FUN_0069b240_Holder
@@ -1281,6 +1363,9 @@ struct FUN_0069b240_Holder
 };
 // Scans field_4 from start to field_8, calling func on each element with a, and returns the first matching index or -1.
 // @fnv 0x0069b240
+// pdb: BSSimpleArray<unsigned short,1024>::Find<unsigned short> | NavMesh_Util.obj | debug, call graph, medium
+// pdb params: aValue, aiStartIndex, apFunc
+// pdb locals: i
 int FUN_0069b240_Holder::FindMatchingIndex(int aiValue, unsigned int start, bool(__cdecl* func)(unsigned short*, int))
 {
     unsigned int i;
@@ -1307,6 +1392,8 @@ struct C006b39a0
 // Copies the first field, an EH at offset 8, and three ints at offsets 0x14, 0x18 and 0x1c from rhs into this, returning *this.
 // @fnv 0x006b39a0
 // src: GUESS 0x006b39a0 (confidence: medium)
+// pdb: PathSmootherPOVSearch::PathEdgeVert::operator= | PathSmootherPOV.obj | debug, object-file gap fill, medium
+// pdb params: __that
 C006b39a0& C006b39a0::CopyFields_006b39a0(C006b39a0 const& rhs)
 {
     *(TwoIntRecord*)this = *(TwoIntRecord*)&rhs;
@@ -1321,30 +1408,36 @@ C006b39a0& C006b39a0::CopyFields_006b39a0(C006b39a0 const& rhs)
 typedef char _sizecheck_PathingLocation[sizeof(PathingLocation) == 40 ? 1 : -1];
 
 // @fnv 0x006dcee0
-PathingLocation::PathingLocation(const NiPoint3& a1, TESObjectCELL* apCell, TESWorldSpace* apWorldspace)
+// pdb: PathingLocation::PathingLocation | PathingLocation.obj | retail, call graph (shared callers), high
+PathingLocation::PathingLocation(const NiPoint3& aLocation, TESObjectCELL* apCell, TESWorldSpace* apWorldSpace)
 {
-    SetLocationData(a1, apCell, apWorldspace);
+    SetLocationData(aLocation, apCell, apWorldSpace);
 }
 
 // Computes index as c * m0 + b and calls the array element's method with a.
 // @fnv 0x00696500
 // src: COMMUNITY 0x00696500
-void NavMeshGrid::SetTriangleData(unsigned short ausValue, unsigned int b, unsigned int c)
+// pdb: NavMeshGrid::SetTriangleData | NavMesh_Util.obj | debug, upstream name already matches, high
+// pdb params: aiTriangle, aiColumn, aiRow
+// pdb locals: iindex
+void NavMeshGrid::SetTriangleData(unsigned short aiTriangle, unsigned int aiColumn, unsigned int aiRow)
 {
-    int index = c * m_uiGridIndex + b;
-    TESFileRecordLoader[index].ReserveIndex(ausValue);
+    int index = aiRow * iGridSize + aiColumn;
+    GridData[index].ReserveIndex(aiTriangle);
 }
 
 struct Sub0069d4b0
 {
-    void __thiscall NavMeshGrid_GetTriangleDataForAABB(int a, int b, int c);
+    void __thiscall NavMeshGrid_GetTriangleDataForAABB(int aLocStart, int aLocEnd, int apReturnArray);
 };
 
 // The shared header has no three-argument grid forwarding member yet.
 // @fnv 0x00696c00
+// pdb: NavMesh::GetTrianglesForAABB | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: aAABBMin, aAABBMax, apRetTriangles
 void __fastcall ForwardNavMeshGrid(NavMesh* self, IW aiArg1, IW aiArg2, IW aiArg3)
 {
-    reinterpret_cast<Sub0069d4b0&>(self->m_kGrid).NavMeshGrid_GetTriangleDataForAABB(aiArg1.v, aiArg2.v, aiArg3.v);
+    reinterpret_cast<Sub0069d4b0&>(self->MeshGrid).NavMeshGrid_GetTriangleDataForAABB(aiArg1.v, aiArg2.v, aiArg3.v);
 }
 
 struct S50
@@ -1394,6 +1487,9 @@ struct FUN_0069b360_shell
 };
 
 // @fnv 0x0069b360
+// pdb: BSSimpleArray<FastNavMeshEdgeHandle,1024>::_Allocate | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* __thiscall FUN_0069b360_shell::ConstructBuffer(unsigned int a)
 {
     *(void**)this = &DAT_0106b1f4;
@@ -1407,6 +1503,9 @@ void* __thiscall FUN_0069b360_shell::ConstructBuffer(unsigned int a)
 
 // Tests arPoint against triangle ausTri, computes arZ, and if a callback is given calls its Test with the point raised by arZ.
 // @fnv 0x00697810
+// pdb: NavMesh::IsPointInsideTriangleFilter | NavMesh_Util.obj | debug, object-file gap fill, medium
+// pdb params: asTriangleIndex, aLocation, afZDiff, apFilter
+// pdb locals: V1, ptri, V2, binside, V0, pointOnTri
 bool NavMesh::TestPointOnTriangle(unsigned short ausTri, const NiPoint3& arPoint, float& arZ,
                                          FindTriangleForLocationFilter* apCallback)
 {
@@ -1441,8 +1540,12 @@ bool NavMesh::TestPointOnTriangle(unsigned short ausTri, const NiPoint3& arPoint
 
 // Tests whether arPoint lies inside triangle ausTriangle in XY, writes the interpolated Z to apfZ, and checks the Z offset against afAbove/afBelow.
 // @fnv 0x00697980
-bool NavMesh::GetTriangleHeightAtPoint(unsigned short ausTriangle, const NiPoint3& arPoint, float afAbove,
-                                              float afBelow, float* apfHeight)
+// src: XBOX_DEBUG_PDB 0x00697980
+// pdb: NavMesh::ComputeTriangleZForLocation | NavMesh_Util.obj | debug, call graph, high
+// pdb params: asTriangleIndex, aLocation, afMaxZdistAbove, afMaxZdistBelow, afZCoord
+// pdb locals: V1, ptri, v1yy, v1xx, v2xx, V2, v0xx, f0, fC, fzdist, fB, fdenom, fA, V0, v2yy, v0yy
+bool NavMesh::ComputeTriangleZForLocation(unsigned short asTriangleIndex, const NiPoint3& aLocation, float afMaxZdistAbove,
+                                              float afMaxZdistBelow, float* afZCoord)
 {
     float fY0;
     {
@@ -1475,7 +1578,7 @@ bool NavMesh::GetTriangleHeightAtPoint(unsigned short ausTriangle, const NiPoint
                                                             NavMeshTriangle* pTri;
                                                             {
                                                                 const NiPoint3* pVertex1;
-                                                                pTri = GetTriangle(ausTriangle);
+                                                                pTri = GetTriangle(asTriangleIndex);
                                                                 pVertex0 = &GetVertex_0068f0a0(pTri->GetVert_005582d0(0));
                                                                 pVertex1 = &GetVertex_0068f0a0(pTri->GetVert_005582d0(1));
                                                                 pVertex2 = &GetVertex_0068f0a0(pTri->GetVert_005582d0(2));
@@ -1485,28 +1588,28 @@ bool NavMesh::GetTriangleHeightAtPoint(unsigned short ausTriangle, const NiPoint
                                                                            (pVertex1->y - pVertex0->y);
                                                                 if (fDet == 0.0)
                                                                     return false;
-                                                                fX1 = pVertex1->x - arPoint.x;
-                                                                fX2 = pVertex2->x - arPoint.x;
-                                                                fY1 = pVertex1->y - arPoint.y;
-                                                                fY2 = pVertex2->y - arPoint.y;
+                                                                fX1 = pVertex1->x - aLocation.x;
+                                                                fX2 = pVertex2->x - aLocation.x;
+                                                                fY1 = pVertex1->y - aLocation.y;
+                                                                fY2 = pVertex2->y - aLocation.y;
                                                                 fInvDet = 1.0f / fDet;
                                                                 fWeight0 = (fX1 * fY2 - fX2 * fY1) * fInvDet;
                                                                 if (fWeight0 < 0.0)
                                                                     return false;
-                                                                fX0 = pVertex0->x - arPoint.x;
-                                                                fY0 = pVertex0->y - arPoint.y;
+                                                                fX0 = pVertex0->x - aLocation.x;
+                                                                fY0 = pVertex0->y - aLocation.y;
                                                                 fWeight1 = (fX2 * fY0 - fX0 * fY2) * fInvDet;
                                                                 if (fWeight1 < 0.0)
                                                                     return false;
                                                                 fC = (fX0 * fY1 - fX1 * fY0) * fInvDet;
                                                                 if (fC < 0.0)
                                                                     return false;
-                                                                *apfHeight = fWeight0 * pVertex0->z +
+                                                                *afZCoord = fWeight0 * pVertex0->z +
                                                                              fWeight1 * pVertex1->z + fC * pVertex2->z;
-                                                                fDZ = arPoint.z - *apfHeight;
-                                                                if (fDZ > afAbove)
+                                                                fDZ = aLocation.z - *afZCoord;
+                                                                if (fDZ > afMaxZdistAbove)
                                                                     return false;
-                                                                else if (-afBelow > fDZ)
+                                                                else if (-afMaxZdistBelow > fDZ)
                                                                     return false;
                                                                 return true;
                                                             }
@@ -1530,6 +1633,9 @@ extern double DAT_01011588;
 // Computes the circumcenter of the triangle's three vertices in the XY plane and returns it with Z set to the highest vertex Z.
 // @fnv 0x00697290
 // src: COMMUNITY 0x00697290
+// pdb: NavMesh::GetCircumCenter | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: apTriangle
+// pdb locals: xdo, a2, circumcenter, p1, denominator, p2, ydo, xao, b2, p0, yao, numerator, Z
 NiPoint3 NavMesh::GetCircumCenter(unsigned short apTriangle)
 {
     float xdo;
@@ -1568,7 +1674,11 @@ NiPoint3 NavMesh::GetCircumCenter(unsigned short apTriangle)
 
 // Tests each triangle edge except aIgnoreEdge for intersection with the segment aStartPoint-aEndPoint and returns the first crossing edge index, or -1.
 // @fnv 0x00698320
-int NavMesh::FindCrossedEdge(unsigned short ausTri, int aIgnoreEdge, const NiPoint3* aStartPoint,
+// src: XBOX_DEBUG_PDB 0x00698320
+// pdb: NavMesh::FindIntersectingEdgeFast | NavMesh_Util.obj | debug, call graph, high
+// pdb params: ausTri, aIgnoreEdge, aStartPoint, aEndPoint
+// pdb locals: ptri, edgeVerts, i, j, fa2, fa3, fa4, fa1
+int NavMesh::FindIntersectingEdgeFast(unsigned short ausTri, int aIgnoreEdge, const NiPoint3* aStartPoint,
                                     const NiPoint3* aEndPoint)
 {
     NiPoint3 edgeVerts[3];
@@ -1625,9 +1735,12 @@ struct GlobalObject_00869f00
 }  // namespace fnv_0069a830
 
 // @fnv 0x0069a830
+// pdb: NavMesh::GetPOVsForTriangle | NavMesh_Util.obj | debug, object-file gap fill, medium
+// pdb params: ausTriangle, aRetPOVs
+// pdb locals: itotal, ptri, i, ivertIndex, data
 int NavMesh::CollectTrianglePOVs(unsigned short triangle, BSSimpleArray<unsigned short, 1024>* povs)
 {
-    if (reinterpret_cast<NavMeshPOVMap&>(POVPointerArray).IsEmpty())
+    if (reinterpret_cast<NavMeshPOVMap&>(POVs).IsEmpty())
         InitializeNavMeshData();
     ((fnv_0069a830::GlobalObject_00869f00*)povs)->Clear(false);
     int iAddedCount = 0;
@@ -1636,16 +1749,16 @@ int NavMesh::CollectTrianglePOVs(unsigned short triangle, BSSimpleArray<unsigned
     {
         unsigned short m_usVertexId = pNavTriangle->GetVert_005582d0(i);
         unsigned int uiPOV;
-        if (((fnv_0069a830::FUN_0069b0a0_shell*)&POVPointerArray)->LookupValue(m_usVertexId, (unsigned int)&uiPOV))
+        if (((fnv_0069a830::FUN_0069b0a0_shell*)&POVs)->LookupValue(m_usVertexId, (unsigned int)&uiPOV))
         {
             povs->ReserveIndex(m_usVertexId);
             iAddedCount++;
         }
     }
-    if (triangle < ((fnv_0069a830::NavmeshOffset08View*)&m_kAdditionalIndexList)->GetFlags() &&
-        ((fnv_0069a830::DA00694f80*)&m_kAdditionalIndexList)->GetAt(triangle) != 0xFFFF)
+    if (triangle < ((fnv_0069a830::NavmeshOffset08View*)&ClosestPOVs)->GetFlags() &&
+        ((fnv_0069a830::DA00694f80*)&ClosestPOVs)->GetAt(triangle) != 0xFFFF)
     {
-        povs->ReserveIndex(((fnv_0069a830::DA00694f80*)&m_kAdditionalIndexList)->GetAt(triangle));
+        povs->ReserveIndex(((fnv_0069a830::DA00694f80*)&ClosestPOVs)->GetAt(triangle));
         iAddedCount++;
     }
     return iAddedCount;
@@ -1663,20 +1776,23 @@ struct FUN_0069afb0_shell
     virtual bool v2(unsigned short a, unsigned short b);
     void* p;
     void** list;
-    bool ProcessEntries_0069afb0(unsigned short a, Helper62d0& out);
+    bool NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_GetAt(unsigned short key, Helper62d0& val);
 };
 
 // @fnv 0x0069afb0
-// src: GUESS 0x0069afb0 (confidence: low)
-bool FUN_0069afb0_shell::ProcessEntries_0069afb0(unsigned short a, Helper62d0& out)
+// src: XBOX_DEBUG_PDB 0x0069afb0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> >::GetAt | NavMesh_Util.obj | debug, call graph (shared callers), high
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
+bool FUN_0069afb0_shell::NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_GetAt(unsigned short key, Helper62d0& val)
 {
-    void* item = v1(a);
+    void* item = v1(key);
     void* node = list[*(unsigned int*)&item];
     while (node)
     {
-        if (v2(a, *(unsigned short*)((char*)node + 4)))
+        if (v2(key, *(unsigned short*)((char*)node + 4)))
         {
-            out = (const char*)node + 8;
+            val = (const char*)node + 8;
             return true;
         }
         node = *(void**)node;
@@ -1706,6 +1822,8 @@ struct FUN_006be6f0_shell
     void MarkNavMeshTriangles();
 };
 // @fnv 0x006be6f0
+// pdb: NavMeshObstacleCutter::RemovePOVs | NavMeshObstacleCutter.obj | debug, object-file gap fill, medium
+// pdb locals: i, iindex
 void FUN_006be6f0_shell::MarkNavMeshTriangles()
 {
     for (unsigned int i = 0; i < ((NavmeshOffset08View*)((char*)*(unsigned int**)((char*)this + 8) + 0x60))->GetFlags(); i++)
@@ -1729,6 +1847,10 @@ struct FUN_00690e10_shell
 
 // Clears the array, then adds each triangle index that has an edge whose linked door ID equals doorID, and returns whether any were added.
 // @fnv 0x00697590
+// pdb: NavMesh::SetEmptyEdgeExtraInfo | NavMesh_Util.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMesh::FindPointForLocation
+// pdb params: aTriangle, aEdgeIndex
+// pdb locals: pthisEdgeExtraInfo, info
 bool NavMesh::CollectTrianglesForDoor(unsigned int doorID, BSSimpleArray<unsigned int>* array)
 {
     array->SetSize(0, true);
@@ -1782,9 +1904,9 @@ struct Arr
 int NavMesh::FindEntryIndex(void* apTarget)
 {
     unsigned int i = 0;
-    for (; i < reinterpret_cast<fnv_006995c0::NavmeshOffset08View*>(&m_kObstacleUndoData)->GetFlags(); ++i)
+    for (; i < reinterpret_cast<fnv_006995c0::NavmeshOffset08View*>(&Obstacles)->GetFlags(); ++i)
     {
-        if (((NiPointer<NiAVObject>*)(((GO*)((char*)reinterpret_cast<fnv_006995c0::Arr*>(&m_kObstacleUndoData)->GetAt(i)))->operator unsigned int() + 0xc))
+        if (((NiPointer<NiAVObject>*)(((GO*)((char*)reinterpret_cast<fnv_006995c0::Arr*>(&Obstacles)->GetAt(i)))->operator unsigned int() + 0xc))
                 ->
                 operator==(*reinterpret_cast<const NiPointer<NiAVObject>*>(apTarget)))
             return i;
@@ -1850,6 +1972,9 @@ struct SwapTriangle : NavMeshTriangle
 };
 
 // @fnv 0x00695660
+// pdb: NavMesh::FlipTriangle | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: aiTriIndex
+// pdb locals: vert1index, tri1index, ptri, bEdge1IsPortal, bEdge0IsPortal, b0right, b1right, icover1, b0left, b1left, icover0
 void NavMesh::SwapTriangleEdges(unsigned short triangle)
 {
     SwapTriangle* tri5 = reinterpret_cast<SwapTriangle*>(FUN_005582f0(triangle));
@@ -1897,13 +2022,19 @@ struct FUN_006957d0_Class
 
 // @fnv 0x006957d0
 // src: COMMUNITY 0x006957d0
+// pdb: NavMesh::RotateTriangle | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: aiTriIndex
+// pdb locals: ptri
 bool FUN_006957d0_Class::NavMeshTriangle_HasCoverOrWallFlags()
 {
     return 0u < (unk0C & 0xFFF0000);
 }
 
 // @fnv 0x006957f0
-void NavMesh::ComputeBounds(NiPoint3& outMin, NiPoint3& outMax)
+// pdb: NavMesh::ComputeBounds | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: apRetMin, apRetMax
+// pdb locals: tempMax, loc, tempMin, ptri, i, j
+void NavMesh::ComputeBounds(NiPoint3& apRetMin, NiPoint3& apRetMax)
 {
     if (Triangles.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
         return;
@@ -1933,8 +2064,8 @@ void NavMesh::ComputeBounds(NiPoint3& outMin, NiPoint3& outMax)
                 _maximum.z = _point.z;
         }
     }
-    outMin = kMinimum;
-    outMax = _maximum;
+    apRetMin = kMinimum;
+    apRetMax = _maximum;
 }
 
 class NavTri
@@ -1945,18 +2076,21 @@ class NavTri
 
 // @fnv 0x00697010
 // src: COMMUNITY 0x00697010
-bool NavMesh::FindClosestOpenEdgeForLocation(const NiPoint3& arPoint, float afRadius, unsigned short* apTri, int* apEdge, bool abFlip)
+// pdb: NavMesh::FindClosestOpenEdgeForLocation | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: aLocation, afRadius, apRetTriIndex, apRetEdgeIndex, abFlipForStartNode
+// pdb locals: itris, bestEdge, fzMin, fzMax, fradiusSqr, i, ptri, e, delta, vertices, fsqrLen, edgeCenter, fsqrXYLen, fsqrZDist
+bool NavMesh::FindClosestOpenEdgeForLocation(const NiPoint3& aLocation, float afRadius, unsigned short* apRetTriIndex, int* apRetEdgeIndex, bool abFlipForStartNode)
 {
     unsigned short usBestTri5 = 0;
     int iBestEdge = -1;
     float fBest2 = 3.402823466e+38f;
     float fRadiusSq2 = afRadius * afRadius;
-    float fMinZ8 = arPoint.z - 64.0;
-    float fMaxZ7 = arPoint.z + 180.0;
-    if (abFlip)
+    float fMinZ8 = aLocation.z - 64.0;
+    float fMaxZ7 = aLocation.z + 180.0;
+    if (abFlipForStartNode)
     {
-        fMinZ8 = arPoint.z - 180.0;
-        fMaxZ7 = arPoint.z + 64.0;
+        fMinZ8 = aLocation.z - 180.0;
+        fMaxZ7 = aLocation.z + 64.0;
     }
     unsigned int uiCount5 = Triangles.GetSize();
     for (unsigned int i5 = 0; i5 < uiCount5; i5++)
@@ -1969,7 +2103,7 @@ bool NavMesh::FindClosestOpenEdgeForLocation(const NiPoint3& arPoint, float afRa
                 NavMeshEdgeVertexPair verts8 = NavMesh_GetEdgeVertices_0((unsigned short)i5, jTmp);
                 NiPoint3 mid3 =
                     (reinterpret_cast<const NiPoint3&>(*verts8.p1) + reinterpret_cast<const NiPoint3&>(*verts8.p2)) * 0.5f;
-                NiPoint3 diff = mid3 - reinterpret_cast<const NiPoint3&>(arPoint);
+                NiPoint3 diff = mid3 - reinterpret_cast<const NiPoint3&>(aLocation);
                 float fDist2D = diff.GetSquaredXYLength();
                 float fDZ = diff.z * diff.z;
                 float fDist_2 = fDist2D + fDZ;
@@ -1984,19 +2118,22 @@ bool NavMesh::FindClosestOpenEdgeForLocation(const NiPoint3& arPoint, float afRa
     }
     if (iBestEdge == -1)
         return false;
-    *apTri = usBestTri5;
-    *apEdge = iBestEdge;
+    *apRetTriIndex = usBestTri5;
+    *apRetEdgeIndex = iBestEdge;
     return true;
 }
 
 // Computes the 2D circumcenter of the triangle's three vertices and writes it into apCenter with z set to 0.
 // @fnv 0x00697440
 // src: XBOX_PDB 0x00697440
-void NavMesh::GetCircumCenter2D(unsigned short ausTriangle, NiPoint3* apCenter)
+// pdb: NavMesh::GetCircumCenter2D | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: apTriangle, aOut
+// pdb locals: xdo, a2, p1, denominator, p2, ydo, xao, b2, p0, yao, numerator
+void NavMesh::GetCircumCenter2D(unsigned short apTriangle, NiPoint3* aOut)
 {
-    NiPoint3 kA = GetVertex_0068f0a0(GetTriangle(ausTriangle)->GetVert_005582d0(0));
-    NiPoint3 kB9 = GetVertex_0068f0a0(GetTriangle(ausTriangle)->GetVert_005582d0(1));
-    NiPoint3 kC2 = GetVertex_0068f0a0(GetTriangle(ausTriangle)->GetVert_005582d0(2));
+    NiPoint3 kA = GetVertex_0068f0a0(GetTriangle(apTriangle)->GetVert_005582d0(0));
+    NiPoint3 kB9 = GetVertex_0068f0a0(GetTriangle(apTriangle)->GetVert_005582d0(1));
+    NiPoint3 kC2 = GetVertex_0068f0a0(GetTriangle(apTriangle)->GetVert_005582d0(2));
     float fDX = kB9.x - kA.x;
     float fB8 = kB9.y - kA.y;
     float fC = kC2.x - kA.x;
@@ -2005,18 +2142,19 @@ void NavMesh::GetCircumCenter2D(unsigned short ausTriangle, NiPoint3* apCenter)
     float fLen8 = fC * fC + fCy3 * fCy3;
     float fDenom = fDX * fCy3 - fC * fB8;
     float fScale = 0.5 / fDenom;
-    apCenter->x = kA.x - (fB8 * fLen8 - fCy3 * fLenB) * fScale;
-    apCenter->y = (fDX * fLen8 - fC * fLenB) * fScale + kA.y;
-    apCenter->z = 0.0f;
+    aOut->x = kA.x - (fB8 * fLen8 - fCy3 * fLenB) * fScale;
+    aOut->y = (fDX * fLen8 - fC * fLenB) * fScale + kA.y;
+    aOut->z = 0.0f;
 }
 
 // NavMesh: get the extra info for a triangle edge, creating and linking a fresh record when missing,
 // then reset its link fields.
 
+// pdb: structure EdgeExtraInfo, size 0xc, 2 members
 struct EdgeExtraInfo
 {
-    int m_iType;
-    void* m_pkPortal;
+    int eType;
+    void* Portal;
     unsigned short m_usLinkedTriangle;
     EdgeExtraInfo();
 };
@@ -2044,7 +2182,7 @@ EdgeExtraInfo* NavMesh::GetOrCreateEdgeInfo(unsigned short m_usTriangleID, int m
             .SetEdgeExtraInfo(m_iEdgeNumber, AddEdgeInfo(kNewInfo));
         pkInfo = GetEdgeInfo(m_usTriangleID, m_iEdgeNumber);
     }
-    pkInfo->m_pkPortal = 0;
+    pkInfo->Portal = 0;
     pkInfo->m_usLinkedTriangle = 0xffff;
     return pkInfo;
 }
@@ -2057,24 +2195,28 @@ struct TriangleList
 
 // Looks up the triangle list at point, tests each triangle with GetTriangleHeightAtPoint, and returns true on the first hit, writing z.
 // @fnv 0x00697b70
-bool NavMesh::FindTriangleZ(const NiPoint3& point, float above, float below, float* z)
+// src: XBOX_DEBUG_PDB 0x00697b70
+// pdb: NavMesh::ComputeNavMeshZForLocation | NavMesh_Util.obj | debug, call graph, high
+// pdb params: aLocation, afMaxZdistAbove, afMaxZdistBelow, afZCoord
+// pdb locals: ptriArray, inum, i, iindex
+bool NavMesh::ComputeNavMeshZForLocation(const NiPoint3& aLocation, float afMaxZdistAbove, float afMaxZdistBelow, float* afZCoord)
 {
     TriangleList* triangles = 0;
-    m_kGrid.GetTriListAtPosition(point, reinterpret_cast<NavMeshTriList*&>(triangles));
+    MeshGrid.GetTriangleData(aLocation, reinterpret_cast<NavMeshTriList*&>(triangles));
     if (!triangles)
         return false;
     unsigned int count = triangles->FUN_0044ddc0();
     for (unsigned int index = 0; index < count; ++index)
     {
         unsigned short triangle = triangles->BSSimpleArray_unsigned_short_1024_GetAt(index);
-        if (GetTriangleHeightAtPoint(triangle, point, above, below, z))
+        if (ComputeTriangleZForLocation(triangle, aLocation, afMaxZdistAbove, afMaxZdistBelow, afZCoord))
             return true;
     }
     return false;
 }
 
 // 0x006b5560 is not declared by the shared NavMeshInfo header yet.
-void InitializeNavMeshInfoFromMesh();
+void NavMeshInfo_CreateFromNavMesh();
 typedef void (__thiscall* InitializeNavMeshInfoFromMeshFunction)(NavMeshInfo*, NavMesh*);
 
 struct b9_nav
@@ -2092,14 +2234,17 @@ extern int DAT_011dea10;
 
 // Keep the original bool result; the shared member is currently declared void.
 // @fnv 0x006986d0
-bool __fastcall InitializeNavMeshInfo(NavMesh* self)
+// src: XBOX_RETAIL_PDB 0x006986d0
+// pdb: NavMesh::UpdateNavMeshInfo | NavMesh_Util.obj | retail, call graph (shared callers), high
+// pdb locals: pinfo
+bool __fastcall NavMesh_UpdateNavMeshInfo(NavMesh* self)
 {
     NavMeshInfo* r =
         ((b9_tab*)DAT_011dea10)->TES_GetNavMeshInfoMap(reinterpret_cast<void*>(self->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))->FUN_00693d70();
     if (self->GetNavMeshInfo_0068efb0() == 0)
     {
         NavMeshInfo* q = new NavMeshInfo();
-        reinterpret_cast<InitializeNavMeshInfoFromMeshFunction>(InitializeNavMeshInfoFromMesh)(q, self);
+        reinterpret_cast<InitializeNavMeshInfoFromMeshFunction>(NavMeshInfo_CreateFromNavMesh)(q, self);
         self->PathingRequestCoveredMove_SetCombatCoverLocation(q);
         q->SetNavMesh(self);
         ((b9_tab*)DAT_011dea10)->TES_GetNavMeshInfoMap(q)->RegisterNavMeshInfo();
@@ -2107,7 +2252,7 @@ bool __fastcall InitializeNavMeshInfo(NavMesh* self)
     }
     else
     {
-        reinterpret_cast<InitializeNavMeshInfoFromMeshFunction>(InitializeNavMeshInfoFromMesh)(r, self);
+        reinterpret_cast<InitializeNavMeshInfoFromMeshFunction>(NavMeshInfo_CreateFromNavMesh)(r, self);
         return false;
     }
 }
@@ -2134,14 +2279,18 @@ struct SearchContext
     unsigned int unk44;
     SearchContext();
     ~SearchContext();
-    bool NavMeshObstacleCutter_SplitNavMeshFromObstacle(void* owner, int first, int second);
+    bool NavMeshObstacleCutter_SplitNavMeshFromObstacle(void* apNavMesh, int first, int aPortalSwaps);
 };
 // Builds a SearchContext and forwards the two ints and this to SearchContext::FUN_006bbd30, returning its result.
 // @fnv 0x00698f40
-bool NavMeshSearch::Search(int first, int second)
+// src: XBOX_RETAIL_PDB 0x00698f40
+// pdb: NavMesh::GetObstaclePOVsForTriangle | NavMesh_Util.obj | retail, object-file gap fill, high
+// pdb params: ausTriangle, aRetObstaclePOVs
+// pdb locals: itotal, ptri, i, ivertIndex
+bool NavMeshSearch::NavMesh_GetObstaclePOVsForTriangle(int ausTriangle, int aRetObstaclePOVs)
 {
     SearchContext searchContext;
-    bool result = searchContext.NavMeshObstacleCutter_SplitNavMeshFromObstacle(this, first, second);
+    bool result = searchContext.NavMeshObstacleCutter_SplitNavMeshFromObstacle(this, ausTriangle, aRetObstaclePOVs);
     return result;
 }
 
@@ -2167,10 +2316,12 @@ struct Dummy0044ddc0_sub
 // Walks the obstacle undo entries backwards, calling UndoToPosition with each index and a local object.
 // @fnv 0x006993c0
 // src: XBOX_PDB 0x006993c0
+// pdb: NavMesh::ClearAllObstacles | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb locals: tempPortalSwap, i
 void NavMesh::ClearAllObstacles()
 {
     FUN_006993c0_local local;
-    for (int i = reinterpret_cast<Dummy0044ddc0_sub&>(m_kObstacleUndoData).FUN_0044ddc0() - 1; i != -1; i--)
+    for (int i = reinterpret_cast<Dummy0044ddc0_sub&>(Obstacles).FUN_0044ddc0() - 1; i != -1; i--)
     {
         UndoToPosition(static_cast<unsigned int>(i), &local);
     }
@@ -2258,6 +2409,9 @@ class FUN_0069b0a0_cls
 };
 // Hashes key, walks the bucket chain comparing keys, and on a match copies the item's value to out and returns true; otherwise returns false.
 // @fnv 0x0069b0a0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NavMeshPOVData> >,unsigned short,NavMeshPOVData>::GetAt | NavMesh_Util.obj | debug, call graph, medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 bool FUN_0069b0a0_cls::LookupValue(unsigned short key, unsigned int* puiOut)
 {
     unsigned int uiBucketIndex = KeyToHashIndex(key);
@@ -2351,6 +2505,8 @@ struct FUN_006bbc50
 
 // Iterates the fourth container's entries and calls FUN_00401970 on each item's resource when FUN_00559450 returns non-null.
 // @fnv 0x006bbc50
+// pdb: NavMeshObstacleCutter::~NavMeshObstacleCutter | NavMeshObstacleCutter.obj | retail, call graph, medium
+// pdb locals: i
 FUN_006bbc50::~FUN_006bbc50()
 {
     for (unsigned int i = 0; i < fourth.FUN_0044ddc0(); ++i)
@@ -2375,17 +2531,20 @@ struct FUN_006bf220_cls
     NavMesh* m_00;
     int unk04;
     FUN_006bf220_sub* m_08;
-    bool NavMeshObstacleCutter_IsPointInOverlappedArea(void* a1);
+    bool NavMeshObstacleCutter_IsPointInOverlappedArea(void* aPoint);
 };
 
 // @fnv 0x006bf220
 // src: COMMUNITY 0x006bf220
-bool FUN_006bf220_cls::NavMeshObstacleCutter_IsPointInOverlappedArea(void* a1)
+// pdb: NavMeshObstacleCutter::IsPointInOverlappedArea | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: fdontCare, i
+bool FUN_006bf220_cls::NavMeshObstacleCutter_IsPointInOverlappedArea(void* aPoint)
 {
     float local;
     for (unsigned int i = 0; i < m_08->Items.GetSize(); i++)
     {
-        if (m_00->FUN_00697730(m_08->Items.GetBufferEntry(i), *static_cast<const NiPoint3*>(a1), local,
+        if (m_00->FUN_00697730(m_08->Items.GetBufferEntry(i), *static_cast<const NiPoint3*>(aPoint), local,
                               DAT_0106b158, DAT_0106b158))
         {
             return true;
@@ -2433,6 +2592,8 @@ struct P507Edge
 };
 
 // @fnv 0x006953b0
+// pdb: NavMesh::FixPortalsFromNavMeshDeletion | NavMesh_Util.obj | retail, call graph (shared callers), medium
+// pdb params: apNavmesh
 void __cdecl RemoveNavMeshId(unsigned int id)
 {
     if (!id)
@@ -2464,7 +2625,7 @@ void __cdecl RemoveNavMeshId(unsigned int id)
                 {
                     mesh.Modelloader_GetReferencedThis()->SetAltered(true);
                     for (unsigned int k = 0;
-                         k < reinterpret_cast<P507Array&>(mesh.Modelloader_GetReferencedThis()->m_kEdgeExtraInfo).FUN_0044ddc0(); ++k)
+                         k < reinterpret_cast<P507Array&>(mesh.Modelloader_GetReferencedThis()->ExtraEdgeInfo).FUN_0044ddc0(); ++k)
                     {
                         P507Edge* edge =
                             reinterpret_cast<P507Edge*>(mesh.Modelloader_GetReferencedThis()->GetEdge((unsigned short)k));
@@ -2501,9 +2662,12 @@ struct NavMeshTriListAdd
 
 // For each triangle index in [ausStart, ausEnd], computes its XY bounds, maps them to grid rows/columns and adds the index to every overlapping cell list.
 // @fnv 0x006965d0
-bool NavMesh::AddTrianglesToGrid(unsigned short ausStart, unsigned short ausEnd)
+// pdb: NavMesh::AddTrianglesToGrid | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: ausFirstTriangleIndex, ausLastTriangleIndex
+// pdb locals: t, istartRow, triMin, ptri, iendRow, istartCol, triMax, iendCol, j, loc, i, pcellarray
+bool NavMesh::AddTrianglesToGrid(unsigned short ausFirstTriangleIndex, unsigned short ausLastTriangleIndex)
 {
-    for (unsigned int i = ausStart; i <= ausEnd; i++)
+    for (unsigned int i = ausFirstTriangleIndex; i <= ausLastTriangleIndex; i++)
     {
         NavMeshTriangle* pTri_ = GetTriangle((unsigned short)i);
         NiPoint3 kMinBoundsCur(DAT_01016970, DAT_01016970, 0.0f);
@@ -2524,13 +2688,13 @@ bool NavMesh::AddTrianglesToGrid(unsigned short ausStart, unsigned short ausEnd)
         unsigned int kUiMinCol = 0;
         unsigned int uiMaxRow = 0;
         unsigned int uiMaxCol3 = 0;
-        m_kGrid.GetCellCoords(kMinBoundsCur, uiMinRow, kUiMinCol);
-        m_kGrid.GetCellCoords(kMaxB, uiMaxRow, uiMaxCol3);
+        MeshGrid.GetCellCoords(kMinBoundsCur, uiMinRow, kUiMinCol);
+        MeshGrid.GetCellCoords(kMaxB, uiMaxRow, uiMaxCol3);
         for (unsigned int uiRow = uiMinRow; uiRow <= uiMaxRow; uiRow++)
         {
             for (unsigned int uiCol9 = kUiMinCol; uiCol9 <= uiMaxCol3; uiCol9++)
             {
-                NavMeshTriListAdd* pList5 = reinterpret_cast<NavMeshTriListAdd*>(m_kGrid.NavMeshGrid_GetTriangleArray(uiCol9, uiRow));
+                NavMeshTriListAdd* pList5 = reinterpret_cast<NavMeshTriListAdd*>(MeshGrid.NavMeshGrid_GetTriangleArray(uiCol9, uiRow));
                 if (!pList5)
                     continue;
                 pList5->Add((unsigned short)i);
@@ -2571,14 +2735,14 @@ bool NavMesh::AddTrianglesToXYGridCells(unsigned short ausStart, unsigned short 
                 f.y = pV->y;
         }
         unsigned int j = 0, cf = 0, b = 0, p = 0;
-        m_kGrid.GetCellCoords(fStack_14, j, cf);
-        m_kGrid.GetCellCoords(f, b, p);
+        MeshGrid.GetCellCoords(fStack_14, j, cf);
+        MeshGrid.GetCellCoords(f, b, p);
         for (unsigned int r = j; r <= b; r++)
         {
             for (unsigned int c = cf; c <= p; c++)
             {
                 int idx;
-                TriList2* pList = (TriList2*)m_kGrid.NavMeshGrid_GetTriangleArray(c, r);
+                TriList2* pList = (TriList2*)MeshGrid.NavMeshGrid_GetTriangleArray(c, r);
                 idx = pList->FindMatchingIndex(*(unsigned short*)&i, 0, Object_ComputeValue_0069b2a0);
                 pList->BSSimpleArray_RemoveFast_1(idx, 1);
             }
@@ -2593,34 +2757,37 @@ extern const double DAT_010240c0;
 
 struct FUN_00696a50_HeightSource
 {
-    void CheckWaterHeight(const NiPoint3* apPos, float* apfHeight);
+    void GetWaterHeight(const NiPoint3* arPos, float* apfHeight);
 };
 
 }  // namespace fnv_00696a50
 
 // @fnv 0x00696a50
 // src: XBOX_PDB 0x00696a50
-unsigned short NavMesh::FindTriangleForLocation_00696a50(const NiPoint3* apPos, int aiArg)
+// pdb: NavMesh::FindTriangleForLocation | NavMesh_Util.obj | debug, call graph (shared callers), high
+// pdb params: aLocation, apFilter
+// pdb locals: ptriArray, ibestFound, inum, fwaterHeight, fclosest, blocationUnderWater, i, iindex, fzdiff
+unsigned short NavMesh::FindTriangleForLocation_00696a50(const NiPoint3* aLocation, int apFilter)
 {
     NavMeshTriList* pCell = 0;
-    m_kGrid.GetTriListAtPosition(apPos, &pCell);
+    MeshGrid.GetTriangleData(aLocation, &pCell);
     unsigned short usBestTmp = 0xffff;
     if (!pCell)
         return 0xffff;
     unsigned int uiEntries = pCell->GetSize();
     float fPointHeight = fnv_00696a50::DAT_01016970;
     float m_fGlyphExtent = DAT_01015f5c;
-    if (reinterpret_cast<fnv_00696a50::FUN_00696a50_HeightSource*>(m_pOwningCell))
-        reinterpret_cast<fnv_00696a50::FUN_00696a50_HeightSource*>(m_pOwningCell)
-            ->CheckWaterHeight(apPos, &m_fGlyphExtent);
-    bool bBelowGround = apPos->z < (float)(m_fGlyphExtent + 50.0);
+    if (reinterpret_cast<fnv_00696a50::FUN_00696a50_HeightSource*>(pParentCell))
+        reinterpret_cast<fnv_00696a50::FUN_00696a50_HeightSource*>(pParentCell)
+            ->GetWaterHeight(aLocation, &m_fGlyphExtent);
+    bool bBelowGround = aLocation->z < (float)(m_fGlyphExtent + 50.0);
     for (unsigned int i = 0; i < uiEntries; i++)
     {
         unsigned short usTri = pCell->BSSimpleArray_unsigned_short_1024_GetAt(i);
         if (Triangles.GetAt(usTri).GetFlag(0x20))
             continue;
         float fDistance;
-        if (TestPointOnTriangle(usTri, apPos, &fDistance, aiArg))
+        if (TestPointOnTriangle(usTri, aLocation, &fDistance, apFilter))
         {
             if (!bBelowGround && fDistance < -180.0)
                 continue;
@@ -2655,7 +2822,10 @@ struct TriArr696
 
 // @fnv 0x00696cf0
 // src: XBOX_PDB 0x00696cf0
-bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& point, unsigned short* outTri, bool* outFlag)
+// pdb: NavMesh::FindClosestTriangleForLocation | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: aLocation, apRetTriIndex, apbOnTriangle
+// pdb locals: ptriArray, fclosestDistanceSqr, closestTriangle, closestTriangleOn, isize, fzdiff, fclosestZ, i, itriIndex, delta, fthisDistanceSqr
+bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& aLocation, unsigned short* apRetTriIndex, bool* apbOnTriangle)
 {
     unsigned short d2;
     unsigned short i;
@@ -2666,7 +2836,7 @@ bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& point, unsigned sho
         d2 = 0xffff;
         i = 0xffff;
         q = 0;
-        m_kGrid.GetTriListAtPosition(point, reinterpret_cast<NavMeshTriList*&>(q));
+        MeshGrid.GetTriangleData(aLocation, reinterpret_cast<NavMeshTriList*&>(q));
         if (q)
         {
             unsigned int triSq = q->FUN_0044ddc0();
@@ -2678,15 +2848,15 @@ bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& point, unsigned sho
                 unsigned short pObj = q->BSSimpleArray_unsigned_short_1024_GetAt(e);
                 if (reinterpret_cast<fnv_00696cf0::TriArr696&>(Triangles).GetElementAddress16(pObj)->GetFlag(0x20))
                     continue;
-                if (FUN_00697730(pObj, point, f, 180.0f, 64.0f))
+                if (FUN_00697730(pObj, aLocation, f, 180.0f, 64.0f))
                 {
                     f = std::abs(f);
                     if (f < bestD)
                     {
                         if (f < 40.0)
                         {
-                            *outTri = pObj;
-                            *outFlag = true;
+                            *apRetTriIndex = pObj;
+                            *apbOnTriangle = true;
                             return true;
                         }
                         i = pObj;
@@ -2695,7 +2865,7 @@ bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& point, unsigned sho
                 }
                 else
                 {
-                    NiPoint3 bestD2 = FUN_00558220(pObj) - point;
+                    NiPoint3 bestD2 = FUN_00558220(pObj) - aLocation;
                     float list = ((NiPoint3*)&bestD2)->FUN_004a7290();
                     if (list < bestSq)
                     {
@@ -2706,8 +2876,8 @@ bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& point, unsigned sho
             }
             if (i != 0xffff)
             {
-                *outTri = i;
-                *outFlag = true;
+                *apRetTriIndex = i;
+                *apbOnTriangle = true;
                 return true;
             }
         }
@@ -2719,15 +2889,15 @@ bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& point, unsigned sho
             float s;
             for (t = 0; t < (int)nn; t++)
             {
-                if (FUN_00697730((unsigned short)t, point, s, 180.0f, 64.0f))
+                if (FUN_00697730((unsigned short)t, aLocation, s, 180.0f, 64.0f))
                 {
                     s = std::abs(s);
                     if (s < n)
                     {
                         if (s < 40.0)
                         {
-                            *outTri = (unsigned short)t;
-                            *outFlag = true;
+                            *apRetTriIndex = (unsigned short)t;
+                            *apbOnTriangle = true;
                             return true;
                         }
                         i = (unsigned short)t;
@@ -2736,7 +2906,7 @@ bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& point, unsigned sho
                 }
                 else
                 {
-                    NiPoint3 count2 = FUN_00558220((unsigned short)t) - point;
+                    NiPoint3 count2 = FUN_00558220((unsigned short)t) - aLocation;
                     float sq2;
                     sq2 = ((NiPoint3*)&count2)->FUN_004a7290();
                     if (sq2 < bestSq)
@@ -2749,25 +2919,28 @@ bool NavMesh::FindClosestTriangleForLocation(const NiPoint3& point, unsigned sho
         }
         if (i != 0xffff)
         {
-            *outTri = i;
-            *outFlag = true;
+            *apRetTriIndex = i;
+            *apbOnTriangle = true;
             return true;
         }
     }
     if (d2 == 0xffff)
     {
-        *outTri = 0xffff;
-        *outFlag = false;
+        *apRetTriIndex = 0xffff;
+        *apbOnTriangle = false;
         return false;
     }
-    *outTri = d2;
-    *outFlag = false;
+    *apRetTriIndex = d2;
+    *apbOnTriangle = false;
     return true;
 }
 
-float __cdecl NavMeshMath_DistanceFromLine(const NiPoint3& point, const NiPoint3& first, const NiPoint3& second);
+float __cdecl NavMeshMath_DistanceFromLine(const NiPoint3& aPoint, const NiPoint3& aLineStart, const NiPoint3& aLineEnd);
 
 // @fnv 0x00697d40
+// pdb: NavMesh::MoveAwayFromEdge | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: aLocation, afDistance
+// pdb locals: retLoc, usTri, isize, triArray, ptempTri, t, ival, vertices, fdistanceFromEdge, triangleNormal, rightAngleVector, i, ptri, e
 NiPoint3 NavMesh::AdjustPointToNavMesh(const NiPoint3& point, float radius)
 {
     NiPoint3 adjusted = point;
@@ -2836,24 +3009,28 @@ struct NavEdgeHit
     NavEdgeHit();
 };
 
-bool __cdecl NavMeshMath_Find2DIntersectionStable(const NiPoint3& start, const NiPoint3& end, const NiPoint3& from, const NiPoint3& to,
-                          NiPoint3* out);
+bool __cdecl NavMeshMath_Find2DIntersectionStable(const NiPoint3& aSegment1Start, const NiPoint3& aSegment1End, const NiPoint3& aSegment2Start, const NiPoint3& aSegment2End,
+                          NiPoint3* apReturnIntersection);
 
 // Tests the triangle's edges (skipping aiSkipEdge) for an intersection with the segment arFrom-arTo and returns the hit edge index and point, or a type-0 miss.
 // @fnv 0x00698160
-NavEdgeHit NavMesh::FindEdgeIntersection(unsigned short ausTriangle, int aiSkipEdge, const NiPoint3& arFrom,
-                                                const NiPoint3& arTo)
+// src: XBOX_DEBUG_PDB 0x00698160
+// pdb: NavMesh::FindInterectingEdge2 | NavMesh_Util.obj | debug, call graph (shared callers), high
+// pdb params: ausTri, aIgnoreEdge, aStartPoint, aEndPoint
+// pdb locals: result, edgeVerts, endNoZ, i, j
+NavEdgeHit NavMesh::FindInterectingEdge2(unsigned short ausTri, int aIgnoreEdge, const NiPoint3& aStartPoint,
+                                                const NiPoint3& aEndPoint)
 {
     NiPoint3 verts[3];
-    NiPoint3 flat = arTo;
+    NiPoint3 flat = aEndPoint;
     flat.z = 0.0f;
     for (int i = 0; i < 3; i++)
     {
-        verts[i] = GetVertex_0068f0a0(GetTriangle(ausTriangle)->GetVert_005582d0(i));
+        verts[i] = GetVertex_0068f0a0(GetTriangle(ausTri)->GetVert_005582d0(i));
     }
     for (int j = 0; j < 3; j++)
     {
-        if (j == aiSkipEdge)
+        if (j == aIgnoreEdge)
             continue;
         int next = j + 1;
         if (next == 3)
@@ -2861,7 +3038,7 @@ NavEdgeHit NavMesh::FindEdgeIntersection(unsigned short ausTriangle, int aiSkipE
         if (verts[j].HasEqualComponents(verts[next]))
             continue;
         NavEdgeHit hit;
-        if (NavMeshMath_Find2DIntersectionStable(verts[j], verts[next], arFrom, arTo, &hit.kPoint))
+        if (NavMeshMath_Find2DIntersectionStable(verts[j], verts[next], aStartPoint, aEndPoint, &hit.kPoint))
         {
             hit.iType = 3;
             hit.m_iEdgeNumber = j;
@@ -2924,22 +3101,25 @@ struct UndoContext
 };
 
 // @fnv 0x00699000
-bool NavMesh::UndoToPosition(unsigned int position, void* output)
+// pdb: NavMesh::RemoveObstacle | NavMesh_Util.obj | retail, object-file gap fill, high
+// pdb params: apObstacle, aPortalSwaps
+// pdb locals: pundoData, undoDataIndex
+bool NavMesh::UndoToPosition(unsigned int aiUndoDataIndex, void* aPortalSwaps)
 {
-    UndoEntry* entry7 = reinterpret_cast<UndoArray&>(m_kObstacleUndoData).At(position).Get();
-    if (position == reinterpret_cast<UndoArray&>(m_kObstacleUndoData).Size() - 1)
+    UndoEntry* entry7 = reinterpret_cast<UndoArray&>(Obstacles).At(aiUndoDataIndex).Get();
+    if (aiUndoDataIndex == reinterpret_cast<UndoArray&>(Obstacles).Size() - 1)
     {
         UndoContext context;
         if (entry7->type == 1)
-            context.Restore(this, entry7, output);
+            context.Restore(this, entry7, aPortalSwaps);
         context.Remove(this, entry7);
-        ForwardToStub(position);
+        ForwardToStub(aiUndoDataIndex);
     }
     else if (!ComputeTriangleHash(reinterpret_cast<NavMeshInfo*>(entry7)))
     {
         UndoContext context;
         if (entry7->type == 1)
-            context.Restore(this, entry7, output);
+            context.Restore(this, entry7, aPortalSwaps);
     }
     else
     {
@@ -2947,32 +3127,32 @@ bool NavMesh::UndoToPosition(unsigned int position, void* output)
         unsigned int count3 = 0;
         UndoContext context;
         unsigned int index2;
-        for (index2 = reinterpret_cast<UndoArray&>(m_kObstacleUndoData).Size() - 1; index2 != position - 1; --index2)
+        for (index2 = reinterpret_cast<UndoArray&>(Obstacles).Size() - 1; index2 != aiUndoDataIndex - 1; --index2)
         {
-            if (reinterpret_cast<UndoArray&>(m_kObstacleUndoData).At(index2).Get()->type == 1)
+            if (reinterpret_cast<UndoArray&>(Obstacles).At(index2).Get()->type == 1)
             {
-                context.Restore(this, reinterpret_cast<UndoArray&>(m_kObstacleUndoData).At(index2).Get(), output);
-                if (index2 > position)
+                context.Restore(this, reinterpret_cast<UndoArray&>(Obstacles).At(index2).Get(), aPortalSwaps);
+                if (index2 > aiUndoDataIndex)
                 {
-                    saved2[count3] = reinterpret_cast<UndoArray&>(m_kObstacleUndoData).At(index2).Get()->mesh;
+                    saved2[count3] = reinterpret_cast<UndoArray&>(Obstacles).At(index2).Get()->mesh;
                     ++count3;
                 }
             }
-            context.Remove(this, reinterpret_cast<UndoArray&>(m_kObstacleUndoData).At(index2).Get());
+            context.Remove(this, reinterpret_cast<UndoArray&>(Obstacles).At(index2).Get());
             ForwardToStub(index2);
         }
         for (; index2 != -1; --index2)
         {
-            if (reinterpret_cast<UndoArray&>(m_kObstacleUndoData).At(index2).Get()->type == 3)
+            if (reinterpret_cast<UndoArray&>(Obstacles).At(index2).Get()->type == 3)
             {
-                context.Remove(this, reinterpret_cast<UndoArray&>(m_kObstacleUndoData).At(index2).Get());
+                context.Remove(this, reinterpret_cast<UndoArray&>(Obstacles).At(index2).Get());
                 ForwardToStub(index2);
             }
             else
                 break;
         }
         for (unsigned int next3 = 0; next3 < count3; ++next3)
-            context.Add(this, saved2[next3], output);
+            context.Add(this, saved2[next3], aPortalSwaps);
     }
     return true;
 }
@@ -2985,12 +3165,14 @@ class ObstacleRegistry
 
 // @fnv 0x00699510
 // src: COMMUNITY 0x00699510
-unsigned int NavMesh::AddObstacleUndoData(ObstacleData* pkObstacle)
+// pdb: NavMesh::AddObstacleUndoData | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: apUndoData
+unsigned int NavMesh::AddObstacleUndoData(ObstacleData* apUndoData)
 {
     unsigned int uiResult;
     {
-        NiPointer<ObstacleData> m_spRegisteredObstacle(pkObstacle);
-        uiResult = reinterpret_cast<ObstacleRegistry&>(m_kObstacleUndoData).BSSimpleArray_NiPointer_NiAVObject_1024_Add(m_spRegisteredObstacle);
+        NiPointer<ObstacleData> m_spRegisteredObstacle(apUndoData);
+        uiResult = reinterpret_cast<ObstacleRegistry&>(Obstacles).BSSimpleArray_NiPointer_NiAVObject_1024_Add(m_spRegisteredObstacle);
     }
     return uiResult;
 }
@@ -3007,6 +3189,8 @@ struct LinkedTriangle : NavMeshTriangle
 };
 
 // @fnv 0x0069aa20
+// pdb: NavMesh::ReconnectEnabledPortals | NavMesh_Util.obj | debug, object-file gap fill, medium
+// pdb locals: i, ptri, e, spotherMesh, potherTri, pinfo, portalEdge, portalCount, f, thisPortalVert1, thisPortalVert0, otherEdgePortalVert0, otherEdgePortalVert1, potherExtraInfo
 bool NavMesh::LinkMatchingEdges()
 {
     for (unsigned int triangleIndex = 0; triangleIndex < NavMesh_GetTriangleCount(); ++triangleIndex)
@@ -3075,35 +3259,39 @@ bool NavMesh::LinkMatchingEdges()
     return true;
 }
 
-float floorf(float afValue);
+float floorf(float _X);
 
 
 // If arPos lies inside the grid bounds, computes the cell column and row from the cell size and stores the cell's tri list in *appList; otherwise stores null.
 // @fnv 0x0069d370
-void NavMeshGrid::GetTriListAtPosition(const NiPoint3& arPos, NavMeshTriList** appList)
+// src: XBOX_DEBUG_PDB 0x0069d370
+// pdb: NavMeshGrid::GetTriangleData | NavMeshGrid.obj | debug, call graph (shared callers), high
+// pdb params: aLoc, apArray
+// pdb locals: icolumn, fscaleY, flocY, fscaleX, flocX, irow
+void NavMeshGrid::GetTriangleData(const NiPoint3& aLoc, NavMeshTriList** apArray)
 {
-    if (arPos.x < IndexedPointRecord.x || arPos.x > IndexedPointData.x || arPos.y < IndexedPointRecord.y ||
-        arPos.y > IndexedPointData.y)
+    if (aLoc.x < GridBoundsMin.x || aLoc.x > GridBoundsMax.x || aLoc.y < GridBoundsMin.y ||
+        aLoc.y > GridBoundsMax.y)
     {
-        *appList = 0;
+        *apArray = 0;
     }
     else
     {
-        float fDX2 = arPos.x - IndexedPointRecord.x;
-        float fDYVal = arPos.y - IndexedPointRecord.y;
-        float fCol = fDX2 / m_fFirstGridValue;
-        float fRow = fDYVal / NavMeshPointEntry;
+        float fDX2 = aLoc.x - GridBoundsMin.x;
+        float fDYVal = aLoc.y - GridBoundsMin.y;
+        float fCol = fDX2 / fColumnSectionLen;
+        float fRow = fDYVal / fRowSectionLen;
         unsigned int uiCol = (unsigned int)floorf(fCol);
         unsigned int uiRowA = (unsigned int)floorf(fRow);
-        if (uiCol >= m_uiGridIndex)
+        if (uiCol >= iGridSize)
         {
-            uiCol = m_uiGridIndex - 1;
+            uiCol = iGridSize - 1;
         }
-        if (uiRowA >= m_uiGridIndex)
+        if (uiRowA >= iGridSize)
         {
-            uiRowA = m_uiGridIndex - 1;
+            uiRowA = iGridSize - 1;
         }
-        *appList = NavMeshGrid_GetTriangleArray(uiCol, uiRowA);
+        *apArray = NavMeshGrid_GetTriangleArray(uiCol, uiRowA);
     }
 }
 
@@ -3112,6 +3300,9 @@ void NavMeshGrid::GetTriListAtPosition(const NiPoint3& arPos, NavMeshTriList** a
 // is within [-fBelow, fAbove], returning the difference.
 // @fnv 0x006b9cf0
 // src: XBOX_PDB 0x006b9cf0
+// pdb: NavMeshMath::ProjectPointOntoSegment2D | NavMeshMath.obj | debug, object-file run extension, low
+// pdb params: aPoint, aLineStart, aLineEnd
+// pdb locals: b, c2, c1, v, w
 bool NavMeshMath_IsPointInsideTriangle(const NiPoint3& kP0, const NiPoint3& kP1, const NiPoint3& kP2, const NiPoint3& akPoint,
                   float& fHeightDiff, float fAbove, float fBelow)
 {
@@ -3182,7 +3373,7 @@ struct NavObstaclePtr
 struct NavMap
 {
     unsigned int unk00, unk04, unk08, unk0C;
-    bool ProcessEntries_0069afb0(unsigned short, NavObstaclePtr&);
+    bool NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_GetAt(unsigned short, NavObstaclePtr&);
     void NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_NavMeshObstacleData_unsigned_short_NiPointer_NavMeshObstacleData_SetAt(unsigned short, NavObstaclePtr);
     void FUN_0049c250(unsigned short);
 };
@@ -3259,11 +3450,11 @@ struct NavChangeBuilder
     void SplitCrossingEdges();
     bool NavMeshObstacleCutter_IsVertInObstacleArea(NavItem*);
     void NavMeshObstacleCutter_RemoveInvalidEdges();
-    void FUN_006bde50();
+    void CreateNewEdges();
     bool BuildTrianglesFromEdgePairs();
-    void JoinAdjacentEdges();
-    void ApplyEdgeSplits();
-    void UpdateEdgeRecords(int);
+    void NavMeshObstacleCutter_CreateRemainingEdges();
+    void NavMeshObstacleCutter_ConnectTriangles();
+    void NavMeshObstacleCutter_CreateSwappedEdgeList(int);
     void NavMeshObstacleCutter_SetObstacleCount();
     void NavMeshObstacleCutter_AddNewTrianglesToNavMeshGrid();
     void NavMeshObstacleCutter_UpdateCoverArray();
@@ -3272,9 +3463,12 @@ struct NavChangeBuilder
 };
 // @fnv 0x006bbd30
 // src: COMMUNITY 0x006bbd30
-bool NavChangeBuilder::NavMeshObstacleCutter_SplitNavMeshFromObstacle(NavMesh* apMesh, const NavObstaclePtr& apObstacle, int flags)
+// pdb: NavMeshObstacleCutter::SplitNavMeshFromObstacle | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb params: apNavMesh, aBox, aPortalSwaps
+// pdb locals: i, sppreviousObstacle, ustriangle
+bool NavChangeBuilder::NavMeshObstacleCutter_SplitNavMeshFromObstacle(NavMesh* apNavMesh, const NavObstaclePtr& apObstacle, int aPortalSwaps)
 {
-    mesh = apMesh;
+    mesh = apNavMesh;
     obstacle.FUN_006e5cc0(apObstacle);
     items.FUN_008454f0(0);
     for (unsigned int i = 0; i < previousItems.FUN_0044ddc0(); ++i)
@@ -3305,7 +3499,7 @@ bool NavChangeBuilder::NavMeshObstacleCutter_SplitNavMeshFromObstacle(NavMesh* a
     {
         unsigned short index = change->affected.GetBufferEntry(k);
         NavObstaclePtr entry(0);
-        if (reinterpret_cast<NavMap*>(mesh->pTriangleToObstacleMap)->ProcessEntries_0069afb0(index, entry))
+        if (reinterpret_cast<NavMap*>(mesh->pTriangleToObstacleMap)->NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_GetAt(index, entry))
         {
             change->obstacleMap.NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_NavMeshObstacleData_unsigned_short_NiPointer_NavMeshObstacleData_SetAt(index, entry);
             reinterpret_cast<NavMap*>(mesh->pTriangleToObstacleMap)->FUN_0049c250(index);
@@ -3319,7 +3513,7 @@ bool NavChangeBuilder::NavMeshObstacleCutter_SplitNavMeshFromObstacle(NavMesh* a
             items.FUN_00877a30(n)->enabled = true;
     }
     NavMeshObstacleCutter_RemoveInvalidEdges();
-    FUN_006bde50();
+    CreateNewEdges();
     if (!BuildTrianglesFromEdgePairs())
     {
         reinterpret_cast<NavResetVertices&>(mesh->Vertices).FUN_00694890(change->oldVertices, true);
@@ -3327,10 +3521,10 @@ bool NavChangeBuilder::NavMeshObstacleCutter_SplitNavMeshFromObstacle(NavMesh* a
         delete change;
         return false;
     }
-    JoinAdjacentEdges();
+    NavMeshObstacleCutter_CreateRemainingEdges();
     BuildTrianglesFromEdgePairs();
-    ApplyEdgeSplits();
-    UpdateEdgeRecords(flags);
+    NavMeshObstacleCutter_ConnectTriangles();
+    NavMeshObstacleCutter_CreateSwappedEdgeList(aPortalSwaps);
     change->newVertices = NavMeshGetArrayFlags(mesh) - change->oldVertices;
     change->newTriangles = mesh->NavMesh_GetTriangleCount() - change->oldTriangles;
     NavMeshObstacleCutter_SetObstacleCount();
@@ -3343,13 +3537,16 @@ bool NavChangeBuilder::NavMeshObstacleCutter_SplitNavMeshFromObstacle(NavMesh* a
     return true;
 }
 
-float __cdecl RandomFloat(float fMin, float fScaledValue);
+float __cdecl RandomFloat(float afMin, float afMax);
 float __cdecl sqrt_004019b0(float fValue);
 extern const float runtimeFloatSettingDefault1020;
 
 // @fnv 0x00697c10
 // src: COMMUNITY 0x00697c10
-bool NavMesh::FindRandomPointWithinRadius(const NiPoint3& aPosition, float aRadius, NiPoint3* pkOut)
+// pdb: NavMesh::FindRandomPointWithinRadius | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb params: aStartLocation, aRadius, apRet1
+// pdb locals: bFound, testpoint, i, ycoord, xcoord
+bool NavMesh::FindRandomPointWithinRadius(const NiPoint3& aStartLocation, float aRadius, NiPoint3* apRet1)
 {
     bool bFound = false;
     NiPoint3 kIntersectionOffset = NiPoint3::ZERO;
@@ -3360,15 +3557,15 @@ bool NavMesh::FindRandomPointWithinRadius(const NiPoint3& aPosition, float aRadi
         fY = RandomFloat(-fY, fY);
         kIntersectionOffset.x = fX;
         kIntersectionOffset.y = fY;
-        bFound = IsLocationOnNavMesh(kIntersectionOffset.FUN_00439e90(aPosition), 0);
+        bFound = IsLocationOnNavMesh(kIntersectionOffset.FUN_00439e90(aStartLocation), 0);
     }
     if (!bFound)
     {
-        pkOut = 0;
+        apRet1 = 0;
         return false;
     }
-    kIntersectionOffset.ComputeValue_0063c8a0(aPosition);
-    *pkOut = AdjustPointToNavMesh(kIntersectionOffset, runtimeFloatSettingDefault1020);
+    kIntersectionOffset.ComputeValue_0063c8a0(aStartLocation);
+    *apRet1 = AdjustPointToNavMesh(kIntersectionOffset, runtimeFloatSettingDefault1020);
     return true;
 }
 
@@ -3377,6 +3574,7 @@ extern const float DAT_01015f5c;
 float __cdecl floorf(float);
 bool __cdecl NavMeshMath_Find2DIntersection(const NiPoint3&, const NiPoint3&, const NiPoint3&, const NiPoint3&);
 
+// pdb: structure GridCell, size 0x4 (here 0x8), 1 members
 struct GridCell
 {
     unsigned int x, y;
@@ -3385,18 +3583,20 @@ struct GridCell
 // Adds each triangle to grid cells containing its vertices, containing cell corners, or intersecting its edges.
 // @fnv 0x006959b0
 // src: COMMUNITY 0x006959b0
+// pdb: NavMesh::CreateGrid | NavMesh_Util.obj | retail, upstream name already matches, high
+// pdb locals: tempMax, istartX, iendY, igridSize, frowLen, ftriMinY, fcolumnLen, ftriMaxX, loc, tempMin, ptri, istartY, vertCell, ftriMaxY, itriSize, verts, topLeft, iendX, bottomRight, i, bottomLeft, topRight, ftriMinX, batLeastOne ...
 void NavMesh::CreateGrid()
 {
     int count2 = NavMesh_GetTriangleCount();
-    m_kGrid.Clear_0069d2d0();
+    MeshGrid.NavMeshGrid_Clear();
     if (count2 == 0)
         return;
     NiPoint3 boundsMin5, boundsMaxX;
     ComputeBounds(boundsMin5, boundsMaxX);
-    m_kGrid.InitFromPoints(boundsMin5, boundsMaxX, count2);
-    unsigned int dimensionB_ = m_kGrid.Modelloader_GetReferencedThis();
-    float width8 = m_kGrid.m_fFirstGridValue;
-    float heightSquared9 = m_kGrid.NavMeshPointEntry;
+    MeshGrid.InitFromPoints(boundsMin5, boundsMaxX, count2);
+    unsigned int dimensionB_ = MeshGrid.Modelloader_GetReferencedThis();
+    float width8 = MeshGrid.fColumnSectionLen;
+    float heightSquared9 = MeshGrid.fRowSectionLen;
     NiPoint3 corner1, right3, upper3, upperRight4, point12;
     NiPoint3 verticesCheck6[3];
     int triangle;
@@ -3445,7 +3645,7 @@ void NavMesh::CreateGrid()
         addedX = false;
         if (minCellX4 == maxX2 && minY2 == maxCellYVal)
         {
-            m_kGrid.SetTriangleData((unsigned short)triangle, minCellX4, minY2);
+            MeshGrid.SetTriangleData((unsigned short)triangle, minCellX4, minY2);
             addedX = true;
         }
         else
@@ -3457,14 +3657,14 @@ void NavMesh::CreateGrid()
                     if ((cellsVal[0].x == x && cellsVal[0].y == y) || (cellsVal[1].x == x && cellsVal[1].y == y) ||
                         (cellsVal[2].x == x && cellsVal[2].y == y))
                     {
-                        m_kGrid.SetTriangleData((unsigned short)triangle, x, y);
+                        MeshGrid.SetTriangleData((unsigned short)triangle, x, y);
                         addedX = true;
                         continue;
                     }
-                    corner1 = m_kGrid.NavMeshGrid_GetGridPosition(x, y);
-                    right3 = m_kGrid.NavMeshGrid_GetGridPosition(x + 1, y);
-                    upper3 = m_kGrid.NavMeshGrid_GetGridPosition(x, y + 1);
-                    upperRight4 = m_kGrid.NavMeshGrid_GetGridPosition(x + 1, y + 1);
+                    corner1 = MeshGrid.NavMeshGrid_GetGridPosition(x, y);
+                    right3 = MeshGrid.NavMeshGrid_GetGridPosition(x + 1, y);
+                    upper3 = MeshGrid.NavMeshGrid_GetGridPosition(x, y + 1);
+                    upperRight4 = MeshGrid.NavMeshGrid_GetGridPosition(x + 1, y + 1);
                     if ((verticesCheck6[0].x <= upperRight4.x && verticesCheck6[0].y <= upperRight4.y &&
                          verticesCheck6[0].x >= corner1.x && verticesCheck6[0].y >= corner1.y) ||
                         (verticesCheck6[1].x <= upperRight4.x && verticesCheck6[1].y <= upperRight4.y &&
@@ -3472,7 +3672,7 @@ void NavMesh::CreateGrid()
                         (verticesCheck6[2].x <= upperRight4.x && verticesCheck6[2].y <= upperRight4.y &&
                          verticesCheck6[2].x >= corner1.x && verticesCheck6[2].y >= corner1.y))
                     {
-                        m_kGrid.SetTriangleData((unsigned short)triangle, x, y);
+                        MeshGrid.SetTriangleData((unsigned short)triangle, x, y);
                         addedX = true;
                         continue;
                     }
@@ -3482,7 +3682,7 @@ void NavMesh::CreateGrid()
                         FUN_00697730((unsigned short)triangle, upper3, zl, DAT_01016970, 180.0f) ||
                         FUN_00697730((unsigned short)triangle, upperRight4, zl, DAT_01016970, 180.0f))
                     {
-                        m_kGrid.SetTriangleData((unsigned short)triangle, x, y);
+                        MeshGrid.SetTriangleData((unsigned short)triangle, x, y);
                         addedX = true;
                         continue;
                     }
@@ -3535,7 +3735,7 @@ void NavMesh::CreateGrid()
                     }
                     if (intersects3)
                     {
-                        m_kGrid.SetTriangleData((unsigned short)triangle, x, y);
+                        MeshGrid.SetTriangleData((unsigned short)triangle, x, y);
                         addedX = true;
                     }
                 }

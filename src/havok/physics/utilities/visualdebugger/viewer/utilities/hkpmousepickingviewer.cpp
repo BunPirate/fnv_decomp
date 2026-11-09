@@ -70,6 +70,7 @@ class hkpMousePickingViewer : public hkpWorldViewerBase
 };
 
 // @fnv 0x00d66b90
+// pdb: hkpUserShapePhantomTypeIdentifier::`scalar deleting destructor' | hkpPhantomDisplayViewer.obj | retail, object-file run extension, low
 hkpMousePickingViewer* hkpMousePickingViewer::Initialize(int contexts)
 {
     reinterpret_cast<WorldViewerBaseConstructor>(&ConstructWorldViewerBase)(this, (const void*)contexts);
@@ -84,34 +85,38 @@ hkpMousePickingViewer* hkpMousePickingViewer::Initialize(int contexts)
 }
 
 extern int DAT_01269cd0;
-extern int DAT_01268ff8;
+extern int hkpMousePickingViewer_m_tag;
 void __cdecl hkpMousePickingViewer_create();
 // @fnv 0x00d66c90
-void* __cdecl RegisterMousePicking()
+// src: XBOX_RETAIL_PDB 0x00d66c90
+// pdb: hkpMousePickingViewer::registerViewer | hkpMousePickingViewer.obj | retail, string-set bridge, high
+void* __cdecl hkpMousePickingViewer_registerViewer()
 {
-    DAT_01268ff8 = (int)((hkProcessFactory*)DAT_01269cd0)->RegisterProcess("Mouse Picking", (void*)hkpMousePickingViewer_create);
-    return (void*)DAT_01268ff8;
+    hkpMousePickingViewer_m_tag = (int)((hkProcessFactory*)DAT_01269cd0)->RegisterProcess("Mouse Picking", (void*)hkpMousePickingViewer_create);
+    return (void*)hkpMousePickingViewer_m_tag;
 }
 
-extern int DAT_01268ff8;
+extern int hkpMousePickingViewer_m_tag;
 
 // @fnv 0x00d66ed0
 // src: GUESS 0x00d66ed0 (confidence: low)
 int __cdecl Hkpmousepickingviewer_GetDAT01268ff8()
 {
-    return DAT_01268ff8;
+    return hkpMousePickingViewer_m_tag;
 }
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 // @fnv 0x00d66c50
 // src: XBOX_PDB 0x00d66c50
-void* __cdecl hkpMousePickingViewer_create(unsigned int value)
+// pdb: hkpMousePickingViewer::create | hkpMousePickingViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+void* __cdecl hkpMousePickingViewer_create(unsigned int contexts)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     FUN_00d66cd0::hkpMousePickingViewer* block = static_cast<FUN_00d66cd0::hkpMousePickingViewer*>(
         holder->m_heap->blockAlloc(sizeof(FUN_00d66cd0::hkpMousePickingViewer)));
-    block->m_usMemSizeAndFlags = sizeof(FUN_00d66cd0::hkpMousePickingViewer);
-    block = block->Initialize(value);
+    block->m_memSizeAndFlags = sizeof(FUN_00d66cd0::hkpMousePickingViewer);
+    block = block->Initialize(contexts);
     if (block)
         return reinterpret_cast<char*>(block) + 8;
     return 0;
@@ -123,7 +128,7 @@ typedef unsigned __int64 hkUint64D66D;
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 
 // These entry points are absent from the shared class declarations.
-extern "C" void ConstructMouseSpringAction();
+extern "C" void hkpMouseSpringAction_ctor();
 extern "C" void SetMouseSpringMaxRelativeForce();
 extern "C" void AddMouseSpringAction();
 
@@ -150,34 +155,38 @@ struct MousePickD66D
     hkpWorld* m_pkWorld;
     hkpMouseSpringAction* m_pkMouseSpring;
     float m_fMaxRelativeForce;
-    hkBool PickEntity(hkUint64D66D uiUserData, const hkVector4& kPositionInWorld);
+    hkBool hkpMousePickingViewer_pickObject(hkUint64D66D id, const hkVector4& worldPosition);
 };
 
 // Validates the user data as a collidable, stores its entity's world, and creates and adds a mouse spring action for the entity.
 // @fnv 0x00d66d00
-hkBool MousePickD66D::PickEntity(hkUint64D66D uiCollidableUserData, const hkVector4& kPositionInWorld)
+// src: XBOX_RETAIL_PDB 0x00d66d00
+// pdb: hkpMousePickingViewer::pickObject | hkpMousePickingViewer.obj | retail, object-file gap fill, high
+// pdb params: id, worldPosition
+// pdb locals: positionAinA
+hkBool MousePickD66D::hkpMousePickingViewer_pickObject(hkUint64D66D id, const hkVector4& worldPosition)
 {
-    hkUint64D66D uiUserDataTag = uiCollidableUserData & 3;
+    hkUint64D66D uiUserDataTag = id & 3;
     if (uiUserDataTag == 3)
-        uiCollidableUserData &= ~(hkUint64D66D)3;
+        id &= ~(hkUint64D66D)3;
     else if (uiUserDataTag != 0)
         return false;
-    hkpCollidable* pkCollidable = (hkpCollidable*)(unsigned int)uiCollidableUserData;
-    if (pkCollidable->m_kBroadPhaseHandle.m_type == 1)
+    hkpCollidable* pkCollidable = (hkpCollidable*)(unsigned int)id;
+    if (pkCollidable->m_broadPhaseHandle.m_type == 1)
     {
-        hkpEntity* pkEntity = (hkpEntity*)((char*)pkCollidable + pkCollidable->m_iOwnerOffset);
+        hkpEntity* pkEntity = (hkpEntity*)((char*)pkCollidable + pkCollidable->m_ownerOffset);
         if (pkEntity)
         {
-            m_pkWorld = static_cast<hkpWorld*>(pkEntity->m_pOwningWorld);
-            if (*reinterpret_cast<const unsigned char*>(&pkEntity->m_pMotionState.m_type) != 5 && pkEntity->m_pOwningWorld == m_pkWorld)
+            m_pkWorld = static_cast<hkpWorld*>(pkEntity->m_world);
+            if (*reinterpret_cast<const unsigned char*>(&pkEntity->m_motion.m_type) != 5 && pkEntity->m_world == m_pkWorld)
             {
                 VectorStorage positionStorage;
                 hkVector4& kPositionInRbLocal = *reinterpret_cast<hkVector4*>(&positionStorage);
-                kPositionInRbLocal.hkVector4_setTransformedInversePos(pkEntity->m_pMotionState.m_kMotionState.m_kMotionTransform, kPositionInWorld);
+                kPositionInRbLocal.hkVector4_setTransformedInversePos(pkEntity->m_motion.m_kMotionState.m_transform, worldPosition);
                 hkpMouseSpringAction* spring = static_cast<hkpMouseSpringAction*>(
                     AllocateMouseSpringStorage(sizeof(hkpMouseSpringAction)));
-                m_pkMouseSpring = reinterpret_cast<MouseSpringConstructor>(&ConstructMouseSpringAction)(
-                    spring, kPositionInRbLocal, kPositionInWorld, 0.5f, 0.3f, 0.95f, pkEntity, 0);
+                m_pkMouseSpring = reinterpret_cast<MouseSpringConstructor>(&hkpMouseSpringAction_ctor)(
+                    spring, kPositionInRbLocal, worldPosition, 0.5f, 0.3f, 0.95f, pkEntity, 0);
                 reinterpret_cast<MouseSpringForceSetter>(&SetMouseSpringMaxRelativeForce)(m_pkMouseSpring, m_fMaxRelativeForce);
                 reinterpret_cast<WorldActionAdder>(&AddMouseSpringAction)(m_pkWorld, m_pkMouseSpring);
             }
@@ -191,8 +200,8 @@ struct Derived;
 
 struct Stream
 {
-    void readQuadVector4(void* vec);
-    int hkIArchive_readArrayGeneric(void* buf, int size, int count);
+    void readQuadVector4(void* v);
+    int hkIArchive_readArrayGeneric(void* array, int elemsize, int arraySize);
     char* GetStreamResult(char* buf);
 };
 
@@ -205,14 +214,14 @@ struct Base2
     {
         return (Derived*)((char*)this - 8);
     }
-    void hkpMousePickingViewer_consumeCommand(unsigned char type);
+    void hkpMousePickingViewer_consumeCommand(unsigned char command);
 };
 
 struct Derived
 {
     void hkpMousePickingViewer_releaseObject();
     void DispatchToChild(void* vec);
-    void PickEntity(char* str, int a, int b, void* vec);
+    void hkpMousePickingViewer_pickObject(char* id, int worldPosition, int b, void* vec);
 };
 
 struct Buf4
@@ -222,7 +231,10 @@ struct Buf4
 
 // @fnv 0x00d66e10
 // src: HAVOK_LIB 0x00d66e10
-void Base2::hkpMousePickingViewer_consumeCommand(unsigned char type)
+// pdb: hkpMousePickingViewer::consumeCommand | hkpMousePickingViewer.obj | retail, upstream name already matches, high
+// pdb params: command
+// pdb locals: worldPosition, newWorldPosition
+void Base2::hkpMousePickingViewer_consumeCommand(unsigned char command)
 {
     Buf4 buf;
     union
@@ -236,7 +248,7 @@ void Base2::hkpMousePickingViewer_consumeCommand(unsigned char type)
         } b0;
     } u;
 
-    switch (type)
+    switch (command)
     {
     case 0xb2:
         getDerived()->hkpMousePickingViewer_releaseObject();
@@ -254,7 +266,7 @@ void Base2::hkpMousePickingViewer_consumeCommand(unsigned char type)
         stream->hkIArchive_readArrayGeneric(&u.b0.pair0, 8, 1);
         if (stream->GetStreamResult(&buf.b2)[0])
         {
-            getDerived()->PickEntity(&buf.b3, u.b0.pair0, u.b0.pair1, &u.b0.vec);
+            getDerived()->hkpMousePickingViewer_pickObject(&buf.b3, u.b0.pair0, u.b0.pair1, &u.b0.vec);
         }
         break;
     }
@@ -274,6 +286,7 @@ struct FnvCpu_FUN_00d66f00_CpuObject
 };
 // Calls FUN_00d66cd0, then if flags bit 0 is set, invokes the allocator from FUN_00c85750 on this with size, and returns this.
 // @fnv 0x00d66f00
+// pdb: hkpMousePickingViewer::`scalar deleting destructor' | hkpMousePickingViewer.obj | retail, vtable slot, high
 FnvCpu_FUN_00d66f00_CpuObject* FnvCpu_FUN_00d66f00_CpuObject::FUN_00d66f00(unsigned int flags)
 {
     FUN_00d66cd0();
@@ -286,7 +299,7 @@ FnvCpu_FUN_00d66f00_CpuObject* FnvCpu_FUN_00d66f00_CpuObject::FUN_00d66f00(unsig
 }
 }  // namespace fnv_00d66f00
 
-extern "C" void RemoveMouseSpringAction();
+extern "C" void hkpWorld_removeAction();
 typedef void (__thiscall* WorldActionRemover)(hkpWorld*, hkpUnaryAction*);
 
 class FUN_00d66c10_cls
@@ -301,14 +314,15 @@ class FUN_00d66c10_cls
 
 // @fnv 0x00d66c10
 // src: HAVOK_LIB 0x00d66c10
+// pdb: hkpMousePickingViewer::releaseObject | hkpMousePickingViewer.obj | retail, upstream name already matches, high
 void FUN_00d66c10_cls::hkpMousePickingViewer_releaseObject()
 {
     if (m_pEntity)
     {
-        if (m_pEntity->m_pOwningWorld)
+        if (m_pEntity->m_world)
         {
-            reinterpret_cast<WorldActionRemover>(&RemoveMouseSpringAction)(m_pOwningWorld, m_pEntity);
-            m_pEntity->m_pEntity->activate_00c9c1d0();
+            reinterpret_cast<WorldActionRemover>(&hkpWorld_removeAction)(m_pOwningWorld, m_pEntity);
+            m_pEntity->m_entity->activate_00c9c1d0();
             m_pEntity->removeReference();
         }
         else
@@ -322,6 +336,7 @@ void FUN_00d66c10_cls::hkpMousePickingViewer_releaseObject()
 
 namespace FUN_00d66cd0 {
 // @fnv 0x00d66cd0
+// pdb: hkpMousePickingViewer::~hkpMousePickingViewer | hkpMousePickingViewer.obj | retail, upstream name already matches, high
 hkpMousePickingViewer::~hkpMousePickingViewer() throw()
 {
     hkpMousePickingViewer_releaseObject();

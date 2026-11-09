@@ -7,6 +7,9 @@
 // FUN_00cbfb90: stdcall, 7 stack params, returns the last one.
 // @fnv 0x00cbfb90
 // src: COMMUNITY 0x00cbfb90
+// pdb: hkpCollisionFilter::numShapeKeyHitsLimitBreached | hkpCollisionFilter.obj | debug, vtable slot, medium
+// pdb params: input, bodyA, bodyB, bvTreeShapeB, aabb, shapeKeysInOut, shapeKeysCapacity
+// pdb locals: assertBuf, ostr
 int __stdcall bhkCollisionFilter_numShapeKeyHitsLimitBreached(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
     return a7;

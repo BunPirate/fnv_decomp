@@ -77,16 +77,19 @@ struct Node
     int unk0c;
     int unk10;
     __declspec(noinline) void resetX();
-    void applyX(void* shape, Mat4* m, XfResult* r);
-    void UpdateState_00de0f90(void* shape, XfResult* result);
+    void applyX(void* shape, Mat4* transform, XfResult* displayGeometries);
+    void hkpShapeDisplayBuilder_buildDisplayGeometries(void* shape, XfResult* displayGeometries);
 };
 __declspec(noinline) void Node::resetX()
 {
     unk10 = 0;
 }
 // @fnv 0x00de0f90
-// src: GUESS 0x00de0f90 (confidence: low)
-void Node::UpdateState_00de0f90(void* shape, XfResult* result)
+// src: XBOX_RETAIL_PDB 0x00de0f90
+// pdb: hkpShapeDisplayBuilder::buildDisplayGeometries | hkpShapeDisplayBuilder.obj | retail, object-file gap fill, high
+// pdb params: shape, displayGeometries
+// pdb locals: transform
+void Node::hkpShapeDisplayBuilder_buildDisplayGeometries(void* shape, XfResult* displayGeometries)
 {
     Mat4 t;
     _mm_store_ps(t.m[0], _mm_setzero_ps());
@@ -97,6 +100,6 @@ void Node::UpdateState_00de0f90(void* shape, XfResult* result)
     t.m[2][2] = 1.0f;
     _mm_store_ps(t.m[3], _mm_setzero_ps());
     resetX();
-    result->m_04 = 0;
-    applyX(shape, &t, result);
+    displayGeometries->m_04 = 0;
+    applyX(shape, &t, displayGeometries);
 }

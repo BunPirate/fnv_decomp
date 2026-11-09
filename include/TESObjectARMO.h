@@ -41,8 +41,8 @@ public:
     virtual void InitItem();
 
     void ResetFormData();
-    bool Load(TESFile* file);
-    unsigned char GetArmorType();
+    bool Load(TESFile* apFile);
+    unsigned char GetArmorWeight();
     float GetArmorRating();
     float GetDamageThreshold();
     bool IsFlag80Clear();

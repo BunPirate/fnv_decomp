@@ -16,6 +16,7 @@ struct FUN_004edb30_t
 
 // Calls FUN_004edb30, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x004edd50
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,TESWaterForm *,bool>::`scalar deleting destructor' | TESWater.obj | retail, vtable slot, high
 void* __thiscall FUN_004edb30_t::FUN_004edd50(unsigned int flags)
 {
     SetVtableAndProcessState_004edb30();
@@ -36,6 +37,7 @@ struct NiPointerListBase
 
 // @fnv 0x004edc60
 // src: GUESS 0x004edc60 (confidence: medium)
+// pdb: NiTArray<enum BSTextureManager::eTextureType,NiTMallocInterface<enum BSTextureManager::eTextureType> >::~NiTArray<enum BSTextureManager::eTextureType,NiTMallocInterface<enum BSTextureManager::eTextureType> > | TESWater.obj | debug, call graph (shared callers), high
 void __thiscall NiPointerListBase::ReleaseStorage_004edc60()
 {
     p = &DAT_010232b4;
@@ -55,6 +57,8 @@ struct FUN_004edc90_t
 // Calls FUN_004edf70 with the two arguments, then stores the address of DAT_010232bc as the object's first field and returns this.
 // @fnv 0x004edc90
 // src: EXE 0x004edc90
+// pdb: NiTPrimitiveArray<enum BSTextureManager::eTextureType>::NiTPrimitiveArray<enum BSTextureManager::eTextureType> | TESWater.obj | debug, object-file gap fill, medium
+// pdb params: uiMaxSize, uiGrowBy
 void* __thiscall FUN_004edc90_t::NiTPrimitiveArray_enum_BSTextureManager_eTextureType_NiTPrimitiveArray(int a, int b)
 {
     reinterpret_cast<FUN_004edf70_t*>(this)->FUN_004edf70(a, b);
@@ -73,6 +77,7 @@ struct FUN_004edcc0_t
 };
 // Sets m to the address of DAT_010232c4, then deallocates the pointer stored just past this via NiTMallocInterface::Deallocate.
 // @fnv 0x004edcc0
+// pdb: NiTArray<enum NiTexturingProperty::FilterMode,NiTMallocInterface<enum NiTexturingProperty::FilterMode> >::~NiTArray<enum NiTexturingProperty::FilterMode,NiTMallocInterface<enum NiTexturingProperty::FilterMode> > | TESWater.obj | debug, call graph (shared callers), high
 void __thiscall FUN_004edcc0_t::InitAndDeallocate()
 {
     m = &DAT_010232c4;
@@ -88,6 +93,8 @@ struct FUN_004edcf0_t
 };
 // Calls FUN_004edfe0 with the two arguments, stores the address of DAT_010232cc at the start of this object, and returns this.
 // @fnv 0x004edcf0
+// pdb: NiTPrimitiveArray<enum NiTexturingProperty::FilterMode>::NiTPrimitiveArray<enum NiTexturingProperty::FilterMode> | TESWater.obj | debug, call graph, medium
+// pdb params: uiMaxSize, uiGrowBy
 int* __thiscall FUN_004edcf0_t::InitWithGlobal(int a, int b)
 {
     FUN_004edfe0(a, b);
@@ -138,6 +145,8 @@ struct FUN_004edc30_t
     void __thiscall ClearAndFreeMap();
 };
 // @fnv 0x004edc30
+// pdb: NiTPointerMap<TESObjectREFR *,WadingWaterData *>::DeleteItem | TESWater.obj | debug, object-file run extension, low
+// pdb params: pkItem
 void __thiscall FUN_004edc30_t::ClearAndFreeMap()
 {
     *(int**)this = (int*)&DAT_01023294;
@@ -149,6 +158,9 @@ void __thiscall FUN_004edc30_t::ClearAndFreeMap()
 class Script;
 // Walks the list from m_pkHead, deleting each item via DeleteItem, then resets the count, head and tail.
 // @fnv 0x004ed900
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,RaceSexMenu::MenuOption *>::RemoveAll | RaceSexMenu.obj | retail, call graph, low
+// pdb note: debug build links it to NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::RemoveAll
+// pdb locals: pkCurr, pkDel
 template <>
 void NiTPointerListBase<NiTPointerAllocator<unsigned int>, Script*>::RemoveAll() // src: GAMEBRYO_SRC
 {
@@ -178,6 +190,8 @@ struct FUN_004ed960
 
 // Sets the vtable, stores sz in size, allocates size*4 bytes for data, zeroes them, and returns this.
 // @fnv 0x004ed960
+// pdb: NiPointer<SceneGraph>::NiPointer<SceneGraph> | InterfaceManager.obj | debug, object-file run extension, low
+// pdb params: pObject
 void* __thiscall FUN_004ed960::Init(unsigned int uiSize)
 {
     vtbl = (void*)&DAT_01023254;
@@ -257,6 +271,7 @@ struct FUN_004edc30_t
     void* __thiscall FUN_004edd80(unsigned int flags);
 };
 // @fnv 0x004edd80
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,TESObjectREFR *,WadingWaterData *>::`scalar deleting destructor' | TESWater.obj | retail, vtable slot, high
 void* __thiscall FUN_004edc30_t::FUN_004edd80(unsigned int flags)
 {
     ClearAndFreeMap();
@@ -271,6 +286,7 @@ struct FUN_004eddb0_t
     void* __thiscall FUN_004eddb0(unsigned int flags);
 };
 // @fnv 0x004eddb0
+// pdb: NiTArray<enum BSTextureManager::eTextureType,NiTMallocInterface<enum BSTextureManager::eTextureType> >::`scalar deleting destructor' | TESWater.obj | debug, vtable slot, medium
 void* FUN_004eddb0_t::FUN_004eddb0(unsigned int flags)
 {
     ((NiPointerListBase*)this)->ReleaseStorage_004edc60();
@@ -287,6 +303,7 @@ struct FUN_004ebb30_shell
 };
 // Calls FUN_004ebb30, then frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x004edde0
+// pdb: NiTPrimitiveArray<enum BSTextureManager::eTextureType>::`scalar deleting destructor' | TESWater.obj | debug, vtable slot, medium
 void* FUN_004ebb30_shell::FUN_004edde0(unsigned int flags)
 {
     ForwardCall_004ebb30();
@@ -301,6 +318,7 @@ struct FUN_004ebb50_shell
     void* __thiscall FUN_004ede10(unsigned int flags);
 };
 // @fnv 0x004ede10
+// pdb: NiTArray<enum NiTexturingProperty::FilterMode,NiTMallocInterface<enum NiTexturingProperty::FilterMode> >::`scalar deleting destructor' | TESWater.obj | debug, vtable slot, medium
 void* __thiscall FUN_004ebb50_shell::FUN_004ede10(unsigned int flags)
 {
     InitAndDeallocate();
@@ -318,6 +336,7 @@ struct FUN_004ebb50_shell
 };
 // Calls FUN_004ebb50, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x004ede40
+// pdb: NiTPrimitiveArray<enum NiTexturingProperty::FilterMode>::`scalar deleting destructor' | TESWater.obj | debug, vtable slot, medium
 void* __thiscall FUN_004ebb50_shell::FUN_004ede40(unsigned int flags)
 {
     InitAndDeallocate_Thunk();
@@ -338,6 +357,10 @@ struct FUN_00ae8bf0_t
 };
 // Allocates a map node from the pool at offset 8, stores the element's first pointer in it, and inserts the node into the map.
 // @fnv 0x00ae8bf0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiAVObject *>::AddTail | Main.obj | retail, call graph, low
+// pdb note: debug build links it to NiTPointerListBase<NiTPointerAllocator<unsigned int>,FontManager::TextPage *>::AddTail
+// pdb params: element
+// pdb locals: pkNode
 void FUN_00ae8bf0_t::AddItem(const void* element)
 {
     NiTMapItem<unsigned int, void*>* node;
@@ -360,6 +383,7 @@ struct FUN_004edd20_shell
     void* __thiscall FUN_004edd20(unsigned int flags);
 };
 // @fnv 0x004edd20
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,TESObjectREFR *,TESObjectREFR *>::`scalar deleting destructor' | TESWater.obj | retail, vtable slot, high
 void* FUN_004edd20_shell::FUN_004edd20(unsigned int flags)
 {
     ((FUN_004eda30_t*)this)->SetVtableAndProcessState_004eda30();
@@ -382,6 +406,7 @@ struct FUN_004ed9d0 : FUN_004eda30
 };
 // Destructor that forwards to FUN_00438af0 on this object.
 // @fnv 0x004ed9d0
+// pdb: NiPointer<SceneGraph>::~NiPointer<SceneGraph> | InterfaceManager.obj | debug, object-file run extension, low
 FUN_004ed9d0::~FUN_004ed9d0()
 {
     ((FUN_00438af0_t*)this)->FUN_00438af0();
@@ -412,6 +437,7 @@ FUN_004edad0::~FUN_004edad0()
 }  // namespace fnv_004edad0
 
 // @fnv 0x00ae8370
+// pdb: NiTPointerList<BSSoundMessage *>::~NiTPointerList<BSSoundMessage *> | BSAudioManager.obj | debug, call graph, medium
 template <>
 void NiTPointerListBase<NiTPointerAllocator<unsigned int>, void*>::RemoveAll() // src: GAMEBRYO_SRC
 {

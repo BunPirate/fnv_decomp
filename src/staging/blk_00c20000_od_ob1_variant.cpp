@@ -144,8 +144,8 @@ namespace loader
 #include "../../include/RecursiveSpinLock.h"
 struct FUN_00c3a090_Class
 {
-    char __thiscall BSMultiBoundRoom_IsEqual(void* arg);
-    char __thiscall IsSameAs(void* arg);
+    char __thiscall BSMultiBoundRoom_IsEqual(void* pkObject);
+    char __thiscall IsSameAs(void* pObject);
 };
 extern "C" void* g_01202828;
 struct FUN_00c3a610_Class
@@ -196,7 +196,7 @@ struct FUN_00c3a080_Class
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 struct FUN_00c3a0c0_Class
 {
-    void* __thiscall BSMultiBoundNode_GetViewerStrings(unsigned int a);
+    void* __thiscall BSMultiBoundNode_GetViewerStrings(unsigned int apStrings);
     void __thiscall AddFirstEmptyFromGlobal(unsigned int a);
 };
 struct FUN_00c3a100_Class
@@ -234,7 +234,7 @@ extern char DAT_01202fa0[];
 void MessageHandler_SetAllWarningFileNames(const char* src);
 extern char DAT_01202a40[0x104];
 extern char DAT_01202fa0[0x104];
-void __cdecl MessageHandler_SetProgrammerOutputFileName(const char* p);
+void __cdecl MessageHandler_SetProgrammerOutputFileName(const char* apFileName);
 extern const void* DAT_010c14a8;
 
 struct FUN_00c3c070_Class
@@ -268,7 +268,7 @@ extern PFN_00c3c100 DAT_01202d5c;
 extern int DAT_01202d70;
 void __cdecl MessageHandler_InstallMessageBoxHook();
 void __cdecl MessageHandler_RemoveMessageBoxHook();
-void* __cdecl MessageHandler_DoMessageBox(void* a, void* b, unsigned int c);
+void* __cdecl MessageHandler_DoMessageBox(void* apText, void* apCaption, unsigned int aiType);
 struct FUN_00c465a0;
 struct FUN_00c4fb10_shell;
 struct FUN_00c61b10;
@@ -291,7 +291,7 @@ NiObject* __cdecl BSPSysMultiTargetEmitterCtlr_CreateObject();
 NiObject* __cdecl BSMasterParticleSystem_CreateObject();
 NiObject* __cdecl BSMultiBound_CreateObject();
 NiObject* __cdecl CreateNewObject();
-NiObject* __cdecl CreateNewBodyCls();
+NiObject* __cdecl BSMultiBoundAABB_CreateObject();
 NiObject* __cdecl CreateBC36500Object();
 NiObject* __cdecl BSMultiBoundCapsule_CreateObject();
 FUN_00c4fb10_shell* __cdecl BSMultiBoundSphere_CreateObject();
@@ -333,9 +333,9 @@ struct FUN_00c3ba80_Class
 };
 extern "C" unsigned char DAT_01202d55;
 void* __cdecl MessageHandler_DoMessageBox(void*, void*, unsigned int);
-void* __cdecl MessageHandler_MenuMessageBoxYesNo(void* a);
+void* __cdecl MessageHandler_MenuMessageBoxYesNo(void* apMessageText);
 extern unsigned char DAT_01202d55;
-void* __cdecl MessageHandler_MenuMessageBoxYesNoAll(void* a);
+void* __cdecl MessageHandler_MenuMessageBoxYesNoAll(void* apMessageText);
 struct GlobalObject_00c3bcf0
 {
     ~GlobalObject_00c3bcf0();
@@ -478,8 +478,8 @@ struct FUN_00c347d0_Obj
 };
 struct FUN_00c347d0_cls
 {
-    void Init(FUN_00c347d0_Elem* res);
-    bool BSOcclusionPlane_CompletelyWithinFrustum(FUN_00c347d0_Obj* obj);
+    void Init(FUN_00c347d0_Elem* apPoints);
+    bool BSOcclusionPlane_CompletelyWithinFrustum(FUN_00c347d0_Obj* aPlanes);
 };
 class Node
 {
@@ -515,7 +515,7 @@ class FUN_00c39a80_cls
         unk78, unk7c, unk80, unk84, unk88, unk8c, unk90, unk94, unk98, unk9c, unka0, unka4, unka8, unkac, unkb0, unkb4,
         unkb8, unkbc;
     Mid m_c0;
-    void BSMultiBoundRoom_AddOccluder(unsigned int a1);
+    void BSMultiBoundRoom_AddOccluder(unsigned int apOccluder);
 };
 extern "C" int DAT_010c117c;
 struct FUN_00c3a220_cls
@@ -635,13 +635,13 @@ extern "C" unsigned int __cdecl strlen(const char*);
 extern "C" __declspec(dllimport) unsigned long __stdcall GetPrivateProfileStringA(
     const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, unsigned long nSize,
     const char* lpFileName);
-PFN_NiObjectLoader __cdecl BSStream_GetCreatorFunction(const char* name);
+PFN_NiObjectLoader __cdecl BSStream_GetCreatorFunction(const char* apObjectName);
 static const char kLoadersSection[] = "Loaders";
 static const char kNoDefault[] = "";
 static const char kBackslash[] = "\\";
 static const char kIniName[] = "Loaders.ini";
 static const char kSpace[] = " ";
-void __cdecl LoadObjectLoadersFromIni(const char* dir);
+void __cdecl BSStream_RegisterLoadersINI(const char* apINIFilePath);
 extern "C" int __cdecl _strnicmp(const char* a, const char* b, unsigned int n);
 void __cdecl BuildDataPath(char* out, const char* path, const char* suffix);
 extern "C" unsigned char DAT_01202b48;
@@ -660,7 +660,7 @@ extern unsigned char DAT_011f6370[0x18];
 extern unsigned int DAT_01202d74;
 extern unsigned int DAT_011f6388;
 void __cdecl MessageHandler_InitSDM();
-void __cdecl MessageHandler_Init(unsigned char a, unsigned char b, unsigned char c, unsigned char d, unsigned int e);
+void __cdecl MessageHandler_Init(unsigned char abDisableWarningMessageBox, unsigned char abAllowYesToAll, unsigned char abSkipProgramFlows, unsigned char abSkipInitializationFlows, unsigned int apMessageBoxCallback);
 int* __cdecl MessageHandler_GetWarningFileName();
 int __cdecl BSSystemFile_DeleteFileA(const char* p);
 int __cdecl GetFileSize(int* buf, int* out);
@@ -691,7 +691,7 @@ struct FUN_00c3c540_Class
 };
 struct C3D3E0Heap
 {
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 extern C3D3E0Heap g_kC3D3E0Heap;
 class C3D3E0Palette
@@ -763,7 +763,7 @@ struct FUN_00c3fa70_elem
 };
 struct DynamicMemoryAllocator
 {
-    void MemoryManager_Deallocate(void* apPtr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern "C" DynamicMemoryAllocator DAT_011f6238;
 struct TeardownBase
@@ -904,6 +904,9 @@ extern const double DAT_01012070;
 extern const double DAT_010c0f58;
 // @fnv 0x00c35ae0
 // src: COMMUNITY 0x00c35ae0
+// pdb: BSOcclusionPlane::TestLineSegmentAllPlanes | BSOcclusionPlane.obj | debug, object-file run extension, low
+// pdb params: akPoint0, akPoint1, akPlane0, akPlanes
+// pdb locals: pn, fintersectT, lv, pndotlv, intPt, iplane
 bool FNVClip::BSOcclusionShape_TestLineSegmentAllPlanes(NiPoint3* begin, NiPoint3* end, FNVPlane* face, FNVPlaneSet* region)
 {
     NiPoint3 direction = end->SubtractIntoVector(*begin);
@@ -970,10 +973,13 @@ extern NiTStringPointerMapL<PFN_NiObjectLoader>* DAT_011f4784;
 
 // @fnv 0x00c3b3c0
 // src: COMMUNITY 0x00c3b3c0
-PFN_NiObjectLoader __cdecl BSStream_GetCreatorFunction(const char* pcName)
+// pdb: BSStream::GetCreatorFunction | BSStream.obj | debug, upstream name already matches, high
+// pdb params: apObjectName
+// pdb locals: pfnCreate
+PFN_NiObjectLoader __cdecl BSStream_GetCreatorFunction(const char* apObjectName)
 {
     PFN_NiObjectLoader pfnLoader = 0;
-    DAT_011f4784->GetAt(pcName, pfnLoader);
+    DAT_011f4784->GetAt(apObjectName, pfnLoader);
     return pfnLoader;
 }
 
@@ -1017,11 +1023,11 @@ struct Builder
     bool dirty;
     unsigned char disabled[4];
 // src: COMMUNITY 0x00c35c10
-    inline void BSOcclusionPlane_GetVertices(LocalPoint* out)
+    inline void BSOcclusionPlane_GetVertices(LocalPoint* apPoints)
     {
         if (!cornersDirty)
         {
-            memcpy(out, cachedCorners, 48);
+            memcpy(apPoints, cachedCorners, 48);
             return;
         }
         LocalPoint right(halfWidth, 0, 0);
@@ -1029,53 +1035,56 @@ struct Builder
         CornerMatrix* transform = &rotation;
         right = (*transform) * right;
         up = (*transform) * up;
-        out[3] = center - right + up;
-        out[2] = center - right - up;
-        out[1] = center + right - up;
-        out[0] = center + right + up;
-        memcpy(cachedCorners, out, 48);
+        apPoints[3] = center - right + up;
+        apPoints[2] = center - right - up;
+        apPoints[1] = center + right - up;
+        apPoints[0] = center + right + up;
+        memcpy(cachedCorners, apPoints, 48);
         cornersDirty = false;
     }
-    void BSOcclusionPlane_UpdateFrustumPlanes(LocalPoint eye, FUN_00a699d0s* out);
+    void BSOcclusionPlane_UpdateFrustumPlanes(LocalPoint akViewPoint, FUN_00a699d0s* akPlanes);
 };
 // @fnv 0x00c33870
 // src: COMMUNITY 0x00c33870
-void Builder::BSOcclusionPlane_UpdateFrustumPlanes(LocalPoint eye, FUN_00a699d0s* out)
+// pdb: BSOcclusionPlane::GetFrustumPlanes | BSOcclusionPlane.obj | retail, call graph (shared callers), high
+// pdb params: akViewPoint, akPlanes
+// pdb locals: koccplane, kPoints, i
+void Builder::BSOcclusionPlane_UpdateFrustumPlanes(LocalPoint akViewPoint, FUN_00a699d0s* akPlanes)
 {
-    if (!dirty && last == eye)
+    if (!dirty && last == akViewPoint)
     {
-        *out = cached;
+        *akPlanes = cached;
         return;
     }
     LocalPoint corners5[4];
     BSOcclusionPlane_GetVertices(corners5);
-    out->active = 63;
+    akPlanes->active = 63;
     FUN_00a699d0 test7(corners5[0], corners5[1], corners5[2]);
-    if (test7.ClassifyPoint(&eye) != 1)
+    if (test7.ClassifyPoint(&akViewPoint) != 1)
     {
-        out->SetWaterColorParameter(0, FUN_00a699d0(corners5[0], corners5[1], corners5[2]));
-        out->DisablePlane(1);
-        out->SetWaterColorParameter(2, FUN_00a699d0(corners5[0], corners5[1], eye));
-        out->SetWaterColorParameter(3, FUN_00a699d0(corners5[2], corners5[3], eye));
-        out->SetWaterColorParameter(4, FUN_00a699d0(corners5[3], corners5[0], eye));
-        out->SetWaterColorParameter(5, FUN_00a699d0(corners5[1], corners5[2], eye));
+        akPlanes->SetWaterColorParameter(0, FUN_00a699d0(corners5[0], corners5[1], corners5[2]));
+        akPlanes->DisablePlane(1);
+        akPlanes->SetWaterColorParameter(2, FUN_00a699d0(corners5[0], corners5[1], akViewPoint));
+        akPlanes->SetWaterColorParameter(3, FUN_00a699d0(corners5[2], corners5[3], akViewPoint));
+        akPlanes->SetWaterColorParameter(4, FUN_00a699d0(corners5[3], corners5[0], akViewPoint));
+        akPlanes->SetWaterColorParameter(5, FUN_00a699d0(corners5[1], corners5[2], akViewPoint));
     }
     else
     {
-        out->SetWaterColorParameter(0, FUN_00a699d0(corners5[1], corners5[0], corners5[2]));
-        out->DisablePlane(1);
-        out->SetWaterColorParameter(2, FUN_00a699d0(corners5[1], corners5[0], eye));
-        out->SetWaterColorParameter(3, FUN_00a699d0(corners5[3], corners5[2], eye));
-        out->SetWaterColorParameter(4, FUN_00a699d0(corners5[0], corners5[3], eye));
-        out->SetWaterColorParameter(5, FUN_00a699d0(corners5[2], corners5[1], eye));
+        akPlanes->SetWaterColorParameter(0, FUN_00a699d0(corners5[1], corners5[0], corners5[2]));
+        akPlanes->DisablePlane(1);
+        akPlanes->SetWaterColorParameter(2, FUN_00a699d0(corners5[1], corners5[0], akViewPoint));
+        akPlanes->SetWaterColorParameter(3, FUN_00a699d0(corners5[3], corners5[2], akViewPoint));
+        akPlanes->SetWaterColorParameter(4, FUN_00a699d0(corners5[0], corners5[3], akViewPoint));
+        akPlanes->SetWaterColorParameter(5, FUN_00a699d0(corners5[2], corners5[1], akViewPoint));
     }
     for (int index = 0; index < 4; index++)
     {
         if (disabled[index] == 1)
-            out->DisablePlane(index + 2);
+            akPlanes->DisablePlane(index + 2);
     }
-    last = eye;
-    cached = *out;
+    last = akViewPoint;
+    cached = *akPlanes;
     dirty = false;
 }
 
@@ -1127,6 +1136,7 @@ struct FUN_00c39640 : FUN_00c46970
     virtual ~FUN_00c39640();
 };
 // @fnv 0x00c39640
+// pdb: BSMultiBoundRoom::BSMultiBoundRoom | BSMultiBoundRoom.obj | retail, call graph, medium
 FUN_00c39640::FUN_00c39640()
 {
     SetBit(0x800, true);
@@ -1188,16 +1198,19 @@ char* __cdecl FUN_00a5b690(const char*);
 TextureObject* __cdecl FUN_00a5fd70(const NiFixedString&, int&, bool, bool);
 struct TextureLoader
 {
-    void __thiscall BSStream_LoadShaderTextures(const char* path);
+    void __thiscall BSStream_LoadShaderTextures(const char* apcName);
 };
 // @fnv 0x00c3b5e0
 // src: COMMUNITY 0x00c3b5e0
-void TextureLoader::BSStream_LoadShaderTextures(const char* path)
+// pdb: BSStream::LoadShaderTextures | BSStream.obj | debug, upstream name already matches, high
+// pdb params: apcName
+// pdb locals: ppSuffix, cDestName, sptexture
+void TextureLoader::BSStream_LoadShaderTextures(const char* apcName)
 {
     char filename[260];
     for (const char** suffix = DAT_011af484; *suffix; ++suffix)
     {
-        BuildDataPath(filename, path, *suffix);
+        BuildDataPath(filename, apcName, *suffix);
         TexturePtr texture;
         FindTextureByPath(filename, &texture);
         if (!texture.object && NiFile_Access(filename, 0))
@@ -1272,6 +1285,7 @@ struct FUN_00c3c4e0 : BaseArray
 };
 
 // @fnv 0x00c3c4e0
+// pdb: QueuedChildren::QueuedChildren | QueuedFiles.obj | debug, object-file run extension, low
 FUN_00c3c4e0::FUN_00c3c4e0()
 {
     children = 0;
@@ -1552,6 +1566,8 @@ struct FUN_00c3eeb0 : BaseObj
     virtual void vfunc0();
 };
 // @fnv 0x00c3eeb0
+// pdb: LockFreePriorityQueue<NiPointer<IOTask> >::RemoveAll | IOManager.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00c3eeb0::FUN_00c3eeb0(int count, int arg2)
 {
     TlsScope context;
@@ -1682,6 +1698,8 @@ struct ListQ
 };
 // @fnv 0x00c3f960
 // src: COMMUNITY 0x00c3f960
+// pdb: BSTaskManager<__int64>::~BSTaskManager<__int64> | IOManager.obj | debug, object-file run extension, low
+// pdb locals: i
 bool ListQ::LockFreeMap_int64_NiPointer_BSTask_int64_Func07(SPX pSceneObject)
 {
     bool bFound = false;
@@ -1698,9 +1716,9 @@ inline NiPoint3::NiPoint3(float x0, float y0, float z0) : x(x0), y(y0), z(z0)
 {}
 inline int NiPlane::Side(const FNVVec3& point) const
 {
-    float distance = x * reinterpret_cast<const NiPoint3&>(point).x +
+    float distance = m_kNormal * reinterpret_cast<const NiPoint3&>(point).x +
                      y * reinterpret_cast<const NiPoint3&>(point).y +
-                     z * reinterpret_cast<const NiPoint3&>(point).z - c;
+                     z * reinterpret_cast<const NiPoint3&>(point).z - m_fConstant;
     if (distance < 0.0)
         return 2;
     else if (distance > 0.0)
@@ -1769,30 +1787,33 @@ struct RectangleClip
     int unke0;
     bool dirty, unkE5, edge0, edge1, edge2, edge3;
 // src: COMMUNITY 0x00c35c10
-    inline void BSOcclusionPlane_GetVertices(NiPoint3* out)
+    inline void BSOcclusionPlane_GetVertices(NiPoint3* apPoints)
     {
         if (!dirty)
         {
-            memcpy(out, cached, sizeof(cached));
+            memcpy(apPoints, cached, sizeof(cached));
             return;
         }
         NiPoint3 horizontal(halfWidth, 0, 0);
         NiPoint3 vertical(0, 0, halfHeight);
         horizontal = rotation * horizontal;
         vertical = rotation * vertical;
-        out[3] = center - horizontal + vertical;
-        out[2] = center - horizontal - vertical;
-        out[1] = center + horizontal - vertical;
-        out[0] = center + horizontal + vertical;
-        memcpy(cached, out, sizeof(cached));
+        apPoints[3] = center - horizontal + vertical;
+        apPoints[2] = center - horizontal - vertical;
+        apPoints[1] = center + horizontal - vertical;
+        apPoints[0] = center + horizontal + vertical;
+        memcpy(cached, apPoints, sizeof(cached));
         dirty = false;
     }
     bool BSOcclusionShape_TestLineSegmentAllPlanes(NiPoint3*, NiPoint3*, void*, void*);
-    bool BSOcclusionPlane_WithinFrustum(ClipVolume* volume, bool testCenter, NiPoint3 point);
+    bool BSOcclusionPlane_WithinFrustum(ClipVolume* aPlanes, bool abViewHitPlane, NiPoint3 akViewIntersection);
 };
 // @fnv 0x00c33cf0
 // src: COMMUNITY 0x00c33cf0
-bool RectangleClip::BSOcclusionPlane_WithinFrustum(ClipVolume* volume, bool testCenter, NiPoint3 point)
+// pdb: BSOcclusionPlane::WithinFrustum | BSOcclusionPlane.obj | retail, upstream name already matches, high
+// pdb params: aPlanes, abViewHitPlane, akViewIntersection
+// pdb locals: kpoints, bsecondarytest, ivertNegativeFlag, i, ballneg, j, bpositive, iplane, kvect, ydist, koccv, xdist
+bool RectangleClip::BSOcclusionPlane_WithinFrustum(ClipVolume* aPlanes, bool abViewHitPlane, NiPoint3 akViewIntersection)
 {
     NiPoint3 corners[4];
     BSOcclusionPlane_GetVertices(corners);
@@ -1800,12 +1821,12 @@ bool RectangleClip::BSOcclusionPlane_WithinFrustum(ClipVolume* volume, bool test
     masks[0] = masks[1] = masks[2] = masks[3] = 0;
     for (int plane = 0; plane < 6; plane++)
     {
-        if (bool(volume->mask & (1 << plane)))
+        if (bool(aPlanes->mask & (1 << plane)))
         {
             bool outside = true;
             for (int vertex = 0; vertex < 4; vertex++)
             {
-                if (volume->planes[plane].Side(reinterpret_cast<const FNVVec3&>(corners[vertex])) != 2)
+                if (aPlanes->planes[plane].Side(reinterpret_cast<const FNVVec3&>(corners[vertex])) != 2)
                 {
                     outside = false;
                 }
@@ -1830,7 +1851,7 @@ bool RectangleClip::BSOcclusionPlane_WithinFrustum(ClipVolume* volume, bool test
         bool hit0 = false;
         for (int plane0 = 2; plane0 < 6; plane0++)
         {
-            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[0], &corners[1], &volume->planes[plane0], volume))
+            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[0], &corners[1], &aPlanes->planes[plane0], aPlanes))
             {
                 hit0 = true;
                 break;
@@ -1844,7 +1865,7 @@ bool RectangleClip::BSOcclusionPlane_WithinFrustum(ClipVolume* volume, bool test
         bool hit1 = false;
         for (int plane1 = 2; plane1 < 6; plane1++)
         {
-            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[3], &corners[2], &volume->planes[plane1], volume))
+            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[3], &corners[2], &aPlanes->planes[plane1], aPlanes))
             {
                 hit1 = true;
                 break;
@@ -1858,7 +1879,7 @@ bool RectangleClip::BSOcclusionPlane_WithinFrustum(ClipVolume* volume, bool test
         bool hit2 = false;
         for (int plane2 = 2; plane2 < 6; plane2++)
         {
-            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[0], &corners[3], &volume->planes[plane2], volume))
+            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[0], &corners[3], &aPlanes->planes[plane2], aPlanes))
             {
                 hit2 = true;
                 break;
@@ -1872,7 +1893,7 @@ bool RectangleClip::BSOcclusionPlane_WithinFrustum(ClipVolume* volume, bool test
         bool hit3 = false;
         for (int plane3 = 2; plane3 < 6; plane3++)
         {
-            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[2], &corners[1], &volume->planes[plane3], volume))
+            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[2], &corners[1], &aPlanes->planes[plane3], aPlanes))
             {
                 hit3 = true;
                 break;
@@ -1885,13 +1906,13 @@ bool RectangleClip::BSOcclusionPlane_WithinFrustum(ClipVolume* volume, bool test
     {
         for (int planeLast = 2; planeLast < 6; planeLast++)
         {
-            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[0], &corners[2], &volume->planes[planeLast], volume) ||
-                BSOcclusionShape_TestLineSegmentAllPlanes(&corners[1], &corners[3], &volume->planes[planeLast], volume))
+            if (BSOcclusionShape_TestLineSegmentAllPlanes(&corners[0], &corners[2], &aPlanes->planes[planeLast], aPlanes) ||
+                BSOcclusionShape_TestLineSegmentAllPlanes(&corners[1], &corners[3], &aPlanes->planes[planeLast], aPlanes))
                 return true;
         }
-        if (testCenter)
+        if (abViewHitPlane)
         {
-            NiPoint3 delta = point - center;
+            NiPoint3 delta = akViewIntersection - center;
             NiPoint3 axis = NiPoint3_ZERO;
             rotation.GetRow(0, axis);
             float vec = fabsf(delta.Dot(axis));
@@ -1936,27 +1957,30 @@ struct RectangleClip
     int unkd8, unkdc, unke0;
     bool dirty, unkE5, edge0, edge1, edge2, edge3;
 // src: COMMUNITY 0x00c35c10
-    inline void BSOcclusionPlane_GetVertices(NiPoint3* out)
+    inline void BSOcclusionPlane_GetVertices(NiPoint3* apPoints)
     {
         if (!dirty)
         {
-            memcpy(out, cached, sizeof(cached));
+            memcpy(apPoints, cached, sizeof(cached));
             return;
         }
         NiPoint3 horizontal(halfWidth, 0, 0);
         NiPoint3 vertical(0, 0, halfHeight);
         horizontal = rotation * horizontal;
         vertical = rotation * vertical;
-        out[3] = center - horizontal + vertical;
-        out[2] = center - horizontal - vertical;
-        out[1] = center + horizontal - vertical;
-        memcpy(cached, out, sizeof(cached));
+        apPoints[3] = center - horizontal + vertical;
+        apPoints[2] = center - horizontal - vertical;
+        apPoints[1] = center + horizontal - vertical;
+        memcpy(cached, apPoints, sizeof(cached));
         dirty = false;
     }
     unsigned char BSPortal_WithinFrustumFullTest(ClipVolume* volume);
 };
 // @fnv 0x00c34350
 // src: COMMUNITY 0x00c34350
+// pdb: BSOcclusionPlane::WithinFrustumFullTest | BSOcclusionPlane.obj | debug, object-file gap fill, medium
+// pdb params: aPlanes
+// pdb locals: kpoints, bvis, ivertNegativeFlag, i, ballneg, j
 unsigned char RectangleClip::BSPortal_WithinFrustumFullTest(ClipVolume* volume)
 {
     NiPoint3 corners[4];
@@ -2039,21 +2063,21 @@ struct SSNode
     int unkd8, unkdc, unke0;
     bool dirty;
 // src: COMMUNITY 0x00c35c10
-    inline void BSOcclusionPlane_GetVertices(NiPoint3* out)
+    inline void BSOcclusionPlane_GetVertices(NiPoint3* apPoints)
     {
         if (!dirty)
-            memmove(out, cache, 48);
+            memmove(apPoints, cache, 48);
         else
         {
             NiPoint3 a(extentX, 0.0f, 0.0f);
             NiPoint3 b(0.0f, 0.0f, extentY);
             a = orientation * a;
             b = orientation * b;
-            out[3] = center - a + b;
-            out[2] = center - a - b;
-            out[1] = center + a - b;
-            out[0] = center + a + b;
-            memmove(cache, out, 48);
+            apPoints[3] = center - a + b;
+            apPoints[2] = center - a - b;
+            apPoints[1] = center + a - b;
+            apPoints[0] = center + a + b;
+            memmove(cache, apPoints, 48);
             dirty = false;
         }
     }
@@ -2077,14 +2101,17 @@ inline float DistanceFromFirst(void* data, int index, const NiPoint3& point)
 }
 // @fnv 0x00c344c0
 // src: COMMUNITY 0x00c344c0
-bool SSNode::BSOcclusionPlane_WithinFrustumDistFirst(void* planes, const NiPoint3& point)
+// pdb: BSOcclusionPlane::WithinFrustumDistFirst | BSOcclusionPlane.obj | retail, upstream name already matches, high
+// pdb params: aPlanes, aViewPos
+// pdb locals: koccplane, fdist, kintersect, kPoints, koccx, yd, xd, koccy
+bool SSNode::BSOcclusionPlane_WithinFrustumDistFirst(void* aPlanes, const NiPoint3& aViewPos)
 {
     NiPoint3 verticesTmp[4];
     BSOcclusionPlane_GetVertices(verticesTmp);
     ClipPlane plane3(verticesTmp[0], verticesTmp[1], verticesTmp[2]);
-    float distance2 = plane3.Distance(point);
-    NiPoint3 projected8 = point + (-distance2 * plane3.normal);
-    distance2 += DistanceFromFirst(planes, 0, point);
+    float distance2 = plane3.Distance(aViewPos);
+    NiPoint3 projected8 = aViewPos + (-distance2 * plane3.normal);
+    distance2 += DistanceFromFirst(aPlanes, 0, aViewPos);
     if (distance2 >= -5.0 && distance2 < 5.0)
     {
         NiPoint3 axisX = NiPoint3_ZERO;
@@ -2101,7 +2128,7 @@ bool SSNode::BSOcclusionPlane_WithinFrustumDistFirst(void* planes, const NiPoint
                 return false;
         }
     }
-    return BSOcclusionPlane_WithinFrustum(planes, 1, projected8);
+    return BSOcclusionPlane_WithinFrustum(aPlanes, 1, projected8);
 }
 }  // namespace fnv_00c344c0
 
@@ -2119,11 +2146,11 @@ inline NiPoint3 NiPoint3::operator*(float f) const
 }
 inline const NiPoint3& NiPlane::GetPlaneNormal() const
 {
-    return *(const NiPoint3*)&x;
+    return *(const NiPoint3*)&m_kNormal;
 }
 inline float NiPlane::GetPlaneConstant() const
 {
-    return c;
+    return m_fConstant;
 }
 namespace fnv_00c359d0 {
 class SegmentPlaneTester
@@ -2135,6 +2162,9 @@ class SegmentPlaneTester
 
 // @fnv 0x00c359d0
 // src: GUESS 0x00c359d0 (confidence: low)
+// pdb: BSOcclusionPlane::TestLineSegment | BSOcclusionPlane.obj | debug, object-file run extension, low
+// pdb params: akPoint0, akPoint1, akPlane0, akPlane1, akPlane2
+// pdb locals: pn, fintersectT, lv, pndotlv, intPt
 bool SegmentPlaneTester::UpdateState_00c359d0(const NiPoint3& kStart, const NiPoint3& kEnd, const NiPlane& m_kFogPlane,
                                       const NiPlane& kBound0, const NiPlane& kBound1)
 {
@@ -2199,6 +2229,7 @@ class FUN_00c35eb0 : public NiRefObject
 };
 
 // @fnv 0x00c35eb0
+// pdb: BSMultiBound::~BSMultiBound | BSMultiBound.obj | retail, object-file run extension, high
 FUN_00c35eb0::~FUN_00c35eb0()
 {
     m_spTransformData = 0;
@@ -2222,14 +2253,17 @@ class FUN_00c39560_Class
     int unk08;
     NiPoint3 center;
     NiPoint3 extents;
-    bool BSMultiBoundAABB_FastPointWithin(NiPoint3 point);
+    bool BSMultiBoundAABB_FastPointWithin(NiPoint3 kpoint);
 };
 
 // @fnv 0x00c39560
 // src: COMMUNITY 0x00c39560
-bool FUN_00c39560_Class::BSMultiBoundAABB_FastPointWithin(NiPoint3 point)
+// pdb: BSMultiBoundAABB::FastPointWithin | BSMultiBoundAABB.obj | debug, upstream name already matches, high
+// pdb params: kpoint
+// pdb locals: kdiff
+bool FUN_00c39560_Class::BSMultiBoundAABB_FastPointWithin(NiPoint3 kpoint)
 {
-    NiPoint3 pointDelta = point.Sub(center);
+    NiPoint3 pointDelta = kpoint.Sub(center);
     float uX;
     float sZ;
     float xY;
@@ -2443,6 +2477,7 @@ class FUN_00c39770 : public Base_00c46af0
 };
 
 // @fnv 0x00c39770
+// pdb: BSMultiBoundRoom::~BSMultiBoundRoom | BSMultiBoundRoom.obj | debug, call graph, medium
 FUN_00c39770::~FUN_00c39770()
 {
     m_b4.FUN_00b71300();
@@ -2513,7 +2548,7 @@ struct Owner39
     Node39* head;
     int tail;
     unsigned int count;
-    unsigned char BSMultiBoundRoom_QPointWithin(void* arg);
+    unsigned char BSMultiBoundRoom_QPointWithin(void* aPoint);
 };
 
 inline Handler39* Pass39(Handler39* p)
@@ -2523,7 +2558,10 @@ inline Handler39* Pass39(Handler39* p)
 
 // @fnv 0x00c39b00
 // src: XBOX_PDB 0x00c39b00
-unsigned char Owner39::BSMultiBoundRoom_QPointWithin(void* arg)
+// pdb: BSMultiBoundRoom::QPointWithin | BSMultiBoundRoom.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: bwithin, kiter, pmb
+unsigned char Owner39::BSMultiBoundRoom_QPointWithin(void* aPoint)
 {
     unsigned char Dir;
     Node39* CN;
@@ -2532,7 +2570,7 @@ unsigned char Owner39::BSMultiBoundRoom_QPointWithin(void* arg)
     Node39* CSA;
     Handler39** EndLoc;
     PN = handler;
-    Dir = Pass39(PN)->v8c(arg);
+    Dir = Pass39(PN)->v8c(aPoint);
     if (!Dir)
     {
         if (!(unsigned char)(unsigned int)(count == 0))
@@ -2544,7 +2582,7 @@ unsigned char Owner39::BSMultiBoundRoom_QPointWithin(void* arg)
                 EndLoc = &CN->item;
                 CN = CN->next;
                 CN2 = *EndLoc;
-                Dir = CN2->v8c(arg);
+                Dir = CN2->v8c(aPoint);
             }
         }
     }
@@ -2643,7 +2681,7 @@ class OwnerC39B
         HolderC39B* p = m_pkHolder;
         return p;
     }
-    int BSMultiBoundRoom_CheckBound(void* pvArg);
+    int BSMultiBoundRoom_CheckBound(void* aTargetBound);
 
     int unk00;
     int unk04;
@@ -2701,16 +2739,19 @@ class OwnerC39B
 
 // @fnv 0x00c39bb0
 // src: XBOX_PDB 0x00c39bb0
-int OwnerC39B::BSMultiBoundRoom_CheckBound(void* pvArg)
+// pdb: BSMultiBoundRoom::CheckBound | BSMultiBoundRoom.obj | retail, object-file gap fill, high
+// pdb params: aTargetBound
+// pdb locals: kresult, kiter, ktempresult, pmb
+int OwnerC39B::BSMultiBoundRoom_CheckBound(void* aTargetBound)
 {
-    int iResult = GetHolder()->GetTarget()->Process(pvArg);
+    int iResult = GetHolder()->GetTarget()->Process(aTargetBound);
     if (iResult != 1 && !m_kChildList.IsEmpty())
     {
         NiTListIteratorC39B kPos = m_kChildList.GetHeadPos();
         while (iResult != 1 && kPos)
         {
             HolderC39B* pkChild = m_kChildList.GetNext(kPos);
-            int node = pkChild->GetTarget()->Process(pvArg);
+            int node = pkChild->GetTarget()->Process(aTargetBound);
             if (node)
                 iResult = node;
         }
@@ -2843,6 +2884,8 @@ struct Node144
 };
 // @fnv 0x00c39d50
 // src: XBOX_PDB 0x00c39d50
+// pdb: BSMultiBoundRoom::UpdateWorldBound | BSMultiBoundRoom.obj | retail, upstream name already matches, high
+// pdb locals: bstandardnodecompute, pshape, kiter, kjbound, pkChild, isize, i
 void Node144::BSMultiBoundRoom_UpdateWorldBound()
 {
     const NiBound* a0;
@@ -3092,6 +3135,10 @@ template <> inline void* NiTPointerListBase<Alloc250, void* >::RemovePos(void*& 
     }
 
 // @fnv 0x00c3a250
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,RaceSexMenu::MenuOption *>::Remove | RaceSexMenu.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiTPointerListBase<NiTPointerAllocator<unsigned int>,BSOcclusionPlane *>::Remove
+// pdb params: element
+// pdb locals: kPos
 template <> void* NiTPointerListBase<Alloc250, void* >::Remove(void* const& element)
 {
     void* kPos = FindPos(element);
@@ -3187,6 +3234,7 @@ inline S_X::~S_X()
 }
 
 // @fnv 0x00c3b9f0
+// pdb: BSReference::`scalar deleting destructor' | BSStream.obj | retail, vtable slot, high
 S_X* S_X::FUN_00c3b9f0(unsigned int flags)
 {
     *(const void**)this = DAT_010c1364;
@@ -3228,6 +3276,7 @@ class FUN_00c3bab0 : public NiRefObject
 };
 
 // @fnv 0x00c3bab0
+// pdb: BSNodeReferences::~BSNodeReferences | BSStream.obj | debug, call graph, medium
 FUN_00c3bab0::~FUN_00c3bab0()
 {
     m_aiIndexedValues.RemoveAll();
@@ -3250,6 +3299,7 @@ MH::MH(bool b)
 
 // @fnv 0x00c3c460
 // src: COMMUNITY 0x00c3c460
+// pdb: MessageHandler::InitSDM | MessageHandler.obj | retail, upstream name already matches, high
 void __cdecl MessageHandler_InitSDM()
 {
     MessageHandler::pHandler = (MessageHandler*)new MH(false);
@@ -3279,6 +3329,7 @@ template <> inline NiPointer<QueuedFile>::~NiPointer()
 }
 
 // @fnv 0x00c3c620
+// pdb: QueuedFile::~QueuedFile | QueuedFiles.obj | retail, upstream name already matches, high
 QueuedFile::~QueuedFile()
 {
     delete (QfDeletable*)pChildren;
@@ -3432,18 +3483,20 @@ struct OwnArr
 // The legacy IOTask entry points operate on QueuedFile parent-link storage.
 // @fnv 0x00c3c7e0
 // src: COMMUNITY 0x00c3c7e0
-void IOTask::QueuedFile_AddAdditionalParent(RefObj* obj)
+// pdb: QueuedFile::AddAdditionalParent | QueuedFiles.obj | retail, upstream name already matches, high
+// pdb params: apAdditionalParent
+void IOTask::QueuedFile_AddAdditionalParent(RefObj* apAdditionalParent)
 {
     if (!((OwnArr*&)((QueuedFile*)this)->pAdditionalParents))
     {
         ((OwnArr*&)((QueuedFile*)this)->pAdditionalParents) = new OwnArr;
     }
-    else if (((OwnArr*&)((QueuedFile*)this)->pAdditionalParents)->Find(obj) != -1)
+    else if (((OwnArr*&)((QueuedFile*)this)->pAdditionalParents)->Find(apAdditionalParent) != -1)
     {
         return;
     }
-    ((OwnArr*&)((QueuedFile*)this)->pAdditionalParents)->QueuedChildren_Append(obj);
-    obj->QueuedFile_AddChild(this);
+    ((OwnArr*&)((QueuedFile*)this)->pAdditionalParents)->QueuedChildren_Append(apAdditionalParent);
+    apAdditionalParent->QueuedFile_AddChild(this);
 }
 
 namespace fnv_00c3cb70 {
@@ -3520,7 +3573,7 @@ extern IOManager* DAT_01202d98;
 }  // namespace fnv_00c3cb70
 inline RefObj* IOTask::GetCur()
 {
-    return (RefObj*)((QueuedFile*)this)->m_pParent.m_pObject;
+    return (RefObj*)((QueuedFile*)this)->spParent.m_pObject;
 }
 inline void IOTask::SetState(long v)
 {
@@ -3529,21 +3582,24 @@ inline void IOTask::SetState(long v)
 }
 // @fnv 0x00c3cb70
 // src: XBOX_PDB 0x00c3cb70
-void IOTask::QueuedFile_Cancel(int state, RefObj* obj)
+// pdb: QueuedFile::Cancel | QueuedFiles.obj | retail, upstream name already matches, high
+// pdb params: aePreviousState, apTaskOwner
+// pdb locals: i, inumChildren, pqueuedFile
+void IOTask::QueuedFile_Cancel(int aePreviousState, RefObj* apTaskOwner)
 {
     using namespace fnv_00c3cb70;
     ::InterlockedIncrement((volatile long*)&BackgroundTask);
-    if (obj)
+    if (apTaskOwner)
     {
-        if (GetCur() == obj)
+        if (GetCur() == apTaskOwner)
         {
-            ((fnv_00c3cb70::RefPtr&)((QueuedFile*)this)->m_pParent).Clear();
+            ((fnv_00c3cb70::RefPtr&)((QueuedFile*)this)->spParent).Clear();
         }
         else if (((fnv_00c3cb70::OwnArr*&)((QueuedFile*)this)->pAdditionalParents))
         {
             for (unsigned i = 0; i < ((fnv_00c3cb70::OwnArr*&)((QueuedFile*)this)->pAdditionalParents)->GetCount(); i++)
             {
-                if (((fnv_00c3cb70::OwnArr*&)((QueuedFile*)this)->pAdditionalParents)->GetAt(i) == obj)
+                if (((fnv_00c3cb70::OwnArr*&)((QueuedFile*)this)->pAdditionalParents)->GetAt(i) == apTaskOwner)
                 {
                     ((fnv_00c3cb70::OwnArr*&)((QueuedFile*)this)->pAdditionalParents)->ReleaseEntries_00c3d5e0(i, 1);
                     break;
@@ -3559,16 +3615,16 @@ void IOTask::QueuedFile_Cancel(int state, RefObj* obj)
     }
     else
     {
-        ((fnv_00c3cb70::RefPtr&)((QueuedFile*)this)->m_pParent).Clear();
+        ((fnv_00c3cb70::RefPtr&)((QueuedFile*)this)->spParent).Clear();
         delete ((fnv_00c3cb70::OwnArr*&)((QueuedFile*)this)->pAdditionalParents);
         ((fnv_00c3cb70::OwnArr*&)((QueuedFile*)this)->pAdditionalParents) = 0;
     }
     if (GetCur() || ((fnv_00c3cb70::OwnArr*&)((QueuedFile*)this)->pAdditionalParents))
     {
-        if (state == 1)
+        if (aePreviousState == 1)
             DAT_01202d98->AddTask((QIOTask*)this);
         else
-            SetState(state);
+            SetState(aePreviousState);
     }
     else if (((fnv_00c3cb70::PtrArr*&)((QueuedFile*)this)->pChildren))
     {
@@ -3623,7 +3679,10 @@ struct QRequest
 };
 // @fnv 0x00c3d0e0
 // src: XBOX_PDB 0x00c3d0e0
-bool QRequest::QueuedFileEntry_GetDescription(char* out, unsigned int size, const char* type)
+// pdb: QueuedFileEntry::GetDescription | QueuedFiles.obj | retail, string-set bridge, high
+// pdb params: apDescription, aiBufferSize, apFileEntryTypeDescription
+// pdb locals: i, pdescription
+bool QRequest::QueuedFileEntry_GetDescription(char* apDescription, unsigned int aiBufferSize, const char* apFileEntryTypeDescription)
 {
     char buffer[13000];
     unsigned int i;
@@ -3638,7 +3697,7 @@ bool QRequest::QueuedFileEntry_GetDescription(char* out, unsigned int size, cons
             QEntry* d = entry;
             c = d->packedOffset & 0x7fffffff;
             const char* e = name;
-            BSsprintf(out, size, "Queued %s %s with file entry offset %i and size %i", type, e, c, g);
+            BSsprintf(apDescription, aiBufferSize, "Queued %s %s with file entry offset %i and size %i", apFileEntryTypeDescription, e, c, g);
         }
         else
         {
@@ -3648,13 +3707,13 @@ bool QRequest::QueuedFileEntry_GetDescription(char* out, unsigned int size, cons
                 QEntry* k = entry;
                 unsigned int l = k->packedSize & 0x3fffffff;
                 QEntry* j = entry;
-                BSsprintf(out, size, "Queued %s with file entry offset %i and size %i", type,
+                BSsprintf(apDescription, aiBufferSize, "Queued %s with file entry offset %i and size %i", apFileEntryTypeDescription,
                              j->packedOffset & 0x7fffffff, l);
             }
             else
             {
                 const char* m = name;
-                BSsprintf(out, size, "Queued %s %s", type, m);
+                BSsprintf(apDescription, aiBufferSize, "Queued %s %s", apFileEntryTypeDescription, m);
             }
         }
         if (tasks)
@@ -3669,8 +3728,8 @@ bool QRequest::QueuedFileEntry_GetDescription(char* out, unsigned int size, cons
                     QPointer* q = &tasks->data[i];
                     if (static_cast<QTask*>(*q)->Describe(buffer, sizeof(buffer)))
                     {
-                        strcat_s(out, size, "\n * ");
-                        strcat_s(out, size, buffer);
+                        strcat_s(apDescription, aiBufferSize, "\n * ");
+                        strcat_s(apDescription, aiBufferSize, buffer);
                     }
                 }
             }
@@ -3830,6 +3889,8 @@ struct C3D980Cls
 
 // @fnv 0x00c3d980
 // src: XBOX_PDB 0x00c3d980
+// pdb: QueuedChildren::QueuedChildren | QueuedFiles.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<NiPointer<QueuedFile>,1024>::Clear
 void C3D980Cls::BSSimpleArray_NiPointer_QueuedFile_1024_Clear(bool bFree)
 {
     unsigned int used;
@@ -3870,7 +3931,7 @@ struct IOQueue
     virtual void v04();
     virtual void v08();
     virtual unsigned Count();
-    void LockFreePriorityQueue_NiPointer_IOTask_Pop(fnv_00c3dbf0::TaskPtr& out);
+    void LockFreePriorityQueue_NiPointer_IOTask_Pop(fnv_00c3dbf0::TaskPtr& arData);
 };
 inline unsigned IOManager::QueuedCount()
 {
@@ -3946,6 +4007,8 @@ inline unsigned Setting::GetUInt()
 }
 // @fnv 0x00c3dbf0
 // src: COMMUNITY 0x00c3dbf0
+// pdb: IOManager::UpdateQueue | IOManager.obj | retail, upstream name already matches, high
+// pdb locals: queueTimer, imaxTime, bqueueResult, sptask, ftaskTime, taskTimeStamp, pdescription
 bool IOManager::UpdateQueue()
 {
     using namespace fnv_00c3dbf0;
@@ -4000,14 +4063,17 @@ inline int S00c3de80_Zero()
 struct TaskSubmissionEntry
 {
     bool __thiscall BSTaskManager_int64_AddTask(IOTask* object);
-    bool __thiscall IOManager_AddTask(IOTask* object);
+    bool __thiscall IOManager_AddTask(IOTask* apTask);
 };
 
 // @fnv 0x00c3de80
 // src: COMMUNITY 0x00c3de80
-bool TaskSubmissionEntry::IOManager_AddTask(IOTask* object)
+// pdb: IOManager::AddTask | IOManager.obj | retail, upstream name already matches, high
+// pdb params: apTask
+// pdb locals: pioTask
+bool TaskSubmissionEntry::IOManager_AddTask(IOTask* apTask)
 {
-    IOTask* self = object;
+    IOTask* self = apTask;
     if (((IOManager*)this)->m_uiContentCount != 6)
     {
         if ((unsigned char)(self->Key >> 16) <= ((IOManager*)this)->m_uiContentCount)
@@ -4032,7 +4098,10 @@ extern "C" __declspec(dllimport) void __stdcall Sleep(unsigned long);
 extern char DAT_011af70c;
 // @fnv 0x00c3dfa0
 // src: XBOX_PDB 0x00c3dfa0
-void IOManager::LoadQueuedPriority(int mode)
+// pdb: IOManager::LoadQueuedPriority | IOManager.obj | retail, upstream name already matches, high
+// pdb params: aePriority
+// pdb locals: icurrentCount, bqueueResult, iloadCount, fpercent
+void IOManager::LoadQueuedPriority(int aePriority)
 {
     if (m_uiContentCount == 7)
         return;
@@ -4043,10 +4112,10 @@ void IOManager::LoadQueuedPriority(int mode)
         DAT_011af70c = 1;
         return;
     }
-    m_uiContentCount = mode;
-    RequeuePrioritiesToNewPriority(mode, 0);
+    m_uiContentCount = aePriority;
+    RequeuePrioritiesToNewPriority(aePriority, 0);
     unsigned queued9 = m_queue->Count();
-    unsigned total2 = SumArrayUpToCount(mode * 4 + 3) + queued9 + (m_pendingFn ? m_pendingFn() : 0);
+    unsigned total2 = SumArrayUpToCount(aePriority * 4 + 3) + queued9 + (m_pendingFn ? m_pendingFn() : 0);
     float pctVal;
     unsigned remaining = total2;
     bool done7 = false;
@@ -4060,7 +4129,7 @@ void IOManager::LoadQueuedPriority(int mode)
             Sleep(50);
         done7 = UpdateQueue();
         unsigned queued4 = m_queue->Count();
-        remaining = SumArrayUpToCount(mode * 4 + 3) + queued4 + (m_pendingFn ? m_pendingFn() : 0);
+        remaining = SumArrayUpToCount(aePriority * 4 + 3) + queued4 + (m_pendingFn ? m_pendingFn() : 0);
     }
     m_uiContentCount = 6;
     if (m_progressFn)
@@ -4284,23 +4353,26 @@ struct TaskManagerQueueState
 
 // @fnv 0x00c3e1b0
 // src: COMMUNITY 0x00c3e1b0
-void IOManager::RequeuePrioritiesToNewPriority(int maxPriority, int arg)
+// pdb: IOManager::RequeuePrioritiesToNewPriority | IOManager.obj | retail, upstream name already matches, high
+// pdb params: aeOldPriority, aeNewPriority
+// pdb locals: iterator, ikey, sptask
+void IOManager::RequeuePrioritiesToNewPriority(int aeOldPriority, int aeNewPriority)
 {
-    if (maxPriority <= arg)
+    if (aeOldPriority <= aeNewPriority)
         return;
     {
         ((TaskManagerQueueState*)this)->Lock();
         Stream_c3e1b0 stream;
-        stream.Reserve(arg * 4 + 4);
+        stream.Reserve(aeNewPriority * 4 + 4);
         while (!bool(stream.flags & 2))
         {
             __int64 key = 0;
             RefPtr_c3e1b0 item3;
             if (((TaskManagerQueueState*)this)->Next(&stream, &key, &item3, 1))
             {
-                if ((unsigned char)(key >> 16) > maxPriority)
+                if ((unsigned char)(key >> 16) > aeOldPriority)
                     break;
-                item3->Run(arg);
+                item3->Run(aeNewPriority);
             }
         }
         ((TaskManagerQueueState*)this)->Unlock();
@@ -4664,12 +4736,12 @@ extern __declspec(thread) int DAT_tls_field;
 inline AutoMemContext::AutoMemContext(int aeMemoryContext)
 {
     int iOld = DAT_tls_field;
-    m_eMemoryContext = (MEM_CONTEXT)iOld;
+    iOldMemContext = (MEM_CONTEXT)iOld;
     DAT_tls_field = aeMemoryContext;
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    int iSaved = m_eMemoryContext;
+    int iSaved = iOldMemContext;
     DAT_tls_field = iSaved;
 }
 
@@ -4690,6 +4762,9 @@ struct Item_00c3f7a0
 
 // @fnv 0x00c3f7a0
 // src: COMMUNITY 0x00c3f7a0
+// pdb: LockFreeQueue<NiPointer<IOTask> >::AllocateInterface | IOManager.obj | debug, vtable slot, medium
+// pdb params: aiNum
+// pdb locals: tempMemContext
 void* FUN_00c3f7a0_Class::LockFreeQueue_NiPointer_IOTask_AllocateInterface(int index)
 {
     AutoMemContext kContext(6);
@@ -4984,26 +5059,29 @@ struct Target
     Result cached;
     int unkD8, unkDC, unkE0;
     bool dirty;
-    void BSOcclusionPlane_GetVertices(Result* out);
+    void BSOcclusionPlane_GetVertices(Result* apPoints);
 };
 // @fnv 0x00c35c10
 // src: COMMUNITY 0x00c35c10
-void Target::BSOcclusionPlane_GetVertices(Result* out)
+// pdb: BSOcclusionPlane::GetVertices | BSOcclusionPlane.obj | retail, upstream name already matches, high
+// pdb params: apPoints
+// pdb locals: kXHalf, kZHalf
+void Target::BSOcclusionPlane_GetVertices(Result* apPoints)
 {
     if (!dirty)
     {
-        memcpy(out, &cached, 48);
+        memcpy(apPoints, &cached, 48);
         return;
     }
     NiPoint3 horizontal(width, 0.0f, 0.0f);
     NiPoint3 vertical(0.0f, 0.0f, height);
     horizontal = matrix.FUN_004b4500(&horizontal);
     vertical = matrix.FUN_004b4500(&vertical);
-    out->p3 = center - horizontal + vertical;
-    out->p2 = center - horizontal - vertical;
-    out->p1 = center + horizontal - vertical;
-    out->p0 = center + horizontal + vertical;
-    memcpy(&cached, out, 48);
+    apPoints->p3 = center - horizontal + vertical;
+    apPoints->p2 = center - horizontal - vertical;
+    apPoints->p1 = center + horizontal - vertical;
+    apPoints->p0 = center + horizontal + vertical;
+    memcpy(&cached, apPoints, 48);
     dirty = false;
 }
 }  // namespace fnv_00c35c10
@@ -5078,6 +5156,8 @@ struct PtrArray_c3d4
 
 // @fnv 0x00c3d4f0
 // src: COMMUNITY 0x00c3d4f0
+// pdb: NiPointer<QueuedFile>::operator= | MiddleHighProcess.obj | retail, call graph (shared callers), medium
+// pdb params: ptr
 unsigned int PtrArray_c3d4::QueuedChildren_Append(const NiPointer<RefObj_c3d4>& element)
 {
     unsigned int uiIndex = QueuedChildren_GetAppendIndex();
@@ -5214,12 +5294,15 @@ struct FUN_00c39c80_cls
         FUN_00c39c80_node* first = m_d0;
         return first;
     }
-    int BSMultiBoundRoom_CheckBound_00c39c80(int a1);
+    int BSMultiBoundRoom_CheckBound_00c39c80(int aTargetBound);
 };
 
 // @fnv 0x00c39c80
 // src: XBOX_PDB 0x00c39c80
-int FUN_00c39c80_cls::BSMultiBoundRoom_CheckBound_00c39c80(int a1)
+// pdb: BSMultiBoundRoom::CheckBound | BSMultiBoundRoom.obj | retail, object-file gap fill, high
+// pdb params: aTargetBound
+// pdb locals: kresult, kiter, ktempresult, pmb
+int FUN_00c39c80_cls::BSMultiBoundRoom_CheckBound_00c39c80(int aTargetBound)
 {
     int res;
     FUN_00c39c80_node* cur;
@@ -5227,14 +5310,14 @@ int FUN_00c39c80_cls::BSMultiBoundRoom_CheckBound_00c39c80(int a1)
     int r2;
     FUN_00c39c80_holder* owner;
     owner = m_ac;
-    res = owner->GetObj()->v94(a1);
+    res = owner->GetObj()->v94(aTargetBound);
     if (res != 1 && !(bool)(int)(m_d8 == 0))
     {
         cur = GetHead();
         while (res != 1 && cur != 0)
         {
             group = GetNext(cur);
-            r2 = group->GetObj()->v94(a1);
+            r2 = group->GetObj()->v94(aTargetBound);
             if (r2 != 0)
             {
                 res = r2;
@@ -5403,6 +5486,9 @@ class FUN_00c3f8c0 : public SpawnedBase
 };
 
 // @fnv 0x00c3f8c0
+// pdb: LockFreeMap<__int64,NiPointer<BSTask<__int64> > >::Remove | IOManager.obj | debug, object-file run extension, low
+// pdb params: aData
+// pdb locals: bResult, i
 FUN_00c3f8c0::~FUN_00c3f8c0()
 {
     this->LockFreeMap_int64_NiPointer_BSTask_int64_RemoveAll(1);
@@ -5462,11 +5548,11 @@ struct OccluderC358
     unsigned char disabled3;
     unsigned char unkEA;
 // src: COMMUNITY 0x00c35c10
-    inline void BSOcclusionPlane_GetVertices(LocalPoint* out)
+    inline void BSOcclusionPlane_GetVertices(LocalPoint* apPoints)
     {
         if (!cornersDirty)
         {
-            memcpy(out, &corner0, 48);
+            memcpy(apPoints, &corner0, 48);
             return;
         }
         LocalPoint horizontal(halfWidth, 0, 0);
@@ -5478,28 +5564,31 @@ struct OccluderC358
         c2 = center - horizontal - vertical;
         c1 = center + horizontal - vertical;
         c0 = center + horizontal + vertical;
-        out[3] = c3;
-        out[2] = c2;
-        out[1] = c1;
-        out[0] = c0;
-        memcpy(&corner0, out, 48);
+        apPoints[3] = c3;
+        apPoints[2] = c2;
+        apPoints[1] = c1;
+        apPoints[0] = c0;
+        memcpy(&corner0, apPoints, 48);
         cornersDirty = false;
     }
-    bool BSOcclusionPlane_ViewerOnCorrectSide(LocalPoint point);
+    bool BSOcclusionPlane_ViewerOnCorrectSide(LocalPoint akViewPoint);
 };
 
 // @fnv 0x00c358a0
 // src: COMMUNITY 0x00c358a0
-bool OccluderC358::BSOcclusionPlane_ViewerOnCorrectSide(LocalPoint point)
+// pdb: BSOcclusionPlane::ViewerOnCorrectSide | BSOcclusionPlane.obj | retail, upstream name already matches, high
+// pdb params: akViewPoint
+// pdb locals: koccplane, ktempplanes, kPoints
+bool OccluderC358::BSOcclusionPlane_ViewerOnCorrectSide(LocalPoint akViewPoint)
 {
     if (unkEA != 0)
         return true;
     LocalPoint verts[4];
     FUN_0045c620 frustum;
-    ((Builder*)this)->BSOcclusionPlane_UpdateFrustumPlanes(point, (FUN_00a699d0s*)&frustum);
+    ((Builder*)this)->BSOcclusionPlane_UpdateFrustumPlanes(akViewPoint, (FUN_00a699d0s*)&frustum);
     BSOcclusionPlane_GetVertices(verts);
     FUN_00a699d0 plane(verts[0], verts[1], verts[2]);
-    if (plane.ClassifyPoint(&point) != 2)
+    if (plane.ClassifyPoint(&akViewPoint) != 2)
         return false;
     else
         return true;

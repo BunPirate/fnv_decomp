@@ -52,13 +52,16 @@ struct FUN_00a32290_Cls
     int m_10;
     FUN_00a32290_Elem* m_14;
 
-    void NiControllerSequence_SetInterpsWeightAndTime(float a1, float a2, float a3);
+    void NiControllerSequence_SetInterpsWeightAndTime(float fWeight, float fEaseSpinner, float fTime);
 };
 
 // For each element, writes a3 (and a1/a2) into the node's child slot or its m_20, and resets the node's m_24/m_28/m_2c to DAT_01015f5c.
 // @fnv 0x00a32290
 // src: XBOX_PDB 0x00a32290
-void FUN_00a32290_Cls::NiControllerSequence_SetInterpsWeightAndTime(float afValue1, float afValue2, float afValue3)
+// pdb: NiControllerSequence::SetInterpsWeightAndTime | NiControllerSequence.obj | debug, upstream name already matches, high
+// pdb params: fWeight, fEaseSpinner, fTime
+// pdb locals: ui, kItem
+void FUN_00a32290_Cls::NiControllerSequence_SetInterpsWeightAndTime(float fWeight, float fEaseSpinner, float fTime)
 {
     for (unsigned int uiIndex = 0; uiIndex < m_0c; ++uiIndex)
     {
@@ -69,13 +72,13 @@ void FUN_00a32290_Cls::NiControllerSequence_SetInterpsWeightAndTime(float afValu
             unsigned char ucSlotIndex = pElem->m_0c;
             if (pNode->m_0e == 1 && ucSlotIndex == pNode->m_0f)
             {
-                pNode->m_20 = afValue3;
+                pNode->m_20 = fTime;
             }
             else
             {
-                pNode->m_14[ucSlotIndex].m_14 = afValue3;
-                pNode->m_14[ucSlotIndex].m_04 = afValue1;
-                pNode->m_14[ucSlotIndex].m_10 = afValue2;
+                pNode->m_14[ucSlotIndex].m_14 = fTime;
+                pNode->m_14[ucSlotIndex].m_04 = fWeight;
+                pNode->m_14[ucSlotIndex].m_10 = fEaseSpinner;
                 pNode->m_0c |= 4;
                 pNode->m_24 = DAT_01015f5c;
                 pNode->m_28 = DAT_01015f5c;

@@ -9,17 +9,19 @@
 
 // @fnv 0x00cb2240
 // src: XBOX_PDB 0x00cb2240
-void Transform::hkTransform_setMul(const Transform* __restrict a, const Transform* __restrict b)
+// pdb: hkTransform::setMul | hkTransform.obj | retail, upstream name already matches, high
+// pdb params: aTb, bTc
+void Transform::hkTransform_setMul(const Transform* __restrict aTb, const Transform* __restrict bTc)
 {
-    const __m128& c1 = a->r[1];
-    const __m128& c0 = a->r[0];
-    const __m128& c2 = a->r[2];
+    const __m128& c1 = aTb->r[1];
+    const __m128& c0 = aTb->r[0];
+    const __m128& c2 = aTb->r[2];
     for (int i = 3; i >= 0; i--)
     {
-        const __m128& v = b->r[i];
+        const __m128& v = bTc->r[i];
         r[i] =
             _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(v, v, 0), c0), _mm_mul_ps(_mm_shuffle_ps(v, v, 0x55), c1)),
                        _mm_mul_ps(_mm_shuffle_ps(v, v, 0xaa), c2));
     }
-    r[3] = _mm_add_ps(a->r[3], r[3]);
+    r[3] = _mm_add_ps(aTb->r[3], r[3]);
 }

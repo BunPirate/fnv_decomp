@@ -4,7 +4,7 @@
 
 struct FUN_00d5f270_class
 {
-    void __thiscall hkLeakDetectAllocator_checkedFree(int c, void* a, unsigned int b);
+    void __thiscall hkLeakDetectAllocator_checkedFree(int isBuf, void* p, unsigned int b);
     void __thiscall hkLeakDetectAllocator_blockFree(void* a, unsigned int b);
 };
 
@@ -136,6 +136,8 @@ struct Old
 extern void* DAT_01269a84;
 extern void* __cdecl hkStackTracer_create();
 // @fnv 0x00d5ee80
+// pdb: hkLeakDetectAllocator::init | hkLeakDetectAllocator.obj | retail, object-file run extension, low
+// pdb params: child, debug, output, outputUserData
 void __thiscall FUN_00d5ee80_class::InitWithAllocator(void* apArg0, void* apAllocator, void* apArg2, void* apArg3)
 {
     unk30 = apArg0;
@@ -186,7 +188,7 @@ struct Sub30
     virtual int vfunc_2C(int a, void* b);
 };
 
-void* __stdcall hkStackTracer_getStackTrace(void* buf, int size);
+void* __stdcall hkStackTracer_getStackTrace(void* trace, int maxtrace);
 struct Helper8
 {
     int FindOrAddCallTrace(void* buf, void* val);
@@ -220,6 +222,9 @@ struct FUN_00d5f0a0_class
 
 // Locks cs, resolves a2 via sub30, accumulates unk44, builds a ParamStruct from a1/a2 and unk04, dispatches through sub40, then unlocks.
 // @fnv 0x00d5f0a0
+// pdb: hkLeakDetectAllocator::checkedAlloc | hkLeakDetectAllocator.obj | retail, object-file run extension, low
+// pdb params: isBuf, numBytes
+// pdb locals: info, trace
 int FUN_00d5f0a0_class::ProcessAndDispatch(int aiFlag, void* apArg)
 {
     EnterCriticalSection(&cs);
@@ -271,18 +276,21 @@ struct FUN_00d5f480_class
     int count;
     int mask;
 
-    void Resize(void* u34, int new_cap);
+    void CWindMatrices_Resize(void* u34, int new_cap);
     int hkMapBase_unsigned_long_struct_hkLeakDetectAllocator_AllocInfo_struct_hkMapOperations_unsigned_long_insert(void* u34, int key, ParamStruct val);
 };
 
 // Grows the table when load exceeds half the mask, probes for the key, stores the key/value pair, and returns 1 if the key was new.
 // @fnv 0x00d5f480
 // src: HAVOK_LIB 0x00d5f480
+// pdb: hkMapBase<unsigned long,hkLeakDetectAllocator::AllocInfo,hkMapOperations<unsigned long> >::insert | hkLeakDetectAllocator.obj | retail, object-file run extension, low
+// pdb params: alloc, key, val
+// pdb locals: assertBuf, ostr
 int FUN_00d5f480_class::hkMapBase_unsigned_long_struct_hkLeakDetectAllocator_AllocInfo_struct_hkMapOperations_unsigned_long_insert(void* u34, int key, ParamStruct val)
 {
     if ((count & 0x7fffffff) * 2 > mask)
     {
-        Resize(u34, mask * 2 + 2);
+        CWindMatrices_Resize(u34, mask * 2 + 2);
     }
 
     int idx = ((unsigned int)key >> 4) * 0x9e3779b1 & mask;
@@ -321,6 +329,8 @@ struct FUN_00d5f640_cls
 };
 
 // @fnv 0x00d5f640
+// pdb: hkStackTracer::CallTree::quit | hkLeakDetectAllocator.obj | retail, call graph, low
+// pdb note: debug build links it to CWindEngine::SetNumWindMatrices
 void FUN_00d5f640_cls::FreeStorage(Deallocator* apAllocator)
 {
     Reset();
@@ -350,14 +360,14 @@ void hkStackTracer_create()
 
 struct FUN_00da2b50_cls
 {
-    int hkStackTracer_CallTree_getCallStack(int a, int b, int c);
+    int hkStackTracer_CallTree_getCallStack(int id, int addrs, int maxAddrs);
 };
 struct FUN_00da2990_cls
 {
-    int hkStackTracer_dumpStackTrace(int a, int b, int c, int d);
+    int hkStackTracer_dumpStackTrace(int trace, int maxtrace, int pfunc, int d);
 };
 
-extern "C" int __cdecl Vsnprintf(char* buf, unsigned int n, const char* fmt, ...);
+extern "C" int __cdecl hkString_snprintf(char* buf, unsigned int n, const char* fmt, ...);
 
 struct FUN_00d5edc0_cls
 {
@@ -378,18 +388,22 @@ struct FUN_00d5edc0_cls
     int m_38;
     int m_3c;
 
-    void LogAddressAndSize(int p1, int p2, int* p3);
+    void hkLeakDetectAllocator_danger(int message, int ptr, int* info);
 };
 
 // @fnv 0x00d5edc0
-void FUN_00d5edc0_cls::LogAddressAndSize(int p1, int aAddress, int* pInfo)
+// src: XBOX_RETAIL_PDB 0x00d5edc0
+// pdb: hkLeakDetectAllocator::danger | hkLeakDetectAllocator.obj | retail, string-set bridge, high
+// pdb params: message, ptr, info
+// pdb locals: buf, trace
+void FUN_00d5edc0_cls::hkLeakDetectAllocator_danger(int message, int ptr, int* info)
 {
     unsigned int buf[0x40];
     unsigned int buf2[0x20];
-    Vsnprintf((char*)buf, 0x100, "\nAddress=0x%p size=%i\n", aAddress, pInfo[1]);
-    reinterpret_cast<int(__cdecl*)(...)>(m_38)(p1, m_3c);
+    hkString_snprintf((char*)buf, 0x100, "\nAddress=0x%p size=%i\n", ptr, info[1]);
+    reinterpret_cast<int(__cdecl*)(...)>(m_38)(message, m_3c);
     reinterpret_cast<int(__cdecl*)(...)>(m_38)(buf, m_3c);
-    int r = reinterpret_cast<FUN_00da2b50_cls*>(&m_08)->hkStackTracer_CallTree_getCallStack(pInfo[0], (int)buf2, 0x20);
+    int r = reinterpret_cast<FUN_00da2b50_cls*>(&m_08)->hkStackTracer_CallTree_getCallStack(info[0], (int)buf2, 0x20);
     reinterpret_cast<FUN_00da2990_cls*>(m_04)->hkStackTracer_dumpStackTrace((int)buf2, r, m_38, m_3c);
     reinterpret_cast<int(__cdecl*)(...)>(m_38)(
         "-------------------------------------------------------------------\n\n", m_3c);
@@ -410,23 +424,25 @@ void FUN_00d5f290_class::CallWithFirstArg(int* piValue)
 struct FUN_00d5f2d0_cls
 {
     int ProcessAndDispatch(int a, int b);
-    int hkLeakDetectAllocator_bufRealloc(int a1, int a2, int* a3);
+    int hkLeakDetectAllocator_bufRealloc(int pold, int oldNum, int* reqNumInOut);
 };
 
 void __cdecl hkMemUtil_memCpy_00d2caa0(int a, int b, int c);
 
 // @fnv 0x00d5f2d0
 // src: HAVOK_LIB 0x00d5f2d0
-int FUN_00d5f2d0_cls::hkLeakDetectAllocator_bufRealloc(int a1, int a2, int* piValue)
+// pdb: hkLeakDetectAllocator::bufRealloc | hkLeakDetectAllocator.obj | retail, upstream name already matches, high
+// pdb params: pold, oldNum, reqNumInOut
+int FUN_00d5f2d0_cls::hkLeakDetectAllocator_bufRealloc(int pold, int oldNum, int* reqNumInOut)
 {
-    int r = this->ProcessAndDispatch(1, *piValue);
-    int m = *piValue;
-    if (!(m < a2))
+    int r = this->ProcessAndDispatch(1, *reqNumInOut);
+    int m = *reqNumInOut;
+    if (!(m < oldNum))
     {
-        m = a2;
+        m = oldNum;
     }
-    hkMemUtil_memCpy_00d2caa0(r, a1, m);
-    reinterpret_cast<FUN_00d5f2b0_class*>(this)->hkLeakDetectAllocator_checkedFree(1, a1, a2);
+    hkMemUtil_memCpy_00d2caa0(r, pold, m);
+    reinterpret_cast<FUN_00d5f2b0_class*>(this)->hkLeakDetectAllocator_checkedFree(1, pold, oldNum);
     return r;
 }
 
@@ -543,7 +559,7 @@ struct S_00d5f320_CallTree
 
 typedef void(__cdecl* S_00d5f320_OutputFunc)(const char*, void*);
 
-int __cdecl Vsnprintf(char* buf, int n, const char* fmt, ...);
+int __cdecl hkString_snprintf(char* buf, int n, const char* fmt, ...);
 
 struct S_00d5f320_LeakDetect
 {
@@ -562,17 +578,20 @@ struct S_00d5f320_LeakDetect
     void* m_pOutputUserData;
     S_00d5f320_Map* m_pAllocationMap;
 
-    void LogAddressAndSize(const char* what, unsigned long addr, const S_00d5f320_AllocInfo& info);
+    void hkLeakDetectAllocator_danger(const char* message, unsigned long ptr, const S_00d5f320_AllocInfo& info);
     void printBlock(const char* what, unsigned long addr, S_00d5f320_AllocInfo info)
     {
-        LogAddressAndSize(what, addr, info);
+        hkLeakDetectAllocator_danger(what, addr, info);
     }
-    void ReportLeaks();
+    void hkLeakDetectAllocator_quit();
 };
 
 // If the leak map is non-empty, prints each leaked block and a leak count via the output callback, then quits the call tree and frees the map.
 // @fnv 0x00d5f320
-void S_00d5f320_LeakDetect::ReportLeaks()
+// src: XBOX_RETAIL_PDB 0x00d5f320
+// pdb: hkLeakDetectAllocator::quit | hkLeakDetectAllocator.obj | retail, string-set bridge, high
+// pdb locals: buf
+void S_00d5f320_LeakDetect::hkLeakDetectAllocator_quit()
 {
     if (m_pAllocationMap->GetLogicalSize())
     {
@@ -588,7 +607,7 @@ void S_00d5f320_LeakDetect::ReportLeaks()
             printBlock("Memory Leaked:\n", m_pAllocationMap->GetIteratorKey(it), info);
         }
         unsigned int buf[64];  // char[256] in the original; built without a GS cookie
-        Vsnprintf((char*)buf, 256, "\n%i leaks found\n", m_pAllocationMap->GetLogicalSize());
+        hkString_snprintf((char*)buf, 256, "\n%i leaks found\n", m_pAllocationMap->GetLogicalSize());
         m_pOutputFunction((char*)buf, m_pOutputUserData);
         m_pOutputFunction("**************************************************************\n"
                           "* End hkLeadDetectorAllocator                                *\n"
@@ -611,6 +630,9 @@ struct FUN_00d5f520_class
 };
 
 // @fnv 0x00d5f520
+// pdb: FindSlot | CombatUtilities.obj | retail, upstream name already matches, high
+// pdb params: aiSlots, acDesiredSlot
+// pdb locals: i, cslot1, cslot2
 int FUN_00d5f520_class::FindSlot(unsigned int auiKey)
 {
     int v = unk08;
@@ -656,11 +678,15 @@ struct D5F670Map
     int m_iPairCount;
 
     int insert(D5F670Allocator& alloc, unsigned int key, D5F670Value val);
-    void Resize(D5F670Allocator& alloc, int newcap);
+    void CWindMatrices_Resize(D5F670Allocator& alloc, int newcap);
 };
 
 // @fnv 0x00d5f670
-void D5F670Map::Resize(D5F670Allocator& alloc, int aiNewCapacity)
+// src: XBOX_RETAIL_PDB 0x00d5f670
+// pdb: CWindMatrices::Resize | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: usCount
+// pdb locals: i
+void D5F670Map::CWindMatrices_Resize(D5F670Allocator& alloc, int aiNewCapacity)
 {
     aiNewCapacity = (aiNewCapacity > 8) ? aiNewCapacity : 8;
     int iNoDeallocate = m_iCapacityFlags & 0x80000000;
@@ -692,19 +718,21 @@ struct Node2b50
 struct List2b50
 {
     Node2b50* m_kNodeCollection;
-    int hkStackTracer_CallTree_getCallStack(int node, unsigned int* out, int count);
+    int hkStackTracer_CallTree_getCallStack(int id, unsigned int* addrs, int maxAddrs);
 };
 // @fnv 0x00da2b50
 // src: HAVOK_LIB 0x00da2b50
-int List2b50::hkStackTracer_CallTree_getCallStack(int iStartIndex, unsigned int* out, int count)
+// pdb: hkStackTracer::CallTree::getCallStack | hkStackTracer.obj | debug, upstream name already matches, high
+// pdb params: id, addrs, maxAddrs
+int List2b50::hkStackTracer_CallTree_getCallStack(int id, unsigned int* addrs, int maxAddrs)
 {
-    int iIndex = iStartIndex;
+    int iIndex = id;
     int i;
-    for (i = 0; i < count; i++)
+    for (i = 0; i < maxAddrs; i++)
     {
         if (iIndex <= 0)
             break;
-        out[i] = m_kNodeCollection[iIndex].m_uiFilterValue;
+        addrs[i] = m_kNodeCollection[iIndex].m_uiFilterValue;
         iIndex = m_kNodeCollection[iIndex].m_next;
     }
     return i;
@@ -838,7 +866,7 @@ struct SnapshotD5
 
 struct SourceD5
 {
-    int hkStackTracer_CallTree_getCallStack(int key, unsigned int* out, int capacity);
+    int hkStackTracer_CallTree_getCallStack(int id, unsigned int* addrs, int maxAddrs);
 };
 
 struct FUN_00d5ef20_Class
@@ -861,6 +889,9 @@ struct FUN_00d5ef20_Class
 
 // Copies the current map entries into out by allocating buffers, reading each source value, and notifying the router listener.
 // @fnv 0x00d5ef20
+// pdb: hkLeakDetectAllocator::getMemorySnapshot | hkLeakDetectAllocator.obj | retail, object-file run extension, low
+// pdb params: snapshot
+// pdb locals: info, trace, assertBuf, ostr
 int FUN_00d5ef20_Class::Snapshot(SnapshotD5* out)
 {
     void* section = &m_kCriticalSection;
@@ -937,6 +968,8 @@ struct MapD5F5
 // Removes the entry at index it by invalidating its key and compacting the remaining valid pairs in the open-addressing table.
 // @fnv 0x00d5f570
 // src: HAVOK_LIB 0x00d5f570
+// pdb: hkMapBase<unsigned long,hkLeakDetectAllocator::AllocInfo,hkMapOperations<unsigned long> >::remove | hkLeakDetectAllocator.obj | retail, call graph, medium
+// pdb params: it
 void MapD5F5::hkMapBase_unsigned_long_struct_hkLeakDetectAllocator_AllocInfo_struct_hkMapOperations_unsigned_long_remove(void* aiIndex)
 {
     typedef MapOpsD5F5 OPS;
@@ -1062,16 +1095,16 @@ struct LeakDetectAllocator
     LeakMap* volatile m_pAllocationMap;
     int m_inUseBytes;
 
-    void LogAddressAndSize(const char* what, unsigned long addr, LeakAllocInfo* info);
+    void hkLeakDetectAllocator_danger(const char* message, unsigned long ptr, LeakAllocInfo* info);
     void checkSize(const char* what, unsigned long addr, LeakAllocInfo info, int size)
     {
         if (info.size != size)
         {
-            LogAddressAndSize(what, addr, &info);
+            hkLeakDetectAllocator_danger(what, addr, &info);
             __debugbreak();
         }
     }
-    void hkLeakDetectAllocator_checkedFree(unsigned int unused, void* p, int numBytes);
+    void hkLeakDetectAllocator_checkedFree(unsigned int isBuf, void* p, int numBytes);
 };
 
 struct LeakCsLock
@@ -1089,18 +1122,21 @@ struct LeakCsLock
 // Validates and removes a freed allocation from the leak map, subtracts its usable size from m_inUseBytes, and releases the block via m_pReferenceObject.
 // @fnv 0x00d5f150
 // src: HAVOK_LIB 0x00d5f150
-void LeakDetectAllocator::hkLeakDetectAllocator_checkedFree(unsigned int unused, void* apBlock, int numBytes)
+// pdb: hkLeakDetectAllocator::checkedFree | hkLeakDetectAllocator.obj | retail, string-set bridge, high
+// pdb params: isBuf, p, numBytes
+// pdb locals: info
+void LeakDetectAllocator::hkLeakDetectAllocator_checkedFree(unsigned int isBuf, void* p, int numBytes)
 {
     void* cs = &m_pWorldLock;
     EnterCriticalSection(cs);
-    if (apBlock != 0 && numBytes == 0)
+    if (p != 0 && numBytes == 0)
     {
         m_pOutputFunction("Given zero bytes to free with an nonnull address\n", m_pOutputUserData);
         __debugbreak();
         LeaveCriticalSection(cs);
         return;
     }
-    if (apBlock == 0)
+    if (p == 0)
     {
         if (numBytes != 0)
         {
@@ -1110,15 +1146,15 @@ void LeakDetectAllocator::hkLeakDetectAllocator_checkedFree(unsigned int unused,
         LeaveCriticalSection(cs);
         return;
     }
-    int it = m_pAllocationMap->m_map.FindSlot((unsigned long)apBlock);
+    int it = m_pAllocationMap->m_map.FindSlot((unsigned long)p);
     if (!m_pAllocationMap->isValid(it))
     {
         m_pOutputFunction("Freeing block not from this allocator", m_pOutputUserData);
         __debugbreak();
     }
-    checkSize("Freeing block of incorrect size", (unsigned long)apBlock, m_pAllocationMap->getValue(it), numBytes);
+    checkSize("Freeing block of incorrect size", (unsigned long)p, m_pAllocationMap->getValue(it), numBytes);
     m_pAllocationMap->remove(it);
-    m_inUseBytes -= m_pReferenceObject->GetUsableSize(apBlock, numBytes);
-    m_pReferenceObject->ReleaseBlock(apBlock, numBytes);
+    m_inUseBytes -= m_pReferenceObject->GetUsableSize(p, numBytes);
+    m_pReferenceObject->ReleaseBlock(p, numBytes);
     LeaveCriticalSection(cs);
 }

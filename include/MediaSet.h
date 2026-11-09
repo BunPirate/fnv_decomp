@@ -7,6 +7,7 @@
 class MediaLocationController;
 class TESSound;
 
+// pdb: class MediaSet, size 0xc4, bases: TESForm, TESFullName, 23 members
 class MediaSet : public TESForm, public TESFullName
 {
 public:
@@ -21,29 +22,29 @@ public:
         SETTYPE_COUNT = 4
     };
 
-    unsigned int m_uiMediaValue1;
-    unsigned int m_uiMediaValue2;
-    unsigned int m_uiMediaValue3;
-    bool bEffectFlag;
-    bool m_bActorStateFlag;
-    bool m_bCountWasNonzero;
-    bool m_bConditionWasTrue;
-    char m_cMediaState;
-    TESFullName m_kFullName;
+    unsigned int uiMinLayerUpdate;
+    unsigned int uiSeekTime;
+    unsigned int uiLoopUpdate;
+    bool bStarted;
+    bool bInCombat;
+    bool bInTension;
+    bool bIsDay;
+    char cCurrentLayer;
+    TESFullName MediaSetName;
     MEDIASETTYPE Type;
-    MediaSetEntry m_kMediaSetEntry1;
-    MediaSetEntry m_kMediaSetEntry2;
-    MediaSetEntry m_kMediaSetEntry3;
-    MediaSetEntry m_kMediaSetEntry4;
-    MediaSetEntry m_kMediaSetEntry5;
-    MediaSetEntry m_kMediaSetEntry6;
-    char m_cMediaFlag;
-    float m_fMediaParameter1;
-    float fSkillValueBonus;
-    float m_fMediaParameter3;
-    float m_fMediaValue;
-    TESSound* m_pSound1;
-    TESSound* m_pSound2;
+    MediaSetEntry pMLOne;
+    MediaSetEntry pMLTwo;
+    MediaSetEntry pMLThree;
+    MediaSetEntry pMLFour;
+    MediaSetEntry pMLFive;
+    MediaSetEntry pMLSix;
+    char cEnableFlags;
+    float fOne;
+    float fTwo;
+    float fThree;
+    float fFour;
+    TESSound* pSoundOne;
+    TESSound* pSoundTwo;
 
     virtual void InitItem();
     virtual void ClearData();
@@ -56,7 +57,7 @@ public:
     bool PointLocation(unsigned int, bool, MediaLocationController*);
     bool UpdateBattleState(bool, unsigned int, int);
     void UpdateIncidental(unsigned int);
-    bool Update(unsigned int auiTime, bool abForce, MediaLocationController* apController);
+    bool Update(unsigned int ticks, bool abInCombat, MediaLocationController* pController);
     void Reset();
     MEDIASETTYPE GetType();
 };

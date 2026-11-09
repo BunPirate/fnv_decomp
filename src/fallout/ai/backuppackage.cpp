@@ -16,14 +16,16 @@
 // These nonvirtual serialization and data-access declarations are not yet in TESPackage.h.
 struct TESPackageUnitSupport : TESPackage
 {
-    void DispatchToSubobjects(void* buffer);
-    void SaveToBuffer(void* buffer);
+    void DispatchToSubobjects(void* apLoadGameBuffer);
+    void SaveToBuffer(void* apSaveGameBuffer);
     void WriteTypedData(void* data, unsigned int size);
     void ReadTypedData(void* data, unsigned int size);
     PackageTargetRecord* GetData();
 };
 
 // @fnv 0x009ed010
+// pdb: AlarmPackage::InitLoadGame | AlarmPackage.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void __thiscall BackUpPackage::ForwardToBase(void* apBuffer)
 {
     ((TESPackageUnitSupport*)this)->DispatchToSubobjects(apBuffer);
@@ -34,6 +36,7 @@ void __thiscall BackUpPackage::FUN_009ed330()
 
 // Calls FUN_009ed330, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x009ed0a0
+// pdb: BackUpPackage::`scalar deleting destructor' | BackUpPackage.obj | retail, vtable slot, high
 void* __thiscall BackUpPackage::DestroyOrFree(unsigned int flags)
 {
     FUN_009ed330();
@@ -44,6 +47,9 @@ void* __thiscall BackUpPackage::DestroyOrFree(unsigned int flags)
 
 // @fnv 0x009edb60
 // src: XBOX_PDB 0x009edb60
+// pdb: BackUpPackage::SaveGame | BackUpPackage.obj | retail, vtable slot, medium
+// pdb note: debug build links it to BackUpPackage::InitLoadGame
+// pdb locals: icount, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void __thiscall BackUpPackage::SaveGame_009edb60(BGSSaveFormBuffer* apBuffer)
 {
     ((TESPackageUnitSupport*)this)->SaveToBuffer(apBuffer);
@@ -52,6 +58,9 @@ void __thiscall BackUpPackage::SaveGame_009edb60(BGSSaveFormBuffer* apBuffer)
 
 // Calls TESPackage::LoadGame on the buffer, then reads 12 bytes from the buffer into the object at offset 0x80.
 // @fnv 0x009edb90
+// pdb: BackUpPackage::LoadGame | BackUpPackage.obj | retail, vtable slot, medium
+// pdb note: debug build links it to BackUpPackage::SaveGame
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icurrentBufferPosition
 void __thiscall BackUpPackage::LoadGameWithBackup(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     TESPackage::LoadGame(apLoadGameBuffer);
@@ -82,6 +91,8 @@ TESForm* __cdecl _ref_004839c0(unsigned int formID);
 
 // @fnv 0x009ed5f0
 // src: XBOX_PDB 0x009ed5f0
+// pdb: BackUpPackage::GetSaveSize | BackUpPackage.obj | retail, vtable slot, high
+// pdb locals: isize, itempStartSize, pheader, pform
 unsigned short __thiscall BackUpPackage::GetSaveSize_009ed5f0()
 {
     unsigned short usSaveSize = 0;
@@ -123,14 +134,17 @@ unsigned short __thiscall BackUpPackage::GetSaveSize_009ed5f0()
 
 // Initializes the base package and the backup position.
 // @fnv 0x009ed030
+// pdb: BackUpPackage::BackUpPackage | BackUpPackage.obj | retail, upstream name already matches, high
 BackUpPackage::BackUpPackage()
 {
-    reinterpret_cast<NiPoint3*>(&unk80)->FUN_006815c0();
+    reinterpret_cast<NiPoint3*>(&pBackUpPoint)->FUN_006815c0();
 }
 
 void ProgramFlow(const char*, ...);
 void Warning_005b5e40(const char*, ...);
 // @fnv 0x009ed700
+// pdb: BackUpPackage::SaveGame | BackUpPackage.obj | retail, vtable slot, high
+// pdb locals: icount, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void BackUpPackage::SaveBackupPackage()
 {
     TESPackage::SaveGameTESAlt();
@@ -149,7 +163,7 @@ void BackUpPackage::SaveBackupPackage()
     unsigned short s = 0;
     char* h = (char*)DAT_011de45c->FUN_00825c00();
     DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&s, 2u);
-    ((TESPackageUnitSupport*)this)->WriteTypedData(&unk80, 12);
+    ((TESPackageUnitSupport*)this)->WriteTypedData(&pBackUpPoint, 12);
     if (*g_011de4e8.Bool())
     {
         char* header = (char*)DAT_011de45c->FUN_00825c00();
@@ -197,6 +211,9 @@ struct BackupPackageActorSupport : Actor
 };
 // Builds a package with location and target data, applies it to the actor's process context, then starts it on the actor.
 // @fnv 0x00897bd0
+// pdb: Actor::InitiateAggroRadiusGuardPackage | Actor.obj | retail, object-file run extension, low
+// pdb params: apActor
+// pdb locals: pnew, pcurrent, ploc, ppack
 void BackupPackageActorSupport::InstallBackupPackage(void* unused)
 {
     TESPackage* value = TESPackage::CreatePackageForType(14);
@@ -232,6 +249,8 @@ struct LoadHeader
 };
 // Reads a 4-byte block marker and a 2-byte size, then reports block header, overrun and underrun errors against the loaded buffer.
 // @fnv 0x009ed8d0
+// pdb: BackUpPackage::LoadGame | BackUpPackage.obj | retail, string-set bridge, high
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icurrentBufferPosition
 void BackUpPackage::LoadPackageBlock()
 {
     TESPackage::LoadGameTESAlt();
@@ -263,7 +282,7 @@ void BackUpPackage::LoadPackageBlock()
         pBlockStart = (char*)DAT_011de45c->FUN_00825c00();
         DAT_011de45c->TESSaveLoadGame_LoadGameDataOLD(&usBlockSize, 2);
     }
-    ((TESPackageUnitSupport*)this)->ReadTypedData(&unk80, 12);
+    ((TESPackageUnitSupport*)this)->ReadTypedData(&pBackUpPoint, 12);
     if (DAT_011de45c->TESSaveLoadGame_UseSaveGameBlocks())
     {
         char* header = (char*)DAT_011de45c->FUN_00825c00();

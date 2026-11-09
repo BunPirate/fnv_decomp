@@ -91,7 +91,7 @@ extern int DAT_010d07f4;
 struct FUN_00cb0a70 {
     void __thiscall m_00cb0a70(int);
 };
-void __cdecl finishLoadedObjecthkpPhysicsSystemWithContacts(int* a, int b);
+void __cdecl finishLoadedObjecthkpPhysicsSystemWithContacts(int* p, int finishing);
 struct FUN_00dff340_Class {
     void* m_p;
     void ReturnSelf(void* arg);
@@ -213,7 +213,7 @@ extern int DAT_010c8e94;
 struct FUN_00cb0a70_m_helper {
     void __thiscall m(int);
 };
-void __cdecl finishLoadedObjecthkpMouseSpringAction(void* a, void* b);
+void __cdecl finishLoadedObjecthkpMouseSpringAction(void* p, void* finishing);
 typedef void (__thiscall *VTableFn)(void*, int);
 void __cdecl Object_ProcessState_00dff3c0(void* p);
 extern int DAT_010e75cc;
@@ -328,7 +328,7 @@ struct FUN_00dfcc30_vt {
 };
 void __cdecl Runtime_ForwardCall_00dfcc30(FUN_00dfcc30_vt* p);
 struct FUN_00dd0420_Class {
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_ctor(int);
 };
 void __cdecl Object_ProcessState_00dfcd80(FUN_00dd0420_Class* self, int a);
 struct FUN_00dfce00_vt {
@@ -397,7 +397,7 @@ struct FUN_00dfe4e0_vt {
 void __cdecl Object_InvokeVirtualMethod_00dfe4e0(FUN_00dfe4e0_vt* p);
 void __cdecl Runtime_UpdateState_00dfe590(void* p);
 extern int DAT_010e587c;
-void __cdecl finishLoadedObjecthkaBoneAttachment(void* a, int b);
+void __cdecl finishLoadedObjecthkaBoneAttachment(void* p, int finishing);
 extern int DAT_010e5a58;
 void __cdecl Object_UpdateState_00dfe990(void* a, int b);
 void __cdecl Object_UpdateFields_00dfeb40(void* p);
@@ -846,18 +846,18 @@ public:
 };
 extern void* DAT_01269ce8;
 int __cdecl Runtime_EvaluateValue_00de8150();
-extern int DAT_01269d18;
+extern int hkpBridgeConstraintAtomClass;
 int* __cdecl Runtime_GetDAT01269d18Address();
-extern int DAT_01269d48;
+extern int hkpBridgeAtomsClass;
 void* Runtime_GetDAT01269d48Address();
-extern int g_unk01269d78;
+extern int hkpSimpleContactConstraintAtomClass;
 void* __cdecl Runtime_GetUnk01269d78Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_01269da8;
+extern CpuOpaque hkpBallSocketConstraintAtomClass;
 CpuOpaque* __cdecl Runtime_GetDAT01269da8Address();
-extern int DAT_01269dd8;
+extern int hkpStiffSpringConstraintAtomClass;
 void* __cdecl Runtime_GetDAT01269dd8Address();
-extern int g_unk01269e08;
+extern int hkpSetLocalTransformsConstraintAtomClass;
 int* Runtime_GetUnk01269e08Address();
 struct GlobalObject {
     int unk00;
@@ -865,55 +865,55 @@ struct GlobalObject {
 extern GlobalObject g_global;
 GlobalObject* __cdecl Runtime_GetGlobalAddress();
 struct CpuOpaque;
-extern CpuOpaque DAT_01269e68;
+extern CpuOpaque hkpSetLocalRotationsConstraintAtomClass;
 CpuOpaque* __cdecl Runtime_GetDAT01269e68Address();
-extern int g_unk01269e98;
+extern int hkpOverwritePivotConstraintAtomClass;
 void* __cdecl Runtime_GetUnk01269e98Address();
-extern int g_unk01269ec8;
+extern int hkpLinConstraintAtomClass;
 void* __cdecl Runtime_GetUnk01269ec8Address();
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_01269ef8;
+extern GlobalObjectO2_00d472a0 hkpLinSoftConstraintAtomClass;
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField01269ef8Address();
-extern int DAT_01269f28;
+extern int hkpLinLimitConstraintAtomClass;
 void* __cdecl Runtime_GetDAT01269f28Address();
-extern int g_unkGlobal01269f58;
+extern int hkp2dAngConstraintAtomClass;
 void* __cdecl Runtime_GetUnkGlobal01269f58Address();
-extern int DAT_01269f88;
+extern int hkpAngConstraintAtomClass;
 void* __cdecl Runtime_GetDAT01269f88Address();
 // FUN_00de8350 : a one-line function - getter
-extern int g_target_00de8350;
+extern int hkpAngLimitConstraintAtomClass;
 void* Runtime_GetTarget00de8350Address();
-extern int DAT_0126a018;
+extern int hkpConeLimitConstraintAtomClass;
 void* __cdecl Runtime_GetDAT0126a018Address();
-extern int DAT_0126a048;
+extern int hkpAngFrictionConstraintAtomClass;
 int* Runtime_GetDAT0126a048Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a078;
+extern CpuOpaque hkpAngMotorConstraintAtomClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126a078Address();
-extern int DAT_0126a0a8;
+extern int hkpRagdollMotorConstraintAtomClass;
 void* __cdecl Runtime_GetDAT0126a0a8Address();
-extern int DAT_0126a0d8;
+extern int hkpLinFrictionConstraintAtomClass;
 void* __cdecl Runtime_GetDAT0126a0d8Address();
-extern int DAT_0126a108;
+extern int hkpLinMotorConstraintAtomClass;
 int* __cdecl Runtime_GetDAT0126a108Address();
-extern int DAT_0126a138;
+extern int hkpPulleyConstraintAtomClass;
 void* __cdecl Runtime_GetDAT0126a138Address();
 extern int DAT_0126a168;
 void* __cdecl Runtime_GetDAT0126a168Address();
-extern int DAT_0126a198;
+extern int hkpSoftContactModifierConstraintAtomClass;
 int* __cdecl Runtime_GetDAT0126a198Address();
-extern int DAT_0126a1c8;
+extern int hkpMassChangerModifierConstraintAtomClass;
 void* __cdecl Runtime_GetDAT0126a1c8Address();
-extern FUN_00de87c0_class DAT_0126a1f8;
+extern FUN_00de87c0_class hkpCenterOfMassChangerModifierConstraintAtomClass;
 FUN_00de87c0_class* __cdecl Runtime_GetDAT0126a1f8Address();
 // FUN_00de84f0 : returns the address of a global data object.
 // Original: mov eax, offset DAT_0126a228 ; ret
-extern int DAT_0126a228;
+extern int hkpViscousSurfaceModifierConstraintAtomClass;
 int* __cdecl Runtime_GetDAT0126a228Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a258;
+extern CpuOpaque hkpMovingSurfaceModifierConstraintAtomClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126a258Address();
-extern int g_0126a288;
+extern int hkpIgnoreModifierConstraintAtomClass;
 int* __cdecl Runtime_GetField0126a288Address();
 struct FUN_00de8570_cls {
     int m_00;
@@ -922,9 +922,9 @@ struct FUN_00de8570_cls {
     void __thiscall hkpBridgeConstraintAtom_init(int value);
 };
 void __cdecl hkpBridgeConstraintAtom_init_ProcessState_00de8570(FUN_00de8570_cls* pTarget, int nIndex);
-extern int DAT_0126a378;
+extern int hkAabbClass;
 void* __cdecl Runtime_GetDAT0126a378Address();
-extern int g_unk126a3a8;
+extern int hkAabbUint32Class;
 void* __cdecl Runtime_GetUnk126a3a8Address();
 class FUN_00de8780_cls
 {
@@ -975,7 +975,7 @@ struct DF25D0Owner {
     int unk18; int unk1C; int unk20; int unk24; int unk28; int unk2C;
     DF25D0State* m_pkState;
 };
-void __cdecl hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(void* pkItem, DF25D0Owner* pkOwner);
+void __cdecl hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(void* pkItem, DF25D0Owner* constraint);
 static void SetOwnerStateFlags(void* pkItem, DF25D0Owner* pkOwner, unsigned char m_ucEntryType);
 void DF25D0Attach(void* pkItem, DF25D0Owner* pkOwner, unsigned char m_ucEntryType);
 class FUN_00df3110 {
@@ -1058,9 +1058,9 @@ struct Handler_cls
     void __thiscall Handle(int value);
 };
 void __cdecl Object_ProcessState_00df6440(Handler_cls* pHandler, int value);
-extern int g_0126a430;
+extern int hkpWorldClass;
 int* __cdecl Runtime_GetField0126a430Address();
-extern int DAT_0126a478;
+extern int hkpCollidableBoundingVolumeDataClass;
 void* __cdecl Runtime_GetDAT0126a478Address();
 extern "C" int DAT_0126a4a8;
 // @fnv 0x00df64c0
@@ -1089,51 +1089,51 @@ extern float DAT_0104da48;
 struct ParserContext { int unk00,unk04,unk08,unk0c,unk10,unk14,unk18,unk1c,unk20,unk24,unk28,unk2c,unk30,unk34,unk38,unk3c,unk40,result44; int __thiscall ClipRangeByPlane(int, void*,float*); };
 struct FloatPair { float first,second; int __thiscall TraverseNode(ParserContext*,int,int*,ParserContext**); int __thiscall hkWingedEdge_findVisibilityBoundaryEdges(ParserContext*,int,int*,ParserContext**); };
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a5f8;
+extern CpuOpaque hkpVehicleSuspensionSuspensionWheelParametersClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfb260();
-extern int g_unk0126aa18;
+extern int hkpMoppBvTreeShapeClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfb280();
 struct FUN_00dfb2d0_class {
     void __thiscall FUN_00dfb2d0(int a);
 };
 void __cdecl Object_ProcessState_00dfb290(FUN_00dfb2d0_class* p, int a);
-extern int DAT_0126aac0;
+extern int hkMeshSectionClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfb360();
-extern int DAT_0126aaf0;
+extern int hkMeshSectionCinfoClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfb380();
-extern int DAT_0126abe0;
+extern int hkMemoryResourceHandleExternalLinkClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfb3c0(void);
 // Null-guarded forwarder: the first argument is an object pointer; when it
 // is non-null the second argument is forwarded to a member function of that
 // object (ecx = object, one stack argument).
 struct FUN_00dfb3d0_cls
 {
-    void __thiscall hkaMeshBinding_hkaMeshBinding(int a1);
+    void __thiscall hkMemoryResourceHandle_ctor(int flag);
 };
 void __cdecl Object_ProcessState_00dfb3d0(FUN_00dfb3d0_cls *pObject, int a1);
-extern unsigned char DAT_0126ac10;
+extern unsigned char hkMemoryResourceHandleClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfb420();
 struct FUN_00e2ebc0_cls
 {
-    void __thiscall Init(void* a);
+    void __thiscall hkMemoryResourceContainer_ctor(void* flag);
 };
 void __cdecl Object_ProcessState_00dfb430(FUN_00e2ebc0_cls* pObject, void* pArg);
-extern "C" int DAT_0126ac58;
+extern "C" int hkMemoryResourceContainerClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfb480(void);
-extern int DAT_0126acd0;
+extern int hkaKeyFrameHierarchyUtilityControlDataClass;
 int __cdecl Runtime_EvaluateValue_00dfb4d0();
-extern int DAT_0126ad00;
+extern int hkaKeyFrameHierarchyUtilityClass;
 void* __cdecl Runtime_GetDAT0126ad00Address();
-extern int DAT_0126ad30;
+extern int hkaWaveletCompressedAnimationCompressionParamsClass;
 void* __cdecl Runtime_GetDAT0126ad30Address();
-extern void* DAT_0126ad60;
+extern void* hkaWaveletCompressedAnimationQuantizationFormatClass;
 int __cdecl Object_ComputeValue_00dfb540();
 class DFB550Object {
 public:
     virtual ~DFB550Object();
 };
 void Runtime_DestroySubobject_00dfb550(DFB550Object* pkObject);
-extern int DAT_0126ad90;
+extern int hkaWaveletCompressedAnimationClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfb560();
 inline void* operator new(unsigned int, void* pvWhere) throw() { return pvWhere; }
 struct DFB570FinishFlag {
@@ -1154,12 +1154,12 @@ public:
 void Runtime_AllocateStorage_00dfb570(void* p, int finishing);
 extern int DAT_010ddc5c;
 void* __cdecl Runtime_GetDAT010ddc5cAddress();
-extern int DAT_0126add8;
+extern int hkaSplineCompressedAnimationTrackCompressionParamsClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfb860();
-extern unsigned char g_fnvDat0126ae08;
+extern unsigned char hkaSplineCompressedAnimationAnimationCompressionParamsClass;
 void* Object_GetGlobalObjectAddress_00dfb880();
 // FUN_00dfb8a0 : a one-line function - getter
-extern int g_target_00dfb8a0;
+extern int hkaSplineCompressedAnimationClass;
 void* Object_GetGlobalObjectAddress_00dfb8a0();
 // ResetVTable -- installs a fixed vtable on an object and, when the second
 // argument is set, runs the object's update step afterwards.
@@ -1175,9 +1175,9 @@ void __cdecl ResetVTable(ResetVTableObj* p, int bUpdate);
 extern int DAT_010de0ec;
 void* Runtime_GetDAT010de0ecAddress();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126ae80;
+extern CpuOpaque hkaSkeletonMapperDataSimpleMappingClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfb920();
-extern int DAT_0126aeb0;
+extern int hkaSkeletonMapperDataChainMappingClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfb940();
 class CalleeObj
 {
@@ -1185,13 +1185,13 @@ public:
     void ComputeValue_00ce5360(void *pParam);
 };
 void __cdecl Runtime_ProcessState_00dfb950(CalleeObj *pFirst, void *pSecond);
-extern int DAT_0126aee0;
+extern int hkaSkeletonMapperDataClass;
 int* __cdecl Runtime_GetDAT0126aee0Address();
 struct FUN_00ce5370_cls {
     void __thiscall UpdateState_00ce5370();
 };
 void __cdecl Object_ForwardCall_00dfb980(FUN_00ce5370_cls* p);
-extern int DAT_0126af10;
+extern int hkaSkeletonLocalFrameOnBoneClass;
 int* __cdecl Runtime_GetDAT0126af10Address();
 // FUN_00dfb9a0 : __cdecl, 13 bytes
 //   mov ecx, dword ptr [esp + 4]
@@ -1206,9 +1206,9 @@ struct FUN_00dfb9a0_cls
     virtual int v00(int a);
 };
 int __cdecl Object_InvokeVirtualMethod_00dfb9a0(FUN_00dfb9a0_cls* pObj);
-extern int DAT_0126af40;
+extern int hkaSkeletonClass;
 int* __cdecl Runtime_GetDAT0126af40Address(void);
-extern int DAT_0126af88;
+extern int hkaMeshBindingMappingClass;
 int* Object_GetGlobalObjectAddress_00dfba40();
 // FUN_00dfba50: null-guarded forwarding of a second argument to a
 // member function of the first (object) argument.
@@ -1218,12 +1218,12 @@ public:
     void FUN_00e34800(int a1);
 };
 void __cdecl Object_ProcessState_00dfba50(FUN_00dfba50_cls *pObject, int a1);
-extern int g_unk0126afb8;
+extern int hkaMeshBindingClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfbaa0();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b000;
+extern CpuOpaque hkaDeltaCompressedAnimationQuantizationFormatClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfbb20();
-extern int DAT_0126b030;
+extern int hkaDeltaCompressedAnimationClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfbb40();
 // FUN_00dfbb50 : installs the class vtable into the object and, when the
 // second argument is non-zero, tail-calls the routine at FUN_00e35050 with
@@ -1237,18 +1237,18 @@ struct FUN_00dfbb50_cls
 void __cdecl Object_UpdateState_00dfbb50(FUN_00dfbb50_cls* p, int a);
 extern int DAT_010de90c;
 void* __cdecl Runtime_GetDAT010de90cAddress();
-extern "C" int DAT_0126b078;
+extern "C" int hkaBoneClass;
 // @fnv 0x00dfbc10
 // src: GUESS 0x00dfbc10 (confidence: low)
 extern "C" void* __cdecl Runtime_GetGlobal0126B078Address() {
-    return &DAT_0126b078;
+    return &hkaBoneClass;
 }
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b0a8;
+extern CpuOpaque hkaAnnotationTrackAnnotationClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126b0a8Address();
-extern int DAT_0126b0d8;
+extern int hkaAnnotationTrackClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfbc60();
-extern int DAT_0126b138;
+extern int hkpVehicleLinearCastWheelCollideClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfbce0();
 // InitVTable : __cdecl initializer for an object with several vtable slots.
 // The first vtable is installed, a flag byte at +9 is cleared when the flag is
@@ -1277,39 +1277,39 @@ struct FUN_00dfbcf0_obj
 void __cdecl InitVTable(FUN_00dfbcf0_obj* self, int flag);
 extern int DAT_010dec3c;
 void* __cdecl Runtime_GetDAT010dec3cAddress();
-extern int DAT_0126b180;
+extern int hkpVehicleInstanceWheelInfoClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfbdc0();
-extern int DAT_0126b1b0;
+extern int hkpVehicleInstanceClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfbde0();
-extern int DAT_0126b1f8;
+extern int hkpVehicleFrictionDescriptionAxisDescriptionClass;
 void* __cdecl Runtime_GetDAT0126b1f8Address();
-extern unsigned char DAT_0126b228;
+extern unsigned char hkpVehicleFrictionDescriptionClass;
 void* __cdecl Runtime_GetDAT0126b228Address();
-extern int DAT_0126b258;
+extern int hkpVehicleFrictionStatusAxisStatusClass;
 void* __cdecl Runtime_GetDAT0126b258Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b288;
+extern CpuOpaque hkpVehicleFrictionStatusClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126b288Address();
-extern int DAT_0126b2b8;
+extern int hkpVehicleDefaultSuspensionWheelSpringSuspensionParametersClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfbf20();
 struct FUN_00dfbf30_class {
     virtual void m0(int);
 };
 void __cdecl Runtime_ForwardCall_00dfbf30(void* p);
-extern int DAT_0126b2e8;
+extern int hkpVehicleDefaultSuspensionClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfbf40();
 int* __cdecl Object_GetGlobalObjectAddress_00dfbf60();
-extern int DAT_0126b330;
+extern int hkpVehicleDefaultBrakeWheelBrakingPropertiesClass;
 void* __cdecl Runtime_GetDAT0126b330Address();
 // FUN_00dfc050 : a constant getter - MSVC emits mov eax, OFFSET <global> ; ret.
 // The global is declared extern so the store becomes a relocation; the checker
 // binds it to the original's own immediate.
-extern int g_target_FUN_00dfc050;
+extern int hkpVehicleDefaultBrakeClass;
 void* __cdecl Runtime_GetTargetFUN00dfc050Address();
 // FUN_00dfc070 : a one-line function - getter
 extern int g_target_00dfc070;
 void* Runtime_GetTarget00dfc070Address();
-extern int DAT_0126b3a8;
+extern int hkpVehicleDataWheelComponentParamsClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc100();
 struct S_00dfc110_vt {
     virtual void m0(int);
@@ -1317,13 +1317,13 @@ struct S_00dfc110_vt {
 void __thiscall S_00dfc110_vt::m0(int) {
 }
 void __cdecl Runtime_ForwardCall_00dfc110(void* p);
-extern int g_0126b3d8;
+extern int hkpVehicleDataClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc120();
 extern int DAT_010dff44;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc140();
-extern unsigned char DAT_0126b420;
+extern unsigned char hkpTyremarkPointClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfc220();
-extern char DAT_0126b498;
+extern char hkpTyremarksInfoClass;
 char* __cdecl Object_GetGlobalObjectAddress_00dfc260();
 extern int DAT_010e00cc;
 void* Runtime_GetDAT010e00ccAddress();
@@ -1332,9 +1332,9 @@ int* __cdecl Runtime_GetDAT010e00dcAddress();
 // FUN_00dfc360: cdecl no-arg getter returning the address of a global.
 extern int DAT_0126b528;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc360();
-extern int g_unk0126b4e0;
+extern int hkpSerializedSubTrack1nInfoClass;
 void* __cdecl Runtime_GetUnk0126b4e0Address();
-extern void* DAT_0126b558;
+extern void* hkpSerializedAgentNnEntryClass;
 void* Runtime_GetDAT0126b558Address();
 struct FUN_00e05c20_class {
     void __thiscall ReleaseSectorAndSubtrackArrays();
@@ -1346,69 +1346,69 @@ struct FUN_00dfc3b0_target
 };
 void __cdecl Runtime_ForwardCall_00dfc3b0(FUN_00dfc3b0_target* pTarget);
 // FUN_00dfc440 : a one-line function - getter
-extern int g_target_00dfc440;
+extern int hkpSerializedDisplayRbTransformsDisplayTransformPairClass;
 void* Object_GetGlobalObjectAddress_00dfc440();
 class VirtualDispatchObj {
 public:
     virtual void Invoke0(int arg);
 };
 void __cdecl Runtime_ForwardCall_00dfc450(VirtualDispatchObj* p);
-extern void* DAT_0126b588;
+extern void* hkpSerializedDisplayRbTransformsClass;
 int __cdecl Object_ComputeValue_00dfc460();
 extern int DAT_010e04ac;
 void* __cdecl Object_GetGlobalObjectAddress_00dfc480();
-extern int g_unk0126b678;
+extern int hkpPoweredChainMapperTargetClass;
 void* __cdecl Runtime_GetUnk0126b678Address();
-extern int DAT_0126b648;
+extern int hkpPoweredChainMapperLinkInfoClass;
 int* __cdecl Runtime_GetDAT0126b648Address();
-extern int DAT_0126b600;
+extern int hkpPoweredChainMapperClass;
 int* __cdecl Runtime_GetDAT0126b600Address();
 extern int DAT_010e0654;
 int* __cdecl Runtime_GetDAT010e0654Address();
-extern int DAT_0126b6a8;
+extern int hkpMassPropertiesClass;
 int* __cdecl Runtime_GetDAT0126b6a8Address(void);
 // FUN_00dfc5b0 : a one-line function - getter
-extern int g_target_00dfc5b0;
+extern int hkpCharacterProxyCinfoClass;
 void* Runtime_GetTarget00dfc5b0Address();
-extern int DAT_0126b708;
+extern int hkpMoppCodeReindexedTerminalClass;
 int* __cdecl Runtime_GetDAT0126b708Address();
-extern int DAT_0126b738;
+extern int hkpMoppCodeCodeInfoClass;
 void* __cdecl Runtime_GetDAT0126b738Address();
 struct FUN_00dfc600_vt {
     virtual void __thiscall m0(int);
 };
 void __cdecl Object_InvokeVirtualMethod_00dfc600(FUN_00dfc600_vt* p);
-extern unsigned char DAT_0126b768;
+extern unsigned char hkpMoppCodeClass;
 void* __cdecl Runtime_GetDAT0126b768Address();
 extern int DAT_0102e368;
 int* __cdecl Runtime_GetDAT0102e368Address();
-extern int DAT_0126b7b0;
+extern int hkpSimpleContactConstraintDataInfoClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc660();
 // FUN_00dfc680 : a one-line function - getter
-extern int g_target_00dfc680;
+extern int hkpWheelConstraintDataAtomsClass;
 void* Object_GetGlobalObjectAddress_00dfc680();
 struct FUN_00dfc690_vt {
     virtual void m0(int);
 };
 void __cdecl Runtime_ForwardCall_00dfc690(FUN_00dfc690_vt* p);
-extern int DAT_0126b810;
+extern int hkpWheelConstraintDataClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfc6a0();
 extern int DAT_010d0a64;
 int* __cdecl Runtime_GetDAT010d0a64Address();
-extern char DAT_0126b858;
+extern char hkpStiffSpringConstraintDataAtomsClass;
 void* Runtime_GetDAT0126b858Address();
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126b888;
+extern GlobalObjectO2_00d472a0 hkpStiffSpringConstraintDataClass;
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField0126b888Address();
 extern int DAT_010d0aac;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc740();
-extern int g_unk0126b8d0;
+extern int hkpStiffSpringChainDataConstraintInfoClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc760();
-extern int g_0126b900;
+extern int hkpStiffSpringChainDataClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc7c0();
-extern int DAT_0126b948;
+extern int hkpSimpleShapePhantomCollisionDetailClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc7e0();
-extern int DAT_0126b978;
+extern int hkpSimpleShapePhantomClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfc800();
 class DFC810Object {
 public:
@@ -1527,19 +1527,19 @@ public:
     virtual ~FUN_00dfc850();
     FUN_00dfc850(int a1);
 };
-extern int DAT_0126b9c0;
+extern int hkpRotationalConstraintDataAtomsClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc8c0();
-extern int g_unk0126b9f0;
+extern int hkpRotationalConstraintDataClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc8e0();
 extern int DAT_010e11ec;
 int* __cdecl Runtime_GetDAT010e11ecAddress();
-extern int g_0126ba38;
+extern int hkpRagdollLimitsDataAtomsClass;
 int* __cdecl Runtime_GetField0126ba38Address();
 struct FUN_00dfc940_class {
     virtual void m0(int);
 };
 void __cdecl Object_InvokeVirtualMethod_00dfc940(FUN_00dfc940_class* p);
-extern int DAT_0126ba68;
+extern int hkpRagdollLimitsDataClass;
 void* __cdecl Runtime_GetDAT0126ba68Address();
 extern int DAT_010d0af4;
 struct S_00dfc970_Flag {
@@ -1590,38 +1590,38 @@ struct S_00dfc970_Obj {
     char unk9a;
     void hkpRagdollLimitsData_setConeLimitStabilization(S_00dfc970_Flag f);
 };
-void __cdecl finishLoadedObjecthkpRagdollLimitsData(S_00dfc970_Obj* p, int flag);
+void __cdecl finishLoadedObjecthkpRagdollLimitsData(S_00dfc970_Obj* p, int finishing);
 extern int DAT_010d0af4;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc9a0();
-extern int DAT_0126bab0;
+extern int hkpRagdollConstraintDataAtomsClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc9c0();
 class DFC9D0Object {
 public:
     virtual ~DFC9D0Object();
 };
 void Runtime_DestroySubobject_00dfc9d0(DFC9D0Object* pkObject);
-extern int DAT_0126bae0;
+extern int hkpRagdollConstraintDataClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc9e0();
 extern int DAT_010cb71c;
 void* __cdecl Runtime_GetDAT010cb71cAddress();
-extern int DAT_0126bb28;
+extern int hkpPulleyConstraintDataAtomsClass;
 void* __cdecl Runtime_GetDAT0126bb28Address();
 class DFCA60Object {
 public:
     virtual ~DFCA60Object();
 };
 void Object_InvokeVirtualMethod_00dfca60(DFCA60Object* pkObject);
-extern char g_unk0126bb58;
+extern char hkpPulleyConstraintDataClass;
 void* __cdecl Runtime_GetUnk0126bb58Address();
 extern int DAT_010da04c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfcaa0();
-extern int DAT_0126bba0;
+extern int hkpPrismaticConstraintDataAtomsClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfcac0();
-extern void* DAT_0126bbd0;
+extern void* hkpPrismaticConstraintDataClass;
 int __cdecl Object_ComputeValue_00dfcae0();
 extern int DAT_010d0b3c;
 int* __cdecl Runtime_GetDAT010d0b3cAddress();
-extern int DAT_0126bc18;
+extern int hkpPoweredChainDataConstraintInfoClass;
 void* __cdecl Runtime_GetDAT0126bc18Address();
 extern int DAT_0126bc48;
 int* __cdecl Runtime_GetDAT0126bc48Address();
@@ -1638,15 +1638,15 @@ void* __cdecl Runtime_GetDAT0126bcc0Address();
 extern void* DAT_010d37e4;
 void** __cdecl Object_GetGlobalObjectAddress_00dfcc00();
 // FUN_00dfcc20 : a one-line function - getter
-extern int g_target_00dfcc20;
+extern int hkpLimitedHingeConstraintDataAtomsClass;
 void* Object_GetGlobalObjectAddress_00dfcc20();
 struct S_00dfcc40_Obj { int unk00; };
-extern S_00dfcc40_Obj DAT_0126bd38;
+extern S_00dfcc40_Obj hkpLimitedHingeConstraintDataClass;
 S_00dfcc40_Obj* __cdecl Object_GetGlobalObjectAddress_00dfcc40();
 // FUN_00dfcc70 : a one-line function - getter
 extern int g_target_00dfcc70;
 void* Runtime_GetTarget00dfcc70Address();
-extern int DAT_0126bd80;
+extern int hkpHingeLimitsDataAtomsClass;
 int* __cdecl Runtime_GetDAT0126bd80Address();
 // Forwarder: takes the object pointer, calls its first virtual slot with a
 // literal 0 argument (push 0; call through the vtable entry).
@@ -1656,44 +1656,44 @@ struct VtblForwarder
 };
 int __cdecl Object_InvokeVirtualMethod_00dfcca0(VtblForwarder* p);
 // FUN_00dfccb0 : a one-line function - getter
-extern int g_target_00dfccb0;
+extern int hkpHingeLimitsDataClass;
 void* Runtime_GetTarget00dfccb0Address();
 extern int DAT_010d0be4;
 void* __cdecl Object_GetGlobalObjectAddress_00dfcce0();
-extern int DAT_0126bdf8;
+extern int hkpHingeConstraintDataAtomsClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfcd00();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126be28;
+extern CpuOpaque hkpHingeConstraintDataClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfcd20();
 extern int DAT_010c91ec;
 int* Runtime_GetDAT010c91ecAddress();
-extern int DAT_0126be70;
+extern int hkpGenericConstraintDataSchemeConstraintInfoClass;
 int* __cdecl Runtime_GetDAT0126be70Address();
-extern int DAT_0126bea0;
+extern int hkpGenericConstraintDataSchemeClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfcda0();
 struct FUN_00dfcdb0_target
 {
-    void Run();
+    void hkpGenericConstraintDataScheme_dtor();
 };
 void __cdecl Runtime_ForwardCall_00dfcdb0(FUN_00dfcdb0_target* pTarget);
-extern char DAT_0126bed0;
+extern char hkpBallSocketChainDataConstraintInfoClass;
 void* __cdecl Runtime_GetDAT0126bed0Address();
-struct DFD5E0 { void __thiscall FUN_00d53df0(void* p); };
+struct DFD5E0 { void __thiscall FUN_00d53df0(void* f); };
 void __cdecl Object_ProcessState_00dfcde0(void* a, void* b);
-extern int DAT_0126bf00;
+extern int hkpBallSocketChainDataClass;
 void* __cdecl Runtime_GetDAT0126bf00Address();
-extern int DAT_0126bf48;
+extern int hkpBallAndSocketConstraintDataAtomsClass;
 int* __cdecl Runtime_GetDAT0126bf48Address();
-extern int DAT_0126bf78;
+extern int hkpBallAndSocketConstraintDataClass;
 void* __cdecl Runtime_GetDAT0126bf78Address();
 extern int DAT_010d0cd4;
 int* __cdecl Object_GetGlobalObjectAddress_00dfcea0();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126bfc0;
+extern CpuOpaque hkpTypedBroadPhaseHandleClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfcec0();
-extern int DAT_0126bff0;
+extern int hkpSimpleMeshShapeTriangleClass;
 void* __cdecl Runtime_GetDAT0126bff0Address();
-extern int DAT_0126c020;
+extern int hkpSimpleMeshShapeClass;
 void* __cdecl Runtime_GetDAT0126c020Address();
 struct FUN_00dfcf20_cls {
     void __thiscall InitializeVtables(int a);
@@ -1719,21 +1719,21 @@ struct FUN_00dfcf60_cls
 
     FUN_00dfcf60_cls* InitializeVtables(int flag);
 };
-extern int DAT_0126c068;
+extern int hkpMultiRayShapeRayClass;
 void* Object_GetGlobalObjectAddress_00dfd0c0();
 struct FUN_00dfd0d0_cls
 {
     virtual void Call(int a);
 };
 void Runtime_ForwardCall_00dfd0d0(FUN_00dfd0d0_cls* pTarget);
-extern int DAT_0126c098;
+extern int hkpMultiRayShapeClass;
 void* Object_GetGlobalObjectAddress_00dfd0e0();
 extern "C" void* DAT_010e222c;
 void* __cdecl Object_GetGlobalObjectAddress_00dfd120();
-extern unsigned char DAT_0126c0e0;
+extern unsigned char hkpListShapeChildInfoClass;
 unsigned char* __cdecl Runtime_GetDAT0126c0e0Address();
 void __cdecl Object_ProcessAndTransformResult_00dfd1c0(void* p);
-extern int DAT_0126c110;
+extern int hkpListShapeClass;
 void* __cdecl Runtime_GetDAT0126c110Address();
 // FUN_00dfd1e0: null-guarded forwarding of a second argument to a
 // member function of the first (object) argument.
@@ -1743,28 +1743,28 @@ public:
     void Forward(int a1);
 };
 void __cdecl Object_ProcessState_00dfd1e0(FUN_00dfd1e0_cls *pObject, int a1);
-extern int DAT_0126c158;
+extern int hkpConvexVerticesShapeFourVectorsClass;
 int* __cdecl Runtime_GetDAT0126c158Address();
 // FUN_00dfd250 : a one-line function - getter
-extern int g_target_00dfd250;
+extern int hkpConvexVerticesShapeClass;
 void* Runtime_GetTarget00dfd250Address();
 struct S_00dfd260_Foo {
     void __thiscall FUN_00d59830(int arg);
 };
 void __cdecl Object_ProcessState_00dfd260(S_00dfd260_Foo* self, int arg);
-extern int DAT_0126c1d0;
+extern int hkpCompressedMeshShapeChunkClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfd2a0();
-extern int DAT_0126c200;
+extern int hkpCompressedMeshShapeBigTriangleClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfd2c0();
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126c230;
+extern GlobalObjectO2_00d472a0 hkpCompressedMeshShapeConvexPieceClass;
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField0126c230Address();
 struct FUN_00dfd2e0_Class {
     virtual void VF00(int value);
 };
 void __cdecl Object_InvokeVirtualMethod_00dfd2e0(FUN_00dfd2e0_Class* param_1);
 // FUN_00dfd2f0 : a one-line function - getter
-extern int g_target_00dfd2f0;
+extern int hkpCompressedMeshShapeClass;
 void* Runtime_GetTarget00dfd2f0Address();
 struct FUN_00e3dbd0_class {
     void __thiscall FUN_00e3dbd0(int value);
@@ -1782,9 +1782,9 @@ void* Object_GetGlobalObjectAddress_00dfd4e0();
 extern int DAT_0126c2d8;
 void* __cdecl Object_GetGlobalObjectAddress_00dfd500();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c308;
+extern CpuOpaque hkpAgent1nSectorClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfd540();
-extern int DAT_0126c338;
+extern int hkxVertexDescriptionElementDeclClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfd560();
 // FUN_00dfd570: null-guarded forwarder. The first argument (an object
 // pointer) is loaded and tested; when it is not null the second argument
@@ -1795,25 +1795,25 @@ public:
     void ReturnSelf(int a1);
 };
 void __cdecl Object_ProcessState_00dfd570(FUN_00dfd570_cls *pObject, int a1);
-extern int DAT_0126c368;
+extern int hkxVertexDescriptionClass;
 int* __cdecl Runtime_GetDAT0126c368Address();
-extern int DAT_0126c398;
+extern int hkxVertexBufferVertexDataClass;
 int __cdecl Runtime_EvaluateValue_00dfd5f0();
 class FUN_00dfd600_cls {
 public:
-    void Callee(unsigned int value);
+    void Callee(unsigned int f);
 };
 void __cdecl Object_ProcessState_00dfd600(FUN_00dfd600_cls* target, unsigned int value);
 // FUN_00dfd650 : a one-line function - getter
-extern int g_target_00dfd650;
+extern int hkxVertexBufferClass;
 void* Runtime_GetTarget00dfd650Address();
-extern int DAT_0126c410;
+extern int hkxNodeAnnotationDataClass;
 int* __cdecl Runtime_GetDAT0126c410Address();
-extern int DAT_0126c440;
+extern int hkxNodeClass;
 void* __cdecl Runtime_GetDAT0126c440Address();
-extern int DAT_0126c488;
+extern int hkxMaterialTextureStageClass;
 void* __cdecl Runtime_GetDAT0126c488Address();
-extern int DAT_0126c4b8;
+extern int hkxMaterialClass;
 int* __cdecl Runtime_GetDAT0126c4b8Address();
 extern int DAT_010e33dc;
 struct FUN_00dfd990_class {
@@ -1825,55 +1825,55 @@ struct FUN_00dfd990_class {
     FUN_00cb0a70_class field14;
 };
 void __cdecl Runtime_SetVtableAndProcessState_00dfd990(FUN_00dfd990_class* object, int value);
-extern int DAT_0126c500;
+extern int hkxEnvironmentVariableClass;
 void* Object_GetGlobalObjectAddress_00dfda40();
 struct S_00e3f510_Foo {
     void __thiscall SetVptr_00e3f510(int);
 };
 void __cdecl Object_ProcessState_00dfda50(void* p, int a);
-extern int DAT_0126c530;
+extern int hkxEnvironmentClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfdaa0();
 struct AdjacentObjects {
     FUN_00cb0c00_class first;
     __declspec(align(4)) FUN_00cb0c00_class second;
 };
 void __cdecl Runtime_ProcessState_00dfdab0(AdjacentObjects* objects);
-extern int DAT_0126c578;
+extern int hkxEnumItemClass;
 void* __cdecl Runtime_GetDAT0126c578Address();
 // FUN_00dfdb10 : a one-line function - getter
-extern int g_target_00dfdb10;
+extern int hkxEnumClass;
 void* Runtime_GetTarget00dfdb10Address();
-extern int DAT_0126c5f0;
+extern int hkxSparselyAnimatedEnumClass;
 void* __cdecl Runtime_GetDAT0126c5f0Address();
 extern int DAT_010e351c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfdb60();
 extern "C" void* DAT_010e352c;
 void* __cdecl Object_GetGlobalObjectAddress_00dfdb80();
-extern int DAT_0126c638;
+extern int hkxAttributeGroupClass;
 int* Object_GetGlobalObjectAddress_00dfdd20();
-extern int DAT_0126c668;
+extern int hkxAttributeClass;
 int __cdecl Object_ComputeValue_00dfdd80();
-extern int DAT_0126c698;
+extern int hkPackfileSectionHeaderClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfddc0();
-extern int DAT_0126c6c8;
+extern int hkPackfileHeaderClass;
 void* Object_GetGlobalObjectAddress_00dfdde0();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c6f8;
+extern CpuOpaque hkTraceStreamTitleClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfde00();
 struct FUN_00dfde10_vtable {
     virtual void __thiscall slot0(int value) {}
 };
 void __cdecl Runtime_ForwardCall_00dfde10(void* p);
-extern int DAT_0126c728;
+extern int hkTraceStreamClass;
 int __cdecl Object_ComputeValue_00dfde20();
 extern int DAT_010d3cc0;
 int* __cdecl Runtime_GetDAT010d3cc0Address();
-extern char DAT_0126c770;
+extern char hkSweptTransformClass;
 char* __cdecl Runtime_GetDAT0126c770Address(void);
-extern int DAT_0126c7a0;
+extern int hkSphereClass;
 void* __cdecl Runtime_GetDAT0126c7a0Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c7d0;
+extern CpuOpaque hkMotionStateClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126c7d0Address();
 // FUN_00dfdec0: null-guarded forwarding of a second argument to a
 // member function of the first (object) argument.
@@ -1883,7 +1883,7 @@ public:
     void hkMonitorStreamStringMap_StringMap_StringMap(int a1);
 };
 void __cdecl Object_ProcessState_00dfdec0(FUN_00dfdec0_cls *pObject, int a1);
-extern unsigned char DAT_0126c800;
+extern unsigned char hkMonitorStreamStringMapStringMapClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfdee0();
 // FUN_00dfdef0: null-guarded forwarding of a second argument to a
 // member function of the first (object) argument.
@@ -1893,19 +1893,19 @@ public:
     void GetSelf_00e0f700(int a1);
 };
 void __cdecl Object_ProcessState_00dfdef0(FUN_00dfdef0_cls *pObject, int a1);
-extern int g_unk0126c830;
+extern int hkMonitorStreamStringMapClass;
 void* __cdecl Runtime_GetUnk0126c830Address();
-extern int DAT_0126c860;
+extern int hkMonitorStreamFrameInfoClass;
 int* __cdecl Runtime_GetDAT0126c860Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c890;
+extern CpuOpaque hkMonitorStreamColorTableColorPairClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfdf40();
 class DFDF50Object {
 public:
     virtual ~DFDF50Object();
 };
 void __cdecl Runtime_DestroySubobject_00dfdf50(DFDF50Object* pkObject);
-extern int DAT_0126c8c0;
+extern int hkMonitorStreamColorTableClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfdf60();
 extern int DAT_010e3e5c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfdfc0();
@@ -1913,21 +1913,21 @@ struct FUN_00ddc870_class {
     void __thiscall ProcessEntries_00ddc870();
 };
 void __cdecl Object_ForwardCall_00dfdfd0(FUN_00ddc870_class* self);
-extern int DAT_0126c908;
+extern int hkGeometryTriangleClass;
 int* __cdecl Runtime_GetDAT0126c908Address();
-extern int DAT_0126c938;
+extern int hkGeometryClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe0a0();
-extern int DAT_0126c968;
+extern int hkCustomAttributesAttributeClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe0e0();
-extern int DAT_0126c998;
+extern int hkCustomAttributesClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe100();
 // FUN_00dfe120 : a one-line function - getter
-extern int g_target_00dfe120;
+extern int hkContactPointMaterialClass;
 void* Object_GetGlobalObjectAddress_00dfe120();
-extern int DAT_0126c9f8;
+extern int hkContactPointClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe140();
 // FUN_00dfe160 : a one-line function - getter
-extern int g_target_00dfe160;
+extern int hkColorClass;
 void* Object_GetGlobalObjectAddress_00dfe160();
 extern int DAT_0126ca58;
 int* __cdecl Object_GetGlobalObjectAddress_00dfe180();
@@ -1937,7 +1937,7 @@ extern int DAT_0126cab8;
 int* __cdecl Object_GetGlobalObjectAddress_00dfe1c0();
 extern int DAT_0126cae8;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe1e0();
-extern int DAT_0126cb18;
+extern int hkBitFieldClass;
 void* __cdecl Runtime_GetDAT0126cb18Address();
 // FUN_00dfe250: null-guarded forwarding of a second argument to a
 // non-virtual member function of the first (object) argument.
@@ -1948,12 +1948,12 @@ public:
 };
 void __cdecl Object_ProcessState_00dfe250(FUN_00dfe250_cls *pObject, int a1);
 // FUN_00dfe2a0: cdecl, returns the address of a global object.
-extern char g_unk0126cb48;
+extern char hkaRagdollInstanceClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe2a0();
-extern void* DAT_0126cb90;
+extern void* hkaSkeletonMapperClass;
 int __cdecl Object_ComputeValue_00dfe2c0();
 // FUN_00dfe330 : a one-line function - getter
-extern int g_target_00dfe330;
+extern int hkaInterleavedUncompressedAnimationClass;
 void* Runtime_GetTarget00dfe330Address();
 extern int DAT_010e5474;
 unsigned int __cdecl Runtime_EvaluateValue_00dfe350();
@@ -1963,21 +1963,21 @@ struct FUN_00cb0a70_obj {
 };
 void __cdecl Object_ProcessState_00dfe410(FUN_00cb0a70_obj* pObject, int value);
 // FUN_00dfe460 : a one-line function - getter
-extern int g_target_00dfe460;
+extern int hkaFootstepAnalysisInfoClass;
 void* Object_GetGlobalObjectAddress_00dfe460();
 void __cdecl Runtime_ForwardCall_00dfe470(FUN_00dfe430_class* p);
-extern int DAT_0126cc68;
+extern int hkaFootstepAnalysisInfoContainerClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe480();
 // FUN_00dfe4f0: cdecl, returns the address of a global object.
-extern char g_unk0126ccb0;
+extern char hkaDefaultAnimatedReferenceFrameClass;
 void* __cdecl Runtime_GetUnk0126ccb0Address();
 extern int DAT_010e57a4;
 int* Runtime_GetDAT010e57a4Address();
 // FUN_00dfe5a0: cdecl, returns the address of a global object.
-extern char g_unk0126ccf8;
+extern char hkaBoneAttachmentClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe5a0();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126cd40;
+extern CpuOpaque hkaAnimationPreviewColorContainerClass;
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfe680();
 extern int DAT_010e58c8;
 int* __cdecl Object_GetGlobalObjectAddress_00dfe6a0();
@@ -1985,7 +1985,7 @@ struct FUN_00dfe6e0_Class {
     virtual void vf00(int value);
 };
 void __cdecl Object_InvokeVirtualMethod_00dfe6e0(FUN_00dfe6e0_Class* param_1);
-extern unsigned char DAT_0126cd88;
+extern unsigned char hkaAnimationContainerClass;
 void* __cdecl Runtime_GetDAT0126cd88Address();
 extern int DAT_010e59ac;
 int __cdecl Runtime_EvaluateValue_00dfe710();
@@ -1993,9 +1993,9 @@ struct FUN_00dfe970_class {
     virtual void __thiscall m_iWordAt00(int);
 };
 void __cdecl Runtime_ForwardCall_00dfe970(FUN_00dfe970_class* p);
-extern int g_unk0126cdd0;
+extern int hkaAnimationBindingClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe980();
-extern int DAT_0126ce18;
+extern int hkpVehicleRayCastWheelCollideClass;
 int __cdecl Runtime_EvaluateValue_00dfeab0();
 extern int DAT_010dec04;
 extern int DAT_010e5ae4;
@@ -2005,7 +2005,7 @@ extern int DAT_010debe4;
 void __cdecl InitObjectVtables(int* p, int b);
 extern int DAT_010e5ae4;
 int* Object_GetGlobalObjectAddress_00dfeb00();
-extern int DAT_0126ce60;
+extern int hkpVehicleRayCastBatchingManagerClass;
 int* __cdecl Runtime_GetDAT0126ce60Address();
 extern int DAT_010e5b68;
 int* __cdecl Runtime_GetDAT010e5b68Address();
@@ -2013,14 +2013,14 @@ extern int DAT_0126cea8;
 int* __cdecl Object_GetGlobalObjectAddress_00dfebc0();
 extern int DAT_010e5b4c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfebe0();
-extern int DAT_0126cef0;
+extern int hkpVehicleLinearCastBatchingManagerClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dfec00();
 extern int DAT_010e5bfc;
 int* __cdecl Object_GetGlobalObjectAddress_00dfec20();
 // FUN_00dfec40 : a constant getter - MSVC emits mov eax, OFFSET <global> ; ret.
 // The global is declared extern so the store becomes a relocation; the checker
 // binds it to the original's own immediate.
-extern int g_target_FUN_00dfec40;
+extern int hkpVehicleDriverInputAnalogStatusClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfec40();
 class DFEC50Object {
 public:
@@ -2028,34 +2028,34 @@ public:
 };
 void __cdecl Runtime_DestroySubobject_00dfec50(DFEC50Object* pkObject);
 // FUN_00dfec60 : a one-line function - getter
-extern int g_target_00dfec60;
+extern int hkpVehicleDefaultAnalogDriverInputClass;
 void* Object_GetGlobalObjectAddress_00dfec60();
 // FUN_00dfec80: cdecl, returns the address of a global data symbol.
 extern int DAT_010e5d94;
 int* __cdecl Object_GetGlobalObjectAddress_00dfec80();
 extern int DAT_010e5da8;
 void* __cdecl Object_GetGlobalObjectAddress_00dfeca0();
-extern int DAT_0126cfc8;
+extern int hkpVehicleDefaultVelocityDamperClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfecc0();
 extern int DAT_010e5e9c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfece0();
 // FUN_00dfed00 : a one-line function - getter
-extern int g_target_00dfed00;
+extern int hkpVehicleDefaultTransmissionClass;
 void* Object_GetGlobalObjectAddress_00dfed00();
 int* Object_GetGlobalObjectAddress_00dfed20();
-extern int DAT_0126d058;
+extern int hkpVehicleDefaultSteeringClass;
 int __cdecl Runtime_EvaluateValue_00dfedf0();
 extern int DAT_010e60c4;
 int* __cdecl Runtime_GetDAT010e60c4Address();
-extern int DAT_0126d0a0;
+extern int hkpVehicleDefaultEngineClass;
 int* __cdecl Runtime_GetDAT0126d0a0Address();
 extern int DAT_010e62a4;
 void* __cdecl Runtime_GetDAT010e62a4Address();
-extern int DAT_0126d0e8;
+extern int hkpVehicleDefaultAerodynamicsClass;
 int __cdecl Runtime_EvaluateValue_00dfeed0();
 extern int DAT_010e6394;
 int* __cdecl Runtime_GetDAT010e6394Address();
-extern int DAT_0126d130;
+extern int hkpRejectChassisListenerClass;
 void* __cdecl Runtime_GetDAT0126d130Address();
 extern int DAT_010debf4;
 int __cdecl Object_ComputeValue_00dfef40();
@@ -2065,7 +2065,7 @@ public:
 };
 void Object_InvokeVirtualMethod_00dfef80(DFEF80Object* pkObject);
 // FUN_00dfefc0: returns the address of the global object at DAT_0126d190.
-extern int DAT_0126d190;
+extern int hkpSpringActionClass;
 int* Object_GetGlobalObjectAddress_00dfefc0();
 // FUN_00dfefd0 : cdecl, 13 bytes
 // Calls slot 0 of the object's vtable with the argument 0 and returns the result.
@@ -2074,7 +2074,7 @@ struct FUN_00dfefd0_cls
     virtual int v00(int a);
 };
 int __cdecl Runtime_ForwardCall_00dfefd0(FUN_00dfefd0_cls* pObj);
-extern int DAT_0126d1d8;
+extern int hkpSerializedDisplayMarkerListClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dfefe0();
 extern int DAT_010e66fc;
 int* __cdecl Object_GetGlobalObjectAddress_00dff000();
@@ -2082,7 +2082,7 @@ struct FUN_00dff0b0_class {
     virtual void m0(int);
 };
 void __cdecl Runtime_ForwardCall_00dff0b0(FUN_00dff0b0_class* p);
-extern int DAT_0126d220;
+extern int hkpSerializedDisplayMarkerClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dff0c0();
 extern int DAT_010e676c;
 int* __cdecl Object_GetGlobalObjectAddress_00dff0e0();
@@ -2091,28 +2091,28 @@ struct FUN_00dff120_Class {
 };
 void __cdecl Object_InvokeVirtualMethod_00dff120(FUN_00dff120_Class* param_1);
 // Getter returning the address of a global object.
-extern int DAT_0126d268;
+extern int hkpReorientActionClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dff160();
 // Null-guarded forwarder: the first argument is an object pointer; when it is
 // non-null the second argument is passed to a member function of that object.
 struct FUN_00dff170_cls
 {
-    void __thiscall FUN_00e45010(int a1);
+    void __thiscall FUN_00e45010(int flag);
 };
 void __cdecl Object_ProcessState_00dff170(FUN_00dff170_cls *pObject, int a1);
 struct FUN_00dff190_cls {
     virtual void m_v00(int arg);
 };
 void __cdecl Object_ForwardCall_00dff190(FUN_00dff190_cls* pObject);
-extern int DAT_0126d298;
+extern int hkpProjectileGunClass;
 int __cdecl Object_ComputeValue_00dff1c0();
-extern int DAT_0126d2f8;
+extern int hkpPhysicsSystemWithContactsClass;
 int __cdecl Object_ComputeValue_00dff1e0();
 struct FUN_00dff250_class {
     virtual void m0(int);
 };
 void __cdecl Runtime_ForwardCall_00dff250(FUN_00dff250_class* p);
-extern int DAT_0126d328;
+extern int hkpMouseSpringActionClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dff260();
 struct DFF2E0FinishFlag {
     int m_bFinishing;
@@ -2124,11 +2124,11 @@ public:
     static void* operator new(unsigned int, void* p) { return p; }
 };
 void Object_ConstructInPlace(void* p, int finishing);
-extern int DAT_0126d370;
+extern int hkpMountedBallGunClass;
 int* __cdecl Runtime_GetDAT0126d370Address();
-extern int DAT_0126d3d0;
+extern int hkpMotorActionClass;
 int __cdecl Runtime_EvaluateValue_00dff3b0();
-extern int DAT_0126d418;
+extern int hkpGroupCollisionFilterClass;
 int* __cdecl Runtime_GetDAT0126d418Address();
 struct CpuOpaque;
 extern CpuOpaque DAT_010e6dec;
@@ -2141,7 +2141,7 @@ struct DFF4E0Object {
     virtual void Destroy(bool bFree);
 };
 void Object_Destroy_Thunk(DFF4E0Object* pkObject);
-extern unsigned char DAT_0126d448;
+extern unsigned char hkpGravityGunClass;
 void* __cdecl Runtime_GetDAT0126d448Address();
 struct DFF520FinishFlag {
     int m_bFinishing;
@@ -2156,12 +2156,12 @@ void Object_ConstructInPlace_00dff520(void* p, int finishing);
 extern int DAT_0126d490;
 int __cdecl Runtime_EvaluateValue_00dff570();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d4d8;
+extern CpuOpaque hkpDisplayBindingDataRigidBodyClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126d4d8Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d508;
+extern CpuOpaque hkpDisplayBindingDataPhysicsSystemClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126d508Address();
-extern int DAT_0126d550;
+extern int hkpDisplayBindingDataClass;
 void* __cdecl Runtime_GetDAT0126d550Address();
 extern int DAT_010e75cc;
 int* __cdecl Runtime_GetDAT010e75ccAddress();
@@ -2176,7 +2176,7 @@ public:
     virtual int v0(int a) = 0;
 };
 int __cdecl Runtime_ForwardCall_00dff870(FUN_00dff870_cls* p);
-extern int DAT_0126d5c8;
+extern int hkpDisableEntityCollisionFilterClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dff880();
 // FUN_00dff890: forwards a second argument to a method of the first argument
 // when that pointer is non-null.
@@ -2212,9 +2212,9 @@ struct FNVRecordPointers {
     void* volatile m30;
     FNVRecordPointers* __thiscall InitializeRecordPointers(int unused);
 };
-extern int DAT_0126d610;
+extern int hkpDashpotActionClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dffa20();
-extern int g_unk0126d658;
+extern int hkpConstrainedSystemFilterClass;
 void* __cdecl Object_GetGlobalObjectAddress_00dffa40();
 // FUN_00dffa50: forwards a value to a helper on the passed-in object
 // when that object is present.
@@ -2276,27 +2276,27 @@ public:
 void __cdecl Object_InvokeVirtualMethod_00dffba0(FUN_00dffba0_cls* p);
 extern int DAT_0126d688;
 int* __cdecl Runtime_GetDAT0126d688Address();
-extern int DAT_0126d6e8;
+extern int hkpAngularDashpotActionClass;
 void* __cdecl Runtime_GetDAT0126d6e8Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d718;
+extern CpuOpaque hkpConvexPieceStreamDataClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126d718Address();
 extern int DAT_010e7c24;
 int* __cdecl Runtime_GetDAT010e7c24Address();
-extern int DAT_0126d760;
+extern int hkpVelocityConstraintMotorClass;
 void* Runtime_GetDAT0126d760Address();
 extern int DAT_010cc0d8;
 int* __cdecl Runtime_GetDAT010cc0d8Address();
 // FUN_00dffdd0 : a one-line function - getter
-extern int g_target_00dffdd0;
+extern int hkpThinBoxMotionClass;
 void* Runtime_GetTarget00dffdd0Address();
 extern int DAT_010c6e34;
 void* Runtime_GetDAT010c6e34Address();
-extern int DAT_0126d7f0;
+extern int hkpSpringDamperConstraintMotorClass;
 void* __cdecl Runtime_GetDAT0126d7f0Address();
 extern int DAT_010d3838;
 void* __cdecl Runtime_GetDAT010d3838Address();
-extern char g_unk0126d838;
+extern char hkpSphereMotionClass;
 void* __cdecl Runtime_GetUnk0126d838Address();
 extern void* DAT_010c59f4;
 extern void* DAT_010c6d54;
@@ -2308,7 +2308,7 @@ public:
     virtual int v0(int a) = 0;
 };
 int __cdecl Object_InvokeVirtualMethod_00dffec0(FUN_00dffec0_cls* p);
-extern int DAT_0126d880;
+extern int hkpPositionConstraintMotorClass;
 void* __cdecl Runtime_GetDAT0126d880Address();
 extern int DAT_010cb798;
 int* __cdecl Runtime_GetDAT010cb798Address();
@@ -2332,14 +2332,14 @@ struct SpawnedObject
 void __cdecl InitSpawnedObject(SpawnedObject* p, int flag);
 extern int DAT_010da004;
 int* __cdecl Runtime_GetDAT010da004Address();
-extern int DAT_0126d910;
+extern int hkpMalleableConstraintDataClass;
 int* __cdecl Runtime_GetDAT0126d910Address();
 struct S_00dfff80_Foo {
     void __thiscall FUN_00cdf760(int a);
 };
 void __cdecl CallFooMethodIfNotNull(S_00dfff80_Foo* p, int a);
 // FUN_00dfffd0 : a one-line function - getter
-extern int g_target_00dfffd0;
+extern int hkpLinearParametricCurveClass;
 void* Runtime_GetTarget00dfffd0Address();
 extern void* DAT_010e80b4;
 void** __cdecl Runtime_GetDAT010e80b4Address();
@@ -2620,7 +2620,7 @@ public:
     short unk114;
     bool m_bModifierActive;
 };
-void __cdecl finishLoadedObjecthkpRagdollConstraintData(void* pvObject, int iFinishing);
+void __cdecl finishLoadedObjecthkpRagdollConstraintData(void* p, int finishing);
 struct FnvCpu_FUN_00de1150_CpuObject { char* EvaluateValue_00de1150(); };
 struct FnvCpu_FUN_00de1160_CpuObject { char* ComputeValue_00de1160(); };
 struct FnvCpu_FUN_00de4de0_CpuObject { char* ComputeValue_00de4de0(); };
@@ -2744,10 +2744,10 @@ struct KdJob {
     KdPair m_38;
 };
 struct KdQueue {
-    int FinishJob(const KdJob* a, const KdJob* b, int flag);
+    int FinishJob(const KdJob* oldJob, const KdJob* jobOut, int waitStatus);
 };
-void __cdecl MixChannels(KdPair* p, int a2, int a3, int a4, int a5, int a6, int* out);
-int __cdecl FinishJobWithPair(KdQueue* queue, KdJob* job);
+void __cdecl hkKdTreeBuildingUtils_buildTree(KdPair* buffers, int treeOut, int projEntOut, int treeSize, int numPrims, int _numAvailableEmptyNodes, int* maxDepth);
+int __cdecl hkCpuKdTreeBuildJobFast(KdQueue* jobQueue, KdJob* nextJobOut);
 struct FnvCpu_FUN_00df8920_CpuObject {
     unsigned int unk00;
     unsigned int unk04;
@@ -2887,7 +2887,7 @@ struct S00de0fe0_Obj10 {
     int unk0c;
     int unk10;
     void __thiscall hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(int* value);
-    void __thiscall UpdateState_00de0f90(int count, S00de0fe0_Element*** array);
+    void __thiscall hkpShapeDisplayBuilder_buildDisplayGeometries(int count, S00de0fe0_Element*** displayGeometries);
 };
 struct S00de0fe0_Local {
     S00de0fe0_Arr arr;
@@ -2904,7 +2904,7 @@ __declspec(noinline) void S00de0fe0_Arr::hkpShapeDisplayBuilder_hkpShapeDisplayB
 }
 void __cdecl hkpShapeDisplayBuilder_addObjectToDebugDisplay(int arg1, int arg2, int arg3, int arg4);
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_01269fe8;
+extern GlobalObjectO2_00d472a0 hkpTwistLimitConstraintAtomClass;
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField01269fe8Address();
 struct cls_d530
 {
@@ -2958,13 +2958,13 @@ struct WorkQueue {
     void* processors[1];
 };
 struct ExecutionContext {
-    void ProcessCallback(WorkQueue* source, WorkQueue* target, int flags);
+    void ProcessCallback(WorkQueue* oldJob, WorkQueue* jobOut, int waitStatus);
 };
 extern unsigned long DAT_0126835c;
 extern "C" const char str_010db918[];
 extern "C" const char str_010c41f8[];
-int __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(void* processor, WorkItem* item, unsigned int* value, int remaining);
-void __cdecl ProcessWorkQueue(ExecutionContext* context, WorkQueue* queue);
+int __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(void* processor, WorkItem* aabbIn, unsigned int* hitsOut, int maxHits);
+void __cdecl hkCpuKdTreeAabbJob(ExecutionContext* jobQueue, WorkQueue* nextJobOut);
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long dwTlsIndex);
 extern "C" unsigned long DAT_0126835c;
 
@@ -2985,6 +2985,7 @@ static inline void TimerMark(const char* name)
         s->m_end.m_storage = (char*)(h + 1);
     }
 }
+// pdb: class Key, size 0x8 (here 0x2), 2 members
 struct Key
 {
     unsigned char m_type;
@@ -3000,12 +3001,12 @@ struct Job
     int m_28;
     int m_2c;
 };
-void __cdecl hkCpuPairGetClosestPointsImplementation(Job* job, int a, int b, int c);
+void __cdecl hkCpuPairGetClosestPointsImplementation(Job* pairGetClosestPointsJob, int collisionInput, int commandsBase, int numCommands);
 struct Scheduler
 {
-    int ProcessCallback(Key* key, int b, int a);
+    int ProcessCallback(Key* oldJob, int jobOut, int waitStatus);
 };
-void __cdecl hkCpuPairGetClosestPointsJob(Scheduler* self, Job* job);
+void __cdecl hkCpuPairGetClosestPointsJob(Scheduler* jobQueue, Job* nextJobOut);
 struct FUN_00df9840_Class {
     int unk00;
     int unk04;
@@ -3051,7 +3052,7 @@ inline void DestructElementsDFB5A0(T* p, int n)
 struct ElemDFB5A0 { int unk00; FUN_00cb0c00_class m_04;
 // src: GUESS 0x00cb0c00 (confidence: low)
  void Object_UpdateFields_00cb0c00() { m_04.Object_UpdateFields_00cb0c00(); } };
-void __cdecl ResizeAudioStream(hkMemoryAllocator* alloc, void* array, int sizeOfElement);
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem);
 // Registry entries store a pointer and an integer key; shared Pair stores two integers and has no pointer constructor.
 struct FilterRegistryEntry {
     void* m_uiFilterValue;
@@ -3061,7 +3062,7 @@ struct FilterRegistryEntry {
 struct Registry_de30 {
     int unk00, unk04;
     hkArray<FilterRegistryEntry> m_pairs;
-    void hkpUserConvexRadiusBuilder_registerUserConvexRadiusDisplayBuilder(void* value, int key);
+    void hkpUserConvexRadiusBuilder_registerUserConvexRadiusDisplayBuilder(void* f, int key);
 };
 void __cdecl Object_DoNothing_00de9b00();
 static void Runtime_UpdateState_00df30b0(stub_cls* target, int value);
@@ -3259,11 +3260,11 @@ struct KdJob2 {
     int m_50;
 };
 struct KdQueue2 {
-    int ProcessCallback(const KdJob2* a, const KdJob2* b, int flag);
+    int ProcessCallback(const KdJob2* oldJob, const KdJob2* jobOut, int waitStatus);
 };
 void __cdecl hkTreeBundleRayCastUtil_autoBundleFromList(int, int, int, int, int, float, float, KdPair, int*, int, int*);
 void __cdecl hkTreeBundleRayCastUtil_autoBundleScanAll(int, int, int, int, float, float, KdPair, int*, int, int*);
-int __cdecl ExecuteJob(KdQueue2* queue, KdJob2* job);
+int __cdecl hkCpuAutoRayBundleJob(KdQueue2* jobQueue, KdJob2* nextJobOut);
 struct InDF8800 {
     int unk00; int unk04; int unk08; int unk0c;
     int unk10; int unk14; int unk18; int unk1c;
@@ -3298,9 +3299,9 @@ struct CollDF8800 {
 };
 void __cdecl FillAabbArray(CollDF8800* pkCollector, int i0x58, int iCount, int i0x54) throw();
 struct WorldDF8800 {
-    void* ProcessCallback(InDF8800* pkSource, InDF8800* pkTarget, int iFlags) throw();
+    void* ProcessCallback(InDF8800* oldJob, InDF8800* jobOut, int waitStatus) throw();
 };
-void* hkCpuKdTreeBuildSetupJob(WorldDF8800* pkWorld, InDF8800* pkInput);
+void* hkCpuKdTreeBuildSetupJob(WorldDF8800* jobQueue, InDF8800* nextJobOut);
 struct Param3Struct {
     unsigned char unk00;
     int unk04;
@@ -4513,14 +4514,14 @@ __forceinline void hkVector4_S::setSub4(const hkVector4_S&v0,const hkVector4_S&v
 {
 m_vComponents=_mm_sub_ps(v0.m_vComponents,v1.m_vComponents);
 }
-__forceinline void hkVector4_S::_setRotatedDir(const hkRotation&r,const hkVector4_S&b)
+__forceinline void hkVector4_S::_setRotatedDir(const hkRotation&quat,const hkVector4_S&direction)
 {
-const hkMatrix3& a = reinterpret_cast<const hkMatrix3&>(r);
-const hkQuadReal b0=_mm_shuffle_ps(b.m_vComponents,b.m_vComponents,(((0)<<6)|((0)<<4)|((0)<<2)|((0))));
+const hkMatrix3& a = reinterpret_cast<const hkMatrix3&>(quat);
+const hkQuadReal b0=_mm_shuffle_ps(direction.m_vComponents,direction.m_vComponents,(((0)<<6)|((0)<<4)|((0)<<2)|((0))));
 const hkQuadReal r0=_mm_mul_ps(a.m_kColumn0.m_vComponents,b0);
-const hkQuadReal b1=_mm_shuffle_ps(b.m_vComponents,b.m_vComponents,(((1)<<6)|((1)<<4)|((1)<<2)|((1))));
+const hkQuadReal b1=_mm_shuffle_ps(direction.m_vComponents,direction.m_vComponents,(((1)<<6)|((1)<<4)|((1)<<2)|((1))));
 const hkQuadReal r1=_mm_mul_ps(a.m_kColumn1.m_vComponents,b1);
-const hkQuadReal b2=_mm_shuffle_ps(b.m_vComponents,b.m_vComponents,(((2)<<6)|((2)<<4)|((2)<<2)|((2))));
+const hkQuadReal b2=_mm_shuffle_ps(direction.m_vComponents,direction.m_vComponents,(((2)<<6)|((2)<<4)|((2)<<2)|((2))));
 const hkQuadReal r2=_mm_mul_ps(a.m_kColumn2.m_vComponents,b2);
 m_vComponents=_mm_add_ps(_mm_add_ps(r0,r1),r2);
 }
@@ -4639,7 +4640,7 @@ _reset();
 __forceinline const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 struct GskAgentInput;
 __forceinline const hkpShape*hkpCollidable::getShape()const
@@ -4850,7 +4851,7 @@ resultToReturn=furthestHit;
 return resultToReturn;}
 inline void hkpRayHitCollector::reset()
 {
-m_fEarlyOutHitFraction=1.f;
+m_earlyOutHitFraction=1.f;
 }
 inline hkpRayHitCollector::hkpRayHitCollector()
 {
@@ -4866,11 +4867,11 @@ g_pFixedBufferRayHitCallback=func;
 __forceinline hkpFixedBufferRayHitCollector::hkpFixedBufferRayHitCollector(WorldRayCastOutput*buffer,int capacity):hkpRayHitCollector()
 {
 ;
-m_pRayHitBuffer=buffer;
-m_pHitBufferEnd=buffer;
-m_pRayCursor=capacity;
-m_iHitCount=0;
-m_pCollidable=0;
+m_rayCastOutputBase=buffer;
+m_nextFreeOutput=buffer;
+m_capacity=capacity;
+m_numOutputs=0;
+m_collidableOnPpu=0;
 }
 __forceinline void __cdecl hkCpuShapeRayCastJobProcessCommand(const WorldRayCastCommand&raycastCommand)
 {
@@ -4914,12 +4915,15 @@ shape->castRayWithCollector(input,*reinterpret_cast<const hkpCdBody*>(collidable
 }
 if(command->m_bResultFlag)
 {
-command->m_iResultCapacity=fixedBufferRayHitCollector.m_iHitCount;
+command->m_iResultCapacity=fixedBufferRayHitCollector.m_numOutputs;
 }
 }
 }
 // @fnv 0x00df94b0
 // src: XBOX_PDB 0x00df94b0
+// pdb: hkCpuShapeRayCastJob | hkpCpuShapeRaycastJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: i
 JobDispatcher::JobStatus __cdecl hkCpuShapeRayCastJob(JobDispatcher&jobQueue,JobDispatcher::JobQueueSlot&nextJobOut)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "CollQueryShapeRayCast";h->setTime();mStream.setEnd((char*)(h+1));}};

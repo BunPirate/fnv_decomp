@@ -21,10 +21,11 @@ class TESObjectREFR;
 #include "BSSimpleList.h"
 #endif
 
+// pdb: class MagicTarget, size 0x10, 3 members
 class MagicTarget
 {
 public:
-    virtual bool AddEffectToTarget(MagicCaster* apCaster, MagicItem* apItem, ActiveEffect* apEffect, bool abImmediate);
+    virtual bool AddEffectToTarget(MagicCaster* apCaster, MagicItem* apSpell, ActiveEffect* apEffect, bool abAreaTarget);
     virtual TESObjectREFR* GetMagicTargetReference() const;
     virtual BSSimpleList<ActiveEffect*>* GetActiveEffectList();
     virtual bool IsActor();
@@ -38,9 +39,9 @@ public:
     virtual bool ExecuteEffect(MagicCaster* apCaster, MagicItem* apItem, ActiveEffect* apEffect);
 
     bool m_bLeadingFlag;
-    bool m_bSecondFlag;
+    bool bUpdating;
     unsigned short layoutPadding6;
-    BSSimpleList<MagicEffectContext*> m_kActiveEffectList;
+    BSSimpleList<MagicEffectContext*> PostUpdateDispelList;
 
     MagicTarget();
     ~MagicTarget();
@@ -58,16 +59,16 @@ public:
     void UpdateActiveEffects(float);
     bool HasEffect(const EffectSetting*);
     static MagicTarget* GetMagicTargetByID(unsigned int);
-    void ClearActiveEffects();
+    void DispelQueuedSpells();
     void AddWeatherEntry(MagicItem*, MagicCaster*, ActiveEffect*);
     void RemoveEffect(ActiveEffect*, bool);
     Actor* GetOwnerActor() const;
     bool AddActiveEffect(MagicCaster*, MagicItem*, ActiveEffect*);
     void Dispel(MagicItem*, MagicCaster*, ActiveEffect*);
-    bool CanAddEffect(MagicItem*, MagicCaster*, ActiveEffect*);
+    bool ResetEffectElapsedTime(MagicItem*, MagicCaster*, ActiveEffect*);
     bool ContainsSpell(MagicItem*, bool);
-    static int CompareActiveEffects(ActiveEffect*, ActiveEffect*);
-    bool CanAcceptEffect(MagicItem*, MagicCaster*, ActiveEffect*);
+    static int ActiveEffectListCompareFn(ActiveEffect*, ActiveEffect*);
+    bool StackEffectDuration(MagicItem*, MagicCaster*, ActiveEffect*);
     void RemoveSpellStub(TESBoundObject*, bool);
     bool HasActiveEffectOfArchetype(int archetype, bool include);
     void DispelMatchingActiveEffects(unsigned int formID, unsigned int flags, TESResponse* caster);
@@ -76,7 +77,7 @@ public:
     void MagicTarget_EvaluateSpellConditions();
     float MagicTarget_GetUsageMonitorEffectMagnitude(MagicItem* apSpell);
     bool MagicTarget_HasDamageHealthEffect();
-    void UpdateEffectsByFlags(unsigned int auiFlags);
+    void MagicTarget_StartSpell(unsigned int apSpell);
     void RemoveEffectsByArchetype(int aiArchetype, int iProcessLevel);
     void MagicTarget_DispelAllSpells(bool immediate);
     void MagicTarget_SetDisplacementSpell(void* pOwner, int iKind);

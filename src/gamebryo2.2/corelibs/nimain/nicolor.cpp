@@ -17,6 +17,8 @@ struct FUN_00a698a0_stream
 };
 // Writes the four 4-byte fields at offsets 0, 4, 8 and 12 of this object to the stream stored at context+0x250, accumulating bytesWritten.
 // @fnv 0x00a698a0
+// pdb: NiColorA::SaveBinary | NiColor.obj | retail, call graph, medium
+// pdb params: stream
 void NiColorA::SaveBinary(NiStream& kStream)
 {
     FUN_00a698a0_stream* stream = *(FUN_00a698a0_stream**)((char*)&kStream + 0x250);
@@ -46,7 +48,11 @@ void* _NiMalloc(unsigned int);
 int NiSprintf(char*, unsigned int, const char*, ...);
 // Formats the three color components with the given prefix and returns the resulting string.
 // @fnv 0x00a696c0
-char* NiColor::GetFormattedString(const char* pPrefix) const
+// src: XBOX_RETAIL_PDB 0x00a696c0
+// pdb: NiColor::GetViewerString | NiColor.obj | retail, string-set bridge, high
+// pdb params: pPrefix
+// pdb locals: pString, uiLen
+char* NiColor::GetViewerString(const char* pPrefix) const
 {
     char* pString;
     unsigned int uiLen;
@@ -60,6 +66,9 @@ void* __cdecl _NiMalloc(unsigned int);
 int __cdecl NiSprintf(char*, unsigned int, const char*, ...);
 // Formats the four components with pPrefix and returns the resulting string.
 // @fnv 0x00a69720
+// pdb: NiColorA::GetViewerString | NiColor.obj | retail, string-set bridge, high
+// pdb params: pPrefix
+// pdb locals: pString, uiLen
 char* NiColorA::GetViewerString(const char* pPrefix) const
 {
     char* pString;

@@ -5,6 +5,7 @@
 class hkpCollidable;
 struct ClassMemberDescriptor;
 
+// pdb: class hkpCollidableCollidableFilter, size 0x4, 0 members
 class hkpCollidableCollidableFilter
 {
 public:

@@ -38,6 +38,7 @@ typedef NiTPrimitiveArray<int> NiTPrimitiveArray_int_;
 #pragma pack(pop)
 FNV_STATIC_ASSERT(sizeof(NiTPrimitiveArray_int_) == 16);
 #pragma pack(push, 4)
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 class ImageSpaceEffect
 {
   public:
@@ -51,7 +52,7 @@ class ImageSpaceEffect
     NiTPrimitiveArray_ImageSpaceEffect__EffectInput___ pEffectInputs;  // +0x38, 16 bytes
     NiTPrimitiveArray_int_ pEffectOutput;                              // +0x48, 16 bytes
     __declspec(noinline) ImageSpaceEffect();
-    void SetTextureArrayCount(int count);
+    void SetTextureArrayCount(int aiCount);
     void SetEffectAt(int index, ImageSpaceEffect* effect, VatsScanEffectParamLocalForm* params, int flags);
     // ImageSpaceEffect
     // void __cdecl ImageSpaceEffect::*(bool)

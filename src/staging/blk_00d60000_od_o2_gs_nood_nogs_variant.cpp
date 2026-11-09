@@ -15,6 +15,8 @@ extern __declspec(align(16)) const unsigned int DAT_010c44d0[4];
 
 // @fnv 0x00d6bec0
 // src: GUESS 0x00d6bec0 (confidence: low)
+// pdb: hkFixedArray<MatrixCache>::operator[] | hkaKeyFrameHierarchyUtility.obj | debug, object-file run extension, low
+// pdb params: i
 void hkQuaternion::UpdateFields_00d6bec0(const hkQuaternion& q, hkVector4& out) const
 {
     const __m128& qVec = *reinterpret_cast<const __m128*>(&q);

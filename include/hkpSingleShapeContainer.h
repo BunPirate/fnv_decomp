@@ -2,6 +2,7 @@
 
 #include "hkpShapeContainer.h"
 
+// pdb: class hkpSingleShapeContainer, size 0x8, bases: hkpShapeContainer, 1 members
 class hkpSingleShapeContainer : public hkpShapeContainer
 {
 public:
@@ -16,8 +17,8 @@ public:
 
     inline const hkpShape* getChild() const
     {
-        return m_pContainedShape;
+        return m_childShape;
     }
 
-    const hkpShape* m_pContainedShape;
+    const hkpShape* m_childShape;
 };

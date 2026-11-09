@@ -12,35 +12,36 @@ class Script;
 
 #include "SCRIPT_ERROR.h"
 
+// pdb: class ScriptRunner, size 0xa4, 15 members
 class ScriptRunner
 {
 public:
-    TESObjectREFR* m_pReference;
-    TESObject* m_pScriptObject;
-    ScriptLocals* m_pScriptLocals;
-    TESTopicInfo* m_pTopicInfo;
-    TESGlobal* m_pGlobal;
-    Script* m_pScript;
-    SCRIPT_ERROR m_eScriptError;
-    EXPRESSION_ERROR m_eExpressionError;
-    int m_iIfStackDepth;
-    int m_aiIfStack[10];
-    int m_iBlockStackDepth;
-    int m_aiBlockOffsets[10];
-    int m_aiBlockSizes[10];
-    bool m_bScriptCompileFailed;
-    bool m_bExecutionFlagSet;
+    TESObjectREFR* m_currentContainer;
+    TESObject* m_currentObject;
+    ScriptLocals* m_currentVars;
+    TESTopicInfo* m_currentInfo;
+    TESGlobal* m_global;
+    Script* m_scriptRunning;
+    SCRIPT_ERROR m_error;
+    EXPRESSION_ERROR m_expError;
+    int m_ifNested;
+    int m_ifFlags[10];
+    int m_whileNested;
+    int m_whileFlags[10];
+    int m_whileOffset[10];
+    bool m_bScriptErrorFound;
+    bool m_bStopObjectScriptExecution;
 
     ScriptRunner();
-    bool ParseOutput(Script* script, SCRIPT_OUTPUT& output, unsigned int& offset, int& lineSize,
-                     TESObjectREFR** reference, bool skipReference);
+    bool GetNextLine(Script* apScript, SCRIPT_OUTPUT& aeNextExp, unsigned int& auiDataOffset, int& aiLineSize,
+                     TESObjectREFR** appRefObject, bool abSkip);
     void SetErrorMessage(Script* script, char* message, ...);
-    bool ParseBlock(Script* script, const SCRIPT_OUTPUT output, TESObjectREFR* reference, int& blockSize,
-                    const unsigned int inputOffset, unsigned int& lineOffset, const unsigned int lineNumber,
-                    bool skip, bool skipBlock);
+    bool EvaluateLine(Script* apScript, const SCRIPT_OUTPUT aeExp, TESObjectREFR* apFunctionOwner, int& aiLineSize,
+                    const unsigned int auiDataOffset, unsigned int& aiSkipLines, const unsigned int auiCurrentLine,
+                    bool abEndian, bool abActionInit);
     void SetError(Script* script, SCRIPT_ERROR error);
     bool SetScriptLocalsFromExtraData(Script* script, TESObjectREFR* reference, ScriptLocals* locals);
-    bool RunScript(Script* script, TESObjectREFR* reference, ScriptLocals* locals);
+    bool RunScript(Script* apScript, TESObjectREFR* apOwnerObject, ScriptLocals* apOwnerVars);
     bool Run(Script* script, TESObjectREFR* reference, ScriptLocals* locals, TESObjectREFR* target,
              bool arg5, bool arg6, bool arg7, float arg8);
 };

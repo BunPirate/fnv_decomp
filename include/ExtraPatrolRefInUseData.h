@@ -4,6 +4,7 @@
 
 class TESForm;
 
+// pdb: class ExtraPatrolRefInUseData, size 0x10, bases: BSExtraData, 1 members
 class ExtraPatrolRefInUseData : public BSExtraData
 {
 public:

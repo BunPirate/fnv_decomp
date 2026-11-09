@@ -4,6 +4,7 @@
 
 #include "../../../include/ActiveEffect.h"
 
+// pdb: class DisintegrateWeaponEffect, size 0x48, bases: ActiveEffect, 0 members
 struct DisintegrateWeaponEffect : ActiveEffect
 {
     DisintegrateWeaponEffect(MagicCaster*, MagicItem*, EffectItem*);
@@ -13,6 +14,8 @@ struct DisintegrateWeaponEffect : ActiveEffect
 };
 // Allocates a new effect, copies this object's data into it, and returns the new object.
 // @fnv 0x0080d710
+// pdb: DisintegrateWeaponEffect::Copy | DisintegrateWeaponEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* DisintegrateWeaponEffect::Copy()
 {
     DisintegrateWeaponEffect* pNewEffect =
@@ -455,6 +458,8 @@ void __cdecl Interface_PrintLine(const char* apFormat, ...);
 
 // Gets the effect's target and applies disintegrate weapon damage to it, then logs the damage if FUN_005b6f70 is true.
 // @fnv 0x0080d7b0
+// pdb: DisintegrateWeaponEffect::Start | DisintegrateWeaponEffect.obj | retail, string-set bridge, high
+// pdb locals: pweapon, pactor
 void DisintegrateWeaponEffect::ApplyDisintegrateWeaponDamage()
 {
     Effect* pEffect = FUN_0059bb30() ? reinterpret_cast<EffectOwner*>(FUN_0059bb30())->FUN_00822b40() : 0;

@@ -5,6 +5,7 @@
 class BGSListForm;
 class TESForm;
 
+// pdb: class BGSBipedModelList, size 0x8, bases: BaseFormComponent, 1 members
 class BGSBipedModelList : public BaseFormComponent
 {
 public:
@@ -16,10 +17,10 @@ public:
     void CopyFromBase(BaseFormComponent* component) override;
     bool CompareWithBase(BaseFormComponent* component) override;
 
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     void SetBipedModelList(BGSListForm* list);
     BGSListForm* GetList();
-    static BGSBipedModelList* GetBipedModelList(TESForm* form);
+    static BGSBipedModelList* GetFormAsBipedModelList(TESForm* apForm);
 
     BGSListForm* pListForm;
 };

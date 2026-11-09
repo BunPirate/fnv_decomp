@@ -24,6 +24,7 @@ struct FUN_00b00860_shell
 
 // @fnv 0x00b00860
 // src: GUESS 0x00b00860 (confidence: medium)
+// pdb: BSSystemDir::~BSSystemDir | BSSystemDir.obj | debug, call graph, medium
 void FUN_00b00860_shell::BSSystemDir_DoClose_Thunk()
 {
     ((FUN_00b007d0_shell*)this)->BSSystemDir_DoClose();
@@ -38,6 +39,7 @@ struct FUN_00b008e0_class
 
 // @fnv 0x00b008e0
 // src: XBOX_PDB 0x00b008e0
+// pdb: BSContentPackage::FileName | BSContentPackage_Xenon.obj | debug, upstream name already matches, high
 int* __thiscall FUN_00b008e0_class::BSContentPackage_FileName()
 {
     return &DAT_010a47b3;
@@ -50,6 +52,7 @@ struct FUN_00b00950
 };
 
 // @fnv 0x00b00950
+// pdb: BSSystemFile::~BSSystemFile | BSSystemFile.obj | debug, call graph, medium
 void __thiscall FUN_00b00950::DoWork()
 {
     CloseHandleWrapper();
@@ -131,13 +134,17 @@ struct TaskletManager
 TaskletManager& __cdecl GetTaskletManager();
 // Appends param_1 to the DAT_011f8b38 queue when the manager's field at offset 8 is zero and the queue count is below 16, returning 1 on success and 0 otherwise.
 // @fnv 0x00b00da0
-char QueueTasklet(int param_1)
+// src: XBOX_RETAIL_PDB 0x00b00da0
+// pdb: BSTaskletManager::RegisterOnExitCallback | BSTaskletManager.obj | retail, object-file gap fill, high
+// pdb params: apCallback
+// pdb locals: bResult
+char BSTaskletManager_RegisterOnExitCallback(int apCallback)
 {
     int* obj = (int*)((char*)&GetTaskletManager() + 8);
     char result;
     if (*obj == 0 && DAT_011f8af4 < 16)
     {
-        DAT_011f8b38[DAT_011f8af4] = param_1;
+        DAT_011f8b38[DAT_011f8af4] = apCallback;
         DAT_011f8af4++;
         result = 1;
     }
@@ -156,6 +163,8 @@ struct FUN_00b130a0
 };
 // Zeroes the six float members a-f and constructs the matrix at offset 0x1c.
 // @fnv 0x00b130a0
+// pdb: std::vector<SIdvBranchInfo const *,std::allocator<SIdvBranchInfo const *> >::operator[] | Branch.obj | debug, call graph (shared callers), medium
+// pdb params: _Pos
 FUN_00b130a0::FUN_00b130a0()
 {
     c = 0.0f;
@@ -175,6 +184,8 @@ struct FUN_00b0cf90_class
 };
 // Adds the object's x, y and z to the three components of pSource and writes the sums into pDest, returning pDest.
 // @fnv 0x00b0cf90
+// pdb: CVec3::operator+ | SpeedTreeRT.obj | debug, call graph, medium
+// pdb params: cVec
 float* FUN_00b0cf90_class::AddVector(float* pDest, const float* pSource)
 {
     float f7 = pSource[0] + x;
@@ -198,18 +209,20 @@ struct FUN_00b00900
     int m8;
     char mc;
     int OpenFile(int arg);
-    FUN_00b00900(int a, int b, int c, char d);
+    FUN_00b00900(int apName, int aeAccessMode, int aeOpenMode, char abAllowAsync);
 };
 
 // Initialises the object: stores b, c and d into m4, m8 and mc, then sets m0 from OpenFile(a).
 // @fnv 0x00b00900
-FUN_00b00900::FUN_00b00900(int aiValue, int aiSecond, int aiThird, char d)
+// pdb: BSSystemFile::BSSystemFile | BSSystemFile.obj | debug, call graph (shared callers), high
+// pdb params: apName, aeAccessMode, aeOpenMode, abAllowAsync
+FUN_00b00900::FUN_00b00900(int apName, int aeAccessMode, int aeOpenMode, char abAllowAsync)
 {
     m0 = 0;
-    m4 = aiSecond;
-    m8 = aiThird;
-    mc = d;
-    m0 = OpenFile(aiValue);
+    m4 = aeAccessMode;
+    m8 = aeOpenMode;
+    mc = abAllowAsync;
+    m0 = OpenFile(apName);
 }
 
 struct FUN_00b00cf0_vt
@@ -223,6 +236,8 @@ struct FUN_00b00cf0_shell
 };
 // Iterates DAT_011f8b38 up to DAT_011f8af4 and calls vfn_1 on each non-null entry.
 // @fnv 0x00b00cf0
+// pdb: BSTaskletManager::OnExit | BSTaskletManager.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void FUN_00b00cf0_shell::CallVirtualOnAllEntries()
 {
     for (int i = 0; i < DAT_011f8af4; ++i)
@@ -234,20 +249,22 @@ void FUN_00b00cf0_shell::CallVirtualOnAllEntries()
 
 struct FUN_00b12b50_class
 {
-    float* TransformVector(float* dst, const float* src) const;
+    float* TransformVector(float* cVec3, const float* src) const;
 };
 
 // Multiplies a 3x3 matrix stored in this by a 3-component vector src and writes the result to dst, returning dst.
 // @fnv 0x00b12b50
-float* FUN_00b12b50_class::TransformVector(float* dst, const float* src) const
+// pdb: CRotTransform::operator* | Branch.obj | debug, call graph, high
+// pdb params: cVec3
+float* FUN_00b12b50_class::TransformVector(float* cVec3, const float* src) const
 {
     float t0 = src[2] * ((const float*)this)[2] + (src[1] * ((const float*)this)[1] + src[0] * ((const float*)this)[0]);
     float t1 = src[2] * ((const float*)this)[5] + (src[1] * ((const float*)this)[4] + src[0] * ((const float*)this)[3]);
     float t2 = src[2] * ((const float*)this)[8] + (src[1] * ((const float*)this)[7] + src[0] * ((const float*)this)[6]);
-    dst[0] = t0;
-    dst[1] = t1;
-    dst[2] = t2;
-    return dst;
+    cVec3[0] = t0;
+    cVec3[1] = t1;
+    cVec3[2] = t2;
+    return cVec3;
 }
 
 struct FUN_00b008b0_t
@@ -275,6 +292,8 @@ struct FUN_00b00c90_vt
 
 // Iterates DAT_011f8af8 up to DAT_011f8af0 and calls vfn_1 on each non-null entry.
 // @fnv 0x00b00c90
+// pdb: BSTaskletManager::OnStartup | BSTaskletManager.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void __fastcall CallVfn1OnAllEntries(int param_1)
 {
     int iIndex;
@@ -292,13 +311,16 @@ extern int DAT_011f8af8[16];
 
 // @fnv 0x00b00d50
 // src: COMMUNITY 0x00b00d50
-char BSTaskletManager_RegisterOnStartupCallback(int param_1)
+// pdb: BSTaskletManager::RegisterOnStartupCallback | BSTaskletManager.obj | retail, upstream name already matches, high
+// pdb params: apCallback
+// pdb locals: bResult
+char BSTaskletManager_RegisterOnStartupCallback(int apCallback)
 {
     char local2;
     int* piVar2 = (int*)((char*)&GetTaskletManager() + 8);
     if (*piVar2 == 0 && DAT_011f8af0 < 0x10)
     {
-        DAT_011f8af8[DAT_011f8af0] = param_1;
+        DAT_011f8af8[DAT_011f8af0] = apCallback;
         DAT_011f8af0 = DAT_011f8af0 + 1;
         local2 = 1;
     }
@@ -425,18 +447,20 @@ struct FUN_00b00820_tail
 };
 struct FUN_00b00820_shell
 {
-    FUN_00b00820_shell* BSSystemDir_BSSystemDir(unsigned int value);
+    FUN_00b00820_shell* BSSystemDir_ctor(unsigned int apcPath);
     void FUN_00b006b0(unsigned int value);
 };
 
 // Clears pendingState and sequence at offset 0x248, calls FUN_00b006b0 with value, and returns this.
 // @fnv 0x00b00820
-// src: COMMUNITY 0x00b00820
-FUN_00b00820_shell* FUN_00b00820_shell::BSSystemDir_BSSystemDir(unsigned int value)
+// src: XBOX_RETAIL_PDB 0x00b00820
+// pdb: BSSystemDir::BSSystemDir | BSSystemDir.obj | retail, upstream name already matches, high
+// pdb params: apcPath
+FUN_00b00820_shell* FUN_00b00820_shell::BSSystemDir_ctor(unsigned int apcPath)
 {
     reinterpret_cast<FUN_00b00820_tail*>(reinterpret_cast<char*>(this) + 0x248)->pendingState = 0;
     reinterpret_cast<FUN_00b00820_tail*>(reinterpret_cast<char*>(this) + 0x248)->sequence = 0;
-    FUN_00b006b0(value);
+    FUN_00b006b0(apcPath);
     return this;
 }
 
@@ -467,7 +491,10 @@ void FUN_00b008a0_cls::nullsub_329()
 
 // If the low byte of _04 is set, obtains a value through virtual slot 0x10 and stores it through result.
 // @fnv 0x00b00a80
-bool __thiscall BSWin32TaskletManager::GetTaskletValue(void* result)
+// pdb: BSTaskletManager::CreateTaskGroup | BSTaskletManager.obj | retail, call graph, high
+// pdb params: aResult
+// pdb locals: bResult, pData
+bool __thiscall BSWin32TaskletManager::GetTaskletValue(void* aResult)
 {
     bool operationSucceeded;
 
@@ -486,12 +513,12 @@ bool __thiscall BSWin32TaskletManager::GetTaskletValue(void* result)
                     typedef bool (__thiscall *GetValueFunction)(BSWin32TaskletManager*, int&);
                     operationSucceeded = reinterpret_cast<GetValueFunction>((*reinterpret_cast<void***>(this))[4])(this, outputValue);
                     copiedValue = outputValue;
-                    *static_cast<int*>(result) = copiedValue;
+                    *static_cast<int*>(aResult) = copiedValue;
                 }
                 else
                 {
                     operationSucceeded = false;
-                    *static_cast<int*>(result) = 0;
+                    *static_cast<int*>(aResult) = 0;
                 }
             }
         }
@@ -509,19 +536,21 @@ struct FUN_00b00ae0_class
     virtual void virtual4();
     virtual bool virtual5(void* value);
     bool enabled;
-    bool __thiscall BSTaskletManager_OpenTaskGroup(void** value);
+    bool __thiscall BSTaskletManager_OpenTaskGroup(void** aGroup);
 };
 // Returns true only if enabled is set and the pointed-to value is non-null and passes virtual5.
 // @fnv 0x00b00ae0
 // src: COMMUNITY 0x00b00ae0
-bool FUN_00b00ae0_class::BSTaskletManager_OpenTaskGroup(void** value)
+// pdb: BSTaskletManager::OpenTaskGroup | BSTaskletManager.obj | debug, upstream name already matches, high
+// pdb params: aGroup
+bool FUN_00b00ae0_class::BSTaskletManager_OpenTaskGroup(void** aGroup)
 {
     bool flag = enabled;
     {
         void* current;
         {
             void* payload;
-            return (flag && (current = *value)) ? virtual5(payload = *value) : false;
+            return (flag && (current = *aGroup)) ? virtual5(payload = *aGroup) : false;
         }
     }
 }
@@ -541,6 +570,8 @@ class FUN_00b00b40_cls
 };
 
 // @fnv 0x00b00b40
+// pdb: BSTaskletManager::AttachTask | BSTaskletManager.obj | debug, call graph, medium
+// pdb params: aGroup, aTask, abLastTask
 bool FUN_00b00b40_cls::TryProcessPair(void** apFirst, void** b, bool abFlag)
 {
     bool flagTmp = m_04;
@@ -574,27 +605,30 @@ class B00C20Pool
     virtual void vfn1C();
     virtual void FreeItem(B00C20Item* pkItem);
 
-    void ReleaseItem(B00C20Item*& rpkItem);
+    void BSTaskletManager_DestroyTaskGroup(B00C20Item*& aGroup);
 };
 
 // If rpkItem is non-null, shuts it down when not already shut down, frees it via FreeItem, and clears the reference.
 // @fnv 0x00b00c20
-void B00C20Pool::ReleaseItem(B00C20Item*& rpkItem)
+// src: XBOX_RETAIL_PDB 0x00b00c20
+// pdb: BSTaskletManager::DestroyTaskGroup | BSTaskletManager.obj | retail, call graph, high
+// pdb params: aGroup
+void B00C20Pool::BSTaskletManager_DestroyTaskGroup(B00C20Item*& aGroup)
 {
-    B00C20Item* pkItem_ = rpkItem;
+    B00C20Item* pkItem_ = aGroup;
     bool bShutDown2;
     B00C20Item* pkFree;
     if (pkItem_)
     {
-        if (rpkItem)
+        if (aGroup)
         {
-            bShutDown2 = rpkItem->m_bShutDown;
+            bShutDown2 = aGroup->m_bShutDown;
             if (!bShutDown2)
-                rpkItem->Shutdown(0);
+                aGroup->Shutdown(0);
         }
-        pkFree = rpkItem;
+        pkFree = aGroup;
         FreeItem(pkFree);
-        rpkItem = 0;
+        aGroup = 0;
     }
 }
 
@@ -619,12 +653,14 @@ class FUN_00b00df0_cls
     unsigned char m_06;
     unsigned char m_07;
     CountingSemaphore m_08;
-    void ReleaseAndSignal();
+    void BSTaskletManager_SignalInstanceAvailable();
 };
 
 // Releases the semaphore in m_08, increments its counter, sets m_05 to 1, then calls vfn_9.
 // @fnv 0x00b00df0
-void FUN_00b00df0_cls::ReleaseAndSignal()
+// src: XBOX_RETAIL_PDB 0x00b00df0
+// pdb: BSTaskletManager::SignalInstanceAvailable | BSTaskletManager.obj | retail, call graph, high
+void FUN_00b00df0_cls::BSTaskletManager_SignalInstanceAvailable()
 {
     CountingSemaphore* p = &m_08;
     ReleaseSemaphore(p->hSemaphore, 1, 0);
@@ -652,6 +688,7 @@ struct FUN_00b00ec0
 };
 
 // @fnv 0x00b00ec0
+// pdb: BSXenonTaskletData::~BSXenonTaskletData | BSXenonTaskletData.obj | retail, call graph (shared callers), low
 FUN_00b00ec0::~FUN_00b00ec0() throw()
 {
     *(void* volatile*)this = (void*)&DAT_0106c800;
@@ -679,12 +716,15 @@ struct FUN_00b01510_cls
     virtual void vfn_4();
     virtual void vfn_5();
     virtual int vfn_6(char* data);
-    bool __thiscall Archive_PlatformGetLastWriteTime(int arg);
+    bool __thiscall Archive_PlatformGetLastWriteTime(int apResult);
 };
 
 // @fnv 0x00b01510
 // src: COMMUNITY 0x00b01510
-bool FUN_00b01510_cls::Archive_PlatformGetLastWriteTime(int aiUnused)
+// pdb: Archive::PlatformGetLastWriteTime | Archive_Xenon.obj | retail, upstream name already matches, high
+// pdb params: apResult
+// pdb locals: handle, findData, bResult
+bool FUN_00b01510_cls::Archive_PlatformGetLastWriteTime(int apResult)
 {
     char data[0x140];
     int handle = FindFirstFileA((const char*)vfn_6(data));
@@ -901,6 +941,8 @@ void* __cdecl AllocatePoolArray(unsigned int count)
 
 // Multiplies this 3x3 matrix by rhs and returns the resulting matrix.
 // @fnv 0x00b12940
+// pdb: CRotTransform::operator* | Branch.obj | retail, call graph (shared callers), medium
+// pdb params: cVec3
 Mat3 Mat3::Multiply(const Mat3& rhs) const
 {
     Mat3 result;
@@ -922,16 +964,20 @@ extern double DAT_010a4d90;
 struct RotationMatrix
 {
     float m00, m01, m02, m10, m11, m12, m20, m21, m22;
-    void __thiscall SetRotationAxisAngle(float angle, float x, float y, float z);
+    void __thiscall RotateAxisFromIdentity(float fAngle, float cAxis, float y, float z);
 };
 // Builds a 3x3 rotation matrix from an angle and axis components, storing the result in m00..m22.
 // @fnv 0x00b12ec0
-void RotationMatrix::SetRotationAxisAngle(float angle, float afAxisX, float afAxisY, float afAxisZ)
+// src: XBOX_RETAIL_PDB 0x00b12ec0
+// pdb: CRotTransform::RotateAxisFromIdentity | Branch.obj | retail, call graph, high
+// pdb params: fAngle, cAxis
+// pdb locals: t, c, z, s, x, y
+void RotationMatrix::RotateAxisFromIdentity(float fAngle, float cAxis, float afAxisY, float afAxisZ)
 {
-    float cosA = (float)((float)(sin((float)(angle / DAT_010a4d90))));
-    float sinA = (float)((float)(cos((float)(angle / DAT_010a4d90))));
+    float cosA = (float)((float)(sin((float)(fAngle / DAT_010a4d90))));
+    float sinA = (float)((float)(cos((float)(fAngle / DAT_010a4d90))));
     float zAxis = 1.0f - sinA;
-    float xAxis = afAxisX, yAxis = afAxisY, oneMinusCosA = afAxisZ;
+    float xAxis = cAxis, yAxis = afAxisY, oneMinusCosA = afAxisZ;
     m00 = zAxis * xAxis * xAxis + sinA;
     m01 = zAxis * xAxis * yAxis + cosA * oneMinusCosA;
     m02 = zAxis * xAxis * oneMinusCosA - cosA * yAxis;
@@ -973,6 +1019,8 @@ struct ScratchHelper
 
 // @fnv 0x00b13000
 // src: COMMUNITY 0x00b13000
+// pdb: VecInterpolate | Branch.obj | debug, upstream name already matches, high
+// pdb params: cStart, cEnd, fPercent
 float* VecInterpolate(float* dst, FUN_00b0cf90_class* pOwner, ScratchHelper* pHelper, float fScale)
 {
     Vec3f blk;
@@ -1263,7 +1311,7 @@ struct StripDestination
     unsigned int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20;
     unsigned short unk24;
     unsigned short stripCount;
-    void CIndexedGeometry_AddStrip(unsigned short id, unsigned short* step, unsigned short indices);
+    void CIndexedGeometry_AddStrip(unsigned short nLodLevel, unsigned short* pStrip, unsigned short nStripLength);
 };
 struct StripBuilder
 {
@@ -1274,6 +1322,9 @@ struct StripBuilder
     void BuildStripIndices(unsigned short id, StripDestination* destination);
 };
 // @fnv 0x00b135a0
+// pdb: CIdvBranch::ComputeLod | Branch.obj | debug, object-file run extension, low
+// pdb params: nDiscreteLodLevel, pGeometry
+// pdb locals: fCrossSectionStep, pStrip, nIndexCount, nTargetVertexCount, fCrossSectionIndex, nTargetCrossSection, nInterleavedIndex, i, nLoopAround, j
 void StripBuilder::BuildStripIndices(unsigned short ausStripId, StripDestination* destination)
 {
     if (width >= 2)
@@ -1412,6 +1463,9 @@ extern MemoryManager g_dirAllocator;
 
 // Enumerates files matching pattern, builds full paths from path and adds each to list, then closes the find handle.
 // @fnv 0x00b01930
+// pdb: FileFinder::PlatformBuildFileList | FileFinder_Xenon.obj | debug, object-file run extension, low
+// pdb params: apSearchName, apBaseFilename, apFileList
+// pdb locals: hfile, fileData, iPathSize, pslash, isize, pfound, idif
 void CollectDirectoryEntries(const char* pattern, const char* path, BSSimpleList<char*>* list)
 {
     DirectoryFindData findData_2;
@@ -1864,11 +1918,13 @@ void FUN_00b15600_cls::ReleaseEntries_00b15600()
 }
 
 extern "C" int __cdecl strcat_s(char* d, unsigned int n, const char* s);
+// pdb: structure _FILETIME, size 0x8, 2 members
 struct _FILETIME
 {
     unsigned long dwLowDateTime;
     unsigned long dwHighDateTime;
 };
+// pdb: structure _WIN32_FIND_DATAA, size 0x140, 10 members
 struct _WIN32_FIND_DATAA
 {
     unsigned long dwFileAttributes;
@@ -1889,18 +1945,21 @@ struct FUN_00afd390_class
 {
     const char* text;
     unsigned int flags;
-    void* UpdateState_00afd390(const char*, int);
+    void* BSHash_ctor(const char*, int);
 };
 struct DirectoryArchive
 {
-    bool FindHashEntry(FUN_00afd390_class*, int*, int);
+    bool Archive_FindDirectory(FUN_00afd390_class*, int*, int);
     bool Archive_InvalidateFile_(int, FUN_00afd390_class*, int);
-    int Archive_InvalidateOlderFilesByPath(const char* root, const char* directory, const _FILETIME* since);
+    int Archive_InvalidateOlderFilesByPath(const char* apBasePath, const char* apPath, const _FILETIME* apArchiveTime);
 };
 // Recursively walks root plus directory with FindFirstFileA, counting files written after since for which FUN_00afac90 returns true.
 // @fnv 0x00b01590
 // src: COMMUNITY 0x00b01590
-int DirectoryArchive::Archive_InvalidateOlderFilesByPath(const char* root, const char* directory, const _FILETIME* since)
+// pdb: Archive::InvalidateOlderFilesByPath | Archive_Xenon.obj | retail, upstream name already matches, high
+// pdb params: apBasePath, apPath, apArchiveTime
+// pdb locals: handle, findData, clength, inumInvalidated, directoryHash, idirectoryIndex, hashPath, ppath, bdirectoryFound, bcontinue, filenameHash
+int DirectoryArchive::Archive_InvalidateOlderFilesByPath(const char* apBasePath, const char* apPath, const _FILETIME* apArchiveTime)
 {
     int count3 = 0;
     char next[260];
@@ -1912,36 +1971,36 @@ int DirectoryArchive::Archive_InvalidateOlderFilesByPath(const char* root, const
     FUN_00afd390_class meshName3;
     int countB;
     bool value;
-    strcpy_s(next, 260, root);
-    strcat_s(next, 260, directory);
+    strcpy_s(next, 260, apBasePath);
+    strcat_s(next, 260, apPath);
     strcat_s(next, 260, "*.*");
     state = FindFirstFileA(next, &data5);
     if (state == -1)
         return 0;
     current = true;
-    strcpy_s(data2, 260, directory);
+    strcpy_s(data2, 260, apPath);
     result = (unsigned char)strlen(data2);
     if (result > 1)
         data2[result - 1] = 0;
-    meshName3.UpdateState_00afd390(data2, 2);
+    meshName3.BSHash_ctor(data2, 2);
     value = false;
-    if (FindHashEntry(&meshName3, &countB, 0))
+    if (Archive_FindDirectory(&meshName3, &countB, 0))
         value = true;
     while (current)
     {
         if ((data5.dwFileAttributes & 0x10) && data5.cFileName[0] != '.')
         {
-            strcpy_s(next, 260, directory);
+            strcpy_s(next, 260, apPath);
             strcat_s(next, 260, data5.cFileName);
             strcat_s(next, 260, "\\");
-            count3 += Archive_InvalidateOlderFilesByPath(root, next, since);
+            count3 += Archive_InvalidateOlderFilesByPath(apBasePath, next, apArchiveTime);
         }
         else if (value)
         {
-            if (CompareFileTime(&data5.ftLastWriteTime, since) > 0)
+            if (CompareFileTime(&data5.ftLastWriteTime, apArchiveTime) > 0)
             {
                 FUN_00afd390_class fileName;
-                fileName.UpdateState_00afd390(data5.cFileName, 0);
+                fileName.BSHash_ctor(data5.cFileName, 0);
                 if (Archive_InvalidateFile_(countB, &fileName, 0))
                     count3++;
             }
@@ -1954,15 +2013,18 @@ int DirectoryArchive::Archive_InvalidateOlderFilesByPath(const char* root, const
 
 // Looks up path with DAT_00fdf070, copies the match's last write time into out and closes the handle; returns whether the lookup succeeded.
 // @fnv 0x00b01b60
-// src: GUESS 0x00b01b60 (confidence: medium)
-bool File_GetLastWriteTime(const char* path, DirFileTime* apOutTime)
+// src: XBOX_RETAIL_PDB 0x00b01b60
+// pdb: FileFinder::PlatformGetFileTime | FileFinder_Xenon.obj | retail, call graph, high
+// pdb params: apFileName, arFileTime
+// pdb locals: findData, hfile
+bool FileFinder_PlatformGetFileTime(const char* apFileName, DirFileTime* arFileTime)
 {
     void* h;
     DirectoryFindData findData;
-    h = DAT_00fdf070(path, &findData);
+    h = DAT_00fdf070(apFileName, &findData);
     if (h != reinterpret_cast<void*>(-1))
     {
-        *apOutTime = findData.ftLastWriteTime;
+        *arFileTime = findData.ftLastWriteTime;
         FindClose(reinterpret_cast<int>(h));
         return true;
     }
@@ -1975,10 +2037,13 @@ typedef int(__stdcall* FindFirstFileA1Fn)(const char* pattern);
 // Checks whether a file matching the given pattern exists by calling FindFirstFileA and closing the handle immediately.
 // @fnv 0x00b01af0
 // src: COMMUNITY 0x00b01af0
-bool __cdecl FileFinder_PlatformFindSingleFile(const char* pattern)
+// pdb: FileFinder::PlatformFindSingleFile | FileFinder_Xenon.obj | retail, upstream name already matches, high
+// pdb params: apSearchName
+// pdb locals: bResult, hfile, fileData
+bool __cdecl FileFinder_PlatformFindSingleFile(const char* apSearchName)
 {
     _WIN32_FIND_DATAA findData;
-    HANDLE handle = (HANDLE)((FindFirstFileAFn)(FindFirstFileA1Fn)&FindFirstFileA)(pattern, &findData);
+    HANDLE handle = (HANDLE)((FindFirstFileAFn)(FindFirstFileA1Fn)&FindFirstFileA)(apSearchName, &findData);
     {
         bool found;
         if (handle != (HANDLE)-1)

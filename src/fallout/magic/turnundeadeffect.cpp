@@ -13,17 +13,22 @@ struct HavokObjectAccessor
 {
     void* GetHavokObject();
 };
+// pdb: class TurnUndeadEffect, size 0x4c (here 0x1), bases: ActiveEffect, 1 members
 struct TurnUndeadEffect : HavokObjectAccessor
 {
-    void ApplyTurnUndeadEffect(MagicCaster* apCaster);
+    void bhkMouseSpringAction_GetMousePositionInWorld(MagicCaster* arPos);
 };
 // Gets a Havok object and, if present, converts its hkVector4 at offset 0x30 into the caster's NiPoint3.
 // @fnv 0x0082aa50
-void TurnUndeadEffect::ApplyTurnUndeadEffect(MagicCaster* apCaster)
+// src: XBOX_DEBUG_PDB 0x0082aa50
+// pdb: bhkMouseSpringAction::GetMousePositionInWorld | TelekinesisEffect.obj | debug, call graph, high
+// pdb params: arPos
+// pdb locals: pm
+void TurnUndeadEffect::bhkMouseSpringAction_GetMousePositionInWorld(MagicCaster* arPos)
 {
     void* bresult = GetHavokObject();
     if (bresult)
-        SetNiPoint3FromHkVector4(*(NiPoint3*)apCaster, *(hkVector4 const*)((char*)bresult + 0x30));
+        SetNiPoint3FromHkVector4(*(NiPoint3*)arPos, *(hkVector4 const*)((char*)bresult + 0x30));
 }
 
 extern unsigned int _data_011c16bc;
@@ -42,6 +47,8 @@ class FUN_0082b370 : public ActiveEffect
 
 // @fnv 0x0082b3b0
 // src: XBOX_PDB 0x0082b3b0
+// pdb: TurnUndeadEffect::Copy | TurnUndeadEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* FUN_0082b370::TurnUndeadEffect_Copy()
 {
     FUN_0082b370* presult = new FUN_0082b370(m_pEffectInstance, pSpell, pEffect);
@@ -63,20 +70,23 @@ class EffectEvaluator
 {
   public:
     float GetFloatAtOffset1C();
-    bool TurnUndeadEffect_CheckTarget(Reference* reference);
+    bool TurnUndeadEffect_CheckTarget(Reference* apTarget);
 };
 // @fnv 0x0082b460
 // src: XBOX_PDB 0x0082b460
-bool EffectEvaluator::TurnUndeadEffect_CheckTarget(Reference* reference)
+// pdb: TurnUndeadEffect::CheckTarget | TurnUndeadEffect.obj | retail, upstream name already matches, high
+// pdb params: apTarget
+// pdb locals: pactor, pcreature
+bool EffectEvaluator::TurnUndeadEffect_CheckTarget(Reference* apTarget)
 {
-    Actor* actor = reference ? reference->FUN_00822b40() : 0;
+    Actor* actor = apTarget ? apTarget->FUN_00822b40() : 0;
     if (actor != 0)
     {
         if (!actor->HasHealth(0) && !actor->GetIsDying())
         {
             if (MagicFormulas_CheckTargetLevelMagnitude(actor->GetLevel_0087f9f0(), GetFloatAtOffset1C()))
             {
-                int result = FUN_00ec43fb(reference, 0, &_data_011a0ef8, &_data_011a106c, 0);
+                int result = FUN_00ec43fb(apTarget, 0, &_data_011a0ef8, &_data_011a106c, 0);
                 if (result != 0)
                 {
                 }
@@ -114,6 +124,8 @@ struct V
 };
 // @fnv 0x0082b530
 // src: XBOX_PDB 0x0082b530
+// pdb: TurnUndeadEffect::Start | TurnUndeadEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor, pcasterActor
 void C::TurnUndeadEffect_Start()
 {
     int b;
@@ -386,6 +398,8 @@ class B82B5E0Request
 
 // If the request is active, resolves the actor and package handles and, when the actor passes FUN_00493bb0, sets the package and starts it on the actor's process.
 // @fnv 0x0082b5e0
+// pdb: TurnUndeadEffect::Finish | TurnUndeadEffect.obj | retail, vtable slot, high
+// pdb locals: ptargetActor, pcasterActor
 void B82B5E0Request::ApplyPackageToActor()
 {
     if (!m_bModifierActive)

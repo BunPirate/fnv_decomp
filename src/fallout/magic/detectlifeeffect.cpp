@@ -31,6 +31,7 @@ TESEffectShader* __cdecl MagicSystem_GetDetectLifeShaderEffect()
 }
 
 // @fnv 0x0080cd90
+// pdb: DetectLifeEffect::~DetectLifeEffect | DetectLifeEffect.obj | debug, upstream name already matches, high
 DetectLifeEffect::~DetectLifeEffect()
 {
 }
@@ -44,6 +45,7 @@ struct RetObj
 };
 
 // @fnv 0x0080ce60
+// pdb: DetectLifeEffect::Start | DetectLifeEffect.obj | retail, upstream name already matches, high
 void DetectLifeEffect::Start()
 {
     ValueModifierEffect::Start();
@@ -52,6 +54,7 @@ void DetectLifeEffect::Start()
 }
 
 // @fnv 0x0080d0e0
+// pdb: DetectLifeEffect::Finish | DetectLifeEffect.obj | retail, upstream name already matches, high
 void DetectLifeEffect::Finish()
 {
     ValueModifierEffect::ApplyEffect();
@@ -62,6 +65,8 @@ void DetectLifeEffect::Finish()
 void* operator new(unsigned int size) throw();
 
 // @fnv 0x0080cdb0
+// pdb: DetectLifeEffect::Copy | DetectLifeEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* DetectLifeEffect::Copy()
 {
     ActiveEffect* e = new DetectLifeEffect(m_pEffectInstance, pSpell, pEffect);
@@ -72,7 +77,7 @@ ActiveEffect* DetectLifeEffect::Copy()
 #include "../../../include/NiMemObject.h"
 struct FUN_0081f580 : public NiMemObject
 {
-    FUN_0081f580(Actor* pkRef, TESEffectShader* pkShader, float fTime);
+    FUN_0081f580(Actor* pkRef, TESEffectShader* apEffectData, float afTime);
     virtual ~FUN_0081f580();
     virtual void e01();
     virtual void e02();
@@ -127,7 +132,7 @@ struct FUN_0081f580 : public NiMemObject
 };
 struct Mgr80c
 {
-    void ProcessLists_AddTempEffect(FUN_0081f580* pkEffect);
+    void ProcessLists_AddTempEffect(FUN_0081f580* apTempEffect);
     void ProcessLists_FinishMagicShaderHitEffect(Actor* pkRef, TESEffectShader* pkShader);
 };
 TESEffectShader* __cdecl MagicSystem_GetDetectLifeShaderEffect();
@@ -137,6 +142,9 @@ extern float DAT_01012054;
 extern Mgr80c DAT_011e0e80;
 
 // @fnv 0x0080ced0
+// pdb: DetectLifeEffect::CheckActorDetected | DetectLifeEffect.obj | debug, call graph, low
+// pdb params: apTarget, abCurrentlyDetected
+// pdb locals: fdistanceSquared, pEffectData, fdetectRange, location, peffect
 bool __cdecl UpdateEffectShaderOnActor(Actor* pkRef, bool bStopEffect)
 {
     TESEffectShader* pkShader2 = MagicSystem_GetDetectLifeShaderEffect();

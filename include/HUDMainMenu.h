@@ -18,6 +18,7 @@ class HUDMainMenu__XPUpdate;
 class HUDMainMenu__RadiationUpdate;
 
 
+// pdb: class HUDMainMenu, size 0x278, bases: Menu, 36 members
 class HUDMainMenu : public Menu
 {
 public:
@@ -56,55 +57,55 @@ public:
     virtual void AssignTileByID(int aTileID, Tile* apTile);
     virtual int GetClass();
 
-    Tile* m_pTiles[87];
-    Tile* m_pAdditionalHudTile;
-    float m_fMessageDisplayTimer;
-    BSSimpleList<HUDMainMenu__MessageData*> m_kMessageList;
-    unsigned int m_uiMessageCount;
-    BSSimpleArray<HUDMainMenu__SubtitleData*, 1024> m_kSubtitleArray;
-    HUDMainMenu__SubtitleData* m_pCurrentSubtitle;
-    BSSoundHandle m_kTargetDisplayData;
-    TESObjectREFR* m_pCrosshairReference;
-    int m_iHudValueFirstBeforeMode;
-    int m_iHudValueSecondBeforeMode;
-    HUD_MENU_MODE m_eHudMenuMode;
-    HotkeyWheelDisplay m_kMenuData;
-    bool m_bHudModeActive;
+    Tile* pTiles[87];
+    Tile* pActive;
+    float fSeenLevel;
+    BSSimpleList<HUDMainMenu__MessageData*> xMessages;
+    unsigned int uiMessageStartTime;
+    BSSimpleArray<HUDMainMenu__SubtitleData*, 1024> xSubtitles;
+    HUDMainMenu__SubtitleData* pCurrSubtitle;
+    BSSoundHandle GeigerSound;
+    TESObjectREFR* pLastObject;
+    int iHUDVisibilityMenuModeFlags;
+    int iHUDVisibilityUserSettings;
+    HUD_MENU_MODE eMenuMode;
+    HotkeyWheelDisplay HKWheel;
+    bool bScopeVisible;
     unsigned char layoutPadding1FD[3];
-    NiControllerSequence* m_pHudAnimationSequence;
-    bool m_bSequenceActive;
-    bool m_bHudAnimationActive;
+    NiControllerSequence* pBreathMeterAnim;
+    bool bXPMeterFinishedMoving;
+    bool bForceObjectiveReminders;
     unsigned char layoutPadding206[2];
-    unsigned int m_uiHudAnimationCounter;
-    BSSimpleList<RegionObjectEntry*>* m_pRegionObjectListObj;
-    int m_iHudValueFirstAfterUpdateList;
-    int m_iHudValueSecondAfterUpdateList;
-    int m_iHudValueThirdAfterUpdateList;
-    Actor* m_pTargetActor;
-    bool m_bTargetActorVisible;
+    unsigned int uiKillRegionDisplay;
+    BSSimpleList<RegionObjectEntry*>* pQuestList;
+    int iCompassImageWidth;
+    int iCompassDisplayWidth;
+    int iCompassHalfAngle;
+    Actor* pCurrentEnemy;
+    bool bWasSneaking;
     unsigned char layoutPadding221[3];
-    GameTimerRecord m_cBuffer;
-    unsigned int m_uiHudValueFirstAfterActor;
-    unsigned int m_uiHudValueSecondAfterActor;
-    int m_iHudValueFirstAfterUnsignedValues;
-    int m_iHudValueSecondAfterUnsignedValues;
-    bool m_bQuestObjectiveUpdatesEnabled;
+    GameTimerRecord HudTimer;
+    unsigned int iEnemyHealthTimer;
+    unsigned int uiQuestReminderTimer;
+    int uiDDTdisplayTimer;
+    int uiEnemyDDTdisplayTimer;
+    bool bKillQuestUpdates;
     unsigned char layoutPadding255[3];
-    BSSimpleList<HUDMainMenu__QuestObjective*> m_kQuestObjectives;
-    bool m_bQuestObjectiveUpdatePending;
-    bool m_bXPUpdatePending;
+    BSSimpleList<HUDMainMenu__QuestObjective*> xQuestObjectives;
+    bool bQuestNameShowing;
+    bool bObjectiveNameShowing;
     unsigned char layoutPadding262[2];
-    BSSimpleList<HUDMainMenu__XPUpdate*> m_kXPUpdates;
-    BSSimpleList<HUDMainMenu__RadiationUpdate*> m_kRadiationUpdates;
-    float m_fRadiationUpdateTimer;
+    BSSimpleList<HUDMainMenu__XPUpdate*> xXPUpdates;
+    BSSimpleList<HUDMainMenu__RadiationUpdate*> xRadiationUpdates;
+    float fShake;
 
     void HUDMainMenu_KillQuestUpdates();
 
     static HUDMainMenu* g_pHudMainMenuInstance;
-    static void SetCrosshairTarget(TESObjectREFR*, bool);
-    static void SetHUDVisible(bool);
+    static void HUDMainMenu_SetTargetType(TESObjectREFR*, bool);
+    static void HUDMainMenu_SetGunScopeVisible(bool);
     static bool UpdateTargetReference(TESObjectREFR*, bool, bool);
     bool RefreshTargetDisplay();
-    static void UpdateTargetActor(Actor* actor);
-    static void UpdateVisibilityState(int state);
+    static void UpdateTargetActor(Actor* apActor);
+    static void UpdateVisibilityState(int aeMenuMode);
 };

@@ -106,7 +106,7 @@ struct FUN_00721410_class
 {
     ListBoxSortList list;
     void __thiscall ListBox_enum_ActorValue_Index_Synchronize();
-    void __thiscall ListBox_enum_ActorValue_Index_Sort(void* param);
+    void __thiscall ListBox_enum_ActorValue_Index_Sort(void* apCompareFn);
 };
 extern "C" char str_010703dc[];
 struct FUN_00723fa0_shell : AX
@@ -144,7 +144,7 @@ void __cdecl ProcessEntries_00724930();
 struct FUN_00721bc0_shell
 {
     int x;
-    void __thiscall SortEntriesAndRefresh(int(__cdecl* param)(void*, void*));
+    void __thiscall SortEntriesAndRefresh(int(__cdecl* apCompareFn)(void*, void*));
     void __thiscall ProcessEntries_00724930();
 };
 struct FUN_00723030_Holder
@@ -162,12 +162,12 @@ struct FUN_00725aa0_shell
 struct FUN_00723310_shell
 {
     ListBoxSortList list;
-    void __thiscall SortListAndProcessSlots(int(__cdecl* cmp)(void*, void*));
+    void __thiscall SortListAndProcessSlots(int(__cdecl* apCompareFn)(void*, void*));
 };
 struct FUN_00723ac0_shell
 {
     void __thiscall ListBox_unsigned_int_Synchronize();
-    void __thiscall ListBox_unsigned_int_Sort(void* param);
+    void __thiscall ListBox_unsigned_int_Sort(void* apCompareFn);
 };
 struct FUN_00723f00_shell : AX
 {
@@ -230,11 +230,11 @@ struct FUN_007643c0_p07 : Member_007a8b10
 struct ListBoxSortList;
 struct FUN_007a6480_shell
 {
-    void __thiscall ProcessEntries_007a6480();
+    void __thiscall ListBox_TESQuest_Synchronize();
 };
 struct FUN_007a22a0_shell
 {
-    void __thiscall SortEntriesAndRefresh_007a22a0(int(__cdecl* cmp)(void*, void*));
+    void __thiscall SortEntriesAndRefresh_007a22a0(int(__cdecl* apCompareFn)(void*, void*));
 };
 struct FUN_007a30a0_Holder
 {
@@ -243,15 +243,15 @@ struct FUN_007a30a0_Holder
 };
 struct FUN_007a80e0_shell
 {
-    int* __thiscall InitSceneNodes();
+    int* __thiscall ListBox_TESChallenge_Synchronize();
 };
 struct FUN_007a5700_shell
 {
-    int* __thiscall SortEntriesAndInitializeSceneNodes(int(__cdecl* cmp)(void*, void*));
+    int* __thiscall SortEntriesAndInitializeSceneNodes(int(__cdecl* apCompareFn)(void*, void*));
 };
 struct FUN_007a1aa0_shell
 {
-    void ResetVirtualTableAndClear_007a1aa0();
+    void BSSimpleArray_BSStringT_char_1024_dtor();
 };
 struct FUN_007a6100_shell : FUN_007a1aa0_shell
 {
@@ -294,7 +294,7 @@ void __cdecl UpdateSaveLoadList();
 struct FUN_007d8420_shell
 {
     ListBoxSortList list;
-    void __thiscall SortList(int(__cdecl* cmp)(void*, void*));
+    void __thiscall SortList(int(__cdecl* apCompareFn)(void*, void*));
     void __thiscall UpdateSaveLoadList();
 };
 struct FUN_007a6fa0_shell
@@ -359,7 +359,7 @@ struct FUN_00721060 : FUN_007240c0
     FUN_00721060();
 };
 struct TileValue;
-Tile* __cdecl FindNamedTile(Tile* tile, const char* name);
+Tile* __cdecl FindNamedTile(Tile* apTarget, const char* apName);
 extern "C" char str_0106f87c[];
 extern "C" char str_0106f884[];
 extern "C" char str_0106f88c[];
@@ -415,10 +415,10 @@ struct FunctionOwner
 {
     int unk00;
     ListboxListNodeView entries;
-    void RemoveTile(int id);
+    void ListBox_ItemChange_RemoveItem(int apItem);
     void ListBox_ItemChange_RemoveItemGroup(int entryType);
 };
-void __cdecl InterfaceManager_UnregisterListBox(void* p);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
 struct SubObject_00721150
 {
     ~SubObject_00721150();
@@ -443,7 +443,7 @@ struct FUN_00721440_class
     bool __thiscall ListBox_enum_ActorValue_Index_IsEnabled();
     bool __thiscall ContainsKey(Tile* object);
     void __thiscall ListBox_enum_ActorValue_Index_UpdateHighlightBoxPos();
-    bool __thiscall SelectObject(Tile* object);
+    bool __thiscall SelectObject(Tile* apHighlightItem);
 };
 extern int DAT_010702ec;
 struct FUN_00721850_shell
@@ -475,8 +475,8 @@ struct FUN_00721920
     CleanupMember_00721920 cleanup;
     void __thiscall ReleaseStorage_00721990();
 };
-void __cdecl InterfaceManager_UnregisterListBox(void* object);
-void __cdecl InterfaceManager_UnregisterListBox(void* p);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
 struct SubObj_007220d0
 {
     int unk00;
@@ -535,7 +535,7 @@ struct ListBox_7223a0
     bool ListBox_enum_MiscStatManager_MiscStatID_IsEnabled();
     bool ContainsKey(Tile*);
     void ListBox_enum_MiscStatManager_MiscStatID_UpdateHighlightBoxPos();
-    bool ListBox_enum_MiscStatManager_MiscStatID_Highlight(Tile* apTile);
+    bool ListBox_enum_MiscStatManager_MiscStatID_Highlight(Tile* apHighlightItem);
 };
 // FUN_007227b0: constructor of a object with a base (vptr), a member sub-object
 // with its own ctor/dtor (state -1..0 EH frame), a few int/word/float fields and
@@ -594,7 +594,7 @@ struct FUN_00723070
     FUN_0046ffb0 cleanupMember;
     void ProcessEntries_007230e0();
 };
-void __cdecl InterfaceManager_UnregisterListBox(FUN_00723070* self);
+void __cdecl InterfaceManager_UnregisterListBox(FUN_00723070* apLB);
 extern char DAT_0107038c;
 struct FUN_00723750 : FUN_007240c0, SL
 {
@@ -611,7 +611,7 @@ struct FUN_00723750 : FUN_007240c0, SL
     FUN_00723750();
     void ListBox_ItemChange_SetFlag(int a, int b);
 };
-void __cdecl InterfaceManager_UnregisterListBox(void* p);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
 class Member_00723820
 {
   public:
@@ -632,7 +632,7 @@ class B23AF0ListBox
     bool IsEnabled();
     bool Contains(Tile* pkTile);
     void Refresh();
-    bool ListBox_unsigned_int_Highlight(Tile* pkTile);
+    bool ListBox_unsigned_int_Highlight(Tile* apHighlightItem);
 
     int unk00;
     int unk04;
@@ -675,7 +675,7 @@ struct FUN_00724360_cls
     unsigned short unk1e;
     float m_20;
     void ListBox_enum_ActorValue_Index_Synchronize();
-    void AccumulateTileHeight(int v);
+    void AccumulateTileHeight(int apNewTile);
     void ListBox_enum_ActorValue_Index_SetTotalListHeight();
     void ListBox_enum_ActorValue_Index_UpdateHighlightBoxPos();
 };
@@ -713,7 +713,7 @@ struct FUN_00724930_cls
     unsigned short unk1e;
     float m_20;
 
-    void __thiscall AccumulateTileHeight(Tile* p);
+    void __thiscall AccumulateTileHeight(Tile* apNewTile);
     void __thiscall UpdateState_00724dd0();
     void __thiscall UpdateTraitDisplay();
     void ProcessEntries_00724930();
@@ -859,7 +859,7 @@ struct FUN_007a23e0_cls
     bool HasEnabledTrait();
     bool __thiscall ContainsKey(Tile* arg);
     void UpdateHighlightTraits_007a6600();
-    bool ListBox_TESQuest_Destroy(Tile* arg);
+    bool ListBox_TESQuest_Destroy(Tile* apHighlightItem);
 };
 int __cdecl Tile_AddUserTrait(const char* name, int len);
 class B7A27F0Base
@@ -1015,7 +1015,7 @@ void** __fastcall FUN_006815c0(void* node);
 void* __fastcall FUN_00726070(void* node);
 struct FUN_007d8da0_cls
 {
-    void ListBox_BGSSaveLoadFileEntry_DeselectAll(bool bFlag);
+    void ListBox_BGSSaveLoadFileEntry_DeselectAll(bool abUnfilteredOnly);
 };
 int __cdecl Tile_AddUserTrait(const char*, int);
 struct SelectionList
@@ -1089,10 +1089,11 @@ struct InventoryEntry
     InventoryEntry();
     int FUN_00726070();
     TESBoundObject* GetObject();
-    bool FUN_004bd820();
+    bool ItemChange_GetModSlots();
     void ItemChange_Copy2(InventoryEntry*);
     void FUN_006ecd40(int);
 };
+// pdb: class InventoryList, size 0x18 (here 0x1), bases: BSSimpleList<ItemChange *>, 3 members
 struct InventoryList
 {
     ~InventoryList();
@@ -1120,7 +1121,7 @@ struct InventoryListBox
     void ListBox_ItemChange_SetFlag(int, bool);
     bool ListBox_unsigned_int_GetFlag(unsigned int);
     Tile* ListBox_ItemChange_AddItem(InventoryEntry*, const char*, int, int);
-    void UpdateItems();
+    void ListBox_ItemChange_Synchronize();
     void PopulateInventoryList(InventoryOwner*, bool(__cdecl*)(InventoryEntry*), int,
                                void(__cdecl*)(Tile*, InventoryEntry*), bool, bool);
 };
@@ -1148,7 +1149,7 @@ struct RemovalList : RemovalHeader, RemovalNode
     Tile* container;
     Tile* selected;
     bool ListBox_unsigned_int_GetFlag(unsigned int);
-    void UpdateItems();
+    void ListBox_ItemChange_Synchronize();
     bool RemoveNode(RemovalNode* node, RemovalNode* previous);
 };
 struct RemovalInterface
@@ -1401,7 +1402,7 @@ struct NavigationList : NavigationBase, NavigationNode
     const char* templateName;
     unsigned short count;
     bool ListBox_enum_ActorValue_Index_IsEnabled();
-    Tile* ListBox_enum_ActorValue_Index_GetHighlightTarget(unsigned int action);
+    Tile* ListBox_enum_ActorValue_Index_GetHighlightTarget(unsigned int aeButton);
 };
 float __cdecl FUN_004bd510(float value, float step);
 int __cdecl LBGetTraitID(const char* apName);
@@ -1441,7 +1442,7 @@ struct Class_721c60 : Base_721c60, Node_721c60
     unsigned short m_usItemCount;
 
     bool IsScrollBarTraitEnabled();
-    Tile* ListBox_PerkRankData_HandleKeyboardInput(int action);
+    Tile* ListBox_PerkRankData_HandleKeyboardInput(int aeButton);
 };
 extern int DAT_01070314;
 struct FUN_00722000 : FUN_007240c0
@@ -1514,7 +1515,7 @@ struct LBKListBox : LBKBase, LBKNode
     unsigned short usItemCount;
 
     bool IsEnabled();
-    Tile* GetTileByKey(int aiKey);
+    Tile* GetTileByKey(int aeButton);
 };
 float __cdecl FUN_004bd510(float value, float one);
 struct ListBoxHelper
@@ -1532,7 +1533,7 @@ struct ListBoxHelper
     int unk18;
     unsigned short m_1c;
     bool ListBox_unsigned_int_IsEnabled();
-    Tile* ListBox_unsigned_int_GetHighlightTarget(int code);
+    Tile* ListBox_unsigned_int_GetHighlightTarget(int aeButton);
 };
 int __cdecl Tile_AddUserTrait(const char*, int);
 extern "C" char str_0106f87c[], str_0106f884[], str_0106f88c[], str_0106f894[], str_0106f898[], str_0106f8ac[],
@@ -1561,7 +1562,7 @@ class MenuBase724
 class ListBox724 : public MenuBase724, public ItemList724
 {
   public:
-    void AddTile(Tile* pkTile);
+    void AddTile(Tile* apNewTile);
     void SortTiles();
     void UpdateScroll();
     void RefreshTiles();
@@ -1635,7 +1636,7 @@ struct VLList
     int unk1C;
     float fTotalHeight;
 
-    void AccumulateTileHeight(Tile* apTile);
+    void AccumulateTileHeight(Tile* apNewTile);
 };
 struct Value050
 {
@@ -1828,7 +1829,7 @@ class FUN_007a3ac0_ListBox
     float m_fFirstListValue;
 
     bool ListBox_unsigned_int_GetFlag(unsigned int flags);
-    void UpdateScrollTraits_007a7700();
+    void ListBox_TESObjectREFR_SetTotalListHeight();
     void UpdateHighlightTraits_007a73e0();
     void ProcessEntries_007a3ac0();
 };
@@ -1861,7 +1862,7 @@ struct Navigation
     int unk18;
     unsigned short count;
     bool Active();
-    Tile* ProcessEntries_007a4000(int key);
+    Tile* ProcessEntries_007a4000(int aeButton);
 };
 struct ListBox_7a6600
 {
@@ -1920,7 +1921,7 @@ struct P240Owner : P240Base, P240List
     void ListBox_BGSSaveLoadFileEntry_SetTotalListHeight();
     Tile* SelectLast();
     void ListBox_BGSSaveLoadFileEntry_UpdateHighlightBoxPos();
-    void ApplyFilter(bool(__cdecl* predicate)(void*));
+    void ApplyFilter(bool(__cdecl* apFilterFn)(void*));
 };
 // Selects a tile in the list box when the box is active and the tile is null or an enabled member of the list.
 int __cdecl C7D8950TraitNameToID(const char* pcName, int iDefault);
@@ -1936,11 +1937,11 @@ class C7D8950ListBox
     bool IsActive();
     bool Contains(Tile* pkTile);
     void UpdateSelection();
-    bool SetSelectedTileIfEnabled(Tile* pkTile);
+    bool SetSelectedTileIfEnabled(Tile* apHighlightItem);
 };
 struct TileValue
 {
-    void Tile_Value_AddRefValueAction(int index, Tile* tile, int value);
+    void Tile_Value_AddRefValueAction(int aiActionType, Tile* apSourceTile, int aeSourceTrait);
     void Tile_Value_SetFloat(int value);
 };
 struct ListBoxExt
@@ -1970,7 +1971,7 @@ struct N6815c0
 };
 struct RList71a5 : RemovalList
 {
-    bool RemoveTile(Tile* tile);
+    bool ListBox_ItemChange_RemoveItem(Tile* apItem);
 };
 struct Item118
 {
@@ -1999,7 +2000,7 @@ struct Box118
     int unk14, unk18;
     unsigned short count, flags;
     bool ListBox_enum_MiscStatManager_MiscStatID_IsEnabled();
-    Tile* ListBox_enum_MiscStatManager_MiscStatID_GetHighlightTarget(unsigned int action);
+    Tile* ListBox_enum_MiscStatManager_MiscStatID_GetHighlightTarget(unsigned int aeButton);
 };
 
 
@@ -2018,15 +2019,15 @@ class AGListItem
     }
     static void operator delete(void* p);
 };
-class AGValueItem : public AGListItem
+class RefValueAction : public AGListItem
 {
   public:
-    virtual ~AGValueItem();
+    virtual ~RefValueAction();
     TileValue* m_pIntegerData;
-    AGValueItem()
+    RefValueAction()
     {}
 };
-void __cdecl Tile_AddReaction(TileValue* pValue, void* pOwner);
+void __cdecl Tile_AddReaction(TileValue* apRefVal, void* apDependantVal);
 class AGOwner
 {
   public:
@@ -2034,22 +2035,25 @@ class AGOwner
     int unk04;
     int unk08;
     int unk0C;
-    AGValueItem* m_pHead;
-    void Tile_Value_AddRefValueAction(int iIndex, Tile* pTile, int iValue);
+    RefValueAction* m_pHead;
+    void Tile_Value_AddRefValueAction(int aiActionType, Tile* apSourceTile, int aeSourceTrait);
 };
 
 // @fnv 0x00a09130
 // src: COMMUNITY 0x00a09130
-void AGOwner::Tile_Value_AddRefValueAction(int iIndex, Tile* pTile, int iValue)
+// pdb: Tile::Value::AddAction | Tile.obj | retail, call graph, high
+// pdb params: aiActionType, afActionVal
+// pdb locals: ptail, pnewAction
+void AGOwner::Tile_Value_AddRefValueAction(int aiActionType, Tile* apSourceTile, int aeSourceTrait)
 {
-    AGValueItem* pLast = m_pHead;
-    AGValueItem* pItem = new AGValueItem;
-    pItem->m_iIndex = iIndex;
-    pItem->m_pIntegerData = (TileValue*)pTile->GetOrCreateTraitValue(iValue);
+    RefValueAction* pLast = m_pHead;
+    RefValueAction* pItem = new RefValueAction;
+    pItem->m_iIndex = aiActionType;
+    pItem->m_pIntegerData = (TileValue*)apSourceTile->GetOrCreateTraitValue(aeSourceTrait);
     if (pLast)
     {
         while (pLast->m_pNext)
-            pLast = (AGValueItem*)pLast->m_pNext;
+            pLast = (RefValueAction*)pLast->m_pNext;
         pLast->m_pNext = pItem;
     }
     else

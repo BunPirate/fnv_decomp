@@ -6,6 +6,7 @@
 class BGSLoadFormBuffer;
 class InventoryStackRecord;
 // Views of a Creature through its vtable (slot 121: animation data) and of its BaseProcess (slot 82: weapon info).
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:

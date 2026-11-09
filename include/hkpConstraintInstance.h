@@ -16,6 +16,7 @@ typedef unsigned char hkUint8;
 typedef unsigned int hkUint32;
 typedef unsigned long hkUlong;
 
+// pdb: class hkpConstraintInstance, size 0x38, bases: hkReferencedObject, 12 members
 class hkpConstraintInstance : public hkReferencedObject
 {
 public:
@@ -72,8 +73,8 @@ public:
         static void __cdecl operator delete[](void* p, void* placement);
 
         void* m_data;
-        hkUint16 m_iElementCount;
-        hkUint16 m_iCapacityState;
+        hkUint16 m_size;
+        hkUint16 m_capacityAndFlags;
     };
 
     static const ClassMemberDescriptor Members[];
@@ -91,19 +92,19 @@ public:
     hkpConstraintOwner* getOwner() const;
     hkBool isConstrainedToWorld() const throw();
     ConstraintPriority getPriority() const { return (ConstraintPriority)m_priority; }
-    hkpConstraintInstance* clone_00cf3fa0(hkpEntity* pkEntityA, hkpEntity* pkEntityB, int eMode) const throw();
+    hkpConstraintInstance* clone(hkpEntity* newEntityA, hkpEntity* newEntityB, int mode) const throw();
 
-    hkpConstraintOwner* m_pOwnerObject;
+    hkpConstraintOwner* m_owner;
     hkpConstraintData* m_data;
-    hkpModifierConstraintAtom* m_pConstraintModifier;
-    hkpEntity* m_kActorEntries[2];
+    hkpModifierConstraintAtom* m_constraintModifiers;
+    hkpEntity* m_entities[2];
     hkUint8 m_priority;
-    hkBool m_bWantRuntime;
-    hkUint8 m_eDestructionRemapInfo;
+    hkBool m_wantRuntime;
+    hkUint8 m_destructionRemapInfo;
     char pad1F[1];
-    hkpConstraintInstanceSmallArraySerializeOverrideType m_kListeners;
+    hkpConstraintInstanceSmallArraySerializeOverrideType m_listeners;
     hkStringPtr m_name;
-    hkUlong m_ulUserData;
-    ConstraintRuntimeInfo* m_pConstraintInternal;
-    hkUint32 m_uiUniqueId;
+    hkUlong m_userData;
+    ConstraintRuntimeInfo* m_internal;
+    hkUint32 m_uid;
 };

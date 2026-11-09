@@ -37,7 +37,7 @@ class BSAudio2
 class TaskQ2
 {
   public:
-    void QueueTaskIfPresent(void*);
+    void TaskQueueInterface_QueueHavokRemove(void*);
 };
 class RefX
 {
@@ -70,7 +70,7 @@ struct LinkedReferenceArgument
 {
     TESObjectREFR* reference;
 };
-void __fastcall SetLinkedReference(ExtraDataList*, LinkedReferenceArgument);
+void __fastcall ExtraDataList_SetOpenCloseActivateRef(ExtraDataList*, LinkedReferenceArgument);
 bool AILinearTaskThreadManager_ShouldQueue3DTask();
 void bhkWorld_Activate(NiAVObject*, bool, bool, int);
 void bhkWorld_RemoveObjects(void*, bool, bool);
@@ -79,16 +79,19 @@ NiFixedString& FUN_0047a510();
 
 // @fnv 0x0047a560
 // src: XBOX_PDB 0x0047a560
-void BGSOpenCloseForm_HandleActivate(TESObjectREFR* apRefr, TESObjectREFR* apActor, BGSOpenCloseForm* apForm)
+// pdb: BGSOpenCloseForm::HandleActivate | BGSOpenCloseForm.obj | retail, upstream name already matches, high
+// pdb params: apItemActivated, apActionRef, apOpenCloseForm
+// pdb locals: bhasanims, pmanager, po, popenSeq, pcloseSeq, pplayThisSeq, soundThisSeq, pDoor, bremovehavok, pdoor, pav, SoundHandle, loc, pocform, bopen
+void BGSOpenCloseForm_HandleActivate(TESObjectREFR* apItemActivated, TESObjectREFR* apActionRef, BGSOpenCloseForm* apOpenCloseForm)
 {
-    if (!apRefr)
+    if (!apItemActivated)
         return;
     bool bFlag = false;
-    if (apRefr->GetNiNode())
+    if (apItemActivated->GetNiNode())
     {
-        if (apRefr->GetNiNode()->NiObjectNET::GetControllers())
+        if (apItemActivated->GetNiNode()->NiObjectNET::GetControllers())
         {
-            NiTimeController* p3d = apRefr->GetNiNode()->NiObjectNET::GetControllers();
+            NiTimeController* p3d = apItemActivated->GetNiNode()->NiObjectNET::GetControllers();
             NiControllerManager* pAV = (NiControllerManager*)NiObject_DynamicCast(&DAT_011f36ac, (NiProperty*)p3d);
             if (pAV)
             {
@@ -101,37 +104,37 @@ void BGSOpenCloseForm_HandleActivate(TESObjectREFR* apRefr, TESObjectREFR* apAct
                     {
                         NiControllerSequence* p2c;
                         SoundH* p28 = 0;
-                        TESObjectDOOR* pPathNodeDoor = dynamic_cast<TESObjectDOOR*>(apForm);
-                        if (!apRefr->GetAction(OBJECT_ACTION_OBJECT_ACTION_OPEN))
+                        TESObjectDOOR* pPathNodeDoor = dynamic_cast<TESObjectDOOR*>(apOpenCloseForm);
+                        if (!apItemActivated->GetAction(OBJECT_ACTION_OBJECT_ACTION_OPEN))
                         {
                             if (pPathNodeDoor)
                                 p28 = (SoundH*)pPathNodeDoor->GetOpenSound();
                             p2c = pSeqA;
-                            apRefr->PerformAction(OBJECT_ACTION_OBJECT_ACTION_OPEN);
+                            apItemActivated->PerformAction(OBJECT_ACTION_OBJECT_ACTION_OPEN);
                         }
                         else
                         {
                             if (pPathNodeDoor)
                                 p28 = (SoundH*)GetDoorSecondarySound(pPathNodeDoor);
                             p2c = pSeqB;
-                            apRefr->CloseReference(OBJECT_ACTION_OBJECT_ACTION_OPEN);
+                            apItemActivated->CloseReference(OBJECT_ACTION_OBJECT_ACTION_OPEN);
                         }
-                        if (!*DAT_011c4c64.Bool() && apActor && apActor->IsActor() &&
-                            apActor != _g_thePlayer && apRefr->GetNiNode())
+                        if (!*DAT_011c4c64.Bool() && apActionRef && apActionRef->IsActor() &&
+                            apActionRef != _g_thePlayer && apItemActivated->GetNiNode())
                         {
                             bool bSkip = true;
-                            if (static_cast<const TESForm*>(apRefr->GetObjectReference())->GetFormType() == ENUM_FORM_ID_DOOR_ID)
+                            if (static_cast<const TESForm*>(apItemActivated->GetObjectReference())->GetFormType() == ENUM_FORM_ID_DOOR_ID)
                             {
-                                TESBoundObject* pObj = apRefr->GetObjectReference();
+                                TESBoundObject* pObj = apItemActivated->GetObjectReference();
                                 if (((TESObjectDOOR*)pObj)->IsSlidingDoor())
                                     bSkip = false;
                             }
                             if (bSkip)
                             {
-                                void* pNi = apRefr->GetNiNode();
+                                void* pNi = apItemActivated->GetNiNode();
                                 if (AILinearTaskThreadManager_ShouldQueue3DTask())
                                 {
-                                    ((TaskQ2*)TaskQueueInterface::GetSingleton())->QueueTaskIfPresent(pNi);
+                                    ((TaskQ2*)TaskQueueInterface::GetSingleton())->TaskQueueInterface_QueueHavokRemove(pNi);
                                 }
                                 else
                                 {
@@ -146,7 +149,7 @@ void BGSOpenCloseForm_HandleActivate(TESObjectREFR* apRefr, TESObjectREFR* apAct
                         if (p28)
                         {
                             BSAudioSoundHandle h;
-                            if (apActor == _g_thePlayer)
+                            if (apActionRef == _g_thePlayer)
                             {
                                 h.ExtraDataList_GetSound(&((BSAudio2*)BSAudioS_::GetSingleton())
                                                     ->GetSoundHandleByFormID_00ad73b0(p28->GetHavokWorldObjectCountInSceneGraph_0084e3a0(0x80000121u)));
@@ -155,16 +158,16 @@ void BGSOpenCloseForm_HandleActivate(TESObjectREFR* apRefr, TESObjectREFR* apAct
                             {
                                 h.ExtraDataList_GetSound(
                                     &((BSAudio2*)BSAudioS_::GetSingleton())->GetSoundHandleByFormID_00ad73b0(p28->GetHavokWorldObjectCountInSceneGraph_0084e3a0(0x102)));
-                                NiPoint3 pt = *static_cast<const TESObjectREFR*>(apRefr)->GetPos();
+                                NiPoint3 pt = *static_cast<const TESObjectREFR*>(apItemActivated)->GetPos();
                                 h.FUN_00ad8b60(pt.x, pt.y, pt.z);
                             }
                             h.Play(false);
                         }
-                        SetLinkedReference(apRefr->GetExtraData(), reinterpret_cast<const LinkedReferenceArgument&>(apActor));
-                        apRefr->MarkAsModified(0x80000000u);
-                        if (p2c == pSeqA && apActor == _g_thePlayer)
+                        ExtraDataList_SetOpenCloseActivateRef(apItemActivated->GetExtraData(), reinterpret_cast<const LinkedReferenceArgument&>(apActionRef));
+                        apItemActivated->MarkAsModified(0x80000000u);
+                        if (p2c == pSeqA && apActionRef == _g_thePlayer)
                         {
-                            BGSOpenCloseForm* pOCF = GetOpenCloseForm(apRefr->GetObjectReference());
+                            BGSOpenCloseForm* pOCF = GetOpenCloseForm(apItemActivated->GetObjectReference());
                             if (pOCF && pOCF->GetBlockActivatesWhileOpening())
                                 ((RefX*)_g_thePlayer)->SetQuickKeysEnabled(1);
                         }
@@ -176,24 +179,24 @@ void BGSOpenCloseForm_HandleActivate(TESObjectREFR* apRefr, TESObjectREFR* apAct
     if (!bFlag)
     {
         bool bOpen = false;
-        switch (BGSOpenCloseForm::GetOpenState(apRefr))
+        switch (BGSOpenCloseForm::GetOpenState(apItemActivated))
         {
         case BGSOpenCloseForm::OPEN:
         case BGSOpenCloseForm::OPENING:
-            apRefr->CloseReference(OBJECT_ACTION_OBJECT_ACTION_OPEN);
+            apItemActivated->CloseReference(OBJECT_ACTION_OBJECT_ACTION_OPEN);
             break;
         default:
             bOpen = true;
-            apRefr->PerformAction(OBJECT_ACTION_OBJECT_ACTION_OPEN);
+            apItemActivated->PerformAction(OBJECT_ACTION_OBJECT_ACTION_OPEN);
             break;
         }
-        BGSOpenCloseForm* pOCF2 = GetOpenCloseForm(apRefr->GetObjectReference());
+        BGSOpenCloseForm* pOCF2 = GetOpenCloseForm(apItemActivated->GetObjectReference());
         if (pOCF2)
         {
             if (bOpen)
-                pOCF2->HandleOpenAnimationFinish(apRefr, apActor);
+                pOCF2->HandleOpenAnimationFinish(apItemActivated, apActionRef);
             else
-                pOCF2->HandleCloseFinish(apRefr, apActor);
+                pOCF2->HandleCloseFinish(apItemActivated, apActionRef);
         }
     }
 }

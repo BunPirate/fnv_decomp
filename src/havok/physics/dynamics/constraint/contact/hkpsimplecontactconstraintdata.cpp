@@ -27,7 +27,7 @@ extern "C" void _mm_store_ss(float* p, LocalM128 a);
 // src/havok/physics/dynamics/constraint/contact/hkpsimplecontactconstraintdata.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/dynamics/constraint/contact/hkpsimplecontactconstraintdata.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void __cdecl hkpConstraintData_getConstraintInfoUtil(void* atom, unsigned short index, unsigned int arg);
+extern "C" void __cdecl hkpConstraintData_getConstraintInfoUtil(void* atom, unsigned short index, unsigned int infoOut);
 struct FUN_00d927b0_class
 {
     void hkpSimpleContactConstraintData_getConstraintInfo(unsigned int arg);
@@ -67,34 +67,37 @@ struct S_00d92690_Mgr
     }
 };
 
-hkpSimpleContactConstraintAtom* AllocateBlock(int cap, int a, int b, int maxCap);
-void hkpSimpleContactConstraintAtom_ProcessEntries_00d925b0(hkpSimpleContactConstraintAtom* dst, hkpSimpleContactConstraintAtom* src);
+hkpSimpleContactConstraintAtom* hkpSimpleContactConstraintAtomUtil_allocateAtom(int numReservedContactPoints, int numExtraUserDatasA, int numExtraUserDatasB, int maxNumContactPoints);
+void hkpSimpleContactConstraintAtomUtil_copyContents(hkpSimpleContactConstraintAtom* dst, hkpSimpleContactConstraintAtom* src);
 int RoundUpToBucketSize(int size);
 S_00d92690_Mgr* hkMemoryRouter_getInstance();
 
 // @fnv 0x00d92690
 // src: HAVOK_LIB 0x00d92690
-hkpSimpleContactConstraintAtom* hkpSimpleContactConstraintAtomUtil_expandOne(hkpSimpleContactConstraintAtom* apContainer, bool* grew)
+// pdb: hkpSimpleContactConstraintAtomUtil::expandOne | hkpConstraintAtomUtil.obj | retail, upstream name already matches, high
+// pdb params: oldAtom_mightGetDeallocated, atomReallocated
+// pdb locals: assertBuf, ostr
+hkpSimpleContactConstraintAtom* hkpSimpleContactConstraintAtomUtil_expandOne(hkpSimpleContactConstraintAtom* oldAtom_mightGetDeallocated, bool* atomReallocated)
 {
-    hkpSimpleContactConstraintAtom* result = apContainer;
-    hkpSimpleContactConstraintAtom* pContainer = apContainer;
-    int iCount = apContainer->m_usNumContactPoints;
-    if (iCount >= apContainer->m_usMaxNumContactPoints)
+    hkpSimpleContactConstraintAtom* result = oldAtom_mightGetDeallocated;
+    hkpSimpleContactConstraintAtom* pContainer = oldAtom_mightGetDeallocated;
+    int iCount = oldAtom_mightGetDeallocated->m_numContactPoints;
+    if (iCount >= oldAtom_mightGetDeallocated->m_numReservedContactPoints)
     {
         int iNewCapacity = iCount > 2 ? iCount : 2;
         iNewCapacity *= 2;
-        if (iNewCapacity >= apContainer->m_usMaxNumContactPointProperties)
-            iNewCapacity = apContainer->m_usMaxNumContactPointProperties;
-        result = AllocateBlock(iNewCapacity, apContainer->m_ucNumReservedContactPoints, apContainer->m_ucNumContactPointProperties, apContainer->m_usMaxNumContactPointProperties);
-        hkpSimpleContactConstraintAtom_ProcessEntries_00d925b0(result, apContainer);
-        int size = RoundUpToBucketSize(apContainer->m_usSizeOfAllAtoms);
-        hkMemoryRouter_getInstance()->GetAllocator()->Free(apContainer, size);
+        if (iNewCapacity >= oldAtom_mightGetDeallocated->m_maxNumContactPoints)
+            iNewCapacity = oldAtom_mightGetDeallocated->m_maxNumContactPoints;
+        result = hkpSimpleContactConstraintAtomUtil_allocateAtom(iNewCapacity, oldAtom_mightGetDeallocated->m_numUserDatasForBodyA, oldAtom_mightGetDeallocated->m_numUserDatasForBodyB, oldAtom_mightGetDeallocated->m_maxNumContactPoints);
+        hkpSimpleContactConstraintAtomUtil_copyContents(result, oldAtom_mightGetDeallocated);
+        int size = RoundUpToBucketSize(oldAtom_mightGetDeallocated->m_sizeOfAllAtoms);
+        hkMemoryRouter_getInstance()->GetAllocator()->Free(oldAtom_mightGetDeallocated, size);
         pContainer = result;
-        *grew = true;
+        *atomReallocated = true;
     }
-    pContainer->m_usNumContactPoints = iCount + 1;
-    int iElemSize = pContainer->m_ucContactPointPropertiesStriding;
-    int* data = (int*)((char*)pContainer + pContainer->m_usMaxNumContactPoints * 32 + 0x30 + (short)iCount * (short)iElemSize);
+    pContainer->m_numContactPoints = iCount + 1;
+    int iElemSize = pContainer->m_contactPointPropertiesStriding;
+    int* data = (int*)((char*)pContainer + pContainer->m_numReservedContactPoints * 32 + 0x30 + (short)iCount * (short)iElemSize);
     for (int i = (iElemSize >> 2) - 1; i >= 0; --i)
         *data++ = 0;
     return result;
@@ -151,12 +154,14 @@ struct FUN_00d92f20
     hkpSimpleContactConstraintAtom* buffer28;
     unsigned int size2c;
 
-    FUN_00d92f20(void* atom, const unsigned char* first, const unsigned char* second);
+    FUN_00d92f20(void* constraint, const unsigned char* bodyA, const unsigned char* bodyB);
 };
 
 // Initialises the object's vtable and fields, allocates a buffer sized from first[0xd1] and second[0xd1], and zeroes the packet result header fields.
 // @fnv 0x00d92f20
-FUN_00d92f20::FUN_00d92f20(void* atom, const unsigned char* first, const unsigned char* second)
+// pdb: hkpSimpleContactConstraintData::hkpSimpleContactConstraintData | hkpSimpleContactConstraintData.obj | retail, object-file gap fill, high
+// pdb params: constraint, bodyA, bodyB
+FUN_00d92f20::FUN_00d92f20(void* constraint, const unsigned char* bodyA, const unsigned char* bodyB)
 {
     vtable = &DAT_010cc934;
     active06 = 1;
@@ -164,12 +169,12 @@ FUN_00d92f20::FUN_00d92f20(void* atom, const unsigned char* first, const unsigne
     field0c = &field18;
     field10 = 0;
     field14 = 0x80000008;
-    context24 = atom;
+    context24 = constraint;
 
-    unsigned int lenA = first[0xd1];
-    unsigned int lenB = second[0xd1];
+    unsigned int lenA = bodyA[0xd1];
+    unsigned int lenB = bodyB[0xd1];
     unsigned int bytesPerEntry = (lenA + lenB) * 4 + 0x34;
-    buffer28 = AllocateBlock(1, lenA, lenB, (unsigned short)(0x3400 / (int)bytesPerEntry));
+    buffer28 = hkpSimpleContactConstraintAtomUtil_allocateAtom(1, lenA, lenB, (unsigned short)(0x3400 / (int)bytesPerEntry));
 
     PacketResult* result = reinterpret_cast<PacketResult*>(buffer28);
     result->state10 = 0;
@@ -182,7 +187,7 @@ FUN_00d92f20::FUN_00d92f20(void* atom, const unsigned char* first, const unsigne
     result->ptr28 = 0;
     result->ptr2c = 0;
 
-    size2c = buffer28->m_usSizeOfAllAtoms;
+    size2c = buffer28->m_sizeOfAllAtoms;
 }
 
 struct S_00d92fd0_Atom
@@ -219,18 +224,21 @@ struct S_00d92fd0_Holder
     int unk00, unk04, unk08, unk0c;
     S_00d92fd0_Atom* head;
 };
-void __cdecl ResizeAudioStream(S_00d92690_Alloc* a, S_00d92fd0_Arr* arr, int elem);
+void __cdecl ResizeAudioStream(S_00d92690_Alloc* mem, S_00d92fd0_Arr* array, int sizeElem);
 
 struct S_00d92fd0_This
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20;
     S_00d92fd0_Holder* holder;
-    void DispatchAtomHandlers(int p1, float p2, int p3, int p4, int p5, int p6);
+    void DispatchAtomHandlers(int cp, float impulseApplied, int inA, int velA, int inB, int velB);
 };
 
 // Collects atoms from holder->head with type >= 0x17 into a temporary array, then dispatches each in reverse order to a handler chosen by type.
 // @fnv 0x00d92fd0
-void S_00d92fd0_This::DispatchAtomHandlers(int aiArg1, float afArg2, int aiArg3, int aiArg4, int aiArg5, int aiArg6)
+// pdb: hkpSimpleContactConstraintData::collisionResponseEndCallback | hkpSimpleContactConstraintData.obj | retail, vtable slot, high
+// pdb params: cp, impulseApplied, inA, velA, inB, velB
+// pdb locals: atoms, atom
+void S_00d92fd0_This::DispatchAtomHandlers(int cp, float impulseApplied, int inA, int velA, int inB, int velB)
 {
     if (!holder->head)
         return;
@@ -251,16 +259,16 @@ void S_00d92fd0_This::DispatchAtomHandlers(int aiArg1, float afArg2, int aiArg3,
         switch (x->type)
         {
         case 0x18:
-            x->nullsub_31(aiArg1, afArg2, aiArg3, aiArg4, aiArg5, aiArg6);
+            x->nullsub_31(cp, impulseApplied, inA, velA, inB, velB);
             break;
         case 0x17:
-            x->UpdateState_00d21d10(aiArg1, afArg2, aiArg3, aiArg4, aiArg5, aiArg6);
+            x->UpdateState_00d21d10(cp, impulseApplied, inA, velA, inB, velB);
             break;
         case 0x1a:
-            x->CopyData_00d21fc0(aiArg1, afArg2, aiArg3, aiArg4, aiArg5, aiArg6);
+            x->CopyData_00d21fc0(cp, impulseApplied, inA, velA, inB, velB);
             break;
         case 0x1c:
-            x->ProcessState_00d22260(aiArg1, afArg2, aiArg3, aiArg4, aiArg5, aiArg6);
+            x->ProcessState_00d22260(cp, impulseApplied, inA, velA, inB, velB);
             break;
         }
     }
@@ -282,6 +290,9 @@ struct FUN_00d93140_cls
 };
 
 // @fnv 0x00d93140
+// pdb: hkpDynamicsCpIdMgr::newId | hkpSimpleContactConstraintData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkArrayBase<hkpConstraintAtom *>::operator[]
+// pdb params: value
 unsigned int FUN_00d93140_cls::ReplaceOrAppendByte(unsigned char value)
 {
     int i = (int)m_len - 1;
@@ -364,12 +375,14 @@ struct hkClsX
     int unk20;
     hkHolderX* unk24;
 
-    void DispatchNodeCallbacks(int a1, int a2, int a3, int a4, int a5);
+    void DispatchNodeCallbacks(int cp, int inA, int velA, int inB, int velB);
 };
 
 // Walks the hkNodeX list from the holder's unk10 while type is at least 0x17, calling a type-specific function for types 0x17, 0x18, 0x1A and 0x1C.
 // @fnv 0x00d92830
-void hkClsX::DispatchNodeCallbacks(int a1, int a2, int a3, int a4, int a5)
+// pdb: hkpSimpleContactConstraintData::collisionResponseBeginCallback | hkpSimpleContactConstraintData.obj | retail, vtable slot, high
+// pdb params: cp, inA, velA, inB, velB
+void hkClsX::DispatchNodeCallbacks(int cp, int inA, int velA, int inB, int velB)
 {
     hkHolderX* pHolder = unk24;
     if (pHolder->unk10 == 0)
@@ -380,16 +393,16 @@ void hkClsX::DispatchNodeCallbacks(int a1, int a2, int a3, int a4, int a5)
         switch (node->type)
         {
         case 0x18:
-            node->ScaleInverseInertia(a1, a2, a3, a4, a5);
+            node->ScaleInverseInertia(cp, inA, velA, inB, velB);
             break;
         case 0x17:
-            node->SetGlobalVectors(a1, a2, a3, a4, a5);
+            node->SetGlobalVectors(cp, inA, velA, inB, velB);
             break;
         case 0x1A:
-            node->CopyMemory_00d21f50(a1, a2, a3, a4, a5);
+            node->CopyMemory_00d21f50(cp, inA, velA, inB, velB);
             break;
         case 0x1C:
-            node->UpdateFields_00d22160(a1, a2, a3, a4, a5);
+            node->UpdateFields_00d22160(cp, inA, velA, inB, velB);
             break;
         }
         node = node->next;
@@ -433,21 +446,21 @@ inline hkContactPoint* hkpSimpleContactConstraintAtom::getContactPoints() const
 inline PhysicsMaterial* hkpSimpleContactConstraintAtom::getContactPointPropertiesStream(int i)
 {
     return reinterpret_cast<PhysicsMaterial*>(reinterpret_cast<char*>(getContactPoints()) +
-                                              m_usMaxNumContactPoints * sizeof(hkContactPoint) +
-                                              i * m_ucContactPointPropertiesStriding);
+                                              m_numReservedContactPoints * sizeof(hkContactPoint) +
+                                              i * m_contactPointPropertiesStriding);
 }
 
 inline UInt32Value* hkpSimpleContactConstraintAtom::getContactPointPropertiesStream() const
 {
-    return (UInt32Value*)(getContactPoints() + m_usMaxNumContactPoints);
+    return (UInt32Value*)(getContactPoints() + m_numReservedContactPoints);
 }
 
 inline int hkpSimpleContactConstraintAtom::getContactPointPropertiesStriding() const
 {
-    return m_ucContactPointPropertiesStriding;
+    return m_contactPointPropertiesStriding;
 }
 
-hkpSimpleContactConstraintAtom* hkpSimpleContactConstraintAtomUtil_expandOne(hkpSimpleContactConstraintAtom* atom, hkBool* atomReallocated);
+hkpSimpleContactConstraintAtom* hkpSimpleContactConstraintAtomUtil_expandOne(hkpSimpleContactConstraintAtom* oldAtom_mightGetDeallocated, hkBool* atomReallocated);
 void __cdecl ReplaceEntry(void* constraint, hkpSimpleContactConstraintAtom* oldAtom,
                           hkpSimpleContactConstraintAtom* newAtom, int newSize);
 
@@ -479,22 +492,25 @@ struct ContactAtomIdsCallView { int ReplaceOrAppendByte(int index); };
 // Adds a contact point at index size, initializes its properties, updates constraint stats, and reallocates the atom if needed.
 // @fnv 0x00d92df0
 // src: HAVOK_LIB 0x00d92df0
+// pdb: hkpSimpleContactConstraintData::allocateContactPoint | hkpSimpleContactConstraintData.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner, cpOut, cpPropsOut
+// pdb locals: info, atomReallocated
 int hkpSimpleContactConstraintData::allocateContactPoint(hkpConstraintOwner& constraintOwner, hkContactPoint** cpOut,
                                                  PhysicsMaterial** cpPropsOut)
 {
-    hkpSimpleContactConstraintAtom* atom = m_pAtom;
-    atom->m_infoFlags |= 4;
-    int size = atom->m_usNumContactPoints;
+    hkpSimpleContactConstraintAtom* atom = m_atom;
+    atom->m_info |= 4;
+    int size = atom->m_numContactPoints;
 
-    hkpSimpleContactConstraintAtom* oldAtom = m_pAtom;
+    hkpSimpleContactConstraintAtom* oldAtom = m_atom;
     hkBool atomReallocated = false;
-    m_pAtom = hkpSimpleContactConstraintAtomUtil_expandOne(m_pAtom, &atomReallocated);
-    hkpSimpleContactConstraintAtom* localAtom = m_pAtom;
+    m_atom = hkpSimpleContactConstraintAtomUtil_expandOne(m_atom, &atomReallocated);
+    hkpSimpleContactConstraintAtom* localAtom = m_atom;
 
     hkContactPoint* cp = &localAtom->getContactPoints()[size];
     PhysicsMaterial* cpp = localAtom->getContactPointPropertiesStream(size);
     PhysicsMaterial* pPrevProps = reinterpret_cast<PhysicsMaterial*>(reinterpret_cast<char*>(cpp) -
-                                                                     localAtom->m_ucContactPointPropertiesStriding);
+                                                                     localAtom->m_contactPointPropertiesStriding);
     PhysicsMaterial*& initTarget = cpp;
     initTarget->m_fAccumulatedImpulse = 0.0f;
     cpp->m_fImpulseLimit = 0.0f;
@@ -523,15 +539,15 @@ int hkpSimpleContactConstraintData::allocateContactPoint(hkpConstraintOwner& con
         {
             info.add(0x40, 1, 1);
         }
-        constraintOwner.AccumulateStats(m_pHavokConstraint, info);
+        constraintOwner.AccumulateStats(m_constraint, info);
     }
 
     if (atomReallocated)
     {
-        ReplaceEntry(m_pHavokConstraint, oldAtom, m_pAtom, localAtom->m_usSizeOfAllAtoms);
-        m_iAtomSize = localAtom->m_usSizeOfAllAtoms;
+        ReplaceEntry(m_constraint, oldAtom, m_atom, localAtom->m_sizeOfAllAtoms);
+        m_atomSize = localAtom->m_sizeOfAllAtoms;
     }
-    return reinterpret_cast<ContactAtomIdsCallView*>(&m_kAtoms)->ReplaceOrAppendByte(size);
+    return reinterpret_cast<ContactAtomIdsCallView*>(&m_idMgrA)->ReplaceOrAppendByte(size);
 }
 
 // Dispatch contact callbacks and prepare new contact solver state.
@@ -647,12 +663,12 @@ struct S00d92900_World
 };
 inline void hkContactPoint::setDistance(float d)
 {
-    m_vSeparatingNormal.w = d;
+    m_separatingNormal.w = d;
 }
 
 inline float hkContactPoint::getDistance() const
 {
-    return m_vSeparatingNormal.w;
+    return m_separatingNormal.w;
 }
 struct S00d92900_Props
 {
@@ -1011,10 +1027,10 @@ extern float hkpSimpleContactConstraintUtil_calculateSeparatingVelocity(const S0
                           const hkContactPoint* cp);
 extern void hkpWorldCallbackUtil_fireContactPointCallback(S00d92900_World* world, S00d92900_Event& event);
 extern void hkpEntityCallbackUtil_fireContactPointCallbackInternal(S00d92900_Body* entity, S00d92900_Event& event);
-extern void hkMatrix3_setMul_ProcessEntries_00d9ee50(S00d92900_Data* data, const hkContactPoint& cp, S00d92900_CollideParams& params,
-                         S00d92900_Body* rbA, S00d92900_Body* rbB, S00d92900_Accum* accA, S00d92900_Accum* accB,
+extern void hkpSimpleCollisionResponse_solveSingleContact2(S00d92900_Data* constraintData, const hkContactPoint& cp, S00d92900_CollideParams& params,
+                         S00d92900_Body* rigidBodyA, S00d92900_Body* rigidBodyB, S00d92900_Accum* bodyA, S00d92900_Accum* bodyB,
                          S00d92900_Output& output);
-extern void hkpWorldCallbackUtil_fireContactImpulseLimitBreached(S00d92900_World* world, const S00d92900_BreachInfo* info, int num);
+extern void hkpWorldCallbackUtil_fireContactImpulseLimitBreached(S00d92900_World* world, const S00d92900_BreachInfo* breachedContacts, int numBreachedContacts);
 
 static __forceinline void S00d92900_fireEntity(S00d92900_Body* entity, S00d92900_Event& event)
 {
@@ -1049,7 +1065,7 @@ static __forceinline void dispatchContacts(S00d92900_Data* constraintData, const
     S00d92900_PropsStream* prevCpp = 0;
     const int cppStriding = atom->getContactPointPropertiesStriding();
     hkContactPoint* cp = atom->getContactPoints();
-    const int nA = atom->m_usNumContactPoints;
+    const int nA = atom->m_numContactPoints;
     __assume(nA >= 0);
     bound = nA - 1;
 
@@ -1105,7 +1121,7 @@ static __forceinline void dispatchContacts(S00d92900_Data* constraintData, const
                     S00d92900_Accum* bodyA = in->m_pBodyA;
                     S00d92900_Accum* bodyB = in->m_pBodyB;
                     S00d92900_Output output;
-                    hkMatrix3_setMul_ProcessEntries_00d9ee50(constraintData, *cp, params, rbA, rbB, bodyA, bodyB, output);
+                    hkpSimpleCollisionResponse_solveSingleContact2(constraintData, *cp, params, rbA, rbB, bodyA, bodyB, output);
                     S00d92900_Props* props = cpp->asProperties();
                     if (params.m_bCollisionOption)
                     {
@@ -1154,6 +1170,9 @@ static __forceinline void dispatchContacts(S00d92900_Data* constraintData, const
 // Wraps dispatchContacts to process contact points for a constraint atom, firing events and resolving collisions.
 // @fnv 0x00d92900
 // src: XBOX_PDB 0x00d92900
+// pdb: hkSimpleContactConstraintData_fireCallbacks | hkpSimpleContactConstraintData.obj | retail, upstream name already matches, high
+// pdb params: constraintData, in, atom, type
+// pdb locals: last_cpp, cppStriding, assertBuf, ostr, projectedVel, linBold, linAold, event, angAold, angBold, out2, params, bi
 void hkSimpleContactConstraintData_fireCallbacks(S00d92900_Data* constraintData, const S00d92900_QueryIn* in, hkpSimpleContactConstraintAtom* atom, int type)
 {
     int bound;

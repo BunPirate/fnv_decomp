@@ -23,6 +23,7 @@ const NiRTTI* const* BSPlayerDistanceCheckController::GetNiRTTI()
 
 // Runs the destructor and, when bit 0 of flags is set, frees this with operator delete; returns this.
 // @fnv 0x008d1620
+// pdb: BSPlayerDistanceCheckController::`scalar deleting destructor' | BSPlayerDistanceCheckController.obj | retail, vtable slot, high
 void* __thiscall BSPlayerDistanceCheckController::ScalarDeletingDestructor(unsigned int flags)
 {
     this->BSPlayerDistanceCheckController::~BSPlayerDistanceCheckController();
@@ -59,10 +60,13 @@ struct ControllerFactory
     TESObjectDoorController* CreateController(void*);
 };
 // @fnv 0x008d1740
-TESObjectDoorController* ControllerFactory::CreateController(void* context)
+// pdb: BSPlayerDistanceCheckController::CreateClone | BSPlayerDistanceCheckController.obj | retail, vtable slot, high
+// pdb params: kCloning
+// pdb locals: pkClone
+TESObjectDoorController* ControllerFactory::CreateController(void* kCloning)
 {
     TESObjectDoorController* result = new TESObjectDoorController;
-    BSPlayerDistanceCheckController_CopyMembers(result, context);
+    BSPlayerDistanceCheckController_CopyMembers(result, kCloning);
     return result;
 }
 
@@ -219,7 +223,10 @@ extern Manager* DAT_011dea3c;
 DoorSpawnRequest* __cdecl NiObject_DynamicCast(char* tag, void* owner);
 
 // @fnv 0x008d1670
-void BSPlayerDistanceCheckController::UpdateDoorSpawn(unsigned int unkArg)
+// pdb: BSPlayerDistanceCheckController::Update | BSPlayerDistanceCheckController.obj | retail, vtable slot, high
+// pdb params: UpdateData
+// pdb locals: ptarget, diff
+void BSPlayerDistanceCheckController::UpdateDoorSpawn(unsigned int UpdateData)
 {
     DoorSpawnRequest* req;
     ItemHandle handle;
@@ -234,7 +241,7 @@ void BSPlayerDistanceCheckController::UpdateDoorSpawn(unsigned int unkArg)
             DAT_011dea3c->v1f4(&handle, req->NiAVObject_GetWorldTranslate())->SubtractIntoVector();
             if (handle.FUN_00457990() < NiControllerSequence_GetLastTime())
             {
-                m_callback(req);
+                pfnCallback(req);
             }
         }
     }
@@ -249,11 +256,13 @@ void __cdecl NiObject_IsKindOf(int* apTarget, void* apValue);
 
 // @fnv 0x008d1720
 // src: XBOX_PDB 0x008d1720
+// pdb: BSPlayerDistanceCheckController::TargetIsRequiredType | BSPlayerDistanceCheckController.obj | debug, upstream name already matches, high
 void BSPlayerDistanceCheckController::TargetIsRequiredType()
 {
     fnv_008d1720::NiObject_IsKindOf(&fnv_008d1720::DAT_011f4280, m_pkTarget);
 }
 
 // @fnv 0x008d1650
+// pdb: BSPlayerDistanceCheckController::~BSPlayerDistanceCheckController | BSPlayerDistanceCheckController.obj | debug, upstream name already matches, high
 BSPlayerDistanceCheckController::~BSPlayerDistanceCheckController()
 {}

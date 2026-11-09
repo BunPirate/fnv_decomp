@@ -16,6 +16,8 @@ __forceinline void CountingSemaphore::Signal()
 }
 
 // @fnv 0x00aa8430
+// pdb: OEI::IO::IO_Thread::ThreadProc | oei_io_thread.obj | retail, upstream name already matches, high
+// pdb locals: next_request, need_to_quit
 unsigned int OEI::IO::IO_Thread::ThreadProc()
 {
     bool quit;

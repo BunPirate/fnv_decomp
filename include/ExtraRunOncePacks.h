@@ -9,6 +9,7 @@ struct ListItem;
 typedef BSSimpleList<ListItem*> ExtraSavePackageListView;
 }
 
+// pdb: class ExtraRunOncePacks, size 0x10, bases: BSExtraData, 1 members
 class ExtraRunOncePacks : public BSExtraData
 {
 public:

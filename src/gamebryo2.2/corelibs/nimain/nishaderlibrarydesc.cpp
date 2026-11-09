@@ -40,6 +40,7 @@ struct MyDesc
 
 // @fnv 0x00a9ffd0
 // src: XBOX_PDB 0x00a9ffd0
+// pdb: NiShaderLibraryDesc::GetShaderCount | NiShaderLibraryDesc.obj | debug, upstream name already matches, high
 unsigned int MyDesc::NiShaderLibraryDesc_GetShaderCount()
 {
     return unk44;

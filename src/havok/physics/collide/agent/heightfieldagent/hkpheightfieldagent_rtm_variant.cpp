@@ -81,7 +81,7 @@ struct D323B0Collector : D323B0CollectorBase {
     virtual void unk00();
     virtual void unk04();
 };
-void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int a, int b, int c, D323B0CollectorBase* collector);
+void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int csBody, int hfBody, int c, D323B0CollectorBase* collector);
 void __cdecl hkpHeightFieldAgent_staticGetClosestPoints_ProcessState_00d323b0(int aiArg1, int aiArg2, int aiArg3, int aiData);
 struct Handler {
     virtual void v0();
@@ -97,7 +97,7 @@ struct Owner {
     Handler* callback;
     unsigned short* indices;
     int count;
-    void NotifyAndClear(int value);
+    void NotifyAndClear(int constraintOwner);
 };
 extern "C" void __cdecl hkpHeightFieldAgent_ProcessSphereQueries(void* arg0, void* arg1, void* arg2, void* arg3, void* arg4);
 // Forwards all five arguments unchanged to FUN_00d31d30.
@@ -107,7 +107,7 @@ extern "C" void __stdcall hkpHeightFieldAgent_linearCast(void* arg0, void* arg1,
 {
     hkpHeightFieldAgent_ProcessSphereQueries(arg0, arg1, arg2, arg3, arg4);
 }
-extern "C" void __cdecl hkpHeightFieldAgent_staticGetPenetrations(void* arg0, void* arg1, void* arg2, void* arg3);
+extern "C" void __cdecl hkpHeightFieldAgent_staticGetPenetrations(void* csBody, void* hfBody, void* arg2, void* arg3);
 // @fnv 0x00d32150
 // src: HAVOK_SRC 0x00d32150
 extern "C" void __stdcall hkpHeightFieldAgent_getPenetrations(void* arg0, void* arg1, void* arg2, void* arg3)
@@ -115,7 +115,7 @@ extern "C" void __stdcall hkpHeightFieldAgent_getPenetrations(void* arg0, void* 
     hkpHeightFieldAgent_staticGetPenetrations(arg0, arg1, arg2, arg3);
 }
 extern char DAT_010ce81c;
-void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int a1, int a2, int a3, void* a4);
+void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int csBody, int hfBody, int a3, void* a4);
 struct FUN_00d32370_cls {
     void* vt;
     unsigned char flag;
@@ -253,25 +253,28 @@ struct ContactPointPair {
 };
 struct CollisionScratch { hkTransform transform; ContactPointPair contact; };
 
-void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int a1, int a2, int a3, void* a4);
+void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int csBody, int hfBody, int a3, void* a4);
 
 // @fnv 0x00d319e0
 // src: XBOX_PDB 0x00d319e0
-void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int a, int b, int c, D323B0CollectorBase* collector)
+// pdb: hkpHeightFieldAgent::staticGetClosestPoints | hkpHeightFieldAgent.obj | retail, upstream name already matches, high
+// pdb params: csBody, hfBody, input, collector
+// pdb locals: bTa, in2, point
+void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int csBody, int hfBody, int c, D323B0CollectorBase* collector)
 {
-    const hkpCdBody* bodyA = (const hkpCdBody*)a;
-    const hkpCdBody* bodyB = (const hkpCdBody*)b;
+    const hkpCdBody* bodyA = (const hkpCdBody*)csBody;
+    const hkpCdBody* bodyB = (const hkpCdBody*)hfBody;
     const CollisionAgentContext* input = (const CollisionAgentContext*)c;
 
     static_cast<StringCursor_hkpheightfieldagent_rtm_variant&>(hkMonitorStream::getInstance()).timerBegin(DAT_010cea38, DAT_010cea7c);
 
-    const hkpShape* shapeA = bodyA->m_pCollisionShape;
-    hkpHeightFieldShape* shapeB = (hkpHeightFieldShape*)bodyB->m_pCollisionShape;
+    const hkpShape* shapeA = bodyA->m_shape;
+    hkpHeightFieldShape* shapeB = (hkpHeightFieldShape*)bodyB->m_shape;
     // SIMD scratch storage preserves the original frame: a local shared hkTransform
     // contains the SDK __m128 byte lanes and would introduce a VC9 /GS cookie.
     N::LocalM128 scratchStorage[sizeof(CollisionScratch) / sizeof(N::LocalM128)];
     CollisionScratch& scratch = *(CollisionScratch*)scratchStorage;
-    scratch.transform.hkTransform_setMulInverseMul(bodyB->m_pMotionState, bodyA->m_pMotionState);
+    scratch.transform.hkTransform_setMulInverseMul(bodyB->m_motion, bodyA->m_motion);
 
     // These sphere-representation virtual slots are absent from shared hkpShape.
     int count = ((int (__thiscall*)(const hkpShape*))(*(void***)shapeA)[11])(shapeA);
@@ -322,9 +325,9 @@ void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int a, int b, int c, D32
             dist4 = N::_mm_shuffle_ps(dist4,dist4,0);
             (*(N::LocalM128*)&posInB.m_vComponents) = N::_mm_add_ps(N::_mm_mul_ps(dist4, (*(N::LocalM128*)&hit.m_pos.m_vComponents)), (*(N::LocalM128*)&spherePtr->m_pos.m_vComponents));
 
-            point.m_kPoint.m_vContactPosition.SetTransformedPoint(((const hkMotionState*)bodyB->m_pMotionState)->m_kMotionTransform, posInB);
-            point.m_kPoint.m_vSeparatingNormal.SetRotatedDirection(((const hkMotionState*)bodyB->m_pMotionState)->m_kMotionTransform, *(const hkVector4*)&hit.m_pos);
-            point.m_kPoint.m_vSeparatingNormal.w = (*(N::LocalM128*)&hit.m_pos.m_vComponents).m128_f32[3];
+            point.m_kPoint.m_position.SetTransformedPoint(((const hkMotionState*)bodyB->m_motion)->m_transform, posInB);
+            point.m_kPoint.m_separatingNormal.SetRotatedDirection(((const hkMotionState*)bodyB->m_motion)->m_transform, *(const hkVector4*)&hit.m_pos);
+            point.m_kPoint.m_separatingNormal.w = (*(N::LocalM128*)&hit.m_pos.m_vComponents).m128_f32[3];
 
             ((hkpCdPointCollector*)collector)->AddCdPoint(point);
         }
@@ -389,7 +392,7 @@ struct S_00d32270_cls
     hkVector4 m_30;
     int m_40;
     S_00d32270_Target* m_44;
-    void hkHeightFieldRayForwardingCollector_addRayHit(S_00d32270_Q* q, S_00d32270_P* p);
+    void hkHeightFieldRayForwardingCollector_addRayHit(S_00d32270_Q* cdBody, S_00d32270_P* hitInfo);
 };
 
 struct S_00d32270_In
@@ -405,13 +408,16 @@ static __forceinline float S_min(float a, float b) { return (b < a) ? b : a; }
 
 // @fnv 0x00d32270
 // src: XBOX_PDB 0x00d32270
-void S_00d32270_cls::hkHeightFieldRayForwardingCollector_addRayHit(S_00d32270_Q* q, S_00d32270_P* p)
+// pdb: hkHeightFieldRayForwardingCollector::addRayHit | hkpHeightFieldAgent.obj | retail, upstream name already matches, high
+// pdb params: cdBody, hitInfo
+// pdb locals: point
+void S_00d32270_cls::hkHeightFieldRayForwardingCollector_addRayHit(S_00d32270_Q* cdBody, S_00d32270_P* hitInfo)
 {
-    __declspec(align(16)) S_00d32270_In in(m_40, q);
+    __declspec(align(16)) S_00d32270_In in(m_40, cdBody);
     float s = -m_20;
-    float t = p->f10;
-    S_combine(in.a, m_10, m_30, Scale(p->f10));
-    S_rotate(in.b, *q->m_08, p->v00);
+    float t = hitInfo->f10;
+    S_combine(in.a, m_10, m_30, Scale(hitInfo->f10));
+    S_rotate(in.b, *cdBody->m_08, hitInfo->v00);
     S_accumulate(in.a, Scale(s), in.b);
     in.b.w = t;
     m_44->v04(&in);

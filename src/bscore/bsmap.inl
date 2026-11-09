@@ -3,6 +3,9 @@
 
 template <>
 // @fnv 0x00a1e380
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,int>::GetAt | Tile.obj | debug, call graph, medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 bool BSMapBase<unsigned long, ScrapHeapBuffer*>::GetAt(unsigned long key, ScrapHeapBuffer*& data)
 {
     unsigned int index = this->KeyToHashIndex(key);
@@ -22,7 +25,10 @@ bool BSMapBase<unsigned long, ScrapHeapBuffer*>::GetAt(unsigned long key, ScrapH
 
 template <>
 // @fnv 0x00aa4860
-void BSMapBase<void*, PointerMapValue*>::SetAt(void* key, PointerMapValue* data)
+// pdb: BSMapBase<unsigned long,ScrapHeap *>::SetAt | MemoryManager.obj | debug, call graph, high
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
+void BSMapBase<void*, PointerMapValue*>::SetAt(void* key, PointerMapValue* val)
 {
     unsigned int index = this->KeyToHashIndex((unsigned int)key);
     BSMapEntry<void*, PointerMapValue*>* item =
@@ -34,13 +40,13 @@ void BSMapBase<void*, PointerMapValue*>::SetAt(void* key, PointerMapValue* data)
         if (this->IsKeysEqual((unsigned int)key, (unsigned int)item->m_key))
         {
             this->ClearValue((NiTMapItem<unsigned int, unsigned int>*)item);
-            this->SetValue((NiTMapItem<unsigned int, unsigned int>*)item, (unsigned int)key, (unsigned int)data);
+            this->SetValue((NiTMapItem<unsigned int, unsigned int>*)item, (unsigned int)key, (unsigned int)val);
             return;
         }
         item = item->m_pkNext;
     }
     item = (BSMapEntry<void*, PointerMapValue*>*)this->NewItem();
-    this->SetValue((NiTMapItem<unsigned int, unsigned int>*)item, (unsigned int)key, (unsigned int)data);
+    this->SetValue((NiTMapItem<unsigned int, unsigned int>*)item, (unsigned int)key, (unsigned int)val);
     item->m_pkNext = ((BSMapEntry<void*, PointerMapValue*>**)this->m_ppkHashTable)[index];
     ((BSMapEntry<void*, PointerMapValue*>**)this->m_ppkHashTable)[index] = item;
     ++this->m_kItemCount.m_uiCount;
@@ -76,6 +82,7 @@ void BSMapBase<unsigned int, BGSDistantTreeBlock::InstanceData*>::SetAt(
 
 template <>
 // @fnv 0x0048b460
+// pdb: BSMap<int,TEX_SWAP *>::~BSMap<int,TEX_SWAP *> | TESModelTextureSwap.obj | debug, call graph (shared callers), high
 BSMapBase<int, DistantTreeTextureInfo*>::~BSMapBase()
 {
     this->RemoveAll();

@@ -3,6 +3,7 @@
 #include "NiDX92DBufferData.h"
 
 // The D3D9 SDK's presentation parameters (d3d9types.h), 0x38 bytes.
+// pdb: structure _D3DPRESENT_PARAMETERS_, size 0x7c (here 0x38), 20 members
 struct _D3DPRESENT_PARAMETERS_
 {
     unsigned int BackBufferWidth;

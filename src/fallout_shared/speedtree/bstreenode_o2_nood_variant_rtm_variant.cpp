@@ -81,7 +81,7 @@ struct FUN_0066d510_shell
 {
     const void* bhkMultiSphereShape_GetRTTI();
 };
-extern const void* g_012683e0;
+extern const void* bhkMultiSphereShape_ms_RTTI;
 struct FUN_0066d520_shell
 {
     void FUN_00cb78b0();
@@ -123,9 +123,9 @@ struct FUN_0066d3d0_shell
 extern int DAT_01066acc;
 struct FUN_0066d3a0_shell
 {
-    void* __thiscall bhkSPCollisionObject_bhkSPCollisionObject(void*);
+    void* __thiscall bhkSPCollisionObject_ctor(void*);
 };
-extern "C" void __cdecl hkActionCinfo_hkActionCinfo();
+extern "C" void __cdecl hkActionCinfo_ctor();
 extern "C" void __cdecl FUN_0056e270();
 struct FUN_0056e120_shell
 {
@@ -133,7 +133,7 @@ struct FUN_0056e120_shell
 };
 struct FUN_0066d550_shell
 {
-    void* Initialize();
+    void* hkTransformShapeCinfo_ctor();
 };
 struct FUN_00c8bed0_holder
 {
@@ -148,7 +148,7 @@ struct FUN_0066d740_owner
 void __cdecl _delete(void* p, unsigned int size);
 struct FUN_0056e900_shell
 {
-    void __thiscall StepAndReturnThis();
+    void __thiscall hkSphereRepShapeCinfo_ctor();
 };
 struct FUN_006299a0_shell
 {
@@ -156,7 +156,7 @@ struct FUN_006299a0_shell
 };
 struct FUN_0066d770_shell
 {
-    void* __thiscall hkMultiSphereShapeCinfo_hkMultiSphereShapeCinfo();
+    void* __thiscall hkMultiSphereShapeCinfo_ctor();
 };
 struct FUN_0094db80_shell
 {
@@ -289,7 +289,7 @@ struct FUN_0066d490_base
 struct FUN_0066d490_cls : FUN_0066d490_base
 {
     void* m_vptr;
-    void bhkMultiSphereShape_Init(unsigned int a1);
+    void bhkMultiSphereShape_Init(unsigned int arInfo);
     FUN_0066d490_cls(unsigned int a1);
 };
 extern char DAT_01066d44;
@@ -302,8 +302,8 @@ struct FUN_0066d590_base
 struct FUN_0066d590_cls : FUN_0066d590_base
 {
     void* m_vptr;
-    void bhkTransformShape_Init(unsigned int a1);
-    FUN_0066d590_cls(unsigned int a1);
+    void bhkTransformShape_Init(unsigned int arInfo);
+    FUN_0066d590_cls(unsigned int arInfo);
 };
 extern "C" int __cdecl BSsprintf(char* text, unsigned size, const char* fmt, ...);
 extern "C" char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* s);
@@ -748,7 +748,7 @@ struct SpawnedSourceOwner
     virtual void Apply(SpawnedSource* apSource);
 
     void bhkCapsuleShape_Init(__m128* apA, __m128* apB, float afT);
-    void bhkCapsuleShape_Init_00cab820(SpawnedSource* apSource);
+    void bhkCapsuleShape_Init_00cab820(SpawnedSource* arInfo);
 };
 #include <xmmintrin.h>
 #include <xmmintrin.h>
@@ -815,7 +815,7 @@ struct S00c880f0_Ifc
     virtual void v10();
     virtual void v14();
     virtual void v18(S00c880f0_Bounds* out);
-    void hkpAabbPhantom_setAabb(S00c880f0_Bounds* out);
+    void hkpAabbPhantom_setAabb(S00c880f0_Bounds* newAabb);
 };
 struct S00c880f0_Node
 {
@@ -837,6 +837,8 @@ struct S00c880f0_LockObj
 };
 // @fnv 0x00c880f0
 // src: XBOX_PDB 0x00c880f0
+// pdb: bhkPCollisionObject::NitohkTransform | bhkPCollisionObject.obj | retail, upstream name already matches, high
+// pdb locals: pobj, pp, nit, hkv, vol
 void S00c880f0_Cls::bhkPCollisionObject_NitohkTransform()
 {
     NiAVObject* a = m_08;

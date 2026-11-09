@@ -12,6 +12,7 @@ class TESForm;
 class TESGlobal;
 class TESObjectREFR;
 
+// pdb: class TESLeveledList, size 0x1c, bases: BaseFormComponent, 5 members
 class TESLeveledList : public BaseFormComponent
 {
 public:
@@ -32,8 +33,8 @@ public:
     void ErrorCheckList();
     void InitializeComponent();
     void ClearComponent();
-    void BaseFormRecord(BaseFormComponent* component);
-    bool IsEqualToBase(BaseFormComponent* component);
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
+    bool IsEqualToBase(BaseFormComponent* apCompareFC);
     void SetChanceNone(unsigned char chance);
     void ExtraWeaponModFlags_SetWeaponModFlags(unsigned char chance);
     bool GetCalcAllBelow();
@@ -48,28 +49,28 @@ public:
     void SetChanceGlobal(TESGlobal* global);
     void InitializeLeveledList();
     void SortLeveledList();
-    LeveledObject* CreateLeveledObject(unsigned short level, unsigned short count, TESForm* form, ContainerItemExtra* extra);
+    LeveledObject* TESLeveledList_AddLeveledObject(unsigned short asLevel, unsigned short asCount, TESForm* apForm, ContainerItemExtra* apExtra);
     void DeleteLeveledObject(LeveledObject* object);
     void SelectLeveledObject(unsigned short level, TESForm** form, unsigned short* count, ContainerItemExtra** extra, bool recurse, int mode);
-    void SelectLeveledObject(unsigned short level, TESForm*& form, unsigned short& count, ContainerItemExtra*& extra, bool recurse, int mode);
-    void PopulateContainerWithLeveledItems(unsigned short level, unsigned short count, TESContainer* container, int mode);
-    void PopulateContainerFromReference(TESObjectREFR* reference, TESContainer* container);
-    void PopulateContainerFromReference(void* reference, TESContainer* container);
-    void ClearScriptAddedLeveledObjects();
+    void CalculateCurrentForm(unsigned short asLevel, TESForm*& apOutForm, unsigned short& asOutCount, ContainerItemExtra*& apOutExtra, bool abRecurse, int aiAllBelowForce);
+    void CalculateCurrentFormList(unsigned short asLevel, unsigned short asCount, TESContainer* apOutCont, int aiAllBelowForce);
+    void CalculateCurrentFormListForRef(TESObjectREFR* reference, TESContainer* container);
+    void CalculateCurrentFormListForRef(void* reference, TESContainer* container);
+    void RemoveAllScriptAddedLeveledObjects();
     void AddScriptAddedLeveledObject(TESForm* form, unsigned short level, unsigned short count, TESForm* owner, ContainerItemExtra* extra);
     void SaveGame(BGSSaveFormBuffer* buffer);
-    void LoadGame(BGSLoadFormBuffer* buffer);
-    void Revert(BGSLoadFormBuffer* buffer);
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     void Save();
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     static TESLeveledList* GetFormAsLeveledList(TESForm* form);
     void* GetLeveledList();
     // The compiler supplies __vecDelDtor(unsigned int).
 
     BSSimpleList<LeveledObject*> leveledList;
-    unsigned char m_pChanceGlobal;
-    unsigned char m_ucChanceNone;
+    unsigned char cChanceNone;
+    unsigned char cLLFlags;
     unsigned char layoutPaddingE[2];
-    TESGlobal* m_pLevelGlobal;
-    BSSimpleList<LeveledObject*> m_kLeveledObjects;
+    TESGlobal* pChanceGlobal;
+    BSSimpleList<LeveledObject*> ScriptAddedList;
 };

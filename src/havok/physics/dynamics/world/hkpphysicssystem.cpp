@@ -12,7 +12,7 @@
 // Allocator-dependent hkArray bodies are unit-defined; preserve this unit's original inline call forms.
 inline void memMoveD062(void* pvDst, const void* pvSrc, int iNumBytes);
 inline void memCpy4_d061(void* dst, const void* src, int nbytes);
-void __cdecl ResizeAudioStream(void* allocator, void* array, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 inline hkMemoryAllocator& physicsHeap(hkMemoryRouter& router)
 {
@@ -130,12 +130,14 @@ struct FUN_00d06090_Class
     DDCC60World** refs3;
     int count3;
 
-    void ReleaseAllReferences();
+    void hkpPhysicsSystem_removeAll();
 };
 
 // Calls removeReference on each non-null entry of the four reference arrays, then resets their counts to zero.
 // @fnv 0x00d06090
-void FUN_00d06090_Class::ReleaseAllReferences()
+// src: XBOX_RETAIL_PDB 0x00d06090
+// pdb: hkpPhysicsSystem::removeAll | hkpPhysicsSystem.obj | retail, object-file gap fill, high
+void FUN_00d06090_Class::hkpPhysicsSystem_removeAll()
 {
     int count = count0;
     for (int i = 0; i < count; ++i)
@@ -210,17 +212,19 @@ struct FUN_00d06640_class
     Buffer m_pWorkingSet[4];
     S_00d49310_Lock m_lock;
 
-    void ReleaseAllReferences();
-    void Destroy();
+    void hkpPhysicsSystem_removeAll();
+    void hkpPhysicsSystem_dtor();
 };
 
 // @fnv 0x00d06640
-void FUN_00d06640_class::Destroy()
+// src: XBOX_RETAIL_PDB 0x00d06640
+// pdb: hkpPhysicsSystem::~hkpPhysicsSystem | hkpPhysicsSystem.obj | retail, call graph (shared callers), high
+void FUN_00d06640_class::hkpPhysicsSystem_dtor()
 {
     unsigned int highBit = 0x80000000u;
 
     m_pVtable = &DAT_010cce28;
-    ReleaseAllReferences();
+    hkpPhysicsSystem_removeAll();
     m_lock.~S_00d49310_Lock();
 
     hkMemoryRouter* router = (&hkMemoryRouter::getInstance());
@@ -264,6 +268,7 @@ void FUN_00d06640_class::Destroy()
 
 // @fnv 0x00cb0020
 // src: XBOX_PDB 0x00cb0020
+// pdb: hkpConstraintData::isBuildJacobianCallbackRequired | bhkMalleableConstraint.obj | debug, vtable slot, medium
 void __stdcall hkMemoryTrackStreamWriter_seekTellSupported(unsigned char* output)
 {
     *output = 0;
@@ -286,6 +291,7 @@ class hkObjD062
 
 // Iterates m_entries backwards and removes every entry that is null via removeAtAndCopy.
 // @fnv 0x00d06230
+// pdb: hkpPhysicsSystem::removeNullPhantoms | hkpPhysicsSystem.obj | debug, object-file gap fill, medium
 void hkObjD062::RemoveNullEntries()
 {
     for (int i = m_entries.GetLogicalSize() - 1; i >= 0; i--)
@@ -305,21 +311,23 @@ struct Shape64
     void __thiscall FUN_00c90510();
 };
 typedef Shape64* ShapePtr64;
-void __cdecl ResizeAudioStream(void* allocator, hkArray<ShapePtr64>* array, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, hkArray<ShapePtr64>* array, int sizeElem);
 struct Container64
 {
     void* vtable;
     void* pad04;
     hkArray<ShapePtr64> array;
-    void __thiscall AddShape(Shape64* object);
+    void __thiscall AddShape(Shape64* rb);
 };
 // Calls FUN_00c90510 on object, then appends object to array, growing it via ResizeAudioStream when full.
 // @fnv 0x00d064a0
-void Container64::AddShape(Shape64* pShape)
+// pdb: hkpPhysicsSystem::addRigidBody | hkpPhysicsSystem.obj | retail, call graph, high
+// pdb params: rb
+void Container64::AddShape(Shape64* rb)
 {
-    if (pShape)
+    if (rb)
     {
-        pShape->FUN_00c90510();
+        rb->FUN_00c90510();
         hkArray<ShapePtr64>* pArray = &array;
         hkMemoryRouter* router = (&hkMemoryRouter::getInstance());
         if (pArray->m_iElementCount == (pArray->m_iCapacityState & 0x3fffffff))
@@ -328,7 +336,7 @@ void Container64::AddShape(Shape64* pShape)
         }
         ShapePtr64* pSlot = pArray->m_data + pArray->m_iElementCount;
         __assume(pSlot != 0);
-        new (pSlot) ShapePtr64(pShape);
+        new (pSlot) ShapePtr64(rb);
         ++pArray->m_iElementCount;
     }
 }
@@ -336,7 +344,7 @@ void Container64::AddShape(Shape64* pShape)
 struct FUN_00cb0b80
 {
     char* m_kStringBuffer;
-    FUN_00cb0b80(const char* s) throw();
+    FUN_00cb0b80(const char* string) throw();
 };
 
 class hkRefObjD065
@@ -368,6 +376,8 @@ class FUN_00d065e0 : public hkRefObjD065
 
 // Initializes the object's name, m_3c to 0 and m_40 to true, leaving the four arrays default-constructed.
 // @fnv 0x00d065e0
+// pdb: hkpPhysicsSystem::hkpPhysicsSystem | hkpPhysicsSystem.obj | retail, call graph, high
+// pdb params: f
 FUN_00d065e0::FUN_00d065e0() throw() : m_name(0), m_3c(0), m_40(true)
 {}
 
@@ -382,13 +392,14 @@ struct FnvCpu_FUN_00d06c00_CpuObject
 {
     unsigned int unk00;
     unsigned short size;
-    void Destroy();
+    void hkpPhysicsSystem_dtor();
     FnvCpu_FUN_00d06c00_CpuObject* FUN_00d06c00(unsigned int flags);
 };
 // @fnv 0x00d06c00
+// pdb: hkpPhysicsSystem::`scalar deleting destructor' | hkpPhysicsSystem.obj | retail, vtable slot, high
 FnvCpu_FUN_00d06c00_CpuObject* FnvCpu_FUN_00d06c00_CpuObject::FUN_00d06c00(unsigned int flags)
 {
-    Destroy();
+    hkpPhysicsSystem_dtor();
     if (flags & 1)
     {
         hkMemoryRouter* holder = (&hkMemoryRouter::getInstance());
@@ -401,18 +412,20 @@ FnvCpu_FUN_00d06c00_CpuObject* FnvCpu_FUN_00d06c00_CpuObject::FUN_00d06c00(unsig
 // The shared class has no copy-method declaration; this helper keeps the original ECX instance and stack argument.
 // Copies the rigid body, constraint, action, phantom, name, user data, and slot enabled state arrays and fields from kOther into this physics system.
 // @fnv 0x00d06290
+// pdb: hkpPhysicsSystem::copy | hkpPhysicsSystem.obj | retail, object-file run extension, low
+// pdb params: toCopy
 void __fastcall CopyPhysicsSystem(hkpPhysicsSystem* system, void*, const hkpPhysicsSystem& kOther)
 {
-    system->m_ppRigidBodies = kOther.m_ppRigidBodies;
-    system->m_kPhantoms = kOther.m_kPhantoms;
-    system->m_ppConstraints = kOther.m_ppConstraints;
-    system->m_ppActions = kOther.m_ppActions;
+    system->m_rigidBodies = kOther.m_rigidBodies;
+    system->m_phantoms = kOther.m_phantoms;
+    system->m_constraints = kOther.m_constraints;
+    system->m_actions = kOther.m_actions;
     system->m_name.UpdateState_00cb0c30(&kOther.m_name);
-    system->m_ulUserData = kOther.m_ulUserData;
-    system->m_bSlotEnabled = kOther.m_bSlotEnabled;
+    system->m_userData = kOther.m_userData;
+    system->m_active = kOther.m_active;
 }
 
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 class hkShapeD064
 {
@@ -426,22 +439,24 @@ class hkOwnerD064
     int unk00[11];
     hkArray<hkShapeD064*> m_shapes;
 
-    void hkpPhysicsSystem_addPhantom(hkShapeD064* shape);
+    void hkpPhysicsSystem_addPhantom(hkShapeD064* p);
 };
 
 // If shape is non-null, calls shape->FUN_00c90510() and appends it to m_shapes via AddBack.
 // @fnv 0x00d064f0
 // src: HAVOK_LIB 0x00d064f0
-void hkOwnerD064::hkpPhysicsSystem_addPhantom(hkShapeD064* shape)
+// pdb: hkpPhysicsSystem::addPhantom | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb params: p
+void hkOwnerD064::hkpPhysicsSystem_addPhantom(hkShapeD064* p)
 {
-    if (shape)
+    if (p)
     {
-        shape->FUN_00c90510();
-        appendPhysicsArray(m_shapes, shape);
+        p->FUN_00c90510();
+        appendPhysicsArray(m_shapes, p);
     }
 }
 
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 class hkShapeXd06540
 {
@@ -461,6 +476,8 @@ class hkOwnerXd06540
 // If shape is non-null, calls shape->FUN_00c90510() and appends shape to m_shapes via AddBack.
 // @fnv 0x00d06540
 // src: HAVOK_LIB 0x00d06540
+// pdb: hkpPhysicsSystem::addConstraint | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb params: c
 void hkOwnerXd06540::hkpPhysicsSystem_addConstraint(hkShapeXd06540* shape)
 {
     if (shape)
@@ -470,7 +487,7 @@ void hkOwnerXd06540::hkpPhysicsSystem_addConstraint(hkShapeXd06540* shape)
     }
 }
 
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 class hkShapeXd06590
 {
@@ -484,18 +501,20 @@ class hkOwnerXd06590
     int unk00[8];
     hkArray<hkShapeXd06590*> m_shapes;
 
-    void hkpPhysicsSystem_addAction(hkShapeXd06590* shape);
+    void hkpPhysicsSystem_addAction(hkShapeXd06590* a);
 };
 
 // If shape is non-null, calls shape->FUN_00c90510() and appends it to m_shapes via AddBack.
 // @fnv 0x00d06590
 // src: HAVOK_LIB 0x00d06590
-void hkOwnerXd06590::hkpPhysicsSystem_addAction(hkShapeXd06590* shape)
+// pdb: hkpPhysicsSystem::addAction | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb params: a
+void hkOwnerXd06590::hkpPhysicsSystem_addAction(hkShapeXd06590* a)
 {
-    if (shape)
+    if (a)
     {
-        shape->FUN_00c90510();
-        appendPhysicsArray(m_shapes, shape);
+        a->FUN_00c90510();
+        appendPhysicsArray(m_shapes, a);
     }
 }
 
@@ -549,7 +568,7 @@ struct FUN_00ca8890_Class
     int unkE0, unkE4, unkE8, unkEC;
     hkTransform m_kMotionTransform;
 
-    void hkpRigidBody_setTransform(const AlignedTransform* t);
+    void hkpRigidBody_setTransform(const AlignedTransform* transform);
 };
 
 struct FUN_00cf30f0_Class
@@ -557,7 +576,7 @@ struct FUN_00cf30f0_Class
     void ApplyTransformToWorldConstraint(const hkTransform* t);
 };
 
-void tranformPhantom(void* phantom, const hkTransform* t);
+void tranformPhantom(void* phantom, const hkTransform* transformation);
 
 // The original transform input is copied as four scalar words per column before the aligned SIMD copy.
 struct TransformColumnFields
@@ -567,33 +586,37 @@ struct TransformColumnFields
 
 struct PhysicsSystemWrapper : public hkpPhysicsSystem
 {
-    void ApplyMotionTransform(const hkTransform* a2);
+    void hkpPhysicsSystem_transform(const hkTransform* transformation);
 };
 
 // Applies a2 to every rigid body, constraint, and phantom in the physics system.
 // @fnv 0x00d05f60
-void PhysicsSystemWrapper::ApplyMotionTransform(const hkTransform* a2)
+// src: XBOX_RETAIL_PDB 0x00d05f60
+// pdb: hkpPhysicsSystem::transform | hkpPhysicsSystem.obj | retail, object-file gap fill, high
+// pdb params: transformation
+// pdb locals: temptrans, assertBuf, ostr
+void PhysicsSystemWrapper::hkpPhysicsSystem_transform(const hkTransform* transformation)
 {
-    for (int i = 0; i < m_ppRigidBodies.m_iElementCount; ++i)
+    for (int i = 0; i < m_rigidBodies.m_iElementCount; ++i)
     {
         AlignedTransform t1;
-        *(TransformColumnFields*)&t1.m_kColumn0 = *(const TransformColumnFields*)&a2->m_kColumn0;
-        *(TransformColumnFields*)&t1.m_kColumn1 = *(const TransformColumnFields*)&a2->m_kColumn1;
-        *(TransformColumnFields*)&t1.m_kColumn2 = *(const TransformColumnFields*)&a2->m_kColumn2;
-        *(TransformColumnFields*)&t1.m_vTranslation = *(const TransformColumnFields*)&a2->m_vTranslation;
+        *(TransformColumnFields*)&t1.m_kColumn0 = *(const TransformColumnFields*)&transformation->m_kColumn0;
+        *(TransformColumnFields*)&t1.m_kColumn1 = *(const TransformColumnFields*)&transformation->m_kColumn1;
+        *(TransformColumnFields*)&t1.m_kColumn2 = *(const TransformColumnFields*)&transformation->m_kColumn2;
+        *(TransformColumnFields*)&t1.m_vTranslation = *(const TransformColumnFields*)&transformation->m_vTranslation;
 
         AlignedTransform t2 = t1;
 
-        t2.ProcessTransformedMatrixCopy_00cb23e0(&((FUN_00ca8890_Class*)m_ppRigidBodies.m_data[i])->m_kMotionTransform);
-        ((FUN_00ca8890_Class*)m_ppRigidBodies.m_data[i])->hkpRigidBody_setTransform(&t2);
+        t2.ProcessTransformedMatrixCopy_00cb23e0(&((FUN_00ca8890_Class*)m_rigidBodies.m_data[i])->m_kMotionTransform);
+        ((FUN_00ca8890_Class*)m_rigidBodies.m_data[i])->hkpRigidBody_setTransform(&t2);
     }
-    for (int i = 0; i < m_ppConstraints.m_iElementCount; ++i)
+    for (int i = 0; i < m_constraints.m_iElementCount; ++i)
     {
-        ((FUN_00cf30f0_Class*)m_ppConstraints.m_data[i])->ApplyTransformToWorldConstraint(a2);
+        ((FUN_00cf30f0_Class*)m_constraints.m_data[i])->ApplyTransformToWorldConstraint(transformation);
     }
-    for (int i = 0; i < m_kPhantoms.m_iElementCount; ++i)
+    for (int i = 0; i < m_phantoms.m_iElementCount; ++i)
     {
-        tranformPhantom(m_kPhantoms.m_data[i], a2);
+        tranformPhantom(m_phantoms.m_data[i], transformation);
     }
 }
 
@@ -607,18 +630,20 @@ struct BodyCollection
     ReferenceBody** data;
     int count;
     unsigned int capacityFlags;
-    void hkpPhysicsSystem_removeRigidBody(unsigned int index);
+    void hkpPhysicsSystem_removeRigidBody(unsigned int i);
 };
 // Calls FUN_00c905b0 on the element at index, decrements count, and shifts the last element into the slot if index is not the last.
 // @fnv 0x00d06130
 // src: HAVOK_LIB 0x00d06130
-void BodyCollection::hkpPhysicsSystem_removeRigidBody(unsigned int index)
+// pdb: hkpPhysicsSystem::removeRigidBody | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb params: i
+void BodyCollection::hkpPhysicsSystem_removeRigidBody(unsigned int i)
 {
-    data[index]->FUN_00c905b0();
+    data[i]->FUN_00c905b0();
     --count;
-    if (count != index)
+    if (count != i)
     {
-        ReferenceBody** dst = data + index;
+        ReferenceBody** dst = data + i;
         ReferenceBody* const* src = data + count;
         for (int n = 0; n < sizeof(ReferenceBody*); n += sizeof(ReferenceBody*))
             *(ReferenceBody**)((char*)dst + n) = *(ReferenceBody* const*)((const char*)src + n);
@@ -635,18 +660,20 @@ struct OwnerD061
     hkRefD061** refs3;
     int count3;
     unsigned int capacityFlags3;
-    void hkpPhysicsSystem_removePhantom(int index);
+    void hkpPhysicsSystem_removePhantom(int i);
 };
 // Calls FUN_00c905b0 on refs3[index], decrements count3, and moves the last element into the slot if index is not the last.
 // @fnv 0x00d06170
 // src: HAVOK_LIB 0x00d06170
-void OwnerD061::hkpPhysicsSystem_removePhantom(int index)
+// pdb: hkpPhysicsSystem::removePhantom | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb params: i
+void OwnerD061::hkpPhysicsSystem_removePhantom(int i)
 {
-    refs3[index]->FUN_00c905b0();
+    refs3[i]->FUN_00c905b0();
     --count3;
-    if (count3 != index)
+    if (count3 != i)
     {
-        hkRefD061** dst = refs3 + index;
+        hkRefD061** dst = refs3 + i;
         hkRefD061* const* src = refs3 + count3;
         for (int n = 0; n < sizeof(hkRefD061*); n += sizeof(hkRefD061*))
             *(hkRefD061**)((char*)dst + n) = *(hkRefD061* const*)((const char*)src + n);
@@ -669,16 +696,18 @@ struct FUN_00d061b0_Class
     void* vftable;
     int unk04, unk08, unk0C, unk10;
     hkArray<RefObj*> m_refs;
-    void hkpPhysicsSystem_removeConstraint(int index);
+    void hkpPhysicsSystem_removeConstraint(int i);
 };
 
 // Calls FUN_00c905b0 on m_refs[index], then removes that entry from m_refs.
 // @fnv 0x00d061b0
 // src: HAVOK_LIB 0x00d061b0
-void FUN_00d061b0_Class::hkpPhysicsSystem_removeConstraint(int index)
+// pdb: hkpPhysicsSystem::removeConstraint | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb params: i
+void FUN_00d061b0_Class::hkpPhysicsSystem_removeConstraint(int i)
 {
-    m_refs[index]->FUN_00c905b0();
-    m_refs.removeAt(index);
+    m_refs[i]->FUN_00c905b0();
+    m_refs.removeAt(i);
 }
 
 namespace fnv_00d061f0 {
@@ -692,16 +721,18 @@ struct FUN_00d061f0_Class
     void* vftable;
     int unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
     hkArray<RefObj*> m_refs;
-    void hkpPhysicsSystem_removeAction(int index);
+    void hkpPhysicsSystem_removeAction(int i);
 };
 
 // Calls FUN_00c905b0 on the RefObj at index, then removes that entry from m_refs.
 // @fnv 0x00d061f0
 // src: HAVOK_LIB 0x00d061f0
-void FUN_00d061f0_Class::hkpPhysicsSystem_removeAction(int index)
+// pdb: hkpPhysicsSystem::removeAction | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb params: i
+void FUN_00d061f0_Class::hkpPhysicsSystem_removeAction(int i)
 {
-    m_refs[index]->FUN_00c905b0();
-    m_refs.removeAt(index);
+    m_refs[i]->FUN_00c905b0();
+    m_refs.removeAt(i);
 }
 }  // namespace fnv_00d061f0
 
@@ -833,18 +864,20 @@ struct TerrainShape : TerrainBase
     TerrainVec worldScale;
     TerrainVec gridScale;
     TerrainVec floorOffset;
-    void EvaluateSpheres(const TerrainInput& input, TerrainVec* output) const;
+    void EvaluateSpheres(const TerrainInput& arInput, TerrainVec* apOutputArray) const;
 };
 // For each input sphere, computes terrain height and normal at its grid position, then stores the signed distance to the sphere in the output vector.
 // @fnv 0x00cb01f0
-void TerrainShape::EvaluateSpheres(const TerrainInput& input, TerrainVec* output) const
+// pdb: hkBSHeightFieldShape::collideSpheres | bhkTriSampledHeightFieldBvTreeShape.obj | retail, object-file gap fill, high
+// pdb params: arInput, apOutputArray
+void TerrainShape::EvaluateSpheres(const TerrainInput& arInput, TerrainVec* apOutputArray) const
 {
-    const TerrainVec* sphere = input.spheres;
+    const TerrainVec* sphere = arInput.spheres;
     TerrainVec fallback;
     fallback.set(0.0f, 1.0f, 0.0f, DAT_0104da48);
-    for (int remaining = input.count - 1; remaining >= 0; ++output, ++sphere, --remaining)
+    for (int remaining = arInput.count - 1; remaining >= 0; ++apOutputArray, ++sphere, --remaining)
     {
-        *output = fallback;
+        *apOutputArray = fallback;
         TerrainVec position;
         position.q = _mm_mul_ps(_mm_load_ps((const float*)sphere), _mm_load_ps((const float*)&gridScale));
         GridCodes codes;
@@ -871,8 +904,8 @@ void TerrainShape::EvaluateSpheres(const TerrainInput& input, TerrainVec* output
                 float sx = c - a;
                 float sz = b - c;
                 height = a + afDepth * sz + fx * sx;
-                output->lane(0) = -sx;
-                output->lane(2) = -sz;
+                apOutputArray->lane(0) = -sx;
+                apOutputArray->lane(2) = -sz;
             }
             else
             {
@@ -880,8 +913,8 @@ void TerrainShape::EvaluateSpheres(const TerrainInput& input, TerrainVec* output
                 float sx = b - c;
                 float sz = c - a;
                 height = a + afDepth * sz + fx * sx;
-                output->lane(0) = -sx;
-                output->lane(2) = -sz;
+                apOutputArray->lane(0) = -sx;
+                apOutputArray->lane(2) = -sz;
             }
         }
         else
@@ -896,8 +929,8 @@ void TerrainShape::EvaluateSpheres(const TerrainInput& input, TerrainVec* output
                 float sx = c - b;
                 float sz = c - a;
                 height = a + afDepth * sz + (fx - 1.0) * sx;
-                output->lane(0) = -sx;
-                output->lane(2) = -sz;
+                apOutputArray->lane(0) = -sx;
+                apOutputArray->lane(2) = -sz;
             }
             else
             {
@@ -905,12 +938,12 @@ void TerrainShape::EvaluateSpheres(const TerrainInput& input, TerrainVec* output
                 float sx = a - c;
                 float sz = b - c;
                 height = c + afDepth * sz + fx * sx;
-                output->lane(0) = -sx;
-                output->lane(2) = -sz;
+                apOutputArray->lane(0) = -sx;
+                apOutputArray->lane(2) = -sz;
             }
         }
-        output->q = _mm_mul_ps(output->q, gridScale.q);
-        output->normalize();
+        apOutputArray->q = _mm_mul_ps(apOutputArray->q, gridScale.q);
+        apOutputArray->normalize();
         float distance;
         if (!projection)
         {
@@ -924,12 +957,12 @@ void TerrainShape::EvaluateSpheres(const TerrainInput& input, TerrainVec* output
             delta.q = _mm_sub_ps(position.q, vertex.q);
             delta.q = _mm_mul_ps(delta.q, worldScale.q);
             TerrainVec product;
-            product.q = _mm_mul_ps(output->q, delta.q);
+            product.q = _mm_mul_ps(apOutputArray->q, delta.q);
             float dot;
             _mm_store_ss(&dot, product.sum3());
             distance = dot - sphere->lane(3);
         }
-        output->lane(3) = distance;
+        apOutputArray->lane(3) = distance;
     }
 }
 
@@ -1024,7 +1057,7 @@ class hkpConstraintInstanceD : public hkReferencedObjectD
         return m_pEntityB;
     }
     hkBoolD isConstrainedToWorld() const throw();
-    hkpConstraintInstanceD* clone_00cf3fa0(hkpRigidBodyD* pk, hkpRigidBodyD* pkB, int eMode) const throw();
+    hkpConstraintInstanceD* clone(hkpRigidBodyD* newEntityA, hkpRigidBodyD* newEntityB, int mode) const throw();
 
     void* m_pOwnerObject;
     void* m_data;
@@ -1063,6 +1096,8 @@ class FUN_00d065e0 : public hkReferencedObjectD
 
 // @fnv 0x00d06720
 // src: HAVOK_LIB 0x00d06720
+// pdb: hkpPhysicsSystem::clone | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb locals: newSystem, assertBuf, ostr, i, newRBs, actionPhantoms, actionEntities, newPhantoms
 FUN_00d065e0* FUN_00d065e0::hkpPhysicsSystem_clone() const throw()
 {
     FUN_00d065e0* newSystem = new FUN_00d065e0();
@@ -1095,7 +1130,7 @@ FUN_00d065e0* FUN_00d065e0::hkpPhysicsSystem_clone() const throw()
             constraint->isConstrainedToWorld()
                 ? 0
                 : newSystem->m_ppRigidBodies[m_ppRigidBodies.indexOf(constraint->getRigidBodyB())];
-        newSystem->m_ppConstraints[i] = constraint->clone_00cf3fa0(pNewRigidBodyA, pNewRigidBodyB, 0);
+        newSystem->m_ppConstraints[i] = constraint->clone(pNewRigidBodyA, pNewRigidBodyB, 0);
     }
 
     for (i = 0; i < m_ppActions.GetLogicalSize(); i++)

@@ -28,6 +28,7 @@ extern "C" void __cdecl hkReferencedObject_setLockMode(int);
 extern "C" void __cdecl hkBaseSystem_quitThread();
 extern "C" void __cdecl hkBaseSystem_quitSingletons();
 // @fnv 0x00cbbcb0
+// pdb: hkBaseSystem::quit | hkBaseSystem.obj | retail, object-file run extension, low
 int __cdecl ShutdownIfInitialized()
 {
     if (DAT_01268414)
@@ -56,9 +57,11 @@ extern "C" void __cdecl hkMonitorStream_init();
 
 // @fnv 0x00cbb930
 // src: XBOX_PDB 0x00cbb930
-int __cdecl hkBaseSystem_initThread(void* value)
+// pdb: hkBaseSystem::initThread | hkBaseSystem.obj | retail, upstream name already matches, high
+// pdb params: memoryRouter
+int __cdecl hkBaseSystem_initThread(void* memoryRouter)
 {
-    SetThreadLocalValue(value);
+    SetThreadLocalValue(memoryRouter);
     hkMonitorStream_init();
     return 0;
 }
@@ -72,6 +75,7 @@ void __cdecl SetThreadLocalValue(int);
 namespace impl {
 // @fnv 0x00cbb990
 // src: HAVOK_LIB 0x00cbb990
+// pdb: hkBaseSystem::quitThread | hkBaseSystem.obj | retail, upstream name already matches, high
 extern "C" int __cdecl hkBaseSystem_quitThread()
 {
     void* p = TlsGetValue(DAT_0126835c);
@@ -103,7 +107,7 @@ struct LocalBuf
     int m_iElementCount;
     int m_iCapacityState;
     int m_kStorage[32];
-    void InitBuffer();
+    void hkStringBuf_ctor();
 };
 
 extern "C" int(__cdecl* DAT_011b3dc0)(int, LocalBuf*);
@@ -137,12 +141,15 @@ inline void* hkAlloc(int n)
 
 // @fnv 0x00cbbee0
 // src: HAVOK_LIB 0x00cbbee0
-ObjB* __stdcall hkNativeFileSystem_openWriter(int a)
+// pdb: hkNativeFileSystem::openWriter | hkBaseSystem.obj | retail, upstream name already matches, high
+// pdb params: name
+// pdb locals: buffer
+ObjB* __stdcall hkNativeFileSystem_openWriter(int name)
 {
     LocalBuf localBuf;
-    localBuf.InitBuffer();
+    localBuf.hkStringBuf_ctor();
     ObjA* objA = (ObjA*)hkAlloc(sizeof(ObjA));
-    ObjA* src = objA->OpenFile(DAT_011b3dc0(a, &localBuf));
+    ObjA* src = objA->OpenFile(DAT_011b3dc0(name, &localBuf));
     ObjB* objB = (ObjB*)hkAlloc(sizeof(ObjB));
     ObjB* result = objB->FUN_00d27460(src, 0x1000);
     src->FUN_00c905b0();
@@ -157,7 +164,7 @@ struct FUN_00cbc810_cls;
 
 struct FUN_00aa4060_cls
 {
-    void MemoryManager_Deallocate(FUN_00cbc810_cls* node);
+    void MemoryManager_Deallocate(FUN_00cbc810_cls* apMem);
 };
 
 extern FUN_00aa4060_cls DAT_011f6238;
@@ -168,11 +175,15 @@ struct FUN_00cbc810_cls
     FUN_00cbc810_cls* m_next;
 
     void BSFadeNode_FreeLinkedNodesRecursively();
-    void RemoveKey(unsigned int* pKey);
+    void NiTMapBase_DFALL_NiTMapItem_NiAVObject_BSSimpleList_bhkLiquidAction_NiAVObject_BSSimpleList_bhkLiquidAction_GetAt(unsigned int* pKey);
 };
 
 // @fnv 0x00cbc810
-void FUN_00cbc810_cls::RemoveKey(unsigned int* puiKey)
+// src: XBOX_DEBUG_PDB 0x00cbc810
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiAVObject *,BSSimpleList<bhkLiquidAction *> *> >,NiAVObject *,BSSimpleList<bhkLiquidAction *> *>::GetAt | bhkLiquidAction.obj | debug, call graph, high
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
+void FUN_00cbc810_cls::NiTMapBase_DFALL_NiTMapItem_NiAVObject_BSSimpleList_bhkLiquidAction_NiAVObject_BSSimpleList_bhkLiquidAction_GetAt(unsigned int* puiKey)
 {
     unsigned int key = *puiKey;
     if (key == 0)
@@ -218,8 +229,8 @@ found:
     DAT_011f6238.MemoryManager_Deallocate(cur);
 }
 
-extern int DAT_01268790;
-void __cdecl ResizeAudioStream(void* allocator, void* array, int itemSize);
+extern int hkSingletonInitList;
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct SoundNode
 {
@@ -239,9 +250,11 @@ struct PendingArray
 
 // @fnv 0x00cbbbd0
 // src: HAVOK_LIB 0x00cbbbd0
+// pdb: hkBaseSystem::quitSingletons | hkBaseSystem.obj | retail, upstream name already matches, high
+// pdb locals: nodes, cur
 extern "C" void __cdecl hkBaseSystem_quitSingletons()
 {
-    SoundNode* node = (SoundNode*)DAT_01268790;
+    SoundNode* node = (SoundNode*)hkSingletonInitList;
     PendingArray pendingList;
     pendingList.m_data = pendingList.m_kStorage;
     pendingList.m_iElementCount = 0;
@@ -272,7 +285,7 @@ extern "C" void __cdecl hkBaseSystem_quitSingletons()
         heap.bufFree(pendingList.m_data, (pendingList.m_iCapacityState & 0x3fffffff) * 4);
 }
 
-extern int DAT_01268790;
+extern int hkSingletonInitList;
 struct SpawnedListNode
 {
     int m_00;
@@ -281,7 +294,7 @@ struct SpawnedListNode
     int* m_0c;
 };
 
-void __cdecl ResizeAudioStream(void* aAlloc, void* aArray, unsigned int aiElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 
 #include "../../../../../include/hkArray.h"
 // hkArray::pushBack (_pushBack through the audio manager's heap at +0x0c).
@@ -309,9 +322,11 @@ template <typename T> __forceinline void hkArrayBase<T>::_clearAndDeallocate(hkM
 // Walks the chain, calls m_04 for nodes with zero m_0c, and retries deferred nodes until their calls return nonzero.
 // @fnv 0x00cbb9f0
 // src: HAVOK_LIB 0x00cbb9f0
+// pdb: hkBaseSystem::initSingletons | hkBaseSystem.obj | retail, upstream name already matches, high
+// pdb locals: again, cur, assertBuf, ostr
 void __cdecl hkBaseSystem_initSingletons()
 {
-    SpawnedListNode** link = (SpawnedListNode**)&DAT_01268790;
+    SpawnedListNode** link = (SpawnedListNode**)&hkSingletonInitList;
     SpawnedListNode* node = *link;
 
     hkArrayBase<SpawnedListNode*> pendingNodes;
@@ -404,6 +419,7 @@ struct SpawnedObject
 // Allocates 8 bytes through the holder's allocator, sets m_w04 and m_w06, then placement-constructs a SpawnedObject there.
 // @fnv 0x00cbb9c0
 // src: XBOX_PDB 0x00cbb9c0
+// pdb: hkDummySingletoncreate | hkBaseSystem.obj | retail, upstream name already matches, high
 void __cdecl hkDummySingletoncreate()
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -416,7 +432,7 @@ void __cdecl hkDummySingletoncreate()
 }  // namespace fnv_00cbb9c0
 
 namespace fnv_00cbbb10 {
-extern "C" void __cdecl hkBaseSystem_initThread(int value);
+extern "C" void __cdecl hkBaseSystem_initThread(int memoryRouter);
 extern "C" void __cdecl hkBaseSystem_initSingletons();
 extern "C" unsigned char DAT_010c8eb8;
 extern int DAT_01268410;
@@ -432,7 +448,7 @@ struct SpawnedObject28
 {
     unsigned int unk00;
     unsigned short m_size04;
-    SpawnedObject28* Init(unsigned int a, unsigned int b);
+    SpawnedObject28* hkDefaultError_ctor(unsigned int errorReportFunction, unsigned int errorReportObject);
 };
 
 struct VirtualIface
@@ -448,13 +464,15 @@ hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 // Allocates and initializes two spawned objects, stores them in global pointers, and sets the initialization flag.
 // @fnv 0x00cbbb10
 // src: HAVOK_LIB 0x00cbbb10
-int __cdecl hkBaseSystem_init(int a1, unsigned int auParam1, unsigned int auParam2)
+// pdb: hkBaseSystem::init | hkBaseSystem.obj | retail, upstream name already matches, high
+// pdb params: memoryRouter, errorReportFunction, errorReportObject
+int __cdecl hkBaseSystem_init(int memoryRouter, unsigned int errorReportFunction, unsigned int errorReportObject)
 {
     if (DAT_01268414 != 0)
     {
         return 0;
     }
-    hkBaseSystem_initThread(a1);
+    hkBaseSystem_initThread(memoryRouter);
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     SpawnedObject8* obj8 = (SpawnedObject8*)reinterpret_cast<hkMemoryAllocator*>(holder->m_heap)->blockAlloc(8);
     obj8->m_size04 = 8;
@@ -469,7 +487,7 @@ int __cdecl hkBaseSystem_init(int a1, unsigned int auParam1, unsigned int auPara
     holder = hkMemoryRouter_getInstance();
     SpawnedObject28* obj28 = (SpawnedObject28*)reinterpret_cast<hkMemoryAllocator*>(holder->m_heap)->blockAlloc(0x28);
     obj28->m_size04 = 0x28;
-    obj28 = obj28->Init(auParam1, auParam2);
+    obj28 = obj28->hkDefaultError_ctor(errorReportFunction, errorReportObject);
     if (DAT_01268360 != 0)
     {
         ((FUN_00c903b0_Class*)DAT_01268360)->ReleaseReference();
@@ -566,6 +584,9 @@ extern const char*(__cdecl* DAT_011b3dc0)(const char* name, S_00cbbde0_StringBuf
 // Creates a StdioReader from the resolved path, wraps it in a 4096-byte BufferedReader when vfn18() is false, and returns the resulting reader.
 // @fnv 0x00cbbde0
 // src: HAVOK_LIB 0x00cbbde0
+// pdb: hkNativeFileSystem::openReader | hkBaseSystem.obj | retail, upstream name already matches, high
+// pdb params: name
+// pdb locals: buffer
 S_00cbbde0_Reader* __stdcall hkNativeFileSystem_openReader(const char* name) throw()
 {
     S_00cbbde0_StringBuf buf;

@@ -59,19 +59,22 @@ template <class T> inline NiPointer<T>& NiPointer<T>::operator=(const NiPointer&
 extern "C" void NiKeyBasedInterpolator_CopyMembers();
 
 // @fnv 0x00a43690
-void BSTreadTransfInterpolator::CopyMembers(BSTreadTransfInterpolator* destination, void* context)
+// pdb: BSTreadTransfInterpolator::CopyMembers | BSTreadTransfInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkDest, kCloning
+// pdb locals: ui
+void BSTreadTransfInterpolator::CopyMembers(BSTreadTransfInterpolator* pkDest, void* kCloning)
 {
-    reinterpret_cast<void (__thiscall *)(NiInterpolator*, NiInterpolator*, void*)>(NiKeyBasedInterpolator_CopyMembers)(this, destination, context);
-    delete[] destination->entries;
-    destination->count = count;
-    destination->entries = new TreadTransformEntry[count];
-    for (unsigned int i = 0; i < count; i++)
+    reinterpret_cast<void (__thiscall *)(NiInterpolator*, NiInterpolator*, void*)>(NiKeyBasedInterpolator_CopyMembers)(this, pkDest, kCloning);
+    delete[] pkDest->Links;
+    pkDest->uiNumLinks = uiNumLinks;
+    pkDest->Links = new TreadTransformEntry[uiNumLinks];
+    for (unsigned int i = 0; i < uiNumLinks; i++)
     {
-        destination->entries[i].name = entries[i].name;
-        memcpy(&destination->entries[i].first, &entries[i].first, sizeof(NiQuatTransform));
-        memcpy(&destination->entries[i].second, &entries[i].second, sizeof(NiQuatTransform));
+        pkDest->Links[i].name = Links[i].name;
+        memcpy(&pkDest->Links[i].first, &Links[i].first, sizeof(NiQuatTransform));
+        memcpy(&pkDest->Links[i].second, &Links[i].second, sizeof(NiQuatTransform));
     }
-    destination->reference = reference;
-    destination->firstValue = firstValue;
-    destination->secondValue = secondValue;
+    pkDest->spLerpData = spLerpData;
+    pkDest->fCurrLerp = fCurrLerp;
+    pkDest->fDiffLerp = fDiffLerp;
 }

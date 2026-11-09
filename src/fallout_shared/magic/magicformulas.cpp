@@ -10,6 +10,7 @@ int FlaggedData::ContainsAnyFlag(unsigned int mask)
 }
 // Returns the result of FUN_00874480 on the object from FUN_004b7210 when it exists and its GetIndex is nonzero, otherwise 0.
 // @fnv 0x00703350
+// pdb: Interface::GetActivateREFR | Interface.obj | debug, call graph, high
 int FlaggedData::GetPlayerValue()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<QuestStage*>(InterfaceManager_GetSingleton())->GetIndex())
@@ -26,7 +27,11 @@ extern Setting originalRuntimeFloatSetting1115;
 
 // Computes an effect cost from base cost, area, duration and magnitude, applying area, duration and magnitude modifiers and a range-target multiplier.
 // @fnv 0x006490b0
-float __cdecl CalcEffectCost(float afBaseEffectCost, int aiArea, int aiDuration, int aiMagnitude, bool abIsRangeTarget)
+// src: XBOX_RETAIL_PDB 0x006490b0
+// pdb: MagicFormulas::GetMagicEffectCost | MagicFormulas.obj | retail, call graph (shared callers), high
+// pdb params: afBaseEffectCost, aiArea, aiDuration, aiMagnitude, abIsRangeTarget
+// pdb locals: fdurationModifier, fmagnitudeModifier, fareaModifier, fbaseCost
+float __cdecl MagicFormulas_GetMagicEffectCost(float afBaseEffectCost, int aiArea, int aiDuration, int aiMagnitude, bool abIsRangeTarget)
 {
     float fdurationModifier;
     float fmagnitudeModifier;
@@ -43,15 +48,19 @@ float __cdecl CalcEffectCost(float afBaseEffectCost, int aiArea, int aiDuration,
 
 // @fnv 0x006494b0
 // src: XBOX_PDB 0x006494b0
-float NiPow_006494b0(float afA, float afB)
+// pdb: NiPow | MagicFormulas.obj | debug, call graph (shared callers), high
+// pdb params: fBase, fExponent
+float NiPow_006494b0(float fBase, float fExponent)
 {
-    return pow_004dd130(afA, afB);
+    return pow_004dd130(fBase, fExponent);
 }
 
 extern double g_d100;
 // Returns 0 if either input is at least g_d100, otherwise computes 1 - ((1 - a/g_d100) * (b/g_d100) + a/g_d100).
 // @fnv 0x006492a0
 // src: COMMUNITY 0x006492a0
+// pdb: MagicFormulas::GetEnchantmentCharge | MagicFormulas.obj | debug, object-file gap fill, medium
+// pdb params: afSpellCost
 float MagicFormulas_GetMagicTargetResistance(float a, float b)
 {
     if (a >= g_d100 || b >= g_d100)
@@ -70,6 +79,9 @@ extern Setting g_011d1a14;
 // Scales afMagnitude by a runtime float setting and returns true if the result reaches the global int threshold or is at least aiTargetLevel.
 // @fnv 0x006494d0
 // src: XBOX_PDB 0x006494d0
+// pdb: MagicFormulas::CheckTargetLevelMagnitude | MagicFormulas.obj | debug, upstream name already matches, high
+// pdb params: aiTargetLevel, afMagnitude
+// pdb locals: fmagnitudeLevel
 bool MagicFormulas_CheckTargetLevelMagnitude(int aiTargetLevel, float afMagnitude)
 {
     float fScaledMagnitude;
@@ -85,6 +97,9 @@ extern Setting originalRuntimeFloatSetting1132;
 extern Setting originalRuntimeFloatSetting1133;
 
 // @fnv 0x00649300
+// pdb: MagicFormulas::CheckExplosionStrength | MagicFormulas.obj | debug, call graph (shared callers), medium
+// pdb params: aiCost, aiArea, afDistance, aiAgility, aiLuck, afFatiguePercentage
+// pdb locals: fmodAgility, fblastPower, fdistanceRatio
 float ComputeBlastPower(int aiCost, int aiAgility, float afDistance, int aiLuck, int aiArea, float afFatiguePercentage)
 {
     float fblastPower = 0.0f;
@@ -110,15 +125,18 @@ extern Setting g_011d1938;
 extern Setting originalRuntimeFloatSetting1161;
 extern Setting originalRuntimeFloatSetting1160;
 extern Setting originalRuntimeFloatSetting1159;
-float NiPow_006494b0(float f, float g);
+float NiPow_006494b0(float fBase, float fExponent);
 
 // Returns 0 outside [afStart, afEnd]; otherwise scales afBase by a curve from afTime, afSkill and settings, with flag-dependent multipliers.
 // @fnv 0x00649390
 // src: XBOX_PDB 0x00649390
-float __cdecl MagicFormulas_CalcSunDamage(float afBase, float afTime, float afStart, float afEnd, bool abFlag1, float afSkill,
-                           bool abFlag2)
+// pdb: MagicFormulas::CalcSunDamage | MagicFormulas.obj | retail, upstream name already matches, high
+// pdb params: afMagnitude, afTimeOfDay, afSunrise, afSunset, abSunVisible, afWeatherScale, abUnderWater
+// pdb locals: fweatherScale, fdamage, fdirectSunDamageScale, fnoon, fwaterScale, ftimeMult
+float __cdecl MagicFormulas_CalcSunDamage(float afMagnitude, float afTimeOfDay, float afSunrise, float afSunset, bool abSunVisible, float afWeatherScale,
+                           bool abUnderWater)
 {
-    if (afTime < afStart || afTime > afEnd)
+    if (afTimeOfDay < afSunrise || afTimeOfDay > afSunset)
         return 0.0f;
     float fRatio9;
     float fFlag2Mult_;
@@ -127,15 +145,15 @@ float __cdecl MagicFormulas_CalcSunDamage(float afBase, float afTime, float afSt
     {
         float fResult;
         float fSkillMult;
-        if (afTime > fMid)
-            fRatio9 = (fMid - afTime) / (fMid - afEnd);
+        if (afTimeOfDay > fMid)
+            fRatio9 = (fMid - afTimeOfDay) / (fMid - afSunset);
         else
-            fRatio9 = (fMid - afTime) / (fMid - afStart);
+            fRatio9 = (fMid - afTimeOfDay) / (fMid - afSunrise);
         fRatio9 = 1.0f - NiPow_006494b0(fRatio9, 4.0f);
-        fSkillMult = (1.0f - *g_011d1938.Float()) * afSkill + *g_011d1938.Float();
-        fFlag1Mult4 = !abFlag1 ? *originalRuntimeFloatSetting1161.Float() : 1.0f;
-        fFlag2Mult_ = abFlag2 ? *originalRuntimeFloatSetting1160.Float() : 1.0f;
-        fResult = *originalRuntimeFloatSetting1159.Float() * afBase * fRatio9 * fSkillMult * fFlag2Mult_ * fFlag1Mult4;
+        fSkillMult = (1.0f - *g_011d1938.Float()) * afWeatherScale + *g_011d1938.Float();
+        fFlag1Mult4 = !abSunVisible ? *originalRuntimeFloatSetting1161.Float() : 1.0f;
+        fFlag2Mult_ = abUnderWater ? *originalRuntimeFloatSetting1160.Float() : 1.0f;
+        fResult = *originalRuntimeFloatSetting1159.Float() * afMagnitude * fRatio9 * fSkillMult * fFlag2Mult_ * fFlag1Mult4;
         return fResult;
     }
 }
@@ -145,7 +163,11 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting1118;
 
 // Multiplies param_1 by the sum of two runtime float settings, the second weighted by one minus param_2 divided by g_d100.
 // @fnv 0x00649180
-float __cdecl ScaleBySettingBlend(float afValue, int aiPercent)
+// src: XBOX_DEBUG_PDB 0x00649180
+// pdb: MagicFormulas::AdjustMagicSpellCost | MagicFormulas.obj | debug, call graph, high
+// pdb params: afSpellCost, aiCasterSkill, aiCasterLuck
+// pdb locals: fSkillModifier, fskill
+float __cdecl MagicFormulas_AdjustMagicSpellCost(float afValue, int aiPercent)
 {
     float quotient = (float)(aiPercent / g_d100);
     float result = *originalRuntimeFloatSetting1117.Float() +
@@ -161,6 +183,9 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting1121;
 extern SettingT<GameSettingCollection> originalRuntimeFloatSetting1122;
 // Computes a band index from a linear combination of two global floats and argument, returning 0 to 4 based on which setting threshold it falls below.
 // @fnv 0x006491d0
+// pdb: MagicFormulas::GetMagicSpellLevel | MagicFormulas.obj | debug, object-file gap fill, medium
+// pdb params: afSpellCost
+// pdb locals: fadjustedCost
 int GetBandIndex(float afValue)
 {
     float f = *g_011d158c.Float() + *g_011d1b98.Float() * afValue;

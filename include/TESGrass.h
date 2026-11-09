@@ -5,6 +5,7 @@
 #include "TESGrass__GRASS_DATA.h"
 #include <stddef.h>
 
+// pdb: class TESGrass, size 0x68, bases: TESBoundObject, TESModel, 1 members
 class TESGrass : public TESBoundObject, public TESModel
 {
 public:
@@ -55,7 +56,7 @@ public:
     void ResetFormData();
     bool Load(TESFile* file);
     // TESForm vtable slot 8 (vftable 0x102814c slot 8 = 0x509f80)
-    bool LoadForm(TESFile* file);
+    bool LoadForm(TESFile* apFile);
 
     TESGrass__GRASS_DATA Data;
 };

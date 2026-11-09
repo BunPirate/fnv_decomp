@@ -8,6 +8,7 @@
 
 class GlobalObject_008c71b0;
 
+// pdb: class Crime, size 0x3c (here 0x1), 14 members
 class Crime
 {
   public:

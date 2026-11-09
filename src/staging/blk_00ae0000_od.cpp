@@ -23,12 +23,13 @@ struct FUN_00af30a0_Class
     int m_iValueAt90;
     char m_cValueAt94;
     char m_cValueAt95;
-    void* BSSystemUtility_BSSystemUtility();
+    void* BSSystemUtility_ctor();
 };
 
 // @fnv 0x00af30a0
-// src: XBOX_PDB 0x00af30a0
-void* FUN_00af30a0_Class::BSSystemUtility_BSSystemUtility()
+// src: XBOX_RETAIL_PDB 0x00af30a0
+// pdb: BSSystemUtility::BSSystemUtility | BSSystemUtility.obj | retail, upstream name already matches, high
+void* FUN_00af30a0_Class::BSSystemUtility_ctor()
 {
     vtbl = &DAT_010a42b4;
     m_pObjectAt84 = 0;
@@ -135,6 +136,7 @@ struct FUN_00af2f20_Class
 
 // @fnv 0x00af2f20
 // src: GUESS 0x00af2f20 (confidence: low)
+// pdb: BSSaveDataSystemUtility::~BSSaveDataSystemUtility | BSSaveDataSystemUtility.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00af2f20_Class::SetVirtualTable_00af2f20()
 {
     *(int*)this = (int)&DAT_010a4288;
@@ -147,6 +149,7 @@ struct FUN_00af3120_Class
 
 // @fnv 0x00af3120
 // src: GUESS 0x00af3120 (confidence: low)
+// pdb: BSSystemUtility::~BSSystemUtility | BSSystemUtility.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00af3120_Class::SetVirtualTable_00af3120()
 {
     *reinterpret_cast<void**>(this) = &DAT_010a42b4;
@@ -190,6 +193,7 @@ struct FUN_00af35c0_Class
 };
 // @fnv 0x00af35c0
 // src: GUESS 0x00af35c0 (confidence: low)
+// pdb: BSSystemUtilitiesStrings::~BSSystemUtilitiesStrings | BSSystemUtilitiesStrings.obj | debug, object-file gap fill, medium
 void FUN_00af35c0_Class::SetVirtualTable_00af35c0()
 {
     vtbl = &DAT_010a42dc;
@@ -202,12 +206,13 @@ struct FUN_00af38d0_Class
     void* vtbl;
     char bVisible;
     void* m_pObjectAt84;
-    void* BSCacheDriveSystemUtility_BSCacheDriveSystemUtility();
+    void* BSCacheDriveSystemUtility_ctor();
 };
 
 // @fnv 0x00af38d0
-// src: COMMUNITY 0x00af38d0
-void* FUN_00af38d0_Class::BSCacheDriveSystemUtility_BSCacheDriveSystemUtility()
+// src: XBOX_DEBUG_PDB 0x00af38d0
+// pdb: BSCacheDriveSystemUtility::BSCacheDriveSystemUtility | BSCacheDriveSystemUtility.obj | debug, upstream name already matches, high
+void* FUN_00af38d0_Class::BSCacheDriveSystemUtility_ctor()
 {
     vtbl = &DAT_010a42ec;
     bVisible = 0;
@@ -239,6 +244,8 @@ struct FUN_00af3a80_Class
 };
 
 // @fnv 0x00af3a80
+// pdb: BSGameDataSystemUtility::DataInit | BSGameDataSystemUtility.obj | debug, object-file run extension, low
+// pdb params: aiRequestSize
 void FUN_00af3a80_Class::InitPointer()
 {
     p = &DAT_010a4318;
@@ -249,12 +256,13 @@ struct FUN_00af3b20_Class
 {
     void* vtbl;
     int i;
-    void* __thiscall BSSysInfoSystemUtility_BSSysInfoSystemUtility();
+    void* __thiscall BSSysInfoSystemUtility_ctor();
 };
 // Sets the object's vtbl to DAT_010a4328 and its i field to 0x10, then returns this.
 // @fnv 0x00af3b20
-// src: COMMUNITY 0x00af3b20
-void* __thiscall FUN_00af3b20_Class::BSSysInfoSystemUtility_BSSysInfoSystemUtility()
+// src: XBOX_DEBUG_PDB 0x00af3b20
+// pdb: BSSysInfoSystemUtility::BSSysInfoSystemUtility | BSSysInfoSystemUtility.obj | debug, upstream name already matches, high
+void* __thiscall FUN_00af3b20_Class::BSSysInfoSystemUtility_ctor()
 {
     vtbl = &DAT_010a4328;
     i = 0x10;
@@ -269,6 +277,7 @@ struct FUN_00af3b50_Class
 };
 
 // @fnv 0x00af3b50
+// pdb: BSSysInfoSystemUtility::~BSSysInfoSystemUtility | BSSysInfoSystemUtility.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00af3b50_Class::SetVTable()
 {
     *reinterpret_cast<void**>(this) = &DAT_010a4328;
@@ -285,12 +294,14 @@ struct FUN_00afd960_Class
 
 // @fnv 0x00afd960
 // src: GUESS 0x00afd960 (confidence: low)
+// pdb: BSHash::Endian | BSArchive.obj | debug, object-file gap fill, medium
 void FUN_00afd960_Class::ProcessState_00afd960()
 {
     void* pUnused[6];
     SwapByteQuadWords((char*)this + 4, 1);
 }
 
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 struct FileFinder
 {
     static NiFile* __cdecl GetFile(const char*, int, unsigned int, unsigned int);
@@ -298,6 +309,8 @@ struct FileFinder
 
 // @fnv 0x00afdf00
 // src: COMMUNITY 0x00afdf00
+// pdb: FileFinder::GetFile | FileFinder.obj | debug, call graph, medium
+// pdb params: apName, aeMode, aiSize
 void __cdecl FileFinder_GetFile_(const char* apPath, int b, unsigned int c)
 {
     FileFinder::GetFile(apPath, b, c, 0xffff);
@@ -424,13 +437,14 @@ int __cdecl CloseAndDeleteFile(BSFile* apFile)
 
 struct DownloadableContentManager
 {
-    static void __cdecl GetRandomGenerator();
+    static void __cdecl BSDLCSystemUtility_QInstance();
 };
 // @fnv 0x00af2750
 // src: GUESS 0x00af2750 (confidence: low)
+// pdb: BSDLCSystemUtility::Initialize | BSDLCSystemUtility_Xenon.obj | retail, call graph, medium
 char __cdecl Runtime_EvaluateValue_00af2750()
 {
-    DownloadableContentManager::GetRandomGenerator();
+    DownloadableContentManager::BSDLCSystemUtility_QInstance();
     return 1;
 }
 
@@ -451,12 +465,14 @@ struct FUN_00af3570_Class
 {
     void* vtbl;
     int a[8];
-    void* __thiscall BSSystemUtilitiesStrings_BSSystemUtilitiesStrings();
+    void* __thiscall BSSystemUtilitiesStrings_ctor();
 };
 // Sets vtbl to &DAT_010a42dc and zeroes the eight-element array a, then returns this.
 // @fnv 0x00af3570
-// src: COMMUNITY 0x00af3570
-void* __thiscall FUN_00af3570_Class::BSSystemUtilitiesStrings_BSSystemUtilitiesStrings()
+// src: XBOX_DEBUG_PDB 0x00af3570
+// pdb: BSSystemUtilitiesStrings::BSSystemUtilitiesStrings | BSSystemUtilitiesStrings.obj | debug, upstream name already matches, high
+// pdb locals: i
+void* __thiscall FUN_00af3570_Class::BSSystemUtilitiesStrings_ctor()
 {
     vtbl = &DAT_010a42dc;
     for (unsigned int i = 0; i < 8; ++i)
@@ -470,15 +486,17 @@ struct FUN_00afd860_Class
 {
     unsigned char m_acCharacterBuffer[4];
     int iValue;
-    void __thiscall BSHash_MakeHashString(char* dst);
+    void __thiscall BSHash_MakeHashString(char* apString);
 };
 
 // @fnv 0x00afd860
 // src: COMMUNITY 0x00afd860
-void __thiscall FUN_00afd860_Class::BSHash_MakeHashString(char* dst)
+// pdb: BSHash::MakeHashString | BSArchive.obj | debug, upstream name already matches, high
+// pdb params: apString
+void __thiscall FUN_00afd860_Class::BSHash_MakeHashString(char* apString)
 {
-    if (dst)
-        _sprintf_s(dst, 0x20, "%c%02X%c%c%08X", m_acCharacterBuffer[3], m_acCharacterBuffer[2], m_acCharacterBuffer[1],
+    if (apString)
+        _sprintf_s(apString, 0x20, "%c%02X%c%c%08X", m_acCharacterBuffer[3], m_acCharacterBuffer[2], m_acCharacterBuffer[1],
                    m_acCharacterBuffer[0], iValue);
 }
 
@@ -491,6 +509,9 @@ struct FUN_00afdbc0_Class
     bool IsIndexInRange(int idx);
 };
 // @fnv 0x00afdbc0
+// pdb: BSDirectoryEntry::IsFileEntryInDirectory | BSArchive.obj | debug, object-file gap fill, medium
+// pdb params: apFileEntry
+// pdb locals: ifileEntryArrayAddress, ifileEntryAddress
 bool FUN_00afdbc0_Class::IsIndexInRange(int idx)
 {
     unsigned int a = idx;
@@ -575,20 +596,24 @@ int __cdecl _strcpy_s(char* dst, size_t size, const char* src);
 
 // Strips a drive prefix and a leading "data\" from source, then copies the remainder into destination with _strcpy_s.
 // @fnv 0x00af4310
-void CopyRelativeDataPath(const char* source, char* destination, size_t size)
+// src: XBOX_RETAIL_PDB 0x00af4310
+// pdb: StandardizeDataPath | Archive.obj | retail, string-set bridge, high
+// pdb params: apFileName, apStandardizedFileName, aiOutSize
+// pdb locals: ilength
+void StandardizeDataPath(const char* apFileName, char* apStandardizedFileName, size_t aiOutSize)
 {
-    size_t length = _strlen(source);
-    if (length > 3 && source[1] == ':')
+    size_t length = _strlen(apFileName);
+    if (length > 3 && apFileName[1] == ':')
     {
-        source += 3;
+        apFileName += 3;
         length -= 3;
     }
-    if (_strnicmp(source, "data\\", 5) == 0)
+    if (_strnicmp(apFileName, "data\\", 5) == 0)
     {
-        source += 5;
+        apFileName += 5;
         length -= 5;
     }
-    _strcpy_s(destination, size, source);
+    _strcpy_s(apStandardizedFileName, aiOutSize, apFileName);
 }
 
 struct FUN_00afd8b0_Class
@@ -602,12 +627,13 @@ struct FUN_00afd8b0_Class
     unsigned int uiHash;
     unsigned int uiCRC;
     unsigned short m_usPassCountLocal;
-    void* __thiscall BSArchiveHeader_BSArchiveHeader();
+    void* __thiscall BSArchiveHeader_ctor();
 };
 
 // @fnv 0x00afd8b0
-// src: COMMUNITY 0x00afd8b0
-void* __thiscall FUN_00afd8b0_Class::BSArchiveHeader_BSArchiveHeader()
+// src: XBOX_DEBUG_PDB 0x00afd8b0
+// pdb: BSArchiveHeader::BSArchiveHeader | BSArchive.obj | debug, upstream name already matches, high
+void* __thiscall FUN_00afd8b0_Class::BSArchiveHeader_ctor()
 {
     void* pSub = (char*)this + 0xc;
     *(int*)pSub = 0;
@@ -662,6 +688,8 @@ void __cdecl _NiFree(void* p);
 
 // @fnv 0x00ae8c30
 // src: GUESS 0x00ae8c30 (confidence: low)
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,FontManager::TextPage *>::Get | Font.obj | debug, object-file run extension, low
+// pdb params: kPos
 void S00a0d390::SetVtableAndProcessState_00ae8c30()
 {
     int p;
@@ -712,13 +740,14 @@ struct FUN_00af2ed0_Class
     int i2;
     char pad2[0x14];
     int i3;
-    FUN_00af2ed0_Class* BSSaveDataSystemUtility_BSSaveDataSystemUtility();
+    FUN_00af2ed0_Class* BSSaveDataSystemUtility_ctor();
 };
 
 // Sets the vtable pointer and zeroes the object's fields, then returns this.
 // @fnv 0x00af2ed0
-// src: COMMUNITY 0x00af2ed0
-FUN_00af2ed0_Class* FUN_00af2ed0_Class::BSSaveDataSystemUtility_BSSaveDataSystemUtility()
+// src: XBOX_DEBUG_PDB 0x00af2ed0
+// pdb: BSSaveDataSystemUtility::BSSaveDataSystemUtility | BSSaveDataSystemUtility.obj | debug, upstream name already matches, high
+FUN_00af2ed0_Class* FUN_00af2ed0_Class::BSSaveDataSystemUtility_ctor()
 {
     char* p;
     vtbl = &DAT_010a4288;
@@ -738,6 +767,7 @@ struct FUN_00af3900_Class
 };
 // @fnv 0x00af3900
 // src: GUESS 0x00af3900 (confidence: low)
+// pdb: BSCacheDriveSystemUtility::~BSCacheDriveSystemUtility | BSCacheDriveSystemUtility.obj | debug, object-file gap fill, medium
 void FUN_00af3900_Class::SetVirtualTable_00af3900()
 {
     *(void**)this = &DAT_010a42ec;
@@ -779,6 +809,8 @@ struct FUN_00af3a40_Class
 };
 // Sets the vtable pointer and clears the fields at offsets 0x44, 0x48, 0x4c and bVisible, then returns this.
 // @fnv 0x00af3a40
+// pdb: BSGameDataSystemUtility::CheckSpace | BSGameDataSystemUtility.obj | debug, object-file run extension, low
+// pdb params: aiRequestSize
 void* __thiscall FUN_00af3a40_Class::ResetState()
 {
     vtbl = &DAT_010a4318;
@@ -874,6 +906,9 @@ struct FUN_00ae8010_pad
 
 // Removes the head node from the linked list, clears its payload pointer, frees the node, decrements the count and returns the payload.
 // @fnv 0x00ae8010
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,RaceSexMenu::MenuOption *>::RemoveTail | RaceSexMenu.obj | retail, call graph, low
+// pdb note: debug build links it to NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile::TileTemplateItem *>::RemoveTail
+// pdb locals: pkNode, element
 void* FUN_00ae8010_cls::PopFront()
 {
     FUN_00ae8010_pad pad;
@@ -1057,6 +1092,7 @@ class FUN_00ae8b40_cls
 
 // Copies m_payload into out, sets flags to 1, and returns out.
 // @fnv 0x00ae8b40
+// pdb: BSSoundInfo::GetDebugInfo | BSAudioManager.obj | debug, object-file run extension, low
 FUNPayload_b4549* FUN_00ae8b40_cls::GetPayload(FUNPayload_b4549* out)
 {
     unsigned int flags = 0;
@@ -1191,6 +1227,7 @@ struct FUN_00aea0a0_Class
 };
 
 // @fnv 0x00aea0a0
+// pdb: BSAudioSynchTimer::BSAudioSynchTimer | BSAudioSynchTimer.obj | retail, object-file run extension, low
 void* __thiscall FUN_00aea0a0_Class::InitTimer()
 {
     m_zero = 0;
@@ -1210,6 +1247,7 @@ struct FUN_00aea0d0_Class
 };
 
 // @fnv 0x00aea0d0
+// pdb: BSAudioSynchTimer::~BSAudioSynchTimer | BSAudioSynchTimer.obj | retail, object-file run extension, low
 void FUN_00aea0d0_Class::Init()
 {
     m_kPointA = 0;
@@ -1753,7 +1791,7 @@ struct SndStream
 struct SndHeap
 {
     void* Allocate(unsigned int size);
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 
 struct SndFloatHolder
@@ -2569,6 +2607,9 @@ struct S_00af01e0_Cls
 // Scales unk15a by f, clamps the result to 100..200000, and if unk19c and unk198 are set calls unk19c->v44 with it; returns whether the result was non-negative.
 // @fnv 0x00af01e0
 // src: XBOX_PDB 0x00af01e0
+// pdb: XAUDIO2::CX2SourceVoice::SetFrequencyRatio | x2voicesource.obj | retail, object-file run extension, low
+// pdb params: fRatio, uOperationSet
+// pdb locals: _ScopeTrace, hr
 int S_00af01e0_Cls::BSWin32GameSound_SetFrequency(float afScale)
 {
     int hr = 0x80004005;
@@ -2729,6 +2770,9 @@ class AF0320Sound
 
 // Validates the requested position against the sound duration, reads the buffer format, and sets the buffer's current position in bytes.
 // @fnv 0x00af0320
+// pdb: XAUDIO2::CX2SourceVoice::SetSourceSampleRate | x2voicesource.obj | retail, object-file run extension, low
+// pdb params: uNewSourceSampleRate
+// pdb locals: _ScopeTrace, hr
 void AF0320Sound::SeekToPosition(unsigned int uiPositionMs)
 {
     if (!m_pCacheEntry || uiPositionMs >= (unsigned int)m_iDurationMs)
@@ -3497,34 +3541,38 @@ extern "C" int __cdecl toupper(int c);
 extern unsigned int g_uiMatchFlags;
 
 // @fnv 0x00af3c40
-int __cdecl WildcardMatch(const char* pcString, const char* pcPattern)
+// src: XBOX_RETAIL_PDB 0x00af3c40
+// pdb: WildCard::RecMatch | WildCard.obj | retail, call graph, high
+// pdb params: apString, apPattern
+// pdb locals: c, i, binvert, cpend, blit, cc
+int __cdecl WildCard_RecMatch(const char* apString, const char* apPattern)
 {
-    char c3 = *pcPattern++;
+    char c3 = *apPattern++;
     if (c3 == 0)
-        return *pcString == 0;
+        return *apString == 0;
     if (c3 == '?')
-        return pcString ? WildcardMatch(pcString + 1, pcPattern) : 0;
+        return apString ? WildCard_RecMatch(apString + 1, apPattern) : 0;
     if (c3 == '*')
     {
-        if (*pcPattern == 0)
+        if (*apPattern == 0)
             return 1;
-        while (*pcString)
+        while (*apString)
         {
-            int result3 = WildcardMatch(pcString, pcPattern);
+            int result3 = WildCard_RecMatch(apString, apPattern);
             if (result3)
                 return result3;
-            pcString++;
+            apString++;
         }
         return 2;
     }
     if (c3 == '[')
     {
-        if (*pcString == 0)
+        if (*apString == 0)
             return 0;
-        bool invertX = *pcPattern == '^';
+        bool invertX = *apPattern == '^';
         if (invertX)
-            pcPattern++;
-        const char* end = pcPattern;
+            apPattern++;
+        const char* end = apPattern;
         bool escaped5 = false;
         while (*end)
         {
@@ -3539,50 +3587,52 @@ int __cdecl WildcardMatch(const char* pcString, const char* pcPattern)
         if (*end != ']')
             return 0;
         c3 = 0;
-        escaped5 = *pcPattern == '-';
-        while (pcPattern < end)
+        escaped5 = *apPattern == '-';
+        while (apPattern < end)
         {
-            if (!escaped5 && *pcPattern == '\\')
+            if (!escaped5 && *apPattern == '\\')
                 escaped5 = true;
-            else if (!escaped5 && *pcPattern == '-')
-                c3 = pcPattern[-1];
+            else if (!escaped5 && *apPattern == '-')
+                c3 = apPattern[-1];
             else
             {
-                char sc = *pcString;
+                char sc = *apString;
                 char folded = (unsigned char)((g_uiMatchFlags & 1) ? sc : (unsigned char)toupper(sc));
-                if (pcPattern[1] != '-')
+                if (apPattern[1] != '-')
                 {
                     if (!c3)
-                        c3 = *pcPattern;
-                    while (c3 <= *pcPattern)
+                        c3 = *apPattern;
+                    while (c3 <= *apPattern)
                     {
                         if ((unsigned char)((g_uiMatchFlags & 1) ? c3 : (unsigned char)toupper(c3)) == folded)
-                            return invertX ? 0 : WildcardMatch(pcString + 1, end + 1);
+                            return invertX ? 0 : WildCard_RecMatch(apString + 1, end + 1);
                         c3++;
                     }
                 }
                 c3 = escaped5 = false;
             }
-            pcPattern++;
+            apPattern++;
         }
-        return invertX ? WildcardMatch(pcString + 1, end + 1) : 0;
+        return invertX ? WildCard_RecMatch(apString + 1, end + 1) : 0;
     }
     if (c3 == '\\')
     {
-        if ((c3 = *pcPattern++) == 0)
+        if ((c3 = *apPattern++) == 0)
             return 0;
     }
     {
         char sc6;
         return (unsigned char)((g_uiMatchFlags & 1) ? c3 : (unsigned char)toupper(c3)) ==
-                       (unsigned char)(sc6 = *pcString, (g_uiMatchFlags & 1) ? sc6 : (unsigned char)toupper(sc6))
-                   ? WildcardMatch(pcString + 1, pcPattern)
+                       (unsigned char)(sc6 = *apString, (g_uiMatchFlags & 1) ? sc6 : (unsigned char)toupper(sc6))
+                   ? WildCard_RecMatch(apString + 1, apPattern)
                    : 0;
     }
 }
 
 // Scans a string, skipping backslash-escaped characters, and returns true if it contains an unescaped wildcard character (?, [, ], *, ^).
 // @fnv 0x00af3fd0
+// pdb: WildCard::IsWild | WildCard.obj | debug, object-file gap fill, medium
+// pdb params: apPattern
 bool HasWildcardChars(const char* pcString)
 {
     char c;
@@ -3628,6 +3678,7 @@ struct FUN_00afd920_Class
 };
 // Calls FUN_00ec3bad on the object's value field and stores the result back into value.
 // @fnv 0x00afd920
+// pdb: ArchiveFlag::Endian | BSArchive.obj | debug, object-file gap fill, medium
 void FUN_00afd920_Class::UpdateValue()
 {
     AllocatorToken allocator = {};
@@ -3645,6 +3696,8 @@ struct AFD980Value
 
 // Reverse the byte order of the 8-byte value in place.
 // @fnv 0x00afd980
+// pdb: BSHash::Reverse | BSArchive.obj | debug, object-file gap fill, medium
+// pdb locals: itemp, i
 void AFD980Value::ReverseBytes()
 {
     unsigned __int64 uiCopy = m_uiCurrentValue;
@@ -3669,6 +3722,7 @@ unsigned int* __cdecl FUN_00ec3bad(unsigned int* value);
 
 // @fnv 0x00afdb80
 // src: GUESS 0x00afdb80 (confidence: low)
+// pdb: BSDirectoryEntry::Endian | BSArchive.obj | debug, object-file gap fill, medium
 void FUN_00afdb80_cls::UpdateFields_00afdb80()
 {
     Flag flag_ = {};
@@ -3699,18 +3753,21 @@ class FUN_00afdc00_cls
     unsigned int unk1C;
     unsigned int unk20;
     FUN_00afdc00_Item* m_pItems;
-    bool BSArchive_IsFileEntryInArchive(int a1);
+    bool BSArchive_IsFileEntryInArchive(int apFileEntry);
 };
 
 // @fnv 0x00afdc00
 // src: COMMUNITY 0x00afdc00
-bool FUN_00afdc00_cls::BSArchive_IsFileEntryInArchive(int aiIndex)
+// pdb: BSArchive::IsFileEntryInArchive | BSArchive.obj | debug, upstream name already matches, high
+// pdb params: apFileEntry
+// pdb locals: i
+bool FUN_00afdc00_cls::BSArchive_IsFileEntryInArchive(int apFileEntry)
 {
     unsigned int n;
     unsigned int i;
     for (i = 0; i < (n = m_uiItemCount); i++)
     {
-        if (m_pItems[i].Test(aiIndex))
+        if (m_pItems[i].Test(apFileEntry))
         {
             return true;
         }
@@ -3734,6 +3791,7 @@ extern int(__stdcall* DAT_00fdf138)(void*);
 // Returns 0 if DAT_00fdf138 returns nonzero for this->unk10, otherwise 4.
 // @fnv 0x00aff060
 // src: COMMUNITY 0x00aff060
+// pdb: BSSystemFile::DoFlush | BSSystemFile_Xenon.obj | debug, upstream name already matches, high
 int S_00aff060_Class::BSSystemFile_DoFlush()
 {
     return DAT_00fdf138(this->unk10) ? 0 : 4;
@@ -3857,6 +3915,7 @@ class FUN_00aff180 : public FUN_00aff180_base
 };
 
 // @fnv 0x00aff180
+// pdb: BSFile::BSFile | BSFile.obj | debug, object-file run extension, low
 FUN_00aff180::FUN_00aff180()
 {
     m_unk28 = 0;
@@ -4448,6 +4507,9 @@ class CAF0290Sound
 
 // Queries the sound buffer's frequency and returns it divided by m_usBaseFrequency, or 1.0 if unavailable.
 // @fnv 0x00af0290
+// pdb: XAUDIO2::CX2SourceVoice::GetFrequencyRatio | x2voicesource.obj | retail, upstream name already matches, high
+// pdb params: pfRatio
+// pdb locals: _ScopeTrace
 float CAF0290Sound::GetFrequencyRatio()
 {
     long hr = 0x80004005;
@@ -4694,7 +4756,7 @@ struct S_008785e0
     unsigned char m_unk0f;
     void* m_unk10;
 
-    int BSSystemFile_DoSeek(int a1, int a2, int a3, int a4);
+    int BSSystemFile_DoSeek(int auiOffset, int aeWhence, int auiPos, int a4);
     int OpenFile(const char* lpFileName);
 };
 
@@ -4824,6 +4886,9 @@ struct Win32ReadFile
 
 // Reads auiSize bytes from hFile into apBuffer via ReadFile, maps GetLastError to a result code, and stores the byte count in apuiRead on success.
 // @fnv 0x00afecd0
+// pdb: BSSystemFile::DoRead | BSSystemFile_Xenon.obj | retail, object-file run extension, low
+// pdb params: apvBuffer, auiBytes, auiRead
+// pdb locals: dwBytesRead, dwResult, dwError, eResult, dwBytesToRead
 int Win32ReadFile::Read(void* apBuffer, unsigned int auiSize, int aiUnused, unsigned __int64* apuiRead)
 {
     int iResult5 = 0;
@@ -5197,6 +5262,7 @@ struct FUN_00aea150_Class
 
 // @fnv 0x00aea150
 // src: COMMUNITY 0x00aea150
+// pdb: BSAudioSynchTimer::Restart | BSAudioSynchTimer.obj | debug, upstream name already matches, high
 void FUN_00aea150_Class::BSAudioSynchTimer_Restart()
 {
     unk08 = 0;
@@ -5586,6 +5652,7 @@ struct FUN_00afdb20_Class
 // Replaces m_08 and m_0c with FUN_00ec3bad applied to each of their current values.
 // @fnv 0x00afdb20
 // src: GUESS 0x00afdb20 (confidence: low)
+// pdb: BSFileEntry::Endian | BSArchive.obj | debug, object-file gap fill, medium
 void FUN_00afdb20_Class::UpdateFields_00afdb20()
 {
     Marker c0 = {};
@@ -5613,6 +5680,8 @@ struct FUN_00afe9f0_Class : public FUN_009b7940_shell
 // Sets the vtable pointer to DAT_010472d0 and calls FUN_006b3eb0 with a twice, returning this.
 // @fnv 0x00afe9f0
 // src: GUESS 0x00afe9f0 (confidence: low)
+// pdb: BSSimpleArray<char const *,1024>::BSSimpleArray<char const *,1024> | FileFinder.obj | debug, object-file run extension, low
+// pdb params: aiInitialSize
 void* FUN_00afe9f0_Class::SetVtableAndProcessState_00afe9f0(unsigned int a)
 {
     int x;
@@ -6676,6 +6745,10 @@ struct PathList
 // Copies path into a new allocated buffer, appending a backslash if it lacks one, and passes the buffer to FUN_007cb2e0.
 // @fnv 0x00afdda0
 // src: COMMUNITY 0x00afdda0
+// pdb: FileFinder::_AddPath | FileFinder.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FileFinder::AddPath
+// pdb params: apPath
+// pdb locals: bslash, uilen, ilen, cp
 void PathList::FileFinder_AddPath(const char* path)
 {
     if (path)
@@ -6712,6 +6785,7 @@ extern BSAudio* DAT_011f6d98;
 // Constructs a function-local static object once and stores its address in DAT_011f6d98.
 // @fnv 0x00aea020
 // src: COMMUNITY 0x00aea020
+// pdb: BSAudio::QCreate | BSAudio_Xenon.obj | debug, call graph, low
 void __cdecl BSWin32Audio_Create()
 {
     static FUN_00aea020_cls obj;
@@ -6729,6 +6803,7 @@ struct FUN_00af33f0
 // Returns a pointer to a static instance of FUN_00af33f0, creating it on first call.
 // @fnv 0x00af3020
 // src: COMMUNITY 0x00af3020
+// pdb: BSMsgDialogSystemUtility::QInstance | BSMsgDialogSystemUtility_Xenon.obj | retail, upstream name already matches, high
 void* __cdecl BSMsgDialogSystemUtility_QInstance()
 {
     static FUN_00af33f0 instance;
@@ -6871,12 +6946,15 @@ extern "C" int __cdecl _makepath_s(char* result, unsigned int resultSize, const 
 extern unsigned int DAT_011f804c;
 // @fnv 0x00af4070
 // src: COMMUNITY 0x00af4070
-void __cdecl WildCard_MakeString(char* result, const char* source)
+// pdb: WildCard::MakeString | WildCard.obj | retail, upstream name already matches, high
+// pdb params: apDest, apSrc
+// pdb locals: dir, drive, ext, fname
+void __cdecl WildCard_MakeString(char* apDest, const char* apSrc)
 {
     if (DAT_011f804c & 8)
     {
-        while (*source && *source == ' ')
-            ++source;
+        while (*apSrc && *apSrc == ' ')
+            ++apSrc;
     }
     if (DAT_011f804c & 6)
     {
@@ -6884,7 +6962,7 @@ void __cdecl WildCard_MakeString(char* result, const char* source)
         char _Dir[256];
         char _Fname[256];
         char _Ext[256];
-        _splitpath_s(source, _Drive, 3, _Dir, 256, _Fname, 256, _Ext, 256);
+        _splitpath_s(apSrc, _Drive, 3, _Dir, 256, _Fname, 256, _Ext, 256);
         if (!(DAT_011f804c & 2))
         {
             _Drive[0] = 0;
@@ -6892,10 +6970,10 @@ void __cdecl WildCard_MakeString(char* result, const char* source)
         }
         if (!(DAT_011f804c & 4))
             _Ext[0] = 0;
-        _makepath_s(result, 260, _Drive, _Dir, _Fname, _Ext);
+        _makepath_s(apDest, 260, _Drive, _Dir, _Fname, _Ext);
     }
     else
-        strcpy_s(result, 260, source);
+        strcpy_s(apDest, 260, apSrc);
 }
 
 extern "C" __declspec(dllimport) int __stdcall WriteFile(void*, const void*, unsigned long, unsigned long*, void*);
@@ -6907,6 +6985,9 @@ struct SystemFileWriter : Win32ReadFile
 // Writes len bytes from buf to hFile via WriteFile, mapping GetLastError codes to 0-4 and storing bytes written in outRead on success.
 // @fnv 0x00afede0
 // src: XBOX_PDB 0x00afede0
+// pdb: BSSystemFile::DoWrite | BSSystemFile_Xenon.obj | retail, upstream name already matches, high
+// pdb params: apvBuffer, auiBytes, auiWrite
+// pdb locals: dwResult, dwError, dwBytesToWrite, eResult, dwBytesWrite
 int SystemFileWriter::BSSystemFile_DoWrite(void* buf, DWORD len, int unused, unsigned __int64* outRead)
 {
     int rc = 0;

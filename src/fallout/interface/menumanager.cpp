@@ -31,7 +31,7 @@ class MenuSystem
   public:
     MenuSystem();
     static MenuSystem* Instance(bool create);
-    Menu* GetMenuById(int menuClass);
+    Menu* MenuManager_CreateMenuByClass(int aiMenuClass);
     void ResizeMenuByClassArray();
 };
 extern MenuSystem* DAT_011d8d54;
@@ -71,9 +71,12 @@ extern MenuClassArray g_menuByClassArray;
 
 // Creates and returns a new menu instance matching the given menu class, warning and returning 0 for unknown classes.
 // @fnv 0x0071e420
-Menu* MenuSystem::GetMenuById(int menuClass)
+// src: XBOX_DEBUG_PDB 0x0071e420
+// pdb: MenuManager::CreateMenuByClass | MenuManager.obj | debug, unique string literal, high
+// pdb params: aiMenuClass
+Menu* MenuSystem::MenuManager_CreateMenuByClass(int aiMenuClass)
 {
-    switch (menuClass)
+    switch (aiMenuClass)
     {
     case 1047:
         return new CreditsMenu;
@@ -176,6 +179,7 @@ void MenuSystem::ResizeMenuByClassArray()
 }
 
 // @fnv 0x0071e340
+// pdb: MenuManager::MenuManager | MenuManager.obj | debug, object-file run extension, low
 MenuSystem::MenuSystem()
 {
     ResizeMenuByClassArray();
@@ -216,6 +220,7 @@ void Menumanager_ClearDAT011d8d54()
 
 // Calls FUN_0071f700, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x0071f6d0
+// pdb: StatsMenu::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* StatsMenu::FUN_0071f6d0(unsigned int flags)
 {
     FUN_0071f700();
@@ -349,6 +354,7 @@ struct FUN_0071fef0 : public Menu
 };
 // Clears the global NiNode pointers and the menu's spNode0F0 pointer by assigning null to them.
 // @fnv 0x0071fef0
+// pdb: SurgeryMenu::~SurgeryMenu | MenuManager.obj | debug, object-file gap fill, medium
 FUN_0071fef0::~FUN_0071fef0()
 {
     g_011dadb4 = 0;
@@ -395,6 +401,7 @@ struct FUN_00720170_t : public Menu
 };
 // Zeroes the tile array and initializes the menu's selection, count, scroll, and target pointers.
 // @fnv 0x00720170
+// pdb: SPECIALBookMenu::SPECIALBookMenu | MenuManager.obj | debug, call graph, medium
 FUN_00720170_t::FUN_00720170_t()
 {
     fnv_00720170::memset(m_pTiles, 0, sizeof(m_pTiles));
@@ -516,6 +523,7 @@ struct FUN_00720860 : public Menu
 };
 // Destructor for the menu class; the body is empty and member destructors run implicitly.
 // @fnv 0x00720860
+// pdb: LoveTesterMenu::~LoveTesterMenu | MenuManager.obj | debug, object-file run extension, low
 FUN_00720860::~FUN_00720860()
 {}
 }  // namespace fnv_00720860
@@ -553,6 +561,8 @@ template <class T> struct NiTPointerList_00720e60
 };
 
 // @fnv 0x00720e60
+// pdb: MenuManager::GetFrontmostMenu | MenuManager.obj | retail, call graph (shared callers), high
+// pdb locals: depth, ptop, elem, pmenutile, pmenu
 Menu* FUN_00720e60_shell::FindTopMenu()
 {
     Menu* ptop = 0;
@@ -615,6 +625,8 @@ struct FUN_007254d0_t : public ListBoxBase_t, public FUN_004ee7d0_node
 
 // @fnv 0x007254d0
 // src: COMMUNITY 0x007254d0
+// pdb: ListBox<StatsMenu::StatusEffect *>::Synchronize | MenuManager.obj | retail, call graph, high
+// pdb locals: pnode
 void FUN_007254d0_t::ListBox_StatsMenu_StatusEffect_Synchronize()
 {
     usItemCount = 0;
@@ -658,6 +670,8 @@ struct FUN_00726530_t : public ListBoxBase_t, public BSSimpleList_t
 
 // @fnv 0x00726530
 // src: XBOX_PDB 0x00726530
+// pdb: ListBox<unsigned int>::SetTotalListHeight | MenuManager.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void FUN_00726530_t::ListBox_unsigned_int_SetTotalListHeight()
 {
     if (m_pListTile)
@@ -741,6 +755,7 @@ struct FUN_007b8d30_t : public Menu
     virtual ~FUN_007b8d30_t();
 };
 // @fnv 0x007b8d30
+// pdb: RouletteMenu::RouletteMenu | RouletteMenu.obj | debug, call graph, high
 FUN_007b8d30_t::FUN_007b8d30_t()
 {
     DAT_011da870 = GetTileValueID("_Value", -1);
@@ -782,6 +797,7 @@ struct FUN_0071e3b0_shell : FUN_0071e3e0_shell
 
 // Calls FUN_0071e3e0, then deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x0071e3b0
+// pdb: MenuManager::`scalar deleting destructor' | MenuManager.obj | debug, object-file run extension, low
 void* FUN_0071e3b0_shell::FUN_0071e3b0(unsigned int flags)
 {
     ForwardCall_0071e3e0();
@@ -812,6 +828,7 @@ struct FUN_00720330_shell
 void __cdecl _Deallocate(void* p);
 
 // @fnv 0x00720330
+// pdb: SPECIALBookMenu::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* FUN_00720330_shell::FUN_00720330(unsigned int flags)
 {
     FUN_00720420();
@@ -830,6 +847,7 @@ void __cdecl _Deallocate(void*);
 
 // Calls FUN_00720860, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00720770
+// pdb: LoveTesterMenu::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* FUN_00720770_shell::FUN_00720770(unsigned int flags)
 {
     FUN_00720860();
@@ -840,6 +858,7 @@ void* FUN_00720770_shell::FUN_00720770(unsigned int flags)
 
 
 // @fnv 0x007209e0
+// pdb: LoveTesterMenu::LoveTesterPage::~LoveTesterPage | MenuManager.obj | debug, object-file run extension, low
 void TutorialMenu::SetTile(int aiID, Tile* apTile)
 {
     if (aiID >= 0 && aiID < 8)
@@ -1026,6 +1045,7 @@ struct S0071e3b0
 // If DAT_011d8d54 is set, calls its FUN_0071e3b0(1) method and then clears DAT_011d8d54.
 // @fnv 0x0071e360
 // src: COMMUNITY 0x0071e360
+// pdb: MenuManager::Free | MenuManager.obj | retail, upstream name already matches, high
 void MenuManager_Free()
 {
     if (DAT_011d8d54)
@@ -1044,6 +1064,7 @@ void MenuManager_Free()
 void __cdecl _Deallocate(void*);
 // Calls DestroyMenu, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0071f2e0
+// pdb: TutorialMenu::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* TutorialMenu::DestroyTutorialMenu(unsigned int flags)
 {
     DestroyMenu();
@@ -1060,6 +1081,7 @@ struct S0071f670
 };
 // Calls FUN_0071f570, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0071f670
+// pdb: StatsMenu::NamedEffectsList::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* S0071f670::FUN_0071f670(unsigned int flags)
 {
     FUN_0071f570();
@@ -1076,6 +1098,7 @@ struct StatusEffectList
 void __cdecl _Deallocate(void*);
 // Calls FUN_0071f600, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0071f6a0
+// pdb: StatsMenu::StatusEffectList::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* StatusEffectList::FUN_0071f6a0(unsigned int flags)
 {
     FUN_0071f600();
@@ -1093,6 +1116,7 @@ struct FUN_0071fef0
 void __cdecl _Deallocate(void*);
 // Runs the destructor, frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0071fec0
+// pdb: SurgeryMenu::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* FUN_0071fef0::FUN_0071fec0(unsigned int flags)
 {
     this->FUN_0071fef0::~FUN_0071fef0();
@@ -1122,6 +1146,7 @@ struct Cls_720110
 void __cdecl _Deallocate(void*);
 // Calls FUN_007e9130, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00720110
+// pdb: VATSMenu::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* Cls_720110::FUN_00720110(unsigned int flags)
 {
     FUN_007e9130();
@@ -1194,6 +1219,7 @@ FUN_00720800::~FUN_00720800()
 }
 
 // @fnv 0x00720a40
+// pdb: QuantityMenu::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* QuantityMenu::FUN_00720a40(unsigned int flags)
 {
     ClearGlobalAndDestroyMenu();
@@ -1208,6 +1234,7 @@ extern int DAT_011da618;
 // Sets the object's first field to the string "@\nr", clears DAT_011da618, then calls the Menu destructor on this.
 // @fnv 0x00720a70
 // src: GUESS 0x00720a70 (confidence: medium)
+// pdb: QuantityMenu::~QuantityMenu | MenuManager.obj | debug, object-file gap fill, medium
 void QuantityMenu::ClearGlobalAndDestroyMenu()
 {
     *(const char**)this = "@\nr";
@@ -1219,11 +1246,15 @@ namespace fnv_00720e00 {
 Tile* __cdecl FindMenuById(int);
 struct FakeMgr
 {
-    bool DestroyMenuByClass(int aiMenuClass);
+    bool MenuManager_DeleteMenu(int aiMenuClass);
 };
 // Looks up a Tile for the given menu class, deletes it if found, and returns whether it existed.
 // @fnv 0x00720e00
-bool FakeMgr::DestroyMenuByClass(int aiMenuClass)
+// src: XBOX_DEBUG_PDB 0x00720e00
+// pdb: MenuManager::DeleteMenu | MenuManager.obj | debug, call graph, high
+// pdb params: aiMenuClass
+// pdb locals: pmenu
+bool FakeMgr::MenuManager_DeleteMenu(int aiMenuClass)
 {
     Tile* pmenu = FindMenuById(aiMenuClass);
     if (pmenu)
@@ -1245,6 +1276,8 @@ struct S0071
 // Stores apTile in the slot returned by FUN_00720010(aiID) when aiID is in 1..0x12.
 // @fnv 0x0071ffe0
 // src: XBOX_PDB 0x0071ffe0
+// pdb: SurgeryMenu::AttachTileByID | MenuManager.obj | debug, upstream name already matches, high
+// pdb params: aiID, apTile
 void __thiscall S0071::SurgeryMenu_AttachTileByID(int aiID, Tile* apTile)
 {
     if (aiID > 0 && aiID <= 0x12)
@@ -1293,12 +1326,14 @@ struct FUN_00720360 : public FUN_00723f50
 
 // Initializes a FUN_00720360 object, constructing its FUN_00723f50 base and FUN_00723f00 member.
 // @fnv 0x00720360
+// pdb: SPECIALBookMenu::SpecialBookPage::SpecialBookPage | MenuManager.obj | debug, object-file run extension, low
 FUN_00720360::FUN_00720360()
 {}
 
 
 
 // @fnv 0x00720a10
+// pdb: QuantityMenu::QuantityMenu | MenuManager.obj | debug, upstream name already matches, high
 QuantityMenu::QuantityMenu()
 {
 }
@@ -1329,14 +1364,16 @@ struct FUN_007df140_cls
     FUN_007df140_Sub m_04;
     FUN_007df140_Tail m_10;
 
-    FUN_007df140_cls(int aValue);
+    FUN_007df140_cls(int apForm);
 };
 
 // Initializes the object's first field with the given value.
 // @fnv 0x007df140
-FUN_007df140_cls::FUN_007df140_cls(int aValue)
+// pdb: StatsMenu::StatusEffect::StatusEffect | StatsMenu.obj | debug, call graph, high
+// pdb params: apForm
+FUN_007df140_cls::FUN_007df140_cls(int apForm)
 {
-    m_00 = aValue;
+    m_00 = apForm;
 }
 
 
@@ -1346,12 +1383,13 @@ void ourMemset(void* apDest, int aiValue, unsigned int auiSize);
 
 
 // @fnv 0x00720040
+// pdb: VATSMenu::VATSMenu | MenuManager.obj | retail, upstream name already matches, high
 VATSMenu::VATSMenu()
 {
     ourMemset(m_pTiles, 0, sizeof(m_pTiles));
-    m_bFirstFlag = false;
-    m_bStateFlag4 = false;
-    m_pSelectedChance = 0;
+    bHeadingReached = false;
+    bConcentratedFirePerk = false;
+    pLastLimb = 0;
 }
 
 namespace fnv_00720550 {
@@ -1399,6 +1437,7 @@ struct FUN_00720550 : Menu
 };
 // Initializes the menu: clears the tiles array, zeroes the current object/tile/index and selected tile, sets mode to 1, elapsed to 0.0 and active to true.
 // @fnv 0x00720550
+// pdb: LoveTesterMenu::LoveTesterMenu | MenuManager.obj | debug, call graph, medium
 FUN_00720550::FUN_00720550()
 {
     ourMemset(tiles, 0, sizeof(tiles));
@@ -1415,7 +1454,7 @@ FUN_00720550::FUN_00720550()
 
 struct FUN_00720f90_shell
 {
-    bool MenuManager_IsMenuOpen(int param_1);
+    bool MenuManager_IsMenuOpen(int aiClass);
 };
 
 struct NiPtrStub
@@ -1442,7 +1481,10 @@ void* __cdecl InterfaceManager_GetSingleton(void);
 
 // @fnv 0x00720f90
 // src: COMMUNITY 0x00720f90
-bool FUN_00720f90_shell::MenuManager_IsMenuOpen(int param_1)
+// pdb: MenuManager::IsMenuOpen | MenuManager.obj | retail, upstream name already matches, high
+// pdb params: aiClass
+// pdb locals: elem, pmenutile, pmenu
+bool FUN_00720f90_shell::MenuManager_IsMenuOpen(int aiClass)
 {
     int* cursor = (int*)((NiPtrStub*)((char*)((InterfaceManager_helper*)InterfaceManager_GetSingleton())->CombatController_GetCombatState() + 4))->GetPtr();
     while (cursor)
@@ -1456,7 +1498,7 @@ bool FUN_00720f90_shell::MenuManager_IsMenuOpen(int param_1)
         {
             if (menu->FUN_00726070())
             {
-                if (menu->GetClass() == param_1)
+                if (menu->GetClass() == aiClass)
                 {
                     if (menu->FUN_00726070()->IsTraitNonZero(0xfa3) &&
                         menu->GetVisibilityState() != 2)

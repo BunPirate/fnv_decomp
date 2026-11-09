@@ -56,6 +56,7 @@ struct FUN_00dc0380
     FUN_00dc0380(BSAudio* v);
 };
 // @fnv 0x00dc0380
+// pdb: NiPick::Record::~Record | NiPick.obj | debug, object-file run extension, low
 FUN_00dc0380::FUN_00dc0380(BSAudio* pAudio)
 {
     p = pAudio;
@@ -141,7 +142,7 @@ struct SoundEntry
 struct Receiver
 {
     void __thiscall FUN_009ba760(void* sound);
-    void __thiscall FUN_009ba780(void* description);
+    void __thiscall hkDataObject_ctor(void* o);
 };
 struct Description
 {
@@ -176,7 +177,7 @@ void* AudioResourceState::ResolveSound(Receiver* receiver, Description* descript
             return receiver;
         }
     }
-    receiver->FUN_009ba780(description);
+    receiver->hkDataObject_ctor(description);
     return receiver;
 }
 
@@ -187,7 +188,7 @@ inline hkMemoryRouter* audio()
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 void* __cdecl _fnv_zlib_memset(void* dst, int val, int n);
 
 // LocalhkCharArray: include/hkCharArray.h gives an inline constructor and an out-of-line destructor and declares
@@ -279,11 +280,15 @@ struct FUN_00dc03d0_cls
     Element** m_ppArray;
     int m_iArrayLength;
     unsigned int m_uCapacity;
-    void ClearArray();
+    void NiPick_Results_ClearArray();
 };
 
 // @fnv 0x00dc03d0
-void FUN_00dc03d0_cls::ClearArray()
+// src: XBOX_RETAIL_PDB 0x00dc03d0
+// pdb: NiPick::Results::ClearArray | NiPick.obj | retail, upstream name already matches, high
+// pdb params: bDeallocateRecords
+// pdb locals: i
+void FUN_00dc03d0_cls::NiPick_Results_ClearArray()
 {
     for (int i = 0; i < m_iArrayLength; i++)
     {
@@ -360,7 +365,7 @@ struct MemberB
 };
 struct MemberC
 {
-    void ClearArray();
+    void NiPick_Results_ClearArray();
 };
 
 struct BaseObj
@@ -383,9 +388,10 @@ struct Obj : BaseObj
 
 // @fnv 0x00dc0460
 // src: GUESS 0x00dc0460 (confidence: low)
+// pdb: Writer::~Writer | hkBinaryTagfileWriter.obj | retail, object-file run extension, low
 void Obj::ProcessState_00dc0460()
 {
-    m58.ClearArray();
+    m58.NiPick_Results_ClearArray();
     m4c.clearAndDeallocate();
     m40.clearAndDeallocate();
     m34.AllocBufferIfNotFlagged(&audio()->heap());
@@ -447,17 +453,20 @@ struct CallbackTarget
     {}
 };
 // @fnv 0x00dc05b0
-int __stdcall WriteAudioObject(int value, CallbackTarget* target, int source)
+// pdb: hkBinaryTagfileWriter::save | hkBinaryTagfileWriter.obj | retail, vtable slot, high
+// pdb params: obj, stream, userListener
+// pdb locals: writer
+int __stdcall WriteAudioObject(int obj, CallbackTarget* stream, int userListener)
 {
     FUN_00dc05b0_writer writer;
-    writer.FUN_00dc0500((int)target, source);
+    writer.FUN_00dc0500((int)stream, userListener);
     writer.WriteInt(0xcab00d1e);
     writer.WriteInt(0xd011face);
     writer.WriteVarint(1, 0);
     writer.WriteVarint(0, 0);
-    writer.WriteReferencedObjectRecursively(value, 0);
-    writer.ProcessEntries_00dc00b0(value);
-    target->Complete();
+    writer.WriteReferencedObjectRecursively(obj, 0);
+    writer.ProcessEntries_00dc00b0(obj);
+    stream->Complete();
     writer.ProcessState_00dc0460();
     return 0;
 }
@@ -629,6 +638,9 @@ struct FUN_00dbec60_cls
 
 // @fnv 0x00dbec60
 // src: HAVOK_LIB 0x00dbec60
+// pdb: NiD3DUtility::SetString | NiD3DUtility.obj | debug, object-file run extension, low
+// pdb params: pcDest, uiDestSize, pcSrc
+// pdb locals: uiSrcSize
 void FUN_00dbec60_cls::hkMapBase_struct_hkCppTypeInfoHash_struct_hkRttiParser_Node_const_struct_hkCppTypeInfoHash_resizeTable(AllocOwner* alloc, int count)
 {
     int newCap = count;
@@ -680,12 +692,16 @@ struct DBED30Writer
 
     void WriteSigned64BitInteger(__int64 i);
     void WriteByteArray(const void* buf, int nbytes);
-    void WriteString(const char* s);
+    void NiD3DUtility_WriteString(const char* s);
 };
 
 // Writes a string to the stream: emits its length and bytes if new, otherwise emits the negated existing index; null writes -1.
 // @fnv 0x00dbed30
-void DBED30Writer::WriteString(const char* pcString)
+// src: XBOX_DEBUG_PDB 0x00dbed30
+// pdb: NiD3DUtility::WriteString | NiD3DUtility.obj | debug, upstream name already matches, high
+// pdb params: kStream, pcString
+// pdb locals: uiLen
+void DBED30Writer::NiD3DUtility_WriteString(const char* pcString)
 {
     if (pcString)
     {
@@ -723,7 +739,7 @@ struct S_dbefc0_Router
         return *unk0c;
     }
 };
-void __cdecl hkArrayUtil__reserve(S_dbefc0_Heap* heap, void* arr, int n, int elemSize);
+void __cdecl hkArrayUtil__reserve(S_dbefc0_Heap* mem, void* array, int numElem, int sizeElem);
 void* __cdecl FUN_00ec61c0(void* dst, int value, unsigned int count);
 
 static __forceinline S_dbefc0_Heap& S_dbefc0_GetHeap()
@@ -809,7 +825,7 @@ struct Rec_00dbf0d0
     void __thiscall PackBitsToBytes(unsigned char* dest);
 };
 
-void __cdecl fnv_grow_00c908c0(int audioD, Rec_00dbf0d0* self, int newCap, int flag);
+void __cdecl fnv_grow_00c908c0(int mem, Rec_00dbf0d0* array, int numElem, int sizeElem);
 void __cdecl fnv_memset_00ec61c0(void* dest, int ch, int count);
 
 // @fnv 0x00dbf0d0
@@ -907,11 +923,11 @@ struct S_00dc0500_Str
     int unk04;
     int unk08;
     int unk0c;
-    void __thiscall hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(int* s, int n);
+    void __thiscall hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(int* key, int val);
 };
 struct FUN_00d87790 : S_00dc0500_Str
 {
-    FUN_00d87790(S_00dc0500_Flag f);
+    FUN_00d87790(S_00dc0500_Flag ops);
 };
 struct S_00dc0500_Holder : UnkHolder
 {
@@ -944,6 +960,8 @@ struct FUN_00dc0500 : FUN_00d60830
     FUN_00dc0500(BSAudio* a1, BSAudio* a2);
 };
 // @fnv 0x00dc0500
+// pdb: Writer::Writer | hkBinaryTagfileWriter.obj | retail, object-file run extension, low
+// pdb params: sw, listener
 FUN_00dc0500::FUN_00dc0500(BSAudio* pAudio, BSAudio* a2)
     : FUN_00d60830(pAudio, S_00dc0500_Opt(false)), m_10(S_00dc0500_Flag(false)), m_20(S_00dc0500_Flag(false)), m_30(0),
       m_58(a2)
@@ -962,7 +980,7 @@ struct S_dbf1a0_Map
     int unk00;
     int unk04;
     int __thiscall GetValue(const char* name, int defValue) throw();
-    void __thiscall hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* name, int value) throw();
+    void __thiscall hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val) throw();
 };
 
 struct S_dbf1a0_Handle
@@ -1079,7 +1097,7 @@ struct S_dbf1a0_Writer
     S_dbf1a0_Map m_map;
 
     void __thiscall WriteVarint(__int64 val) throw();
-    void __thiscall WriteString(const char* str) throw();
+    void __thiscall NiD3DUtility_WriteString(const char* str) throw();
     int WriteHandle(const S_dbf1a0_Handle& h) throw();
 };
 
@@ -1116,7 +1134,7 @@ int S_dbf1a0_Writer::WriteHandle(const S_dbf1a0_Handle& ahHandle) throw()
     ahHandle.DispatchRecords(&arr);
 
     WriteVarint(2);
-    WriteString(ahHandle.hkDataClass_getName());
+    NiD3DUtility_WriteString(ahHandle.hkDataClass_getName());
     WriteVarint(ahHandle.ForwardCall_00dba690());
     WriteVarint(parentId);
     WriteVarint(count);
@@ -1124,7 +1142,7 @@ int S_dbf1a0_Writer::WriteHandle(const S_dbf1a0_Handle& ahHandle) throw()
     for (int i = 0; i < count; ++i)
     {
         S_dbf1a0_Elem* elem = &arr.m_data[i];
-        WriteString(elem->name);
+        NiD3DUtility_WriteString(elem->name);
         WriteVarint(elem->flags);
         if (elem->flags & 0x20)
         {
@@ -1135,7 +1153,7 @@ int S_dbf1a0_Writer::WriteHandle(const S_dbf1a0_Handle& ahHandle) throw()
         {
             if (elem->sub)
             {
-                WriteString(S_dbf1a0_Handle(elem->sub).hkDataClass_getName());
+                NiD3DUtility_WriteString(S_dbf1a0_Handle(elem->sub).hkDataClass_getName());
             }
             else
             {
@@ -1250,7 +1268,7 @@ struct ObjC
 {
     void* m_00;
     __declspec(nothrow) int ForwardCall_00dba730();
-    __declspec(nothrow) void DispatchItems(hkArrayBase<Rec>& a);
+    __declspec(nothrow) void hkDataClass_getAllMemberInfo(hkArrayBase<Rec>& minfos);
     __declspec(nothrow) void Object_DoNothing_00dba660();
     ~ObjC()
     {
@@ -1300,7 +1318,7 @@ __forceinline void initializeRecords(hkArrayBase<Rec>& out,int n)
     for (int k = 0; k < capacity; ++k)
         new (data + k) Rec;
 }
-extern "C" void __cdecl hkArrayUtil__reserve(void* owner, hkArrayBase<Rec>* arr, int newCap, int stride);
+extern "C" void __cdecl hkArrayUtil__reserve(void* mem, hkArrayBase<Rec>* array, int numElem, int sizeElem);
 struct Host
 {
     __declspec(nothrow) void WriteArray(const Wrap& arg0, int count);
@@ -1309,7 +1327,7 @@ struct Host
     __declspec(nothrow) void HashUInt(float f);
     __declspec(nothrow) void WriteFloatArray(void* p, int v);
     __declspec(nothrow) void ProcessEntries_00dc00b0(const StringHandle& v);
-    __declspec(nothrow) void WriteString(int v);
+    __declspec(nothrow) void NiD3DUtility_WriteString(int v);
     __declspec(nothrow) void hkOArchive_writeRaw(void* p, int n);
     __declspec(nothrow) int IsTruthy(Pair* p);
 };
@@ -1393,7 +1411,7 @@ void Host::WriteArray(const Wrap& arg0, int count)
         int iCount = arg0.ProcessAndReturnValue_00dbac20().ForwardCall_00dba730();
         hkArrayBase<Rec> items;
         initializeRecords(items,iCount);
-        arg0.ProcessAndReturnValue_00dbac20().DispatchItems(items);
+        arg0.ProcessAndReturnValue_00dbac20().hkDataClass_getAllMemberInfo(items);
         packedBits.FUN_00dbef20(iCount);
         for (int idx = 0; idx < iCount; idx++)
         {
@@ -1473,7 +1491,7 @@ void Host::WriteArray(const Wrap& arg0, int count)
     case 10: {
         for (i = 0; i < count; i++)
         {
-            WriteString(arg0.CreateResultPair(i).ForwardCall_00dbac70());
+            NiD3DUtility_WriteString(arg0.CreateResultPair(i).ForwardCall_00dbac70());
         }
     }
     break;
@@ -1541,7 +1559,7 @@ struct S_00dbfef0_Visitor
     void HashUInt(float v);
     void WriteFloatArray(int p, int n);
     void WriteVarint(__int64 v);
-    void WriteString(int v);
+    void NiD3DUtility_WriteString(int v);
     void WriteArray(S_00dbfef0_A* a, int n);
     void ProcessEntries_00dc00b0(int v);
     void WriteNode(S_00dbfef0_Node* node, S_00dbfef0_B b);
@@ -1604,7 +1622,7 @@ void S_00dbfef0_Visitor::WriteNode(S_00dbfef0_Node* node, S_00dbfef0_B b)
         b.ReleaseStorage_00dba7f0();
         break;
     case 10:
-        WriteString(node->hkDataObject_Value_asString());
+        NiD3DUtility_WriteString(node->hkDataObject_Value_asString());
         break;
     }
 }
@@ -1677,7 +1695,7 @@ struct FUN_00dba650
     }
     __declspec(nothrow) void __thiscall Object_DoNothing_00dba660();
     __declspec(nothrow) int __thiscall ForwardCall_00dba730();
-    __declspec(nothrow) void __thiscall DispatchItems(void* arr);
+    __declspec(nothrow) void __thiscall hkDataClass_getAllMemberInfo(void* minfos);
 };
 struct MyDesc
 {
@@ -1888,7 +1906,7 @@ void __thiscall ResourceWriter::ProcessEntries_00dc00b0(MyDesc* apSoundDesc)
 
     Array20 ptr(c);
 
-    k.DispatchItems(&ptr);
+    k.hkDataClass_getAllMemberInfo(&ptr);
 
     for (int i = 0; c > i; ++i)
     {
@@ -1987,7 +2005,7 @@ struct ScanRecord
     ScanKey key;
 };
 extern ScanRecord DAT_010d6848;
-void __cdecl ResizeAudioStream(hkMemoryAllocator& heap, void* array, int elementSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator& mem, void* array, int sizeElem);
 struct ScanReferences
 {
     ScanRecord* data;

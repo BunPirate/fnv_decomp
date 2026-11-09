@@ -22,11 +22,13 @@ extern int DAT_01268ff0;
 void* __cdecl hkpPhantomDisplayViewer_create();
 struct HKProcessFactory
 {
-    void* __thiscall RegisterProcess(const char* name, void* creator);
+    void* __thiscall RegisterProcess(const char* viewerName, void* creationFunction);
 };
 void* __cdecl hkProcessFactory_registerProcess(void* factory, const char* name, void* creator);
 // @fnv 0x00d66af0
-void* __cdecl RegisterPhantomsProcess()
+// src: XBOX_RETAIL_PDB 0x00d66af0
+// pdb: hkpPhantomDisplayViewer::registerViewer | hkpPhantomDisplayViewer.obj | retail, call graph, high
+void* __cdecl hkpPhantomDisplayViewer_registerViewer()
 {
     DAT_01268ff0 = (int)((HKProcessFactory*)DAT_01269cd0)->RegisterProcess("Phantoms", (void*)&hkpPhantomDisplayViewer_create);
     return (void*)DAT_01268ff0;
@@ -42,6 +44,7 @@ struct World
     void __thiscall hkpWorld_removePhantomListener(void*);
 };
 
+// pdb: class hkpPhantomDisplayViewer, size 0x3c (here 0x1), bases: hkpWorldViewerBase, hkpPhantomListener, hkpWorldPostSimulationListener, 1 members
 struct hkpPhantomDisplayViewer
 {
     void removeWorld(void*);
@@ -49,39 +52,44 @@ struct hkpPhantomDisplayViewer
 
 // @fnv 0x00d66250
 // src: HAVOK_LIB 0x00d66250
-void hkpPhantomDisplayViewer::removeWorld(void* arg)
+// pdb: hkpPhantomDisplayViewer::removeWorld | hkpPhantomDisplayViewer.obj | retail, upstream name already matches, high
+// pdb params: world
+void hkpPhantomDisplayViewer::removeWorld(void* world)
 {
     void* p1 = this ? (char*)this + 0x28 : 0;
-    ((World*)arg)->hkpWorld_removePhantomListener(p1);
+    ((World*)world)->hkpWorld_removePhantomListener(p1);
     void* p2 = this ? (char*)this + 0x2c : 0;
-    ((Container*)arg)->ClearValue(p2);
+    ((Container*)world)->ClearValue(p2);
     int i = 0;
-    if (*(int*)((char*)arg + 0x114) > 0)
+    if (*(int*)((char*)world + 0x114) > 0)
     {
         char* base = (char*)this + 0x28;
         do
         {
-            void* item = *(void**)(*(int*)((char*)arg + 0x110) + i * 4);
+            void* item = *(void**)(*(int*)((char*)world + 0x110) + i * 4);
             void* vt = *(void**)base;
             void* fn = *(void**)((char*)vt + 8);
             ((void(__thiscall*)(void*, void*))fn)(base, item);
             ++i;
-        } while (i < *(int*)((char*)arg + 0x114));
+        } while (i < *(int*)((char*)world + 0x114));
     }
 }
 
 struct FUN_00c93860_stub
 {
-    void hkpWorld_addPhantomListener(void* arg);
+    void hkpWorld_addPhantomListener(void* worldListener);
 };
 
 struct FUN_00d662c0_stub
 {
-    void AttachToIsland(void* arg);
+    void hkpPhantomDisplayViewer_addWorld(void* world);
 };
 
 // @fnv 0x00d662c0
-void FUN_00d662c0_stub::AttachToIsland(void* pIsland)
+// src: XBOX_RETAIL_PDB 0x00d662c0
+// pdb: hkpPhantomDisplayViewer::addWorld | hkpPhantomDisplayViewer.obj | retail, object-file gap fill, high
+// pdb params: world
+void FUN_00d662c0_stub::hkpPhantomDisplayViewer_addWorld(void* world)
 {
     char* pSelf = (char*)this;
     void* p1;
@@ -89,7 +97,7 @@ void FUN_00d662c0_stub::AttachToIsland(void* pIsland)
         p1 = pSelf + 0x28;
     else
         p1 = 0;
-    hkpWorld* edi = (hkpWorld*)pIsland;
+    hkpWorld* edi = (hkpWorld*)world;
     ((FUN_00c93860_stub*)edi)->hkpWorld_addPhantomListener(p1);
     void* p2;
     if (pSelf)
@@ -98,16 +106,16 @@ void FUN_00d662c0_stub::AttachToIsland(void* pIsland)
         p2 = 0;
     edi->hkpWorld_addWorldPostSimulationListener(p2);
     int i = 0;
-    if (edi->m_kPhantoms.m_iElementCount > 0)
+    if (edi->m_phantoms.m_iElementCount > 0)
     {
         char* base = pSelf + 0x28;
         do
         {
-            void* item = ((void**)edi->m_kPhantoms.m_data)[i];
+            void* item = ((void**)edi->m_phantoms.m_data)[i];
             void* pVtable = *(void**)base;
             ((void(__thiscall*)(void*, void*)) * (void**)((char*)pVtable + 4))(base, item);
             ++i;
-        } while (i < edi->m_kPhantoms.m_iElementCount);
+        } while (i < edi->m_phantoms.m_iElementCount);
     }
 }
 
@@ -123,6 +131,8 @@ struct FUN_00d663f0_Class
 };
 
 // @fnv 0x00d663f0
+// pdb: hkpUserShapePhantomTypeIdentifier::registerShapePhantomType | hkpPhantomDisplayViewer.obj | retail, object-file run extension, low
+// pdb params: t
 void __thiscall FUN_00d663f0_Class::AppendInt(int value)
 {
     hkArray<int>& array = m_ppData;
@@ -151,6 +161,7 @@ struct hkpPhantomDisplayViewer
 hkMemoryRouter* __cdecl _D1A0E0GetMemoryRouter();
 
 // @fnv 0x00d66b60
+// pdb: hkpPhantomDisplayViewer::`scalar deleting destructor' | hkpPhantomDisplayViewer.obj | retail, vtable slot, high
 void* hkpPhantomDisplayViewer::Destroy(int flags)
 {
     FUN_00d66490();
@@ -185,7 +196,7 @@ void FnvCpu_FUN_00d66370_CpuOwner::ProcessState_00d66370()
 // add ecx,-0x20; jmp AttachToIsland : override in Derived forwards to the primary base's virtual.
 struct PrimaryBase
 {
-    virtual void AttachToIsland();
+    virtual void hkpPhantomDisplayViewer_addWorld();
     int unk04;
     int unk08;
     int unk0C;
@@ -214,7 +225,7 @@ Derived::Derived()
 // src: GUESS 0x00d66380 (confidence: medium)
 void Derived::AttachToIsland_Thunk()
 {
-    this->PrimaryBase::AttachToIsland();
+    this->PrimaryBase::hkpPhantomDisplayViewer_addWorld();
 }
 
 extern int DAT_01268ff0;
@@ -240,6 +251,7 @@ struct FUN_00d66330_StandIn
 };
 // @fnv 0x00d66330
 // src: GUESS 0x00d66330 (confidence: low)
+// pdb: hkpPhantomDisplayViewer::init | hkpPhantomDisplayViewer.obj | retail, vtable slot, high
 void FUN_00d66330_StandIn::ProcessEntries_00d66330()
 {
     if (m_pShapeCollection)
@@ -247,7 +259,7 @@ void FUN_00d66330_StandIn::ProcessEntries_00d66330()
         for (int i = 0; i < m_pShapeCollection->m_numWorlds; ++i)
         {
             reinterpret_cast<FUN_00d662c0_stub*>(reinterpret_cast<char*>(this) - 8)
-                ->AttachToIsland(m_pShapeCollection->m_ppWorlds[i]);
+                ->hkpPhantomDisplayViewer_addWorld(m_pShapeCollection->m_ppWorlds[i]);
         }
     }
 }
@@ -292,6 +304,8 @@ struct ViewerOwner : OwnerBase, ViewerList
 
 // Scans entries for target, decrements count, moves the last entry into its slot, and notifies the owner's callback with the target's callbackState.
 // @fnv 0x00d66390
+// pdb: hkpPhantomDisplayViewer::phantomRemovedCallback | hkpPhantomDisplayViewer.obj | debug, vtable slot, medium
+// pdb params: phantom
 void ViewerList::RemoveViewer(Viewer* pViewer)
 {
     int index = 0;
@@ -333,13 +347,15 @@ struct FnvCpu_FUN_00d66770_CpuBlock
 };
 // @fnv 0x00d66770
 // src: XBOX_PDB 0x00d66770
-void* __cdecl hkpPhantomDisplayViewer_create(unsigned int value)
+// pdb: hkpPhantomDisplayViewer::create | hkpPhantomDisplayViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+void* __cdecl hkpPhantomDisplayViewer_create(unsigned int contexts)
 {
     hkMemoryRouter* pCpuHolder = static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
     FnvCpu_FUN_00d66770_CpuBlock* pCpuBlock =
         static_cast<FnvCpu_FUN_00d66770_CpuBlock*>(reinterpret_cast<hkMemoryAllocator*>(pCpuHolder->m_heap)->blockAlloc(60));
     pCpuBlock->size = 60;
-    pCpuBlock = pCpuBlock->FUN_00d66430(value);
+    pCpuBlock = pCpuBlock->FUN_00d66430(contexts);
     if (pCpuBlock)
         return reinterpret_cast<char*>(pCpuBlock) + 8;
     return 0;
@@ -371,7 +387,7 @@ HavokArrayOwner* HavokArrayOwner::DestroyHavokArrayOwner(unsigned int deletionFl
     if (deletionFlags & 1)
     {
         hkMemoryRouter* router2 = hkMemoryRouter_getInstance();
-        reinterpret_cast<hkMemoryAllocator*>(router2->m_heap)->blockFree(this, m_usMemSizeAndFlags);
+        reinterpret_cast<hkMemoryAllocator*>(router2->m_heap)->blockFree(this, m_memSizeAndFlags);
     }
     return this;
 }
@@ -387,6 +403,8 @@ class FUN_00d66430 : public hkpWorldViewerBase,
 };
 // Constructor that passes contexts to the shared viewer base; its own body is empty.
 // @fnv 0x00d66430
+// pdb: hkpPhantomDisplayViewer::hkpPhantomDisplayViewer | hkpPhantomDisplayViewer.obj | retail, object-file run extension, low
+// pdb params: contexts
 FUN_00d66430::FUN_00d66430(const void* contexts) : hkpWorldViewerBase(contexts)
 {}
 
@@ -400,23 +418,26 @@ inline void* hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(
         reinterpret_cast<hkMemoryAllocator&>(phantomViewerMemory::hkMemoryRouter_getInstance().heap()).blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = (unsigned short)nbytes;
+    b->m_memSizeAndFlags = (unsigned short)nbytes;
     return b;
 }
 
 // Vtable 0x010d1c2c belongs to a 20-byte referenced array owner (8-byte base plus 12-byte array).
-class ReferencedArrayOwner : public hkReferencedObject
+// pdb: class hkpUserShapePhantomTypeIdentifier, size 0x14, bases: hkReferencedObject, hkSingleton<hkpUserShapePhantomTypeIdentifier>, 1 members
+class hkpUserShapePhantomTypeIdentifier : public hkReferencedObject
 {
   public:
-    hkArray<void*> m_items;
-    virtual ~ReferencedArrayOwner();
+    hkArray<void*> m_shapePhantomTypes;
+    virtual ~hkpUserShapePhantomTypeIdentifier();
 };
 
 // Allocates the referenced array owner through the shared Havok base.
 // @fnv 0x00d66730
-hkReferencedObject* __cdecl CreateHkObject()
+// src: XBOX_RETAIL_PDB 0x00d66730
+// pdb: hkpUserShapePhantomTypeIdentifiercreate | hkpPhantomDisplayViewer.obj | retail, object-file gap fill, high
+hkReferencedObject* __cdecl hkpUserShapePhantomTypeIdentifiercreate()
 {
-    return new ReferencedArrayOwner();
+    return new hkpUserShapePhantomTypeIdentifier();
 }
 
 __forceinline hkMemoryAllocator& hkContainerHeapAllocator::get(const void*)
@@ -490,13 +511,14 @@ class hkpPhantomDisplayViewer : public hkpWorldViewerBase,
     virtual void PhantomAddedCallback(hkpPhantom* pkPhantom);
     virtual void postSimulationCallback(hkpWorld* pkWorld);
 
-    void removeWorld(hkpWorld* pkWorld) throw();
+    void removeWorld(hkpWorld* world) throw();
 
     hkArray<int> m_kIds;
 };
 
 // Destructor that detaches from each world in the physics context when it is set.
 // @fnv 0x00d66490
+// pdb: hkpPhantomDisplayViewer::~hkpPhantomDisplayViewer | hkpPhantomDisplayViewer.obj | retail, upstream name already matches, high
 hkpPhantomDisplayViewer::~hkpPhantomDisplayViewer()
 {
     if (m_iValueAtOffset0C)
@@ -724,12 +746,15 @@ extern int DAT_01268ff0;
 extern int DAT_01268ff4;
 // Builds display geometry boxes from the phantom world's AABBs, submits them to the display handler, and updates tracked phantoms.
 // @fnv 0x00d667b0
+// pdb: hkpPhantomDisplayViewer::postSimulationCallback | hkpPhantomDisplayViewer.obj | retail, string-set bridge, high
+// pdb params: world
+// pdb locals: displayGeometries, phantomAabbGeometries, aabb
 void S00d667b0_Viewer::postSimulationCallback(hkpWorld* pkWorld)
 {
     hkpWorld* world = pkWorld;
     Monitor(str_010d1c38);
     {
-        const hkArray<hkpPhantom*>& phantoms = world->m_kPhantoms;
+        const hkArray<hkpPhantom*>& phantoms = world->m_phantoms;
         LocalArray<FUN_00de1210> boxes(phantoms.m_iElementCount);
         boxes.SetSizeAndGrow(phantoms.m_iElementCount);
         LocalArray<DisplayGeometry*> geometries(phantoms.m_iElementCount);
@@ -959,7 +984,7 @@ struct Vw66530Str
     int unk00;
     int unk04;
     int unk08;
-    void FUN_00cb1600(char* buf, int size);
+    void FUN_00cb1600(char* buf, int bufSize);
     void ProcessAndReturnValue_00cc01c0(const char* s);
     void FUN_00cc00e0();
 };
@@ -978,7 +1003,7 @@ struct Vw66530Col
     int unk0C;
     int unk10;
     void hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(Vw66530Obj* o);
-    void UpdateState_00de0f90(int root, hkArrayBase<Vw66530Entry*>* out);
+    void hkpShapeDisplayBuilder_buildDisplayGeometries(int root, hkArrayBase<Vw66530Entry*>* displayGeometries);
 };
 
 struct Vw66530Disp
@@ -994,7 +1019,7 @@ struct Vw66530Self
     int unk00;
     int unk04;
     hkArray<Vw66530Arg*> m_args;
-    void hkpPhantomDisplayViewer_phantomAddedCallback(Vw66530Arg* arg);
+    void hkpPhantomDisplayViewer_phantomAddedCallback(Vw66530Arg* phantom);
 };
 
 struct Vw66530Outer
@@ -1009,11 +1034,14 @@ struct Vw66530Outer
 // For an allowed type and nonzero root, collects entries, drops and logs some, stores arg, then calls the dispatcher's add and update.
 // @fnv 0x00d66530
 // src: HAVOK_LIB 0x00d66530
-void Vw66530Self::hkpPhantomDisplayViewer_phantomAddedCallback(Vw66530Arg* arg)
+// pdb: hkpPhantomDisplayViewer::phantomAddedCallback | hkpPhantomDisplayViewer.obj | retail, string-set bridge, high
+// pdb params: phantom
+// pdb locals: displayGeometries, shapeBuilder, env, reportBuf, ostr
+void Vw66530Self::hkpPhantomDisplayViewer_phantomAddedCallback(Vw66530Arg* phantom)
 {
-    int root = arg->m_info.unk00;
-    Vw66530Info* info = &arg->m_info;
-    int type = arg->getType();
+    int root = phantom->m_info.unk00;
+    Vw66530Info* info = &phantom->m_info;
+    int type = phantom->getType();
     hkArrayBase<Vw66530Entry*> entries;
     Vw66530Str str;
     Vw66530Col col;
@@ -1026,7 +1054,7 @@ void Vw66530Self::hkpPhantomDisplayViewer_phantomAddedCallback(Vw66530Arg* arg)
         goto done;
     o.hkpShapeDisplayBuilder_hkpShapeDisplayBuilderEnvironment_hkpShapeDisplayBuilderEnvironment();
     col.hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(&o);
-    col.UpdateState_00de0f90(root, &entries);
+    col.hkpShapeDisplayBuilder_buildDisplayGeometries(root, &entries);
     for (int i = entries.m_iElementCount - 1; i >= 0; i--)
     {
         Vw66530Entry* pEntry = entries.m_data[i];
@@ -1039,7 +1067,7 @@ void Vw66530Self::hkpPhantomDisplayViewer_phantomAddedCallback(Vw66530Arg* arg)
             entries.removeAt(i);
         }
     }
-    m_args.pushBack(arg);
+    m_args.pushBack(phantom);
     Vw66530Outer* outer = reinterpret_cast<Vw66530Outer*>((char*)this - 0x10);
     outer->m_disp->add(&entries, info->unk08, info, DAT_01268ff0, root);
     outer->m_disp->update(DAT_01268ff4, info, DAT_01268ff0);

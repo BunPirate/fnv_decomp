@@ -28,16 +28,19 @@ struct FUN_00b404c0_cls
     int unk14;
     unsigned char unk18;
 
-    void CBillboardLeaf_SetColor(const FUN_00b28440_Class* src, bool flag);
+    void CBillboardLeaf_SetColor(const FUN_00b28440_Class* cColor, bool bApplyDimming);
 };
 
 // @fnv 0x00b404c0
 // src: COMMUNITY 0x00b404c0
-void FUN_00b404c0_cls::CBillboardLeaf_SetColor(const FUN_00b28440_Class* src, bool flag)
+// pdb: CBillboardLeaf::SetColor | BillboardLeaf.obj | debug, upstream name already matches, high
+// pdb params: cColor, bApplyDimming
+// pdb locals: cScaledColor, i
+void FUN_00b404c0_cls::CBillboardLeaf_SetColor(const FUN_00b28440_Class* cColor, bool bApplyDimming)
 {
-    FUN_00b28440_Class v = *src;
+    FUN_00b28440_Class v = *cColor;
     int i;
-    if (flag)
+    if (bApplyDimming)
     {
         v.Scale((float)((double)unk18 / 255.0));
     }
@@ -106,7 +109,7 @@ struct Parser
     float CTreeFileAccess_ParseFloat();
     int AdvanceBlockAllocationCursor();
     unsigned char GetNextChar();
-    V3 GetVector3();
+    V3 BSSoundMessage_GetVector3();
 };
 inline void DeadEnd()
 {
@@ -138,45 +141,48 @@ struct LeafQ
 };
 // @fnv 0x00b405c0
 // src: XBOX_PDB 0x00b405c0
-LeafQ* CBillboardLeaf_Parse(Parser* p)
+// pdb: CBillboardLeaf::Parse | BillboardLeaf.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken, pLeaf
+LeafQ* CBillboardLeaf_Parse(Parser* cFile)
 {
     LeafQ* pLeaf = new LeafQ;
-    int iToken = p->GetNextElement();
+    int iToken = cFile->GetNextElement();
     do
     {
         switch (iToken)
         {
         case 0x1b5e:
-            pLeaf->i14 = p->AdvanceBlockAllocationCursor();
+            pLeaf->i14 = cFile->AdvanceBlockAllocationCursor();
             break;
         case 0x1b5f:
-            pLeaf->b10 = p->GetNextChar();
+            pLeaf->b10 = cFile->GetNextChar();
             break;
         case 0x1b60:
-            pLeaf->b18 = p->GetNextChar();
+            pLeaf->b18 = cFile->GetNextChar();
             break;
         case 0x1b62:
-            pLeaf->kB = p->GetVector3();
+            pLeaf->kB = cFile->BSSoundMessage_GetVector3();
             break;
         case 0x1b63:
-            pLeaf->b40 = p->GetNextChar();
+            pLeaf->b40 = cFile->GetNextChar();
             break;
         case 0x1b64:
-            pLeaf->f44 = p->GetNextChar() / 255.0;
+            pLeaf->f44 = cFile->GetNextChar() / 255.0;
             break;
         case 0x1b65:
-            pLeaf->i48 = p->GetNextElement();
+            pLeaf->i48 = cFile->GetNextElement();
             break;
         case 0x1b67:
-            pLeaf->SetA(p->GetVector3());
+            pLeaf->SetA(cFile->BSSoundMessage_GetVector3());
             break;
         case 0x1b68:
-            p->CTreeFileAccess_ParseFloat();
+            cFile->CTreeFileAccess_ParseFloat();
             break;
         default:
             throw FUN_00b09480("malformed billboard leaf", false);
         }
-        iToken = p->GetNextElement();
+        iToken = cFile->GetNextElement();
     } while (iToken != 0x1b5d);
     DeadEnd();
     return pLeaf;

@@ -19,13 +19,16 @@ void* __cdecl NiPSysVortexFieldModifier_GetRTTI()
     return &g_01202688;
 }
 
+// pdb: class NiPSysVortexFieldModifier, size 0x3c, bases: NiPSysFieldModifier, 1 members
 struct NiPSysVortexFieldModifier : NiPSysFieldModifier
 {
-    NiColor m_kFogTint;
+    NiColor m_kDirection;
     void LoadBinary_00c267d0(NiStream& stream);
 };
 // @fnv 0x00c267d0
 // src: XBOX_PDB 0x00c267d0
+// pdb: NiPSysGravityFieldModifier::RegisterStreamables | NiPSysGravityFieldModifier.obj | debug, object-file run extension, low
+// pdb params: kStream
 void NiPSysVortexFieldModifier::LoadBinary_00c267d0(NiStream& stream)
 {
     NiPSysFieldModifier::LoadBinary(stream);
@@ -42,6 +45,8 @@ struct FUN_00c26920_shell
 
 // Calls FUN_00c31750, then deletes this with size 0x3c when bit 0 of a is set, and returns this.
 // @fnv 0x00c26920
+// pdb: NiPSysVortexFieldModifier::LoadBinary | NiPSysVortexFieldModifier.obj | retail, object-file run extension, low
+// pdb params: kStream
 FUN_00c26920_shell* __thiscall FUN_00c26920_shell::DestroyIfFlagged(int a)
 {
     FUN_00c31750();
@@ -72,6 +77,10 @@ struct ParticleDragCloneOwner : NiPSysModifier
 };
 // Calls NiPSysModifier::ProcessClone, then remaps the drag object through the clone map, falling back to the original pointer.
 // @fnv 0x00c2c110
+// pdb: NiPSysDragModifier::CreateClone | NiPSysDragModifier.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysDragModifier::NiPSysDragModifier
+// pdb params: kCloning
+// pdb locals: pkObject
 void ParticleDragCloneOwner::RemapDragObject(CloningProcess& aCloneProcess)
 {
     NiPSysModifier::ProcessClone(aCloneProcess);
@@ -105,6 +114,8 @@ struct FUN_00c27060_shell : C27A30Base
 };
 
 // @fnv 0x00c27060
+// pdb: NiPSysVortexFieldModifier::GetViewerStrings | NiPSysVortexFieldModifier.obj | retail, object-file run extension, low
+// pdb params: pkStrings
 void FUN_00c27060_shell::AppendNameAndDirection(StrArr* pkStrings)
 {
     FUN_00c322b0(pkStrings);
@@ -151,17 +162,20 @@ struct CloneHost
 {
     char _pad_0[0x30];
     CloneVec3 m_30;
-    void NiPSysFieldModifier_CopyMembers(CloneItem* pItem, int a);
-    CloneItem* NiPSysVortexFieldModifier_CreateClone(int a);
+    void NiPSysFieldModifier_CopyMembers(CloneItem* pkDest, int kCloning);
+    CloneItem* NiPSysVortexFieldModifier_CreateClone(int kCloning);
 };
 
 // Allocates a CloneItem, passes it with a to FUN_00c32020, copies m_30 into the item's m_30, and returns it.
 // @fnv 0x00c26940
 // src: XBOX_PDB 0x00c26940
-CloneItem* CloneHost::NiPSysVortexFieldModifier_CreateClone(int a)
+// pdb: NiPSysVortexFieldModifier::CreateClone | NiPSysVortexFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
+CloneItem* CloneHost::NiPSysVortexFieldModifier_CreateClone(int kCloning)
 {
     CloneItem* pItem = new CloneItem;
-    this->NiPSysFieldModifier_CopyMembers(pItem, a);
+    this->NiPSysFieldModifier_CopyMembers(pItem, kCloning);
     pItem->m_30 = m_30;
     return pItem;
 }
@@ -192,7 +206,7 @@ struct Pt_c268
         return x * o.x + y * o.y + z * o.z;
     }
     // The game helper forms the unit cross product with this vector as receiver.
-    Pt_c268 FUN_0053d1a0(const Pt_c268& value) const;
+    Pt_c268 FUN_0053d1a0(const Pt_c268& pt) const;
     Pt_c268& operator-=(const Pt_c268& o)
     {
         x -= o.x;
@@ -307,6 +321,9 @@ struct VortexModifier
 // For each active particle with nonzero time delta, adds a scaled vector to its velocity when distance is at most m_fDistanceLimit squared.
 // @fnv 0x00c269b0
 // src: GUESS 0x00c269b0 (confidence: medium)
+// pdb: NiPSysVortexFieldModifier::UpdateNoAttenuation | NiPSysVortexFieldModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: kVortexToPSys, fMaxDistanceSqr, kInvPSys, kPosition, kDirection, kPSys, kVortex, us, pkCurrentParticle, fDeltaT, kParticlePosition, fDistanceSqr, kDeltaV
 void VortexModifier::ApplyVortexVelocityWithinDistance(float fTime, PSysData* pkData)
 {
     NiTransform kField;
@@ -467,6 +484,9 @@ struct ForceOwner
 // Computes the force on each particle in list from node10's transform and m_dir, scaled by age, and adds it to each particle's velocity.
 // @fnv 0x00c26c00
 // src: GUESS 0x00c26c00 (confidence: medium)
+// pdb: NiPSysVortexFieldModifier::UpdateNoAttenuationNoDist | NiPSysVortexFieldModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: kVortexToPSys, kInvPSys, kPosition, kDirection, kPSys, kVortex, us, pkCurrentParticle, fDeltaT, kParticlePosition, kDeltaV
 void ForceOwner::ApplyParticleForces(float delta, ParticleList* list)
 {
     NiTransform transformB;
@@ -572,16 +592,19 @@ struct AirField
     AirNode* field;
     AirVector direction;
     float magnitude, nearDistance, farDistance;
-    void NiPSysDragModifier_Update(float time, const AirParticles* data);
+    void NiPSysDragModifier_Update(float fTime, const AirParticles* pkData);
 };
 // Updates each particle's velocity along the normalized axis, with distance falloff above nearDistance and a time-based scale.
 // @fnv 0x00c2c170
 // src: XBOX_PDB 0x00c2c170
-void AirField::NiPSysDragModifier_Update(float time, const AirParticles* apParticles)
+// pdb: NiPSysDragModifier::Update | NiPSysDragModifier.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkData
+// pdb locals: kDragAxis, kPosition, fRangeDifference, fLenSquared, kDrag, kInvPSys, kPSys, kDragToPSys, us, kParticlePosition, pkCurrentParticle, fDeltaT, fProj, fDistance, fPercentage, fDifference
+void AirField::NiPSysDragModifier_Update(float fTime, const AirParticles* pkData)
 {
     if (!(magnitude > 0.0f))
         return;
-    if (apParticles->count <= 0)
+    if (pkData->count <= 0)
         return;
     if (!field)
         return;
@@ -597,16 +620,16 @@ void AirField::NiPSysDragModifier_Update(float time, const AirParticles* apParti
     axis.Unitize_004a0c10();
     float axisSquared = axis.SquaredLength();
     float range = farDistance - nearDistance;
-    for (unsigned short i = 0; i < apParticles->count; ++i)
+    for (unsigned short i = 0; i < pkData->count; ++i)
     {
-        AirVector position = apParticles->GetVertices()[i];
+        AirVector position = pkData->GetVertices()[i];
         AirVector displacement = position - *(AirVector*)&transform.m_Translate;
-        AirParticle* pAlias0 = &apParticles->GetParticleInfo()[i];
+        AirParticle* pAlias0 = &pkData->GetParticleInfo()[i];
         AirParticle* pAlias1 = pAlias0;
         AirParticle* particle = pAlias1;
         float distance = (float)sqrt(displacement.SquaredLength());
         float force = magnitude;
-        float age = (float)((time - particle->birthTime) / 0.03333330154418945);
+        float age = (float)((fTime - particle->birthTime) / 0.03333330154418945);
         if (distance > nearDistance)
         {
             if (distance >= farDistance)

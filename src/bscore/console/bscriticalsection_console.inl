@@ -1,6 +1,9 @@
 
 #include "bscriticalsection_console_decls.h"
 // @fnv 0x00a0c850
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,XMLStorage *>::GetNext | Menu.obj | debug, call graph, medium
+// pdb params: pos, key, val
+// pdb locals: bfound, ihashIndex, pkItem, pcompItem, i
 void BSCriticalSectionMap::Unlock(BSCriticalSectionEntry** entry, unsigned int* key, unsigned int* value)
 {
     unsigned int uiIndex;

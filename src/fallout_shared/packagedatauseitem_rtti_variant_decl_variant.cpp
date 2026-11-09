@@ -21,20 +21,23 @@ struct LocationDescriptor
     void FUN_0067f4d0(LocationDescriptor* other, bool a);
 };
 // @fnv 0x0067c860
-void TESUseItemPackageData::vf01(TESPackageData* source)
+// pdb: TESUseItemPackageData::Copy | PackageDataUseItem.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
+void TESUseItemPackageData::vf01(TESPackageData* apCopy)
 {
-    TESUseItemPackageData* copy = dynamic_cast<TESUseItemPackageData*>(source);
+    TESUseItemPackageData* copy = dynamic_cast<TESUseItemPackageData*>(apCopy);
     if (copy)
     {
-        if (m_pPackageTarget)
+        if (pSearchLocation)
         {
-            delete m_pPackageTarget;
-            m_pPackageTarget = 0;
+            delete pSearchLocation;
+            pSearchLocation = 0;
         }
-        if (copy->m_pPackageTarget)
+        if (copy->pSearchLocation)
         {
-            m_pPackageTarget = new LocationDescriptor;
-            m_pPackageTarget->FUN_0067f4d0(copy->m_pPackageTarget, false);
+            pSearchLocation = new LocationDescriptor;
+            pSearchLocation->FUN_0067f4d0(copy->pSearchLocation, false);
         }
     }
 }

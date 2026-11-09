@@ -7,6 +7,7 @@ class CTreeFileAccessImpl;
 class TreeFileAccess;
 class Reader;
 
+// pdb: class CTreeEngine, size 0x110, bases: CIdvCamera, 22 members
 class CTreeEngine : public CIdvCamera
 {
 public:
@@ -31,43 +32,43 @@ public:
 
     struct Sub94
     {
-        void SIdvLeafInfo_Parse(ElementIterator* a);
+        void SIdvLeafInfo_Parse(ElementIterator* cFile);
     };
 
     struct SubA4
     {
-        void CTreeEngine_SetLeafTextures(SubA4* a);
+        void CTreeEngine_SetLeafTextures(SubA4* vTextures);
     };
 
     struct Sub10c
     {
-        void SIdvWindInfo_Parse(ElementIterator* a);
+        void SIdvWindInfo_Parse(ElementIterator* cFile);
     };
 
-    float* m_pfTreeSize;
-    float* m_pfTreeSizeVariance;
-    float m_actualSize;
-    float m_actualVariance;
-    int unk20;
-    SptFilename m_pcFileName;
+    float* m_fBillboardSize;
+    float* m_fLod;
+    float m_fOverrideTreeSize;
+    float m_fOverrideTreeVariance;
+    int m_cRandom;
+    SptFilename m_sTreeInfo;
     int unk40;
     int unk44;
     int unk48;
     int unk4c;
     int unk50;
     int unk54;
-    int unk58;
-    int unk5c;
-    int unk60;
+    int m_pBranch;
+    int m_pBranchGeometry;
+    int m_vBranchInfo;
     int unk64;
     int unk68;
     int unk6c;
-    int unk70;
-    int unk74;
+    int m_nNumBranchLodLevels;
+    int m_vBillboardLeaves;
     int unk78;
     int unk7c;
     int unk80;
-    int unk84;
+    int m_sLeafInfo;
     int unk88;
     int unk8c;
     int unk90;
@@ -87,15 +88,15 @@ public:
     int unkc8;
     int unkcc;
     int unkd0;
-    int unkd4;
-    int unkd8;
-    int unkdc;
-    int unke0;
-    int unke4;
-    int unke8;
-    int unkec;
-    int unkf0;
-    float unkF4;
+    int m_vLeafLods;
+    int m_bParsedLeafLods;
+    int m_fMinBranchVolumePercent;
+    int m_fMaxBranchVolumePercent;
+    int m_fLeafReductionPercentage;
+    int m_fBranchReductionFuzziness;
+    int m_fLargeBranchPercent;
+    int m_nBranchesWeightLevel;
+    float m_sWindInfo;
     float unkF8;
     float unkFC;
     float unk100;
@@ -106,20 +107,20 @@ public:
     CTreeEngine(int param);
     virtual ~CTreeEngine();
 
-    void SetWind(float v);
+    void SetWind(float fStrength);
     void CTreeEngine_GetSize(float* a, float* b);
     void SetSize_00b2bd20(float fSize, float fVariance);
     float GetNormalizedValue();
     void UpdateFields_00b2bdc0(float a, float b);
     void InitSeed(unsigned int seed);
-    void InitSeed(int seed);
-    bool Parse_00b2b550(CTreeFileAccessImpl* file);
-    void ParseTreeInfo(ElementIterator* a);
-    void ParseLeafCluster(ElementIterator* a);
+    void CTreeEngine_SetSeed(int nSeed);
+    bool Parse(CTreeFileAccessImpl* cFile);
+    void ParseTreeInfo(ElementIterator* cFile);
+    void ParseLeafCluster(ElementIterator* cFile);
     void CTreeEngine_ParseFlareSeed(ElementIterator* a);
-    void ParseLodInfo(ElementIterator* a);
-    void ProcessEntries_00b2c790(ElementIterator* a);
+    void ParseLodInfo(ElementIterator* cFile);
+    void ParseBranchInfo(ElementIterator* cFile);
     void BuildBranchLods();
-    void ParseTextureControls(TreeFileAccess* file);
-    void ParseFlareInfo(Reader* a);
+    void ParseTextureControls(TreeFileAccess* cFile);
+    void ParseFlareInfo(Reader* cFile);
 };

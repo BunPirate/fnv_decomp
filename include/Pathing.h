@@ -19,6 +19,7 @@ class TESObjectCELL;
 class TESObjectREFR;
 class TESWorldSpace;
 
+// pdb: class Pathing, size 0x1 (here 0x2c), 0 members
 class Pathing
 {
 public:
@@ -65,7 +66,7 @@ public:
                                          TELEPORT_DOOR_PATH_RESTRICTION, float, PathingActorData*,
                                          DOOR_LOCK_DISPOSITION);
     static bool FindClosestPathingPoint(TESWorldSpace*, TESObjectCELL*, const NiPoint3&, NiPoint3*);
-    static float FindPathDistance(const PathingLocation&, const PathingLocation&, float, PathingActorData*,
+    static float ComputeTeleportDoorPathLength(const PathingLocation&, const PathingLocation&, float, PathingActorData*,
                                   DOOR_LOCK_DISPOSITION);
     static bool FindPathingLocationOnNavMesh(PathingLocation&, const NiPoint3&, NavMesh*, unsigned short,
                                             PathingLocation*, CheckLineOfSightFilter*);

@@ -132,21 +132,23 @@ class FUN_004a0dd0_cls
     virtual void vfn_98();
     virtual void vfn_99();
     virtual void vfn_100(int a);
-    bool LookupFlag(const char* name, int flag);
-    void NiRenderer_SetScreenSpaceCameraData(int a1);
+    bool LookupFlag(const char* pcCallingFunction, int bExpectedValue);
+    void NiRenderer_SetScreenSpaceCameraData(int pkPort);
 };
 
 // If the "SetScreenSpaceCameraData" flag is set, forwards a1 to vfn_100; otherwise does nothing.
 // @fnv 0x004a0dd0
 // src: COMMUNITY 0x004a0dd0
-void FUN_004a0dd0_cls::NiRenderer_SetScreenSpaceCameraData(int a1)
+// pdb: NiXenonRenderer::SetScreenSpaceCameraData | BGSDecalManager.obj | debug, unique string literal, high
+// pdb params: pkPort
+void FUN_004a0dd0_cls::NiRenderer_SetScreenSpaceCameraData(int pkPort)
 {
     if (LookupFlag("SetScreenSpaceCameraData", 1) == 0)
     {
     }
     else
     {
-        vfn_100(a1);
+        vfn_100(pkPort);
     }
 }
 
@@ -386,6 +388,7 @@ class FUN_00c5db90 : public StubBaseC5DB90
 
 // Resets unkc0 to 0, then removes all items from m_kList and clears m_kArray.
 // @fnv 0x00c5db90
+// pdb: BSMasterParticleSystem::~BSMasterParticleSystem | BSMasterParticleSystem.obj | debug, call graph, medium
 FUN_00c5db90::~FUN_00c5db90()
 {
     unkc0 = 0;

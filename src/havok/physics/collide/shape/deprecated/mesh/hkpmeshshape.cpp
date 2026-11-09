@@ -48,20 +48,20 @@ template <typename ENUM, typename STORAGE>
 inline hkEnum<ENUM, STORAGE>::hkEnum(ENUM value) : m_kStorage(value) {}
 inline hkpShape::hkpShape(hkpShapeType type)
 {
-    m_ulUserData = 0;
+    m_userData = 0;
     reinterpret_cast<hkUint32&>(m_type) = type;
 }
 inline hkpConvexShape::hkpConvexShape(hkpShapeType type, hkReal radius) : hkpShape(type)
 {
-    m_fSphereRadius = radius;
+    m_radius = radius;
 }
 inline hkpTriangleShape::hkpTriangleShape(float radius, unsigned short weldingInfo, int weldingType) throw()
     : hkpConvexShape(HK_SHAPE_TRIANGLE, radius)
 {
-    m_kWeldingInfo = weldingInfo;
-    reinterpret_cast<hkUint8&>(m_eWeldingType) = static_cast<hkUint8>(weldingType);
-    m_kVertexTransform.m_vComponents = _mm_setzero_ps();
-    m_ucWeldingPadding = 0;
+    m_weldingInfo = weldingInfo;
+    reinterpret_cast<hkUint8&>(m_weldingType) = static_cast<hkUint8>(weldingType);
+    m_extrusion.m_vComponents = _mm_setzero_ps();
+    m_isExtruded = 0;
 }
 
 struct hkpMeshShapeSubpart
@@ -98,10 +98,12 @@ class MeshFirstTriangleCursor : public hkpShapeContainer
     int GetFirstTriangleKey();
 };
 // @fnv 0x00dccbc0
+// pdb: hkpMeshShape::getFirstKey | hkpMeshShape.obj | retail, vtable slot, high
+// pdb locals: buffer
 int MeshFirstTriangleCursor::GetFirstTriangleKey()
 {
     const hkpMeshShape* mesh = reinterpret_cast<const hkpMeshShape*>(reinterpret_cast<const char*>(this) - 0x10);
-    if (mesh->m_kSubparts.m_iElementCount == 0)
+    if (mesh->m_subparts.m_iElementCount == 0)
         return -1;
     hkpShapeBuffer buffer;
     const hkpTriangleShape* triangle = reinterpret_cast<const hkpTriangleShape*>(GetShapeForKey(0, buffer));
@@ -122,16 +124,19 @@ class MeshTriangleKeyCursor : public hkpShapeContainer
     int m_iNumBitsForSubpartIndex;
     hkArray<hkpMeshShapeSubpart> m_kSubparts;
 
-    hkUint32 GetNextNonDegenerateTriangleKey(hkUint32 oldKey) const throw();
+    hkUint32 GetNextNonDegenerateTriangleKey(hkUint32 initialKey) const throw();
 };
 
 // @fnv 0x00dccc30
-hkUint32 MeshTriangleKeyCursor::GetNextNonDegenerateTriangleKey(hkUint32 auiKey) const throw()
+// pdb: hkpMeshShape::getNextKey | hkpMeshShape.obj | retail, vtable slot, high
+// pdb params: initialKey
+// pdb locals: buffer
+hkUint32 MeshTriangleKeyCursor::GetNextNonDegenerateTriangleKey(hkUint32 initialKey) const throw()
 {
     hkpShapeBuffer buffer;
 
-    hkUint32 subPart = auiKey >> (32 - m_iNumBitsForSubpartIndex);
-    int triIndex = auiKey & (0xffffffff >> m_iNumBitsForSubpartIndex);
+    hkUint32 subPart = initialKey >> (32 - m_iNumBitsForSubpartIndex);
+    int triIndex = initialKey & (0xffffffff >> m_iNumBitsForSubpartIndex);
 
     while (true)
     {
@@ -151,11 +156,11 @@ hkUint32 MeshTriangleKeyCursor::GetNextNonDegenerateTriangleKey(hkUint32 auiKey)
 
 extern const hkClass DAT_01269198;
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(const void* pvChunk, int iNumBytes) throw();
+int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size) throw();
 
 template <class T> __forceinline void addArray(hkStatisticsCollector* collector, const char* name, const hkArray<T>& array)
 {
-    if ((array.m_iCapacityState & 0x80000000) == 0 || collector->m_reportInplaceAllocations)
+    if ((array.m_iCapacityState & 0x80000000) == 0 || collector->m_includeUnmanagedArrayMemory)
     {
         const T* data = array.m_data;
         int allocated = hkStatisticsCollector_getAllocatedSize(data, array.getCapacity() * sizeof(T));
@@ -177,10 +182,12 @@ class MeshShapeStatistics : public hkpMeshShape
 
 // Adds the SubParts array to the statistics collector, then forwards to the base shape's statistics collection with DAT_01269198.
 // @fnv 0x00dcd140
-void MeshShapeStatistics::CollectSubPartsStats(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw()
+// pdb: hkpMeshShape::calcContentStatistics | hkpMeshShape.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void MeshShapeStatistics::CollectSubPartsStats(hkStatisticsCollector* collector, const hkClass* cls) const throw()
 {
-    addArray(pkCollector, "SubParts", m_kSubparts);
-    reinterpret_cast<const ShapeCollectionStatistics*>(this)->CollectBaseStatistics(pkCollector, &DAT_01269198);
+    addArray(collector, "SubParts", m_subparts);
+    reinterpret_cast<const ShapeCollectionStatistics*>(this)->CollectBaseStatistics(collector, &DAT_01269198);
 }
 
 class MeshMaterialIndex : public hkpMeshShape
@@ -196,13 +203,15 @@ class MeshMaterialLookup : public hkpShapeContainer
 
 // Gets an index for uiKey from GetElement on the owner; if found, returns the pointer stored in that page's value array, otherwise null.
 // @fnv 0x00dccd00
-void* MeshMaterialLookup::FindValue(unsigned int uiKey)
+// pdb: hkpMeshShape::getCollisionFilterInfo | hkpMeshShape.obj | retail, vtable slot, high
+// pdb params: key
+void* MeshMaterialLookup::FindValue(unsigned int key)
 {
     MeshMaterialIndex* pkOwner = (MeshMaterialIndex*)((char*)this - 0x10);
-    int iIndex = pkOwner->GetElement(uiKey);
+    int iIndex = pkOwner->GetElement(key);
     if (iIndex != -1)
     {
-        hkpMeshShapeSubpart* pkPage = &pkOwner->m_kSubparts.m_data[uiKey >> (32 - pkOwner->m_iNumBitsForSubpartIndex)];
+        hkpMeshShapeSubpart* pkPage = &pkOwner->m_subparts.m_data[key >> (32 - pkOwner->m_numBitsForSubpartIndex)];
         void** ppValue = (void**)((char*)pkPage->m_pIndexBase + pkPage->m_iNumTriangles * iIndex);
         if (ppValue)
             return *ppValue;
@@ -233,6 +242,9 @@ class MeshTriangleStorageView
 
 // Extracts a triangle's vertex data from subpart index arrays, scales it, and constructs a hkpTriangleShape in the provided buffer.
 // @fnv 0x00dccf60
+// pdb: hkpMeshShape::getChildShape | hkpMeshShape.obj | retail, vtable slot, high
+// pdb params: key, buffer
+// pdb locals: assertBuf, ostr
 const void* MeshTriangleStorageView::CreateTriangle(unsigned int key, void* buffer) const
 {
     unsigned int triangleIndex = key & (~0U >> m_iNumBitsForSubpartIndex);
@@ -310,6 +322,9 @@ class FUN_00dcd310 : public FUN_00d21410
 };
 
 // @fnv 0x00dcd310
+// pdb: hkpMeshShape::hkpMeshShape | hkpMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numBitsForSubpartIndex
+// pdb locals: assertBuf, ostr
 FUN_00dcd310::FUN_00dcd310(float afSphereRadius, int iNumBitsForSubpartIndex) throw() : FUN_00d21410(0x17, 5)
 {
     m_kScaling.m_vComponents = _mm_set_ps1(1.0f);
@@ -322,11 +337,11 @@ FUN_00dcd310::FUN_00dcd310(float afSphereRadius, int iNumBitsForSubpartIndex) th
 // @fnv 0x00dcd410
 int MeshMaterialIndex::GetElement(unsigned int uiKey)
 {
-    unsigned int uiPage = uiKey >> (32 - m_iNumBitsForSubpartIndex);
-    hkpMeshShapeSubpart* pkPage = &m_kSubparts.m_data[uiPage];
+    unsigned int uiPage = uiKey >> (32 - m_numBitsForSubpartIndex);
+    hkpMeshShapeSubpart* pkPage = &m_subparts.m_data[uiPage];
     if (pkPage->m_pVertexBase)
     {
-        const unsigned char* p = (const unsigned char*)pkPage->m_pVertexBase + (uiKey & (0xffffffff >> m_iNumBitsForSubpartIndex)) * pkPage->m_iVertexStriding;
+        const unsigned char* p = (const unsigned char*)pkPage->m_pVertexBase + (uiKey & (0xffffffff >> m_numBitsForSubpartIndex)) * pkPage->m_iVertexStriding;
         if (pkPage->m_iMaterialIndexType == 1)
             return *p;
         return *(const unsigned short*)p;
@@ -336,7 +351,11 @@ int MeshMaterialIndex::GetElement(unsigned int uiKey)
 
 // Scales a vertex, transforms it to world space, and expands the AABB's min and max corners to include it.
 // @fnv 0x00dccd50
-static __declspec(noinline) void ExpandAabbWithVertex(hkAabb& aabb, const hkTransform& localToWorld,
+// src: XBOX_RETAIL_PDB 0x00dccd50
+// pdb: meshShape_addToAabb | hkpMeshShape.obj | retail, object-file gap fill, high
+// pdb params: aabb, localToWorld, v, scaling
+// pdb locals: vLocal, vWorld
+static __declspec(noinline) void meshShape_addToAabb(hkAabb& aabb, const hkTransform& localToWorld,
                                                       const float* vertex, const hkVector4& scaling)
 {
     hkVector4 scaled;
@@ -453,7 +472,7 @@ __forceinline void add(const hkVector4& b, hkVector4& a)
 class MeshShapeHelper : public hkpMeshShape
 {
   public:
-    void hkpMeshShape_getAabb(const hkTransform& transform, hkReal tolerance, hkAabb& out) const;
+    void hkpMeshShape_getAabb(const hkTransform& localToWorld, hkReal tolerance, hkAabb& out) const;
 };
 template <class T> __forceinline const T* hkAddByteOffsetConst(const T* p, long n)
 {
@@ -462,13 +481,16 @@ template <class T> __forceinline const T* hkAddByteOffsetConst(const T* p, long 
 // Computes the world-space AABB of all subpart triangles, then expands it by margin plus m_fSphereRadius.
 // @fnv 0x00dccdd0
 // src: XBOX_PDB 0x00dccdd0
-void MeshShapeHelper::hkpMeshShape_getAabb(const hkTransform& placement, hkReal margin, hkAabb& bounds) const
+// pdb: hkpMeshShape::getAabbImpl | hkpMeshShape.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: tol4, assertBuf, ostr, s
+void MeshShapeHelper::hkpMeshShape_getAabb(const hkTransform& localToWorld, hkReal tolerance, hkAabb& out) const
 {
-    bounds.m_kMinimumCorner.set(3.402820018375656e+38f, 3.402820018375656e+38f, 3.402820018375656e+38f);
-    bounds.m_kMaximumCorner.set(-3.402820018375656e+38f, -3.402820018375656e+38f, -3.402820018375656e+38f);
-    for (int partIndex = 0; partIndex < m_kSubparts.m_iElementCount; ++partIndex)
+    out.m_kMinimumCorner.set(3.402820018375656e+38f, 3.402820018375656e+38f, 3.402820018375656e+38f);
+    out.m_kMaximumCorner.set(-3.402820018375656e+38f, -3.402820018375656e+38f, -3.402820018375656e+38f);
+    for (int partIndex = 0; partIndex < m_subparts.m_iElementCount; ++partIndex)
     {
-        const hkpMeshShapeSubpart& part = m_kSubparts.m_data[partIndex];
+        const hkpMeshShapeSubpart& part = m_subparts.m_data[partIndex];
         for (int face = 0; face < part.m_iTriangleCount; ++face)
         {
             const float *a, *b, *c;
@@ -488,15 +510,15 @@ void MeshShapeHelper::hkpMeshShape_getAabb(const hkTransform& placement, hkReal 
                 b = hkAddByteOffsetConst(part.m_pMaterialIndexBase, indices[1] * part.m_iTriangleIndexStride);
                 c = hkAddByteOffsetConst(part.m_pMaterialIndexBase, indices[2] * part.m_iTriangleIndexStride);
             }
-            ExpandAabbWithVertex(bounds, placement, a, m_kScaling);
-            ExpandAabbWithVertex(bounds, placement, b, m_kScaling);
-            ExpandAabbWithVertex(bounds, placement, c, m_kScaling);
+            meshShape_addToAabb(out, localToWorld, a, m_scaling);
+            meshShape_addToAabb(out, localToWorld, b, m_scaling);
+            meshShape_addToAabb(out, localToWorld, c, m_scaling);
         }
     }
     hkVector4 expansion;
-    setSplat(expansion, margin + m_fSphereRadius);
-    subtract(bounds.m_kMinimumCorner, expansion);
-    add(expansion, bounds.m_kMaximumCorner);
+    setSplat(expansion, tolerance + m_radius);
+    subtract(out.m_kMinimumCorner, expansion);
+    add(expansion, out.m_kMaximumCorner);
 }
 
 class MeshScalingSetter : public hkpMeshShape
@@ -510,5 +532,5 @@ class MeshScalingSetter : public hkpMeshShape
 void MeshScalingSetter::UpdateFields_00dccf40(const hkVector4& value)
 {
     LocalM128 data = _mm_load_ps(&value.x);
-    _mm_store_ps(&m_kScaling.x, data);
+    _mm_store_ps(&m_scaling.x, data);
 }

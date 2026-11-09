@@ -2,6 +2,7 @@
 
 #include "bhkCharacterController.h"
 
+// pdb: class ProjectileListener, size 0x660 (here 0x4d0), bases: bhkCharacterController, 1 members
 class ProjectileListener : public bhkCharacterController
 {
 public:

@@ -13,6 +13,7 @@ class MoveVec;
 class Output052;
 class OutputValue;
 
+// pdb: class CombatProcedureMove, size 0x7c, bases: CombatProcedure, 15 members
 class CombatProcedureMove : public CombatProcedure
 {
 public:
@@ -29,10 +30,10 @@ public:
         MoveVec Position();
         void Set(const MoveVec&, int);
         void BGSWorldLocation_SaveGame(void* buffer);
-        void BGSLoadGameBuffer_LoadBGSWorldLocation(void* buffer);
+        void BGSWorldLocation_LoadGame(void* buffer);
     };
 
-    CombatProcedureMove(MoveInput* input, float speed, unsigned int flags);
+    CombatProcedureMove(MoveInput* apCombatLocation, float afTargetRadius, unsigned int aiLocation);
     virtual ~CombatProcedureMove();
 
     virtual void Unk04();
@@ -51,15 +52,15 @@ public:
     void Update_009d6ca0();
     void UpdateCombatMovement();
     void ClearTargetRef(TESObjectREFR* apRef);
-    void PrintDebugInfo(DebugDisplay* display, int x, int y);
+    void PrintDebugInfo(DebugDisplay* apDebugText, int aeLocation, int aeJustify);
     void StartedPlanning();
     void FinishedPlanning();
-    void SaveGame_009d8880(BGSSaveFormBuffer* buffer);
-    void LoadGame_009d89a0(BGSLoadFormBuffer* buffer);
-    void InitLoadGame_009d8ad0(unsigned int value);
+    void SaveGame_009d8880(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadGame_009d89a0(BGSLoadFormBuffer* apLoadGameBuffer);
+    void InitLoadGame_009d8ad0(unsigned int apLoadGameBuffer);
     float GetHidingTime();
     void UpdateOutput(OutputValue* output);
-    bool UpdateMovementRequest(Output052* output);
+    bool CreatePath(Output052* arspAvoidNodeArray);
 
     MoveRef* Actor();
     MoveRef* Target();
@@ -72,21 +73,21 @@ public:
     void Reset();
     void Avoid(MoveRequest*);
 
-    unsigned int unk10;
+    unsigned int eState;
     Location startTransform;
-    Location currentTransform;
-    float rate;
-    unsigned int target38;
-    unsigned int mode;
-    TimeoutTimer pos40;
-    NiPoint3 pos48;
-    bool active54;
+    Location CurrentDestination;
+    float fTargetRadius;
+    unsigned int pTargetRef;
+    unsigned int iLocation;
+    TimeoutTimer HidingTimer;
+    NiPoint3 LookAtPosition;
+    bool bReservedSecondaryLocation;
     unsigned char unk55[3];
-    GO state58;
-    bool active5C;
+    GO spQueuedPathingRequest;
+    bool bHasQueuedPathingRequest;
     unsigned char unk5D[3];
-    int unk60;
-    TimeoutTimer state64;
-    TimeoutTimer state6C;
-    TimeoutTimer state74;
+    int iCurrentNode;
+    TimeoutTimer CoveredMoveSearchTimer;
+    TimeoutTimer CheckCoverTimer;
+    TimeoutTimer CheckDestinationTimer;
 };

@@ -67,9 +67,9 @@ __forceinline void hkVector4::setCross(const hkVector4& v1, const hkVector4& v2)
                    _mm_mul_ps(_mm_shuffle_ps(v1.m_vComponents, v1.m_vComponents, _MM_SHUFFLE(3, 1, 0, 2)),
                               _mm_shuffle_ps(v2.m_vComponents, v2.m_vComponents, _MM_SHUFFLE(3, 0, 2, 1))));
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const __m128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    const __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const __m128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(1, 1, 1, 1)), x2);
     const __m128 z = _mm_shuffle_ps(x2, x2, _MM_SHUFFLE(2, 2, 2, 2));
     return _mm_add_ss(z, xySum);
@@ -113,7 +113,7 @@ static __forceinline void calcEdgeAxis(const hkVector4& a0, const hkVector4& a1,
     eb.setSub4(b1, b0);
     axis.setCross(ea, eb);
 }
-int __cdecl hkGeometryProcessing_checkTrianglesIntersection(const hkVector4* triA, const hkVector4* triB);
+int __cdecl hkGeometryProcessing_checkTrianglesIntersection(const hkVector4* triangleA, const hkVector4* triangleB);
 struct Point4;
 extern Point4 DAT_01267e30;
 struct __declspec(align(16)) Point4

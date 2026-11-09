@@ -51,13 +51,15 @@ class BSOrderedNode : public NiNode
 };
 // Calls NiNode::LoadBinary, loads bound from the stream, and reads staticBound when stream.version() > 23, otherwise sets it to true.
 // @fnv 0x00bc2e80
-void BSOrderedNode::LoadBinary(NiStream& stream)
+// pdb: BSOrderedNode::LoadBinary | BSOrderedNode.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void BSOrderedNode::LoadBinary(NiStream& kStream)
 {
-    NiNode::LoadBinary(stream);
-    bound.LoadBinary(stream);
-    if (stream.version() > 23)
+    NiNode::LoadBinary(kStream);
+    bound.LoadBinary(kStream);
+    if (kStream.version() > 23)
     {
-        stream.GetBinaryStream()->Read(&staticBound, 1);
+        kStream.GetBinaryStream()->Read(&staticBound, 1);
     }
     else
     {
@@ -111,17 +113,21 @@ class DummyNode
     NiSphere bound;             // +0xac
     bool staticBound;           // +0xbc
     void NiNode_OnVisible(NiCullingProcess* culling);
-    void UpdateCullingBound(NiCullingProcess* culling);
+    void BSOrderedNode_OnVisible(NiCullingProcess* arCuller);
 };
 
 // The bound a node without a bound of its own is given.
 extern NiBound g_defaultBound;
 
 // @fnv 0x00bc2d70
-void DummyNode::UpdateCullingBound(NiCullingProcess* culling)
+// src: XBOX_RETAIL_PDB 0x00bc2d70
+// pdb: BSOrderedNode::OnVisible | BSOrderedNode.obj | retail, object-file gap fill, high
+// pdb params: arCuller
+// pdb locals: paccum, kboundWorldCenter, bound
+void DummyNode::BSOrderedNode_OnVisible(NiCullingProcess* arCuller)
 {
     // The extended culling process stores its accumulator beyond the shared base.
-    DummyAccum* accum = *reinterpret_cast<DummyAccum**>(reinterpret_cast<char*>(culling) + 0xc4);
+    DummyAccum* accum = *reinterpret_cast<DummyAccum**>(reinterpret_cast<char*>(arCuller) + 0xc4);
 
     if (staticBound)
     {
@@ -132,7 +138,7 @@ void DummyNode::UpdateCullingBound(NiCullingProcess* culling)
         NiSphere storage;
         NiBound& out = *reinterpret_cast<NiBound*>(&storage);
         out.m_kCenter = centre;
-        out.m_fRadius = bound.r * xform.m_fScale;
+        out.m_fRadius = bound.m_fRadius * xform.m_fScale;
         accum->RenderBound(out, 0);
     }
     else
@@ -143,7 +149,7 @@ void DummyNode::UpdateCullingBound(NiCullingProcess* culling)
         accum->RenderBound(*b, 0);
     }
 
-    NiNode_OnVisible(culling);
+    NiNode_OnVisible(arCuller);
     accum->DispatchBatchRenderer();
 }
 
@@ -170,16 +176,20 @@ class FUN_00bc2e00_cls
 {
   public:
     void CopyTailFields(SpawnedObject* obj, void* arg);
-    SpawnedObject* CreateSpawnedObject(void* arg);
+    SpawnedObject* BSOrderedNode_CreateClone(void* kCloning);
 };
 
 // Allocates a SpawnedObject, initialises it via CopyTailFields with arg, and returns the new object.
 // @fnv 0x00bc2e00
-SpawnedObject* FUN_00bc2e00_cls::CreateSpawnedObject(void* arg)
+// src: XBOX_RETAIL_PDB 0x00bc2e00
+// pdb: BSOrderedNode::CreateClone | BSOrderedNode.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+SpawnedObject* FUN_00bc2e00_cls::BSOrderedNode_CreateClone(void* kCloning)
 {
     SpawnedObject* obj = 0;
     obj = new SpawnedObject();
-    this->CopyTailFields(obj, arg);
+    this->CopyTailFields(obj, kCloning);
     return obj;
 }
 
@@ -189,17 +199,20 @@ struct FUN_00bc2ee0_cls : NiNode
     bool staticBound;
 
     void NiNode_SaveBinary(NiStream& aStream);
-    void LoadBoundSphereAndStaticBound(NiStream& aStream);
+    void BSOrderedNode_SaveBinary(NiStream& kStream);
 };
 
 // Calls the base loader, loads the bound sphere from the stream, then reads one byte into staticBound.
 // @fnv 0x00bc2ee0
-void FUN_00bc2ee0_cls::LoadBoundSphereAndStaticBound(NiStream& aStream)
+// src: XBOX_RETAIL_PDB 0x00bc2ee0
+// pdb: BSOrderedNode::SaveBinary | BSOrderedNode.obj | retail, object-file gap fill, high
+// pdb params: kStream
+void FUN_00bc2ee0_cls::BSOrderedNode_SaveBinary(NiStream& kStream)
 {
-    NiNode_SaveBinary(aStream);
-    bound.LoadBinary(aStream);
+    NiNode_SaveBinary(kStream);
+    bound.LoadBinary(kStream);
 
-    aStream.Istr().BinaryRead(static_cast<void*>(&staticBound), 1);
+    kStream.Istr().BinaryRead(static_cast<void*>(&staticBound), 1);
 }
 
 struct S_00bc2f30_Arr
@@ -217,9 +230,9 @@ struct S_00bc2f30_Base
 {
     void NiNode_GetViewerStrings(S_00bc2f30_Arr* a);
 };
-extern const char* DAT_01201f84;
+extern const char* BSOrderedNode_ms_RTTI;
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* s);
-char* __cdecl NiGetViewerString(const char* fmt, ...);
+char* __cdecl NiGetViewerString(const char* pcPrefix, ...);
 struct S_00bc2f30_Cls : S_00bc2f30_Base
 {
     int unk00;
@@ -255,7 +268,7 @@ struct S_00bc2f30_Cls : S_00bc2f30_Base
     int unkA8;
     NiBound mAC;
     unsigned char mBC;
-    void AppendAlphaSortBound(S_00bc2f30_Arr* a);
+    void BSOrderedNode_GetViewerStrings(S_00bc2f30_Arr* pkStrings);
 };
 __forceinline void S_00bc2f30_Add(S_00bc2f30_Arr* a, char* s)
 {
@@ -265,11 +278,15 @@ __forceinline void S_00bc2f30_Add(S_00bc2f30_Arr* a, char* s)
     a->FUN_0096ae90(i, s);
 }
 // @fnv 0x00bc2f30
-void S_00bc2f30_Cls::AppendAlphaSortBound(S_00bc2f30_Arr* a)
+// src: XBOX_RETAIL_PDB 0x00bc2f30
+// pdb: BSOrderedNode::GetViewerStrings | BSOrderedNode.obj | retail, unique string literal, high
+// pdb params: pkStrings
+// pdb locals: kboundWorldCenter, bound
+void S_00bc2f30_Cls::BSOrderedNode_GetViewerStrings(S_00bc2f30_Arr* pkStrings)
 {
-    NiNode_GetViewerStrings(a);
-    S_00bc2f30_Add(a, NiViewerStrings_NiGetViewerString_Title(DAT_01201f84));
-    S_00bc2f30_Add(a, NiGetViewerString("bHasStaticBound", mBC));
+    NiNode_GetViewerStrings(pkStrings);
+    S_00bc2f30_Add(pkStrings, NiViewerStrings_NiGetViewerString_Title(BSOrderedNode_ms_RTTI));
+    S_00bc2f30_Add(pkStrings, NiGetViewerString("bHasStaticBound", mBC));
     NiPoint3 sortVec;
     m68.ComputeValue_00524c40(&sortVec, reinterpret_cast<const NiSphere*>(&mAC));
     // The original fills this storage without calling the NiBound constructor.
@@ -277,5 +294,5 @@ void S_00bc2f30_Cls::AppendAlphaSortBound(S_00bc2f30_Arr* a)
     NiBound& b = *reinterpret_cast<NiBound*>(&storage);
     b.m_fRadius = mAC.m_fRadius * m68.m_fScale;
     b.m_kCenter = sortVec;
-    S_00bc2f30_Add(a, b.GetViewerString_00a7fb20("Alpha Sort Bound"));
+    S_00bc2f30_Add(pkStrings, b.GetViewerString_00a7fb20("Alpha Sort Bound"));
 }

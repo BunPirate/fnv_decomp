@@ -11,6 +11,9 @@ FNV_STATIC_ASSERT(offsetof(FaceGenMatrix<float>, m_uiRowCount) == 24);
 FNV_STATIC_ASSERT(offsetof(FaceGenMatrix<float>, m_uiColumnCount) == 28);
 
 // @fnv 0x006581e0
+// pdb: FR2MatrixVTC<float>::FR2MatrixVTC<float> | BSFaceGenManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FR2MatrixVTC<float>::operator=
+// pdb params: m
 template <> FaceGenMatrix<float>& FaceGenMatrix<float>::operator=(const FaceGenMatrix<float>& rhs)
 {
     if (this == &rhs)
@@ -24,6 +27,8 @@ template <> FaceGenMatrix<float>& FaceGenMatrix<float>::operator=(const FaceGenM
 }
 
 // @fnv 0x006588a0
+// pdb: FR2MatrixVTC<float>::lengthSqr | BSFaceGenManager.obj | debug, call graph, high
+// pdb locals: j, tot, i
 template <> float FaceGenMatrix<float>::GetTrace()
 {
     float result = 0.0f;
@@ -40,12 +45,15 @@ template <> float FaceGenMatrix<float>::GetTrace()
 }
 
 // @fnv 0x00658360
-template <> FaceGenMatrix<float> FaceGenMatrix<float>::operator*(const FaceGenMatrix<float>& rhs)
+// pdb: FR2MatrixVTC<float>::operator* | BSFaceGenManager.obj | retail, call graph (shared callers), high
+// pdb params: d
+// pdb locals: dptr, newMat, nd
+template <> FaceGenMatrix<float> FaceGenMatrix<float>::operator*(const FaceGenMatrix<float>& m)
 {
     unsigned int k;
     {
     unsigned int i;
-    if (m_uiColumnCount == rhs.m_uiRowCount)
+    if (m_uiColumnCount == m.m_uiRowCount)
     {
     }
     else
@@ -53,12 +61,12 @@ template <> FaceGenMatrix<float> FaceGenMatrix<float>::operator*(const FaceGenMa
         ReportAssertionViolation("d:\\_fallout3\\platforms\\common\\code\\sdk\\facegen\\matrixVT.hpp", 0x113);
     }
 
-    FaceGenMatrix<float> result(m_uiRowCount, rhs.m_uiColumnCount);
+    FaceGenMatrix<float> result(m_uiRowCount, m.m_uiColumnCount);
     i = 0;
     for (; i < m_uiRowCount; ++i)
     {
         unsigned int j = 0;
-        for (; j < rhs.m_uiColumnCount; ++j)
+        for (; j < m.m_uiColumnCount; ++j)
         {
             *const_cast<float*>(result.ForwardCall_0060b370(i, j).NiTSet_NiControllerSequence_NiTMallocInterface_NiControllerSequence_GetAt()) = 0.0f;
 
@@ -67,7 +75,7 @@ template <> FaceGenMatrix<float> FaceGenMatrix<float>::operator*(const FaceGenMa
             {
                 *const_cast<float*>(result.ForwardCall_0060b370(i, j).NiTSet_NiControllerSequence_NiTMallocInterface_NiControllerSequence_GetAt())
                     += *ForwardCall_0060b370(i, k).NiTSet_NiControllerSequence_NiTMallocInterface_NiControllerSequence_GetAt()
-                     * *const_cast<FaceGenMatrix<float>&>(rhs).ForwardCall_0060b370(k, j).NiTSet_NiControllerSequence_NiTMallocInterface_NiControllerSequence_GetAt();
+                     * *const_cast<FaceGenMatrix<float>&>(m).ForwardCall_0060b370(k, j).NiTSet_NiControllerSequence_NiTMallocInterface_NiControllerSequence_GetAt();
             }
         }
     }

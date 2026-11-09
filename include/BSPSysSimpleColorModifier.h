@@ -5,6 +5,7 @@
 
 class ViewerStrings;
 
+// pdb: class BSPSysSimpleColorModifier, size 0x60, bases: NiPSysModifier, 9 members
 class BSPSysSimpleColorModifier : public NiPSysModifier
 {
 public:
@@ -12,15 +13,15 @@ public:
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
 
     void LinkObject_00c60910(NiStream& stream);
-    void GetViewerStrings_00c60b20(ViewerStrings* strings);
+    void GetViewerStrings_00c60b20(ViewerStrings* pkStrings);
 
-    NiColorA color1;
-    NiColorA color2;
-    NiColorA color3;
-    float fadeIn;
-    float fadeOut;
-    float color1End;
-    float color2Start;
-    float color2End;
-    float color3Start;
+    NiColorA kColor1;
+    NiColorA kColor2;
+    NiColorA kColor3;
+    float fFadeInPct;
+    float fFadeOutPct;
+    float fColor1EndPct;
+    float fColor2StartPct;
+    float fColor2EndPct;
+    float fColor3StartPct;
 };

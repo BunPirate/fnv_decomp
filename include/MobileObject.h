@@ -17,26 +17,27 @@ class TESTopicInfo;
 class bhkCharacterController;
 enum PROCESS_TYPE;
 
+// pdb: class MobileObject, size 0x88, bases: TESObjectREFR, 17 members
 class MobileObject : public TESObjectREFR
 {
 public:
-    BaseProcess* m_pBaseProcess;
-    TESObjectREFR* m_pLinkedReference;
-    MobileObject* m_pMobileObject;
-    float ProcessReferenceState;
-    float ReferenceMobileState;
-    bool m_bFirstFlag;
-    bool m_bSecondBooleanValue;
-    bool m_bThirdFlag;
-    bool m_bFourthBooleanValue;
-    bool m_bFifthFlag;
-    bool m_bSixthFlag;
-    bool m_bSeventhFlag;
-    bool m_bEighthFlag;
-    char m_cCharacterValue;
-    bool m_bNinthFlag;
-    bool m_bTenthFlag;
-    bool m_bThirdActorFlag;
+    BaseProcess* pCurrentProcess;
+    TESObjectREFR* pTalkingActivator;
+    MobileObject* pDialogueItemTarget;
+    float fUpdateTargetTimer;
+    float fSayToFailVoiceTimer;
+    bool bSpeakingDone;
+    bool bTalkingToPlayer;
+    bool bIgnoreChangeAnimationCall;
+    bool bSoundFileDone;
+    bool bVoiceFileDone;
+    bool bTalkingActivator;
+    bool bInTempChangeList;
+    bool bDoNotRunSayToCallBack;
+    char cSoundCallBackSet;
+    bool bSoundCallBackSuccess;
+    bool bUseEmotion;
+    bool bRunsInLow;
 
     virtual void StartHighProcess(void);
     virtual void Unk_91(void);
@@ -93,7 +94,7 @@ public:
 
     MobileObject();
     virtual ~MobileObject();
-    virtual void Revert(BGSLoadFormBuffer* buffer);
+    virtual void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual NiPoint3* GetPos() const;
     virtual bool IsProjectile() const;
 
@@ -101,8 +102,8 @@ public:
     bhkCharacterController* GetPhysicsCharacterController();
     bool IsActorDead();
     bool GetCharControllerFlag() const;
-    BSSoundHandle PlaySoundByEditorName(const char* editorName, bool loop, unsigned int flags, bool unused);
-    void AdvanceMovement(float delta);
+    BSSoundHandle PlaySoundByEditorName(const char* apEditorName, bool abLoop, unsigned int aiSoundType, bool abAllowCopy);
+    void AdvanceMovement(float afModAngle);
     float GetLooking() const;
     bool IsInDialogueWithPlayer() const;
     void ProcessAnimation();
@@ -140,13 +141,13 @@ public:
 
     using TESObjectREFR::IsDead;
     bool IsDead();
-    void FUN_008c30a0() {}
+    void Actor_UnloadPermanentMagic() {}
 
     bool FUN_00440d80();
     bool FUN_00440da0();
     bool MobileObject_IsTalkingActivator();
     bool IsSwimming_005a2030() const;
-    bool Actor_IsAtPoint(const NiPoint3& targetPos, float radius, bool addCharRadius, bool check3D);
+    bool Actor_IsAtPoint(const NiPoint3& aPoint, float afRadius, bool abExpandRadius, bool abAlwaysTestHeight);
     BaseProcess* FUN_008d8520();
     BaseProcess* FUN_008d8520() const;
     void ArrowProjectile_InitLoadGame(unsigned int, unsigned int);

@@ -94,13 +94,16 @@ int FUN_00e39e60_class::ComputeIndex(int aiOffset)
 struct FUN_00e3f340_Class
 {
     int __thiscall FindEntryByKey(int arg);
-    void* __thiscall GetEntryByArg(int arg);
+    void* __thiscall hkxEnvironment_getVariableValue(int name);
 };
 
 // @fnv 0x00e3f340
-void* __thiscall FUN_00e3f340_Class::GetEntryByArg(int arg)
+// src: XBOX_RETAIL_PDB 0x00e3f340
+// pdb: hkxEnvironment::getVariableValue | hkxEnvironment.obj | retail, object-file gap fill, high
+// pdb params: i
+void* __thiscall FUN_00e3f340_Class::hkxEnvironment_getVariableValue(int name)
 {
-    int index = FindEntryByKey(arg);
+    int index = FindEntryByKey(name);
     if (index != -1)
     {
         void* entry = *(void**)(*(char**)((char*)this + 8) + index * 8 + 4);
@@ -125,9 +128,12 @@ int __thiscall FUN_00e3f900_class::ProcessAndReturnValue_00e3f900(int a)
 
 // @fnv 0x00e30f40
 // src: HAVOK_LIB 0x00e30f40
-int __cdecl hkaSplineCompressedAnimation_packMaskAndQuantizationType(int a, int b)
+// pdb: hkaSplineCompressedAnimation::packMaskAndQuantizationType | hkaSplineCompressedAnimationCtor.obj | debug, upstream name already matches, high
+// pdb params: mask, floatQuatization
+// pdb locals: assertBuf, ostr
+int __cdecl hkaSplineCompressedAnimation_packMaskAndQuantizationType(int a, int floatQuatization)
 {
-    return ((unsigned char)b << 1) | (unsigned char)a;
+    return ((unsigned char)floatQuatization << 1) | (unsigned char)a;
 }
 
 struct S_00df8990_Obj;
@@ -142,7 +148,7 @@ void __cdecl Runtime_SetDAT0126ec04()
 
 extern int DAT_010eb3b8[];
 extern int DAT_010eb3d0[];
-int __cdecl hkaSplineCompressedAnimation_handleEndianQuaternion(int a, int b);
+int __cdecl hkaSplineCompressedAnimation_handleEndianQuaternion(int type, int dataInOut);
 
 // @fnv 0x00e31010
 void __cdecl AlignAndAdvance(char flags, int aiCount, int aiIndex, int* p)
@@ -293,28 +299,31 @@ struct SplitChunk
 };
 
 // @fnv 0x00e2aa70
-void __cdecl InitSplitChunks(int a1, int aiTotal, int a3, int a4, int a5, SplitChunk* out)
+// src: XBOX_RETAIL_PDB 0x00e2aa70
+// pdb: hkKdTreeRayCastJobUtil::initializeBuildSetupJobs | hkpRayCastQueryJobUtils.obj | retail, call graph, high
+// pdb params: collidablesPtr, numCollidables, entries, semaphore, numJobs, jobsOut
+void __cdecl hkKdTreeRayCastJobUtil_initializeBuildSetupJobs(int collidablesPtr, int numCollidables, int entries, int semaphore, int numJobs, SplitChunk* jobsOut)
 {
-    if (a5 > aiTotal)
+    if (numJobs > numCollidables)
     {
-        a5 = aiTotal;
+        numJobs = numCollidables;
     }
-    int n = a5;
-    int q = aiTotal / n;
-    out->unk10 = a4;
-    out->unk50 = a1;
-    out->unk54 = a3;
-    out->unk58 = 0;
-    out->unk5c = q;
+    int n = numJobs;
+    int q = numCollidables / n;
+    jobsOut->unk10 = semaphore;
+    jobsOut->unk50 = collidablesPtr;
+    jobsOut->unk54 = entries;
+    jobsOut->unk58 = 0;
+    jobsOut->unk5c = q;
     if (n > 1)
     {
         int bnd = q;
-        int* e = &out[1].unk5c;
+        int* e = &jobsOut[1].unk5c;
         int cnt = n - 1;
         do
         {
             SplitChunk* p = (SplitChunk*)((char*)e - 0x5c);
-            *p = *out;
+            *p = *jobsOut;
             e[-1] = bnd;
             bnd += q;
             *e = bnd;
@@ -322,7 +331,7 @@ void __cdecl InitSplitChunks(int a1, int aiTotal, int a3, int a4, int a5, SplitC
             cnt--;
         } while (cnt != 0);
     }
-    out[n - 1].unk5c = aiTotal;
+    jobsOut[n - 1].unk5c = numCollidables;
 }
 
 struct E2baaSrc
@@ -1391,7 +1400,7 @@ hkMemoryRouter* GetMemoryRouterStub();
 struct RefHolderE2
 {
     void* m_ptr;
-    RefHolderE2(const RefHolderE2& other);
+    RefHolderE2(const RefHolderE2& strRef);
     ~RefHolderE2();
     RefHolderE2& operator=(const RefHolderE2& other);
 };
@@ -1455,6 +1464,8 @@ struct FUN_00e2f680_Class
 
 // Copies the reference holder and the keyed-entry array from other into this object and returns *this.
 // @fnv 0x00e2f680
+// pdb: hkaAnnotationTrack::operator= | hkaAnimation.obj | retail, object-file run extension, low
+// pdb params: __that
 FUN_00e2f680_Class& FUN_00e2f680_Class::CopyFrom(const FUN_00e2f680_Class& other)
 {
     m_ref = other.m_ref;
@@ -1514,6 +1525,9 @@ void __cdecl SwapBytesAndAdvance(int iByteCount, unsigned char** ppBuffer)
 
 // Fills values[0..count] with a linear interpolation from first to last, using i/count as the fraction.
 // @fnv 0x00e31650
+// pdb: hkaSplineCompressedAnimation::handleEndianRotationControlPoints | hkaSplineCompressedAnimationCtor.obj | debug, object-file run extension, low
+// pdb params: mask, n, type, dataInOut
+// pdb locals: assertBuf, ostr
 void __cdecl FillInterpolatedValues(int count, float** array, float first, float last)
 {
     float* values = *array;
@@ -1547,7 +1561,7 @@ void __cdecl FillInterpolatedValues(int count, float** array, float first, float
 }
 
 unsigned int __cdecl hkaSplineCompressedAnimation_handleEndianKnots(unsigned char a1, unsigned int* a2);
-int __cdecl hkaSplineCompressedAnimation_handleEndianScalarControlPoints(unsigned char a1, unsigned int a2, unsigned int a3, unsigned int* a4);
+int __cdecl hkaSplineCompressedAnimation_handleEndianScalarControlPoints(unsigned char a1, unsigned int n, unsigned int type, unsigned int* dataInOut);
 
 // @fnv 0x00e31740
 // src: GUESS 0x00e31740 (confidence: low)
@@ -1616,7 +1630,7 @@ struct FUN_00e33910_item
     int unk10;
     int unk14;
     int unk18;
-    bool* Test(bool* result);
+    bool* isOk(bool* result);
 };
 
 class FUN_00e33910_cls
@@ -1629,6 +1643,7 @@ class FUN_00e33910_cls
 
 // Iterates over m_pItems calling Test on each item; writes 0 to out and returns early if any Test fails, otherwise writes 1.
 // @fnv 0x00e33910
+// pdb: hkaSplineCompressedAnimation::PerTrackCompressionParams::isOk | hkaSplineCompressedAnimation.obj | retail, object-file run extension, low
 bool* FUN_00e33910_cls::AreAllItemsValid(bool* out)
 {
     bool flag;
@@ -1640,7 +1655,7 @@ bool* FUN_00e33910_cls::AreAllItemsValid(bool* out)
         do
         {
             FUN_00e33910_item* item = (FUN_00e33910_item*)((char*)m_pItems + off);
-            if (*item->Test(&flag) == 0)
+            if (*item->isOk(&flag) == 0)
             {
                 *out = 0;
                 return out;
@@ -1806,6 +1821,9 @@ struct S_00e3ae70_cls
 };
 
 // @fnv 0x00e3ae70
+// pdb: hkpPoweredChainMapper::setForceLimits | hkpPoweredChainMapper.obj | retail, object-file run extension, low
+// pdb params: linkIndex, coordinageIndex, minForce, maxForce
+// pdb locals: motors, assertBuf, ostr
 void S_00e3ae70_cls::SetItemValues(unsigned int a1, unsigned int a2, float afValue1, float afValue2)
 {
     S_00e3ae70_Array arr;
@@ -1863,6 +1881,7 @@ struct FUN_00e3b060_Class
 };
 // Sets the vtable and, depending on flags, releases the link owner's handle and/or the owner itself, then returns this.
 // @fnv 0x00e3b060
+// pdb: hkpStiffSpringChainData::hkpStiffSpringChainData | hkpStiffSpringChainData.obj | retail, object-file run extension, low
 FUN_00e3b060_Class* FUN_00e3b060_Class::ReleaseLinks(ReleaseFlags aReleaseFlags)
 {
     vtable = &DAT_010eb98c;
@@ -1898,6 +1917,7 @@ struct FUN_00e3b0a0_cls
 // Sets the vtable, frees the data array through the audio allocator if capacity is not flagged, then resets the data pointer and capacity and sets a new vtable.
 // @fnv 0x00e3b0a0
 // src: GUESS 0x00e3b0a0 (confidence: medium)
+// pdb: hkpStiffSpringChainData::~hkpStiffSpringChainData | hkpStiffSpringChainData.obj | retail, object-file run extension, low
 void FUN_00e3b0a0_cls::ReleaseOwnedArrayAndResetFields()
 {
     m_vptr00 = (int)&DAT_010eb98c;
@@ -1954,6 +1974,8 @@ struct FUN_00e3c5b0 : S_00e3c5b0_Base
 };
 // Initializes the base with type 0x17 and flag 4, stores f in unk3c and sets unk40 to 6.
 // @fnv 0x00e3c5b0
+// pdb: hkpSimpleMeshShape::hkpSimpleMeshShape | hkpSimpleMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius
 FUN_00e3c5b0::FUN_00e3c5b0(float afValue) : S_00e3c5b0_Base(0x17, 4)
 {
     unk3c = afValue;
@@ -2005,16 +2027,19 @@ class FUN_00e3dfb0_cls
     int unk34;
     int m_38;
 
-    int hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* rec);
+    int hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* elem);
 };
 
 // Selects one of the object's fields based on rec->m_type and returns rec->value plus that field, or 0 for unknown types.
 // @fnv 0x00e3dfb0
 // src: XBOX_PDB 0x00e3dfb0
-int FUN_00e3dfb0_cls::hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* apRecord)
+// pdb: hkxVertexBuffer::getVertexDataPtr | hkxVertexBuffer.obj | debug, upstream name already matches, high
+// pdb params: elem
+// pdb locals: assertBuf, ostr
+int FUN_00e3dfb0_cls::hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* elem)
 {
     int field;
-    switch (apRecord->m_type)
+    switch (elem->m_type)
     {
     case 1:
         field = m_38;
@@ -2036,7 +2061,7 @@ int FUN_00e3dfb0_cls::hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* apRecor
     default:
         return 0;
     }
-    return apRecord->value + field;
+    return elem->value + field;
 }
 
 struct FUN_00e3ec00_Class
@@ -2113,7 +2138,7 @@ struct S_00e3ed00_Foo
     int __thiscall AppendToTraversalList(S_00e3ed00_Foo* param1, S_00e3ed00_List* param2);
 };
 
-void __cdecl ResizeAudioStream(int param1, S_00e3ed00_List* param2, int param3);
+void __cdecl ResizeAudioStream(int mem, S_00e3ed00_List* array, int sizeElem);
 
 // Appends this node to param2's list, then recurses into children until param1 is found; returns 0 on match, 1 otherwise (rolling back the append).
 // @fnv 0x00e3ed00
@@ -2281,7 +2306,7 @@ struct E3F0F0Less
 {
 };
 
-void __cdecl HeapSort(int* piFirst, int* piLast, E3F0F0Less kPred);
+void __cdecl D3DXShader_HeapSort(int* piFirst, int* piLast, E3F0F0Less kPred);
 
 struct E3F0F0Owner
 {
@@ -2302,7 +2327,7 @@ struct E3F0F0Owner
 void E3F0F0Owner::ProcessState_00e3f0f0()
 {
     E3F0F0Less kPred;
-    HeapSort(m_piFirst, m_piLast, kPred);
+    D3DXShader_HeapSort(m_piFirst, m_piLast, kPred);
 }
 
 class BSAudio;
@@ -2428,6 +2453,7 @@ struct FUN_00e3f210_cls
 
 // Scans m_buf until a NUL and returns 1 if any character is <= 0x20, '=' or ';', otherwise 0.
 // @fnv 0x00e3f210
+// pdb: hkxEnvironment::Variable::Variable | hkxEnvironment.obj | debug, object-file run extension, low
 unsigned char FUN_00e3f210_cls::HasDelimiter()
 {
     char* p = m_buf;
@@ -2460,6 +2486,8 @@ struct FUN_00e3f230_cls
 
 // Scans m_pEntries for the first entry whose masked key matches arg via CompareStringsCaseInsensitive, returning its index or -1.
 // @fnv 0x00e3f230
+// pdb: hkxEnvironment::findVariableByName | hkxEnvironment.obj | retail, call graph (shared callers), medium
+// pdb params: name
 int FUN_00e3f230_cls::FindEntryByKey(int arg)
 {
     int i = 0;
@@ -2483,9 +2511,12 @@ extern int(__cdecl* DAT_011be4a0[])(int);
 
 // @fnv 0x00e30ff0
 // src: HAVOK_LIB 0x00e30ff0
-void __cdecl hkaSplineCompressedAnimation_handleEndianQuaternion(int index, int arg)
+// pdb: hkaSplineCompressedAnimation::handleEndianQuaternion | hkaSplineCompressedAnimationCtor.obj | debug, upstream name already matches, high
+// pdb params: type, dataInOut
+// pdb locals: assertBuf, ostr
+void __cdecl hkaSplineCompressedAnimation_handleEndianQuaternion(int type, int dataInOut)
 {
-    DAT_011be4a0[index](arg);
+    DAT_011be4a0[type](dataInOut);
 }
 }  // namespace fnv_00e30ff0
 
@@ -2517,6 +2548,8 @@ class BE3E7E0Table
 
 // Searches the table's entries for one whose name matches pcName via CompareStringsCaseInsensitive, returning a pointer to it or null.
 // @fnv 0x00e3e7e0
+// pdb: hkxAttributeHolder::findAttributeGroupByName | hkxAttributeHolder.obj | retail, object-file run extension, low
+// pdb params: name
 BE3E7E0Entry* BE3E7E0Table::FindEntryByName(const char* pcName)
 {
     if (!pcName)
@@ -2570,7 +2603,7 @@ FUN_00e3df50_Class* FUN_00e3df50_Class::ReturnSelf(int param)
     return this;
 }
 
-int __cdecl hkxVertexBuffer_getVertexDataPtr(int param_1, int* param_2);
+int __cdecl hkxVertexBuffer_getVertexDataPtr(int elem, int* param_2);
 
 // @fnv 0x00e3e020
 // src: GUESS 0x00e3e020 (confidence: medium)
@@ -2721,11 +2754,13 @@ struct FUN_00e3f370_cls
     int unk04;
     FUN_00e3f370_pair* m_pItems;
     int m_iArrayLength;
-    void ReleaseItems();
+    void hkxEnvironment_clear();
 };
 
 // @fnv 0x00e3f370
-void FUN_00e3f370_cls::ReleaseItems()
+// src: XBOX_RETAIL_PDB 0x00e3f370
+// pdb: hkxEnvironment::clear | hkxEnvironment.obj | retail, object-file gap fill, high
+void FUN_00e3f370_cls::hkxEnvironment_clear()
 {
     FUN_00e3f370_pair* p = m_pItems;
     int n = m_iArrayLength;
@@ -2856,17 +2891,19 @@ struct S00e311f0_T
 // Compares each component of a against b, c and d within eps, setting bit 16<<i if it differs from b or c, else bit 1<<i if it differs from d.
 // @fnv 0x00e311f0
 // src: HAVOK_LIB 0x00e311f0
-unsigned char __cdecl hkaSplineCompressedAnimation_isStatic(S00e311f0_PA apVecA, S00e311f0_PB apVecB, const V4* apVecC, S00e311f0_T eps,
-                                   const V4* apVecD)
+// pdb: hkaSplineCompressedAnimation::isStatic | hkaSplineCompressedAnimationCtor.obj | debug, upstream name already matches, high
+// pdb params: mean, minp, maxp, tol, I
+unsigned char __cdecl hkaSplineCompressedAnimation_isStatic(S00e311f0_PA apVecA, S00e311f0_PB minp, const V4* maxp, S00e311f0_T eps,
+                                   const V4* I)
 {
     unsigned char result = 0;
     for (int i = 0; i < 4; i++)
     {
-        if (!(S00e311f0_abs(apVecA->f[i] - apVecB->f[i]) <= eps.value) ||
-            !(S00e311f0_abs(apVecA->f[i] - apVecC->f[i]) <= eps.value))
+        if (!(S00e311f0_abs(apVecA->f[i] - minp->f[i]) <= eps.value) ||
+            !(S00e311f0_abs(apVecA->f[i] - maxp->f[i]) <= eps.value))
             result |= 16 << i;
-        else if (!(S00e311f0_abs(apVecA->f[i] - apVecD->f[i]) <= eps.value) ||
-                 !(S00e311f0_abs(apVecA->f[i] - apVecD->f[i]) <= eps.value))
+        else if (!(S00e311f0_abs(apVecA->f[i] - I->f[i]) <= eps.value) ||
+                 !(S00e311f0_abs(apVecA->f[i] - I->f[i]) <= eps.value))
             result |= 1 << i;
     }
     return result;
@@ -2977,6 +3014,7 @@ struct FUN_00e39da0 : hkReferencedObject
 };
 // Constructor: zeroes the gravity vector, chassis orientation, wheel count, mass and torque max, and sets fixed torque and inertia factors.
 // @fnv 0x00e39da0
+// pdb: hkpVehicleData::hkpVehicleData | hkpVehicleData.obj | retail, object-file run extension, low
 FUN_00e39da0::FUN_00e39da0()
 {
     m_iWheelCount = 0;
@@ -3044,6 +3082,7 @@ struct S3b010Obj
 // Initializes S3b010Obj fields to default values and calls m_0c.FUN_00d21ce0(this) before returning this.
 // @fnv 0x00e3b010
 // src: HAVOK_LIB 0x00e3b010
+// pdb: hkpStiffSpringChainData::hkpStiffSpringChainData | hkpStiffSpringChainData.obj | retail, object-file run extension, low
 void* S3b010Obj::hkpStiffSpringChainData_hkpStiffSpringChainData()
 {
     unk06 = 1;
@@ -3238,6 +3277,9 @@ hkRefPtr_e3e8<Resource_e3e8> __stdcall FindWorldByKey(const char* name) throw();
 // Finds an object by name with FindWorldByKey and returns it if expected is null or their FUN_00d46d40 strings match case-insensitively, otherwise returns null.
 // @fnv 0x00e3e8e0
 // src: GUESS 0x00e3e8e0 (confidence: medium)
+// pdb: hkxAttributeHolder::findAttributeObjectByName | hkxAttributeHolder.obj | retail, object-file run extension, low
+// pdb params: name, type
+// pdb locals: var
 Resource_e3e8* __stdcall Object_FindNamedWorldWithExpectedType(const char* name, Resource_e3e8* expected)
 {
     if (!name)
@@ -3290,16 +3332,18 @@ struct FUN_00e22d50
 };
 
 // @fnv 0x00e22d50
+// pdb: hkgpMesh::WeldingPolicy::`scalar deleting destructor' | hkgpMesh.obj | retail, vtable slot, high
 FUN_00e22d50::~FUN_00e22d50()
 {}
 
 
 // Releases each referenced wheel object, then frees the wheel array.
 // @fnv 0x00e3a360
+// pdb: hkpTyremarksInfo::~hkpTyremarksInfo | hkpTyremarksInfo.obj | retail, upstream name already matches, high
 hkpTyremarksInfo::~hkpTyremarksInfo() throw()
 {
-    for (int i = 0; i < m_kTyremarksWheels.m_iElementCount; i++)
-        reinterpret_cast<hkReferencedObject*>(m_kTyremarksWheels.m_data[i])->removeReference();
+    for (int i = 0; i < m_tyremarksWheel.m_iElementCount; i++)
+        reinterpret_cast<hkReferencedObject*>(m_tyremarksWheel.m_data[i])->removeReference();
 }
 
 
@@ -3385,6 +3429,9 @@ void __cdecl hkKdTreeUtils_castRayIterative(void*, void*, S_00df8990_Obj*, void*
 // Initializes a CastCollector from source and value, optionally fills a CastOutput, then calls FUN_00d98ca0 with the caster and source.
 // @fnv 0x00e2abf0
 // src: HAVOK_LIB 0x00e2abf0
+// pdb: hkTreeRayCastJobUtil::castRayKdTree | hkpRayCastQueryJobUtils.obj | retail, upstream name already matches, high
+// pdb params: kdTree, command, filter, fixedBufferHitCollector, collidableCache, shapeCache, transformCache, resultLocalArray
+// pdb locals: kdCollector
 void __cdecl hkTreeRayCastJobUtil_castRayKdTree(void* caster, S_00df8990_Obj* source, int value, CastOutput* output)
 {
     if (caster)
@@ -4494,7 +4541,7 @@ unsigned int __cdecl hkaSplineCompressedAnimation_handleEndianKnots(unsigned cha
 
 extern int DAT_010e00dc;
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* allocator, void* array, int capacity, int elementSize);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 
 template <class T>
 static __forceinline void TyremarkArray_initialize(hkArrayBase<T>& self);
@@ -4526,7 +4573,7 @@ static __forceinline void TyremarkArray_SetSizeAndGrow(hkArrayBase<T>& self, int
 struct TyremarkWheelView : FUN_00e3a270
 {
     TyremarkWheelView* FUN_00e3a270();
-    void hkpTyremarksWheel_setNumPoints(int pointCount);
+    void hkpTyremarksWheel_setNumPoints(int num_points);
 };
 
 inline TyremarkWheelView* allocateTyremarkWheel()
@@ -4534,7 +4581,7 @@ inline TyremarkWheelView* allocateTyremarkWheel()
     void* memory =
         reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance())->heap().blockAlloc(sizeof(TyremarkWheelView));
     TyremarkWheelView* wheel = static_cast<TyremarkWheelView*>(memory);
-    wheel->m_usMemSizeAndFlags = sizeof(TyremarkWheelView);
+    wheel->m_memSizeAndFlags = sizeof(TyremarkWheelView);
     return wheel->FUN_00e3a270();
 }
 
@@ -4553,24 +4600,26 @@ struct TyremarkInfoView
     float m_fMaxTyremarkPointDistance;
     hkArrayBase<TyremarkWheelView*> m_wheels;
 
-    TyremarkInfoView* hkpTyremarksInfo_hkpTyremarksInfo(const TyremarkVehicleView* vehicle, int pointCount);
+    TyremarkInfoView* hkpTyremarksInfo_ctor(const TyremarkVehicleView* data, int num_points);
 };
 
 // Initializes the TyremarkInfoView from a TyremarkVehicleView, allocating and storing wheel views for each wheel in the vehicle.
 // @fnv 0x00e3a2a0
-// src: HAVOK_LIB 0x00e3a2a0
-TyremarkInfoView* TyremarkInfoView::hkpTyremarksInfo_hkpTyremarksInfo(const TyremarkVehicleView* vehicle, int pointCount)
+// src: XBOX_RETAIL_PDB 0x00e3a2a0
+// pdb: hkpTyremarksInfo::hkpTyremarksInfo | hkpTyremarksInfo.obj | retail, upstream name already matches, high
+// pdb params: data, num_points
+TyremarkInfoView* TyremarkInfoView::hkpTyremarksInfo_ctor(const TyremarkVehicleView* data, int num_points)
 {
     m_ppVirtualMethodTable = &DAT_010e00dc;
     m_sReferenceCount = 1;
     TyremarkArray_initialize(m_wheels);
     m_fMinTyremarkPointDistance = 0.0f;
     m_fMaxTyremarkPointDistance = 0.0f;
-    TyremarkArray_SetSizeAndGrow(m_wheels, vehicle->m_iWheelCount);
+    TyremarkArray_SetSizeAndGrow(m_wheels, data->m_iWheelCount);
     for (int index = 0; index < m_wheels.m_iElementCount; ++index)
     {
         TyremarkWheelView* wheel = allocateTyremarkWheel();
-        wheel->hkpTyremarksWheel_setNumPoints(pointCount);
+        wheel->hkpTyremarksWheel_setNumPoints(num_points);
         m_wheels.m_data[index] = wheel;
     }
     return this;
@@ -4603,8 +4652,8 @@ struct S_Pair2b0
 
 struct S_Out2b0
 {
-    void FUN_00d61cc0();
-    void FUN_00d61df0(const char* separator);
+    void hkStringBuf_clear();
+    void FUN_00d61df0(const char* other);
 };
 
 extern char DAT_01021184[];
@@ -4621,23 +4670,25 @@ struct S_Class2b0
     S_Pair2b0* unk08;
     int unk0c;
 
-    void hkxEnvironment_convertToString(S_Out2b0* param);
+    void hkxEnvironment_convertToString(S_Out2b0* result);
 };
 
 // Writes unk0c pairs from unk08 to param, formatting each with DAT_01021184 or DAT_01011584 based on Q_cls::FUN_00e3f210 and joining with str_010ebaa0.
 // @fnv 0x00e3f2b0
 // src: COMMUNITY 0x00e3f2b0
-void S_Class2b0::hkxEnvironment_convertToString(S_Out2b0* apOut)
+// pdb: hkxEnvironment::convertToString | hkxEnvironment.obj | retail, string-set bridge, high
+// pdb params: result
+void S_Class2b0::hkxEnvironment_convertToString(S_Out2b0* result)
 {
-    apOut->FUN_00d61cc0();
+    result->hkStringBuf_clear();
     for (int i = 0; i < unk0c; i++)
     {
         Q_cls* first = (Q_cls*)(unk08[i].first & ~1u);
         Q_cls* second = (Q_cls*)(unk08[i].second & ~1u);
         const char* a = first->HasDelimiter() ? DAT_01021184 : DAT_01011584;
         const char* b = second->HasDelimiter() ? DAT_01021184 : DAT_01011584;
-        WriteFormatted(apOut, str_010ebaa4, a, first, a, b, second, b);
+        WriteFormatted(result, str_010ebaa4, a, first, a, b, second, b);
         if (i < unk0c - 1)
-            apOut->FUN_00d61df0(str_010ebaa0);
+            result->FUN_00d61df0(str_010ebaa0);
     }
 }

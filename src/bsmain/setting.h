@@ -26,6 +26,7 @@ template <> INIPrefSettingCollection* SettingT<INIPrefSettingCollection>::GetCol
 }
 
 // @fnv 0x005e02b0
+// pdb: SettingT<INISettingCollection>::QCollection | ModelLoader.obj | debug, call graph, medium
 template <> Setting* SettingCollectionList<Setting>::GetPtr(const char* key)
 {
     Setting* result = 0;

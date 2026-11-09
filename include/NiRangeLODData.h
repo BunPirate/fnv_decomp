@@ -6,6 +6,7 @@
 
 class CloningProcess;
 
+// pdb: class NiRangeLODData, size 0x28, bases: NiLODData, 4 members
 class NiRangeLODData : public NiLODData
 {
   public:

@@ -17,6 +17,9 @@ const NiRTTI* bhkCollisionObject::GetRTTI() const
 }
 
 // @fnv 0x0043b610
+// pdb: bhkCollisionObject::GetbhkCollisionObject | ModelLoader.obj | debug, call graph, medium
+// pdb params: apObject
+// pdb locals: pc
 bhkCollisionObject* bhkCollisionObject::GetFromNiAVObject(NiAVObject* object)
 {
     const char* collision = reinterpret_cast<BGSBodyPart*>(object)->GetPartName();
@@ -25,9 +28,12 @@ bhkCollisionObject* bhkCollisionObject::GetFromNiAVObject(NiAVObject* object)
 }
 
 // @fnv 0x004b5a20
-bhkCollisionObject* bhkCollisionObject::GetFromRigidBody(const hkpRigidBody* body)
+// pdb: bhkCollisionObject::Getbhk | GlobalFunc.obj | debug, call graph, high
+// pdb params: apBody
+// pdb locals: pc
+bhkCollisionObject* bhkCollisionObject::GetFromRigidBody(const hkpRigidBody* apBody)
 {
-    NiAVObject* collision = NiShader::DynamicCast(reinterpret_cast<NiAVObject*>(const_cast<hkpRigidBody*>(body)));
+    NiAVObject* collision = NiShader::DynamicCast(reinterpret_cast<NiAVObject*>(const_cast<hkpRigidBody*>(apBody)));
     return reinterpret_cast<bhkCollisionObject*>(
         DynamicCastByRTTI(const_cast<NiRTTI*>(&ms_kRTTI), reinterpret_cast<NiNode*>(collision)));
 }
@@ -50,6 +56,7 @@ struct MyType
 };
 // @fnv 0x00c65830
 // src: EXE 0x00c65830
+// pdb: bhkCollisionObject::CreateObject | bhkCollisionObject.obj | retail, upstream name already matches, high
 void* bhkCollisionObject_CreateObject()
 {
     return new MyType;
@@ -61,6 +68,8 @@ extern int DAT_011f4270;
 extern int DAT_011f4274;
 extern float DAT_01267e30;
 // @fnv 0x00c65ef0
+// pdb: bhkCollisionObject::GetVelocity | bhkCollisionObject.obj | retail, object-file run extension, high
+// pdb locals: vel, prb
 void* WeaponObject::GetTranslation(void* a1)
 {
     void* p = *(void**)((char*)this + 0x10);
@@ -106,16 +115,19 @@ struct ScopedMemoryContext
 struct FUN_00c659d0_shell : bhkCollisionObject
 {
     void bhkNiCollisionObject_CopyMembers(MyType*, void*);
-    MyType* bhkCollisionObject_CreateClone(void* param);
+    MyType* bhkCollisionObject_CreateClone(void* arCloneData);
 };
 
 // @fnv 0x00c659d0
 // src: XBOX_PDB 0x00c659d0
-MyType* FUN_00c659d0_shell::bhkCollisionObject_CreateClone(void* param)
+// pdb: bhkCollisionObject::CreateClone | bhkCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+MyType* FUN_00c659d0_shell::bhkCollisionObject_CreateClone(void* arCloneData)
 {
     ScopedMemoryContext scope(0x10);
     MyType* obj = new MyType;
-    bhkNiCollisionObject_CopyMembers(obj, param);
+    bhkNiCollisionObject_CopyMembers(obj, arCloneData);
     return obj;
 }
 
@@ -140,13 +152,16 @@ struct FUN_00c65890_cls
     FUN_00c65890_Callee* m_08;
     int unk0c;
     FUN_00c65890_Tgt* m_10;
-    void bhkCollisionObject_UpdateWorldData(int param);
+    void bhkCollisionObject_UpdateWorldData(int UpdateData);
     void UpdateState(int param);
 };
 
 // @fnv 0x00c65890
 // src: XBOX_PDB 0x00c65890
-void FUN_00c65890_cls::bhkCollisionObject_UpdateWorldData(int param)
+// pdb: bhkCollisionObject::UpdateWorldData | bhkCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: prb
+void FUN_00c65890_cls::bhkCollisionObject_UpdateWorldData(int UpdateData)
 {
     FUN_00c65890_Tgt* tgt = m_10;
     if (tgt != 0)
@@ -163,7 +178,7 @@ void FUN_00c65890_cls::bhkCollisionObject_UpdateWorldData(int param)
             return;
         }
     }
-    UpdateState(param);
+    UpdateState(UpdateData);
 }
 
 struct CollisionNode
@@ -183,6 +198,8 @@ struct CollisionState
 };
 // @fnv 0x00c659a0
 // src: XBOX_PDB 0x00c659a0
+// pdb: bhkCollisionObject::QKeyframe | bhkCollisionObject.obj | debug, upstream name already matches, high
+// pdb locals: prb, et
 bool CollisionState::bhkCollisionObject_QKeyframe()
 {
     if (node)
@@ -207,7 +224,7 @@ struct SpinLock_c65f40
 };
 extern SpinLock_c65f40 g_lock_c65f40;
 
-char __cdecl bhkRigidBody_IsMotionTypeDynamic(int* type);
+char __cdecl bhkRigidBody_IsMotionTypeDynamic(int* areMotion);
 
 inline bool Check(int t)
 {
@@ -364,28 +381,31 @@ struct ColObj_c65f40
     unsigned short flags;
     short unk0E;
     RigidBody_c65f40* body;
-    void bhkCollisionObject_SetMotionType(int type, NiObj_c65f40* obj, bool update);
+    void bhkCollisionObject_SetMotionType(int aeType, NiObj_c65f40* apObject, bool abAllowActivate);
 };
 
 // @fnv 0x00c65f40
 // src: XBOX_PDB 0x00c65f40
-void ColObj_c65f40::bhkCollisionObject_SetMotionType(int type, NiObj_c65f40* obj, bool update)
+// pdb: bhkCollisionObject::SetMotionType | bhkCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: aeType, apObject, abAllowActivate
+// pdb locals: prb, bdone, eprevType
+void ColObj_c65f40::bhkCollisionObject_SetMotionType(int aeType, NiObj_c65f40* apObject, bool abAllowActivate)
 {
     RigidBody_c65f40* rb;
     int t;
-    if (!obj || (rb = obj->Cast(&rtti_c65f40)) == 0)
+    if (!apObject || (rb = apObject->Cast(&rtti_c65f40)) == 0)
     {
         rb = body;
         if (!rb)
             return;
     }
     int cur = rb->hkObj ? rb->hkObj->motionType : 5;
-    if (cur == type)
+    if (cur == aeType)
         return;
-    if (type == 1 && bhkRigidBody_IsMotionTypeDynamic(&cur))
+    if (aeType == 1 && bhkRigidBody_IsMotionTypeDynamic(&cur))
         return;
     g_lock_c65f40.Lock(0);
-    bool ok = rb->SetMotion(type);
+    bool ok = rb->SetMotion(aeType);
     g_lock_c65f40.Unlock();
     if (!ok)
         return;
@@ -393,7 +413,7 @@ void ColObj_c65f40::bhkCollisionObject_SetMotionType(int type, NiObj_c65f40* obj
         flags |= 8;
     else
         flags &= ~8;
-    if (update)
+    if (abAllowActivate)
     {
         t = rb->GetType();
         if (bhkRigidBody_IsMotionTypeDynamic(&t))
@@ -623,12 +643,12 @@ struct RttiStub
 extern RttiStub g_collisionRtti;
 
 char* __cdecl NiGetViewerStringA(const char* pcName);
-char* __cdecl NiGetViewerStringB(const char* pcName, bool bValue);
+char* __cdecl NiGetViewerStringB(const char* pcPrefix, bool bValue);
 
 class CollisionParent
 {
   public:
-    void ParentViewerStrings(ViewerStrings* apViewerStrings);
+    void ParentViewerStrings(ViewerStrings* apStrings);
 };
 
 class CollisionObj : public CollisionParent
@@ -642,17 +662,20 @@ class CollisionObj : public CollisionParent
     {
         return (m_usFlags & 0x20) && !(bool)((m_usFlags >> 6) & 1);
     }
-    void bhkCollisionObject_AddViewerStrings(ViewerStrings* apViewerStrings);
+    void bhkCollisionObject_AddViewerStrings(ViewerStrings* apStrings);
 };
 
 // @fnv 0x00c66060
 // src: XBOX_PDB 0x00c66060
-void CollisionObj::bhkCollisionObject_AddViewerStrings(ViewerStrings* apViewerStrings)
+// pdb: bhkCollisionObject::AddViewerStrings | bhkCollisionObject.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void CollisionObj::bhkCollisionObject_AddViewerStrings(ViewerStrings* apStrings)
 {
     MemContextGuard guard(0x10);
-    ParentViewerStrings(apViewerStrings);
-    apViewerStrings->Add(NiGetViewerStringA(g_collisionRtti.GetName()));
-    apViewerStrings->Add(NiGetViewerStringB("bUseVel", GetUseVel()));
+    ParentViewerStrings(apStrings);
+    apStrings->Add(NiGetViewerStringA(g_collisionRtti.GetName()));
+    apStrings->Add(NiGetViewerStringB("bUseVel", GetUseVel()));
 }
 
 struct Xform
@@ -739,8 +762,8 @@ struct BhkBody
     int unk00;
     int unk04;
     HkEntity* pNode08;
-    void bhkRigidBody_GetRotation(Quat& a1);
-    void bhkRigidBody_GetPosition(NiPoint3& a1);
+    void bhkRigidBody_GetRotation(Quat& arRot);
+    void bhkRigidBody_GetPosition(NiPoint3& arPos);
 };
 
 struct CollObj
@@ -801,6 +824,8 @@ struct CollObj
 
 // @fnv 0x00c65a80
 // src: XBOX_PDB 0x00c65a80
+// pdb: bhkCollisionObject::hktoNiTransform | bhkCollisionObject.obj | retail, upstream name already matches, high
+// pdb locals: prb, niq, nit
 void CollObj::bhkCollisionObject_hktoNiTransform()
 {
     BhkBody* pBody = pBody10;

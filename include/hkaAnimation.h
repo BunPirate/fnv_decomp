@@ -11,6 +11,7 @@ typedef int hkInt32;
 typedef float hkReal;
 
 
+// pdb: class hkaAnimation, size 0x28, bases: hkReferencedObject, 6 members
 class hkaAnimation : public hkReferencedObject
 {
 public:
@@ -39,9 +40,9 @@ public:
     virtual void vf15();
 
     hkInt32 m_type;
-    hkReal m_fAnimationDuration;
+    hkReal m_duration;
     hkInt32 m_iNumTransformTracks;
     hkInt32 m_iNumberOfFloatTracks;
-    hkaAnimatedReferenceFrame* m_pExtractedMotion;
-    hkArray<hkaAnnotationTrack> m_kAnnotationTracks;
+    hkaAnimatedReferenceFrame* m_extractedMotion;
+    hkArray<hkaAnnotationTrack> m_annotationTracks;
 };

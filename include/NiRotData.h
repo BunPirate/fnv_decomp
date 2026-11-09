@@ -5,6 +5,7 @@
 
 class TimedRotationKey;
 
+// pdb: class NiRotData, size 0x18, bases: NiObject, 4 members
 class NiRotData : public NiObject
 {
   public:
@@ -13,7 +14,7 @@ class NiRotData : public NiObject
     TimedRotationKey* ComputePositionAtTime(unsigned int& uiNumKeys, int& eType, unsigned char& ucSize) const;
 
     unsigned int m_uiNumKeys;
-    TimedRotationKey* m_pKeyArray;
-    NiAnimationKey::KeyType m_eRequestType;
-    unsigned char m_ucKeyDataSize;
+    TimedRotationKey* m_pkKeys;
+    NiAnimationKey::KeyType m_eType;
+    unsigned char m_ucKeySize;
 };

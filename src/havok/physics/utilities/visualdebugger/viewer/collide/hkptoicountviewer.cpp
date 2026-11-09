@@ -53,10 +53,12 @@ struct Derived : Prefix, Item
 };
 // @fnv 0x00d67bc0
 // src: GUESS 0x00d67bc0 (confidence: low)
-void Item::ProcessState_00d67bc0(Sink* sink)
+// pdb: hkpToiCountViewer::entityDeletedCallback | hkpToiCountViewer.obj | retail, vtable slot, high
+// pdb params: entity
+void Item::ProcessState_00d67bc0(Sink* entity)
 {
-    sink->removeEntityListener_00c9c670(static_cast<Item*>(reinterpret_cast<Derived*>(reinterpret_cast<char*>(this) - sizeof(Prefix))));
-    link.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_remove(sink);
+    entity->removeEntityListener_00c9c670(static_cast<Item*>(reinterpret_cast<Derived*>(reinterpret_cast<char*>(this) - sizeof(Prefix))));
+    link.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_remove(entity);
 }
 
 class PrimaryBase
@@ -131,12 +133,14 @@ class FUN_00d67ce0 : public FUN_00ddccb0,
     virtual void entitySetMotionTypeCallback(hkpEntity*);
     virtual void EntityDeletionCallback(hkpEntity*);
     CountArray counts;
-    FUN_00d67ce0(int context);
+    FUN_00d67ce0(int contexts);
 };
 
 // Constructs the object via FUN_00ddccb0 and initializes counts from the allocator returned by FUN_00c85750.
 // @fnv 0x00d67ce0
-FUN_00d67ce0::FUN_00d67ce0(int context) : FUN_00ddccb0(context)
+// pdb: hkpToiCountViewer::hkpToiCountViewer | hkpToiCountViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+FUN_00d67ce0::FUN_00d67ce0(int contexts) : FUN_00ddccb0(contexts)
 {
     hkMemoryRouter* audio = hkMemoryRouter_getInstance();
     counts.EnsureCapacity(audio->m_heap, 0);
@@ -153,32 +157,37 @@ struct hkpToiCountViewer
 };
 // Allocates a 0x40-byte hkpToiCountViewer from the global heap, initializes it with arg, and returns a pointer 8 bytes into it or null.
 // @fnv 0x00d67d60
-void* __cdecl AllocateToiCountViewer(unsigned int arg)
+// src: XBOX_RETAIL_PDB 0x00d67d60
+// pdb: hkpToiCountViewer::create | hkpToiCountViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+void* __cdecl hkpToiCountViewer_create(unsigned int contexts)
 {
     hkMemoryRouter* global = (hkMemoryRouter*)hkMemoryRouter_getInstance();
     hkpToiCountViewer* pViewer = (hkpToiCountViewer*)reinterpret_cast<hkMemoryAllocator*>(global->m_heap)->blockAlloc(0x40);
     pViewer->size = 0x40;
-    pViewer = pViewer->FUN_00d67ce0(arg);
+    pViewer = pViewer->FUN_00d67ce0(contexts);
     if (pViewer)
         return (char*)pViewer + 8;
     return 0;
 }
 }  // namespace fnv_00d67d60
 
-void* AllocateToiCountViewer();
+void* hkpToiCountViewer_create();
 
 struct S_00d67e10_Registry
 {
-    int Register(const char* name, void* (*create)());
+    int Register(const char* viewerName, void* (*creationFunction)());
 };
 
 extern S_00d67e10_Registry* g_00d67e10_registry;
 extern int g_00d67e10_toiCounterId;
 
 // @fnv 0x00d67e10
-void RegisterToiCounter()
+// src: XBOX_RETAIL_PDB 0x00d67e10
+// pdb: hkpToiCountViewer::registerViewer | hkpToiCountViewer.obj | retail, string-set bridge, high
+void hkpToiCountViewer_registerViewer()
 {
-    g_00d67e10_toiCounterId = g_00d67e10_registry->Register("TOI counter", AllocateToiCountViewer);
+    g_00d67e10_toiCounterId = g_00d67e10_registry->Register("TOI counter", hkpToiCountViewer_create);
 }
 
 __declspec(nothrow) hkMemoryRouter* hkMemoryRouter_getInstance();
@@ -205,7 +214,7 @@ struct BaseC
 {
     virtual void c0();
     ItemList* list;
-    __declspec(nothrow) void Remove(void* item);
+    __declspec(nothrow) void Remove(void* w);
 };
 
 struct Base0 : BaseP, BaseQ, BaseC
@@ -255,6 +264,7 @@ struct FUN_00d67fa0 : Base0, Iface1, Iface2, Iface3
 
 // Destructor that removes every item in the list from the owning container before base destruction.
 // @fnv 0x00d67fa0
+// pdb: hkpToiCountViewer::~hkpToiCountViewer | hkpToiCountViewer.obj | retail, object-file gap fill, high
 FUN_00d67fa0::~FUN_00d67fa0()
 {
     for (int i = 0; list && i < list->count; ++i)
@@ -303,33 +313,35 @@ struct Query
 };
 struct BaseHelper
 {
-    void hkpToiCountViewer_displayCountForBody(void* entry, int mode);
+    void hkpToiCountViewer_displayCountForBody(void* body, int displayPosition);
 };
 int __cdecl Object_GetSignedLargestComponentIndex(float* direction);
 struct Context
 {
-    void ProcessQuery(Query* query);
+    void ProcessQuery(Query* world);
 };
 // Computes a mode from the query direction, then dispatches each group entry and each direct entry to FUN_00d68030 with that mode.
 // @fnv 0x00d68130
-void Context::ProcessQuery(Query* query)
+// pdb: hkpToiCountViewer::postSimulationCallback | hkpToiCountViewer.obj | retail, vtable slot, high
+// pdb params: world
+void Context::ProcessQuery(Query* world)
 {
-    int mode = Object_GetSignedLargestComponentIndex(&query->direction.x);
-    for (int groupIndex = 0; groupIndex < query->groupCount; ++groupIndex)
+    int mode = Object_GetSignedLargestComponentIndex(&world->direction.x);
+    for (int groupIndex = 0; groupIndex < world->groupCount; ++groupIndex)
     {
-        EntryListNode* list = &query->groups[groupIndex]->entries;
+        EntryListNode* list = &world->groups[groupIndex]->entries;
         for (int entryIndex = 0; entryIndex < list->count; ++entryIndex)
             ((BaseHelper*)((char*)this - 0x2c))->hkpToiCountViewer_displayCountForBody(list->entries[entryIndex], mode);
     }
-    EntryListNode* list = &query->direct->entries;
+    EntryListNode* list = &world->direct->entries;
     for (int entryIndex = 0; entryIndex < list->count; ++entryIndex)
         ((BaseHelper*)((char*)this - 0x2c))->hkpToiCountViewer_displayCountForBody(list->entries[entryIndex], mode);
 }
 
 struct FUN_00d67970_helper
 {
-    void __thiscall c93920(void* value);
-    void __thiscall c93a20(void* value);
+    void __thiscall c93920(void* worldListener);
+    void __thiscall c93a20(void* collisionListener);
 };
 
 struct FUN_00d67970_class
@@ -339,13 +351,15 @@ struct FUN_00d67970_class
     void* unk08;
     void* unk0c;
 
-    void __thiscall hkpToiCountViewer_worldAddedCallback(FUN_00d67970_helper* helper);
+    void __thiscall hkpToiCountViewer_worldAddedCallback(FUN_00d67970_helper* w);
 };
 
 // Passes pointers to this object's unk0c and unk08 fields to the helper's c93920 and c93a20 methods, or null if the base pointer is null.
 // @fnv 0x00d67970
 // src: HAVOK_LIB 0x00d67970
-void __thiscall FUN_00d67970_class::hkpToiCountViewer_worldAddedCallback(FUN_00d67970_helper* helper)
+// pdb: hkpToiCountViewer::worldAddedCallback | hkpToiCountViewer.obj | retail, upstream name already matches, high
+// pdb params: w
+void __thiscall FUN_00d67970_class::hkpToiCountViewer_worldAddedCallback(FUN_00d67970_helper* w)
 {
     void* base = reinterpret_cast<char*>(this) - 0x20;
     void* value;
@@ -355,14 +369,14 @@ void __thiscall FUN_00d67970_class::hkpToiCountViewer_worldAddedCallback(FUN_00d
     else
         value = 0;
 
-    helper->c93920(value);
+    w->c93920(value);
 
     if (base)
         value = &unk08;
     else
         value = 0;
 
-    helper->c93a20(value);
+    w->c93a20(value);
 }
 
 struct OwnerBinding
@@ -391,15 +405,17 @@ struct FUN_00d67b90_cls
     int unk28;
     int unk2c;
 
-    void BindAndAttach(int* arg);
+    void BindAndAttach(int* entity);
 };
 
 // @fnv 0x00d67b90
-void FUN_00d67b90_cls::BindAndAttach(int* arg)
+// pdb: hkpToiCountViewer::entityRemovedCallback | hkpToiCountViewer.obj | retail, vtable slot, high
+// pdb params: entity
+void FUN_00d67b90_cls::BindAndAttach(int* entity)
 {
     FUN_00d67b90_cls* owner = ((char*)this - 0x30) != 0 ? this : 0;
-    ((OwnerBinding*)arg)->Bind(owner);
-    m_sub.Attach(arg);
+    ((OwnerBinding*)entity)->Bind(owner);
+    m_sub.Attach(entity);
 }
 
 struct ListItem;
@@ -429,6 +445,7 @@ struct FUN_00d67bf0_cls
 
 // Iterates the node's items up to its count, passing each to m_visitor.v1, stopping early if the node becomes null.
 // @fnv 0x00d67bf0
+// pdb: hkpToiCountViewer::init | hkpToiCountViewer.obj | retail, vtable slot, high
 void FUN_00d67bf0_cls::VisitItems()
 {
     int i = 0;
@@ -461,14 +478,14 @@ struct SpawnedObject
     unsigned int unk04;
     SpawnedObject* m_08;
     void removeEntityListener_00c9c670(void* listener) throw();
-    void hkpWorld_removeContactListener(void* listener) throw();
+    void hkpWorld_removeContactListener(void* collisionListener) throw();
     void ClearValue(void* listener) throw();
 };
 
 
 hkMemoryRouter* hkMemoryRouter_getInstance() throw();
 
-void __cdecl ResizeAudioStream(void* a, void* arr, unsigned int size) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem) throw();
 
 // Exe 0x00d67e30: unit-local Map view; declarations and layout are preserved.
 struct HkptoicountviewerMapView
@@ -536,11 +553,14 @@ class FUN_00d67e30_cls
     unsigned int unk10;
     HkptoicountviewerMapView m_14;
 
-    void RemoveEntriesForObject(SpawnedObject* a1);
+    void RemoveEntriesForObject(SpawnedObject* w);
 };
 
 // @fnv 0x00d67e30
-void FUN_00d67e30_cls::RemoveEntriesForObject(SpawnedObject* a1)
+// pdb: hkpToiCountViewer::worldRemovedCallback | hkpToiCountViewer.obj | retail, vtable slot, high
+// pdb params: w
+// pdb locals: bodiesToRemove, body
+void FUN_00d67e30_cls::RemoveEntriesForObject(SpawnedObject* w)
 {
     Array out;
     out.m_data = 0;
@@ -550,7 +570,7 @@ void FUN_00d67e30_cls::RemoveEntriesForObject(SpawnedObject* a1)
     for (int it = m_14.GetFirstIterator(); m_14.isValid(it); it = m_14.getNext(it))
     {
         SpawnedObject* obj = m_14.m_kPrimitiveElement[it].obj;
-        if (obj->m_08 == a1)
+        if (obj->m_08 == w)
         {
             hkMemoryRouter* h = hkMemoryRouter_getInstance();
             if (out.m_iElementCount == (int)(out.m_iCapacityState & 0x3fffffffu))
@@ -572,8 +592,8 @@ void FUN_00d67e30_cls::RemoveEntriesForObject(SpawnedObject* a1)
 
     out.clear();
 
-    a1->hkpWorld_removeContactListener((char*)this - 0x20 != 0 ? (void*)((char*)this + 8) : 0);
-    a1->ClearValue((char*)this - 0x20 != 0 ? (void*)((char*)this + 0xc) : 0);
+    w->hkpWorld_removeContactListener((char*)this - 0x20 != 0 ? (void*)((char*)this + 8) : 0);
+    w->ClearValue((char*)this - 0x20 != 0 ? (void*)((char*)this + 0xc) : 0);
 }
 
 #include <xmmintrin.h>
@@ -653,6 +673,7 @@ struct FUN_00d67da0_cls
 // Walks m_kStorage entries with a key other than -1, calls FUN_00c9c670 on each key with the address of m_i30, then calls m_kStorage.clear().
 // @fnv 0x00d67da0
 // src: HAVOK_LIB 0x00d67da0
+// pdb: hkpToiCountViewer::reset | hkpToiCountViewer.obj | retail, upstream name already matches, high
 void FUN_00d67da0_cls::hkpToiCountViewer_reset()
 {
     PtrMapStorage* st = &m_kStorage;
@@ -771,17 +792,20 @@ struct ContactViewer
     int unk30;
     ContactTable m_table;
 
-    void hkpToiCountViewer_displayCountForBody(void* entry, int mode);
+    void hkpToiCountViewer_displayCountForBody(void* body, int displayPosition);
 };
 
-extern void __cdecl HkptoicountviewerGsEhscNogsNoehsc_UpdateState_00d67a50(int owner, int id, void* entry, int mode, const char* name, unsigned int info,
-                                 float value, BSAudioValue flags);
+extern void __cdecl hkpToiCountViewer_displayTextAtBody(int handler, int tag, void* body, int mode, const char* text, unsigned int color,
+                                 float extraDistance, BSAudioValue drawLine);
 
 // @fnv 0x00d68030
 // src: HAVOK_LIB 0x00d68030
-void ContactViewer::hkpToiCountViewer_displayCountForBody(void* entry, int mode)
+// pdb: hkpToiCountViewer::displayCountForBody | hkpToiCountViewer.obj | retail, string-set bridge, high
+// pdb params: body, displayPosition
+// pdb locals: s
+void ContactViewer::hkpToiCountViewer_displayCountForBody(void* body, int displayPosition)
 {
-    unsigned int index = m_table.Find(entry);
+    unsigned int index = m_table.Find(body);
     if ((int)index > m_table.m_pRayCursor)
         return;
     unsigned int flags = m_table.m_entries[index].m_flags;
@@ -791,7 +815,7 @@ void ContactViewer::hkpToiCountViewer_displayCountForBody(void* entry, int mode)
         name.Format("%d(%d)", flags & 0xffffff, tag);
     else
         name.Format("%d", flags & 0xffffff);
-    HkptoicountviewerGsEhscNogsNoehsc_UpdateState_00d67a50(m_18, m_notifier.v1(), entry, mode, name.m_data, 0xff800000u, 0.1f, BSAudioValue());
+    hkpToiCountViewer_displayTextAtBody(m_18, m_notifier.v1(), body, displayPosition, name.m_data, 0xff800000u, 0.1f, BSAudioValue());
     m_table.m_entries[index].m_flags = flags & 0xffffff;
     name.Release();
 }
@@ -882,6 +906,7 @@ struct FUN_00d68230
 
 // Constructs the object, zeroing m_u04 and m_u06.
 // @fnv 0x00d68230
+// pdb: hkpToiCountViewer::`scalar deleting destructor' | hkpToiCountViewer.obj | retail, vtable slot, high
 FUN_00d68230::FUN_00d68230()
 {
     m_u04 = 0;
@@ -911,7 +936,7 @@ struct Table
 
 struct Item
 {
-    void Apply(int aValue);
+    void Apply(int el);
 };
 
 struct ArgBlock
@@ -931,20 +956,22 @@ struct FUN_00d67c30_cls
     Table m_0c;
     int m_14;
 
-    void hkpToiCountViewer_contactPointCallback(ArgBlock* a1);
+    void hkpToiCountViewer_contactPointCallback(ArgBlock* event);
 };
 
 // For each of two items in a1->m_items, increments the high/low counters in the table entry or attaches a new entry and applies the item.
 // @fnv 0x00d67c30
 // src: HAVOK_LIB 0x00d67c30
-void FUN_00d67c30_cls::hkpToiCountViewer_contactPointCallback(ArgBlock* apBlock)
+// pdb: hkpToiCountViewer::contactPointCallback | hkpToiCountViewer.obj | retail, upstream name already matches, high
+// pdb params: event
+void FUN_00d67c30_cls::hkpToiCountViewer_contactPointCallback(ArgBlock* event)
 {
-    if (apBlock->unk10 > 0)
+    if (event->unk10 > 0)
     {
         return;
     }
     Table* t = &m_0c;
-    int* p = apBlock->m_items;
+    int* p = event->m_items;
     int n = 2;
     do
     {

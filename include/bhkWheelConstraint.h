@@ -2,6 +2,7 @@
 
 #include "bhkConstraint.h"
 
+// pdb: class bhkWheelConstraint, size 0x10, bases: bhkConstraint, 0 members
 class bhkWheelConstraint : public bhkConstraint
 {
 public:

@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class BSCoreMessage, size 0x4, 0 members
 class BSCoreMessage
 {
 public:

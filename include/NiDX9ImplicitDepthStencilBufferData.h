@@ -19,6 +19,6 @@ public:
     virtual bool Recreate(IDirect3DDevice9* pkD3DDevice9);
 
     // 0x00e7d850
-    static NiDX9ImplicitDepthStencilBufferData* __cdecl Create(IDirect3DDevice9* pkD3DDevice9,
-                                                               NiDepthStencilBuffer*& pkBuffer);
+    static NiDX9ImplicitDepthStencilBufferData* __cdecl Create(IDirect3DDevice9* uiNumBuffers,
+                                                               NiDepthStencilBuffer*& apkRenderer);
 };

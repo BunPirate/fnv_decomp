@@ -30,7 +30,7 @@ struct FUN_00bb39e0_shell
     int m_00;
     int m_04;
     void* m_08;
-    void UpdateFields_00bb39e0(const void* src, unsigned int count);
+    void STLSPData_SetLeafMaps(const void* apLeafMaps, unsigned int aiCount);
 };
 
 #include <xmmintrin.h>
@@ -54,6 +54,8 @@ struct FUN_005532a0_cls
 
 // @fnv 0x005532a0
 // src: XBOX_PDB 0x005532a0
+// pdb: TESObjectCELL::SetNavMeshArray | TESObjectCELL.obj | retail, object-file run extension, low
+// pdb params: apNavMeshArray
 FUN_005532a0_cls* FUN_005532a0_cls::hkVector4_hkVector4(float a1, float a2, float a3, float a4)
 {
     m_v = _mm_setr_ps(a1, a2, a3, a4);

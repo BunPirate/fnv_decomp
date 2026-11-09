@@ -10,6 +10,7 @@ class hkClass;
 class hkStatisticsCollector;
 class hkCriticalSection;
 
+// pdb: class hkReferencedObject, size 0x8, bases: hkBaseObject, 2 members
 class hkReferencedObject : public hkBaseObject
 {
 public:
@@ -65,29 +66,29 @@ public:
         MASK_MEMSIZE = 0x7fff
     };
 
-    unsigned short m_usMemSizeAndFlags;   // +0x4 m_memSizeAndFlags
-    mutable short m_sReferenceCount;      // +0x6 m_referenceCount
+    unsigned short m_memSizeAndFlags;   // +0x4 m_memSizeAndFlags
+    mutable short m_referenceCount;      // +0x6 m_referenceCount
 
 public:
     hkReferencedObject(FinishingFlag flag) {}
 };
 
 __forceinline hkReferencedObject::hkReferencedObject()
-    : m_sReferenceCount(1)
+    : m_referenceCount(1)
 {
 }
 
 __forceinline hkReferencedObject::hkReferencedObject(const hkReferencedObject& originalObject)
-    : hkBaseObject(), m_sReferenceCount(1)
+    : hkBaseObject(), m_referenceCount(1)
 {
 }
 
 __forceinline int hkReferencedObject::getReferenceCount() const
 {
-    return m_sReferenceCount;
+    return m_referenceCount;
 }
 
 __forceinline int hkReferencedObject::getAllocatedSize() const
 {
-    return m_usMemSizeAndFlags & MASK_MEMSIZE;
+    return m_memSizeAndFlags & MASK_MEMSIZE;
 }

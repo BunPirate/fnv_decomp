@@ -11,7 +11,7 @@
 
 void __cdecl Object_ForwardCall_00d48620(int a, int b, int c);
 void __cdecl Object_ForwardCall_00d48640(int a, int b);
-extern "C" void __cdecl Object_ProcessAndReturnValue_00d485a0(int, int, int, int, int);
+extern "C" void __cdecl hkSerializeUtil_saveTagfile(int, int, int, int, int);
 void __cdecl Object_ForwardCall_00d48660(int a, int b, int c);
 extern int DAT_0102e388;
 extern int DAT_010d7540;
@@ -93,18 +93,18 @@ struct GlobalDispatch
     virtual int Dispatch(int, int, int, int, int);
 };
 extern GlobalDispatch* DAT_01269b74;
-int __cdecl hkSerializeUtil_savePackfile(int a1, int a2, int a3, int a4, int useLocal, int a6);
-extern void* hkSerializeUtil_load(void* obj_b, int a2, int a3);
+int __cdecl hkSerializeUtil_savePackfile(int object, int klass, int writer, int options, int binary, int userListener);
+extern void* hkSerializeUtil_load(void* streamIn, int errorOut, int classReg);
 struct CtorBox
 {
-    CtorBox* InitFromValue(void* arg);
+    CtorBox* hkIstream_ctor(void* fname);
     void SetVirtualTable_00dcc160();
 
     void* f0;
     int f4;
     void* b;
 };
-void* __cdecl hkSerializeUtil_load_00d48ec0(void* a1, int a2, int a3);
+void* __cdecl hkSerializeUtil_load_00d48ec0(void* filename, int resultOut, int classReg);
 struct S_00d49310_Lock
 {
     int unk0;
@@ -118,8 +118,8 @@ struct S_00d49310_Result
     S_00d49310_Result(int v) : m_uiFilterValue(v)
     {}
 };
-void hkSerializeUtil_detectFormat(void* stream, int* out) throw();
-S_00d49310_Result hkSerializeUtil_detectFormat_00d49310(void* stream);
+void hkSerializeUtil_detectFormat(void* reader, int* details) throw();
+S_00d49310_Result hkSerializeUtil_detectFormat_00d49310(void* reader);
 int hkString_strCmp(const char* a, const char* b);
 static inline int S_00d49350_Compare(const char* a, const char* b)
 {
@@ -148,7 +148,7 @@ struct D493E0Ref
 };
 struct D493E0Registry
 {
-    D493E0Object* find(const void* key, int flags) const;
+    D493E0Object* find(const void* object, int klass) const;
 };
 struct D493E0Loader
 {
@@ -189,7 +189,7 @@ struct Obj2
 };
 struct Obj1
 {
-    void AssignRef(Obj2* apArg);
+    void hkDataObject_ctor(Obj2* o);
 };
 struct PairVt
 {
@@ -210,14 +210,14 @@ struct FUN_00d49420_cls
 };
 extern volatile int DAT_01269b70;
 // src: GUESS 0x00d48950 (confidence: low)
-static __declspec(noinline) int Hkserializeutil_UpdateState_00d48950(int d, int a, int b, int c)
+static __declspec(noinline) int anonymous_namespace_checkTagfileWorld(int world, int errorOut, int versionManager, int classReg)
 {
-    int* pb = &b;
-    if (d)
+    int* pb = &versionManager;
+    if (world)
     {
-        return a;
+        return errorOut;
     }
-    return *pb + c;
+    return *pb + classReg;
 }
 struct Holder_cls
 {
@@ -233,9 +233,9 @@ struct Pending_cls
 };
 struct Owner_cls
 {
-    int hkVersionPatchManager_applyPatches(int a, int b);
+    int hkVersionPatchManager_applyPatches(int worldToUpdate, int finalClassesReg);
 };
-static int hkBinaryTagfileReader_load_EvaluateValue_00d48a90(int a1, int esi_in, int edi_in, int ebx_in);
+static int anonymous_namespace_loadBinaryTagfileIntoWorld(int streamIn, int world, int errorOut, int classReg);
 int __cdecl S00d48a90_Entry(int a1);
 struct S00d48d30_Bool
 {
@@ -297,47 +297,47 @@ extern const char str_010cfacc[];
 extern const char str_010cfab8[];
 extern const char str_010cfa94[];
 int S00d48d30_Finish(int opts);
-void hkSerializeUtil_detectFormat(void* stream, int* out) throw();
-int __cdecl hkDataObjectUtil_toResourceWithRegistry(const S00d48d30_Ref& r, int opts);
+void hkSerializeUtil_detectFormat(void* reader, int* details) throw();
+int __cdecl hkDataObjectUtil_toResourceWithRegistry(const S00d48d30_Ref& r, int classReg);
 // src: GUESS 0x00d48a90 (confidence: low)
-static __declspec(noinline) int hkBinaryTagfileReader_load_EvaluateValue_00d48a90(S00d48d30_Stream* s, S00d48d30_Reader* reader, S00d48d30_Result* out)
+static __declspec(noinline) int anonymous_namespace_loadBinaryTagfileIntoWorld(S00d48d30_Stream* streamIn, S00d48d30_Reader* world, S00d48d30_Result* errorOut)
 {
-    reader->prepare();
-    if (reader->open(s) == 0)
+    world->prepare();
+    if (world->open(streamIn) == 0)
     {
-        if (out != 0)
+        if (errorOut != 0)
         {
-            out->m_iResultCode = 3;
-            out->m_message = str_010cfa94;
+            errorOut->m_iResultCode = 3;
+            errorOut->m_message = str_010cfa94;
         }
-        reader->close();
+        world->close();
         return 1;
     }
     return 0;
 }
 // src: GUESS 0x00d48760 (confidence: low)
-static __declspec(noinline) int Object_ProcessAndReturnValue_00d48760(S00d48d30_Stream* s, S00d48d30_Format* format, S00d48d30_Result* out,
-                                             int opts)
+static __declspec(noinline) int anonymous_namespace_loadPackfile(S00d48d30_Stream* streamIn, S00d48d30_Format* details, S00d48d30_Result* errorOut,
+                                             int typeReg)
 {
-    if (format->m_type < 2)
+    if (details->m_type < 2)
     {
         return 0;
     }
-    if (out != 0)
+    if (errorOut != 0)
     {
-        out->m_iResultCode = 0;
+        errorOut->m_iResultCode = 0;
     }
-    if (s == 0)
-    {
-        return 0;
-    }
-    if (format->attach(s, out) == 0)
+    if (streamIn == 0)
     {
         return 0;
     }
-    return S00d48d30_Finish(opts);
+    if (details->attach(streamIn, errorOut) == 0)
+    {
+        return 0;
+    }
+    return S00d48d30_Finish(typeReg);
 }
-int __cdecl hkSerializeUtil_load(S00d48d30_Stream* s, S00d48d30_Result* out, int opts) throw();
+int __cdecl hkSerializeUtil_load(S00d48d30_Stream* streamIn, S00d48d30_Result* errorOut, int classReg) throw();
 struct S00d48680_Arr
 {
     char* m_data;
@@ -360,7 +360,7 @@ struct S00d48680_Sys
     }
 };
 extern "C" S00d48680_Sys* __cdecl hkMemoryRouter_getInstance();
-extern "C" void __cdecl hkArrayUtil__reserve(S00d48680_Alloc* h, S00d48680_Arr* a, int cap, int flag);
+extern "C" void __cdecl hkArrayUtil__reserve(S00d48680_Alloc* mem, S00d48680_Arr* array, int numElem, int sizeElem);
 struct S00d48680_Obj
 {
     virtual void v0();
@@ -376,7 +376,7 @@ struct S00d48680_Obj
     virtual void v10(int a, int b);
     virtual int v11();
 };
-static void Object_ReadIntoGrowingBuffer(S00d48680_Obj* obj, S00d48680_Arr* arr);
+static void anonymous_namespace_loadStreamIntoBuffer(S00d48680_Obj* stream, S00d48680_Arr* buf);
 void __cdecl S00d48680_Entry(S00d48680_Obj* obj, S00d48680_Arr* arr);
 
 struct VersionedDataBlock
@@ -484,7 +484,7 @@ struct BufferedText
 };
 inline const char* stringText(const hkStringPtr& s)
 {
-    return reinterpret_cast<const char*>(reinterpret_cast<unsigned int>(s.m_pcText) & ~1u);
+    return reinterpret_cast<const char*>(reinterpret_cast<unsigned int>(s.m_stringAndFlag) & ~1u);
 }
 void __cdecl hkString_memSet(void*, int, int);
 struct PackHeader
@@ -635,7 +635,10 @@ static __forceinline void detect(VersionedDataBlock* reader, FormatInfo& out)
 }
 // @fnv 0x00d48af0
 // src: XBOX_PDB 0x00d48af0
-void hkSerializeUtil_detectFormat(void* stream, int* out) throw()
+// pdb: hkSerializeUtil::detectFormat | hkSerializeUtil.obj | retail, string-set bridge, high
+// pdb params: reader, details
+// pdb locals: buf, packfileActual, assertBuf, ostr, header, classVersionString
+void hkSerializeUtil_detectFormat(void* reader, int* details) throw()
 {
-    detect(static_cast<VersionedDataBlock*>(stream), *reinterpret_cast<FormatInfo*>(out));
+    detect(static_cast<VersionedDataBlock*>(reader), *reinterpret_cast<FormatInfo*>(details));
 }

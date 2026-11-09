@@ -23,24 +23,26 @@ struct Updater
 // Copies src into dest, calling self->update and other->update for each changed component and storing results in out1 and out2.
 // @fnv 0x00da4a50
 // src: HAVOK_LIB 0x00da4a50
-static __declspec(noinline) void extractChildShapes_00da4a50(Updater* self, int flag, Pair* dest, Pair* src, Updater* other, int y,
-                                              Out* out2, Out* out1)
+// pdb: extractChildShapes | hkpAgent1nMachineProcess.obj | retail, object-file gap fill, high
+// pdb params: shapeKey, shapeContainerB, shapeBufferB, modifiedBodyB
+static __declspec(noinline) void extractChildShapes_00da4a50(Updater* shapeKeyPair, int extractedShapeKeys, Pair* shapeContainerA, Pair* shapeContainerB, Updater* shapeBufferA, int shapeBufferB,
+                                              Out* modifiedBodyA, Out* modifiedBodyB)
 {
-    Out** ppOut1 = &out1;
+    Out** ppOut1 = &modifiedBodyB;
     Out* pOut1 = *ppOut1;
-    int b = src->b;
-    if (dest->b != b)
+    int b = shapeContainerB->b;
+    if (shapeContainerA->b != b)
     {
-        dest->b = b;
-        pOut1->res = self->update(b, flag);
+        shapeContainerA->b = b;
+        pOut1->res = shapeKeyPair->update(b, extractedShapeKeys);
         pOut1->val = b;
     }
-    int a = src->a;
-    if (dest->a != a)
+    int a = shapeContainerB->a;
+    if (shapeContainerA->a != a)
     {
-        dest->a = a;
-        out2->res = other->update(a, y);
-        out2->val = a;
+        shapeContainerA->a = a;
+        modifiedBodyA->res = shapeBufferA->update(a, shapeBufferB);
+        modifiedBodyA->val = a;
     }
 }
 
@@ -350,6 +352,8 @@ extern "C" CParam00da4970 d4970_c(void);
 // For each Entry00da4970 between self+0x408 and m_kRayEnd, if m_04 minus a is in range, set m_04 to that value plus b and add b minus a to m_08.
 // @fnv 0x00da4970
 // src: HAVOK_LIB 0x00da4970
+// pdb: extractChildShapes | hkpAgent1nMachineProcess.obj | retail, object-file run extension, low
+// pdb params: shapeKey, shapeContainerB, shapeBufferB, modifiedBodyB
 static __declspec(noinline) void fixupPotentialContactPointers_00da4970(Owner00da4970* self, int a, int b, CParam00da4970 c)
 {
     int iLimit = *(volatile int*)&c.m_uiFilterValue;
@@ -446,33 +450,35 @@ void* __cdecl hkSweptTransformUtil_lerp2(void*, float, void*);
 // Calls FUN_00cf1510 to fill dest+0x20 and dest+0x60, sets up dest, its node and result from source, then calls FUN_00cb22f0 on result+0x20.
 // @fnv 0x00da49b0
 // src: HAVOK_LIB 0x00da49b0
-static __declspec(noinline) void hkAgent1nMachine_initInputAtTime(DaDest* dest, DaSource* source, void* p)
+// pdb: hkAgent1nMachine_initInputAtTime | hkpAgent1nMachineProcess.obj | retail, upstream name already matches, high
+// pdb params: in, temp, out
+static __declspec(noinline) void hkAgent1nMachine_initInputAtTime(DaDest* in, DaSource* temp, void* out)
 {
-    DaResult* result = (DaResult*)p;
-    float value = source->unk0c->unk50;
-    void* first = (char*)dest + 0x20;
-    hkSweptTransformUtil_lerp2((char*)source->unk00->unk08 + 0x40, value, first);
-    p = (char*)dest + 0x60;
-    hkSweptTransformUtil_lerp2((char*)source->unk04->unk08 + 0x40, source->unk0c->unk50, p);
-    DaNode* node = (DaNode*)((char*)dest + 0x10);
-    result->unk00 = dest;
+    DaResult* result = (DaResult*)out;
+    float value = temp->unk0c->unk50;
+    void* first = (char*)in + 0x20;
+    hkSweptTransformUtil_lerp2((char*)temp->unk00->unk08 + 0x40, value, first);
+    out = (char*)in + 0x60;
+    hkSweptTransformUtil_lerp2((char*)temp->unk04->unk08 + 0x40, temp->unk0c->unk50, out);
+    DaNode* node = (DaNode*)((char*)in + 0x10);
+    result->unk00 = in;
     result->unk04 = node;
-    result->unk10 = source->unk10;
-    result->unk0c = source->unk0c;
-    int b = source->unk00->pair.b;
-    int a = source->unk00->pair.a;
-    dest->pair.a = a;
-    dest->pair.b = b;
-    dest->unk0c = source->unk00;
-    dest->unk08 = first;
+    result->unk10 = temp->unk10;
+    result->unk0c = temp->unk0c;
+    int b = temp->unk00->pair.b;
+    int a = temp->unk00->pair.a;
+    in->pair.a = a;
+    in->pair.b = b;
+    in->unk0c = temp->unk00;
+    in->unk08 = first;
     if (node)
     {
         _ReadWriteBarrier();
-        node->unk0c = source->unk04;
-        node->unk08 = p;
+        node->unk0c = temp->unk04;
+        node->unk08 = out;
     }
     _ReadWriteBarrier();
-    ((DaReceiver*)((char*)result + 0x20))->hkTransform_setMulInverseMul(first, p);
+    ((DaReceiver*)((char*)result + 0x20))->hkTransform_setMulInverseMul(first, out);
 }
 DaDest* volatile daDest;
 DaSource* volatile daSource;

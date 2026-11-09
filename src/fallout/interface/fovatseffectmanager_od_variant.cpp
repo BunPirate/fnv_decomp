@@ -16,16 +16,18 @@ void ApplyPerkModifiers(int entryPoint, Actor* actor, ...);
 struct Struct801420
 {
     int f0;
-    void FOVATSEffectManager_DrawTarget(unsigned char a, int b);
-    void FOVATSEffectManager_DrawSingleTarget(unsigned char a, int b);
+    void FOVATSEffectManager_DrawTarget(unsigned char abQueryMode, int aeDrawMode);
+    void FOVATSEffectManager_DrawSingleTarget(unsigned char abQueryMode, int aeDrawMode);
     void FOVATSEffectManager_DrawMultipleTargets();
 };
 // @fnv 0x00801420
 // src: COMMUNITY 0x00801420
-void Struct801420::FOVATSEffectManager_DrawTarget(unsigned char a, int b)
+// pdb: FOVATSEffectManager::DrawTarget | FOVATSEffectManager.obj | debug, upstream name already matches, high
+// pdb params: abQueryMode, aeDrawMode
+void Struct801420::FOVATSEffectManager_DrawTarget(unsigned char abQueryMode, int aeDrawMode)
 {
     if (f0 == 0)
-        FOVATSEffectManager_DrawSingleTarget(a, b);
+        FOVATSEffectManager_DrawSingleTarget(abQueryMode, aeDrawMode);
     else
         FOVATSEffectManager_DrawMultipleTargets();
 }
@@ -37,7 +39,9 @@ extern "C" unsigned char __cdecl Interface_GetIsVATSRescanning();
 
 // @fnv 0x00801a60
 // src: COMMUNITY 0x00801a60
-void FOVATSEffectManager::PrepareEffect(int a, int b, int c, unsigned char d)
+// pdb: FOVATSEffectManager::PrepareEffect | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: apSourceColors, apSourceMask, apTarget, abClearTarget
+void FOVATSEffectManager::PrepareEffect(int apSourceColors, int apSourceMask, int apTarget, unsigned char abClearTarget)
 {
     if (Interface_GetIsVATSRescanning())
         return;
@@ -45,15 +49,16 @@ void FOVATSEffectManager::PrepareEffect(int a, int b, int c, unsigned char d)
     {
         if (reinterpret_cast<unsigned char*>(this)[0x2b4])
         {
-            PrepareScanEffect(a, b, c, d);
+            PrepareScanEffect(apSourceColors, apSourceMask, apTarget, abClearTarget);
         }
         else
         {
-            FOVATSEffectManager_PrepareHighlightEffect(a, b, c, d);
+            FOVATSEffectManager_PrepareHighlightEffect(apSourceColors, apSourceMask, apTarget, abClearTarget);
         }
     }
 }
 
+// pdb: class ImageSpaceEffect, size 0x58 (here 0x4), 7 members
 class ImageSpaceEffect
 {
 public:
@@ -69,8 +74,9 @@ public:
 extern int DAT_012007fc;
 
 // @fnv 0x008019d0
-// src: COMMUNITY 0x008019d0
-void FOVATSEffectManager::VATSEffect_ShutdownEffect()
+// src: XBOX_RETAIL_PDB 0x008019d0
+// pdb: FOVATSEffectManager::ShutdownEffect | FOVATSEffectManager.obj | retail, object-file run extension, high
+void FOVATSEffectManager::ShutdownEffect()
 {
     ImageSpaceManager::BSShaderManager_GetImageSpaceManager()->GetEffect_004ebbc0(0x0A)->SetFormType(0);
     ImageSpaceManager::BSShaderManager_GetImageSpaceManager()->GetEffect_004ebbc0(0x0B)->SetFormType(0);
@@ -115,32 +121,35 @@ struct CellLike
 
 struct TESLike
 {
-    CellLike* TES_GetLandGeometry(NiPoint3* pos);
+    CellLike* TES_GetLandGeometry(NiPoint3* acoord);
 };
 
 struct ExtraLike
 {
-    unsigned int bhkWorldObject_GetAVObject(int a);
+    unsigned int bhkWorldObject_GetAVObject(int aiKey);
 };
 
 extern TESLike* g_TES;
 
 void* hkpGetRigidBody(const void* p);
 void* hkpGetPhantom(const void* p);
-RefLike* FUN_004b5a20(void* p);
+RefLike* FUN_004b5a20(void* apBody);
 void FUN_00458620(NiPoint3* out, int v);
 void* bhkUtilFunctions_IsbhkPCollisionObject(NiAVObject* p);
-void* bhkEntity_Getbhk(const void* p);
+void* bhkEntity_Getbhk(const void* apEnt);
 
 // @fnv 0x004b5820
 // src: XBOX_PDB 0x004b5820
-unsigned int GetAVObjectForCollidable(FormLike* form)
+// pdb: GetAVObjectForCollidable | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: aphkCol
+// pdb locals: p3D, pphantom, pbody, pcol, pland3D, location, pbp
+unsigned int GetAVObjectForCollidable(FormLike* aphkCol)
 {
     unsigned int result5 = 0;
-    if (form)
+    if (aphkCol)
     {
-        void* node_ = hkpGetRigidBody(form);
-        void* objTmp = !node_ ? hkpGetPhantom(form) : 0;
+        void* node_ = hkpGetRigidBody(aphkCol);
+        void* objTmp = !node_ ? hkpGetPhantom(aphkCol) : 0;
         if (node_)
         {
             RefLike* ref = FUN_004b5a20(node_);
@@ -148,7 +157,7 @@ unsigned int GetAVObjectForCollidable(FormLike* form)
             {
                 result5 = ref->GetFlags();
             }
-            else if (FilterHolder(form->hkpCollidable_getCollisionFilterInfo()).CFilter_GetGroup() == 1)
+            else if (FilterHolder(aphkCol->hkpCollidable_getCollisionFilterInfo()).CFilter_GetGroup() == 1)
             {
                 NiPoint3 pos4;
                 FUN_00458620(&pos4, ((NodeLike*)node_)->hkpRigidBody_getPosition());
@@ -481,15 +490,17 @@ struct VATSEffectStub
     void FOVATSEffectManager_OnIdle();
     void FOVATSEffectManager_TriggerDistort();
     void FOVATSEffectManager_UpdateBurst(float t);
-    void SetScaledValues(float t);
-    void FOVATSEffectManager_UpdateTargetPulse(float t);
-    void UpdateProgress(float t);
-    void FOVATSEffectManager_UpdateScan(float t);
-    void FOVATSEffectManager_SetTarget(int a, int b, int c);
+    void FOVATSEffectManager_UpdatePulse(float afTime);
+    void FOVATSEffectManager_UpdateTargetPulse(float afTime);
+    void FOVATSEffectManager_UpdateDistort(float afTime);
+    void FOVATSEffectManager_UpdateScan(float afTime);
+    void FOVATSEffectManager_SetTarget(int a, int aeLimb, int abDoOcclusion);
 };
 
 // @fnv 0x00800370
 // src: COMMUNITY 0x00800370
+// pdb: FOVATSEffectManager::OnIdle | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb locals: fappTime, itempResultPartial, itempResultEntire
 void VATSEffectStub::FOVATSEffectManager_OnIdle()
 {
     if (!node)
@@ -507,13 +518,13 @@ void VATSEffectStub::FOVATSEffectManager_OnIdle()
     {
         if (unk284)
         {
-            UpdateProgress(time);
+            FOVATSEffectManager_UpdateDistort(time);
         }
         else if (time > unk294)
         {
             FOVATSEffectManager_TriggerDistort();
         }
-        SetScaledValues(time);
+        FOVATSEffectManager_UpdatePulse(time);
         if (state == 1 && unk10 != -1)
         {
             FOVATSEffectManager_UpdateTargetPulse(time);
@@ -557,9 +568,10 @@ struct Str8
     int len;
     operator const char*() const;
 };
+// pdb: class Renderer, size 0x1, 0 members
 struct Renderer
 {
-    void M4e9bb0(void* anim);
+    void M4e9bb0(void* pkCamera);
 };
 Renderer* GetRenderer();
 struct AnimData
@@ -568,9 +580,9 @@ struct AnimData
 };
 struct Obj
 {
-    void M4a0fd0(const char* s);
+    void M4a0fd0(const char* apAccumulator);
     void M41fd00(AnimData* a);
-    void Ma694a0(void* p);
+    void Ma694a0(void* kFrustum);
 };
 struct FaceNode
 {
@@ -578,9 +590,9 @@ struct FaceNode
     AnimData* GetAnimationData();
 };
 FaceNode* GetFacialAnimationNode();
-void __cdecl SetFlag(const char* s, int f, int on);
-void __cdecl ApplyAnim(AnimData* a, const char* s, Obj* o);
-void __cdecl ApplyAnim2(AnimData* a, const char* s, int z);
+void __cdecl SetFlag(const char* apObject, int aeFlag, int abEnable);
+void __cdecl ApplyAnim(AnimData* apCamera, const char* apScene, Obj* aCuller);
+void __cdecl ApplyAnim2(AnimData* apCamera, const char* apAccumulator, int abUseSPU);
 struct S801880
 {
     int unk00;
@@ -609,6 +621,8 @@ struct S801880
 
 // @fnv 0x00801880
 // src: COMMUNITY 0x00801880
+// pdb: FOVATSEffectManager::DrawMultipleTargets | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb locals: psg, bsetprop, pactor, pr, pcam, pselobj, pculler, i, pobj
 void S801880::FOVATSEffectManager_DrawMultipleTargets()
 {
     if (this->count > 0)
@@ -693,7 +707,10 @@ Obj719_00801ad0* __stdcall SystemColorManager_GetInstance(int, Vec4Tmp_00801ad0*
 
 // @fnv 0x00801ad0
 // src: COMMUNITY 0x00801ad0
-void FOVATSEffectManager::PrepareScanEffect(int a0, int a1, int a2, unsigned char a3)
+// pdb: FOVATSEffectManager::PrepareScanEffect | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: apSourceColors, apSourceMask, apTarget, abClearTarget
+// pdb locals: newcolor
+void FOVATSEffectManager::PrepareScanEffect(int apSourceColors, int apSourceMask, int apTarget, unsigned char abClearTarget)
 {
     Vec4Tmp_00801ad0 tmp;
     tmp.FUN_00414430(0.0f, 0.0f, 0.0f, 0.0f);
@@ -706,7 +723,7 @@ void FOVATSEffectManager::PrepareScanEffect(int a0, int a1, int a2, unsigned cha
     DAT_01201f38 = tmp.d2;
     DAT_01201f3c = tmp.d3;
     ((Obj6e5_00801ad0*)&DAT_01201f40)->FUN_006e5cc0((char*)this + 0x2c4);
-    ((Obj0664_00801ad0*)&DAT_01201f44)->FUN_0066b0d0(((RenderedTextureSource*)a1)->BSRenderedTexture_GetTexture(0));
+    ((Obj0664_00801ad0*)&DAT_01201f44)->FUN_0066b0d0(((RenderedTextureSource*)apSourceMask)->BSRenderedTexture_GetTexture(0));
     ImageSpaceManager::BSShaderManager_GetImageSpaceManager()->GetEffect_004ebbc0(0xb)->SetFormType(1);
 }
 
@@ -722,7 +739,7 @@ struct ExtraRefraction
 };
 struct ExtraListRender
 {
-    ExtraRefraction* GetRefractionProperty();
+    ExtraRefraction* ExtraDataList_GetRefractionPropertyExtra();
 };
 struct RenderActor
 {
@@ -1069,7 +1086,7 @@ struct RenderTexture
 };
 extern unsigned char DAT_01200bf6, DAT_011fd86c;
 extern Actor* DAT_011dea3c;
-bool BSRenderedTexture_IsOutsideFrame();
+bool BSRenderedTexture_QOutsideFrame();
 void BSRenderedTexture_StartOffscreen(int, void*);
 void FUN_00b6b790();
 void FUN_00b4f450(int);
@@ -1082,8 +1099,11 @@ struct VATSRender : VATSEffectStub
 };
 // @fnv 0x00800f30
 // src: COMMUNITY 0x00800f30
-void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* texture, int mode, unsigned char draw, int flags, int view,
-                              unsigned char finish)
+// pdb: FOVATSEffectManager::DrawTargetToTexture | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: apTarget, aQueryType, abQueryMode, aeDrawMode, aeClearMode, abStopRenderTarget
+// pdb locals: prevcolor, bHasRefract, bdidQuery, bdoQuery, pactor, fRefractPower, pr, fOldAlpha, fHasImprovedDetect, pRPE, pktarget, pktargetData
+void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* apTarget, int aQueryType, unsigned char abQueryMode, int aeDrawMode, int aeClearMode,
+                              unsigned char abStopRenderTarget)
 {
     if (((RenderActor*)target)->IsHidden(0))
         return;
@@ -1091,8 +1111,8 @@ void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* texture,
     FUN_00414430 enabled(0.0f, 0.0f, 0.0f, 0.0f);
     restore->GetColor(&enabled);
     restore->SetColor(&FUN_00414430(0.0f, 0.0f, 0.0f, 0.0f));
-    if (BSRenderedTexture_IsOutsideFrame())
-        BSRenderedTexture_StartOffscreen(view, texture->FUN_00b6b260());
+    if (BSRenderedTexture_QOutsideFrame())
+        BSRenderedTexture_StartOffscreen(aeClearMode, apTarget->FUN_00b6b260());
     DAT_01200bf6 = 1;
     DAT_011fd86c = 1;
     unsigned char refraction;
@@ -1105,7 +1125,7 @@ void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* texture,
     float renderer = 0.0f;
     ApplyPerkModifiers(0x45, DAT_011dea3c, &renderer);
     if (saved && saved->BSFile_GetDevice() && renderer > 0.0)
-        amount = saved->BSFile_GetDevice()->GetRefractionProperty();
+        amount = saved->BSFile_GetDevice()->ExtraDataList_GetRefractionPropertyExtra();
     actor = 0;
     float issued = 0.0f;
     if (amount && saved)
@@ -1116,7 +1136,7 @@ void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* texture,
     }
     if (extra)
     {
-        if (mode == 2)
+        if (aQueryType == 2)
         {
             if (queriesB[unk23c])
                 delete (FUN_004a4410*)queriesB[unk23c];
@@ -1124,7 +1144,7 @@ void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* texture,
             refraction = 1;
             ((FUN_004a4410*)queriesB[unk23c])->BSOcclusionQuery_Begin();
         }
-        else if (mode == 1)
+        else if (aQueryType == 1)
         {
             if (queriesA[unk23c])
                 delete (FUN_004a4410*)queriesA[unk23c];
@@ -1135,12 +1155,12 @@ void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* texture,
     }
     accumulator.Modelloader_GetReferencedThis()->FUN_004a1040(8);
     FUN_00b4f450(8);
-    FOVATSEffectManager_DrawTarget(draw, flags);
+    FOVATSEffectManager_DrawTarget(abQueryMode, aeDrawMode);
     FUN_00b4f450(0);
     accumulator.Modelloader_GetReferencedThis()->FUN_004a1040(0);
     if (refraction)
     {
-        if (mode == 2)
+        if (aQueryType == 2)
         {
             if (queriesB[unk23c])
             {
@@ -1150,7 +1170,7 @@ void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* texture,
             else
                 Warning_005b5e40("pPartialLimbQuery is NULL even though we just issued one.  This should be impossible.");
         }
-        else if (mode == 1)
+        else if (aQueryType == 1)
         {
             if (queriesA[unk23c])
                 ((FUN_004a4410*)queriesA[unk23c])->BSOcclusionQuery_End();
@@ -1158,7 +1178,7 @@ void VATSRender::FOVATSEffectManager_DrawTargetToTexture(RenderTexture* texture,
                 Warning_005b5e40("pEntireLimbQuery is NULL even though we just issued one.  This should be impossible.");
         }
     }
-    if (finish)
+    if (abStopRenderTarget)
         FUN_00b6b790();
     if (actor && saved)
         saved->AssignActorValue(1, issued);
@@ -1371,14 +1391,17 @@ struct EffectModeSetup
 };
 // @fnv 0x00801bb0
 // src: COMMUNITY 0x00801bb0
-void EffectModeSetup::FOVATSEffectManager_PrepareHighlightEffect(int unused, RenderedTextureSource* actor, int unused2, unsigned char flag)
+// pdb: FOVATSEffectManager::PrepareHighlightEffect | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: apSourceColors, apSourceMask, apTarget, abClearTarget
+// pdb locals: newcolor
+void EffectModeSetup::FOVATSEffectManager_PrepareHighlightEffect(int apSourceColors, RenderedTextureSource* apSourceMask, int apTarget, unsigned char abClearTarget)
 {
     Vec4Tmp_00801ad0 vector;
     vector.FUN_00414430(0.0f, 0.0f, 0.0f, 0.0f);
     SystemColorManager_GetInstance(1, &vector)->FUN_00719060();
     DAT_012007fc = 1;
     ImageSpaceManager::BSShaderManager_GetImageSpaceManager()->GetEffect_004ebbc0(10)->SetFormType(1);
-    DAT_01200818.FUN_0066b0d0(actor->BSRenderedTexture_GetTexture(0));
+    DAT_01200818.FUN_0066b0d0(apSourceMask->BSRenderedTexture_GetTexture(0));
     if (enabled)
     {
         DAT_012007f0 = *DAT_011db6e4.Setting_Float_00403e20();
@@ -1407,7 +1430,7 @@ void EffectModeSetup::FOVATSEffectManager_PrepareHighlightEffect(int unused, Ren
     DAT_011ae5fc = value2c0;
     DAT_011ae5f0 = *DAT_011db778.Setting_Float_00403e20();
     DAT_011ae5f4 = 1.0f;
-    DAT_012007ec = flag ? 1 : 0;
+    DAT_012007ec = abClearTarget ? 1 : 0;
 }
 
 struct Obj9
@@ -2007,7 +2030,7 @@ struct This9
     int unk2c4;
     int unk2c8;
     Sub9 sub2cc;
-    void UpdateEquipmentVisibility();
+    void FOVATSEffectManager_IsolateBodyPart();
     void FOVATSEffectManager_RestoreBodyParts();
 };
 P2Obj* __cdecl Main_GetWorldSceneGraph();
@@ -2016,12 +2039,15 @@ void __cdecl FUN_00b6c0d0(Svc9*, int, int);
 
 // @fnv 0x00801450
 // src: COMMUNITY 0x00801450
-void Struct801420::FOVATSEffectManager_DrawSingleTarget(unsigned char a, int b)
+// pdb: FOVATSEffectManager::DrawSingleTarget | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: abQueryMode, aeDrawMode
+// pdb locals: pweapon, psg, pactor, pr, pprocess, pcam, pculler, bhidWeapon, pbodyPartData, ppart, plimbNode, i
+void Struct801420::FOVATSEffectManager_DrawSingleTarget(unsigned char abQueryMode, int aeDrawMode)
 {
     if (((This9*)this)->actor)
     {
-        if ((((This9*)this)->b129 && !(((This9*)this)->b2b4) || a) && b != 1)
-            ((This9*)this)->UpdateEquipmentVisibility();
+        if ((((This9*)this)->b129 && !(((This9*)this)->b2b4) || abQueryMode) && aeDrawMode != 1)
+            ((This9*)this)->FOVATSEffectManager_IsolateBodyPart();
         VRenderer* ptr12 = NiXenonRenderer_GetRenderer();
         P2Obj* q23 = Main_GetWorldSceneGraph();
         Actor9* actor_ = ((This9*)this)->actor;
@@ -2035,18 +2061,18 @@ void Struct801420::FOVATSEffectManager_DrawSingleTarget(unsigned char a, int b)
             mgr2X = actor_->FUN_008d8520();
         if (mgr2X)
             o1z = mgr2X->vt190(actor_->vt1e8());
-        if (((This9*)this)->f23c == 0xe || b == 1)
+        if (((This9*)this)->f23c == 0xe || aeDrawMode == 1)
         {
             if (((This9*)this)->actor->vt100())
             {
-                if (!(((This9*)this)->b2b4) || a)
+                if (!(((This9*)this)->b2b4) || abQueryMode)
                 {
                     if (o1z && mgr2X)
                         BSShaderUtil_AccumulateScene(svcX, o1z, x102);
                 }
             }
         }
-        if (((This9*)this)->f23c != 0xe || b == 1)
+        if (((This9*)this)->f23c != 0xe || aeDrawMode == 1)
         {
             bool flag_ = 0;
             if (o1z)
@@ -2089,7 +2115,7 @@ void Struct801420::FOVATSEffectManager_DrawSingleTarget(unsigned char a, int b)
         FUN_00b6c0d0(svcX, ((This9*)this)->sub2cc.Modelloader_GetReferencedThis(), 0);
         x102->BSCullingProcess_SetAccumulator(0);
         x102->SetImpactDataSet_004fb0b0(0);
-        if ((((This9*)this)->b129 && !(((This9*)this)->b2b4) || a) && b != 1)
+        if ((((This9*)this)->b129 && !(((This9*)this)->b2b4) || abQueryMode) && aeDrawMode != 1)
             ((This9*)this)->FOVATSEffectManager_RestoreBodyParts();
         (void)ptr12;
     }

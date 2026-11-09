@@ -24,6 +24,7 @@ class NiPoint3;
 class TESObjectREFR;
 class ScrapHeapBuffer;
 
+// pdb: class PathBuilder, size 0x34, 7 members
 class PathBuilder
 {
 public:
@@ -72,7 +73,7 @@ public:
     void* AdvanceCounter();
     PathingInfoEntry* GetPathingInfoEntry(PathingInfoEntry&);
     int AppendPathNodeLocations(int, BSSimpleArray<PathingLocation, 1024>*, TESObjectREFR*);
-    bool BuildPathNodeLocation(PacketNodeRecord*, PacketNodeRecord*, PathingLocation&);
+    bool PathBuilder_FindEntryPoint(PacketNodeRecord*, PacketNodeRecord*, PathingLocation&);
     int AppendNearbyPathLocations(PathingLocation*, BSSimpleArray<PathingLocation, 1024>*, int, TESObjectREFR*);
     void* GetElementAddress30_006e8f40(void*);
     void* BSSimpleArray_VirtualPathingNode_1024_GetAt(void* a1);

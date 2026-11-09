@@ -3,22 +3,22 @@
 #define FNV_TESDATAHANDLER_DEFAULTS_H
 
 
-namespace ActorValue { void LoadActorValueDefinitions(); }
+namespace ActorValue { void ActorValue_RegisterActorValues(); }
 class CameraPathManager
 {
   public:
     void UpdateCameraPaths();
-    void InitializeCameraPaths();
+    void CreateDefaultPath();
 };
 class TESGlobalMap
 {
   public:
     void SetAt(const char*, TESGlobal*);
 };
-namespace MagicSystem { void InitializeMagicSystem(); }
-void CreateDefaultTopics();
+namespace MagicSystem { void MagicSystem_GenerateDefaultObjects(); }
+void TESTopic_AddDefaultTopics();
 void BGSEquipType_GenerateDefaultMenuIcons();
-void RegisterEffectSetting(EffectSetting*);
+void EffectSettingCollection_AddEffect(EffectSetting*);
 template <class T> unsigned int BSStringLength(const T*);
 extern BGSExplosion* DAT_011ca284;
 extern TESObjectWEAP* DAT_011ca288;

@@ -8,6 +8,7 @@ class BGSLoadFormBuffer;
 class BGSSaveFormBuffer;
 class NavMeshTriangle;
 
+// pdb: class PathingAvoidNode, size 0x24, 5 members
 class PathingAvoidNode
 {
 public:

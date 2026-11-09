@@ -16,12 +16,15 @@ struct S00a67410
     char _pad34[6];
     unsigned char m_bModifierActive;  // +0x3a
 
-    void NiGeometryData_GetVerticesIterator(BSFaceGenMorphData::Buffers* outData);
+    void NiGeometryData_GetVerticesIterator(BSFaceGenMorphData::Buffers* arIterator);
 };
 
 // @fnv 0x00a67410
 // src: COMMUNITY 0x00a67410
-void S00a67410::NiGeometryData_GetVerticesIterator(BSFaceGenMorphData::Buffers* outData)
+// pdb: NiGeometryData::GetVerticesIterator | NiGeometryData.obj | retail, upstream name already matches, high
+// pdb params: arIterator
+// pdb locals: pucData, pkAGD, bcompressed, uiStride, usCount, uiType, uiStream, pkPackedAGD, bResult, uiTotalSize, uiUnitSize, uiIndex
+void S00a67410::NiGeometryData_GetVerticesIterator(BSFaceGenMorphData::Buffers* arIterator)
 {
     if (!m_bModifierActive)
         return;
@@ -52,9 +55,9 @@ void S00a67410::NiGeometryData_GetVerticesIterator(BSFaceGenMorphData::Buffers* 
         size = (unsigned int)vars[1];
     }
 
-    outData->vertices = data;
-    outData->normals = reinterpret_cast<void*>(size);
-    *reinterpret_cast<unsigned char*>(&outData->tangents) = 0;
+    arIterator->vertices = data;
+    arIterator->normals = reinterpret_cast<void*>(size);
+    *reinterpret_cast<unsigned char*>(&arIterator->tangents) = 0;
 }
 
 extern RecursiveSpinLock g_011c5f80;  // the pool allocator's lock (recursion count at 0x011c5f84)
@@ -83,6 +86,7 @@ struct FUN_00a68e30_shell
 
 // @fnv 0x00a68e30
 // src: XBOX_PDB 0x00a68e30
+// pdb: NiDynamicEffect::DetachAllUnaffectedNodes | NiDynamicEffect.obj | retail, upstream name already matches, high
 void FUN_00a68e30_shell::NiDynamicEffect_DetachAllUnaffectedNodes()
 {
     while (m_uiCount)
@@ -139,30 +143,33 @@ class A72720StreamSet
     unsigned short unk24;
     unsigned short m_usBufferCount;
 
-    bool NiAdditionalGeometryData_GetDataStream(unsigned int uiIndex, char** ppcData, void** ppvStream, unsigned short* pusVertexCount,
-                      int* piFormat, int* piStride, int* piUsage);
+    bool NiAdditionalGeometryData_GetDataStream(unsigned int uiStreamIndex, char** pucData, void** uiType, unsigned short* usCount,
+                      int* uiTotalSize, int* uiUnitSize, int* uiStride);
 };
 
 // @fnv 0x00a72720
 // src: COMMUNITY 0x00a72720
-bool A72720StreamSet::NiAdditionalGeometryData_GetDataStream(unsigned int uiIndex, char** ppcData, void** ppvStream,
-                                   unsigned short* pusVertexCount, int* piFormat, int* piStride, int* piUsage)
+// pdb: NiAdditionalGeometryData::GetDataStream | NiAdditionalGeometryData.obj | retail, upstream name already matches, high
+// pdb params: uiStreamIndex, pucData, uiType, usCount, uiTotalSize, uiUnitSize, uiStride
+// pdb locals: pkBlock, pkDataStream
+bool A72720StreamSet::NiAdditionalGeometryData_GetDataStream(unsigned int uiStreamIndex, char** pucData, void** uiType,
+                                   unsigned short* usCount, int* uiTotalSize, int* uiUnitSize, int* uiStride)
 {
-    if (uiIndex >= m_uiRecordCount)
+    if (uiStreamIndex >= m_uiRecordCount)
         return false;
     if (!m_pkRecords)
         return false;
 
-    A72720Record& kRecord = m_pkRecords[uiIndex];
+    A72720Record& kRecord = m_pkRecords[uiStreamIndex];
     void* pvStream = kRecord.m_pvStream;
-    *ppvStream = pvStream;
+    *uiType = pvStream;
     if (!pvStream)
         return false;
 
-    *pusVertexCount = m_usVertexCount;
-    *piFormat = kRecord.m_iFormat;
-    *piStride = kRecord.m_iArrayCapacity;
-    *piUsage = kRecord.m_iUsage;
+    *usCount = m_usVertexCount;
+    *uiTotalSize = kRecord.m_iFormat;
+    *uiUnitSize = kRecord.m_iArrayCapacity;
+    *uiStride = kRecord.m_iUsage;
 
     if (kRecord.m_uiBuffer > m_usBufferCount)
         return false;
@@ -170,6 +177,6 @@ bool A72720StreamSet::NiAdditionalGeometryData_GetDataStream(unsigned int uiInde
     if (!pkBuffer || pkBuffer->m_uiSize < kRecord.m_uiValueBeforeCount)
         return false;
 
-    *ppcData = pkBuffer->m_pcData + kRecord.m_uiValueBeforeCount;
+    *pucData = pkBuffer->m_pcData + kRecord.m_uiValueBeforeCount;
     return true;
 }

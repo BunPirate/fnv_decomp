@@ -4,6 +4,8 @@
 
 // Destructor: if the file is good and open, flushes and closes m_pFile, then frees m_pBuffer.
 // @fnv 0x00aa1690
+// pdb: NiFile::~NiFile | NiFile_Xenon.obj | retail, upstream name already matches, high
+// pdb locals: dwBytesIO
 NiFile::~NiFile()
 {
     if (m_bGood && m_pFile)
@@ -15,6 +17,7 @@ NiFile::~NiFile()
 }
 
 // @fnv 0x00aa15a0
+// pdb: NiFile::Flush | NiFile_Xenon.obj | retail, upstream name already matches, high
 bool NiFile::Flush()
 {
     if (m_eMode == READ_ONLY)
@@ -68,6 +71,8 @@ struct S_00aa15f0
     int GetFileSize();
 };
 // @fnv 0x00aa15f0
+// pdb: NiFile::DefaultCreateDirectoryFunc | NiFile_Xenon.obj | debug, object-file run extension, low
+// pdb params: pcDirName
 int S_00aa15f0::GetFileSize()
 {
     int cur = _ftell(_f);
@@ -155,34 +160,36 @@ int __cdecl FUN_00aa85c0(void*, int, int);
 
 struct FUN_00aa16d0_cls : NiFile
 {
-    void NiFile_Seek(unsigned int offset, unsigned int whence);
+    void NiFile_Seek(unsigned int iOffset, unsigned int iWhence);
 };
 
 // Seeks the file: advances within the read buffer when possible, otherwise flushes and calls the underlying seek, updating position and good flag.
 // @fnv 0x00aa16d0
 // src: XBOX_PDB 0x00aa16d0
-void FUN_00aa16d0_cls::NiFile_Seek(unsigned int offset, unsigned int whence)
+// pdb: NiFile::Seek | NiFile_Xenon.obj | retail, upstream name already matches, high
+// pdb params: iNumBytes
+void FUN_00aa16d0_cls::NiFile_Seek(unsigned int iOffset, unsigned int iWhence)
 {
     if (!m_bGood)
     {
         return;
     }
-    if (whence == 1)
+    if (iWhence == 1)
     {
-        unsigned int newPos = m_uiPos + offset;
+        unsigned int newPos = m_uiPos + iOffset;
         if ((int)newPos >= 0 && (int)newPos < (int)m_uiBufferReadSize)
         {
-            m_uiAbsoluteCurrentPos += offset;
+            m_uiAbsoluteCurrentPos += iOffset;
             m_uiPos = newPos;
             return;
         }
         if (m_eMode == READ_ONLY)
         {
-            offset += m_uiPos - m_uiBufferReadSize;
+            iOffset += m_uiPos - m_uiBufferReadSize;
         }
     }
     Flush();
-    m_bGood = FUN_00aa85c0(m_pFile, offset, whence) == 0;
+    m_bGood = FUN_00aa85c0(m_pFile, iOffset, iWhence) == 0;
     if (m_bGood)
     {
         m_uiFilePos = _ftell(m_pFile);
@@ -216,6 +223,9 @@ class AA1F10BinaryStream
 };
 
 // @fnv 0x00aa1f10
+// pdb: NiBinaryStream::GetLine | NiBinaryStream.obj | retail, object-file run extension, low
+// pdb params: pBuffer, uiMaxBytes
+// pdb locals: uiBytesRead, i, c, uiRead
 unsigned int AA1F10BinaryStream::ReadLine(char* pcLineBuffer, unsigned int uiMaxBytes)
 {
     unsigned int uiBytesRead = 0;

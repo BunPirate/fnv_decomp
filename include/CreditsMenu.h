@@ -11,6 +11,7 @@ class CreditTextureName;
 class CreditTextureSource;
 class OutputA;
 
+// pdb: class CreditsMenu, size 0x80, bases: Menu, 16 members
 class CreditsMenu : public Menu
 {
 public:
@@ -97,7 +98,7 @@ public:
         char* m3c;
         char* m_3c;
     };
-    int font;
+    int eFont;
     union
     {
         int align;
@@ -113,7 +114,7 @@ public:
         int y;
         int iY;
     };
-    CreditColor color;
+    CreditColor Color;
     union
     {
         struct
@@ -131,9 +132,9 @@ public:
             };
         };
     };
-    float fLineDelay;
-    float m_fPackageValue;
-    unsigned int uiLineIndex;
+    float fBackgroundSwapInterval;
+    float fBackgroundSwapTimer;
+    unsigned int uiBackgroundIndexCounter;
 
     int FUN_0075f1c0();
     void FUN_0075f910();

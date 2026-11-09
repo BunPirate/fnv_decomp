@@ -19,6 +19,7 @@ int MagicShaderHitEffect::GetType()
 
 
 // @fnv 0x00409340
+// pdb: SpellItem::ClearData | SpellItem.obj | debug, upstream name already matches, high
 void SpellItem::ClearData()
 {
     RemoveAllEffectItems();
@@ -33,6 +34,7 @@ void EnchantmentItem::ResetFormData()
 }
 
 // @fnv 0x00409080
+// pdb: EnchantmentItem::EnchantmentItem | EnchantmentItem.obj | retail, upstream name already matches, high
 EnchantmentItem::EnchantmentItem()
 {
     SetFormType((ENUM_FORM_ID)19);
@@ -47,6 +49,7 @@ struct FUN_00409160_Class
 };
 // Calls FUN_004092a0, frees this when flags has bit 1 set, and returns this.
 // @fnv 0x00409160
+// pdb: EnchantmentItem::`scalar deleting destructor' | EnchantmentItem.obj | retail, object-file run extension, low
 void* FUN_00409160_Class::DestroyIfFlagged(unsigned int flags)
 {
     FUN_004092a0();
@@ -63,6 +66,7 @@ struct Unnamed
 void __cdecl _Deallocate(void*);
 // Calls FUN_00409210, then frees this via _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x00409270
+// pdb: EnchantmentItem::~EnchantmentItem | EnchantmentItem.obj | debug, object-file run extension, low
 void* __thiscall Unnamed::FUN_00409270(unsigned int flags)
 {
     FUN_00409210();
@@ -118,6 +122,8 @@ struct FUN_004094a0_Class
 // Returns the entry point value as a float if the check on the object at this-0x24 passes, otherwise calls GetTotalCost(0).
 // @fnv 0x004094a0
 // src: COMMUNITY 0x004094a0
+// pdb: EnchantmentItem::GetCost | EnchantmentItem.obj | retail, upstream name already matches, high
+// pdb params: apActor
 float FUN_004094a0_Class::EnchantmentItem_GetCost(int apActor)
 {
     if (((FlaggedData*)((char*)this - 0x24))->ContainsAnyFlag(1))
@@ -144,6 +150,9 @@ struct FUN_00409fd0_shell : EnchantmentItem
 // Returns true unless apCompare is an IngredientItem with the same FUN_00586150 value and matching byte at offset 0xa0 as this object.
 // @fnv 0x00409fd0
 // src: COMMUNITY 0x00409fd0
+// pdb: IngredientItem::CompareMagicItemData | IngredientItem.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: palchemy
 bool FUN_00409fd0_shell::IngredientItem_CompareMagicItemData(MagicItem* apCompare)
 {
     EnchantmentItem* penchantment = (EnchantmentItem*)dynamic_cast<IngredientItem*>(apCompare);
@@ -195,6 +204,7 @@ struct EnchantmentComparison : PrimaryBase, MagicItem
 
 // Returns true if the cast fails or any of three accessor results or flags differ; otherwise returns false.
 // @fnv 0x00409360
+// pdb: SpellItem::SaveMagicItemData | SpellItem.obj | debug, object-file run extension, low
 bool EnchantmentComparison::IsMagicItemEqual(MagicItem* apMagicItem)
 {
     EnchantmentItem* pEnchantmentItem = dynamic_cast<EnchantmentItem*>(apMagicItem);

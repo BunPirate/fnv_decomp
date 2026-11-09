@@ -21,6 +21,7 @@ class CombatState;
 class PathingRequest;
 class TESBoundObject;
 
+// pdb: class CombatController, size 0x188, bases: TESPackage, 43 members
 class CombatController : public TESPackage
 {
 public:
@@ -99,9 +100,9 @@ public:
         CombatState* combat;
     };
     union { CombatPlan* m_pCombatPlan; CombatPlan* unkA0; }; // 0xA0
-    int unkA4;                                          // 0xA4
+    int pCombatPlannerData;                                          // 0xA4
     union { BSThread* m_pCombatThread; BSThread* unkA8; }; // 0xA8
-    int unkAC;                                          // 0xAC
+    int pCurrentGoal;                                          // 0xAC
     union { int unkB0; int ib0; };                       // 0xB0
     CombatTimer unkB4;                                  // 0xB4
     union
@@ -111,7 +112,7 @@ public:
         Actor* pActor;
     };
     union { Actor* pTarget; Actor* field_c0; Actor* unkC0; }; // 0xC0
-    unsigned char byteC4;                                // 0xC4
+    unsigned char bForceCombat;                                // 0xC4
     union { unsigned char byteC5; char cc5; };            // 0xC5
     union { unsigned char byteC6; char cc6; };            // 0xC6
     union { unsigned char byteC7; char cc7; };            // 0xC7
@@ -122,25 +123,25 @@ public:
         int ic8;
     };
     float floatCC;                                      // 0xCC
-    float floatD0;                                      // 0xD0
-    bool byteD4;                                        // 0xD4
-    bool byteD5;                                        // 0xD5
+    float fAttackerSneakHeight;                                      // 0xD0
+    bool bAttackerCanSneak;                                        // 0xD4
+    bool bAttackerCanMove;                                        // 0xD5
     char unkD6[2];                                      // 0xD6
     union { float floatD8; int id8; };                   // 0xD8
     union { float floatDC; int idc; };                   // 0xDC
-    float floatE0;                                      // 0xE0
+    float fCombatPosition;                                      // 0xE0
     union { unsigned char byteE4; char ce4; bool equipmentChanged; };            // 0xE4
     char unkE5[3];                                      // 0xE5
     NiPointer<AnimIdle> unkE8;                           // 0xE8
-    NiPointer<AnimIdle> unkEC;                           // 0xEC
-    int unkF0;                                          // 0xF0
-    int unkF4;                                          // 0xF4
-    unsigned char byteF8;                                // 0xF8
-    unsigned char byteF9;                                // 0xF9
+    NiPointer<AnimIdle> spCellDebugGeometry;                           // 0xEC
+    int pCurrentWeapon;                                          // 0xF0
+    int pCurrentCombatStyle;                                          // 0xF4
+    unsigned char bDestructing;                                // 0xF8
+    unsigned char bDeterminedPowerAttackDeltas;                                // 0xF9
     char unkFA[2];                                      // 0xFA
     Struct14A unkFC;                                    // 0xFC
-    Struct14B unk110;                                   // 0x110
-    unsigned char byte124;                               // 0x124
+    Struct14B fPowerAttackHitTimes;                                   // 0x110
+    unsigned char bHasForwardAttacks;                               // 0x124
     union { unsigned char byte125; bool byte_125; char c125; }; // 0x125
     union { unsigned char byte126; bool byte_126; char c126; }; // 0x126
     char unk127;                                        // 0x127
@@ -156,9 +157,9 @@ public:
     union { float unk148; float m_fCombatModifier; float lastUpdate; int i148; }; // 0x148
     Struct3C unk14C;                                    // 0x14C
 
-    CombatController(Actor* apActor, ActorCombatGroup* apGroup, bool abFlag);
-    CombatController(void* arg1, ActorCombatGroup* group, void* arg2);
-    CombatController(Actor* apActor, int group, TESPackage* apPackage);
+    CombatController(Actor* apAttacker, ActorCombatGroup* apCombatGroup, bool apCurrentPackage);
+    CombatController(void* apAttacker, ActorCombatGroup* apCombatGroup, void* apCurrentPackage);
+    CombatController(Actor* apAttacker, int apCombatGroup, TESPackage* apCurrentPackage);
     void* operator new(size_t size);
 
     // Overrides of primary vtable slots 4, 21, 23, 25 and 33.
@@ -173,19 +174,19 @@ public:
     void SetByteAtOffsetC5(bool value);
     void SetFieldC7(unsigned char value);
     bool GetByteAtOffsetC7();
-    void DestroyOwnedObject();
-    void UpdatePointer();
-    void UpdateActorValues();
+    void ClearCombatPlan();
+    void UpdateCurrentCombatStyle();
+    void DeterminePowerAttackDeltas();
     void ValidateCurrentWeapon();
-    void ProcessActivation(TESObjectREFR* apRef, TESBoundObject* apObject, int aiCount,
+    void ActivatedReference(TESObjectREFR* apRef, TESBoundObject* apObject, int aiCount,
                            bool abActivatedScriptOnly);
     void UpdateCombatEquipment(int first, int second);
     ActorCombatGroup* GetCombatGroup();
     void __thiscall ResetCombatState();
     char GetModifierKey(void);
-    void StopActorMoving();
+    void StartCalmed();
     void UpdateMoveTarget();
-    void SetupPackageTarget(TESPackage* package);
+    void UpdatePackageData(TESPackage* apCurrentPackage);
     bool GetLoading();
     bool SetActive(Actor* actor);
 
@@ -195,8 +196,8 @@ public:
     CombatLocations* FUN_005e3fc0();
     bool TESPackage_GetContinueDuringCombat();
     void* GetCurrentWeapon();
-    void bhkCharacterController_SetQuickSimulate(bool value);
-    void bhkCharacterController_SetFarAway(bool far);
+    void bhkCharacterController_SetQuickSimulate(bool abTF);
+    void bhkCharacterController_SetFarAway(bool abTF);
     void FUN_008d0600();
     int PlayerCharacter_AttemptYield();
     void* FUN_0097d740(unsigned int flags);
@@ -206,15 +207,15 @@ public:
     void Update_0097da50();
     void __thiscall ForcePlanUpdate();
     void UpdateCurrentWeapon();
-    void StopCombat_0097f4d0(int arg);
-    bool StopCombat_0097f4d0(void* arg);
-    void Disarmed_0097f6d0(int arg);
-    void FiredProjectile(int arg);
+    void StopCombat(int apTarget);
+    bool StopCombat(void* apTarget);
+    void Disarmed_0097f6d0(int apOpponent);
+    void FiredProjectile(int apProjectile);
     void ResetEmbeddedWeaponSwitchTimer(void* arg, bool value);
-    void AddTarget_0097f930(Actor* apTarget, int iPriority, bool abHighPriority,
+    void AddTarget(Actor* apTarget, int iPriority, bool abHighPriority,
                       float afDamageDone, float afDamageTaken);
-    void RemoveTarget_0097f9c0(void* actor);
-    void RemoveTarget_0097f9c0(Actor* actor);
+    void RemoveTarget(void* actor);
+    void RemoveTarget(Actor* actor);
     CombatOptions* GetCurrentCombatStyle();
     void SetActionProcedure(CombatProcedure* apActionProcedure);
     void SetMovementProcedure(CombatProcedure* apMovementProcedure);
@@ -223,13 +224,13 @@ public:
     void ClearBackgroundProcedures();
     bool GetProcedureFailed();
     bool GetProcedureFinished();
-    void SetTarget_00980830(void* arg);
-    void ClearReferencePointers(int arg);
+    void SetTarget(void* apTarget);
+    void ClearReferencePointers(int apRef);
     bool TESPackage_GetPretendInCombat();
     void FinishedPackageTask();
     bool ShouldStopCombat();
     void __thiscall SetMoveMode(int aiCombatMoveMode);
-    void CombatController_SetActualMoveMode(unsigned int state);
+    void CombatController_SetActualMoveMode(unsigned int aiMoveMode);
     unsigned int GetLookAtTargetIndex(CombatProcedure* apCombatProcedure);
     int __thiscall GetLookAtTargetIndex(void* arg);
     int __thiscall GetLookAtTargetIndex(void* arg, const NiPoint3& point, unsigned char index);
@@ -240,8 +241,8 @@ public:
     bool CombatController_CombatPlanContainsAction(int arg);
     bool IsFleeing_00981990();
     void SaveGame_009819f0(BGSSaveFormBuffer* buffer);
-    void LoadGame_00981d00(BGSLoadFormBuffer* buffer);
-    void InitLoadGame_00982080(BGSLoadFormBuffer* buffer);
+    void LoadGame_00981d00(BGSLoadFormBuffer* apLoadGameBuffer);
+    void InitLoadGame_00982080(BGSLoadFormBuffer* apLoadGameBuffer);
     void FinishLoadGame_00982310(BGSLoadFormBuffer* buffer);
     void CombatProcedure_SaveGame_(CombatProcedure** procedure, BGSSaveFormBuffer* buffer);
     void FUN_00984f60(unsigned int flags);

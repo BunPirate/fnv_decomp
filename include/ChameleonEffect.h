@@ -2,10 +2,11 @@
 
 #include "ValueModifierEffect.h"
 
+// pdb: class ChameleonEffect, size 0x4c, bases: ValueModifierEffect, 0 members
 class ChameleonEffect : public ValueModifierEffect
 {
 public:
-    ChameleonEffect(void* caster, void* item, void* effect);
+    ChameleonEffect(void* apCaster, void* apSpell, void* apEffect);
 
     virtual ~ChameleonEffect();
     virtual ActiveEffect* Copy();
@@ -17,9 +18,9 @@ public:
     virtual void Finish();
 
     void Revert_0080b1b0(Actor* apActor);
-    void Revert_0080b310(BGSLoadFormBuffer* apActor);
-    void FinishInitLoadGame_0080b0c0(Actor* actor);
-    void FinishLoadGame(BGSLoadFormBuffer* target);
+    void Revert_0080b310(BGSLoadFormBuffer* apLoadGameBuffer);
+    void FinishInitLoadGame_0080b0c0(Actor* apActor);
+    void FinishLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void Finish_0080aef0();
     void UpdateChameleonEffect();
     ChameleonEffect* Clone();

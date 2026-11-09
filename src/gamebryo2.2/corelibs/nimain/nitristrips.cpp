@@ -12,6 +12,8 @@ extern unsigned int DAT_0109ed94;
 
 // The shared base has no default constructor declaration.
 // @fnv 0x00a89740
+// pdb: NiTriBasedGeom::NiTriBasedGeom | NiTriBasedGeom.obj | retail, call graph, medium
+// pdb params: pkModelData
 __declspec(noinline) NiTriBasedGeom* __fastcall InitTriBasedGeom(NiTriBasedGeom* self, void*)
 {
     self->NiGeometry::NiGeometry();
@@ -94,6 +96,8 @@ char const* const* __cdecl NiTriStrips_GetRTTI()
 // Allocates 0xc4 bytes, constructs a NiGeometry in place, sets its vtable to NiParticleMeshes::vftable, and returns the pointer or 0 on failure.
 // @fnv 0x00a9b150
 // src: EXE 0x00a9b150
+// pdb: NiParticles::CreateObject | NiParticles.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiParticles_CreateObject()
 {
     void* pObject = BSFadeNode::operator new(0xc4);
@@ -166,6 +170,8 @@ void __cdecl FUN_00a80400();
 
 // @fnv 0x00a9b140
 // src: XBOX_PDB 0x00a9b140
+// pdb: NiParticleMeshes::CopyMembers | NiParticleMeshes.obj | debug, upstream name already matches, high
+// pdb params: pkDest, kCloning
 void __cdecl NiParticleMeshes_CopyMembers()
 {
     FUN_00a80400();
@@ -174,6 +180,8 @@ void __cdecl NiParticleMeshes_CopyMembers()
 void __cdecl NiLines_LoadBinary();
 // @fnv 0x00a98ea0
 // src: XBOX_PDB 0x00a98ea0
+// pdb: NiParticleMeshes::LoadBinary | NiParticleMeshes.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiParticleMeshes_LoadBinary()
 {
     NiLines_LoadBinary();

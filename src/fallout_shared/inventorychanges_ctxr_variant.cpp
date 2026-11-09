@@ -122,7 +122,7 @@ struct _DummySimpleList
 };
 struct XExtra
 {
-    bool HasOnlyAllowedExtraData(int a);
+    bool ExtraDataList_IsExtraDefaultforContainer(int a);
     bool ExtraDataList_GetWorn(int a);
     short ExtraDataList_GetCount();
 };
@@ -141,7 +141,7 @@ struct ListRemover
 short __fastcall ExtraDataList_GetCount(const ExtraDataList*);
 struct FUN_0041d120_shell
 {
-    bool HasOnlyAllowedExtraData(int);
+    bool ExtraDataList_IsExtraDefaultforContainer(int);
 };
 struct ExtraVDtor
 {
@@ -209,6 +209,7 @@ struct NiNode;
 struct NiPoint3;
 struct TESAnimGroup;
 struct TESIdleForm;
+// pdb: class Animation, size 0x13c, 33 members
 struct Animation
 {
     void SetField(unsigned char, unsigned char, unsigned char);
@@ -334,42 +335,42 @@ struct Animation
     bool GetDelayUpdateScenegraph();
     void SetDelayUpdateScenegraph(bool);
     void* __vecDelDtor(unsigned int);
-    unsigned char m_uiObjectFlags;
+    unsigned char m_uFlags;
     char _pad_1[3];
-    TESObjectREFR* m_pAttachedReference;
-    char m_acHeaderData[4];
-    NiNode* m_pObjectNode;
-    char m_kNodeTranslation[12];
-    char m_kRootTranslation[12];
-    char m_acNodeName[32];
-    float m_fAnimationAmount;
+    TESObjectREFR* pActorRef;
+    char pAnimRoot[4];
+    NiNode* pAccumRoot;
+    char movementDelta[12];
+    char AccumRootTranslate[12];
+    char pSoundPriorityBone[32];
+    float m_fLooking;
     char group[16];
     char action[32];
-    char m_acTargetName[32];
-    char usReloadGroup[16];
-    char m_acAnimationName[32];
-    char m_cState;
-    bool m_bIsPlaying;
+    char loopCount[32];
+    char nextGroup[16];
+    char nextLoops[32];
+    char cSkipUpdate;
+    bool bShutDown;
     char _pad_ce[2];
     float time;
-    float m_fTimeOffset;
-    char m_acReservedBytes[4];
-    void* m_pOwnerReference;
-    char m_pChildTile[32];
-    BSAnimGroupSequence* m_pCurrentSequence;
+    float fLipTime;
+    char spManager[4];
+    void* pAnimSequenceMap;
+    char pCurrentSequence[32];
+    BSAnimGroupSequence* pLastMovementSequence;
     char kfModelList[8];
-    float m_fMovementRate;
-    float m_fCombatAnimationRate;
-    float m_fEquipAnimationRate;
-    float m_fReloadAnimationRate;
-    float m_fAnimationTimeScale;
-    char m_cSkipNextBlend;
+    float m_fMoveSpeed;
+    float m_fAttackSpeed;
+    float m_fGlobalTimeMultiplier;
+    float m_fReloadModifier;
+    float m_fEquipModifier;
+    char cSkipNextBlend;
     char _pad_121[1];
-    unsigned short m_usQueuedGroup;
-    char LocalInput[4];
-    char LocalStateValue[4];
-    char LocalOutput[8];
-    char m_acTrailingData[8];
+    unsigned short sQueuedReloadGroup;
+    char spAnimIdle[4];
+    char spAnimIdleQueued[4];
+    char spAnimIdleFreeWhenInactiveA[8];
+    char replayDelayList[8];
 };
 typedef char _sizecheck_Animation[sizeof(Animation) == 316 ? 1 : -1];
 struct FUN_004c0c90_shell : public Animation
@@ -384,6 +385,7 @@ bool __fastcall PlayerCharacter_IsHardcore(char* pThis);
 extern Setting originalRuntimeFloatSetting543;
 extern GameTimerRecord g_timeGlobal;
 extern float DAT_011f21e0;
+// pdb: class VATS, size 0x48 (here 0xc), 17 members
 struct VATS
 {
     VATS_CommandList_inventorychanges_ctxr_variant m_kCommandList;
@@ -395,7 +397,7 @@ struct VATS
 extern unsigned int __cdecl BSStringCapacityMaximum(unsigned int, unsigned int);
 struct FUN_00766a10_shell
 {
-    void SetCapacity(unsigned int a);
+    void AnimatingText_SetDisplayInterval(unsigned int aiInterval);
 };
 struct FUN_0042dec0_shell : public BaseExtraList
 {
@@ -479,11 +481,11 @@ struct Unk_004ca1a0
     List_009e03e0* pList;
     void DestroyList();
 };
-void TESForm_UpdateFields_004ce300(TESForm* a, unsigned int b);
+void TESScriptableForm_SetFormScript(TESForm* a, unsigned int apScript);
 struct FUN_004ce340_stand
 {
-    void InventoryChanges_RemoveAllTypedItems(int a0, int a1, bool a2, bool a3, bool a4, bool a5, int a6, int a7);
-    void InventoryChanges_RemoveAllItems(int a0, int a1, bool a2, bool a3, bool a4, bool a5, int a6, int a7);
+    void InventoryChanges_RemoveAllTypedItems(int apRef, int apStolenContainer, bool abStealing, bool abowner, bool abRemoveOwnership, bool abSilent, int aiFormType, int apDoNotRemoveList);
+    void InventoryChanges_RemoveAllItems(int apRef, int apStolenContainer, bool abStealing, bool abowner, bool abRemoveOwnership, bool abSilent, int aiFormType, int apDoNotRemoveList);
 };
 struct C008256d0
 {
@@ -830,7 +832,7 @@ struct RefV_004d17a0
 struct Extra_004d17a0
 {
     virtual ~Extra_004d17a0();
-    void* GetExtraLeveledItem();
+    void* ExtraDataList_GetLeveledItem();
     void ExtraDataList_RemoveLevelItemExtra();
     short ExtraDataList_GetCount();
 };
@@ -924,7 +926,7 @@ struct SaveFormIDHelper
 };
 struct FUN_00426a30_shell
 {
-    void WriteNodeList(BGSSaveFormBuffer*);
+    void ExtraDataList_SaveGame(BGSSaveFormBuffer*);
 };
 struct SpawnedEntry
 {
@@ -943,13 +945,13 @@ class B4BDF00Form
 };
 unsigned int __cdecl FUN_004873d0(B4BDF00Form* pkWeapon);
 class B4BDF00Data;
-float __cdecl CombatFormulas_CalcWeaponDamage(void* pvActor, B4BDF00Form* pkWeapon, float fScale, float fValue, int iUnused, int iFlag,
-                           B4BDF00Data* pkData, int iMode);
+float __cdecl CombatFormulas_CalcWeaponDamage(void* apActor, B4BDF00Form* pkWeapon, float fScale, float afDamageMultiplier, int abIgnoreFatigue, int abIgnoreExplosion,
+                           B4BDF00Data* pkData, int abUseCurrentAmmo);
 class B4BDF00Data
 {
   public:
     float ItemChange_GetItemHealth(int iIndex);
-    float GetScaledValue(void* pvActor, float fValue, bool bFlag);
+    float ItemChange_GetModifiedAttackDamage(void* apActor, float afDamageMultiplier, bool abIgnoreExplosion);
 
     int unk00;
     int unk04;
@@ -971,7 +973,7 @@ struct ItemChangeCalc
     int unknown04;
     BookForm* item;
     float ItemChange_GetItemHealth(int);
-    void UpdateItemChange(int unused);
+    void ItemChange_GetModifiedArmorRating(int apActor);
 };
 struct NewExtraList
 {
@@ -1016,6 +1018,7 @@ struct ExtraList_4bf330
     void Remove(Extra_4bf330* const& item);
 };
 extern const char g_inventoryChangesSourceFilename[];
+// pdb: class InventoryIterator, size 0x18 (here 0x1), 4 members
 struct InventoryIterator
 {
     ~InventoryIterator();
@@ -1069,7 +1072,7 @@ struct DataHandler
 extern DataHandler* g_dataHandler;
 struct Placement
 {
-    PlacedRef* PlaceObject(PlacedRef*, void*, int, int, NiPoint3*, NiPoint3*);
+    PlacedRef* InventoryChanges_DropItemIntoWorld(PlacedRef*, void*, int, int, NiPoint3*, NiPoint3*);
 };
 void* __cdecl operator new(unsigned int);
 struct Weapon;
@@ -1582,7 +1585,7 @@ float __cdecl ScaleByGameSetting(float, int, int);
 void* __cdecl operator new(unsigned int);
 struct ContainerView
 {
-    unsigned int CopyUniqueObjects();
+    unsigned int TESContainer_GetFilteredList();
 };
 struct Product
 {
@@ -1632,7 +1635,7 @@ struct ActorProcessView
 struct FUN_004d43c0_cls
 {
     ContNode* m_pFirstNode;
-    int FindItemIndex(int a1, InventoryItemEntry* a2);
+    int InventoryChanges_GetExtraDataListIndexForItem(int apObject, InventoryItemEntry* apExtra);
 };
 int __fastcall FUN_0044ddc0(InventoryItemEntry* item);
 ContNode* __fastcall Modelloader_GetReferencedThis(InventoryItemEntry* item);
@@ -1805,12 +1808,12 @@ struct Animation90 : Animation
     void Animation_UpdateBipOnly(float, void*, bool);
     Manager90* GetControllerManager_00496940();
 };
-Idle90* LoadIdleAnimation(Actor90*, Animation90*, float);
+Idle90* AnimIdle_LoadAnimIdle(Actor90*, Animation90*, float);
 struct ExtraList_4bd5c0
 {
     ExtraList_4bd5c0();
     virtual ~ExtraList_4bd5c0();
-    void CopyFrom(void* src);
+    void CopyFrom(void* apOwner);
     void* pHead;
     int unk08;
     int unk0C;
@@ -1836,12 +1839,12 @@ struct RefSlot
 struct PlayerSlot
 {
     unsigned int GetAtIfValid(int);
-    void SetIdleAt(int, void*);
+    void PlayerCharacter_SetAmmoForHotKey(int, void*);
 };
 struct ExtraSlot
 {
-    bool HasOnlyAllowedExtraData(int);
-    void SetHotKey(unsigned char);
+    bool ExtraDataList_IsExtraDefaultforContainer(int);
+    void ExtraDataList_SetHotKey(unsigned char);
     void ExtraDataList_SetCount(int);
 };
 struct EquipForm;
@@ -1889,8 +1892,8 @@ struct EquipEntry
     EquipForm* form;
     EquipEntry(EquipForm*, int);
     ~EquipEntry();
-    int ItemChange_GetExtraTotalCount(bool);
-    int ItemChange_GetExtraTotalDefaultCount();
+    int GetExtraTotalCount(bool);
+    int GetExtraTotalDefaultCount();
     bool ItemChange_GetWorn(bool);
     int FUN_00726070();
     EquipForm* FUN_0044ddc0();
@@ -2624,8 +2627,8 @@ struct W20Extra
     void RemoveExtra24();
     void SetWornState(bool, bool);
     void ExtraDataList_SetReferencePointer(W20Ref*);
-    W20AmmoExtra* GetExtraAmmo();
-    void SetOwnership(int, int);
+    W20AmmoExtra* ExtraDataList_GetAmmoExtra();
+    void ExtraDataList_SetAmmoExtra(int, int);
 };
 struct W20ExtraList
 {
@@ -2781,7 +2784,7 @@ struct AddExtra
     virtual ~AddExtra();
     int unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
     AddExtra();
-    AddAmmoExtra* GetExtraAmmo();
+    AddAmmoExtra* ExtraDataList_GetAmmoExtra();
     AddRef* ExtraDataList_GetOwner();
     void ExtraDataList_RemoveOwnership();
     void SetWornState(bool, bool);
@@ -3002,8 +3005,8 @@ struct AddInventory
 };
 extern AddRef* addPlayer;
 extern float DAT_01012054;
-bool __cdecl FUN_00705020();
-bool __cdecl FUN_00705000();
+bool __cdecl Interface_ContainerIsBarter();
+bool __cdecl Interface_ContainerIsRecipe();
 int __cdecl TESPackage_GetObjectTypeFromForm(void*);
 extern float DAT_01015f5c;
 struct AmmoScorer
@@ -3047,7 +3050,7 @@ struct Form64
 struct Extra64
 {
     bool FUN_00418750();
-    bool HasOnlyAllowedExtraData(int);
+    bool ExtraDataList_IsExtraDefaultforContainer(int);
     short ExtraDataList_GetCount();
     void ExtraDataList_SetCount(int);
     bool ExtraDataList_GetWorn(int);
@@ -3073,7 +3076,7 @@ struct Change64
     int FUN_00726070();
     ExtraNode64* Modelloader_GetReferencedThis();
     int CountAndPruneEntries();
-    int ItemChange_GetExtraTotalCount(int);
+    int GetExtraTotalCount(int);
     void FUN_00403550(Form64*);
     void* FUN_004bde40();
     int FindFirstNonNegativeValue();
@@ -3096,7 +3099,7 @@ struct BaseNode64
 };
 struct BaseContainer64
 {
-    BaseNode64* CopyUniqueObjects();
+    BaseNode64* TESContainer_GetFilteredList();
     int FUN_00482a90(Form64*);
     bool FUN_00481eb0(Form64*);
 };
@@ -3121,7 +3124,7 @@ struct InventoryForm4ca330
 };
 struct InventoryExtra4ca330
 {
-    bool HasOnlyAllowedExtraData(int flag);
+    bool ExtraDataList_IsExtraDefaultforContainer(int flag);
     bool ExtraDataList_GetWorn(int flag);
     short ExtraDataList_GetCount();
     unsigned char FUN_00418750();
@@ -3172,7 +3175,7 @@ struct InventoryOutputFromForm4ca330
     InventoryOutputExtras4ca330* m_extraList;
     int m_uiItemCount;
     InventoryForm4ca330* m_form;
-    InventoryOutputFromForm4ca330(InventoryForm4ca330* form, int count);
+    InventoryOutputFromForm4ca330(InventoryForm4ca330* apObject, int aiNumber);
 };
 struct InventoryCursor4ca330
 {
@@ -3341,32 +3344,35 @@ struct Container
 struct Registry
 {
     void FUN_004603b0(CopiedForm*);
-    void FUN_00861780(CopiedForm*);
+    void TESSaveLoadGame_AddCreatedBaseObject(CopiedForm*);
 };
 extern Registry* DAT_011c3f2c;
 extern Registry* DAT_011de45c;
 Inventory* __cdecl FUN_004bf220(void*);
 void* __cdecl TESScriptableForm_GetFormScript(TESBoundObject*);
-CopiedForm* __cdecl FUN_00465110(int);
-void __cdecl TESForm_UpdateFields_004ce300(CopiedForm*, int);
+CopiedForm* __cdecl CreateFormOfType(int);
+void __cdecl TESScriptableForm_SetFormScript(CopiedForm*, int);
 struct Inventory
 {
     ItemNode* head;
     Container* FUN_004bffb0();
     Item* FUN_004bfba0(TESBoundObject*, int, int);
     void FUN_004c3380(Item*, int);
-    void ExtraContainerChangeData_DuplicateAllItem(void*, void*);
+    void InventoryChanges_DuplicateAllItems(void*, void*);
 };
 // @fnv 0x004cd9c0
-// src: COMMUNITY 0x004cd9c0
-void Inventory::ExtraContainerChangeData_DuplicateAllItem(void* source, void* destination)
+// src: XBOX_RETAIL_PDB 0x004cd9c0
+// pdb: InventoryChanges::DuplicateAllItems | InventoryChanges.obj | retail, call graph, high
+// pdb params: apRef, apDupContainer
+// pdb locals: pInventoryItem, pleveled, pObj, pNewItem, pdupchange, pListInv, pList, pitem, ioriginalcount, iorigcount, iamount, pNewForm, icount, plistextra, pscriptExtra, pextra
+void Inventory::InventoryChanges_DuplicateAllItems(void* apRef, void* apDupContainer)
 {
-    if (!destination || !source)
+    if (!apDupContainer || !apRef)
         return;
     TESBoundObject* formSlot11 = 0;
     Item* copySlot14 = 0;
     Inventory* targetSlot4 = 0;
-    targetSlot4 = FUN_004bf220(destination);
+    targetSlot4 = FUN_004bf220(apDupContainer);
     if (!targetSlot4)
         return;
     BaseNode* baseSlot45 = FUN_004bffb0()->FUN_00717e50();
@@ -3392,11 +3398,11 @@ void Inventory::ExtraContainerChangeData_DuplicateAllItem(void* source, void* de
                 CopiedForm* clone = 0;
                 if (TESScriptableForm_GetFormScript(formSlot11))
                 {
-                    clone = FUN_00465110(((FormView*)formSlot11)->FUN_00401170());
+                    clone = CreateFormOfType(((FormView*)formSlot11)->FUN_00401170());
                     clone->v108(formSlot11);
-                    TESForm_UpdateFields_004ce300(clone, 0);
+                    TESScriptableForm_SetFormScript(clone, 0);
                     DAT_011c3f2c->FUN_004603b0(clone);
-                    DAT_011de45c->FUN_00861780(clone);
+                    DAT_011de45c->TESSaveLoadGame_AddCreatedBaseObject(clone);
                     int quantity = baseCountSlot31;
                     if (itemSlot25)
                         quantity += itemSlot25->FUN_00726070();
@@ -3457,11 +3463,11 @@ void Inventory::ExtraContainerChangeData_DuplicateAllItem(void* source, void* de
             CopiedForm* clone2 = 0;
             if (GetItemScript(changedSlot20))
             {
-                clone2 = FUN_00465110(((FormView*)changedSlot20->FUN_0044ddc0())->FUN_00401170());
+                clone2 = CreateFormOfType(((FormView*)changedSlot20->FUN_0044ddc0())->FUN_00401170());
                 clone2->v108(changedSlot20->FUN_0044ddc0());
-                TESForm_UpdateFields_004ce300(clone2, 0);
+                TESScriptableForm_SetFormScript(clone2, 0);
                 DAT_011c3f2c->FUN_004603b0(clone2);
-                DAT_011de45c->FUN_00861780(clone2);
+                DAT_011de45c->TESSaveLoadGame_AddCreatedBaseObject(clone2);
                 copySlot14 = new Item((TESBoundObject*)clone2, changedSlot20->FUN_00726070());
                 if (changedSlot20 && ((ExtraNode*)changedSlot20->Modelloader_GetReferencedThis()) && ((ExtraNode*)changedSlot20->Modelloader_GetReferencedThis())->FUN_005ae380())
                 {
@@ -3703,7 +3709,7 @@ void __cdecl Actor_InventoryWeightModifiedCallback(ActorValueOwner*, int, float,
 struct WeightExtra
 {
     bool ExtraDataList_HasWeaponMods();
-    bool CheckExtraByType(int);
+    bool ExtraDataList_GetWeaponModSlotActive(int);
     short ExtraDataList_GetCount();
 };
 struct WeightExtraNode
@@ -3721,7 +3727,7 @@ struct WeightEntry : InventoryStackRecord
     int FUN_00726070();
     WeightExtraNode* Modelloader_GetReferencedThis();
     WeightWeapon* FUN_0044ddc0();
-    int ItemChange_GetExtraTotalCount(bool);
+    int GetExtraTotalCount(bool);
     bool ItemChange_GetWorn(bool);
 };
 struct WeightChangeNode
@@ -3919,12 +3925,12 @@ struct Extra
     static void* operator new(unsigned int);
     static void operator delete(void*);
     void* BaseExtraList_GetExtraData(int);
-    void SetOriginalReference(void*);
+    void ExtraDataList_SetOriginalReferenceExtra(void*);
     void ExtraDataList_RemoveOriginalReferenceExtra();
     short ExtraDataList_GetCount();
     void ExtraDataList_SetCount(int);
     void RemoveExtra24();
-    bool HasOnlyAllowedExtraData(int);
+    bool ExtraDataList_IsExtraDefaultforContainer(int);
 };
 struct ExtraNode
 {
@@ -3954,12 +3960,12 @@ struct Item
     void FUN_00403550(TESBoundObject*);
     void FUN_00403550(Form*);
     void FUN_006ecd40(int);
-    void ProcessNodes();
+    void ItemChange_RemoveOriginalChanges();
     bool FUN_004bcb70();
     int ItemChange_NumberLeveledExtra();
     bool ItemChange_GetWorn(int);
-    int ItemChange_GetExtraTotalCount(int);
-    int GetFormTypeCategory();
+    int GetExtraTotalCount(int);
+    int ItemChange_GetTypeforMenu();
 };
 struct BaseEntry
 {
@@ -3992,7 +3998,10 @@ struct Inventory
 };
 // @fnv 0x004d26d0
 // src: XBOX_PDB 0x004d26d0
-void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner, bool exclude)
+// pdb: InventoryChanges::CreateCopyofList | InventoryChanges.obj | retail, upstream name already matches, high
+// pdb params: apCopy, apRef, bdontcopyquestitems
+// pdb locals: plist, preturnitem, tempMemContext, pkFirst, pobject, pObj, iOriginalcount, pitem, icount, pextlist, pcurextra, pextralist, inumb, leveledlist
+void Inventory::InventoryChanges_CreateCopyofList(Inventory* apCopy, void* apRef, bool bdontcopyquestitems)
 {
     AutoMemContext contextSlot2(0x36, true, DAT_01020778, 0x26b7);
     BaseNode* baseSlot2 = FUN_004bffb0()->FUN_00717e50();
@@ -4009,21 +4018,21 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
         {
             Item* current = FUN_004bfba0(entrySlot7->form, 1, 0);
             if (current)
-                current->ProcessNodes();
+                current->ItemChange_RemoveOriginalChanges();
             if (entrySlot7 && current &&
                 (((!current->FUN_004bcb70() || current->ItemChange_NumberLeveledExtra() < 1) && current->count + baseCountSlot38 == 0) ||
-                 (current->FUN_0044ddc0()->v094() && exclude) || current->ItemChange_GetWorn(0)))
+                 (current->FUN_0044ddc0()->v094() && bdontcopyquestitems) || current->ItemChange_GetWorn(0)))
             {
                 delete transferSlot3;
                 transferSlot3 = 0;
             }
-            else if (entrySlot7 && (!current || (current && !current->ItemChange_GetExtraTotalCount(0))))
+            else if (entrySlot7 && (!current || (current && !current->GetExtraTotalCount(0))))
             {
                 int magnitude = baseCountSlot38;
                 if (magnitude < 0)
                     magnitude *= -1;
                 if (current)
-                    transferSlot3->count = magnitude + current->count - current->ItemChange_GetExtraTotalCount(0);
+                    transferSlot3->count = magnitude + current->count - current->GetExtraTotalCount(0);
                 else
                     transferSlot3->count = magnitude;
                 transferSlot3->FUN_00403550(entrySlot7->form);
@@ -4032,21 +4041,21 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                     ExtraNode* scripted = current->Modelloader_GetReferencedThis();
                     while (scripted && *scripted->FUN_006815c0())
                     {
-                        (*scripted->FUN_006815c0())->SetOriginalReference(owner);
+                        (*scripted->FUN_006815c0())->ExtraDataList_SetOriginalReferenceExtra(apRef);
                         transferSlot3->list->FUN_00905820(scripted->FUN_006815c0());
                         scripted = scripted->FUN_00726070();
                     }
-                    target->FUN_004c3380(transferSlot3, 1);
+                    apCopy->FUN_004c3380(transferSlot3, 1);
                 }
                 else
                 {
                     if (!transferSlot3->ItemChange_GetWorn(0))
                     {
                         Extra* extraA = new Extra;
-                        extraA->SetOriginalReference(owner);
+                        extraA->ExtraDataList_SetOriginalReferenceExtra(apRef);
                         extraA->ExtraDataList_SetCount(transferSlot3->FUN_00726070());
                         transferSlot3->list->FUN_005ae3d0(&extraA);
-                        target->FUN_004c3380(transferSlot3, 1);
+                        apCopy->FUN_004c3380(transferSlot3, 1);
                     }
                     else
                     {
@@ -4059,7 +4068,7 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
             {
                 int extraCountSlot33 = 0;
                 if (current->list)
-                    extraCountSlot33 = current->ItemChange_GetExtraTotalCount(0);
+                    extraCountSlot33 = current->GetExtraTotalCount(0);
                 ExtraNode* extrasSlot23 = current->list;
                 while (extrasSlot23 && *extrasSlot23->FUN_006815c0() && !transferSlot3)
                 {
@@ -4068,28 +4077,28 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                     transferSlot3->FUN_006ecd40(extraB->ExtraDataList_GetCount());
                     if (!transferSlot3->list)
                         transferSlot3->list = new ExtraNode;
-                    extraB->SetOriginalReference(owner);
+                    extraB->ExtraDataList_SetOriginalReferenceExtra(apRef);
                     transferSlot3->list->FUN_005ae3d0(&extraB);
                     if (!transferSlot3->ItemChange_GetWorn(0))
-                        target->FUN_004c3380(transferSlot3, 1);
+                        apCopy->FUN_004c3380(transferSlot3, 1);
                     extrasSlot23 = extrasSlot23->FUN_00726070();
                 }
-                if (current->ItemChange_GetExtraTotalCount(0) < baseCountSlot38 + current->count)
+                if (current->GetExtraTotalCount(0) < baseCountSlot38 + current->count)
                 {
                     if (!transferSlot3->list)
                         transferSlot3->list = new ExtraNode;
                     if (current)
-                        transferSlot3->count = baseCountSlot38 + current->count - current->ItemChange_GetExtraTotalCount(0);
+                        transferSlot3->count = baseCountSlot38 + current->count - current->GetExtraTotalCount(0);
                     else
                         transferSlot3->count = baseCountSlot38;
                     transferSlot3->FUN_00403550(entrySlot7->form);
                     if (!transferSlot3->ItemChange_GetWorn(0))
                     {
                         Extra* extraC = new Extra;
-                        extraC->SetOriginalReference(owner);
+                        extraC->ExtraDataList_SetOriginalReferenceExtra(apRef);
                         extraC->ExtraDataList_SetCount(transferSlot3->FUN_00726070());
                         transferSlot3->list->FUN_005ae3d0(&extraC);
-                        target->FUN_004c3380(transferSlot3, 1);
+                        apCopy->FUN_004c3380(transferSlot3, 1);
                     }
                     else
                     {
@@ -4120,7 +4129,7 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
         Item* changed = *nodeSlot1->FUN_006815c0();
         if (changed && changed->FUN_00726070() > 0 && (!FUN_004bffb0() || !FUN_004bffb0()->FUN_00481eb0(changed->form)))
         {
-            if (changed->ItemChange_GetExtraTotalCount(0) || changed->FUN_004bde40())
+            if (changed->GetExtraTotalCount(0) || changed->FUN_004bde40())
             {
                 ExtraNode* walkSlot1 = changed->list;
                 int countSlot56 = 0;
@@ -4132,12 +4141,12 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                     walkSlot1 = walkSlot1->FUN_00726070();
                 }
                 walkSlot1 = changed->list;
-                if (!hasSpecialSlot4 || changed->GetFormTypeCategory() != 4)
+                if (!hasSpecialSlot4 || changed->ItemChange_GetTypeforMenu() != 4)
                 {
                     while (walkSlot1 && *walkSlot1->FUN_006815c0())
                     {
                         Extra* extraD = *walkSlot1->FUN_006815c0();
-                        extraD->SetOriginalReference(owner);
+                        extraD->ExtraDataList_SetOriginalReferenceExtra(apRef);
                         transferSlot3->list->FUN_005ae3d0(&extraD);
                         walkSlot1 = walkSlot1->FUN_00726070();
                         countSlot56 += extraD->ExtraDataList_GetCount();
@@ -4145,13 +4154,13 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                 }
                 else
                 {
-                    if (changed->GetFormTypeCategory() == 4 && changed->FUN_004bde40())
+                    if (changed->ItemChange_GetTypeforMenu() == 4 && changed->FUN_004bde40())
                         changed->FUN_006ecd40(1);
                     while (walkSlot1 && *walkSlot1->FUN_006815c0())
                     {
                         Extra* extraE = *walkSlot1->FUN_006815c0();
                         extraE->RemoveExtra24();
-                        extraE->SetOriginalReference(owner);
+                        extraE->ExtraDataList_SetOriginalReferenceExtra(apRef);
                         transferSlot3->list->FUN_005ae3d0(&extraE);
                         walkSlot1 = walkSlot1->FUN_00726070();
                         countSlot56 = 1;
@@ -4162,12 +4171,12 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                 if (!transferSlot3->ItemChange_GetWorn(0) && countSlot56 < changed->FUN_00726070())
                 {
                     Extra* extraF = new Extra;
-                    extraF->SetOriginalReference(owner);
+                    extraF->ExtraDataList_SetOriginalReferenceExtra(apRef);
                     extraF->ExtraDataList_SetCount(changed->FUN_00726070() - countSlot56);
                     transferSlot3->list->FUN_005ae3d0(&extraF);
                 }
                 if (!transferSlot3->ItemChange_GetWorn(0))
-                    target->FUN_004c3380(transferSlot3, 1);
+                    apCopy->FUN_004c3380(transferSlot3, 1);
                 else
                 {
                     if (*transferSlot3->list->FUN_006815c0())
@@ -4187,7 +4196,7 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                     {
                         chosen = *walk2Slot3->FUN_006815c0();
                         count2Slot41 += chosen->ExtraDataList_GetCount();
-                        if (chosen->HasOnlyAllowedExtraData(0))
+                        if (chosen->ExtraDataList_IsExtraDefaultforContainer(0))
                             chosen = 0;
                         walk2Slot3 = walk2Slot3->FUN_00726070();
                     }
@@ -4195,12 +4204,12 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                     {
                         if (!transferSlot3->list)
                             transferSlot3->list = new ExtraNode;
-                        chosen->SetOriginalReference(owner);
+                        chosen->ExtraDataList_SetOriginalReferenceExtra(apRef);
                         transferSlot3->list->FUN_005ae3d0(&chosen);
                         if (!transferSlot3->ItemChange_GetWorn(0) && count2Slot41 < changed->FUN_00726070())
                         {
                             Extra* extraG = new Extra;
-                            extraG->SetOriginalReference(owner);
+                            extraG->ExtraDataList_SetOriginalReferenceExtra(apRef);
                             extraG->ExtraDataList_SetCount(changed->FUN_00726070() - count2Slot41);
                             transferSlot3->list->FUN_005ae3d0(&extraG);
                         }
@@ -4208,7 +4217,7 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                     else
                     {
                         Extra* extraH = new Extra;
-                        extraH->SetOriginalReference(owner);
+                        extraH->ExtraDataList_SetOriginalReferenceExtra(apRef);
                         extraH->ExtraDataList_SetCount(changed->FUN_00726070());
                         transferSlot3->list->FUN_005ae3d0(&extraH);
                     }
@@ -4217,7 +4226,7 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                     if (!transferSlot3->ItemChange_GetWorn(0))
                     {
                         transferSlot3->FUN_006ecd40(changed->FUN_00726070());
-                        target->FUN_004c3380(transferSlot3, 1);
+                        apCopy->FUN_004c3380(transferSlot3, 1);
                     }
                     else
                     {
@@ -4232,10 +4241,10 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* target, void* owner
                     transferSlot3->FUN_00403550(changed->FUN_0044ddc0());
                     transferSlot3->FUN_006ecd40(changed->FUN_00726070());
                     chosen = new Extra;
-                    chosen->SetOriginalReference(owner);
+                    chosen->ExtraDataList_SetOriginalReferenceExtra(apRef);
                     chosen->ExtraDataList_SetCount(transferSlot3->FUN_00726070());
                     transferSlot3->list->FUN_005ae3d0(&chosen);
-                    target->FUN_004c3380(transferSlot3, 1);
+                    apCopy->FUN_004c3380(transferSlot3, 1);
                 }
             }
         }
@@ -4290,7 +4299,7 @@ struct CleanupInventory
 {
     CleanupItemNode* first;
     CleanupItem* FUN_004bfba0(TESBoundObject*, int, int);
-    void RemoveAllItems();
+    void InventoryChanges_ClearAllChangeItems();
 };
 // Save-game block loader (FUN_004d3cc0): block header checks, item list rebuild, size validation logs.
 class TESForm;
@@ -4308,7 +4317,7 @@ class SaveLoadGame
 {
   public:
     bool IsLoading();                             // 0x862110
-    void ReadData(void* dst, unsigned int size);  // 0x8579e0
+    void ReadData(void* apData, unsigned int aiSize);  // 0x8579e0
     LoadingFormInfo* GetLoadingForm();            // 0x4fd3c0
     unsigned char GetVersion();                   // 0x8df040
     unsigned int GetOffset();                     // 0x825c00
@@ -4449,7 +4458,7 @@ struct WalkInventory
     WalkNode* first;
     WalkContainer* FUN_004bffb0();
     void* FUN_004bfba0(WalkForm*, int, int);
-    int ForEachInventoryItem(bool(__cdecl* callback)(WalkTemp*, void*), void* context, int flags);
+    int IterateInventory(bool(__cdecl* apCallback)(WalkTemp*, void*), void* apData, int aiIterateFlags);
 };
 struct IterForm
 {
@@ -4567,7 +4576,7 @@ struct InvExtra
     int unk18;
     int unk1c;
     InvExtra();
-    bool HasOnlyAllowedExtraData(int);
+    bool ExtraDataList_IsExtraDefaultforContainer(int);
     bool ExtraDataList_CompareListForContainer(InvExtra*, int, int);
     short ExtraDataList_GetCount();
     void ExtraDataList_SetCount(unsigned short);
@@ -5502,7 +5511,7 @@ struct InvHost
     InvArray entries;
     float weight;
     bool PlayerCharacter_IsHardcore();
-    void PlayerCharacter_AddRockItAmmo(void* object, InvExtra* extra, int amount);
+    void PlayerCharacter_AddRockItAmmo(void* apObj, InvExtra* apExtra, int aiNumAdded);
 };
 extern const char g_inventoryChangesSourceFilename[];
 void* operator new(unsigned int);
@@ -5956,11 +5965,11 @@ struct Transfer4c37C37Obj
     int FUN_008d6f30();
     void* BGSSaveFormBuffer_GetForm();
     bool FUN_00440da0();
-    bool Actor_UnEquipObject(int a, int b, void* c, int d, int e, int f);
+    bool Actor_UnEquipObject(int a, int aiNumber, void* apExtra, int abForceUnequip, int abEquipCalling, int abPlayPickUpSounds);
     Transfer4c37MidObj* BSFile_GetDevice();
     int TESObjectREFR_GetOwner();
     int PlayerCharacter_AddNote(int a, int b);
-    void PlayerCharacter_RewardKarma(int a);
+    void PlayerCharacter_RewardKarma(int aiAmount);
     int Actor_GetCurrentWeapon();
 };
 struct Transfer4c37Form4
@@ -5989,8 +5998,8 @@ struct Transfer4c37Obj20
     int unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
     void SetLeveledItemIndex(int a);
     int ExtraDataList_RemoveLevelItemExtra();
-    void ExtraDataList_CopyListForReference(void* a, int b);
-    void ExtraDataList_SetOwnership(void* a);
+    void ExtraDataList_CopyListForReference(void* apCopy, int abremove);
+    void ExtraDataList_SetOwnership(void* apOwner);
     void ExtraDataList_SetCount(int a);
     int BaseExtraList_ItemsInList();
     short ExtraDataList_GetCount();
@@ -6025,11 +6034,11 @@ struct Transfer4c37CurHead
 };
 struct Transfer4c37MidObj
 {
-    void ExtraDataList_CopyListForReference(void* a, int b);
+    void ExtraDataList_CopyListForReference(void* apCopy, int abremove);
     void RemoveExtraData30();
     void ExtraDataList_RemoveReferencePointer();
     int ExtraDataList_GetStartingWorldOrCell();
-    void ExtraDataList_SetStartingWorldOrCellForRef(void* a);
+    void ExtraDataList_SetStartingWorldOrCellForRef(void* apRef);
     int ExtraDataList_GetLevCreaOriginalBase();
 };
 struct Transfer4c37AuxObj
@@ -6088,7 +6097,7 @@ struct Transfer4c37ResObj
     virtual void RPadC4_47();
     virtual void RPadC4_48();
     virtual void VcallC4(int a);
-    void TESObjectREFR_SetScale(float f);
+    void TESObjectREFR_SetScale(float newscale);
     Transfer4c37MidObj* BSFile_GetDevice();
     int TESObjectREFR_GetMyOwner();
     void FUN_00567ad0(void* a);
@@ -6119,7 +6128,7 @@ struct Transfer4c37ItemObj
     int ExtraDataList_GetReferencePointer();
     float ExtraDataList_GetScale();
     bool FUN_00418750();
-    Transfer4c37Ret720* GetExtraLeveledItem();
+    Transfer4c37Ret720* ExtraDataList_GetLeveledItem();
     void* ExtraDataList_GetScript();
     void ExtraDataList_SetCount(int a);
     int ExtraDataList_RemoveLevelItemExtra();
@@ -6297,7 +6306,7 @@ struct Transfer4c37FormFull
     virtual void PadF_62();
     virtual void PadF_63();
     virtual bool Vcall100();
-    int Actor_EquipObject(int a, int b, void* c, int d, int e, int f);
+    int Actor_EquipObject(int apObject, int aiNumber, void* apExtra, int abNow, int abForceEquip, int abPlayPickUpSounds);
 };
 struct Transfer4c37C37This
 {
@@ -6309,7 +6318,7 @@ struct Transfer4c37C37This
     TESContainer* FUN_004bffb0();
     InventoryStackRecord* FUN_004bfba0(int a, int b, int c);
     void SetInventorySlotExtraData(InventoryStackRecord* e, void* f, int v);
-    Transfer4c37ResObj* PlaceObject(void* a, int b, int c, int d, int e, int f);
+    Transfer4c37ResObj* InventoryChanges_DropItemIntoWorld(void* apRef, int apObject, int ainumber, int apCreatedRef, int apPoint, int apRotate);
     int kCreateReferenceCallAddr(Transfer4c37C37Obj* p0, int p1, unsigned char p2, int p3, Transfer4c37Form4* p4, unsigned char p5,
                      Transfer4c37C37Form* p6, int p7, int p8, unsigned char p9, unsigned char p10,
                      InventoryStackRecord* p11);
@@ -6347,7 +6356,7 @@ struct MoveFormInfo_ex : public MoveFormInfo
 {
     bool FUN_00480af0(int, int, void*);
 };
-void* __cdecl FUN_00475020(Weapon*);
+void* __cdecl GetFormAsBipedModelList(Weapon*);
 extern const char DAT_01020778[];
 struct E4C5
 {
@@ -6608,8 +6617,8 @@ struct Item2_6
     int FUN_00726070();
     int FUN_0044ddc0();
 };
-bool __cdecl MatchesObjectType(void* a, void* b);
-int __cdecl TESPackage_GetObjectTypeFromForm(void* a);
+bool __cdecl MatchesObjectType(void* apForm, void* aeType);
+int __cdecl TESPackage_GetObjectTypeFromForm(void* apForm);
 int __fastcall FUN_0044ddc0(ItemCh6* p);
 namespace Rebuild004d0650 {
 struct Object
@@ -6617,7 +6626,7 @@ struct Object
 };
 struct Extra
 {
-    bool HasOnlyAllowedExtraData(int);
+    bool ExtraDataList_IsExtraDefaultforContainer(int);
 };
 struct FUN_0096a2d0
 {
@@ -6657,6 +6666,9 @@ struct Inventory
 };
 // @fnv 0x004d0650
 // src: XBOX_PDB 0x004d0650
+// pdb: InventoryChanges::GetInventoryItem | InventoryChanges.obj | retail, upstream name already matches, high
+// pdb params: apObject, aId
+// pdb locals: pitem, temp, iOriginalcount, pextra, plist, pObj, pList
 InventoryStackRecord* Inventory::InventoryChanges_GetInventoryItem(Object* object, int arg)
 {
     InventoryStackRecord* source3 = FUN_004bfba0(object, 1, arg);
@@ -6668,29 +6680,29 @@ InventoryStackRecord* Inventory::InventoryChanges_GetInventoryItem(Object* objec
         if (((FUN_0096a2d0*)source3->Modelloader_GetReferencedThis()) && ((FUN_0096a2d0*)source3->Modelloader_GetReferencedThis())->FUN_005ae380())
         {
             if (!((FUN_0096a2d0*)result2->Modelloader_GetReferencedThis()))
-                ((FUN_0096a2d0*&)result2->m_pExtraDataLists) = new FUN_0096a2d0;
+                ((FUN_0096a2d0*&)result2->pExtraObjectList) = new FUN_0096a2d0;
             Extra* extra7 = *((FUN_0096a2d0*)source3->Modelloader_GetReferencedThis())->FUN_006815c0();
-            if (extra7->HasOnlyAllowedExtraData(0))
+            if (extra7->ExtraDataList_IsExtraDefaultforContainer(0))
             {
                 FUN_0096a2d0* node5 = ((FUN_0096a2d0*)source3->Modelloader_GetReferencedThis());
                 while (node5 && *node5->FUN_006815c0())
                 {
                     extra7 = *node5->FUN_006815c0();
-                    ((FUN_0096a2d0*&)result2->m_pExtraDataLists)->FUN_00905820(extra7);
+                    ((FUN_0096a2d0*&)result2->pExtraObjectList)->FUN_00905820(extra7);
                     node5 = node5->FUN_00726070();
                 }
             }
             else
             {
-                ((FUN_0096a2d0*&)result2->m_pExtraDataLists)->FUN_005ae3d0(&extra7);
+                ((FUN_0096a2d0*&)result2->pExtraObjectList)->FUN_005ae3d0(&extra7);
             }
         }
         else
         {
             if (((FUN_0096a2d0*)result2->Modelloader_GetReferencedThis()))
             {
-                delete ((FUN_0096a2d0*&)result2->m_pExtraDataLists);
-                ((FUN_0096a2d0*&)result2->m_pExtraDataLists) = 0;
+                delete ((FUN_0096a2d0*&)result2->pExtraObjectList);
+                ((FUN_0096a2d0*&)result2->pExtraObjectList) = 0;
             }
         }
     }
@@ -6796,7 +6808,7 @@ class Holder
 namespace charge4bd {
 struct C4Enchant
 {
-    float GetValue();
+    float ExtraDataList_GetCharge();
 };
 struct C4Node
 {
@@ -6850,7 +6862,7 @@ struct XDism17
     int unk18;
     int unk1c;
     XDism17Arr17 arr;
-    XDism17Part17* GetInfoAt(unsigned int);
+    XDism17Part17* ExtraDismemberedLimbs_GetDismemberedLimb(unsigned int);
 };
 struct XExtra17
 {
@@ -6864,13 +6876,13 @@ struct XExtra17
     bool FUN_004bca60();
     bool ExtraDataList_CompareListForContainer(XExtra17*, int, bool);
     short ExtraDataList_GetCount();
-    void SetHotKey(unsigned char);
+    void ExtraDataList_SetHotKey(unsigned char);
     XDism17* FUN_0042e8c0();
 };
 struct XChange17
 {
     int _ref_00726070();
-    int ItemChange_GetExtraTotalCount(bool);
+    int GetExtraTotalCount(bool);
     void* Modelloader_GetReferencedThis();
     ~XChange17();
 };
@@ -6895,7 +6907,7 @@ struct XFound17
 };
 struct XTQ17
 {
-    void SendCommand22(XActor17*, int);
+    void TaskQueueInterface_QueueRemoveWeapon(XActor17*, int);
 };
 struct XRefr17
 {
@@ -7545,11 +7557,15 @@ struct MoveActorExt : MoveOwner
 const char* __cdecl TESTexture_GetTextureName(TESBoundObject*, MoveOwner*);
 void __cdecl BSsprintf(char*, unsigned int, const char*, const char*, const char*);
 // @fnv 0x004cb5f0
-void InventoryChanges::MoveItemsOfType(TESObjectREFR* source, TESObjectREFR* destination, TESForm* onlyForm)
+// src: XBOX_RETAIL_PDB 0x004cb5f0
+// pdb: InventoryChanges::RemoveStolenItems | InventoryChanges.obj | retail, string-set bridge, high
+// pdb params: apRef, apStolenContainer, apOwner
+// pdb locals: pInventoryItem, pObj, pListInv, bflag, pnext, plistextra, pactor, bextrabad, pnpc, pextra, pfac, plistextranext, pform, pstring, iCount, icon
+void InventoryChanges::RemoveStolenItems(TESObjectREFR* apRef, TESObjectREFR* apStolenContainer, TESForm* apOwner)
 {
     InventoryStackRecord* item = 0;
     TESBoundObject* form = 0;
-    MoveItemNode* itemNode = (MoveItemNode*)m_pEntryList;
+    MoveItemNode* itemNode = (MoveItemNode*)pListofChanges;
     while (itemNode && !itemNode->FUN_008256d0())
     {
 
@@ -7562,8 +7578,8 @@ void InventoryChanges::MoveItemsOfType(TESObjectREFR* source, TESObjectREFR* des
             MoveExtraNode* pExtra = ((MoveExtraNode*)item->Modelloader_GetReferencedThis());
             form = item->FUN_0044ddc0();
             MoveOwner* actor = 0;
-            if (((MoveOwner*)destination)->IsActor())
-                actor = (MoveOwner*)destination;
+            if (((MoveOwner*)apStolenContainer)->IsActor())
+                actor = (MoveOwner*)apStolenContainer;
             if (pExtra && *pExtra->FUN_006815c0())
             {
                 while (pExtra && *pExtra->FUN_006815c0() && !restartItems)
@@ -7582,11 +7598,11 @@ void InventoryChanges::MoveItemsOfType(TESObjectREFR* source, TESObjectREFR* des
                             baseExtraA = original4;
                     }
 
-                    if (!onlyForm || onlyForm == (TESForm*)extra->ExtraDataList_GetOwner())
+                    if (!apOwner || apOwner == (TESForm*)extra->ExtraDataList_GetOwner())
                     {
-                        if (actor && !onlyForm)
-                            onlyForm = (TESForm*)actor->BGSSaveFormBuffer_GetForm();
-                        if (extra->ExtraDataList_GetOwner() && (MoveForm*)extra->ExtraDataList_GetOwner() != (MoveForm*)source &&
+                        if (actor && !apOwner)
+                            apOwner = (TESForm*)actor->BGSSaveFormBuffer_GetForm();
+                        if (extra->ExtraDataList_GetOwner() && (MoveForm*)extra->ExtraDataList_GetOwner() != (MoveForm*)apRef &&
                             (!actor || actor->BGSSaveFormBuffer_GetForm() == baseExtraA ||
                              ((MoveActorExt*)actor)->Actor_IsInFaction(modExtra_2)))
                         {
@@ -7596,7 +7612,7 @@ void InventoryChanges::MoveItemsOfType(TESObjectREFR* source, TESObjectREFR* des
                             else
                                 restartExtras = true;
 
-                            if (onlyForm)
+                            if (apOwner)
                             {
                                 BSStringT<char> formattedItem;
                                 int copies = extra->ExtraDataList_GetCount();
@@ -7618,15 +7634,15 @@ void InventoryChanges::MoveItemsOfType(TESObjectREFR* source, TESObjectREFR* des
                                                       inventoryPlayer->Actor_GetPickUpSoundName(form, false, false), DAT_010162c0,
                                                       0);
                             }
-                            RemoveItem(source, form, false, extra->ExtraDataList_GetCount(), (ExtraDataList*)extra, 0, destination, 0, 0, true,
+                            RemoveItem(apRef, form, false, extra->ExtraDataList_GetCount(), (ExtraDataList*)extra, 0, apStolenContainer, 0, 0, true,
                                          0, 0);
-                            itemNode = (MoveItemNode*)m_pEntryList;
+                            itemNode = (MoveItemNode*)pListofChanges;
                         }
                     }
 
                     if (restartItems)
                     {
-                        itemNode = (MoveItemNode*)m_pEntryList;
+                        itemNode = (MoveItemNode*)pListofChanges;
                         pExtra = 0;
                     }
                     else if (restartExtras)
@@ -7642,7 +7658,7 @@ void InventoryChanges::MoveItemsOfType(TESObjectREFR* source, TESObjectREFR* des
                         if (!pExtra)
                         {
                             if (savedItemNext != itemNode->FUN_00726070())
-                                itemNode = (MoveItemNode*)m_pEntryList;
+                                itemNode = (MoveItemNode*)pListofChanges;
                             else
                                 itemNode = savedItemNext;
                         }
@@ -7652,7 +7668,7 @@ void InventoryChanges::MoveItemsOfType(TESObjectREFR* source, TESObjectREFR* des
             else
             {
                 if (savedItemNext != itemNode->FUN_00726070())
-                    itemNode = (MoveItemNode*)m_pEntryList;
+                    itemNode = (MoveItemNode*)pListofChanges;
                 else
                     itemNode = savedItemNext;
             }
@@ -7660,7 +7676,7 @@ void InventoryChanges::MoveItemsOfType(TESObjectREFR* source, TESObjectREFR* des
         else
         {
             if (savedItemNext != itemNode->FUN_00726070())
-                itemNode = (MoveItemNode*)m_pEntryList;
+                itemNode = (MoveItemNode*)pListofChanges;
             else
                 itemNode = savedItemNext;
         }

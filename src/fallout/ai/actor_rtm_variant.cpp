@@ -199,7 +199,7 @@ struct Process
 
 struct PathMover
 {
-    void GetMovement(NiPoint3* apPos, void* apActor, int aiA, int aiB);
+    void GetMovement(NiPoint3* delta, void* apRef, int applyRot, int zeroZ);
 };
 
 struct LookTarget
@@ -271,12 +271,12 @@ struct LodManager
 struct Havok
 {
     bool bhkRagdollController_QRagdollAnimEnable();
-    void bhkRagdollController_DisableRagdollAnim(int aiValue);
+    void bhkRagdollController_DisableRagdollAnim(int abUpdateConstraints);
 };
 
 struct Ragdoll
 {
-    void bhkRagdollPenetrationUtil_Initialize(NiNode* apRoot, int aiValue);
+    void bhkRagdollPenetrationUtil_Initialize(NiNode* apRoot, int aiGroup);
 };
 
 struct AnimSequence
@@ -287,10 +287,10 @@ struct AnimSequence
 
 struct AnimController
 {
-    bool Animation_GroupLoaded(int aiGroup);
-    void Animation_ForceSection(int aiA, int aiGroup, int aiB, float afC, int aiD);
+    bool Animation_GroupLoaded(int asTestGroup);
+    void Animation_ForceSection(int aeSection, int asNewGroup, int aeNewAction, float afNewTime, int aiSequenceIndex);
     AnimSequence* Animation_GetCurrentSequence(int aiValue);
-    void Animation_Update(void* apActor, float afA, float afB);
+    void Animation_Update(void* ownerObject, float fSecondsPassed, float forceTime);
     void Animation_UpdateMovement(void* apActor);
 };
 
@@ -311,8 +311,8 @@ struct ActorListNodeView
 struct ShaderProp
 {
     struct ShaderData* bhkLimitedHingeConstraint_GetMotor();
-    void bhkLimitedHingeConstraint_SetMotorActive(int aiValue);
-    void bhkLimitedHingeConstraint_SetMotorTargetAngle(float afValue);
+    void bhkLimitedHingeConstraint_SetMotorActive(int abActive);
+    void bhkLimitedHingeConstraint_SetMotorTargetAngle(float afAngle);
 };
 
 struct ShaderData
@@ -346,7 +346,7 @@ struct PropertyHolder
 struct FaceProp
 {
     void ForwardToScriptLocals(int aiValue);
-    void bhkOrientHingedBodyAction_SetTargetDir(AlignedRotation* apRot);
+    void bhkOrientHingedBodyAction_SetTargetDir(AlignedRotation* arDir);
 };
 
 struct GeomData
@@ -391,9 +391,9 @@ struct GeomData
     virtual int FUN_vt94();
     ActorListNodeView* FUN_007d6bb0();
     int bhkRigidBody_GetMotionType();
-    void UpdateMatchingNodes(int aiValue);
+    void UpdateMatchingNodes(int apWorld);
     FormType bhkWorldObject_GetCollisionFilter();
-    void bhkRigidBody_SetActive(int aiValue);
+    void bhkRigidBody_SetActive(int abTF);
 };
 
 struct Geometry
@@ -424,21 +424,21 @@ extern const double DAT_01021798;
 float __cdecl BSFadeNode_GetFadeOutMultiplier(int aiSetting);
 LodManager* __cdecl BSShaderManager_GetAccumulator();
 bool __cdecl Main_GetSceneIsComplex();
-void __cdecl bhkBlendController_DoKnockDown(NiNode* apRoot, NiPoint3* apDir, int aiA, float afB, int aiC);
+void __cdecl bhkBlendController_DoKnockDown(NiNode* apObject, NiPoint3* arDirection, int abKill, float afTime, int abNoForce);
 const char* __cdecl FixedStrings_QBip01Yaw();
 const char* __cdecl FixedStrings_QBip01Pitch();
-NiAVObject* __cdecl BSUtilities_GetObjectByName_004ade00(NiNode* apRoot, const char* apName);
+NiAVObject* __cdecl BSUtilities_GetObjectByName_004ade00(NiNode* apScene, const char* apName);
 void* __cdecl NiObject_DynamicCast(int* apType, int aiObject);
-bool __cdecl bhkRigidBody_IsMotionTypeDynamic(int* apValue);
-void __cdecl bhkWorld_SetMotion(NiAVObject* apObject, int a, int b, int c, int d);
-int __cdecl bhkWorld_Getbhk(int aiValue);
-void __cdecl bhkUtilFunctions_SetLayer(NiNode* apRoot, int aiValue);
+bool __cdecl bhkRigidBody_IsMotionTypeDynamic(int* areMotion);
+void __cdecl bhkWorld_SetMotion(NiAVObject* apObject, int aeType, int abRecurse, int abForce, int abAllowActivate);
+int __cdecl bhkWorld_Getbhk(int apWorld);
+void __cdecl bhkUtilFunctions_SetLayer(NiNode* apObject, int aeLayer);
 float __cdecl NiCos(float afValue);
 float __cdecl NiSin_005c53d0(float afValue);
 void __cdecl BSClamp_float(float* apValue, float afMin, float afMax);
 bool __cdecl AILinearTaskThreadManager_ShouldQueue3DTask();
 FaceAnim* __stdcall FUN_004537b0(Actor* apActor, NiAVObject* apObject);
-void __cdecl SetTlsValueAndReset(NiAVObject* apObject, int aiValue);
+void __cdecl SetTlsValueAndReset(NiAVObject* apObject, int aeMode);
 NiPoint3 __cdecl FUN_004a3760(float afScale, const NiPoint3& arPoint);
 
 
@@ -448,6 +448,9 @@ using namespace ActorUpdate3D;
 
 // @fnv 0x00886cb0
 // src: XBOX_PDB 0x00886cb0
+// pdb: Actor::UpdateMovement | Actor.obj | debug, object-file gap fill, medium
+// pdb params: afDelta, abSleeping
+// pdb locals: fdelta, pcharController, pparent, delta, imoveMode, panim, rot, pbound3d, pfade, fdistance, playerEye, paccum, bound, bfar, ffadeNodeDist, runtest, p3dObj, bshouldHaveRagDoll, pcreature, dr, pseq, ppivot, baddHavokChangeFlag, proot ...
 void Actor::UpdateMovement_00886cb0(float afDelta, int aiUnused)
 {
     DAT_011df69e.FUN_00483710();
@@ -464,10 +467,10 @@ void Actor::UpdateMovement_00886cb0(float afDelta, int aiUnused)
     {
         NiPoint3 kTarget = DAT_011f426c;
         int iTargetFlags = 0;
-        if (!FUN_vt4b4() && !PlaceAtPosition(&kTarget))
+        if (!FUN_vt4b4() && !Actor_GetKnockedDownMovementDelta(&kTarget))
         {
-            iTargetFlags = ((Holder*)m_pActorMover)->FUN_vt20();
-            if (!((Holder*)m_pActorMover)->FUN_vt24(&kTarget))
+            iTargetFlags = ((Holder*)pActorMover)->FUN_vt20();
+            if (!((Holder*)pActorMover)->FUN_vt24(&kTarget))
             {
                 PathMover* pMover = Actor_GetAnimation();
                 if (pMover)
@@ -488,7 +491,7 @@ void Actor::UpdateMovement_00886cb0(float afDelta, int aiUnused)
     }
     if (Actor_IsInCombat())
         UpdateControllerFlag();
-    CombatController* pCombat = m_pBaseProcess ? ((Process*)m_pBaseProcess)->FUN_vt28c() : 0;
+    CombatController* pCombat = pCurrentProcess ? ((Process*)pCurrentProcess)->FUN_vt28c() : 0;
     if (this != DAT_011dea3c)
     {
         NiNode* p3D = GetNiNode();
@@ -527,7 +530,7 @@ void Actor::UpdateMovement_00886cb0(float afDelta, int aiUnused)
     }
     if (pCombat)
         pCombat->bhkCharacterController_SetQuickSimulate(Main_GetSceneIsComplex());
-    if (m_bHasUpdated && FUN_008d8520())
+    if (bDeadFlag && FUN_008d8520())
     {
         NiNode* pRoot = TESObjectREFR_Get3D();
         if (pRoot)
@@ -540,8 +543,8 @@ void Actor::UpdateMovement_00886cb0(float afDelta, int aiUnused)
                 bUpright = false;
             if (m_pRagdollController && ((Havok*)m_pRagdollController)->bhkRagdollController_QRagdollAnimEnable())
                 ((Havok*)m_pRagdollController)->bhkRagdollController_DisableRagdollAnim(1);
-            if (m_pRagdollPenetrationUtil)
-                ((Ragdoll*)m_pRagdollPenetrationUtil)->bhkRagdollPenetrationUtil_Initialize(pRoot, FUN_00931ed0().CFilter_GetGroup());
+            if (pPenetrationDetection)
+                ((Ragdoll*)pPenetrationDetection)->bhkRagdollPenetrationUtil_Initialize(pRoot, FUN_00931ed0().CFilter_GetGroup());
             FUN_008a1800(1);
             Unk_A8();
             if (bUpright)
@@ -552,7 +555,7 @@ void Actor::UpdateMovement_00886cb0(float afDelta, int aiUnused)
                 kForward = static_cast<const NiMatrix3&>(kHeading).operator*(kForward);
                 bhkBlendController_DoKnockDown(pRoot, &kForward, 1, 0.0f, 0);
                 MarkAsModified(4);
-                ((Process*)m_pBaseProcess)->FUN_vt28();
+                ((Process*)pCurrentProcess)->FUN_vt28();
             }
             else
             {
@@ -570,7 +573,7 @@ void Actor::UpdateMovement_00886cb0(float afDelta, int aiUnused)
                     TryMakeTargetThing();
                 }
             }
-            m_bHasUpdated = false;
+            bDeadFlag = false;
         }
     }
     if (GetTurretBehavior() && !HasHealth(0) && !Actor_IsUnConscious())
@@ -1027,59 +1030,62 @@ struct P164Process
 };
 // @fnv 0x008ab3a0
 // src: XBOX_PDB 0x008ab3a0
+// pdb: Actor::LoadGame | Actor.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: eprevLifeState, clifestate, isaveGameCount, iloop, pmod, pinventory, pbipedAnim, icount, parts, i, pitemChange, pwornItem, ppartForm
 void ActorLoadGame::Actor_LoadGame_008ab3a0(P164Buffer* buffer)
 {
     int oldState = GameSettingCollection_File();
     MobileObject_LoadGame(buffer);
-    m_eLifeState = (ACTOR_LIFE_STATE)oldState;
+    eLifeState = (ACTOR_LIFE_STATE)oldState;
     SetWalkRunFlagDirty();
-    buffer->LoadData(&ActorConditionAndAnimationState, 4);
-    ActorConditionAndAnimationState = DAT_011e0e80.ProcessLists_GetSystemTimeClock() - ActorConditionAndAnimationState;
-    buffer->LoadData(&ActorStateFlags, 1);
-    buffer->LoadData(&ActorReferenceData, 1);
-    buffer->LoadData(&m_bFirstActorFlag, 1);
-    buffer->LoadData(&m_bActorFlag, 1);
-    buffer->LoadData(&m_fFirstValueAfterFlag, 4);
-    buffer->LoadData(&m_bSecondBooleanValue, 1);
-    buffer->LoadData(&m_eAnimationGroup, 4);
-    buffer->LoadData(&m_bHasUpdated, 1);
-    buffer->LoadData(&ActorReferenceListData, 1);
-    buffer->LoadData(&ActorBaseConfiguration, 1);
-    buffer->LoadData(&m_bFlagBeforeActorBase, 1);
-    buffer->LoadData(&ActorBaseReference, 1);
-    buffer->LoadData(&m_bSecondActorFlag, 1);
-    buffer->LoadData(&m_iIntegerBeforeTwoFloatValues, 4);
-    buffer->LoadData(&BooleanIntegerTwoFloatData, 4);
-    buffer->LoadData(&IntegerFloatFlagSettings, 4);
-    buffer->LoadData(&m_bFirstFlagAfterForm, 1);
-    buffer->LoadData(&m_bFormFlag, 1);
-    buffer->LoadData(&m_bMiddleFlagBeforeActorMover, 1);
-    buffer->LoadData(&m_iPackageState, 4);
-    buffer->LoadData(&ActorProjectileState, 4);
-    buffer->LoadData(&m_bFlagBeforeTwoBooleans, 1);
-    buffer->LoadData(&m_bMiddleFlag, 1);
+    buffer->LoadData(&fLastUpdate, 4);
+    fLastUpdate = DAT_011e0e80.ProcessLists_GetSystemTimeClock() - fLastUpdate;
+    buffer->LoadData(&bForceRun, 1);
+    buffer->LoadData(&bForceSneak, 1);
+    buffer->LoadData(&bProcessMe, 1);
+    buffer->LoadData(&bMurderAlarm, 1);
+    buffer->LoadData(&fCheckMyDeadBodyTimer, 4);
+    buffer->LoadData(&bTalkingToPlayer, 1);
+    buffer->LoadData(&eQueuedattack, 4);
+    buffer->LoadData(&bDeadFlag, 1);
+    buffer->LoadData(&bForceUpdateQuestTarget, 1);
+    buffer->LoadData(&bEVPBuffered, 1);
+    buffer->LoadData(&bResetAI, 1);
+    buffer->LoadData(&bInWater, 1);
+    buffer->LoadData(&bSwimming, 1);
+    buffer->LoadData(&iActionValue, 4);
+    buffer->LoadData(&fTimeronAction, 4);
+    buffer->LoadData(&fHeadTrackTimer, 4);
+    buffer->LoadData(&bSetOnDeath, 1);
+    buffer->LoadData(&bContainerReset, 1);
+    buffer->LoadData(&bPlayerTeammate, 1);
+    buffer->LoadData(&iEmotion, 4);
+    buffer->LoadData(&iEmotionValue, 4);
+    buffer->LoadData(&bBlockPostAnim, 1);
+    buffer->LoadData(&bReloadTargetQueued, 1);
     if (buffer->GetVersion() >= 8)
-        buffer->LoadData(&m_eCriticalStage, 4);
+        buffer->LoadData(&eCriticalStage, 4);
     if (buffer->GetVersion() >= 9)
     {
-        buffer->LoadData(&m_bActorListValid, 1);
-        buffer->LoadData(&m_iIntegerAfterActorListValid, 4);
-        buffer->LoadData(&ActorStatusData, 1);
-        buffer->LoadData(&m_uiFirstValueAfterInteger, 4);
-        buffer->LoadData(&m_uiActorFlags, 4);
+        buffer->LoadData(&bAttackOnNextTheft, 1);
+        buffer->LoadData(&iThiefCrimeStamp, 4);
+        buffer->LoadData(&bIgnoreCrime, 1);
+        buffer->LoadData(&iMinorCrimes, 4);
+        buffer->LoadData(&iMajorCrimes, 4);
         Actor_SetActorRefEssential(false);
         SetFlag40000000(false);
     }
     if (buffer->GetVersion() >= 13)
-        buffer->LoadData(&m_uiValueBeforeBooleanFields, 4);
-    buffer->FUN_008648e0(&m_pActorReference);
-    m_pActorBase = dynamic_cast<TESActorBase*>(TESForm_GetFormByNumericID(buffer->FUN_008648a0()));
-    buffer->FUN_008648e0(&m_pMobileObject);
+        buffer->LoadData(&iLastSeenTime, 4);
+    buffer->FUN_008648e0(&pMyKiller);
+    pTemplateActorBase = dynamic_cast<TESActorBase*>(TESForm_GetFormByNumericID(buffer->FUN_008648a0()));
+    buffer->FUN_008648e0(&pDialogueItemTarget);
     if (buffer->FUN_00428110().FUN_004280f0(0x400))
     {
         unsigned char lifeState = 0;
         buffer->LoadData(&lifeState, 1);
-        m_eLifeState = (ACTOR_LIFE_STATE)lifeState;
+        eLifeState = (ACTOR_LIFE_STATE)lifeState;
     }
     if (buffer->FUN_00428110().FUN_004280f0(0x80000))
     {
@@ -1089,15 +1095,15 @@ void ActorLoadGame::Actor_LoadGame_008ab3a0(P164Buffer* buffer)
             ActorListEntry* modifier = new ActorListEntry;
             buffer->FUN_008648e0(&modifier->form);
             buffer->LoadData(modifier, 4);
-            ((P164List*)&m_kSecondPointerList)->FUN_005ae3d0(modifier);
+            ((P164List*)&DispModifierList)->FUN_005ae3d0(modifier);
         }
     }
     if (buffer->FUN_00428110().FUN_004280f0(0x800000))
-        ((P164Modifier*)&m_kFirstActorData)->LoadModifiers(buffer);
+        ((P164Modifier*)&pPermanentModifiers)->LoadModifiers(buffer);
     if (buffer->FUN_00428110().FUN_004280f0(0x400000))
-        ((P164Modifier*)&m_kSecondActorData)->LoadModifiers(buffer);
-    ((P164Mover*)m_pActorMover)->Load(buffer);
-    if (Get3DSimple() && m_pBaseProcess)
+        ((P164Modifier*)&pBaseValueOverrides)->LoadModifiers(buffer);
+    ((P164Mover*)pActorMover)->Load(buffer);
+    if (Get3DSimple() && pCurrentProcess)
     {
         P164Biped* inventory = ((P164Biped*)GetValidBip01Names());
         P164Inventory* biped = FUN_004bf220(this);
@@ -1119,7 +1125,7 @@ void ActorLoadGame::Actor_LoadGame_008ab3a0(P164Buffer* buffer)
                 }
                 if (current != equipped)
                 {
-                    ((P164Process*)m_pBaseProcess)->Update(true);
+                    ((P164Process*)pCurrentProcess)->Update(true);
                     break;
                 }
                 delete item;
@@ -1130,11 +1136,11 @@ void ActorLoadGame::Actor_LoadGame_008ab3a0(P164Buffer* buffer)
         {
             P164Item* weapon = biped->InventoryChanges_GetWornItem(5, 0);
             TESForm* weaponForm = weapon ? weapon->FUN_0044ddc0() : 0;
-            if (((P164Process*)m_pBaseProcess)->GetLoadedForm() &&
-                ((P164Process*)m_pBaseProcess)->GetLoadedForm()->FUN_0044ddc0() != weaponForm)
-                ((P164Process*)m_pBaseProcess)->Update(true);
+            if (((P164Process*)pCurrentProcess)->GetLoadedForm() &&
+                ((P164Process*)pCurrentProcess)->GetLoadedForm()->FUN_0044ddc0() != weaponForm)
+                ((P164Process*)pCurrentProcess)->Update(true);
         }
     }
-    if (!HasHealth(false) && m_eCriticalStage != 0)
-        m_eCriticalStage = (ACTOR_CRITICAL_STAGE)0;
+    if (!HasHealth(false) && eCriticalStage != 0)
+        eCriticalStage = (ACTOR_CRITICAL_STAGE)0;
 }

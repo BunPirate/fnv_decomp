@@ -209,14 +209,14 @@ struct Ref
     bool FUN_00440da0();
     ExtraList* BSFile_GetDevice();
     void TESObjectREFR_CleanUpTraps();
-    void TESForm_SetDisabled(int a);
+    void TESForm_SetDisabled(int abDisabled);
     Proc* FUN_008d8520();
-    void ApplyActorSpells();
+    void Actor_DispelPermanentMagic();
     Ref* FUN_008d6f30();
     bool TESObjectREFR_HasScript();
     bool GetTargeted();
     void PlayerCharacter_RemoveActorFromPlayercombatList(Ref* a);
-    void PlayerCharacter_RemovePerceivedActor(Ref* a);
+    void PlayerCharacter_RemovePerceivedActor(Ref* apActor);
     void PlayerCharacter_CheckForQuestTargetUpdate(Ref* a);
     int FUN_00931850();
     bool MobileObject_IsTalkingActivator();
@@ -229,11 +229,11 @@ struct Ref
     void TESForm_SetDisableFade(int a);
     void TESObjectREFR_Enable();
     void TESObjectREFR_MarkAsDeleted();
-    void TESObjectREFR_AttachSound(bool a);
+    void TESObjectREFR_AttachSound(bool abAttach);
     Ref* BGSSaveFormBuffer_GetForm();
     void TESObjectREFR_Disable();
     void DoDeathStuff();
-    void TESObjectCELL_AddScriptedRef(Ref* a);
+    void TESObjectCELL_AddScriptedRef(Ref* apRef);
     bool TESForm_GetHasSpokenFlag();
 };
 struct ExtraList
@@ -241,7 +241,7 @@ struct ExtraList
     Ref* ExtraDataList_GetAshPileRef();
     bool ExtraDataList_ShouldPopInWhenEnabledByParent();
     void* ExtraDataList_GetDroppedItemList();
-    void ExtraDataList_SetItemDropper(Ref* a);
+    void ExtraDataList_SetItemDropper(Ref* apDropper);
 };
 struct Iter
 {
@@ -567,7 +567,7 @@ struct ObjX
 {
     void TESObjectREFR_SetMarkerUsed(int a);
     ObjX* FUN_00586170();
-    void FUN_006fcfa0();
+    void HideTree();
 };
 struct Tes
 {
@@ -576,8 +576,8 @@ struct Tes
 struct GlobalObj
 {
     void RemoveActor(Ref* a);
-    void ProcessLists_RemoveReference(Ref* a, int b);
-    void ProcessLists_NullOutTargetRef(Ref* a, int b);
+    void ProcessLists_RemoveReference(Ref* apActor, int aWhichList);
+    void ProcessLists_NullOutTargetRef(Ref* apRef, int abDeleted);
 };
 extern Ref* DAT_011dea3c;
 extern Ref* DAT_011ca27c;
@@ -590,6 +590,8 @@ void __cdecl FalloutRadio_DisableNPCRadio(Ref* a);
 
 // @fnv 0x00574400
 // src: COMMUNITY 0x00574400
+// pdb: TESObjectREFR::Disable | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pashpileref, plist, pdroplist, pmob, pact, pactor, pchild, pdropref
 void Ref::TESObjectREFR_Disable()
 {
     Ref* p;
@@ -635,7 +637,7 @@ void Ref::TESObjectREFR_Disable()
                             if (p->vt100())
                             {
                                 q = p;
-                                q->ApplyActorSpells();
+                                q->Actor_DispelPermanentMagic();
                                 ((MagicSub*)((char*)q + 0x94))->FUN_00824970();
                                 if (ArrowProjectile_GetArrowCount() > 0)
                                 {
@@ -714,7 +716,7 @@ void Ref::TESObjectREFR_Disable()
                     }
                     if (BGSSaveFormBuffer_GetForm()->TESForm_GetHasSpokenFlag())
                     {
-                        DAT_011dea10->FUN_004fd3e0(this, 1)->FUN_00586170()->FUN_006fcfa0();
+                        DAT_011dea10->FUN_004fd3e0(this, 1)->FUN_00586170()->HideTree();
                     }
                     TESObjectREFR_SetLoadedDataFlag(1, 0);
                     DAT_011dea3c->PlayerCharacter_CheckForQuestTargetUpdate(this);
@@ -785,7 +787,10 @@ void Callee_007ebd50();
 
 // @fnv 0x007f6a20
 // src: XBOX_PDB 0x007f6a20
-void __cdecl VATSMenu_RemoveTarget(int a1)
+// pdb: VATSMenu::RemoveTarget | VATSMenu.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: plist, pcurrItem
+void __cdecl VATSMenu_RemoveTarget(int apRef)
 {
     if (DAT_011db150.Probe())
     {
@@ -794,9 +799,9 @@ void __cdecl VATSMenu_RemoveTarget(int a1)
     PathingdebuggeometryListNodeView* pNode = &DAT_011db150;
     while (pNode != 0 && !pNode->Probe())
     {
-        if ((*(int**)pNode->GetData())[0] == a1)
+        if ((*(int**)pNode->GetData())[0] == apRef)
         {
-            if (DAT_011f21cc == a1 && DAT_011db0d4 != 0)
+            if (DAT_011f21cc == apRef && DAT_011db0d4 != 0)
             {
                 ((EventTarget*)DAT_011db0d4)->v0c(2, 0);
             }

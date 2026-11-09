@@ -89,10 +89,12 @@ struct __declspec(align(16)) hkpShapeBuffer
 // @fnv 0x00e48510
 hkBool hkpRemoveTerminalsMoppModifier::shouldTerminalBeRemoved(hkUint32 id, const hkUint32* properties) throw()
 {
-    return m_pTerminalIdsToRemove->indexOf(id) >= 0;
+    return m_tempShapesToRemove->indexOf(id) >= 0;
 }
 
 // @fnv 0x00e48550
+// pdb: hkpRemoveTerminalsMoppModifier2::shouldTerminalBeRemoved | hkpRemoveTerminalsMoppModifier.obj | debug, upstream name already matches, high
+// pdb params: id, properties
 hkBool hkpRemoveTerminalsMoppModifier2::shouldTerminalBeRemoved(hkUint32 id, const hkUint32* properties) throw()
 {
     return !m_enabledKeys->get(static_cast<int>(id));
@@ -105,9 +107,11 @@ struct PackedTerminalRemoveInfo
 };
 
 // @fnv 0x00e48580
+// pdb: hkpRemoveTerminalsMoppModifier::addTerminalRemoveInfo | hkpRemoveTerminalsMoppModifier.obj | retail, upstream name already matches, high
+// pdb params: relativeMoppAddress
 void hkpRemoveTerminalsMoppModifier::addTerminalRemoveInfo(int relativeMoppAddress) throw()
 {
-    hkArray<hkUint32>* arr = &m_kRemovedTerminalIds;
+    hkArray<hkUint32>* arr = &m_removeInfo;
     hkMemoryRouter& router = hkMemoryRouter_getInstance();
     if (arr->m_iElementCount == (int)(arr->m_iCapacityState & 0x3fffffff))
     {
@@ -127,42 +131,49 @@ inline hkUint32 shapeKey(const hkArray<hkUint32>& shapes, int i)
 }
 
 // @fnv 0x00e485d0
+// pdb: hkpRemoveTerminalsMoppModifier::hkpRemoveTerminalsMoppModifier | hkpRemoveTerminalsMoppModifier.obj | retail, object-file gap fill, high
+// pdb params: moppCode, shapeContainer, shapesToRemove
+// pdb locals: aabb, shapeBuffer, localAabb
 hkpRemoveTerminalsMoppModifier::hkpRemoveTerminalsMoppModifier(
-    const hkpMoppCode* code, const hkpShapeContainer* container, const hkArray<hkUint32>& shapesToRemove) throw()
+    const hkpMoppCode* moppCode, const hkpShapeContainer* shapeContainer, const hkArray<hkUint32>& shapesToRemove) throw()
 {
     if (shapesToRemove.GetLogicalSize() != 0)
     {
         hkAabb aabb;
         hkpShapeBuffer buffer;
         {
-            const hkpShape* shape = container->GetShapeForKey(shapeKey(shapesToRemove, 0), buffer);
+            const hkpShape* shape = shapeContainer->GetShapeForKey(shapeKey(shapesToRemove, 0), buffer);
             shape->CalculateAabb(DAT_01268370, 0.0f, aabb);
         }
         for (int i = 1; i < shapesToRemove.GetLogicalSize(); i++)
         {
-            const hkpShape* shape = container->GetShapeForKey(shapeKey(shapesToRemove, i), buffer);
+            const hkpShape* shape = shapeContainer->GetShapeForKey(shapeKey(shapesToRemove, i), buffer);
             hkAabb nextAabb;
             shape->CalculateAabb(DAT_01268370, 0.0f, nextAabb);
             aabb.m_kMinimumCorner.setMin4(aabb.m_kMinimumCorner, nextAabb.m_kMinimumCorner);
             aabb.m_kMaximumCorner.setMax4(aabb.m_kMaximumCorner, nextAabb.m_kMaximumCorner);
         }
-        m_pTerminalIdsToRemove = &shapesToRemove;
-        ConstructTemporaryObject(code, aabb, this);
-        m_pTerminalIdsToRemove = 0;
+        m_tempShapesToRemove = &shapesToRemove;
+        ConstructTemporaryObject(moppCode, aabb, this);
+        m_tempShapesToRemove = 0;
     }
 }
 
 // @fnv 0x00e486e0
+// pdb: hkpRemoveTerminalsMoppModifier::hkpRemoveTerminalsMoppModifier | hkpRemoveTerminalsMoppModifier.obj | retail, object-file gap fill, high
+// pdb params: moppCode, shapeContainer, shapesToRemove
+// pdb locals: aabb, shapeBuffer, localAabb
 hkpRemoveTerminalsMoppModifier::hkpRemoveTerminalsMoppModifier(
-    const hkpMoppCode* code, const hkAabb& aabb, const hkArray<hkUint32>& shapesToRemove) throw()
+    const hkpMoppCode* moppCode, const hkAabb& aabb, const hkArray<hkUint32>& shapesToRemove) throw()
 {
-    m_pTerminalIdsToRemove = &shapesToRemove;
-    ConstructTemporaryObject(code, aabb, this);
-    m_pTerminalIdsToRemove = 0;
+    m_tempShapesToRemove = &shapesToRemove;
+    ConstructTemporaryObject(moppCode, aabb, this);
+    m_tempShapesToRemove = 0;
 }
 
 // 0x00e48740 restores 0x010e8894, the hkpMoppModifier vfptr; its old listener stand-in was misidentified.
 // @fnv 0x00e48740
+// pdb: hkpRemoveTerminalsMoppModifier::~hkpRemoveTerminalsMoppModifier | hkpRemoveTerminalsMoppModifier.obj | retail, upstream name already matches, high
 hkpRemoveTerminalsMoppModifier::~hkpRemoveTerminalsMoppModifier() throw()
 {}
 
@@ -173,6 +184,9 @@ struct __declspec(align(16)) FUN_00e67230_Obj
 };
 
 // @fnv 0x00e5d040
+// pdb: hkMoppModifyVirtualMachine_queryAabb | hkpMoppMachine.obj | retail, object-file run extension, low
+// pdb params: code, aabb, modifierOut
+// pdb locals: machine
 void __cdecl ConstructTemporaryObject(int a1, int a2, int a3)
 {
     FUN_00e67230_Obj tmp;

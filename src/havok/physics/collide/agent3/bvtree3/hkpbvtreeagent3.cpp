@@ -6,9 +6,9 @@ extern "C" void __cdecl Object_HkAgent1nMachine_Destroy_Thunk(void*);
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 void* __cdecl InitAndReturnTail(void*, void*, void*);
-void __fastcall hkBvTreeAgent3_process(void* self, int, void*, int);
+void __fastcall hkBvTreeAgent3_process(void* input, int, void*, int);
 void __fastcall CallWithValueSource(void* self, int, int, int);
-void __fastcall hkBvTreeAgent3_ProcessState_00d2d430(void* self, int, int, int);
+void __fastcall hkBvTreeAgent3_calcStatistics(void* entry, int, int, int);
 void __fastcall Object__hkAgent1nMachine_WarpTime_Thunk(void* self, int, int, int);
 // @fnv 0x00d2d9d0
 // src: GUESS 0x00d2d9d0 (confidence: low)
@@ -22,7 +22,7 @@ void hkBvTreeAgent3_process_UpdateState_00d2d9d0(void* pObject)
     *(int*)((char*)pObject + 0x10) = 0;
     *(int*)((char*)pObject + 0x14) = 0;
     *(void**)((char*)pObject + 0x18) = (void*)&CallWithValueSource;
-    *(void**)((char*)pObject + 0x1c) = (void*)&hkBvTreeAgent3_ProcessState_00d2d430;
+    *(void**)((char*)pObject + 0x1c) = (void*)&hkBvTreeAgent3_calcStatistics;
     *(int*)((char*)pObject + 0x20) = (int)&Object_ForwardCall_00d2d460;
     *(void**)((char*)pObject + 0x24) = (void*)&Object__hkAgent1nMachine_WarpTime_Thunk;
     *(int*)((char*)pObject + 4) = (int)&Object_HkAgent1nMachine_Destroy_Thunk;
@@ -64,6 +64,8 @@ struct LessU32
 
 // Partitions pArr[d..h] around a middle pivot using cmpLess, swapping out-of-order elements, then recurses on the left part and loops on the right.
 // @fnv 0x00d2da70
+// pdb: hkAlgorithm::quickSortRecursive<unsigned int,hkAlgorithm::less<unsigned int> > | hkpBvTreeAgent3.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
 extern "C" void __cdecl QuickSortRange(unsigned* auiArray, int aiLow, int aiHigh, LessU32 aComparator)
 {
 setpoint:
@@ -122,6 +124,9 @@ void __cdecl hkAgent1nMachine_UpdateShapeCollectionFilter(void* a, void* b);
 
 // Calls f4 on the ValueSource, fills a CallBuf with the arguments and result, then passes it to FUN_00da48e0 with p2.
 // @fnv 0x00d2d3e0
+// pdb: hkBvTreeAgent3::updateFilter | hkpBvTreeAgent3.obj | retail, object-file run extension, low
+// pdb params: entry, agentData, bodyA, bodyB, input, mgr, constraintOwner
+// pdb locals: vin
 void __cdecl CallWithValueSource(void* apUnused, void* p2, int aiArg0, ValueSource** apValueSource, int aiArg1,
                                  int aiArg2, int aiArg3)
 {
@@ -195,12 +200,14 @@ extern "C" void __cdecl hkpAgent1nSector_ProcessEntries_00da3510(int, int);
 
 // Calls p->f6 with the type name hkBvTreeAgent3, then FUN_00d97250 with a2, a3 and p, then p->f7().
 // @fnv 0x00d2d430
-// src: GUESS 0x00d2d430 (confidence: low)
-void __cdecl hkBvTreeAgent3_ProcessState_00d2d430(int a1, int a2, int a3, Agent* pAgent)
+// src: XBOX_RETAIL_PDB 0x00d2d430
+// pdb: hkBvTreeAgent3::calcStatistics | hkpBvTreeAgent3.obj | retail, string-set bridge, high
+// pdb params: entry, agentData, input, collector
+void __cdecl hkBvTreeAgent3_calcStatistics(int entry, int agentData, int input, Agent* collector)
 {
-    pAgent->f6("hkBvTreeAgent3");
-    hkpAgentMachineUtil_calc1nStatistics(a2, a3, pAgent);
-    pAgent->f7();
+    collector->f6("hkBvTreeAgent3");
+    hkpAgentMachineUtil_calc1nStatistics(agentData, input, collector);
+    collector->f7();
 }
 
 // src: GUESS 0x00d2d460 (confidence: low)
@@ -252,7 +259,7 @@ struct __declspec(align(16)) S00d2d890_Local
     int b0f;
     S00d2d890_Local()
     {}
-    void hkTransform_setInverse(void* a);
+    void hkTransform_setInverse(void* t);
 };
 struct S00d2d890_Hits
 {
@@ -399,14 +406,17 @@ struct S00d2d890_Obj
     int unk0c;
 };
 char** hkMemoryRouter_getInstance();
-int hkpCdBody_UpdateState_00d2d4f0(int a, int b, S00d2d890_Local* l, void* c, int d, int e, char* f, int g);
+int hkBvTreeAgent3_calcAabbAndQueryTree(int a, int b, S00d2d890_Local* l, void* c, int d, int e, char* f, int g);
 int Hkpbvtreeagent3_ForwardCall_00d2d4b0(int a, S00d2d890_Hits* h);
 int hkAgent1nMachine_Process(int a, void* b, int c, char* d, int e);
 
 // Takes 0x4000 bytes from an arena, calls FUN_00d2d4f0, FUN_00d2d4b0 and FUN_00da4aa0 between timing markers, restores the arena and returns child + 0x10.
 // @fnv 0x00d2d890
 // src: HAVOK_LIB 0x00d2d890
-char* __cdecl hkBvTreeAgent3_process(char* self, int a1, char* child, int a3, int a4)
+// pdb: hkBvTreeAgent3::process | hkpBvTreeAgent3.obj | retail, upstream name already matches, high
+// pdb params: input, entry, agentData, separatingNormal, output
+// pdb locals: bTa, assertBuf, ostr
+char* __cdecl hkBvTreeAgent3_process(char* input, int entry, char* agentData, int separatingNormal, int output)
 {
     volatile unsigned int tb;
     S00d2d890_Buf* t = (S00d2d890_Buf*)TlsGetValue(DAT_0126835c);
@@ -424,13 +434,13 @@ char* __cdecl hkBvTreeAgent3_process(char* self, int a1, char* child, int a3, in
     char* mark = *arena;
     *arena = mark + 0x4000;
     S00d2d890_Local loc;
-    loc.hkTransform_setInverse(self + 0x20);
+    loc.hkTransform_setInverse(input + 0x20);
     S00d2d890_Hits hits;
-    int c = *(int*)(self + 0xc);
-    int p1 = *(int*)(self + 4);
-    int p0 = *(int*)self;
-    int numHits = hkpCdBody_UpdateState_00d2d4f0(p0, p1, &loc, self + 0x70, c, 0, mark, 0x1000);
-    int tree = *(int*)(self + 4);
+    int c = *(int*)(input + 0xc);
+    int p1 = *(int*)(input + 4);
+    int p0 = *(int*)input;
+    int numHits = hkBvTreeAgent3_calcAabbAndQueryTree(p0, p1, &loc, input + 0x70, c, 0, mark, 0x1000);
+    int tree = *(int*)(input + 4);
     int r4b = Hkpbvtreeagent3_ForwardCall_00d2d4b0(tree, &hits);
 
     t = (S00d2d890_Buf*)TlsGetValue(DAT_0126835c);
@@ -444,7 +454,7 @@ char* __cdecl hkBvTreeAgent3_process(char* self, int a1, char* child, int a3, in
         t->cur = (char*)(r + 1);
     }
     char* cond = numHits < 0 ? 0 : mark;
-    hkAgent1nMachine_Process((int)child, self, (*(volatile int*)&r4b), cond, a4);
+    hkAgent1nMachine_Process((int)agentData, input, (*(volatile int*)&r4b), cond, output);
     t = (S00d2d890_Buf*)TlsGetValue(DAT_0126835c);
     if (t->cur < t->end)
     {
@@ -456,12 +466,12 @@ char* __cdecl hkBvTreeAgent3_process(char* self, int a1, char* child, int a3, in
         t->cur = (char*)(r + 1);
     }
     *hkMemoryRouter_getInstance() = mark;
-    return child + 0x10;
+    return agentData + 0x10;
 }
 
 struct FUN_00cfbd60_Obj
 {
-    void AddEntry(void* a1, int a2, int a3);
+    void hkpCollisionDispatcher_registerAgent3(void* f, int typeA, int typeB);
 };
 __declspec(noinline) void hkBvTreeAgent3_process_UpdateState_00d2d9d0(void* pObject);
 
@@ -498,9 +508,12 @@ struct __declspec(align(16)) S_00d2da20_AgentFuncs
 // Builds an S_00d2da20_AgentFuncs with FUN_00d2d9d0, then passes it to target->FUN_00cfbd60 with -1 and 8.
 // @fnv 0x00d2da20
 // src: HAVOK_LIB 0x00d2da20
-void hkBvTreeAgent3_registerAgent3(FUN_00cfbd60_Obj* target)
+// pdb: hkBvTreeAgent3::registerAgent3 | hkpBvTreeAgent3.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: f
+void hkBvTreeAgent3_registerAgent3(FUN_00cfbd60_Obj* dispatcher)
 {
     S_00d2da20_AgentFuncs agentFuncs;
     hkBvTreeAgent3_process_UpdateState_00d2d9d0(&agentFuncs);
-    target->AddEntry(&agentFuncs, -1, 8);
+    dispatcher->hkpCollisionDispatcher_registerAgent3(&agentFuncs, -1, 8);
 }

@@ -4,6 +4,7 @@
 #include "hkStringPtr.h"
 #include "hkaAnimation.h"
 
+// pdb: class hkpFirstPersonGun, size 0x20, bases: hkReferencedObject, 4 members
 class hkpFirstPersonGun : public hkReferencedObject
 {
 public:
@@ -52,7 +53,7 @@ public:
     unsigned char m_type;
     char pad9[3];
     hkStringPtr m_name;
-    unsigned char m_uiKeyboardKey;
+    unsigned char m_keyboardKey;
     char pad11[3];
-    hkArray<void*> m_kListeners;
+    hkArray<void*> m_listeners;
 };

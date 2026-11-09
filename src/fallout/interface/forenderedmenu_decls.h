@@ -36,7 +36,7 @@ class TimeGlobal
 
 extern TimeGlobal g_timeGlobal;
 extern bool g_burstSoundEnabled;
-bool __cdecl RandomBoolean(float chance);
+bool __cdecl RandomBoolean(float afPercentTrue);
 
 class ShadowSceneLight;
 class NiLight;

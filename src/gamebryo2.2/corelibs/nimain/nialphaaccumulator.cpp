@@ -76,6 +76,8 @@ struct FUN_00a43350_shell
 };
 // @fnv 0x00a43350
 // src: XBOX_PDB 0x00a43350
+// pdb: BSTreadTransfInterpolator::GetKeyContent | BSTreadTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
 unsigned int FUN_00a43350_shell::BSTreadTransfInterpolator_GetKeyContent(unsigned short usChannel)
 {
     return usChannel ? 6 : 0;
@@ -85,13 +87,13 @@ struct GlobalObjectO2_00a7b610
 {
     char c;
 };
-extern GlobalObjectO2_00a7b610 g_011f3ed8;
+extern GlobalObjectO2_00a7b610 BSTreadTransfInterpolator_ms_RTTI;
 // Returns the address of the global object g_011f3ed8.
 // @fnv 0x00a43360
 // src: COMMUNITY 0x00a43360
 GlobalObjectO2_00a7b610* __cdecl BSTreadTransfInterpolator_GetRTTI()
 {
-    return &g_011f3ed8;
+    return &BSTreadTransfInterpolator_ms_RTTI;
 }
 
 struct FUN_00a43450_fs
@@ -156,6 +158,9 @@ struct FUN_00a43450_shell : FUN_00aa0ad0_base
 // Calls the base register, then registers each link's name string and the data object's streamables with the stream; returns the base result.
 // @fnv 0x00a43450
 // src: XBOX_PDB 0x00a43450
+// pdb: BSTreadTransfInterpolator::RegisterStreamables | BSTreadTransfInterpolator.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: bret, ui
 bool FUN_00a43450_shell::BSTreadTransfInterpolator_RegisterStreamables(FUN_00a43450_stream* arStream)
 {
     bool bret = BSPackedAdditionalGeometryData_RegisterStreamables(arStream);
@@ -173,6 +178,8 @@ bool FUN_00a43450_shell::BSTreadTransfInterpolator_RegisterStreamables(FUN_00a43
 // The base equality thunk returns a byte, which the alpha override normalizes.
 char __stdcall NiBackToFrontAccumulator_IsEqual(NiObject*);
 // @fnv 0x00a9b510
+// pdb: NiAlphaAccumulator::IsEqual | NiAlphaAccumulator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
 bool NiAlphaAccumulator::IsEqual(NiObject* pkObject) const
 {
     bool b = NiBackToFrontAccumulator_IsEqual(pkObject) != 0;
@@ -354,9 +361,12 @@ struct FUN_00a9b850_Obj
 };
 
 // @fnv 0x00a9b850
-bool NiAlphaAccumulator::RegisterObject(NiGeometry* pkObject)
+// pdb: NiAlphaAccumulator::RegisterObject | NiAlphaAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apGeometry
+// pdb locals: pkState, pkRenderer, pkAlpha
+bool NiAlphaAccumulator::RegisterObject(NiGeometry* apGeometry)
 {
-    FUN_00a9b850_Obj*& pObject = reinterpret_cast<FUN_00a9b850_Obj*&>(pkObject);
+    FUN_00a9b850_Obj*& pObject = reinterpret_cast<FUN_00a9b850_Obj*&>(apGeometry);
     FUN_00a9b850_Prop* p = pObject->m9c;
     int g = DAT_011f4748;
     if ((p->unk18 & 1) && (!m_bObserveNoSortHint || !((unsigned char)(p->unk18w >> 13) & 1)) &&
@@ -394,6 +404,8 @@ bool FUN_00a43340::IsEqual(const FUN_00a43340& apObject)
 void __cdecl NiKeyBasedInterpolator_LoadBinary();
 // @fnv 0x00a9b4f0
 // src: XBOX_PDB 0x00a9b4f0
+// pdb: NiAlphaAccumulator::LoadBinary | NiAlphaAccumulator.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiAlphaAccumulator_LoadBinary()
 {
     NiKeyBasedInterpolator_LoadBinary();
@@ -402,6 +414,8 @@ void __cdecl NiAlphaAccumulator_LoadBinary()
 void __cdecl BSPackedAdditionalGeometryData_RegisterStreamables();
 // @fnv 0x00a9b500
 // src: XBOX_PDB 0x00a9b500
+// pdb: NiAlphaAccumulator::RegisterStreamables | NiAlphaAccumulator.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiAlphaAccumulator_RegisterStreamables()
 {
     BSPackedAdditionalGeometryData_RegisterStreamables();
@@ -510,6 +524,8 @@ static inline NiGeometry* const& GetNext(ItemListNode*& pos)
 }
 
 // @fnv 0x00a9b570
+// pdb: NiAlphaAccumulator::Sort | NiAlphaAccumulator.obj | retail, upstream name already matches, high
+// pdb locals: pkPos, kViewDir, i
 void NiAlphaAccumulator::Sort()
 {
     if (!m_kItemsToSortAndRender)
@@ -733,6 +749,9 @@ static inline void AddTail(NiAlphaAccumulator* self, S00a9b790_NiGeometry* pkObj
 }  // namespace fnv_00a9b790
 
 // @fnv 0x00a9b790
+// pdb: NiAlphaAccumulator::RegisterObjectArray | NiAlphaAccumulator.obj | retail, upstream name already matches, high
+// pdb params: kArray
+// pdb locals: pkRenderer, uiQuantity, i, pkState, kObject, pkAlpha
 void NiAlphaAccumulator::RegisterObjectArray(NiVisibleArray* array)
 {
     using namespace fnv_00a9b790;
@@ -759,6 +778,9 @@ extern unsigned int kVtbl_NiAlphaAccumulator;
 
 // Allocates a NiAlphaAccumulator clone, initializes it, copies skip flags, and returns the new object.
 // @fnv 0x00a9b730
+// pdb: NiAlphaAccumulator::CreateClone | NiAlphaAccumulator.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiAlphaAccumulator::MakeClone(CloningProcess& cloning)
 {
     NiAlphaAccumulator* clone = (NiAlphaAccumulator*)Object_DispatchCommandFour(sizeof(NiAlphaAccumulator));

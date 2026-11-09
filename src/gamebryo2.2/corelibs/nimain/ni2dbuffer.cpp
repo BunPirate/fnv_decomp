@@ -13,35 +13,40 @@ inline bool Ni2DBuffer::IsKindOfType(const NiRTTI* target) const
     {
         if (type == target)
             return true;
-        type = type->m_pBaseRTTI;
+        type = type->m_pkBaseRTTI;
     }
     return false;
 }
 
 // Creates the renderer data if missing, then asks the renderer to create a depth-stencil surface for this buffer; returns false on failure.
 // @fnv 0x00a8f200
-bool Ni2DBuffer::CreateRendererData(const NiPixelFormat& format, MultiSamplePreference preference)
+// pdb: Ni2DBuffer::CreateRendererData | Ni2DBuffer.obj | retail, upstream name already matches, high
+// pdb params: kFormat, eMSAAPref
+// pdb locals: pkRenderer, pkDSBuffer
+bool Ni2DBuffer::CreateRendererData(const NiPixelFormat& kFormat, MultiSamplePreference eMSAAPref)
 {
-    if (!m_pRendererData)
+    if (!m_spRendererData)
     {
-        if (!IsKindOfType(&DAT_011f603c))
+        if (!IsKindOfType(&NiDepthStencilBuffer_ms_RTTI))
             return false;
         NiRenderer* renderer = NiRenderer::ms_pRenderer;
         // CreateDepthStencil is slot 85; the shared renderer does not yet declare it.
         typedef bool (__thiscall *CreateDepthStencilFunction)(NiRenderer*, Ni2DBuffer*,
             const NiPixelFormat&, MultiSamplePreference);
         if (renderer && !reinterpret_cast<CreateDepthStencilFunction>(
-                (*reinterpret_cast<void***>(renderer))[85])(renderer, this, format, preference))
+                (*reinterpret_cast<void***>(renderer))[85])(renderer, this, kFormat, eMSAAPref))
             return false;
     }
     return true;
 }
 
-bool __stdcall IsSameAs(NiObject* pkObject);
+bool __stdcall IsSameAs(NiObject* pObject);
 
 bool __stdcall Ni2DBuffer_IsEqual(NiObject* pkObject);
 // @fnv 0x00a88a50
 // src: XBOX_PDB 0x00a88a50
+// pdb: Ni2DBuffer::IsEqual | Ni2DBuffer.obj | retail, upstream name already matches, high
+// pdb params: pkObject
 bool __stdcall Ni2DBuffer_IsEqual(NiObject* pkObject)
 {
     if (IsSameAs(pkObject))
@@ -69,10 +74,12 @@ struct RendererDataPtr
 extern int DAT_0109f4dc;
 void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 // @fnv 0x00a8f330
+// pdb: Ni2DBuffer::`scalar deleting destructor' | Ni2DBuffer.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Ni2DBuffer::CreateObject
 Ni2DBuffer* __fastcall DestroyNi2DBuffer(Ni2DBuffer* self, int unused, unsigned char flags)
 {
     *reinterpret_cast<void**>(self) = &DAT_0109f4dc;
-    reinterpret_cast<RendererDataPtr*>(&self->m_pRendererData)->~RendererDataPtr();
+    reinterpret_cast<RendererDataPtr*>(&self->m_spRendererData)->~RendererDataPtr();
     self->NiRefObject::~NiRefObject();
     if (flags & 1)
         __Dummy_00b6fef0(self, 0x14);
@@ -80,20 +87,23 @@ Ni2DBuffer* __fastcall DestroyNi2DBuffer(Ni2DBuffer* self, int unused, unsigned 
 }
 
 // @fnv 0x00a8f0a0
+// pdb: D3DDevice::SynchronizeToPresentationInterval | NiXenon2DBufferData.obj | debug, object-file run extension, low
 bool Ni2DBuffer::CopyRectTo(Ni2DBuffer* pkDest, void* pkSrcRect, unsigned int uiDestX, unsigned int uiDestY)
 {
     NiRenderer* pkRenderer = NiRenderer::ms_pRenderer;
-    if (m_pRendererData == 0 || pkRenderer == 0 || pkDest->m_pRendererData == 0)
+    if (m_spRendererData == 0 || pkRenderer == 0 || pkDest->m_spRendererData == 0)
         return false;
     return pkRenderer->FastCopy(this, pkDest, static_cast<const NiRect<unsigned int>*>(pkSrcRect), uiDestX, uiDestY);
 }
 
 // If this, the renderer and pkDest all have a renderer pointer, forwards to the renderer's copy call with the rects and preference; otherwise returns false.
 // @fnv 0x00a8f0f0
+// pdb: D3DDevice::Swap | NiXenon2DBufferData.obj | debug, object-file run extension, low
+// pdb params: pFrontBuffer, pParameters
 bool Ni2DBuffer::CopySurface(Ni2DBuffer* pkDest, void* pkSrcRect, void* pkDestRect, int ePref)
 {
     NiRenderer* pkRenderer = NiRenderer::ms_pRenderer;
-    if (m_pRendererData != 0 && pkRenderer != 0 && pkDest->m_pRendererData != 0)
+    if (m_spRendererData != 0 && pkRenderer != 0 && pkDest->m_spRendererData != 0)
         return pkRenderer->Copy(this, pkDest, static_cast<NiRect<unsigned int>*>(pkSrcRect),
                                 static_cast<NiRect<unsigned int>*>(pkDestRect), static_cast<unsigned int>(ePref));
     return false;
@@ -105,6 +115,9 @@ extern char const* const g_011f603c_arg1;
 char* _FUN_00a7d330(char const*);
 // Calls the base handler, obtains a string from g_011f603c_arg1, grows pkStrings if full, then stores the string at index m_usSize.
 // @fnv 0x00a8f380
+// pdb: Ni2DBuffer::GetViewerStrings | Ni2DBuffer.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Ni2DBuffer::LoadBinary
+// pdb params: pkStrings
 void __fastcall AppendBufferString(Ni2DBuffer* self, int unused, StrArr* pkStrings)
 {
     AppendCameraPathEntries(self, unused, pkStrings);

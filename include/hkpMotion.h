@@ -14,6 +14,7 @@ struct ClassMemberDescriptor;
 typedef unsigned short hkUint16;
 #include "hkHalf.h"   // Havok 7.1 hkHalf (was a short typedef here)
 
+// pdb: class hkpMotion, size 0x120, bases: hkReferencedObject, 12 members
 class hkpMotion : public hkReferencedObject
 {
 public:
@@ -61,8 +62,8 @@ public:
     virtual void ApplyAngularImpulseToBodies(const hkVector4& kImpulse);
     virtual void vf58(float fTimestep, const hkVector4& kForce, const hkVector4& kPoint);
     virtual void vf5c(float fTimestep, const hkVector4& kForce);
-    virtual void StepMotion(float fTimestep, const hkVector4& kTorque);
-    virtual void getMotionStateAndVelocitiesAndDeactivationType(hkpMotion* pDestination);
+    virtual void StepMotion(float deltaTime, const hkVector4& torque);
+    virtual void getMotionStateAndVelocitiesAndDeactivationType(hkpMotion* motionOut);
 
     MotionType getType() const;
     const hkTransform& getTransform() const;
@@ -78,16 +79,16 @@ public:
     static const ClassMemberDescriptor Members[];
 
     hkEnum<MotionType, hkUint8> m_type;
-    hkUint8 m_ucDeactivationIntegrateCounter;
-    hkUint16 m_ausDeactivationNumInactiveFrames[2];
+    hkUint8 m_deactivationIntegrateCounter;
+    hkUint16 m_deactivationNumInactiveFrames[2];
     char padE[2];
     hkMotionState m_kMotionState;
-    hkVector4 m_kInertiaAndMassInv;
+    hkVector4 m_inertiaAndMassInv;
     hkVector4 m_kTranslationalVelocity;
     hkVector4 m_kAngularVelocity;
-    hkVector4 m_akDeactivationReferencePositions[2];
-    hkUint32 m_auiDeactivationReferenceOrientations[2];
-    hkpMaxSizeMotion* m_pSavedMotion;
-    hkUint16 m_savedMotionSize;
-    hkHalf m_fGravityFactor;
+    hkVector4 m_deactivationRefPosition[2];
+    hkUint32 m_deactivationRefOrientation[2];
+    hkpMaxSizeMotion* m_savedMotion;
+    hkUint16 m_savedQualityTypeIndex;
+    hkHalf m_gravityFactor;
 };

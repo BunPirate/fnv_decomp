@@ -36,18 +36,21 @@ const NiRTTI* BSTreeNode::GetRTTI() const
 }
 
 // @fnv 0x0066b5c0
+// pdb: BSTreeNode::GetBranchNode | BSTreeNode.obj | debug, vtable slot, medium
 NiNode* BSTreeNode::GetBranchesNode()
 {
     return static_cast<NiNode*>(GetAt(0));
 }
 
 // @fnv 0x0066b5e0
+// pdb: BSTreeNode::GetLeafNode | BSTreeNode.obj | debug, vtable slot, medium
 NiNode* BSTreeNode::GetFrondNode()
 {
     return static_cast<NiNode*>(GetAt(1));
 }
 
 // @fnv 0x0066b600
+// pdb: BSTreeNode::GetBillboardNode | BSTreeNode.obj | debug, vtable slot, medium
 NiNode* BSTreeNode::GetLeavesNode()
 {
     return static_cast<NiNode*>(GetAt(2));
@@ -56,6 +59,7 @@ NiNode* BSTreeNode::GetLeavesNode()
 void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 
 // @fnv 0x0066b680
+// pdb: BSTreeNode::`scalar deleting destructor' | BSTreeNode.obj | retail, vtable slot, high
 void* BSTreeNode::FUN_0066b680(unsigned int flags)
 {
     this->BSTreeNode::~BSTreeNode();
@@ -65,6 +69,9 @@ void* BSTreeNode::FUN_0066b680(unsigned int flags)
 }
 
 // @fnv 0x0066be30
+// pdb: BSTreeNode::SetVisibilityOnBillboard | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: acTest
+// pdb locals: pprop
 bool BSTreeNode::SetLeafTextureVariant(unsigned char acTest)
 {
     if (!static_cast<NiTriBasedGeom*>(m_spLeafMesh))
@@ -95,6 +102,8 @@ struct NiCullingProcess;
 extern "C" unsigned char __cdecl BSTreeManager_GetTreesEnabled();
 // If FUN_0054ee20() returns nonzero, forwards the culling call to FUN_00a5dbe0 with arCuller.
 // @fnv 0x0066bf50
+// pdb: BSTreeNode::OnVisible | BSTreeNode.obj | retail, upstream name already matches, high
+// pdb params: arCuller
 void __thiscall BSTreeNode::OnVisible(NiCullingProcess& arCuller)
 {
     if (BSTreeManager_GetTreesEnabled())
@@ -142,6 +151,7 @@ struct FUN_0066d440_shell
 };
 
 // @fnv 0x0066d440
+// pdb: bhkSPCollisionObject::`scalar deleting destructor' | BSTreeNode.obj | debug, vtable slot, medium
 void* FUN_0066d440_shell::FUN_0066d440(unsigned int flags)
 {
     this->ForwardCall_0066d470();
@@ -158,6 +168,7 @@ struct FUN_0066d470_shell
 
 // @fnv 0x0066d470
 // src: GUESS 0x0066d470 (confidence: low)
+// pdb: bhkSPCollisionObject::~bhkSPCollisionObject | BSTreeNode.obj | debug, call graph, medium
 void FUN_0066d470_shell::ForwardCall_0066d470()
 {
     this->ForwardCall_0066d410();
@@ -168,13 +179,13 @@ struct FUN_0066d510_shell
     const void* bhkMultiSphereShape_GetRTTI();
 };
 
-extern const void* g_012683e0;
+extern const void* bhkMultiSphereShape_ms_RTTI;
 
 // @fnv 0x0066d510
 // src: COMMUNITY 0x0066d510
 const void* FUN_0066d510_shell::bhkMultiSphereShape_GetRTTI()
 {
-    return &g_012683e0;
+    return &bhkMultiSphereShape_ms_RTTI;
 }
 
 struct FUN_0066d520_shell
@@ -186,6 +197,7 @@ struct FUN_0066d520_shell
 void __cdecl __Dummy_00b6fef0(void* p, unsigned int size);
 
 // @fnv 0x0066d520
+// pdb: bhkMultiSphereShape::`scalar deleting destructor' | BSTreeNode.obj | retail, vtable slot, high
 void* __thiscall FUN_0066d520_shell::FUN_0066d520(unsigned int flags)
 {
     this->FUN_00cb78b0();
@@ -230,12 +242,14 @@ struct FUN_0066d7a0_shell
 };
 
 // @fnv 0x0066d7a0
+// pdb: hkMultiSphereShapeCinfo::~hkMultiSphereShapeCinfo | BSTreeNode.obj | debug, object-file gap fill, medium
 void FUN_0066d7a0_shell::RunInner()
 {
     m1.FUN_0066da50();
 }
 
 // @fnv 0x0066b620
+// pdb: BSTreeNode::GetBillboard | BSTreeNode.obj | debug, vtable slot, medium
 NiTriBasedGeom* BSTreeNode::GetLeafMesh()
 {
     return static_cast<NiTriBasedGeom*>(m_spLeafMesh);
@@ -256,6 +270,9 @@ const char* const* FUN_0066d400_shell::GetArg1Ptr()
 
 // Gets the node's NiAVObject and sets its app-culled flag to the inverse of abVisible; returns false if there is no object.
 // @fnv 0x0066bc40
+// pdb: BSTreeNode::SetVisibilityForBranches | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: abVisible
+// pdb locals: pnode
 bool __thiscall BSTreeNode::SetBranchVisible(bool abVisible)
 {
     NiAVObject* object = GetBranchesNode();
@@ -267,6 +284,9 @@ bool __thiscall BSTreeNode::SetBranchVisible(bool abVisible)
 
 // Gets the frond node, sets its app-culled flag to the inverse of abVisible, and returns false if no leaf exists.
 // @fnv 0x0066bc90
+// pdb: BSTreeNode::SetVisibilityForLeaves | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: abVisible
+// pdb locals: pnode
 bool __thiscall BSTreeNode::SetFrondVisible(bool abVisible)
 {
     NiNode* pnode = GetFrondNode();
@@ -283,13 +303,15 @@ struct FUN_0066d3d0_shell
 extern int DAT_01066acc;
 struct FUN_0066d3a0_shell
 {
-    void* __thiscall bhkSPCollisionObject_bhkSPCollisionObject(void*);
+    void* __thiscall bhkSPCollisionObject_ctor(void*);
 };
 // @fnv 0x0066d3a0
-// src: EXE 0x0066d3a0
-void* __thiscall FUN_0066d3a0_shell::bhkSPCollisionObject_bhkSPCollisionObject(void* arg)
+// src: XBOX_DEBUG_PDB 0x0066d3a0
+// pdb: bhkSPCollisionObject::bhkSPCollisionObject | BSTreeNode.obj | debug, call graph, high
+// pdb params: apObject
+void* __thiscall FUN_0066d3a0_shell::bhkSPCollisionObject_ctor(void* apObject)
 {
-    reinterpret_cast<FUN_0066d3d0_shell*>(this)->bhkPCollisionObject_bhkPCollisionObject(arg);
+    reinterpret_cast<FUN_0066d3d0_shell*>(this)->bhkPCollisionObject_bhkPCollisionObject(apObject);
     *reinterpret_cast<void**>(this) = &DAT_01066acc;
     return this;
 }
@@ -310,6 +332,8 @@ struct FUN_0066d3d0_shell
 // Calls FUN_00c6b950 with a, then sets m0 to point at DAT_01066b94 and returns this.
 // @fnv 0x0066d3d0
 // src: EXE 0x0066d3d0
+// pdb: bhkPCollisionObject::bhkPCollisionObject | BSTreeNode.obj | debug, object-file run extension, low
+// pdb params: apObject
 void* __thiscall FUN_0066d3d0_shell::bhkPCollisionObject_bhkPCollisionObject(unsigned int a)
 {
     ((FUN_00c6b950_shell*)this)->FUN_00c6b950(a);
@@ -318,7 +342,7 @@ void* __thiscall FUN_0066d3d0_shell::bhkPCollisionObject_bhkPCollisionObject(uns
 }
 }  // namespace fnv_0066d3d0
 
-extern "C" void __cdecl hkActionCinfo_hkActionCinfo();
+extern "C" void __cdecl hkActionCinfo_ctor();
 extern "C" void __cdecl FUN_0056e270();
 struct FUN_0056e120_shell
 {
@@ -326,12 +350,14 @@ struct FUN_0056e120_shell
 };
 struct FUN_0066d550_shell
 {
-    void* Initialize();
+    void* hkTransformShapeCinfo_ctor();
 };
 // @fnv 0x0066d550
-void* FUN_0066d550_shell::Initialize()
+// src: XBOX_DEBUG_PDB 0x0066d550
+// pdb: hkTransformShapeCinfo::hkTransformShapeCinfo | BSTreeNode.obj | debug, call graph (shared callers), high
+void* FUN_0066d550_shell::hkTransformShapeCinfo_ctor()
 {
-    ((void(__thiscall*)(void*))hkActionCinfo_hkActionCinfo)(this);
+    ((void(__thiscall*)(void*))hkActionCinfo_ctor)(this);
     ((unsigned int*)this)[1] = 0;
     ((void(__thiscall*)(void*))FUN_0056e270)((char*)this + 0x10);
     ((FUN_0056e120_shell*)((char*)this + 0x10))->bhkTransform_setIdentity();
@@ -344,6 +370,7 @@ struct FUN_00c8bed0_holder
 };
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x0066d620
+// pdb: bhkTransformShape::`scalar deleting destructor' | BSTreeNode.obj | retail, vtable slot, high
 void* bhkTransformShape::Destroy(unsigned int flags)
 {
     ((FUN_00c8bed0_holder*)this)->FUN_00c8bed0();
@@ -361,6 +388,7 @@ struct CapsuleDeleteFlags
 };
 
 // @fnv 0x0066d740
+// pdb: bhkCapsuleShape::`scalar deleting destructor' | BSTreeNode.obj | retail, vtable slot, high
 void* __fastcall DestroyCapsuleShape(bhkCapsuleShape* shape, CapsuleDeleteFlags flags)
 {
     shape->bhkCapsuleShape::~bhkCapsuleShape();
@@ -371,7 +399,7 @@ void* __fastcall DestroyCapsuleShape(bhkCapsuleShape* shape, CapsuleDeleteFlags 
 
 struct FUN_0056e900_shell
 {
-    void __thiscall StepAndReturnThis();
+    void __thiscall hkSphereRepShapeCinfo_ctor();
 };
 struct FUN_006299a0_shell
 {
@@ -379,20 +407,24 @@ struct FUN_006299a0_shell
 };
 struct FUN_0066d770_shell
 {
-    void* __thiscall hkMultiSphereShapeCinfo_hkMultiSphereShapeCinfo();
+    void* __thiscall hkMultiSphereShapeCinfo_ctor();
 };
 // Calls StepAndReturnThis on this and FUN_006299a0 on the object at this+4, then returns this.
 // @fnv 0x0066d770
-// src: XBOX_PDB 0x0066d770
-void* __thiscall FUN_0066d770_shell::hkMultiSphereShapeCinfo_hkMultiSphereShapeCinfo()
+// src: XBOX_DEBUG_PDB 0x0066d770
+// pdb: hkMultiSphereShapeCinfo::hkMultiSphereShapeCinfo | BSTreeNode.obj | debug, upstream name already matches, high
+void* __thiscall FUN_0066d770_shell::hkMultiSphereShapeCinfo_ctor()
 {
-    ((FUN_0056e900_shell*)this)->StepAndReturnThis();
+    ((FUN_0056e900_shell*)this)->hkSphereRepShapeCinfo_ctor();
     ((FUN_006299a0_shell*)((char*)this + 4))->ProcessAndReturnValue_006299a0();
     return this;
 }
 
 // Gets the node and, if present, sets its app-culled flag to the inverse of abVisible; returns whether a node was found.
 // @fnv 0x0066bce0
+// pdb: BSTreeNode::SetVisibilityForBillboards | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: abVisible
+// pdb locals: pnode
 bool __thiscall BSTreeNode::SetLeavesVisible(bool abVisible)
 {
     NiNode* pnode;
@@ -405,6 +437,9 @@ bool __thiscall BSTreeNode::SetLeavesVisible(bool abVisible)
 
 // If this object has a property container and apProp is non-null, replaces any existing property slot 5 with apProp and returns whether it attached.
 // @fnv 0x0066bec0
+// pdb: BSTreeNode::SetTexturePropOnBillboard | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: apProp
+// pdb locals: pprop
 bool BSTreeNode::SetTexturingProperty(NiTexturingProperty* apProp)
 {
     NiTexturingProperty* pprop = 0;
@@ -427,12 +462,15 @@ struct FUN_0094db80_shell
 };
 // Looks up the node for a type; if mode is 0xff it culls the node, otherwise it unculls it and passes mode to the node's property 0.
 // @fnv 0x0066bdb0
-bool BSTreeNode::SetFrondTextureVariant(unsigned short type, unsigned char mode)
+// pdb: BSTreeNode::SetVisibilityOnLeaf | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: asLevel, acTest
+// pdb locals: pgeom, pprop
+bool BSTreeNode::SetFrondTextureVariant(unsigned short asLevel, unsigned char acTest)
 {
-    NiAVObject* node = reinterpret_cast<NiAVObject*>(GetFrondMesh(type));
+    NiAVObject* node = reinterpret_cast<NiAVObject*>(GetFrondMesh(asLevel));
     if (node == 0)
         return false;
-    if (mode == 0xff)
+    if (acTest == 0xff)
     {
         node->SetAppCulled(true);
     }
@@ -441,7 +479,7 @@ bool BSTreeNode::SetFrondTextureVariant(unsigned short type, unsigned char mode)
         node->SetAppCulled(false);
         NiObject* property = (NiObject*)((NiAVObject*)node)->GetProperty(0);
         if (property != 0)
-            ((FUN_0094db80_shell*)property)->NiAlphaProperty_SetTestRef(mode);
+            ((FUN_0094db80_shell*)property)->NiAlphaProperty_SetTestRef(acTest);
     }
     return true;
 }
@@ -452,20 +490,23 @@ extern "C" unsigned int __cdecl BSTreeManager_GetCamera();
 extern bool __cdecl NodeInFrustum(NiAVObject*, NiCamera*);
 #include "../../../include/MEM_CONTEXT.h"
 // @fnv 0x0066bf80
-void BSTreeNode::UpdateDownwardPass(NiUpdateData& data, unsigned int flags)
+// pdb: BSTreeNode::UpdateDownwardPass | BSTreeNode.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+// pdb locals: tempMemContext
+void BSTreeNode::UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TREEART, true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\SpeedTree\\BSTreeNode.cpp", 0x20d);
     if (!BSTreeManager_GetTreesEnabled())
         return;
-    if (data.fTime > gModifierZero)
+    if (UpdateData.fTime > gModifierZero)
     {
         if (!NodeInFrustum((NiAVObject*)this, (NiCamera*)BSTreeManager_GetCamera()))
             return;
     }
-    SetWindAmplitude(data.fTime);
+    SetWindAmplitude(UpdateData.fTime);
     reinterpret_cast<NiNode*>(this)->NiNode::UpdateDownwardPass(
-        data, flags);
+        UpdateData, uFlags);
 }
 
 class NiTexture;
@@ -476,6 +517,8 @@ extern char g_01268444_arg1;
 NiObject* __cdecl NiObject_DynamicCast(const NiRTTI* apRTTI, NiObject* apObject);
 
 // @fnv 0x0066d7c0
+// pdb: BSTreeNode::GetLeafObject | BSTreeNode.obj | retail, upstream name already matches, high
+// pdb locals: pln, pp, pnico, pwo
 bhkSimpleShapePhantom* BSTreeNode::GetLeafObject()
 {
     NiObject* pResult4 = 0;
@@ -494,6 +537,7 @@ bhkSimpleShapePhantom* BSTreeNode::GetLeafObject()
 
 // Frees the two geometry pointer arrays owned by the object and nulls their pointers.
 // @fnv 0x0066b6c0
+// pdb: BSTreeNode::~BSTreeNode | BSTreeNode.obj | retail, upstream name already matches, high
 BSTreeNode::~BSTreeNode()
 {
     if (m_pBranchMeshes)
@@ -510,11 +554,13 @@ BSTreeNode::~BSTreeNode()
 
 // Returns the entry at index from m_pFrondMeshes if the list pointer and entries are valid and index is in range, otherwise returns 0.
 // @fnv 0x0066b840
-NiTriBasedGeom* BSTreeNode::GetFrondMesh(unsigned short index)
+// pdb: BSTreeNode::GetLeafLevel | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: asLevel
+NiTriBasedGeom* BSTreeNode::GetFrondMesh(unsigned short asLevel)
 {
-    if (static_cast<BSTreeModel*>(m_spModel) == 0 || m_pFrondMeshes == 0 || index >= m_spModel->FUN_006699d0())
+    if (static_cast<BSTreeModel*>(m_spModel) == 0 || m_pFrondMeshes == 0 || asLevel >= m_spModel->FUN_006699d0())
         return 0;
-    return static_cast<NiTriBasedGeom*>(m_pFrondMeshes[index]);
+    return static_cast<NiTriBasedGeom*>(m_pFrondMeshes[asLevel]);
 }
 
 struct S_0066ba30_Str
@@ -528,21 +574,24 @@ struct S_0066ba30_Str
 struct S_0066ba30_Obj;
 // Validates the model, object array and object, then clears the node's old object, sets the new one and stores it at index.
 // @fnv 0x0066ba30
-bool BSTreeNode::SetFrondGeometry(unsigned short index, NiTriBasedGeom* apObj)
+// pdb: BSTreeNode::AddLeafLevel | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: asLevel, apGeom
+// pdb locals: slevels, pnode, strtemp
+bool BSTreeNode::SetFrondGeometry(unsigned short asLevel, NiTriBasedGeom* apGeom)
 {
     S_0066ba30_Str name5;
-    if (!m_spModel || !m_pFrondMeshes || !apObj)
+    if (!m_spModel || !m_pFrondMeshes || !apGeom)
         return false;
     unsigned short count = m_spModel->FUN_006699d0();
-    if (index >= count)
+    if (asLevel >= count)
         return false;
     NiNode* pNode2 = GetFrondNode();
     if (!pNode2)
         return false;
-    if (m_pFrondMeshes[index])
-        pNode2->RemoveObject(reinterpret_cast<NiAVObject*>(static_cast<NiTriBasedGeom*>(m_pFrondMeshes[index])));
-    pNode2->AttachChildInAvailableSlot(reinterpret_cast<NiAVObject*>(apObj), true);
-    m_pFrondMeshes[index] = apObj;
+    if (m_pFrondMeshes[asLevel])
+        pNode2->RemoveObject(reinterpret_cast<NiAVObject*>(static_cast<NiTriBasedGeom*>(m_pFrondMeshes[asLevel])));
+    pNode2->AttachChildInAvailableSlot(reinterpret_cast<NiAVObject*>(apGeom), true);
+    m_pFrondMeshes[asLevel] = apGeom;
     return true;
 }
 
@@ -552,12 +601,15 @@ struct VisNodeAlpha70
 };
 
 // @fnv 0x0066bd30
-bool BSTreeNode::SetBranchTextureVariant(unsigned short aType, unsigned char aMode)
+// pdb: BSTreeNode::SetVisibilityOnBranch | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: asLevel, acTest
+// pdb locals: pgeom, pprop
+bool BSTreeNode::SetBranchTextureVariant(unsigned short asLevel, unsigned char acTest)
 {
-    NiAVObject* node = reinterpret_cast<NiAVObject*>(GetBranchMesh(aType));
+    NiAVObject* node = reinterpret_cast<NiAVObject*>(GetBranchMesh(asLevel));
     if (node == 0)
         return false;
-    if (aMode == 0xff)
+    if (acTest == 0xff)
     {
         node->SetAppCulled(true);
     }
@@ -566,27 +618,30 @@ bool BSTreeNode::SetBranchTextureVariant(unsigned short aType, unsigned char aMo
         node->SetAppCulled(false);
         VisNodeAlpha70* alpha = (VisNodeAlpha70*)node->GetProperty(0);
         if (alpha)
-            alpha->Method0094db80(aMode);
+            alpha->Method0094db80(acTest);
     }
     return true;
 }
 
 // @fnv 0x0066c070
-void BSTreeNode::UpdateSelectedDownwardPass(NiUpdateData& kUpdate, unsigned int uiFlags)
+// pdb: BSTreeNode::UpdateSelectedDownwardPass | BSTreeNode.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+// pdb locals: tempMemContext
+void BSTreeNode::UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
     AutoMemContext kMemContext(MEM_CONTEXT_MEM_CONTEXT_TREEART, true,
                                "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\SpeedTree\\BSTreeNode.cpp",
                                0x223);
     if (!BSTreeManager_GetTreesEnabled())
         return;
-    if (kUpdate.fTime > gModifierZero)
+    if (UpdateData.fTime > gModifierZero)
     {
         if (!NodeInFrustum((NiAVObject*)this, (NiCamera*)BSTreeManager_GetCamera()))
             return;
     }
-    SetWindAmplitude(kUpdate.fTime);
+    SetWindAmplitude(UpdateData.fTime);
     reinterpret_cast<NiNode*>(this)->NiNode::UpdateSelectedDownwardPass(
-        reinterpret_cast<NiUpdateData&>(kUpdate), uiFlags);
+        reinterpret_cast<NiUpdateData&>(UpdateData), uFlags);
 }
 
 extern char DAT_01066c5c;
@@ -601,12 +656,14 @@ struct FUN_0066d490_base
 struct FUN_0066d490_cls : FUN_0066d490_base
 {
     void* m_vptr;
-    void bhkMultiSphereShape_Init(unsigned int a1);
+    void bhkMultiSphereShape_Init(unsigned int arInfo);
     FUN_0066d490_cls(unsigned int a1);
 };
 
 // Sets the vtable pointer, calls FUN_00cb7b80 with a1, and increments DAT_012683dc.
 // @fnv 0x0066d490
+// pdb: bhkMultiSphereShape::bhkMultiSphereShape | BSTreeNode.obj | debug, object-file run extension, low
+// pdb params: arInfo
 FUN_0066d490_cls::FUN_0066d490_cls(unsigned int a1)
 {
     *(void* volatile*)&m_vptr = &DAT_01066c5c;
@@ -626,16 +683,18 @@ struct FUN_0066d590_base
 struct FUN_0066d590_cls : FUN_0066d590_base
 {
     void* m_vptr;
-    void bhkTransformShape_Init(unsigned int a1);
-    FUN_0066d590_cls(unsigned int a1);
+    void bhkTransformShape_Init(unsigned int arInfo);
+    FUN_0066d590_cls(unsigned int arInfo);
 };
 
 // Sets the vtable pointer, calls FUN_00c8c5b0 with the given id, and increments DAT_012681b0.
 // @fnv 0x0066d590
-FUN_0066d590_cls::FUN_0066d590_cls(unsigned int a1)
+// pdb: bhkTransformShape::bhkTransformShape | BSTreeNode.obj | debug, call graph, high
+// pdb params: arInfo
+FUN_0066d590_cls::FUN_0066d590_cls(unsigned int arInfo)
 {
     *(void* volatile*)&m_vptr = &DAT_01066d44;
-    this->bhkTransformShape_Init(a1);
+    this->bhkTransformShape_Init(arInfo);
     DAT_012681b0 = DAT_012681b0 + 1;
 }
 
@@ -655,11 +714,14 @@ extern "C" void __cdecl NiNode_GetViewerStrings();
 
 // The shared NiNode header does not declare its viewer-string override.
 // @fnv 0x0066d880
-void BSTreeNode::GetViewerStrings(NiViewerStringsArray* list)
+// pdb: BSTreeNode::GetViewerStrings | BSTreeNode.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: message
+void BSTreeNode::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    reinterpret_cast<void (__thiscall*)(NiNode*, void*)>(NiNode_GetViewerStrings)(this, list);
+    reinterpret_cast<void (__thiscall*)(NiNode*, void*)>(NiNode_GetViewerStrings)(this, pkStrings);
     char* name = NiViewerStrings_NiGetViewerString_Title("BSTreeNode");
-    reinterpret_cast<S_0066d880_List*>(list)->FUN_0096a610(&name);
+    reinterpret_cast<S_0066d880_List*>(pkStrings)->FUN_0096a610(&name);
     char* text;
     if (m_spModel.operator->())
     {
@@ -668,16 +730,16 @@ void BSTreeNode::GetViewerStrings(NiViewerStringsArray* list)
             BSsprintf(text, 0x20, "Type = Instance");
         else
             BSsprintf(text, 0x20, "Type = Base");
-        reinterpret_cast<S_0066d880_List*>(list)->FUN_0096a610(&text);
+        reinterpret_cast<S_0066d880_List*>(pkStrings)->FUN_0096a610(&text);
         text = new char[0x20];
         BSsprintf(text, 0x20, "Seed = %d", reinterpret_cast<S_0066d880_Obj*>(m_spModel.operator->())->FUN_008d6f30());
-        reinterpret_cast<S_0066d880_List*>(list)->FUN_0096a610(&text);
+        reinterpret_cast<S_0066d880_List*>(pkStrings)->FUN_0096a610(&text);
     }
     else
     {
         text = new char[0x20];
         BSsprintf(text, 0x20, "-No Model-");
-        reinterpret_cast<S_0066d880_List*>(list)->FUN_0096a610(&text);
+        reinterpret_cast<S_0066d880_List*>(pkStrings)->FUN_0096a610(&text);
     }
 }
 
@@ -790,7 +852,7 @@ struct FUN_0051cf00
     unsigned int unkb0;
     FUN_0051cf00();
     void SetMode_0051d000(int enabled);
-    void FUN_006404b0(float size, float a, float b, float c);
+    void FUN_006404b0(float fAngle, float a, float b, float c);
     static void* operator new(unsigned int size)
     {
         return Object_DispatchCommandFour(size);
@@ -837,7 +899,7 @@ struct FUN_0066b640
     virtual void v8c(void*);
     unsigned int unk04, unk08, unk0c, unk10;
     FUN_0066b640();
-    void bhkNiCollisionObject_SetWorldObject(void* p);
+    void bhkNiCollisionObject_SetWorldObject(void* apWorldObject);
     static void* operator new(unsigned int size)
     {
         return Object_DispatchCommandFour(size);
@@ -846,10 +908,13 @@ struct FUN_0066b640
 };
 // Initializes the tree controller: sets up slots, allocates arrays from the tree list counts, creates controllers and attaches the chosen object.
 // @fnv 0x0066b120
-BSTreeNode::BSTreeNode(void* initial, void* external) : m_spModel(0), m_spLeafMesh(0)
+// pdb: BSTreeNode::BSTreeNode | BSTreeNode.obj | retail, upstream name already matches, high
+// pdb params: apModel, apRigid
+// pdb locals: pnodeBB, pcoll, prigid, slevels, pnode, slevel
+BSTreeNode::BSTreeNode(void* apModel, void* apRigid) : m_spModel(0), m_spLeafMesh(0)
 {
     BSFadeNode_SetLODMultType(6);
-    m_spModel = reinterpret_cast<BSTreeModel*>(initial);
+    m_spModel = reinterpret_cast<BSTreeModel*>(apModel);
     NiAVObject_SetSelectiveUpdate(1);
     FUN_00a5ecb0* pkCurrentObject = new FUN_00a5ecb0(0);
     NiNode::AddObjectAt(0, reinterpret_cast<NiAVObject*>(pkCurrentObject));
@@ -886,11 +951,11 @@ BSTreeNode::BSTreeNode(void* initial, void* external) : m_spModel(0), m_spLeafMe
     }
     m_spLeafMesh = 0;
     SetExtraDataName(GetFltValueAtOffset16());
-    void* chosen = external ? external : m_spModel.operator->()->ConvertFloatToUInt();
+    void* chosen = apRigid ? apRigid : m_spModel.operator->()->ConvertFloatToUInt();
     if (chosen)
     {
         pController = new FUN_0066b640();
-        pController->bhkNiCollisionObject_SetWorldObject(external ? external : m_spModel.operator->()->ConvertFloatToUInt());
+        pController->bhkNiCollisionObject_SetWorldObject(apRigid ? apRigid : m_spModel.operator->()->ConvertFloatToUInt());
         pController->v8c(this);
     }
     m_fWindTime = 0.0f;
@@ -898,18 +963,23 @@ BSTreeNode::BSTreeNode(void* initial, void* external) : m_spModel(0), m_spLeafMe
 
 // Returns the object at usIndex from m_pBranchMeshes if the header exists, the array exists and usIndex is below the header count; otherwise returns 0.
 // @fnv 0x0066b7d0
-NiTriBasedGeom* BSTreeNode::GetBranchMesh(unsigned short usIndex)
+// pdb: BSTreeNode::GetBranchLevel | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: asLevel
+NiTriBasedGeom* BSTreeNode::GetBranchMesh(unsigned short asLevel)
 {
-    if (!static_cast<BSTreeModel*>(m_spModel) || !m_pBranchMeshes || usIndex >= m_spModel->GetNumBranchLODLevels())
+    if (!static_cast<BSTreeModel*>(m_spModel) || !m_pBranchMeshes || asLevel >= m_spModel->GetNumBranchLODLevels())
         return 0;
-    return static_cast<NiTriBasedGeom*>(m_pBranchMeshes[usIndex]);
+    return static_cast<NiTriBasedGeom*>(m_pBranchMeshes[asLevel]);
 }
 
 // Clears the handler's current path if one is set, assigns pkPath to the handler, and stores it in m_kPathRef.
 // @fnv 0x0066bbb0
-void BSTreeNode::SetBillboardObject(NiTriBasedGeom* pkPath)
+// pdb: BSTreeNode::SetBillboard | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: apGeom
+// pdb locals: pnode
+void BSTreeNode::SetBillboardObject(NiTriBasedGeom* apGeom)
 {
-    if (!pkPath)
+    if (!apGeom)
         return;
 
     NiNode* pkHandler = GetLeavesNode();
@@ -918,8 +988,8 @@ void BSTreeNode::SetBillboardObject(NiTriBasedGeom* pkPath)
 
     if (static_cast<NiTriBasedGeom*>(m_spLeafMesh))
         pkHandler->RemoveObject(reinterpret_cast<NiAVObject*>(static_cast<NiTriBasedGeom*>(m_spLeafMesh)));
-    pkHandler->AttachChildInAvailableSlot(reinterpret_cast<NiAVObject*>(pkPath), true);
-    m_spLeafMesh = pkPath;
+    pkHandler->AttachChildInAvailableSlot(reinterpret_cast<NiAVObject*>(apGeom), true);
+    m_spLeafMesh = apGeom;
 }
 
 struct FnvScopedContext
@@ -931,23 +1001,26 @@ struct FnvScopedContext
 };
 // Validates index and type against the model, clears the slot's existing object, sets the new object on the actor, and stores it in the slot.
 // @fnv 0x0066b8b0
-bool BSTreeNode::SetBranchGeometry(unsigned short index, NiTriBasedGeom* type)
+// pdb: BSTreeNode::AddBranchLevel | BSTreeNode.obj | retail, vtable slot, high
+// pdb params: asLevel, apGeom
+// pdb locals: slevels, pnode, strtemp
+bool BSTreeNode::SetBranchGeometry(unsigned short asLevel, NiTriBasedGeom* apGeom)
 {
     FnvScopedContext guard;
-    if (!static_cast<BSTreeModel*>(m_spModel) || !m_pBranchMeshes || !type)
+    if (!static_cast<BSTreeModel*>(m_spModel) || !m_pBranchMeshes || !apGeom)
         return false;
     unsigned short maxIndex = m_spModel->GetNumBranchLODLevels();
-    if (index >= maxIndex)
+    if (asLevel >= maxIndex)
         return false;
     NiNode* actor = GetBranchesNode();
     if (!actor)
         return false;
-    if (static_cast<NiTriBasedGeom*>(m_pBranchMeshes[index]))
+    if (static_cast<NiTriBasedGeom*>(m_pBranchMeshes[asLevel]))
     {
-        actor->RemoveObject(reinterpret_cast<NiAVObject*>(static_cast<NiTriBasedGeom*>(m_pBranchMeshes[index])));
+        actor->RemoveObject(reinterpret_cast<NiAVObject*>(static_cast<NiTriBasedGeom*>(m_pBranchMeshes[asLevel])));
     }
-    actor->AttachChildInAvailableSlot(reinterpret_cast<NiAVObject*>(type), true);
-    m_pBranchMeshes[index] = type;
+    actor->AttachChildInAvailableSlot(reinterpret_cast<NiAVObject*>(apGeom), true);
+    m_pBranchMeshes[asLevel] = apGeom;
     return true;
 }
 

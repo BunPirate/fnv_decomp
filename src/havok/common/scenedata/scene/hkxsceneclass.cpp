@@ -26,6 +26,7 @@ struct AudioObject
 };
 // Calls ClearScene, then if flags has bit 0 set frees this through the AudioManager allocator using allocationSize, and returns this.
 // @fnv 0x00e01ca0
+// pdb: hkxScene::`scalar deleting destructor' | hkxSceneClass.obj | retail, vtable slot, high
 AudioObject* AudioObject::Release(unsigned int flags)
 {
     ClearScene();

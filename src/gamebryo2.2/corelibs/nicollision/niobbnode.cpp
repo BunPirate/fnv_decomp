@@ -27,36 +27,39 @@ static __forceinline int& boundsId(NiOBBNode* node)
 // @fnv 0x00eb6b70
 bool NiOBBNode::HasChildren()
 {
-    return m_0x80 || m_0x84;
+    return m_pLeft || m_pRight;
 }
 
 struct QueryContext
 {
     int unk00;
-    void UpdateWorldBounds(void* detail);
-    int IntersectRay(void* a1, void* a2);
+    void NiOBBox_Transform(void* xform);
+    int NiOBBox_TestIntersection(void* a1, void* a2);
 };
 // Updates the context when a6 differs from m_0x88, rejects via context.IntersectRay, then returns the first child Test result >= 1, else 0.
 // @fnv 0x00eb9430
-int NiOBBNode::TestChildren(void* a1, void* a2, int a3, int a4, void* a5, int a6)
+// pdb: NiOBBNode::FindIntersections | NiOBBNode.obj | retail, object-file gap fill, high
+// pdb params: origin, dir, pick, bIntersects, pObj, uiChangeStamp
+// pdb locals: ret
+int NiOBBNode::TestChildren(void* origin, void* dir, int pick, int bIntersects, void* pObj, int uiChangeStamp)
 {
-    if (a6 != boundsId(this))
+    if (uiChangeStamp != boundsId(this))
     {
-        ((QueryContext*)pad1)->UpdateWorldBounds((char*)a5 + 0x68);
-        boundsId(this) = a6;
+        ((QueryContext*)pad1)->NiOBBox_Transform((char*)pObj + 0x68);
+        boundsId(this) = uiChangeStamp;
     }
-    if (!((QueryContext*)pad1)->IntersectRay(a1, a2))
+    if (!((QueryContext*)pad1)->NiOBBox_TestIntersection(origin, dir))
         return 0;
     int result;
-    if (m_0x80 != 0)
+    if (m_pLeft != 0)
     {
-        result = ((NiOBBNode*)m_0x80)->TestChildren(a1, a2, a3, a4, a5, a6);
+        result = ((NiOBBNode*)m_pLeft)->TestChildren(origin, dir, pick, bIntersects, pObj, uiChangeStamp);
         if (result >= 1)
             return result;
     }
-    if (m_0x84 != 0)
+    if (m_pRight != 0)
     {
-        result = ((NiOBBNode*)m_0x84)->TestChildren(a1, a2, a3, a4, a5, a6);
+        result = ((NiOBBNode*)m_pRight)->TestChildren(origin, dir, pick, bIntersects, pObj, uiChangeStamp);
         if (result >= 1)
             return result;
     }
@@ -128,45 +131,49 @@ struct SwapNode
 };
 
 // @fnv 0x00eb9a50
-int __stdcall RunSwapTests(SwapNode* pNode)
+// src: XBOX_RETAIL_PDB 0x00eb9a50
+// pdb: NiOBBNode::CollisionCallback | NiOBBNode.obj | retail, call graph, high
+// pdb params: intr
+// pdb locals: ret0, ret1, pkData, cb0, cb1, saveNormal, pSaveRoot
+int __stdcall NiOBBNode_CollisionCallback(SwapNode* intr)
 {
     int iResult0 = 0;
     int iResult1 = 0;
 
-    SwapShape* pShape = pNode->m_00;
+    SwapShape* pShape = intr->m_00;
     if (pShape)
     {
         SwapShape* t = pShape->m_1c;
         if (!t)
-            t = pNode->m_08->m_1c;
+            t = intr->m_08->m_1c;
         if (t)
         {
             SwapTestFn pfnTest = t->m_38;
             if (pfnTest)
-                iResult0 = pfnTest(pNode);
+                iResult0 = pfnTest(intr);
         }
     }
 
-    pShape = pNode->m_04;
+    pShape = intr->m_04;
     if (pShape)
     {
         SwapShape* t = pShape->m_1c;
         if (!t)
-            t = pNode->m_0c->m_1c;
+            t = intr->m_0c->m_1c;
         if (t)
         {
             SwapTestFn pfnTest = t->m_38;
             if (pfnTest)
             {
                 // exchange the two shapes and their two records
-                SwapShape* a = pNode->m_00;
-                SwapShape* b = pNode->m_04;
-                pNode->m_00 = b;
-                pNode->m_04 = a;
-                SwapRecord recordSaved = pNode->m_20;
-                pNode->m_20 = pNode->m_2c;
-                pNode->m_2c = recordSaved;
-                iResult1 = pfnTest(pNode);
+                SwapShape* a = intr->m_00;
+                SwapShape* b = intr->m_04;
+                intr->m_00 = b;
+                intr->m_04 = a;
+                SwapRecord recordSaved = intr->m_20;
+                intr->m_20 = intr->m_2c;
+                intr->m_2c = recordSaved;
+                iResult1 = pfnTest(intr);
             }
         }
     }
@@ -274,7 +281,7 @@ struct WorkObj
     int m_18;
     int m_1c;
     int m_20;
-    void GetMatrix(void* a1, void* a2);
+    void GetMatrix(void* afEigenvalue, void* a2);
 };
 struct RayNodeW7
 {
@@ -302,11 +309,15 @@ struct RayNodeW7
     NiOBBNode* m_0x84;
     int m_0x88;
     void ComputeWeightedCovariance(void* out, unsigned short* a1, V3* a2, int a3, int a4, int a5, int a6, int* a7);
-    void ComputeTriangleBounds(int a0, unsigned short* a1, V3* a2, int a3, int a4, int a5, int a6, int* a7);
+    void NiOBBNode_ComputeCovarianceAndMean(int a0, unsigned short* a1, V3* a2, int a3, int a4, int a5, int a6, int* a7);
 };
 
 // @fnv 0x00eb94e0
-void RayNodeW7::ComputeTriangleBounds(int a0, unsigned short* ausIndices, V3* apVertices, int a3, int a4, int a5,
+// src: XBOX_RETAIL_PDB 0x00eb94e0
+// pdb: NiOBBNode::ComputeCovarianceAndMean | NiOBBNode.obj | retail, object-file gap fill, high
+// pdb params: pTriList, pVertex, pArea, pCentroid, i0, i1, pISplit
+// pdb locals: sum, C, fScale, fInverseTotalArea, fTotArea, pSumCofactors, center, i, j, r, avr, area, q, usTriangle, p
+void RayNodeW7::NiOBBNode_ComputeCovarianceAndMean(int a0, unsigned short* ausIndices, V3* apVertices, int a3, int a4, int a5,
                                       int aiEndTri, int* apiTriMap)
 {
     V3& origin = center;
@@ -388,7 +399,7 @@ void RayNodeW7::ComputeTriangleBounds(int a0, unsigned short* ausIndices, V3* ap
     V3 vMidpoint = (vUpper + vLower) * 0.5;
     origin += mat.row0 * vMidpoint.x + mat.row1 * vMidpoint.y + mat.row2 * vMidpoint.z;
     detail.FUN_00a86bf0();
-    ((QueryContext*)&origin)->UpdateWorldBounds(&detail);
+    ((QueryContext*)&origin)->NiOBBox_Transform(&detail);
     unk7c = a0;
 }
 
@@ -490,70 +501,73 @@ struct MyContext
     int unk74;
     int unk78;
 
-    void UpdateWorldBounds(void* detail);
-    int NiOBBox_TestIntersection(void* other);
+    void NiOBBox_Transform(void* xform);
+    int NiOBBox_TestIntersection(void* box);
 };
 
 // Recursively compares this node's context with another node's, refreshing cached ids, and descends into child nodes up to the given depths.
 // @fnv 0x00eb9180
-bool NiOBBNode::CompareTreeRecursive(NiOBBNode* other, char* apThisData, char* apOtherData, int depthA, int depthB, int idA,
-                                  int idB)
+// pdb: NiOBBNode::TestCollision | NiOBBNode.obj | retail, object-file gap fill, high
+// pdb params: pTestNode, pkObj0, pkObj1, iMaxDepth, iTestMaxDepth, uiChangeStamp0, uiChangeStamp1
+// pdb locals: iTMDm1, iMDm1
+bool NiOBBNode::CompareTreeRecursive(NiOBBNode* pTestNode, char* pkObj0, char* pkObj1, int iMaxDepth, int iTestMaxDepth, int uiChangeStamp0,
+                                  int uiChangeStamp1)
 {
-    if (!other)
+    if (!pTestNode)
         return false;
 
-    if (idA != boundsId(this))
+    if (uiChangeStamp0 != boundsId(this))
     {
-        (*(MyContext*)this->pad1).UpdateWorldBounds(apThisData + 0x68);
-        boundsId(this) = idA;
+        (*(MyContext*)this->pad1).NiOBBox_Transform(pkObj0 + 0x68);
+        boundsId(this) = uiChangeStamp0;
     }
 
-    if (idB != boundsId(other))
+    if (uiChangeStamp1 != boundsId(pTestNode))
     {
-        (*(MyContext*)other->pad1).UpdateWorldBounds(apOtherData + 0x68);
-        boundsId(other) = idB;
+        (*(MyContext*)pTestNode->pad1).NiOBBox_Transform(pkObj1 + 0x68);
+        boundsId(pTestNode) = uiChangeStamp1;
     }
 
-    if (!(*(MyContext*)this->pad1).NiOBBox_TestIntersection(&(*(MyContext*)other->pad1)))
+    if (!(*(MyContext*)this->pad1).NiOBBox_TestIntersection(&(*(MyContext*)pTestNode->pad1)))
         return false;
 
-    if (!depthA || !depthB)
+    if (!iMaxDepth || !iTestMaxDepth)
         return true;
 
     if (this->IsTerminalNode())
     {
-        if (other->IsTerminalNode())
+        if (pTestNode->IsTerminalNode())
             return true;
 
-        if (!((NiOBBNode*)other)->HasChildren())
+        if (!((NiOBBNode*)pTestNode)->HasChildren())
             return true;
 
-        return this->CompareTreeRecursive(((NiOBBNode*)other->m_0x80), apThisData, apOtherData, depthA, depthB - 1, idA, idB) ||
-               this->CompareTreeRecursive(((NiOBBNode*)other->m_0x84), apThisData, apOtherData, depthA, depthB - 1, idA, idB);
+        return this->CompareTreeRecursive(((NiOBBNode*)pTestNode->m_pLeft), pkObj0, pkObj1, iMaxDepth, iTestMaxDepth - 1, uiChangeStamp0, uiChangeStamp1) ||
+               this->CompareTreeRecursive(((NiOBBNode*)pTestNode->m_pRight), pkObj0, pkObj1, iMaxDepth, iTestMaxDepth - 1, uiChangeStamp0, uiChangeStamp1);
     }
 
-    if (other->IsTerminalNode())
+    if (pTestNode->IsTerminalNode())
     {
-        if (!((NiOBBNode*)this->m_0x80) || !((NiOBBNode*)this->m_0x84))
+        if (!((NiOBBNode*)this->m_pLeft) || !((NiOBBNode*)this->m_pRight))
             return true;
 
-        return ((NiOBBNode*)this->m_0x80)->CompareTreeRecursive(other, apThisData, apOtherData, depthA - 1, depthB, idA, idB) ||
-               ((NiOBBNode*)this->m_0x84)->CompareTreeRecursive(other, apThisData, apOtherData, depthA - 1, depthB, idA, idB);
+        return ((NiOBBNode*)this->m_pLeft)->CompareTreeRecursive(pTestNode, pkObj0, pkObj1, iMaxDepth - 1, iTestMaxDepth, uiChangeStamp0, uiChangeStamp1) ||
+               ((NiOBBNode*)this->m_pRight)->CompareTreeRecursive(pTestNode, pkObj0, pkObj1, iMaxDepth - 1, iTestMaxDepth, uiChangeStamp0, uiChangeStamp1);
     }
 
-    if (!((NiOBBNode*)this->m_0x80) || !((NiOBBNode*)this->m_0x84))
+    if (!((NiOBBNode*)this->m_pLeft) || !((NiOBBNode*)this->m_pRight))
         return true;
 
-    int iChildDepthA = depthA - 1;
-    int iChildDepthB = depthB - 1;
-    return ((NiOBBNode*)this->m_0x80)->CompareTreeRecursive(((NiOBBNode*)other->m_0x80), apThisData, apOtherData, iChildDepthA, iChildDepthB, idA,
-                                              idB) ||
-           ((NiOBBNode*)this->m_0x80)->CompareTreeRecursive(((NiOBBNode*)other->m_0x84), apThisData, apOtherData, iChildDepthA, iChildDepthB, idA,
-                                              idB) ||
-           ((NiOBBNode*)this->m_0x84)->CompareTreeRecursive(((NiOBBNode*)other->m_0x80), apThisData, apOtherData, iChildDepthA, iChildDepthB, idA,
-                                              idB) ||
-           ((NiOBBNode*)this->m_0x84)->CompareTreeRecursive(((NiOBBNode*)other->m_0x84), apThisData, apOtherData, iChildDepthA, iChildDepthB, idA,
-                                              idB);
+    int iChildDepthA = iMaxDepth - 1;
+    int iChildDepthB = iTestMaxDepth - 1;
+    return ((NiOBBNode*)this->m_pLeft)->CompareTreeRecursive(((NiOBBNode*)pTestNode->m_pLeft), pkObj0, pkObj1, iChildDepthA, iChildDepthB, uiChangeStamp0,
+                                              uiChangeStamp1) ||
+           ((NiOBBNode*)this->m_pLeft)->CompareTreeRecursive(((NiOBBNode*)pTestNode->m_pRight), pkObj0, pkObj1, iChildDepthA, iChildDepthB, uiChangeStamp0,
+                                              uiChangeStamp1) ||
+           ((NiOBBNode*)this->m_pRight)->CompareTreeRecursive(((NiOBBNode*)pTestNode->m_pLeft), pkObj0, pkObj1, iChildDepthA, iChildDepthB, uiChangeStamp0,
+                                              uiChangeStamp1) ||
+           ((NiOBBNode*)this->m_pRight)->CompareTreeRecursive(((NiOBBNode*)pTestNode->m_pRight), pkObj0, pkObj1, iChildDepthA, iChildDepthB, uiChangeStamp0,
+                                              uiChangeStamp1);
 }
 
 struct OBBShape
@@ -568,8 +582,8 @@ struct OBBShape
 struct OBBContext
 {
     int unk00;
-    int NiOBBox_FindIntersection(OBBContext* pkOther, float* pfTime, NiPoint3* pkPoint);
-    void ProjectOntoAxes(NiPoint3* pkPoint, NiPoint3* pkNormal);
+    int NiOBBox_FindIntersection(OBBContext* box, float* t, NiPoint3* p);
+    void NiOBBox_ComputeNormal(NiPoint3* p, NiPoint3* normal);
 };
 
 struct OBBCollisionRecord
@@ -619,45 +633,48 @@ struct OBBLeaf
     int unk78;
     OBBShape* m_pkShape;
 
-    int NiOBBNode_BoxBoxCollision(OBBLeaf* pkOther, int iA, int iB, int iC, int iD, bool* pbHit);
-    int RunSwapTests(OBBCollisionRecord* pkRecord);
+    int NiOBBNode_BoxBoxCollision(OBBLeaf* pTestNode, int pkRoot0, int pkRoot1, int pkObj0, int pkObj1, bool* bCollision);
+    int NiOBBNode_CollisionCallback(OBBCollisionRecord* intr);
 };
 
 // On a collision, sets pbHit, projects the contact point onto both contexts' axes, and runs swap tests.
 // @fnv 0x00eb9b00
 // src: GAMEBRYO_LIB 0x00eb9b00
-int OBBLeaf::NiOBBNode_BoxBoxCollision(OBBLeaf* pkOther, int iA, int iB, int iC, int iD, bool* pbHit)
+// pdb: NiOBBNode::BoxBoxCollision | NiOBBNode.obj | retail, upstream name already matches, high
+// pdb params: pTestNode, pkRoot0, pkRoot1, pkObj0, pkObj1, bCollision
+// pdb locals: velocity0, intr, velocity1, iIntersects, center1, center0
+int OBBLeaf::NiOBBNode_BoxBoxCollision(OBBLeaf* pTestNode, int pkRoot0, int pkRoot1, int pkObj0, int pkObj1, bool* bCollision)
 {
     OBBCollisionRecord kRecord;
     kRecord.m_iE = 0;
     kRecord.m_iF = 0;
-    kRecord.m_iA = iA;
-    kRecord.m_iB = iB;
-    kRecord.m_iC = iC;
-    kRecord.m_iD = iD;
+    kRecord.m_iA = pkRoot0;
+    kRecord.m_iB = pkRoot1;
+    kRecord.m_iC = pkObj0;
+    kRecord.m_iD = pkObj1;
 
     OBBShape* pkShape0 = m_pkShape;
     NiPoint3 kV0 = pkShape0->m_kValue;
-    OBBShape* pkShape1 = pkOther->m_pkShape;
+    OBBShape* pkShape1 = pTestNode->m_pkShape;
     NiPoint3 kV1 = pkShape1->m_kValue;
     int iCollide;
     if ((const NiPoint3&)kV0 == NiPoint3::ZERO && (const NiPoint3&)kV1 == NiPoint3::ZERO)
     {
         kRecord.m_fTime = 0.0f;
-        NiPoint3 kSum = m_kCenter + pkOther->m_kCenter;
+        NiPoint3 kSum = m_kCenter + pTestNode->m_kCenter;
         kRecord.m_kPoint = NiPoint3(kSum.x * 0.5, kSum.y * 0.5, kSum.z * 0.5);
         iCollide = 1;
     }
     else
     {
-        iCollide = m_kContext.NiOBBox_FindIntersection(&pkOther->m_kContext, &kRecord.m_fTime, &kRecord.m_kPoint);
+        iCollide = m_kContext.NiOBBox_FindIntersection(&pTestNode->m_kContext, &kRecord.m_fTime, &kRecord.m_kPoint);
     }
     if (iCollide)
     {
-        *pbHit = true;
-        m_kContext.ProjectOntoAxes(&kRecord.m_kPoint, &kRecord.m_kNormal0);
-        pkOther->m_kContext.ProjectOntoAxes(&kRecord.m_kPoint, &kRecord.m_kNormal1);
-        return RunSwapTests(&kRecord);
+        *bCollision = true;
+        m_kContext.NiOBBox_ComputeNormal(&kRecord.m_kPoint, &kRecord.m_kNormal0);
+        pTestNode->m_kContext.NiOBBox_ComputeNormal(&kRecord.m_kPoint, &kRecord.m_kNormal1);
+        return NiOBBNode_CollisionCallback(&kRecord);
     }
     return 0;
 }
@@ -689,11 +706,14 @@ struct RayTree
     RayTree* m_0x84;
     int m_0x88;
     bool FUN_00eb6b70();
-    int NiOBBNode_BoxBoxCollision(RayTree* pOther, void* a2, void* a3, void* a4, void* a5, void* a10);
+    int NiOBBNode_BoxBoxCollision(RayTree* pTestNode, void* pkRoot0, void* pkRoot1, void* pkObj0, void* pkObj1, void* bCollision);
 };
 
 // Checks bounds, then tests this node or recursively tests its children, returning a positive result or 0.
 // @fnv 0x00eb9cc0
+// pdb: NiOBBNode::FindCollisions | NiOBBNode.obj | retail, object-file run extension, low
+// pdb params: pTestNode, pkRoot0, pkRoot1, pkObj0, pkObj1, iMaxDepth, iTestMaxDepth, uiChangeStamp0, uiChangeStamp1, bCollision
+// pdb locals: ret, iTMDm1, iMDm1
 int RayTree::Intersect(RayTree* pOther, void* a2, void* a3, void* a4, void* a5, int aiDepthA, Depth adDepthB,
                        int aiBoundsIdA, int aiBoundsIdB, void* a10)
 {
@@ -702,12 +722,12 @@ int RayTree::Intersect(RayTree* pOther, void* a2, void* a3, void* a4, void* a5, 
 
     if (aiBoundsIdA != m_0x88)
     {
-        context.UpdateWorldBounds((char*)a4 + 0x68);
+        context.NiOBBox_Transform((char*)a4 + 0x68);
         m_0x88 = aiBoundsIdA;
     }
     if (aiBoundsIdB != pOther->m_0x88)
     {
-        pOther->context.UpdateWorldBounds((char*)a5 + 0x68);
+        pOther->context.NiOBBox_Transform((char*)a5 + 0x68);
         pOther->m_0x88 = aiBoundsIdB;
     }
     if (!context.NiOBBox_TestIntersection(&pOther->context))
@@ -781,53 +801,56 @@ static __forceinline float dotProduct(const V3& a, const V3& b)
 }
 struct RayNodeW7_Derived : RayNodeW7
 {
-    void NiOBBNode_DivideTriangles(const V3* vertices, int first, int last, const int* srcIndices, int* outLeft, int* outRight,
-                      int* dstIndices);
+    void NiOBBNode_DivideTriangles(const V3* pCentroid, int i0, int i1, const int* pISplit, int* j0, int* j1,
+                      int* pOSplit);
 };
 
 // @fnv 0x00eb8dc0
 // src: GAMEBRYO_LIB 0x00eb8dc0
-void RayNodeW7_Derived::NiOBBNode_DivideTriangles(const V3* vertices, int first, int last, const int* srcIndices, int* outLeft,
-                                     int* outRight, int* dstIndices)
+// pdb: NiOBBNode::DivideTriangles | NiOBBNode.obj | retail, upstream name already matches, high
+// pdb params: pCentroid, i0, i1, pISplit, j0, j1, pOSplit
+// pdb locals: usHalf, basis, i, iAxis, center, d, k
+void RayNodeW7_Derived::NiOBBNode_DivideTriangles(const V3* pCentroid, int i0, int i1, const int* pISplit, int* j0,
+                                     int* j1, int* pOSplit)
 {
 
-    int axes = (first + last) / 2;
-    *outLeft = first - 1;
-    *outRight = last + 1;
+    int axes = (i0 + i1) / 2;
+    *j0 = i0 - 1;
+    *j1 = i1 + 1;
 
     const V3* mid = &matrix.row0;
     int axis = 0;
     do
     {
-        if (*outLeft >= first && *outRight <= last)
+        if (*j0 >= i0 && *j1 <= i1)
         {
             break;
         }
-        *outLeft = first - 1;
-        *outRight = 1 + last;
-        __assume(first <= last);
-        for (int k = first; k <= last; ++k)
+        *j0 = i0 - 1;
+        *j1 = 1 + i1;
+        __assume(i0 <= i1);
+        for (int k = i0; k <= i1; ++k)
         {
-            int idx = srcIndices[k];
-            const V3& point = vertices[idx];
+            int idx = pISplit[k];
+            const V3& point = pCentroid[idx];
             V3 diff;
             diff = point - center;
             float proj = dotProduct(diff, mid[axis]);
             if (proj > 0.0f)
             {
-                dstIndices[++*outLeft] = idx;
+                pOSplit[++*j0] = idx;
             }
             else if (proj < 0.0f)
             {
-                dstIndices[--*outRight] = idx;
+                pOSplit[--*j1] = idx;
             }
             else if (k <= axes)
             {
-                dstIndices[++*outLeft] = idx;
+                pOSplit[++*j0] = idx;
             }
             else
             {
-                dstIndices[--*outRight] = idx;
+                pOSplit[--*j1] = idx;
             }
         }
         axis += 1;
@@ -835,13 +858,13 @@ void RayNodeW7_Derived::NiOBBNode_DivideTriangles(const V3* vertices, int first,
 
     if (axis == 3)
     {
-        if (*outLeft < first || *outRight > last)
+        if (*j0 < i0 || *j1 > i1)
         {
-            *outLeft = axes;
-            *outRight = 1 + axes;
-            for (int k = first; k <= last; ++k)
+            *j0 = axes;
+            *j1 = 1 + axes;
+            for (int k = i0; k <= i1; ++k)
             {
-                dstIndices[k] = srcIndices[k];
+                pOSplit[k] = pISplit[k];
             }
         }
     }
@@ -877,9 +900,9 @@ struct S00eb9fa0_Node
         m_0x84 = 0;
         m_0x88 = 0;
     }
-    void ComputeTriangleBounds(void* a0, const unsigned short* a1, const V3* a2, float* a3, V3* a4, int iStart,
+    void NiOBBNode_ComputeCovarianceAndMean(void* a0, const unsigned short* a1, const V3* a2, float* a3, V3* a4, int iStart,
                                int iEnd, int* a7);
-    __declspec(noalias) void NiOBBNode_DivideTriangles(V3* a5, int iStart, int iEnd, int* a7, int* piMid, int* piRight, int* a8);
+    __declspec(noalias) void NiOBBNode_DivideTriangles(V3* pCentroid, int i0, int i1, int* pISplit, int* j0, int* j1, int* pOSplit);
     void BuildNode(void* a0, const unsigned short* a1, const V3* a2, const V3* a3, float* a4, V3* a5, int iStart,
                    int iEnd, int* a7, int* a8, int iMin);
 };
@@ -892,10 +915,13 @@ struct S00eb9fa0_Leaf : S00eb9fa0_Node
 };
 // Recursively partitions the inclusive range [iStart, iEnd] into child nodes or leaves stored in m_0x80 and m_0x84.
 // @fnv 0x00eb9fa0
+// pdb: NiOBBNode::ComputeOBB | NiOBBNode.obj | retail, object-file run extension, low
+// pdb params: pRoot, pTriList, pVertex, pArea, pCentroid, i0, i1, pISplit
+// pdb locals: eigenvalue, lower, I, delta, C, radius, basis, upper, extent, center, i, j, r, z, b, q, x, y, usTriangle, p
 void S00eb9fa0_Node::BuildNode(void* a0, const unsigned short* apIndices, const V3* apVertices, const V3* a3, float* a4,
                                V3* a5, int iStart, int iEnd, int* a7, int* apOrder, int iMin)
 {
-    ComputeTriangleBounds(a0, apIndices, apVertices, a4, a5, iStart, iEnd, a7);
+    NiOBBNode_ComputeCovarianceAndMean(a0, apIndices, apVertices, a4, a5, iStart, iEnd, a7);
     if (iEnd - iStart < iMin)
     {
         m_0x80 = 0;

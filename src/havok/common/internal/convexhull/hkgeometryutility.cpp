@@ -22,7 +22,7 @@ struct FUN_00d5a5e0_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void FinishA();
 };
 
@@ -40,6 +40,8 @@ struct FUN_00d5a5e0_ctxB
 
 // Initializes two context objects, looks up a1 in the first, and if found calls SetB with 0 and a2, then finishes.
 // @fnv 0x00d5a5e0
+// pdb: bhkCharControllerShape::bhkCharControllerShape | bhkCharControllerShape.obj | retail, object-file run extension, low
+// pdb params: arInfo
 void __cdecl InitAndSetB(void* a1, int a2)
 {
     FUN_00d5a5e0_ctxB b;
@@ -65,7 +67,7 @@ struct FUN_00d5a630_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void SetF(float f, int zero);
     void SetC(int a3);
     void FinishA();
@@ -88,6 +90,7 @@ extern float DAT_0106ea1c;
 // Initialises two context objects, sets a flag, looks up a1 in the first context and, if found, applies a2 and a3 and a float constant before finishing.
 // @fnv 0x00d5a630
 // src: HAVOK_LIB 0x00d5a630
+// pdb: bhkCharControllerShape::`scalar deleting destructor' | bhkCharControllerShape.obj | retail, object-file run extension, low
 void __cdecl hkGeometryUtility_createConvexGeometry(void* a1, int a2, int a3)
 {
     FUN_00d5a630_ctxB b;
@@ -183,22 +186,26 @@ void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl InitAndSetB(const D5C110StridedVertices& vertices, D5C110Geometry& out);
 
 // @fnv 0x00d5c110
-void __cdecl BuildGeometryFromShape(const void* shape, D5C110Geometry& aGeometry)
+// src: XBOX_RETAIL_PDB 0x00d5c110
+// pdb: hkGeometryUtility::createGeometryFromPlaneEquations | hkGeometryUtility.obj | retail, object-file gap fill, high
+// pdb params: planeEquationsIn, geometryOut
+// pdb locals: verts, stridedVertices
+void __cdecl hkGeometryUtility_createGeometryFromPlaneEquations(const void* planeEquationsIn, D5C110Geometry& geometryOut)
 {
     D5C110VertexArray vertices;
-    ProcessArg(shape, vertices);
+    ProcessArg(planeEquationsIn, vertices);
     if (vertices.m_iElementCount > 0)
     {
         D5C110StridedVertices stridedVertices;
         stridedVertices.m_iStridedVertexCount = vertices.m_iElementCount;
         stridedVertices.m_kVertices = &vertices.m_data->x;
         stridedVertices.m_iVertexStride = sizeof(Vec4);
-        InitAndSetB(stridedVertices, aGeometry);
+        InitAndSetB(stridedVertices, geometryOut);
     }
     else
     {
-        aGeometry.m_iTriangleCount = 0;
-        aGeometry.m_iStridedVertexCount = 0;
+        geometryOut.m_iTriangleCount = 0;
+        geometryOut.m_iStridedVertexCount = 0;
     }
     vertices.ClearAndRelease();
 }
@@ -290,20 +297,23 @@ void __cdecl Hkgeometryutility_ProcessEntries_00d5beb0(S00d5c060_Result* self, c
 // Allocates a buffer, copies vertex coordinates from src->m_pData into it, and passes it to FUN_00d5beb0 to produce a result.
 // @fnv 0x00d5c060
 // src: HAVOK_LIB 0x00d5c060
-S00d5c060_Result hkGeometryUtility_createMinBoundingSphere(const S00d5c060_Src* src, float scale)
+// pdb: hkGeometryUtility::createMinBoundingSphere | hkGeometryUtility.obj | retail, upstream name already matches, high
+// pdb params: stridedVertsIn, radiusEpsilon
+// pdb locals: assertBuf, ostr
+S00d5c060_Result hkGeometryUtility_createMinBoundingSphere(const S00d5c060_Src* stridedVertsIn, float radiusEpsilon)
 {
     S00d5c060_Result result;
-    int count = src->m_uiItemCount;
+    int count = stridedVertsIn->m_uiItemCount;
     char* data = AllocateWithHeader(&hkMemoryRouter_getInstance().heap(), count * 16);
-    int quad = src->m_iElementIndex / 4;
+    int quad = stridedVertsIn->m_iElementIndex / 4;
     Vec4* d = (Vec4*)data;
-    for (int i = 0; i < src->m_uiItemCount; ++i)
+    for (int i = 0; i < stridedVertsIn->m_uiItemCount; ++i)
     {
-        d[i].x = ((const float*)src->m_pData)[i * quad];
-        d[i].y = ((const float*)src->m_pData)[i * quad + 1];
-        d[i].z = ((const float*)src->m_pData)[i * quad + 2];
+        d[i].x = ((const float*)stridedVertsIn->m_pData)[i * quad];
+        d[i].y = ((const float*)stridedVertsIn->m_pData)[i * quad + 1];
+        d[i].z = ((const float*)stridedVertsIn->m_pData)[i * quad + 2];
     }
-    Hkgeometryutility_ProcessEntries_00d5beb0(&result, data, src->m_uiItemCount, 0, scale);
+    Hkgeometryutility_ProcessEntries_00d5beb0(&result, data, stridedVertsIn->m_uiItemCount, 0, radiusEpsilon);
     hkMemoryRouter_easyFree(&hkMemoryRouter_getInstance().heap(), data);
     return result;
 }
@@ -449,10 +459,13 @@ static __declspec(noinline) float Hkgeometryutility_UpdateState_00d5b990(S4 vert
 // Computes the oriented bounding box of a shape's triangle vertices, writing the half-extents and transform to outExt and outXf.
 // @fnv 0x00d5d270
 // src: XBOX_PDB 0x00d5d270
-void hkGeometryUtility_calcObb(const void* shape, ObbVec* outExt, ObbXf* outXf, int mode)
+// pdb: hkGeometryUtility::calcObb | hkGeometryUtility.obj | retail, upstream name already matches, high
+// pdb params: stridedVertsIn, halfExtents, transform, mode
+// pdb locals: cov, positionAabb, geom, axesCov, axesAabb, halfExtentsCov, halfExtentsAabb, triangleVerts, positionCov, mu, assertBuf, ostr
+void hkGeometryUtility_calcObb(const void* stridedVertsIn, ObbVec* halfExtents, ObbXf* transform, int mode)
 {
     ObbGeom geom;
-    InitAndSetB(*(const D5C110StridedVertices*)shape, *(D5C110Geometry*)&geom);
+    InitAndSetB(*(const D5C110StridedVertices*)stridedVertsIn, *(D5C110Geometry*)&geom);
 
     int nStack = geom.numTris * 3;
     ObbArr arr;
@@ -481,7 +494,7 @@ void hkGeometryUtility_calcObb(const void* shape, ObbVec* outExt, ObbXf* outXf, 
         arr.m_data[i * 3 + 2].q = geom.verts[geom.tris[i].i2].q;
     }
 
-    if (getIsBoxGeometry(&geom, outExt, outXf, DAT_01013ea4))
+    if (getIsBoxGeometry(&geom, halfExtents, transform, DAT_01013ea4))
     {
         char* saved = arr.m_pTrailingData;
         if (saved == (char*)arr.m_data)
@@ -529,22 +542,22 @@ void hkGeometryUtility_calcObb(const void* shape, ObbVec* outExt, ObbXf* outXf, 
     {
         vPickedCtr = f.ctr0.q;
         pickedRot = &f.rot0;
-        outExt->q = f.ext0.q;
+        halfExtents->q = f.ext0.q;
     }
     else
     {
         vPickedCtr = f.ctr1.q;
         pickedRot = &f.rot1;
-        outExt->q = f.ext1.q;
+        halfExtents->q = f.ext1.q;
     }
     LocalM128 vCol0 = pickedRot->c0.q;
     LocalM128 vCol1 = pickedRot->c1.q;
     LocalM128 vCol2 = pickedRot->c2.q;
     _ReadWriteBarrier();
-    outXf->c0.q = vCol0;
-    outXf->c1.q = vCol1;
-    outXf->c2.q = vCol2;
-    outXf->c3.q = vPickedCtr;
+    transform->c0.q = vCol0;
+    transform->c1.q = vCol1;
+    transform->c2.q = vCol2;
+    transform->c3.q = vPickedCtr;
 
     char* saved = arr.m_pTrailingData;
     if (saved == (char*)arr.m_data)
@@ -611,6 +624,8 @@ static __declspec(noinline) Vec4* Object_ComputeValue_00d5bce0(Vec4* res, Vec4* 
 // Moves points whose XYZ distance from out exceeds out[3] to the front, then recurses on the preceding points.
 // @fnv 0x00d5beb0
 // src: GUESS 0x00d5beb0 (confidence: low)
+// pdb: miniSphereRecurseCall | hkGeometryUtility.obj | retail, object-file run extension, low
+// pdb params: verts, numVerts, supportSize, radiusEpsilon
 LocalM128* __cdecl Hkgeometryutility_ProcessEntries_00d5beb0(LocalM128* apResult, MyPoint* apPoints, int count, int depth, float t)
 {
     Vec4::Aligned rTempA(Vec4::Uninitialized);

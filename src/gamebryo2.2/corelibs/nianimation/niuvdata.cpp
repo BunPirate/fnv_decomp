@@ -33,24 +33,27 @@ extern void(__cdecl* DAT_011f38a0[])(void*);
 extern unsigned char DAT_011f3758[];
 // @fnv 0x00a45280
 // src: XBOX_PDB 0x00a45280
-void NiUVData::ReplaceVOffsetAnim(void* keys, unsigned int count, int type)
+// pdb: NiUVData::ReplaceVOffsetAnim | NiUVData.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiUVData::ReplaceVOffsetAnim(void* pkKeys, unsigned int uiNumKeys, int eType)
 {
-    void* oldKeys = m_pVOffsetKeys;
+    void* oldKeys = m_pkVOffsetKeys;
     if (oldKeys)
-        DAT_011f38a0[m_uiVOffsetKeyStride](oldKeys);
-    if (keys && count)
+        DAT_011f38a0[m_eVOffsetType](oldKeys);
+    if (pkKeys && uiNumKeys)
     {
-        m_uiNumVOffsetKeys = count;
-        m_pVOffsetKeys = reinterpret_cast<unsigned char*>(keys);
-        m_uiVOffsetKeyStride = type;
-        m_ucByte49 = DAT_011f3758[type];
+        m_uiNumVOffsetKeys = uiNumKeys;
+        m_pkVOffsetKeys = reinterpret_cast<unsigned char*>(pkKeys);
+        m_eVOffsetType = eType;
+        m_ucVOffsetSize = DAT_011f3758[eType];
     }
     else
     {
         m_uiNumVOffsetKeys = 0;
-        m_pVOffsetKeys = 0;
-        m_uiVOffsetKeyStride = 0;
-        m_ucByte49 = 0;
+        m_pkVOffsetKeys = 0;
+        m_eVOffsetType = 0;
+        m_ucVOffsetSize = 0;
     }
 }
 
@@ -58,23 +61,26 @@ void NiUVData::ReplaceVOffsetAnim(void* keys, unsigned int count, int type)
 // Releases the previous key data, then stores the new keys, count and type (or clears them when keys or count is null/zero).
 // @fnv 0x00a45340
 // src: XBOX_PDB 0x00a45340
-void NiUVData::ReplaceVTilingAnim(void* keys, unsigned int count, unsigned int type)
+// pdb: NiUVData::ReplaceVTilingAnim | NiUVData.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiUVData::ReplaceVTilingAnim(void* pkKeys, unsigned int uiNumKeys, unsigned int eType)
 {
-    if (m_pVTilingKeys)
-        DAT_011f38a0[m_uiVTilingKeyStride](m_pVTilingKeys);
-    if (keys && count)
+    if (m_pkVTilingKeys)
+        DAT_011f38a0[m_eVTilingType](m_pkVTilingKeys);
+    if (pkKeys && uiNumKeys)
     {
-        m_uiNumVTilingKeys = count;
-        m_pVTilingKeys = reinterpret_cast<unsigned char*>(keys);
-        m_uiVTilingKeyStride = type;
-        m_ucByte4B = DAT_011f3758[type];
+        m_uiNumVTilingKeys = uiNumKeys;
+        m_pkVTilingKeys = reinterpret_cast<unsigned char*>(pkKeys);
+        m_eVTilingType = eType;
+        m_ucVTilingSize = DAT_011f3758[eType];
     }
     else
     {
         m_uiNumVTilingKeys = 0;
-        m_pVTilingKeys = 0;
-        m_uiVTilingKeyStride = 0;
-        m_ucByte4B = 0;
+        m_pkVTilingKeys = 0;
+        m_eVTilingType = 0;
+        m_ucVTilingSize = 0;
     }
 }
 
@@ -82,46 +88,52 @@ void NiUVData::ReplaceVTilingAnim(void* keys, unsigned int count, unsigned int t
 // Releases the current key array, then stores the new keys, count and type (or clears them when keys or numKeys is null/zero).
 // @fnv 0x00a45220
 // src: XBOX_PDB 0x00a45220
-void NiUVData::ReplaceUOffsetAnim(TimedAnimationKey* keys, unsigned int numKeys, unsigned int type)
+// pdb: NiUVData::ReplaceUOffsetAnim | NiUVData.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiUVData::ReplaceUOffsetAnim(TimedAnimationKey* pkKeys, unsigned int uiNumKeys, unsigned int eType)
 {
-    if (m_pUOffsetKeys)
-        DAT_011f38a0[m_uiUOffsetKeyStride](m_pUOffsetKeys);
-    if (keys && numKeys)
+    if (m_pkUOffsetKeys)
+        DAT_011f38a0[m_eUOffsetType](m_pkUOffsetKeys);
+    if (pkKeys && uiNumKeys)
     {
-        m_uiNumUOffsetKeys = numKeys;
-        m_pUOffsetKeys = reinterpret_cast<unsigned char*>(keys);
-        m_uiUOffsetKeyStride = type;
-        m_ucByte48 = DAT_011f3758[type];
+        m_uiNumUOffsetKeys = uiNumKeys;
+        m_pkUOffsetKeys = reinterpret_cast<unsigned char*>(pkKeys);
+        m_eUOffsetType = eType;
+        m_ucUOffsetSize = DAT_011f3758[eType];
     }
     else
     {
         m_uiNumUOffsetKeys = 0;
-        m_pUOffsetKeys = 0;
-        m_uiUOffsetKeyStride = 0;
-        m_ucByte48 = 0;
+        m_pkUOffsetKeys = 0;
+        m_eUOffsetType = 0;
+        m_ucUOffsetSize = 0;
     }
 }
 
 // Releases the previous key array, then stores the new keys, count and type (or clears them when keys or count is null/zero).
 // @fnv 0x00a452e0
 // src: XBOX_PDB 0x00a452e0
-void NiUVData::ReplaceUTilingAnim(void* keys, unsigned int count, unsigned int type)
+// pdb: NiUVData::ReplaceUTilingAnim | NiUVData.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiUVData::ReplaceUTilingAnim(void* pkKeys, unsigned int uiNumKeys, unsigned int eType)
 {
-    if (m_pUTilingKeys)
-        DAT_011f38a0[m_uiUTilingKeyStride](m_pUTilingKeys);
-    if (keys && count)
+    if (m_pkUTilingKeys)
+        DAT_011f38a0[m_eUTilingType](m_pkUTilingKeys);
+    if (pkKeys && uiNumKeys)
     {
-        m_uiNumUTilingKeys = count;
-        m_pUTilingKeys = reinterpret_cast<unsigned char*>(keys);
-        m_uiUTilingKeyStride = type;
-        m_ucByte4A = DAT_011f3758[type];
+        m_uiNumUTilingKeys = uiNumKeys;
+        m_pkUTilingKeys = reinterpret_cast<unsigned char*>(pkKeys);
+        m_eUTilingType = eType;
+        m_ucUTilingSize = DAT_011f3758[eType];
     }
     else
     {
         m_uiNumUTilingKeys = 0;
-        m_pUTilingKeys = 0;
-        m_uiUTilingKeyStride = 0;
-        m_ucByte4A = 0;
+        m_pkUTilingKeys = 0;
+        m_eUTilingType = 0;
+        m_ucUTilingSize = 0;
     }
 }
 
@@ -134,18 +146,18 @@ void NiUVData::Destructor()
 {
     *(void**)this = (void*)&DAT_01097f84;
     void* p;
-    p = m_pUOffsetKeys;
+    p = m_pkUOffsetKeys;
     if (p)
-        DAT_011f38a0[m_uiUOffsetKeyStride](p);
-    p = m_pVOffsetKeys;
+        DAT_011f38a0[m_eUOffsetType](p);
+    p = m_pkVOffsetKeys;
     if (p)
-        DAT_011f38a0[m_uiVOffsetKeyStride](p);
-    p = m_pUTilingKeys;
+        DAT_011f38a0[m_eVOffsetType](p);
+    p = m_pkUTilingKeys;
     if (p)
-        DAT_011f38a0[m_uiUTilingKeyStride](p);
-    p = m_pVTilingKeys;
+        DAT_011f38a0[m_eUTilingType](p);
+    p = m_pkVTilingKeys;
     if (p)
-        DAT_011f38a0[m_uiVTilingKeyStride](p);
+        DAT_011f38a0[m_eVTilingType](p);
     ((NiRefObject*)this)->NiRefObject::~NiRefObject();
 }
 
@@ -156,42 +168,44 @@ char* __cdecl NiGetViewerString_00a7d510(char const*, unsigned int);
 
 
 // @fnv 0x00a457d0
-void NiUVData::AppendKeyNames(StrArr* apViewerStrings)
+// pdb: NiUVData::GetViewerStrings | NiUVData.obj | retail, string-set bridge, high
+// pdb params: pStrings
+void NiUVData::AppendKeyNames(StrArr* pStrings)
 {
     char* pString;
     unsigned int nIndex;
 
-    AppendCameraPathEntries(apViewerStrings);
+    AppendCameraPathEntries(pStrings);
 
     pString = _FUN_00a7d330(const_cast<char*>(static_cast<const char*>(g_011f3f10)));
-    nIndex = apViewerStrings->m_usSize;
-    if (nIndex >= apViewerStrings->m_usMaxSize)
-        apViewerStrings->SetSize(apViewerStrings->m_usGrowBy + nIndex);
-    apViewerStrings->SetAt(nIndex, pString);
+    nIndex = pStrings->m_usSize;
+    if (nIndex >= pStrings->m_usMaxSize)
+        pStrings->SetSize(pStrings->m_usGrowBy + nIndex);
+    pStrings->SetAt(nIndex, pString);
 
     pString = NiGetViewerString_00a7d510("m_uiNumUOffsetKeys", m_uiNumUOffsetKeys);
-    nIndex = apViewerStrings->m_usSize;
-    if (nIndex >= apViewerStrings->m_usMaxSize)
-        apViewerStrings->SetSize(apViewerStrings->m_usGrowBy + nIndex);
-    apViewerStrings->SetAt(nIndex, pString);
+    nIndex = pStrings->m_usSize;
+    if (nIndex >= pStrings->m_usMaxSize)
+        pStrings->SetSize(pStrings->m_usGrowBy + nIndex);
+    pStrings->SetAt(nIndex, pString);
 
     pString = NiGetViewerString_00a7d510("m_uiNumUTilingKeys", m_uiNumUTilingKeys);
-    nIndex = apViewerStrings->m_usSize;
-    if (nIndex >= apViewerStrings->m_usMaxSize)
-        apViewerStrings->SetSize(apViewerStrings->m_usGrowBy + nIndex);
-    apViewerStrings->SetAt(nIndex, pString);
+    nIndex = pStrings->m_usSize;
+    if (nIndex >= pStrings->m_usMaxSize)
+        pStrings->SetSize(pStrings->m_usGrowBy + nIndex);
+    pStrings->SetAt(nIndex, pString);
 
     pString = NiGetViewerString_00a7d510("m_uiNumVOffsetKeys", m_uiNumVOffsetKeys);
-    nIndex = apViewerStrings->m_usSize;
-    if (nIndex >= apViewerStrings->m_usMaxSize)
-        apViewerStrings->SetSize(apViewerStrings->m_usGrowBy + nIndex);
-    apViewerStrings->SetAt(nIndex, pString);
+    nIndex = pStrings->m_usSize;
+    if (nIndex >= pStrings->m_usMaxSize)
+        pStrings->SetSize(pStrings->m_usGrowBy + nIndex);
+    pStrings->SetAt(nIndex, pString);
 
     pString = NiGetViewerString_00a7d510("m_uiNumVTilingKeys", m_uiNumVTilingKeys);
-    nIndex = apViewerStrings->m_usSize;
-    if (nIndex >= apViewerStrings->m_usMaxSize)
-        apViewerStrings->SetSize(apViewerStrings->m_usGrowBy + nIndex);
-    apViewerStrings->SetAt(nIndex, pString);
+    nIndex = pStrings->m_usSize;
+    if (nIndex >= pStrings->m_usMaxSize)
+        pStrings->SetSize(pStrings->m_usGrowBy + nIndex);
+    pStrings->SetAt(nIndex, pString);
 }
 
 extern bool(__cdecl* DAT_011f3ae0[])(void*, void*);
@@ -209,46 +223,46 @@ bool NiUVData::IsEqual_00a45090(NiUVData* pkOther)
     if (!NiObject::IsEqual(pkOther))
         return false;
 
-    if (m_uiNumUOffsetKeys != pkOther->m_uiNumUOffsetKeys || m_uiUOffsetKeyStride != pkOther->m_uiUOffsetKeyStride ||
-        m_uiNumVOffsetKeys != pkOther->m_uiNumVOffsetKeys || m_uiVOffsetKeyStride != pkOther->m_uiVOffsetKeyStride ||
-        m_uiNumUTilingKeys != pkOther->m_uiNumUTilingKeys || m_uiUTilingKeyStride != pkOther->m_uiUTilingKeyStride ||
-        m_uiNumVTilingKeys != pkOther->m_uiNumVTilingKeys || m_uiVTilingKeyStride != pkOther->m_uiVTilingKeyStride ||
-        m_ucByte48 != pkOther->m_ucByte48 || m_ucByte49 != pkOther->m_ucByte49 || m_ucByte4A != pkOther->m_ucByte4A ||
-        m_ucByte4B != pkOther->m_ucByte4B)
+    if (m_uiNumUOffsetKeys != pkOther->m_uiNumUOffsetKeys || m_eUOffsetType != pkOther->m_eUOffsetType ||
+        m_uiNumVOffsetKeys != pkOther->m_uiNumVOffsetKeys || m_eVOffsetType != pkOther->m_eVOffsetType ||
+        m_uiNumUTilingKeys != pkOther->m_uiNumUTilingKeys || m_eUTilingType != pkOther->m_eUTilingType ||
+        m_uiNumVTilingKeys != pkOther->m_uiNumVTilingKeys || m_eVTilingType != pkOther->m_eVTilingType ||
+        m_ucUOffsetSize != pkOther->m_ucUOffsetSize || m_ucVOffsetSize != pkOther->m_ucVOffsetSize || m_ucUTilingSize != pkOther->m_ucUTilingSize ||
+        m_ucVTilingSize != pkOther->m_ucVTilingSize)
         return false;
 
     unsigned int i;
     bool(__cdecl * pfnKeyEqual)(void*, void*);
 
-    pfnKeyEqual = DAT_011f3ae0[m_uiUOffsetKeyStride];
+    pfnKeyEqual = DAT_011f3ae0[m_eUOffsetType];
     for (i = 0; i < m_uiNumUOffsetKeys; i++)
     {
-        if (!pfnKeyEqual(GetKeyPointerByIndex(m_pUOffsetKeys, i, m_ucByte48),
-                         GetKeyPointerByIndex(pkOther->m_pUOffsetKeys, i, m_ucByte48)))
+        if (!pfnKeyEqual(GetKeyPointerByIndex(m_pkUOffsetKeys, i, m_ucUOffsetSize),
+                         GetKeyPointerByIndex(pkOther->m_pkUOffsetKeys, i, m_ucUOffsetSize)))
             return false;
     }
 
-    pfnKeyEqual = DAT_011f3ae0[m_uiVOffsetKeyStride];
+    pfnKeyEqual = DAT_011f3ae0[m_eVOffsetType];
     for (i = 0; i < m_uiNumVOffsetKeys; i++)
     {
-        if (!pfnKeyEqual(GetKeyPointerByIndex(m_pVOffsetKeys, i, m_ucByte49),
-                         GetKeyPointerByIndex(pkOther->m_pVOffsetKeys, i, m_ucByte49)))
+        if (!pfnKeyEqual(GetKeyPointerByIndex(m_pkVOffsetKeys, i, m_ucVOffsetSize),
+                         GetKeyPointerByIndex(pkOther->m_pkVOffsetKeys, i, m_ucVOffsetSize)))
             return false;
     }
 
-    pfnKeyEqual = DAT_011f3ae0[m_uiUTilingKeyStride];
+    pfnKeyEqual = DAT_011f3ae0[m_eUTilingType];
     for (i = 0; i < m_uiNumUTilingKeys; i++)
     {
-        if (!pfnKeyEqual(GetKeyPointerByIndex(m_pUTilingKeys, i, m_ucByte4A),
-                         GetKeyPointerByIndex(pkOther->m_pUTilingKeys, i, m_ucByte4A)))
+        if (!pfnKeyEqual(GetKeyPointerByIndex(m_pkUTilingKeys, i, m_ucUTilingSize),
+                         GetKeyPointerByIndex(pkOther->m_pkUTilingKeys, i, m_ucUTilingSize)))
             return false;
     }
 
-    pfnKeyEqual = DAT_011f3ae0[m_uiVTilingKeyStride];
+    pfnKeyEqual = DAT_011f3ae0[m_eVTilingType];
     for (i = 0; i < m_uiNumVTilingKeys; i++)
     {
-        if (!pfnKeyEqual(GetKeyPointerByIndex(m_pVTilingKeys, i, m_ucByte4B),
-                         GetKeyPointerByIndex(pkOther->m_pVTilingKeys, i, m_ucByte4B)))
+        if (!pfnKeyEqual(GetKeyPointerByIndex(m_pkVTilingKeys, i, m_ucVTilingSize),
+                         GetKeyPointerByIndex(pkOther->m_pkVTilingKeys, i, m_ucVTilingSize)))
             return false;
     }
 
@@ -301,6 +315,9 @@ extern NiUVKeyFillFunction g_apfnFloatKeyFill[];
 
 // Loads the base object, then reads U/V offset and U/V tiling key blocks from the stream and replaces each key set.
 // @fnv 0x00a453a0
+// pdb: NiUVData::LoadBinary | NiUVData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiNumKeys, pfnDerived, eUOffsetType, pfnCreate, pkUOffsetKeys, pkVOffsetKeys, eVOffsetType, pkUTilingKeys, eUTilingType, pkVTilingKeys, eVTilingType
 void NiUVData::LoadBinary(NiStream& kStream)
 {
     NiObject::LoadBinary(kStream);
@@ -312,11 +329,11 @@ void NiUVData::LoadBinary(NiStream& kStream)
     if (uiNumKeys > 0)
     {
         ReadStreamValue(kStream, eType);
-        m_ucByte48 = g_aucFloatKeySizes[eType];
+        m_ucUOffsetSize = g_aucFloatKeySizes[eType];
         NiUVKeyCreateFunction pfnCreate = g_apfnFloatKeyCreate[eType];
         NiUVKey* pkKeys = pfnCreate(kStream, uiNumKeys);
         NiUVKeyFillFunction pfnFill = g_apfnFloatKeyFill[eType];
-        pfnFill(pkKeys, uiNumKeys, m_ucByte48);
+        pfnFill(pkKeys, uiNumKeys, m_ucUOffsetSize);
         ReplaceUOffsetKeys(pkKeys, uiNumKeys, eType);
     }
 
@@ -324,11 +341,11 @@ void NiUVData::LoadBinary(NiStream& kStream)
     if (uiNumKeys > 0)
     {
         ReadStreamValue(kStream, eType);
-        m_ucByte49 = g_aucFloatKeySizes[eType];
+        m_ucVOffsetSize = g_aucFloatKeySizes[eType];
         NiUVKeyCreateFunction pfnCreate = g_apfnFloatKeyCreate[eType];
         NiUVKey* pkKeys = pfnCreate(kStream, uiNumKeys);
         NiUVKeyFillFunction pfnFill = g_apfnFloatKeyFill[eType];
-        pfnFill(pkKeys, uiNumKeys, m_ucByte49);
+        pfnFill(pkKeys, uiNumKeys, m_ucVOffsetSize);
         ReplaceVOffsetKeys(pkKeys, uiNumKeys, eType);
     }
 
@@ -336,11 +353,11 @@ void NiUVData::LoadBinary(NiStream& kStream)
     if (uiNumKeys > 0)
     {
         ReadStreamValue(kStream, eType);
-        m_ucByte4A = g_aucFloatKeySizes[eType];
+        m_ucUTilingSize = g_aucFloatKeySizes[eType];
         NiUVKeyCreateFunction pfnCreate = g_apfnFloatKeyCreate[eType];
         NiUVKey* pkKeys = pfnCreate(kStream, uiNumKeys);
         NiUVKeyFillFunction pfnFill = g_apfnFloatKeyFill[eType];
-        pfnFill(pkKeys, uiNumKeys, m_ucByte4A);
+        pfnFill(pkKeys, uiNumKeys, m_ucUTilingSize);
         ReplaceUTilingKeys(pkKeys, uiNumKeys, eType);
     }
 
@@ -348,11 +365,11 @@ void NiUVData::LoadBinary(NiStream& kStream)
     if (uiNumKeys > 0)
     {
         ReadStreamValue(kStream, eType);
-        m_ucByte4B = g_aucFloatKeySizes[eType];
+        m_ucVTilingSize = g_aucFloatKeySizes[eType];
         NiUVKeyCreateFunction pfnCreate = g_apfnFloatKeyCreate[eType];
         NiUVKey* pkKeys = pfnCreate(kStream, uiNumKeys);
         NiUVKeyFillFunction pfnFill = g_apfnFloatKeyFill[eType];
-        pfnFill(pkKeys, uiNumKeys, m_ucByte4B);
+        pfnFill(pkKeys, uiNumKeys, m_ucVTilingSize);
         ReplaceVTilingKeys(pkKeys, uiNumKeys, eType);
     }
 }
@@ -376,31 +393,34 @@ extern void(__cdecl* DAT_011f3a50[])(NiStream& kStream, void* pkKeys, unsigned i
 
 // Saves the base object, then writes each UV key count and any key array via the key-type saver table.
 // @fnv 0x00a45610
+// pdb: NiUVData::SaveBinary | NiUVData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pfnSave
 void NiUVData::SaveBinary(NiStream& kStream)
 {
     NiObject::SaveBinary(kStream);
     WriteBinaryValue(kStream, m_uiNumUOffsetKeys);
     if (m_uiNumUOffsetKeys > 0)
     {
-        WriteBinaryValue(kStream, m_uiUOffsetKeyStride);
-        DAT_011f3a50[m_uiUOffsetKeyStride](kStream, m_pUOffsetKeys, m_uiNumUOffsetKeys);
+        WriteBinaryValue(kStream, m_eUOffsetType);
+        DAT_011f3a50[m_eUOffsetType](kStream, m_pkUOffsetKeys, m_uiNumUOffsetKeys);
     }
     WriteBinaryValue(kStream, m_uiNumVOffsetKeys);
     if (m_uiNumVOffsetKeys > 0)
     {
-        WriteBinaryValue(kStream, m_uiVOffsetKeyStride);
-        DAT_011f3a50[m_uiVOffsetKeyStride](kStream, m_pVOffsetKeys, m_uiNumVOffsetKeys);
+        WriteBinaryValue(kStream, m_eVOffsetType);
+        DAT_011f3a50[m_eVOffsetType](kStream, m_pkVOffsetKeys, m_uiNumVOffsetKeys);
     }
     WriteBinaryValue(kStream, m_uiNumUTilingKeys);
     if (m_uiNumUTilingKeys > 0)
     {
-        WriteBinaryValue(kStream, m_uiUTilingKeyStride);
-        DAT_011f3a50[m_uiUTilingKeyStride](kStream, m_pUTilingKeys, m_uiNumUTilingKeys);
+        WriteBinaryValue(kStream, m_eUTilingType);
+        DAT_011f3a50[m_eUTilingType](kStream, m_pkUTilingKeys, m_uiNumUTilingKeys);
     }
     WriteBinaryValue(kStream, m_uiNumVTilingKeys);
     if (m_uiNumVTilingKeys > 0)
     {
-        WriteBinaryValue(kStream, m_uiVTilingKeyStride);
-        DAT_011f3a50[m_uiVTilingKeyStride](kStream, m_pVTilingKeys, m_uiNumVTilingKeys);
+        WriteBinaryValue(kStream, m_eVTilingType);
+        DAT_011f3a50[m_eVTilingType](kStream, m_pkVTilingKeys, m_uiNumVTilingKeys);
     }
 }

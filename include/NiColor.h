@@ -3,6 +3,7 @@
 
 class NiStream;
 
+// pdb: class NiColor, size 0xc, 3 members
 class NiColor
 {
   public:
@@ -25,7 +26,7 @@ class NiColor
     void SaveBinary(NiStream& stream);
     void SaveBinary(NiStream* stream);
     char* FormatToBuffer(char* buffer);
-    char* GetFormattedString(const char* prefix) const;
+    char* GetViewerString(const char* prefix) const;
     float Luminance();
     void __dflt_ctor_closure();
 

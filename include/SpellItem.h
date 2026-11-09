@@ -2,6 +2,7 @@
 
 #include "MagicItemForm.h"
 
+// pdb: class SpellItem, size 0x44, bases: MagicItemForm, 1 members
 class SpellItem : public MagicItemForm
 {
 public:

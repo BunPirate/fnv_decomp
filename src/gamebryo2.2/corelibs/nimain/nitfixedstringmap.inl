@@ -3,6 +3,9 @@
 
 template<>
 // @fnv 0x00a8f770
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiAVObject *> >,NiAVObject *>::GetNext | NiDefaultAVObjectPalette.obj | retail, call graph, medium
+// pdb params: pos, kKey, val
+// pdb locals: pkItem, i
 void NiAVObjectFixedStringMap::GetNext(void*& pos, NiFixedString& key, NiAVObject*& value) const
 {
     EntryType* item = static_cast<EntryType*>(pos);
@@ -36,6 +39,10 @@ void NiAVObjectFixedStringMap::GetNext(void*& pos, NiFixedString& key, NiAVObjec
 
 template<>
 // @fnv 0x00a6e980
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiAVObject *> >,NiAVObject *>::SetAt | NiControllerManager.obj | retail, call graph, low
+// pdb note: debug build links it to NiDefaultAVObjectPalette::GetObjectCount
+// pdb params: kKey, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void NiCharFixedStringMap::SetAt(const NiFixedString& key, const char* value)
 {
     unsigned int hash = reinterpret_cast<unsigned int>(key.m_kHandle) % m_uiHashSize;
@@ -58,6 +65,8 @@ void NiCharFixedStringMap::SetAt(const NiFixedString& key, const char* value)
 
 template<>
 // @fnv 0x00aa01f0
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiAVObject *> >,NiAVObject *>::RemoveAll | NiControllerManager.obj | retail, call graph (shared callers), medium
+// pdb locals: i, pkSave
 void NiAVObjectFixedStringMap::RemoveAll()
 {
     for (unsigned int hash = 0; hash < m_uiHashSize; ++hash)

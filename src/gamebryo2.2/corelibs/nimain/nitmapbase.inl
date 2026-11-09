@@ -64,8 +64,11 @@ void NiTMapBase<NiTPointerAllocator<unsigned int>, NiObject*, bool>::SetAt(
 
 template<>
 // @fnv 0x00e92760
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,NiPointer<DistantLODShaderProperty::CachedGeometry> >::GetAt | DistantLODShaderProperty.obj | debug, call graph, high
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 bool NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiPointer<RefCountedNamedObject> >::GetAt(
-    const char* key, NiPointer<RefCountedNamedObject>& data) const
+    const char* key, NiPointer<RefCountedNamedObject>& val) const
 {
     unsigned int index = KeyToHashIndex(key);
     NiTMapItem<const char*, NiPointer<RefCountedNamedObject> >* item = m_ppkHashTable[index];
@@ -73,7 +76,7 @@ bool NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiPointer<RefCou
     {
         if (IsKeysEqual(key, item->m_key))
         {
-            data = item->m_val;
+            val = item->m_val;
             return true;
         }
         item = item->m_pkNext;
@@ -83,6 +86,9 @@ bool NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiPointer<RefCou
 
 template<>
 // @fnv 0x00e91fd0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,CombatThreat *> >,unsigned int,CombatThreat *>::RemoveAt | CombatThreatMap.obj | retail, call graph, medium
+// pdb params: key
+// pdb locals: pkItem, uiIndex, pkPrev, pkCurr
 bool NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiShader*>::RemoveAt(
     const char* key)
 {
@@ -127,10 +133,12 @@ bool FUN_00404d30_Owner::GetFirstPos()
 }
 
 // @fnv 0x00589000
+// pdb: NiTPointerMap<int,TESObjectCELL *>::NiTPointerMap<int,TESObjectCELL *> | TESWorldSpace.obj | retail, call graph (shared callers), high
+// pdb params: uiHashSize
 // the base constructor 0x005892c0, then the NiTPointerMap<int,TESObjectCELL *> vftable 0x01031fec.
 template <>
-NiTPointerMap<int, TESObjectCELL*>::NiTPointerMap(unsigned int size)
-    : NiTMapBase<NiTPointerAllocator<unsigned int>, int, TESObjectCELL*>(size)
+NiTPointerMap<int, TESObjectCELL*>::NiTPointerMap(unsigned int uiHashSize)
+    : NiTMapBase<NiTPointerAllocator<unsigned int>, int, TESObjectCELL*>(uiHashSize)
 {
 }
 
@@ -142,10 +150,12 @@ FUN_004701d0_TESFormLargeArray::FUN_004701d0_TESFormLargeArray(unsigned int size
 }
 
 // @fnv 0x00402d00
+// pdb: TESFullName::TESFullName | AlchemyItem.obj | debug, upstream name already matches, high
 TESFullName::TESFullName() {}
 
 
 // @fnv 0x00845690
+// pdb: BGSFormChanges::`scalar deleting destructor' | BGSSaveLoadChangesMap.obj | debug, call graph, medium
 FUN_00845690_Owner* FUN_00845690_Owner::Destructor(unsigned int flags)
 {
  Object_ForwardCall_008456c0();
@@ -154,24 +164,29 @@ FUN_00845690_Owner* FUN_00845690_Owner::Destructor(unsigned int flags)
 }
 
 // @fnv 0x006b7b30
-// src: COMMUNITY 0x006b7b30
-unsigned int NavMeshInfo_GetCellOrCoords(NavMeshInfo* info)
+// src: XBOX_DEBUG_PDB 0x006b7b30
+// pdb: GetKeyForNavMeshInfo | NavMeshInfoMap.obj | debug, call graph, high
+// pdb params: apNavMeshInfo
+// pdb locals: pcell
+unsigned int GetKeyForNavMeshInfo(NavMeshInfo* apNavMeshInfo)
 {
- TESObjectCELL* cell = info->GetInteriorCell();
+ TESObjectCELL* cell = apNavMeshInfo->GetInteriorCell();
  if (cell)
    return reinterpret_cast<unsigned int (__cdecl*)(TESObjectCELL*)>(PrepareScriptMessage)(cell);
  else
-   return reinterpret_cast<unsigned int (__cdecl*)(TESObjectCELL*)>(PrepareScriptMessage)(reinterpret_cast<TESObjectCELL*>(info->m_uiPathingFlags));
+   return reinterpret_cast<unsigned int (__cdecl*)(TESObjectCELL*)>(PrepareScriptMessage)(reinterpret_cast<TESObjectCELL*>(apNavMeshInfo->iCellKey));
 }
 
 // @fnv 0x00473210
 void TESFile::SetCompileIndex(unsigned char index)
 {
- m_kFileMetadata.m_uiThirdUnsignedValue = (static_cast<unsigned int>(index) << 24) | (m_kFileMetadata.m_uiThirdUnsignedValue & 0x00ffffff);
- m_ucCompileIndex = index;
+ fileHeaderInfo.m_uiThirdUnsignedValue = (static_cast<unsigned int>(index) << 24) | (fileHeaderInfo.m_uiThirdUnsignedValue & 0x00ffffff);
+ cCompileIndex = index;
 }
 
 // @fnv 0x0043d410
+// pdb: ShadowSceneNode::UpdateObjectLighting | ShadowSceneNode.obj | debug, call graph, medium
+// pdb params: apObject, abActiveLightsOnly
 NiUpdateData::NiUpdateData(float time,bool updateControllers,bool isMultiThreaded)
 {
  // pad1..pad5 are the shared header's names for Gamebryo's update flags (+0x4 controllers, +0x5 multithreaded).
@@ -194,5 +209,6 @@ void* BGSReconstructFormsInAllFilesMap::GetFirstPos()
 }
 
 // @fnv 0x00843470
+// pdb: BGSReconstructedForms::BGSReconstructedForms | BGSReconstructFormsInAllFilesMap.obj | debug, object-file gap fill, medium
 FormChangeMap::FormChangeMap() {}
 

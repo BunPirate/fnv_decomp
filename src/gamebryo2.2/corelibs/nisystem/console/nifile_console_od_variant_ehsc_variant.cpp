@@ -10,9 +10,10 @@ struct MersenneTwister
     char _8[0x9C0];
     int _9C8;
     void BSRandom_Init(unsigned int);
-    void Seed(unsigned int);
+    void BSRandom_Seed(unsigned int);
 };
 
+// pdb: class ArchiveManager, size 0x1, 0 members
 struct ArchiveManager
 {
     void* FUN_00afe0d0(const char* name, unsigned int a, unsigned int b, unsigned int c);
@@ -41,12 +42,15 @@ class FileStream
 
 // @fnv 0x00afde50
 // src: COMMUNITY 0x00afde50
-bool FileFinder_AccessFile(const char* name, int mode)
+// pdb: FileFinder::AccessFile | FileFinder.obj | retail, upstream name already matches, high
+// pdb params: apName, aeMode
+// pdb locals: tempFile
+bool FileFinder_AccessFile(const char* apName, int aeMode)
 {
-    if (mode == 0)
+    if (aeMode == 0)
     {
-        return DAT_011f81dc ? DAT_011f81dc->FUN_00afe0d0(name, 0, 0, 0xffffffff) : 0;
+        return DAT_011f81dc ? DAT_011f81dc->FUN_00afe0d0(apName, 0, 0, 0xffffffff) : 0;
     }
-    FileStream kFile(name, mode, 0);
+    FileStream kFile(apName, aeMode, 0);
     return kFile;
 }

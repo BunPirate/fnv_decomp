@@ -66,12 +66,14 @@ class ShaderOwner
     int unk0b0;
     int unk0b4;
     NiPointer<NiGPUProgramOwner> m_spProgramOwner;
-    void NiGeometry_SetAdditionalGeometryData(NiGPUProgram* program);
+    void NiGeometry_SetAdditionalGeometryData(NiGPUProgram* pkData);
 };
 
 // @fnv 0x00539ef0
 // src: COMMUNITY 0x00539ef0
-void ShaderOwner::NiGeometry_SetAdditionalGeometryData(NiGPUProgram* program)
+// pdb: NiGeometry::SetAdditionalGeometryData | TESLand.obj | debug, upstream name already matches, high
+// pdb params: pkData
+void ShaderOwner::NiGeometry_SetAdditionalGeometryData(NiGPUProgram* pkData)
 {
-    ((NiGPUProgramOwner*)m_spProgramOwner)->SetProgram(program);
+    ((NiGPUProgramOwner*)m_spProgramOwner)->SetProgram(pkData);
 }

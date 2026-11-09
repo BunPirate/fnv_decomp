@@ -2,6 +2,7 @@
 
 class hkpConstraintInstance;
 
+// pdb: class hkpConstraintListener, size 0x4, 0 members
 class hkpConstraintListener
 {
 public:

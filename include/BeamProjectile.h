@@ -6,6 +6,7 @@ class BGSLoadFormBuffer;
 class BGSSaveFormBuffer;
 class NiGeometry;
 
+// pdb: class BeamProjectile, size 0x180 (here 0x150), bases: Projectile, 1 members
 class BeamProjectile : public Projectile
 {
 public:
@@ -18,7 +19,7 @@ public:
     virtual unsigned int GetProjectileType();
     virtual void Do3DLoaded();
     virtual void HandleTracer();
-    virtual void UpdateProjectile(float timeDelta);
+    virtual void UpdateProjectile(float afDelta);
     virtual bool OnCollision(Actor* actor, const NiPoint3& contactPoint,
                              const NiPoint3& contactNormal, hkpCollidable* collidable,
                              unsigned int collisionShapeKey, unsigned int hitMaterial);
@@ -33,11 +34,11 @@ public:
 
     void Process3D();
     void __thiscall Initialize_00979280();
-    unsigned char AddImpact(void* a1, void* a2, void* a3,
-                              void* a4, void* a5, void* a6);
+    unsigned char AddImpact(void* apCollidee, void* aContactPoint, void* aContactNormal,
+                              void* apTargetCollidable, void* aiKey, void* aeForceMaterial);
     void Projectile_SetRange(float value);
-    void ScaleBeamGeometryLength(NiAVObject* apObject, float scale);
-    float FindBeamGeometryLength(NiGeometry* arg);
-    float FindBeamGeometryLength(NiAVObject* obj);
+    void ScaleBeamGeometryLength(NiAVObject* apGeometry, float afScaleFactor);
+    float FindBeamGeometryLength(NiGeometry* apGeometry);
+    float FindBeamGeometryLength(NiAVObject* apGeometry);
     void ScaleNode(NiAVObject* node, float fScale, float fDivisor);
 };

@@ -17,9 +17,9 @@ class RegionObjectEntry
     unsigned char layoutPadding1[3];
     PerkEntryConditionSet m_kInfoConditions;
     TESObjectREFR* m_pReference;
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     PerkEntryConditionSet* GetConditions();
-    TESObjectREFR* GetReference(bool resolveDeleted);
+    TESObjectREFR* GetReference(bool abAllowPickUpActor);
 };
 FNV_STATIC_ASSERT(offsetof(RegionObjectEntry, m_pReference) == 12);
 

@@ -12,6 +12,7 @@ struct TrianglesSubpart;
 struct ShapesSubpart;
 struct SourceArg;
 
+// pdb: class hkpStorageExtendedMeshShape, size 0x110, bases: hkpExtendedMeshShape, 2 members
 class hkpStorageExtendedMeshShape : public hkpExtendedMeshShape
 {
 public:
@@ -29,22 +30,22 @@ public:
     {
         virtual ~ShapeSubpartStorage() throw();
 
-        hkArray<unsigned char> m_kMaterialIndices8;
-        hkArray<Material> m_kMaterials;
-        hkArray<unsigned short> m_kMaterialIndices16;
+        hkArray<unsigned char> m_materialIndices;
+        hkArray<Material> m_materials;
+        hkArray<unsigned short> m_materialIndices16;
     };
 
     hkpStorageExtendedMeshShape(FinishingFlag flag) throw();
     hkpStorageExtendedMeshShape(const hkpExtendedMeshShape* mesh) throw();
     virtual ~hkpStorageExtendedMeshShape() throw();
 
-    virtual void addTrianglesSubpart(SourceArg sourceArg);
+    virtual void addTrianglesSubpart(SourceArg partIn);
     virtual int addShapesSubpart(const TrianglesSubpart& partIn);
 
     Subpart* hkpExtendedMeshShape_expandOneTriangleSubparts();
-    TrianglesSubpart* AppendElement();
+    TrianglesSubpart* hkpExtendedMeshShape_expandOneShapesSubparts();
     void hkpExtendedMeshShape_recalcAabbExtents();
-    int Vec4(Subpart* part, int index);
+    int hkpExtendedMeshShape__getNumChildShapesInTrianglesSubpart(Subpart* subpart, int subpartIndex);
     int hkpExtendedMeshShape__getNumChildShapesInShapesSubpart(TrianglesSubpart& part);
     void addTrianglesSubpart(const Subpart& part) throw();
     void addShapesSubpart(const ShapesSubpart& part) throw();
@@ -62,7 +63,7 @@ public:
     int m_iNumTriangles;
     hkReal m_fSphereRadius;
     unsigned char unkE8[0x8];
-    hkArray<hkpStorageExtendedMeshShapeMeshSubpartStorage*> m_kMeshSubparts;
-    hkArray<hkpStorageExtendedMeshShapeShapeSubpartStorage*> m_kShapeSubparts;
+    hkArray<hkpStorageExtendedMeshShapeMeshSubpartStorage*> m_meshstorage;
+    hkArray<hkpStorageExtendedMeshShapeShapeSubpartStorage*> m_shapestorage;
     unsigned char unk108[0x8];
 };

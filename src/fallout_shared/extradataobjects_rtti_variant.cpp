@@ -37,11 +37,16 @@ void* __cdecl operator new[](unsigned int size);
 void __cdecl operator delete[](void* pointer);
 extern "C" void* __cdecl memcpy(void* destination, const void* source, unsigned int size);
 // @fnv 0x00877a30
+// pdb: NiTArray<NiTexturingProperty::Map *,NiTMallocInterface<NiTexturingProperty::Map *> >::GetAt | TESDataHandler.obj | debug, call graph, medium
+// pdb params: uiIndex
 template <> TESObjectREFR*& NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >::GetAt(unsigned int index)
 {
     return m_pBase[index];
 }
 // @fnv 0x00438470
+// pdb: BSStringT<char>::Set | ExtraDataObjects.obj | retail, call graph, medium
+// pdb params: arString
+// pdb locals: inewLen, pold
 template <> bool BSStringT<char>::Set(const BSStringT<char>& source)
 {
     unsigned int length = source.Length();
@@ -90,6 +95,9 @@ class BSExtraDataEx;
 
 // @fnv 0x00434050
 // src: XBOX_PDB 0x00434050
+// pdb: ExtraLitWaterRefs::InitItem | ExtraDataObjects.obj | retail, object-file run extension, high
+// pdb params: apOwner
+// pdb locals: preflist, pnewlist, newlist, pdata, tempint, pref
 void ExtraLitWaterRefs::InitItem_00434050(TESForm* apOwner)
 {
     BSSimpleList<TESObjectREFR*>* pNodeB8 = &kRefs;
@@ -111,7 +119,7 @@ void ExtraLitWaterRefs::InitItem_00434050(TESForm* apOwner)
         }
         else
         {
-            static_cast<LitWaterReference*>(pRef)->BSFile_GetDevice(apOwner, true)->FUN_0041f840();
+            static_cast<LitWaterReference*>(pRef)->BSFile_GetDevice(apOwner, true)->ExtraDataList_SetWaterLightRef();
             kResolved4.AddHead(pRef);
         }
         pNodeB8 = pNodeB8->GetNext();

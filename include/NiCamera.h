@@ -22,9 +22,9 @@ class __declspec(novtable) NiCamera : public NiAVObject
     void UpdateWorldToCamera(); // exe 0x00a70ba0
     virtual ~NiCamera() {}
 
-    virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
-    virtual void UpdateWorldData(NiUpdateData& update);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void LinkObject(NiStream& kStream);
+    virtual void UpdateWorldData(NiUpdateData& UpdateData);
     virtual void UpdateWorldBound();
 
     const NiFrustum& GetViewFrustum() const;
@@ -48,10 +48,10 @@ class __declspec(novtable) NiCamera : public NiAVObject
                           const NiRenderTargetGroup* group);
     void ScreenPointToRay(float x, float y, NiPoint3& origin, NiPoint3& direction);
     void MapScreenToRay(int x, int y, NiPoint3& origin, NiPoint3& direction, bool flag);
-    bool AimAt(const NiPoint3& point, const NiPoint3& up);
-    bool SetLookAt(const NiPoint3& point, const NiPoint3& up);
-    void GetScreenSpaceBounds(const NiBound& bound, NiPoint3& minimum, NiPoint3& maximum,
-                             float tolerance);
+    bool AimAt(const NiPoint3& kWorldPt, const NiPoint3& kWorldUp);
+    bool SetLookAt(const NiPoint3& kWorldPt, const NiPoint3& kWorldUp);
+    void GetScreenSpaceBounds(const NiBound& kSBound, NiPoint3& kMinBound, NiPoint3& kMaxBound,
+                             float fZeroTolerance);
 
     using NiAVObject::NiAVObject_SetTranslate;
     using NiAVObject::SetRotate_0043fa80;
@@ -65,7 +65,7 @@ class __declspec(novtable) NiCamera : public NiAVObject
     void NiCamera_SetMaxFarNearRatio(float ratio);
     void FUN_00712e60(const NiRect<float>& viewport);
     void FUN_00a6faf0(const NiFrustum& frustum);
-    bool FitNearAndFarToBound(const NiBound& bound);
+    bool FitNearAndFarToBound(const NiBound& kBound);
     const NiPoint3& NiAVObject_GetWorldTranslate() const;
     const NiMatrix3& NiAVObject_GetWorldRotate() const;
     float NiAVObject_GetWorldScale() const;

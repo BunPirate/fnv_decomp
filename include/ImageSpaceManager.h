@@ -159,6 +159,7 @@ enum ISM_EFFECT_ENUM
     ISM_EFFECT_VALUE(EFFECT_NONE) = -1
 };
 
+// pdb: class ImageSpaceManager, size 0x31c, 61 members
 class ImageSpaceManager
 {
 public:
@@ -240,7 +241,7 @@ public:
     static bool m_bHasEndOfFrameEffects;
 
     BSRenderedTexture* GetDepthRenderedTexture();
-    void CreateMenuBackgroundGeometry();
+    void InitGeometry();
     void BeginParamModifiers();
     void SetupEffects();
     bool IsEffectActive(ISM_EFFECT_ENUM);
@@ -313,7 +314,7 @@ public:
     void SetMenuBGBlendEnabled(bool);
     void SetMenuBGBlendValue(float);
     void EnablePartialRender(bool, NiScreenElements*);
-    void SetMenuBackgroundBlend(float, float, void*);
+    void CreatePartialScreenGeometry(float, float, void*);
     NiTexture* GetDepthTexture();
     ImageSpaceTexture* GetDepthImageSpaceTexture();
     void SetDepthTexture(BSRenderedTexture*);

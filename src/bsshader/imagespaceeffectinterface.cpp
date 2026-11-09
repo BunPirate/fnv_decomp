@@ -25,7 +25,7 @@ extern NiTexture* g_pkDistortMap_01200814;
 
 extern NiTexture* g_spPipboyTexture_01200818;
 
-void __cdecl FUN_00b55840(const char* pPath, int iFlags, NiTexture** ppTexture, int a4, int a5);
+void __cdecl FUN_00b55840(const char* apFilename, int abCheckHardDrive, NiTexture** aspTexture, int abCheckForMipMaps, int abCubeMap);
 
 struct PipboyParamBase
 {
@@ -134,7 +134,7 @@ struct PipboyConstants : PipboyConstantsBase
         PipboyFree(pvMem);
     }
 
-    void FUN_00b8ab10(int a1, int a2);
+    void FUN_00b8ab10(int aiVSize, int aiPSize);
 
     void FUN_00b8a790(int iIndex, float f0, float f1, float f2, float f3);
 };
@@ -315,7 +315,7 @@ struct PipboyShader
 
     PipboyArray<PipboyParamBase*> m_kPasses;
 
-    void SetTextureArraySize(int iCount);
+    void SetTextureArraySize(int aiCount);
 
     void SetEntryRanges(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
 

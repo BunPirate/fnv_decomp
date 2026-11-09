@@ -26,6 +26,7 @@ class NiVec4;
 class RenderTargetGroup;
 template <class T> class NiRect;
 
+// pdb: class NiRenderer, size 0x280, bases: NiObject, 11 members
 class NiRenderer : public NiObject
 {
 public:
@@ -97,7 +98,7 @@ public:
     void StartScene();
     void FinishScene();
     RenderTargetGroup* GetDefaultRenderTargetGroup();
-    void SetCurrentCamera(NiCamera* camera);
+    void SetCurrentCamera(NiCamera* pkCamera);
     void TryUnlock();
     void CallFooForEachElement(int, int, const NiVec4*);
     bool MapScreenCoordinates(unsigned int x, unsigned int y,

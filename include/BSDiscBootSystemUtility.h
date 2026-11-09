@@ -2,16 +2,17 @@
 
 enum BSDiscBootSystemUtility__NOTIFICATION_TYPE;
 
+// pdb: class BSDiscBootSystemUtility, size 0x50, 4 members
 class BSDiscBootSystemUtility
 {
 public:
     virtual void* vf00(unsigned int flags);
-    virtual void Initialize(const char* titleID, unsigned int parentalLevel);
+    virtual void Initialize(const char* apcDefaultTitleID, unsigned int auiDefaultParentalLevel);
     virtual void Destroy();
 
-    char m_acTitleID[64];
-    unsigned int m_uiParentalLevel;
-    bool m_bNotificationActive;
+    char cTitleID[64];
+    unsigned int uiParentalLevel;
+    bool bAllowDiscEjectChange;
     unsigned char layoutPadding49[3];
-    void (__cdecl* m_pNotificationCallback)(BSDiscBootSystemUtility__NOTIFICATION_TYPE);
+    void (__cdecl* pNotificationCallback)(BSDiscBootSystemUtility__NOTIFICATION_TYPE);
 };

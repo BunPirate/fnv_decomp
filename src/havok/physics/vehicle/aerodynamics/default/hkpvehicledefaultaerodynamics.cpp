@@ -12,22 +12,22 @@ extern double DAT_01011588;
 // @fnv 0x00e442e0
 float hkpVehicleDefaultAerodynamics::calcLiftForce(float speed) throw()
 {
-    return m_fAirDensity * DAT_01011588 * m_fLiftCoefficient * m_fFrontalArea * speed * speed;
+    return m_airDensity * DAT_01011588 * m_liftCoefficient * m_frontalArea * speed * speed;
 }
 
 // @fnv 0x00e44310
 hkpVehicleDefaultAerodynamics::hkpVehicleDefaultAerodynamics() throw()
 {
-    m_fAirDensity = 0.0f;
-    m_fFrontalArea = 0.0f;
-    m_fDragCoefficient = 0.0f;
-    m_fLiftCoefficient = 0.0f;
-    m_vExtraGravityWorldSpace.m_vComponents = _mm_setzero_ps();
+    m_airDensity = 0.0f;
+    m_frontalArea = 0.0f;
+    m_dragCoefficient = 0.0f;
+    m_liftCoefficient = 0.0f;
+    m_extraGravityws.m_vComponents = _mm_setzero_ps();
 }
 
 // @fnv 0x00e44340
 float hkpVehicleDefaultAerodynamics::calcDragForce(float speed) throw()
 {
     float fAbs = (float)fabs((double)speed);
-    return speed * (fAbs * (m_fAirDensity * -0.5 * m_fDragCoefficient * m_fFrontalArea));
+    return speed * (fAbs * (m_airDensity * -0.5 * m_dragCoefficient * m_frontalArea));
 }

@@ -21,14 +21,15 @@ struct CT
 // @fnv 0x00e96cd0
 void __thiscall NiD3DHLSLPixelShader::UnloadShader()
 {
-    if (m_pShaderConstantTable)
+    if (m_pkConstantTable)
     {
-        reinterpret_cast<CT*>(m_pShaderConstantTable)->Release();
-        m_pShaderConstantTable = 0;
+        reinterpret_cast<CT*>(m_pkConstantTable)->Release();
+        m_pkConstantTable = 0;
     }
     NiD3DPixelShader::UnloadShader();
 }
 
+// pdb: structure _D3DXCONSTANTTABLE_DESC, size 0xc, 3 members
 struct _D3DXCONSTANTTABLE_DESC
 {
     const char* Creator;
@@ -46,12 +47,14 @@ struct FakeConstantTable00e96d10
 };
 // @fnv 0x00e96d10
 // src: GAMEBRYO_LIB 0x00e96d10
+// pdb: NiD3DHLSLPixelShader::GetVariableCount | NiD3DHLSLPixelShader.obj | retail, upstream name already matches, high
+// pdb locals: kDesc
 unsigned int NiD3DHLSLPixelShader::GetVariableCount()
 {
     _D3DXCONSTANTTABLE_DESC kDesc;
-    if (!m_pShaderConstantTable)
+    if (!m_pkConstantTable)
         return 0;
-    return reinterpret_cast<FakeConstantTable00e96d10*>(m_pShaderConstantTable)->GetDesc(&kDesc) < 0 ? 0 : kDesc.Constants;
+    return reinterpret_cast<FakeConstantTable00e96d10*>(m_pkConstantTable)->GetDesc(&kDesc) < 0 ? 0 : kDesc.Constants;
 }
 
 
@@ -75,17 +78,20 @@ typedef unsigned int(__thiscall* FNC_F20)(void*, void*, unsigned int, unsigned i
 typedef long(__thiscall* FNC_F18)(void*, void*, unsigned int, unsigned int*, unsigned int&);
 
 // @fnv 0x00e96d40
-char* NiD3DHLSLPixelShader::GetVariableName(unsigned int a)
+// pdb: NiD3DHLSLPixelShader::GetVariableName | NiD3DHLSLPixelShader.obj | retail, upstream name already matches, high
+// pdb params: uiIndex
+// pdb locals: kDesc, uiCount, hConstant
+char* NiD3DHLSLPixelShader::GetVariableName(unsigned int uiIndex)
 {
     FUN_00e96d40_Out out;
-    unsigned int r1 = (*(FNC_F20*)((char*)(unsigned int)*(int*)m_pShaderConstantTable + 0x20))(
-        (void*)(unsigned int)*(int*)m_pShaderConstantTable, m_pShaderConstantTable, 0u, a);
+    unsigned int r1 = (*(FNC_F20*)((char*)(unsigned int)*(int*)m_pkConstantTable + 0x20))(
+        (void*)(unsigned int)*(int*)m_pkConstantTable, m_pkConstantTable, 0u, uiIndex);
     if (r1 == 0)
         return 0;
-    a = 1u;
-    long lResult = (*(FNC_F18*)((char*)(unsigned int)*(int*)m_pShaderConstantTable + 0x18))(
-        (void*)(unsigned int)*(int*)m_pShaderConstantTable, m_pShaderConstantTable, r1, &out.u0, a);
-    if (lResult < 0 || a == 0)
+    uiIndex = 1u;
+    long lResult = (*(FNC_F18*)((char*)(unsigned int)*(int*)m_pkConstantTable + 0x18))(
+        (void*)(unsigned int)*(int*)m_pkConstantTable, m_pkConstantTable, r1, &out.u0, uiIndex);
+    if (lResult < 0 || uiIndex == 0)
         return 0;
     return reinterpret_cast<char*>(out.u0);
 }
@@ -1394,43 +1400,46 @@ struct D3DRenderer
 
 // Resolves the constant register for pkEntry and uploads uiNumEntries matrix blocks from pvDataSource to the pixel shader via SetPixelShaderConstantF.
 // @fnv 0x00e96fb0
+// pdb: NiD3DHLSLPixelShader::SetShaderConstantArray | NiD3DHLSLPixelShader.obj | retail, string-set bridge, high
+// pdb params: pkEntry, pvDataSource, uiNumEntries, uiRegistersPerEntry, pusReorderArray
+// pdb locals: bReturn, pkVariable, kVariableName, kDesc, hr, uiCount, kMat, uiBaseRegister, i, pkEntryHandle, usNewIndex, pfDataSourceIterator
 bool NiD3DHLSLPixelShader::SetShaderConstantArray(NiShaderConstantMapEntry* pkEntry, void* pvDataSource,
                                    unsigned int uiNumEntries, unsigned int uiRegistersPerEntry,
                                    unsigned short* pusReorderArray)
 {
-    if (m_pShaderConstantTable == NULL || m_pD3DDevice == NULL)
+    if (m_pkConstantTable == NULL || m_pkD3DDevice == NULL)
         return false;
 
-    int eType = DAT_011f5fc4[pkEntry->m_uiValue1 & 0xff];
+    int eType = DAT_011f5fc4[pkEntry->m_uiFlags & 0xff];
     if (eType != 8 && eType != 9)
         return false;
 
     if (pvDataSource == NULL)
-        pvDataSource = pkEntry->m_pConstantData;
+        pvDataSource = pkEntry->m_pvDataSource;
 
     if (!IsEntryResolved(pkEntry))
     {
         char kVariableNameStorage[sizeof(NiFixedString)];
-        NiFixedString& kVariableName = CopyFixedString(kVariableNameStorage, pkEntry->m_kSecondaryString);
+        NiFixedString& kVariableName = CopyFixedString(kVariableNameStorage, pkEntry->m_kVariableName);
         if (!kVariableName.Exists())
         {
-            kVariableName.AssignInternedString(pkEntry->m_kControlPoint);
+            kVariableName.AssignInternedString(pkEntry->m_kKey);
             static_cast<ShaderConstantEntryOperations*>(pkEntry)->NiShaderConstantMapEntry_SetVariableName(kVariableName);
         }
 
-        const char* hConstant = reinterpret_cast<ConstantTable*>(m_pShaderConstantTable)->FindConstantByName(NULL, kVariableName);
+        const char* hConstant = reinterpret_cast<ConstantTable*>(m_pkConstantTable)->FindConstantByName(NULL, kVariableName);
         if (hConstant)
         {
             ShaderConstantDesc kDesc;
             unsigned int ItemUpdateArray = 1;
-            reinterpret_cast<ConstantTable*>(m_pShaderConstantTable)->GetConstantDescription(hConstant, &kDesc, &ItemUpdateArray);
-            pkEntry->m_uiValue3 = kDesc.m_uiRegisterIndex;
-            pkEntry->m_uiValue4 = kDesc.m_uiRegisterSpan;
+            reinterpret_cast<ConstantTable*>(m_pkConstantTable)->GetConstantDescription(hConstant, &kDesc, &ItemUpdateArray);
+            pkEntry->m_uiShaderRegister = kDesc.m_uiRegisterIndex;
+            pkEntry->m_uiRegisterCount = kDesc.m_uiRegisterSpan;
             IsEntryResolved(pkEntry) = true;
         }
         else
         {
-            Object_DoNothing("NiD3DHLSLPixelShader::SetShaderConstantArray - %s - variable %s not found\n", m_pcProgramName,
+            Object_DoNothing("NiD3DHLSLPixelShader::SetShaderConstantArray - %s - variable %s not found\n", m_pszName,
                          (const char*)kVariableName);
             kVariableName.Release();
             return false;
@@ -1441,7 +1450,7 @@ bool NiD3DHLSLPixelShader::SetShaderConstantArray(NiShaderConstantMapEntry* pkEn
     bool bSuccess = false;
     if (pusReorderArray)
     {
-        unsigned int uiRegister = pkEntry->m_uiValue3;
+        unsigned int uiRegister = pkEntry->m_uiShaderRegister;
         for (unsigned int i = 0; i < uiNumEntries; i++)
         {
             Matrix16 kMatrix;
@@ -1449,7 +1458,7 @@ bool NiD3DHLSLPixelShader::SetShaderConstantArray(NiShaderConstantMapEntry* pkEn
             D3DXMatrixTranspose_00ee6dd4(&kMatrix,
                          (const Matrix16*)((const char*)pvDataSource + pusReorderArray[i] * uiRegistersPerEntry * 16));
             HRESULT hr =
-                reinterpret_cast<D3DRenderer*>(m_pRenderState)->GetD3DDevice()->SetPixelShaderConstantF(uiRegister, kMatrix.m, uiRegistersPerEntry);
+                reinterpret_cast<D3DRenderer*>(m_pkD3DRenderState)->GetD3DDevice()->SetPixelShaderConstantF(uiRegister, kMatrix.m, uiRegistersPerEntry);
             if (FAILED(hr))
                 break;
             uiRegister += uiRegistersPerEntry;
@@ -1459,7 +1468,7 @@ bool NiD3DHLSLPixelShader::SetShaderConstantArray(NiShaderConstantMapEntry* pkEn
     else
     {
         const Vec4* pVector4 = (const Vec4*)pvDataSource;
-        unsigned int uiRegister = pkEntry->m_uiValue3;
+        unsigned int uiRegister = pkEntry->m_uiShaderRegister;
         HRESULT hr;
 
         for (unsigned int i = 0; i < uiNumEntries; i++)
@@ -1467,7 +1476,7 @@ bool NiD3DHLSLPixelShader::SetShaderConstantArray(NiShaderConstantMapEntry* pkEn
             Matrix16 kMatrix;
             D3DXMatrixTranspose_00ee6dd4(&kMatrix, (const Matrix16*)pVector4);
             bSuccess = false;
-            D3DRenderer* pkRenderer = reinterpret_cast<D3DRenderer*>(m_pRenderState);
+            D3DRenderer* pkRenderer = reinterpret_cast<D3DRenderer*>(m_pkD3DRenderState);
             if (pkRenderer->m_pkDevice->lpVtbl->SetPixelShaderConstantF(pkRenderer->m_pkDevice, uiRegister, kMatrix.m,
                                                                         uiRegistersPerEntry) < 0)
                 break;
@@ -2748,79 +2757,82 @@ struct Handler
 
 // Resolves the entry's shader register and uploads constants through the renderer.
 // @fnv 0x00e96da0
-bool NiD3DHLSLPixelShader::SetShaderConstant(NiShaderConstantMapEntry* entry, void* arg, unsigned int extra)
+// pdb: NiD3DHLSLPixelShader::SetShaderConstant | NiD3DHLSLPixelShader.obj | retail, string-set bridge, high
+// pdb params: pkEntry, pvDataSource, __formal
+// pdb locals: bReturn, pkVariable, kVariableName, kDesc, hr, uiCount, kMat
+bool NiD3DHLSLPixelShader::SetShaderConstant(NiShaderConstantMapEntry* pkEntry, void* pvDataSource, unsigned int extra)
 {
     using fnv_00e96da0::SoundInfo;
     using fnv_00e96da0::ReleaseString;
     SoundInfo info;
-    if (reinterpret_cast<fnv_00e96da0::Library*>(m_pShaderConstantTable) == 0 || m_pD3DDevice == 0)
+    if (reinterpret_cast<fnv_00e96da0::Library*>(m_pkConstantTable) == 0 || m_pkD3DDevice == 0)
         return false;
-    if (arg == 0)
-        arg = entry->m_pConstantData;
-    if (!IsEntryResolved(entry))
+    if (pvDataSource == 0)
+        pvDataSource = pkEntry->m_pvDataSource;
+    if (!IsEntryResolved(pkEntry))
     {
         char nameStorage[sizeof(NiFixedString)];
-        NiFixedString& name = CopyFixedString(nameStorage, entry->m_kSecondaryString);
+        NiFixedString& name = CopyFixedString(nameStorage, pkEntry->m_kVariableName);
         if (!name.Exists())
         {
-            name.AssignInternedString(entry->m_kControlPoint);
-            static_cast<ShaderConstantEntryOperations*>(entry)->NiShaderConstantMapEntry_SetVariableName(name);
+            name.AssignInternedString(pkEntry->m_kKey);
+            static_cast<ShaderConstantEntryOperations*>(pkEntry)->NiShaderConstantMapEntry_SetVariableName(name);
         }
         char* text = name.m_kHandle;
-        int handle = reinterpret_cast<fnv_00e96da0::Library*>(m_pShaderConstantTable)->Find(0, text);
+        int handle = reinterpret_cast<fnv_00e96da0::Library*>(m_pkConstantTable)->Find(0, text);
         if (handle != 0)
         {
             int count = 1;
-            reinterpret_cast<fnv_00e96da0::Library*>(m_pShaderConstantTable)->GetInfo(handle, &info, &count);
-            entry->m_uiValue3 = info.unk08;
-            entry->m_uiValue4 = info.unk0c;
-            IsEntryResolved(entry) = true;
+            reinterpret_cast<fnv_00e96da0::Library*>(m_pkConstantTable)->GetInfo(handle, &info, &count);
+            pkEntry->m_uiShaderRegister = info.unk08;
+            pkEntry->m_uiRegisterCount = info.unk0c;
+            IsEntryResolved(pkEntry) = true;
             ReleaseString(text);
         }
         else
         {
-            fnv_00e96da0::Object_DoNothing(fnv_00e96da0::DAT_010f13f0, m_pcProgramName, text);
+            fnv_00e96da0::Object_DoNothing(fnv_00e96da0::DAT_010f13f0, m_pszName, text);
             ReleaseString(text);
             return false;
         }
     }
-    int type = DAT_011f5fc4[entry->m_uiValue1 & 0xff];
+    int type = DAT_011f5fc4[pkEntry->m_uiFlags & 0xff];
     bool ok = false;
     if (type != 8 && type != 9)
     {
         if (type == 5 || type == 6 || type == 7 || type == 10)
         {
-            int count = entry->m_uiValue4;
-            int id = entry->m_uiValue3;
-            if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pRenderState)->NiDX9RenderState_SetPixelShaderConstantF(id, (int)arg, count, 0))
+            int count = pkEntry->m_uiRegisterCount;
+            int id = pkEntry->m_uiShaderRegister;
+            if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pkD3DRenderState)->NiDX9RenderState_SetPixelShaderConstantF(id, (int)pvDataSource, count, 0))
                 ok = true;
         }
         else if (type == 4)
         {
-            int count = entry->m_uiValue4;
-            int id = entry->m_uiValue3;
-            if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pRenderState)->NiDX9RenderState_SetPixelShaderConstantF(id, (int)arg, count, 0))
+            int count = pkEntry->m_uiRegisterCount;
+            int id = pkEntry->m_uiShaderRegister;
+            if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pkD3DRenderState)->NiDX9RenderState_SetPixelShaderConstantF(id, (int)pvDataSource, count, 0))
                 ok = true;
         }
         else if (type == 3)
         {
-            int count = entry->m_uiValue4;
-            int id = entry->m_uiValue3;
-            if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pRenderState)->NiDX9RenderState_SetPixelShaderConstantI(id, (int)arg, count, 0))
+            int count = pkEntry->m_uiRegisterCount;
+            int id = pkEntry->m_uiShaderRegister;
+            if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pkD3DRenderState)->NiDX9RenderState_SetPixelShaderConstantI(id, (int)pvDataSource, count, 0))
                 ok = true;
         }
         else if (type == 1)
         {
-            int count = entry->m_uiValue4;
-            int id = entry->m_uiValue3;
-            if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pRenderState)->NiDX9RenderState_SetPixelShaderConstantB(id, (int)arg, count, 0))
+            int count = pkEntry->m_uiRegisterCount;
+            int id = pkEntry->m_uiShaderRegister;
+            if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pkD3DRenderState)->NiDX9RenderState_SetPixelShaderConstantB(id, (int)pvDataSource, count, 0))
                 ok = true;
         }
     }
     else
     {
-        fnv_00e96da0::D3DXMatrixTranspose_00ee6dd4(&info, (int)arg);
-        if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pRenderState)->Upload(entry->m_uiValue3, &info, entry->m_uiValue4))
+        fnv_00e96da0::D3DXMatrixTranspose_00ee6dd4(&info, (int)pvDataSource);
+        if (reinterpret_cast<fnv_00e96da0::Handler*>(m_pkD3DRenderState)->Upload(pkEntry->m_uiShaderRegister, &info, pkEntry->m_uiRegisterCount))
             ok = true;
     }
     return ok;

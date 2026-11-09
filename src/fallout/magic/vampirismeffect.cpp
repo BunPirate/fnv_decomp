@@ -13,6 +13,9 @@ void ActiveEffect::InitLoadGame(Actor* apActor)
 
 // Calls ActiveEffect::InitLoadGame with apActor, then dynamic_casts apActor to Character and discards the result.
 // @fnv 0x0082d110
+// pdb: VampirismEffect::InitLoadGame | VampirismEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: pcharacter
 void VampirismEffect::InitLoadGame(Actor* apActor)
 {
     ActiveEffect::InitLoadGame(apActor);
@@ -20,6 +23,8 @@ void VampirismEffect::InitLoadGame(Actor* apActor)
 }
 
 // @fnv 0x0082cfb0
+// pdb: VampirismEffect::Copy | VampirismEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* VampirismEffect::Copy()
 {
     VampirismEffect* spawned = new VampirismEffect(m_pEffectInstance, pSpell, pEffect);

@@ -5,6 +5,7 @@
 class Script;
 class TESForm;
 
+// pdb: class TESScriptableForm, size 0xc, bases: BaseFormComponent, 2 members
 class TESScriptableForm : public BaseFormComponent
 {
 public:
@@ -13,7 +14,7 @@ public:
     virtual void Init();
     virtual void Free();
     virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual bool CompareWithBase(BaseFormComponent* apCompareFC);
 
     void InitializeComponent();
     void ClearComponent();
@@ -24,7 +25,7 @@ public:
     void FUN_006ecd40(unsigned int);
     void Save_0048cca0();
     void* FUN_00726070();
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     static Script* GetScriptForForm(TESForm* form);
     Script* GetScriptForForm();
     static char* GetFormScriptEditorID(TESForm* form);

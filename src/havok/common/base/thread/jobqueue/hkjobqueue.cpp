@@ -93,6 +93,8 @@ struct ItemManager
 };
 
 // @fnv 0x00d04990
+// pdb: hkJobQueue::checkQueueAndReleaseOneWaitingThread | hkJobQueue.obj | debug, call graph, medium
+// pdb params: queueIndex, data
 void ItemManager::RemoveItemReference(int index, UnsignedShortCountBlock* refs)
 {
     if (index < count)
@@ -252,13 +254,16 @@ struct Owner
 };
 // @fnv 0x00d04a80
 // src: HAVOK_LIB 0x00d04a80
-void Owner::hkJobQueue_setQueueCapacityForJobType(int first, int second)
+// pdb: hkJobQueue::setQueueCapacityForJobType | hkJobQueue.obj | retail, upstream name already matches, high
+// pdb params: jobType, queueCapacity
+// pdb locals: dynamicDataStorage
+void Owner::hkJobQueue_setQueueCapacityForJobType(int jobType, int queueCapacity)
 {
     RequestContext context;
     Registry* data = hkJobQueue_lockQueue(&context);
-    ((Bucket*)((char*)data + 0x2c))[unk30 + first].hkQueue_struct_hkJobQueue_JobQueueEntry_setCapacity(second);
+    ((Bucket*)((char*)data + 0x2c))[unk30 + jobType].hkQueue_struct_hkJobQueue_JobQueueEntry_setCapacity(queueCapacity);
     for (int i = 0; i < count; ++i)
-        ((Bucket*)((char*)data + 0x2c))[*((unsigned char*)this + 0x3d + i * 8)].hkQueue_struct_hkJobQueue_JobQueueEntry_setCapacity(second);
+        ((Bucket*)((char*)data + 0x2c))[*((unsigned char*)this + 0x3d + i * 8)].hkQueue_struct_hkJobQueue_JobQueueEntry_setCapacity(queueCapacity);
     hkJobQueue_unlockQueue(data);
 }
 
@@ -275,7 +280,7 @@ struct ItemPool
     int m_unk0c;
     int m_uiItemCount;
 
-    void Insert(const Item& item);
+    void Insert(const Item& element);
     void Insert2(const Item& item);
 };
 
@@ -287,27 +292,30 @@ struct PoolSet
 
 struct Mgr
 {
-    int GetIndex(const Item& item);
+    int GetIndex(const Item& element);
     void Notify(int idx, PoolSet* set);
-    void InsertItemAndNotify(PoolSet* set, const Item& item, int flag);
+    void hkJobQueue_addJobQueueLocked(PoolSet* data, const Item& job, int priority);
 };
 
 // Looks up the pool index for item, inserts it into that pool via Insert or Insert2 depending on flag, then notifies with the index and set.
 // @fnv 0x00d04b00
-void Mgr::InsertItemAndNotify(PoolSet* set, const Item& item, int abUseInsert2)
+// src: XBOX_RETAIL_PDB 0x00d04b00
+// pdb: hkJobQueue::addJobQueueLocked | hkJobQueue.obj | retail, object-file gap fill, high
+// pdb params: data, job, priority
+void Mgr::hkJobQueue_addJobQueueLocked(PoolSet* data, const Item& job, int priority)
 {
-    int idx = GetIndex(item);
-    ItemPool& pool = set->m_pools[idx];
-    if (!abUseInsert2)
-        pool.Insert(item);
+    int idx = GetIndex(job);
+    ItemPool& pool = data->m_pools[idx];
+    if (!priority)
+        pool.Insert(job);
     else
-        pool.Insert2(item);
-    Notify(idx, set);
+        pool.Insert2(job);
+    Notify(idx, data);
 }
 
 struct Obj
 {
-    int Forward3(int a, int b, int c);
+    int Forward3(int oldJob, int jobOut, int waitStatus);
     int ForwardWithZero(int a, int b);
 };
 
@@ -403,6 +411,7 @@ struct D057A0Queue
 
 // @fnv 0x00d057a0
 // src: HAVOK_LIB 0x00d057a0
+// pdb: hkJobQueue::DynamicData::~DynamicData | hkJobQueue.obj | retail, object-file run extension, low
 void D057A0Queue::hkQueue_struct_hkJobQueue_JobQueueEntry_enqueue(const D057A0Element& element)
 {
     if (m_iNodeCount >= m_pRayCursor)
@@ -433,13 +442,15 @@ struct ItemPool
     int m_uiItemCount;
 
     void Grow(int newCapacity);
-    void hkQueue_struct_hkJobQueue_JobQueueEntry_enqueueInFront(const Item& item);
+    void hkQueue_struct_hkJobQueue_JobQueueEntry_enqueueInFront(const Item& element);
 };
 
 // Grows the pool if full, then stores item at the next free slot and increments the count.
 // @fnv 0x00d057f0
 // src: HAVOK_LIB 0x00d057f0
-void ItemPool::hkQueue_struct_hkJobQueue_JobQueueEntry_enqueueInFront(const Item& item)
+// pdb: hkQueue<hkJobQueue::JobQueueEntry>::enqueue | hkJobQueue.obj | debug, call graph, high
+// pdb params: element
+void ItemPool::hkQueue_struct_hkJobQueue_JobQueueEntry_enqueueInFront(const Item& element)
 {
     if (m_uiItemCount >= m_pRayCursor)
     {
@@ -451,7 +462,7 @@ void ItemPool::hkQueue_struct_hkJobQueue_JobQueueEntry_enqueueInFront(const Item
     if (!m_free)
         m_free = m_pRayCursor;
     --m_free;
-    m_items[m_free] = item;
+    m_items[m_free] = element;
     ++m_uiItemCount;
 }
 }  // namespace fnv_00d057f0
@@ -474,13 +485,16 @@ struct FUN_00d04450_cls
 {
     int unk00;
 
-    void* hkJobQueue_lockQueue(void* out);
-    void hkJobQueue_unlockQueue(void* p);
+    void* hkJobQueue_lockQueue(void* dynamicDataStorage);
+    void hkJobQueue_unlockQueue(void* dynamicDataStorage);
     void SetValue(int a1);
 };
 
 // Stores a1 into a field of the object at this+0x18, decrements a per-index counter in the buffer from FUN_00d04400, and calls FUN_00d043c0 when it was positive.
 // @fnv 0x00d04450
+// pdb: hkJobQueue::setMasterThreadFinishingFlags | hkJobQueue.obj | debug, call graph, medium
+// pdb params: flags
+// pdb locals: dynamicDataStorage, assertBuf, ostr
 void FUN_00d04450_cls::SetValue(int aiValue)
 {
     __declspec(align(16)) unsigned int buf[0x5c];
@@ -567,6 +581,8 @@ struct FnvReleaseSet
 
 // For each semaphore up to count, clears its pending count and releases that many single counts on the semaphore.
 // @fnv 0x00d044f0
+// pdb: hkJobQueue::releaseWaitingThreads | hkJobQueue.obj | debug, call graph, medium
+// pdb params: data
 void FnvReleaseSet::ReleasePendingCounts(FnvReleaseCounts* pCounts)
 {
     for (int i = 0; i < count; i++)
@@ -618,23 +634,25 @@ class FUN_00d04890_cls
     unsigned int unk44;
     int m_48;
 
-    int LookupSpawnedEntry(const unsigned char* p);
+    int LookupSpawnedEntry(const unsigned char* element);
 };
 
 // Scans up to m_48 entries for one matching p[0] and p[1], returning its byte at offset 8*i+0x3d, else p[1]+m_30.
 // @fnv 0x00d04890
-int FUN_00d04890_cls::LookupSpawnedEntry(const unsigned char* pKey)
+// pdb: hkQueue<hkJobQueue::JobQueueEntry>::enqueueInFront | hkJobQueue.obj | debug, call graph, high
+// pdb params: element
+int FUN_00d04890_cls::LookupSpawnedEntry(const unsigned char* element)
 {
     int i = 0;
     if (m_48 > 0)
     {
-        unsigned char ucKey2 = pKey[1];
+        unsigned char ucKey2 = element[1];
         unsigned char* pEntry = reinterpret_cast<unsigned char*>(&unk3c);
         do
         {
             if (ucKey2 == pEntry[-4])
             {
-                unsigned char k = pKey[0];
+                unsigned char k = element[0];
                 if (k == pEntry[0])
                 {
                     return reinterpret_cast<unsigned char*>(this)[8 * i + 0x3d];
@@ -644,7 +662,7 @@ int FUN_00d04890_cls::LookupSpawnedEntry(const unsigned char* pKey)
             ++i;
         } while (i < m_48);
     }
-    return pKey[1] + m_30;
+    return element[1] + m_30;
 }
 
 void __cdecl hkSemaphoreBusyWait_release(int value, int flag);
@@ -693,6 +711,7 @@ struct FUN_00d048e0_cls
 
 // Scans entries from m_4c to m_50 then m_34 for pending flags, and if found decrements the entry's counter and calls FUN_00d043c0 with its m_78 value.
 // @fnv 0x00d048e0
+// pdb: hkArray<hkJobQueue::CustomJobTypeSetup,hkContainerHeapAllocator>::clearAndDeallocate | hkJobQueue.obj | debug, object-file run extension, low
 void FUN_00d048e0_cls::ProcessPendingEntries(char* tbl)
 {
     unsigned char pending = 0;
@@ -856,15 +875,18 @@ struct D049D0World
     int unk14;
     D049D0Simulation* m_pSimulation;
 
-    void* lock(D049D0LockInfo* info);
+    void* lock(D049D0LockInfo* dynamicDataStorage);
     void disable(void* lockHandle);
-    void unlock(void* lockHandle);
+    void unlock(void* dynamicDataStorage);
 
     void SetSimulationEnabled(int enabled);
 };
 
 // Locks the world, stores enabled into the simulation's m_enabled, disables it when enabled is false, then unlocks.
 // @fnv 0x00d049d0
+// pdb: hkJobQueue::setWaitPolicy | hkJobQueue.obj | debug, object-file gap fill, medium
+// pdb params: waitPolicy
+// pdb locals: dynamicDataStorage, assertBuf, ostr
 void D049D0World::SetSimulationEnabled(int enabled)
 {
     D049D0LockInfo info;
@@ -916,11 +938,13 @@ struct __declspec(align(16)) D04B90Object
 
 struct D04B90World
 {
-    void addCopy(D04B90Object* copy, void* userData);
+    void addCopy(D04B90Object* job, void* priority);
     void AddObjectCopy(const D04B90Object* object, void* userData);
 };
 
 // @fnv 0x00d04b90
+// pdb: __restgprlr | crtgpr.obj | retail, call graph, low
+// pdb note: debug build links it to hkJobQueue::addJob
 void D04B90World::AddObjectCopy(const D04B90Object* object, void* userData)
 {
     D04B90Object copy;
@@ -946,6 +970,8 @@ class FUN_00d05450_cls
 };
 
 // @fnv 0x00d05450
+// pdb: hkJobQueueHwSetup::hkJobQueueHwSetup | hkJobQueue.obj | retail, object-file run extension, low
+// pdb locals: info
 FUN_00d05450_cls* FUN_00d05450_cls::Init()
 {
     unsigned int value;
@@ -1026,11 +1052,14 @@ extern void __cdecl hookC_00d967a0(void*, void*);
 extern void __cdecl hookD_00d968e0(void*, void*);
 
 // Two more registration helpers, both cdecl with one pointer argument.
-void __cdecl hkpCollisionQueryJobQueueUtils_registerWithJobQueue(TargetObj* p);
-void __cdecl hkpRayCastQueryJobQueueUtils_registerWithJobQueue(TargetObj* p);
+void __cdecl hkpCollisionQueryJobQueueUtils_registerWithJobQueue(TargetObj* queue);
+void __cdecl hkpRayCastQueryJobQueueUtils_registerWithJobQueue(TargetObj* queue);
 
 // Fills g_hookTable with hookDefault_00d01e50, raises p->unk60 to at least 2, registers two hook pairs via SetEntry, then calls FUN_00da3400 and FUN_00da3480.
 // @fnv 0x00d2cca0
+// pdb: hkpWorld::registerWithJobQueue | hkpWorldRegisterSpu.obj | retail, call graph, low
+// pdb params: jobQueue
+// pdb locals: jobHandlerFuncs
 void __cdecl InitHookTable(TargetObj* apTarget)
 {
     g_hookTable[0] = hookDefault_00d01e50;
@@ -1079,7 +1108,7 @@ void __cdecl InitHookTable(TargetObj* apTarget)
 namespace fnvc_adapt {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance();
 }
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct D04A20Operation
 {
@@ -1222,6 +1251,8 @@ struct D04A20World
 
 // Appends an operation with the given object, flag and data to the pending array, then processes pending operations.
 // @fnv 0x00d04a20
+// pdb: hkJobQueue::registerJobWithCpuThread | hkJobQueue.obj | debug, object-file gap fill, medium
+// pdb params: jobType, subType, threadId
 void D04A20World::QueueOperation(void* object, bool flag, int data)
 {
     D04A20Operation& op = m_pPendingOperations.AllocatePair();
@@ -1389,6 +1420,9 @@ struct FUN_00d05490 : D05490Base
 
 // Initializes the TLS value, allocates a PoolTable, sets up its entries and slot callbacks, then calls FinishInit.
 // @fnv 0x00d05490
+// pdb: hkJobQueue::hkJobQueue | hkJobQueue.obj | retail, object-file run extension, low
+// pdb params: cinfo
+// pdb locals: assertBuf, ostr
 FUN_00d05490::FUN_00d05490(SrcCfg* pConfig) throw() : D05490Base(0)
 {
     TlsSetValue(g_dwTlsIndex, 0);
@@ -1455,6 +1489,8 @@ struct hkQueue128
 // Grows the underlying element array to at least n slots, copying existing nodes and resetting the ring indices.
 // @fnv 0x00d056d0
 // src: HAVOK_LIB 0x00d056d0
+// pdb: hkQueue<hkJobQueue::JobQueueEntry>::setCapacity | hkJobQueue.obj | retail, call graph, low
+// pdb params: n
 void hkQueue128::hkQueue_struct_hkJobQueue_JobQueueEntry_setCapacity(int aiMinCapacity)
 {
     if (m_pRayCursor < aiMinCapacity)
@@ -1509,9 +1545,9 @@ static __forceinline short& Ref212(Registry* r, unsigned char sub)
 }
 struct LunaOwner : Owner
 {
-    int LookupSpawnedEntry(Item* item);
-    int hkJobQueue_findJobInternal(int index, Registry* registry, int param_4, int param_3);
-    int ProcessCallback(int param_2, int param_3, int param_4);
+    int LookupSpawnedEntry(Item* element);
+    int hkJobQueue_findJobInternal(int queueIndexOfNewJob, Registry* data, int waitStatus, int jobOut);
+    int ProcessCallback(int oldJob, int jobOut, int waitStatus);
 };
 
 struct LunaCallbackItem
@@ -1525,7 +1561,10 @@ struct LunaCallbackItem
 
 // When param_2 is nonzero, invokes the owner callback and inserts its payload; repeats FUN_00d05840 until it returns a value other than -1.
 // @fnv 0x00d04e80
-int LunaOwner::ProcessCallback(int param_2, int param_3, int param_4)
+// pdb: hkJobQueue::finishJobAndGetNextJob | hkJobQueue.obj | retail, call graph, high
+// pdb params: oldJob, jobOut, waitStatus
+// pdb locals: assertBuf, ostr, createdJob, dynamicDataStorage
+int LunaOwner::ProcessCallback(int oldJob, int jobOut, int waitStatus)
 {
     union Phase212
     {
@@ -1553,11 +1592,11 @@ int LunaOwner::ProcessCallback(int param_2, int param_3, int param_4)
         RequestContext context;
         phase.registry = hkJobQueue_lockQueue(&context);
         int index = -1;
-        if (param_2 != 0)
+        if (oldJob != 0)
         {
             LunaCallbackItem item;
             typedef int(__cdecl * OwnerCallback)(Owner*, Registry*, int, LunaCallbackItem*);
-            if (((OwnerCallback)unk20)(this, phase.registry, param_2, &item) == 0)
+            if (((OwnerCallback)unk20)(this, phase.registry, oldJob, &item) == 0)
             {
                 index = LookupSpawnedEntry(&item.payload);
                 Bucket* bucket = &phase.registry->buckets[index];
@@ -1597,12 +1636,12 @@ int LunaOwner::ProcessCallback(int param_2, int param_3, int param_4)
                 }
             }
 
-            unsigned char sub = *(unsigned char*)(param_2 + 1);
+            unsigned char sub = *(unsigned char*)(oldJob + 1);
             --Ref212(phase.registry, sub);
-            param_2 = 0;
+            oldJob = 0;
         }
 
-        result = hkJobQueue_findJobInternal(index, phase.registry, param_4, param_3);
+        result = hkJobQueue_findJobInternal(index, phase.registry, waitStatus, jobOut);
         if (result != -1)
             break;
     }
@@ -1638,14 +1677,18 @@ typedef hkArrayBase<void*> ArrayOfJobs;
 
 struct FUN_00d04bd0_cls : Owner
 {
-    int LookupSpawnedEntry(void* p);
+    int LookupSpawnedEntry(void* element);
     void RemoveItemReference(int index, Registry* set);
-    void AddJobBatch(ArrayOfJobs* jobs, int priority);
+    void hkJobQueue_addJobBatch(ArrayOfJobs* jobs, int priority);
 };
 
 // Copies each job into a registry bucket, inserts it at the front or tail according to priority, and removes its item reference.
 // @fnv 0x00d04bd0
-void FUN_00d04bd0_cls::AddJobBatch(ArrayOfJobs* jobs, int priority)
+// src: XBOX_RETAIL_PDB 0x00d04bd0
+// pdb: hkJobQueue::addJobBatch | hkJobQueue.obj | retail, string-set bridge, high
+// pdb params: jobs, priority
+// pdb locals: dynamicDataStorage, assertBuf, ostr, entry
+void FUN_00d04bd0_cls::hkJobQueue_addJobBatch(ArrayOfJobs* jobs, int priority)
 {
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     TimerEntry* cur = (TimerEntry*)stream->m_end.m_storage;
@@ -1827,15 +1870,18 @@ struct S_00d05020_DynamicData
 struct S_00d05020_JobQueue
 {
     S_00d05020_DynamicData* hkJobQueue_lockQueue(char* dynamicDataStorage);
-    int LookupSpawnedEntry(const S_00d05020_Job& job);
+    int LookupSpawnedEntry(const S_00d05020_Job& element);
     int hkJobQueue_findJobInternal(int queueIndexOfNewJob, S_00d05020_DynamicData* data, int waitStatus, S_00d05020_Job& jobOut);
-    int hkJobQueue_finishAddAndGetNextJob(int originalJobType, int priority, S_00d05020_Job& jobInOut, int waitStatus);
+    int hkJobQueue_finishAddAndGetNextJob(int oldJobType, int priority, S_00d05020_Job& jobInOut, int waitStatus);
 };
 
 // Enqueues a job at the front or tail of a queue, then repeats FUN_00d05840 until it returns a value other than -1.
 // @fnv 0x00d05020
 // src: HAVOK_LIB 0x00d05020
-int S_00d05020_JobQueue::hkJobQueue_finishAddAndGetNextJob(int aiJobType, int priority, S_00d05020_Job& jobInOut, int waitStatus)
+// pdb: hkJobQueue::finishAddAndGetNextJob | hkJobQueue.obj | retail, upstream name already matches, high
+// pdb params: oldJobType, priority, jobInOut, waitStatus
+// pdb locals: assertBuf, ostr, dynamicDataStorage
+int S_00d05020_JobQueue::hkJobQueue_finishAddAndGetNextJob(int oldJobType, int priority, S_00d05020_Job& jobInOut, int waitStatus)
 {
     volatile unsigned int tick;
     {
@@ -1859,7 +1905,7 @@ int S_00d05020_JobQueue::hkJobQueue_finishAddAndGetNextJob(int aiJobType, int pr
         int queueIndex = -1;
         if (jobToAdd)
         {
-            data->m_sQueueCounts[aiJobType]--;
+            data->m_sQueueCounts[oldJobType]--;
             queueIndex = LookupSpawnedEntry(jobInOut);
             S_00d05020_Queue& queue = data->m_kQueues[queueIndex];
             if (priority == 0)
@@ -1969,17 +2015,20 @@ struct S00df8570_Result
 };
 struct S00df8570_Enc
 {
-    int hkJobQueue_lockQueue(S00df8570_Result* result);
-    void InsertItemAndNotify(int output, S00df8570_Rec* record, int zero);
-    void hkJobQueue_unlockQueue(int output);
-    int ProcessCallback(S00df8570_Input* first, S00df8570_Input* second, int zero);
+    int hkJobQueue_lockQueue(S00df8570_Result* dynamicDataStorage);
+    void hkJobQueue_addJobQueueLocked(int data, S00df8570_Rec* job, int priority);
+    void hkJobQueue_unlockQueue(int dynamicDataStorage);
+    int ProcessCallback(S00df8570_Input* oldJob, S00df8570_Input* jobOut, int waitStatus);
 };
-extern "C" void __cdecl InitSplitChunks(int resource, int total, int options, int base, int count,
-                                        S00df8570_Rec* records);
+extern "C" void __cdecl hkKdTreeRayCastJobUtil_initializeBuildSetupJobs(int collidablesPtr, int numCollidables, int entries, int semaphore, int numJobs,
+                                        S00df8570_Rec* jobsOut);
 // Writes trace markers, copies input fields into records, calls InitSplitChunks, encodes and inserts items, then calls ProcessCallback and returns its result.
 // @fnv 0x00df8570
 // src: HAVOK_LIB 0x00df8570
-int __cdecl hkCpuKdTreeBuildCoordinatorJob(S00df8570_Enc* encoder, S00df8570_Input* input)
+// pdb: hkCpuKdTreeBuildCoordinatorJob | hkpCpuKdTreeBuildJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: buildSetupJob, dynamicDataStorage
+int __cdecl hkCpuKdTreeBuildCoordinatorJob(S00df8570_Enc* jobQueue, S00df8570_Input* nextJobOut)
 {
     volatile unsigned int stamp;
     int output;
@@ -1996,33 +2045,33 @@ int __cdecl hkCpuKdTreeBuildCoordinatorJob(S00df8570_Enc* encoder, S00df8570_Inp
         }
     }
     __declspec(align(16)) S00df8570_Rec records[4];
-    int count = input->entryCount;
+    int count = nextJobOut->entryCount;
     if (count > 4)
         count = 4;
-    *input->outCount = count;
+    *nextJobOut->outCount = count;
     if (count > 0)
     {
-        records[0].m14 = reinterpret_cast<int>(input->outCount);
-        records[0].m10 = input->m10;
-        records[0].m1c = input->m1c;
-        records[0].m20 = input->m20;
-        records[0].m24 = input->m24;
-        records[0].m38 = input->entryCount;
-        records[0].m28 = input->m28;
-        records[0].m2c = input->m2c;
-        records[0].m30 = input->m30;
-        records[0].m3c = input->m3c;
-        records[0].m34 = input->m34;
-        records[0].m40 = input->m40;
+        records[0].m14 = reinterpret_cast<int>(nextJobOut->outCount);
+        records[0].m10 = nextJobOut->m10;
+        records[0].m1c = nextJobOut->m1c;
+        records[0].m20 = nextJobOut->m20;
+        records[0].m24 = nextJobOut->m24;
+        records[0].m38 = nextJobOut->entryCount;
+        records[0].m28 = nextJobOut->m28;
+        records[0].m2c = nextJobOut->m2c;
+        records[0].m30 = nextJobOut->m30;
+        records[0].m3c = nextJobOut->m3c;
+        records[0].m34 = nextJobOut->m34;
+        records[0].m40 = nextJobOut->m40;
         records[0].m60 = 1;
-        InitSplitChunks(input->m50, input->entryCount, input->m20, input->m10, count, records);
+        hkKdTreeRayCastJobUtil_initializeBuildSetupJobs(nextJobOut->m50, nextJobOut->entryCount, nextJobOut->m20, nextJobOut->m10, count, records);
         S00df8570_Result result;
-        output = (int)encoder->hkJobQueue_lockQueue(&result);
+        output = (int)jobQueue->hkJobQueue_lockQueue(&result);
         for (int i = 0; i < count; ++i)
-            encoder->InsertItemAndNotify(output, &records[i], 0);
-        encoder->hkJobQueue_unlockQueue(output);
+            jobQueue->hkJobQueue_addJobQueueLocked(output, &records[i], 0);
+        jobQueue->hkJobQueue_unlockQueue(output);
     }
-    int iResult = encoder->ProcessCallback(input, input, 0);
+    int iResult = jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
     {
         hkMonitorStream* trace = static_cast<hkMonitorStream*>(TlsGetValue(DAT_0126835c));
         unsigned int* next = reinterpret_cast<unsigned int*>(trace->m_end.m_storage);
@@ -2054,19 +2103,22 @@ struct __declspec(align(16)) Buffer
 };
 struct Owner
 {
-    Buffer* hkJobQueue_lockQueue(Buffer* scratch);
-    void InsertItemAndNotify(Buffer* work, void* first, unsigned int second);
-    void hkJobQueue_unlockQueue(Buffer* work);
-    void hkJobQueue_addJob(void* first, unsigned int second);
+    Buffer* hkJobQueue_lockQueue(Buffer* dynamicDataStorage);
+    void hkJobQueue_addJobQueueLocked(Buffer* data, void* job, unsigned int priority);
+    void hkJobQueue_unlockQueue(Buffer* dynamicDataStorage);
+    void hkJobQueue_addJob(void* job, unsigned int priority);
 };
 // Passes a stack Buffer to FUN_00d04400, calls FUN_00d04b00 with its result and the arguments, then passes that result to FUN_00d04420.
 // @fnv 0x00d04b50
 // src: HAVOK_LIB 0x00d04b50
-void Owner::hkJobQueue_addJob(void* first, unsigned int second)
+// pdb: hkJobQueue::addJob | hkJobQueue.obj | retail, call graph, high
+// pdb params: job, priority
+// pdb locals: dynamicDataStorage, assertBuf, ostr
+void Owner::hkJobQueue_addJob(void* job, unsigned int priority)
 {
     Buffer scratch;
     Buffer* work = hkJobQueue_lockQueue(&scratch);
-    InsertItemAndNotify(work, first, second);
+    hkJobQueue_addJobQueueLocked(work, job, priority);
     hkJobQueue_unlockQueue(work);
 }
 }  // namespace fnv_00d04b50
@@ -2250,6 +2302,7 @@ struct S_00d055c0_Obj
 // Releases the pool and handle objects, clears and deallocates Arr12 storage, calls FUN_00cbf490, then calls DAT_00fdf058 with this.
 // @fnv 0x00d055c0
 // src: GUESS 0x00d055c0 (confidence: low)
+// pdb: hkJobQueue::~hkJobQueue | hkJobQueue.obj | retail, object-file run extension, low
 void S_00d055c0_Obj::ProcessEntries_00d055c0()
 {
     S_00d055c0_Pool* pool = unk18;
@@ -2331,13 +2384,16 @@ struct SlotAllocator
     virtual void vSlot10(unsigned int a, unsigned int b);
 };
 
-void* Object_ProcessAndReturnValue_00d883c0(void* a1, unsigned int a2, unsigned int a3, ScratchBlock* a4);
+void* hkpConstraintSolverSetup_calcBufferOffsetsForSolve(void* a1, unsigned int a2, unsigned int a3, ScratchBlock* a4);
 hkMemoryRouter* hkMemoryRouter_getInstance();
 
 // Initializes fields of a local ScratchBlock, passes it to FUN_00d883c0, then conditionally calls vSlot10 on m_pAllocator.
 // @fnv 0x00d889f0
 // src: GUESS 0x00d889f0 (confidence: low)
-void* __cdecl hkMemoryRouter_UpdateState_00d889f0(void* a1)
+// pdb: hkpConstraintSolverSetup::calcBufferSize | hkpConstraintSolverSetup.obj | retail, object-file gap fill, high
+// pdb params: island
+// pdb locals: taskHeader
+void* __cdecl hkMemoryRouter_UpdateState_00d889f0(void* island)
 {
     __declspec(align(16)) ScratchBlock s;
     s.unk0C = 1;
@@ -2354,7 +2410,7 @@ void* __cdecl hkMemoryRouter_UpdateState_00d889f0(void* a1)
     s.unk78 = 0;
     s.unk64 = 0x80000000u;
     s.unk7C = 0;
-    void* obj = Object_ProcessAndReturnValue_00d883c0(a1, 0, 0, &s);
+    void* obj = hkpConstraintSolverSetup_calcBufferOffsetsForSolve(island, 0, 0, &s);
     hkMemoryRouter* pAllocHolder = hkMemoryRouter_getInstance();
     SlotAllocator* alloc = reinterpret_cast<SlotAllocator*>(pAllocHolder->m_heap);
     unsigned int flag = s.unk64;
@@ -2398,18 +2454,21 @@ class Worker
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
     int(__cdecl* m_pfn20)(Worker*, PoolSet*, TraceArg*, int*);
 
-    PoolSet* GetNode(RequestContext* ctx);
-    int FindIndex(Item* item);
+    PoolSet* GetNode(RequestContext* dynamicDataStorage);
+    int FindIndex(Item* element);
     void Sync(int index, PoolSet* set);
-    void Release(PoolSet* set);
+    void Release(PoolSet* dynamicDataStorage);
 
-    void hkJobQueue_finishJob(TraceArg* p, int flag);
+    void hkJobQueue_finishJob(TraceArg* oldJob, int flag);
 };
 
 // Records trace markers, runs the job callback on a pool node, inserts the result item, syncs, and releases the node.
 // @fnv 0x00d04d80
 // src: HAVOK_LIB 0x00d04d80
-void Worker::hkJobQueue_finishJob(TraceArg* apTraceArg, int flag)
+// pdb: hkJobQueue::finishJob | hkJobQueue.obj | retail, string-set bridge, high
+// pdb params: oldJob, flag
+// pdb locals: createdJob, dynamicDataStorage, assertBuf, ostr
+void Worker::hkJobQueue_finishJob(TraceArg* oldJob, int flag)
 {
     volatile unsigned long tick;
     JobOut out;
@@ -2428,7 +2487,7 @@ void Worker::hkJobQueue_finishJob(TraceArg* apTraceArg, int flag)
     }
 
     PoolSet* pPoolNode = GetNode(&ctx);
-    if (m_pfn20(this, pPoolNode, apTraceArg, &out.m_iResultCode) == 0)
+    if (m_pfn20(this, pPoolNode, oldJob, &out.m_iResultCode) == 0)
     {
         int idx = FindIndex(&item);
         if (out.m_iResultCode == 0)
@@ -2439,7 +2498,7 @@ void Worker::hkJobQueue_finishJob(TraceArg* apTraceArg, int flag)
     }
 
     if (flag == 0)
-        --((short*)pPoolNode)[apTraceArg->m_uiEdgeIndex];  // per-index reference counts open the pool set
+        --((short*)pPoolNode)[oldJob->m_uiEdgeIndex];  // per-index reference counts open the pool set
 
     Release(pPoolNode);
 
@@ -2528,6 +2587,8 @@ struct Dispatcher : FUN_00d05490
 // Fetches and executes a loop of DispatchJob entries, recording start and end ticks into the TLS hkMonitorStream for each job type.
 // @fnv 0x00d051b0
 // src: HAVOK_LIB 0x00d051b0
+// pdb: hkJobQueue::processAllJobs | hkJobQueue.obj | retail, string-set bridge, high
+// pdb locals: job, assertBuf, ostr
 int Dispatcher::hkJobQueue_processAllJobs()
 {
     TimerSamples samples;
@@ -2693,11 +2754,13 @@ extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void* secti
 
 struct QueueLockView : Owner
 {
-    Registry* hkJobQueue_lockQueue(RequestContext* storage);
+    Registry* hkJobQueue_lockQueue(RequestContext* dynamicDataStorage);
 };
 
 // @fnv 0x00d04400
 // src: COMMUNITY 0x00d04400
+// pdb: hkJobQueue::lockQueue | hkJobQueue.obj | retail, upstream name already matches, high
+// pdb params: dynamicDataStorage
 Registry* QueueLockView::hkJobQueue_lockQueue(RequestContext*)
 {
     EnterCriticalSection(this);
@@ -2708,12 +2771,14 @@ extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void* secti
 
 struct CriticalSectionOwner
 {
-    void hkJobQueue_unlockQueue(Registry* data);
+    void hkJobQueue_unlockQueue(Registry* dynamicDataStorage);
 };
 
 // @fnv 0x00d04420
 // src: COMMUNITY 0x00d04420
-void CriticalSectionOwner::hkJobQueue_unlockQueue(Registry* data)
+// pdb: hkJobQueue::unlockQueue | hkJobQueue.obj | debug, upstream name already matches, high
+// pdb params: dynamicDataStorage
+void CriticalSectionOwner::hkJobQueue_unlockQueue(Registry* dynamicDataStorage)
 {
     LeaveCriticalSection(this);
 }

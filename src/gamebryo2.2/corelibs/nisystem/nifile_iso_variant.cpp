@@ -48,11 +48,13 @@ struct FileConstructor
 
 // @fnv 0x00aa1b60
 // src: COMMUNITY 0x00aa1b60
-extern "C" NiFile* __cdecl NiFile_DefaultFileCreateFunc(const char* filename, NiFile::OpenMode mode, unsigned int bufferSize)
+// pdb: NiFile::DefaultFileCreateFunc | NiFile.obj | retail, upstream name already matches, high
+// pdb params: pcName, eMode, uiSize
+extern "C" NiFile* __cdecl NiFile_DefaultFileCreateFunc(const char* pcName, NiFile::OpenMode eMode, unsigned int uiSize)
 {
     void* storage = DAT_011f6238.Game_DoHeapAlloc(0x30);
     if (storage)
-        return static_cast<FileConstructor*>(storage)->FUN_00aa14d0(filename, mode, bufferSize);
+        return static_cast<FileConstructor*>(storage)->FUN_00aa14d0(pcName, eMode, uiSize);
     return 0;
 }
 
@@ -118,9 +120,12 @@ struct FileAccessObject
 };
 // @fnv 0x00aa1a40
 // src: COMMUNITY 0x00aa1a40
-extern "C" bool __cdecl NiFile_DefaultFileAccessFunc(const char* name, NiFile::OpenMode mode)
+// pdb: NiFile::DefaultFileAccessFunc | NiFile.obj | retail, upstream name already matches, high
+// pdb params: pcName, eMode
+// pdb locals: kFile
+extern "C" bool __cdecl NiFile_DefaultFileAccessFunc(const char* pcName, NiFile::OpenMode eMode)
 {
-    FileAccessObject file(name, mode, 0);
+    FileAccessObject file(pcName, eMode, 0);
     return file.good;
 }
 
@@ -149,6 +154,8 @@ class RelativeSeekFile : public NiFile
 
 // @fnv 0x00aa1a90
 // src: GAMEBRYO_LIB 0x00aa1a90
+// pdb: NiFile::Seek | NiFile.obj | debug, vtable slot, medium
+// pdb params: iNumBytes
 void RelativeSeekFile::NiFile_Seek_00aa1a90(int distance)
 {
     Seek(distance, DAT_010a2484);  // NiFile::Seek(int, int), vtable slot 5 (+0x14)
@@ -164,16 +171,19 @@ void __cdecl fnv_StandardizeFilePath(char*);
 
 // @fnv 0x00aa1bb0
 // src: COMMUNITY 0x00aa1bb0
-bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcPath)
+// pdb: NiFile::CreateDirectoryRecursive | NiFile.obj | retail, upstream name already matches, high
+// pdb params: pcFullPath
+// pdb locals: acFullPathCopy, uiStart, ui, cCurChar
+bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcFullPath)
 {
-    if (DAT_011ac230(pcPath))
+    if (DAT_011ac230(pcFullPath))
         return true;
 
-    if (strlen(pcPath) > 0x104)
+    if (strlen(pcFullPath) > 0x104)
         return false;
 
     char acPath[0x104];
-    strcpy_s(acPath, 0x104, pcPath);
+    strcpy_s(acPath, 0x104, pcFullPath);
     fnv_StandardizeFilePath(acPath);
 
     unsigned int n = 0;
@@ -207,8 +217,10 @@ namespace fnv_00aa1a30 {
 extern void(__cdecl* DAT_011ac228)(const char*, NiFile::OpenMode);
 // @fnv 0x00aa1a30
 // src: XBOX_PDB 0x00aa1a30
-void __cdecl NiFile_Access(const char* name, NiFile::OpenMode mode)
+// pdb: NiFile::Access | NiFile.obj | debug, upstream name already matches, high
+// pdb params: pcName, eMode
+void __cdecl NiFile_Access(const char* pcName, NiFile::OpenMode eMode)
 {
-    DAT_011ac228(name, mode);
+    DAT_011ac228(pcName, eMode);
 }
 }  // namespace fnv_00aa1a30

@@ -31,17 +31,19 @@ struct FUN_00d263f0_t
     char pad20[0x20];
     char m_buf40[0x40];  // +0x40
 
-    int hkpTriSampledHeightFieldCollection_calcSizeForSpu(int a, int b);
+    int hkpTriSampledHeightFieldCollection_calcSizeForSpu(int input, int spuBufferSizeLeft);
 };
 
 // Calls a virtual function on m_obj with a and b-0x40, then maps the result to an offset in m_buf40 or stores it in m_field1c, returning -1 when out of range.
 // @fnv 0x00d263f0
 // src: HAVOK_LIB 0x00d263f0
-int FUN_00d263f0_t::hkpTriSampledHeightFieldCollection_calcSizeForSpu(int a, int aiLimit)
+// pdb: hkpTriSampledHeightFieldCollection::calcSizeForSpu | hkpTriSampledHeightFieldCollection.obj | retail, upstream name already matches, high
+// pdb params: input, spuBufferSizeLeft
+int FUN_00d263f0_t::hkpTriSampledHeightFieldCollection_calcSizeForSpu(int input, int spuBufferSizeLeft)
 {
-    int iAdjusted = aiLimit - 0x40;
+    int iAdjusted = spuBufferSizeLeft - 0x40;
     void* obj = m_obj;
-    int iResult = (*(int(__thiscall**)(void*, int, int))(*(unsigned char**)obj + 0x18))(obj, a, iAdjusted);
+    int iResult = (*(int(__thiscall**)(void*, int, int))(*(unsigned char**)obj + 0x18))(obj, input, iAdjusted);
     if (iResult >= 0 && iResult <= iAdjusted)
     {
         if (m_obj == m_buf40)
@@ -83,6 +85,7 @@ struct FUN_00d26880_StandIn : public hkpTriSampledHeightFieldCollection
 // Runs FUN_00d26760 on this, then if flags bit 0 is set, frees this through the memory router's manager using the size at offset 4, and returns this.
 // @fnv 0x00d26880
 // src: COMMUNITY 0x00d26880
+// pdb: hkpTriSampledHeightFieldCollection::`scalar deleting destructor' | hkpTriSampledHeightFieldCollection.obj | retail, vtable slot, high
 hkpTriSampledHeightFieldCollection* FUN_00d26880_StandIn::hkpTriSampledHeightFieldCollection_Destroy(unsigned int flags)
 {
     reinterpret_cast<FUN_00d26760_StandIn*>(this)->FUN_00d26760();
@@ -120,10 +123,10 @@ int __thiscall FUN_00d263a0_cls::GetNextKey(unsigned int key)
         return key | 1;
     unsigned int hi = key >> 16;
     unsigned int idx = ((key >> 1) & 0x7fff) + 1;
-    unsigned int uiLimit = unk08->m_iXResolution - 1;
+    unsigned int uiLimit = unk08->m_xRes - 1;
     if (idx == uiLimit)
     {
-        unsigned int uiLimit2 = unk08->m_iZResolution - 1;
+        unsigned int uiLimit2 = unk08->m_zRes - 1;
         hi++;
         idx = 0;
         if (hi == uiLimit2)
@@ -160,23 +163,26 @@ void* FUN_00d26450_Obj::hkpTriSampledHeightFieldCollection_getHeightFieldShape()
 struct S_d264d0_Coll : public hkpTriSampledHeightFieldCollection
 {
     hkpSampledHeightFieldShape* hkpTriSampledHeightFieldCollection_getHeightFieldShape();
-    void hkpTriSampledHeightFieldCollection_setWeldingInfo(unsigned int key, unsigned short value);
+    void hkpTriSampledHeightFieldCollection_setWeldingInfo(unsigned int key, unsigned short weldingInfo);
 };
 
 // src: XBOX_PDB 0x00d26450
 __declspec(noinline) hkpSampledHeightFieldShape* S_d264d0_Coll::hkpTriSampledHeightFieldCollection_getHeightFieldShape()
 {
-    return m_pHeightFieldShape;
+    return m_heightfield;
 }
 
 // Computes an index from key and count, then stores value in m_kWeldingInfo.m_data at that index.
 // @fnv 0x00d264d0
 // src: HAVOK_LIB 0x00d264d0
-void S_d264d0_Coll::hkpTriSampledHeightFieldCollection_setWeldingInfo(unsigned int key, unsigned short value)
+// pdb: hkpTriSampledHeightFieldCollection::setWeldingInfo | hkpTriSampledHeightFieldCollection.obj | debug, upstream name already matches, high
+// pdb params: key, weldingInfo
+// pdb locals: assertBuf, ostr
+void S_d264d0_Coll::hkpTriSampledHeightFieldCollection_setWeldingInfo(unsigned int key, unsigned short weldingInfo)
 {
-    unsigned int count = hkpTriSampledHeightFieldCollection_getHeightFieldShape()->m_iXResolution;
+    unsigned int count = hkpTriSampledHeightFieldCollection_getHeightFieldShape()->m_xRes;
     unsigned int idx = ((count - 1) * (key >> 16) + ((key >> 1) & 0x7fff)) * 2 | (key & 1);
-    m_kWeldingInfo.m_data[idx] = value;
+    m_weldingInfo.m_data[idx] = weldingInfo;
 }
 
 extern int DAT_010ce390;
@@ -205,12 +211,15 @@ struct FUN_00d26700
     volatile int m_uiZ;  // +0x2c
     LocalM128 m_v;          // +0x30
 
-    FUN_00d26700(void* p, float f);
+    FUN_00d26700(void* shape, float radius);
 };
 
 // Initializes a FUN_00d26700 object with a pointer and float, sets vtable pointers and default values, then calls a method on the pointer.
 // @fnv 0x00d26700
-FUN_00d26700::FUN_00d26700(void* p, float f)
+// pdb: hkpTriSampledHeightFieldCollection::hkpTriSampledHeightFieldCollection | hkpTriSampledHeightFieldCollection.obj | retail, object-file gap fill, high
+// pdb params: shape, radius
+// pdb locals: assertBuf, ostr
+FUN_00d26700::FUN_00d26700(void* shape, float radius)
 {
     FUN_00d21410(7, 2);
     m_vptr1 = &DAT_010ce390;
@@ -218,10 +227,10 @@ FUN_00d26700::FUN_00d26700(void* p, float f)
     m_uiX = 0;
     m_uiY = 0;
     m_uiZ = 0x80000000;
-    m_f = f;
-    m_p = p;
+    m_f = radius;
+    m_p = shape;
     m_v = _mm_setzero_ps();
-    ((Target26700*)p)->FUN_00c90510();
+    ((Target26700*)shape)->FUN_00c90510();
 }
 
 // hkMemoryRouter is the shared Havok memory router: 0x00c85750 returns it, heap at +0x10.
@@ -280,6 +289,7 @@ class FUN_00d26760 : public hkBase0D267, public hkBase1D267
 };
 
 // @fnv 0x00d26760
+// pdb: hkpTriSampledHeightFieldCollection::~hkpTriSampledHeightFieldCollection | hkpTriSampledHeightFieldCollection.obj | retail, object-file gap fill, high
 FUN_00d26760::~FUN_00d26760() throw()
 {
     m_pkRef->FUN_00c905b0();
@@ -300,22 +310,25 @@ struct FUN_00d267c0_Alloc
 };
 
 void* hkMemoryRouter_getInstance(void);
-void hkArrayUtil__reserve(int a1, int a2, int a3, int a4);
+void hkArrayUtil__reserve(int mem, int array, int numElem, int sizeElem);
 
 struct FUN_00d267c0_t : FUN_00d26450_S
 {
-    void hkpTriSampledHeightFieldCollection_initWeldingInfo(int mode);
+    void hkpTriSampledHeightFieldCollection_initWeldingInfo(int weldingType);
 };
 
 // Resizes the internal buffer to the computed index when mode is not 6, otherwise frees the buffer and resets its state fields.
 // @fnv 0x00d267c0
 // src: HAVOK_LIB 0x00d267c0
-void FUN_00d267c0_t::hkpTriSampledHeightFieldCollection_initWeldingInfo(int mode)
+// pdb: hkpTriSampledHeightFieldCollection::initWeldingInfo | hkpTriSampledHeightFieldCollection.obj | retail, upstream name already matches, high
+// pdb params: weldingType
+// pdb locals: assertBuf, ostr
+void FUN_00d267c0_t::hkpTriSampledHeightFieldCollection_initWeldingInfo(int weldingType)
 {
-    if (mode != 6)
+    if (weldingType != 6)
     {
         const hkpSampledHeightFieldShape* o = hkpTriSampledHeightFieldCollection_getHeightFieldShape();
-        int idx = (2 * o->m_iZResolution - 2) * (o->m_iXResolution - 1);
+        int idx = (2 * o->m_zRes - 2) * (o->m_xRes - 1);
         char* arr = (char*)this + 0x24;
         char* cur = (char*)hkMemoryRouter_getInstance();
         if ((*(int*)(arr + 8) & 0x3fffffff) < idx)
@@ -448,6 +461,9 @@ __declspec(noinline) hkpSampledHeightFieldShape* S00d26510_Coll::getHF() const
 // Constructs a triangle shape in the provided buffer from heightfield vertices, welding data, and extrusion vector.
 // @fnv 0x00d26510
 // src: GUESS 0x00d26510 (confidence: low)
+// pdb: hkpTriSampledHeightFieldCollection::getChildShape | hkpTriSampledHeightFieldCollection.obj | retail, vtable slot, high
+// pdb params: key, buffer
+// pdb locals: p
 const S00d26510_ShapeB* S00d26510_Coll::AllocateStorage_00d26510(unsigned int key, void* buffer) const
 {
     const S00d26510_Coll* coll = this;
@@ -461,7 +477,7 @@ const S00d26510_ShapeB* S00d26510_Coll::AllocateStorage_00d26510(unsigned int ke
         int xx = ((key & 0xffff) >> 1) + (i >> 1);
         int zz = (key >> 16) + (i & 1);
         vertices[i].set((float)xx, hf->GetHeightAtGridPoint(xx, zz), (float)zz, 0.0f);
-        vertices[i].mul4(hf->m_kHeightScaleVector);
+        vertices[i].mul4(hf->m_intToFloatScale);
     }
     hkBool flipB;
     // The shared vf14 declaration has no output parameter yet.
@@ -476,7 +492,7 @@ const S00d26510_ShapeB* S00d26510_Coll::AllocateStorage_00d26510(unsigned int ke
     int type = size ? 0 : 6;
     int iWeldingInfo = size;
     if (size)
-        iWeldingInfo = coll->m_weldingData[((coll->getHF()->m_iXResolution - 1) * z + x) * 2 | iParity];
+        iWeldingInfo = coll->m_weldingData[((coll->getHF()->m_xRes - 1) * z + x) * 2 | iParity];
     tri->m_kWeldingInfo = (unsigned short)iWeldingInfo;
     tri->m_eWeldingType = type;
     LocalM128 sq = _mm_mul_ps(coll->m_kTriangleExtrusion, coll->m_kTriangleExtrusion);

@@ -10,10 +10,11 @@ class NiColorA;
 class TESObjectCELL;
 class NiPoint3;
 
+// pdb: class TESObjectLAND, size 0x2c, bases: TESForm, TESChildCell, 4 members
 class TESObjectLAND : public TESForm, public TESChildCell
 {
 public:
-    unsigned char formData[0x10];
+    unsigned char Data[0x10];
 
     TESObjectLAND();
     void InitializeForCell(TESObjectCELL* cell);
@@ -25,11 +26,11 @@ public:
     bool __thiscall TESObjectLAND_GetLandHeight(LandscapeColorData&, float&);
     bool __thiscall GetLandHeight(const LandscapeColorData&, float&);
     NiGeometry* __thiscall GetGeometry_0053f120(LandscapeColorData*);
-    NiGeometry* __thiscall GetGeometry_0053f0e0(const NiPoint3&);
-    void TESObjectLAND_GetColorA(int m_iGridX, int m_iGridY, NiColorA* color);
+    NiGeometry* __thiscall GetGeometry(const NiPoint3&);
+    void TESObjectLAND_GetColorA(int iblock, int m_iGridY, NiColorA* color);
     bool GetLandColor_0(const LandscapeColorData* cdata, NiColorA* color);
     void TESObjectLAND_SetLandRemapped(int);
     void SetCell(TESObjectCELL* apCell);
-    void SetAltered_00539010(bool altered);
+    void SetAltered_00539010(bool abVal);
     NiPoint3* TESObjectLAND_GetMainTexture();
 };

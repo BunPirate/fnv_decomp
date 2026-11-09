@@ -6,6 +6,7 @@
 struct BGSChangeFlags;
 class TESBoundObject;
 
+// pdb: class BGSSaveFormBuffer, size 0x24, bases: BGSSaveGameBuffer, 2 members
 class BGSSaveFormBuffer : public BGSSaveGameBuffer
 {
 public:
@@ -31,7 +32,7 @@ public:
     ~BGSSaveFormBuffer();
 
     using BGSSaveGameBuffer::Save;
-    void Save(SaveLoadFile* file);
+    void Save(SaveLoadFile* apFile);
     void SetHeader(unsigned int formID, FormChangeMask changeFlags, int formType, unsigned char version);
     void SetHeader(unsigned int formID, FormChangeMask changeFlags, int formType, int version);
     void SetHeader(unsigned int formID, FormChangeMask changeFlags, int formType, unsigned int version);
@@ -66,21 +67,21 @@ public:
     void SaveIfChanged(BGSSaveFormBuffer* buffer);
     unsigned int GetPos();
     unsigned int GetSize();
-    void SetChunk(unsigned int size, unsigned int position);
+    void SetChunk(unsigned int aiVariableValue, unsigned int aiPosition);
     TESObjectREFR* GetFormAsReference();
     Actor* GetActorReference();
 
     BGSChangeFlags FUN_00428110();
     void FUN_0048c9d0(BGSSaveFormBuffer* buffer);
     void FUN_0050f9c0(TESForm* form);
-    void BGSSaveFormBuffer_RemoveChange(int value);
-    void BGSSaveFormBuffer_RemoveChange(unsigned int value);
+    void BGSSaveFormBuffer_RemoveChange(int aiFlags);
+    void BGSSaveFormBuffer_RemoveChange(unsigned int aiFlags);
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    void FUN_00865db0(unsigned int value, int flags);
+    void FUN_00865db0(unsigned int aiFormID, int aiUnusuedMetaDataArg);
     void FUN_00865db0(unsigned int value, unsigned int flags);
     void FUN_00865df0(void* form, int flags = 0);
     void FUN_00865e50(void* data, unsigned int size, int flags = 0);
     unsigned int StartVariableSizedValue();
     void SaveVariableSizedValue(unsigned int value);
-    void SaveVariableSizedValue_00865ff0(int count, unsigned int position);
+    void SaveVariableSizedValue_00865ff0(int aiVariableValue, unsigned int aiPosition);
 };

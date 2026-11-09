@@ -14,7 +14,10 @@
 
 // Deletes every entry in the list by taking the head item, removing it, and freeing it, until the list is empty.
 // @fnv 0x0048ade0
-void TESModelTextureSwap::ClearTextureSwaps()
+// src: XBOX_RETAIL_PDB 0x0048ade0
+// pdb: TESModelTextureSwap::ClearTexSwapList | TESModelTextureSwap.obj | retail, call graph, high
+// pdb locals: pswap
+void TESModelTextureSwap::ClearTexSwapList()
 {
     void* pDelete;
     BGSPerkEntry* pItem;
@@ -29,7 +32,10 @@ void TESModelTextureSwap::ClearTextureSwaps()
 
 // Resolves each texture-swap entry's formID to a BGSTextureSet, warns and removes entries that fail to resolve.
 // @fnv 0x0048aa80
-void TESModelTextureSwap::InitItem(TESForm* form)
+// pdb: TESModelTextureSwap::InitItem | TESModelTextureSwap.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: plist, plastlist, iid, pswap
+void TESModelTextureSwap::InitItem(TESForm* apOwner)
 {
     struct InitItemLocals
     {
@@ -48,12 +54,12 @@ void TESModelTextureSwap::InitItem(TESForm* form)
         locals.swap = reinterpret_cast<DistantTreeTextureInfo*>(
             reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(locals.list)->GetItem());
         locals.formID = locals.swap->formID;
-        TESForm::RemapFormIDForFile(locals.formID, form->GetFile(-1));
+        TESForm::RemapFormIDForFile(locals.formID, apOwner->GetFile(-1));
         locals.swap->formID =
             reinterpret_cast<unsigned int>(dynamic_cast<BGSTextureSet*>(TESForm::GetFormByID(locals.formID)));
         if (!locals.swap->formID)
         {
-            Warning(kModelTextureSwapInitWarning, locals.formID, form->GetName(), form->GetFormID());
+            Warning(kModelTextureSwapInitWarning, locals.formID, apOwner->GetName(), apOwner->GetFormID());
             if (previous)
             {
                 reinterpret_cast<BSSimpleList<TESGrass*>*>(previous)->Remove(reinterpret_cast<TESGrass*&>(locals.swap));
@@ -76,6 +82,9 @@ void TESModelTextureSwap::InitItem(TESForm* form)
 }
 
 // @fnv 0x0048b130
+// pdb: TESModelTextureSwap::SwapTexturesRecurse | TESModelTextureSwap.obj | debug, object-file gap fill, medium
+// pdb params: ap3D, apSwapMap, aiGeomIndex
+// pdb locals: pnode, icount, i, pchild, pswap, pswapname, pparent, plastParent, parentName, pbssprop, pprop, pnewset
 bool TESModelTextureSwap::ApplyTextureSwapToNode(NiAVObject* object, BSMap<int, DistantTreeTextureInfo*>* apSwapMap,
                                                  int& index)
 {
@@ -137,10 +146,13 @@ bool TESModelTextureSwap::ApplyTextureSwapToNode(NiAVObject* object, BSMap<int, 
 }
 
 // @fnv 0x0048afe0
-void TESModelTextureSwap::ApplyTextureSwaps(NiAVObject* object)
+// pdb: TESModelTextureSwap::SwapTextures | TESModelTextureSwap.obj | retail, string-set bridge, high
+// pdb params: ap3D
+// pdb locals: plist, swapmap, iwarncount, pswap, iindex
+void TESModelTextureSwap::ApplyTextureSwaps(NiAVObject* ap3D)
 {
     int warningCount;
-    if (object)
+    if (ap3D)
     {
         warningCount = Warning();
         SetWarningState(true);
@@ -164,7 +176,7 @@ void TESModelTextureSwap::ApplyTextureSwaps(NiAVObject* object)
         if (reinterpret_cast<TESForm*>(&swapMap)->GetFormID())
         {
             int index = 0;
-            ApplyTextureSwapToNode(object, reinterpret_cast<BSMap<int, DistantTreeTextureInfo*>*>(&swapMap), index);
+            ApplyTextureSwapToNode(ap3D, reinterpret_cast<BSMap<int, DistantTreeTextureInfo*>*>(&swapMap), index);
             if (reinterpret_cast<TESForm*>(&swapMap)->GetFormID())
                 Warning("Not all texture swaps were performed.");
         }
@@ -177,11 +189,15 @@ void TESModelTextureSwap::ApplyTextureSwaps(NiAVObject* object)
 }
 
 // @fnv 0x0048a990
-void TESModelTextureSwap::ReadTextureSwapChunk(TESModelTextureSwap* model, TESFile* file)
+// src: XBOX_RETAIL_PDB 0x0048a990
+// pdb: TESModelTextureSwap::LoadModelTextureSwapChunk | TESModelTextureSwap.obj | retail, object-file run extension, high
+// pdb params: apModel, apFile
+// pdb locals: chunk, isize, pdata
+void TESModelTextureSwap::LoadModelTextureSwapChunk(TESModelTextureSwap* apModel, TESFile* apFile)
 {
-    if (!file || !model)
+    if (!apFile || !apModel)
         return;
-    int chunk = file->GetChunkID();
+    int chunk = apFile->GetChunkID();
     switch (chunk)
     {
     case 0x53324f4d:
@@ -193,16 +209,16 @@ void TESModelTextureSwap::ReadTextureSwapChunk(TESModelTextureSwap* model, TESFi
             unsigned int size;
             char* data;
         } buffer;
-        buffer.size = file->GetChunkSize();
+        buffer.size = apFile->GetChunkSize();
         buffer.data = static_cast<char*>(_alloca(buffer.size));
-        file->GetChunkData(buffer.data, buffer.size);
-        model->ParseTextureSwapData(buffer.data, buffer.size,
-                                    file->GetFormVersion());
+        apFile->GetChunkData(buffer.data, buffer.size);
+        apModel->UnpackTextureSwapChunkData(buffer.data, buffer.size,
+                                    apFile->GetFormVersion());
     }
     break;
     default:
         if (TESModel_IsModelChunk(chunk))
-            TESModel::LoadModelData(reinterpret_cast<TESModel*>(model), file);
+            TESModel::LoadModelData(reinterpret_cast<TESModel*>(apModel), apFile);
         break;
     }
 }
@@ -236,35 +252,41 @@ void TESModel::LoadModelData(TESModel* model, TESFile* file)
 }
 
 // @fnv 0x0048ae30
-void TESModelTextureSwap::AddTexSwap(const char* name, int index, BGSTextureSet* textureSet)
+// pdb: TESModelTextureSwap::AddTexSwap | TESModelTextureSwap.obj | retail, upstream name already matches, high
+// pdb params: apObjName, aiIndex, apTexSet
+// pdb locals: pswap
+void TESModelTextureSwap::AddTexSwap(const char* apObjName, int aiIndex, BGSTextureSet* apTexSet)
 {
-    if (name && textureSet)
+    if (apObjName && apTexSet)
     {
-        DistantTreeTextureInfo* swap = GetTexSwap(index);
+        DistantTreeTextureInfo* swap = GetTexSwap(aiIndex);
         if (!swap)
         {
             swap = new DistantTreeTextureInfo;
-            TaskQueueInterface::CopyStringToBuffer(swap->objectName, 128, name);
-            swap->index = index;
+            TaskQueueInterface::CopyStringToBuffer(swap->objectName, 128, apObjName);
+            swap->index = aiIndex;
             reinterpret_cast<BSSimpleList<SpellItem*>*>(&textureList)
                 ->AddHead(reinterpret_cast<SpellItem*&>(swap));
         }
-        swap->formID = reinterpret_cast<unsigned int>(textureSet);
+        swap->formID = reinterpret_cast<unsigned int>(apTexSet);
     }
 }
 
 // Walks the package list and returns the entry whose index matches the given index, or null if index is -1 or no match is found.
 // @fnv 0x0048ad70
-DistantTreeTextureInfo* TESModelTextureSwap::GetTexSwap(int index)
+// pdb: TESModelTextureSwap::GetTexSwap | TESModelTextureSwap.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+// pdb locals: pretswap, plist
+DistantTreeTextureInfo* TESModelTextureSwap::GetTexSwap(int aiIndex)
 {
     DistantTreeTextureInfo* result = 0;
-    if (index != -1)
+    if (aiIndex != -1)
     {
         BSSimpleList<PerkButtonEntry*>* list =
             reinterpret_cast<BSSimpleList<PerkButtonEntry*>*>(reinterpret_cast<TESAIForm*>(this)->GetPackageList());
         while (list && !list->IsEmpty())
         {
-            if (index == reinterpret_cast<DistantTreeTextureInfo*>(
+            if (aiIndex == reinterpret_cast<DistantTreeTextureInfo*>(
                              reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(list)->GetItem())
                              ->index)
             {
@@ -290,6 +312,8 @@ DistantTreeTextureInfo::DistantTreeTextureInfo()
 
 // Copy constructor: retains the other string handle, then copies it.
 // @fnv 0x0048af40
+// pdb: NiFixedString::NiFixedString | TESModelTextureSwap.obj | debug, call graph, medium
+// pdb params: kString
 NiFixedString::NiFixedString(const NiFixedString& other)
 {
     NiGlobalStringTable_IncRefCount(other);
@@ -303,6 +327,8 @@ int NiFixedString::IsNotEmpty() const
 }
 
 // @fnv 0x0048b2f0
+// pdb: BSShaderPPLightingProperty::SetTextureSet | TESModelTextureSwap.obj | debug, upstream name already matches, high
+// pdb params: apTextureSet
 void BSShaderPPLightingProperty::SetTextureSet(BSTextureSet* apTextureSet)
 {
     *reinterpret_cast<NiPointer<NiNode>*>(&spTextureSet) = reinterpret_cast<NiNode*>(apTextureSet);
@@ -318,6 +344,8 @@ struct FUN_0048af90_shell
 
 // Returns true if m_str and a1 are the same pointer, false if either is null, otherwise compares them case-insensitively with _NiStricmp.
 // @fnv 0x0048af90
+// pdb: NiFixedString::EqualsNoCase | TESModelTextureSwap.obj | retail, call graph, medium
+// pdb params: pcStr
 bool FUN_0048af90_shell::Equals(const char* apOther)
 {
     if (m_str == apOther)
@@ -362,22 +390,28 @@ typedef char _sizecheck_TESWeightForm[sizeof(TESWeightForm) == 8 ? 1 : -1];
 typedef char _sizecheck_BGSEquipType[sizeof(BGSEquipType) == 8 ? 1 : -1];
 
 // @fnv 0x0048a470
+// pdb: TESModelTextureSwap::InitializeDataComponent | TESModelTextureSwap.obj | debug, vtable slot, medium
 void TESModelTextureSwap::InitializeComponent()
 {
     TESModel::InitializeComponent();
 }
 
 // @fnv 0x0048a500
+// pdb: TESModelTextureSwap::ClearDataComponent | TESModelTextureSwap.obj | retail, vtable slot, high
 void TESModelTextureSwap::Free()
 {
-    ClearTextureSwaps();
+    ClearTexSwapList();
     TESModel::Free();
 }
 
 void* __cdecl __memcpy(void*, const void*, unsigned int);
 // Reads a count-prefixed list of texture swaps (name, texture pointer, optional geometry index) from a buffer and adds each valid entry via AddTexSwap.
 // @fnv 0x0048a7b0
-bool TESModelTextureSwap::ParseTextureSwapData(void* apData, unsigned int aiDataSize, unsigned int aiVersion)
+// src: XBOX_RETAIL_PDB 0x0048a7b0
+// pdb: TESModelTextureSwap::UnpackTextureSwapChunkData | TESModelTextureSwap.obj | retail, call graph (shared callers), high
+// pdb params: apData, aiDataSize, aiVersion
+// pdb locals: icount, pdata, ireadsize, isize, igeomindex, pname, pnewtexture, iid
+bool TESModelTextureSwap::UnpackTextureSwapChunkData(void* apData, unsigned int aiDataSize, unsigned int aiVersion)
 {
     unsigned int uiRemaining;
     unsigned char* pdata;
@@ -458,19 +492,23 @@ void __cdecl Deallocate(void*);
 
 // Calls WriteToBuffer with a and b, then if SerializeList yields a data pointer and size, passes them with c to AppendChunk and deallocates the pointer.
 // @fnv 0x0048a520
-void TESModelTextureSwap::ProcessAndFreeData(unsigned int uiFirst, unsigned int uiSecond, unsigned int uiThird)
+// pdb: TESModelTextureSwap::Save | TESModelTextureSwap.obj | retail, call graph (shared callers), high
+// pdb params: aeModelID, aeTextureID, aeSwapID
+// pdb locals: pdata, idatasize
+void TESModelTextureSwap::ProcessAndFreeData(unsigned int aeModelID, unsigned int aeTextureID, unsigned int aeSwapID)
 {
-    WriteToBuffer(uiFirst, uiSecond);
+    BSSendSceneGraphCommand_WriteToBuffer(aeModelID, aeTextureID);
     unsigned int pdata = 0;
     unsigned int idatasize = 0;
     if (SerializeList(reinterpret_cast<char**>(&pdata), &idatasize))
     {
-        AppendChunk(uiThird, pdata, idatasize);
+        AppendChunk(aeSwapID, pdata, idatasize);
         Deallocate((void*)pdata);
     }
 }
 
 // @fnv 0x0048a490
+// pdb: TESModelTextureSwap::~TESModelTextureSwap | TESModelTextureSwap.obj | retail, upstream name already matches, high
 TESModelTextureSwap::~TESModelTextureSwap()
 {
     Free();
@@ -498,14 +536,17 @@ struct TextureSwapNodeAccessor
 
 // Looks up a texture swap list for formID, then for each node applies its record's objectName, index and formID via FUN_0048ae30.
 // @fnv 0x0048aba0
-void TESModelTextureSwap::ApplyTextureSwapOverrides(unsigned int formID)
+// pdb: TESModelTextureSwap::CopyComponent | TESModelTextureSwap.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: plist, pcopy, pswap
+void TESModelTextureSwap::ApplyTextureSwapOverrides(unsigned int apCopyFC)
 {
-    TESModel::BaseFormRecord(reinterpret_cast<BaseFormComponent*>(formID));
+    TESModel::BaseFormRecord(reinterpret_cast<BaseFormComponent*>(apCopyFC));
     struct TextureSwapNodeAccessor* list =
-        static_cast<struct TextureSwapNodeAccessor*>(FUN_00ec43fb(formID, 0, &DAT_01183040, &DAT_011831c4, 0));
+        static_cast<struct TextureSwapNodeAccessor*>(FUN_00ec43fb(apCopyFC, 0, &DAT_01183040, &DAT_011831c4, 0));
     if (!list)
         return;
-    ClearTextureSwaps();
+    ClearTexSwapList();
     TextureSwapNode* node = list->FUN_00500940();
     while (node && !node->FUN_008256d0())
     {
@@ -526,11 +567,14 @@ struct TextureSwapCount
 int BSstricmp(const char*, const char*);
 
 // @fnv 0x0048ac40
-bool TESModelTextureSwap::CompareTextureSwaps(BaseFormComponent* other)
+// pdb: TESModelTextureSwap::CompareComponent | TESModelTextureSwap.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcomp, plist, pswap, pcompswap
+bool TESModelTextureSwap::CompareTextureSwaps(BaseFormComponent* apCompareFC)
 {
-    if (TESModel::CompareWithBase(other))
+    if (TESModel::CompareWithBase(apCompareFC))
         return true;
-    TESModelTextureSwap* pOther = dynamic_cast<TESModelTextureSwap*>(other);
+    TESModelTextureSwap* pOther = dynamic_cast<TESModelTextureSwap*>(apCompareFC);
     if (!pOther)
         return true;
     if (((TextureSwapCount*)((TextureSwapListHead*)pOther)->FUN_00500940())->GetSize() !=
@@ -576,6 +620,9 @@ void __cdecl BSEndian_00401080(int*, FUN_00401080_tag);
 void __cdecl FUN_00401460(char*, unsigned int, unsigned int);
 
 // @fnv 0x0048a590
+// pdb: TESModelTextureSwap::BuildTextureSwapChunkData | TESModelTextureSwap.obj | debug, object-file gap fill, medium
+// pdb params: apOutData, aiOutDataSize
+// pdb locals: plist, icount, itempint, pdata, pswap, iid, isize
 bool TESModelTextureSwap::SerializeList(char** apBuffer, unsigned int* auiSize)
 {
     *apBuffer = 0;

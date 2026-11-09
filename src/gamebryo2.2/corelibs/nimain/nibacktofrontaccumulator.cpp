@@ -60,6 +60,9 @@ NiAccumulator* __fastcall InitializeAccumulator(NiAccumulator* self, void*) thro
 
 // Returns the median of the three values at indices left, mid and right in the array.
 // @fnv 0x00aa0a20
+// pdb: NiKeyBasedInterpolator::FillDerivedValues | NiKeyBasedInterpolator.obj | debug, object-file run extension, low
+// pdb params: usChannel
+// pdb locals: uiNumKeys, pkKeys, ucSize, pDerived, eType
 float NiBackToFrontAccumulator::GetPivotValue(int left, int right)
 {
     int mid = (left + right) >> 1;
@@ -79,6 +82,8 @@ float NiBackToFrontAccumulator::GetPivotValue(int left, int right)
 }
 
 // @fnv 0x00aa0b40
+// pdb: NiBackToFrontAccumulator::FinishAccumulating | NiBackToFrontAccumulator.obj | debug, object-file run extension, low
+// pdb locals: pkItem, pkRenderer
 void NiBackToFrontAccumulator::QuickSort(int left, int right)
 {
     if (right > left)
@@ -118,6 +123,8 @@ void NiBackToFrontAccumulator::QuickSort(int left, int right)
 unsigned char __stdcall BSAnimNotes_IsEqual(NiObject*);
 // @fnv 0x00aa0ae0
 // src: XBOX_PDB 0x00aa0ae0
+// pdb: NiBackToFrontAccumulator::IsEqual | NiBackToFrontAccumulator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
 unsigned char __stdcall NiBackToFrontAccumulator_IsEqual(NiObject* pkObject)
 {
     unsigned char r = BSAnimNotes_IsEqual(pkObject);
@@ -199,6 +206,8 @@ void __fastcall ResetBackToFrontAccumulator(NiBackToFrontAccumulator*, void*);
 // Sorts and releases the items, returns their nodes to the free list, and resets the accumulator.
 // Free entry points retain the member-call ABI where the shared header has no declaration.
 // @fnv 0x00aa0d00
+// pdb: NiBackToFrontAccumulator::FinishAccumulating | NiBackToFrontAccumulator.obj | retail, object-file run extension, low
+// pdb locals: pkItem, pkRenderer
 void __fastcall ReleaseAllItems(NiBackToFrontAccumulator* self, void*)
 {
     S_00aa0d00_Renderer* r = DAT_011f4748;
@@ -283,6 +292,8 @@ NiBackToFrontAccumulator* __fastcall CloneBackToFrontAccumulator(NiBackToFrontAc
 void __cdecl BSTextureSet_LoadBinary();
 // @fnv 0x00aa0ac0
 // src: XBOX_PDB 0x00aa0ac0
+// pdb: NiKeyBasedInterpolator::LoadBinary | NiKeyBasedInterpolator.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiKeyBasedInterpolator_LoadBinary()
 {
     BSTextureSet_LoadBinary();
@@ -298,6 +309,7 @@ void __fastcall ClearItemList(NiBackToFrontAccumulator::ItemList*, void*);
 
 // Frees geometry arrays, moves unsorted list nodes to a global free list, updates the vtable, and calls FUN_00a5d3d0.
 // @fnv 0x00aa0dc0
+// pdb: NiBackToFrontAccumulator::~NiBackToFrontAccumulator | NiBackToFrontAccumulator.obj | retail, object-file run extension, low
 void __fastcall DestroyBackToFrontAccumulator(NiBackToFrontAccumulator* self, void*)
 {
     *(unsigned int*)self = (unsigned int)&DAT_010a23ac;
@@ -342,12 +354,12 @@ inline const NiPoint3& NiBound::GetNavMeshData() const
     return m_kCenter;
 }
 
-inline void NiMatrix3::GetCol(unsigned int column, NiPoint3& point) const
+inline void NiMatrix3::GetCol(unsigned int uiCol, NiPoint3& col) const
 {
     const float* entries = reinterpret_cast<const float*>(this);
-    point.x = entries[column];
-    point.y = entries[3 + column];
-    point.z = entries[6 + column];
+    col.x = entries[uiCol];
+    col.y = entries[3 + uiCol];
+    col.z = entries[6 + uiCol];
 }
 
 inline NiPoint3 NiCamera::GetWorldTranslation() const
@@ -359,6 +371,8 @@ inline NiPoint3 NiCamera::GetWorldTranslation() const
 
 // Collects the geometry pointers, computes their camera-relative depths, and sorts them.
 // @fnv 0x00aa0c00
+// pdb: NiBackToFrontAccumulator::Sort | NiBackToFrontAccumulator.obj | retail, upstream name already matches, high
+// pdb locals: kPos, kViewDir, i
 void NiBackToFrontAccumulator::Sort()
 {
     if (!m_kItemsToSortAndRender)

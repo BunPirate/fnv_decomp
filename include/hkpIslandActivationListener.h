@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class hkpIslandActivationListener, size 0x4, 0 members
 class hkpIslandActivationListener
 {
 public:

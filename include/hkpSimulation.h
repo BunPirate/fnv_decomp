@@ -9,6 +9,7 @@ typedef unsigned char hkUint8;
 typedef float hkReal;
 typedef hkReal hkTime;
 
+// pdb: class hkpSimulation, size 0x2c, bases: hkReferencedObject, 9 members
 class hkpSimulation : public hkReferencedObject
 {
 public:
@@ -48,16 +49,16 @@ public:
     static const ClassMemberDescriptor Members[];
 
     void checkDeltaTimeIsOk(hkReal deltaTime);
-    void setCurrentTime(hkTime time) { m_fElapsedSimulationTime = time; }
+    void setCurrentTime(hkTime time) { m_currentTime = time; }
 
-    hkUint32 m_eLastProcessingStep;
-    hkpWorld* m_pOwningWorld;
-    hkUint8 m_bHasStepped;
+    hkUint32 m_determinismCheckFrameCounter;
+    hkpWorld* m_world;
+    hkUint8 m_lastProcessingStep;
     char pad11[3];
-    hkReal m_fElapsedSimulationTime;
-    hkReal m_fSimulationTime;
-    hkReal m_fStepDeltaTime;
-    hkReal m_fFrameMarkerTime;
-    hkReal m_fFrameMarkerPsiSnap;
-    hkUint32 m_uiSimulationType;
+    hkReal m_currentTime;
+    hkReal m_currentPsiTime;
+    hkReal m_physicsDeltaTime;
+    hkReal m_simulateUntilTime;
+    hkReal m_frameMarkerPsiSnap;
+    hkUint32 m_previousStepResult;
 };

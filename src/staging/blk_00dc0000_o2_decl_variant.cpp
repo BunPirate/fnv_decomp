@@ -63,7 +63,7 @@ struct FUN_00ddf050_cls
 {
     void ClearContainer();
 };
-extern "C" void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(int* p1, int* p2);
+extern "C" void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(int* commands, int* info);
 struct FUN_00dd0420_Class
 {
     int m_00;
@@ -74,7 +74,7 @@ struct FUN_00dd0420_Class
     int m_14;
     int m_18;
     int m_1c;
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int arg);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_ctor(int f);
 };
 struct FUN_00dd4b70_class
 {
@@ -184,7 +184,7 @@ struct FUN_00dc1670_cls
     int m_00;
     FUN_00dc1670_cls* hkStructureLayout_hkStructureLayout();
 };
-void __stdcall hkIArchive_readArrayGeneric(float* out, int a, int b);
+void __stdcall hkIArchive_readArrayGeneric(float* array, int elemsize, int arraySize);
 float hkIArchive_readFloat32();
 struct ArrayBlock
 {
@@ -207,7 +207,7 @@ struct ArrayHost
 {
     int unk00, unk04, unk08;
     ArrayBlock array;
-    void ResizeArray(int desired);
+    void ResizeArray(int n);
 };
 struct FUN_00dcc180_Interface
 {
@@ -253,11 +253,11 @@ struct FUN_00dcc670_Class
     unsigned short unk06;
     int unk08;
 
-    int* __thiscall InitFromValue(int* value);
+    int* __thiscall hkIstream_ctor(int* fname);
 };
 extern int DAT_010d7540;
 extern FUN_00dcc670_Manager* DAT_01268364;
-extern int g_unk01269bb4;
+extern int hkpNamedMeshMaterialClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dccb00();
 extern int DAT_01269be4;
 int* __cdecl Runtime_GetDAT01269be4Address();
@@ -266,7 +266,7 @@ struct FUN_00dced30_cls
     virtual void m_v00(int arg);
 };
 void __cdecl Object_ForwardCall_00dced30(FUN_00dced30_cls* pObject);
-extern int DAT_01269c44;
+extern int hkpBreakableConstraintDataClass;
 int __cdecl Object_ComputeValue_00dced40();
 struct FUN_00d4dfc0_class
 {
@@ -568,9 +568,9 @@ struct Lock_dd9
     int uNewnk;
     int uTmpnk;
     int* m_pkCriticalSection;
-    int FindEntry(int iKey);
-    int InvokeRecord(int iIndex, int iArg);
-    int hkProcessFactory_createProcess(int iKey, int iArg);
+    int hkProcessFactory_getProcessId(int name);
+    int InvokeRecord(int tag, int contexts);
+    int hkProcessFactory_createProcess(int iKey, int contexts);
 };
 extern int DAT_010d7db8;
 struct Bool1
@@ -726,7 +726,7 @@ namespace hkRouterDDFB {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
 
-void __cdecl ResizeAudioStream(void* pvAlloc, void* apvArray, int iElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct hkPairDDFB
 {
     void* m_object;
@@ -777,9 +777,9 @@ static int volatile g_stub_v;
 static int volatile g_stub_out;
 extern "C" int stub_val(void);
 // src: HAVOK_LIB 0x00dcc3b0
-static __declspec(noinline) float readFloat(int arg)
+static __declspec(noinline) float readFloat(int reader)
 {
-    g_stub_out = arg;
+    g_stub_out = reader;
     stub_cls* s = g_stub_self;
     s->unk00 = s->unk04 + g_stub_v;
     return (float)s->unk00;
@@ -875,7 +875,7 @@ struct S00dcd1b0_Obj
     int unk3C;
     ArrayBlock m_40;
     unsigned char m_4c;
-    void hkpMeshShape_initWeldingInfo(int value);
+    void hkpMeshShape_initWeldingInfo(int weldingType);
 };
 struct S00dcd270_Rec
 {
@@ -920,7 +920,7 @@ struct S00dcd270_cls
     int unk2c;
     int unk30;
     S00dcd270_Arr arr;
-    S00dcd270_Rec* AddRecord(const S00dcd270_Rec* a0);
+    S00dcd270_Rec* AddRecord(const S00dcd270_Rec* part);
 };
 
 struct S_00dcc820_Class
@@ -934,6 +934,9 @@ struct S_00dcc820_Class
 extern "C" void __cdecl SkipWhitespace(void);
 // @fnv 0x00dcc820
 // src: GUESS 0x00dcc820 (confidence: low)
+// pdb: hkIstream::operator>> | hkIStream.obj | retail, object-file run extension, low
+// pdb params: b
+// pdb locals: buf
 S_00dcc820_Class* __thiscall S_00dcc820_Class::ProcessAndReturnValue_00dcc820(int* result)
 {
     unsigned char ok;

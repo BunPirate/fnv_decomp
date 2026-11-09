@@ -40,76 +40,84 @@ typedef bool (BSSoundHandle::*SoundHandlePlay)();
 
 // Returns whether the referenced image space modifier is expired, or false when no modifier is set.
 // @fnv 0x005297b0
+// pdb: ImageSpaceModifierInstanceForm::IsExpired | ImageSpaceModifierInstance.obj | debug, upstream name already matches, high
 bool ImageSpaceModifierInstanceForm::IsExpired()
 {
-    if (m_pPreviousImageSpaceModifier)
-        return m_pPreviousImageSpaceModifier->IsExpired(m_fStartTime);
+    if (pImageSpaceMod)
+        return pImageSpaceMod->IsExpired(fStartTime);
     else
         return false;
 }
 
 // @fnv 0x005297e0
+// pdb: ImageSpaceModifierInstanceForm::Apply | ImageSpaceModifierInstance.obj | debug, upstream name already matches, high
+// pdb locals: fcurrentTime, fpercent
 void ImageSpaceModifierInstanceForm::Apply()
 {
-    if (fWaterLevelItem > 0.0 || m_fBlendWeight > 0.0)
+    if (fStrength > 0.0 || fLastStrength > 0.0)
     {
-        if (m_pPreviousImageSpaceModifier)
+        if (pImageSpaceMod)
         {
-            if (m_fStartTime < -10000.0)
-                m_fStartTime = ImageSpaceModifierInstance::GetTime();
-            if (m_pImageSpaceModifier)
+            if (fStartTime < -10000.0)
+                fStartTime = ImageSpaceModifierInstance::GetTime();
+            if (pLastImageSpaceMod)
             {
                 float afTime = ImageSpaceModifierInstance::GetTime();
-                float afBlendWeight = (afTime - m_fStartTime) / m_fElapsedTime;
+                float afBlendWeight = (afTime - fStartTime) / fTransitionTime;
                 if (afBlendWeight < 1.0)
                 {
-                    TESImageSpaceModifier::BlendModifiers(afBlendWeight, m_pImageSpaceModifier,
-                                                          m_pPreviousImageSpaceModifier, m_fBlendWeight,
-                                                          fWaterLevelItem, m_pTargetNode, m_spTargetObject);
+                    TESImageSpaceModifier::BlendModifiers(afBlendWeight, pLastImageSpaceMod,
+                                                          pImageSpaceMod, fLastStrength,
+                                                          fStrength, spLastTarget, spTarget);
                 }
                 else
                 {
-                    m_pImageSpaceModifier = NULL;
-                    m_fBlendWeight = 0.0f;
-                    if (m_bHasBeenApplied)
-                        m_pPreviousImageSpaceModifier->EvaluateInterpolators(m_fStartTime, fWaterLevelItem);
+                    pLastImageSpaceMod = NULL;
+                    fLastStrength = 0.0f;
+                    if (bIsWeather)
+                        pImageSpaceMod->EvaluateInterpolators(fStartTime, fStrength);
                     else
-                        m_pPreviousImageSpaceModifier->Apply(m_fStartTime, fWaterLevelItem, m_spTargetObject);
+                        pImageSpaceMod->Apply(fStartTime, fStrength, spTarget);
                 }
             }
             else
             {
-                if (m_bHasBeenApplied)
-                    m_pPreviousImageSpaceModifier->EvaluateInterpolators(m_fStartTime, fWaterLevelItem);
+                if (bIsWeather)
+                    pImageSpaceMod->EvaluateInterpolators(fStartTime, fStrength);
                 else
-                    m_pPreviousImageSpaceModifier->Apply(m_fStartTime, fWaterLevelItem, m_spTargetObject);
+                    pImageSpaceMod->Apply(fStartTime, fStrength, spTarget);
             }
         }
     }
 }
 
 // @fnv 0x0052a920
+// pdb: ImageSpaceModifierInstanceTemp::IsExpired | ImageSpaceModifierInstance.obj | debug, upstream name already matches, high
+// pdb locals: bexpired
 bool ImageSpaceModifierInstanceTemp::IsExpired()
 {
     bool bExpired = false;
     if (fDuration != 0.0)
-        bExpired = ((ImageSpaceModifierInstance::GetTime() - m_fStartTime) > fDuration) ? 1 : 0;
+        bExpired = ((ImageSpaceModifierInstance::GetTime() - fStartTime) > fDuration) ? 1 : 0;
     return bExpired;
 }
 
 // Creates an ImageSpaceModifierInstanceForm for the given modifier, appends it to a list, plays its intro sound, and returns the instance.
 // @fnv 0x005299a0
-ImageSpaceModifierInstanceForm* ImageSpaceModifierInstanceForm::Trigger(TESImageSpaceModifier* modifier, float strength,
-                                                                        NiAVObject* target)
+// pdb: ImageSpaceModifierInstanceForm::Trigger | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: apMod, afStrength, apTarget
+// pdb locals: pmod
+ImageSpaceModifierInstanceForm* ImageSpaceModifierInstanceForm::Trigger(TESImageSpaceModifier* apMod, float afStrength,
+                                                                        NiAVObject* apTarget)
 {
     ImageSpaceModifierInstanceForm* instance = NULL;
-    if (modifier)
+    if (apMod)
     {
-        instance = new ImageSpaceModifierInstanceForm(modifier, DAT_0102d270, strength, target);
+        instance = new ImageSpaceModifierInstanceForm(apMod, DAT_0102d270, afStrength, apTarget);
         reinterpret_cast<BSSimpleList<NiPointer<ImageSpaceModifierInstance> >*>(g_TES->FUN_0043b5d0())->AddTail(instance);
-        if (modifier->GetIntroSound())
+        if (apMod->GetIntroSound())
             ((BSAudio::GetSingleton()->*reinterpret_cast<SoundHandleByFormID>(static_cast<BSSoundHandle (BSAudio::*)(unsigned int, unsigned int, bool)>(&BSAudio::GetSoundHandleByFormID)))(
-                modifier->GetIntroSound()->GetFormID(), 0x200000, false).*reinterpret_cast<SoundHandlePlay>(&BSSoundHandle::Play))();
+                apMod->GetIntroSound()->GetFormID(), 0x200000, false).*reinterpret_cast<SoundHandlePlay>(&BSSoundHandle::Play))();
     }
     return instance;
 }
@@ -131,40 +139,44 @@ FNV_STATIC_ASSERT(offsetof(ImageSpaceModifierInstanceDOF, m_fMaskConstant) == 40
 FNV_STATIC_ASSERT(offsetof(ImageSpaceModifierInstanceDOF, Mode) == 44);
 
 // @fnv 0x0052a670
+// pdb: ImageSpaceModifierInstanceDRB::Apply | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb locals: pmanager
 void ImageSpaceModifierInstanceDRB::Apply()
 {
-    if (fWaterLevelItem > 0.0)
+    if (fStrength > 0.0)
     {
-        if (m_fStartTime < -10000.0)
-            m_fStartTime = ImageSpaceModifierInstance::GetTime();
+        if (fStartTime < -10000.0)
+            fStartTime = ImageSpaceModifierInstance::GetTime();
         ImageSpaceManager* manager = ImageSpaceManager::BSShaderManager_GetImageSpaceManager();
-        if (m_spTargetObject)
+        if (spTarget)
         {
-            ((NiAVObject*)m_spTargetObject)->UpdateWorldBound();
-            manager->ApplyDepthOfFieldModifier(fWaterLevelItem, Mode, m_fRampUp, fStart,
-                                               ((NiAVObject*)m_spTargetObject)->GetBoundingVolume());
+            ((NiAVObject*)spTarget)->UpdateWorldBound();
+            manager->ApplyDepthOfFieldModifier(fStrength, Mode, m_fRampUp, fStart,
+                                               ((NiAVObject*)spTarget)->GetBoundingVolume());
         }
         else
-            manager->SetIfHigherPriority(fWaterLevelItem, Mode, fDistance, fImpulseRadiusSquared, m_fRampUp, fStart, Center);
+            manager->SetIfHigherPriority(fStrength, Mode, fDistance, fImpulseRadiusSquared, m_fRampUp, fStart, Center);
     }
 }
 
 // @fnv 0x0052a060
+// pdb: ImageSpaceModifierInstanceDOF::Apply | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb locals: pmanager
 void ImageSpaceModifierInstanceDOF::Apply()
 {
-    if (fWaterLevelItem > 0.0)
+    if (fStrength > 0.0)
     {
-        if (m_fStartTime < -10000.0)
-            m_fStartTime = ImageSpaceModifierInstance::GetTime();
+        if (fStartTime < -10000.0)
+            fStartTime = ImageSpaceModifierInstance::GetTime();
         ImageSpaceManager* manager = ImageSpaceManager::BSShaderManager_GetImageSpaceManager();
-        if (m_spTargetObject)
+        if (spTarget)
         {
-            ((NiAVObject*)m_spTargetObject)->UpdateWorldBound();
-            manager->SetDistanceEffect(fWaterLevelItem, Mode, m_fMaskConstant,
-                                       ((NiAVObject*)m_spTargetObject)->GetBoundingVolume());
+            ((NiAVObject*)spTarget)->UpdateWorldBound();
+            manager->SetDistanceEffect(fStrength, Mode, m_fMaskConstant,
+                                       ((NiAVObject*)spTarget)->GetBoundingVolume());
         }
         else
-            manager->SetDepthOfFieldParameters(fWaterLevelItem, Mode, m_fMaskConstant, fDistance, fImpulseRadiusSquared);
+            manager->SetDepthOfFieldParameters(fStrength, Mode, m_fMaskConstant, fDistance, fImpulseRadiusSquared);
     }
 }
 
@@ -178,23 +190,26 @@ inline void NiRefObject::IncRefCount()
     NiAtomicIncrement(m_uiRefCount);
 }
 // @fnv 0x00529c90
-void ImageSpaceModifierInstanceForm::Stop(TESImageSpaceModifier* modifier)
+// pdb: ImageSpaceModifierInstanceForm::Stop | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: apMod
+// pdb locals: pkList, bHasPlayed, pinstance
+void ImageSpaceModifierInstanceForm::Stop(TESImageSpaceModifier* apMod)
 {
-    if (!modifier)
+    if (!apMod)
         return;
     bool playedSound = false;
     BSSimpleList<NiPointer<ImageSpaceModifierInstance> >* node = reinterpret_cast<BSSimpleList<NiPointer<ImageSpaceModifierInstance> >*>(g_TES->FUN_0043b5d0());
     while (node)
     {
         ImageSpaceModifierInstance* instance = node->GetItem();
-        if (instance && instance->GetInstanceForm() && instance->GetInstanceForm()->GetImageSpaceMod() == modifier)
+        if (instance && instance->GetInstanceForm() && instance->GetInstanceForm()->GetImageSpaceMod() == apMod)
         {
             node->Remove(instance);
-            if (modifier->GetOutroSound() && !playedSound)
+            if (apMod->GetOutroSound() && !playedSound)
             {
                 playedSound = true;
                 ((BSAudio::GetSingleton()->*reinterpret_cast<SoundHandleByFormID>(static_cast<BSSoundHandle (BSAudio::*)(unsigned int, unsigned int, bool)>(&BSAudio::GetSoundHandleByFormID)))(
-                    modifier->GetOutroSound()->GetFormID(), 0x200000, false).*reinterpret_cast<SoundHandlePlay>(&BSSoundHandle::Play))();
+                    apMod->GetOutroSound()->GetFormID(), 0x200000, false).*reinterpret_cast<SoundHandlePlay>(&BSSoundHandle::Play))();
             }
         }
         else
@@ -204,14 +219,17 @@ void ImageSpaceModifierInstanceForm::Stop(TESImageSpaceModifier* modifier)
 
 // Creates a new ImageSpaceModifierInstanceDRB with the given parameters, appends it to the image space modifier list, and returns it.
 // @fnv 0x0052a780
-ImageSpaceModifierInstanceDRB* ImageSpaceModifierInstanceDRB::Trigger(float distance, float range,
-                                                                      DepthOfFieldMode mode, float strength,
-                                                                      float rampup, float start, float rampdown,
-                                                                      float downstart, const NiPoint2& center,
-                                                                      float duration)
+// pdb: ImageSpaceModifierInstanceDRB::Trigger | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: afDistance, afRange, aMode, afStrength, afRampup, afStart, afRampdown, afDownStart, aCenter, afDuration
+// pdb locals: pinstance
+ImageSpaceModifierInstanceDRB* ImageSpaceModifierInstanceDRB::Trigger(float afDistance, float afRange,
+                                                                      DepthOfFieldMode aMode, float afStrength,
+                                                                      float afRampup, float afStart, float afRampdown,
+                                                                      float afDownStart, const NiPoint2& aCenter,
+                                                                      float afDuration)
 {
     ImageSpaceModifierInstanceDRB* instance = new ImageSpaceModifierInstanceDRB(
-        strength, DAT_0102d270, NULL, duration, mode, distance, range, rampup, start, rampdown, downstart, center);
+        afStrength, DAT_0102d270, NULL, afDuration, aMode, afDistance, afRange, afRampup, afStart, afRampdown, afDownStart, aCenter);
     reinterpret_cast<BSSimpleList<NiPointer<ImageSpaceModifierInstance> >*>(g_TES->FUN_0043b5d0())->AddTail(instance);
     return instance;
 }
@@ -230,38 +248,44 @@ ImageSpaceModifierInstanceDOF* ImageSpaceModifierInstanceDOF::CreateAndRegister(
 
 // Constructs a depth-of-field modifier instance, initializing the base temp instance and storing ramp, center, distance, range and mode values.
 // @fnv 0x0052a590
-ImageSpaceModifierInstanceDRB::ImageSpaceModifierInstanceDRB(float strength, float startTime, NiAVObject* target,
-                                                             float duration, DepthOfFieldMode mode, float distance,
-                                                             float range, float rampup, float start, float rampdown,
-                                                             float downstart, const NiPoint2& center)
-    : ImageSpaceModifierInstanceTemp(startTime, strength, target, duration),
-      m_fRampUp(rampup), fStart(start), m_fRampDown(rampdown), m_fRampDownStart(downstart), Center(center)
+// pdb: ImageSpaceModifierInstanceDRB::ImageSpaceModifierInstanceDRB | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: afStrength, afStartTime, apTarget, afDuration, aMode, afDistance, afRange, afRampup, afStart, afRampdown, afDownStart, aCenter
+ImageSpaceModifierInstanceDRB::ImageSpaceModifierInstanceDRB(float afStrength, float afStartTime, NiAVObject* apTarget,
+                                                             float afDuration, DepthOfFieldMode aMode, float afDistance,
+                                                             float afRange, float afRampup, float afStart, float afRampdown,
+                                                             float afDownStart, const NiPoint2& aCenter)
+    : ImageSpaceModifierInstanceTemp(afStartTime, afStrength, apTarget, afDuration),
+      m_fRampUp(afRampup), fStart(afStart), m_fRampDown(afRampdown), m_fRampDownStart(afDownStart), Center(aCenter)
 {
-    fDistance = distance;
-    fImpulseRadiusSquared = range;
-    Mode = mode;
+    fDistance = afDistance;
+    fImpulseRadiusSquared = afRange;
+    Mode = aMode;
 }
 
 // Constructs a DOF modifier instance: forwards startTime, strength, target and duration to the temp base, then stores distance, range, mask and mode.
 // @fnv 0x00529fb0
-ImageSpaceModifierInstanceDOF::ImageSpaceModifierInstanceDOF(float strength, float startTime, DepthOfFieldMode mode,
-                                                             float distance, float range, float mask,
-                                                             NiAVObject* target, float duration)
-    : ImageSpaceModifierInstanceTemp(startTime, strength, target, duration)
+// pdb: ImageSpaceModifierInstanceDOF::ImageSpaceModifierInstanceDOF | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: afStrength, afStartTime, aMode, afDistance, afRange, afMaskConst, apTarget, afDuration
+ImageSpaceModifierInstanceDOF::ImageSpaceModifierInstanceDOF(float afStrength, float afStartTime, DepthOfFieldMode aMode,
+                                                             float afDistance, float afRange, float afMaskConst,
+                                                             NiAVObject* apTarget, float afDuration)
+    : ImageSpaceModifierInstanceTemp(afStartTime, afStrength, apTarget, afDuration)
 {
-    fDistance = distance;
-    fImpulseRadiusSquared = range;
-    m_fMaskConstant = mask;
-    Mode = mode;
+    fDistance = afDistance;
+    fImpulseRadiusSquared = afRange;
+    m_fMaskConstant = afMaskConst;
+    Mode = aMode;
 }
 
 // Constructs a temporary image space modifier instance, forwarding strength, start time and target to the base and storing the duration.
 // @fnv 0x0052a8b0
-ImageSpaceModifierInstanceTemp::ImageSpaceModifierInstanceTemp(float startTime, float strength, NiAVObject* target,
-                                                               float duration)
-    : ImageSpaceModifierInstance(strength, startTime, target)
+// pdb: ImageSpaceModifierInstanceTemp::ImageSpaceModifierInstanceTemp | ImageSpaceModifierInstance.obj | debug, upstream name already matches, high
+// pdb params: afStartTime, afStrength, apTarget, afDuration
+ImageSpaceModifierInstanceTemp::ImageSpaceModifierInstanceTemp(float afStartTime, float afStrength, NiAVObject* apTarget,
+                                                               float afDuration)
+    : ImageSpaceModifierInstance(afStrength, afStartTime, apTarget)
 {
-    fDuration = duration;
+    fDuration = afDuration;
 }
 
 // @fnv 0x0052a650
@@ -271,6 +295,7 @@ void ImageSpaceModifierInstanceDOF::DestroyMembers()
 }
 
 // @fnv 0x0052a040
+// pdb: ImageSpaceModifierInstanceTemp::~ImageSpaceModifierInstanceTemp | ImageSpaceModifierInstance.obj | debug, call graph, medium
 void ImageSpaceModifierInstanceTemp::DestroyMembers()
 {
     this->ImageSpaceModifierInstance::~ImageSpaceModifierInstance();
@@ -285,6 +310,7 @@ float ImageSpaceModifierInstance::GetTime()
 // Explicit readable equivalent of the compiler's scalar deleting destructor.
 // Destructs the ImageSpaceModifierInstanceDOF and, if flags bit 0 is set, frees its memory via operator delete, returning this.
 // @fnv 0x0052a010
+// pdb: ImageSpaceModifierInstanceDOF::`scalar deleting destructor' | ImageSpaceModifierInstance.obj | retail, vtable slot, high
 void* ImageSpaceModifierInstanceDOF::ScalarDeletingDestructor(unsigned int flags)
 {
     this->ImageSpaceModifierInstanceDOF::~ImageSpaceModifierInstanceDOF();
@@ -296,6 +322,9 @@ void* ImageSpaceModifierInstanceDOF::ScalarDeletingDestructor(unsigned int flags
 // Walks the image space modifier instance list from g_TES and removes every entry matching apInstance.
 // @fnv 0x005293f0
 // src: XBOX_PDB 0x005293f0
+// pdb: ImageSpaceModifierInstance::Stop | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: apInstance
+// pdb locals: pkList, pinstance
 void __cdecl ImageSpaceModifierInstance_Stop(ImageSpaceModifierInstance* apInstance)
 {
     BSSimpleList<NiPointer<ImageSpaceModifierInstance> >* pkList = reinterpret_cast<BSSimpleList<NiPointer<ImageSpaceModifierInstance> >*>(g_TES->FUN_0043b5d0());
@@ -315,6 +344,7 @@ void __cdecl ImageSpaceModifierInstance_Stop(ImageSpaceModifierInstance* apInsta
 
 
 // @fnv 0x00529660
+// pdb: ImageSpaceModifierInstanceForm::`scalar deleting destructor' | ImageSpaceModifierInstance.obj | retail, vtable slot, high
 void* ImageSpaceModifierInstanceForm::Destroy(unsigned int flags)
 {
     this->ImageSpaceModifierInstanceForm::~ImageSpaceModifierInstanceForm();
@@ -326,16 +356,19 @@ void* ImageSpaceModifierInstanceForm::Destroy(unsigned int flags)
 
 // Destructor that clears the NiPointer member by assigning null to it.
 // @fnv 0x00529690
+// pdb: ImageSpaceModifierInstanceForm::~ImageSpaceModifierInstanceForm | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
 ImageSpaceModifierInstanceForm::~ImageSpaceModifierInstanceForm()
 {
-    m_pTargetNode = 0;
+    spLastTarget = 0;
 }
 
 // @fnv 0x00529540
+// pdb: ImageSpaceModifierInstance::ImageSpaceModifierInstance | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: afStrength, afStartTime, apTarget
 ImageSpaceModifierInstance::ImageSpaceModifierInstance(float afStrength, float afStartTime, NiAVObject* apTarget)
-    : fWaterLevelItem(afStrength), m_spTargetObject(apTarget)
+    : fStrength(afStrength), spTarget(apTarget)
 {
-    m_fStartTime = afStartTime;
+    fStartTime = afStartTime;
 }
 
 // Destructor that clears the node pointer reference by assigning null to it.
@@ -362,6 +395,7 @@ struct FUN_005295c0 : public FUN_00a5d3d0
     ~FUN_005295c0();
 };
 // @fnv 0x005295c0
+// pdb: ImageSpaceModifierInstance::~ImageSpaceModifierInstance | ImageSpaceModifierInstance.obj | retail, call graph (shared callers), high
 FUN_005295c0::~FUN_005295c0()
 {
     m_spTargetObject = 0;
@@ -381,6 +415,7 @@ void* _delete(void*, unsigned int);
 
 // Calls Destruct on this instance and, when flags has bit 0 set, frees it with _delete; returns this.
 // @fnv 0x00529630
+// pdb: ImageSpaceModifierInstance::`scalar deleting destructor' | ImageSpaceModifierInstance.obj | retail, vtable slot, high
 ImageSpaceModifierInstance* __fastcall DeleteImageSpaceModifierInstance(ImageSpaceModifierInstance* self, InstanceDeleteFlags flags)
 {
     self->ImageSpaceModifierInstance::~ImageSpaceModifierInstance();
@@ -394,6 +429,7 @@ extern "C" void _delete(void* p, unsigned int size);
 
 // Destroys the object's members and, when flags has bit 0 set, frees the 0x44-byte object; returns this.
 // @fnv 0x0052a620
+// pdb: ImageSpaceModifierInstanceDRB::`scalar deleting destructor' | ImageSpaceModifierInstance.obj | retail, vtable slot, high
 void* __fastcall DeleteImageSpaceModifierInstanceDRB(ImageSpaceModifierInstanceDRB* self, InstanceDeleteFlags flags)
 {
     reinterpret_cast<ImageSpaceModifierInstanceDOF*>(self)->DestroyMembers();
@@ -409,6 +445,7 @@ extern "C" void* __cdecl _delete(void* ptr, unsigned int size);
 
 // Calls Destruct on the object, then frees it with _delete when flags has bit 0 set, and returns the object pointer.
 // @fnv 0x0052a8f0
+// pdb: ImageSpaceModifierInstanceTemp::`scalar deleting destructor' | ImageSpaceModifierInstance.obj | debug, vtable slot, medium
 void* __fastcall DeleteImageSpaceModifierInstanceTemp(ImageSpaceModifierInstanceTemp* self, InstanceDeleteFlags flags)
 {
     self->ImageSpaceModifierInstanceTemp::~ImageSpaceModifierInstanceTemp();
@@ -423,13 +460,17 @@ struct DebugStringBuffer { char* value; };
 int _sprintf_s(char*, unsigned int, const char*, ...);
 // Writes the DOF distance, range and strength values into apBuffer with _sprintf_s.
 // @fnv 0x0052a240
+// pdb: ImageSpaceModifierInstanceDOF::PrintInfo | ImageSpaceModifierInstance.obj | retail, string-set bridge, high
+// pdb params: apBuffer
 void __fastcall FormatDofParams(ImageSpaceModifierInstanceDOF* self, DebugStringBuffer apBuffer)
 {
-    _sprintf_s(apBuffer.value, 0x800, "  DOF  Distance: %f  Range: %f  Str: %f", self->fDistance, self->fImpulseRadiusSquared, self->fWaterLevelItem);
+    _sprintf_s(apBuffer.value, 0x800, "  DOF  Distance: %f  Range: %f  Str: %f", self->fDistance, self->fImpulseRadiusSquared, self->fStrength);
 }
 
 int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
 // @fnv 0x0052a880
+// pdb: ImageSpaceModifierInstanceDRB::PrintInfo | ImageSpaceModifierInstance.obj | debug, unique string literal, high
+// pdb params: apBuffer
 void __fastcall WriteDepthRadialBlurLabel(ImageSpaceModifierInstanceDRB* self, DebugStringBuffer apBuffer)
 {
     _sprintf_s(apBuffer.value, 0x800, "  Depth Radial Blur");
@@ -444,47 +485,55 @@ bool TESImageSpaceModifier::GetAnimatable()
 int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
 extern const char str_0102d408[];
 // @fnv 0x0052a530
+// pdb: ImageSpaceModifierInstanceRB::PrintInfo | ImageSpaceModifierInstance.obj | retail, string-set bridge, high
+// pdb params: apBuffer
 void ImageSpaceModifierInstanceRB::vf38(char* apBuffer)
 {
-    _sprintf_s(apBuffer, 0x800, str_0102d408, m_fRampUp, fStart, m_fRampDown, m_fRampDownStart, fWaterLevelItem);
+    _sprintf_s(apBuffer, 0x800, str_0102d408, m_fRampUp, fStart, m_fRampDown, m_fRampDownStart, fStrength);
 }
 
 // @fnv 0x00529490
+// pdb: ImageSpaceModifierInstanceForm::ImageSpaceModifierInstanceForm | ImageSpaceModifierInstance.obj | retail, call graph, medium
 ImageSpaceModifierInstanceForm::ImageSpaceModifierInstanceForm()
-    : ImageSpaceModifierInstance(0.0f, 0.0f, 0), m_pPreviousImageSpaceModifier(0), m_pImageSpaceModifier(0),
-      m_fBlendWeight(0.0f), m_pTargetNode(0), m_fElapsedTime(0.0f)
+    : ImageSpaceModifierInstance(0.0f, 0.0f, 0), pImageSpaceMod(0), pLastImageSpaceMod(0),
+      fLastStrength(0.0f), spLastTarget(0), fTransitionTime(0.0f)
 {
-    m_bHasBeenApplied = false;
+    bIsWeather = false;
 }
 
 // Constructs an ImageSpaceModifierInstance from a modifier, start, strength and target, initializing the modifier pointer and clearing the remaining fields.
 // @fnv 0x00529700
-ImageSpaceModifierInstanceForm::ImageSpaceModifierInstanceForm(TESImageSpaceModifier* apModifier, float start, float strength, NiAVObject* target)
-    : ImageSpaceModifierInstance(strength, start, target), m_pPreviousImageSpaceModifier(apModifier),
-      m_pImageSpaceModifier(0), m_fBlendWeight(0.0f), m_pTargetNode(0), m_fElapsedTime(0.0f)
+// pdb: ImageSpaceModifierInstanceForm::ImageSpaceModifierInstanceForm | ImageSpaceModifierInstance.obj | retail, call graph (shared callers), high
+ImageSpaceModifierInstanceForm::ImageSpaceModifierInstanceForm(TESImageSpaceModifier* apMod, float afStartTime, float afStrength, NiAVObject* apTarget)
+    : ImageSpaceModifierInstance(afStrength, afStartTime, apTarget), pImageSpaceMod(apMod),
+      pLastImageSpaceMod(0), fLastStrength(0.0f), spLastTarget(0), fTransitionTime(0.0f)
 {
-    m_bHasBeenApplied = false;
+    bIsWeather = false;
 }
 
 // @fnv 0x00529df0
+// pdb: ImageSpaceModifierInstanceDOF::Trigger | ImageSpaceModifierInstance.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceModifierInstanceForm::StartTransition
+// pdb params: afDistance, afRange, aMode, afStrength, afMaskConst, afDuration
+// pdb locals: pinstance
 bool ImageSpaceModifierInstanceForm::Blend(TESImageSpaceModifier* pModifier, float m_fElapsedTime, float fWaterLevelItem,
                                       NiAVObject* pTarget)
 {
-    if ((this->m_pPreviousImageSpaceModifier != 0 &&
-         this->m_pPreviousImageSpaceModifier->GetAnimatable()) ||
+    if ((this->pImageSpaceMod != 0 &&
+         this->pImageSpaceMod->GetAnimatable()) ||
         (pModifier != 0 && pModifier->GetAnimatable()))
     {
         return false;
     }
 
-    this->m_pImageSpaceModifier = this->m_pPreviousImageSpaceModifier;
-    this->m_fBlendWeight = this->fWaterLevelItem;
-    this->m_pTargetNode = this->m_spTargetObject;
-    this->m_fStartTime = ImageSpaceModifierInstance::GetTime();
-    this->m_fElapsedTime = m_fElapsedTime;
-    this->m_pPreviousImageSpaceModifier = pModifier;
-    this->fWaterLevelItem = fWaterLevelItem;
-    this->m_spTargetObject = pTarget;
+    this->pLastImageSpaceMod = this->pImageSpaceMod;
+    this->fLastStrength = this->fStrength;
+    this->spLastTarget = this->spTarget;
+    this->fStartTime = ImageSpaceModifierInstance::GetTime();
+    this->fTransitionTime = m_fElapsedTime;
+    this->pImageSpaceMod = pModifier;
+    this->fStrength = fWaterLevelItem;
+    this->spTarget = pTarget;
 
     return true;
 }
@@ -493,46 +542,52 @@ bool ImageSpaceModifierInstanceForm::Blend(TESImageSpaceModifier* pModifier, flo
 ImageSpaceManager* BSShaderManager_GetImageSpaceManager(void);
 
 // @fnv 0x0052a330
+// pdb: ImageSpaceModifierInstanceRB::Apply | ImageSpaceModifierInstance.obj | retail, vtable slot, high
+// pdb locals: pmanager
 void ImageSpaceModifierInstanceRB::vf36()
 {
-    if (fWaterLevelItem > 0.0)
+    if (fStrength > 0.0)
     {
-        if (m_fStartTime < -10000.0)
-            m_fStartTime = ImageSpaceModifierInstance::GetTime();
+        if (fStartTime < -10000.0)
+            fStartTime = ImageSpaceModifierInstance::GetTime();
 
         ImageSpaceManager* pmanager = BSShaderManager_GetImageSpaceManager();
 
-        if (m_spTargetObject.operator NiAVObject*())
+        if (spTarget.operator NiAVObject*())
         {
-            reinterpret_cast<NiAVObject*>(m_spTargetObject.operator NiAVObject*())->UpdateWorldBound();
+            reinterpret_cast<NiAVObject*>(spTarget.operator NiAVObject*())->UpdateWorldBound();
 
             pmanager->ApplyRadialBlurParamModifier(
-                fWaterLevelItem, m_fRampUp, fStart, m_fRampDown, m_fRampDownStart,
-                reinterpret_cast<NiAVObject*>(m_spTargetObject.operator NiAVObject*())->GetBoundingVolume());
+                fStrength, m_fRampUp, fStart, m_fRampDown, m_fRampDownStart,
+                reinterpret_cast<NiAVObject*>(spTarget.operator NiAVObject*())->GetBoundingVolume());
         }
         else
         {
             pmanager->SetRadialBlurParameters(
-                fWaterLevelItem, m_fRampUp, fStart, m_fRampDown, m_fRampDownStart, Center);
+                fStrength, m_fRampUp, fStart, m_fRampDown, m_fRampDownStart, Center);
         }
     }
 }
 
 // Checks whether an instance for apModifier already exists; if not, creates one, appends it to the list, and plays the modifier's intro sound.
 // @fnv 0x00529ae0
-ImageSpaceModifierInstanceForm* __cdecl CreateImageSpaceModifierInstance(TESImageSpaceModifier* apModifier,
+// src: XBOX_RETAIL_PDB 0x00529ae0
+// pdb: ImageSpaceModifierInstanceForm::TriggerIfNotActive | ImageSpaceModifierInstance.obj | retail, object-file gap fill, high
+// pdb params: apMod, afStrength, apTarget
+// pdb locals: bfound, pmod, pkList, pinstance
+ImageSpaceModifierInstanceForm* __cdecl ImageSpaceModifierInstanceForm_TriggerIfNotActive(TESImageSpaceModifier* apMod,
                                                                          float afStrength, NiAVObject* apTarget)
 {
     bool bFound = false;
     ImageSpaceModifierInstanceForm* pInstance = 0;
-    if (apModifier)
+    if (apMod)
     {
         BSSimpleList<NiPointer<ImageSpaceModifierInstance> >* pIter = reinterpret_cast<BSSimpleList<NiPointer<ImageSpaceModifierInstance> >*>(g_TES->FUN_0043b5d0());
         while (pIter)
         {
             ImageSpaceModifierInstance* pCurrent = pIter->GetItem();
             if (pCurrent && pCurrent->GetInstanceForm() &&
-                pCurrent->GetInstanceForm()->m_pPreviousImageSpaceModifier == apModifier)
+                pCurrent->GetInstanceForm()->pImageSpaceMod == apMod)
             {
                 bFound = true;
                 break;
@@ -541,12 +596,12 @@ ImageSpaceModifierInstanceForm* __cdecl CreateImageSpaceModifierInstance(TESImag
         }
         if (!bFound)
         {
-            pInstance = new ImageSpaceModifierInstanceForm(apModifier, DAT_0102d270, afStrength, apTarget);
+            pInstance = new ImageSpaceModifierInstanceForm(apMod, DAT_0102d270, afStrength, apTarget);
             reinterpret_cast<BSSimpleList<NiPointer<ImageSpaceModifierInstance> >*>(g_TES->FUN_0043b5d0())->AddTail(pInstance);
-            if (apModifier->GetIntroSound())
+            if (apMod->GetIntroSound())
             {
                 ((BSAudio::GetSingleton()->*reinterpret_cast<SoundHandleByFormID>(static_cast<BSSoundHandle (BSAudio::*)(unsigned int, unsigned int, bool)>(&BSAudio::GetSoundHandleByFormID)))(
-                    apModifier->GetIntroSound()->GetFormID(), 0x200000, false).*reinterpret_cast<SoundHandlePlay>(&BSSoundHandle::Play))();
+                    apMod->GetIntroSound()->GetFormID(), 0x200000, false).*reinterpret_cast<SoundHandlePlay>(&BSSoundHandle::Play))();
             }
         }
     }
@@ -560,25 +615,29 @@ extern const char str_0102d28c[];
 extern const char str_0102d274[];
 int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
 // @fnv 0x00529ec0
+// pdb: ImageSpaceModifierInstanceForm::PrintInfo | ImageSpaceModifierInstance.obj | retail, string-set bridge, high
+// pdb params: apBuffer
 void ImageSpaceModifierInstanceForm::FormatDebugString(char* apBuffer)
 {
-    if (m_pImageSpaceModifier != 0)
+    if (pLastImageSpaceMod != 0)
     {
-        _sprintf_s(apBuffer, 0x800, "B %s %s", (m_pPreviousImageSpaceModifier != 0) ? m_pPreviousImageSpaceModifier->GetName() : "(NULL)", m_pImageSpaceModifier->GetName());
+        _sprintf_s(apBuffer, 0x800, "B %s %s", (pImageSpaceMod != 0) ? pImageSpaceMod->GetName() : "(NULL)", pLastImageSpaceMod->GetName());
     }
     else
     {
-        _sprintf_s(apBuffer, 0x800, "%s %s Str: %1.3f ", (m_bHasBeenApplied != 0) ? DAT_0102d288 : DAT_01020770,
-                   (m_pPreviousImageSpaceModifier != 0) ? m_pPreviousImageSpaceModifier->GetName() : "(NULL)", (double)fWaterLevelItem);
+        _sprintf_s(apBuffer, 0x800, "%s %s Str: %1.3f ", (bIsWeather != 0) ? DAT_0102d288 : DAT_01020770,
+                   (pImageSpaceMod != 0) ? pImageSpaceMod->GetName() : "(NULL)", (double)fStrength);
     }
 }
 
 // Initializes an ImageSpaceModifierInstanceTemp from the given parameters and stores the ramp-up, ramp-down, down-start and center values.
 // @fnv 0x0052a290
-ImageSpaceModifierInstanceRB::ImageSpaceModifierInstanceRB(float a, float b, NiAVObject* obj, float c, float afRampup, float fStart, float afRampdown,
-                           float afDownStart, const NiPoint2& center)
-    : ImageSpaceModifierInstanceTemp(b, a, obj, c),
-      m_fRampUp(afRampup), fStart(fStart), m_fRampDown(afRampdown), m_fRampDownStart(afDownStart), Center(center)
+// pdb: ImageSpaceModifierInstanceRB::ImageSpaceModifierInstanceRB | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: afStrength, afStartTime, apTarget, afDuration, afRampup, afStart, afRampdown, afDownStart, aCenter
+ImageSpaceModifierInstanceRB::ImageSpaceModifierInstanceRB(float afStrength, float afStartTime, NiAVObject* apTarget, float afDuration, float afRampup, float afStart, float afRampdown,
+                           float afDownStart, const NiPoint2& aCenter)
+    : ImageSpaceModifierInstanceTemp(afStartTime, afStrength, apTarget, afDuration),
+      m_fRampUp(afRampup), fStart(afStart), m_fRampDown(afRampdown), m_fRampDownStart(afDownStart), Center(aCenter)
 {
 }
 
@@ -587,11 +646,14 @@ namespace fnv_0052a440 {
 // Allocates an ImageSpaceModifierInstanceRB with the given parameters, appends it to the modifier list, and returns it.
 // @fnv 0x0052a440
 // src: XBOX_PDB 0x0052a440
+// pdb: ImageSpaceModifierInstanceRB::Trigger | ImageSpaceModifierInstance.obj | retail, upstream name already matches, high
+// pdb params: afStrength, afRampup, afStart, afRampdown, afDownStart, apTarget, afDuration
+// pdb locals: pinstance
 ImageSpaceModifierInstance* __cdecl ImageSpaceModifierInstanceRB_Trigger(float afStrength, float afRampup, float afStart, float afRampdown,
-                                                 float afDownStart, const NiPoint2& akCenter, float afDuration)
+                                                 float afDownStart, const NiPoint2& aCenter, float afDuration)
 {
     ImageSpaceModifierInstanceRB* p = new ImageSpaceModifierInstanceRB(
-        afStrength, DAT_0102d270, 0, afDuration, afRampup, afStart, afRampdown, afDownStart, akCenter);
+        afStrength, DAT_0102d270, 0, afDuration, afRampup, afStart, afRampdown, afDownStart, aCenter);
     reinterpret_cast<BSSimpleList<NiPointer<ImageSpaceModifierInstance> >*>(g_TES->FUN_0043b5d0())->AddTail(p);
     return p;
 }
@@ -601,6 +663,7 @@ extern "C" void _operator_delete_sized(void* apMemory, unsigned int aSize);
 
 // Calls DestroyMembers, then frees this via _operator_delete_sized when aFlags has bit 0 set, and returns this.
 // @fnv 0x0052a300
+// pdb: ImageSpaceModifierInstanceRB::`scalar deleting destructor' | ImageSpaceModifierInstance.obj | retail, vtable slot, high
 void* __fastcall DeleteImageSpaceModifierInstanceRB(ImageSpaceModifierInstanceRB* self, InstanceDeleteFlags aFlags)
 {
     reinterpret_cast<ImageSpaceModifierInstanceDOF*>(self)->DestroyMembers();
@@ -637,6 +700,7 @@ typedef void (BSAudioManager::*AudioMessageSender)(SOUND_MSG, unsigned int, int,
 // Sends SOUND_MSG_ENTER_DIALOGUE to the audio manager with no target object or position.
 // @fnv 0x00ad85a0
 // src: XBOX_PDB 0x00ad85a0
+// pdb: BSAudio::EnterDialogue | BSAudio.obj | retail, upstream name already matches, high
 void BSAudio::EnterDialogue()
 {
     (BSAudioManager::GetRandomGenerator().*reinterpret_cast<AudioMessageSender>(&BSAudioManager::SendSoundMessage))(

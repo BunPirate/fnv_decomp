@@ -41,9 +41,11 @@ extern "C"
 
 
 // @fnv 0x00A711B0
-void NiCamera::UpdateWorldData(NiUpdateData& update)
+// pdb: NiCamera::UpdateWorldData | NiCamera.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+void NiCamera::UpdateWorldData(NiUpdateData& UpdateData)
 {
-    NiAVObject::UpdateWorldData(update);
+    NiAVObject::UpdateWorldData(UpdateData);
     UpdateWorldFrustum();
 }
 
@@ -65,16 +67,19 @@ void NiCamera::UpdateViewFrustum(const NiFrustum& frustum)
 }
 
 // @fnv 0x00A711D0
-void NiCamera::LinkObject(NiStream& stream)
+// pdb: NiCamera::LinkObject | NiCamera.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: spScene, uiSize, i, spScreenPolygon, spScreenTexture
+void NiCamera::LinkObject(NiStream& kStream)
 {
-    NiAVObject::LinkObject(stream);
-    NiObject* obsoleteScene = stream.GetLoadedObject();
+    NiAVObject::LinkObject(kStream);
+    NiObject* obsoleteScene = kStream.GetLoadedObject();
     if (obsoleteScene)
         InterlockedIncrement(reinterpret_cast<volatile long*>(&obsoleteScene->m_uiRefCount));
-    unsigned int count = stream.GetLinkID();
+    unsigned int count = kStream.GetLinkID();
     for (unsigned int i = 0; i < count; ++i)
     {
-        NiObject* object = stream.GetLoadedObject();
+        NiObject* object = kStream.GetLoadedObject();
         if (object)
         {
             InterlockedIncrement(reinterpret_cast<volatile long*>(&object->m_uiRefCount));
@@ -82,12 +87,12 @@ void NiCamera::LinkObject(NiStream& stream)
                 object->DeleteThis();
         }
     }
-    if (stream.GetFileVersion() >= 0x04010004)
+    if (kStream.GetFileVersion() >= 0x04010004)
     {
-        count = stream.GetLinkID();
+        count = kStream.GetLinkID();
         for (unsigned int i = 0; i < count; ++i)
         {
-            NiObject* object = stream.GetLoadedObject();
+            NiObject* object = kStream.GetLoadedObject();
             if (object)
             {
                 InterlockedIncrement(reinterpret_cast<volatile long*>(&object->m_uiRefCount));
@@ -95,11 +100,11 @@ void NiCamera::LinkObject(NiStream& stream)
                     object->DeleteThis();
             }
         }
-        if (stream.GetFileVersion() >= 0x0a000107 && stream.GetFileVersion() < 0x0a00010f)
+        if (kStream.GetFileVersion() >= 0x0a000107 && kStream.GetFileVersion() < 0x0a00010f)
         {
-            count = stream.GetLinkID();
+            count = kStream.GetLinkID();
             for (unsigned int i = 0; i < count; ++i)
-                stream.GetLoadedObject();
+                kStream.GetLoadedObject();
         }
     }
     if (obsoleteScene && !InterlockedDecrement(reinterpret_cast<volatile long*>(&obsoleteScene->m_uiRefCount)))
@@ -107,6 +112,8 @@ void NiCamera::LinkObject(NiStream& stream)
 }
 
 // @fnv 0x00A703A0
+// pdb: NiCamera::ViewPointToRay | NiCamera.obj | debug, object-file run extension, low
+// pdb params: fVx, fVy, kOrigin, kDir
 void NiCamera::ScreenPointToRay(float x, float y, NiPoint3& origin, NiPoint3& direction)
 {
     if (m_kViewFrustum.m_bOrthographic)
@@ -181,6 +188,7 @@ void NiCamera::ScreenPointToRay(float x, float y, NiPoint3& origin, NiPoint3& di
 }
 
 // @fnv 0x00A70B40
+// pdb: NiCamera::UpdateWorldBound | NiCamera.obj | retail, upstream name already matches, high
 void NiCamera::UpdateWorldBound()
 {
     if (!m_kWorldBound)
@@ -208,6 +216,7 @@ void __fastcall ReleaseStorage_00a5a390(void* pThis);
 #include "../../../../include/NiMemObject.h"
 
 // @fnv 0x00a70050
+// pdb: NiCamera::~NiCamera | NiCamera.obj | debug, object-file run extension, low
 void* __fastcall DestroyCamera(int* pThis, int, unsigned int flags)
 {
     *pThis = (int)&DAT_0109cb9c;
@@ -257,6 +266,9 @@ struct CamStub
 };
 // @fnv 0x00a713e0
 // src: XBOX_PDB 0x00a713e0
+// pdb: NiCamera::CreateClone | NiCamera.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 void* __fastcall NiCamera_CreateClone(CamStub* self, int edx, CloningProcess* kCloning)
 {
     CameraCloneStorage* pkObject = new CameraCloneStorage();
@@ -267,6 +279,8 @@ void* __fastcall NiCamera_CreateClone(CamStub* self, int edx, CloningProcess* kC
 namespace fnv_00a71430 {
 // @fnv 0x00a71430
 // src: EXE 0x00a71430
+// pdb: NiCamera::CreateObject | NiCamera.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 CameraCloneStorage* NiCamera_CreateObject()
 {
     return new CameraCloneStorage();
@@ -280,12 +294,12 @@ struct CameraViewerAppender
 };
 
 // The shared frustum and rect types do not declare these viewer formatting helpers.
-void FormatFrustum();
+void GetViewerString();
 void FormatCameraPort();
 
 struct NiPoint3ViewerProxy
 {
-    char* GetViewerString_00a59af0(char const* name);
+    char* GetViewerString_00a59af0(char const* pPrefix);
 };
 
 extern char const* const g_011f5e6c_arg1;
@@ -295,87 +309,89 @@ char* __cdecl NiGetViewerString_00a7d550(char const* name, float value);
 
 struct FUN_00a71920_shell
 {
-    void NiCamera_GetViewerStrings(StrArr* strings);
+    void NiCamera_GetViewerStrings(StrArr* pkStrings);
 };
 
 // @fnv 0x00a71920
 // src: XBOX_PDB 0x00a71920
-void FUN_00a71920_shell::NiCamera_GetViewerStrings(StrArr* strings)
+// pdb: NiCamera::GetViewerStrings | NiCamera.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void FUN_00a71920_shell::NiCamera_GetViewerStrings(StrArr* pkStrings)
 {
-    reinterpret_cast<CameraViewerAppender*>(this)->AppendViewerStrings(strings);
+    reinterpret_cast<CameraViewerAppender*>(this)->AppendViewerStrings(pkStrings);
 
     char* value;
     unsigned int index;
     unsigned int size;
 
     value = _FUN_00a7d330(g_011f5e6c_arg1);
-    index = strings->m_usSize;
-    size = strings->m_usMaxSize;
+    index = pkStrings->m_usSize;
+    size = pkStrings->m_usMaxSize;
     if (index >= size)
-        strings->SetSize(static_cast<unsigned int>(strings->m_usGrowBy) + index);
-    strings->SetAt(index, value);
+        pkStrings->SetSize(static_cast<unsigned int>(pkStrings->m_usGrowBy) + index);
+    pkStrings->SetAt(index, value);
 
     value =
-        reinterpret_cast<char* (__thiscall*)(NiFrustum*, const char*)>(FormatFrustum)(
+        reinterpret_cast<char* (__thiscall*)(NiFrustum*, const char*)>(GetViewerString)(
             &reinterpret_cast<NiCamera*>(this)->m_kViewFrustum, "m_kViewFrustum");
-    index = strings->m_usSize;
-    size = strings->m_usMaxSize;
+    index = pkStrings->m_usSize;
+    size = pkStrings->m_usMaxSize;
     if (index >= size)
-        strings->SetSize(static_cast<unsigned int>(strings->m_usGrowBy) + index);
-    strings->SetAt(index, value);
+        pkStrings->SetSize(static_cast<unsigned int>(pkStrings->m_usGrowBy) + index);
+    pkStrings->SetAt(index, value);
 
     value = reinterpret_cast<char* (__thiscall*)(NiRect<float>*, const char*)>(FormatCameraPort)(
         &reinterpret_cast<NiCamera*>(this)->m_kPort, "m_kPort");
-    index = strings->m_usSize;
-    size = strings->m_usMaxSize;
+    index = pkStrings->m_usSize;
+    size = pkStrings->m_usMaxSize;
     if (index >= size)
-        strings->SetSize(static_cast<unsigned int>(strings->m_usGrowBy) + index);
-    strings->SetAt(index, value);
+        pkStrings->SetSize(static_cast<unsigned int>(pkStrings->m_usGrowBy) + index);
+    pkStrings->SetAt(index, value);
 
     NiPoint3 point;
     point.x = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x68);
     point.y = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x74);
     point.z = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x80);
     value = reinterpret_cast<NiPoint3ViewerProxy*>(&point)->GetViewerString_00a59af0("m_kWorldDir");
-    index = strings->m_usSize;
-    size = strings->m_usMaxSize;
+    index = pkStrings->m_usSize;
+    size = pkStrings->m_usMaxSize;
     if (index >= size)
-        strings->SetSize(static_cast<unsigned int>(strings->m_usGrowBy) + index);
-    strings->SetAt(index, value);
+        pkStrings->SetSize(static_cast<unsigned int>(pkStrings->m_usGrowBy) + index);
+    pkStrings->SetAt(index, value);
 
     point.x = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x6c);
     point.y = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x78);
     point.z = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x84);
     value = reinterpret_cast<NiPoint3ViewerProxy*>(&point)->GetViewerString_00a59af0("m_kWorldUp");
-    index = strings->m_usSize;
-    size = strings->m_usMaxSize;
+    index = pkStrings->m_usSize;
+    size = pkStrings->m_usMaxSize;
     if (index >= size)
-        strings->SetSize(static_cast<unsigned int>(strings->m_usGrowBy) + index);
-    strings->SetAt(index, value);
+        pkStrings->SetSize(static_cast<unsigned int>(pkStrings->m_usGrowBy) + index);
+    pkStrings->SetAt(index, value);
 
     point.x = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x70);
     point.y = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x7c);
     point.z = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x88);
     value = reinterpret_cast<NiPoint3ViewerProxy*>(&point)->GetViewerString_00a59af0("m_kWorldRight");
-    index = strings->m_usSize;
-    size = strings->m_usMaxSize;
+    index = pkStrings->m_usSize;
+    size = pkStrings->m_usMaxSize;
     if (index >= size)
-        strings->SetSize(static_cast<unsigned int>(strings->m_usGrowBy) + index);
-    strings->SetAt(index, value);
+        pkStrings->SetSize(static_cast<unsigned int>(pkStrings->m_usGrowBy) + index);
+    pkStrings->SetAt(index, value);
 
     value = NiGetViewerString_00a7d550("m_fMinNearPlaneDist", *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0xf8));
-    index = strings->m_usSize;
-    size = strings->m_usMaxSize;
+    index = pkStrings->m_usSize;
+    size = pkStrings->m_usMaxSize;
     if (index >= size)
-        strings->SetSize(static_cast<unsigned int>(strings->m_usGrowBy) + index);
-    strings->SetAt(index, value);
+        pkStrings->SetSize(static_cast<unsigned int>(pkStrings->m_usGrowBy) + index);
+    pkStrings->SetAt(index, value);
 
     value = NiGetViewerString_00a7d550("m_fMaxFarNearRatio", *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0xfc));
-    index = strings->m_usSize;
-    size = strings->m_usMaxSize;
+    index = pkStrings->m_usSize;
+    size = pkStrings->m_usMaxSize;
     if (index >= size)
-        strings->SetSize(static_cast<unsigned int>(strings->m_usGrowBy) + index);
-    strings->SetAt(index, value);
+        pkStrings->SetSize(static_cast<unsigned int>(pkStrings->m_usGrowBy) + index);
+    pkStrings->SetAt(index, value);
 }
 
 extern double DAT_01011588;
@@ -514,7 +530,7 @@ struct CamPoint
         return x * x + y * y + z * z;
     }
     void Unitize();
-    CamPoint CrossProduct(const CamPoint& v) const;
+    CamPoint CrossProduct(const CamPoint& pt) const;
 };
 
 struct CamMatrix
@@ -551,7 +567,7 @@ struct CamMatrix
 
 struct CamLook : public NiCamera
 {
-    bool SetLookAt(const CamPoint& point, const CamPoint& up);
+    bool SetLookAt(const CamPoint& kWorldPt, const CamPoint& kWorldUp);
     const CamPoint& GetWorldTranslate() const
     {
         return *(const CamPoint*)&m_kWorld.m_Translate;
@@ -575,15 +591,18 @@ struct CamLook : public NiCamera
 };
 
 // @fnv 0x00a701b0
-bool CamLook::SetLookAt(const CamPoint& point, const CamPoint& worldUp)
+// pdb: NiCamera::LookAtWorldPoint | NiCamera.obj | retail, call graph, high
+// pdb params: kWorldPt, kWorldUp
+// pdb locals: kDir, UpdateData, pkParent, kRot, kRight, kUp
+bool CamLook::SetLookAt(const CamPoint& kWorldPt, const CamPoint& kWorldUp)
 {
-    CamPoint dir = GetWorldTranslate() - point;
+    CamPoint dir = GetWorldTranslate() - kWorldPt;
     if (dir.SqrLength() < (double)1e-10f)
         return false;
     dir.Unitize();
     CamMatrix rot;
     {
-        CamPoint right = worldUp.CrossProduct(dir);
+        CamPoint right = kWorldUp.CrossProduct(dir);
         if (right.SqrLength() < 0.5f)
             return false;
         CamPoint up = dir.CrossProduct(right);
@@ -604,6 +623,9 @@ struct ScreenCamera : public NiCamera
 };
 
 // @fnv 0x00a6fc50
+// pdb: NiCamera::ScreenSpaceBoundSize | NiCamera.obj | debug, object-file run extension, low
+// pdb params: kSBound, kBoundSize, fZeroTolerance
+// pdb locals: fBoundViewDist, fRatio
 bool ScreenCamera::ProjectToScreen(const NiPoint3& kPt, float& fBx, float& fBy, float fZeroTolerance) const
 {
     float fW = kPt.x * m_aafWorldToCam[3][0] + kPt.y * m_aafWorldToCam[3][1] + kPt.z * m_aafWorldToCam[3][2] +
@@ -638,19 +660,21 @@ class FUN_00a6ff10_StandIn
 {
   public:
     bool FUN_00a59f00(NiStream& stream);
-    bool NiDynamicEffect_RegisterStreamables(NiStream& stream);
+    bool NiDynamicEffect_RegisterStreamables(NiStream& kStream);
 };
 
 // @fnv 0x00a6ff10
 // src: XBOX_PDB 0x00a6ff10
-bool FUN_00a6ff10_StandIn::NiDynamicEffect_RegisterStreamables(NiStream& stream)
+// pdb: NiDynamicEffect::RegisterStreamables | NiDynamicEffect.obj | debug, upstream name already matches, high
+// pdb params: kStream
+bool FUN_00a6ff10_StandIn::NiDynamicEffect_RegisterStreamables(NiStream& kStream)
 {
-    return FUN_00a59f00(stream);
+    return FUN_00a59f00(kStream);
 }
 
 struct NiCameraHack : NiCamera
 {
-    void NiCamera_LoadBinary(NiStream& stream);
+    void NiCamera_LoadBinary(NiStream& kStream);
 };
 inline unsigned int NiBinaryStream::BinaryRead(void* pvBuffer, unsigned int uiTotalBytes,
                                unsigned int* puiComponentSizes, unsigned int uiNumComponents)
@@ -681,49 +705,52 @@ inline void ReadBinaryValue(NiStream& stream, bool& value)
 // Reads camera frustum, port, and trailing values from a NiStream, handling NIF version differences for flags and orthographic projection.
 // @fnv 0x00a71450
 // src: XBOX_PDB 0x00a71450
-void NiCameraHack::NiCamera_LoadBinary(NiStream& stream)
+// pdb: NiCamera::LoadBinary | NiCamera.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: usObsolete, kValue
+void NiCameraHack::NiCamera_LoadBinary(NiStream& kStream)
 {
-    NiAVObject::LoadBinary(stream);
+    NiAVObject::LoadBinary(kStream);
 
     unsigned int uiAVObjectFlags;
-    if (stream.GetFileVersion() < 0x0A000102)
-        uiAVObjectFlags = stream.savedFlags();
+    if (kStream.GetFileVersion() < 0x0A000102)
+        uiAVObjectFlags = kStream.savedFlags();
     else
     {
-        NiBinaryStreamLoad(stream.GetBinaryStream(), (unsigned short*)&uiAVObjectFlags, 1);
+        NiBinaryStreamLoad(kStream.GetBinaryStream(), (unsigned short*)&uiAVObjectFlags, 1);
     }
-    ReadBinaryValue(stream, m_kViewFrustum.m_fLeftBound);
-    ReadBinaryValue(stream, m_kViewFrustum.m_fRightBound);
-    ReadBinaryValue(stream, m_kViewFrustum.m_fTopBound);
-    ReadBinaryValue(stream, m_kViewFrustum.m_fBottomBound);
-    ReadBinaryValue(stream, m_kViewFrustum.m_fNearPlane);
-    ReadBinaryValue(stream, m_kViewFrustum.m_fFarPlane);
+    ReadBinaryValue(kStream, m_kViewFrustum.m_fLeftBound);
+    ReadBinaryValue(kStream, m_kViewFrustum.m_fRightBound);
+    ReadBinaryValue(kStream, m_kViewFrustum.m_fTopBound);
+    ReadBinaryValue(kStream, m_kViewFrustum.m_fBottomBound);
+    ReadBinaryValue(kStream, m_kViewFrustum.m_fNearPlane);
+    ReadBinaryValue(kStream, m_kViewFrustum.m_fFarPlane);
 
-    if (stream.GetFileVersion() < 0x0A000105)
+    if (kStream.GetFileVersion() < 0x0A000105)
         m_kViewFrustum.m_bOrthographic = false;
     else
     {
         unsigned char ucOrthographic;
-        ReadBinaryValue(stream, ucOrthographic);
+        ReadBinaryValue(kStream, ucOrthographic);
         m_kViewFrustum.m_bOrthographic = (ucOrthographic != 0);
     }
 
-    ReadBinaryValue(stream, m_kPort.m_fMinimumU);
-    ReadBinaryValue(stream, m_kPort.m_fMaximumU);
-    ReadBinaryValue(stream, m_kPort.m_fMinimumV);
-    ReadBinaryValue(stream, m_kPort.m_fMaximumV);
-    ReadBinaryValue(stream, m_fLODAdjust);
+    ReadBinaryValue(kStream, m_kPort.m_fMinimumU);
+    ReadBinaryValue(kStream, m_kPort.m_fMaximumU);
+    ReadBinaryValue(kStream, m_kPort.m_fMinimumV);
+    ReadBinaryValue(kStream, m_kPort.m_fMaximumV);
+    ReadBinaryValue(kStream, m_fLODAdjust);
 
-    stream.ResetStreamState();
-    stream.ReadUnsignedInteger();
+    kStream.ResetStreamState();
+    kStream.ReadUnsignedInteger();
 
-    if (stream.GetFileVersion() >= 0x04010004)
+    if (kStream.GetFileVersion() >= 0x04010004)
     {
-        stream.ReadUnsignedInteger();
-        if (stream.GetFileVersion() >= 0x0A000107)
+        kStream.ReadUnsignedInteger();
+        if (kStream.GetFileVersion() >= 0x0A000107)
         {
-            if (stream.GetFileVersion() < 0x0A00010F)
-                stream.ReadUnsignedInteger();
+            if (kStream.GetFileVersion() < 0x0A00010F)
+                kStream.ReadUnsignedInteger();
         }
     }
 }
@@ -736,12 +763,16 @@ static inline float CamAbs(float fValue)
 
 struct FUN_00a6fdb0_t : public NiCamera
 {
-    bool ProjectPointToScreen(const NiPoint3& kPt, float& fBx, float& fBy, float& fBz, float fZeroTolerance) const;
+    bool NiCamera_WorldPtToScreenPt3(const NiPoint3& kPt, float& fBx, float& fBy, float& fBz, float fZeroTolerance) const;
 };
 
 // Projects a world-space point into camera/screen space using m_aafWorldToCam and m_kPort, writing the result to fBx, fBy, fBz.
 // @fnv 0x00a6fdb0
-bool FUN_00a6fdb0_t::ProjectPointToScreen(const NiPoint3& kPt, float& fBx, float& fBy, float& fBz,
+// src: XBOX_DEBUG_PDB 0x00a6fdb0
+// pdb: NiCamera::WorldPtToScreenPt3 | NiCamera.obj | debug, call graph (shared callers), high
+// pdb params: kPt, fBx, fBy, fBz, fZeroTolerance
+// pdb locals: bret, fW, fInvW
+bool FUN_00a6fdb0_t::NiCamera_WorldPtToScreenPt3(const NiPoint3& kPt, float& fBx, float& fBy, float& fBz,
                                           float fZeroTolerance) const
 {
     bool bResult = false;
@@ -777,7 +808,7 @@ struct CameraBoundsVector
 
 struct CrossPoint : CameraBoundsVector
 {
-    __declspec(noalias) CameraBoundsVector CrossProduct(const CameraBoundsVector& vector) const;
+    __declspec(noalias) CameraBoundsVector CrossProduct(const CameraBoundsVector& pt) const;
 };
 
 inline CameraBoundsVector Scaled(float radius, const CameraBoundsVector& unit)
@@ -826,17 +857,20 @@ __forceinline void FullBound(CameraBoundsVector& lo, CameraBoundsVector& hi)
 
 struct CameraBoundMatcher : public NiCamera
 {
-    void NiCamera_ScreenSpaceBoundBound(const NiBound& bound, NiPoint3& kMinBoundsCur, NiPoint3& kMaxPoint, float fTolerance);
+    void NiCamera_ScreenSpaceBoundBound(const NiBound& kSBound, NiPoint3& kMinBound, NiPoint3& kMaxBound, float fZeroTolerance);
 };
 
 // @fnv 0x00a705f0
 // src: XBOX_PDB 0x00a705f0
-void CameraBoundMatcher::NiCamera_ScreenSpaceBoundBound(const NiBound& bound, NiPoint3& minimum, NiPoint3& maximum, float fTolerance)
+// pdb: NiCamera::ScreenSpaceBoundBound | NiCamera.obj | retail, upstream name already matches, high
+// pdb params: kSBound, kMinBound, kMaxBound, fZeroTolerance
+// pdb locals: fInvFmN, kCSmLoc, kCenter, fMaxZ, sphereUp, fMinZ, kTmp, fW, fRadius, kSphereRight
+void CameraBoundMatcher::NiCamera_ScreenSpaceBoundBound(const NiBound& kSBound, NiPoint3& kMinBound, NiPoint3& kMaxBound, float fZeroTolerance)
 {
-    CameraBoundsVector& kMinPoint = reinterpret_cast<CameraBoundsVector&>(minimum);
-    CameraBoundsVector& kMaxPoint = reinterpret_cast<CameraBoundsVector&>(maximum);
-    CameraBoundsVector kTargetCenter = reinterpret_cast<const CameraBoundsVector&>(bound.m_kCenter);
-    float fRadius = bound.m_fRadius;
+    CameraBoundsVector& kMinPoint = reinterpret_cast<CameraBoundsVector&>(kMinBound);
+    CameraBoundsVector& kMaxPoint = reinterpret_cast<CameraBoundsVector&>(kMaxBound);
+    CameraBoundsVector kTargetCenter = reinterpret_cast<const CameraBoundsVector&>(kSBound.m_kCenter);
+    float fRadius = kSBound.m_fRadius;
     CameraBoundsVector kScratch;
     kScratch.x = kTargetCenter.x - m_kWorld.m_Translate.x;
     kScratch.y = kTargetCenter.y - m_kWorld.m_Translate.y;
@@ -870,7 +904,7 @@ void CameraBoundMatcher::NiCamera_ScreenSpaceBoundBound(const NiBound& bound, Ni
         kPt.z = kTargetCenter.z - kCross.z;
         float fW = kPt.x * m_aafWorldToCam[3][0] + (double)(kPt.y * m_aafWorldToCam[3][1]) +
                    (double)(kPt.z * m_aafWorldToCam[3][2]) + m_aafWorldToCam[3][3];
-        if (fW > fTolerance)
+        if (fW > fZeroTolerance)
         {
         }
         else
@@ -887,7 +921,7 @@ void CameraBoundMatcher::NiCamera_ScreenSpaceBoundBound(const NiBound& bound, Ni
         CameraBoundsVector kPositive = Added(kTargetCenter, kCross);
         float fWMax = kPositive.x * m_aafWorldToCam[3][0] + kPositive.y * m_aafWorldToCam[3][1] +
                       kPositive.z * m_aafWorldToCam[3][2] + m_aafWorldToCam[3][3];
-        if (fWMax > fTolerance)
+        if (fWMax > fZeroTolerance)
         {
         }
         else
@@ -912,7 +946,7 @@ void CameraBoundMatcher::NiCamera_ScreenSpaceBoundBound(const NiBound& bound, Ni
         kPt.z = kTargetCenter.z - kCross.z;
         float fW = kPt.x * m_aafWorldToCam[3][0] + kPt.y * m_aafWorldToCam[3][1] + kPt.z * m_aafWorldToCam[3][2] +
                    m_aafWorldToCam[3][3];
-        if (fW > fTolerance)
+        if (fW > fZeroTolerance)
         {
         }
         else
@@ -930,7 +964,7 @@ void CameraBoundMatcher::NiCamera_ScreenSpaceBoundBound(const NiBound& bound, Ni
         kPositive.z = kTargetCenter.z + kCross.z;
         float fWMax = kPositive.x * m_aafWorldToCam[3][0] + kPositive.y * m_aafWorldToCam[3][1] +
                       kPositive.z * m_aafWorldToCam[3][2] + m_aafWorldToCam[3][3];
-        if (fWMax > fTolerance)
+        if (fWMax > fZeroTolerance)
         {
         }
         else
@@ -1002,6 +1036,8 @@ inline void CameraRight(const NiCamera* camera, float& x, float& y, float& z)
 
 // Computes the m_aafWorldToCam matrix from the camera orientation, translation, and view frustum for orthographic or perspective projection.
 // @fnv 0x00a70ba0
+// pdb: NiCamera::WorldToCameraMatrix | NiCamera.obj | retail, call graph, high
+// pdb locals: kDVector, fV13, fV03, kLoc, fTmB, fFmN, kUVector, kRVector, fTpB, fRmL, fV23, fRpL, fP03, fP13, fP23, fP11, fP22, fP00, fP02, fP12
 void NiCamera::UpdateWorldToCamera()
 {
     CameraVector kWorldPosition;
@@ -1083,33 +1119,36 @@ union FUN_00a70f60_FloatBits
 
 struct FUN_00a70f60_Obj
 {
-    void __thiscall NiCamera_CopyMembers(NiCamera* destination, int second);
+    void __thiscall NiCamera_CopyMembers(NiCamera* pkDest, int kCloning);
 };
 
 // Copies NiCamera state from source to destination via base copy, memcpy, and field assignments.
 // @fnv 0x00a70f60
 // src: XBOX_PDB 0x00a70f60
-void __thiscall FUN_00a70f60_Obj::NiCamera_CopyMembers(NiCamera* destination, int second)
+// pdb: NiCamera::CopyMembers | NiCamera.obj | retail, upstream name already matches, high
+// pdb params: pkDest, kCloning
+// pdb locals: uiDestSize
+void __thiscall FUN_00a70f60_Obj::NiCamera_CopyMembers(NiCamera* pkDest, int kCloning)
 {
     NiCamera* source = reinterpret_cast<NiCamera*>(this);
 
-    source->NiAVObject::CopyMembers_00a5ac90(destination, *reinterpret_cast<CloningProcess*>(second));
+    source->NiAVObject::CopyMembers_00a5ac90(pkDest, *reinterpret_cast<CloningProcess*>(kCloning));
 
-    FUN_00ec44d0(reinterpret_cast<char*>(destination) + 0x9C, reinterpret_cast<char*>(source) + 0x9C, 0x40);
+    FUN_00ec44d0(reinterpret_cast<char*>(pkDest) + 0x9C, reinterpret_cast<char*>(source) + 0x9C, 0x40);
 
     FUN_00a70f60_FloatBits* sourceTranslate =
         reinterpret_cast<FUN_00a70f60_FloatBits*>(reinterpret_cast<char*>(source) + 0x8C);
     FUN_00a70f60_FloatBits* destinationTranslate =
-        reinterpret_cast<FUN_00a70f60_FloatBits*>(reinterpret_cast<char*>(destination) + 0x8C);
+        reinterpret_cast<FUN_00a70f60_FloatBits*>(reinterpret_cast<char*>(pkDest) + 0x8C);
 
     destinationTranslate[0].i = sourceTranslate[0].i;
     destinationTranslate[1].i = sourceTranslate[1].i;
     destinationTranslate[2].i = sourceTranslate[2].i;
 
-    destination->m_kViewFrustum = source->m_kViewFrustum;
+    pkDest->m_kViewFrustum = source->m_kViewFrustum;
 
     volatile int* sourceValues = reinterpret_cast<volatile int*>(reinterpret_cast<char*>(source) + 0x100);
-    volatile int* destinationValues = reinterpret_cast<volatile int*>(reinterpret_cast<char*>(destination) + 0x100);
+    volatile int* destinationValues = reinterpret_cast<volatile int*>(reinterpret_cast<char*>(pkDest) + 0x100);
 
     destinationValues[0] = sourceValues[0];
     destinationValues[1] = sourceValues[1];
@@ -1117,7 +1156,7 @@ void __thiscall FUN_00a70f60_Obj::NiCamera_CopyMembers(NiCamera* destination, in
     destinationValues[3] = sourceValues[3];
 
     float* sourceFloats = reinterpret_cast<float*>(reinterpret_cast<char*>(source) + 0x110);
-    float* destinationFloats = reinterpret_cast<float*>(reinterpret_cast<char*>(destination) + 0x110);
+    float* destinationFloats = reinterpret_cast<float*>(reinterpret_cast<char*>(pkDest) + 0x110);
 
     destinationFloats[0] = sourceFloats[0];
     destinationFloats[-6] = sourceFloats[-6];
@@ -1130,6 +1169,9 @@ struct CameraWindowRay : NiCamera
 };
 // Maps screen coordinates to a view-space ray using the camera port and view frustum, returning false if the point is outside the port.
 // @fnv 0x00a71080
+// pdb: NiCamera::WindowPointToRay | NiCamera.obj | debug, call graph, medium
+// pdb params: lWx, lWy, kOrigin, kDir, pkTarget
+// pdb locals: bConverted, fPy, pkRenderer, fBy, fPx, fBx, fVy, fVx
 bool CameraWindowRay::MapScreenToRay(long aiScreenX, long aiScreenY, NiPoint3& origin, NiPoint3& direction,
                                      const NiRenderTargetGroup* apRenderTargetGroup)
 {
@@ -1193,6 +1235,9 @@ struct NiCamera_Candidate : public NiCamera
 // Saves the camera's AV object data, view frustum, port, and link ID to the binary stream via SerializeValue calls.
 // @fnv 0x00a716c0
 // src: XBOX_PDB 0x00a716c0
+// pdb: NiCamera::SaveBinary | NiCamera.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bOrtho, uiSize, usObsolete
 void NiCamera_Candidate::NiCamera_SaveBinary(NiStream& kStream)
 {
     NiAVObject::SaveBinary(kStream);
@@ -1231,6 +1276,9 @@ void* NiMalloc(unsigned int);
 
 // Formats the rect's four float bounds into a newly allocated string prefixed by pPrefix.
 // @fnv 0x00a71020
+// pdb: NiRect<float>::GetViewerString | NiCamera.obj | retail, unique string literal, high
+// pdb params: pPrefix
+// pdb locals: pString, uiLen
 template <> char* NiRect<float>::ToString(const char* pPrefix) const
 {
     char* pString;
@@ -1278,6 +1326,8 @@ inline void CameraConstructBound(NiCamera* camera) throw()
 
 // Initialises the camera's view frustum, port, near/far limits and trailing value, then calls UpdateWorldData, UpdateWorldFrustum and UpdateCameras.
 // @fnv 0x00a712f0
+// pdb: NiCamera::NiCamera | NiCamera.obj | retail, upstream name already matches, high
+// pdb locals: UpdateData
 extern void* g_NiCameraVftable;
 NiCamera::NiCamera()
 {
@@ -1327,13 +1377,16 @@ inline NiPoint3 CameraPointDifference(const NiPoint3& first, const NiPoint3& sec
 // Projects a bound onto the camera's forward axis to set the view frustum near/far planes, then updates world data and bound.
 // @fnv 0x00a70080
 // src: COMMUNITY 0x00a70080
-bool NiCamera::FitNearAndFarToBound(const NiBound& bound)
+// pdb: NiCamera::FitNearAndFarToBound | NiCamera.obj | retail, upstream name already matches, high
+// pdb params: kBound
+// pdb locals: fDistToCenter, UpdateData, kCenter, fMinMinDist, fMaxDist, fMinDist
+bool NiCamera::FitNearAndFarToBound(const NiBound& kBound)
 {
     NiPoint3 kWDir = CameraForwardVector(*this);
-    NiPoint3 kDiff = CameraPointDifference(bound.m_kCenter, m_kWorld.m_Translate);
+    NiPoint3 kDiff = CameraPointDifference(kBound.m_kCenter, m_kWorld.m_Translate);
     float fProjection = kWDir.x * kDiff.x + kWDir.y * kDiff.y + kDiff.z * kWDir.z;
-    float fNear = fProjection - bound.m_fBoundRadius;
-    float fFar = fProjection + bound.m_fBoundRadius;
+    float fNear = fProjection - kBound.m_fBoundRadius;
+    float fFar = fProjection + kBound.m_fBoundRadius;
     if (fFar <= 0.0f)
         return false;
     float minimum = fFar / m_fMaxFarNearRatio;

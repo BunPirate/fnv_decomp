@@ -28,7 +28,7 @@ inline hkMemoryAllocator& hkThreadMemory::heap()
     return *reinterpret_cast<hkMemoryAllocator*>(m_pMemoryAllocator);
 }
 
-void __cdecl ResizeAudioStream(void* alloc, void* array, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> __forceinline void D51ConstructWithCopy(T* p, int n, const T& t)
 {
@@ -80,25 +80,27 @@ struct D51Writer
     short unk14;
     bool m_bValueAt0C;
 
-    int UpdateState_00d51c30(const D51Input& input);
+    int hkpConstraintConstructionKit_setAngularBasisA(const D51Input& dofBasis);
 };
 
 // @fnv 0x00d51c30
-// src: GUESS 0x00d51c30 (confidence: low)
-int D51Writer::UpdateState_00d51c30(const D51Input& input)
+// src: XBOX_RETAIL_PDB 0x00d51c30
+// pdb: hkpConstraintConstructionKit::setAngularBasisA | hkpConstraintConstructionKit.obj | retail, call graph, high
+// pdb params: dofBasis
+int D51Writer::hkpConstraintConstructionKit_setAngularBasisA(const D51Input& dofBasis)
 {
     D51Array_AddBack(m_stream->m_commands, 8);
     int index = m_stream->m_kShapeVectorData.GetLogicalSize();
-    D51Array_AddBack(m_stream->m_kShapeVectorData, input.m_kPointA);
-    D51Array_AddBack(m_stream->m_kShapeVectorData, input.m_kPointB);
-    D51Array_AddBack(m_stream->m_kShapeVectorData, input.m_iThirdValue);
+    D51Array_AddBack(m_stream->m_kShapeVectorData, dofBasis.m_kPointA);
+    D51Array_AddBack(m_stream->m_kShapeVectorData, dofBasis.m_kPointB);
+    D51Array_AddBack(m_stream->m_kShapeVectorData, dofBasis.m_iThirdValue);
     m_bValueAt0C = true;
     return index;
 }
 
 namespace fnv_00d52640 {
 
-void ResizeAudioStream(void* allocator, void* array, int elemSize);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <typename T> __forceinline void hkConstructWithCopy(T* p, int n, const T& t)
 {
@@ -145,25 +147,28 @@ struct FUN_00d52640_c
 {
     int unk00;
     S00d52640_Writer* m_pStreamWriter;
-    int ProcessAndReturnValue_00d52640(bool flag, const hkReferencedObject* object);
+    int hkpConstraintConstructionKit_setAngularMotor(bool axis, const hkReferencedObject* motor);
 };
 
 // @fnv 0x00d52640
-// src: GUESS 0x00d52640 (confidence: low)
-int FUN_00d52640_c::ProcessAndReturnValue_00d52640(bool flag, const hkReferencedObject* object)
+// src: XBOX_RETAIL_PDB 0x00d52640
+// pdb: hkpConstraintConstructionKit::setAngularMotor | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: axis, motor
+// pdb locals: motorData, assertBuf, ostr
+int FUN_00d52640_c::hkpConstraintConstructionKit_setAngularMotor(bool axis, const hkReferencedObject* motor)
 {
     // A leading assembly label suppresses MSVC /GS parameter copies for the shared vector's union.
     // It emits no instructions and preserves the original stack layout.
     __asm { vector_start: }
     m_pStreamWriter->m_commands.pushBack(0xe);
-    m_pStreamWriter->m_commands.pushBack(flag);
+    m_pStreamWriter->m_commands.pushBack(axis);
 
     int index = m_pStreamWriter->m_kShapeVectorData.m_iElementCount;
     hkVector4 v;
     v.set((float)m_pStreamWriter->m_kTrackedObjects.m_iElementCount, 0.0f, 0.0f, 0.0f);
-    object->addReference();
+    motor->addReference();
     m_pStreamWriter->m_kShapeVectorData.pushBack(v);
-    m_pStreamWriter->m_kTrackedObjects.pushBack(object);
+    m_pStreamWriter->m_kTrackedObjects.pushBack(motor);
 
     S00d52640_Writer* writer = m_pStreamWriter;
     writer->unk08 += 1;
@@ -194,17 +199,19 @@ struct FUN_00d56470_cls
     hkQuaternion m_rotation;
     hkVector4 m_vTranslation;
 
-    FUN_00d56470_cls* hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(int bCompute);
+    FUN_00d56470_cls* hkpExtendedMeshShape_ShapesSubpart_ctor(int flag);
 };
 
 // @fnv 0x00d56470
-// src: XBOX_PDB 0x00d56470
-FUN_00d56470_cls* FUN_00d56470_cls::hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(int bCompute)
+// src: XBOX_RETAIL_PDB 0x00d56470
+// pdb: hkpExtendedMeshShape::ShapesSubpart::ShapesSubpart | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
+// pdb params: flag
+FUN_00d56470_cls* FUN_00d56470_cls::hkpExtendedMeshShape_ShapesSubpart_ctor(int flag)
 {
-    if (bCompute)
+    if (flag)
     {
         const int iTranslated = !equals3(m_vTranslation, DAT_01267e30, DAT_01017d00);
-        const int iRotated = (m_rotation.GetAngle() < DAT_01017d00) ? 0 : 2;
+        const int iRotated = (m_rotation.hkQuaternion_getAngle() < DAT_01017d00) ? 0 : 2;
         reinterpret_cast<int*>(&m_vTranslation)[3] = iRotated | iTranslated | 0x3f000000;
     }
     return this;
@@ -228,11 +235,14 @@ void __cdecl hkBoxBoxAgent3_initAgentFunc(void* buf);
 
 // @fnv 0x00d40130
 // src: HAVOK_LIB 0x00d40130
-void __cdecl hkBoxBoxAgent3_registerAgent3(hkpCollisionDispatcher* self)
+// pdb: hkBoxBoxAgent3::registerAgent3 | hkpBoxBoxAgent3.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: f
+void __cdecl hkBoxBoxAgent3_registerAgent3(hkpCollisionDispatcher* dispatcher)
 {
     hkpCollisionDispatcher::Agent3FunctionTable kFuncs;
     hkBoxBoxAgent3_initAgentFunc(&kFuncs);
-    self->AddEntry(&kFuncs, 4, 4);
+    dispatcher->hkpCollisionDispatcher_registerAgent3(&kFuncs, 4, 4);
 }
 
 struct Handle_d49550
@@ -382,6 +392,8 @@ struct __declspec(align(16)) FUN_00c9ce00
 extern int DAT_010c7888;
 // @fnv 0x00d49550
 // src: HAVOK_LIB 0x00d49550
+// pdb: getVtablehkpRigidBody | hkpRigidBodyClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 int* __cdecl getVtablehkpRigidBody()
 {
     Handle_d49550 kHandle = {0};
@@ -487,6 +499,8 @@ struct __declspec(align(16)) SpawnedObject
 
 // @fnv 0x00d4b260
 // src: HAVOK_LIB 0x00d4b260
+// pdb: getVtablehkpStorageExtendedMeshShape | hkpStorageExtendedMeshShapeClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 int getVtablehkpStorageExtendedMeshShape()
 {
     SpawnedObject obj;
@@ -758,7 +772,7 @@ void FnvCpu_FUN_00d4f820_CpuObject::UpdateFields_00d4f820(FnvCpu_FUN_00d4f820_Cp
 }
 
 namespace fnv_00d51890 {
-void ResizeAudioStream(void* alloc, void* array, int elemSize);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <typename T> inline void D51ConstructWithCopy(T* p, int n, const T& t)
 {
@@ -802,6 +816,8 @@ struct HkOwnerD51
 
 // @fnv 0x00d51890
 // src: GUESS 0x00d51890 (confidence: low)
+// pdb: hkpConstraintConstructionKit::setLinearDofA | hkpConstraintConstructionKit.obj | retail, object-file run extension, low
+// pdb params: dof, axis
 int HkOwnerD51::UpdateState_00d51890(const hkVector4& v, int index)
 {
     HkArrD51_AddBack(m_core->m_auiHeaderValues, 3);
@@ -815,7 +831,7 @@ int HkOwnerD51::UpdateState_00d51890(const hkVector4& v, int index)
 
 namespace fnv_00d51d40 {
 
-void __cdecl ResizeAudioStream(void* allocator, void* array, unsigned int stride);
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 template <typename T> inline void hkConstructWithCopy(T* p, int n, const T& t)
 {
     for (int i = 0; i < n; i++)
@@ -853,11 +869,13 @@ struct GeometryBuilder
     unsigned char status15;
     unsigned char status16;
     bool updated;
-    unsigned int ProcessAndReturnValue_00d51d40(const __m128* vectors);
+    unsigned int hkpConstraintConstructionKit_setAngularBasisB(const __m128* dofBasis);
 };
 // @fnv 0x00d51d40
-// src: GUESS 0x00d51d40 (confidence: low)
-unsigned int GeometryBuilder::ProcessAndReturnValue_00d51d40(const __m128* vectors)
+// src: XBOX_RETAIL_PDB 0x00d51d40
+// pdb: hkpConstraintConstructionKit::setAngularBasisB | hkpConstraintConstructionKit.obj | retail, call graph, high
+// pdb params: dofBasis
+unsigned int GeometryBuilder::hkpConstraintConstructionKit_setAngularBasisB(const __m128* dofBasis)
 {
     IndexArray* indexBuffer = &arrays->indices;
     hkThreadMemory* heap = hkThreadMemory::GetMonitorStream();
@@ -871,21 +889,21 @@ unsigned int GeometryBuilder::ProcessAndReturnValue_00d51d40(const __m128* vecto
     heap = hkThreadMemory::GetMonitorStream();
     if (positions->count == (positions->capacityFlags & 0x3fffffff))
         fnv_00d51d40::ResizeAudioStream(heap->m_pMemoryAllocator, positions, 16);
-    positions->elements[positions->count] = vectors[0];
+    positions->elements[positions->count] = dofBasis[0];
     ++positions->count;
 
     positions = &arrays->vertices;
     heap = hkThreadMemory::GetMonitorStream();
     if (positions->count == (positions->capacityFlags & 0x3fffffff))
         fnv_00d51d40::ResizeAudioStream(heap->m_pMemoryAllocator, positions, 16);
-    positions->elements[positions->count] = vectors[1];
+    positions->elements[positions->count] = dofBasis[1];
     ++positions->count;
 
     positions = &arrays->vertices;
     heap = hkThreadMemory::GetMonitorStream();
     if (positions->count == (positions->capacityFlags & 0x3fffffff))
         fnv_00d51d40::ResizeAudioStream(heap->m_pMemoryAllocator, positions, 16);
-    positions->elements[positions->count] = vectors[2];
+    positions->elements[positions->count] = dofBasis[2];
     ++positions->count;
 
     updated = true;
@@ -894,7 +912,7 @@ unsigned int GeometryBuilder::ProcessAndReturnValue_00d51d40(const __m128* vecto
 }  // namespace fnv_00d51d40
 
 namespace fnv_00d52000 {
-void __cdecl ResizeAudioStream(void* allocator, void* array, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 template <typename T> inline void D52ConstructWithCopy(T* p, int n, const T& t)
 {
     for (int i = 0; i < n; i++)
@@ -925,15 +943,17 @@ struct D52Class
     OwnerD52* m_pOwnerObject;
     int unk08, unk0c, unk10, unk14;
     bool m_dirty;
-    int ProcessAndReturnValue_00d52000(const hkVector4& v);
+    int hkpConstraintConstructionKit_setPivotA(const hkVector4& pivot);
 };
 // @fnv 0x00d52000
-// src: GUESS 0x00d52000 (confidence: low)
-int D52Class::ProcessAndReturnValue_00d52000(const hkVector4& v)
+// src: XBOX_RETAIL_PDB 0x00d52000
+// pdb: hkpConstraintConstructionKit::setPivotA | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: pivot
+int D52Class::hkpConstraintConstructionKit_setPivotA(const hkVector4& pivot)
 {
     ArrayD52_AddBack(m_pOwnerObject->m_auiHeaderValues, 1);
     int index = m_pOwnerObject->m_vecs.GetLogicalSize();
-    ArrayD52_AddBack(m_pOwnerObject->m_vecs, v);
+    ArrayD52_AddBack(m_pOwnerObject->m_vecs, pivot);
     m_dirty = true;
     return index;
 }
@@ -970,15 +990,18 @@ struct D529E0_Builder
 {
     int unk00;
     D529E0_Batch* m_batch;
-    int ProcessAndReturnValue_00d529e0(unsigned char a1, float a2);
+    int hkpConstraintConstructionKit_setLinearFriction(unsigned char axis, float maxImpulse);
 };
 // @fnv 0x00d529e0
-// src: GUESS 0x00d529e0 (confidence: low)
-int D529E0_Builder::ProcessAndReturnValue_00d529e0(unsigned char a1, float a2)
+// src: XBOX_RETAIL_PDB 0x00d529e0
+// pdb: hkpConstraintConstructionKit::setLinearFriction | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: axis, maxImpulse
+// pdb locals: coef, assertBuf, ostr
+int D529E0_Builder::hkpConstraintConstructionKit_setLinearFriction(unsigned char axis, float maxImpulse)
 {
     D51Array_AddBack(m_batch->m_commands, 0x15);
-    D529E0_Array_AddBack<int>(m_batch->m_commands, a1);
-    __m128 v = _mm_setr_ps(a2, DAT_01011d78, DAT_01011d78, DAT_01011d78);
+    D529E0_Array_AddBack<int>(m_batch->m_commands, axis);
+    __m128 v = _mm_setr_ps(maxImpulse, DAT_01011d78, DAT_01011d78, DAT_01011d78);
     int index = m_batch->m_kShapeVectorData.m_iElementCount;
     D51Array_AddBack(m_batch->m_kShapeVectorData, v);
     D529E0_Batch* batch = m_batch;
@@ -1080,6 +1103,9 @@ static __forceinline __m128 Normalize172(__m128 vector)
 }
 // @fnv 0x00d53060
 // src: GUESS 0x00d53060 (confidence: low)
+// pdb: hkpHingeLimitsData::setInBodySpace | hkpHingeLimitsData.obj | retail, object-file run extension, low
+// pdb params: axisA, axisB, axisAPerp, axisBPerp
+// pdb locals: assertBuf, ostr
 void Frame172::UpdateFields_00d53060(int first, int second, const hkVector4* direction)
 {
     float ax = Absolute172(direction->m_f[0]);
@@ -1173,6 +1199,8 @@ struct Writer
 
 // @fnv 0x00d51a50
 // src: GUESS 0x00d51a50 (confidence: low)
+// pdb: hkpConstraintConstructionKit::setLinearDofWorld | hkpConstraintConstructionKit.obj | retail, object-file run extension, low
+// pdb params: dof, axis
 int Writer::UpdateState_00d51a50(const hkVector4& direction, int axis)
 {
     D51Array_AddBack(m_stream->m_commands, 5);
@@ -1194,12 +1222,14 @@ struct PivotBWriter
     unsigned char m_pivotASet;
     bool m_pivotBSet;
 
-    int ProcessAndReturnValue_00d520a0(const hkVector4& pivot);
+    int hkpConstraintConstructionKit_setPivotB(const hkVector4& pivot);
 };
 
 // @fnv 0x00d520a0
-// src: GUESS 0x00d520a0 (confidence: low)
-int PivotBWriter::ProcessAndReturnValue_00d520a0(const hkVector4& pivot)
+// src: XBOX_RETAIL_PDB 0x00d520a0
+// pdb: hkpConstraintConstructionKit::setPivotB | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: pivot
+int PivotBWriter::hkpConstraintConstructionKit_setPivotB(const hkVector4& pivot)
 {
     D51Array_AddBack(m_stream->m_commands, 2);
     int index = m_stream->m_kShapeVectorData.GetLogicalSize();

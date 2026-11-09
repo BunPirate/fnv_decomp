@@ -14,12 +14,12 @@ class WeaponObjStub;
 class InventoryStackRecord
 {
 public:
-    BSSimpleList<ExtraDataList*>* m_pExtraDataLists;
-    int m_iCountChange;
-    TESBoundObject* m_pItemObject;
+    BSSimpleList<ExtraDataList*>* pExtraObjectList;
+    int iNumber;
+    TESBoundObject* pContainerObj;
 
     InventoryStackRecord();
-    InventoryStackRecord(TESBoundObject* apType, int aiCount);
+    InventoryStackRecord(TESBoundObject* apObject, int aiNumber);
     ~InventoryStackRecord();
 
     float GetArmorDamageThreshold(Actor* actor);
@@ -45,16 +45,16 @@ public:
     int FUN_00726070();
     void ClearExtraDataList();
     int CountAndPruneEntries();
-    int ItemChange_GetExtraTotalCount(bool abWornIgnore);
-    int ItemChange_GetExtraTotalDefaultCount();
+    int GetExtraTotalCount(bool abWornIgnore);
+    int GetExtraTotalDefaultCount();
     void InitLoadGame(BGSLoadFormBuffer* buffer);
     bool HasPerkEntry();
-    bool HasApplicablePerkEntry();
-    ScriptLocals* GetScriptLocalData();
+    bool HasStolenData();
+    ScriptLocals* GetScriptLocals();
 
-    void SetPerkExtra(void* extra);
+    void SetPoison(void* apPoison);
     void SavePerkList(BGSSaveFormBuffer* buffer);
-    InventoryStackRecord* CopyFrom(InventoryStackRecord* other);
+    InventoryStackRecord* ItemChange_ctor(InventoryStackRecord* apCopy);
     void SetExtraListFlag(bool abNew, bool abFlag, bool abDelete);
     void CopyFirstExtraList(void* extra);
     const char* GetIconFilename(TESObjectREFR* reference);

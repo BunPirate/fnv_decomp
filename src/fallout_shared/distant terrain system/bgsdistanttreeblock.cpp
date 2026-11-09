@@ -28,15 +28,18 @@ extern NP DAT_012007c4;
 
 // @fnv 0x006f7a60
 // src: COMMUNITY 0x006f7a60
-void BSDistantTreeShader_SetTextureAtlas(void* p)
+// pdb: BSDistantTreeShader::SetTextureAtlas | BGSDistantTreeBlock.obj | debug, upstream name already matches, high
+// pdb params: apTextureAtlas
+void BSDistantTreeShader_SetTextureAtlas(void* apTextureAtlas)
 {
-    DAT_012007c4.operator=(p);
+    DAT_012007c4.operator=(apTextureAtlas);
 }
 
 void* __cdecl _Deallocate(void*);
 
 // Calls FUN_006f94a0, then deallocates this if flags has bit 1 set, and returns this.
 // @fnv 0x006f9470
+// pdb: BGSDistantTreeBlockLoadTask::`scalar deleting destructor' | BGSDistantTreeBlock.obj | retail, vtable slot, high
 void* BGSDistantTreeBlockLoadTask::Destroy(unsigned int flags)
 {
     FUN_006f94a0();
@@ -48,9 +51,11 @@ void* BGSDistantTreeBlockLoadTask::Destroy(unsigned int flags)
 // Sets the byte at this+0x44 to 1, then calls FUN_00c3cb70 with the given arguments.
 // @fnv 0x006f9540
 // src: XBOX_PDB 0x006f9540
+// pdb: BGSDistantTreeBlockLoadTask::Cancel | BGSDistantTreeBlock.obj | debug, vtable slot, medium
+// pdb params: aePreviousState, apTaskOwner
 void BGSDistantTreeBlockLoadTask::Cancel_006f9540(int aiArg, void* apArg)
 {
-    m_bCancelled = true;
+    bCanceled = true;
     QueuedFile_Cancel(aiArg, apArg);
 }
 
@@ -58,6 +63,8 @@ extern int _sprintf_s(char*, unsigned int, const char*, ...);
 
 // Writes the block coordinates and level into apDescription with _sprintf_s and returns true.
 // @fnv 0x006f9640
+// pdb: BGSDistantTreeBlockLoadTask::GetDescription | BGSDistantTreeBlock.obj | retail, string-set bridge, high
+// pdb params: apDescription, aiBufferSize
 bool BGSDistantTreeBlockLoadTask::FormatDescription(char* apDescription, unsigned int aiBufferSize)
 {
     _sprintf_s(apDescription, aiBufferSize, "Tree LOD Task for block ( %i, %i ) at level ( %i )", iX, iY, iLevel);
@@ -77,6 +84,7 @@ struct FUN_006f8650
 };
 // Constructor: initializes unk4 with 0 and calls FUN_006f9740 on unk8.
 // @fnv 0x006f8650
+// pdb: BGSDistantTreeBlock::TreeGroup::TreeGroup | BGSDistantTreeBlock.obj | debug, call graph, high
 FUN_006f8650::FUN_006f8650() : unk4(0)
 {
     unk8.BSSimpleArray_BGSDistantTreeBlock_InstanceData_1024_BSSimpleArray_BGSDistantTreeBlock_InstanceData_1024();
@@ -84,16 +92,18 @@ FUN_006f8650::FUN_006f8650() : unk4(0)
 
 struct FUN_006b3140_shell
 {
-    void AddElement(void*);
+    void D3DXShader_CFragmentRegisterAllocator_AddElement(void*);
     void* FUN_006b3140();
 };
 extern FUN_006b3140_shell g_011d85d0;
 void BuildNavMeshGeometry(void*);
 // @fnv 0x006f86b0
 // src: COMMUNITY 0x006f86b0
+// pdb: BGSDistantTreeBlock::AddType | BGSDistantTreeBlock.obj | debug, call graph, medium
+// pdb params: aType
 void BGSDistantTreeBlock_TreeTypes_Append(void* a1)
 {
-    g_011d85d0.AddElement(a1);
+    g_011d85d0.D3DXShader_CFragmentRegisterAllocator_AddElement(a1);
     BuildNavMeshGeometry(g_011d85d0.FUN_006b3140());
 }
 
@@ -106,6 +116,7 @@ struct FUN_006f8800_shell
 // Calls FUN_006f8830, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006f8800
 // src: COMMUNITY 0x006f8800
+// pdb: BGSDistantTreeBlock::TreeGroup::`scalar deleting destructor' | BGSDistantTreeBlock.obj | debug, object-file run extension, low
 void* FUN_006f8800_shell::BGSDistantTreeBlock_TreeGroup_Destroy(unsigned int flags)
 {
     FUN_006f8830();
@@ -128,6 +139,7 @@ struct FUN_006f8830
 };
 // Destructor that calls FUN_006f9770 on the member at offset 0x08.
 // @fnv 0x006f8830
+// pdb: BGSDistantTreeBlock::TreeGroup::~TreeGroup | BGSDistantTreeBlock.obj | debug, object-file run extension, low
 FUN_006f8830::~FUN_006f8830()
 {
     _08.SetVtableAndProcessState_006f9770();
@@ -150,6 +162,7 @@ struct FUN_006f88e0_shell
 // Sets the byte at offset 0x48 to 1, calls FUN_00929260(1) on the process at offset 0x44, then clears the pointer at offset 0.
 // @fnv 0x006f88e0
 // src: COMMUNITY 0x006f88e0
+// pdb: BGSDistantTreeBlock::OnLoadFinished | BGSDistantTreeBlock.obj | debug, object-file run extension, low
 void FUN_006f88e0_shell::BGSDistantTreeBlock_FinishLoad()
 {
     *(char*)(this + 0x48) = 1;
@@ -180,12 +193,14 @@ struct FUN_006f90a0_shell
 };
 struct FUN_006f91a0_shell : BgsdistanttreeblockOffset08View
 {
-    void BGSDistantTreeBlock_UpdateShaderPropertyRecurse();
+    void BGSDistantTreeBlock_UpdateShaderProperties();
 };
 // Iterates the array at this+4, and for each unflagged entry with a nonzero value, looks up a property and passes it with the entry to UpdateInstances.
 // @fnv 0x006f91a0
-// src: COMMUNITY 0x006f91a0
-void FUN_006f91a0_shell::BGSDistantTreeBlock_UpdateShaderPropertyRecurse()
+// src: XBOX_DEBUG_PDB 0x006f91a0
+// pdb: BGSDistantTreeBlock::UpdateShaderProperties | BGSDistantTreeBlock.obj | debug, call graph, high
+// pdb locals: i, pgroup, pprop
+void FUN_006f91a0_shell::BGSDistantTreeBlock_UpdateShaderProperties()
 {
     for (unsigned int i = 0; i < ((BgsdistanttreeblockOffset08View*)((char*)this + 4))->GetFlags(); ++i)
     {
@@ -203,9 +218,10 @@ void FUN_006f91a0_shell::BGSDistantTreeBlock_UpdateShaderPropertyRecurse()
 
 // @fnv 0x006f94c0
 // src: XBOX_PDB 0x006f94c0
+// pdb: BGSDistantTreeBlockLoadTask::QueueMe | BGSDistantTreeBlock.obj | debug, upstream name already matches, high
 void BGSDistantTreeBlockLoadTask::QueueMe()
 {
-    unk30[4] = true;
+    pBlock[4] = true;
     OnChildCompletion();
 }
 
@@ -215,10 +231,11 @@ struct Block88
 };
 // If loading completed without cancellation, notify the tree block.
 // @fnv 0x006f9610
+// pdb: BGSDistantTreeBlockLoadTask::Finish | BGSDistantTreeBlock.obj | debug, upstream name already matches, high
 void BGSDistantTreeBlockLoadTask::Finish()
 {
-    if (m_bLoadComplete && !m_bCancelled)
-        (*(Block88**)unk30)->BGSDistantTreeBlock_FinishLoad();
+    if (bFileExists && !bCanceled)
+        (*(Block88**)pBlock)->BGSDistantTreeBlock_FinishLoad();
 }
 
 struct InstanceData
@@ -258,6 +275,8 @@ struct FUN_006f9c70_shell
 };
 // @fnv 0x006f9c70
 // src: COMMUNITY 0x006f9c70
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeType,1024>::Clear | BGSDistantTreeBlock.obj | debug, call graph, medium
+// pdb params: abFreeMemory
 void FUN_006f9c70_shell::BGSDistantTreeBlock_TreeTypes_FreeAll(bool freeStorage)
 {
     if (*(void**)((char*)this + 4))
@@ -356,7 +375,11 @@ struct Fake076
 };
 // Formats a Data\Meshes\Landscape\LOD tree DTL path into a1 using a2's string, a3, a4 and a5, and returns _sprintf_s's result.
 // @fnv 0x006f8890
-int __cdecl FormatTreeLodDtlPath(char* pcBuffer, Fake076* a2, int iLevel, short iX, short iY)
+// src: XBOX_RETAIL_PDB 0x006f8890
+// pdb: BGSDistantTreeBlockLoadTask::BGSDistantTreeBlockLoadTask | BGSDistantTreeBlock.obj | retail, string-set bridge, high
+// pdb params: apBlock, apWorld, aiX, aiY, aiLevel, abPostApocalypse
+// pdb locals: pmeshFileName
+int __cdecl BGSDistantTreeBlockLoadTask_ctor(char* pcBuffer, Fake076* a2, int iLevel, short iX, short iY)
 {
     return _sprintf_s(pcBuffer, 260, "Data\\Meshes\\Landscape\\LOD\\%s\\Trees\\%s.Level%i.X%i.Y%i.DTL", a2->GetStr(),
                       a2->GetStr(), iLevel, iX, iY);
@@ -365,12 +388,16 @@ int __cdecl FormatTreeLodDtlPath(char* pcBuffer, Fake076* a2, int iLevel, short 
 class BGSDistantTreeBlock::InstanceData
 {
 public:
-    unsigned char pad[0x18];
-    int f18;
-    unsigned char f1c;
+    unsigned char Pos[0x18];
+    int uiGroup;
+    unsigned char bHidden;
 };
 // Looks up aID in map; if found, clears f1c on the instance and on the instance referenced by arr at f18.
 // @fnv 0x006f92a0
+// pdb: BGSDistantTreeBlock::HideTree | BGSDistantTreeBlock.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSDistantTreeBlock::ShowTree
+// pdb params: aID, abQueue
+// pdb locals: bfound, pinst
 void BGSDistantTreeBlock::ClearInstanceFlag(unsigned int aID)
 {
     bool bfound;
@@ -378,13 +405,15 @@ void BGSDistantTreeBlock::ClearInstanceFlag(unsigned int aID)
     bfound = map.GetAt(aID, (unsigned int&)pinst);
     if (bfound)
     {
-        pinst->f1c = 0;
-        ((InstanceData*)arr.GetAt(pinst->f18))->f1c = 0;
+        pinst->bHidden = 0;
+        ((InstanceData*)arr.GetAt(pinst->uiGroup))->bHidden = 0;
     }
 }
 
 // Iterates over every entry in mArray, passes each element to MarkTreeInstance, then calls FUN_006f7780.
 // @fnv 0x006f9300
+// pdb: BGSDistantTreeBlock::HideQueuedTrees | BGSDistantTreeBlock.obj | retail, call graph, high
+// pdb locals: i
 void BGSDistantTreeBlock::ProcessAllTrees()
 {
     unsigned int i;
@@ -398,9 +427,10 @@ void BGSDistantTreeBlock::ProcessAllTrees()
 class BSSoundHandle;
 extern IOManager* DAT_01202d98;
 // @fnv 0x006f94e0
+// pdb: BGSDistantTreeBlockLoadTask::CheckFinished | BGSDistantTreeBlock.obj | debug, vtable slot, medium
 void BGSDistantTreeBlockLoadTask::DispatchToManager()
 {
-    if (((IOTask*)this)->QueuedFile_GetAllChildrenFinished() && unk30[4])
+    if (((IOTask*)this)->QueuedFile_GetAllChildrenFinished() && pBlock[4])
     {
         if (((NiTPointerMap<unsigned int, BSSoundHandle*>*)this)->IsEmpty())
             DAT_01202d98->AddTask(reinterpret_cast<QIOTask*>(this));
@@ -415,6 +445,9 @@ struct InstanceDataB
     unsigned char b1c;
 };
 // @fnv 0x006f9230
+// pdb: BGSDistantTreeBlock::HideTree | BGSDistantTreeBlock.obj | debug, call graph, medium
+// pdb params: aID, abQueue
+// pdb locals: bfound, pinst
 void BGSDistantTreeBlock::MarkTreeInstance(unsigned int aID, bool abQueue)
 {
     unsigned int pinst = 0;
@@ -442,6 +475,8 @@ extern unsigned char DAT_011d85a0;
 // Clears each element's field at offset 0x1c, resets g_011d85bc, g_011d85c4, g_011d85e0, calls FUN_006f7a60(0) and clears DAT_011d85a0.
 // @fnv 0x006f83f0
 // src: COMMUNITY 0x006f83f0
+// pdb: BGSDistantTreeBlock::DeallocateStaticData | BGSDistantTreeBlock.obj | retail, upstream name already matches, high
+// pdb locals: i
 void BGSDistantTreeBlock_DeallocateStaticData()
 {
     int i;
@@ -477,12 +512,16 @@ struct FUN_006f8b40_shell
 {
     void ClearEntries();
     void AddTreeInstance(unsigned int type, void* instance);
-    void ReadGroups(NiFile* apInputFile);
+    void BGSDistantTreeBlock_Read(NiFile* apInputFile);
 };
 
 // Reads a group count from the file, then for each group reads a type and size and reads that many tree instance records, passing each to AddTreeInstance.
 // @fnv 0x006f8b40
-void FUN_006f8b40_shell::ReadGroups(NiFile* apInputFile)
+// src: XBOX_RETAIL_PDB 0x006f8b40
+// pdb: BGSDistantTreeBlock::Read | BGSDistantTreeBlock.obj | retail, call graph, high
+// pdb params: apInputFile
+// pdb locals: tempMemContext, uinumGroups, i, uitype, uisize, j, instance
+void FUN_006f8b40_shell::BGSDistantTreeBlock_Read(NiFile* apInputFile)
 {
     AutoMemHelper tempMemContext(0x25, true, str_0106dd30, 0x204);
 
@@ -509,7 +548,7 @@ void FUN_006f8b40_shell::ReadGroups(NiFile* apInputFile)
 
 struct FUN_00bb7290_shell
 {
-    void SetEntry(unsigned int, float, float, float, float, float);
+    void BSDistantTreeShaderProperty_SetInstance(unsigned int, float, float, float, float, float);
 };
 
 struct FUN_006b3120_shell
@@ -549,6 +588,9 @@ unsigned int __cdecl FUN_0042f5a0(unsigned int, unsigned int);
 unsigned int __cdecl BSDistantTreeShader_GetMaxInstances(void);
 
 // @fnv 0x006f90a0
+// pdb: BGSDistantTreeBlock::SetupShaderProperty | BGSDistantTreeBlock.obj | debug, call graph, high
+// pdb params: apProp, aGroup
+// pdb locals: inum, i, inst
 void FUN_006f90a0_shell::UpdateInstances(FUN_006f90a0_params params)
 {
     unsigned int count = FUN_0042f5a0(
@@ -559,13 +601,13 @@ void FUN_006f90a0_shell::UpdateInstances(FUN_006f90a0_params params)
         FUN_006f90a0_instance* instance = reinterpret_cast<FUN_006f90a0_instance*>(
             reinterpret_cast<FUN_006b3120_shell*>(reinterpret_cast<unsigned char*>(params.owner) + 8)->GetElementAt(i));
 
-        params.renderer->SetEntry(i, instance->f0, instance->f1, instance->f2, instance->f3,
+        params.renderer->BSDistantTreeShaderProperty_SetInstance(i, instance->f0, instance->f1, instance->f2, instance->f3,
                                   instance->flag ? 0.0f : instance->f4);
     }
 
     for (unsigned int j = count; j < BSDistantTreeShader_GetMaxInstances(); ++j)
     {
-        params.renderer->SetEntry(j, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        params.renderer->BSDistantTreeShaderProperty_SetInstance(j, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
     }
 
     params.owner->flag = 1;
@@ -613,6 +655,9 @@ struct InParam
 extern const float DAT_01012054;
 float __cdecl NiSqrt_004579e0(float);
 // @fnv 0x006f7a80
+// pdb: BGSDistantTreeBlock::AllocateStaticDataForTreeType | BGSDistantTreeBlock.obj | debug, object-file gap fill, medium
+// pdb params: aType
+// pdb locals: fbaseWidth, u1, v0, fsqrt2, uitriangles, uiverts, pinstanceNumber, uscurIndex, spdata, tempMemContext, fhalfBaseHeight, pdata, pvertices, pindices, fbaseHeight, u0, v1, ptexcoords, fhalfBaseWidth, pnormals, i, j
 void BuildNavMeshGeometry(void* pInParam)
 {
     AutoMemHelper helper0(0x25, true, str_0106dd30, 0x95);
@@ -830,6 +875,10 @@ struct TreeLODManager
 
 // Finds or creates the tree block for auiType, adds apInstance to it, sets the instance's block index and flag, and registers it in kInstanceMap by ID.
 // @fnv 0x006f8470
+// pdb: BGSDistantTreeBlock::ComputeBound | BGSDistantTreeBlock.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSDistantTreeBlock::AddTree
+// pdb params: aGroup
+// pdb locals: max, uinumInstances, fbig, radius, bound, min, center, j
 void TreeLODManager::AddTreeInstance(unsigned int auiType, TreeInstance* apInstance)
 {
     AutoMemHelper kMem(0x25, true, str_0106dd30, 0x14b);
@@ -905,6 +954,8 @@ struct TreeOwnerS
 };
 
 // @fnv 0x006f86e0
+// pdb: BGSDistantTreeBlock::ClearTrees | BGSDistantTreeBlock.obj | debug, call graph, medium
+// pdb locals: i
 void TreeOwnerS::ClearEntries()
 {
     for (unsigned int i = 0; i < kEntries.GetSize(); i++)
@@ -923,7 +974,7 @@ void TreeOwnerS::ClearEntries()
 struct TreeScopeGuard
 {
     void* p;
-    TreeScopeGuard(int line, int flags, const char* file, int size);
+    TreeScopeGuard(int memContext, int overridable, const char* file, int aiLine);
     ~TreeScopeGuard();
 };
 
@@ -953,7 +1004,11 @@ struct TreeHost
 
 // Reads a 4-byte record count from the host, then reads and processes that many 0x20-byte TreeRecords.
 // @fnv 0x006f8f80
-void ReadTreeRecords(TreeHost* host)
+// src: XBOX_DEBUG_PDB 0x006f8f80
+// pdb: BGSDistantTreeBlock::ReadTypes | BGSDistantTreeBlock.obj | debug, call graph, high
+// pdb params: apInputFile
+// pdb locals: uinumTypes, tempMemContext, i, newType
+void BGSDistantTreeBlock_ReadTypes(TreeHost* apInputFile)
 {
     TreeScopeGuard guardX(
         0x25, 1,
@@ -961,11 +1016,11 @@ void ReadTreeRecords(TreeHost* host)
         0x27e);
     ((FUN_006f9c70_shell*)&g_011d85d0)->BGSDistantTreeBlock_TreeTypes_FreeAll(true);
     unsigned int count = 0;
-    host->ReadBytes(&count, 4);
+    apInputFile->ReadBytes(&count, 4);
     for (unsigned int i = 0; i < count; i++)
     {
         TreeRecord rec;
-        host->ReadBytes(&rec, 0x20);
+        apInputFile->ReadBytes(&rec, 0x20);
         TreeTemp tmp(0);
         BGSDistantTreeBlock_TreeTypes_Append(&rec);
     }
@@ -993,6 +1048,7 @@ struct FUN_006f9060
 };
 
 // @fnv 0x006f9060
+// pdb: BGSDistantTreeBlock::TreeType::TreeType | BGSDistantTreeBlock.obj | debug, call graph, medium
 FUN_006f9060::FUN_006f9060() : m_kMember(0)
 {}
 
@@ -1014,13 +1070,14 @@ void Callee::FUN_0045cec0()
 
 // @fnv 0x006f9080
 // src: GUESS 0x006f9080 (confidence: low)
+// pdb: BGSDistantTreeBlock::TreeType::~TreeType | BGSDistantTreeBlock.obj | debug, call graph, medium
 void FUN_006f9080_owner::ForwardCall_006f9080()
 {
     callee.FUN_0045cec0();
 }
 
 struct Fake076;
-int __cdecl FormatTreeLodDtlPath(char* a1, Fake076* a2, int a3, short a4, short a5);
+int __cdecl BGSDistantTreeBlockLoadTask_ctor(char* a1, Fake076* a2, int a3, short a4, short a5);
 
 // Initializes a QueuedFileEntry task for a distant tree block: stores the block, cell coordinates and LOD level, builds a path and sets the task name and flag.
 // @fnv 0x006f9360
@@ -1028,20 +1085,21 @@ BGSDistantTreeBlockLoadTask::BGSDistantTreeBlockLoadTask(
     BGSDistantTreeBlock* apBlock, Fake076* apWorld, int aiCellX, int aiCellY, int aiLODLevel, int aiUnused)
     : QueuedFileEntry(3)
 {
-    *(BGSDistantTreeBlock**)unk30 = apBlock;
-    unk30[4] = false;
+    *(BGSDistantTreeBlock**)pBlock = apBlock;
+    pBlock[4] = false;
     iX = aiCellX;
     iY = aiCellY;
     iLevel = aiLODLevel;
-    m_bCancelled = false;
+    bCanceled = false;
     char acPath[260];
-    FormatTreeLodDtlPath(acPath, apWorld, aiLODLevel, (short)aiCellX, (short)aiCellY);
+    BGSDistantTreeBlockLoadTask_ctor(acPath, apWorld, aiLODLevel, (short)aiCellX, (short)aiCellY);
     SetFileName_00c3cee0(acPath + 5);
     LookupFileEntry(0);
-    m_bLoadComplete = false;
+    bFileExists = false;
 }
 
 // @fnv 0x006f94a0
+// pdb: BGSDistantTreeBlockLoadTask::~BGSDistantTreeBlockLoadTask | BGSDistantTreeBlock.obj | debug, upstream name already matches, high
 BGSDistantTreeBlockLoadTask::~BGSDistantTreeBlockLoadTask()
 {}
 
@@ -1054,31 +1112,33 @@ class B6F9570File
 class B6F9570FileFinder
 {
   public:
-    static B6F9570File* GetFile(const char* pcName, int eMode, unsigned int uiBufferSize, unsigned int uiFlags);
+    static B6F9570File* GetFile(const char* apName, int aeMode, unsigned int aiSize, unsigned int aiArchiveType);
 };
 
 class B6F9570TreeBlock
 {
   public:
-    void ReadGroups(B6F9570File* pkFile);
+    void BGSDistantTreeBlock_Read(B6F9570File* pkFile);
     void ProcessAllTrees();
 };
 
 // Opens the loader's filename as a file, loads it into the tree block if not cancelled, and sets the success flag.
 // @fnv 0x006f9570
+// pdb: BGSDistantTreeBlockLoadTask::Run | BGSDistantTreeBlock.obj | retail, upstream name already matches, high
+// pdb locals: pfile
 void BGSDistantTreeBlockLoadTask::Run()
 {
     B6F9570File* pkFile = B6F9570FileFinder::GetFile(GetFileName(), 0, 0x800, 1);
-    if (pkFile && !m_bCancelled)
+    if (pkFile && !bCanceled)
     {
-        (*(B6F9570TreeBlock**)unk30)->ReadGroups(pkFile);
+        (*(B6F9570TreeBlock**)pBlock)->BGSDistantTreeBlock_Read(pkFile);
         delete pkFile;
-        m_bLoadComplete = true;
-        (*(B6F9570TreeBlock**)unk30)->ProcessAllTrees();
+        bFileExists = true;
+        (*(B6F9570TreeBlock**)pBlock)->ProcessAllTrees();
     }
     else
     {
-        m_bLoadComplete = false;
+        bFileExists = false;
     }
 }
 
@@ -1118,7 +1178,7 @@ struct Lod77Elem
     void Step1();
     void Step2();
     void Step3();
-    void Step4();
+    void NiAlphaProperty_SetTestMode();
 };
 
 struct Lod77Container
@@ -1135,7 +1195,7 @@ struct LodFile
 
 struct Lod77Mgr
 {
-    void Load(char* path, Lod77Container* c, int a, int b);
+    void Load(char* apfilename, Lod77Container* aspSourceTexture, int abNoFileOK, int b);
 };
 
 extern Lod77Container DAT_011d85bc;
@@ -1149,23 +1209,27 @@ void __cdecl Warning_005b5e40(const char* msg);
 
 // Builds the TreeTypes.lst mesh path and the tree LOD texture path, loads both, then populates the LOD containers and steps their elements.
 // @fnv 0x006f77a0
-void __cdecl LoadTreeLodResources(Fake076* self)
+// src: XBOX_RETAIL_PDB 0x006f77a0
+// pdb: BGSDistantTreeBlock::AllocateStaticData | BGSDistantTreeBlock.obj | retail, unique string literal, high
+// pdb params: apWorld
+// pdb locals: ptypesFile, pfile, ptreename, ptextureAtlas
+void __cdecl BGSDistantTreeBlock_AllocateStaticData(Fake076* apWorld)
 {
     char path[0x104];
     LodFile* f5;
     const char* texName;
     char texPath[0x104];
 
-    _sprintf_s(path, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\Trees\\TreeTypes.lst", self->GetStr());
+    _sprintf_s(path, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\Trees\\TreeTypes.lst", apWorld->GetStr());
     f5 = (LodFile*)FileFinder_GetFile_(path, 0, 0x800);
     if (f5 != 0)
     {
-        ReadTreeRecords((TreeHost*)f5);
+        BGSDistantTreeBlock_ReadTypes((TreeHost*)f5);
         delete f5;
     }
 
     texName = "TreeDeadLOD.dds";
-    if (!FUN_00ec8a19(self->GetStr(), "DLC4", 4))
+    if (!FUN_00ec8a19(apWorld->GetStr(), "DLC4", 4))
     {
         texName = "TreeSwampLOD.dds";
     }
@@ -1185,7 +1249,7 @@ void __cdecl LoadTreeLodResources(Fake076* self)
     DAT_011d85c4.Get(1)->Step1();
     DAT_011d85c4.Get(0)->Step2();
     DAT_011d85c4.Get(0x80)->Step3();
-    DAT_011d85c4.Get(4)->Step4();
+    DAT_011d85c4.Get(4)->NiAlphaProperty_SetTestMode();
 }
 
 
@@ -1280,6 +1344,9 @@ struct TreeBoundsOwner
 };
 // Computes the bounding sphere of a tree block: min/max of instance positions, center, and radius including the geometry bound.
 // @fnv 0x006f8910
+// pdb: BGSDistantTreeBlock::ComputeBound | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: aGroup
+// pdb locals: max, uinumInstances, fbig, radius, bound, min, center, j
 // Expose the original result pointer so the return retains its inline word copy.
 NiBound* TreeBoundsOwner::ComputeTreeBounds(NiBound* result, BoundTreeBlock* block)
 {
@@ -1515,6 +1582,8 @@ struct OwnerX
 void __cdecl SetupNode(NodeX*, int, int);
 // @fnv 0x006f8c40
 // src: COMMUNITY 0x006f8c40
+// pdb: BGSDistantTreeBlock::Attach | BGSDistantTreeBlock.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, i, foobar, bar, psp, group, pname, sx, sy, foo
 void OwnerX::BGSDistantTreeBlock_Attach()
 {
     AutoMemHelper guard(0x25, true, str_0106dd30, 0x240);

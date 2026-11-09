@@ -14,24 +14,25 @@
 class ImageSpaceShaderParam;
 class NiRefObject;
 
+// pdb: class FOHUDEffectManager, size 0x64, 13 members
 class FOHUDEffectManager
 {
 public:
-    NiPointer<NiRefObject> spEffect;              // 0x00 pointee type not established
-    BGSMenuPacker kMenuPacker;                    // 0x04
+    NiPointer<NiRefObject> spPartialScreenGeometry;              // 0x00 pointee type not established
+    BGSMenuPacker Packer;                    // 0x04
     bool bShudderActive;                          // 0x28
     float fShudderStartTime;                      // 0x2c
-    NiPoint2 kShudderDuration;                    // 0x30
-    NiPoint2 kShudderStrength;                    // 0x38
-    NiPoint2 kShudderFrequency;                   // 0x40
-    NiPoint2 kShudderOffset;                      // 0x48
-    ImageSpaceShaderParam* pShaderParam;          // 0x50
-    bool bFlag54;                                 // 0x54
+    NiPoint2 ShudderDuration;                    // 0x30
+    NiPoint2 ShudderIntensity;                    // 0x38
+    NiPoint2 ShudderFrequency;                   // 0x40
+    NiPoint2 ShudderCurrentPosition;                      // 0x48
+    ImageSpaceShaderParam* pUnpackShaderParams;          // 0x50
+    bool bHideHUD;                                 // 0x54
     bool bFlag55;                                 // 0x55
     bool bFlag56;                                 // 0x56
-    float fBlurRadius;                            // 0x58
-    float fScanlineFrequency;                     // 0x5c
-    float fBlurIntensity;                         // 0x60
+    float fCurrentBlurRadiusHUD;                            // 0x58
+    float fCurrentScanlineFrequencyHUD;                     // 0x5c
+    float fCurrentBlurIntensityHUD;                         // 0x60
 
     FOHUDEffectManager();                         // 0x007f7610
     void OnIdle();                                // 0x007f7830

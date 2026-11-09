@@ -7,6 +7,7 @@ class ReflectedReferenceRecord;
 class TESForm;
 class TESObjectREFR;
 
+// pdb: class ExtraReflectedRefs, size 0x14, bases: BSExtraData, 1 members
 class ExtraReflectedRefs : public BSExtraData
 {
 public:

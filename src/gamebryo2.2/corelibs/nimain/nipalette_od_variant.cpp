@@ -4,7 +4,7 @@
 
 // src/gamebryo2.2/corelibs/nimain/nipalette.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nimain/nipalette.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
-extern "C" void* g_011f5c08;
+extern "C" void* NiPalette_ms_RTTI;
 void* __cdecl NiPalette_GetRTTI();
 
 // MemoryManager::FUN_00aa4060 - release a block that was handed out by one
@@ -131,50 +131,53 @@ struct FNV_MemoryManager
     void* m_pHeap;
 
     void FNV_releaseAlias(void* block, int flag);
-    FNV_Heap* FNV_heapForPointer(void* block);
+    FNV_Heap* FNV_heapForPointer(void* apMem);
 
-    void MemoryManager_Deallocate(void* block);
+    void MemoryManager_Deallocate(void* apMem);
 };
 
 // @fnv 0x00aa4060
 // src: XBOX_PDB 0x00aa4060
-void FNV_MemoryManager::MemoryManager_Deallocate(void* block)
+// pdb: MemoryManager::Deallocate | MemoryManager.obj | retail, upstream name already matches, high
+// pdb params: apMem
+// pdb locals: ppool, pdefaultHeap, pheap
+void FNV_MemoryManager::MemoryManager_Deallocate(void* apMem)
 {
-    if (!block)
+    if (!apMem)
         return;
 
     if (!this->m_bEnableState)
     {
-        this->FNV_releaseAlias(block, 0);
+        this->FNV_releaseAlias(apMem, 0);
         return;
     }
 
     void* pHeapMgr = this->m_pHeap;
     if (!pHeapMgr)
     {
-        this->FNV_releaseAlias(block, 0);
+        this->FNV_releaseAlias(apMem, 0);
         return;
     }
 
-    FNV_Pool* poolObj = g_pageTable[((unsigned int)block) >> 24];
+    FNV_Pool* poolObj = g_pageTable[((unsigned int)apMem) >> 24];
     if (poolObj)
     {
-        if ((unsigned char)(((unsigned int)block >= poolObj->m_base) &&
-                                    ((unsigned int)block < (unsigned int)(poolObj->m_base + poolObj->m_iElementCount))
+        if ((unsigned char)(((unsigned int)apMem >= poolObj->m_base) &&
+                                    ((unsigned int)apMem < (unsigned int)(poolObj->m_base + poolObj->m_iElementCount))
                                 ? 1
                                 : 0))
         {
-            poolObj->FNV_poolRelease(block);
+            poolObj->FNV_poolRelease(apMem);
             return;
         }
     }
 
-    FNV_Heap* owner = this->FNV_heapForPointer(block);
+    FNV_Heap* owner = this->FNV_heapForPointer(apMem);
     if (owner)
     {
-        owner->FNV_heapRelease(block, 0);
+        owner->FNV_heapRelease(apMem, 0);
         return;
     }
 
-    this->FNV_releaseAlias(block, 0);
+    this->FNV_releaseAlias(apMem, 0);
 }

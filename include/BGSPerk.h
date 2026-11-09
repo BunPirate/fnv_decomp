@@ -13,6 +13,7 @@ class Actor;
 class PlayerCharacter;
 class TESFile;
 
+// pdb: class BGSPerk, size 0x50, bases: TESForm, TESFullName, TESDescription, TESIcon, 3 members
 class BGSPerk : public TESForm, public TESFullName, public TESDescription, public TESIcon
 {
 public:
@@ -22,7 +23,7 @@ public:
 
     BGSPerk();
     virtual ~BGSPerk();
-    virtual bool LoadForm(TESFile* file);
+    virtual bool LoadForm(TESFile* apFile);
     virtual void InitItem();
 
     void ResetFormData();
@@ -36,6 +37,6 @@ public:
     bool GetByteAtOffset56();
     bool IsPerkAttainable(PlayerCharacter* player);
     bool CheckPlayerConditions();
-    bool BGSPerk_IsPerkAvailable(PlayerCharacter* player);
-    void GetDescription(char* buffer, unsigned int size);
+    bool BGSPerk_IsPerkAvailable(PlayerCharacter* apActionRef);
+    void GetDescription(char* apOutText, unsigned int aiOutSize);
 };

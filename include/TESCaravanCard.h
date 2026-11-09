@@ -27,14 +27,14 @@ public:
     virtual bool LoadForm(TESFile* file);
     virtual void InitItem();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void ResetFormData();
     TESTexture* GetBackTexture();
     char* CaravanAIPackage_Print_WhatIsHeThinking();
 
     bool bIsActive;
     unsigned char layoutPadding99[3];
-    TESTexture m_kFrontTexture;
-    TESTexture m_kBackTexture;
+    TESTexture faceTexture;
+    TESTexture backTexture;
     UnsignedValuePair data;
 };

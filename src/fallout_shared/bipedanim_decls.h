@@ -205,6 +205,7 @@ template <class T> struct vector
 #include "../../include/NiMemObject.h"
 class NiTimeController;
 class InventoryChanges;
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
@@ -234,6 +235,7 @@ class BipedAnimObject
     NiAVObject* m_pSceneObject;
     bool bHasAnimation;
 };
+// pdb: class BipedAnim, size 0x2b4, 6 members
 class BipedAnim
 {
   public:
@@ -244,33 +246,33 @@ class BipedAnim
     float m_fFadeAlpha;
     TESObjectREFR* m_pActor;
     void ProcessQueuedHelmet(IO_TASK_PRIORITY, NiPointer<QueuedHelmet>&, QueuedFile*);
-    void QueueBipedObjectLoads(unsigned int, IO_TASK_PRIORITY, QueuedFile*);
+    void QueueSkinTextures(unsigned int, IO_TASK_PRIORITY, QueuedFile*);
     void LoadBipedObject(TESNPC*, BIPED_OBJECT, IO_TASK_PRIORITY, QueuedFile*);
     void RequestModelLoad(IO_TASK_PRIORITY, QueuedFile*, NiPointer<QueuedHelmet>&, BIPED_OBJECT);
-    void CompleteModelLoadTask();
+    void RemoveAllParts();
     NiNode* GetBoneNode(BIPED_BONE);
     void AttachFaceGenNode();
     void RemoveBipedWeapon();
     void SetBipedVisibility(bool);
     NiAVObject* PrepareBipedModel(NiNode*, BIPED_OBJECT, bool, bool, BSFaceGenModel*);
-    NiAVObject* AttachBipedModel(NiNode*, NiNode*, BIPED_OBJECT, bool, bool, BSFaceGenModel*);
+    NiAVObject* AttachSkinnedObject(NiNode*, NiNode*, BIPED_OBJECT, bool, bool, BSFaceGenModel*);
     static void AttachFaceGenNode(NiNode*, NiNode*, NiNode*, BipedAnim*, BIPED_OBJECT, BSFaceGenModel*);
     void UpdateSkinInstance(NiAVObject*, bool);
     bool IsSlotHidden(BIPED_OBJECT);
     BSFaceGenModel* GetFaceGenModelForSlot(BIPED_OBJECT);
     void UpdateBipedWeapon(TESObjectWEAP*, unsigned char);
     void ClearBipedObject(BipedAnimObject*, bool, TESForm*);
-    void QueueItem(IO_TASK_PRIORITY, void*, BIPED_OBJECT);
+    void BipedAnim_QueueHelmetLoad(IO_TASK_PRIORITY, void*, BIPED_OBJECT);
     static bool CanLoadHiddenBipedObjects();
     static void ApplyReferenceExtraData(NiNode*, NiNode*, BIPED_OBJECT, TESObjectREFR*);
-    static BSShaderPPLightingProperty* FindLightingShaderProperty(NiAVObject*);
-    static BIPED_OBJECT GetBipedObjectFromShaderProperty(NiAVObject*, BSShaderPPLightingProperty*);
-    bool IsModelPathMatch(TESModel*, char*);
-    TESModel* GetModelForSlot(BIPED_OBJECT, TESModel*);
+    static BSShaderPPLightingProperty* GetLightingProperty(NiAVObject*);
+    static BIPED_OBJECT GetSkinBipedObject(NiAVObject*, BSShaderPPLightingProperty*);
+    bool Get1stPersonModelFileName(TESModel*, char*);
+    TESModel* Get1stPersonModel(BIPED_OBJECT, TESModel*);
     TESModel* BipedAnim_Store1stPersonModel(BIPED_OBJECT, char*);
     void RemovePart(BIPED_OBJECT, bool, TESForm*);
     void RemovePartsByParent(TESForm*);
-    void SetBipedObject(TESForm*, TESModel*, BIPED_OBJECT);
+    void SetBipedPart(TESForm*, TESModel*, BIPED_OBJECT);
     void UpdateRaceSex(TESRace*, SEX);
 };
 extern PlayerCharacter* g_thePlayer;
@@ -291,7 +293,7 @@ void AddNodeEntries(int, NiAVObject*);
 class DialogMenuInterfaceCalls
 {
   public:
-    static void SetHUDVisible(bool);
+    static void Interface_SetGunScopeVisible(bool);
 };
 
 extern "C" void* __cdecl memset(void*, int, unsigned int);
@@ -318,6 +320,7 @@ struct SceneObjectRemover
 };
 void FalloutAudio_LockAcousticSpace(bool);
 int BSstrcmp(const char*, const char*);
+// pdb: class VATS, size 0x48 (here 0x1), 17 members
 class VATS
 {
   public:
@@ -337,8 +340,8 @@ class TimeGlobal
     unsigned int GetTimeStamp();
 };
 extern TimeGlobal g_timeGlobal;
-bool HandleUnparentedObjectNode(NiNode*);
-void SetCollisionRefFlag(NiNode*, bool);
+bool RemoveScabard(NiNode*);
+void bhkNiCollisionObject_EnableCollision(NiNode*, bool);
 void bhkWorld_KillHavok(NiNode*, bool, bool);
 void bhkWorld_SetMotion(NiNode*, int, bool, bool, bool);
 const char* ConvertFromUni(const char*, bool);
@@ -353,6 +356,7 @@ extern SettingT<INISettingCollection> DAT_011d5a10, DAT_011d5a44;
 bool Animation_FindSkinnedNode(NiNode*);
 unsigned int NiMaterialProperty_GetType();
 int NiTexturingProperty_GetType();
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -361,6 +365,7 @@ class TaskQueueInterface
 char* strrchr_0040ab30(char*, int);
 int strcat_s(char*, unsigned int, const char*);
 extern "C" int __cdecl sprintf_s(char*, unsigned int, const char*, ...);
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 class FileFinder
 {
   public:
@@ -391,6 +396,7 @@ struct BipedAttachmentTarget
 };
 class TESTopic;
 extern "C" const char kMeshesFolder[];
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:

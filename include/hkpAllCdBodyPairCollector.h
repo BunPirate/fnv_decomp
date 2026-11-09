@@ -2,6 +2,7 @@
 
 #include "hkpCdBodyPairCollector.h"
 
+// pdb: class hkpAllCdBodyPairCollector, size 0x114, bases: hkpCdBodyPairCollector, 1 members
 class hkpAllCdBodyPairCollector : public hkpCdBodyPairCollector
 {
 public:
@@ -25,7 +26,7 @@ public:
     };
 
     int unk04;
-    PairArray m8;
+    PairArray m_hits;
 
     hkpAllCdBodyPairCollector();
     virtual ~hkpAllCdBodyPairCollector();

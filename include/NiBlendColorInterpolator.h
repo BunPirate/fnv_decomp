@@ -5,10 +5,11 @@
 
 class ArraySource;
 
+// pdb: class NiBlendColorInterpolator, size 0x44, bases: NiBlendInterpolator, 2 members
 class NiBlendColorInterpolator : public NiBlendInterpolator
 {
 public:
-    NiBlendColorInterpolator(bool onlyUseHighestWeight, float weightThreshold, unsigned char arraySize);
+    NiBlendColorInterpolator(bool bManagerControlled, float fWeightThreshold, unsigned char ucArraySize);
     virtual ~NiBlendColorInterpolator();
 
     virtual const NiRTTI* GetRTTI() const;
@@ -26,7 +27,7 @@ public:
     bool UpdateBlend(float time, NiObjectNET* target, NiColorA& value);
     bool InterpolateValue(float time, NiObjectNET* target, NiColorA& value);
     bool GetUpdateTimeForItem(float& time, NiBlendInterpolator__InterpArrayItem& item);
-    void AppendTwoEntries(ArraySource* source);
+    void AppendTwoEntries(ArraySource* pkStrings);
 
     void SaveBinary_00a56040(NiStream& stream);
     void* FUN_00a56070(unsigned int flags);
@@ -35,5 +36,5 @@ public:
     bool IsEqual_00a564a0(void* other);
 
     NiColorA m_kColorValue;
-    bool m_bValueValid;
+    bool m_bValidValue;
 };

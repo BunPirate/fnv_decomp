@@ -29,7 +29,7 @@ char const* const* __cdecl NiBSplineColorInterpolator_GetRTTI()
 struct SplineBaseOperations
 {
     __declspec(nothrow) SplineBaseOperations(int, int);
-    void CopyTo(NiBSplineInterpolator*, CloningProcess&);
+    void NiBSplineInterpolator_CopyMembers(NiBSplineInterpolator*, CloningProcess&);
     void SaveBinary(NiStream*);
     void AppendStrings(struct StringArray*);
     bool IsEqual(NiBSplineInterpolator*);
@@ -37,6 +37,8 @@ struct SplineBaseOperations
 extern int DAT_01099d3c;
 // @fnv 0x00a51c60
 // src: EXE 0x00a51c60
+// pdb: NiBSplineColorInterpolator::CreateObject | NiBSplineColorInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* NiBSplineColorInterpolator_CreateObject()
 {
     NiBSplineColorInterpolator* p = (NiBSplineColorInterpolator*)BSFadeNode::operator new(52);
@@ -44,10 +46,10 @@ void* NiBSplineColorInterpolator_CreateObject()
     {
         new (p) SplineBaseOperations(0, 0);
         *(volatile int*)p = (int)&DAT_01099d3c;
-        ((volatile NiColorA*)&p->m_kDiffuseColor)->a =
-            ((volatile NiColorA*)&p->m_kDiffuseColor)->b =
-            ((volatile NiColorA*)&p->m_kDiffuseColor)->g =
-            ((volatile NiColorA*)&p->m_kDiffuseColor)->r = 0.0f;
+        ((volatile NiColorA*)&p->m_kColorAValue)->a =
+            ((volatile NiColorA*)&p->m_kColorAValue)->b =
+            ((volatile NiColorA*)&p->m_kColorAValue)->g =
+            ((volatile NiColorA*)&p->m_kColorAValue)->r = 0.0f;
         *(volatile unsigned int*)&p->m_kColorACPHandle = 0xffff;
         return p;
     }
@@ -62,13 +64,16 @@ int __fastcall GetChannelResult(NiBSplineColorInterpolator* self, void* unused, 
 
 __forceinline void NiBSplineColorInterpolator::CopyTo(NiBSplineColorInterpolator* pkDest, CloningProcess& kCloning)
 {
-    ((SplineBaseOperations*)this)->CopyTo(pkDest, kCloning);
-    pkDest->m_kDiffuseColor = m_kDiffuseColor;
+    ((SplineBaseOperations*)this)->NiBSplineInterpolator_CopyMembers(pkDest, kCloning);
+    pkDest->m_kColorAValue = m_kColorAValue;
     pkDest->m_kColorACPHandle = m_kColorACPHandle;
 }
 
 // @fnv 0x00a51bf0
 // src: XBOX_PDB 0x00a51bf0
+// pdb: NiBSplineColorInterpolator::CreateClone | NiBSplineColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiBSplineInterpolator* __fastcall NiBSplineColorInterpolator_CreateClone(NiBSplineColorInterpolator* self, void* unused, CloningProcess& kCloning)
 {
     NiBSplineColorInterpolator* pkClone = (NiBSplineColorInterpolator*)NiObject::operator new(sizeof(NiBSplineColorInterpolator));
@@ -76,10 +81,10 @@ NiBSplineInterpolator* __fastcall NiBSplineColorInterpolator_CreateClone(NiBSpli
     {
         new (pkClone) SplineBaseOperations(0, 0);
         *(volatile int*)pkClone = (int)&DAT_01099d3c;
-        ((volatile NiColorA*)&pkClone->m_kDiffuseColor)->r = 0.0f;
-        ((volatile NiColorA*)&pkClone->m_kDiffuseColor)->g = 0.0f;
-        ((volatile NiColorA*)&pkClone->m_kDiffuseColor)->b = 0.0f;
-        ((volatile NiColorA*)&pkClone->m_kDiffuseColor)->a = 0.0f;
+        ((volatile NiColorA*)&pkClone->m_kColorAValue)->r = 0.0f;
+        ((volatile NiColorA*)&pkClone->m_kColorAValue)->g = 0.0f;
+        ((volatile NiColorA*)&pkClone->m_kColorAValue)->b = 0.0f;
+        ((volatile NiColorA*)&pkClone->m_kColorAValue)->a = 0.0f;
         *(volatile unsigned int*)&pkClone->m_kColorACPHandle = 0xffff;
     }
     else
@@ -99,10 +104,12 @@ struct FNVStreamBuffer
 
 // @fnv 0x00a51ca0
 // src: XBOX_PDB 0x00a51ca0
+// pdb: NiBSplineColorInterpolator::SaveBinary | NiBSplineColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void __fastcall NiBSplineColorInterpolator_SaveBinary(NiBSplineColorInterpolator* self, void* unused, NiStream* stream)
 {
     ((SplineBaseOperations*)self)->SaveBinary(stream);
-    self->m_kDiffuseColor.SaveBinary(*stream);
+    self->m_kColorAValue.SaveBinary(*stream);
     FNVStreamBuffer* writer = reinterpret_cast<FNVStreamBuffer*&>(stream->m_pkOstr);
     {
         int stream = 4;
@@ -129,6 +136,8 @@ template <class T, class I> struct FnvStringPrimitiveArray
 };
 struct StringArray : FnvStringPrimitiveArray<char*, FnvStringMallocInterface<char*> > {};
 // @fnv 0x00a51d80
+// pdb: NiBSplineColorInterpolator::GetViewerStrings | NiBSplineColorInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall AppendColorACPHandleStrings(NiBSplineColorInterpolator* self, void* unused, StringArray* array)
 {
     ((SplineBaseOperations*)self)->AppendStrings(array);
@@ -161,9 +170,11 @@ extern "C++" unsigned char __stdcall LoadNiBSplineInterpolator(int value);
 
 // @fnv 0x00a50b10
 // src: XBOX_PDB 0x00a50b10
-unsigned char __stdcall NiBSplineColorInterpolator_RegisterStreamables(int value)
+// pdb: NiBSplineColorInterpolator::RegisterStreamables | NiBSplineColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+unsigned char __stdcall NiBSplineColorInterpolator_RegisterStreamables(int kStream)
 {
-    return LoadNiBSplineInterpolator(value) != 0;
+    return LoadNiBSplineInterpolator(kStream) != 0;
 }
 
 // @fnv 0x00a51a40
@@ -188,12 +199,16 @@ struct SplineCurveOperations
 };
 
 // @fnv 0x00a51b10
+// pdb: NiBSplineColorInterpolator::Update | NiBSplineColorInterpolator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBSplineColorInterpolator::SetPoseValue
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: fNormTime, afValues
 bool __fastcall EvaluateColorAtTime(NiBSplineColorInterpolator* self, void* unused, float fTime, float fUnused, NiColorA* pColorOut)
 {
     // The colour is already the one of this time stamp.
     if (self->m_fLastTime == fTime)
     {
-        *pColorOut = self->m_kDiffuseColor;
+        *pColorOut = self->m_kColorAValue;
         return true;
     }
 
@@ -202,29 +217,32 @@ bool __fastcall EvaluateColorAtTime(NiBSplineColorInterpolator* self, void* unus
     {
         float fNormalizedTime = (fTime - self->m_fStartTime) / (self->m_fEndTime - self->m_fStartTime);
         float afCurveOut[4];
-        ((SplineCurveOperations*)self->m_spTransformData.m_pObject)->Evaluate(fNormalizedTime, afCurveOut, 4, self->m_spSplineBasisData.m_pObject, self->m_kColorACPHandle);
+        ((SplineCurveOperations*)self->m_spData.m_pObject)->Evaluate(fNormalizedTime, afCurveOut, 4, self->m_spBasisData.m_pObject, self->m_kColorACPHandle);
         float colorResult[4];
         colorResult[0] = afCurveOut[0];
         colorResult[1] = afCurveOut[1];
         colorResult[2] = afCurveOut[2];
         colorResult[3] = afCurveOut[3];
-        self->m_kDiffuseColor = *reinterpret_cast<const NiColorA*>(colorResult);
+        self->m_kColorAValue = *reinterpret_cast<const NiColorA*>(colorResult);
     }
 
-    *pColorOut = self->m_kDiffuseColor;
+    *pColorOut = self->m_kColorAValue;
     self->m_fLastTime = fTime;
     return true;
 }
 
 // @fnv 0x00a51cf0
 // src: GAMEBRYO_LIB 0x00a51cf0
+// pdb: NiBSplineColorInterpolator::IsEqual | NiBSplineColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool __fastcall NiBSplineColorInterpolator_IsEqual(NiBSplineColorInterpolator* self, void* unused, NiBSplineColorInterpolator* other)
 {
     if (!((SplineBaseOperations*)self)->IsEqual(other))
     {
         return false;
     }
-    if (self->m_kDiffuseColor.operator!=(other->m_kDiffuseColor))
+    if (self->m_kColorAValue.operator!=(other->m_kColorAValue))
     {
         return false;
     }
@@ -249,10 +267,12 @@ struct A51D30Input
 // Loads the base spline data and colour, then reads the colour control-point handle.
 // @fnv 0x00a51d30
 // src: XBOX_PDB 0x00a51d30
+// pdb: NiBSplineColorInterpolator::LoadBinary | NiBSplineColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void __fastcall NiBSplineColorInterpolator_LoadBinary(NiBSplineColorInterpolator* self, void* unused, NiStream* stream)
 {
     self->NiBSplineInterpolator::LoadBinary(*stream);
-    self->m_kDiffuseColor.LoadBinary(*stream);
+    self->m_kColorAValue.LoadBinary(*stream);
     A51D30Input* input = reinterpret_cast<A51D30Input*&>(stream->m_pkIstr);
     {
         int componentSize = 4;

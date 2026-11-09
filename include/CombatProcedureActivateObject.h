@@ -5,6 +5,7 @@
 class TESObjectREFR;
 class TESBoundObject;
 
+// pdb: class CombatProcedureActivateObject, size 0x1c, bases: CombatProcedure, 3 members
 class CombatProcedureActivateObject : public CombatProcedure
 {
 public:
@@ -25,12 +26,12 @@ public:
     void SetState();
     void ClearReferencePointers_009cab00(TESObjectREFR* apRef);
     void vf04(TESObjectREFR* apRef);
-    void SaveGame_009cacb0(BGSSaveFormBuffer* apBuffer);
-    void LoadGame_009cad00(BGSLoadFormBuffer* apBuffer);
-    void InitLoadGame_009cad70(unsigned int arg);
+    void SaveGame_009cacb0(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadGame_009cad00(BGSLoadFormBuffer* apLoadGameBuffer);
+    void InitLoadGame_009cad70(unsigned int apLoadGameBuffer);
 
-    TESObjectREFR* m_pReference;
-    TESBoundObject* m_pBaseObject;
+    TESObjectREFR* pTargetRef;
+    TESBoundObject* pBoundObject;
     union
     {
         char m_cValue24;

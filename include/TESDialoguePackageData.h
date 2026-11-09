@@ -7,6 +7,7 @@ class TESTopic;
 class TargetLocation;
 struct PairOfBytes;
 
+// pdb: class TESDialoguePackageData, size 0x20, bases: TESPackageData, 9 members
 class TESDialoguePackageData : public TESPackageData
 {
 public:
@@ -18,19 +19,19 @@ public:
     virtual void Copy(TESPatrolPackageData* source);
     virtual bool vf02(TESPackageData* other);
     virtual void vf03();
-    virtual void InitItem(TESForm* item);
+    virtual void InitItem(TESForm* apOwner);
     virtual void SaveToBuffer(BGSSaveFormBuffer* buffer);
     virtual void vf06(BGSLoadFormBuffer* buffer);
     virtual void vf07(BGSLoadFormBuffer* buffer);
 
-    float m_fFirstFloat;
-    TESTopic* pMenuTopicEntry;
-    TargetLocation* m_pTargetLocation;
-    bool m_bFirstFlag;
-    bool m_bFollowingFlag;
-    float m_fFloatValue;
-    bool m_bThirdFlag;
-    int m_iTrailingValue;
+    float fFov;
+    TESTopic* ptopic;
+    TargetLocation* pTargetLocation;
+    bool bNOHeadtracking;
+    bool bDoNotControlTarget;
+    float fDistanceStartTalking;
+    bool bSayTo;
+    int eTriggerType;
 
     TESDialoguePackageData* Construct(float initial, unsigned int object, PairOfBytes flags, float scale,
                                       unsigned char enabled, unsigned int reference);

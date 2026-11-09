@@ -127,6 +127,8 @@ class CQueuedTexture
 
 // @fnv 0x0043c150
 // src: XBOX_PDB 0x0043c150
+// pdb: QueuedTexture::Run | ModelLoader.obj | retail, upstream name already matches, high
+// pdb locals: pfile, tempMemContext, pfileName, iloadMethod, ilength
 void CQueuedTexture::QueuedTexture_Run()
 {
     AutoMemContext memContext(this->unk18, true,

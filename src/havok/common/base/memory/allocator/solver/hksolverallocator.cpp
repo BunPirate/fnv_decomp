@@ -6,14 +6,14 @@
 #include "../../../../../../../include/hkCriticalSection.h"
 #include "../../../../../../../include/hkCriticalSectionLock.h"
 
-inline hkCriticalSectionLock::hkCriticalSectionLock(hkCriticalSection* pkSection) : m_kCriticalSection(pkSection)
+inline hkCriticalSectionLock::hkCriticalSectionLock(hkCriticalSection* pkSection) : m_section(pkSection)
 {
-    m_kCriticalSection->enter();
+    m_section->enter();
 }
 
 inline hkCriticalSectionLock::~hkCriticalSectionLock()
 {
-    m_kCriticalSection->leave();
+    m_section->leave();
 }
 
 
@@ -44,6 +44,7 @@ struct hkMemoryStatistics
     int m_uiLogicalSize;
 };
 
+// pdb: class hkSolverAllocator, size 0x140 (here 0x18), bases: hkMemoryAllocator, 8 members
 struct hkSolverAllocator
 {
     int m_iFree;
@@ -137,13 +138,19 @@ void S_00d5e8f0::hkSolverAllocator_resetPeakMemoryStatistics()
 
 // @fnv 0x00d5e880
 // src: COMMUNITY 0x00d5e880
-int __stdcall hkSolverAllocator_blockAlloc(int arg0)
+// pdb: hkSolverAllocator::blockAlloc | hkSolverAllocator.obj | debug, upstream name already matches, high
+// pdb params: numBytes
+// pdb locals: assertBuf, ostr
+int __stdcall hkSolverAllocator_blockAlloc(int numBytes)
 {
     return 0;
 }
 
 // @fnv 0x00d5e890
 // src: COMMUNITY 0x00d5e890
+// pdb: hkSolverAllocator::blockFree | hkSolverAllocator.obj | debug, vtable slot, medium
+// pdb params: p, numBytes
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_79(void* context, unsigned int flags)
 {}
 
@@ -241,16 +248,20 @@ struct hkObjD5E9
     int unk120;
     hkCriticalSection m_kCriticalSection;
 
-    void InitStream(char* p, int size);
+    void hkSolverAllocator_setBuffer(char* vbuffer, int bufferSize);
 };
 
 // @fnv 0x00d5e960
-void hkObjD5E9::InitStream(char* pBuffer, int size)
+// src: XBOX_RETAIL_PDB 0x00d5e960
+// pdb: hkSolverAllocator::setBuffer | hkSolverAllocator.obj | retail, call graph (shared callers), high
+// pdb params: vbuffer, bufferSize
+// pdb locals: assertBuf, ostr
+void hkObjD5E9::hkSolverAllocator_setBuffer(char* vbuffer, int bufferSize)
 {
     EnterCriticalSection(&m_kCriticalSection);
     m_data = &unk24;
     m_iCapacityState = 0x80000020;
-    m_stream.init(pBuffer, size);
+    m_stream.init(vbuffer, bufferSize);
     LeaveCriticalSection(&m_kCriticalSection);
 }
 
@@ -345,14 +356,17 @@ class hkBlockAllocatorD5E9
             m_peakUsage = uiUsed;
     }
 
-    char* Allocate(int* piSizeInOut) throw();
+    char* Allocate(int* reqNumInOut) throw();
 };
 
 // @fnv 0x00d5e9b0
-char* hkBlockAllocatorD5E9::Allocate(int* piSizeInOut) throw()
+// pdb: hkSolverAllocator::bufAlloc | hkSolverAllocator.obj | retail, vtable slot, high
+// pdb params: reqNumInOut
+// pdb locals: assertBuf, ostr
+char* hkBlockAllocatorD5E9::Allocate(int* reqNumInOut) throw()
 {
     hkCriticalSectionLock kLock(&m_pWorldLock);
-    int iSize = *piSizeInOut;
+    int iSize = *reqNumInOut;
     int iBestIndex = -1;
     int iBestSize = 0x7ffffff;
     if (m_iCurrentUsage + 1 >= m_pFreeBlocks.getCapacity() * 2 - m_pFreeBlocks.GetLogicalSize())
@@ -374,7 +388,7 @@ char* hkBlockAllocatorD5E9::Allocate(int* piSizeInOut) throw()
         {
             char* pResult = m_cur;
             m_cur = pResult + iSize;
-            *piSizeInOut = iSize;
+            *reqNumInOut = iSize;
             updateStats();
             return pResult;
         }
@@ -390,7 +404,7 @@ char* hkBlockAllocatorD5E9::Allocate(int* piSizeInOut) throw()
     }
     else
     {
-        *piSizeInOut = kBlock.m_iElementCount;
+        *reqNumInOut = kBlock.m_iElementCount;
         m_pFreeBlocks.removeAtAndCopy(iBestIndex);
     }
     updateStats();
@@ -413,6 +427,9 @@ struct Element
 
 // Grows the array if needed, shifts elements to make room, copy-constructs numToInsert elements at index, and updates the size.
 // @fnv 0x00d5ecc0
+// pdb: hkArrayBase<hkSolverAllocator::Element>::hkArrayBase<hkSolverAllocator::Element> | hkSolverAllocator.obj | debug, object-file run extension, low
+// pdb params: ptr, size, capacity
+// pdb locals: assertBuf, ostr
 template <>
 void hkArrayBase<Element>::_spliceInto(hkMemoryAllocator& allocator, int index, int numToRemove, const Element* elements, int numToInsert)
 {
@@ -509,18 +526,21 @@ struct S00d5eb10_Alloc : public FUN_00c66560_class
     hkInplaceArray<S00d5eb10_Block, 32> m_kBlocks;
     S00d5eb10_CS m_pWorldLock;
 
-    void hkSolverAllocator_bufFree(void* p, int size);
+    void hkSolverAllocator_bufFree(void* data, int size);
 };
 
 // Updates allocation bookkeeping; moves m_pTileTemplate backward for an adjacent block, otherwise merges with or inserts into m_kBlocks.
 // @fnv 0x00d5eb10
 // src: HAVOK_LIB 0x00d5eb10
-void S00d5eb10_Alloc::hkSolverAllocator_bufFree(void* apBlock, int size)
+// pdb: hkSolverAllocator::bufFree | hkSolverAllocator.obj | retail, upstream name already matches, high
+// pdb params: data, size
+// pdb locals: e
+void S00d5eb10_Alloc::hkSolverAllocator_bufFree(void* data, int size)
 {
     void* cs = &m_pWorldLock;
     EnterCriticalSection(cs);
     m_numAllocations--;
-    if ((char*)apBlock + size == m_pTileTemplate)
+    if ((char*)data + size == m_pTileTemplate)
     {
         m_pTileTemplate = (char*)m_pTileTemplate - size;
         if (m_kBlocks.m_iElementCount == 0)
@@ -528,7 +548,7 @@ void S00d5eb10_Alloc::hkSolverAllocator_bufFree(void* apBlock, int size)
         do
         {
             S00d5eb10_Block& freeBlock = m_kBlocks.back();
-            if (freeBlock.size + (char*)freeBlock.p != (char*)apBlock)
+            if (freeBlock.size + (char*)freeBlock.p != (char*)data)
                 goto exit;
             m_pTileTemplate = m_kBlocks.back().p;
             m_kBlocks.popBack();
@@ -542,7 +562,7 @@ void S00d5eb10_Alloc::hkSolverAllocator_bufFree(void* apBlock, int size)
     {
         int iIndex = m_kBlocks.m_iElementCount++;
         S00d5eb10_Block& newBlock = m_kBlocks.m_data[iIndex];
-        newBlock.p = apBlock;
+        newBlock.p = data;
         newBlock.size = size;
         LeaveCriticalSection(cs);
         return;
@@ -551,7 +571,7 @@ void S00d5eb10_Alloc::hkSolverAllocator_bufFree(void* apBlock, int size)
     int i = iCount - 1;
     while (i >= 0)
     {
-        if (m_kBlocks.m_data[i].p < apBlock)
+        if (m_kBlocks.m_data[i].p < data)
             break;
         --i;
     }
@@ -559,10 +579,10 @@ void S00d5eb10_Alloc::hkSolverAllocator_bufFree(void* apBlock, int size)
     if (i >= 0)
     {
         S00d5eb10_Block& b = m_kBlocks.m_data[i];
-        if (b.size + (char*)b.p == (char*)apBlock)
+        if (b.size + (char*)b.p == (char*)data)
         {
             b.size += size;
-            if (i < m_kBlocks.m_iElementCount - 1 && (char*)apBlock + size == m_kBlocks.m_data[i + 1].p)
+            if (i < m_kBlocks.m_iElementCount - 1 && (char*)data + size == m_kBlocks.m_data[i + 1].p)
             {
                 b.size += m_kBlocks.m_data[i + 1].size;
                 m_kBlocks.removeAtAndCopy(i + 1);
@@ -575,16 +595,16 @@ void S00d5eb10_Alloc::hkSolverAllocator_bufFree(void* apBlock, int size)
     if (i < iCount - 1)
     {
         S00d5eb10_Block& kNextBlock = m_kBlocks.m_data[i + 1];
-        if (kNextBlock.p == (char*)apBlock + size)
+        if (kNextBlock.p == (char*)data + size)
         {
             kNextBlock.size += size;
-            kNextBlock.p = apBlock;
+            kNextBlock.p = data;
             LeaveCriticalSection(cs);
             return;
         }
     }
 
-    m_kBlocks._insertAt(*(hkMemoryAllocator*)0, i + 1, S00d5eb10_Block(apBlock, size));
+    m_kBlocks._insertAt(*(hkMemoryAllocator*)0, i + 1, S00d5eb10_Block(data, size));
 exit:
     LeaveCriticalSection(cs);
 }
@@ -596,6 +616,7 @@ struct SolverDeletingView : FUN_00cd06a0_class
 
 // @fnv 0x00d5ed70
 // src: GUESS 0x00d5ed70 (confidence: low)
+// pdb: hkSolverAllocator::`scalar deleting destructor' | hkSolverAllocator.obj | retail, vtable slot, high
 SolverDeletingView* SolverDeletingView::UpdateState_00d5ed70(unsigned int)
 {
     void (FUN_00cd06a0_class::*destroy)() = &FUN_00cd06a0_class::ResetVftableAndDeleteCriticalSection;

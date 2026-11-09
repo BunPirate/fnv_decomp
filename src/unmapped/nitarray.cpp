@@ -37,25 +37,28 @@ struct FUN_009ba5f0_shell
 
 struct FUN_00c89c80_obj
 {
-    void CopyFromSource(unsigned int uiMaxSize);
+    void CopyFromSource(unsigned int arInfo);
 };
 
 // @fnv 0x00c89c80
-void FUN_00c89c80_obj::CopyFromSource(unsigned int pDest)
+// pdb: bhkConstraint::CopyCinfo | bhkConstraint.obj | retail, call graph (shared callers), high
+// pdb params: arInfo
+// pdb locals: pc
+void FUN_00c89c80_obj::CopyFromSource(unsigned int arInfo)
 {
     if (this && *(void**)((char*)this + 8))
     {
         void* p = *(void**)((char*)this + 8);
-        ((FUN_009ba5f0_shell*)pDest)->SetChildObject(*(int*)((char*)p + 0xc));
-        *(int*)((char*)pDest + 0xc) = *(int*)((char*)p + 0x14);
-        *(int*)((char*)pDest + 0x10) = *(int*)((char*)p + 0x18);
-        *(unsigned int*)((char*)pDest + 8) = *(unsigned char*)((char*)p + 0x1c);
+        ((FUN_009ba5f0_shell*)arInfo)->SetChildObject(*(int*)((char*)p + 0xc));
+        *(int*)((char*)arInfo + 0xc) = *(int*)((char*)p + 0x14);
+        *(int*)((char*)arInfo + 0x10) = *(int*)((char*)p + 0x18);
+        *(unsigned int*)((char*)arInfo + 8) = *(unsigned char*)((char*)p + 0x1c);
     }
     else
     {
-        ((FUN_009ba5f0_shell*)pDest)->SetChildObject(0);
-        *(int*)((char*)pDest + 0xc) = 0;
-        *(int*)((char*)pDest + 0x10) = 0;
+        ((FUN_009ba5f0_shell*)arInfo)->SetChildObject(0);
+        *(int*)((char*)arInfo + 0xc) = 0;
+        *(int*)((char*)arInfo + 0x10) = 0;
     }
 }
 
@@ -82,16 +85,19 @@ template <> void NiTArray<KeyPair*, NiTMallocInterface<KeyPair*> >::SetAt(unsign
 struct KeyPairArray : NiTPrimitiveArray<KeyPair*>
 {
     int FindPairIndex(void* apFirst, void* apSecond);
-    bool BSAnimNoteListener_Register(void* apFirst, void* apSecond);
+    bool BSAnimNoteListener_Register(void* aeType, void* apReceiver);
 };
 
 // @fnv 0x00a41520
 // src: COMMUNITY 0x00a41520
-bool KeyPairArray::BSAnimNoteListener_Register(void* apFirst, void* apSecond)
+// pdb: BSAnimNoteListener::Register | BSAnimNoteListener.obj | retail, upstream name already matches, high
+// pdb params: aeType, apReceiver
+// pdb locals: bret, pReceiverType
+bool KeyPairArray::BSAnimNoteListener_Register(void* aeType, void* apReceiver)
 {
-    if (FindPairIndex(apFirst, apSecond) == -1)
+    if (FindPairIndex(aeType, apReceiver) == -1)
     {
-        KeyPair* pEntry = new KeyPair(apFirst, apSecond);
+        KeyPair* pEntry = new KeyPair(aeType, apReceiver);
 
         unsigned int ItemUpdateArray = m_usSize;
         if (ItemUpdateArray >= m_usMaxSize)
@@ -219,18 +225,21 @@ struct C89CD0Holder
     int unk04;
     C89CD0Target* m_pkTarget;
 
-    void ProcessTarget(void* arg);
+    void ProcessTarget(void* apEntity);
 };
 
 // @fnv 0x00c89cd0
-void C89CD0Holder::ProcessTarget(void* arg)
+// pdb: bhkConstraint::SetEntityA | bhkConstraint.obj | retail, vtable slot, high
+// pdb params: apEntity
+// pdb locals: pc
+void C89CD0Holder::ProcessTarget(void* apEntity)
 {
     C89CD0Holder* pkHolder = this;
     if (pkHolder)
     {
         C89CD0Target* pkTarget = pkHolder->m_pkTarget;
         if (pkTarget)
-            pkTarget->process(arg);
+            pkTarget->process(apEntity);
     }
 }
 
@@ -245,16 +254,19 @@ struct FUN_00c89cf0_cls
     int unk04;
     Target* m_pFlagTarget;
 
-    void DispatchToTarget(void* apArg);
+    void DispatchToTarget(void* apEntity);
 };
 
 // @fnv 0x00c89cf0
-void FUN_00c89cf0_cls::DispatchToTarget(void* apArg)
+// pdb: bhkConstraint::SetEntityB | bhkConstraint.obj | retail, vtable slot, high
+// pdb params: apEntity
+// pdb locals: pc
+void FUN_00c89cf0_cls::DispatchToTarget(void* apEntity)
 {
     if (this != 0)
     {
         if (m_pFlagTarget != 0)
-            m_pFlagTarget->UpdateState_00c89bf0(apArg);
+            m_pFlagTarget->UpdateState_00c89bf0(apEntity);
     }
 }
 
@@ -306,6 +318,9 @@ void __cdecl ReleaseObjectArray(ObjectPtr* pkArray);
 
 // Resizes the object array to uiMaxSize, releasing surplus elements and reallocating m_pBase while preserving existing entries.
 // @fnv 0x00a47770
+// pdb: NiSequence::~NiSequence | NiSequence.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTArray<NiPointer<NiControllerSequence>,NiTNewInterface<NiPointer<NiControllerSequence> > >::SetSize
+// pdb locals: i
 template <> void NiTArray<ObjectPtr, NiTNewInterface<ObjectPtr> >::SetSize(unsigned int uiCapacity)
 {
     if (uiCapacity == this->m_usMaxSize)
@@ -344,7 +359,7 @@ template <> void NiTArray<ObjectPtr, NiTNewInterface<ObjectPtr> >::SetSize(unsig
 
 extern char* DAT_0109b220;
 extern long DAT_011f4400;
-void __cdecl RemoveGlobalConstant(char** name);
+void __cdecl NiShaderFactory_ReleaseGlobalShaderConstant(char** kKey);
 
 inline __declspec(nothrow) NiFixedString::NiFixedString(const NiFixedString& o)
 {
@@ -411,10 +426,10 @@ FUN_00e87690::~FUN_00e87690() throw()
         if (p)
         {
             InterlockedIncrement((long*)&p->m_uiRefCount);
-            if ((p->m_uiValue1 & 0xf0000000) == 0x40000000)
+            if ((p->m_uiFlags & 0xf0000000) == 0x40000000)
             {
-                NiFixedString k(p->m_kControlPoint);
-                RemoveGlobalConstant(&k.m_kHandle);
+                NiFixedString k(p->m_kKey);
+                NiShaderFactory_ReleaseGlobalShaderConstant(&k.m_kHandle);
             }
             if (!InterlockedDecrement((long*)&p->m_uiRefCount))
                 p->DeleteThis();
@@ -427,8 +442,8 @@ FUN_00e87690::~FUN_00e87690() throw()
         if (p)
         {
             InterlockedIncrement((long*)&p->m_uiRefCount);
-            if ((p->m_uiValue1 & 0xf0000000) == 0x40000000)
-                RemoveGlobalConstant(&p->m_kControlPoint.m_kHandle);
+            if ((p->m_uiFlags & 0xf0000000) == 0x40000000)
+                NiShaderFactory_ReleaseGlobalShaderConstant(&p->m_kKey.m_kHandle);
             if (!InterlockedDecrement((long*)&p->m_uiRefCount))
                 p->DeleteThis();
         }
@@ -458,22 +473,24 @@ struct FUN_00e878c0_cls
     int unk30;
     int m_34;
 
-    int NiD3DShaderConstantMap_InsertEntry(NiShaderConstantMapEntry* apObj);
+    int NiD3DShaderConstantMap_InsertEntry(NiShaderConstantMapEntry* pkEntry);
 };
 
 // Holds a reference on apObj while calling FUN_00e87800 on the sub-object at unk0c; sets m_34 to 0x30 if it returns -1, and returns m_34.
 // @fnv 0x00e878c0
 // src: COMMUNITY 0x00e878c0
-int FUN_00e878c0_cls::NiD3DShaderConstantMap_InsertEntry(NiShaderConstantMapEntry* apObj)
+// pdb: NiD3DShaderConstantMap::InsertEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkEntry
+int FUN_00e878c0_cls::NiD3DShaderConstantMap_InsertEntry(NiShaderConstantMapEntry* pkEntry)
 {
-    NiShaderConstantMapEntry* pObj = apObj;
-    *(NiShaderConstantMapEntry* volatile*)&apObj = pObj;
+    NiShaderConstantMapEntry* pObj = pkEntry;
+    *(NiShaderConstantMapEntry* volatile*)&pkEntry = pObj;
     if (pObj != 0)
     {
         InterlockedIncrement((long volatile*)&pObj->m_uiRefCount);
     }
     ShaderEntryArray* sub = (ShaderEntryArray*)&unk0c;
-    bool failed = sub->AddFirstEmpty(*(const NiPointer<NiShaderConstantMapEntry>*)&apObj) == -1;
+    bool failed = sub->AddFirstEmpty(*(const NiPointer<NiShaderConstantMapEntry>*)&pkEntry) == -1;
     if (pObj != 0 && InterlockedDecrement((long volatile*)&pObj->m_uiRefCount) == 0)
     {
         pObj->DeleteThis();
@@ -510,6 +527,8 @@ struct FUN_00e87920_cls
 // Holds a reference on apObj while calling FUN_00e87800 on the sub-object at unk1c; sets m_34 to 0x30 if it returns -1, and returns m_34.
 // @fnv 0x00e87920
 // src: GAMEBRYO_LIB 0x00e87920
+// pdb: NiD3DShaderConstantMap::InsertDefinedEntry | NiD3DShaderConstantMap.obj | debug, object-file run extension, low
+// pdb params: pkEntry
 int FUN_00e87920_cls::NiD3DShaderConstantMap_InsertEntry_00e87920(NiShaderConstantMapEntry* apObj)
 {
     NiShaderConstantMapEntry* pObj = apObj;
@@ -591,18 +610,20 @@ inline NiTexturingProperty::Map::TexturePtr::TexturePtr(const TexturePtr& kPtr) 
 
 // Copy-constructs a NiTexturingProperty::Map, copying flags and texture, and deep-copying the texture transform if present.
 // @fnv 0x00a6a8b0
-NiTexturingProperty::Map::Map(const Map& kMap) : m_usFlags(kMap.m_usFlags), m_spTexture(kMap.m_spTexture)
+// pdb: NiTArray<NiD3DShaderDeclaration::NiPackerEntry *,NiTMallocInterface<NiD3DShaderDeclaration::NiPackerEntry *> >::SetAtGrow | NiD3DShaderDeclaration.obj | debug, object-file run extension, low
+// pdb params: uiIndex, element
+NiTexturingProperty::Map::Map(const Map& kMap) : m_uFlags(kMap.m_uFlags), m_spTexture(kMap.m_spTexture)
 {
-    if (kMap.m_pTextureTransform)
+    if (kMap.m_pkTextureTransform)
     {
-        m_pTextureTransform =
-            new TextureMapTransform(kMap.m_pTextureTransform->GetTranslate(), kMap.m_pTextureTransform->GetRotate(),
-                                   kMap.m_pTextureTransform->GetScale(), kMap.m_pTextureTransform->GetNavMeshData(),
-                                   kMap.m_pTextureTransform->GetTransformMethod());
+        m_pkTextureTransform =
+            new TextureMapTransform(kMap.m_pkTextureTransform->GetTranslate(), kMap.m_pkTextureTransform->GetRotate(),
+                                   kMap.m_pkTextureTransform->GetScale(), kMap.m_pkTextureTransform->GetNavMeshData(),
+                                   kMap.m_pkTextureTransform->GetTransformMethod());
     }
     else
     {
-        m_pTextureTransform = 0;
+        m_pkTextureTransform = 0;
     }
 }
 
@@ -693,6 +714,8 @@ struct FUN_00b8a9e0 : FUN_004eba20
 
 // Zero-initializes m_24, m_28, m_3c, m_40, m_44, m_48 and the m_abFlags array; other members use their default constructors.
 // @fnv 0x00b8a9e0
+// pdb: ImageSpaceShaderParam::ImageSpaceShaderParam | ImageSpaceShaderParam.obj | retail, call graph, high
+// pdb locals: i
 FUN_00b8a9e0::FUN_00b8a9e0() : m_24(0), m_28(0), m_3c(0), m_40(0), m_44(0), m_48(0)
 {
     memset(m_abFlags, 0, sizeof(m_abFlags));
@@ -707,6 +730,9 @@ void ReleaseObjectArray(GeometryPtr* pBase);
 
 // Sets the array capacity to uiMaxSize, clearing entries past it, copying entries into a new buffer from FUN_00c1d740 and releasing the old buffer.
 // @fnv 0x00c1e9a0
+// pdb: NiPSysMeshEmitter::IsEqual | NiPSysMeshEmitter.obj | debug, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: uiCount0, pkDest, uiCount1, i, pkGeomEmitter1, pkGeomEmitter0
 template <> void NiTArray<GeometryPtr, NiTNewInterface<GeometryPtr> >::SetSize(unsigned int uiCapacity)
 {
     if (uiCapacity == this->m_usMaxSize)
@@ -744,7 +770,7 @@ template <> void NiTArray<GeometryPtr, NiTNewInterface<GeometryPtr> >::SetSize(u
 }
 
 void __cdecl FUN_00aa1460(void* apSelf, unsigned int auiSize);
-void __cdecl RemoveGlobalConstant(void** appRef);
+void __cdecl NiShaderFactory_ReleaseGlobalShaderConstant(void** kKey);
 
 struct FUN_00e7de30_cls
 {
@@ -805,6 +831,7 @@ struct FUN_00e7ecd0_cls
 // If m_5f is 0, calls FUN_00e7de30 then FUN_00aa1460(this, 0x68); otherwise resets m_10, m_18 and other fields and passes this to DAT_0126f6cc->FindOrAdd.
 // @fnv 0x00e7ecd0
 // src: COMMUNITY 0x00e7ecd0
+// pdb: NiD3DTextureStage::ReturnStageToPool | NiD3DTextureStage.obj | debug, upstream name already matches, high
 void FUN_00e7ecd0_cls::NiD3DTextureStage_ReturnStageToPool()
 {
     void* ref;
@@ -829,7 +856,7 @@ void FUN_00e7ecd0_cls::NiD3DTextureStage_ReturnStageToPool()
             InterlockedIncrement((LONG*)((char*)holder->m_08 - 8));
         }
         ref = holder->m_08;
-        RemoveGlobalConstant(&ref);
+        NiShaderFactory_ReleaseGlobalShaderConstant(&ref);
         if (ref != DAT_0109b220)
         {
             InterlockedDecrement((LONG*)((char*)ref - 8));
@@ -852,6 +879,9 @@ void __cdecl DeleteNiNodePointerArray(NiPointer<NiShaderConstantMapEntry>* pArra
 
 // Resizes the array to uiMaxSize, clearing excess elements and reallocating the backing pointer array while preserving existing entries.
 // @fnv 0x00e87510
+// pdb: NiD3DShaderConstantMap::SetupObjectEntry | NiD3DShaderConstantMap.obj | debug, object-file run extension, low
+// pdb params: pkEntry
+// pdb locals: uiFlags, uiRegCount, eAttribType, uiMappingID, uiFloatCount
 template <> void ShaderEntryArray::SetSize(unsigned int uiMaxSize)
 {
     if (uiMaxSize == m_usMaxSize)
@@ -898,6 +928,8 @@ struct S_00e98aa0_Holder
 
 // Assigns p to m_sp0 and null to m_sp4 through the reference-counting pointer assignment.
 // @fnv 0x00e98aa0
+// pdb: NiD3DShaderConstantManager::GetVertexShaderConstantB | NiD3DShaderConstantManager.obj | debug, object-file run extension, low
+// pdb params: uiStartRegister, pbConstantData, uiBoolCount
 void S_00e98aa0_Holder::SetObject(NiRefObject* apRefObj)
 {
     m_sp0 = apRefObj;
@@ -914,22 +946,25 @@ inline unsigned int NiTArray<T, TAlloc>::SetAtGrow(unsigned int uiSlot, const T&
 }
 
 // @fnv 0x00c1f360
-template <> unsigned int NiTArray<GeometryPtr, NiTNewInterface<GeometryPtr> >::AddFirstEmpty(const GeometryPtr& kItem)
+// pdb: NiTArray<NiPointer<NiGeometry>,NiTNewInterface<NiPointer<NiGeometry> > >::AddFirstEmpty | NiPSysMeshEmitter.obj | retail, call graph, high
+// pdb params: element
+// pdb locals: i
+template <> unsigned int NiTArray<GeometryPtr, NiTNewInterface<GeometryPtr> >::AddFirstEmpty(const GeometryPtr& element)
 {
-    if (kItem == GeometryPtr(0))
+    if (element == GeometryPtr(0))
         return (unsigned int)~0;
 
     for (unsigned short i = 0; i < this->m_usSize; i++)
     {
         if (this->m_pBase[i] == GeometryPtr(0))
         {
-            this->m_pBase[i] = kItem;
+            this->m_pBase[i] = element;
             this->m_usESize++;
             return i;
         }
     }
 
-    return SetAtGrow(this->m_usSize, kItem);
+    return SetAtGrow(this->m_usSize, element);
 }
 
 struct MaterialDeviceView;
@@ -1007,6 +1042,9 @@ __declspec(noinline) void NiD3DShaderFactory::NiDX9MaterialManager_UpdateToDevic
 
 // Stores element in the first null slot, else grows the array if full and appends it, returning its index; returns -1 for a null element.
 // @fnv 0x00e87800
+// pdb: NiD3DShaderConstantMap::GetEntryIndex | NiD3DShaderConstantMap.obj | debug, object-file run extension, low
+// pdb params: pszKey
+// pdb locals: pkEntry, uiSize, ui
 template <> unsigned int ShaderEntryArray::AddFirstEmpty(const NiPointer<NiShaderConstantMapEntry>& element)
 {
     if (element == NiPointer<NiShaderConstantMapEntry>(0))

@@ -29,13 +29,13 @@
 #include "../../include/NiPoint3.h"
 #include "../../include/bhkRefObject.h"
 bool ConvertLocalizedString(const char* input, char* output, unsigned int capacity);
-bool UpdateObjectVisibility(NiAVObject* object);
-bool RemoveInvalidChildNodes(NiNode* object);
-bool HandleUnparentedObjectNode(NiNode* object);
-void SetObjectFormID(NiAVObject* object, unsigned int referenceID);
-bool IsObjectNetValid(NiObjectNET* object);
+bool UpdateObjectVisibility(NiAVObject* ap3D);
+bool RemoveEditorMarkers(NiNode* object);
+bool RemoveScabard(NiNode* apNode);
+void SetReferenceIDOnScenegraph(NiAVObject* apObject, unsigned int auiID);
+bool HasParticleSystem(NiObjectNET* apObj);
 float GetAngleFromVector(const NiPoint3& vector);
-int CountCollisionObjects(NiAVObject* object, bool skipPhantoms, bool skipBlendObjects, bool skipUnknown);
+int GetCollisionObjectCountInSceneGraph(NiAVObject* apRoot, bool abIgnoreWeaponBone, bool abIgnoreFadeNodes, bool abIgnoreArrows);
 LANGUAGE GetConfiguredLanguage();
 bool IsSettingEnabled();
 
@@ -58,9 +58,12 @@ struct OutBa
 };
 // @fnv 0x00ba6240
 // src: XBOX_PDB 0x00ba6240
-void __stdcall ParticleShader_SetupGeometryTextures(OutBa* a1)
+// pdb: ParticleShader::SetupGeometryTextures | ParticleShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: pstage, pcurrentpass, ppsProp, pprop
+void __stdcall ParticleShader_SetupGeometryTextures(OutBa* apState)
 {
-    InBa* p = a1->fC;
+    InBa* p = apState->fC;
     int cond = 0;
     if (p)
         cond = (p->f1c == 0x11);
@@ -124,19 +127,22 @@ struct S86870
     virtual void d43() = 0;
     virtual void d44() = 0;
     virtual void* GetLink(char* p) = 0;
-    void bhkSerializable_LinkObject(NiStream* s);
-    void bhkUnaryAction_LinkObject(NiStream* s);
+    void bhkSerializable_LinkObject(NiStream* arStream);
+    void bhkUnaryAction_LinkObject(NiStream* arStream);
 };
 // @fnv 0x00c86870
 // src: XBOX_PDB 0x00c86870
-void S86870::bhkUnaryAction_LinkObject(NiStream* s)
+// pdb: bhkUnaryAction::LinkObject | bhkUnaryAction.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: pbody, cinfo
+void S86870::bhkUnaryAction_LinkObject(NiStream* arStream)
 {
     char tmp;
     void* p = GetLink(&tmp);
-    NiObject* o = s->GetLoadedObject();
+    NiObject* o = arStream->GetLoadedObject();
     if (o)
         *(int*)((char*)p + 4) = *(int*)((char*)o + 8);
-    bhkSerializable_LinkObject(s);
+    bhkSerializable_LinkObject(arStream);
 }
 
 #include "../../include/NiTMallocInterface.h"
@@ -157,16 +163,18 @@ char* __cdecl _FUN_00a7d330(const char*);
 void __stdcall bhkSerializable_GetViewerStrings(NiTPrimitiveArrayWithAllocator<char*, NiTMallocInterface<char*> >*);
 // @fnv 0x00c87be0
 // src: XBOX_PDB 0x00c87be0
-void __stdcall bhkAction_GetViewerStrings(NiTPrimitiveArrayWithAllocator<char*, NiTMallocInterface<char*> >* p)
+// pdb: bhkAction::GetViewerStrings | bhkAction.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+void __stdcall bhkAction_GetViewerStrings(NiTPrimitiveArrayWithAllocator<char*, NiTMallocInterface<char*> >* apStrings)
 {
-    bhkSerializable_GetViewerStrings(p);
+    bhkSerializable_GetViewerStrings(apStrings);
     char* v = _FUN_00a7d330(g_0126811c_arg1);
-    unsigned int idx = p->m_kOutgoingTangent;
-    if (idx >= p->m_8)
+    unsigned int idx = apStrings->m_kOutgoingTangent;
+    if (idx >= apStrings->m_8)
     {
-        p->SetSize(p->m_E + idx);
+        apStrings->SetSize(apStrings->m_E + idx);
     }
-    p->SetAt(idx, v);
+    apStrings->SetAt(idx, v);
 }
 
 namespace fnv_00c86790 {
@@ -228,10 +236,13 @@ struct Holder
 };
 // @fnv 0x00c86790
 // src: XBOX_PDB 0x00c86790
-void Holder::bhkUnaryAction_LoadBinary(NiStream* stream)
+// pdb: bhkUnaryAction::LoadBinary | bhkUnaryAction.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void Holder::bhkUnaryAction_LoadBinary(NiStream* arStream)
 {
-    stream->ResetStreamState();
-    FUN_00c87650(stream);
+    arStream->ResetStreamState();
+    FUN_00c87650(arStream);
     int tmp;
     RetVal* p = MyVirt(&tmp);
     p->b = 0;
@@ -282,6 +293,8 @@ struct FUN_00c75460_S
 };
 // @fnv 0x00c75460
 // src: XBOX_PDB 0x00c75460
+// pdb: bhkRagdollController::InitGrabIK | bhkRagdollController.obj | retail, string-set bridge, high
+// pdb locals: bret, pskel, i
 bool FUN_00c75460_S::bhkRagdollController_InitGrabIK()
 {
     bool bResult = bEnabled;
@@ -316,9 +329,12 @@ void __cdecl BSRenderState_SetZFunc(int, int);
 
 // @fnv 0x00ba5de0
 // src: XBOX_PDB 0x00ba5de0
-void __stdcall ParticleShader_SetupGeometryRenderStates(OutBa* a1, int unused)
+// pdb: ParticleShader::SetupGeometryRenderStates | ParticleShader.obj | retail, upstream name already matches, high
+// pdb params: apState, abFirstPass
+// pdb locals: ppsProp, pprop
+void __stdcall ParticleShader_SetupGeometryRenderStates(OutBa* apState, int abFirstPass)
 {
-    InBa* p = a1->fC;
+    InBa* p = apState->fC;
     int c = 0;
     if (p != 0)
     {
@@ -345,11 +361,13 @@ struct CallTarget_00ba5320
 };
 struct SearchObject
 {
-    int ParticleShader_SetupPassConstants(unsigned int arg0);
+    int ParticleShader_SetupPassConstants(unsigned int auiCurrentPass);
 };
 // @fnv 0x00ba5ed0
 // src: XBOX_PDB 0x00ba5ed0
-int SearchObject::ParticleShader_SetupPassConstants(unsigned int arg0)
+// pdb: ParticleShader::SetupPassConstants | ParticleShader.obj | debug, upstream name already matches, high
+// pdb params: auiCurrentPass
+int SearchObject::ParticleShader_SetupPassConstants(unsigned int auiCurrentPass)
 {
     unsigned int callResult0 = (unsigned int)((CallTarget_00ba5320*)this)->ParticleShader_UpdateFov();
     return (int)callResult0;
@@ -374,6 +392,10 @@ struct S_00c85ef0_Ret
 };
 // @fnv 0x00c85ef0
 // src: XBOX_PDB 0x00c85ef0
+// pdb: bhkWorldObject::GetProperty | bhkWorldObject.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to bhkWorldObject::MarkWrite
+// pdb params: apObj, aiKey
+// pdb locals: hkv, isetVal, pw, blocked
 S_00c85ef0_Ret bhkWorldObject_GetProperty(S_00c85ef0_Map* map, int key)
 {
     int r = 0;
@@ -400,6 +422,7 @@ class FUN_00c86720 : public FUN_00c86720_base
 };
 
 // @fnv 0x00c86720
+// pdb: bhkUnaryAction::~bhkUnaryAction | bhkUnaryAction.obj | retail, object-file run extension, low
 FUN_00c86720::~FUN_00c86720()
 {
     this->unk08();
@@ -429,15 +452,17 @@ class FUN_00c867d0_cls
     void* unk00;
     void* unk04;
     FUN_00c867d0_inner* unk08;
-    void* bhkAction_CopyCinfo(FUN_00c867d0_out* out);
-    void bhkUnaryAction_CopyCinfo(FUN_00c867d0_out* out);
+    void* bhkAction_CopyCinfo(FUN_00c867d0_out* arInfo);
+    void bhkUnaryAction_CopyCinfo(FUN_00c867d0_out* arInfo);
 };
 
 // @fnv 0x00c867d0
 // src: XBOX_PDB 0x00c867d0
-void FUN_00c867d0_cls::bhkUnaryAction_CopyCinfo(FUN_00c867d0_out* out)
+// pdb: bhkUnaryAction::CopyCinfo | bhkUnaryAction.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+void FUN_00c867d0_cls::bhkUnaryAction_CopyCinfo(FUN_00c867d0_out* arInfo)
 {
-    this->bhkAction_CopyCinfo(out);
+    this->bhkAction_CopyCinfo(arInfo);
 
     void* value;
     if (this != 0 && this->unk08 != 0)
@@ -445,7 +470,7 @@ void FUN_00c867d0_cls::bhkUnaryAction_CopyCinfo(FUN_00c867d0_out* out)
     else
         value = 0;
 
-    out->unk04 = value;
+    arInfo->unk04 = value;
 }
 
 
@@ -478,29 +503,32 @@ struct FUN_00c86800_Table
 
 struct FUN_00c86800_Class : S86870
 {
-    void bhkUnaryAction_CopyMembers(int a1, FUN_00c86800_Table* a2);
-    void bhkSerializable_CopyMembers(int a1, FUN_00c86800_Table* a2);
+    void bhkUnaryAction_CopyMembers(int pDest, FUN_00c86800_Table* arCloneData);
+    void bhkSerializable_CopyMembers(int pDest, FUN_00c86800_Table* arCloneData);
 };
 
 // @fnv 0x00c86800
 // src: XBOX_PDB 0x00c86800
-void FUN_00c86800_Class::bhkUnaryAction_CopyMembers(int a1, FUN_00c86800_Table* a2)
+// pdb: bhkUnaryAction::CopyMembers | bhkUnaryAction.obj | retail, upstream name already matches, high
+// pdb params: pDest, arCloneData
+// pdb locals: pba, cinfo, pc
+void FUN_00c86800_Class::bhkUnaryAction_CopyMembers(int pDest, FUN_00c86800_Table* arCloneData)
 {
     char key;
     FUN_00c86800_Link* link = (FUN_00c86800_Link*)GetLink(&key);
     FUN_00c86800_Node* node = (FUN_00c86800_Node*)link->m04;
     void* keyValue = node ? node->key0C : 0;
-    FUN_00c86800_Table* table = a2;
+    FUN_00c86800_Table* table = arCloneData;
     link->m04 = 0;
     if (keyValue != 0)
     {
-        if (table->map->GetAt(keyValue, (void*&)a2))
+        if (table->map->GetAt(keyValue, (void*&)arCloneData))
         {
-            FUN_00c86800_Target* target = (FUN_00c86800_Target*)a2;
+            FUN_00c86800_Target* target = (FUN_00c86800_Target*)arCloneData;
             link->m04 = target ? target->m08 : 0;
         }
     }
-    bhkSerializable_CopyMembers(a1, table);
+    bhkSerializable_CopyMembers(pDest, table);
 }
 
 struct FUN_00c868f0_inner
@@ -520,15 +548,18 @@ class FUN_00c868f0_cls
     int unk00;
     int unk04;
     FUN_00c868f0_inner* m_08;
-    bool BSAnimNotes_IsEqual(FUN_00c868f0_cls* other);
-    unsigned char bhkUnaryAction_IsEqual(FUN_00c868f0_cls* other);
+    bool BSAnimNotes_IsEqual(FUN_00c868f0_cls* apObject);
+    unsigned char bhkUnaryAction_IsEqual(FUN_00c868f0_cls* apObject);
 };
 
 // @fnv 0x00c868f0
 // src: XBOX_PDB 0x00c868f0
-unsigned char FUN_00c868f0_cls::bhkUnaryAction_IsEqual(FUN_00c868f0_cls* other)
+// pdb: bhkUnaryAction::IsEqual | bhkUnaryAction.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres, pobj
+unsigned char FUN_00c868f0_cls::bhkUnaryAction_IsEqual(FUN_00c868f0_cls* apObject)
 {
-    unsigned char result = this->BSAnimNotes_IsEqual(other);
+    unsigned char result = this->BSAnimNotes_IsEqual(apObject);
     if (result)
     {
         FUN_00c868f0_inner* l = 0;
@@ -538,9 +569,9 @@ unsigned char FUN_00c868f0_cls::bhkUnaryAction_IsEqual(FUN_00c868f0_cls* other)
         }
         void* left = l != 0 ? l->m_18 : 0;
         FUN_00c868f0_inner* r = 0;
-        if (other != 0)
+        if (apObject != 0)
         {
-            r = other->m_08;
+            r = apObject->m_08;
         }
         void* right = r != 0 ? r->m_18 : 0;
         result = left == right;
@@ -615,7 +646,7 @@ class ObjectCandidate
     virtual void Reset();
     int unk04;
     int activeObject;
-    bool bhkUnaryAction_Add(class Item* item);
+    bool bhkUnaryAction_Add(class Item* apWorld);
     void ProcessEntity(Item*);
 };
 class Item
@@ -624,24 +655,27 @@ class Item
     int unk00;
     int unk04;
     int matchingValue;
-    void bhkWorld_Add_00c6b3c0(int);
+    void bhkWorld_Add(int);
 };
 // @fnv 0x00c86ab0
 // src: XBOX_PDB 0x00c86ab0
-bool ObjectCandidate::bhkUnaryAction_Add(Item* item)
+// pdb: bhkUnaryAction::Add | bhkUnaryAction.obj | retail, upstream name already matches, high
+// pdb params: apWorld
+// pdb locals: bres, pa, tempMemContext, pcur
+bool ObjectCandidate::bhkUnaryAction_Add(Item* apWorld)
 {
     ScopedAllocationMode guard;
     int current = this ? activeObject : 0;
     bool result = false;
     if (current != 0)
     {
-        if (item)
+        if (apWorld)
         {
-            if (QueryValue() != item->matchingValue)
+            if (QueryValue() != apWorld->matchingValue)
             {
                 Reset();
-                ProcessEntity(item);
-                item->bhkWorld_Add_00c6b3c0(current);
+                ProcessEntity(apWorld);
+                apWorld->bhkWorld_Add(current);
                 result = true;
             }
         }
@@ -656,7 +690,7 @@ bool ObjectCandidate::bhkUnaryAction_Add(Item* item)
 extern __declspec(thread) int g_tlsHeapContext;
 
 int sprintf_s(char* buffer, unsigned int size, const char* format, ...);
-char* __cdecl NiGetViewerString_00a7d5e0(const char* className, const char* name);
+char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 
 struct HeapContextGuard
 {
@@ -700,18 +734,21 @@ struct Wrapper86b80
     int unk04;
     HkObject86b80* m_pObject;
 
-    void bhkAction_GetViewerStrings(StringArray* arr);
-    void bhkUnaryAction_GetViewerStrings(StringArray* arr);
+    void bhkAction_GetViewerStrings(StringArray* apStrings);
+    void bhkUnaryAction_GetViewerStrings(StringArray* apStrings);
 };
 
 // @fnv 0x00c86b80
 // src: XBOX_PDB 0x00c86b80
-void Wrapper86b80::bhkUnaryAction_GetViewerStrings(StringArray* arr)
+// pdb: bhkUnaryAction::GetViewerStrings | bhkUnaryAction.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, pstr
+void Wrapper86b80::bhkUnaryAction_GetViewerStrings(StringArray* apStrings)
 {
     HeapContextGuard guard(0x10);
-    bhkAction_GetViewerStrings(arr);
+    bhkAction_GetViewerStrings(apStrings);
     char* s = _FUN_00a7d330(g_name86b80);
-    AddString(arr, s);
+    AddString(apStrings, s);
     void* p;
     if (this && m_pObject)
         p = m_pObject->m_pHkObject;
@@ -720,7 +757,7 @@ void Wrapper86b80::bhkUnaryAction_GetViewerStrings(StringArray* arr)
     char buf[0x20];
     sprintf_s(buf, 0x20, "0x%08X", p);
     s = NiGetViewerString_00a7d5e0("hkpRigidBody", buf);
-    AddString(arr, s);
+    AddString(apStrings, s);
 }
 
 extern int DAT_01268124;
@@ -741,6 +778,7 @@ class FUN_00c86cb0 : public FUN_00c86cb0_base
 };
 
 // @fnv 0x00c86cb0
+// pdb: bhkMouseSpringAction::~bhkMouseSpringAction | bhkMouseSpringAction.obj | retail, object-file run extension, high
 FUN_00c86cb0::~FUN_00c86cb0()
 {
     this->unk08();
@@ -766,36 +804,39 @@ struct FUN_00c86d20_Class
 {
     int unk00, unk04;
     InnerData* inner;
-    void __thiscall bhkMouseSpringAction_CopyCinfo(OutputData* dest);
+    void __thiscall bhkMouseSpringAction_CopyCinfo(OutputData* arInfo);
 };
 // @fnv 0x00c86d20
 // src: XBOX_PDB 0x00c86d20
-void FUN_00c86d20_Class::bhkMouseSpringAction_CopyCinfo(OutputData* dest)
+// pdb: bhkMouseSpringAction::CopyCinfo | bhkMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: pa
+void FUN_00c86d20_Class::bhkMouseSpringAction_CopyCinfo(OutputData* arInfo)
 {
-    bhkUnaryAction_CopyCinfo(dest);
-    dest->x30 = (this && inner) ? inner->x40 : 0.0f;
-    dest->y34 = (this && inner) ? inner->y44 : 0.0f;
-    dest->w3c = (this && inner) ? inner->w4c : 0.0f;
+    bhkUnaryAction_CopyCinfo(arInfo);
+    arInfo->x30 = (this && inner) ? inner->x40 : 0.0f;
+    arInfo->y34 = (this && inner) ? inner->y44 : 0.0f;
+    arInfo->w3c = (this && inner) ? inner->w4c : 0.0f;
     if (this)
     {
         InnerData* current = inner;
         if (current)
         {
-            dest->a10.SetQuaternionComponentsFromVector(&current->q20);
-            dest->b20.SetQuaternionComponentsFromVector(&current->q30);
-            dest->z38 = current->z48;
+            arInfo->a10.SetQuaternionComponentsFromVector(&current->q20);
+            arInfo->b20.SetQuaternionComponentsFromVector(&current->q30);
+            arInfo->z38 = current->z48;
             return;
         }
     }
-    dest->a10.x = 0.0f;
-    dest->a10.y = 0.0f;
-    dest->a10.z = 0.0f;
-    dest->a10.w = 0.0f;
-    dest->b20.x = 0.0f;
-    dest->b20.y = 0.0f;
-    dest->b20.z = 0.0f;
-    dest->b20.w = 0.0f;
-    dest->z38 = 0.0f;
+    arInfo->a10.x = 0.0f;
+    arInfo->a10.y = 0.0f;
+    arInfo->a10.z = 0.0f;
+    arInfo->a10.w = 0.0f;
+    arInfo->b20.x = 0.0f;
+    arInfo->b20.y = 0.0f;
+    arInfo->b20.z = 0.0f;
+    arInfo->b20.w = 0.0f;
+    arInfo->z38 = 0.0f;
 }
 
 struct FUN_00c871c0_tls
@@ -1004,15 +1045,18 @@ class FUN_00c871c0_cls
     unsigned int unk04;
     unsigned int unk08;
     char* m_0c;
-    void bhkBoxShape_KillCinfo(bool flag);
+    void bhkBoxShape_KillCinfo(bool abCreated);
 };
 
 // @fnv 0x00c871c0
 // src: XBOX_PDB 0x00c871c0
-void FUN_00c871c0_cls::bhkBoxShape_KillCinfo(bool flag)
+// pdb: bhkBoxShape::KillCinfo | bhkBoxShape.obj | retail, upstream name already matches, high
+// pdb params: abCreated
+// pdb locals: tempMemContext, pi
+void FUN_00c871c0_cls::bhkBoxShape_KillCinfo(bool abCreated)
 {
     TlsFlagGuard guard;
-    if (flag)
+    if (abCreated)
     {
         char* p = m_0c;
         if (p != 0)
@@ -1063,17 +1107,20 @@ class FUN_00c878c0_cls
 {
   public:
     void AddDebugStrings(BC878C0StringArray* pkArray);
-    void bhkSerializable_GetViewerStrings(BC878C0StringArray* pkArray);
+    void bhkSerializable_GetViewerStrings(BC878C0StringArray* apStrings);
 };
 
 // @fnv 0x00c878c0
 // src: XBOX_PDB 0x00c878c0
-void FUN_00c878c0_cls::bhkSerializable_GetViewerStrings(BC878C0StringArray* pkArray)
+// pdb: bhkSerializable::GetViewerStrings | bhkSerializable.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void FUN_00c878c0_cls::bhkSerializable_GetViewerStrings(BC878C0StringArray* apStrings)
 {
     BC878C0AllocTagScope kScope(0x10);
-    AddDebugStrings(pkArray);
+    AddDebugStrings(apStrings);
     char* pcName = NiViewerStrings_NiGetViewerString_Title(g_pcC878C0Name);
-    pkArray->Add(pcName);
+    apStrings->Add(pcName);
 }
 
 extern int DAT_01268154;
@@ -1087,6 +1134,7 @@ struct FUN_00c87970 : FUN_00c877b0
     void bhkSerializable_Kill();
 };
 // @fnv 0x00c87970
+// pdb: bhkAction::~bhkAction | bhkAction.obj | retail, call graph, high
 FUN_00c87970::~FUN_00c87970()
 {
     bhkSerializable_Kill();
@@ -1111,14 +1159,17 @@ struct FadeNodeEntry
 
 // @fnv 0x00ead0d0
 // src: XBOX_PDB 0x00ead0d0
-FadeNodeEntry* __stdcall NiCollisionData_FindAncestorWithCollisionData(FadeNodeEntry* pHead)
+// pdb: NiCollisionData::FindAncestorWithCollisionData | NiCollisionData.obj | debug, upstream name already matches, high
+// pdb params: pkObj
+// pdb locals: pkParent, pkData
+FadeNodeEntry* __stdcall NiCollisionData_FindAncestorWithCollisionData(FadeNodeEntry* pkObj)
 {
-    if (pHead == 0)
+    if (pkObj == 0)
     {
         return 0;
     }
 
-    FadeNodeEntry* pNode = pHead->m_pNext;
+    FadeNodeEntry* pNode = pkObj->m_pNext;
     if (pNode == 0)
     {
         return 0;
@@ -1146,13 +1197,16 @@ struct InBaFull
 };
 int __cdecl GetTableValue(int);
 void __cdecl DevCallbackMode(int, int);
-void __cdecl AddToTwoCounters(int, int, int);
+void __cdecl BSRenderState_SetAlphaBlendFunc(int, int, int);
 
 // @fnv 0x00ba5e60
 // src: XBOX_PDB 0x00ba5e60
-void __stdcall ParticleShader_SetupGeometryAlphaBlending(OutBa* a1)
+// pdb: ParticleShader::SetupGeometryAlphaBlending | ParticleShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: ppsProp, pprop
+void __stdcall ParticleShader_SetupGeometryAlphaBlending(OutBa* apState)
 {
-    InBaFull* p = reinterpret_cast<InBaFull*>(a1->fC);
+    InBaFull* p = reinterpret_cast<InBaFull*>(apState->fC);
     int bMatch = 0;
     if (p != 0)
     {
@@ -1162,11 +1216,11 @@ void __stdcall ParticleShader_SetupGeometryAlphaBlending(OutBa* a1)
     DevCallbackMode(1, 0);
     if (q != 0)
     {
-        AddToTwoCounters(GetTableValue(q->f108), GetTableValue(q->f10C), 0);
+        BSRenderState_SetAlphaBlendFunc(GetTableValue(q->f108), GetTableValue(q->f10C), 0);
     }
     else
     {
-        AddToTwoCounters(6, 7, 0);
+        BSRenderState_SetAlphaBlendFunc(6, 7, 0);
     }
 }
 
@@ -1190,7 +1244,7 @@ struct C69EE0Properties
     int unkValue;
     unsigned int m_uiValue1;
 };
-extern "C" C69EE0Properties* GetExtraDataChecked(NiAVObject* pkObject);
+extern "C" C69EE0Properties* GetExtraDataChecked(NiAVObject* apObject);
 static inline unsigned int C69EE0IsEnabled(NiAVObject* pkObject)
 {
     C69EE0Properties* pkProps = GetExtraDataChecked(pkObject);
@@ -1200,18 +1254,21 @@ extern void (*DAT_011afe8c)(NiCollisionObject*, CollisionObjectCountContext*);
 
 // @fnv 0x00c69ee0
 // src: XBOX_PDB 0x00c69ee0
-bool bhkWorld_RemoveObjects(NiAVObject* pkObject, bool bRecurse, bool bForce)
+// pdb: bhkWorld::RemoveObjects | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, abRecurse, abForce
+// pdb locals: bres, tempAutoEvent, recData
+bool bhkWorld_RemoveObjects(NiAVObject* apObject, bool abRecurse, bool abForce)
 {
     bool bResult = false;
-    if (pkObject && (bForce || C69EE0IsEnabled(pkObject)))
+    if (apObject && (abForce || C69EE0IsEnabled(apObject)))
     {
-        bResult = bForce;
+        bResult = abForce;
         CollisionObjectCountContext kContext;
         kContext.pCurrentObject = 0;
-        kContext.bRecurse = bRecurse;
+        kContext.bRecurse = abRecurse;
         kContext.uiTraversalFlags = 1;
         if (DAT_011afe8c)
-            bhkWorld_DoObjectRec(pkObject, &kContext, DAT_011afe8c);
+            bhkWorld_DoObjectRec(apObject, &kContext, DAT_011afe8c);
     }
     return bResult;
 }
@@ -1391,12 +1448,14 @@ class BeamPassShader
     NiD3DPointer<NiD3DPixelShader> m_spPixelShaderObject;
     NiD3DPointer<NiD3DVertexShader> m_spVertexShaderObject;
 
-    void UpdateFields_00ba59e0();
+    void ParticleShader_PresetStages();
 };
 
 // @fnv 0x00ba59e0
-// src: GUESS 0x00ba59e0 (confidence: low)
-void BeamPassShader::UpdateFields_00ba59e0()
+// src: XBOX_RETAIL_PDB 0x00ba59e0
+// pdb: ParticleShader::PresetStages | ParticleShader.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage
+void BeamPassShader::ParticleShader_PresetStages()
 {
     NiD3DPassPtr spRenderPass;
     StageReturnPtr spStage;
@@ -1713,11 +1772,14 @@ inline int isSource(Source* p)
 }
 // @fnv 0x00ba5ee0
 // src: XBOX_PDB 0x00ba5ee0
-void Obj::ParticleShader_SetupGeometryConstants(Arg* arg)
+// pdb: ParticleShader::SetupGeometryConstants | ParticleShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: pgeometry, worldTransform, apRenderPass, ppsProp, pprop, worldBound, pbufferData, pskin, windPoint, geometryWorldInvert
+void Obj::ParticleShader_SetupGeometryConstants(Arg* apState)
 {
     Geom* geom = *DAT_011f91e0;
     unk18->NiDX9Renderer_SetModelTransform(&geom->GetWorldTransform(), 0);
-    Source* raw = arg->unk0c;
+    Source* raw = apState->unk0c;
     Source* source = isSource(raw) ? raw : 0;
     if (source)
     {
@@ -1776,13 +1838,13 @@ void Obj::ParticleShader_SetupGeometryConstants(Arg* arg)
     {
         void* resource = ((Manager*)DAT_0126f74c)->unk44;
         if (resource)
-            unk30->apply(resource, geom, other, 0, extra, arg, 0, &geom->GetWorldTransform(), data, 0, 1);
+            unk30->apply(resource, geom, other, 0, extra, apState, 0, &geom->GetWorldTransform(), data, 0, 1);
     }
     if (unk34)
     {
         void* resource = ((Manager*)DAT_0126f74c)->unk5c;
         if (resource)
-            unk34->apply(resource, geom, other, 0, extra, arg, 0, &geom->GetWorldTransform(), data, 0, 1);
+            unk34->apply(resource, geom, other, 0, extra, apState, 0, &geom->GetWorldTransform(), data, 0, 1);
     }
 }
 
@@ -1822,13 +1884,15 @@ class FUN_00c868b0_cls
   public:
     int unk00, unk04;
     C868_L2* m_08;
-    void SaveSerializeData(C868_Iface* a1);
-    void bhkUnaryAction_SaveBinary(C868_Iface* a1);
+    void SaveSerializeData(C868_Iface* arStream);
+    void bhkUnaryAction_SaveBinary(C868_Iface* arStream);
 };
 
 // @fnv 0x00c868b0
 // src: XBOX_PDB 0x00c868b0
-void FUN_00c868b0_cls::bhkUnaryAction_SaveBinary(C868_Iface* a1)
+// pdb: bhkUnaryAction::SaveBinary | bhkUnaryAction.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c868b0_cls::bhkUnaryAction_SaveBinary(C868_Iface* arStream)
 {
     C868_L3* l3;
     if (this != 0 && m_08 != 0)
@@ -1843,8 +1907,8 @@ void FUN_00c868b0_cls::bhkUnaryAction_SaveBinary(C868_Iface* a1)
     else
         z = 0;
 
-    a1->vfn_30(z);
-    this->SaveSerializeData(a1);
+    arStream->vfn_30(z);
+    this->SaveSerializeData(arStream);
 }
 
 extern int DAT_01268154;
@@ -1885,6 +1949,7 @@ class RefObjC86D : public TESObjectDoorController
 
 // @fnv 0x00c86de0
 // src: EXE 0x00c86de0
+// pdb: bhkMouseSpringAction::CreateObject | bhkMouseSpringAction.obj | retail, upstream name already matches, high
 RefObjC86D* __cdecl bhkMouseSpringAction_CreateObject()
 {
     return new RefObjC86D;
@@ -1927,17 +1992,20 @@ class AllocatedNode
 class FUN_00c87010_cls : public FUN_00c86800_Class
 {
   public:
-    AllocatedNode* bhkMouseSpringAction_CreateClone(FUN_00c86800_Table* p);
+    AllocatedNode* bhkMouseSpringAction_CreateClone(FUN_00c86800_Table* arCloneData);
 };
 
 // @fnv 0x00c87010
 // src: XBOX_PDB 0x00c87010
-AllocatedNode* FUN_00c87010_cls::bhkMouseSpringAction_CreateClone(FUN_00c86800_Table* p)
+// pdb: bhkMouseSpringAction::CreateClone | bhkMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+AllocatedNode* FUN_00c87010_cls::bhkMouseSpringAction_CreateClone(FUN_00c86800_Table* arCloneData)
 {
     ScopedAllocationMode mode;
     bhkSerializable_CloneCritLock();
     AllocatedNode* node = new AllocatedNode();
-    bhkUnaryAction_CopyMembers((int)node, p);
+    bhkUnaryAction_CopyMembers((int)node, arCloneData);
     bhkSerializable_CloneCritUnlock();
     return node;
 }
@@ -2023,10 +2091,13 @@ struct bhkWorldRefS
 };
 // @fnv 0x00c86940
 // src: XBOX_PDB 0x00c86940
-void bhkUnaryAction::ProcessEntity(hkpUnaryAction* action)
+// pdb: bhkUnaryAction::ProcessEntity | bhkUnaryAction.obj | retail, string-set bridge, high
+// pdb params: apWorld
+// pdb locals: pe, tempMemContext, assertBuf, ostr
+void bhkUnaryAction::ProcessEntity(hkpUnaryAction* apWorld)
 {
     TlsFlagGuard mode;
-    hkWorldHolderS* holder = this && m_pHavokObject ? reinterpret_cast<bhkWorldRefS*>(m_pHavokObject)->m_pHkObject : 0;
+    hkWorldHolderS* holder = this && phkObject ? reinterpret_cast<bhkWorldRefS*>(phkObject)->m_pHkObject : 0;
     _ReadWriteBarrier();
     if (holder)
     {
@@ -2034,9 +2105,9 @@ void bhkUnaryAction::ProcessEntity(hkpUnaryAction* action)
         if (world)
         {
             unsigned int locked = world->IsLocked();
-            if (!locked && reinterpret_cast<unsigned int>(action->m_pEntity) <= locked)
+            if (!locked && reinterpret_cast<unsigned int>(apWorld->m_entity) <= locked)
             {
-                world->AddActionPre(action);
+                world->AddActionPre(apWorld);
                 if (!(world->m_flags & 0x30))
                 {
                     {
@@ -2047,7 +2118,7 @@ void bhkUnaryAction::ProcessEntity(hkpUnaryAction* action)
                             1, 0x234f24fc, buf, "D:\\_Fallout3\\Platforms\\Common\\Code\\BSHavok\\bhkUnaryAction.cpp",
                             200);
                     }
-                    world->AddActionPost(action);
+                    world->AddActionPost(apWorld);
                 }
             }
         }
@@ -2057,12 +2128,12 @@ void bhkUnaryAction::ProcessEntity(hkpUnaryAction* action)
 extern __declspec(thread) unsigned int t_uiMemContext7100;
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(t_uiMemContext7100);
+    iOldMemContext = static_cast<MEM_CONTEXT>(t_uiMemContext7100);
     t_uiMemContext7100 = context;
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    t_uiMemContext7100 = m_eMemoryContext;
+    t_uiMemContext7100 = iOldMemContext;
 }
 
 extern MemoryManager g_kMemoryManager;
@@ -2100,8 +2171,8 @@ class __declspec(align(16)) Aligned7100
 class Owner7100
 {
   public:
-    Aligned7100* bhkMouseSpringAction_CreateCinfo(bool* pbCreated);
-    void SetObject(Aligned7100* pkObject);
+    Aligned7100* bhkMouseSpringAction_CreateCinfo(bool* arCreated);
+    void SetObject(Aligned7100* arInfo);
 
     int unk00;
     int unk04;
@@ -2111,11 +2182,14 @@ class Owner7100
 
 // @fnv 0x00c87100
 // src: XBOX_PDB 0x00c87100
-Aligned7100* Owner7100::bhkMouseSpringAction_CreateCinfo(bool* pbCreated)
+// pdb: bhkMouseSpringAction::CreateCinfo | bhkMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+Aligned7100* Owner7100::bhkMouseSpringAction_CreateCinfo(bool* arCreated)
 {
     AutoMemContext kContext(0x10);
     bool bCreate = m_pPointer == 0;
-    *pbCreated = bCreate;
+    *arCreated = bCreate;
     if (bCreate)
     {
         m_pPointer = new Aligned7100;
@@ -2321,25 +2395,28 @@ struct TlsGuard_t
 
 struct S00c87a70_Obj : ObjectCandidate
 {
-    bool bhkAction_Add(Item* arg);
+    bool bhkAction_Add(Item* apWorld);
 };
 
 // @fnv 0x00c87a70
 // src: XBOX_PDB 0x00c87a70
-bool S00c87a70_Obj::bhkAction_Add(Item* arg)
+// pdb: bhkAction::Add | bhkAction.obj | retail, upstream name already matches, high
+// pdb params: apWorld
+// pdb locals: bres, pa, tempMemContext, pcur
+bool S00c87a70_Obj::bhkAction_Add(Item* apWorld)
 {
     TlsGuard_t guard;
     int active = this ? activeObject : 0;
     bool result = false;
     if (active != 0)
     {
-        if (arg != 0)
+        if (apWorld != 0)
         {
             int v = QueryValue();
-            if (v != arg->matchingValue)
+            if (v != apWorld->matchingValue)
             {
                 Reset();
-                arg->bhkWorld_Add_00c6b3c0(active);
+                apWorld->bhkWorld_Add(active);
                 result = true;
             }
         }
@@ -2419,6 +2496,8 @@ class EntityOwner_c87b
 
 // @fnv 0x00c87b40
 // src: XBOX_PDB 0x00c87b40
+// pdb: bhkAction::Remove | bhkAction.obj | retail, upstream name already matches, high
+// pdb locals: bres, pbw, tempMemContext
 bool EntityOwner_c87b::bhkAction_Remove()
 {
     HeapContextGuard kContext(0x10);
@@ -2479,7 +2558,7 @@ struct Entry6b3c0
 
 struct Target6b3c0
 {
-    void Add(Entry6b3c0* entry);  // 0xc97370
+    void Add(Entry6b3c0* action);  // 0xc97370
 };
 
 extern MemoryManager g_memoryManager6b3c0;
@@ -2500,7 +2579,7 @@ struct RefSet6b3c0
 {
     RefPtr6b3c0 m_pTileTemplate;
     Node6b3c0* m_saved;
-    void Insert(const RefPtr6b3c0& ref);  // 0xc68b50
+    void BSSimpleList_NiPointer_ObstacleData_AddHead(const RefPtr6b3c0& item);  // 0xc68b50
 };
 
 extern bool DAT_012677a2;
@@ -2584,17 +2663,17 @@ class World6b3c0
     int unk8C;
     RefSet6b3c0 refs90;
 
-    void Flush(int* items, unsigned int count);  // 0xc674d0
-    void Step1();                                // 0xc676e0
+    void Flush(int* apEntityA, unsigned int auiNumEntities);  // 0xc674d0
+    void bhkWorld_AddBatchedPhantoms();                                // 0xc676e0
     void Step2();                                // 0xc6aac0
-    void Step3();                                // 0xc67850
-    void bhkWorld_Add_00c6b3c0(Entry6b3c0* entry);
+    void bhkWorld_AddBatchedConstraints();                                // 0xc67850
+    void bhkWorld_Add(Entry6b3c0* apObject);
 };
 
 // Defined here (as in the original unit) so the compiler sees Insert never modifies its argument.
-void RefSet6b3c0::Insert(const RefPtr6b3c0& ref)
+void RefSet6b3c0::BSSimpleList_NiPointer_ObstacleData_AddHead(const RefPtr6b3c0& item)
 {
-    if (ref.m_p == 0)
+    if (item.m_p == 0)
         return;
     if (m_pTileTemplate.m_p != 0)
     {
@@ -2602,12 +2681,14 @@ void RefSet6b3c0::Insert(const RefPtr6b3c0& ref)
         node->m_next = m_saved;
         m_saved = node;
     }
-    m_pTileTemplate = ref;
+    m_pTileTemplate = item;
 }
 
 // @fnv 0x00c6b3c0
-// src: XBOX_PDB 0x00c6b3c0
-void World6b3c0::bhkWorld_Add_00c6b3c0(Entry6b3c0* entry)
+// src: XBOX_RETAIL_PDB 0x00c6b3c0
+// pdb: bhkWorld::Add | bhkWorld.obj | retail, call graph, high
+// pdb params: apObj
+void World6b3c0::bhkWorld_Add(Entry6b3c0* apObject)
 {
     TlsFlagGuard guard;
     if (this != 0)
@@ -2632,25 +2713,25 @@ void World6b3c0::bhkWorld_Add_00c6b3c0(Entry6b3c0* entry)
                         unk30 = rest;
                         DAT_012677a2 = true;
                     }
-                    Step1();
+                    bhkWorld_AddBatchedPhantoms();
                     Step2();
-                    Step3();
+                    bhkWorld_AddBatchedConstraints();
                 }
-                entry->Prepare();
-                pending3C[pendingCount40] = entry;
+                apObject->Prepare();
+                pending3C[pendingCount40] = apObject;
                 pendingCount40++;
             }
             else
             {
-                target->Add(entry);
+                target->Add(apObject);
             }
-            if (entry != 0)
+            if (apObject != 0)
             {
-                NiRefObject* obj = entry->unk10;
+                NiRefObject* obj = apObject->unk10;
                 if (obj != 0)
                 {
                     RefPtr6b3c0 sp(obj);
-                    refs90.Insert(sp);
+                    refs90.BSSimpleList_NiPointer_ObstacleData_AddHead(sp);
                 }
             }
         }
@@ -2673,7 +2754,7 @@ struct Block86
 };
 struct FUN_00c86790_t
 {
-    void bhkUnaryAction_LoadBinary(NiStream86* pkStream);
+    void bhkUnaryAction_LoadBinary(NiStream86* arStream);
 };
 class FUN_00c86e80_t
 {
@@ -2724,14 +2805,17 @@ class FUN_00c86e80_t
     virtual void v43();
     virtual void v44();
     virtual Block86* GetBlock(int* piSize);
-    void bhkMouseSpringAction_LoadBinary(NiStream86* pkStream);
+    void bhkMouseSpringAction_LoadBinary(NiStream86* arStream);
 };
 // @fnv 0x00c86e80
 // src: XBOX_PDB 0x00c86e80
-void FUN_00c86e80_t::bhkMouseSpringAction_LoadBinary(NiStream86* pkStream)
+// pdb: bhkMouseSpringAction::LoadBinary | bhkMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void FUN_00c86e80_t::bhkMouseSpringAction_LoadBinary(NiStream86* arStream)
 {
-    ((FUN_00c86790_t*)this)->bhkUnaryAction_LoadBinary(pkStream);
-    if (pkStream->m_bSameEndian == 1)
+    ((FUN_00c86790_t*)this)->bhkUnaryAction_LoadBinary(arStream);
+    if (arStream->m_bSameEndian == 1)
         return;
     int iSize;
     Block86* pkBlock = GetBlock(&iSize);
@@ -2924,17 +3008,20 @@ class FUN_00c86f10_cls
     virtual void v2B();
     virtual void v2C();
     virtual volatile unsigned int* vGet(unsigned char* out);
-    void bhkUnaryAction_SaveBinary(FUN_00c86f10_arg* a);
-    void bhkMouseSpringAction_SaveBinary(FUN_00c86f10_arg* a1);
+    void bhkUnaryAction_SaveBinary(FUN_00c86f10_arg* arStream);
+    void bhkMouseSpringAction_SaveBinary(FUN_00c86f10_arg* arStream);
 };
 
 // @fnv 0x00c86f10
 // src: XBOX_PDB 0x00c86f10
-void FUN_00c86f10_cls::bhkMouseSpringAction_SaveBinary(FUN_00c86f10_arg* a1)
+// pdb: bhkMouseSpringAction::SaveBinary | bhkMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void FUN_00c86f10_cls::bhkMouseSpringAction_SaveBinary(FUN_00c86f10_arg* arStream)
 {
     unsigned int tmp;
     volatile unsigned int* p = vGet((unsigned char*)&tmp + 3);
-    if (a1->m_1e4 != 1)
+    if (arStream->m_1e4 != 1)
     {
         p[4] = _byteswap_ulong(p[4]);
         p[5] = _byteswap_ulong(p[5]);
@@ -2949,8 +3036,8 @@ void FUN_00c86f10_cls::bhkMouseSpringAction_SaveBinary(FUN_00c86f10_arg* a1)
         p[14] = _byteswap_ulong(p[14]);
         p[15] = _byteswap_ulong(p[15]);
     }
-    bhkUnaryAction_SaveBinary(a1);
-    if (a1->m_1e4 != 1)
+    bhkUnaryAction_SaveBinary(arStream);
+    if (arStream->m_1e4 != 1)
     {
         p[4] = _byteswap_ulong(p[4]);
         p[5] = _byteswap_ulong(p[5]);

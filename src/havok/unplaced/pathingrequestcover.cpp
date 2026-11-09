@@ -91,6 +91,7 @@ void FUN_006e43e0_class::SetFlag(bool value)
 }
 
 
+// pdb: class PathingRequestCover, size 0xec (here 0xe0), bases: PathingRequest, 13 members
 struct PathingRequestCover
 {
     unsigned int mPadding[0xd4 / 4];
@@ -116,7 +117,7 @@ unsigned char* PathingCoverLocation_ComputeKey(int aiBase, unsigned short ausInd
 // src: XBOX_PDB 0x006e4820
 bool PathingCoverLocation::IsLedgeCover_006e4820()
 {
-    return f04c == 2;
+    return cCoverHeight == 2;
 }
 
 // @fnv 0x006e4500
@@ -124,68 +125,74 @@ bool PathingCoverLocation::IsLedgeCover_006e4820()
 void PathingCoverLocation::SetCoverData(unsigned short ausValue, unsigned short b, unsigned short c, char e, char f,
                                       char g)
 {
-    f04c = (char)ausValue;
-    f04d = (char)(ausValue >= b ? 1 : 0);
-    f04e = (char)(ausValue > c ? 1 : 0);
-    f04f = e;
-    f050 = f;
-    f051 = g;
-    f052 = 0;
+    cCoverHeight = (char)ausValue;
+    bStandCover = (char)(ausValue >= b ? 1 : 0);
+    bHigherThanCrouch = (char)(ausValue > c ? 1 : 0);
+    bLeftEdgeOpen = e;
+    bRightEdgeOpen = f;
+    cEdge = g;
+    cState = 0;
 }
 
 // Copies the base PathingLocation, three NiPoint3 values and seven bytes from src into this object and returns *this.
 // @fnv 0x006e4430
+// pdb: PathingCoverLocation::operator= | PathingRequestCover.obj | retail, call graph (shared callers), medium
+// pdb params: aLoc
 PathingCoverLocation& PathingCoverLocation::operator=(const PathingCoverLocation& src)
 {
     PathingLocation::operator=(src);
-    a = src.a;
-    b = src.b;
-    c = src.c;
-    f04c = src.f04c;
-    f04d = src.f04d;
-    f04e = src.f04e;
-    f04f = src.f04f;
-    f050 = src.f050;
-    f051 = src.f051;
-    f052 = src.f052;
+    LeftVertex = src.LeftVertex;
+    RightVertex = src.RightVertex;
+    EdgeDirection = src.EdgeDirection;
+    cCoverHeight = src.cCoverHeight;
+    bStandCover = src.bStandCover;
+    bHigherThanCrouch = src.bHigherThanCrouch;
+    bLeftEdgeOpen = src.bLeftEdgeOpen;
+    bRightEdgeOpen = src.bRightEdgeOpen;
+    cEdge = src.cEdge;
+    cState = src.cState;
     return *this;
 }
 
 struct FUN_006def40_Class
 {
-    void FUN_006def40(BGSSaveFormBuffer* buffer);
+    void FUN_006def40(BGSSaveFormBuffer* apSaveGameBuffer);
 };
 // Calls the base save routine, then writes three 12-byte blocks and seven single bytes from offsets 0x28 through 0x52 into the buffer.
 // @fnv 0x006e48a0
-void PathingCoverLocation::SaveToBuffer(BGSSaveFormBuffer* buffer)
+// pdb: PathingCoverLocation::SaveGame | PathingRequestCover.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+void PathingCoverLocation::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    ((FUN_006def40_Class*)this)->FUN_006def40(buffer);
-    buffer->SaveData(&a, 12, 0);
-    buffer->SaveData(&b, 12, 0);
-    buffer->SaveData(&c, 12, 0);
-    buffer->SaveData(&f04c, 1, 0);
-    buffer->SaveData(&f04d, 1, 0);
-    buffer->SaveData(&f04e, 1, 0);
-    buffer->SaveData(&f04f, 1, 0);
-    buffer->SaveData(&f050, 1, 0);
-    buffer->SaveData(&f051, 1, 0);
-    buffer->SaveData(&f052, 1, 0);
+    ((FUN_006def40_Class*)this)->FUN_006def40(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData(&LeftVertex, 12, 0);
+    apSaveGameBuffer->SaveData(&RightVertex, 12, 0);
+    apSaveGameBuffer->SaveData(&EdgeDirection, 12, 0);
+    apSaveGameBuffer->SaveData(&cCoverHeight, 1, 0);
+    apSaveGameBuffer->SaveData(&bStandCover, 1, 0);
+    apSaveGameBuffer->SaveData(&bHigherThanCrouch, 1, 0);
+    apSaveGameBuffer->SaveData(&bLeftEdgeOpen, 1, 0);
+    apSaveGameBuffer->SaveData(&bRightEdgeOpen, 1, 0);
+    apSaveGameBuffer->SaveData(&cEdge, 1, 0);
+    apSaveGameBuffer->SaveData(&cState, 1, 0);
 }
 
 // @fnv 0x006e4980
-void PathingCoverLocation::Load(BGSLoadGameBuffer* buffer)
+// pdb: PathingCoverLocation::LoadGame | PathingRequestCover.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+void PathingCoverLocation::Load(BGSLoadGameBuffer* apLoadGameBuffer)
 {
-    PathingLocation::Load(buffer);
-    buffer->ReadTypedData(&a, 0xc);
-    buffer->ReadTypedData(&b, 0xc);
-    buffer->ReadTypedData(&c, 0xc);
-    buffer->ReadTypedData(&f04c, 1);
-    buffer->ReadTypedData(&f04d, 1);
-    buffer->ReadTypedData(&f04e, 1);
-    buffer->ReadTypedData(&f04f, 1);
-    buffer->ReadTypedData(&f050, 1);
-    buffer->ReadTypedData(&f051, 1);
-    buffer->ReadTypedData(&f052, 1);
+    PathingLocation::Load(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData(&LeftVertex, 0xc);
+    apLoadGameBuffer->ReadTypedData(&RightVertex, 0xc);
+    apLoadGameBuffer->ReadTypedData(&EdgeDirection, 0xc);
+    apLoadGameBuffer->ReadTypedData(&cCoverHeight, 1);
+    apLoadGameBuffer->ReadTypedData(&bStandCover, 1);
+    apLoadGameBuffer->ReadTypedData(&bHigherThanCrouch, 1);
+    apLoadGameBuffer->ReadTypedData(&bLeftEdgeOpen, 1);
+    apLoadGameBuffer->ReadTypedData(&bRightEdgeOpen, 1);
+    apLoadGameBuffer->ReadTypedData(&cEdge, 1);
+    apLoadGameBuffer->ReadTypedData(&cState, 1);
 }
 
 struct CoverPoint3
@@ -242,7 +249,7 @@ struct CoverPathingRequest
     int unkA8;
     int unkAC;
 
-    void CopyTo(CoverPathingRequest* apRequest);
+    void CopyTo(CoverPathingRequest* apDest);
 };
 
 struct CoverPathingRequestCover : CoverPathingRequest
@@ -262,7 +269,7 @@ struct CoverPathingRequestCover : CoverPathingRequest
     unsigned char unkD3;
     CoverPoint3 m_kThreatPoint;
 
-    void SetCoverPoint(const CoverPoint3& arPoint);
+    void SetCoverPoint(const CoverPoint3& apRef);
     void SetUnkC0(float afValue);
     void SetUnkBC(float afValue);
     void SetUnkC4(float afValue);
@@ -274,14 +281,17 @@ struct CoverPathingRequestCover : CoverPathingRequest
     void SetUnkD1(bool abValue);
     void SetThreatPoint(const CoverPoint3& arPoint);
 
-    void CopyToCover(CoverPathingRequest* apRequest);
+    void CopyToCover(CoverPathingRequest* apDest);
 };
 
 // Copies the base request into apRequest and then sets its cover point, unkBC/C0/C4/C8/CD/CE/CF/D0/D1 values and threat point from this object.
 // @fnv 0x006e4220
-void CoverPathingRequestCover::CopyToCover(CoverPathingRequest* apRequest)
+// pdb: PathingRequestCover::CopyTo | PathingRequestCover.obj | retail, vtable slot, high
+// pdb params: apDest
+// pdb locals: pdest
+void CoverPathingRequestCover::CopyToCover(CoverPathingRequest* apDest)
 {
-    CoverPathingRequestCover* pCover = (CoverPathingRequestCover*)apRequest;
+    CoverPathingRequestCover* pCover = (CoverPathingRequestCover*)apDest;
     CoverPathingRequest::CopyTo(pCover);
     pCover->SetCoverPoint(m_kCoverPoint);
     pCover->SetUnkC0(m_fUnkC0);
@@ -301,20 +311,23 @@ void CoverPathingRequestCover::CopyToCover(CoverPathingRequest* apRequest)
 
 struct FUN_006e4650_class
 {
-    bool FUN_006dd610(NavMeshPtr& nm);
+    bool FUN_006dd610(NavMeshPtr& aRetNavMesh);
     unsigned short GetShortValueAtOffset24(NiPointer<PathingSolution>& sol);
-    bool PathingCoverLocation_CheckDynamicCoverValid(int arg);
+    bool PathingCoverLocation_CheckDynamicCoverValid(int aiLastMovedTime);
 };
 
 // @fnv 0x006e4650
 // src: XBOX_PDB 0x006e4650
-bool FUN_006e4650_class::PathingCoverLocation_CheckDynamicCoverValid(int aiValue)
+// pdb: PathingCoverLocation::CheckDynamicCoverValid | PathingRequestCover.obj | retail, upstream name already matches, high
+// pdb params: aiLastMovedTime
+// pdb locals: spnavMesh, spObstacle
+bool FUN_006e4650_class::PathingCoverLocation_CheckDynamicCoverValid(int aiLastMovedTime)
 {
     NavMeshPtr nm;
     if (FUN_006dd610(nm))
     {
         NiPointer<PathingSolution> sol(0);
-        if (nm->FUN_006997b0(GetShortValueAtOffset24(sol)) && *(int*)((char*)sol.operator->() + 0x70) == aiValue)
+        if (nm->NavMesh_GetObstacleForTriangle(GetShortValueAtOffset24(sol)) && *(int*)((char*)sol.operator->() + 0x70) == aiLastMovedTime)
             return true;
     }
     return false;
@@ -328,32 +341,36 @@ struct S_006e4570_NavMesh : NavMesh
 // Looks up a navmesh triangle via FUN_006dd640 and returns FUN_006e4630's result for that triangle and unk51, or null if lookup fails.
 // @fnv 0x006e4570
 // src: XBOX_PDB 0x006e4570
+// pdb: PathingCoverLocation::GetKey | PathingRequestCover.obj | debug, call graph, medium
+// pdb locals: spnavMesh, striangle
 unsigned char* PathingCoverLocation::GetKey_006e4570()
 {
     NavMeshPtr navMesh;
     unsigned short triangleIndexA = 0;
     if (FUN_006dd640(&navMesh, &triangleIndexA))
     {
-        return PathingCoverLocation_ComputeKey(((S_006e4570_NavMesh*)navMesh.operator->())->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), triangleIndexA, f051);
+        return PathingCoverLocation_ComputeKey(((S_006e4570_NavMesh*)navMesh.operator->())->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), triangleIndexA, cEdge);
     }
     return 0;
 }
 
 struct S_006e4740
 {
-    bool FUN_006dd610(NavMeshPtr& nm);
+    bool FUN_006dd610(NavMeshPtr& aRetNavMesh);
     unsigned short GetShortValueAtOffset24(NiPointer<PathingSolution>& sol);
     int PathingCoverLocation_GetDynamicCoverObstacleTimeStamp();
 };
 // @fnv 0x006e4740
 // src: XBOX_PDB 0x006e4740
+// pdb: PathingCoverLocation::GetDynamicCoverObstacleTimeStamp | PathingRequestCover.obj | retail, upstream name already matches, high
+// pdb locals: spnavMesh, spObstacle
 int S_006e4740::PathingCoverLocation_GetDynamicCoverObstacleTimeStamp()
 {
     NavMeshPtr nm;
     if (FUN_006dd610(nm))
     {
         NiPointer<PathingSolution> sol(0);
-        if (nm->FUN_006997b0(GetShortValueAtOffset24(sol)))
+        if (nm->NavMesh_GetObstacleForTriangle(GetShortValueAtOffset24(sol)))
         {
             return *(int*)((char*)sol.operator->() + 0x70);
         }
@@ -368,10 +385,13 @@ struct PointCalc : NiPoint3
 };
 // @fnv 0x006e4840
 // src: XBOX_PDB 0x006e4840
-bool PathingCoverLocation::IsLeftSideClosest(const NiPoint3& point)
+// pdb: PathingCoverLocation::IsLeftSideClosest | PathingRequestCover.obj | debug, upstream name already matches, high
+// pdb params: arPoint
+// pdb locals: leftEdgeVector, rightEdgeVector
+bool PathingCoverLocation::IsLeftSideClosest(const NiPoint3& arPoint)
 {
-    PointCalc vecA = ((const PointCalc&)a).SubtractIntoVector(point);
-    PointCalc vecB = ((const PointCalc&)b).SubtractIntoVector(point);
+    PointCalc vecA = ((const PointCalc&)LeftVertex).SubtractIntoVector(arPoint);
+    PointCalc vecB = ((const PointCalc&)RightVertex).SubtractIntoVector(arPoint);
     if (vecA.FUN_004a7290() < vecB.FUN_004a7290())
         return true;
     return false;
@@ -447,5 +467,6 @@ struct FUN_006e41e0
 };
 
 // @fnv 0x006e41e0
+// pdb: PathingRequestCover::`scalar deleting destructor' | PathingRequestCover.obj | retail, vtable slot, high
 FUN_006e41e0::FUN_006e41e0()
 {}

@@ -50,6 +50,7 @@ struct FUN_004216d0_shell
 
 // @fnv 0x004216d0
 // src: COMMUNITY 0x004216d0
+// pdb: ExtraDataList::HasLevCreaCalced | ExtraDataList.obj | debug, upstream name already matches, high
 bool FUN_004216d0_shell::ExtraDataList_HasLevCreaCalced()
 {
     return ((BaseExtraList*)this)->HasExtraData(0x2e);
@@ -75,6 +76,7 @@ struct FUN_0042e040_shell
 
 // @fnv 0x0042e040
 // src: XBOX_PDB 0x0042e040
+// pdb: ExtraDataList::RemoveInfoGeneral | ExtraDataList.obj | debug, upstream name already matches, high
 void FUN_0042e040_shell::ExtraDataList_RemoveInfoGeneral()
 {
     ((BaseExtraList*)this)->RemoveExtra((unsigned char)0x4d);
@@ -84,10 +86,13 @@ void FUN_0042e040_shell::ExtraDataList_RemoveInfoGeneral()
 namespace fnv_0042e110 {
 struct FUN_0042e110 : BaseExtraList
 {
-    BSExtraData* GetExtraData();
+    BSExtraData* ExtraDataList_GetTalkingActorExtra();
 };
 // @fnv 0x0042e110
-BSExtraData* FUN_0042e110::GetExtraData()
+// src: XBOX_DEBUG_PDB 0x0042e110
+// pdb: ExtraDataList::GetTalkingActorExtra | ExtraDataList.obj | debug, call graph (shared callers), high
+// pdb locals: pextra
+BSExtraData* FUN_0042e110::ExtraDataList_GetTalkingActorExtra()
 {
     BSExtraData* result = BaseExtraList::GetExtraData(0x55);
     return result;
@@ -100,15 +105,17 @@ struct FUN_0042f4e0_class
 {
     void* m_vtbl;
     void __thiscall NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_bool_TESObjectREFR_bool_NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_bool_TESObjectREFR_bool(void* arg);
-    void* __thiscall SetVirtualTable_0042f4e0(void* arg);
+    void* __thiscall NiTMap_TESObjectREFR_bool_ctor(void* uiHashSize);
 };
 
 // Calls FUN_0042fe10 on arg, sets m_vtbl to &DAT_010159e8, and returns this.
 // @fnv 0x0042f4e0
-// src: GUESS 0x0042f4e0 (confidence: low)
-void* __thiscall FUN_0042f4e0_class::SetVirtualTable_0042f4e0(void* arg)
+// src: XBOX_RETAIL_PDB 0x0042f4e0
+// pdb: NiTMap<TESObjectREFR *,bool>::NiTMap<TESObjectREFR *,bool> | ExtraDataList.obj | retail, call graph, high
+// pdb params: uiHashSize
+void* __thiscall FUN_0042f4e0_class::NiTMap_TESObjectREFR_bool_ctor(void* uiHashSize)
 {
-    NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_bool_TESObjectREFR_bool_NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_bool_TESObjectREFR_bool(arg);
+    NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_bool_TESObjectREFR_bool_NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_bool_TESObjectREFR_bool(uiHashSize);
     m_vtbl = &DAT_010159e8;
     return this;
 }
@@ -133,6 +140,7 @@ struct GlobalObject_00869f00
 };
 // @fnv 0x0042ff80
 // src: GUESS 0x0042ff80 (confidence: medium)
+// pdb: BSSimpleArray<TESBoundObject *,1024>::~BSSimpleArray<TESBoundObject *,1024> | ExtraDataList.obj | debug, call graph (shared callers), high
 void GlobalObject_00869f00::ResetVirtualTableAndClear()
 {
     *(int*)this = (int)&DAT_01015a08;
@@ -149,6 +157,7 @@ struct FUN_00435ef0 : public BSExtraData
 // Sets the vtable pointer, zeroes the field at offset 0xc, then calls the BSExtraData destructor.
 // @fnv 0x00435ef0
 // src: GUESS 0x00435ef0 (confidence: low)
+// pdb: ExtraHeadingTarget::~ExtraHeadingTarget | ExtraDataObjects.obj | debug, object-file gap fill, medium
 void FUN_00435ef0::SetVtableAndProcessState_00435ef0()
 {
     *reinterpret_cast<void**>(this) = &DAT_01015968;
@@ -163,6 +172,7 @@ struct FUN_00437dd0_Class
 
 // @fnv 0x00437dd0
 // src: COMMUNITY 0x00437dd0
+// pdb: ExtraFollowerSwimBreadcrumbs::GetFirstCrumb | ExtraDataObjects.obj | debug, upstream name already matches, high
 void* FUN_00437dd0_Class::ExtraFollowerSwimBreadcrumbs_GetFirstCrumb()
 {
     return *(void**)&((Bound*)((char*)this + 0x20))->FUN_006815c0();
@@ -178,6 +188,8 @@ struct FUN_004383b0_Class
 // Calls FUN_004386b0 with a, sets p to the address of DAT_01015fbc, and returns this.
 // @fnv 0x004383b0
 // src: EXE 0x004383b0
+// pdb: NiTMap<WaterZone *,int>::NiTMap<WaterZone *,int> | ExtraDataObjects.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 void* FUN_004383b0_Class::NiTMap_WaterZone_int_NiTMap(void* apArg)
 {
     NiTMapBase_DFALL_NiTMapItem_WaterZone_int_WaterZone_int_NiTMapBase(apArg);
@@ -197,6 +209,8 @@ struct FUN_004383e0_class
 // Calls FUN_00438820 with this and a, sets p to the address of DAT_01015fdc, and returns this.
 // @fnv 0x004383e0
 // src: EXE 0x004383e0
+// pdb: BSMap<TESFaction *,bool>::BSMap<TESFaction *,bool> | ExtraDataObjects.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 void* __thiscall FUN_004383e0_class::BSMap_TESFaction_bool_BSMap(void* apArg)
 {
     ((void(__thiscall*)(void*, void*))FUN_00438820)(this, apArg);
@@ -214,6 +228,7 @@ struct AX
 
 // @fnv 0x00438570
 // src: EXE 0x00438570
+// pdb: BSSimpleArray<DismemberedLimb *,1024>::BSSimpleArray<DismemberedLimb *,1024> | ExtraDataObjects.obj | debug, object-file run extension, low
 AX* AX::BSSimpleArray_DismemberedLimb_1024_BSSimpleArray()
 {
     *reinterpret_cast<int*>(this) = (int)&DAT_01015ffc;
@@ -229,11 +244,12 @@ struct GlobalObject_00869f00
 };
 struct FUN_004385a0Class
 {
-    void ResetVirtualTableAndClear_004385a0();
+    void BSSimpleArray_DismemberedLimb_1024_dtor();
 };
 // @fnv 0x004385a0
-// src: GUESS 0x004385a0 (confidence: medium)
-void FUN_004385a0Class::ResetVirtualTableAndClear_004385a0()
+// src: XBOX_DEBUG_PDB 0x004385a0
+// pdb: BSSimpleArray<DismemberedLimb *,1024>::~BSSimpleArray<DismemberedLimb *,1024> | ExtraDataObjects.obj | debug, call graph (shared callers), high
+void FUN_004385a0Class::BSSimpleArray_DismemberedLimb_1024_dtor()
 {
     *(int*)this = (int)&DAT_01015ffc;
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -241,6 +257,7 @@ void FUN_004385a0Class::ResetVirtualTableAndClear_004385a0()
 }  // namespace fnv_004385a0
 
 // @fnv 0x004385c0
+// pdb: BSSimpleArray<CombatTimeStamp,1024>::BSSimpleArray<CombatTimeStamp,1024> | ExtraDataObjects.obj | debug, object-file run extension, low
 template <>
 BSSimpleArray<CombatTargetTimestamp, 1024>::BSSimpleArray()
 {
@@ -259,6 +276,7 @@ struct GlobalObject_00869f00
 
 // @fnv 0x00438690
 // src: GUESS 0x00438690 (confidence: low)
+// pdb: BSSimpleArray<unsigned int,1024>::~BSSimpleArray<unsigned int,1024> | ExtraDataObjects.obj | debug, call graph, medium
 void GlobalObject_00869f00::UpdateState_00438690()
 {
     p = &DAT_01016024;
@@ -309,6 +327,7 @@ struct FUN_00438bf0_shell : FUN_00591300_shell
 
 // @fnv 0x00438bf0
 // src: GUESS 0x00438bf0 (confidence: low)
+// pdb: MapMarkerData::~MapMarkerData | MapMarkerData.obj | debug, object-file run extension, low
 void FUN_00438bf0_shell::ForwardCall_00438bf0()
 {
     BSStringT_Thunk();
@@ -349,6 +368,7 @@ struct FUN_004392c0_shell
 
 // @fnv 0x00439320
 // src: GUESS 0x00439320 (confidence: low)
+// pdb: NiAlphaProperty::~NiAlphaProperty | MultiBoundMarkerData.obj | debug, call graph, medium
 void FUN_004392c0_shell::ForwardCall_00439320()
 {
     FUN_004392c0();
@@ -356,17 +376,21 @@ void FUN_004392c0_shell::ForwardCall_00439320()
 
 // @fnv 0x00439340
 // src: COMMUNITY 0x00439340
-void NiObjectNET::NiAlphaProperty_SetSrcBlendMode(unsigned short a)
+// pdb: NiAlphaProperty::SetSrcBlendMode | MultiBoundMarkerData.obj | debug, upstream name already matches, high
+// pdb params: eSrcBlend
+void NiObjectNET::NiAlphaProperty_SetSrcBlendMode(unsigned short eSrcBlend)
 {
-    SetField_00439360(a, 0x1e, 1);
+    SetField_00439360(eSrcBlend, 0x1e, 1);
 }
 
 // Calls FUN_00439360 with the given unsigned short and the constants 0x1e0 and 5.
 // @fnv 0x00439390
 // src: COMMUNITY 0x00439390
-void NiObjectNET::NiAlphaProperty_SetDestBlendMode(unsigned short ausValue)
+// pdb: NiAlphaProperty::SetDestBlendMode | MultiBoundMarkerData.obj | debug, upstream name already matches, high
+// pdb params: eDestBlend
+void NiObjectNET::NiAlphaProperty_SetDestBlendMode(unsigned short eDestBlend)
 {
-    SetField_00439360(ausValue, 0x1e0, 5);
+    SetField_00439360(eDestBlend, 0x1e0, 5);
 }
 
 // Stores the given NiPoint3 into the object at offset 0x18.
@@ -392,17 +416,20 @@ bool __thiscall FUN_0043b260_Class::NiZBufferProperty_IsEqualFast(unsigned short
     return *(unsigned short*)((char*)this + 0x18) == *(unsigned short*)((char*)pOther + 0x18);
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool, unsigned int);
-    void NiAVObject_SetSelectiveUpdateTransformsOverride(bool enabled);
+    void NiAVObject_SetSelectiveUpdateTransformsOverride(bool bOverride);
 };
 
 // @fnv 0x0043b350
 // src: COMMUNITY 0x0043b350
-void TaskQueueInterface::NiAVObject_SetSelectiveUpdateTransformsOverride(bool enabled)
+// pdb: NiAVObject::SetSelectiveUpdateTransformsOverride | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: bOverride
+void TaskQueueInterface::NiAVObject_SetSelectiveUpdateTransformsOverride(bool bOverride)
 {
-    SetTaskFlagDWord(enabled, 0x80);
+    SetTaskFlagDWord(bOverride, 0x80);
 }
 
 
@@ -413,6 +440,7 @@ struct FUN_0043b5b0_shell
 
 // @fnv 0x0043b5b0
 // src: COMMUNITY 0x0043b5b0
+// pdb: hkpWorldObject::markForRead | ModelLoader.obj | debug, upstream name already matches, high
 void FUN_0043b5b0_shell::hkpWorldObject_markForRead()
 {
     ((TESForm*)((TESObjectTREE*)this)->GetData())->Revert(1);
@@ -425,27 +453,31 @@ struct FUN_0043ba10_shell
 
 struct FUN_0043b9f0_shell
 {
-    void NiControllerSequence_SetName(FUN_0043ba10_shell* p);
+    void NiControllerSequence_SetName(FUN_0043ba10_shell* kName);
 };
 
 // @fnv 0x0043b9f0
 // src: COMMUNITY 0x0043b9f0
-void FUN_0043b9f0_shell::NiControllerSequence_SetName(FUN_0043ba10_shell* p)
+// pdb: NiControllerSequence::SetName | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: kName
+void FUN_0043b9f0_shell::NiControllerSequence_SetName(FUN_0043ba10_shell* kName)
 {
-    ((FUN_0043ba10_shell*)((char*)this + 8))->AssignInternedString(p);
+    ((FUN_0043ba10_shell*)((char*)this + 8))->AssignInternedString(kName);
 }
 
 
 struct FUN_0043baa0_class
 {
-    void BSAnimGroupSequence_SetAnimGroup(void* p);
+    void BSAnimGroupSequence_SetAnimGroup(void* apAnimGroup);
 };
 
 // @fnv 0x0043baa0
 // src: COMMUNITY 0x0043baa0
-void FUN_0043baa0_class::BSAnimGroupSequence_SetAnimGroup(void* p)
+// pdb: BSAnimGroupSequence::SetAnimGroup | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: apAnimGroup
+void FUN_0043baa0_class::BSAnimGroupSequence_SetAnimGroup(void* apAnimGroup)
 {
-    *(GO*)((char*)this + 0x74) = p;
+    *(GO*)((char*)this + 0x74) = apAnimGroup;
 }
 
 bool __cdecl MLGetFlag_1(unsigned char);
@@ -457,6 +489,7 @@ struct FUN_0043fab0_class
 
 // @fnv 0x0043fab0
 // src: XBOX_PDB 0x0043fab0
+// pdb: QueuedHelmet::GetFinishedQueuing | ModelLoader.obj | debug, upstream name already matches, high
 bool __thiscall FUN_0043fab0_class::QueuedHelmet_GetFinishedQueuing()
 {
     return MLGetFlag_1(reinterpret_cast<unsigned char*>(this)[0x120]);
@@ -466,6 +499,7 @@ extern "C" void* __cdecl _NiFreeAlias(void*);
 extern int DAT_01015a1c;
 
 // @fnv 0x0042fee0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,bool> >,TESObjectREFR *,bool>::~NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,bool> >,TESObjectREFR *,bool> | ExtraDataList.obj | debug, call graph (shared callers), high
 template <>
 NiTMapBase<DFALL<NiTMapItem<TESObjectREFR*, bool> >, TESObjectREFR*, bool>::~NiTMapBase()
 {
@@ -482,6 +516,7 @@ struct FUN_00436ac0 : BSExtraData
 
 // Initialises the base with tag 0x55, installs the vtable pointer from DAT_01015f24, and zeroes the field at offset 0xc.
 // @fnv 0x00436ac0
+// pdb: ExtraTalkingActor::ExtraTalkingActor | ExtraDataObjects.obj | debug, call graph, high
 FUN_00436ac0::FUN_00436ac0() : BSExtraData(0x55)
 {
     *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0xc) = 0;
@@ -490,6 +525,7 @@ FUN_00436ac0::FUN_00436ac0() : BSExtraData(0x55)
 class WaterZone;
 // RTTI at vtable 0x01016038 identifies NiTMapBase<DFALL<NiTMapItem<WaterZone*, int> >, WaterZone*, int>.
 // @fnv 0x00438780
+// pdb: NiTMapBase<DFALL<NiTMapItem<WaterZone *,int> >,WaterZone *,int>::~NiTMapBase<DFALL<NiTMapItem<WaterZone *,int> >,WaterZone *,int> | ExtraDataObjects.obj | debug, call graph (shared callers), high
 template <>
 NiTMapBase<DFALL<NiTMapItem<WaterZone*, int> >, WaterZone*, int>::~NiTMapBase()
 {
@@ -516,6 +552,7 @@ struct FUN_0042ffd0_cls
 
 // Calls the base cleanup, then frees this object when the flags bit 0 is set, and returns this.
 // @fnv 0x0042ffd0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,bool> >,TESObjectREFR *,bool>::`scalar deleting destructor' | ExtraDataList.obj | retail, vtable slot, high
 void* __thiscall FUN_0042ffd0_cls::FUN_0042ffd0(unsigned int flags)
 {
     ((NiTMapBase<DFALL<NiTMapItem<TESObjectREFR*, bool> >, TESObjectREFR*, bool>*)this)->NiTMapBase::~NiTMapBase();
@@ -531,6 +568,8 @@ struct FUN_00435ec0 : public BSExtraData
 };
 // Initialises the object with base value 0x46, sets its vtable to DAT_01015968 and stores the passed pointer in p.
 // @fnv 0x00435ec0
+// pdb: ExtraHeadingTarget::ExtraHeadingTarget | ExtraDataObjects.obj | debug, call graph, medium
+// pdb params: apRef
 FUN_00435ec0::FUN_00435ec0(void* a) : BSExtraData(0x46)
 {
     p = a;
@@ -542,6 +581,8 @@ struct FUN_00435f20_class : public BSExtraData
     FUN_00435f20_class(float f);
 };
 // @fnv 0x00435f20
+// pdb: ExtraRefractionProperty::ExtraRefractionProperty | ExtraDataObjects.obj | debug, call graph, medium
+// pdb params: afRefractionPower
 FUN_00435f20_class::FUN_00435f20_class(float f) : BSExtraData(0x48)
 {
     m_fValue = f;
@@ -558,6 +599,7 @@ struct FUN_00435f50_class : FUN_00435f80_shell
 };
 // Calls FUN_00435f80, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00435f50
+// pdb: ExtraRefractionProperty::`scalar deleting destructor' | ExtraDataObjects.obj | debug, vtable slot, medium
 void* __thiscall FUN_00435f50_class::FUN_00435f50(unsigned int flags)
 {
     FUN_00435f80();
@@ -573,6 +615,8 @@ struct FUN_00436090 : public BSExtraData
     FUN_00436090(unsigned char);
 };
 // @fnv 0x00436090
+// pdb: ExtraHasNoRumors::ExtraHasNoRumors | ExtraDataObjects.obj | debug, call graph, medium
+// pdb params: abVal
 FUN_00436090::FUN_00436090(unsigned char x) : BSExtraData(0x4e)
 {
     c = x;
@@ -585,6 +629,7 @@ struct FUN_00436150_Class
     void* __thiscall FUN_00436150(unsigned int flags);
 };
 // @fnv 0x00436150
+// pdb: ExtraSound::`scalar deleting destructor' | ExtraDataObjects.obj | debug, vtable slot, medium
 void* __thiscall FUN_00436150_Class::FUN_00436150(unsigned int flags)
 {
     FUN_00436180();
@@ -600,6 +645,7 @@ struct FUN_00436390_Class
 };
 
 // @fnv 0x00436390
+// pdb: ExtraCreatureMovementSound::`scalar deleting destructor' | ExtraDataObjects.obj | debug, vtable slot, medium
 void* FUN_00436390_Class::FUN_00436390(unsigned int flags)
 {
     FUN_004363c0();
@@ -615,6 +661,7 @@ struct FUN_004364b0_Class
 };
 // Calls FUN_004364e0, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x004364b0
+// pdb: ExtraWeaponIdleSound::`scalar deleting destructor' | ExtraDataObjects.obj | debug, vtable slot, medium
 void* FUN_004364b0_Class::FUN_004364b0(unsigned int flags)
 {
     FUN_004364e0();
@@ -630,6 +677,7 @@ struct FUN_004365d0_class
 };
 // Calls FUN_00436600, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004365d0
+// pdb: ExtraWeaponAttackSound::`scalar deleting destructor' | ExtraDataObjects.obj | debug, vtable slot, medium
 void* __thiscall FUN_004365d0_class::FUN_004365d0(unsigned int flags)
 {
     FUN_00436600();
@@ -649,6 +697,7 @@ struct FUN_004366f0_class
 
 // Calls FUN_00436720, frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x004366f0
+// pdb: ExtraActivateLoopSound::`scalar deleting destructor' | ExtraDataObjects.obj | debug, vtable slot, medium
 void* __thiscall FUN_004366f0_class::FUN_004366f0(unsigned int flags)
 {
     FUN_00436720();
@@ -665,6 +714,7 @@ struct FUN_00436af0_Class
     void* FUN_00436af0(unsigned int flags);
 };
 // @fnv 0x00436af0
+// pdb: ExtraTalkingActor::`scalar deleting destructor' | ExtraDataObjects.obj | debug, vtable slot, medium
 void* FUN_00436af0_Class::FUN_00436af0(unsigned int flags)
 {
     FUN_00436bb0();
@@ -680,6 +730,7 @@ struct FUN_00438410_Class
 };
 // Calls FUN_00438720, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00438410
+// pdb: NiTMap<WaterZone *,int>::`scalar deleting destructor' | ExtraDataObjects.obj | retail, vtable slot, high
 void* __thiscall FUN_00438410_Class::FUN_00438410(unsigned int flags)
 {
     ((NiTMap<WaterZone*, int>*)this)->NiTMap::~NiTMap();
@@ -712,6 +763,7 @@ struct FUN_00438440_Class
     void* __thiscall FUN_00438440(unsigned int flags);
 };
 // @fnv 0x00438440
+// pdb: BSMap<TESFaction *,bool>::`scalar deleting destructor' | ExtraDataObjects.obj | retail, vtable slot, high
 void* __thiscall FUN_00438440_Class::FUN_00438440(unsigned int flags)
 {
     ((FactionMembershipMap*)this)->FactionMembershipMap::~FactionMembershipMap();
@@ -724,13 +776,14 @@ void Deallocate(void*);
 void ResetVirtualTableAndClear_004385a0();
 struct FUN_00438970_class
 {
-    void __thiscall ResetVirtualTableAndClear_004385a0();
+    void __thiscall BSSimpleArray_DismemberedLimb_1024_dtor();
     void* __thiscall FUN_00438970(unsigned int flags);
 };
 // @fnv 0x00438970
+// pdb: BSSimpleArray<DismemberedLimb *,1024>::`scalar deleting destructor' | ExtraDataObjects.obj | retail, vtable slot, high
 void* __thiscall FUN_00438970_class::FUN_00438970(unsigned int flags)
 {
-    ResetVirtualTableAndClear_004385a0();
+    BSSimpleArray_DismemberedLimb_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -742,6 +795,7 @@ struct WaterZoneMapBaseDeletion
     void* FUN_00438a00(unsigned int flags);
 };
 // @fnv 0x00438a00
+// pdb: NiTMapBase<DFALL<NiTMapItem<WaterZone *,int> >,WaterZone *,int>::`scalar deleting destructor' | ExtraDataObjects.obj | retail, vtable slot, high
 void* WaterZoneMapBaseDeletion::FUN_00438a00(unsigned int flags)
 {
     ((NiTMapBase<DFALL<NiTMapItem<WaterZone*, int> >, WaterZone*, int>*)this)->NiTMapBase::~NiTMapBase();
@@ -762,6 +816,7 @@ struct FUN_00438a30_class
 
 // Calls FUN_00438900 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x00438a30
+// pdb: BSMapBase<TESFaction *,bool>::`scalar deleting destructor' | ExtraDataObjects.obj | retail, vtable slot, high
 void* __thiscall FUN_00438a30_class::FUN_00438a30(unsigned int flags)
 {
     ((FUN_00438900_class*)this)->ReleaseStorage_00438900();
@@ -798,6 +853,8 @@ struct Holder00420dd0 : BaseExtraList
 };
 // @fnv 0x00420dd0
 // src: XBOX_PDB 0x00420dd0
+// pdb: ExtraDataList::GetPortal | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb locals: pextra
 unsigned int __thiscall Holder00420dd0::ExtraDataList_GetPortal()
 {
     BSExtraData* e = GetExtraData(0x78);
@@ -817,6 +874,7 @@ struct FUN_0042cba0_class : public BSExtraData
 
 // Initialises the object with base value 0x6e, sets its vtbl to DAT_01015998, and zeroes fields c and d.
 // @fnv 0x0042cba0
+// pdb: ExtraAmmo::ExtraAmmo | ExtraDataList.obj | debug, call graph, high
 FUN_0042cba0_class::FUN_0042cba0_class() : BSExtraData(0x6e)
 {
     c = 0;
@@ -831,6 +889,7 @@ extern int DAT_010151fc;
 // Initialises the object with BSExtraData(0x70), installs the vtable pointer DAT_010151fc, zeroes the field at offset 0xc, and returns this.
 // @fnv 0x0042cbe0
 // src: EXE 0x0042cbe0
+// pdb: ExtraPackageData::ExtraPackageData | ExtraDataList.obj | debug, call graph, medium
 void* __thiscall FHolder_42cbe0::ExtraPackageData_ExtraPackageData()
 {
     this->BSExtraData::BSExtraData(0x70);
@@ -865,37 +924,43 @@ struct FUN_00432470 : public BSExtraData
 };
 struct FUN_0042dee0_shell
 {
-    void __thiscall ExtraDataList_SetInfoGeneralTopic(int v);
+    void __thiscall ExtraDataList_SetInfoGeneralTopic(int apItem);
 };
 // Looks up extra data of type 0x4d; if absent, creates a new FUN_00432470 with v and adds it, otherwise stores v at offset 0xc.
 // @fnv 0x0042dee0
 // src: XBOX_PDB 0x0042dee0
-void __thiscall FUN_0042dee0_shell::ExtraDataList_SetInfoGeneralTopic(int aiValue)
+// pdb: ExtraDataList::SetInfoGeneralTopic | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb params: apItem
+// pdb locals: pextra
+void __thiscall FUN_0042dee0_shell::ExtraDataList_SetInfoGeneralTopic(int apItem)
 {
     BSExtraData* extra = ((BaseExtraList*)this)->GetExtraData(0x4d);
     if (!extra)
     {
-        extra = new FUN_00432470(aiValue);
+        extra = new FUN_00432470(apItem);
         ((BaseExtraList*)this)->AddExtra(extra);
     }
     else
     {
-        *(int*)((char*)extra + 0xc) = aiValue;
+        *(int*)((char*)extra + 0xc) = apItem;
     }
 }
 
 struct FUN_0042df90_shell
 {
-    ExtraLock* ExtraDataList_GetInfoGeneralTopic(int a);
+    ExtraLock* ExtraDataList_GetInfoGeneralTopic(int apSpeaker);
 };
 // @fnv 0x0042df90
 // src: XBOX_PDB 0x0042df90
-ExtraLock* FUN_0042df90_shell::ExtraDataList_GetInfoGeneralTopic(int a)
+// pdb: ExtraDataList::GetInfoGeneralTopic | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb params: apSpeaker
+// pdb locals: pextra, pItem
+ExtraLock* FUN_0042df90_shell::ExtraDataList_GetInfoGeneralTopic(int apSpeaker)
 {
     ExtraLock* p = 0;
     ExtraDataList* e = (ExtraDataList*)((ExtraDataList*)this)->GetExtraData(0x4d);
     if (e && (p = (ExtraLock*)*(void**)((char*)e + 0xc)) && p->MenuTopic_GetResponseListEmpty())
-        p->MenuTopic_FillResponseList(a);
+        p->MenuTopic_FillResponseList(apSpeaker);
     return p;
 }
 
@@ -908,6 +973,8 @@ struct FUN_0042e210_Class : public BSExtraData
 };
 // Initializes the object with base BSExtraData(0x5b), sets vtbl to DAT_01015980, and stores x into c and y into d.
 // @fnv 0x0042e210
+// pdb: ExtraModelSwap::ExtraModelSwap | ExtraDataList.obj | debug, call graph, medium
+// pdb params: apModelSwap, apModelSwapForm
 FUN_0042e210_Class::FUN_0042e210_Class(int x, int y) : BSExtraData(0x5b)
 {
     c = x;
@@ -918,13 +985,15 @@ extern void* DAT_010159bc;
 struct FUN_0042e650_class : BSExtraData
 {
     unsigned char c;
-    FUN_0042e650_class(unsigned char c);
+    FUN_0042e650_class(unsigned char bMod);
 };
 // Initialises the object with base value 0x8e, sets its vtbl to DAT_010159bc and stores c in field c.
 // @fnv 0x0042e650
-FUN_0042e650_class::FUN_0042e650_class(unsigned char aucValue) : BSExtraData(0x8e)
+// pdb: ExtraModdingItem::ExtraModdingItem | ExtraDataList.obj | debug, call graph, high
+// pdb params: bMod
+FUN_0042e650_class::FUN_0042e650_class(unsigned char bMod) : BSExtraData(0x8e)
 {
-    this->c = aucValue;
+    this->c = bMod;
 }
 
 struct G00559a40
@@ -938,6 +1007,8 @@ struct FUN_0042fdc0_class
 };
 // @fnv 0x0042fdc0
 // src: GUESS 0x0042fdc0 (confidence: medium)
+// pdb: NiPointer<NavMesh>::operator= | ExtraDataList.obj | debug, object-file run extension, low
+// pdb params: ptr
 NiAVObject* __thiscall FUN_0042fdc0_class::AssignRetainedObject_0042fdc0(NiAVObject** apObject)
 {
     if (m_pObject != *apObject)
@@ -987,6 +1058,7 @@ struct FUN_0042ff50_host : FUN_0042ff80_s
 };
 // Calls FUN_0042ff80, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0042ff50
+// pdb: BSSimpleArray<TESBoundObject *,1024>::`scalar deleting destructor' | ExtraDataList.obj | retail, vtable slot, high
 void* __thiscall FUN_0042ff50_host::FUN_0042ff50(unsigned int flags)
 {
     ResetVirtualTableAndClear();
@@ -1002,6 +1074,9 @@ void __cdecl FinishScriptRunLock(void*);
 // If the object at p is not _EmptyFS, obtains a value via FUN_00438210 and passes it to FinishScriptRunLock.
 // @fnv 0x004381d0
 // src: XBOX_PDB 0x004381d0
+// pdb: NiGlobalStringTable::DecRefCount | ExtraDataObjects.obj | debug, upstream name already matches, high
+// pdb params: kHandle
+// pdb locals: pkMem
 void NiGlobalStringTable_DecRefCount(void* p)
 {
     if (*(void**)p == _EmptyFS)
@@ -1012,21 +1087,24 @@ void NiGlobalStringTable_DecRefCount(void* p)
 
 // @fnv 0x00438210
 // src: COMMUNITY 0x00438210
-int __cdecl NiGlobalStringTable_GetRealBufferStart(int* p)
+// pdb: NiGlobalStringTable::GetRealBufferStart | ExtraDataObjects.obj | debug, upstream name already matches, high
+// pdb params: kHandle
+int __cdecl NiGlobalStringTable_GetRealBufferStart(int* kHandle)
 {
-    return *p - 8;
+    return *kHandle - 8;
 }
 
 extern int DAT_01016024;
 struct FUN_00438660_class
 {
     void* vtable;
-    FUN_00438660_class* SetVirtualTableAndProcessState_00438660();
+    FUN_00438660_class* BSSimpleArray_unsigned_int_1024_ctor();
 };
 // Sets the vtable to DAT_01016024, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x00438660
-// src: GUESS 0x00438660 (confidence: low)
-FUN_00438660_class* FUN_00438660_class::SetVirtualTableAndProcessState_00438660()
+// src: XBOX_DEBUG_PDB 0x00438660
+// pdb: BSSimpleArray<unsigned int,1024>::BSSimpleArray<unsigned int,1024> | ExtraDataObjects.obj | debug, call graph (shared callers), high
+FUN_00438660_class* FUN_00438660_class::BSSimpleArray_unsigned_int_1024_ctor()
 {
     vtable = &DAT_01016024;
     reinterpret_cast<AX*>(this)->BSSimpleArray_float_1024_InitialSetup(0, 0);
@@ -1038,6 +1116,7 @@ void __cdecl Deallocate(void*);
 
 // @fnv 0x00438900
 // src: GUESS 0x00438900 (confidence: medium)
+// pdb: BSMapBase<TESFaction *,bool>::~BSMapBase<TESFaction *,bool> | ExtraDataObjects.obj | debug, call graph (shared callers), medium
 void __thiscall FUN_00438900_class::ReleaseStorage_00438900()
 {
     *reinterpret_cast<void**>(this) = &DAT_01016058;
@@ -1062,6 +1141,8 @@ struct FUN_00438c10_Class : public FNStub
 };
 // @fnv 0x00438c10
 // src: GUESS 0x00438c10 (confidence: low)
+// pdb: MapMarkerData::Save | MapMarkerData.obj | debug, object-file run extension, low
+// pdb locals: itempint
 void __thiscall FUN_00438c10_Class::ReleaseStorage_00438c10()
 {
     TESForm_AddChunk_3(0x4d414e46, *(unsigned char*)((char*)this + 0xc));
@@ -1082,6 +1163,7 @@ struct FUN_00438f90_Class
 };
 // @fnv 0x00438f90
 // src: GUESS 0x00438f90 (confidence: low)
+// pdb: MultiBoundMarkerData::Save | MultiBoundMarkerData.obj | debug, object-file run extension, low
 void FUN_00438f90_Class::EvaluateValue_00438f90()
 {
     if (EvaluateValue_00439150())
@@ -1154,16 +1236,18 @@ void __thiscall Bound::BSMultiBoundAABB_SetAxis(const Matrix& aMatrix)
 
 struct FUN_00439f50_class
 {
-    void NiMatrix3_GetCol(unsigned int col, NiPoint3* out);
+    void NiMatrix3_GetCol(unsigned int uiCol, NiPoint3* col);
 };
 // Reads three floats at offsets col*4, col*4+0xc and col*4+0x18 from this into out as x, y and z.
 // @fnv 0x00439f50
 // src: XBOX_PDB 0x00439f50
-void FUN_00439f50_class::NiMatrix3_GetCol(unsigned int uiColumn, NiPoint3* out)
+// pdb: NiMatrix3::GetCol | MultiBoundMarkerData.obj | debug, call graph, high
+// pdb params: uiCol, col
+void FUN_00439f50_class::NiMatrix3_GetCol(unsigned int uiCol, NiPoint3* col)
 {
-    out->x = *(float*)((char*)this + uiColumn * 4);
-    out->y = *(float*)((char*)this + uiColumn * 4 + 0xc);
-    out->z = *(float*)((char*)this + uiColumn * 4 + 0x18);
+    col->x = *(float*)((char*)this + uiCol * 4);
+    col->y = *(float*)((char*)this + uiCol * 4 + 0xc);
+    col->z = *(float*)((char*)this + uiCol * 4 + 0x18);
 }
 
 struct Node
@@ -1220,12 +1304,14 @@ struct FUN_0043a9a0_class
     unsigned int x;
     unsigned int y;
     unsigned int z;
-    void __thiscall LoadFields();
+    void __thiscall DoorTeleportData_LoadGame();
 };
 
 // @fnv 0x0043a9a0
-// src: GUESS 0x0043a9a0 (confidence: medium)
-void __thiscall FUN_0043a9a0_class::LoadFields()
+// src: XBOX_RETAIL_PDB 0x0043a9a0
+// pdb: DoorTeleportData::LoadGame | TeleportData.obj | retail, object-file run extension, high
+// pdb locals: ilinkedDoorID
+void __thiscall FUN_0043a9a0_class::DoorTeleportData_LoadGame()
 {
     g_TESSaveLoadGame->ReadTypedData((char*)this + 4, 0xc);
     g_TESSaveLoadGame->ReadTypedData((char*)this + 0x10, 0xc);
@@ -1242,6 +1328,7 @@ struct Flt
 extern Flt DAT_011f4438;
 // @fnv 0x0043b250
 // src: COMMUNITY 0x0043b250
+// pdb: NiVertexColorProperty::GetDefault | ModelLoader.obj | debug, upstream name already matches, high
 unsigned int __cdecl NiVertexColorProperty_GetDefault()
 {
     return DAT_011f4438;
@@ -1257,6 +1344,7 @@ extern Flt DAT_011f4444;
 
 // @fnv 0x0043b2a0
 // src: COMMUNITY 0x0043b2a0
+// pdb: NiZBufferProperty::GetDefault | ModelLoader.obj | debug, upstream name already matches, high
 unsigned int __cdecl NiZBufferProperty_GetDefault()
 {
     return DAT_011f4444;
@@ -1267,16 +1355,18 @@ struct S_0043b320
 {
     char _pad0[0x38];
     TaskQueueInterface** arr;
-    void __thiscall NiMultiTargetTransformController_SetInterpolatorTarget(unsigned short a, TaskQueueInterface* b);
+    void __thiscall NiMultiTargetTransformController_SetInterpolatorTarget(unsigned short a, TaskQueueInterface* pkTarget);
 };
 // Stores b in arr[a] and, when b is non-null, calls b->FUN_0043b350(true).
 // @fnv 0x0043b320
 // src: COMMUNITY 0x0043b320
-void __thiscall S_0043b320::NiMultiTargetTransformController_SetInterpolatorTarget(unsigned short usIndex, TaskQueueInterface* pTaskQueue)
+// pdb: NiMultiTargetTransformController::SetInterpolatorTarget | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: usIndex, pkTarget
+void __thiscall S_0043b320::NiMultiTargetTransformController_SetInterpolatorTarget(unsigned short usIndex, TaskQueueInterface* pkTarget)
 {
-    arr[usIndex] = pTaskQueue;
-    if (pTaskQueue)
-        pTaskQueue->NiAVObject_SetSelectiveUpdateTransformsOverride(true);
+    arr[usIndex] = pkTarget;
+    if (pkTarget)
+        pkTarget->NiAVObject_SetSelectiveUpdateTransformsOverride(true);
 }
 
 namespace fnv_0043ba60 {
@@ -1285,15 +1375,18 @@ void* __cdecl NiGlobalStringTable_GetRealBufferStart(void*);
 int __cdecl InitScriptRunLock(void*);
 // @fnv 0x0043ba60
 // src: XBOX_PDB 0x0043ba60
-void __cdecl NiGlobalStringTable_IncRefCount(int* p)
+// pdb: NiGlobalStringTable::IncRefCount | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: kHandle
+// pdb locals: pkMem
+void __cdecl NiGlobalStringTable_IncRefCount(int* kHandle)
 {
     void* v;
-    if (*p == _EmptyFS)
+    if (*kHandle == _EmptyFS)
     {
     }
     else
     {
-        v = NiGlobalStringTable_GetRealBufferStart(p);
+        v = NiGlobalStringTable_GetRealBufferStart(kHandle);
         InitScriptRunLock(v);
     }
 }
@@ -1307,24 +1400,27 @@ struct FUN_00435820 : public BSExtraData
 };
 struct FUN_00420e00_cls : public BaseExtraList
 {
-    void ExtraDataList_SetPortal(void* p);
+    void ExtraDataList_SetPortal(void* apPortal);
 };
 // Stores p in the extra data of type 0x78, creating and adding it if absent, or removes that extra data when p is null.
 // @fnv 0x00420e00
 // src: COMMUNITY 0x00420e00
-void FUN_00420e00_cls::ExtraDataList_SetPortal(void* apData)
+// pdb: ExtraDataList::SetPortal | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb params: apPortal
+// pdb locals: pextra
+void FUN_00420e00_cls::ExtraDataList_SetPortal(void* apPortal)
 {
-    if (apData)
+    if (apPortal)
     {
         FUN_00435820* e = (FUN_00435820*)GetExtraData(0x78);
         if (e)
         {
-            ((GO*)((char*)e + 0xc))->operator=(apData);
+            ((GO*)((char*)e + 0xc))->operator=(apPortal);
         }
         else
         {
             e = new FUN_00435820;
-            ((GO*)((char*)e + 0xc))->operator=(apData);
+            ((GO*)((char*)e + 0xc))->operator=(apPortal);
             AddExtra(e);
         }
     }
@@ -1336,19 +1432,22 @@ void FUN_00420e00_cls::ExtraDataList_SetPortal(void* apData)
 
 struct FUN_00421600_Class : BaseExtraList
 {
-    void ExtraDataList_SetNoRumors(unsigned char val);
+    void ExtraDataList_SetNoRumors(unsigned char abVal);
 };
 // Stores val in the byte at offset 0xc of extra data 0x4e, creating a new FUN_00436090 extra if none exists.
 // @fnv 0x00421600
 // src: XBOX_PDB 0x00421600
-void FUN_00421600_Class::ExtraDataList_SetNoRumors(unsigned char aucValue)
+// pdb: ExtraDataList::SetNoRumors | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb params: abVal
+// pdb locals: pextra
+void FUN_00421600_Class::ExtraDataList_SetNoRumors(unsigned char abVal)
 {
     BSExtraData* extra = GetExtraData(0x4e);
     if (extra)
-        *(unsigned char*)((char*)extra + 0xc) = aucValue;
+        *(unsigned char*)((char*)extra + 0xc) = abVal;
     else
     {
-        extra = (BSExtraData*)new FUN_00436090(aucValue);
+        extra = (BSExtraData*)new FUN_00436090(abVal);
         AddExtra(extra);
     }
 }
@@ -1368,6 +1467,7 @@ struct FUN_00433830 : public BSExtraData
 };
 void __cdecl FreeActivateList(ListX*);
 // @fnv 0x00433830
+// pdb: ExtraActivateRefChildren::~ExtraActivateRefChildren | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_00433830::~FUN_00433830()
 {
     FreeActivateList(&m_kEntryList);
@@ -1400,21 +1500,24 @@ FUN_00438820_Class::FUN_00438820_Class(int aiCount)
 
 struct FUN_0042e5a0_class
 {
-    void ExtraDataList_SetIsModding(unsigned char type);
+    void ExtraDataList_SetIsModding(unsigned char bModding);
 };
 // @fnv 0x0042e5a0
 // src: COMMUNITY 0x0042e5a0
-void FUN_0042e5a0_class::ExtraDataList_SetIsModding(unsigned char type)
+// pdb: ExtraDataList::SetIsModding | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb params: bModding
+// pdb locals: pExtra
+void FUN_0042e5a0_class::ExtraDataList_SetIsModding(unsigned char bModding)
 {
     BSExtraData* extra = ((BaseExtraList*)this)->GetExtraData(0x8e);
     if (!extra)
     {
-        extra = (BSExtraData*)new FUN_0042e650_class(type);
+        extra = (BSExtraData*)new FUN_0042e650_class(bModding);
         ((BaseExtraList*)this)->AddExtra(extra);
     }
     else
     {
-        ((TESLeveledList*)extra)->ExtraWeaponModFlags_SetWeaponModFlags(type);
+        ((TESLeveledList*)extra)->ExtraWeaponModFlags_SetWeaponModFlags(bModding);
     }
 }
 
@@ -1429,6 +1532,9 @@ struct FUN_004386b0_Class
 // Stores a pointer and a count, allocates count*4 bytes, zeroes them, and returns this.
 // @fnv 0x004386b0
 // src: EXE 0x004386b0
+// pdb: BSSimpleArray<unsigned int,1024>::Add | ExtraDataObjects.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 void* FUN_004386b0_Class::NiTMapBase_DFALL_NiTMapItem_WaterZone_int_WaterZone_int_NiTMapBase(void* auiCount)
 {
     p = &DAT_01016038;
@@ -1451,6 +1557,8 @@ struct FUN_00439ef0_class : public NiPoint3
 // Subtracts b from this NiPoint3, stores the result in a, and returns a.
 // @fnv 0x00439ef0
 // src: GUESS 0x00439ef0 (confidence: high)
+// pdb: NiPoint3::operator- | MultiBoundMarkerData.obj | debug, call graph, medium
+// pdb params: pt
 NiPoint3* FUN_00439ef0_class::SubtractIntoVector(NiPoint3* apResult, const NiPoint3& arSubtrahend)
 {
     ((NiPoint3Set*)apResult)->Set(x - arSubtrahend.x, y - arSubtrahend.y, z - arSubtrahend.z);
@@ -1487,7 +1595,7 @@ struct LH
 
 struct FUN_00420440_Class
 {
-    void ExtraDataList_SetRoomLinkedRefData(void* pObject);
+    void ExtraDataList_SetRoomLinkedRefData(void* apData);
 };
 
 struct FUN_00416b80
@@ -1503,7 +1611,7 @@ struct FUN_00416b80
 
 struct FUN_00420c10_Class : public FUN_004207e0Class
 {
-    void ExtraDataList_AddRoomLinkedRoomRef(int value);
+    void ExtraDataList_AddRoomLinkedRoomRef(int apRef);
 };
 
 void* __cdecl operator new(unsigned int size);
@@ -1511,17 +1619,20 @@ void* __cdecl operator new(unsigned int size);
 // Ensures the object exists when value is nonzero, then adds value to the list at offset 8 if it is not already present.
 // @fnv 0x00420c10
 // src: COMMUNITY 0x00420c10
-void FUN_00420c10_Class::ExtraDataList_AddRoomLinkedRoomRef(int value)
+// pdb: ExtraDataList::AddRoomLinkedRoomRef | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: pdata
+void FUN_00420c10_Class::ExtraDataList_AddRoomLinkedRoomRef(int apRef)
 {
-    if (!this->ExtraDataList_GetRoomLinkedRefData() && value)
+    if (!this->ExtraDataList_GetRoomLinkedRefData() && apRef)
     {
         ((FUN_00420440_Class*)this)->ExtraDataList_SetRoomLinkedRefData(new FUN_00416b80());
     }
 
     void* m_pLinkedReference = this->ExtraDataList_GetRoomLinkedRefData();
-    if (!((LH*)((char*)m_pLinkedReference + 8))->IsInList(value))
+    if (!((LH*)((char*)m_pLinkedReference + 8))->IsInList(apRef))
     {
-        ((G2*)((char*)m_pLinkedReference + 8))->AddHead(&value);
+        ((G2*)((char*)m_pLinkedReference + 8))->AddHead(&apRef);
     }
 }
 
@@ -1530,6 +1641,7 @@ struct FUN_0042cca0 : public BSExtraData
     virtual ~FUN_0042cca0();
 };
 // @fnv 0x0042cca0
+// pdb: ExtraWeaponModFlags::~ExtraWeaponModFlags | ExtraDataList.obj | debug, object-file gap fill, medium
 FUN_0042cca0::~FUN_0042cca0()
 {}
 
@@ -1543,6 +1655,7 @@ struct FUN_0042dff0_shell
 };
 // @fnv 0x0042dff0
 // src: XBOX_PDB 0x0042dff0
+// pdb: MenuTopic::GetResponseListEmpty | ExtraDataList.obj | debug, upstream name already matches, high
 int FUN_0042dff0_shell::MenuTopic_GetResponseListEmpty()
 {
     return ((BSSimpleListTESRaceSize*)((char*)this + 0xc))->GetSize() == 0 ? 1 : 0;
@@ -1555,6 +1668,7 @@ struct FUN_0042e130_shell : BaseExtraList
 
 // @fnv 0x0042e130
 // src: COMMUNITY 0x0042e130
+// pdb: ExtraDataList::RemoveTalkingActorExtra | ExtraDataList.obj | debug, call graph (shared callers), high
 void FUN_0042e130_shell::ExtraDataList_RemoveTalkingActor()
 {
     BaseExtraList::RemoveExtra((unsigned char)0x55);
@@ -1565,6 +1679,7 @@ struct FUN_0042e6d0 : public BSExtraData
     virtual ~FUN_0042e6d0();
 };
 // @fnv 0x0042e6d0
+// pdb: ExtraModdingItem::~ExtraModdingItem | ExtraDataList.obj | debug, object-file gap fill, medium
 FUN_0042e6d0::~FUN_0042e6d0()
 {}
 
@@ -1579,6 +1694,7 @@ NavMeshArr::~NavMeshArr()
 
 // Runs the destructor and, when flags has bit 0 set, deallocates the object; returns this.
 // @fnv 0x0042f510
+// pdb: BSSimpleArray<NavMeshPtr,1024>::`scalar deleting destructor' | ExtraDataList.obj | retail, vtable slot, high
 void* NavMeshArr::FUN_0042f510(unsigned int flags)
 {
     this->NavMeshArr::~NavMeshArr();
@@ -1588,44 +1704,46 @@ void* NavMeshArr::FUN_0042f510(unsigned int flags)
 }
 
 // @fnv 0x0042f5f0
+// pdb: BSSimpleArray<CombatTimeStamp,1024>::SetSize | ExtraDataList.obj | debug, call graph, high
+// pdb params: aiNewSize, abFreeMemory
 template <>
-void BSSimpleArray<CombatTargetTimestamp, 1024>::SetSize(unsigned int count, bool clear)
+void BSSimpleArray<CombatTargetTimestamp, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (count == 0)
+    if (aiNewSize == 0)
     {
-        Clear(clear);
+        Clear(abFreeMemory);
     }
-    else if (count > SimpleArrayStorage)
+    else if (aiNewSize > SimpleArrayStorage)
     {
         if (SimpleArrayStorage == 0)
         {
-            pBuffer = _Allocate(count);
-            SimpleArrayStorage = count;
+            pBuffer = _Allocate(aiNewSize);
+            SimpleArrayStorage = aiNewSize;
         }
         else
         {
-            ReallocateStorage(count, iSize);
-            SimpleArrayStorage = count;
+            ReallocateStorage(aiNewSize, iSize);
+            SimpleArrayStorage = aiNewSize;
         }
 
-        InitializeItems(pBuffer + iSize, count - iSize);
-        iSize = count;
+        InitializeItems(pBuffer + iSize, aiNewSize - iSize);
+        iSize = aiNewSize;
     }
-    else if (count < iSize)
+    else if (aiNewSize < iSize)
     {
-        ReleaseElements(pBuffer + count, iSize - count);
-        iSize = count;
+        ReleaseElements(pBuffer + aiNewSize, iSize - aiNewSize);
+        iSize = aiNewSize;
 
-        if (clear && count <= SimpleArrayStorage / 4)
+        if (abFreeMemory && aiNewSize <= SimpleArrayStorage / 4)
         {
-            ReallocateStorage(count, count);
-            SimpleArrayStorage = count;
+            ReallocateStorage(aiNewSize, aiNewSize);
+            SimpleArrayStorage = aiNewSize;
         }
     }
     else
     {
-        InitializeItems(pBuffer + iSize, count - iSize);
-        iSize = count;
+        InitializeItems(pBuffer + iSize, aiNewSize - iSize);
+        iSize = aiNewSize;
     }
 }
 
@@ -1633,12 +1751,13 @@ struct AC_0042f730
 {
     void* vtbl;
     void __fastcall ActorCause_DecRefCount();
-    void __fastcall ReleaseReferencedObject();
+    void __fastcall NiPointer_ActorCause_dtor();
 };
 
 // @fnv 0x0042f760
-// src: GUESS 0x0042f760 (confidence: medium)
-void __fastcall AC_0042f730::ReleaseReferencedObject()
+// src: XBOX_DEBUG_PDB 0x0042f760
+// pdb: NiPointer<ActorCause>::~NiPointer<ActorCause> | ExtraDataList.obj | debug, call graph (shared callers), high
+void __fastcall AC_0042f730::NiPointer_ActorCause_dtor()
 {
     if (vtbl)
         ((AC_0042f730*)vtbl)->ActorCause_DecRefCount();
@@ -1656,6 +1775,7 @@ struct FUN_00435f80 : public BSExtraData
     virtual ~FUN_00435f80();
 };
 // @fnv 0x00435f80
+// pdb: ExtraRefractionProperty::~ExtraRefractionProperty | ExtraDataObjects.obj | debug, object-file run extension, low
 FUN_00435f80::~FUN_00435f80()
 {}
 
@@ -1667,6 +1787,7 @@ struct FUN_004362a0
 
 // Runs the destructor, frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00436270
+// pdb: ExtraCreatureAwakeSound::`scalar deleting destructor' | ExtraDataObjects.obj | debug, vtable slot, medium
 void* FUN_004362a0::FUN_00436270(unsigned int flags)
 {
     FUN_004362a0::~FUN_004362a0();
@@ -1682,10 +1803,12 @@ struct FUN_00436bb0 : public BSExtraData
     virtual ~FUN_00436bb0();
 };
 // @fnv 0x00436bb0
+// pdb: ExtraTalkingActor::~ExtraTalkingActor | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_00436bb0::~FUN_00436bb0()
 {}
 
 // @fnv 0x004385f0
+// pdb: BSSimpleArray<CombatTimeStamp,1024>::~BSSimpleArray<CombatTimeStamp,1024> | ExtraDataObjects.obj | debug, call graph (shared callers), high
 template <>
 BSSimpleArray<CombatTargetTimestamp, 1024>::~BSSimpleArray()
 {
@@ -1705,6 +1828,8 @@ extern void* DAT_011c5f58;
 
 // @fnv 0x0043a080
 // src: XBOX_PDB 0x0043a080
+// pdb: NiTAbstractPoolAllocator<unsigned int>::CreateFreeMem | MultiBoundMarkerData.obj | retail, call graph, high
+// pdb locals: pkCurr, i
 void NiTAbstractPoolAllocator_unsigned_int_CreateFreeMem()
 {
     DAT_011c5f58 = new FUN_0043a080_Node[DAT_01188f7c];
@@ -1733,6 +1858,7 @@ void NiTAbstractPoolAllocator_unsigned_int_CreateFreeMem()
     DAT_011c5f58 = (char*)DAT_011c5f58 + 12;
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -1743,6 +1869,7 @@ struct FUN_0043b5f0_cls : TESObjectTREE
 };
 // @fnv 0x0043b5f0
 // src: COMMUNITY 0x0043b5f0
+// pdb: hkpWorldObject::unmarkForRead | ModelLoader.obj | debug, upstream name already matches, high
 void FUN_0043b5f0_cls::hkpWorldObject_unmarkForRead()
 {
     ((Date*)GetData())->Date::~Date();
@@ -1750,11 +1877,12 @@ void FUN_0043b5f0_cls::hkpWorldObject_unmarkForRead()
 
 struct ExtraListShell
 {
-    void BaseExtraList_RemoveExtra_00410140(unsigned char type);
+    void BaseExtraList_RemoveExtra_00410140(unsigned char acType);
     void ExtraDataList_ClearRumorsExtra();
 };
 // @fnv 0x004216b0
 // src: XBOX_PDB 0x004216b0
+// pdb: ExtraDataList::ClearRumorsExtra | ExtraDataList.obj | debug, upstream name already matches, high
 void ExtraListShell::ExtraDataList_ClearRumorsExtra()
 {
     BaseExtraList_RemoveExtra_00410140(0x4E);
@@ -1781,6 +1909,7 @@ struct FUN_0042cb30 : public BSExtraData
 
 // Destructor for FUN_0042cb30 that resets its unk0c member by calling Init(0).
 // @fnv 0x0042cb30
+// pdb: ExtraActorCause::~ExtraActorCause | ExtraDataList.obj | debug, object-file gap fill, medium
 FUN_0042cb30::~FUN_0042cb30()
 {
     unk0c.Init(0);
@@ -1799,6 +1928,7 @@ class FUN_0042ccc0 : public BSExtraData
 
 // Constructs a BSExtraData-derived extra-data object of type 0x8f holding two BSStringT<char> members.
 // @fnv 0x0042ccc0
+// pdb: ExtraSecuritronFace::ExtraSecuritronFace | ExtraDataList.obj | debug, call graph, high
 FUN_0042ccc0::FUN_0042ccc0() : BSExtraData(0x8f)
 {}
 
@@ -1808,24 +1938,27 @@ struct FUN_00436b20
     unsigned int unk04;
     unsigned int unk08;
     unsigned int unk0c;
-    FUN_00436b20(unsigned int a, unsigned int b);
+    FUN_00436b20(unsigned int apTalkAct, unsigned int apRef);
 };
 struct FUN_0042e060_class
 {
     void* __thiscall BaseExtraList_GetExtraData(unsigned char type);
     void __thiscall BaseExtraList_RemoveExtra(void* extra, bool remove);
     void __thiscall BaseExtraList_AddExtra(void* extra);
-    void __thiscall ExtraDataList_SetTalkingActorExtra(unsigned int a, unsigned int b);
+    void __thiscall ExtraDataList_SetTalkingActorExtra(unsigned int apTalkAct, unsigned int apRef);
 };
 // Removes the existing 0x55-type entry, allocates a new FUN_00436b20 from a and b, and installs it via FUN_0040ff60.
 // @fnv 0x0042e060
 // src: XBOX_PDB 0x0042e060
-void FUN_0042e060_class::ExtraDataList_SetTalkingActorExtra(unsigned int a, unsigned int b)
+// pdb: ExtraDataList::SetTalkingActorExtra | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb params: apTalkAct, apRef
+// pdb locals: pextra
+void FUN_0042e060_class::ExtraDataList_SetTalkingActorExtra(unsigned int apTalkAct, unsigned int apRef)
 {
     void* pEntry = BaseExtraList_GetExtraData(0x55);
     if (pEntry)
         BaseExtraList_RemoveExtra(pEntry, true);
-    pEntry = new FUN_00436b20(a, b);
+    pEntry = new FUN_00436b20(apTalkAct, apRef);
     BaseExtraList_AddExtra(pEntry);
 }
 
@@ -1842,19 +1975,23 @@ struct B42FA60Entry
 class B42FA60Allocator
 {
   public:
-    void BSSimpleArray_NavMeshPtr_1024_ConstructItems(B42FA60Entry* pkArray, unsigned int ItemUpdateArray);
+    void BSSimpleArray_NavMeshPtr_1024_ConstructItems(B42FA60Entry* apFirstAddr, unsigned int aiCount);
 };
 
 // Constructs each B42FA60Entry in the array in place using placement new.
 // @fnv 0x0042fa60
 // src: XBOX_PDB 0x0042fa60
-void B42FA60Allocator::BSSimpleArray_NavMeshPtr_1024_ConstructItems(B42FA60Entry* pkArray, unsigned int ItemUpdateArray)
+// pdb: BSSimpleArray<NavMeshPtr,1024>::_ConstructItems | ExtraDataList.obj | debug, call graph (shared callers), high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void B42FA60Allocator::BSSimpleArray_NavMeshPtr_1024_ConstructItems(B42FA60Entry* apFirstAddr, unsigned int aiCount)
 {
-    for (unsigned int i = 0; i < ItemUpdateArray; i++)
-        new (&pkArray[i]) B42FA60Entry;
+    for (unsigned int i = 0; i < aiCount; i++)
+        new (&apFirstAddr[i]) B42FA60Entry;
 }
 
 // @fnv 0x0042fe80
+// pdb: NiTMap<TESObjectREFR *,bool>::~NiTMap<TESObjectREFR *,bool> | ExtraDataList.obj | retail, call graph, high
 template <>
 NiTMap<TESObjectREFR*, bool>::~NiTMap()
 {
@@ -1865,6 +2002,9 @@ void* __cdecl operator new(unsigned int, void*);
 void __cdecl operator delete(void*, void*);
 // Default-constructs count timestamps in place at data.
 // @fnv 0x00430000
+// pdb: BSSimpleArray<CombatTimeStamp,1024>::_ConstructItems | ExtraDataList.obj | debug, call graph (shared callers), low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 template <>
 void BSSimpleArray<CombatTargetTimestamp, 1024>::InitializeItems(CombatTargetTimestamp* data, unsigned int count)
 {
@@ -1887,6 +2027,7 @@ struct FUN_00435ce0_cls : public BSExtraData
 
 // Destructor for FUN_00435ce0_cls that destroys its SpawnedSub member and base BSExtraData.
 // @fnv 0x00435ce0
+// pdb: ExtraFriendHits::~ExtraFriendHits | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_00435ce0_cls::~FUN_00435ce0_cls()
 {}
 
@@ -1933,6 +2074,8 @@ class FUN_00435d40_cls
 
 // @fnv 0x00435d40
 // src: COMMUNITY 0x00435d40
+// pdb: ExtraFriendHits::AddHit | ExtraDataObjects.obj | retail, upstream name already matches, high
+// pdb locals: isize, ftimeStamp, frecentHitTimeStamp
 void FUN_00435d40_cls::ExtraFriendHits_AddHit()
 {
     Reset();
@@ -1976,6 +2119,8 @@ struct FUN_00435e40_cls
 // Iterates m_0c, evaluates each entry's key and removes entries whose Eval() exceeds the float at DAT_011cd580.
 // @fnv 0x00435e40
 // src: XBOX_PDB 0x00435e40
+// pdb: ExtraFriendHits::RemoveOldHits | ExtraDataObjects.obj | retail, upstream name already matches, high
+// pdb locals: i, fhitTimeStamp
 void FUN_00435e40_cls::ExtraFriendHits_RemoveOldHits()
 {
     for (unsigned int i = 0; i < m_0c.Count(); i++)
@@ -2136,6 +2281,8 @@ struct FUN_00435fa0_cls : BSExtraData
 };
 
 // @fnv 0x00435fa0
+// pdb: ExtraEditorRefMoveData::ExtraEditorRefMoveData | ExtraDataObjects.obj | retail, call graph, medium
+// pdb params: apRef
 FUN_00435fa0_cls::FUN_00435fa0_cls(SlottedSource* apSource) : BSExtraData(0x4c)
 {
     if (apSource != 0)
@@ -2178,6 +2325,8 @@ struct FUN_004360c0_cls : public BSExtraData
 
 // Initializes the base with flags 0x4f and assigns the given Arg12 value to m_0c.
 // @fnv 0x004360c0
+// pdb: ExtraSound::ExtraSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
+// pdb params: apSound
 FUN_004360c0_cls::FUN_004360c0_cls(Arg12 value) : BSExtraData(0x4f), m_0c()
 {
     m_0c.Assign(value);
@@ -2214,6 +2363,8 @@ struct FUN_004361e0 : BSExtraData
 
 // Initializes the base with 0x7d and adds the passed argument to the member at offset 0x0C.
 // @fnv 0x004361e0
+// pdb: ExtraCreatureAwakeSound::ExtraCreatureAwakeSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
+// pdb params: apSound
 FUN_004361e0::FUN_004361e0(Arg12_004361e0 aArg) : BSExtraData(0x7d)
 {
     m_0C.Add(&aArg);
@@ -2246,6 +2397,8 @@ class FUN_00436660 : public BSExtraData
 
 // Constructs a BSExtraData of kind 0x87 and attaches the given ParamBlock to its ChildMember.
 // @fnv 0x00436660
+// pdb: ExtraActivateLoopSound::ExtraActivateLoopSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
+// pdb params: apSound
 FUN_00436660::FUN_00436660(ParamBlock aParamBlock) : BSExtraData(0x87)
 {
     m_pChildAtom.Attach(&aParamBlock);
@@ -2784,36 +2937,39 @@ extern "C" CloneRef* g_thePlayer;
 
 struct CloneFactory
 {
-    CloneRef* ExtraTalkingActor_CreateLocalMobileObjectCopy(void* pBase, CloneSource* pSource);
+    CloneRef* ExtraTalkingActor_CreateLocalMobileObjectCopy(void* apTalkact, CloneSource* apRef);
 };
 
 // Allocates a CloneRef from pSource, copies its data, sets its parent cell, and attaches a process matching the player's process level.
 // @fnv 0x00436780
 // src: XBOX_PDB 0x00436780
-CloneRef* CloneFactory::ExtraTalkingActor_CreateLocalMobileObjectCopy(void* pBase, CloneSource* pSource)
+// pdb: ExtraTalkingActor::CreateLocalMobileObjectCopy | ExtraDataObjects.obj | retail, upstream name already matches, high
+// pdb params: apTalkact, apRef
+// pdb locals: pnewactor, pproc, psavecell, pcopyproc
+CloneRef* CloneFactory::ExtraTalkingActor_CreateLocalMobileObjectCopy(void* apTalkact, CloneSource* apRef)
 {
     CloneRef* pRef = 0;
-    if (pSource)
+    if (apRef)
     {
         pRef = new CloneRef;
-        pRef->TESObjectREFR_SetObjectReference(pBase);
-        pRef->TESObjectREFR_SetRefPersists(pSource->TESObjectREFR_GetRefPersists_005653d0());
-        pRef->TESObjectREFR_SetLocationOnReference(*pSource->FUN_00436aa0());
-        pRef->TESObjectREFR_SetAngleOnReference(*(const CloneRef::AngleWords*)&pSource->FUN_00430830());
-        pRef->MobileObject_SetTalkingActivatorRef(pSource);
+        pRef->TESObjectREFR_SetObjectReference(apTalkact);
+        pRef->TESObjectREFR_SetRefPersists(apRef->TESObjectREFR_GetRefPersists_005653d0());
+        pRef->TESObjectREFR_SetLocationOnReference(*apRef->FUN_00436aa0());
+        pRef->TESObjectREFR_SetAngleOnReference(*(const CloneRef::AngleWords*)&apRef->FUN_00430830());
+        pRef->MobileObject_SetTalkingActivatorRef(apRef);
         pRef->FUN_00898280(true);
         pRef->MobileObject_UpdateTopicInfoSayOnce();
-        if (pSource->FUN_008d6f30() && pSource->FUN_008d6f30()->FUN_00425fd0())
+        if (apRef->FUN_008d6f30() && apRef->FUN_008d6f30()->FUN_00425fd0())
         {
-            pRef->SetParentCell(pSource->FUN_008d6f30());
+            pRef->SetParentCell(apRef->FUN_008d6f30());
         }
         else
         {
-            CloneCell* pCell = pSource->kChildCell.GetPersistentCell();
+            CloneCell* pCell = apRef->kChildCell.GetPersistentCell();
             if (pCell)
                 pRef->BSFile_GetDevice()->ExtraDataList_SetPersistentCell(pCell);
             else
-                pRef->SetParentCell(pSource->FUN_008d6f30());
+                pRef->SetParentCell(apRef->FUN_008d6f30());
         }
         CloneProcess* pPlayerProcess = g_thePlayer->FUN_008d8520();
         if (pPlayerProcess)
@@ -2873,6 +3029,8 @@ class FUN_00437d10 : public GcBase
 };
 
 // @fnv 0x00437d10
+// pdb: ExtraFollowerSwimBreadcrumbs::~ExtraFollowerSwimBreadcrumbs | ExtraDataObjects.obj | debug, object-file run extension, low
+// pdb locals: plist
 FUN_00437d10::~FUN_00437d10()
 {
     for (GcNode* pos = &m_pChildAtom; pos != 0; pos = pos->Next())
@@ -2897,6 +3055,9 @@ class FUN_00438610_cls
 // Appends the value to the end of the array, growing it by one, and returns the index where it was stored.
 // @fnv 0x00438610
 // src: COMMUNITY 0x00438610
+// pdb: BSSimpleArray<CombatTimeStamp,1024>::Add | ExtraDataObjects.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 int FUN_00438610_cls::BSSimpleArray_CombatTimeStamp_1024_Add(unsigned int* value)
 {
     unsigned int index = GetCount();
@@ -2906,6 +3067,7 @@ int FUN_00438610_cls::BSSimpleArray_CombatTimeStamp_1024_Add(unsigned int* value
 }
 
 // @fnv 0x00438720
+// pdb: NiTMap<WaterZone *,int>::~NiTMap<WaterZone *,int> | ExtraDataObjects.obj | debug, call graph (shared callers), high
 template <>
 NiTMap<WaterZone*, int>::~NiTMap()
 {
@@ -2934,16 +3096,17 @@ class FUN_004391c0 : public NiSpawnBase
     FUN_004391c0();
     virtual void v00();
     void Init0(unsigned int a);
-    void Init1(unsigned int a);
-    void Init2(unsigned int a);
+    void Init1(unsigned int bAlpha);
+    void NiAlphaProperty_SetTestMode(unsigned int eTestFunc);
     void Init3(unsigned int a);
     void Init4(unsigned int a);
-    void Init5(unsigned short a);
-    void Init6(unsigned int a);
+    void Init5(unsigned short eSrcBlend);
+    void Init6(unsigned int eDestBlend);
     unsigned short m_0018;
 };
 
 // @fnv 0x004391c0
+// pdb: NiAlphaProperty::NiAlphaProperty | MultiBoundMarkerData.obj | debug, call graph, high
 FUN_004391c0::FUN_004391c0()
 {
     m_0018 = 0;
@@ -2951,7 +3114,7 @@ FUN_004391c0::FUN_004391c0()
     Init5(6);
     Init6(7);
     Init1(0);
-    Init2(0);
+    NiAlphaProperty_SetTestMode(0);
     Init3(0);
 }
 
@@ -2969,6 +3132,7 @@ struct FUN_00439260 : public NiPropertyBase
 };
 
 // @fnv 0x00439260
+// pdb: NiProperty::NiProperty | MultiBoundMarkerData.obj | debug, call graph, high
 FUN_00439260::FUN_00439260()
 {}
 
@@ -2986,26 +3150,29 @@ struct Matrix
 #include "../../include/NiMemObject.h"
 // @fnv 0x00439490
 // src: COMMUNITY 0x00439490
-BSMultiBound* __cdecl MultiBoundMarkerData_CreateMultiBoundForRef(TESObjectREFR* reference)
+// pdb: MultiBoundMarkerData::CreateMultiBoundForRef | MultiBoundMarkerData.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: pbound, pshape
+BSMultiBound* __cdecl MultiBoundMarkerData_CreateMultiBoundForRef(TESObjectREFR* apRef)
 {
     BSMultiBound* result = 0;
-    if (reference)
+    if (apRef)
     {
         BSMultiBoundShape* pBound = 0;
-        if (std::abs(reference->GetAngleOnReference().x) < 0.01f &&
-            std::abs(reference->GetAngleOnReference().y) < 0.01f &&
-            std::abs(reference->GetAngleOnReference().z) < 0.01f)
+        if (std::abs(apRef->GetAngleOnReference().x) < 0.01f &&
+            std::abs(apRef->GetAngleOnReference().y) < 0.01f &&
+            std::abs(apRef->GetAngleOnReference().z) < 0.01f)
         {
             pBound = new BSMultiBoundAABB;
-            ((Bound*)pBound)->BSMultiBound_SetHalfExtents(reference->TESObjectREFR_GetMultiBoundHalfExtent());
+            ((Bound*)pBound)->BSMultiBound_SetHalfExtents(apRef->TESObjectREFR_GetMultiBoundHalfExtent());
         }
         else
         {
             pBound = new BSMultiBoundOBB;
-            ((Bound*)pBound)->BSMultiBoundAABB_SetAxis(reference->TESObjectREFR_GetOrientation());
-            ((Bound*)pBound)->BSMultiBound_SetHalfExtents(reference->TESObjectREFR_GetMultiBoundHalfExtent());
+            ((Bound*)pBound)->BSMultiBoundAABB_SetAxis(apRef->TESObjectREFR_GetOrientation());
+            ((Bound*)pBound)->BSMultiBound_SetHalfExtents(apRef->TESObjectREFR_GetMultiBoundHalfExtent());
         }
-        pBound->SetGridPosition(*static_cast<const TESObjectREFR*>(reference)->GetPos());
+        pBound->SetGridPosition(*static_cast<const TESObjectREFR*>(apRef)->GetPos());
         result = new BSMultiBound;
         result->BSMultiBound_SetShape((Bound*)pBound);
     }
@@ -3027,6 +3194,8 @@ InterlockedCompareExchange_t DAT_00fdf1bc = InterlockedCompareExchange;
 
 // @fnv 0x0043b460
 // src: XBOX_PDB 0x0043b460
+// pdb: BSAtomicCompareExchange | ModelLoader.obj | debug, call graph, medium
+// pdb params: apAddress, aiCompare, aiValue
 void __cdecl BSAtomicCompareExchange(void* apDestination, void* pSrc, unsigned int n)
 {
     DAT_00fdf1bc(static_cast<long volatile*>(apDestination), n, reinterpret_cast<long>(pSrc));
@@ -3054,6 +3223,7 @@ struct Host00437df0
 // Calls FUN_007b3fa0(true) on the object returned by m_sub.FUN_006815c0 if non-null, then FUN_00726c60(&d) and FUN_0063f7b0 on m_sub.
 // @fnv 0x00437df0
 // src: COMMUNITY 0x00437df0
+// pdb: ExtraFollowerSwimBreadcrumbs::RemoveFirstCrumb | ExtraDataObjects.obj | retail, upstream name already matches, high
 void Host00437df0::ExtraFollowerSwimBreadcrumbs_RemoveFirstCrumb()
 {
     ObjB4037* a = *m_sub.FUN_006815c0();
@@ -3067,6 +3237,7 @@ void Host00437df0::ExtraFollowerSwimBreadcrumbs_RemoveFirstCrumb()
 }
 
 // @fnv 0x004388a0
+// pdb: BSMap<TESFaction *,bool>::~BSMap<TESFaction *,bool> | ExtraDataObjects.obj | debug, call graph (shared callers), high
 FactionMembershipMap::~FactionMembershipMap()
 {
     RemoveAll();
@@ -3311,26 +3482,29 @@ struct AnimController : AnimMemObject
 
 // @fnv 0x004396e0
 // src: COMMUNITY 0x004396e0
-AnimController* __cdecl MultiBoundMarkerData_CreateRoomForRef(AnimSource* apSource)
+// pdb: MultiBoundMarkerData::CreateRoomForRef | MultiBoundMarkerData.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: pbound, pshape, pmb
+AnimController* __cdecl MultiBoundMarkerData_CreateRoomForRef(AnimSource* apRef)
 {
     AnimController* pController = 0;
-    if (apSource)
+    if (apRef)
     {
         AnimBlendData* pData;
         AnimInterpolator* pInterp = 0;
-        if (std::abs(apSource->GetAngleOnReference().x) < 0.01f &&
-            std::abs(apSource->GetAngleOnReference().y) < 0.01f && std::abs(apSource->GetAngleOnReference().z) < 0.01f)
+        if (std::abs(apRef->GetAngleOnReference().x) < 0.01f &&
+            std::abs(apRef->GetAngleOnReference().y) < 0.01f && std::abs(apRef->GetAngleOnReference().z) < 0.01f)
         {
             pInterp = new AnimPointInterpolator;
-            pInterp->SetPosition(apSource->TESObjectREFR_GetMultiBoundHalfExtent());
+            pInterp->SetPosition(apRef->TESObjectREFR_GetMultiBoundHalfExtent());
         }
         else
         {
             pInterp = new AnimTransformInterpolator;
-            pInterp->SetRotation(apSource->TESObjectREFR_GetOrientation());
-            pInterp->SetPosition(apSource->TESObjectREFR_GetMultiBoundHalfExtent());
+            pInterp->SetRotation(apRef->TESObjectREFR_GetOrientation());
+            pInterp->SetPosition(apRef->TESObjectREFR_GetMultiBoundHalfExtent());
         }
-        pInterp->SetSource(apSource->GetSourceData());
+        pInterp->SetSource(apRef->GetSourceData());
         pController = new AnimController;
         pData = new AnimBlendData;
         pData->SetInterpolator(pInterp);
@@ -3383,7 +3557,7 @@ class AttachedNode
 class AttachTarget
 {
   public:
-    void BSAnimGroupSequence_SetAnimGroup(AttachedNode* pkNode);
+    void BSAnimGroupSequence_SetAnimGroup(AttachedNode* apAnimGroup);
 };
 
 class NamedObjectPtr
@@ -3414,12 +3588,15 @@ class NamedObjectLoader
     AttachedNodePtr m_spNode;            // +0x08
 
     AttachTarget* SkyObject_GetNiNode();
-    void KFModel_InitSequence(const char* pcName);
+    void KFModel_InitSequence(const char* apFilename);
 };
 
 // @fnv 0x0043b7e0
 // src: COMMUNITY 0x0043b7e0
-void NamedObjectLoader::KFModel_InitSequence(const char* pcName)
+// pdb: KFModel::InitSequence | ModelLoader.obj | retail, upstream name already matches, high
+// pdb params: apFilename
+// pdb locals: pstart, pdash, temp, c, pname
+void NamedObjectLoader::KFModel_InitSequence(const char* apFilename)
 {
     if (!m_pReferencedObject.Modelloader_GetReferencedThis())
         return;
@@ -3435,10 +3612,10 @@ void NamedObjectLoader::KFModel_InitSequence(const char* pcName)
             m_pReferencedObject.Modelloader_GetReferencedThis()->NiControllerSequence_SetName(NiFixedString((const char*)acBuffer));
         }
     }
-    m_spNode.FUN_0066b0d0(TESAnimGroup_LoadAnimGroup(m_pReferencedObject.Modelloader_GetReferencedThis(), pcName));
+    m_spNode.FUN_0066b0d0(TESAnimGroup_LoadAnimGroup(m_pReferencedObject.Modelloader_GetReferencedThis(), apFilename));
     if (NiObject_IsKindOf(&DAT_011c7d74, m_pReferencedObject.Modelloader_GetReferencedThis()))
         SkyObject_GetNiNode()->BSAnimGroupSequence_SetAnimGroup(m_spNode.Modelloader_GetReferencedThis());
-    m_pReferencedObject.Modelloader_GetReferencedThis()->NiControllerSequence_SetName(NiFixedString(pcName));
+    m_pReferencedObject.Modelloader_GetReferencedThis()->NiControllerSequence_SetName(NiFixedString(apFilename));
 }
 
 class MenuTopic;
@@ -3453,6 +3630,8 @@ class FUN_00437510 : public BSExtraData
 
 // Constructs an extra of type 0x73 holding a new list and adds the given topics list to it.
 // @fnv 0x00437510
+// pdb: ExtraSayTopicInfoOnceADay::ExtraSayTopicInfoOnceADay | ExtraDataObjects.obj | debug, call graph, medium
+// pdb params: apInfo
 FUN_00437510::FUN_00437510(BSSimpleList<MenuTopic*>* topics) : BSExtraData(0x73)
 {
     m_pTopics = new BSSimpleList<BSSimpleList<MenuTopic*>*>;
@@ -3464,17 +3643,19 @@ struct FUN_00438df0
     void* vtbl;
     int unk4;
     int unk8;
-    void __thiscall UpdateState_00438df0(FUN_00438df0* src);
+    void __thiscall MapMarkerData_Copy(FUN_00438df0* apCopy);
 };
 
 // @fnv 0x00438df0
-// src: GUESS 0x00438df0 (confidence: low)
-void __thiscall FUN_00438df0::UpdateState_00438df0(FUN_00438df0* apSource)
+// src: XBOX_RETAIL_PDB 0x00438df0
+// pdb: MapMarkerData::Copy | MapMarkerData.obj | retail, object-file gap fill, high
+// pdb params: apCopy
+void __thiscall FUN_00438df0::MapMarkerData_Copy(FUN_00438df0* apCopy)
 {
-    ((void(__thiscall*)(void*, FUN_00438df0*))(*((void***)this))[2])(this, apSource);
-    *(char*)((char*)this + 0xc) = *(char*)((char*)apSource + 0xc);
-    *(unsigned short*)((unsigned char*)this + 0xe) = *(unsigned short*)((unsigned char*)apSource + 0xe);
-    *(int*)((char*)this + 0x10) = *(int*)((char*)apSource + 0x10);
+    ((void(__thiscall*)(void*, FUN_00438df0*))(*((void***)this))[2])(this, apCopy);
+    *(char*)((char*)this + 0xc) = *(char*)((char*)apCopy + 0xc);
+    *(unsigned short*)((unsigned char*)this + 0xe) = *(unsigned short*)((unsigned char*)apCopy + 0xe);
+    *(int*)((char*)this + 0x10) = *(int*)((char*)apCopy + 0x10);
 }
 
 struct ListArg436
@@ -3493,17 +3674,20 @@ struct ExtraList436
     int m_data;
 };
 
-class FUN_00436300 : public BSExtraData
+// pdb: class ExtraCreatureMovementSound, size 0x18 (here 0x10), bases: BSExtraData, 1 members
+class ExtraCreatureMovementSound : public BSExtraData
 {
   public:
-    FUN_00436300(ListArg436 kList);
-    virtual ~FUN_00436300();
+    ExtraCreatureMovementSound(ListArg436 kList);
+    virtual ~ExtraCreatureMovementSound();
     ExtraList436 m_kList;
 };
 
 // Constructs an BSExtraData with type 0x8a and copies the supplied ListArg436 into m_kList.
 // @fnv 0x00436300
-FUN_00436300::FUN_00436300(ListArg436 kList) : BSExtraData(0x8a)
+// pdb: ExtraCreatureMovementSound::ExtraCreatureMovementSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
+// pdb params: apSound
+ExtraCreatureMovementSound::ExtraCreatureMovementSound(ListArg436 kList) : BSExtraData(0x8a)
 {
     m_kList.Copy(&kList);
 }
@@ -3518,16 +3702,19 @@ struct Value436540
     Value436540& operator=(const Value436540& other);
 };
 
-struct FUN_00436540 : BSExtraData
+// pdb: class ExtraWeaponAttackSound, size 0x18, bases: BSExtraData, 1 members
+struct ExtraWeaponAttackSound : BSExtraData
 {
-    Value436540 m_uiFilterValue;
-    FUN_00436540(Value436540 value);
+    Value436540 pHandle;
+    ExtraWeaponAttackSound(Value436540 value);
 };
 
 // @fnv 0x00436540
-FUN_00436540::FUN_00436540(Value436540 value) : BSExtraData(0x86)
+// pdb: ExtraWeaponAttackSound::ExtraWeaponAttackSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
+// pdb params: apSound
+ExtraWeaponAttackSound::ExtraWeaponAttackSound(Value436540 value) : BSExtraData(0x86)
 {
-    m_uiFilterValue = value;
+    pHandle = value;
 }
 
 struct Val42CE30
@@ -3565,14 +3752,15 @@ namespace FNV {
 struct FUN_00436b20 : BSExtraData
 {
     CloneRef* unk0c;
-    FUN_00436b20(unsigned int first, unsigned int second);
+    FUN_00436b20(unsigned int apTalkAct, unsigned int apRef);
 };
 // Sets the vtable pointer, stores the result of FUN_00436780(first, second) in unk0c, then calls FUN_00575830 on it with second's v125() point.
 // @fnv 0x00436b20
-FUN_00436b20::FUN_00436b20(unsigned int first, unsigned int second) : BSExtraData(0x55)
+// pdb: ExtraTalkingActor::ExtraTalkingActor | ExtraDataObjects.obj | retail, call graph, high
+FUN_00436b20::FUN_00436b20(unsigned int apTalkAct, unsigned int apRef) : BSExtraData(0x55)
 {
-    unk0c = ((CloneFactory*)this)->ExtraTalkingActor_CreateLocalMobileObjectCopy((void*)first, (CloneSource*)second);
-    unk0c->TESObjectREFR_SetLocationOnReference(*((const TESObjectREFR*)second)->GetPos());
+    unk0c = ((CloneFactory*)this)->ExtraTalkingActor_CreateLocalMobileObjectCopy((void*)apTalkAct, (CloneSource*)apRef);
+    unk0c->TESObjectREFR_SetLocationOnReference(*((const TESObjectREFR*)apRef)->GetPos());
 }
 }
 
@@ -3586,6 +3774,7 @@ struct FUN_004389d0 : FUN_00438690
 };
 // Empty destructor for FUN_004389d0, inheriting from FUN_00438690.
 // @fnv 0x004389d0
+// pdb: BSSimpleArray<unsigned int,1024>::`scalar deleting destructor' | ExtraDataObjects.obj | retail, vtable slot, high
 FUN_004389d0::~FUN_004389d0()
 {}
 
@@ -3610,6 +3799,8 @@ struct FUN_00436420 : BSExtraData
 };
 // Constructs the object by calling the Base constructor with 0x83 and assigning the Arg parameter to the Member field m.
 // @fnv 0x00436420
+// pdb: ExtraWeaponIdleSound::ExtraWeaponIdleSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
+// pdb params: apSound
 FUN_00436420::FUN_00436420(Arg a, int aiUnused1, int aiUnused2) : BSExtraData(0x83)
 {
     m.Assign(a);

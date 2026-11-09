@@ -2,13 +2,14 @@
 
 #include "BGSEntryPointFunctionData.h"
 
+// pdb: class BGSEntryPointFunctionDataTwoValue, size 0xc, bases: BGSEntryPointFunctionData, 2 members
 class BGSEntryPointFunctionDataTwoValue : public BGSEntryPointFunctionData
 {
 public:
     BGSEntryPointFunctionDataTwoValue();
 
-    float EntryPointTwoValueFunctionData;
-    float fSecondFunctionValue;
+    float fValue1;
+    float fValue2;
 
     float ReadValueA();
     float ReadValueB();

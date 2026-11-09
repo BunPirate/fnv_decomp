@@ -4,12 +4,15 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 extern MemoryManager g_memoryManager;
+// pdb: class BSNiAllocator, size 0x4 (here 0x1), bases: NiAllocator, 0 members
 struct BSNiAllocator
 {
     void Deallocate_00aa22b0(void* pvMemory, int aiAllocationType, unsigned int stSizeInBytes);
 };
 // @fnv 0x00aa22b0
 // src: XBOX_PDB 0x00aa22b0
+// pdb: BSNiAllocator::Deallocate | BSNiAllocator.obj | debug, object-file run extension, low
+// pdb params: pvMemory, eEventType, stSizeInBytes
 void BSNiAllocator::Deallocate_00aa22b0(void* pvMemory, int aiAllocationType, unsigned int stSizeInBytes)
 {
     if (aiAllocationType == 10)
@@ -31,9 +34,11 @@ namespace fnv_00aa23e0 {
 extern MemoryManager g_memoryManager;
 // @fnv 0x00aa23e0
 // src: XBOX_PDB 0x00aa23e0
-void __stdcall BSNiAllocator_DeallocateExternal(void* pvMemory, int aiAllocationType, unsigned int stSizeInBytes)
+// pdb: BSNiAllocator::DeallocateExternal | BSNiAllocator.obj | debug, upstream name already matches, high
+// pdb params: pvMemory, eEventType, stSizeInBytes
+void __stdcall BSNiAllocator_DeallocateExternal(void* pvMemory, int eEventType, unsigned int stSizeInBytes)
 {
-    if (aiAllocationType == 0x10)
+    if (eEventType == 0x10)
     {
         if (!pvMemory)
             return;
@@ -54,6 +59,7 @@ struct BSNiAllocator
 };
 // Sets the vtable pointer to DAT_010a24d0 and, when bit 0 of flags is set, deallocates this via g_memoryManager, then returns this.
 // @fnv 0x00aa24a0
+// pdb: BSNiAllocator::`scalar deleting destructor' | BSNiAllocator.obj | debug, object-file run extension, low
 void* BSNiAllocator::Destroy(unsigned int flags)
 {
     *(void**)this = (void*)&DAT_010a24d0;
@@ -65,6 +71,9 @@ void* BSNiAllocator::Destroy(unsigned int flags)
 
 // For eType 8, reallocates pBlock with extra *pAdjust bytes and fixes the header offset; otherwise uses tracked reallocation.
 // @fnv 0x00aa22f0
+// pdb: BSNiAllocator::Reallocate | BSNiAllocator.obj | debug, object-file run extension, low
+// pdb params: pvMemory, stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, stSizeCurrent, pcFile, iLine, pcFunction
+// pdb locals: pmem
 char* __stdcall ResizeHeapBlock(char* pBlock, int* pSize, unsigned char* pAdjust, int eType, int a5, int a6, int a7,
                                 int a8, int a9)
 {
@@ -90,6 +99,9 @@ char* __stdcall ResizeHeapBlock(char* pBlock, int* pSize, unsigned char* pAdjust
 void FUN_00ec61c0(unsigned int p, int zero, unsigned int v);
 
 // @fnv 0x00aa2370
+// pdb: BSNiAllocator::AllocateExternal | BSNiAllocator.obj | debug, object-file run extension, low
+// pdb params: stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, pcFile, iLine, pcFunction
+// pdb locals: pmem
 unsigned int __stdcall AllocateAlignedBuffer(unsigned int* puiSize, unsigned char* pucAlignByte, int aiAlignMode,
                                              int aiUnused, int a5, int a6, int a7)
 {
@@ -127,6 +139,9 @@ enum NiMemEventTypeAA2
 
 // Allocates memory (aligned or plain) via g_memoryManager, zeroes stSizeInBytes bytes, and returns the pointer.
 // @fnv 0x00aa2240
+// pdb: BSNiAllocator::Allocate | BSNiAllocator.obj | debug, object-file run extension, low
+// pdb params: stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, pcFile, iLine, pcFunction
+// pdb locals: pmem
 void* __stdcall AllocateZeroedMemory(unsigned int& stSizeInBytes, unsigned int& stAlignment,
                                      NiMemEventTypeAA2 eMemEventType, bool bProvideAccurateSizeOnDeallocate,
                                      const char* pcFile, int iLine, const char* pcFunction)
@@ -152,17 +167,20 @@ void* __stdcall AllocateZeroedMemory(unsigned int& stSizeInBytes, unsigned int& 
 
 // @fnv 0x00aa2420
 // src: XBOX_PDB 0x00aa2420
-void* __stdcall BSNiAllocator_ReallocateExternal(void* pvMem, unsigned int& uiSize, unsigned char& ucAlignment, int aiAllocationType,
-                             bool bProvideSize, unsigned int uiCurrentSize, const char* pcFile, int iLine,
+// pdb: BSNiAllocator::ReallocateExternal | BSNiAllocator.obj | debug, upstream name already matches, high
+// pdb params: pvMemory, stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, stSizeCurrent, pcFile, iLine, pcFunction
+// pdb locals: pmem
+void* __stdcall BSNiAllocator_ReallocateExternal(void* pvMemory, unsigned int& stSizeInBytes, unsigned char& stAlignment, int eEventType,
+                             bool bProvideAccurateSizeOnDeallocate, unsigned int stSizeCurrent, const char* pcFile, int iLine,
                              const char* pcFunction)
 {
-    if (aiAllocationType == 14)
+    if (eEventType == 14)
     {
-        unsigned int uiNewSize = uiSize;
-        unsigned char ucAlign = ucAlignment;
-        if (pvMem)
+        unsigned int uiNewSize = stSizeInBytes;
+        unsigned char ucAlign = stAlignment;
+        if (pvMemory)
         {
-            char* pcBase = (char*)pvMem - ((unsigned char*)pvMem)[-1];
+            char* pcBase = (char*)pvMemory - ((unsigned char*)pvMemory)[-1];
             char* pcNew = (char*)g_memoryManager.Reallocate(pcBase, ucAlign + uiNewSize);
             unsigned char ucOffset = ucAlign - ((ucAlign - 1) & (unsigned char)(unsigned int)pcNew);
             pcNew += ucOffset;
@@ -171,5 +189,5 @@ void* __stdcall BSNiAllocator_ReallocateExternal(void* pvMem, unsigned int& uiSi
         }
         return 0;
     }
-    return g_memoryManager.Reallocate(pvMem, uiSize, const_cast<char*>(pcFile), iLine, const_cast<char*>(pcFunction));
+    return g_memoryManager.Reallocate(pvMemory, stSizeInBytes, const_cast<char*>(pcFile), iLine, const_cast<char*>(pcFunction));
 }

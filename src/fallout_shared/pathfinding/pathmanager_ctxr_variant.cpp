@@ -80,14 +80,14 @@ struct CollBase
 struct Coll1480 : public CollBase
 {
     virtual void Notify(void* p);
-    bool TryGetNextEntry(ObjA* pA, void** ppOut2, PathingTaskData_Ext** ppFound, int flag);
+    bool LockFreeMap_PathingRequest_PathingTaskData_GetNext(ObjA* arIterator, void** arKey, PathingTaskData_Ext** arData, int abSwitchBuckets);
 };
 
 struct TaskQueueInterface
 {
     static TaskQueueInterface* GetInstance();
-    void TaskQueueInterface_QueueNodeDetach(void* p);
-    void QueueTaskWithTwoObjects(void* a, void* b, bool c, bool d);
+    void TaskQueueInterface_QueueNodeDetach(void* apObject);
+    void TaskQueueInterface_QueueNodeAttach(void* apChildNode, void* apNewParetNode, bool abFirstAvailable, bool abUpdateProperties);
     void TaskQueueInterface_QueueObjectUpdate(void* p);
 };
 
@@ -1408,12 +1408,14 @@ struct FUN_006eae40_shell
     int unk_1478;
     int unk_147c;
     Coll1480 m_sub1480;
-    void BSTaskletGroup_AttachTask(ObjC* pC, int a);
+    void BSTaskletGroup_AttachTask(ObjC* aTask, int abLastTask);
     void PathManagerImpl_Update();
 };
 
 // @fnv 0x006eae40
 // src: EXE 0x006eae40
+// pdb: PathManagerImpl::Update | PathManager.obj | retail, upstream name already matches, high
+// pdb locals: spnode, itotalRayCasts, msg, bpathsChanged, it, prequest, ptaskData, task, updateData
 void FUN_006eae40_shell::PathManagerImpl_Update()
 {
     m_lockC38.Lock("PathManagerImpl::Update");
@@ -1442,12 +1444,12 @@ void FUN_006eae40_shell::PathManagerImpl_Update()
     void* pOut_b;
     while (!objA6.LockFreeMap_char_const_Model_LockFreeMapIterator_GetFinished())
     {
-        if (m_sub1480.TryGetNextEntry(&objA6, &pOut_b, &pFound_vv, 1) && pFound_vv->GetByteAtOffset64())
+        if (m_sub1480.LockFreeMap_PathingRequest_PathingTaskData_GetNext(&objA6, &pOut_b, &pFound_vv, 1) && pFound_vv->GetByteAtOffset64())
         {
             count_iagb += pFound_vv->PathingTaskData_ComputeRayCasts();
             if ((unsigned int)count_iagb > 10)
                 break;
-            if (pFound_vv->HasPendingMessages())
+            if (pFound_vv->AllRayCastPathComputed())
             {
                 pFound_vv->FUN_0060d4b0(0);
                 ObjC objC_oqluk;
@@ -1486,7 +1488,7 @@ void FUN_006eae40_shell::PathManagerImpl_Update()
     {
         if (AILinearTaskThreadManager_ShouldQueue3DTask())
         {
-            TaskQueueInterface::GetInstance()->QueueTaskWithTwoObjects(spObj2, g_011d6e5c, true, false);
+            TaskQueueInterface::GetInstance()->TaskQueueInterface_QueueNodeAttach(spObj2, g_011d6e5c, true, false);
         }
         else
         {

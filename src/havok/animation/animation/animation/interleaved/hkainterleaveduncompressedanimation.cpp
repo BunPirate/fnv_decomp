@@ -78,24 +78,27 @@ void FUN_00e3f920_class::hkaInterleavedUncompressedAnimation_sampleTracks(float 
 
 struct S00e3fb60_Anim : public hkaInterleavedUncompressedAnimation
 {
-    void hkaAnimation_getFrameAndDelta(float time, int& frameIndex, float& weight) const;
-    void hkaInterleavedUncompressedAnimation_sampleIndividualFloatTracks(float time, const short* tracks, int numTracks, float* out);
+    void hkaAnimation_getFrameAndDelta(float time, int& frameOut, float& deltaOut) const;
+    void hkaInterleavedUncompressedAnimation_sampleIndividualFloatTracks(float time, const short* tracks, int numTracks, float* floatTracksOut);
 };
 
 // src: HAVOK_LIB 0x00e2f7c0
-__declspec(noinline) void S00e3fb60_Anim::hkaAnimation_getFrameAndDelta(float time, int& frameIndex, float& weight) const
+__declspec(noinline) void S00e3fb60_Anim::hkaAnimation_getFrameAndDelta(float time, int& frameOut, float& deltaOut) const
 {
-    unsigned int numPoses = m_kTransforms.m_iElementCount / m_iNumTransformTracks;
-    float f = (time / m_fAnimationDuration) * (float)(numPoses - 1);
+    unsigned int numPoses = m_transforms.m_iElementCount / m_iNumTransformTracks;
+    float f = (time / m_duration) * (float)(numPoses - 1);
     unsigned int i = (unsigned int)f;
-    frameIndex = i;
-    weight = f - (float)i;
+    frameOut = i;
+    deltaOut = f - (float)i;
 }
 
 // Interpolates float animation tracks between two frames at the given time, writing results to out.
 // @fnv 0x00e3fb60
 // src: HAVOK_LIB 0x00e3fb60
-void S00e3fb60_Anim::hkaInterleavedUncompressedAnimation_sampleIndividualFloatTracks(float time, const short* tracks, int numTracks, float* out)
+// pdb: hkaInterleavedUncompressedAnimation::sampleIndividualFloatTracks | hkaInterleavedUncompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: time, tracks, numTracks, floatTracksOut
+// pdb locals: frame, delta
+void S00e3fb60_Anim::hkaInterleavedUncompressedAnimation_sampleIndividualFloatTracks(float time, const short* tracks, int numTracks, float* floatTracksOut)
 {
     int frameIndex;
     hkaAnimation_getFrameAndDelta(time, frameIndex, time);
@@ -108,8 +111,8 @@ void S00e3fb60_Anim::hkaInterleavedUncompressedAnimation_sampleIndividualFloatTr
             int n = m_iNumberOfFloatTracks;
             if (track < n)
             {
-                const float* frame0 = &m_kFloats.m_data[frameIndex * n];
-                out[i] = frame0[track + n] * time + frame0[track] * invWeight;
+                const float* frame0 = &m_floats.m_data[frameIndex * n];
+                floatTracksOut[i] = frame0[track + n] * time + frame0[track] * invWeight;
             }
         }
     }
@@ -131,32 +134,35 @@ struct S00e3fd20_Desc
     int m_2c;
     int m_30;
     int m_34;
-    void __thiscall hkaInterleavedUncompressedAnimation_getDataChunks(int scale, int unused1, int* out, int unused2);
+    void __thiscall hkaInterleavedUncompressedAnimation_getDataChunks(int frame, int delta, int* dataChunks, int numDataChunks);
 };
 
 // Writes a descriptor into out, storing this pointer, a 0x40 size, and optional segment and alignment data based on m_10 and m_14.
 // @fnv 0x00e3fd20
 // src: HAVOK_LIB 0x00e3fd20
-void __thiscall S00e3fd20_Desc::hkaInterleavedUncompressedAnimation_getDataChunks(int scale, int unused1, int* out, int unused2)
+// pdb: hkaInterleavedUncompressedAnimation::getDataChunks | hkaInterleavedUncompressedAnimation.obj | debug, upstream name already matches, high
+// pdb params: frame, delta, dataChunks, numDataChunks
+// pdb locals: assertBuf, ostr
+void __thiscall S00e3fd20_Desc::hkaInterleavedUncompressedAnimation_getDataChunks(int frame, int delta, int* dataChunks, int numDataChunks)
 {
-    out[0] = (int)this;
-    out[1] = 0x40;
+    dataChunks[0] = (int)this;
+    dataChunks[1] = 0x40;
 
     int segment = 1;
 
     if (m_10 > 0)
     {
-        out[3] = m_10 * scale * 0x30 + m_28;
-        out[4] = m_10 * 0x60;
+        dataChunks[3] = m_10 * frame * 0x30 + m_28;
+        dataChunks[4] = m_10 * 0x60;
         segment = 2;
     }
 
     if (m_14 > 0)
     {
-        int* descriptor = out + segment * 3;
+        int* descriptor = dataChunks + segment * 3;
         int count = *(volatile int*)&m_14;
 
-        unsigned int address = (unsigned int)m_34 + count * scale * 4;
+        unsigned int address = (unsigned int)m_34 + count * frame * 4;
         unsigned char offset = (unsigned char)address;
         offset &= 0xf;
         address &= 0xfffffff0;
@@ -237,6 +243,8 @@ extern int DAT_010e5474;
 
 // Copies transform and float track arrays from src into m_kTransforms and m_kFloats, resizing via the audio service heap manager when capacity is insufficient.
 // @fnv 0x00e402e0
+// pdb: hkaInterleavedUncompressedAnimation::hkaInterleavedUncompressedAnimation | hkaInterleavedUncompressedAnimation.obj | retail, object-file run extension, low
+// pdb params: that
 FUN_00e402e0::FUN_00e402e0(SrcAnimX* apSrcAnim)
     : BaseAnimX(apSrcAnim), m_vfptr((void*)&DAT_010e5474), m_kTransforms(), m_kFloats()
 {
@@ -320,7 +328,7 @@ inline SampleRec* S00e3ffc0_zero(SampleRec* recs)
 }
 struct FUN_00e2f7c0_Obj
 {
-    void hkaAnimation_getFrameAndDelta(float a1, int* a2, float* a3);
+    void hkaAnimation_getFrameAndDelta(float a1, int* frameOut, float* deltaOut);
 };
 __forceinline int S00e3ffc0_getFrame(FUN_00e2f7c0_Obj* o, float t, float* d)
 {
@@ -328,7 +336,7 @@ __forceinline int S00e3ffc0_getFrame(FUN_00e2f7c0_Obj* o, float t, float* d)
     o->hkaAnimation_getFrameAndDelta(t, &f, d);
     return f;
 }
-void __cdecl hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(int frame, float delta, unsigned int nT, QsT* tOut, unsigned int nF, float* fOut,
+void __cdecl hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(int frame, float delta, unsigned int nT, QsT* tOut, unsigned int nF, float* floatTracksOut,
                           SampleRec* recs, int n);
 
 struct hkaAnimSlot : hkaInterleavedUncompressedAnimation
@@ -343,13 +351,16 @@ struct hkaAnimSlot : hkaInterleavedUncompressedAnimation
     virtual void v8();
     virtual void v9();
     virtual void SampleIndividualTracks(int frame, float delta, SampleRec* recs, int n);
-    void hkaInterleavedUncompressedAnimation_samplePartialTracks(float time, unsigned int nT, QsT* tOut, unsigned int nF, float* fOut, int a6);
+    void hkaInterleavedUncompressedAnimation_samplePartialTracks(float time, unsigned int maxNumTransformTracks, QsT* transformTracksOut, unsigned int maxNumFloatTracks, float* floatTracksOut, int cache);
 };
 
 // Samples the animation into tOut and fOut, using the last frame when time is at or beyond the animation duration.
 // @fnv 0x00e3ffc0
 // src: HAVOK_SRC 0x00e3ffc0
-void hkaAnimSlot::hkaInterleavedUncompressedAnimation_samplePartialTracks(float time, unsigned int nT, QsT* tOut, unsigned int nF, float* fOut, int a6)
+// pdb: hkaInterleavedUncompressedAnimation::samplePartialTracks | hkaInterleavedUncompressedAnimation.obj | retail, string-set bridge, high
+// pdb params: time, maxNumTransformTracks, transformTracksOut, maxNumFloatTracks, floatTracksOut, cache
+// pdb locals: frame, delta, data
+void hkaAnimSlot::hkaInterleavedUncompressedAnimation_samplePartialTracks(float time, unsigned int maxNumTransformTracks, QsT* transformTracksOut, unsigned int maxNumFloatTracks, float* floatTracksOut, int cache)
 {
     TlsGetValueFn pfnTlsGetValue = &TlsGetValue;
     union
@@ -369,18 +380,18 @@ void hkaAnimSlot::hkaInterleavedUncompressedAnimation_samplePartialTracks(float 
             pProfLog->m_end.m_storage = reinterpret_cast<char*>(pCurRec + 1);
         }
     }
-    if (time >= m_fAnimationDuration)
+    if (time >= m_duration)
     {
-        for (unsigned int i = 0; i < nT; ++i)
+        for (unsigned int i = 0; i < maxNumTransformTracks; ++i)
         {
-            const QsTm* s = (const QsTm*)m_kTransforms.m_data + (m_kTransforms.m_iElementCount - m_iNumTransformTracks + i);
-            QsTm* d = (QsTm*)tOut + i;
+            const QsTm* s = (const QsTm*)m_transforms.m_data + (m_transforms.m_iElementCount - m_iNumTransformTracks + i);
+            QsTm* d = (QsTm*)transformTracksOut + i;
             d->t = s->t;
             d->r = s->r;
             d->s = s->s;
         }
-        for (unsigned int iFloat = 0; iFloat < nF; ++iFloat)
-            fOut[iFloat] = m_kFloats.m_data[m_kFloats.m_iElementCount - m_iNumberOfFloatTracks + iFloat];
+        for (unsigned int iFloat = 0; iFloat < maxNumFloatTracks; ++iFloat)
+            floatTracksOut[iFloat] = m_floats.m_data[m_floats.m_iElementCount - m_iNumberOfFloatTracks + iFloat];
         {
             hkMonitorStream* pProfLog = (hkMonitorStream*)pfnTlsGetValue(DAT_0126835c);
             hkMonitorStream::TimerCommand* pCurRec = reinterpret_cast<hkMonitorStream::TimerCommand*>(pProfLog->m_end.m_storage);
@@ -399,7 +410,7 @@ void hkaAnimSlot::hkaInterleavedUncompressedAnimation_samplePartialTracks(float 
         int frame = S00e3ffc0_getFrame((FUN_00e2f7c0_Obj*)this, time, &u.delta);
         SampleRec recs[3];
         SampleIndividualTracks(frame, u.delta, S00e3ffc0_zero(recs), 3);
-        hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(frame, u.delta, nT, tOut, nF, fOut, recs, 3);
+        hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(frame, u.delta, maxNumTransformTracks, transformTracksOut, maxNumFloatTracks, floatTracksOut, recs, 3);
     }
     {
         hkMonitorStream* pProfLog = (hkMonitorStream*)pfnTlsGetValue(DAT_0126835c);

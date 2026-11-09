@@ -5,8 +5,9 @@
 
 class hkxEnvironmentVariable;
 
+// pdb: class hkxEnvironment, size 0x14, bases: hkReferencedObject, 1 members
 class hkxEnvironment : public hkReferencedObject
 {
 public:
-    hkArray<hkxEnvironmentVariable> m_kVariables;
+    hkArray<hkxEnvironmentVariable> m_variables;
 };

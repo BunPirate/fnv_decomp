@@ -7,6 +7,7 @@ class hkpPhantom;
 
 typedef float hkReal;
 
+// pdb: class hkpReorientAction, size 0x50, bases: hkpUnaryAction, 4 members
 class hkpReorientAction : public hkpUnaryAction
 {
 public:
@@ -17,9 +18,9 @@ public:
                             const hkArray<hkpPhantom*>& newPhantoms) const;
 
     char pad1C[0x4];
-    hkVector4 m_vRotationAxis;
-    hkVector4 m_vUpAxis;
-    hkReal m_fSpringStrength;
-    hkReal m_fMotorDamping;
+    hkVector4 m_rotationAxis;
+    hkVector4 m_upAxis;
+    hkReal m_strength;
+    hkReal m_damping;
     char pad48[0x8];
 };

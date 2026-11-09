@@ -11,6 +11,7 @@ class CombatVec3;
 class MeleeDebugOutput;
 class NiPoint3;
 
+// pdb: class CombatProcedureAttackMelee, size 0x88, bases: CombatProcedure, 16 members
 class CombatProcedureAttackMelee : public CombatProcedure
 {
 public:
@@ -27,8 +28,8 @@ public:
     virtual void Unk0c();
     virtual void d05();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void vf16();
 
     int ChooseMeleeAttack(bool abMidAttack, float afDistance, float afReach,
@@ -92,22 +93,22 @@ public:
     int GetSection();
     int GetAudioBackendData();
 
-    int unk10;
-    int unk14;
-    int unk18;
-    int unk1C;
-    TimeoutTimer pt20;
-    TimeoutTimer pt28;
-    TimeoutTimer pt30;
-    TimeoutTimer pt38;
-    TimeoutTimer pt40;
-    TimeoutTimer pt48;
-    bool unk50;
+    int eManeuverState;
+    int eCombatState;
+    int eLastCombatState;
+    int eCurrentAttack;
+    TimeoutTimer MeleeTimer;
+    TimeoutTimer ManeuverTimer;
+    TimeoutTimer DodgeTimer;
+    TimeoutTimer AdvanceTimer;
+    TimeoutTimer CloseTimer;
+    TimeoutTimer TargetUnreachableTimer;
+    bool bRangedAllyWantsToShoot;
     unsigned char unk51[3];
-    int unk54;
-    float unk58;
-    float unk5C;
-    CombatTargetTimestamp val60;
-    CombatMeleeData data64;
+    int iAdvanceMoveMode;
+    float fCurrentAttackReach;
+    float fFacingTargetDistance;
+    CombatTargetTimestamp fAttackPickFailedTimestamp;
+    CombatMeleeData MovementRestrictions;
     unsigned char unk68[0x20];
 };

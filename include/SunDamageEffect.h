@@ -2,6 +2,7 @@
 
 #include "ActiveEffect.h"
 
+// pdb: class SunDamageEffect, size 0x50, bases: ActiveEffect, 3 members
 class SunDamageEffect : public ActiveEffect
 {
 public:
@@ -15,13 +16,13 @@ public:
     void SaveGame(Actor* apActor) override;
 
     void LoadGame(Actor* apActor) override;
-    void UpdateEffect(float arg);
+    void UpdateEffect(float afSecondsElapsed);
     bool IsCausingDamage();
     double GetDamageAmount();
-    void UpdateHitEffect(bool abApply);
+    void UpdateHitEffect(bool abDamaging);
     int FUN_0055b980();
 
-    float fValue;
-    bool bFlag4C;
-    bool bFlag4D;
+    float fGlowEffect;
+    bool bHitEffectApplied;
+    bool bDoNotTakeDamageNextUpdate;
 };

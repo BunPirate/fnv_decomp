@@ -14,6 +14,7 @@ namespace loader
 class PackageRef;
 }
 
+// pdb: class ExtraPackage, size 0x1c, bases: BSExtraData, 6 members
 class ExtraPackage : public BSExtraData
 {
 public:
@@ -55,7 +56,7 @@ public:
             unsigned short unk16;
         };
     };
-    char unk18;
-    char unk19;
-    unsigned short unk1A;
+    char bActionComplete;
+    char bActivated;
+    unsigned short bDoneOnce;
 };

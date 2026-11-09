@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraHealthPerc, size 0x10, bases: BSExtraData, 1 members
 class ExtraHealthPerc : public BSExtraData
 {
 public:

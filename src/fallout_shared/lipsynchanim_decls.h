@@ -19,7 +19,7 @@ class LipSyncAnimation
     bool ApplyToAnimationData(BSFaceGenAnimationData* animation, float endDelay);
     void* DeleteThis(unsigned int flags);
     void ReleaseStorage_004d5080();
-    float GetNegativeMagnitude(bool, bool, bool, bool, bool);
+    float LipSynchAnim_LoadFromFile(bool, bool, bool, bool, bool);
 };
 
 FNV_STATIC_ASSERT(sizeof(LipSyncAnimation) == 16);

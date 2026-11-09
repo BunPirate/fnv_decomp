@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: structure in_addr, size 0x4, 1 members
 class in_addr
 {
 public:

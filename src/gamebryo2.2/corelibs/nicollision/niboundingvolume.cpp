@@ -181,13 +181,15 @@ struct S_00e9cb10_Obj
     virtual void v1();
     virtual void v2();
     virtual int v3();
-    void SaveValueToStream(S_00e9cb10_Stream* s);
+    void SaveValueToStream(S_00e9cb10_Stream* kStream);
 };
 // @fnv 0x00e9cb10
-void S_00e9cb10_Obj::SaveValueToStream(S_00e9cb10_Stream* apStream)
+// pdb: NiBoundingVolume::SaveBinary | NiBoundingVolume.obj | retail, call graph, high
+// pdb params: kStream
+void S_00e9cb10_Obj::SaveValueToStream(S_00e9cb10_Stream* kStream)
 {
     int v = v3();
-    S_00e9cb10_SaveBinary(*apStream->m_pBackingStream, v);
+    S_00e9cb10_SaveBinary(*kStream->m_pBackingStream, v);
 }
 
 extern void(__cdecl* DAT_0126fa7c)(void);
@@ -215,13 +217,16 @@ typedef unsigned int(__cdecl* e9Dispatch)(e9Obj*);
 // Reads a 4-byte type from the object's sink and dispatches to the handler at DAT_0126fa7c[type] when the type is in 0..5, otherwise returns 0.
 // @fnv 0x00e9cab0
 // src: XBOX_PDB 0x00e9cab0
-unsigned int __cdecl NiBoundingVolume_CreateFromStream(e9Obj* pObj)
+// pdb: NiBoundingVolume::CreateFromStream | NiBoundingVolume.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: iType, fnCF
+unsigned int __cdecl NiBoundingVolume_CreateFromStream(e9Obj* kStream)
 {
     int iType;
-    pObj->m_pSink->Read(&iType, 4);
+    kStream->m_pSink->Read(&iType, 4);
     if (iType < 0)
         return 0;
     if (iType < 6)
-        return ((e9Dispatch*)&DAT_0126fa7c)[iType](pObj);
+        return ((e9Dispatch*)&DAT_0126fa7c)[iType](kStream);
     return 0;
 }

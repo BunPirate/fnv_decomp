@@ -12,6 +12,9 @@ extern int DAT_0119bc6c;
 // Dispatches on aeActivity (0-4) to call FindPairValue with aiDifficulty, one of five global tables, and a count of 5, returning its result.
 // @fnv 0x006705b0
 // src: XBOX_PDB 0x006705b0
+// pdb: ExperiencePoints::GetExperiencePoints | ExperiencePoints.obj | retail, call graph, high
+// pdb params: aeActivity, aiDifficulty
+// pdb locals: iresult
 int __cdecl ExperiencePoints_GetExperiencePoints(int aeActivity, int aiDifficulty)
 {
     int iresult = 0;

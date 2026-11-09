@@ -97,13 +97,18 @@ extern DebugTES* g_TES;
 
 // Locks the manager's lock, appends task to the array at offset 0x14c, then unlocks.
 // @fnv 0x006c4f70
-void NavMeshObstacleManager::AddProcessedTask(ObstacleTaskData* task)
+// pdb: NavMeshObstacleManager::AddProcessedTask | NavMeshObstacleManager.obj | retail, string-set bridge, high
+// pdb params: apTaskData
+void NavMeshObstacleManager::AddProcessedTask(ObstacleTaskData* apTaskData)
 {
     ((RecursiveSpinLock*)((char*)this + 0x160))->Lock("NavMeshObstacleManager::AddProcessedTask()");
-    ((BSSimpleArray<NavMeshInfo*, 1024>*)((char*)this + 0x14c))->Add((NavMeshInfo*&)task);
+    ((BSSimpleArray<NavMeshInfo*, 1024>*)((char*)this + 0x14c))->Add((NavMeshInfo*&)apTaskData);
     ((RecursiveSpinLock*)((char*)this + 0x160))->Unlock();
 }
 // @fnv 0x006c4540
+// src: XBOX_DEBUG_PDB 0x006c4540
+// pdb: NavMeshObstacleManager::DeleteCurrentTasks | NavMeshObstacleManager.obj | debug, call graph, high
+// pdb locals: icount, t
 bool NavMeshObstacleManager::ClearBackgroundTasks()
 {
     unsigned int size = ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)this + 0x14c))->GetSize();
@@ -117,6 +122,9 @@ bool NavMeshObstacleManager::ClearBackgroundTasks()
     return true;
 }
 // @fnv 0x006c4ec0
+// src: XBOX_DEBUG_PDB 0x006c4ec0
+// pdb: NavMeshObstacleManager::QueueTasks | NavMeshObstacleManager.obj | debug, call graph, high
+// pdb locals: taskIt, formID, ptaskData
 void NavMeshObstacleManager::QueueObstacleTasks()
 {
     struct
@@ -143,6 +151,8 @@ void NavMeshObstacleManager::QueueObstacleTasks()
     ((NiTPointerMap<unsigned int, unsigned int>*)((char*)this + 0x12c))->RemoveAll();
 }
 // @fnv 0x006c47e0
+// pdb: NavMeshObstacleManager::ProcessRemovedReferences | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: plist2, prefID, spArray, i
 void NavMeshObstacleManager::ClearObstacles()
 {
     BSSimpleList<BGSPerkEntry*>* item = (BSSimpleList<BGSPerkEntry*>*)((char*)this + 0x34);
@@ -183,6 +193,7 @@ struct S4ee810
 // Calls GlobalObject_00633c90 with 0, sets x to 0, and returns this.
 // @fnv 0x004ee810
 // src: GUESS 0x004ee810 (confidence: low)
+// pdb: BSSimpleList<NiPointer<bhkSerializable> >::BSSimpleList<NiPointer<bhkSerializable> > | TESObjectREFR.obj | debug, call graph, medium
 S4ee810* S4ee810::UpdateState_004ee810()
 {
     GlobalObject_00633c90(0);
@@ -230,6 +241,7 @@ struct Struct_124
 // Checks the tasklet manager and the object at offset 0x128, then allocates two objects stored at offsets 0x120 and 0x124; returns false on either check failing.
 // @fnv 0x006c07d0
 // src: COMMUNITY 0x006c07d0
+// pdb: NavMeshObstacleManager::Initialize | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
 bool FUN_006c07d0_shell::NavMeshObstacleManager_CreateListeners()
 {
     if (!GetTaskletManager().GetTaskletValue((char*)this + 0x128))
@@ -245,6 +257,7 @@ void __fastcall AcquireTaskletItem(BSWin32TaskletManager*, int, void*);
 
 // @fnv 0x006c08e0
 // src: COMMUNITY 0x006c08e0
+// pdb: BSTaskletGroup::Open | NavMeshObstacleManager.obj | debug, upstream name already matches, high
 void __fastcall BSTaskletGroup_Open(void* pThis)
 {
     ((void(__thiscall*)(BSWin32TaskletManager*, void*)) &AcquireTaskletItem)(&GetTaskletManager(), pThis);
@@ -260,6 +273,7 @@ typedef void (Dummy006c09d0::*MemFn)(void*);
 
 // @fnv 0x006c09d0
 // src: COMMUNITY 0x006c09d0
+// pdb: BSTaskletGroup::Close | NavMeshObstacleManager.obj | debug, upstream name already matches, high
 void __fastcall BSTaskletGroup_Close(void* pThis)
 {
     ((void(__thiscall*)(BSWin32TaskletManager*, void*)) & BSTaskletManager_CloseTaskGroup)(&GetTaskletManager(), pThis);
@@ -497,6 +511,9 @@ class FUN_006c02c0 : public GlobalObject_0044fae0
 };
 
 // @fnv 0x006c0f10
+// pdb: NavMeshObstacleManager::OnDoorClose | NavMeshObstacleManager.obj | retail, call graph, high
+// pdb params: apDoorRef
+// pdb locals: spdummy, pbaseObject, pdoor
 void FUN_006c0f10_shell::UpdateDoorObstacle(TESObjectREFR* apDoorRef)
 {
     typedef NiTMapBase<DFALL<NiTMapItem<bhkRigidBody*, NiPointer<ObstacleData> > >, bhkRigidBody*,
@@ -550,6 +567,8 @@ void __cdecl ClearStringAndCheck(void* param1, BSStringT<char>* param2);
 // Stores the result of _ref_0084e3a0(param1) at offset 8 of param2's string, then calls ClearStringAndCheck(param1, param2).
 // @fnv 0x006c34f0
 // src: COMMUNITY 0x006c34f0
+// pdb: NavMeshObstacleManager::GetFirstObstacleForReference | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: apRef, apRetObstacle
 void __cdecl NavMeshObstacleManager_AddObstaclesForReference(void* param1, BSStringT<char>* pString)
 {
     *(void**)(const_cast<char*>(pString->operator char const*()) + 8) = _ref_0084e3a0(param1);
@@ -567,13 +586,15 @@ struct Obj3520
     void** vt;
 };
 typedef void*(__thiscall* Fn3520)(Obj3520*);
-bool RegisterCollisionObstacles(void*, ::BSStringT<char>*);
+bool NavMeshObstacleManager_AddObstaclesFor3DRecursive(void*, ::BSStringT<char>*);
 // @fnv 0x006c3520
+// pdb: NavMeshObstacleManager::GetObstacleDataForReference | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: apRef, apRetObstacleArray
 bool ClearStringAndCheck(Obj3520* pObj, ::BSStringT<char>* pString)
 {
     ((Arr3520*)((const char*)*pString + 0xc))->RemoveAll(true);
     if (((Fn3520)pObj->vt[116])(pObj))
-        return RegisterCollisionObstacles(((Fn3520)pObj->vt[116])(pObj), pString);
+        return NavMeshObstacleManager_AddObstaclesFor3DRecursive(((Fn3520)pObj->vt[116])(pObj), pString);
     else
         return false;
 }
@@ -589,6 +610,9 @@ struct S6c4350
 // Calls _ref_006815c0, then copies fields a, b and c from o into this and returns this.
 // @fnv 0x006c4350
 // src: XBOX_PDB 0x006c4350
+// pdb: bhkObstacleRemovalListener::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMeshEdgeHandle::NavMeshEdgeHandle
+// pdb params: this
 S6c4350* S6c4350::FastNavMeshEdgeHandle_FastNavMeshEdgeHandle(const S6c4350& aOther)
 {
     _ref_006815c0();
@@ -610,6 +634,8 @@ bool __fastcall FUN_006c85e0(unsigned int);
 // Iterates the task array at this+0x14c, calls FUN_006c85e0 on each task, and returns whether any call succeeded.
 // @fnv 0x006c44d0
 // src: XBOX_PDB 0x006c44d0
+// pdb: NavMeshObstacleManager::SwapNavmeshes | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: icount, bNavmeshesUpdated, t, ptask
 bool FUN_006c44d0_shell::NavMeshObstacleManager_SwapNavmeshes()
 {
     bool bNavmeshesUpdated = false;
@@ -639,6 +665,8 @@ BSSimpleList<int>* __fastcall _ref_00726070(void* pThis);
 // Iterates the list at this+0x180, calls FUN_00694500 on each entry's value, then removes all entries and returns true.
 // @fnv 0x006c4900
 // src: COMMUNITY 0x006c4900
+// pdb: NavMeshObstacleManager::ProcessEnabledNavMeshes | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: plist, meshID
 bool FUN_006c4900_shell::NavMeshObstacleManager_ProcessEnabledNavMeshes()
 {
     BSSimpleList<int>* pCurrentElementNext = reinterpret_cast<BSSimpleList<int>*>(reinterpret_cast<char*>(this) + 0x180);
@@ -679,14 +707,16 @@ using ::GetTaskletManager;
 void __fastcall ProcessTaskletPair(BSWin32TaskletManager*, int, void*, void*, bool);
 struct S6c5ec0
 {
-    void BSTaskletGroup_AttachTask(void* task, bool last);
+    void BSTaskletGroup_AttachTask(void* aTask, bool abLastTask);
 };
 // Forwards this object, task and last to the tasklet manager's TryProcessPair.
 // @fnv 0x006c5ec0
 // src: XBOX_PDB 0x006c5ec0
-void S6c5ec0::BSTaskletGroup_AttachTask(void* task, bool last)
+// pdb: BSTaskletGroup::AttachTask | NavMeshObstacleManager.obj | debug, upstream name already matches, high
+// pdb params: aTask, abLastTask
+void S6c5ec0::BSTaskletGroup_AttachTask(void* aTask, bool abLastTask)
 {
-    ((void(__thiscall*)(BSWin32TaskletManager*, void*, void*, bool)) &ProcessTaskletPair)(&GetTaskletManager(), this, task, last);
+    ((void(__thiscall*)(BSWin32TaskletManager*, void*, void*, bool)) &ProcessTaskletPair)(&GetTaskletManager(), this, aTask, abLastTask);
 }
 }  // namespace fnv_006c5ec0
 
@@ -702,6 +732,7 @@ struct FUN_006c5fc0_shell
 // Calls FUN_006c6260 with uiHashSize, sets the vftable to DAT_0106c5e0, and returns this.
 // @fnv 0x006c5fc0
 // src: GUESS 0x006c5fc0 (confidence: low)
+// pdb: BSSimpleList<NiPointer<ObstacleData> >::BSSimpleList<NiPointer<ObstacleData> > | NavMeshObstacleManager.obj | debug, object-file run extension, low
 FUN_006c5fc0_shell* FUN_006c5fc0_shell::InitializeFields_006c5fc0(unsigned int uiHashSize)
 {
     FUN_006c6260(uiHashSize);
@@ -721,6 +752,8 @@ struct FUN_006c6070_Class
 // Calls FUN_006c68b0 with uiHashSize, sets the vftable to DAT_0106c600, and returns this.
 // @fnv 0x006c6070
 // src: GUESS 0x006c6070 (confidence: low)
+// pdb: NiTMap<bhkRigidBody *,NiPointer<ObstacleData> >::NiTMap<bhkRigidBody *,NiPointer<ObstacleData> > | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* FUN_006c6070_Class::SetVtableAndProcessState_006c6070(unsigned int uiHashSize)
 {
     NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData(uiHashSize);
@@ -740,6 +773,8 @@ void __fastcall FUN_005890c0(int* self, FUN_006c60a0_arg a);
 // Calls FUN_005890c0 on self, then stores the address of DAT_01031fac into *self and returns self.
 // @fnv 0x006c60a0
 // src: GUESS 0x006c60a0 (confidence: low)
+// pdb: NiTMap<unsigned int,ObstacleTaskData *>::NiTMap<unsigned int,ObstacleTaskData *> | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 int* __fastcall Object_InitializeFields_006c60a0(int* self, FUN_006c60a0_arg aArg)
 {
     FUN_005890c0(self, aArg);
@@ -769,6 +804,9 @@ struct Helper62d0
 // Hashes the key, scans that bucket's chain for a matching key, and if found writes its value to out and returns true.
 // @fnv 0x006c62d0
 // src: XBOX_PDB 0x006c62d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,NiPointer<ObstacleData> > >,bhkRigidBody *,NiPointer<ObstacleData> >::GetAt | NavMeshObstacleManager.obj | retail, call graph (shared callers), medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 bool Map62d0::NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_GetAt(unsigned int key, void** out)
 {
     unsigned int uiBucketIndex = HashFunction(key);
@@ -810,6 +848,7 @@ struct GlobalObject_00869f00
 
 // @fnv 0x006c6de0
 // src: GUESS 0x006c6de0 (confidence: medium)
+// pdb: BSSimpleArray<TESObjectCELL *,1024>::~BSSimpleArray<TESObjectCELL *,1024> | NavMeshObstacleManager.obj | debug, call graph, medium
 void __fastcall Object_ResetVirtualTableAndClear_006c6de0(GlobalObject_00869f00* pThis)
 {
     *(int**)pThis = &DAT_0106c708;
@@ -831,6 +870,8 @@ struct FUN_006c1480_holder : public NiRefObject
 };
 // Initializes the holder by setting its f8 field to 0.
 // @fnv 0x006c1480
+// pdb: ReferenceObstacleArray::~ReferenceObstacleArray | NavMeshObstacleManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ReferenceObstacleArray::ReferenceObstacleArray
 FUN_006c1480_holder::FUN_006c1480_holder()
 {
     f8 = 0;
@@ -844,16 +885,19 @@ struct Flt
 NiPoint3* __cdecl NiPoint3_TransformByMatrix3(NiPoint3*, const NiPoint3&, const float*);
 // @fnv 0x006c3570
 // src: XBOX_PDB 0x006c3570
-bool NavMeshObstacleManager_IsPointInBox(NiPoint3* pPoint, Flt* b, float c, float fMaxZ)
+// pdb: NavMeshObstacleManager::IsPointInBox | NavMeshObstacleManager.obj | debug, upstream name already matches, high
+// pdb params: aPoint, aBox, afMaxHeightAbove, afMaxHeightBelow
+// pdb locals: newPointCoord
+bool NavMeshObstacleManager_IsPointInBox(NiPoint3* aPoint, Flt* aBox, float afMaxHeightAbove, float afMaxHeightBelow)
 {
     // The transform writes every component; leave its output uninitialized.
     float r[3];
-    NiPoint3_TransformByMatrix3(reinterpret_cast<NiPoint3*>(r), *pPoint - *(NiPoint3*)((unsigned int)*b + 0x10), (const float*)((unsigned int)*b + 0x1c));
-    if (r[2] < -c || r[2] > fMaxZ)
+    NiPoint3_TransformByMatrix3(reinterpret_cast<NiPoint3*>(r), *aPoint - *(NiPoint3*)((unsigned int)*aBox + 0x10), (const float*)((unsigned int)*aBox + 0x1c));
+    if (r[2] < -afMaxHeightAbove || r[2] > afMaxHeightBelow)
         return false;
-    if (r[0] < *(float*)((unsigned int)*b + 0x40) || r[0] > *(float*)((unsigned int)*b + 0x4c))
+    if (r[0] < *(float*)((unsigned int)*aBox + 0x40) || r[0] > *(float*)((unsigned int)*aBox + 0x4c))
         return false;
-    if (r[1] < *(float*)((unsigned int)*b + 0x44) || r[1] > *(float*)((unsigned int)*b + 0x50))
+    if (r[1] < *(float*)((unsigned int)*aBox + 0x44) || r[1] > *(float*)((unsigned int)*aBox + 0x50))
         return false;
     return true;
 }
@@ -874,7 +918,10 @@ struct FUN_006c4540_obj
 };
 // Deletes every object stored in the array at this+0x14c, then clears the containers at this+0x14c and this+0x13c, returning true.
 // @fnv 0x006c4540
-bool __fastcall ClearOwnedObjects(char* this_ptr)
+// src: XBOX_DEBUG_PDB 0x006c4540
+// pdb: NavMeshObstacleManager::DeleteCurrentTasks | NavMeshObstacleManager.obj | debug, call graph, high
+// pdb locals: icount, t
+bool __fastcall NavMeshObstacleManager_DeleteCurrentTasks(char* this_ptr)
 {
     unsigned int icount = ((NavmeshobstaclemanagerOffset08View*)(this_ptr + 0x14c))->GetFlags();
     for (unsigned int t = 0; t < icount; t++)
@@ -893,7 +940,10 @@ struct FUN_006c4ec0_vt
     virtual void v2();
 };
 // @fnv 0x006c4ec0
-void __fastcall ProcessObstacleTasks(NavMeshObstacleManager* pObstacleManager)
+// src: XBOX_DEBUG_PDB 0x006c4ec0
+// pdb: NavMeshObstacleManager::QueueTasks | NavMeshObstacleManager.obj | debug, call graph, high
+// pdb locals: taskIt, formID, ptaskData
+void __fastcall NavMeshObstacleManager_QueueTasks(NavMeshObstacleManager* pObstacleManager)
 {
     void* taskIt;
     taskIt = ((NiTMap<unsigned int, ObstacleTaskData*>*)((char*)pObstacleManager + 0x12c))->GetFirstPos();
@@ -934,6 +984,9 @@ struct FUN_006c5ef0_arg
 };
 // @fnv 0x006c5ef0
 // src: COMMUNITY 0x006c5ef0
+// pdb: NavMeshObstacleManager::GetTaskForNavMesh | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
+// pdb params: apNavMesh
+// pdb locals: ptask
 FUN_006c77a0_cls* __fastcall NavMeshObstacleManager_AddTask(char* this_ptr, FUN_006c5ef0_arg aNavArg)
 {
     FUN_006c77a0_cls* ptask = 0;
@@ -954,10 +1007,12 @@ struct DtorStandIn
 };
 struct DelStandIn
 {
-    void* FUN_004ee360(unsigned int flags);
+    void* BSSimpleList_NiPointer_BSTempEffect_ScalarDtor(unsigned int flags);
 };
 // @fnv 0x004ee360
-void* DelStandIn::FUN_004ee360(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x004ee360
+// pdb: BSSimpleList<NiPointer<BSTempEffect> >::`scalar deleting destructor' | BGSDecalNode.obj | debug, call graph, high
+void* DelStandIn::BSSimpleList_NiPointer_BSTempEffect_ScalarDtor(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
     if (flags & 1)
@@ -984,6 +1039,7 @@ struct FUN_006c6c60 : public NavMeshArr
 
 // Destructor that calls FUN_0042f9c0 with argument 1 on this object.
 // @fnv 0x006c6ce0
+// pdb: BSScrapArray<NavMeshPtr,1024>::~BSScrapArray<NavMeshPtr,1024> | NavMeshObstacleManager.obj | debug, call graph, high
 FUN_006c6ce0::FUN_006c6c60::~FUN_006c6c60()
 {
     ((FUN_0042f830_struct*)this)->BSSimpleArray_NavMeshPtr_1024_Clear(1);
@@ -1028,6 +1084,9 @@ struct FUN_006c23c0 : NiRefObject
 
 // Constructs the object, initialising go1 and go2 to 0 and setting flag to true.
 // @fnv 0x006c23c0
+// pdb: NavMeshObstacleManager::UpdateObstacleDataForReference | NavMeshObstacleManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ObstacleData::ObstacleData
+// pdb params: apRef, apRetObstacleArray
 FUN_006c23c0::FUN_006c23c0() : go1(0), flag(true), go2(0)
 {}
 
@@ -1065,6 +1124,8 @@ struct MgrX
 
 // @fnv 0x006c4c30
 // src: COMMUNITY 0x006c4c30
+// pdb: NavMeshObstacleManager::ProcessAllObstacles | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: it, formID, spArray, i, spObstacle
 void FUN_006c4c30_shell::NavMeshObstacleManager_ProcessAllObstacles()
 {
     void* it = ((MapX*)((char*)this + 0x1c))->GetFirstPos();
@@ -1116,6 +1177,8 @@ struct FUN_006c1150_shell
 
 // @fnv 0x006c1150
 // src: COMMUNITY 0x006c1150
+// pdb: NavMeshObstacleManager::DisableNavMesh | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: aiNavMeshID
 void FUN_006c1150_shell::Cmd_DisableNavMeshAlt_Execute(int* apParam)
 {
     ((G2*)((char*)this + 0x188))->AddHead(&apParam);
@@ -1123,29 +1186,31 @@ void FUN_006c1150_shell::Cmd_DisableNavMeshAlt_Execute(int* apParam)
 
 struct FUN_006c5ff0_cls
 {
-    void LockFreeQueue_bhkRigidBody_Push(int* p);
+    void LockFreeQueue_bhkRigidBody_Push(int* aData);
 };
 
 struct FUN_006c1c70_shell
 {
     char pad[0x60];
-    void NavMeshObstacleManager_AddObstacleToUpdateList(int arg);
+    void NavMeshObstacleManager_AddObstacleToUpdateList(int apRigidBody);
 };
 
 // @fnv 0x006c1c70
 // src: XBOX_PDB 0x006c1c70
-void FUN_006c1c70_shell::NavMeshObstacleManager_AddObstacleToUpdateList(int arg)
+// pdb: NavMeshObstacleManager::AddObstacleToUpdateList | NavMeshObstacleManager.obj | debug, upstream name already matches, high
+// pdb params: apRigidBody
+void FUN_006c1c70_shell::NavMeshObstacleManager_AddObstacleToUpdateList(int apRigidBody)
 {
-    ((FUN_006c5ff0_cls*)((char*)this + 0x60))->LockFreeQueue_bhkRigidBody_Push(&arg);
+    ((FUN_006c5ff0_cls*)((char*)this + 0x60))->LockFreeQueue_bhkRigidBody_Push(&apRigidBody);
 }
 
 struct FUN_006c5ff0_shell
 {
-    void __thiscall LockFreeQueue_bhkRigidBody_Push(void* apArg);
+    void __thiscall LockFreeQueue_bhkRigidBody_Push(void* aData);
 };
 
 // src: XBOX_PDB 0x006c5ff0
-void FUN_006c5ff0_shell::LockFreeQueue_bhkRigidBody_Push(void* apArg)
+void FUN_006c5ff0_shell::LockFreeQueue_bhkRigidBody_Push(void* aData)
 {}
 
 struct FUN_006c1c90_shell
@@ -1154,6 +1219,8 @@ struct FUN_006c1c90_shell
 };
 
 // @fnv 0x006c1c90
+// pdb: NavMeshObstacleManager::RemoveObstacleFromUpdateList | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
+// pdb params: apRigidBody
 void FUN_006c1c90_shell::ForwardToSubObject(void* apArg)
 {
     ((FUN_006c5ff0_shell*)((char*)this + 0xa0))->LockFreeQueue_bhkRigidBody_Push(&apArg);
@@ -1163,21 +1230,24 @@ void FUN_006c1c90_shell::ForwardToSubObject(void* apArg)
 struct HavokBodyListenerAccess
 {
     void* GetLocalData();
-    void bhkEntity_AddEntityActivationListener(void* arg);
+    void bhkEntity_AddEntityActivationListener(void* apList);
 };
 
 struct FUN_00c9c700_target
 {
-    void FUN_00c9c700(void* arg);
+    void hkpEntity_addEntityActivationListener(void* arg);
 };
 
 // @fnv 0x006c1dd0
 // src: XBOX_PDB 0x006c1dd0
-void HavokBodyListenerAccess::bhkEntity_AddEntityActivationListener(void* arg)
+// pdb: bhkEntity::AddEntityActivationListener | NavMeshObstacleManager.obj | debug, upstream name already matches, high
+// pdb params: apList
+// pdb locals: pe
+void HavokBodyListenerAccess::bhkEntity_AddEntityActivationListener(void* apList)
 {
     void* result = GetLocalData();
     if (result)
-        ((FUN_00c9c700_target*)result)->FUN_00c9c700(arg);
+        ((FUN_00c9c700_target*)result)->hkpEntity_addEntityActivationListener(apList);
 }
 
 namespace fnv_006c1e40 {
@@ -1190,6 +1260,9 @@ struct FUN_006c1e40_shell
 
 // @fnv 0x006c1e40
 // src: GUESS 0x006c1e40 (confidence: medium)
+// pdb: bhkEntity::RemoveEntityListener | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
+// pdb params: apList
+// pdb locals: pe
 void FUN_006c1e40_shell::RemoveEntityListener_006c1e40(void* arg1)
 {
     void* result = ((bhkWorldObject*)this)->Bipedanim_GetReferenceFlagsOrZero();
@@ -1214,6 +1287,9 @@ struct FUN_006c1e70_shell
 
 // @fnv 0x006c1e70
 // src: GUESS 0x006c1e70 (confidence: medium)
+// pdb: bhkEntity::RemoveEntityActivationListener | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
+// pdb params: apList
+// pdb locals: pe
 void FUN_006c1e70_shell::RemoveWorldObjectListener(int a1)
 {
     int result = (int)((bhkWorldObject*)this)->Bipedanim_GetReferenceFlagsOrZero();
@@ -1233,6 +1309,7 @@ struct ObstacleData_shell
 };
 
 // @fnv 0x006c2490
+// pdb: ObstacleData::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall ObstacleData_shell::FUN_006c2490(unsigned int flags)
 {
     this->DestroyMembers();
@@ -1251,6 +1328,7 @@ struct FUN_006c5e90_shell
 
 // Calls FUN_006c5e70 on this object, deletes it when flags has bit 0 set, and returns this.
 // @fnv 0x006c5e90
+// pdb: BSTasklet::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c5e90_shell::FUN_006c5e90(unsigned int flags)
 {
     NavMeshObstacleManager_UpdateState_006c5e70((int**)this);
@@ -1274,6 +1352,7 @@ struct FUN_006c0120_shell : FUN_006c0150_shell
 
 // Calls FUN_006c0150, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x006c0120
+// pdb: hkpEntityActivationListener::`scalar deleting destructor' | NavMeshObstacleManager.obj | debug, vtable slot, medium
 void* FUN_006c0120_shell::FUN_006c0120(unsigned int flags)
 {
     SetVtableAndProcessState_006c0150();
@@ -1314,6 +1393,8 @@ struct FUN_006c1d60_shell
 // Calls two methods on arg, passing the pointers stored at this+0x120 and this+0x124.
 // @fnv 0x006c1d60
 // src: COMMUNITY 0x006c1d60
+// pdb: NavMeshObstacleManager::AddActivationListener | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
+// pdb params: apRigidBody
 void __thiscall FUN_006c1d60_shell::NavMeshObstacleManager_AddListeners(HavokBodyListenerAccess* arg)
 {
     arg->bhkEntity_AddEntityActivationListener(*(void**)(this + 0x120));
@@ -1342,6 +1423,7 @@ struct FUN_006923c0
 };
 // Initializes the object by setting f0 to -1.
 // @fnv 0x006923c0
+// pdb: EdgeExtraInfo::EdgeExtraInfo | NavMesh.obj | debug, call graph (shared callers), low
 FUN_006923c0::FUN_006923c0()
 {
     f0 = -1;
@@ -1355,6 +1437,7 @@ struct Dummy
 };
 // Calls FUN_006c0170, then if the low bit of flags is set calls _Deallocate on this, and returns this.
 // @fnv 0x006c00d0
+// pdb: bhkObstacleDeactivationListener::`scalar deleting destructor' | NavMeshObstacleManager.obj | debug, vtable slot, medium
 void* Dummy::FUN_006c00d0(unsigned int flags)
 {
     ForwardCall_006c0170();
@@ -1372,6 +1455,9 @@ struct ActivationObstacleManager
 
 NavMeshObstacleManager* __cdecl MyGetSingleton();
 // @fnv 0x006c01d0
+// pdb: bhkObstacleDeactivationListener::entityActivatedCallback | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: entity
+// pdb locals: pb
 void bhkObstacleDeactivationListener::entityActivatedCallback(hkpEntity* entity)
 {
     bhkRigidBody* pb;
@@ -1392,6 +1478,7 @@ struct FUN_006c0210_shell
 extern int DAT_0106c3d4;
 
 // @fnv 0x006c0210
+// pdb: bhkObstacleRemovalListener::bhkObstacleRemovalListener | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
 FUN_006c0210_shell::FUN_006c0210_shell()
 {
     ComputeValue_0061f580();
@@ -1405,6 +1492,7 @@ struct FUN_006c0230_shell
     void* FUN_006c0230(unsigned int);
 };
 // @fnv 0x006c0230
+// pdb: bhkObstacleRemovalListener::`scalar deleting destructor' | NavMeshObstacleManager.obj | debug, vtable slot, medium
 void* FUN_006c0230_shell::FUN_006c0230(unsigned int flags)
 {
     UpdateFields_006c0260(this);
@@ -1431,6 +1519,8 @@ struct Mgr006c0c30
 // If the game setting is enabled and apRef is not already in the list at this+0x2c, adds apRef to the head of that list.
 // @fnv 0x006c0c30
 // src: XBOX_PDB 0x006c0c30
+// pdb: NavMeshObstacleManager::AddObstacleForReference | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: apRef
 void Mgr006c0c30::NavMeshObstacleManager_AddObstacleForReference(Actor* apRef)
 {
     if (!*(unsigned char*)(((SettingT_GameSettingCollection_*)&g_011d73e4)->Bool()))
@@ -1452,6 +1542,8 @@ struct FUN_006c1130_shell
 };
 // @fnv 0x006c1130
 // src: COMMUNITY 0x006c1130
+// pdb: NavMeshObstacleManager::EnableNavMesh | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: aiNavMeshID
 void FUN_006c1130_shell::Cmd_EnableNavMeshAlt_Execute(int* pItem)
 {
     ((G2*)((char*)this + 0x180))->AddHead(&pItem);
@@ -1461,6 +1553,7 @@ void FUN_006c1130_shell::Cmd_EnableNavMeshAlt_Execute(int* pItem)
 void __fastcall DestroyReferenceObstacleArray(ReferenceObstacleArray*);
 void _delete(void*, unsigned int);
 // @fnv 0x006c14f0
+// pdb: ReferenceObstacleArray::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* ReferenceObstacleArray::DestroyIfFlagged(unsigned int flags)
 {
     DestroyReferenceObstacleArray(this);
@@ -1482,11 +1575,14 @@ struct S_00c9c5b0
 };
 // @fnv 0x006c1da0
 // src: XBOX_PDB 0x006c1da0
-void HavokBodyListenerAccess::bhkEntity_AddEntityListener(int a)
+// pdb: bhkEntity::AddEntityListener | NavMeshObstacleManager.obj | debug, upstream name already matches, high
+// pdb params: apList
+// pdb locals: pe
+void HavokBodyListenerAccess::bhkEntity_AddEntityListener(int apList)
 {
     void* p = GetLocalData();
     if (p)
-        ((S_00c9c5b0*)p)->hkpEntity_addEntityListener(a);
+        ((S_00c9c5b0*)p)->hkpEntity_addEntityListener(apList);
 }
 }  // namespace fnv_006c1da0
 
@@ -1504,10 +1600,12 @@ struct S_this
 };
 // @fnv 0x006c1e00
 // src: COMMUNITY 0x006c1e00
-void S_this::NavMeshObstacleManager_RemoveActivationListener(S_param* apParam)
+// pdb: NavMeshObstacleManager::RemoveActivationListener | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: apRigidBody
+void S_this::NavMeshObstacleManager_RemoveActivationListener(S_param* apRigidBody)
 {
-    apParam->RemoveWorldObjectListener(f120);
-    apParam->RemoveEntityListener_006c1e40(f124);
+    apRigidBody->RemoveWorldObjectListener(f120);
+    apRigidBody->RemoveEntityListener_006c1e40(f124);
 }
 
 struct C006c6fe0
@@ -1525,10 +1623,13 @@ struct C006c6030
 // Locks the object at offset 0x20, calls FUN_00449f80 on a1 and FUN_006c6fe0 on the result, unlocks, and returns that bool.
 // @fnv 0x006c6030
 // src: COMMUNITY 0x006c6030
-bool C006c6030::LockFreeQueue_bhkRigidBody_Pop(void* apArg)
+// pdb: LockFreeQueue<bhkRigidBody *>::Pop | NavMeshObstacleManager.obj | debug, call graph, high
+// pdb params: arData
+// pdb locals: bResult
+bool C006c6030::LockFreeQueue_bhkRigidBody_Pop(void* arData)
 {
     ((RecursiveSpinLock*)((char*)this + 0x20))->Lock(0);
-    bool b = ((C00449f80*)this)->LockFreeMap_GetInterface_0(apArg)->PopQueueValue();
+    bool b = ((C00449f80*)this)->LockFreeMap_GetInterface_0(arData)->PopQueueValue();
     ((RecursiveSpinLock*)((char*)this + 0x20))->Unlock();
     return b;
 }
@@ -1545,6 +1646,7 @@ struct FUN_006c0260_shell
 };
 // @fnv 0x006c0260
 // src: GUESS 0x006c0260 (confidence: low)
+// pdb: bhkObstacleRemovalListener::~bhkObstacleRemovalListener | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
 void FUN_006c0260_shell::UpdateFields_006c0260()
 {
     *(void**)this = &DAT_0106c3d4;
@@ -1571,20 +1673,24 @@ bool __cdecl DoBoundsOverlap(const NiPoint3&, const NiPoint3&, const NiPoint3&, 
 extern float _DAT_01015f5c;
 
 // @fnv 0x006c1ea0
-bool __cdecl CollectCellsNearObstacle(Flt& kObstacle, BSSimpleArray<void*, 1024>* pCells)
+// src: XBOX_RETAIL_PDB 0x006c1ea0
+// pdb: NavMeshObstacleManager::GetCellListForObstacle | NavMeshObstacleManager.obj | retail, object-file run extension, high
+// pdb params: apData, apReturnCellArray
+// pdb locals: pcell, celly, cellx, x, y, pgridCell, gridcellMax, gridcellMin
+bool __cdecl NavMeshObstacleManager_GetCellListForObstacle(Flt& apData, BSSimpleArray<void*, 1024>* apReturnCellArray)
 {
-    ((GlobalObject_00869f00*)pCells)->Clear(false);
+    ((GlobalObject_00869f00*)apReturnCellArray)->Clear(false);
     TESObjectCELL* pCell = reinterpret_cast<TES*>(::g_TES)->GetDetailedActorPathHandler();
     if (!pCell)
         return false;
     if (FUN_00425fd0(pCell))
     {
-        pCells->Add(reinterpret_cast<void*&>(pCell));
+        apReturnCellArray->Add(reinterpret_cast<void*&>(pCell));
     }
     else
     {
-        int m_iGridPositionX = (int)*(float*)((unsigned int)kObstacle + 0x10) >> 12;
-        int m_iGridCoordinateY = (int)*(float*)((unsigned int)kObstacle + 0x14) >> 12;
+        int m_iGridPositionX = (int)*(float*)((unsigned int)apData + 0x10) >> 12;
+        int m_iGridCoordinateY = (int)*(float*)((unsigned int)apData + 0x14) >> 12;
         for (int x = m_iGridPositionX - 1; x <= m_iGridPositionX + 1; x++)
         {
             for (int y = m_iGridCoordinateY - 1; y <= m_iGridCoordinateY + 1; y++)
@@ -1595,9 +1701,9 @@ bool __cdecl CollectCellsNearObstacle(Flt& kObstacle, BSSimpleArray<void*, 1024>
                     NiPoint3 kMinBoundsCur((float)(x << 12), (float)(y << 12), _DAT_01015f5c);
                     NiPoint3 kMaxPoint((float)(kMinBoundsCur.x + 4096.0), (float)(kMinBoundsCur.y + 4096.0), 3.402823466e+38F);
                     if (DoBoundsOverlap(*(NiPoint3*)&kMinBoundsCur, *(NiPoint3*)&kMaxPoint,
-                                        *(NiPoint3*)((unsigned int)kObstacle + 0x58),
-                                        *(NiPoint3*)((unsigned int)kObstacle + 0x64)))
-                        pCells->Add(reinterpret_cast<void*&>(pAdjCell));
+                                        *(NiPoint3*)((unsigned int)apData + 0x58),
+                                        *(NiPoint3*)((unsigned int)apData + 0x64)))
+                        apReturnCellArray->Add(reinterpret_cast<void*&>(pAdjCell));
                 }
             }
         }
@@ -1643,17 +1749,20 @@ struct CellArr
     unsigned int e;
 };
 int __fastcall GetReferenceFlags(void*);
-bool __cdecl CollectCellsNearObstacle(const Flt*, CellArr*);
+bool __cdecl NavMeshObstacleManager_GetCellListForObstacle(const Flt*, CellArr*);
 bool __cdecl DoBoundsOverlap(const NiPoint3&, const NiPoint3&, const NiPoint3&, const NiPoint3&);
 
 // @fnv 0x006c2050
 // src: COMMUNITY 0x006c2050
+// pdb: NavMeshObstacleManager::GetNavMeshListForObstacle | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: apData, apReturnNavMeshArray
+// pdb locals: cells, navmeshMax, navmeshMin, i, parray, j
 bool GetNavMeshListForObstacle(const Flt* apData, S2f850* apReturnNavMeshArray)
 {
     NiPoint3 navmeshMin;
     NiPoint3 navmeshMax;
     CellArr cells(0x20, 0, 0);
-    if (CollectCellsNearObstacle(apData, &cells))
+    if (NavMeshObstacleManager_GetCellListForObstacle(apData, &cells))
     {
         for (unsigned int i = 0; i < ((NavmeshobstaclemanagerOffset08View*)&cells)->GetFlags(); i++)
         {
@@ -1723,11 +1832,15 @@ struct Owner_006c2210
 void __cdecl UpdateObstacleBounds(unsigned int);
 
 // @fnv 0x006c2210
-bool __cdecl RegisterCollisionObstacles(NiAVObject* apObject, Flt* apOwner)
+// src: XBOX_RETAIL_PDB 0x006c2210
+// pdb: NavMeshObstacleManager::AddObstaclesFor3DRecursive | NavMeshObstacleManager.obj | retail, object-file run extension, high
+// pdb params: ap3D, apRetObstacleArray
+// pdb locals: pcol, pnode, prb, layer, spObstacle, i
+bool __cdecl NavMeshObstacleManager_AddObstaclesFor3DRecursive(NiAVObject* ap3D, Flt* apRetObstacleArray)
 {
     NiNode* pkNode;
     {
-        bhkCollisionObject* pCollision = bhkCollisionObject::GetFromNiAVObject(apObject);
+        bhkCollisionObject* pCollision = bhkCollisionObject::GetFromNiAVObject(ap3D);
         if (pCollision)
         {
             bhkWorldObject* pWorldObject = pCollision->bhkNiCollisionObject_GetWorldObject();
@@ -1737,21 +1850,21 @@ bool __cdecl RegisterCollisionObstacles(NiAVObject* apObject, Flt* apOwner)
                 if (iLayer == 2 || iLayer == 4 || iLayer == 10 || iLayer == 0x14 || iLayer == 0x1c)
                 {
                     GO m_spRegisteredObstacle((int)new FUN_006c23c0);
-                    ((Obstacle_006c2210*)(unsigned int)m_spRegisteredObstacle)->uiOwner = (unsigned int)*apOwner;
+                    ((Obstacle_006c2210*)(unsigned int)m_spRegisteredObstacle)->uiOwner = (unsigned int)*apRetObstacleArray;
                     ((Obstacle_006c2210*)(unsigned int)m_spRegisteredObstacle)->m_pGameObject = pWorldObject;
                     UpdateObstacleBounds((unsigned int)m_spRegisteredObstacle);
-                    ((Owner_006c2210*)(unsigned int)*apOwner)->kArray.BSSimpleArray_NiPointer_NiAVObject_1024_Add(*(NavMeshPtr*)&m_spRegisteredObstacle);
+                    ((Owner_006c2210*)(unsigned int)*apRetObstacleArray)->kArray.BSSimpleArray_NiPointer_NiAVObject_1024_Add(*(NavMeshPtr*)&m_spRegisteredObstacle);
                 }
             }
         }
     }
-    pkNode = ((Obj_006c2210*)apObject)->IsSceneNode();
+    pkNode = ((Obj_006c2210*)ap3D)->IsSceneNode();
     if (pkNode)
     {
         for (unsigned int i = 0; i < pkNode->GetNumChildren(); i++)
         {
             if (pkNode->GetAt(i))
-                RegisterCollisionObstacles(pkNode->GetAt(i), apOwner);
+                NavMeshObstacleManager_AddObstaclesFor3DRecursive(pkNode->GetAt(i), apRetObstacleArray);
         }
     }
     return true;
@@ -1791,6 +1904,8 @@ struct List_009e03e0
 };
 // @fnv 0x006c47e0
 // src: COMMUNITY 0x006c47e0
+// pdb: NavMeshObstacleManager::ProcessRemovedReferences | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: plist2, prefID, spArray, i
 void FUN_006c47e0_shell::NavMeshObstacleManager_ProcessRemovedReferences()
 {
     UList* pNode = (UList*)((char*)this + 0x34);
@@ -1814,7 +1929,7 @@ void FUN_006c47e0_shell::NavMeshObstacleManager_ProcessRemovedReferences()
 namespace fnv_006c4fb0 {
 struct FUN_006c4fb0_shell : public NavMeshObstacleManager
 {
-    bool ProcessDoorObstacles();
+    bool NavMeshObstacleManager_ProcessRemovedDoors();
 };
 
 struct UNode;
@@ -1862,7 +1977,10 @@ struct FUN_006c5ef0_shell
 
 // Iterates the node list at this+0xf8, adds operations for each door found in the map at this+0x110, removes those entries, then clears the list and returns true.
 // @fnv 0x006c4fb0
-bool FUN_006c4fb0_shell::ProcessDoorObstacles()
+// src: XBOX_RETAIL_PDB 0x006c4fb0
+// pdb: NavMeshObstacleManager::ProcessRemovedDoors | NavMeshObstacleManager.obj | retail, call graph, high
+// pdb locals: plist, doorId, spArray, i, j
+bool FUN_006c4fb0_shell::NavMeshObstacleManager_ProcessRemovedDoors()
 {
     UNode* pCurrentElementNext;
     if (_ref_008256d0((char*)this + 0xf8))
@@ -1932,6 +2050,9 @@ struct FUN_006c5ec0_s
 };
 // @fnv 0x006c5ce0
 // src: XBOX_PDB 0x006c5ce0
+// pdb: NavMeshObstacleManager::PushTask | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: apTaskData
+// pdb locals: task, iMaxAttachTaskAttempts, itryCount, iremoveIndex
 bool FUN_006c5ce0_shell::NavMeshObstacleManager_PushTask(ObstacleTaskData* apTaskData)
 {
     BSTasklet_BSTasklet::FUN_006c5e70 task;
@@ -1995,25 +2116,27 @@ struct NMOM
 {
     unsigned int GetProcessedTaskCount();
     unsigned int GetBackgroundTaskCount();
-    void MatchPortalEdges();
+    void NavMeshObstacleManager_ReconnectPortals();
     void NavMeshObstacleManager_SwapNavmeshes();
-    void ProcessAddedRefs();
+    void NavMeshObstacleManager_ProcessNewReferences();
     void NavMeshObstacleManager_ProcessRemovedReferences();
     void NavMeshObstacleManager_ProcessMovingReferences();
-    void ProcessDoorObstacles();
+    void NavMeshObstacleManager_ProcessRemovedDoors();
     void NavMeshObstacleManager_ProcessNewDoors();
-    void ProcessObstacleTasks();
+    void NavMeshObstacleManager_QueueTasks();
 };
 struct FUN_006c4c30_shell
 {
     void NavMeshObstacleManager_ProcessAllObstacles();
 };
-bool __fastcall ClearOwnedObjects(char*);
+bool __fastcall NavMeshObstacleManager_DeleteCurrentTasks(char*);
 extern float DAT_0106c398;
 
 // Waits for processed and background task counts to match, runs path manager and navmesh update steps, resets offset 0x190/0x194, and waits for rendering tasks.
 // @fnv 0x006c39c0
 // src: EXE 0x006c39c0
+// pdb: NavMeshObstacleManager::ForceUpdateAllObstacles | NavMeshObstacleManager.obj | debug, unique string literal, high
+// pdb locals: iProcessedTaskCount, iBackgroundTaskCount
 void FUN_006c39c0_shell::NavMeshObstacleManager_ForceUpdate()
 {
     unsigned int iProcessedTaskCount;
@@ -2033,10 +2156,10 @@ void FUN_006c39c0_shell::NavMeshObstacleManager_ForceUpdate()
         // needs an explicit calling convention adapter to preserve that ABI.
         reinterpret_cast<void (__thiscall*)(void*)>(&ScriptLocals::ProcessPendingTasks)(
             PathManager::GetRandomGenerator());
-    ((NMOM*)this)->MatchPortalEdges();
+    ((NMOM*)this)->NavMeshObstacleManager_ReconnectPortals();
     ((NMOM*)this)->NavMeshObstacleManager_SwapNavmeshes();
-    ClearOwnedObjects((char*)this);
-    ((NMOM*)this)->ProcessObstacleTasks();
+    NavMeshObstacleManager_DeleteCurrentTasks((char*)this);
+    ((NMOM*)this)->NavMeshObstacleManager_QueueTasks();
     iProcessedTaskCount = ((NMOM*)this)->GetProcessedTaskCount();
     iBackgroundTaskCount = ((NMOM*)this)->GetBackgroundTaskCount();
     while (iProcessedTaskCount != iBackgroundTaskCount)
@@ -2045,16 +2168,16 @@ void FUN_006c39c0_shell::NavMeshObstacleManager_ForceUpdate()
         iProcessedTaskCount = ((NMOM*)this)->GetProcessedTaskCount();
         iBackgroundTaskCount = ((NMOM*)this)->GetBackgroundTaskCount();
     }
-    ((NMOM*)this)->MatchPortalEdges();
+    ((NMOM*)this)->NavMeshObstacleManager_ReconnectPortals();
     ((NMOM*)this)->NavMeshObstacleManager_SwapNavmeshes();
-    ClearOwnedObjects((char*)this);
+    NavMeshObstacleManager_DeleteCurrentTasks((char*)this);
     ((NMOM*)this)->NavMeshObstacleManager_ProcessRemovedReferences();
-    ((NMOM*)this)->ProcessAddedRefs();
+    ((NMOM*)this)->NavMeshObstacleManager_ProcessNewReferences();
     ((FUN_006c4c30_shell*)this)->NavMeshObstacleManager_ProcessAllObstacles();
     ((NMOM*)this)->NavMeshObstacleManager_ProcessMovingReferences();
-    ((NMOM*)this)->ProcessDoorObstacles();
+    ((NMOM*)this)->NavMeshObstacleManager_ProcessRemovedDoors();
     ((NMOM*)this)->NavMeshObstacleManager_ProcessNewDoors();
-    ((NMOM*)this)->ProcessObstacleTasks();
+    ((NMOM*)this)->NavMeshObstacleManager_QueueTasks();
     iProcessedTaskCount = ((NMOM*)this)->GetProcessedTaskCount();
     iBackgroundTaskCount = ((NMOM*)this)->GetBackgroundTaskCount();
     while (iProcessedTaskCount != iBackgroundTaskCount)
@@ -2063,9 +2186,9 @@ void FUN_006c39c0_shell::NavMeshObstacleManager_ForceUpdate()
         iProcessedTaskCount = ((NMOM*)this)->GetProcessedTaskCount();
         iBackgroundTaskCount = ((NMOM*)this)->GetBackgroundTaskCount();
     }
-    ((NMOM*)this)->MatchPortalEdges();
+    ((NMOM*)this)->NavMeshObstacleManager_ReconnectPortals();
     ((NMOM*)this)->NavMeshObstacleManager_SwapNavmeshes();
-    ClearOwnedObjects((char*)this);
+    NavMeshObstacleManager_DeleteCurrentTasks((char*)this);
     *(int*)((char*)this + 0x190) = 0;
     *(float*)((char*)this + 0x194) = DAT_0106c398;
     if (NavMeshRender_GetSingleton()->NavMeshRender_GetDraw())
@@ -2168,7 +2291,7 @@ typedef char _sizecheck_BaseFormComponent[sizeof(BaseFormComponent) == 4 ? 1 : -
 typedef char _sizecheck_TESChildCell[sizeof(TESChildCell) == 4 ? 1 : -1];
 struct FUN_006c45e0_shell : public NavMeshObstacleManager
 {
-    void ProcessAddedRefs();
+    void NavMeshObstacleManager_ProcessNewReferences();
 };
 
 namespace FUN_005e04c0 {
@@ -2212,7 +2335,7 @@ struct Map62d0
 };
 struct FUN_006c1920_s
 {
-    void RebuildRefObstacles(unsigned int, TESObjectREFR*);
+    void NavMeshObstacleManager_UpdateObstaclesForReference(unsigned int, TESObjectREFR*);
 };
 struct FUN_006c1190_s
 {
@@ -2278,7 +2401,10 @@ struct FormStand
 };
 bool FindNodeData(void*, FUN_006c23c0::FUN_006c24d0*);
 // @fnv 0x006c45e0
-void FUN_006c45e0_shell::ProcessAddedRefs()
+// src: XBOX_RETAIL_PDB 0x006c45e0
+// pdb: NavMeshObstacleManager::ProcessNewReferences | NavMeshObstacleManager.obj | retail, call graph, high
+// pdb locals: addedRefs, plist, pref, spArray, tempData, i
+void FUN_006c45e0_shell::NavMeshObstacleManager_ProcessNewReferences()
 {
     FUN_005e04c0::FUN_005e04f0 addedRefs;
     ListStand* pCurrentElementNext = (ListStand*)((char*)this + 0x2c);
@@ -2289,7 +2415,7 @@ void FUN_006c45e0_shell::ProcessAddedRefs()
         GO spArray(0);
         if (((Map62d0*)((char*)this + 0x1c))->NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_GetAt(pref->GetFormID(), spArray))
         {
-            ((FUN_006c1920_s*)this)->RebuildRefObstacles(pref->GetFormID(), pref);
+            ((FUN_006c1920_s*)this)->NavMeshObstacleManager_UpdateObstaclesForReference(pref->GetFormID(), pref);
             ((BSSimpleArray<void*, 1024>*)&addedRefs)->Add((void*&)pref);
         }
         else if (pref->GetNiNode())
@@ -2390,6 +2516,8 @@ struct FUN_00799dc0_class
 
 // Finds the nearest map marker tile to the cursor within range, marks it highlighted, plays a sound and updates the title and highlight state.
 // @fnv 0x00799dc0
+// pdb: MapMenu::HighlightCenterMarker | MapMenu.obj | debug, object-file gap fill, medium
+// pdb locals: xelem, fnearestDist, pnearestTile, highlightCenter, pcurrTile, currPoint, fcurrDist
 void FUN_00799dc0_class::UpdateMapHighlight()
 {
     if (!m_pMapTile)
@@ -2398,14 +2526,14 @@ void FUN_00799dc0_class::UpdateMapHighlight()
                      m_pTile40->GetFloat(0xfa2) + m_pTile40->GetFloat(0xfb0) / 2.0);
     Tile* pBest;
     {
-        void* pos = (void*)(unsigned int)*(Flt*)&m_pMapTile->m_kChildTileList;
+        void* pos = (void*)(unsigned int)*(Flt*)&m_pMapTile->xChildren;
         float fClosest = 3.402823466e+38F;
         pBest = 0;
         kCursor.x -= m_pMapTile->GetFloat(0xfa1);
         kCursor.y -= m_pMapTile->GetFloat(0xfa2);
         while (pos)
         {
-            Tile* pTile = ((TL*)&m_pMapTile->m_kChildTileList)->GetNext(pos);
+            Tile* pTile = ((TL*)&m_pMapTile->xChildren)->GetNext(pos);
             if (pTile->GetFloat(0xfaa) == DAT_01074f60 && !FUN_00ec7750(pTile->GetName_00700300(), " Marker"))
             {
                 NiPoint2 kPos(pTile->GetFloat(DAT_011da350), pTile->GetFloat(DAT_011da34c));
@@ -2469,9 +2597,9 @@ struct CF845
 // Havok listener access: GetLocalData binds to bhkWorldObject::FUN_004ae750 (0x004ae750), not ScriptLocals.
 struct HavokBodyListenerAccess
 {
-    void bhkEntity_AddContactListener(void* p);
-    void bhkEntity_AddEntityListener(void* p);
-    void bhkEntity_AddEntityActivationListener(void* p);
+    void bhkEntity_AddContactListener(void* apList);
+    void bhkEntity_AddEntityListener(void* apList);
+    void bhkEntity_AddEntityActivationListener(void* apList);
 };
 struct FUN_00807790 : public FUN_006234b0, public FUN_0061f580, public FUN_006c0100
 {
@@ -2479,15 +2607,17 @@ struct FUN_00807790 : public FUN_006234b0, public FUN_0061f580, public FUN_006c0
     HavokBodyListenerAccess* m_10;
     CF845 m_kFlags;
     bool m_18;
-    FUN_00807790(int a1, HavokBodyListenerAccess* a2, unsigned int a3);
+    FUN_00807790(int apRef, HavokBodyListenerAccess* apBody, unsigned int aDefaultFilter);
 };
 
 // @fnv 0x00807790
-FUN_00807790::FUN_00807790(int a1, HavokBodyListenerAccess* a2, unsigned int auiFlags) : m_kFlags(0)
+// pdb: bhkTelekinesisListener::bhkTelekinesisListener | bhkTelekinesisListener.obj | debug, call graph, high
+// pdb params: apRef, apBody, aDefaultFilter
+FUN_00807790::FUN_00807790(int apRef, HavokBodyListenerAccess* apBody, unsigned int aDefaultFilter) : m_kFlags(0)
 {
-    m_0c = a1;
-    m_10 = a2;
-    m_kFlags.uiFlags = auiFlags;
+    m_0c = apRef;
+    m_10 = apBody;
+    m_kFlags.uiFlags = aDefaultFilter;
     m_18 = false;
     m_10->bhkEntity_AddContactListener(this);
     m_10->bhkEntity_AddEntityListener(static_cast<FUN_0061f580*>(this));
@@ -2526,6 +2656,9 @@ void Call_006c0c80::NavMeshObstacleManager_RemoveObstacleForReference(TESObjectR
 
 // Looks up the rigid body in the model map at offset 0xe0, resolves the referenced form by its formID and passes it to FUN_006c0c80 if found.
 // @fnv 0x006c1cb0
+// pdb: NavMeshObstacleManager::OnObstacleLost3D | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
+// pdb params: apRigidBody
+// pdb locals: spobstacle, pref
 void Call_006c0c80::HandleRigidBodyObstacle(bhkRigidBody* apRigidBody)
 {
     TESObjectREFR* pref;
@@ -2564,20 +2697,23 @@ class TargetObj
     void UnkCall();
 };
 
-void* __cdecl UnkLookup(int id);
+void* __cdecl UnkLookup(int apEnt);
 TargetObj* __stdcall UnkResolve(void* obj);
 
 class FUN_006c0280_cls
 {
   public:
-    void CallResolvedObject(int id);
+    void CallResolvedObject(int entity);
 };
 
 // Looks up an object by id; if found, resolves it and calls UnkCall on the result.
 // @fnv 0x006c0280
-void FUN_006c0280_cls::CallResolvedObject(int id)
+// pdb: bhkObstacleRemovalListener::entityRemovedCallback | NavMeshObstacleManager.obj | retail, vtable slot, high
+// pdb params: entity
+// pdb locals: pb
+void FUN_006c0280_cls::CallResolvedObject(int entity)
 {
-    void* obj = UnkLookup(id);
+    void* obj = UnkLookup(entity);
     if (obj != 0)
     {
         UnkResolve(obj)->UnkCall();
@@ -2673,10 +2809,11 @@ struct S_006c0900
 void __fastcall NavMeshObstacleManager_ClearAllObstacles(void* pThis);
 void __fastcall BSTaskletGroup_Close(void* pThis);
 void* __stdcall FUN_00b00a00(void* pObject);
-void __fastcall ReleaseItem(void* pThis);
+void __fastcall BSTaskletManager_DestroyTaskGroup(void* aGroup);
 
 // @fnv 0x006c0900
 // src: COMMUNITY 0x006c0900
+// pdb: NavMeshObstacleManager::Release | NavMeshObstacleManager.obj | retail, upstream name already matches, high
 void S_006c0900::NavMeshObstacleManager_Release()
 {
     NavMeshObstacleManager_ClearAllObstacles(this);
@@ -2698,7 +2835,7 @@ void S_006c0900::NavMeshObstacleManager_Release()
     }
 
     BSTaskletGroup_Close(&this->unk128);
-    ReleaseItem(FUN_00b00a00(&this->unk128));
+    BSTaskletManager_DestroyTaskGroup(FUN_00b00a00(&this->unk128));
 }
 
 // ReferenceObstacleArray lifetime migration is blocked: its shared header omits the
@@ -2728,6 +2865,7 @@ struct FUN_006c1520_Class : public FNV_NiRefObjectStandIn
 
 // Destructor that resets the m_08 field to zero.
 // @fnv 0x006c1520
+// pdb: ReferenceObstacleArray::~ReferenceObstacleArray | NavMeshObstacleManager.obj | debug, call graph, medium
 FUN_006c1520_Class::~FUN_006c1520_Class()
 {
     m_08 = 0;
@@ -2755,10 +2893,10 @@ struct NavMeshPtrArrX
 };
 struct TaskDataX
 {
-    bool AddOperation(const NiPointer<ObstacleData>& obst, int type);
+    bool AddOperation(const NiPointer<ObstacleData>& apObstacle, int aeType);
 };
-void __cdecl UpdateObstacleBounds(ObstacleData* p);
-void __cdecl NavMeshObstacleManager_UpdateObstacleActiveStatus(const NiPointer<ObstacleData>& obst);
+void __cdecl UpdateObstacleBounds(ObstacleData* apObstacle);
+void __cdecl NavMeshObstacleManager_UpdateObstacleActiveStatus(const NiPointer<ObstacleData>& aspObstacle);
 bool __cdecl GetNavMeshListForObstacle(const NiPointer<ObstacleData>& obst, NavMeshPtrArrX& arr);
 
 struct ObstacleMgrX
@@ -2867,38 +3005,41 @@ struct ObstacleMgrX
     int unk194;
     bool bFlag198;
     TaskDataX* GetTaskData(NavMeshInfo* info);
-    void NavMeshObstacleManager_AddBoundingBox3DNode(const NiPointer<ObstacleData>& obst);
-    void NavMeshObstacleManager_UpdateObstacle(const NiPointer<ObstacleData>& obst);
+    void NavMeshObstacleManager_AddBoundingBox3DNode(const NiPointer<ObstacleData>& aBox);
+    void NavMeshObstacleManager_UpdateObstacle(const NiPointer<ObstacleData>& spObstacle);
 };
 
 // @fnv 0x006c1760
 // src: COMMUNITY 0x006c1760
-void ObstacleMgrX::NavMeshObstacleManager_UpdateObstacle(const NiPointer<ObstacleData>& apObstacle)
+// pdb: NavMeshObstacleManager::UpdateObstacle | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: spObstacle
+// pdb locals: i, navmeshes, j
+void ObstacleMgrX::NavMeshObstacleManager_UpdateObstacle(const NiPointer<ObstacleData>& spObstacle)
 {
-    if (apObstacle.operator->()->bFlag74)
+    if (spObstacle.operator->()->bFlag74)
     {
-        for (unsigned int i = 0; i < apObstacle.operator->()->kNavMeshInfos.GetSize(); i++)
+        for (unsigned int i = 0; i < spObstacle.operator->()->kNavMeshInfos.GetSize(); i++)
         {
-            GetTaskData(apObstacle.operator->()->kNavMeshInfos.GetAt(i))->AddOperation(apObstacle, 0x21);
+            GetTaskData(spObstacle.operator->()->kNavMeshInfos.GetAt(i))->AddOperation(spObstacle, 0x21);
         }
-        apObstacle.operator->()->kNavMeshInfos.Clear(true);
+        spObstacle.operator->()->kNavMeshInfos.Clear(true);
     }
-    UpdateObstacleBounds(apObstacle.operator->());
-    NavMeshObstacleManager_UpdateObstacleActiveStatus(apObstacle);
+    UpdateObstacleBounds(spObstacle.operator->());
+    NavMeshObstacleManager_UpdateObstacleActiveStatus(spObstacle);
     if (bFlag198)
     {
-        NavMeshObstacleManager_AddBoundingBox3DNode(apObstacle);
+        NavMeshObstacleManager_AddBoundingBox3DNode(spObstacle);
     }
-    if (apObstacle.operator->()->bFlag74)
+    if (spObstacle.operator->()->bFlag74)
     {
         NavMeshPtrArrX kArr;
-        if (GetNavMeshListForObstacle(apObstacle, kArr))
+        if (GetNavMeshListForObstacle(spObstacle, kArr))
         {
             for (unsigned int j = 0; j < kArr.GetSize(); j++)
             {
-                GetTaskData(GetObstacleNavMeshInfo(kArr.GetAt(j).GetPtr()))->AddOperation(apObstacle, 0x11);
+                GetTaskData(GetObstacleNavMeshInfo(kArr.GetAt(j).GetPtr()))->AddOperation(spObstacle, 0x11);
                 NavMeshInfo* pInfo = GetObstacleNavMeshInfo(kArr.GetAt(j).GetPtr());
-                apObstacle.operator->()->kNavMeshInfos.Add(pInfo);
+                spObstacle.operator->()->kNavMeshInfos.Add(pInfo);
             }
         }
     }
@@ -2932,6 +3073,7 @@ struct FUN_006c24d0 : FUN_00496910_Base
 };
 
 // @fnv 0x006c24d0
+// pdb: ObstacleData::~ObstacleData | NavMeshObstacleManager.obj | retail, call graph (shared callers), high
 FUN_006c24d0::~FUN_006c24d0()
 {}
 
@@ -2939,7 +3081,7 @@ struct FNVNode;
 struct FNVNodeList
 {
     unsigned int NiNode_GetChildCount();
-    FNVNode* func_0x0043b4a0(unsigned int index);
+    FNVNode* func_0x0043b4a0(unsigned int i);
 };
 struct FNVNode
 {
@@ -2965,9 +3107,12 @@ struct FNVResult
     int unk08;
     FNVResultMember record;
 };
-void __cdecl func_0x006c2650(FNVResult* result);
+void __cdecl func_0x006c2650(FNVResult* apObstacle);
 // Looks up a node's data; if its type is one of 2,1,4,10,20,28, stores it in result and returns true, otherwise recurses over children.
 // @fnv 0x006c2550
+// pdb: NavMeshObstacleManager::FindFirstObstacleFor3D | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
+// pdb params: ap3D, apRetObstacle
+// pdb locals: pcol, pnode, prb, layer, i
 bool __cdecl FindNodeData(FNVNode* node, FNVResult* result)
 {
     FNVNodeList* children5;
@@ -3047,6 +3192,10 @@ struct FUN_006c4460_cls
 
 // Builds a key from p3, finds a word via p1, then adds p2's fields and runs the next entry.
 // @fnv 0x006c4460
+// pdb: NavMeshObstacleManager::CreatePortal | NavMeshObstacleManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMeshObstacleManager::CreateOneWayPortal
+// pdb params: aspNavMesh1, aEdge1, aspNavMesh2, aEdge2
+// pdb locals: edge1InfoIndex, pedge1Info, edge2InfoIndex, pedge2Info
 bool FUN_006c4460_cls::AddAndRunFromSources(ObjA* apObjA, SrcB* apSrcB, SrcC* apSrcC)
 {
     KeyX key4;
@@ -3083,6 +3232,9 @@ struct FUN_006c6d40_cls : public FUN_006c6d40_base
 };
 // Sets m_10 to p or a default from FUN_00401020, then calls FUN_006b3eb0 with a and b.
 // @fnv 0x006c6d40
+// pdb: BSScrapArray<NavMeshPtr,1024>::_Allocate | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 FUN_006c6d40_cls::FUN_006c6d40_cls(unsigned int auiParam1, unsigned int auiParam2, void* p)
 {
     m_10 = p ? p : ((FUN_006c6d40_helper*)MemoryManager_Instance())->FUN_00aa42e0();
@@ -3097,20 +3249,23 @@ FUN_006c6d40_cls::FUN_006c6d40_cls(unsigned int auiParam1, unsigned int auiParam
 
 struct FUN_006c0190_cls
 {
-    void bhkObstacleDeactivationListener_entityDeactivatedCallback(void* apParam);
+    void bhkObstacleDeactivationListener_entityDeactivatedCallback(void* entity);
 };
 
 // Lookup helper: cdecl, one argument, returns the resolved pointer.
-extern void* __cdecl bhkEntity_Getbhk(void* apParam);
+extern void* __cdecl bhkEntity_Getbhk(void* apEnt);
 
 // Singleton accessor: cdecl, no arguments, returns the global manager.
 extern void* __cdecl GetNavMeshObstacleManager();
 
 // @fnv 0x006c0190
 // src: XBOX_PDB 0x006c0190
-void FUN_006c0190_cls::bhkObstacleDeactivationListener_entityDeactivatedCallback(void* apParam)
+// pdb: bhkObstacleDeactivationListener::entityDeactivatedCallback | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: entity
+// pdb locals: pb
+void FUN_006c0190_cls::bhkObstacleDeactivationListener_entityDeactivatedCallback(void* entity)
 {
-    void* pResolved = bhkEntity_Getbhk(apParam);
+    void* pResolved = bhkEntity_Getbhk(entity);
     if (pResolved != 0)
     {
         ((FUN_006c1c90_shell*)GetNavMeshObstacleManager())->ForwardToSubObject(pResolved);
@@ -3252,6 +3407,7 @@ struct FUN_006c0510 : ObstacleManagerBase
 };
 // Runs cleanup via FUN_006c09f0, then deletes currentTasks and finishedTasks if they are set.
 // @fnv 0x006c0510
+// pdb: NavMeshObstacleManager::~NavMeshObstacleManager | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
 FUN_006c0510::~FUN_006c0510()
 {
     NavMeshObstacleManager_ClearAllObstacles();
@@ -3295,7 +3451,7 @@ struct ClearArrayView
 };
 struct ObstacleTreeView
 {
-    void ClearQueue(bool release);
+    void LockFreeQueue_bhkRigidBody_RemoveAll(bool abCalledByDestructor);
 };
 struct ManagerView
 {
@@ -3390,11 +3546,13 @@ struct ManagerView
     unsigned int unk194;
     bool active;
     void NavMeshObstacleManager_ClearAllObstacles();
-    void NavMeshObstacleManager_RemoveActivationListener(ObstArr* reference);
+    void NavMeshObstacleManager_RemoveActivationListener(ObstArr* apRigidBody);
     void SetEnabled(bool value);
 };
 // @fnv 0x006c09f0
 // src: XBOX_PDB 0x006c09f0
+// pdb: NavMeshObstacleManager::ClearAllObstacles | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: formID, spArray, it, i, spObstacle, n, spmesh
 void ManagerView::NavMeshObstacleManager_ClearAllObstacles()
 {
     NiPointer<ReferenceObstacleArray> records(0);
@@ -3430,8 +3588,8 @@ void ManagerView::NavMeshObstacleManager_ClearAllObstacles()
     pending.RemoveAll();
     removed.RemoveAll();
     processed.BSSimpleList_NiPointer_bhkAction_RemoveAll();
-    treeA.ClearQueue(false);
-    treeB.ClearQueue(false);
+    treeA.LockFreeQueue_bhkRigidBody_RemoveAll(false);
+    treeB.LockFreeQueue_bhkRigidBody_RemoveAll(false);
     if (active)
         SetEnabled(false);
 }
@@ -3537,30 +3695,33 @@ struct ObstMgr0dc0
     Map0dc0 kMap100;
     Map0dc0 kMap110;
     void HandleDoor(TESObjectREFR* ref);
-    void NavMeshObstacleManager_OnDoorOpen(TESObjectREFR* ref);
+    void NavMeshObstacleManager_OnDoorOpen(TESObjectREFR* apDoorRef);
 };
 
 // @fnv 0x006c0dc0
 // src: XBOX_PDB 0x006c0dc0
-void ObstMgr0dc0::NavMeshObstacleManager_OnDoorOpen(TESObjectREFR* ref)
+// pdb: NavMeshObstacleManager::OnDoorOpen | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: apDoorRef
+// pdb locals: spdummy, pbaseObject, pdoor
+void ObstMgr0dc0::NavMeshObstacleManager_OnDoorOpen(TESObjectREFR* apDoorRef)
 {
-    TESBoundObject* pBase6 = ref->BGSSaveFormBuffer_GetForm();
+    TESBoundObject* pBase6 = apDoorRef->BGSSaveFormBuffer_GetForm();
     if (GetFormType0dc0(pBase6) == 0x1c)
     {
         TESObjectDOOR* pPathNodeDoor = (TESObjectDOOR*)pBase6;
         if (!IsDoorX0dc0(pPathNodeDoor))
-            HandleDoor(ref);
+            HandleDoor(apDoorRef);
     }
     NiPointer<ReferenceObstacleArray> spScreenData(0);
-    if (!kMap110.GetAt(ref->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), spScreenData))
+    if (!kMap110.GetAt(apDoorRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), spScreenData))
     {
-        if (kRemovedRefs.IsInList(ref))
-            kRemovedRefs.Remove(ref);
+        if (kRemovedRefs.IsInList(apDoorRef))
+            kRemovedRefs.Remove(apDoorRef);
     }
-    if (!kMap100.GetAt(ref->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), spScreenData))
+    if (!kMap100.GetAt(apDoorRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), spScreenData))
     {
-        if (!kPendingIDs.IsInList(ref->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
-            kPendingIDs.AddHead(ref->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+        if (!kPendingIDs.IsInList(apDoorRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
+            kPendingIDs.AddHead(apDoorRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
 }
 
@@ -3651,7 +3812,7 @@ struct Holder_c1190
 };
 struct Task_c1190
 {
-    bool FUN_006c7a30(const NiPointer<Obs_c1190>& obst, int type);
+    bool FUN_006c7a30(const NiPointer<Obs_c1190>& apObstacle, int aeType);
 };
 struct Key_c1190
 {
@@ -3667,17 +3828,20 @@ struct ObsMap_c1190
     void FUN_006c6920(Kind_c1190* key, NiPointer<Obs_c1190> val);
 };
 void __cdecl NavMeshObstacleManager_AddObstaclesForReference(Key_c1190* key, NiPointer<Holder_c1190>& holder);
-void __cdecl NavMeshObstacleManager_UpdateObstacleActiveStatus(const NiPointer<Obs_c1190>& obst);
+void __cdecl NavMeshObstacleManager_UpdateObstacleActiveStatus(const NiPointer<Obs_c1190>& aspObstacle);
 bool __cdecl GetNavMeshListForObstacle(const NiPointer<Obs_c1190>& obst, MeshArr_c1190& arr);
 struct Mgr_c1190
 {
-    void NavMeshObstacleManager_AddObstacleToUpdateList(Kind_c1190* kind);
+    void NavMeshObstacleManager_AddObstacleToUpdateList(Kind_c1190* apRigidBody);
     void NavMeshObstacleManager_AddListeners(Kind_c1190* kind);
-    void NavMeshObstacleManager_AddBoundingBox3DNode(const NiPointer<Obs_c1190>& obst);
+    void NavMeshObstacleManager_AddBoundingBox3DNode(const NiPointer<Obs_c1190>& aBox);
     Task_c1190* NavMeshObstacleManager_AddTask(Info_c1190* info);
     void RegisterKey(Key_c1190* key);
 };
 // @fnv 0x006c1190
+// pdb: NavMeshObstacleManager::ReallyAddObstaclesForReference | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: apRef
+// pdb locals: spArray, i, spObstacle, navmeshes, j
 void Mgr_c1190::RegisterKey(Key_c1190* key)
 {
     NiPointer<Holder_c1190> spHolder(0);
@@ -3889,6 +4053,9 @@ struct HostA
     void RemoveEntry(unsigned int);
 };
 // @fnv 0x006c1590
+// pdb: NavMeshObstacleManager::ReallyRemoveObstaclesForReference | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
+// pdb params: aiFormID
+// pdb locals: spArray, i, spObstacle, j
 void HostA::RemoveEntry(unsigned int key)
 {
     NiPointer<ReferenceObstacleArray> array(0);
@@ -4005,11 +4172,11 @@ struct MapE0_1920
 
 struct TaskData1920
 {
-    bool AddOperation(const NiPointer<ObstData1920>& obst, int type);
+    bool AddOperation(const NiPointer<ObstData1920>& apObstacle, int aeType);
 };
 
 void __cdecl BuildRefObstacles1920(void* pRef, NiPointer<RefObstData1920>& spArr);
-void __cdecl UpdateObstacle1920(const NiPointer<ObstData1920>& obst);
+void __cdecl UpdateObstacle1920(const NiPointer<ObstData1920>& aspObstacle);
 bool __cdecl FindNavMeshes1920(const NiPointer<ObstData1920>& obst, NavMeshPtrArrX& arr);
 
 struct ObstMgr1920
@@ -4109,17 +4276,21 @@ struct ObstMgr1920
 
     TaskData1920* GetTaskData(NavMeshInfo* info);
     void RemoveFromOctree1920(const NiPointer<ObstData1920>& obst);
-    void AddToOctree1920(const NiPointer<ObstData1920>& obst);
-    void OnRemoveBody1920(void* body);
+    void AddToOctree1920(const NiPointer<ObstData1920>& aBox);
+    void OnRemoveBody1920(void* apRigidBody);
     void OnAddBody1920(void* body);
-    void RebuildRefObstacles(unsigned int formID, void* pRef);
+    void NavMeshObstacleManager_UpdateObstaclesForReference(unsigned int aiRefID, void* apRef);
 };
 
 // @fnv 0x006c1920
-void ObstMgr1920::RebuildRefObstacles(unsigned int formID, void* pRef)
+// src: XBOX_RETAIL_PDB 0x006c1920
+// pdb: NavMeshObstacleManager::UpdateObstaclesForReference | NavMeshObstacleManager.obj | retail, object-file run extension, high
+// pdb params: aiRefID, apRef
+// pdb locals: spArray, a, spObstacle, i, navmeshes, j
+void ObstMgr1920::NavMeshObstacleManager_UpdateObstaclesForReference(unsigned int aiRefID, void* apRef)
 {
     NiPointer<RefObstData1920> spArr(0);
-    if (!this->map1C.GetAt(formID, spArr))
+    if (!this->map1C.GetAt(aiRefID, spArr))
     {
         return;
     }
@@ -4142,7 +4313,7 @@ void ObstMgr1920::RebuildRefObstacles(unsigned int formID, void* pRef)
         this->mapE0.RemoveAt(spObst.operator->()->m_pRigidBody.Get());
         this->list3C.Remove(spObst);
     }
-    BuildRefObstacles1920(pRef, spArr);
+    BuildRefObstacles1920(apRef, spArr);
     for (unsigned int k = 0; k < spArr.operator->()->kObstacles.GetSize(); k++)
     {
         NiPointer<ObstData1920> spObst2 = spArr.operator->()->kObstacles.GetAt(k);
@@ -4209,7 +4380,7 @@ struct Body
 struct Collision
 {
     Body* GetReferenceFlags();
-    void GetAabb(hkAabb&);
+    void bhkRigidBody_GetAabbLocal(hkAabb&);
 };
 struct Pointer
 {
@@ -4241,9 +4412,12 @@ extern double DAT_01012060;
 extern float DAT_01017a3c, DAT_0106c3ac, DAT_01016970, DAT_01015f5c;
 // Rebuilds an obstacle's position, rotation, local and world bounds from its collision body's transform and bounds, then bumps the generation counter.
 // @fnv 0x006c2650
-bool UpdateObstacleBounds(Obstacle* obstacle)
+// pdb: NavMeshObstacleManager::UpdateObstacleData | NavMeshObstacleManager.obj | retail, call graph (shared callers), high
+// pdb params: apObstacle
+// pdb locals: hktransform, max, xaxis, axes, localToNewLocalSpace, aabb, fy, fz, inverseRot, prb, yaxis, phkrb, min, wTransform, fx, worldspaceCorners, zaxis, newLocalSpaceCorners, i
+bool UpdateObstacleBounds(Obstacle* apObstacle)
 {
-    Collision* collision = obstacle->collision.Modelloader_GetReferencedThis();
+    Collision* collision = apObstacle->collision.Modelloader_GetReferencedThis();
     if (!collision)
         return false;
     Body* body = collision->GetReferenceFlags();
@@ -4254,13 +4428,13 @@ bool UpdateObstacleBounds(Obstacle* obstacle)
     transform.scale = 1.0f;
     HK2NI_00624ad0(transform, hkTransform);
     hkAabb bounds;
-    collision->GetAabb(bounds);
+    collision->bhkRigidBody_GetAabbLocal(bounds);
     float angleX, angleY, angleZ;
     transform.rotation.DecomposeToEulerAngles(angleX, angleY, angleZ);
     NiPoint3 minimum, maximum;
     FUN_00458620(minimum, reinterpret_cast<const HkVec&>(bounds.m_kMinimumCorner));
     FUN_00458620(maximum, reinterpret_cast<const HkVec&>(bounds.m_kMaximumCorner));
-    obstacle->position = reinterpret_cast<const NiPoint3&>(transform.position);
+    apObstacle->position = reinterpret_cast<const NiPoint3&>(transform.position);
     NiPoint3 axisVectors[3];
     for (unsigned int axis = 0; axis < 3; axis++)
         transform.rotation.NiMatrix3_GetCol(axis, axisVectors[axis]);
@@ -4303,10 +4477,10 @@ bool UpdateObstacleBounds(Obstacle* obstacle)
     upAxis = DAT_011a9484;
     sideAxis = upAxis.FUN_0053d1a0(forwardAxis);
     forwardAxis = sideAxis.FUN_004b3800(upAxis).GetNegatedVector();
-    obstacle->rotation.FUN_004769c0(0, forwardAxis);
-    obstacle->rotation.FUN_004769c0(1, sideAxis);
-    obstacle->rotation.FUN_004769c0(2, upAxis);
-    Mat toLocalMat = obstacle->rotation.FUN_004768c0().FUN_0043f8d0(transform.rotation);
+    apObstacle->rotation.FUN_004769c0(0, forwardAxis);
+    apObstacle->rotation.FUN_004769c0(1, sideAxis);
+    apObstacle->rotation.FUN_004769c0(2, upAxis);
+    Mat toLocalMat = apObstacle->rotation.FUN_004768c0().FUN_0043f8d0(transform.rotation);
     NiPoint3 localCorners[8];
     localCorners[0] = toLocalMat.FUN_004b4500(NiPoint3(minimum.x, minimum.y, minimum.z));
     localCorners[1] = toLocalMat.FUN_004b4500(NiPoint3(maximum.x, minimum.y, minimum.z));
@@ -4319,44 +4493,44 @@ bool UpdateObstacleBounds(Obstacle* obstacle)
     NiPoint3 worldCorners[8];
     for (unsigned int worldIndex = 0; worldIndex < 8; worldIndex++)
         worldCorners[worldIndex] =
-            obstacle->rotation.FUN_004b4500(localCorners[worldIndex]).FUN_00439e90(obstacle->position);
-    Mat fromWorldMat = obstacle->rotation.FUN_004768c0();
+            apObstacle->rotation.FUN_004b4500(localCorners[worldIndex]).FUN_00439e90(apObstacle->position);
+    Mat fromWorldMat = apObstacle->rotation.FUN_004768c0();
     for (unsigned int snap = 0; snap < 8; snap++)
     {
         if (FUN_00408840(fmod_004b1500(worldCorners[snap].x, DAT_01017a3c)) < DAT_0106c3ac)
         {
             worldCorners[snap].x += DAT_0106c3ac * 2.0f;
-            localCorners[snap] = fromWorldMat.FUN_004b4500(worldCorners[snap].SubtractIntoVector(obstacle->position));
+            localCorners[snap] = fromWorldMat.FUN_004b4500(worldCorners[snap].SubtractIntoVector(apObstacle->position));
         }
         if (FUN_00408840(fmod_004b1500(worldCorners[snap].y, DAT_01017a3c)) < DAT_0106c3ac)
         {
             worldCorners[snap].y += DAT_0106c3ac * 2.0f;
-            localCorners[snap] = fromWorldMat.FUN_004b4500(worldCorners[snap].SubtractIntoVector(obstacle->position));
+            localCorners[snap] = fromWorldMat.FUN_004b4500(worldCorners[snap].SubtractIntoVector(apObstacle->position));
         }
     }
-    obstacle->localMin = NiPoint3(DAT_01016970, DAT_01016970, DAT_01016970);
-    obstacle->localMax = NiPoint3(DAT_01015f5c, DAT_01015f5c, DAT_01015f5c);
+    apObstacle->localMin = NiPoint3(DAT_01016970, DAT_01016970, DAT_01016970);
+    apObstacle->localMax = NiPoint3(DAT_01015f5c, DAT_01015f5c, DAT_01015f5c);
     for (unsigned int localIndex = 0; localIndex < 8; localIndex++)
     {
-        obstacle->localMin.x = BSMIN(obstacle->localMin.x, localCorners[localIndex].x);
-        obstacle->localMin.y = BSMIN(obstacle->localMin.y, localCorners[localIndex].y);
-        obstacle->localMin.z = BSMIN(obstacle->localMin.z, localCorners[localIndex].z);
-        obstacle->localMax.x = BSMAX_00404010(obstacle->localMax.x, localCorners[localIndex].x);
-        obstacle->localMax.y = BSMAX_00404010(obstacle->localMax.y, localCorners[localIndex].y);
-        obstacle->localMax.z = BSMAX_00404010(obstacle->localMax.z, localCorners[localIndex].z);
+        apObstacle->localMin.x = BSMIN(apObstacle->localMin.x, localCorners[localIndex].x);
+        apObstacle->localMin.y = BSMIN(apObstacle->localMin.y, localCorners[localIndex].y);
+        apObstacle->localMin.z = BSMIN(apObstacle->localMin.z, localCorners[localIndex].z);
+        apObstacle->localMax.x = BSMAX_00404010(apObstacle->localMax.x, localCorners[localIndex].x);
+        apObstacle->localMax.y = BSMAX_00404010(apObstacle->localMax.y, localCorners[localIndex].y);
+        apObstacle->localMax.z = BSMAX_00404010(apObstacle->localMax.z, localCorners[localIndex].z);
     }
-    obstacle->worldMin = NiPoint3(DAT_01016970, DAT_01016970, DAT_01016970);
-    obstacle->worldMax = NiPoint3(DAT_01015f5c, DAT_01015f5c, DAT_01015f5c);
+    apObstacle->worldMin = NiPoint3(DAT_01016970, DAT_01016970, DAT_01016970);
+    apObstacle->worldMax = NiPoint3(DAT_01015f5c, DAT_01015f5c, DAT_01015f5c);
     for (unsigned int boundIndex = 0; boundIndex < 8; boundIndex++)
     {
-        obstacle->worldMin.x = BSMIN(obstacle->worldMin.x, worldCorners[boundIndex].x);
-        obstacle->worldMin.y = BSMIN(obstacle->worldMin.y, worldCorners[boundIndex].y);
-        obstacle->worldMin.z = BSMIN(obstacle->worldMin.z, worldCorners[boundIndex].z);
-        obstacle->worldMax.x = BSMAX_00404010(obstacle->worldMax.x, worldCorners[boundIndex].x);
-        obstacle->worldMax.y = BSMAX_00404010(obstacle->worldMax.y, worldCorners[boundIndex].y);
-        obstacle->worldMax.z = BSMAX_00404010(obstacle->worldMax.z, worldCorners[boundIndex].z);
+        apObstacle->worldMin.x = BSMIN(apObstacle->worldMin.x, worldCorners[boundIndex].x);
+        apObstacle->worldMin.y = BSMIN(apObstacle->worldMin.y, worldCorners[boundIndex].y);
+        apObstacle->worldMin.z = BSMIN(apObstacle->worldMin.z, worldCorners[boundIndex].z);
+        apObstacle->worldMax.x = BSMAX_00404010(apObstacle->worldMax.x, worldCorners[boundIndex].x);
+        apObstacle->worldMax.y = BSMAX_00404010(apObstacle->worldMax.y, worldCorners[boundIndex].y);
+        apObstacle->worldMax.z = BSMAX_00404010(apObstacle->worldMax.z, worldCorners[boundIndex].z);
     }
-    obstacle->generation = DAT_011f6394.FUN_00825c00();
+    apObstacle->generation = DAT_011f6394.FUN_00825c00();
     return true;
 }
 }
@@ -4649,6 +4823,10 @@ struct DebugObstacleManager
     void SetEnabled(bool show);
 };
 // @fnv 0x006c5460
+// pdb: NavMeshObstacleManager::ReallyAddObstaclesForReference | NavMeshObstacleManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMeshObstacleManager::DrawObstacles
+// pdb params: apRef
+// pdb locals: spArray, i, spObstacle, navmeshes, j
 void DebugObstacleManager::SetEnabled(bool show)
 {
     if (show)
@@ -4709,37 +4887,40 @@ AnimIdle* __cdecl CreateBoxMesh(NiPoint3& a, NiPoint3& b, NiPoint3& c, NiPoint3&
 class FUN_006c5840_Class
 {
   public:
-    void CreateObstacleBox(NiPointer<ObstacleData>& aspObstacleData, NiPointer<AnimIdle>& spResult);
+    void CreateObstacleBox(NiPointer<ObstacleData>& aBox, NiPointer<AnimIdle>& aspTriShape);
 };
 
 // Builds a box geometry from the obstacle's two corner points, applies its translate and rotate, stores it in the obstacle and returns it.
 // @fnv 0x006c5840
-void FUN_006c5840_Class::CreateObstacleBox(NiPointer<ObstacleData>& aspObstacleData, NiPointer<AnimIdle>& spResult)
+// pdb: NavMeshObstacleManager::CreateBoundingBox3DNode | NavMeshObstacleManager.obj | retail, object-file run extension, high
+// pdb params: aBox, aspTriShape
+// pdb locals: dfRight, spBox, ubLeft, ufRight, ubRight, size, dbRight, colora, dbLeft, dfLeft, ufLeft
+void FUN_006c5840_Class::CreateObstacleBox(NiPointer<ObstacleData>& aBox, NiPointer<AnimIdle>& aspTriShape)
 {
-    NiPoint3 kSize = *(NiPoint3*)&((ObstacleData*)aspObstacleData)->kMaxPoint - *(NiPoint3*)&((ObstacleData*)aspObstacleData)->kMinBoundsCur;
+    NiPoint3 kSize = *(NiPoint3*)&((ObstacleData*)aBox)->kMaxPoint - *(NiPoint3*)&((ObstacleData*)aBox)->kMinBoundsCur;
     NiColorA kBoxColor(1.0f, 0.0f, 1.0f, 0.5f);
-    NiPoint3 kCorner6(((ObstacleData*)aspObstacleData)->kMinBoundsCur.x, ((ObstacleData*)aspObstacleData)->kMinBoundsCur.y,
-                           ((ObstacleData*)aspObstacleData)->kMinBoundsCur.z);
-    NiPoint3 kVert0(((ObstacleData*)aspObstacleData)->kMaxPoint.x, ((ObstacleData*)aspObstacleData)->kMinBoundsCur.y,
-                         ((ObstacleData*)aspObstacleData)->kMinBoundsCur.z);
-    NiPoint3 kCorner5(((ObstacleData*)aspObstacleData)->kMaxPoint.x, ((ObstacleData*)aspObstacleData)->kMinBoundsCur.y,
-                           ((ObstacleData*)aspObstacleData)->kMaxPoint.z);
-    NiPoint3 kCorner2(((ObstacleData*)aspObstacleData)->kMinBoundsCur.x, ((ObstacleData*)aspObstacleData)->kMinBoundsCur.y,
-                           ((ObstacleData*)aspObstacleData)->kMaxPoint.z);
-    NiPoint3 kPt2(((ObstacleData*)aspObstacleData)->kMinBoundsCur.x, ((ObstacleData*)aspObstacleData)->kMaxPoint.y,
-                       ((ObstacleData*)aspObstacleData)->kMinBoundsCur.z);
-    NiPoint3 kPoint5(((ObstacleData*)aspObstacleData)->kMaxPoint.x, ((ObstacleData*)aspObstacleData)->kMaxPoint.y,
-                          ((ObstacleData*)aspObstacleData)->kMinBoundsCur.z);
-    NiPoint3 kCorner1(((ObstacleData*)aspObstacleData)->kMaxPoint.x, ((ObstacleData*)aspObstacleData)->kMaxPoint.y,
-                           ((ObstacleData*)aspObstacleData)->kMaxPoint.z);
-    NiPoint3 kVert4(((ObstacleData*)aspObstacleData)->kMinBoundsCur.x, ((ObstacleData*)aspObstacleData)->kMaxPoint.y,
-                         ((ObstacleData*)aspObstacleData)->kMaxPoint.z);
+    NiPoint3 kCorner6(((ObstacleData*)aBox)->kMinBoundsCur.x, ((ObstacleData*)aBox)->kMinBoundsCur.y,
+                           ((ObstacleData*)aBox)->kMinBoundsCur.z);
+    NiPoint3 kVert0(((ObstacleData*)aBox)->kMaxPoint.x, ((ObstacleData*)aBox)->kMinBoundsCur.y,
+                         ((ObstacleData*)aBox)->kMinBoundsCur.z);
+    NiPoint3 kCorner5(((ObstacleData*)aBox)->kMaxPoint.x, ((ObstacleData*)aBox)->kMinBoundsCur.y,
+                           ((ObstacleData*)aBox)->kMaxPoint.z);
+    NiPoint3 kCorner2(((ObstacleData*)aBox)->kMinBoundsCur.x, ((ObstacleData*)aBox)->kMinBoundsCur.y,
+                           ((ObstacleData*)aBox)->kMaxPoint.z);
+    NiPoint3 kPt2(((ObstacleData*)aBox)->kMinBoundsCur.x, ((ObstacleData*)aBox)->kMaxPoint.y,
+                       ((ObstacleData*)aBox)->kMinBoundsCur.z);
+    NiPoint3 kPoint5(((ObstacleData*)aBox)->kMaxPoint.x, ((ObstacleData*)aBox)->kMaxPoint.y,
+                          ((ObstacleData*)aBox)->kMinBoundsCur.z);
+    NiPoint3 kCorner1(((ObstacleData*)aBox)->kMaxPoint.x, ((ObstacleData*)aBox)->kMaxPoint.y,
+                           ((ObstacleData*)aBox)->kMaxPoint.z);
+    NiPoint3 kVert4(((ObstacleData*)aBox)->kMinBoundsCur.x, ((ObstacleData*)aBox)->kMaxPoint.y,
+                         ((ObstacleData*)aBox)->kMaxPoint.z);
     NiPointer<AnimIdle> spBoxGeom(
         CreateBoxMesh(kVert4, kCorner1, kCorner5, kCorner2, kPt2, kPoint5, kVert0, kCorner6, kBoxColor, true));
-    ((AnimIdle*)spBoxGeom)->SetTranslate(((ObstacleData*)aspObstacleData)->kTranslate);
-    ((AnimIdle*)spBoxGeom)->SetRotate(((ObstacleData*)aspObstacleData)->acRotate);
-    ((ObstacleData*)aspObstacleData)->m_kGeometry = spBoxGeom;
-    spResult = spBoxGeom;
+    ((AnimIdle*)spBoxGeom)->SetTranslate(((ObstacleData*)aBox)->kTranslate);
+    ((AnimIdle*)spBoxGeom)->SetRotate(((ObstacleData*)aBox)->acRotate);
+    ((ObstacleData*)aBox)->m_kGeometry = spBoxGeom;
+    aspTriShape = spBoxGeom;
 }
 }  // namespace fnv_006c5840
 
@@ -4962,20 +5143,23 @@ struct ObstMgr6c5b20
     int unk194;
     int unk198;
     NiPointer<NodeX> m_pController;
-    void Helper5840(NiPointer<Owner88>& owner, NiPointer<NiAVObject>& out);
-    void NavMeshObstacleManager_AddBoundingBox3DNode(NiPointer<Owner88>& owner);
+    void Helper5840(NiPointer<Owner88>& aBox, NiPointer<NiAVObject>& aspTriShape);
+    void NavMeshObstacleManager_AddBoundingBox3DNode(NiPointer<Owner88>& aBox);
 };
 
 // @fnv 0x006c5b20
 // src: COMMUNITY 0x006c5b20
-void ObstMgr6c5b20::NavMeshObstacleManager_AddBoundingBox3DNode(NiPointer<Owner88>& owner)
+// pdb: NavMeshObstacleManager::AddBoundingBox3DNode | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: aBox
+// pdb locals: spnode, UpdateData
+void ObstMgr6c5b20::NavMeshObstacleManager_AddBoundingBox3DNode(NiPointer<Owner88>& aBox)
 {
-    if (owner->pSceneObject)
+    if (aBox->pSceneObject)
     {
-        m_pController->DetachChildX(owner->pSceneObject);
+        m_pController->DetachChildX(aBox->pSceneObject);
     }
     NiPointer<NiAVObject> spChild(0);
-    Helper5840(owner, spChild);
+    Helper5840(aBox, spChild);
     m_pController->AttachChildX(spChild, true);
     m_pController->Func5a040();
     UpdData kData(0.0f, false, false);
@@ -5205,6 +5389,8 @@ class Owner6C5
 
 // If both this object and the source hold a child, attaches the source's child to this object and clears the source's child handle.
 // @fnv 0x006c5c50
+// pdb: NavMeshObstacleManager::RemoveBoundingBox3DNode | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
+// pdb params: aBox
 void Owner6C5::AttachChildFromSource(Handle6C5& kSource)
 {
     if (m_kRoomNode.Get() && kSource.Get()->m_kChild.Get())
@@ -5238,23 +5424,26 @@ struct InfoEntryArrY
     void Clear(bool bFree);
     void SetAllocSize(unsigned int uiSize);
     unsigned int Add(InfoEntryY*& item);
-    void RebuildFromNavMesh(const NavMeshPtr& apSearchNavMesh);
+    void RebuildFromNavMesh(const NavMeshPtr& aspNavMesh);
 };
 
 // @fnv 0x006dfba0
-void InfoEntryArrY::RebuildFromNavMesh(const NavMeshPtr& apNavMesh)
+// pdb: PathingLOSGrid::Setup | PathingLOSGridMap.obj | debug, call graph (shared callers), high
+// pdb params: aspNavMesh
+// pdb locals: igridCellCount, i
+void InfoEntryArrY::RebuildFromNavMesh(const NavMeshPtr& aspNavMesh)
 {
-    unsigned int ItemUpdateArray = GetNavMeshInfoCount(apNavMesh.operator->());
+    unsigned int ItemUpdateArray = GetNavMeshInfoCount(aspNavMesh.operator->());
     if (!m_pNavigationMesh || GetSize() != ItemUpdateArray)
     {
         Clear(false);
         SetAllocSize(ItemUpdateArray);
         for (unsigned int i = 0; i < ItemUpdateArray; i++)
         {
-            InfoEntryY* pEntry = new InfoEntryY((NavMeshInfoY*)GetObstacleNavMeshInfo(apNavMesh.operator->()), i);
+            InfoEntryY* pEntry = new InfoEntryY((NavMeshInfoY*)GetObstacleNavMeshInfo(aspNavMesh.operator->()), i);
             Add(pEntry);
         }
-        m_pNavigationMesh = (NavMeshInfoY*)GetObstacleNavMeshInfo(apNavMesh.operator->());
+        m_pNavigationMesh = (NavMeshInfoY*)GetObstacleNavMeshInfo(aspNavMesh.operator->());
     }
 }
 
@@ -5650,25 +5839,28 @@ struct FUN_00963d60_shell
     int unk608;
 
     BSSimpleList<int>* unk60c;
-    void PlayerCharacter_RemoveAllActionsForObject(int param_2);
+    void PlayerCharacter_RemoveAllActionsForObject(int apActObject);
 };
 // Walks the list at unk60c and deletes each entry whose stored value at offset 8 equals param_2, restarting from the head after each removal.
 // @fnv 0x00963d60
 // src: COMMUNITY 0x00963d60
-void FUN_00963d60_shell::PlayerCharacter_RemoveAllActionsForObject(int param_2)
+// pdb: PlayerCharacter::RemoveAllActionsForObject | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apActObject
+// pdb locals: plist, pAction
+void FUN_00963d60_shell::PlayerCharacter_RemoveAllActionsForObject(int apActObject)
 {
     BSSimpleList<int>* pNode;
     int pEntry;
     int pEntryCopy;
 
-    if (unk60c == 0 || param_2 == 0)
+    if (unk60c == 0 || apActObject == 0)
         return;
     pNode = unk60c;
     pEntry = 0;
     while (pNode != 0 && *_ref_006815c0(pNode) != 0)
     {
         pEntry = *_ref_006815c0(pNode);
-        if (pEntry != 0 && param_2 == *(int*)((char*)pEntry + 8))
+        if (pEntry != 0 && apActObject == *(int*)((char*)pEntry + 8))
         {
             ((Call_00905330*)pNode)->_ref_00905330((bhkRigidBody**)&pEntry);
             pEntryCopy = pEntry;
@@ -5711,28 +5903,31 @@ class Own60
     char padCur[0xf0 - 0x34];
     L1 m_f0;
     L2 m_f8;
-    void NavMeshObstacleManager_RemoveObstacleForReference(TESObjectREFR* r);
-    void NavMeshObstacleManager_OnDoorRemove(TESObjectREFR* ref);
+    void NavMeshObstacleManager_RemoveObstacleForReference(TESObjectREFR* apRef);
+    void NavMeshObstacleManager_OnDoorRemove(TESObjectREFR* apDoorRef);
 };
 // @fnv 0x006c1060
 // src: XBOX_PDB 0x006c1060
-void Own60::NavMeshObstacleManager_OnDoorRemove(TESObjectREFR* ref)
+// pdb: NavMeshObstacleManager::OnDoorRemove | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: apDoorRef
+// pdb locals: pbaseObject, pdoor
+void Own60::NavMeshObstacleManager_OnDoorRemove(TESObjectREFR* apDoorRef)
 {
-    s60::Form* pForm = (s60::Form*)ref->BGSSaveFormBuffer_GetForm();
+    s60::Form* pForm = (s60::Form*)apDoorRef->BGSSaveFormBuffer_GetForm();
     if (FUN_00401170(pForm) == 0x1c)
     {
         Door* door = (Door*)pForm;
         if (!IsSlidingDoor(door))
-            NavMeshObstacleManager_RemoveObstacleForReference(ref);
+            NavMeshObstacleManager_RemoveObstacleForReference(apDoorRef);
     }
-    m_2c.RemoveMatchingItem(ref);
-    if (m_f0.BSSimpleList_TESLevSpell_IsInList(ref))
+    m_2c.RemoveMatchingItem(apDoorRef);
+    if (m_f0.BSSimpleList_TESLevSpell_IsInList(apDoorRef))
     {
-        m_f0.RemoveMatchingItem(ref);
+        m_f0.RemoveMatchingItem(apDoorRef);
     }
-    else if (!m_f8.BSSimpleList_TESLevSpell_IsInList(ref->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
+    else if (!m_f8.BSSimpleList_TESLevSpell_IsInList(apDoorRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
     {
-        m_f8.FUN_005ae3d0(ref->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+        m_f8.FUN_005ae3d0(apDoorRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
 }
 
@@ -5753,28 +5948,31 @@ extern float g_0106c3a8;
 
 // @fnv 0x006c3440
 // src: COMMUNITY 0x006c3440
-void __cdecl NavMeshObstacleManager_UpdateObstacleActiveStatus(Reference* reference)
+// pdb: NavMeshObstacleManager::UpdateObstacleActiveStatus | NavMeshObstacleManager.obj | debug, upstream name already matches, high
+// pdb params: aspObstacle
+// pdb locals: dimensions
+void __cdecl NavMeshObstacleManager_UpdateObstacleActiveStatus(Reference* aspObstacle)
 {
     // The rotation fills this uninitialized output; NiPoint3 default construction calls out of line.
     float transformed[3];
-    reinterpret_cast<RotationMatrix*>(reinterpret_cast<char*>(reference->Modelloader_GetReferencedThis()) + 0x64)
+    reinterpret_cast<RotationMatrix*>(reinterpret_cast<char*>(aspObstacle->Modelloader_GetReferencedThis()) + 0x64)
         ->SubtractIntoVector(reinterpret_cast<NiPoint3*>(transformed),
-                       reinterpret_cast<const NiPoint3*>(reinterpret_cast<char*>(reference->Modelloader_GetReferencedThis()) + 0x58));
+                       reinterpret_cast<const NiPoint3*>(reinterpret_cast<char*>(aspObstacle->Modelloader_GetReferencedThis()) + 0x58));
 
     if (transformed[2] < g_0106c3a4)
     {
-        *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(reference->Modelloader_GetReferencedThis()) + 0x74) = 0;
+        *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(aspObstacle->Modelloader_GetReferencedThis()) + 0x74) = 0;
     }
     else
     {
         float zLimit = g_0106c3a4 * 2.0;
         if (zLimit > transformed[2] && transformed[0] < g_0106c3a8 && transformed[1] < g_0106c3a8)
         {
-            *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(reference->Modelloader_GetReferencedThis()) + 0x74) = 0;
+            *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(aspObstacle->Modelloader_GetReferencedThis()) + 0x74) = 0;
         }
         else
         {
-            *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(reference->Modelloader_GetReferencedThis()) + 0x74) = 1;
+            *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(aspObstacle->Modelloader_GetReferencedThis()) + 0x74) = 1;
         }
     }
 }
@@ -5826,8 +6024,8 @@ struct C006c3640
     void BSCriticalSection_Enter(char*);
     void FUN_004538c0();
     void NavMeshObstacleManager_ProcessRemovedReferences();
-    void ProcessAddedRefs();
-    void ProcessDoorObstacles();
+    void NavMeshObstacleManager_ProcessNewReferences();
+    void NavMeshObstacleManager_ProcessRemovedDoors();
     void NavMeshObstacleManager_ProcessNewDoors();
     void NavMeshObstacleManager_ProcessDisabledNavMeshes();
     bool NavMeshObstacleManager_ProcessEnabledNavMeshes();
@@ -5837,14 +6035,16 @@ struct C006c3640
     void NavMeshObstacleManager_ProcessMovingReferences();
     unsigned FUN_006c3920();
     unsigned FUN_006c3970();
-    void MatchPortalEdges();
+    void NavMeshObstacleManager_ReconnectPortals();
     bool NavMeshObstacleManager_SwapNavmeshes();
-    bool ClearOwnedObjects();
-    void ProcessObstacleTasks();
+    bool NavMeshObstacleManager_DeleteCurrentTasks();
+    void NavMeshObstacleManager_QueueTasks();
     void NavMeshObstacleManager_Update();
 };
 // @fnv 0x006c3640
 // src: EXE 0x006c3640
+// pdb: NavMeshObstacleManager::Update | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, bupdatedObstacles, bSwitchState, bneedsToQueueNewTasks, iProcessedTaskCount, iBackgroundTaskCount
 void C006c3640::NavMeshObstacleManager_Update()
 {
     AutoMemHelper mem(0x2e, true, &DAT_0106c3f0, 0x508);
@@ -5858,8 +6058,8 @@ void C006c3640::NavMeshObstacleManager_Update()
     {
     case 0: {
         NavMeshObstacleManager_ProcessRemovedReferences();
-        ProcessAddedRefs();
-        ProcessDoorObstacles();
+        NavMeshObstacleManager_ProcessNewReferences();
+        NavMeshObstacleManager_ProcessRemovedDoors();
         NavMeshObstacleManager_ProcessNewDoors();
         NavMeshObstacleManager_ProcessDisabledNavMeshes();
         NavMeshObstacleManager_ProcessEnabledNavMeshes();
@@ -5904,11 +6104,11 @@ void C006c3640::NavMeshObstacleManager_Update()
             unsigned background = FUN_006c3970();
             if (background > 0)
             {
-                MatchPortalEdges();
+                NavMeshObstacleManager_ReconnectPortals();
                 changed = NavMeshObstacleManager_SwapNavmeshes();
-                ClearOwnedObjects();
+                NavMeshObstacleManager_DeleteCurrentTasks();
             }
-            ProcessObstacleTasks();
+            NavMeshObstacleManager_QueueTasks();
             GetPathManager()->PathManager_Resume();
             state = 0;
             time = *(float*)&DAT_0106c398;
@@ -5986,7 +6186,7 @@ struct NodeX
 };
 struct TblX
 {
-    void FUN_006c7a30(NiPointer<ElemX>& e, int n);
+    void FUN_006c7a30(NiPointer<ElemX>& apObstacle, int aeType);
 };
 struct M100
 {
@@ -6011,6 +6211,8 @@ class SelfX
 // For each object passing F1d0, builds data, updates entries through FUN_006c5ef0, removes its key from m100, and passes the data to m110.
 // @fnv 0x006c5190
 // src: XBOX_PDB 0x006c5190
+// pdb: NavMeshObstacleManager::ProcessNewDoors | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: bupdated, plist, pdoor, spArray, i, navmeshes, j
 bool SelfX::NavMeshObstacleManager_ProcessNewDoors()
 {
     if (m_kList.FUN_008256d0())
@@ -6241,12 +6443,15 @@ struct ObstacleManager
     void ConnectEdges(NiPointer<NavMesh>& spMeshA, PortalInfo& kPortalA, NiPointer<NavMesh>& spMeshB,
                       PortalInfo& kPortalB);
     void AddAndRunFromSources(NiPointer<NavMesh>& apSearchNavMesh, PortalInfo& kFirstPortal, PortalLink& kLink);
-    bool MatchPortalEdges();
+    bool NavMeshObstacleManager_ReconnectPortals();
 };
 
 // Checks portal edges across obstacles and open portals, calling connection routines when endpoints are within the squared-distance threshold.
 // @fnv 0x006c3ba0
-bool ObstacleManager::MatchPortalEdges()
+// src: XBOX_DEBUG_PDB 0x006c3ba0
+// pdb: NavMeshObstacleManager::ReconnectPortals | NavMeshObstacleManager.obj | debug, unique string literal, high
+// pdb locals: icount, t, ptask1, pswap1, j, edge1Vert1, bFoundMatchingEdge, navmesh1Edge, edge1Vert2, u, ptask2, pswap2, l, edge2Vert2, navmesh2Edge, edge2Vert1, k, hnewEdge, holdEdge, spotherMesh, pmodifedNavmeshTask, p, poldEdgeExtraInfo, matchingTri
+bool ObstacleManager::NavMeshObstacleManager_ReconnectPortals()
 {
     unsigned int ItemUpdateArray = m_kObstacles.FUN_0044ddc0();
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
@@ -6428,6 +6633,8 @@ struct LocalConnector
 };
 // Adds cross-referencing connections between two mesh triangles via their edges and returns true.
 // @fnv 0x006c4390
+// pdb: NavMeshObstacleManager::Initialize | NavMeshObstacleManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMeshObstacleManager::CreatePortal
 bool LocalConnector::ConnectEdges(NiPointer<LocalMesh>& first, const LocalEdge& firstEdge, NiPointer<LocalMesh>& second,
                                   const LocalEdge& secondEdge)
 {
@@ -6533,13 +6740,15 @@ struct ObsMgr
     int unk34;
     int unk38;
     ObstList list3C;
-    void NavMeshObstacleManager_UpdateObstacle(NiPointer<ObstData1920>* sp);
+    void NavMeshObstacleManager_UpdateObstacle(NiPointer<ObstData1920>* spObstacle);
     void NavMeshObstacleManager_ProcessMovingReferences();
 };
 
 // For each obstacle, compares a converted vector with its position and calls a method when distance and elapsed-time thresholds are met.
 // @fnv 0x006c4d30
 // src: COMMUNITY 0x006c4d30
+// pdb: NavMeshObstacleManager::ProcessMovingReferences | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: plist, itimeDelta, pos, spObstacle, hkPos
 void ObsMgr::NavMeshObstacleManager_ProcessMovingReferences()
 {
     unsigned int uiTimeLimitMs = (unsigned int)(*g_011d71b0.Setting_Float_00403e20() * 1000.0);
@@ -6562,6 +6771,8 @@ static const float s_fDefaultInterval = 0.5f;
 
 // Initializes the NavMeshObstacleManager, setting up task queues, timers, and default update interval.
 // @fnv 0x006c02c0
+// pdb: NavMeshObstacleManager::NavMeshObstacleManager | NavMeshObstacleManager.obj | debug, unique string literal, high
+// pdb locals: tempMemContext
 FUN_006c02c0::FUN_006c02c0()
     : m_kTasks(0x25), m_kAddQueue(7, 8), m_kRemoveQueue(7, 8), m_kObstacles(0x25), m_kTasksB(0x25), m_kTasksC(0x25),
       m_kRefMap(0x25), m_spTask(0), m_kUpdateTimer("Pathing", "Obstacle Manager Update", 1, 1),
@@ -6587,6 +6798,10 @@ struct NavMeshObstacleManagerObj
 };
 // Returns the address of a function-local static NavMeshObstacleManagerObj after creating an AutoMemContext.
 // @fnv 0x006c0720
+// pdb: ThreadSpecificInterfaceManager<LockFreeMap<MobileObject *,NiPointer<LipTask> >::LockFreeMapInterface>::AddInterface | LipSyncBackgroundManager.obj | retail, call graph, low
+// pdb note: debug build links it to NavMeshObstacleManager::GetInstance
+// pdb params: apInterfacedClass
+// pdb locals: iopenSlot, pinterface, pmessage
 NavMeshObstacleManagerObj* GetNavMeshObstacleManager()
 {
     AutoMemContext tempMemContext(
@@ -6612,10 +6827,12 @@ struct FUN_006c5ff0_shell
 // Locks _lock20, calls Push on the object returned by FUN_00449f80(a1), then unlocks _lock20.
 // @fnv 0x006c5ff0
 // src: XBOX_PDB 0x006c5ff0
-void FUN_006c5ff0_shell::LockFreeQueue_bhkRigidBody_Push(int* a1)
+// pdb: LockFreeQueue<bhkRigidBody *>::Push | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
+// pdb params: aData
+void FUN_006c5ff0_shell::LockFreeQueue_bhkRigidBody_Push(int* aData)
 {
     _lock20.Lock(0);
-    LockFreeMap_GetInterface_0(a1)->Push();
+    LockFreeMap_GetInterface_0(aData)->Push();
     _lock20.Unlock();
 }
 }  // namespace fnv_006c5ff0
@@ -6656,27 +6873,30 @@ struct RemoveObstacleManagerView
     ReferenceMap0c80 references;
     PendingRefs0c80 pending;
     RemovedIDs0c80 removed;
-    void NavMeshObstacleManager_RemoveObstacleForReference(::TESObjectREFR* ref);
+    void NavMeshObstacleManager_RemoveObstacleForReference(::TESObjectREFR* apRef);
 };
 
 // Adds ref to pending; if its FormID is not removed and has a map entry, processes each obstacle and records the FormID.
 // @fnv 0x006c0c80
 // src: XBOX_PDB 0x006c0c80
-void RemoveObstacleManagerView::NavMeshObstacleManager_RemoveObstacleForReference(::TESObjectREFR* ref)
+// pdb: NavMeshObstacleManager::RemoveObstacleForReference | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: spArray, i
+void RemoveObstacleManagerView::NavMeshObstacleManager_RemoveObstacleForReference(::TESObjectREFR* apRef)
 {
     if (!reinterpret_cast< ::SettingT< ::INISettingCollection>*>(&::fnv_006c0c30::g_011d73e4)->Bool()[0])
         return;
-    pending.RemoveMatchingItem(&ref);
-    if (!removed.IsInList(reinterpret_cast< ::TESForm*>(ref)->GetFormID()))
+    pending.RemoveMatchingItem(&apRef);
+    if (!removed.IsInList(reinterpret_cast< ::TESForm*>(apRef)->GetFormID()))
     {
         ::NiPointer<RefObstData1920> spArray(0);
         unsigned int i;
-        if (references.NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_GetAt(reinterpret_cast< ::TESForm*>(ref)->GetFormID(), spArray))
+        if (references.NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_GetAt(reinterpret_cast< ::TESForm*>(apRef)->GetFormID(), spArray))
         {
             for (i = 0; i < spArray.operator->()->kObstacles.GetSize(); i++)
                 reinterpret_cast< ::S_this*>(this)->NavMeshObstacleManager_RemoveActivationListener(
                     static_cast< ::S_param*>(spArray.operator->()->kObstacles.GetAt(i).operator->()->m_pRigidBody.Get()));
-            removed.AddTail(reinterpret_cast< ::TESForm*>(ref)->GetFormID());
+            removed.AddTail(reinterpret_cast< ::TESForm*>(apRef)->GetFormID());
         }
     }
 }

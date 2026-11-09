@@ -7,6 +7,7 @@ class NavMeshPtr;
 class NiSortAdjustNode;
 class SpawnedTarget;
 
+// pdb: class PathingLOSMap, size 0x50, bases: NiRefObject, 11 members
 class PathingLOSMap : public NiRefObject
 {
 public:
@@ -18,21 +19,21 @@ public:
         void ReleaseMember();
     };
 
-    DummyPointerMap m_map;
+    DummyPointerMap NavMeshToOffsetMap;
     union
     {
         char* pTriangleScores;
         char* m_pData;
     };
-    Shell1c m_shell1c;
+    Shell1c NavMeshes;
     unsigned char unk20[0x0C];
-    unsigned int m_uTotalCount;
-    unsigned char unk30[0x0C];
-    float f3c;
+    unsigned int iTotalTriangleCount;
+    unsigned char iTotalTrianglesSeen[0x0C];
+    float Center;
     float f40;
     float f44;
-    float f48;
-    unsigned int unk4C;
+    float fRadius;
+    unsigned int fSightRadius;
 
     virtual ~PathingLOSMap();
 
@@ -41,8 +42,8 @@ public:
     char* GetTriangleScore(unsigned int aNavMeshID);
     void GetMapValue(unsigned int uiKey, unsigned int& ruiValue);
     char GetLOSValue(unsigned int aiOffset, unsigned short aOffset);
-    char GetNavMeshAndTriangleForIndex(unsigned int limit, SpawnedTarget* target, unsigned short* outOffset);
-    bool GetUnseenNavMeshAndTriangle(unsigned int a, unsigned int b);
+    char GetNavMeshAndTriangleForIndex(unsigned int aiIndex, SpawnedTarget* aRetNavMesh, unsigned short* aRetTriangle);
+    bool GetUnseenNavMeshAndTriangle(unsigned int aRetNavMesh, unsigned int aRetTriangle);
     NiSortAdjustNode* CreateSortAdjustNode();
     void ClampNonPositiveTextChars();
     bool HasNavMeshEntry(unsigned int aiNavMeshID);

@@ -13,23 +13,26 @@ extern unsigned char DAT_011f4380;
 
 // Removes the extra-data entry at index under a critical section, releasing its reference and shifting the remaining entries down.
 // @fnv 0x00a5b990
-void NiObjectNET::DeleteExtraData(unsigned short index)
+// pdb: NiObjectNET::DeleteExtraData | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: usExtraDataIndex
+// pdb locals: i
+void NiObjectNET::DeleteExtraData(unsigned short usExtraDataIndex)
 {
     fnv_EnterCriticalSection(&DAT_011f4380);
-    if (index >= m_usExtraDataSize)
+    if (usExtraDataIndex >= m_usExtraDataSize)
     {
         fnv_LeaveCriticalSection(&DAT_011f4380);
         return;
     }
 
-    if (m_ppkExtra[index])
+    if (m_ppkExtra[usExtraDataIndex])
     {
-        NiExtraData* extra = m_ppkExtra[index];
+        NiExtraData* extra = m_ppkExtra[usExtraDataIndex];
         if (InterlockedDecrement(reinterpret_cast<volatile long*>(&extra->m_uiRefCount)) == 0)
             extra->DeleteThis();
     }
 
-    for (unsigned short i = index; i < m_usExtraDataSize - 1; ++i)
+    for (unsigned short i = usExtraDataIndex; i < m_usExtraDataSize - 1; ++i)
         m_ppkExtra[i] = m_ppkExtra[i + 1];
     --m_usExtraDataSize;
     m_ppkExtra[m_usExtraDataSize] = 0;
@@ -37,9 +40,11 @@ void NiObjectNET::DeleteExtraData(unsigned short index)
 }
 
 // @fnv 0x00a47350
-void NiTexture::LoadBinary(NiStream& stream)
+// pdb: NiTexture::LoadBinary | NiTexture.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void NiTexture::LoadBinary(NiStream& kStream)
 {
-    NiObjectNET::LoadBinary(stream);
+    NiObjectNET::LoadBinary(kStream);
 }
 
 extern int DAT_010983bc;
@@ -47,6 +52,8 @@ extern int DAT_010983bc;
 // Allocates a 0x18-byte NiProperty, runs its constructor, installs the vtable at DAT_010983bc, and returns it (or null on allocation failure).
 // @fnv 0x00a47380
 // src: EXE 0x00a47380
+// pdb: NiSequenceStreamHelper::CreateObject | NiSequenceStreamHelper.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiSequenceStreamHelper_CreateObject()
 {
     NiProperty* p = (NiProperty*)NiRefObject::operator new(0x18);
@@ -71,6 +78,7 @@ extern Pool00a91290* DAT_011f5e50;
 // Allocates a Pool00a91290, zeroes its first four fields, sets the last two to 8, and stores it in DAT_011f5e50 (or null on failure).
 // @fnv 0x00a91290
 // src: COMMUNITY 0x00a91290
+// pdb: NiScreenGeometryData::_SDMInit | NiOldScreenSpace.obj | retail, upstream name already matches, high
 void __cdecl NiScreenGeometryData__SDMInit()
 {
     Pool00a91290* p = (Pool00a91290*)g_memoryManager.Allocate(sizeof(Pool00a91290));
@@ -101,6 +109,8 @@ GlobalObjectO2_00a7b610* __fastcall NiSequenceStreamHelper_GetRTTI(void*, int)
 void __fastcall DestroyFogProperty(void*);
 void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 // @fnv 0x00a473b0
+// pdb: NiSequenceStreamHelper::LoadBinary | NiSequenceStreamHelper.obj | debug, object-file run extension, low
+// pdb params: stream
 void* __fastcall FUN_00a473b0(void* self, int, unsigned int flags)
 {
     DestroyFogProperty(self);
@@ -129,6 +139,8 @@ ActorCombatGroup* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 ActorCombatGroup* __cdecl NiGetViewerString_00a7d4d0(const char*, unsigned int);
 // @fnv 0x00a62a40
 // src: XBOX_PDB 0x00a62a40
+// pdb: NiTexture::GetViewerStrings | NiTexture.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall NiTexture_GetViewerStrings(NiTexture* self, int unused, CGArray* apArray)
 {
     NiObjectNET_GetViewerStrings(self, unused, apArray);
@@ -158,6 +170,8 @@ struct TexInfo
 };
 
 // @fnv 0x00a62670
+// pdb: NiTexture::GetMemorySize | NiTexture.obj | debug, upstream name already matches, high
+// pdb locals: isize
 // The shared NiTexture header does not yet declare this renderer-data query.
 // src: XBOX_PDB 0x00a62670
 int __fastcall NiTexture_GetMemorySize(NiTexture* self)
@@ -182,6 +196,8 @@ extern int GetTextureForType(int, int);
 
 // Returns 0 when a2's high bit is clear; otherwise lazily installs GetTextureForType as DAT_011a9600 and calls it with a1 and a2.
 // @fnv 0x00a62a10
+// pdb: NiTexture::IsEqual | NiTexture.obj | debug, object-file run extension, low
+// pdb params: pkObject
 int __cdecl DispatchIfHighBitSet(int a1, int a2, int aUnused)
 {
     if ((a2 & 0x80000000u) == 0)
@@ -270,6 +286,8 @@ int GetTextureForType(int unused, int type)
 extern "C" void __cdecl FUN_00a5c0e0();
 // @fnv 0x00a47360
 // src: XBOX_PDB 0x00a47360
+// pdb: NiSequenceStreamHelper::LinkObject | NiSequenceStreamHelper.obj | debug, upstream name already matches, high
+// pdb params: stream
 extern "C" void __cdecl NiSequenceStreamHelper_LinkObject()
 {
     FUN_00a5c0e0();
@@ -308,7 +326,7 @@ template <class T> class ViewerArray
 };
 typedef ViewerArray<char*> ViewerStrings;
 
-extern const char* DAT_011f5e54;
+extern const char* NiScreenGeometryData_ms_RTTI;
 char* NiViewerStrings_NiGetViewerString_Title(const char* pcClassName);
 char* NiGetViewerString(const char* pcPrefix, bool bValue);
 char* NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);
@@ -360,10 +378,12 @@ class Elements : public ElementsBase
 // Calls base RegisterFields, then adds class name, m_bPixelAccurate, and m_usNumElements to pkStrings.
 // @fnv 0x00a912d0
 // src: XBOX_PDB 0x00a912d0
+// pdb: NiScreenGeometryData::GetViewerStrings | NiOldScreenSpace.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void Elements::NiScreenGeometryData_GetViewerStrings(ViewerStrings* pkStrings)
 {
     ElementsBase::RegisterFields(pkStrings);
-    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(DAT_011f5e54));
+    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(NiScreenGeometryData_ms_RTTI));
     pkStrings->Add(NiGetViewerString("m_bPixelAccurate", m_bPixelAccurate));
     unsigned int n = m_usNumElements;
     pkStrings->Add(NiGetViewerString_00a7d510("Num Elements", n));

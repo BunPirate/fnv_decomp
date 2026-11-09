@@ -44,7 +44,8 @@ void BGSHeadPart::ResetFormData()
 }
 
 // @fnv 0x005e72c0
-BGSHeadPart::BGSHeadPart() : TESForm(), TESFullName(), TESModelTextureSwap(), m_kExtraParts()
+// pdb: BGSHeadPart::BGSHeadPart | BGSHeadPart.obj | retail, upstream name already matches, high
+BGSHeadPart::BGSHeadPart() : TESForm(), TESFullName(), TESModelTextureSwap(), ExtraParts()
 {
     SetFormType(ENUM_FORM_ID_HDPT_ID);
     ResetFormData();
@@ -54,6 +55,9 @@ extern "C" void* __cdecl _alloca(unsigned int);
 
 // @fnv 0x005e7530
 // src: XBOX_PDB 0x005e7530
+// pdb: BGSHeadPart::Load | BGSHeadPart.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata, itempint
 bool BGSHeadPart::Load_005e7530(TESFile* apFile)
 {
     // The original caller consumes the full EAX result; the shared accessor returns a byte.
@@ -90,7 +94,7 @@ bool BGSHeadPart::Load_005e7530(TESFile* apFile)
             unsigned int isize = apFile->GetChunkSize();
             void* pdata = _alloca(isize);
             apFile->GetChunkData(pdata, isize);
-            TESModelTextureSwap::ParseTextureSwapData(pdata, isize, apFile->GetFormVersion());
+            TESModelTextureSwap::UnpackTextureSwapChunkData(pdata, isize, apFile->GetFormVersion());
             break;
         }
         case 0x41544144:
@@ -114,7 +118,7 @@ bool BGSHeadPart::Load_005e7530(TESFile* apFile)
 // src: XBOX_PDB 0x00624700
 void* BGSHeadPart::GetExtraPartList()
 {
-    return &m_kExtraParts;
+    return &ExtraParts;
 }
 
 struct List_005e7480
@@ -128,6 +132,8 @@ extern "C" void ref_0048a520();
 void TESForm_AddChunk_3(unsigned int, unsigned char);
 void TESForm_AddChunk_00485910(unsigned int, unsigned int);
 // @fnv 0x005e7480
+// pdb: BGSHeadPart::Save | BGSHeadPart.obj | retail, vtable slot, high
+// pdb locals: plist, itempint, ppart
 void BGSHeadPart::InitializeHeadPart()
 {
     BSSimpleList<BGSHeadPart*>* pCurrentElementNext;
@@ -159,6 +165,9 @@ struct List_009e03e0
 };
 // @fnv 0x005e78f0
 // src: XBOX_PDB 0x005e78f0
+// pdb: BGSHeadPart::Copy | BGSHeadPart.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pcopy, ppart
 void BGSHeadPart::Copy_005e78f0(TESForm* apCopy)
 {
     BSSimpleList<BGSHeadPart*>* pCurrentElementNext;
@@ -188,6 +197,9 @@ struct LH
 };
 // @fnv 0x005e79a0
 // src: XBOX_PDB 0x005e79a0
+// pdb: BGSHeadPart::Compare | BGSHeadPart.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp, plist, ppart
 bool BGSHeadPart::Compare_005e79a0(TESForm* apCompare)
 {
     BGSHeadPart* pcomp;
@@ -217,6 +229,7 @@ struct Deleter
 };
 // Calls FUN_005e73a0 on this, frees this when flags has bit 1 set, and returns this.
 // @fnv 0x005e7370
+// pdb: BGSHeadPart::`scalar deleting destructor' | BGSHeadPart.obj | retail, vtable slot, high
 void* Deleter::Destroy(unsigned int flags)
 {
     reinterpret_cast<BGSHeadPart*>(this)->BGSHeadPart::~BGSHeadPart();
@@ -226,6 +239,7 @@ void* Deleter::Destroy(unsigned int flags)
 }
 
 // @fnv 0x005e73a0
+// pdb: BGSHeadPart::~BGSHeadPart | BGSHeadPart.obj | retail, upstream name already matches, high
 BGSHeadPart::~BGSHeadPart()
 {
     ClearData_005e7460();
@@ -256,6 +270,7 @@ struct FUN_005e6600 : FUN_005e6470
 
 // Destructor that calls FUN_005e6c60 with 0 on this object.
 // @fnv 0x005e6600
+// pdb: BGSEntryPointFunctionDataActivateChoice::~BGSEntryPointFunctionDataActivateChoice | BGSEntryPointFunction.obj | debug, object-file gap fill, medium
 FUN_005e6600::~FUN_005e6600()
 {
     this->SetLabel(0);
@@ -275,6 +290,7 @@ struct HeadPartListOperations
 
 // @fnv 0x005e7460
 // src: COMMUNITY 0x005e7460
+// pdb: BGSHeadPart::ClearData | BGSHeadPart.obj | debug, call graph, medium
 void BGSHeadPart::ClearData_005e7460()
 {
     reinterpret_cast<HeadPartListOperations*>(GetExtraPartList())
@@ -295,6 +311,8 @@ TESForm* LookupFormByID(unsigned int);
 void FNV_Warning(const char*, ...);
 // @fnv 0x005e77b0
 // src: XBOX_PDB 0x005e77b0
+// pdb: BGSHeadPart::InitItem | BGSHeadPart.obj | retail, string-set bridge, high
+// pdb locals: plist, plastlist, itempint, ppart
 void BGSHeadPart::InitItem_005e77b0()
 {
     if (static_cast<const TESForm*>(this)->GetInitialized())

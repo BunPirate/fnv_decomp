@@ -15,6 +15,7 @@ class DurationData
     int FUN_00726070();
 };
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:

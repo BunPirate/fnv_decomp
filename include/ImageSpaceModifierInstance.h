@@ -5,6 +5,7 @@
 
 class ImageSpaceModifierInstanceForm;
 
+// pdb: class ImageSpaceModifierInstance, size 0x1c, bases: NiObject, 5 members
 class ImageSpaceModifierInstance : public NiObject
 {
   public:
@@ -21,10 +22,10 @@ class ImageSpaceModifierInstance : public NiObject
     bool IsFlagSet();
     void __thiscall PlayerCharacter_StopVatsImageSpace();
 
-    bool m_bHasBeenApplied;
+    bool bIsWeather;
     unsigned char layoutPadding9[3];
-    float fWaterLevelItem;
-    NiPointer<NiAVObject> m_spTargetObject;
-    float m_fStartTime;
+    float fStrength;
+    NiPointer<NiAVObject> spTarget;
+    float fStartTime;
     unsigned int iFlags;
 };

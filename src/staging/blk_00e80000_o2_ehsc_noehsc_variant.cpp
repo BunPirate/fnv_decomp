@@ -91,7 +91,7 @@ struct FUN_00e81d00_Class {
     void* m_pRenderState;
     void* m_pShaderObject;
     void* m_pD3DDevice;
-    void __thiscall NiD3DShaderConstantMap_SetD3DRenderer(void* renderer);
+    void __thiscall NiD3DShaderConstantMap_SetD3DRenderer(void* pkD3DRenderer);
 };
 struct FUN_00e87af0_This {
     void __thiscall NiDX9RenderState_SetD3DRenderer(void* renderer);
@@ -131,7 +131,7 @@ struct NiConsoleRenderStateStub {
     void* m_ppVirtualMethodTable;
 };
 struct FUN_00e89760_Class {
-    void __thiscall NiD3DShaderProgram_SetD3DRenderer(NiConsoleRendererStub* renderer);
+    void __thiscall NiD3DShaderProgram_SetD3DRenderer(NiConsoleRendererStub* pkD3DRenderer);
 };
 extern int DAT_011f4500;
 struct ShaderNode {
@@ -318,8 +318,8 @@ struct Program {
     void* m_auiShapeKeys[5];
     NiTStringPointerMap<NiD3DPixelShader*>* m_map;
 };
-extern Program* DAT_0126fa10;
-void __cdecl RemoveProgramFromMap(Program* program);
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory;
+void __cdecl NiD3DShaderProgramFactory_ReleasePixelShader(Program* pkShader);
 struct FUN_00e94070_Class {
     void* m_obj;
     char m_auiShapeKeys[0x48 - 4];
@@ -330,7 +330,7 @@ struct FUN_00e942d0_Class {
     void __thiscall ClearAllData();
 };
 extern int DAT_0126fa30;
-void __stdcall NiVBSet_FreeBlock(void* p);
+void __stdcall NiVBSet_FreeBlock(void* pkBlock);
 void __cdecl _NiFree(void* p);
 struct FUN_00e94390_Class {
     void* m_vptr;
@@ -370,7 +370,7 @@ extern int DAT_0126fa58;
 struct A51BF0Base {
     static void* __cdecl operator new(unsigned int);
 };
-void AllocateNodeList();
+void NiVBBlock_GetFreeChip();
 struct FUN_00e98b10_Class {
     void*** m_ppVirtualMethodTable;
     void* m_data;
@@ -382,7 +382,7 @@ struct SpawnedObject {
     void __thiscall ReleaseResources();
 };
 struct GlobalHolder {
-    void __thiscall MemoryManager_Deallocate(SpawnedObject* p);
+    void __thiscall MemoryManager_Deallocate(SpawnedObject* apMem);
 };
 extern SpawnedObject* DAT_0126f72c;
 extern GlobalHolder DAT_011f6238;
@@ -458,7 +458,7 @@ struct ConstantTarget {
 extern Vec4 DAT_0126f8a0;
 extern Vec4 DAT_0126f8b0;
 extern Vec4 DAT_0126f900;
-int __stdcall SetConstantSum(ConstantTarget* target, int reg, int type1, int type2, int a5, int a6);
+int __stdcall NiD3DShaderConstantMap_PerformOperatorAdd(ConstantTarget* pkShaderProgram, int pkEntry, int eType1, int eType2, int bInverse, int bTranspose);
 class FUN_00e879b0_cls {
 public:
     virtual void vtbl_unk00();
@@ -4615,7 +4615,7 @@ struct FUN_00e89250_cls
 struct FUN_00e89410_Class
 {
     void* __thiscall DispatchSlots(unsigned int index);
-    void* __thiscall NiD3DTextureStageGroup_SetAllStageSamplers(unsigned int index);
+    void* __thiscall NiD3DTextureStageGroup_SetAllStageSamplers(unsigned int uiStage);
     void* __thiscall GetItemByIndex(unsigned int index);
 };
 extern unsigned int DAT_011bf558;
@@ -6184,6 +6184,7 @@ struct S_00e8b4b0_Class {
     void __thiscall UpdateFromSource(int value);
     S_00e8b4b0_Class* __thiscall Init(int value1, int value2);
 };
+// pdb: class Key, size 0x8 (here 0xf0), 2 members
 struct Key {
  unsigned int unk00;
  unsigned int unk04;
@@ -6380,8 +6381,8 @@ public:
     unsigned int m_04;
     unsigned int m_08;
 
-    void ResizeStringArray(unsigned int newCap);
-    void PushBack(char* const* src);
+    void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Realloc(unsigned int uiNewSize);
+    void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(char* const* element);
 };
 struct ListNode_b5254 {
     ListNode_b5254* m_00;
@@ -6473,7 +6474,7 @@ public:
     FUN_00e95b60_cls* Reset();
 };
 struct S_00e97790_This {
-    void __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(void* p);
+    void __thiscall NiD3DShaderConstantManager_ctor(void* pkD3DRenderer);
 };
 struct FUN_00e984d0_Struct {
     int unk00;
@@ -6495,9 +6496,9 @@ public:
     virtual unsigned int GetIndex();
 };
 extern FNV_CondFn_e9c8c0* DAT_0126fa94;
-bool __cdecl CallConditionFunction(float f, FUN_00e9c8c0_obj* a, unsigned int b, FUN_00e9c8c0_obj* c, unsigned int d);
+bool __cdecl NiBoundingVolume_TestIntersect(float fTime, FUN_00e9c8c0_obj* kBV0, unsigned int kVel0, FUN_00e9c8c0_obj* kBV1, unsigned int kVel1);
 typedef int (__cdecl *FUN_00e9c950_handler)(float, void*, int, void*, int, int, int, int, int, int);
-extern FUN_00e9c950_handler* DAT_0126fa98;
+extern FUN_00e9c950_handler* NiBoundingVolume_ms_pfnFindFuncTable;
 class FUN_00e9c950_cls_key
 {
 public:
@@ -6506,7 +6507,7 @@ public:
     virtual void Slot2();
     virtual int Slot3();
 };
-int DispatchPairHandler(float a1, FUN_00e9c950_cls_key* a2, int a3, FUN_00e9c950_cls_key* a4, int a5, int a6, int a7, int a8, int a9, int a10);
+int DispatchPairHandler(float fTime, FUN_00e9c950_cls_key* kBV0, int kVel0, FUN_00e9c950_cls_key* kBV1, int kVel1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1);
 struct DispatchObj_b4010 {
     virtual void v0();
     virtual void v1();
@@ -6514,8 +6515,8 @@ struct DispatchObj_b4010 {
     virtual int v3();
 };
 typedef void (__cdecl *DispatchFn_b4010)(float, DispatchObj_b4010*, int, int, int, int, int);
-extern DispatchFn_b4010* DAT_0126fa9c;
-void __cdecl DispatchByVirtualIndex(float f, DispatchObj_b4010* p, int a2, int a3, int a4, int a5, int a6);
+extern DispatchFn_b4010* NiBoundingVolume_ms_pfnTriTestFuncTable;
+void __cdecl NiBoundingVolume_TestTriIntersect(float fTime, DispatchObj_b4010* kBV0, int kVel0, int kVert0, int kVert1, int kVert2, int kVel1);
 struct FUN_00e9e840_Class
 {
     virtual int m_virtual00(int value);
@@ -6581,8 +6582,8 @@ struct ItemArrayOwner {
     unsigned int unk10;
     unsigned int foundIndex;
 };
-bool __cdecl CallConditionFunction(float a1, void* a2, unsigned int a3, void* a4, unsigned int a5);
-bool __cdecl FindMatchingItemPair(float a1, ItemArrayOwner* a2, unsigned int a3, ItemArrayOwner* a4, unsigned int a5);
+bool __cdecl NiBoundingVolume_TestIntersect(float fTime, void* kBV0, unsigned int kVel0, void* kBV1, unsigned int kVel1);
+bool __cdecl NiUnionBV_UnionUnionTestIntersect(float fTime, ItemArrayOwner* kABV0, unsigned int kV0, ItemArrayOwner* kABV1, unsigned int kV1);
 struct FNVItemHolder {
     int m_00;
     int m_04;
@@ -6592,8 +6593,8 @@ struct FNVItemHolder {
     int m_10;
     int m_14;
 };
-bool __cdecl DispatchPairHandler(float f, void* item, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
-bool __cdecl FindItemByPredicate(float f, FNVItemHolder* holder, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
+bool __cdecl DispatchPairHandler(float fTime, void* kBV0, int kVel0, int kBV1, int kVel1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1);
+bool __cdecl NiUnionBV_UnionOtherFindIntersect(float fTime, FNVItemHolder* kABV0, int kV0, int kABV1, int kV1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1);
 // Candidate for FindMatchingPair (167 bytes)
 //
 // Searches two fixed-size index tables for a pair of entries that satisfy a
@@ -6610,9 +6611,9 @@ struct E9EB60_Item
     int unk10;
     int m_result;
 };
-extern "C" bool __cdecl E9C950_probe(float a0, void* a1, int a2, void* a3,
-                                     int a4, int a5, int a6, int a7, int a8, int a9);
-bool __cdecl FindMatchingPair(float a0, E9EB60_Item* a1, int a2, E9EB60_Item* a3, int a4, int a5, int a6, int a7, int a8, int a9);
+extern "C" bool __cdecl E9C950_probe(float fTime, void* kBV0, int kVel0, void* kBV1,
+                                     int kVel1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1);
+bool __cdecl NiUnionBV_UnionUnionFindIntersect(float fTime, E9EB60_Item* kABV0, int kV0, E9EB60_Item* kABV1, int kV1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1);
 struct FogProperty {
     unsigned int unk00;
     unsigned int unk04;
@@ -6941,7 +6942,7 @@ void Object_ProcessEntries_00a644a0(FixedStr* pkArray);
 // array delete
 class FixedStrArray {
 public:
-    void ResizeStringArray(unsigned int uiMaxSize);
+    void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Realloc(unsigned int uiNewSize);
 
     FixedStr* m_pBase;
     unsigned int m_uiMaxSize;
@@ -7114,7 +7115,7 @@ struct FUN_00e8d350_Class {
     int* __thiscall NiDX9FragmentShader_GetShaderInstanceDesc();
 };
 struct Item9ea;
-bool DispatchByVirtualIndex(float fTime, Item9ea* pkItem, void* p2, void* p3, void* p4, void* p5, void* p6);
+bool NiBoundingVolume_TestTriIntersect(float fTime, Item9ea* kBV0, void* kVel0, void* kVert0, void* kVert1, void* kVert2, void* kVel1);
 struct Seq9ea
 {
     int m_00;
@@ -7125,7 +7126,7 @@ struct Seq9ea
     int m_10;
     unsigned int m_uiLast;
 };
-bool NiUnionBV_UnionTriTestIntersect(float fTime, Seq9ea* pkSeq, void* p2, void* p3, void* p4, void* p5, void* p6);
+bool NiUnionBV_UnionTriTestIntersect(float fTime, Seq9ea* kABV0, void* kV0, void* kVert0, void* kVert1, void* kVert2, void* kV1);
 #include "fnv_asm_helpers.h"   // project x87 helpers (fnv_SinCos, fnv_FloatToInt), kept last so earlier code is unchanged
 struct ColorWithAlpha { float r,g,b,a; ColorWithAlpha(float red,float green,float blue):r(red),g(green),b(blue) {} void addScaled(const ColorWithAlpha& source,float factor) { r+=source.r*factor;g+=source.g*factor;b+=source.b*factor; } };
 struct ActiveLight;
@@ -7335,6 +7336,9 @@ struct ArrayElementE80390 {
 
 // @fnv 0x00e80390
 // src: GUESS 0x00e80390 (confidence: medium)
+// pdb: NiTNewInterface<NiD3DPass>::Allocate | NiD3DPass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DPass::ReleaseTextureStages
+// pdb params: uiNumElements
 ArrayElementE80390* __cdecl Runtime_AllocateElementArrayInPlace(unsigned int count)
 {
     return new(count) ArrayElementE80390[count];

@@ -2,6 +2,7 @@
 
 #include "PathingRequestClosePoint.h"
 
+// pdb: class PathingRequestSafeStraightLine, size 0xbc, bases: PathingRequestClosePoint, 1 members
 class PathingRequestSafeStraightLine : public PathingRequestClosePoint
 {
 public:
@@ -17,7 +18,7 @@ public:
     void __thiscall CopyTo_006e6080(PathingRequest* apDest);
     void __thiscall SetTarget_006e60c0(int a1);
     void __thiscall SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer);
-    void LoadGame_006e6110(BGSLoadFormBuffer* buffer);
+    void LoadGame_006e6110(BGSLoadFormBuffer* apLoadGameBuffer);
     void __thiscall ResolveReference(BGSLoadFormBuffer* apLoadGameBuffer);
 
     int pTarget;

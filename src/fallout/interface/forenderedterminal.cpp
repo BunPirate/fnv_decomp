@@ -77,6 +77,7 @@ struct ShadowSceneNode;
 
 // @fnv 0x007ffad0
 // src: COMMUNITY 0x007ffad0
+// pdb: FORenderedTerminal::GetParentNodeToRender | FORenderedTerminal.obj | debug, upstream name already matches, high
 NiAVObject* FORenderedTerminal::GetParentNodeToRender()
 {
     return NiAdditionalGeometryData::GetShadowSceneNodeForIndex(1);
@@ -90,6 +91,8 @@ struct GlobalObjectO2_0045cfe0
 GlobalObjectO2_0045cfe0 g_011f9148;
 
 // @fnv 0x007ffb60
+// pdb: BSFadeNode::SetMinNearDistance | FORenderedTerminal.obj | debug, call graph, medium
+// pdb params: aiDist
 void ForwardToGlobalObject(int aiValue)
 {
     g_011f9148.ProcessAndReturnValue_0045ce80(aiValue);
@@ -108,6 +111,7 @@ extern GlobalObjectO2_0045cfe0 g_011f9148;
 
 // @fnv 0x007ffb80
 // src: XBOX_PDB 0x007ffb80
+// pdb: BSFadeNode::QMinNearDistance | FORenderedTerminal.obj | debug, upstream name already matches, high
 int BSFadeNode_QMinNearDistance()
 {
     return *g_011f9148.Int();
@@ -126,6 +130,7 @@ struct FUN_007ff8e0_shell
 
 // @fnv 0x007ff8e0
 // src: XBOX_PDB 0x007ff8e0
+// pdb: NiAVObject::QFadedIn | FORenderedTerminal.obj | debug, upstream name already matches, high
 bool FUN_007ff8e0_shell::NiAVObject_QFadedIn()
 {
     return reinterpret_cast<FUN_00456630_helper*>(this)->NiAVObject_GetBit(0x4000);
@@ -137,6 +142,7 @@ struct FUN_007ff8c0_shell : public FUN_007ff8e0_shell
 };
 // @fnv 0x007ff8c0
 // src: COMMUNITY 0x007ff8c0
+// pdb: BSFadeNode::QFadingFlag | FORenderedTerminal.obj | debug, object-file gap fill, medium
 bool FUN_007ff8c0_shell::BSFadeNode_IsFadedIn()
 {
     return NiAVObject_QFadedIn();
@@ -152,6 +158,8 @@ struct FUN_007ff900_This
     void UpdateSynchTimeNode();
 };
 // @fnv 0x007ff900
+// pdb: FORenderedTerminal::PostDraw | FORenderedTerminal.obj | retail, object-file run extension, high
+// pdb locals: proot, UpdateData
 void FUN_007ff900_This::UpdateSynchTimeNode()
 {
     NiAVObject* proot;
@@ -177,6 +185,9 @@ struct FUN_007ff7c0_shell : public BSAudio, public FUN_00440460_S
 };
 // @fnv 0x007ff7c0
 // src: COMMUNITY 0x007ff7c0
+// pdb: FORenderedTerminal::Draw | FORenderedTerminal.obj | retail, upstream name already matches, high
+// pdb params: apTarget, aeClearMode, apSwapTarget
+// pdb locals: proot, UpdateData
 void FUN_007ff7c0_shell::FORenderedTerminal_Draw(BSRenderedTexture* apTarget, NiRenderer::ClearFlags aeClearMode,
                                       BSRenderedTexture* apSwapTarget)
 {
@@ -205,6 +216,8 @@ struct FUN_007ffaf0_shell
 // If g_011db63c is set, saves and restores the value from FUN_007ffb80 around ForwardToGlobalObject(0) and SetRange(0,0); then sets byte 0xec to 1 and float 0xe8 to 1.0.
 // @fnv 0x007ffaf0
 // src: XBOX_PDB 0x007ffaf0
+// pdb: FORenderedTerminal::FadeOut | FORenderedTerminal.obj | retail, upstream name already matches, high
+// pdb locals: iminNear
 void FUN_007ffaf0_shell::FORenderedTerminal_FadeOut()
 {
     if ((unsigned int)g_011db63c)
@@ -236,6 +249,7 @@ void __fastcall SetRenderedMenu(AudioFallback* fallback);
 AudioFallback* __stdcall InterfaceManager_GetSingleton(int mode);
 
 // @fnv 0x007ff820
+// pdb: FORenderedTerminal::OnIdle | FORenderedTerminal.obj | retail, object-file run extension, high
 bool FUN_007ff820_shell::UpdateAudioFallback()
 {
     if (*((unsigned char*)this + 0xec))
@@ -312,7 +326,7 @@ struct PickQuery
     int unk28;
     int unk2C;
     int unk30;
-    PickQuery(int aeSortType, int aeIntersectType);
+    PickQuery(int uiResultsInitialSize, int uiResultsGrowBy);
     ~PickQuery();
     void SetPickType(int aeType);
     void SetTarget(PickTargetNode* apTarget);
@@ -630,12 +644,12 @@ struct RenderNode
 {
     void SetMode(int, float);
     void SetScreen(Resource*);
-    void SetScreen2(Resource*);
+    void FORenderedMenu_SetScreenGeometry(Resource*);
     void SetRoot(Resource*);
-    void SetCamera(Camera*);
+    void FORenderedMenu_SetCamera(Camera*);
     void Update();
     Resource* GetRenderObject();
-    void NoBackend();
+    void FORenderedTerminal_InitLight();
     void Enable(int);
     void Toggle(int);
     void SetColor(const TerminalColorViewport_007feeb0&);
@@ -643,6 +657,8 @@ struct RenderNode
 };
 // Loads the screen and PowerButton nodes, builds a camera with frustum, sets screen/root/camera, updates, and creates the backend render object.
 // @fnv 0x007feeb0
+// pdb: FORenderedTerminal::Initialize | FORenderedTerminal.obj | retail, string-set bridge, high
+// pdb locals: theta, mat2, fzoom, faspectDelta, fradius, pscreen, fr, pscreenObj, rot, newcolor, fHeightByWidth, inumlights, bloaded, pgeom, pexitButtonObj, pcam, mat1, port, UpdateData1, UpdateData2
 void RenderNode::SetupPowerButtonScreen()
 {
     SetMode(1, *g_011db674.Setting_Float_00403e20());
@@ -701,18 +717,18 @@ void RenderNode::SetupPowerButtonScreen()
     LocalVector3 pos2(0.f, 0, 0);
     cameraK->SetPosition(pos2);
     SetScreen(screenNode);
-    SetScreen2(screenNode);
+    FORenderedMenu_SetScreenGeometry(screenNode);
     SetRoot(rootP);
     screenNode->AddProperty(MagicSystem_CheckEffectFlares());
     screenNode->SetController(new Controller);
-    SetCamera(cameraK);
+    FORenderedMenu_SetCamera(cameraK);
     Update();
     *(LocalVector3*)((char*)this + 0xd8) = GetRenderObject()->GetPosition();
     GetRenderObject()->SetTranslation(DAT_01078bb0, 0.f, 0.f);
     float radius = (float)(rootP->GetBound()->GetRadius() * DAT_01021928);
     void* aBackend = GetBackend(1)->Create(rootP, radius);
     if (!aBackend)
-        NoBackend();
+        FORenderedTerminal_InitLight();
     Enable(0);
     Toggle(0);
     ((Resource*)(unsigned)g_011db63c)->SetFlag(8);
@@ -729,7 +745,7 @@ struct Sound376
     unsigned int state;
     ~Sound376()
     {}
-    bool FUN_00ad8830(bool deferred);
+    bool FUN_00ad8830(bool abLoopPlayback);
 };
 struct Audio376
 {
@@ -738,6 +754,7 @@ struct Audio376
 Audio376* BSAudioManager_QInstance_00ad9060();
 // @fnv 0x007ffe40
 // src: XBOX_PDB 0x007ffe40
+// pdb: FORenderedTerminal::PlayShutdownSound | FORenderedTerminal.obj | retail, string-set bridge, high
 void FORenderedTerminal_PlayShutdownSound()
 {
     BSAudioManager_QInstance_00ad9060()->ResolveAudioHandle("OBJComputerTerminalPowerDown", 0x121).FUN_00ad8830(false);

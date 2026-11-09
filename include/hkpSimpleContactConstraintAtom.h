@@ -5,20 +5,21 @@
 class PhysicsMaterial;
 class UInt32Value;
 
+// pdb: structure hkpSimpleContactConstraintAtom, size 0x30, bases: hkpConstraintAtom, 8 members
 class hkpSimpleContactConstraintAtom
 {
 public:
     unsigned short m_type;
-    unsigned short m_usSizeOfAllAtoms;
-    unsigned short m_usNumContactPoints;
-    unsigned short m_usMaxNumContactPoints;
-    unsigned char m_ucNumReservedContactPoints;
-    unsigned char m_ucNumContactPointProperties;
-    unsigned char m_ucContactPointPropertiesStriding;
+    unsigned short m_sizeOfAllAtoms;
+    unsigned short m_numContactPoints;
+    unsigned short m_numReservedContactPoints;
+    unsigned char m_numUserDatasForBodyA;
+    unsigned char m_numUserDatasForBodyB;
+    unsigned char m_contactPointPropertiesStriding;
     unsigned char unk0B;
-    unsigned short m_usMaxNumContactPointProperties;
+    unsigned short m_maxNumContactPoints;
     unsigned short unk0E;
-    unsigned short m_infoFlags;
+    unsigned short m_info;
     unsigned short unk12;
     int unk14;
     int unk18;

@@ -21,6 +21,7 @@ class FileNameHash
 FNV_STATIC_ASSERT(sizeof(FileNameHash) == 8);
 
 // Archive type one is the texture archive group.
+// pdb: class ArchiveManager, size 0x1, 0 members
 class ArchiveManager
 {
   public:
@@ -36,14 +37,15 @@ class TextureFileEntrySetter
 bool __cdecl CleanPath(const char*, char*, unsigned int);
 
 // Shared BSTexMapItem.h is not available yet; retain one definition for the 0x10-byte cache node.
+// pdb: structure BSTexMapItem, size 0x10, 5 members
 class BSTexMapItem
 {
   public:
     NiTexture* spTexture;
-    BSFileEntry* m_pFileEntry;
+    BSFileEntry* pFileEntry;
     BSTexMapItem* pNext;
-    unsigned short m_usTextureSizeLevel;
-    short m_sTextureCacheValue;
+    unsigned short sPriority;
+    short sNameBaseOffset;
 
     void* operator new(size_t size);
 
@@ -51,10 +53,10 @@ class BSTexMapItem
     {
         spTexture = tex;
         InterlockedIncrement((volatile long*)&tex->m_uiRefCount);
-        m_pFileEntry = 0;
+        pFileEntry = 0;
         pNext = next;
-        m_usTextureSizeLevel = 0;
-        m_sTextureCacheValue = 0;
+        sPriority = 0;
+        sNameBaseOffset = 0;
     }
 };
 
@@ -73,7 +75,7 @@ class BSFileEntryMap
     void SetAt(const BSFileEntry*, BSTexMapItem*);
 };
 extern RecursiveSpinLock g_spinLock;
-extern TextureCacheMap* DAT_011f4464;
+extern TextureCacheMap* BSTexturePalette_pTexMapA;
 extern BSFileEntryMap* DAT_011f4468;
 unsigned int __cdecl GetTextureSizeLevel(NiTexture*);
 #endif

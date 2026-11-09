@@ -27,6 +27,8 @@ void ShutdownVats();
 
 // @fnv 0x00705780
 // src: COMMUNITY 0x00705780
+// pdb: Interface::CloseVATSMenu | Interface.obj | debug, call graph (shared callers), high
+// pdb locals: pmenu, ptile
 void __cdecl VATSCameraData_Accept()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<FUN_009373f0_shell*>(InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())

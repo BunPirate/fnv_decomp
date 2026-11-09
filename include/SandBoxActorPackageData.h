@@ -9,6 +9,7 @@ class Actor;
 class SandboxProcedureData;
 class TESObjectREFR;
 
+// pdb: class SandBoxActorPackageData, size 0x64, bases: ActorPackageData, 23 members
 class SandBoxActorPackageData : public ActorPackageData
 {
 public:
@@ -25,11 +26,11 @@ public:
 
     SandBoxActorPackageData();
     virtual ~SandBoxActorPackageData();
-    virtual void SetReferenceTarget(TESObjectREFR* apReference);
+    virtual void SetReferenceTarget(TESObjectREFR* pDeletedObj);
     virtual PTYPE GetPackageType();
     virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
-    virtual void InitLoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    virtual void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     bool IsLocationCheckDue();
     bool IsActivityTime();
@@ -41,27 +42,27 @@ public:
 
     SANDBOX_STATE eState;
     SANDBOX_PROCEDURE eProcedure;
-    float m_fProcedureTime;
+    float fProcedureDuration;
     TESObjectREFR* pLocation;
-    float m_fLastProcedureCheckHour;
-    float m_fNextProcedureCheckHour;
-    unsigned int m_uiLastProcedureCheckDay;
-    BSSimpleArray<SandboxProcedureData, 1024> m_kProcedureList;
-    unsigned int m_uiProcedureIndex;
-    bool m_bNeedsSandboxUpdate;
-    bool m_bHasFoodMarker;
-    bool m_bHasChairMarker;
-    bool m_bHasBedMarker;
-    int m_iSerializedValue;
-    TESObjectREFR* m_pCurrentTarget;
-    unsigned char m_ucProcedureIndex;
+    float fLastTimeChanged;
+    float fTotalTime;
+    unsigned int iNextTimeToChangeLocations;
+    BSSimpleArray<SandboxProcedureData, 1024> PotentialTargets;
+    unsigned int iNextTimeToScanWorld;
+    bool bShouldPickNewProcedure;
+    bool bFood;
+    bool bChair;
+    bool bBed;
+    int iIdleMarkers;
+    TESObjectREFR* pCurrentTargetObject;
+    unsigned char cCurrentTargetMarker;
     unsigned char layoutPadding41[3];
-    TESObjectREFR* m_pCurrentFurniture;
-    unsigned int m_uiActivityStartDay;
-    unsigned int m_uiActivityEndDay;
-    float m_fActivityStartHour;
-    float m_fActivityEndHour;
-    SANDBOX_ACTIVITY m_eSandboxActivity;
-    unsigned char m_ucProcedureFlags[NUM_SANDBOX_PROCEDURES];
+    TESObjectREFR* pPrevTargetObject;
+    unsigned int iPrevTargetChangedTimeStamp;
+    unsigned int iActivityStartDay;
+    float fActivityStartHour;
+    float fActivityDuration;
+    SANDBOX_ACTIVITY eActivity;
+    unsigned char cProcedureWeight[NUM_SANDBOX_PROCEDURES];
     unsigned char layoutPadding62[2];
 };

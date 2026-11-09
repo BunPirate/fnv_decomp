@@ -4,6 +4,7 @@
 
 class TESObjectREFR;
 
+// pdb: class ExtraXTarget, size 0x10, bases: BSExtraData, 1 members
 class ExtraXTarget : public BSExtraData
 {
 public:

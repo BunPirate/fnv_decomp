@@ -3,13 +3,16 @@
 #include "nimemobject_decls.h"
 
 // @fnv 0x004393c0
-void Flag512Receiver::SetFlag512(bool enabled)
+// pdb: NiAlphaProperty::SetAlphaTesting | MultiBoundMarkerData.obj | debug, call graph, high
+// pdb params: bAlpha
+void Flag512Receiver::SetFlag512(bool bAlpha)
 {
-    NiAlphaProperty_SetBit(enabled, 0x200);
+    NiAlphaProperty_SetBit(bAlpha, 0x200);
 }
 
 // Initializes the point's x and y components from the two float arguments.
 // @fnv 0x00452dc0
+// pdb: TES::CancelExteriorCellLoads | TES.obj | debug, object-file run extension, low
 NiPoint2::NiPoint2(float afX, float afY)
 {
     x = afX;

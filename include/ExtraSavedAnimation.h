@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraSavedAnimation, size 0x10, bases: BSExtraData, 1 members
 class ExtraSavedAnimation : public BSExtraData
 {
 public:

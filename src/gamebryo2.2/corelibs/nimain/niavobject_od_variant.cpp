@@ -36,6 +36,7 @@ struct FUN_00456650_shell
 };
 // @fnv 0x00456650
 // src: XBOX_PDB 0x00456650
+// pdb: NiGeometry::GetVertexCount | TES.obj | debug, upstream name already matches, high
 unsigned short FUN_00456650_shell::NiGeometry_GetVertexCount() const
 {
     return ((TESActorBaseData*)((const Flt*)((const char*)this + 0xb8))->operator unsigned int())->GetFatigue();

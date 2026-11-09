@@ -80,6 +80,10 @@ struct FUN_00a08720_t {
 
 // @fnv 0x00a08720
 // src: COMMUNITY 0x00a08720
+// pdb: LoadingMenu::FadeIn3D | LoadingMenu.obj | retail, call graph, low
+// pdb note: debug build links it to Tile::FadeIn3D
+// pdb params: apObject, afPct
+// pdb locals: pnode, i, ptsp
 void FUN_00a08720_t::Tile_FadeIn3D(NiAVObject* apObject, float afPct)
 {
     NiNode* pnode2;
@@ -93,7 +97,7 @@ void FUN_00a08720_t::Tile_FadeIn3D(NiAVObject* apObject, float afPct)
     if (apObject->IsGeometry()) {
         ptsp = ((PropHelper*)apObject)->GetProperty(3);
         if (ptsp)
-            ptsp->m_fAlpha = afPct;
+            ptsp->fAlpha = afPct;
     }
 }
 
@@ -118,7 +122,7 @@ inline BSSoundHandle& BSSoundHandle::operator=(const BSSoundHandle& rhs) {
 // Expose the same game entry point with the shared handle type.
 class TileAudio : public BSAudio {
 public:
-    BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags);
+    BSSoundHandle GetSoundHandleByEditorID(const char* apSoundName, unsigned int aiTypeFlags);
 };
 extern BSAudio* DAT_011f6d98;
 
@@ -128,12 +132,15 @@ inline BSAudio* GetAudio() {
 
 // @fnv 0x00a0b110
 // src: XBOX_PDB 0x00a0b110
+// pdb: Tile::PlayTileSound | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiSoundType
+// pdb locals: strSoundName, soundHand, pmenu
 void FUN_00a0b110_shell::Tile_PlayTileSound(int aiSoundType) {
     BSSoundHandle soundHand;
     const char* strSoundName = reinterpret_cast<FUN_00a011f0_shell*>(this)->Tile_GetString(aiSoundType);
     Menu* pmenu = GetMenu();
 
-    if (pmenu && pmenu->m_eFadeState == 1 && strSoundName && *strSoundName) {
+    if (pmenu && pmenu->xFadeState == 1 && strSoundName && *strSoundName) {
         soundHand = static_cast<TileAudio*>(GetAudio())->GetSoundHandleByEditorID(strSoundName, 0x121);
         soundHand.Play(false);
     }
@@ -151,6 +158,8 @@ struct S00a0d390
 };
 // @fnv 0x00a0d390
 // src: GUESS 0x00a0d390 (confidence: low)
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,int>,int>::IsKeysEqual | Tile.obj | debug, object-file run extension, low
+// pdb params: pcKey1, pcKey2
 void S00a0d390::ReleaseStorage_00a0d390()
 {
     int pad1;
@@ -169,12 +178,13 @@ struct FUN_00a03c90_shell : public Tile {
     Menu* Tile_GetMenu();
 };
 
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 void __cdecl _FUN_00a04500();
 
 // AutoTileLock.h is not provided yet; retain the lock RAII definition until it is shared.
+// pdb: class AutoTileLock, size 0x1, 0 members
 struct AutoTileLock {
-    AutoTileLock() { AutoTileLock_AutoTileLock(); }
+    AutoTileLock() { AutoTileLock_ctor(); }
     ~AutoTileLock() { _FUN_00a04500(); }
 };
 
@@ -191,6 +201,8 @@ struct Tile_Helper {
 
 // @fnv 0x00a03c90
 // src: COMMUNITY 0x00a03c90
+// pdb: Tile::GetMenu | Tile.obj | retail, upstream name already matches, high
+// pdb locals: __my_auto_tile_lock, ptile, pmenu
 Menu* FUN_00a03c90_shell::Tile_GetMenu() {
     AutoTileLock __my_auto_tile_lock;
     Tile* ptile = reinterpret_cast<FUN_00a03d40_shell*>(this)->Tile_GetMenuTile();
@@ -231,6 +243,7 @@ struct FUN_00a0abe0 : Base_00a0abe0 {
 };
 
 // @fnv 0x00a0abe0
+// pdb: Tile::Extra::~Extra | Tile.obj | debug, call graph, medium
 FUN_00a0abe0::~FUN_00a0abe0() {
     void* arg;
     void* local1;
@@ -283,6 +296,8 @@ struct FUN_00a0c190 : Tile__TileTemplate {
 };
 
 // @fnv 0x00a0c190
+// pdb: Tile::TileTemplate::Clear | Tile.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to Tile::TileTemplate::`scalar deleting destructor'
 FUN_00a0c190::~FUN_00a0c190() {
     int v1; int v2; int v3;
     Clear();
@@ -300,6 +315,8 @@ struct FUN_00a012d0_t {
 
 // @fnv 0x00a012d0
 // src: XBOX_PDB 0x00a012d0
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::assign | Tile.obj | retail, object-file run extension, low
+// pdb params: _Ptr
 void FUN_00a012d0_t::Tile_Set(int aiTrait, float afValue, bool abClearActions)
 {
     TileValue_00a0a270* pvalue = ((TileValueOwner_00a01000*)this)->GetOrCreateTraitValue(aiTrait);
@@ -325,17 +342,19 @@ struct FUN_00a01350_Obj {
     FUN_00a01350_Value* GetOrCreateTraitValue(int);
 };
 struct FUN_00a01350_Value {
-    void SetString(char*, bool);
+    void Tile_Value_SetString(char*, bool);
 };
 
 // @fnv 0x00a01350
 // src: XBOX_PDB 0x00a01350
-void FUN_00a01350_shell::Tile_Set_00a01350(int aiTrait, char* apValue, bool abClearActions)
+// pdb: Tile::Set | Tile.obj | retail, call graph, high
+// pdb params: aiTrait, aiValue
+void FUN_00a01350_shell::Tile_Set_00a01350(int aiTrait, char* apString, bool abClearActions)
 {
     FUN_00a01350_Value* pvalue = ((FUN_00a01350_Obj*)this)->GetOrCreateTraitValue(aiTrait);
     if (pvalue) {
         AutoTileLock __my_auto_tile_lock;
-        pvalue->SetString(apValue, abClearActions);
+        pvalue->Tile_Value_SetString(apString, abClearActions);
     }
 }
 }  // namespace fnv_00a01350
@@ -369,6 +388,9 @@ template<class K, class V> struct BSMapBase {
 extern BSMapBase<unsigned long, ScrapHeapBuffer*> DAT_011f32f4;
 // @fnv 0x00a01860
 // src: XBOX_PDB 0x00a01860
+// pdb: Tile::TextToTrait | Tile.obj | retail, upstream name already matches, high
+// pdb params: apText
+// pdb locals: __my_auto_tile_lock, iret
 int Tile_TextToTrait(const char* apText)
 {
     AutoTileLock __my_auto_tile_lock;
@@ -404,6 +426,9 @@ struct TileChildList {
 
 // @fnv 0x00a03da0
 // src: XBOX_PDB 0x00a03da0
+// pdb: Tile::GetChildByName | Tile.obj | retail, upstream name already matches, high
+// pdb params: apName
+// pdb locals: __my_auto_tile_lock, xelem, ptile, pchild
 Tile* FUN_00a03da0_shell::Tile_GetChildByName(char* apName)
 {
     AutoTileLock __my_auto_tile_lock;
@@ -448,6 +473,9 @@ struct TileAction_00a03f70 {
 
 // @fnv 0x00a03f70
 // src: COMMUNITY 0x00a03f70
+// pdb: Tile::GetFirstRefCopy | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiTrait, aiType
+// pdb locals: __my_auto_tile_lock, pvalue, preturnTile, bfound, pcurrAction
 Tile* FUN_00a03f70_shell::Tile_GetFirstRefCopy(int aiTrait, int* aiType)
 {
     AutoTileLock __my_auto_tile_lock;
@@ -545,6 +573,9 @@ typedef NiTPointerListBase<NiTPointerAllocator<unsigned int>, Script*> ScriptLis
 
 // @fnv 0x00a087d0
 // src: XBOX_PDB 0x00a087d0
+// pdb: Tile::SetParent | Tile.obj | retail, upstream name already matches, high
+// pdb params: apParent, apReplacedTile
+// pdb locals: xelem, xlast_elem, got_it, pitem
 void FUN_00a087d0_shell::Tile_SetParent(Tile* apParent, Tile* apReplacedTile)
 {
     if (*(Tile**)((char*)this + 0x28) && !((TileFlags_00a087d0*)*(Tile**)((char*)this + 0x28))->GetFlag(0x2000)) {
@@ -591,6 +622,8 @@ struct FUN_00a0ad40 {
     ~FUN_00a0ad40();
 };
 // @fnv 0x00a0ad40
+// pdb: Tile::BuildStorage::~BuildStorage | Tile.obj | retail, call graph, high
+// pdb locals: plist, ptemp
 FUN_00a0ad40::~FUN_00a0ad40()
 {
     if (pTemplate)
@@ -624,6 +657,8 @@ extern TileElement* DAT_011f329c[10];
 extern unsigned int DAT_011f32dc;
 // @fnv 0x00a0b8d0
 // src: XBOX_PDB 0x00a0b8d0
+// pdb: Tile::TileTemplate::ThrowAway | Tile.obj | retail, upstream name already matches, high
+// pdb params: apItem
 void __cdecl Tile_TileTemplate_ThrowAway(TileElement* apItem)
 {
     if (DAT_011f32dc < 10) {
@@ -643,6 +678,9 @@ extern BSMapBase<unsigned long, ScrapHeapBuffer*> DAT_011f32f4;
 
 // @fnv 0x00a00940
 // src: XBOX_PDB 0x00a00940
+// pdb: Tile::AddUserTrait | Tile.obj | retail, upstream name already matches, high
+// pdb params: apString, aiIndex
+// pdb locals: __my_auto_tile_lock, iret
 int __cdecl Tile_AddUserTrait(char const* apString, int aiIndex)
 {
     AutoTileLock __my_auto_tile_lock;
@@ -694,21 +732,24 @@ ScrapHeapBuffer* __cdecl Tile_GetExtraDataFromTraitName(char const* apName);
 
 // @fnv 0x009ff8a0
 // src: COMMUNITY 0x009ff8a0
-void __cdecl Tile_AddToTable(char const* apName, int aiValue)
+// pdb: Tile::AddToTable | Tile.obj | retail, upstream name already matches, high
+// pdb params: apText, aiIndex
+// pdb locals: __my_auto_tile_lock, iextradata
+void __cdecl Tile_AddToTable(char const* apText, int aiIndex)
 {
     FrameLocals locals;
-    if (apName == 0 || *apName == 0) {
+    if (apText == 0 || *apText == 0) {
         return;
     }
     AutoTileLock lock;
-    reinterpret_cast<ScrapMapShell*>(&DAT_011f32f4)->Insert(apName, aiValue);
-    if (FUN_00a0bb00(apName) && aiValue >= 10000) {
-        if (DAT_011a6d74 <= aiValue) {
-            DAT_011a6d74 = aiValue + 1;
+    reinterpret_cast<ScrapMapShell*>(&DAT_011f32f4)->Insert(apText, aiIndex);
+    if (FUN_00a0bb00(apText) && aiIndex >= 10000) {
+        if (DAT_011a6d74 <= aiIndex) {
+            DAT_011a6d74 = aiIndex + 1;
         }
-        locals.heap = Tile_GetExtraDataFromTraitName(apName);
+        locals.heap = Tile_GetExtraDataFromTraitName(apText);
         if (locals.heap != 0) {
-            DAT_011f3308.Add(aiValue, locals.heap);
+            DAT_011f3308.Add(aiIndex, locals.heap);
         }
     }
 }
@@ -738,6 +779,8 @@ struct TileNode {
 };
 // @fnv 0x00a00b50
 // src: COMMUNITY 0x00a00b50
+// pdb: Tile::SetMenuDeleting | Tile.obj | retail, upstream name already matches, high
+// pdb locals: __my_auto_tile_lock, xelem
 void TileObject::Tile_SetMenuDeleting() {
     AutoTileLock lock;
     if (!GetFlag(0x2000) && !GetFlag(0x4000)) {
@@ -784,22 +827,25 @@ __forceinline BSMapEntry<unsigned long, ScrapHeapBuffer*>* FindFirstHeapEntry(
 }
 // @fnv 0x00a01a70
 // src: COMMUNITY 0x00a01a70
-ScrapHeapBuffer* __cdecl Tile_TraitToText(unsigned int requestedKey) {
+// pdb: Tile::TraitToText | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiTrait
+// pdb locals: piter, pkey, itrait
+ScrapHeapBuffer* __cdecl Tile_TraitToText(unsigned int aiTrait) {
     ScrapHeapBuffer* result;
     unsigned int key;
     void* position = FindFirstHeapEntry(DAT_011f32f4);
     while (position) {
         ((MapIterator_00a0c850*)&DAT_011f32f4)->FUN_00a0c850(&position, &result, &key);
-        if (key == requestedKey) return result;
+        if (key == aiTrait) return result;
     }
     return 0;
 }
 
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 void __cdecl _FUN_00a04500();
 
 struct TileLockGuard {
-    TileLockGuard() { AutoTileLock_AutoTileLock(); }
+    TileLockGuard() { AutoTileLock_ctor(); }
     ~TileLockGuard() { _FUN_00a04500(); }
 };
 
@@ -874,6 +920,9 @@ extern TileList g_kRemovedTiles;
 
 // @fnv 0x00a07690
 // src: XBOX_PDB 0x00a07690
+// pdb: Tile::AddDirtyTile | Tile.obj | retail, upstream name already matches, high
+// pdb params: apTile
+// pdb locals: __my_auto_tile_lock
 void __cdecl Tile_AddDirtyTile(FlaggedTile* apTile) {
     if (!apTile) return;
     TileLockGuard kLock;
@@ -915,6 +964,8 @@ static inline NiAVObject* A0B1F0GetChild(NiNode* pkNode, unsigned int uiIndex) {
 
 // @fnv 0x00a0b1f0
 // src: XBOX_PDB 0x00a0b1f0
+// pdb: Tile::GetShaderProperty | Tile.obj | debug, upstream name already matches, high
+// pdb locals: pmodel, ptsp, pgeom
 TileShaderProperty* A0B1F0Tile::Tile_GetShaderProperty() {
     TileShaderProperty* pkProperty = 0;
     NiNode* pkNode = GetNode();
@@ -948,6 +999,7 @@ struct FUN_00a0d220_cls {
 };
 
 // @fnv 0x00a0d220
+// pdb: Tile::MenuStringMap::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
 FUN_00a0d220_cls* FUN_00a0d220_cls::FUN_00a0d220(unsigned int auiFlags)
 {
     FUN_00a0d220_frame frame;
@@ -1071,14 +1123,17 @@ struct Storage_00a0ae70 {
     TileTemplate_00a0ae70* m_pTileTemplate;
     bool m_owns;
 
-    TileTemplate_00a0ae70* Tile_BuildStorage_NewSubTemplate(const char* apName);
+    TileTemplate_00a0ae70* Tile_BuildStorage_NewSubTemplate(const char* pName);
 };
 
 // @fnv 0x00a0ae70
 // src: COMMUNITY 0x00a0ae70
-TileTemplate_00a0ae70* Storage_00a0ae70::Tile_BuildStorage_NewSubTemplate(const char* apName)
+// pdb: Tile::BuildStorage::NewSubTemplate | Tile.obj | retail, upstream name already matches, high
+// pdb params: pName
+// pdb locals: ptemplate
+TileTemplate_00a0ae70* Storage_00a0ae70::Tile_BuildStorage_NewSubTemplate(const char* pName)
 {
-    TileTemplate_00a0ae70* pTemplate = new TileTemplate_00a0ae70(apName, this);
+    TileTemplate_00a0ae70* pTemplate = new TileTemplate_00a0ae70(pName, this);
     m_kNode.AddTail(&pTemplate);
     return pTemplate;
 }
@@ -1104,6 +1159,8 @@ public:
 };
 // @fnv 0x00a0b020
 // src: XBOX_PDB 0x00a0b020
+// pdb: Tile::ForceTextureRelease | Tile.obj | retail, upstream name already matches, high
+// pdb locals: xelem, xnode, ptsp, ptile
 void A0B020Tile::Tile_ForceTextureRelease()
 {
     NiTListItem<A0B020Child*>* pos2;
@@ -1148,6 +1205,8 @@ struct Item_00a0ba50 {
 
 // @fnv 0x00a0ba50
 // src: GUESS 0x00a0ba50 (confidence: medium)
+// pdb: Tile::TileTemplate::ClearAll | Tile.obj | retail, call graph, medium
+// pdb locals: pitem
 void __cdecl Tile_DeleteGlobalItems()
 {
     while (DAT_011f32dc-- != 0) {
@@ -1157,11 +1216,11 @@ void __cdecl Tile_DeleteGlobalItems()
     DAT_011f32dc = 0;
 }
 
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 extern "C" void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 
 struct TileSearchLock {
-    TileSearchLock() { AutoTileLock_AutoTileLock(); }
+    TileSearchLock() { AutoTileLock_ctor(); }
     ~TileSearchLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
@@ -1174,18 +1233,21 @@ struct TileFloatList {
         kPos = kPos->m_pkNext;
         return element;
     }
-    Tile* Tile_GetChildByID(int iValue);
+    Tile* Tile_GetChildByID(int aiID);
 };
 
 // @fnv 0x00a03eb0
 // src: XBOX_PDB 0x00a03eb0
-Tile* TileFloatList::Tile_GetChildByID(int iValue)
+// pdb: Tile::GetChildByID | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiID
+// pdb locals: __my_auto_tile_lock, xelem, ptile
+Tile* TileFloatList::Tile_GetChildByID(int aiID)
 {
     TileSearchLock kLock;
     NiTListItem<Tile*>* kPos = GetHeadPos();
     while (kPos) {
         Tile* pkTile = GetNext(kPos);
-        if (pkTile->GetFloat(0xfaa) == iValue)
+        if (pkTile->GetFloat(0xfaa) == aiID)
             return pkTile;
     }
     return 0;
@@ -1238,6 +1300,7 @@ struct FUN_00a0ac80 {
     FUN_00a0ac80();
 };
 // @fnv 0x00a0ac80
+// pdb: Tile::BuildStorage::BuildStorage | Tile.obj | retail, call graph, high
 FUN_00a0ac80::FUN_00a0ac80()
 {
     pTemplate = (TileCollection*)new TileTemplateNew_ac80("main", this);
@@ -1245,7 +1308,7 @@ FUN_00a0ac80::FUN_00a0ac80()
     bOwns = true;
 }
 
-void AutoTileLock_AutoTileLock();
+void AutoTileLock_ctor();
 void Object___imp__LeaveCriticalSection_Thunk();
 
 class TileV;
@@ -1263,7 +1326,7 @@ public:
 class FnvTileLock
 {
 public:
-    FnvTileLock() { AutoTileLock_AutoTileLock(); }
+    FnvTileLock() { AutoTileLock_ctor(); }
     ~FnvTileLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
@@ -1298,6 +1361,9 @@ public:
 
 // @fnv 0x00a0b420
 // src: GUESS 0x00a0b420 (confidence: low)
+// pdb: Tile::RecursiveColorUpdate | Tile.obj | debug, object-file gap fill, medium
+// pdb params: pColorIDList, afInheritedVal
+// pdb locals: piter, fval
 void TileV::ProcessEntries_00a0b420(TileValueV* pValues, float fValue)
 {
     FnvTileLock aKLock;
@@ -1320,7 +1386,7 @@ inline NiPoint3::NiPoint3(float a, float b, float c) : x(a), y(b), z(c) {}
 inline NiPoint3 NiPoint3::operator-(const NiPoint3& kRhs) const { return NiPoint3(x-kRhs.x,y-kRhs.y,z-kRhs.z); }
 inline NiPoint3 NiPoint3::operator+(const NiPoint3& kRhs) const { return NiPoint3(x+kRhs.x,y+kRhs.y,z+kRhs.z); }
 void NiSinCos_004169a0(float,float&,float&);
-struct Mat { float m00,m01,m02,m10,m11,m12,m20,m21,m22; void FUN_0043f850(float angle) { float sn,cs; NiSinCos_004169a0(angle,sn,cs); float negativeSin=-sn; float cosine=cs; m00=cosine; m01=0; m02=negativeSin; m10=0; m11=1; m12=0; m20=sn; m21=0; m22=cosine; } NiPoint3 FUN_004b4500(const NiPoint3* v) { return NiPoint3(m00*v->x+m01*v->y+m02*v->z,m10*v->x+m11*v->y+m12*v->z,m20*v->x+m21*v->y+m22*v->z); } };
+struct Mat { float m00,m01,m02,m10,m11,m12,m20,m21,m22; void FUN_0043f850(float fAngle) { float sn,cs; NiSinCos_004169a0(fAngle,sn,cs); float negativeSin=-sn; float cosine=cs; m00=cosine; m01=0; m02=negativeSin; m10=0; m11=1; m12=0; m20=sn; m21=0; m22=cosine; } NiPoint3 FUN_004b4500(const NiPoint3* v) { return NiPoint3(m00*v->x+m01*v->y+m02*v->z,m10*v->x+m11*v->y+m12*v->z,m20*v->x+m21*v->y+m22*v->z); } };
 extern const NiPoint3 NiPoint3_ZERO;
 extern const double DAT_0106f290;
 struct Rtti { const char* name; Rtti* parent; };
@@ -1393,6 +1459,8 @@ struct TileWork {
 };
 // @fnv 0x00a0b520
 // src: COMMUNITY 0x00a0b520
+// pdb: Tile::RecursiveRotationUpdate | Tile.obj | debug, object-file gap fill, medium
+// pdb locals: Itor, pChildTile, fParentY, fParentRotateAxisY, fChildY, fChildX, fParentRotateAxisX, fParentX, xpos, fdepth, pnode, a, mrot, axisPoint, ptri
 void TileWork::Tile_ApplyRotationOnChildren() {
  float local37;
  float local35;
@@ -1524,14 +1592,17 @@ inline void* operator new(unsigned int size) { return g_mm.Allocate(size); }
 void operator delete(void* memory);
 // @fnv 0x00a0b950
 // src: COMMUNITY 0x00a0b950
-ReuseNode* Tile_TileTemplate_GetItem(int a, float f, const char* s, int b, int c) {
+// pdb: Tile::TileTemplate::GetItem | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiCmd, afVal, apStr, aiTA, aiLine
+// pdb locals: pitem
+ReuseNode* Tile_TileTemplate_GetItem(int aiCmd, float afVal, const char* apStr, int aiTA, int aiLine) {
     ReuseNode* node;
     if ((unsigned int)DAT_011f32dc > 0) {
         DAT_011f32dc = DAT_011f32dc - 1;
         node = (ReuseNode*)DAT_011f329c[DAT_011f32dc];
-        node->Init(a, f, s, b, c);
+        node->Init(aiCmd, afVal, apStr, aiTA, aiLine);
     } else {
-        node = new ReuseNode(a, f, s, b, c);
+        node = new ReuseNode(aiCmd, afVal, apStr, aiTA, aiLine);
     }
     return node;
 }
@@ -1555,6 +1626,7 @@ struct Target_00a0c020 {
 
 // @fnv 0x00a0c020
 // src: XBOX_PDB 0x00a0c020
+// pdb: Tile::RefValueAction::QFloat | Tile.obj | debug, upstream name already matches, high
 float Target_00a0c020::Tile_RefValueAction_QFloat() {
     return unk0c ? unk0c->GetVal() : 0.0f;
 }
@@ -1582,7 +1654,7 @@ struct S00ac5490_Str {
 
 struct S00ac5490_Base {
     int unk04;
-    S00ac5490_Base(S00ac5490_Str s);
+    S00ac5490_Base(S00ac5490_Str a_fileId);
     virtual ~S00ac5490_Base();
 };
 
@@ -1603,11 +1675,13 @@ struct FUN_00ac5490 : public S00ac5490_Base {
     int unk3C;
     int unk40;
     int unk44;
-    FUN_00ac5490(S00ac5490_Str a);
+    FUN_00ac5490(S00ac5490_Str apString);
 };
 
 // @fnv 0x00ac5490
-FUN_00ac5490::FUN_00ac5490(S00ac5490_Str a) : S00ac5490_Base(a)
+// pdb: BSFaceGenBinaryFile::BSFaceGenBinaryFile | binaryFile.obj | retail, object-file run extension, high
+// pdb params: apString
+FUN_00ac5490::FUN_00ac5490(S00ac5490_Str apString) : S00ac5490_Base(apString)
 {
     int d1;
     unk40 = 0;
@@ -1679,13 +1753,14 @@ public:
     void Tile_Release();
     
 };
-void ClearInterfaceRefs(FUN_009ff340*);
+void Interface_TileIsBeingDeleted(FUN_009ff340*);
 
 // @fnv 0x009ff340
+// pdb: Tile::~Tile | Tile.obj | retail, string-set bridge, high
 FUN_009ff340::~FUN_009ff340()
 {
     EnterCriticalSection((_RTL_CRITICAL_SECTION*)&DAT_011f3330);
-    ClearInterfaceRefs(this);
+    Interface_TileIsBeingDeleted(this);
     if (!GetFlag(0x2000)) {
         Warning_005b5e40(str_01093f44);
         Tile_Release();
@@ -1713,7 +1788,7 @@ struct MemoryContextGuard {
     }
     __forceinline ~MemoryContextGuard() { SetMemoryContext(previous); }
 };
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 struct TileReleaseLock { __forceinline ~TileReleaseLock() { Object___imp__LeaveCriticalSection_Thunk(); } };
 extern MemoryManager DAT_011f6238;
@@ -1837,16 +1912,18 @@ struct ReleaseTile {
     void RemoveFadeItemsForTile(unsigned int);
     void Tile_Release();
 };
-void __cdecl ClearInterfaceRefs(ReleaseTile*);
+void __cdecl Interface_TileIsBeingDeleted(ReleaseTile*);
 // @fnv 0x009ff690
 // src: COMMUNITY 0x009ff690
+// pdb: Tile::Release | Tile.obj | retail, upstream name already matches, high
+// pdb locals: __my_auto_tile_lock, tempMemContext, i
 void ReleaseTile::Tile_Release() {
     unsigned int i;
     MemoryContextGuard guard(13);
-    AutoTileLock_AutoTileLock();
+    AutoTileLock_ctor();
     TileReleaseLock lock;
     Tile_SetMenuDeleting();
-    ClearInterfaceRefs(this);
+    Interface_TileIsBeingDeleted(this);
     flags |= 0x2000;
     Tile_SeverExtraData();
     Tile_SetParent(0, 0);
@@ -1868,7 +1945,7 @@ namespace fnv_00a00a30 {
 
 extern MemoryManager DAT_011f6238;
 
-void __cdecl AutoTileLock_AutoTileLock(); // EnterCriticalSection on the menu lock
+void __cdecl AutoTileLock_ctor(); // EnterCriticalSection on the menu lock
 void __cdecl Object___imp__LeaveCriticalSection_Thunk(); // LeaveCriticalSection
 
 class TileTemplateA00 {
@@ -1944,12 +2021,14 @@ extern SimpleListA00<FadeNodeA00*> DAT_011f3348;
 
 class MenuLockA00 {
 public:
-    MenuLockA00() { AutoTileLock_AutoTileLock(); }
+    MenuLockA00() { AutoTileLock_ctor(); }
     ~MenuLockA00() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
 // @fnv 0x00a00a30
 // src: COMMUNITY 0x00a00a30
+// pdb: Tile::FreeTraitList | Tile.obj | retail, upstream name already matches, high
+// pdb locals: __my_auto_tile_lock, pcurrEntry, premove
 void __cdecl Tile_FreeTraitList()
 {
     MenuLockA00 kLock;
@@ -2005,7 +2084,7 @@ struct Tile3D_FactoryView : ::Tile {
     static __forceinline void operator delete(void* memory) {
         DAT_011f6238.Deallocate(memory);
     }
-    inline Tile3D_FactoryView() { reinterpret_cast<NodeRef*>(&m_pRenderedNodeEntry)->Assign(0); m_pParent=0; unk3c=0; }
+    inline Tile3D_FactoryView() { reinterpret_cast<NodeRef*>(&spModel)->Assign(0); m_pParent=0; unk3c=0; }
     void* m_pParent;
     int unk3c;
     SmallArray first;
@@ -2017,6 +2096,8 @@ struct FUN_00a21660 : TileImage {
 };
 // @fnv 0x00a00c20
 // src: COMMUNITY 0x00a00c20
+// pdb: Tile::BuildTile | Tile.obj | debug, object-file gap fill, medium
+// pdb params: aeTiletype
 Tile* __cdecl Tile_CreateByID(int aiType)
 {
     switch (aiType) {
@@ -2047,11 +2128,11 @@ public:
 
 extern const char* DAT_011f34cc;
 
-void AutoTileLock_AutoTileLock();
+void AutoTileLock_ctor();
 void Object___imp__LeaveCriticalSection_Thunk();
 
 struct TileListLock {
-    TileListLock() { AutoTileLock_AutoTileLock(); }
+    TileListLock() { AutoTileLock_ctor(); }
     ~TileListLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
@@ -2066,20 +2147,23 @@ struct ExtraNode {
 
     ExtraNode* GetParent() { return m_pParentNode; }
     static const char* GetKey() { return DAT_011f34cc; }
-    ExtraObject* FUN_00a5bdd0(const char* pcKey);
+    ExtraObject* FUN_00a5bdd0(const char* kKey);
 };
 
 // @fnv 0x00a01630
 // src: COMMUNITY 0x00a01630
-int Tile_GetTileFromNode(ExtraNode* pkNode)
+// pdb: Tile::GetTileFromNode | Tile.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: __my_auto_tile_lock, ptile, spextra
+int Tile_GetTileFromNode(ExtraNode* apNode)
 {
     TileListLock kLock;
     int iValue = 0;
-    if (pkNode)
+    if (apNode)
     {
-        NiPointer<ExtraObject> spExtra = pkNode->FUN_00a5bdd0(ExtraNode::GetKey());
-        if (!spExtra && pkNode->GetParent())
-            spExtra = pkNode->GetParent()->FUN_00a5bdd0(ExtraNode::GetKey());
+        NiPointer<ExtraObject> spExtra = apNode->FUN_00a5bdd0(ExtraNode::GetKey());
+        if (!spExtra && apNode->GetParent())
+            spExtra = apNode->GetParent()->FUN_00a5bdd0(ExtraNode::GetKey());
         if (spExtra)
             iValue = spExtra->m_iValue;
     }
@@ -2091,12 +2175,12 @@ int Tile_GetTileFromNode(ExtraNode* pkNode)
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile* lpAddend);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* lpAddend);
 
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 
 class MenuLockA01 {
 public:
-    MenuLockA01() { AutoTileLock_AutoTileLock(); }
+    MenuLockA01() { AutoTileLock_ctor(); }
     ~MenuLockA01() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
@@ -2124,7 +2208,7 @@ public:
 
 class ListA01 {
 public:
-    RefObjectA01* FUN_00a5bdd0(void* pKey);
+    RefObjectA01* FUN_00a5bdd0(void* kKey);
     unsigned short GetCount() const { return m_usElementCount; }
     ActionA01* FindA(void* pKey) { return (ActionA01*)FUN_00a5bdd0(pKey); }
     ActionA01* FindN(void* pKey);
@@ -2145,7 +2229,7 @@ inline void* GetActionKeyA01() { return DAT_011f34cc; }
 // Tile's node at +0x2c supplies the extra-data list; only this unshared method is added.
 class UpdateRegistration : public Tile {
 public:
-    ListA01* GetList() const { return reinterpret_cast<ListA01*>(m_pRenderedNodeEntry.m_pObject); }
+    ListA01* GetList() const { return reinterpret_cast<ListA01*>(spModel.m_pObject); }
     void Tile_SeverExtraData();
 };
 
@@ -2160,6 +2244,8 @@ inline ActionA01* ListA01::FindN(void* pKey)
 
 // @fnv 0x00a01750
 // src: XBOX_PDB 0x00a01750
+// pdb: Tile::SeverExtraData | Tile.obj | retail, upstream name already matches, high
+// pdb locals: __my_auto_tile_lock, spextra
 void UpdateRegistration::Tile_SeverExtraData()
 {
     MenuLockA01 kLock;
@@ -2186,7 +2272,7 @@ struct FUN_00a0ac80 {
     XmlNode* m_iFirstChild;
     XmlNode* m_bSlotEnabled;
     unsigned int m_flags;
-    void Tile_TileTemplate_AddPair(unsigned int kind, const char* name, unsigned int line, unsigned int flags);
+    void Tile_TileTemplate_AddPair(unsigned int aiCmd, const char* apStr, unsigned int aiLine, unsigned int aiPreserveStrings);
 };
 struct XmlFile {
     unsigned int length;
@@ -2213,15 +2299,18 @@ extern const char DAT_01094970[];
 extern const char DAT_01094934[];
 extern const char DAT_01094904[];
 extern const char DAT_010948dc[];
-XmlFile* __cdecl GetOrLoadXML(const char*, unsigned int);
+XmlFile* __cdecl Menu_GetXML(const char*, unsigned int);
 void __cdecl Tile_InsertIncludedFiles(XmlFile*);
 int __cdecl Tile_TextToTrait(const char*);
 unsigned int __cdecl FUN_00ec6130(const char*);
-bool __cdecl ResolveSettingString(const char*, char*);
+bool __cdecl Interface_TestConstantForGameSettings(const char*, char*);
 void __cdecl Warning_005b5e40(const char*, ...);
 // @fnv 0x00a01e20
 // src: XBOX_PDB 0x00a01e20
-XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsigned int sourceLength)
+// pdb: Tile::ParseFile | Tile.obj | retail, string-set bridge, high
+// pdb params: apName, apData, apSize
+// pdb locals: bendtag, pBuild, ibufsize, collect, flag, data, bquotes, b, pxmlstorage, datalen, mode, itrait, a, tag, ilinenum, bis_gamesetting, new_collect
+XmlNode* __cdecl Tile_ParseFile(const char* apName, const char* apData, unsigned int apSize)
 {
     XmlNode* root3 = 0;
     root3 = new XmlNode;
@@ -2230,11 +2319,11 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
     unsigned int length = 0;
     int tokenLimit4 = 0x1000;
     int tokenLength3 = 0;
-    if (source != 0) {
-        text_2 = source;
-        length = sourceLength;
+    if (apData != 0) {
+        text_2 = apData;
+        length = apSize;
     } else {
-        sourceFile3 = GetOrLoadXML(filename, 0);
+        sourceFile3 = Menu_GetXML(apName, 0);
         if (sourceFile3 != 0) {
             Tile_InsertIncludedFiles(sourceFile3);
             text_2 = sourceFile3->data;
@@ -2276,7 +2365,7 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
                 } else if (tag[0] != 0 && !kClosing) {
                     (root3->m_bSlotEnabled ? root3->m_bSlotEnabled : root3->m_pTreeNode)->Tile_TileTemplate_AddPair(0, tag, line5, 0);
                 } else if (!hasWhitespace8) {
-                    Warning_005b5e40(DAT_01094a08, DAT_01094a3c, filename, line5);
+                    Warning_005b5e40(DAT_01094a08, DAT_01094a3c, apName, line5);
                     DAT_011f32c8 = 1;
                     return 0;
                 }
@@ -2316,12 +2405,12 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
         } else if (aState == 5) {
             if (text_2[offset_] == '>' ||
                 (offset_ + 1 < length && text_2[offset_] == '/' && text_2[offset_ + 1] == '>')) {
-                Warning_005b5e40(DAT_01094a08, DAT_010949f0, filename, line5);
+                Warning_005b5e40(DAT_01094a08, DAT_010949f0, apName, line5);
                 DAT_011f32c8 = 1;
                 return 0;
             } else if (text_2[offset_] == '=') {
                 if (value5[0] == 0) {
-                    Warning_005b5e40(DAT_01094a08, DAT_010949d8, filename, line5);
+                    Warning_005b5e40(DAT_01094a08, DAT_010949d8, apName, line5);
                     DAT_011f32c8 = 1;
                     return 0;
                 }
@@ -2338,7 +2427,7 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
                     hasWhitespace8 = true;
                 }
             } else if (hasWhitespace8) {
-                Warning_005b5e40(DAT_01094a08, DAT_010949b0, filename, line5);
+                Warning_005b5e40(DAT_01094a08, DAT_010949b0, apName, line5);
                 DAT_011f32c8 = 1;
                 return 0;
             } else {
@@ -2362,7 +2451,7 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
                 if (value5[0] != 0) {
                     (root3->m_bSlotEnabled ? root3->m_bSlotEnabled : root3->m_pTreeNode)->Tile_TileTemplate_AddPair(parameterType4, value5, line5, 0);
                 } else if (!hasWhitespace8) {
-                    Warning_005b5e40(DAT_01094a08, DAT_01094970, filename, line5);
+                    Warning_005b5e40(DAT_01094a08, DAT_01094970, apName, line5);
                     DAT_011f32c8 = 1;
                     return 0;
                 }
@@ -2397,7 +2486,7 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
                 aState = 3;
                 tag[0] = 0;
             } else {
-                Warning_005b5e40(DAT_01094a08, DAT_01094934, filename, line5);
+                Warning_005b5e40(DAT_01094a08, DAT_01094934, apName, line5);
                 DAT_011f32c8 = 1;
                 return 0;
             }
@@ -2416,7 +2505,7 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
                         value5[tokenLength3 + 1] = 0;
                         if (value5[0] == '&') {
                             if (value5[1] == '-') {
-                                bool ok2 = ResolveSettingString(value5, converted7);
+                                bool ok2 = Interface_TestConstantForGameSettings(value5, converted7);
                                 if (ok2)
                                     (root3->m_bSlotEnabled ? root3->m_bSlotEnabled : root3->m_pTreeNode)->Tile_TileTemplate_AddPair(0xbb9, converted7, line5, 0);
                             } else {
@@ -2434,11 +2523,11 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
                     tag[0] = 0;
                 }
             } else if (offset_ + 1 < length && text_2[offset_] == '/' && text_2[offset_ + 1] == '>') {
-                Warning_005b5e40(DAT_01094a08, DAT_01094904, filename, line5);
+                Warning_005b5e40(DAT_01094a08, DAT_01094904, apName, line5);
                 DAT_011f32c8 = 1;
                 return 0;
             } else if (text_2[offset_] == '>') {
-                Warning_005b5e40(DAT_01094a08, DAT_010948dc, filename, line5);
+                Warning_005b5e40(DAT_01094a08, DAT_010948dc, apName, line5);
                 DAT_011f32c8 = 1;
                 return 0;
             } else if ((unsigned char)text_2[offset_] > ' ' || hasWhitespace8 == true) {
@@ -2460,8 +2549,8 @@ XmlNode* __cdecl Tile_ParseFile(const char* filename, const char* source, unsign
 namespace fnv_00a04200 { extern __declspec(thread) int g_tlsMemContext; }
 inline int GetTileMemoryContext() { return fnv_00a04200::g_tlsMemContext; }
 inline void SetTileMemoryContext(int value) { fnv_00a04200::g_tlsMemContext = value; }
-__forceinline AutoMemContext::AutoMemContext(int value) { m_eMemoryContext = (MEM_CONTEXT)GetTileMemoryContext(); SetTileMemoryContext(value); }
-__forceinline AutoMemContext::~AutoMemContext() { SetTileMemoryContext(m_eMemoryContext); }
+__forceinline AutoMemContext::AutoMemContext(int value) { iOldMemContext = (MEM_CONTEXT)GetTileMemoryContext(); SetTileMemoryContext(value); }
+__forceinline AutoMemContext::~AutoMemContext() { SetTileMemoryContext(iOldMemContext); }
 
 namespace fnv_00a04200 {
 extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
@@ -2490,7 +2579,7 @@ struct UpdateTreeNode {
     void Tile_Set(int, float, bool);
 };
 struct UpdateManager {
-    void FUN_00713da0(UpdateTreeNode*);
+    void AddTileToUpdateList(UpdateTreeNode*);
     void InterfaceManager_UpdateTileModels();
 };
 extern UpdateManager* DAT_011d8a80;
@@ -2505,7 +2594,10 @@ void __cdecl BSTexturePalette_PurgeUnusedTextures();
 
 // @fnv 0x00a04200
 // src: XBOX_PDB 0x00a04200
-void __cdecl Tile_UpdateAll(bool update)
+// pdb: Tile::UpdateAll | Tile.obj | retail, upstream name already matches, high
+// pdb params: abDoNiUpdate
+// pdb locals: tempMemContext, bnodeNeedsUpdating, ptile
+void __cdecl Tile_UpdateAll(bool abDoNiUpdate)
 {
     AutoMemContext autoMemContext(13);
     EnterCriticalSection(&DAT_011f3330);
@@ -2519,7 +2611,7 @@ void __cdecl Tile_UpdateAll(bool update)
         changed = pTile->Tile_UpdateTile(true);
         pTile->changed = pTile->changed | changed;
         if (changed)
-            DAT_011d8a80->FUN_00713da0(pTile);
+            DAT_011d8a80->AddTileToUpdateList(pTile);
         if (pTile->GetParent() == FUN_00706cd0()) {
             if (pTile->FUN_00a011b0(0xfa7) == 102.0)
                 pTile->Tile_Set(0xfa7, 6006.0f, true);
@@ -2529,11 +2621,11 @@ void __cdecl Tile_UpdateAll(bool update)
     }
     if (DAT_011f32c9) {
         Tile_CheckHibernatingTiles();
-        Tile_UpdateAll(update);
+        Tile_UpdateAll(abDoNiUpdate);
         LeaveCriticalSection(&DAT_011f3330);
         return;
     }
-    if (update) {
+    if (abDoNiUpdate) {
         AutoMemContext kRenderContext(13);
         DAT_011d8a80->InterfaceManager_UpdateTileModels();
     }
@@ -2551,7 +2643,7 @@ void __cdecl AutoTileLock_AutoTileLock();
 void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 
 struct LockGuard_00a07580 {
-    LockGuard_00a07580() { ::AutoTileLock_AutoTileLock(); }
+    LockGuard_00a07580() { ::AutoTileLock_ctor(); }
     ~LockGuard_00a07580() { ::Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
@@ -2587,11 +2679,14 @@ extern NiTPointerListBase<NiTPointerAllocator<unsigned int>, TileResult_00a07580
 
 // @fnv 0x00a07580
 // src: COMMUNITY 0x00a07580
-TileResult_00a07580* Tile_GetNextDirtyTile(bool pop) {
+// pdb: Tile::GetNextDirtyTile | Tile.obj | retail, upstream name already matches, high
+// pdb params: abRemove
+// pdb locals: __my_auto_tile_lock, ptile
+TileResult_00a07580* Tile_GetNextDirtyTile(bool abRemove) {
     LockGuard_00a07580 guard;
     if (DAT_011f3318.IsEmpty()) {
         return 0;
-    } else if (pop) {
+    } else if (abRemove) {
         TileResult_00a07580* tile = DAT_011f3318.RemoveHead();
         if (tile) {
             tile->SetFlag(false);
@@ -2663,7 +2758,7 @@ struct ClipTile {
     __forceinline ClipNode* Model() { return model; }
     bool IsTraitNonZero(int);
     bool FUN_00a03c60();
-    void Tile_ReClipChildren(float left, float top, float right, float bottom);
+    void Tile_ReClipChildren(float afx, float afy, float afx2, float afy2);
 };
 float __cdecl FUN_00706e40();
 float __cdecl FUN_00706e10();
@@ -2672,7 +2767,10 @@ float __cdecl CalculateScaledHeight();
 __forceinline float ClipMax(float a, float b) { return a > b ? a : b; }
 // @fnv 0x00a07a40
 // src: COMMUNITY 0x00a07a40
-void ClipTile::Tile_ReClipChildren(float left, float top, float right, float bottom)
+// pdb: Tile::ReClipChildren | Tile.obj | retail, upstream name already matches, high
+// pdb params: afx, afy, afx2, afy2
+// pdb locals: xelem, pitem, a, ptsp, scissorRect, fscreenH, fscreenW
+void ClipTile::Tile_ReClipChildren(float afx, float afy, float afx2, float afy2)
 {
     NiTListItem<ClipTile*>* position;
     ClipTile* child;
@@ -2707,11 +2805,11 @@ void ClipTile::Tile_ReClipChildren(float left, float top, float right, float bot
                         height = retn1280_0();
                         width = CalculateScaledHeight();
                     }
-                    rect.left = (int)ClipMax(left, 0.0f);
-                    rect.top = (int)ClipMax(top, 0.0f);
-                    rect.right = (int)(right < height ? right : height);
-                    rect.bottom = (int)(bottom < width ? bottom : width);
-                    *reinterpret_cast<ClipRect*>(property->m_auiUnk9C) = rect;
+                    rect.left = (int)ClipMax(afx, 0.0f);
+                    rect.top = (int)ClipMax(afy, 0.0f);
+                    rect.right = (int)(afx2 < height ? afx2 : height);
+                    rect.bottom = (int)(afy2 < width ? afy2 : width);
+                    *reinterpret_cast<ClipRect*>(property->ScissorRect) = rect;
                     static_cast<TileShaderClipping*>(property)->TileShaderProperty_SetUseScissorTest(true);
                 }
                 }
@@ -2720,7 +2818,7 @@ void ClipTile::Tile_ReClipChildren(float left, float top, float right, float bot
         }
         }
         }
-        child->Tile_ReClipChildren(left, top, right, bottom);
+        child->Tile_ReClipChildren(afx, afy, afx2, afy2);
     }
     }
 }
@@ -2830,6 +2928,8 @@ public:
 
 // @fnv 0x00a08a20
 // src: COMMUNITY 0x00a08a20
+// pdb: Tile::DeleteModel | Tile.obj | retail, upstream name already matches, high
+// pdb locals: pmodel, sptemp
 void SceneNodeOwner::Tile_DeleteModel()
 {
     SceneNode* pkNode = GetNode();
@@ -2857,6 +2957,10 @@ extern MenuArray DAT_011f3508;
 
 // @fnv 0x00a09030
 // src: XBOX_PDB 0x00a09030
+// pdb: Tile::SearchForTileByName | Tile.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Tile::GetMenuByClass
+// pdb params: apTarget, apName
+// pdb locals: xelem, pitem
 int __cdecl Tile_GetMenuByClass(int id)
 {
     int result;
@@ -2891,34 +2995,37 @@ extern ListMap_a0a130 DAT_011f3358;
 
 // @fnv 0x00a0a130
 // src: COMMUNITY 0x00a0a130
-void __cdecl Tile_AddReaction(int iKey, int iItem)
+// pdb: Tile::AddReaction | Tile.obj | retail, upstream name already matches, high
+// pdb params: apRefVal, apDependantVal
+// pdb locals: pnewReaction, pfoundReactionListA, bfound
+void __cdecl Tile_AddReaction(int apRefVal, int apDependantVal)
 {
     ListNode_a0a130* pkNew = new ListNode_a0a130;
     ListNode_a0a130* pkCur = 0;
-    pkNew->m_item = iItem;
-    if (DAT_011f3358.FUN_00a1e380(iKey, pkCur)) {
-        bool bFound = pkCur->m_item == iItem;
+    pkNew->m_item = apDependantVal;
+    if (DAT_011f3358.FUN_00a1e380(apRefVal, pkCur)) {
+        bool bFound = pkCur->m_item == apDependantVal;
         while (pkCur->m_pkNext) {
             pkCur = pkCur->m_pkNext;
-            bFound = pkCur->m_item == iItem;
+            bFound = pkCur->m_item == apDependantVal;
         }
         if (!bFound)
             pkCur->m_pkNext = pkNew;
         else
             delete pkNew;
     } else {
-        DAT_011f3358.InsertOrUpdate(iKey, pkNew);
+        DAT_011f3358.InsertOrUpdate(apRefVal, pkNew);
     }
 }
 }  // namespace fnv_00a0a130
 
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 extern const double _gModifierZero;
 
 class MenuLockB35 {
 public:
-    MenuLockB35() { AutoTileLock_AutoTileLock(); }
+    MenuLockB35() { AutoTileLock_ctor(); }
     ~MenuLockB35() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
@@ -2945,6 +3052,9 @@ public:
 
 // @fnv 0x00a0b350
 // src: COMMUNITY 0x00a0b350
+// pdb: Tile::RecursiveColorUpdate | Tile.obj | debug, object-file gap fill, medium
+// pdb params: aiColorID, afInheritedVal
+// pdb locals: piter, fval
 void ChildTraitInvalidator::Cmd_SetSystemColor_Execute(int iValue, float fDefault)
 {
     MenuLockB35 kLock;
@@ -2954,9 +3064,9 @@ void ChildTraitInvalidator::Cmd_SetSystemColor_Execute(int iValue, float fDefaul
     if ((float)iValue == fValue)
         Tile_SetChangeFlag(8);
 
-    NiTListItem<ChildTraitInvalidator*>* pkPos = reinterpret_cast<ChildTraversal*>(&m_kChildTileList)->GetHeadPos();
+    NiTListItem<ChildTraitInvalidator*>* pkPos = reinterpret_cast<ChildTraversal*>(&xChildren)->GetHeadPos();
     while (pkPos)
-        reinterpret_cast<ChildTraversal*>(&m_kChildTileList)->GetNext(pkPos)->Cmd_SetSystemColor_Execute(iValue, fValue);
+        reinterpret_cast<ChildTraversal*>(&xChildren)->GetNext(pkPos)->Cmd_SetSystemColor_Execute(iValue, fValue);
 }
 
 unsigned int __cdecl BSstrlen(const char* text);
@@ -2976,6 +3086,8 @@ public:
 };
 
 // @fnv 0x00a0c220
+// pdb: Tile::TileTemplateItem::TileTemplateItem | Tile.obj | debug, call graph, medium
+// pdb params: aiCmd, afVal, axStr, aiTA, aiLine
 FUN_00a0c220::FUN_00a0c220(int aiType, float afValue, const char* apText, int aiParam1, int aiParam2)
 {
     m_iType = aiType;
@@ -3027,6 +3139,9 @@ public:
 };
 
 // @fnv 0x00a0d3c0
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,int>,int>::SetValue | Tile.obj | debug, object-file run extension, low
+// pdb params: pkItem, pcKey, val
+// pdb locals: uiLen
 FUN_00a0d3c0::~FUN_00a0d3c0()
 {
     RemoveAll();
@@ -3043,15 +3158,17 @@ struct FUN_00a0c190
 struct A1E1D0_Holder
 {
     FUN_00a0c190* m_entry;
-    void Tile_BuildStorage_SetTemplate(FUN_00a0c190* entry);
+    void Tile_BuildStorage_SetTemplate(FUN_00a0c190* apTemplate);
 };
 // @fnv 0x00a1e1d0
 // src: COMMUNITY 0x00a1e1d0
-void A1E1D0_Holder::Tile_BuildStorage_SetTemplate(FUN_00a0c190* entry)
+// pdb: Tile::BuildStorage::SetTemplate | Menu.obj | debug, upstream name already matches, high
+// pdb params: apTemplate
+void A1E1D0_Holder::Tile_BuildStorage_SetTemplate(FUN_00a0c190* apTemplate)
 {
     if (m_entry)
         delete m_entry;
-    m_entry = entry;
+    m_entry = apTemplate;
 }
 }  // namespace fnv_00a1e1d0
 
@@ -3082,6 +3199,8 @@ public:
 };
 
 // @fnv 0x00a1f610
+// pdb: Tile::Extra::Extra | TileRect.obj | retail, call graph, medium
+// pdb params: t, n
 FUN_00a1f610::FUN_00a1f610(int a, int b)
     : FUN_00a7b2e0()
 {
@@ -3137,9 +3256,9 @@ struct FUN_00aaaa80 {
 struct FUN_00ac5490 : FUN_00aaaa80 {
     void* file;
     void* archive;
-    FUN_00ac5490(GameString signature);
-    bool BSFaceGenBinaryFile_openForRead(GameString filename, bool binary);
-    bool BSFaceGenBinaryFile_readHeader(void* buffer, unsigned int size, unsigned int count);
+    FUN_00ac5490(GameString apString);
+    bool BSFaceGenBinaryFile_openForRead(GameString apFileName, bool abCTLFile);
+    bool BSFaceGenBinaryFile_readHeader(void* buffer, unsigned int size, unsigned int num);
     void ClearHolders();
     __forceinline ~FUN_00ac5490() {
         ClearHolders();
@@ -3154,10 +3273,10 @@ struct FractalHeader {
 struct FractalReaderA { bool FanLinCtlGrpS_readFromFile(FUN_00ac5490*, unsigned int (*)[2]); };
 struct FractalReaderB { bool FanGenCtlsGrpC_readFromFile(FUN_00ac5490*, unsigned int (*)[2]); };
 
-inline FUN_00ac5490::FUN_00ac5490(GameString signature)
+inline FUN_00ac5490::FUN_00ac5490(GameString apString)
 {
     int c00, c01, c02, c03, c04, c05, c06, c07, c08, c09, c10;
-    c00 = (int)&signature; c01 = c00 + 1; c02 = c01 + 1; c03 = c02 + 1;
+    c00 = (int)&apString; c01 = c00 + 1; c02 = c01 + 1; c03 = c02 + 1;
     c04 = c03 + 1; c05 = c04 + 1; c06 = c05 + 1; c07 = c06 + 1;
     c08 = c07 + 1; c09 = c08 + 1; c10 = c09 + 1;
 }
@@ -3175,24 +3294,27 @@ inline void FractalHeader::nullsub_321()
 
 // @fnv 0x00aaa7d0
 // src: COMMUNITY 0x00aaa7d0
-bool __cdecl fanReadCtlFile(const GameString& filename, unsigned int* width,
-    unsigned int* height, unsigned int values[2][2], FractalReaderA* a, FractalReaderB* b)
+// pdb: fanReadCtlFile | FanCtlFile.obj | retail, upstream name already matches, high
+// pdb params: fname, basisKeyGeo, basisKeyTex, basisSize, linCtl, genCtl
+// pdb locals: hdr, bfile, tt, ss
+bool __cdecl fanReadCtlFile(const GameString& fname, unsigned int* basisKeyGeo,
+    unsigned int* basisKeyTex, unsigned int basisSize[2][2], FractalReaderA* linCtl, FractalReaderB* genCtl)
 {
     FUN_00ac5490 stream("FRCTL001");
-    if (!stream.BSFaceGenBinaryFile_openForRead(filename, true))
+    if (!stream.BSFaceGenBinaryFile_openForRead(fname, true))
         return false;
     FractalHeader header;
     if (!stream.BSFaceGenBinaryFile_readHeader(&header, 1, 24))
         return false;
     header.nullsub_321();
-    *width = header.width;
-    *height = header.height;
+    *basisKeyGeo = header.width;
+    *basisKeyTex = header.height;
     for (unsigned int i = 0; i < 2; i++)
         for (unsigned int j = 0; j < 2; j++)
-            values[i][j] = header.values[i][j];
-    if (!a->FanLinCtlGrpS_readFromFile(&stream, values))
+            basisSize[i][j] = header.values[i][j];
+    if (!linCtl->FanLinCtlGrpS_readFromFile(&stream, basisSize))
         return false;
-    if (!b->FanGenCtlsGrpC_readFromFile(&stream, values))
+    if (!genCtl->FanGenCtlsGrpC_readFromFile(&stream, basisSize))
         return false;
     return true;
 }
@@ -3214,6 +3336,7 @@ struct TileBaseA0BBF0 {
 
 struct FUN_00a0bbf0 : TileBaseA0BBF0 {
 // @fnv 0x00a0bbf0
+// pdb: TileText::`scalar deleting destructor' | Tile.obj | debug, vtable slot, medium
     virtual ~FUN_00a0bbf0()
     {
         if (!GetFlag(0x2000))
@@ -3265,6 +3388,9 @@ struct A0C0C0_Entry
     A0C0C0_Entry(const char* name, int value);
 };
 // @fnv 0x00a0c0c0
+// pdb: NiFixedString::operator= | NiD3DGPUProgramCache.obj | retail, call graph (shared callers), medium
+// pdb params: pcString
+// pdb locals: kHandle
 A0C0C0_Entry::A0C0C0_Entry(const char* name, int value) : m_name(DAT_0109b220)
 {
     m_name = name;
@@ -3292,6 +3418,8 @@ struct A0D2A0_StringMap : A0D2A0_Map
     virtual ~A0D2A0_StringMap();
 };
 // @fnv 0x00a0d2a0
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,int>,int>::~NiTStringTemplateMap<NiTPointerMap<char const *,int>,int> | Tile.obj | retail, call graph, medium
+// pdb locals: i, pkItem, pkSave
 A0D2A0_StringMap::~A0D2A0_StringMap()
 {
     if (m_bCopy) {
@@ -3347,6 +3475,8 @@ struct S_00a04150_Class {
 
 // @fnv 0x00a04150
 // src: XBOX_PDB 0x00a04150
+// pdb: Tile::DeleteChildren | Tile.obj | retail, upstream name already matches, high
+// pdb locals: __my_auto_tile_lock, xelem
 void S_00a04150_Class::Tile_DeleteChildren()
 {
     AutoTileLock kLock;
@@ -3362,7 +3492,7 @@ extern MemoryManager g_memoryManager;
 extern __declspec(thread) int DAT_000002b4;
 extern void (__stdcall *DAT_00fdf05c)(void*);
 extern void (__stdcall *DAT_00fdf100)(void*);
-struct FUN_00a031b0_shell { Tile* CreateMenuTiles(void*); };
+struct FUN_00a031b0_shell { Tile* Tile_BuildAndNameTree(void*); };
 struct Tile__TileTemplate;
 
 struct TemplateListNode {
@@ -3424,33 +3554,36 @@ struct TileManager {
 extern TileManager* DAT_011f4748;
 __forceinline TileManager* GetDebrisManager() { return DAT_011f4748; }
 
-FUN_00a0ad40* __cdecl Tile_ParseFile(void* a1, int a2, int a3);
+FUN_00a0ad40* __cdecl Tile_ParseFile(void* apName, int apData, int apSize);
 
 // The shared Menu declaration does not yet expose its template-loading operation.
 struct MenuTemplateLoader {
-    void LoadTemplate(Tile__TileTemplate*);
+    void Menu_AddTemplate(Tile__TileTemplate*);
 };
 
 struct TileLoader : public FUN_00a031b0_shell {
     void Tile_ConnectTraitsToTree(void*);
-    void FUN_00a04620(bool);
-    Tile* Tile_ReadFile(void* arg0);
+    void UpdateChildren(bool);
+    Tile* Tile_ReadFile(void* apName);
 };
 
 // @fnv 0x00a01b00
 // src: XBOX_PDB 0x00a01b00
-Tile* TileLoader::Tile_ReadFile(void* arg0) {
+// pdb: Tile::ReadFile | Tile.obj | retail, upstream name already matches, high
+// pdb params: apName
+// pdb locals: tempAutoPause, tempMemContext, pmenu, pParsedBuild, bdontDelete, ptile, plist
+Tile* TileLoader::Tile_ReadFile(void* apName) {
     AutoMemContext kContext(0xd);
     DAT_011f32c8 = 0;
     Tile* pTile7 = 0;
     FUN_00a0ad40* pTemplate = 0;
     bool bKeep_ = 0;
 
-    pTemplate = Tile_ParseFile(arg0, 0, 0);
+    pTemplate = Tile_ParseFile(apName, 0, 0);
     if (DAT_011f32c8)
         return 0;
 
-    pTile7 = this->CreateMenuTiles(pTemplate->unk0c ? pTemplate->unk0c : pTemplate->unk00);
+    pTile7 = this->Tile_BuildAndNameTree(pTemplate->unk0c ? pTemplate->unk0c : pTemplate->unk00);
     if (DAT_011f32c8)
         return 0;
 
@@ -3462,8 +3595,8 @@ Tile* TileLoader::Tile_ReadFile(void* arg0) {
     if (pMenu) {
         TemplateListNode* pNode = &pTemplate->kList;
         while (pNode && pNode->pItem) {
-            reinterpret_cast<MenuTemplateLoader*>(pMenu)->LoadTemplate(pNode->pItem);
-            pMenu->m_bVisible = !bKeep_;
+            reinterpret_cast<MenuTemplateLoader*>(pMenu)->Menu_AddTemplate(pNode->pItem);
+            pMenu->bDeleteTemplates = !bKeep_;
             pTemplate->bUnk10 = bKeep_;
             if (DAT_011f32c8)
                 return 0;
@@ -3477,7 +3610,7 @@ Tile* TileLoader::Tile_ReadFile(void* arg0) {
     }
 
     GetDebrisManager()->Enter();
-    if (pTile7) ((TileLoader*)pTile7)->FUN_00a04620(false);
+    if (pTile7) ((TileLoader*)pTile7)->UpdateChildren(false);
 if(0){} GetDebrisManager()->Leave();
 
     DAT_011f32c8 = 0;
@@ -3511,12 +3644,12 @@ template <> inline bool BSStringT<char>::Set(const BSStringT<char>& rhs) {
     SetLength(n);
     return n != 0;
 }
-template <> inline BSStringT<char>& BSStringT<char>::operator=(const BSStringT<char>& rhs) {
+template <> inline BSStringT<char>& BSStringT<char>::operator=(const BSStringT<char>& arString) {
     // /Ob1 keeps the copy helper's frame slots when its call remains out of line.
     unsigned int length;
     char* oldString;
     char* newString;
-    Set(rhs);
+    Set(arString);
     return *this;
 }
 
@@ -3711,25 +3844,28 @@ extern float DAT_01094cf4;
 
 // @fnv 0x00a0a410
 // src: XBOX_PDB 0x00a0a410
-void ParsedBuilder::Tile_TileTemplate_AddPair(int trait, const char* text, void* context, bool literal) {
+// pdb: Tile::TileTemplate::AddPair | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiCmd, apStr, aiLine, aiPreserveStrings
+// pdb locals: xelem, pitem, plast2, plast1, bis_number, fvalue, plast3, a
+void ParsedBuilder::Tile_TileTemplate_AddPair(int aiCmd, const char* apStr, void* aiLine, bool aiPreserveStrings) {
     float value = DAT_01094cf4;
-    if (!literal)
-        value = (float)Tile_TextToTrait(text);
-    if (value == DAT_01094ba8 && (text[0] == '_' || (text[0] == '&' && text[1] == '_')))
-        value = (float)Tile_AddUserTrait(text, -1);
-    ParsedToken* createdToken16 = Tile_TileTemplate_GetItem(trait, value, text, (int)value, context);
+    if (!aiPreserveStrings)
+        value = (float)Tile_TextToTrait(apStr);
+    if (value == DAT_01094ba8 && (apStr[0] == '_' || (apStr[0] == '&' && apStr[1] == '_')))
+        value = (float)Tile_AddUserTrait(apStr, -1);
+    ParsedToken* createdToken16 = Tile_TileTemplate_GetItem(aiCmd, value, apStr, (int)value, aiLine);
     bool isNumericX = true;
-    for (unsigned i = 0; i < strlen(text); ++i) {
-        if ((text[i] < '0' || text[i] > '9') && text[i] != '-' && text[i] != '.') {
+    for (unsigned i = 0; i < strlen(apStr); ++i) {
+        if ((apStr[i] < '0' || apStr[i] > '9') && apStr[i] != '-' && apStr[i] != '.') {
             isNumericX = false;
             break;
         }
     }
     if (isNumericX) {
         if (value == DAT_01094ba8)
-            sscanf(text, DAT_01094cf0, &value);
+            sscanf(apStr, DAT_01094cf0, &value);
         if (value == DAT_01012060)
-            sscanf(text, DAT_01094cf0, &value);
+            sscanf(apStr, DAT_01094cf0, &value);
         createdToken16->text = DAT_01011584;
         createdToken16->value = value;
         createdToken16->integer = (int)value;
@@ -3741,30 +3877,30 @@ void ParsedBuilder::Tile_TileTemplate_AddPair(int trait, const char* text, void*
     if (iteratorPosition8) lastToken15 = tokens.GetPrevious(iteratorPosition8);
     if (iteratorPosition8) previousToken2 = tokens.GetPrevious(iteratorPosition8);
     if (iteratorPosition8) thirdToken12 = tokens.GetPrevious(iteratorPosition8);
-    if (trait == 3002 && lastToken15 && lastToken15->kind == 0 && lastToken15->value == DAT_01094ce8) {
+    if (aiCmd == 3002 && lastToken15 && lastToken15->kind == 0 && lastToken15->value == DAT_01094ce8) {
         if (parent->templateData) {
             Warning_005b5e40(DAT_01094ca8);
         } else {
-            parent->SetTileTemplate(parent->FindTemplateByName(text));
+            parent->SetTileTemplate(parent->FindTemplateByName(apStr));
             if (!parent->templateData) {
-                parent->SetTileTemplate(parent->Tile_BuildStorage_NewSubTemplate(text));
+                parent->SetTileTemplate(parent->Tile_BuildStorage_NewSubTemplate(apStr));
             }
         }
         Tile_TileTemplate_ThrowAway(tokens.PopFront());
         Tile_TileTemplate_ThrowAway(createdToken16);
-    } else if (trait == 1 && value == DAT_01094ce8 && parent->templateData) {
+    } else if (aiCmd == 1 && value == DAT_01094ce8 && parent->templateData) {
         parent->SetTileTemplate(0);
         Tile_TileTemplate_ThrowAway(createdToken16);
-    } else if (trait == 3002 && lastToken15 && lastToken15->kind == 0 &&
+    } else if (aiCmd == 3002 && lastToken15 && lastToken15->kind == 0 &&
                lastToken15->value >= DAT_01094ca0 && lastToken15->value <= DAT_01094c98) {
         lastToken15->kind = 6;
-        AssignParsedText(lastToken15->text, text);
+        AssignParsedText(lastToken15->text, apStr);
         Tile_TileTemplate_ThrowAway(createdToken16);
-    } else if (trait == 3002) {
+    } else if (aiCmd == 3002) {
         createdToken16->kind = 8;
         createdToken16->integer = 3002;
         tokens.Append(createdToken16);
-    } else if (trait == 1 && lastToken15 && lastToken15->kind == 3001 && previousToken2 &&
+    } else if (aiCmd == 1 && lastToken15 && lastToken15->kind == 3001 && previousToken2 &&
                (previousToken2->kind == 4 || previousToken2->kind == 2) && previousToken2->value == value) {
         if ((createdToken16->value >= DAT_01094c90 && createdToken16->value <= DAT_01094c88) || createdToken16->integer >= 10000)
             previousToken2->kind = 8;
@@ -3779,7 +3915,7 @@ void ParsedBuilder::Tile_TileTemplate_AddPair(int trait, const char* text, void*
         previousToken2->text = lastToken15->text;
         Tile_TileTemplate_ThrowAway(tokens.PopFront());
         Tile_TileTemplate_ThrowAway(createdToken16);
-    } else if (trait == 1 && lastToken15 && lastToken15->kind == 3004 && previousToken2 &&
+    } else if (aiCmd == 1 && lastToken15 && lastToken15->kind == 3004 && previousToken2 &&
                previousToken2->kind == 3003 && thirdToken12 && thirdToken12->kind == 2 && thirdToken12->value == value) {
         thirdToken12->kind = 10;
         thirdToken12->integer = (int)thirdToken12->value;
@@ -3844,53 +3980,56 @@ struct UITile {
 enum { TilePathLayout = 1 / (sizeof(UITile) == 0x2c) };
 enum { TileChildrenLayout = 1 / (sizeof(TileChildren) == 0xc) };
 
-int ParseTextAndParams(const char* pcPath, char* pcName);
+int Tile_TextToTraitAndParam(const char* pcPath, char* pcName);
 int FUN_00ec68e4(const char* pcA, const char* pcB);
 UITile* FUN_00706cd0();
-UITile* FUN_00706cf0();
-UITile* FindTileByName(UITile* pkRoot, const char* pcPath);
+UITile* Interface_GetStringRoot();
+UITile* Tile_SearchForTileByName(UITile* pkRoot, const char* pcPath);
 
 // @fnv 0x00a08b20
 // src: XBOX_PDB 0x00a08b20
-UITile* Tile_GetTileByName(UITile* pTile, const char* pcPath)
+// pdb: Tile::GetTileByName | Tile.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apName
+// pdb locals: pparam, itrait, ptile, xelem, pitem
+UITile* Tile_GetTileByName(UITile* apTarget, const char* apName)
 {
     UITile* pResultTmp = 0;
     int m_iValueId;
     {
     char acName[0x800];
     acName[0] = 0;
-    m_iValueId = ParseTextAndParams(pcPath, acName);
+    m_iValueId = Tile_TextToTraitAndParam(apName, acName);
 
     switch (m_iValueId)
     {
     case 0x1391:
-        return pTile->GetParent() ? pTile->GetParent()->GetParent() : 0;
+        return apTarget->GetParent() ? apTarget->GetParent()->GetParent() : 0;
     case 0x1389:
-        return pTile->GetParent();
+        return apTarget->GetParent();
     case 0x138a:
-        return pTile;
+        return apTarget;
     case 0x1390:
-        return pTile->Tile_GetMenu()->GetTile();
+        return apTarget->Tile_GetMenu()->GetTile();
     case 0x138c:
-        if (!acName[0] && pTile->GetParent()->GetChildCount())
+        if (!acName[0] && apTarget->GetParent()->GetChildCount())
         {
-            TileItem* kPos = pTile->GetParent()->GetHeadPos();
+            TileItem* kPos = apTarget->GetParent()->GetHeadPos();
             while (kPos)
             {
-                if (pTile->GetParent()->GetNext(kPos) == pTile)
+                if (apTarget->GetParent()->GetNext(kPos) == apTarget)
                     break;
             }
             if (kPos)
-                return pTile->GetParent()->GetNext(kPos);
+                return apTarget->GetParent()->GetNext(kPos);
             else
-                return pTile->GetParent()->m_kChildList.m_pkHead->m_element;
+                return apTarget->GetParent()->m_kChildList.m_pkHead->m_element;
         }
-        else if (acName[0] && pTile->GetParent()->GetChildCount())
+        else if (acName[0] && apTarget->GetParent()->GetChildCount())
         {
-            TileItem* kPos2 = pTile->GetParent()->GetHeadPos();
+            TileItem* kPos2 = apTarget->GetParent()->GetHeadPos();
             while (kPos2)
             {
-                UITile* pChild = pTile->GetParent()->GetNext(kPos2);
+                UITile* pChild = apTarget->GetParent()->GetNext(kPos2);
                 if (pChild->GetName() && !FUN_00ec68e4(pChild->GetName(), acName))
                 {
                     pResultTmp = pChild;
@@ -3902,21 +4041,21 @@ UITile* Tile_GetTileByName(UITile* pTile, const char* pcPath)
         else
             return 0;
     case 0x138d:
-        if (!acName[0] && pTile->GetChildCount())
-            return pTile->m_kChildList.m_pkHead->m_element;
-        else if (pTile && acName[0] && pTile->GetChildCount())
-            return pTile->Tile_GetChildByName(acName);
+        if (!acName[0] && apTarget->GetChildCount())
+            return apTarget->m_kChildList.m_pkHead->m_element;
+        else if (apTarget && acName[0] && apTarget->GetChildCount())
+            return apTarget->Tile_GetChildByName(acName);
         else
             return 0;
     case 0x138e:
         return FUN_00706cd0();
     case 0x138f:
-        return FUN_00706cf0();
+        return Interface_GetStringRoot();
     default:
-        if (pTile)
-            pResultTmp = FindTileByName(pTile->Tile_GetMenuTile(), pcPath);
+        if (apTarget)
+            pResultTmp = Tile_SearchForTileByName(apTarget->Tile_GetMenuTile(), apName);
         else
-            pResultTmp = FindTileByName(FUN_00706cd0(), pcPath);
+            pResultTmp = Tile_SearchForTileByName(FUN_00706cd0(), apName);
         return pResultTmp;
     }
     }
@@ -3981,6 +4120,8 @@ inline float minFloat(float a, float b) { return a < b ? a : b; }
 inline float linear(float x, float x0, float x1, float y0, float y1) { return ((x-x0)/(x1-x0)) * (y1-y0) + y0; }
 // @fnv 0x00a080d0
 // src: COMMUNITY 0x00a080d0
+// pdb: Tile::UpdateFadeControls | Tile.obj | retail, upstream name already matches, high
+// pdb locals: pfade, removeList, fpercentComplete, fendValue, itrait, fstartValue, efade, ftotalFlashCount, fflashCount, fnewValue, fabsHalfScale, premove, ptoBeDeleted
 void __cdecl Tile_UpdateFadeControls()
 {
     if ((unsigned char)((DAT_011f3348.next == 0 && DAT_011f3348.item == 0) ? 1 : 0)) return;
@@ -4163,19 +4304,22 @@ extern "C" unsigned int strlen(const char* s);
 
 extern void FNV_Warning(const char* fmt, ...);
 
-extern void* Tile_GetTileByName(R_Tile* t, const char* name);
+extern void* Tile_GetTileByName(R_Tile* apTarget, const char* apName);
 
 class C00a033b0 {
 
 public:
 
-    void Tile_ConnectTraitsToTree(R_Menu* a1);
+    void Tile_ConnectTraitsToTree(R_Menu* apTemplate);
 
 };
 
 // @fnv 0x00a033b0
 // src: XBOX_PDB 0x00a033b0
-void C00a033b0::Tile_ConnectTraitsToTree(R_Menu* a1)
+// pdb: Tile::ConnectTraitsToTree | Tile.obj | retail, string-set bridge, high
+// pdb params: apTemplate
+// pdb locals: xelem, pitem, proottile, pcurrent, itrait, i, ptile
+void C00a033b0::Tile_ConnectTraitsToTree(R_Menu* apTemplate)
 
 {
 
@@ -4195,7 +4339,7 @@ void C00a033b0::Tile_ConnectTraitsToTree(R_Menu* a1)
 
     int* aj;               // link result
 
-    ah = (R_Act*)a1->acts;
+    ah = (R_Act*)apTemplate->acts;
 
     af = ah;
 
@@ -4492,7 +4636,7 @@ struct RenderPtr {
     __forceinline RenderTexture* operator->() const { return object; }
 };
 __forceinline RenderTexture* RenderShaderTexture(TileShaderProperty* property) {
-    RenderTexture* result = reinterpret_cast<RenderTexture*>((NiTexture*)property->m_spTexture);
+    RenderTexture* result = reinterpret_cast<RenderTexture*>((NiTexture*)property->spTileTexture);
     return result;
 }
 struct RenderData {
@@ -4588,7 +4732,7 @@ struct RenderTile {
     float textureScale; RenderPtr cachedTexture;
     float GetFloat(int); bool GetBool(int); RenderValue* GetValue(int); char* GetString(int);
     void Set(int,const char*,bool); void Set(int,float,bool); bool IsVisible();
-    void Tile_DeleteModel(); void SetImageFlags(int); void UpdateChildrenPosition(); void Update3D();
+    void Tile_DeleteModel(); void SetImageFlags(int); void UpdateChildrenPosition(); void Tile3D_UpdateNIF();
     bool IsRenderedMenu(); void* GetMenu(); float PositionX(); float PositionY();
     void SetBounds(float,float,float,float);
     __forceinline RenderObject* Model() { RenderObject* result=model; return result; }
@@ -4598,11 +4742,11 @@ struct RenderTile {
         float x=GetFloat(0xffb); float y=-GetFloat(0xffc);
         return RenderPoint3(x,0.0f,y);
     }
-    __forceinline void UpdateText() { RenderTile* text=this; text->Update3D(); }
+    __forceinline void UpdateText() { RenderTile* text=this; text->Tile3D_UpdateNIF(); }
     __forceinline RenderTile* Parent() { RenderTile* result=parent; return result; }
     __forceinline bool SpeechFailure() { bool result=speechFailure; return result; }
     __forceinline const char* Name() { const char* result=name; return result; }
-    bool Tile_UpdateTile(bool clear);
+    bool Tile_UpdateTile(bool abClearUpdateFlags);
 };
 extern bool renderVisibilityChanged;
 extern int renderUpdateCount;
@@ -4611,7 +4755,7 @@ RenderTile* RenderRoot(); float RenderScreenWidth(); float RenderScreenHeight();
 float RenderTargetWidth(); float RenderTargetHeight(); float RenderMenuWidth(); float RenderMenuHeight();
 float RenderAspect(); bool RenderWideMenu(void*);
 void RenderParseAtlas(const char*,const char*,BSStringT<char>*,RenderRect*);
-void RenderLoadTexture(const char*,float*,RenderPtr*,float,RenderPtr);
+void TileImage_AddToTesTextures(const char*,float*,RenderPtr*,float,RenderPtr);
 struct RenderColorManager { bool GetColor(int,RenderColor&); static RenderColorManager* GetSingleton(); };
 extern RenderPoint3 renderZero;
 extern const double renderDepthScale;
@@ -4623,7 +4767,10 @@ extern const char* volatile renderDefaultAtlas;
 
 // @fnv 0x00a04640
 // src: XBOX_PDB 0x00a04640
-bool RenderTile::Tile_UpdateTile(bool clear) {
+// pdb: Tile::UpdateTile | Tile.obj | retail, upstream name already matches, high
+// pdb params: abClearUpdateFlags
+// pdb locals: bupdated, textureAtlasCoords, tempMemContext, bstatic, bis_image, bwas_culled, xnode, ptsp, ptexture, pactionlist, pimage, bcheckTexAtlas, pvalue, pstr, strTAIFilename, strAtlasTextureFilename, zoom, ftextureWidth, ptemp, ftextureHeight, pgeom, pgeomData, fwidth, foffsety ...
+bool RenderTile::Tile_UpdateTile(bool abClearUpdateFlags) {
     EnterCriticalSection(&DAT_011f3330);
     bool changed=false;
     bool imageB;
@@ -4635,7 +4782,7 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
             if (HasModel()) {
                 if (Type()==0x387) RenderTextChanged(true);
                 changed=true;
-                if(clear && (flags & 2)) flags ^= 2;
+                if(abClearUpdateFlags && (flags & 2)) flags ^= 2;
             }
         }
         if ((flags & 4) && Model()) {
@@ -4643,7 +4790,7 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
             Model()->SetHidden(GetFloat(0xfa3)==0.0);
             changed=true;
             if(oldHiddenTmp && oldHiddenTmp!=Model()->Hidden()) renderVisibilityChanged=true;
-            if(clear && (flags & 4)) flags ^= 4;
+            if(abClearUpdateFlags && (flags & 4)) flags ^= 4;
         }
         if (RenderResetTextures() && Model()) {
             RenderObject* childVal5=Model()->GetChild(0);
@@ -4677,15 +4824,15 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
                             BSStringT<char> resolved4("");
                             const char* sheetName_=fallbackX ? g_011f3368.GetValue() : GetString(0xff9);
                             RenderParseAtlas(sheetName_,GetString(0xfcc),&resolved4,&sheet_2);
-                            RenderLoadTexture(resolved4.String(),&tileA->textureScale,&textureCheck9,tileA->GetFloat(0xfb8),tileA->cachedTexture);
+                            TileImage_AddToTesTextures(resolved4.String(),&tileA->textureScale,&textureCheck9,tileA->GetFloat(0xfb8),tileA->cachedTexture);
                         }
                         if(!textureCheck9) {
-                            RenderLoadTexture(var6c9,&tileA->textureScale,&textureCheck9,tileA->GetFloat(0xfb8),tileA->cachedTexture);
+                            TileImage_AddToTesTextures(var6c9,&tileA->textureScale,&textureCheck9,tileA->GetFloat(0xfb8),tileA->cachedTexture);
                         }
                     }
                     if(textureCheck9) {
                         varF9->SetTileTexture(reinterpret_cast<NiTexture*>((RenderTexture*)textureCheck9));
-                        if(GetBool(0xfb5)) varF9->m_iUnk8C=2; else varF9->m_iUnk8C=0;
+                        if(GetBool(0xfb5)) varF9->TexClampMode=2; else varF9->TexClampMode=0;
                         float var4=GetFloat(0xfb8);
                         const char* pathY=GetString(0xfcc);
                         float width2=(float)textureCheck9->Width();
@@ -4710,8 +4857,8 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
                             SetImageFlags(0x10);
                         }
                         changed=true;
-                        if(clear && (flags & 0x20)) flags ^= 0x20;
-                    } else if(clear && !GetBool(0xfa3) && (flags & 0x20)) flags ^= 0x20;
+                        if(abClearUpdateFlags && (flags & 0x20)) flags ^= 0x20;
+                    } else if(abClearUpdateFlags && !GetBool(0xfa3) && (flags & 0x20)) flags ^= 0x20;
                 }
             }
         }
@@ -4741,7 +4888,7 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
                 float textureHeight2=var4cVal;
                 TileShaderProperty* propA=childB->GetProperty(3);
                 if(propA && imageB && RenderShaderTexture(propA)) {
-                    if(GetFloat(0xfb5)!=0.0) propA->m_iUnk8C=2; else propA->m_iUnk8C=0;
+                    if(GetFloat(0xfb5)!=0.0) propA->TexClampMode=2; else propA->TexClampMode=0;
                     float zoom=GetFloat(0xfb8);
                     if(GetFloat(0xfb5)==-1.0) {
                         textureWidth4=RenderShaderTexture(propA)->Width()*(var4cVal/RenderShaderTexture(propA)->Height());
@@ -4798,12 +4945,12 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
                 RenderData* data8=geometry9->Data();
                 if(data8) data8->Update(false);
             }
-            if(clear && (flags & 0x10)) flags ^= 0x10;
+            if(abClearUpdateFlags && (flags & 0x10)) flags ^= 0x10;
         }
         if((flags & 0x40) && Model()) {
-            if(Type()==0x388) { RenderTile* text_=this; text_->Update3D(); }
+            if(Type()==0x388) { RenderTile* text_=this; text_->Tile3D_UpdateNIF(); }
             changed=true;
-            if(clear && (flags & 0x40)) flags ^= 0x40;
+            if(abClearUpdateFlags && (flags & 0x40)) flags ^= 0x40;
         }
         if((flags & 1) && Model()) {
             if(GetBool(0xfa8) || parent==RenderRoot()) {
@@ -4843,9 +4990,9 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
                 }
             }
             changed=true;
-            if(clear && (flags & 1)) flags ^= 1;
+            if(abClearUpdateFlags && (flags & 1)) flags ^= 1;
         }
-        if(clear && (flags & 0x200)) flags ^= 0x200;
+        if(abClearUpdateFlags && (flags & 0x200)) flags ^= 0x200;
         if(Model() && (flags & 0x80)) {
             float widthTmp=RenderTargetWidth();
             float var50=RenderTargetHeight();
@@ -4860,7 +5007,7 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
             leftNode7*=scaleX3; topic2*=varF6;
             SetBounds(leftNode7,topic2,rightA,varE7);
             changed=true;
-            if(clear && (flags & 0x80)) flags ^= 0x80;
+            if(abClearUpdateFlags && (flags & 0x80)) flags ^= 0x80;
         }
         if(Model() && (flags & 0x100)) {
             RenderTile* clipParent=parent;
@@ -4890,14 +5037,14 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
                             (int)RenderMaximum(0.0f,leftNodeA), (int)RenderMaximum(0.0f,topicCount8),
                             (int)RenderMinimum(right5,widthTmp), (int)RenderMinimum(var4c,var114)
                         };
-                        *reinterpret_cast<ClipRect*>(_prop->m_auiUnk9C)=rect24;
+                        *reinterpret_cast<ClipRect*>(_prop->ScissorRect)=rect24;
                         static_cast<TileShaderClipping*>(_prop)->TileShaderProperty_SetUseScissorTest(true);
                     }
                     ++indexB_;
                 }
             }
             changed=true;
-            if(clear && (flags & 0x100)) flags ^= 0x100;
+            if(abClearUpdateFlags && (flags & 0x100)) flags ^= 0x100;
         }
         if(flags & 8) {
             RenderColor color9;
@@ -4934,10 +5081,10 @@ bool RenderTile::Tile_UpdateTile(bool clear) {
                 }
             }
             SetColor(Model(),alphaB,&color9);
-            if(clear && (flags & 8)) flags ^= 8;
+            if(abClearUpdateFlags && (flags & 8)) flags ^= 8;
         }
     }
-    if(clear && (flags & 0x3ff)) RenderQueue(this); else ++renderUpdateCount;
+    if(abClearUpdateFlags && (flags & 0x3ff)) RenderQueue(this); else ++renderUpdateCount;
     LeaveCriticalSection(&DAT_011f3330);
     return changed;
 }

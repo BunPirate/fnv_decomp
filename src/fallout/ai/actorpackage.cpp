@@ -36,6 +36,7 @@
 
 #include "../../../include/PTYPE.h"
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:
@@ -55,13 +56,16 @@ static const char s_kPackageTypeChangedWarning[] =
 
 // Clears the stored actor reference if it matches the passed reference.
 // @fnv 0x008c5ec0
+// pdb: BaseProcess::GetCurrentPackageInstanceData | DebugTextNpcAi.obj | debug, call graph (shared callers), low
 void GuardActorPackageData::SetReferenceTarget(TESObjectREFR* apReference)
 {
-    if (apReference == pWarningTarget)
-        pWarningTarget = NULL;
+    if (apReference == pGuardWarnedActor)
+        pGuardWarnedActor = NULL;
 }
 
 // @fnv 0x008c5ef0
+// pdb: ActorPackage::Clear | ActorPackage.obj | retail, call graph (shared callers), medium
+// pdb locals: pdelPack
 void ActorPackageContext::Clear()
 {
     if (pPackage)
@@ -94,7 +98,10 @@ void ActorPackageContext::Clear()
 }
 
 // @fnv 0x008c6080
-void ActorPackageContext::SetPackageAndTarget(TESPackage* apPackage, TESObjectREFR* apTarget)
+// src: XBOX_RETAIL_PDB 0x008c6080
+// pdb: ActorPackage::InitFromPackage | ActorPackage.obj | retail, call graph, high
+// pdb params: apPackage, apTarget
+void ActorPackageContext::ActorPackage_InitFromPackage(TESPackage* apPackage, TESObjectREFR* apTarget)
 {
     if (apPackage == pPackage)
         return;
@@ -104,7 +111,7 @@ void ActorPackageContext::SetPackageAndTarget(TESPackage* apPackage, TESObjectRE
         apPackage->AddRef();
         m_fPackageValue = g_calendar.GetGameTime();
         pPackage = apPackage;
-        pData = ActorPackageData::CreatePackageData((PTYPE)apPackage->GetPackType());
+        pData = ActorPackageData::CreateActorPackageData((PTYPE)apPackage->GetPackType());
         m_iPackageValue = 0;
         pTarget = apTarget;
     }
@@ -112,6 +119,9 @@ void ActorPackageContext::SetPackageAndTarget(TESPackage* apPackage, TESObjectRE
 
 // Reads a package form ID, package type and package data from the buffer, then reads flags and target, creating the package if needed.
 // @fnv 0x008c6730
+// pdb: ActorPackage::LoadGame | ActorPackage.obj | debug, call graph, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: ipackageID, bforcedToZero, cpackDataType, bshared, cpackType
 void ActorPackageContext::LoadGame(BGSLoadFormBuffer* apBuffer)
 {
     unsigned int iFormID = 0;
@@ -128,7 +138,7 @@ void ActorPackageContext::LoadGame(BGSLoadFormBuffer* apBuffer)
             if (cPackageType != -1)
             {
                 pPackage = TESPackage::CreatePackageForType((PTYPE)cPackageType);
-                g_BGSSaveLoadGame->ChangeFormID(iFormID, pPackage->GetFormID());
+                g_BGSSaveLoadGame->AddChangedFormID(iFormID, pPackage->GetFormID());
                 static_cast<TESForm*>(pPackage)->LoadGame(apBuffer);
             }
             else
@@ -145,7 +155,7 @@ void ActorPackageContext::LoadGame(BGSLoadFormBuffer* apBuffer)
         apBuffer->ReadTypedData(&cDataType, 1u);
         if (cDataType != -1)
         {
-            pData = ActorPackageData::CreatePackageData((PTYPE)cDataType);
+            pData = ActorPackageData::CreateActorPackageData((PTYPE)cDataType);
             pData->LoadGame(apBuffer);
         }
         else
@@ -165,12 +175,15 @@ void ActorPackageContext::LoadGame(BGSLoadFormBuffer* apBuffer)
 }
 
 // @fnv 0x008c6b20
-void ActorPackageContext::ApplyLoadBuffer(BGSLoadFormBuffer* apBuffer)
+// src: XBOX_RETAIL_PDB 0x008c6b20
+// pdb: ActorPackage::FinishLoadGame | ActorPackage.obj | retail, string-set bridge, high
+// pdb params: apLoadGameBuffer
+void ActorPackageContext::ActorPackage_FinishLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     if (IsFlagSet(0))
         SetFlag((unsigned char)0, false);
     else if (pPackage && g_dataHandler->FormIDExists(pPackage->GetFormID()))
-        pPackage->Unk_21(apBuffer);
+        pPackage->Unk_21(apLoadGameBuffer);
     if (pData && pPackage)
     {
         if (pPackage->GetPackType() != pData->GetPackageType())
@@ -178,7 +191,7 @@ void ActorPackageContext::ApplyLoadBuffer(BGSLoadFormBuffer* apBuffer)
             LogWarning(s_kPackageTypeChangedWarning, pPackage->GetName(), pPackage->GetFormID(),
                        g_packageTypeNames[pData->GetPackageType()], g_packageTypeNames[pPackage->GetPackType()]);
             delete pData;
-            pData = ActorPackageData::CreatePackageData((PTYPE)pPackage->GetPackType());
+            pData = ActorPackageData::CreateActorPackageData((PTYPE)pPackage->GetPackType());
         }
     }
 }
@@ -223,7 +236,7 @@ unsigned int __cdecl FinishScriptRunLock(void*);
 // @fnv 0x008c6030
 int TESPackage::Release()
 {
-    unsigned int newRefCount = FinishScriptRunLock(&unk07C);
+    unsigned int newRefCount = FinishScriptRunLock(&uiRefCount);
     return newRefCount;
 }
 
@@ -231,9 +244,11 @@ unsigned int __cdecl InitScriptRunLock(void*);
 
 // Calls InitScriptRunLock on the object at offset 0x7c and returns its result.
 // @fnv 0x008c6100
+// pdb: TESPackage::IncRefCount | ActorPackage.obj | debug, call graph, medium
+// pdb locals: newRefCount
 void TESPackage::AddRef()
 {
-    unsigned int newRefCount = InitScriptRunLock(&unk07C);
+    unsigned int newRefCount = InitScriptRunLock(&uiRefCount);
     // The original leaves the updated count in EAX, despite the shared void return.
     __asm mov eax, newRefCount
 }
@@ -265,7 +280,10 @@ void ActorPackageContext::NullInstanceData()
 }
 
 // @fnv 0x008c65a0
-void ActorPackageContext::Revert(unsigned int aiFlags)
+// src: XBOX_DEBUG_PDB 0x008c65a0
+// pdb: ActorPackage::Revert | ActorPackage.obj | debug, call graph (shared callers), high
+// pdb params: aiFlags
+void ActorPackageContext::ActorPackage_Revert(unsigned int aiFlags)
 {
     if ((aiFlags & 0) && pPackage)
         Clear();
@@ -274,11 +292,14 @@ void ActorPackageContext::Revert(unsigned int aiFlags)
 int __cdecl Procedure_GetProcedureCount(int);
 
 // @fnv 0x008c6970
+// pdb: ActorPackage::InitLoadGame | ActorPackage.obj | debug, call graph (shared callers), medium
+// pdb params: apLoadGameBuffer
+// pdb locals: ipackageID, irange
 void ActorPackageContext::InitLoadGame(BGSLoadFormBuffer* apBuffer)
 {
     if (IsFlagSet(0))
     {
-        unsigned int uiPackageFormID = g_BGSSaveLoadGame->GetNewFormID((unsigned int)pPackage);
+        unsigned int uiPackageFormID = g_BGSSaveLoadGame->GetChangedFormID((unsigned int)pPackage);
         pPackage = uiPackageFormID ? dynamic_cast<TESPackage*>(TESForm::GetFormByID(uiPackageFormID)) : 0;
     }
     else if (pPackage && g_dataHandler->FormIDExists(pPackage->GetFormID()))
@@ -302,6 +323,9 @@ void ActorPackageContext::InitLoadGame(BGSLoadFormBuffer* apBuffer)
 }
 
 // @fnv 0x008c61a0
+// pdb: ActorPackage::GetSaveSize | ActorPackage.obj | debug, call graph (shared callers), medium
+// pdb params: aiFlags
+// pdb locals: isize, ipackageID, cpacktype
 unsigned short ActorPackageContext::GetSaveSize(unsigned int aiFlags)
 {
     int total = 0;
@@ -332,6 +356,9 @@ unsigned short ActorPackageContext::GetSaveSize(unsigned int aiFlags)
 
 // Saves the package's type, data, flags and target to the buffer, writing -1 for the type when the package data is invalid for the buffer version.
 // @fnv 0x008c65d0
+// pdb: ActorPackage::SaveGame | ActorPackage.obj | debug, call graph, medium
+// pdb params: apSaveGameBuffer
+// pdb locals: pactor, cpackDataType, cpackType
 void ActorPackageContext::SaveGame(BGSSaveFormBuffer* apBuffer)
 {
     // The original save path calls virtual slot 2 and consumes the full EAX result.
@@ -362,16 +389,20 @@ void ActorPackageContext::SaveGame(BGSSaveFormBuffer* apBuffer)
 }
 
 // @fnv 0x008c64d0
-void ActorPackageContext::InitLoadGame(unsigned a, unsigned auiUnused)
+// src: XBOX_DEBUG_PDB 0x008c64d0
+// pdb: ActorPackage::InitLoadGame | ActorPackage.obj | debug, call graph, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: ipackageID, irange
+void ActorPackageContext::ActorPackage_InitLoadGame(unsigned aiFlags, unsigned aiOldFlags)
 {
     if (pPackage)
     {
-        if (a & 0)
+        if (aiFlags & 0)
         {
-            if (a & 0)
+            if (aiFlags & 0)
             {
                 TESPackage* pManager = pPackage;
-                SetPackageAndTarget(dynamic_cast<TESPackage*>(TESForm::GetFormByID((unsigned)pManager)), 0);
+                ActorPackage_InitFromPackage(dynamic_cast<TESPackage*>(TESForm::GetFormByID((unsigned)pManager)), 0);
             }
             else
             {
@@ -390,7 +421,11 @@ void ActorPackageContext::InitLoadGame(unsigned a, unsigned auiUnused)
 
 // Writes the package form ID, writes m_iPackageValue when the ID is nonzero, and always writes m_fPackageValue.
 // @fnv 0x008c6250
-void ActorPackageContext::SaveGame(unsigned int auiFlags)
+// src: XBOX_RETAIL_PDB 0x008c6250
+// pdb: TESSaveLoadGame::SaveGameDataOLDEndian | TESSaveLoadGame.obj | retail, call graph (shared callers), high
+// pdb params: apData, aiSize, aiElementSize
+// pdb locals: icount, i, result, tmp2, tmp, result2
+void ActorPackageContext::TESSaveLoadGame_SaveGameDataOLDEndian(unsigned int auiFlags)
 {
     unsigned int auiFormId = 0;
     if (pPackage != NULL)
@@ -417,6 +452,10 @@ void ActorPackageContext::SaveGame(unsigned int auiFlags)
 extern "C" void __cdecl Warning_005b5e40(const char* apFormat, ...);
 
 // @fnv 0x008c6320
+// pdb: TESSaveLoadGame::LoadGameDataOLDEndian | TESSaveLoadGame.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to ActorPackage::LoadGame
+// pdb params: apData, aiSize, aiElementSize
+// pdb locals: icount, i, result, tmp2, tmp, result2
 void ActorPackageContext::LoadGame(unsigned int aiFlags, unsigned int aiUnused)
 {
     unsigned int auiFormId;
@@ -435,7 +474,7 @@ void ActorPackageContext::LoadGame(unsigned int aiFlags, unsigned int aiUnused)
             {
                 TESPackage* pNew = g_TESSaveLoadGame->CreatePackageForType(auiFormId, ucType);
                 pNew->LoadGameTESAlt();
-                SetPackageAndTarget(pNew, 0);
+                ActorPackage_InitFromPackage(pNew, 0);
                 if (pNew->GetProcedureType() == -1)
                 {
                     pNew->SetTargetFromReference(pTarget);
@@ -443,12 +482,12 @@ void ActorPackageContext::LoadGame(unsigned int aiFlags, unsigned int aiUnused)
             }
             else
             {
-                SetPackageAndTarget((TESPackage*)auiFormId, 0);
+                ActorPackage_InitFromPackage((TESPackage*)auiFormId, 0);
             }
         }
         else
         {
-            SetPackageAndTarget(dynamic_cast<TESPackage*>(TESForm::GetFormByID(auiFormId)), 0);
+            ActorPackage_InitFromPackage(dynamic_cast<TESPackage*>(TESForm::GetFormByID(auiFormId)), 0);
             if (pPackage)
             {
                 pPackage->SetTargetFromReference(pTarget);

@@ -656,7 +656,7 @@ struct FUN_00b3fdd0_class
     int unk54;
     int unk58;
     FUN_00b37880_class* unk5c;
-    void __thiscall UpdateState_00b3fdd0(FUN_00b37880_class* value);
+    void __thiscall SIdvBranchInfo_SetFlexibilityScale(FUN_00b37880_class* pSpline);
 };
 extern int DAT_010173e8;
 struct FUN_00b3c3b0_Sub
@@ -713,7 +713,7 @@ struct PointOwner
     int unk80, unk84, unk88, unk8c, unk90, unk94, unk98, unk9c;
     VecStandIn<float> m_kPoints;
 
-    float* CIndexedGeometry_GetOrigVertexCoord(int index);
+    float* CIndexedGeometry_GetOrigVertexCoord(int nVertexIndex);
 };
 struct SubObj_b3f
 {
@@ -726,7 +726,7 @@ struct ClsB3FCF0
     int unk20, unk24, unk28, unk2C, unk30, unk34, unk38, unk3C;
     int unk40, unk44, unk48, unk4C, unk50;
     SubObj_b3f* unk54;
-    void ReleaseStorage_00b3fcf0(SubObj_b3f* value);
+    void SIdvBranchInfo_SetGravity(SubObj_b3f* pSpline);
 };
 extern "C" int __cdecl memcpy_s(void* _Dst, unsigned int _DstSize, const void* _Src, unsigned int _MaxCount);
 struct B2ESecureTag
@@ -880,8 +880,8 @@ struct B30Owner
 {
     char pad00[0x58];
     B30Vec<B30Vec<void*> > m_kLists;
-    unsigned short CIndexedGeometry_GetNumStrips(unsigned short usType);
-    void CIndexedGeometry_DeleteLodStrip(unsigned short usType);
+    unsigned short GetNumStrips(unsigned short sLodLevel);
+    void CIndexedGeometry_DeleteLodStrip(unsigned short usLodLevel);
 };
 unsigned int __cdecl FUN_00ec7c56();
 struct ScalarTag
@@ -1363,7 +1363,7 @@ class FUN_00b37880
 struct FUN_00b3ff20_Class : public FUN_00b3ff20_Base
 {
     FUN_00b37880* unk68;
-    void UpdateFields_00b3ff20(FUN_00b37880* arg);
+    void SIdvBranchInfo_SetRadiusScale(FUN_00b37880* pSpline);
 };
 struct BufferGroup
 {
@@ -1463,7 +1463,7 @@ struct GroupBuilder
     int unk18, unk1c, unk20, unk24;
     unsigned short groupCount;
     BufferGroup* groups;
-    void CLeafGeometry_InitLods(unsigned short count, PointVector* input);
+    void CLeafGeometry_InitLods(unsigned short usNumLeafLods, PointVector* pvLeafLods);
 };
 struct FnvContBase
 {
@@ -3383,7 +3383,7 @@ struct SxOwner
     int unk48;
     int unk4c;
     SxObj* pObj;
-    void UpdateFields_00b3fc80(SxObj* obj);
+    void SIdvBranchInfo_SetDisturbance(SxObj* pSpline);
 };
 }
 using namespace setb3f;
@@ -4262,6 +4262,9 @@ inline const MapValue& LookupConstIter::EvaluateValue_00b3b090() const
 }
 // @fnv 0x00b39210
 // src: GUESS 0x00b39210 (confidence: low)
+// pdb: std::map<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> > >::operator[] | IdvSpline.obj | debug, call graph, medium
+// pdb params: _Keyval
+// pdb locals: _Where
 int& LookupMap::UpdateState_00b39210(const MapKey& sought)
 {
     LookupIter where = lower(sought);

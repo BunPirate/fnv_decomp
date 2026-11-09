@@ -54,7 +54,7 @@ class PlayerQuestData
   public:
     PerkEntryConditionSet* GetConditions();
     bool Load(TESFile* file);
-    void InitItem(TESForm* form, QuestStage* stage);
+    void TESQuestStage_InitItem(TESForm* form, QuestStage* stage);
     Script* GetOffsetC();
     void SetNextQuest(TESQuest* quest);
     unsigned char m_type;
@@ -68,6 +68,7 @@ class PlayerQuestData
 
 #include "../../include/CALENDAR_MONTH.h"
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:
@@ -76,11 +77,12 @@ class Calendar
     signed char GetGameHour();
 };
 
+// pdb: class Date, size 0x4, 2 members
 class Date
 {
   public:
-    Date(short day, CALENDAR_MONTH month, unsigned int year);
-    unsigned int value;
+    Date(short asDay, CALENDAR_MONTH asMonth, unsigned int asYear);
+    unsigned int sDate;
 };
 
 extern Calendar g_calendar;

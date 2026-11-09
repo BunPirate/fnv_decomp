@@ -12,28 +12,30 @@
 struct C9D8F0Callback;
 
 // No approved include/hkpBvShape.h exists yet; retain the reflected layout here.
+// pdb: class hkpBvShape, size 0x1c, bases: hkpShape, 2 members
 class hkpBvShape : public hkpShape
 {
 public:
-    hkpShape* m_pBvShapeReference;
-    hkpSingleShapeContainer m_pContainedShape;
+    hkpShape* m_boundingVolumeShape;
+    hkpSingleShapeContainer m_childShape;
 
     __declspec(noinline) void ReleaseReference_00c9d930();
     hkpBvShape* Destroy(int flags);
     void CalculateAabb(const hkTransform& transform, float tolerance, hkAabb& out) const;
-    hkBool IntersectRayWithShape(const ShapeRayCastQuery& input, ShapeRayCastOutput& output) const;
-    void CastRayWithCollector(const ShapeRayCastQuery& input, const hkpCdBody& parent, hkpRayHitCollector& collector) const;
+    hkBool IntersectRayWithShape(const ShapeRayCastQuery& input, ShapeRayCastOutput& results) const;
+    void CastRayWithCollector(const ShapeRayCastQuery& input, const hkpCdBody& cdBody, hkpRayHitCollector& collector) const;
     hkpSingleShapeContainer* GetContainer();
-    void hkReferencedObject_calcContentStatistics(C9D8F0Callback* callback, void* typeInfo);
-    void NotifyCallback(C9D8F0Callback* callback, int flags);
+    void hkReferencedObject_calcContentStatistics(C9D8F0Callback* collector, void* cls);
+    void NotifyCallback(C9D8F0Callback* collector, int cls);
 };
 
 extern int DAT_010c6fb0;
 extern int DAT_010c6fd0;
 // @fnv 0x00c9d8c0
+// pdb: hkpSingleShapeContainer::`scalar deleting destructor' | hkpBvShape.obj | retail, vtable slot, high
 hkpSingleShapeContainer* __fastcall ReleaseSingleShapeContainer(hkpSingleShapeContainer* self, void*, int flags)
 {
-    const hkpShape* pOldWorld = self->m_pContainedShape;
+    const hkpShape* pOldWorld = self->m_childShape;
     *(int**)self = (int*)&DAT_010c6fd0;
     if (pOldWorld)
         pOldWorld->removeReference();
@@ -44,13 +46,14 @@ hkpSingleShapeContainer* __fastcall ReleaseSingleShapeContainer(hkpSingleShapeCo
 // @fnv 0x00c9d970
 void hkpBvShape::CalculateAabb(const hkTransform& transform, float tolerance, hkAabb& out) const
 {
-    m_pBvShapeReference->CalculateAabb(transform, tolerance, out);
+    m_boundingVolumeShape->CalculateAabb(transform, tolerance, out);
 }
 
 hkMemoryRouter* _D1A0E0GetMemoryRouter();
 
 // Calls FUN_00c9d930 on this, then if flags has bit 0 set, frees this through the memory router's manager using the object flags at offset 4, and returns this.
 // @fnv 0x00c9db30
+// pdb: hkpBvShape::`scalar deleting destructor' | hkpBvShape.obj | retail, vtable slot, high
 hkpBvShape* hkpBvShape::Destroy(int flags)
 {
     ReleaseReference_00c9d930();
@@ -58,7 +61,7 @@ hkpBvShape* hkpBvShape::Destroy(int flags)
     if (flags & 1)
     {
         hkMemoryRouter* router = _D1A0E0GetMemoryRouter();
-        unsigned short objectFlags = m_usMemSizeAndFlags;
+        unsigned short objectFlags = m_memSizeAndFlags;
         reinterpret_cast<hkMemoryAllocator*>(router->m_heap)->blockFree(this, objectFlags);
     }
 
@@ -84,33 +87,38 @@ struct C9D8F0Callback
 };
 
 // @fnv 0x00c9d8f0
-void hkpBvShape::NotifyCallback(C9D8F0Callback* callback, int flags)
+// pdb: hkpBvShape::calcContentStatistics | hkpBvShape.obj | retail, vtable slot, high
+// pdb params: collector, cls
+void hkpBvShape::NotifyCallback(C9D8F0Callback* collector, int cls)
 {
-    callback->method3(&DAT_010c6fec, (void*)m_pContainedShape.m_pContainedShape, 0);
-    hkReferencedObject_calcContentStatistics(callback, &DAT_01268910);
+    collector->method3(&DAT_010c6fec, (void*)m_childShape.m_childShape, 0);
+    hkReferencedObject_calcContentStatistics(collector, &DAT_01268910);
 }
 
 // @fnv 0x00c9d920
 hkpSingleShapeContainer* hkpBvShape::GetContainer()
 {
-    return &m_pContainedShape;
+    return &m_childShape;
 }
 
 extern int DAT_010c6ff8;
 extern int DAT_010c6fd0;
 // Explicit constructor entry: initialize the existing storage without calling shared base constructors.
 // @fnv 0x00c9d990
+// pdb: hkpBvShape::hkpBvShape | hkpBvShape.obj | retail, object-file run extension, low
+// pdb params: boundingVolumeShape, childShape
+// pdb locals: assertBuf, ostr
 hkpBvShape* __fastcall ConstructBvShape(hkpBvShape* self, void*, hkpShape* apBoundingVolume, hkpShape* childShape)
 {
-    self->m_sReferenceCount = 1;
-    self->m_pBvShapeReference = apBoundingVolume;
-    self->m_ulUserData = 0;
+    self->m_referenceCount = 1;
+    self->m_boundingVolumeShape = apBoundingVolume;
+    self->m_userData = 0;
     *reinterpret_cast<unsigned int*>(&self->m_type) = 27;
     *(void**)self = &DAT_010c6ff8;
-    *(void**)&self->m_pContainedShape = &DAT_010c6fd0;
-    self->m_pContainedShape.m_pContainedShape = childShape;
+    *(void**)&self->m_childShape = &DAT_010c6fd0;
+    self->m_childShape.m_childShape = childShape;
     childShape->addReference();
-    self->m_pBvShapeReference->addReference();
+    self->m_boundingVolumeShape->addReference();
     return self;
 }
 
@@ -141,14 +149,16 @@ struct ShapeRayCastOutput
 };
 
 // @fnv 0x00c9d9e0
-hkBool hkpBvShape::IntersectRayWithShape(const ShapeRayCastQuery& input, ShapeRayCastOutput& output) const
+// pdb: hkpBvShape::castRayImpl | hkpBvShape.obj | retail, vtable slot, high
+// pdb params: input, results
+hkBool hkpBvShape::IntersectRayWithShape(const ShapeRayCastQuery& input, ShapeRayCastOutput& results) const
 {
     TimerCommand(static_cast<hkMonitorStream*>(TlsGetValue(DAT_0126835c)), str_010c7024);
-    output.m_iShapeKeyIndex++;
-    hkBool hit = m_pContainedShape.m_pContainedShape->IntersectRayWithShape(input, output);
-    output.m_iShapeKeyIndex--;
+    results.m_iShapeKeyIndex++;
+    hkBool hit = m_childShape.m_childShape->IntersectRayWithShape(input, results);
+    results.m_iShapeKeyIndex--;
     if (hit.m_cBooleanValue)
-        output.unk00[output.m_iShapeKeyIndex + 8] = 0;
+        results.unk00[results.m_iShapeKeyIndex + 8] = 0;
     TimerCommand(static_cast<hkMonitorStream*>(TlsGetValue(DAT_0126835c)), str_010c41f8);
     return hit;
 }
@@ -169,17 +179,20 @@ static inline void TimerCommand_c9da80(const char* pName)
 }
 // Wraps the contained shape in a child collision body and forwards the ray cast.
 // @fnv 0x00c9da80
-void hkpBvShape::CastRayWithCollector(const ShapeRayCastQuery& input, const hkpCdBody& kParent, hkpRayHitCollector& collector) const
+// pdb: hkpBvShape::castRayWithCollectorImpl | hkpBvShape.obj | retail, vtable slot, high
+// pdb params: input, cdBody, collector
+// pdb locals: body
+void hkpBvShape::CastRayWithCollector(const ShapeRayCastQuery& input, const hkpCdBody& cdBody, hkpRayHitCollector& collector) const
 {
     TimerCommand_c9da80("TtrcBvShape");
     // The original initializes these four fields directly, without calling the out-of-line default constructor.
     unsigned int bodyStorage[sizeof(hkpCdBody) / sizeof(unsigned int)];
     hkpCdBody& kBody = *reinterpret_cast<hkpCdBody*>(bodyStorage);
-    kBody.m_parent = &kParent;
-    kBody.m_pMotionState = kParent.m_pMotionState;
-    kBody.m_pCollisionShape = m_pContainedShape.m_pContainedShape;
-    kBody.m_uiCollisionShapeKey = 0;
-    m_pContainedShape.m_pContainedShape->CastRayWithCollector(input, kBody, collector);
+    kBody.m_parent = &cdBody;
+    kBody.m_motion = cdBody.m_motion;
+    kBody.m_shape = m_childShape.m_childShape;
+    kBody.m_shapeKey = 0;
+    m_childShape.m_childShape->CastRayWithCollector(input, kBody, collector);
     TimerCommand_c9da80("Et");
 }
 
@@ -192,15 +205,15 @@ void hkpBvShape::ReleaseReference_00c9d930()
 {
     hkpBvShape* self = (hkpBvShape*)this;
 
-    hkpShape* bv = self->m_pBvShapeReference;
+    hkpShape* bv = self->m_boundingVolumeShape;
     *(void**)self = &DAT_010c6ff8;
     bv->removeReference();
 
-    hkpShape* child = const_cast<hkpShape*>(self->m_pContainedShape.m_pContainedShape);
-    *(void**)&self->m_pContainedShape = &DAT_010c6fd0;
+    hkpShape* child = const_cast<hkpShape*>(self->m_childShape.m_childShape);
+    *(void**)&self->m_childShape = &DAT_010c6fd0;
     if (child)
         child->removeReference();
 
     *(void**)self = &DAT_0102e388;
-    *(void**)&self->m_pContainedShape = &DAT_010c6fb0;
+    *(void**)&self->m_childShape = &DAT_010c6fb0;
 }

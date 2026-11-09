@@ -5,6 +5,7 @@
 
 class SpellItem;
 
+// pdb: class BGSRadiationStage, size 0x20, bases: TESForm, 1 members
 class BGSRadiationStage : public TESForm
 {
 public:
@@ -18,7 +19,7 @@ public:
     virtual void ClearData();
     virtual void InitItem();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void ResetFormData();
     SpellItem* GetSpell();
     void* __RTDynamicCast(void* form);

@@ -18,18 +18,18 @@ inline hkpCdBody::hkpCdBody() {}
 inline hkpCdBody::hkpCdBody(const hkpCdBody* parent)
 {
     m_parent = parent;
-    m_pMotionState = parent->m_pMotionState;
+    m_motion = parent->m_motion;
 }
 
 inline const hkpShape* hkpCdBody::getShape() const
 {
-    return m_pCollisionShape;
+    return m_shape;
 }
 
 inline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape* shape, unsigned int key)
 {
-    m_pCollisionShape = shape;
-    m_uiCollisionShapeKey = key;
+    m_shape = shape;
+    m_shapeKey = key;
 }
 
 inline hkpShapeType hkpShape::getType() const
@@ -40,6 +40,7 @@ inline hkpShapeType hkpShape::getType() const
 // src/havok/physics/collide/agent/compoundagent/shapecollection/hkpshapecollectionagent.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/collide/agent/compoundagent/shapecollection/hkpshapecollectionagent.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
+// pdb: class hkpShapeCollectionAgent, size 0x38 (here 0x14), bases: hkpCollisionAgent, 1 members
 struct hkpShapeCollectionAgent
 {
     const void* vtbl;
@@ -47,18 +48,20 @@ struct hkpShapeCollectionAgent
     void* p1;
     void* p2;
     int count;
-    void cleanup_00d436f0(int arg);
+    void cleanup_00d436f0(int info);
 };
 
 // @fnv 0x00d436f0
 // src: HAVOK_SRC 0x00d436f0
-void hkpShapeCollectionAgent::cleanup_00d436f0(int arg)
+// pdb: hkpShapeCollectionAgent::cleanup | hkpShapeCollectionAgent.obj | retail, vtable slot, high
+// pdb params: info
+void hkpShapeCollectionAgent::cleanup_00d436f0(int info)
 {
     for (int i = 0; i < count; ++i)
     {
         void** arr = reinterpret_cast<void**>(reinterpret_cast<void**>(this)[3]);
         void* obj = arr[i * 2 + 1];
-        ((void(__thiscall*)(void*, int))(*reinterpret_cast<void***>(obj))[7])(obj, arg);
+        ((void(__thiscall*)(void*, int))(*reinterpret_cast<void***>(obj))[7])(obj, info);
     }
     ((void(__thiscall*)(void*, int))(*reinterpret_cast<void***>(this))[0])(this, 1);
 }
@@ -92,18 +95,20 @@ class FUN_00d43730_cls
     ShapeEntry* m_entries;  // +0xc
     int m_uiItemCount;      // +0x10
 
-    void CallShapeItems(int arg);
+    void CallShapeItems(int input);
 };
 
 // @fnv 0x00d43730
-void FUN_00d43730_cls::CallShapeItems(int arg)
+// pdb: hkpShapeCollectionAgent::invalidateTim | hkpShapeCollectionAgent.obj | retail, vtable slot, high
+// pdb params: input
+void FUN_00d43730_cls::CallShapeItems(int input)
 {
     int i = 0;
     if (m_uiItemCount > 0)
     {
         do
         {
-            m_entries[i].m_pInventoryEntryData->v09(arg);
+            m_entries[i].m_pInventoryEntryData->v09(input);
             ++i;
         } while (i < m_uiItemCount);
     }
@@ -140,18 +145,20 @@ class FUN_00d43760_cls
     ShapeEntry* m_entries;  // +0xc
     int m_uiItemCount;      // +0x10
 
-    void DispatchToEntries(float a, float b, int c);
+    void DispatchToEntries(float oldTime, float newTime, int input);
 };
 
 // @fnv 0x00d43760
-void FUN_00d43760_cls::DispatchToEntries(float afArg1, float afArg2, int aiArg3)
+// pdb: hkpShapeCollectionAgent::warpTime | hkpShapeCollectionAgent.obj | retail, vtable slot, high
+// pdb params: oldTime, newTime, input
+void FUN_00d43760_cls::DispatchToEntries(float oldTime, float newTime, int input)
 {
     int i = 0;
     if (m_uiItemCount > 0)
     {
         do
         {
-            m_entries[i].m_pInventoryEntryData->v10(afArg1, afArg2, aiArg3);
+            m_entries[i].m_pInventoryEntryData->v10(oldTime, newTime, input);
             ++i;
         } while (i < m_uiItemCount);
     }
@@ -209,16 +216,20 @@ __forceinline void hkTimerEnd()
 
 // Iterates the shape collection's keys, filters each child shape, and dispatches the static get-closest-points agent for each accepted pair.
 // @fnv 0x00d43960
-void __cdecl GetClosestPointsShapeCollection(const hkpCdBody* bodyA, const hkpCdBody* bodyB,
+// src: XBOX_RETAIL_PDB 0x00d43960
+// pdb: hkpShapeCollectionAgent::staticGetClosestPoints | hkpShapeCollectionAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: shapeBuffer, newOperandA, assertBuf, ostr
+void __cdecl hkpShapeCollectionAgent_staticGetClosestPoints(const hkpCdBody* bodyA, const hkpCdBody* bodyB,
                                              const CollisionAgentContext* input, void* collector)
 {
     hkTimerBegin("TtShapeCollection");
 
-    const hkpShapeContainer* collection = bodyA->m_pCollisionShape->GetShapeContainer();
-    const hkpShape* shapeB = bodyB->m_pCollisionShape;
+    const hkpShapeContainer* collection = bodyA->m_shape->GetShapeContainer();
+    const hkpShape* shapeB = bodyB->m_shape;
 
     hkpCdBody local_body;
-    local_body.m_pMotionState = bodyA->m_pMotionState;
+    local_body.m_motion = bodyA->m_motion;
     local_body.m_parent = bodyA;
 
     int typeB = shapeB->getType();
@@ -231,8 +242,8 @@ void __cdecl GetClosestPointsShapeCollection(const hkpCdBody* bodyA, const hkpCd
         {
             __declspec(align(16)) int buffer[128];
             const hkpShape* childShape = collection->GetShapeForKey(key, *(hkpShapeBuffer*)buffer);
-            local_body.m_pCollisionShape = childShape;
-            local_body.m_uiCollisionShapeKey = key;
+            local_body.m_shape = childShape;
+            local_body.m_shapeKey = key;
 
             int typeA = childShape->getType();
             hkpCollisionDispatcher* pDispatcher = input->m_pCollisionDispatcher;
@@ -273,15 +284,15 @@ typedef AgentS*(__cdecl* CreateFunc)(const hkpCdBody&, const hkpCdBody&, const C
 inline AgentS* getNewCollisionAgent(const hkpCollisionDispatcher* dispatcher, const hkpCdBody& bodyA, const hkpCdBody& bodyB,
                                                  const CollisionAgentContext& input, ContactMgrS* mgr)
 {
-    const int typeA = bodyA.m_pCollisionShape->getType();
-    const int typeB = bodyB.m_pCollisionShape->getType();
+    const int typeA = bodyA.m_shape->getType();
+    const int typeB = bodyB.m_shape->getType();
     const unsigned char(*table)[32] = input.m_bCreatePredictiveAgents ? dispatcher->m_agent3TypeMap : dispatcher->m_agent2TypeMap;
     int idx = table[typeA][typeB];
     CreateFunc f = (CreateFunc)dispatcher->m_agent2Funcs[idx].m_pCreateFunc;
     return f(bodyA, bodyB, input, mgr);
 }
 
-void hkArrayUtil__reserve(void* alloc, void* arr, int n, int size);
+void hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 
 struct CollisionAgentMapRecord
 {
@@ -364,13 +375,16 @@ struct FUN_00d440f0 : CollisionAgentS
 
 // Reserves space for the shapes in bodyA's container and appends a key/agent pair for each shape accepted by the filter.
 // @fnv 0x00d440f0
+// pdb: hkpShapeCollectionAgent::hkpShapeCollectionAgent | hkpShapeCollectionAgent.obj | retail, call graph (shared callers), high
+// pdb params: bodyA, bodyB, input, mgr
+// pdb locals: shapeBuffer, newOperandA, assertBuf, ostr
 FUN_00d440f0::FUN_00d440f0(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
-                           ContactMgrS* apContactMgr)
-    : CollisionAgentS(apContactMgr)
+                           ContactMgrS* mgr)
+    : CollisionAgentS(mgr)
 {
     hkpCdBody newOperandA(&bodyA);
 
-    const hkpShapeContainer* shapeContainer = bodyA.m_pCollisionShape->GetShapeContainer();
+    const hkpShapeContainer* shapeContainer = bodyA.m_shape->GetShapeContainer();
     int size = shapeContainer->GetNumChildShapes();
     m_agents2.reserve(size);
 
@@ -385,7 +399,7 @@ FUN_00d440f0::FUN_00d440f0(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const
         {
             CollisionAgentMapRecord& newPair = *m_agents2.expandByUnchecked(1);
             newPair.m_pCollisionAgent =
-                getNewCollisionAgent(input.m_pCollisionDispatcher, newOperandA, bodyB, input, apContactMgr);
+                getNewCollisionAgent(input.m_pCollisionDispatcher, newOperandA, bodyB, input, mgr);
             newPair.m_key = key;
         }
     }
@@ -429,7 +443,7 @@ struct CollisionAgent
                                       ConstraintOwner& owner);
 };
 
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 __forceinline hkMemoryRouter* getRouter()
 {
@@ -518,6 +532,9 @@ class ShapeCollectionAgentA
 // Iterates shape keys in bodyA's container, creating or updating collision agents for enabled pairs and removing agents for disabled ones.
 // @fnv 0x00d43f10
 // src: HAVOK_LIB 0x00d43f10
+// pdb: hkpShapeCollectionAgent::updateShapeCollectionFilter | hkpShapeCollectionAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, constraintOwner
+// pdb locals: shapeBuffer, shapeContainer, newOperandA, assertBuf, ostr
 void ShapeCollectionAgentA::hkpShapeCollectionAgent_updateShapeCollectionFilter(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
                                          ConstraintOwner& constraintOwner)
 {
@@ -602,13 +619,16 @@ struct B512
 // Calling convention note: declared __thiscall as in the packet (this in ecx, callee pops 20 bytes).
 struct Agent : hkpShapeCollectionAgent
 {
-    void hkpShapeCollectionAgent_linearCast(hkpCdBody* holder, int a, int b, int c, int d);
+    void hkpShapeCollectionAgent_linearCast(hkpCdBody* bodyA, int bodyB, int input, int collector, int startCollector);
 };
 
 // Records profiler markers, resolves each pair's shape key, and dispatches its child body to the handler.
 // @fnv 0x00d43aa0
 // src: HAVOK_LIB 0x00d43aa0
-void Agent::hkpShapeCollectionAgent_linearCast(hkpCdBody* holder, int a, int b, int c, int d)
+// pdb: hkpShapeCollectionAgent::linearCast | hkpShapeCollectionAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: shapeBuffer, newOperandA, assertBuf, ostr
+void Agent::hkpShapeCollectionAgent_linearCast(hkpCdBody* bodyA, int bodyB, int input, int collector, int startCollector)
 {
     hkMonitorStream* pb = (hkMonitorStream*)TlsGetValue(g_tlsIndex);
     Rec* cur = (Rec*)pb->m_end.val();
@@ -621,19 +641,19 @@ void Agent::hkpShapeCollectionAgent_linearCast(hkpCdBody* holder, int a, int b, 
         cur->ticks = t;
         pb->m_end.m_storage = (char*)(cur + 1);
     }
-    const hkpShapeContainer* q = holder->m_pCollisionShape->GetShapeContainer();
+    const hkpShapeContainer* q = bodyA->m_shape->GetShapeContainer();
     hkpCdBody packet;
     B512 buf;
-    packet.m_pMotionState = holder->m_pMotionState;
-    packet.m_parent = holder;
+    packet.m_motion = bodyA->m_motion;
+    packet.m_parent = bodyA;
     Pair* p = (Pair*)p2;
     for (int i = count - 1; i >= 0; i--)
     {
         int id = p->a;
         const hkpShape* r = q->GetShapeForKey(id, *(hkpShapeBuffer*)&buf);
-        packet.m_pCollisionShape = r;
-        packet.m_uiCollisionShapeKey = id;
-        ((Handler*)p->b)->v14(&packet, a, b, c, d);
+        packet.m_shape = r;
+        packet.m_shapeKey = id;
+        ((Handler*)p->b)->v14(&packet, bodyB, input, collector, startCollector);
         p++;
     }
     pb = (hkMonitorStream*)TlsGetValue(g_tlsIndex);
@@ -713,12 +733,15 @@ struct S_00d43cd0
 
 // Iterates m_entries, resolving each key to a shape, and calls the agent's process on bodyA/bodyB until the collector reports a hit.
 // @fnv 0x00d43cd0
+// pdb: hkpShapeCollectionAgent::getPenetrations | hkpShapeCollectionAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: shapeBuffer, newOperandA, assertBuf, ostr
 void S_00d43cd0::ProcessCollisionEntries(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
                                          const S_00d43cd0_Input& input, S_00d43cd0_Collector& collector)
 {
     S_00d43cd0_Timer("TtShapeCollection");
 
-    const hkpShapeContainer* container = bodyA.m_pCollisionShape->GetShapeContainer();
+    const hkpShapeContainer* container = bodyA.m_shape->GetShapeContainer();
     hkpCdBody newBodyA(&bodyA);
     S_00d43cd0_ShapeBuffer shapeBuffer;
 
@@ -801,6 +824,9 @@ typedef void(__cdecl* S_00d43dc0_GetPenetrationsFunc)(const hkpCdBody& bodyA, co
 // Iterates shapes in bodyA's container, calls the dispatcher's penetration query for each enabled shape, and stops early if the collector requests it.
 // @fnv 0x00d43dc0
 // src: HAVOK_LIB 0x00d43dc0
+// pdb: hkpShapeCollectionAgent::staticGetPenetrations | hkpShapeCollectionAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: shapeBuffer, newOperandA, assertBuf, ostr
 void __cdecl hkpShapeCollectionAgent_staticGetPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
                           const CollisionAgentContext& input, S_00d43dc0_CdBodyPairCollector& collector)
 {
@@ -871,13 +897,16 @@ class ShapeObject
 
 struct FUN_00d43880_cls : public hkpShapeCollectionAgent
 {
-    void hkpShapeCollectionAgent_getClosestPoints(hkpCdBody* pHolder, DWORD a1, DWORD a2, DWORD a3);
+    void hkpShapeCollectionAgent_getClosestPoints(hkpCdBody* bodyA, DWORD bodyB, DWORD input, DWORD collector);
 };
 
 // Between profiler records, resolves each key to a child body and passes it to the pair's object.
 // @fnv 0x00d43880
 // src: HAVOK_LIB 0x00d43880
-void FUN_00d43880_cls::hkpShapeCollectionAgent_getClosestPoints(hkpCdBody* pHolder, DWORD a1, DWORD a2, DWORD a3)
+// pdb: hkpShapeCollectionAgent::getClosestPoints | hkpShapeCollectionAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: shapeBuffer, newOperandA, assertBuf, ostr
+void FUN_00d43880_cls::hkpShapeCollectionAgent_getClosestPoints(hkpCdBody* bodyA, DWORD bodyB, DWORD input, DWORD collector)
 {
     hkMonitorStream* pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     if (pBuf->m_end.m_storage < pBuf->m_capacityMinus16.m_storage)
@@ -890,11 +919,11 @@ void FUN_00d43880_cls::hkpShapeCollectionAgent_getClosestPoints(hkpCdBody* pHold
         pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
     }
 
-    const hkpShapeContainer* pHandler = pHolder->m_pCollisionShape->GetShapeContainer();
+    const hkpShapeContainer* pHandler = bodyA->m_shape->GetShapeContainer();
     hkpCdBody res;
-    res.m_pMotionState = pHolder->m_pMotionState;
+    res.m_motion = bodyA->m_motion;
     int i = this->count - 1;
-    res.m_parent = pHolder;
+    res.m_parent = bodyA;
     KeyedPointerEntry* apPairs = (KeyedPointerEntry*)this->p2;
     ShapeKeyBuf keyBuf;
     if (i >= 0)
@@ -902,10 +931,10 @@ void FUN_00d43880_cls::hkpShapeCollectionAgent_getClosestPoints(hkpCdBody* pHold
         do
         {
             DWORD key = apPairs->m_key;
-            res.m_pCollisionShape = pHandler->GetShapeForKey(key, *(hkpShapeBuffer*)&keyBuf);
-            res.m_uiCollisionShapeKey = key;
+            res.m_shape = pHandler->GetShapeForKey(key, *(hkpShapeBuffer*)&keyBuf);
+            res.m_shapeKey = key;
             ShapeObject* pObj = (ShapeObject*)apPairs->m_pEntryObject;
-            pObj->vtbl10(&res, a1, a2, a3);
+            pObj->vtbl10(&res, bodyB, input, collector);
             apPairs++;
             i--;
         } while (i >= 0);
@@ -937,17 +966,20 @@ typedef void(__cdecl* LinearCastFunc)(const hkpCdBody* local_body, const hkpCdBo
 // Iterates each shape in bodyA's collection, dispatches the linear-cast agent for enabled shapes against bodyB, and times the work.
 // @fnv 0x00d43b90
 // src: HAVOK_LIB 0x00d43b90
-void __cdecl hkpShapeCollectionAgent_staticLinearCast(const hkpCdBody* bodyA, const hkpCdBody* bodyB, const CollisionAgentContext* input, void* a4,
-                          void* a5)
+// pdb: hkpShapeCollectionAgent::staticLinearCast | hkpShapeCollectionAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: shapeBuffer, newOperandA, assertBuf, ostr
+void __cdecl hkpShapeCollectionAgent_staticLinearCast(const hkpCdBody* bodyA, const hkpCdBody* bodyB, const CollisionAgentContext* input, void* collector,
+                          void* startCollector)
 {
     hkTimerBegin(str_010cf300);
 
-    const hkpShapeContainer* collection = bodyA->m_pCollisionShape->GetShapeContainer();
+    const hkpShapeContainer* collection = bodyA->m_shape->GetShapeContainer();
     hkpCdBody localBody;
-    localBody.m_pMotionState = bodyA->m_pMotionState;
+    localBody.m_motion = bodyA->m_motion;
     localBody.m_parent = bodyA;
 
-    int typeB = bodyB->m_pCollisionShape->getType();
+    int typeB = bodyB->m_shape->getType();
     unsigned int key = collection->GetFirstKey();
     if (key != -1)
     {
@@ -958,13 +990,13 @@ void __cdecl hkpShapeCollectionAgent_staticLinearCast(const hkpCdBody* bodyA, co
             {
                 hkpShapeBuffer buffer;
                 const hkpShape* childShape = collection->GetShapeForKey(key, buffer);
-                localBody.m_pCollisionShape = childShape;
-                localBody.m_uiCollisionShapeKey = key;
+                localBody.m_shape = childShape;
+                localBody.m_shapeKey = key;
 
                 int typeA = childShape->getType();
                 unsigned char agentType = input->m_pCollisionDispatcher->m_agent2TypeMap[typeA][typeB];
                 LinearCastFunc func = (LinearCastFunc)input->m_pCollisionDispatcher->m_agent2Funcs[agentType].m_pLinearCastFunc;
-                func(&localBody, bodyB, input, a4, a5);
+                func(&localBody, bodyB, input, collector, startCollector);
             }
             key = collection->GetNextShapeKey(key);
         } while (key != -1);
@@ -998,13 +1030,16 @@ struct CollectionProcessEntry
 
 struct CollectionProcessAgent : hkpShapeCollectionAgent
 {
-    void hkpShapeCollectionAgent_processCollision(hkpCdBody* arg, unsigned int a0, unsigned int a1, unsigned int a2);
+    void hkpShapeCollectionAgent_processCollision(hkpCdBody* bodyA, unsigned int bodyB, unsigned int input, unsigned int result);
 };
 
 // Records profiler ticks around resolving child bodies and dispatching each through v18.
 // @fnv 0x00d437a0
 // src: HAVOK_LIB 0x00d437a0
-void CollectionProcessAgent::hkpShapeCollectionAgent_processCollision(hkpCdBody* arg, unsigned int a0, unsigned int a1, unsigned int a2)
+// pdb: hkpShapeCollectionAgent::processCollision | hkpShapeCollectionAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: shapeBuffer, newOperandA, assertBuf, ostr
+void CollectionProcessAgent::hkpShapeCollectionAgent_processCollision(hkpCdBody* bodyA, unsigned int bodyB, unsigned int input, unsigned int result)
 {
     hkMonitorStream* pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     if (pBuf->m_end.m_storage < pBuf->m_capacityMinus16.m_storage)
@@ -1017,19 +1052,19 @@ void CollectionProcessAgent::hkpShapeCollectionAgent_processCollision(hkpCdBody*
         pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
     }
 
-    const hkpShapeContainer* pRes = arg->m_pCollisionShape->GetShapeContainer();
+    const hkpShapeContainer* pRes = bodyA->m_shape->GetShapeContainer();
     hkpCdBody pair;
     hkpShapeBuffer out;
-    pair.m_pMotionState = arg->m_pMotionState;
-    pair.m_parent = arg;
+    pair.m_motion = bodyA->m_motion;
+    pair.m_parent = bodyA;
 
     CollectionProcessEntry* pEntry = (CollectionProcessEntry*)p2;
     for (int i = count - 1; i >= 0; i--)
     {
         void* shape = pEntry->pShape;
-        pair.m_pCollisionShape = pRes->GetShapeForKey((unsigned int)shape, out);
-        pair.m_uiCollisionShapeKey = (unsigned int)shape;
-        pEntry->pHandler->v18(&pair, a0, a1, a2);
+        pair.m_shape = pRes->GetShapeForKey((unsigned int)shape, out);
+        pair.m_shapeKey = (unsigned int)shape;
+        pEntry->pHandler->v18(&pair, bodyB, input, result);
         pEntry++;
     }
 

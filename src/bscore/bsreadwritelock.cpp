@@ -4,6 +4,7 @@
 
 // Runs the BGSPerkEntry constructor (0x005e9530), then sets the derived vtable and clears the function data, conditions, condition count and function.
 // @fnv 0x005e9f60
+// pdb: BGSEntryPointPerkEntry::BGSEntryPointPerkEntry | BGSPerk.obj | debug, upstream name already matches, high
 BGSEntryPointPerkEntry::BGSEntryPointPerkEntry()
 {
     m_pFunctionData = 0;
@@ -36,6 +37,8 @@ __declspec(dllimport) long __stdcall InterlockedCompareExchange(long volatile* D
 
 // @fnv 0x00aa62e0
 // src: XBOX_PDB 0x00aa62e0
+// pdb: BSReadWriteLock::UnlockWrite | BSReadWriteLock.obj | debug, upstream name already matches, high
+// pdb locals: uicurrentThread
 void FUN_00aa62e0_shell::BSReadWriteLock_UnlockWrite()
 {
     m_uiLockState -= 1;
@@ -52,6 +55,8 @@ extern "C" __declspec(dllimport) unsigned long __stdcall GetCurrentThreadId();
 extern "C" __declspec(dllimport) long __stdcall InterlockedCompareExchange(volatile long*, long, long);
 extern "C" __declspec(dllimport) void __stdcall Sleep(unsigned long);
 // @fnv 0x00aa6060
+// pdb: BSReadWriteLock::LockForWrite | BSReadWriteLock.obj | retail, call graph, high
+// pdb locals: uicurrentThread, uimarkedLock, uiunmarkedLock
 void __fastcall AcquireLock(ReadWriteLock* lock)
 {
     unsigned int uiz;
@@ -92,6 +97,8 @@ struct Lock00aa6120
 };
 // @fnv 0x00aa6120
 // src: COMMUNITY 0x00aa6120
+// pdb: BSReadWriteLock::TryLockForRead | BSReadWriteLock.obj | retail, upstream name already matches, high
+// pdb locals: uicurrentThread, blocked, uioldLockCount
 bool Lock00aa6120::BSReadWriteLock_TryLockForRead()
 {
     bool bLocked = false;
@@ -133,6 +140,8 @@ struct Lock00aa61b0
 // Tries to acquire the lock: re-enters if already owned by this thread, otherwise atomically sets state and records the owner thread id.
 // @fnv 0x00aa61b0
 // src: COMMUNITY 0x00aa61b0
+// pdb: BSReadWriteLock::TryLockForWrite | BSReadWriteLock.obj | debug, upstream name already matches, high
+// pdb locals: uicurrentThread, blocked
 bool Lock00aa61b0::BSReadWriteLock_TryLockForWrite()
 {
     bool bLocked = false;
@@ -170,6 +179,8 @@ struct Lock00aa6220
 // Tries to acquire the lock: re-enters if already owned by this thread, otherwise claims the state word via InterlockedCompareExchange and records the owner.
 // @fnv 0x00aa6220
 // src: COMMUNITY 0x00aa6220
+// pdb: BSReadWriteLock::TryLockForWriteAndReserve | BSReadWriteLock.obj | retail, upstream name already matches, high
+// pdb locals: uicurrentThread, blocked, uilockCopy, uinewLock
 bool Lock00aa6220::BSReadWriteLock_TryLockForWriteAndReserve()
 {
     bool bLocked = false;
@@ -211,6 +222,7 @@ struct Lock00aa62c0
 };
 // @fnv 0x00aa62c0
 // src: XBOX_PDB 0x00aa62c0
+// pdb: BSReadWriteLock::UnlockRead | BSReadWriteLock.obj | debug, upstream name already matches, high
 void Lock00aa62c0::BSReadWriteLock_UnlockRead()
 {
     InterlockedDecrement(&count);

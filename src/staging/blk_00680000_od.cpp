@@ -43,6 +43,8 @@ struct FUN_00692290_class
 
 // @fnv 0x00692290
 // src: XBOX_PDB 0x00692290
+// pdb: BSSimpleArray<EdgeExtraInfo,1024>::AddUninitialized | NavMesh.obj | debug, object-file run extension, low
+// pdb locals: inewSize
 void FUN_00692290_class::BSSimpleArray_unsigned_short_1024_InitialSetup(unsigned int requested, unsigned int savedSize)
 {
     iSize = 0;
@@ -67,6 +69,8 @@ void FUN_00692290_class::BSSimpleArray_unsigned_short_1024_InitialSetup(unsigned
 
 // @fnv 0x00680170
 // src: GUESS 0x00680170 (confidence: low)
+// pdb: PackageTarget::SetTargObjectType | PackageTarget.obj | debug, object-file run extension, low
+// pdb params: aeType
 void PackageTargetRecord::UpdateState_00680170(void* reference)
 {
     if (GetTargetKind() == 2)
@@ -150,6 +154,7 @@ struct FUN_006836f0_class
 
 // @fnv 0x006836f0
 // src: EXE 0x006836f0
+// pdb: BSList<BSTempEffectDebris *>::BSList<BSTempEffectDebris *> | BSTempEffectDebris.obj | debug, object-file run extension, low
 FUN_006836f0_class* __thiscall FUN_006836f0_class::BSList_BSTempEffectDebris_BSList()
 {
     FUN_00683760();
@@ -165,6 +170,7 @@ struct FUN_00683740_class
 
 // @fnv 0x00683740
 // src: COMMUNITY 0x00683740
+// pdb: BSList<BSTempEffectDebris *>::~BSList<BSTempEffectDebris *> | BSTempEffectDebris.obj | debug, object-file gap fill, medium
 void FUN_00683740_class::BSList_BSTempEffectDebris_Free()
 {
     FUN_006837f0();
@@ -177,6 +183,7 @@ struct FUN_00683760_class
     FUN_00683760_class();
 };
 // @fnv 0x00683760
+// pdb: BSPointerListBase<BSTempEffectDebris *>::BSPointerListBase<BSTempEffectDebris *> | BSTempEffectDebris.obj | debug, object-file gap fill, medium
 FUN_00683760_class::FUN_00683760_class()
 {
     Init();
@@ -198,18 +205,19 @@ struct FUN_0068ab80_class
 {
     ActorCombatGroup** p;
     ActorCombatGroup** q;
-    void ReleaseStorage_0068ab80();
+    void NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_dtor();
 };
 // Points p at DAT_01069d7c and frees the allocation held by q via NiTMallocInterface<ActorCombatGroup*>::Deallocate.
 // @fnv 0x0068ab80
-// src: GUESS 0x0068ab80 (confidence: medium)
-void FUN_0068ab80_class::ReleaseStorage_0068ab80()
+// src: XBOX_DEBUG_PDB 0x0068ab80
+// pdb: NiTArray<NiAVObject *,NiTMallocInterface<NiAVObject *> >::~NiTArray<NiAVObject *,NiTMallocInterface<NiAVObject *> > | BSTempEffectParticle.obj | debug, call graph (shared callers), high
+void FUN_0068ab80_class::NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_dtor()
 {
     p = (ActorCombatGroup**)&DAT_01069d7c;
     NiTMallocInterface<ActorCombatGroup*>::Deallocate(q);
 }
 
-extern "C" void __cdecl NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll(void*);
+extern "C" void __cdecl NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll(void*);
 
 struct FUN_0068e740_class
 {
@@ -218,9 +226,10 @@ struct FUN_0068e740_class
 
 // @fnv 0x0068e740
 // src: XBOX_PDB 0x0068e740
+// pdb: NiAVObject::DetachAllProperties | BSTempEffectSimpleDecal.obj | debug, upstream name already matches, high
 void FUN_0068e740_class::NiAVObject_DetachAllProperties()
 {
-    ((void(__thiscall*)(void*))NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll)((char*)this + 0x24);
+    ((void(__thiscall*)(void*))NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll)((char*)this + 0x24);
 }
 
 extern int DAT_0106a038;
@@ -233,11 +242,13 @@ struct GlobalObject_00869f00
 
 struct FUN_0068eb30_class : GlobalObject_00869f00
 {
-    void InitializeGlobalObject();
+    void BSSimpleArray_DecalVertex_1024_dtor();
 };
 
 // @fnv 0x0068eb30
-void FUN_0068eb30_class::InitializeGlobalObject()
+// src: XBOX_DEBUG_PDB 0x0068eb30
+// pdb: BSSimpleArray<DecalVertex *,1024>::~BSSimpleArray<DecalVertex *,1024> | BSTempEffectSimpleDecal.obj | debug, call graph, high
+void FUN_0068eb30_class::BSSimpleArray_DecalVertex_1024_dtor()
 {
     pData = (int)&DAT_0106a038;
     Clear(true);
@@ -273,15 +284,17 @@ struct FUN_00691a30_class
 {
     GO m0;
     void UpdateFields_00659080(int);
-    void ClearEntryPointerAndForward(int a);
+    void ClearEntryPointerAndForward(int pkItem);
 };
 // Clears the pointer at offset 8 of the passed object and forwards it to FUN_00659080 on this+0xc.
 // @fnv 0x00691a30
 // src: GUESS 0x00691a30 (confidence: medium)
-void FUN_00691a30_class::ClearEntryPointerAndForward(int pObject)
+// pdb: NiTMap<unsigned int,NiPointer<ReferenceObstacleArray> >::DeleteItem | NavMeshObstacleManager.obj | retail, vtable slot, high
+// pdb params: pkItem
+void FUN_00691a30_class::ClearEntryPointerAndForward(int pkItem)
 {
-    ((GO*)((char*)pObject + 8))->operator=(0);
-    ((FUN_00691a30_class*)((char*)this + 0xc))->UpdateFields_00659080(pObject);
+    ((GO*)((char*)pkItem + 8))->operator=(0);
+    ((FUN_00691a30_class*)((char*)this + 0xc))->UpdateFields_00659080(pkItem);
 }
 
 namespace fnv_00691bf0 {
@@ -291,15 +304,16 @@ struct GlobalObject_00869f00
 {
     void* p;
     void Clear(bool);
-    void UpdateState_00691bf0();
+    void BSSimpleArray_EdgeExtraInfo_1024_dtor();
 };
 
 void GlobalObject_00869f00::Clear(bool)
 {}
 
 // @fnv 0x00691bf0
-// src: GUESS 0x00691bf0 (confidence: low)
-void GlobalObject_00869f00::UpdateState_00691bf0()
+// src: XBOX_DEBUG_PDB 0x00691bf0
+// pdb: BSSimpleArray<EdgeExtraInfo,1024>::~BSSimpleArray<EdgeExtraInfo,1024> | NavMesh.obj | debug, call graph (shared callers), high
+void GlobalObject_00869f00::BSSimpleArray_EdgeExtraInfo_1024_dtor()
 {
     p = &DAT_0106ac40;
     Clear(true);
@@ -331,12 +345,13 @@ struct GlobalObject_00869f00
 struct FUN_00691fe0_class
 {
     void* p;
-    void ResetVirtualTableAndClear_00691fe0();
+    void BSSimpleArray_NavMeshStaticAvoidNode_1024_dtor();
 };
 
 // @fnv 0x00691fe0
-// src: GUESS 0x00691fe0 (confidence: medium)
-void FUN_00691fe0_class::ResetVirtualTableAndClear_00691fe0()
+// src: XBOX_DEBUG_PDB 0x00691fe0
+// pdb: BSSimpleArray<NavMeshStaticAvoidNode,1024>::~BSSimpleArray<NavMeshStaticAvoidNode,1024> | NavMesh.obj | debug, call graph (shared callers), high
+void FUN_00691fe0_class::BSSimpleArray_NavMeshStaticAvoidNode_1024_dtor()
 {
     p = &DAT_0106acb0;
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -355,6 +370,7 @@ struct FUN_006926e0_class
 // Calls FUN_00692710 on this object, sets the unsigned short at offset 0x24 to 0xffff, and returns this.
 // @fnv 0x006926e0
 // src: COMMUNITY 0x006926e0
+// pdb: ExtraStartingPosition::`scalar deleting destructor' | ExtraDataObjects.obj | debug, object-file run extension, low
 PositionRotation* __thiscall FUN_006926e0_class::NavMeshStaticAvoidNode_NavMeshStaticAvoidNode()
 {
     ((PositionRotation*)this)->PathingAvoidNode_PathingAvoidNode();
@@ -428,6 +444,8 @@ unsigned int FUN_00695370_class::GetArrFlags()
 extern "C" void* __cdecl memset(void* dst, int value, unsigned int count);
 
 // @fnv 0x00695390
+// pdb: BSmemset | TESScriptFunctions.obj | debug, call graph, medium
+// pdb params: apDest, aiC, aiCount
 void* __cdecl MemsetWrapper(void* dst, int value, unsigned int count)
 {
     return memset(dst, value, count);
@@ -443,6 +461,8 @@ struct FUN_0069ad40_class
 
 // Calls ConstructBuffer with param, stores the address of DAT_0106b184 at the start of this, and returns this as an int pointer.
 // @fnv 0x0069ad40
+// pdb: NiTMap<FastNavMeshVertHandle,POVVertexData *>::NiTMap<FastNavMeshVertHandle,POVVertexData *> | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 int* FUN_0069ad40_class::InitializeWithGlobal(int param)
 {
     ConstructBuffer(param);
@@ -487,6 +507,7 @@ struct FUN_0069b1d0_class
 };
 // @fnv 0x0069b1d0
 // src: GUESS 0x0069b1d0 (confidence: low)
+// pdb: BSSimpleArray<bool,1024>::~BSSimpleArray<bool,1024> | NavMesh_Util.obj | debug, call graph (shared callers), low
 void FUN_0069b1d0_class::UpdateState_0069b1d0()
 {
     m_pData = (int)&DAT_0106b1cc;
@@ -534,12 +555,13 @@ extern int DAT_0106b1e0;
 struct Dummy_0069af30
 {
     void ResetAndWrite(int, int);
-    int* BSSimpleArray_FastNavMeshEdgeHandle_1024_BSSimpleArray_FastNavMeshEdgeHandle_1024();
+    int* BSSimpleArray_FastNavMeshEdgeHandle_1024_ctor();
 };
 
 // @fnv 0x0069b2c0
-// src: COMMUNITY 0x0069b2c0
-int* Dummy_0069af30::BSSimpleArray_FastNavMeshEdgeHandle_1024_BSSimpleArray_FastNavMeshEdgeHandle_1024()
+// src: XBOX_DEBUG_PDB 0x0069b2c0
+// pdb: BSSimpleArray<FastNavMeshEdgeHandle,1024>::BSSimpleArray<FastNavMeshEdgeHandle,1024> | NavMesh_Util.obj | debug, call graph, high
+int* Dummy_0069af30::BSSimpleArray_FastNavMeshEdgeHandle_1024_ctor()
 {
     *(int*)this = (int)&DAT_0106b1e0;
     ResetAndWrite(0, 0);
@@ -555,11 +577,12 @@ struct GlobalObject_00869f00
 struct FUN_0069b2f0_class
 {
     void* p;
-    void UpdateState_0069b2f0();
+    void BSSimpleArray_FastNavMeshEdgeHandle_1024_dtor();
 };
 // @fnv 0x0069b2f0
-// src: GUESS 0x0069b2f0 (confidence: low)
-void FUN_0069b2f0_class::UpdateState_0069b2f0()
+// src: XBOX_DEBUG_PDB 0x0069b2f0
+// pdb: BSSimpleArray<FastNavMeshEdgeHandle,1024>::~BSSimpleArray<FastNavMeshEdgeHandle,1024> | NavMesh_Util.obj | debug, call graph, high
+void FUN_0069b2f0_class::BSSimpleArray_FastNavMeshEdgeHandle_1024_dtor()
 {
     p = &DAT_0106b1e0;
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -578,6 +601,7 @@ struct FUN_0069b760_class
 
 // @fnv 0x0069b760
 // src: GUESS 0x0069b760 (confidence: low)
+// pdb: NiTMap<FastNavMeshVertHandle,POVVertexData *>::NewItem | NavMesh_Util.obj | debug, vtable slot, medium
 void FUN_0069b760_class::InvokeVirtualMethod_0069b760()
 {
     ((FUN_0069b8a0_class*)((char*)this + 0xc))->CreateObj();
@@ -597,6 +621,8 @@ struct FUN_0069b780_class
 // Clears the int at offset 0xc of p, then calls FreeMemory on this+0xc with p.
 // @fnv 0x0069b780
 // src: GUESS 0x0069b780 (confidence: medium)
+// pdb: NiTMap<FastNavMeshVertHandle,POVVertexData *>::DeleteItem | NavMesh_Util.obj | debug, vtable slot, medium
+// pdb params: pkItem
 void FUN_0069b780_class::ReleaseStorage_0069b780(void* p)
 {
     *(int*)((char*)p + 0xc) = 0;
@@ -622,6 +648,8 @@ int __thiscall FUN_0069b920_class::ProcessAndReturnValue_0069b920()
 
 template <>
 // @fnv 0x0069ccf0
+// pdb: BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024>::operator[] | NavMeshBounds.obj | debug, call graph, low
+// pdb params: aiIndex
 NavMeshBounds::NavMeshBoundsTriangle& BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle, 1024>::GetAt(int aiValue)
 {
     return *(NavMeshBounds::NavMeshBoundsTriangle*)(aiValue * 6 + (char*)pBuffer);
@@ -639,6 +667,7 @@ struct FUN_0069cd40_class
     void InitAndClear();
 };
 // @fnv 0x0069cd40
+// pdb: BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024>::~BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024> | NavMeshBounds.obj | debug, call graph, medium
 void FUN_0069cd40_class::InitAndClear()
 {
     p = &DAT_0106b28c;
@@ -659,6 +688,8 @@ struct FUN_0069d790_class
 
 // @fnv 0x0069d790
 // src: COMMUNITY 0x0069d790
+// pdb: NavMeshGrid::GetGridPosition | NavMeshGrid.obj | debug, upstream name already matches, high
+// pdb params: aiColumn, aiRow
 NiPoint3* FUN_0069d790_class::NavMeshGrid_GetGridPosition(NiPoint3* result, unsigned int a, unsigned int b)
 {
     result->Set((float)a * m_f4 + m_fc, (float)b * m_f8 + m_f10, m_f14);
@@ -677,6 +708,8 @@ struct FUN_0069dec0_class
 
 // @fnv 0x0069dec0
 // src: XBOX_PDB 0x0069dec0
+// pdb: BSSimpleArray<unsigned short,1024>::GetAt | NavMesh_Util.obj | debug, call graph, medium
+// pdb params: aiIndex
 unsigned short& FUN_0069dec0_class::BSSimpleArray_unsigned_short_1024_GetAt(int index)
 {
     return ((DA00694f80*)this)->GetAt(index);
@@ -694,6 +727,8 @@ struct FUN_0069dee0_class
 };
 // Searches the NavMeshTriList for the given unsigned short using AreWideCharsEqual and returns whether the index is not -1.
 // @fnv 0x0069dee0
+// pdb: BSSimpleArray<unsigned short,1024>::IsInArray | NavMeshGrid.obj | debug, call graph (shared callers), low
+// pdb params: aValue
 bool FUN_0069dee0_class::Contains(const unsigned short& ausValue)
 {
     return reinterpret_cast<NavMeshTriList*>(this)->FindMatchingIndex(ausValue, 0, AreWideCharsEqual) != -1;
@@ -712,12 +747,13 @@ bool FUN_0069dfb0_class::HasNonZeroAtOffset54() const
 
 struct FUN_00691a00_class : public NiTPointerMap<int, int>
 {
-    void ReleaseStorage_00691a00();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_dtor();
 };
 void NiFreeAlias(void*);
 // @fnv 0x00691a00
-// src: GUESS 0x00691a00 (confidence: medium)
-void FUN_00691a00_class::ReleaseStorage_00691a00()
+// src: XBOX_DEBUG_PDB 0x00691a00
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> >::~NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> > | NavMesh.obj | debug, call graph (shared callers), high
+void FUN_00691a00_class::NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_dtor()
 {
     *reinterpret_cast<const char**>(this) = "P i";
     RemoveAll();
@@ -733,13 +769,14 @@ struct FUN_0069b730_class
     void* pvt;
     void* unused;
     void* pMem;
-    void UpdateState_0069b730();
+    void NiTMapBase_DFALL_NiTMapItem_FastNavMeshVertHandle_POVVertexData_FastNavMeshVertHandle_POVVertexData_dtor();
 };
 
 // Resets the vtable pointer, clears the pointer map, and frees the allocated memory block.
 // @fnv 0x0069b730
-// src: GUESS 0x0069b730 (confidence: low)
-void FUN_0069b730_class::UpdateState_0069b730()
+// src: XBOX_DEBUG_PDB 0x0069b730
+// pdb: NiTMapBase<DFALL<NiTMapItem<FastNavMeshVertHandle,POVVertexData *> >,FastNavMeshVertHandle,POVVertexData *>::~NiTMapBase<DFALL<NiTMapItem<FastNavMeshVertHandle,POVVertexData *> >,FastNavMeshVertHandle,POVVertexData *> | NavMesh_Util.obj | debug, call graph (shared callers), high
+void FUN_0069b730_class::NiTMapBase_DFALL_NiTMapItem_FastNavMeshVertHandle_POVVertexData_FastNavMeshVertHandle_POVVertexData_dtor()
 {
     pvt = &DAT_0106b1f4;
     ((NiTPointerMap<int, int>*)this)->RemoveAll();
@@ -823,6 +860,7 @@ struct Fake683760
 };
 // Sets m0 to "p8h" and clears m1, m2 and m3, then returns this.
 // @fnv 0x006837b0
+// pdb: BSPointerListBase<BSTempEffectDebris *>::~BSPointerListBase<BSTempEffectDebris *> | BSTempEffectDebris.obj | debug, object-file gap fill, medium
 Fake683760* Fake683760::Init()
 {
     m0 = "p8h";
@@ -843,6 +881,7 @@ struct FUN_006837f0_t : public FUN_0062e290_shell
     ~FUN_006837f0_t();
 };
 // @fnv 0x006837f0
+// pdb: BSPointerListBase<BSTempEffectDebris *>::NewItem | BSTempEffectDebris.obj | debug, object-file gap fill, medium
 FUN_006837f0_t::~FUN_006837f0_t()
 {
     ClearList();
@@ -855,6 +894,7 @@ struct FUN_00683870_class
     void* __thiscall FUN_00683870(unsigned int);
 };
 // @fnv 0x00683870
+// pdb: BSListBase<BSTempEffectDebris *>::`scalar deleting destructor' | BSTempEffectDebris.obj | retail, vtable slot, high
 void* __thiscall FUN_00683870_class::FUN_00683870(unsigned int flags)
 {
     UpdateState_00683850();
@@ -865,14 +905,16 @@ void* __thiscall FUN_00683870_class::FUN_00683870(unsigned int flags)
 
 // Sets the position from the first three elements of the given float array and returns the result.
 // @fnv 0x0068a7d0
-bool BSSoundHandle::SetPosition(const NiPoint3& position)
+// pdb: BSSoundHandle::SetPosition | BSTempEffectParticle.obj | debug, call graph, high
+// pdb params: aPosition
+bool BSSoundHandle::SetPosition(const NiPoint3& aPosition)
 {
-    return SetPosition(position.x, position.y, position.z);
+    return SetPosition(aPosition.x, aPosition.y, aPosition.z);
 }
 
 struct BaseForAbb0
 {
-    void __thiscall NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(int a, int b);
+    void __thiscall NiTPrimitiveArray_NiAVObject_ctor(int uiMaxSize, int uiGrowBy);
 };
 extern int DAT_01069d84;
 struct FUN_0068abb0 : BaseForAbb0
@@ -883,20 +925,21 @@ struct FUN_0068abb0 : BaseForAbb0
 // @fnv 0x0068abb0
 FUN_0068abb0::FUN_0068abb0(int a, int b)
 {
-    NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(a, b);
+    NiTPrimitiveArray_NiAVObject_ctor(a, b);
     *(int*)this = (int)&DAT_01069d84;
 }
 
 struct FUN_0068ab60_shell
 {
-    void ReleaseStorage_0068ab80();
+    void NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_dtor();
     void* __thiscall FUN_0068abe0(unsigned int flags);
 };
 // Calls FUN_0068ab80, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x0068abe0
+// pdb: NiTArray<NiAVObject *,NiTMallocInterface<NiAVObject *> >::`scalar deleting destructor' | BSTempEffectParticle.obj | debug, vtable slot, medium
 void* __thiscall FUN_0068ab60_shell::FUN_0068abe0(unsigned int flags)
 {
-    ReleaseStorage_0068ab80();
+    NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -905,13 +948,15 @@ void* __thiscall FUN_0068ab60_shell::FUN_0068abe0(unsigned int flags)
 namespace fnv_0068ac10 {
 struct FUN_0068ab60_shell
 {
-    void ForwardCall_0068ab60();
+    void NiTPrimitiveArray_NiAVObject_dtor();
     void* FUN_0068ac10(unsigned int flags);
 };
 // @fnv 0x0068ac10
+// pdb: BSTempEffectParticle::`scalar deleting destructor' | BSTempEffectParticle.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTPrimitiveArray<NiAVObject *>::`scalar deleting destructor'
 void* FUN_0068ab60_shell::FUN_0068ac10(unsigned int flags)
 {
-    ForwardCall_0068ab60();
+    NiTPrimitiveArray_NiAVObject_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -926,6 +971,7 @@ struct AX
 };
 // @fnv 0x0068eb00
 // src: EXE 0x0068eb00
+// pdb: BSSimpleArray<DecalVertex *,1024>::BSSimpleArray<DecalVertex *,1024> | BSTempEffectSimpleDecal.obj | debug, object-file run extension, low
 AX* AX::BSSimpleArray_DecalVertex_1024_BSSimpleArray()
 {
     vtable = &DAT_0106a038;
@@ -939,9 +985,10 @@ struct Holder_0068eb50 : FUN_0068eb30_class
     void* FUN_0068eb50(unsigned int);
 };
 // @fnv 0x0068eb50
+// pdb: BSSimpleArray<DecalVertex *,1024>::`scalar deleting destructor' | BSTempEffectSimpleDecal.obj | retail, vtable slot, high
 void* Holder_0068eb50::FUN_0068eb50(unsigned int flags)
 {
-    InitializeGlobalObject();
+    BSSimpleArray_DecalVertex_1024_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -956,6 +1003,7 @@ struct FUN_00691770_class
 };
 // Calls FUN_006919a0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00691770
+// pdb: NiTMap<unsigned short,NiPointer<ObstacleData> >::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* __thiscall FUN_00691770_class::FUN_00691770(unsigned int flags)
 {
     FUN_006919a0();
@@ -971,6 +1019,7 @@ struct FUN_00691ea0_class
     void* FUN_006917a0(unsigned int flags);
 };
 // @fnv 0x006917a0
+// pdb: NiTMap<unsigned short,NavMeshPOVData>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* FUN_00691ea0_class::FUN_006917a0(unsigned int flags)
 {
     FUN_00691ea0();
@@ -991,6 +1040,9 @@ struct FUN_006918c0_class
     FUN_006918c0_class(unsigned int count);
 };
 // @fnv 0x006918c0
+// pdb: NavMesh::GetGridIndex | NavMesh.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> >::NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> >
+// pdb params: arLoc
 FUN_006918c0_class::FUN_006918c0_class(unsigned int count)
 {
     pvTable = &SG6701;
@@ -1022,9 +1074,10 @@ struct S00692050 : FUN_00691a00_class
     void* __thiscall FUN_00692050(unsigned int flags);
 };
 // @fnv 0x00692050
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> >::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* __thiscall S00692050::FUN_00692050(unsigned int flags)
 {
-    ReleaseStorage_00691a00();
+    NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1035,10 +1088,10 @@ extern "C" void __cdecl _Deallocate(void*);
 
 struct FUN_00691a90_class
 {
-    void __thiscall FUN_00691a90();
+    void __thiscall BSSimpleArray_NavMeshVertex_1024_dtor();
 };
 
-void __thiscall FUN_00691a90_class::FUN_00691a90()
+void __thiscall FUN_00691a90_class::BSSimpleArray_NavMeshVertex_1024_dtor()
 {}
 
 struct FUN_00692080_class
@@ -1048,9 +1101,10 @@ struct FUN_00692080_class
 
 // Calls FUN_00691a90 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00692080
+// pdb: BSSimpleArray<NavMeshVertex,1024>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* __thiscall FUN_00692080_class::FUN_00692080(unsigned int flags)
 {
-    ((FUN_00691a90_class*)this)->FUN_00691a90();
+    ((FUN_00691a90_class*)this)->BSSimpleArray_NavMeshVertex_1024_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1065,6 +1119,7 @@ struct FUN_00691b40_class
 };
 // Calls FUN_00691b40, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006920b0
+// pdb: BSSimpleArray<NavMeshTriangle,1024>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* FUN_00691b40_class::FUN_006920b0(unsigned int flags)
 {
     FUN_00691b40();
@@ -1077,14 +1132,15 @@ void __cdecl operator delete(void*);
 void UpdateState_00691bf0();
 struct FUN_006920e0_class
 {
-    void UpdateState_00691bf0();
+    void BSSimpleArray_EdgeExtraInfo_1024_dtor();
     void* __thiscall FUN_006920e0(unsigned int flags);
 };
 // Calls FUN_00691bf0, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x006920e0
+// pdb: BSSimpleArray<EdgeExtraInfo,1024>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* __thiscall FUN_006920e0_class::FUN_006920e0(unsigned int flags)
 {
-    UpdateState_00691bf0();
+    BSSimpleArray_EdgeExtraInfo_1024_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -1098,6 +1154,7 @@ struct FUN_00691d70_class
 
 // Calls FUN_00691d70, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x00692110
+// pdb: BSSimpleArray<NavMeshTriangleDoorPortal,1024>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* FUN_00691d70_class::FUN_00692110(unsigned int flags)
 {
     FUN_00691d70();
@@ -1112,6 +1169,7 @@ struct FUN_00691dc0_class
     void* FUN_00692140(unsigned int flags);
 };
 // @fnv 0x00692140
+// pdb: BSSimpleArray<NavMeshClosedDoorInfo,1024>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* FUN_00691dc0_class::FUN_00692140(unsigned int flags)
 {
     FUN_00691dc0();
@@ -1127,6 +1185,7 @@ struct FUN_00691f00_shell
 };
 
 // @fnv 0x00692170
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NavMeshPOVData> >,unsigned short,NavMeshPOVData>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* FUN_00691f00_shell::FUN_00692170(unsigned int flags)
 {
     FUN_00691f00();
@@ -1141,6 +1200,7 @@ struct Arr3520
     void* FUN_006921a0(unsigned int flags);
 };
 // @fnv 0x006921a0
+// pdb: BSSimpleArray<NiPointer<ObstacleUndoData>,1024>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* Arr3520::FUN_006921a0(unsigned int flags)
 {
     FUN_00691f90();
@@ -1151,14 +1211,15 @@ void* Arr3520::FUN_006921a0(unsigned int flags)
 
 struct FUN_00691fe0_class
 {
-    void ResetVirtualTableAndClear_00691fe0();
+    void BSSimpleArray_NavMeshStaticAvoidNode_1024_dtor();
     void* FUN_006921d0(unsigned int flags);
 };
 
 // @fnv 0x006921d0
+// pdb: BSSimpleArray<NavMeshStaticAvoidNode,1024>::`scalar deleting destructor' | NavMesh.obj | retail, vtable slot, high
 void* FUN_00691fe0_class::FUN_006921d0(unsigned int flags)
 {
-    ResetVirtualTableAndClear_00691fe0();
+    BSSimpleArray_NavMeshStaticAvoidNode_1024_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -1179,6 +1240,9 @@ struct FUN_006923f0_class
 };
 // @fnv 0x006923f0
 // src: COMMUNITY 0x006923f0
+// pdb: BSSimpleArray<EdgeExtraInfo,1024>::_DestructItems | NavMesh.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void FUN_006923f0_class::BSSimpleArray_EdgeExtraInfo_1024_InitialSetup(unsigned int uiRequestedSize, unsigned int savedSize)
 {
     iSize = 0;
@@ -1239,15 +1303,17 @@ struct FUN_00693bd0_class
     int c;
     int d;
     int e;
-    void NavMeshTriangle_SetObjectCount(unsigned short v);
+    void NavMeshTriangle_SetObjectCount(unsigned short aiCount);
 };
 // Calls ClampUnsignedShort on a local copy of v with 0 and 7, then stores bits 13-15 of the result into d.
 // @fnv 0x00693bd0
 // src: COMMUNITY 0x00693bd0
-void FUN_00693bd0_class::NavMeshTriangle_SetObjectCount(unsigned short ausValue)
+// pdb: NavMeshTriangle::SetObjectCount | NavMesh_LoadSave.obj | debug, upstream name already matches, high
+// pdb params: aiCount
+void FUN_00693bd0_class::NavMeshTriangle_SetObjectCount(unsigned short aiCount)
 {
-    ClampUnsignedShort(&ausValue, 0, 7);
-    d = (d & 0xffff1fff) | (ausValue << 0xd);
+    ClampUnsignedShort(&aiCount, 0, 7);
+    d = (d & 0xffff1fff) | (aiCount << 0xd);
 }
 
 extern int DAT_0106abe4;
@@ -1258,6 +1324,8 @@ struct FUN_0069ada0_class : FUN_00692290_class
 // Sets the vtable pointer to DAT_0106abe4, calls the base constructor with a and b, and returns this.
 // @fnv 0x0069ada0
 // src: EXE 0x0069ada0
+// pdb: BSSimpleArray<unsigned short,1024>::BSSimpleArray<unsigned short,1024> | NavMesh_Util.obj | debug, call graph, medium
+// pdb params: aiReserveSize, aiInitialSize
 FUN_0069ada0_class* FUN_0069ada0_class::BSSimpleArray_unsigned_short_1024_BSSimpleArray_0069ada0(unsigned int a, unsigned int b)
 {
     *(void**)this = (void*)&DAT_0106abe4;
@@ -1292,6 +1360,8 @@ struct FUN_0069b6a0_class
 };
 // Copies b into a->f4 and stores d into a->fc; c is unused.
 // @fnv 0x0069b6a0
+// pdb: NiTMapBase<DFALL<NiTMapItem<FastNavMeshVertHandle,POVVertexData *> >,FastNavMeshVertHandle,POVVertexData *>::SetValue | NavMesh_Util.obj | debug, vtable slot, medium
+// pdb params: pkItem, key, val
 void __thiscall FUN_0069b6a0_class::SetEntryValues(Entry0069b6a0* apEntry, TwoIntRecordValue aValue, int c, int aiValue)
 {
     apEntry->f4 = aValue;
@@ -1299,7 +1369,7 @@ void __thiscall FUN_0069b6a0_class::SetEntryValues(Entry0069b6a0* apEntry, TwoIn
 }
 }  // namespace fnv_0069b6a0
 
-void __fastcall Object_ResetVirtualTableAndClear_0069af60(struct GlobalObject_00869f00*);
+void __fastcall BSSimpleArray_NavMeshEdgeHandle_1024_dtor(struct GlobalObject_00869f00*);
 void __cdecl _Deallocate(void*);
 struct H69
 {
@@ -1307,9 +1377,10 @@ struct H69
 };
 // Calls FUN_0069af60 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0069b7e0
+// pdb: BSSimpleArray<NavMeshEdgeHandle,1024>::`scalar deleting destructor' | NavMesh_Util.obj | retail, vtable slot, high
 void* __thiscall H69::FUN_0069b7e0(unsigned int flags)
 {
-    Object_ResetVirtualTableAndClear_0069af60((struct GlobalObject_00869f00*)this);
+    BSSimpleArray_NavMeshEdgeHandle_1024_dtor((struct GlobalObject_00869f00*)this);
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1322,6 +1393,7 @@ struct FUN_0069b1d0_class
 };
 // Calls FUN_0069b1d0, then frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x0069b810
+// pdb: BSSimpleArray<bool,1024>::`scalar deleting destructor' | NavMesh_Util.obj | retail, vtable slot, high
 void* FUN_0069b1d0_class::FUN_0069b810(unsigned int flags)
 {
     UpdateState_0069b1d0();
@@ -1332,13 +1404,14 @@ void* FUN_0069b1d0_class::FUN_0069b810(unsigned int flags)
 
 struct FUN_0069b730_class
 {
-    void UpdateState_0069b730();
+    void NiTMapBase_DFALL_NiTMapItem_FastNavMeshVertHandle_POVVertexData_FastNavMeshVertHandle_POVVertexData_dtor();
     void* FUN_0069b870(unsigned int flags);
 };
 // @fnv 0x0069b870
+// pdb: NiTMapBase<DFALL<NiTMapItem<FastNavMeshVertHandle,POVVertexData *> >,FastNavMeshVertHandle,POVVertexData *>::`scalar deleting destructor' | NavMesh_Util.obj | retail, vtable slot, high
 void* FUN_0069b730_class::FUN_0069b870(unsigned int flags)
 {
-    UpdateState_0069b730();
+    NiTMapBase_DFALL_NiTMapItem_FastNavMeshVertHandle_POVVertexData_FastNavMeshVertHandle_POVVertexData_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -1363,6 +1436,8 @@ struct FUN_0069bca0_class : public FUN_0042f830_struct
 };
 // @fnv 0x0069bca0
 // src: COMMUNITY 0x0069bca0
+// pdb: NavMeshArray::ClearAllMeshes | NavMeshArray.obj | debug, call graph, medium
+// pdb locals: i
 void FUN_0069bca0_class::NavMeshArray_AddToGarbageCollector()
 {
     unsigned int i = 0;
@@ -1380,6 +1455,7 @@ struct FUN_0069cd10_class
 };
 // @fnv 0x0069cd10
 // src: GUESS 0x0069cd10 (confidence: low)
+// pdb: BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024>::BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024> | NavMeshBounds.obj | debug, object-file run extension, low
 FUN_0069cd10_class* __thiscall FUN_0069cd10_class::UpdateState_0069cd10()
 {
     m_iWordAt00 = (int)&DAT_0106b28c;
@@ -1397,6 +1473,7 @@ struct FUN_0069d0c0_class
 
 // Calls InitAndClear, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x0069d0c0
+// pdb: BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024>::`scalar deleting destructor' | NavMeshBounds.obj | retail, vtable slot, high
 void* FUN_0069d0c0_class::FUN_0069d0c0(unsigned int flags)
 {
     InitAndClear();
@@ -1408,6 +1485,9 @@ void* FUN_0069d0c0_class::FUN_0069d0c0(unsigned int flags)
 void* __cdecl operator new(unsigned int, void*);
 template <>
 // @fnv 0x0069d0f0
+// pdb: BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024>::_ConstructItems | NavMeshBounds.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle, 1024>::InitializeItems(NavMeshBounds::NavMeshBoundsTriangle* apBuffer, unsigned int auiCount)
 {
     int i;
@@ -1437,6 +1517,7 @@ struct FUN_0069d280
 };
 // Initializes m0 and m24 to 0 and sets a.f0 to the maximum float value.
 // @fnv 0x0069d280
+// pdb: NavMeshGrid::NavMeshGrid | NavMeshGrid.obj | debug, call graph, high
 FUN_0069d280::FUN_0069d280() : m0(0)
 {
     m24 = 0;
@@ -1452,6 +1533,9 @@ struct FUN_0069da10_C
 // Indexes into the array at _p by idx and forwards v to the element's Contains, returning its result.
 // @fnv 0x0069da10
 // src: COMMUNITY 0x0069da10
+// pdb: NavMeshGrid::IsTriangleInGridCell | NavMeshGrid.obj | debug, object-file run extension, low
+// pdb params: aiTriangle, aiIndex
+// pdb locals: parray
 bool __thiscall FUN_0069da10_C::NavMeshGrid_IsTriangleInGridCell_0(unsigned short ausValue, int aiIndex)
 {
     FUN_0069dee0_class* e = (FUN_0069dee0_class*)(_p + (aiIndex << 4));
@@ -1470,6 +1554,9 @@ struct FUN_0069df10
     FUN_0069df10(NavMeshTriangleEdgeReference* a);
 };
 // @fnv 0x0069df10
+// pdb: BSSimpleArray<BSSimpleArray<unsigned short,1024> const *,1024>::Add | NavMeshGrid.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 FUN_0069df10::FUN_0069df10(NavMeshTriangleEdgeReference* pParam)
 {
     ((Dummy006815c0*)this)->_ref_006815c0();
@@ -1511,6 +1598,8 @@ struct FUN_0069e090_class
 // Returns false when f0 is zero or f4 equals 0xffff, otherwise returns true.
 // @fnv 0x0069e090
 // src: XBOX_PDB 0x0069e090
+// pdb: NavMeshPOVSearchNode::ComputePoint | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: aAngle
 bool FUN_0069e090_class::NavMeshTriangleEdgePortal_IsValid()
 {
     if (!f0)
@@ -1547,6 +1636,7 @@ struct CLS_0069efd0
 };
 // Calls the virtual method f(1) on the stored pointer p if it is non-null.
 // @fnv 0x0069efd0
+// pdb: PathSmootherPOVDebugPOV::PathSmootherPOVDebugPOV | NavMeshPOVSearch.obj | debug, object-file run extension, low
 void CLS_0069efd0::CallVirtualMethod()
 {
     VT_0069efd0* p1 = p;
@@ -1562,6 +1652,9 @@ struct FUN_00692480
 };
 
 // @fnv 0x00692480
+// pdb: BSSimpleArray<EdgeExtraInfo,1024>::_MoveItems | NavMesh.obj | debug, object-file run extension, low
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void FUN_00692480::Method(char* dst, char* src, unsigned int count)
 {
     if (count <= 0)
@@ -1593,6 +1686,8 @@ struct FUN_006925b0_class
 
 // Grows the buffer when needed, then increments iCount and returns the index of the newly added slot.
 // @fnv 0x006925b0
+// pdb: BSSimpleArray<PathingLocation,1024>::AddUninitialized | PathBuilder.obj | debug, call graph, medium
+// pdb locals: inewSize
 int FUN_006925b0_class::AppendSlot()
 {
     if (BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -1622,6 +1717,9 @@ struct FUN_006928a0_class
 // Copies c elements of 0x28 bytes from src to dst, iterating forward when dst < src and backward otherwise.
 // @fnv 0x006928a0
 // src: COMMUNITY 0x006928a0
+// pdb: BSSimpleArray<PathingLocation,1024>::_MoveItems | PathBuilder.obj | debug, call graph, low
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void FUN_006928a0_class::BSSimpleArray_PathingLocation_1024_MoveItems(char* pDst, char* pSrc, unsigned int c)
 {
     if (c <= 0)
@@ -1670,6 +1768,8 @@ struct FUN_0069b940_class
 
 // @fnv 0x0069b940
 // src: COMMUNITY 0x0069b940
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::_InitialSetup | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 void FUN_0069b940_class::BSSimpleArray_char_1024_InitialSetup(unsigned int auiRequestedSize, unsigned int savedSize)
 {
     iSize = 0;
@@ -1704,6 +1804,8 @@ struct FUN_0069b310_S
     void ResetAndWrite(unsigned int requested, unsigned int savedSize);
 };
 // @fnv 0x0069ba70
+// pdb: NavMeshArray::ClearAllMeshes | NavMeshArray.obj | retail, object-file run extension, low
+// pdb locals: i
 void FUN_0069b310_S::ResetAndWrite(unsigned int requested, unsigned int savedSize)
 {
     iSize = 0;
@@ -1733,6 +1835,9 @@ struct FUN_0069d140_class
     int iDataLength;
 };
 // @fnv 0x0069d140
+// pdb: BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024>::_DestructItems | NavMeshBounds.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void FUN_0069d140_class::InitializeBuffer(unsigned int requested, unsigned int savedSize)
 {
     iSize = 0;
@@ -1785,16 +1890,18 @@ struct FUN_0068ac40_class
     unsigned short m_usElementCount;
     unsigned short m_usUnknown2;
     unsigned short m_usUnknown;
-    void* NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(unsigned short usSize, unsigned short m_usPassCountLocal);
+    void* NiTPrimitiveArray_NiAVObject_ctor(unsigned short uiMaxSize, unsigned short uiGrowBy);
 };
 
 // @fnv 0x0068ac40
-// src: COMMUNITY 0x0068ac40
-void* FUN_0068ac40_class::NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(unsigned short usSize, unsigned short ausUnknown)
+// src: XBOX_RETAIL_PDB 0x0068ac40
+// pdb: NiTPrimitiveArray<NiAVObject *>::NiTPrimitiveArray<NiAVObject *> | BSTempEffectParticle.obj | retail, call graph (shared callers), high
+// pdb params: uiMaxSize, uiGrowBy
+void* FUN_0068ac40_class::NiTPrimitiveArray_NiAVObject_ctor(unsigned short uiMaxSize, unsigned short uiGrowBy)
 {
     m_pData = &DAT_01069d7c;
-    m_usSize = usSize;
-    m_usUnknown = ausUnknown;
+    m_usSize = uiMaxSize;
+    m_usUnknown = uiGrowBy;
     m_usElementCount = 0;
     m_usUnknown2 = 0;
     if (m_usSize > 0)
@@ -1818,6 +1925,8 @@ struct S5460
     int GetNextPosition();
 };
 // @fnv 0x00692200
+// pdb: BSSimpleArray<NavMeshTriangle,1024>::_InitialSetup | NavMesh.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 int S5460::GetNextPosition()
 {
     if (BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -1889,6 +1998,8 @@ struct FUN_00683850_class
 };
 // @fnv 0x00683850
 // src: GUESS 0x00683850 (confidence: low)
+// pdb: BSPointerListBase<BSTempEffectDebris *>::DeleteItem | BSTempEffectDebris.obj | debug, object-file gap fill, medium
+// pdb params: pkItem
 void FUN_00683850_class::UpdateState_00683850()
 {
     *reinterpret_cast<int*>(this) = (int)&$SG6833;
@@ -1913,6 +2024,7 @@ struct FUN_00693dc0_class
 };
 
 // @fnv 0x00693dc0
+// pdb: NavMeshSaveStruct::Endian | NavMesh_LoadSave.obj | debug, object-file run extension, low
 void FUN_00693dc0_class::SwapEndian()
 {
     BSEndian(reinterpret_cast<unsigned char*>(this), BSIntToType0());
@@ -1945,6 +2057,9 @@ unsigned int FUN_0042f5a0(unsigned int, unsigned int);
 
 // @fnv 0x0069add0
 // src: COMMUNITY 0x0069add0
+// pdb: BSSimpleArray<unsigned short,1024>::RemoveFast | NavMesh_Util.obj | debug, call graph, medium
+// pdb params: aiIndex, aiHowMany
+// pdb locals: iitemsToMove
 void FUN_0069add0_class::BSSimpleArray_RemoveFast_1(unsigned int uiStartIndex, unsigned int second)
 {
     unsigned int result = FUN_0042f5a0(this->iCount - uiStartIndex - second, second);
@@ -1958,6 +2073,8 @@ void FUN_0069add0_class::BSSimpleArray_RemoveFast_1(unsigned int uiStartIndex, u
 
 template <>
 // @fnv 0x0069cd60
+// pdb: BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024>::SetSize | NavMeshBounds.obj | retail, call graph (shared callers), low
+// pdb params: aiNewSize, abFreeMemory
 void BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle, 1024>::SetSize(unsigned int size, bool shrink)
 {
     if (size == 0)
@@ -2021,6 +2138,9 @@ struct FUN_0069d800_class
 };
 
 // @fnv 0x0069d800
+// pdb: NavMeshGrid::SetBoundingExtents | NavMeshGrid.obj | debug, object-file gap fill, medium
+// pdb params: aMin, aMax, aiNumTriangles
+// pdb locals: itotal, sections
 void FUN_0069d800_class::InitFromPoints(const NiPoint3* apPointA, const NiPoint3* apPointB, unsigned int count)
 {
     m_fc = *apPointA;
@@ -2067,6 +2187,7 @@ class C81110Header
 };
 
 // @fnv 0x00681110
+// pdb: FUNCTION_DATA::Endian | TESConditionItem.obj | debug, object-file run extension, low
 void C81110Header::ClearFields()
 {
     C81110ClearShort(&m_sVersion, C81110ScalarTag());
@@ -2121,12 +2242,15 @@ unsigned int __cdecl FUN_00682270(unsigned short* pusCommand);
 
 // @fnv 0x00682380
 // src: XBOX_PDB 0x00682380
-bool __cdecl TESParameters_GetParamIsScriptVariable(unsigned short* pusCommand, unsigned int uiParam)
+// pdb: TESParameters::GetParamIsScriptVariable | TESParameters.obj | debug, upstream name already matches, high
+// pdb params: apFuncData, aiParam
+// pdb locals: bretval
+bool __cdecl TESParameters_GetParamIsScriptVariable(unsigned short* apFuncData, unsigned int aiParam)
 {
     bool bResult = false;
-    if (pusCommand && uiParam < FUN_00682270(pusCommand))
+    if (apFuncData && aiParam < FUN_00682270(apFuncData))
     {
-        switch (DAT_01190900[*pusCommand].m_pkParams[uiParam].m_eRequestType)
+        switch (DAT_01190900[*apFuncData].m_pkParams[aiParam].m_eRequestType)
         {
         case 0x16:
             bResult = true;
@@ -2210,6 +2334,8 @@ class B683670List
 
 // Removes the head node from the list, unlinks it, frees it, decrements the count and returns its element.
 // @fnv 0x00683670
+// pdb: BSPointerListBase<BSTempEffectDebris *>::RemoveTail | BSTempEffectDebris.obj | debug, object-file run extension, low
+// pdb locals: pkNode, element
 void* B683670List::RemoveHead()
 {
     B683670Node* pkNode = m_pkHead;
@@ -2226,6 +2352,8 @@ void* B683670List::RemoveHead()
 
 // Raises base to exponent by binary exponentiation, returning the reciprocal when exponent is negative.
 // @fnv 0x00688f10
+// pdb: NiSkinInstance::`scalar deleting destructor' | BSTempEffectGeometryDecal.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPointer<NiSkinData>::NiPointer<NiSkinData>
 float __cdecl PowFloat(float base, int exponent)
 {
     unsigned int power;
@@ -2307,10 +2435,13 @@ struct LoopSoundState
     ManagedSound first;
     ManagedSound second;
     void StopSounds();
-    void InitLoopSounds();
+    void BSTempEffectParticle_StartSounds();
 };
 // @fnv 0x0068a600
-void LoopSoundState::InitLoopSounds()
+// src: XBOX_RETAIL_PDB 0x0068a600
+// pdb: BSTempEffectParticle::StartSounds | BSTempEffectParticle.obj | retail, object-file run extension, high
+// pdb locals: isoundFileID
+void LoopSoundState::BSTempEffectParticle_StartSounds()
 {
     StopSounds();
     if (object.Modelloader_GetReferencedThis() && sounds)
@@ -2367,12 +2498,15 @@ struct FUN_0068aa50_shell
 };
 // @fnv 0x0068aa50
 // src: XBOX_PDB 0x0068aa50
-void FUN_0068aa50_shell::BSTempEffectParticle_ResetGravity(void* searchArg)
+// pdb: BSTempEffectParticle::ResetGravity | BSTempEffectParticle.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: icount, array, i, pobj, mat2, mat
+void FUN_0068aa50_shell::BSTempEffectParticle_ResetGravity(void* apObject)
 {
     NavMeshSearchList_0068aa50 items(10, 1);
     {
         unsigned int found = 0;
-        CollectUniqueChildValues(searchArg, &items, &found);
+        CollectUniqueChildValues(apObject, &items, &found);
         for (unsigned int i = 0; i < items.GetShortAtOffsetA(); ++i)
         {
             NavMeshNode_0068aa50* node = *items.FUN_00877a30(i);
@@ -2406,17 +2540,19 @@ struct DecompRefOwner
 
 // Creates a DecompScopedRef from source, passes it to owner->ProcessScoped, then destroys it.
 // @fnv 0x00690890
-void ProcessWithScopedRef(DecompRefOwner* owner, void* source)
+// pdb: NavMeshPtr::MakeNavMeshPtr | NavMesh.obj | debug, call graph (shared callers), high
+// pdb params: arNavmeshPtr, apNavMesh
+void ProcessWithScopedRef(DecompRefOwner* arNavmeshPtr, void* apNavMesh)
 {
-    DecompScopedRef ref(source);
-    owner->ProcessScoped(ref);
+    DecompScopedRef ref(apNavMesh);
+    arNavmeshPtr->ProcessScoped(ref);
 }
 
 struct CleanupMap : FUN_00691a00_class
 {
     virtual ~CleanupMap()
     {
-        ReleaseStorage_00691a00();
+        NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_dtor();
     }
 };
 struct FUN_006919a0 : CleanupMap
@@ -2425,6 +2561,7 @@ struct FUN_006919a0 : CleanupMap
     void __thiscall FUN_00438af0();
 };
 // @fnv 0x006919a0
+// pdb: NiTMap<unsigned short,NiPointer<ObstacleData> >::~NiTMap<unsigned short,NiPointer<ObstacleData> > | NavMesh.obj | debug, call graph (shared callers), high
 FUN_006919a0::~FUN_006919a0()
 {
     FUN_00438af0();
@@ -2469,6 +2606,7 @@ struct FUN_00692000_class
 };
 
 // @fnv 0x00692000
+// pdb: BSSimpleArray<unsigned short,1024>::`scalar deleting destructor' | NavMesh.obj | debug, object-file run extension, low
 int __thiscall FUN_00692000_class::AddData(FUN_00692000_data* source)
 {
     int index = AppendSlot();
@@ -2500,6 +2638,9 @@ class B692320Allocator
 
 // Default-constructs each of the given number of B692320Entry elements in place in the array.
 // @fnv 0x00692320
+// pdb: BSSimpleArray<EdgeExtraInfo,1024>::_ConstructItems | NavMesh.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void B692320Allocator::ConstructEntries(B692320Entry* pkArray, unsigned int ItemUpdateArray)
 {
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
@@ -2582,6 +2723,7 @@ class FUN_00693c10_cls
 
 // @fnv 0x00693c10
 // src: COMMUNITY 0x00693c10
+// pdb: NavMeshTriangle::Endian | NavMesh_LoadSave.obj | debug, object-file run extension, low
 void FUN_00693c10_cls::NavMeshTriangle_endianSwap()
 {
     SpawnedFlag f0 = {};
@@ -2650,6 +2792,8 @@ struct FUN_0069b620_cls
 };
 
 // @fnv 0x0069b620
+// pdb: NiTMapBase<DFALL<NiTMapItem<FastNavMeshVertHandle,POVVertexData *> >,FastNavMeshVertHandle,POVVertexData *>::KeyToHashIndex | NavMesh_Util.obj | debug, vtable slot, medium
+// pdb params: key
 unsigned int FUN_0069b620_cls::GetModuloOfValue(int iValue, int iUnused)
 {
     return (unsigned int)((FUN_0069b640_class*)&iValue)->GetPackedValue() % m_04;
@@ -2669,6 +2813,8 @@ struct FUN_0069b680_cls
 
 // @fnv 0x0069b680
 // src: GUESS 0x0069b680 (confidence: medium)
+// pdb: NiTMapBase<DFALL<NiTMapItem<FastNavMeshVertHandle,POVVertexData *> >,FastNavMeshVertHandle,POVVertexData *>::IsKeysEqual | NavMesh_Util.obj | debug, vtable slot, medium
+// pdb params: key1, key2
 void FUN_0069b680_cls::Equals_Thunk(KeyStruct aKey1, KeyStruct aKey2)
 {
     aKey1.Equals(&aKey2);
@@ -2686,6 +2832,7 @@ struct FUN_0069b6d0_cls : public FUN_0069b730_base
 };
 
 // @fnv 0x0069b6d0
+// pdb: NiTMap<FastNavMeshVertHandle,POVVertexData *>::~NiTMap<FastNavMeshVertHandle,POVVertexData *> | NavMesh_Util.obj | debug, call graph (shared callers), high
 FUN_0069b6d0_cls::~FUN_0069b6d0_cls()
 {
     FUN_00438af0();
@@ -2714,6 +2861,7 @@ struct FUN_0069b8a0_cls
 
 // Allocates and constructs a new Obj_b9971 via its operator new and returns the pointer.
 // @fnv 0x0069b8a0
+// pdb: DFALL<NiTMapItem<FastNavMeshVertHandle,POVVertexData *> >::Allocate | NavMesh_Util.obj | debug, object-file run extension, low
 Obj_b9971* FUN_0069b8a0_cls::CreateObj()
 {
     return new Obj_b9971();
@@ -2729,15 +2877,18 @@ struct FUN_006240d0_Element
 };
 struct PlacementRange
 {
-    void ConstructBounds(FUN_006240d0_Element* begin, unsigned int count);
+    void ConstructBounds(FUN_006240d0_Element* apFirstAddr, unsigned int aiCount);
 };
 // Placement-constructs count FUN_006240d0_Element objects in the buffer starting at begin.
 // @fnv 0x0069b9d0
-void PlacementRange::ConstructBounds(FUN_006240d0_Element* apBounds, unsigned int count)
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::_ConstructItems | CombatGroup.obj | debug, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void PlacementRange::ConstructBounds(FUN_006240d0_Element* apFirstAddr, unsigned int aiCount)
 {
-    for (unsigned int i = 0; i < count; ++i)
+    for (unsigned int i = 0; i < aiCount; ++i)
     {
-        new (apBounds + i) FUN_006240d0_Element;
+        new (apFirstAddr + i) FUN_006240d0_Element;
     }
 }
 
@@ -2760,15 +2911,18 @@ class B69BB90List
   public:
     unsigned int GetSize();
     B69BB90Entry* GetAt(unsigned int uiIndex);
-    unsigned int FindIndex(B69BB90Handle kHandle);
+    unsigned int CPointerList_XAUDIO2_CX2EffectChain_EffectEntry_1_4294967295_0_FindIndex(B69BB90Handle nIndex);
 };
 
 // @fnv 0x0069bb90
-unsigned int B69BB90List::FindIndex(B69BB90Handle kHandle)
+// src: XBOX_DEBUG_PDB 0x0069bb90
+// pdb: CPointerList<XAUDIO2::CX2EffectChain::EffectEntry,1,4294967295,0>::FindIndex | x2effectchain.obj | debug, upstream name already matches, high
+// pdb params: nIndex
+unsigned int B69BB90List::CPointerList_XAUDIO2_CX2EffectChain_EffectEntry_1_4294967295_0_FindIndex(B69BB90Handle nIndex)
 {
     for (unsigned int i = 0; i < GetSize(); i++)
     {
-        if (GetAt(i)->IsEqual(kHandle))
+        if (GetAt(i)->IsEqual(nIndex))
             return i;
     }
     return 0xffffffff;
@@ -2803,18 +2957,22 @@ struct FUN_0069bda0_cls
 };
 
 // @fnv 0x0069bda0
+// pdb: NavMeshBounds::~NavMeshBounds | NavMeshBounds.obj | debug, object-file gap fill, medium
 FUN_0069bda0_cls::~FUN_0069bda0_cls()
 {}
 
 // Sizes the destination, then copies each six-byte bounds triangle.
 template <> template <>
 // @fnv 0x0069d050
-void BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle, 1024>::CopyTo<1024>(BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle, 1024>* apTarget)
+// pdb: BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle,1024>::CopyTo<1024> | NavMeshBounds.obj | retail, call graph, high
+// pdb params: aDestArray
+// pdb locals: i
+void BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle, 1024>::CopyTo<1024>(BSSimpleArray<NavMeshBounds::NavMeshBoundsTriangle, 1024>* aDestArray)
 {
-    apTarget->SetSize(iSize, true);
+    aDestArray->SetSize(iSize, true);
     for (unsigned int i = 0; i < iSize; i++)
     {
-        apTarget->GetAt((int)i) = *(NavMeshBounds::NavMeshBoundsTriangle*)((char*)pBuffer + i * 6);
+        aDestArray->GetAt((int)i) = *(NavMeshBounds::NavMeshBoundsTriangle*)((char*)pBuffer + i * 6);
     }
 }
 
@@ -2830,6 +2988,7 @@ extern "C" void __stdcall FUN_00ec5fce(void* object, int elementSize, int count,
 extern "C" void __cdecl FormHeapFreeAndLog_00401030(void* apMemory);
 
 // @fnv 0x0069d9a0
+// pdb: BSSimpleArray<unsigned short,1024>::`vector deleting destructor' | NavMeshGrid.obj | retail, vtable slot, high
 void* S_0069d9a0_cls::FUN_0069d9a0(unsigned int flags)
 {
     if (flags & 2)
@@ -2975,6 +3134,8 @@ struct ResizeMesh
 };
 // Allocates new position, normal, coordinate, color and triangle buffers, copies the old data into them and frees the old buffers via the heap.
 // @fnv 0x0068e760
+// pdb: BSTempEffectSimpleDecal::ResizeDataArrays | BSTempEffectSimpleDecal.obj | debug, object-file run extension, low
+// pdb locals: pScrapHeap
 void ResizeMesh::ResizeMeshBuffers()
 {
     P03MMHeap* heap = MemoryManager_Instance()->FUN_00aa42e0();
@@ -3023,15 +3184,17 @@ class B691930Map
   public:
     virtual void VFunc00();
 
-    void SetItemKeyAndValue(B691930Item* pkItem, unsigned short usKey, B691930Ptr spValue);
+    void SetItemKeyAndValue(B691930Item* pkItem, unsigned short key, B691930Ptr val);
 };
 
 // Assigns usKey to pkItem->m_usKey and copies spValue into pkItem->m_spValue.
 // @fnv 0x00691930
-void B691930Map::SetItemKeyAndValue(B691930Item* pkItem, unsigned short usKey, B691930Ptr spValue)
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> >::SetValue | NavMesh.obj | retail, vtable slot, high
+// pdb params: pkItem, key, val
+void B691930Map::SetItemKeyAndValue(B691930Item* pkItem, unsigned short key, B691930Ptr val)
 {
-    pkItem->m_usKey = usKey;
-    pkItem->m_spValue = spValue;
+    pkItem->m_usKey = key;
+    pkItem->m_spValue = val;
 }
 
 static const float NI_INFINITY_69B = 3.402823466e+38f;
@@ -3062,6 +3225,7 @@ class PathBounds69B
 // Initialises the max point to negative infinity, the min point to positive infinity, and clears both path info blocks.
 // @fnv 0x0069be00
 // src: COMMUNITY 0x0069be00
+// pdb: NavMeshBounds::Clear | NavMeshBounds.obj | debug, object-file gap fill, medium
 void PathBounds69B::NavMeshBounds_NavMeshBounds_0()
 {
     m_kMax = NiPoint3(NEG_INFINITY_69B, NEG_INFINITY_69B, NEG_INFINITY_69B);
@@ -3079,23 +3243,26 @@ NiPoint3 __cdecl GetClosestPointOnSegment(const NiPoint3&, const NiPoint3&, cons
 
 // @fnv 0x0069c070
 // src: COMMUNITY 0x0069c070
-NiPoint3 NavMeshBounds::DistanceFromPointToBounds(const NiPoint3& point)
+// pdb: NavMeshBounds::DistanceFromPointToBounds | NavMeshBounds.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: bestPoint, fbestDistanceSqr, i, TriVerts, zdiff, maxzdelta, e, pointOnEdge, f, fdistSqr, retVal
+NiPoint3 NavMeshBounds::DistanceFromPointToBounds(const NiPoint3& aPoint)
 {
-    if (!vertices.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
+    if (!Vertices.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
     {
         float fPointHeight = 3.402823466e38f;
         NiPoint3 kClosest;
-        for (unsigned int i = 0; i < triangles.GetSize(); i++)
+        for (unsigned int i = 0; i < Triangles.GetSize(); i++)
         {
             float m_fGlyphExtent;
             float fZ;
             {
                 NiPoint3 kTriangle[3];
-                kTriangle[0] = vertices.Object_GetIndexedValue_006a1440(triangles.GetAt((int)i).a);
-                kTriangle[1] = vertices.Object_GetIndexedValue_006a1440(triangles.GetAt((int)i).b);
-                kTriangle[2] = vertices.Object_GetIndexedValue_006a1440(triangles.GetAt((int)i).c);
-                m_fGlyphExtent = max.z - min.z;
-                if (bounds_detail::NavMeshMath_IsPointInsideTriangle(kTriangle[0], kTriangle[1], kTriangle[2], point, fZ, m_fGlyphExtent, m_fGlyphExtent))
+                kTriangle[0] = Vertices.Object_GetIndexedValue_006a1440(Triangles.GetAt((int)i).Vertices);
+                kTriangle[1] = Vertices.Object_GetIndexedValue_006a1440(Triangles.GetAt((int)i).b);
+                kTriangle[2] = Vertices.Object_GetIndexedValue_006a1440(Triangles.GetAt((int)i).c);
+                m_fGlyphExtent = BoundingBoxMax.z - BoundingBoxMin.z;
+                if (bounds_detail::NavMeshMath_IsPointInsideTriangle(kTriangle[0], kTriangle[1], kTriangle[2], aPoint, fZ, m_fGlyphExtent, m_fGlyphExtent))
                     return NiPoint3(0.0f, 0.0f, fZ);
                 for (int j = 0; j < 3; j++)
                 {
@@ -3104,8 +3271,8 @@ NiPoint3 NavMeshBounds::DistanceFromPointToBounds(const NiPoint3& point)
                     if (next == 3)
                         next = 0;
                     {
-                        NiPoint3 kPoint = bounds_detail::GetClosestPointOnSegment(point, kTriangle[j], kTriangle[next]);
-                        fDistance = (point - kPoint).FUN_004a7290();
+                        NiPoint3 kPoint = bounds_detail::GetClosestPointOnSegment(aPoint, kTriangle[j], kTriangle[next]);
+                        fDistance = (aPoint - kPoint).FUN_004a7290();
                         if (fDistance < fPointHeight)
                         {
                             kClosest = kPoint;
@@ -3115,34 +3282,34 @@ NiPoint3 NavMeshBounds::DistanceFromPointToBounds(const NiPoint3& point)
                 }
             }
         }
-        return kClosest - point;
+        return kClosest - aPoint;
     }
     else
     {
-        if (point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y &&
-            point.z >= min.z && point.z <= max.z)
+        if (aPoint.x >= BoundingBoxMin.x && aPoint.x <= BoundingBoxMax.x && aPoint.y >= BoundingBoxMin.y && aPoint.y <= BoundingBoxMax.y &&
+            aPoint.z >= BoundingBoxMin.z && aPoint.z <= BoundingBoxMax.z)
         {
             return bounds_detail::pathingrequestZero;
         }
         else
         {
             NiPoint3 kIntersectionOffset = bounds_detail::pathingrequestZero;
-            if (point.x > max.x)
-                kIntersectionOffset.x = point.x - max.x;
-            else if (point.x < min.x)
-                kIntersectionOffset.x = point.x - min.x;
+            if (aPoint.x > BoundingBoxMax.x)
+                kIntersectionOffset.x = aPoint.x - BoundingBoxMax.x;
+            else if (aPoint.x < BoundingBoxMin.x)
+                kIntersectionOffset.x = aPoint.x - BoundingBoxMin.x;
             else
                 kIntersectionOffset.x = 0.0f;
-            if (point.y > max.y)
-                kIntersectionOffset.y = point.y - max.y;
-            else if (point.y < min.y)
-                kIntersectionOffset.y = point.y - min.y;
+            if (aPoint.y > BoundingBoxMax.y)
+                kIntersectionOffset.y = aPoint.y - BoundingBoxMax.y;
+            else if (aPoint.y < BoundingBoxMin.y)
+                kIntersectionOffset.y = aPoint.y - BoundingBoxMin.y;
             else
                 kIntersectionOffset.y = 0.0f;
-            if (point.z > max.z)
-                kIntersectionOffset.z = point.z - max.z;
-            else if (point.z < min.z)
-                kIntersectionOffset.z = point.z - min.z;
+            if (aPoint.z > BoundingBoxMax.z)
+                kIntersectionOffset.z = aPoint.z - BoundingBoxMax.z;
+            else if (aPoint.z < BoundingBoxMin.z)
+                kIntersectionOffset.z = aPoint.z - BoundingBoxMin.z;
             else
                 kIntersectionOffset.z = 0.0f;
             return kIntersectionOffset;
@@ -3204,50 +3371,54 @@ struct LDMesh
     LDVertexArray kVertices;
 
     void Reset();
-    void ReadFromBuffer(char* apData, LDFile* apFile, int aiUnused);
+    void NavMeshBounds_SetFromBoundsChunk(char* apChunkBuffer, LDFile* apFile, int aiFileVersionNumber);
 };
 
 // Resets the mesh, reads two points, vertex and triangle counts and their arrays from apData, byte-swapping when the file is big-endian.
 // @fnv 0x0069c8f0
-void LDMesh::ReadFromBuffer(char* apData, LDFile* apFile, int aiUnused)
+// src: XBOX_RETAIL_PDB 0x0069c8f0
+// pdb: NavMeshBounds::SetFromBoundsChunk | NavMeshBounds.obj | retail, object-file run extension, high
+// pdb params: apChunkBuffer, apFile, aiFileVersionNumber
+// pdb locals: sizeOfTriangleArray, sizeOfVertexArray, i
+void LDMesh::NavMeshBounds_SetFromBoundsChunk(char* apChunkBuffer, LDFile* apFile, int aiFileVersionNumber)
 {
     unsigned short usVertexCountA;
     unsigned short usTriangleCount4;
 
     Reset();
-    kMinBoundsCur = *(NiPoint3*)apData;
+    kMinBoundsCur = *(NiPoint3*)apChunkBuffer;
     if (apFile->IsBigEndian())
     {
         LDSwap32((int*)&kMinBoundsCur.x, LDEndianTag());
         LDSwap32((int*)&kMinBoundsCur.y, LDEndianTag());
         LDSwap32((int*)&kMinBoundsCur.z, LDEndianTag());
     }
-    apData += sizeof(NiPoint3);
+    apChunkBuffer += sizeof(NiPoint3);
 
-    kMaxPoint = *(NiPoint3*)apData;
+    kMaxPoint = *(NiPoint3*)apChunkBuffer;
     if (apFile->IsBigEndian())
     {
         LDSwap32((int*)&kMaxPoint.x, LDEndianTag());
         LDSwap32((int*)&kMaxPoint.y, LDEndianTag());
         LDSwap32((int*)&kMaxPoint.z, LDEndianTag());
     }
-    apData += sizeof(NiPoint3);
+    apChunkBuffer += sizeof(NiPoint3);
 
-    usVertexCountA = *(unsigned short*)apData;
+    usVertexCountA = *(unsigned short*)apChunkBuffer;
     if (apFile->IsBigEndian())
         LDSwap16((short*)&usVertexCountA, LDEndianTag());
     kVertices.SetSize(usVertexCountA, true);
-    apData += sizeof(unsigned short);
+    apChunkBuffer += sizeof(unsigned short);
 
-    usTriangleCount4 = *(unsigned short*)apData;
+    usTriangleCount4 = *(unsigned short*)apChunkBuffer;
     if (apFile->IsBigEndian())
         LDSwap16((short*)&usTriangleCount4, LDEndianTag());
     kTriangles.SetSize(usTriangleCount4, true);
-    apData += sizeof(unsigned short);
+    apChunkBuffer += sizeof(unsigned short);
 
     if (!kVertices.IsEmpty())
     {
-        memcpy_s(kVertices.GetAt(0), kVertices.Size() * sizeof(NiPoint3), apData, kVertices.Size() * sizeof(NiPoint3));
+        memcpy_s(kVertices.GetAt(0), kVertices.Size() * sizeof(NiPoint3), apChunkBuffer, kVertices.Size() * sizeof(NiPoint3));
         if (apFile->IsBigEndian())
         {
             for (unsigned int i = 0; i < usVertexCountA; i++)
@@ -3257,9 +3428,9 @@ void LDMesh::ReadFromBuffer(char* apData, LDFile* apFile, int aiUnused)
                 LDSwap32((int*)&kVertices.GetAt(i)->z, LDEndianTag());
             }
         }
-        apData += kVertices.Size() * sizeof(NiPoint3);
+        apChunkBuffer += kVertices.Size() * sizeof(NiPoint3);
 
-        memcpy_s(kTriangles.GetAt(0), kTriangles.Size() * sizeof(LDTriangle), apData,
+        memcpy_s(kTriangles.GetAt(0), kTriangles.Size() * sizeof(LDTriangle), apChunkBuffer,
                  kTriangles.Size() * sizeof(LDTriangle));
         if (apFile->IsBigEndian())
         {
@@ -3270,7 +3441,7 @@ void LDMesh::ReadFromBuffer(char* apData, LDFile* apFile, int aiUnused)
                 LDSwap16(&kTriangles.GetAt(j)->c, LDEndianTag());
             }
         }
-        apData += kTriangles.Size() * sizeof(LDTriangle);
+        apChunkBuffer += kTriangles.Size() * sizeof(LDTriangle);
     }
 }
 
@@ -3316,22 +3487,25 @@ struct Sub0069d4b0
     float m_originX;
     float m_originY;
     Tris_0069d4b0* NavMeshGrid_GetTriangleArray(int x, int y);
-    void NavMeshGrid_GetTriangleDataForAABB(Pt_0069d4b0* a1, Pt_0069d4b0* a2, Out_0069d4b0* a3);
+    void NavMeshGrid_GetTriangleDataForAABB(Pt_0069d4b0* aLocStart, Pt_0069d4b0* aLocEnd, Out_0069d4b0* apReturnArray);
 };
 // @fnv 0x0069d4b0
 // src: COMMUNITY 0x0069d4b0
-void Sub0069d4b0::NavMeshGrid_GetTriangleDataForAABB(Pt_0069d4b0* a1, Pt_0069d4b0* a2, Out_0069d4b0* apOut)
+// pdb: NavMeshGrid::GetTriangleDataForAABB | NavMeshGrid.obj | retail, upstream name already matches, high
+// pdb params: aLocStart, aLocEnd, apReturnArray
+// pdb locals: fscaleY, flocY, igoalcolumn, indicesToRemove, istartcolumn, fscaleX, flocX, istartrow, igoalrow, i, j, parray, k
+void Sub0069d4b0::NavMeshGrid_GetTriangleDataForAABB(Pt_0069d4b0* aLocStart, Pt_0069d4b0* aLocEnd, Out_0069d4b0* apReturnArray)
 {
-    float dx9 = a1->x - m_originX;
-    float dy2 = a1->y - m_originY;
+    float dx9 = aLocStart->x - m_originX;
+    float dy2 = aLocStart->y - m_originY;
     float fx = dx9 / m_cellW;
     float fy4 = dy2 / m_cellH;
     int x9 = (int)floorf(fx);
     int y0 = (int)floorf(fy4);
     ClampInt(&y0, 0, m_uiItemCount - 1);
     ClampInt(&x9, 0, m_uiItemCount - 1);
-    dx9 = a1->x - m_originX;
-    dy2 = a1->y - m_originY;
+    dx9 = aLocStart->x - m_originX;
+    dy2 = aLocStart->y - m_originY;
     fx = dx9 / m_cellW;
     fy4 = dy2 / m_cellH;
     int x5 = (int)floorf(fx);
@@ -3345,17 +3519,17 @@ void Sub0069d4b0::NavMeshGrid_GetTriangleDataForAABB(Pt_0069d4b0* a1, Pt_0069d4b
             Tris_0069d4b0* tris = NavMeshGrid_GetTriangleArray(x7, y7);
             for (unsigned int i = 0; i < tris->FUN_0044ddc0(); i++)
             {
-                apOut->Append(&tris->BSSimpleArray_unsigned_short_1024_GetAt(i));
+                apReturnArray->Append(&tris->BSSimpleArray_unsigned_short_1024_GetAt(i));
             }
         }
     }
-    if (apOut->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
+    if (apReturnArray->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
         return;
-    apOut->ForwardCall_0069aeb0(UInt16_CompareValues);
+    apReturnArray->ForwardCall_0069aeb0(UInt16_CompareValues);
     Dups_0069d4b0 dups_;
-    for (unsigned int i = 0; i < apOut->FUN_0044ddc0() - 1; i++)
+    for (unsigned int i = 0; i < apReturnArray->FUN_0044ddc0() - 1; i++)
     {
-        if (apOut->BSSimpleArray_unsigned_short_1024_GetAt(i + 1) == apOut->BSSimpleArray_unsigned_short_1024_GetAt(i))
+        if (apReturnArray->BSSimpleArray_unsigned_short_1024_GetAt(i + 1) == apReturnArray->BSSimpleArray_unsigned_short_1024_GetAt(i))
         {
             dups_.FUN_007cb2e0(i + 1);
         }
@@ -3364,7 +3538,7 @@ void Sub0069d4b0::NavMeshGrid_GetTriangleDataForAABB(Pt_0069d4b0* a1, Pt_0069d4b
         return;
     for (int j = dups_.FUN_0044ddc0() - 1; j >= 0; j--)
     {
-        apOut->BSSimpleArray_RemoveFast_1(dups_.FUN_00877a30(j), 1);
+        apReturnArray->BSSimpleArray_RemoveFast_1(dups_.FUN_00877a30(j), 1);
     }
 }
 
@@ -3376,6 +3550,8 @@ extern "C" void __cdecl FUN_0042f8a0();
 
 // Calls FUN_007037c0(0) on the nav mesh at index, passes its handle to AddNavMeshToGarbageCollector, then calls RemoveAt(index, true).
 // @fnv 0x0069bc50
+// pdb: NavMeshArray::RemoveNavMeshByIndex | NavMeshArray.obj | debug, call graph, low
+// pdb params: aiNavMeshIndex
 void NavMeshCollection::RemoveAndCollect(unsigned int index)
 {
     ((void (__thiscall*)(NavMesh*, unsigned int))FUN_007037c0)(FUN_00877a30(index).Modelloader_GetReferencedThis(), 0);
@@ -3392,6 +3568,7 @@ struct FUN_00683710 : GlobalObject_006836f0
     virtual ~FUN_00683710();
 };
 // @fnv 0x00683710
+// pdb: BSList<BSTempEffectDebris *>::`scalar deleting destructor' | BSTempEffectDebris.obj | debug, vtable slot, medium
 FUN_00683710::~FUN_00683710()
 {}
 
@@ -3406,6 +3583,7 @@ struct FUN_0069ad70 : NavMeshVertexMap
 };
 // Destructor with an empty body; the NavMeshVertexMap base destructor runs implicitly.
 // @fnv 0x0069ad70
+// pdb: NiTMap<FastNavMeshVertHandle,POVVertexData *>::`scalar deleting destructor' | NavMesh_Util.obj | retail, vtable slot, high
 FUN_0069ad70::~FUN_0069ad70()
 {}
 
@@ -3417,6 +3595,7 @@ struct FUN_0069b7b0 : BSSimpleArray<NavMeshInfo*, 1024>
 };
 // Destructor with an empty body; the BSSimpleArray<NavMeshInfo*, 1024> base is destroyed implicitly.
 // @fnv 0x0069b7b0
+// pdb: BSSimpleArray<NavMeshInfo *,1024>::`scalar deleting destructor' | NavMesh_Util.obj | retail, vtable slot, high
 FUN_0069b7b0::~FUN_0069b7b0()
 {}
 
@@ -3429,6 +3608,7 @@ struct FUN_0069b840 : FUN_0069b2f0
     virtual ~FUN_0069b840();
 };
 // @fnv 0x0069b840
+// pdb: BSSimpleArray<FastNavMeshEdgeHandle,1024>::`scalar deleting destructor' | NavMesh_Util.obj | retail, vtable slot, high
 FUN_0069b840::~FUN_0069b840()
 {}
 
@@ -3442,9 +3622,9 @@ void* operator new(unsigned int n);
 void* __cdecl Object_DispatchCommandFour(unsigned int n);
 void* __cdecl FormHeap_Allocate(unsigned int n);
 void* __stdcall GetPathManager(void* p, int a);
-void* __cdecl BSTestObjects_CreateSphere(float f, int a, int b, void* p);
-void __cdecl AttachLightingPropertyRecursive(void* p);
-void __cdecl FUN_00b57e30(void* p, int a, int b);
+void* __cdecl BSTestObjects_CreateSphere(float afRadius, int aiSlices, int aiStacks, void* apColor);
+void __cdecl AddNoLightingPropertyRecurse(void* apObject);
+void __cdecl FUN_00b57e30(void* apObject, int abFaceGenModel, int abSkipPreCache);
 
 struct ObjX
 {
@@ -3511,7 +3691,7 @@ struct ObjY
 };
 struct GRes2
 {
-    bool ForwardToHost();
+    bool PathManager_DrawPath();
 };
 struct LinkT;
 struct ArrObj
@@ -3538,7 +3718,7 @@ struct Obj2088
     int unk0020;
     int unk0024;
     void FUN_006dcce0(void* p);
-    void FUN_006dd6f0(int a);
+    void FUN_006dd6f0(int apFilter);
     bool FUN_006dd6a0();
 };
 struct Obj20d8
@@ -3659,7 +3839,7 @@ struct ResObj
     virtual void vf54();
     virtual void vtarget(void* p, int a);
     void NiAVObject_SetTranslate(void* p);
-    void NiAVObject_AttachProperty(void* p);
+    void NiAVObject_AttachProperty(void* pkProperty);
     void UpdateProperties();
     void NiAVObject_Update(void* p);
 };
@@ -3694,7 +3874,7 @@ struct StrObj
     int unk001c;
     int unk0020;
     int unk0024;
-    StrObj(void* a, void* b);
+    StrObj(void* aLocation, void* apNavMeshInfo);
     ~StrObj();
 };
 struct VecObj
@@ -3783,7 +3963,7 @@ struct GObj
 extern GObj DAT_011d6ddc;
 struct A4Obj
 {
-    void PathingSolution_AddPathingNode(StrObj* s, void* p);
+    void PathingSolution_AddPathingNode(StrObj* aLocation, void* aTangent);
 };
 struct HdrS
 {
@@ -5876,30 +6056,33 @@ struct ThisCls
     ArrE m_20e8;
     void BuildGroups(void* a, void* p);
     void* GetKeyForNode(Node* n, int a, void* hdr, float f);
-    void InsertNode(void* p);
+    void AStarSearch_PathSmootherPOVNode_PathSmootherPOVLink_AddStartNode(void* p);
     bool ProcessSearchNode(Obj20d8* a, ArrE* b, int flags);
-    bool NavMeshPOVSearch_BuildPath(Vec3Obj* a0, Vec3Obj* a1, void* a2, int a3, A4Obj* a4);
+    bool NavMeshPOVSearch_BuildPath(Vec3Obj* a0, Vec3Obj* a1, void* apList, int apRequest, A4Obj* apSolution);
 };
 
 // Sets up start and end nodes from a0 and a1, runs ProcessSearchNode, passes each result entry's strings to a4->FUN_0069f920, and returns the search result.
 // @fnv 0x0069f010
 // src: COMMUNITY 0x0069f010
-bool ThisCls::NavMeshPOVSearch_BuildPath(Vec3Obj* apStart, Vec3Obj* apEnd, void* a2, int a3, A4Obj* apResult)
+// pdb: NavMeshPOVSearch::BuildPath | NavMeshPOVSearch.obj | retail, upstream name already matches, high
+// pdb params: aStartLocation, aGoalLocation, apList, apRequest, apSolution
+// pdb locals: bres, startNode, i, j, spnode, UpdateData, palpha, color, entryLoc, exitLoc, updateData
+bool ThisCls::NavMeshPOVSearch_BuildPath(Vec3Obj* apStart, Vec3Obj* apEnd, void* apList, int apRequest, A4Obj* apSolution)
 {
     HdrS raw2;
     {
         bool ok;
-        m_2080 = a3;
-        m_2084 = (int)apResult;
+        m_2080 = apRequest;
+        m_2084 = (int)apSolution;
         if (DAT_011d6dcc)
         {
             if (DAT_011d6ddc.FUN_0052aa80(0))
             {
-                ((GRes2*)GetPathManager(&DAT_011d6ddc, 0))->ForwardToHost();
+                ((GRes2*)GetPathManager(&DAT_011d6ddc, 0))->PathManager_DrawPath();
             }
             DAT_011d6ddc.FUN_0066b0d0(new ObjX(0));
         }
-        BuildGroups(a2, &m_2068);
+        BuildGroups(apList, &m_2068);
         if (DAT_011d6dcc)
         {
             unsigned int i;
@@ -5920,7 +6103,7 @@ bool ThisCls::NavMeshPOVSearch_BuildPath(Vec3Obj* apStart, Vec3Obj* apEnd, void*
                         auxPtr = (AuxObj*)new ObjY();
                         auxPtr->NiAlphaProperty_SetAlphaBlending(1);
                         objB2.Modelloader_GetReferencedThis()->NiAVObject_AttachProperty(auxPtr);
-                        AttachLightingPropertyRecursive(objB2.Modelloader_GetReferencedThis());
+                        AddNoLightingPropertyRecurse(objB2.Modelloader_GetReferencedThis());
                         FUN_00b57e30(objB2.Modelloader_GetReferencedThis(), 0, 0);
                         objB2.Modelloader_GetReferencedThis()->UpdateProperties();
                         VecObj vobjL(0.0f, 0, 0);
@@ -5956,7 +6139,7 @@ bool ThisCls::NavMeshPOVSearch_BuildPath(Vec3Obj* apStart, Vec3Obj* apEnd, void*
             raw2.p = m_2078;
             raw2.a = 0;
             raw2.b = 0;
-            InsertNode(GetKeyForNode(m_2078, 0, &raw2,
+            AStarSearch_PathSmootherPOVNode_PathSmootherPOVLink_AddStartNode(GetKeyForNode(m_2078, 0, &raw2,
                                     (float)(((Vec3Obj*)&m_20b0)
                                                 ->FUN_005c3420()
                                                 .SubtractIntoVector(((Vec3Obj*)&m_2088)->FUN_005c3420())
@@ -5970,10 +6153,10 @@ bool ThisCls::NavMeshPOVSearch_BuildPath(Vec3Obj* apStart, Vec3Obj* apEnd, void*
             {
                 StrObj str1((char*)m_20e8.GetBufferElementAddress(k) + 0x1c,
                             ((NavLike*)m_20e8.GetBufferElementAddress(k)->m_10)->GetNavMeshInfo_0068efb0());
-                apResult->PathingSolution_AddPathingNode(&str1, &DAT_011f426c);
+                apSolution->PathingSolution_AddPathingNode(&str1, &DAT_011f426c);
                 StrObj str2((char*)m_20e8.GetBufferElementAddress(k) + 0x34,
                             ((NavLike*)m_20e8.GetBufferElementAddress(k)->m_28)->GetNavMeshInfo_0068efb0());
-                apResult->PathingSolution_AddPathingNode(&str2, &DAT_011f426c);
+                apSolution->PathingSolution_AddPathingNode(&str2, &DAT_011f426c);
             }
         }
         if (DAT_011d6dcc)
@@ -5981,7 +6164,7 @@ bool ThisCls::NavMeshPOVSearch_BuildPath(Vec3Obj* apStart, Vec3Obj* apEnd, void*
             DAT_011d6ddc.Modelloader_GetReferencedThis()->UpdateProperties();
             VecObj vobj(0.0f, 0, 0);
             DAT_011d6ddc.Modelloader_GetReferencedThis()->NiAVObject_Update(&vobj);
-            ((GRes2*)GetPathManager(&DAT_011d6ddc, 1))->ForwardToHost();
+            ((GRes2*)GetPathManager(&DAT_011d6ddc, 1))->PathManager_DrawPath();
         }
         {
             unsigned int m;
@@ -6002,6 +6185,7 @@ struct ScalarDeleteOwner : FUN_00683740_class
 
 // Calls FUN_006837f0, deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00683780
+// pdb: BSPointerListBase<BSTempEffectDebris *>::`scalar deleting destructor' | BSTempEffectDebris.obj | debug, vtable slot, medium
 void* __thiscall ScalarDeleteOwner::FUN_00683780(unsigned int flags)
 {
     FUN_006837f0();
@@ -6029,8 +6213,8 @@ BSSimpleArray<unsigned short, 1024>::~BSSimpleArray()
 
 // Copies scalar and block fields from this NavMeshGrid into apGrid, allocates a matching BSSimpleArray, and copies each element via FUN_00694f80.
 // @fnv 0x0069dd50
-// src: COMMUNITY 0x0069d2d0
-void NavMeshGrid::Clear_0069d2d0()
+// src: XBOX_RETAIL_PDB 0x0069d2d0
+void NavMeshGrid::NavMeshGrid_Clear()
 
 {}
 
@@ -6045,31 +6229,31 @@ void NavMeshGrid::CopyTo_0069dd50(NavMeshGrid* apGrid) const
 
 {
 
-    apGrid->Clear_0069d2d0();
+    apGrid->NavMeshGrid_Clear();
 
 
 
-    apGrid->m_uiGridIndex = m_uiGridIndex;
+    apGrid->iGridSize = iGridSize;
 
-    apGrid->m_fFirstGridValue = m_fFirstGridValue;
+    apGrid->fColumnSectionLen = fColumnSectionLen;
 
-    apGrid->NavMeshPointEntry = NavMeshPointEntry;
+    apGrid->fRowSectionLen = fRowSectionLen;
 
-    apGrid->IndexedPointRecord = IndexedPointRecord;
+    apGrid->GridBoundsMin = GridBoundsMin;
 
-    apGrid->IndexedPointData = IndexedPointData;
+    apGrid->GridBoundsMax = GridBoundsMax;
 
 
 
-    unsigned int itotal = apGrid->m_uiGridIndex * apGrid->m_uiGridIndex;
+    unsigned int itotal = apGrid->iGridSize * apGrid->iGridSize;
 
-    apGrid->TESFileRecordLoader = new BSSimpleArray<unsigned short, 1024>[itotal];
+    apGrid->GridData = new BSSimpleArray<unsigned short, 1024>[itotal];
 
 
 
     for (unsigned int i = 0; i < itotal; ++i)
 
-        reinterpret_cast<SA00694f80*>(&TESFileRecordLoader[i])->FUN_00694f80(reinterpret_cast<DA00694f80*>(&apGrid->TESFileRecordLoader[i]));
+        reinterpret_cast<SA00694f80*>(&GridData[i])->FUN_00694f80(reinterpret_cast<DA00694f80*>(&apGrid->GridData[i]));
 
 }
 
@@ -6091,16 +6275,19 @@ Script* __cdecl TESScriptableForm_GetFormScript(TESForm* formID);
 
 // @fnv 0x006823d0
 // src: XBOX_PDB 0x006823d0
-Script* TESParameters_GetScriptFromParam(unsigned int index, FunctionData const* data)
+// pdb: TESParameters::GetScriptFromParam | TESParameters.obj | retail, upstream name already matches, high
+// pdb params: aiParam, apFuncData
+// pdb locals: pScript, pscriptableform, pform, pRef
+Script* TESParameters_GetScriptFromParam(unsigned int aiParam, FunctionData const* apFuncData)
 {
     Script* result = 0;
 
     {
         TESForm* formID;
 
-        if (FUN_006822a0(data, index))
+        if (FUN_006822a0(apFuncData, aiParam))
         {
-            formID = reinterpret_cast<const ScriptParamDataView*>(data)->parameters[index];
+            formID = reinterpret_cast<const ScriptParamDataView*>(apFuncData)->parameters[aiParam];
 
             TESScriptableForm* script = dynamic_cast<TESScriptableForm*>(formID);
 

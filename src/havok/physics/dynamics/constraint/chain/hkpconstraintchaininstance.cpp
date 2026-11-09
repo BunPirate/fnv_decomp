@@ -27,16 +27,19 @@ struct FUN_00c97510
 };
 struct FUN_00cb3da0
 {
-    static void AddConstraintToCriticalLockedIsland(void*, void*);
+    static void hkpWorldOperationUtil_removeConstraintFromCriticalLockedIsland(void*, void*);
 };
 // @fnv 0x00dd0460
-void hkpConstraintChainInstance::EntityRemovedCallback(void* a)
+// pdb: hkpConstraintChainInstance::entityRemovedCallback | hkpConstraintChainInstance.obj | retail, vtable slot, high
+// pdb params: entity
+// pdb locals: assertBuf, ostr
+void hkpConstraintChainInstance::EntityRemovedCallback(void* entity)
 {
-    FUN_00c97510* w = *(FUN_00c97510**)((char*)a + 8);
+    FUN_00c97510* w = *(FUN_00c97510**)((char*)entity + 8);
     ++*(int*)((char*)w + 0x94);
-    FUN_00c97510* w2 = (FUN_00c97510*)m_pAction;
+    FUN_00c97510* w2 = (FUN_00c97510*)m_action;
     w->ProcessPointer(w2);
-    FUN_00cb3da0::AddConstraintToCriticalLockedIsland(w, this);
+    FUN_00cb3da0::hkpWorldOperationUtil_removeConstraintFromCriticalLockedIsland(w, this);
     if (--*(int*)((char*)w + 0x94) == 0 && !*(char*)((char*)w + 0x9c))
     {
         if (*(int*)((char*)w + 0x8c))
@@ -68,16 +71,20 @@ template <class T> __forceinline void hkArrayBase<T>::_pushBack(hkMemoryAllocato
 }
 
 // @fnv 0x00dd04d0
-void hkpConstraintChainInstance::AddReferencedObject(hkpEntity* pkObject)
+// src: XBOX_RETAIL_PDB 0x00dd04d0
+// pdb: hkpConstraintChainInstance::addEntity | hkpConstraintChainInstance.obj | retail, call graph, high
+// pdb params: entity
+// pdb locals: assertBuf, ostr
+void hkpConstraintChainInstance::addEntity(hkpEntity* entity)
 {
-    int iSlot = m_ppRigidBodies.m_iElementCount;
-    if (iSlot < 2 && m_kActorEntries[iSlot] == 0)
+    int iSlot = m_chainedEntities.m_iElementCount;
+    if (iSlot < 2 && m_entities[iSlot] == 0)
     {
-        m_kActorEntries[iSlot] = pkObject;
-        ((hkReferencedObject*)pkObject)->addReference();
+        m_entities[iSlot] = entity;
+        ((hkReferencedObject*)entity)->addReference();
     }
-    m_ppRigidBodies.pushBack(pkObject);
-    ((hkReferencedObject*)pkObject)->addReference();
+    m_chainedEntities.pushBack(entity);
+    ((hkReferencedObject*)entity)->addReference();
 }
 
 template <typename T> __forceinline void hkArrayBase<T>::_clearAndDeallocate(hkMemoryAllocator& alloc)
@@ -94,11 +101,13 @@ template <typename T, typename A> __forceinline hkArray<T, A>::~hkArray()
 }
 
 // @fnv 0x00dd05c0
+// pdb: hkpConstraintChainInstance::~hkpConstraintChainInstance | hkpConstraintChainInstance.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 hkpConstraintChainInstance::~hkpConstraintChainInstance() throw()
 {
-    for (int i = 0; i < m_ppRigidBodies.m_iElementCount; i++)
-        ((hkReferencedObject*)m_ppRigidBodies.m_data[i])->removeReference();
-    m_pAction->removeReference();
+    for (int i = 0; i < m_chainedEntities.m_iElementCount; i++)
+        ((hkReferencedObject*)m_chainedEntities.m_data[i])->removeReference();
+    m_action->removeReference();
 }
 
 
@@ -107,32 +116,34 @@ inline void* hkReferencedObject::operator new(std::size_t nbytes) throw()
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(
         hkMemoryRouter::getInstance().heap().blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = (unsigned short)nbytes;
+    b->m_memSizeAndFlags = (unsigned short)nbytes;
     return b;
 }
 
 inline void hkReferencedObject::operator delete(void* p)
 {
     hkReferencedObject* object = static_cast<hkReferencedObject*>(p);
-    hkMemoryRouter::getInstance().heap().blockFree(p, object->m_usMemSizeAndFlags);
+    hkMemoryRouter::getInstance().heap().blockFree(p, object->m_memSizeAndFlags);
 }
 
 inline hkpAction::hkpAction() throw()
-    : m_pOwningWorld(0), m_pCurrentSimulationIsland(0), m_ulUserData(0)
+    : m_world(0), m_island(0), m_userData(0)
 {}
 
 inline hkpConstraintChainInstanceAction::hkpConstraintChainInstanceAction(
     hkpConstraintInstance* pkInstance) throw()
-    : m_pConstraintChainInstance(static_cast<hkpConstraintChainInstance*>(pkInstance))
+    : m_constraintInstance(static_cast<hkpConstraintChainInstance*>(pkInstance))
 {}
 
 // @fnv 0x00dd0530
-hkpConstraintChainInstance::hkpConstraintChainInstance(hkpConstraintChainData* pkData)
+// pdb: hkpConstraintChainInstance::hkpConstraintChainInstance | hkpConstraintChainInstance.obj | retail, call graph (shared callers), high
+// pdb params: f
+hkpConstraintChainInstance::hkpConstraintChainInstance(hkpConstraintChainData* data)
     : hkpConstraintInstance(1)
 {
-    m_data = pkData;
-    pkData->FUN_00c90510();
-    m_kActorEntries[0] = 0;
-    m_kActorEntries[1] = 0;
-    m_pAction = new hkpConstraintChainInstanceAction(this);
+    m_data = data;
+    data->FUN_00c90510();
+    m_entities[0] = 0;
+    m_entities[1] = 0;
+    m_action = new hkpConstraintChainInstanceAction(this);
 }

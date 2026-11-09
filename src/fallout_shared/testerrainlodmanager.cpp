@@ -42,15 +42,19 @@ float tanf_0057dd90(float value);
 
 // @fnv 0x0057dd70
 // src: XBOX_PDB 0x0057dd70
-float tan_0057dd70(float value)
+// pdb: tan | TESTerrainLODManager.obj | debug, call graph (shared callers), high
+// pdb params: _X
+float tan_0057dd70(float _X)
 {
-    return tanf_0057dd90(value);
+    return tanf_0057dd90(_X);
 }
 
 extern "C" double __cdecl FUN_00eca590(double);
 
 // @fnv 0x0057dd90
 // src: XBOX_PDB 0x0057dd90
+// pdb: tanf | TESTerrainLODManager.obj | debug, object-file gap fill, medium
+// pdb params: _X
 float tanf_0057dd90(float value)
 {
     return static_cast<float>(FUN_00eca590(value));
@@ -67,6 +71,7 @@ struct FUN_0057ce90_shell
 
 // Decrements DAT_011ca444; when it reaches zero, deletes DAT_011ca43c and DAT_011ca440 and clears both pointers.
 // @fnv 0x0057ce90
+// pdb: TESTerrainLODManager::~TESTerrainLODManager | TESTerrainLODManager.obj | debug, call graph, high
 FUN_0057ce90_shell::~FUN_0057ce90_shell()
 {
     if (--DAT_011ca444 == 0)
@@ -89,15 +94,20 @@ FUN_0057ce90_shell::~FUN_0057ce90_shell()
 float __cdecl FloatFloor(float);
 // Truncates p[0] and p[1] to ints via FUN_00404040 and packs x into the high 16 bits and y into the low 16 bits.
 // @fnv 0x0057ddb0
-int __cdecl PackFloatPairToInt(float* afValues)
+// src: XBOX_DEBUG_PDB 0x0057ddb0
+// pdb: TallGrassShaderProperty::Hash_2DPosition | TESTerrainLODManager.obj | debug, call graph, high
+// pdb params: arPos
+// pdb locals: x, y
+int __cdecl TallGrassShaderProperty_Hash_2DPosition(float* arPos)
 {
     int x;
     int y;
-    x = (int)FloatFloor(afValues[0]);
-    y = (int)FloatFloor(afValues[1]);
+    x = (int)FloatFloor(arPos[0]);
+    y = (int)FloatFloor(arPos[1]);
     return (x << 16) | (y & 0xffff);
 }
 
+// pdb: class TallGrassShaderProperty, size 0x98 (here 0x1), bases: BSShaderLightingProperty, 6 members
 struct TallGrassShaderProperty
 {
     static int __cdecl GetCacheIdentifier();
@@ -117,6 +127,8 @@ struct FUN_0057cd10
 };
 
 // @fnv 0x0057cd10
+// pdb: TESTerrainLODManager::TESTerrainLODManager | TESTerrainLODManager.obj | debug, call graph, medium
+// pdb locals: isizecap
 FUN_0057cd10::FUN_0057cd10()
 {
     if (!DAT_011ca444)
@@ -143,6 +155,8 @@ extern bool DAT_011ca430;
 
 // Computes a clamped max range from settings and stores it, then creates a named NiNode, attaches it at index 6, and sets a flag.
 // @fnv 0x0057cf00
+// pdb: TESTerrainLODManager::InitGrass | TESTerrainLODManager.obj | debug, object-file run extension, low
+// pdb locals: fmaxrange, pbasenode, tempMemContext
 void UpdateTerrainLODMaxRange()
 {
     AutoMemHelper tempMemContext(
@@ -301,19 +315,22 @@ extern Setting DAT_011ca4f0, DAT_011ca480, DAT_011ca450, DAT_011ca498, DAT_011ca
 extern bool DAT_0118c000, DAT_011ca430, DAT_011f9ef0;
 extern TerrainNode* DAT_011ca438;
 TerrainNode* FUN_00450b80(int);
-void FUN_00b62970();
+void RemoveAllGrass();
 void UpdateTerrainLODMaxRange();
 void TallGrassShaderProperty_SetFadeParameters(float, float, float, float);
 void TESTerrainLODManager_UpdateGrassForCell(Cell*, TerrainNode*, NiPoint3, NiPoint3, float, float, float);
 void TallGrassShaderProperty_RemoveFromCell(int, int);
 // @fnv 0x0057d0a0
 // src: XBOX_PDB 0x0057d0a0
+// pdb: TESTerrainLODManager::UpdateGrass | TESTerrainLODManager.obj | retail, upstream name already matches, high
+// pdb params: apCameraPosition, apCameraDirection, afUpdateAngle
+// pdb locals: fmaxrange, ffaderange, tempMemContext, pgrassobj, pbasenode, pcell, icellx, icelly, pcameraCellPos, icitx, icity, bremove, UpdateData
 void TESTerrainLODManager_UpdateGrass(NiPoint3 position, NiPoint3 direction, float scale)
 {
     AutoMemContext contextSlot1(28, true, DAT_010310d8, 177);
     if (DAT_011dea10->FUN_005f36f0() || !*DAT_011ca4f0.FUN_00408d60() || !DAT_0118c000)
     {
-        FUN_00b62970();
+        RemoveAllGrass();
         return;
     }
     if (!DAT_011ca430)
@@ -414,7 +431,7 @@ struct FUN_0045c620
     unsigned int m_uiActive;
     unsigned int m_uiPad;
     FUN_0045c620();
-    void SetFromFrustum(const void* apFrustum, void* apTransform);
+    void SetFromFrustum(const void* kFrust, void* kXform);
 };
 struct Tmp53a510
 {
@@ -463,7 +480,7 @@ struct Mgr
     float TESObjectCELL_GetWaterHeight();
     int FUN_00544c30();
     int FUN_00544c60();
-    CellObj* GetCellNodeAt(unsigned int);
+    CellObj* TESObjectCELL_GetLandNode(unsigned int);
     NiNodeHelper* FUN_00456fc0(int, unsigned int);
 };
 extern unsigned char DAT_011ca534;
@@ -472,14 +489,17 @@ bool _TallGrassShaderProperty_ContainsChunk(const char*, const char*);
 CellForm* _ref_004839c0(int);
 void TallGrassShaderProperty_RemoveFromTerrainChunk(int);
 float __cdecl tan_0057dd70(float);
-int __cdecl PackFloatPairToInt(float*);
-void __cdecl GenerateGrassPositions(int, int, int, Obj30*, int, const NiPoint3*, int, NiPoint3, int*, int*, float,
+int __cdecl TallGrassShaderProperty_Hash_2DPosition(float*);
+void __cdecl TESTerrainLODManager_CreateGrass(int, int, int, Obj30*, int, const NiPoint3*, int, NiPoint3, int*, int*, float,
                                     float, unsigned short, int, float, unsigned char, unsigned char);
 
 // @fnv 0x0057d4f0
 // src: COMMUNITY 0x0057d4f0
-void __cdecl TESTerrainLODManager_UpdateGrassForCell(Mgr* apMgr, int aiParam, NiPoint3 akPos, NiPoint3 akDir, float afParam1, float afRadius,
-                          float afFov)
+// pdb: TESTerrainLODManager::UpdateGrassForCell | TESTerrainLODManager.obj | retail, upstream name already matches, high
+// pdb params: apCell, apGrassNode, apCameraPosition, apCameraDirection, fFadeRange, fMaxRange, afUpdateAngle
+// pdb locals: plandTextures, iCellY, theta, pparam, l, iminSlope, centoffset, k, iheightLimit, centcoord, fCellWaterHeight, fwidth, faspectDelta, igrassEvalSquared, iCellX, kcurrentfrustum, kplanes, fHeightByWidth, imaxSlope, iwaterState, pgrass, coordData, igrassEvalSize, heightPt ...
+void __cdecl TESTerrainLODManager_UpdateGrassForCell(Mgr* apCell, int apGrassNode, NiPoint3 apCameraPosition, NiPoint3 apCameraDirection, float fFadeRange, float fMaxRange,
+                          float afUpdateAngle)
 {
     int iQuad;
     if (DAT_011ca534)
@@ -500,23 +520,23 @@ void __cdecl TESTerrainLODManager_UpdateGrassForCell(Mgr* apMgr, int aiParam, Ni
     int iStart4 = FUN_0057ce60();
     int iDelta = iStart4 * 2;
     int iCount2 = 8;
-    if (apMgr == 0 || apMgr->FUN_0054ddd0() == 0 || apMgr->TESObjectCELL_GetLand() == 0)
+    if (apCell == 0 || apCell->FUN_0054ddd0() == 0 || apCell->TESObjectCELL_GetLand() == 0)
         return;
-    float fScaleF4 = apMgr->TESObjectCELL_GetWaterHeight();
-    Obj30* pData30 = apMgr->TESObjectCELL_GetLand();
-    int m_iGridPositionX = apMgr->FUN_00544c30();
-    int iLodLevel5 = apMgr->FUN_00544c60();
+    float fScaleF4 = apCell->TESObjectCELL_GetWaterHeight();
+    Obj30* pData30 = apCell->TESObjectCELL_GetLand();
+    int m_iGridPositionX = apCell->FUN_00544c30();
+    int iLodLevel5 = apCell->FUN_00544c60();
     iSampleIdx = 0;
-    akDir.z = 0.0f;
-    akDir.Unitize_004a0c10();
-    afFov = afFov * 2.0f;
+    apCameraDirection.z = 0.0f;
+    apCameraDirection.Unitize_004a0c10();
+    afUpdateAngle = afUpdateAngle * 2.0f;
     NiFrustum kFrust;
     kFrust.Init(false);
     float fW = (float)NiXenonRenderer_GetRenderer()->FUN_004dee70();
     float fScreenH4 = (float)NiXenonRenderer_GetRenderer()->FUN_004dee10();
     float kFAspectRatio = fW / fScreenH4;
     float fFactorB = 0.75 / (fW / fScreenH4);
-    float fTheta = Main_GetWorldSceneGraph()->BSSceneGraph_GetCameraFOV() * 0.01745329238474369 * 0.5 + afFov;
+    float fTheta = Main_GetWorldSceneGraph()->BSSceneGraph_GetCameraFOV() * 0.01745329238474369 * 0.5 + afUpdateAngle;
     kFrust.m_fLeftBound = -tan_0057dd70(fTheta) * fFactorB;
     kFrust.m_fRightBound = tan_0057dd70(fTheta) * fFactorB;
     kFrust.m_fBottomBound = -tan_0057dd70(fTheta) * kFAspectRatio * fFactorB;
@@ -528,7 +548,7 @@ void __cdecl TESTerrainLODManager_UpdateGrassForCell(Mgr* apMgr, int aiParam, Ni
     kTester.SetFromFrustum(&kFrust, ((CamNode*)Main_GetWorldSceneGraph()->FUN_006629f0())->NiAVObject_GetWorldRotate());
     for (iQuad = 0; iQuad < 4; iQuad++)
     {
-        CellObj* pCell = apMgr->GetCellNodeAt(iQuad);
+        CellObj* pCell = apCell->TESObjectCELL_GetLandNode(iQuad);
         if (pCell)
         {
             NiPoint3 kStartPt = pData30->TESObjectLAND_GetVertexLocation(0, 0, 0, 0);
@@ -537,12 +557,12 @@ void __cdecl TESTerrainLODManager_UpdateGrassForCell(Mgr* apMgr, int aiParam, Ni
             unsigned int kBounds[sizeof(NiBound) / sizeof(unsigned int)];
             memcpy(kBounds, &pCell->NiAVObject_GetWorldBound(), sizeof(NiBound));
             NiPoint3 kNone = NiPoint3::ZERO;
-            float fDist = (akPos - *reinterpret_cast<NiBound*>(kBounds)->FUN_006815c0()).Length() -
+            float fDist = (apCameraPosition - *reinterpret_cast<NiBound*>(kBounds)->FUN_006815c0()).Length() -
                           reinterpret_cast<const NiBound*>(kBounds)->FUN_0084d030();
-            Node45* pAt = apMgr->FUN_00456fc0(2, iQuad)->FUN_0043b4a0();
+            Node45* pAt = apCell->FUN_00456fc0(2, iQuad)->FUN_0043b4a0();
             int eState = ((FormKind*)pAt->FUN_006629f0()->NiObjectNET_GetControllers())->FUN_0044ddc0();
             unsigned char bProjectedOnScreen = pAt->FUN_006629f0()->NiObjectNET_GetControllers()->IsInFrustum(&kTester);
-            if ((eState == 1 || eState == 0 || bProjectedOnScreen) && fDist < afRadius)
+            if ((eState == 1 || eState == 0 || bProjectedOnScreen) && fDist < fMaxRange)
             {
                 for (int iX = iStart4; iX < 0x10; iX += iDelta)
                 {
@@ -550,10 +570,10 @@ void __cdecl TESTerrainLODManager_UpdateGrassForCell(Mgr* apMgr, int aiParam, Ni
                     {
                         iSampleIdx = iY * 0x11 + iX;
                         kPos = pData30->TESObjectLAND_GetVertexLocation((unsigned char)iQuad, (unsigned short)iSampleIdx, 0, 0);
-                        kPos.z = akPos.z;
+                        kPos.z = apCameraPosition.z;
                         kPos.x = kPos.x - 256.0;
                         kPos.y = kPos.y - 256.0;
-                        iV1b8 = PackFloatPairToInt(&kPos.x);
+                        iV1b8 = TallGrassShaderProperty_Hash_2DPosition(&kPos.x);
                         ppEntries = pData30->TESObjectLAND_GetGrassParameters(iQuad, iSampleIdx);
                         iEntry = 0;
                         while (ppEntries != 0 && ppEntries[iEntry] != 0 && iEntry < 0x10 && ppEntries[iEntry][0] != 0)
@@ -570,9 +590,9 @@ void __cdecl TESTerrainLODManager_UpdateGrassForCell(Mgr* apMgr, int aiParam, Ni
                                         bFlagB = pBase->Get190();
                                         bFlagA6 = pBase->Get188();
                                     }
-                                    GenerateGrassPositions(m_iGridPositionX, iLodLevel5, iQuad, pData30, iV1b8, &kPos, aiParam,
-                                                           akPos, ppEntries[iEntry], ppEntries[iEntry] + 8, afParam1,
-                                                           afRadius, usW, iCount2, fScaleF4, bFlagA6, bFlagB);
+                                    TESTerrainLODManager_CreateGrass(m_iGridPositionX, iLodLevel5, iQuad, pData30, iV1b8, &kPos, apGrassNode,
+                                                           apCameraPosition, ppEntries[iEntry], ppEntries[iEntry] + 8, fFadeRange,
+                                                           fMaxRange, usW, iCount2, fScaleF4, bFlagA6, bFlagB);
                                 }
                             }
                             iEntry++;
@@ -590,7 +610,7 @@ void __cdecl TESTerrainLODManager_UpdateGrassForCell(Mgr* apMgr, int aiParam, Ni
                         kPos = pData30->TESObjectLAND_GetVertexLocation((unsigned char)iQuad, (unsigned short)iSampleIdx, 0, 0);
                         kPos.x = kPos.x - 256.0;
                         kPos.y = kPos.y - 256.0;
-                        int iSample = PackFloatPairToInt(&kPos.x);
+                        int iSample = TallGrassShaderProperty_Hash_2DPosition(&kPos.x);
                         TallGrassShaderProperty_RemoveFromTerrainChunk(iSample);
                     }
                 }
@@ -649,8 +669,8 @@ class LODLand
 {
   public:
     bool TESPackage_GetLockDoorsAtStart();
-    bool TESObjectLAND_GetCoordData(FUN_0053a510_LandData* pkData, NiPoint3* pkPos, int iUnused);
-    void ComputeTerrainNormalAndTangent(FUN_0053a510_LandData* pkData, NiPoint3* pkNormal, NiPoint3* pkSlope);
+    bool TESObjectLAND_GetCoordData(FUN_0053a510_LandData* cdata, NiPoint3* coord, int forcetovertex);
+    void TESObjectLAND_GetLandNormal(FUN_0053a510_LandData* cdata, NiPoint3* aNormal, NiPoint3* aFaceNormal);
     void GetLandColor_0(FUN_0053a510_LandData* pkData, FUN_00414430_Color* pkColor);
 };
 
@@ -658,8 +678,8 @@ class LODWorld
 {
   public:
     void GetLandHeightAt(NiPoint3* pkPos, float* pfHeight);
-    void TES_GetLandNormal(NiPoint3* pkPos, NiPoint3* pkNormal, NiPoint3* pkSlope);
-    void TES_GetLandColor(NiPoint3* pkPos, FUN_00414430_Color* pkColor);
+    void TES_GetLandNormal(NiPoint3* aCoord, NiPoint3* aNormal, NiPoint3* aFaceNormal);
+    void TES_GetLandColor(NiPoint3* acoord, FUN_00414430_Color* acolor);
 };
 extern LODWorld* DAT_011dea10;
 
@@ -683,7 +703,7 @@ extern float* DAT_011ca440;
 
 float NiCosQ(float fAngleDifference);
 int FUN_0057ce60();
-bool TallGrassShaderProperty_ContainsChunk(LODSettings* pkSettings, void* pvOwner);
+bool TallGrassShaderProperty_ContainsChunk(LODSettings* aiGrassID, void* alTerrainChunkSeed);
 float RandomFloatNeg1To1();
 float FloatFloor(float fValue);
 int TruncateFloatToInt(float fValue);
@@ -693,26 +713,30 @@ void PopulateGrassInstances(void* pvOwner, int iA, int iB, int iC, LODSettings* 
 
 // Samples a grid over the land, tests density and height/slope filters, and stores accepted positions and luminance values for the owner.
 // @fnv 0x0057de00
-void GenerateGrassPositions(int iA, int iB, int iUnused08, LODLand* pkLand, void* pvOwner, const NiPoint3& kBase,
-                            int iC, NiPoint3 akStart, LODSettings* pkSettings, float* afDensityGrid, int iUnused34,
-                            float fRadius, unsigned short usRange, int iMode, float afHeight, unsigned char ucMinAngle,
-                            unsigned char ucMaxAngle)
+// src: XBOX_DEBUG_PDB 0x0057de00
+// pdb: TESTerrainLODManager::CreateGrass | TESTerrainLODManager.obj | debug, call graph, high
+// pdb params: aiCellx, aiCelly, aiBlock, apLand, aiSeed, aCoord, apGrassNode, apPosition, apGrassParam, apfDensity, fFadeRange, fMaxRange, iHeightLimit, iWaterState, afCellWaterHeight, aiMinSlope, aiMaxSlope
+// pdb locals: block, baddlow, lbaseseed, imaxSize, fmaxSlope, fgrassArea, fminSlope, aCoordData, tempMemContext, swapPoint, igrassSize, ilowgrasscount, i, j, fdensx, fd1, fdensy, fd2, fd4, idens, idensx, fd3, pnewpos, idensy ...
+void TESTerrainLODManager_CreateGrass(int aiCellx, int aiCelly, int aiBlock, LODLand* apLand, void* aiSeed, const NiPoint3& aCoord,
+                            int apGrassNode, NiPoint3 apPosition, LODSettings* apGrassParam, float* apfDensity, int fFadeRange,
+                            float fMaxRange, unsigned short iHeightLimit, int iWaterState, float afCellWaterHeight, unsigned char aiMinSlope,
+                            unsigned char aiMaxSlope)
 {
     AutoMemContext kMemContextRef(MEM_CONTEXT_MEM_CONTEXT_GRASS, true,
                                   "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TESTerrainLODManager.cpp",
                                   522);
     NiPointer_0057de00<BSFogProperty> spProperty;
     NiPoint3 kUnusedRef;
-    float fMinSlopeRes = NiCosQ(ucMinAngle * 0.017453292f);
-    float fMaxSlopeValue = NiCosQ(ucMaxAngle * 0.017453292f);
-    fRadius *= fRadius;
-    void* pvLandOwnerPos = pvOwner;
-    bool bNotLoadedNew = !TallGrassShaderProperty_ContainsChunk(pkSettings, pvLandOwnerPos);
-    if (!bNotLoadedNew || !pkLand->TESPackage_GetLockDoorsAtStart())
+    float fMinSlopeRes = NiCosQ(aiMinSlope * 0.017453292f);
+    float fMaxSlopeValue = NiCosQ(aiMaxSlope * 0.017453292f);
+    fMaxRange *= fMaxRange;
+    void* pvLandOwnerPos = aiSeed;
+    bool bNotLoadedNew = !TallGrassShaderProperty_ContainsChunk(apGrassParam, pvLandOwnerPos);
+    if (!bNotLoadedNew || !apLand->TESPackage_GetLockDoorsAtStart())
         return;
 
     float fLodSize = FUN_0057ce60() << 8;
-    unsigned short usSteps = (int)(fLodSize / pkSettings->m_fHorizontalSpacing);
+    unsigned short usSteps = (int)(fLodSize / apGrassParam->m_fHorizontalSpacing);
     unsigned short usMaxStepsNew = (FUN_0057ce60() << 8) / *DAT_011ca524.Setting_Int();
     if (usSteps > usMaxStepsNew)
         usSteps = usMaxStepsNew;
@@ -722,7 +746,7 @@ void GenerateGrassPositions(int iA, int iB, int iUnused08, LODLand* pkLand, void
     {
         for (int j = 0; j < usSteps; j++)
         {
-            NiPoint3 kPosPos = kBase + NiPoint3(i * (fLodSize / usSteps), j * (fLodSize / usSteps), 0.0f);
+            NiPoint3 kPosPos = aCoord + NiPoint3(i * (fLodSize / usSteps), j * (fLodSize / usSteps), 0.0f);
             float fNewV = j * (3.0 / usSteps);
             float fTextureCoordinateU = i * (3.0 / usSteps);
             int iColEntry = TruncateFloatToInt(fTextureCoordinateU);
@@ -733,37 +757,37 @@ void GenerateGrassPositions(int iA, int iB, int iUnused08, LODLand* pkLand, void
             float fAdjacentDensityGridValue = 0.0f;
             float fH01Out = 0.0f;
             float fH11Info = 0.0f;
-            fDensityAtRowColumn = afDensityGrid[iRowNew * 3 + iColEntry];
+            fDensityAtRowColumn = apfDensity[iRowNew * 3 + iColEntry];
             if (fTextureCoordinateU > 0.01)
             {
                 if (iColEntry < 2)
-                    fAdjacentDensityGridValue = afDensityGrid[iRowNew * 3 + iColEntry + 1];
+                    fAdjacentDensityGridValue = apfDensity[iRowNew * 3 + iColEntry + 1];
                 else
-                    fAdjacentDensityGridValue = afDensityGrid[iRowNew * 3 + iColEntry];
+                    fAdjacentDensityGridValue = apfDensity[iRowNew * 3 + iColEntry];
                 if (fNewV > 0.01)
                 {
                     if (iRowNew < 2)
                     {
                         if (iColEntry < 2)
-                            fH11Info = afDensityGrid[(iRowNew + 1) * 3 + iColEntry + 1];
+                            fH11Info = apfDensity[(iRowNew + 1) * 3 + iColEntry + 1];
                         else
-                            fH11Info = afDensityGrid[(iRowNew + 1) * 3 + iColEntry];
+                            fH11Info = apfDensity[(iRowNew + 1) * 3 + iColEntry];
                     }
                     else
                     {
                         if (iColEntry < 2)
-                            fH11Info = afDensityGrid[iRowNew * 3 + iColEntry + 1];
+                            fH11Info = apfDensity[iRowNew * 3 + iColEntry + 1];
                         else
-                            fH11Info = afDensityGrid[iRowNew * 3 + iColEntry];
+                            fH11Info = apfDensity[iRowNew * 3 + iColEntry];
                     }
                 }
             }
             if (fNewV > 0.01)
             {
                 if (iRowNew < 2)
-                    fH01Out = afDensityGrid[(iRowNew + 1) * 3 + iColEntry];
+                    fH01Out = apfDensity[(iRowNew + 1) * 3 + iColEntry];
                 else
-                    fH01Out = afDensityGrid[iRowNew * 3 + iColEntry];
+                    fH01Out = apfDensity[iRowNew * 3 + iColEntry];
             }
             float fDensityIn =
                 ((1.0f - fTextureCoordinateU) * fDensityAtRowColumn + fAdjacentDensityGridValue * fTextureCoordinateU) *
@@ -774,52 +798,52 @@ void GenerateGrassPositions(int iA, int iB, int iUnused08, LODLand* pkLand, void
             {
                 float fGroundZ = 0.0f;
                 float fRandTmp = RandomFloatNeg1To1();
-                kPosPos.x += fRandTmp * pkSettings->m_fHorizontalSpacing;
+                kPosPos.x += fRandTmp * apGrassParam->m_fHorizontalSpacing;
                 fRandTmp = RandomFloatNeg1To1();
-                kPosPos.y += fRandTmp * pkSettings->m_fHorizontalSpacing;
+                kPosPos.y += fRandTmp * apGrassParam->m_fHorizontalSpacing;
                 kPosPos.x = FloatFloor(kPosPos.x);
                 kPosPos.y = FloatFloor(kPosPos.y);
                 kPosPos.z = 0.0f;
-                bool bOnLand = pkLand->TESObjectLAND_GetCoordData(&kTheLandData, &kPosPos, 0);
+                bool bOnLand = apLand->TESObjectLAND_GetCoordData(&kTheLandData, &kPosPos, 0);
                 DAT_011dea10->GetLandHeightAt(&kPosPos, &fGroundZ);
-                switch (iMode)
+                switch (iWaterState)
                 {
                 case 0:
-                    if (afHeight - usRange > fGroundZ)
+                    if (afCellWaterHeight - iHeightLimit > fGroundZ)
                         continue;
                     break;
                 case 1:
-                    if (fGroundZ < afHeight || afHeight + usRange < fGroundZ)
+                    if (fGroundZ < afCellWaterHeight || afCellWaterHeight + iHeightLimit < fGroundZ)
                         continue;
                     break;
                 case 2:
-                    if (afHeight - usRange < fGroundZ)
+                    if (afCellWaterHeight - iHeightLimit < fGroundZ)
                         continue;
                     break;
                 case 3:
-                    if (fGroundZ > afHeight || afHeight - usRange > fGroundZ)
+                    if (fGroundZ > afCellWaterHeight || afCellWaterHeight - iHeightLimit > fGroundZ)
                         continue;
                     break;
                 case 4:
-                    if (afHeight + usRange > fGroundZ && afHeight - usRange < fGroundZ)
+                    if (afCellWaterHeight + iHeightLimit > fGroundZ && afCellWaterHeight - iHeightLimit < fGroundZ)
                         continue;
                     break;
                 case 5:
-                    if (afHeight + usRange < fGroundZ || afHeight - usRange > fGroundZ)
+                    if (afCellWaterHeight + iHeightLimit < fGroundZ || afCellWaterHeight - iHeightLimit > fGroundZ)
                         continue;
                     break;
                 }
-                NiPoint3 kOffsetOld = kPosPos - akStart;
+                NiPoint3 kOffsetOld = kPosPos - apPosition;
                 kPosPos.z = FloatFloor(fGroundZ);
                 NiPoint3 kNormal;
                 NiPoint3 kSlopeValue;
                 if (bOnLand)
-                    pkLand->ComputeTerrainNormalAndTangent(&kTheLandData, &kNormal, &kSlopeValue);
+                    apLand->TESObjectLAND_GetLandNormal(&kTheLandData, &kNormal, &kSlopeValue);
                 else
                     DAT_011dea10->TES_GetLandNormal(&kPosPos, &kNormal, &kSlopeValue);
-                if (pkSettings->bUseSlope && pkSettings->bSlopeOnly)
+                if (apGrassParam->bUseSlope && apGrassParam->bSlopeOnly)
                     kNormal = kSlopeValue;
-                else if (pkSettings->bUseSlope && !pkSettings->bSlopeOnly)
+                else if (apGrassParam->bUseSlope && !apGrassParam->bSlopeOnly)
                 {
                     kNormal = kNormal + kSlopeValue;
                     kNormal.Unitize_004a0c10();
@@ -840,11 +864,11 @@ void GenerateGrassPositions(int iA, int iB, int iUnused08, LODLand* pkLand, void
                 kPosPos.z += kNormal.z;
                 FUN_00414430_Color kColor(0.0f, 0.0f, 0.0f, 0.0f);
                 if (bOnLand)
-                    pkLand->GetLandColor_0(&kTheLandData, &kColor);
+                    apLand->GetLandColor_0(&kTheLandData, &kColor);
                 else
                     DAT_011dea10->TES_GetLandColor(&kPosPos, &kColor);
                 float fLuminanceNum = kColor.r * 0.31 + kColor.g * 0.37 + kColor.b * 0.32;
-                kOffsetOld = kPosPos - akStart;
+                kOffsetOld = kPosPos - apPosition;
                 DAT_011ca43c[usCountOld] = kPosPos;
                 DAT_011ca440[usCountOld] = fLuminanceNum;
                 usCountOld++;
@@ -852,6 +876,6 @@ void GenerateGrassPositions(int iA, int iB, int iUnused08, LODLand* pkLand, void
         }
     }
     if (usCountOld > 0)
-        PopulateGrassInstances(pvLandOwnerPos, iA, iB, iC, pkSettings, DAT_011ca43c, DAT_011ca440, usCountOld);
+        PopulateGrassInstances(pvLandOwnerPos, aiCellx, aiCelly, apGrassNode, apGrassParam, DAT_011ca43c, DAT_011ca440, usCountOld);
 }
 }  // namespace fnv_0057de00

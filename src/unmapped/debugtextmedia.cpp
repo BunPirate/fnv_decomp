@@ -20,9 +20,9 @@ void* __cdecl operator new(unsigned int n);
 class Finder
 {
   public:
-    Finder(char* p);
+    Finder(char* apcPath);
     ~Finder();
-    void FUN_00b00720(unsigned char* flag29);
+    void BSSystemDir_NextEntry(unsigned char* abIsComplete);
     bool FUN_00852700();
     char* FUN_00436aa0();
     void* searchHandle;
@@ -43,11 +43,11 @@ class Finder
 class Handle
 {
   public:
-    Handle(char* name, int a, int b, bool c);
+    Handle(char* apName, int aeAccessMode, int aeOpenMode, bool abAllowAsync);
     ~Handle();
     int Modelloader_GetReferencedThis();
     void BSSystemFile_GetSize(int* pair);
-    int FUN_008526d0(int v);
+    int BSSystemFile_Read(int v);
     void* file;
     int mode;
     int flags;
@@ -133,11 +133,11 @@ class InfoLike
     int FUN_008d85e0(int a, int b, int* pair);
     int FUN_008d85e0();
     void* GetNavMeshInfo_0068efb0();
-    void BSSaveDataSystemUtilityFile_SetDirectoryName(const char* s);
-    void BSSaveDataSystemUtilityFile_SetSubTitle(char* s);
-    void BSSaveDataSystemUtilityFile_SetDetail(char* s);
+    void BSSaveDataSystemUtilityFile_SetDirectoryName(const char* apcName);
+    void BSSaveDataSystemUtilityFile_SetSubTitle(char* apcSubTitle);
+    void BSSaveDataSystemUtilityFile_SetDetail(char* apcDetail);
     void BSSaveDataSystemUtilityFile_SetIconImage(int a, int b, int c);
-    void BSSaveDataSystemUtilityFile_SetBackgroundImagePath(const char* s);
+    void BSSaveDataSystemUtilityFile_SetBackgroundImagePath(const char* apcPath);
     void FUN_00852060(int v);
 };
 class EntryLike
@@ -191,7 +191,7 @@ class SingObj
 {
   public:
     void* BSSystemUtility_GetMsgDialogUtility();
-    void* BSSystemUtility_GetSaveDataUtility();
+    void* BSSystemUtility_QSaveDataUtility();
     bool TESRegionData_GetOverride();
 };
 SingObj* __cdecl FUN_00af2640();
@@ -225,7 +225,7 @@ extern GlobalObject_0040c150 g_011d4f78;
 extern GlobalObject_0040c150 g_011d3b2c;
 void __cdecl FUN_0084dab0(int a, int b);
 int __cdecl BSprintf(const char* fmt, char* buf);
-void __cdecl BSSleep(int ms);
+void __cdecl BSSleep(int auiMSec);
 void BGSSaveLoadManager_SysUtilSaveCompleteCallback();
 
 union SizePair
@@ -243,13 +243,16 @@ class ThisCls
   public:
     void* m_thispad;
     void FUN_0050f9c0(int v);
-    void BGSSaveLoadManager_CopySaveGames(int unused);
+    void BGSSaveLoadManager_CopySaveGames(int bFromMemoryStick);
 };
 
 // Loops over files in the Saves directory and, for each save-extension file, reads it into a SaveData and fills an info entry for copying it to the target.
 // @fnv 0x00852080
 // src: COMMUNITY 0x00852080
-void ThisCls::BGSSaveLoadManager_CopySaveGames(int unused)
+// pdb: BGSSaveLoadManager::CopySaveGames | BGSSaveLoadManager.obj | retail, upstream name already matches, high
+// pdb params: bFromMemoryStick
+// pdb locals: bisComplete, bcopySaveGamesToHostOrMemStick, systemDir, cpath, uilength, cfileName, systemFile, psaveDataFile, uifileSize, psaveFile, uibytesRead, cstring, pentry, cmessage
+void ThisCls::BGSSaveLoadManager_CopySaveGames(int bFromMemoryStick)
 {
     int lenTmp7;
     unsigned char settingByte16;
@@ -262,7 +265,7 @@ void ThisCls::BGSSaveLoadManager_CopySaveGames(int unused)
     Finder finder(buf127);
     unsigned char flag29;
     flag29 = 0;
-    finder.FUN_00b00720(&flag29);
+    finder.BSSystemDir_NextEntry(&flag29);
     while (flag29 == 0)
     {
         if (finder.FUN_00852700() == 1)
@@ -290,7 +293,7 @@ void ThisCls::BGSSaveLoadManager_CopySaveGames(int unused)
                         info8 = ((InfoLike*)(void*)val4a8)->GetNavMeshInfo_0068efb0();
                         pair2a.low = 0;
                         pair2a.high = 0;
-                        handle20.FUN_008526d0(
+                        handle20.BSSystemFile_Read(
                             ((InfoLike*)info8)->FUN_008d85e0(kPair1a12.low, kPair1a12.high, &pair2a.low));
                         if (handle20.Modelloader_GetReferencedThis() == 0)
                         {
@@ -319,8 +322,8 @@ void ThisCls::BGSSaveLoadManager_CopySaveGames(int unused)
                             ((InfoLike*)info8)->FUN_00852060((int)&BGSSaveLoadManager_SysUtilSaveCompleteCallback);
                             delete entry3;
                             FUN_0050f9c0(val4a8);
-                            ((VCall20*)FUN_00af2640()->BSSystemUtility_GetSaveDataUtility())->v20((int)info8);
-                            while (((SingObj*)FUN_00af2640()->BSSystemUtility_GetSaveDataUtility())->TESRegionData_GetOverride() == 1)
+                            ((VCall20*)FUN_00af2640()->BSSystemUtility_QSaveDataUtility())->v20((int)info8);
+                            while (((SingObj*)FUN_00af2640()->BSSystemUtility_QSaveDataUtility())->TESRegionData_GetOverride() == 1)
                                 BSSleep(10);
                         }
                         else
@@ -339,7 +342,7 @@ void ThisCls::BGSSaveLoadManager_CopySaveGames(int unused)
             }
         }
     next_iter:
-        finder.FUN_00b00720(&flag29);
+        finder.BSSystemDir_NextEntry(&flag29);
     }
     g_011de308.Setting_SetValueB(settingByte16);
 }

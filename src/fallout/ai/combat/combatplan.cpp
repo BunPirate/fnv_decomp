@@ -12,6 +12,8 @@ struct FUN_00994860_obj
 // Returns the result of ContainsValue(aiAction) on the object at offset 0xa0, or false if that pointer is null.
 // @fnv 0x00981940
 // src: XBOX_PDB 0x00981940
+// pdb: CombatController::CombatPlanContainsAction | CombatController.obj | debug, upstream name already matches, high
+// pdb params: aiAction
 bool __thiscall CombatPlan::CombatController_CombatPlanContainsAction(int aiAction)
 {
     if (*reinterpret_cast<FUN_00994860_obj**>(reinterpret_cast<char*>(this) + 0xa0))

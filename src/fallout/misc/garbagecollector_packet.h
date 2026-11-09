@@ -8,10 +8,11 @@
 #include "../../../include/TESObjectREFR.h"
 #include "../../../include/BSSimpleArray.h"
 #include "../../../include/BSTempEffect.h"
+// pdb: class GarbageCollector, size 0x1, 0 members
 class GarbageCollector
 {
   public:
-    static void Remove(TESObjectREFR* reference);
+    static void Remove(TESObjectREFR* apRef);
     static NiTObjectArray<TESObjectREFR*> ms_kReferencesQueuedForRemoval;
     static NiTObjectArray<TESObjectREFR*> ObjectGarbageB;
     static void QueryCurrentThread(bool);
@@ -19,6 +20,7 @@ class GarbageCollector
     static void Update();
 };
 extern "C" __declspec(dllimport) unsigned long __stdcall GetCurrentThreadId();
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:

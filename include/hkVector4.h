@@ -36,6 +36,7 @@ typedef BooleanTypeConstant<true> hkTypeIsPod;
 
 // Havok 7.1 declares the default and copy constructors and operator= HK_FORCE_INLINE (hkVector4.h:35-49).
 // A unit whose matched code needs another copy form defines FNV64_HKVECTOR4_OWN_COPY / _ASSIGN and its own body.
+// pdb: class hkVector4, size 0x10, 1 members
 class hkVector4
 {
   public:
@@ -99,7 +100,7 @@ class hkVector4
 
     void set(float x, float y, float z, float w = 0.0f);
     void setZero4();
-    void SetAllComponents(float value);
+    void setAll(float value);
     __forceinline void SetAllComponents(const hkSimdReal& value);
     void broadcast(int index);
     void setBroadcast(const hkVector4& vector, int index);
@@ -121,10 +122,10 @@ class hkVector4
 #else
     void setMul4(const hkVector4& a, const hkVector4& b);
 #endif
-    void setMul4(const hkSimdReal& scalar, const hkVector4& vector);
+    void setMul4(const hkSimdReal& r, const hkVector4& x);
     void setMul4(__m128 scalar, const hkVector4& vector);
     void setMul4(float scalar, const hkVector4& vector);
-    void setAddMul4(const hkVector4& a, const hkVector4& b, const hkVector4& c);
+    void setAddMul4(const hkVector4& a, const hkVector4& b, const hkVector4& r);
     void setAddMul4(const hkVector4& a, const hkVector4& b, const hkSimdReal& scalar);
     void setAddMul4a(const hkVector4& a, const hkVector4& b, float scalar);
     void setAddMul4b(const hkVector4& a, const hkVector4& b, float scalar);
@@ -155,7 +156,7 @@ class hkVector4
 #endif
     __forceinline void addMul4(const hkSimdReal& scalar, const hkVector4& vector);
     void addMul4(__m128 scalar, const hkVector4& vector);
-    void Mul(const MassVec& scalar);
+    void Mul(const MassVec& s);
     void setCross(const hkVector4& a, const hkVector4& b);
     __forceinline void setMin4(const hkVector4& a, const hkVector4& b);
     __forceinline void setMax4(const hkVector4& a, const hkVector4& b);
@@ -182,7 +183,7 @@ class hkVector4
     void SetRotatedDirection(const hkVector4& quaternion, const hkVector4& direction);
     void setRotatedInverseDir(const hkQuaternion& quaternion, const hkVector4& direction);
     void SetTransformedPoint(const hkQsTransform& transform, const hkVector4& vector);
-    __forceinline hkSimdReal dot3(const hkVector4& vector) const;
+    __forceinline hkSimdReal dot3(const hkVector4& x) const;
     hkSimdReal dot4xyz1(const hkVector4& vector) const;
     float dot3scalar(const hkVector4& vector) const;
     hkSimdReal lengthSquared3() const;
@@ -199,7 +200,7 @@ class hkVector4
     hkVector4 FUN_00630b40() const;
     float EvaluateValue_004586d0() const;
     void normalize3_0062aea0();
-    void hkVector4_mul4(const hkSimdReal& scalar);
+    void hkVector4_mul4(const hkSimdReal& s);
     void ComputeValues_00630df0(const hkVector4& a, const hkVector4& b);
     hkSimdReal& hkVector4_getSimdAt(hkSimdReal& value, int index) const;
     int GetTriangleEdgeSignMask(const hkVector4& vector, const hkVector4* vectors, void* data);
@@ -220,7 +221,7 @@ class hkVector4
     hkSimdReal getSimdAt0() const;
     hkSimdReal getSimdAt3() const;
     hkSimdReal getSimdAtE(int index) const;
-    hkSimdReal dot4(const hkVector4& vector) const;
+    hkSimdReal dot4(const hkVector4& x) const;
     hkSimdReal horizontalAdd3() const;
     hkSimdReal horizontalAdd4() const;
     __m128 lengthSquared3q() const;
@@ -228,7 +229,7 @@ class hkVector4
     Vector4Comparison compareLessThan4(const hkVector4& vector) const;
     Vector4Comparison compareEqual4(const hkVector4& vector) const;
     CompareBits compareLessThanEqual4(const hkVector4& vector) const;
-    int equals4(const hkVector4& vector, float epsilon) const;
+    int equals3(const hkVector4& v, float epsilon) const;
 #ifdef FNV64_HKVECTOR4_PACKET_BODIES
     __forceinline void set(__m128 value) { m_vComponents = value; }
 #else
@@ -271,18 +272,18 @@ class hkVector4
     __forceinline void _setTransformedPos(const hkTransform& transform, const hkVector4& vector);
     void _setTransformedPos(const hkQsTransform& transform, const hkVector4& vector);
     void _setTransformedInversePos(const hkTransform& transform, const hkVector4& vector);
-    void SetRotatedDirection(const hkRotation& rotation, const hkVector4& vector);
+    void SetRotatedDirection(const hkRotation& quat, const hkVector4& direction);
     void SetRotatedDirection(const hkTransform& transform, const hkVector4& vector);
     void setRotatedInverseDir(const hkRotation& rotation, const hkVector4& vector);
     void SetTransformedPoint(const hkTransform& transform, const hkVector4& vector);
     void setRotatedCached(const hkQuaternion& quaternion, const hkVector4& vector,
                           const __m128& yz, const __m128& zx) throw();
     void hkVector4_setRotatedInverseDir(const hkRotation& rotation, const hkVector4& vector);
-    void normalize_005611c0();
+    void hkQuaternion_normalize();
     void FUN_006815c0();
     void setTransformedPos_00c7f640(const hkTransform& transform, const hkVector4& vector);
-    void hkVector4_setRotatedDir(const hkRotation& rotation, const hkVector4& vector);
-    void hkVector4_setRotatedDir(const hkRotation* rotation, const hkVector4* vector);
+    void hkVector4_setRotatedDir(const hkRotation& quat, const hkVector4& direction);
+    void hkVector4_setRotatedDir(const hkRotation* quat, const hkVector4* direction);
     void hkVector4_setMul3(const hkMatrix3& matrix, const hkVector4& vector);
 
     static void* __cdecl operator new(size_t size);
@@ -338,17 +339,17 @@ class hkVector4
     int getMajorAxis() const;
     int maxAxisSecond() const;
     int maxAxis() const;
-    float GetAngle();
+    float hkQuaternion_getAngle();
     void SetComponents(float x, float y, float z);
     hkVector4 SubtractIntoVector(const hkVector4& vector);
     hkVector4 FUN_00439e90(const hkVector4& vector);
     void ScaleComponents(float value);
     void Unitize_004a0c10();
     void setMul(const hkVector4* a, const hkVector4* b);
-    void setMulInverse(const hkVector4* a, const hkVector4* b);
-    void hkQuaternion_getAxis(hkVector4* vector);
+    void setMulInverse(const hkVector4* q0, const hkVector4* q1);
+    void hkQuaternion_getAxis(hkVector4* axisOut);
     void setTransformedPos_00c7f640(const Transform& transform, const hkVector4& point);
-    void hkQuaternion_setAxisAngle(const hkVector4* vector, float value);
+    void hkQuaternion_setAxisAngle(const hkVector4* axis, float angle);
     void FUN_00cb26e0(const hkRotation* rotation);
     template <int I> void splat(const hkVector4& vector);
     // Typed vector calls recovered from the former FourFloatVector declarations.

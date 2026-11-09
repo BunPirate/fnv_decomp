@@ -19,6 +19,10 @@
 #include <malloc.h>
 
 // @fnv 0x00aa4150
+// pdb: MemoryManager::Reallocate | MemoryManager.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to ourMemalignRealloc
+// pdb params: apMem, aSize
+// pdb locals: ioldaSize, pmem
 void* MemoryManager::Reallocate(void* apBlock, unsigned int size)
 {
     void* allocation = 0;
@@ -42,26 +46,29 @@ void* MemoryManager::Reallocate(void* apBlock, unsigned int size)
 
 // Returns the allocation size of a pointer by checking the owning MemoryPool, then the heap for the pointer or its physical address, falling back to _msize.
 // @fnv 0x00aa44c0
-unsigned int MemoryManager::Size(const void* pointer)
+// pdb: MemoryManager::Size | MemoryManager.obj | retail, upstream name already matches, high
+// pdb params: apPtr
+// pdb locals: ppool, size, pheap
+unsigned int MemoryManager::Size(const void* apPtr)
 {
     unsigned int size;
-    MemoryPool* pool = MemoryPool::ms_pPoolAddressMap[reinterpret_cast<size_t>(pointer) >> kPoolAddressRegionShift];
-    if (pool && pool->PointerInPool(pointer))
+    MemoryPool* pool = MemoryPool::ms_pPoolAddressMap[reinterpret_cast<size_t>(apPtr) >> kPoolAddressRegionShift];
+    if (pool && pool->PointerInPool(apPtr))
         size = pool->GetBlockSize();
     else
     {
-        IMemoryHeap* heap = GetHeapForPointer(pointer);
+        IMemoryHeap* heap = GetHeapForPointer(apPtr);
         if (heap)
-            size = heap->Size(pointer, 0);
+            size = heap->Size(apPtr, 0);
         else
         {
-            heap = GetHeapForPhysicalPointer(pointer);
+            heap = GetHeapForPhysicalPointer(apPtr);
             if (heap)
-                size = heap->Size(pointer, 0);
+                size = heap->Size(apPtr, 0);
             else
             {
                 unsigned int systemSize = 0;
-                systemSize = _msize(const_cast<void*>(pointer));
+                systemSize = _msize(const_cast<void*>(apPtr));
                 size = systemSize;
             }
         }
@@ -72,16 +79,19 @@ unsigned int MemoryManager::Size(const void* pointer)
 // @fnv 0x005f5760
 PerkEntryConditionSet* TESQuest::GetConditions()
 {
-    return &m_kInfoConditions;
+    return &objConditions;
 }
 
 // @fnv 0x00461580
+// pdb: TESForm::LoadGameDataOLD | TESForm.obj | debug, call graph, medium
+// pdb params: apData, aiSize
 bool TESActorBaseData::GetFlag(unsigned int flag) const
 {
     return actorData.m_uiActorFlags & flag;
 }
 
 // @fnv 0x0087f4c0
+// pdb: Actor::GetSex | Actor.obj | debug, upstream name already matches, high
 SEX Actor::GetSex()
 {
     return GetActorBase()->GetSex();
@@ -89,20 +99,25 @@ SEX Actor::GetSex()
 
 // Sets the ExtraHealth extra data value to health, creating and adding a new ExtraHealth if none exists.
 // @fnv 0x00419970
-void ExtraDataList::SetExtraHealth(float health)
+// pdb: ExtraDataList::SetHealth | ExtraDataList.obj | retail, call graph, high
+// pdb params: afHealth
+// pdb locals: pHealth
+void ExtraDataList::SetExtraHealth(float afHealth)
 {
     ExtraHealth* extra = static_cast<ExtraHealth*>(BaseExtraList::GetExtraData(0x25));
     if (extra)
-        extra->fHealthPercent = health;
+        extra->fHealthPercent = afHealth;
     else
     {
-        extra = new ExtraHealth(health);
+        extra = new ExtraHealth(afHealth);
         AddExtra(extra);
     }
 }
 
 MemoryManager* MemoryManager_Instance();
 // @fnv 0x0042f5d0
+// pdb: ourRealloc | ExtraDataList.obj | debug, call graph, medium
+// pdb params: apPtr, aSize
 void* Reallocate(void* pointer, unsigned int size)
 {
     return MemoryManager_Instance()->Reallocate(pointer, size);
@@ -110,6 +125,8 @@ void* Reallocate(void* pointer, unsigned int size)
 
 // Looks up the scrap heap for the current thread ID, creating and storing a new one if none exists, and returns it.
 // @fnv 0x00aa42e0
+// pdb: MemoryManager::GetThreadScrapHeap | MemoryManager.obj | retail, call graph, high
+// pdb locals: pscrapHeap, threadid
 ScrapHeapBuffer* MemoryManager::GetGeneralAllocator()
 {
     unsigned long threadID = GetCurrentThreadId();
@@ -127,13 +144,14 @@ void __cdecl Deallocate(void*);
 
 // If the pointer at offset 0x420 is non-null, deallocates it and clears the pointer and the count at offset 0x424.
 // @fnv 0x00473960
+// pdb: TESFile::FreeDecompressedBuffer | TESFile.obj | debug, call graph, high
 void TESFile::ClearDecompressedFormBuffer()
 {
-    if (m_pDecompressedFormBuffer != 0)
+    if (pDecompressedFormBuffer != 0)
     {
-        Deallocate(m_pDecompressedFormBuffer);
-        m_pDecompressedFormBuffer = 0;
-        m_uiAuxBufferSize = 0;
+        Deallocate(pDecompressedFormBuffer);
+        pDecompressedFormBuffer = 0;
+        iDecompressedFormBufferSize = 0;
     }
 }
 
@@ -161,6 +179,9 @@ struct MemCtxGuard
 };
 // Creates a MemoryPool with the given block and pool sizes and description, deleting it if it has no memory; returns early when aiBlockSize is below 8.
 // @fnv 0x00aa3cc0
+// pdb: MemoryManager::AddPool | MemoryManager.obj | debug, object-file gap fill, medium
+// pdb params: aiBlockSize, aiPoolSize, apDesc
+// pdb locals: pnewPool, tempMemContext
 void MemoryManager::CreateMemoryPool(unsigned int aiBlockSize, unsigned int aiPoolSize, const char* apDesc)
 {
     MemCtxGuard tempMemContext(3);
@@ -185,6 +206,7 @@ __declspec(thread) FUN_00aa3a10_tls_struct g_fun_tls;
 
 // Clears the TLS flag and sets the first byte of this object to 1.
 // @fnv 0x00aa3a10
+// pdb: MemoryManager::InitializeStandard | MemoryManager.obj | debug, upstream name already matches, high
 void MemoryManager::InitializeStandard()
 {
     g_fun_tls.flag = 0;
@@ -199,6 +221,7 @@ __declspec(dllimport) void __stdcall LeaveCriticalSection(_RTL_CRITICAL_SECTION*
 extern _RTL_CRITICAL_SECTION DAT_011f6234;
 // @fnv 0x00aa4460
 // src: COMMUNITY 0x00aa4460
+// pdb: MemoryManager::EnableDelayedFree | MemoryManager.obj | debug, upstream name already matches, high
 void MemoryManager_EnableDelayedFree()
 {
     memorymanager_imports::EnterCriticalSection(&DAT_011f6234);
@@ -206,6 +229,7 @@ void MemoryManager_EnableDelayedFree()
 
 // @fnv 0x00aa4470
 // src: COMMUNITY 0x00aa4470
+// pdb: MemoryManager::DisableDelayedFree | MemoryManager.obj | debug, upstream name already matches, high
 void MemoryManager_DisableDelayedFree()
 {
     memorymanager_imports::LeaveCriticalSection(&DAT_011f6234);
@@ -215,9 +239,11 @@ extern char DAT_011f6230;
 
 // @fnv 0x00aa4480
 // src: COMMUNITY 0x00aa4480
-void MemoryManager_SetCheckMemOnFree(unsigned char value)
+// pdb: MemoryManager::SetCheckMemOnFree | MemoryManager.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void MemoryManager_SetCheckMemOnFree(unsigned char abVal)
 {
-    DAT_011f6230 = value;
+    DAT_011f6230 = abVal;
 }
 
 namespace fnv_00aa4490 {
@@ -244,6 +270,9 @@ char __cdecl MemoryManager_GetCheckMemOnFree()
 
 // Returns the entry at index from tableA if index < iNumHeaps, otherwise from tableB at index - countA when that offset is < countB; returns 0 otherwise.
 // @fnv 0x00aa46a0
+// pdb: MemoryManager::GetHeapByIndex | MemoryManager.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex
+// pdb locals: pheap
 void* MemoryManager::GetEntryAt(unsigned int index)
 {
     void* pEntry = 0;
@@ -270,10 +299,11 @@ void ClearMemoryPoolTables();
 
 // Calls ClearMemoryPoolTables, InitializeHeaps, FUN_00866770 and FUN_00483710, sets m_00 to 1 and clears g_tls.m_2b4.
 // @fnv 0x00aa39c0
+// pdb: MemoryManager::Initialize | MemoryManager.obj | debug, upstream name already matches, high
 void MemoryManager::Initialize()
 {
     ClearMemoryPoolTables();
-    InitializeHeaps();
+    SpecifyMemoryLayout();
     bInitialized = true;
     SpecifyPools();
     FUN_00483710();
@@ -308,6 +338,8 @@ inline int S_Sum(unsigned short a, unsigned short b)
 }
 // Sums DAT_011f623a and DAT_011f623c, then for each index up to that sum fetches an object from DAT_011f6238 and calls its v0b virtual method.
 // @fnv 0x00aa4400
+// pdb: MemoryManager::CheckDelayedFreeBlocks | MemoryManager.obj | debug, object-file gap fill, medium
+// pdb locals: pheap, inumHeaps, i
 void CallVirtualOnEachElement()
 {
     int iTotal = S_Sum(DAT_011f623a, DAT_011f623c);
@@ -407,6 +439,8 @@ inline void DestroyMemoryPools()
 }
 extern "C" void* __cdecl fnv_zlib_memset(void*, int, unsigned int);
 // @fnv 0x00aa3a40
+// pdb: MemoryManager::~MemoryManager | MemoryManager.obj | retail, upstream name already matches, high
+// pdb locals: pscrapHeap, threadId, itr, i
 MemoryManager::~MemoryManager()
 {
     WeightedMapNode* position = reinterpret_cast<MapView*>(&kThreadScrapHeapMap)->First();
@@ -462,6 +496,9 @@ class ItemAA43
 // Calls FUN_00aa7370, then iterates over all entries and calls Update on each ItemAA43.
 // @fnv 0x00aa43a0
 // src: COMMUNITY 0x00aa43a0
+// pdb: MemoryManager::CheckMemoryIntegrity | MemoryManager.obj | debug, object-file gap fill, medium
+// pdb params: abThreaded
+// pdb locals: pheap, inumHeaps, i
 void MemoryManager::CheckMemoryIntegrity_00aa43a0(int unused)
 {
     fnv_00aa43a0::MemoryPool_CheckPools();

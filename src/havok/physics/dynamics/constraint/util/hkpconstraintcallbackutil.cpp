@@ -57,10 +57,12 @@ static __declspec(noinline) void Object_ProcessEntries_00d85d40(ListenerArray* p
 // Invokes v03 on each non-null listener in pOwner->m_kListeners with pOwner, logging start and end ticks, then compacts the array.
 // @fnv 0x00d85ef0
 // src: HAVOK_LIB 0x00d85ef0
-void __cdecl hkpConstraintCallbackUtil_fireConstraintDeleted(ListenerOwner* pOwner)
+// pdb: hkpConstraintCallbackUtil::fireConstraintDeleted | hkpConstraintCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: constraint
+void __cdecl hkpConstraintCallbackUtil_fireConstraintDeleted(ListenerOwner* constraint)
 {
     volatile DWORD ticks[2];
-    ListenerArray* pArr = &pOwner->m_kListeners;
+    ListenerArray* pArr = &constraint->m_kListeners;
     int i = (int)pArr->m_wCount - 1;
     if (i >= 0)
     {
@@ -80,7 +82,7 @@ void __cdecl hkpConstraintCallbackUtil_fireConstraintDeleted(ListenerOwner* pOwn
                     cur++;
                     pBuf->m_end.m_storage = reinterpret_cast<char*>(cur);
                 }
-                pArr->m_ppItems[i]->v03(pOwner);
+                pArr->m_ppItems[i]->v03(constraint);
                 pBuf = (hkMonitorStream*)pfnTls(DAT_0126835c);
                 cur = reinterpret_cast<hkMonitorStream::TimerCommand*>(pBuf->m_end.m_storage);
                 if (reinterpret_cast<char*>(cur) < pBuf->m_capacityMinus16.m_storage)

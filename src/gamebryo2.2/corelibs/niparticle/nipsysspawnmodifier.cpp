@@ -39,26 +39,33 @@ template <class T> __forceinline void ReadBinaryValue(NiStream& stream, T& value
 
 // Calls the base NiPSysModifier::LoadBinary, then loads eight values from kStream via a helper.
 // @fnv 0x00c247f0
+// pdb: NiPSysSpawnModifier::LoadBinary | NiPSysSpawnModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiPSysSpawnModifier::LoadBinary(NiStream& kStream)
 {
     NiPSysModifier::LoadBinary(kStream);
-    ReadBinaryValue(kStream, m_usSpawnGenerationCount);
-    ReadBinaryValue(kStream, m_fSpawnPercentage);
-    ReadBinaryValue(kStream, m_usMinimumParticlesToSpawn);
-    ReadBinaryValue(kStream, m_usMaximumParticlesToSpawn);
-    ReadBinaryValue(kStream, m_fSpawnedSpeedChaos);
-    ReadBinaryValue(kStream, m_fSpawnDirectionChaos);
-    ReadBinaryValue(kStream, m_fYValue);
-    ReadBinaryValue(kStream, m_fLifeSpanVariation);
+    ReadBinaryValue(kStream, m_usNumSpawnGenerations);
+    ReadBinaryValue(kStream, m_fPercentageSpawned);
+    ReadBinaryValue(kStream, m_usMinNumToSpawn);
+    ReadBinaryValue(kStream, m_usMaxNumToSpawn);
+    ReadBinaryValue(kStream, m_fSpawnSpeedChaos);
+    ReadBinaryValue(kStream, m_fSpawnDirChaos);
+    ReadBinaryValue(kStream, m_fLifeSpan);
+    ReadBinaryValue(kStream, m_fLifeSpanVar);
 }
 
 // @fnv 0x00c2d6d0
+// pdb: NiPSysBoundUpdateModifier::LinkObject | NiPSysBoundUpdateModifier.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiPSysBoundUpdateModifier::LinkObject(NiStream& kStream)
 {
     NiPSysModifier::LinkObject(kStream);
 }
 
 // @fnv 0x00c2d6e0
+// pdb: NiPSysBoundUpdateModifier::IsEqual | NiPSysBoundUpdateModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiPSysBoundUpdateModifier::IsEqual(NiObject* pkObject) const
 {
     if (!NiPSysModifier::IsEqual(pkObject))
@@ -74,13 +81,13 @@ const NiRTTI* NiPSysBoundUpdateModifier::GetRTTI() const
     return &ms_kRTTI;
 }
 
-extern "C" const NiRTTI g_01202550;
+extern "C" const NiRTTI NiPSysSpawnModifier_ms_RTTI;
 
 // @fnv 0x00c23ce0
 // src: COMMUNITY 0x00c23ce0
 const NiRTTI* __cdecl NiPSysSpawnModifier_GetRTTI()
 {
-    return &g_01202550;
+    return &NiPSysSpawnModifier_ms_RTTI;
 }
 
 extern "C" void __cdecl __Dummy_00b6fef0(void*, int);
@@ -99,16 +106,19 @@ NiPSysSpawnModifier* __fastcall DestroySpawnModifier(NiPSysSpawnModifier* modifi
 
 // Compares this object with pkObject: checks IsEqual and that eight stored values match, returning true only if all are equal.
 // @fnv 0x00c23b70
+// pdb: NiPSysSpawnModifier::IsEqual | NiPSysSpawnModifier.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkDest
 bool __fastcall SpawnModifiersEqual(const NiPSysSpawnModifier* modifier, void*, NiObject* pkObject)
 {
     NiPSysSpawnModifier* pkDest = static_cast<NiPSysSpawnModifier*>(pkObject);
-    if (modifier->NiPSysModifier::IsEqual(pkObject) && pkDest->m_usSpawnGenerationCount == modifier->m_usSpawnGenerationCount &&
-        pkDest->m_fSpawnPercentage == modifier->m_fSpawnPercentage &&
-        pkDest->m_usMinimumParticlesToSpawn == modifier->m_usMinimumParticlesToSpawn &&
-        pkDest->m_usMaximumParticlesToSpawn == modifier->m_usMaximumParticlesToSpawn &&
-        pkDest->m_fSpawnedSpeedChaos == modifier->m_fSpawnedSpeedChaos &&
-        pkDest->m_fSpawnDirectionChaos == modifier->m_fSpawnDirectionChaos && pkDest->m_fYValue == modifier->m_fYValue &&
-        pkDest->m_fLifeSpanVariation == modifier->m_fLifeSpanVariation)
+    if (modifier->NiPSysModifier::IsEqual(pkObject) && pkDest->m_usNumSpawnGenerations == modifier->m_usNumSpawnGenerations &&
+        pkDest->m_fPercentageSpawned == modifier->m_fPercentageSpawned &&
+        pkDest->m_usMinNumToSpawn == modifier->m_usMinNumToSpawn &&
+        pkDest->m_usMaxNumToSpawn == modifier->m_usMaxNumToSpawn &&
+        pkDest->m_fSpawnSpeedChaos == modifier->m_fSpawnSpeedChaos &&
+        pkDest->m_fSpawnDirChaos == modifier->m_fSpawnDirChaos && pkDest->m_fLifeSpan == modifier->m_fLifeSpan &&
+        pkDest->m_fLifeSpanVar == modifier->m_fLifeSpanVar)
         return true;
     return false;
 }
@@ -117,18 +127,20 @@ bool __fastcall SpawnModifiersEqual(const NiPSysSpawnModifier* modifier, void*, 
 void __cdecl FUN_00c319e0();
 
 char* __cdecl _FUN_00a7d330(void* value);
-char* __cdecl NiGetViewerString_00a7d490(char const* name, unsigned short value);
+char* __cdecl NiGetViewerString_00a7d490(char const* pcPrefix, unsigned short usValue);
 char* __cdecl NiGetViewerString_00a7d550(char const* name, float value);
 
 // Appends formatted spawn-setting name/value strings to the StrArr, growing it when full.
 // @fnv 0x00c24a50
+// pdb: NiPSysSpawnModifier::GetViewerStrings | NiPSysSpawnModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*, StrArr* strings)
 {
     typedef void (__thiscall* ViewerStrings)(NiPSysModifier*, StrArr*);
     reinterpret_cast<ViewerStrings>(&FUN_00c319e0)(modifier, strings);
 
     {
-        char* value = _FUN_00a7d330(*reinterpret_cast<void* const*>(&g_01202550));
+        char* value = _FUN_00a7d330(*reinterpret_cast<void* const*>(&NiPSysSpawnModifier_ms_RTTI));
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -136,7 +148,7 @@ void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*,
     }
 
     {
-        char* value = NiGetViewerString_00a7d490("Num Spawn Generations", modifier->m_usSpawnGenerationCount);
+        char* value = NiGetViewerString_00a7d490("Num Spawn Generations", modifier->m_usNumSpawnGenerations);
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -144,7 +156,7 @@ void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*,
     }
 
     {
-        char* value = NiGetViewerString_00a7d550("Percentage Spawned", modifier->m_fSpawnPercentage);
+        char* value = NiGetViewerString_00a7d550("Percentage Spawned", modifier->m_fPercentageSpawned);
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -152,7 +164,7 @@ void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*,
     }
 
     {
-        char* value = NiGetViewerString_00a7d490("Min Num to Spawn", modifier->m_usMinimumParticlesToSpawn);
+        char* value = NiGetViewerString_00a7d490("Min Num to Spawn", modifier->m_usMinNumToSpawn);
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -160,7 +172,7 @@ void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*,
     }
 
     {
-        char* value = NiGetViewerString_00a7d490("Max Num to Spawn", modifier->m_usMaximumParticlesToSpawn);
+        char* value = NiGetViewerString_00a7d490("Max Num to Spawn", modifier->m_usMaxNumToSpawn);
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -168,7 +180,7 @@ void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*,
     }
 
     {
-        char* value = NiGetViewerString_00a7d550("Spawn Speed Chaos", modifier->m_fSpawnedSpeedChaos);
+        char* value = NiGetViewerString_00a7d550("Spawn Speed Chaos", modifier->m_fSpawnSpeedChaos);
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -176,7 +188,7 @@ void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*,
     }
 
     {
-        char* value = NiGetViewerString_00a7d550("Spawn Dir Chaos", modifier->m_fSpawnDirectionChaos);
+        char* value = NiGetViewerString_00a7d550("Spawn Dir Chaos", modifier->m_fSpawnDirChaos);
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -184,7 +196,7 @@ void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*,
     }
 
     {
-        char* value = NiGetViewerString_00a7d550("Life Span", modifier->m_fYValue);
+        char* value = NiGetViewerString_00a7d550("Life Span", modifier->m_fLifeSpan);
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -192,7 +204,7 @@ void __fastcall AppendSpawnSettingsStrings(NiPSysSpawnModifier* modifier, void*,
     }
 
     {
-        char* value = NiGetViewerString_00a7d550("Life Span Variation", modifier->m_fLifeSpanVariation);
+        char* value = NiGetViewerString_00a7d550("Life Span Variation", modifier->m_fLifeSpanVar);
         unsigned int index = strings->m_usSize;
         if (index >= strings->m_usMaxSize)
             strings->SetSize(index + strings->m_usGrowBy);
@@ -204,35 +216,39 @@ void* __cdecl Object_DispatchCommandFour(unsigned int size);
 extern int DAT_010be124;
 
 // @fnv 0x00c23d10
+// pdb: NiMatrix3::operator- | NiPSysSpawnModifier.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysSpawnModifier::NiPSysSpawnModifier
+// pdb params: mat
+// pdb locals: result
 NiPSysSpawnModifier* __fastcall CloneSpawnModifier(NiPSysSpawnModifier* modifier, void*, CloningProcess& process)
 {
     NiPSysSpawnModifier* pkNew = (NiPSysSpawnModifier*)Object_DispatchCommandFour(0x34);
     if (pkNew != 0)
     {
         pkNew->NiPSysModifier::NiPSysModifier();
-        pkNew->m_fSpawnPercentage = 1.0f;
-        pkNew->m_fSpawnedSpeedChaos = 0.0f;
-        pkNew->m_fSpawnDirectionChaos = 0.0f;
+        pkNew->m_fPercentageSpawned = 1.0f;
+        pkNew->m_fSpawnSpeedChaos = 0.0f;
+        pkNew->m_fSpawnDirChaos = 0.0f;
         *(int*)pkNew = (int)&DAT_010be124;
-        pkNew->m_fYValue = 0.0f;
-        pkNew->m_usSpawnGenerationCount = 1;
-        pkNew->m_fLifeSpanVariation = 0.0f;
-        pkNew->m_usMinimumParticlesToSpawn = 1;
-        pkNew->m_usMaximumParticlesToSpawn = 1;
+        pkNew->m_fLifeSpan = 0.0f;
+        pkNew->m_usNumSpawnGenerations = 1;
+        pkNew->m_fLifeSpanVar = 0.0f;
+        pkNew->m_usMinNumToSpawn = 1;
+        pkNew->m_usMaxNumToSpawn = 1;
     }
     else
     {
         pkNew = 0;
     }
-    modifier->NiPSysModifier::CopyMemberData(pkNew, process);
-    pkNew->m_usSpawnGenerationCount = modifier->m_usSpawnGenerationCount;
-    pkNew->m_fSpawnPercentage = modifier->m_fSpawnPercentage;
-    pkNew->m_usMinimumParticlesToSpawn = modifier->m_usMinimumParticlesToSpawn;
-    pkNew->m_usMaximumParticlesToSpawn = modifier->m_usMaximumParticlesToSpawn;
-    pkNew->m_fSpawnedSpeedChaos = modifier->m_fSpawnedSpeedChaos;
-    pkNew->m_fSpawnDirectionChaos = modifier->m_fSpawnDirectionChaos;
-    pkNew->m_fYValue = modifier->m_fYValue;
-    pkNew->m_fLifeSpanVariation = modifier->m_fLifeSpanVariation;
+    modifier->NiPSysModifier::CopyMembers(pkNew, process);
+    pkNew->m_usNumSpawnGenerations = modifier->m_usNumSpawnGenerations;
+    pkNew->m_fPercentageSpawned = modifier->m_fPercentageSpawned;
+    pkNew->m_usMinNumToSpawn = modifier->m_usMinNumToSpawn;
+    pkNew->m_usMaxNumToSpawn = modifier->m_usMaxNumToSpawn;
+    pkNew->m_fSpawnSpeedChaos = modifier->m_fSpawnSpeedChaos;
+    pkNew->m_fSpawnDirChaos = modifier->m_fSpawnDirChaos;
+    pkNew->m_fLifeSpan = modifier->m_fLifeSpan;
+    pkNew->m_fLifeSpanVar = modifier->m_fLifeSpanVar;
     return pkNew;
 }
 
@@ -249,22 +265,27 @@ template <class T> __forceinline void StreamSaveBinary(NiStream& stream, const T
 
 // Saves the spawn modifier fields after calling the base class save routine.
 // @fnv 0x00c24920
+// pdb: NiPSysSpawnModifier::SaveBinary | NiPSysSpawnModifier.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void __fastcall SaveSpawnModifier(NiPSysSpawnModifier* modifier, void*, NiStream& stream)
 {
     modifier->NiPSysModifier::SaveBinary(stream);
-    StreamSaveBinary(stream, modifier->m_usSpawnGenerationCount);
-    StreamSaveBinary(stream, modifier->m_fSpawnPercentage);
-    StreamSaveBinary(stream, modifier->m_usMinimumParticlesToSpawn);
-    StreamSaveBinary(stream, modifier->m_usMaximumParticlesToSpawn);
-    StreamSaveBinary(stream, modifier->m_fSpawnedSpeedChaos);
-    StreamSaveBinary(stream, modifier->m_fSpawnDirectionChaos);
-    StreamSaveBinary(stream, modifier->m_fYValue);
-    StreamSaveBinary(stream, modifier->m_fLifeSpanVariation);
+    StreamSaveBinary(stream, modifier->m_usNumSpawnGenerations);
+    StreamSaveBinary(stream, modifier->m_fPercentageSpawned);
+    StreamSaveBinary(stream, modifier->m_usMinNumToSpawn);
+    StreamSaveBinary(stream, modifier->m_usMaxNumToSpawn);
+    StreamSaveBinary(stream, modifier->m_fSpawnSpeedChaos);
+    StreamSaveBinary(stream, modifier->m_fSpawnDirChaos);
+    StreamSaveBinary(stream, modifier->m_fLifeSpan);
+    StreamSaveBinary(stream, modifier->m_fLifeSpanVar);
 }
 
 #include <string.h>
 // Adds the corresponding elements of two matrices.
 // @fnv 0x00c23c00
+// pdb: NiMatrix3::operator+ | NiPSysSpawnModifier.obj | debug, call graph, medium
+// pdb params: mat
+// pdb locals: result
 __declspec(noinline) Mat3 Mat3::operator+(const Mat3& other) const
 {
     Mat3 result = *this;
@@ -282,6 +303,9 @@ __declspec(noinline) Mat3 Mat3::operator+(const Mat3& other) const
 
 // Subtracts the corresponding elements of two matrices.
 // @fnv 0x00c23c70
+// pdb: NiMatrix3::operator- | NiPSysSpawnModifier.obj | debug, call graph, medium
+// pdb params: mat
+// pdb locals: result
 __declspec(noinline) Mat3 Mat3::operator-(const Mat3& other) const
 {
     Mat3 result = *this;
@@ -401,18 +425,21 @@ inline float RandomFloat0To1()
 }
 
 // @fnv 0x00c23db0
+// pdb: NiPSysSpawnModifier::SpawnParticles | NiPSysSpawnModifier.obj | retail, upstream name already matches, high
+// pdb params: fCurrentTime, fSpawnTime, usOldIndex, pkOldPSystem
+// pdb locals: pkOldParticle, fVariation, usVariation, pkOldData, usNumToSpawn, us
 void __fastcall SpawnParticles(NiPSysSpawnModifier* modifier, void*, float afTime, float fTime,
                                unsigned short usOldIndex, ParticleSystemX* pkSystem)
 {
     PSysDataX* pkData = pkSystem->m_spGeometryData;
-    if (pkData->m_pkParticleInfo[usOldIndex].m_usFirstValue < modifier->m_usSpawnGenerationCount &&
-        !(RandomFloat0To1() > modifier->m_fSpawnPercentage))
+    if (pkData->m_pkParticleInfo[usOldIndex].m_usFirstValue < modifier->m_usNumSpawnGenerations &&
+        !(RandomFloat0To1() > modifier->m_fPercentageSpawned))
     {
-        float fNumToSpawn = (modifier->m_usMaximumParticlesToSpawn - modifier->m_usMinimumParticlesToSpawn) * RandomFloat0To1();
+        float fNumToSpawn = (modifier->m_usMaxNumToSpawn - modifier->m_usMinNumToSpawn) * RandomFloat0To1();
         unsigned short usExtra = (unsigned short)fNumToSpawn;
         if (fmod(fNumToSpawn, 1.0f) > 0.5f)
             usExtra++;
-        unsigned short usNumToSpawn = modifier->m_usMinimumParticlesToSpawn + usExtra;
+        unsigned short usNumToSpawn = modifier->m_usMinNumToSpawn + usExtra;
         if (usNumToSpawn == 0)
             usNumToSpawn = 1;
         for (unsigned short us = 0; us < usNumToSpawn; us++)
@@ -647,7 +674,10 @@ struct LocalPoint
 };
 
 // @fnv 0x00c23ee0
-void NiPSysSpawnModifier::UpdateSpawning(float afTime, float fTimeDelta, unsigned short usOldIndex,
+// pdb: NiPSysSpawnModifier::SpawnParticle | NiPSysSpawnModifier.obj | retail, object-file gap fill, high
+// pdb params: fCurrentTime, fSpawnTime, usOldIndex, pkOldPSystem
+// pdb locals: pkOldColors, pkNewVertices, fAge, pfOldRadii, pfNewSizes, fTestVal, pkOldParticle, kTempMat, pfNewRadii, pfOldSizes, fPlanChaos, fpcSin, fY, pkNewData, pfNewRotationAngles, pfNewRotationSpeeds, fX, usNewIndex, pkOldRotationAxes, kOldVelocity, pfOldRotationSpeeds, pkNewParticle, fDeltaSpeedFactor, kS ...
+void NiPSysSpawnModifier::UpdateSpawning(float fCurrentTime, float fSpawnTime, unsigned short usOldIndex,
                                         ParticleSystemX* pkOldSystem)
 {
     PSys* pkOldPSystem = reinterpret_cast<PSys*>(pkOldSystem);
@@ -684,7 +714,7 @@ void NiPSysSpawnModifier::UpdateSpawning(float afTime, float fTimeDelta, unsigne
     if (usNewIndex == DAT_010be248)
         return;
 
-    float fPreviousTime = afTime - fTimeDelta;
+    float fPreviousTime = fCurrentTime - fSpawnTime;
     PInfo* pkNewInfo = &pkData->m_pkParticleInfo[usNewIndex];
     NiPoint3* pkNewVerts = pkData->m_pkVertex;
     ColA* pkNewColors = pkData->m_pkColor;
@@ -698,10 +728,10 @@ void NiPSysSpawnModifier::UpdateSpawning(float afTime, float fTimeDelta, unsigne
                             kMotionVelocity.z * kMotionVelocity.z);
     float fLen = sqrtf(fLenSq);
 
-    float fSpeedVar = m_fSpawnedSpeedChaos * UnitRandom();
+    float fSpeedVar = m_fSpawnSpeedChaos * UnitRandom();
     float fSpeed = (fSpeedVar + DAT_01012070) * fLen;
 
-    float fDecl = (float)(m_fSpawnDirectionChaos * UnitRandom() * DAT_0101ff40);
+    float fDecl = (float)(m_fSpawnDirChaos * UnitRandom() * DAT_0101ff40);
     float fRand = UnitRandom();
     float fSinDecl, fCosDecl;
     FastSinCos(fDecl, fSinDecl, fCosDecl);
@@ -768,7 +798,7 @@ void NiPSysSpawnModifier::UpdateSpawning(float afTime, float fTimeDelta, unsigne
     kWorldPosition = MulMV(kScaled, kWorldPosition);
     pkNewInfo->m_kValue = kWorldPosition;
     pkNewInfo->m_fXValue = fPreviousTime;
-    pkNewInfo->m_fYValue = (float)((UnitRandom() - DAT_01011588) * m_fLifeSpanVariation + m_fYValue);
+    pkNewInfo->m_fYValue = (float)((UnitRandom() - DAT_01011588) * m_fLifeSpanVar + m_fLifeSpan);
     pkNewInfo->m_usFirstValue = pkOldInfo->m_usFirstValue + 1;
 
     pkNewVerts[usNewIndex] = kPosition;
@@ -787,6 +817,6 @@ void NiPSysSpawnModifier::UpdateSpawning(float afTime, float fTimeDelta, unsigne
     if (pkOldRotAxes && pkNewRotAxes)
         pkNewRotAxes[usNewIndex] = pkOldRotAxes[usOldIndex];
 
-    pkNewInfo->m_fZValue = afTime - pkNewInfo->m_fXValue;
+    pkNewInfo->m_fZValue = fCurrentTime - pkNewInfo->m_fXValue;
     ((PSys*)m_pkTarget)->InitializeSpawnedParticle(usNewIndex);
 }

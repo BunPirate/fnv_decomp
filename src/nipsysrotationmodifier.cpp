@@ -8,6 +8,7 @@
 #include "../include/NiPSysPositionModifier.h"
 #include "../include/NiStream.h"
 
+// pdb: class NiPSysRotationModifier, size 0x38, bases: NiPSysModifier, 7 members
 class NiPSysRotationModifier : public NiPSysPositionModifier
 {
   protected:
@@ -16,36 +17,40 @@ class NiPSysRotationModifier : public NiPSysPositionModifier
   public:
     NiPSysRotationModifier();
 
-    float m_fInitialRotationSpeed;
-    float m_fInitialRotationSpeedVariation;
-    float m_fInitialRotationAngle;
-    float m_fInitialRotationAngleVariation;
-    NiPoint3 m_kRotationAxis;
-    bool m_bUseRandomRotationAxis;
-    bool m_bRandomInitialRotationSpeedSign;
+    float m_fInitialRotSpeed;
+    float m_fInitialRotSpeedVar;
+    float m_fInitialRotAngle;
+    float m_fInitialRotAngleVar;
+    NiPoint3 m_kInitialAxis;
+    bool m_bRandomInitialAxis;
+    bool m_bRandomRotSpeedSign;
     unsigned char layoutPadding36[2];
 };
 
 // Calls the base NiPSysModifier copy and copies the rotation modifier's fields from this object into destination.
 // @fnv 0x00c205e0
+// pdb: NiPSysRotationModifier::CopyMembers | NiPSysRotationModifier.obj | retail, object-file run extension, low
+// pdb params: pkDest, kCloning
 void NiPSysRotationModifier::CopyMemberData(NiPSysRotationModifier* destination, CloningProcess& arProcess)
 {
-    NiPSysModifier::CopyMemberData(destination, arProcess);
-    destination->m_fInitialRotationSpeed = m_fInitialRotationSpeed;
-    destination->m_fInitialRotationSpeedVariation = m_fInitialRotationSpeedVariation;
-    destination->m_bRandomInitialRotationSpeedSign = m_bRandomInitialRotationSpeedSign;
-    destination->m_fInitialRotationAngle = m_fInitialRotationAngle;
-    destination->m_fInitialRotationAngleVariation = m_fInitialRotationAngleVariation;
-    destination->m_bUseRandomRotationAxis = m_bUseRandomRotationAxis;
-    destination->m_kRotationAxis = m_kRotationAxis;
+    NiPSysModifier::CopyMembers(destination, arProcess);
+    destination->m_fInitialRotSpeed = m_fInitialRotSpeed;
+    destination->m_fInitialRotSpeedVar = m_fInitialRotSpeedVar;
+    destination->m_bRandomRotSpeedSign = m_bRandomRotSpeedSign;
+    destination->m_fInitialRotAngle = m_fInitialRotAngle;
+    destination->m_fInitialRotAngleVar = m_fInitialRotAngleVar;
+    destination->m_bRandomInitialAxis = m_bRandomInitialAxis;
+    destination->m_kInitialAxis = m_kInitialAxis;
 }
 
 // @fnv 0x00c20f00
-void NiPSysMeshUpdateModifier::LoadBinary(NiStream& stream)
+// pdb: NiPSysMeshUpdateModifier::LoadBinary | NiPSysMeshUpdateModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysMeshUpdateModifier::LoadBinary(NiStream& kStream)
 {
-    NiPSysModifier::LoadBinary(stream);
+    NiPSysModifier::LoadBinary(kStream);
     m_uiUpdateOrder = 0x1964;
-    stream.ReadUnsignedInteger();
+    kStream.ReadUnsignedInteger();
 }
 
 struct FUN_00c206a0_shell : public NiPSysRotationModifier
@@ -70,6 +75,9 @@ struct FUN_00c20a00_shell : public NiPSysRotationModifier
 // Links the object to the stream and, for older stream versions, fills the particle rotation speeds array with the modifier's rotation speed value.
 // @fnv 0x00c20a00
 // src: XBOX_PDB 0x00c20a00
+// pdb: NiPSysRotationModifier::PostLinkObject | NiPSysRotationModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pfRotationSpeeds, us
 void FUN_00c20a00_shell::NiPSysRotationModifier_PostLinkObject(NiStream* kStream)
 {
     NiObject::LinkObject(*kStream);
@@ -100,16 +108,19 @@ struct Call_439090_tgt
 
 // @fnv 0x00c20a60
 // src: GAMEBRYO_LIB 0x00c20a60
-bool FUN_00c20a60_shell::NiPSysRotationModifier_IsEqual(NiObject* object)
+// pdb: NiPSysRotationModifier::IsEqual | NiPSysRotationModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool FUN_00c20a60_shell::NiPSysRotationModifier_IsEqual(NiObject* pkObject)
 {
-    NiPSysRotationModifier* pkDest = static_cast<NiPSysRotationModifier*>(object);
-    if (NiPSysModifier::IsEqual(pkDest) && pkDest->m_fInitialRotationSpeed == m_fInitialRotationSpeed &&
-        pkDest->m_fInitialRotationSpeedVariation == m_fInitialRotationSpeedVariation &&
-        pkDest->m_bRandomInitialRotationSpeedSign == m_bRandomInitialRotationSpeedSign &&
-        pkDest->m_fInitialRotationAngle == m_fInitialRotationAngle &&
-        pkDest->m_fInitialRotationAngleVariation == m_fInitialRotationAngleVariation &&
-        pkDest->m_bUseRandomRotationAxis == m_bUseRandomRotationAxis &&
-        !reinterpret_cast<Call_439090_tgt*>(&pkDest->m_kRotationAxis)->Call_439090(m_kRotationAxis))
+    NiPSysRotationModifier* pkDest = static_cast<NiPSysRotationModifier*>(pkObject);
+    if (NiPSysModifier::IsEqual(pkDest) && pkDest->m_fInitialRotSpeed == m_fInitialRotSpeed &&
+        pkDest->m_fInitialRotSpeedVar == m_fInitialRotSpeedVar &&
+        pkDest->m_bRandomRotSpeedSign == m_bRandomRotSpeedSign &&
+        pkDest->m_fInitialRotAngle == m_fInitialRotAngle &&
+        pkDest->m_fInitialRotAngleVar == m_fInitialRotAngleVar &&
+        pkDest->m_bRandomInitialAxis == m_bRandomInitialAxis &&
+        !reinterpret_cast<Call_439090_tgt*>(&pkDest->m_kInitialAxis)->Call_439090(m_kInitialAxis))
         return true;
     return false;
 }
@@ -125,6 +136,8 @@ inline void* __cdecl operator new(unsigned int, void* p)
 // Allocates and constructs a NiPSysRotationModifier, sets its vtable, zeroes four floats, copies three globals and initializes two flags.
 // @fnv 0x00c20640
 // src: EXE 0x00c20640
+// pdb: NiPSysRotationModifier::CreateObject | NiPSysRotationModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiPSysRotationModifier* NiPSysRotationModifier_CreateObject()
 {
     NiPSysRotationModifier* pModifier = (NiPSysRotationModifier*)BSFadeNode::operator new(56);
@@ -132,13 +145,13 @@ NiPSysRotationModifier* NiPSysRotationModifier_CreateObject()
     {
         ::new (static_cast<NiPSysPositionModifier*>(pModifier)) NiPSysPositionModifier();
         *(void**)pModifier = (void*)&DAT_010bdaec;
-        pModifier->m_fInitialRotationAngleVariation = pModifier->m_fInitialRotationAngle =
-            pModifier->m_fInitialRotationSpeedVariation = pModifier->m_fInitialRotationSpeed = 0.0f;
-        *reinterpret_cast<int*>(&pModifier->m_kRotationAxis.x) = DAT_011a946c;
-        *reinterpret_cast<int*>(&pModifier->m_kRotationAxis.y) = DAT_011a9470;
-        *reinterpret_cast<int*>(&pModifier->m_kRotationAxis.z) = DAT_011a9474;
-        pModifier->m_bUseRandomRotationAxis = true;
-        pModifier->m_bRandomInitialRotationSpeedSign = false;
+        pModifier->m_fInitialRotAngleVar = pModifier->m_fInitialRotAngle =
+            pModifier->m_fInitialRotSpeedVar = pModifier->m_fInitialRotSpeed = 0.0f;
+        *reinterpret_cast<int*>(&pModifier->m_kInitialAxis.x) = DAT_011a946c;
+        *reinterpret_cast<int*>(&pModifier->m_kInitialAxis.y) = DAT_011a9470;
+        *reinterpret_cast<int*>(&pModifier->m_kInitialAxis.z) = DAT_011a9474;
+        pModifier->m_bRandomInitialAxis = true;
+        pModifier->m_bRandomRotSpeedSign = false;
         return pModifier;
     }
     return 0;
@@ -166,6 +179,8 @@ struct NiPoint3Proxy
 
 // Appends the rotation modifier's property names and values to a string array, growing it as needed via SetSize and SetAt.
 // @fnv 0x00c20d00
+// pdb: NiPSysRotationModifier::GetViewerStrings | NiPSysRotationModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void FUN_00c20d00_shell::AddRotationStrings(void* pkStrings)
 {
     StrArr* strings = static_cast<StrArr*>(pkStrings);
@@ -181,7 +196,7 @@ void FUN_00c20d00_shell::AddRotationStrings(void* pkStrings)
     }
     strings->SetAt(count, value);
 
-    value = NiGetViewerString_00a7d550("Initial Rotation Speed", m_fInitialRotationSpeed);
+    value = NiGetViewerString_00a7d550("Initial Rotation Speed", m_fInitialRotSpeed);
     count = strings->m_usSize;
     if (count >= strings->m_usMaxSize)
     {
@@ -189,7 +204,7 @@ void FUN_00c20d00_shell::AddRotationStrings(void* pkStrings)
     }
     strings->SetAt(count, value);
 
-    value = NiGetViewerString_00a7d550("Initial Rotation Speed Variation", m_fInitialRotationSpeedVariation);
+    value = NiGetViewerString_00a7d550("Initial Rotation Speed Variation", m_fInitialRotSpeedVar);
     count = strings->m_usSize;
     if (count >= strings->m_usMaxSize)
     {
@@ -197,7 +212,7 @@ void FUN_00c20d00_shell::AddRotationStrings(void* pkStrings)
     }
     strings->SetAt(count, value);
 
-    value = _FUN_00a7d370("Random Rot Speed Sign", m_bRandomInitialRotationSpeedSign);
+    value = _FUN_00a7d370("Random Rot Speed Sign", m_bRandomRotSpeedSign);
     count = strings->m_usSize;
     if (count >= strings->m_usMaxSize)
     {
@@ -205,7 +220,7 @@ void FUN_00c20d00_shell::AddRotationStrings(void* pkStrings)
     }
     strings->SetAt(count, value);
 
-    value = NiGetViewerString_00a7d550("Initial Rotation Angle", m_fInitialRotationAngle);
+    value = NiGetViewerString_00a7d550("Initial Rotation Angle", m_fInitialRotAngle);
     count = strings->m_usSize;
     if (count >= strings->m_usMaxSize)
     {
@@ -213,7 +228,7 @@ void FUN_00c20d00_shell::AddRotationStrings(void* pkStrings)
     }
     strings->SetAt(count, value);
 
-    value = NiGetViewerString_00a7d550("Initial Rotation Angle Variation", m_fInitialRotationAngleVariation);
+    value = NiGetViewerString_00a7d550("Initial Rotation Angle Variation", m_fInitialRotAngleVar);
     count = strings->m_usSize;
     if (count >= strings->m_usMaxSize)
     {
@@ -221,7 +236,7 @@ void FUN_00c20d00_shell::AddRotationStrings(void* pkStrings)
     }
     strings->SetAt(count, value);
 
-    value = _FUN_00a7d370("Random Initial Axis", m_bUseRandomRotationAxis);
+    value = _FUN_00a7d370("Random Initial Axis", m_bRandomInitialAxis);
     count = strings->m_usSize;
     if (count >= strings->m_usMaxSize)
     {
@@ -268,7 +283,7 @@ struct FnvModBase
     unsigned int m_uiUpdateOrder;
     void* m_pkTarget;
     bool m_bModifierActive;
-    void FUN_00c31950(void* stream);
+    void FUN_00c31950(void* kStream);
 };
 
 struct FnvPoint3 : public NiPoint3
@@ -285,46 +300,48 @@ struct FnvRotMod : public FnvModBase
     FnvPoint3 m_kRotationAxis;
     bool m_bUseRandomRotationAxis;
     bool m_bRandomInitialRotationSpeedSign;
-    void NiPSysRotationModifier_SaveBinary(NiStream* stream);
+    void NiPSysRotationModifier_SaveBinary(NiStream* kStream);
 };
 
 // Calls the base save, writes four floats and two bytes to the stream, then saves the point.
 // @fnv 0x00c20c00
 // src: XBOX_PDB 0x00c20c00
-void FnvRotMod::NiPSysRotationModifier_SaveBinary(NiStream* stream)
+// pdb: NiPSysRotationModifier::SaveBinary | NiPSysRotationModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void FnvRotMod::NiPSysRotationModifier_SaveBinary(NiStream* kStream)
 {
-    FnvModBase::FUN_00c31950(stream);
+    FnvModBase::FUN_00c31950(kStream);
 
     {
-        FnvOutStream* out = *(FnvOutStream**)((char*)stream + 0x250);
+        FnvOutStream* out = *(FnvOutStream**)((char*)kStream + 0x250);
         {
             int written = 4;
             out->m_uiCount += out->m_pWrite(out, &m_fInitialRotationSpeed, 4, &written, 1);
         }
     }
     {
-        FnvOutStream* out = *(FnvOutStream**)((char*)stream + 0x250);
+        FnvOutStream* out = *(FnvOutStream**)((char*)kStream + 0x250);
         {
             int written = 4;
             out->m_uiCount += out->m_pWrite(out, &m_fInitialRotationSpeedVariation, 4, &written, 1);
         }
     }
     {
-        FnvOutStream* out = *(FnvOutStream**)((char*)stream + 0x250);
+        FnvOutStream* out = *(FnvOutStream**)((char*)kStream + 0x250);
         {
             int written = 4;
             out->m_uiCount += out->m_pWrite(out, &m_fInitialRotationAngle, 4, &written, 1);
         }
     }
     {
-        FnvOutStream* out = *(FnvOutStream**)((char*)stream + 0x250);
+        FnvOutStream* out = *(FnvOutStream**)((char*)kStream + 0x250);
         {
             int written = 4;
             out->m_uiCount += out->m_pWrite(out, &m_fInitialRotationAngleVariation, 4, &written, 1);
         }
     }
     {
-        FnvOutStream* out = *(FnvOutStream**)((char*)stream + 0x250);
+        FnvOutStream* out = *(FnvOutStream**)((char*)kStream + 0x250);
         {
             unsigned char value = m_bRandomInitialRotationSpeedSign;
             int written = 1;
@@ -332,7 +349,7 @@ void FnvRotMod::NiPSysRotationModifier_SaveBinary(NiStream* stream)
         }
     }
     {
-        FnvOutStream* out = *(FnvOutStream**)((char*)stream + 0x250);
+        FnvOutStream* out = *(FnvOutStream**)((char*)kStream + 0x250);
         {
             unsigned char value = m_bUseRandomRotationAxis;
             int written = 1;
@@ -340,7 +357,7 @@ void FnvRotMod::NiPSysRotationModifier_SaveBinary(NiStream* stream)
         }
     }
 
-    m_kRotationAxis.FnvSavePoint(stream);
+    m_kRotationAxis.FnvSavePoint(kStream);
 }
 
 class CC20AE0BinaryStream
@@ -562,6 +579,9 @@ class CC20AE0FieldModifier : public CC20AE0Modifier
 // Loads the base modifier, then reads float fields, version-gated fields and two bool flags, and a point from the stream.
 // @fnv 0x00c20ae0
 // src: XBOX_PDB 0x00c20ae0
+// pdb: NiPSysRotationModifier::LoadBinary | NiPSysRotationModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bRandomInitialAxis, bRandomRotSpeedSign
 void CC20AE0FieldModifier::NiPSysRotationModifier_LoadBinary(CC20AE0Stream& kStream)
 {
     CC20AE0Modifier::LoadBinary(kStream);
@@ -603,6 +623,9 @@ class Point3ParameterData
 
 // For each particle, adds (fTime minus m_fZValue) times its rotation speed to its angle, resetting it to 0 if above 10 pi, else reducing it to at most 2 pi.
 // @fnv 0x00c206b0
+// pdb: NiPSysRotationModifier::Update | NiPSysRotationModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: pfRotationAngles, pfRotationSpeeds, us, fRotationAngle, pkCurrentParticle, fDeltaTime
 void __stdcall UpdateRotationAngles(float fTime, NiPSysData* pkData)
 {
     float* pfRotationAngles = pkData->m_pfRotationAngles;
@@ -632,15 +655,15 @@ void __stdcall UpdateRotationAngles(float fTime, NiPSysData* pkData)
 
 inline NiPSysRotationModifier::NiPSysRotationModifier()
 {
-    m_fInitialRotationSpeed = 0.0f;
-    m_fInitialRotationSpeedVariation = 0.0f;
-    m_fInitialRotationAngle = 0.0f;
-    m_fInitialRotationAngleVariation = 0.0f;
-    *reinterpret_cast<int*>(&m_kRotationAxis.x) = DAT_011a946c;
-    *reinterpret_cast<int*>(&m_kRotationAxis.y) = DAT_011a9470;
-    *reinterpret_cast<int*>(&m_kRotationAxis.z) = DAT_011a9474;
-    m_bUseRandomRotationAxis = true;
-    m_bRandomInitialRotationSpeedSign = false;
+    m_fInitialRotSpeed = 0.0f;
+    m_fInitialRotSpeedVar = 0.0f;
+    m_fInitialRotAngle = 0.0f;
+    m_fInitialRotAngleVar = 0.0f;
+    *reinterpret_cast<int*>(&m_kInitialAxis.x) = DAT_011a946c;
+    *reinterpret_cast<int*>(&m_kInitialAxis.y) = DAT_011a9470;
+    *reinterpret_cast<int*>(&m_kInitialAxis.z) = DAT_011a9474;
+    m_bRandomInitialAxis = true;
+    m_bRandomRotSpeedSign = false;
 }
 struct C20980_Owner
 {
@@ -649,6 +672,9 @@ struct C20980_Owner
 };
 // Allocates and constructs a NiPSysRotationModifier, passes it and arg to FUN_00c205e0, and returns it.
 // @fnv 0x00c20980
+// pdb: NiPSysRotationModifier::CreateClone | NiPSysRotationModifier.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysRotationModifier* C20980_Owner::CreateModifier(int arg)
 {
     NiPSysRotationModifier* modifier = new NiPSysRotationModifier;
@@ -693,6 +719,9 @@ struct FUN_00c207a0_shell : public NiPSysRotationModifier
 
 // Sets the rotation axis and initial rotation angle/speed for a new particle, using random values or the modifier's configured defaults.
 // @fnv 0x00c207a0
+// pdb: NiPSysRotationModifier::Initialize | NiPSysRotationModifier.obj | retail, object-file run extension, low
+// pdb params: pkData, usNewParticle
+// pdb locals: kRotationAxis, fTheta, fcos, fHypot, fZ, fsin, fPhi, fInitialRotSpeed
 void FUN_00c207a0_shell::UpdateParticleRotation(NiPSysData* pkSysData, unsigned short usNewParticle)
 {
     NiPSysData* pkData = pkSysData;
@@ -700,7 +729,7 @@ void FUN_00c207a0_shell::UpdateParticleRotation(NiPSysData* pkSysData, unsigned 
     if (pkAxes)
     {
         NiPoint3& kAxis = pkAxes[usNewParticle];
-        if (m_bUseRandomRotationAxis)
+        if (m_bRandomInitialAxis)
         {
             float fZAngle = UnitRandom() * 3.1415927f;
             float fCosZ = FastCos(fZAngle);
@@ -714,16 +743,16 @@ void FUN_00c207a0_shell::UpdateParticleRotation(NiPSysData* pkSysData, unsigned 
         }
         else
         {
-            kAxis = m_kRotationAxis;
+            kAxis = m_kInitialAxis;
         }
     }
 
     if (pkData->m_pfRotationAngles)
     {
         pkData->m_pfRotationAngles[usNewParticle] =
-            m_fInitialRotationAngle + m_fInitialRotationAngleVariation * SymmetricRandom();
-        float fSpeed = m_fInitialRotationSpeed + m_fInitialRotationSpeedVariation * SymmetricRandom();
-        if (m_bRandomInitialRotationSpeedSign && !(UnitRandom() > 0.5f))
+            m_fInitialRotAngle + m_fInitialRotAngleVar * SymmetricRandom();
+        float fSpeed = m_fInitialRotSpeed + m_fInitialRotSpeedVar * SymmetricRandom();
+        if (m_bRandomRotSpeedSign && !(UnitRandom() > 0.5f))
             fSpeed = -fSpeed;
         pkData->m_pfRotationSpeeds[usNewParticle] = fSpeed;
     }

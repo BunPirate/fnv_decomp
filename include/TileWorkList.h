@@ -16,5 +16,5 @@ public:
     Tile_Set_Helper*& At(void*);
     void NiTPointerListBase_DFALL_NiTListItem_NiAVObject_NiAVObject_AddHead(NiAVObject* const&);
     unsigned int NiNode_GetChildCount();
-    SceneNode* NiNode_GetAtChecked(unsigned int auiIndex);
+    SceneNode* NiNode_GetAtChecked(unsigned int i);
 };

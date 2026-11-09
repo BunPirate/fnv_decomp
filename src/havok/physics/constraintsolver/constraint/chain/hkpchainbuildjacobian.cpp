@@ -471,18 +471,21 @@ __forceinline void buildConstraintMatrixLuDecompositionForBallAndSocketChain(
 // Initializes a BallSocketChainSchema, builds LU-decomposed constraint matrices, and advances the schema pointer past the schema block.
 // @fnv 0x00dd0ad0
 // src: XBOX_PDB 0x00dd0ad0
-extern "C" void hkBallSocketChainBuildJacobian(int numConstraints, hkReal tau, hkReal afMotorDamping, hkReal cfm,
-                             QuantizedBoundsDataOffset* accumulatorOffsets, const QuantizedBoundsData* accumsBase,
-                             Matrix3LowerDiagonalUpperFactors* tripleBuffer, int bufferSize,
-                             hkPadSpu<SolverSchemaHeader*>& schemaInOut)
+// pdb: hkBallSocketChainBuildJacobian | hkpChainBuildJacobian.obj | retail, upstream name already matches, high
+// pdb params: numConstraints, tau, damping, cfm, accumulators, accumBase, jacobiansEnd, in, out
+// pdb locals: j, triplesSize, triples, assertBuf, ostr
+extern "C" void hkBallSocketChainBuildJacobian(int numConstraints, hkReal tau, hkReal damping, hkReal cfm,
+                             QuantizedBoundsDataOffset* accumulators, const QuantizedBoundsData* accumBase,
+                             Matrix3LowerDiagonalUpperFactors* jacobiansEnd, int in,
+                             hkPadSpu<SolverSchemaHeader*>& out)
 {
-    BallSocketChainSchema* schema = static_cast<BallSocketChainSchema*>(schemaInOut.val());
-    schema->initBallSocketChainSchema(numConstraints, accumulatorOffsets, tau, afMotorDamping);
-    ConstraintJacobian* jacobians = BallSocketChainSchema::getJacobians(schemaInOut.val());
+    BallSocketChainSchema* schema = static_cast<BallSocketChainSchema*>(out.val());
+    schema->initBallSocketChainSchema(numConstraints, accumulators, tau, damping);
+    ConstraintJacobian* jacobians = BallSocketChainSchema::getJacobians(out.val());
     QuantizedBoundsDataOffset* offsets = schema->getAccumulatorOffsetsBase();
     Matrix3LowerDiagonalUpperFactors* matrices = schema->getMatrixBuffer();
     int size = 0x90 * numConstraints;
-    buildConstraintMatrixLuDecompositionForBallAndSocketChain(numConstraints, cfm, jacobians, offsets, accumsBase,
+    buildConstraintMatrixLuDecompositionForBallAndSocketChain(numConstraints, cfm, jacobians, offsets, accumBase,
                                                               matrices, size);
-    schemaInOut = hkAddByteOffset(schemaInOut.val(), schema->m_sizeOfSchema);
+    out = hkAddByteOffset(out.val(), schema->m_sizeOfSchema);
 }

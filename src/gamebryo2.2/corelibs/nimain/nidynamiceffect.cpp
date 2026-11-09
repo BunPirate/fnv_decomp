@@ -41,39 +41,45 @@ inline unsigned int NiBinaryStream::BinaryRead(void* data, unsigned int size, un
 }
 
 // @fnv 0x00a68ea0
-void NiDynamicEffect::LoadBinary(NiStream& stream)
+// pdb: NiDynamicEffect::LoadBinary | NiDynamicEffect.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bValue, iListSize, i, pkNode
+void NiDynamicEffect::LoadBinary(NiStream& kStream)
 {
-    NiAVObject::LoadBinary(stream);
-    if (stream.m_uiNifFileVersion >= 0x0a010066)
+    NiAVObject::LoadBinary(kStream);
+    if (kStream.m_uiNifFileVersion >= 0x0a010066)
     {
         unsigned char on;
-        ReadBinaryValue(stream, on);
+        ReadBinaryValue(kStream, on);
         switchState = on != 0;
     }
-    if (stream.m_uiNifFileVersion < 0x04010000)
+    if (kStream.m_uiNifFileVersion < 0x04010000)
     {
         int count;
-        ReadBinaryValue(stream, count);
+        ReadBinaryValue(kStream, count);
         for (int i = 0; i < count; ++i)
         {
             unsigned int linkID;
-            ReadBinaryValue(stream, linkID);
+            ReadBinaryValue(kStream, linkID);
         }
     }
-    if (stream.m_uiNifFileVersion >= 0x0a00010e)
-        stream.ReadUnsignedInteger();
+    if (kStream.m_uiNifFileVersion >= 0x0a00010e)
+        kStream.ReadUnsignedInteger();
 }
 
 // @fnv 0x00a69070
-void NiDynamicEffect::LinkObject(NiStream& stream)
+// pdb: NiDynamicEffect::LinkObject | NiDynamicEffect.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiSize, pkNode
+void NiDynamicEffect::LinkObject(NiStream& kStream)
 {
-    NiAVObject::LinkObject(stream);
-    if (stream.m_uiNifFileVersion >= 0x0a00010e)
+    NiAVObject::LinkObject(kStream);
+    if (kStream.m_uiNifFileVersion >= 0x0a00010e)
     {
-        unsigned int count = stream.GetLinkID();
+        unsigned int count = kStream.GetLinkID();
         while (count--)
         {
-            NiNode* node = reinterpret_cast<NiNode*>(stream.GetLoadedObject());
+            NiNode* node = reinterpret_cast<NiNode*>(kStream.GetLoadedObject());
             if (node)
             {
                 NiTListItem<NiNode*>* item = NiDynamicEffectNewListItem();
@@ -92,6 +98,7 @@ void NiDynamicEffect::LinkObject(NiStream& stream)
 }
 
 // @fnv 0x00a69320
+// pdb: NiDynamicEffect::NiDynamicEffect | NiDynamicEffect.obj | retail, upstream name already matches, high
 NiDynamicEffect::NiDynamicEffect()
     : switchState(true), effectType(0xff), pushCount(0), revID(1)
 {
@@ -109,6 +116,8 @@ extern const void* vftable_NiDynamicEffect;
 // The scalar deleting destructor takes its flags on the stack and this in ECX.
 // A free fastcall helper preserves that ABI without a stand-in derived class.
 // @fnv 0x00a69390
+// pdb: NiDynamicEffect::`scalar deleting destructor' | NiDynamicEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiDynamicEffect::~NiDynamicEffect
 void* __fastcall DestroyNiDynamicEffect(NiDynamicEffect* effect, void*, unsigned int flags)
 {
     *reinterpret_cast<void**>(effect) = &vftable_NiDynamicEffect;
@@ -178,6 +187,9 @@ static inline NiNode* GetNext(NiTListItem<NiNode*>*& node)
     return element;
 }
 // @fnv 0x00a69140
+// pdb: NiDynamicEffect::GetViewerStrings | NiDynamicEffect.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: kPos, i, acPrefix, pkNode
 void NiDynamicEffect::AppendEffectProperties(StrArr* pkStrings)
 {
     reinterpret_cast<NiAVObjectEffectMethods*>(this)->AppendEffectProperties(pkStrings);
@@ -218,10 +230,13 @@ static __forceinline void WriteLinkedObject(NiStream* stream, NiNode*& object)
     stream->SaveLinkID(reinterpret_cast<const NiObject*>(object));
 }
 // @fnv 0x00a68f80
-void NiDynamicEffect::SaveBinary(NiStream& streamRef)
+// pdb: NiDynamicEffect::SaveBinary | NiDynamicEffect.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bValue, iListSize, kPos
+void NiDynamicEffect::SaveBinary(NiStream& kStream)
 {
-    NiStream* stream = &streamRef;
-    NiAVObject::SaveBinary(streamRef);
+    NiStream* stream = &kStream;
+    NiAVObject::SaveBinary(kStream);
     unsigned char enabled = switchState;
     NiBinaryStream* output = stream->m_pkOstr;
     WriteBytes(output, &enabled, 1);
@@ -242,10 +257,13 @@ void NiDynamicEffect::SaveBinary(NiStream& streamRef)
 
 // Returns false if counts differ or paired entries differ in nullness; otherwise returns true if FUN_00a5a260 succeeds.
 // @fnv 0x00a68d80
-bool NiDynamicEffect::IsEqual(NiObject* object) const
+// pdb: NiDynamicEffect::IsEqual | NiDynamicEffect.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkEffect, uiCount0, uiCount1, kPos1, kPos0, pkNode0, pkNode1
+bool NiDynamicEffect::IsEqual(NiObject* pkObject) const
 {
-    const NiDynamicEffect* other = static_cast<NiDynamicEffect*>(object);
-    if (!reinterpret_cast<const NiAVObjectEffectMethods*>(this)->IsEqual(object))
+    const NiDynamicEffect* other = static_cast<NiDynamicEffect*>(pkObject);
+    if (!reinterpret_cast<const NiAVObjectEffectMethods*>(this)->IsEqual(pkObject))
         return false;
     if (EffectNodes(shadowGenerator).m_kItemCount.m_uiCount != EffectNodes(other->shadowGenerator).m_kItemCount.m_uiCount)
         return false;

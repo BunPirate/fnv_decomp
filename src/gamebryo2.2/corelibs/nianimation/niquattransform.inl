@@ -12,17 +12,18 @@ extern float DAT_01096b8c;
 
 #pragma optimize("", off)
 // @fnv 0x00494260
+// pdb: NiQuatTransform::IsTransformInvalid | NiBlendAccumTransformInterpolator.obj | debug, call graph, medium
 NiQuatTransform::NiQuatTransform()
 {
-    *(NiPoint3*)&x = DAT_011a8400;
-    *(NiQuaternionValue*)&qx = *(const NiQuaternionValue*)&DAT_011f3704;
-    scale = DAT_01096b8c;
+    *(NiPoint3*)&m_kTranslate = DAT_011a8400;
+    *(NiQuaternionValue*)&m_kRotate = *(const NiQuaternionValue*)&DAT_011f3704;
+    m_fScale = DAT_01096b8c;
 }
 
 #pragma optimize("", on)
 // @fnv 0x00a39180
 bool NiQuatTransform::IsInvalid() const
 {
-    return scale == -3.4028234663852886e+38 && qy == -3.4028234663852886e+38 && x == -3.4028234663852886e+38;
+    return m_fScale == -3.4028234663852886e+38 && qy == -3.4028234663852886e+38 && m_kTranslate == -3.4028234663852886e+38;
 }
 

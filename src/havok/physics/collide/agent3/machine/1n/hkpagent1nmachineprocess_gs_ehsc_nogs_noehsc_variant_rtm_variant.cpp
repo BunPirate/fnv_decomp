@@ -61,7 +61,7 @@ struct Updater
     virtual void v04();
     virtual int update(int x, int y);
 };
-static void extractChildShapes_00da4a50(Updater* self, int flag, Pair* dest, Pair* src, Updater* other, int y, Out* out2, Out* out1);
+static void extractChildShapes_00da4a50(Updater* shapeKeyPair, int extractedShapeKeys, Pair* shapeContainerA, Pair* shapeContainerB, Updater* shapeBufferA, int shapeBufferB, Out* modifiedBodyA, Out* modifiedBodyB);
 void S00da4a50_Wrap(Updater* self, int flag, Pair* dest, Pair* src, Updater* other, int y, Out* out2, Out* out1);
 
 
@@ -74,13 +74,13 @@ __forceinline hkBool __cdecl hkMonitorStream::memoryAvailable() { return getEnd(
 __forceinline void __cdecl hkMonitorStream::setEnd(char* ptr) { m_end = ptr; }
 
 __forceinline hkpCdBody::hkpCdBody() {}
-__forceinline hkpCdBody::hkpCdBody(const hkpCdBody* parent) { m_parent = parent; m_pMotionState = parent->m_pMotionState; }
-__forceinline hkpCdBody::hkpCdBody(const hkpCdBody* parent, const void* motion) { m_parent = parent; m_pMotionState = motion; }
-__forceinline const hkTransform& hkpCdBody::getTransform() const { return *static_cast<const hkTransform*>(m_pMotionState); }
-__forceinline const hkMotionState* hkpCdBody::GetMotionState() const { return static_cast<const hkMotionState*>(m_pMotionState); }
-__forceinline const hkpShape* hkpCdBody::getShape() const { return m_pCollisionShape; }
-__forceinline unsigned int hkpCdBody::getShapeKey() const { return m_uiCollisionShapeKey; }
-__forceinline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape* shape, unsigned int key) { m_pCollisionShape = shape; m_uiCollisionShapeKey = key; }
+__forceinline hkpCdBody::hkpCdBody(const hkpCdBody* parent) { m_parent = parent; m_motion = parent->m_motion; }
+__forceinline hkpCdBody::hkpCdBody(const hkpCdBody* parent, const void* motion) { m_parent = parent; m_motion = motion; }
+__forceinline const hkTransform& hkpCdBody::getTransform() const { return *static_cast<const hkTransform*>(m_motion); }
+__forceinline const hkMotionState* hkpCdBody::GetMotionState() const { return static_cast<const hkMotionState*>(m_motion); }
+__forceinline const hkpShape* hkpCdBody::getShape() const { return m_shape; }
+__forceinline unsigned int hkpCdBody::getShapeKey() const { return m_shapeKey; }
+__forceinline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape* shape, unsigned int key) { m_shape = shape; m_shapeKey = key; }
 __forceinline hkpShapeType hkpShape::getType() const { return *reinterpret_cast<const hkpShapeType*>(&m_type); }
 // ProcessAgent is the agent's seventh virtual slot; the shared header does not name it yet.
 template <class Input, class Output>
@@ -115,7 +115,7 @@ __forceinline hkTransform::hkTransform() {}
 __forceinline hkQuaternion::hkQuaternion() {}
 struct S00da4920_Sub
 {
-    void hkTransform_setInverse(void* arg);
+    void hkTransform_setInverse(void* t);
 };
 struct S00da4920_Blob
 {
@@ -342,21 +342,21 @@ inline void hkVector4::setNeg3(const hkVector4& v)
     static __declspec(align(16)) const hkUint32 negateMask[4] = {0x80000000, 0x80000000, 0x80000000, 0x00000000};
     m_vComponents = _mm_xor_ps(v.m_vComponents, *(const hkQuadReal*)&negateMask);
 }
-inline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& v1)
+inline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), v1.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 inline void hkVector4::addMul4(hkSimdRealParameter r, const hkVector4& v1)
 {
     m_vComponents = _mm_add_ps(m_vComponents, _mm_mul_ps(r.broadcast(), v1.m_vComponents));
 }
-inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& x, const hkVector4& y)
+inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& x, const hkVector4& r)
 {
-    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(x.m_vComponents, y.m_vComponents));
+    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(x.m_vComponents, r.m_vComponents));
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    hkQuadReal x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    hkQuadReal x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     hkQuadReal xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, (((1) << 6) | ((1) << 4) | ((1) << 2) | ((1)))), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, (((2) << 6) | ((2) << 4) | ((2) << 2) | ((2)))), xySum);
 }
@@ -447,14 +447,14 @@ typedef hkUint16 hkContactPointId;
 
 inline hkVector4& hkContactPoint::getSeparatingNormal()
 {
-    return m_vSeparatingNormal;
+    return m_separatingNormal;
 }
 inline void hkContactPoint::setFlipped(const hkContactPoint& point)
 {
     hkVector4 dist;
-    dist.setBroadcast(point.m_vSeparatingNormal, 3);
-    m_vContactPosition.setAddMul4(point.m_vContactPosition, point.m_vSeparatingNormal, dist);
-    m_vSeparatingNormal.setNeg3(point.m_vSeparatingNormal);
+    dist.setBroadcast(point.m_separatingNormal, 3);
+    m_position.setAddMul4(point.m_position, point.m_separatingNormal, dist);
+    m_separatingNormal.setNeg3(point.m_separatingNormal);
 }
 inline void hkContactPoint::flip()
 {
@@ -927,14 +927,14 @@ void __cdecl MotionUtilities::calcTimInfo(const hkMotionState& ms0, const hkMoti
     const hkSweptTransform& st0 = ms0.getSweptTransform();
     const hkSweptTransform& st1 = ms1.getSweptTransform();
     hkVector4 diff0;
-    diff0.setSub4(st0.m_vCenterOfMass0, st0.m_vCenterOfMass1);
+    diff0.setSub4(st0.m_centerOfMass0, st0.m_vCenterOfMass1);
     hkVector4 diff1;
-    diff1.setSub4(st1.m_vCenterOfMass1, st1.m_vCenterOfMass0);
+    diff1.setSub4(st1.m_vCenterOfMass1, st1.m_centerOfMass0);
     hkReal f0 = deltaTime * st0.getInvDeltaTime();
     hkReal f1 = deltaTime * st1.getInvDeltaTime();
     (timOut.*static_cast<void (hkVector4::*)(const hkSimdReal&, const hkVector4&)>(&hkVector4::setMul4))(f0, diff0);
     timOut.addMul4(f1, diff1);
-    timOut(3) = f0 * ms0.m_kDeltaAngle(3) * ms0.m_fObjectRadius + f1 * ms1.m_kDeltaAngle(3) * ms1.m_fObjectRadius;
+    timOut(3) = f0 * ms0.m_deltaAngle(3) * ms0.m_objectRadius + f1 * ms1.m_deltaAngle(3) * ms1.m_objectRadius;
 }
 struct ShapeKeyAgentEntry : FourByteState
 {
@@ -1025,14 +1025,14 @@ struct AgentProcessingBodyTemp
     AgentTransform m_kTransformB;
 };
 __declspec(noinline) static void CreateAgentInputWithTemporaryBodies(MachineAgentInputLocalForm& in,
-                                                                     AgentProcessingBodyTemp& bodyTemp,
+                                                                     AgentProcessingBodyTemp& temp,
                                                                      MachineAgentInputLocalForm& out)
 {
     MotionUtilities::ComputeTransformAtTime(in.m_pBodyA->GetMotionState()->getSweptTransform(),
-                           GetStepTime(in.m_pRayCastInput->m_pStepInfo.m_uiStartTime), bodyTemp.m_kTransformA);
+                           GetStepTime(in.m_pRayCastInput->m_pStepInfo.m_startTime), temp.m_kTransformA);
     MotionUtilities::ComputeTransformAtTime(in.m_pBodyB->GetMotionState()->getSweptTransform(),
-                           GetStepTime(in.m_pRayCastInput->m_pStepInfo.m_uiStartTime), bodyTemp.m_kTransformB);
-    out.m_pBodyA = &bodyTemp.m_pBodyA;
+                           GetStepTime(in.m_pRayCastInput->m_pStepInfo.m_startTime), temp.m_kTransformB);
+    out.m_pBodyA = &temp.m_pBodyA;
 }
 __declspec(noinline) static void InvertAgentSubtypeMarker(AgentSubtypeMarker& in, AgentSubtypeMarker& out)
 {
@@ -1091,6 +1091,9 @@ static __forceinline void extractChildShapes(const WrappedShapeKeys& shapeKeyPai
 }
 // @fnv 0x00da5b80
 // src: GUESS 0x00da5b80 (confidence: low)
+// pdb: hkAgentNmMachine_Process | hkpAgent1nMachineProcess.obj | retail, object-file run extension, low
+// pdb params: agentTrack, inputIn, shapeContainerA, shapeContainerB, newKeys, output
+// pdb locals: prevInputInitialized, extensionBuffer, prevInput, currentSectorIndex, extractedShapeKeys, transformForTransformedShapeB, cdBodyForTransformedShapeA, childBodyA, dispatcher, currentDataEnd, prevFlippedInputInitialized, readEnd, prevFlippedInput, currentData, prevTemp, input, shapeBufferA, transformForTransformedShapeA, currentSector, readData, inExtensionBuffer, nextReadSectorIndex, readSector, prevFlippedTemp ...
 void __cdecl ProcessAgentSectorsAndChildren_00da5b80(AgentSectorPointerArray& agentTrack, const AgentSubtypeMarker& inputIn,
                           const hkpShapeContainer* shapeContainerA, const hkpShapeContainer* shapeContainerB,
                           const ShapeKeyCombination* newKeys, WorldOperationEntry& output)
@@ -1185,17 +1188,17 @@ void __cdecl ProcessAgentSectorsAndChildren_00da5b80(AgentSectorPointerArray& ag
                     }
                     extractChildShapes(shapeKeyPair, extractedShapeKeys, shapeContainerA, shapeContainerB, shapeBufferA,
                                        shapeBufferB, childBodyA, childBodyB);
-                    const hkpShape* shapeB = (*modifiedBodyBPtr)->m_pCollisionShape;
-                    const hkpShape* shapeA = (*modifiedBodyAPtr)->m_pCollisionShape;
+                    const hkpShape* shapeB = (*modifiedBodyBPtr)->m_shape;
+                    const hkpShape* shapeA = (*modifiedBodyAPtr)->m_shape;
                     AgentValue<hkUchar> cdBodyHasTransformFlag = 0;
                     *modifiedBodyBPtr = GetTransformedCdBody(*modifiedBodyBPtr, cdBodyForTransformedShapeB,
                                                              transformForTransformedShapeB,
                                                              numSlotsForTransformedCdBodies, cdBodyHasTransformFlag);
-                    shapeB = (*modifiedBodyBPtr)->m_pCollisionShape;
+                    shapeB = (*modifiedBodyBPtr)->m_shape;
                     *modifiedBodyAPtr = GetTransformedCdBody(*modifiedBodyAPtr, cdBodyForTransformedShapeA,
                                                              transformForTransformedShapeA,
                                                              numSlotsForTransformedCdBodies, cdBodyHasTransformFlag);
-                    shapeA = (*modifiedBodyAPtr)->m_pCollisionShape;
+                    shapeA = (*modifiedBodyAPtr)->m_shape;
                     input.m_kTransform.SetMulInverse(reinterpret_cast<const AgentTransform&>((*modifiedBodyAPtr)->getTransform()),
                                                      reinterpret_cast<const AgentTransform&>((*modifiedBodyBPtr)->getTransform()));
                     ShapeKeyAgentEntry* h = reinterpret_cast<ShapeKeyAgentEntry*>(currentData);
@@ -1324,12 +1327,12 @@ void __cdecl ProcessAgentSectorsAndChildren_00da5b80(AgentSectorPointerArray& ag
                 InvertAgentSubtypeMarker(input, flippedInput);
                 ByteStateWithMixedNumericData* entry = reinterpret_cast<ByteStateWithMixedNumericData*>(currentData);
                 hkReal distAtT1;
-                if (entry->m_fFloatValue != GetStepTime(flippedInput.m_pRayCastInput->m_pStepInfo.m_uiStartTime))
+                if (entry->m_fFloatValue != GetStepTime(flippedInput.m_pRayCastInput->m_pStepInfo.m_startTime))
                 {
                     const AgentQualityInfo* ci = flippedInput.m_pRayCastInput->m_pCollisionQualityInfo;
                     if (!ci->m_iQualityInfoValue10.val())
                     {
-                        entry->m_fFloatValue = GetStepTime(flippedInput.m_pRayCastInput->m_pStepInfo.m_fEndTime);
+                        entry->m_fFloatValue = GetStepTime(flippedInput.m_pRayCastInput->m_pStepInfo.m_endTime);
                         distAtT1 = ci->m_fCreateContactThreshold * 0.5f;
                         entry->m_vSeparatingNormal.setZero4();
                         entry->m_vSeparatingNormal(3) = distAtT1;
@@ -1340,19 +1343,19 @@ void __cdecl ProcessAgentSectorsAndChildren_00da5b80(AgentSectorPointerArray& ag
                         prevFlippedInputInitialized = !thisChildHasTransformApplied;
                         CreateAgentInputWithTemporaryBodies(flippedInput, prevFlippedTemp, prevFlippedInput);
                         prevFlippedTemp.m_pBodyB.SetCollisionShapeAndKey(flippedInput.m_pBodyB->getShape(),
-                                                                         flippedInput.m_pBodyB->m_uiCollisionShapeKey);
+                                                                         flippedInput.m_pBodyB->m_shapeKey);
                     }
                     extractChildShapes(shapeKeyPair, extractedShapeKeys, shapeContainerA, shapeContainerB, shapeBufferA,
                                        shapeBufferB, childBodyA, childBodyB);
-                    prevFlippedTemp.m_pBodyA.SetCollisionShapeAndKey((*modifiedBodyBPtr)->m_pCollisionShape,
-                                                                     (*modifiedBodyBPtr)->m_uiCollisionShapeKey);
-                    prevFlippedTemp.m_pBodyB.SetCollisionShapeAndKey((*modifiedBodyAPtr)->m_pCollisionShape,
-                                                                     (*modifiedBodyAPtr)->m_uiCollisionShapeKey);
+                    prevFlippedTemp.m_pBodyA.SetCollisionShapeAndKey((*modifiedBodyBPtr)->m_shape,
+                                                                     (*modifiedBodyBPtr)->m_shapeKey);
+                    prevFlippedTemp.m_pBodyB.SetCollisionShapeAndKey((*modifiedBodyAPtr)->m_shape,
+                                                                     (*modifiedBodyAPtr)->m_shapeKey);
                     void* agentData = entry + 1;
                     GetAgent3SepNormalFunc(dispatcher, entry->m_ucNnTrackType)(prevFlippedInput, entry, agentData,
                                                                                entry->m_vSeparatingNormal);
                 }
-                entry->m_fFloatValue = GetStepTime(flippedInput.m_pRayCastInput->m_pStepInfo.m_fEndTime);
+                entry->m_fFloatValue = GetStepTime(flippedInput.m_pRayCastInput->m_pStepInfo.m_endTime);
                 {
                     hkReal worstCaseDeltaDist = flippedInput.m_vSubtypePosition.dot4xyz1(entry->m_vSeparatingNormal);
                     distAtT1 = entry->m_vSeparatingNormal(3) - worstCaseDeltaDist;
@@ -1398,11 +1401,11 @@ void __cdecl ProcessAgentSectorsAndChildren_00da5b80(AgentSectorPointerArray& ag
             case AgentCallbacks::STREAM_CALL_WITH_TIM: {
                 ByteStateWithMixedNumericData* entry = reinterpret_cast<ByteStateWithMixedNumericData*>(currentData);
                 hkReal distAtT1;
-                if (entry->m_fFloatValue != GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_uiStartTime))
+                if (entry->m_fFloatValue != GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_startTime))
                 {
-                    if (entry->m_fFloatValue >= GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_fEndTime))
+                    if (entry->m_fFloatValue >= GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_endTime))
                     {
-                        hkReal backDt = entry->m_fFloatValue - GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_fEndTime);
+                        hkReal backDt = entry->m_fFloatValue - GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_endTime);
                         hkVector4 backTim;
                         MotionUtilities::calcTimInfo(*input.m_pBodyA->GetMotionState(),
                                                      *input.m_pBodyB->GetMotionState(), backDt, backTim);
@@ -1415,7 +1418,7 @@ void __cdecl ProcessAgentSectorsAndChildren_00da5b80(AgentSectorPointerArray& ag
                         const AgentQualityInfo* ci = input.m_pRayCastInput->m_pCollisionQualityInfo;
                         if (!ci->m_iQualityInfoValue10.val())
                         {
-                            entry->m_fFloatValue = GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_fEndTime);
+                            entry->m_fFloatValue = GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_endTime);
                             distAtT1 = ci->m_fCreateContactThreshold * 0.1f;
                             entry->m_vSeparatingNormal.setZero4();
                             entry->m_vSeparatingNormal(3) = distAtT1;
@@ -1428,16 +1431,16 @@ void __cdecl ProcessAgentSectorsAndChildren_00da5b80(AgentSectorPointerArray& ag
                         }
                         extractChildShapes(shapeKeyPair, extractedShapeKeys, shapeContainerA, shapeContainerB,
                                            shapeBufferA, shapeBufferB, childBodyA, childBodyB);
-                        prevTemp.m_pBodyB.SetCollisionShapeAndKey((*modifiedBodyBPtr)->m_pCollisionShape,
-                                                                  (*modifiedBodyBPtr)->m_uiCollisionShapeKey);
-                        prevTemp.m_pBodyA.SetCollisionShapeAndKey((*modifiedBodyAPtr)->m_pCollisionShape,
-                                                                  (*modifiedBodyAPtr)->m_uiCollisionShapeKey);
+                        prevTemp.m_pBodyB.SetCollisionShapeAndKey((*modifiedBodyBPtr)->m_shape,
+                                                                  (*modifiedBodyBPtr)->m_shapeKey);
+                        prevTemp.m_pBodyA.SetCollisionShapeAndKey((*modifiedBodyAPtr)->m_shape,
+                                                                  (*modifiedBodyAPtr)->m_shapeKey);
                         void* agentData = entry + 1;
                         GetAgent3SepNormalFunc(dispatcher, entry->m_ucNnTrackType)(prevInput, entry, agentData,
                                                                                    entry->m_vSeparatingNormal);
                     }
                 }
-                entry->m_fFloatValue = GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_fEndTime);
+                entry->m_fFloatValue = GetStepTime(input.m_pRayCastInput->m_pStepInfo.m_endTime);
                 {
                     hkReal worstCaseDeltaDist = input.m_vSubtypePosition.dot4xyz1(entry->m_vSeparatingNormal);
                     distAtT1 = entry->m_vSeparatingNormal(3) - worstCaseDeltaDist;
@@ -1716,7 +1719,7 @@ class Q184
 {
   public:
     template <typename T> static __forceinline void construct(T* t, int n, Q154);
-    static void __cdecl GrowArrayCapacity(hkMemoryAllocator& a, void*, int reqElem, int sizeElem);
+    static void __cdecl GrowArrayCapacity(hkMemoryAllocator& mem, void*, int numElem, int sizeElem);
 };
 struct Q99
 {
@@ -2530,14 +2533,14 @@ void __cdecl Q56::calcTimInfo(const hkMotionState& ms0, const hkMotionState& ms1
     const hkSweptTransform& st0 = ms0.getSweptTransform();
     const hkSweptTransform& st1 = ms1.getSweptTransform();
     Q1 diff0;
-    diff0.setSub4(reinterpret_cast<const Q1&>(st0.m_vCenterOfMass0), reinterpret_cast<const Q1&>(st0.m_vCenterOfMass1));
+    diff0.setSub4(reinterpret_cast<const Q1&>(st0.m_centerOfMass0), reinterpret_cast<const Q1&>(st0.m_vCenterOfMass1));
     Q1 diff1;
-    diff1.setSub4(reinterpret_cast<const Q1&>(st1.m_vCenterOfMass1), reinterpret_cast<const Q1&>(st1.m_vCenterOfMass0));
+    diff1.setSub4(reinterpret_cast<const Q1&>(st1.m_vCenterOfMass1), reinterpret_cast<const Q1&>(st1.m_centerOfMass0));
     hkReal f0 = deltaTime * st0.getInvDeltaTime();
     hkReal f1 = deltaTime * st1.getInvDeltaTime();
     timOut.setMul4(f0, diff0);
     timOut.addMul4(f1, diff1);
-    timOut(3) = f0 * ms0.m_kDeltaAngle(3) * ms0.m_fObjectRadius + f1 * ms1.m_kDeltaAngle(3) * ms1.m_fObjectRadius;
+    timOut(3) = f0 * ms0.m_deltaAngle(3) * ms0.m_objectRadius + f1 * ms1.m_deltaAngle(3) * ms1.m_objectRadius;
 }
 struct Q18 : Q21
 {
@@ -2601,18 +2604,18 @@ struct Q58
     Q28 q172;
     Q28 q173;
 };
-static __declspec(noinline) void Q54(Q41& in, Q58& bodyTemp, Q41& out)
+static __declspec(noinline) void Q54(Q41& in, Q58& temp, Q41& out)
 {
-    Q56::ComputeTransformAtTime(in.q72->GetMotionState()->getSweptTransform(), GetStepTime(in.q34->q64.m_uiStartTime), bodyTemp.q172);
-    Q56::ComputeTransformAtTime(in.q65->GetMotionState()->getSweptTransform(), GetStepTime(in.q34->q64.m_uiStartTime), bodyTemp.q173);
-    out.q72 = &bodyTemp.q72;
-    out.q65 = &bodyTemp.q65;
+    Q56::ComputeTransformAtTime(in.q72->GetMotionState()->getSweptTransform(), GetStepTime(in.q34->q64.m_startTime), temp.q172);
+    Q56::ComputeTransformAtTime(in.q65->GetMotionState()->getSweptTransform(), GetStepTime(in.q34->q64.m_startTime), temp.q173);
+    out.q72 = &temp.q72;
+    out.q65 = &temp.q65;
     out.q59 = in.q59;
     out.q34 = in.q34;
-    bodyTemp.q72.SetCollisionShapeAndKey(in.q72->getShape(), in.q72->getShapeKey());
-    ::new (&bodyTemp.q72) hkpCdBody(in.q72, static_cast<const void*>(&bodyTemp.q172));
-    ::new (&bodyTemp.q65) hkpCdBody(in.q65, static_cast<const void*>(&bodyTemp.q173));
-    out.m_kTransform.SetMulInverse(bodyTemp.q172, bodyTemp.q173);
+    temp.q72.SetCollisionShapeAndKey(in.q72->getShape(), in.q72->getShapeKey());
+    ::new (&temp.q72) hkpCdBody(in.q72, static_cast<const void*>(&temp.q172));
+    ::new (&temp.q65) hkpCdBody(in.q65, static_cast<const void*>(&temp.q173));
+    out.m_kTransform.SetMulInverse(temp.q172, temp.q173);
 }
 static __declspec(noinline) void Q50(Q14& in, Q14& out)
 {
@@ -2674,6 +2677,9 @@ static __forceinline void fixupPotentialContactPointers(const Q150* bufferIn, vo
 }
 // @fnv 0x00da4aa0
 // src: XBOX_PDB 0x00da4aa0
+// pdb: hkAgent1nMachine_Process | hkpAgent1nMachineProcess.obj | retail, upstream name already matches, high
+// pdb params: agentTrack, inputIn, shapeContainerB, newKeys, output
+// pdb locals: prevInputInitialized, extensionBuffer, oldPotentialInfo, prevInput, currentSectorIndex, transformForTransformedShapeB, dispatcher, currentDataEnd, prevFlippedInputInitialized, readEnd, prevFlippedInput, prevTemp, input, currentSector, readData, potentialContacts, inExtensionBuffer, nextReadSectorIndex, readSector, prevFlippedTemp, bytesUsedInCurrentSector, shapeBufferB, cdBodyForTransformedShapeB, childBodyB ...
 void __cdecl hkAgent1nMachine_Process(AgentSectorPointerArray& agentTrack, const Q14& inputIn, const hkpShapeContainer* shapeContainerB, const Q26* newKeys,
                           Q6& output)
 {
@@ -2767,13 +2773,13 @@ void __cdecl hkAgent1nMachine_Process(AgentSectorPointerArray& agentTrack, const
                         goto checkReadSector;
                     }
                     extractChildShapes(shapeKeyPair.q23, shapeContainerB, shapeBufferB, childBodyB);
-                    const hkpShape* shapeB = (*modifiedBodyBPtr)->m_pCollisionShape;
-                    const hkpShape* shapeA = (*modifiedBodyAPtr)->m_pCollisionShape;
+                    const hkpShape* shapeB = (*modifiedBodyBPtr)->m_shape;
+                    const hkpShape* shapeA = (*modifiedBodyAPtr)->m_shape;
                     Q20<Q42> cdBodyHasTransformFlag = 0;
                     *modifiedBodyBPtr =
                         Q43(*modifiedBodyBPtr, cdBodyForTransformedShapeB, transformForTransformedShapeB,
                             numSlotsForTransformedCdBodies, cdBodyHasTransformFlag);
-                    shapeB = (*modifiedBodyBPtr)->m_pCollisionShape;
+                    shapeB = (*modifiedBodyBPtr)->m_shape;
                     input.m_kTransform.SetMulInverse(reinterpret_cast<const Q28&>((*modifiedBodyAPtr)->getTransform()),
                                                      reinterpret_cast<const Q28&>((*modifiedBodyBPtr)->getTransform()));
                     Q18* h = reinterpret_cast<Q18*>(currentData);
@@ -2888,12 +2894,12 @@ void __cdecl hkAgent1nMachine_Process(AgentSectorPointerArray& agentTrack, const
                 Q50(input, flippedInput);
                 Q22* entry = reinterpret_cast<Q22*>(currentData);
                 hkReal distAtT1;
-                if (entry->q17 != GetStepTime(flippedInput.q34->q64.m_uiStartTime))
+                if (entry->q17 != GetStepTime(flippedInput.q34->q64.m_startTime))
                 {
                     const Q61* ci = flippedInput.q34->q81;
                     if (!ci->q79.val())
                     {
-                        entry->q17 = GetStepTime(flippedInput.q34->q64.m_fEndTime);
+                        entry->q17 = GetStepTime(flippedInput.q34->q64.m_endTime);
                         distAtT1 = ci->q116 * 0.5f;
                         entry->InvokeFifthVirtualFunction.setZero4();
                         entry->InvokeFifthVirtualFunction(3) = distAtT1;
@@ -2904,15 +2910,15 @@ void __cdecl hkAgent1nMachine_Process(AgentSectorPointerArray& agentTrack, const
                         prevFlippedInputInitialized = !thisChildHasTransformApplied;
                         Q54(flippedInput, prevFlippedTemp, prevFlippedInput);
                         prevFlippedTemp.q65.SetCollisionShapeAndKey(flippedInput.q65->getShape(),
-                                                                    flippedInput.q65->m_uiCollisionShapeKey);
+                                                                    flippedInput.q65->m_shapeKey);
                     }
                     extractChildShapes(shapeKeyPair.q23, shapeContainerB, shapeBufferB, childBodyB);
-                    prevFlippedTemp.q72.SetCollisionShapeAndKey((*modifiedBodyBPtr)->m_pCollisionShape, (*modifiedBodyBPtr)->m_uiCollisionShapeKey);
+                    prevFlippedTemp.q72.SetCollisionShapeAndKey((*modifiedBodyBPtr)->m_shape, (*modifiedBodyBPtr)->m_shapeKey);
                     void* agentData = entry + 1;
                     fnv_00da4aa0::GetAgent3SepNormalFunc(dispatcher, entry->q38)(prevFlippedInput, entry, agentData,
                                                                    entry->InvokeFifthVirtualFunction);
                 }
-                entry->q17 = GetStepTime(flippedInput.q34->q64.m_fEndTime);
+                entry->q17 = GetStepTime(flippedInput.q34->q64.m_endTime);
                 {
                     hkReal worstCaseDeltaDist = flippedInput.q76.dot4xyz1(entry->InvokeFifthVirtualFunction);
                     distAtT1 = entry->InvokeFifthVirtualFunction(3) - worstCaseDeltaDist;
@@ -2957,11 +2963,11 @@ void __cdecl hkAgent1nMachine_Process(AgentSectorPointerArray& agentTrack, const
             case Q7::STREAM_CALL_WITH_TIM: {
                 Q22* entry = reinterpret_cast<Q22*>(currentData);
                 hkReal distAtT1;
-                if (entry->q17 != GetStepTime(input.q34->q64.m_uiStartTime))
+                if (entry->q17 != GetStepTime(input.q34->q64.m_startTime))
                 {
-                    if (entry->q17 >= GetStepTime(input.q34->q64.m_fEndTime))
+                    if (entry->q17 >= GetStepTime(input.q34->q64.m_endTime))
                     {
-                        hkReal backDt = entry->q17 - GetStepTime(input.q34->q64.m_fEndTime);
+                        hkReal backDt = entry->q17 - GetStepTime(input.q34->q64.m_endTime);
                         Q1 backTim;
                         Q56::calcTimInfo(*input.q72->GetMotionState(), *input.q65->GetMotionState(), backDt, backTim);
                         hkReal backLinear = backTim.dot3(entry->InvokeFifthVirtualFunction);
@@ -2973,7 +2979,7 @@ void __cdecl hkAgent1nMachine_Process(AgentSectorPointerArray& agentTrack, const
                         const Q61* ci = input.q34->q81;
                         if (!ci->q79.val())
                         {
-                            entry->q17 = GetStepTime(input.q34->q64.m_fEndTime);
+                            entry->q17 = GetStepTime(input.q34->q64.m_endTime);
                             distAtT1 = ci->q116 * 0.1f;
                             entry->InvokeFifthVirtualFunction.setZero4();
                             entry->InvokeFifthVirtualFunction(3) = distAtT1;
@@ -2985,13 +2991,13 @@ void __cdecl hkAgent1nMachine_Process(AgentSectorPointerArray& agentTrack, const
                             Q54(input, prevTemp, prevInput);
                         }
                         extractChildShapes(shapeKeyPair.q23, shapeContainerB, shapeBufferB, childBodyB);
-                        prevTemp.q65.SetCollisionShapeAndKey((*modifiedBodyBPtr)->m_pCollisionShape, (*modifiedBodyBPtr)->m_uiCollisionShapeKey);
+                        prevTemp.q65.SetCollisionShapeAndKey((*modifiedBodyBPtr)->m_shape, (*modifiedBodyBPtr)->m_shapeKey);
                         void* agentData = entry + 1;
                         fnv_00da4aa0::GetAgent3SepNormalFunc(dispatcher, entry->q38)(prevInput, entry, agentData,
                                                                        entry->InvokeFifthVirtualFunction);
                     }
                 }
-                entry->q17 = GetStepTime(input.q34->q64.m_fEndTime);
+                entry->q17 = GetStepTime(input.q34->q64.m_endTime);
                 {
                     hkReal worstCaseDeltaDist = input.q76.dot4xyz1(entry->InvokeFifthVirtualFunction);
                     distAtT1 = entry->InvokeFifthVirtualFunction(3) - worstCaseDeltaDist;

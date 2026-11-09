@@ -5,6 +5,7 @@
 // info index when the edge's flag bit is set), m_uiTriangleFlags = bits 0..2 edge-extra-info, 0x40/0x10/0x200 type
 // flags, 0x0FBE0000 cover bits. The methods are /Od out-of-line accessors; the FUN_ names are the units' names for
 // them, with what each one does (from the exe) in the comment.
+// pdb: structure NavMeshTriangle, size 0x10, 3 members
 class NavMeshTriangle
 {
   public:
@@ -26,5 +27,5 @@ class NavMeshTriangle
 
     unsigned short Vertices[3];     // +0x00
     unsigned short Triangles[3];    // +0x06
-    unsigned int m_uiTriangleFlags; // +0x0C
+    unsigned int TriangleFlags; // +0x0C
 };

@@ -33,7 +33,7 @@ struct FUN_00c54b70_cls
     unsigned short m_0e;
     void AllocateStorage_00c54850(unsigned int n);
     void FUN_00c54a30(unsigned int idx, NiIntegerStreamEntry& e);
-    unsigned int NiTArray_FurnitureMark_NiTNewInterface_FurnitureMark_Add(NiIntegerStreamEntry& e);
+    unsigned int NiTArray_FurnitureMark_NiTNewInterface_FurnitureMark_Add(NiIntegerStreamEntry& element);
 };
 struct FUN_00c54cc0_cls
 {
@@ -52,6 +52,9 @@ inline void NiFixedString::operator delete(void* pvMem)
 
 // @fnv 0x00c54760
 // src: GUESS 0x00c54760 (confidence: low)
+// pdb: NiTNewInterface<FurnitureMark>::Allocate | BSFurnitureMarker.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFurnitureMarker::KillSDM
+// pdb params: uiNumElements
 void Object_UpdateFields_00c54760()
 {
     delete DAT_012031c0;
@@ -84,6 +87,8 @@ struct FUN_00c54a30
     void SetAt(unsigned int uiIndex, const ElemZ& kElem);
 };
 // @fnv 0x00c54a30
+// pdb: NiTArray<FurnitureMark,NiTNewInterface<FurnitureMark> >::SetAt | BSFurnitureMarker.obj | debug, object-file gap fill, medium
+// pdb params: uiIndex, element
 void FUN_00c54a30::SetAt(unsigned int uiIndex, const ElemZ& kElem)
 {
     static ElemZ s_kEmpty;
@@ -109,7 +114,7 @@ void FUN_00c54a30::SetAt(unsigned int uiIndex, const ElemZ& kElem)
 
 inline const NiRTTI* NiRTTI::GetBaseRTTI() const
 {
-    return m_pBaseRTTI;
+    return m_pkBaseRTTI;
 }
 
 inline bool NiObject::IsKindOfType(const NiRTTI* pkRTTI) const
@@ -126,13 +131,16 @@ inline bool NiObject::IsKindOfType(const NiRTTI* pkRTTI) const
 
 // @fnv 0x00c54400
 // src: XBOX_PDB 0x00c54400
-NiObject* __cdecl BSFurnitureMarker_Find(NiAVObject* pkOwner)
+// pdb: BSFurnitureMarker::Find | BSFurnitureMarker.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pd, pe
+NiObject* __cdecl BSFurnitureMarker_Find(NiAVObject* apObject)
 {
     NiObject* pkResult = 0;
-    if (pkOwner)
+    if (apObject)
     {
         const NiFixedString& kName = *DAT_012031c0;
-        NiObject* pkTarget = (NiObject*)pkOwner->FUN_00a5bdd0(kName);
+        NiObject* pkTarget = (NiObject*)apObject->FUN_00a5bdd0(kName);
         if (!pkTarget)
             pkResult = 0;
         else
@@ -223,6 +231,8 @@ class NiIntegerStreamExtraData : public NiExtraData
 
 // @fnv 0x00c54490
 // src: COMMUNITY 0x00c54490
+// pdb: BSFurnitureMarker::KillSDM | BSFurnitureMarker.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFurnitureMarker::Add
 void NiIntegerStreamExtraData::BSFurnitureMarker_Add(const NiIntegerStreamEntryData& kEntry)
 {
     unsigned int uiSize = m_kEntries.GetEffectiveSize();
@@ -358,6 +368,7 @@ struct IntegersExtraData : ExtraDataBase
 };
 
 // @fnv 0x00c53f10
+// pdb: BSFurnitureMarker::BSFurnitureMarker | BSFurnitureMarker.obj | debug, call graph, medium
 IntegersExtraData::IntegersExtraData()
 {
     BSFurnitureMarker_SetName();
@@ -373,6 +384,7 @@ __forceinline void* NiFixedString::operator new(size_t size)
 namespace fnv_00c546c0 {
 // @fnv 0x00c546c0
 // src: COMMUNITY 0x00c546c0
+// pdb: BSFurnitureMarker::InitSDM | BSFurnitureMarker.obj | retail, upstream name already matches, high
 void __cdecl BSFurnitureMarker_InitSDM()
 {
     DAT_012031c0 = new NiFixedString((const char*)"FRN");
@@ -427,6 +439,9 @@ struct NiIntStreamAllocatorC
 
 // @fnv 0x00c54850
 // src: GUESS 0x00c54850 (confidence: low)
+// pdb: NiTArray<FurnitureMark,NiTNewInterface<FurnitureMark> >::SetSize | BSFurnitureMarker.obj | debug, object-file gap fill, medium
+// pdb params: uiMaxSize
+// pdb locals: pSaveBase, i
 void FUN_00c54b70_cls::AllocateStorage_00c54850(unsigned int uiMaxSize)
 {
     if (uiMaxSize == m_08)

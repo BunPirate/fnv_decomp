@@ -39,7 +39,7 @@ __forceinline float& hkVector4::component(int k)
 {
     return lanes[k];
 }
-__forceinline void hkVector4::SetAllComponents(float v)
+__forceinline void hkVector4::setAll(float v)
 {
     LocalM128 t = _mm_load_ss(&v);
     quad = _mm_shuffle_ps(t, t, 0);
@@ -47,15 +47,15 @@ __forceinline void hkVector4::SetAllComponents(float v)
 
 __forceinline float hkContactPoint::getDistance() const
 {
-    return m_vSeparatingNormal.w;
+    return m_separatingNormal.w;
 }
 __forceinline void hkContactPoint::setDistance(float value)
 {
-    m_vSeparatingNormal.component(3) = value;
+    m_separatingNormal.component(3) = value;
 }
 __forceinline void hkContactPoint::setSeparatingNormal(const hkVector4& value, float distance)
 {
-    m_vSeparatingNormal.quad = value.quad;
+    m_separatingNormal.quad = value.quad;
     setDistance(distance);
 }
 
@@ -69,11 +69,11 @@ struct __declspec(align(16)) ContactPointPair
 extern float DAT_0104da48;
 // Preserve this unit's inlined collector construction.
 __declspec(nothrow) __forceinline hkpCdPointCollector::hkpCdPointCollector()
-    : m_fEarlyOutDistance(DAT_0104da48) {}
+    : m_earlyOutDistance(DAT_0104da48) {}
 __declspec(nothrow) __forceinline hkpSimpleClosestContactCollector::hkpSimpleClosestContactCollector()
 {
-    m_fEarlyOutDistance = reinterpret_cast<hkContactPoint&>(contact).m_vSeparatingNormal.w = DAT_0104da48;
-    m_bOk = false;
+    m_earlyOutDistance = reinterpret_cast<hkContactPoint&>(m_hitPoint).m_separatingNormal.w = DAT_0104da48;
+    m_hasHit = false;
 }
 
 typedef void (*hkpLinearCastFunc)(const hkpCdBody*, const hkpCdBody*, const void*, hkpCdPointCollector*) throw();
@@ -137,8 +137,11 @@ __declspec(nothrow) __forceinline void copyMotionState(void* storage, const void
 
 // @fnv 0x00daf540
 // src: GUESS 0x00daf540 (confidence: low)
+// pdb: hkpIterativeLinearCastAgent::linearCast | hkpIterativeLinearCastAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: in2, startPointCollector, event, assertBuf, ostr, checkPointCollector, ms, bodyACopy
 void hkpIterativeLinearCastAgent::ProcessEntries_00daf540(const hkpCdBody* bodyA, const hkpCdBody* bodyB,
-                                               const ShapeSweepParameters* input, hkpCdPointCollector* castCollector,
+                                               const ShapeSweepParameters* input, hkpCdPointCollector* collector,
                                                hkpCdPointCollector* startCollector)
 {
     // Explicit storage preserves the original collector lifetime without adding
@@ -148,22 +151,22 @@ void hkpIterativeLinearCastAgent::ProcessEntries_00daf540(const hkpCdBody* bodyA
     CollisionAgentContext linearInput = *input;
     linearInput.m_fScalar += input->m_fMaxExtraPenetration;
     CastImpl(bodyA, bodyB, &linearInput, &localCastCollector);
-    if (!localCastCollector.m_bOk)
+    if (!localCastCollector.m_hasHit)
         return;
 
     ContactPointPair hitPoint;
-    hitPoint.m_kPoint.m_vContactPosition.quad = reinterpret_cast<const hkContactPoint&>(localCastCollector.contact).m_vContactPosition.quad;
+    hitPoint.m_kPoint.m_position.quad = reinterpret_cast<const hkContactPoint&>(localCastCollector.m_hitPoint).m_position.quad;
     hitPoint.m_pRootCollidableB = bodyB;
     hitPoint.m_pRootCollidableA = bodyA;
-    hitPoint.m_kPoint.m_vSeparatingNormal.quad = reinterpret_cast<const hkContactPoint&>(localCastCollector.contact).m_vSeparatingNormal.quad;
+    hitPoint.m_kPoint.m_separatingNormal.quad = reinterpret_cast<const hkContactPoint&>(localCastCollector.m_hitPoint).m_separatingNormal.quad;
 
-    const float& distance = reinterpret_cast<hkContactPoint&>(localCastCollector.contact).m_vSeparatingNormal.w;
+    const float& distance = reinterpret_cast<hkContactPoint&>(localCastCollector.m_hitPoint).m_separatingNormal.w;
     if (distance < input->m_fScalar && startCollector)
         startCollector->AddCdPoint(hitPoint);
 
     hkVector4 step;
     step.quad = input->m_step.quad;
-    float closing = dot3(input->m_step, reinterpret_cast<const hkContactPoint&>(localCastCollector.contact).m_vSeparatingNormal);
+    float closing = dot3(input->m_step, reinterpret_cast<const hkContactPoint&>(localCastCollector.m_hitPoint).m_separatingNormal);
     float endpoint = distance + closing;
     if (endpoint > 0.0f)
         return;
@@ -175,7 +178,7 @@ void hkpIterativeLinearCastAgent::ProcessEntries_00daf540(const hkpCdBody* bodyA
         if (distance > 0.0f)
         {
             float t = distance / (distance - endpoint);
-            if (t > castCollector->m_fEarlyOutDistance)
+            if (t > collector->m_earlyOutDistance)
                 return;
             hitPoint.m_kPoint.setDistance(t);
         }
@@ -183,7 +186,7 @@ void hkpIterativeLinearCastAgent::ProcessEntries_00daf540(const hkpCdBody* bodyA
         {
             hitPoint.m_kPoint.setDistance(0.0f);
         }
-        castCollector->AddCdPoint(hitPoint);
+        collector->AddCdPoint(hitPoint);
         return;
     }
 
@@ -192,42 +195,42 @@ void hkpIterativeLinearCastAgent::ProcessEntries_00daf540(const hkpCdBody* bodyA
     hkpSimpleClosestContactCollector& projectedDistance = *::new (static_cast<void*>(projectedDistanceStorage)) hkpSimpleClosestContactCollector;
     LocalM128 motionStorage[sizeof(hkMotionState) / sizeof(LocalM128)];
     hkMotionState& motion = *reinterpret_cast<hkMotionState*>(motionStorage);
-    copyMotionState(motionStorage, bodyA->m_pMotionState);
+    copyMotionState(motionStorage, bodyA->m_motion);
     hkpCdBody movedBody;
     movedBody.m_parent = bodyA;
-    movedBody.m_pMotionState = &motion;
-    movedBody.m_pCollisionShape = bodyA->m_pCollisionShape;
-    movedBody.m_uiCollisionShapeKey = 0xffffffff;
+    movedBody.m_motion = &motion;
+    movedBody.m_shape = bodyA->m_shape;
+    movedBody.m_shapeKey = 0xffffffff;
     int iterations = path->m_numIterations;
     while (--iterations >= 0)
     {
-        reinterpret_cast<hkContactPoint&>(projectedDistance.contact).m_vSeparatingNormal.w = DAT_0104da48;
-        projectedDistance.m_fEarlyOutDistance = DAT_0104da48;
-        projectedDistance.m_bOk = false;
+        reinterpret_cast<hkContactPoint&>(projectedDistance.m_hitPoint).m_separatingNormal.w = DAT_0104da48;
+        projectedDistance.m_earlyOutDistance = DAT_0104da48;
+        projectedDistance.m_hasHit = false;
         hkVector4 delta;
         float broadcast = hitPoint.m_kPoint.getDistance();
-        delta.SetAllComponents(broadcast);
-        motion.m_kMotionTransform.m_vTranslation = _mm_add_ps(_mm_mul_ps(delta.quad, step.quad),
-                                                ((const hkTransform*)bodyA->m_pMotionState)->m_vTranslation);
+        delta.setAll(broadcast);
+        motion.m_transform.m_vTranslation = _mm_add_ps(_mm_mul_ps(delta.quad, step.quad),
+                                                ((const hkTransform*)bodyA->m_motion)->m_vTranslation);
         CastImpl(&movedBody, bodyB, &linearInput, &projectedDistance);
 
         step.quad = input->m_step.quad;
-        float approach = dot3(input->m_step, reinterpret_cast<const hkContactPoint&>(projectedDistance.contact).m_vSeparatingNormal);
+        float approach = dot3(input->m_step, reinterpret_cast<const hkContactPoint&>(projectedDistance.m_hitPoint).m_separatingNormal);
         if (approach >= 0.0f)
             return;
         float roundedSpeed = -approach;
         float oldFraction = hitPoint.m_kPoint.getDistance();
         float travel = oldFraction * roundedSpeed;
-        float separation = reinterpret_cast<hkContactPoint&>(projectedDistance.contact).m_vSeparatingNormal.w;
+        float separation = reinterpret_cast<hkContactPoint&>(projectedDistance.m_hitPoint).m_separatingNormal.w;
         if (separation + travel > roundedSpeed)
             return;
         float newFraction = oldFraction + separation / roundedSpeed;
-        if (newFraction > castCollector->m_fEarlyOutDistance)
+        if (newFraction > collector->m_earlyOutDistance)
             return;
-        hitPoint.m_kPoint.m_vContactPosition.quad = reinterpret_cast<const hkContactPoint&>(projectedDistance.contact).m_vContactPosition.quad;
-        hitPoint.m_kPoint.setSeparatingNormal(reinterpret_cast<const hkContactPoint&>(projectedDistance.contact).m_vSeparatingNormal, newFraction);
+        hitPoint.m_kPoint.m_position.quad = reinterpret_cast<const hkContactPoint&>(projectedDistance.m_hitPoint).m_position.quad;
+        hitPoint.m_kPoint.setSeparatingNormal(reinterpret_cast<const hkContactPoint&>(projectedDistance.m_hitPoint).m_separatingNormal, newFraction);
         if (input->m_path->m_minDistance >= separation)
             break;
     }
-    castCollector->AddCdPoint(hitPoint);
+    collector->AddCdPoint(hitPoint);
 }

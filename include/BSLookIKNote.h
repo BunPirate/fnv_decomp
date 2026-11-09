@@ -2,6 +2,7 @@
 
 #include "BSAnimNote.h"
 
+// pdb: class BSLookIKNote, size 0x18, bases: BSAnimNote, 2 members
 class BSLookIKNote : public BSAnimNote
 {
   public:
@@ -19,6 +20,6 @@ class BSLookIKNote : public BSAnimNote
 
     void* __thiscall Destroy(unsigned int flags);
 
-    float m_fDistanceScale;
+    float fGain;
     int eState;
 };

@@ -25,6 +25,9 @@ struct CtlrStandin
 };
 // @fnv 0x00c31260
 // src: EXE 0x00c31260
+// pdb: NiPSysModifierCtlr::NiPSysModifierCtlr | NiPSysModifierCtlr.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to NiPSysEmitterCtlr::NiPSysEmitterCtlr
+// pdb params: kModifierName
 CtlrStandin* CtlrStandin::NiPSysModifierCtlr_NiPSysModifierCtlr()
 {
     ((NiTimeController_Call*)this)->SetControllerActive();
@@ -37,6 +40,9 @@ CtlrStandin* CtlrStandin::NiPSysModifierCtlr_NiPSysModifierCtlr()
 extern unsigned int DAT_011f404c;
 // @fnv 0x00c32c70
 // src: XBOX_PDB 0x00c32c70
+// pdb: NiPSysModifierBoolCtlr::SynchronizePoseInterpolator | NiPSysModifierBoolCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkInterp, usIndex
+// pdb locals: bValue, pkBoolInterp
 void __fastcall NiPSysModifierBoolCtlr_SynchronizePoseInterpolator(NiPSysModifierBoolCtlr* controller, void*, NiInterpolator* pkInterp, unsigned short usIndex)
 {
     bool bValue;
@@ -46,7 +52,7 @@ void __fastcall NiPSysModifierBoolCtlr_SynchronizePoseInterpolator(NiPSysModifie
     else
         pkBoolInterp = (NiBoolInterpolator*)pkInterp->DynamicCast(&DAT_011f404c);
     controller->vf60(&bValue);
-    pkBoolInterp->SetBoolValue(bValue);
+    pkBoolInterp->SetPoseValue(bValue);
 }
 
 namespace fnv_00c32d30 {
@@ -58,6 +64,9 @@ extern char const* const g_012026d0_arg1;
 void __fastcall AppendBaseModifierInfo(NiPSysModifierCtlr*, void*, StrArr*);
 
 // @fnv 0x00c32d30
+// pdb: NiPSysModifierBoolCtlr::GetViewerStrings | NiPSysModifierBoolCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysModifierBoolCtlr::InterpolatorIsCorrectType
+// pdb params: pkStrings
 void NiPSysModifierBoolCtlr::AppendModifierInfo(StrArr* pkStrings)
 {
     typedef void (__thiscall *AppendBaseInfo)(NiPSysModifierCtlr*, StrArr*);
@@ -70,7 +79,7 @@ void NiPSysModifierBoolCtlr::AppendModifierInfo(StrArr* pkStrings)
     pkStrings->SetAt(size, tmp);
 }
 
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME;
 
 class C32CB0Interpolator
 {
@@ -133,23 +142,26 @@ class C32CB0Interpolator
 
 // @fnv 0x00c32cb0
 // src: XBOX_PDB 0x00c32cb0
+// pdb: NiPSysModifierBoolCtlr::Update | NiPSysModifierBoolCtlr.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: bValue
 void __fastcall NiPSysModifierBoolCtlr_Update(NiPSysModifierBoolCtlr* controller, void*, const float& fTime)
 {
     if (((unsigned char)(controller->m_uiObjectFlags >> 5) & 1) != 0)
     {
-        controller->m_fControllerTime = DAT_01096324;
+        controller->m_fScaledTime = NiInterpController_INVALID_TIME;
     }
-    else if (controller->DontDoUpdate(fTime) && (!controller->m_spControllerInterpolator.m_pObject ||
-             !((C32CB0Interpolator*)(NiInterpolator*)controller->m_spControllerInterpolator.m_pObject)->IsChannelPosed()))
+    else if (controller->DontDoUpdate(fTime) && (!controller->m_spInterpolator.m_pObject ||
+             !((C32CB0Interpolator*)(NiInterpolator*)controller->m_spInterpolator.m_pObject)->IsChannelPosed()))
     {
         return;
     }
 
-    if (controller->m_spControllerInterpolator.m_pObject)
+    if (controller->m_spInterpolator.m_pObject)
     {
         int fValue;
-        if (((C32CB0Interpolator*)(NiInterpolator*)controller->m_spControllerInterpolator.m_pObject)->Update(
-                controller->m_fControllerTime, controller->m_pkTarget, fValue))
+        if (((C32CB0Interpolator*)(NiInterpolator*)controller->m_spInterpolator.m_pObject)->Update(
+                controller->m_fScaledTime, controller->m_pkTarget, fValue))
             controller->vf61(fValue);
     }
 }

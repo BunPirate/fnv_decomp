@@ -69,13 +69,14 @@ class RegionObjectEntry
     unsigned int m_auiData[14];
     RegionObjectEntry();
     void Load(TESFile* file);
-    TESObjectREFR* GetReference(bool resolve);
+    TESObjectREFR* GetReference(bool abAllowPickUpActor);
     PerkEntryConditionSet* GetConditions();
 };
+// pdb: class Date, size 0x4, 2 members
 class Date
 {
   public:
-    unsigned short usDate, usYear;
+    unsigned short sDate, sYear;
     Date();
     Date(const Date& date);
     ~Date();
@@ -147,6 +148,7 @@ unsigned int TESQuest::GetStageMask()
 }
 
 // @fnv 0x0060c740
+// pdb: TESQuest::InitializeData | TESQuest.obj | retail, vtable slot, high
 void TESQuest::ResetFormData()
 {
     SetEnabled(true);
@@ -155,7 +157,10 @@ void TESQuest::ResetFormData()
 
 // Deletes every stage object in the quest's stage list and removes each entry until the list is empty.
 // @fnv 0x0060c7d0
-void TESQuest::RemoveAllStages()
+// src: XBOX_DEBUG_PDB 0x0060c7d0
+// pdb: TESQuest::ClearStageList | TESQuest.obj | debug, call graph, high
+// pdb locals: pList
+void TESQuest::ClearStageList()
 {
     BSSimpleList<QuestStage*>* stages = GetStageList();
     while (stages && !stages->IsEmpty())
@@ -167,6 +172,9 @@ void TESQuest::RemoveAllStages()
 
 // Walks the quest's stage list and returns whether the stage with the given index is marked done, or false if not found.
 // @fnv 0x0060d600
+// pdb: TESQuest::IsStageDone | TESQuest.obj | debug, call graph, medium
+// pdb params: aucIndex
+// pdb locals: pList
 bool TESQuest::HasStage(unsigned char ucStageIndex)
 {
     BSSimpleList<QuestStage*>* stages = GetStageList();
@@ -180,11 +188,12 @@ bool TESQuest::HasStage(unsigned char ucStageIndex)
 }
 
 // @fnv 0x0060c760
+// pdb: TESQuest::ClearData | TESQuest.obj | retail, upstream name already matches, high
 void TESQuest::ClearData()
 {
     GetConditions()->InitializeConditionItems();
-    RemoveAllStages();
-    ClearObjectives();
+    ClearStageList();
+    ClearObjectiveList();
     if (m_pScriptLocals)
     {
         delete m_pScriptLocals;
@@ -194,7 +203,10 @@ void TESQuest::ClearData()
 
 // Deletes every BGSQuestObjective in the objective list and removes each entry until the list is empty.
 // @fnv 0x0060c870
-void TESQuest::ClearObjectives()
+// src: XBOX_DEBUG_PDB 0x0060c870
+// pdb: TESQuest::ClearObjectiveList | TESQuest.obj | debug, call graph, high
+// pdb locals: pList
+void TESQuest::ClearObjectiveList()
 {
     BSSimpleList<BGSQuestObjective*>* objectives = GetObjectiveList();
     while (objectives && !objectives->IsEmpty())
@@ -205,25 +217,30 @@ void TESQuest::ClearObjectives()
 }
 
 // @fnv 0x0060f110
-void TESQuest::GetTargetsAndObjectives(BSSimpleList<RegionObjectEntry*>* targets,
-                                       BSSimpleList<BGSQuestObjective*>* objectives)
+// pdb: TESQuest::UpdateCurrentTargetList | TESQuest.obj | retail, call graph (shared callers), high
+// pdb params: apListToFill, apPlayerObjectiveList
+// pdb locals: pObjectiveList
+void TESQuest::GetTargetsAndObjectives(BSSimpleList<RegionObjectEntry*>* apListToFill,
+                                       BSSimpleList<BGSQuestObjective*>* apPlayerObjectiveList)
 {
-    if (!targets)
+    if (!apListToFill)
         return;
-    targets->RemoveAll();
+    apListToFill->RemoveAll();
     if (GetCompleted())
         return;
     BSSimpleList<BGSQuestObjective*>* pObjectiveNode = GetObjectiveList();
     while (pObjectiveNode && pObjectiveNode->GetItem())
     {
-        if (objectives->IsInList(pObjectiveNode->GetItem()))
-            pObjectiveNode->GetItem()->GetTargetsAndObjectives(targets);
+        if (apPlayerObjectiveList->IsInList(pObjectiveNode->GetItem()))
+            pObjectiveNode->GetItem()->GetTargetsAndObjectives(apListToFill);
         pObjectiveNode = pObjectiveNode->GetNext();
     }
 }
 
 // Scans the stage list for the highest done stage index and stores it into the quest's highest completed stage field if greater.
 // @fnv 0x0060d670
+// pdb: TESQuest::FindCurrentStage | TESQuest.obj | debug, object-file run extension, low
+// pdb locals: maxIndex, pList, pStage
 void TESQuest::UpdateStageMask()
 {
     BSSimpleList<QuestStage*>* stages = GetStageList();
@@ -240,17 +257,21 @@ void TESQuest::UpdateStageMask()
 }
 
 // @fnv 0x0060d510
-bool TESQuest::IsStageComplete(unsigned char ucStageIndex)
+// src: XBOX_RETAIL_PDB 0x0060d510
+// pdb: TESQuest::SetStageDone | TESQuest.obj | retail, call graph, high
+// pdb params: aucIndex
+// pdb locals: pList
+bool TESQuest::SetStageDone(unsigned char aucIndex)
 {
     BSSimpleList<QuestStage*>* stages = GetStageList();
     while (stages && !stages->IsEmpty())
     {
-        if (stages->GetItem()->GetIndex() == ucStageIndex)
+        if (stages->GetItem()->GetIndex() == aucIndex)
         {
             if (!GetCompleted() || GetAllowRepeatStages())
                 SetEnabled(true);
-            if (ucStageIndex > m_ucEnabled)
-                m_ucEnabled = ucStageIndex;
+            if (aucIndex > m_ucEnabled)
+                m_ucEnabled = aucIndex;
             stages->GetItem()->MarkDone(this, false);
             MarkAsModified(0x80000000U);
             return true;
@@ -261,17 +282,21 @@ bool TESQuest::IsStageComplete(unsigned char ucStageIndex)
 }
 
 // @fnv 0x0060EFD0
-bool TESQuest::HasTargetsAndObjectives(BSSimpleList<RegionObjectEntry*>* targets,
-                                       BSSimpleList<BGSQuestObjective*>* objectives)
+// src: XBOX_RETAIL_PDB 0x0060efd0
+// pdb: TESQuest::ValidateTargetList | TESQuest.obj | retail, object-file run extension, high
+// pdb params: apListToValidate, apPlayerObjectiveList
+// pdb locals: pSuppliedList, pObjectiveList, pMasterList, ptarget
+bool TESQuest::ValidateTargetList(BSSimpleList<RegionObjectEntry*>* apListToValidate,
+                                       BSSimpleList<BGSQuestObjective*>* apPlayerObjectiveList)
 {
-    BSSimpleList<RegionObjectEntry*>* currentTarget = targets;
+    BSSimpleList<RegionObjectEntry*>* currentTarget = apListToValidate;
     BSSimpleList<BGSQuestObjective*>* currentObjective = GetObjectiveList();
     if (currentTarget && currentObjective)
     {
         while (currentObjective)
         {
             if (currentObjective->GetItem() && currentObjective->GetItem()->GetState() == QOS_DISPLAYED &&
-                objectives->IsInList(currentObjective->GetItem()))
+                apPlayerObjectiveList->IsInList(currentObjective->GetItem()))
             {
                 BSSimpleList<RegionObjectEntry*>* objectiveTarget = currentObjective->GetItem()->GetTargetList();
                 while (objectiveTarget)
@@ -296,6 +321,8 @@ bool TESQuest::HasTargetsAndObjectives(BSSimpleList<RegionObjectEntry*>* targets
 }
 
 // @fnv 0x0060CBA0
+// pdb: TESQuest::InitItem | TESQuest.obj | retail, upstream name already matches, high
+// pdb locals: pList, pObjectiveList
 void TESQuest::InitItem()
 {
     if (IsFormInitialized())
@@ -329,10 +356,13 @@ void TESQuest::InitItem()
 }
 
 // @fnv 0x0060EE40
-void TESQuest::Revert(BGSLoadFormBuffer* buffer)
+// pdb: TESQuest::Revert | TESQuest.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: pstages, pstage, pstageitems, pstageitem, pdate
+void TESQuest::Revert(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::Revert(buffer);
-    if (static_cast<QuestLoadChangeFlags*>(buffer)->GetOldChangeFlags(0x80000000U).operator bool())
+    TESForm::Revert(apLoadGameBuffer);
+    if (static_cast<QuestLoadChangeFlags*>(apLoadGameBuffer)->GetOldChangeFlags(0x80000000U).operator bool())
     {
         BSSimpleList<QuestStage*>* stages = &m_kStageList;
         while (stages)
@@ -357,11 +387,11 @@ void TESQuest::Revert(BGSLoadFormBuffer* buffer)
         }
         m_ucEnabled = 0;
     }
-    if (static_cast<QuestLoadChangeFlags*>(buffer)->GetOldChangeFlags(0x40000000U).operator bool() && m_pScriptLocals)
-        m_pScriptLocals->Revert(buffer);
-    if (static_cast<QuestLoadChangeFlags*>(buffer)->GetOldChangeFlags(0x20000000U).operator bool())
+    if (static_cast<QuestLoadChangeFlags*>(apLoadGameBuffer)->GetOldChangeFlags(0x40000000U).operator bool() && m_pScriptLocals)
+        m_pScriptLocals->Revert(apLoadGameBuffer);
+    if (static_cast<QuestLoadChangeFlags*>(apLoadGameBuffer)->GetOldChangeFlags(0x20000000U).operator bool())
     {
-        BSSimpleList<BGSQuestObjective*>* objectives = &m_kObjectives;
+        BSSimpleList<BGSQuestObjective*>* objectives = &m_listObjectives;
         while (objectives)
         {
             BGSQuestObjective* objective = objectives->GetItem();
@@ -395,7 +425,10 @@ enum QUEST_CHUNK_ID
 };
 
 // @fnv 0x0060C8E0
-BGSQuestObjective* TESQuest::GetObjective(unsigned int index)
+// pdb: TESQuest::GetObjective | TESQuest.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+// pdb locals: pList, pLastList, pobjective
+BGSQuestObjective* TESQuest::GetObjective(unsigned int aiIndex)
 {
     struct ObjectiveSearch
     {
@@ -407,7 +440,7 @@ BGSQuestObjective* TESQuest::GetObjective(unsigned int index)
     while (search.objectives && !search.objectives->IsEmpty())
     {
         BGSQuestObjective* objective = search.objectives->GetItem();
-        if (objective && objective->GetIndex() == index)
+        if (objective && objective->GetIndex() == aiIndex)
             return objective;
         search.objectives = search.objectives->GetNext();
     }
@@ -415,22 +448,25 @@ BGSQuestObjective* TESQuest::GetObjective(unsigned int index)
 }
 
 // @fnv 0x0060EAF0
-void TESQuest::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESQuest::LoadGame | TESQuest.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, cflags, i, ccount, j, ccount2, pstage, cindex, bdone, cindex2, date, pstageitem, pdate, plocals, icurrentBufferPosition
+void TESQuest::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::LoadGame(buffer);
-    if (static_cast<QuestLoadChangeFlags*>(buffer)->GetChangeFlags(2U).operator bool())
-        static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&data.m_ucEntryType), 1U);
-    if (static_cast<QuestLoadChangeFlags*>(buffer)->GetChangeFlags(4U).operator bool())
-        static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&data.fQuestDelayTime), 4U);
-    if (static_cast<QuestLoadChangeFlags*>(buffer)->GetChangeFlags(0x80000000U).operator bool())
+    TESForm::LoadGame(apLoadGameBuffer);
+    if (static_cast<QuestLoadChangeFlags*>(apLoadGameBuffer)->GetChangeFlags(2U).operator bool())
+        static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&data.m_ucEntryType), 1U);
+    if (static_cast<QuestLoadChangeFlags*>(apLoadGameBuffer)->GetChangeFlags(4U).operator bool())
+        static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&data.fQuestDelayTime), 4U);
+    if (static_cast<QuestLoadChangeFlags*>(apLoadGameBuffer)->GetChangeFlags(0x80000000U).operator bool())
     {
-        unsigned int stageCount = static_cast<BGSLoadFormBuffer*>(buffer)->ReadElementCount();
+        unsigned int stageCount = static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadElementCount();
         for (unsigned int i = 0; i < stageCount; ++i)
         {
             unsigned char stageIndex = 0;
             bool done = false;
-            static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&stageIndex), 1U);
-            static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&done), 1U);
+            static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&stageIndex), 1U);
+            static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&done), 1U);
             {
                 QuestStage* stage = GetStage(stageIndex);
                 if (stage)
@@ -438,16 +474,16 @@ void TESQuest::LoadGame(BGSLoadFormBuffer* buffer)
                 else
                     LogWarning("SAVELOAD: Could not find stage %i in quest %s during load.", stageIndex,
                                GetEditorName());
-                unsigned int itemCount = static_cast<BGSLoadFormBuffer*>(buffer)->ReadElementCount();
+                unsigned int itemCount = static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadElementCount();
                 for (unsigned int j = 0; j < itemCount; ++j)
                 {
                     unsigned char itemIndex = 0;
                     bool hasDate = false;
                     Date logDate;
-                    static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&itemIndex), 1U);
-                    static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&hasDate), 1U);
+                    static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&itemIndex), 1U);
+                    static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&hasDate), 1U);
                     if (hasDate)
-                        static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&logDate), 4U);
+                        static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&logDate), 4U);
                     if (hasDate && stage)
                     {
                         PlayerQuestData* item = stage->GetStageItemByIndex(itemIndex);
@@ -460,19 +496,19 @@ void TESQuest::LoadGame(BGSLoadFormBuffer* buffer)
         m_ucEnabled = 0;
         UpdateStageMask();
     }
-    if (static_cast<QuestLoadChangeFlags*>(buffer)->GetChangeFlags(0x40000000U).operator bool())
+    if (static_cast<QuestLoadChangeFlags*>(apLoadGameBuffer)->GetChangeFlags(0x40000000U).operator bool())
     {
         if (m_pScriptLocals)
-            m_pScriptLocals->LoadGame(static_cast<BGSLoadFormBuffer*>(buffer));
+            m_pScriptLocals->LoadGame(static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer));
         else
         {
             ScriptLocals locals;
-            locals.LoadGame(static_cast<BGSLoadFormBuffer*>(buffer));
+            locals.LoadGame(static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer));
         }
     }
-    if (static_cast<QuestLoadChangeFlags*>(buffer)->GetChangeFlags(0x20000000U).operator bool())
+    if (static_cast<QuestLoadChangeFlags*>(apLoadGameBuffer)->GetChangeFlags(0x20000000U).operator bool())
     {
-        unsigned int objectiveCount = static_cast<BGSLoadFormBuffer*>(buffer)->ReadElementCount();
+        unsigned int objectiveCount = static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadElementCount();
         for (unsigned int k = 0; k < objectiveCount; ++k)
         {
             struct SavedObjectiveState
@@ -482,8 +518,8 @@ void TESQuest::LoadGame(BGSLoadFormBuffer* buffer)
             } savedObjective;
             savedObjective.index = 0;
             savedObjective.state = QOS_DORMANT;
-            static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&savedObjective.index), 4U);
-            static_cast<BGSLoadFormBuffer*>(buffer)->ReadTypedData(static_cast<void*>(&savedObjective.state), 4U);
+            static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&savedObjective.index), 4U);
+            static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&savedObjective.state), 4U);
             BGSQuestObjective* objective = GetObjective(savedObjective.index);
             if (objective)
                 objective->SetState(savedObjective.state);
@@ -492,53 +528,56 @@ void TESQuest::LoadGame(BGSLoadFormBuffer* buffer)
 }
 
 // @fnv 0x0060CEB0
-bool TESQuest::Load(TESFile* file)
+// pdb: TESQuest::Load | TESQuest.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: pNewStageItem, pNewTarget, chunkid, pNewObjective, ucStageItemIndex, formid, pNewStage, pMessage, tempint
+bool TESQuest::Load(TESFile* apFile)
 {
     QuestStage* stage;
     {
-        unsigned char formType = file->GetTESForm();
+        unsigned char formType = apFile->GetTESForm();
         if (formType != ENUM_FORM_ID_QUST_ID)
             return false;
         stage = 0;
         PlayerQuestData* item = 0;
         RegionObjectEntry* target = 0;
         BGSQuestObjective* objective = 0;
-        LoadRecordHeader(file);
+        LoadRecordHeader(apFile);
         SetInitializationState(false);
         unsigned char itemIndex = 0;
         int chunk;
-        while ((chunk = file->GetChunkID()) != 0)
+        while ((chunk = apFile->GetChunkID()) != 0)
         {
             switch (chunk)
             {
             case CHUNK_EDID: {
-                char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-                file->GetChunkData(editorID, 0x200);
+                char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+                apFile->GetChunkData(editorID, 0x200);
                 SetEditorID_AtRuntime(editorID);
                 break;
             }
             case CHUNK_OBND:
-                readOBNDSubRecord(file);
+                readOBNDSubRecord(apFile);
                 break;
             case CHUNK_SCRI: {
                 unsigned int script = 0;
-                file->GetChunkData(&script);
+                apFile->GetChunkData(&script);
                 TESScriptableForm::SetScript(reinterpret_cast<Script*>(script));
                 TESScriptableForm::InitItem(this);
                 break;
             }
             case CHUNK_FULL:
-                TESFullName::LoadFullNameChunk(this ? reinterpret_cast<TESFullName*>(reinterpret_cast<char*>(this) + 0x30) : 0, file);
+                TESFullName::LoadFullNameChunk(this ? reinterpret_cast<TESFullName*>(reinterpret_cast<char*>(this) + 0x30) : 0, apFile);
                 break;
             case CHUNK_ICON:
-                TESTexture::ReadTextureData(this ? reinterpret_cast<TESIcon*>(reinterpret_cast<char*>(this) + 0x24) : 0, file);
+                TESTexture::ReadTextureData(this ? reinterpret_cast<TESIcon*>(reinterpret_cast<char*>(this) + 0x24) : 0, apFile);
                 break;
             case CHUNK_DATA:
-                ReadTypedData(file, &data, sizeof(data));
+                ReadTypedData(apFile, &data, sizeof(data));
                 break;
             case CHUNK_QOBJ:
                 objective = new BGSQuestObjective;
-                objective->Load(file);
+                objective->Load(apFile);
                 GetObjectiveList()->AddTail(objective);
                 objective->SetOwnerQuest(this);
                 break;
@@ -546,7 +585,7 @@ bool TESQuest::Load(TESFile* file)
                 stage = 0;
                 item = 0;
                 target = new RegionObjectEntry;
-                target->Load(file);
+                target->Load(apFile);
                 if (!objective)
                 {
                     objective = new BGSQuestObjective;
@@ -557,14 +596,14 @@ bool TESQuest::Load(TESFile* file)
                 break;
             case CHUNK_INDX:
                 stage = new QuestStage;
-                stage->Load(file);
+                stage->Load(apFile);
                 GetStageList()->AddTail(stage);
                 break;
             case CHUNK_QSDT:
                 if (stage)
                 {
                     item = new PlayerQuestData;
-                    item->Load(file);
+                    item->Load(apFile);
                     item->SetIndex(itemIndex);
                     ++itemIndex;
                     stage->GetStageItemList()->AddTail(item);
@@ -579,7 +618,7 @@ bool TESQuest::Load(TESFile* file)
             case CHUNK_SCRV:
                 if (item)
                 {
-                    item->Load(file);
+                    item->Load(apFile);
                     continue;
                 }
                 break;
@@ -589,40 +628,45 @@ bool TESQuest::Load(TESFile* file)
                 break;
             case CHUNK_CTDA:
                 if (item)
-                    item->GetConditions()->Load(file);
+                    item->GetConditions()->Load(apFile);
                 else if (target)
-                    target->GetConditions()->Load(file);
+                    target->GetConditions()->Load(apFile);
                 else
-                    GetConditions()->Load(file);
+                    GetConditions()->Load(apFile);
                 break;
             }
-            if (!file->NextChunk())
+            if (!apFile->NextChunk())
                 break;
         }
-        if (file->IsEndianConversionRequired())
+        if (apFile->IsEndianConversionRequired())
             data.Endian();
         return true;
     }
 }
 
 // @fnv 0x0060c9c0
-void TESQuest::SetEnabled(bool enabled)
+// pdb: TESQuest::SetEnabled | TESQuest.obj | debug, upstream name already matches, high
+// pdb params: abEnabled
+void TESQuest::SetEnabled(bool abEnabled)
 {
-    enabled
+    abEnabled
         ? reinterpret_cast<QuestData*>(reinterpret_cast<TESRecipe*>(this)->GetIngredientList())->m_ucEntryType |= 1
         : reinterpret_cast<QuestData*>(reinterpret_cast<TESRecipe*>(this)->GetIngredientList())->m_ucEntryType &= ~1;
     MarkAsModified(2);
 }
 
 // @fnv 0x0060cd00
-void TESQuest::SetStartsEnabled(bool enabled)
+// pdb: TESQuest::SetStartsEnabled | TESQuest.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void TESQuest::SetStartsEnabled(bool abVal)
 {
-    enabled
+    abVal
         ? reinterpret_cast<QuestData*>(reinterpret_cast<TESRecipe*>(this)->GetIngredientList())->m_ucEntryType |= 16
         : reinterpret_cast<QuestData*>(reinterpret_cast<TESRecipe*>(this)->GetIngredientList())->m_ucEntryType &= ~16;
 }
 
 // @fnv 0x0060d4d0
+// pdb: TESQuest::RunScript | TESQuest.obj | debug, upstream name already matches, high
 void TESQuest::RunScript()
 {
     if (TESScriptableForm::GetScript())
@@ -649,6 +693,7 @@ struct FUN_004b1000_shell
 
 // Copies the first two shorts from b into the object's a array and returns a pointer to it.
 // @fnv 0x004b1000
+// pdb: Date::GetFullDate | Date.obj | debug, object-file run extension, low
 short* FUN_004b1000_shell::CopyShortPair(const short* pSource)
 {
     a[0] = pSource[0];
@@ -660,9 +705,11 @@ short* FUN_004b1000_shell::CopyShortPair(const short* pSource)
 
 // @fnv 0x0060cad0
 // src: XBOX_PDB 0x0060cad0
-void MiscStatManager_Decrement(int aeStatId)
+// pdb: MiscStatManager::Decrement | TESQuest.obj | debug, upstream name already matches, high
+// pdb params: aeID
+void MiscStatManager_Decrement(int aeID)
 {
-    MiscStatManager::AddMiscStat((MiscStatManager::MiscStat)aeStatId, -1);
+    MiscStatManager::AddMiscStat((MiscStatManager::MiscStat)aeID, -1);
 }
 
 struct FUN_0060d5e0_shell : TESRecipe
@@ -671,6 +718,7 @@ struct FUN_0060d5e0_shell : TESRecipe
 };
 
 // @fnv 0x0060d5e0
+// pdb: TESQuest::GetAllowRepeatStages | TESQuest.obj | debug, call graph, high
 bool FUN_0060d5e0_shell::HasFlag8()
 {
     return (reinterpret_cast<unsigned char*>(this->GetIngredientList())[0] & 8) != 0;
@@ -707,6 +755,7 @@ struct FUN_004b0fa0_shell
 };
 
 // @fnv 0x004b0fa0
+// pdb: BSSimpleList<NiPointer<NiAVObject> >::~BSSimpleList<NiPointer<NiAVObject> > | BSClonePool.obj | debug, object-file run extension, low
 FUN_004b0fa0_shell::FUN_004b0fa0_shell()
 {
     m_iWordAt00 = 0;
@@ -719,6 +768,7 @@ struct FUN_0060d8d0_shell : TESRecipe
 };
 
 // @fnv 0x0060d8d0
+// pdb: TESQuest::GetStartsEnabled | TESQuest.obj | debug, call graph, low
 bool FUN_0060d8d0_shell::HasFlag0x10()
 {
     return (*reinterpret_cast<unsigned char*>(this->GetIngredientList()) & 0x10) != 0;
@@ -738,6 +788,7 @@ void FUN_0060e680_shell::SetFlags(unsigned int auiFlags)
 extern "C" void* __cdecl _alloca(unsigned int);
 extern "C" void __cdecl _security_check_cookie(unsigned int);
 extern "C" unsigned int DAT_011c16bc;
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, const char*);
@@ -746,14 +797,16 @@ struct TaskQueueInterface
 // Keep only that missing entry point here, without a duplicate quest layout.
 struct QuestEditorIDSetter
 {
-    bool SetEditorID(const char* arg);
+    bool SetEditorID(const char* apEditorID);
 };
 // @fnv 0x0060dab0
-bool QuestEditorIDSetter::SetEditorID(const char* pcString)
+// pdb: TESQuest::SetFormEditorID | TESQuest.obj | retail, vtable slot, high
+// pdb params: apEditorID
+bool QuestEditorIDSetter::SetEditorID(const char* apEditorID)
 {
-    unsigned int size = BSStringLength(pcString) + 1;
+    unsigned int size = BSStringLength(apEditorID) + 1;
     char* buffer = static_cast<char*>(_alloca(size));
-    TaskQueueInterface::CopyStringToBuffer(buffer, size, pcString);
+    TaskQueueInterface::CopyStringToBuffer(buffer, size, apEditorID);
     if (!reinterpret_cast<BSStringT<char>*>(reinterpret_cast<char*>(this) + 0x64)->StrCmp(buffer, true))
         return false;
     reinterpret_cast<BSStringT<char>*>(reinterpret_cast<char*>(this) + 0x64)->Set(buffer, 0);
@@ -764,11 +817,13 @@ bool QuestEditorIDSetter::SetEditorID(const char* pcString)
 // @fnv 0x0060c5f0
 const char* TESQuest::GetEditorName() const
 {
-    return strEditorID.String() ? strEditorID.String() : "";
+    return cFormEditorID.String() ? cFormEditorID.String() : "";
 }
 
 // @fnv 0x0060e7c0
 // src: COMMUNITY 0x0060e7c0
+// pdb: TESQuest::CheckSaveGame | TESQuest.obj | debug, upstream name already matches, high
+// pdb params: apSaveGameBuffer
 void TESQuest::CheckSaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     if (static_cast<QuestSaveChangeFlags*>(apSaveGameBuffer)->GetChangeFlags(0x40000000).operator bool() && m_pScriptLocals == 0)
@@ -776,6 +831,7 @@ void TESQuest::CheckSaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 }
 
 // @fnv 0x0060c4b0
+// pdb: TESQuest::TESQuest | TESQuest.obj | retail, upstream name already matches, high
 TESQuest::TESQuest()
 {
     SetFormType(ENUM_FORM_ID_QUST_ID);
@@ -788,18 +844,20 @@ void __cdecl HUDMainMenu_ShowQuestName(void* apQuest);
 // Sets or clears the completed flag bit 0x40 on the quest, calls vtable slot 18 with 2, and notifies via FUN_0077a480 when newly completed.
 // @fnv 0x0060caf0
 // src: XBOX_PDB 0x0060caf0
-void TESQuest::SetFailed(bool abCompleted)
+// pdb: TESQuest::SetFailed | TESQuest.obj | retail, upstream name already matches, high
+// pdb params: abFailed
+void TESQuest::SetFailed(bool abFailed)
 {
-    if (abCompleted && GetCompleted())
+    if (abFailed && GetCompleted())
         return;
-    if (abCompleted && !(data.m_ucEntryType & 0x40))
+    if (abFailed && !(data.m_ucEntryType & 0x40))
     {
         data.m_ucEntryType |= 0x40;
         data.m_ucEntryType |= 2;
         ((void(__thiscall*)(void*, unsigned int))(*(void***)this)[18])(this, 2);
         HUDMainMenu_ShowQuestName(this);
     }
-    else if (!abCompleted && (data.m_ucEntryType & 0x40))
+    else if (!abFailed && (data.m_ucEntryType & 0x40))
     {
         data.m_ucEntryType &= ~0x40;
         ((void(__thiscall*)(void*, unsigned int))(*(void***)this)[18])(this, 2);
@@ -813,6 +871,8 @@ struct TopicMenuController
 
 // @fnv 0x0060ca30
 // src: XBOX_PDB 0x0060ca30
+// pdb: TESQuest::SetCompleted | TESQuest.obj | retail, upstream name already matches, high
+// pdb params: abCompleted
 void TESQuest::SetCompleted(bool abCompleted)
 {
     if (abCompleted && !(data.m_ucEntryType & 2))
@@ -832,6 +892,7 @@ void TESQuest::SetCompleted(bool abCompleted)
 
 // Clears quest data before destroying the shared members and base components.
 // @fnv 0x0060c660
+// pdb: TESQuest::~TESQuest | TESQuest.obj | retail, upstream name already matches, high
 TESQuest::~TESQuest()
 {
     TESQuest::ClearData();
@@ -845,7 +906,10 @@ struct QuestObjectiveTransitions : BGSQuestObjective
 
 // @fnv 0x0060c950
 // src: COMMUNITY 0x0060c950
-void TESQuest::SetAllObjectivesComplete(int a1)
+// pdb: TESQuest::SetAllObjectivesComplete | TESQuest.obj | retail, upstream name already matches, high
+// pdb params: abComplete
+// pdb locals: plist
+void TESQuest::SetAllObjectivesComplete(int abComplete)
 {
     BSSimpleList<QuestObjectiveTransitions*>* node = reinterpret_cast<BSSimpleList<QuestObjectiveTransitions*>*>(GetObjectiveList());
     while (node && node->GetItem())
@@ -859,7 +923,7 @@ struct FNV_InitNode;
 struct FNV_SubObject
 {
     void FUN_00483710();
-    void FUN_005ec280();
+    void BGSQuestObjective_Save();
 };
 struct FNV_NodeValue
 {
@@ -878,12 +942,14 @@ struct FNV_InitPart
 
 struct FNV_EventObject
 {
-    void ProcessItems();
+    void Save();
 };
 extern "C" bool __cdecl TESForm_QEndianSwapOnSave();
 
 // @fnv 0x0060cd60
 // src: XBOX_PDB 0x0060cd60
+// pdb: TESQuest::Save | TESQuest.obj | retail, vtable slot, high
+// pdb locals: pList, pObjectiveList
 void TESQuest::Save_0060cd60()
 {
     BeginFormRecord();
@@ -901,7 +967,7 @@ void TESQuest::Save_0060cd60()
     }
     if (GetConditions() != 0)
     {
-        reinterpret_cast<FNV_EventObject*>(GetConditions())->ProcessItems();
+        reinterpret_cast<FNV_EventObject*>(GetConditions())->Save();
     }
     FNV_InitNode* node = reinterpret_cast<FNV_InitNode*>(GetStageList());
     while (node != 0 && !node->FUN_008256d0())
@@ -912,7 +978,7 @@ void TESQuest::Save_0060cd60()
     FNV_InitNode* pOtherNode = reinterpret_cast<FNV_InitNode*>(GetObjectiveList());
     while (pOtherNode != 0 && !pOtherNode->FUN_008256d0())
     {
-        pOtherNode->FUN_006815c0()->object->FUN_005ec280();
+        pOtherNode->FUN_006815c0()->object->BGSQuestObjective_Save();
         pOtherNode = pOtherNode->FUN_00726070();
     }
     FinishFormRecord();
@@ -922,7 +988,7 @@ struct QuestEntryStandIn
 {
     TESQuest* GetQuest();
     void* GetOwnerProcess();
-    void* CheckQuest(TESQuest* apQuest);
+    void* CheckQuest(TESQuest* apOwner);
 };
 
 struct PlayerQuestListStandIn
@@ -935,12 +1001,15 @@ extern PlayerQuestListStandIn* g_thePlayer;
 // Clears apList, then walks the player's quest entry list and appends or prepends entries whose quest matches apQuest or passes the completed/any filter.
 // @fnv 0x0060d8f0
 // src: XBOX_PDB 0x0060d8f0
-void __cdecl TESQuest_GetQuestLog(BSSimpleList<QuestEntryStandIn*>* apList, TESQuest* apQuest, bool abCompleted, bool abAddTail,
-                          bool abAny)
+// pdb: TESQuest::GetQuestLog | TESQuest.obj | retail, upstream name already matches, high
+// pdb params: apListToFill, apQuest, abShowCompleted, abNewestFirst, abShowAll
+// pdb locals: pList, foundList, pItem, pOwner, bDisplay
+void __cdecl TESQuest_GetQuestLog(BSSimpleList<QuestEntryStandIn*>* apListToFill, TESQuest* apQuest, bool abShowCompleted, bool abNewestFirst,
+                          bool abShowAll)
 {
-    if (!apList)
+    if (!apListToFill)
         return;
-    apList->RemoveAll();
+    apListToFill->RemoveAll();
     BSSimpleList<TESQuest*> kSeen;
     BSSimpleList<QuestEntryStandIn*>* pNode = g_thePlayer->GetQuestEntryList();
     while (pNode && pNode->GetItem())
@@ -954,16 +1023,16 @@ void __cdecl TESQuest_GetQuestLog(BSSimpleList<QuestEntryStandIn*>* apList, TESQ
             bool bOk3 = !apQuest || (apQuest && pQuest == apQuest);
             if (bOk3 && !apQuest)
             {
-                bOk3 = (abCompleted == pQuest->GetCompleted() || abAny) && !kSeen.IsInList(pQuest);
+                bOk3 = (abShowCompleted == pQuest->GetCompleted() || abShowAll) && !kSeen.IsInList(pQuest);
                 if (bOk3)
                     kSeen.AddHead(pQuest);
             }
             if (bOk3 && pEntry2->GetOwnerProcess() && pEntry2->CheckQuest(pQuest))
             {
-                if (abAddTail)
-                    apList->AddTail(pEntry2);
+                if (abNewestFirst)
+                    apListToFill->AddTail(pEntry2);
                 else
-                    apList->AddHead(pEntry2);
+                    apListToFill->AddHead(pEntry2);
             }
         }
     }
@@ -1011,21 +1080,24 @@ void __cdecl SaveGameSizeWarning(const char* message, ...);
 
 // @fnv 0x0060dba0
 // src: XBOX_PDB 0x0060dba0
-unsigned short TESQuest::GetSaveSize_0060dba0(unsigned int changedFlags)
+// pdb: TESQuest::GetSaveSize | TESQuest.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize, itempStartSize, pstages, pstage, pstageitems, pheader, pform
+unsigned short TESQuest::GetSaveSize_0060dba0(unsigned int aiFlags)
 {
     unsigned short size7 = 0;
-    size7 += ((FormSaveSizeStub*)this)->GetSaveSize(changedFlags);
+    size7 += ((FormSaveSizeStub*)this)->GetSaveSize(aiFlags);
     unsigned short baseSize2 = size7;
     if (g_TESSaveLoadGame->TESSaveLoadGame_UseSaveGameBlocks())
     {
         size7 += 4;
         size7 += 2;
     }
-    if (changedFlags & 2)
+    if (aiFlags & 2)
     {
         size7 += 1;
     }
-    if (changedFlags & 0x80000000)
+    if (aiFlags & 0x80000000)
     {
         StageNodeStub* node9 = reinterpret_cast<StageNodeStub*>(GetStageList());
         size7 += 1;
@@ -1041,9 +1113,9 @@ unsigned short TESQuest::GetSaveSize_0060dba0(unsigned int changedFlags)
             node9 = node9->GetNext();
         }
     }
-    if (changedFlags & 0x40000000)
+    if (aiFlags & 0x40000000)
     {
-        size7 += m_pScriptLocals->GetSaveSize();
+        size7 += m_pScriptLocals->ScriptLocals_GetSaveSize();
     }
     if (bDebugSaveGameSize.Bool()[0])
     {
@@ -1079,10 +1151,13 @@ struct QuestScriptLocals : ScriptLocals
 
 // @fnv 0x0060e6a0
 // src: COMMUNITY 0x0060e6a0
-void TESQuest::RevertTES_0060e6a0(unsigned int auiFlags)
+// pdb: TESQuest::Revert | TESQuest.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: pstages, pstage, pstageitems, pstageitem, pdate
+void TESQuest::RevertTES_0060e6a0(unsigned int aiFlags)
 {
-    ((FUN_004534f0_shell*)this)->FUN_004534f0(auiFlags);
-    if (auiFlags & 0x80000000)
+    ((FUN_004534f0_shell*)this)->FUN_004534f0(aiFlags);
+    if (aiFlags & 0x80000000)
     {
         BSSimpleList<QuestStage*>* pStageIter = GetStageList();
         while (pStageIter)
@@ -1108,7 +1183,7 @@ void TESQuest::RevertTES_0060e6a0(unsigned int auiFlags)
         }
         m_ucEnabled = 0;
     }
-    if ((auiFlags & 0x40000000) && m_pScriptLocals)
+    if ((aiFlags & 0x40000000) && m_pScriptLocals)
     {
         ((QuestScriptLocals*)m_pScriptLocals)->ResetLocals();
     }
@@ -1157,9 +1232,12 @@ void __cdecl Warning_005b5e40(const char*, ...);
 // Writes the quest's save data: flags, stage and item lists, optional locals, debug size logging, and a block-size header when block saving is active.
 // @fnv 0x0060dd50
 // src: XBOX_PDB 0x0060dd50
-void TESQuest::SaveGame_0060dd50(unsigned int flags)
+// pdb: TESQuest::SaveGame | TESQuest.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, cflags, pcount, pstages, ccount, pstage, ccount2, pcount2, cindex, bdone, pstageitems, pstageitem, cindex2, pdate, date, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void TESQuest::SaveGame_0060dd50(unsigned int aiFlags)
 {
-    reinterpret_cast<QuestRecordIO*>(this)->TESForm_SaveGame(flags);
+    reinterpret_cast<QuestRecordIO*>(this)->TESForm_SaveGame(aiFlags);
     unsigned short h = 0;  // Reserved block size.
     unsigned char* p = 0;  // Address of the reserved block-size field.
     unsigned char* a = ((QuestSaveManager*)g_TESSaveLoadGame)->FUN_00825c00();
@@ -1172,12 +1250,12 @@ void TESQuest::SaveGame_0060dd50(unsigned int flags)
         p = ((QuestSaveManager*)g_TESSaveLoadGame)->FUN_00825c00();
         ((QuestSaveManager*)g_TESSaveLoadGame)->TESSaveLoadGame_SaveGameDataOLD(&h, 2);
     }
-    if (flags & 2)
+    if (aiFlags & 2)
     {
         unsigned char questFlags = *reinterpret_cast<QuestRecordIO*>(this)->ComputeValue_005a8080();
         reinterpret_cast<QuestRecordIO*>(this)->TESForm_SaveGameDataOLD(&questFlags, 1);
     }
-    if (flags & 0x80000000)
+    if (aiFlags & 0x80000000)
     {
         unsigned char p = 0;  // Number of saved stages.
         unsigned char* j = ((QuestSaveManager*)g_TESSaveLoadGame)->FUN_00825c00();
@@ -1224,7 +1302,7 @@ void TESQuest::SaveGame_0060dd50(unsigned int flags)
         }
         *j = p;
     }
-    if (flags & 0x40000000)
+    if (aiFlags & 0x40000000)
         static_cast<QuestScriptLocals*>(m_pScriptLocals)->WriteScriptLocals();
     if (bDebugSaveGameSize.Bool()[0])
     {
@@ -1309,9 +1387,12 @@ typedef unsigned int(__thiscall* TagMethod)(void*);
 
 // Reads quest data from the stream: enabled flag, stages with dates, script locals, and logs size mismatches.
 // @fnv 0x0060e0d0
-void TESQuest::LoadQuestData(unsigned int flags, unsigned int extra)
+// pdb: TESQuest::LoadGame | TESQuest.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, cflags, i, ccount, j, ccount2, pstage, cindex, bdone, cindex2, date, pstageitem, pdate, plocals, icurrentBufferPosition
+void TESQuest::LoadQuestData(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    ((QuestInput*)this)->TESForm_LoadGame(flags, extra);
+    ((QuestInput*)this)->TESForm_LoadGame(aiFlags, aiCurrentFlags);
     unsigned short sizeRead = 0;
     unsigned int start = 0;
     if (((StreamReader*)DAT_011de45c)->TESSaveLoadGame_UseSaveGameBlocks())
@@ -1335,13 +1416,13 @@ void TESQuest::LoadQuestData(unsigned int flags, unsigned int extra)
         start = ((StreamReader*)DAT_011de45c)->FUN_00825c00();
         ((StreamReader*)DAT_011de45c)->TESSaveLoadGame_LoadGameDataOLD(&sizeRead, 2);
     }
-    if (flags & 2)
+    if (aiFlags & 2)
     {
         unsigned char enabled;
         ((QuestInput*)this)->TESForm_LoadGameDataOLD(&enabled, 1);
         *((QuestInput*)this)->ComputeValue_005a8080() = enabled;
     }
-    if (flags & 0x80000000)
+    if (aiFlags & 0x80000000)
     {
         unsigned char stageCount;
         ((QuestInput*)this)->TESForm_LoadGameDataOLD(&stageCount, 1);
@@ -1408,7 +1489,7 @@ void TESQuest::LoadQuestData(unsigned int flags, unsigned int extra)
         this->m_ucEnabled = 0;
         UpdateStageMask();
     }
-    if (flags & 0x40000000)
+    if (aiFlags & 0x40000000)
     {
         if (!this->m_pScriptLocals)
         {
@@ -1502,7 +1583,10 @@ struct F810Buf
 
 // Serializes changed quest flags, delay, stages, objectives, and script locals.
 // @fnv 0x0060e810
-void TESQuest::WriteToBuffer(BGSSaveFormBuffer* buf)
+// pdb: TESQuest::SaveGame | TESQuest.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, cflags, pcount, pstages, ccount, pstage, ccount2, pcount2, cindex, bdone, pstageitems, pstageitem, cindex2, pdate, date, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void TESQuest::WriteToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned int flagsE;
     unsigned int tagD;
@@ -1528,19 +1612,19 @@ void TESQuest::WriteToBuffer(BGSSaveFormBuffer* buf)
     F810Node1* nodeC;
     unsigned int cnt1;
     int idx0;
-    SaveIfChanged(buf);
-    if (reinterpret_cast<F810Buf*>(buf)->FUN_00428110(&flag, 2)->FUN_004280f0())
+    SaveIfChanged(apSaveGameBuffer);
+    if (reinterpret_cast<F810Buf*>(apSaveGameBuffer)->FUN_00428110(&flag, 2)->FUN_004280f0())
     {
-        buf->FUN_00865e50(&data.m_ucEntryType, 1, 0);
+        apSaveGameBuffer->FUN_00865e50(&data.m_ucEntryType, 1, 0);
     }
-    if (reinterpret_cast<F810Buf*>(buf)->FUN_00428110(&flag2, 4)->FUN_004280f0())
+    if (reinterpret_cast<F810Buf*>(apSaveGameBuffer)->FUN_00428110(&flag2, 4)->FUN_004280f0())
     {
-        buf->FUN_00865e50(&data.fQuestDelayTime, 4, 0);
+        apSaveGameBuffer->FUN_00865e50(&data.fQuestDelayTime, 4, 0);
     }
-    if (reinterpret_cast<F810Buf*>(buf)->FUN_00428110(&flags2, 0x80000000)->FUN_004280f0())
+    if (reinterpret_cast<F810Buf*>(apSaveGameBuffer)->FUN_00428110(&flags2, 0x80000000)->FUN_004280f0())
     {
         idx0 = 0;
-        cnt1 = buf->StartVariableSizedValue();
+        cnt1 = apSaveGameBuffer->StartVariableSizedValue();
         nodeC = reinterpret_cast<F810Node1*>(&m_kStageList);
         while (nodeC != 0)
         {
@@ -1549,10 +1633,10 @@ void TESQuest::WriteToBuffer(BGSSaveFormBuffer* buf)
             {
                 rawD = itemD->TESTextureList_GetTextureCount();
                 flg = itemD->FUN_005dc960();
-                buf->FUN_00865e50(&rawD, 1, 0);
-                buf->FUN_00865e50(&flg, 1, 0);
+                apSaveGameBuffer->FUN_00865e50(&rawD, 1, 0);
+                apSaveGameBuffer->FUN_00865e50(&flg, 1, 0);
                 idxD = 0;
-                cntA = buf->StartVariableSizedValue();
+                cntA = apSaveGameBuffer->StartVariableSizedValue();
                 listD = itemD->FUN_00717e50();
                 while (listD != 0)
                 {
@@ -1562,32 +1646,32 @@ void TESQuest::WriteToBuffer(BGSSaveFormBuffer* buf)
                         opts = item2->BGSBodyPart_GetToHitChance();
                         val1 = item2->FUN_008d8520();
                         gotB = (val1 != 0);
-                        buf->FUN_00865e50(&opts, 1, 0);
-                        buf->FUN_00865e50(&gotB, 1, 0);
+                        apSaveGameBuffer->FUN_00865e50(&opts, 1, 0);
+                        apSaveGameBuffer->FUN_00865e50(&gotB, 1, 0);
                         if (gotB)
                         {
-                            buf->FUN_00865e50(val1, 4, 0);
+                            apSaveGameBuffer->FUN_00865e50(val1, 4, 0);
                         }
                         idxD++;
                     }
                     listD = listD->FUN_00726070();
                 }
-                buf->SaveVariableSizedValue_00865ff0(idxD, cntA);
+                apSaveGameBuffer->SaveVariableSizedValue_00865ff0(idxD, cntA);
                 idx0++;
             }
             nodeC = nodeC->FUN_00726070();
         }
-        buf->SaveVariableSizedValue_00865ff0(idx0, cnt1);
+        apSaveGameBuffer->SaveVariableSizedValue_00865ff0(idx0, cnt1);
     }
-    if (reinterpret_cast<F810Buf*>(buf)->FUN_00428110(&tagD, 0x40000000)->FUN_004280f0())
+    if (reinterpret_cast<F810Buf*>(apSaveGameBuffer)->FUN_00428110(&tagD, 0x40000000)->FUN_004280f0())
     {
-        m_pScriptLocals->SaveGame(buf);
+        m_pScriptLocals->SaveGame(apSaveGameBuffer);
     }
-    if (reinterpret_cast<F810Buf*>(buf)->FUN_00428110(&flagsE, 0x20000000)->FUN_004280f0())
+    if (reinterpret_cast<F810Buf*>(apSaveGameBuffer)->FUN_00428110(&flagsE, 0x20000000)->FUN_004280f0())
     {
         iterY = 0;
-        cntY = buf->StartVariableSizedValue();
-        head1 = reinterpret_cast<F810Node3*>(&m_kObjectives);
+        cntY = apSaveGameBuffer->StartVariableSizedValue();
+        head1 = reinterpret_cast<F810Node3*>(&m_listObjectives);
         while (head1 != 0)
         {
             entry = *head1->FUN_006815c0();
@@ -1597,14 +1681,14 @@ void TESQuest::WriteToBuffer(BGSSaveFormBuffer* buf)
                 if (valY != 0)
                 {
                     next0 = reinterpret_cast<F810Node3*>(entry->GetIndex());
-                    buf->FUN_00865e50(&next0, 4, 0);
-                    buf->FUN_00865e50(&valY, 4, 0);
+                    apSaveGameBuffer->FUN_00865e50(&next0, 4, 0);
+                    apSaveGameBuffer->FUN_00865e50(&valY, 4, 0);
                     iterY++;
                 }
             }
             head1 = head1->FUN_00726070();
         }
-        buf->SaveVariableSizedValue_00865ff0(iterY, cntY);
+        apSaveGameBuffer->SaveVariableSizedValue_00865ff0(iterY, cntY);
     }
 }
 
@@ -1638,6 +1722,8 @@ void __cdecl TESTopic_ClearAllSaidOnceInfosForQuest(TESQuest*);
 
 // @fnv 0x0060d720
 // src: GUESS 0x0060d720 (confidence: low)
+// pdb: TESQuest::ResetQuest | TESQuest.obj | debug, call graph, low
+// pdb locals: plist, pstages, pstage, pstageitems, pstageitem, pdate
 void TESQuest::ProcessEntries_0060d720()
 {
     StageNode* aStageNode;
@@ -1691,5 +1777,5 @@ void TESQuest::ProcessEntries_0060d720()
     FUN_0060c9c0(HasFlag0x10());
     SetCompleted(false);
     SetFailed(false);
-    SetFlag20(false);
+    TESQuest_SetDisplayedInHUD(false);
 }

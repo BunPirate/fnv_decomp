@@ -8,15 +8,16 @@ class BSShaderAccumulator;
 class NiCamera;
 class NiNode;
 
-class BSShaderRenderUtility_bsshaderutil
+// pdb: class BSShaderUtil, size 0x1, 0 members
+class BSShaderUtil
 {
 public:
     bool IsRenderTargetId(unsigned int value);
-    static void InitializeMultiBounds();
-    static void SetRenderCamera(NiCamera* camera, BSShaderAccumulator* accumulator, bool unused);
+    static void InitSDM();
+    static void SetRenderCamera(NiCamera* apCamera, BSShaderAccumulator* apAccumulator, bool abUseSPU);
     static void SetRenderCamera(AnimIdle* camera, AnimIdle* accumulator, bool unused);
     static void SetRenderCamera(void* camera, unsigned int accumulator, bool unused);
-    static void SetAlphaOnNode(NiNode* node, float alpha);
+    static void RecursiveSetPropertyFadeAlpha(NiNode* apNode, float afAlpha);
 };
 #include "../../include/BSSimpleArray.h"
 #include "../../include/NiTPointerMap.h"
@@ -44,7 +45,7 @@ extern NiCamera* DAT_011f917c;
 extern void* DAT_011fa050;
 extern void* DAT_011fa054;
 extern MemoryManager g_memoryManager;
-void BSShaderManager_SetCurrentAccumulator(BSShaderAccumulator* accumulator);
+void BSShaderManager_SetCurrentAccumulator(BSShaderAccumulator* apAccum);
 
 inline void* NiFixedString::operator new(size_t size)
 {
@@ -57,7 +58,7 @@ inline void NiFixedString::operator delete(void* pointer)
 
 #pragma optimize("", off)
 // @fnv 0x00469860
-bool BSShaderRenderUtility_bsshaderutil::IsRenderTargetId(unsigned int value)
+bool BSShaderUtil::IsRenderTargetId(unsigned int value)
 {
     return value >= 0xff000000u;
 }
@@ -66,36 +67,44 @@ bool BSShaderRenderUtility_bsshaderutil::IsRenderTargetId(unsigned int value)
 
 // Allocates two NiFixedString objects and stores them in DAT_011fa050 and DAT_011fa054.
 // @fnv 0x00b6ba70
-void BSShaderRenderUtility_bsshaderutil::InitializeMultiBounds()
+// src: XBOX_RETAIL_PDB 0x00b6ba70
+// pdb: BSShaderUtil::InitSDM | BSShaderUtil.obj | retail, string-set bridge, high
+void BSShaderUtil::InitSDM()
 {
     DAT_011fa050 = new NiFixedString("ConvertedTexture");
     DAT_011fa054 = new NiFixedString("BackgroundConvertedTexture");
 }
 
 // @fnv 0x00b6c0d0
-void BSShaderRenderUtility_bsshaderutil::SetRenderCamera(NiCamera* camera, BSShaderAccumulator* accumulator, bool)
+// pdb: BSShaderUtil::RenderScene | BSShaderUtil.obj | retail, call graph, high
+// pdb params: apCamera, apAccumulator, abUseSPU
+void BSShaderUtil::SetRenderCamera(NiCamera* apCamera, BSShaderAccumulator* apAccumulator, bool)
 {
     typedef void (__thiscall* AccumulatorCallback)(BSShaderAccumulator*);
-    if (NiRenderer::ms_pRenderer && camera)
+    if (NiRenderer::ms_pRenderer && apCamera)
     {
-        NiRenderer::ms_pRenderer->SetCurrentCamera(camera);
-        DAT_011f917c = camera;
-        BSShaderManager_SetCurrentAccumulator(accumulator);
-        accumulator->StartAccumulating(camera);
+        NiRenderer::ms_pRenderer->SetCurrentCamera(apCamera);
+        DAT_011f917c = apCamera;
+        BSShaderManager_SetCurrentAccumulator(apAccumulator);
+        apAccumulator->StartAccumulating(apCamera);
         // The shared accumulator does not yet declare the callbacks at 0xa8 and 0xac.
-        ((AccumulatorCallback)(*(void***)accumulator)[0xa8 / 4])(accumulator);
+        ((AccumulatorCallback)(*(void***)apAccumulator)[0xa8 / 4])(apAccumulator);
     }
-    ((AccumulatorCallback)(*(void***)accumulator)[0xac / 4])(accumulator);
+    ((AccumulatorCallback)(*(void***)apAccumulator)[0xac / 4])(apAccumulator);
 }
 
 // @fnv 0x00b6bb30
-void BSShaderRenderUtility_bsshaderutil::SetAlphaOnNode(NiNode* node, float alpha)
+// src: XBOX_RETAIL_PDB 0x00b6bb30
+// pdb: BSShaderUtil::RecursiveSetPropertyFadeAlpha | BSShaderUtil.obj | retail, call graph (shared callers), high
+// pdb params: apNode, afAlpha
+// pdb locals: n, pObj, pgeom, pProperty, pShaderProp
+void BSShaderUtil::RecursiveSetPropertyFadeAlpha(NiNode* apNode, float afAlpha)
 {
-    if (node && node->m_kWorldBound && reinterpret_cast<NiBound*>(node->m_kWorldBound)->m_fRadius != 0.0f)
+    if (apNode && apNode->m_kWorldBound && reinterpret_cast<NiBound*>(apNode->m_kWorldBound)->m_fRadius != 0.0f)
     {
-        for (unsigned int i = 0; i < node->m_kChildren.m_usSize; ++i)
+        for (unsigned int i = 0; i < apNode->m_kChildren.m_usSize; ++i)
         {
-            NiAVObject* child = node->m_kChildren.m_pBase[i].m_pObject;
+            NiAVObject* child = apNode->m_kChildren.m_pBase[i].m_pObject;
             if (child)
             {
                 NiGeometry* properties = child->IsGeometry();
@@ -108,12 +117,12 @@ void BSShaderRenderUtility_bsshaderutil::SetAlphaOnNode(NiNode* node, float alph
                         {
                             state = state->iShaderPropertyType != -1 ? state : 0;
                             if (state)
-                                state->fFadeAlpha = alpha;
+                                state->fFadeAlpha = afAlpha;
                         }
                     }
                 }
 
-                BSShaderRenderUtility_bsshaderutil::SetAlphaOnNode(child->IsSceneNode(), alpha);
+                BSShaderUtil::RecursiveSetPropertyFadeAlpha(child->IsSceneNode(), afAlpha);
             }
         }
     }
@@ -165,18 +174,20 @@ extern NiPointer<NiRefObject> g_spCurrentAccumulator;
 // Stores the given BSShaderAccumulator into the global g_spCurrentAccumulator smart pointer.
 // @fnv 0x00b54b10
 // src: COMMUNITY 0x00b54b10
-void BSShaderManager_SetCurrentAccumulator(BSShaderAccumulator* accumulator)
+// pdb: BSShaderManager::SetCurrentAccumulator | BSShaderManager.obj | debug, upstream name already matches, high
+// pdb params: apAccum
+void BSShaderManager_SetCurrentAccumulator(BSShaderAccumulator* apAccum)
 {
-    g_spCurrentAccumulator = reinterpret_cast<NiRefObject*>(accumulator);
+    g_spCurrentAccumulator = reinterpret_cast<NiRefObject*>(apAccum);
 }
 
 // The shared renderer lacks this setter; retain only its member-call ABI.
 struct RendererAccumulatorCall
 {
-    void NiTexturingProperty_Map_SetTexture(NiRefObject* accumulator);
+    void NiTexturingProperty_Map_SetTexture(NiRefObject* pkTexture);
 };
 extern NiRenderer* DAT_011f4748;
-void __cdecl BSShaderManager_SetAccumulator(NiRefObject* pkNode);
+void __cdecl BSShaderManager_SetAccumulator(NiRefObject* apAccum);
 
 // Slot18 has not yet acquired its camera/object signature in the shared header.
 inline void SetSortingCamera(BSCullingProcess* process, void* camera, void* object, int flags)
@@ -204,20 +215,23 @@ inline void* NextObject(void*& position)
 // Sets the sorting camera from the first list item, then registers later items when the manager and camera are non-null.
 // @fnv 0x00b6bfc0
 // src: COMMUNITY 0x00b6bfc0
-void __cdecl BSShaderUtil_AccumulateSceneList(void* pkCamera, NiTPointerList<void*>& kList, BSCullingProcess* pkAccumulator)
+// pdb: BSShaderUtil::AccumulateSceneList | BSShaderUtil.obj | retail, upstream name already matches, high
+// pdb params: apCamera, aSceneList, aCuller
+// pdb locals: spaccum, prenderer, iter, pscene, pnextscene
+void __cdecl BSShaderUtil_AccumulateSceneList(void* apCamera, NiTPointerList<void*>& aSceneList, BSCullingProcess* aCuller)
 {
-    if (!DAT_011f4748 || !pkCamera)
+    if (!DAT_011f4748 || !apCamera)
         return;
 
     NiPointer<NiRefObject> spRetainedObject = *reinterpret_cast<NiPointer<NiRefObject>*>(&DAT_011f4748->m_spAccum);
     reinterpret_cast<RendererAccumulatorCall*>(DAT_011f4748)->NiTexturingProperty_Map_SetTexture(
-        reinterpret_cast<NiPointer<NiRefObject>&>(pkAccumulator->m_acRendererDataA));
-    BSShaderManager_SetAccumulator(reinterpret_cast<NiPointer<NiRefObject>&>(pkAccumulator->m_acRendererDataA));
+        reinterpret_cast<NiPointer<NiRefObject>&>(aCuller->m_acRendererDataA));
+    BSShaderManager_SetAccumulator(reinterpret_cast<NiPointer<NiRefObject>&>(aCuller->m_acRendererDataA));
 
-    void* kPos = kList.GetHeadPos();
+    void* kPos = aSceneList.GetHeadPos();
     if (kPos)
     {
-        SetSortingCamera(pkAccumulator, pkCamera, NextObject(kPos), 0);
+        SetSortingCamera(aCuller, apCamera, NextObject(kPos), 0);
         if (kPos)
         {
             void* pvObject = NextObject(kPos);
@@ -225,7 +239,7 @@ void __cdecl BSShaderUtil_AccumulateSceneList(void* pkCamera, NiTPointerList<voi
             {
                 void* pvCurrent = pvObject;
                 pvObject = NextObject(kPos);
-                pkAccumulator->Process(static_cast<NiAVObject*>(pvCurrent));
+                aCuller->Process(static_cast<NiAVObject*>(pvCurrent));
             } while (pvObject);
         }
     }
@@ -250,11 +264,14 @@ NiTexture* NiSourceTexture_Create(NiPixelData*, void*, NiTexture::TextureFormatP
 // Converts a NiTexture to a supported D3D format by copying each mip level and swapping RGB bytes when needed, then builds a new NiTexture from the result.
 // @fnv 0x00b6bbd0
 // src: COMMUNITY 0x00b6bbd0
-NiTexture* BSShaderUtil_ConvertTexture(NiTexture* texture, const NiPixelFormat* pixelFormat)
+// pdb: BSShaderUtil::ConvertTexture | BSShaderUtil.obj | retail, upstream name already matches, high
+// pdb params: apTex, arFormat
+// pdb locals: pd3ddestSurface, iwidth, uimipSize, pd3dsourceSurface, dwalloc, ptexdataSource, fmt, ptexMem, apRenderer, efmt, pd3dtexSource, prd, pd3dtexDest, ptexReturn, iheight, inumMipMaps, allocAttribs, pdx9device, uibaseSize, imipmap
+NiTexture* BSShaderUtil_ConvertTexture(NiTexture* apTex, const NiPixelFormat* arFormat)
 {
     NiDX9Renderer* renderer = DAT_011f4748;
-    NiPixelFormat format = *pixelFormat;
-    if (!texture || !renderer)
+    NiPixelFormat format = *arFormat;
+    if (!apTex || !renderer)
         return 0;
     int d3dFormat = FUN_00e7bd20(&format);
     switch (d3dFormat)
@@ -271,15 +288,15 @@ NiTexture* BSShaderUtil_ConvertTexture(NiTexture* texture, const NiPixelFormat* 
         return 0;
     }
     IDirect3DDevice9* device = renderer->pD3DDevice;
-    unsigned int width = texture->GetWidth();
-    unsigned int height = texture->GetHeight();
+    unsigned int width = apTex->GetWidth();
+    unsigned int height = apTex->GetHeight();
     // The converted texture is a source texture; its pixel-data pointer is at 0x3c.
-    NiPixelData* mipData = static_cast<NiSourceTexture*>(texture)->m_spSrcPixelData.m_pObject;
+    NiPixelData* mipData = static_cast<NiSourceTexture*>(apTex)->m_spSrcPixelData.m_pObject;
     unsigned int levels = mipData ? mipData->m_uiMipmapLevels : 1;
     // GetTexture is not yet declared by the shared DX9 texture-data header.
     typedef IDirect3DTexture9* (__thiscall* GetD3DTexture)(NiDX9TextureData*);
-    IDirect3DTexture9* source = ((GetD3DTexture)(*(void***)texture->m_pkRendererData)[0x9c / 4])(
-        static_cast<NiDX9TextureData*>(texture->m_pkRendererData));
+    IDirect3DTexture9* source = ((GetD3DTexture)(*(void***)apTex->m_pkRendererData)[0x9c / 4])(
+        static_cast<NiDX9TextureData*>(apTex->m_pkRendererData));
     IDirect3DTexture9* destination;
     HRESULT hStatus =
         device->CreateTexture(width, height, levels, 0, (D3DFORMAT)d3dFormat, D3DPOOL_SYSTEMMEM, &destination, 0);

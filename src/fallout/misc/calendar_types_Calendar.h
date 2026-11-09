@@ -8,6 +8,7 @@
 #include "../../../include/TESGlobal.h"
 class Calendar;
 #pragma pack(push, 4)
+// pdb: class Calendar, size 0x1c (here 0x20), 7 members
 class Calendar
 {
   public:
@@ -26,8 +27,8 @@ class Calendar
     DAYS_OF_THE_WEEK GetGameDayOfWeek();
     int GetDayOfMonth();
     void ResetCachedValues();
-    void Update(float afDeltaTime);
-    unsigned int GetGameDaysPassed();
+    void Update(float afSeconds);
+    unsigned int GetDaysPassed();
     unsigned int GetGameHoursPassed();
     // void __cdecl Calendar::*()
     // void __cdecl Calendar::*()

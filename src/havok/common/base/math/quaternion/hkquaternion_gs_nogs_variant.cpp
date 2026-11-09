@@ -42,16 +42,19 @@ inline float fabs(float f)
 
 // @fnv 0x00cb2a50
 // src: COMMUNITY 0x00cb2a50
+// pdb: hkQuaternion::removeAxisComponent | hkQuaternion.obj | retail, upstream name already matches, high
+// pdb params: axis
+// pdb locals: perpVector, rotationAxis
 void hkQuaternion::removeAxisComponent(const hkVector4& v)
 {
-    __m128 q_w = _mm_shuffle_ps((*reinterpret_cast<__m128*>(&unk00)), (*reinterpret_cast<__m128*>(&unk00)), 0xff);
+    __m128 q_w = _mm_shuffle_ps((*reinterpret_cast<__m128*>(&m_vec)), (*reinterpret_cast<__m128*>(&m_vec)), 0xff);
 
-    __m128 prod0 = _mm_mul_ps(v.m_vComponents, (*reinterpret_cast<__m128*>(&unk00)));
+    __m128 prod0 = _mm_mul_ps(v.m_vComponents, (*reinterpret_cast<__m128*>(&m_vec)));
     __m128 sum0 = _mm_add_ss(_mm_shuffle_ps(prod0, prod0, 0x55), prod0);
     __m128 dot0 = _mm_add_ss(_mm_shuffle_ps(prod0, prod0, 0xaa), sum0);
 
-    __m128 q_c9 = _mm_shuffle_ps((*reinterpret_cast<__m128*>(&unk00)), (*reinterpret_cast<__m128*>(&unk00)), 0xc9);
-    __m128 q_d2 = _mm_shuffle_ps((*reinterpret_cast<__m128*>(&unk00)), (*reinterpret_cast<__m128*>(&unk00)), 0xd2);
+    __m128 q_c9 = _mm_shuffle_ps((*reinterpret_cast<__m128*>(&m_vec)), (*reinterpret_cast<__m128*>(&m_vec)), 0xc9);
+    __m128 q_d2 = _mm_shuffle_ps((*reinterpret_cast<__m128*>(&m_vec)), (*reinterpret_cast<__m128*>(&m_vec)), 0xd2);
 
     __m128 v_c9 = _mm_shuffle_ps(v.m_vComponents, v.m_vComponents, 0xc9);
     __m128 qd2_vc9 = _mm_mul_ps(q_d2, v_c9);
@@ -64,7 +67,7 @@ void hkQuaternion::removeAxisComponent(const hkVector4& v)
     __m128 w2_sub_half = _mm_add_ps(w2, DAT_010c71e0.m_vComponents);
 
     __m128 dot0_shuf = _mm_shuffle_ps(dot0, dot0, 0);
-    __m128 term2 = _mm_mul_ps(dot0_shuf, (*reinterpret_cast<__m128*>(&unk00)));
+    __m128 term2 = _mm_mul_ps(dot0_shuf, (*reinterpret_cast<__m128*>(&m_vec)));
     __m128 term3 = _mm_mul_ps(w2_sub_half, v.m_vComponents);
 
     __m128 add1 = _mm_add_ps(term3, term2);
@@ -81,7 +84,7 @@ void hkQuaternion::removeAxisComponent(const hkVector4& v)
 
     if (dot - 1.0f > DAT_010c8760)
     {
-        (*reinterpret_cast<__m128*>(&unk00)) = DAT_010c71b0.m_vComponents;
+        (*reinterpret_cast<__m128*>(&m_vec)) = DAT_010c71b0.m_vComponents;
         return;
     }
 

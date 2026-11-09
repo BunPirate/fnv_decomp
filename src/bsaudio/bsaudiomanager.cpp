@@ -18,6 +18,8 @@ extern "C" int __cdecl FUN_00ec7d40(int);
 
 // @fnv 0x0072fa80
 // src: XBOX_PDB 0x0072fa80
+// pdb: abs | BarterMenu.obj | debug, object-file gap fill, medium
+// pdb params: _X
 int __cdecl abs_0072fa80(int param_1)
 {
     return FUN_00ec7d40(param_1);
@@ -28,19 +30,21 @@ struct FUN_00ad8d60_shell
     int m_uiSoundResourceID;
     int pad;
     int eState;
-    bool __thiscall BSSoundHandle_FadeInPlay(int param2);
+    bool __thiscall BSSoundHandle_FadeInPlay(int aiMilliseconds);
 };
 
 // @fnv 0x00ad8d60
 // src: COMMUNITY 0x00ad8d60
-bool FUN_00ad8d60_shell::BSSoundHandle_FadeInPlay(int aiParam)
+// pdb: BSSoundHandle::FadeInPlay | BSSoundHandle.obj | retail, upstream name already matches, high
+// pdb params: aiMilliseconds
+bool FUN_00ad8d60_shell::BSSoundHandle_FadeInPlay(int aiMilliseconds)
 {
     if (m_uiSoundResourceID == 0xffffffff)
     {
         return false;
     }
     eState = 1;
-    BSAudioManager::GetRandomGenerator().BSAudioManager_FadeInPlay(m_uiSoundResourceID, aiParam);
+    BSAudioManager::GetRandomGenerator().BSAudioManager_FadeInPlay(m_uiSoundResourceID, aiMilliseconds);
     return true;
 }
 
@@ -62,6 +66,8 @@ struct BottomlessStack
 
 // @fnv 0x00adad60
 // src: XBOX_PDB 0x00adad60
+// pdb: AudioMessageStack::Pop | BSAudioManager.obj | retail, upstream name already matches, high
+// pdb locals: presult
 void BSAudioManager::AudioMessageStack_Pop()
 {
     reinterpret_cast<fnv_00adad60::BottomlessStack*>(FreeMessages)->AudioMessageStack_Pop_00ae76b0();
@@ -78,6 +84,7 @@ struct BottomlessStack
 
 // @fnv 0x00adaf80
 // src: COMMUNITY 0x00adaf80
+// pdb: BSAudioManager::GetFreeQueueMessage | BSAudioManager.obj | debug, upstream name already matches, high
 SoundMessageRecord* BSAudioManager::GetFreeQueueMessage()
 {
     return reinterpret_cast<fnv_00adaf80::BottomlessStack*>(FreeQueueMessages)->Pop();
@@ -109,6 +116,8 @@ bool FUN_00adbf40_shell::BSAudioManager_SetOrientation(float f1, float f2, float
 }
 
 // @fnv 0x00ae7480
+// pdb: AudioLoadTask::GetDescription | BSAudioManager.obj | debug, upstream name already matches, high
+// pdb params: apDescription, aiBufferSize
 bool __thiscall AudioLoadTask::GetDescription(char* apDescription, unsigned int aiBufferSize)
 {
     return QueuedFileEntry::GetDescription(apDescription, aiBufferSize, const_cast<char*>("audio load task"));
@@ -116,14 +125,17 @@ bool __thiscall AudioLoadTask::GetDescription(char* apDescription, unsigned int 
 
 struct FUN_00adcaa0_shell
 {
-    void BSAudioManager_UnMuteAllOfType(int param_2, int param_3);
+    void BSAudioManager_UnMuteAllOfType(int aiTargetType, int aiFadeTimeMS);
 };
 
 // Forwards the two arguments to BSAudioManager's FUN_00adcaa0.
 // @fnv 0x00ad84b0
-void BSAudio::ForwardToManager(unsigned int param_2, unsigned int param_3)
+// src: XBOX_RETAIL_PDB 0x00ad84b0
+// pdb: BSAudio::UnMuteType | BSAudio.obj | retail, object-file run extension, high
+// pdb params: aiType, aiFadeTimeMS
+void BSAudio::ForwardToManager(unsigned int aiType, unsigned int aiFadeTimeMS)
 {
-    ((FUN_00adcaa0_shell*)&BSAudioManager::GetRandomGenerator())->BSAudioManager_UnMuteAllOfType(param_2, param_3);
+    ((FUN_00adcaa0_shell*)&BSAudioManager::GetRandomGenerator())->BSAudioManager_UnMuteAllOfType(aiType, aiFadeTimeMS);
 }
 
 struct FUN_00adcc10_shell
@@ -132,9 +144,12 @@ struct FUN_00adcc10_shell
 };
 // Forwards param1 and param2 to the BSAudioManager method FUN_00adcc10.
 // @fnv 0x00ad8540
-void __thiscall BSAudio::ForwardToManager(unsigned int param1, bool param2)
+// src: XBOX_RETAIL_PDB 0x00ad8540
+// pdb: BSAudio::UnPauseAllOfType | BSAudio.obj | retail, object-file gap fill, high
+// pdb params: aiType, abExactMatch
+void __thiscall BSAudio::ForwardToManager(unsigned int aiType, bool abExactMatch)
 {
-    ((FUN_00adcc10_shell*)&BSAudioManager::GetRandomGenerator())->BSAudioManager_UnPauseAllOfType(param1, param2);
+    ((FUN_00adcc10_shell*)&BSAudioManager::GetRandomGenerator())->BSAudioManager_UnPauseAllOfType(aiType, abExactMatch);
 }
 
 struct S_00ae5f70
@@ -149,6 +164,8 @@ struct C_00ae5f70
 };
 // Initializes the object: sets f0 to -1, f4 and f8 to 0, and returns the object pointer.
 // @fnv 0x00ae5f70
+// pdb: BSGameSound::QueueMessage | BSAudioManager.obj | retail, object-file run extension, low
+// pdb params: apMsg
 S_00ae5f70* __thiscall C_00ae5f70::Init(S_00ae5f70* pObject, int a2, int a3, int a4, int a5, int a6, int a7)
 {
     int i = 0;
@@ -178,6 +195,7 @@ struct FUN_00ae6c60_shell
 };
 // @fnv 0x00ae6c60
 // src: COMMUNITY 0x00ae6c60
+// pdb: BSAudioManager::GetAudioCacheSizeInK | BSAudioManager.obj | debug, object-file gap fill, medium
 int __thiscall FUN_00ae6c60_shell::_BSAudioManager_AudioCacheSize()
 {
     int* p = &g_011f6ec8 ? &DAT_011f6ecc : (DAT_01202800 = 0, &DAT_01202800);
@@ -190,18 +208,20 @@ extern char DAT_01202800;
 extern int g_011f6ebc;
 struct BSAudioManager_shell : BSAudioManager
 {
-    void __thiscall AddSound(int arg2);
-    void __thiscall BSAudioManager_SetCacheEnabled(bool enable);
+    void __thiscall AddToCache(int apToCache);
+    void __thiscall BSAudioManager_SetCacheEnabled(bool abEnableCache);
 };
 // Stores enable into a global flag and, when disabling, calls AddSound(0).
 // @fnv 0x00ae6ca0
 // src: COMMUNITY 0x00ae6ca0
-void __thiscall BSAudioManager_shell::BSAudioManager_SetCacheEnabled(bool enable)
+// pdb: BSAudioManager::SetCacheEnabled | BSAudioManager.obj | debug, upstream name already matches, high
+// pdb params: abEnableCache
+void __thiscall BSAudioManager_shell::BSAudioManager_SetCacheEnabled(bool abEnableCache)
 {
     char* target = &g_011f6ebc ? (char*)&DAT_011f6ec0 : ((void)(DAT_01202800 = 0), (char*)&DAT_01202800);
-    *target = enable;
-    if (!enable)
-        AddSound(0);
+    *target = abEnableCache;
+    if (!abEnableCache)
+        AddToCache(0);
 }
 }  // namespace fnv_00ae6ca0
 
@@ -215,6 +235,7 @@ struct FUN_00ae6cf0_shell
 };
 // @fnv 0x00ae6cf0
 // src: COMMUNITY 0x00ae6cf0
+// pdb: BSAudioManager::GetCacheEnabled | BSAudioManager.obj | debug, object-file run extension, low
 bool __thiscall FUN_00ae6cf0_shell::BSAudioManager_IsEnableAudioCache()
 {
     bool* mode = &g_011f6ebc ? &DAT_011f6ec0 : (DAT_01202800 = 0, &DAT_01202800);
@@ -227,6 +248,7 @@ extern int DAT_010a3718;
 // Sets the vtable pointer to DAT_010a3718, touches the field at offset 0x30, then calls the base destructor.
 // @fnv 0x00ae7020
 // src: GUESS 0x00ae7020 (confidence: medium)
+// pdb: AudioLoadTask::~AudioLoadTask | BSAudioManager.obj | debug, object-file gap fill, medium
 void __thiscall AudioLoadTask::DestroyFields_00ae7020()
 {
     *reinterpret_cast<void**>(this) = &DAT_010a3718;
@@ -278,6 +300,7 @@ struct FUN_00ae77a0_shell
 };
 // Calls FUN_00ad93f0 on this, deallocates this via g_memoryManager when flags has bit 1 set, and returns this.
 // @fnv 0x00ae77a0
+// pdb: NiTPointerList<AudioLoadTask *>::~NiTPointerList<AudioLoadTask *> | BSAudioManager.obj | debug, object-file run extension, low
 void* FUN_00ae77a0_shell::FUN_00ae77a0(unsigned int flags)
 {
     ((FUN_00ad93f0_shell*)this)->FUN_00ad93f0();
@@ -311,6 +334,7 @@ void* FUN_00ae7870_shell::FUN_00ae7870(unsigned int flags)
 
 // Calls FUN_00ae7020, then deallocates this via g_memoryManager when flags has bit 1 set, and returns this.
 // @fnv 0x00ae7b10
+// pdb: AudioLoadTask::`scalar deleting destructor' | BSAudioManager.obj | debug, object-file run extension, low
 void* __thiscall AudioLoadTask::FUN_00ae7b10(unsigned int flags)
 {
     DestroyFields_00ae7020();
@@ -436,6 +460,7 @@ struct Helper
 // Calls a helper on the BSAudioManager singleton with this task, then assigns the task's pointer field to itself.
 // @fnv 0x00ae7360
 // src: XBOX_PDB 0x00ae7360
+// pdb: AudioLoadTask::Finish | BSAudioManager.obj | retail, object-file gap fill, high
 void AudioLoadTask::Finish_00ae7360()
 {
     ((Helper*)&BSAudioManager::GetRandomGenerator())->NiTPointerListBase_NiTPointerAllocator_unsigned_int_ShadowSceneLight_Remove(this);
@@ -459,6 +484,8 @@ struct FUN_00ae89f0
     FUN_00ae89f0();
 };
 // @fnv 0x00ae89f0
+// pdb: BSSoundInfo::BSSoundInfo | BSAudioManager.obj | debug, object-file run extension, low
+// pdb params: i, f, v, t, d, p
 FUN_00ae89f0::FUN_00ae89f0()
 {
     m_uiSoundID = 0;
@@ -486,6 +513,7 @@ struct FUN_00ad9da0_t
 
 // Copies the six setting values into the fVal array at this+0x140 and sets all six fMult entries to 1.0.
 // @fnv 0x00ad9da0
+// pdb: BSAudioManager::InitializeAudio | BSAudioManager.obj | debug, object-file gap fill, medium
 void FUN_00ad9da0_t::InitAudioVolumes()
 {
     float* r0 = &g_011f6e14 ? &g_011f6e14.uValue.f : (*(float*)& DAT_01202800 = 0.0f, (float*)&DAT_01202800);
@@ -539,14 +567,16 @@ bool BSAudioManager::HasMatchingEntry(unsigned int mask)
 
 // @fnv 0x00ae6e60
 // src: COMMUNITY 0x00ae6e60
-bool __thiscall BSAudioManager::ClearPausedType(int param_2, unsigned char abMatchStateOne)
+// pdb: BSAudioManager::ClearPausedType | BSAudioManager.obj | retail, upstream name already matches, high
+// pdb params: aiType, bExact
+bool __thiscall BSAudioManager::ClearPausedType(int aiType, unsigned char bExact)
 {
     int i = 0;
     for (; i < *(unsigned int*)((char*)this + 0x17c); ++i)
     {
-        if (param_2 == *(int*)((char*)*(int*)((char*)this + 0x178) + i * 8) &&
-            ((!abMatchStateOne && *(unsigned short*)((char*)*(int*)((char*)this + 0x178) + i * 8 + 4) == 2) ||
-             (abMatchStateOne && *(unsigned short*)((char*)*(int*)((char*)this + 0x178) + i * 8 + 4) == 1)))
+        if (aiType == *(int*)((char*)*(int*)((char*)this + 0x178) + i * 8) &&
+            ((!bExact && *(unsigned short*)((char*)*(int*)((char*)this + 0x178) + i * 8 + 4) == 2) ||
+             (bExact && *(unsigned short*)((char*)*(int*)((char*)this + 0x178) + i * 8 + 4) == 1)))
         {
             *(unsigned short*)((char*)*(int*)((char*)this + 0x178) + i * 8 + 4) = 0;
             *(int*)((char*)*(int*)((char*)this + 0x178) + i * 8) = 0;
@@ -586,11 +616,14 @@ struct FUN_00ada1d0_shell
 {
     unsigned char _pad[0x134];
     bool m_bUISoundsEnabled;
-    void __thiscall InitUISounds(bool);
+    void __thiscall BSAudioManager_Update(bool);
 };
 
 // @fnv 0x00ada1d0
-void FUN_00ada1d0_shell::InitUISounds(bool abPlayGameWorldSounds)
+// src: XBOX_RETAIL_PDB 0x00ada1d0
+// pdb: BSAudioManager::Update | BSAudioManager.obj | retail, string-set bridge, high
+// pdb params: abPlayGameWorldSounds
+void FUN_00ada1d0_shell::BSAudioManager_Update(bool abPlayGameWorldSounds)
 {
     if (!m_bUISoundsEnabled)
     {
@@ -631,7 +664,7 @@ class BADC7D0Map
 class BADC7D0Cache
 {
   public:
-    bool ContainsKey(unsigned int uiKey);
+    bool BSAudioManager_IsValid(unsigned int aiSoundID);
 
     int unk00;
     int unk04;
@@ -663,17 +696,21 @@ class BADC7D0Cache
 
 // Looks up uiKey in the map and returns true if an item is found whose key equals uiKey.
 // @fnv 0x00adc7d0
-bool BADC7D0Cache::ContainsKey(unsigned int uiKey)
+// src: XBOX_RETAIL_PDB 0x00adc7d0
+// pdb: BSAudioManager::IsValid | BSAudioManager.obj | retail, call graph, high
+// pdb params: aiSoundID
+// pdb locals: si, bretValue
+bool BADC7D0Cache::BSAudioManager_IsValid(unsigned int aiSoundID)
 {
     bool bFound4 = false;
     BADC7D0Item* pkItem9 = 0;
-    m_kUnsortedGeometryList.GetAt(uiKey, pkItem9);
+    m_kUnsortedGeometryList.GetAt(aiSoundID, pkItem9);
     if (pkItem9)
     {
         void* pvX;
         void* pvUnusedB;
         unsigned int uiItemKey = pkItem9->m_uiKey;
-        if (uiItemKey == uiKey)
+        if (uiItemKey == aiSoundID)
             bFound4 = true;
     }
     if (!bFound4)
@@ -709,14 +746,17 @@ struct ObjRegistry
     char unk98[0xdc - 0x98];
     CritSecA m_kCS;
 
-    bool BSAudioManager_IsInCache(int m_uiSoundID, bool bCheckAlt);
+    bool BSAudioManager_IsInCache(int aiSoundHash, bool abFuzzy);
 };
 
 // @fnv 0x00add480
 // src: COMMUNITY 0x00add480
-bool ObjRegistry::BSAudioManager_IsInCache(int m_uiSoundID, bool bCheckAlt)
+// pdb: BSAudioManager::IsInCache | BSAudioManager.obj | retail, upstream name already matches, high
+// pdb params: aiSoundHash, abFuzzy
+// pdb locals: binCache, iter, pSoundCopy
+bool ObjRegistry::BSAudioManager_IsInCache(int aiSoundHash, bool abFuzzy)
 {
-    if (m_uiSoundID == 0)
+    if (aiSoundHash == 0)
         return false;
     EnterCriticalSection(&m_kCS);
     bool bFound = false;
@@ -726,8 +766,8 @@ bool ObjRegistry::BSAudioManager_IsInCache(int m_uiSoundID, bool bCheckAlt)
         ObjEntry* pEntry = pNode->m_pEntryObject;
         if (pEntry)
         {
-            if ((bool)(int)(m_uiSoundID == pEntry->m_144) ||
-                (bCheckAlt && (int)(unsigned char)(m_uiSoundID == pEntry->m_148 && pEntry->m_148 ? 1 : 0)))
+            if ((bool)(int)(aiSoundHash == pEntry->m_144) ||
+                (abFuzzy && (int)(unsigned char)(aiSoundHash == pEntry->m_148 && pEntry->m_148 ? 1 : 0)))
             {
                 bFound = true;
                 break;
@@ -747,26 +787,29 @@ extern int DAT_01202800;
 
 struct AudioCacheOwner
 {
-    void BSAudioManager_SetCacheEnabled(int flags);
-    void SetAudioCacheSize(int size);
+    void BSAudioManager_SetCacheEnabled(int abEnableCache);
+    void BSAudioManager_SetAudioCacheSizeInK(int aiNewSize);
 };
 
 // Sets the audio cache size when it is below 0x1000, otherwise logs an error; a size of 0 also calls FUN_00ae6ca0(0).
 // @fnv 0x00ae6bf0
-void AudioCacheOwner::SetAudioCacheSize(int size)
+// src: XBOX_DEBUG_PDB 0x00ae6bf0
+// pdb: BSAudioManager::SetAudioCacheSizeInK | BSAudioManager.obj | debug, unique string literal, high
+// pdb params: aiNewSize
+void AudioCacheOwner::BSAudioManager_SetAudioCacheSizeInK(int aiNewSize)
 {
-    if (size == 0)
+    if (aiNewSize == 0)
     {
         BSAudioManager_SetCacheEnabled(0);
     }
-    if ((unsigned int)size < 0x1000)
+    if ((unsigned int)aiNewSize < 0x1000)
     {
         int* piCacheSize = (&g_011f6ec8 != 0) ? &DAT_011f6ecc : (DAT_01202800 = 0, &DAT_01202800);
-        *piCacheSize = size;
+        *piCacheSize = aiNewSize;
     }
     else
     {
-        Warning_005b5e40("AUDIO: Attempted to set audio cache size to %i. Cache size must be < 4MB", size);
+        Warning_005b5e40("AUDIO: Attempted to set audio cache size to %i. Cache size must be < 4MB", aiNewSize);
     }
 }
 
@@ -779,6 +822,8 @@ struct AE6DE0Slot
 
 // Finds the first slot with state 0, sets its state to 1 or 2 depending on bPrimary, stores pvData in it, and returns true; returns false if no free slot exists.
 // @fnv 0x00ae6de0
+// pdb: BSAudioManager::IsPausedType | BSAudioManager.obj | retail, object-file run extension, low
+// pdb params: aiType
 bool BSAudioManager::AddSlot(void* pData, bool bPrimary)
 {
     for (unsigned int i = 0; i < iPauseListSize; i++)
@@ -793,7 +838,7 @@ bool BSAudioManager::AddSlot(void* pData, bool bPrimary)
     return false;
 }
 
-extern "C" int __cdecl CopyRelativeDataPath(int src, char* dst, unsigned int size);
+extern "C" int __cdecl StandardizeDataPath(int apFileName, char* apStandardizedFileName, unsigned int aiOutSize);
 
 // AudioLoadTask.h lacks AudioLoadTask(int); retain its constructor and base method view.
 class BaseObj_b5112
@@ -814,8 +859,8 @@ class BaseObj_b5112
 
     BaseObj_b5112(int aValue);
     ~BaseObj_b5112();
-    void SetupBuffer(char* apBuffer);
-    void SetMode(int aMode);
+    void SetupBuffer(char* apFileName);
+    void SetMode(int aeArchiveTypeIndex);
 };
 
 class FUN_00ae6f50 : public BaseObj_b5112
@@ -824,15 +869,18 @@ class FUN_00ae6f50 : public BaseObj_b5112
     virtual void vfn_0000();
     int m_30;
 
-    FUN_00ae6f50(int aValue);
+    FUN_00ae6f50(int apSound);
 };
 
 // @fnv 0x00ae6f50
-FUN_00ae6f50::FUN_00ae6f50(int aValue) : BaseObj_b5112(0)
+// pdb: AudioLoadTask::AudioLoadTask | BSAudioManager.obj | retail, call graph (shared callers), high
+// pdb params: apSound
+// pdb locals: pstandardFileName
+FUN_00ae6f50::FUN_00ae6f50(int apSound) : BaseObj_b5112(0)
 {
-    m_30 = aValue;
+    m_30 = apSound;
     char buf[0x104];
-    CopyRelativeDataPath(m_30 + 0x36, buf, 0x104);
+    StandardizeDataPath(m_30 + 0x36, buf, 0x104);
     SetupBuffer(buf);
     SetMode(3);
 }
@@ -851,6 +899,8 @@ struct AudioHelper7390
 };
 AudioHelper7390* __stdcall BSAudioManager_QInstance_00ad9060(AudioLoadTask*);
 // @fnv 0x00ae7390
+// pdb: AudioLoadTask::Cancel | BSAudioManager.obj | retail, upstream name already matches, high
+// pdb params: aePreviousState, apTaskOwner
 void __thiscall AudioLoadTask::Cancel(BS_TASK_STATE, void*)
 {
     BSAudioManager_QInstance_00ad9060(this)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_ShadowSceneLight_Remove();
@@ -894,6 +944,9 @@ struct Msg_ae7990
 };
 
 // @fnv 0x00ae7990
+// pdb: BSSoundMessage::operator= | BSAudioManager.obj | retail, call graph (shared callers), high
+// pdb params: __that
+// pdb locals: S2, S3
 Msg_ae7990& Msg_ae7990::CopyFrom(const Msg_ae7990& aOther)
 {
     int j;
@@ -928,6 +981,8 @@ struct AE8470List
 
 // Bubble-sorts the linked list by swapping item pointers using pfnCompare, counting non-null items to bound the passes.
 // @fnv 0x00ae8470
+// pdb: BSSimpleList<BSContentPackage *>::RemoveAll | BSDLCSystemUtility_Xenon.obj | debug, object-file run extension, low
+// pdb locals: pkSave
 void AE8470List::SortList(int(__cdecl* pfnCompare)(AE8470Item*, AE8470Item*))
 {
     AE8470List* pkCur8 = this;
@@ -993,6 +1048,9 @@ struct FUN_00ae8550_shell
 // Sorts the values array in place using a Shell sort with a Knuth gap sequence and the given comparison function.
 // @fnv 0x00ae8550
 // src: GUESS 0x00ae8550 (confidence: high)
+// pdb: BSSimpleList<BSContentPackage *>::AddTail | BSDLCSystemUtility_Xenon.obj | debug, object-file run extension, low
+// pdb params: item
+// pdb locals: pkCur
 void __thiscall FUN_00ae8550_shell::SortValuesByComparison(int* values, int(__cdecl* compare)(int, int), int count)
 {
     int offset;
@@ -1039,10 +1097,11 @@ void __thiscall FUN_00ae8550_shell::SortValuesByComparison(int* values, int(__cd
 
 extern Setting g_011f6ee0;
 
-void __cdecl SetAudioThreadName(int aiHandle, const char* apName);
+void __cdecl SetAudioThreadName(int hThread, const char* nPriority);
 
 // @fnv 0x00ad9f30
 // src: COMMUNITY 0x00ad9f30
+// pdb: BSAudioManager::StartAudioThread | BSAudioManager.obj | retail, string-set bridge, high
 void BSAudioManager::StartAudioThread(void)
 {
     if (pUpdateThread)
@@ -1074,20 +1133,23 @@ typedef bool(__cdecl* ADD630ResolveFunc)(const char* pcName, char* pcPath, unsig
 extern BSAudio* DAT_011f6d98;
 
 // @fnv 0x00add630
-// src: COMMUNITY 0x00add630
-void BSAudioManager::Precache_00add630(unsigned int pcName, unsigned int uiFlags)
+// src: XBOX_RETAIL_PDB 0x00add630
+// pdb: BSAudioManager::Precache | BSAudioManager.obj | retail, object-file run extension, high
+// pdb params: apToCache, aiFlags
+// pdb locals: filename, pSettingsContext, isoundTypeFlags, pfncallback
+void BSAudioManager::Precache(unsigned int apToCache, unsigned int aiFlags)
 {
-    unsigned int uiResolvedFlags3 = uiFlags;
+    unsigned int uiResolvedFlags3 = aiFlags;
     BSAudio* pkAudio5 = DAT_011f6d98;
     ADD630ResolveFunc pfnResolve4 = reinterpret_cast<ADD630ResolveFunc>(pkAudio5->pfnIDCallback);
     unsigned int _uiExtra = 0;
     BSAudio* pkAudio2 = DAT_011f6d98;
     bool bEnabled6 = pkAudio2->bAudioEnabled;
     char acPath4[260];
-    if (!bEnabled6 || !pfnResolve4 || !pfnResolve4(reinterpret_cast<const char*>(pcName), acPath4, &uiResolvedFlags3, &_uiExtra))
+    if (!bEnabled6 || !pfnResolve4 || !pfnResolve4(reinterpret_cast<const char*>(apToCache), acPath4, &uiResolvedFlags3, &_uiExtra))
         return;
-    uiFlags |= uiResolvedFlags3;
-    BSAudioManager_Precache_00add6f0(reinterpret_cast<unsigned int>(acPath4), uiFlags, _uiExtra);
+    aiFlags |= uiResolvedFlags3;
+    BSAudioManager_Precache(reinterpret_cast<unsigned int>(acPath4), aiFlags, _uiExtra);
 }
 
 struct Sub
@@ -1110,6 +1172,8 @@ struct S
 
 // Copies the scalar fields from src into this and forwards src's sub object to sub.FUN_00ae88c0, returning this.
 // @fnv 0x00ae7920
+// pdb: BSSoundInfo::operator= | BSAudioManager.obj | retail, object-file run extension, low
+// pdb params: __that
 S* __thiscall S::AssignFrom(const S* apSource)
 {
     int u1, u2, u3, u4;
@@ -1129,6 +1193,9 @@ extern Setting g_011f6e74;
 // Scales a1 by fMasterVolume*fMasterSecondaryVolume and a setting value, then applies a further gain pair chosen by the flags in a2 and returns the result.
 // @fnv 0x00adac30
 // src: COMMUNITY 0x00adac30
+// pdb: BSAudioManager::GetCorrectedVolume | BSAudioManager.obj | debug, object-file run extension, low
+// pdb params: afBaseVolume, aiTypeFlags
+// pdb locals: fcorrectedVolume
 float BSAudioManager::GetVolumeValue(float afBase, unsigned int auiFlags)
 {
     float f6 = afBase;
@@ -1206,7 +1273,11 @@ struct DeleteView
 };
 // Locks the critical section, rejects duplicate or oversized sounds, clones the input into the list, then evicts entries while total exceeds the limit.
 // @fnv 0x00adcd80
-void BSAudioManager::AddSound(BSGameSound* apSound)
+// src: XBOX_RETAIL_PDB 0x00adcd80
+// pdb: BSAudioManager::AddToCache | BSAudioManager.obj | retail, call graph, high
+// pdb params: apToCache
+// pdb locals: pnewCopy, iattempts, pSoundCopy, iter, count
+void BSAudioManager::AddToCache(BSGameSound* apToCache)
 {
     Sound* v35 = 0;
     Sound* v16;
@@ -1252,12 +1323,12 @@ void BSAudioManager::AddSound(BSGameSound* apSound)
                     unsigned int* pi;
                     {
                         unsigned int f;
-                        if (!*p || !apSound ||
-                            (n = reinterpret_cast<Sound*>(apSound)->size,
+                        if (!*p || !apToCache ||
+                            (n = reinterpret_cast<Sound*>(apToCache)->size,
                              pi = &DAT_011f6ed4 ? (unsigned int*)(&DAT_011f6ed4 + 4)
                                                 : (*(unsigned int*)& DAT_01202800 = 0, (unsigned int*)&DAT_01202800),
                              n > (*pi << 10)) ||
-                            (f = reinterpret_cast<Sound*>(apSound)->flags, f & 0x10000))
+                            (f = reinterpret_cast<Sound*>(apToCache)->flags, f & 0x10000))
                         {
                             LeaveCriticalSection(reinterpret_cast<CritSecA*>(CacheCritSection));
                             return;
@@ -1271,7 +1342,7 @@ void BSAudioManager::AddSound(BSGameSound* apSound)
     while (v3)
     {
         v35 = v3->sound;
-        if ((unsigned char)(int)(reinterpret_cast<Sound*>(apSound)->id == v35->id))
+        if ((unsigned char)(int)(reinterpret_cast<Sound*>(apToCache)->id == v35->id))
         {
             LeaveCriticalSection(reinterpret_cast<CritSecA*>(CacheCritSection));
             return;
@@ -1280,15 +1351,15 @@ void BSAudioManager::AddSound(BSGameSound* apSound)
     }
     Sound* v15 = reinterpret_cast<Sound*>((*(BSAudio* volatile*)&DAT_011f6d98)->Create(0));
     {
-        unsigned int f = reinterpret_cast<Sound*>(apSound)->flags;
+        unsigned int f = reinterpret_cast<Sound*>(apToCache)->flags;
         {
             Sound* p = v15;
             p->flags = f;
         }
     }
-    v15->Copy(reinterpret_cast<Sound*>(apSound), 0);
+    v15->Copy(reinterpret_cast<Sound*>(apToCache), 0);
     {
-        unsigned int f = reinterpret_cast<Sound*>(apSound)->flags;
+        unsigned int f = reinterpret_cast<Sound*>(apToCache)->flags;
         {
             Sound* p = v15;
             p->flags = f | 0x8000;
@@ -1303,7 +1374,7 @@ void BSAudioManager::AddSound(BSGameSound* apSound)
         U4 unused;
     }
     {
-        unsigned int f = reinterpret_cast<Sound*>(apSound)->flags;
+        unsigned int f = reinterpret_cast<Sound*>(apToCache)->flags;
         if (!(f & 0x20000000))
         {
             unsigned int n = v15->size;
@@ -1374,7 +1445,7 @@ struct LinkedSoundQueue
 };
 struct FUN_00ae76b0_shell
 {
-    void __thiscall FUN_00ae75f0(int item);
+    void __thiscall FUN_00ae75f0(int apMsg);
     int __thiscall AudioMessageStack_Pop_00ae76b0();
 };
 struct AudioThreadData
@@ -1419,12 +1490,15 @@ struct AudioThreadData
     int unkA4;
     int unkA8;
     CritSecA kLock;
-    bool __thiscall ProcessMessage_00adf080(int item);
-    void __thiscall BSAudioManager_FreeMessage(int item);
-    void __thiscall ProcessAudioQueue();
+    bool __thiscall ProcessMessage(int apMsg);
+    void __thiscall BSAudioManager_FreeMessage(int apMsgToFree);
+    void __thiscall BSAudioManager_ProcessMessages();
 };
 // @fnv 0x00addc70
-void AudioThreadData::ProcessAudioQueue()
+// src: XBOX_RETAIL_PDB 0x00addc70
+// pdb: BSAudioManager::ProcessMessages | BSAudioManager.obj | retail, call graph, high
+// pdb locals: pMsg, pcurrentMessages
+void AudioThreadData::BSAudioManager_ProcessMessages()
 {
     int item9 = 0;
     LinkedSoundQueue* pListU = &kLists0 + iReadIndex;
@@ -1445,7 +1519,7 @@ void AudioThreadData::ProcessAudioQueue()
     while (!(bool)(int)(pListU->iCount == 0) && (aPHead = pListU->pHead) != 0 && (kPTail = pListU->pTail) != 0)
     {
         item9 = pListU->FUN_00ae7f90();
-        if (ProcessMessage_00adf080(item9))
+        if (ProcessMessage(item9))
             return;
         kQueue.FUN_00ae75f0(item9);
     }
@@ -1475,11 +1549,14 @@ typedef bool(__cdecl* Resolver_ae5680)(int, void*, unsigned int*, int*);
 
 struct AudioClass_ae5680
 {
-    Handle_ae5680 __thiscall BSAudioManager_InitSoundPath(const void* pPath, unsigned int uiFlags, int iExtra);
+    Handle_ae5680 __thiscall BSAudioManager_GetSoundHandleByFilename(const void* apFilename, unsigned int aiTypeFlags, int apSettingsContext);
     Handle_ae5680* __thiscall ResolveAudioHandle(Handle_ae5680* pOut, int aiSoundId, unsigned int uiFlags);
 };
 
 // @fnv 0x00ae5680
+// pdb: BSAudioManager::GetSoundHandleByName | BSAudioManager.obj | retail, call graph, high
+// pdb params: apSoundName, aiTypeFlags
+// pdb locals: filename, pSettingsContext, returnHandle, isoundTypeFlags, pfncallback
 Handle_ae5680* AudioClass_ae5680::ResolveAudioHandle(Handle_ae5680* pOut, int aiSoundId, unsigned int uiFlags)
 {
     int iState = 0;
@@ -1532,7 +1609,7 @@ Handle_ae5680* AudioClass_ae5680::ResolveAudioHandle(Handle_ae5680* pOut, int ai
         iState |= 1;
         return pOut;
     }
-    Handle_ae5680 h7 = BSAudioManager_InitSoundPath(path3, uiFlags, aIExtra);
+    Handle_ae5680 h7 = BSAudioManager_GetSoundHandleByFilename(path3, uiFlags, aIExtra);
     pOut->f0 = h7.f0;
     pOut->f4 = h7.f4;
     pOut->f8 = h7.f8;
@@ -1551,6 +1628,7 @@ struct FUN_00ae8650_cls
 // Initializes all members to zero and increments the reference count of the object stored in m_10 if it is non-null.
 // @fnv 0x00ae8650
 // src: GUESS 0x00ae8650 (confidence: medium)
+// pdb: BSSoundMessage::BSSoundMessage | BSAudioManager.obj | retail, object-file run extension, low
 FUN_00ae8650_cls* FUN_00ae8650_cls::InitializeFields()
 {
     void* pTarget;
@@ -1584,6 +1662,7 @@ struct FUN_00ad90e0_shell
 // Returns a pointer to a static singleton instance of FUN_00ad90e0_shell.
 // @fnv 0x00ad9060
 // src: XBOX_PDB 0x00ad9060
+// pdb: BSAudioManager::QInstance | BSAudioManager.obj | retail, call graph, high
 FUN_00ad90e0_shell* __cdecl BSAudioManager_QInstance_00ad9060()
 {
     static FUN_00ad90e0_shell sInstance;
@@ -1594,12 +1673,12 @@ extern "C" __declspec(dllimport) int __stdcall fnv_Import_TryEnterCriticalSectio
 
 struct AudioHelperA
 {
-    void UpdateAccumulatedTime();
+    void BSAudioSynchTimer_Update();
 };
 
 struct AudioHelperB
 {
-    void ProcessAudioQueue();
+    void BSAudioManager_ProcessMessages();
     void BSAudioManager_ProcessSoundUpdates();
 };
 
@@ -1620,14 +1699,15 @@ struct AudioManagerUpdate
 // Calls the audio system update helper, then acquires m_cs and invokes two AudioHelperB methods if the lock is obtained.
 // @fnv 0x00addc00
 // src: COMMUNITY 0x00addc00
+// pdb: BSAudioManager::Process | BSAudioManager.obj | retail, upstream name already matches, high
 void AudioManagerUpdate::BSAudioManager_Process()
 {
     BSAudio* p = DAT_011f6d98;
-    reinterpret_cast<AudioHelperA*>(&p->SynchTimer)->UpdateAccumulatedTime();
+    reinterpret_cast<AudioHelperA*>(&p->SynchTimer)->BSAudioSynchTimer_Update();
     bool locked = fnv_Import_TryEnterCriticalSection(&m_cs) != 0;
     if (locked)
     {
-        reinterpret_cast<AudioHelperB*>(BSAudioManager_QInstance_00ad9060())->ProcessAudioQueue();
+        reinterpret_cast<AudioHelperB*>(BSAudioManager_QInstance_00ad9060())->BSAudioManager_ProcessMessages();
         reinterpret_cast<AudioHelperB*>(BSAudioManager_QInstance_00ad9060())->BSAudioManager_ProcessSoundUpdates();
         LeaveCriticalSection(&m_cs);
     }
@@ -1651,6 +1731,7 @@ struct FUN_00ae77d0 : BSThread
 };
 // Initializes two binary semaphores with initial count 0 and max 1, and sets unk48 to 1.
 // @fnv 0x00ae77d0
+// pdb: BSAudioManagerThread::BSAudioManagerThread | BSAudioManager.obj | debug, call graph, high
 FUN_00ae77d0::FUN_00ae77d0()
 {
     S_00ae77d0_Sem* a = &sem0;
@@ -1671,6 +1752,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volati
 // Sets processing, signals signalSemaphore, waits on waitSemaphore, then clears processing.
 // @fnv 0x00ae7a50
 // src: COMMUNITY 0x00ae7a50
+// pdb: BSAudioManagerThread::Suspended | BSAudioManager.obj | retail, upstream name already matches, high
 void BSAudioManagerThread::Suspended()
 {
 
@@ -1696,6 +1778,7 @@ extern "C" __declspec(dllimport) int __stdcall ReleaseSemaphore(void*, long, lon
 // Sets waiting48, releases workSemaphore3c, increments its count, and calls FUN_00aa6590.
 // @fnv 0x00ae7ac0
 // src: COMMUNITY 0x00ae7ac0
+// pdb: BSAudioManagerThread::Exited | BSAudioManager.obj | retail, object-file run extension, low
 void BSAudioManagerThread::ExitThread_00ae7ac0()
 {
     waiting48 = true;
@@ -1802,6 +1885,8 @@ struct S00ae6f10_FUN_00ae6f10_frame
 // Locks m_10c, passes the address of arg to m_124.FUN_00ae8150, then unlocks m_10c.
 // @fnv 0x00ae6f10
 // src: XBOX_PDB 0x00ae6f10
+// pdb: BSAudioManager::RemoveLoadTask | BSAudioManager.obj | debug, call graph, medium
+// pdb params: pTask
 void S00ae6f10_FUN_00ae6f10_cls::NiTPointerListBase_NiTPointerAllocator_unsigned_int_ShadowSceneLight_Remove(int aValue)
 {
     S00ae6f10_FUN_00ae6f10_frame frame;
@@ -1815,6 +1900,7 @@ extern int DAT_01202d98;
 
 // Waits on doneSemaphore30, then loops calling FUN_00addc00 on the update object when DAT_01202d98 is set, sleeping 1 ms each iteration.
 // @fnv 0x00ae74b0
+// pdb: BSAudioManagerThread::ThreadProc | BSAudioManager.obj | retail, upstream name already matches, high
 unsigned int BSAudioManagerThread::ThreadProc()
 {
     BSSemaphore_adf080* semaphore = &doneSemaphore30;
@@ -1843,7 +1929,10 @@ struct FUN_00adc8b0_shell
 };
 // @fnv 0x00adc8b0
 // src: XBOX_PDB 0x00adc8b0
-float __thiscall FUN_00adc8b0_shell::BSAudioManager_GetVolume(unsigned long auiKey)
+// pdb: BSAudioManager::GetVolume | BSAudioManager.obj | retail, upstream name already matches, high
+// pdb params: aiSoundID
+// pdb locals: si, fretValue
+float __thiscall FUN_00adc8b0_shell::BSAudioManager_GetVolume(unsigned long aiSoundID)
 {
     float fVol;
     {
@@ -1854,7 +1943,7 @@ float __thiscall FUN_00adc8b0_shell::BSAudioManager_GetVolume(unsigned long auiK
             pBuffer = 0;
             fVol = 0.0f;
             EnterCriticalSection((CritSecA*)((char*)this + 0xC4));
-            ((BSMapBase*)((char*)this + 0x64))->GetAt(auiKey, pBuffer);
+            ((BSMapBase*)((char*)this + 0x64))->GetAt(aiSoundID, pBuffer);
             LeaveCriticalSection((CritSecA*)((char*)this + 0xC4));
             if (pBuffer != 0)
             {

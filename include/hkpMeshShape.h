@@ -10,6 +10,7 @@ struct MeshFinishFlag;
 typedef unsigned short hkUint16;
 typedef unsigned char hkUint8;
 
+// pdb: class hkpMeshShape, size 0x60, bases: hkpShapeCollection, 7 members
 class hkpMeshShape : public hkpShapeCollection
 {
 public:
@@ -36,12 +37,12 @@ public:
     virtual void vf13();
 
     char pad18[0x8];
-    hkVector4 m_kScaling;
-    hkInt32 m_iNumBitsForSubpartIndex;
-    hkArray<hkpMeshShapeSubpart> m_kSubparts;
-    hkArray<hkUint16> m_kWeldingInfo;
-    hkUint8 m_eWeldingType;
+    hkVector4 m_scaling;
+    hkInt32 m_numBitsForSubpartIndex;
+    hkArray<hkpMeshShapeSubpart> m_subparts;
+    hkArray<hkUint16> m_weldingInfo;
+    hkUint8 m_weldingType;
     char pad4D[0x3];
-    hkReal m_fSphereRadius;
-    hkInt32 m_auiShapeKeys[3];
+    hkReal m_radius;
+    hkInt32 m_pad[3];
 };

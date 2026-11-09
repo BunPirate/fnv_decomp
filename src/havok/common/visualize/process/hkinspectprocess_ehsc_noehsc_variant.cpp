@@ -30,7 +30,7 @@ template <class T> __forceinline T* hkMemoryAllocator::_bufAlloc(int& count)
 typedef unsigned __int64 Wide;
 struct InputArchive
 {
-    void hkIArchive_readArrayGeneric(void* data, int width, int count);
+    void hkIArchive_readArrayGeneric(void* array, int elemsize, int arraySize);
     int ForwardCall_00dd90d0(void* data, int bytes);
     __forceinline Wide readWide()
     {
@@ -135,7 +135,7 @@ class InspectionClassAccess : public hkClass
 };
 static __forceinline int memberOffset(const hkClassMember& field) { return field.m_offset; }
 static __forceinline int memberKind(const hkClassMember& field) { return field.m_type; }
-static __forceinline int memberSubtype(const hkClassMember& field) { return field.m_eSubtype; }
+static __forceinline int memberSubtype(const hkClassMember& field) { return field.m_subtype; }
 // src: HAVOK_LIB 0x00ddb450
 static __declspec(noinline) void* _FindMemberItem(void* address, const hkArray<unsigned short>& path, int depth, int kind,
                                                int subtype, const hkClassMember* field)
@@ -175,7 +175,7 @@ static __declspec(noinline) void* _FindMemberItem(void* address, const hkArray<u
         int childIndex = path[depth + 1];
         hkArray<char>* array = static_cast<hkArray<char>*>(address);
         void* child = array->begin() + childIndex * field->GetTagValue();
-        return _FindMemberItem(child, path, depth + 1, field->m_eSubtype, 0, field);
+        return _FindMemberItem(child, path, depth + 1, field->m_subtype, 0, field);
     }
     case 25: {
         const hkClass* type = field && field->m_class ? field->GetClass() : 0;
@@ -183,7 +183,7 @@ static __declspec(noinline) void* _FindMemberItem(void* address, const hkArray<u
         {
             int childIndex = path[depth + 1];
             const hkClassMember& child = type->getMember(childIndex);
-            return _FindMemberItem(static_cast<char*>(address) + child.m_offset, path, depth + 1, child.m_type, child.m_eSubtype,
+            return _FindMemberItem(static_cast<char*>(address) + child.m_offset, path, depth + 1, child.m_type, child.m_subtype,
                                 &child);
         }
         break;
@@ -198,13 +198,16 @@ class InspectionCommandHandler : public hkInspectProcess
 {
   public:
     virtual void ExecuteCommand(unsigned char command);
-    __forceinline InputArchive* inputArchive() { return reinterpret_cast<InputArchive*>(unk08); }
+    __forceinline InputArchive* inputArchive() { return reinterpret_cast<InputArchive*>(m_inStream); }
     __forceinline hkArray<hkWrittenObjectQ>& trackedObjects()
     {
-        return *reinterpret_cast<hkArray<hkWrittenObjectQ>*>(&unk20);
+        return *reinterpret_cast<hkArray<hkWrittenObjectQ>*>(&m_autoUpdateList);
     }
 };
 // @fnv 0x00ddbae0
+// pdb: hkInspectProcess::consumeCommand | hkInspectProcess.obj | retail, vtable slot, high
+// pdb params: command
+// pdb locals: data, memberPath, recursionStack
 void InspectionCommandHandler::ExecuteCommand(unsigned char command)
 {
     switch (command)

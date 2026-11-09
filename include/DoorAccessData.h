@@ -25,5 +25,5 @@ public:
     bool DoorLock_IsAnOwner(Actor* ref, bool b);
     bool CanActorUseDoor(const PathingActorData* pActorData, bool bFlag);
     bool CanActorOpenDoor(const PathingActorData* pActorData, bool bFlag);
-    bool CanUnlockDoor(const PathingActorData* pActorData, TESObjectREFR* pRef, bool& bNeedsKey);
+    bool CanUnlockDoor(const PathingActorData* apActorLockData, TESObjectREFR* apDoorRef, bool& abOutMustPick);
 };

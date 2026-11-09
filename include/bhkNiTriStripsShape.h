@@ -5,10 +5,11 @@
 class StripsShape;
 class NiNode;
 
+// pdb: class bhkNiTriStripsShape, size 0x14 (here 0x20), bases: bhkShapeCollection, 0 members
 class bhkNiTriStripsShape : public bhkShapeCollection
 {
 public:
-    virtual void BuildDisplayGeometry_00ca6b60(NiNode* parent, int arg);
+    virtual void BuildDisplayGeometry_00ca6b60(NiNode* apNode, int arDefColor);
     virtual void vf56();
     virtual void vf57();
 

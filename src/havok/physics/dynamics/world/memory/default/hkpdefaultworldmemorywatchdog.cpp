@@ -16,7 +16,7 @@ class WatchdogReclaimer
     int unk04;
     int m_memoryLimit;
     int GetMemoryLimit();
-    void ProcessList(hkpWorld* pkWorld);
+    void ProcessList(hkpWorld* world);
 };
 
 // @fnv 0x00e48260
@@ -56,9 +56,11 @@ struct WatchdogState
 };
 
 // @fnv 0x00e48270
-void __stdcall NotifyWatchdogCallback(WatchdogState* pState, int unused)
+// pdb: hkpDefaultWorldMemoryWatchDog::reduceConstraintsInIsland | hkpDefaultWorldMemoryWatchDog.obj | retail, vtable slot, high
+// pdb params: island, solverBufferSize
+void __stdcall NotifyWatchdogCallback(WatchdogState* island, int solverBufferSize)
 {
-    pState->callback18->ProcessTarget(reinterpret_cast<void**>(&pState), *pState->value48);
+    island->callback18->ProcessTarget(reinterpret_cast<void**>(&island), *island->value48);
 }
 
 // The original allocator invokes its bool-returning allocation check through vtable slot +0x24.
@@ -81,48 +83,53 @@ struct EntityRemovalIsland
 
 // @fnv 0x00e48290
 // src: HAVOK_LIB 0x00e48290
-void __cdecl hkpDefaultWorldMemoryWatchDog_removeObjectsFromIsland(EntityRemovalIsland* pIsland, int level, int bytes, int* piMaxLevel)
+// pdb: hkpDefaultWorldMemoryWatchDog::removeObjectsFromIsland | hkpDefaultWorldMemoryWatchDog.obj | retail, upstream name already matches, high
+// pdb params: island, currentAutoRemoveLevel, freeHeapMemoryRequested, maxFoundAutoRemoveLevelOut
+void __cdecl hkpDefaultWorldMemoryWatchDog_removeObjectsFromIsland(EntityRemovalIsland* island, int currentAutoRemoveLevel, int freeHeapMemoryRequested, int* maxFoundAutoRemoveLevelOut)
 {
-    for (int i = pIsland->m_numEntities - 1; i >= 0; i--)
+    for (int i = island->m_numEntities - 1; i >= 0; i--)
     {
-        hkpEntity* entity = pIsland->m_entities[i];
-        int iPriority = entity->m_iAutoRemoveLevel;
-        if (iPriority >= level)
+        hkpEntity* entity = island->m_entities[i];
+        int iPriority = entity->m_autoRemoveLevel;
+        if (iPriority >= currentAutoRemoveLevel)
         {
-            pIsland->m_world->ProcessTarget(reinterpret_cast<hkpRigidBody*>(entity));
-            if (!reinterpret_cast<hkMemoryAllocator&>((&hkMemoryRouter::getInstance())->heap()).canAllocTotal(bytes))
+            island->m_world->ProcessTarget(reinterpret_cast<hkpRigidBody*>(entity));
+            if (!reinterpret_cast<hkMemoryAllocator&>((&hkMemoryRouter::getInstance())->heap()).canAllocTotal(freeHeapMemoryRequested))
                 return;
         }
         else
         {
-            *piMaxLevel = (*piMaxLevel > iPriority) ? *piMaxLevel : iPriority;
+            *maxFoundAutoRemoveLevelOut = (*maxFoundAutoRemoveLevelOut > iPriority) ? *maxFoundAutoRemoveLevelOut : iPriority;
         }
     }
 }
 
 // Remove entities by descending auto-remove level until the heap can satisfy the memory limit.
 // @fnv 0x00e48300
-void WatchdogReclaimer::ProcessList(hkpWorld* pkWorld)
+// pdb: hkpDefaultWorldMemoryWatchDog::freeHeapMemoryTillRequestedAmountIsAvailable | hkpDefaultWorldMemoryWatchDog.obj | retail, vtable slot, high
+// pdb params: world
+// pdb locals: maxFoundAutoRemoveLevel, assertBuf, ostr
+void WatchdogReclaimer::ProcessList(hkpWorld* world)
 {
     int bytes = m_memoryLimit;
     int iFlags = 0x7f;
     do
     {
         int iOut = 0;
-        int i = pkWorld->m_kActiveSimulationIslands.m_iElementCount - 1;
-        while (i >= -pkWorld->m_kInactiveSimulationIslands.m_iElementCount)
+        int i = world->m_activeSimulationIslands.m_iElementCount - 1;
+        while (i >= -world->m_inactiveSimulationIslands.m_iElementCount)
         {
-            if (i >= pkWorld->m_kActiveSimulationIslands.m_iElementCount)
+            if (i >= world->m_activeSimulationIslands.m_iElementCount)
             {
-                i = pkWorld->m_kActiveSimulationIslands.m_iElementCount - 1;
-                if (i < -pkWorld->m_kInactiveSimulationIslands.m_iElementCount)
+                i = world->m_activeSimulationIslands.m_iElementCount - 1;
+                if (i < -world->m_inactiveSimulationIslands.m_iElementCount)
                     return;
             }
             EntityRemovalIsland* island;
             if (i >= 0)
-                island = static_cast<EntityRemovalIsland*>(pkWorld->m_kActiveSimulationIslands.m_data[i]);
+                island = static_cast<EntityRemovalIsland*>(world->m_activeSimulationIslands.m_data[i]);
             else
-                island = static_cast<EntityRemovalIsland*>(pkWorld->m_kInactiveSimulationIslands.m_data[-i - 1]);
+                island = static_cast<EntityRemovalIsland*>(world->m_inactiveSimulationIslands.m_data[-i - 1]);
             hkpDefaultWorldMemoryWatchDog_removeObjectsFromIsland(island, iFlags, bytes, &iOut);
             if (reinterpret_cast<hkMemoryAllocator&>((&hkMemoryRouter::getInstance())->heap()).canAllocTotal(bytes))
                 return;

@@ -12,22 +12,26 @@
 // src/fallout_shared/bgstextureusemap.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/fallout shared/bgstextureusemap.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-struct FUN_004aa3d0_shell
+// pdb: class BGSTextureUseMap, size 0x14 (here 0x1), 2 members
+struct BGSTextureUseMap
 {
-    void BGSTextureUseMap_CollectTexUseDataRecursive(int a, char b);
-    void SetValueAndCall(int a, int b, char c);
+    void CollectTexUseDataRecursive(int a, char b);
+    void CollectTexUseData(int apNode, int apDefaultUser, char abCheckActors);
 };
 
 // src: XBOX_PDB 0x004aa3d0
-void FUN_004aa3d0_shell::BGSTextureUseMap_CollectTexUseDataRecursive(int a, char b)
+void BGSTextureUseMap::CollectTexUseDataRecursive(int a, char b)
 {}
 
 // Stores b into the object's first field and forwards a and c to FUN_004aa3d0.
 // @fnv 0x004aa3a0
-void FUN_004aa3d0_shell::SetValueAndCall(int aiArg, int aiValue, char c)
+// src: XBOX_DEBUG_PDB 0x004aa3a0
+// pdb: BGSTextureUseMap::CollectTexUseData | BGSTextureUseMap.obj | debug, call graph, high
+// pdb params: apNode, apDefaultUser, abCheckActors
+void BGSTextureUseMap::CollectTexUseData(int apNode, int apDefaultUser, char abCheckActors)
 {
-    *(int*)this = aiValue;
-    BGSTextureUseMap_CollectTexUseDataRecursive(aiArg, c);
+    *(int*)this = apDefaultUser;
+    CollectTexUseDataRecursive(apNode, abCheckActors);
 }
 
 struct FUN_004aa830;
@@ -47,6 +51,8 @@ struct NiTMapContainer
 
 // @fnv 0x004aa890
 // src: XBOX_PDB 0x004aa890
+// pdb: BGSTextureUseMap::GetTotalTextureSize | BGSTextureUseMap.obj | retail, upstream name already matches, high
+// pdb locals: ulretsize, iter, pdata, pignore
 unsigned long NiTMapContainer::BGSTextureUseMap_GetTotalTextureSize()
 {
     unsigned long ulretsize = 0;
@@ -73,6 +79,7 @@ struct FUN_004aa340
     ~FUN_004aa340();
 };
 // @fnv 0x004aa340
+// pdb: BGSTextureUseMap::~BGSTextureUseMap | BGSTextureUseMap.obj | retail, call graph, high
 FUN_004aa340::~FUN_004aa340()
 {
     RemoveAllEntries();
@@ -86,6 +93,7 @@ struct FUN_004aa650_shell
 };
 // Calls FUN_004aa680, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x004aa650
+// pdb: TEX_USER_DATA::`scalar deleting destructor' | BGSTextureUseMap.obj | debug, object-file run extension, low
 void* FUN_004aa650_shell::DestroyIfFlagged(unsigned int flags)
 {
     FUN_004aa680();
@@ -96,16 +104,19 @@ void* FUN_004aa650_shell::DestroyIfFlagged(unsigned int flags)
 
 struct FUN_004aa720_shell
 {
-    void AddEntry(int a, int b, int c);
+    void NiD3DShaderConstantMap_AddEntry(int a, int b, int c);
 };
 // If the pointer stored at c is non-null, calls AddEntry on it with a, b and the value at c+4.
 // @fnv 0x004aa6f0
+// pdb: BGSTextureUseMap::TexUseCB | BGSTextureUseMap.obj | debug, object-file run extension, low
+// pdb params: apTexture, aulMemorySize, apParam
+// pdb locals: pparam
 void InvokeIfPresent(int aiArg1, int aiArg2, int apHolder)
 {
     int pparam = apHolder;
     if (*(int*)pparam)
     {
-        ((FUN_004aa720_shell*)*(int*)pparam)->AddEntry(aiArg1, aiArg2, *(int*)(pparam + 4));
+        ((FUN_004aa720_shell*)*(int*)pparam)->NiD3DShaderConstantMap_AddEntry(aiArg1, aiArg2, *(int*)(pparam + 4));
     }
 }
 
@@ -117,6 +128,7 @@ struct FUN_004aa830
     FUN_004aa830();
 };
 // @fnv 0x004aa830
+// pdb: TEX_USER_DATA::TEX_USER_DATA | BGSTextureUseMap.obj | debug, object-file run extension, low
 FUN_004aa830::FUN_004aa830() : m0(0)
 {}
 
@@ -136,6 +148,7 @@ struct FUN_004aa680_shell
 
 // Destructor that calls RemoveAll on the embedded list before the object is destroyed.
 // @fnv 0x004aa680
+// pdb: TEX_USER_DATA::~TEX_USER_DATA | BGSTextureUseMap.obj | debug, object-file run extension, low
 FUN_004aa680_shell::~FUN_004aa680_shell()
 {
     m_kNode.RemoveAll();
@@ -144,6 +157,8 @@ FUN_004aa680_shell::~FUN_004aa680_shell()
 
 // Iterates the map at this+4, calls DestroyIfFlagged(1) on each value, then clears the map with RemoveAll.
 // @fnv 0x004aa5d0
+// pdb: BGSTextureUseMap::ClearAllTexUseData | BGSTextureUseMap.obj | debug, call graph, medium
+// pdb locals: iter, pdata, pignore
 void FUN_004aa340::RemoveAllEntries()
 {
     void* iter = reinterpret_cast<NiTMap<unsigned int, FUN_004aa830*>*>(reinterpret_cast<unsigned char*>(this) + 4)->GetFirstPos();
@@ -184,7 +199,11 @@ struct GO_operator
 
 // Looks up or creates a FUN_004aa830 keyed by a in the map at this+4, sets its key and m4, then adds c to its list at offset 8 if absent.
 // @fnv 0x004aa720
-void FUN_004aa720_shell::AddEntry(int aiKey, int aiValue, int aiItem)
+// src: XBOX_RETAIL_PDB 0x004aa720
+// pdb: NiD3DShaderConstantMap::AddEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pszKey, uiFlags, uiExtra, uiShaderRegister, uiRegisterCount, pszVariableName, uiDataSize, uiDataStride, pvDataSource, bCopyData
+// pdb locals: pkEntry
+void FUN_004aa720_shell::NiD3DShaderConstantMap_AddEntry(int aiKey, int aiValue, int aiItem)
 {
     FUN_004aa830* p;
 
@@ -218,9 +237,10 @@ struct LLD_Cell
     NiNode* Get3D_00545cb0();
 };
 
+// pdb: structure GridCell, size 0x4, 1 members
 struct GridCell
 {
-    LLD_Cell* m0;
+    LLD_Cell* pCell;
 };
 
 struct GlobalObject_0045cfe0
@@ -231,15 +251,18 @@ struct GlobalObject_0045cfe0
 extern TES* g_TES;
 extern GlobalObject_0045cfe0 g_011c63cc;
 
-struct FUN_004aabb0_shell : public FUN_004aa3d0_shell
+struct FUN_004aabb0_shell : public BGSTextureUseMap
 {
-    void BGSTextureUseMap_CollectTextureUseDataForLoadedArea(char a1);
+    void BGSTextureUseMap_CollectTextureUseDataForLoadedArea(char abCheckActors);
 };
 
 // If a previous path exists, processes its cell; otherwise iterates the 5x5 grid around half the global int and processes each occupied cell.
 // @fnv 0x004aabb0
 // src: XBOX_PDB 0x004aabb0
-void FUN_004aabb0_shell::BGSTextureUseMap_CollectTextureUseDataForLoadedArea(char a1)
+// pdb: BGSTextureUseMap::CollectTextureUseDataForLoadedArea | BGSTextureUseMap.obj | retail, upstream name already matches, high
+// pdb params: abCheckActors
+// pdb locals: pcell, icenter, imin, imax, ix, iy, pgridcell
+void FUN_004aabb0_shell::BGSTextureUseMap_CollectTextureUseDataForLoadedArea(char abCheckActors)
 {
     LLD_Cell* inner5;
     unsigned int center3;
@@ -253,7 +276,7 @@ void FUN_004aabb0_shell::BGSTextureUseMap_CollectTextureUseDataForLoadedArea(cha
     if (g_TES->GetPrevPath())
     {
         inner5 = reinterpret_cast<LLD_Cell*>(g_TES->GetPrevPath());
-        this->SetValueAndCall(reinterpret_cast<int>(inner5->Get3D_00545cb0()), reinterpret_cast<int>(inner5), a1);
+        this->CollectTexUseData(reinterpret_cast<int>(inner5->Get3D_00545cb0()), reinterpret_cast<int>(inner5), abCheckActors);
     }
     else
     {
@@ -266,10 +289,10 @@ void FUN_004aabb0_shell::BGSTextureUseMap_CollectTextureUseDataForLoadedArea(cha
             for (fTargetUpperBound = grid; fTargetUpperBound <= center3; ++fTargetUpperBound)
             {
                 outer = g_TES->GetGridCell_00457050(previousPath, fTargetUpperBound);
-                if (outer->m0)
+                if (outer->pCell)
                 {
-                    cell = outer->m0;
-                    this->SetValueAndCall(reinterpret_cast<int>(cell->Get3D_00545cb0()), reinterpret_cast<int>(cell), a1);
+                    cell = outer->pCell;
+                    this->CollectTexUseData(reinterpret_cast<int>(cell->Get3D_00545cb0()), reinterpret_cast<int>(cell), abCheckActors);
                 }
             }
         }
@@ -426,14 +449,17 @@ struct TexUseMap
 {
     unsigned int m1;
     NiTMap<unsigned int, FUN_004aa830*> m_kEntryMap;
-    bool BGSTextureUseMap_WriteToFile(const char* name);
+    bool BGSTextureUseMap_WriteToFile(const char* apFilename);
 };
 // @fnv 0x004aa900
 // src: XBOX_PDB 0x004aa900
-bool TexUseMap::BGSTextureUseMap_WriteToFile(const char* apFileName)
+// pdb: BGSTextureUseMap::WriteToFile | BGSTextureUseMap.obj | retail, string-set bridge, high
+// pdb params: apFilename
+// pdb locals: mapfile, bretval, iter, ptex, pdata, pbasetex, plist, outstring, puser
+bool TexUseMap::BGSTextureUseMap_WriteToFile(const char* apFilename)
 {
     bool result5 = false;
-    BSFile file9(apFileName, true, 0x400, true);
+    BSFile file9(apFilename, true, 0x400, true);
     if (file9.FUN_00aff300(false, false))
     {
         result5 = true;
@@ -565,13 +591,16 @@ struct WalkCtx
 struct TextureWalker
 {
     int m0;
-    void BGSTextureUseMap_CollectTexUseDataRecursive(NiAVObject* obj, bool b);
+    void CollectTexUseDataRecursive(NiAVObject* obj, bool b);
 };
 
 // Recursively walks a NiAVObject tree, tracking the current WalkRef from fade nodes and invoking a texture callback on geometry properties.
 // @fnv 0x004aa3d0
-// src: XBOX_PDB 0x004aa3d0
-void TextureWalker::BGSTextureUseMap_CollectTexUseDataRecursive(NiAVObject* obj, bool b)
+// src: XBOX_RETAIL_PDB 0x004aa3d0
+// pdb: BGSTextureUseMap::CollectTexUseDataRecursive | BGSTextureUseMap.obj | retail, upstream name already matches, high
+// pdb params: ap3D, abCheckActors
+// pdb locals: pnode, pfadenode, bignore, bsetref, pref, bisactor, icount, i, pchild, pgeom, pbssprop, pprop, kparam
+void TextureWalker::CollectTexUseDataRecursive(NiAVObject* obj, bool b)
 {
     if (obj && !obj->IsCulledFlag())
     {
@@ -611,7 +640,7 @@ void TextureWalker::BGSTextureUseMap_CollectTexUseDataRecursive(NiAVObject* obj,
                 for (unsigned int i = 0; i < count; i++)
                 {
                     NiAVObject* child = node->FUN_0043b4a0(i);
-                    BGSTextureUseMap_CollectTexUseDataRecursive(child, b);
+                    CollectTexUseDataRecursive(child, b);
                 }
             }
             if (bSet)

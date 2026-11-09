@@ -16,6 +16,7 @@ class SpellItem;
 class BGSPlaceableWater;
 class BGSSaveFormBuffer;
 
+// pdb: class TESWaterForm, size 0x194, bases: TESForm, TESFullName, TESAttackDamageForm, 29 members
 struct TESWaterForm : public TESForm, public TESFullName, public TESAttackDamageForm
 {
 public:
@@ -64,36 +65,36 @@ public:
     void LoadGame_00580730(BGSLoadFormBuffer*);
     void Revert_005807a0(BGSLoadFormBuffer*);
 
-    bool m_bNeedsUpdate;
+    bool bNeedUpdate;
     unsigned char layoutPadding2D[3];
-    NiPointer<BSRenderedTexture> m_pRenderedTexture;
-    NiColorA m_kTextureScrollLayer0;
-    NiColorA m_kTextureScrollLayer1;
-    NiColorA m_kTextureScrollLayer2;
-    TESTexture m_kNoiseMapTexture;
-    unsigned char m_ucOpacity;
+    NiPointer<BSRenderedTexture> spNoiseNormalMap;
+    NiColorA fTexScroll0;
+    NiColorA fTexScroll1;
+    NiColorA fTexScroll2;
+    TESTexture NoiseTexture;
+    unsigned char cAlpha;
     unsigned char cFlags;
     unsigned char layoutPadding72[2];
-    BSStringT<char> m_kMaterialId;
-    TESSound* m_pWaterSound;
-    TESWaterForm* m_pWaterForm;
+    BSStringT<char> cMaterialID;
+    TESSound* pWaterSound;
+    TESWaterForm* pRemappedWaterForm;
     WaterShaderSettings Data;
-    TESWaterForm* m_apWaterForms[3];
-    int m_iCurrentTextureSelection1;
-    int m_iCurrentTextureSelection2;
-    unsigned int m_uiNoiseFrequencyX;
-    unsigned int m_uiNoiseFrequencyY;
-    int m_iNoiseOctaveCount;
-    float m_fNoiseAmplitude;
-    float m_fNoiseLacunarity;
-    float fSideOffset;
-    float m_fDistanceScale;
-    SpellItem* m_pWaterSpell;
-    NiPointer<NiTexture> m_kNoiseTextureData;
-    BGSPlaceableWater* m_pPlaceableAutoWater;
-    BGSPlaceableWater* m_pPlaceableWater;
-    int m_iRadiationMagnitude;
-    int m_iHealthMagnitude;
-    bool m_bResetNoiseTextures;
+    TESWaterForm* pWaterWeatherControl[3];
+    int iCurrentTextureSelect01;
+    int iCurrentTextureSelect02;
+    unsigned int fFrequencyX;
+    unsigned int fFrequencyY;
+    int iOctaves;
+    float fAmplitude;
+    float fLacunarity;
+    float fBias;
+    float fGain;
+    SpellItem* pSpellItem;
+    NiPointer<NiTexture> spNoiseTexture;
+    BGSPlaceableWater* pPlaceableAutoWater;
+    BGSPlaceableWater* pPlaceableLODWater;
+    int iRadiationDamage;
+    int iHealthRestoration;
+    bool bResetNoiseTexture;
     unsigned char layoutPadding191[3];
 };

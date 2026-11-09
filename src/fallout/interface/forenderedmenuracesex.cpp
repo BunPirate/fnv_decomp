@@ -25,6 +25,7 @@ NiColorA* FUN_007feb40_This::GetValueAtC0(NiColorA* pValue)
     return pValue;
 }
 
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 struct Animation
 {
     void Animation_SkipUpdate(char);
@@ -33,6 +34,7 @@ extern PlayerCharacter* g_thePlayer;
 void _FUN_007037e0();
 // @fnv 0x007fe4e0
 // src: COMMUNITY 0x007fe4e0
+// pdb: FORenderedMenuRaceSex::OnIdle | FORenderedMenuRaceSex.obj | retail, upstream name already matches, high
 bool Menu::FORenderedMenuRaceSex_OnIdle()
 {
     if (!IsUnk28Set())
@@ -154,7 +156,10 @@ struct Effect
 };
 // @fnv 0x007fe9c0
 // src: COMMUNITY 0x007fe9c0
-void Effect::FORenderedMenuRaceSex_DoEffect(void* apArg1, void* apArg2, void* unused)
+// pdb: FORenderedMenuRaceSex::DoEffect | FORenderedMenuRaceSex.obj | retail, upstream name already matches, high
+// pdb params: apSource, apDest, aeClearMode
+// pdb locals: bUseDistortion
+void Effect::FORenderedMenuRaceSex_DoEffect(void* apSource, void* apDest, void* aeClearMode)
 {
     bool active = true;
     active = false;
@@ -186,7 +191,7 @@ void Effect::FORenderedMenuRaceSex_DoEffect(void* apArg1, void* apArg2, void* un
         g_011ae608 = 0.0f;
         g_01200828 = -1.0f;
     }
-    BSShaderManager_GetImageSpaceManager()->ImageSpaceManager_RenderEffect(30, NiXenonRenderer_GetRenderer(), apArg1, apArg2, 0, 1);
+    BSShaderManager_GetImageSpaceManager()->ImageSpaceManager_RenderEffect(30, NiXenonRenderer_GetRenderer(), apSource, apDest, 0, 1);
 }
 
 struct S_007fb5a0_Point3
@@ -295,13 +300,13 @@ struct S_007fe560_Light
     void FUN_0050c630(float f);
     void FUN_0050c660(float f);
     void FUN_0050c690(float f);
-    void NiLight_SetDimmer(float f);
+    void NiLight_SetDimmer(float fDimmer);
     void FUN_0050dd50(const S_007fe560_Pt3& p);
     void NiAVObject_Update(const S_007fe560_Upd& u);
 };
 struct S_007fe560_Base
 {
-    bool FUN_007fc400(const char* name, S_007fe560_Shadow* ssn);
+    bool FUN_007fc400(const char* apLightNodeName, S_007fe560_Shadow* apShadowSceneNode);
     S_007fe560_Light* NiAVObject_GetCollisionObject();
     void FORenderedMenu_SetScreenLightColor(S_007fe560_Pt3* c);
     void SetIntensity(float f);
@@ -313,11 +318,14 @@ void __cdecl Warning_005b5e40(const char* msg);
 
 struct FUN_007fe560_cls : S_007fe560_Base
 {
-    void InitTerminalLight();
+    void FORenderedMenuRaceSex_InitLight();
 };
 
 // @fnv 0x007fe560
-void FUN_007fe560_cls::InitTerminalLight()
+// src: XBOX_RETAIL_PDB 0x007fe560
+// pdb: FORenderedMenuRaceSex::InitLight | FORenderedMenuRaceSex.obj | retail, call graph, high
+// pdb locals: plight, screenLightColor, foo
+void FUN_007fe560_cls::FORenderedMenuRaceSex_InitLight()
 {
     if (!FUN_007fc400("Omni01", FUN_00450b80(1)))
     {
@@ -376,7 +384,7 @@ struct GlobalObject_00e98f20
     int unk28;
     int unk2C;
     int unk30;
-    GlobalObject_00e98f20(int a1, int a2);
+    GlobalObject_00e98f20(int uiResultsInitialSize, int uiResultsGrowBy);
     ~GlobalObject_00e98f20();
     void SetByteAtOffset17(int a1);
     void FUN_006ecd40(unsigned int a1);
@@ -601,6 +609,8 @@ struct FUN_007feb80_cls
 
 // Updates m_f150/m_f154 when afValue exceeds the timer threshold, then calls v54 if m_b158 is set, otherwise calls FUN_007fecc0 when afValue exceeds m_f168.
 // @fnv 0x007feb80
+// pdb: FORenderedMenuRaceSex::UpdateDistort | FORenderedMenuRaceSex.obj | debug, object-file run extension, low
+// pdb params: afTime
 void FUN_007feb80_cls::Update(float afValue)
 {
     if ((double)(afValue - m_f150) > *DAT_011db5b4.Get())
@@ -641,19 +651,22 @@ struct Timer
     float unk160;
     float unk164;
     float unk168;
-    void FORenderedMenuRaceSex_UpdateFakeDistort(float now);
+    void FORenderedMenuRaceSex_UpdateFakeDistort(float afTime);
 };
 
 // @fnv 0x007fec30
 // src: COMMUNITY 0x007fec30
-void Timer::FORenderedMenuRaceSex_UpdateFakeDistort(float now)
+// pdb: FORenderedMenuRaceSex::UpdateFakeDistort | FORenderedMenuRaceSex.obj | retail, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: fdelta
+void Timer::FORenderedMenuRaceSex_UpdateFakeDistort(float afTime)
 {
-    float delta = now - unk15c;
+    float delta = afTime - unk15c;
     unk160 = delta / unk164;
     if (*g_floatSource.Get() + g_epsilon < unk160)
     {
         unk158 = false;
-        unk168 = (float)(FUN_00ecadb8() % *g_intSource.Get()) + now;
+        unk168 = (float)(FUN_00ecadb8() % *g_intSource.Get()) + afTime;
     }
 }
 
@@ -947,16 +960,18 @@ struct xRenderedMenu
     void bhkCharacterControllerCinfo_SetAvoidBox(bool);
     void LowProcess_SetEssentialDownTimer(float);
     int FUN_009b6600();
-    void SetGo(xCam*);
-    void SetScreen(xAV*);
+    void FORenderedMenu_SetCamera(xCam*);
+    void FORenderedMenu_SetScreenGeometry(xAV*);
     xAV* SkyObject_GetNiNode();
-    void InitTerminalLight();
+    void FORenderedMenuRaceSex_InitLight();
     void FUN_007fc150();
     void Init();
 };
 
 // Initializes the rendered menu by loading the screen model, configuring its transform and camera, and setting up the terminal light.
 // @fnv 0x007fc970
+// pdb: FORenderedMenuRaceSex::Initialize | FORenderedMenuRaceSex.obj | retail, unique string literal, high
+// pdb locals: theta, mat2, fzoom, faspectDelta, fradius, pscreen, fr, rot, newcolor, fHeightByWidth, inumlights, pgeom, pcam, mat1, port, UpdateData1, UpdateData2, ud, plight
 void xRenderedMenu::Init()
 {
     float qahtre;
@@ -1040,11 +1055,11 @@ void xRenderedMenu::Init()
     xF709d50(qSVM, *xg_f_11db5ec.Setting_Float_00403e20());
     xUpdateData qfTOqo(0.0f, false, false);
     qSVM->NiAVObject_Update(qfTOqo);
-    SetGo(qSVM);
+    FORenderedMenu_SetCamera(qSVM);
     if (qSuoDt->GetGeom())
-        SetScreen(qSuoDt->GetGeom());
+        FORenderedMenu_SetScreenGeometry(qSuoDt->GetGeom());
     else if (qSuoDt->GetNode())
-        SetScreen(qSuoDt->GetNode()->FUN_0043b4a0(0)->GetGeom());
+        FORenderedMenu_SetScreenGeometry(qSuoDt->GetNode()->FUN_0043b4a0(0)->GetGeom());
     NiTexturingProperty_Map_SetTexture(qdqWL);
     SkyObject_GetNiNode()->NiAVObject_RemoveProperty(xF40df90());
     SkyObject_GetNiNode()->NiAVObject_AttachProperty(new xAlpha());
@@ -1061,7 +1076,7 @@ void xRenderedMenu::Init()
         xUpdateData UPD3(0.0f, false, false);
         PLIGHT->NiAVObject_Update(UPD3);
         xF450b80(1)->FUN_00b5c940(PLIGHT, 0);
-        InitTerminalLight();
+        FORenderedMenuRaceSex_InitLight();
     }
     FUN_007fc150();
 }
@@ -1148,8 +1163,8 @@ struct RtAccum
     int unk00[0xc4 / 4];
     RtAccum(int iUnk);
     ~RtAccum();
-    void BSCullingProcess_SetAccumulator(RtTexture* pkTexture);
-    void BSCullingProcess_PushCullMode(int i);
+    void BSCullingProcess_SetAccumulator(RtTexture* apAccumulator);
+    void BSCullingProcess_PushCullMode(int aeType);
     void BSCullingProcess_PopCullMode();
 };
 
@@ -1158,10 +1173,10 @@ struct RtSource
     RtTexture* RaceSexMenu_GetProjectorFile();
 };
 RtSource* __cdecl InterfaceManager_GetSingleton();
-void __cdecl BSRenderedTexture_StartOffscreen(int i, void* pkData);
+void __cdecl BSRenderedTexture_StartOffscreen(int aiClearMode, void* apTarget);
 void* __cdecl FUN_00450b80(int i);
-void __cdecl BSShaderUtil_AccumulateScene(void* pkNode, void* pkCamera, RtAccum* pkAccum);
-void __cdecl FUN_00b6c0d0(void* pkNode, RtTexture* pkTexture, int i);
+void __cdecl BSShaderUtil_AccumulateScene(void* apCamera, void* apScene, RtAccum* aCuller);
+void __cdecl FUN_00b6c0d0(void* apCamera, RtTexture* apAccumulator, int abUseSPU);
 void __cdecl FUN_00b6b790();
 
 struct RtNode;
@@ -1171,14 +1186,17 @@ struct RenderToTextureImpl
     RtPtr<RtNode> m_spScene;
 
     const NiColorA& GetBackTexture();
-    void Render_007fba00(int a1, int a2, RtTexture* pkTexture);
-    void FORenderedMenuRaceSex_Draw(int a1, int a2, int a3);
+    void Render_007fba00(int apTarget, int aeClearMode, RtTexture* apSwapTarget);
+    void FORenderedMenuRaceSex_Draw(int apTarget, int aeClearMode, int apSwapTarget);
 };
 
 // Sets a render target and background color, processes m_spScene through render calls, then passes the target to FUN_007fba00.
 // @fnv 0x007fe1f0
 // src: COMMUNITY 0x007fe1f0
-void RenderToTextureImpl::FORenderedMenuRaceSex_Draw(int aiUnk, int aiUnk2, int aiUnk3)
+// pdb: FORenderedMenuRaceSex::Draw | FORenderedMenuRaceSex.obj | retail, upstream name already matches, high
+// pdb params: apTarget, aeClearMode, apSwapTarget
+// pdb locals: prevcolor, backcolor, spaccum, bTintBackground, spswap, culler, pr
+void RenderToTextureImpl::FORenderedMenuRaceSex_Draw(int apTarget, int aeClearMode, int apSwapTarget)
 {
     bool bOverrideTmp = false;
     bOverrideTmp = true;
@@ -1203,7 +1221,7 @@ void RenderToTextureImpl::FORenderedMenuRaceSex_Draw(int aiUnk, int aiUnk2, int 
     kAccumRes.BSCullingProcess_SetAccumulator(0);
     spSource9.FUN_0066b0d0(0);
     FUN_00b6b790();
-    Render_007fba00(aiUnk, 0, spTarget5.Modelloader_GetReferencedThis());
+    Render_007fba00(apTarget, 0, spTarget5.Modelloader_GetReferencedThis());
     BSShaderManager_GetTextureManager(spTarget5.Modelloader_GetReferencedThis())->BSTextureManager_ReturnRenderedTexture();
     spTarget5.FUN_0066b0d0(0);
 }

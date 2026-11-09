@@ -13,12 +13,13 @@ struct BGSTextureSetMethods : public BGSTextureSet
     void SetFullNameByType(int aeType, const char* apFilename);
     void SaveTextureSet();
     bool CompareTextureSet(TESForm* apCompare);
-    void CopyFromTextureSet(TESForm* apForm);
+    void CopyFromTextureSet(TESForm* apCopy);
     using BSTextureSet::GetTexture;
     virtual void GetTexture(BSShaderProperty::TextureTypeEnum aeTextureType, NiPointer<NiTexture>& arspTexture);
 };
 
 // @fnv 0x005922e0
+// pdb: BGSTextureSet::BGSTextureSet | BGSTextureSet.obj | retail, upstream name already matches, high
 BGSTextureSet::BGSTextureSet()
 {
     ResetFormData();
@@ -26,6 +27,8 @@ BGSTextureSet::BGSTextureSet()
 }
 
 // @fnv 0x00592450
+// pdb: BGSTextureSet::InitializeData | BGSTextureSet.obj | retail, vtable slot, high
+// pdb locals: i
 void BGSTextureSet::ResetFormData()
 {
     for (int i = 0; i < 6; i++)
@@ -37,6 +40,8 @@ void BGSTextureSet::ResetFormData()
 
 // Frees all six textures, deletes the decal data object if present, and clears the flags.
 // @fnv 0x005924d0
+// pdb: BGSTextureSet::ClearData | BGSTextureSet.obj | retail, upstream name already matches, high
+// pdb locals: i
 void BGSTextureSet::ClearData()
 {
     int i;
@@ -50,6 +55,9 @@ void BGSTextureSet::ClearData()
 }
 
 // @fnv 0x00592e70
+// pdb: BGSTextureSet::GetTexture | BGSTextureSet.obj | retail, upstream name already matches, high
+// pdb params: aiType, aspTexture
+// pdb locals: sptexture, pfilename, ptexfile
 const char* BGSTextureSet::GetTexture(BSShaderProperty::TextureTypeEnum aeTextureType)
 {
     const char* pTextureFilePath = 0;
@@ -81,18 +89,24 @@ const char* BGSTextureSet::GetTexture(BSShaderProperty::TextureTypeEnum aeTextur
 
 // Queues each non-null texture in the set to the model loader with the given priority and queued file.
 // @fnv 0x005930e0
-void BGSTextureSet::LoadTextures(int aePriority, QueuedFile* apQueuedFile, bool abFlag)
+// src: XBOX_RETAIL_PDB 0x005930e0
+// pdb: BGSTextureSet::QueueTextureSet | BGSTextureSet.obj | retail, call graph (shared callers), high
+// pdb params: aePriority, apParent, abNoSpecular
+// pdb locals: i
+void BGSTextureSet::QueueTextureSet(int aePriority, QueuedFile* apParent, bool abNoSpecular)
 {
     for (int i = 0; i < 6; i++)
     {
         if (m_ppTextureFileEntries[i])
-            g_pModelLoader->QueueTextureFile(m_ppTextureFileEntries[i], aePriority, apQueuedFile);
+            g_pModelLoader->QueueTextureFile(m_ppTextureFileEntries[i], aePriority, apParent);
     }
 }
 
 // Creates the null texture set once, assigns it ref ID 40 and editor ID "NullTextureSet", and registers it with the data handler.
 // @fnv 0x00593140
-void BGSTextureSet::InitializeNullTextureSet()
+// src: XBOX_RETAIL_PDB 0x00593140
+// pdb: BGSTextureSet::CreateNullTextureSet | BGSTextureSet.obj | retail, string-set bridge, high
+void BGSTextureSet::CreateNullTextureSet()
 {
     if (!s_pNullTextureSet)
     {
@@ -104,52 +118,55 @@ void BGSTextureSet::InitializeNullTextureSet()
 }
 
 // @fnv 0x005928a0
-bool BGSTextureSet::LoadForm(TESFile* file)
+// pdb: BGSTextureSet::Load | BGSTextureSet.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, pnormalfilename, pspecularfilename, i, pfilename, ptexfile, directoryHash, pstandardPath, fileHash, ilength
+bool BGSTextureSet::LoadForm(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while (chunk = file->GetChunkID())
+    while (chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x30305854:
-            TESTextureLoader::ReadTextureData(&pTextures[0], file);
+            TESTextureLoader::ReadTextureData(&pTextures[0], apFile);
             break;
         case 0x31305854:
-            TESTextureLoader::ReadTextureData(&pTextures[1], file);
+            TESTextureLoader::ReadTextureData(&pTextures[1], apFile);
             break;
         case 0x32305854:
-            TESTextureLoader::ReadTextureData(&pTextures[2], file);
+            TESTextureLoader::ReadTextureData(&pTextures[2], apFile);
             break;
         case 0x33305854:
-            TESTextureLoader::ReadTextureData(&pTextures[3], file);
+            TESTextureLoader::ReadTextureData(&pTextures[3], apFile);
             break;
         case 0x34305854:
-            TESTextureLoader::ReadTextureData(&pTextures[4], file);
+            TESTextureLoader::ReadTextureData(&pTextures[4], apFile);
             break;
         case 0x35305854:
-            TESTextureLoader::ReadTextureData(&pTextures[5], file);
+            TESTextureLoader::ReadTextureData(&pTextures[5], apFile);
             break;
         case 0x4d414e44:
-            ((TESFileChunkData16*)file)->GetChunkData(&iFlags);
+            ((TESFileChunkData16*)apFile)->GetChunkData(&iFlags);
             break;
         case 0x54444f44:
             if (!m_pDecalData)
                 m_pDecalData = new DecalData;
-            m_pDecalData->Load(file);
+            m_pDecalData->Load(apFile);
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     for (int i = 0; i < 6; i++)
@@ -194,6 +211,7 @@ struct S591140
 };
 // Calls FUN_00591170, deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x00591140
+// pdb: MESSAGEBOX_BUTTON::`scalar deleting destructor' | BGSMessage.obj | debug, object-file gap fill, medium
 void* S591140::FUN_00591140(unsigned int flags)
 {
     FUN_00591170();
@@ -205,6 +223,7 @@ void* S591140::FUN_00591140(unsigned int flags)
 void __cdecl _delete(void*, unsigned int);
 // Destroys the texture set, frees it when flags has bit 1 set, and returns this.
 // @fnv 0x00592380
+// pdb: BGSTextureSet::`scalar deleting destructor' | BGSTextureSet.obj | retail, vtable slot, high
 void* BGSTextureSetMethods::DeleteTextureSet(unsigned int flags)
 {
     BGSTextureSet::~BGSTextureSet();
@@ -234,11 +253,13 @@ struct FUN_0048e370_obj
 };
 struct FUN_00593320_shell
 {
-    void ProcessState_00593320(void*);
+    void DecalData_Save(void*);
 };
 void __cdecl TESForm_AddChunk_00485950(unsigned int, unsigned int);
 extern unsigned int DAT_0118c574[6];
 // @fnv 0x00592810
+// pdb: BGSTextureSet::Save | BGSTextureSet.obj | retail, vtable slot, high
+// pdb locals: i
 void BGSTextureSetMethods::SaveTextureSet()
 {
     int i;
@@ -246,7 +267,7 @@ void BGSTextureSetMethods::SaveTextureSet()
     for (i = 0; i < 6; ++i)
         ((FUN_0048e370_obj*)&pTextures[i])->TESTexture_Save(DAT_0118c574[i]);
     if (m_pDecalData)
-        ((FUN_00593320_shell*)m_pDecalData)->ProcessState_00593320((void*)0x54444f44);
+        ((FUN_00593320_shell*)m_pDecalData)->DecalData_Save((void*)0x54444f44);
     TESForm_AddChunk_00485950(0x4d414e44, iFlags);
     TESForm::FinishFormRecord();
 }
@@ -258,7 +279,7 @@ struct FUN_005e79a0_t : public TESForm
 
 struct FUN_005932e0_shell
 {
-    bool Compare(void*);
+    bool DecalData_Compare(void*);
 };
 
 struct FUN_005926f0_entry
@@ -270,6 +291,9 @@ struct FUN_005926f0_entry
 };
 
 // @fnv 0x005926f0
+// pdb: BGSTextureSet::Compare | BGSTextureSet.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcompare, i
 bool BGSTextureSetMethods::CompareTextureSet(TESForm* apCompare)
 {
     BGSTextureSet* pcompare = dynamic_cast<BGSTextureSet*>(apCompare);
@@ -290,7 +314,7 @@ bool BGSTextureSetMethods::CompareTextureSet(TESForm* apCompare)
         if (!m_pDecalData)
             return true;
 
-        if (reinterpret_cast<FUN_005932e0_shell*>(m_pDecalData)->Compare(reinterpret_cast<FUN_005932e0_shell*>(pcompare->m_pDecalData)))
+        if (reinterpret_cast<FUN_005932e0_shell*>(m_pDecalData)->DecalData_Compare(reinterpret_cast<FUN_005932e0_shell*>(pcompare->m_pDecalData)))
             return true;
     }
     else if (m_pDecalData)
@@ -314,14 +338,17 @@ struct DecalDataOwned : public DecalData
 
 struct DecalDataCopier
 {
-    void Copy(DecalData* apSrc);
+    void Copy(DecalData* apCopy);
 };
 
 // Copies the six texture entries, the decal data and the flags from another BGSTextureSet, then copies the bound object.
 // @fnv 0x00592560
-void BGSTextureSetMethods::CopyFromTextureSet(TESForm* apForm)
+// pdb: BGSTextureSet::Copy | BGSTextureSet.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy, i
+void BGSTextureSetMethods::CopyFromTextureSet(TESForm* apCopy)
 {
-    BGSTextureSet* pSourceTextureSet = dynamic_cast<BGSTextureSet*>(apForm);
+    BGSTextureSet* pSourceTextureSet = dynamic_cast<BGSTextureSet*>(apCopy);
     if (!pSourceTextureSet)
         return;
     for (int i = 0; i < 6; i++)
@@ -370,7 +397,7 @@ struct ValueList
     int unk04;
     int unk08;
 
-    void FUN_00489100(int iValue);
+    void FUN_00489100(int apFullName);
 };
 
 struct Owner

@@ -106,7 +106,10 @@ void ShaderMaterialCacheSlot::ShutdownPoint3()
 
 // Allocates a NiD3DShaderFactory, calls Create to store it in DAT_0126fa0c and DAT_011f6044, and reports failure if the factory is null.
 // @fnv 0x00e92e60
-void NiD3DShaderFactory::InitializePoint3()
+// src: XBOX_RETAIL_PDB 0x00e92e60
+// pdb: NiD3DShaderFactory::_SDMInit | NiD3DShaderFactory.obj | retail, string-set bridge, high
+// pdb locals: pkFactory
+void NiD3DShaderFactory::_SDMInit()
 {
     if (DAT_0126fa0c == 0)
     {
@@ -125,12 +128,14 @@ void NiD3DShaderFactory::InitializePoint3()
 
 // Initializes the shader factory's vtable and state, allocates two string-map storages for shaders and libraries, and returns this.
 // @fnv 0x00e92cf0
+// pdb: NiD3DShaderFactory::Create | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb locals: pkFactory
 NiShaderFactory* NiD3DShaderFactory::Create()
 {
     FUN_00aa0390();
     *(void**)this = &kVtbl_NiD3DShaderFactory;
-    m_pOwnerShader = 0;
-    DAT_00fdf054(m_kShaderMap);
+    m_pkRenderer = 0;
+    DAT_00fdf054(m_kShaderMapLock);
 
     ShaderStringMap* shaderMap;
     ShaderStringMap* shaderStorage =
@@ -148,7 +153,7 @@ NiShaderFactory* NiD3DShaderFactory::Create()
     }
     else
         shaderMap = 0;
-    m_pShaderMapStorage = shaderMap;
+    m_pkShaderMap = shaderMap;
 
     ShaderLibraryStringMap* libraryStorage =
         static_cast<ShaderLibraryStringMap*>(g_memoryManager.Allocate(sizeof(ShaderLibraryStringMap)));
@@ -161,10 +166,10 @@ NiShaderFactory* NiD3DShaderFactory::Create()
         fnv_zlib_memset(libraryStorage->m_ppkHashTable, 0, libraryStorage->m_uiHashSize * 4);
         libraryStorage->m_bCopy = false;
         *reinterpret_cast<void**>(libraryStorage) = &DAT_010f0ca0;
-        m_pShaderLibraryStorage = libraryStorage;
+        m_pkLibraryMap = libraryStorage;
         return this;
     }
-    m_pShaderLibraryStorage = 0;
+    m_pkLibraryMap = 0;
     return this;
 }
 
@@ -177,6 +182,9 @@ NiD3DShaderProgramFactory* __cdecl NiD3DShaderProgramFactory_GetInstance();
 
 // @fnv 0x00e91f40
 // src: XBOX_PDB 0x00e91f40
+// pdb: NiD3DShaderFactory::GetNextProgramDirectory | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: kIter
+// pdb locals: pkSPFactory
 char* FUN_00e91f40_shell::NiD3DShaderFactory_GetNextProgramDirectory(void** kIter)
 {
     NiD3DShaderProgramFactory* pkSPFactory = NiD3DShaderProgramFactory_GetInstance();
@@ -196,6 +204,8 @@ void __fastcall NiD3DShaderProgramFactory_RemoveAllProgramDirectories(void* pThi
 
 // @fnv 0x00e91fa0
 // src: XBOX_PDB 0x00e91fa0
+// pdb: NiD3DShaderFactory::RemoveAllProgramDirectories | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb locals: pkFactory
 void FUN_00e91fa0_shell::NiD3DShaderFactory_RemoveAllProgramDirectories()
 {
     void* pkFactory = NiD3DShaderProgramFactory_GetInstance();
@@ -215,6 +225,7 @@ struct FUN_00e91ea0_cls
 };
 // @fnv 0x00e91ea0
 // src: GAMEBRYO_LIB 0x00e91ea0
+// pdb: NiD3DShaderFactory::PurgeAllShaderRendererData | NiD3DShaderFactory.obj | debug, upstream name already matches, high
 void __fastcall NiD3DShaderFactory_PurgeAllShaderRendererData(FUN_00e91ea0_cls* self, int)
 {
     if (self->renderer)
@@ -266,6 +277,9 @@ extern NiD3DShaderProgramFactory* __cdecl NiD3DShaderProgramFactory_GetInstance(
 
 // @fnv 0x00e91f20
 // src: XBOX_PDB 0x00e91f20
+// pdb: NiD3DShaderFactory::GetFirstProgramDirectory | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: kIter
+// pdb locals: pkSPFactory
 char* FUN_00e91f20_shell::NiD3DShaderFactory_GetFirstProgramDirectory(void** kIter)
 {
     NiD3DShaderProgramFactory* pkSPFactory = NiD3DShaderProgramFactory_GetInstance();
@@ -282,11 +296,14 @@ NiD3DShaderProgramFactory* __cdecl NiD3DShaderProgramFactory_GetInstance(void);
 
 // @fnv 0x00e91f60
 // src: XBOX_PDB 0x00e91f60
+// pdb: NiD3DShaderFactory::AddProgramDirectory | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: pacDirectory
+// pdb locals: pkFactory
 void __stdcall NiD3DShaderFactory_AddProgramDirectory(const char* pacDirectory)
 {
     NiD3DShaderProgramFactory* pkFactory = NiD3DShaderProgramFactory_GetInstance();
     if (pkFactory)
-        pkFactory->AddDirectory(pacDirectory);
+        pkFactory->NiD3DShaderProgramFactory_AddProgramDirectory(pacDirectory);
 }
 }  // namespace fnv_00e91f60
 
@@ -296,11 +313,14 @@ NiD3DShaderProgramFactory* __cdecl NiD3DShaderProgramFactory_GetInstance();
 
 // @fnv 0x00e91f80
 // src: XBOX_PDB 0x00e91f80
+// pdb: NiD3DShaderFactory::RemoveProgramDirectory | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: pacDirectory
+// pdb locals: pkFactory
 void __stdcall NiD3DShaderFactory_RemoveProgramDirectory(char* pacDirectory)
 {
     NiD3DShaderProgramFactory* pkFactory = NiD3DShaderProgramFactory_GetInstance();
     if (pkFactory)
-        pkFactory->LoadProgramByName(pacDirectory);
+        pkFactory->NiD3DShaderProgramFactory_RemoveProgramDirectory(pacDirectory);
 }
 }  // namespace fnv_00e91f80
 
@@ -324,6 +344,9 @@ struct NiD3DShaderFactory_shell
 // Builds a name from pcName and uiImplementation and removes the matching entry from the map at offset 0x28 if present.
 // @fnv 0x00e923f0
 // src: XBOX_PDB 0x00e923f0
+// pdb: NiD3DShaderFactory::RemoveShader | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: pcName, uiImplementation
+// pdb locals: acFullName
 void __thiscall NiD3DShaderFactory_shell::NiD3DShaderFactory_RemoveShader(const char* pcName, unsigned int uiImplementation)
 {
     char acFullName[260];
@@ -341,6 +364,7 @@ struct FUN_00e92460_cls
 };
 // @fnv 0x00e92460
 // src: GAMEBRYO_LIB 0x00e92460
+// pdb: NiD3DShaderFactory::RemoveAllShaders | NiD3DShaderFactory.obj | debug, upstream name already matches, high
 void __fastcall NiD3DShaderFactory_RemoveAllShaders(FUN_00e92460_cls* self, int)
 {
     if (self->map)
@@ -384,6 +408,9 @@ extern void* DAT_010f0be0;
 extern void* DAT_010f0c00;
 
 // @fnv 0x00e92520
+// pdb: NiD3DShaderFactory::IsDefaultImplementation | NiD3DShaderFactory.obj | debug, object-file run extension, low
+// pdb params: pkShader
+// pdb locals: pkShaderIf
 void __fastcall DestroyMap(ShaderMapBase* self, int)
 {
     *reinterpret_cast<void**>(self) = &DAT_010f0c00;
@@ -550,6 +577,9 @@ struct FakeFactory374
 };
 // @fnv 0x00e91e60
 // src: GAMEBRYO_SRC 0x00e91e60
+// pdb: NiD3DShaderFactory::SetRenderer | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: pkRenderer
+// pdb locals: pkLibrary
 void FUN_00e91e60_shell::NiD3DShaderFactory_SetRenderer(GraphicsRenderer* pkRenderer)
 {
     ShaderConstantInterface* pkLibrary;
@@ -577,6 +607,9 @@ struct FUN_00e921d0_shell
 };
 // Builds a name from pcName and uiImplementation, looks it up in the shader map at this+0x28, and returns the found NiShader or null.
 // @fnv 0x00e921d0
+// pdb: NiD3DShaderFactory::FindShader | NiD3DShaderFactory.obj | retail, object-file gap fill, high
+// pdb params: pcName, uiImplementation
+// pdb locals: pkShader, acFullName
 NiShader* FUN_00e921d0_shell::GetShaderByNameAndImplementation(const char* pcName, unsigned int uiImplementation)
 {
     if (!*(ShaderMapBase**)((char*)this + 0x28))
@@ -603,6 +636,9 @@ struct FUN_00e929c0_shell
 
 // Builds a name from the shader filename and implementation index, then stores the shader in the map at this+0x28 if both exist.
 // @fnv 0x00e929c0
+// pdb: NiD3DShaderFactory::InsertShader | NiD3DShaderFactory.obj | retail, object-file run extension, low
+// pdb params: pkShader, uiImplementation
+// pdb locals: acFullName
 void FUN_00e929c0_shell::RegisterShaderImplementation(NiShader* pkShader, unsigned int uiImplementation)
 {
     char acFullName[260];
@@ -619,6 +655,9 @@ void FUN_00e929c0_shell::RegisterShaderImplementation(NiShader* pkShader, unsign
 }  // namespace fnv_00e929c0
 
 // @fnv 0x00b57f20
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,NiNode *,unsigned int>::GetAt | NiBSBoneLODController.obj | debug, object-file run extension, low
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 template <>
 void ShaderMapBase::GetNext(void*& pos, const char*& key, NiShader*& val) const
 {
@@ -775,20 +814,23 @@ class E92270Library
     int unk7C;
     E92270CriticalSection m_kCriticalSection;
 
-    bool HasEntry(const char* pcName, unsigned int uiID);
+    bool HasEntry(const char* pcName, unsigned int uiImplementation);
 };
 
 // Checks pcName is non-empty and resolves a program by name/ID, then scans the library's entries under the critical section for a matching entry.
 // @fnv 0x00e92270
-bool E92270Library::HasEntry(const char* pcName, unsigned int uiID)
+// pdb: NiD3DShaderFactory::ReleaseShaderFromLibrary | NiD3DShaderFactory.obj | retail, object-file gap fill, high
+// pdb params: pcName, uiImplementation
+// pdb locals: pkLibrary, pkShader, bRet
+bool E92270Library::HasEntry(const char* pcName, unsigned int uiImplementation)
 {
     if (!pcName || !*pcName)
         return false;
 
-    if (!FindProgram(pcName, uiID))
+    if (!FindProgram(pcName, uiImplementation))
     {
         NiShader* pkProgram = FindProgram(pcName, 0xffffffff);
-        if (!pkProgram || reinterpret_cast<GetShaderImplementation>(&NiD3DShaderProgram_GetName)(pkProgram) != uiID)
+        if (!pkProgram || reinterpret_cast<GetShaderImplementation>(&NiD3DShaderProgram_GetName)(pkProgram) != uiImplementation)
             return false;
     }
 
@@ -797,7 +839,7 @@ bool E92270Library::HasEntry(const char* pcName, unsigned int uiID)
     bool bFound = false;
     while (pkEntry)
     {
-        if (pkEntry->Matches(pcName, uiID))
+        if (pkEntry->Matches(pcName, uiImplementation))
         {
             bFound = true;
             break;
@@ -864,7 +906,7 @@ struct ShaderLibrary
     virtual void vf51();
     virtual void ReleaseResources();
 
-    void FUN_00e818d0(void* renderer);
+    void FUN_00e818d0(void* pkD3DRenderer);
 };
 struct ShaderRenderer
 {
@@ -877,17 +919,19 @@ struct ShaderFactoryShell : NiD3DShaderFactory
 // Iterates the shader library map and, for each non-default shader, releases its resources and notifies the renderer.
 // @fnv 0x00e92470
 // src: GAMEBRYO_SRC 0x00e92470
+// pdb: NiD3DShaderFactory::RestoreAllShaderRendererData | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb locals: pkShader, pcName, kIter, pkD3DShader
 void ShaderFactoryShell::NiD3DShaderFactory_RestoreAllShaderRendererData()
 {
-    if (m_pOwnerShader && m_pShaderMapStorage)
+    if (m_pkRenderer && m_pkShaderMap)
     {
-        ShaderMapBase* map = static_cast<ShaderMapBase*>(m_pShaderMapStorage);
+        ShaderMapBase* map = static_cast<ShaderMapBase*>(m_pkShaderMap);
         ShaderLibrary* volatile pCurrentShader = 0;
         void* current = map->GetFirstPos();
         const char* position;
         while (current)
         {
-            static_cast<ShaderMapBase*>(m_pShaderMapStorage)
+            static_cast<ShaderMapBase*>(m_pkShaderMap)
                 ->GetNext(current, position, *reinterpret_cast<NiShader**>(const_cast<ShaderLibrary**>(&pCurrentShader)));
             ShaderLibrary* activeShader = pCurrentShader;
             if (activeShader)
@@ -895,9 +939,9 @@ void ShaderFactoryShell::NiD3DShaderFactory_RestoreAllShaderRendererData()
                 ShaderLibrary& library = *activeShader;
                 if (!library.IsDefault())
                 {
-                    library.FUN_00e818d0(m_pOwnerShader);
+                    library.FUN_00e818d0(m_pkRenderer);
                     library.ReleaseResources();
-                    static_cast<ShaderRenderer*>(m_pOwnerShader)->NiXenonRenderer_RegisterD3DShader(&library);
+                    static_cast<ShaderRenderer*>(m_pkRenderer)->NiXenonRenderer_RegisterD3DShader(&library);
                 }
             }
         }
@@ -912,6 +956,8 @@ extern "C" int __cdecl strcpy_s(char* pcDest, unsigned int uiSize, const char* p
 void* __cdecl NiMalloc(unsigned int uiSize);
 
 // @fnv 0x00e92910
+// pdb: NiTPointerMap<char const *,NiPointer<NiShaderLibrary> >::DeleteItem | NiD3DShaderFactory.obj | retail, object-file run extension, low
+// pdb params: pkItem
 template <>
 void ShaderLibraryStringTemplateMap::SetValue(EntryType* pkEntry, const char* pcName,
                                              NiPointer<NiShaderLibrary> spRetainedObject) throw()
@@ -947,28 +993,30 @@ struct FUN_00e92c40_shell : NiD3DShaderFactory
 };
 // @fnv 0x00e92c40
 // src: XBOX_PDB 0x00e92c40
+// pdb: NiD3DShaderFactory::RemoveAllLibraries | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb locals: pkLibrary
 void FUN_00e92c40_shell::NiD3DShaderFactory_RemoveAllLibraries()
 {
-    if (!m_pShaderLibraryStorage)
+    if (!m_pkLibraryMap)
         return;
     ShaderLibrary_92c40* current = NiD3DShaderFactory_GetFirstLibrary();
     if (current)
     {
         do
         {
-            static_cast<ShaderLibraryMapBase*>(m_pShaderLibraryStorage)->RemoveAt(current->FUN_00d47a30());
-            if (!m_pShaderLibraryStorage || !m_pShaderLibraryIterator)
+            static_cast<ShaderLibraryMapBase*>(m_pkLibraryMap)->RemoveAt(current->FUN_00d47a30());
+            if (!m_pkLibraryMap || !m_kLibraryIter)
                 break;
             ReferenceObject_92c40* next = 0;
             const char* scratch;
-            static_cast<ShaderLibraryMapBase*>(m_pShaderLibraryStorage)->GetNext(m_pShaderLibraryIterator, scratch, *reinterpret_cast<NiPointer<NiShaderLibrary>*>(&next));
+            static_cast<ShaderLibraryMapBase*>(m_pkLibraryMap)->GetNext(m_kLibraryIter, scratch, *reinterpret_cast<NiPointer<NiShaderLibrary>*>(&next));
             ReferenceObject_92c40* savedNext = *(ReferenceObject_92c40* volatile*)&next;
             if (savedNext && InterlockedDecrement(&savedNext->referenceCount) == 0)
                 savedNext->Release();
             current = (ShaderLibrary_92c40*)savedNext;
         } while (current);
     }
-    static_cast<ShaderLibraryMapBase*>(m_pShaderLibraryStorage)->RemoveAll();
+    static_cast<ShaderLibraryMapBase*>(m_pkLibraryMap)->RemoveAll();
 }
 
 extern "C" __declspec(dllimport) void __stdcall DeleteCriticalSection(void* criticalSection);
@@ -982,24 +1030,26 @@ struct ShaderFactoryShutdown : NiD3DShaderFactory
 
 // @fnv 0x00e92dc0
 // src: GUESS 0x00e92dc0 (confidence: low)
+// pdb: NiD3DShaderFactory::`scalar deleting destructor' | NiD3DShaderFactory.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DShaderFactory::Destroy
 void ShaderFactoryShutdown::UpdateFields_00e92dc0()
 {
-    ShaderMapBase* shaderMap = static_cast<ShaderMapBase*>(m_pShaderMapStorage);
+    ShaderMapBase* shaderMap = static_cast<ShaderMapBase*>(m_pkShaderMap);
     *(void**)this = &kVtbl_NiD3DShaderFactory;
     if (shaderMap)
         shaderMap->RemoveAll();
 
     NiD3DShaderFactory_RemoveAllLibraries();
 
-    if (m_pShaderMapStorage)
-        delete static_cast<ShaderMapBase*>(m_pShaderMapStorage);
-    if (m_pShaderLibraryStorage)
-        delete static_cast<ShaderLibraryMapBase*>(m_pShaderLibraryStorage);
+    if (m_pkShaderMap)
+        delete static_cast<ShaderMapBase*>(m_pkShaderMap);
+    if (m_pkLibraryMap)
+        delete static_cast<ShaderLibraryMapBase*>(m_pkLibraryMap);
 
-    m_pShaderMapStorage = 0;
-    m_pShaderLibraryStorage = 0;
-    m_pOwnerShader = 0;
-    DeleteCriticalSection(m_kShaderMap);
+    m_pkShaderMap = 0;
+    m_pkLibraryMap = 0;
+    m_pkRenderer = 0;
+    DeleteCriticalSection(m_kShaderMapLock);
     FUN_00aa05a0();
 }
 
@@ -1024,19 +1074,21 @@ struct RetainedShaderLibraryArgument
 
 struct ShaderFactory_e92a40 : NiD3DShaderFactory
 {
-    void NiD3DShaderFactory_InsertLibrary(FUN_00d47a30_class* p);
+    void NiD3DShaderFactory_InsertLibrary(FUN_00d47a30_class* pkLibrary);
 };
 // @fnv 0x00e92a40
 // src: GAMEBRYO_LIB 0x00e92a40
-void ShaderFactory_e92a40::NiD3DShaderFactory_InsertLibrary(FUN_00d47a30_class* p)
+// pdb: NiD3DShaderFactory::InsertLibrary | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: pkLibrary
+void ShaderFactory_e92a40::NiD3DShaderFactory_InsertLibrary(FUN_00d47a30_class* pkLibrary)
 {
-    if (p)
+    if (pkLibrary)
     {
         typedef void (__thiscall* SetLibraryAt)(ShaderLibraryMapBase*, const char*, RetainedShaderLibraryArgument);
         void (ShaderLibraryMapBase::*setAt)(const char*, NiPointer<NiShaderLibrary>) = &ShaderLibraryMapBase::SetAt;
-        reinterpret_cast<SetLibraryAt&>(setAt)(static_cast<ShaderLibraryMapBase*>(m_pShaderLibraryStorage),
-                                             static_cast<const char*>(p->FUN_00d47a30()),
-                                             reinterpret_cast<NiShaderLibrary*>(p));
+        reinterpret_cast<SetLibraryAt&>(setAt)(static_cast<ShaderLibraryMapBase*>(m_pkLibraryMap),
+                                             static_cast<const char*>(pkLibrary->FUN_00d47a30()),
+                                             reinterpret_cast<NiShaderLibrary*>(pkLibrary));
     }
 }
 
@@ -1112,6 +1164,9 @@ class ShaderFactoryView
 };
 // Looks up a ShaderRefObject by name in m_pTaskMap and returns it, releasing the temporary reference in all cases.
 // @fnv 0x00e92a70
+// pdb: NiD3DShaderFactory::FindLibrary | NiD3DShaderFactory.obj | retail, object-file gap fill, high
+// pdb params: pcName
+// pdb locals: spLibrary
 ShaderRefObject* ShaderFactoryView::GetShaderRefObject(const char* pcName) throw()
 {
     ShaderRefObject* spRetainedObject = 0;
@@ -1160,6 +1215,9 @@ class OwnerE92A
 // Looks up pcName in m_pTaskMap; if found with refcount 2, removes it and decrements the reference, otherwise just decrements the reference.
 // @fnv 0x00e92ae0
 // src: XBOX_PDB 0x00e92ae0
+// pdb: NiD3DShaderFactory::RemoveLibrary | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: pcName
+// pdb locals: spLibrary
 void OwnerE92A::NiD3DShaderFactory_RemoveLibrary(const char* pcName)
 {
     NiRefObject* pkVal = 0;
@@ -1216,6 +1274,8 @@ class ShaderFactoryView
 // Resets the iterator to the first map position, advances it once, releases the returned object's reference, and returns that pointer.
 // @fnv 0x00e92b50
 // src: GAMEBRYO_LIB 0x00e92b50
+// pdb: NiD3DShaderFactory::GetFirstLibrary | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb locals: spLibrary, pcName
 ShaderRefObject* ShaderFactoryView::NiD3DShaderFactory_GetFirstLibrary()
 {
     ShaderLibraryMapBase* map = m_pShaderLibraryStorage;
@@ -1276,6 +1336,8 @@ void S_00e92be0_Ref::f1()
 // Calls unk30->AdvanceIterator to fetch the next S_00e92be0_Ref, decrements its reference count, and returns the object or null.
 // @fnv 0x00e92be0
 // src: GAMEBRYO_LIB 0x00e92be0
+// pdb: NiD3DShaderFactory::GetNextLibrary | NiD3DShaderFactory.obj | retail, upstream name already matches, high
+// pdb locals: spLibrary, pcName
 S_00e92be0_Ref* S_00e92be0_Factory::NiD3DShaderFactory_GetNextLibrary()
 {
     ShaderLibraryMapBase* callee = unk30;
@@ -1464,12 +1526,15 @@ class ShaderFactory
     int unk7C;
     int m_kShaderMap;
 
-    ShaderLibrary* NiD3DShaderFactory_RetrieveShader(const char* pcName, unsigned int uiImplementation, bool bReportFailure);
+    ShaderLibrary* NiD3DShaderFactory_RetrieveShader(const char* pcName, unsigned int uiImplementation, bool bReportNotFound);
 };
 // Acquires a ShaderLibrary by name, creating and registering it via producer interfaces if not already present, and optionally logs a failure.
 // @fnv 0x00e920a0
 // src: XBOX_PDB 0x00e920a0
-ShaderLibrary* ShaderFactory::NiD3DShaderFactory_RetrieveShader(const char* pcName, unsigned int uiImplementation, bool bReportFailure)
+// pdb: NiD3DShaderFactory::RetrieveShader | NiD3DShaderFactory.obj | retail, string-set bridge, high
+// pdb params: pcName, uiImplementation, bReportNotFound
+// pdb locals: pkShader, pkLibrary, pkD3DSI
+ShaderLibrary* ShaderFactory::NiD3DShaderFactory_RetrieveShader(const char* pcName, unsigned int uiImplementation, bool bReportNotFound)
 {
     if (!m_pOwnerShader)
     {
@@ -1506,7 +1571,7 @@ ShaderLibrary* ShaderFactory::NiD3DShaderFactory_RetrieveShader(const char* pcNa
         }
         LeaveCriticalSection(pCriticalSection);
     }
-    if (bReportFailure && !pkShader)
+    if (bReportNotFound && !pkShader)
         NiShaderFactory_ReportError(1, 0, UNK_010f0b54, pcName, uiImplementation);
     return pkShader;
 }
@@ -1550,7 +1615,7 @@ struct FUN_00e92330_cls
     virtual FUN_00e92330_item* GetNext();
     unsigned int unk04[31];
     FUN_00e92330_critsec m_lock;
-    bool NiD3DShaderFactory_ReleaseShaderFromLibrary(unsigned int a1);
+    bool NiD3DShaderFactory_ReleaseShaderFromLibrary(unsigned int pkShader);
 };
 
 typedef FUN_00e92330_item*(__thiscall* FUN_00e92330_match)(FUN_00e92330_cls*, unsigned int, unsigned int);
@@ -1558,22 +1623,25 @@ typedef FUN_00e92330_item*(__thiscall* FUN_00e92330_match)(FUN_00e92330_cls*, un
 // Checks whether the collection contains the item identified by a1, using a virtual Match lookup and a Test predicate under a critical section.
 // @fnv 0x00e92330
 // src: XBOX_PDB 0x00e92330
-bool FUN_00e92330_cls::NiD3DShaderFactory_ReleaseShaderFromLibrary(unsigned int apItem)
+// pdb: NiD3DShaderFactory::ReleaseShaderFromLibrary | NiD3DShaderFactory.obj | retail, object-file gap fill, high
+// pdb params: pcName, uiImplementation
+// pdb locals: pkLibrary, pkShader, bRet
+bool FUN_00e92330_cls::NiD3DShaderFactory_ReleaseShaderFromLibrary(unsigned int pkShader)
 {
-    if (apItem == 0)
+    if (pkShader == 0)
     {
         return false;
     }
-    unsigned int key = reinterpret_cast<unsigned int>(((NiShader*)apItem)->GetFilename().m_kHandle);
+    unsigned int key = reinterpret_cast<unsigned int>(((NiShader*)pkShader)->GetFilename().m_kHandle);
     void** pVTable = *(void***)this;
     void** pMatchSlot = pVTable + 3;
-    unsigned int ref = reinterpret_cast<GetShaderImplementation>(&NiD3DShaderProgram_GetName)((NiShader*)apItem);
+    unsigned int ref = reinterpret_cast<GetShaderImplementation>(&NiD3DShaderProgram_GetName)((NiShader*)pkShader);
     FUN_00e92330_item* r = ((FUN_00e92330_match)*pMatchSlot)(this, key, ref);
-    if (!(r && (unsigned int)r == apItem))
+    if (!(r && (unsigned int)r == pkShader))
     {
-        unsigned int key2 = reinterpret_cast<unsigned int>(((NiShader*)apItem)->GetFilename().m_kHandle);
+        unsigned int key2 = reinterpret_cast<unsigned int>(((NiShader*)pkShader)->GetFilename().m_kHandle);
         r = ((FUN_00e92330_match)(*(void***)this)[3])(this, key2, 0xffffffff);
-        if (!(r && (unsigned int)r == apItem))
+        if (!(r && (unsigned int)r == pkShader))
         {
             return false;
         }
@@ -1583,7 +1651,7 @@ bool FUN_00e92330_cls::NiD3DShaderFactory_ReleaseShaderFromLibrary(unsigned int 
     bool result = false;
     while (pItem)
     {
-        if (pItem->Test(apItem))
+        if (pItem->Test(pkShader))
         {
             result = true;
             break;

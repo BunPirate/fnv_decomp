@@ -39,6 +39,8 @@ struct FUN_00a35e90_shell : public BSMultiTargetTreadTransfController
 
 // @fnv 0x00a35e90
 // src: XBOX_PDB 0x00a35e90
+// pdb: BSMultiTargetTreadTransfController::GetInterpolatorID | BSMultiTargetTreadTransfController.obj | debug, upstream name already matches, high
+// pdb params: ausIndex
 char* FUN_00a35e90_shell::BSMultiTargetTreadTransfController_GetInterpolatorID(unsigned short ausIndex)
 {
     char** arr = *(char***)((char*)this + 0x3c);
@@ -70,6 +72,8 @@ struct FUN_00a35910_shell
 
 // Scans the array at this+0x3c for an entry whose field at offset 4 equals a, returning its index or INVALID_INDEX.
 // @fnv 0x00a35910
+// pdb: BSMultiTargetTreadTransfController::GetInterpolatorTarget | BSMultiTargetTreadTransfController.obj | debug, object-file run extension, low
+// pdb params: ausIndex
 unsigned short __thiscall FUN_00a35910_shell::FindIndexByValue(unsigned short a)
 {
     unsigned short i = 0;
@@ -146,6 +150,8 @@ struct S_00a36050
 };
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x00a36050
+// pdb: NiTransformController::RegisterStreamables | NiTransformController.obj | debug, object-file run extension, low
+// pdb params: kStream
 void* __thiscall S_00a36050::DestroyIfFlagged(unsigned int uiFlags)
 {
     ProcessEntries_00a35960();
@@ -217,6 +223,9 @@ struct Ctrl00a358b0
 };
 // @fnv 0x00a358b0
 // src: XBOX_PDB 0x00a358b0
+// pdb: BSMultiTargetTreadTransfController::GuaranteeTimeRange | BSMultiTargetTreadTransfController.obj | retail, upstream name already matches, high
+// pdb params: afStartTime, afEndTime
+// pdb locals: us
 void __thiscall Ctrl00a358b0::BSMultiTargetTreadTransfController_GuaranteeTimeRange(float afStartTime, float afEndTime)
 {
     unsigned short us = 0;
@@ -285,9 +294,11 @@ struct InterpStub_00a2fac0
 
 // @fnv 0x00a2fac0
 // src: COMMUNITY 0x00a2fac0
-bool __stdcall NiMultiTargetTransformController_InterpolatorIsCorrectType(InterpStub_00a2fac0* apInterpolator, unsigned short ausIndex)
+// pdb: NiMultiTargetTransformController::InterpolatorIsCorrectType | NiMultiTargetTransformController.obj | debug, upstream name already matches, high
+// pdb params: pkInterpolator, usIndex
+bool __stdcall NiMultiTargetTransformController_InterpolatorIsCorrectType(InterpStub_00a2fac0* pkInterpolator, unsigned short usIndex)
 {
-    return apInterpolator->IsCorrectType();
+    return pkInterpolator->IsCorrectType();
 }
 
 // FUN_00a35900 : BSMultiTargetTreadTransfController entry getter.
@@ -313,6 +324,8 @@ struct FUN_00a35900_cls
 
 // @fnv 0x00a35900
 // src: XBOX_PDB 0x00a35900
+// pdb: BSMultiTargetTreadTransfController::GetBlendInterpolator | BSMultiTargetTreadTransfController.obj | debug, upstream name already matches, high
+// pdb params: ausIndex
 TreadEntry* FUN_00a35900_cls::BSMultiTargetTreadTransfController_GetBlendInterpolator(unsigned short usIndex, int aParam1, int aParam2, int aParam3, int aParam4)
 {
     return &m_pEntries[usIndex];
@@ -321,7 +334,7 @@ TreadEntry* FUN_00a35900_cls::BSMultiTargetTreadTransfController_GetBlendInterpo
 extern char DAT_01096694;
 void* __cdecl Object_DispatchCommandFour(unsigned int size) throw();
 
-void* __fastcall NiInterpController_NiInterpController(void* controller) throw();
+void* __fastcall NiInterpController_ctor(void* controller) throw();
 
 struct TreadInterpolator : NiInterpController
 {
@@ -335,19 +348,22 @@ struct TreadInterpolator : NiInterpController
 
 struct TreadController
 {
-    TreadInterpolator* __thiscall CreateInterpolator(unsigned int index);
-    void __thiscall BSMultiTargetTreadTransfController_CopyMembers(TreadInterpolator* interp, unsigned int index);
+    TreadInterpolator* __thiscall CreateInterpolator(unsigned int kCloning);
+    void __thiscall BSMultiTargetTreadTransfController_CopyMembers(TreadInterpolator* pkDest, unsigned int kCloning);
 };
 
 // @fnv 0x00a35a10
-TreadInterpolator* TreadController::CreateInterpolator(unsigned int index)
+// pdb: BSMultiTargetTreadTransfController::CreateClone | BSMultiTargetTreadTransfController.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+TreadInterpolator* TreadController::CreateInterpolator(unsigned int kCloning)
 {
     TreadInterpolator* interp;
     TreadInterpolator* storage = static_cast<TreadInterpolator*>(Object_DispatchCommandFour(sizeof(TreadInterpolator)));
     if (storage)
     {
         // The shared base has no declaration for the original constructor yet.
-        NiInterpController_NiInterpController(storage);
+        NiInterpController_ctor(storage);
         *reinterpret_cast<void**>(storage) = &DAT_01096694;
         storage->unk34 = 0;
         storage->unk38 = 0;
@@ -359,7 +375,7 @@ TreadInterpolator* TreadController::CreateInterpolator(unsigned int index)
     {
         interp = 0;
     }
-    BSMultiTargetTreadTransfController_CopyMembers(interp, index);
+    BSMultiTargetTreadTransfController_CopyMembers(interp, kCloning);
     return interp;
 }
 
@@ -381,6 +397,7 @@ struct FUN_00a35b90_cls
 
 // Destroys the object or, when acFlags has bit 2 set, destroys each of the count elements in the array and optionally frees the memory.
 // @fnv 0x00a35b90
+// pdb: BSBlendTreadTransfInterpolator::`vector deleting destructor' | BSMultiTargetTreadTransfController.obj | retail, object-file gap fill, high
 void* FUN_00a35b90_cls::Destroy(unsigned int acFlags)
 {
     if (acFlags & 2)
@@ -456,7 +473,7 @@ struct FUN_00a35fe0_shell
     Entry_00a35fe0** unk3C;
     unsigned short unk40;
 
-    unsigned short __thiscall BSMultiTargetTreadTransfController_AddInterpolatorTarget(Target_00a35fe0* target, unsigned short id, void* value);
+    unsigned short __thiscall BSMultiTargetTreadTransfController_AddInterpolatorTarget(Target_00a35fe0* apTarget, unsigned short ausBlendIdx, void* apLink);
 };
 
 extern unsigned short DAT_01096320;
@@ -464,7 +481,10 @@ extern unsigned short DAT_01096320;
 // Finds the first free entry slot, stores the value, id and target in it, sets bit 0x80 on the target, and returns the slot index or DAT_01096320 if none is free.
 // @fnv 0x00a35fe0
 // src: XBOX_PDB 0x00a35fe0
-unsigned short __thiscall FUN_00a35fe0_shell::BSMultiTargetTreadTransfController_AddInterpolatorTarget(Target_00a35fe0* target, unsigned short id, void* value)
+// pdb: BSMultiTargetTreadTransfController::AddInterpolatorTarget | BSMultiTargetTreadTransfController.obj | retail, upstream name already matches, high
+// pdb params: apTarget, ausBlendIdx, apLink
+// pdb locals: usIndex
+unsigned short __thiscall FUN_00a35fe0_shell::BSMultiTargetTreadTransfController_AddInterpolatorTarget(Target_00a35fe0* apTarget, unsigned short ausBlendIdx, void* apLink)
 {
     for (unsigned short index = 0; index < unk40; ++index)
     {
@@ -472,10 +492,10 @@ unsigned short __thiscall FUN_00a35fe0_shell::BSMultiTargetTreadTransfController
 
         if (entry->unk04 == 0)
         {
-            unk3C[index]->unk08 = value;
-            unk3C[index]->unk00 = id;
-            unk3C[index]->unk04 = target;
-            target->unk30 |= 0x80;
+            unk3C[index]->unk08 = apLink;
+            unk3C[index]->unk00 = ausBlendIdx;
+            unk3C[index]->unk04 = apTarget;
+            apTarget->unk30 |= 0x80;
             return index;
         }
     }
@@ -570,6 +590,10 @@ void Holder::AssignInterpolatorRef(unsigned int idx, SmartPtr<RefObj>& out) thro
 // Clears the entry at idx by moving its RefObj into a temporary SmartPtr, which releases it when the pointer goes out of scope.
 // @fnv 0x00a32b80
 // src: COMMUNITY 0x00a32b80
+// pdb: NiControllerSequence::RemoveInterpolator | NiControllerSequence.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiControllerSequence::GetKeyTimeAtDivFreq
+// pdb params: uiIndex
+// pdb locals: spinterpolator
 void Holder::NiControllerSequence_RemoveInterpolator_0(unsigned int uiIndex)
 {
     SmartPtr<RefObj> sp;
@@ -582,9 +606,11 @@ extern void __cdecl LoadBinary(NiStream*);
 
 // @fnv 0x00a35840
 // src: XBOX_PDB 0x00a35840
-void __cdecl BSMultiTargetTreadTransfController_LoadBinary(NiStream* stream)
+// pdb: BSMultiTargetTreadTransfController::LoadBinary | BSMultiTargetTreadTransfController.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void __cdecl BSMultiTargetTreadTransfController_LoadBinary(NiStream* arStream)
 {
-    return LoadBinary(stream);
+    return LoadBinary(arStream);
 }
 
 struct Vec112
@@ -613,9 +639,9 @@ extern float DAT_01096b8c;
 // This unit inlines the invalid-value constructor; keep its definition here because the shared header only declares it.
 inline NiQuatTransform::NiQuatTransform()
 {
-    *reinterpret_cast<Vec112*>(&x) = DAT_011a8400;
-    memcpy(&qx, &DAT_011f3704, sizeof(DAT_011f3704));
-    scale = DAT_01096b8c;
+    *reinterpret_cast<Vec112*>(&m_kTranslate) = DAT_011a8400;
+    memcpy(&m_kRotate, &DAT_011f3704, sizeof(DAT_011f3704));
+    m_fScale = DAT_01096b8c;
 }
 struct Blend112
 {
@@ -698,19 +724,22 @@ struct Controller112
     unsigned short count, field3a;
     Link112** links;
     unsigned short linkCount;
-    void BSMultiTargetTreadTransfController_Update(float* time);
+    void BSMultiTargetTreadTransfController_Update(float* UpdateData);
 };
 
 // @fnv 0x00a35c00
 // src: XBOX_PDB 0x00a35c00
-void Controller112::BSMultiTargetTreadTransfController_Update(float* time)
+// pdb: BSMultiTargetTreadTransfController::Update | BSMultiTargetTreadTransfController.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: kTransform, us, fcurrLerp, ul, endPos, startRot, curPos, startPos, curRot, linkTransf, endRot
+void Controller112::BSMultiTargetTreadTransfController_Update(float* UpdateData)
 {
     if (Active() & 1)
     {
         NiQuatTransform value;
         for (int i = 0; i < count; ++i)
         {
-            if (blends[i].Update(*time, 0, value))
+            if (blends[i].Update(*UpdateData, 0, value))
             {
                 float weight = blends[i].weight;
                 for (unsigned short j = 0; j < linkCount; ++j)
@@ -744,7 +773,7 @@ void __cdecl _NiFree_00aa10f0(void* p);
 
 struct S00a35960_Heap
 {
-    void __thiscall MemoryManager_Deallocate(void* p);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 
 struct S00a35960_Obj
@@ -767,6 +796,8 @@ struct S00a35960_Cls : NiInterpController
 // Sets the vtable, disposes of m34 and m3c storage, then calls FUN_00a6d290.
 // @fnv 0x00a35960
 // src: GUESS 0x00a35960 (confidence: low)
+// pdb: BSMultiTargetTreadTransfController::~BSMultiTargetTreadTransfController | BSMultiTargetTreadTransfController.obj | retail, object-file run extension, low
+// pdb locals: us
 void S00a35960_Cls::ProcessEntries_00a35960()
 {
     S00a35960_Obj* pObj = m34;
@@ -884,6 +915,9 @@ struct FUN_00a35eb0_shell
 
 // Searches the entry array for an interpolator whose name matches name and returns its index, or DAT_01096320 if not found.
 // @fnv 0x00a35eb0
+// pdb: BSMultiTargetTreadTransfController::GetInterpolatorIndex | BSMultiTargetTreadTransfController.obj | debug, object-file run extension, low
+// pdb params: pcID
+// pdb locals: us
 unsigned short __thiscall FUN_00a35eb0_shell::FindByName(const char* name)
 {
     if (name == 0)

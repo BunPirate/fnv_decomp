@@ -5,6 +5,8 @@
 
 // Exe 0x004f2390 tests membership via 0x005f65d0, then appends via 0x00905820 if absent.
 // @fnv 0x004f2390
+// pdb: TESRegionDataImposter::AddToImposterList | TESRegionDataImposter.obj | retail, object-file run extension, low
+// pdb params: apNewImposter
 bool TESRegionDataImposter::AddImposter(TESObjectREFR* ref)
 {
     if (!((BSSimpleList<TESForm*>*)((TESTopicInfoData*)this)->GetLinkToList())
@@ -17,14 +19,17 @@ bool TESRegionDataImposter::AddImposter(TESObjectREFR* ref)
 }
 
 // @fnv 0x004f2190
-bool TESRegionDataImposter::ReadRegionData(TESFile* file)
+// pdb: TESRegionDataImposter::LoadRegionDataImposter | TESRegionDataImposter.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: tmpArray, entrySize, uicount, uisize, i, nID
+bool TESRegionDataImposter::ReadRegionData(TESFile* apFile)
 {
-    if (!file)
+    if (!apFile)
         return false;
-    switch (file->GetChunkID())
+    switch (apFile->GetChunkID())
     {
     case 0x44494452: {
-        unsigned int uiChunkSize = file->GetChunkSize();
+        unsigned int uiChunkSize = apFile->GetChunkSize();
         struct ImposterArrayCounts
         {
             unsigned int formIDSize;
@@ -33,11 +38,11 @@ bool TESRegionDataImposter::ReadRegionData(TESFile* file)
         loadCounts.formIDSize = sizeof(unsigned int);
         loadCounts.count = uiChunkSize / loadCounts.formIDSize;
         unsigned int* formIDs = new unsigned int[loadCounts.count];
-        file->GetChunkData(formIDs, uiChunkSize);
+        apFile->GetChunkData(formIDs, uiChunkSize);
         for (unsigned int i = 0; i < loadCounts.count; i++)
         {
             unsigned int formID = formIDs[i];
-            if (file->IsEndianConversionRequired())
+            if (apFile->IsEndianConversionRequired())
                 BSEndian(&formID, EndianSizeTag<4>());
             AddImposter(reinterpret_cast<TESObjectREFR*>(formID));
         }
@@ -52,7 +57,10 @@ bool TESRegionDataImposter::ReadRegionData(TESFile* file)
 
 // Walks the imposter's reference list, resolving each stored form ID to a TESObjectREFR and removing entries that fail to resolve.
 // @fnv 0x004f2290
-void TESRegionDataImposter::InitItem(TESForm* form)
+// pdb: TESRegionDataImposter::InitItem | TESRegionDataImposter.obj | retail, upstream name already matches, high
+// pdb params: apOwner
+// pdb locals: pImposter, nID, pList, pownerFile
+void TESRegionDataImposter::InitItem(TESForm* apOwner)
 {
     struct ImposterResolution
     {
@@ -66,7 +74,7 @@ void TESRegionDataImposter::InitItem(TESForm* form)
         if (pList->GetItem())
         {
             entry.formID = reinterpret_cast<unsigned int>(pList->GetItem());
-            TESFile* file = form ? form->GetFile(-1) : 0;
+            TESFile* file = apOwner ? apOwner->GetFile(-1) : 0;
             TESForm::RemapFormIDForFile(entry.formID, file);
             entry.reference = dynamic_cast<TESObjectREFR*>(TESForm::GetFormByID(entry.formID));
             pList->SetItem(entry.reference);
@@ -90,6 +98,7 @@ struct List_009e03e0
 };
 
 // @fnv 0x004f2370
+// pdb: TESRegionDataImposter::ClearImposterList | TESRegionDataImposter.obj | debug, object-file run extension, low
 bool TESRegionDataImposter::ClearList()
 {
     ((List_009e03e0*)((TESTopicInfoData*)this)->GetLinkToList())->RemoveAll();
@@ -97,6 +106,9 @@ bool TESRegionDataImposter::ClearList()
 }
 
 // @fnv 0x004f2450
+// pdb: TESRegionDataImposter::BlendInto | TESRegionDataImposter.obj | debug, vtable slot, medium
+// pdb params: apRegionData, aiTotalBlending
+// pdb locals: pdataIn
 void TESRegionDataImposter::SetFromData(const TESRegionData* apRegionData, unsigned int aiTotalBlending)
 {
     TESRegionDataImposter* pdataIn = (TESRegionDataImposter*)apRegionData;
@@ -106,6 +118,8 @@ void TESRegionDataImposter::SetFromData(const TESRegionData* apRegionData, unsig
 
 // Allocates a copy of this region data.
 // @fnv 0x004f23d0
+// pdb: TESRegionDataImposter::Copy | TESRegionDataImposter.obj | retail, vtable slot, high
+// pdb locals: pdata
 TESRegionData* TESRegionDataImposter::Clone()
 {
     TESRegionDataImposter* pdata = new TESRegionDataImposter(this);
@@ -113,6 +127,7 @@ TESRegionData* TESRegionDataImposter::Clone()
 }
 
 // @fnv 0x004f2040
+// pdb: TESRegionDataImposter::~TESRegionDataImposter | TESRegionDataImposter.obj | debug, upstream name already matches, high
 TESRegionDataImposter::~TESRegionDataImposter()
 {
     ClearList();
@@ -132,6 +147,8 @@ struct FUN_004f20b0_node
     FUN_004f20b0_node* next;
 };
 // @fnv 0x004f20b0
+// pdb: TESRegionDataImposter::Save | TESRegionDataImposter.obj | retail, upstream name already matches, high
+// pdb locals: tmpImposter, uicount, tmpArray, tmpList, i, nID
 void TESRegionDataImposter::Save()
 {
     TESRegionData::Save();
@@ -180,6 +197,8 @@ class Obj4f11
 // Returns false if m_pNext or m_pHead is null, m_pHead->FUN_004f3610() fails, or any node's item fails FUN_004f81e0(1); otherwise true.
 // @fnv 0x004f11e0
 // src: XBOX_PDB 0x004f11e0
+// pdb: TESRegion::Validate | TESRegion.obj | retail, upstream name already matches, high
+// pdb locals: pcheck
 bool Obj4f11::TESRegion_Validate()
 {
     ContNode* pNode = m_pNext;

@@ -49,9 +49,9 @@ extern "C" LocalM128 _mm_shuffle_ps(LocalM128, LocalM128, int);
 // src/havok/physics/collide/agent3/bvtree3/hkpbvtreeagent3.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/collide/agent3/bvtree3/hkpbvtreeagent3.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 void* __cdecl InitAndReturnTail(void*, void*, void*);
-void __fastcall hkBvTreeAgent3_process(void* self, int, void*, int);
+void __fastcall hkBvTreeAgent3_process(void* input, int, void*, int);
 void __fastcall CallWithValueSource(void* self, int, int, int);
-void __fastcall hkBvTreeAgent3_ProcessState_00d2d430(void* self, int, int, int);
+void __fastcall hkBvTreeAgent3_calcStatistics(void* entry, int, int, int);
 void __fastcall Object__hkAgent1nMachine_WarpTime_Thunk(void* self, int, int, int);
 void hkBvTreeAgent3_process_UpdateState_00d2d9d0(void* pObject);
 extern "C" void __cdecl _hkAgent1nMachine_WarpTime(void*, float, float, int);
@@ -76,6 +76,8 @@ struct LessU32
 };
 // Partitions pArr[d..h] around a middle pivot using cmpLess, swapping out-of-order elements, then recurses on the left part and loops on the right.
 // @fnv 0x00d2da70
+// pdb: hkAlgorithm::quickSortRecursive<unsigned int,hkAlgorithm::less<unsigned int> > | hkpBvTreeAgent3.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
 extern "C" void __cdecl QuickSortRange(unsigned* auiArray, int aiLow, int aiHigh, LessU32 aComparator)
 {
 setpoint:
@@ -164,7 +166,7 @@ struct Agent
 };
 extern "C" void __cdecl hkpAgentMachineUtil_calc1nStatistics(int, int, void*);
 extern "C" void __cdecl hkpAgent1nSector_ProcessEntries_00da3510(int, int);
-void __cdecl hkBvTreeAgent3_ProcessState_00d2d430(int a1, int a2, int a3, Agent* p);
+void __cdecl hkBvTreeAgent3_calcStatistics(int entry, int agentData, int input, Agent* collector);
 // src: GUESS 0x00d2d460 (confidence: low)
 void __cdecl Object_ForwardCall_00d2d460(int a, int b, int c)
 {
@@ -340,7 +342,7 @@ char** hkMemoryRouter_getInstance();
 int hkpCdBody_UpdateState_00d2d4f0(int a, int b, hkTransform* l, void* c, int d, int e, char* f, int g);
 int Hkpbvtreeagent3_ForwardCall_00d2d4b0(int a, S00d2d890_Hits* h);
 int hkAgent1nMachine_Process(int a, void* b, int c, char* d, int e);
-char* __cdecl hkBvTreeAgent3_process(char* self, int a1, char* child, int a3, int a4);
+char* __cdecl hkBvTreeAgent3_process(char* input, int entry, char* agentData, int separatingNormal, int output);
 __declspec(noinline) void hkBvTreeAgent3_process_UpdateState_00d2d9d0(void* pObject);
 void hkBvTreeAgent3_registerAgent3(hkpCollisionDispatcher* target);
 
@@ -453,9 +455,9 @@ __forceinline void hkVector4::setSub4(const hkVector4& v0, const hkVector4& v1)
 {
     m_vComponents = _mm_sub_ps(v0.m_vComponents, v1.m_vComponents);
 }
-__forceinline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& v1)
+__forceinline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), v1.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 __forceinline void hkVector4::addMul4(hkSimdRealParameter r, const hkVector4& v1)
 {
@@ -570,15 +572,15 @@ __forceinline void hkpShape::getAabb(const hkTransform& localToWorld, hkReal tol
 const hkTransform& hkpCdBody::getTransform() const
 {
     ;
-    return *static_cast<const hkTransform*>(m_pMotionState);
+    return *static_cast<const hkTransform*>(m_motion);
 }
 const hkMotionState* hkpCdBody::GetMotionState() const
 {
-    return static_cast<const hkMotionState*>(m_pMotionState);
+    return static_cast<const hkMotionState*>(m_motion);
 }
 const hkpShape* hkpCdBody::getShape() const
 {
-    return m_pCollisionShape;
+    return m_shape;
 }
 class hkpContactMgr;
 struct WorldOperationEntry;
@@ -708,8 +710,11 @@ template <typename T, typename L> void __cdecl quickSort(T* pArr, int iSize, L c
 }
 }
 // @fnv 0x00d2d4f0
-// src: GUESS 0x00d2d4f0 (confidence: low)
-int __cdecl hkpCdBody_UpdateState_00d2d4f0(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const hkTransform& bTa,
+// src: XBOX_RETAIL_PDB 0x00d2d4f0
+// pdb: hkBvTreeAgent3::calcAabbAndQueryTree | hkpBvTreeAgent3.obj | retail, call graph (shared callers), high
+// pdb params: bodyA, bodyB, bTa, linearTimInfo, input, cachedAabb, hitListOut, hitListCapacity
+// pdb locals: aabb, radius4, f, expand4, assertBuf, ostr
+int __cdecl hkBvTreeAgent3_calcAabbAndQueryTree(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const hkTransform& bTa,
                          const hkVector4& linearTimInfo, const GskAgentInput& input, hkAabb* cachedAabb,
                          hkpShapeKey* hitListOut, int hitListCapacity)
 {
@@ -721,16 +726,16 @@ int __cdecl hkpCdBody_UpdateState_00d2d4f0(const hkpCdBody& bodyA, const hkpCdBo
         hkVector4 timInfo;
         SetRotatedInverseDir(timInfo, bodyB.getTransform().getRotation(), linearTimInfo);
         hkVector4 aabbExtents;
-        if (input.m_pCollisionQualityInfo->m_iQualityInfoValue10.val())
+        if (input.m_pCollisionQualityInfo->m_useContinuousPhysics.val())
         {
-            const hkReal secOrdErrA = (msA->m_kDeltaAngle(3) + msB->m_kDeltaAngle(3)) * msA->m_fObjectRadius;
-            const hkReal secOrdErrB = msB->m_kDeltaAngle(3) * msB->m_kDeltaAngle(3) * msB->m_fObjectRadius;
+            const hkReal secOrdErrA = (msA->m_deltaAngle(3) + msB->m_deltaAngle(3)) * msA->m_objectRadius;
+            const hkReal secOrdErrB = msB->m_deltaAngle(3) * msB->m_deltaAngle(3) * msB->m_objectRadius;
             const hkReal checkEpsilon = input.m_fScalar * 0.5f + (secOrdErrA + secOrdErrB);
             bodyA.getShape()->getAabb(bTa, checkEpsilon, aabb);
             hkVector4 massCenterAinB;
             {
                 hkVector4 radius4;
-                SetAll3(radius4, input.m_fScalar * 0.5f + msA->m_fObjectRadius + secOrdErrB);
+                SetAll3(radius4, input.m_fScalar * 0.5f + msA->m_objectRadius + secOrdErrB);
                 SetTransformedInversePos(massCenterAinB, bodyB.getTransform(),
                                                          msA->getSweptTransform().m_vCenterOfMass1);
                 hkVector4 maxR;
@@ -742,13 +747,13 @@ int __cdecl hkpCdBody_UpdateState_00d2d4f0(const hkpCdBody& bodyA, const hkpCdBo
             }
             aabbExtents.setSub4(aabb.m_kMaximumCorner, aabb.m_kMinimumCorner);
             {
-                if (msB->m_kDeltaAngle(3) > 0.0f)
+                if (msB->m_deltaAngle(3) > 0.0f)
                 {
                     hkVector4 relPos;
-                    relPos.setSub4(massCenterAinB, msB->getSweptTransform().m_vCenterOfMassLocal);
+                    relPos.setSub4(massCenterAinB, msB->getSweptTransform().m_centerOfMassLocal);
                     hkVector4 offsetOut;
-                    offsetOut.setCross(relPos, msB->m_kDeltaAngle);
-                    hkReal f = input.m_pStepInfo.m_fTimeStep * msB->getSweptTransform().getInvDeltaTime();
+                    offsetOut.setCross(relPos, msB->m_deltaAngle);
+                    hkReal f = input.m_pStepInfo.m_deltaTime * msB->getSweptTransform().getInvDeltaTime();
                     timInfo.addMul4(f, offsetOut);
                 }
                 hkVector4 zero;

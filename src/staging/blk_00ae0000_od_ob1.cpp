@@ -30,26 +30,29 @@ struct FUN_00afb190_entry
 };
 struct FUN_00afb190_shell
 {
-    bool Archive_CheckInvalidateFile(FUN_00afb190_entry* entry, const char* name);
+    bool Archive_CheckInvalidateFile(FUN_00afb190_entry* apFile, const char* apFileName);
 };
 // @fnv 0x00afb190
 // src: COMMUNITY 0x00afb190
-bool FUN_00afb190_shell::Archive_CheckInvalidateFile(FUN_00afb190_entry* entry, const char* name)
+// pdb: Archive::CheckInvalidateFile | Archive.obj | retail, upstream name already matches, high
+// pdb params: apFile, apFileName
+// pdb locals: pfilename
+bool FUN_00afb190_shell::Archive_CheckInvalidateFile(FUN_00afb190_entry* apFile, const char* apFileName)
 {
     char path[0x104];
-    if (DAT_011acdf9 && !entry->IsChecked())
+    if (DAT_011acdf9 && !apFile->IsChecked())
     {
-        if (name)
+        if (apFileName)
         {
             _strcpy_s(path, 0x104, "Data\\");
-            _strcat_s(path, 0x104, name);
+            _strcat_s(path, 0x104, apFileName);
             if (FUN_00ecbf05(path, 0) != -1)
             {
-                entry->SetOffset(0);
+                apFile->SetOffset(0);
                 return true;
             }
         }
-        entry->SetChecked(true);
+        apFile->SetChecked(true);
     }
     return false;
 }

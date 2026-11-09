@@ -11,27 +11,28 @@ class QueuedFile;
 
 
 
+// pdb: class BGSTextureSet, size 0xb0 (here 0xa0), bases: TESBoundObject, BSTextureSet, 4 members
 class BGSTextureSet : public TESBoundObject, public BSTextureSet
 {
 public:
     BGSTextureSet();
     virtual ~BGSTextureSet();
 
-    virtual bool LoadForm(TESFile* modInfo);
+    virtual bool LoadForm(TESFile* apFile);
     virtual void ClearData();
     virtual void LoadBinary(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
     virtual const char* GetTexture(BSShaderProperty::TextureTypeEnum textureType);
 
     void ResetFormData();
-    void LoadTextures(int aePriority, QueuedFile* apQueuedFile, bool abLoad);
+    void QueueTextureSet(int aePriority, QueuedFile* apParent, bool abNoSpecular);
     void LoadTextures(int aePriority, void* apQueuedFile, bool abLoad);
     void SetHasSpecular(bool hasSpecular);
     BSShaderTextureSet* BuildShaderTextureSet();
 
     static void operator delete(void*, unsigned int);
     static BGSTextureSet* GetEmptyTextureSet();
-    static void InitializeNullTextureSet();
+    static void CreateNullTextureSet();
     static BGSTextureSet* s_pNullTextureSet;
 
     // Exe ctor/dtor 0x0048e270/0x0048e2e0: six ordinary 12-byte TESTexture slots.

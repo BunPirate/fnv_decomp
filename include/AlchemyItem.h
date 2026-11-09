@@ -35,7 +35,7 @@ public:
     int CombatController_GetTarget(int, int, bool);
     bool AlchemyItem_IsFlagSet(unsigned int);
     bool AlchemyItem_IsFlagSet(int);
-    bool FUN_00981420();
+    bool CombatController_IsSearching();
     void SetSound(TESSound* sound);
     unsigned int GetFieldC8();
     void FUN_00874460(SpellItem* item);

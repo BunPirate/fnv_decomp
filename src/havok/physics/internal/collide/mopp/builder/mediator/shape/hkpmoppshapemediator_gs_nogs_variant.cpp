@@ -33,7 +33,7 @@ struct FUN_00dd5210_Object
     int unk04;
     hkpShapeContainer* unk08;
     int unk0c;
-    void FillRecords(FUN_00dd5210_Record* records);
+    void FillRecords(FUN_00dd5210_Record* primitives);
 };
 struct SpawnedBase
 {
@@ -48,7 +48,7 @@ class FUN_00dd52a0_cls : public SpawnedBase
     hkpShapeContainer* m_src08;
     int m_result0c;
 
-    FUN_00dd52a0_cls* InitFromSource(hkpShapeContainer* src);
+    FUN_00dd52a0_cls* hkpMoppShapeMediator_ctor(hkpShapeContainer* shapeArray);
 };
 struct CpuAllocator
 {
@@ -110,8 +110,8 @@ struct ProjectionShape
     int unk04;
     hkpShapeContainer* m_container;
 
-    void ComputeProjectionRange(const hkVector4& direction, int unused, ProjectionSample* samples, int numSamples,
-                                hkReal* minOut, hkReal* maxOut);
+    void ComputeProjectionRange(const hkVector4& direction, int directionIndex, ProjectionSample* primitives, int numPrimitives,
+                                hkReal* absMinOut, hkReal* absMaxOut);
 };
 
 namespace fnv_00dd5440 {
@@ -130,20 +130,22 @@ struct ExtentCalculator
     int m_unk04;
     const hkpShapeContainer* m_container;
 
-    void hkpMoppShapeMediator_findExtents(const hkVector4& direction, int unused, const hkpChildKey* keys, int numKeys, float* minOut,
-                      float* maxOut) const;
+    void hkpMoppShapeMediator_findExtents(const hkVector4& direction, int directionIndex, const hkpChildKey* primitives, int numPrimitives, float* absMinOut,
+                      float* absMaxOut) const;
 };
 
 // @fnv 0x00dd5440
 // src: XBOX_PDB 0x00dd5440
-void ExtentCalculator::hkpMoppShapeMediator_findExtents(const hkVector4& direction, int unused, const hkpChildKey* keys, int numKeys,
-                                    float* minOut, float* maxOut) const
+// pdb: hkpMoppShapeMediator::findExtents | hkpMoppShapeMediator.obj | retail, upstream name already matches, high
+// pdb params: direction, directionIndex, primitives, numPrimitives, absMinOut, absMaxOut
+void ExtentCalculator::hkpMoppShapeMediator_findExtents(const hkVector4& direction, int directionIndex, const hkpChildKey* primitives, int numPrimitives,
+                                    float* absMinOut, float* absMaxOut) const
 {
     hkpShapeBuffer buffer;
     float lo;
     float hi;
 
-    unsigned int key = keys[0].m_key;
+    unsigned int key = primitives[0].m_key;
     const hkpConvexShape* shape = static_cast<const hkpConvexShape*>(m_container->GetShapeForKey(key, buffer));
     if (shape)
     {
@@ -161,9 +163,9 @@ void ExtentCalculator::hkpMoppShapeMediator_findExtents(const hkVector4& directi
     float fTargetUpperBound = lo;
     float fMinimumInputValue = hi;
 
-    for (int i = 1; i < numKeys; i++)
+    for (int i = 1; i < numPrimitives; i++)
     {
-        key = keys[i].m_key;
+        key = primitives[i].m_key;
         shape = static_cast<const hkpConvexShape*>(m_container->GetShapeForKey(key, buffer));
         if (shape)
         {
@@ -188,7 +190,7 @@ void ExtentCalculator::hkpMoppShapeMediator_findExtents(const hkVector4& directi
         }
     }
 
-    *minOut = fTargetUpperBound;
-    *maxOut = fMinimumInputValue;
+    *absMinOut = fTargetUpperBound;
+    *absMaxOut = fMinimumInputValue;
 }
 }  // namespace fnv_00dd5440

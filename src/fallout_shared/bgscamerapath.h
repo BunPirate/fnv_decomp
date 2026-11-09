@@ -11,7 +11,7 @@
 class TESConditionInit
 {
   public:
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
 };
 class CameraPathManager
 {

@@ -6,6 +6,7 @@
 
 // Calls FUN_006e62b0, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x006e6280
+// pdb: PathingSearchRayCast::`scalar deleting destructor' | PathingSearchRayCast.obj | retail, vtable slot, high
 void* __thiscall PathingSearchRayCast::Destroy(unsigned int flags)
 {
     FUN_006e62b0();

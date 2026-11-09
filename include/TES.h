@@ -58,63 +58,64 @@ class TESWaterSystem;
 
 #define TES_ADD_DEAD_COUNT Add##Dead##Count
 
+// pdb: class TES, size 0xc4, 49 members
 class TES
 {
 public:
     virtual void vf00();
 
-    GridDistantArray* m_pGridDistantArray;
-    GridCellArray* m_pGridCells;
-    NiNode* m_pLandRootNode;
-    NiNode* m_pWaterRootNode;
-    NiNode* m_pDistantLandRootNode;
-    NiNode* m_pObjectRootNode;
-    NiDirectionalLight* m_pDirectionalLight;
-    NiFogProperty* m_pFogProperty;
-    int iFirstValue;
-    int iSecondValue;
-    int m_iGridWidth;
-    int m_iGridHeight;
-    TESObjectCELL* m_pReferenceCell;
-    TESObjectCELL** m_ppCellBufferA;
-    TESObjectCELL** m_ppCellBufferB;
-    unsigned int m_uiGridCellCountX;
-    unsigned int m_uiGridCellCountY;
-    int m_iCurrentGridX;
-    int m_iCurrentGridY;
-    bool m_bFirstCellGridFlag;
-    bool m_bSecondCellGridFlag;
-    bool m_bThirdCellGridFlag;
-    bool m_bFourthCellGridFlag;
-    void(__cdecl* m_pfnCellCallback)(TESObjectCELL*, void*);
-    void* m_pCellCallbackContext;
-    TESRegion* m_pCurrentRegion;
-    bool m_bHasCurrentRegion;
+    GridDistantArray* pGridDistantA;
+    GridCellArray* pGridCellA;
+    NiNode* pObjRoot;
+    NiNode* pObjLandRoot;
+    NiNode* pObjLODWaterRoot;
+    NiNode* pTempNodeManager;
+    NiDirectionalLight* pObjLight;
+    NiFogProperty* pObjFog;
+    int iCurrentGridX;
+    int iCurrentGridY;
+    int iCurrentQueuedX;
+    int iCurrentQueuedY;
+    TESObjectCELL* pInteriorCell;
+    TESObjectCELL** pInteriorBuffer;
+    TESObjectCELL** pExteriorBuffer;
+    unsigned int iTempInteriorBufferSize;
+    unsigned int iTempExteriorBufferSize;
+    int iSaveGridX;
+    int iSaveGridY;
+    bool bCollisionBoxes;
+    bool bRunningCellTests;
+    bool bRunningCellTests2;
+    bool bRunningSubmergedObjectTest;
+    void(__cdecl* pfnTACCallbackFunc)(TESObjectCELL*, void*);
+    void* pTACCallbackData;
+    TESRegion* pTACRegionFilter;
+    bool bShowLANDborders;
     unsigned char layoutPadding61[3];
-    TESWaterSystem* m_pCurrentClimate;
-    Sky* pWeatherSky;
-    BSSimpleList<ImageSpaceModifierInstance*> m_kImageSpaceModifierInstances;
-    unsigned int m_uiNextImageSpaceModifierId;
-    unsigned int m_uiImageSpaceModifierCount;
-    bool m_bImageSpaceStateFlag;
-    bool m_bSkyStateFlag;
+    TESWaterSystem* pWaterSystem;
+    Sky* pSky;
+    BSSimpleList<ImageSpaceModifierInstance*> listActiveImageSpaceModifiers;
+    unsigned int iTotalToLoad;
+    unsigned int iLoaded;
+    bool bDisablePercentageUpdate;
+    bool bUpdateGridString;
     unsigned char layoutPadding7E[2];
-    float m_fFirstWorldspaceValue;
-    float m_fSecondWorldspaceValue;
-    TESWorldSpace* m_pContainingWorldspace;
-    BSSimpleList<TESObjectCELL*> m_kWorldspaceCellList;
-    BSSimpleList<TESObjectREFR*> m_kTemporaryReferences;
-    BSSimpleList<LeveledActorEntry*> m_kLeveledActorEntries;
-    QueuedFile* m_spWorldspaceQueuedFile;
-    NiSourceTexture* m_pSourceTexture;
-    QueuedFile* m_spQueuedFile;
-    TES__ParticleObjectCache* m_pParticleObjectCache;
-    bool m_bFirstTESStateFlag;
-    bool m_bSecondTESStateFlag;
+    float fCell_delta_x;
+    float fCell_delta_y;
+    TESWorldSpace* pWorldSpace;
+    BSSimpleList<TESObjectCELL*> listLastLoadedExteriors;
+    BSSimpleList<TESObjectREFR*> ListofBedsAndChairs;
+    BSSimpleList<LeveledActorEntry*> DeadCount;
+    QueuedFile* spPreloadedAddonNodes;
+    NiSourceTexture* BloodDecalPreload1;
+    QueuedFile* spPreloadedForms;
+    TES__ParticleObjectCache* pParticleCacheHead;
+    bool bFadeWhenLoading;
+    bool bAllowUnusedPurge;
     unsigned char layoutPaddingB6[2];
-    unsigned int m_uiNavMeshStateValue;
-    NavMeshInfoMap* m_pNavMeshInfoMap;
-    NiPointer<LoadedAreaBound> m_spLoadedAreaBound;  // +0xC0; FindCellAtPosition 0x00452580 reads it through operator T* (0x00559450)
+    unsigned int iPlaceableWaterCount;
+    NavMeshInfoMap* pNavMeshInfoMap;
+    NiPointer<LoadedAreaBound> spLoadedAreaBound;  // +0xC0; FindCellAtPosition 0x00452580 reads it through operator T* (0x00559450)
 
     void InitVars();
     NiNode* GetRoot();
@@ -252,9 +253,9 @@ public:
     static void SetCollisionDisableFlag(bool);
     void ToggleCollision();
     unsigned short GetSaveSize();
-    void SaveGame(BGSSaveGameBuffer*);
+    void TES_SaveGame(BGSSaveGameBuffer*);
     void SaveGame();
-    void LoadGame(BGSLoadGameBuffer*);
+    void TES_LoadGame(BGSLoadGameBuffer*);
     void LoadGame();
     void FinishLoad();
     void ClearPersistentRef3DInLoadedCells();
@@ -323,19 +324,19 @@ public:
     void HideFarLandNormalMaps();
     void SetHideLandBlendPassForGridCell(int, int, bool);
     void SetHideLandNormalMapForGridCell(int, int, bool);
-    bool LoadCanopyShadowTexture(const char*, unsigned int);
+    bool TES_RemoveTextureImage(const char*, unsigned int);
     int FindCellAtPosition(const NiPoint3*, bool);
     void InitFromMatrix();
     void InitSoundGrid();
     void RefreshWorldState(int, int, int);
-    void RefreshGrid();
+    void TES_GridArrayLoad();
     static void RefreshWorldSpace();
     void ClearField88();
     void SetDawnSound(TESSound*);
     void ResetCachedValues();
     TESObjectCELL* GetPrevPath();
     TESWorldSpace* GetHitSound();
-    void ProcessItems(BGSLoadGameBuffer*);
+    void FinishLoadGame(BGSLoadGameBuffer*);
     TESWaterSystem* GetActorScale();
     void CreateTextureImage(const char*, NiSourceTexture*&, bool, bool);
     template <class TexturePointer>

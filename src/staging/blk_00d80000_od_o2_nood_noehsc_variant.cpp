@@ -64,12 +64,15 @@ struct __declspec(align(16)) QueryCollector
     {}
 };
 
-int Object_ProcessAndReturnValue_00d883c0(void* a, int b, int c, QueryCollector* out);
+int hkpConstraintSolverSetup_calcBufferOffsetsForSolve(void* a, int b, int c, QueryCollector* out);
 
 // @fnv 0x00d88aa0
 // src: GUESS 0x00d88aa0 (confidence: low)
-int Object_ProcessAndReturnValue_00d88aa0(void* a)
+// pdb: hkpConstraintSolverSetup_calcBufferSize | hkpConstraintSolverSetup.obj | retail, object-file gap fill, high
+// pdb params: island
+// pdb locals: taskHeader
+int Object_ProcessAndReturnValue_00d88aa0(void* island)
 {
     QueryCollector collector;
-    return Object_ProcessAndReturnValue_00d883c0(a, 0, 0, &collector);
+    return hkpConstraintSolverSetup_calcBufferOffsetsForSolve(island, 0, 0, &collector);
 }

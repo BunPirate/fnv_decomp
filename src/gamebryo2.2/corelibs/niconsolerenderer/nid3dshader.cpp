@@ -63,7 +63,9 @@ unsigned int NiD3DShader::IsRendererActive()
 }
 
 // @fnv 0x00e81100
-void NiD3DShader::InitializePoint3()
+// src: XBOX_RETAIL_PDB 0x00e81100
+// pdb: NiD3DShader::_SDMInit | NiD3DShader.obj | retail, string-set bridge, high
+void NiD3DShader::_SDMInit()
 {
     char* oldString = DAT_0126f750;
     if (oldString != &DAT_010ef37c)
@@ -125,8 +127,8 @@ NiDX9AdditionalDepthStencilBufferData* NiDX9AdditionalDepthStencilBufferData::Cr
     default:
         multisampleType = 0;
     }
-    unsigned int height = (*buffer)->m_uiImageHeight;
-    unsigned int width = (*buffer)->m_uiImageWidth;
+    unsigned int height = (*buffer)->m_uiHeight;
+    unsigned int width = (*buffer)->m_uiWidth;
     hr =
         device->CreateDepthStencilSurface(width, height, d3dFormat, multisampleType, 0, data->m_bDiscard,
                                           reinterpret_cast<DepthSurface**>(&data->m_pkSurface), 0);
@@ -155,6 +157,7 @@ extern "C" void __cdecl CreateStagePool();
 
 // @fnv 0x00e80620
 // src: COMMUNITY 0x00e80620
+// pdb: NiD3DShader::InitializePools | NiD3DShader.obj | retail, upstream name already matches, high
 void __cdecl NiD3DShader_InitializePools()
 {
     NiD3DPass_InitializePools();
@@ -166,6 +169,7 @@ extern "C" void __cdecl DestroyStagePool();
 
 // @fnv 0x00e80630
 // src: COMMUNITY 0x00e80630
+// pdb: NiD3DShader::ShutdownPools | NiD3DShader.obj | retail, upstream name already matches, high
 void __cdecl NiD3DShader_ShutdownPools()
 {
     ClearSpawnedObject();
@@ -173,6 +177,7 @@ void __cdecl NiD3DShader_ShutdownPools()
 }
 
 // @fnv 0x00e80690
+// pdb: NiD3DShader::_SDMShutdown | NiD3DShader.obj | debug, object-file run extension, low
 void ResetGlobalString()
 {
     char* old = DAT_0126f750;
@@ -224,9 +229,12 @@ struct FakeRenderer008
 };
 // @fnv 0x00e805b0
 // src: COMMUNITY 0x00e805b0
-unsigned int __stdcall NiD3DShader_SetupRenderingPass(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7)
+// pdb: NiD3DShader::SetupRenderingPass | NiD3DShader.obj | retail, upstream name already matches, high
+// pdb params: pkGeometry, pkSkin, pkRendererData, pkState, pkEffects, kWorld, kWorldBound
+// pdb locals: uiRet, pkBuffData
+unsigned int __stdcall NiD3DShader_SetupRenderingPass(void* pkGeometry, void* pkSkin, void* pkRendererData, void* pkState, void* pkEffects, void* kWorld, void* kWorldBound)
 {
-    return ((FakeRenderer008*)DAT_0126f74c)->V8(a1, a2, a3, a4, a5, a6, a7, 0);
+    return ((FakeRenderer008*)DAT_0126f74c)->V8(pkGeometry, pkSkin, pkRendererData, pkState, pkEffects, kWorld, kWorldBound, 0);
 }
 
 struct VirtHelper
@@ -264,6 +272,7 @@ unsigned int __fastcall SetupGeometryShader(NiD3DShader* shader, void*, void* a1
 }
 
 // @fnv 0x00e818a0
+// pdb: NiD3DShaderInterface::NiD3DShaderInterface | NiD3DShaderInterface.obj | retail, upstream name already matches, high
 NiD3DShaderInterface::NiD3DShaderInterface() throw()
 {
     m_pkD3DDevice = 0;
@@ -292,6 +301,8 @@ void __fastcall UnloadShader(NiD3DShader* shader, void*)
 }
 
 // @fnv 0x00e814b0
+// pdb: NiD3DShader::RecreateRendererData | NiD3DShader.obj | retail, call graph (shared callers), medium
+// pdb locals: pkPass, pkVS, pkPS
 void __fastcall BuildVertexShader(NiD3DShader* shader, void*)
 {
     if (shader->m_pkD3DRenderer)
@@ -372,6 +383,8 @@ class FUN_00e80640_cls
 };
 
 // @fnv 0x00e80640
+// pdb: NiD3DShader::SetupGeometry | NiD3DShader.obj | debug, object-file run extension, low
+// pdb params: pkGeometry
 void FUN_00e80640_cls::AddEntry(unsigned int uiKeyLow, unsigned int uiKeyHigh, unsigned int uiArrayIndex,
                                 unsigned int uiValue, bool flag)
 {
@@ -412,7 +425,7 @@ struct ShaderLibrary
 ShaderLibrary* NiD3DShaderFactory_GetD3DShaderFactory();
 
 // NiDX9Renderer::PurgeShader (0x00e75310) is not declared by the shared header.
-void PurgeD3DShader();
+void NiXenonRenderer_ReleaseD3DShader();
 typedef void (__thiscall *PurgeD3DShaderFunction)(NiDX9Renderer*, NiD3DShaderInterface*);
 
 void FUN_00e7f6b0(void* pkGroup);
@@ -420,6 +433,8 @@ void FUN_00e7f6b0(void* pkGroup);
 unsigned int __fastcall GetImplementation(NiShader* shader);
 
 // @fnv 0x00e806c0
+// pdb: NiD3DShader::~NiD3DShader | NiD3DShader.obj | retail, upstream name already matches, high
+// pdb locals: pkShaderFactory
 NiD3DShader::~NiD3DShader() throw()
 {
     if (m_kName.Exists() && m_kName.GetLength() != 0)
@@ -434,7 +449,7 @@ NiD3DShader::~NiD3DShader() throw()
         }
     }
     if (m_pkD3DRenderer)
-        reinterpret_cast<PurgeD3DShaderFunction>(&PurgeD3DShader)(
+        reinterpret_cast<PurgeD3DShaderFunction>(&NiXenonRenderer_ReleaseD3DShader)(
             reinterpret_cast<NiDX9Renderer*>(m_pkD3DRenderer), this);
     m_bInitialized = false;
     FUN_00e7f6b0(m_pkRenderStateGroup);
@@ -464,6 +479,8 @@ struct IndexController
     virtual void vfn_2c(unsigned int index);
 };
 // @fnv 0x00e807d0
+// pdb: NiD3DShader::SetupTransformations | NiD3DShader.obj | debug, call graph, high
+// pdb params: pkGeometry, pkSkin, pkPartition, pkRendererData, pkState, pkEffects, kWorld, kWorldBound
 int __fastcall SetupTransformations(NiD3DShader* shader, void*, void* unusedFirst, void* geometry, void* info, void* unusedFourth,
                                      void* unusedFifth, void* unusedSixth, void* context, void* unusedEighth)
 {
@@ -646,6 +663,8 @@ unsigned int __fastcall RenderPartitionedSkinGeometry(NiD3DShader* shader, void*
 
 // @fnv 0x00e814f0
 // src: COMMUNITY 0x00e814f0
+// pdb: NiD3DShader::GetVSPresentAllPasses | NiD3DShader.obj | debug, upstream name already matches, high
+// pdb locals: pkPass
 char __cdecl NiD3DShader_GetVSPresentAllPasses(void)
 {
     return *(int*)(DAT_0126f74c + 0x5c) != 0;
@@ -661,6 +680,8 @@ struct RendererState008
 
 // @fnv 0x00e81500
 // src: COMMUNITY 0x00e81500
+// pdb: NiD3DShader::GetPSPresentAllPasses | NiD3DShader.obj | debug, upstream name already matches, high
+// pdb locals: pkPass
 unsigned char NiD3DShader_GetPSPresentAllPasses()
 {
     RendererState008* pState = reinterpret_cast<RendererState008*>(DAT_0126f74c);
@@ -1375,6 +1396,9 @@ extern unsigned int DAT_0126f0e4;
 // Sets beam texture state values, flags m_bFlag5e from DAT_0126f0e4, and builds pkState->m_kWorldView from the renderer view, rotation and translation.
 // @fnv 0x00e80a50
 // src: COMMUNITY 0x00e80a50
+// pdb: NiD3DShader::PrepareGeometryForRendering | NiD3DShader.obj | debug, object-file run extension, low
+// pdb params: pkGeometry, pkPartition, pkRendererData, pkState
+// pdb locals: pkBuffData, psd, pkAGD, pkData, pkSkinInstance, pkPackedAGD, pkSkinPartition, i
 void __cdecl NiD3DShader_PackWorldPerspectiveEffect(const ModelMatrix3* pkRot, const ModelPoint3* pkTrans, ModelXformState* pkState, bool bSave,
                           const ModelRendererView* pkRenderer)
 {
@@ -1468,7 +1492,7 @@ extern "C" void __cdecl BindShaderConstants(NiD3DShader* shader, NiGeometry* geo
     unsigned int pixelCount = 0;
     if (shader->m_spVertexConstantMap.m_pObject)
     {
-        unsigned int count = shader->m_spVertexConstantMap.m_pObject->m_kEntries.m_usESize;
+        unsigned int count = shader->m_spVertexConstantMap.m_pObject->m_aspEntries.m_usESize;
         for (unsigned int i = 0; i < count; ++i)
         {
             ConstantEntry* entry = GetConstantMapEntry(shader->m_spVertexConstantMap.m_pObject, i);
@@ -1478,7 +1502,7 @@ extern "C" void __cdecl BindShaderConstants(NiD3DShader* shader, NiGeometry* geo
     }
     if (shader->m_spPixelConstantMap.m_pObject)
     {
-        unsigned int count = shader->m_spPixelConstantMap.m_pObject->m_kEntries.m_usESize;
+        unsigned int count = shader->m_spPixelConstantMap.m_pObject->m_aspEntries.m_usESize;
         for (unsigned int i = 0; i < count; ++i)
         {
             ConstantEntry* entry = GetConstantMapEntry(shader->m_spPixelConstantMap.m_pObject, i);
@@ -1492,7 +1516,7 @@ extern "C" void __cdecl BindShaderConstants(NiD3DShader* shader, NiGeometry* geo
         NiD3DShaderConstantMap* pConstantMap = pass->m_spPixelConstantMap.m_pObject;
         if (pConstantMap)
         {
-            unsigned int count = pConstantMap->m_kEntries.m_usESize;
+            unsigned int count = pConstantMap->m_aspEntries.m_usESize;
             for (unsigned int i = 0; i < count; ++i)
             {
                 ConstantEntry* entry = GetConstantMapEntry(pConstantMap, i);
@@ -1503,7 +1527,7 @@ extern "C" void __cdecl BindShaderConstants(NiD3DShader* shader, NiGeometry* geo
         pConstantMap = pass->m_spVertexConstantMap.m_pObject;
         if (pConstantMap)
         {
-            unsigned int count = pConstantMap->m_kEntries.m_usESize;
+            unsigned int count = pConstantMap->m_aspEntries.m_usESize;
             for (unsigned int i = 0; i < count; ++i)
             {
                 ConstantEntry* entry = GetConstantMapEntry(pConstantMap, i);
@@ -1520,7 +1544,7 @@ extern "C" void __cdecl BindShaderConstants(NiD3DShader* shader, NiGeometry* geo
         {
             unsigned int count = 0;
             if (shader->m_spPixelConstantMap.m_pObject)
-                count = shader->m_spPixelConstantMap.m_pObject->m_kEntries.m_usESize;
+                count = shader->m_spPixelConstantMap.m_pObject->m_aspEntries.m_usESize;
             for (unsigned int i = 0; i < count; ++i)
             {
                 ConstantEntry* entry = GetConstantMapEntry(shader->m_spPixelConstantMap.m_pObject, i);
@@ -1533,7 +1557,7 @@ extern "C" void __cdecl BindShaderConstants(NiD3DShader* shader, NiGeometry* geo
             }
             count = 0;
             if (shader->m_spVertexConstantMap.m_pObject)
-                count = shader->m_spVertexConstantMap.m_pObject->m_kEntries.m_usESize;
+                count = shader->m_spVertexConstantMap.m_pObject->m_aspEntries.m_usESize;
             for (unsigned int i = 0; i < count; ++i)
             {
                 ConstantEntry* entry = GetConstantMapEntry(shader->m_spVertexConstantMap.m_pObject, i);
@@ -1547,7 +1571,7 @@ extern "C" void __cdecl BindShaderConstants(NiD3DShader* shader, NiGeometry* geo
             NiD3DShaderConstantMap* pConstantMap = pass->m_spPixelConstantMap.m_pObject;
             if (pConstantMap)
             {
-                unsigned int count = pConstantMap->m_kEntries.m_usESize;
+                unsigned int count = pConstantMap->m_aspEntries.m_usESize;
                 for (unsigned int i = 0; i < count; ++i)
                 {
                     ConstantEntry* entry = GetConstantMapEntry(pConstantMap, i);
@@ -1562,7 +1586,7 @@ extern "C" void __cdecl BindShaderConstants(NiD3DShader* shader, NiGeometry* geo
             pConstantMap = pass->m_spVertexConstantMap.m_pObject;
             if (pConstantMap)
             {
-                unsigned int count = pConstantMap->m_kEntries.m_usESize;
+                unsigned int count = pConstantMap->m_aspEntries.m_usESize;
                 for (unsigned int i = 0; i < count; ++i)
                 {
                     ConstantEntry* entry = GetConstantMapEntry(pConstantMap, i);
@@ -1583,6 +1607,7 @@ extern "C" void __cdecl FUN_00e81a90();
 
 // @fnv 0x00e80570
 // src: XBOX_PDB 0x00e80570
+// pdb: NiD3DShader::Initialize | NiD3DShader.obj | debug, upstream name already matches, high
 void __cdecl NiD3DShader_Initialize()
 {
     FUN_00e81a90();
@@ -1605,6 +1630,7 @@ struct FnvCpu_FUN_00eea530_CpuObject
 };
 // @fnv 0x00eea530
 // src: COMMUNITY 0x00eea530
+// pdb: NiD3DShader::GetShaderDecl | NiD3DShader.obj | debug, upstream name already matches, high
 int FnvCpu_FUN_00eea530_CpuObject::NiD3DShader_GetShaderDecl()
 {
     return value;
@@ -1612,6 +1638,9 @@ int FnvCpu_FUN_00eea530_CpuObject::NiD3DShader_GetShaderDecl()
 
 // Sets two render-state stage values, then writes m_kWorldView using pkRot, the second shadow matrix, and pkTrans.
 // @fnv 0x00e80860
+// pdb: NiD3DShader::SetupShaderPrograms | NiD3DShader.obj | debug, object-file run extension, low
+// pdb params: pkGeometry, pkSkin, pkPartition, pkRendererData, pkState, pkEffects, kWorld, kWorldBound
+// pdb locals: uiRet, eErr, pkBuffData, pkAGD, pkPackedAGD
 void __cdecl SetShadowWorldView(const ModelMatrix3* pkRot, const ModelPoint3* pkTrans, ModelXformState* pkState,
                                 bool bSave, const ModelRendererView* pkRenderer)
 {

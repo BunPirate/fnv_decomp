@@ -29,6 +29,8 @@ struct Obj
 };
 
 // @fnv 0x00dfaf80
+// pdb: hkpWingedEdge::init | hkpConvexPenetrationUtil.obj | retail, object-file run extension, low
+// pdb params: AinA, BinB, simplex
 void Obj::SetEntries(const hkVector4* aVecA, const hkVector4* aVecB, const hkVector4* aVecC)
 {
     m_num = 4;
@@ -304,6 +306,9 @@ struct S00dfa940_Solver
 // Loops building simplex entries until FUN_00df9fe0/FUN_00df9c90 give a result; on result 3 retries up to 0x14 times, adding an offset to m_30; returns status.
 // @fnv 0x00dfa940
 // src: GUESS 0x00dfa940 (confidence: medium)
+// pdb: hkpConvexPenetrationUtil::calculatePenetrationDepth | hkpConvexPenetrationUtil.obj | retail, object-file run extension, low
+// pdb params: output
+// pdb locals: gjkStatus, we, random
 int S00dfa940_Solver::BuildSimplexWithRetries(int a1)
 {
     S00dfa940_Simplex simplex;
@@ -455,14 +460,18 @@ int __cdecl Geometry_RefineClosestPointsByDirectionSampling(int a, int b, const 
 
 // Constructs a Penetration object and calls FUN_00dfa940; if it returns 3, calls FUN_00e2db70 and returns 1, otherwise returns the original result.
 // @fnv 0x00dfaac0
-int __cdecl TestPenetration(int a, int b, const hkTransform& t, float f, int c, int d, int e, int g, int out)
+// src: XBOX_RETAIL_PDB 0x00dfaac0
+// pdb: hkCalculatePenetrationDepth | hkpConvexPenetrationUtil.obj | retail, string-set bridge, high
+// pdb params: shapeA, shapeB, btoa, epsTol, pointsAinA, pointsBinB, simplex, simplexSize, output
+// pdb locals: penDepth
+int __cdecl hkCalculatePenetrationDepth(int shapeA, int shapeB, const hkTransform& btoa, float epsTol, int pointsAinA, int pointsBinB, int simplex, int simplexSize, int output)
 {
     S_00dfaac0_MonitorStream::GetMonitorStream().timer("TtPenetration");
-    S_00dfaac0_Penetration penetration(a, b, t, f, c, d, e, g);
-    int result = penetration.BuildSimplexWithRetries(out);
+    S_00dfaac0_Penetration penetration(shapeA, shapeB, btoa, epsTol, pointsAinA, pointsBinB, simplex, simplexSize);
+    int result = penetration.BuildSimplexWithRetries(output);
     if (result == 3)
     {
-        Geometry_RefineClosestPointsByDirectionSampling(a, b, t, c, d, out);
+        Geometry_RefineClosestPointsByDirectionSampling(shapeA, shapeB, btoa, pointsAinA, pointsBinB, output);
         result = 1;
     }
     S_00dfaac0_MonitorStream::GetMonitorStream().timer("Et");
@@ -594,6 +603,9 @@ struct WorkArray
 
 // @fnv 0x00dfaba0
 // src: GUESS 0x00dfaba0 (confidence: low)
+// pdb: hkCalcMultiPenetrationDepth | hkpConvexPenetrationUtil.obj | retail, object-file run extension, low
+// pdb params: transformA, shapeA, shapeBs, numShapeBs, aTb, pointsOut
+// pdb locals: workData, direction, gjkStatii, gjkOut, gjkStatus, output
 int hkTransform_ProcessEntries_00dfaba0(const hkTransform* transform, Arg1* arg1, Arg2** arg2, int count, const hkTransform* arg4,
                  OutItem** arg5)
 {

@@ -143,19 +143,22 @@ struct SharedAccumulatorState
     unsigned int unk1f8;
     unsigned int unk1fc;
     unsigned int sharedLock;
-    bool BSShaderAccumulator_AddShared(NiObject* object);
+    bool BSShaderAccumulator_AddShared(NiObject* apObject);
 };
 
 // Locks sharedLock, checks if object is in sharedObjects, adds it if missing, and returns true when it was newly added.
 // @fnv 0x00b63b10
 // src: XBOX_PDB 0x00b63b10
-bool SharedAccumulatorState::BSShaderAccumulator_AddShared(NiObject* object)
+// pdb: BSShaderAccumulator::AddShared | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: badded, bfound
+bool SharedAccumulatorState::BSShaderAccumulator_AddShared(NiObject* apObject)
 {
     bool value = false;
     EnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(&sharedLock));
-    const bool bFound = sharedObjects.GetAt(object, value);
+    const bool bFound = sharedObjects.GetAt(apObject, value);
     if (!bFound)
-        sharedObjects.SetAt(object, true);
+        sharedObjects.SetAt(apObject, true);
     LeaveCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(&sharedLock));
     return !bFound;
 }

@@ -10,6 +10,7 @@
 
 // Zeroes out the Data member of the TESImageSpace form using memset.
 // @fnv 0x0052b410
+// pdb: TESImageSpace::InitializeData | TESImageSpace.obj | debug, call graph, medium
 void TESImageSpace::ResetFormData()
 {
     memset(&Data, 0, sizeof(Data));
@@ -17,33 +18,36 @@ void TESImageSpace::ResetFormData()
 
 // Reads a TESImageSpace record from file, handling EDID, OBND and DNAM chunks, and returns false if the form type is not 0x53.
 // @fnv 0x0052b440
-bool TESImageSpace::Load(TESFile* file)
+// pdb: TESImageSpace::Load | TESImageSpace.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, data, pMessage
+bool TESImageSpace::Load(TESFile* apFile)
 {
     unsigned char formType;
     int chunk;
     ImageSpaceModifierParameterData data;
-    formType = file->GetTESForm();
+    formType = apFile->GetTESForm();
     if (formType != 0x53)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445:  // EDID
         {
-            char* buffer = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(buffer, 0x200);
+            char* buffer = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(buffer, 0x200);
             SetEditorID_AtRuntime(buffer);
             break;
         }
         case 0x444E424F:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4D414E44:  // DNAM
-            file->GetChunkData(&data, sizeof(data));
-            if (file->GetChunkSize() < sizeof(data))
+            apFile->GetChunkData(&data, sizeof(data));
+            if (apFile->GetChunkSize() < sizeof(data))
             {
                 memcpy_s(&Data, 0x3C, &data, 0x38);
                 Data.m_afFirstParameterSet[14] = 1.0f;
@@ -53,17 +57,18 @@ bool TESImageSpace::Load(TESFile* file)
             {
                 memcpy_s(&Data, sizeof(data), &data, sizeof(data));
             }
-            if (file->IsEndianConversionRequired())
+            if (apFile->IsEndianConversionRequired())
                 Data.Endian();
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
 }
 
 // @fnv 0x0052b3b0
+// pdb: TESImageSpace::~TESImageSpace | TESImageSpace.obj | debug, upstream name already matches, high
 TESImageSpace::~TESImageSpace()
 {
     ClearData();
@@ -72,6 +77,7 @@ TESImageSpace::~TESImageSpace()
 bool __cdecl TESForm_QEndianSwapOnSave();
 void __cdecl AppendChunk(unsigned int, char*, unsigned int);
 // @fnv 0x0052b630
+// pdb: TESImageSpace::Save | TESImageSpace.obj | retail, upstream name already matches, high
 void TESImageSpace::Save()
 {
     BeginFormRecord();
@@ -84,6 +90,9 @@ void TESImageSpace::Save()
 }
 
 // @fnv 0x0052b700
+// pdb: TESImageSpace::Compare | TESImageSpace.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool TESImageSpace::Compare(TESForm* apCompare)
 {
     TESImageSpace* pcomp = dynamic_cast<TESImageSpace*>(apCompare);
@@ -99,6 +108,7 @@ bool TESImageSpace::Compare(TESForm* apCompare)
 void __cdecl _Deallocate(void*);
 // Runs the base destructor, then frees this object with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0052b380
+// pdb: TESImageSpace::`scalar deleting destructor' | TESImageSpace.obj | retail, vtable slot, high
 void* TESImageSpace::DestroyAndDeallocate(unsigned int flags)
 {
     TESImageSpace::~TESImageSpace();
@@ -109,6 +119,9 @@ void* TESImageSpace::DestroyAndDeallocate(unsigned int flags)
 
 // Copies the TESImageSpace data after copying its base form.
 // @fnv 0x0052b6a0
+// pdb: TESImageSpace::Copy | TESImageSpace.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void TESImageSpace::Copy(TESForm* apCopy)
 {
     ::TESImageSpace* pcopy = dynamic_cast< ::TESImageSpace*>(apCopy);

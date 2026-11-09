@@ -6,29 +6,34 @@
 #include "bsfile_console_decls.h"
 // Constructs a NiTPointerMap of unsigned int to TESFile* pairs, delegating to the base constructor with the given count.
 // @fnv 0x004744a0
+// pdb: NiTPointerMap<unsigned int,TESFile *>::NiTPointerMap<unsigned int,TESFile *> | TESFile.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 template <> NiTPointerMap<unsigned int, TESFile*>::NiTPointerMap(unsigned int count) : NiTMapBase<NiTPointerAllocator<unsigned int>, unsigned int, TESFile*>(count)
 {}
 // Seeks the file to a position computed from the offset and mode (set/current/end), updating position when it changes.
 // @fnv 0x00b00590
-void BSFile::Seek(int offset, int mode)
+// pdb: BSFile::Seek | BSFile_Xenon.obj | retail, upstream name already matches, high
+// pdb params: aiOffset, aiWhence
+// pdb locals: ioldFilePos, ipos
+void BSFile::Seek(int aiOffset, int aiWhence)
 {
     int target;
-    if (mode == DAT_010a2480)
+    if (aiWhence == DAT_010a2480)
     {
-        target = offset;
+        target = aiOffset;
         if (m_eMode == 0)
         {
-            mode = DAT_010a2484;
-            offset -= m_uiBufferSize;
+            aiWhence = DAT_010a2484;
+            aiOffset -= m_uiBufferSize;
         }
     }
-    else if (mode == DAT_010a2484)
+    else if (aiWhence == DAT_010a2484)
     {
-        target = m_uiBufferSize + offset;
+        target = m_uiBufferSize + aiOffset;
     }
-    else if (mode == DAT_010a2488)
+    else if (aiWhence == DAT_010a2488)
     {
-        target = GetSize() - offset;
+        target = GetSize() - aiOffset;
     }
     else
     {
@@ -36,7 +41,7 @@ void BSFile::Seek(int offset, int mode)
     }
     if (target != m_uiBufferSize)
     {
-        NiFile::Seek(offset, mode);
+        NiFile::Seek(aiOffset, aiWhence);
         m_uiBufferSize = target;
     }
 }
@@ -49,9 +54,12 @@ struct FUN_00aff950_shell
 };
 // @fnv 0x00aff950
 // src: XBOX_PDB 0x00aff950
-unsigned int FUN_00aff950_shell::BSFile_WriteF(void* buffer, unsigned int size)
+// pdb: BSFile::WriteF | BSFile.obj | retail, upstream name already matches, high
+// pdb params: apBuffer, aiBytes
+// pdb locals: ibytesWritten
+unsigned int FUN_00aff950_shell::BSFile_WriteF(void* apBuffer, unsigned int aiBytes)
 {
-    unsigned int term = this->FUN_00aa1810(buffer, size);
+    unsigned int term = this->FUN_00aa1810(apBuffer, aiBytes);
     *(unsigned int*)((char*)this + 0x150) += term;
     return term;
 }
@@ -82,6 +90,9 @@ struct S_00aff7c0_Pad
 };
 
 // @fnv 0x00aff7c0
+// pdb: BSFile::Read | BSFile.obj | debug, vtable slot, medium
+// pdb params: arString, aiMaxLength
+// pdb locals: ptempBuf, itotal, ibytesRead, ibuffer, iread, ch
 unsigned int BSFile::Read(BSStringT<char>& out, unsigned int maxLen)
 {
     if (!(bool)(m_pFile != 0 ? 1 : 0))
@@ -129,6 +140,7 @@ void __cdecl FUN_00ec65a6(char* dest, unsigned int size, const char* src);
 
 // Initializes fields, copies pPath when its length is below 260, and calls helper functions depending on mode.
 // @fnv 0x00b00260
+// pdb: BSFile::BSFile | BSFile_Xenon.obj | retail, call graph, high
 BSFile::BSFile(const char* pPath, int mode, unsigned int bufferSize, bool abFlag)
 {
     BSFile::SetEndianSwap(false);
@@ -196,6 +208,9 @@ class B003C0File
 
 // Returns the last write time of the file as local time, or zeroed SYSTEMTIME if m_handle is null.
 // @fnv 0x00b003c0
+// pdb: BSFile::GetLastSaveTime | BSFile_Xenon.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESFile::GetLastWriteTime
+// pdb locals: AdjustedFileTime, LocalFileTime, bSuccess, BaseFileTime
 SYSTEMTIME B003C0File::GetLastWriteTime()
 {
     SYSTEMTIME localTime2;

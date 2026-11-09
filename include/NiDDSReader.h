@@ -4,6 +4,7 @@
 #include "NiPixelFormat.h"
 class NiBinaryStream;
 
+// pdb: class NiDDSReader, size 0x180 (here 0x154), bases: NiImageReader, 5 members
 class NiDDSReader : public NiImageReader
 {
 public:

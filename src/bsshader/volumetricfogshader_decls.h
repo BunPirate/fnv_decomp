@@ -120,7 +120,7 @@ class VolumetricFogShader : public NiMemObject
     unsigned char m_data98[0x10];
 
     BSShader* CreateShader();
-    void UpdateShaderConstants();
+    void CreateConstantMaps();
 };
 
 class VolumetricFogShaderVTable

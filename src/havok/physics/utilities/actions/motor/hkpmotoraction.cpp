@@ -48,14 +48,16 @@ struct FUN_00d4d720
     volatile float m_fGain;
     volatile unsigned char m_bSlotEnabled;
 
-    FUN_00d4d720(int entity, const float* axis, float spinRate, float gain);
+    FUN_00d4d720(int body, const float* axis, float spinRate, float gain);
 };
 
 // Calls FUN_00d2b260(entity, 0), sets the vtable, loads and normalizes axis, stores spinRate and gain, and sets m_bSlotEnabled to 1.
 // @fnv 0x00d4d720
-FUN_00d4d720::FUN_00d4d720(int entity, const float* axis, float spinRate, float gain)
+// pdb: hkpMotorAction::hkpMotorAction | hkpMotorAction.obj | retail, object-file run extension, high
+// pdb params: flag
+FUN_00d4d720::FUN_00d4d720(int body, const float* axis, float spinRate, float gain)
 {
-    reinterpret_cast<FUN_00d2b260_Obj*>(this)->FUN_00d2b260(entity, 0);
+    reinterpret_cast<FUN_00d2b260_Obj*>(this)->FUN_00d2b260(body, 0);
     m_vtbl = &DAT_010d0944;
     m_kAxisEndPoints.quad = _mm_load_ps(axis);
     m_fSpinRate = spinRate;

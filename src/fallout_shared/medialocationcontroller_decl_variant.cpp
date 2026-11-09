@@ -19,35 +19,36 @@ int __cdecl Warning(const char* apFormat, ...);
 extern TESDataHandler* g_dataHandler;
 
 // @fnv 0x00595310
+// pdb: MediaLocationController::MediaLocationController | MediaLocationController.obj | retail, upstream name already matches, high
 MediaLocationController::MediaLocationController()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x70));
     iFlags = 4;
-    m_fLowerWeightThreshold = 0.33f;
-    m_fUpperWeightThreshold = 0.66f;
-    m_fUpdateInterval = 0.0f;
-    m_uiShortDelay = 64;
-    m_uiLongDelay = 336;
-    m_kMediaSetList1.RemoveAll();
-    m_kMediaSetList2.RemoveAll();
-    m_kMediaSetList3.RemoveAll();
-    m_kMediaSetList4.RemoveAll();
-    m_kMediaSetList5.RemoveAll();
-    m_kMediaSetList6.RemoveAll();
+    fLayerTwoPercent = 0.33f;
+    fLayerThreePercent = 0.66f;
+    fLocationDelay = 0.0f;
+    uiDayStart = 64;
+    uiNightStart = 336;
+    lConditionalNeutralList.RemoveAll();
+    lConditionalAllyList.RemoveAll();
+    lConditionalFriendList.RemoveAll();
+    lConditionalEnemyList.RemoveAll();
+    lLocationList.RemoveAll();
+    lBattleList.RemoveAll();
     pFaction = 0;
-    m_eRequiredFightReaction = FIGHT_REACTION_FIGHT_REACTION_ENEMY;
-    m_pReference = 0;
-    m_fUpdateCooldown = 0;
-    m_uiFirstCounter = 0;
-    m_uiSecondCounter = 0;
-    m_uiThirdCounter = 0;
-    m_bCountWasNonzero = false;
-    m_bActorStateFlag = false;
-    m_bConditionWasTrue = false;
-    m_bConditionActive = false;
-    m_cMediaState = 0;
-    m_pMediaSet = 0;
-    m_uiPerceivedActorCount = 0;
-    m_uiPreviousPerceivedActorCount = 0;
-    m_eCurrentFightReaction = FIGHT_REACTION_FIGHT_REACTION_ENEMY;
+    rFactionConditional = FIGHT_REACTION_FIGHT_REACTION_ENEMY;
+    pAudioMarker = 0;
+    uiLocationDelay = 0;
+    uiLayerTime = 0;
+    uiLoopTime = 0;
+    uiMediaStartTime = 0;
+    bInTension = false;
+    bInCombat = false;
+    bIsDay = false;
+    bIsConditional = false;
+    cCurrentLayer = 0;
+    pCurrentMediaSet = 0;
+    uiFoundHostileActors = 0;
+    uiFoundFactionActors = 0;
+    eCurrentFactionReaction = FIGHT_REACTION_FIGHT_REACTION_ENEMY;
 }

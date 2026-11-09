@@ -142,7 +142,7 @@ Matrix* __stdcall D3DXMatrixMultiply(Matrix*, const Matrix*, const Matrix*);
 Matrix* __stdcall D3DXMatrixTranspose(Matrix*, const Matrix*);
 struct Shader
 {
-    void TallGrassShader_SetupShadowData(int identity, const Transform* transform);
+    void TallGrassShader_UpdateShadowLights(int apSkin, const Transform* aWorld);
     unsigned int unk000;
     unsigned int unk004;
     unsigned int unk008;
@@ -255,8 +255,11 @@ struct Shader
     hkVector4 direction;
 };
 // @fnv 0x00baa850
-// src: COMMUNITY 0x00baa850
-void Shader::TallGrassShader_SetupShadowData(int identity, const Transform* transform)
+// src: XBOX_RETAIL_PDB 0x00baa850
+// pdb: TallGrassShader::UpdateShadowLights | TallGrassShader.obj | retail, object-file run extension, high
+// pdb params: apSkin, aWorld
+// pdb locals: kdiffuse, kobjtoworld, rposAdj, kposition, kshadowproj, plight, kobjtoshadow, kspecular
+void Shader::TallGrassShader_UpdateShadowLights(int apSkin, const Transform* aWorld)
 {
     AlignedMatrix world;
     Matrix result;
@@ -267,8 +270,8 @@ void Shader::TallGrassShader_SetupShadowData(int identity, const Transform* tran
     result.m12 = result.m13 = result.m14 = result.m21 = result.m23 = result.m24 = result.m31 = result.m32 = result.m34 =
         result.m41 = result.m42 = result.m43 = 0.0f;
 
-    if (!identity)
-        FUN_00b71a40(&world, transform, reinterpret_cast<const NiPoint3*>(&transform->position), transform->scale);
+    if (!apSkin)
+        FUN_00b71a40(&world, aWorld, reinterpret_cast<const NiPoint3*>(&aWorld->position), aWorld->scale);
     world.m41 += DAT_011f474c.x;
     world.m42 += DAT_011f474c.y;
     world.m43 += DAT_011f474c.z;

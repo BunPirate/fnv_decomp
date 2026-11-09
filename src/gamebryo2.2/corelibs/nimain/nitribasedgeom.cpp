@@ -4,12 +4,16 @@
 template <class T> __forceinline NiPointer<T>::NiPointer() : m_pObject(0) {}
 #pragma optimize("", off)
 // @fnv 0x0051d190
+// pdb: BSTextureSet::BSTextureSet | TESObjectTREE.obj | debug, upstream name already matches, high
 BSTextureSet::BSTextureSet()
 {
 }
 #pragma optimize("", on)
 // Initializes the NiGeometry object by setting model, skin and shader pointers to null.
 // @fnv 0x00a80540
+// pdb: NiGeometry::NiGeometry | NiGeometry.obj | retail, call graph, low
+// pdb note: debug build links it to NiLines::NiLines
+// pdb params: pkModelData
 NiGeometry::NiGeometry()
 {
     m_spShader = 0;
@@ -34,6 +38,8 @@ struct StackByte
 
 // @fnv 0x0051d060
 // src: COMMUNITY 0x0051d060
+// pdb: NiBillboardNode::SetUpdateControllers | TESObjectTREE.obj | debug, upstream name already matches, high
+// pdb params: bUpdateControllers
 void __fastcall NiBillboardNode_SetUpdateControllers(DummyClass* _this, StackByte aByteValue)
 {
     _this->FUN_0051d080_mem(aByteValue.v, 8);
@@ -47,6 +53,7 @@ struct Dummy_0051d160
 {
     // Calls FUN_0051d1c0 on this, then frees this (0x38 bytes) via NiMemObject::operator delete when bit 0 of flags is set, returning this.
 // @fnv 0x0051d160
+// pdb: BSShaderTextureSet::`scalar deleting destructor' | TESObjectTREE.obj | retail, vtable slot, high
     void* __thiscall FUN_0051d160(unsigned int flags)
     {
         FUN_0051d1c0(this);

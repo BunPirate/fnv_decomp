@@ -25,10 +25,11 @@ inline void NiInterpolator::DecRefCount()
 }
 
 // @fnv 0x00a4be20
+// pdb: NiLookAtInterpolator::~NiLookAtInterpolator | NiLookAtInterpolator.obj | retail, upstream name already matches, high
 NiLookAtInterpolator::~NiLookAtInterpolator()
 {
-    m_kTargetNodeName = *(NiFixedString*)&g_StaticFixedString_011f49e0;
-    NiInterpolator** pItem = m_pItems + 3;
+    m_kLookAtName = *(NiFixedString*)&g_StaticFixedString_011f49e0;
+    NiInterpolator** pItem = m_aspInterpolators + 3;
     for (int i = 2; i >= 0; --i)
     {
         NiInterpolator* pObject = *--pItem;

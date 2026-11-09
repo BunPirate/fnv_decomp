@@ -47,6 +47,8 @@ struct FNVCollection
 };
 // @fnv 0x00700350
 // src: XBOX_PDB 0x00700350
+// pdb: BGSMenuPacker::DumpInfo | BGSMenuPacker.obj | retail, string-set bridge, high
+// pdb locals: i, pm
 void FNVCollection::BGSMenuPacker_DumpInfo()
 {
     Interface_PrintLine(UNK_0106e8ac);

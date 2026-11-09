@@ -41,16 +41,16 @@ struct WheelAngleScalar
 void __fastcall hkpWheelConstraintData_UpdateFields_00d4e480(hkpWheelConstraintData* self, void*, float angle)
 {
     // The shared atoms header exposes padding: rotation B columns 0 and 2 are at +0xf0 and +0x110.
-    __m128& steeringDirection = *reinterpret_cast<__m128*>(self->m_kBridgeAtoms.pad0 + 0xf0);
-    __m128& perpendicularDirection = *reinterpret_cast<__m128*>(self->m_kBridgeAtoms.pad0 + 0x110);
+    __m128& steeringDirection = *reinterpret_cast<__m128*>(self->m_atoms.pad0 + 0xf0);
+    __m128& perpendicularDirection = *reinterpret_cast<__m128*>(self->m_atoms.pad0 + 0x110);
     float s = sinf(angle);
     float c = sqrtf(1.0f - s * s);
     WheelAngleScalar co(c);
     WheelAngleScalar si(s);
-    __m128 cr = WheelAngleCross(self->m_kAxleDirectionInBodyB.m_vComponents, self->m_kSteeringDirectionInBodyB.m_vComponents);
+    __m128 cr = WheelAngleCross(self->m_initialAxleInB.m_vComponents, self->m_initialSteeringAxisInB.m_vComponents);
     __m128 st = _mm_mul_ps(cr, si.broadcast());
-    __m128 ct = _mm_mul_ps(co.broadcast(), self->m_kAxleDirectionInBodyB.m_vComponents);
+    __m128 ct = _mm_mul_ps(co.broadcast(), self->m_initialAxleInB.m_vComponents);
     __m128 result = _mm_add_ps(st, ct);
     steeringDirection = result;
-    perpendicularDirection = WheelAnglePerpendicular(result, self->m_kSteeringDirectionInBodyB.m_vComponents);
+    perpendicularDirection = WheelAnglePerpendicular(result, self->m_initialSteeringAxisInB.m_vComponents);
 }

@@ -7,6 +7,7 @@
 struct WorldRayCastOutput;
 class hkpCollidable;
 
+// pdb: class hkpFixedBufferRayHitCollector, size 0x1c, bases: hkpRayHitCollector, 5 members
 class hkpFixedBufferRayHitCollector : public hkpRayHitCollector
 {
 public:
@@ -21,9 +22,9 @@ public:
 
     virtual void CollectRayHit(const hkpCdBody& cdBody, const RayCastHitResult& hitInfo);
 
-    hkPadSpu<WorldRayCastOutput*> m_pRayHitBuffer;
-    hkPadSpu<WorldRayCastOutput*> m_pHitBufferEnd;
-    hkPadSpu<int> m_pRayCursor;
-    hkPadSpu<int> m_iHitCount;
-    hkPadSpu<const hkpCollidable*> m_pCollidable;
+    hkPadSpu<WorldRayCastOutput*> m_rayCastOutputBase;
+    hkPadSpu<WorldRayCastOutput*> m_nextFreeOutput;
+    hkPadSpu<int> m_capacity;
+    hkPadSpu<int> m_numOutputs;
+    hkPadSpu<const hkpCollidable*> m_collidableOnPpu;
 };

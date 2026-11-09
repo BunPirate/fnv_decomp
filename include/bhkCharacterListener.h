@@ -2,6 +2,7 @@
 
 #include "hkpCharacterProxyListener.h"
 
+// pdb: class bhkCharacterListener, size 0x70, bases: hkpCharacterProxyListener, 13 members
 class bhkCharacterListener : public hkpCharacterProxyListener
 {
 public:
@@ -12,7 +13,7 @@ public:
     virtual void vf04();
     virtual void vf05();
 
-    unsigned char unk04[0x6C];
+    unsigned char iFlags[0x6C];
 
     unsigned int GetFlags(unsigned int aiFlags);
 };

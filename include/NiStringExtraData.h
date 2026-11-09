@@ -3,6 +3,7 @@
 #include "NiExtraData.h"
 
 #pragma pack(push, 1)
+// pdb: class NiStringExtraData, size 0x10 (here 0x35), bases: NiExtraData, 1 members
 class NiStringExtraData : public NiExtraData
 {
   public:
@@ -11,7 +12,7 @@ class NiStringExtraData : public NiExtraData
 
     const NiFixedString& GetString();
     virtual bool IsEqual(NiObject* other) const;
-    char BSXFlags_IsEqual(const char* other);
+    char BSXFlags_IsEqual(const char* apObject);
     void SaveBinary_00a74200(NiStream& stream);
 
     union

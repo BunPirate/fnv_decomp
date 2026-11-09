@@ -5,14 +5,15 @@
 #include "../../../../include/NiPSysModifier.h"
 #include "../../../../include/NiStream.h"
 
+// pdb: class NiPSysGrowFadeModifier, size 0x2c, bases: NiPSysModifier, 5 members
 class NiPSysGrowFadeModifier : public NiPSysModifier
 {
   public:
-    float m_fGrowthTime;
-    unsigned short m_usGrowGenerationLimit;
-    float m_fFadeDuration;
-    unsigned short m_usFadeGenerationLimit;
-    float m_fInitialScale;
+    float m_fGrowTime;
+    unsigned short m_usGrowGeneration;
+    float m_fFadeTime;
+    unsigned short m_usFadeGeneration;
+    float m_fBaseScale;
     virtual void LoadBinary(NiStream&);
 };
 template <class T> inline void NiBinaryStreamLoad(NiBinaryStream& stream, T* value)

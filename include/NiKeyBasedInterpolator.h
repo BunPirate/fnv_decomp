@@ -4,6 +4,7 @@
 
 class NiAnimationKey;
 
+// pdb: class NiKeyBasedInterpolator, size 0xc, bases: NiInterpolator, 0 members
 class NiKeyBasedInterpolator : public NiInterpolator
 {
   public:

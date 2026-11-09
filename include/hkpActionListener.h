@@ -2,6 +2,7 @@
 
 class hkpAction;
 
+// pdb: class hkpActionListener, size 0x4, 0 members
 class hkpActionListener
 {
 public:

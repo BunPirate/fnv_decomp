@@ -10,6 +10,7 @@ class PositionKeyInterpolator;
 class NiMatrix3;
 class StrArr;
 
+// pdb: class NiPathInterpolator, size 0x5c, bases: NiKeyBasedInterpolator, 15 members
 class NiPathInterpolator : public NiKeyBasedInterpolator
 {
   public:
@@ -28,7 +29,7 @@ class NiPathInterpolator : public NiKeyBasedInterpolator
     virtual bool UpdateTransform(float afTime, NiObjectNET* apTarget, NiQuatTransform& arValue);
     virtual void GetInterpolatorTimeRange(float& arBeginKeyTime, float& arEndKeyTime) const;
     virtual void SetActiveTimeRange(float afStartTime, float afEndTime);
-    virtual NiInterpolator* CloneForTimeRange(float afStartTime, float afEndTime);
+    virtual NiInterpolator* CloneForTimeRange(float fStartTime, float fEndTime);
     virtual unsigned short GetKeyChannelCount() const;
     virtual unsigned int GetColorKeyCount(unsigned short usChannel) const;
     virtual void vf57();
@@ -38,10 +39,10 @@ class NiPathInterpolator : public NiKeyBasedInterpolator
     virtual void vf61(unsigned short usChannel);
 
     void GuaranteeTimeRange_00a3dc50(float m_fStartTime, float m_fMaximumDistance);
-    void* GetKeyCount(short idx);
+    void* GetKeyCount(short usChannel);
     int GetValueByIndex(short arg);
-    int GetKeyArray(short arg);
-    char GetKeyStride(unsigned short arg);
+    int GetKeyArray(short usChannel);
+    char GetKeyStride(unsigned short usChannel);
     int GetChannelIndex(unsigned short usChannel);
     void* GenPathInterp(void* pData, int i1, int i2, float fTime);
     NiPoint3 GenPathInterp(int i1, int i2, float fTime);
@@ -62,14 +63,14 @@ class NiPathInterpolator : public NiKeyBasedInterpolator
         unsigned char& stride) const;
     float CalcTotalLength();
     float GetAccumulatedValue();
-    float NiPathInterpolator_PathLength(int i1, int i2, float t);
-    float SampleLength(int i1, int i2, float t);
-    void GetPercentLoc(float fTime, unsigned int& i1, unsigned int& i2, float& fNormTime);
+    float NiPathInterpolator_PathLength(int iI0, int iI1, float fTime);
+    float NiPathInterpolator_PathSpeed(int iI0, int iI1, float fTime);
+    void GetPercentLoc(float fPercent, unsigned int& uiI1, unsigned int& uiI2, float& fNormTime);
     void FindKeyPair(float fTime, unsigned int& i1, unsigned int& i2, float& fNormTime);
     void FindKeyPair(float fTime, int& i1, int& i2, float& fNormTime);
-    void EvaluateBasis(int i1, int i2, float fTime, NiMatrix3& kRot);
-    void EvaluateBasis(unsigned int first, unsigned int second, float time,
-        NiMatrix3* out);
+    void CalcRefFrame(int ui1, int ui2, float fNormTime, NiMatrix3& kRefFrame);
+    void CalcRefFrame(unsigned int ui1, unsigned int ui2, float fNormTime,
+        NiMatrix3* kRefFrame);
     void SetBit(bool bVal, unsigned short uMask);
     bool GetBit(unsigned short uMask) const;
     unsigned short GetField(unsigned short uMask, unsigned short uPos) const;
@@ -80,7 +81,7 @@ class NiPathInterpolator : public NiKeyBasedInterpolator
     bool GetFollow() const;
     bool TimeHasChanged(float fTime) const;
 
-    unsigned short m_uiObjectFlags;
+    unsigned short m_uFlags;
     unsigned short unk0E;
     union
     {
@@ -92,22 +93,22 @@ class NiPathInterpolator : public NiKeyBasedInterpolator
         unsigned int m_uiPercentKeyCount;
         int unk14;
     };
-    NiPosData* m_pPathObject;
-    void* m_pPathInterp;
-    float* m_pfPathLengths;
-    float m_fTotalPathLength;
-    float m_fPreviousTime;
-    float m_fLastPercent;
-    short m_sLastPathIndex;
+    NiPosData* m_spPathData;
+    void* m_spPctData;
+    float* m_pfPartialLength;
+    float m_fTotalLength;
+    float m_fMaxBankAngle;
+    float m_fSmoothing;
+    short m_sFollowAxis;
     short unk32;
     union
     {
         float m_fPathLength;
         int unk34;
     };
-    int m_iPathPointCount;
-    NiQuaternion m_kRotationMatrix;
-    NiPoint3 m_kPathOffset;
+    int m_eBankDir;
+    NiQuaternion m_kRotation;
+    NiPoint3 m_kPosition;
     union
     {
         float m_fLast;

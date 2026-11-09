@@ -63,7 +63,7 @@ struct FUN_00ddf050_cls
 {
     void ClearContainer();
 };
-extern "C" void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(int* p1, int* p2);
+extern "C" void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(int* commands, int* info);
 struct FUN_00dd0420_Class
 {
     int m_00;
@@ -74,7 +74,7 @@ struct FUN_00dd0420_Class
     int m_14;
     int m_18;
     int m_1c;
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int arg);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_ctor(int f);
 };
 struct FUN_00dd4b70_class
 {
@@ -184,7 +184,7 @@ struct FUN_00dc1670_cls
     int m_00;
     FUN_00dc1670_cls* hkStructureLayout_hkStructureLayout();
 };
-void __stdcall hkIArchive_readArrayGeneric(float* out, int a, int b);
+void __stdcall hkIArchive_readArrayGeneric(float* array, int elemsize, int arraySize);
 float hkIArchive_readFloat32();
 struct ArrayBlock
 {
@@ -207,7 +207,7 @@ struct ArrayHost
 {
     int unk00, unk04, unk08;
     ArrayBlock array;
-    void ResizeArray(int desired);
+    void ResizeArray(int n);
 };
 struct FUN_00dcc180_Interface
 {
@@ -253,11 +253,11 @@ struct FUN_00dcc670_Class
     unsigned short unk06;
     int unk08;
 
-    int* __thiscall InitFromValue(int* value);
+    int* __thiscall hkIstream_ctor(int* fname);
 };
 extern int DAT_010d7540;
 extern FUN_00dcc670_Manager* DAT_01268364;
-extern int g_unk01269bb4;
+extern int hkpNamedMeshMaterialClass;
 int* __cdecl Object_GetGlobalObjectAddress_00dccb00();
 extern int DAT_01269be4;
 int* __cdecl Runtime_GetDAT01269be4Address();
@@ -266,7 +266,7 @@ struct FUN_00dced30_cls
     virtual void m_v00(int arg);
 };
 void __cdecl Object_ForwardCall_00dced30(FUN_00dced30_cls* pObject);
-extern int DAT_01269c44;
+extern int hkpBreakableConstraintDataClass;
 int __cdecl Object_ComputeValue_00dced40();
 struct FUN_00d4dfc0_class
 {
@@ -568,9 +568,9 @@ struct Lock_dd9
     int uNewnk;
     int uTmpnk;
     int* m_pkCriticalSection;
-    int FindEntry(int iKey);
-    int InvokeRecord(int iIndex, int iArg);
-    int hkProcessFactory_createProcess(int iKey, int iArg);
+    int hkProcessFactory_getProcessId(int name);
+    int InvokeRecord(int tag, int contexts);
+    int hkProcessFactory_createProcess(int iKey, int contexts);
 };
 extern int DAT_010d7db8;
 struct Bool1
@@ -781,7 +781,7 @@ static stub_cls* volatile g_stub_self;
 static int volatile g_stub_v;
 static int volatile g_stub_out;
 extern "C" int stub_val(void);
-static float readFloat(int arg);
+static float readFloat(int reader);
 float stub_caller(void);
 class FUN_00dcc5c0_cls
 {
@@ -870,7 +870,7 @@ struct S00dcd1b0_Obj
     int unk3C;
     ArrayBlock m_40;
     unsigned char m_4c;
-    void hkpMeshShape_initWeldingInfo(int value);
+    void hkpMeshShape_initWeldingInfo(int weldingType);
 };
 struct S00dcd270_Rec
 {
@@ -915,7 +915,7 @@ struct S00dcd270_cls
     int unk2c;
     int unk30;
     S00dcd270_Arr arr;
-    S00dcd270_Rec* AddRecord(const S00dcd270_Rec* a0);
+    S00dcd270_Rec* AddRecord(const S00dcd270_Rec* part);
 };
 // The original 0x00dd8c40 chunk validator belongs to hkLargeBlockAllocator;
 // its unused local declaration and partial Chunk copy are unnecessary in this RTM unit.
@@ -951,7 +951,7 @@ static void SkipWhitespace(TokenReader* stream);
 extern TokenReader* volatile inputStream;
 void MatchCaller();
 struct CpuOpaque;
-extern CpuOpaque DAT_01269c14;
+extern CpuOpaque hkpWeldingUtilityClass;
 CpuOpaque* __cdecl Runtime_GetDAT01269c14Address();
 struct RefObj
 {
@@ -1100,6 +1100,8 @@ extern "C" unsigned int be_store_value(void);
 static void StoreBigEndian(BEStoreTarget* self, unsigned int value);
 void be_store_caller(BEStoreTarget* self);
 // @fnv 0x00dcb460
+// pdb: StructArrayImplementation::Object::asObject | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
 struct DispatchTarget
 {
     virtual void v00();
@@ -1147,9 +1149,9 @@ struct Owner
     void StructArrayImplementation_Object_asObject(unsigned int);
 };
 // src: XBOX_PDB 0x00dcb460
-void Owner::StructArrayImplementation_Object_asObject(unsigned int i)
+void Owner::StructArrayImplementation_Object_asObject(unsigned int name)
 {
-    table->entryAt(table->StructArrayImplementation__find(i))->forward(context);
+    table->entryAt(table->StructArrayImplementation__find(name))->forward(context);
 }
 #include <stdlib.h>
 // Text reader: read the next number as a double.
@@ -1167,9 +1169,9 @@ class DCC5E0Stream
     int Peek();
     char* m_pcCursor;
 };
-static __declspec(noinline) double DCC5E0ReadNumber(DCC5E0Stream* pkStream)
+static __declspec(noinline) double DCC5E0ReadNumber(DCC5E0Stream* reader)
 {
-    double dValue = strtod(pkStream->m_pcCursor, &pkStream->m_pcCursor);
+    double dValue = strtod(reader->m_pcCursor, &reader->m_pcCursor);
     return dValue;
 }
 class DCC5E0Reader
@@ -1218,7 +1220,7 @@ class FUN_00dd9240_cls
     int m_unk14;
     CRITICAL_SECTION* m_pCrit;
 
-    int hkProcessFactory_getProcessName(int index);
+    int hkProcessFactory_getProcessName(int id);
 };
 int __cdecl hkString_strCmp(unsigned int entry, unsigned int flag);
 // Stand-in for the class owning this function.
@@ -1236,7 +1238,7 @@ class FUN_00dd9270_cls
     int m_unk14;
     CRITICAL_SECTION* m_pCrit;
 
-    int FindEntry(unsigned int flag);
+    int hkProcessFactory_getProcessId(unsigned int name);
 };
 // Stand-in for the class owning this function.
 //   +0x0c : record*  array of 12-byte records
@@ -1259,10 +1261,10 @@ class FUN_00dd92f0_cls
     int m_i14;
     CRITICAL_SECTION* m_pCrit;
 
-    int InvokeRecord(int index, int arg);
+    int InvokeRecord(int tag, int contexts);
 };
 double FUN_00ecdf2d(const char* s, char** end);
-static float readFloat(TokenReader* stream);
+static float readFloat(TokenReader* reader);
 float MatchCaller(TokenReader* s);
 void __stdcall Object_DoNothing_00dccb60(int value);
 extern "C"
@@ -1413,9 +1415,9 @@ inline float S00dd0ff0_max2(float a, float b)
 {
     return (a > b) ? a : b;
 }
-static void FactorTridiagonal(int numConstraints, float cfm, S00dd0ff0_Jacobian* jac,
-                              S00dd0ff0_AccumulatorOffset* accumsOffsets,
-                              const S00dd0ff0_VelocityAccumulator* accumsBase, S00dd0ff0_Triple* triple,
+static void buildConstraintMatrixLuDecompositionForStiffSpringChain(int numConstraints, float cfm, S00dd0ff0_Jacobian* j,
+                              S00dd0ff0_AccumulatorOffset* va,
+                              const S00dd0ff0_VelocityAccumulator* accumBase, S00dd0ff0_Triple* triple,
                               int bufferSize);
 extern volatile int g_S00dd0ff0_n;
 extern volatile float g_S00dd0ff0_cfm;
@@ -1441,7 +1443,7 @@ struct S_00dd1180_Hdr
     float f08;
     float f0c;
 };
-void hkStiffSpringChainBuildJacobian(int n, float a, float b, float c, char** src, int stride, int u1, int u2, char** pp);
+void hkStiffSpringChainBuildJacobian(int numConstraints, float tau, float damping, float cfm, char** accumulators, int accumBase, int jacobiansEnd, int in, char** pp);
 typedef LocalM128* V;
 struct Wrap
 {
@@ -1640,15 +1642,17 @@ struct AllocatorStatisticsDD8D
     int m_b8;
     int m_bc;
     int m_c0;
-    void __thiscall hkLargeBlockAllocator_calculateStatistics(unsigned int* out);
+    void __thiscall hkLargeBlockAllocator_calculateStatistics(unsigned int* stats);
 };
 // @fnv 0x00dd8d70
 // src: HAVOK_LIB 0x00dd8d70
-void __thiscall AllocatorStatisticsDD8D::hkLargeBlockAllocator_calculateStatistics(unsigned int* out)
+// pdb: hkLargeBlockAllocator::calculateStatistics | hkLargeBlockAllocator.obj | retail, upstream name already matches, high
+// pdb params: stats
+void __thiscall AllocatorStatisticsDD8D::hkLargeBlockAllocator_calculateStatistics(unsigned int* stats)
 {
-    out[0] = ((FUN_00dd8c20_class*)this)->SumListValues();
-    out[1] = (unsigned int)m_c0;
-    out[3] = out[0] - (unsigned int)m_c0;
-    out[5] = (unsigned int)((hkLargeBlockAllocator*)this)->findLargestBlockSize();
-    out[4] = 0;
+    stats[0] = ((FUN_00dd8c20_class*)this)->SumListValues();
+    stats[1] = (unsigned int)m_c0;
+    stats[3] = stats[0] - (unsigned int)m_c0;
+    stats[5] = (unsigned int)((hkLargeBlockAllocator*)this)->findLargestBlockSize();
+    stats[4] = 0;
 }

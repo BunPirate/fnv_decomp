@@ -19,10 +19,10 @@ void hkpMultiRayConvexAgent_staticGetPenetrations(int a, int b, int c, int d);
 struct FUN_00d37690_Class {
     void __thiscall ForwardToFunction(int a, int b, int c, int d);
 };
-void hkpMultiRayConvexAgent_createMultiRayConvexAgent(int a, int b, int c, int d);
-void FUN_00d37780(int a, int b, int c, int d);
-void Object_ProcessState_00d37860(int a, int b, int c, int d);
-void Object_UpdateFields_00d378a0(int a, int b, int c, int d);
+void hkpMultiRayConvexAgent_createMultiRayConvexAgent(int bodyA, int bodyB, int input, int mgr);
+void FUN_00d37780(int bodyA, int bodyB, int input, int mgr);
+void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int d);
+void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_staticGetClosestPoints(int bodyA, int bodyB, int input, int collector);
 void hkpMultiRayConvexAgent_staticGetClosestPoints(int a, int b, int c, int d);
 void Object_ProcessEntries_00daf8e0();
 void Object_UpdateFields_00d3ac80();
@@ -35,9 +35,9 @@ struct FUN_00cfbbe0_Arg {
     char f5;
 };
 struct FUN_00cfbbe0_Class {
-    void __thiscall AppendRecordAndRegisterAgents(FUN_00cfbbe0_Arg* a, int b, int c);
+    void __thiscall AppendRecordAndRegisterAgents(FUN_00cfbbe0_Arg* f, int typeA, int typeB);
 };
-void hkpMultiRayConvexAgent_registerAgent(int a);
+void hkpMultiRayConvexAgent_registerAgent(int dispatcher);
 struct Handler {
     virtual void slot0();
     virtual void slot1();
@@ -52,7 +52,7 @@ struct Owner {
     Handler* handler;
     unsigned short* values;
     int count;
-    void ProcessValuesAndDelete(int argument);
+    void ProcessValuesAndDelete(int constraintOwner);
 };
 struct S_00d37860_Base {
     virtual void f0();
@@ -67,12 +67,12 @@ struct S_00d37860_Collector : S_00d37860_Base {
     virtual void f1();
 };
 void hkpMultiRayConvexAgent_staticGetPenetrations(void* b, void* a, void* c, S_00d37860_Collector* collector);
-void Object_ProcessState_00d37860(void* a, void* b, void* c, int filter);
+void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, int filter);
 struct Payload { const char* name; float value; int id; };
 extern float DAT_0104da48;
 extern const char DAT_010ce7fc[];
 void hkpMultiRayConvexAgent_staticGetClosestPoints(int, int, int, Payload*);
-void Object_UpdateFields_00d378a0(int a, int b, int c, int d);
+void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_staticGetClosestPoints(int bodyA, int bodyB, int input, int collector);
 struct D376B0Allocator;
 struct D376B0MemoryRouter {
     int unk00;
@@ -84,7 +84,7 @@ struct D376B0MemoryRouter {
     D376B0Allocator& heap() { return *m_pStreamAllocator; }
 };
 extern "C" D376B0MemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(D376B0Allocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(D376B0Allocator* mem, void* array, int numElem, int sizeElem);
 class D376B0ReferencedObject {
 public:
     D376B0ReferencedObject() : m_sReferenceCount(1) {}
@@ -135,7 +135,7 @@ public:
 };
 class FUN_00d376b0 : public D376B0Filter {
 public:
-    FUN_00d376b0(const D376B0ShapeRef& shape, void* ReportDiagnostic, void* unused1, void* userData);
+    FUN_00d376b0(const D376B0ShapeRef& bodyA, void* bodyB, void* input, void* mgr);
     virtual void unk00();
 
     D376B0IndexArray m_ppIndices;
@@ -249,6 +249,9 @@ struct S_00d374f0_Collector {
 
 // @fnv 0x00d374f0
 // src: XBOX_PDB 0x00d374f0
+// pdb: hkpMultiRayConvexAgent::staticGetPenetrations | hkpMultiRayConvexAgent.obj | retail, string-set bridge, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: rayInput, convexTRay, rayOuput
 void hkpMultiRayConvexAgent_staticGetPenetrations(const S_00d374f0_CdBody& bodyA, const S_00d374f0_CdBody& bodyB, int input, S_00d374f0_Collector* collector)
 {
     S_00d374f0_Timer("TtmultiRay-cnvx-getPen");
@@ -265,8 +268,8 @@ void hkpMultiRayConvexAgent_staticGetPenetrations(const S_00d374f0_CdBody& bodyA
     S_00d374f0_RayOutput rayResults;
     while (nRays-- && !col->m_fHitDistance)
     {
-        S_00d374f0_SetTransformedPos(rayInput.m_vFrom, bTa, rayA->m_kRayStart);
-        S_00d374f0_SetTransformedPos(rayInput.m_vTo, bTa, rayA->m_kRayEnd);
+        S_00d374f0_SetTransformedPos(rayInput.m_vFrom, bTa, rayA->m_start);
+        S_00d374f0_SetTransformedPos(rayInput.m_vTo, bTa, rayA->m_end);
         S_00d374f0_Bool hit = convexB->RayCast(rayInput, rayResults);
         if (hit.m_cBooleanValue)
         {
@@ -344,21 +347,24 @@ inline __m128 transform378(const hkTransform& t, __m128 p) {
 struct Scratch378 { Ray378 ray; hkTransform relative; hkVector4 position; };
 // @fnv 0x00d378e0
 // src: HAVOK_SRC 0x00d378e0
-void Agent378::hkpMultiRayConvexAgent_processCollision(Body378* a, Body378* b, void* input, ContactBuffer378* buffer) {
+// pdb: hkpMultiRayConvexAgent::processCollision | hkpMultiRayConvexAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: msA, nRays, rayInput, bTa, convexB, assertBuf, ostr, rayHit, rayResults, hitpoint
+void Agent378::hkpMultiRayConvexAgent_processCollision(Body378* bodyA, Body378* bodyB, void* input, ContactBuffer378* result) {
     timer378(DAT_010ceda8);
     struct { int count; Shape378* target; Shape378* source; } shapes;
-    shapes.source = a->shape;
-    shapes.target = b->shape;
+    shapes.source = bodyA->shape;
+    shapes.target = bodyB->shape;
     Scratch378 scratch;
-    scratch.relative.hkTransform_setMulInverseMul(b->transform,a->transform);
+    scratch.relative.hkTransform_setMulInverseMul(bodyB->transform,bodyA->transform);
     shapes.count = shapes.source->count;
     scratch.ray.filter = 0;
     scratch.ray.userData = 0;
     hkpMultiRayShape::Ray* current = shapes.source->rays;
     for (int i=0; i<shapes.count; ++current, ++i) {
         Output378 hit;
-        scratch.ray.from.v = transform378(scratch.relative,current->m_kRayStart.v);
-        scratch.ray.to.v = transform378(scratch.relative,current->m_kRayEnd.v);
+        scratch.ray.from.v = transform378(scratch.relative,current->m_start.v);
+        scratch.ray.to.v = transform378(scratch.relative,current->m_end.v);
         hit.fraction = 1.0f;
         hit.m_uiExtraInfo = -1;
         hit.shapeKeys[0] = -1;
@@ -367,21 +373,21 @@ void Agent378::hkpMultiRayConvexAgent_processCollision(Body378* a, Body378* b, v
         if (!DidHit.value) {
             unsigned short id = indices[i];
             if (id != 0xffff) {
-                manager->remove(id,buffer->context);
+                manager->remove(id,result->context);
                 indices[i] = 0xffff;
             }
         } else {
-            Contact378* contact = buffer->current;
+            Contact378* contact = result->current;
             __m128 fraction = _mm_set1_ps(hit.fraction);
             scratch.position.v = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(DAT_010ec7f0,fraction),scratch.ray.from.v),_mm_mul_ps(fraction,scratch.ray.to.v));
-            contact->position.setTransformedPos_00c7f640(*b->transform, scratch.position);
-            contact->normal.hkVector4_setRotatedDir(reinterpret_cast<const hkRotation*>(b->transform), &hit.normal);
-            contact->normal.w = (hit.fraction-1.0)*current->m_kRayStart.w+shapes.source->radius;
+            contact->position.setTransformedPos_00c7f640(*bodyB->transform, scratch.position);
+            contact->normal.hkVector4_setRotatedDir(reinterpret_cast<const hkRotation*>(bodyB->transform), &hit.normal);
+            contact->normal.w = (hit.fraction-1.0)*current->m_start.w+shapes.source->radius;
             if (indices[i] == 0xffff) {
-                unsigned short iContactPointId = manager->add(a,b,input,buffer,0,contact); indices[i] = iContactPointId;
+                unsigned short iContactPointId = manager->add(bodyA,bodyB,input,result,0,contact); indices[i] = iContactPointId;
             }
             if (indices[i] != 0xffff) {
-                ++buffer->current;
+                ++result->current;
                 contact->index = indices[i];
             }
         }

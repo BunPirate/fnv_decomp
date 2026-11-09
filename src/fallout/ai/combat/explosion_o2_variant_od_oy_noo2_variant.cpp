@@ -18,11 +18,11 @@ public:
     static AudioMgr_BSAudio* Get();
     AudioPlaybackHandle Make(int id, SndForm* form);
     AudioPlaybackHandle Make2(int id);
-    bool PlayAt(void* node, float f, int flags);
+    bool PlayAt(void* apObj, float afFadeSeconds, int aiFlags);
     AudioPlaybackHandle GetHandle(const char* name, int flags, int a);
     AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags, int a);
     AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags);
-    Snd Make(void* a, SndSrc* b);
+    Snd Make(void* apFilename, SndSrc* aiTypeFlags);
 };
 #include "../../../../include/bhkLiquidAction.h"
 #include "../../../../include/BSOcclusionPlane.h"
@@ -50,7 +50,7 @@ struct FUN_009afbb0_shell
 {
     virtual ~FUN_009afbb0_shell();
     void* FUN_009afbb0(unsigned int flags);
-    void ForwardCall_009afc10();
+    void hkpFixedBufferCdPointCollector_dtor();
 };
 extern "C" void __cdecl Object_UpdateFields_009afbe0(void*);
 struct FUN_00621100_shell
@@ -59,7 +59,7 @@ struct FUN_00621100_shell
 };
 struct FUN_009afc10_shell
 {
-    void __thiscall ForwardCall_009afc10();
+    void __thiscall hkpFixedBufferCdPointCollector_dtor();
 };
 struct FUN_009afc50_shell
 {
@@ -253,8 +253,8 @@ struct FUN_00cbc650_cls
     virtual void v2B();
     virtual void v2C();
     virtual FUN_00cbc650_obj* vGet(FUN_00cbc650_obj* volatile* pp);
-    void bhkUnaryAction_LoadBinary(FUN_00cbc650_obj* a);
-    void bhkLiquidAction_LoadBinary(FUN_00cbc650_obj* volatile a1);
+    void bhkUnaryAction_LoadBinary(FUN_00cbc650_obj* arStream);
+    void bhkLiquidAction_LoadBinary(FUN_00cbc650_obj* volatile arStream);
 };
 struct FUN_00cbc6a0_Data
 {
@@ -289,7 +289,7 @@ struct FUN_00cbc6a0_Class
     virtual void vf19();
     virtual void vf20();
     virtual void vf21();
-    virtual void bhkLiquidAction_SaveBinary(unsigned char* arg);
+    virtual void bhkLiquidAction_SaveBinary(unsigned char* arStream);
     virtual void vf23();
     virtual void vf24();
     virtual void vf25();
@@ -313,7 +313,7 @@ struct FUN_00cbc6a0_Class
     virtual void vf43();
     virtual void vf44();
     virtual FUN_00cbc6a0_Data* vf45(int* value);
-    void __thiscall bhkUnaryAction_SaveBinary(unsigned char* arg);
+    void __thiscall bhkUnaryAction_SaveBinary(unsigned char* arStream);
 };
 extern __declspec(thread) int g_memoryContext;
 void __cdecl bhkSerializable_CloneCritLock();
@@ -345,8 +345,8 @@ struct FUN_00cbc550_class
 };
 struct FUN_00cbca20_class
 {
-    void __thiscall bhkUnaryAction_CopyMembers(FUN_00cbc550_class* obj, int flags);
-    FUN_00cbc550_class* __thiscall bhkLiquidAction_CreateClone(int flags);
+    void __thiscall bhkUnaryAction_CopyMembers(FUN_00cbc550_class* pDest, int arCloneData);
+    FUN_00cbc550_class* __thiscall bhkLiquidAction_CreateClone(int arCloneData);
 };
 
 #include <xmmintrin.h>
@@ -813,17 +813,20 @@ struct Debug810
 extern Debug810* DAT_011dea10;
 // @fnv 0x009b1810
 // src: COMMUNITY 0x009b1810
-bool Host810::Explosion_RunLOSPick(NiPoint3 pos, Actor* actor)
+// pdb: Explosion::RunLOSPick | Explosion.obj | retail, upstream name already matches, high
+// pdb params: aLocation, apTarget
+// pdb locals: collector, pw, pExplode, pactorTarget, fltr, uimultiLayer, targetLocation, ptarget3D, bpickResult, bMultiCheck, pd, pActor, i, toHit, length, point, pdebug, green, phkworldObject, blue, normal, red, pcol, ptarget ...
+bool Host810::Explosion_RunLOSPick(NiPoint3 aLocation, Actor* apTarget)
 {
     Object810* base = FUN_004181e0();
     if (base->HasAnyFlags(16))
         return true;
-    Body810* body = actor ? (Body810*)actor->GetNiNode() : 0;
-    if (actor == pPlayer)
+    Body810* body = apTarget ? (Body810*)apTarget->GetNiNode() : 0;
+    if (apTarget == pPlayer)
         body = (Body810*)((PlayerCharacter*)pPlayer)->PlayerCharacter_Get3D_00950bb0(0);
     if (!body || !body->FUN_004b2960())
         return false;
-    World810* world = actor->FUN_008d6f30() ? ((Cell810*)actor->FUN_008d6f30())->TESObjectCELL_GetbhkWorld() : 0;
+    World810* world = apTarget->FUN_008d6f30() ? ((Cell810*)apTarget->FUN_008d6f30())->TESObjectCELL_GetbhkWorld() : 0;
     if (!world)
         return false;
     unsigned mask = 0x26206;
@@ -831,9 +834,9 @@ bool Host810::Explosion_RunLOSPick(NiPoint3 pos, Actor* actor)
     NiPoint3 points[7];
     memcpy(&points[0], body->NiAVObject_GetWorldBound()->FUN_006815c0(), sizeof(points[0]));
     bool multiple = false;
-    if (actor->IsActor())
+    if (apTarget->IsActor())
     {
-        Actor* checkActor = actor;
+        Actor* checkActor = apTarget;
         if (checkActor->GetSitSleepState())
         {
             multiple = true;
@@ -854,14 +857,14 @@ bool Host810::Explosion_RunLOSPick(NiPoint3 pos, Actor* actor)
     Query810 query;
     Filter810 filter(0);
     filter.CFilter_SetLayer(39);
-    Actor* checkActor = actor->IsActor() ? actor : 0;
+    Actor* checkActor = apTarget->IsActor() ? apTarget : 0;
     if (checkActor && checkActor->FUN_009306d0())
         filter.CFilter_SetGroup(((Process810*)checkActor->FUN_009306d0())->bhkCharacterController_GetCollisionGroup());
     else
         filter.CFilter_SetGroup(bhkCollisionFilter_GetNewSystemGroup());
-    pos.ComputeValue_0063c8a0(&array.ApplyScaled(*DAT_011d1344.Setting_Float_00403e20()));
+    aLocation.ComputeValue_0063c8a0(&array.ApplyScaled(*DAT_011d1344.Setting_Float_00403e20()));
     query.bhkPickData_SetFilter(filter.value);
-    query.bhkPickData_SetFrom(pos);
+    query.bhkPickData_SetFrom(aLocation);
     query.bhkPickData_SetTo(points[0]);
     Snapshot810 snapshot;
     query.bhkPickData_SetAllCollector(&snapshot);
@@ -870,7 +873,7 @@ bool Host810::Explosion_RunLOSPick(NiPoint3 pos, Actor* actor)
     for (int i = 0; !blocked && i < query.DialoguePackage_GetCurrentDialogItem()->TESDataHandler_GetWorldSpaceList()->FUN_00726070(); i++)
     {
         Hit810 hit(query.DialoguePackage_GetCurrentDialogItem()->TESDataHandler_GetWorldSpaceList()->GetEntryAt(i));
-        NiPoint3 dir = points[0] - pos;
+        NiPoint3 dir = points[0] - aLocation;
         NiPoint3 delta = FUN_004a3760(hit.unk10, dir);
         if (!(array[2] < -0.98) || !(delta.FUN_00457990() < *DAT_011d150c.Setting_Float_00403e20()))
         {
@@ -885,7 +888,7 @@ bool Host810::Explosion_RunLOSPick(NiPoint3 pos, Actor* actor)
     if (*DAT_011d0a78.Setting_Int() > 0)
     {
         Color810 color = blocked ? Color810(1, 0, 0, 1) : Color810(0, 1, 0, 1);
-        void* line = MakeLine(pos, color, points[0], color, 1);
+        void* line = MakeLine(aLocation, color, points[0], color, 1);
         DAT_011dea10->FUN_00458e20(line, 25.0f);
     }
     if (multiple && blocked)
@@ -900,7 +903,7 @@ bool Host810::Explosion_RunLOSPick(NiPoint3 pos, Actor* actor)
             for (int j = 0; !blocked && j < query.DialoguePackage_GetCurrentDialogItem()->TESDataHandler_GetWorldSpaceList()->FUN_00726070(); j++)
             {
                 Hit810 hit(query.DialoguePackage_GetCurrentDialogItem()->TESDataHandler_GetWorldSpaceList()->GetEntryAt(j));
-                NiPoint3 dir = points[j] - pos;
+                NiPoint3 dir = points[j] - aLocation;
                 NiPoint3 delta = FUN_004a3760(hit.unk10, dir);
                 if (!(array[2] < -0.98) || !(delta.FUN_00457990() < *DAT_011d150c.Setting_Float_00403e20()))
                     blocked = true;
@@ -1049,7 +1052,7 @@ struct Shape
 struct Drawer
 {
     void FUN_00458e20(Shape* s, float t);
-    int TES_GetLandMaterialType(const NiPoint3* p);
+    int TES_GetLandMaterialType(const NiPoint3* aCoord);
     struct Mgr* TES_GetCellForPoint(NiPoint3 p);
 };
 extern Drawer* g_drawer;
@@ -1093,7 +1096,7 @@ struct Params
 
 struct Mgr
 {
-    void TESObjectCELL_AddDecal(Params* p, int a, int b);
+    void TESObjectCELL_AddDecal(Params* arDecalData, int aeDecalType, int abForceAdd);
 };
 
 struct Wrap4
@@ -1135,7 +1138,7 @@ struct Owner
 {
     virtual void vf00();
     int bhkShape_QMaterial();
-    int bhkShape_GetSubshapeMaterial(int i);
+    int bhkShape_GetSubshapeMaterial(int aiKey);
 };
 
 struct VTbl;
@@ -1228,10 +1231,10 @@ struct NodeList
 
 struct Query
 {
-    void FUN_006233c0(int a);
-    void DecalCaster_SetCollision(int a, int b);
-    void DecalCaster_Add(void* t);
-    void DecalCaster_GetPenetrations(const NiPoint3* p, NodeList* l);
+    void DecalCaster_SetCustomPickCollisions(int aeCustomPick);
+    void DecalCaster_SetCollision(int aeLayer, int abEnable);
+    void DecalCaster_Add(void* apWorld);
+    void DecalCaster_GetPenetrations(const NiPoint3* arPos, NodeList* arCollector);
 };
 
 struct NameHolder
@@ -1254,7 +1257,7 @@ struct Weap
     unsigned int unk14;
     NameHolder unk18;
     void* FUN_006733e0();
-    float GetModifierValue();
+    float BGSImpactData_GetDecalMaxWidth();
     float BGSImpactData_GetDecalMinWidth();
     float GetNestedValue();
     char BGSImpactData_GetIsAlphaBlend();
@@ -1282,8 +1285,8 @@ struct Snd
     unsigned int unk04;
     unsigned int unk08;
     ~Snd();
-    void FUN_00ad8b60(float x, float y, float z);
-    void FUN_00ad8830(int a);
+    void FUN_00ad8b60(float afX, float afY, float afZ);
+    void FUN_00ad8830(int abLoopPlayback);
 };
 
 struct WeapHolder
@@ -1552,7 +1555,7 @@ struct __declspec(align(16)) Big570
     unsigned int unkAC;
     Big570();
     void bhkPickData_SetFrom(const NiPoint3* p);
-    void bhkPickData_SetLength(const NiPoint3* p);
+    void bhkPickData_SetLength(const NiPoint3* arLength);
     void bhkPickData_SetFilter(void* p);
     void bhkPickData_SetAllCollector(Big4c0* p);
     HitArray* DialoguePackage_GetCurrentDialogItem();
@@ -1565,7 +1568,7 @@ struct PlayerX
 
 struct Cell
 {
-    void bhkSimpleShapePhantom_GetFixedClosestPoints(ProjList* l);
+    void bhkSimpleShapePhantom_GetFixedClosestPoints(ProjList* arCollector);
     Hand4* bhkWorldObject_GetCollisionFilter(Hand4* out);
 };
 
@@ -1578,25 +1581,25 @@ struct CellPtr
 extern "C" void __cdecl hkpFixedBufferCdPointCollector_registerDefaultAddCdPointFunction();
 extern "C" void __cdecl hkAlgorithm_quickSort_hkpRootCdPoint(void* a, int b);
 extern "C" void __cdecl FUN_00458620(NiPoint3* out, const NiPoint3* in);
-extern "C" void __cdecl HK2NINS(NiPoint3* out, const NiPoint3* in);
+extern "C" void __cdecl HK2NINS(NiPoint3* arNiP, const NiPoint3* arhkV);
 extern "C" Shape* __cdecl CreateOctahedron(float r, const Color4* c, int a);
-extern "C" Shape* __cdecl MakeLine(const NiPoint3* a, const Color4* c, const NiPoint3* b, const Color4* c2, int f);
+extern "C" Shape* __cdecl MakeLine(const NiPoint3* aStart, const Color4* aStartColor, const NiPoint3* aEnd, const Color4* aEndColor, int abWithNoLightingProp);
 NiPoint3 __cdecl FUN_004a3760(float f, const NiPoint3& v);
-extern "C" void* __cdecl GetAVObjectForCollidable(void* p);
+extern "C" void* __cdecl GetAVObjectForCollidable(void* aphkCol);
 extern "C" Proc* __cdecl TESObjectREFR_FindReferenceFor3D(void* p);
-extern "C" Owner* __cdecl bhkShape_Getbhk(void* p);
+extern "C" Owner* __cdecl bhkShape_Getbhk(void* apShape);
 extern "C" PlayerX* __cdecl Main_WorldRootCamera();
 extern "C" bool __cdecl Main_GetSceneIsComplex();
-extern "C" bool __cdecl PointInFrustum(NiPoint3 p, PlayerX* pl, float f);
-extern "C" float __cdecl FUN_00476b70(float a, float b);
+extern "C" bool __cdecl PointInFrustum(NiPoint3 aTestLocation, PlayerX* apCamera, float afDistance);
+extern "C" float __cdecl FUN_00476b70(float afMin, float afMax);
 extern "C" Query* __cdecl FUN_00622a70(float a, int b);
 extern "C" float __cdecl RandomFloatTwoPi();
 extern "C" float __cdecl FUN_00406cc0(float a);
 extern "C" void* __cdecl hkpGetRigidBody(RefObj* r);
 extern "C" Sub* __cdecl bhkWorldObject_GetProperty(Hand8* out, void* a, void* b);
-extern "C" Sub* __cdecl bhkUtilFunctions_GetNiAVObject(RefObj* r);
-extern "C" bool __cdecl IsAcousticSpaceFormTypeAllowed(Proc* p, int a);
-extern "C" void __cdecl BSTempEffectParticle_Spawn(void* a, float f, char* name, NiPoint3 d, NiPoint3 p, float s, int b, int c);
+extern "C" Sub* __cdecl bhkUtilFunctions_GetNiAVObject(RefObj* apCollidable);
+extern "C" bool __cdecl BGSDecalManager_IsValidDecalImpact(Proc* apCollidee, int aeDecalType);
+extern "C" void __cdecl BSTempEffectParticle_Spawn(void* apCell, float afLifetime, char* apParticleFilename, NiPoint3 aVector, NiPoint3 aPosition, float afScale, int aiFlags, int apFollowObject);
 extern "C" AudioMgr_BSAudio* __cdecl BSAudio_QInstance();
 extern double g_maxLen;
 extern float g_f1;
@@ -1948,6 +1951,8 @@ struct SelfVt
 
 // @fnv 0x009ae6e0
 // src: XBOX_PDB 0x009ae6e0
+// pdb: Explosion::ApplyImpactDecals | Explosion.obj | retail, upstream name already matches, high
+// pdb locals: tempAutoEvent, cdPointA, bpointFound, fixedCollector, i, pdebug, normal, red, location, point, pav, pref, pickCollector, origin, buseThisPoint, contactNormal, emat, contactPoint, pickLength, pd, bfail, ppickAV, ppickRef, pickPoint ...
 void ProjCls::Explosion_ApplyImpactDecals()
 {
     if (unkA0.Modelloader_GetReferencedThis() == 0)
@@ -2083,9 +2088,9 @@ void ProjCls::Explosion_ApplyImpactDecals()
                             void* proj = wt->FUN_006733e0();
                             if (proj)
                             {
-                                float spd = FUN_00476b70(wt->BGSImpactData_GetDecalMinWidth(), wt->GetModifierValue());
+                                float spd = FUN_00476b70(wt->BGSImpactData_GetDecalMinWidth(), wt->BGSImpactData_GetDecalMaxWidth());
                                 Query* qq = FUN_00622a70(spd, 1);
-                                qq->FUN_006233c0(0);
+                                qq->DecalCaster_SetCustomPickCollisions(0);
                                 qq->DecalCaster_SetCollision(8, 0);
                                 qq->DecalCaster_SetCollision(0x1d, 0);
                                 Proc2* p2 = FUN_008d6f30();
@@ -2143,7 +2148,7 @@ void ProjCls::Explosion_ApplyImpactDecals()
                                                     node = bhkUtilFunctions_GetNiAVObject(ref);
                                                 }
                                                 Proc* u3 = TESObjectREFR_FindReferenceFor3D(node);
-                                                if (!isActor && (!u3 || !IsAcousticSpaceFormTypeAllowed(u3, 1)))
+                                                if (!isActor && (!u3 || !BGSDecalManager_IsValidDecalImpact(u3, 1)))
                                                     continue;
                                                 Mgr* mg = g_drawer->TES_GetCellForPoint(pos);
                                                 Params prm;

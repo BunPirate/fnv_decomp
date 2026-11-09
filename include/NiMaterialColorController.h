@@ -2,6 +2,7 @@
 
 #include "NiPoint3InterpController.h"
 
+// pdb: class NiMaterialColorController, size 0x3c (here 0xb8), bases: NiPoint3InterpController, 1 members
 class NiMaterialColorController : public NiPoint3InterpController
 {
 public:

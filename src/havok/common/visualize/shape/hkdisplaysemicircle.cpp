@@ -75,25 +75,28 @@ struct Geometry
 // Fills a temporary array via FUN_00de4af0, then writes consecutive pairs (i, i+1) from it into destination, 2*unk9c entries, growing destination as needed.
 // @fnv 0x00de4c40
 // src: HAVOK_SRC 0x00de4c40
-void __thiscall Geometry::hkDisplaySemiCircle_getWireframeGeometry(VectorArray* destination, void* allocator)
+// pdb: hkDisplaySemiCircle::getWireframeGeometry | hkDisplaySemiCircle.obj | retail, upstream name already matches, high
+// pdb params: lines, a
+// pdb locals: points
+void __thiscall Geometry::hkDisplaySemiCircle_getWireframeGeometry(VectorArray* lines, void* a)
 {
     VectorArray temporary = {0, 0, 0x80000000u};
     hkDisplaySemiCircle_generatePoints(&temporary);
     int required = unk9c * 2;
-    int capacity = destination->capacityAndFlags & 0x3fffffff;
+    int capacity = lines->capacityAndFlags & 0x3fffffff;
     if (capacity < required)
     {
         int newCapacity = capacity * 2;
         if (required >= newCapacity)
             newCapacity = required;
-        hkArrayUtil__reserve(allocator, destination, newCapacity, 16);
+        hkArrayUtil__reserve(a, lines, newCapacity, 16);
     }
-    destination->size = required;
+    lines->size = required;
     int outputIndex = 0;
     for (int i = 0; i < unk9c; ++i)
     {
-        destination->data[outputIndex++] = temporary.data[i];
-        destination->data[outputIndex++] = temporary.data[i + 1];
+        lines->data[outputIndex++] = temporary.data[i];
+        lines->data[outputIndex++] = temporary.data[i + 1];
     }
     Heap* heap = hkMemoryRouter_getInstance()->getHeap();
     temporary.size = 0;
@@ -128,7 +131,7 @@ struct S_de4d20_Holder
 };
 
 S_de4d20_Holder* hkMemoryRouter_getInstance() throw();
-void FUN_00c90940(S_de4d20_Heap& h, void* arr, int elemSize) throw();
+void FUN_00c90940(S_de4d20_Heap& mem, void* array, int sizeElem) throw();
 
 struct __declspec(align(16)) S_de4d20_Vec
 {
@@ -216,13 +219,14 @@ struct S_de4d20_Context
     int unk98;
     int m9c;
 
-    void hkDisplaySemiCircle_generatePoints(S_de4d20_Grid* g) throw();
+    void hkDisplaySemiCircle_generatePoints(S_de4d20_Grid* points) throw();
     void hkDisplaySemiCircle_buildGeometry() throw();
 };
 
 // Allocates a grid, stores it in m8, calls FUN_00de4af0, appends m80 to the grid data, and fills m9c cells with index ranges.
 // @fnv 0x00de4d20
 // src: HAVOK_SRC 0x00de4d20
+// pdb: hkDisplaySemiCircle::buildGeometry | hkDisplaySemiCircle.obj | retail, upstream name already matches, high
 void S_de4d20_Context::hkDisplaySemiCircle_buildGeometry() throw()
 {
     S_de4d20_Grid* g = new S_de4d20_Grid;

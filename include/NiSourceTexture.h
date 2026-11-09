@@ -9,6 +9,7 @@ class NiPersistentSrcTextureRendererData;
 class NiPixelData;
 class NiTexture__FormatPrefs;
 
+// pdb: class NiSourceTexture, size 0x48, bases: NiTexture, 9 members
 class NiSourceTexture : public NiTexture
 {
   public:

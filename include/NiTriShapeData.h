@@ -5,6 +5,7 @@
 class NiTriShapeData__SharedNormalArray;
 class NiTriShapeData__SNAMemBlock;
 
+// pdb: class NiTriShapeData, size 0x58, bases: NiTriBasedGeomData, 5 members
 class NiTriShapeData : public NiTriBasedGeomData
 {
   public:

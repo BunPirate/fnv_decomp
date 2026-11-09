@@ -6,9 +6,10 @@
 unsigned int __fastcall GetMorphTargetCount(NiMorphData* pkMorphData);
 
 // @fnv 0x008d3ed0
+// pdb: NiGeomMorpherController::GetNumTargets | Character.obj | debug, upstream name already matches, high
 unsigned int NiGeomMorpherController::GetNumTargets() const
 {
-    return m_spMorphTargetData.operator->()
-               ? GetMorphTargetCount(m_spMorphTargetData.operator->())
+    return m_spMorphData.operator->()
+               ? GetMorphTargetCount(m_spMorphData.operator->())
                : 0;
 }

@@ -10,7 +10,7 @@
 class ActorValueUtility_blk_00780000_od
 {
 public:
-    static int __cdecl ConvertActorValue(int);
+    static int __cdecl GamePlayFormulas_GetRequiredExperiencePoints(int);
 };
 #include "../../include/InventoryMenu.h"
 #include "../../include/LoveTesterMenu.h"
@@ -21,17 +21,19 @@ public:
 
 struct FUN_007832e0_class
 {
-    void UpdateCurrentValueTile(int a);
-    void ListBox_ItemChange_SetListState(float a, float b);
+    void UpdateCurrentValueTile(int abPlayFocusSound);
+    void ListBox_ItemChange_SetListState(float afNewHighlightIndex, float afNewScrollbarValue);
 };
 
 // Stores two floats at offsets 9 and 10 of this object, then calls UpdateCurrentValueTile with 1.
 // @fnv 0x007832e0
 // src: XBOX_PDB 0x007832e0
-void FUN_007832e0_class::ListBox_ItemChange_SetListState(float afFirst, float afSecond)
+// pdb: ListBox<ItemChange *>::SetListState | InventoryMenu.obj | debug, call graph, high
+// pdb params: afNewHighlightIndex, afNewScrollbarValue
+void FUN_007832e0_class::ListBox_ItemChange_SetListState(float afNewHighlightIndex, float afNewScrollbarValue)
 {
-    ((float*)this)[9] = afFirst;
-    ((float*)this)[10] = afSecond;
+    ((float*)this)[9] = afNewHighlightIndex;
+    ((float*)this)[10] = afNewScrollbarValue;
     UpdateCurrentValueTile(1);
 }
 
@@ -51,6 +53,7 @@ void* __thiscall FUN_00788330::Alloc(int a)
 
 // If the BSSystemUtility singleton exists, sets its byte at offset 0x4a to 1 and calls Update().
 // @fnv 0x0078d050
+// pdb: LoadingMenu::SetThreadExiting | LoadingMenu.obj | debug, object-file gap fill, medium
 void UpdateSystemUtility()
 {
     if (BSSystemUtility::ms_pSystemUtility)
@@ -78,6 +81,7 @@ struct GlobalObject_00788300
 };
 // Runs the destructor and, when flags has bit 0 set, frees the object with operator delete; returns this.
 // @fnv 0x00788360
+// pdb: BSSimpleArray<EffectItemData,1024>::`scalar deleting destructor' | LevelUpMenu.obj | retail, vtable slot, high
 void* __thiscall GlobalObject_00788300::Destroy(unsigned int flags)
 {
     GlobalObject_00788300::~GlobalObject_00788300();
@@ -88,7 +92,7 @@ void* __thiscall GlobalObject_00788300::Destroy(unsigned int flags)
 
 struct FUN_0078d8d0_Class
 {
-    void __thiscall LoadingMenu_UpdateState_0078d8b0();
+    void __thiscall BSSimpleArray_TESLoadScreen_1024_dtor();
     void* __thiscall FUN_0078d8d0(unsigned int flags);
 };
 
@@ -96,9 +100,10 @@ void __cdecl Deallocate(void*);
 
 // Calls FUN_0078d8b0, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x0078d8d0
+// pdb: BSSimpleArray<TESLoadScreen *,1024>::`scalar deleting destructor' | LoadingMenu.obj | retail, vtable slot, high
 void* __thiscall FUN_0078d8d0_Class::FUN_0078d8d0(unsigned int flags)
 {
-    LoadingMenu_UpdateState_0078d8b0();
+    BSSimpleArray_TESLoadScreen_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -143,6 +148,9 @@ struct FUN_0078cf10_Class
 };
 // Recursively applies alpha to the object's children and, if the object has a shader property, sets its alpha.
 // @fnv 0x0078cf10
+// pdb: LoadingMenu::FadeIn3D | LoadingMenu.obj | debug, object-file gap fill, medium
+// pdb params: apObject, afPct
+// pdb locals: pnode, i, ptsp
 void __thiscall FUN_0078cf10_Class::SetAlphaRecursive(NiAVObject* object, float alpha)
 {
     if (!object)
@@ -173,6 +181,9 @@ struct FUN_0098f040_shell
 // If FUN_00438b90 succeeds, initializes or advances the id at offset 0xc, then increments the counter at offset 8 and returns its previous value.
 // @fnv 0x007881d0
 // src: XBOX_PDB 0x007881d0
+// pdb: BSSimpleArray<UnreachableLocation,1024>::AddUninitialized | CombatState.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSSimpleArray<WeaponData,1024>::AddUninitialized
+// pdb locals: inewSize
 unsigned int S5460::BSSimpleArray_CombatMember_1024_AddUninitialized()
 {
     if (BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -206,6 +217,8 @@ struct FUN_007883b0
 };
 
 // @fnv 0x007883b0
+// pdb: BSSimpleArray<EffectItemData,1024>::_InitialSetup | LevelUpMenu.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 void FUN_007883b0::RecordRequestedSize(unsigned int requested, unsigned int savedSize)
 {
     iSize = 0;
@@ -244,7 +257,10 @@ void FNV_Warning(int a, const char* format, int b, int c, double d);
 
 // Returns the player's progress fraction between the current and next level XP thresholds, warning if current XP is below the low threshold.
 // @fnv 0x0078d5a0
-float GetLevelProgress()
+// src: XBOX_DEBUG_PDB 0x0078d5a0
+// pdb: LoadingMenu::GetPlayerLevelProgress | LoadingMenu.obj | debug, unique string literal, high
+// pdb locals: fhave, ilow, ihigh, ilevel
+float LoadingMenu_GetPlayerLevelProgress()
 {
     if (g_thePlayer->GetLevel() >= *g_011d0c60.Int())
         return 0.0f;
@@ -252,8 +268,8 @@ float GetLevelProgress()
     int lowXP;
     int highXP;
     int level = g_thePlayer->GetLevel();
-    lowXP = ActorValueUtility_blk_00780000_od::ConvertActorValue(level);
-    highXP = ActorValueUtility_blk_00780000_od::ConvertActorValue(level + 1);
+    lowXP = ActorValueUtility_blk_00780000_od::GamePlayFormulas_GetRequiredExperiencePoints(level);
+    highXP = ActorValueUtility_blk_00780000_od::GamePlayFormulas_GetRequiredExperiencePoints(level + 1);
     float currentXP = ((Player*)(char*)g_thePlayer + 0xa4 / 4)->v3(0x18);
     if (currentXP < lowXP)
         FNV_Warning(0x12, "Loading Menu:  Invalid Level Progress Values\n  LowXP=%d, HighXP=%d, CurrXP=%.2f", lowXP,
@@ -303,6 +319,7 @@ struct FUN_0078e0f0 : Menu
 };
 
 // @fnv 0x0078e0f0
+// pdb: LockPickMenu::~LockPickMenu | LockPickMenu.obj | debug, object-file run extension, low
 FUN_0078e0f0::~FUN_0078e0f0()
 {
     NiAdditionalGeometryData::GetShadowSceneNodeForIndex(1)
@@ -332,6 +349,9 @@ struct Owner_788
 };
 
 // @fnv 0x00788260
+// pdb: BSSimpleArray<EffectItemData,1024>::_ConstructItems | LevelUpMenu.obj | debug, call graph (shared callers), low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void Owner_788::ConstructElems(Elem_788* pData, unsigned int auiCount)
 {
     for (unsigned int i = 0; i < auiCount; i++)
@@ -378,7 +398,7 @@ void __cdecl CreateLoveTesterMenu(int aiValue)
         }
         DAT_011da2c8->unk58 = aiValue;
         DAT_011da2c8->Setup();
-        g_011da2f4 = DAT_011da2c8->GetNode();
+        g_011da2f4 = DAT_011da2c8->LoveTesterMenu_InitCamera();
         SetLoveTesterEnabled(true);
         menu->SetMenuVisibility(false);
     }
@@ -459,6 +479,7 @@ struct SmartMember
     ~SmartMember();
     SmartMember& operator=(void*);
 };
+// pdb: class Renderer, size 0x1 (here 0x4), 0 members
 struct Renderer
 {
     virtual void v0();
@@ -801,10 +822,12 @@ struct FUN_00788440 : Menu
     FUN_00788440();
     virtual ~FUN_00788440();
     void SetFlag(int, bool);
-    void Apply(void*);
+    void CalcLoadScreenTypeTextWindowFaces(void*);
 };
 // Initializes the view, clears the node and index arrays, queries the renderer view, sets flags, and applies the first item's data.
 // @fnv 0x00788440
+// pdb: LoadingMenu::LoadingMenu | LoadingMenu.obj | debug, call graph, high
+// pdb locals: i, pType
 FUN_00788440::FUN_00788440() : view(0.0f, 0.0f, 0.0f, 0.0f)
 {
     memset(&unk028, 0, 0x98);
@@ -832,7 +855,7 @@ FUN_00788440::FUN_00788440() : view(0.0f, 0.0f, 0.0f, 0.0f)
     {
         void* data = selected->Get();
         if (data)
-            Apply(&static_cast<Menu*>(data)->m_iSecondaryValue);
+            CalcLoadScreenTypeTextWindowFaces(&static_cast<Menu*>(data)->iMenuThickness);
     }
 }
 
@@ -841,7 +864,7 @@ FUN_00788440::FUN_00788440() : view(0.0f, 0.0f, 0.0f, 0.0f)
 class C1540InputManager
 {
   public:
-    int GetControlState(int iControlSlot, int iControl);
+    int GetControlState(int eAction, int toggleFlags);
 };
 
 class C1540OSGlobals
@@ -854,18 +877,20 @@ extern C1540OSGlobals* g_pkC1540OSGlobals;
 class C1540Menu
 {
   public:
-    bool LockPickMenu_IsTurningLock(int iControl);
+    bool LockPickMenu_IsTurningLock(int aiStateFlag);
 };
 
 // Returns true if the input manager reports control state for device 2, 3, 0 or 1 for the given control.
 // @fnv 0x00791540
 // src: XBOX_PDB 0x00791540
-bool C1540Menu::LockPickMenu_IsTurningLock(int iControl)
+// pdb: LockPickMenu::IsTurningLock | LockPickMenu.obj | debug, upstream name already matches, high
+// pdb params: aiStateFlag
+bool C1540Menu::LockPickMenu_IsTurningLock(int aiStateFlag)
 {
-    return g_pkC1540OSGlobals->GetInputManager()->GetControlState(2, iControl) ||
-           g_pkC1540OSGlobals->GetInputManager()->GetControlState(3, iControl) ||
-           g_pkC1540OSGlobals->GetInputManager()->GetControlState(0, iControl) ||
-           g_pkC1540OSGlobals->GetInputManager()->GetControlState(1, iControl);
+    return g_pkC1540OSGlobals->GetInputManager()->GetControlState(2, aiStateFlag) ||
+           g_pkC1540OSGlobals->GetInputManager()->GetControlState(3, aiStateFlag) ||
+           g_pkC1540OSGlobals->GetInputManager()->GetControlState(0, aiStateFlag) ||
+           g_pkC1540OSGlobals->GetInputManager()->GetControlState(1, aiStateFlag);
 }
 
 extern int(__stdcall* DAT_00fdf1b0)(void*);

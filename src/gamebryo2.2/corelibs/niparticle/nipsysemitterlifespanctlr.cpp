@@ -5,15 +5,16 @@
 #include "../../../../include/NiPSysModifierFloatCtlr.h"
 #include "../../../../include/StrArr.h"
 
-extern "C" void* g_01202740;
+extern "C" void* NiPSysEmitterLifeSpanCtlr_ms_RTTI;
 
 // @fnv 0x00c2b650
 // src: COMMUNITY 0x00c2b650
 void* __cdecl NiPSysEmitterLifeSpanCtlr_GetRTTI()
 {
-    return &g_01202740;
+    return &NiPSysEmitterLifeSpanCtlr_ms_RTTI;
 }
 
+// pdb: class NiPSysEmitterLifeSpanCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 class NiPSysEmitterLifeSpanCtlr : public NiPSysModifierFloatCtlr
 {
 public:
@@ -29,9 +30,11 @@ public:
 
 // @fnv 0x00c2b660
 // src: XBOX_PDB 0x00c2b660
+// pdb: NiPSysEmitterLifeSpanCtlr::GetTargetFloatValue | NiPSysEmitterLifeSpanCtlr.obj | debug, upstream name already matches, high
+// pdb params: fValue
 void __thiscall NiPSysEmitterLifeSpanCtlr::GetTargetFloatValue(float& fValue)
 {
-    NiPSysModifier* p = m_pkTargetModifier;
+    NiPSysModifier* p = m_pkModifier;
     fValue = *(float*)((char*)p + 0x48);
 }
 
@@ -39,7 +42,7 @@ void __thiscall NiPSysEmitterLifeSpanCtlr::GetTargetFloatValue(float& fValue)
 // src: XBOX_PDB 0x00c2b670
 void NiPSysEmitterLifeSpanCtlr::SetTargetFloatValue_00c2b670(float fValue)
 {
-    NiPSysModifier* p = m_pkTargetModifier;
+    NiPSysModifier* p = m_pkModifier;
     float* f = (float*)((char*)p + 0x48);
     *f = fValue;
 }
@@ -48,10 +51,12 @@ char* __cdecl _FUN_00a7d330(void*);
 // Appends the string returned by _FUN_00a7d330(g_01202740) to pkStrings, growing the array by its growth step when it is full.
 // @fnv 0x00c2b6d0
 // src: XBOX_PDB 0x00c2b6d0
+// pdb: NiPSysEmitterLifeSpanCtlr::GetViewerStrings | NiPSysEmitterLifeSpanCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysEmitterLifeSpanCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
-    char* pszStr = _FUN_00a7d330(g_01202740);
+    char* pszStr = _FUN_00a7d330(NiPSysEmitterLifeSpanCtlr_ms_RTTI);
     unsigned int uSize = pkStrings->m_usSize;
     unsigned int uCap = pkStrings->m_usMaxSize;
     if (uSize >= uCap)
@@ -63,6 +68,10 @@ void __stdcall NiPSysEmitterLifeSpanCtlr_GetViewerStrings(StrArr* pkStrings)
 
 // @fnv 0x00c2b680
 // src: XBOX_PDB 0x00c2b680
+// pdb: NiPSysEmitterLifeSpanCtlr::CreateClone | NiPSysEmitterLifeSpanCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysEmitterLifeSpanCtlr::IsEqual
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysEmitterLifeSpanCtlr* NiPSysEmitterLifeSpanCtlr::CreateClone_00c2b680(void* pvCloning)
 {
     NiPSysEmitterLifeSpanCtlr* pkClone = new NiPSysEmitterLifeSpanCtlr;

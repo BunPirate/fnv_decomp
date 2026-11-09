@@ -204,19 +204,22 @@ class B9F30Owner
     int unk148;
     B9F30Property* m_pkProperty;
 
-    B9F30Property* WaterShaderProperty_GetWaterPass(B9F30Geometry* pkGeometry);
+    B9F30Property* WaterShaderProperty_GetWaterPass(B9F30Geometry* apGeometry);
 };
 
 // @fnv 0x00b69f30
 // src: XBOX_PDB 0x00b69f30
-B9F30Property* B9F30Owner::WaterShaderProperty_GetWaterPass(B9F30Geometry* pkGeometry)
+// pdb: WaterShaderProperty::GetWaterPass | WaterShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apGeometry
+// pdb locals: bvertexcolors, pniagd, pbsagd
+B9F30Property* B9F30Owner::WaterShaderProperty_GetWaterPass(B9F30Geometry* apGeometry)
 {
     if (!m_pkProperty)
     {
-        if (pkGeometry->m_pkSkinData->m_pkSkinInstance)
-            m_pkProperty = new B9F30Property(pkGeometry, 0x289, true, 0, 0);
+        if (apGeometry->m_pkSkinData->m_pkSkinInstance)
+            m_pkProperty = new B9F30Property(apGeometry, 0x289, true, 0, 0);
         else
-            m_pkProperty = new B9F30Property(pkGeometry, 0x288, true, 0, 0);
+            m_pkProperty = new B9F30Property(apGeometry, 0x288, true, 0, 0);
     }
     return m_pkProperty;
 }

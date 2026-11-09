@@ -17,6 +17,7 @@ class NiTexture;
 class RenderTexture;
 class RenderedTextureSource;
 
+// pdb: class FOVATSEffectManager, size 0x1c4 (here 0x2d0), 37 members
 class FOVATSEffectManager
 {
 public:
@@ -77,7 +78,7 @@ public:
     void FOVATSEffectManager_DrawTarget(unsigned char, int);
     void FOVATSEffectManager_DrawSingleTarget(unsigned char, int);
     void FOVATSEffectManager_DrawMultipleTargets();
-    void VATSEffect_ShutdownEffect();
+    void ShutdownEffect();
     void PrepareScanEffect(int, int, int, unsigned char);
     void FOVATSEffectManager_PrepareHighlightEffect(int, int, int, unsigned char);
     void FOVATSEffectManager_PrepareHighlightEffect(int, RenderedTextureSource*, int, unsigned char);

@@ -5,6 +5,7 @@
 #include "hkaAnimation.h"
 #include "hkVector4.h"
 
+// pdb: class hkpMultiRayShape, size 0x20, bases: hkpShape, 2 members
 class hkpMultiRayShape : public hkpShape
 {
 public:
@@ -24,16 +25,16 @@ public:
         static const hkClass& __cdecl staticClass();
         struct DefaultStruct;
 
-        hkVector4 m_kRayStart;
-        hkVector4 m_kRayEnd;
+        hkVector4 m_start;
+        hkVector4 m_end;
     };
 
-    hkpMultiRayShape(const Ray* rays, int nRays, hkReal rayPenetrationDistance = 0.0f);
+    hkpMultiRayShape(const Ray* Rays, int nRays, hkReal rayPenetrationDistance = 0.0f);
     hkpMultiRayShape(FinishingFlag flag);
 
-    const hkArray<Ray>& getRays() const { return m_kRays; }
-    hkReal getRayPenetrationDistance() const { return m_fRayRadius; }
+    const hkArray<Ray>& getRays() const { return m_rays; }
+    hkReal getRayPenetrationDistance() const { return m_rayPenetrationDistance; }
 
-    hkArray<Ray> m_kRays;
-    hkReal m_fRayRadius;
+    hkArray<Ray> m_rays;
+    hkReal m_rayPenetrationDistance;
 };

@@ -7,29 +7,30 @@ namespace ActorValue
     enum Index;
 }
 
+// pdb: class ValueModifierEffect, size 0x4c, bases: ActiveEffect, 1 members
 class ValueModifierEffect : public ActiveEffect
 {
 public:
     virtual ~ValueModifierEffect();
     virtual ActiveEffect* Copy();
     virtual void Finalize();
-    virtual void Update(float delta);
+    virtual void Update(float afSecondsElapsed);
     virtual void FinishLoadGameTES(Actor* actor);
     virtual bool CanFinish();
-    virtual void CopyData(ActiveEffect* other);
-    virtual bool IsEffectValid(MagicTarget* target);
+    virtual void CopyData(ActiveEffect* apDestination);
+    virtual bool IsEffectValid(MagicTarget* apTarget);
     virtual void Start();
     virtual void Continue();
     virtual void Finish();
     virtual void SetActorValue(ActorValue::Index value);
     virtual ActorValue::Index GetActorValue();
-    virtual void ApplyActorValueModifier(Actor* actor, float magnitude, ActorValue::Index value);
+    virtual void ApplyActorValueModifier(Actor* apActor, float afModifier, ActorValue::Index aeOverrideActorValue);
 
-    ActorValue::Index m_eActorValue;
+    ActorValue::Index eWhichActorValue;
 
     ValueModifierEffect(void*, void*, void*);
-    float GetModifiedMagnitude(float magnitude);
-    void RefreshPlayerActorValue();
+    float GetModifiedMagnitude(float afMagnitude);
+    void ShowAttributeReductionMessage();
     void ApplyEffect();
     MagicTarget* FUN_0059bb30();
     unsigned short __thiscall FUN_00802d90(Actor* apActor);

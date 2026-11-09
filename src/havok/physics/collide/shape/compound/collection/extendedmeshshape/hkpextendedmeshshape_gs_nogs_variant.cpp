@@ -27,7 +27,7 @@ inline hkMemoryRouter* audio()
 {
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
-__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 static __forceinline void hkShortArray_reserveExactly(hkArrayBase<short>& self, int n)
 {
         hkMemoryRouter* m = audio();
@@ -66,7 +66,7 @@ struct FUN_00d56070_class
     int m_iCapacityFlags;
     char pad1[0xcc - 0xbc];
     hkArrayBase<short> m_aiIndexedValues;
-    void SetShortAtKey(int key, short value);
+    void SetShortAtKey(int key, short weldingInfo);
 };
 inline void* operator new(unsigned int, void* p)
 {
@@ -189,7 +189,7 @@ struct S_00d56880
     int unkb8;
     int unkbc;
     S_00d56880_Array m_aiIndexedValues;
-    S_00d56880_Elem* AppendElement();
+    S_00d56880_Elem* hkpExtendedMeshShape_expandOneShapesSubparts();
 };
 struct FUN_00d55520_cls
 {
@@ -261,12 +261,12 @@ struct SpawnedOwner
     int unkD8;
     int m_0xdc;
 
-    int hkpExtendedMeshShape_getMeshMaterial(int aiIndex);
+    int hkpExtendedMeshShape_getMeshMaterial(int key);
 };
 struct FUN_00d555d0_cls
 {
     int m_d0;
-    int GetSpawnedValue(int aiKey);
+    int GetSpawnedValue(int key);
 };
 struct Child
 {
@@ -350,7 +350,7 @@ struct FUN_00d55a90_cls
     Group* m_0c0;
     int m_0c4;
 
-    int __thiscall hkpExtendedMeshShape_calcSizeForSpu(int a1, int a2);
+    int __thiscall hkpExtendedMeshShape_calcSizeForSpu(int input, int spuBufferSizeLeft);
 };
 struct S_00d55bd0_Bool
 {
@@ -662,7 +662,7 @@ struct S00d55950_hkAabb
     __m128 m_kMaximumCorner;
 };
 
-void __cdecl calcAabbExtents(void* elem, void* unk80, S00d55950_hkAabb* aabb);
+void __cdecl calcAabbExtents(void* elem, void* scaling, S00d55950_hkAabb* out);
 
 extern __m128 DAT_010c44d0;
 extern __m128 DAT_010c71d0;
@@ -687,20 +687,20 @@ struct S00d55950_MeshChild
     virtual void getAabb(const S00d55950_MeshTransform& transform, float tolerance, S00d55950_hkAabb& out);
 };
 // src: XBOX_PDB 0x00d558b0
-static __declspec(noinline) void calcAabbExtents_00d558b0(const S_00d56880_Elem* elem, S00d55950_hkAabb* out)
+static __declspec(noinline) void calcAabbExtents_00d558b0(const S_00d56880_Elem* part, S00d55950_hkAabb* out)
 {
     out->m_kMinimumCorner = _mm_load_ps1(&DAT_0104da48);
     out->m_kMaximumCorner = _mm_xor_ps(out->m_kMinimumCorner, DAT_010c44d0);
     S00d55950_MeshTransform transform;
-    transform.translation.x = elem->unk30;
-    transform.translation.y = elem->unk34;
-    transform.translation.z = elem->unk38;
-    transform.translation.w = elem->unk3c;
-    transform.hkRotation_set(&elem->unk20);
-    for (int i = 0; i < elem->m_iElementCount; ++i)
+    transform.translation.x = part->unk30;
+    transform.translation.y = part->unk34;
+    transform.translation.z = part->unk38;
+    transform.translation.w = part->unk3c;
+    transform.hkRotation_set(&part->unk20);
+    for (int i = 0; i < part->m_iElementCount; ++i)
     {
         S00d55950_hkAabb aabb;
-        static_cast<S00d55950_MeshChild**>(elem->m_data)[i]->getAabb(transform, 0.0f, aabb);
+        static_cast<S00d55950_MeshChild**>(part->m_data)[i]->getAabb(transform, 0.0f, aabb);
         out->m_kMinimumCorner = _mm_min_ps(out->m_kMinimumCorner, aabb.m_kMinimumCorner);
         out->m_kMaximumCorner = _mm_max_ps(out->m_kMaximumCorner, aabb.m_kMaximumCorner);
     }
@@ -766,6 +766,8 @@ struct S_00d55950
 
 // @fnv 0x00d55950
 // src: XBOX_PDB 0x00d55950
+// pdb: hkpExtendedMeshShape::recalcAabbExtents | hkpExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb locals: out, tol4, childAabb
 void S_00d55950::hkpExtendedMeshShape_recalcAabbExtents()
 {
     S00d55950_hkAabb bounds;

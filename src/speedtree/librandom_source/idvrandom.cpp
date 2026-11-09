@@ -4,19 +4,24 @@
 #include "idvrandom_decls.h"
 
 // @fnv 0x00b3f100
-RandomNumberGenerator::RandomNumberGenerator()
+// pdb: CIdvRandom::CIdvRandom | IdvRandom.obj | retail, call graph (shared callers), high
+CIdvRandom::CIdvRandom()
 {
-    if (!DAT_011f8eb8)
-        SeedRandomGenerator(-1);
+    if (!SIdvRandomImpl_m_bInit)
+        Reseed(-1);
 }
 
 // @fnv 0x00b3f160
-void RandomNumberGenerator::SeedRandomGenerator(long seed)
+// src: XBOX_RETAIL_PDB 0x00b3f160
+// pdb: CIdvRandom::Reseed | IdvRandom.obj | retail, call graph, high
+// pdb params: lSeed
+// pdb locals: nNewSeed, nTimeValue
+void CIdvRandom::Reseed(long lSeed)
 {
-    if (seed == -1)
+    if (lSeed == -1)
     {
         long randomSeed = 12345;
-        if (DAT_011f8eb8)
+        if (SIdvRandomImpl_m_bInit)
             randomSeed = (long)GenerateRandomFloat(0.0f, 2147483648.0f);
         long currentTime = (long)_time64(0);
         if (randomSeed > currentTime)
@@ -26,11 +31,11 @@ void RandomNumberGenerator::SeedRandomGenerator(long seed)
     }
     else
     {
-        if (seed <= 1)
-            seed = 1;
-        Random::SetLong(seed);
+        if (lSeed <= 1)
+            lSeed = 1;
+        Random::SetLong(lSeed);
     }
-    DAT_011f8eb8 = true;
+    SIdvRandomImpl_m_bInit = true;
 }
 
 // @fnv 0x00b3f270
@@ -39,12 +44,14 @@ int Random::vf06()
     return 1;
 }
 
-extern Random DAT_011f8ebc;
+extern Random SIdvRandomImpl_m_cUniform;
 // Linearly interpolates between fMin and afMax using a random sample.
 // @fnv 0x00b3f130
-float RandomNumberGenerator::GenerateRandomFloat(float fMin, float afMax)
+// pdb: CIdvRandom::GetUniform | IdvRandom.obj | retail, call graph, high
+// pdb params: fMin, fMax
+float CIdvRandom::GenerateRandomFloat(float fMin, float fMax)
 {
-    return (float)((afMax - fMin) * (double)DAT_011f8ebc.Random::Next() + fMin);
+    return (float)((fMax - fMin) * (double)SIdvRandomImpl_m_cUniform.Random::Next() + fMin);
 }
 
 struct FloatIntPair
@@ -71,6 +78,7 @@ FloatIntPair* Random::vf05(FloatIntPair* pValue)
     return pValue;
 }
 extern double _gModifierZero;
+// pdb: class Uniform, size 0x4 (here 0x1), bases: Random, 0 members
 struct Uniform
 {
     float Next();
@@ -78,6 +86,7 @@ struct Uniform
 };
 
 // @fnv 0x00b3f280
+// pdb: Uniform::Next | IdvRandom.obj | debug, upstream name already matches, high
 float Uniform::Next()
 {
     return ((Random*)this)->Random::Next();

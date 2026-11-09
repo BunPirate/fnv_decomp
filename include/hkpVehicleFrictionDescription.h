@@ -5,6 +5,7 @@
 struct ClassMemberDescriptor;
 class hkClass;
 
+// pdb: structure hkpVehicleFrictionDescription, size 0xd0, 3 members
 class hkpVehicleFrictionDescription
 {
 public:
@@ -23,19 +24,19 @@ public:
         static void __cdecl operator delete(void* p, void* place);
         static void __cdecl operator delete[](void* p, void* place);
 
-        float m_afFrictionCurveSamples[16];
-        float m_fAxisFrictionTuning1;
-        float m_fAxisFrictionTuning2;
-        float m_fAxisFrictionTuning3;
-        float m_fAxisFrictionTuning4;
-        float m_fAxisFrictionTuning5;
-        float m_fAxisFrictionTuning6;
-        float m_fAxisFrictionTuning7;
-        float m_fAxisFrictionTuning8;
-        float m_fAxisFrictionTuning9;
+        float m_frictionCircleYtab[16];
+        float m_xStep;
+        float m_xStart;
+        float m_wheelSurfaceInertia;
+        float m_wheelSurfaceInertiaInv;
+        float m_wheelChassisMassRatio;
+        float m_wheelRadius;
+        float m_wheelRadiusInv;
+        float m_wheelDownForceFactor;
+        float m_wheelDownForceSumFactor;
     };
 
-    float m_fFrictionEqualizer;
-    float m_fMaxVelocityForPositionalFriction;
-    AxisDescription m_kAxisDescriptions[2];
+    float m_wheelDistance;
+    float m_chassisMassInv;
+    AxisDescription m_axleDescr[2];
 };

@@ -129,6 +129,9 @@ struct RayLocals
 
 // @fnv 0x00d37010
 // src: HAVOK_SRC 0x00d37010
+// pdb: hkpMultiRayConvexAgent::getClosestPoints | hkpMultiRayConvexAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event, rayInput, bTa, rayHit, rayResults, dist
 void __stdcall hkpMultiRayConvexAgent_getClosestPoints(const hkpCdBody* a, const hkpCdBody* b, void* unused, hkpCdPointCollector* collector)
 {
 
@@ -140,18 +143,18 @@ void __stdcall hkpMultiRayConvexAgent_getClosestPoints(const hkpCdBody* a, const
 
     timer(DAT_010ceda8, counter.ticks);
 
-    const hkpMultiRayShape* shape = static_cast<const hkpMultiRayShape*>(a->m_pCollisionShape);
+    const hkpMultiRayShape* shape = static_cast<const hkpMultiRayShape*>(a->m_shape);
 
-    const hkpShape* target = b->m_pCollisionShape;
+    const hkpShape* target = b->m_shape;
 
     RayLocals L;
     ShapeRayCastQuery input;
 
-    L.relative.hkTransform_setMulInverseMul(b->m_pMotionState, a->m_pMotionState);
+    L.relative.hkTransform_setMulInverseMul(b->m_motion, a->m_motion);
 
-    int count = shape->m_kRays.m_iElementCount;
+    int count = shape->m_rays.m_iElementCount;
 
-    const hkpMultiRayShape::Ray* ray = shape->m_kRays.m_data;
+    const hkpMultiRayShape::Ray* ray = shape->m_rays.m_data;
 
     L.hit.bodyB = b;
 
@@ -166,11 +169,11 @@ void __stdcall hkpMultiRayConvexAgent_getClosestPoints(const hkpCdBody* a, const
         {
 
             ShapeRayCastOutput output;
-            LocalM128 from = ray->m_kRayStart.m_vComponents;
+            LocalM128 from = ray->m_start.m_vComponents;
 
             input.from.m_vComponents = point(L.relative, from);
 
-            LocalM128 to = ray->m_kRayEnd.m_vComponents;
+            LocalM128 to = ray->m_end.m_vComponents;
 
             input.to.m_vComponents = point(L.relative, to);
 
@@ -187,13 +190,13 @@ void __stdcall hkpMultiRayConvexAgent_getClosestPoints(const hkpCdBody* a, const
 
                 LocalM128 p = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(DAT_010ec7f0, t), input.from.m_vComponents), _mm_mul_ps(input.to.m_vComponents, t));
 
-                const hkTransform* world = static_cast<const hkTransform*>(b->m_pMotionState);
+                const hkTransform* world = static_cast<const hkTransform*>(b->m_motion);
 
-                L.hit.point.m_vContactPosition.m_vComponents = point(*world, p);
+                L.hit.point.m_position.m_vComponents = point(*world, p);
 
-                L.hit.point.m_vSeparatingNormal.m_vComponents = direction(*world, output.normal.m_vComponents);
+                L.hit.point.m_separatingNormal.m_vComponents = direction(*world, output.normal.m_vComponents);
 
-                L.hit.point.m_vSeparatingNormal.w = (fraction - 1.0) * ray->m_kRayStart.w + shape->m_fRayRadius;
+                L.hit.point.m_separatingNormal.w = (fraction - 1.0) * ray->m_start.w + shape->m_rayPenetrationDistance;
 
                 collector->AddCdPoint(L.hit);
             }

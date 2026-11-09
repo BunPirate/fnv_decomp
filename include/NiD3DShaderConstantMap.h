@@ -20,6 +20,7 @@ struct Skin;
 struct Properties;
 struct Effects;
 
+// pdb: class NiD3DShaderConstantMap, size 0x44, bases: NiShaderConstantMap, 8 members
 class NiD3DShaderConstantMap : public NiShaderConstantMap
 {
 public:
@@ -104,13 +105,13 @@ public:
         Program*, NiShaderConstantMapEntry*, NiAVObject*, Skin*, NiSkinPartition::Partition*,
         void*, Properties*, Effects*, const void*, const void*, unsigned int);
 
-    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_kEntries;
-    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_kDefinedEntries;
-    bool m_bHasChanges;
+    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_aspEntries;
+    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_aspDefinedEntries;
+    bool m_bModified;
     unsigned char layoutPadding2D[3];
-    NiD3DShaderProgram* m_pShaderProgram;
-    unsigned int m_uiErrorCode;
-    Direct3DDeviceInterface* m_pD3DDevice;
-    GraphicsRenderer* m_pShaderObject;
-    ShaderPassRenderer* m_pRenderState;
+    NiD3DShaderProgram* m_pkLastShaderProgram;
+    unsigned int m_eLastError;
+    Direct3DDeviceInterface* m_pkD3DDevice;
+    GraphicsRenderer* m_pkD3DRenderer;
+    ShaderPassRenderer* m_pkD3DRenderState;
 };

@@ -5,11 +5,12 @@
 class Actor;
 class TESBoundObject;
 
+// pdb: class Reset3DMobIterator, size 0x10, bases: MobIterOperator, 2 members
 class Reset3DMobIterator : public MobIterOperator
 {
 public:
-    TESBoundObject* base;
-    bool reset;
+    TESBoundObject* pActorBase;
+    bool cFlags;
 
     Reset3DMobIterator();
     void Tesscriptfunctions_UpdateState_005d8b10();

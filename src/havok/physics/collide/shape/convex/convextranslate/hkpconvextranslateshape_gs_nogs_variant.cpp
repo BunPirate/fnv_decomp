@@ -19,18 +19,22 @@ typedef void (__thiscall* ConvexShapeOutputCall)(const hkpShape*, hkVector4*);
 // The shared translate-shape header omits these overrides. An unused EDX argument
 // preserves their thiscall ABI while using the shared class without a local copy.
 // @fnv 0x00dd5fa0
+// pdb: hkpConvexTranslateShape::getCentreImpl | hkpConvexTranslateShape.obj | retail, vtable slot, high
+// pdb params: centreOut
 void __fastcall GetConvexTranslateOutput(const hkpConvexTranslateShape* self, void*, hkVector4* value)
 {
-    const hkpShape* child = self->m_pContainedShape.m_pContainedShape;
+    const hkpShape* child = self->m_childShape.m_childShape;
     ConvexShapeOutputCall* vtable = *reinterpret_cast<ConvexShapeOutputCall* const*>(child);
     vtable[0x44 / sizeof(void*)](child, value);
-    value->m_vComponents = _mm_add_ps(self->m_vTranslation.m_vComponents, value->m_vComponents);
+    value->m_vComponents = _mm_add_ps(self->m_translation.m_vComponents, value->m_vComponents);
 }
 
 // @fnv 0x00dd5fd0
+// pdb: hkpConvexTranslateShape::getFirstVertex | hkpConvexTranslateShape.obj | retail, vtable slot, high
+// pdb params: v
 void __fastcall GetConvexTranslateFirstVertex(const hkpConvexTranslateShape* self, void*, hkVector4* value)
 {
-    const hkpConvexShape* child = static_cast<const hkpConvexShape*>(self->m_pContainedShape.m_pContainedShape);
+    const hkpConvexShape* child = static_cast<const hkpConvexShape*>(self->m_childShape.m_childShape);
     child->GetFirstVertex(*value);
-    value->m_vComponents = _mm_add_ps(self->m_vTranslation.m_vComponents, value->m_vComponents);
+    value->m_vComponents = _mm_add_ps(self->m_translation.m_vComponents, value->m_vComponents);
 }

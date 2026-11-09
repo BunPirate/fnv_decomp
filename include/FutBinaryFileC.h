@@ -4,6 +4,7 @@
 
 class BxString;
 
+// pdb: class FutBinaryFileC, size 0x40, 3 members
 class FutBinaryFileC
 {
 public:
@@ -28,7 +29,7 @@ public:
     template <class String>
     char ProcessAndReturnValue_00ac3fe0(const String& path);
 
-    std::string signature;
-    std::string path;
-    unsigned int unk3c;
+    std::string m_fname;
+    std::string fileId;
+    unsigned int fptr;
 };

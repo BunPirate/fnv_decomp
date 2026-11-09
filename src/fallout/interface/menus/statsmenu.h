@@ -14,10 +14,13 @@ int StatsMenu::GetClass()
 void StatsMenu::AssignTileByID(int id, Tile* tile)
 {
     if (id >= 0 && id < 60)
-        m_pTiles[id] = tile;
+        pTiles[id] = tile;
 }
 
 // @fnv 0x007dc040
+// pdb: CBaseEndianBuffer::GetWord | endian.obj | debug, object-file run extension, low
+// pdb params: pw
+// pdb locals: cb
 bool StatsMenu::SetTileFlashing(Tile* tile, unsigned int flashing)
 {
     if (flashing)

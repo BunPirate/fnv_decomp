@@ -58,6 +58,7 @@ struct FUN_004d4e10_StandIn
 
 // Calls FUN_004d4eb0, then deletes this object if bit 0 of flags is set, and returns this.
 // @fnv 0x004d4e10
+// pdb: NiTMap<TESObject *,bool>::`scalar deleting destructor' | InventoryChanges.obj | retail, vtable slot, high
 void* FUN_004d4e10_StandIn::DestroyIfFlagged(unsigned int flags)
 {
     FUN_004d4eb0();
@@ -105,6 +106,7 @@ struct FUN_004d7d50_StandIn
 };
 // @fnv 0x004d7d50
 // src: XBOX_PDB 0x004d7d50
+// pdb: NiParticleSystem::GetModifierCount | BSTempEffectParticle.obj | debug, upstream name already matches, high
 unsigned int __thiscall FUN_004d7d50_StandIn::NiParticleSystem_GetModifierCount()
 {
     return ((BlkOffset08View*)((char*)this + 0xC8))->GetFlags();
@@ -118,6 +120,7 @@ struct FUN_004d8510_StandIn
 
 // @fnv 0x004d8510
 // src: COMMUNITY 0x004d8510
+// pdb: bhkBinaryAction::GetRigidBodyB | bhkBinaryAction.obj | debug, upstream name already matches, high
 void FUN_004d8510_StandIn::bhkBinaryAction_GetRigidBodyB()
 {
     GetResultValue(0x42);
@@ -130,13 +133,15 @@ void* GetLocalSubValue(TESObjectREFR* p, int a);
 struct FUN_004d85a0_Class
 {
     void* GetLocalSubValue(int a);
-    void* bhkListShape_GetChildShape(int a);
+    void* bhkListShape_GetChildShape(int aiAt);
 };
 // @fnv 0x004d85a0
 // src: COMMUNITY 0x004d85a0
-void* FUN_004d85a0_Class::bhkListShape_GetChildShape(int a)
+// pdb: bhkListShape::GetChildShape | bhkListShape.obj | debug, upstream name already matches, high
+// pdb params: aiAt
+void* FUN_004d85a0_Class::bhkListShape_GetChildShape(int aiAt)
 {
-    return bhkShape_Getbhk(GetLocalSubValue(a));
+    return bhkShape_Getbhk(GetLocalSubValue(aiAt));
 }
 
 struct FUN_004d8670_Class
@@ -212,6 +217,7 @@ struct FUN_004d9190_Class
 
 // @fnv 0x004d9190
 // src: GUESS 0x004d9190 (confidence: low)
+// pdb: NiTPrimitiveArray<char *>::~NiTPrimitiveArray<char *> | TESScriptFunctions.obj | debug, call graph, medium
 void __thiscall FUN_004d9190_Class::ForwardCall_004d9190()
 {
     FUN_004d91b0();
@@ -224,6 +230,8 @@ struct FUN_004dc020_Class
 };
 // @fnv 0x004dc020
 // src: XBOX_PDB 0x004dc020
+// pdb: D3DDevice::SetIndices | Main.obj | debug, call graph, medium
+// pdb params: pIndexData
 unsigned int FUN_004dc020_Class::NiXenonRenderer_GetD3DDevice()
 {
     return *(unsigned int*)((char*)this + 0x288);
@@ -350,6 +358,8 @@ struct FUN_004de2b0_StandIn
 };
 
 // @fnv 0x004de2b0
+// pdb: SettingT<INISettingCollection>::operator= | Renderer.obj | debug, object-file run extension, low
+// pdb params: afValue
 FUN_004de2b0_StandIn* __thiscall FUN_004de2b0_StandIn::SetCharAtOffset4(char acValue)
 {
     if (this)
@@ -381,6 +391,7 @@ struct FUN_004def90_Class
 
 // @fnv 0x004def90
 // src: XBOX_PDB 0x004def90
+// pdb: NiNode::RemoveAllChildren | TES.obj | debug, upstream name already matches, high
 void FUN_004def90_Class::NiNode_RemoveAllChildren()
 {
     ((GlobalObject_004aff00*)((char*)this + 0x9c))->RemoveAll();
@@ -412,6 +423,7 @@ struct FUN_004dfec0_StandIn
 
 // @fnv 0x004dfea0
 // src: XBOX_PDB 0x004dfea0
+// pdb: RandomFloatNeg1To1 | ScreenCustomSplatter.obj | debug, upstream name already matches, high
 void RandomFloatNeg1To1()
 {
     reinterpret_cast<FUN_004dfec0_StandIn*>(MersenneTwister::GetRandomGenerator())->BSRandom_FloatNeg1To1();
@@ -420,11 +432,12 @@ void RandomFloatNeg1To1()
 void _NiFreeAlias(void*);
 struct FUN_004d4f10_StandIn : public NiTPointerMap<int, int>
 {
-    void ReleaseStorage_004d4f10();
+    void NiTMapBase_DFALL_NiTMapItem_TESObject_bool_TESObject_bool_dtor();
 };
 // @fnv 0x004d4f10
-// src: GUESS 0x004d4f10 (confidence: low)
-void FUN_004d4f10_StandIn::ReleaseStorage_004d4f10()
+// src: XBOX_DEBUG_PDB 0x004d4f10
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObject *,bool> >,TESObject *,bool>::~NiTMapBase<DFALL<NiTMapItem<TESObject *,bool> >,TESObject *,bool> | InventoryChanges.obj | debug, call graph (shared callers), high
+void FUN_004d4f10_StandIn::NiTMapBase_DFALL_NiTMapItem_TESObject_bool_TESObject_bool_dtor()
 {
     *(const char**)this = "@OM";
     RemoveAll();
@@ -475,6 +488,7 @@ struct FUN_004d9160_Class : public FUN_004d9190_Class
     void* FUN_004d9160(unsigned int flags);
 };
 // @fnv 0x004d9160
+// pdb: NiTPrimitiveArray<char *>::`scalar deleting destructor' | TESScriptFunctions.obj | debug, vtable slot, medium
 void* FUN_004d9160_Class::FUN_004d9160(unsigned int flags)
 {
     ForwardCall_004d9190();
@@ -490,14 +504,16 @@ struct FUN_004d4e40_Holder
 };
 struct FUN_004d4de0_Class
 {
-    void* __thiscall ProcessAndReturnValue_004d4de0(unsigned int);
+    void* __thiscall NiTMap_TESObject_bool_ctor(unsigned int);
 };
 // Calls FUN_004d4e40 on this, then stores the address of DAT_01020924 into the object's first field and returns this.
 // @fnv 0x004d4de0
-// src: GUESS 0x004d4de0 (confidence: low)
-void* __thiscall FUN_004d4de0_Class::ProcessAndReturnValue_004d4de0(unsigned int a)
+// src: XBOX_DEBUG_PDB 0x004d4de0
+// pdb: NiTMap<TESObject *,bool>::NiTMap<TESObject *,bool> | InventoryChanges.obj | debug, call graph, high
+// pdb params: uiHashSize
+void* __thiscall FUN_004d4de0_Class::NiTMap_TESObject_bool_ctor(unsigned int uiHashSize)
 {
-    ((FUN_004d4e40_Holder*)this)->FUN_004d4e40(a);
+    ((FUN_004d4e40_Holder*)this)->FUN_004d4e40(uiHashSize);
     *(void**)this = (void*)&DAT_01020924;
     return (void*)this;
 }
@@ -532,9 +548,10 @@ struct FUN_004d4f40_StandIn
 };
 // Calls FUN_004d4f10 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004d4f40
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObject *,bool> >,TESObject *,bool>::`scalar deleting destructor' | InventoryChanges.obj | retail, vtable slot, high
 void* __thiscall FUN_004d4f40_StandIn::FUN_004d4f40(unsigned int flags)
 {
-    ((FUN_004d4f10_StandIn*)this)->ReleaseStorage_004d4f10();
+    ((FUN_004d4f10_StandIn*)this)->NiTMapBase_DFALL_NiTMapItem_TESObject_bool_TESObject_bool_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -552,6 +569,7 @@ struct FUN_004d5c20_StandIn
 // Calls FUN_000(1) on m_p0 when m_p0 is non-null.
 // @fnv 0x004d5c20
 // src: GUESS 0x004d5c20 (confidence: low)
+// pdb: MiscStatManager::~MiscStatManager | MiscStats.obj | debug, object-file run extension, low
 void __thiscall FUN_004d5c20_StandIn::UpdateFields_004d5c20()
 {
     FUN_004d5c20_Base* p1 = m_p0;
@@ -567,6 +585,7 @@ struct FUN_004d5dd0_Class
 };
 // Calls FUN_004d5c20, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004d5dd0
+// pdb: MiscStat::`scalar deleting destructor' | MiscStats.obj | debug, call graph, low
 void* __thiscall FUN_004d5dd0_Class::FUN_004d5dd0(unsigned int flags)
 {
     UpdateFields_004d5c20();
@@ -693,6 +712,7 @@ struct FUN_004d8530_Class
 // Returns the result of FUN_004b5a80 called on the object returned by virtual slot f52.
 // @fnv 0x004d8530
 // src: COMMUNITY 0x004d8530
+// pdb: bhkConstraint::GetEntityB | bhkUtilFunctions.obj | retail, upstream name already matches, high
 void* __thiscall FUN_004d8530_Class::bhkConstraint_GetEntityB()
 {
     return bhkEntity_Getbhk(f52());
@@ -780,6 +800,7 @@ struct FUN_004d91e0_Class : public FUN_004d9190_Class
 };
 // Calls FUN_004d91b0, then frees this with _Deallocate if flags has bit 1 set, and returns this.
 // @fnv 0x004d91e0
+// pdb: NiTArray<char *,NiTMallocInterface<char *> >::`scalar deleting destructor' | TESScriptFunctions.obj | debug, vtable slot, medium
 void* __thiscall FUN_004d91e0_Class::FUN_004d91e0(unsigned int flags)
 {
     FUN_004d91b0();
@@ -798,6 +819,7 @@ struct FUN_004d9380_Class
 };
 // Deallocates the pointer stored in m_p4, then clears m_p0 and m_p4.
 // @fnv 0x004d9380
+// pdb: RagDollData::~RagDollData | RagDollData.obj | debug, object-file gap fill, medium
 void __thiscall FUN_004d9380_Class::FreeAndClear()
 {
     void* p = m_p4;
@@ -950,6 +972,7 @@ struct Flt
 {
     operator unsigned int();
 };
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -1053,6 +1076,8 @@ __pragma(comment(linker, "/alternatename:?GetAt@MyArr_GetAt@@QAEPAIH@Z=?GetAt@Ar
     // Returns the element at index from the array if index is within bounds, otherwise returns 0.
 // @fnv 0x004dcdf0
 // src: GUESS 0x004dcdf0 (confidence: high)
+// pdb: Renderer::Reposition | Renderer.obj | debug, object-file run extension, low
+// pdb params: aiX, aiY
     unsigned int __thiscall FUN_004dcdf0_Class::GetElementOrZero(unsigned int index)
 {
     if (index < _4.a.GetSize())
@@ -1090,12 +1115,14 @@ void* __thiscall FUN_004de550_StandIn::FUN_004de550(unsigned int flags)
 extern NiPointer<NiTexture> DAT_011c7804[];
 // @fnv 0x004deed0
 // src: GUESS 0x004deed0 (confidence: low)
+// pdb: ScreenCustomSplatter::SetCustomSplatterTexture | ScreenCustomSplatter.obj | debug, object-file run extension, low
+// pdb params: sTexureName, cTexSlot
 bool __cdecl Runtime_EvaluateValue_004deed0(char const* a, unsigned char aucIndex)
 {
     if (aucIndex > 2)
         return false;
     else
-        SkyTextureManager::LoadTextureFromPath(&DAT_011c7804[aucIndex], a);
+        SkyTextureManager::LoadTextureInBackground(&DAT_011c7804[aucIndex], a);
     return true;
 }
 
@@ -1175,6 +1202,9 @@ struct Buf
 
 // Reads a count and type from a buffer, allocates a Buf, fills its float arrays from the buffer, scales three entries by globals, and returns it or 0 on failure.
 // @fnv 0x004d5570
+// pdb: LipSynchAnim::Scatter | LipSynchAnim.obj | debug, call graph, low
+// pdb params: pBuffer, nBufferSize
+// pdb locals: nIndex, nNumFrames, nStartingFrame, pRet, nFrame, nPhon, nMod
 void* ReadBufFromMemory(char* pData, unsigned int uiSize)
 {
     if (pData == 0 || uiSize == 0)
@@ -1236,12 +1266,15 @@ struct FUN_004d5a90_Class
 {
     int m_i0;
     int m_i4;
-    float GetNegativeMagnitude();
+    float LipSynchAnim_LoadFromFile();
 };
 
 // Returns the absolute value of m_i4 scaled by DAT_010209a8 when m_i4 is negative, otherwise 0.0.
 // @fnv 0x004d5a90
-float FUN_004d5a90_Class::GetNegativeMagnitude()
+// src: XBOX_RETAIL_PDB 0x004d5a90
+// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | retail, object-file gap fill, high
+// pdb params: aFilename
+float FUN_004d5a90_Class::LipSynchAnim_LoadFromFile()
 {
     return (float)(m_i4 < 0 ? (double)(m_i4 * -1) * DAT_010209a8 : 0.0);
 }
@@ -1266,6 +1299,8 @@ struct FUN_004d5b60
 
 // Formats number into a 13-byte buffer, stores extra in value, and constructs a FUN_0040c150 from the text and index.
 // @fnv 0x004d5b60
+// pdb: MiscStatManager::MiscStatManager | MiscStats.obj | retail, string-set bridge, high
+// pdb locals: i
 FUN_004d5b60::FUN_004d5b60(int index, int number, int extra)
 {
     value = extra;
@@ -1305,6 +1340,8 @@ extern "C" void* __cdecl memset(void* dest, int value, unsigned int count);
 
 // Iterates DAT_011c6d50, calls FUN_004d5dd0(1) on each non-null entry, then zeroes the 43-entry array with memset.
 // @fnv 0x004d5d50
+// pdb: MiscStatManager::ReleaseMemory | MiscStats.obj | debug, call graph, low
+// pdb locals: i
 void __cdecl ClearGlobalArray(void)
 {
     for (int i = 0; i < 43; i++)
@@ -1740,7 +1777,7 @@ struct MsgStruct
     int unk3C;
 };
 
-void __cdecl BSstrncpy(char* dst, const char* src, unsigned int count);
+void __cdecl BSstrncpy(char* apString1, const char* apString2, unsigned int aiLen);
 
 struct ObjClass : public FUN_004d7d50_StandIn
 {
@@ -2008,7 +2045,7 @@ struct FNVTypeC
 struct FNVTypeD
 {
     unsigned int GetInnerVirtualResult();
-    FNVTreeNode* bhkListShape_GetChildShape(unsigned int index);
+    FNVTreeNode* bhkListShape_GetChildShape(unsigned int aiAt);
 };
 struct FNVTypeE
 {
@@ -2860,6 +2897,8 @@ struct FUN_004de2d0_StandIn : FUN_004de2b0_StandIn
 
 // @fnv 0x004de2d0
 // src: COMMUNITY 0x004de2d0
+// pdb: SettingT<INISettingCollection>::operator= | Renderer.obj | debug, call graph, high
+// pdb params: abValue
 FUN_004de2b0_StandIn* FUN_004de2d0_StandIn::Setting_SetValueB(char c)
 {
     SetCharAtOffset4(c);
@@ -2875,6 +2914,7 @@ struct FUN_004de3f0_Class
 };
 
 // @fnv 0x004de3f0
+// pdb: SettingT<INIPrefSettingCollection>::`scalar deleting destructor' | Renderer.obj | retail, vtable slot, high
 void* __thiscall FUN_004de3f0_Class::FUN_004de3f0(int flags)
 {
     this->FUN_004de420();
@@ -3158,12 +3198,15 @@ extern C4DF040TexturePtr g_spDebrisNormalMap;
 extern C4DF040TexturePtr g_spDebrisShadowTexture;
 
 float __cdecl C4DF040Random();
-float __cdecl C4DF040RandomFloat(float fMin, float fScaledValue);
-bool __cdecl C4DF040RandomChance(float afChance);
-void __cdecl C4DF040UpdateProperties(C4DF040TriShape* pkShape, int iArg1, int iArg2);
+float __cdecl C4DF040RandomFloat(float afMin, float afMax);
+bool __cdecl C4DF040RandomChance(float afPercentTrue);
+void __cdecl C4DF040UpdateProperties(C4DF040TriShape* apObject, int abFaceGenModel, int abSkipPreCache);
 
 // Builds a node with a quad-tri shape of randomly placed, rotated and sized debris pieces, optionally adding a shadow shape, and returns the node.
 // @fnv 0x004df040
+// pdb: ScreenCustomSplatter::CreateGeometry | ScreenCustomSplatter.obj | retail, object-file run extension, low
+// pdb params: auiCount, fSplatScale, fOpacityScale
+// pdb locals: ptexcoordsA, pshaderprop, pflareTexcoordsA, pnode, pverticesA, pindicesA, pflareIndicesA, i, pgeom, pflareVerticesA, falpha2, uibase, fy, translate, rotationMatrix, fscale, falpha1, texTranslate, fuoffset, fx, fflareSize, fvoffset, uiindexBase
 C4DF040Node* __cdecl CreateDebrisNode(unsigned int uiPieceCount, float fWidthScale, float fHeightScale)
 {
     C4DF040Point2* pkTexCoords;
@@ -3306,6 +3349,8 @@ struct FUN_004dfec0_Class
 };
 // @fnv 0x004dfec0
 // src: XBOX_PDB 0x004dfec0
+// pdb: BSRandom::FloatNeg1To1 | ScreenCustomSplatter.obj | debug, upstream name already matches, high
+// pdb locals: r
 float FUN_004dfec0_Class::BSRandom_FloatNeg1To1()
 {
     unsigned int randomValue = BSRandom_UnsignedInt();
@@ -3327,6 +3372,7 @@ class FUN_004d4eb0 : public FUN_004d4f10
 };
 
 // @fnv 0x004d4eb0
+// pdb: NiTMap<TESObject *,bool>::~NiTMap<TESObject *,bool> | InventoryChanges.obj | debug, call graph (shared callers), high
 FUN_004d4eb0::~FUN_004d4eb0()
 {
     FUN_00438af0();
@@ -3339,17 +3385,21 @@ struct SavedSettingValue
 };
 // Reads a count (default 0x15, read from the buffer if version >= 11), then that many ints, storing each in DAT_011c6d50[i]'s value if i < 43 and non-null.
 // @fnv 0x004d6020
-void __cdecl ReadSavedSettings(BGSLoadGameBuffer* buffer)
+// src: XBOX_RETAIL_PDB 0x004d6020
+// pdb: MiscStatManager::LoadGame | MiscStats.obj | retail, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: imiscStatCount, i, ival
+void __cdecl MiscStatManager_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     unsigned int count = 0x15;
-    if (buffer->GetVersion() >= 11)
-        buffer->LoadData(&count, 4);
+    if (apLoadGameBuffer->GetVersion() >= 11)
+        apLoadGameBuffer->LoadData(&count, 4);
     if (count > 0x1000000)
         return;
     for (unsigned int i = 0; i < count; i++)
     {
         unsigned int value = 0;
-        buffer->LoadData(&value, 4);
+        apLoadGameBuffer->LoadData(&value, 4);
         if (i < 43 && DAT_011c6d50[i])
             static_cast<SavedSettingValue*>(DAT_011c6d50[i])->value = value;
     }
@@ -3420,6 +3470,9 @@ class Owner
 };
 // Returns the element at the given index from the list, or null if the index is out of range.
 // @fnv 0x004d7d70
+// pdb: NiParticleSystem::GetModifierAt | Precipitation.obj | debug, call graph, medium
+// pdb params: uiIndex
+// pdb locals: uiCount, kIter, pkModifier
 void* Owner::GetByIndex(unsigned int idx)
 {
     if (idx >= kList.FUN_0044ddc0())
@@ -3466,6 +3519,7 @@ struct FUN_004d91b0_Class
 };
 // Frees the pData buffer by calling NiTMallocInterface<void>::Deallocate.
 // @fnv 0x004d91b0
+// pdb: NiTArray<char *,NiTMallocInterface<char *> >::~NiTArray<char *,NiTMallocInterface<char *> > | TESScriptFunctions.obj | debug, call graph (shared callers), medium
 FUN_004d91b0_Class::~FUN_004d91b0_Class()
 {
     NiTMallocInterface<void>::Deallocate(pData);
@@ -3492,6 +3546,7 @@ struct DoorTeleportArray
 // Reads a door teleport array from the save game stream, allocating and populating the entries buffer.
 // @fnv 0x004da3f0
 // src: COMMUNITY 0x004da3f0
+// pdb: RagDollData::LoadGame | RagDollData.obj | retail, upstream name already matches, high
 void DoorTeleportArray::RagDollData_LoadGame()
 {
     g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(this, 1);
@@ -3580,7 +3635,7 @@ void Interface3DSceneGraph_Destroy();
 void BSTexturePalette_RemoveAll();
 void BSShaderManager_Reinitialize();
 void TESMain_CreateMenuRootNode();
-void FUN_004dc650();
+void CreateMenuRootNode3D();
 void FUN_007022c0();
 void Interface_CreateMainMenu();
 void __cdecl CopyStringToGlobal(const char* src);
@@ -3625,7 +3680,7 @@ void RecreateRenderDevice()
         g_011c73b4.Modelloader_GetReferencedThis()->NiTexturingProperty_Map_SetTexture((NiAVObject*)BSShaderManager_GetAccumulator());
         Main_GetWorldSceneGraph()->BSSceneGraph_UpdateCameraFOV();
         TESMain_CreateMenuRootNode();
-        FUN_004dc650();
+        CreateMenuRootNode3D();
         BlkInterfaceView::Init(false);
         FUN_007022c0();
         Interface_CreateMainMenu();
@@ -3684,6 +3739,9 @@ struct FUN_004d8610_StandIn
 };
 // Retrieves the sub-value at index a from the Havok object, returning null if no object exists.
 // @fnv 0x004d85d0
+// pdb: bhkListShape::GetChildhkShape | bhkListShape.obj | debug, call graph, medium
+// pdb params: aiAt
+// pdb locals: pls
 void* FUN_004d85a0_Class::GetLocalSubValue(int a)
 {
     FUN_004d8610_StandIn* pLocalData = (FUN_004d8610_StandIn*)((bhkWorldObject*)this)->Bipedanim_GetReferenceFlagsOrZero();
@@ -3868,6 +3926,7 @@ extern FUN_004de530* DAT_011f35a0;
 // Allocates a B004de530 instance into DAT_011f35a0 if it is null.
 // @fnv 0x004de4a0
 // src: COMMUNITY 0x004de4a0
+// pdb: SettingT<INIPrefSettingCollection>::InitCollection | Renderer.obj | retail, call graph, medium
 void SettingT_INIPrefSettingCollection_InitCollection()
 {
     if (!DAT_011f35a0)

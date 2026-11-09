@@ -65,14 +65,16 @@ struct Owner
     int unk0b4;
     NiPointer<Target> m_spReferencedObject;
 
-    int NiGeometry_SetModelBound(int iArg);
+    int NiGeometry_SetModelBound(int kBound);
 };
 
 // @fnv 0x004a5200
 // src: COMMUNITY 0x004a5200
-int Owner::NiGeometry_SetModelBound(int iArg)
+// pdb: NiGeometry::SetModelBound | BGSPrimitive.obj | debug, upstream name already matches, high
+// pdb params: kBound
+int Owner::NiGeometry_SetModelBound(int kBound)
 {
-    return static_cast<Target*>(m_spReferencedObject)->ForwardToMember(iArg);
+    return static_cast<Target*>(m_spReferencedObject)->ForwardToMember(kBound);
 }
 
 }

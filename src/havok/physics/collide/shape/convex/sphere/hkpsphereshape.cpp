@@ -29,6 +29,8 @@ struct FUN_00cd8160
 };
 
 // @fnv 0x00cd8160
+// pdb: hkpSphereShape::hkpSphereShape | hkpSphereShape.obj | debug, object-file run extension, low
+// pdb params: radius
 FUN_00cd8160::FUN_00cd8160(float radius)
 {
     *(float*)((char*)this + 0x10) = radius;
@@ -127,6 +129,8 @@ class HostCD81
 
 // Writes start and end timer commands to the TLS monitor stream around a call to FUN_00cd85c0, then returns pvResult.
 // @fnv 0x00cd8190
+// pdb: hkpSphereShape::castRayImpl | hkpSphereShape.obj | retail, string-set bridge, high
+// pdb params: input, results
 void* HostCD81::RecordTimerCommands(void* pvResult, int a, int b)
 {
     hkMonitorStream* pkStream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -367,7 +371,10 @@ struct ProbeSphere : hkpSphereShape
 // Performs a vectorized ray-sphere intersection test, writing hit fractions and normals into hits and returning the active RayMask.
 // @fnv 0x00cd8220
 // src: HAVOK_SRC 0x00cd8220
-RayMask ProbeSphere::hkpSphereShape_castRayBundleImpl(const RayQuerySet& ray, RayHits& hits, const RayMask& enabled) const
+// pdb: hkpSphereShape::castRayBundleImpl | hkpSphereShape.obj | retail, string-set bridge, high
+// pdb params: input, results, mask
+// pdb locals: assertBuf, ostr, normals, t, radius
+RayMask ProbeSphere::hkpSphereShape_castRayBundleImpl(const RayQuerySet& input, RayHits& results, const RayMask& mask) const
 {
     hkMonitorStream* s = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* pCurrent = s->m_end.m_storage;
@@ -382,9 +389,9 @@ RayMask ProbeSphere::hkpSphereShape_castRayBundleImpl(const RayQuerySet& ray, Ra
         ((hkMonitorStream::TimerCommand*)pCurrent)->m_time0 = ticks;
         s->m_end.m_storage = pCurrent + sizeof(hkMonitorStream::TimerCommand);
     }
-    RayMask active = enabled;
+    RayMask active = mask;
     RayVector radius, radiusSquared;
-    radius.splat(m_fSphereRadius);
+    radius.splat(m_radius);
     radiusSquared.product(radius, radius);
     LocalM128 hundredValues = {100.0f, 100.0f, 100.0f, 100.0f};
     RayVector hundred;
@@ -392,15 +399,15 @@ RayMask ProbeSphere::hkpSphereShape_castRayBundleImpl(const RayQuerySet& ray, Ra
     RayVector quadratic, linear;
     {
         RayVector dx, dy, dz;
-        dx.difference(ray.m_vTo[0], ray.m_vFrom[0]);
+        dx.difference(input.m_vTo[0], input.m_vFrom[0]);
         quadratic.product(dx, dx);
-        linear.product(ray.m_vFrom[0], dx);
-        dy.difference(ray.m_vTo[1], ray.m_vFrom[1]);
+        linear.product(input.m_vFrom[0], dx);
+        dy.difference(input.m_vTo[1], input.m_vFrom[1]);
         quadratic.accumulate(dy, dy);
-        linear.accumulate(ray.m_vFrom[1], dy);
-        dz.difference(ray.m_vTo[2], ray.m_vFrom[2]);
+        linear.accumulate(input.m_vFrom[1], dy);
+        dz.difference(input.m_vTo[2], input.m_vFrom[2]);
         quadratic.accumulate(dz, dz);
-        linear.accumulate(ray.m_vFrom[2], dz);
+        linear.accumulate(input.m_vFrom[2], dz);
     }
     RayVector scaled, linearSquared;
     scaled.product(quadratic, radiusSquared);
@@ -425,8 +432,8 @@ RayMask ProbeSphere::hkpSphereShape_castRayBundleImpl(const RayQuerySet& ray, Ra
         RayVector midpoint[3];
         for (int axis = 0; axis < 3; ++axis)
         {
-            midpoint[axis].product(ray.m_vFrom[axis], remaining);
-            midpoint[axis].accumulate(ray.m_vTo[axis], middle);
+            midpoint[axis].product(input.m_vFrom[axis], remaining);
+            midpoint[axis].accumulate(input.m_vTo[axis], middle);
             c.accumulate(midpoint[axis], midpoint[axis]);
         }
     }
@@ -447,8 +454,8 @@ RayMask ProbeSphere::hkpSphereShape_castRayBundleImpl(const RayQuerySet& ray, Ra
     fraction.subtract(linear);
     fraction.subtract(root);
     RayVector limits;
-    limits.set(hits.m_akRayOutputs[0].m_fHitFraction, hits.m_akRayOutputs[1].m_fHitFraction,
-               hits.m_akRayOutputs[2].m_fHitFraction, hits.m_akRayOutputs[3].m_fHitFraction);
+    limits.set(results.m_akRayOutputs[0].m_fHitFraction, results.m_akRayOutputs[1].m_fHitFraction,
+               results.m_akRayOutputs[2].m_fHitFraction, results.m_akRayOutputs[3].m_fHitFraction);
     fraction.multiply(reciprocal);
     RayMask below = fraction.less(limits);
     RayMask positive = fraction.atLeast(zero);
@@ -460,8 +467,8 @@ RayMask ProbeSphere::hkpSphereShape_castRayBundleImpl(const RayQuerySet& ray, Ra
     RayVector normals[4];
     for (int axis = 0; axis < 3; ++axis)
     {
-        normals[axis].product(ray.m_vFrom[axis], oneMinusFraction);
-        normals[axis].accumulate(ray.m_vTo[axis], fraction);
+        normals[axis].product(input.m_vFrom[axis], oneMinusFraction);
+        normals[axis].accumulate(input.m_vTo[axis], fraction);
         normals[axis].multiply(invRadius);
     }
     normals[3].zero();
@@ -470,9 +477,9 @@ RayMask ProbeSphere::hkpSphereShape_castRayBundleImpl(const RayQuerySet& ray, Ra
     {
         if (active.any(RayMask::components[lane]))
         {
-            hits.m_akRayOutputs[lane].m_fHitFraction = fraction(lane);
-            hits.m_akRayOutputs[lane].m_vHitNormal = normals[lane];
-            hits.m_akRayOutputs[lane].setKey(~0u);
+            results.m_akRayOutputs[lane].m_fHitFraction = fraction(lane);
+            results.m_akRayOutputs[lane].m_vHitNormal = normals[lane];
+            results.m_akRayOutputs[lane].setKey(~0u);
         }
     }
     s = (hkMonitorStream*)TlsGetValue(DAT_0126835c);

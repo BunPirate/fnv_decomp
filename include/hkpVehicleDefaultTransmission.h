@@ -5,10 +5,11 @@
 
 struct Vehicle;
 
+// pdb: class hkpVehicleDefaultTransmission, size 0x34, bases: hkpVehicleTransmission, 7 members
 class hkpVehicleDefaultTransmission : public hkpVehicleTransmission
 {
 public:
-    float calcTransmissionRPM(const Vehicle* vehicle, const void* input);
+    float calcTransmissionRPM(const Vehicle* vehicle, const void* transmissionOut);
     virtual void vf03();
     virtual void vf04();
     virtual float vf05(const Vehicle* vehicle, const void* input);
@@ -16,11 +17,11 @@ public:
     virtual void vf07();
     virtual hkReal getTransmissionRatio(const Vehicle* vehicle, const void* input) const;
 
-    hkReal m_fDownshiftRPM;
-    hkReal m_fUpshiftRPM;
-    hkReal m_fPrimaryTransmissionRatio;
-    hkReal m_fClutchDelayTime;
-    hkReal m_fReverseGearRatio;
-    hkArray<hkReal> m_kGearRatios;
-    hkArray<hkReal> m_kWheelTorqueRatios;
+    hkReal m_downshiftRPM;
+    hkReal m_upshiftRPM;
+    hkReal m_primaryTransmissionRatio;
+    hkReal m_clutchDelayTime;
+    hkReal m_reverseGearRatio;
+    hkArray<hkReal> m_gearsRatio;
+    hkArray<hkReal> m_wheelsTorqueRatio;
 };

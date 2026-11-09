@@ -170,7 +170,7 @@ struct DecalStub
 {
     void NiMaterialProperty_SetChanged(int);
     float m_f;
-    void NiMaterialProperty_SetShine(float f);
+    void NiMaterialProperty_SetShine(float c);
 };
 struct FUN_00657880_class
 {
@@ -522,7 +522,7 @@ struct FUN_00642860_Class
 };
 extern Setting originalRuntimeFloatSetting332;
 extern Setting originalRuntimeFloatSetting333;
-float AiFormulas_AVDeriveUnarmedDamage(GameSettingCollection* collection, int index);
+float AiFormulas_AVDeriveUnarmedDamage(GameSettingCollection* apActor, int aiWhich);
 struct FUN_00644350_Class
 {
     bool IsGreaterThan(int a);
@@ -543,7 +543,7 @@ struct FUN_006444e0_Class
 };
 GlobalObject_0040e0b0 g_011ce840;
 GlobalObject_0040e0b0 g_011cfd8c;
-float CombatFormulas_CalcBlock(int value);
+float CombatFormulas_CalcBlock(int aiSkill);
 void __cdecl ClampUInt(unsigned int* p, unsigned int low, unsigned int high);
 extern double g_d100;
 extern Setting g_011d17d0;
@@ -971,7 +971,7 @@ struct PropHelper
 };
 void* DynamicCastByRTTI(const NiRTTI*, NiProperty*);
 extern int DAT_011f49e0;
-extern const char* const DAT_012005b8;
+extern const char* const SkyShaderProperty_ms_RTTI;
 struct FUN_00642940_class
 {
     int a;
@@ -1079,7 +1079,7 @@ struct FUN_0065f430_class
 };
 struct FUN_0064cc90_Class
 {
-    void __thiscall BSFaceGenAnimationData_SetAnimHeadCulled(unsigned char bFlag);
+    void __thiscall BSFaceGenAnimationData_SetAnimHeadCulled(unsigned char abCulled);
 };
 void* __cdecl NiMalloc(unsigned int);
 void* __cdecl memset(void* dst, int value, unsigned int size);
@@ -1117,18 +1117,19 @@ int __cdecl _sprintf_s(char* buffer, unsigned int sizeOfBuffer, char const* form
 void __cdecl FormatMenuText(int menuType, char const* text, char* buffer, unsigned int bufferSize);
 struct FUN_0064da80_Class
 {
-    int __thiscall NiPixelData_GetWidth(int a, int b);
+    int __thiscall NiPixelData_GetWidth(int uiMipmapLevel, int uiFace);
 };
 struct FUN_0064daa0_Class
 {
-    int __thiscall NiPixelData_GetHeight(int a, int b);
+    int __thiscall NiPixelData_GetHeight(int uiMipmapLevel, int uiFace);
 };
+// pdb: class Calendar, size 0x1c (here 0x3c), 7 members
 struct Calendar : public BGSTerrainManager
 {
     int GetDaysPassed();
     void __thiscall ScaleAll(float value);
 };
-void BSFaceGenManager_ScaleFaceCoord(float value, Calendar* calendars, bool flag);
+void BSFaceGenManager_ScaleFaceCoord(float afScaleAmount, Calendar* apCoordToScale, bool abNoTextureScale);
 struct Helper62d0
 {
     void* operator=(const void*);
@@ -1141,7 +1142,7 @@ struct FUN_00658ad0_arg
 };
 struct FUN_00658ad0_class
 {
-    void __thiscall AssignString(FUN_00658ad0_arg* arg, char* source, GO value);
+    void __thiscall AssignString(FUN_00658ad0_arg* pkItem, char* pcKey, GO val);
 };
 int __cdecl strcpy_s(char*, unsigned int, char*);
 int __cdecl strlen(char*);
@@ -1217,7 +1218,7 @@ extern const char DAT_0104f2ac;
 struct FUN_00404eb0
 {
     int state;
-    FUN_00404eb0(int category, int enabled, const char* source, int line);
+    FUN_00404eb0(int memContext, int overridable, const char* source, int aiLine);
     ~FUN_00404eb0();
 };
 struct FUN_00508050
@@ -1282,8 +1283,8 @@ struct Object_006428b0
 };
 extern double DAT_010356d8;
 extern double DAT_01012060;
-float __cdecl FUN_00476b70(float a, float b);
-float __cdecl AiFormulas_RandomHour(float a, float b);
+float __cdecl FUN_00476b70(float afMin, float afMax);
+float __cdecl AiFormulas_RandomHour(float afMin, float afMax);
 extern GlobalObject_0040e0b0 g_011cddec;
 extern Setting originalRuntimeFloatSetting112;
 extern Setting originalRuntimeFloatSetting117;
@@ -1295,16 +1296,16 @@ extern GlobalObject_0040e0b0 g_011cddc4;
 extern GlobalObject_0040e0b0 g_011cd890;
 extern Setting originalRuntimeFloatSetting116;
 extern GlobalObject_0040e0b0 g_011cd438;
-int AiFormulas_GetActorDispositiontoTarget(int base, int level, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int extra, bool flag);
+int AiFormulas_GetActorDispositiontoTarget(int aiActorBaseDisp, int aiCharismaTarget, int aiResponActor, int aiKarmaTarget, int aiRaceReactionTarget, int aiFactionReactionTarget, int aiFactionRankTarget, int aiWeaponStatusTarget, int aiDiseaseStatusTarget, int aiTargetMod, bool abcreature);
 extern Setting DAT_011cdf78;
 extern Setting DAT_011cdf44;
 extern Setting DAT_011cde50;
 extern Setting DAT_011cdce8;
 struct FUN_0066ef50_Class
 {
-    double FUN_0066ef50(int a);
+    double FUN_0066ef50(int aiWhich);
 };
-float __cdecl AiFormulas_AVDeriveResistance(FUN_0066ef50_Class* actor, int action);
+float __cdecl AiFormulas_AVDeriveResistance(FUN_0066ef50_Class* apActor, int aiWhich);
 class FUN_00644350_cls
 {
   public:
@@ -1319,7 +1320,7 @@ struct AVOwnerStub_646400
     virtual float GetBaseAV(int index);
     virtual float GetAV2(int index);
     virtual float GetCurAV(int index);
-    float GetScaledAV(int index);
+    float GetScaledAV(int aiWhich);
 };
 struct FloatSetting_646400
 {
@@ -1346,7 +1347,7 @@ struct FUN_00647a30_Flag
 {
     unsigned char Check();
 };
-float __cdecl CombatFormulas_CalcTargetedLimbDamage(FUN_00647a30_Obj* a1, FUN_00647a30_Flag* a2, float a3);
+float __cdecl CombatFormulas_CalcTargetedLimbDamage(FUN_00647a30_Obj* apTarget, FUN_00647a30_Flag* apBodyPart, float afHealthDamage);
 class SettingValue
 {
   public:
@@ -1356,7 +1357,7 @@ extern SettingValue g_011cee24;
 extern SettingValue g_011cf314;
 extern SettingValue g_011ced28;
 extern SettingValue g_011ceb38;
-float __cdecl FUN_00476b70(float a, float b);
+float __cdecl FUN_00476b70(float afMin, float afMax);
 int __cdecl BSMAX_00647b70(int a, int b);
 int __cdecl ComputeScaledSettingSum(float scale);
 // Scale a value by the remaining fraction (max - current) / max, clamped to [0, 1].
@@ -1374,7 +1375,7 @@ extern S_00648ea0_Setting DAT_011d0a24;
 extern S_00648ea0_Setting DAT_011d00f0;
 extern double DAT_01017a40;
 extern double DAT_01011588;
-int __cdecl ComputeWeightedValue(float value1, float value2, int weight);
+int __cdecl GamePlayFormulas_GetSpeechChallengeChance(float afPlayerSpeech, float afTargetDisposition, int aiTopicDifficulty);
 extern int DAT_011d5744;
 int __cdecl Get_Ni_FAD();
 extern double DAT_01012060;
@@ -1531,7 +1532,7 @@ struct FUN_0040fbf0_lock
 };
 struct FUN_0064be40_shell
 {
-    bool BSFaceGenAnimationData_UpdateEyeTracking(float elapsed, int unused);
+    bool BSFaceGenAnimationData_UpdateEyeTracking(float afTime, int apHeadNode);
     int BSFaceGenAnimationData_GetCurrentExpression();
     void FUN_0064bf90(int deltaY, float* deltaX, float* limit, float elapsed);
     void SetEyeHeadingAndPitch(float x, float y);
@@ -1737,8 +1738,8 @@ namespace std {
 struct exception
 {
     virtual ~exception() throw();
-    const char* message;
-    bool ownsMessage;
+    const char* _Mywhat;
+    bool _Mydofree;
 };
 struct bad_alloc : public exception
 {
@@ -1877,7 +1878,7 @@ struct FUN_0064fcd0_Self
     int unk0c;
     unsigned int m_uiItemCount;
     void __thiscall SetQuantity_0064a4d0(unsigned int index, float value);
-    FUN_0064fcd0_Self* __thiscall CopyFrom(FUN_0064fcd0_Other* other);
+    FUN_0064fcd0_Self* __thiscall CopyFrom(FUN_0064fcd0_Other* aOther);
 };
 struct FUN_00438af0_cls
 {
@@ -2119,6 +2120,8 @@ extern "C" void __cdecl FormHeap_Allocate(int scaled);
 extern "C" int DAT_01140ef8;
 // @fnv 0x00658c10
 // src: GUESS 0x00658c10 (confidence: medium)
+// pdb: std::_Destroy_range<std::allocator<FanLinCtlS> > | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: _First, _Last, _Al
 extern "C" void __cdecl Array_AllocateElements60Checked(int a, int b)
 {
     Hldr0044 h;
@@ -2203,7 +2206,7 @@ struct PacketScope
     PacketScope(unsigned int selector);
     ~PacketScope();
 };
-void __cdecl Object_ProcessEntries_00ab2640(PacketScope* scope, void* owner, PacketEntry* begin, PacketEntry* next);
+void __cdecl fffReadEgtFile(PacketScope* fname, void* basisKey, PacketEntry* symm, PacketEntry* asym);
 struct FUN_00659670
 {
     unsigned int mode;
@@ -2787,7 +2790,7 @@ struct FNVFlag7675
 int __cdecl ComputeIndexAndCall(int a, int b, int c);
 // Candidate: CallWithFlag
 //   int CallWithFlag(int* p) { bool flag; return FUN_0043b1d0(p, flag); }
-int __cdecl NiGlobalStringTable_GetString(int* p, bool flag);
+int __cdecl NiGlobalStringTable_GetString(int* kHandle, bool flag);
 int __cdecl CallWithFlag(int* p);
 struct _DummyTag
 {
@@ -2926,8 +2929,8 @@ struct FGRGBA
 struct FGPixels
 {
     FGRGBA* GetPixels(int aiMipmap, int aiFace);
-    unsigned int GetWidth(int aiMipmap, int aiFace);
-    unsigned int GetHeight(int aiMipmap, int aiFace);
+    unsigned int GetWidth(int uiMipmapLevel, int uiFace);
+    unsigned int GetHeight(int uiMipmapLevel, int uiFace);
 };
 struct FGPixelData
 {
@@ -2955,7 +2958,7 @@ struct FGImage
     FGColor* GetAt(unsigned int auiIndex);
 };
 extern const FGPixelFormat g_kFGPixelFormatRGBA32;
-FGPixelData* __cdecl FGConvertPixelData(FGSourceTexture* apTexture, const FGPixelFormat* apFormat);
+FGPixelData* __cdecl FGConvertPixelData(FGSourceTexture* apTex, const FGPixelFormat* arFormat);
 struct FGOwner
 {
     int unk00;
@@ -3288,7 +3291,7 @@ class FUN_006624c0 : public NiMemObject
     int unk0C;
     int unk10;
     int unk14;
-    FUN_006624c0(NiTriBasedGeom* pGeom, int a2, int a3);
+    FUN_006624c0(NiTriBasedGeom* apMesh, int apAdditionalVertices, int aiAdditionalVerticesCount);
 };
 struct VecItem1C
 {
@@ -3444,7 +3447,7 @@ struct FloatGetterGlobal
     float* Setting_Float_00403e20();
 };
 extern FloatGetterGlobal DAT_011cfb5c, DAT_011cf264;
-float CombatFormulas_CalcExplosionDamage(FloatSource* src);
+float CombatFormulas_CalcExplosionDamage(FloatSource* pExplosion);
 namespace ctor_0065c8f0 {
 
 struct FUN_006815c0
@@ -3466,6 +3469,7 @@ struct FUN_0065c8f0 : FUN_0065d3a0
 };
 
 // @fnv 0x0065c8f0
+// pdb: std::vector<FffTriVtxLabelS,std::allocator<FffTriVtxLabelS> >::vector<FffTriVtxLabelS,std::allocator<FffTriVtxLabelS> > | BSFaceGenModel.obj | debug, call graph, medium
 FUN_0065c8f0::FUN_0065c8f0() : FUN_0065d3a0(FUN_006815c0())
 {
     UpdateState_0065d2b0(0);
@@ -3540,8 +3544,8 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting150;
 extern GlobalObject_0040e0b0 g_011cd080;
 extern GlobalObject_0040e0b0 g_011cdb84;
 float BSMAX_00404010(float, float);
-int __cdecl AiFormulas_GetDetectedEvent(int skill, int count, float distance, int resistance, int level, bool flagA, bool flagB,
-                         bool flagC, int quantity, int value, bool special);
+int __cdecl AiFormulas_GetDetectedEvent(int aiPercep, int aiLineofSite, float afDistance, int aiBlindess, int aiLightLevel, bool absleeping, bool abAlert,
+                         bool abInCombat, int aiActionSound, int aiVisual, bool abExterior);
 struct FUN_006443d0 : GlobalObject_00869f00
 {
     virtual ~FUN_006443d0();

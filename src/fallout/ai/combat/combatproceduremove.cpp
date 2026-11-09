@@ -19,6 +19,7 @@
 
 
 // @fnv 0x009d6b70
+// pdb: CombatProcedureMove::`scalar deleting destructor' | CombatProcedureMove.obj | retail, vtable slot, high
 void* CombatProcedureMove::DestroyIfFlagged(unsigned int flags)
 {
     FUN_009d6ba0();
@@ -55,7 +56,7 @@ extern float DAT_010162c0;
 // src: XBOX_PDB 0x009d8440
 float CombatProcedureMove::GetHidingTime()
 {
-    switch (static_cast<int>(mode))
+    switch (static_cast<int>(iLocation))
     {
     case 6:
     case 7:
@@ -69,11 +70,13 @@ float CombatProcedureMove::GetHidingTime()
 
 // If the reference stored at offset 0x38 matches apRef, clears it to null and logs that the targeted reference pointer was cleared.
 // @fnv 0x009d8480
+// pdb: CombatProcedureMove::ClearReferencePointers | CombatProcedureMove.obj | debug, vtable slot, medium
+// pdb params: apRef
 void CombatProcedureMove::ClearTargetRef(TESObjectREFR* apRef)
 {
-    if (reinterpret_cast<TESObjectREFR*>(target38) == apRef)
+    if (reinterpret_cast<TESObjectREFR*>(pTargetRef) == apRef)
     {
-        target38 = 0;
+        pTargetRef = 0;
         Fail("Targeted reference pointer was cleared");
     }
 }
@@ -89,12 +92,13 @@ struct IMH
 // If the bool at offset 0x54 is set, calls FUN_009d6c80 through the object at offset 4 and clears the flag.
 // @fnv 0x009d84b0
 // src: XBOX_PDB 0x009d84b0
+// pdb: CombatProcedureMove::StartedPlanning | CombatProcedureMove.obj | retail, upstream name already matches, high
 void CombatProcedureMove::StartedPlanning()
 {
-    if (active54)
+    if (bReservedSecondaryLocation)
     {
-        reinterpret_cast<IMH*>(m_pCombatController)->CombatController_GetCombatState()->CombatState_UnreserveSecondaryCoverLocation();
-        active54 = 0;
+        reinterpret_cast<IMH*>(pCombatController)->CombatController_GetCombatState()->CombatState_UnreserveSecondaryCoverLocation();
+        bReservedSecondaryLocation = 0;
     }
 }
 
@@ -112,13 +116,14 @@ struct FUN_009d7c20_shell
 
 // @fnv 0x009d84e0
 // src: XBOX_PDB 0x009d84e0
+// pdb: CombatProcedureMove::FinishedPlanning | CombatProcedureMove.obj | retail, upstream name already matches, high
 void CombatProcedureMove::FinishedPlanning()
 {
-    if (unk10 == 2 || unk10 == 3)
+    if (eState == 2 || eState == 3)
     {
-        reinterpret_cast<fnv_009d84e0::FUN_009d7c20_shell*>(reinterpret_cast<fnv_009d84e0::IMH*>(m_pCombatController)->CombatController_GetCombatState())
+        reinterpret_cast<fnv_009d84e0::FUN_009d7c20_shell*>(reinterpret_cast<fnv_009d84e0::IMH*>(pCombatController)->CombatController_GetCombatState())
             ->CombatState_ReserveSecondaryCoverLocation();
-        active54 = true;
+        bReservedSecondaryLocation = true;
     }
 }
 
@@ -132,95 +137,101 @@ struct MoveCompletionCheck
     bool IsComplete();
 };
 // @fnv 0x009d6c00
+// pdb: CombatProcedureMove::Shutdown | CombatProcedureMove.obj | retail, vtable slot, high
+// pdb locals: pattacker
 void CombatProcedureMove::UpdateCombatMovement()
 {
-    ::Actor* attacker = reinterpret_cast<TESAmmoInitCalls*>(m_pCombatController)->GetFieldBC();
-    if (unk10 == 1 || unk10 == 2)
+    ::Actor* attacker = reinterpret_cast<TESAmmoInitCalls*>(pCombatController)->GetFieldBC();
+    if (eState == 1 || eState == 2)
     {
         if (!reinterpret_cast<MoveCompletionCheck*>(this)->IsComplete())
             attacker->StopMoving();
     }
-    else if (unk10 == 3)
+    else if (eState == 3)
         ((CombatProcedure*)this)->RunProcedure();
     reinterpret_cast<CombatProcedureEngageTarget*>(this)->ClearMoveMode();
-    if (active54)
-        reinterpret_cast<IMH*>(m_pCombatController)->CombatController_GetCombatState()->CombatState_UnreserveSecondaryCoverLocation();
+    if (bReservedSecondaryLocation)
+        reinterpret_cast<IMH*>(pCombatController)->CombatController_GetCombatState()->CombatState_UnreserveSecondaryCoverLocation();
 }
 
 
 // @fnv 0x009d8880
 // src: XBOX_PDB 0x009d8880
-void CombatProcedureMove::SaveGame_009d8880(BGSSaveFormBuffer* buffer)
+// pdb: CombatProcedureMove::SaveGame | CombatProcedureMove.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+void CombatProcedureMove::SaveGame_009d8880(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    CombatProcedure::SaveGame(buffer);
+    CombatProcedure::SaveGame(apSaveGameBuffer);
 
-    buffer->SaveData(&unk10, static_cast<unsigned short>(4), static_cast<unsigned short>(0));
+    apSaveGameBuffer->SaveData(&eState, static_cast<unsigned short>(4), static_cast<unsigned short>(0));
 
-    startTransform.BGSWorldLocation_SaveGame(buffer);
-    currentTransform.BGSWorldLocation_SaveGame(buffer);
+    startTransform.BGSWorldLocation_SaveGame(apSaveGameBuffer);
+    CurrentDestination.BGSWorldLocation_SaveGame(apSaveGameBuffer);
 
-    buffer->SaveData(&rate, static_cast<unsigned short>(4), static_cast<unsigned short>(0));
+    apSaveGameBuffer->SaveData(&fTargetRadius, static_cast<unsigned short>(4), static_cast<unsigned short>(0));
 
-    buffer->SerializeFormData(reinterpret_cast<void*>(target38), 0);
+    apSaveGameBuffer->SerializeFormData(reinterpret_cast<void*>(pTargetRef), 0);
 
-    buffer->SaveData(&mode, static_cast<unsigned short>(4), static_cast<unsigned short>(0));
+    apSaveGameBuffer->SaveData(&iLocation, static_cast<unsigned short>(4), static_cast<unsigned short>(0));
 
-    buffer->SaveData(&unk60, static_cast<unsigned short>(4), static_cast<unsigned short>(0));
+    apSaveGameBuffer->SaveData(&iCurrentNode, static_cast<unsigned short>(4), static_cast<unsigned short>(0));
 
-    state64.SaveGame(buffer);
-    pos40.SaveGame(buffer);
-    state6C.SaveGame(buffer);
-    state74.SaveGame(buffer);
+    CoveredMoveSearchTimer.SaveGame(apSaveGameBuffer);
+    HidingTimer.SaveGame(apSaveGameBuffer);
+    CheckCoverTimer.SaveGame(apSaveGameBuffer);
+    CheckDestinationTimer.SaveGame(apSaveGameBuffer);
 
-    buffer->SaveData(&pos48, static_cast<unsigned short>(0x0C), static_cast<unsigned short>(0));
+    apSaveGameBuffer->SaveData(&LookAtPosition, static_cast<unsigned short>(0x0C), static_cast<unsigned short>(0));
 
-    buffer->SaveData(&active54, static_cast<unsigned short>(1), static_cast<unsigned short>(0));
+    apSaveGameBuffer->SaveData(&bReservedSecondaryLocation, static_cast<unsigned short>(1), static_cast<unsigned short>(0));
 
-    active5C = static_cast<const GO&>(state58).operator unsigned int();
+    bHasQueuedPathingRequest = static_cast<const GO&>(spQueuedPathingRequest).operator unsigned int();
 
-    buffer->SaveData(&active5C, static_cast<unsigned short>(1), static_cast<unsigned short>(0));
+    apSaveGameBuffer->SaveData(&bHasQueuedPathingRequest, static_cast<unsigned short>(1), static_cast<unsigned short>(0));
 }
 
 
 
 // @fnv 0x009d89a0
 // src: XBOX_PDB 0x009d89a0
-void CombatProcedureMove::LoadGame_009d89a0(BGSLoadFormBuffer* buffer)
+// pdb: CombatProcedureMove::LoadGame | CombatProcedureMove.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+void CombatProcedureMove::LoadGame_009d89a0(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    CombatProcedure::LoadGame(buffer);
+    CombatProcedure::LoadGame(apLoadGameBuffer);
 
-    buffer->ReadTypedData(static_cast<void*>(&unk10), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&eState), 4u);
 
-    startTransform.BGSLoadGameBuffer_LoadBGSWorldLocation(buffer);
+    startTransform.BGSWorldLocation_LoadGame(apLoadGameBuffer);
 
-    currentTransform.BGSLoadGameBuffer_LoadBGSWorldLocation(buffer);
+    CurrentDestination.BGSWorldLocation_LoadGame(apLoadGameBuffer);
 
-    buffer->ReadTypedData(static_cast<void*>(&rate), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fTargetRadius), 4u);
 
-    buffer->ReadFormIdentifier(static_cast<void*>(&target38));
+    apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&pTargetRef));
 
-    buffer->ReadTypedData(static_cast<void*>(&mode), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iLocation), 4u);
 
-    buffer->ReadTypedData(static_cast<void*>(&unk60), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iCurrentNode), 4u);
 
-    state64.LoadGame(buffer);
+    CoveredMoveSearchTimer.LoadGame(apLoadGameBuffer);
 
-    pos40.LoadGame(buffer);
+    HidingTimer.LoadGame(apLoadGameBuffer);
 
-    state6C.LoadGame(buffer);
+    CheckCoverTimer.LoadGame(apLoadGameBuffer);
 
-    if (buffer->GetVersion() >= 8)
+    if (apLoadGameBuffer->GetVersion() >= 8)
     {
-        state74.LoadGame(buffer);
+        CheckDestinationTimer.LoadGame(apLoadGameBuffer);
     }
 
-    buffer->ReadTypedData(static_cast<void*>(&pos48), 0xcu);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&LookAtPosition), 0xcu);
 
-    buffer->ReadTypedData(static_cast<void*>(&active54), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bReservedSecondaryLocation), 1u);
 
-    if (buffer->GetVersion() >= 0xc)
+    if (apLoadGameBuffer->GetVersion() >= 0xc)
     {
-        buffer->ReadTypedData(static_cast<void*>(&active5C), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bHasQueuedPathingRequest), 1u);
     }
 }
 
@@ -231,22 +242,25 @@ struct MoveInput
     bool CombatLocation_GetFlag(int);
 };
 // @fnv 0x009d69f0
-CombatProcedureMove::CombatProcedureMove(MoveInput* input, float speed, unsigned int flags)
-    : unk10(0), startTransform(), currentTransform(), rate(speed), target38(0), mode(flags), pos40(), pos48(),
-      active54(false), state58(0), active5C(false), unk60(-1), state64(), state6C(), state74()
+// pdb: CombatProcedureMove::CombatProcedureMove | CombatProcedureMove.obj | retail, upstream name already matches, high
+// pdb params: apCombatLocation, afTargetRadius, aiLocation
+CombatProcedureMove::CombatProcedureMove(MoveInput* apCombatLocation, float afTargetRadius, unsigned int aiLocation)
+    : eState(0), startTransform(), CurrentDestination(), fTargetRadius(afTargetRadius), pTargetRef(0), iLocation(aiLocation), HidingTimer(), LookAtPosition(),
+      bReservedSecondaryLocation(false), spQueuedPathingRequest(0), bHasQueuedPathingRequest(false), iCurrentNode(-1), CoveredMoveSearchTimer(), CheckCoverTimer(), CheckDestinationTimer()
 {
-    if (input)
+    if (apCombatLocation)
     {
-        startTransform = *input->FUN_006815c0();
-        currentTransform = startTransform;
-        target38 = input->TESMain_GetThread();
-        if (input->CombatLocation_GetFlag(2))
-            rate = -rate;
+        startTransform = *apCombatLocation->FUN_006815c0();
+        CurrentDestination = startTransform;
+        pTargetRef = apCombatLocation->TESMain_GetThread();
+        if (apCombatLocation->CombatLocation_GetFlag(2))
+            fTargetRadius = -fTargetRadius;
     }
 }
 
 
 // @fnv 0x009d6ba0
+// pdb: CombatProcedureMove::~CombatProcedureMove | CombatProcedureMove.obj | retail, upstream name already matches, high
 CombatProcedureMove::~CombatProcedureMove()
 {}
 
@@ -422,28 +436,31 @@ struct ModeValue
 extern ModeValue DAT_011a5650[];
 // Calls the vtable getter on the holder, updates the target, and writes values to output depending on unk3c and DAT_011a5650[unk3c].enabled.
 // @fnv 0x009d82e0
+// pdb: CombatProcedureMove::CreateAvoidNodeArray | CombatProcedureMove.obj | debug, call graph, medium
+// pdb params: arspAvoidNodeArray
+// pdb locals: pcombatState, pignoreActor, pattacker
 void CombatProcedureMove::UpdateOutput(OutputValue* output)
 {
     TargetActor* holder = reinterpret_cast<TargetActor*>(reinterpret_cast<CombatProcedureEngageTarget*>(this)->CombatProcedure_GetAttacker());
-    Holder* target = reinterpret_cast<IMValue*>(m_pCombatController)->CombatController_GetCombatState();
+    Holder* target = reinterpret_cast<IMValue*>(pCombatController)->CombatController_GetCombatState();
     output->Assign(
         DAT_011f1958->FUN_00825c00(holder->vtable->get(holder, holder, DAT_01012054))->BuildAvoidanceNodes());
     target->SetValue(CombatTimer_GetTimer());
     void* actor = 0;
-    switch (static_cast<int>(mode))
+    switch (static_cast<int>(iLocation))
     {
     case 4:
-        output->Assign(reinterpret_cast<IMValue*>(m_pCombatController)->FUN_004fb070(holder, reinterpret_cast<MemberValue*>(&startTransform)->FUN_006815c0(0.0f, output->Modelloader_GetReferencedThis()))->CombatGroup_CreateFlankingAvoidNodeArray());
+        output->Assign(reinterpret_cast<IMValue*>(pCombatController)->FUN_004fb070(holder, reinterpret_cast<MemberValue*>(&startTransform)->FUN_006815c0(0.0f, output->Modelloader_GetReferencedThis()))->CombatGroup_CreateFlankingAvoidNodeArray());
         break;
     case 0:
     case 1:
         actor = reinterpret_cast<CombatProcedureEngageTarget*>(this)->GetTarget_00996e00();
         break;
     }
-    if (DAT_011a5650[mode].enabled)
+    if (DAT_011a5650[iLocation].enabled)
     {
         output->Assign(
-            reinterpret_cast<IMValue*>(m_pCombatController)->FUN_004fb070(holder, reinterpret_cast<MemberValue*>(&startTransform)->FUN_006815c0(0.0f, output->Modelloader_GetReferencedThis()))->CombatGroup_CreateMovementAvoidNodeArray(actor));
+            reinterpret_cast<IMValue*>(pCombatController)->FUN_004fb070(holder, reinterpret_cast<MemberValue*>(&startTransform)->FUN_006815c0(0.0f, output->Modelloader_GetReferencedThis()))->CombatGroup_CreateMovementAvoidNodeArray(actor));
     }
 }
 
@@ -683,8 +700,8 @@ struct MoveManager
     bool Start();
     MovePath* Path();
     MovePath* OtherPath();
-    void Cancel(int);
-    void ClearPath(int);
+    void CombatState_AddUnreachableCoverLocation(int);
+    void CombatState_ClearSecondaryCoverLocation(int);
     void ClearOther(int);
     void Modes(unsigned);
     void ResetMode();
@@ -697,7 +714,7 @@ struct MoveManager
     bool Check(MoveLoc*, MoveVec*, MoveRef*, int);
     bool Query(MoveQuery*, MoveVec*, int, float, void*);
     void Complete();
-    void Finish(const MoveLoc&, int);
+    void CombatState_ReachedDestination(const MoveLoc&, int);
     MoveStamp Stamp();
 };
 struct MoveOwner
@@ -734,6 +751,8 @@ extern ByteAndFlagState MoveModes[];
 extern bool DAT_011a5bfc;
 // @fnv 0x009d6ca0
 // src: XBOX_PDB 0x009d6ca0
+// pdb: CombatProcedureMove::Update | CombatProcedureMove.obj | retail, string-set bridge, high
+// pdb locals: eattackerProcessLevel, ptarget, pcombatState, pattacker, bcreateNewPath, bforceComplete, prequest, pcoveredMoveRequest, pcombatCoverLocation, coverLocation, psecondaryCoverLocation, pcoverLocation, frepathDistanceSquared, etargetProcessLevel, targetWorldLocation, ptargetRefActor, attackerWorldLoc, targetWorldLoc, icurrentNode, fminAdvanceDistance, previousNodeLocation, nextNodeLocation, fpathLength, bdone ...
 void CombatProcedureMove::Update_009d6ca0()
 {
     bool changed3;
@@ -741,22 +760,22 @@ void CombatProcedureMove::Update_009d6ca0()
     MoveRef* actorsB = Actor();
     void* actorStatus5 = actorsB->Status();
     MoveRef* other7 = Target();
-    MoveManager* manager2 = reinterpret_cast<MoveOwner*>(m_pCombatController)->Manager();
-    switch (unk10)
+    MoveManager* manager2 = reinterpret_cast<MoveOwner*>(pCombatController)->Manager();
+    switch (eState)
     {
     case 0:
-        currentTransform = startTransform;
-        unk10 = 1;
+        CurrentDestination = startTransform;
+        eState = 1;
         if (!Begin())
             return;
-        if (mode == 15)
-            reinterpret_cast<MoveTimer*>(&state74)->Set(*originalRuntimeFloatSetting461.Float());
+        if (iLocation == 15)
+            reinterpret_cast<MoveTimer*>(&CheckDestinationTimer)->Set(*originalRuntimeFloatSetting461.Float());
         break;
     case 1:
     case 2:
-        if (reinterpret_cast<MoveSmart*>(&state58)->Get() && !actorsB->Busy())
+        if (reinterpret_cast<MoveSmart*>(&spQueuedPathingRequest)->Get() && !actorsB->Busy())
         {
-            MoveRef* ref = reinterpret_cast<MoveSmart*>(&state58)->Get();
+            MoveRef* ref = reinterpret_cast<MoveSmart*>(&spQueuedPathingRequest)->Get();
             if (ref->Type() == 8)
             {
                 MoveTarget* node = (MoveTarget*)ref;
@@ -768,71 +787,71 @@ void CombatProcedureMove::Update_009d6ca0()
                     node->Clear(0);
                     if (point)
                     {
-                        currentTransform.Set(*node->LocationPoint(), actorsB->Cell());
+                        CurrentDestination.Set(*node->LocationPoint(), actorsB->Cell());
                         if (manager2->Start())
                         {
-                            unk10 = 2;
-                            active54 = true;
+                            eState = 2;
+                            bReservedSecondaryLocation = true;
                             MoveVec pos;
-                            UpdateMove(reinterpret_cast<MoveOwner*>(m_pCombatController), manager2->Path(), &pos, &(*reinterpret_cast<MoveVec*>(&pos48)));
-                            reinterpret_cast<MoveVec*>(&pos48)->z += MoveAmount(actorsB, 2, 0);
-                            reinterpret_cast<MoveTimer*>(&state6C)->Set(0.5f);
+                            UpdateMove(reinterpret_cast<MoveOwner*>(pCombatController), manager2->Path(), &pos, &(*reinterpret_cast<MoveVec*>(&LookAtPosition)));
+                            reinterpret_cast<MoveVec*>(&LookAtPosition)->z += MoveAmount(actorsB, 2, 0);
+                            reinterpret_cast<MoveTimer*>(&CheckCoverTimer)->Set(0.5f);
                         }
                         else
                         {
-                            (*reinterpret_cast<MoveSmart*>(&state58)) = 0;
-                            currentTransform = startTransform;
-                            unk10 = 1;
+                            (*reinterpret_cast<MoveSmart*>(&spQueuedPathingRequest)) = 0;
+                            CurrentDestination = startTransform;
+                            eState = 1;
                             Begin();
                             return;
                         }
                     }
                     else
-                        currentTransform = startTransform;
+                        CurrentDestination = startTransform;
                 }
             }
-            (*reinterpret_cast<MoveSmart*>(&state58)) = 0;
+            (*reinterpret_cast<MoveSmart*>(&spQueuedPathingRequest)) = 0;
         }
         if (actorsB->Failed())
         {
             if (!actorsB->BuildingFailed())
             {
-                if (unk10 == 2)
+                if (eState == 2)
                 {
                     MovePath* path = manager2->Path();
                     if (path)
                     {
-                        manager2->Cancel(path->handle);
-                        manager2->ClearPath(0);
+                        manager2->CombatState_AddUnreachableCoverLocation(path->handle);
+                        manager2->CombatState_ClearSecondaryCoverLocation(0);
                     }
                 }
                 else
                 {
-                    switch (mode)
+                    switch (iLocation)
                     {
                     case 0:
                     case 1:
                     case 7:
                     case 8:
-                        manager2->Modes(1 << mode);
+                        manager2->Modes(1 << iLocation);
                         break;
                     case 3:
                         manager2->ResetMode();
                         break;
                     }
                     MovePath* path = manager2->OtherPath();
-                    if (path && path->mode == mode)
+                    if (path && path->mode == iLocation)
                     {
-                        manager2->Cancel(path->handle);
+                        manager2->CombatState_AddUnreachableCoverLocation(path->handle);
                         manager2->ClearOther(0);
                     }
                 }
-                manager2->Destination(currentTransform);
+                manager2->Destination(CurrentDestination);
                 manager2->Update();
-                switch (mode)
+                switch (iLocation)
                 {
                 case 1:
-                    if (unk10 != 2 && *currentTransform.Point() == *startTransform.Point())
+                    if (eState != 2 && *CurrentDestination.Point() == *startTransform.Point())
                         manager2->Destination(startTransform);
                     break;
                 }
@@ -841,24 +860,24 @@ void CombatProcedureMove::Update_009d6ca0()
                                            : "Path Building failed to destination");
             return;
         }
-        if (reinterpret_cast<MoveRef*>(target38) && (reinterpret_cast<MoveRef*>(target38)->Disabled() || reinterpret_cast<MoveRef*>(target38)->Deleted()))
+        if (reinterpret_cast<MoveRef*>(pTargetRef) && (reinterpret_cast<MoveRef*>(pTargetRef)->Disabled() || reinterpret_cast<MoveRef*>(pTargetRef)->Deleted()))
         {
             Fail("Target ref is now disabled or deleted");
             return;
         }
         changed3 = false;
-        if (reinterpret_cast<MoveRef*>(target38))
+        if (reinterpret_cast<MoveRef*>(pTargetRef))
         {
             void* targetStatus8 = 0;
-            if (reinterpret_cast<MoveRef*>(target38)->IsActor())
+            if (reinterpret_cast<MoveRef*>(pTargetRef)->IsActor())
             {
-                MoveRef* ref = reinterpret_cast<MoveRef*>(target38);
+                MoveRef* ref = reinterpret_cast<MoveRef*>(pTargetRef);
                 targetStatus8 = ref->Status();
             }
-            MoveLoc locationB = reinterpret_cast<MoveRef*>(target38)->Location();
+            MoveLoc locationB = reinterpret_cast<MoveRef*>(pTargetRef)->Location();
             float distance8 = 0.0f;
             if (!actorStatus5 && !targetStatus8)
-                distance8 = unk10 == 2
+                distance8 = eState == 2
                                 ? *originalRuntimeFloatSetting390.Float() * *originalRuntimeFloatSetting390.Float()
                                 : *originalRuntimeFloatSetting389.Float() * *originalRuntimeFloatSetting389.Float();
             else
@@ -869,7 +888,7 @@ void CombatProcedureMove::Update_009d6ca0()
                 changed3 = true;
             }
         }
-        if (unk10 == 2 && reinterpret_cast<MoveTimer*>(&state6C)->Expired())
+        if (eState == 2 && reinterpret_cast<MoveTimer*>(&CheckCoverTimer)->Expired())
         {
             if (!changed3 && other7 && manager2->Active())
             {
@@ -884,38 +903,38 @@ void CombatProcedureMove::Update_009d6ca0()
                     {
                         if (!InRange(path->location.Position(), *other7->Position(), path->start, path->end))
                             changed3 = true;
-                        else if (!manager2->Check(&path->location, currentTransform.Point(), other7, 0))
+                        else if (!manager2->Check(&path->location, CurrentDestination.Point(), other7, 0))
                             changed3 = true;
                     }
                 }
             }
-            reinterpret_cast<MoveTimer*>(&state6C)->Set(0.5f);
+            reinterpret_cast<MoveTimer*>(&CheckCoverTimer)->Set(0.5f);
         }
         if (changed3)
         {
-            if (unk10 == 2)
+            if (eState == 2)
             {
                 manager2->Complete();
-                manager2->ClearPath(0);
-                active54 = false;
+                manager2->CombatState_ClearSecondaryCoverLocation(0);
+                bReservedSecondaryLocation = false;
             }
-            currentTransform = startTransform;
-            unk10 = 1;
+            CurrentDestination = startTransform;
+            eState = 1;
             if (!Begin())
                 return;
             return;
         }
-        if (!DAT_011a5bfc && unk10 == 1 && !actorsB->Busy() && !actorStatus5 && MoveModes[mode].enabled &&
+        if (!DAT_011a5bfc && eState == 1 && !actorsB->Busy() && !actorStatus5 && MoveModes[iLocation].enabled &&
             manager2->Allowed(1))
         {
             float radius5 = 256.0f;
             int pathIndex9 = actorsB->PathIndex();
-            if (unk60 == -1)
+            if (iCurrentNode == -1)
                 radius5 = 512.0f;
-            if (pathIndex9 != unk60 || reinterpret_cast<MoveTimer*>(&state64)->Expired())
+            if (pathIndex9 != iCurrentNode || reinterpret_cast<MoveTimer*>(&CoveredMoveSearchTimer)->Expired())
             {
-                unk60 = pathIndex9;
-                reinterpret_cast<MoveTimer*>(&state64)->Set(2.0f);
+                iCurrentNode = pathIndex9;
+                reinterpret_cast<MoveTimer*>(&CoveredMoveSearchTimer)->Set(2.0f);
                 MoveRequest avoid7(0);
                 bool initialized16 = false;
                 MoveVec previous6_2 = *actorsB->Position();
@@ -939,25 +958,25 @@ void CombatProcedureMove::Update_009d6ca0()
                         Avoid(&avoid7);
                     initialized16 = true;
                     MoveQuery query_2;
-                    if (manager2->Query(&query_2, &point35, mode, radius5, avoid7.Get()))
+                    if (manager2->Query(&query_2, &point35, iLocation, radius5, avoid7.Get()))
                     {
-                        active54 = true;
+                        bReservedSecondaryLocation = true;
                         manager2->Refresh();
                         MoveVec pos;
-                        UpdateMove(reinterpret_cast<MoveOwner*>(m_pCombatController), manager2->Path(), &pos, &(*reinterpret_cast<MoveVec*>(&pos48)));
-                        reinterpret_cast<MoveVec*>(&pos48)->z += MoveAmount(actorsB, 2, 0);
-                        unk10 = 2;
-                        currentTransform.Set(pos, actorsB->Cell());
+                        UpdateMove(reinterpret_cast<MoveOwner*>(pCombatController), manager2->Path(), &pos, &(*reinterpret_cast<MoveVec*>(&LookAtPosition)));
+                        reinterpret_cast<MoveVec*>(&LookAtPosition)->z += MoveAmount(actorsB, 2, 0);
+                        eState = 2;
+                        CurrentDestination.Set(pos, actorsB->Cell());
                         if (!Begin())
                             return;
-                        reinterpret_cast<MoveTimer*>(&state6C)->Set(0.5f);
+                        reinterpret_cast<MoveTimer*>(&CheckCoverTimer)->Set(0.5f);
                         break;
                     }
                 }
             }
         }
         stop5 = false;
-        if (mode == 15 && reinterpret_cast<MoveTimer*>(&state74)->Expired())
+        if (iLocation == 15 && reinterpret_cast<MoveTimer*>(&CheckDestinationTimer)->Expired())
         {
             MoveLoc loc = actorsB->Location();
             if (loc.Distance(startTransform) <
@@ -967,23 +986,23 @@ void CombatProcedureMove::Update_009d6ca0()
                 if (Probe(&request, loc.Point(), 0, 0))
                     stop5 = true;
             }
-            reinterpret_cast<MoveTimer*>(&state74)->Set(*g_011cfad4.Float());
+            reinterpret_cast<MoveTimer*>(&CheckDestinationTimer)->Set(*g_011cfad4.Float());
         }
         if (stop5)
             actorsB->Stop();
         if (stop5 || actorsB->HasStopped())
         {
-            if (unk10 == 2)
+            if (eState == 2)
             {
-                unk10 = 3;
-                reinterpret_cast<MoveTimer*>(&pos40)->Set(Duration());
-                reinterpret_cast<MoveTimer*>(&state6C)->Set(0.25f);
-                Look((*reinterpret_cast<MoveVec*>(&pos48)), 3);
+                eState = 3;
+                reinterpret_cast<MoveTimer*>(&HidingTimer)->Set(Duration());
+                reinterpret_cast<MoveTimer*>(&CheckCoverTimer)->Set(0.25f);
+                Look((*reinterpret_cast<MoveVec*>(&LookAtPosition)), 3);
                 SetState(2);
             }
             else
             {
-                manager2->Finish(startTransform, mode);
+                manager2->CombatState_ReachedDestination(startTransform, iLocation);
                 Clear();
             }
             return;
@@ -992,11 +1011,11 @@ void CombatProcedureMove::Update_009d6ca0()
     case 3: {
         bool finished6 = false;
         MovePath* path2 = manager2->Path();
-        if (reinterpret_cast<MoveTimer*>(&pos40)->Expired() || !path2)
+        if (reinterpret_cast<MoveTimer*>(&HidingTimer)->Expired() || !path2)
             finished6 = true;
         else if (other7)
         {
-            float deadline = float(reinterpret_cast<MoveTimer*>(&pos40)->Time() + 1.0);
+            float deadline = float(reinterpret_cast<MoveTimer*>(&HidingTimer)->Time() + 1.0);
             if (deadline < CombatTimer_GetTimer())
             {
                 if (manager2->PathFailed())
@@ -1004,19 +1023,19 @@ void CombatProcedureMove::Update_009d6ca0()
                 else if (deadline < manager2->Stamp().Time())
                     finished6 = true;
             }
-            if (!finished6 && manager2->Active() && reinterpret_cast<MoveTimer*>(&state6C)->Expired())
+            if (!finished6 && manager2->Active() && reinterpret_cast<MoveTimer*>(&CheckCoverTimer)->Expired())
             {
-                if (!manager2->Check(&path2->location, currentTransform.Point(), other7, 1))
+                if (!manager2->Check(&path2->location, CurrentDestination.Point(), other7, 1))
                     finished6 = true;
-                reinterpret_cast<MoveTimer*>(&state6C)->Set(0.25f);
+                reinterpret_cast<MoveTimer*>(&CheckCoverTimer)->Set(0.25f);
             }
         }
         if (finished6)
         {
-            unk10 = 0;
+            eState = 0;
             manager2->Complete();
-            active54 = false;
-            manager2->ClearPath(0);
+            bReservedSecondaryLocation = false;
+            manager2->CombatState_ClearSecondaryCoverLocation(0);
             Reset();
         }
     }
@@ -1202,7 +1221,7 @@ struct Location052
     int unk24;
     Location052(const NiPoint3&, Actor*);
     ~Location052();
-    bool FUN_006ded70(float);
+    bool IsValidLocation(float);
 };
 struct Avoid052
 {
@@ -1226,30 +1245,33 @@ NiPoint3 __cdecl CombatUtilities_ComputeFaceTargetLocation(Actor*, Actor*, NiPoi
 bool __cdecl CombatUtilities_CalculateLOS(Actor*, Actor*, NiPoint3*, NiPoint3*, int, int);
 extern const char DAT_01091c80[];
 // @fnv 0x009d7d00
-bool CombatProcedureMove::UpdateMovementRequest(Output052* output)
+// src: XBOX_RETAIL_PDB 0x009d7d00
+// pdb: CombatProcedureMove::CreatePath | CombatProcedureMove.obj | retail, string-set bridge, high
+// pdb locals: spavoidNodeArray
+bool CombatProcedureMove::CreatePath(Output052* arspAvoidNodeArray)
 {
     float request;
     bool d;
     float g;
     ::Actor* a = reinterpret_cast<CombatProcedureEngageTarget*>(this)->CombatProcedure_GetAttacker();
     void* c = reinterpret_cast<CombatProcedureEngageTarget*>(this)->GetTarget_00996e00();
-    Holder052* k = reinterpret_cast<Manager052*>(m_pCombatController)->CombatController_GetCombatState();
+    Holder052* k = reinterpret_cast<Manager052*>(pCombatController)->CombatController_GetCombatState();
     int b = 3;
     NiPoint3 h = DAT_011f426c;
     g = 0.0f;
-    switch (mode)
+    switch (iLocation)
     {
     case 3:
         h = *static_cast<const ::Actor*>(a)->GetPos();
         g = DAT_0103a1c4;
         break;
     case 0:
-        if (reinterpret_cast<Manager052*>(m_pCombatController)->CombatController_CombatPlanContainsAction(24))
+        if (reinterpret_cast<Manager052*>(pCombatController)->CombatController_CombatPlanContainsAction(24))
             b = 4;
         break;
     }
     State052* i = k->FUN_007058c0();
-    if (i && i->type == 1 && !k->FUN_00461580(256) && mode != 8 && i->location.GetHavokWorldObjectCountInSceneGraph_0084e3a0() == a->TESObjectREFR_GetSpace())
+    if (i && i->type == 1 && !k->FUN_00461580(256) && iLocation != 8 && i->location.GetHavokWorldObjectCountInSceneGraph_0084e3a0() == a->TESObjectREFR_GetSpace())
     {
         h = *i->location.FUN_006815c0();
         g = k->CombatState_GetLocationTargetDistance();
@@ -1258,29 +1280,29 @@ bool CombatProcedureMove::UpdateMovementRequest(Output052* output)
             g = 0.0f;
     }
     request = 0.0f;
-    if (unk10 == 1)
-        request = rate;
-    if (mode == 1 && unk10 == 1 && reinterpret_cast<::Actor*>(target38))
+    if (eState == 1)
+        request = fTargetRadius;
+    if (iLocation == 1 && eState == 1 && reinterpret_cast<::Actor*>(pTargetRef))
     {
-        NiPoint3 position = CombatUtilities_ComputeFaceTargetLocation(a, reinterpret_cast<::Actor*>(target38), reinterpret_cast<LocationMember052*>(&startTransform)->FUN_006815c0(), DAT_01012054);
+        NiPoint3 position = CombatUtilities_ComputeFaceTargetLocation(a, reinterpret_cast<::Actor*>(pTargetRef), reinterpret_cast<LocationMember052*>(&startTransform)->FUN_006815c0(), DAT_01012054);
         Location052 location(position, a);
-        if (location.FUN_006ded70(a->FUN_008be1b0()) &&
-            CombatUtilities_CalculateLOS(a, reinterpret_cast<::Actor*>(target38), &position, reinterpret_cast<LocationMember052*>(&startTransform)->FUN_006815c0(), 0, -1))
+        if (location.IsValidLocation(a->FUN_008be1b0()) &&
+            CombatUtilities_CalculateLOS(a, reinterpret_cast<::Actor*>(pTargetRef), &position, reinterpret_cast<LocationMember052*>(&startTransform)->FUN_006815c0(), 0, -1))
         {
-            reinterpret_cast<LocationMember052*>(&currentTransform)->FUN_0098ddd0(&position);
-            if (!output->Modelloader_GetReferencedThis())
-                output->Assign(new Avoid052);
-            output->Modelloader_GetReferencedThis()->AppendNode(
-                PathingAvoidNode(*reinterpret_cast<const ::Actor*>(target38)->GetPos(), *DAT_011cf4e0.Setting_Float_00403e20(), *DAT_011cf120.Setting_Float_00403e20()));
+            reinterpret_cast<LocationMember052*>(&CurrentDestination)->FUN_0098ddd0(&position);
+            if (!arspAvoidNodeArray->Modelloader_GetReferencedThis())
+                arspAvoidNodeArray->Assign(new Avoid052);
+            arspAvoidNodeArray->Modelloader_GetReferencedThis()->AppendNode(
+                PathingAvoidNode(*reinterpret_cast<const ::Actor*>(pTargetRef)->GetPos(), *DAT_011cf4e0.Setting_Float_00403e20(), *DAT_011cf120.Setting_Float_00403e20()));
         }
     }
     void* e = 0;
     Request052 j;
     SpecialRequest052 f;
-    if (DAT_011a5bfc && (unsigned char)DAT_011a5650[mode].unk02 && k->IsFlagSet(1) && !a->FUN_00931850())
+    if (DAT_011a5bfc && (unsigned char)DAT_011a5650[iLocation].unk02 && k->IsFlagSet(1) && !a->FUN_00931850())
     {
         k->BuildCoveredMoveRequest(&f);
-        f.FUN_00705b10(mode);
+        f.FUN_00705b10(iLocation);
         e = &f;
     }
     else
@@ -1291,7 +1313,7 @@ bool CombatProcedureMove::UpdateMovementRequest(Output052* output)
         request = -request;
         d = true;
     }
-    static_cast<CombatMovementRequestAccess*>(a)->BuildPathingRequest(e, reinterpret_cast<LocationMember052*>(&currentTransform)->FUN_006815c0(), reinterpret_cast<LocationMember052*>(&currentTransform)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), request, output->Modelloader_GetReferencedThis());
+    static_cast<CombatMovementRequestAccess*>(a)->BuildPathingRequest(e, reinterpret_cast<LocationMember052*>(&CurrentDestination)->FUN_006815c0(), reinterpret_cast<LocationMember052*>(&CurrentDestination)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), request, arspAvoidNodeArray->Modelloader_GetReferencedThis());
     ((Request052*)e)->PathingRequest_SetCenterRadius(h, g);
     if (d)
         ((Request052*)e)->SetUseSoft(0);
@@ -1300,8 +1322,8 @@ bool CombatProcedureMove::UpdateMovementRequest(Output052* output)
         Fail(DAT_01091c80);
         return false;
     }
-    unk60 = -1;
-    reinterpret_cast<Ref052*>(&state58)->FUN_0066b0d0(static_cast<CombatMovementRequestAccess*>(a)->Actor_GetCurrentPathingRequest());
+    iCurrentNode = -1;
+    reinterpret_cast<Ref052*>(&spQueuedPathingRequest)->FUN_0066b0d0(static_cast<CombatMovementRequestAccess*>(a)->Actor_GetCurrentPathingRequest());
     reinterpret_cast<CombatProcedureEngageTarget*>(this)->SetMoveMode_00996e20(b);
     return true;
 }
@@ -1471,43 +1493,46 @@ struct DebugDisplay
 };
 // Prints the move state, destination cell and position, target info and destination timer to the debug display at the given coordinates.
 // @fnv 0x009d8520
-void CombatProcedureMove::PrintDebugInfo(DebugDisplay* display, int x, int y)
+// pdb: CombatProcedureMove::DisplayDebugText | CombatProcedureMove.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aeLocation, aeJustify
+// pdb locals: pdestinationSpace, destinationPoint, loc
+void CombatProcedureMove::PrintDebugInfo(DebugDisplay* apDebugText, int aeLocation, int aeJustify)
 {
-    switch (unk10)
+    switch (eState)
     {
     case 0:
-        display->Print(x, y, "INITIALIZING");
+        apDebugText->Print(aeLocation, aeJustify, "INITIALIZING");
         break;
     case 1:
-        display->Print(x, y, "MOVING");
+        apDebugText->Print(aeLocation, aeJustify, "MOVING");
         break;
     case 2:
-        display->Print(x, y, "MOVING_USING_COVER");
-        display->Print(x, y, "Check Cover Timer: %.02f/%.02f", reinterpret_cast<DebugTimer*>(&state6C)->FUN_00435e00(), reinterpret_cast<DebugTimer*>(&state6C)->CombatTimer_GetTargetTime());
+        apDebugText->Print(aeLocation, aeJustify, "MOVING_USING_COVER");
+        apDebugText->Print(aeLocation, aeJustify, "Check Cover Timer: %.02f/%.02f", reinterpret_cast<DebugTimer*>(&CheckCoverTimer)->FUN_00435e00(), reinterpret_cast<DebugTimer*>(&CheckCoverTimer)->CombatTimer_GetTargetTime());
         break;
     case 3:
-        display->Print(x, y, "HIDING_BEHIND_COVER");
-        display->Print(x, y, "Hiding Timer: %.02f/%.02f", reinterpret_cast<DebugTimer*>(&pos40)->FUN_00435e00(), reinterpret_cast<DebugTimer*>(&pos40)->CombatTimer_GetTargetTime());
-        display->Print(x, y, "Check Cover Timer: %.02f/%.02f", reinterpret_cast<DebugTimer*>(&state6C)->FUN_00435e00(), reinterpret_cast<DebugTimer*>(&state6C)->CombatTimer_GetTargetTime());
+        apDebugText->Print(aeLocation, aeJustify, "HIDING_BEHIND_COVER");
+        apDebugText->Print(aeLocation, aeJustify, "Hiding Timer: %.02f/%.02f", reinterpret_cast<DebugTimer*>(&HidingTimer)->FUN_00435e00(), reinterpret_cast<DebugTimer*>(&HidingTimer)->CombatTimer_GetTargetTime());
+        apDebugText->Print(aeLocation, aeJustify, "Check Cover Timer: %.02f/%.02f", reinterpret_cast<DebugTimer*>(&CheckCoverTimer)->FUN_00435e00(), reinterpret_cast<DebugTimer*>(&CheckCoverTimer)->CombatTimer_GetTargetTime());
         break;
     }
     DebugPoint position = reinterpret_cast<DebugLocation*>(&startTransform)->FUN_006815c0();
     DebugReference* cell = reinterpret_cast<DebugLocation*>(&startTransform)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    if (cell && cell != reinterpret_cast<DebugOwner*>(m_pCombatController)->GetFieldBC()->TESObjectREFR_GetSpace())
-        display->Print(x, y, "Destination: %s (%.02f,%.02f,%.02f)", cell->GetDebugName(), position.x, position.y,
+    if (cell && cell != reinterpret_cast<DebugOwner*>(pCombatController)->GetFieldBC()->TESObjectREFR_GetSpace())
+        apDebugText->Print(aeLocation, aeJustify, "Destination: %s (%.02f,%.02f,%.02f)", cell->GetDebugName(), position.x, position.y,
                        position.z);
     else
-        display->Print(x, y, "Destination: (%.02f,%.02f,%.02f)", position.x, position.y, position.z);
-    if (reinterpret_cast<DebugReference*>(target38))
+        apDebugText->Print(aeLocation, aeJustify, "Destination: (%.02f,%.02f,%.02f)", position.x, position.y, position.z);
+    if (reinterpret_cast<DebugReference*>(pTargetRef))
     {
-        DebugPoint targetPosition = reinterpret_cast<DebugReference*>(target38)->GetDebugPosition();
-        display->Print(x, y, "Target: '%s' (%08X) - Position: (%.02f,%.02f,%.02f)",
-                       reinterpret_cast<DebugReference*>(target38)->GetFormEditorIDLength() ? reinterpret_cast<DebugReference*>(target38)->GetDebugName() : reinterpret_cast<DebugReference*>(target38)->TESObjectREFR_GetFullName(), reinterpret_cast<DebugReference*>(target38)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
+        DebugPoint targetPosition = reinterpret_cast<DebugReference*>(pTargetRef)->GetDebugPosition();
+        apDebugText->Print(aeLocation, aeJustify, "Target: '%s' (%08X) - Position: (%.02f,%.02f,%.02f)",
+                       reinterpret_cast<DebugReference*>(pTargetRef)->GetFormEditorIDLength() ? reinterpret_cast<DebugReference*>(pTargetRef)->GetDebugName() : reinterpret_cast<DebugReference*>(pTargetRef)->TESObjectREFR_GetFullName(), reinterpret_cast<DebugReference*>(pTargetRef)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
                        targetPosition.x, targetPosition.y, targetPosition.z);
     }
-    if (reinterpret_cast<DebugTimer*>(&state74)->CombatTimer_IsSet())
-        display->Print(x, y, "Check Destination Timer: %.02f/%.02f", reinterpret_cast<DebugTimer*>(&state74)->FUN_00435e00(),
-                       reinterpret_cast<DebugTimer*>(&state74)->CombatTimer_GetTargetTime());
+    if (reinterpret_cast<DebugTimer*>(&CheckDestinationTimer)->CombatTimer_IsSet())
+        apDebugText->Print(aeLocation, aeJustify, "Check Destination Timer: %.02f/%.02f", reinterpret_cast<DebugTimer*>(&CheckDestinationTimer)->FUN_00435e00(),
+                       reinterpret_cast<DebugTimer*>(&CheckDestinationTimer)->CombatTimer_GetTargetTime());
 }
 
 
@@ -1535,16 +1560,19 @@ struct CommandTarget
 
 // Resolves the saved target form and restores the movement request when active5C is set.
 // @fnv 0x009d8ad0
+// pdb: CombatProcedureMove::InitLoadGame | CombatProcedureMove.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pattacker
 
 // src: XBOX_PDB 0x009d8ad0
-void CombatProcedureMove::InitLoadGame_009d8ad0(unsigned int value)
+void CombatProcedureMove::InitLoadGame_009d8ad0(unsigned int apLoadGameBuffer)
 {
     ::Actor* context = reinterpret_cast<CombatProcedureEngageTarget*>(this)->CombatProcedure_GetAttacker();
 
-    reinterpret_cast<fnv_009d8ad0::CombatProcedureSlot16Base*>(this)->FUN_004534f0(value);
+    reinterpret_cast<fnv_009d8ad0::CombatProcedureSlot16Base*>(this)->FUN_004534f0(apLoadGameBuffer);
 
-    target38 = (unsigned int)(target38 ? dynamic_cast<TESObjectREFR*>(fnv_009d8ad0::TESForm_GetFormByNumericID(target38)) : 0);
+    pTargetRef = (unsigned int)(pTargetRef ? dynamic_cast<TESObjectREFR*>(fnv_009d8ad0::TESForm_GetFormByNumericID(pTargetRef)) : 0);
 
-    if (active5C)
-        reinterpret_cast<fnv_009d8ad0::CommandTarget*>(&state58)->FUN_0066b0d0(static_cast<CombatMovementRequestAccess*>(context)->Actor_GetCurrentPathingRequest());
+    if (bHasQueuedPathingRequest)
+        reinterpret_cast<fnv_009d8ad0::CommandTarget*>(&spQueuedPathingRequest)->FUN_0066b0d0(static_cast<CombatMovementRequestAccess*>(context)->Actor_GetCurrentPathingRequest());
 }

@@ -26,6 +26,9 @@ struct FUN_00c9ea00__VirtualObject
 };
 
 // @fnv 0x00c9ea00
+// pdb: hkpShapePhantom::calcAabb | hkpShapePhantom.obj | debug, upstream name already matches, high
+// pdb params: aabb
+// pdb locals: assertBuf, ostr
 inline void FUN_00c9ea00__VirtualObject::FUN_00c9ea00__M0()
 {}
 inline void FUN_00c9ea00__VirtualObject::FUN_00c9ea00__M1()
@@ -51,7 +54,7 @@ struct FUN_00c9ea00__Class
 };
 
 // src: HAVOK_LIB 0x00c9ea00
-void FUN_00c9ea00__Class::hkpShapePhantom_calcAabb(void* arg)
+void FUN_00c9ea00__Class::hkpShapePhantom_calcAabb(void* aabb)
 {
     unsigned char* this_base = reinterpret_cast<unsigned char*>(this);
     unsigned char* outer = *reinterpret_cast<unsigned char**>(this_base + 8);
@@ -60,7 +63,7 @@ void FUN_00c9ea00__Class::hkpShapePhantom_calcAabb(void* arg)
     float scaled = static_cast<float>(DAT_01011588 * value);
     FUN_00c9ea00__VirtualObject* object = *reinterpret_cast<FUN_00c9ea00__VirtualObject**>(this_base + 0x10);
 
-    object->FUN_00c9ea00__M7(reinterpret_cast<void*>(this_base + 0xb0), scaled, arg);
+    object->FUN_00c9ea00__M7(reinterpret_cast<void*>(this_base + 0xb0), scaled, aabb);
 }
 
 struct CpuObject
@@ -109,8 +112,8 @@ class FUN_00d4ce10 : public FUN_00c9ea40
     hkArray<hkpCollisionDetailD4CE> m_kCollisionDetails;
     hkBool m_bOrderDirty;
 
-    FUN_00d4ce10(const hkpShape* pkShape, const hkTransform& kTransform,
-                 hkUint32 uiCollisionFilterInfo) throw();
+    FUN_00d4ce10(const hkpShape* shape, const hkTransform& transform,
+                 hkUint32 collisionFilterInfo) throw();
     virtual ~FUN_00d4ce10() throw();
 };
 
@@ -118,12 +121,14 @@ typedef char fnv_check_d4ce10[(sizeof(FUN_00d4ce10) == 0x170) ? 1 : -1];
 
 // Constructs the object from a shape and transform, clears the bool flag, and stores the collision filter info in the collidable.
 // @fnv 0x00d4ce10
-FUN_00d4ce10::FUN_00d4ce10(const hkpShape* pkShape, const hkTransform& kTransform,
-                           hkUint32 uiCollisionFilterInfo) throw()
-    : FUN_00c9ea40(pkShape, kTransform)
+// pdb: hkpCachingShapePhantom::hkpCachingShapePhantom | hkpCachingShapePhantom.obj | retail, object-file gap fill, high
+// pdb params: flag
+FUN_00d4ce10::FUN_00d4ce10(const hkpShape* shape, const hkTransform& transform,
+                           hkUint32 collisionFilterInfo) throw()
+    : FUN_00c9ea40(shape, transform)
 {
     m_bOrderDirty = false;
-    m_kCollidable.m_kBroadPhaseHandle.m_uiCollisionFilterData = uiCollisionFilterInfo;
+    m_kCollidable.m_broadPhaseHandle.m_collisionFilterInfo = collisionFilterInfo;
 }
 
 struct S00c9e830_Operation
@@ -209,9 +214,9 @@ struct S00c9e830_Shape
     void FUN_00c905b0();
 };
 
-extern "C" void __cdecl hkpWorldOperationUtil_removePhantomBP(S00c9e830_Owner* owner, void* object);
-extern "C" void __cdecl hkpWorldCallbackUtil_firePhantomShapeSet(S00c9e830_Owner* owner, void* object);
-extern "C" void __cdecl QueryEntityIntoBuffer(S00c9e830_Owner* owner, void* object);
+extern "C" void __cdecl hkpWorldOperationUtil_removePhantomBP(S00c9e830_Owner* owner, void* phantom);
+extern "C" void __cdecl hkpWorldCallbackUtil_firePhantomShapeSet(S00c9e830_Owner* owner, void* Phantom);
+extern "C" void __cdecl hkpWorldOperationUtil_addPhantomBP(S00c9e830_Owner* owner, void* phantom);
 
 struct S00c9e830_Obj
 {
@@ -222,13 +227,16 @@ struct S00c9e830_Obj
     S00c9e830_Shape* unk10;
 
     void NotifyListeners();
-    unsigned int hkpShapePhantom_setShape(S00c9e830_Shape* parameter);
+    unsigned int hkpShapePhantom_setShape(S00c9e830_Shape* shape);
 };
 
 // Sets the object's shape to the given parameter, notifying listeners and the owner, or queues the operation if the owner is locked.
 // @fnv 0x00c9e830
 // src: HAVOK_LIB 0x00c9e830
-unsigned int S00c9e830_Obj::hkpShapePhantom_setShape(S00c9e830_Shape* apShape)
+// pdb: hkpShapePhantom::setShape | hkpShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: shape
+// pdb locals: assertBuf, ostr, op
+unsigned int S00c9e830_Obj::hkpShapePhantom_setShape(S00c9e830_Shape* shape)
 {
     S00c9e830_Operation operation;
 
@@ -236,7 +244,7 @@ unsigned int S00c9e830_Obj::hkpShapePhantom_setShape(S00c9e830_Shape* apShape)
     {
         operation.type = 5;
         operation.object = this;
-        operation.parameter = reinterpret_cast<unsigned int>(apShape);
+        operation.parameter = reinterpret_cast<unsigned int>(shape);
         unk08->hkpWorld_queueOperation(&operation);
         return 0;
     }
@@ -247,12 +255,12 @@ unsigned int S00c9e830_Obj::hkpShapePhantom_setShape(S00c9e830_Shape* apShape)
         hkpWorldOperationUtil_removePhantomBP(unk08, this);
     }
 
-    apShape->FUN_00c90510();
+    shape->FUN_00c90510();
 
     if (unk10 != 0)
         unk10->FUN_00c905b0();
 
-    unk10 = apShape;
+    unk10 = shape;
 
     if (unk08 != 0)
         hkpWorldCallbackUtil_firePhantomShapeSet(unk08, this);
@@ -261,7 +269,7 @@ unsigned int S00c9e830_Obj::hkpShapePhantom_setShape(S00c9e830_Shape* apShape)
 
     if (unk08 != 0)
     {
-        QueryEntityIntoBuffer(unk08, this);
+        hkpWorldOperationUtil_addPhantomBP(unk08, this);
         unk08->unlockAndAttemptToExecutePendingOperations();
     }
 
@@ -375,16 +383,19 @@ class FUN_00c9e910_Class
     __m128 unkD0;
     __m128 unkE0;
 
-    void hkpPhantom_updateBroadPhase(void* value);
-    void hkpShapePhantom_setTransform(int value);
+    void hkpPhantom_updateBroadPhase(void* aabb);
+    void hkpShapePhantom_setTransform(int transform);
 };
 
 // Copies 16 floats from value into unkB0..unkE0; if unk08 is set, calls unk10's method with value and a scaled factor, then passes the result to FUN_00d07ec0.
 // @fnv 0x00c9e910
 // src: XBOX_PDB 0x00c9e910
-void FUN_00c9e910_Class::hkpShapePhantom_setTransform(int value)
+// pdb: hkpShapePhantom::setTransform | hkpShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: transform
+// pdb locals: assertBuf, ostr, aabb
+void FUN_00c9e910_Class::hkpShapePhantom_setTransform(int transform)
 {
-    const float* pMatrixData = reinterpret_cast<const float*>(value);
+    const float* pMatrixData = reinterpret_cast<const float*>(transform);
 
     _mm_store_ps(reinterpret_cast<float*>(&unkB0), _mm_load_ps(pMatrixData));
     _mm_store_ps(reinterpret_cast<float*>(&unkC0), _mm_load_ps(pMatrixData + 4));
@@ -396,7 +407,7 @@ void FUN_00c9e910_Class::hkpShapePhantom_setTransform(int value)
         float scaled = unk08->m_pInner->unk08 * DAT_01011588;
         FUN_00c9e910_Temporary temporary;
 
-        unk10->FUN_00c9ea00__M7(reinterpret_cast<void*>(value), scaled, &temporary);
+        unk10->FUN_00c9ea00__M7(reinterpret_cast<void*>(transform), scaled, &temporary);
         hkpPhantom_updateBroadPhase(&temporary);
     }
 }
@@ -522,19 +533,22 @@ struct FUN_00c9e990_cls
     int unkD8;
     int unkDC;
     __m128 unkE0;
-    void hkpShapePhantom_setPosition(__m128* a, float b);
-    void hkpPhantom_updateBroadPhase(void* a1);
+    void hkpShapePhantom_setPosition(__m128* position, float extraTolerance);
+    void hkpPhantom_updateBroadPhase(void* aabb);
 };
 // Stores *a in unkE0 and, if m_08 is set, calls m_10->M7 with &unkB0, b plus half of m_08->unk78->unk08, and a local buffer, then FUN_00d07ec0 on it.
 // @fnv 0x00c9e990
 // src: XBOX_PDB 0x00c9e990
-void FUN_00c9e990_cls::hkpShapePhantom_setPosition(__m128* a, float b)
+// pdb: hkpShapePhantom::setPosition | hkpShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: position, extraTolerance
+// pdb locals: aabb
+void FUN_00c9e990_cls::hkpShapePhantom_setPosition(__m128* position, float extraTolerance)
 {
-    unkE0 = *a;
+    unkE0 = *position;
     if (m_08 != 0)
     {
         float scaled = m_08->unk78->unk08 * 0.5;
-        float sum = scaled + b;
+        float sum = scaled + extraTolerance;
         FUN_00c9e990_Local local;
         m_10->M7(&unkB0, sum, &local);
         hkpPhantom_updateBroadPhase(&local);

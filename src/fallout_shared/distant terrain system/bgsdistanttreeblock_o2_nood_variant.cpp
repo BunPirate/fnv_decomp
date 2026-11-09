@@ -25,7 +25,7 @@
 // src/fallout_shared/distant terrain system/bgsdistanttreeblock.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/fallout shared/distant terrain system/bgsdistanttreeblock.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 extern NP DAT_012007c4;
-void BSDistantTreeShader_SetTextureAtlas(void* p);
+void BSDistantTreeShader_SetTextureAtlas(void* apTextureAtlas);
 void* __cdecl _Deallocate(void*);
 struct Helper8
 {
@@ -40,7 +40,7 @@ struct FUN_006f8650
 };
 struct FUN_006b3140_shell
 {
-    void AddElement(void*);
+    void D3DXShader_CFragmentRegisterAllocator_AddElement(void*);
     void* FUN_006b3140();
 };
 extern FUN_006b3140_shell g_011d85d0;
@@ -173,7 +173,7 @@ struct Fake076
     virtual void v75();
     virtual const char* GetStr();
 };
-int __cdecl FormatTreeLodDtlPath(char* a1, Fake076* a2, int a3, short a4, short a5);
+int __cdecl BGSDistantTreeBlockLoadTask_ctor(char* a1, Fake076* a2, int a3, short a4, short a5);
 class BSSoundHandle;
 extern IOManager* DAT_01202d98;
 struct InstanceDataB
@@ -196,7 +196,7 @@ void BGSDistantTreeBlock_DeallocateStaticData();
 extern const char str_0106dd30[];
 struct FUN_00bb7290_shell
 {
-    void SetEntry(unsigned int, float, float, float, float, float);
+    void BSDistantTreeShaderProperty_SetInstance(unsigned int, float, float, float, float, float);
 };
 struct FUN_006b3120_shell
 {
@@ -376,7 +376,7 @@ struct TreeOwnerS
 struct TreeScopeGuard
 {
     void* p;
-    TreeScopeGuard(int line, int flags, const char* file, int size);
+    TreeScopeGuard(int memContext, int overridable, const char* file, int aiLine);
     ~TreeScopeGuard();
 };
 struct TreeRecord
@@ -400,7 +400,7 @@ struct TreeHost
 {
     void ReadBytes(void* buf, unsigned int n);
 };
-void ReadTreeRecords(TreeHost* host);
+void BGSDistantTreeBlock_ReadTypes(TreeHost* apInputFile);
 struct C6F9060Member
 {
     int unk00;
@@ -434,7 +434,7 @@ struct FUN_006f9080_owner : BGSDistantTreeBlockLoadTask
 void Callee::FUN_0045cec0()
 {}
 struct Fake076;
-int __cdecl FormatTreeLodDtlPath(char* a1, Fake076* a2, int a3, short a4, short a5);
+int __cdecl BGSDistantTreeBlockLoadTask_ctor(char* a1, Fake076* a2, int a3, short a4, short a5);
 class B6F9570File
 {
   public:
@@ -443,7 +443,7 @@ class B6F9570File
 class B6F9570FileFinder
 {
   public:
-    static B6F9570File* GetFile(const char* pcName, int eMode, unsigned int uiBufferSize, unsigned int uiFlags);
+    static B6F9570File* GetFile(const char* apName, int aeMode, unsigned int aiSize, unsigned int aiArchiveType);
 };
 struct Lod77Foo1
 {
@@ -477,7 +477,7 @@ struct Lod77Elem
     void Step1();
     void Step2();
     void Step3();
-    void Step4();
+    void NiAlphaProperty_SetTestMode();
 };
 struct Lod77Container
 {
@@ -491,7 +491,7 @@ struct LodFile
 };
 struct Lod77Mgr
 {
-    void Load(char* path, Lod77Container* c, int a, int b);
+    void Load(char* apfilename, Lod77Container* aspSourceTexture, int abNoFileOK, int b);
 };
 extern Lod77Container DAT_011d85bc;
 extern Lod77Container DAT_011d85c4;
@@ -500,7 +500,7 @@ extern Lod77Mgr* DAT_011dea10;
 int __cdecl FUN_00ec8a19(const char* a, const char* b, int c);
 void* __cdecl FileFinder_GetFile_(char* path, int mode, unsigned int size);
 void __cdecl Warning_005b5e40(const char* msg);
-void __cdecl LoadTreeLodResources(Fake076* self);
+void __cdecl BGSDistantTreeBlock_AllocateStaticData(Fake076* apWorld);
 struct TreeGeometry
 {
     virtual void v00();
@@ -825,12 +825,14 @@ struct S_00bb6050
     int unk7c;
     int unk80;
 
-    int __thiscall BSDistantTreeShader_GetShaderDecl(int arg0, int arg1);
+    int __thiscall BSDistantTreeShader_GetShaderDecl(int apGeometry, int apProperty);
 };
 
 // @fnv 0x00bb6050
 // src: XBOX_PDB 0x00bb6050
-int __thiscall S_00bb6050::BSDistantTreeShader_GetShaderDecl(int arg0, int arg1)
+// pdb: BSDistantTreeShader::GetShaderDecl | BSDistantTreeShader.obj | debug, upstream name already matches, high
+// pdb params: apGeometry, apProperty
+int __thiscall S_00bb6050::BSDistantTreeShader_GetShaderDecl(int apGeometry, int apProperty)
 {
     return this->unk80;
 }

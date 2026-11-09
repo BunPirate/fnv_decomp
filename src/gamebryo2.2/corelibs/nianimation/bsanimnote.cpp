@@ -25,6 +25,8 @@ struct TimedTextEntry
 };
 
 // @fnv 0x00a44930
+// pdb: BSAnimNote::ParseTextKey | BSAnimNote.obj | debug, call graph (shared callers), low
+// pdb params: apTextKey
 bool __thiscall BSAnimNote::vf35(const TimedTextEntry* apTextKey)
 {
     fTime = apTextKey->m_fTime;
@@ -37,6 +39,8 @@ inline void* operator new(unsigned int, void* storage) { return storage; }
 // Allocates a 0x10-byte BSFadeNode, calls Init on it, sets its vtable to DAT_01097dd4, and returns the pointer or 0.
 // @fnv 0x00a44940
 // src: EXE 0x00a44940
+// pdb: BSAnimNotes::CreateObject | BSAnimNote.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl BSAnimNotes_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x10);
@@ -53,11 +57,14 @@ bool __stdcall IsSameAs(NiObject*);
 
 // Returns true if apObject passes IsSameAs and its eType and fTime equal this object's eType and fTime.
 // @fnv 0x00a44880
+// pdb: BSAnimNote::IsEqual | BSAnimNote.obj | retail, object-file run extension, low
+// pdb params: apObject
+// pdb locals: bres, pkDest
 bool __fastcall AnimNoteMatches(BSAnimNote* self, void*, NiObject* apObject)
 {
     if (IsSameAs(apObject))
     {
-        if (*(int*)self->unk08 == *(int*)((BSAnimNote*)apObject)->unk08)
+        if (*(int*)self->eType == *(int*)((BSAnimNote*)apObject)->eType)
         {
             if (self->fTime == ((BSAnimNote*)apObject)->fTime)
                 return true;
@@ -67,14 +74,17 @@ bool __fastcall AnimNoteMatches(BSAnimNote* self, void*, NiObject* apObject)
 }
 
 // @fnv 0x00a448c0
+// pdb: BSAnimNotes::RegisterStreamables | BSAnimNote.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: bret, i
 bool __thiscall BSAnimNotes::RegisterStreamables(NiStream& arStream)
 {
     bool bret = true;
     int i;
     if (!NiObject::RegisterStreamables(arStream))
         bret = false;
-    for (i = 0; i < m_usNumAnimNotes && bret; i++)
-        bret = m_ppNotes[i]->RegisterStreamables(arStream);
+    for (i = 0; i < usNumNotes && bret; i++)
+        bret = NoteA[i]->RegisterStreamables(arStream);
     return bret;
 }
 
@@ -82,25 +92,29 @@ extern MemoryManager g_memoryManager;
 
 // Releases the stored object array: deletes each NiRefObject element, deallocates the array, then destroys the base NiRefObject.
 // @fnv 0x00a44970
-void BSAnimNotes::Destroy()
+// src: XBOX_RETAIL_PDB 0x00a44970
+// pdb: BSAnimNotes::~BSAnimNotes | BSAnimNote.obj | retail, object-file gap fill, high
+// pdb locals: ui
+void BSAnimNotes::BSAnimNotes_dtor()
 {
     *(void**)this = (void*)&DAT_01097dd4;
-    for (unsigned int i = 0; i < m_usNumAnimNotes; ++i)
+    for (unsigned int i = 0; i < usNumNotes; ++i)
     {
-        NiRefObject* p = m_ppNotes[i];
+        NiRefObject* p = NoteA[i];
         if (p)
             delete p;
     }
-    g_memoryManager.Deallocate(m_ppNotes);
+    g_memoryManager.Deallocate(NoteA);
     ((NiRefObject*)this)->NiRefObject::~NiRefObject();
 }
 
 void __cdecl _delete(void*, unsigned int);
 // Calls Destroy, then deletes this with size 0x10 when bit 0 of a1 is set, and returns this.
 // @fnv 0x00a44a10
+// pdb: BSAnimNotes::`scalar deleting destructor' | BSAnimNote.obj | retail, object-file gap fill, high
 void* BSAnimNotes::DestroyIfFlagged(unsigned int auiFlags)
 {
-    Destroy();
+    BSAnimNotes_dtor();
     if (auiFlags & 1)
         _delete(this, 0x10);
     return this;
@@ -124,22 +138,27 @@ extern "C" unsigned char __stdcall MyHelper00a5d2f0(void* pObject);
 
 // @fnv 0x00a84c70
 // src: XBOX_PDB 0x00a84c70
-bool __stdcall BSAnimNote_RegisterStreamables(void* pObject)
+// pdb: BSAnimNote::RegisterStreamables | BSAnimNote.obj | debug, upstream name already matches, high
+// pdb params: arStream
+bool __stdcall BSAnimNote_RegisterStreamables(void* arStream)
 {
-    return MyHelper00a5d2f0(pObject);
+    return MyHelper00a5d2f0(arStream);
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long* plAddend);
 
 // Links the base object from the stream, then fills self->m_ppNotes with objects from the stream and increments each one's ref count.
 // @fnv 0x00a449c0
+// pdb: BSAnimNotes::LinkObject | BSAnimNote.obj | retail, object-file gap fill, high
+// pdb params: arStream
+// pdb locals: i
 void __fastcall LinkAnimNotes(BSAnimNotes* self, void*, NiStream& kStream)
 {
     self->NiObject::LinkObject(kStream);
-    for (int i = 0; i < self->m_usNumAnimNotes; i++)
+    for (int i = 0; i < self->usNumNotes; i++)
     {
-        self->m_ppNotes[i] = kStream.GetLoadedObject();
-        InterlockedIncrement((volatile long*)&self->m_ppNotes[i]->m_uiRefCount);
+        self->NoteA[i] = kStream.GetLoadedObject();
+        InterlockedIncrement((volatile long*)&self->NoteA[i]->m_uiRefCount);
     }
 }
 
@@ -167,15 +186,18 @@ template <class T> inline void A4AF0LoadBinary(NiBinaryStream& kStream, T& rValu
 }
 
 // @fnv 0x00a44af0
+// pdb: BSAnimNotes::LoadBinary | BSAnimNote.obj | retail, object-file gap fill, high
+// pdb params: arStream
+// pdb locals: i
 void __fastcall LoadAnimNotes(BSAnimNotes* self, void*, NiStream& kStream)
 {
     self->NiObject::LoadBinary(kStream);
 
-    A4AF0LoadBinary(*kStream.m_pkIstr, self->m_usNumAnimNotes);
-    if (self->m_usNumAnimNotes > 0)
-        self->m_ppNotes = new NiObject*[self->m_usNumAnimNotes];
+    A4AF0LoadBinary(*kStream.m_pkIstr, self->usNumNotes);
+    if (self->usNumNotes > 0)
+        self->NoteA = new NiObject*[self->usNumNotes];
 
-    for (int i = 0; i < self->m_usNumAnimNotes; i++)
+    for (int i = 0; i < self->usNumNotes; i++)
         kStream.ResetStreamState();
 }
 
@@ -211,12 +233,14 @@ char* __cdecl C4BF0GetViewerString(const char* pcPrefix, float fValue);
 char* __cdecl C4BF0GetViewerString(const char* pcPrefix, const char* pcValue);
 
 // @fnv 0x00a44bf0
+// pdb: BSAnimNote::GetViewerStrings | BSAnimNote.obj | retail, string-set bridge, high
+// pdb params: apStrings
 void BSAnimNote::GetViewerStrings(NiViewerStringsArray* apStrings)
 {
     C4BF0StringArray* pkStrings = reinterpret_cast<C4BF0StringArray*>(apStrings);
     BaseGetViewerStrings(apStrings);
     pkStrings->Add(C4BF0GetViewerString("Time", fTime));
-    switch (*(int*)unk08)
+    switch (*(int*)eType)
     {
     case 1:
         pkStrings->Add(C4BF0GetViewerString("Type", "GrabIK"));
@@ -229,6 +253,8 @@ void __cdecl AppendCameraPathEntries();
 
 // @fnv 0x00a44910
 // src: XBOX_PDB 0x00a44910
+// pdb: BSAnimNotes::GetViewerStrings | BSAnimNote.obj | debug, upstream name already matches, high
+// pdb params: apStrings
 void __cdecl BSAnimNotes_GetViewerStrings()
 {
     AppendCameraPathEntries();
@@ -255,10 +281,12 @@ template <class T> inline void WriteBinaryValue(NiStream& kStream, const T& valu
 
 // Calls the base routine, then writes the note type and time to the output stream.
 // @fnv 0x00a44a90
+// pdb: BSAnimNote::SaveBinary | BSAnimNote.obj | retail, object-file gap fill, high
+// pdb params: arStream
 void __fastcall LinkAnimNote(BSAnimNote* self, void*, NiStream& kStream)
 {
     self->NiObject::LinkObject(kStream);
-    WriteBinaryValue(kStream, *(int*)self->unk08);
+    WriteBinaryValue(kStream, *(int*)self->eType);
     WriteBinaryValue(kStream, self->fTime);
 }
 
@@ -270,12 +298,15 @@ template <class T> inline void B80SaveBinary(NiBinaryStream& kStream, const T& r
 
 // Saves the B80Notes object by calling the base B80Object save, writing self->m_usNumAnimNotes, and saving each NiObject link ID in self->m_ppNotes.
 // @fnv 0x00a44b80
+// pdb: BSAnimNotes::SaveBinary | BSAnimNote.obj | retail, object-file gap fill, high
+// pdb params: arStream
+// pdb locals: ui
 void __fastcall SaveAnimNotes(BSAnimNotes* self, void*, NiStream& kStream)
 {
     self->NiObject::LinkObject(kStream);
-    B80SaveBinary(*kStream.m_pkOstr, self->m_usNumAnimNotes);
-    for (unsigned int i = 0; i < self->m_usNumAnimNotes; i++)
-        kStream.SaveLinkID(reinterpret_cast<const NiObject*>(self->m_ppNotes[i]));
+    B80SaveBinary(*kStream.m_pkOstr, self->usNumNotes);
+    for (unsigned int i = 0; i < self->usNumNotes; i++)
+        kStream.SaveLinkID(reinterpret_cast<const NiObject*>(self->NoteA[i]));
 }
 
 template <class T> inline void StreamLoadBinary(NiBinaryStream& bs, T& val)
@@ -286,10 +317,12 @@ template <class T> inline void StreamLoadBinary(NiBinaryStream& bs, T& val)
 
 // Reads a group from the load stream, then binary-reads two unsigned int fields (unk08, unk0C) into the object.
 // @fnv 0x00a44a30
+// pdb: BSAnimNote::LoadBinary | BSAnimNote.obj | retail, object-file gap fill, high
+// pdb params: arStream
 void __fastcall LoadAnimNote(BSAnimNote* self, void*, NiStream* apLoadStream)
 {
     self->NiObject::LoadBinary(*apLoadStream);
-    StreamLoadBinary(*apLoadStream->m_pkIstr, *(unsigned int*)self->unk08);
+    StreamLoadBinary(*apLoadStream->m_pkIstr, *(unsigned int*)self->eType);
     StreamLoadBinary(*apLoadStream->m_pkIstr, self->fTime);
 }
 

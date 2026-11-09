@@ -23,6 +23,7 @@ class TESHair;
 class TESRace;
 class ValidBip01Names;
 
+// pdb: class TESNPC, size 0x1ec (here 0x20c), bases: TESActorBase, TESRaceForm, 21 members
 class TESNPC : public TESActorBase, public TESRaceForm
 {
 public:
@@ -35,13 +36,13 @@ public:
     virtual void Revert(BGSLoadFormBuffer*);
     virtual TESCombatStyle* GetCombatStyle() const;
     virtual void SetCombatStyle(TESCombatStyle*);
-    virtual int GetActorValue(ActorValue::Index actorValue);
+    virtual int GetActorValue(ActorValue::Index aiWhich);
 
     bool Activate(TESObjectREFR*, TESObjectREFR*, bool, TESBoundObject*, int);
     bool Load(TESFile*);
     virtual void LoadGame(BGSLoadFormBuffer*);
-    void UpdateActorFaceGen(TESObjectREFR*, BipedAnim*, BSFaceGenNiNode*, BSFaceGenNiNode*);
-    void UpdateActorFaceGen(Actor*, Biped*, unsigned int, unsigned int);
+    void AttachHead(TESObjectREFR*, BipedAnim*, BSFaceGenNiNode*, BSFaceGenNiNode*);
+    void AttachHead(Actor*, Biped*, unsigned int, unsigned int);
     void UpdateModel3D(TESObjectREFR*, bool, bool, bool, bool);
     void UpdateActorBaseData(bool);
     void RebuildHeadModel(TESObjectREFR*, BipedAnim*, bool);
@@ -56,11 +57,11 @@ public:
     TESEyes* FUN_00602150();
     unsigned int TESDataHandler_GetRegionList();
     void SetField1F0(TESNPC*);
-    BipedAnim* GetBipedAnimationForReference(TESObjectREFR*);
+    BipedAnim* CreateBipedAnim(TESObjectREFR*);
     void UpdateHeadParts(TESObjectREFR*, BipedAnim*);
     bool InitWornObject(TESObjectREFR*, BipedAnim*, TESBoundObject*);
-    void GetFaceGenNodes(BSFaceGenNiNode*&, BSFaceGenNiNode*&);
-    void GetFaceGenNodes(unsigned int*, unsigned int*);
+    void InitHead(BSFaceGenNiNode*&, BSFaceGenNiNode*&);
+    void InitHead(unsigned int*, unsigned int*);
     TESHair* GetHair();
     float GetWeight();
     float GetDefaultHeight();

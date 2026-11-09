@@ -8,15 +8,16 @@ class hkpConstraintMotor;
 
 typedef short hkInt16;
 
+// pdb: structure hkpRagdollMotorConstraintAtom, size 0x50, bases: hkpConstraintAtom, 5 members
 class hkpRagdollMotorConstraintAtom : public hkpConstraintAtom
 {
 public:
-    hkBool m_bLimitEnabled;
+    hkBool m_isEnabled;
     char pad3[0x1];
-    hkInt16 m_iInitializedOffset;
-    hkInt16 m_iPreviousTargetAnglesOffset;
+    hkInt16 m_initializedOffset;
+    hkInt16 m_previousTargetAnglesOffset;
     char pad8[0x8];
-    hkMatrix3 m_kMotorAxes;
-    hkpConstraintMotor* m_ppMotors[3];
+    hkMatrix3 m_target_bRca;
+    hkpConstraintMotor* m_motors[3];
     char pad4C[0x4];
 };

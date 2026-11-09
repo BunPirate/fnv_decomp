@@ -81,7 +81,7 @@ class CFun00cbf280Owner
     virtual void Commit(void* src, int size);
 
     /* The unit itself. Non-virtual: it is entered directly, not through a slot. */
-    void* hkMemoryAllocator_bufRealloc(void* src, int size, SFun00cbf280Args* args);
+    void* hkMemoryAllocator_bufRealloc(void* pold, int oldNumBytes, SFun00cbf280Args* reqBytesInOut);
 };
 
 /*
@@ -107,17 +107,19 @@ class CFun00cbf280Owner
  */
 // @fnv 0x00cbf280
 // src: HAVOK_LIB 0x00cbf280
-void* CFun00cbf280Owner::hkMemoryAllocator_bufRealloc(void* src, int size, SFun00cbf280Args* args)
+// pdb: hkMemoryAllocator::bufRealloc | hkMemoryAllocator.obj | retail, upstream name already matches, high
+// pdb params: pold, oldNumBytes, reqBytesInOut
+void* CFun00cbf280Owner::hkMemoryAllocator_bufRealloc(void* pold, int oldNumBytes, SFun00cbf280Args* reqBytesInOut)
 {
-    void* dest = this->Reserve(args);
+    void* dest = this->Reserve(reqBytesInOut);
 
-    int count = args->limit;
-    if (size < count)
-        count = size;
+    int count = reqBytesInOut->limit;
+    if (oldNumBytes < count)
+        count = oldNumBytes;
 
-    hkMemUtil_memCpy_00d2caa0(dest, src, (unsigned int)count);
+    hkMemUtil_memCpy_00d2caa0(dest, pold, (unsigned int)count);
 
-    this->Commit(src, size);
+    this->Commit(pold, oldNumBytes);
 
     return dest;
 }
@@ -159,17 +161,19 @@ class FUN_00cbf1e0_cls
     virtual void f0();
     virtual void* f1(void* a);
 
-    void hkMemoryAllocator_blockAllocBatch(void** dest, int count, void* arg);
+    void hkMemoryAllocator_blockAllocBatch(void** ptrsOut, int numPtrs, void* blockSize);
 };
 
 // Calls f1(arg) count times and stores each returned pointer into dest[i].
 // @fnv 0x00cbf1e0
 // src: HAVOK_LIB 0x00cbf1e0
-void FUN_00cbf1e0_cls::hkMemoryAllocator_blockAllocBatch(void** dest, int count, void* arg)
+// pdb: hkMemoryAllocator::blockAllocBatch | hkMemoryAllocator.obj | retail, upstream name already matches, high
+// pdb params: ptrsOut, numPtrs, blockSize
+void FUN_00cbf1e0_cls::hkMemoryAllocator_blockAllocBatch(void** ptrsOut, int numPtrs, void* blockSize)
 {
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < numPtrs; ++i)
     {
-        dest[i] = this->f1(arg);
+        ptrsOut[i] = this->f1(blockSize);
     }
 }
 
@@ -178,25 +182,27 @@ struct Visitor
     virtual void slot00();
     virtual void slot04();
     virtual void Visit(void* item, int arg);
-    void VisitAll(void** items, int count, int arg);
+    void VisitAll(void** ptrsIn, int numPtrs, int blockSize);
 };
 
 // Iterates over the first count entries of items and calls Visit on each non-null item, passing arg through.
 // @fnv 0x00cbf220
-void Visitor::VisitAll(void** items, int count, int arg)
+// pdb: hkMemoryAllocator::blockFreeBatch | hkMemoryAllocator.obj | retail, vtable slot, high
+// pdb params: ptrsIn, numPtrs, blockSize
+void Visitor::VisitAll(void** ptrsIn, int numPtrs, int blockSize)
 {
     int i = 0;
-    if (0 < count)
+    if (0 < numPtrs)
     {
         do
         {
-            void* item = items[i];
+            void* item = ptrsIn[i];
             if (item != 0)
             {
-                Visit(item, arg);
+                Visit(item, blockSize);
             }
             i = i + 1;
-        } while (i < count);
+        } while (i < numPtrs);
     }
 }
 

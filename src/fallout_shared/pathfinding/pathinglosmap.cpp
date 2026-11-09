@@ -23,6 +23,7 @@ extern "C" void __cdecl operator delete(void* p, unsigned int size);
 
 // Runs the destructor and, when flags has bit 0 set, frees the object with operator delete, then returns this.
 // @fnv 0x006e1440
+// pdb: PathingLOSMap::`scalar deleting destructor' | PathingLOSMap.obj | retail, vtable slot, high
 void* PathingLOSMap::DestroyAndFree(unsigned int flags)
 {
     this->PathingLOSMap::~PathingLOSMap();
@@ -33,10 +34,13 @@ void* PathingLOSMap::DestroyAndFree(unsigned int flags)
 
 // Looks up aNavMeshID in the map at this+8 and returns a pointer into the buffer at this+0x18 offset by the stored offset, or null if not found.
 // @fnv 0x006e1610
+// pdb: PathingLOSMap::GetArrayForNavMesh | PathingLOSMap.obj | debug, object-file gap fill, medium
+// pdb params: aNavMeshID
+// pdb locals: ioffset
 char* PathingLOSMap::GetTriangleScore(unsigned int aNavMeshID)
 {
     unsigned int ioffset;
-    if (m_map.GetAt(aNavMeshID, ioffset))
+    if (NavMeshToOffsetMap.GetAt(aNavMeshID, ioffset))
         return pTriangleScores + ioffset;
     else
         return 0;
@@ -44,9 +48,11 @@ char* PathingLOSMap::GetTriangleScore(unsigned int aNavMeshID)
 
 // Calls GetAt on the DummyPointerMap at offset 8 of this object, passing a and b through.
 // @fnv 0x006e1650
+// pdb: PathingLOSMap::GetOffsetForNavMesh | PathingLOSMap.obj | debug, object-file gap fill, medium
+// pdb params: aNavMeshID, aRetOffset
 void PathingLOSMap::GetMapValue(unsigned int uiKey, unsigned int& ruiValue)
 {
-    m_map.GetAt(uiKey, ruiValue);
+    NavMeshToOffsetMap.GetAt(uiKey, ruiValue);
 }
 
 // Returns the smaller of the two char arguments.
@@ -81,10 +87,13 @@ void NiSortAdjustNode::SetArraySize(unsigned int aSize)
 
 // Looks up aiNavMeshID in the map at offset 8 and returns whether GetAt found an entry.
 // @fnv 0x006e2050
+// pdb: PathingLOSMap::IsNavMeshInMap | PathingLOSMap.obj | debug, object-file run extension, low
+// pdb params: aiNavMeshID
+// pdb locals: idummy
 bool PathingLOSMap::HasNavMeshEntry(unsigned int aiNavMeshID)
 {
     unsigned int idummy;
-    return m_map.GetAt(aiNavMeshID, idummy);
+    return NavMeshToOffsetMap.GetAt(aiNavMeshID, idummy);
 }
 
 struct ArrHelper
@@ -94,7 +103,10 @@ struct ArrHelper
 // Returns false if the helper at offset 0x1c reports true; otherwise scans text entries and returns true on the first non-positive char whose lookup succeeds.
 // @fnv 0x006e1770
 // src: COMMUNITY 0x006e1770
-bool PathingLOSMap::GetUnseenNavMeshAndTriangle(unsigned int a, unsigned int b)
+// pdb: PathingLOSMap::GetUnseenNavMeshAndTriangle | PathingLOSMap.obj | retail, upstream name already matches, high
+// pdb params: aRetNavMesh, aRetTriangle
+// pdb locals: i, bresult, cscore
+bool PathingLOSMap::GetUnseenNavMeshAndTriangle(unsigned int aRetNavMesh, unsigned int aRetTriangle)
 {
     if (((const ArrHelper*)((char*)this + 0x1c))->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
         return false;
@@ -103,7 +115,7 @@ bool PathingLOSMap::GetUnseenNavMeshAndTriangle(unsigned int a, unsigned int b)
         char cChar = ((Script*)this)->GetByteAt(i);
         if (cChar > 0)
             continue;
-        unsigned char d = GetNavMeshAndTriangleForIndex(i, (SpawnedTarget*)a, (unsigned short*)b);
+        unsigned char d = GetNavMeshAndTriangleForIndex(i, (SpawnedTarget*)aRetNavMesh, (unsigned short*)aRetTriangle);
         if (d)
             return true;
     }
@@ -120,6 +132,8 @@ struct FUN_006d8970_shell
 };
 // Iterates over the text characters and sets each character whose value is <= 0 to 0x7f.
 // @fnv 0x006e2000
+// pdb: PathingLOSMap::ClearUnseenTriangles | PathingLOSMap.obj | debug, object-file run extension, low
+// pdb locals: i
 void PathingLOSMap::ClampNonPositiveTextChars()
 {
     for (unsigned int i = 0; i < (unsigned int)((Script*)this)->FUN_0055b980(); ++i)
@@ -155,7 +169,7 @@ struct LOSHeap
 struct LOSMember1C
 {
     unsigned int unk00;
-    void ReleaseMember();
+    void BSSimpleArray_NavMeshPtr_1024_dtor();
 };
 
 struct PathingLOSMapDestructor : PathingLOSBase
@@ -169,35 +183,39 @@ struct PathingLOSMapDestructor : PathingLOSBase
 
 // Destructor that deletes m_18 if non-null, then calls ReleaseMember on m_1c.
 // @fnv 0x006e1470
+// pdb: PathingLOSMap::~PathingLOSMap | PathingLOSMap.obj | debug, call graph, medium
 PathingLOSMapDestructor::~PathingLOSMapDestructor()
 {
     if (m_18 != 0)
     {
         delete m_18;
     }
-    m_1c.ReleaseMember();
+    m_1c.BSSimpleArray_NavMeshPtr_1024_dtor();
 }
 
 
 // Clears the total count, maps each array entry's navmesh id to a running offset, sums sizes, then allocates and fills m_pData with 0x7f.
 // @fnv 0x006e1500
+// pdb: PathingLOSMap::Setup | PathingLOSMap.obj | debug, object-file gap fill, medium
+// pdb params: aNavMeshes
+// pdb locals: n, i
 bool PathingLOSMap::BuildNavMeshMap(NavMeshCollection* pNavMeshArray)
 {
     unsigned int i;
     unsigned int j2;
-    m_uTotalCount = 0;
+    iTotalTriangleCount = 0;
     for (i = 0; i < pNavMeshArray->FUN_0044ddc0(); i++)
     {
-        m_map.SetAt(pNavMeshArray->FUN_00877a30(i).Modelloader_GetReferencedThis()->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), m_uTotalCount);
-        m_uTotalCount += pNavMeshArray->FUN_00877a30(i).Modelloader_GetReferencedThis()->NavMesh_GetTriangleCount();
-        m_shell1c.AppendValue(pNavMeshArray->FUN_00877a30(i));
+        NavMeshToOffsetMap.SetAt(pNavMeshArray->FUN_00877a30(i).Modelloader_GetReferencedThis()->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), iTotalTriangleCount);
+        iTotalTriangleCount += pNavMeshArray->FUN_00877a30(i).Modelloader_GetReferencedThis()->NavMesh_GetTriangleCount();
+        NavMeshes.AppendValue(pNavMeshArray->FUN_00877a30(i));
     }
     if (m_pData)
     {
         delete m_pData;
     }
-    m_pData = new char[m_uTotalCount];
-    for (j2 = 0; j2 < m_uTotalCount; j2++)
+    m_pData = new char[iTotalTriangleCount];
+    for (j2 = 0; j2 < iTotalTriangleCount; j2++)
     {
         m_pData[j2] = 0x7f;
     }
@@ -229,7 +247,10 @@ struct SpawnedTarget
 // Scans the sequence list, measuring each entry's script length; when a length exceeds limit, stores the remaining offset and passes the previous entry to target.
 // @fnv 0x006e1670
 // src: COMMUNITY 0x006e1670
-char PathingLOSMap::GetNavMeshAndTriangleForIndex(unsigned int limit, SpawnedTarget* target, unsigned short* outOffset)
+// pdb: PathingLOSMap::GetNavMeshAndTriangleForIndex | PathingLOSMap.obj | retail, upstream name already matches, high
+// pdb params: aiIndex, aRetNavMesh, aRetTriangle
+// pdb locals: inavmeshIndex, ipreviousOffset, navmeshID, ioffset
+char PathingLOSMap::GetNavMeshAndTriangleForIndex(unsigned int aiIndex, SpawnedTarget* aRetNavMesh, unsigned short* aRetTriangle)
 {
     unsigned int i;
     unsigned int accum;
@@ -247,10 +268,10 @@ char PathingLOSMap::GetNavMeshAndTriangleForIndex(unsigned int limit, SpawnedTar
         {
             return 0;
         }
-        if (len > limit)
+        if (len > aiIndex)
         {
-            *outOffset = (unsigned short)(limit - i);
-            target->FUN_0042f4c0(((SeqList*)((char*)this + 0x1c))->FUN_00877a30(accum - 1));
+            *aRetTriangle = (unsigned short)(aiIndex - i);
+            aRetNavMesh->FUN_0042f4c0(((SeqList*)((char*)this + 0x1c))->FUN_00877a30(accum - 1));
             return 1;
         }
         else
@@ -258,8 +279,8 @@ char PathingLOSMap::GetNavMeshAndTriangleForIndex(unsigned int limit, SpawnedTar
             i = len;
         }
     }
-    *outOffset = (unsigned short)(limit - i);
-    target->FUN_0042f4c0(((SeqList*)((char*)this + 0x1c))->FUN_00877a30(accum - 1));
+    *aRetTriangle = (unsigned short)(aiIndex - i);
+    aRetNavMesh->FUN_0042f4c0(((SeqList*)((char*)this + 0x1c))->FUN_00877a30(accum - 1));
     return 1;
 }
 
@@ -268,7 +289,7 @@ char PathingLOSMap::GetNavMeshAndTriangleForIndex(unsigned int limit, SpawnedTar
 
 void* __cdecl BSTestObjects_CreateCircle(float, int, void*);
 void* __cdecl BSTestObjects_CreateCappedCylinder(float, float, float, int, int, void*);
-void __cdecl AttachLightingPropertyRecursive(void*);
+void __cdecl AddNoLightingPropertyRecurse(void*);
 void __cdecl FUN_00b57e30(void*, int, int);
 // This external call passes three trivial 12-byte vertices by value.  The
 // shared NiPoint3 copy constructor must not change that calling sequence.
@@ -279,6 +300,8 @@ struct DebugTriangleVertex
 NiAVObject* __cdecl MakeTriangle(DebugTriangleVertex, DebugTriangleVertex, DebugTriangleVertex, const NiColorA*, int);
 
 // @fnv 0x006e1800
+// pdb: PathingLOSMap::CreateDebugGeometry | PathingLOSMap.obj | debug, object-file run extension, low
+// pdb locals: ismallestVal, UpdateData, pLOSGeometry, spAlphaProp, spmat, ilargestVal, i, cscore, verts, spmesh, ustriangle, fgreenvalue, colora, ptriangle, fredvalue, spTri, v, pcenterCylinder, pradiusDebugGeometry, color, pradiusCircle
 NiSortAdjustNode* PathingLOSMap::CreateSortAdjustNode()
 {
     NiSortAdjustNode* rootNode = new NiSortAdjustNode(0);
@@ -329,20 +352,20 @@ NiSortAdjustNode* PathingLOSMap::CreateSortAdjustNode()
         }
     }
 
-    if (this->f48 != 0.0)
+    if (this->fRadius != 0.0)
     {
         NiSortAdjustNode* p4 = new NiSortAdjustNode(0);
         NiColorA vec(1.0f, 1.0f, 0.0f, 0.5f);
         for (unsigned int m = 0; m < 5; ++m)
         {
-            void* ac = BSTestObjects_CreateCircle(this->f48, 0x24, &vec);
-            ((NiAVObject*)ac)->NiAVObject_SetTranslate_004bc1f0(this->f3c, this->f40, (float)((double)m * 25.0 + this->f44));
+            void* ac = BSTestObjects_CreateCircle(this->fRadius, 0x24, &vec);
+            ((NiAVObject*)ac)->NiAVObject_SetTranslate_004bc1f0(this->Center, this->f40, (float)((double)m * 25.0 + this->f44));
             p4->AttachChildInAvailableSlot((NiAVObject*)ac, 1);
         }
         void* ac1 = BSTestObjects_CreateCappedCylinder(16.0f, 16.0f, 400.0f, 10, 10, &vec);
-        ((NiSortAdjustNode*)ac1)->NiAVObject_SetTranslate(*(const NiPoint3*)&this->f3c);
+        ((NiSortAdjustNode*)ac1)->NiAVObject_SetTranslate(*(const NiPoint3*)&this->Center);
         p4->AttachChildInAvailableSlot((NiAVObject*)ac1, 1);
-        AttachLightingPropertyRecursive(p4);
+        AddNoLightingPropertyRecurse(p4);
         FUN_00b57e30(p4, 0, 0);
         rootNode->AttachChildInAvailableSlot((NiAVObject*)p4, 1);
     }

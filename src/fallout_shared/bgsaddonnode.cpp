@@ -41,61 +41,67 @@ int __cdecl Warning(const char* format, ...);
 #include <string.h>
 
 // @fnv 0x004f8c50
+// pdb: BGSAddonNode::InitializeData | BGSAddonNode.obj | retail, vtable slot, high
 void BGSAddonNode::ResetFormData()
 {
-    SoundAssetTmp = 0;
+    pSound = 0;
     memset(reinterpret_cast<char*>(this) + 0x58, 0, 4);
-    uiParticleSystemIndex = 0;
+    iMasterParticleSystemIndex = 0;
 }
 
 // @fnv 0x004f8c90
+// pdb: BGSAddonNode::InitItem | BGSAddonNode.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void BGSAddonNode::InitItem()
 {
     if (reinterpret_cast<TESFormInitFlag*>(this)->IsFormInitialized())
         return;
 
     TESModelTextureSwap::InitItem(this);
-    if (SoundAssetTmp)
+    if (pSound)
     {
-        unsigned int formID = reinterpret_cast<unsigned int>(SoundAssetTmp);
+        unsigned int formID = reinterpret_cast<unsigned int>(pSound);
         TESForm::RemapFormIDForFile(formID, GetFile(-1));
-        SoundAssetTmp = dynamic_cast<TESSound*>(GetFormByID(formID));
-        if (!SoundAssetTmp)
+        pSound = dynamic_cast<TESSound*>(GetFormByID(formID));
+        if (!pSound)
             Warning("MASTERFILE: Unable to find sound (%08X) on addon node '%s'.", formID, GetName());
     }
     SetInitializationState(true);
 }
 
 // @fnv 0x004f8d50
-bool BGSAddonNode::Load(TESFile* file)
+// pdb: BGSAddonNode::Load | BGSAddonNode.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, itempint
+bool BGSAddonNode::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x58)
         return false;
 
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     int chunkID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
 
         switch (chunkID)
         {
         case 0x44494445:  // EDID
         {
-            char* data = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(data, 0x200);
+            char* data = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(data, 0x200);
             SetEditorID_AtRuntime(data);
             break;
         }
         case 0x444e424f:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c444f4d:  // MODL
         case 0x44444f4d:  // MODD
         case 0x44534f4d:  // MOSD
         case 0x54444f4d:  // MODT
         {
-            TESModel::LoadModelData(this ? reinterpret_cast<TESModel*>(reinterpret_cast<char*>(this) + 0x30) : 0, file);
+            TESModel::LoadModelData(this ? reinterpret_cast<TESModel*>(reinterpret_cast<char*>(this) + 0x30) : 0, apFile);
             break;
         }
         case 0x53444f4d:  // MODS
@@ -105,38 +111,38 @@ bool BGSAddonNode::Load(TESFile* file)
                 unsigned int size;
                 char* data;
             } buffer;
-            buffer.size = file->GetChunkSize();
+            buffer.size = apFile->GetChunkSize();
             buffer.data = static_cast<char*>(_alloca(buffer.size));
-            file->GetChunkData(buffer.data, buffer.size);
+            apFile->GetChunkData(buffer.data, buffer.size);
             reinterpret_cast<TESModelTextureSwap*>(reinterpret_cast<char*>(this) + 0x30)
-                ->ParseTextureSwapData(buffer.data, buffer.size,
-                                       reinterpret_cast<TESFileFormVersion*>(file)->GetFormVersion());
+                ->UnpackTextureSwapChunkData(buffer.data, buffer.size,
+                                       reinterpret_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
             break;
         }
         case 0x41544144:  // DATA
-            file->GetChunkData(&uiIndex);
+            apFile->GetChunkData(&iIndex);
             break;
         case 0x4d414e53:  // SNAM
         {
             unsigned int formID = 0;
-            file->GetChunkData(&formID);
-            SoundAssetTmp = reinterpret_cast<TESSound*>(formID);
+            apFile->GetChunkData(&formID);
+            pSound = reinterpret_cast<TESSound*>(formID);
             break;
         }
         case 0x4d414e44:  // DNAM
         {
-            file->GetChunkData(reinterpret_cast<char*>(this) + 0x58, 4);
-            if (reinterpret_cast<TESFileAccessor_bgsaddonnode*>(file)->GetChunkData())
+            apFile->GetChunkData(reinterpret_cast<char*>(this) + 0x58, 4);
+            if (reinterpret_cast<TESFileAccessor_bgsaddonnode*>(apFile)->GetChunkData())
                 reinterpret_cast<AddonNodeData*>(reinterpret_cast<char*>(this) + 0x58)->BSEndian_Thunk();
             if (FUN_00448bf0())
             {
-                uiParticleSystemIndex = DAT_011c8054;
+                iMasterParticleSystemIndex = DAT_011c8054;
                 ++DAT_011c8054;
             }
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
 
@@ -144,7 +150,8 @@ bool BGSAddonNode::Load(TESFile* file)
 }
 
 // @fnv 0x004f8b00
-BGSAddonNode::BGSAddonNode() : uiIndex(-1)
+// pdb: BGSAddonNode::BGSAddonNode | BGSAddonNode.obj | retail, upstream name already matches, high
+BGSAddonNode::BGSAddonNode() : iIndex(-1)
 {
     SetFormType(ENUM_FORM_ID_ADDN_ID);
     ResetFormData();
@@ -154,8 +161,9 @@ extern NiFixedString* DAT_011c8058;
 
 // Allocates the "ASH" extra-data name and stores it in DAT_011c8058.
 // @fnv 0x004f92e0
-// src: COMMUNITY 0x004f92e0
-void __cdecl BGSAddonNodeSoundHandleExtra_InitTag()
+// src: XBOX_RETAIL_PDB 0x004f92e0
+// pdb: BGSAddonNodeSoundHandleExtra::InitSDM | BGSAddonNode.obj | retail, call graph, high
+void __cdecl BGSAddonNodeSoundHandleExtra_InitSDM()
 {
     DAT_011c8058 = ::new NiFixedString("ASH");
 }
@@ -174,6 +182,7 @@ struct Proxy_004f8b90
     void* FUN_004f8b90(unsigned int);
 };
 // @fnv 0x004f8b90
+// pdb: BGSAddonNode::`scalar deleting destructor' | BGSAddonNode.obj | retail, vtable slot, high
 void* Proxy_004f8b90::FUN_004f8b90(unsigned int flags)
 {
     FUN_004f8bc0();
@@ -185,6 +194,7 @@ void* Proxy_004f8b90::FUN_004f8b90(unsigned int flags)
 void _delete(void*, unsigned int);
 // Calls FUN_004f9270, deletes this with size 24 when bit 0 of flags is set, and returns this.
 // @fnv 0x004f9240
+// pdb: BGSAddonNodeSoundHandleExtra::`scalar deleting destructor' | BGSAddonNode.obj | debug, object-file run extension, low
 void* BGSAddonNodeSoundHandleExtra::FUN_004f9240(unsigned int flags)
 {
     this->FUN_004f9270();
@@ -197,13 +207,14 @@ namespace fnv_004f9360 {
 // Calls FUN_004b9900(1) on DAT_011c8058 if it is non-null, then sets DAT_011c8058 to null.
 // @fnv 0x004f9360
 // src: GUESS 0x004f9360 (confidence: low)
+// pdb: BGSAddonNodeSoundHandleExtra::KillSDM | BGSAddonNode.obj | debug, call graph, medium
 void Object_UpdateFields_004f9360()
 {
     NiFixedString* pName;
     {
         NiFixedString* inner = DAT_011c8058;
         pName = inner;
-        pName ? pName->FUN_004b9900(1) : 0;
+        pName ? pName->NiFixedString_ScalarDtor(1) : 0;
     }
     DAT_011c8058 = 0;
 }
@@ -244,15 +255,17 @@ struct FUN_004f8fe0_shell : public BGSAddonNode
 };
 // @fnv 0x004f8fe0
 // src: COMMUNITY 0x004f8fe0
+// pdb: BGSAddonNode::Save | BGSAddonNode.obj | retail, vtable slot, high
+// pdb locals: itempint
 void FUN_004f8fe0_shell::BGSAddonNode_SaveAlt()
 {
     reinterpret_cast<::FUN_004855a0*>(this)->M();
     reinterpret_cast<S_0048a520*>(reinterpret_cast<char*>(this) + 0x30)
         ->ProcessAndFreeData(0x4c444f4d, 0x54444f4d, 0x53444f4d);
-    TESForm_AddChunk_00485910(0x41544144, uiIndex);
-    if (SoundAssetTmp)
+    TESForm_AddChunk_00485910(0x41544144, iIndex);
+    if (pSound)
     {
-        unsigned int itempint = SoundAssetTmp->TESForm::GetFormID();
+        unsigned int itempint = pSound->TESForm::GetFormID();
         TESForm_AddChunk_00485910(0x4d414e53, itempint);
     }
     if (TESForm_QEndianSwapOnSave())
@@ -280,6 +293,9 @@ struct FUN_004f90a0_shell : BGSAddonNode
     void CopyFromAddonNode(TESForm* apCopy);
 };
 // @fnv 0x004f90a0
+// pdb: BGSAddonNode::Copy | BGSAddonNode.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void FUN_004f90a0_shell::CopyFromAddonNode(TESForm* apCopy)
 {
     BGSAddonNode* pcopy = dynamic_cast<BGSAddonNode*>(apCopy);
@@ -303,6 +319,9 @@ struct FUN_004f9110_shell : BGSAddonNode
 
 // @fnv 0x004f9110
 // src: XBOX_PDB 0x004f9110
+// pdb: BGSAddonNode::Compare | BGSAddonNode.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool FUN_004f9110_shell::BGSAddonNode_Compare(TESForm* apCompare)
 {
     BGSAddonNode* pcomp;
@@ -331,9 +350,10 @@ bool FUN_004f9110_shell::BGSAddonNode_Compare(TESForm* apCompare)
 
 // Clears the sound handle before the member and base destructors run.
 // @fnv 0x004f9270
+// pdb: BGSAddonNodeSoundHandleExtra::~BGSAddonNodeSoundHandleExtra | BGSAddonNode.obj | debug, upstream name already matches, high
 BGSAddonNodeSoundHandleExtra::~BGSAddonNodeSoundHandleExtra()
 {
-    m_kData.Stop();
+    SoundHandle.Stop();
 }
 
 extern TESDataHandler* g_dataHandler;
@@ -346,6 +366,7 @@ class FUN_004f8bc0 : public TESBoundObject, public TESModelTextureSwap
 
 // Destructor that, when g_dataHandler is set, passes this object to TESDataHandler::RemoveAddonNode as a BGSAddonNode.
 // @fnv 0x004f8bc0
+// pdb: BGSAddonNode::~BGSAddonNode | BGSAddonNode.obj | debug, object-file gap fill, medium
 FUN_004f8bc0::~FUN_004f8bc0()
 {
     if (g_dataHandler)
@@ -355,5 +376,6 @@ FUN_004f8bc0::~FUN_004f8bc0()
 }
 
 // @fnv 0x004f91b0
+// pdb: BGSAddonNodeSoundHandleExtra::BGSAddonNodeSoundHandleExtra | BGSAddonNode.obj | retail, upstream name already matches, high
 BGSAddonNodeSoundHandleExtra::BGSAddonNodeSoundHandleExtra() : NiExtraData(BGSAddonNodeSoundHandleExtra_Tag())
 {}

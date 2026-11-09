@@ -7,15 +7,18 @@
 
 // Inserts pRef into the map by its form ID if absent, increments iCount and records the current timestamp.
 // @fnv 0x00526bd0
-bool LoadedReferenceMap::AddReference(TESObjectREFR* pRef)
+// pdb: LoadedReferenceMap::AddReference | BGSLoadedReferenceCollection.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: pref
+bool LoadedReferenceMap::AddReference(TESObjectREFR* apRef)
 {
     TESObjectREFR* existing = 0;
-    if (GetAt(pRef->GetFormID(), existing))
+    if (GetAt(apRef->GetFormID(), existing))
         return false;
 
-    SetAt(pRef->GetFormID(), pRef);
+    SetAt(apRef->GetFormID(), apRef);
     iCount++;
-    m_uiLastUpdateTime = g_timeGlobal.GetTimeStamp();
+    iLastChangedTimeStamp = g_timeGlobal.GetTimeStamp();
     return true;
 }
 
@@ -30,8 +33,11 @@ unsigned int __fastcall _FNV_GetFormType(TESForm* object);
 #include "../../include/BGSLoadedReferenceCollection.h"
 // Gets the form type of apRef's base object and adds apRef to the collection's per-type lists based on that type and extra data.
 // @fnv 0x005270b0
-// src: XBOX_PDB 0x005270b0
-void BGSLoadedReferenceCollection::RemoveReference_005270b0(TESObjectREFR* apRef)
+// src: XBOX_RETAIL_PDB 0x005270b0
+// pdb: BGSLoadedReferenceCollection::RemoveReference | BGSLoadedReferenceCollection.obj | retail, call graph (shared callers), high
+// pdb params: apRef
+// pdb locals: eformType, prefMap
+void BGSLoadedReferenceCollection::RemoveReference(TESObjectREFR* apRef)
 {
     unsigned int eformType;
 
@@ -64,6 +70,8 @@ void BGSLoadedReferenceCollection::RemoveReference_005270b0(TESObjectREFR* apRef
 }
 
 // @fnv 0x00526b70
+// pdb: BGSLoadedReferenceCollection::BGSLoadedReferenceCollection | BGSLoadedReferenceCollection.obj | retail, object-file run extension, low
+// pdb note: debug build links it to LoadedReferenceMap::~LoadedReferenceMap
 LoadedReferenceMap::~LoadedReferenceMap()
 {
     RemoveAll();

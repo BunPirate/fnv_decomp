@@ -6,6 +6,7 @@
 
 
 // @fnv 0x00800190
+// pdb: ActorPathingMessage::~ActorPathingMessage | PathManager.obj | debug, call graph, medium
 QueuedMessage::~QueuedMessage()
 {}
 

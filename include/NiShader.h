@@ -33,6 +33,7 @@ class NiD3DShaderDeclaration;
 class NiShaderConstantMap;
 class NiGPUProgram;
 
+// pdb: class NiShader, size 0x14, bases: NiRefObject, 3 members
 class NiShader : public NiRefObject
 {
   public:

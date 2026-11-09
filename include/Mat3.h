@@ -41,16 +41,16 @@ public:
     Mat3 operator*(const Mat3& other) const;
     Mat3 Multiply(const Mat3& rhs) const;
 
-    void SetZRotation(float angle);
-    void SetXRotation(float angle);
-    void FromAngles(float a, float b, float c);
-    void GetCol(unsigned int col, NiPoint3& out) const;
+    void SetZRotation(float fAngle);
+    void SetXRotation(float fAngle);
+    void FromAngles(float fZAngle, float fYAngle, float fXAngle);
+    void GetCol(unsigned int uiCol, NiPoint3& col) const;
     void GetColumn(unsigned int col, NiPoint3& out) const;
     void SetRow(unsigned int row, const Pt& value);
 
     Mat3 FUN_0043f8d0(const Mat3& other);
     Mat3* FUN_0043f8d0(Mat3* result, Mat3* input);
-    void FUN_004a0c90(float angle);
+    void FUN_004a0c90(float fAngle);
     __declspec(noalias) NiPoint3 FUN_004b4500(const NiPoint3& point) const;
     __declspec(noalias) NiPoint3 FUN_004b4500(const NiPoint3* point) const;
     void FUN_00cd5880(const void* rotation);

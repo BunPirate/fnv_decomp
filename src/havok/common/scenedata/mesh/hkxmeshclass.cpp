@@ -30,6 +30,7 @@ struct Owner
     void* Destroy(unsigned int flags);
 };
 // @fnv 0x00e01ef0
+// pdb: hkxMesh::UserChannelInfo::`scalar deleting destructor' | hkxMeshClass.obj | retail, vtable slot, high
 void* Owner::Destroy(unsigned int flags)
 {
     unk18.Object_UpdateFields_00cb0c00();

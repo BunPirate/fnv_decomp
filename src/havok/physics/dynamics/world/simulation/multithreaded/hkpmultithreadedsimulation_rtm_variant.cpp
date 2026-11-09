@@ -365,8 +365,8 @@ struct SubNode
     int unk0c;
     signed char off10;  // +0x10  byte offset of the polymorphic object
 };
-void __stdcall hkpMultiThreadedSimulation_MtPhantomBroadPhaseListener_addCollisionPair(HandlePair* pHandlePair);
-bool pairLessThan(int* apPairA, int* apPairB);
+void __stdcall hkpMultiThreadedSimulation_MtPhantomBroadPhaseListener_addCollisionPair(HandlePair* pair);
+bool pairLessThan(int* A, int* B);
 struct PairEntry
 {
     int first;
@@ -379,13 +379,13 @@ struct PairArray
     unsigned int m_pRayCursor;
 };
 char* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, PairArray* arr, int elemSize);
-void __cdecl hkpWorldAgentUtil_addAgent(char* a, char* b, char* c);
+void __cdecl ResizeAudioStream(void* mem, PairArray* array, int sizeElem);
+void __cdecl hkpWorldAgentUtil_addAgent(char* collA, char* collB, char* input);
 struct FUN_00d026e0_cls
 {
     int unk00;
     char* m_04;
-    void ProcessPair(int* pr);
+    void ProcessPair(int* pair);
 };
 struct SortPair8
 {
@@ -599,7 +599,7 @@ struct ThreadState
         return *allocator;
     }
 };
-void* __cdecl AllocateBlockHeader(int, int);
+void* __cdecl hkpAgentSectorHeader_allocate(int, int);
 extern int DAT_01269210;
 struct Processor;
 struct __declspec(align(16)) ProcessingContext
@@ -613,7 +613,7 @@ struct __declspec(align(16)) ProcessingContext
     float delta;
     int* shared;
 };
-void __cdecl AccumulateShapes(ProcessingContext*, JobQueue*, ResultJob*);
+void __cdecl hkCpuPostCollideJob(ProcessingContext*, JobQueue*, ResultJob*);
 struct Processor
 {
     int unk00, unk04, unk08;
@@ -626,7 +626,7 @@ struct Processor
     int unkB0, unkB4, unkB8, unkBC;
     JobQueue* active;
 
-    void ProcessGroups(int**, int, struct Group*, int, TaskInput*, hkBool);
+    void hkpMultiThreadedSimulation_processAgentNnEntriesFromMultipleIslands(int**, int, struct Group*, int, TaskInput*, hkBool);
     void hkpContinuousSimulation_processAgentNnEntries(int**, int, TaskInput*, GroupIdentity*, hkBool);
 };
 struct Group
@@ -636,7 +636,7 @@ struct Group
     BuildJob* job;
     int unk14;
 };
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 extern "C" void __cdecl hkString_memSet(void* p, int v, int n);
 __forceinline hkMemoryRouterQ_hkpmultithreadedsimulation_rtm_variant& getRouter()
 {
@@ -747,7 +747,7 @@ struct CollidableQ
 };
 struct LinkedCollidableQ
 {
-    void CopyAndSortGeometryList(hkArray<CollisionEntryQ>& entries);
+    void hkpLinkedCollidable_getCollisionEntriesSorted(hkArray<CollisionEntryQ>& entries);
 };
 struct EntityQ
 {
@@ -782,9 +782,9 @@ struct CollideSimQ
     int m_3c;
     int unk40[0x20];
     int m_c0;
-    void hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly(EntityQ** entities, int numEntities, void* input, int* out);
-    void hkpMultiThreadedSimulation_processAgentNnEntries(AgentEntryQ** entries, int numEntries, void* input, SimulationIslandQ* island, hkBool flag);
-    void ProcessCollisionEntries(EntityQ** entities, int numEntities, void* input, InputQ* collInput) throw();
+    void hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly(EntityQ** entities, int numEntities, void* input, int* entitiesNeedingPsiCollisionDetection);
+    void hkpMultiThreadedSimulation_processAgentNnEntries(AgentEntryQ** entries, int numEntries, void* collisionInput, SimulationIslandQ* island, hkBool forceManifoldQualityType);
+    void ProcessCollisionEntries(EntityQ** entities, int numEntities, void* input, InputQ* entitiesNeedingPsiCollisionDetection) throw();
 };
 extern "C" void _ReadWriteBarrier(void);
 struct S00d02880_Elem
@@ -826,7 +826,7 @@ struct S00d02880_Key
 {
     int v;
 };
-static S00d02880_Elem* getIslandEntriesInfo(S00d02880_Arr* b, S00d02880_Key t);
+static S00d02880_Elem* getIslandEntriesInfo(S00d02880_Arr* island, S00d02880_Key islandEntriesInfos);
 S00d02880_Elem* S00d02880_Call(S00d02880_Arr* a, S00d02880_Key key);
 #include <windows.h>
 #include <xmmintrin.h>
@@ -870,7 +870,7 @@ struct MessageBuilder
     char* buffer;
     unsigned int capacity;
     char* cursor;
-    __declspec(nothrow) MessageBuilder(char* buffer, unsigned int capacity);
+    __declspec(nothrow) MessageBuilder(char* buf, unsigned int bufSize);
     void ProcessAndReturnValue_00cc01c0(const char* text);
     void FUN_00cc00e0();
 };
@@ -966,7 +966,7 @@ struct FUN_00d02e70_cls
     Event* items30;
     int count34;
     unsigned int capacity38;
-    void AddToiEvent(char* input, EventMeta* meta, CRITICAL_SECTION* cs);
+    void hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(char* processOutput, EventMeta* entry, CRITICAL_SECTION* criticalSection);
 };
 template <class T> __forceinline void exchangePairField(T& a, T& b)
 {
@@ -1029,7 +1029,7 @@ template <class T, class L> inline void sortPairs(T* data, int count, L less)
         QuickSortPairs((SortPair8*)data, lo, hi, (SortPairLess)less);
     }
 }
-void __cdecl sortPairList(PairList<TypedPair>& list);
+void __cdecl sortPairList(PairList<TypedPair>& pairs);
 extern int DAT_01269200;
 __declspec(selectany) extern const float DAT_0104da48 = 3.402820018375656e+38f;
 struct ProfileNamedRecord : TraceRecord
@@ -2263,7 +2263,7 @@ struct Stepper
 
     int f100;
 
-    void AddToiEvent(Output*, Agent*, void*);
+    void hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(Output*, Agent*, void*);
 
     int hkpMultiThreadedSimulation_finishMtStep(Job*, Jobs*);
 };
@@ -4337,7 +4337,7 @@ struct ElemSub
 {
     SubNode* first;
     SubNode* second;
-    void CopyAndSortGeometryList(ArrPair* out);
+    void hkpLinkedCollidable_getCollisionEntriesSorted(ArrPair* entries);
 };
 struct Elem
 {
@@ -4705,8 +4705,8 @@ struct ThisCls
     int m_04;
     int m_08;
     SubObj* m_0c;
-    void hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly(ParamObj* p0, ParamObj* p1);
-    void ProcessGroups(int* a, int b, Group* c, int d, void* e, CollisionFlag f);
+    void hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly(ParamObj* input, ParamObj* entitiesNeedingPsiCollisionDetection);
+    void hkpMultiThreadedSimulation_processAgentNnEntriesFromMultipleIslands(int* allEntries, int numAllEntries, Group* islandEntriesInfos, int numInfos, void* collisionInput, CollisionFlag forceManifoldQualityType);
 };
 
 namespace StepBeginSse {
@@ -4843,7 +4843,7 @@ struct Glob
     GlobObj* m_18;
 };
 void __cdecl hkpWorldOperationUtil_cleanupDirtyIslands(void* p);
-void __cdecl hkpWorldMemoryUtil_checkMemoryForIntegration(void* p);
+void __cdecl hkpWorldMemoryUtil_checkMemoryForIntegration(void* world);
 void __cdecl hkSolveUpload();
 struct Sub
 {
@@ -4956,7 +4956,7 @@ struct __declspec(align(16)) Msg : JobBase
 };
 struct ArgCls
 {
-    void hkJobQueue_setQueueCapacityForJobType(int a, int b);
+    void hkJobQueue_setQueueCapacityForJobType(int jobType, int queueCapacity);
     void AddObjectCopy(Msg* m, int b);
 };
 struct QueueHandle
@@ -5243,7 +5243,7 @@ struct Simulation
     int unkb4;
     int m_b8;
     int m_bc;
-    int hkpMultiThreadedSimulation_stepBeginSt(ArgCls* arg, float dt);
+    int hkpMultiThreadedSimulation_stepBeginSt(ArgCls* jobQueue, float physicsDeltaTime);
     void hkpSimulation_applyActions();
 };
 static __forceinline void scaleGravity(Vec4* dst, const Obj& world, const float& scale)
@@ -5255,7 +5255,10 @@ static __forceinline void scaleGravity(Vec4* dst, const Obj& world, const float&
 }
 // @fnv 0x00d022b0
 // src: XBOX_PDB 0x00d022b0
-int Simulation::hkpMultiThreadedSimulation_stepBeginSt(ArgCls* arg, float dt)
+// pdb: hkpMultiThreadedSimulation::stepBeginSt | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high
+// pdb params: jobQueue, physicsDeltaTime
+// pdb locals: memInfo, physicsStepInfo, assertBuf, ostr, deltaTime, job
+int Simulation::hkpMultiThreadedSimulation_stepBeginSt(ArgCls* jobQueue, float physicsDeltaTime)
 {
     union StepTraceScratch
     {
@@ -5266,10 +5269,10 @@ int Simulation::hkpMultiThreadedSimulation_stepBeginSt(ArgCls* arg, float dt)
     writeBeginTrace(scratch.ticks);
     m_68 = 1;
     m_0c->m_94 += 1;
-    m_1c = dt;
+    m_1c = physicsDeltaTime;
     __declspec(align(16)) Vec4 v;
     scratch.start = m_18;
-    v.set(scratch.start, dt + m_18);
+    v.set(scratch.start, physicsDeltaTime + m_18);
     m_0c->m_1d0 = v;
     m_0c->m_78->m_50 = v;
     {
@@ -5329,9 +5332,9 @@ int Simulation::hkpMultiThreadedSimulation_stepBeginSt(ArgCls* arg, float dt)
         Msg msg;
         msg.d20 = count;
         msg.header = (int)m_0c->m_74;
-        arg->hkJobQueue_setQueueCapacityForJobType(0, count);
-        arg->hkJobQueue_setQueueCapacityForJobType(1, count);
-        arg->AddObjectCopy(&msg, 1);
+        jobQueue->hkJobQueue_setQueueCapacityForJobType(0, count);
+        jobQueue->hkJobQueue_setQueueCapacityForJobType(1, count);
+        jobQueue->AddObjectCopy(&msg, 1);
     }
     m_0c->m_1e0.advanceCounters();
     world = m_0c;

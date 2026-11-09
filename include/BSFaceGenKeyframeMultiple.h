@@ -4,6 +4,7 @@
 
 template <class T> class NiTPointerList;
 
+// pdb: class BSFaceGenKeyframeMultiple, size 0x14, bases: BSFaceGenKeyframe, 2 members
 class BSFaceGenKeyframeMultiple : public BSFaceGenKeyframe
 {
 public:
@@ -15,7 +16,7 @@ public:
     virtual void UnknownSlot5();
     virtual void UnknownSlot6();
     virtual void UnknownSlot7();
-    virtual bool ClearData(bool initialize);
+    virtual bool ClearData(bool abForceZero);
     virtual void UnknownSlot9();
     virtual void UnknownSlot10();
     void UnknownSlot11();
@@ -28,14 +29,14 @@ public:
     virtual void UnknownSlot17();
     virtual void UnknownSlot18();
     virtual bool IsQuantityInRange(unsigned int quantity);
-    virtual void ApplyFaceGenValues(unsigned int count, bool initialize);
+    virtual void ApplyFaceGenValues(unsigned int aiNumQuantities, bool abForceZero);
 
     void CopyFromKeyframe(BSFaceGenKeyframe* keyframe);
     bool DiffersFrom(BSFaceGenKeyframe* keyframe);
     BSFaceGenKeyframeMultiple* CreateCopy_0064f530();
-    bool BlendWith(BSFaceGenKeyframe* left, BSFaceGenKeyframe* right, float weight);
-    bool BlendFrom(BSFaceGenKeyframe* other, float weight, bool includeZero, bool copyInvalid);
-    bool Interpolate(float time, BSFaceGenKeyframe* other);
+    bool BlendWith(BSFaceGenKeyframe* apSource1, BSFaceGenKeyframe* apSource2, float afBlend);
+    bool BlendFrom(BSFaceGenKeyframe* apSource, float afBlend, bool abMergeZeroes, bool abClearValueIfNoUpdate);
+    bool Interpolate(float afTime, BSFaceGenKeyframe* apTarget);
     bool IsEmpty_0064f7e0();
     float BSFaceGenKeyframeMultiple_GetQuantity(unsigned int quantity);
     unsigned int GetCount();
@@ -45,6 +46,6 @@ public:
     bool InsertIntoKeyframeList(NiTPointerList<BSFaceGenKeyframe*>* list);
     bool AddToCompatibleList(NiTPointerList<BSFaceGenKeyframe*>* list);
 
-    float* m_pfFaceGenValues;
-    unsigned int m_uiFaceGenValueCount;
+    float* pQuantities;
+    unsigned int iNumQuantities;
 };

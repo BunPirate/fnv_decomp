@@ -208,9 +208,9 @@ __forceinline void hkVector4::setAbs4(const hkVector4& v)
     m_vComponents = _mm_and_ps(v.m_vComponents, *(const hkQuadReal*)&absMask);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    hkQuadReal x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    hkQuadReal x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     hkQuadReal xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(1, 1, 1, 1)), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(2, 2, 2, 2)), xySum);
 }
@@ -318,17 +318,17 @@ __forceinline const hkVector4& hkTransform::getColumn(int x) const
 
 __forceinline const hkVector4& hkContactPoint::getPosition() const
 {
-    return m_vContactPosition;
+    return m_position;
 }
 
 __forceinline const hkVector4& hkContactPoint::getNormal() const
 {
-    return m_vSeparatingNormal;
+    return m_separatingNormal;
 }
 
 __forceinline hkReal hkContactPoint::getDistance() const
 {
-    return m_vSeparatingNormal(3);
+    return m_separatingNormal(3);
 }
 
 __forceinline QuantizedFloat8::operator hkReal() const
@@ -339,7 +339,7 @@ __forceinline QuantizedFloat8::operator hkReal() const
 
 __forceinline hkReal hkContactPointMaterial::getFriction() const
 {
-    return m_fSlipAngle;
+    return m_friction;
 }
 
 extern const hkTransform DAT_01268370;
@@ -401,13 +401,13 @@ __forceinline hkContactPoint* hkpSimpleContactConstraintAtom::getContactPoints()
 
 __forceinline int hkpSimpleContactConstraintAtom::getContactPointPropertiesStriding() const
 {
-    return m_ucContactPointPropertiesStriding;
+    return m_contactPointPropertiesStriding;
 }
 
 __forceinline UInt32Value* hkpSimpleContactConstraintAtom::getContactPointPropertiesStream() const
 {
     const hkContactPoint* endContactPoint =
-        hkAddByteOffsetConst(getContactPoints(), sizeof(hkContactPoint) * m_usMaxNumContactPoints);
+        hkAddByteOffsetConst(getContactPoints(), sizeof(hkContactPoint) * m_numReservedContactPoints);
     const UInt32Value* beginningOfProperties = reinterpret_cast<const UInt32Value*>(endContactPoint);
     return const_cast<UInt32Value*>(hkAddByteOffsetConst(beginningOfProperties, 0));
 }
@@ -833,19 +833,22 @@ __forceinline hkReal calculateRhs(const hkContactPoint* ccp, PhysicsMaterial& sr
 
 // @fnv 0x00d72190
 // src: XBOX_PDB 0x00d72190
-extern "C" void __cdecl hkSimpleContactConstraintDataBuildJacobian(hkpSimpleContactConstraintAtom* atomNode, Buffer* queryIn, int writeHeader, int* queryOut)
+// pdb: hkSimpleContactConstraintDataBuildJacobian | hkpSimpleContactConstraintInfo.obj | retail, upstream name already matches, high
+// pdb params: atom, in, writeHeaderSchemas, out
+// pdb locals: info, avgNormal, invNum, contacts, numContacts, assertBuf, ostr, jac0Initialized, prevRequestAccessorCheck, i, absNormal
+extern "C" void __cdecl hkSimpleContactConstraintDataBuildJacobian(hkpSimpleContactConstraintAtom* atomNode, Buffer* queryIn, int writeHeaderSchemas, int* queryOut)
 {
     int modified = 0;
     const hkContactPoint* __restrict contacts =
         static_cast<const hkpSimpleContactConstraintAtom*>(atomNode)->getContactPoints();
-    const int numContacts = static_cast<const hkpSimpleContactConstraintAtom*>(atomNode)->m_usNumContactPoints;
+    const int numContacts = static_cast<const hkpSimpleContactConstraintAtom*>(atomNode)->m_numContactPoints;
     UInt32Value* properties =
         static_cast<const hkpSimpleContactConstraintAtom*>(atomNode)->getContactPointPropertiesStream();
     int propertiesStriding =
         static_cast<const hkpSimpleContactConstraintAtom*>(atomNode)->getContactPointPropertiesStriding();
     UInt32Value* propertiesInMainMemory = properties;
     ContactImpulseState& info = *reinterpret_cast<ContactImpulseState*>(
-        &atomNode->m_infoFlags);
+        &atomNode->m_info);
 
     hkVector4 avgPosition;
     avgPosition.setZero4();
@@ -859,7 +862,7 @@ extern "C" void __cdecl hkSimpleContactConstraintDataBuildJacobian(hkpSimpleCont
     const QuantizedBoundsData* opaA = reinterpret_cast<const SixteenWordFloatRecord*>(queryIn)->m_pBodyA;
     const QuantizedBoundsData* opaB = reinterpret_cast<const SixteenWordFloatRecord*>(queryIn)->m_pBodyB;
 
-    if ((char)writeHeader)
+    if ((char)writeHeaderSchemas)
     {
         ConstraintHeaderSchema* header = reinterpret_cast<ConstraintHeaderSchema*>(com);
         header->initHeader(
@@ -904,7 +907,7 @@ extern "C" void __cdecl hkSimpleContactConstraintDataBuildJacobian(hkpSimpleCont
 
             if (!contactUsesSolverPath2)
             {
-                int maxImpulse = *reinterpret_cast<const hkUint8*>(&sr->asProperties()->m_usFlags);
+                int maxImpulse = *reinterpret_cast<const hkUint8*>(&sr->asProperties()->m_maxImpulse);
                 JacobianPointerSchema* sc = reinterpret_cast<JacobianPointerSchema*>(com);
                 QuantizedBoundsBuilder::copyJacRegToJac1Reg();
                 sc->initSingleContact(*jac1Lin2Ang, 0);

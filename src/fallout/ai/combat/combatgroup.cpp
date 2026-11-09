@@ -116,6 +116,7 @@ struct FUN_00986c40_shell
 
 // @fnv 0x00986c40
 // src: COMMUNITY 0x00986c40
+// pdb: CombatGroup::IsEmpty | CombatGroup.obj | debug, upstream name already matches, high
 bool FUN_00986c40_shell::CombatGroup_IsEmpty() const
 {
     return arr.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty();
@@ -123,23 +124,25 @@ bool FUN_00986c40_shell::CombatGroup_IsEmpty() const
 
 struct FUN_0096a2b0_stub
 {
-    void BSSimpleArray_CombatTarget_1024_GetAt(int state);
+    void BSSimpleArray_CombatTarget_1024_GetAt(int aiIndex);
 };
 
 // src: XBOX_PDB 0x0096a2b0
-void FUN_0096a2b0_stub::BSSimpleArray_CombatTarget_1024_GetAt(int state)
+void FUN_0096a2b0_stub::BSSimpleArray_CombatTarget_1024_GetAt(int aiIndex)
 {}
 
 struct FUN_009871c0_shell
 {
-    void CombatGroup_GetCombatTarget(int state);
+    void CombatGroup_GetCombatTarget(int aiIndex);
 };
 
 // @fnv 0x009871c0
 // src: XBOX_PDB 0x009871c0
-void FUN_009871c0_shell::CombatGroup_GetCombatTarget(int state)
+// pdb: CombatGroup::GetCombatTarget | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+void FUN_009871c0_shell::CombatGroup_GetCombatTarget(int aiIndex)
 {
-    ((FUN_0096a2b0_stub*)((char*)this + 8))->BSSimpleArray_CombatTarget_1024_GetAt(state);
+    ((FUN_0096a2b0_stub*)((char*)this + 8))->BSSimpleArray_CombatTarget_1024_GetAt(aiIndex);
 }
 
 extern double _gModifierZero;
@@ -164,11 +167,13 @@ struct CombatgroupOffset08View
 
 struct FUN_009877c0_shell : CombatgroupOffset08View
 {
-    unsigned int GetFlagsFromSubobject();
+    unsigned int CombatGroup_GetClusterCount();
 };
 
 // @fnv 0x009877c0
-unsigned int FUN_009877c0_shell::GetFlagsFromSubobject()
+// src: XBOX_DEBUG_PDB 0x009877c0
+// pdb: CombatGroup::GetClusterCount | CombatGroup.obj | debug, call graph, high
+unsigned int FUN_009877c0_shell::CombatGroup_GetClusterCount()
 {
     return ((CombatgroupOffset08View*)((char*)this + 0x138))->GetFlags();
 }
@@ -184,6 +189,7 @@ struct FUN_009877e0_shell
 };
 
 // @fnv 0x009877e0
+// pdb: CombatGroup::ClearClusterArray | CombatGroup.obj | debug, object-file run extension, low
 void FUN_009877e0_shell::ClearGlobalObject()
 {
     ((GlobalObject_00869f00*)((char*)this + 0x138))->Clear(true);
@@ -213,6 +219,9 @@ struct FUN_00988750_shell
 };
 
 // @fnv 0x00988750
+// pdb: BSXFlags::GetFlags | FOIslandActivationListener.obj | retail, upstream name already matches, high
+// pdb params: apObject, aiFlags
+// pdb locals: pf
 unsigned int FUN_00988750_shell::GetFlags() const
 {
     return ((CombatgroupOffset08View*)(this + 0x110))->GetFlags();
@@ -226,13 +235,15 @@ struct FUN_0098ebc0_obj
 
 struct FUN_00988770_shell
 {
-    void __thiscall ForwardToMember(int a1);
+    void __thiscall ForwardToMember(int aiIndex);
 };
 
 // @fnv 0x00988770
-void __thiscall FUN_00988770_shell::ForwardToMember(int a1)
+// pdb: CombatGroup::GetSearchLocation | CombatGroup.obj | debug, call graph, high
+// pdb params: aiIndex
+void __thiscall FUN_00988770_shell::ForwardToMember(int aiIndex)
 {
-    ((FUN_0098ebc0_obj*)((char*)this + 0x110))->GetElementAt(a1);
+    ((FUN_0098ebc0_obj*)((char*)this + 0x110))->GetElementAt(aiIndex);
 }
 
 struct BSSimpleArray_NavMeshSearchNode
@@ -244,18 +255,23 @@ struct FUN_00988790_shell
 {
     char pad[0x18];
     BSSimpleArray_NavMeshSearchNode m_aiIndexedValues;
-    void CombatGroup_GetCombatMember(unsigned int idx) const;
+    void CombatGroup_GetCombatMember(unsigned int aiIndex) const;
 };
 
 // @fnv 0x00988790
 // src: XBOX_PDB 0x00988790
-void FUN_00988790_shell::CombatGroup_GetCombatMember(unsigned int auiIndex) const
+// pdb: CombatGroup::GetCombatMember | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+void FUN_00988790_shell::CombatGroup_GetCombatMember(unsigned int aiIndex) const
 {
-    m_aiIndexedValues.BSSimpleArray_CombatMember_1024_GetAt(auiIndex);
+    m_aiIndexedValues.BSSimpleArray_CombatMember_1024_GetAt(aiIndex);
 }
 
 // Calls FUN_009865d0 with arg; if it returns non-null, returns byte at offset 0x64, otherwise 0.
 // @fnv 0x009891a0
+// pdb: CombatGroup::GetTargetMember360LOSCount | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: apTarget
+// pdb locals: pcombatTarget
 unsigned char __thiscall ActorCombatGroup::GetByteAtOffset100(int arg)
 {
     void* result = CombatGroup_GetCombatTargetForActor(arg);
@@ -267,21 +283,25 @@ unsigned char __thiscall ActorCombatGroup::GetByteAtOffset100(int arg)
 struct FUN_0098a310_shell
 {
     int m_field;
-    int __thiscall GetFieldOrZero(int param);
+    int __thiscall CombatGroup_GetMemberGroupStrategyAssignment(int apMember);
 };
 
 struct FUN_009865f0_stub
 {
     int m_kPointA;
     int m_field;
-    FUN_009865f0_stub* __thiscall CombatGroup_GetCombatMemberForActor(int param);
+    FUN_009865f0_stub* __thiscall CombatGroup_GetCombatMemberForActor(int apActor);
 };
 
 // Calls FUN_009865f0 with param and returns the resulting object's m_field, or 0 if the call returns null.
 // @fnv 0x0098a310
-int __thiscall FUN_0098a310_shell::GetFieldOrZero(int param)
+// src: XBOX_DEBUG_PDB 0x0098a310
+// pdb: CombatGroup::GetMemberGroupStrategyAssignment | CombatGroup.obj | debug, call graph (shared callers), high
+// pdb params: apMember
+// pdb locals: pcombatMember
+int __thiscall FUN_0098a310_shell::CombatGroup_GetMemberGroupStrategyAssignment(int apMember)
 {
-    FUN_009865f0_stub* result = reinterpret_cast<FUN_009865f0_stub*>(this)->CombatGroup_GetCombatMemberForActor(param);
+    FUN_009865f0_stub* result = reinterpret_cast<FUN_009865f0_stub*>(this)->CombatGroup_GetCombatMemberForActor(apMember);
     if (result)
         return result->m_field;
     return 0;
@@ -289,28 +309,31 @@ int __thiscall FUN_0098a310_shell::GetFieldOrZero(int param)
 
 struct FUN_009865f0_shell
 {
-    int __thiscall CombatGroup_GetCombatMemberForActor(int a1);
+    int __thiscall CombatGroup_GetCombatMemberForActor(int apActor);
 };
 
 // src: XBOX_PDB 0x009865f0
-int __thiscall FUN_009865f0_shell::CombatGroup_GetCombatMemberForActor(int a1)
+int __thiscall FUN_009865f0_shell::CombatGroup_GetCombatMemberForActor(int apActor)
 {
     return 0;
 }
 
 struct FUN_0098a360_shell
 {
-    void __thiscall CombatGroup_SetMemberGroupStrategyAssignment(int a1, int a2);
+    void __thiscall CombatGroup_SetMemberGroupStrategyAssignment(int apMember, int aiGroupStrategyAssignment);
 };
 
 // Calls FUN_009865f0 with a1; if it returns non-null, stores a2 at offset 4 of the result.
 // @fnv 0x0098a360
 // src: COMMUNITY 0x0098a360
-void __thiscall FUN_0098a360_shell::CombatGroup_SetMemberGroupStrategyAssignment(int a1, int a2)
+// pdb: CombatGroup::SetMemberGroupStrategyAssignment | CombatGroup.obj | debug, call graph, high
+// pdb params: apMember, aiGroupStrategyAssignment
+// pdb locals: pcombatMember
+void __thiscall FUN_0098a360_shell::CombatGroup_SetMemberGroupStrategyAssignment(int apMember, int aiGroupStrategyAssignment)
 {
-    int v1 = ((FUN_009865f0_shell*)this)->CombatGroup_GetCombatMemberForActor(a1);
+    int v1 = ((FUN_009865f0_shell*)this)->CombatGroup_GetCombatMemberForActor(apMember);
     if (v1 != 0)
-        *(int*)(v1 + 4) = a2;
+        *(int*)(v1 + 4) = aiGroupStrategyAssignment;
 }
 
 
@@ -324,6 +347,8 @@ struct FUN_0098de60_shell
 
 // Returns 0 if index is negative, otherwise returns the element at index from arr.
 // @fnv 0x0098de60
+// pdb: CombatGroup::GetCluster | CombatGroup.obj | debug, call graph, medium
+// pdb params: acIndex
 int FUN_0098de60_shell::GetArrayItem(char index)
 {
     if (index < 0)
@@ -337,13 +362,14 @@ struct FUN_0098ed30_class
 {
     void* vtable;
     void BSSimpleArray_CombatTarget_1024_InitialSetup(int a, int b);
-    void* BSSimpleArray_CombatTarget_1024_BSSimpleArray_CombatTarget_1024();
+    void* BSSimpleArray_CombatTarget_1024_ctor();
 };
 
 // Sets the vtable to DAT_0108d6f4, calls FUN_0098fab0 with 0 and 0, and returns this.
 // @fnv 0x0098ed30
-// src: XBOX_PDB 0x0098ed30
-void* FUN_0098ed30_class::BSSimpleArray_CombatTarget_1024_BSSimpleArray_CombatTarget_1024()
+// src: XBOX_DEBUG_PDB 0x0098ed30
+// pdb: BSSimpleArray<CombatTarget,1024>::BSSimpleArray<CombatTarget,1024> | CombatGroup.obj | debug, call graph, high
+void* FUN_0098ed30_class::BSSimpleArray_CombatTarget_1024_ctor()
 {
     vtable = &DAT_0108d6f4;
     BSSimpleArray_CombatTarget_1024_InitialSetup(0, 0);
@@ -358,6 +384,9 @@ struct FUN_0098efa0_shell
 // Allocates a byte array of count * 0x68 bytes and returns the pointer.
 // @fnv 0x0098efa0
 // src: GUESS 0x0098efa0 (confidence: medium)
+// pdb: BSSimpleArray<CombatTarget,1024>::_Allocate | CombatGroup.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* FUN_0098efa0_shell::AllocateElements68(int count)
 {
     return new char[count * 0x68];
@@ -372,6 +401,8 @@ struct FUN_0098efd0_shell
 
 // @fnv 0x0098efd0
 // src: GUESS 0x0098efd0 (confidence: medium)
+// pdb: BSSimpleArray<CombatTarget,1024>::_Reallocate | CombatGroup.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiNewSizeInItem
 void* __thiscall FUN_0098efd0_shell::Reallocate_Thunk(void* a, unsigned int b)
 {
     return Reallocate(a, b * 0x68);
@@ -388,11 +419,13 @@ extern int DAT_0108d708;
 struct FUN_0098f020_shell
 {
     int m_iWordAt00;
-    void ResetGlobalObject();
+    void BSSimpleArray_CombatMember_1024_dtor();
 };
 
 // @fnv 0x0098f020
-void FUN_0098f020_shell::ResetGlobalObject()
+// src: XBOX_DEBUG_PDB 0x0098f020
+// pdb: BSSimpleArray<CombatMember,1024>::~BSSimpleArray<CombatMember,1024> | CombatGroup.obj | debug, call graph, high
+void FUN_0098f020_shell::BSSimpleArray_CombatMember_1024_dtor()
 {
     m_iWordAt00 = (int)&DAT_0108d708;
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -406,37 +439,42 @@ struct FUN_00985a50_shell
     float f8;
     float fc;
     void* p10;
-    void CombatMember_LoadGame(BGSLoadFormBuffer* buffer, FUN_0098de60_shell* obj);
+    void CombatMember_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer, FUN_0098de60_shell* apGroup);
 };
 
 // @fnv 0x00985a50
 // src: COMMUNITY 0x00985a50
-void FUN_00985a50_shell::CombatMember_LoadGame(BGSLoadFormBuffer* buffer, FUN_0098de60_shell* obj)
+// pdb: CombatMember::LoadGame | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer, apGroup
+// pdb locals: cclusterIndex
+void FUN_00985a50_shell::CombatMember_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer, FUN_0098de60_shell* apGroup)
 {
-    buffer->ReadFormIdentifier(this);
-    buffer->ReadTypedData((void*)(&f4), 4u);
-    buffer->ReadTypedData((void*)(&f8), 4u);
-    buffer->ReadTypedData((void*)(&fc), 4u);
+    apLoadGameBuffer->ReadFormIdentifier(this);
+    apLoadGameBuffer->ReadTypedData((void*)(&f4), 4u);
+    apLoadGameBuffer->ReadTypedData((void*)(&f8), 4u);
+    apLoadGameBuffer->ReadTypedData((void*)(&fc), 4u);
     char c = -1;
-    buffer->ReadTypedData((void*)(&c), 1u);
+    apLoadGameBuffer->ReadTypedData((void*)(&c), 1u);
     if (c != -1)
-        p10 = (void*)obj->GetArrayItem(c);
+        p10 = (void*)apGroup->GetArrayItem(c);
     else
         p10 = 0;
 }
 
 struct FUN_00985ae0_shell
 {
-    void __thiscall CombatGroupCluster_SaveGame(BGSSaveFormBuffer* buffer, int a1);
+    void __thiscall CombatGroupCluster_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, int apGroup);
 };
 
 // Writes the object's first 0x10 bytes and the 4 bytes at offset 0x10 to the save buffer.
 // @fnv 0x00985ae0
 // src: COMMUNITY 0x00985ae0
-void __thiscall FUN_00985ae0_shell::CombatGroupCluster_SaveGame(BGSSaveFormBuffer* buffer, int aiUnused)
+// pdb: CombatGroupCluster::SaveGame | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apSaveGameBuffer, apGroup
+void __thiscall FUN_00985ae0_shell::CombatGroupCluster_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, int apGroup)
 {
-    buffer->SaveData(this, 0x10u, 0);
-    buffer->SaveData((char*)this + 0x10, 4u, 0);
+    apSaveGameBuffer->SaveData(this, 0x10u, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x10, 4u, 0);
 }
 
 struct FUN_00985b10_shell
@@ -445,6 +483,8 @@ struct FUN_00985b10_shell
 };
 // @fnv 0x00985b10
 // src: COMMUNITY 0x00985b10
+// pdb: CombatGroupCluster::LoadGame | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer, apGroup
 void __thiscall FUN_00985b10_shell::Lst0044_PathingLocation_Load(BGSLoadFormBuffer* buffer, int aiUnused)
 {
     buffer->ReadTypedData((void*)(this), 0x10u);
@@ -456,6 +496,9 @@ void __thiscall FUN_00985b10_shell::Lst0044_PathingLocation_Load(BGSLoadFormBuff
 
 
 // @fnv 0x0098eec0
+// pdb: BSSimpleArray<CombatTarget,1024>::Add | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: aValue
+// pdb locals: iindex
 template <>
 unsigned int __thiscall BSSimpleArray<CombatTarget>::Add(const CombatTarget& aValue)
 {
@@ -479,6 +522,7 @@ struct FUN_0098eff0_shell
 // Sets the vtable pointer to DAT_0108d708, calls FUN_0098fbe0 with 0, 0, and returns this.
 // @fnv 0x0098eff0
 // src: XBOX_PDB 0x0098eff0
+// pdb: BSSimpleArray<CombatMember,1024>::BSSimpleArray<CombatMember,1024> | CombatGroup.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_0098eff0_shell::BSSimpleArray_CombatMember_1024_BSSimpleArray_CombatMember_1024()
 {
     vtable = (void*)&DAT_0108d708;
@@ -496,6 +540,8 @@ struct Holder00985930
 };
 // @fnv 0x00985930
 // src: GUESS 0x00985930 (confidence: medium)
+// pdb: CombatTarget::InitLoadGame | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer, apGroup
 void __thiscall Holder00985930::ResolveStoredActor(int a1, int aiUnused)
 {
     *(Actor**)&m_data = m_data ? dynamic_cast<Actor*>(_ref_004839c0(m_data)) : (Actor*)0;
@@ -515,32 +561,38 @@ struct FUN_009863b0
 };
 // Destructor for a structure holding two 16-byte members, destroying both in turn.
 // @fnv 0x009863b0
+// pdb: CombatGroupData::~CombatGroupData | CombatGroup.obj | debug, object-file gap fill, medium
 FUN_009863b0::~FUN_009863b0()
 {}
 
 // @fnv 0x009865b0
 // src: XBOX_PDB 0x009865b0
-unsigned char ActorCombatGroup::CombatGroup_IsTarget(void* param)
+// pdb: CombatGroup::IsTarget | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apActor
+unsigned char ActorCombatGroup::CombatGroup_IsTarget(void* apActor)
 {
-    return (CombatGroup_GetCombatTargetForActor((int)param) != 0) ? true : false;
+    return (CombatGroup_GetCombatTargetForActor((int)apActor) != 0) ? true : false;
 }
 
 namespace fnv_009866d0 {
 
 struct FUN_009866d0_shell
 {
-    bool __thiscall CombatGroup_CanAddTarget(Actor* target);
+    bool __thiscall CombatGroup_CanAddTarget(Actor* apActor);
 };
 // Iterates the actors in this collection and returns false as soon as one actor fails FUN_008b0670 on target; otherwise returns true.
 // @fnv 0x009866d0
 // src: XBOX_PDB 0x009866d0
-bool __thiscall FUN_009866d0_shell::CombatGroup_CanAddTarget(Actor* target)
+// pdb: CombatGroup::CanAddTarget | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: imemberCount, i, pmember
+bool __thiscall FUN_009866d0_shell::CombatGroup_CanAddTarget(Actor* apActor)
 {
     unsigned int count = ((ActorCombatGroup*)this)->GetCount();
     for (unsigned int i = 0; i < count; ++i)
     {
         Actor* actor = ((ActorCombatGroup*)this)->GetIntAt((int)i);
-        if (actor && !actor->Actor_CanAttackActor(target))
+        if (actor && !actor->Actor_CanAttackActor(apActor))
             return false;
     }
     return true;
@@ -571,13 +623,15 @@ void* __thiscall FUN_00986950_shell::CombatMember_CombatMember(void* a1)
 
 struct FUN_00986a80_shell : public FUN_009865f0_shell
 {
-    char __thiscall CombatGroup_IsMember(int param);
+    char __thiscall CombatGroup_IsMember(int apActor);
 };
 // @fnv 0x00986a80
 // src: XBOX_PDB 0x00986a80
-char __thiscall FUN_00986a80_shell::CombatGroup_IsMember(int param)
+// pdb: CombatGroup::IsMember | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apActor
+char __thiscall FUN_00986a80_shell::CombatGroup_IsMember(int apActor)
 {
-    return (CombatGroup_GetCombatMemberForActor(param) != 0);
+    return (CombatGroup_GetCombatMemberForActor(apActor) != 0);
 }
 
 namespace fnv_00986aa0 {
@@ -590,17 +644,20 @@ struct FUN_005a4320_shell
 
 struct FUN_00986aa0_shell : PathingSolution
 {
-    bool __thiscall CombatGroup_CanAddMember(Actor* actor);
+    bool __thiscall CombatGroup_CanAddMember(Actor* apActor);
 };
 // @fnv 0x00986aa0
 // src: XBOX_PDB 0x00986aa0
-bool __thiscall FUN_00986aa0_shell::CombatGroup_CanAddMember(Actor* actor)
+// pdb: CombatGroup::CanAddMember | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: itargetCount, i, ptarget
+bool __thiscall FUN_00986aa0_shell::CombatGroup_CanAddMember(Actor* apActor)
 {
     unsigned int count = GetVirtualNodeCount();
     for (unsigned int i = 0; i < count; ++i)
     {
         Actor* target = reinterpret_cast<FUN_005a4320_shell*>(this)->CombatGroup_GetTarget(i);
-        if (!actor->Actor_CanAttackActor(target))
+        if (!apActor->Actor_CanAttackActor(target))
             return false;
     }
     return true;
@@ -609,18 +666,21 @@ bool __thiscall FUN_00986aa0_shell::CombatGroup_CanAddMember(Actor* actor)
 
 struct FUN_009874b0_shell : ActorCombatGroup
 {
-    void __thiscall CombatGroup_IncrementAttackerCount(int a1);
+    void __thiscall CombatGroup_IncrementAttackerCount(int apTarget);
 };
 
 // Calls FUN_009865d0 with a1 to get a CombatTarget and, if non-null, increments the ushort at offset 0x4a in its m_data.
 // @fnv 0x009874b0
 // src: XBOX_PDB 0x009874b0
-void __thiscall FUN_009874b0_shell::CombatGroup_IncrementAttackerCount(int a1)
+// pdb: CombatGroup::IncrementAttackerCount | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apTarget
+// pdb locals: pcombatTarget
+void __thiscall FUN_009874b0_shell::CombatGroup_IncrementAttackerCount(int apTarget)
 {
     CombatTarget* pcombatTarget;
-    pcombatTarget = (CombatTarget*)CombatGroup_GetCombatTargetForActor(a1);
+    pcombatTarget = (CombatTarget*)CombatGroup_GetCombatTargetForActor(apTarget);
     if (pcombatTarget)
-        ++((unsigned short*)pcombatTarget->m_data)[0x4a / 2];
+        ++((unsigned short*)pcombatTarget->pActor)[0x4a / 2];
 }
 
 
@@ -630,11 +690,14 @@ struct FUN_009874f0_obj
 };
 // Decrements the target counter at offset 0x4A when a target is found.
 // @fnv 0x009874f0
+// pdb: CombatGroup::DecrementAttackerCount | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: apTarget
+// pdb locals: pcombatTarget
 void __thiscall FUN_009874f0_obj::DecrementField4A(int a1)
 {
     CombatTarget* p = (CombatTarget*)reinterpret_cast<ActorCombatGroup*>(this)->CombatGroup_GetCombatTargetForActor(a1);
     if (p)
-        (*reinterpret_cast<short*>(p->m_data + 0x4A))--;
+        (*reinterpret_cast<short*>(p->pActor + 0x4A))--;
 }
 
 struct ThreeInts_00989010
@@ -651,6 +714,8 @@ struct StandIn_00989010
 };
 // Copies the three-int struct pointed to by src into t and stores val in v.
 // @fnv 0x00989010
+// pdb: BGSWorldLocation::SetLocation | CombatGroup.obj | debug, call graph, medium
+// pdb params: arPoint, apSpace
 void __thiscall StandIn_00989010::SetTripleAndValue(ThreeInts_00989010* apTriple, int aiValue)
 {
     t = *apTriple;
@@ -662,7 +727,7 @@ CombatTargetTimestamp* __fastcall CombatTargetTimestamp_ClearTimeStamp(CombatTar
 struct MyClass
 {
     int GetResultForArg(int arg);
-    void UpdateTargetPerception(int a1, int a2, int* a3, CombatTargetTimestamp* a4, bool* a5, bool* a6);
+    void CombatGroup_GetTargetDetectionLevel(int apAttacker, int apTarget, int* a3, CombatTargetTimestamp* arfLastTargetDetectedTimeStamp, bool* arbTargetLineOfSight, bool* arbTarget360LineOfSight);
 };
 // @fnv 0x00989040
 int MyClass::GetResultForArg(int arg)
@@ -676,7 +741,7 @@ int MyClass::GetResultForArg(int arg)
     CombatTargetTimestamp_ClearTimeStamp(reinterpret_cast<CombatTargetTimestamp*>(&stamp));
     b1 = false;
     b2 = false;
-    UpdateTargetPerception(0, arg, &result, reinterpret_cast<CombatTargetTimestamp*>(&stamp), &b1, &b2);
+    CombatGroup_GetTargetDetectionLevel(0, arg, &result, reinterpret_cast<CombatTargetTimestamp*>(&stamp), &b1, &b2);
     return result;
 }
 
@@ -689,7 +754,7 @@ CombatTargetTimestamp ActorCombatGroup::GetLastDetectedTimestamp(Actor* apTarget
     CombatTarget* pcombatTarget;
     pcombatTarget = (CombatTarget*)CombatGroup_GetCombatTargetForActor((int)apTarget);
     if (pcombatTarget)
-        return *reinterpret_cast<CombatTargetTimestamp*>(pcombatTarget->m_data + 0x50);
+        return *reinterpret_cast<CombatTargetTimestamp*>(pcombatTarget->pActor + 0x50);
     return CombatTargetTimestamp(-DAT_0108d540);
 }
 
@@ -711,6 +776,9 @@ struct DetectedTargetLocationQuery
     bool __thiscall GetDetectedTargetLocation(Actor* apTarget, CoordinateTriple& arLastDetectedLocation);
 };
 // @fnv 0x009890e0
+// pdb: CombatGroup::GetTargetLastDetectedLocation | CombatGroup.obj | debug, call graph (shared callers), medium
+// pdb params: apTarget, arLastDetectedLocation
+// pdb locals: pcombatTarget
 bool __thiscall DetectedTargetLocationQuery::GetDetectedTargetLocation(Actor* apTarget, CoordinateTriple& arLastDetectedLocation)
 {
     CombatTarget* pcombatTarget;
@@ -727,6 +795,7 @@ bool __thiscall DetectedTargetLocationQuery::GetDetectedTargetLocation(Actor* ap
 }
 }  // namespace fnv_009890e0
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     unsigned int __thiscall GetDaysPassed();
@@ -739,21 +808,24 @@ struct FUN_009891d0_class
 {
     char _pad[0x28];
     int m28;
-    void __thiscall CombatGroup_NotifyMemberPlanFinished(TESAmmoInitCalls* p1, Calendar* p2);
+    void __thiscall CombatGroup_NotifyMemberPlanFinished(TESAmmoInitCalls* apCombatController, Calendar* apGoal);
 };
 // @fnv 0x009891d0
 // src: COMMUNITY 0x009891d0
-void __thiscall FUN_009891d0_class::CombatGroup_NotifyMemberPlanFinished(TESAmmoInitCalls* p1, Calendar* pCalendar)
+// pdb: CombatGroup::NotifyMemberPlanFinished | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, apGoal
+// pdb locals: pmember, igroupStrategyAssignment
+void __thiscall FUN_009891d0_class::CombatGroup_NotifyMemberPlanFinished(TESAmmoInitCalls* apCombatController, Calendar* apGoal)
 {
     unsigned int v2;
     if (m28 != 0)
     {
         unsigned int v1;
-        v1 = p1->GetFieldBC();
-        v2 = pCalendar->GetDaysPassed();
+        v1 = apCombatController->GetFieldBC();
+        v2 = apGoal->GetDaysPassed();
         if (v2 != 0)
         {
-            if (((FUN_0098a310_shell*)this)->GetFieldOrZero(v1) == (int)v2)
+            if (((FUN_0098a310_shell*)this)->CombatGroup_GetMemberGroupStrategyAssignment(v1) == (int)v2)
             {
                 ((FUN_0098a360_shell*)this)->CombatGroup_SetMemberGroupStrategyAssignment(v1, 0);
             }
@@ -768,8 +840,8 @@ struct Ref_997440
 };
 struct S989970
 {
-    void __thiscall FindClosestRef(int v);
-    void __thiscall CombatGroup_FindClosestMemberToActor(Ref_997440* p, float f);
+    void __thiscall CombatGroup_FindClosestMemberToLocation(int arWorldLoc);
+    void __thiscall CombatGroup_FindClosestMemberToActor(Ref_997440* apActor, float afMaxDistance);
 };
 struct B16
 {
@@ -780,10 +852,12 @@ struct B16
 };
 // @fnv 0x00989970
 // src: XBOX_PDB 0x00989970
-void __thiscall S989970::CombatGroup_FindClosestMemberToActor(Ref_997440* apRef, float afValue)
+// pdb: CombatGroup::FindClosestMemberToActor | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apActor, afMaxDistance
+void __thiscall S989970::CombatGroup_FindClosestMemberToActor(Ref_997440* apActor, float afMaxDistance)
 {
     B16 b;
-    FindClosestRef(apRef->TESObjectREFR_GetWorldLocation(&b, apRef, afValue));
+    CombatGroup_FindClosestMemberToLocation(apActor->TESObjectREFR_GetWorldLocation(&b, apActor, afMaxDistance));
 }
 
 struct FUN_0098a340_shell
@@ -794,15 +868,19 @@ struct FUN_0098a410_shell
 {
     unsigned int __thiscall GetCount();
     void* __thiscall GetIntAt(int);
-    void* FindByValue(unsigned int value);
+    void* CombatGroup_FindMemberWithStrategyAssignment(unsigned int aiAssigment);
 };
 // @fnv 0x0098a410
-void* FUN_0098a410_shell::FindByValue(unsigned int value)
+// src: XBOX_DEBUG_PDB 0x0098a410
+// pdb: CombatGroup::FindMemberWithStrategyAssignment | CombatGroup.obj | debug, call graph (shared callers), high
+// pdb params: aiAssigment
+// pdb locals: imemberCount, i
+void* FUN_0098a410_shell::CombatGroup_FindMemberWithStrategyAssignment(unsigned int aiAssigment)
 {
     unsigned int count = GetCount();
     for (unsigned int i = 0; i < count; ++i)
     {
-        if (((FUN_0098a340_shell*)this)->CombatGroup_GetMemberGroupStrategyAssignment(i) == value)
+        if (((FUN_0098a340_shell*)this)->CombatGroup_GetMemberGroupStrategyAssignment(i) == aiAssigment)
             return GetIntAt(i);
     }
     return 0;
@@ -828,6 +906,9 @@ struct CombatClusterMember
 
 // Appends a copy of the given combat member to the array and returns the index it was stored at.
 // @fnv 0x0098f180
+// pdb: BSSimpleArray<CombatMember,1024>::Add | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 template <>
 unsigned int __thiscall BSSimpleArray<CombatClusterMember>::Add(const CombatClusterMember& aValue)
 {
@@ -849,6 +930,7 @@ struct FUN_00985bb0_Class
 // Returns the difference between the stored _f18 value and the elapsed time from _ts.
 // @fnv 0x00985bb0
 // src: XBOX_PDB 0x00985bb0
+// pdb: CombatSearchLocation::GetScore | CombatGroup.obj | debug, upstream name already matches, high
 float __thiscall FUN_00985bb0_Class::CombatSearchLocation_GetScore()
 {
     return _f18 - _ts.GetElapsedTime();
@@ -857,26 +939,29 @@ float __thiscall FUN_00985bb0_Class::CombatSearchLocation_GetScore()
 struct FUN_00986560_shell
 {
     char pad[8];
-    void __thiscall CombatGroup_RemoveTarget(int a1);
+    void __thiscall CombatGroup_RemoveTarget(int apActor);
 };
 struct FUN_0098ef10_shell
 {
-    void* __thiscall BSSimpleArray_CombatTarget_1024_RemoveFast(int a1);
+    void* __thiscall BSSimpleArray_CombatTarget_1024_RemoveFast(int aiIndex);
     void __thiscall BSSimpleArray_CombatTarget_1024_RemoveFast(int a1, int a2);
 };
 struct FUN_009926e0_shell
 {
-    void __thiscall SwapAndDispatch(void* a, void* b);
+    void __thiscall CombatManager_NotifyCombatGroupRemovedTarget(void* apGroup, void* apTarget);
 };
 extern void* BGSSaveLoadGlobalDataWorldspacePtr;
 // @fnv 0x00986560
 // src: XBOX_PDB 0x00986560
-void __thiscall FUN_00986560_shell::CombatGroup_RemoveTarget(int a1)
+// pdb: CombatGroup::RemoveTarget | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: i, combatTarget
+void __thiscall FUN_00986560_shell::CombatGroup_RemoveTarget(int apActor)
 {
-    void* v = reinterpret_cast<FUN_0098ef10_shell*>(reinterpret_cast<char*>(this) + 8)->BSSimpleArray_CombatTarget_1024_RemoveFast(a1);
+    void* v = reinterpret_cast<FUN_0098ef10_shell*>(reinterpret_cast<char*>(this) + 8)->BSSimpleArray_CombatTarget_1024_RemoveFast(apActor);
     reinterpret_cast<FUN_009926e0_shell*>(BGSSaveLoadGlobalDataWorldspacePtr)
-        ->SwapAndDispatch(this, *reinterpret_cast<void**>(v));
-    reinterpret_cast<FUN_0098ef10_shell*>(reinterpret_cast<char*>(this) + 8)->BSSimpleArray_CombatTarget_1024_RemoveFast(a1, 1);
+        ->CombatManager_NotifyCombatGroupRemovedTarget(this, *reinterpret_cast<void**>(v));
+    reinterpret_cast<FUN_0098ef10_shell*>(reinterpret_cast<char*>(this) + 8)->BSSimpleArray_CombatTarget_1024_RemoveFast(apActor, 1);
 }
 
 
@@ -897,13 +982,16 @@ struct C00986670
 // Scans arr for the first SearchNode whose p->FUN_0084e3a0() equals a1 and returns it, or 0 if none match.
 // @fnv 0x00986670
 // src: XBOX_PDB 0x00986670
-SearchNode* __thiscall C00986670::CombatGroup_GetCombatMemberForNumericID(unsigned int a1)
+// pdb: CombatGroup::GetCombatMemberForNumericID | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: aiMemberID
+// pdb locals: i, combatMember
+SearchNode* __thiscall C00986670::CombatGroup_GetCombatMemberForNumericID(unsigned int aiMemberID)
 {
     unsigned int i;
     for (i = 0; i < arr.GetFlags(); i++)
     {
         SearchNode* n = arr.BSSimpleArray_CombatMember_1024_GetAt(i);
-        if (n->p->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == a1)
+        if (n->p->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == aiMemberID)
             return n;
     }
     return 0;
@@ -1177,6 +1265,8 @@ struct Actor_vfn
 // Iterates all entries via GetCount/GetIntAt and calls vfn_3fc(false) on each actor.
 // @fnv 0x00986b70
 // src: COMMUNITY 0x00986b70
+// pdb: CombatGroup::RemoveFromMembers | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: imemberCount, i, pmember
 void __thiscall FUN_00986b70_shell::CombatGroup_StopCombat()
 {
     unsigned int count = ((ActorCombatGroup*)this)->GetCount();
@@ -1201,6 +1291,7 @@ struct Host
 };
 // Returns whether stamp.GetElapsedTime() is less than the float value of originalRuntimeFloatSetting412.
 // @fnv 0x009897a0
+// pdb: CombatTarget::GetHasBufferedDetection | CombatGroup.obj | debug, object-file gap fill, medium
 bool Host::IsElapsedTimeBelowSetting()
 {
     return (double)stamp.GetElapsedTime() < *(((Setting*)&originalRuntimeFloatSetting412)->Float());
@@ -1217,6 +1308,8 @@ struct FUN_0098a2e0_shell
 
 // @fnv 0x0098a2e0
 // src: XBOX_PDB 0x0098a2e0
+// pdb: CombatGroup::IsInCombatWithGuard | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: itargetCount, i, ptarget
 bool __thiscall FUN_0098a2e0_shell::CombatGroup_IsFleeing()
 {
     if (!m_kPointB && m_kPointA)
@@ -1246,6 +1339,8 @@ struct FUN_0098a3c0_shell
 // Iterates over the array's nodes up to GetCount() and sets each node's m1 field to 0.
 // @fnv 0x0098a3c0
 // src: COMMUNITY 0x0098a3c0
+// pdb: CombatGroup::ClearGroupStrategyAssignments | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: imemberCount, i, combatMember
 void __thiscall FUN_0098a3c0_shell::CombatGroup_ResetMembers()
 {
     MyNode_0098a3c0* pNode;
@@ -1271,17 +1366,19 @@ struct FUN_0098a470_shell
     unsigned int m_kPointA;
     RegionPoint p44;
     CombatTargetTimestamp p45;
-    bool CombatGroup_CheckGroupStrategyChosenTimeStamp(unsigned int a, float b);
+    bool CombatGroup_CheckGroupStrategyChosenTimeStamp(unsigned int aiIndex, float afMinimumTimePassed);
 };
 // @fnv 0x0098a470
 // src: XBOX_PDB 0x0098a470
-bool FUN_0098a470_shell::CombatGroup_CheckGroupStrategyChosenTimeStamp(unsigned int a, float fTime)
+// pdb: CombatGroup::CheckGroupStrategyChosenTimeStamp | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: aiIndex, afMinimumTimePassed
+bool FUN_0098a470_shell::CombatGroup_CheckGroupStrategyChosenTimeStamp(unsigned int aiIndex, float afMinimumTimePassed)
 {
     if (p44.GetX() == _gModifierZero)
         return true;
-    if (m_kPointA != a)
+    if (m_kPointA != aiIndex)
         return true;
-    if (((CombatTargetTimestamp*)((char*)this + 0x44))->GetElapsedTime() > fTime)
+    if (((CombatTargetTimestamp*)((char*)this + 0x44))->GetElapsedTime() > afMinimumTimePassed)
         return true;
     return false;
 }
@@ -1290,28 +1387,33 @@ bool FUN_0098a470_shell::CombatGroup_CheckGroupStrategyChosenTimeStamp(unsigned 
 
 struct FUN_0098c590_shell
 {
-    CombatSearchDoor* FindParentSpaceNode(int param);
+    CombatSearchDoor* CombatGroup_GetCombatSearchDoor(int apDoor);
 };
 struct FUN_0098c780_shell
 {
-    void ClearReservedFlag(int param);
+    void CombatGroup_UnreserveSearchDoor(int apDoor);
 };
 // Looks up a CombatSearchDoor by param and clears its bReserved flag when found.
 // @fnv 0x0098c780
-void FUN_0098c780_shell::ClearReservedFlag(int param)
+// src: XBOX_RETAIL_PDB 0x0098c780
+// pdb: CombatGroup::UnreserveSearchDoor | CombatGroup.obj | retail, call graph, high
+// pdb params: apDoor
+// pdb locals: psearchDoor
+void FUN_0098c780_shell::CombatGroup_UnreserveSearchDoor(int apDoor)
 {
-    CombatSearchDoor* psearchDoor = ((FUN_0098c590_shell*)this)->FindParentSpaceNode(param);
+    CombatSearchDoor* psearchDoor = ((FUN_0098c590_shell*)this)->CombatGroup_GetCombatSearchDoor(apDoor);
     if (psearchDoor)
         psearchDoor->bReserved = false;
 }
 
 struct FUN_0098ed60_shell : GlobalObject_00869f00
 {
-    void __thiscall ResetVirtualTableAndClear_0098ed60();
+    void __thiscall BSSimpleArray_CombatTarget_1024_dtor();
 };
 // @fnv 0x0098ed60
-// src: GUESS 0x0098ed60 (confidence: medium)
-void __thiscall FUN_0098ed60_shell::ResetVirtualTableAndClear_0098ed60()
+// src: XBOX_DEBUG_PDB 0x0098ed60
+// pdb: BSSimpleArray<CombatTarget,1024>::~BSSimpleArray<CombatTarget,1024> | CombatGroup.obj | debug, call graph, high
+void __thiscall FUN_0098ed60_shell::BSSimpleArray_CombatTarget_1024_dtor()
 {
     *(void**)this = &DAT_0108d6f4;
     Clear(true);
@@ -1326,11 +1428,13 @@ struct FUN_00990500_host
     S0098a4d0* p0;
     char pad[16];
     float f14;
-    float __thiscall GetCachedValue();
+    float __thiscall CombatGroupData_GetMemberHealthPercentage();
 };
 // Returns f14, computing and storing it from p0->ComputeAverageRatio() first when f14 equals _gModifierZero.
 // @fnv 0x00990500
-float __thiscall FUN_00990500_host::GetCachedValue()
+// src: XBOX_DEBUG_PDB 0x00990500
+// pdb: CombatGroupData::GetMemberHealthPercentage | CombatGroupStrategy.obj | debug, call graph, high
+float __thiscall FUN_00990500_host::CombatGroupData_GetMemberHealthPercentage()
 {
     if (f14 == _gModifierZero)
         f14 = p0->ComputeAverageRatio();
@@ -1367,45 +1471,48 @@ struct TargetExpiryGroupView
     char pad00[0xd0];
     unsigned int ItemUpdateArray;
     Flt spSphere;
-    bool CombatGroup_CheckRemoveCombatTarget(CombatTarget* pMember);
-    void* CombatGroup_FindMemberNearActor(Actor* pActor, float fRadius);
+    bool CombatGroup_CheckRemoveCombatTarget(CombatTarget* apCombatTarget);
+    void* CombatGroup_FindMemberNearActor(Actor* apActor, float fRadius);
 };
 // @fnv 0x00987220
 // src: XBOX_PDB 0x00987220
-bool TargetExpiryGroupView::CombatGroup_CheckRemoveCombatTarget(CombatTarget* pMember)
+// pdb: CombatGroup::CheckRemoveCombatTarget | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apCombatTarget
+// pdb locals: bsearchStalled
+bool TargetExpiryGroupView::CombatGroup_CheckRemoveCombatTarget(CombatTarget* apCombatTarget)
 {
     if (((FUN_0098a2e0_shell*)this)->CombatGroup_IsFleeing())
     {
-        if (((CombatTargetTimestamp*)((char*)pMember + 0x50))->GetElapsedTime() > *originalRuntimeFloatSetting403.Float())
+        if (((CombatTargetTimestamp*)((char*)apCombatTarget + 0x50))->GetElapsedTime() > *originalRuntimeFloatSetting403.Float())
             return true;
-        if (((CombatTargetTimestamp*)((char*)pMember + 0x50))->GetElapsedTime() > *originalRuntimeFloatSetting404.Float() &&
-            !CombatGroup_FindMemberNearActor((*reinterpret_cast<Actor**>(pMember->m_data)), *originalRuntimeFloatSetting405.Float()))
+        if (((CombatTargetTimestamp*)((char*)apCombatTarget + 0x50))->GetElapsedTime() > *originalRuntimeFloatSetting404.Float() &&
+            !CombatGroup_FindMemberNearActor((*reinterpret_cast<Actor**>(apCombatTarget->pActor)), *originalRuntimeFloatSetting405.Float()))
             return true;
     }
-    if (((CombatTargetTimestamp*)((char*)pMember + 0x58))->GetElapsedTime() > *originalRuntimeFloatSetting406.Float())
+    if (((CombatTargetTimestamp*)((char*)apCombatTarget + 0x58))->GetElapsedTime() > *originalRuntimeFloatSetting406.Float())
     {
-        if ((*reinterpret_cast<unsigned short*>(pMember->m_data + 0x4a)) == 0)
+        if ((*reinterpret_cast<unsigned short*>(apCombatTarget->pActor + 0x4a)) == 0)
             return true;
-        if (((CombatTargetTimestamp*)((char*)pMember + 0x58))->GetElapsedTime() > *originalRuntimeFloatSetting407.Float())
+        if (((CombatTargetTimestamp*)((char*)apCombatTarget + 0x58))->GetElapsedTime() > *originalRuntimeFloatSetting407.Float())
         {
             bool bnoSphere = false;
             if (ItemUpdateArray == 1 && spSphere && ((AvoidSphere*)(unsigned int)spSphere)->GetRadius() == 0.0)
                 bnoSphere = true;
-            if (bnoSphere || !CombatGroup_FindMemberNearActor((*reinterpret_cast<Actor**>(pMember->m_data)), *originalRuntimeFloatSetting408.Float()))
+            if (bnoSphere || !CombatGroup_FindMemberNearActor((*reinterpret_cast<Actor**>(apCombatTarget->pActor)), *originalRuntimeFloatSetting408.Float()))
                 return true;
         }
     }
     if (ItemUpdateArray != 0)
     {
-        if (ItemUpdateArray > (*reinterpret_cast<unsigned short*>(pMember->m_data + 0x48)) + *g_011cef50.Int())
+        if (ItemUpdateArray > (*reinterpret_cast<unsigned short*>(apCombatTarget->pActor + 0x48)) + *g_011cef50.Int())
             return true;
         if (((CombatTargetTimestamp*)((char*)this + 0xe8))->GetElapsedTime() < *originalRuntimeFloatSetting410.Float() &&
-            ((CombatTargetTimestamp*)((char*)pMember + 0x60))->GetElapsedTime() >= *originalRuntimeFloatSetting410.Float() &&
-            ((RegionPoint*)((char*)pMember + 0x50))->GetX() == -DAT_0108d540 &&
-            ((CombatTargetTimestamp*)((char*)pMember + 0x58))->GetElapsedTime() > *originalRuntimeFloatSetting409.Float())
+            ((CombatTargetTimestamp*)((char*)apCombatTarget + 0x60))->GetElapsedTime() >= *originalRuntimeFloatSetting410.Float() &&
+            ((RegionPoint*)((char*)apCombatTarget + 0x50))->GetX() == -DAT_0108d540 &&
+            ((CombatTargetTimestamp*)((char*)apCombatTarget + 0x58))->GetElapsedTime() > *originalRuntimeFloatSetting409.Float())
             return true;
     }
-    if ((*reinterpret_cast<Actor**>(pMember->m_data))->Actor_IsUnConscious() || ((*reinterpret_cast<Actor**>(pMember->m_data))->HasHealth(false) && !(*reinterpret_cast<Actor**>(pMember->m_data))->GetIsDying()))
+    if ((*reinterpret_cast<Actor**>(apCombatTarget->pActor))->Actor_IsUnConscious() || ((*reinterpret_cast<Actor**>(apCombatTarget->pActor))->HasHealth(false) && !(*reinterpret_cast<Actor**>(apCombatTarget->pActor))->GetIsDying()))
         return true;
     return false;
 }
@@ -1416,21 +1523,24 @@ struct FUN_0098de30_class
 };
 struct FUN_009859c0_shell
 {
-    void __thiscall CombatMember_SaveGame(BGSSaveFormBuffer* buffer, FUN_0098de30_class* obj);
+    void __thiscall CombatMember_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, FUN_0098de30_class* apGroup);
 };
 // Saves the form ID, three 4-byte fields, and a byte derived from the object at offset 16 (0xFF if null) to the buffer.
 // @fnv 0x009859c0
 // src: COMMUNITY 0x009859c0
-void __thiscall FUN_009859c0_shell::CombatMember_SaveGame(BGSSaveFormBuffer* buffer, FUN_0098de30_class* obj)
+// pdb: CombatMember::SaveGame | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer, apGroup
+// pdb locals: cclusterIndex
+void __thiscall FUN_009859c0_shell::CombatMember_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, FUN_0098de30_class* apGroup)
 {
-    buffer->SerializeFormData(*(void**)this, 0);
-    buffer->SaveData((char*)this + 4, 4u, 0);
-    buffer->SaveData((char*)this + 8, 4u, 0);
-    buffer->SaveData((char*)this + 12, 4u, 0);
+    apSaveGameBuffer->SerializeFormData(*(void**)this, 0);
+    apSaveGameBuffer->SaveData((char*)this + 4, 4u, 0);
+    apSaveGameBuffer->SaveData((char*)this + 8, 4u, 0);
+    apSaveGameBuffer->SaveData((char*)this + 12, 4u, 0);
     char result = 0xFF;
     if (*(unsigned int*)((char*)this + 16))
-        result = obj->CombatGroup_GetClusterIndex(*(unsigned int**)((char*)this + 16));
-    buffer->SaveData(&result, 1u, 0);
+        result = apGroup->CombatGroup_GetClusterIndex(*(unsigned int**)((char*)this + 16));
+    apSaveGameBuffer->SaveData(&result, 1u, 0);
 }
 
 
@@ -1589,6 +1699,9 @@ struct CombatMemberInsertionView
 
 // @fnv 0x009867d0
 // src: XBOX_PDB 0x009867d0
+// pdb: CombatGroup::AddMember | CombatGroup.obj | retail, string-set bridge, high
+// pdb params: apActor
+// pdb locals: colorA, color
 bool CombatMemberInsertionView::CombatGroup_AddMember(ActorV* apActor)
 {
     // The original leaves this storage uninitialized until the color is copied below.
@@ -1643,6 +1756,8 @@ struct FUN_0098f040_shell
 // Resizes the buffer to auiNewSize: clears when zero, reallocates and grows when larger than capacity, shrinks and optionally frees when smaller.
 // @fnv 0x0098f040
 // src: GUESS 0x0098f040 (confidence: medium)
+// pdb: BSSimpleArray<CombatMember,1024>::SetSize | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, abFreeMemory
 void FUN_0098f040_shell::ResizeBufferStorage(unsigned int auiNewSize, bool abFreeMemory)
 {
     if (!auiNewSize)
@@ -1683,15 +1798,17 @@ void FUN_0098f040_shell::ResizeBufferStorage(unsigned int auiNewSize, bool abFre
 
 struct FUN_00986500_shell : ActorCombatGroup
 {
-    void CombatGroup_RemoveTarget(int i);
+    void CombatGroup_RemoveTarget(int apActor);
     void RemoveByTarget(int target);
 };
 struct FUN_0096a2b0_stub2
 {
-    CombatTarget* BSSimpleArray_CombatTarget_1024_GetAt(int i);
+    CombatTarget* BSSimpleArray_CombatTarget_1024_GetAt(int aiIndex);
 };
 // Scans the array at this+8 for a CombatTarget whose first int equals target, then calls FUN_00986560 with that index and returns.
 // @fnv 0x00986500
+// pdb: CombatGroupData::~CombatGroupData | CombatGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatGroup::RemoveTarget
 void FUN_00986500_shell::RemoveByTarget(int target)
 {
     for (int i = 0; i < ((CombatgroupOffset08View*)((char*)this + 8))->GetFlags(); ++i)
@@ -1711,18 +1828,21 @@ struct FUN_00986610_shell
 {
     char pad[8];
     BSSimpleArray<CombatClusterMember> arr;
-    void* CombatGroup_GetCombatTargetForNumericID(unsigned int value);
+    void* CombatGroup_GetCombatTargetForNumericID(unsigned int aiTargetID);
 };
 
 // Scans the combat member array for the first member whose actor's FUN_0084e3a0 result equals value, returning it or null.
 // @fnv 0x00986610
 // src: XBOX_PDB 0x00986610
-void* FUN_00986610_shell::CombatGroup_GetCombatTargetForNumericID(unsigned int value)
+// pdb: CombatGroup::GetCombatTargetForNumericID | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: aiTargetID
+// pdb locals: i, combatTarget
+void* FUN_00986610_shell::CombatGroup_GetCombatTargetForNumericID(unsigned int aiTargetID)
 {
     for (unsigned int i = 0; i < ((CombatgroupOffset08View*)((char*)this + 8))->GetFlags(); ++i)
     {
         CombatClusterMember* m = (CombatClusterMember*)((FUN_0098ef10_shell*)((char*)this + 8))->BSSimpleArray_CombatTarget_1024_RemoveFast(i);
-        if (((TESForm*)m->pActor)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == value)
+        if (((TESForm*)m->pActor)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == aiTargetID)
             return m;
     }
     return 0;
@@ -1745,6 +1865,9 @@ struct FUN_00986b00_shell
 };
 // Resizes dst to the source array's count and copies each element from arr into dst by index.
 // @fnv 0x00986b00
+// pdb: CombatGroup::FillMemberArray | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: apActorArray
+// pdb locals: i
 void FUN_00986b00_shell::CopyArrayTo(XArr* dst)
 {
     unsigned int i;
@@ -1764,6 +1887,8 @@ struct FUN_00986bd0_shell : ActorCombatGroup
 // Iterates all members, calls SkyObject::Update on each with this and the member, then clears the object at offset 0x18.
 // @fnv 0x00986bd0
 // src: COMMUNITY 0x00986bd0
+// pdb: CombatGroup::RemoveAllMembers | CombatGroup.obj | retail, upstream name already matches, high
+// pdb locals: imemberCount, i, pmember
 void FUN_00986bd0_shell::CombatGroup_RemoveAllMembers()
 {
     unsigned int imemberCount = GetCount();
@@ -1786,9 +1911,11 @@ class CoordinateTriple
 
 // @fnv 0x009856e0
 // src: COMMUNITY 0x009856e0
+// pdb: CombatTarget::SaveGame | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: apSaveGameBuffer, apGroup
 void CombatTarget::SaveGame_009856e0(CombatWriter* pBuffer, SavedCombatState* pGroup)
 {
-    reinterpret_cast<BGSSaveFormBuffer*>(pBuffer)->SerializeFormData(*reinterpret_cast<Actor**>(m_data), 0);
+    reinterpret_cast<BGSSaveFormBuffer*>(pBuffer)->SerializeFormData(*reinterpret_cast<Actor**>(pActor), 0);
 
     reinterpret_cast<BGSSaveFormBuffer*>(pBuffer)->SaveData((char*)this + 4, 4u, 0);
     reinterpret_cast<BGSSaveFormBuffer*>(pBuffer)->SaveData((char*)this + 0x48, 2u, 0);
@@ -1812,7 +1939,7 @@ void CombatTarget::SaveGame_009856e0(CombatWriter* pBuffer, SavedCombatState* pG
 struct FUN_00527ba0_Class
 {
     char pad[0x10];
-    void __thiscall BGSLoadGameBuffer_LoadBGSWorldLocation(void* pBuffer);
+    void __thiscall BGSWorldLocation_LoadGame(void* pBuffer);
 };
 
 
@@ -1836,36 +1963,38 @@ struct FUN_00985800_shell
     char m64;
     char m65;
 
-    void __thiscall CombatTarget_LoadGame(BGSLoadFormBuffer* pBuffer, ActorCombatGroup* pGroup);
+    void __thiscall CombatTarget_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer, ActorCombatGroup* apGroup);
 };
 
 // @fnv 0x00985800
 // src: XBOX_PDB 0x00985800
-void FUN_00985800_shell::CombatTarget_LoadGame(BGSLoadFormBuffer* pBuffer, ActorCombatGroup* pGroup)
+// pdb: CombatTarget::LoadGame | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer, apGroup
+void FUN_00985800_shell::CombatTarget_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer, ActorCombatGroup* apGroup)
 {
-    pBuffer->ReadFormIdentifier(this);
+    apLoadGameBuffer->ReadFormIdentifier(this);
 
-    pBuffer->ReadTypedData((void*)(&m4), 4u);
-    pBuffer->ReadTypedData((void*)(m48), 2u);
-    pBuffer->ReadTypedData((void*)(m4a), 2u);
-    pBuffer->ReadTypedData((void*)(&m64), 1u);
-    pBuffer->ReadTypedData((void*)(&m65), 1u);
+    apLoadGameBuffer->ReadTypedData((void*)(&m4), 4u);
+    apLoadGameBuffer->ReadTypedData((void*)(m48), 2u);
+    apLoadGameBuffer->ReadTypedData((void*)(m4a), 2u);
+    apLoadGameBuffer->ReadTypedData((void*)(&m64), 1u);
+    apLoadGameBuffer->ReadTypedData((void*)(&m65), 1u);
 
-    m8.BGSLoadGameBuffer_LoadBGSWorldLocation(pBuffer);
-    m18.BGSLoadGameBuffer_LoadBGSWorldLocation(pBuffer);
-    m28.BGSLoadGameBuffer_LoadBGSWorldLocation(pBuffer);
+    m8.BGSWorldLocation_LoadGame(apLoadGameBuffer);
+    m18.BGSWorldLocation_LoadGame(apLoadGameBuffer);
+    m28.BGSWorldLocation_LoadGame(apLoadGameBuffer);
 
-    if (pBuffer->GetVersion() >= 0x0e)
-        m38.BGSLoadGameBuffer_LoadBGSWorldLocation(pBuffer);
+    if (apLoadGameBuffer->GetVersion() >= 0x0e)
+        m38.BGSWorldLocation_LoadGame(apLoadGameBuffer);
 
-    reinterpret_cast<CombatTargetTimestamp*>(&m50)->LoadGame(pBuffer);
-    reinterpret_cast<CombatTargetTimestamp*>(&m54)->LoadGame(pBuffer);
-    reinterpret_cast<CombatTargetTimestamp*>(&m58)->LoadGame(pBuffer);
-    reinterpret_cast<CombatTargetTimestamp*>(&m4c)->LoadGame(pBuffer);
-    reinterpret_cast<CombatTargetTimestamp*>(&m5c)->LoadGame(pBuffer);
+    reinterpret_cast<CombatTargetTimestamp*>(&m50)->LoadGame(apLoadGameBuffer);
+    reinterpret_cast<CombatTargetTimestamp*>(&m54)->LoadGame(apLoadGameBuffer);
+    reinterpret_cast<CombatTargetTimestamp*>(&m58)->LoadGame(apLoadGameBuffer);
+    reinterpret_cast<CombatTargetTimestamp*>(&m4c)->LoadGame(apLoadGameBuffer);
+    reinterpret_cast<CombatTargetTimestamp*>(&m5c)->LoadGame(apLoadGameBuffer);
 
-    if (pBuffer->GetVersion() >= 0x0d)
-        reinterpret_cast<CombatTargetTimestamp*>(&m60)->LoadGame(pBuffer);
+    if (apLoadGameBuffer->GetVersion() >= 0x0d)
+        reinterpret_cast<CombatTargetTimestamp*>(&m60)->LoadGame(apLoadGameBuffer);
 }
 
 double DAT_0101db88;
@@ -1878,6 +2007,8 @@ struct FUN_00985be0_shell : public FUN_00985bb0_Class
 
 // Reads a value from FUN_00985bb0 and returns a color: magenta above 50, blue above DAT_0101db88, otherwise yellow, all with alpha 0.5.
 // @fnv 0x00985be0
+// pdb: CombatSearchLocation::GetColor | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: fscore, color
 NiColorA* FUN_00985be0_shell::GetEffectColor(NiColorA* result)
 {
     NiColorA color(0.0f, 0.0f, 0.0f, 0.0f);
@@ -2048,6 +2179,9 @@ struct FUN_009869a0_shell
 
 // @fnv 0x009869a0
 // src: XBOX_PDB 0x009869a0
+// pdb: CombatGroup::RemoveMember | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: i, combatMember
 void FUN_009869a0_shell::CombatGroup_RemoveMember(Actor* apActor)
 {
     unsigned int i;
@@ -2094,17 +2228,20 @@ extern float _DAT_010162c0;
 
 struct FUN_00989eb0_shell
 {
-    void __thiscall UpdateBoundsFromActors(B006815c0* points, int index);
+    void __thiscall CombatGroup_ComputeTargetBoundingBox(B006815c0* apCorners, int abAlreadyInitialized);
     void __thiscall CombatGroup_ComputeTargetBoundingSphere(NiPoint3* result);
 };
 
 // @fnv 0x00989eb0
 // src: COMMUNITY 0x00989eb0
+// pdb: CombatGroup::ComputeTargetBoundingSphere | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: arCenter
+// pdb locals: corners, vec
 void FUN_00989eb0_shell::CombatGroup_ComputeTargetBoundingSphere(NiPoint3* result)
 {
     B006815c0 points[8];
 
-    this->UpdateBoundsFromActors(points, 0);
+    this->CombatGroup_ComputeTargetBoundingBox(points, 0);
 
     *reinterpret_cast<NiPoint3_helper_combatgroup*>(result) = (const NiPoint3_helper_combatgroup&)(points[0] + points[7]).ProcessAndReturnValue_0053d280(_DAT_010162c0);
 
@@ -2121,6 +2258,8 @@ struct FUN_0098a390_shell
 };
 
 // @fnv 0x0098a390
+// pdb: CombatGroup::SetMemberGroupStrategyAssignment | CombatGroup.obj | debug, call graph, medium
+// pdb params: aiIndex, aiGroupStrategyAssignment
 void FUN_0098a390_shell::SetElementValue(unsigned int uiIndex, unsigned int uiValue)
 {
     reinterpret_cast<CombatClusterMember*>(m_aiIndexedValues.BSSimpleArray_CombatMember_1024_GetAt(uiIndex))->m_uiGoalFlags = uiValue;
@@ -2132,7 +2271,7 @@ namespace identity {
 
 struct FUN_009871c0_shell
 {
-    CombatTarget* __thiscall CombatGroup_GetCombatTarget(int index);
+    CombatTarget* __thiscall CombatGroup_GetCombatTarget(int aiIndex);
 };
 }
 
@@ -2417,6 +2556,8 @@ struct FUN_0098cf70_shell
 
 // For each virtual node, resets f4A and counts non-player actors whose GetID matches the node's ID.
 // @fnv 0x0098cf70
+// pdb: CombatGroup::UpdateAttackerCounts | CombatGroup.obj | retail, object-file run extension, high
+// pdb locals: imemberCount, itargetCount, i, pcombatTarget, j, pmember
 void FUN_0098cf70_shell::CountActorsPerNode()
 {
     {
@@ -2429,7 +2570,7 @@ void FUN_0098cf70_shell::CountActorsPerNode()
                 {
                     {
                         CombatTarget* target = reinterpret_cast<identity::FUN_009871c0_shell*>(this)->CombatGroup_GetCombatTarget(i);
-                        *reinterpret_cast<short*>(target->m_data + 0x4A) = 0;
+                        *reinterpret_cast<short*>(target->pActor + 0x4A) = 0;
                         {
                             unsigned int j = 0;
                             for (; j < uiActorCount; ++j)
@@ -2442,7 +2583,7 @@ void FUN_0098cf70_shell::CountActorsPerNode()
                                     if (reinterpret_cast<ActorVirtual*>(actor)->GetID() ==
                                         *reinterpret_cast<int*>(target))
                                     {
-                                        ++*reinterpret_cast<short*>(target->m_data + 0x4A);
+                                        ++*reinterpret_cast<short*>(target->pActor + 0x4A);
                                     }
                                 }
                             }
@@ -2455,6 +2596,8 @@ void FUN_0098cf70_shell::CountActorsPerNode()
 }
 
 // @fnv 0x0098ed80
+// pdb: BSSimpleArray<CombatTarget,1024>::SetSize | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: aiNewSize, abFreeMemory
 template <>
 void __thiscall BSSimpleArray<CombatTarget>::SetSize(unsigned int auiCount, bool abShrink)
 {
@@ -2518,9 +2661,9 @@ struct FUN_0097fa50_Class
 struct FUN_00986150_shell
 {
     void CombatGroup_Update();
-    void RecountActors();
+    void CombatGroup_UpdateCounts();
     void CombatGroup_UpdateTargets();
-    void UpdateChoiceSelection();
+    void CombatGroup_UpdateGroupStrategy();
     void CombatGroup_UpdateSearch();
     void CombatGroup_UpdateCombatStrength();
     void UpdateGroups();
@@ -2535,9 +2678,11 @@ extern double _DAT_01012060;
 
 // @fnv 0x00986150
 // src: COMMUNITY 0x00986150
+// pdb: CombatGroup::Update | CombatGroup.obj | retail, upstream name already matches, high
+// pdb locals: i, pmember, pcombatController, fthreatRatio
 void FUN_00986150_shell::CombatGroup_Update()
 {
-    this->RecountActors();
+    this->CombatGroup_UpdateCounts();
 
     if (reinterpret_cast<TimeoutTimer*>(reinterpret_cast<char*>(this) + 0xa8)->CheckTimer())
     {
@@ -2546,7 +2691,7 @@ void FUN_00986150_shell::CombatGroup_Update()
         reinterpret_cast<FUN_008d7f40_shell*>(reinterpret_cast<char*>(this) + 0xa8)->FUN_008d7f40(_DAT_010162c0);
     }
 
-    this->UpdateChoiceSelection();
+    this->CombatGroup_UpdateGroupStrategy();
     this->CombatGroup_UpdateSearch();
 
     if (reinterpret_cast<TimeoutTimer*>(reinterpret_cast<char*>(this) + 0x50)->CheckTimer())
@@ -2664,6 +2809,8 @@ struct EventRecord
 };
 // Initialises the event record from a source and event type: clears vectors and status, sets times, and copies the source's event vector into primary.
 // @fnv 0x00985410
+// pdb: CombatTarget::CombatTarget | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: apActor, aiSearch
 EventRecord* EventRecord::Init(EventSource* apSource, unsigned short eventType)
 {
     source = apSource;
@@ -2727,6 +2874,8 @@ struct CombatMemberData_985520
 
 // Merges another member's combat data into this one: takes max iValue04, copies newer timestamps with their blocks, and accumulates w4A, b64 and b65.
 // @fnv 0x00985520
+// pdb: CombatTarget::CopyData | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: apCombatTarget
 void CombatMemberData_985520::MergeCombatData(CombatMemberData_985520* pOther)
 {
     if (iValue04 < pOther->iValue04)
@@ -2769,6 +2918,9 @@ struct CombatClock : FUN_00985bb0_Class
     float __thiscall GetAdjustedTime(TimeInput* timeInput);
 };
 // @fnv 0x00985b40
+// pdb: CombatSearchLocation::GetModifiedScore | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: arMemberWorldLoc
+// pdb locals: fscore, fsquaredLength
 float CombatClock::GetAdjustedTime(TimeInput* timeInput)
 {
     float elapsed;
@@ -2791,23 +2943,25 @@ struct FUN_00986740_shell
     void* unk04;
     BSSimpleArray<CombatClusterMember> arr;
 
-    void __thiscall CombatGroup_CopyTargets(FUN_00986740_shell* other);
+    void __thiscall CombatGroup_CopyTargets(FUN_00986740_shell* apGroup);
 };
 
 
 
 // @fnv 0x00986740
 // src: XBOX_PDB 0x00986740
-void __thiscall FUN_00986740_shell::CombatGroup_CopyTargets(FUN_00986740_shell* other)
+// pdb: CombatGroup::CopyTargets | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apGroup
+void __thiscall FUN_00986740_shell::CombatGroup_CopyTargets(FUN_00986740_shell* apGroup)
 {
-    other->arr.CopyTo<1024>(&arr);
+    apGroup->arr.CopyTo<1024>(&arr);
 }
 
 struct FUN_00986760_sub
 {
     unsigned int __thiscall FUN_0044ddc0(int flag);
     unsigned int __thiscall FUN_0044ddc0();
-    void* __thiscall BSSimpleArray_CombatTarget_1024_GetAt(int i);
+    void* __thiscall BSSimpleArray_CombatTarget_1024_GetAt(int aiIndex);
 };
 
 struct FUN_00986760_arg
@@ -2826,6 +2980,9 @@ struct FUN_00986760_cls
 // Passes the result of FUN_0044ddc0(1) to the argument's FUN_006f2290, then forwards each indexed element from FUN_0096a2b0 to FUN_0047a110.
 // @fnv 0x00986760
 // src: COMMUNITY 0x00986760
+// pdb: CombatGroup::FillTargetArray | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: apActorArray
+// pdb locals: i
 void FUN_00986760_cls::CombatGroup_AddCombatTargets(int pTarget)
 {
     unsigned int i;
@@ -2843,12 +3000,15 @@ struct Group_987820
     unsigned int GetCount();
     Actor* GetAt(int idx);
     void RemoveByTarget(Actor* apTarget);
-    void CombatGroup_ClearReferencePointers(Actor* apTarget);
+    void CombatGroup_ClearReferencePointers(Actor* apRef);
 };
 // Calls FUN_00980a30 on each member's controller with apTarget, then calls RemoveByTarget if apTarget->IsActor() is nonzero.
 // @fnv 0x00987820
 // src: COMMUNITY 0x00987820
-void Group_987820::CombatGroup_ClearReferencePointers(Actor* apTarget)
+// pdb: CombatGroup::ClearReferencePointers | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: imemberCount, i, pmember, pcombatController
+void Group_987820::CombatGroup_ClearReferencePointers(Actor* apRef)
 {
     unsigned int p = GetCount();
     unsigned int h;
@@ -2858,12 +3018,12 @@ void Group_987820::CombatGroup_ClearReferencePointers(Actor* apTarget)
         CombatController* e = j->GetCombatController();
         if (e)
         {
-            e->ClearReferencePointers(reinterpret_cast<int>(apTarget));
+            e->ClearReferencePointers(reinterpret_cast<int>(apRef));
         }
     }
-    if (apTarget->IsActor())
+    if (apRef->IsActor())
     {
-        RemoveByTarget(apTarget);
+        RemoveByTarget(apRef);
     }
 }
 
@@ -2951,12 +3111,15 @@ struct B989230Entry
 class B989230Tracker
 {
   public:
-    B989230Entry* CombatGroup_GetCombatTargetForActor(B989230Ref* pkRef);
+    B989230Entry* CombatGroup_GetCombatTargetForActor(B989230Ref* apActor);
     void UpdateEntryFromRef(int iUnused, B989230Ref* pkRef);
 };
 
 // Looks up the entry for pkRef and, if found, refreshes its stamp from FUN_00435dd0 and its quad from pkRef->FUN_00575650.
 // @fnv 0x00989230
+// pdb: CombatGroup::NotifyMemberHit | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: apMember, apAttacker
+// pdb locals: pcombatTarget
 void B989230Tracker::UpdateEntryFromRef(int iUnused, B989230Ref* pkRef)
 {
     if (pkRef)
@@ -3000,15 +3163,19 @@ struct AvoidWork
 {
     unsigned PathingSolution_GetVirtualNodeCount();
     AvoidActor* CombatGroup_GetTarget(unsigned);
-    PathingAvoidNodeArray* BuildAvoidNodes(AvoidActor*, PathingAvoidNodeArray*);
+    PathingAvoidNodeArray* CombatGroup_CreateFleeAvoidNodeArray(AvoidActor*, PathingAvoidNodeArray*);
 };
 // @fnv 0x009895a0
-PathingAvoidNodeArray* AvoidWork::BuildAvoidNodes(AvoidActor* actor, PathingAvoidNodeArray* apExistingNodes)
+// src: XBOX_RETAIL_PDB 0x009895a0
+// pdb: CombatGroup::CreateFleeAvoidNodeArray | CombatGroup.obj | retail, object-file run extension, high
+// pdb params: apActor, apExistingAvoidNodeArray
+// pdb locals: memberWorldLoc, fmaxDistSquared, pavoidNodeArray, itargetCount, i, ptarget, targetWorldLoc
+PathingAvoidNodeArray* AvoidWork::CombatGroup_CreateFleeAvoidNodeArray(AvoidActor* apActor, PathingAvoidNodeArray* apExistingAvoidNodeArray)
 {
-    PathingAvoidNodeArray* h = apExistingNodes;
+    PathingAvoidNodeArray* h = apExistingAvoidNodeArray;
     unsigned p = PathingSolution_GetVirtualNodeCount();
     float a = *DAT_011cea50.Setting_Float_00403e20() * *DAT_011cea50.Setting_Float_00403e20();
-    AvoidPosition i = actor->TESObjectREFR_GetWorldLocation();
+    AvoidPosition i = apActor->TESObjectREFR_GetWorldLocation();
     for (unsigned uiIndex = 0; uiIndex < p; ++uiIndex)
     {
         AvoidActor* other = CombatGroup_GetTarget(uiIndex);
@@ -3045,24 +3212,27 @@ class B9897F0List
   public:
     unsigned int GetCount();
     Actor* GetAt(unsigned int uiIndex);
-    Actor* CombatGroup_FindMemberNearLocation(B9897F0Point* pkPoint, float fRadius, Actor* pkExclude);
+    Actor* CombatGroup_FindMemberNearLocation(B9897F0Point* arWorldLoc, float fRadius, Actor* apIgnoreMember);
 };
 
 // Scans the list for the first entry other than pkExclude whose squared distance to pkPoint is less than the squared radius, returning it or 0.
 // @fnv 0x009897f0
 // src: XBOX_PDB 0x009897f0
-Actor* B9897F0List::CombatGroup_FindMemberNearLocation(B9897F0Point* pkPoint, float afRadius, Actor* pkExclude)
+// pdb: CombatGroup::FindMemberNearLocation | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: arWorldLoc, afRadius, apIgnoreMember
+// pdb locals: imemberCount, fradiusSquared, i, pmember, memberWorldLoc
+Actor* B9897F0List::CombatGroup_FindMemberNearLocation(B9897F0Point* arWorldLoc, float afRadius, Actor* apIgnoreMember)
 {
     float fRadiusSq = afRadius * afRadius;
     unsigned int ItemUpdateArray = GetCount();
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
     {
         Actor* pkRef = GetAt(i);
-        if (pkRef != pkExclude)
+        if (pkRef != apIgnoreMember)
         {
             B9897F0Quad kPosition;
         pkRef->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&kPosition));
-            if (pkPoint->GetSquaredDistance(kPosition) < fRadiusSq)
+            if (arWorldLoc->GetSquaredDistance(kPosition) < fRadiusSq)
                 return pkRef;
         }
     }
@@ -3090,16 +3260,18 @@ struct ActorRef00989880
 // Group side: takes the result block, the radius and the actor.
 struct GroupRef00989880
 {
-    void* __thiscall CombatGroup_FindMemberNearLocation(int aResult, float aRadius, Actor* pActor);
+    void* __thiscall CombatGroup_FindMemberNearLocation(int arWorldLoc, float aRadius, Actor* apIgnoreMember);
 };
 
 // @fnv 0x00989880
 // src: XBOX_PDB 0x00989880
-void* TargetExpiryGroupView::CombatGroup_FindMemberNearActor(Actor* pActor, float afRadius)
+// pdb: CombatGroup::FindMemberNearActor | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apActor, afRadius
+void* TargetExpiryGroupView::CombatGroup_FindMemberNearActor(Actor* apActor, float afRadius)
 {
     LocalResult16 tResult;
     return ((GroupRef00989880*)this)
-        ->CombatGroup_FindMemberNearLocation(((ActorRef00989880*)pActor)->TESObjectREFR_GetWorldLocation(&tResult), afRadius, pActor);
+        ->CombatGroup_FindMemberNearLocation(((ActorRef00989880*)apActor)->TESObjectREFR_GetWorldLocation(&tResult), afRadius, apActor);
 }
 
 extern NiPoint3 NiPoint3_ZERO;
@@ -3263,6 +3435,8 @@ struct Grp_Call2 : FUN_005a4320_shell
 
 // @fnv 0x009899a0
 // src: XBOX_PDB 0x009899a0
+// pdb: CombatGroup::CheckMemberTargetIntersection | CombatGroup.obj | retail, upstream name already matches, high
+// pdb locals: totalCenter, targetCenter, flength, inewMemberCount, imemberCount, totalVector, ptargetLocations, memberCenter, inewTargetCount, ftargetPercent, itargetCount, fmemberPercent, projectedPoint, targetVector, fdot, perpVector, pmemberLocations, fprojectedLength, i, pmember, ptarget, vec
 bool Grp_Call2::CombatGroup_CheckMemberTargetIntersection()
 {
     unsigned int a3 = GetCount();
@@ -3344,13 +3518,16 @@ struct Blk_00989e20_cls
 
 struct FUN_00989e20_cls
 {
-    void ExpandBounds(B006815c0* arr, int n);
-    void CombatGroup_ComputeMemberBoundingSphere(NiPoint3* out);
+    void CombatGroup_ComputeMemberBoundingBox(B006815c0* apCorners, int abAlreadyInitialized);
+    void CombatGroup_ComputeMemberBoundingSphere(NiPoint3* arCenter);
 };
 
 // @fnv 0x00989e20
 // src: COMMUNITY 0x00989e20
-void FUN_00989e20_cls::CombatGroup_ComputeMemberBoundingSphere(NiPoint3* out)
+// pdb: CombatGroup::ComputeMemberBoundingSphere | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: arCenter
+// pdb locals: corners, vec
+void FUN_00989e20_cls::CombatGroup_ComputeMemberBoundingSphere(NiPoint3* arCenter)
 {
     // These output buffers must not invoke NiPoint3 default constructors.
     float v88[3];
@@ -3358,8 +3535,8 @@ void FUN_00989e20_cls::CombatGroup_ComputeMemberBoundingSphere(NiPoint3* out)
     B006815c0 arr[8];
     Blk_00989e20_cls pa0;
 
-    this->ExpandBounds(arr, 0);
-    *reinterpret_cast<NiPoint3_helper_combatgroup*>(out) = *reinterpret_cast<NiPoint3_helper_combatgroup*>(((Vec_00989e20_cls*)((Helper_00989e20_cls*)arr)->FUN_00439e90((NiPoint3*)v7c3, (NiPoint3*)&arr[7], (NiPoint3*)v88))
+    this->CombatGroup_ComputeMemberBoundingBox(arr, 0);
+    *reinterpret_cast<NiPoint3_helper_combatgroup*>(arCenter) = *reinterpret_cast<NiPoint3_helper_combatgroup*>(((Vec_00989e20_cls*)((Helper_00989e20_cls*)arr)->FUN_00439e90((NiPoint3*)v7c3, (NiPoint3*)&arr[7], (NiPoint3*)v88))
                 ->ProcessAndReturnValue_0053d280(_DAT_010162c0));
     ((Helper_00989e20_cls*)arr)->SubtractIntoVector(&pa0.t, (NiPoint3*)&arr[7]);
     pa0.t.FUN_004a7290();
@@ -3504,20 +3681,24 @@ struct BoundsGroup
 {
     unsigned int CombatGroup_GetMemberCount();
     BoundsActor* GetIntAt(unsigned int index);
-    void ExpandBounds(BoundsVector* points, bool append);
+    void CombatGroup_ComputeMemberBoundingBox(BoundsVector* apCorners, bool abAlreadyInitialized);
 };
 
 // Initializes or expands eight corner points from each actor's bounds point, taking per-axis min/max according to the corner sign table.
 // @fnv 0x00989f40
-void BoundsGroup::ExpandBounds(BoundsVector* points, bool append)
+// src: XBOX_DEBUG_PDB 0x00989f40
+// pdb: CombatGroup::ComputeMemberBoundingBox | CombatGroup.obj | debug, call graph, high
+// pdb params: apCorners, abAlreadyInitialized
+// pdb locals: imemberCount, i, j, pmember, loc, fcoordValue
+void BoundsGroup::CombatGroup_ComputeMemberBoundingBox(BoundsVector* apCorners, bool abAlreadyInitialized)
 {
-    if (!append)
+    if (!abAlreadyInitialized)
     {
         for (unsigned int corner = 0; corner < 8; ++corner)
         {
             for (unsigned int axis = 0; axis < 3; ++axis)
             {
-                points[corner].GetFloatElementPointer(axis) = DAT_0108d57c[corner][axis] ? -DAT_0108d540 : DAT_0108d540;
+                apCorners[corner].GetFloatElementPointer(axis) = DAT_0108d57c[corner][axis] ? -DAT_0108d540 : DAT_0108d540;
             }
         }
     }
@@ -3533,13 +3714,13 @@ void BoundsGroup::ExpandBounds(BoundsVector* points, bool append)
                 float value = position.GetFloatElementPointer(axis);
                 if (DAT_0108d57c[corner][axis])
                 {
-                    if (value > points[corner].GetFloatElementPointer(axis))
-                        points[corner].GetFloatElementPointer(axis) = value;
+                    if (value > apCorners[corner].GetFloatElementPointer(axis))
+                        apCorners[corner].GetFloatElementPointer(axis) = value;
                 }
                 else
                 {
-                    if (value < points[corner].GetFloatElementPointer(axis))
-                        points[corner].GetFloatElementPointer(axis) = value;
+                    if (value < apCorners[corner].GetFloatElementPointer(axis))
+                        apCorners[corner].GetFloatElementPointer(axis) = value;
                 }
             }
         }
@@ -3687,11 +3868,15 @@ struct CornerAccumulator
 {
     unsigned int PathingSolution_GetVirtualNodeCount();
     CombatActorAccess* CombatGroup_GetTarget(unsigned int);
-    void UpdateBoundsFromActors(PointAccess*, bool);
+    void CombatGroup_ComputeTargetBoundingBox(PointAccess*, bool);
 };
 // Initializes 8 corner points from DAT_0108d57c signs and DAT_0108d540, then expands each corner per axis with every actor's position.
 // @fnv 0x0098a110
-void CornerAccumulator::UpdateBoundsFromActors(PointAccess* points, bool initialized)
+// src: XBOX_DEBUG_PDB 0x0098a110
+// pdb: CombatGroup::ComputeTargetBoundingBox | CombatGroup.obj | debug, call graph, high
+// pdb params: apCorners, abAlreadyInitialized
+// pdb locals: itargetCount, i, j, loc, ptarget, fcoordValue
+void CornerAccumulator::CombatGroup_ComputeTargetBoundingBox(PointAccess* apCorners, bool abAlreadyInitialized)
 {
     unsigned int f, eb;
     unsigned int s;
@@ -3700,13 +3885,13 @@ void CornerAccumulator::UpdateBoundsFromActors(PointAccess* points, bool initial
     PointAccess b;
     unsigned int ba, k;
     float l;
-    if (!initialized)
+    if (!abAlreadyInitialized)
     {
         for (f = 0; f < 8; ++f)
         {
             for (eb = 0; eb < 3; ++eb)
             {
-                points[f].GetFloatElementPointer(eb) = DAT_0108d57c[f][eb] ? -DAT_0108d540 : DAT_0108d540;
+                apCorners[f].GetFloatElementPointer(eb) = DAT_0108d57c[f][eb] ? -DAT_0108d540 : DAT_0108d540;
             }
         }
     }
@@ -3722,13 +3907,13 @@ void CornerAccumulator::UpdateBoundsFromActors(PointAccess* points, bool initial
                 l = b.GetFloatElementPointer(k);
                 if (DAT_0108d57c[ba][k])
                 {
-                    if (l > points[ba].GetFloatElementPointer(k))
-                        points[ba].GetFloatElementPointer(k) = l;
+                    if (l > apCorners[ba].GetFloatElementPointer(k))
+                        apCorners[ba].GetFloatElementPointer(k) = l;
                 }
                 else
                 {
-                    if (l < points[ba].GetFloatElementPointer(k))
-                        points[ba].GetFloatElementPointer(k) = l;
+                    if (l < apCorners[ba].GetFloatElementPointer(k))
+                        apCorners[ba].GetFloatElementPointer(k) = l;
                 }
             }
         }
@@ -3749,6 +3934,8 @@ struct SearchNodeArrayOwner
 
 // @fnv 0x0098a340
 // src: XBOX_PDB 0x0098a340
+// pdb: CombatGroup::GetMemberGroupStrategyAssignment | CombatGroup.obj | debug, call graph, medium
+// pdb params: aiIndex
 int FUN_0098a340_shell::CombatGroup_GetMemberGroupStrategyAssignment(int index)
 {
     return reinterpret_cast<SearchNodeArrayOwner*>(this)->nodes.BSSimpleArray_CombatMember_1024_GetAt(index)->m1;
@@ -3815,6 +4002,8 @@ struct FUN_0098a4d0_class : FUN_0098a410_shell
 
 // Averages, over all items from GetCount, the ratio of Slot3(16) to Slot0(16) and returns the mean.
 // @fnv 0x0098a4d0
+// pdb: CombatGroup::ComputeMemberHealthPercentage | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: imemberCount, fhealthPercentage, i, pmember
 float FUN_0098a4d0_class::ComputeAverageRatio()
 {
     float total = 0.0f;
@@ -4129,15 +4318,19 @@ struct ActorObj
 struct ItemList
 {
     unsigned int GetCount();
-    ItemObj* GetAt(unsigned int i);
-    ItemObj* FindBestItem(ActorObj* actor, unsigned char thresh, ItemObj* target);
+    ItemObj* GetAt(unsigned int aiIndex);
+    ItemObj* CombatGroup_FindSearchLocation(ActorObj* apMember, unsigned char acMinScore, ItemObj* apCurrentSearchLocation);
 };
 
 // @fnv 0x0098bc00
-ItemObj* ItemList::FindBestItem(ActorObj* actor, unsigned char aucThreshold, ItemObj* target)
+// src: XBOX_DEBUG_PDB 0x0098bc00
+// pdb: CombatGroup::FindSearchLocation | CombatGroup.obj | debug, call graph (shared callers), high
+// pdb params: apMember, acMinScore, apCurrentSearchLocation
+// pdb locals: pcombatController, memberWorldLoc, iindex, isearchLocationCount, bcurrentScoreTarget, fcurrentScore, i, fscore, fmodifiedScore, searchLoc, fscoreBonus
+ItemObj* ItemList::CombatGroup_FindSearchLocation(ActorObj* apMember, unsigned char acMinScore, ItemObj* apCurrentSearchLocation)
 {
-    MgrObj* mgr_2 = actor->GetMgr();
-    ItemPositionResult kPos = actor->GetPos();
+    MgrObj* mgr_2 = apMember->GetMgr();
+    ItemPositionResult kPos = apMember->GetPos();
     int bestIdx3 = -1;
     float best = 0.0f;
     bool found3 = false;
@@ -4147,9 +4340,9 @@ ItemObj* ItemList::FindBestItem(ActorObj* actor, unsigned char aucThreshold, Ite
         ItemObj* item = GetAt(i4);
         float score2 = item->GetScore();
         float bonus2 = 0.0f;
-        if (target && item->GetID() == target->GetID() && item->GetPosObj()->IsEqual(target->GetPosObj()))
+        if (apCurrentSearchLocation && item->GetID() == apCurrentSearchLocation->GetID() && item->GetPosObj()->IsEqual(apCurrentSearchLocation->GetPosObj()))
             bonus2 += 5.0;
-        if (score2 + bonus2 < aucThreshold)
+        if (score2 + bonus2 < acMinScore)
             continue;
         float dist6 = item->GetDistance(&kPos.position) + bonus2;
         if (score2 < best)
@@ -4433,7 +4626,7 @@ struct CombatEntryObj
     virtual void vfn_420();
     virtual void vfn_424();
     virtual void* vfn_428();
-    bool Actor_GetCurrentPathfindingGoal(struct Probe16* p);
+    bool Actor_GetCurrentPathfindingGoal(struct Probe16* apRetLocation);
 };
 struct Probe16
 {
@@ -4442,7 +4635,7 @@ struct Probe16
 };
 struct RefTarget
 {
-    bool FUN_00981420();
+    bool CombatController_IsSearching();
 };
 struct CombatGroupTarget
 {
@@ -4455,6 +4648,8 @@ struct CombatSearchCls
     bool CheckOtherEntriesForTarget(CombatEntryObj* a1, CombatGroupTarget* a2);
 };
 // @fnv 0x0098c7b0
+// pdb: CombatGroup::UpdateGroupStrategy | CombatGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatGroup::CalculateSearchIgnoreLocations
 bool CombatSearchCls::CheckOtherEntriesForTarget(CombatEntryObj* pExcludeEntry, CombatGroupTarget* pGroupTarget)
 {
     unsigned int count = CombatGroup_GetMemberCount();
@@ -4469,7 +4664,7 @@ bool CombatSearchCls::CheckOtherEntriesForTarget(CombatEntryObj* pExcludeEntry, 
             void* r2 = p2->vfn_428();
             if (r2 != 0)
             {
-                if (((RefTarget*)r2)->FUN_00981420())
+                if (((RefTarget*)r2)->CombatController_IsSearching())
                 {
                     Probe16 probe;
                     probe.FUN_006815c0();
@@ -4823,17 +5018,21 @@ struct FUN_0098cb30_cls
     int unkBC;
     float m_c0;
     unsigned int CombatGroup_GetMemberCount();
-    FUN_0098cb30_obj* CombatGroup_GetCombatMember(unsigned int idx);
-    float GetModifierSum(FUN_0098cb30_inner* a1);
+    FUN_0098cb30_obj* CombatGroup_GetCombatMember(unsigned int aiIndex);
+    float CombatGroup_GetMemberCombatStrength(FUN_0098cb30_inner* apMember);
 };
 
 extern double _gModifierZero;
 
 // Sums per-entry modifier values for entries matching a1 (or all others), skipping non-positive values, and returns m_c0 when a1 is null.
 // @fnv 0x0098cb30
-float FUN_0098cb30_cls::GetModifierSum(FUN_0098cb30_inner* apInner)
+// src: XBOX_RETAIL_PDB 0x0098cb30
+// pdb: CombatGroup::GetMemberCombatStrength | CombatGroup.obj | retail, object-file run extension, high
+// pdb params: apMember
+// pdb locals: fcombatStrength, imemberCount, i, pcombatController, pcombatMember, fmemberStrength
+float FUN_0098cb30_cls::CombatGroup_GetMemberCombatStrength(FUN_0098cb30_inner* apMember)
 {
-    if (apInner == 0)
+    if (apMember == 0)
     {
         return m_c0;
     }
@@ -4844,7 +5043,7 @@ float FUN_0098cb30_cls::GetModifierSum(FUN_0098cb30_inner* apInner)
         int r;
         FUN_0098cb30_obj* pObj = CombatGroup_GetCombatMember(i);
         r = pObj->m_pInner->v10A();
-        if (apInner == pObj->m_pInner && r != 0)
+        if (apMember == pObj->m_pInner && r != 0)
         {
             float fValue = ((FUN_0098cb30_res*)r)->CombatController_GetCombatState()->FUN_00453700();
             if (fValue > _gModifierZero)
@@ -4911,6 +5110,8 @@ class B98EBC0Array
 };
 
 // @fnv 0x0098ebc0
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::GetAt | CombatGroup.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 int* B98EBC0Array::GetElementAt(int iIndex)
 {
     return GetElementAddress_006bf670(iIndex);
@@ -4978,6 +5179,10 @@ struct RemovalArray : RemovalOperations
 };
 // @fnv 0x0098ef10
 // src: XBOX_PDB 0x0098ef10
+// pdb: BSSimpleArray<CombatTarget,1024>::_MoveItems | CombatGroup.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<CombatTarget,1024>::RemoveFast
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void RemovalArray::BSSimpleArray_CombatTarget_1024_RemoveFast(unsigned int first, unsigned int count)
 {
     unsigned int moved = FUN_0042f5a0(unk08 - first - count, count);
@@ -5030,6 +5235,9 @@ class C98F840Allocator
 
 // @fnv 0x0098f840
 // src: XBOX_PDB 0x0098f840
+// pdb: BSSimpleArray<CombatTarget,1024>::_ConstructItems | CombatGroup.obj | debug, call graph (shared callers), medium
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void C98F840Allocator::BSSimpleArray_CombatTarget_1024_ConstructItems(C98F840Element* pkElements, unsigned int ItemUpdateArray)
 {
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
@@ -5082,6 +5290,7 @@ struct FUN_009d3390_cls
 // Returns 1 if the sub-object's CallA or CallB returns nonzero, or if m74 is nonzero; otherwise 0.
 // @fnv 0x009d3390
 // src: XBOX_PDB 0x009d3390
+// pdb: CombatCoverLocation::HasFireLocation | CombatProcedureBeInCover.obj | retail, upstream name already matches, high
 unsigned char FUN_009d3390_cls::CombatCoverLocation_HasFireLocation()
 {
     return (m14.CallA() != 0 || m14.CallB() != 0 || m74 != 0) ? 1 : 0;
@@ -5216,13 +5425,15 @@ struct FUN_00985f90
     ~FUN_00985f90();
 };
 // @fnv 0x00985f90
+// pdb: CombatGroup::~CombatGroup | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb locals: imemberCount, itargetCount, i, ptarget, pmember, pcluster
 FUN_00985f90::~FUN_00985f90()
 {
     unsigned int count = PathingSolution_GetVirtualNodeCount();
     for (unsigned int i = 0; i < count; i++)
     {
         void* actor = CombatGroup_GetTarget(i);
-        g_011f1958->SwapAndDispatch(this, actor);
+        g_011f1958->CombatManager_NotifyCombatGroupRemovedTarget(this, actor);
     }
     unsigned int targetCount = CombatGroup_GetMemberCount();
     for (unsigned int j = 0; j < targetCount; j++)
@@ -5395,7 +5606,7 @@ struct MergeMember
 struct MergeTargets : CombatgroupOffset08View
 {
     unsigned int unk00, unk04, unk08, unk0c;
-    MergeTarget* BSSimpleArray_CombatTarget_1024_GetAt(unsigned int index);
+    MergeTarget* BSSimpleArray_CombatTarget_1024_GetAt(unsigned int aiIndex);
 };
 struct MergeMembers : CombatgroupOffset08View
 {
@@ -5487,23 +5698,27 @@ struct ActorMergeData
     char state;
     MergeTargets* FUN_00413f40();
     MergeMembers* FUN_00500940();
-    bool CombatGroup_CanAddTarget(MergeActor* actor);
+    bool CombatGroup_CanAddTarget(MergeActor* apActor);
     bool CombatGroup_AddMember(MergeActor* actor);
-    bool CombatGroup_AddTarget(MergeActor* actor);
-    MergeMember* CombatGroup_GetCombatMemberForActor(MergeActor* actor);
-    MergeTarget* CombatGroup_GetCombatTargetForActor(MergeActor* actor);
-    char GetFlagsFromSubobject();
+    bool CombatGroup_AddTarget(MergeActor* apActor);
+    MergeMember* CombatGroup_GetCombatMemberForActor(MergeActor* apActor);
+    MergeTarget* CombatGroup_GetCombatTargetForActor(MergeActor* apActor);
+    char CombatGroup_GetClusterCount();
     int GetArrayItem(unsigned char index);
     void ClearGlobalObject();
     char GetByteAtOffset154();
-    bool MergeFrom(ActorMergeData* other);
+    bool CombatGroup_MergeGroup(ActorMergeData* apCombatGroup);
 };
 
 // Merges another combat group's targets, entries and members into this one, warning on members or targets that cannot be added, and copies its state.
 // @fnv 0x00987530
-bool ActorMergeData::MergeFrom(ActorMergeData* other)
+// src: XBOX_RETAIL_PDB 0x00987530
+// pdb: CombatGroup::MergeGroup | CombatGroup.obj | retail, string-set bridge, high
+// pdb params: apCombatGroup
+// pdb locals: pnewTargetArray, ccombatMusicState, pnewMemberArray, i, combatTarget, pcluster, combatMember, pcombatMember, pcombatTarget
+bool ActorMergeData::CombatGroup_MergeGroup(ActorMergeData* apCombatGroup)
 {
-    MergeTargets* otherMembers = other->FUN_00413f40();
+    MergeTargets* otherMembers = apCombatGroup->FUN_00413f40();
     for (unsigned int i = 0; i < otherMembers->GetFlags(); ++i)
     {
         MergeTarget* target = otherMembers->BSSimpleArray_CombatTarget_1024_GetAt(i);
@@ -5513,16 +5728,16 @@ bool ActorMergeData::MergeFrom(ActorMergeData* other)
     for (unsigned int j = 0; j < targets.GetFlags(); ++j)
     {
         MergeTarget* target = targets.BSSimpleArray_CombatTarget_1024_GetAt(j);
-        if (!other->CombatGroup_CanAddTarget(target->actor))
+        if (!apCombatGroup->CombatGroup_CanAddTarget(target->actor))
             return false;
     }
-    for (unsigned int k = 0; k < other->GetFlagsFromSubobject(); ++k)
+    for (unsigned int k = 0; k < apCombatGroup->CombatGroup_GetClusterCount(); ++k)
     {
-        int entry = other->GetArrayItem((unsigned char)k);
+        int entry = apCombatGroup->GetArrayItem((unsigned char)k);
         entries.FUN_007cb2e0(entry);
     }
-    other->ClearGlobalObject();
-    MergeMembers* otherState = other->FUN_00500940();
+    apCombatGroup->ClearGlobalObject();
+    MergeMembers* otherState = apCombatGroup->FUN_00500940();
     for (unsigned int m = 0; m < otherState->GetFlags(); ++m)
     {
         MergeMember* member = otherState->BSSimpleArray_CombatMember_1024_GetAt(m);
@@ -5550,7 +5765,7 @@ bool ActorMergeData::MergeFrom(ActorMergeData* other)
             FNV_Warning("COMBAT: Error merging groups.  Could not add target %08X %s", target->actor->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
                         target->actor->V130());
     }
-    char otherTargets = other->GetByteAtOffset154();
+    char otherTargets = apCombatGroup->GetByteAtOffset154();
     if (otherTargets != -1)
         state = otherTargets;
     return true;
@@ -6085,7 +6300,7 @@ DebugNode* BSTestObjects_Create3DArrow(const DebugPoint&, const DebugPoint&, flo
 DebugNode* BSTestObjects_CreateCircle(float, int, const NiColorA*);
 DebugNode* BSTestObjects_CreateCappedCylinder(float, float, float, int, int, const NiColorA*);
 DebugNode* BSTestObjects_CreateSphere(float, int, int, const NiColorA*);
-void AttachLightingPropertyRecursive(DebugNode*);
+void AddNoLightingPropertyRecurse(DebugNode*);
 void FUN_00b57e30(DebugNode*, int, int);
 struct DebugGroup
 {
@@ -6176,6 +6391,9 @@ struct DebugGroup
     void RebuildDebugVisuals(bool);
 };
 // @fnv 0x009878b0
+// pdb: CombatGroup::UpdateDebugGeometry | CombatGroup.obj | retail, object-file run extension, low
+// pdb params: abForceClear
+// pdb locals: pplayerSpace, psearchDebugGeometry, pselectedMember, pactor, i, pcluster, bfoundMember, imemberCount, color, clusterCenterPoint, pcombatMember, memberLoc, arrowEndColor, parrow, arrowStartColor, pcenterCylinder, pradiusCircle, pcylinder, fradius, isearchLocationCount, psphere, searchLoc, doorLoc, searchDoor ...
 void DebugGroup::RebuildDebugVisuals(bool clearOnly)
 {
     if (debug.Modelloader_GetReferencedThis() && debug.Modelloader_GetReferencedThis()->NiAVObject_GetParent())
@@ -6307,7 +6525,7 @@ void DebugGroup::RebuildDebugVisuals(bool clearOnly)
         DebugMaterial* material = new DebugMaterial;
         material->NiAlphaProperty_SetAlphaBlending(true);
         debug.Modelloader_GetReferencedThis()->NiAVObject_AttachProperty(material);
-        AttachLightingPropertyRecursive(debug.Modelloader_GetReferencedThis());
+        AddNoLightingPropertyRecurse(debug.Modelloader_GetReferencedThis());
         FUN_00b57e30(debug.Modelloader_GetReferencedThis(), 0, 0);
         if (extra)
             debug.Modelloader_GetReferencedThis()->Attach(extra, true);
@@ -6793,12 +7011,16 @@ struct Group
     unsigned int CombatGroup_GetMemberCount();
     Actor* GetIntAt(unsigned int);
     bool CombatGroup_IsSearching();
-    void StoreRecord(Position*, float, int);
-    void UpdateTargetPerception(Actor*, Actor*, int*, Time*, bool*, bool*);
+    void CombatGroup_AddSearchLocation(Position*, float, int);
+    void CombatGroup_GetTargetDetectionLevel(Actor*, Actor*, int*, Time*, bool*, bool*);
 };
 // @fnv 0x009887b0
-void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result, Time* timestamp, bool* visible,
-                                   bool* detected)
+// src: XBOX_RETAIL_PDB 0x009887b0
+// pdb: CombatGroup::GetTargetDetectionLevel | CombatGroup.obj | retail, call graph (shared callers), high
+// pdb params: apAttacker, apTarget, ariDetectionLevel, arfLastTargetDetectedTimeStamp, arbTargetLineOfSight, arbTarget360LineOfSight
+// pdb locals: pcombatTarget, icurrentDetectionLevel, pbestDetectingMember, lastDetectedLocation, targetLoc, flastDetectedTime, imemberCount, inewDetectionLevel, bfindLastDetectedLocation, idetectionEventLevel, i, pmember, pdetection, detectionState, memberLoc, pcombatController, idetectionLevel, pdetectionEvent, fscore, worldLoc
+void Group::CombatGroup_GetTargetDetectionLevel(Actor* apAttacker, Actor* apTarget, int* result, Time* arfLastTargetDetectedTimeStamp, bool* arbTargetLineOfSight,
+                                   bool* arbTarget360LineOfSight)
 {
     Time temp4Local2;
     Time temp3Local31;
@@ -6830,12 +7052,12 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
     int previousLocal5;
     Target* targetLocal40;
 
-    *visible = false;
-    *detected = false;
+    *arbTargetLineOfSight = false;
+    *arbTarget360LineOfSight = false;
     *result = -100;
     temp0Local20.FUN_00435de0(-DAT_0108d540);
-    *timestamp = temp0Local20;
-    targetLocal40 = CombatGroup_GetCombatTargetForActor(subject);
+    *arfLastTargetDetectedTimeStamp = temp0Local20;
+    targetLocal40 = CombatGroup_GetCombatTargetForActor(apTarget);
     if (targetLocal40)
     {
         previousLocal5 = targetLocal40->score;
@@ -6855,12 +7077,12 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
             for (indexLocal5 = 0; indexLocal5 < countLocal20; indexLocal5++)
             {
                 memberLocal19 = GetIntAt(indexLocal5);
-                senseLocal1 = reinterpret_cast<Process*>(memberLocal19->FUN_008d8520())->v504(subject, 0);
+                senseLocal1 = reinterpret_cast<Process*>(memberLocal19->FUN_008d8520())->v504(apTarget, 0);
                 fallbackLocal15.FUN_0066e590();
-                if (memberLocal19->FUN_00931850() && subject->FUN_00931850())
+                if (memberLocal19->FUN_00931850() && apTarget->FUN_00931850())
                 {
                     memberLocal19->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&originLocal30));
-                    subject->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&destinationLocal23));
+                    apTarget->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&destinationLocal23));
                     if (originLocal30.BGSWorldLocation_GetDistanceSquared(&destinationLocal23) < 67108864.0)
                     {
                         fallbackLocal15.score = 1;
@@ -6873,10 +7095,10 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                         targetLocal40->visibleCount++;
                     if (senseLocal1->detected)
                         targetLocal40->detectedCount++;
-                    if (memberLocal19 == selected)
+                    if (memberLocal19 == apAttacker)
                     {
-                        *visible = senseLocal1->visible;
-                        *detected = senseLocal1->detected;
+                        *arbTargetLineOfSight = senseLocal1->visible;
+                        *arbTarget360LineOfSight = senseLocal1->detected;
                     }
                     scoreLocal7 = senseLocal1->score;
                     if (senseLocal1->score20 != 0x7fffffff)
@@ -6888,8 +7110,8 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                             scoreLocal7 = (int)*DAT_011cd45c.Setting_Float_00403e20();
                     }
                     stateLocal7 = reinterpret_cast<CombatState*>(memberLocal19->GetCombatController());
-                    if (!stateLocal7 || stateLocal7->CombatController_GetTarget() != subject ||
-                        reinterpret_cast<DetectionViewData*>(stateLocal7->CombatController_GetCombatState(memberLocal19, subject))->CombatState_CheckShouldUpdateDetection())
+                    if (!stateLocal7 || stateLocal7->CombatController_GetTarget() != apTarget ||
+                        reinterpret_cast<DetectionViewData*>(stateLocal7->CombatController_GetCombatState(memberLocal19, apTarget))->CombatState_CheckShouldUpdateDetection())
                     {
                         if (senseLocal1 && scoreLocal7 > maximumLocal6)
                         {
@@ -6917,7 +7139,7 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
             if (CombatGroup_IsSearching() && previousLocal5 <= 0 && maximumLocal6 > 0)
             {
                 if (targetLocal40->activeTime.AStarSearch_EvaluateValue_006a7f50() != -DAT_0108d540)
-                    DAT_011f1708->TryStartDialogue(bestLocal4, subject, 4, 9, 1, 0);
+                    DAT_011f1708->TryStartDialogue(bestLocal4, apTarget, 4, 9, 1, 0);
                 else
                 {
                     for (index2Local31 = 0; index2Local31 < countLocal20; index2Local31++)
@@ -6926,7 +7148,7 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                         if (member2Local23 != DAT_011dea3c)
                             Script_SetActionFlag(member2Local23->GetCombatTarget(), member2Local23->BSFile_GetDevice(), 0x8000);
                     }
-                    DAT_011f1708->TryStartDialogue(bestLocal4, subject, 4, 3, 1, 0);
+                    DAT_011f1708->TryStartDialogue(bestLocal4, apTarget, 4, 3, 1, 0);
                 }
             }
             targetLocal40->score = maximumLocal6;
@@ -6934,7 +7156,7 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                 temp1Local7.FUN_00435de0(CombatTimer_GetTimer());
                 targetLocal40->updateTime = temp1Local7;
             }
-            subject->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&currentLocal8));
+            apTarget->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&currentLocal8));
             if (maximumLocal6 > 0)
             {
                 temp2Local6.FUN_00435de0(CombatTimer_GetTimer());
@@ -6963,7 +7185,7 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
             }
             if (highestLocal52 > *DAT_011cd45c.Setting_Float_00403e20() && CombatGroup_IsSearching())
             {
-                hitLocal9 = reinterpret_cast<Process*>(subject->FUN_008d8520())->vf8(subject);
+                hitLocal9 = reinterpret_cast<Process*>(apTarget->FUN_008d8520())->vf8(apTarget);
                 if (hitLocal9 && hitLocal9->time.FUN_00435e00() < 5.0 &&
                     hitLocal9->time.AStarSearch_EvaluateValue_006a7f50() > targetLocal40->hitTime.AStarSearch_EvaluateValue_006a7f50())
                 {
@@ -6973,23 +7195,23 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                     else
                         strengthLocal6 = (highestLocal52 - (int)*DAT_011cd45c.Setting_Float_00403e20()) / 2.0 + 40.0;
                     impactLocal48.BGSWorldLocation_BGSWorldLocation();
-                    impactLocal48.SetTripleAndValue(reinterpret_cast<NiPoint3*>(hitLocal9->pointStorage), subject->TESObjectREFR_GetSpace());
-                    StoreRecord(&impactLocal48, strengthLocal6, 0);
+                    impactLocal48.SetTripleAndValue(reinterpret_cast<NiPoint3*>(hitLocal9->pointStorage), apTarget->TESObjectREFR_GetSpace());
+                    CombatGroup_AddSearchLocation(&impactLocal48, strengthLocal6, 0);
                     targetLocal40->hitTime = hitLocal9->time;
                 }
             }
         }
         else
         {
-            reusedLocal18 = selected ? reinterpret_cast<Process*>(selected->FUN_008d8520())->v504(subject, 0) : 0;
+            reusedLocal18 = apAttacker ? reinterpret_cast<Process*>(apAttacker->FUN_008d8520())->v504(apTarget, 0) : 0;
             if (reusedLocal18)
             {
-                *visible = reusedLocal18->visible;
-                *detected = reusedLocal18->detected;
+                *arbTargetLineOfSight = reusedLocal18->visible;
+                *arbTarget360LineOfSight = reusedLocal18->detected;
             }
         }
         *result = targetLocal40->score;
-        *timestamp = targetLocal40->activeTime;
+        *arfLastTargetDetectedTimeStamp = targetLocal40->activeTime;
     }
 }
 }
@@ -7159,27 +7381,30 @@ struct AvoidMember9892
 struct FUN_009892a0_shell
 {
     unsigned int PathingSolution_GetVirtualNodeCount();
-    AvoidMember9892* CombatGroup_GetTarget(unsigned int uiIndex);
-    PathingAvoidNodeArray* CombatGroup_CreateMovementAvoidNodeArray(AvoidMember9892* pActor, const Pos9892* pTarget, float fRadius,
-                                        PathingAvoidNodeArray* pAvoidArray, AvoidMember9892* pIgnore);
+    AvoidMember9892* CombatGroup_GetTarget(unsigned int aiIndex);
+    PathingAvoidNodeArray* CombatGroup_CreateMovementAvoidNodeArray(AvoidMember9892* apActor, const Pos9892* arDestination, float afExtraRadius,
+                                        PathingAvoidNodeArray* apExistingAvoidNodeArray, AvoidMember9892* apIgnoreActor);
 };
 
 // @fnv 0x009892a0
 // src: XBOX_PDB 0x009892a0
-PathingAvoidNodeArray* FUN_009892a0_shell::CombatGroup_CreateMovementAvoidNodeArray(AvoidMember9892* pActor, const Pos9892* pTarget, float fRadius,
-                                                        PathingAvoidNodeArray* pAvoidArray, AvoidMember9892* pIgnore)
+// pdb: CombatGroup::CreateMovementAvoidNodeArray | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apActor, arDestination, afExtraRadius, apExistingAvoidNodeArray, apIgnoreActor
+// pdb locals: destinationVector, pavoidNodeArray, itargetCount, center, fradiusSquared, i, ptarget, targetLoc, centerVector
+PathingAvoidNodeArray* FUN_009892a0_shell::CombatGroup_CreateMovementAvoidNodeArray(AvoidMember9892* apActor, const Pos9892* arDestination, float afExtraRadius,
+                                                        PathingAvoidNodeArray* apExistingAvoidNodeArray, AvoidMember9892* apIgnoreActor)
 {
-    PathingAvoidNodeArray* pResult_2 = pAvoidArray;
-    Pos9892 kCenterTmp = pActor->GetPos()->FUN_00439e90(*pTarget).ProcessAndReturnValue_0053d280(DAT_010162c0);
-    Pos9892 kOffsetValue = pTarget->SubtractIntoVector(kCenterTmp);
-    float afValueAfterThirdFloat = kOffsetValue.FUN_004a7290() + fRadius * fRadius;
+    PathingAvoidNodeArray* pResult_2 = apExistingAvoidNodeArray;
+    Pos9892 kCenterTmp = apActor->GetPos()->FUN_00439e90(*arDestination).ProcessAndReturnValue_0053d280(DAT_010162c0);
+    Pos9892 kOffsetValue = arDestination->SubtractIntoVector(kCenterTmp);
+    float afValueAfterThirdFloat = kOffsetValue.FUN_004a7290() + afExtraRadius * afExtraRadius;
     afValueAfterThirdFloat = Setting_Float_00403e20((float*)&originalRuntimeFloatSetting382) *
                              Setting_Float_00403e20((float*)&originalRuntimeFloatSetting382) * afValueAfterThirdFloat;
     unsigned int uiCountTmp = PathingSolution_GetVirtualNodeCount();
     for (unsigned int i4 = 0; i4 < uiCountTmp; i4++)
     {
         AvoidMember9892* pMember = CombatGroup_GetTarget(i4);
-        if (pMember != pIgnore)
+        if (pMember != apIgnoreActor)
         {
             Pos9892 kPos3 = *pMember->GetPos();
             Pos9892 kDelta_ = kCenterTmp.SubtractIntoVector(kPos3);
@@ -7295,7 +7520,7 @@ struct Shape
     {}
     float FUN_004a7bd0();
     void Reset();
-    void Initialize_006e0320(const Region&, float);
+    void Initialize(const Region&, float);
     void PathingLOSGridMap_SetSightRadius(float);
 };
 void* Object_DispatchCommandFour(unsigned int);
@@ -7418,6 +7643,8 @@ struct Group
 };
 // @fnv 0x0098a580
 // src: XBOX_PDB 0x0098a580
+// pdb: CombatGroup::UpdateSearch | CombatGroup.obj | retail, upstream name already matches, high
+// pdb locals: bdontSearch, itargetCount, i, pcombatTarget, ilostTargetCount, itargetedTargets, pmember, bsearchAreaChanged, idialogueMember, imemberCount, ptarget, pcell, pworld, closestPoint, searchPathingCenter, Headings, Locations, memberPathingLocation, fseenPercent
 void Group::CombatGroup_UpdateSearch()
 {
     if (capacity)
@@ -7494,7 +7721,7 @@ void Group::CombatGroup_UpdateSearch()
                                 region.FUN_006f4ed0(location.FUN_006815c0());
                                 if (!shape.Modelloader_GetReferencedThis())
                                     shape.FUN_0066b0d0(new Shape);
-                                shape.Modelloader_GetReferencedThis()->Initialize_006e0320(region, radius);
+                                shape.Modelloader_GetReferencedThis()->Initialize(region, radius);
                                 shape.Modelloader_GetReferencedThis()->PathingLOSGridMap_SetSightRadius(*DAT_011cf42c.Setting_Float_00403e20());
                                 changed = 1;
                             }
@@ -7649,12 +7876,15 @@ class CE80Group
 
     unsigned int GetCount();
     Actor* GetAt(int iIndex);
-    void RecountActors();
+    void CombatGroup_UpdateCounts();
 };
 
 // Resets the flagged, alive and other counters, then tallies each actor's process by IsFlagged and IsAlive.
 // @fnv 0x0098ce80
-void CE80Group::RecountActors()
+// src: XBOX_RETAIL_PDB 0x0098ce80
+// pdb: CombatGroup::UpdateCounts | CombatGroup.obj | retail, object-file run extension, high
+// pdb locals: imemberCount, i, pmember, pcombatController
+void CE80Group::CombatGroup_UpdateCounts()
 {
     m_uiFlagged = 0;
     m_uiAlive = 0;
@@ -7706,7 +7936,7 @@ struct LoadExtra
     LoadRef ref;
     int id;
     int value;
-    void BGSLoadGameBuffer_LoadBGSWorldLocation(BGSLoadFormBuffer*);
+    void BGSWorldLocation_LoadGame(BGSLoadFormBuffer*);
 };
 
 struct ParentNode
@@ -7775,7 +8005,7 @@ struct ArrParents
 struct LoadHandle
 {
     int x0, x4, x8, xc;
-    void BGSLoadGameBuffer_LoadBGSWorldLocation(BGSLoadFormBuffer*);
+    void BGSWorldLocation_LoadGame(BGSLoadFormBuffer*);
 };
 struct GroupLoad
 {
@@ -7825,107 +8055,110 @@ struct GroupLoad
     int unk14c;
     int unk150;
     char flag154;
-    void CombatGroup_LoadGame(BGSLoadFormBuffer* buffer);
+    void CombatGroup_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // Reads item, node and member arrays plus strategy, flags, pairs, timers, active-state extras/parents and optional anim from the buffer.
 // @fnv 0x0098e3d0
 // src: COMMUNITY 0x0098e3d0
-void GroupLoad::CombatGroup_LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: CombatGroup::LoadGame | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: cgroupStrategyType, isaveGameCount, i, pcluster, combatTarget, combatMember, bhasPathingLOSGridMap, searchLoc, searchDoor
+void GroupLoad::CombatGroup_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     {
-        unsigned int countItems = buffer->FUN_00864a60();
+        unsigned int countItems = apLoadGameBuffer->FUN_00864a60();
         items.SetSize(countItems, true);
         for (unsigned int indexItems = 0; indexItems < countItems; indexItems++)
         {
             LoadItem*& item = items.BSSimpleArray_NiAVObject_1024_GetAt(indexItems);
             item = new LoadItem;
-            item->Lst0044_PathingLocation_Load(buffer, this);
+            item->Lst0044_PathingLocation_Load(apLoadGameBuffer, this);
         }
     }
     {
-        unsigned int countNodes = buffer->FUN_00864a60();
+        unsigned int countNodes = apLoadGameBuffer->FUN_00864a60();
         nodes.SetSize(countNodes, true);
         for (unsigned int indexNodes = 0; indexNodes < countNodes; indexNodes++)
         {
             LoadNode* node = reinterpret_cast<LoadNode*>(&nodes.GetAt(indexNodes));
-            node->CombatTarget_LoadGame(buffer, this);
+            node->CombatTarget_LoadGame(apLoadGameBuffer, this);
         }
     }
     {
-        unsigned int countMembers = buffer->FUN_00864a60();
+        unsigned int countMembers = apLoadGameBuffer->FUN_00864a60();
         members.ResizeBufferStorage(countMembers, true);
         for (unsigned int indexMembers = 0; indexMembers < countMembers; indexMembers++)
         {
             MemberNode* member = members.BSSimpleArray_CombatMember_1024_GetAt(indexMembers);
-            member->CombatMember_LoadGame(buffer, this);
+            member->CombatMember_LoadGame(apLoadGameBuffer, this);
         }
     }
     char strategyIndex = -1;
-    buffer->LoadData(&strategyIndex, 1u);
+    apLoadGameBuffer->LoadData(&strategyIndex, 1u);
     if (strategyIndex != -1)
         strategy = CombatGroupStrategies_GetStrategy(strategyIndex);
-    buffer->LoadData(&flag, 1u);
-    pair30.FUN_009a5f20(buffer);
-    pair38.FUN_009a5f20(buffer);
-    buffer->LoadData(&unk040, 4u);
-    ref44.FUN_009a5ff0(buffer);
-    pair48.FUN_009a5f20(buffer);
-    pairb0.FUN_009a5f20(buffer);
-    paira8.FUN_009a5f20(buffer);
+    apLoadGameBuffer->LoadData(&flag, 1u);
+    pair30.FUN_009a5f20(apLoadGameBuffer);
+    pair38.FUN_009a5f20(apLoadGameBuffer);
+    apLoadGameBuffer->LoadData(&unk040, 4u);
+    ref44.FUN_009a5ff0(apLoadGameBuffer);
+    pair48.FUN_009a5f20(apLoadGameBuffer);
+    pairb0.FUN_009a5f20(apLoadGameBuffer);
+    paira8.FUN_009a5f20(apLoadGameBuffer);
     for (unsigned int indexTimers = 0; indexTimers < 10; indexTimers++)
-        timers[indexTimers].FUN_009a5f20(buffer);
-    buffer->LoadData(&active, 4u);
+        timers[indexTimers].FUN_009a5f20(apLoadGameBuffer);
+    apLoadGameBuffer->LoadData(&active, 4u);
     if (active > 0)
     {
-        buffer->FUN_008648e0((void*)&unk0ec);
-        buffer->LoadData(&unk100, 12u);
-        paird8.FUN_009a5f20(buffer);
-        paire0.FUN_009a5f20(buffer);
-        if (buffer->GetVersion() >= 5)
-            refe8.FUN_009a5ff0(buffer);
-        handle.BGSLoadGameBuffer_LoadBGSWorldLocation(buffer);
-        buffer->LoadData(&unk10c, 4u);
+        apLoadGameBuffer->FUN_008648e0((void*)&unk0ec);
+        apLoadGameBuffer->LoadData(&unk100, 12u);
+        paird8.FUN_009a5f20(apLoadGameBuffer);
+        paire0.FUN_009a5f20(apLoadGameBuffer);
+        if (apLoadGameBuffer->GetVersion() >= 5)
+            refe8.FUN_009a5ff0(apLoadGameBuffer);
+        handle.BGSWorldLocation_LoadGame(apLoadGameBuffer);
+        apLoadGameBuffer->LoadData(&unk10c, 4u);
         {
-            unsigned int countExtras = buffer->FUN_00864a60();
+            unsigned int countExtras = apLoadGameBuffer->FUN_00864a60();
             extras.FUN_0098f2f0(countExtras, true);
             for (unsigned int indexExtras = 0; indexExtras < countExtras; indexExtras++)
             {
                 LoadExtra* extra = extras.GetElementAt(indexExtras);
-                extra->BGSLoadGameBuffer_LoadBGSWorldLocation(buffer);
-                buffer->LoadData(&extra->value, 4u);
-                buffer->FUN_008648e0((void*)&extra->id);
-                extra->ref.FUN_009a5ff0(buffer);
+                extra->BGSWorldLocation_LoadGame(apLoadGameBuffer);
+                apLoadGameBuffer->LoadData(&extra->value, 4u);
+                apLoadGameBuffer->FUN_008648e0((void*)&extra->id);
+                extra->ref.FUN_009a5ff0(apLoadGameBuffer);
             }
         }
         {
-            unsigned int countParents = buffer->FUN_00864a60();
+            unsigned int countParents = apLoadGameBuffer->FUN_00864a60();
             parents.UpdateState_006a8890(countParents, true);
             for (unsigned int indexParents = 0; indexParents < countParents; indexParents++)
             {
                 ParentNode& parent = parents.GetAt(indexParents);
-                parent.a = dynamic_cast<TESObjectREFR*>(_ref_004839c0(buffer->FUN_008648a0()));
-                parent.b = dynamic_cast<TESObjectREFR*>(_ref_004839c0(buffer->FUN_008648a0()));
-                buffer->LoadData(&parent.c, 1u);
-                buffer->LoadData(&parent.d, 1u);
-                buffer->LoadData(&parent.e, 1u);
+                parent.a = dynamic_cast<TESObjectREFR*>(_ref_004839c0(apLoadGameBuffer->FUN_008648a0()));
+                parent.b = dynamic_cast<TESObjectREFR*>(_ref_004839c0(apLoadGameBuffer->FUN_008648a0()));
+                apLoadGameBuffer->LoadData(&parent.c, 1u);
+                apLoadGameBuffer->LoadData(&parent.d, 1u);
+                apLoadGameBuffer->LoadData(&parent.e, 1u);
             }
         }
         bool hasAnim = false;
-        buffer->LoadData(&hasAnim, 1u);
+        apLoadGameBuffer->LoadData(&hasAnim, 1u);
         if (hasAnim)
         {
             anim = new LoadAnim;
-            ((LoadAnim*)anim)->Lst0044_Data00D4_Load(buffer);
+            ((LoadAnim*)anim)->Lst0044_Data00D4_Load(apLoadGameBuffer);
         }
         loaded = 1;
     }
-    pair50.FUN_009a5f20(buffer);
-    buffer->LoadData(&unk0c0, 4u);
-    buffer->LoadData(&unk0c4, 4u);
-    buffer->LoadData(&unk0c8, 4u);
-    buffer->LoadData(&unk0cc, 4u);
-    pairb8.FUN_009a5f20(buffer);
-    buffer->LoadData(&flag154, 1u);
+    pair50.FUN_009a5f20(apLoadGameBuffer);
+    apLoadGameBuffer->LoadData(&unk0c0, 4u);
+    apLoadGameBuffer->LoadData(&unk0c4, 4u);
+    apLoadGameBuffer->LoadData(&unk0c8, 4u);
+    apLoadGameBuffer->LoadData(&unk0cc, 4u);
+    pairb8.FUN_009a5f20(apLoadGameBuffer);
+    apLoadGameBuffer->LoadData(&flag154, 1u);
 }
 
 struct UpdateOwner;
@@ -8005,7 +8238,7 @@ struct UpdateOwner
         Actor* actor;
     } reference;
     bool CombatGroup_IsSearching();
-    void RecountActors();
+    void CombatGroup_UpdateCounts();
     void UpdateElements(unsigned int);
 };
 // @fnv 0x0098e990
@@ -8048,7 +8281,7 @@ void UpdateOwner::UpdateElements(unsigned int argument)
     }
     if (CombatGroup_IsSearching())
         reference.actor = reference.id ? dynamic_cast<Actor*>(_ref_004839c0(reference.id)) : 0;
-    RecountActors();
+    CombatGroup_UpdateCounts();
 }
 
 namespace fnv_009a1280 {
@@ -8202,11 +8435,13 @@ struct CombatLogic
     unsigned int unk1c0;
     CombatController* controller;
     void __thiscall CombatState_ClearCoverLocation(int);
-    void __thiscall CombatState_BoostConfidence(bool update);
+    void __thiscall CombatState_BoostConfidence(bool abChangeFleeStatus);
 };
 // @fnv 0x009a1280
 // src: XBOX_PDB 0x009a1280
-void CombatLogic::CombatState_BoostConfidence(bool update)
+// pdb: CombatState::BoostConfidence | CombatState.obj | retail, upstream name already matches, high
+// pdb params: abChangeFleeStatus
+void CombatLogic::CombatState_BoostConfidence(bool abChangeFleeStatus)
 {
     if (phase < 4)
     {
@@ -8215,15 +8450,15 @@ void CombatLogic::CombatState_BoostConfidence(bool update)
             ++phase;
         }
         controller->ForcePlanUpdate();
-        if (update && condition && condition->mode == 1)
+        if (abChangeFleeStatus && condition && condition->mode == 1)
         {
             float values[4];
             if (condition->location.BGSWorldLocation_GetDistanceSquared(reinterpret_cast<EventEvaluator*>(controller->m_pkAttacker)->TESObjectREFR_GetWorldLocation(reinterpret_cast<EventPositionOutput_00575650*>(values))) < DAT_01017a10)
             {
-                update = false;
+                abChangeFleeStatus = false;
             }
         }
-        if (update)
+        if (abChangeFleeStatus)
         {
             needsUpdate = false;
         }
@@ -8253,6 +8488,8 @@ struct CFUN98fb40Owner
 
 // @fnv 0x0098fb40
 // src: XBOX_PDB 0x0098fb40
+// pdb: BSSimpleArray<CombatMember,1024>::AddUninitialized | CombatGroup.obj | debug, object-file run extension, low
+// pdb locals: inewSize
 void CFUN98fb40Owner::BSSimpleArray_CombatMember_1024_ConstructItems(CombatClusterMember* pDest, unsigned int auiCount)
 {
     for (unsigned int i = 0; i < auiCount; i++)
@@ -8282,7 +8519,7 @@ struct OtherState
     ScoreValue GetValue98();
     bool GetHasBufferedDetection_0097ee90();
     bool IsModifierZero();
-    bool HasItemWithinRadius(const PoseData*, float);
+    bool CombatState_IsLocationUnreachable(const PoseData*, float);
 };
 struct MovementPose
 {
@@ -8601,11 +8838,15 @@ struct ActorPicker
     void CombatGroup_RemoveMember(ActorSelect*);
     int PathingSolution_GetVirtualNodeCount();
     CandidateLink* CombatGroup_GetCombatTarget(unsigned int);
-    void UpdateTargetPerception(ActorSelect*, ActorSelect*, int*, ScoreValue*, bool*, bool*);
-    ActorSelect* SelectActor(ActorSelect*);
+    void CombatGroup_GetTargetDetectionLevel(ActorSelect*, ActorSelect*, int*, ScoreValue*, bool*, bool*);
+    ActorSelect* CombatGroup_GetBestTarget(ActorSelect*);
 };
 // @fnv 0x00986c60
-ActorSelect* ActorPicker::SelectActor(ActorSelect* actor)
+// src: XBOX_RETAIL_PDB 0x00986c60
+// pdb: CombatGroup::GetBestTarget | CombatGroup.obj | retail, call graph, high
+// pdb params: apMember
+// pdb locals: plastTargetChecked, pcombatController, pmemberEncounterZone, fcurrentTargetScore, memberWorldLoc, pbestTarget, pcombatState, itargetCount, plastDetectedTarget, pcurrentTarget, ftargetingFOV, bisMelee, fcurrentLastDetectedTimeStamp, i, b360LineOfSight, btargetRemoved, ptarget, blineOfSight, pcombatTarget, flastDetectedTimeStamp, idetectionLevel, ptargetEncounterZone, efightReaction, ftargetScore ...
+ActorSelect* ActorPicker::CombatGroup_GetBestTarget(ActorSelect* apMember)
 {
     if (condition.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
         return 0;
@@ -8615,18 +8856,18 @@ ActorSelect* ActorPicker::SelectActor(ActorSelect* actor)
     ActorSelect* ffirstActor3 = 0;
     ActorSelect* fallbackTmp = 0;
     PoseData baactorPose_2;
-    actor->TESObjectREFR_GetWorldLocation(&baactorPose_2);
-    ActorSelect* centerA = actor->GetTarget();
+    apMember->TESObjectREFR_GetWorldLocation(&baactorPose_2);
+    ActorSelect* centerA = apMember->GetTarget();
     if (!centerA)
     {
-        CombatGroup_RemoveMember(actor);
+        CombatGroup_RemoveMember(apMember);
         return 0;
     }
     ActorSelect* firstB8 = (ActorSelect*)centerA->CombatController_GetTarget();
     OtherState* pkState3 = centerA->CombatController_GetCombatState();
     float thresholdA = centerA->GetCurrentCombatStyle()->TESCombatStyle_GetTargetingFOV();
-    int factionNum = actor->TESObjectREFR_GetLocationEncounterZone();
-    bool hactorTypeTmp = CombatUtilities_IsActorUsingMelee(actor);
+    int factionNum = apMember->TESObjectREFR_GetLocationEncounterZone();
+    bool hactorTypeTmp = CombatUtilities_IsActorUsingMelee(apMember);
     unsigned int count113 = PathingSolution_GetVirtualNodeCount();
     for (unsigned int index = 0; index < count113; ++index)
     {
@@ -8634,7 +8875,7 @@ ActorSelect* ActorPicker::SelectActor(ActorSelect* actor)
         ActorSelect* candidate18 = entry36->actor;
         if (thresholdA > 0.0)
         {
-            if (!IsWithinAimLimits(actor, candidate18->GetDistanceValue(), (float)(thresholdA * DAT_01023128),
+            if (!IsWithinAimLimits(apMember, candidate18->GetDistanceValue(), (float)(thresholdA * DAT_01023128),
                                    DAT_0101ff50))
                 continue;
         }
@@ -8644,10 +8885,10 @@ ActorSelect* ActorPicker::SelectActor(ActorSelect* actor)
             if (factionNum != candidateFaction)
                 continue;
         }
-        if (actor->FUN_00566950())
+        if (apMember->FUN_00566950())
         {
             int ignored = 0;
-            if (!actor->IsHostileTo(candidate18, 0, &ignored, 0))
+            if (!apMember->IsHostileTo(candidate18, 0, &ignored, 0))
                 continue;
         }
         bool lOther = false;
@@ -8655,7 +8896,7 @@ ActorSelect* ActorPicker::SelectActor(ActorSelect* actor)
         bool bshapeChanged_2 = false;
         bool isClose = false;
         ScoreValue value3;
-        UpdateTargetPerception(actor, candidate18, &pisValid_, &value3, &bshapeChanged_2, &isClose);
+        CombatGroup_GetTargetDetectionLevel(apMember, candidate18, &pisValid_, &value3, &bshapeChanged_2, &isClose);
         if (pisValid_ < 0 && candidate18 == firstB8 && pkState3->GetHasBufferedDetection_0097ee90())
             pisValid_ = 1;
         if (pisValid_ > 0)
@@ -8699,9 +8940,9 @@ ActorSelect* ActorPicker::SelectActor(ActorSelect* actor)
                 unsigned int cfsameActor = firstB8 == candidate18;
                 if (entry36->threshold > cfsameActor)
                     score += DAT_011f18b0;
-                if ((pkState3->IsModifierZero() || difference3) && pkState3->HasItemWithinRadius(&spose8, DAT_01032adc))
+                if ((pkState3->IsModifierZero() || difference3) && pkState3->CombatState_IsLocationUnreachable(&spose8, DAT_01032adc))
                     score -= DAT_011a4d5c;
-                if (difference3 && !CombatUtilities_CanActorExistInSpace(actor, &spose8))
+                if (difference3 && !CombatUtilities_CanActorExistInSpace(apMember, &spose8))
                     score -= DAT_011a4d58;
                 if (candidate18->GetFirstCondition(0) || candidate18->GetSecondCondition())
                     score -= DAT_011a4d54;
@@ -8741,22 +8982,25 @@ struct B989700Entry
 struct B989700List
 {
     unsigned int PathingSolution_GetVirtualNodeCount();
-    B989700Entry* CombatGroup_GetCombatTarget(unsigned int uiIndex);
-    Actor* FindRefInRadius(B9897F0Point* pkPoint, float fRadius, bool bCheck);
+    B989700Entry* CombatGroup_GetCombatTarget(unsigned int aiIndex);
+    Actor* FindRefInRadius(B9897F0Point* arWorldLoc, float fRadius, bool abDetectedOnly);
 };
 // @fnv 0x00989700
-Actor* B989700List::FindRefInRadius(B9897F0Point* pkPoint, float afRadius, bool bCheck)
+// pdb: CombatGroup::FindTargetNearLocation | CombatGroup.obj | retail, call graph (shared callers), high
+// pdb params: arWorldLoc, afRadius, abDetectedOnly
+// pdb locals: itargetCount, fradiusSquared, i, pcombatTarget, targetWorldLoc
+Actor* B989700List::FindRefInRadius(B9897F0Point* arWorldLoc, float afRadius, bool abDetectedOnly)
 {
     float fRadiusSqr = afRadius * afRadius;
     unsigned int ItemUpdateArray = PathingSolution_GetVirtualNodeCount();
     for (unsigned int i = 0; i < ItemUpdateArray; ++i)
     {
         B989700Entry* pkEntry = CombatGroup_GetCombatTarget(i);
-        if (!bCheck || pkEntry->IsElapsedTimeBelowSetting())
+        if (!abDetectedOnly || pkEntry->IsElapsedTimeBelowSetting())
         {
             B9897F0Quad kPos;
             pkEntry->m_pkRef->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&kPos));
-            if (pkPoint->GetSquaredDistance(kPos) < fRadiusSqr)
+            if (arWorldLoc->GetSquaredDistance(kPos) < fRadiusSqr)
                 return pkEntry->m_pkRef;
         }
     }
@@ -8767,22 +9011,26 @@ struct B9898B0Group
 {
     unsigned int CombatGroup_GetMemberCount();
     Actor* GetIntAt(unsigned int uiIndex);
-    Actor* FindClosestRef(B9897F0Point* pkPoint, Actor* pkExclude, float fRadius);
+    Actor* CombatGroup_FindClosestMemberToLocation(B9897F0Point* arWorldLoc, Actor* apIgnoreMember, float afMaxDistance);
 };
 // @fnv 0x009898b0
-Actor* B9898B0Group::FindClosestRef(B9897F0Point* pkPoint, Actor* pkExclude, float afMaxDist)
+// src: XBOX_RETAIL_PDB 0x009898b0
+// pdb: CombatGroup::FindClosestMemberToLocation | CombatGroup.obj | retail, object-file run extension, high
+// pdb params: arWorldLoc, apIgnoreMember, afMaxDistance
+// pdb locals: fclosestMemberRadiusSquared, pclosestMember, imemberCount, i, pmember, memberWorldLoc, fsquaredLength
+Actor* B9898B0Group::CombatGroup_FindClosestMemberToLocation(B9897F0Point* arWorldLoc, Actor* apIgnoreMember, float afMaxDistance)
 {
-    float fBestDistSqr2 = (afMaxDist == DAT_0108d540) ? DAT_0108d540 : (float)(afMaxDist * afMaxDist);
+    float fBestDistSqr2 = (afMaxDistance == DAT_0108d540) ? DAT_0108d540 : (float)(afMaxDistance * afMaxDistance);
     Actor* pkClosest = 0;
     unsigned int uiCount2 = CombatGroup_GetMemberCount();
     for (unsigned int i = 0; i < uiCount2; ++i)
     {
         Actor* pkRef = GetIntAt(i);
-        if (pkRef == pkExclude)
+        if (pkRef == apIgnoreMember)
             continue;
         B9897F0Quad kPos;
         pkRef->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&kPos));
-        float fDistSqr2 = pkPoint->GetSquaredDistance(kPos);
+        float fDistSqr2 = arWorldLoc->GetSquaredDistance(kPos);
         if (fDistSqr2 < fBestDistSqr2)
         {
             fBestDistSqr2 = fDistSqr2;
@@ -8875,15 +9123,17 @@ struct TargetAssessmentGroup
     float unkCC;
 
     unsigned int CombatGroup_GetMemberCount();
-    TargetAssessmentEntry* CombatGroup_GetCombatMember(unsigned int idx);
+    TargetAssessmentEntry* CombatGroup_GetCombatMember(unsigned int aiIndex);
     unsigned int PathingSolution_GetVirtualNodeCount();
-    AssessmentActor* CombatGroup_GetTarget(unsigned int idx);
+    AssessmentActor* CombatGroup_GetTarget(unsigned int aiIndex);
 
     void CombatGroup_UpdateCombatStrength();
 };
 
 // @fnv 0x0098c870
 // src: COMMUNITY 0x0098c870
+// pdb: CombatGroup::UpdateCombatStrength | CombatGroup.obj | retail, upstream name already matches, high
+// pdb locals: inonFleeingMemberCount, imemberCount, inonFleeingTargetCount, itargetCount, i, pcombatMember, bfleeing, pcombatController, fcombatStrength, ptarget
 void TargetAssessmentGroup::CombatGroup_UpdateCombatStrength()
 {
     unsigned int _countLocal;
@@ -9009,28 +9259,30 @@ struct GrpQ
     bool CombatGroup_IsTarget(ActQ*);
     bool CombatGroup_CanAddTarget(ActQ*);
     bool CombatGroup_IsMember(ActQ*);
-    bool CombatGroup_AddTarget(ActQ* pActor);
+    bool CombatGroup_AddTarget(ActQ* apActor);
 };
 // Returns early based on two actor checks, rejects actors accepted by a third check, otherwise appends a target and updates the group.
 // @fnv 0x00986410
 // src: XBOX_PDB 0x00986410
-bool GrpQ::CombatGroup_AddTarget(ActQ* pActor)
+// pdb: CombatGroup::AddTarget | CombatGroup.obj | retail, string-set bridge, high
+// pdb params: apActor
+bool GrpQ::CombatGroup_AddTarget(ActQ* apActor)
 {
-    if (!pActor)
+    if (!apActor)
         return false;
-    if (CombatGroup_IsTarget(pActor))
+    if (CombatGroup_IsTarget(apActor))
         return true;
-    if (!CombatGroup_CanAddTarget(pActor))
+    if (!CombatGroup_CanAddTarget(apActor))
         return false;
-    if (CombatGroup_IsMember(pActor))
+    if (CombatGroup_IsMember(apActor))
     {
         Warning_005b5e40("COMBAT: Trying to add actor %08X %s to Combat Group target list when they are a member.",
-                     pActor->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), pActor->GetFormEditorIDLength() ? pActor->GetNameQ() : pActor->TESObjectREFR_GetFullName());
+                     apActor->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), apActor->GetFormEditorIDLength() ? apActor->GetNameQ() : apActor->TESObjectREFR_GetFullName());
         return false;
     }
     TgtQ kTarget;
-    kTargets.FUN_0098eec0(kTarget.Init(pActor, unkD0));
-    DAT_011f1958->AddCombatGroupTarget(reinterpret_cast<ActorCombatGroup*>(this), reinterpret_cast<Actor*>(pActor));
+    kTargets.FUN_0098eec0(kTarget.Init(apActor, unkD0));
+    DAT_011f1958->AddCombatGroupTarget(reinterpret_cast<ActorCombatGroup*>(this), reinterpret_cast<Actor*>(apActor));
     return true;
 }
 
@@ -9057,7 +9309,7 @@ struct CombatCtx
     int unk2c;
     int unk30;
     int unk34;
-    CombatCtx(Owner_9862e0* owner);
+    CombatCtx(Owner_9862e0* apCombatGroup);
     ~CombatCtx();
 };
 struct Owner_9862e0
@@ -9081,14 +9333,17 @@ struct Owner_9862e0
     int m40;
     TimeValue m44;
     void CombatGroup_ResetMembers();
-    void CombatGroup_ForceGroupStrategy(Target_9862e0* target);
+    void CombatGroup_ForceCombatGroupStrategy(Target_9862e0* apStrategy);
 };
 // Stores target in m28; when non-null, creates CombatCtx, calls FUN_0098a3c0 and target->v4, updates m40, m44, and m2c; otherwise clears m2c.
 // @fnv 0x009862e0
-// src: COMMUNITY 0x009862e0
-void Owner_9862e0::CombatGroup_ForceGroupStrategy(Target_9862e0* target)
+// src: XBOX_DEBUG_PDB 0x009862e0
+// pdb: CombatGroup::ForceCombatGroupStrategy | CombatGroup.obj | debug, call graph, high
+// pdb params: apStrategy
+// pdb locals: groupData
+void Owner_9862e0::CombatGroup_ForceCombatGroupStrategy(Target_9862e0* apStrategy)
 {
-    m28 = target;
+    m28 = apStrategy;
     if (m28)
     {
         CombatCtx ctx(this);
@@ -9222,6 +9477,8 @@ struct FUN_00985d10
 
 // Initializes all members of FUN_00985d10, setting m_04 to a1 and several float fields to DAT_01012054.
 // @fnv 0x00985d10
+// pdb: CombatGroup::CombatGroup | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: aiGroupID
 FUN_00985d10::FUN_00985d10(int a1)
     : m_00(0), m_04(a1), m_28(0), m_2c(false), m_40(0), m_c0(DAT_01012054), m_c4(DAT_01012054), m_c8(DAT_01012054),
       m_cc(DAT_01012054), m_d0(0), m_d4(0), m_e8(-DAT_0108d540), m_ec(0), m_100(reinterpret_cast<const NiPoint3_helper_combatgroup&>(NiPoint3_ZERO)), m_10c(0.0f), m_130(0),
@@ -9241,14 +9498,17 @@ struct AvoidArray9894 : PathingAvoidNodeArray
 struct FUN_00989490_shell
 {
     float GetBoundsSq(NiPoint3* apCenter);
-    PathingAvoidNodeArray* __thiscall CombatGroup_CreateFlankingAvoidNodeArray(int a1, int a2, int a3, PathingAvoidNodeArray* apArray);
+    PathingAvoidNodeArray* __thiscall CombatGroup_CreateFlankingAvoidNodeArray(int apActor, int arDestination, int afExtraRadius, PathingAvoidNodeArray* apExistingAvoidNodeArray);
 };
 
 // Adds an avoidance node at the target center with a radius derived from the bounds square to the given pathing avoid node array.
 // @fnv 0x00989490
 // src: COMMUNITY 0x00989490
-PathingAvoidNodeArray* __thiscall FUN_00989490_shell::CombatGroup_CreateFlankingAvoidNodeArray(int aiUnused1, int aiUnused2, int aiUnused3,
-                                                                   PathingAvoidNodeArray* apArray)
+// pdb: CombatGroup::CreateFlankingAvoidNodeArray | CombatGroup.obj | retail, upstream name already matches, high
+// pdb params: apActor, arDestination, afExtraRadius, apExistingAvoidNodeArray
+// pdb locals: targetCenter, fradius, pavoidNodeArray, fboundingSphereRadiusSquared
+PathingAvoidNodeArray* __thiscall FUN_00989490_shell::CombatGroup_CreateFlankingAvoidNodeArray(int apActor, int arDestination, int afExtraRadius,
+                                                                   PathingAvoidNodeArray* apExistingAvoidNodeArray)
 {
     B006815c0 kTargetCenter;
     float fBoundsSq;
@@ -9256,7 +9516,7 @@ PathingAvoidNodeArray* __thiscall FUN_00989490_shell::CombatGroup_CreateFlanking
     fBoundsSq = GetBoundsSq(&kTargetCenter);
     if (fBoundsSq > fR * fR)
         fR = NiSqrt_004579e0(fBoundsSq);
-    PathingAvoidNodeArray* pArray = apArray;
+    PathingAvoidNodeArray* pArray = apExistingAvoidNodeArray;
     if (!pArray)
         pArray = new PathingAvoidNodeArray;
     static_cast<AvoidArray9894*>(pArray)->AddNode(
@@ -9266,7 +9526,9 @@ PathingAvoidNodeArray* __thiscall FUN_00989490_shell::CombatGroup_CreateFlanking
 
 // @fnv 0x009865d0
 // src: XBOX_PDB 0x009865d0
-void* ActorCombatGroup::CombatGroup_GetCombatTargetForActor(int aiRef)
+// pdb: CombatGroup::GetCombatTargetForActor | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apActor
+void* ActorCombatGroup::CombatGroup_GetCombatTargetForActor(int apActor)
 {
-    return reinterpret_cast<FUN_00986610_shell*>(this)->CombatGroup_GetCombatTargetForNumericID(reinterpret_cast<TESForm*>(aiRef)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+    return reinterpret_cast<FUN_00986610_shell*>(this)->CombatGroup_GetCombatTargetForNumericID(reinterpret_cast<TESForm*>(apActor)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
 }

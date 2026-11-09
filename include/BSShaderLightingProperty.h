@@ -10,6 +10,7 @@ class NiTriBasedGeom;
 // the PDB: the light list at +0x60, fForcedDarkness = 1.0 at +0x6c, uiReferenceID at +0x70, bLightListChanged at
 // +0x74 and kLightListFence at +0x78. The 0x80-byte shader property allocated at many sites (constructor 0x00b6fc90)
 // is BSShaderNoLightingProperty.
+// pdb: class BSShaderLightingProperty, size 0x7c, bases: BSShaderProperty, 5 members
 class BSShaderLightingProperty : public BSShaderProperty
 {
   public:
@@ -28,7 +29,7 @@ class BSShaderLightingProperty : public BSShaderProperty
     bool AreLightsSorted(NiBound* bound);
     ShadowSceneLight* GetFirstAttachedLight(void*& iter);
     ShadowSceneLight* GetFirstAttachedLight(void** iter);
-    ShadowSceneLight* GetFirstActiveLight(void*& iter);
+    ShadowSceneLight* GetFirstActiveLight(void*& aitIter);
     ShadowSceneLight* GetFirstActiveLight(void** iter);
     ShadowSceneLight* GetFirstActiveNonShadowLight(void*& iter);
     ShadowSceneLight* GetFirstActiveNonShadowLight(void** iter);
@@ -36,7 +37,7 @@ class BSShaderLightingProperty : public BSShaderProperty
     ShadowSceneLight* GetNextLight(void** iter);
     ShadowSceneLight* GetNextAttachedLight(void*& iter);
     ShadowSceneLight* GetNextAttachedLight(void** iter);
-    ShadowSceneLight* GetNextAttachedLight(void* iter);
+    ShadowSceneLight* BSShaderLightingProperty_RemoveLight(void* apSSLight);
     ShadowSceneLight* GetNextVisibleNonShadowLight(void*& iter);
     ShadowSceneLight* GetNextVisibleNonShadowLight(void** iter);
     void AttachLight(ShadowSceneLight* light, NiBound* bound);

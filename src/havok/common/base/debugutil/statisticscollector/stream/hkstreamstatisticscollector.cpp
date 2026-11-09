@@ -39,7 +39,7 @@ inline hkMemoryRouter* audio()
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
 
-extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* arr, int capacity, int elemSize);
+extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 extern "C" void __cdecl hkString_memCpy(void* dst, const void* src, int n);
 
 struct hkArrayCharLocalForm
@@ -91,16 +91,19 @@ struct Obj
 {
     int pad[5];
     hkArrayCharLocalForm m14;
-    void SetData(const void* src, int n, hkBool swap);
+    void hkStreamStatisticsCollector_setDataByCopying(const void* buffer, int length, hkBool endianSwap);
 };
 
 // Copies n bytes from src into m14, then if swap is set byte-swaps the a and b fields of each record in the buffer.
 // @fnv 0x00ddf2a0
-void Obj::SetData(const void* src, int n, hkBool swap)
+// src: XBOX_RETAIL_PDB 0x00ddf2a0
+// pdb: hkStreamStatisticsCollector::setDataByCopying | hkStreamStatisticsCollector.obj | retail, object-file gap fill, high
+// pdb params: buffer, length, endianSwap
+void Obj::hkStreamStatisticsCollector_setDataByCopying(const void* buffer, int length, hkBool endianSwap)
 {
-    m14.setData(src, n);
-    hkString_memCpy(m14.m_data, src, n);
-    if (swap)
+    m14.setData(buffer, length);
+    hkString_memCpy(m14.m_data, buffer, length);
+    if (endianSwap)
     {
         for (int i = 0; i < m14.m_iElementCount;)
         {
@@ -128,6 +131,7 @@ struct StreamStatisticsCollector
     void* FreeIfFlagged(unsigned int flags);
 };
 // @fnv 0x00ddfb40
+// pdb: hkStreamStatisticsCollector::`scalar deleting destructor' | hkStreamStatisticsCollector.obj | retail, vtable slot, high
 void* StreamStatisticsCollector::FreeIfFlagged(unsigned int flags)
 {
     FUN_00ddf240();
@@ -140,27 +144,29 @@ void* StreamStatisticsCollector::FreeIfFlagged(unsigned int flags)
 }
 }  // namespace fnv_00ddfb40
 
-void __cdecl ResizeAudioStream(void* heap, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 // @fnv 0x00ddf370
 // src: HAVOK_LIB 0x00ddf370
-static __declspec(noinline) int* _newCommand(hkArrayCharLocalForm* apArray, int n)
+// pdb: _newCommand | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: stream, nameLen
+static __declspec(noinline) int* _newCommand(hkArrayCharLocalForm* stream, int nameLen)
 {
     int* pSlot;
-    if (apArray->m_iElementCount > 0)
+    if (stream->m_iElementCount > 0)
     {
-        pSlot = (int*)(apArray->m_data + apArray->m_iElementCount);
+        pSlot = (int*)(stream->m_data + stream->m_iElementCount);
     }
     else
     {
         hkMemoryRouter* pAudioMgr = audio();
-        if (apArray->m_iElementCount == apArray->getCapacity())
-            ResizeAudioStream(pAudioMgr->m_heap, apArray, 1);
-        pSlot = (int*)(apArray->m_data + apArray->m_iElementCount);
-        apArray->m_iElementCount = apArray->m_iElementCount + 1;
-        apArray->setData(0, 0);
+        if (stream->m_iElementCount == stream->getCapacity())
+            ResizeAudioStream(pAudioMgr->m_heap, stream, 1);
+        pSlot = (int*)(stream->m_data + stream->m_iElementCount);
+        stream->m_iElementCount = stream->m_iElementCount + 1;
+        stream->setData(0, 0);
     }
-    apArray->setData(0, n + apArray->m_iElementCount + 6);
+    stream->setData(0, nameLen + stream->m_iElementCount + 6);
     return pSlot;
 }
 
@@ -226,12 +232,12 @@ struct NodeAllocator
 extern "C" int __cdecl hkString_strCmp(const char* a, const char* b);
 // src: HAVOK_LIB 0x00ddf070
 static __declspec(noinline) MonitorNode* _newNode(const char* name, MonitorStrings* strings, MonitorNode* parent,
-                                                      int first, int second)
+                                                      int allocSize, int stringTable)
 {
     if (!name)
         name = "?";
-    if (!second)
-        second = first;
+    if (!stringTable)
+        stringTable = allocSize;
     MonitorNode* node = 0;
     for (int i = 0; parent && i < parent->children.size; ++i)
     {
@@ -261,34 +267,38 @@ static __declspec(noinline) MonitorNode* _newNode(const char* name, MonitorStrin
         node = storage ? new (storage) MonitorNode(parent, name, 1) : 0;
     }
     ++node->count0;
-    node->value0 += (float)first;
+    node->value0 += (float)allocSize;
     ++node->count1;
-    node->value1 += (float)second;
+    node->value1 += (float)stringTable;
     return node;
 }
 // @fnv 0x00ddf680
-void __cdecl AggregateChildValues(MonitorNode* node, MonitorStrings* strings)
+// src: XBOX_RETAIL_PDB 0x00ddf680
+// pdb: _sumNodes | hkStreamStatisticsCollector.obj | retail, string-set bridge, high
+// pdb params: n, stringTable
+// pdb locals: self
+void __cdecl _sumNodes(MonitorNode* n, MonitorStrings* stringTable)
 {
-    if (!node || !node->children.size)
+    if (!n || !n->children.size)
         return;
-    for (int i = 0; i < node->children.size; ++i)
-        AggregateChildValues(node->children.data[i], strings);
-    if (node->value0 != 0.0f)
+    for (int i = 0; i < n->children.size; ++i)
+        _sumNodes(n->children.data[i], stringTable);
+    if (n->value0 != 0.0f)
     {
-        MonitorNode* child = _newNode("self", strings, node, (int)node->value0, (int)node->value1);
-        if (node->children.back() == child)
+        MonitorNode* child = _newNode("self", stringTable, n, (int)n->value0, (int)n->value1);
+        if (n->children.back() == child)
         {
-            node->children.popBack();
-            node->children.CallWithFlag(audio()->m_heap, 0, &child);
+            n->children.popBack();
+            n->children.CallWithFlag(audio()->m_heap, 0, &child);
         }
     }
-    node->value0 = 0.0f;
-    node->value1 = 0.0f;
-    for (int i = 0; i < node->children.size; ++i)
+    n->value0 = 0.0f;
+    n->value1 = 0.0f;
+    for (int i = 0; i < n->children.size; ++i)
     {
-        MonitorNode* child = node->children.data[i];
-        node->value0 = child->value0 + node->value0;
-        node->value1 = child->value1 + node->value1;
+        MonitorNode* child = n->children.data[i];
+        n->value0 = child->value0 + n->value0;
+        n->value1 = child->value1 + n->value1;
     }
 }
 
@@ -326,9 +336,9 @@ class ObjDDF9
   public:
     ~ObjDDF9() throw()
     {
-        ClearItems();
+        hkMonitorStreamAnalyzer_Node_dtor();
     }
-    void ClearItems() throw();
+    void hkMonitorStreamAnalyzer_Node_dtor() throw();
     static void operator delete(void* p, unsigned int nbytes)
     {
         hkRouterDDF9::heap(hkRouterDDF9::hkMemoryRouter_getInstance()).blockFree(p, nbytes);
@@ -337,10 +347,14 @@ class ObjDDF9
     int unk30, unk34, unk38, unk3C, unk40, unk44, unk48, unk4C, unk50, unk54;
 };
 
-void __stdcall hkStreamStatisticsCollector_makeTree(hkArray<ObjDDF9*>& kArray, int iParam) throw();
+void __stdcall hkStreamStatisticsCollector_makeTree(hkArray<ObjDDF9*>& m_nodesOut, int stringTable) throw();
 
 // @fnv 0x00ddf970
-void __stdcall ClearAllItems(int iUnused0, int iUnused1)
+// src: XBOX_RETAIL_PDB 0x00ddf970
+// pdb: hkStreamStatisticsCollector::writeStatistics | hkStreamStatisticsCollector.obj | retail, object-file gap fill, high
+// pdb params: outstream, reportLevel
+// pdb locals: nodes
+void __stdcall hkStreamStatisticsCollector_writeStatistics(int outstream, int reportLevel)
 {
     hkArray<ObjDDF9*> kArray;
     hkStreamStatisticsCollector_makeTree(kArray, 0);
@@ -399,16 +413,18 @@ struct FUN_00ddf170_cls
     SpawnedHandle m_14;
     SpawnedHandle m_20;
 
-    FUN_00ddf170_cls* hkStreamStatisticsCollector_hkStreamStatisticsCollector(int a1, int a2);
+    FUN_00ddf170_cls* hkStreamStatisticsCollector_ctor(int vtblReg, int memSize);
 };
 
 // Calls a base method, sets the vtable, initializes two SpawnedHandle members, and optionally allocates a buffer.
 // @fnv 0x00ddf170
-// src: HAVOK_LIB 0x00ddf170
-FUN_00ddf170_cls* FUN_00ddf170_cls::hkStreamStatisticsCollector_hkStreamStatisticsCollector(int a1, int aiBufferSize)
+// src: XBOX_RETAIL_PDB 0x00ddf170
+// pdb: hkStreamStatisticsCollector::hkStreamStatisticsCollector | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: vtblReg, memSize
+FUN_00ddf170_cls* FUN_00ddf170_cls::hkStreamStatisticsCollector_ctor(int vtblReg, int memSize)
 {
-    ((SubBase*)this)->FUN_00d06f50(a1);
-    int value = aiBufferSize;
+    ((SubBase*)this)->FUN_00d06f50(vtblReg);
+    int value = memSize;
     m_vtbl = (void*)&DAT_010d8040;
     SpawnedHandle* pHandle = &m_14;
     pHandle->m_ptr = 0;
@@ -449,21 +465,23 @@ struct StrPacker
 {
     int unk00, unk04, unk08, unk0c, unk10;
     hkArrayCharLocalForm m14;
-    void hkStreamStatisticsCollector_pushDir(const char* str);
+    void hkStreamStatisticsCollector_pushDir(const char* dirName);
 };
 
 // Packs a string into m14 with a 0x50 header, length, and padding when capacity allows.
 // @fnv 0x00ddf5a0
 // src: HAVOK_LIB 0x00ddf5a0
-void StrPacker::hkStreamStatisticsCollector_pushDir(const char* str)
+// pdb: hkStreamStatisticsCollector::pushDir | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: dirName
+void StrPacker::hkStreamStatisticsCollector_pushDir(const char* dirName)
 {
     if (m14.getCapacity() > m14.m_iElementCount + 0x46)
     {
         int count = 0;
         int pad = 0;
-        if (str != 0)
+        if (dirName != 0)
         {
-            count = hkString_strLen(str) + 1;
+            count = hkString_strLen(dirName) + 1;
             pad = count % 2;
         }
         unsigned char* out = (unsigned char*)_newCommand(&m14, pad + count);
@@ -473,7 +491,7 @@ void StrPacker::hkStreamStatisticsCollector_pushDir(const char* str)
         *(unsigned short*)(out + 4) = 0;
         if (count > 0)
         {
-            hkString_memCpy(out + 6, str, count);
+            hkString_memCpy(out + 6, dirName, count);
             if (pad != 0)
                 out[count + 6] = 0;
         }
@@ -523,6 +541,7 @@ struct FUN_00ddf640_Cls : Obj
 };
 // @fnv 0x00ddf640
 // src: HAVOK_LIB 0x00ddf640
+// pdb: hkStreamStatisticsCollector::popDir | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
 unsigned char* FUN_00ddf640_Cls::hkStreamStatisticsCollector_popDir()
 {
     unsigned char* out = (unsigned char*)m14.getCapacity();
@@ -566,6 +585,7 @@ struct FUN_00ddf240_cls : SpawnedRoot
 };
 
 // @fnv 0x00ddf240
+// pdb: hkStreamStatisticsCollector::~hkStreamStatisticsCollector | hkStreamStatisticsCollector.obj | retail, call graph, high
 FUN_00ddf240_cls::~FUN_00ddf240_cls() throw()
 {
     SpawnedSub* pSub = &m_sub;
@@ -609,40 +629,42 @@ struct FUN_00ddfa10_cls
     Sub20_cls m_20;
 
     int D06D90(int a);
-    void DDF420(int a, int b, int c);
+    void DDF420(int name, int object, int size);
     int D06D50(int a);
     void DDF020();
-    void hkStreamStatisticsCollector_addReferencedObject(int a1, int a2, unsigned char flag);
+    void hkStreamStatisticsCollector_addReferencedObject(int fieldName, int obj, unsigned char flags);
 };
 
 // After capacity and a2 checks, updates m_20 and calls a virtual function from a2; when flag bit 0 is clear, it also calls DDF420 and DDF020.
 // @fnv 0x00ddfa10
 // src: HAVOK_LIB 0x00ddfa10
-void FUN_00ddfa10_cls::hkStreamStatisticsCollector_addReferencedObject(int a1, int a2, unsigned char aiFlags)
+// pdb: hkStreamStatisticsCollector::addReferencedObject | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: fieldName, obj, flags
+void FUN_00ddfa10_cls::hkStreamStatisticsCollector_addReferencedObject(int fieldName, int obj, unsigned char flags)
 {
     int count = (int)(m_1c & 0x3fffffffu);
     if (count <= m_18 + 0x46)
         return;
-    if (a2 == 0)
+    if (obj == 0)
         return;
     Sub20_cls* sub = &m_20;
-    if (sub->CB1930(a2, 0))
+    if (sub->CB1930(obj, 0))
         return;
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
-    sub->CB1870((int)holder->m_heap, a2, 1);
-    if ((aiFlags & 1) == 0)
+    sub->CB1870((int)holder->m_heap, obj, 1);
+    if ((flags & 1) == 0)
     {
-        DDF420(a1, a2, D06D90(a2));
-        void** pVTable = *(void***)a2;
-        int r = D06D50(a2);
-        ((VSlot8)pVTable[2])((void*)a2, this, r);
+        DDF420(fieldName, obj, D06D90(obj));
+        void** pVTable = *(void***)obj;
+        int r = D06D50(obj);
+        ((VSlot8)pVTable[2])((void*)obj, this, r);
         DDF020();
     }
     else
     {
-        void** pVTable = *(void***)a2;
-        int r = D06D50(a2);
-        ((VSlot8)pVTable[2])((void*)a2, this, r);
+        void** pVTable = *(void***)obj;
+        int r = D06D50(obj);
+        ((VSlot8)pVTable[2])((void*)obj, this, r);
     }
 }
 }  // namespace fnv_00ddfa10
@@ -660,7 +682,7 @@ struct Sub20
 };
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl hkStatisticsCollectorUtil_addClassContentsAll(int a, void* b, void* c);
+void __cdecl hkStatisticsCollectorUtil_addClassContentsAll(int obj, void* cls, void* collector);
 
 struct FUN_00ddfab0_cls
 {
@@ -674,15 +696,17 @@ struct FUN_00ddfab0_cls
     unsigned int m_1c;
     Sub20 m_20;
 
-    void hkStreamStatisticsCollector__startObject(int a, int b, int c);
+    void hkStreamStatisticsCollector__startObject(int name, int object, int size);
     void Dispatch_Thunk();
-    void hkStreamStatisticsCollector_addObject(Param1* a1, int a2, int a3, int a4);
+    void hkStreamStatisticsCollector_addObject(Param1* cls, int fieldName, int obj, int flags);
 };
 
 // Checks m_1c, m_18, and a3; updates m_20, then calls FUN_00cf6920 and conditionally calls FUN_00ddf420 and FUN_00ddf020.
 // @fnv 0x00ddfab0
 // src: HAVOK_LIB 0x00ddfab0
-void FUN_00ddfab0_cls::hkStreamStatisticsCollector_addObject(Param1* a1, int a2, int a3, int aiFlags)
+// pdb: hkStreamStatisticsCollector::addObject | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: cls, fieldName, obj, flags
+void FUN_00ddfab0_cls::hkStreamStatisticsCollector_addObject(Param1* cls, int fieldName, int obj, int flags)
 {
     int iMasked = (int)(m_1c & 0x3fffffff);
     int iLimit = m_18 + 0x46;
@@ -690,26 +714,26 @@ void FUN_00ddfab0_cls::hkStreamStatisticsCollector_addObject(Param1* a1, int a2,
     {
         return;
     }
-    if (a3 == 0)
+    if (obj == 0)
     {
         return;
     }
-    if (m_20.LookupHashEntry(a3, 0) != 0)
+    if (m_20.LookupHashEntry(obj, 0) != 0)
     {
         return;
     }
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
-    m_20.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert((int)holder->m_heap, a3, 1);
-    if ((aiFlags & 1) == 0)
+    m_20.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert((int)holder->m_heap, obj, 1);
+    if ((flags & 1) == 0)
     {
-        int r = a1->FUN_00d470d0();
-        hkStreamStatisticsCollector__startObject(a2, a3, r);
-        hkStatisticsCollectorUtil_addClassContentsAll(a3, a1, this);
+        int r = cls->FUN_00d470d0();
+        hkStreamStatisticsCollector__startObject(fieldName, obj, r);
+        hkStatisticsCollectorUtil_addClassContentsAll(obj, cls, this);
         Dispatch_Thunk();
     }
     else
     {
-        hkStatisticsCollectorUtil_addClassContentsAll(a3, a1, this);
+        hkStatisticsCollectorUtil_addClassContentsAll(obj, cls, this);
     }
 }
 }  // namespace fnv_00ddfab0
@@ -734,15 +758,17 @@ struct AllocIface
 // stand-in before.
 struct StreamStatisticsCollector_ddf4d0
 {
-    void hkStreamStatisticsCollector_addChunk(int unused, const char* name, int size, int id, int tag);
+    void hkStreamStatisticsCollector_addChunk(int type, const char* name, int chunkAddress, int usedSize, int allocSize);
 };
 // @fnv 0x00ddf4d0
 // src: HAVOK_LIB 0x00ddf4d0
-void StreamStatisticsCollector_ddf4d0::hkStreamStatisticsCollector_addChunk(int unused, const char* name, int size, int id, int tag)
+// pdb: hkStreamStatisticsCollector::addChunk | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: type, name, chunkAddress, usedSize, allocSize
+void StreamStatisticsCollector_ddf4d0::hkStreamStatisticsCollector_addChunk(int type, const char* name, int chunkAddress, int usedSize, int allocSize)
 {
     if (((hkArrayCharLocalForm*)((char*)this + 0x14))->getCapacity() <= ((hkArrayCharLocalForm*)((char*)this + 0x14))->m_iElementCount + 0x46)
         return;
-    if (id == 0 && tag == 0)
+    if (usedSize == 0 && allocSize == 0)
         return;
     int len = 0;
     int odd = 0;
@@ -754,12 +780,12 @@ void StreamStatisticsCollector_ddf4d0::hkStreamStatisticsCollector_addChunk(int 
     unsigned char* p = (unsigned char*)_newCommand((hkArrayCharLocalForm*)((char*)this + 0x14), odd + len);
     p[0] = 0x43;
     p[1] = (unsigned char)(len + odd);
-    *(unsigned short*)(p + 2) = (unsigned short)id;
+    *(unsigned short*)(p + 2) = (unsigned short)usedSize;
     unsigned int r;
-    if (!tag)
+    if (!allocSize)
         r = 0;
     else
-        r = ((AllocIface*)audio()->m_heap)->allocTag(size, tag);
+        r = ((AllocIface*)audio()->m_heap)->allocTag(chunkAddress, allocSize);
     *(unsigned short*)(p + 4) = r;
     if (len > 0)
     {
@@ -771,34 +797,36 @@ void StreamStatisticsCollector_ddf4d0::hkStreamStatisticsCollector_addChunk(int 
 
 struct Pkt : Obj
 {
-    void hkStreamStatisticsCollector__startObject(const char* str, const void* a2, int a3);
+    void hkStreamStatisticsCollector__startObject(const char* name, const void* object, int size);
 };
 // Writes a six-byte header and an optional null-terminated string padded to an even length; stores an allocator result in the header.
 // @fnv 0x00ddf420
 // src: HAVOK_LIB 0x00ddf420
-void Pkt::hkStreamStatisticsCollector__startObject(const char* str, const void* a2, int a3)
+// pdb: hkStreamStatisticsCollector::_startObject | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: name, object, size
+void Pkt::hkStreamStatisticsCollector__startObject(const char* name, const void* object, int size)
 {
     int len = 0;
     int pad = 0;
-    if (str != 0)
+    if (name != 0)
     {
-        len = hkString_strLen(str) + 1;
+        len = hkString_strLen(name) + 1;
         pad = len % 2;
     }
     unsigned char* out = (unsigned char*)_newCommand(&m14, len + pad);
     Record* rec = (Record*)out;
     rec->type = 0x50;
     rec->len = (unsigned char)(len + pad);
-    rec->a = (unsigned short)a3;
+    rec->a = (unsigned short)size;
     int v;
-    if (a3 == 0)
+    if (size == 0)
         v = 0;
     else
-        v = ((AllocIface&)audio()->heap()).allocTag((int)a2, a3);
+        v = ((AllocIface&)audio()->heap()).allocTag((int)object, size);
     rec->b = (unsigned short)v;
     if (len > 0)
     {
-        hkString_memCpy(out + 6, str, len);
+        hkString_memCpy(out + 6, name, len);
         if (pad != 0)
             out[len + 6] = 0;
     }

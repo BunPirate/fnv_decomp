@@ -6,13 +6,13 @@ class InventoryStackRecord;
 class HotkeyWheelDisplay
 {
 public:
-    Tile* m_pWheelTile;
-    Tile* m_ppHotkeySlotTiles[8];
-    bool m_bHasHotkeySelection;
+    Tile* pWheel;
+    Tile* pHotkeyTilesA[8];
+    bool bSelectingHotkey;
     unsigned char layoutPadding25[3];
-    int m_iTileValueIdAtOffset28;
-    int m_iTileValueIdAtOffset2C;
-    int m_iTileValueIdAtOffset30;
+    int iLastHighlightedHotkey;
+    int iUT_HighlightedHotkey;
+    int iUT_HighlightedText;
 
     HotkeyWheelDisplay();
     ~HotkeyWheelDisplay();

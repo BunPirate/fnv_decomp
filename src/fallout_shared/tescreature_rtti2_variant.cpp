@@ -240,6 +240,8 @@ extern "C" const char DAT_010495e0[], DAT_01049598[], DAT_01049548[], DAT_010494
 
 // @fnv 0x005f9340
 // src: XBOX_PDB 0x005f9340
+// pdb: TESCreature::InitItem | TESCreature.obj | retail, string-set bridge, high
+// pdb locals: itempInt, tempint
 void Host_CreatureInit::TESCreature_InitItem()
 {
     unsigned int formId;
@@ -332,7 +334,7 @@ namespace fnv_005fb270 {
 
 struct TESCreatureCall_1b30
 {
-    void LoadGame_005f1b30(int a1, int a2);
+    void LoadGame_005f1b30(int a1, int aiCurrentFlags);
 };
 
 struct TESCreatureCall_0d00
@@ -345,29 +347,32 @@ __if_exists(::TESCreature::m_ucField00)
 {
     struct TESCreatureLoad : ::TESCreature
     {
-        void TESCreature_LoadGame(int a1, int a2);
+        void TESCreature_LoadGame(int aiFlags, int aiCurrentFlags);
     };
 }
 
 // @fnv 0x005fb270
 // src: XBOX_PDB 0x005fb270
-void TESCreatureLoad::TESCreature_LoadGame(int a1, int a2)
+// pdb: TESCreature::LoadGame | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: icombatstyleID, pcombatstyle
+void TESCreatureLoad::TESCreature_LoadGame(int aiFlags, int aiCurrentFlags)
 {
-    ((TESCreatureCall_1b30*)this)->LoadGame_005f1b30(a1, a2);
-    if (a1 & 0x200)
+    ((TESCreatureCall_1b30*)this)->LoadGame_005f1b30(aiFlags, aiCurrentFlags);
+    if (aiFlags & 0x200)
     {
         ((TESCreatureCall_0d00*)this)->TESForm_LoadGameDataOLD(&m_ucField00, 1);
         ((TESCreatureCall_0d00*)this)->TESForm_LoadGameDataOLD(&m_ucField01, 1);
         ((TESCreatureCall_0d00*)this)->TESForm_LoadGameDataOLD(&m_ucField02, 1);
     }
-    if (a1 & 0)
+    if (aiFlags & 0)
     {
         unsigned int formId;
         ((TESCreatureCall_0d00*)this)->TESForm_LoadNumericID(&formId, 4);
         ::TESCombatStyle* style = dynamic_cast< ::TESCombatStyle*>(TESForm_GetFormByNumericID(formId));
         if (style)
         {
-            m_pCombatStyle = style;
+            pCombatStyle = style;
         }
     }
 }

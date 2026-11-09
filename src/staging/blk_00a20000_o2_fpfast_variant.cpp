@@ -51,12 +51,12 @@ extern "C" int _NiPoint3_ZERO;
 extern "C" unsigned int DAT_011f4270;
 extern "C" unsigned int DAT_011f4274;
 void __cdecl Runtime_UpdateState_00a27470(int a, int b, int c, int* p);
-extern "C" void __cdecl ReadBlockEntries(void*, void*);
-void __cdecl NiEulerRotKey_SaveToStream(void* a, void* b, unsigned int c);
+extern "C" void __cdecl NiEulerRotKey_LoadBinary(void*, void*);
+void __cdecl NiEulerRotKey_SaveToStream(void* stream, void* pkKeys, unsigned int uiNumKeys);
 extern MemoryManager g_memoryManager;
-void NiStepPosKey_DeleteArray(void* p);
+void NiStepPosKey_DeleteArray(void* pkKeyArray);
 extern "C" void __cdecl SaveKey(int, int);
-void __cdecl NiTCBPosKey_SaveToStream(int a, int b, unsigned int count);
+void __cdecl NiTCBPosKey_SaveToStream(int stream, int pkKeys, unsigned int uiNumKeys);
 struct FUN_00a2cc10_T {
     float f;
     char c;
@@ -68,7 +68,7 @@ void __stdcall FUN_00a312d0(int, int, int, int, int);
 void __cdecl Object_ForwardCall_00a31680();
 extern "C" float __cdecl GetAccumulatedValue();
 struct FUN_00a3ea40_cls {
-    void UpdateIfFlagged();
+    void NiPathInterpolator_SetConstantVelocityData();
 };
 void* _memmove(void* d, const void* s, unsigned int n);
 struct TCBKeyS {
@@ -85,7 +85,7 @@ bool FindKeyIndex(float t, TCBKeyS* keys, unsigned int count, unsigned int* idx,
 NiPoint3 GetKeyPosAtTime(float t, TCBKeyS* keys, int type, unsigned int count, unsigned int stride);
 void NiInterpScalar_AdjustBezier(float p0, float t0, float* tan0, float p1, float t1, float* tan1, float t, float p, float* a, float* b);
 void ComputeTCBKeyTangents(TCBKeyS* keys, unsigned int count, unsigned int stride);
-bool Object_CopyData_00a282a0(float t, TCBKeyS** pKeys, unsigned int* pCount);
+bool NiBezPosKey_Insert(float fTime, TCBKeyS** pkKeys, unsigned int* uiNumKeys);
 extern "C" unsigned char DAT_011f367d;
 void StoreGlobalByte(int a, int b, int c, unsigned char* d);
 struct Inner_00a6db50 { void Set(float, float, float, float); };
@@ -131,7 +131,7 @@ struct FUN_00a30700_T {
     void ReleaseRefs();
 };
 struct Base_00a26eb0 {
-    void AccumulateAnimSink(NiStream&);
+    void NiAnimationKey_LoadBinary(NiStream&);
 };
 struct FUN_00a27430_T : Base_00a26eb0 {
     char pad[4];
@@ -150,14 +150,14 @@ extern int DAT_011f3b70;
 extern int DAT_011f3ae0;
 extern int DAT_011f3780;
 extern int DAT_011f3810;
-void Object_UpdateFields_00a28620(int param_1, int param_2);
+void NiBezPosKey_RegisterSupportedFunctions(int eContent, int eType);
 struct Helper { unsigned int a; char b; };
 bool AreFloatsEqual(const Helper* x, const Helper* y);
-bool NiBoolKey_Equal(const Helper* a, const Helper* b);
+bool NiBoolKey_Equal(const Helper* key0, const Helper* key1);
 struct SStream;
 struct SObj;
 void __cdecl WriteFloatToStream(SStream*, SObj*);
-void __cdecl NiAnimationKey_SaveToStream(SStream* a, SObj* b, unsigned int c);
+void __cdecl NiAnimationKey_SaveToStream(SStream* stream, SObj* pkKeys, unsigned int uiNumKeys);
 extern int DAT_01096114;
 extern void __cdecl _NiFree(void*);
 extern MemoryManager _g_memoryManager;
@@ -268,7 +268,7 @@ struct AnimTarget
     int unk00;
     AnimNode m_node;
 };
-void __cdecl CallAnimCallback(int a, void* b);
+void __cdecl CallAnimCallback(int stream, void* pkKey);
 void __cdecl ApplyAnimToTarget(int a, AnimTarget* b);
 struct FUN_00a27b60_tail {
     unsigned int unk00;
@@ -314,7 +314,7 @@ struct A27BD0BezKey : A27BD0Key {
 bool BezKeyEqual(const A27BD0BezKey& kA, const A27BD0BezKey& kB);
 struct DynamicMemoryAllocator {
     void* Allocate(unsigned int auiSize);
-    void Free(void* apPtr);
+    void Free(void* apMem);
 };
 extern "C" DynamicMemoryAllocator DAT_011f6238;
 struct Elem64 {
@@ -387,7 +387,7 @@ public:
     A281E0Point3 m_kOutTan;
     int unk28; int unk2C; int unk30; int unk34; int unk38; int unk3C;
 };
-A281E0BezPosKey* LoadBezPosKeys(A281E0Stream& kStream, unsigned int uiNumKeys);
+A281E0BezPosKey* NiBezPosKey_CreateFromStream(A281E0Stream& stream, unsigned int uiNumKeys);
 struct A28260Key {
     int unk00;
     int unk04;
@@ -403,7 +403,7 @@ struct A28260Key {
     int unk3C;
 };
 void __cdecl ApplyAnimToTarget(NiStream& kStream, A28260Key* pkKey);
-void __cdecl SaveKeyArray(NiStream& kStream, A28260Key* pkKeys, unsigned int uiNumKeys);
+void __cdecl NiBezPosKey_SaveToStream(NiStream& stream, A28260Key* pkKeys, unsigned int uiNumKeys);
 struct Inner_b5508 {
     unsigned int unk00;
     unsigned int unk04;
@@ -415,7 +415,7 @@ void NiRotKey_Interpolate(unsigned int a0, unsigned int a1, unsigned int a2, Vec
 struct FUN_00a28720_target {
     void __thiscall FUN_00a6e4a0(void* value);
 };
-void __cdecl CallAnimCallback(void* a, void* b);
+void __cdecl CallAnimCallback(void* stream, void* pkKey);
 void __cdecl Object_ProcessState_00a28720(void* a, void* b);
 extern "C" unsigned int DAT_011f366c;
 extern "C" unsigned int DAT_011f3670;
@@ -475,9 +475,9 @@ struct FNVAnim {
     float   f00;
     FNVKey  keys[64];
 };
-extern void  __cdecl NiRotKey_FillDerivedVals(FNVAnim* obj, unsigned int count, unsigned int flag);
+extern void  __cdecl NiRotKey_FillDerivedVals(FNVAnim* obj, unsigned int count, unsigned int ucSize);
 extern FNVQuat* __cdecl NiQuaternion_Intermediate(FNVQuat* out, FNVQuat* a, FNVQuat* b, FNVQuat* c);
-void __cdecl NiBezRotKey_FillDerivedVals(FNVAnim* obj, unsigned int count, unsigned int flag);
+void __cdecl NiBezRotKey_FillDerivedVals(FNVAnim* pkKeys, unsigned int uiNumKeys, unsigned int ucSize);
 // The game class NiBound - a 16-byte bound (three position floats and a radius).
 // UHelper layout as read off the image: a float at +0, then two 16-byte
 // NiBound sub-objects at +4 and at +0x14.
@@ -488,7 +488,7 @@ struct UHelper {
 };
 // The primary comparison: the float at +0 and the NiBound sub-object at +4.
 bool Object_ProcessAndReturnValue_00a28a80(UHelper* a, UHelper* b);
-bool CompareBounds(UHelper* a, UHelper* b);
+bool NiBezRotKey_Equal(UHelper* key0, UHelper* key1);
 typedef void (__cdecl *A291F0Func)();
 void __cdecl Object_ComputeValue_00a291e0();
 void __cdecl A291F0CurveA();
@@ -663,7 +663,7 @@ struct Outer {
     int unk00;
     Inner inner04;
 };
-void __cdecl CallAnimCallback(void* target, Outer* source);
+void __cdecl CallAnimCallback(void* stream, Outer* pkKey);
 void __cdecl Object_ProcessState_00a29660(void* target, Outer* source);
 // Reconstruction of UpdateArrayElements (0x00a29e40, 189 bytes).
 //
@@ -704,7 +704,7 @@ extern FNV_CbFn g_fnv_cb_011f3810[];
 extern "C" void __stdcall FNV_array_ctor_iterator(void* base, unsigned int size, unsigned int count, void* ctor);
 // The element constructor of the allocated object.
 extern "C" void __cdecl FNV_element_ctor(void* self);
-bool UpdateArrayElements(float t, void** pOut, int* pFlag);
+bool NiEulerRotKey_Insert(float fTime, void** pkKeys, int* uiNumKeys);
 class A29F00Stream {
 public:
     int unk000;
@@ -872,7 +872,7 @@ extern unsigned char DAT_011f3758[];
 extern A29F00LoadFunc DAT_011f3db0[];
 class A29F00KeyData {
 public:
-    void LoadKeyData(A29F00Stream& kStream);
+    void NiEulerRotKey_RegisterSupportedFunctions(A29F00Stream& kStream);
 
     int unk00;
     int unk04;
@@ -1048,7 +1048,7 @@ struct A29FE0Block {
 };
 typedef void (*A29FE0LoadFunc)(A29FE0Context* pkContext, void* pvData, unsigned int ItemUpdateArray);
 extern A29FE0LoadFunc g_apfnA29FE0Load[];
-void ReadBlockEntries(A29FE0Context* pkContext, A29FE0Block* pkBlock);
+void NiEulerRotKey_LoadBinary(A29FE0Context* pkContext, A29FE0Block* pkBlock);
 struct Quaternion {
     float x;
     float y;
@@ -1076,7 +1076,7 @@ struct QuaternionKey {
 };
 void __cdecl InterpolateQuaternion(float interpolation, const QuaternionKey* first, const QuaternionKey* second, Quaternion* output);
 float __cdecl NiInterpScalar_Linear(float a, float b, float c);
-void __cdecl NiLinFloatKey_Interpolate(float s, const NiPoint3* a, const NiPoint3* b, float* out);
+void __cdecl NiLinFloatKey_Interpolate(float fTime, const NiPoint3* pKey0, const NiPoint3* pKey1, float* pResult);
 struct CopyTail12 {
     unsigned int m_00;
     unsigned int m_04;
@@ -1100,7 +1100,7 @@ struct A2A890Key {
     float m_fTime;
     A2A890Point3 m_kValue;
 };
-void NiLinPosKey_InterpolateD1(float fTime, const A2A890Key& kKey0, const A2A890Key& kKey1, A2A890Point3& kResult);
+void NiLinPosKey_InterpolateD1(float fTime, const A2A890Key& pKey0, const A2A890Key& pKey1, A2A890Point3& pResult);
 struct VertexRecord {
     int x, y, z, w;
     ~VertexRecord() {}
@@ -1126,7 +1126,7 @@ struct LinPosKey : AnimKeyBase {
 };
 bool InsertLinPosKey(float t, LinPosKey** pKeys, unsigned int* pCount);
 struct FUN_00a6e330_StandIn {
-    void __thiscall FUN_00a6e330(float value, const void* first, const void* second);
+    void __thiscall FUN_00a6e330(float value, const void* p, const void* q);
 };
 void __cdecl Runtime_ForwardCall_00a2ab90( float value, const void* first, const void* second, FUN_00a6e330_StandIn* result );
 // Structural equality of two light-like objects: base equality, three scalar terms, four vectors.
@@ -1182,7 +1182,7 @@ static __forceinline S_00a2af70_V Scale(const S_00a2af70_V& v, float t) {
 static __forceinline S_00a2af70_V Add(const S_00a2af70_V& a, const S_00a2af70_V& b) {
     S_00a2af70_V r; r.x = a.x + b.x; r.y = a.y + b.y; r.z = a.z + b.z; return r;
 }
-void __cdecl NiTCBPosKey_Interpolate(float t, S_00a2af70_P* p, int unused, S_00a2af70_V* out);
+void __cdecl NiTCBPosKey_Interpolate(float fTime, S_00a2af70_P* pKey0, int pKey1, S_00a2af70_V* pResult);
 struct S_00a2b050_V3 {
     float x, y, z;
     S_00a2b050_V3() {}
@@ -1460,7 +1460,7 @@ struct TCBRotKey {
     float m_fValueZ;
     TQuat m_kOutgoingTangent;
     TQuat m_kIncomingTangent;
-    void ComputeTangents(const TCBRotKey& prev, const TCBRotKey& next);
+    void NiTCBRotKey_CalculateDVals(const TCBRotKey& pPrev, const TCBRotKey& pNext);
 };
 struct Quad64
 {
@@ -1480,10 +1480,10 @@ struct Quad64
     int unk34;
     int unk38;
     int unk3C;
-    void ComputeTangents(void* a, void* b);
+    void NiTCBRotKey_CalculateDVals(void* pPrev, void* pNext);
 };
-void __cdecl NiRotKey_FillDerivedVals(void* a, unsigned int count, void* c);
-void __cdecl NiTCBRotKey_FillDerivedVals(Quad64* base, unsigned int count, void* c);
+void __cdecl NiRotKey_FillDerivedVals(void* a, unsigned int count, void* ucSize);
+void __cdecl NiTCBRotKey_FillDerivedVals(Quad64* pkKeys, unsigned int uiNumKeys, void* ucSize);
 struct S_a2c300_Istr {
     int unk0;
     int unk4;
@@ -1656,7 +1656,7 @@ struct S_a2c300_Obj {
     int unk18;
     int unk1c;
     void ProcessState_00a29640(S_a2c300_Stream* s);
-    void SaveExtraFields(S_a2c300_Stream* s);
+    void NiTCBRotKey_LoadBinary(S_a2c300_Stream* stream);
 };
 struct S_a2c390_Istr {
     int unk0;
@@ -1833,8 +1833,8 @@ struct S_a2c390_Obj {
     int unk18;
     int unk1c;
 };
-void __cdecl LoadObjFields(S_a2c390_Stream* s, S_a2c390_Obj* o);
-extern "C" void __cdecl LoadObjFields(void* ctx, void* entry);
+void __cdecl NiTCBRotKey_RegisterSupportedFunctions(S_a2c390_Stream* eContent, S_a2c390_Obj* eType);
+extern "C" void __cdecl NiTCBRotKey_RegisterSupportedFunctions(void* eContent, void* eType);
 struct Entry64 {
     unsigned int unk00;
     unsigned int unk01;
@@ -1853,7 +1853,7 @@ struct Entry64 {
     unsigned int unk14;
     unsigned int unk15;
 };
-void __cdecl NiTCBRotKey_SaveToStream(void* ctx, Entry64* entries, unsigned int count);
+void __cdecl NiTCBRotKey_SaveToStream(void* stream, Entry64* pkKeys, unsigned int uiNumKeys);
 struct ShapeValues {
     float initial;
     float start;
@@ -1864,7 +1864,8 @@ struct ShapeValues {
     float extent;
 };
 extern "C" float __cdecl func_0x00a42070(float input, float leftStart, float leftExtent, float rightStart, float rightEnd);
-void __cdecl NiTCBFloatKey_Interpolate(float input, const ShapeValues* left, const ShapeValues* right, float* result);
+void __cdecl NiTCBFloatKey_Interpolate(float fTime, const ShapeValues* pKey0, const ShapeValues* pKey1, float* pResult);
+// pdb: class Key, size 0x8 (here 0x1c), 2 members
 struct Key {
     float t;
     float v;
@@ -1875,9 +1876,9 @@ struct Key {
     float e;
 };
 // src: GAMEBRYO_LIB 0x00a2c6a0
-__declspec(noinline) void __cdecl NiTCBFloatKey_CalculateDVals(Key* k, float a, float b, float c, float d) {
-    k->a = a * c;
-    k->b = b * d;
+__declspec(noinline) void __cdecl NiTCBFloatKey_CalculateDVals(Key* result, float fValSub1, float fValPlus1, float fPreLen, float fNextLen) {
+    result->a = fValSub1 * fPreLen;
+    result->b = fValPlus1 * fNextLen;
 }
 void __cdecl NiTCBFloatKey_FillDerivedVals(Key* keys, unsigned int count);
 struct S_00a2c9d0_Owner {
@@ -2063,7 +2064,7 @@ struct KeyframeElement {
 };
 KeyframeElement* __cdecl AllocateKeyframeElements(void* context, unsigned int count);
 extern "C" void __cdecl Object_WriteKeyFields(void* a1, void* a2);
-void __cdecl NiTCBFloatKey_SaveToStream(void* a1, void* a2, unsigned int count);
+void __cdecl NiTCBFloatKey_SaveToStream(void* stream, void* pkKeys, unsigned int uiNumKeys);
 struct FUN_00a2cc40_S
 {
     unsigned int unk00;
@@ -2107,7 +2108,7 @@ struct FUN_00a2d200_arg
     unsigned int unk00;
     float m_04;
 };
-void NiStepFloatKey_Interpolate(float t, FUN_00a2d200_arg* a, FUN_00a2d200_arg* b, float* out);
+void NiStepFloatKey_Interpolate(float fTime, FUN_00a2d200_arg* pkKey0, FUN_00a2d200_arg* pkKey1, float* pvResult);
 struct KeyVec {
     int m_iX;
     int m_iY;
@@ -2318,7 +2319,7 @@ public:
     virtual void v38();
     virtual void v39();
     virtual void v40(int a, int b, int c, int d);
-    void NiParallelUpdateTaskManager_AddTask(int a, int b);
+    void NiParallelUpdateTaskManager_AddTask(int pkTask, int ePriority);
 };
 inline void* __cdecl operator new(unsigned int, void* memory) throw() {
     return memory;
@@ -2334,7 +2335,7 @@ struct AnimSink {
 };
 class FUN_00a3da20_cls {
 public:
-    void AccumulateAnimSink(int a1);
+    void NiAnimationKey_LoadBinary(int stream);
 };
 struct FUN_00a3da50_Anim {
     int m_unk00;
@@ -2493,7 +2494,7 @@ struct FUN_00a3da50_Owner {
     int m_unk24C;
     FUN_00a3da50_Anim *m_pAnim;
 };
-int __cdecl CallAnimCallback(FUN_00a3da50_Owner *pOwner, int iIndex);
+int __cdecl CallAnimCallback(FUN_00a3da50_Owner *stream, int pkKey);
 __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 struct S_a3dd40_Obj {
     virtual ~S_a3dd40_Obj();
@@ -2528,7 +2529,7 @@ struct FUN_00a3dd40 : FUN_00a3ca30 {
     virtual ~FUN_00a3dd40() throw();
 };
 extern "C" float __cdecl func_0x00a42070(float input, float leftStart, float leftExtent, float rightStart, float rightEnd);
-void __cdecl NiBezFloatKey_Interpolate(float a, const float* b, const float* c, float* out);
+void __cdecl NiBezFloatKey_Interpolate(float fTime, const float* pKey0, const float* pKey1, float* pResult);
 struct FloatKey {
     float time;
     float value;
@@ -2582,7 +2583,7 @@ typedef void* (__cdecl* A29CF0CreateFn)(unsigned int uiNumKeys);
 typedef void (__cdecl* A29CF0CopyFn)(void* pkNewKey, const void* pkOrigKey);
 extern A29CF0CreateFn DAT_011f3930[];
 extern A29CF0CopyFn DAT_011f39c0[];
-void __cdecl CopyKeyData(void* pvDest, void* pvSrc);
+void __cdecl NiEulerRotKey_Copy(void* pkNewKey, void* pkOrigKey);
 void __cdecl CompareHelpers(int a, int b);
 void __cdecl Object_CompareHelpers_Thunk(int a, int b);
 struct A2C550Key {
@@ -2599,9 +2600,9 @@ bool Runtime_AreRecordsAndFloatFieldsEqual(const A2C550Key& kA, const A2C550Key&
 void __cdecl Object_ProcessState_00a29660(void* dst, const void* src);
 void __cdecl Runtime_ProcessEntries_00a2cfd0(void* target, const unsigned char* source, unsigned int count);
 struct Key415 { float time; NiPoint3 value; };
-void NiStepPosKey_InterpolateD1(float unused,const Key415& a,const Key415& b,NiPoint3& result);
+void NiStepPosKey_InterpolateD1(float fTime,const Key415& pKey0,const Key415& pKey1,NiPoint3& pResult);
 struct FNVAnim;
-void __cdecl NiRotKey_FillDerivedVals(FNVAnim* object, unsigned int count, unsigned int flags);
+void __cdecl NiRotKey_FillDerivedVals(FNVAnim* object, unsigned int count, unsigned int ucSize);
 void __cdecl NiRotKey_FillDerivedVals_Thunk(FNVAnim* object, unsigned int count, unsigned int flags);
 bool Object_ProcessAndReturnValue_00a28a80(UHelper* a, UHelper* b);
 bool Object_ForwardCall_00a2d680(UHelper* a, UHelper* b);
@@ -2631,6 +2632,8 @@ template <> inline __declspec(nothrow) NiPointer<NiTextKeyExtraData>::NiPointer(
 template <> inline __declspec(nothrow) NiPointer<NiStringPalette>::NiPointer() {}
 
 // @fnv 0x00a316a0
+// pdb: NiControllerSequence::NiControllerSequence | NiControllerSequence.obj | retail, call graph, medium
+// pdb params: kName, uiArraySize, uiArrayGrowBy
 NiControllerSequence::NiControllerSequence() :
     m_uiNumControlledBlocks(0), m_uiNumIDTags(0), m_pInterpArray(0), m_pkIDTags(0), m_fWeight(1.0f), m_spTextKeyData(0),
     m_eAnimationCycleType(NiTimeController__CycleType_LOOP), m_fFrequency(1.0f), m_fFirstKeyTime(3.402823466e+38f),

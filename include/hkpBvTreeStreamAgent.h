@@ -23,6 +23,7 @@ typedef unsigned int hkpShapeKey;
 typedef float hkTime;
 typedef unsigned short hkContactPointId;
 
+// pdb: class hkpBvTreeStreamAgent, size 0x40, bases: hkpCollisionAgent, 3 members
 class hkpBvTreeStreamAgent : public hkpCollisionAgent
 {
 public:
@@ -32,7 +33,7 @@ public:
     virtual void getClosestPoints(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpCdPointCollector& kCollector);
     virtual void linearCast(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const ShapeSweepParameters& kInput, hkpCdPointCollector& kCollector, hkpCdPointCollector* pStartCollector);
     virtual void vf06(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const GskAgentInput& kInput, WorldOperationEntry& kResult);
-    virtual void cleanup(hkpConstraintOwner& kInfo);
+    virtual void cleanup(hkpConstraintOwner& info);
     virtual void ProcessContactPoints(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpConstraintOwner& kConstraintOwner);
     virtual void RemovePoint(const CollisionAgentContext& kInput);
     virtual void WarpTime(hkTime kOldTime, hkTime kNewTime, const CollisionAgentContext& kInput);
@@ -54,7 +55,7 @@ public:
     static hkpCollisionAgent* __cdecl dispatchBvTreeConvexList(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpContactMgr* pMgr);
     static hkpCollisionAgent* __cdecl dispatchConvexListBvTree(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpContactMgr* pMgr);
 
-    hkpCollisionDispatcher* m_pCollisionDispatcher;
-    hkAabb m_kBoundingBox;
-    AgentSectorPointerArray m_kAgentNnTrack;
+    hkpCollisionDispatcher* m_dispatcher;
+    hkAabb m_cachedAabb;
+    AgentSectorPointerArray m_agentTrack;
 };

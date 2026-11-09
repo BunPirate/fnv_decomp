@@ -6,6 +6,7 @@
 
 class TESActorBase;
 
+// pdb: class TESLevCreature, size 0x70, bases: TESBoundObject, TESLeveledList, TESModelTextureSwap, 1 members
 class TESLevCreature : public TESBoundObject, public TESLeveledList, public TESModelTextureSwap
 {
 public:
@@ -14,7 +15,7 @@ public:
 
     virtual void InitItem();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     bool LoadForm(TESFile* file);
 
     TESActorBase* pTemplate;

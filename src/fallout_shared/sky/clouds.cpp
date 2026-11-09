@@ -5,27 +5,30 @@
 #include "../../../include/NiPoint3.h"
 
 // @fnv 0x00634110
-void Clouds::Update(Sky* sky, float time)
+// pdb: Clouds::Update | Clouds.obj | retail, upstream name already matches, high
+// pdb params: apSky, afSecondsPassed
+// pdb locals: pLastWeather, pCurrentWeather, i, pshadeProperty, fdelta, fCloudSpeed, kcolor, strfilename, ptestexture, pprop, spTex, ptex, pskyprop
+void Clouds::Update(Sky* apSky, float afSecondsPassed)
 {
-    SkyObject::Update(sky, time);
-    TESWeather* m_pWeatherObject = sky->TESMain_GetThread();
-    TESWeather* m_pPreviousWeather = sky->FUN_00825c00();
+    SkyObject::Update(apSky, afSecondsPassed);
+    TESWeather* m_pWeatherObject = apSky->TESMain_GetThread();
+    TESWeather* m_pPreviousWeather = apSky->FUN_00825c00();
     if (!m_pWeatherObject)
         return;
     for (int i = 0; i < GetOffset58(); ++i)
-        if (!m_pCloudLayerGeometry[i])
+        if (!spClouds[i])
             return;
-    if (sky->Sky_GetMode() == 3 || sky->Sky_GetMode() == 2)
+    if (apSky->Sky_GetMode() == 3 || apSky->Sky_GetMode() == 2)
     {
         for (int i = 0; i < GetOffset58(); ++i)
         {
             float speed;
             float delta;
             CloudsColorController* controller =
-                (!m_pCloudLayerGeometry[i]->FUN_0050d100()->GetControllers()
+                (!spClouds[i]->FUN_0050d100()->GetControllers()
                      ? false
-                     : m_pCloudLayerGeometry[i]->FUN_0050d100()->GetControllers()->FUN_00441110() == 13)
-                    ? (CloudsColorController*)m_pCloudLayerGeometry[i]->FUN_0050d100()->GetControllers()
+                     : spClouds[i]->FUN_0050d100()->GetControllers()->FUN_00441110() == 13)
+                    ? (CloudsColorController*)spClouds[i]->FUN_0050d100()->GetControllers()
                     : 0;
             if (controller)
             {
@@ -35,15 +38,15 @@ void Clouds::Update(Sky* sky, float time)
             speed = m_pWeatherObject->GetCloudLayerSpeed(i, DAT_011cca6c.Float()->f, 0.0f);
             if (m_pPreviousWeather)
             {
-                speed *= sky->Sky_GetCurrentWeatherPct();
-                speed += (1.0f - sky->Sky_GetCurrentWeatherPct()) *
+                speed *= apSky->Sky_GetCurrentWeatherPct();
+                speed += (1.0f - apSky->Sky_GetCurrentWeatherPct()) *
                          m_pPreviousWeather->GetCloudLayerSpeed(i, DAT_011cca6c.Float()->f, 0.0f);
             }
-            delta = sky->GetFieldCC() * time * speed;
+            delta = apSky->GetFieldCC() * afSecondsPassed * speed;
             AddToFloatArray((unsigned short)i, delta);
         }
     }
-    if (sky->GetWeatherUpdateFlag() || bForceUpdate)
+    if (apSky->GetWeatherUpdateFlag() || bForceUpdate)
     {
         bForceUpdate = false;
         if (m_pPreviousWeather)
@@ -51,25 +54,25 @@ void Clouds::Update(Sky* sky, float time)
             for (int i = 0; i < GetOffset58(); ++i)
             {
                 BSStringT<char> path;
-                SkyShaderProperty* property = (SkyShaderProperty*)m_pCloudLayerGeometry[i]->GetProperty(3);
+                SkyShaderProperty* property = (SkyShaderProperty*)spClouds[i]->GetProperty(3);
                 TESTexture1024* pkTexture = m_pWeatherObject->GetCloudTexture(i);
                 if (pkTexture && pkTexture->GetModelLength())
                 {
                     path = pkTexture->GetTextureResourcePath();
                     path += pkTexture->GetTextureResourceName();
-                    sky->GetTextureManager();
-                    SkyTextureManager::LoadTextureFromPath(&m_pCloudLayerTexture[i], path);
+                    apSky->GetTextureManager();
+                    SkyTextureManager::LoadTextureInBackground(&spTransTexture[i], path);
                 }
                 else
-                    m_pCloudLayerTexture[i] = 0;
+                    spTransTexture[i] = 0;
             }
         }
-        else if (sky->Sky_GetMode() == 3 || sky->Sky_GetMode() == 2)
+        else if (apSky->Sky_GetMode() == 3 || apSky->Sky_GetMode() == 2)
         {
             for (int i = 0; i < GetOffset58(); ++i)
             {
                 BSStringT<char> path;
-                SkyShaderProperty* property = (SkyShaderProperty*)m_pCloudLayerGeometry[i]->GetProperty(3);
+                SkyShaderProperty* property = (SkyShaderProperty*)spClouds[i]->GetProperty(3);
                 TESTexture1024* pkTexture = m_pWeatherObject->GetCloudTexture(i);
                 if (pkTexture && pkTexture->GetModelLength())
                 {
@@ -80,7 +83,7 @@ void Clouds::Update(Sky* sky, float time)
                     NiTexture* raw = loaded;
                     if (raw)
                     {
-                        property->SetTexture(raw);
+                        property->SetBaseMap(raw);
                         property->SetTextureFile(NiFixedString(path));
                         property->SkyShaderProperty_SetBlendValue(0.0f);
                     }
@@ -91,32 +94,35 @@ void Clouds::Update(Sky* sky, float time)
     for (int i = 0; i < GetOffset58(); ++i)
     {
         SkyShaderProperty* property;
-        NiProperty* baseProperty = m_pCloudLayerGeometry[i]->GetProperty(3);
-        property = NiObject_DynamicCast(&DAT_012005b8, baseProperty);
-        if (m_pCloudLayerTexture[i])
+        NiProperty* baseProperty = spClouds[i]->GetProperty(3);
+        property = NiObject_DynamicCast(&SkyShaderProperty_ms_RTTI, baseProperty);
+        if (spTransTexture[i])
         {
             if (property)
             {
-                property->NiPhysXProp_SetSnapshot(m_pCloudLayerTexture[i]);
-                property->SkyShaderProperty_SetBlendValue(sky->Sky_GetCurrentWeatherPct());
+                property->NiPhysXProp_SetSnapshot(spTransTexture[i]);
+                property->SkyShaderProperty_SetBlendValue(apSky->Sky_GetCurrentWeatherPct());
             }
             if (!m_pPreviousWeather)
             {
-                property->SetTexture(m_pCloudLayerTexture[i]);
-                m_pCloudLayerTexture[i] = 0;
+                property->SetBaseMap(spTransTexture[i]);
+                spTransTexture[i] = 0;
                 property->NiPhysXProp_SetSnapshot(0);
                 property->SkyShaderProperty_SetBlendValue(0.0f);
             }
         }
-        m_pCloudLayerGeometry[i]->FUN_00450f90(!property || !property->BGSCameraShot_GetImagespaceTarget());
+        spClouds[i]->FUN_00450f90(!property || !property->BGSCameraShot_GetImagespaceTarget());
     }
 }
 
 // Loads Clouds.nif, attaches its 3D to parent, adds each geometry child to the cloud node, and sets the layer count.
 // @fnv 0x00633ed0
-void Clouds::Initialize(NiNode* parent)
+// pdb: Clouds::Initialize | Clouds.obj | retail, string-set bridge, high
+// pdb params: apSkyRoot
+// pdb locals: stream, model, inumlayers, pnode, inumchildren, i
+void Clouds::Initialize(NiNode* apSkyRoot)
 {
-    SkyObject::Initialize(parent);
+    SkyObject::Initialize(apSkyRoot);
     BSStream stream;
     if (stream.BSStream_Load("Meshes\\Sky\\Clouds.nif", false))
     {
@@ -128,15 +134,15 @@ void Clouds::Initialize(NiNode* parent)
             int children;
         } build;
         build.root = kModel.GetObject3D();
-        parent->AttachChildInAvailableSlot((NiAVObject*)(NiNode*)m_pRootNode, true);
+        apSkyRoot->AttachChildInAvailableSlot((NiAVObject*)(NiNode*)spRoot, true);
         build.layers = 0;
         build.children = build.root->NiNode_GetChildCount();
         for (int i = 0; i < build.children; ++i)
         {
             if (build.root->FUN_0043b4a0(i)->IsGeometry())
             {
-                m_pCloudLayerGeometry[i] = (NiGeometry*)build.root->FUN_0043b4a0(i);
-                m_pRootNode->AttachChildInAvailableSlot((NiAVObject*)(NiGeometry*)m_pCloudLayerGeometry[i], true);
+                spClouds[i] = (NiGeometry*)build.root->FUN_0043b4a0(i);
+                spRoot->AttachChildInAvailableSlot((NiAVObject*)(NiGeometry*)spClouds[i], true);
                 ++build.layers;
             }
         }
@@ -145,11 +151,13 @@ void Clouds::Initialize(NiNode* parent)
 }
 
 // @fnv 0x006340e0
+// pdb: Clouds::SetNumLayers | Clouds.obj | debug, object-file gap fill, medium
+// pdb params: aiNumLayers
 void Clouds::SetCloudCount(int count)
 {
     if (count > 4)
         count = 4;
-    m_usCloudCount = (unsigned short)count;
+    usNumLayers = (unsigned short)count;
 }
 
 // @fnv 0x00634870
@@ -168,6 +176,8 @@ SkyTextureManager* Sky::GetTextureManager()
 // Assigns the fixed string to the cloud texture path at offset 0x74.
 // @fnv 0x00634900
 // src: XBOX_PDB 0x00634900
+// pdb: SkyShaderProperty::SetTextureFile | Clouds.obj | debug, upstream name already matches, high
+// pdb params: aFilename
 void SkyShaderProperty::SetTextureFile(const NiFixedString& aFilename)
 {
     *(BSStringT<char>*)((char*)this + 0x74) = aFilename;
@@ -175,6 +185,7 @@ void SkyShaderProperty::SetTextureFile(const NiFixedString& aFilename)
 
 // @fnv 0x009c8680
 // src: XBOX_PDB 0x009c8680
+// pdb: BGSCameraShot::GetImagespaceTarget | VATS.obj | debug, upstream name already matches, high
 NiTexture* SkyShaderProperty::BGSCameraShot_GetImagespaceTarget()
 {
     return (NiTexture*)((BSStringT<char>*)((char*)this + 0x70))->operator const char*();
@@ -190,6 +201,7 @@ void __fastcall InitializeCloudColor(NiColor* color)
 void __fastcall ClearCloudGeometry(Clouds*);
 
 // @fnv 0x00633e30
+// pdb: Clouds::~Clouds | Clouds.obj | retail, upstream name already matches, high
 Clouds::~Clouds()
 {
     ClearCloudGeometry(this);

@@ -23,14 +23,14 @@ inline NiPalette* NiPixelData::GetPalette() const throw()
 
 inline unsigned NiPalette::GetEntries(PaletteColorEntry*& entries) const throw()
 {
-    entries = reinterpret_cast<PaletteColorEntry*>(unk14);
-    return unk0C;
+    entries = reinterpret_cast<PaletteColorEntry*>(m_pkPalette);
+    return m_uiEntries;
 }
 
 inline NiPalette::PaletteColorEntry* NiPalette::GetEntries(unsigned& count) const throw()
 {
-    PaletteColorEntry* entries = reinterpret_cast<PaletteColorEntry*>(unk14);
-    count = unk0C;
+    PaletteColorEntry* entries = reinterpret_cast<PaletteColorEntry*>(m_pkPalette);
+    count = m_uiEntries;
     return entries;
 }
 
@@ -71,41 +71,44 @@ static __forceinline bool ReadImageHeader(NiImageReader* reader, NiFile* file,
 }
 
 // @fnv 0x00a7a4f0
-bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& src, int mip)
+// pdb: NiDevImageConverter::ConvertPixelDataFormat | NiDevImageConverter.obj | retail, object-file gap fill, high
+// pdb params: kDest, kSrc, iMipmapLevel
+// pdb locals: kDestFmt, uiMaxLevel, uiSrcBPP, uiMinLevel, kDestBits, uiMaxFaces, kSrcFmt, eSrcFmt, uiDestBPP, kSrcBits, eDestFmt, pfnConverter, uiFace, uiMip, pkEntries, uiEntries, i
+bool NiDevImageConverter::ConvertMipLevel(NiPixelData& kDest, const NiPixelData& kSrc, int iMipmapLevel)
 {
-    const NiPixelFormat& sf = src.m_kPixelFormat;
-    const NiPixelFormat& df = dst.m_kPixelFormat;
-    if (src.GetWidth() != dst.GetWidth() || src.GetHeight() != dst.GetHeight())
+    const NiPixelFormat& sf = kSrc.m_kPixelFormat;
+    const NiPixelFormat& df = kDest.m_kPixelFormat;
+    if (kSrc.GetWidth() != kDest.GetWidth() || kSrc.GetHeight() != kDest.GetHeight())
         return false;
-    unsigned faces = src.m_uiFaces;
-    if (faces != dst.m_uiFaces)
+    unsigned faces = kSrc.m_uiFaces;
+    if (faces != kDest.m_uiFaces)
         return false;
     unsigned uiFirstLevel, uiLastLevel;
-    if (mip == -1)
+    if (iMipmapLevel == -1)
     {
-        uiLastLevel = dst.m_uiMipmapLevels;
-        if (src.m_uiMipmapLevels < uiLastLevel)
+        uiLastLevel = kDest.m_uiMipmapLevels;
+        if (kSrc.m_uiMipmapLevels < uiLastLevel)
             return false;
         uiFirstLevel = 0;
         --uiLastLevel;
     }
     else
     {
-        if ((unsigned)mip >= src.m_uiMipmapLevels || (unsigned)mip >= dst.m_uiMipmapLevels)
+        if ((unsigned)iMipmapLevel >= kSrc.m_uiMipmapLevels || (unsigned)iMipmapLevel >= kDest.m_uiMipmapLevels)
             return false;
-        uiFirstLevel = uiLastLevel = mip;
+        uiFirstLevel = uiLastLevel = iMipmapLevel;
     }
     if (sf == df)
     {
         for (unsigned face = 0; face < faces; ++face)
             for (unsigned level = uiFirstLevel; level <= uiLastLevel; ++level)
-                fnv_zlib_memcpy(dst.GetPixels(level, face), src.GetPixels(level, face), src.GetSizeInBytes(level));
-        if (src.GetPalette())
+                fnv_zlib_memcpy(kDest.GetPixels(level, face), kSrc.GetPixels(level, face), kSrc.GetSizeInBytes(level));
+        if (kSrc.GetPalette())
         {
-            if (!dst.GetPalette())
-                dst.NiPixelData_SetPalette(new NiPalette(*src.GetPalette()));
+            if (!kDest.GetPalette())
+                kDest.NiPixelData_SetPalette(new NiPalette(*kSrc.GetPalette()));
             else
-                AssignPalette(dst.GetPalette(), *src.GetPalette());
+                AssignPalette(kDest.GetPalette(), *kSrc.GetPalette());
         }
         return true;
     }
@@ -122,7 +125,7 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
     PixelConvertFunc convert;
     if (sf == DAT_011aa180)
     {
-        if (!src.GetPalette())
+        if (!kSrc.GetPalette())
             return false;
         if (dstFormat == 0 || dstFormat == 1)
         {
@@ -139,14 +142,14 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
                 return false;
             for (unsigned face = 0; face < faces; ++face)
                 for (unsigned level = uiFirstLevel; level <= uiLastLevel; ++level)
-                    fnv_zlib_memcpy(dst.GetPixels(level, face), src.GetPixels(level, face), src.GetSizeInBytes(level));
-            if (!src.GetPalette())
+                    fnv_zlib_memcpy(kDest.GetPixels(level, face), kSrc.GetPixels(level, face), kSrc.GetSizeInBytes(level));
+            if (!kSrc.GetPalette())
                 return false;
-            if (!dst.GetPalette())
-                dst.NiPixelData_SetPalette(new NiPalette(*src.GetPalette()));
+            if (!kDest.GetPalette())
+                kDest.NiPixelData_SetPalette(new NiPalette(*kSrc.GetPalette()));
             else
-                AssignPalette(dst.GetPalette(), *src.GetPalette());
-            NiPalette* palette = dst.GetPalette();
+                AssignPalette(kDest.GetPalette(), *kSrc.GetPalette());
+            NiPalette* palette = kDest.GetPalette();
             NiPalette::PaletteColorEntry* entries;
             unsigned paletteCount = palette->GetEntries(entries);
             for (unsigned entry = 0; entry < paletteCount; ++entry)
@@ -156,7 +159,7 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
     }
     else if (sf == DAT_011aa1c8)
     {
-        if (!src.GetPalette())
+        if (!kSrc.GetPalette())
             return false;
         if (dstFormat == 0 || dstFormat == 1)
         {
@@ -173,17 +176,17 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
                 return false;
             for (unsigned face = 0; face < faces; ++face)
                 for (unsigned level = uiFirstLevel; level <= uiLastLevel; ++level)
-                    fnv_zlib_memcpy(dst.GetPixels(level, face), src.GetPixels(level, face), src.GetSizeInBytes(level));
-            if (!src.GetPalette())
+                    fnv_zlib_memcpy(kDest.GetPixels(level, face), kSrc.GetPixels(level, face), kSrc.GetSizeInBytes(level));
+            if (!kSrc.GetPalette())
                 return false;
             unsigned paletteCount;
-            dst.NiPixelData_SetPalette(new NiPalette(false, 16, src.GetPalette()->GetEntries(paletteCount)));
+            kDest.NiPixelData_SetPalette(new NiPalette(false, 16, kSrc.GetPalette()->GetEntries(paletteCount)));
             return true;
         }
     }
     else if (sf == DAT_011aa210)
     {
-        if (!src.GetPalette())
+        if (!kSrc.GetPalette())
             return false;
         if (dstFormat == 0 || dstFormat == 1)
         {
@@ -202,14 +205,14 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
                 return false;
             for (unsigned face = 0; face < faces; ++face)
                 for (unsigned level = uiFirstLevel; level <= uiLastLevel; ++level)
-                    fnv_zlib_memcpy(dst.GetPixels(level, face), src.GetPixels(level, face), src.GetSizeInBytes(level));
-            if (!src.GetPalette())
+                    fnv_zlib_memcpy(kDest.GetPixels(level, face), kSrc.GetPixels(level, face), kSrc.GetSizeInBytes(level));
+            if (!kSrc.GetPalette())
                 return false;
-            if (!dst.GetPalette())
-                dst.NiPixelData_SetPalette(new NiPalette(*src.GetPalette()));
+            if (!kDest.GetPalette())
+                kDest.NiPixelData_SetPalette(new NiPalette(*kSrc.GetPalette()));
             else
-                AssignPalette(dst.GetPalette(), *src.GetPalette());
-            NiPalette* palette = dst.GetPalette();
+                AssignPalette(kDest.GetPalette(), *kSrc.GetPalette());
+            NiPalette* palette = kDest.GetPalette();
             NiPalette::PaletteColorEntry* entries;
             unsigned paletteCount = palette->GetEntries(entries);
             for (unsigned entry = 0; entry < paletteCount; ++entry)
@@ -219,7 +222,7 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
     }
     else if (sf == DAT_011aa258)
     {
-        if (!src.GetPalette())
+        if (!kSrc.GetPalette())
             return false;
         if (dstFormat == 0 || dstFormat == 1)
         {
@@ -238,11 +241,11 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
                 return false;
             for (unsigned face = 0; face < faces; ++face)
                 for (unsigned level = uiFirstLevel; level <= uiLastLevel; ++level)
-                    fnv_zlib_memcpy(dst.GetPixels(level, face), src.GetPixels(level, face), src.GetSizeInBytes(level));
-            if (!src.GetPalette())
+                    fnv_zlib_memcpy(kDest.GetPixels(level, face), kSrc.GetPixels(level, face), kSrc.GetSizeInBytes(level));
+            if (!kSrc.GetPalette())
                 return false;
             unsigned paletteCount;
-            dst.NiPixelData_SetPalette(new NiPalette(false, 256, src.GetPalette()->GetEntries(paletteCount)));
+            kDest.NiPixelData_SetPalette(new NiPalette(false, 256, kSrc.GetPalette()->GetEntries(paletteCount)));
             return true;
         }
     }
@@ -288,7 +291,7 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
         if (!(dstFormat == 8 || dstFormat == 9))
             return false;
         if (dstBpp == 16)
-            convert = ConvertRgbToPacked16;
+            convert = NiDevImageConverter_ConvertBUMPLUMA32To16;
         else if (dstBpp == 32)
             convert = NiDevImageConverter_ConvertBUMPLUMA32To32;
         else
@@ -339,45 +342,48 @@ bool NiDevImageConverter::ConvertMipLevel(NiPixelData& dst, const NiPixelData& s
     }
     for (unsigned face = 0; face < faces; ++face)
         for (unsigned level = uiFirstLevel; level <= uiLastLevel; ++level)
-            convert(dst.m_puiWidth[level], dst.m_puiHeight[level], dst.GetSizeInBytes(level),
-                    dst.GetPixels(level, face), src.GetPalette(), dstBits, src.GetPixels(level, face), srcBits);
+            convert(kDest.m_puiWidth[level], kDest.m_puiHeight[level], kDest.GetSizeInBytes(level),
+                    kDest.GetPixels(level, face), kSrc.GetPalette(), dstBits, kSrc.GetPixels(level, face), srcBits);
     return true;
 }
 
 // Checks whether a source NiPixelFormat can be converted to a destination NiPixelFormat, validating endianness, compression, bit depth and format pairs.
 // @fnv 0x00a77e40
-bool NiDevImageConverter::CanConvertPixelFormat(const NiPixelFormat& sf, const NiPixelFormat& df)
+// pdb: NiDevImageConverter::CanConvertPixelData | NiDevImageConverter.obj | retail, object-file gap fill, high
+// pdb params: kSrcFmt, kDestFmt
+// pdb locals: kDestBits, uiDestBPP, eDestFmt
+bool NiDevImageConverter::CanConvertPixelFormat(const NiPixelFormat& kSrcFmt, const NiPixelFormat& kDestFmt)
 {
-    NiPixelFormat::Format dstFormat = df.GetFormat();
-    unsigned dstBpp = df.GetBitsPerPixel();
-    PixelFormatBitLayout bits(df);
-    if (sf == df)
+    NiPixelFormat::Format dstFormat = kDestFmt.GetFormat();
+    unsigned dstBpp = kDestFmt.GetBitsPerPixel();
+    PixelFormatBitLayout bits(kDestFmt);
+    if (kSrcFmt == kDestFmt)
         return true;
-    if (!sf.GetLittleEndian() || !df.GetLittleEndian() || df.IsCompressed())
+    if (!kSrcFmt.GetLittleEndian() || !kDestFmt.GetLittleEndian() || kDestFmt.IsCompressed())
         return false;
     if (dstBpp == 24 && (bits.m_uiGreenMask != 0xff00 || (bits.m_uiRedMask != 0xff && bits.m_uiRedMask != 0xff0000)))
         return false;
-    if (sf == DAT_011aa180 || sf == DAT_011aa1c8)
+    if (kSrcFmt == DAT_011aa180 || kSrcFmt == DAT_011aa1c8)
     {
         if (dstFormat == 0 || dstFormat == 1)
         {
             if (dstBpp != 24 && dstBpp != 32)
                 return false;
         }
-        else if (df != DAT_011aa180 && df != DAT_011aa1c8)
+        else if (kDestFmt != DAT_011aa180 && kDestFmt != DAT_011aa1c8)
             return false;
     }
-    else if (sf == DAT_011aa210 || sf == DAT_011aa258)
+    else if (kSrcFmt == DAT_011aa210 || kSrcFmt == DAT_011aa258)
     {
         if (dstFormat == 0 || dstFormat == 1)
         {
             if (dstBpp != 16 && dstBpp != 24 && dstBpp != 32)
                 return false;
         }
-        else if (df != DAT_011aa210 && df != DAT_011aa258)
+        else if (kDestFmt != DAT_011aa210 && kDestFmt != DAT_011aa258)
             return false;
     }
-    else if (sf == DAT_011aa2e8 || sf == SOURCE_FORMAT_RGB || sf.IsField4InRange())
+    else if (kSrcFmt == DAT_011aa2e8 || kSrcFmt == SOURCE_FORMAT_RGB || kSrcFmt.IsField4InRange())
     {
         if (dstFormat == 0 || dstFormat == 1 || dstFormat == 8 || dstFormat == 9)
         {
@@ -387,7 +393,7 @@ bool NiDevImageConverter::CanConvertPixelFormat(const NiPixelFormat& sf, const N
         else
             return false;
     }
-    else if (sf == DAT_011aa408 || sf == DAT_011aa450)
+    else if (kSrcFmt == DAT_011aa408 || kSrcFmt == DAT_011aa450)
     {
         if (dstFormat == 8 || dstFormat == 9)
         {
@@ -397,7 +403,7 @@ bool NiDevImageConverter::CanConvertPixelFormat(const NiPixelFormat& sf, const N
         else
             return false;
     }
-    else if (sf == DAT_011aa330 || sf == DAT_011aa3c0)
+    else if (kSrcFmt == DAT_011aa330 || kSrcFmt == DAT_011aa3c0)
     {
         if (dstBpp != 16)
             return false;
@@ -408,23 +414,30 @@ bool NiDevImageConverter::CanConvertPixelFormat(const NiPixelFormat& sf, const N
 }
 
 // @fnv 0x00a78050
-bool NiDevImageConverter::IsSupportedSourceFormat(const NiPixelFormat& format)
+// pdb: NiDevImageConverter::IsANonAlphaSupportedMipmapGenerationFormat | NiDevImageConverter.obj | retail, object-file gap fill, high
+// pdb params: kSrcFmt
+bool NiDevImageConverter::IsSupportedSourceFormat(const NiPixelFormat& kSrcFmt)
 {
-    if (format == DAT_011aa180 || format == DAT_011aa210 || format == DAT_011aa2e8)
+    if (kSrcFmt == DAT_011aa180 || kSrcFmt == DAT_011aa210 || kSrcFmt == DAT_011aa2e8)
         return true;
     return false;
 }
 
 // @fnv 0x00a78010
-bool NiDevImageConverter::IsSupportedDestinationFormat(const NiPixelFormat& format)
+// pdb: NiDevImageConverter::IsAnAlphaSupportedMipmapGenerationFormat | NiDevImageConverter.obj | retail, object-file gap fill, high
+// pdb params: kSrcFmt
+bool NiDevImageConverter::IsSupportedDestinationFormat(const NiPixelFormat& kSrcFmt)
 {
-    if (format == DAT_011aa1c8 || format == DAT_011aa258 || format == SOURCE_FORMAT_RGB)
+    if (kSrcFmt == DAT_011aa1c8 || kSrcFmt == DAT_011aa258 || kSrcFmt == SOURCE_FORMAT_RGB)
         return true;
     return false;
 }
 
 // Dispatches on ePlatform: returns gNiPoint3StartupSrc or kDesiredFmt for case 0, calls virtual slots 18-20 for platforms 6/4/5, else returns 0.
 // @fnv 0x00a78630
+// pdb: NiDevImageConverter::FindClosestPixelFormat | NiDevImageConverter.obj | debug, object-file gap fill, medium
+// pdb params: ePlatform, kFmtPrefs, kSrcFmt, kDesiredFmt
+// pdb locals: pkDestFmt
 void* NiDevImageConverter::SelectPlatformFormat(int ePlatform, void* kFmtPrefs, void* kSrcFmt, void* kDesiredFmt)
 {
     typedef void*(__thiscall * VFn)(void*, void*, void*, void*);
@@ -468,6 +481,7 @@ void __fastcall FUN_00a76680(void* pThis);
 
 // @fnv 0x00a7aff0
 // src: GUESS 0x00a7aff0 (confidence: low)
+// pdb: NiDevImageConverter::~NiDevImageConverter | NiDevImageConverter.obj | retail, object-file run extension, low
 void NiDevImageConverter::ProcessEntries_00a7aff0()
 {
     *(void**)this = &DAT_0109d9c4;
@@ -578,6 +592,8 @@ void __cdecl Object_ProcessEntries_00a79e20(unsigned int width, unsigned int hei
 
 // Scans four int entries at offset 0x14 for value and returns the byte at offset 0x1c + i*12 for the matching entry, else 0.
 // @fnv 0x00a77980
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiImageReader *>::DeleteItem | NiDevImageConverter.obj | debug, object-file run extension, low
+// pdb params: pkItem
 unsigned char NiPixelFormat::GetPixelBitData(int value)
 {
     unsigned int i = 0;
@@ -601,6 +617,8 @@ struct NodePoolView
 
 // Allocates a node from the pool at self+0x998, stores pkReader at offset 8, and links the node into the list at self+0x990/0x994.
 // @fnv 0x00a7b0b0
+// pdb: NiDevImageConverter::AddReader | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb params: pkReader
 void __thiscall NiDevImageConverter::PushImageReaderNode(NiImageReader* pkReader)
 {
     char* self = (char*)this;
@@ -650,7 +668,7 @@ void __cdecl ConvertPalettizedToFormat(unsigned int uiWidth, unsigned int uiHeig
                                        const unsigned char* pSrc)
 {
     unsigned int auiTable[256];
-    NiPalette::PaletteColorEntry* pkEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkPalette->unk14);
+    NiPalette::PaletteColorEntry* pkEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkPalette->m_pkPalette);
     for (unsigned int i = 0; i < 256; i++)
     {
         auiTable[i] =
@@ -683,10 +701,13 @@ struct FUN_00a78f70_Fmt
 };
 
 // @fnv 0x00a78f70
+// pdb: NiDevImageConverter::ConvertPAL4To24 | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+// pdb locals: pkPal, pucExpanded, pucStart, i, y, x
 void Convert4BitPalettedTo24Bit(unsigned int width, unsigned int height, unsigned int unused, unsigned char* dst,
                                 NiPalette* pal, FUN_00a78f70_Fmt* fmt, unsigned char* src)
 {
-    NiPalette::PaletteColorEntry* entries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pal->unk14);
+    NiPalette::PaletteColorEntry* entries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pal->m_pkPalette);
     if (fmt->mask1 != 0xff00)
         return;
     unsigned char* p = (unsigned char*)_NiMalloc(width * height);
@@ -740,6 +761,8 @@ static inline unsigned char FindComponentBits(const NiPixelFormat* kFmt, int kin
 
 // Builds per-component masks, bit counts and 8-minus-bits shifts from a NiPixelFormat for all four components.
 // @fnv 0x00a779b0
+// pdb: NiDevImageConverter::PixelBits::PixelBits | NiDevImageConverter.obj | retail, call graph (shared callers), high
+// pdb params: kFmt
 NiDevImageConverter::PixelFormatBitLayout::PixelFormatBitLayout(const NiPixelFormat& format)
 {
     const NiPixelFormat* kFmt = &format;
@@ -788,8 +811,11 @@ static inline bool IsPal_a78a50(const NiPixelFormat& kFmt)
 
 // @fnv 0x00a78a50
 // src: XBOX_PDB 0x00a78a50
-const NiPixelFormat* NiDevImageConverter::FindClosestPixelFormatPS3(const NiTexture::TextureFormatPreferences& kPrefs, const NiPixelFormat& kSrcFmt,
-                                            const NiPixelFormat& kDestFmt)
+// pdb: NiDevImageConverter::FindClosestPixelFormatPS3 | NiDevImageConverter.obj | debug, upstream name already matches, high
+// pdb params: kFmtPrefs, kSrcFmt, kDesiredFmt
+// pdb locals: bSrcAlpha, bDesiredAlpha
+const NiPixelFormat* NiDevImageConverter::FindClosestPixelFormatPS3(const NiTexture::TextureFormatPreferences& kFmtPrefs, const NiPixelFormat& kSrcFmt,
+                                            const NiPixelFormat& kDesiredFmt)
 {
     bool bAlpha;
     if (IsPal_a78a50(kSrcFmt))
@@ -799,7 +825,7 @@ const NiPixelFormat* NiDevImageConverter::FindClosestPixelFormatPS3(const NiText
     if (kSrcFmt.IsCompressed())
         bAlpha = true;
 
-    int eLayout = kPrefs.m_ePreferredPixelLayout;
+    int eLayout = kFmtPrefs.m_ePreferredPixelLayout;
     if (eLayout == 14)
         return &g_kFmtRGBA128_a78a50;
     if (eLayout == 13)
@@ -812,50 +838,50 @@ const NiPixelFormat* NiDevImageConverter::FindClosestPixelFormatPS3(const NiText
     }
     if (eLayout == 0 || eLayout == 5)
     {
-        if (kPrefs.m_eAlphaFormat == 2)
+        if (kFmtPrefs.m_eAlphaFormat == 2)
             return &g_kFmtDXT5_a78a50;
         return &g_kFmtDXT1_a78a50;
     }
     if (eLayout == 3)
     {
-        int eDestFormat = kDestFmt.m_eFormat;
+        int eDestFormat = kDesiredFmt.m_eFormat;
         if (eDestFormat == NiPixelFormat::FORMAT_DXT1)
             return &g_kFmtDXT1_a78a50;
         if (eDestFormat == NiPixelFormat::FORMAT_DXT3)
             return &g_kFmtDXT3_a78a50;
         if (eDestFormat == NiPixelFormat::FORMAT_DXT5)
             return &g_kFmtDXT5_a78a50;
-        if (kPrefs.m_eAlphaFormat == 2)
+        if (kFmtPrefs.m_eAlphaFormat == 2)
             return &g_kFmtDXT5_a78a50;
         return &g_kFmtDXT1_a78a50;
     }
     if (eLayout == 6)
     {
-        const NiPixelFormat& kDest = kDestFmt;
+        const NiPixelFormat& kDest = kDesiredFmt;
         if (kDest.IsField4InRange() || const_cast<NiPixelFormat&>(kDest).GetPalettized())
         {
-            int eDestFormat = kDestFmt.m_eFormat;
+            int eDestFormat = kDesiredFmt.m_eFormat;
             if (eDestFormat == NiPixelFormat::FORMAT_DXT1)
                 return &g_kFmtDXT1_a78a50;
             if (eDestFormat == NiPixelFormat::FORMAT_DXT3)
                 return &g_kFmtDXT3_a78a50;
             if (eDestFormat == NiPixelFormat::FORMAT_DXT5)
                 return &g_kFmtDXT5_a78a50;
-            if (kPrefs.m_eAlphaFormat == 2)
+            if (kFmtPrefs.m_eAlphaFormat == 2)
                 return &g_kFmtDXT5_a78a50;
             return &g_kFmtDXT1_a78a50;
         }
-        if (kDestFmt.m_ucBitsPerPixel == 16)
+        if (kDesiredFmt.m_ucBitsPerPixel == 16)
         {
             bool bDestAlpha;
             if (const_cast<NiPixelFormat&>(kDest).GetPalettized())
-                bDestAlpha = (kDestFmt.m_eFormat == NiPixelFormat::FORMAT_PALALPHA);
+                bDestAlpha = (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_PALALPHA);
             else
                 bDestAlpha = const_cast<NiPixelFormat&>(kDest).GetPixelBitData(3) > 0;
             if (kDest.IsField4InRange())
                 bDestAlpha = true;
 
-            int iAlphaMode = kPrefs.m_eAlphaFormat;
+            int iAlphaMode = kFmtPrefs.m_eAlphaFormat;
             bool bUseAlpha = (iAlphaMode == 1 || iAlphaMode == 2 || (iAlphaMode != 0 && bDestAlpha));
             if (bUseAlpha)
                 return &g_kFmtRGBA16_a78a50;
@@ -875,11 +901,14 @@ struct Format_a798c0
 // Builds a 256-entry lookup table from the palette using the format masks/shifts, then converts the source indices into destination pixels.
 // @fnv 0x00a798c0
 // src: GAMEBRYO_LIB 0x00a798c0
+// pdb: NiDevImageConverter::ConvertPAL8To32 | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+// pdb locals: pkPal, aulLut, puiDW, i, y, x
 void __cdecl NiDevImageConverter_ConvertPAL8To32(unsigned int uiWidth, unsigned int uiHeight, unsigned int uiUnused, unsigned int* pDst,
                           NiPalette* pkPalette, Format_a798c0* pkFormat, const unsigned char* pSrc)
 {
     unsigned int auiTable[256];
-    NiPalette::PaletteColorEntry* pkEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkPalette->unk14);
+    NiPalette::PaletteColorEntry* pkEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkPalette->m_pkPalette);
     for (unsigned int i = 0; i < 256; i++)
         auiTable[i] = (((0xffu >> pkFormat->m_aucShr[3]) << pkFormat->m_aucShl[3]) & pkFormat->m_auiMask[3]) |
                       (((pkEntries[i].b >> pkFormat->m_aucShr[2]) << pkFormat->m_aucShl[2]) & pkFormat->m_auiMask[2]) |
@@ -892,7 +921,7 @@ void __cdecl NiDevImageConverter_ConvertPAL8To32(unsigned int uiWidth, unsigned 
 }
 
 void strcpy_s(char* dst, unsigned int size, const char* src);
-void _fnv_StandardizeFilePath(char* path);
+void _fnv_StandardizeFilePath(char* pcPath);
 
 inline NiImageReader* const& NiDevImageConverter::GetNext(NiTListItem<NiImageReader*>*& pkPos)
 {
@@ -903,7 +932,10 @@ inline NiImageReader* const& NiDevImageConverter::GetNext(NiTListItem<NiImageRea
 
 // @fnv 0x00a77d10
 // src: XBOX_PDB 0x00a77d10
-NiPixelData* NiDevImageConverter::ReadImageFile_00a77d10(const char* pcFilename, NiPixelData* pkOptDest, NiFile* pkIstr)
+// pdb: NiDevImageConverter::ReadImageFile | NiDevImageConverter.obj | retail, object-file gap fill, high
+// pdb params: pcFilename, pkOptDest, apFile
+// pdb locals: kFileName, pcExt, pkIter, acStandardFilename, pkReader, pkIstr, pkDest
+NiPixelData* NiDevImageConverter::ReadImageFile_00a77d10(const char* pcFilename, NiPixelData* pkOptDest, NiFile* apFile)
 {
     NiTListItem<NiImageReader*>* pkPos = m_kImageReaderList.m_pkHead;
     char acStandardFilename[260];
@@ -916,7 +948,7 @@ NiPixelData* NiDevImageConverter::ReadImageFile_00a77d10(const char* pcFilename,
         NiImageReader* pkReader = GetNext(pkPos);
         if (IsExtensionSupported(pkReader, kFileName.GetExt()))
         {
-            NiFile* pkFile = pkIstr ? pkIstr : NiFile::GetFile(acStandardFilename, NiFile::READ_ONLY, 0x8000);
+            NiFile* pkFile = apFile ? apFile : NiFile::GetFile(acStandardFilename, NiFile::READ_ONLY, 0x8000);
             if (!pkFile || !(*pkFile))
             {
                 delete pkFile;
@@ -928,11 +960,11 @@ NiPixelData* NiDevImageConverter::ReadImageFile_00a77d10(const char* pcFilename,
                 delete pkFile;
                 return pkData;
             }
-            if (!pkIstr)
+            if (!apFile)
                 delete pkFile;
         }
     }
-    delete pkIstr;
+    delete apFile;
     return 0;
 }
 
@@ -955,109 +987,112 @@ extern const NiPixelFormat DAT_011aa528;
 
 // @fnv 0x00a786e0
 // src: GAMEBRYO_LIB 0x00a786e0
-const NiPixelFormat* NiDevImageConverter::FindClosestPixelFormatDX9(const NiTexture::TextureFormatPreferences& prefs, const NiPixelFormat& src,
-                                            const NiPixelFormat& dest)
+// pdb: NiDevImageConverter::FindClosestPixelFormatDX9 | NiDevImageConverter.obj | debug, upstream name already matches, high
+// pdb params: kFmtPrefs, kSrcFmt, kDesiredFmt
+// pdb locals: bDesiredAlpha
+const NiPixelFormat* NiDevImageConverter::FindClosestPixelFormatDX9(const NiTexture::TextureFormatPreferences& kFmtPrefs, const NiPixelFormat& kSrcFmt,
+                                            const NiPixelFormat& kDesiredFmt)
 {
-    if (prefs.m_ePreferredPixelLayout == 7)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 7)
     {
-        if (prefs.m_eAlphaFormat == 0)
+        if (kFmtPrefs.m_eAlphaFormat == 0)
             return &DAT_011aad98;
         return &DAT_011aa768;
     }
-    if (prefs.m_ePreferredPixelLayout == 8)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 8)
         return &DAT_011aa6d8;
-    if (prefs.m_ePreferredPixelLayout == 9)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 9)
         return &DAT_011aa600;
-    if (prefs.m_ePreferredPixelLayout == 10)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 10)
         return &DAT_011aa648;
-    if (prefs.m_ePreferredPixelLayout == 11)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 11)
         return &DAT_011aa690;
-    if (prefs.m_ePreferredPixelLayout == 14)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 14)
         return &DAT_011aa570;
-    if (prefs.m_ePreferredPixelLayout == 13)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 13)
         return &DAT_011aa5b8;
-    if (prefs.m_ePreferredPixelLayout == 12)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 12)
         return &DAT_011aa5b8;
-    if (prefs.m_ePreferredPixelLayout == 2)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 2)
     {
-        if (prefs.m_eAlphaFormat == 0)
+        if (kFmtPrefs.m_eAlphaFormat == 0)
             return &DAT_011aab58;
         return &DAT_011aaac8;
     }
-    if (prefs.m_ePreferredPixelLayout == 1)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 1)
     {
-        if (prefs.m_eAlphaFormat == 1)
+        if (kFmtPrefs.m_eAlphaFormat == 1)
             return &DAT_011aa960;
-        if (prefs.m_eAlphaFormat == 2)
+        if (kFmtPrefs.m_eAlphaFormat == 2)
             return &DAT_011aa9f0;
         return &DAT_011aa8d0;
     }
-    if (prefs.m_ePreferredPixelLayout == 0 || prefs.m_ePreferredPixelLayout == 5)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 0 || kFmtPrefs.m_ePreferredPixelLayout == 5)
     {
-        if (prefs.m_eAlphaFormat == 2)
+        if (kFmtPrefs.m_eAlphaFormat == 2)
             return &DAT_011aa528;
         return &DAT_011aa498;
     }
-    if (prefs.m_ePreferredPixelLayout == 3)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 3)
     {
-        if (dest.m_eFormat == NiPixelFormat::FORMAT_DXT1)
+        if (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_DXT1)
             return &DAT_011aa498;
-        if (dest.m_eFormat == NiPixelFormat::FORMAT_DXT3)
+        if (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_DXT3)
             return &DAT_011aa4e0;
-        if (dest.m_eFormat == NiPixelFormat::FORMAT_DXT5)
+        if (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_DXT5)
             return &DAT_011aa528;
-        if (prefs.m_eAlphaFormat == 2)
+        if (kFmtPrefs.m_eAlphaFormat == 2)
             return &DAT_011aa528;
         return &DAT_011aa498;
     }
-    if (prefs.m_ePreferredPixelLayout == 4)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 4)
         return &DAT_011aa450;
-    if (prefs.m_ePreferredPixelLayout == 6)
+    if (kFmtPrefs.m_ePreferredPixelLayout == 6)
     {
-        if (dest.IsField4InRange() || const_cast<NiPixelFormat&>(dest).GetPalettized())
+        if (kDesiredFmt.IsField4InRange() || const_cast<NiPixelFormat&>(kDesiredFmt).GetPalettized())
         {
-            if (dest.m_eFormat == NiPixelFormat::FORMAT_DXT1)
+            if (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_DXT1)
                 return &DAT_011aa498;
-            if (dest.m_eFormat == NiPixelFormat::FORMAT_DXT3)
+            if (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_DXT3)
                 return &DAT_011aa4e0;
-            if (dest.m_eFormat == NiPixelFormat::FORMAT_DXT5)
+            if (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_DXT5)
                 return &DAT_011aa528;
-            if (prefs.m_eAlphaFormat == 2)
+            if (kFmtPrefs.m_eAlphaFormat == 2)
                 return &DAT_011aa528;
             return &DAT_011aa498;
         }
-        if (dest.m_ucBitsPerPixel == 16)
+        if (kDesiredFmt.m_ucBitsPerPixel == 16)
         {
             bool alpha;
-            if (const_cast<NiPixelFormat&>(dest).GetPalettized())
-                alpha = dest.m_eFormat == NiPixelFormat::FORMAT_PALALPHA;
+            if (const_cast<NiPixelFormat&>(kDesiredFmt).GetPalettized())
+                alpha = kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_PALALPHA;
             else
-                alpha = const_cast<NiPixelFormat&>(dest).GetPixelBitData(3) > 0;
-            if (dest.IsField4InRange())
+                alpha = const_cast<NiPixelFormat&>(kDesiredFmt).GetPixelBitData(3) > 0;
+            if (kDesiredFmt.IsField4InRange())
                 alpha = true;
-            if (prefs.m_eAlphaFormat == 1)
+            if (kFmtPrefs.m_eAlphaFormat == 1)
                 return &DAT_011aa960;
-            if (prefs.m_eAlphaFormat == 2)
+            if (kFmtPrefs.m_eAlphaFormat == 2)
                 return &DAT_011aa9f0;
-            if (prefs.m_eAlphaFormat == 0)
+            if (kFmtPrefs.m_eAlphaFormat == 0)
                 return &DAT_011aa8d0;
             if (alpha)
                 return &DAT_011aa9f0;
             return &DAT_011aa8d0;
         }
-        if (dest.m_ucBitsPerPixel == 32)
+        if (kDesiredFmt.m_ucBitsPerPixel == 32)
         {
-            if (prefs.m_eAlphaFormat == 0)
+            if (kFmtPrefs.m_eAlphaFormat == 0)
                 return &DAT_011aab58;
-            if (prefs.m_eAlphaFormat == 1 || prefs.m_eAlphaFormat == 2)
+            if (kFmtPrefs.m_eAlphaFormat == 1 || kFmtPrefs.m_eAlphaFormat == 2)
                 return &DAT_011aaac8;
-            if (dest.m_eFormat == NiPixelFormat::FORMAT_RGB)
+            if (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_RGB)
                 return &DAT_011aab58;
-            if (dest.m_eFormat == NiPixelFormat::FORMAT_RGBA)
+            if (kDesiredFmt.m_eFormat == NiPixelFormat::FORMAT_RGBA)
                 return &DAT_011aaac8;
         }
     }
-    return &dest;
+    return &kDesiredFmt;
 }
 
 extern const NiPixelFormat DAT_011aa498;
@@ -1098,6 +1133,9 @@ static inline bool IsPalettized_a78910(const NiPixelFormat& kFmt)
 
 // Chooses a target NiPixelFormat from the preferred layout and source alpha/compression, falling back to compressed or default formats.
 // @fnv 0x00a78910
+// pdb: NiDevImageConverter::FindClosestPixelFormatXenon | NiDevImageConverter.obj | debug, object-file gap fill, medium
+// pdb params: kFmtPrefs, kSrcFmt, kDesiredFmt
+// pdb locals: bSrcAlpha
 const NiPixelFormat* NiDevImageConverter::SelectFormat(const NiTexture::TextureFormatPreferences& kPrefs, const NiPixelFormat& kSrcFmt,
                                                          const NiPixelFormat& kDestFmt)
 {
@@ -1143,11 +1181,15 @@ void* __cdecl _NiMalloc_00aa1070(unsigned);
 void __cdecl _NiFree_00aa10f0(void*);
 // Expands 4-bit paletted source pixels into a 32-bit color buffer using the palette and bit-shift masks, then frees the temporary buffer.
 // @fnv 0x00a790a0
+// pdb: NiDevImageConverter::ConvertPAL4To32 | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiDevImageConverter::ConvertPALA4To32
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+// pdb locals: pkPal, pucExpanded, pucStart, aulLut, i, puiDW, y, x
 void __cdecl ExpandPalettedImage(unsigned width, unsigned height, unsigned unused, unsigned char* dst,
                                  const NiPalette* palette, const NiDevImageConverter::PixelFormatBitLayout& bits,
                                  const unsigned char* src, const NiDevImageConverter::PixelFormatBitLayout& srcBits)
 {
-    const NiPalette::PaletteColorEntry* entries = reinterpret_cast<NiPalette::PaletteColorEntry*>(palette->unk14);
+    const NiPalette::PaletteColorEntry* entries = reinterpret_cast<NiPalette::PaletteColorEntry*>(palette->m_pkPalette);
     unsigned char* expanded = (unsigned char*)_NiMalloc_00aa1070(width * height);
     unsigned count = (width >> 1) * height;
     unsigned char* saved = expanded;
@@ -1188,10 +1230,14 @@ struct Format_a79310
 // Expands 4-bit packed palette indices into 32-bit colors using the palette and format masks, writes them to pDst, and frees the temporary buffer.
 // @fnv 0x00a79310
 // src: GUESS 0x00a79310 (confidence: high)
+// pdb: NiDevImageConverter::ConvertPALA4To32 | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiDevImageConverter::ConvertPAL8To16
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+// pdb locals: pkPal, pucExpanded, pucStart, aulLut, i, puiDW, y, x
 void __cdecl NiPalette_ExpandFourBitPaletteIndices(unsigned int uiWidth, unsigned int uiHeight, unsigned int uiUnused, unsigned int* pDst,
                           NiPalette* pkPalette, Format_a79310* pkFormat, const unsigned char* pSrc)
 {
-    NiPalette::PaletteColorEntry* pkEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkPalette->unk14);
+    NiPalette::PaletteColorEntry* pkEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkPalette->m_pkPalette);
     unsigned char* pucOut = (unsigned char*)_NiMalloc_00aa1070(uiWidth * uiHeight);
     unsigned int uiBytes = (uiWidth >> 1) * uiHeight;
     unsigned char* pucIndices = pucOut;
@@ -1223,28 +1269,31 @@ void __cdecl NiPalette_ExpandFourBitPaletteIndices(unsigned int uiWidth, unsigne
 // Builds a 256-entry palette table from the palette using the format's channel shifts/masks, then converts each source index to a 16-bit output pixel.
 // @fnv 0x00a79ae0
 // src: GAMEBRYO_LIB 0x00a79ae0
-void __cdecl NiDevImageConverter_ConvertPALA8To16(unsigned width, unsigned height, unsigned unused, unsigned char* dst,
-                          const NiPalette* pPalette, const NiDevImageConverter::PixelFormatBitLayout& kFormat,
-                          const unsigned char* src, const NiDevImageConverter::PixelFormatBitLayout& unusedFmt)
+// pdb: NiDevImageConverter::ConvertPALA8To16 | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+// pdb locals: pkPal, pusW, ausLut, i, y, x
+void __cdecl NiDevImageConverter_ConvertPALA8To16(unsigned uiWidth, unsigned uiHeight, unsigned uiDestSize, unsigned char* pucDest,
+                          const NiPalette* pkSrcPal, const NiDevImageConverter::PixelFormatBitLayout& kDestBits,
+                          const unsigned char* pucSrc, const NiDevImageConverter::PixelFormatBitLayout& kSrcBits)
 {
     unsigned short paletteTable[256];
-    const NiPalette::PaletteColorEntry* paletteEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pPalette->unk14);
-    unsigned alphaLeftShift = kFormat.m_ucAlphaDestinationShift;
-    signed char alphaRightShift = kFormat.m_ucAlphaSourceShift;
+    const NiPalette::PaletteColorEntry* paletteEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkSrcPal->m_pkPalette);
+    unsigned alphaLeftShift = kDestBits.m_ucAlphaDestinationShift;
+    signed char alphaRightShift = kDestBits.m_ucAlphaSourceShift;
     unsigned short blueMask;
-    unsigned short alphaMask = (unsigned short)kFormat.m_uiAlphaMask;
-    unsigned char blueRightShift = kFormat.m_ucBlueSourceShift;
-    unsigned blueLeftShift = kFormat.m_ucBlueDestinationShift;
-    blueMask = (unsigned short)kFormat.m_uiBlueMask;
-    char greenRightShift = kFormat.m_ucGreenSourceShift;
+    unsigned short alphaMask = (unsigned short)kDestBits.m_uiAlphaMask;
+    unsigned char blueRightShift = kDestBits.m_ucBlueSourceShift;
+    unsigned blueLeftShift = kDestBits.m_ucBlueDestinationShift;
+    blueMask = (unsigned short)kDestBits.m_uiBlueMask;
+    char greenRightShift = kDestBits.m_ucGreenSourceShift;
     unsigned greenLeftShift;
-    greenLeftShift = kFormat.m_ucGreenDestinationShift;
-    unsigned short greenMask = (unsigned short)kFormat.m_uiGreenMask;
+    greenLeftShift = kDestBits.m_ucGreenDestinationShift;
+    unsigned short greenMask = (unsigned short)kDestBits.m_uiGreenMask;
     unsigned redLeftShift;
-    unsigned char redRightShift = kFormat.m_ucRedSourceShift;
+    unsigned char redRightShift = kDestBits.m_ucRedSourceShift;
     unsigned uiIndex = 0;
-    redLeftShift = kFormat.m_ucRedDestinationShift;
-    unsigned short redMask = (unsigned short)kFormat.m_uiRedMask;
+    redLeftShift = kDestBits.m_ucRedDestinationShift;
+    unsigned short redMask = (unsigned short)kDestBits.m_uiRedMask;
     for (; uiIndex < 256; ++uiIndex)
     {
         paletteTable[uiIndex] =
@@ -1256,10 +1305,10 @@ void __cdecl NiDevImageConverter_ConvertPALA8To16(unsigned width, unsigned heigh
             ((unsigned short)((unsigned char)(paletteEntries[uiIndex].a >> alphaRightShift)) << alphaLeftShift &
              alphaMask);
     }
-    unsigned short* output = (unsigned short*)dst;
-    for (unsigned row = 0; row < height; ++row)
-        for (unsigned col = 0; col < width; ++col)
-            *output++ = paletteTable[*src++];
+    unsigned short* output = (unsigned short*)pucDest;
+    for (unsigned row = 0; row < uiHeight; ++row)
+        for (unsigned col = 0; col < uiWidth; ++col)
+            *output++ = paletteTable[*pucSrc++];
 }
 
 struct ReaderAllocator
@@ -1399,7 +1448,9 @@ void __fastcall InitializeConverterCodec(void*) throw();
 // original base and codec without invoking synthesized base construction.
 // Initializes the reader list and registers the three built-in image readers.
 // @fnv 0x00a7b110
-NiDevImageConverter* __fastcall InitializeNiDevImageConverter(NiDevImageConverter* self)
+// src: XBOX_RETAIL_PDB 0x00a7b110
+// pdb: NiDevImageConverter::NiDevImageConverter | NiDevImageConverter.obj | retail, call graph (shared callers), high
+NiDevImageConverter* __fastcall NiDevImageConverter_ctor(NiDevImageConverter* self)
 {
     InitializeConverterBase(self);
     *(void**)self = &DAT_0109d9c4;
@@ -1427,6 +1478,9 @@ template <class TAlloc, class T> inline T& NiTPointerListBase<TAlloc, T>::GetNex
 // Copies the path, normalizes it, then tries each registered image reader's extension match and opens the file to test readability.
 // @fnv 0x00a77ae0
 // src: XBOX_PDB 0x00a77ae0
+// pdb: NiDevImageConverter::CanReadImageFile | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: pcFilename
+// pdb locals: kFileName, pcExt, pkIter, acStandardFilename, pkReader, pkIstr
 bool NiDevImageConverter::CanReadImageFile(const char* pcFilename)
 {
     char acStandardFilename[0x104];
@@ -1473,12 +1527,15 @@ inline NiImageReader*& NextReader(ReaderNode*& position)
 }  // namespace fnv_00a77bd0
 
 // @fnv 0x00a77bd0
-bool NiDevImageConverter::ReadFileWithReader(const char* apPath, int& a2, int& a3, int& a4, int& a5, int& a6)
+// pdb: NiDevImageConverter::ReadImageFileInfo | NiDevImageConverter.obj | retail, object-file gap fill, high
+// pdb params: pcFilename, kFmt, bMipmap, uiWidth, uiHeight, uiNumFaces
+// pdb locals: kFileName, pcExt, pkIter, acStandardFilename, pkReader, pkIstr
+bool NiDevImageConverter::ReadFileWithReader(const char* pcFilename, int& kFmt, int& bMipmap, int& uiWidth, int& uiHeight, int& uiNumFaces)
 {
     using namespace fnv_00a77bd0;
     fnv_00a77bd0::ReaderNode* node = reinterpret_cast<fnv_00a77bd0::ReaderNode*>(m_kImageReaderList.m_pkHead);
     char acFilePath[260];
-    _strcpy_s(acFilePath, 260, apPath);
+    _strcpy_s(acFilePath, 260, pcFilename);
     fnv_00a77bd0::_fnv_StandardizeFilePath(acFilePath);
     NiFilename fileNameParts(acFilePath);
     while (node)
@@ -1489,7 +1546,7 @@ bool NiDevImageConverter::ReadFileWithReader(const char* apPath, int& a2, int& a
             NiFile* file = NiFile::GetFile(acFilePath, NiFile::READ_ONLY, 0x8000);
             if (file && *file)
             {
-                if (ReadImageHeader(reader, file, a4, a5, a2, a3, a6))
+                if (ReadImageHeader(reader, file, uiWidth, uiHeight, kFmt, bMipmap, uiNumFaces))
                 {
                     delete file;
                     return true;
@@ -1517,10 +1574,13 @@ inline unsigned PixelDataFaces(const NiPixelData& k)
 // Converts kSrc to the destination pixel format, returning a new NiPixelData or a pointer to kSrc if no conversion is needed.
 // @fnv 0x00a78570
 // src: XBOX_PDB 0x00a78570
-NiPixelData* NiDevImageConverter::ConvertForPlatform(int a1, int a2, const NiPixelData& kSrc, int a4)
+// pdb: NiDevImageConverter::ConvertForPlatform | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: ePlatform, kPrefs, pkSrc, kDesiredFormat
+// pdb locals: pkDest, kSrcFmt, pkDestFmt
+NiPixelData* NiDevImageConverter::ConvertForPlatform(int ePlatform, int kPrefs, const NiPixelData& kSrc, int kDesiredFormat)
 {
     typedef const NiPixelFormat* (__thiscall* DestinationFn)(NiDevImageConverter*, int, int, const NiPixelFormat&, int);
-    const NiPixelFormat* pkFmt = ((DestinationFn)(*(void***)this)[15])(this, a1, a2, kSrc.m_kPixelFormat, a4);
+    const NiPixelFormat* pkFmt = ((DestinationFn)(*(void***)this)[15])(this, ePlatform, kPrefs, kSrc.m_kPixelFormat, kDesiredFormat);
     if (pkFmt == &kSrc.m_kPixelFormat)
         return (NiPixelData*)&kSrc;
     if (!pkFmt)
@@ -1537,24 +1597,27 @@ NiPixelData* NiDevImageConverter::ConvertForPlatform(int a1, int a2, const NiPix
 // Allocates destination pixel data and fills it using differences between neighboring source bytes.
 // @fnv 0x00a78be0
 // src: XBOX_PDB 0x00a78be0
-NiPixelData* __stdcall NiDevImageConverter_GenerateBumpMap(const NiPixelData& src, const NiPixelFormat& fmt)
+// pdb: NiDevImageConverter::GenerateBumpMap | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: kSrc, kDestFmt
+// pdb locals: j, uiHeight, uiDestPixelStride, l, uiSrcPixelStride, uiWidth, pkDest, uiLevels, i, pucSrc, pucDest, pucSrcV, pucSrcU, sDU, s00, sDV, s01, s10
+NiPixelData* __stdcall NiDevImageConverter_GenerateBumpMap(const NiPixelData& kSrc, const NiPixelFormat& kDestFmt)
 {
-    unsigned width = src.m_puiWidth[0], height = src.m_puiHeight[0];
-    unsigned levels = src.m_uiMipmapLevels;
+    unsigned width = kSrc.m_puiWidth[0], height = kSrc.m_puiHeight[0];
+    unsigned levels = kSrc.m_uiMipmapLevels;
     NiPixelData* dst;
     unsigned dstStride, srcStride;
     unsigned level, x, y;
     unsigned char* out;
     const unsigned char *in, *below, *right;
-    if (src.m_kPixelFormat == SOURCE_FORMAT_RGB)
+    if (kSrc.m_kPixelFormat == SOURCE_FORMAT_RGB)
     {
         dst = ::new (NiPixelData::operator new(sizeof(NiPixelData))) NiPixelData(width, height, DAT_011aa450, levels, 1);
         for (level = 0; level < levels; ++level)
         {
             out = dst->m_pucPixels + dst->m_puiOffsetInBytes[level];
-            width = src.m_puiWidth[level];
-            height = src.m_puiHeight[level];
-            in = src.m_pucPixels + src.m_puiOffsetInBytes[level];
+            width = kSrc.m_puiWidth[level];
+            height = kSrc.m_puiHeight[level];
+            in = kSrc.m_pucPixels + kSrc.m_puiOffsetInBytes[level];
             for (y = 0; y < height; ++y)
                 for (x = width; x > 0; --x)
                 {
@@ -1567,15 +1630,15 @@ NiPixelData* __stdcall NiDevImageConverter_GenerateBumpMap(const NiPixelData& sr
         dstStride = 4;
         srcStride = 4;
     }
-    else if (src.m_kPixelFormat == DAT_011aa2e8 && fmt == DAT_011aa450)
+    else if (kSrc.m_kPixelFormat == DAT_011aa2e8 && kDestFmt == DAT_011aa450)
     {
         dst = ::new (NiPixelData::operator new(sizeof(NiPixelData))) NiPixelData(width, height, DAT_011aa450, levels, 1);
         for (level = 0; level < levels; ++level)
         {
             out = dst->m_pucPixels + dst->m_puiOffsetInBytes[level];
-            width = src.m_puiWidth[level];
-            height = src.m_puiHeight[level];
-            in = src.m_pucPixels + src.m_puiOffsetInBytes[level];
+            width = kSrc.m_puiWidth[level];
+            height = kSrc.m_puiHeight[level];
+            in = kSrc.m_pucPixels + kSrc.m_puiOffsetInBytes[level];
             for (y = 0; y < height; ++y)
                 for (x = width; x > 0; --x)
                 {
@@ -1588,7 +1651,7 @@ NiPixelData* __stdcall NiDevImageConverter_GenerateBumpMap(const NiPixelData& sr
         dstStride = 4;
         srcStride = 3;
     }
-    else if (src.m_kPixelFormat == DAT_011aa2e8)
+    else if (kSrc.m_kPixelFormat == DAT_011aa2e8)
     {
         dst = ::new (NiPixelData::operator new(sizeof(NiPixelData))) NiPixelData(width, height, DAT_011aa408, levels, 1);
         dstStride = 2;
@@ -1599,12 +1662,12 @@ NiPixelData* __stdcall NiDevImageConverter_GenerateBumpMap(const NiPixelData& sr
     for (level = 0; level < levels; ++level)
     {
         out = dst->m_pucPixels + dst->m_puiOffsetInBytes[level];
-        width = src.m_puiWidth[level];
-        const unsigned char* in = src.m_pucPixels + src.m_puiOffsetInBytes[level];
+        width = kSrc.m_puiWidth[level];
+        const unsigned char* in = kSrc.m_pucPixels + kSrc.m_puiOffsetInBytes[level];
         right = in + srcStride;
         below = in + width * srcStride;
         width--;
-        height = src.m_puiHeight[level] - 1;
+        height = kSrc.m_puiHeight[level] - 1;
         for (y = 0; y < height; ++y)
         {
             for (x = 0; x < width; ++x)
@@ -1672,6 +1735,9 @@ struct PixelDataRef
 // Queries the first file's properties, allocates a NiPixelData buffer, and copies each mipmap level from the source files into it.
 // @fnv 0x00a7ae60
 // src: XBOX_PDB 0x00a7ae60
+// pdb: NiDevImageConverter::GenerateMipmapPyramidFromFiles | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: apcFilenames, uiNumLevels, pkSrc
+// pdb locals: uiNumFaces, uiHeight, bMipmap, uiWidth, pkDest, kFmt, i, spLevel, uiDestSize
 NiPixelData* NiDevImageConverter::GenerateMipmapPyramidFromFiles(const char** ppcFileNames, unsigned uiNumLevels, NiPixelData* pkCurrentObject)
 {
     if (!ppcFileNames[0])
@@ -1733,9 +1799,12 @@ extern const NiPixelFormat DAT_011aa2a0;
 
 // Generates RGB or RGBA mip levels by averaging pixels from the preceding level.
 // @fnv 0x00a78090
-NiPixelData* NiDevImageConverter::GenerateMipmaps(NiPixelData* source, NiPixelData* destination)
+// pdb: NiDevImageConverter::GenerateMipmapLevels | NiDevImageConverter.obj | retail, object-file gap fill, high
+// pdb params: pkSrc, pkOptDest
+// pdb locals: uiFineRowStride, kDestFmt, pkDest, kSrcFmt, uiMipmapLevels, uiFace, j, k, i, uiCoarseHeight, uiCoarseWidth, pucFine, pucCoarse
+NiPixelData* NiDevImageConverter::GenerateMipmaps(NiPixelData* pkSrc, NiPixelData* pkOptDest)
 {
-    const NiPixelFormat& sourceFormat = source->m_kPixelFormat;
+    const NiPixelFormat& sourceFormat = pkSrc->m_kPixelFormat;
     NiPixelFormat format;
 
     if (IsSupportedSourceFormat(sourceFormat))
@@ -1745,23 +1814,23 @@ NiPixelData* NiDevImageConverter::GenerateMipmaps(NiPixelData* source, NiPixelDa
     else
         return 0;
 
-    NiPixelData* output = destination;
+    NiPixelData* output = pkOptDest;
 
-    if (!output || !output->m_kPixelFormat.operator==(format) || output->m_uiMipmapLevels <= 1 || output->m_uiFaces != source->m_uiFaces)
+    if (!output || !output->m_kPixelFormat.operator==(format) || output->m_uiMipmapLevels <= 1 || output->m_uiFaces != pkSrc->m_uiFaces)
     {
         void* storage = NiPixelData::operator new(sizeof(NiPixelData));
         if (storage)
-            output = ::new (storage) NiPixelData(source->GetWidth(), source->GetHeight(), format, 0, PixelDataFaces(*source));
+            output = ::new (storage) NiPixelData(pkSrc->GetWidth(), pkSrc->GetHeight(), format, 0, PixelDataFaces(*pkSrc));
         else
             output = 0;
     }
 
     unsigned int levels = output->m_uiMipmapLevels;
 
-    if (source != output && !ConvertMipLevel(*output, *source, 0))
+    if (pkSrc != output && !ConvertMipLevel(*output, *pkSrc, 0))
         return 0;
 
-    for (unsigned int face = 0; face < source->m_uiFaces; ++face)
+    for (unsigned int face = 0; face < pkSrc->m_uiFaces; ++face)
     {
 
         if (format.operator==(DAT_011aa2e8))
@@ -1909,13 +1978,17 @@ NiPixelData* NiDevImageConverter::GenerateMipmaps(NiPixelData* source, NiPixelDa
 
 // Converts an 8-bit paletted image to 16-bit using the given NiPalette and pixel format bit layouts.
 // @fnv 0x00a795d0
+// pdb: NiDevImageConverter::ConvertPAL8To16 | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiDevImageConverter::ConvertPAL8To24
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+// pdb locals: pkPal, pusW, ausLut, i, y, x
 void __cdecl ConvertPaletteTo16Bit(unsigned int uiWidth, unsigned int uiHeight, unsigned int uiDestSize,
                                    unsigned char* pucDest, const NiPalette* pkPalette,
                                    const NiDevImageConverter::PixelFormatBitLayout& kDestBits,
                                    const unsigned char* pucSrc,
                                    const NiDevImageConverter::PixelFormatBitLayout& kSrcBits)
 {
-    const NiPalette::PaletteColorEntry* pkEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkPalette->unk14);
+    const NiPalette::PaletteColorEntry* pkEntries = reinterpret_cast<NiPalette::PaletteColorEntry*>(pkPalette->m_pkPalette);
     unsigned short ausPalette[256];
     unsigned int i;
 
@@ -2082,8 +2155,11 @@ struct ConverterTable
 // Converts source pixel data to a destination format, optionally expanding compressed data, generating mipmaps, and converting to bump maps.
 // @fnv 0x00a7a280
 // src: XBOX_PDB 0x00a7a280
+// pdb: NiDevImageConverter::ConvertPixelData | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: kSrc, kDestFmt, pkOptDest, bMipmap
+// pdb locals: spCompressionTmp, spBumpmap, pkSrcTmp, pkPostBumpmap, pkDest, pkPostMipmap, spMipmap
 NiPixelData* NiDevImageConverter::ConvertPixelData(const NiPixelData& kSrc, const NiPixelFormat& kDstFmt,
-                                                 NiPixelData* pkDst, bool bWithMipmaps) throw()
+                                                 NiPixelData* pkOptDest, bool bMipmap) throw()
 {
     ImageConverterPointer<NiPixelData> spExpanded;
     const NiPixelData* pkSrc = &kSrc;
@@ -2098,12 +2174,12 @@ NiPixelData* NiDevImageConverter::ConvertPixelData(const NiPixelData& kSrc, cons
 
     ImageConverterPointer<NiPixelData> spMipmap;
     const NiPixelData* mipSource = 0;
-    if (bWithMipmaps && pkSrc->m_uiMipmapLevels <= 1 && IsPowerOf2(pkSrc->GetWidth()) &&
+    if (bMipmap && pkSrc->m_uiMipmapLevels <= 1 && IsPowerOf2(pkSrc->GetWidth()) &&
         NiIsPowerOf2(pkSrc->GetHeight()) &&
         (kDstFmt.GetFormat() == NiPixelFormat::FORMAT_RGB || kDstFmt.GetFormat() == NiPixelFormat::FORMAT_RGBA ||
          kDstFmt.GetFormat() == NiPixelFormat::FORMAT_BUMP || kDstFmt.GetFormat() == NiPixelFormat::FORMAT_BUMPLUMA))
     {
-        spMipmap = GenerateMipmaps(pkSrc, pkDst);
+        spMipmap = GenerateMipmaps(pkSrc, pkOptDest);
         if (spMipmap)
             mipSource = spMipmap;
         else
@@ -2112,15 +2188,15 @@ NiPixelData* NiDevImageConverter::ConvertPixelData(const NiPixelData& kSrc, cons
     else
         mipSource = pkSrc;
 
-    if (pkDst && pkDst->m_kPixelFormat == kDstFmt && (!bWithMipmaps || pkDst->m_uiMipmapLevels > 1))
+    if (pkOptDest && pkOptDest->m_kPixelFormat == kDstFmt && (!bMipmap || pkOptDest->m_uiMipmapLevels > 1))
     {
-        if (pkDst == mipSource)
-            return pkDst;
+        if (pkOptDest == mipSource)
+            return pkOptDest;
         else
         {
             ConverterTable* table = *reinterpret_cast<ConverterTable**>(this);
-            if (table->convert(this, table, *pkDst, *mipSource, -1))
-                return pkDst;
+            if (table->convert(this, table, *pkOptDest, *mipSource, -1))
+                return pkOptDest;
         }
     }
 

@@ -158,33 +158,36 @@ static __forceinline LocalM128 normalizeVector(FNV_Vec4& result, LocalM128 value
 
 // @fnv 0x00e2a010
 // src: XBOX_PDB 0x00e2a010
-void hkTreeBundleRayCastUtil_autoBundleScanAll(int corner, FNV_Vec4* A, FNV_Vec4* B, int n, float angle, float scale, char* a7, E29Out1* a8, int* a9,
-                  E29Out2* a10, int* a11)
+// pdb: hkTreeBundleRayCastUtil::autoBundleScanAll | hkTreeBundleRaycastUtil.obj | retail, upstream name already matches, high
+// pdb params: octIdx, rayFrom, rayTo, numRays, angleVariance, distanceVariance2, resultBuffer, singleCommandsOut, numSingleCommandsOut, bundledCommandsOut, numBundledCommandsOut
+// pdb locals: clusters, lastCluster
+void hkTreeBundleRayCastUtil_autoBundleScanAll(int octIdx, FNV_Vec4* rayFrom, FNV_Vec4* rayTo, int numRays, float angleVariance, float distanceVariance2, char* resultBuffer, E29Out1* singleCommandsOut, int* numSingleCommandsOut,
+                  E29Out2* bundledCommandsOut, int* numBundledCommandsOut)
 {
-    float thresh = (float)fabs((float)cos((double)angle));
+    float thresh = (float)fabs((float)cos((double)angleVariance));
     E29SrcList list;
     list.count = 0;
     FNV_Ctx* ctx = hkMemoryRouter_getInstance();
     E29Src* recs = (E29Src*)ctx->cur;
-    ctx->cur = (char*)recs + ((n * 5 * 4 + 0x7f) & ~0x7f);
-    int cap = n | 0x80000000;
+    ctx->cur = (char*)recs + ((numRays * 5 * 4 + 0x7f) & ~0x7f);
+    int cap = numRays | 0x80000000;
     list.data = recs;
     list.cap = cap;
     list.mem = recs;
-    FNV_Vec4* pa = A;
+    FNV_Vec4* pa = rayFrom;
     int i = 0;
-    if (n > 0)
+    if (numRays > 0)
     {
         LocalM128 zero = _mm_setzero_ps();
         E29Src* cursor = recs;
-        int off = (char*)B - (char*)A;
+        int off = (char*)rayTo - (char*)rayFrom;
         do
         {
             FNV_Vec4 va = *pa;
             FNV_Vec4 vb = *(FNV_Vec4*)((char*)pa + off);
             LocalM128 delta = _mm_sub_ps(*(LocalM128*)&vb, *(LocalM128*)&va);
             int bits = _mm_movemask_ps(_mm_cmplt_ps(delta, zero));
-            if ((bits & 4) + (bits & 2) + (bits & 1) != corner)
+            if ((bits & 4) + (bits & 2) + (bits & 1) != octIdx)
                 goto next;
             FNV_Vec4 nrm1;
             float dist;
@@ -201,13 +204,13 @@ void hkTreeBundleRayCastUtil_autoBundleScanAll(int corner, FNV_Vec4* A, FNV_Vec4
                     for (int j = 0; j < 1; j++)
                     {
                         int idx = rec->idx[j];
-                        FNV_Vec4 va2 = A[idx];
-                        FNV_Vec4 vb2 = B[idx];
+                        FNV_Vec4 va2 = rayFrom[idx];
+                        FNV_Vec4 vb2 = rayTo[idx];
                         LocalM128 d2 = _mm_sub_ps(*(LocalM128*)&vb2, *(LocalM128*)&va2);
                         FNV_Vec4 nrm2;
                         normalizeVector(nrm2, d2);
                         float sc;
-                        _mm_store_ss(&sc, _mm_mul_ss(ang, _mm_load_ss(&scale)));
+                        _mm_store_ss(&sc, _mm_mul_ss(ang, _mm_load_ss(&distanceVariance2)));
                         if (Object_ProcessAndReturnValue_00e29920(&va, &vb, &nrm1, &va2, &vb2, &nrm2, thresh, sc))
                         {
                             rec->idx[rec->n] = i;
@@ -227,9 +230,9 @@ void hkTreeBundleRayCastUtil_autoBundleScanAll(int corner, FNV_Vec4* A, FNV_Vec4
         next:
             i++;
             pa++;
-        } while (i < n);
+        } while (i < numRays);
     }
-    Runtime_ProcessEntries_00e29a10(&list, (const LocalM128*)A, (const LocalM128*)B, a7, a8, a9, a10, a11);
+    Runtime_ProcessEntries_00e29a10(&list, (const LocalM128*)rayFrom, (const LocalM128*)rayTo, resultBuffer, singleCommandsOut, numSingleCommandsOut, bundledCommandsOut, numBundledCommandsOut);
     hkMemoryRouter_getInstance()->cur = recs;
     FNV_Ctx* holder = hkMemoryRouter_getInstance();
     FNV_MemObj* allocator = holder->obj;

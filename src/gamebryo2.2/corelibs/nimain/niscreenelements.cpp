@@ -2,7 +2,10 @@
 #include "niscreenelements_flags.h"
 
 // @fnv 0x005467c0
-void TaskQueueInterface::SetTaskFlag2000(bool enabled)
+// src: XBOX_DEBUG_PDB 0x005467c0
+// pdb: NiAVObject::SetFixedBound | TESObjectCELL.obj | debug, call graph, high
+// pdb params: abTF
+void TaskQueueInterface::NiAVObject_SetFixedBound(bool abTF)
 {
-    SetTaskFlagDWord(enabled, 0x2000);
+    SetTaskFlagDWord(abTF, 0x2000);
 }

@@ -2,25 +2,26 @@
 
 #include "SeenData.h"
 
+// pdb: class IntSeenData, size 0x2c, bases: SeenData, 3 members
 class IntSeenData : public SeenData
 {
 public:
-    signed char field_24;
-    signed char field_25;
+    signed char cSectionX;
+    signed char cSectionY;
     unsigned short field_26;
-    IntSeenData* field_28;
+    IntSeenData* pNextSection;
 
     IntSeenData();
     IntSeenData(char x, char y);
     IntSeenData(unsigned char x, unsigned char y);
 
     virtual ~IntSeenData();
-    virtual void AddToNode(NiNode* pNode, NiPoint3& kPos, bool bFlag) override;
+    virtual void AddToNode(NiNode* apDrawNode, NiPoint3& aSeenStart, bool abDrawSeen) override;
     virtual unsigned short GetSaveSize(bool abRecursing) override;
     virtual void SaveGame_0087a060(bool abRecursing) override;
-    virtual void LoadGame(BGSLoadFormBuffer* buffer) override;
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer) override;
     virtual void LoadGame_0087a090(unsigned short count) override;
 
-    void SaveToBuffer(BGSSaveFormBuffer* buffer);
+    void SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer);
     void* FUN_0087a140(unsigned int flags);
 };

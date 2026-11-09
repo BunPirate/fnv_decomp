@@ -2,15 +2,16 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraCellImageSpace, size 0x10, bases: BSExtraData, 1 members
 class ExtraCellImageSpace : public BSExtraData
 {
 public:
     virtual ~ExtraCellImageSpace();
-    bool Compare(BSExtraData* extra) override;
+    bool Compare(BSExtraData* apCompare) override;
 
-    ExtraCellImageSpace(void* aField);
+    ExtraCellImageSpace(void* apImageSpace);
 
     bool IsDifferentFrom(BSExtraData* extra);
 
-    void* m_pImageSpace;
+    void* pImageSpace;
 };

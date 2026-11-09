@@ -16,7 +16,7 @@ class HighlightValue_levelupmenu
 {
 public:
     void Tile_Value_AddRefValueAction(int trait, Tile* tile, int sourceTrait);
-    void Tile_Value_AddRefValueAction(int trait, void* source, int sourceTrait);
+    void Tile_Value_AddRefValueAction(int aiActionType, void* apSourceTile, int aeSourceTrait);
     void Tile_Value_SetFloat(int value);
 };
 
@@ -53,8 +53,8 @@ class NiNodeBooleanState_levelupmenu
 public:
     NiPointer<NiNode> pData;
 
-    __declspec(noinline) bool GetBooleanValue();
-    void CharacterProgression_FinishLevelUp();
+    __declspec(noinline) bool QReadyToLevelUp();
+    void FinishLevelUp();
 };
 #include "../../../../include/StatsMenu.h"
 #include "../../../../include/Setting.h"
@@ -82,12 +82,16 @@ namespace ActorValue
 // Returns whether the effect's detrimental flag differs from the actor value's damage-positive flag, treating av -1 as not damage-positive.
 
 // @fnv 0x007869e0
-bool EffectSetting::IsDetrimentalToActorValue(int aiActorValue)
+// src: XBOX_DEBUG_PDB 0x007869e0
+// pdb: EffectSetting::ShouldNegateMagnitude | LevelUpMenu.obj | debug, call graph (shared callers), high
+// pdb params: aeActorValue
+// pdb locals: bdetrimental, bdamagePositive
+bool EffectSetting::ShouldNegateMagnitude(int aeActorValue)
 {
     bool detrimental = IsFlagSet(4);
     bool damagePositive = false;
-    if (aiActorValue != -1)
-        damagePositive = ActorValue::GetFlag(aiActorValue, 0x200);
+    if (aeActorValue != -1)
+        damagePositive = ActorValue::GetFlag(aeActorValue, 0x200);
     return ((detrimental && !damagePositive) || (!detrimental && damagePositive)) ? 1 : 0;
 }
 
@@ -153,22 +157,23 @@ struct PC7d
 };
 extern PC7d* g_thePlayer;
 extern int DAT_011d9fdc;
-extern "C" void __cdecl UpdateStatsMenuLevelText();
+extern "C" void __cdecl StatsMenu_UpdatePlayerName();
 void __cdecl HUDMainMenu_ClearXPMeterFinishedMoving();
 void __cdecl CharacterProgression_FinishLevelUp();
-void __cdecl LevelUpMenu_IncreaseSelectedPerkRank(Tile*, ActorValue::Index);
+void __cdecl LevelUpMenu_SetPerksFunc(Tile*, ActorValue::Index);
 // @fnv 0x007851d0
+// pdb: LevelUpMenu::Close | LevelUpMenu.obj | retail, object-file run extension, low
 void __cdecl UpdateLevelUpMenu()
 {
     HUDMainMenu_ClearXPMeterFinishedMoving();
     if (DAT_011d9fdc != 0)
     {
-        g_thePlayer->GetCharacterProgressionInfo()->CharacterProgression_FinishLevelUp();
-        ((ListBox_enum_ActorValue__Index_*)((int)DAT_011d9fdc + 0x94))->Traverse(LevelUpMenu_IncreaseSelectedPerkRank, 0, 0x7fffffff);
-        if (g_thePlayer->GetCharacterProgressionInfo()->GetBooleanValue())
+        g_thePlayer->GetCharacterProgressionInfo()->FinishLevelUp();
+        ((ListBox_enum_ActorValue__Index_*)((int)DAT_011d9fdc + 0x94))->Traverse(LevelUpMenu_SetPerksFunc, 0, 0x7fffffff);
+        if (g_thePlayer->GetCharacterProgressionInfo()->QReadyToLevelUp())
             ((Actor*)g_thePlayer)->ConfigureActorState(true, false);
-        UpdateStatsMenuLevelText();
-        StatsMenu::UpdateStatusEffects();
+        StatsMenu_UpdatePlayerName();
+        StatsMenu::UpdatePlayerTitle();
         ((Menu*)DAT_011d9fdc)->FUN_00726070()->Set(0x1772, 1);
         ((Menu*)DAT_011d9fdc)->LoadMenuData();
         DAT_011d9fdc = 0;
@@ -185,6 +190,8 @@ struct FUN_007866e0_shell
 
 // @fnv 0x00786550
 // src: GUESS 0x00786550 (confidence: low)
+// pdb: LevelUpMenu::UpdateSkillsFunc | LevelUpMenu.obj | debug, object-file gap fill, medium
+// pdb params: apTile, aeIndex
 void LevelUpMenu_ForwardCall_00786550(const char* s)
 {
     ((FUN_007866e0_shell*)(void*)DAT_011d9fdc)->UpdateDisplayValue(s);
@@ -217,6 +224,7 @@ struct S
 // Calls FUN_0071ae60(0), subtracts 1 from the result, and passes it to f, returning f's result.
 // @fnv 0x007315b0
 // src: XBOX_PDB 0x007315b0
+// pdb: ListBox<ItemChange *>::GetLastItem | BarterMenu.obj | debug, call graph, high
 int S::ListBox_ItemChange_GetLastItem()
 {
     return f(ListBox_ItemChange_NumUnfiltered(0) - 1);
@@ -230,6 +238,7 @@ struct FUN_00784bc0_shell
 void _Deallocate(void*);
 // Calls FUN_00784bf0, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00784bc0
+// pdb: LevelUpMenu::`scalar deleting destructor' | LevelUpMenu.obj | retail, vtable slot, high
 void* FUN_00784bc0_shell::FUN_00784bc0(unsigned int flags)
 {
     FUN_00784bf0();
@@ -244,10 +253,13 @@ struct FUN_00785150_This
 };
 // @fnv 0x00785150
 // src: COMMUNITY 0x00785150
-bool FUN_00785150_This::BGSPerk_IsPerkAvailable(TESObjectREFR* a1)
+// pdb: BGSPerk::IsPerkAvailable | LevelUpMenu.obj | debug, upstream name already matches, high
+// pdb params: apActionRef
+// pdb locals: bdummy
+bool FUN_00785150_This::BGSPerk_IsPerkAvailable(TESObjectREFR* apActionRef)
 {
     bool result;
-    return reinterpret_cast<PerkEntryConditionSet*>(reinterpret_cast<char*>(this) + 0x40)->ContainsTrait(a1, 0, result, false);
+    return reinterpret_cast<PerkEntryConditionSet*>(reinterpret_cast<char*>(this) + 0x40)->IsTrue(apActionRef, 0, result, false);
 }
 
 struct FUN_00785190_This
@@ -277,6 +289,8 @@ extern int DAT_011d9fe0;
 // If the tile reports the state stored in DAT_011d9fe0, clears that state via Set and notifies the holder at DAT_011d9fdc.
 // @fnv 0x00786200
 // src: GUESS 0x00786200 (confidence: medium)
+// pdb: LevelUpMenu::ResetPerksFunc | LevelUpMenu.obj | debug, object-file gap fill, medium
+// pdb params: apTile, apPerk
 void Object_ClearTileStateAndNotify(Tile* pTile)
 {
     if (pTile->ContainsTrait(DAT_011d9fe0))
@@ -305,8 +319,10 @@ struct PC7d : Pad<294>
 };
 extern PC7d* g_thePlayer;
 // @fnv 0x00786570
-// src: COMMUNITY 0x00786570
-void LevelUpMenu_IncreaseSelectedPerkRank(Tile* apTile, BGSPerk* apPerk)
+// src: XBOX_RETAIL_PDB 0x00786570
+// pdb: LevelUpMenu::SetPerksFunc | LevelUpMenu.obj | retail, object-file run extension, high
+// pdb params: apTile, apPerk
+void LevelUpMenu_SetPerksFunc(Tile* apTile, BGSPerk* apPerk)
 {
     if (apTile->ContainsTrait(DAT_011d9fe0))
         g_thePlayer->Func498(apPerk, g_thePlayer->Func4A0(apPerk, 0, 0) + 1);
@@ -324,9 +340,11 @@ struct Holder
 };
 // Sorts the weather entry list using the given comparison function, then calls ResetAndProcessTiles.
 // @fnv 0x007871c0
-void Holder::SortWeatherEntries(int(__cdecl* a)(WeatherEntry*, WeatherEntry*))
+// pdb: ListBox<BGSPerk *>::Sort | LevelUpMenu.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void Holder::SortWeatherEntries(int(__cdecl* apCompareFn)(WeatherEntry*, WeatherEntry*))
 {
-    _4.Sort(a);
+    _4.Sort(apCompareFn);
     ResetAndProcessTiles();
 }
 }  // namespace fnv_007871c0
@@ -338,6 +356,7 @@ struct Unk_7879c0
 };
 // Calls FUN_00786c80, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x007879c0
+// pdb: ListBox<BGSPerk *>::`scalar deleting destructor' | LevelUpMenu.obj | retail, vtable slot, high
 void* Unk_7879c0::FUN_007879c0(unsigned int flags)
 {
     FUN_00786c80();
@@ -361,6 +380,9 @@ extern int DAT_011d9ff4;
 extern PC7d* g_thePlayer;
 // @fnv 0x007864e0
 // src: COMMUNITY 0x007864e0
+// pdb: ListBox<BGSPerk *>::NumSelected | LevelUpMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to LevelUpMenu::UpdatePerksFunc
+// pdb locals: uicount, pnode
 void LevelUpMenu_SetPerkAlphaIfRequirementsNotMet(Tile* tile, TESObjectREFR* reference)
 {
     float value;
@@ -376,27 +398,31 @@ void LevelUpMenu_SetPerkAlphaIfRequirementsNotMet(Tile* tile, TESObjectREFR* ref
 struct FUN_00787760_shell
 {
     void SetTileSelection(int, int);
-    void ListBox_BGSPerk_Select(int a);
+    void ListBox_BGSPerk_Select(int apSelectItem);
 };
 
 // @fnv 0x00787760
 // src: XBOX_PDB 0x00787760
-void FUN_00787760_shell::ListBox_BGSPerk_Select(int aiValue)
+// pdb: ListBox<BGSPerk *>::Select | LevelUpMenu.obj | debug, call graph, high
+// pdb params: apSelectItem
+void FUN_00787760_shell::ListBox_BGSPerk_Select(int apSelectItem)
 {
-    SetTileSelection(aiValue, 0);
+    SetTileSelection(apSelectItem, 0);
 }
 
 struct FUN_00787c40_shell
 {
     void SetTileSelection(int a1, int a2);
-    void ListBox_BGSPerk_ToggleSelection(int arg);
+    void ListBox_BGSPerk_ToggleSelection(int apSelectItem);
 };
 
 // @fnv 0x00787780
 // src: XBOX_PDB 0x00787780
-void __thiscall FUN_00787c40_shell::ListBox_BGSPerk_ToggleSelection(int aiValue)
+// pdb: ListBox<BGSPerk *>::ToggleSelection | LevelUpMenu.obj | debug, call graph, high
+// pdb params: apSelectItem
+void __thiscall FUN_00787c40_shell::ListBox_BGSPerk_ToggleSelection(int apSelectItem)
 {
-    SetTileSelection(aiValue, 2);
+    SetTileSelection(apSelectItem, 2);
 }
 
 struct FUN_00787c20_shell
@@ -407,6 +433,8 @@ struct FUN_00787c20_shell
 
 // @fnv 0x00787c20
 // src: GUESS 0x00787c20 (confidence: medium)
+// pdb: ListBox<BGSPerk *>::Deselect | LevelUpMenu.obj | debug, object-file gap fill, medium
+// pdb params: apSelectItem
 void __thiscall FUN_00787c20_shell::SetTileSelection_Thunk(unsigned int a)
 {
     SetTileSelection(a, 1);
@@ -429,6 +457,9 @@ struct FakeMenu
     bool HandleButton(int aiButton, float afValue);
 };
 // @fnv 0x00786110
+// pdb: LevelUpMenu::DoGamepadUpEvent | LevelUpMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
 bool FakeMenu::HandleButton(int aiButton, float afValue)
 {
     bool bhandled = false;
@@ -449,6 +480,9 @@ bool FakeMenu::HandleButton(int aiButton, float afValue)
 
 // The perk effect array stores the five-field EFIT data copied at 0x00787950.
 // @fnv 0x00787950
+// pdb: BSSimpleArray<EffectItemData,1024>::Add | LevelUpMenu.obj | retail, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 template <>
 unsigned int BSSimpleArray<MagicEffectEntry>::Add(MagicEffectEntry& value)
 {
@@ -468,6 +502,7 @@ struct FUN_007879f0
     int GetIntegerResult();
 };
 // @fnv 0x007879f0
+// pdb: ListBox<BGSPerk *>::NumUnfiltered | LevelUpMenu.obj | debug, object-file run extension, low
 int FUN_007879f0::GetIntegerResult()
 {
     static int numFiltered = GetTileValueID("_num_filtered", -1);
@@ -500,6 +535,8 @@ int __cdecl _sprintf_s(char*, unsigned int, char const*, ...);
 
 // @fnv 0x00785990
 // src: XBOX_PDB 0x00785990
+// pdb: LevelUpMenu::UpdatePointCounter | LevelUpMenu.obj | retail, upstream name already matches, high
+// pdb locals: strcounterStrings, ipointsLeft, strtemp
 void FUN_00785990_shell::LevelUpMenu_UpdatePointCounter()
 {
     const char* strcounterStrings[2];
@@ -557,7 +594,11 @@ extern int DAT_011d9ff4;
 int __cdecl BSstrcmp(char const*, char const*);
 
 // @fnv 0x007865d0
-int __cdecl ComparePerkListItems(ListBoxItem<BGSPerk*>* apItem1, ListBoxItem<BGSPerk*>* apItem2)
+// src: XBOX_RETAIL_PDB 0x007865d0
+// pdb: LevelUpMenu::SortPerksFunc | LevelUpMenu.obj | retail, object-file run extension, high
+// pdb params: apItem1, apItem2
+// pdb locals: iresult
+int __cdecl LevelUpMenu_SortPerksFunc(ListBoxItem<BGSPerk*>* apItem1, ListBoxItem<BGSPerk*>* apItem2)
 {
     int iresult;
     iresult = 0;
@@ -615,6 +656,9 @@ struct FUN_007866e0_shell
 };
 
 // @fnv 0x007866e0
+// pdb: LevelUpMenu::SetDisplayString | LevelUpMenu.obj | retail, string-set bridge, high
+// pdb params: apTile
+// pdb locals: idisplayValue, strtemp
 void FUN_007866e0_shell::UpdateDisplayValue(Tile* apTile)
 {
     int idisplayValue = static_cast<int>(apTile->GetFloat(DAT_011d9fe4) + apTile->GetFloat(DAT_011d9fec) +
@@ -668,6 +712,7 @@ struct FUN_00786bb0 : public ObjBase, public ObjSub
 
 // Initializes the object's integer, float and short fields to zero, calls FUN_007a1950(0, 1), then AddToHeadList(this).
 // @fnv 0x00786bb0
+// pdb: ListBox<BGSPerk *>::ListBox<BGSPerk *> | LevelUpMenu.obj | retail, call graph (shared callers), high
 FUN_00786bb0::FUN_00786bb0()
 {
     m_i14 = 0;
@@ -695,6 +740,10 @@ struct FUN_007877a0_Object
 };
 // @fnv 0x007877a0
 // src: XBOX_PDB 0x007877a0
+// pdb: ListBox<BGSPerk *>::SetSelection | LevelUpMenu.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to ListBox<BGSPerk *>::IsSelected
+// pdb params: apSelectItem, aeMode
+// pdb locals: bselected
 bool FUN_007877a0_Object::ListBox_BGSPerk_IsSelected(LevelOption* option)
 {
     static void* cached = Tile_AddUserTrait(&DAT_01071b64, -1);
@@ -732,6 +781,8 @@ struct LevelMenuView
 };
 // @fnv 0x007880a0
 // src: XBOX_PDB 0x007880a0
+// pdb: ListBox<BGSPerk *>::SetTotalListHeight | LevelUpMenu.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void LevelMenuView::ListBox_BGSPerk_SetTotalListHeight()
 {
     if (meter0c)
@@ -847,28 +898,31 @@ struct LevelView
 // Handles hover for ids 11-14: fills the skill or perk name/description tiles, toggles their visibility and notifies, or selects the parent skill list.
 // @fnv 0x00785280
 // src: XBOX_PDB 0x00785280
-void LevelView::LevelUpMenu_DoEnter(int id, ViewTile* tile)
+// pdb: LevelUpMenu::DoEnter | LevelUpMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
+// pdb locals: strDescription
+void LevelView::LevelUpMenu_DoEnter(int aiID, ViewTile* apTarget)
 {
     char description[512];
-    switch (id)
+    switch (aiID)
     {
     case 11:
-        tile38->Set(0xfcc, SkillName(skills.Lookup(tile)), true);
-        tile3c->Set(0xfc4, SkillDescription(skills.Lookup(tile)), true);
+        tile38->Set(0xfcc, SkillName(skills.Lookup(apTarget)), true);
+        tile3c->Set(0xfc4, SkillDescription(skills.Lookup(apTarget)), true);
         tile38->Set(0xfa3, 1);
         tile3c->Set(0xfa3, 1);
-        if (SkillExtra(skills.Lookup(tile)) > 0)
+        if (SkillExtra(skills.Lookup(apTarget)) > 0)
         {
             tile50->Set(0xfa3, 1);
-            tile50->Set(0xfcc, (const char*)SkillExtra(skills.Lookup(tile)), true);
+            tile50->Set(0xfcc, (const char*)SkillExtra(skills.Lookup(apTarget)), true);
         }
         else
             tile50->Set(0xfa3, 0);
         Notify(4);
         break;
     case 12:
-        tile38->Set(0xfcc, ((MenuItem*)perks.Lookup(tile))->name.GetFullName(), true);
-        ((MenuItem*)perks.Lookup(tile))->Describe(description, 512);
+        tile38->Set(0xfcc, ((MenuItem*)perks.Lookup(apTarget))->name.GetFullName(), true);
+        ((MenuItem*)perks.Lookup(apTarget))->Describe(description, 512);
         tile3c->Set(0xfc4, description, true);
         if (BSStringLength(tile38->GetString(0xfcc)) > 1)
             tile38->Set(0xfa3, 1);
@@ -880,8 +934,8 @@ void LevelView::LevelUpMenu_DoEnter(int id, ViewTile* tile)
         break;
     case 13:
     case 14:
-        skills.Select(tile->Parent());
-        Hover(11, tile->Parent());
+        skills.Select(apTarget->Parent());
+        Hover(11, apTarget->Parent());
         break;
     }
 }
@@ -1286,7 +1340,7 @@ extern int DAT_011d9ff0, DAT_011d9fe4, DAT_011d9ff8;
 extern const char str_01073dcc[], str_01073db8[], str_0106eb00[];
 unsigned int FUN_0066ecf0(int);
 int FUN_0066ec10(int, unsigned char);
-const char* FUN_0066e950(int);
+const char* ActorValue_GetActorValueName(int);
 void CompareActorValueNames();
 int MinInt(int, int);
 bool ActorValue_IsFlagSet(int, unsigned int);
@@ -1323,11 +1377,14 @@ struct SkillsMenu
     SkillList skills;
     SkillList perks;
     LBNode availablePerks;
-    void UpdateSkillsAndPerks();
+    void LevelUpMenu_InitLists();
 };
 // Rebuilds the skill list and perk list tiles, recomputes points from skill totals, and labels perks with rank.
 // @fnv 0x00785540
-void SkillsMenu::UpdateSkillsAndPerks()
+// src: XBOX_RETAIL_PDB 0x00785540
+// pdb: LevelUpMenu::InitLists | LevelUpMenu.obj | retail, unique string literal, high
+// pdb locals: itotalSkillPoints, inumSkills, ivalueCt, currValue, pnew, pcurrentPerk, icurrRank, strtemp
+void SkillsMenu::LevelUpMenu_InitLists()
 {
     int iTotalSkillValue = 0;
     int count = 0;
@@ -1337,8 +1394,8 @@ void SkillsMenu::UpdateSkillsAndPerks()
         int iSkillId = FUN_0066ec10(2, (unsigned char)i);
         if (!ActorValue_IsFlagSet(iSkillId, 0x2000))
         {
-            SkillTile* tile = skills.AddListEntry(iSkillId, FUN_0066e950(iSkillId), 0, 0);
-            tile->SetName(FUN_0066e950(iSkillId));
+            SkillTile* tile = skills.AddListEntry(iSkillId, ActorValue_GetActorValueName(iSkillId), 0, 0);
+            tile->SetName(ActorValue_GetActorValueName(iSkillId));
             tile->FUN_00700320(0xfaa, 11);
             tile->Tile_Set(DAT_011d9ff0, 0.0f, 1);
             tile->FUN_00700320(DAT_011d9fe4,
@@ -1375,7 +1432,7 @@ void SkillsMenu::UpdateSkillsAndPerks()
 int Tile_TextToTrait(const char*);
 void UpdateLevelUpMenu();
 void LevelUpMenu_SetPerkAlphaIfRequirementsNotMet(const char*);
-void ComparePerkListItems(const char*);
+void LevelUpMenu_SortPerksFunc(const char*);
 extern int DAT_011d9fe8;
 extern int DAT_011d9fd8;
 extern int DAT_011d9fd4;
@@ -1442,18 +1499,20 @@ struct Target
     void SetPage(int);
 };
 // @fnv 0x00785830
-void Target::SetPage(int page)
+// pdb: LevelUpMenu::SetCurrentPage | LevelUpMenu.obj | retail, string-set bridge, high
+// pdb params: aePage
+void Target::SetPage(int aePage)
 {
-    if (page > FUN_00726070()->FUN_00a011b0(Tile_TextToTrait("_EndPage")))
+    if (aePage > FUN_00726070()->FUN_00a011b0(Tile_TextToTrait("_EndPage")))
     {
         UpdateLevelUpMenu();
     }
     else
     {
-        unk28 = page;
-        FUN_00726070()->Set(DAT_011d9fe8, page);
-        FUN_00726070()->Set(DAT_011d9fd8, first[page]);
-        FUN_00726070()->Set(DAT_011d9fd4, second[page]);
+        unk28 = aePage;
+        FUN_00726070()->Set(DAT_011d9fe8, aePage);
+        FUN_00726070()->Set(DAT_011d9fd8, first[aePage]);
+        FUN_00726070()->Set(DAT_011d9fd4, second[aePage]);
         LevelUpMenu_UpdatePointCounter();
         switch (unk28)
         {
@@ -1464,7 +1523,7 @@ void Target::SetPage(int page)
             break;
         case 1:
             listB.ListBox_ItemChange_Traverse(LevelUpMenu_SetPerkAlphaIfRequirementsNotMet, 0, 0x7fffffff);
-            listB.Apply(ComparePerkListItems);
+            listB.Apply(LevelUpMenu_SortPerksFunc);
             listA.FUN_007312e0();
             listB.UpdateScrollTile(true);
             break;
@@ -1772,11 +1831,14 @@ extern int DAT_011d9ff0;
 
 // @fnv 0x00786170
 // src: XBOX_PDB 0x00786170
-void __cdecl LevelUpMenu_ResetSkillsFunc(Tile* apTile, int a2)
+// pdb: LevelUpMenu::ResetSkillsFunc | LevelUpMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, aeIndex
+// pdb locals: bexists
+void __cdecl LevelUpMenu_ResetSkillsFunc(Tile* apTile, int aeIndex)
 {
     bool flag = false;
     reinterpret_cast<VT_b9166*>(DAT_011dea3c)
-        ->v229(a2, (float)(reinterpret_cast<VT_b9166*>(DAT_011dea3c)->v291(a2, flag) -
+        ->v229(aeIndex, (float)(reinterpret_cast<VT_b9166*>(DAT_011dea3c)->v291(aeIndex, flag) -
                            (double)apTile->FUN_00a011b0(DAT_011d9ff0)));
     apTile->Tile_Set(DAT_011d9ff0, 0.0f, 1);
     reinterpret_cast<FUN_007866e0_shell*>(DAT_011d9fdc)->UpdateDisplayValue((const char*)apTile);
@@ -1874,9 +1936,12 @@ struct HolderThis
 extern int DAT_011d9ff8;
 extern GlobalObj DAT_011da050;
 
-void LevelUpMenu_PerkUpdateFunc(Tile* tile, int idx);
+void LevelUpMenu_PerkUpdateFunc(Tile* tile, int aeIndex);
 
 // @fnv 0x007867a0
+// pdb: LevelUpMenu::ApplyPerkEffects | LevelUpMenu.obj | debug, call graph, medium
+// pdb params: apTile
+// pdb locals: pcurrPerkEntry, uccurrPerkRank, pprevRankEntry, pcurrPerk, pprevRankEffectList, peffectList, peffectObj, perkEffect, pprevRankEffectObj
 void Holder::UpdateTileEffects(Tile* tile)
 {
 
@@ -1914,7 +1979,7 @@ void Holder::UpdateTileEffects(Tile* tile)
             {
                 recVal.mag = recVal.mag * -1;
             }
-            if (((EffectItem*)*curVal->_ref_006815c0())->GetEffectSetting()->IsDetrimentalToActorValue(av7))
+            if (((EffectItem*)*curVal->_ref_006815c0())->GetEffectSetting()->ShouldNegateMagnitude(av7))
             {
                 recVal.mag = recVal.mag * -1;
             }
@@ -1936,7 +2001,7 @@ class C6C80List
 };
 
 class FUN_00786c80;
-void __cdecl C6C80Unregister(FUN_00786c80* pkObject);
+void __cdecl C6C80Unregister(FUN_00786c80* apLB);
 
 class FUN_00786c80
 {
@@ -1949,6 +2014,7 @@ class FUN_00786c80
 
 // Clears the object's model list, then unregisters the object from the C6C80 registry.
 // @fnv 0x00786c80
+// pdb: ListBox<BGSPerk *>::~ListBox<BGSPerk *> | LevelUpMenu.obj | debug, call graph, medium
 FUN_00786c80::~FUN_00786c80()
 {
     Clear();
@@ -1963,8 +2029,8 @@ struct LBMenu
 struct LBValue
 {
     void ResetOps();
-    void AddOp(int op, LBTile* src, int traitID);
-    void AddFloatOp(int op, float val);
+    void AddOp(int aiActionType, LBTile* apSourceTile, int aeSourceTrait);
+    void AddFloatOp(int op, float afActionVal);
     void Finish(bool b);
 };
 struct LBTile
@@ -1972,7 +2038,7 @@ struct LBTile
     LBMenu* GetMenu();
     void* GetValue(int traitID);
     void Set(int traitID, int val);
-    void SetString(int traitID, const char* str, bool propagate);
+    void SetString(int traitID, const char* apString, bool propagate);
     float GetFloat(int traitID);
     LBValue* GetActionValue(int traitID);
     static int __cdecl TraitNameToID(const char* name, int unk);
@@ -2002,13 +2068,16 @@ struct LBItemListBox
     unsigned short itemCount;
     bool ListBox_unsigned_int_GetFlag(unsigned int a);
     void Sort();
-    void AccumulateTileHeight(LBTile* tile);
+    void AccumulateTileHeight(LBTile* apNewTile);
     void ListBox_BGSPerk_SetTotalListHeight();
     int GetNumVisible();
     LBTile* AddItemTile(int item, const char* text, int (*sortFunc)(LBItem*, LBItem*), const char* templ);
 };
 
 // @fnv 0x00786cf0
+// pdb: ListBox<BGSPerk *>::AddItem | LevelUpMenu.obj | debug, object-file run extension, low
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
 LBTile* LBItemListBox::AddItemTile(int item, const char* text, int (*sortFunc)(LBItem*, LBItem*),
                                    const char* apTemplate)
 {
@@ -2102,6 +2171,8 @@ struct LBListBox
 };
 
 // @fnv 0x00786f90
+// pdb: ListBox<BGSPerk *>::RemoveAll | LevelUpMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void LBListBox::ClearItems()
 {
     while (pHeadNext && *pHeadNext->GetItem())
@@ -2143,7 +2214,7 @@ class ListBox787
     bool IsActive();
     bool Contains(Tile* pkTile);
     void UpdateSelection();
-    bool SelectTile(Tile* pkTile);
+    bool SelectTile(Tile* apHighlightItem);
 
     int unk00;
     int unk04;
@@ -2154,11 +2225,13 @@ class ListBox787
 
 // If the list box is active and the tile is null or contained and enabled, stores it as the selected tile, updates the selection and returns true.
 // @fnv 0x007871f0
-bool ListBox787::SelectTile(Tile* pkTile)
+// pdb: ListBox<BGSPerk *>::Highlight | LevelUpMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool ListBox787::SelectTile(Tile* apHighlightItem)
 {
-    if (IsActive() && (!pkTile || (Contains(pkTile) && pkTile->IsTraitNonZero(Tile_AddUserTrait("_enabled", -1)))))
+    if (IsActive() && (!apHighlightItem || (Contains(apHighlightItem) && apHighlightItem->IsTraitNonZero(Tile_AddUserTrait("_enabled", -1)))))
     {
-        m_pkSelected = pkTile;
+        m_pkSelected = apHighlightItem;
         UpdateSelection();
         return true;
     }
@@ -2175,7 +2248,7 @@ InterfaceManager* InterfaceManager_GetSingleton();
 bool InterfaceManager_Has360Controller();
 struct IMStandIn
 {
-    void InterfaceManager_SetCurrentFocusTarget(int aiA, int aiB, int aiC);
+    void InterfaceManager_SetCurrentFocusTarget(int apTarget, int aiType, int abPlaySounds);
 };
 struct FUN_00787600_shell
 {
@@ -2196,6 +2269,10 @@ struct FUN_00787600_shell
     void UpdateScrollTile(bool abFlag);
 };
 // @fnv 0x00787600
+// pdb: ListBox<enum ActorValue::Index>::RestoreListState | LevelUpMenu.obj | retail, call graph, low
+// pdb note: debug build links it to ListBox<BGSPerk *>::RestoreListState
+// pdb params: abPlayFocusSound
+// pdb locals: pnewHighlight
 void FUN_00787600_shell::UpdateScrollTile(bool abFlag)
 {
     Tile* pTile = 0;
@@ -2230,16 +2307,19 @@ class FUN_00787850_cls
   public:
     int pad;
     LBNode first;
-    void ListBox_BGSPerk_DeselectAll(unsigned char flag);
+    void ListBox_BGSPerk_DeselectAll(unsigned char abUnfilteredOnly);
 };
 
 // @fnv 0x00787850
 // src: XBOX_PDB 0x00787850
-void FUN_00787850_cls::ListBox_BGSPerk_DeselectAll(unsigned char abSkipFlagged)
+// pdb: ListBox<BGSPerk *>::DeselectAll | LevelUpMenu.obj | debug, call graph, high
+// pdb params: abUnfilteredOnly
+// pdb locals: pnode
+void FUN_00787850_cls::ListBox_BGSPerk_DeselectAll(unsigned char abUnfilteredOnly)
 {
     for (LBNode* node = this ? &this->first : 0; node != 0 && *node->_ref_006815c0() != 0; node = node->_ref_00726070())
     {
-        if (abSkipFlagged == 0 || ((FUN_00787850_item*)*node->_ref_006815c0())->flag8 == 0)
+        if (abUnfilteredOnly == 0 || ((FUN_00787850_item*)*node->_ref_006815c0())->flag8 == 0)
         {
             reinterpret_cast<FUN_00787c20_shell*>(this)->SetTileSelection_Thunk((unsigned int)(*node->_ref_006815c0())->tile);
         }
@@ -2260,7 +2340,7 @@ struct TileCallees787aa0
 
 struct Callees787aa0
 {
-    void AccumulateTileHeight(Tile* t);
+    void AccumulateTileHeight(Tile* apNewTile);
     void ListBox_BGSPerk_SetTotalListHeight();
     void UpdateHighlight();
 };
@@ -2282,6 +2362,8 @@ struct FUN_00787aa0_cls : Callees787aa0
 
 // Clears m_1c and m_20, iterates the list calling FUN_00700320 and AccumulateTileHeight on tiles with unk08 == 0, then calls FUN_007880a0 and UpdateHighlight.
 // @fnv 0x00787aa0
+// pdb: ListBox<BGSPerk *>::Synchronize | LevelUpMenu.obj | retail, call graph, medium
+// pdb locals: pnode
 void FUN_00787aa0_cls::ResetAndProcessTiles()
 {
     m_1c = 0;
@@ -2311,6 +2393,7 @@ extern int DAT_011d9fe0;
 extern int DAT_011d9ff4;
 // Initializes the menu's trait IDs by resolving each trait name to an ID via TraitNameToID and storing the results in the DAT globals.
 // @fnv 0x00784a40
+// pdb: LevelUpMenu::LevelUpMenu | LevelUpMenu.obj | retail, string-set bridge, high
 LevelUpMenu::LevelUpMenu()
 {
     DAT_011d9fe4 = TraitNameToID("_BaseValue", -1);
@@ -2335,9 +2418,10 @@ bool __cdecl IsStartMenuFlag1Set(void);
 
 // If m_eFadeState equals 4 and neither FUN_00525430 nor IsStartMenuFlag1Set is true, plays the MUSSuccess sound and calls FUN_00a1dc20(0).
 // @fnv 0x00785e20
+// pdb: LevelUpMenu::DoIdle | LevelUpMenu.obj | retail, string-set bridge, high
 void LevelUpMenu::PlayLevelUpSuccessSound()
 {
-    if (m_eFadeState == 4)
+    if (xFadeState == 4)
     {
         if (!((FUN_00525430_Class*)&g_011f2250)->VATS_IsInVats() && !IsStartMenuFlag1Set())
         {
@@ -2361,6 +2445,7 @@ int __cdecl Tile_AddUserTrait(const char* s, int n);
 
 // @fnv 0x00787b70
 // src: XBOX_PDB 0x00787b70
+// pdb: ListBox<BGSPerk *>::IsEnabled | LevelUpMenu.obj | retail, call graph (shared callers), high
 bool FUN_00787b70_cls::ListBox_BGSPerk_IsEnabled()
 {
     static void* sKey = (void*)Tile_AddUserTrait("_enabled", -1);
@@ -2389,9 +2474,9 @@ struct ListBox94
 {
     int unk00;
     bool fn_7877a0(Tile* t);
-    void fn_787780(Tile* t);
-    void fn_787850(bool b);
-    void fn_787760(Tile* t);
+    void fn_787780(Tile* apSelectItem);
+    void fn_787850(bool abUnfilteredOnly);
+    void fn_787760(Tile* apSelectItem);
     int fn_7878d0();
     void fn_7314c0(void(__cdecl* cb)(Tile*), int a, int b);
 };
@@ -2744,31 +2829,34 @@ struct LevelUpButtonHandler
     Tile* fn_726070();
     void fn_785990();
     void fn_7866e0(Tile* t);
-    void fn_785830(int page);
-    void OnButtonPressed(int btn, Tile* tile);
+    void fn_785830(int aePage);
+    void OnButtonPressed(int aiID, Tile* apTarget);
 };
 
 // Handles button press events (btn) on a tile, updating list states, adjusting values, and navigating between menu pages.
 // @fnv 0x00785aa0
-void LevelUpButtonHandler::OnButtonPressed(int aiButton, Tile* tile)
+// pdb: LevelUpMenu::DoClick | LevelUpMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: idelta, bexists, eindex
+void LevelUpButtonHandler::OnButtonPressed(int aiID, Tile* apTarget)
 {
     int avTmp;
     bool bOut;
     int delta;
 
-    switch (aiButton)
+    switch (aiID)
     {
     case 12:
-        if (unk94.fn_7877a0(tile))
+        if (unk94.fn_7877a0(apTarget))
         {
-            unk94.fn_787780(tile);
-            fn_7867a0(tile);
+            unk94.fn_787780(apTarget);
+            fn_7867a0(apTarget);
         }
-        else if (tile->FUN_00a011b0(g_11d9ff4) == 255.0)
+        else if (apTarget->FUN_00a011b0(g_11d9ff4) == 255.0)
         {
             unk94.fn_787850(true);
-            unk94.fn_787760(tile);
-            fn_7867a0(tile);
+            unk94.fn_787760(apTarget);
+            fn_7867a0(apTarget);
         }
         (&unk54)[unk28] = unk94.fn_7878d0();
         fn_726070()->FUN_00700320(g_11d9fd8, (&unk54)[unk28]);
@@ -2776,20 +2864,20 @@ void LevelUpButtonHandler::OnButtonPressed(int aiButton, Tile* tile)
         break;
     case 13:
     case 14:
-        if (tile->IsTraitNonZero(0xfa3))
+        if (apTarget->IsTraitNonZero(0xfa3))
         {
-            avTmp = unk64.fn_7e1110(tile->FUN_0045cd60());
-            delta = (aiButton == 13) ? -1 : 1;
+            avTmp = unk64.fn_7e1110(apTarget->FUN_0045cd60());
+            delta = (aiID == 13) ? -1 : 1;
             (&unk54)[unk28] += delta;
             fn_726070()->FUN_00700320(g_11d9fd8, (&unk54)[unk28]);
             if (g_11dea3c->fn_884350()->fn_5a5f40(avTmp))
             {
                 delta *= *g_11cd6c0.Setting_Int();
             }
-            tile->FUN_0045cd60()->Tile_Set(g_11d9ff0, tile->FUN_0045cd60()->FUN_00a011b0(g_11d9ff0) + delta, true);
+            apTarget->FUN_0045cd60()->Tile_Set(g_11d9ff0, apTarget->FUN_0045cd60()->FUN_00a011b0(g_11d9ff0) + delta, true);
             bOut = false;
             g_11dea3c->vf229(avTmp, g_11dea3c->vf291(avTmp, &bOut) + delta);
-            fn_7866e0(tile->FUN_0045cd60());
+            fn_7866e0(apTarget->FUN_0045cd60());
             fn_785990();
         }
         break;
@@ -2845,7 +2933,7 @@ struct ScrollTile
 
 struct ScrollIM
 {
-    void PlayScroll(ScrollTile* apTile, int aiType, bool abSound);
+    void PlayScroll(ScrollTile* apTarget, int aiType, bool abPlaySounds);
 };
 ScrollIM* GetScrollIM();
 bool IsScrollBlocked();
@@ -2878,6 +2966,10 @@ struct ScrollBar
 // Updates the scroll tile, plays its scroll effect, and sends its value to the parent menu when scrolling is not blocked.
 // @fnv 0x00786a50
 // src: COMMUNITY 0x00786a50
+// pdb: ListBox<BGSPerk *>::RestoreListState | LevelUpMenu.obj | retail, call graph, low
+// pdb note: debug build links it to ListBox<enum ActorValue::Index>::RestoreListState
+// pdb params: abPlayFocusSound
+// pdb locals: pnewHighlight
 void ScrollBar::ListBox_enum_ActorValue_Index_RestoreListState(bool abSound)
 {
     ScrollTile* pTile = 0;
@@ -2940,13 +3032,16 @@ struct LBItemListBox : LBItemList
     const char* templateName;
     unsigned short itemCount;
     bool ListBox_BGSPerk_IsEnabled();
-    LBTile* FindEnabledTileForKey(int key);
+    LBTile* FindEnabledTileForKey(int aeButton);
 };
 
 // Finds an enabled tile at the index reached by the key-derived delta, returning null when no different tile is found.
 // @fnv 0x00787260
 // src: GUESS 0x00787260 (confidence: medium)
-LBTile* LBItemListBox::FindEnabledTileForKey(int key)
+// pdb: ListBox<BGSPerk *>::GetHighlightTarget | LevelUpMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+LBTile* LBItemListBox::FindEnabledTileForKey(int aeButton)
 {
     LBTile* found7 = 0;
     int delta3 = 0;
@@ -2954,7 +3049,7 @@ LBTile* LBItemListBox::FindEnabledTileForKey(int key)
     int last2;
     int selected;
     LBItemList* node;
-    switch (key)
+    switch (aeButton)
     {
     case 2:
         delta3 = 1;
@@ -3058,6 +3153,10 @@ struct Counter_007878d0 : Base_007878d0, ListNode_007878d0
 // Traverses the linked list and counts items for which FUN_007877a0 returns true.
 // @fnv 0x007878d0
 // src: XBOX_PDB 0x007878d0
+// pdb: ListBox<BGSPerk *>::DeselectAll | LevelUpMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ListBox<BGSPerk *>::NumSelected
+// pdb params: abUnfilteredOnly
+// pdb locals: pnode
 int Counter_007878d0::ListBox_BGSPerk_NumSelected()
 {
     int iCount = 0;
@@ -3081,6 +3180,8 @@ struct SkillHighlight
 };
 // Links two tile values to the selected tile, then calls update methods on the highlight box and its edges.
 // @fnv 0x00787d80
+// pdb: ListBox<BGSPerk *>::UpdateHighlightBoxPos | LevelUpMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void SkillHighlight::UpdateHighlight()
 {
     static int highlightY = (int)Tile_AddUserTrait("_highlight_y", -1);
@@ -3510,7 +3611,7 @@ struct DatObj
     int f58;
     int f5c;
     int f60;
-    void UpdateSkillsAndPerks();
+    void LevelUpMenu_InitLists();
     void SetPage(int);
 };
 struct ListObj
@@ -3583,6 +3684,8 @@ static const char s_endpage[] = "_EndPage";
 // Loads levelup_menu.xml, initialises the menu, sets up condition lists, and returns the menu pointer or 0 on failure.
 // @fnv 0x00784c80
 // src: XBOX_PDB 0x00784c80
+// pdb: LevelUpMenu::Create | LevelUpMenu.obj | retail, upstream name already matches, high
+// pdb locals: pin, ptile, pold_menu_tile, fskillPoints, strtemp, pcurrentPerk, pperk, badd
 int LevelUpMenu_Create()
 {
     void* objB = Tile_GetMenuByClass(0x403);
@@ -3661,7 +3764,7 @@ int LevelUpMenu_Create()
             ((HeadO*)FUN_00726070((ContNode*)(void*)(unsigned int)DAT_011d9fdc))
                 ->FUN_00700320(Tile_TextToTrait(s_endpage), 0);
         }
-        ((DatObj*)(void*)(unsigned int)DAT_011d9fdc)->UpdateSkillsAndPerks();
+        ((DatObj*)(void*)(unsigned int)DAT_011d9fdc)->LevelUpMenu_InitLists();
         ((DatObj*)(void*)(unsigned int)DAT_011d9fdc)->SetPage(0);
         return (int)(void*)menu;
     }
@@ -3683,6 +3786,9 @@ struct TileValue
 };
 // Sets or toggles pkTile's selected trait according to eMode and returns true when it writes the trait.
 // @fnv 0x00787c40
+// pdb: ListBox<BGSPerk *>::SetSelection | LevelUpMenu.obj | debug, object-file gap fill, medium
+// pdb params: apSelectItem, aeMode
+// pdb locals: bselected
 bool ListBox_int_::SetTileSelection(Tile* pkTile, int eMode)
 {
     if (((FUN_00787b70_cls*)this)->ListBox_BGSPerk_IsEnabled() && pkTile && ContainsKey(pkTile))
@@ -3738,11 +3844,14 @@ extern GlobalObject_00788300 g_011da050;
 // Finds the matching item, adjusts its stored value against tile bounds and overflow, then updates a tile trait.
 // @fnv 0x00786240
 // src: XBOX_PDB 0x00786240
-void __cdecl LevelUpMenu_PerkUpdateFunc(LevelValue* apTile, int aiMatchValue)
+// pdb: LevelUpMenu::PerkUpdateFunc | LevelUpMenu.obj | retail, string-set bridge, high
+// pdb params: apTile, aeIndex
+// pdb locals: ieffectCt, itotalValue, iUT_Overflow, idifference
+void __cdecl LevelUpMenu_PerkUpdateFunc(LevelValue* apTile, int aeIndex)
 {
     for (unsigned int i = 0; i < g_011da050.GetCount(); ++i)
     {
-        if (g_011da050.GetItem(i)->unk10 == aiMatchValue)
+        if (g_011da050.GetItem(i)->unk10 == aeIndex)
         {
             int total = (int)(apTile->FUN_00a011b0(DAT_011d9fe4) + apTile->FUN_00a011b0(DAT_011d9fec) +
                               apTile->FUN_00a011b0(DAT_011d9ff0));
@@ -3776,7 +3885,7 @@ void __cdecl LevelUpMenu_PerkUpdateFunc(LevelValue* apTile, int aiMatchValue)
 
 struct LevelGamepadTile
 {
-    LevelGamepadTile* Tile_GetChildByID(int id);
+    LevelGamepadTile* Tile_GetChildByID(int aiID);
     bool IsTraitNonZero(int trait);
     void Tile_PlayTileSound(int trait);
 };
@@ -3815,7 +3924,7 @@ class LevelGamepadView
     virtual void vfunc11();
     virtual void vfunc12();
     virtual void vfunc13();
-    virtual bool LevelUpMenu_DoGamepad(int code, float val);
+    virtual bool LevelUpMenu_DoGamepad(int aiButton, float val);
 
     int unk04;
     int unk08;
@@ -3848,10 +3957,13 @@ class LevelGamepadView
 // Processes gamepad button codes to select and activate level-up tiles, returning whether the input was handled.
 // @fnv 0x00785ed0
 // src: XBOX_PDB 0x00785ed0
-bool LevelGamepadView::LevelUpMenu_DoGamepad(int aiButtonCode, float afValue)
+// pdb: LevelUpMenu::DoGamepad | LevelUpMenu.obj | retail, upstream name already matches, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled, parrowTile
+bool LevelGamepadView::LevelUpMenu_DoGamepad(int aiButton, float afValue)
 {
     bool bHandled = false;
-    switch (aiButtonCode)
+    switch (aiButton)
     {
     case 4:
         if (this->unk28 == 0 && this->list64.GetSelectedTile())

@@ -9,14 +9,17 @@ struct VersionedDataBlock
     virtual void v08();
     virtual void v0c();
     virtual int Read(void* destination, int size);
-    int ReadBytes(int size);
+    int ReadBytes(int nbytes);
 };
 // Reads up to size bytes in chunks of at most 512 into a local buffer, stopping on a zero-length read, and returns the number of bytes read.
 // @fnv 0x00cb14f0
-int VersionedDataBlock::ReadBytes(int size)
+// pdb: hkStreamReader::skip | hkStreamReader.obj | retail, vtable slot, high
+// pdb params: nbytes
+// pdb locals: buf
+int VersionedDataBlock::ReadBytes(int nbytes)
 {
     unsigned int buffer[128];
-    int remaining = size;
+    int remaining = nbytes;
     while (remaining)
     {
         int count = Read(buffer, remaining > 512 ? 512 : remaining);
@@ -24,7 +27,7 @@ int VersionedDataBlock::ReadBytes(int size)
             break;
         remaining -= count;
     }
-    return size - remaining;
+    return nbytes - remaining;
 }
 
 class Stream
@@ -39,6 +42,8 @@ class Stream
 };
 
 // @fnv 0x00cb1550
+// pdb: hkStreamReader::readChar | hkStreamReader.obj | debug, object-file gap fill, medium
+// pdb locals: c
 int Stream::ReadChar()
 {
     char c;
@@ -53,6 +58,8 @@ struct S_00cb1570
 };
 // @fnv 0x00cb1570
 // src: GUESS 0x00cb1570 (confidence: high)
+// pdb: hkStreamReader::setMark | hkStreamReader.obj | debug, vtable slot, medium
+// pdb params: markLimit
 int S_00cb1570::ReturnOne(void* pArg)
 {
     return 1;
@@ -60,6 +67,7 @@ int S_00cb1570::ReturnOne(void* pArg)
 
 // @fnv 0x00cb1580
 // src: GUESS 0x00cb1580 (confidence: high)
+// pdb: hkStreamReader::rewindToMark | hkStreamReader.obj | debug, vtable slot, medium
 int __cdecl Object_ReturnOne()
 {
     return 1;
@@ -79,6 +87,8 @@ struct CB1590Object
 
 // @fnv 0x00cb1590
 // src: GUESS 0x00cb1590 (confidence: high)
+// pdb: hkStreamReader::seek | hkStreamReader.obj | debug, vtable slot, medium
+// pdb params: offset, whence
 int CB1590Object::ReturnOne(const void* a, const void* b) const
 {
     return 1;
@@ -108,6 +118,7 @@ CB15B0Bool CB15B0Object::hkStreamReader_markSupported() const
 
 // @fnv 0x00cb15a0
 // src: HAVOK_SRC 0x00cb15a0
+// pdb: hkStreamReader::tell | hkStreamReader.obj | debug, upstream name already matches, high
 int hkStreamReader_tell()
 {
     return -1;

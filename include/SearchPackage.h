@@ -7,6 +7,7 @@
 class SearchReference;
 class PathingCoverLocation;
 
+// pdb: class SearchPackage, size 0x1a4, bases: TESPackage, 10 members
 class SearchPackage : public TESPackage
 {
 public:
@@ -81,17 +82,17 @@ public:
     SearchPackage(float afX, float afY, float afZ, int aiValue, int aiUnused);
     virtual ~SearchPackage();
 
-    float unk80;
-    int unk84;
-    float unk88;
-    int unk8c;
-    float unk90;
-    NiPoint3 unk94;
-    int unka0;
-    char unka4;
+    float fSearchStageTimer;
+    int iAlertLevel;
+    float fCommentTimer;
+    int iCurrentCover;
+    float fIdleTimer;
+    NiPoint3 LocationCenter;
+    int pThreatObject;
+    char bLocationStart;
     unsigned char unkA5[3];
-    CoverRequest unka8;
-    BSSimpleArray<PathingCoverLocation, 1024> unk194;
+    CoverRequest coverRequest;
+    BSSimpleArray<PathingCoverLocation, 1024> coverPoints;
 
     int HasSearchLocation();
     unsigned int Radius(SearchReference*);

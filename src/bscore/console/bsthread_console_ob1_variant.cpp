@@ -53,6 +53,7 @@ class FUN_00aa63c0
 };
 
 // @fnv 0x00aa63c0
+// pdb: BSThread::~BSThread | BSThread_Xenon.obj | debug, object-file gap fill, medium
 FUN_00aa63c0::~FUN_00aa63c0()
 {
     Shutdown();

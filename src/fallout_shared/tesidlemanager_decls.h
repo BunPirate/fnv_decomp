@@ -13,7 +13,7 @@ class IdleAnimationDirectoryEntry
   public:
     BSSimpleList<const char*>* m_ppFileListsByWeapon[12];
     IdleAnimationDirectoryEntry(const char*);
-    void SetWeaponFiles(BSSimpleList<const char*>* files);
+    void IDLE_ANIM_ROOT_AddRootFilenameList(BSSimpleList<const char*>* apList);
 };
 
 #include "../../include/ANIM_GROUP_MOVE_ENUM.h"
@@ -36,25 +36,26 @@ class AnimData
     BSSimpleList<IdleReplayDelayEntry*> replayDelays;
 };
 
-class IdleAnimationManager : public NiTMap<const char*, IdleAnimationDirectoryEntry*>
+// pdb: class TESIdleManager, size 0x28, 3 members
+class TESIdleManager : public NiTMap<const char*, IdleAnimationDirectoryEntry*>
 {
     // The map occupies 0x10 bytes; the manager's loaded flag is at 0x14.
     unsigned char unused10[4];
 
   public:
-    unsigned char loadedIdles;
+    unsigned char bInitialized;
     unsigned char padLoadedIdles[3];
-    NiTArray<BGSCameraPath*, NiTMallocInterface<BGSCameraPath*> > idleForms;
-    NiFormArray* GetIdleFormArray(const char* directory);
-    NiFormArray* GetIdleArray(TESForm* form);
+    NiTArray<BGSCameraPath*, NiTMallocInterface<BGSCameraPath*> > LoadedIdleArray;
+    NiFormArray* TESIdleManager_GetLooseIdleArray(const char* directory);
+    NiFormArray* GetIdleArray(TESForm* apForm);
     void InitializeIdleAnimations();
-    NiFormArray* GetFormArrayForIdleDir(const char*);
+    NiFormArray* TESIdleManager_GetRootIdleArray(const char*);
     TESIdleForm* FindIdleFormForObject(TESObjectREFR*, TESObjectREFR*);
-    IdleAnimationDirectoryEntry* ClearIdleData(const char*, BSSimpleList<const char*>*, bool);
+    IdleAnimationDirectoryEntry* AddRootIdleArray(const char*, BSSimpleList<const char*>*, bool);
     void InsertOrUpdate(const char*, IdleAnimationDirectoryEntry*);
     void ReleaseStorage_00600030();
-    BSSimpleList<const char*>* FindIdleArrayEntry(const char* directory, ANIM_GROUP_WEAPON_ENUM weapon);
-    static void BuildIdlePath(const char* source, char* destination);
+    BSSimpleList<const char*>* FindIdleArrayEntry(const char* apIdleDir, ANIM_GROUP_WEAPON_ENUM aeWeaponGroup);
+    static void GetIdleDirName(const char* apInDir, char* apOutDir);
     static TESObject* GetCurrentUsedItem();
     static bool GetUsedItemActivate();
 };
@@ -62,6 +63,7 @@ class IdleAnimationManager : public NiTMap<const char*, IdleAnimationDirectoryEn
 extern "C" TESObject* fnv_tesidlemanager_used_item;
 extern "C" bool fnv_tesidlemanager_used_item_activate;
 extern "C" const char fnv_tesidlemanager_idle_anims[];
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -84,6 +86,7 @@ extern "C" const char fnv_idle_1hp_left[];
 template <class T> unsigned int BSStringLength(const T* string);
 
 void* operator new(unsigned int);
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:

@@ -23,7 +23,10 @@
 #include "../../../../include/NiPoint3.h"
 #include "../../../../include/GO.h"
 // @fnv 0x007e5890
-void SurgeryMenu::UpdatePerkEntries()
+// src: XBOX_RETAIL_PDB 0x007e5890
+// pdb: SurgeryMenu::ResetAllLimbs | SurgeryMenu.obj | retail, call graph, high
+// pdb locals: plimbWounds
+void SurgeryMenu::ResetAllLimbs()
 {
     if (DAT_011dada4)
     {
@@ -38,14 +41,16 @@ void SurgeryMenu::UpdatePerkEntries()
 
 struct FUN_007e4fc0_shell
 {
-    int NiControllerSequence_GetIDTag(int arg);
+    int NiControllerSequence_GetIDTag(int uiTagIndex);
 };
 
 // @fnv 0x007e4fc0
 // src: COMMUNITY 0x007e4fc0
-int __thiscall FUN_007e4fc0_shell::NiControllerSequence_GetIDTag(int aiIndex)
+// pdb: NiControllerSequence::GetIDTag | SurgeryMenu.obj | debug, upstream name already matches, high
+// pdb params: uiTagIndex
+int __thiscall FUN_007e4fc0_shell::NiControllerSequence_GetIDTag(int uiTagIndex)
 {
-    return *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x18) + aiIndex * 0x14;
+    return *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x18) + uiTagIndex * 0x14;
 }
 
 struct S
@@ -62,6 +67,8 @@ struct S
 };
 // Handles key codes 0x57/0x77 and 0x53/0x73 by calling d with 6 or 5 and returning true, otherwise returns false.
 // @fnv 0x007e4260
+// pdb: SurgeryMenu::DoKey | SurgeryMenu.obj | retail, vtable slot, high
+// pdb params: aiKey
 bool S::HandleKey(int aiKey)
 {
     if (aiKey == 0x57 || aiKey == 0x77)
@@ -122,6 +129,8 @@ struct FUN_007e5720_struct
 // Walks the limb wound list and returns the first wound whose _04 matches the menu's _C0, or null if none is found.
 // @fnv 0x007e5720
 // src: XBOX_PDB 0x007e5720
+// pdb: SurgeryMenu::GetCurrentLimbWound | SurgeryMenu.obj | debug, upstream name already matches, high
+// pdb locals: plimbWounds
 WoundFake* FUN_007e5720_struct::SurgeryMenu_GetCurrentLimbWound()
 {
     FakeList* pWoundList = (FakeList*)&g_011dae48;
@@ -180,6 +189,7 @@ FUN_00950c20_self* _g_thePlayer;
 
 // @fnv 0x007e5170
 // src: XBOX_PDB 0x007e5170
+// pdb: SurgeryMenu::Shutdown3DElements | SurgeryMenu.obj | retail, upstream name already matches, high
 void SurgeryMenu_Shutdown3DElements()
 {
     ShadowSceneNode* pSourceGeometry = static_cast<ShadowSceneNode*>(NiAdditionalGeometryData::GetShadowSceneNodeForIndex(1));
@@ -254,6 +264,9 @@ struct SurgeryCull
     void FUN_00450f90(bool);
 };
 // @fnv 0x007e47a0
+// pdb: SurgeryMenu::SetSurgery3DPosition | SurgeryMenu.obj | debug, object-file run extension, low
+// pdb params: afX, afY, afScale
+// pdb locals: update
 void __cdecl UpdateSurgeryScene()
 {
     if (!(unsigned)g_011dade8 || !(unsigned)g_011dae5c)
@@ -323,6 +336,8 @@ struct FUN_007e5780_shell
 };
 
 // @fnv 0x007e5780
+// pdb: SurgeryMenu::LimbWound::ResetLimb | SurgeryMenu.obj | retail, call graph (shared callers), high
+// pdb locals: psequenceList
 void FUN_007e5780_shell::ProcessNodeChain()
 {
     b0C = true;
@@ -411,6 +426,8 @@ struct AnimOwner
 
 // Advances time by the global delta, updates the direction-matched controller sequence, then updates the node with a zero-time update.
 // @fnv 0x007e5a90
+// pdb: SurgeryMenu::UpdateAnimations | SurgeryMenu.obj | retail, object-file run extension, low
+// pdb locals: update, psurgerygeomController, pseq, ppsurgerygeomControllerManager, pmt, UpdateData
 void AnimOwner::UpdateAnimation()
 {
     NiTimeController* ctrl = static_cast<NiTimeController*>(node->GetControllers());
@@ -503,7 +520,10 @@ void __cdecl RefreshEntryByID(int);
 
 // Closes the surgery menu: plays the UISurgeryExit sound, sets tile traits, stops and releases the menu's two sounds, and updates the parent tile.
 // @fnv 0x007e1980
-void CloseSurgeryMenu()
+// src: XBOX_RETAIL_PDB 0x007e1980
+// pdb: SurgeryMenu::Close | SurgeryMenu.obj | retail, string-set bridge, high
+// pdb locals: ptile, plist, soundHand
+void SurgeryMenu_Close()
 {
     Tile* pTile = Tile_GetMenuByClass(SurgeryMenu_GetClassStatic());
     if (!pTile)
@@ -613,6 +633,8 @@ struct SurgeryFrameOperations : SurgeryMenu
 };
 // Updates the menu's top-menu flag, drag position, decay of unkAC over time, sounds, and the value text from the player's actor value 16.
 // @fnv 0x007e23c0
+// pdb: SurgeryMenu::DoIdle | SurgeryMenu.obj | retail, string-set bridge, high
+// pdb locals: breducePain, temp, bcursorInFlesh, bsizzle, pcontrols, pim, fhealPerSec
 void SurgeryFrameOperations::UpdateFrame()
 {
     char text[256];
@@ -1059,6 +1081,8 @@ struct PainMenu
 // Advances pain over elapsed time, plays threshold sounds, updates the player's value and hurt state, and refreshes the tile text.
 // @fnv 0x007e28b0
 // src: XBOX_PDB 0x007e28b0
+// pdb: SurgeryMenu::BurnFlesh | SurgeryMenu.obj | retail, string-set bridge, high
+// pdb locals: ffleshBurnPercent, foldPain, fplay, tmp, fburnPerSec, soundHand
 void PainMenu::SurgeryMenu_BurnFlesh()
 {
     float result = UpdateWoundInteraction();
@@ -1275,7 +1299,7 @@ struct SurgeryView
     int enabled;
     WoundData* Wounds();
     int GetIndex(int);
-    void PlaceSurgeryDecal(NiPoint2, bool);
+    void SurgeryMenu_PlaceDecal(NiPoint2, bool);
     struct ValueOwner
     {
         float FUN_00a011b0(int);
@@ -1286,6 +1310,8 @@ struct SurgeryView
 
 // Projects wound nodes to screen, tests the cursor against them, updates hit/idle sounds and wound radii, and returns 0 when hit or 100 otherwise.
 // @fnv 0x007e2de0
+// pdb: SurgeryMenu::UpdateFlesh | SurgeryMenu.obj | debug, object-file gap fill, medium
+// pdb locals: binsideWound, pwound, toolLoc, psequenceList, itotalBones, screenPoint2, pgon, screenPoint1, point, pseqinfo, update, psequence, fsequenceTime, i, fmouseSpeedScalar, fmagnitude, movement, fresistanceTime, p, UpdateData1
 float SurgeryView::UpdateWoundInteraction()
 {
     WoundData* p = Wounds();
@@ -1384,13 +1410,13 @@ float SurgeryView::UpdateWoundInteraction()
                     UpdateArgs e(0.0f, true, false);
                     ((SceneNode*)((SurgeryView*)DAT_011dada4)->nodes[GetIndex(p->index)])->NiAVObject_Update(e);
                     if (((SurgeryView*)DAT_011dada4)->enabled && (eb[0] + eb[1]) / 2.0 < 0.10000000149011612)
-                        PlaceSurgeryDecal(s, true);
+                        SurgeryMenu_PlaceDecal(s, true);
                 }
             }
         }
         else
         {
-            PlaceSurgeryDecal(s, false);
+            SurgeryMenu_PlaceDecal(s, false);
             if (!idleSound.IsPlaying())
                 idleSound.Play(false);
             if (activeSound.IsPlaying())
@@ -1654,6 +1680,8 @@ struct FaceOwnerS
 };
 // If g_011dae5c is set, sets face controller value 13 from fAC and updates the node with the current time.
 // @fnv 0x007e3750
+// pdb: SurgeryMenu::UpdateFace | SurgeryMenu.obj | debug, call graph, high
+// pdb locals: update, bface
 void FaceOwnerS::UpdateFaceGenNode()
 {
     if (!g_011dae5c)
@@ -1736,6 +1764,8 @@ struct FUN_007e4540_shell
 
 // @fnv 0x007e4540
 // src: XBOX_PDB 0x007e4540
+// pdb: SurgeryMenu::IsCursorInFlesh | SurgeryMenu.obj | debug, upstream name already matches, high
+// pdb locals: icenterX, pcenter, icenterY, radius, Vector, pouterEdge, pim, outerEdge, center
 bool FUN_007e4540_shell::SurgeryMenu_IsCursorInFlesh()
 {
     InterfaceManager_GetSingleton();
@@ -1838,6 +1868,9 @@ float GetScreenHeightS();
 
 // Projects each item of both lists to screen space and compares their distance to the normalized cursor, returning 1, -1 or 0.
 // @fnv 0x007e5250
+// pdb: SurgeryMenu::SortSequenceByCursorDistance | SurgeryMenu.obj | retail, object-file run extension, low
+// pdb params: apObject1, apObject2
+// pdb locals: fdist, pbones, tool, screenPoint
 int __cdecl CompareProjectedListsToCursor(ProjOwnerS* a, ProjOwnerS* pOwnerB)
 {
     if (!DAT_011dada4)
@@ -1896,14 +1929,17 @@ bool __cdecl E5810IsMenuOpen(int iMenuID);
 
 // If the interface exists and menu 0x41e is closed, walks the queue and calls Refresh on the first entry whose m_iID equals the given ID.
 // @fnv 0x007e5810
-void RefreshEntryByID(int aiEntryID)
+// pdb: SurgeryMenu::ResetLimb | SurgeryMenu.obj | retail, call graph, high
+// pdb params: aeLimb
+// pdb locals: plimbWounds
+void RefreshEntryByID(int aeLimb)
 {
     if (g_pE5810Interface && !E5810IsMenuOpen(0x41e))
     {
         E5810Node* pkNode = &g_kE5810Queue;
         while (pkNode && !pkNode->IsEmpty())
         {
-            if ((*pkNode->GetItem())->m_iID == aiEntryID)
+            if ((*pkNode->GetItem())->m_iID == aeLimb)
             {
                 (*pkNode->GetItem())->Refresh();
                 break;
@@ -1935,7 +1971,7 @@ struct LimbWoundData
 };
 #include "../../../../include/ActorValue.h"
 namespace ActorValue {
-const char* GetActorValueName(Index av);
+const char* ActorValue_GetActorValueName(Index aiIndex);
 }
 int Tile_TextToTrait(const char* name);
 extern const double _gModifierZero;
@@ -1999,6 +2035,8 @@ struct SurgeryLimbMenu
 // Sums limb source values and ranges over the wound list, clamps the total, and returns 1 minus the normalized total; sets tiles when no wound data exists.
 // @fnv 0x007e58e0
 // src: XBOX_PDB 0x007e58e0
+// pdb: SurgeryMenu::GetLimbPercentFromSequences | SurgeryMenu.obj | retail, upstream name already matches, high
+// pdb locals: psequences, pwound, flimbPercent, ftotalAnimTime, pseq
 float SurgeryLimbMenu::SurgeryMenu_GetLimbPercentFromSequences()
 {
     float total = 0;
@@ -2007,7 +2045,7 @@ float SurgeryLimbMenu::SurgeryMenu_GetLimbPercentFromSequences()
     if (!wound_)
     {
         tile70->Set(Tile_TextToTrait("_Value"), 1.0f, true);
-        tile4C->Set(0xfc4, ActorValue::GetActorValueName(avC0), true);
+        tile4C->Set(0xfc4, ActorValue::ActorValue_GetActorValueName(avC0), true);
         return 0;
     }
     LimbListNode* node3 = wound_->list;
@@ -2101,18 +2139,20 @@ struct DataF
 struct HostF
 {
     int GetIndex(int);
-    void SurgeryMenu_SwitchSkinGeometry(int a1, int a2);
+    void SurgeryMenu_SwitchSkinGeometry(int aeOldLimb, int aeNewLimb);
 };
 // @fnv 0x007e5ee0
 // src: XBOX_PDB 0x007e5ee0
-void __thiscall HostF::SurgeryMenu_SwitchSkinGeometry(int a1, int a2)
+// pdb: SurgeryMenu::SwitchSkinGeometry | SurgeryMenu.obj | retail, string-set bridge, high
+// pdb params: aeOldLimb, aeNewLimb
+void __thiscall HostF::SurgeryMenu_SwitchSkinGeometry(int aeOldLimb, int aeNewLimb)
 {
     ((PtrBox*)&g_011dade8)
         ->Modelloader_GetReferencedThis()
-        ->virt58(((DataF*)DAT_011dada4)->m_aiIndexedValues[GetIndex(a1)].Modelloader_GetReferencedThis());
+        ->virt58(((DataF*)DAT_011dada4)->m_aiIndexedValues[GetIndex(aeOldLimb)].Modelloader_GetReferencedThis());
     ((PtrBox*)&g_011dade8)
         ->Modelloader_GetReferencedThis()
-        ->virt55(((DataF*)DAT_011dada4)->m_aiIndexedValues[GetIndex(a2)].Modelloader_GetReferencedThis(), 1);
+        ->virt55(((DataF*)DAT_011dada4)->m_aiIndexedValues[GetIndex(aeNewLimb)].Modelloader_GetReferencedThis(), 1);
     ((DataF*)DAT_011dada4)->m_e8 = ((PtrBox*)&g_011dade8)->Modelloader_GetReferencedThis()->virt39(&NiFixedString("ScarMesh"));
 }
 }  // namespace fnv_007e5ee0
@@ -2228,16 +2268,20 @@ struct FUN_004a37b0
 typedef struct FUN_004a37b0 DecalInfo;
 struct DecalManager
 {
-    void AddGeometryDecal(DecalInfo*, bool, bool);
+    void BGSDecalManager_AddDecal(DecalInfo*, bool, bool);
 };
 extern DecalManager* __cdecl FUN_0049fef0();
 struct SurgeryDecals
 {
-    void PlaceSurgeryDecal(float, float, bool);
+    void SurgeryMenu_PlaceDecal(float, float, bool);
 };
 // Raycasts from screen coordinates to find a scene position, then submits a decal with a texture chosen by good at that position.
 // @fnv 0x007e5ff0
-void SurgeryDecals::PlaceSurgeryDecal(float afScreenX, float afScreenY, bool good)
+// src: XBOX_RETAIL_PDB 0x007e5ff0
+// pdb: SurgeryMenu::PlaceDecal | SurgeryMenu.obj | retail, string-set bridge, high
+// pdb params: aToolLocation, abInWound
+// pdb locals: pgoodTextureSet, fy, korigin, activatePick, kdir, isect, fx, pdecalData, ipickIndex, ppickRecord
+void SurgeryDecals::SurgeryMenu_PlaceDecal(float afScreenX, float afScreenY, bool good)
 {
     NiPoint3 origin3, direction;
     float kScreenX = Renderer_GetScreenWidth() * afScreenX;
@@ -2279,7 +2323,7 @@ void SurgeryDecals::PlaceSurgeryDecal(float afScreenX, float afScreenY, bool goo
     infoB.unknown74 = 1;
     infoB.unknown75 = 1;
     infoB.unknown77 = 0;
-    FUN_0049fef0()->AddGeometryDecal(&infoB, true, true);
+    FUN_0049fef0()->BGSDecalManager_AddDecal(&infoB, true, true);
 }
 
 struct CursorNode
@@ -2396,6 +2440,9 @@ struct CursorMenu
 };
 // Finds CenterNode and FrameNode, projects them to screen space, clamps the cursor offset to a radius, and moves tiles 4001 and 4002 to the resulting positions.
 // @fnv 0x007e42c0
+// pdb: SurgeryMenu::PlaceToolInWindow | SurgeryMenu.obj | debug, object-file gap fill, medium
+// pdb params: aiX, aiY
+// pdb locals: icenterX, pcenter, icenterY, radius, Vector, pouterEdge, outerEdge, center
 void CursorMenu::UpdateTilePositions(int x, int y)
 {
     CursorNode* radius = node->Find(NiFixedString("CenterNode"));
@@ -2436,7 +2483,7 @@ void CursorMenu::UpdateTilePositions(int x, int y)
 struct SeqHolder
 {
     float GetEndKeyTime_00508100();
-    void SetPhase(float time, bool recurse);
+    void SetPhase(float afPhase, bool abUpdateControllers);
 };
 
 struct WoundUpdater
@@ -2445,6 +2492,9 @@ struct WoundUpdater
 };
 
 // @fnv 0x007e59f0
+// pdb: SurgeryMenu::SetLimbSequences | SurgeryMenu.obj | retail, object-file run extension, low
+// pdb params: afPercent
+// pdb locals: plimbWounds, update, psequenceInfoList
 void WoundUpdater::UpdateWounds(float delta)
 {
     WoundFake* pHead = ((FUN_007e5720_struct*)DAT_011dada4)->SurgeryMenu_GetCurrentLimbWound();
@@ -2471,7 +2521,7 @@ class DirectionManager
 {
   public:
     DirectionSequence* NiControllerManager_GetSequenceByName(const NiFixedString& kName);  // FindSequenceByName
-    void FUN_0048fef0(float fTime);                               // deactivate all
+    void FUN_0048fef0(float fEaseOutTime);                               // deactivate all
     void FUN_0047aab0(DirectionSequence* pkSequence, int iPriority, bool bStartOver, float fWeight, float fEaseInTime,
                       DirectionSequence* pkTimeSync);
     void FUN_0047aa40(bool bValue);
@@ -2489,7 +2539,7 @@ struct DirectionSceneOwner
     DirectionRoot* m_pkTreeNode;  // +0xe0
 };
 
-void NiTimeController_StartAnimations(DirectionRoot* pkRoot);
+void NiTimeController_StartAnimations(DirectionRoot* pkObj);
 
 class DirectionAnimator
 {
@@ -2503,6 +2553,9 @@ class DirectionAnimator
 };
 
 // @fnv 0x007e5c80
+// pdb: SurgeryMenu::SetAnimation | SurgeryMenu.obj | retail, object-file run extension, low
+// pdb params: aeAnimation
+// pdb locals: psurgerygeomController, pseq, ppsurgerygeomControllerManager
 void DirectionAnimator::SetDirection(int iDirection)
 {
     m_iDirection = iDirection;
@@ -2640,12 +2693,15 @@ struct PickMenu
 
     PickTile* FUN_00726070();
     void UpdateTilePositions(int aiX, int aiY);
-    void UpdateLockpick(bool abForcing);
+    void UpdateLockpick(bool abBurning);
 };
 
 // Updates lockpick cursor position and resistance based on forcing state, input device, and interpolated magnitude and mouse percent values.
 // @fnv 0x007e3890
-void PickMenu::UpdateLockpick(bool abForcing)
+// pdb: SurgeryMenu::UpdateToolLocation | SurgeryMenu.obj | retail, unique string literal, high
+// pdb params: abBurning
+// pdb locals: fMaxResistance, fMaxXBoxMagnitude, fMouseMinPercent, fMinMagnitude, fMinResistance, fMouseMaxPercent, pim, fMinXBoxMagnitude, fMaxMagnitude, fmouseSpeedScalar, fmagnitude, delta, fscreenRatio, fnoise, fresistanceTime, fnoise2, pcontrols, x, y, iDeltaY, iDeltaX
+void PickMenu::UpdateLockpick(bool abBurning)
 {
     PickInterface* pInterfaceFinal = InterfaceManager_GetSingleton();
     static int iMinResistanceTime = Tile_AddUserTrait(s_szMinResistanceTime, -1);
@@ -2664,7 +2720,7 @@ void PickMenu::UpdateLockpick(bool abForcing)
     float fMaxXBoxMagCount = FUN_00726070()->FUN_00a011b0(iMaxXBoxMag);
     float fMouseMinLocal = FUN_00726070()->FUN_00a011b0(iMouseMinPercent) / 100.0;
     float fMouseMax = FUN_00726070()->FUN_00a011b0(iMouseMaxPercent) / 100.0;
-    if (abForcing)
+    if (abBurning)
     {
         bForcing = true;
         kArgumentPosition->FUN_00700320(0xfa3, 1);
@@ -3142,17 +3198,20 @@ struct EventMenu
 };
 int __cdecl Tile_AddUserTrait(const char*, int);
 EventForm* __cdecl FUN_0058db10(int);
-void __cdecl ComputeMedicineHealing(float&, float&, int, bool, float);
+void __cdecl GamePlayFormulas_GetSurgeryAutoAttemptPercentages(float&, float&, int, bool, float);
 float __cdecl BSMIN(float, float);
-void __cdecl UpdateBoneWounds(void*);
+void __cdecl SurgeryMenu_PrepareSequences(void*);
 
 // Handles surgery menu button presses to apply stimpak or morphine, cycle the selected limb, or heal the current limb.
 // @fnv 0x007e1b10
-void EventMenu::OnButtonClick(int button, int arg)
+// pdb: SurgeryMenu::DoClick | SurgeryMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: eindex, plimbWounds, fnewCondition, fdamageHealthPercent, bmorphine, fhealLimbPercent, pmorphine, eoldLimb
+void EventMenu::OnButtonClick(int aiID, int apTarget)
 {
     static int stimpak = Tile_AddUserTrait("_StimpacCount", -1);
     static int morphine = Tile_AddUserTrait("_MorphineCount", -1);
-    int event = SurgeryMenu_GetIndex(button);
+    int event = SurgeryMenu_GetIndex(aiID);
     {
         float benefit;
         {
@@ -3166,7 +3225,7 @@ void EventMenu::OnButtonClick(int button, int arg)
                         switch (event)
                         {
                         case 1:
-                            CloseSurgeryMenu();
+                            SurgeryMenu_Close();
                             break;
                         case 4:
                             if (((EventMenu*)DAT_011dada4)->entry &&
@@ -3232,9 +3291,9 @@ void EventMenu::OnButtonClick(int button, int arg)
                             amount = ScaleLimbWoundPercent(((EventPlayer*)_g_thePlayer)->values.Damage(limb));
                             gauge->Tile_Set(Tile_TextToTrait("_Value"),
                                                 ((EventPlayer*)_g_thePlayer)->values.Damage(limb) / 100.0, true);
-                            label->Tile_Set_00a01350(0xfc4, ActorValue::GetActorValueName((ActorValue::Index)limb), true);
+                            label->Tile_Set_00a01350(0xfc4, ActorValue::ActorValue_GetActorValueName((ActorValue::Index)limb), true);
                             SurgeryMenu_SwitchSkinGeometry(iOldLimb, limb);
-                            UpdateBoneWounds(((EventMenu*)DAT_011dada4)->nodes[GetIndex(limb)].Modelloader_GetReferencedThis());
+                            SurgeryMenu_PrepareSequences(((EventMenu*)DAT_011dada4)->nodes[GetIndex(limb)].Modelloader_GetReferencedThis());
                             break;
                         }
                         case 15: {
@@ -3264,15 +3323,15 @@ void EventMenu::OnButtonClick(int button, int arg)
                             amount = ScaleLimbWoundPercent(((EventPlayer*)_g_thePlayer)->values.Damage(limb));
                             gauge->Tile_Set(Tile_TextToTrait("_Value"),
                                                 ((EventPlayer*)_g_thePlayer)->values.Damage(limb) / 100.0, true);
-                            label->Tile_Set_00a01350(0xfc4, ActorValue::GetActorValueName((ActorValue::Index)limb), true);
+                            label->Tile_Set_00a01350(0xfc4, ActorValue::ActorValue_GetActorValueName((ActorValue::Index)limb), true);
                             SurgeryMenu_SwitchSkinGeometry(old2, limb);
-                            UpdateBoneWounds(((EventMenu*)DAT_011dada4)->nodes[GetIndex(limb)].Modelloader_GetReferencedThis());
+                            SurgeryMenu_PrepareSequences(((EventMenu*)DAT_011dada4)->nodes[GetIndex(limb)].Modelloader_GetReferencedThis());
                             break;
                         }
                         case 2: {
                             has = ((EventPlayer*)_g_thePlayer)->target.FUN_00822b90(FUN_0058db10(4), true);
 
-                            ComputeMedicineHealing(benefit, cost, ((EventPlayer*)_g_thePlayer)->values.Current(37), has,
+                            GamePlayFormulas_GetSurgeryAutoAttemptPercentages(benefit, cost, ((EventPlayer*)_g_thePlayer)->values.Current(37), has,
                                                    ((EventPlayer*)_g_thePlayer)->values.Damage(limb));
                             healing = BSMIN(SurgeryMenu_GetLimbPercentFromSequences() * 100.0 + benefit, 100.0f);
                             UpdateWounds(1.0 - healing / 100.0);
@@ -3470,11 +3529,15 @@ extern "C" int _strnicmp(const char*, const char*, unsigned);
 
 // Updates bone wound animations on the host by matching bone names, computing a blend factor from the limb tier, and applying it to each wound entry.
 // @fnv 0x007e4920
-void __cdecl UpdateBoneWounds(BoneHost* host)
+// src: XBOX_RETAIL_PDB 0x007e4920
+// pdb: SurgeryMenu::PrepareSequences | SurgeryMenu.obj | retail, unique string literal, high
+// pdb params: apNode
+// pdb locals: plimbWounds, bwoundPreviouslyCreated, update, fscale, pcontroller, pwound, plimbWound, n, screenPoint2, goodTargets, sseqInfo, pseq, screenPoint1, m, ptag, psequenceInfoList
+void __cdecl SurgeryMenu_PrepareSequences(BoneHost* apNode)
 {
-    if (!host)
+    if (!apNode)
         return;
-    BoneManager* managerLocal3 = host->NiObjectNET_GetController(&DAT_011f36ac);
+    BoneManager* managerLocal3 = apNode->NiObjectNET_GetController(&DAT_011f36ac);
     bool cachedX = true;
     if (managerLocal3)
     {
@@ -3572,7 +3635,7 @@ void __cdecl UpdateBoneWounds(BoneHost* host)
         wound9->dirty = 0;
     }
     NiUpdateData update2(0.0f, true, false);
-    host->NiAVObject_Update(update2);
+    apNode->NiAVObject_Update(update2);
 }
 
 class GlobalObject_0044f440
@@ -3644,15 +3707,18 @@ extern BipPointer DAT_011dae5c;
 
 // Looks up the "Bip01" node, calls two methods with global float values and arguments, then updates the current root.
 // @fnv 0x007e4fe0
-// src: COMMUNITY 0x007e4fe0
-void __cdecl SetTerminalMenuPos(float a, float b, float c)
+// src: XBOX_RETAIL_PDB 0x007e4fe0
+// pdb: SurgeryMenu::SetSurgeryPlayer3DPosition | SurgeryMenu.obj | retail, object-file run extension, high
+// pdb params: afX, afY, afScale
+// pdb locals: update
+void __cdecl SurgeryMenu_SetSurgeryPlayer3DPosition(float afX, float afY, float afScale)
 {
     if (DAT_011dae5c.Modelloader_GetReferencedThis())
     {
         DAT_011dae5c.Modelloader_GetReferencedThis()
             ->v039(NiFixedString("Bip01"))
-            ->NiAVObject_SetTranslate_004bc1f0(-*g_011dae6c.Float(), *g_011dadf0.Float() - b, *g_011dae28.Float() - a);
-        DAT_011dae5c.Modelloader_GetReferencedThis()->v039(NiFixedString("Bip01"))->NiAVObject_SetScale(*g_011dadfc.Float() * (double)c);
+            ->NiAVObject_SetTranslate_004bc1f0(-*g_011dae6c.Float(), *g_011dadf0.Float() - afY, *g_011dae28.Float() - afX);
+        DAT_011dae5c.Modelloader_GetReferencedThis()->v039(NiFixedString("Bip01"))->NiAVObject_SetScale(*g_011dadfc.Float() * (double)afScale);
         NiUpdateData kData(0.0f, false, false);
         DAT_011dae5c.Modelloader_GetReferencedThis()->NiAVObject_Update(kData);
     }
@@ -3666,6 +3732,8 @@ struct LimbPercentageMenu : SurgeryLimbMenu
 
 // Computes a limb percentage from a mode and fraction, updates two UI tiles, and returns the integer percentage.
 // @fnv 0x007e5590
+// pdb: SurgeryMenu::ShowLimbCondition | SurgeryMenu.obj | retail, call graph (shared callers), high
+// pdb locals: flimbPercent, fscale, ilimbDamage
 int LimbPercentageMenu::GetLimbPercentage()
 {
     float fraction = 1.0f - SurgeryMenu_GetLimbPercentFromSequences();
@@ -3690,7 +3758,7 @@ int LimbPercentageMenu::GetLimbPercentage()
     }
     int result2 = (int)percentage;
     tile70->Set(Tile_TextToTrait("_Value"), result2 / 100.0, true);
-    tile4C->Set(0xfc4, ActorValue::GetActorValueName(avC0), true);
+    tile4C->Set(0xfc4, ActorValue::ActorValue_GetActorValueName(avC0), true);
     return result2;
 }
 

@@ -18,9 +18,12 @@
 const char kConcussionFXCrippleHead[] = "FXCrippleHead";
 
 // @fnv 0x0080bd60
-bool ConcussionEffect::IsEffectValid(MagicTarget* target)
+// pdb: ConcussionEffect::CheckTarget | ConcussionEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: pactor
+bool ConcussionEffect::IsEffectValid(MagicTarget* apTarget)
 {
-    Actor* actor = target ? target->GetOwnerActor() : 0;
+    Actor* actor = apTarget ? apTarget->GetOwnerActor() : 0;
     if (actor)
     {
         if (!actor->HasHealth(false) && !actor->GetIsDying())
@@ -30,42 +33,50 @@ bool ConcussionEffect::IsEffectValid(MagicTarget* target)
 }
 
 // @fnv 0x0080bdd0
-void ConcussionEffect::Update(float deltaTime)
+// pdb: ConcussionEffect::Update | ConcussionEffect.obj | retail, upstream name already matches, high
+// pdb params: afSecondsElapsed
+// pdb locals: ptarget
+void ConcussionEffect::Update(float afSecondsElapsed)
 {
-    ((MagicProjectile*)this)->Process(deltaTime);
-    m_fPackageValue += deltaTime;
+    ((MagicProjectile*)this)->Process(afSecondsElapsed);
+    fTimer += afSecondsElapsed;
     Actor* actor = GetTarget() ? GetTarget()->GetOwnerActor() : 0;
     if (actor)
-        ApplyConcussion(actor);
+        CheckApplyConcussion(actor);
 }
 
 // @fnv 0x0080bcb0
+// pdb: ConcussionEffect::Copy | ConcussionEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* ConcussionEffect::Copy()
 {
     ConcussionEffect* copy = new ConcussionEffect(m_pEffectInstance, pSpell, pEffect);
-    copy->m_fPackageValue = m_fPackageValue;
+    copy->fTimer = fTimer;
     CopyData(copy);
     return copy;
 }
 
 // @fnv 0x0080be40
-void ConcussionEffect::ApplyConcussion(Actor* actor)
+// src: XBOX_RETAIL_PDB 0x0080be40
+// pdb: ConcussionEffect::CheckApplyConcussion | ConcussionEffect.obj | retail, string-set bridge, high
+// pdb params: apTarget
+void ConcussionEffect::CheckApplyConcussion(Actor* apTarget)
 {
-    if (m_fPackageValue > DAT_011d1ba4.Float()->f)
+    if (fTimer > DAT_011d1ba4.Float()->f)
     {
-        m_fPackageValue = 0.0f;
-        if (actor->Actor_GetPerceptionCondition() == 0.0)
+        fTimer = 0.0f;
+        if (apTarget->Actor_GetPerceptionCondition() == 0.0)
         {
-            if (!actor->GetActorValue(static_cast<ActorValue::Index>(0x48)))
+            if (!apTarget->GetActorValue(static_cast<ActorValue::Index>(0x48)))
             {
                 DAT_011dbe50 = true;
-                if (actor->IsPlayerRef() && !g_thePlayer->IsSleepingOrResting())
+                if (apTarget->IsPlayerRef() && !g_thePlayer->IsSleepingOrResting())
                 {
                     ImageSpaceModifierInstanceForm::Trigger(TESImageSpaceModifier::GetConcussionModifier(),
                                                             DAT_011cf834.Float()->f, 0);
                     BSAudio::GetSingleton()->GetSoundHandleByEditorID(kConcussionFXCrippleHead, 0x101).Play(false);
                 }
-                actor->GetProcess()->StartIdleAnimation(actor, 0, static_cast<ANIM_IDLE_PLAY_TYPE>(2), true, false, true);
+                apTarget->GetProcess()->StartIdleAnimation(apTarget, 0, static_cast<ANIM_IDLE_PLAY_TYPE>(2), true, false, true);
                 DAT_011dbe50 = false;
             }
         }
@@ -73,10 +84,12 @@ void ConcussionEffect::ApplyConcussion(Actor* actor)
 }
 
 // @fnv 0x0080bc70
-ConcussionEffect::ConcussionEffect(MagicCaster* apCaster, MagicItem* apMagicItem, EffectItem* apEffectItem)
-    : ActiveEffect(apCaster, apMagicItem, apEffectItem)
+// pdb: ConcussionEffect::ConcussionEffect | ConcussionEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+ConcussionEffect::ConcussionEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
+    : ActiveEffect(apCaster, apSpell, apEffect)
 {
-    m_fPackageValue = 0.0f;
+    fTimer = 0.0f;
 }
 
 TESForm* __cdecl GetFormByID(unsigned int);
@@ -100,6 +113,7 @@ struct FUN_0052d240_shell
 };
 // @fnv 0x0052d240
 // src: COMMUNITY 0x0052d240
+// pdb: BGSStaticCollection::ClearData | BGSStaticCollection.obj | debug, upstream name already matches, high
 void FUN_0052d240_shell::BGSStaticCollection_ClearData()
 {
     FUN_00483710();

@@ -74,14 +74,15 @@ __forceinline hkAabb::hkAabb(const hkAabb& a) throw()
 
 // The BV tree's reflected layout is not yet provided by include/.
 #pragma pack(push, 1)
+// pdb: class hkpTriSampledHeightFieldBvTreeShape, size 0x30, bases: hkpBvTreeShape, 4 members
 class hkpTriSampledHeightFieldBvTreeShape
 {
   public:
     char pad0[0x14];
-    hkpSingleShapeContainer m_kChildContainer;
-    hkInt32 m_iChildSize;
-    hkBool m_bCheckHeightFieldBounds;
-    unsigned char m_ucUnknownByte[12];
+    hkpSingleShapeContainer m_childContainer;
+    hkInt32 m_childSize;
+    hkBool m_wantAabbRejectionTest;
+    unsigned char m_padding[12];
     char pad2D[3];
 };
 #pragma pack(pop)
@@ -99,24 +100,26 @@ struct TriSampledHeightFieldBvTreeShape : public hkpTriSampledHeightFieldBvTreeS
 // src: HAVOK_LIB 0x00d27200
 void TriSampledHeightFieldBvTreeShape::hkpTriSampledHeightFieldBvTreeShape_getContainer()
 {
-    m_kChildContainer.m_pContainedShape->GetShapeContainer();
+    m_childContainer.m_childShape->GetShapeContainer();
 }
 
 struct FUN_00d268b0_Obj : public hkpTriSampledHeightFieldBvTreeShape
 {
-    int __thiscall hkpTriSampledHeightFieldBvTreeShape_calcSizeForSpu(int a, int b);
+    int __thiscall hkpTriSampledHeightFieldBvTreeShape_calcSizeForSpu(int input, int spuBufferSizeLeft);
 };
 
 // @fnv 0x00d268b0
 // src: HAVOK_LIB 0x00d268b0
-int __thiscall FUN_00d268b0_Obj::hkpTriSampledHeightFieldBvTreeShape_calcSizeForSpu(int a, int aiUnused)
+// pdb: hkpTriSampledHeightFieldBvTreeShape::calcSizeForSpu | hkpTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: input, spuBufferSizeLeft
+int __thiscall FUN_00d268b0_Obj::hkpTriSampledHeightFieldBvTreeShape_calcSizeForSpu(int input, int spuBufferSizeLeft)
 {
-    const hkpShape* childShape = m_kChildContainer.m_pContainedShape;
+    const hkpShape* childShape = m_childContainer.m_childShape;
     unsigned int result = (unsigned int)childShape->CalcSizeForSpu(
-        *reinterpret_cast<const hkpShape::PhysicsShape*>(a), 0x100);
+        *reinterpret_cast<const hkpShape::PhysicsShape*>(input), 0x100);
     if (result <= 0x100u)
     {
-        m_iChildSize = (hkInt32)result;
+        m_childSize = (hkInt32)result;
         return 0x30;
     }
     return -1;
@@ -150,15 +153,17 @@ class hkObjD26B
     int unk14;
     const hkpTriSampledHeightFieldCollection* m_holder;
 
-    hkBool Query(void* a, void* b) throw();
+    hkBool Query(void* input, void* output) throw();
 };
 
 // Forwards the two arguments to the query method of the target obtained from m_holder and returns its result.
 // @fnv 0x00d26b00
-hkBool hkObjD26B::Query(void* a, void* b) throw()
+// pdb: hkpTriSampledHeightFieldBvTreeShape::castRayImpl | hkpTriSampledHeightFieldBvTreeShape.obj | retail, vtable slot, high
+// pdb params: input, output
+hkBool hkObjD26B::Query(void* input, void* output) throw()
 {
     return m_holder->getHeightFieldShape()->IntersectRayWithShape(
-        *static_cast<const ShapeRayCastQuery*>(a), *static_cast<ShapeRayCastOutput*>(b));
+        *static_cast<const ShapeRayCastQuery*>(input), *static_cast<ShapeRayCastOutput*>(output));
 }
 
 extern void __cdecl ComputeAabbFromTransform(int, int, float, char*);
@@ -183,12 +188,15 @@ class FUN_00d268f0_Shape
 
 // Calls ComputeAabbFromTransform(a, b, c, &buffer), then calls CollectHits with that buffer and d.
 // @fnv 0x00d268f0
-void __thiscall FUN_00d268f0_Shape::ProcessBuffer(int a, int b, float c, int d)
+// pdb: hkpTriSampledHeightFieldBvTreeShape::queryObb | hkpTriSampledHeightFieldBvTreeShape.obj | retail, vtable slot, high
+// pdb params: obbTransform, obbExtent, tolerance, hits
+// pdb locals: aabb
+void __thiscall FUN_00d268f0_Shape::ProcessBuffer(int obbTransform, int obbExtent, float tolerance, int hits)
 {
     hkAabb buffer;
 
-    ComputeAabbFromTransform(a, b, c, reinterpret_cast<char*>(&buffer));
-    CollectHits(reinterpret_cast<char*>(&buffer), d);
+    ComputeAabbFromTransform(obbTransform, obbExtent, tolerance, reinterpret_cast<char*>(&buffer));
+    CollectHits(reinterpret_cast<char*>(&buffer), hits);
 }
 
 extern int DAT_010c6fd0;
@@ -207,12 +215,14 @@ struct FUN_00d26b50
     hkpShape* m_pShape;
     char pad1d[4];
     unsigned char m_bE;
-    FUN_00d26b50(hkpShape* pShape, unsigned char bE);
+    FUN_00d26b50(hkpShape* pShape, unsigned char doAabbRejection);
 };
 
 // Initializes a FUN_00d26b50 object with default values, assigns pShape and bE, and calls pShape->FUN_00c90510().
 // @fnv 0x00d26b50
-FUN_00d26b50::FUN_00d26b50(hkpShape* pShape, unsigned char bE)
+// pdb: hkpTriSampledHeightFieldBvTreeShape::hkpTriSampledHeightFieldBvTreeShape | hkpTriSampledHeightFieldBvTreeShape.obj | retail, object-file gap fill, high
+// pdb params: c, doAabbRejection
+FUN_00d26b50::FUN_00d26b50(hkpShape* pShape, unsigned char doAabbRejection)
 {
     m_uiValue1 = 1;
     m_iA = 0;
@@ -222,12 +232,12 @@ FUN_00d26b50::FUN_00d26b50(hkpShape* pShape, unsigned char bE)
     m_pD = &DAT_010c6fd0;
     m_pShape = pShape;
     m_pShape->addReference();
-    m_bE = bE;
+    m_bE = doAabbRejection;
 }
 
 extern "C" hkThreadMemory* hkMemoryRouter_getInstance();
-extern "C" void ResizeAudioStream(hkMemory* memory, void* array, int elemSize);
-extern "C" void hkArrayUtil__reserve(hkMemory* memory, void* array, int numElements, int elemSize);
+extern "C" void ResizeAudioStream(hkMemory* mem, void* array, int sizeElem);
+extern "C" void hkArrayUtil__reserve(hkMemory* mem, void* array, int numElem, int sizeElem);
 
 template <typename T> __forceinline void hkConstructWithCopy(T* p, int n, const T& t)
 {
@@ -270,13 +280,16 @@ struct TriSampledHeightFieldBvTreeShapeq : public hkpTriSampledHeightFieldBvTree
 {
     __forceinline const hkpTriSampledHeightFieldCollection* getShapeCollection() const
     {
-        return static_cast<const hkpTriSampledHeightFieldCollection*>(m_kChildContainer.m_pContainedShape);
+        return static_cast<const hkpTriSampledHeightFieldCollection*>(m_childContainer.m_childShape);
     }
     void CollectHits(const hkAabb& aabbIn, hkArrayBase<hkUint32>& hits) const;
 };
 
 // Appends shape keys for grid cells overlapping aabbIn to hits; with bounds checking, drops them if all sampled heights are above or below the AABB.
 // @fnv 0x00d26e50
+// pdb: hkpTriSampledHeightFieldBvTreeShape::queryAabb | hkpTriSampledHeightFieldBvTreeShape.obj | retail, vtable slot, high
+// pdb params: aabbIn, hits
+// pdb locals: minZ, aabb, overlaps, maxX, minX, initialSize, maxZ, belowHeightField
 void TriSampledHeightFieldBvTreeShapeq::CollectHits(const hkAabb& aabbIn, hkArrayBase<hkUint32>& hits) const
 {
     hkAabb aabb(aabbIn);
@@ -293,7 +306,7 @@ void TriSampledHeightFieldBvTreeShapeq::CollectHits(const hkAabb& aabbIn, hkArra
     const hkpSampledHeightFieldShape* hf = getShapeCollection()->getHeightFieldShape();
     int origSize = hits.GetLogicalSize();
 
-    if (m_bCheckHeightFieldBounds)
+    if (m_wantAabbRejectionTest)
     {
         hkBool allBelow = true;
         hkBool allAbove = true;
@@ -309,7 +322,7 @@ void TriSampledHeightFieldBvTreeShapeq::CollectHits(const hkAabb& aabbIn, hkArra
                 if (allBelow || allAbove)
                 {
                     hkReal raw = hf->GetHeightAtGridPoint(x, z);
-                    hkReal h = raw * hf->m_kHeightScaleVector.y;
+                    hkReal h = raw * hf->m_intToFloatScale.y;
                     if (aabb.m_kMinimumCorner.y < h)
                     {
                         allBelow = false;
@@ -330,7 +343,7 @@ void TriSampledHeightFieldBvTreeShapeq::CollectHits(const hkAabb& aabbIn, hkArra
         for (hkUint32 x = minX; x <= maxX + 1; x++)
         {
             hkReal raw = hf->GetHeightAtGridPoint(x, maxZ + 1);
-            hkReal h = raw * hf->m_kHeightScaleVector.y;
+            hkReal h = raw * hf->m_intToFloatScale.y;
             if (aabb.m_kMinimumCorner.y < h)
             {
                 allBelow = false;
@@ -344,7 +357,7 @@ void TriSampledHeightFieldBvTreeShapeq::CollectHits(const hkAabb& aabbIn, hkArra
         for (hkUint32 z = minZ; z <= maxZ + 1; z++)
         {
             hkReal raw = hf->GetHeightAtGridPoint(maxX + 1, z);
-            hkReal h = raw * hf->m_kHeightScaleVector.y;
+            hkReal h = raw * hf->m_intToFloatScale.y;
             if (aabb.m_kMinimumCorner.y < h)
             {
                 allBelow = false;
@@ -389,6 +402,8 @@ struct FUN_00d26b30_cls
 
 // @fnv 0x00d26b30
 // src: HAVOK_LIB 0x00d26b30
+// pdb: hkpTriSampledHeightFieldBvTreeShape::castRayWithCollectorImpl | hkpTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: input, cdBody, collector
 void FUN_00d26b30_cls::hkpTriSampledHeightFieldBvTreeShape_castRayWithCollectorImpl(int a, int b, int c, int d)
 {
     const hkpSampledHeightFieldShape* shape = m_holder->getHeightFieldShape();
@@ -432,19 +447,19 @@ struct hkUint16x4
 
 __forceinline const hkSimdVector& getFloatToIntScale(const hkpSampledHeightFieldShape* hf)
 {
-    return simd(hf->m_kInverseScale);
+    return simd(hf->m_floatToIntScale);
 }
 
 __forceinline const hkSimdVector& getFloatToIntOffsetFloorCorrected(const hkpSampledHeightFieldShape* hf)
 {
-    return simd(hf->m_kOffset);
+    return simd(hf->m_floatToIntOffsetFloorCorrected);
 }
 
 extern const hkVector4 hkVector4Util_uint16Magic;
 
 __forceinline hkReal getRadius(const hkpTriSampledHeightFieldCollection* collection)
 {
-    return collection->m_fSphereRadius;
+    return collection->m_radius;
 }
 
 __forceinline void SetAllComponents(hkSimdVector& self, hkReal r)
@@ -540,6 +555,9 @@ __forceinline void convertToUint16WithClipAgain(const hkSimdVector& in, const hk
 // Expands aabb by the collection radius, clamps it to the height field's AABB, returns false if empty, else outputs uint16 grid min/max X and Z.
 // @fnv 0x00d26940
 // src: XBOX_PDB 0x00d26940
+// pdb: hkpTriSampledHeightFieldBvTreeShape::getExtentsForQueryAabb | hkpTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: aabb, collection, minX, maxX, minZ, maxZ
+// pdb locals: radiusVec, thisAabb
 hkBool hkpTriSampledHeightFieldBvTreeShape_getExtentsForQueryAabb(const hkAabb* aabb, const hkpTriSampledHeightFieldCollection* collection, hkUint32* minX,
                      hkUint32* maxX, hkUint32* minZ, hkUint32* maxZ)
 {
@@ -577,7 +595,7 @@ hkBool hkpTriSampledHeightFieldBvTreeShape_getExtentsForQueryAabb(const hkAabb* 
     hkSimdVector zero;
     setZero4(zero);
     hkSimdVector maxVal;
-    set(maxVal, hkReal(hf->m_iXResolution - 2), 0.0f, hkReal(hf->m_iZResolution - 2), 0.0f);
+    set(maxVal, hkReal(hf->m_xRes - 2), 0.0f, hkReal(hf->m_zRes - 2), 0.0f);
 
     hkUint16x4 out;
     const LocalM128 magic =
@@ -599,13 +617,13 @@ hkBool hkpTriSampledHeightFieldBvTreeShape_getExtentsForQueryAabb(const hkAabb* 
 __forceinline hkReal hkpSampledHeightFieldShape::getHeightAt(int x, int z) const throw()
 {
     hkReal h = GetHeightAtGridPoint(x, z);
-    return h * m_kHeightScaleVector.y;
+    return h * m_intToFloatScale.y;
 }
 
 __forceinline hkReal hkpSampledHeightFieldShape::getScaledHeight(int x, int z) const throw()
 {
     hkReal h = GetHeightAtGridPoint(x, z);
-    return m_kHeightScaleVector.y * h;
+    return m_intToFloatScale.y * h;
 }
 
 
@@ -615,10 +633,10 @@ __declspec(noinline) hkBool
                          hkUint32& maxX, hkUint32& minZ, hkUint32& maxZ)
 {
     const hkpSampledHeightFieldShape* hf = collection->getHeightFieldShape();
-    minX = (int)(aabb.m_kMinimumCorner.m_f[0] * hf->m_kHeightScaleVector.x);
-    maxX = (int)(aabb.m_kMaximumCorner.m_f[0] * hf->m_kHeightScaleVector.x);
-    minZ = (int)(aabb.m_kMinimumCorner.m_f[2] * hf->m_kHeightScaleVector.z);
-    maxZ = (int)(aabb.m_kMaximumCorner.m_f[2] * hf->m_kHeightScaleVector.z);
+    minX = (int)(aabb.m_kMinimumCorner.m_f[0] * hf->m_intToFloatScale.x);
+    maxX = (int)(aabb.m_kMaximumCorner.m_f[0] * hf->m_intToFloatScale.x);
+    minZ = (int)(aabb.m_kMinimumCorner.m_f[2] * hf->m_intToFloatScale.z);
+    maxZ = (int)(aabb.m_kMaximumCorner.m_f[2] * hf->m_intToFloatScale.z);
     return hkBool(minX <= maxX && minZ <= maxZ);
 }
 
@@ -634,11 +652,14 @@ struct BvTreeShape : public hkpTriSampledHeightFieldBvTreeShape
 // Fills hits with shape keys for grid cells overlapping aabbIn and returns the count, or 0 if bounds checking finds every sampled height above or below it.
 // @fnv 0x00d26ba0
 // src: HAVOK_SRC 0x00d26ba0
+// pdb: hkpTriSampledHeightFieldBvTreeShape::queryAabbImpl | hkpTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: aabbIn, hits, maxNumKeys
+// pdb locals: minZ, aabb, overlaps, maxX, minX, maxZ
 hkUint32 BvTreeShape::hkpTriSampledHeightFieldBvTreeShape_queryAabbImpl(const hkAabb& aabbIn, hkpShapeKey* hits, int maxNumKeys) const
 {
     hkAabb aabb(aabbIn);
     const hkpTriSampledHeightFieldCollection* collection =
-        static_cast<const hkpTriSampledHeightFieldCollection*>(m_kChildContainer.m_pContainedShape);
+        static_cast<const hkpTriSampledHeightFieldCollection*>(m_childContainer.m_childShape);
 
     hkUint32 maxZ, minZ, maxX, minX;
     {
@@ -652,7 +673,7 @@ hkUint32 BvTreeShape::hkpTriSampledHeightFieldBvTreeShape_queryAabbImpl(const hk
     int numHits = 0;
     const hkpSampledHeightFieldShape* hf = collection->getHeightFieldShape();
 
-    if (m_bCheckHeightFieldBounds)
+    if (m_wantAabbRejectionTest)
     {
         bool allBelow = true;
         bool allAbove = true;

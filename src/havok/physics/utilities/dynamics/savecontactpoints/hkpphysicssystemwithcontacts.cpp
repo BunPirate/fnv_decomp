@@ -13,6 +13,8 @@ class hkpSerializedAgentNnEntry;
 // Returns 0.
 // @fnv 0x00dceb80
 // src: GUESS 0x00dceb80 (confidence: high)
+// pdb: hkpPhysicsSystemWithContacts::clone | hkpPhysicsSystemWithContacts.obj | debug, vtable slot, medium
+// pdb locals: assertBuf, ostr
 int Object_ReturnZero_00dceb80()
 {
     return 0;
@@ -53,30 +55,35 @@ __forceinline hkArray<T, Allocator>::~hkArray()
 }
 
 // No shared contacts-system header is available yet; both functions use its array at +0x44.
+// pdb: class hkpPhysicsSystemWithContacts, size 0x50, bases: hkpPhysicsSystem, 1 members
 class hkpPhysicsSystemWithContacts : public hkpPhysicsSystem
 {
   public:
     virtual ~hkpPhysicsSystemWithContacts() throw();
-    hkArray<hkpSerializedAgentNnEntry*> m_kSerializedAgentEntries;
-    void AddObject(hkpSerializedAgentNnEntry* pkObject);
+    hkArray<hkpSerializedAgentNnEntry*> m_contacts;
+    void addContact(hkpSerializedAgentNnEntry* c);
 };
 
 // @fnv 0x00dcec70
-void hkpPhysicsSystemWithContacts::AddObject(hkpSerializedAgentNnEntry* pkObject)
+// src: XBOX_RETAIL_PDB 0x00dcec70
+// pdb: hkpPhysicsSystemWithContacts::addContact | hkpPhysicsSystemWithContacts.obj | retail, object-file gap fill, high
+// pdb params: c
+void hkpPhysicsSystemWithContacts::addContact(hkpSerializedAgentNnEntry* c)
 {
-    if (pkObject)
+    if (c)
     {
-        reinterpret_cast<hkReferencedObject*>(pkObject)->addReference();
-        m_kSerializedAgentEntries.pushBack(pkObject);
+        reinterpret_cast<hkReferencedObject*>(c)->addReference();
+        m_contacts.pushBack(c);
     }
 }
 
 // @fnv 0x00dcecc0
+// pdb: hkpPhysicsSystemWithContacts::~hkpPhysicsSystemWithContacts | hkpPhysicsSystemWithContacts.obj | retail, upstream name already matches, high
 hkpPhysicsSystemWithContacts::~hkpPhysicsSystemWithContacts() throw()
 {
-    int iAgentCount = m_kSerializedAgentEntries.m_iElementCount;
+    int iAgentCount = m_contacts.m_iElementCount;
     for (int i = 0; i < iAgentCount; ++i)
     {
-        reinterpret_cast<hkReferencedObject*>(m_kSerializedAgentEntries.m_data[i])->removeReference();
+        reinterpret_cast<hkReferencedObject*>(m_contacts.m_data[i])->removeReference();
     }
 }

@@ -21,7 +21,7 @@ class TESCasinoChips : public TESBoundObject,
                        public BGSPickupPutdownSounds
 {
 public:
-    BSStringT<char> m_kPrimaryString;
+    BSStringT<char> cDesc;
 
     TESCasinoChips();
 

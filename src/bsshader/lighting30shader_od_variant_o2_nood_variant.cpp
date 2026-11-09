@@ -92,12 +92,15 @@ struct S00bbe6b0_Renderer
     int unk10;
     int unk14;
     char* m_18;
-    void Lighting30Shader_SetupGeometryConstants_ObjToCubemap(S00bbe6b0_Src* src, unsigned int id, int flag, void* out);
+    void Lighting30Shader_SetupGeometryConstants_ObjToCubemap(S00bbe6b0_Src* apRenderPass, unsigned int auiCurrentPass, int apSkin, void* aWorldTransform);
 };
 
 // @fnv 0x00bbe6b0
 // src: COMMUNITY 0x00bbe6b0
-void S00bbe6b0_Renderer::Lighting30Shader_SetupGeometryConstants_ObjToCubemap(S00bbe6b0_Src* src, unsigned int id, int flag, void* out)
+// pdb: Lighting30Shader::SetupGeometryConstants_ObjToCubemap | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: apRenderPass, auiCurrentPass, apSkin, aWorldTransform
+// pdb locals: kD3DMat, kobjtoworld, rposAdj, psslight, kobjtoshadow
+void S00bbe6b0_Renderer::Lighting30Shader_SetupGeometryConstants_ObjToCubemap(S00bbe6b0_Src* apRenderPass, unsigned int auiCurrentPass, int apSkin, void* aWorldTransform)
 {
     __declspec(align(16)) S00bbe6b0_Mat mat;
     __declspec(align(16)) S00bbe6b0_Mat world;
@@ -105,9 +108,9 @@ void S00bbe6b0_Renderer::Lighting30Shader_SetupGeometryConstants_ObjToCubemap(S0
 
     if (DAT_01201098->bEnabled)
     {
-        S00bbe6b0_Pair* pair = src->pair;
-        if (!pair || (src->count > 0 && *((unsigned char*)pair->first + 0xed)) || (id >= 0x1bd && id <= 0x1c3) ||
-            (id >= 0x2d8 && id <= 0x2ef))
+        S00bbe6b0_Pair* pair = apRenderPass->pair;
+        if (!pair || (apRenderPass->count > 0 && *((unsigned char*)pair->first + 0xed)) || (auiCurrentPass >= 0x1bd && auiCurrentPass <= 0x1c3) ||
+            (auiCurrentPass >= 0x2d8 && auiCurrentPass <= 0x2ef))
         {
             mat = *(S00bbe6b0_Mat*)(m_18 + 0x940);
             D3DXMatrixTranspose_00ee6dd4(&mat, &mat);
@@ -130,23 +133,23 @@ void S00bbe6b0_Renderer::Lighting30Shader_SetupGeometryConstants_ObjToCubemap(S0
         }
         else
         {
-            if (src->count > 0)
+            if (apRenderPass->count > 0)
             {
                 S00bbe6b0_Identity(&world);
                 S00bbe6b0_Identity(&mat);
-                if (!flag)
-                    NiD3DUtility_GetD3DFromNi_(&world, out);
+                if (!apSkin)
+                    NiD3DUtility_GetD3DFromNi_(&world, aWorldTransform);
                 world._41 += DAT_011f474c;
                 world._42 += DAT_011f4750;
                 world._43 += DAT_011f4754;
-                D3DXMatrixMultiply_00ee6de0(&res, &world, &(id - 0x1c4 <= 3 ? pair->first : pair->second)->world);
+                D3DXMatrixMultiply_00ee6de0(&res, &world, &(auiCurrentPass - 0x1c4 <= 3 ? pair->first : pair->second)->world);
                 mat = res;
                 D3DXMatrixTranspose_00ee6dd4(&mat, &mat);
                 FUN_00ec44d0(&DAT_01201170, &mat, 0x40);
             }
         }
     }
-    if (DAT_012010b8->bEnabled && flag)
+    if (DAT_012010b8->bEnabled && apSkin)
     {
         S00bbe6b0_Identity(&mat);
         FUN_00ec44d0(&DAT_012012b0, &mat, 0x40);

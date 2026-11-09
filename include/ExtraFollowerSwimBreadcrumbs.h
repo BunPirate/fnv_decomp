@@ -6,6 +6,7 @@
 
 class FollowerSwimBreadcrumb;
 
+// pdb: class ExtraFollowerSwimBreadcrumbs, size 0x28, bases: BSExtraData, 4 members
 class ExtraFollowerSwimBreadcrumbs : public BSExtraData
 {
 public:
@@ -14,8 +15,8 @@ public:
     void __thiscall FUN_00437d10();
     void* __thiscall FUN_00437ce0(unsigned int flags);
 
-    int iCount;
-    NiPoint3 kLastPos;
-    int iLastCell;
-    BSSimpleList<FollowerSwimBreadcrumb*> kBreadcrumbs;
+    int eLeaderState;
+    NiPoint3 LeaderLocation;
+    int LeaderNavMeshID;
+    BSSimpleList<FollowerSwimBreadcrumb*> CrumbList;
 };

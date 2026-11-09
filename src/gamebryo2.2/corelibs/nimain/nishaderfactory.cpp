@@ -36,15 +36,18 @@ const NiRTTI* NiD3DShaderProgram::GetRTTI() const
     return (const NiRTTI*)&g_0126f9ac_arg1;
 }
 
-int __cdecl SwapBufferBySizes(void*, unsigned int, void*, void*);
+int __cdecl NiBinaryStream_DoByteSwap(void*, unsigned int, void*, void*);
 // @fnv 0x00aa19e0
 // src: GAMEBRYO_LIB 0x00aa19e0
-unsigned int __cdecl NiFile_ReadAndSwap(NiFile* apFile, void* apBuffer, unsigned int auiSize, void* apArg4, void* apArg5)
+// pdb: NiFile::ReadAndSwap | NiFile.obj | retail, upstream name already matches, high
+// pdb params: pkThis, pvBuffer, uiBytes, puiComponentSizes, uiNumComponents
+// pdb locals: uiBytesRead
+unsigned int __cdecl NiFile_ReadAndSwap(NiFile* pkThis, void* pvBuffer, unsigned int uiBytes, void* puiComponentSizes, void* uiNumComponents)
 {
-    if (auiSize <= 0)
+    if (uiBytes <= 0)
         return 0;
-    unsigned int r = apFile->FileRead(apBuffer, auiSize);
-    SwapBufferBySizes(apBuffer, auiSize, apArg4, apArg5);
+    unsigned int r = pkThis->FileRead(pvBuffer, uiBytes);
+    NiBinaryStream_DoByteSwap(pvBuffer, uiBytes, puiComponentSizes, uiNumComponents);
     return r;
 }
 
@@ -64,16 +67,17 @@ struct ShaderFactorySlot : NiShaderFactory
 };
 
 // Constructor 0x00aa00d0 and deleting destructor 0x00aa0190 identify this 24-byte NiRefObject; no shared header exists yet.
+// pdb: class NiGlobalConstantEntry, size 0x18, bases: NiRefObject, 4 members
 class NiGlobalConstantEntry : public NiRefObject
 {
 public:
-    NiGlobalConstantEntry(const char* pcName, unsigned int uiValue, unsigned int uiSize, const void* pvData) throw();
+    NiGlobalConstantEntry(const char* pcKey, unsigned int eType, unsigned int uiDataSize, const void* pvDataSource) throw();
     void* Destroy(int flag);
 
-    NiFixedString m_kName;
-    unsigned int m_uiCurrentValue;
-    unsigned int m_uiSize;
-    void* m_pResource;
+    NiFixedString m_kKey;
+    unsigned int m_eType;
+    unsigned int m_uiDataSize;
+    void* m_pvDataSource;
 };
 
 void* __cdecl Object_DispatchCommandFour(unsigned int uiSize);
@@ -86,23 +90,27 @@ struct FixedStringHandle
 };
 
 // @fnv 0x00aa0400
-bool __cdecl AcquireGlobalConstantEntry(const NiFixedString* pkName, unsigned int a2, unsigned int a3, unsigned int a4)
+// src: XBOX_RETAIL_PDB 0x00aa0400
+// pdb: NiShaderFactory::RegisterGlobalShaderConstant | NiShaderFactory.obj | retail, call graph, high
+// pdb params: kKey, eType, uiDataSize, pvInitialData
+// pdb locals: pkEntry, kGlobalKey
+bool __cdecl NiShaderFactory_RegisterGlobalShaderConstant(const NiFixedString* kKey, unsigned int eType, unsigned int uiDataSize, unsigned int pvInitialData)
 {
     if (ShaderFactorySlot::Get() == 0)
         return false;
     NiShaderFactory* pkFactory = ShaderFactorySlot::Get();
     FixedStringHandle kLocal;
     NiTMapItem<NiFixedString, NiGlobalConstantEntry*>* pkItem =
-        pkFactory->m_kGlobalConstantEntryMap
-            .m_ppkHashTable[(unsigned int)pkName->m_kHandle % pkFactory->m_kGlobalConstantEntryMap.m_uiHashSize];
+        pkFactory->m_kGlobalConstantMap
+            .m_ppkHashTable[(unsigned int)kKey->m_kHandle % pkFactory->m_kGlobalConstantMap.m_uiHashSize];
     while (pkItem != 0)
     {
-        if ((unsigned int)pkName->m_kHandle == (unsigned int)pkItem->m_key.m_kHandle)
+        if ((unsigned int)kKey->m_kHandle == (unsigned int)pkItem->m_key.m_kHandle)
         {
             NiGlobalConstantEntry* pkEntry = pkItem->m_val;
             if (pkEntry == 0)
                 break;
-            if (pkEntry->m_uiCurrentValue != a2)
+            if (pkEntry->m_eType != eType)
                 return false;
             InterlockedIncrement((long*)&pkEntry->m_uiRefCount);
             return true;
@@ -113,19 +121,19 @@ bool __cdecl AcquireGlobalConstantEntry(const NiFixedString* pkName, unsigned in
     void* pvMem = Object_DispatchCommandFour(0x18);
     if (pvMem == 0)
         return false;
-    const char* pcName = pkName->m_kHandle;
-    NiGlobalConstantEntry* pkNew = new (pvMem) NiGlobalConstantEntry(pcName, a2, a3, (const void*)a4);
+    const char* pcName = kKey->m_kHandle;
+    NiGlobalConstantEntry* pkNew = new (pvMem) NiGlobalConstantEntry(pcName, eType, uiDataSize, (const void*)pvInitialData);
     if (pkNew == 0)
         return false;
 
     InterlockedIncrement((long*)&pkNew->m_uiRefCount);
-    if (pkName->m_kHandle != _EmptyFS)
-        InterlockedIncrement((long*)(pkName->m_kHandle - 8));
+    if (kKey->m_kHandle != _EmptyFS)
+        InterlockedIncrement((long*)(kKey->m_kHandle - 8));
 
-    char* pcHandle = pkName->m_kHandle;
+    char* pcHandle = kKey->m_kHandle;
     NiShaderFactory* pkMapOwner = ShaderFactorySlot::Get();
     kLocal.m_kHandle = pcHandle;
-    ((ShaderConstantMap*)&pkMapOwner->m_kGlobalConstantEntryMap)->SetAt(reinterpret_cast<NiFixedString*>(&kLocal), pkNew);
+    ((ShaderConstantMap*)&pkMapOwner->m_kGlobalConstantMap)->SetAt(reinterpret_cast<NiFixedString*>(&kLocal), pkNew);
 
     if (pcHandle != _EmptyFS)
         InterlockedDecrement((long*)(pcHandle - 8));
@@ -153,13 +161,15 @@ struct FUN_00e897d0 : public SpawnedArgBase
     int m_unk20;
     int m_unk24;
     int m_unk28;
-    FUN_00e897d0(int a1, int a2) throw();
-    void Init(int a1);
+    FUN_00e897d0(int pkRenderer, int eType) throw();
+    void Init(int pkD3DRenderer);
 };
 
 // Constructs the object from a base argument and a1, zeroes eight fields, then calls Init(a1).
 // @fnv 0x00e897d0
-FUN_00e897d0::FUN_00e897d0(int a1, int aiArg) throw() : SpawnedArgBase(aiArg)
+// pdb: NiD3DShaderProgram::NiD3DShaderProgram | NiD3DShaderProgram.obj | retail, call graph, high
+// pdb params: pkRenderer, eType
+FUN_00e897d0::FUN_00e897d0(int pkRenderer, int eType) throw() : SpawnedArgBase(eType)
 {
     m_unk0C = 0;
     m_unk10 = 0;
@@ -169,7 +179,7 @@ FUN_00e897d0::FUN_00e897d0(int a1, int aiArg) throw() : SpawnedArgBase(aiArg)
     m_unk20 = 0;
     m_unk24 = 0;
     m_unk28 = 0;
-    Init(a1);
+    Init(pkRenderer);
 }
 
 inline NiRefObject::~NiRefObject()
@@ -225,9 +235,11 @@ __forceinline NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString, NiGlobalCons
     NiFree(m_ppkHashTable);
 }
 
-void __cdecl RemoveGlobalConstant(char** pkName) throw();
+void __cdecl NiShaderFactory_ReleaseGlobalShaderConstant(char** kKey) throw();
 
 // @fnv 0x00aa05a0
+// pdb: NiShaderFactory::~NiShaderFactory | NiShaderFactory.obj | retail, upstream name already matches, high
+// pdb locals: kIter, pkEntry, kName
 NiShaderFactory::~NiShaderFactory() throw()
 {
     if (ms_pShaderFactory)
@@ -235,7 +247,7 @@ NiShaderFactory::~NiShaderFactory() throw()
     if (ms_pShaderFactory)
         ms_pShaderFactory->v13();
 
-    GlobalConstantMapOperations& kMap = static_cast<GlobalConstantMapOperations&>(m_kGlobalConstantEntryMap);
+    GlobalConstantMapOperations& kMap = static_cast<GlobalConstantMapOperations&>(m_kGlobalConstantMap);
     void* pos = kMap.GetFirstPos();
     while (pos)
     {
@@ -243,7 +255,7 @@ NiShaderFactory::~NiShaderFactory() throw()
         NiGlobalConstantEntry* pkEntry = 0;
         kMap.GetNext(pos, kName, pkEntry);
         if (pkEntry)
-            RemoveGlobalConstant(&kName.m_kHandle);
+            NiShaderFactory_ReleaseGlobalShaderConstant(&kName.m_kHandle);
     }
 
     if (ms_pShaderFactory == this)
@@ -270,13 +282,15 @@ void __cdecl _NiFree_00aa10f0(void* p);
 void __cdecl FUN_00aa1460(void* p, unsigned int size);
 
 // @fnv 0x00aa0190
+// pdb: NiGlobalConstantEntry::~NiGlobalConstantEntry | NiShaderFactory.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiGlobalConstantEntry::`scalar deleting destructor'
 void* __thiscall NiGlobalConstantEntry::Destroy(int aiFlags)
 {
-    void* saved = m_pResource;
+    void* saved = m_pvDataSource;
     *(int**)this = &DAT_010a2148;
     _NiFree_00aa10f0(saved);
 
-    void* head = m_kName.m_kHandle;
+    void* head = m_kKey.m_kHandle;
     FUN_00aa0190_Decrement decrement = DAT_00fdf1c4;
     if (head != DAT_0109b220)
     {
@@ -311,14 +325,18 @@ struct Stub
 
 // Finds the global constant entry for pkName in the shader factory, decrements its ref count, and deletes it when it reaches zero.
 // @fnv 0x00aa04e0
-bool RemoveGlobalConstant(const NiFixedString* pkName)
+// src: XBOX_RETAIL_PDB 0x00aa04e0
+// pdb: NiShaderFactory::ReleaseGlobalShaderConstant | NiShaderFactory.obj | retail, call graph, high
+// pdb params: kKey
+// pdb locals: pkEntry, kRemoveKey
+bool NiShaderFactory_ReleaseGlobalShaderConstant(const NiFixedString* kKey)
 {
     NiShaderFactory* pkFactory = ShaderFactorySlot::Get();
     if (pkFactory == 0)
         return false;
 
-    unsigned int uiKey = (unsigned int)pkName->m_kHandle;
-    ShaderConstantMap* pkMap = (ShaderConstantMap*)&pkFactory->m_kGlobalConstantEntryMap;
+    unsigned int uiKey = (unsigned int)kKey->m_kHandle;
+    ShaderConstantMap* pkMap = (ShaderConstantMap*)&pkFactory->m_kGlobalConstantMap;
     NiTMapItem<NiFixedString, NiGlobalConstantEntry*>* pkItem = pkMap->m_ppkHashTable[uiKey % pkMap->m_uiHashSize];
     NiRefObject* pkEntry = 0;
     while (pkItem != 0)
@@ -333,16 +351,16 @@ bool RemoveGlobalConstant(const NiFixedString* pkName)
     if (pkEntry == 0)
         return false;
 
-    if (pkName->m_kHandle != _EmptyFS)
-        InterlockedIncrement((long*)(pkName->m_kHandle - 8));
+    if (kKey->m_kHandle != _EmptyFS)
+        InterlockedIncrement((long*)(kKey->m_kHandle - 8));
     pkFactory = ShaderFactorySlot::Get();
 
     FixedStringHandle kLocal;
-    char* pcHandle = pkName->m_kHandle;
+    char* pcHandle = kKey->m_kHandle;
     kLocal.m_kHandle = pcHandle;
     if (pkEntry->m_uiRefCount == 1)
     {
-        ((Stub*)&pkFactory->m_kGlobalConstantEntryMap)->NiTStringPointerMap_NiAVObject_RemoveAt(reinterpret_cast<NiFixedString*>(&kLocal));
+        ((Stub*)&pkFactory->m_kGlobalConstantMap)->NiTStringPointerMap_NiAVObject_RemoveAt(reinterpret_cast<NiFixedString*>(&kLocal));
         if (InterlockedDecrement((long*)&pkEntry->m_uiRefCount) == 0)
             pkEntry->DeleteThis();
     }

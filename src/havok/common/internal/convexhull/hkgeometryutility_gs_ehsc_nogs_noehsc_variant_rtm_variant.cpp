@@ -17,7 +17,7 @@ struct FUN_00d5a5e0_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void FinishA();
 };
 struct FUN_00d5a5e0_ctxB
@@ -42,7 +42,7 @@ struct FUN_00d5a630_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void SetF(float f, int zero);
     void SetC(int a3);
     void FinishA();
@@ -136,7 +136,7 @@ struct D5C110Geometry
 };
 void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl InitAndSetB(const D5C110StridedVertices& vertices, D5C110Geometry& out);
-void __cdecl BuildGeometryFromShape(const void* shape, D5C110Geometry& out);
+void __cdecl hkGeometryUtility_createGeometryFromPlaneEquations(const void* planeEquationsIn, D5C110Geometry& geometryOut);
 struct D5C110VertexArray;
 void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl hkGeometryUtility_createVerticesFromPlaneEquations(const void* shape, D5C110VertexArray& vertices);
@@ -255,6 +255,9 @@ struct S00d5bb80_hkSphere
 
 // @fnv 0x00d5bb80
 // src: GUESS 0x00d5bb80 (confidence: low)
+// pdb: lineMinimize | hkGeometryUtility.obj | debug, object-file run extension, low
+// pdb params: vertexArray, numVertices, striding, axes, stepIn, direction, maxIter
+// pdb locals: tempAxes
 static __declspec(noinline) S00d5bb80_hkSphere
     Object_ProcessAndReturnValue_00d5bb80(const S00d5bb80_hkVector4& a, const S00d5bb80_hkVector4& b, const S00d5bb80_hkVector4& c, float radius)
 {

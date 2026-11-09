@@ -9,16 +9,20 @@
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // @fnv 0x0082b780
-void ValueAndConditionsEffect::LoadGame(void* buffer)
+// pdb: TurnUndeadEffect::LoadGame | TurnUndeadEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+void ValueAndConditionsEffect::LoadGame(void* apActor)
 {
-    ActiveEffect::LoadGame(buffer);
-    g_TESSaveLoadGame->ReadTypedData(&m_eActorValue, 1);
+    ActiveEffect::LoadGame(apActor);
+    g_TESSaveLoadGame->ReadTypedData(&eWhichActorValue, 1);
 }
 
 // @fnv 0x0082b7b0
-ValueAndConditionsEffect::ValueAndConditionsEffect(void* a, void* b, void* c) : ValueModifierEffect(a, b, c)
+// pdb: ValueAndConditionsEffect::ValueAndConditionsEffect | ValueAndConditionsEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+ValueAndConditionsEffect::ValueAndConditionsEffect(void* apCaster, void* apSpell, void* apEffect) : ValueModifierEffect(apCaster, apSpell, apEffect)
 {
-    m_eModifiedActorValue = ActorValue::ActorValue__Index_VALUE_NONE;
+    eTargetBodyPart = ActorValue::ActorValue__Index_VALUE_NONE;
 }
 
 extern Setting originalRuntimeFloatSetting1213;
@@ -26,20 +30,23 @@ extern Setting originalRuntimeFloatSetting1214;
 
 // Applies the modifier to the stored actor value (or none) and, scaled by a runtime setting, to ActorValue__Index_VALUE_NONE or actor values 25-31.
 // @fnv 0x0082b970
-void ValueAndConditionsEffect::ApplyActorValueModifier(Actor* actor, float modifier, ActorValue::Index index)
+// pdb: ValueAndConditionsEffect::ModifyActorValue | ValueAndConditionsEffect.obj | retail, vtable slot, high
+// pdb params: apActor, afModifier, aeOverrideActorValue
+// pdb locals: falteredMagnitude, i
+void ValueAndConditionsEffect::ApplyActorValueModifier(Actor* apActor, float afModifier, ActorValue::Index aeOverrideActorValue)
 {
-    if (m_eModifiedActorValue != ActorValue::ActorValue__Index_VALUE_NONE)
+    if (eTargetBodyPart != ActorValue::ActorValue__Index_VALUE_NONE)
     {
-        float fScaledMagnitude = modifier * originalRuntimeFloatSetting1213.Float()[0];
-        ValueModifierEffect::ApplyActorValueModifier(actor, modifier, m_eModifiedActorValue);
-        ValueModifierEffect::ApplyActorValueModifier(actor, fScaledMagnitude, ActorValue::ActorValue__Index_VALUE_NONE);
+        float fScaledMagnitude = afModifier * originalRuntimeFloatSetting1213.Float()[0];
+        ValueModifierEffect::ApplyActorValueModifier(apActor, afModifier, eTargetBodyPart);
+        ValueModifierEffect::ApplyActorValueModifier(apActor, fScaledMagnitude, ActorValue::ActorValue__Index_VALUE_NONE);
     }
     else
     {
-        ValueModifierEffect::ApplyActorValueModifier(actor, modifier, ActorValue::ActorValue__Index_VALUE_NONE);
-        float fScaledMagnitude = modifier * originalRuntimeFloatSetting1214.Float()[0];
+        ValueModifierEffect::ApplyActorValueModifier(apActor, afModifier, ActorValue::ActorValue__Index_VALUE_NONE);
+        float fScaledMagnitude = afModifier * originalRuntimeFloatSetting1214.Float()[0];
         for (int i = 25; i < 32; ++i)
-            ValueModifierEffect::ApplyActorValueModifier(actor, fScaledMagnitude, (ActorValue::Index)i);
+            ValueModifierEffect::ApplyActorValueModifier(apActor, fScaledMagnitude, (ActorValue::Index)i);
     }
 }
 
@@ -48,23 +55,30 @@ extern int DAT_011a0d1c;
 void* __cdecl CreateSpawnedRecord(void* p, int a2, void* a3, void* a4, int a5);
 
 // @fnv 0x0082b8a0
-void ValueAndConditionsEffect::CopyData(ActiveEffect* other)
+// pdb: ValueAndConditionsEffect::CopyData | ValueAndConditionsEffect.obj | retail, upstream name already matches, high
+// pdb params: apDestination
+// pdb locals: pvme
+void ValueAndConditionsEffect::CopyData(ActiveEffect* apDestination)
 {
-    ValueModifierEffect::CopyData(other);
-    ValueAndConditionsEffect* copy = (ValueAndConditionsEffect*)CreateSpawnedRecord(other, 0, &DAT_011a0d1c, &DAT_011a13d0, 0);
+    ValueModifierEffect::CopyData(apDestination);
+    ValueAndConditionsEffect* copy = (ValueAndConditionsEffect*)CreateSpawnedRecord(apDestination, 0, &DAT_011a0d1c, &DAT_011a13d0, 0);
     if (copy != 0)
-        copy->m_eModifiedActorValue = m_eModifiedActorValue;
+        copy->eTargetBodyPart = eTargetBodyPart;
 }
 
 void* __cdecl operator new(unsigned int size);
 
 // @fnv 0x0082b8f0
+// pdb: ValueAndConditionsEffect::Instantiate | ValueAndConditionsEffect.obj | debug, object-file gap fill, medium
+// pdb params: apCaster, apSpell, apEffect
 ValueAndConditionsEffect* CreateValueModifier(void* a, void* b, void* c)
 {
     return new ValueAndConditionsEffect(a, b, c);
 }
 
 // @fnv 0x0082b7f0
+// pdb: ValueAndConditionsEffect::Copy | ValueAndConditionsEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* ValueAndConditionsEffect::Copy()
 {
     ValueAndConditionsEffect* effect = new ValueAndConditionsEffect(m_pEffectInstance, pSpell, pEffect);

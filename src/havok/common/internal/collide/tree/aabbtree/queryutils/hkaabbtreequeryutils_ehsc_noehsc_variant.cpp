@@ -45,7 +45,7 @@ struct S_00d1bcb0_Router
     }
 };
 S_00d1bcb0_Router* hkMemoryRouter_getInstance();
-void ResizeAudioStream(S_00d1bcb0_Allocator& alloc, void* array, int sizeElem);
+void ResizeAudioStream(S_00d1bcb0_Allocator& mem, void* array, int sizeElem);
 struct S_00d1bcb0_Entry
 {
     int m_kPointA;
@@ -56,7 +56,7 @@ struct S_00d1bcb0
 {
     int unk00;
     S_00d1bcb0_Array* m_ppData;
-    bool AppendPointPairAndReturnFalse(int a, int b);
+    bool AppendPointPairAndReturnFalse(int leafA, int leafB);
 };
 extern int __cdecl Object_CollectAABBTreeHits(void*, int, int, int, int, int);
 int __cdecl CallWithDefaults(void* arg0, int arg1, int arg2);
@@ -208,6 +208,9 @@ struct NodeStack
 
 // @fnv 0x00d1dbb0
 // src: GUESS 0x00d1dbb0 (confidence: low)
+// pdb: hkAabbTreeQueryUtils<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::queryClosestPoint | hkAabbTreeQueryUtils.obj | retail, object-file run extension, low
+// pdb params: tree, point, collector
+// pdb locals: rootNode, stack, c1, c0
 void __cdecl hkVector4_ProcessEntries_00d1dbb0(AabbTree* tree, const hkVector4& point, ClosestCollector* collector)
 {
     TreeNode* root = tree->m_pTreeNode;

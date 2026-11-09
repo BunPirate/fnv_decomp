@@ -454,6 +454,7 @@ typedef _SoundLevel::Level SOUND_LEVEL;
 
 typedef PROCESS_TYPE PROCESS_LEVEL;
 
+// pdb: class BaseProcess, size 0x30, 6 members
 class BaseProcess
 {
   public:
@@ -575,7 +576,7 @@ class BaseProcess
     typedef _HeadTrackType::Type HeadTrackType;
 
     virtual ~BaseProcess();
-    virtual void Copy(BaseProcess* apSource);
+    virtual void Copy(BaseProcess* apProcess);
     virtual void SetReferenceTarget(Actor* apActor);
     virtual void UpdateAlt(MobileObject* apObject, float afDelta);
     virtual void Update(MobileObject* apObject);
@@ -823,7 +824,7 @@ class BaseProcess
     virtual TESIdleForm* GetActiveIdleForm() const;
     virtual void SetLastPlayedIdle(TESIdleForm* idleForm);
     virtual void RefreshActorValues(Actor* apActor);
-    virtual int GetActorValueI(TESActorBase* apBase, ActorValue::Index aeIndex, Actor* apActor);
+    virtual int GetActorValueI(TESActorBase* apActorBase, ActorValue::Index aiWhich, Actor* apActor);
     virtual float GetActorValueF(TESActorBase* apBase, ActorValue::Index aeIndex, Actor* apActor);
     virtual void TempModActorValueF(Actor* apActor, ActorValue::Index aeIndex, float afVal);
     virtual void TempModActorValueI(Actor* apActor, ActorValue::Index aeIndex, int aiVal);
@@ -938,11 +939,11 @@ class BaseProcess
                                         FurnitureMark* apMark);
     virtual void ApplyProcessLevelChange(MobileObject* apObject);
     virtual unsigned short GetSaveSize(unsigned int auiFlags, MobileObject* apObject);
-    virtual void SaveGameBGS(BGSSaveGameBuffer* apBuffer);
-    virtual void SaveGameTES(unsigned int auiFlags, MobileObject* apObject);
+    virtual void SaveGameBGS(BGSSaveGameBuffer* apSaveGameBuffer);
+    virtual void SaveGameTES(unsigned int aiFlags, MobileObject* pmob);
     virtual void LoadGameBGS(BGSLoadFormBuffer* apBuffer);
-    virtual void LoadGameTES(unsigned int auiFlags, unsigned int auiCurrentFlags,
-                             MobileObject* apObject);
+    virtual void LoadGameTES(unsigned int aiFlags, unsigned int aiCurrentFlags,
+                             MobileObject* pmob);
     virtual void InitLoadGameBGS(BGSLoadFormBuffer* apBuffer);
     virtual void InitLoadGameTES(unsigned int auiFlags, unsigned int auiOldFlags,
                                  MobileObject* apObject);

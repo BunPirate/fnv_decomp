@@ -4,15 +4,16 @@
 #include "NiAVObject.h"
 #include "BGSLoadGameSubBuffer.h"
 
+// pdb: class MagicModelHitEffect, size 0x3c, bases: MagicHitEffect, 6 members
 class MagicModelHitEffect : public MagicHitEffect
 {
   public:
     MagicModelHitEffect(TESObjectREFR* apTarget, ActiveEffect* apEffect);
-    MagicModelHitEffect(TESObjectREFR* apTarget, const char* apFilename, float afLifetime);
+    MagicModelHitEffect(TESObjectREFR* apTarget, const char* apFilename, float afTime);
     virtual ~MagicModelHitEffect();
     virtual const NiRTTI* GetRTTI() const;
 
-    virtual bool Update(float afTime);
+    virtual bool Update(float afTimeDelta);
     virtual int GetType();
     virtual bool IsSaveable();
     virtual unsigned short GetSaveSize();
@@ -30,11 +31,11 @@ class MagicModelHitEffect : public MagicHitEffect
     virtual void InitLoadGame(ActiveEffect* apEffect, TESObjectREFR* apTarget);
     virtual void FinishLoadGameTES(ActiveEffect* apEffect, TESObjectREFR* apTarget, void* apData);
 
-    bool m_bFirstPerson;
+    bool bOwnPath;
     bool b3rdPerson;
     unsigned char layoutPadding2A[2];
     const char* pFilename;
-    NiPointer<NiAVObject> spRetainedObject;
-    NiPointer<NiAVObject> m_spTargetObject;
-    BGSLoadGameSubBuffer m_kLoadGameSubBuffer;
+    NiPointer<NiAVObject> spObject;
+    NiPointer<NiAVObject> spTarget;
+    BGSLoadGameSubBuffer LoadedDataSubBuffer;
 };

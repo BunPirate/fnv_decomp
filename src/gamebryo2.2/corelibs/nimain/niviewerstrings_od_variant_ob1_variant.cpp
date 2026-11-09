@@ -110,8 +110,8 @@ extern RTTI_Stub g_0120436c;
 
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* name);
 char* __cdecl NiGetViewerString_00a7d510(const char* label, unsigned int value);
-char* __cdecl NiGetViewerString_00a7d490(const char* label, unsigned short value);
-char* __cdecl NiGetViewerString_00a7d5a0(const char* label, void* value);
+char* __cdecl NiGetViewerString_00a7d490(const char* pcPrefix, unsigned short usValue);
+char* __cdecl NiGetViewerString_00a7d5a0(const char* pcPrefix, void* pvValue);
 
 inline NiFixedString::operator const char*() const
 {
@@ -215,6 +215,9 @@ struct MeshEmitter : EmitterBase
 
 // @fnv 0x00c5e9f0
 // src: XBOX_PDB 0x00c5e9f0
+// pdb: BSMasterParticleSystem::GetViewerStrings | BSMasterParticleSystem.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: EmitterObjIter, pemitterObj
 void MeshEmitter::BSMasterParticleSystem_GetViewerStrings(ViewerStrings* pkStrings)
 {
     EmitterBase::GetViewerStrings(pkStrings);

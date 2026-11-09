@@ -21,11 +21,14 @@ struct __declspec(align(16)) Matrix43
     float m10, m11, m12, m13;
     float m20, m21, m22, m23;
     float m30, m31, m32, m33;
-    void hkTransform_setMul(Matrix43* a, Matrix43* b);
+    void hkTransform_setMul(Matrix43* aTb, Matrix43* bTc);
     void hkTransform_setMul_00cb22c0(Transform* a, Matrix43* b);
 };
 // @fnv 0x00cb22c0
 // src: HAVOK_LIB 0x00cb22c0
+// pdb: hkTransform::setMul | hkTransform.obj | debug, object-file gap fill, medium
+// pdb params: aTb, bTc
+// pdb locals: temp
 void Matrix43::hkTransform_setMul_00cb22c0(Transform* apTransform, Matrix43* apMatrix)
 {
     Matrix43 temp;
@@ -36,11 +39,11 @@ void Matrix43::hkTransform_setMul_00cb22c0(Transform* apTransform, Matrix43* apM
 struct Matrix44;
 struct FUN_00cb21e0_shell
 {
-    void __thiscall hkTransform_setInverse(const Matrix44* source);
+    void __thiscall hkTransform_setInverse(const Matrix44* t);
 };
 struct FUN_00cb2240_shell
 {
-    void __thiscall hkTransform_setMul(const Matrix44* left, const Matrix44* right);
+    void __thiscall hkTransform_setMul(const Matrix44* aTb, const Matrix44* bTc);
 };
 __declspec(align(16)) struct Matrix44
 {
@@ -48,16 +51,19 @@ __declspec(align(16)) struct Matrix44
     hkVector4 row1;
     hkVector4 row2;
     hkVector4 row3;
-    void hkTransform_setMulMulInverse(const Matrix44* left, const Matrix44* right);
+    void hkTransform_setMulMulInverse(const Matrix44* wTa, const Matrix44* wTb);
 };
 // @fnv 0x00cb2420
 // src: HAVOK_LIB 0x00cb2420
-void Matrix44::hkTransform_setMulMulInverse(const Matrix44* left, const Matrix44* right)
+// pdb: hkTransform::setMulMulInverse | hkTransform.obj | retail, upstream name already matches, high
+// pdb params: wTa, wTb
+// pdb locals: h
+void Matrix44::hkTransform_setMulMulInverse(const Matrix44* wTa, const Matrix44* wTb)
 {
     __m128 tempStorage[4];
     Matrix44& tempMatrix = *reinterpret_cast<Matrix44*>(tempStorage);
-    ((FUN_00cb21e0_shell*)&tempMatrix)->hkTransform_setInverse(right);
-    ((FUN_00cb2240_shell*)this)->hkTransform_setMul(left, &tempMatrix);
+    ((FUN_00cb21e0_shell*)&tempMatrix)->hkTransform_setInverse(wTb);
+    ((FUN_00cb2240_shell*)this)->hkTransform_setMul(wTa, &tempMatrix);
 }
 
 // The shared vector does not yet declare this method; retain only its call interface.
@@ -89,6 +95,7 @@ struct S_cb2110_Foo
 
 // @fnv 0x00cb2110
 // src: HAVOK_LIB 0x00cb2110
+// pdb: hkTransform::isOk | hkTransform.obj | retail, upstream name already matches, high
 bool* __thiscall S_cb2110_Foo::hkTransform_isOk(bool* result)
 {
     bool value1;
@@ -190,6 +197,9 @@ class __declspec(align(16)) hkTransformCB22
 // Sets the transform to the inverse of kA multiplied by kB, combining rotation via SetMulInverse and translation via a rotated difference.
 // @fnv 0x00cb22f0
 // src: XBOX_PDB 0x00cb22f0
+// pdb: hkpProcessCollisionOutputBackup::hkpProcessCollisionOutputBackup | hkpConvexListAgent3.obj | retail, call graph, low
+// pdb note: debug build links it to hkTransform::setMulInverseMul
+// pdb params: output
 void hkTransformCB22::hkTransform_setMulInverseMul(const hkTransformCB22& kA, const hkTransformCB22& kB)
 {
     MatrixMulInverse(m_rotation, kA.m_rotation, kB.m_rotation);
@@ -216,13 +226,16 @@ struct Matrix
 
 struct Obj : Matrix
 {
-    void __thiscall hkTransform_setMul(Matrix* m, int a);
+    void __thiscall hkTransform_setMul(Matrix* aTb, int bTc);
     void __thiscall ProcessTransformedMatrixCopy_00cb23e0(int a);
 };
 
 // Copies the matrix into a local, applies FUN_00cb2240 to that copy with a, leaving the original matrix unchanged.
 // @fnv 0x00cb23e0
 // src: GUESS 0x00cb23e0 (confidence: low)
+// pdb: hkTransform::setMulEq | hkTransform.obj | debug, object-file gap fill, medium
+// pdb params: b
+// pdb locals: at
 void __thiscall Obj::ProcessTransformedMatrixCopy_00cb23e0(int a)
 {
     Matrix localMatrix;
@@ -275,23 +288,26 @@ struct FUN_00cb20b0_shell
     hkVector4 row2;
     hkVector4 row3;
 
-    const Matrix44* __thiscall hkTransform_set4x4ColumnMajor(const Matrix44* source);
+    const Matrix44* __thiscall hkTransform_set4x4ColumnMajor(const Matrix44* p);
 };
 
 // Applies g_absMask to the first three source rows, shuffles source row3 with g_rowMask, stores the results, and returns source.
 // @fnv 0x00cb20b0
 // src: XBOX_PDB 0x00cb20b0
-const Matrix44* FUN_00cb20b0_shell::hkTransform_set4x4ColumnMajor(const Matrix44* source)
+// pdb: hkTransform::set4x4ColumnMajor | hkTransform.obj | debug, upstream name already matches, high
+// pdb params: p
+// pdb locals: dv, assertBuf, ostr
+const Matrix44* FUN_00cb20b0_shell::hkTransform_set4x4ColumnMajor(const Matrix44* p)
 {
-    _mm_store_ps(&row0.x, _mm_and_ps(_mm_load_ps(&source->row0.x), _mm_load_ps(g_absMask)));
-    _mm_store_ps(&row1.x, _mm_and_ps(_mm_load_ps(&source->row1.x), _mm_load_ps(g_absMask)));
-    _mm_store_ps(&row2.x, _mm_and_ps(_mm_load_ps(&source->row2.x), _mm_load_ps(g_absMask)));
+    _mm_store_ps(&row0.x, _mm_and_ps(_mm_load_ps(&p->row0.x), _mm_load_ps(g_absMask)));
+    _mm_store_ps(&row1.x, _mm_and_ps(_mm_load_ps(&p->row1.x), _mm_load_ps(g_absMask)));
+    _mm_store_ps(&row2.x, _mm_and_ps(_mm_load_ps(&p->row2.x), _mm_load_ps(g_absMask)));
 
-    __m128 last = _mm_load_ps(&source->row3.x);
+    __m128 last = _mm_load_ps(&p->row3.x);
     __m128 high = _mm_unpackhi_ps(last, _mm_load_ps(g_rowMask));
     _mm_store_ps(&row3.x, _mm_shuffle_ps(last, high, 0xc4));
 
-    return source;
+    return p;
 }
 
 extern "C" __m128 _mm_xor_ps(__m128 a, __m128 b);
@@ -326,9 +342,11 @@ __forceinline void S_00cb21e0_Transform::Body(const S_00cb21e0_Transform& t)
 
 // @fnv 0x00cb21e0
 // src: XBOX_PDB 0x00cb21e0
-void FUN_00cb21e0_shell::hkTransform_setInverse(const Matrix44* source)
+// pdb: hkTransform::setInverse | hkTransform.obj | retail, upstream name already matches, high
+// pdb params: t
+void FUN_00cb21e0_shell::hkTransform_setInverse(const Matrix44* t)
 {
-    ((S_00cb21e0_Transform*)this)->Body(*(const S_00cb21e0_Transform*)source);
+    ((S_00cb21e0_Transform*)this)->Body(*(const S_00cb21e0_Transform*)t);
 }
 
 extern "C" __m128 _mm_set_ps1(float _A);
@@ -346,6 +364,8 @@ struct FUN_00cb2160_cls : hkTransformCB22
 // Writes 1 when Probe succeeds and the masked first three translation differences are at most eps; otherwise writes 0.
 // @fnv 0x00cb2160
 // src: COMMUNITY 0x00cb2160
+// pdb: hkTransform::isApproximatelyEqual | hkTransform.obj | retail, upstream name already matches, high
+// pdb params: t, zero
 unsigned char* FUN_00cb2160_cls::hkTransform_isApproximatelyEqual(unsigned char* out, const FUN_00cb2160_cls* other, float eps)
 {
     unsigned char flag;

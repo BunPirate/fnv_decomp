@@ -13,7 +13,7 @@ hkBool hkaRaycastInterface::castRay(const hkVector4& fromWS, const hkVector4& to
 
 struct GlobalMgr
 {
-    void Release(void* apObject);
+    void Release(void* apMem);
 };
 
 extern "C" GlobalMgr DAT_011f6238;
@@ -28,6 +28,8 @@ struct FUN_00c74e70_cls
 
 // Sets the object's vtable pointer to DAT_010c4b60 and, when bit 0 of acFlags is set, releases the object through DAT_011f6238, returning this.
 // @fnv 0x00c74e70
+// pdb: hkQsTransform::setScale | bhkRagdollController.obj | debug, object-file run extension, low
+// pdb params: s
 FUN_00c74e70_cls* FUN_00c74e70_cls::FUN_00c74e70(unsigned char acFlags)
 {
     m_vptr = (int)&DAT_010c4b60;
@@ -53,13 +55,16 @@ class NormVec_cls
 {
   public:
     __m128 m_v;
-    __m128* hkQuaternion_getAxis(__m128* out);
+    __m128* hkQuaternion_getAxis(__m128* axisOut);
 };
 
 // Computes the normalized version of m_v using an approximate reciprocal square root and one Newton-Raphson refinement, storing the result in out.
 // @fnv 0x00c74c90
 // src: COMMUNITY 0x00c74c90
-__m128* NormVec_cls::hkQuaternion_getAxis(__m128* out)
+// pdb: hkQuaternion::getAxis | bhkRagdollController.obj | debug, upstream name already matches, high
+// pdb params: axisOut
+// pdb locals: axisTmp, zero, assertBuf, ostr
+__m128* NormVec_cls::hkQuaternion_getAxis(__m128* axisOut)
 {
     __m128 vVec = m_v;
     __m128 vSq = _mm_mul_ps(vVec, vVec);
@@ -75,6 +80,6 @@ __m128* NormVec_cls::hkQuaternion_getAxis(__m128* out)
     {
         vResult = _mm_xor_ps(DAT_010c44d0, vResult);
     }
-    *out = vResult;
-    return out;
+    *axisOut = vResult;
+    return axisOut;
 }

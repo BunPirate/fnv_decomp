@@ -17,10 +17,13 @@ extern "C" LocalM128 _mm_load_ss(const float* p);
 #include "../../../../../../include/hkpSphereMotion.h"
 
 // @fnv 0x00d1e560
-void hkpMotion::StepMotion(float fMoveElapsedTime, const hkVector4& kForce)
+// pdb: hkpSphereMotion::applyTorque | hkpSphereMotion.obj | retail, vtable slot, high
+// pdb params: deltaTime, torque
+// pdb locals: impulse
+void hkpMotion::StepMotion(float deltaTime, const hkVector4& torque)
 {
     hkVector4 kImpulse;
-    const LocalM128 scalar = _mm_shuffle_ps(_mm_load_ss(&fMoveElapsedTime), _mm_load_ss(&fMoveElapsedTime), 0);
-    kImpulse.m_vComponents = _mm_mul_ps(scalar, kForce.m_vComponents);
+    const LocalM128 scalar = _mm_shuffle_ps(_mm_load_ss(&deltaTime), _mm_load_ss(&deltaTime), 0);
+    kImpulse.m_vComponents = _mm_mul_ps(scalar, torque.m_vComponents);
     ApplyAngularImpulseToBodies(kImpulse);
 }

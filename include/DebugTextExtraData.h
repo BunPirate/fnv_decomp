@@ -8,7 +8,7 @@ class NiAVObject;
 class DebugTextExtraData : public NiExtraData
 {
 public:
-    DebugTextExtraData(NiAVObject* a, const char* name, int x, int y);
+    DebugTextExtraData(NiAVObject* apBillboard, const char* apText, int aiHeight, int aiOldCenter);
     virtual const NiRTTI* GetRTTI() const;
     // Preserve the /Ob1 deleting-destructor scratch frame with the shared string destructor.
     static __forceinline void operator delete(void* object, size_t size)

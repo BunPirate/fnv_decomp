@@ -11,6 +11,7 @@ class TESForm;
 class TESObject;
 class TESPackage;
 
+// pdb: class TESAIForm, size 0x20, bases: BaseFormComponent, 2 members
 class TESAIForm : public BaseFormComponent
 {
 public:
@@ -22,8 +23,8 @@ public:
     virtual void CopyFromBase(BaseFormComponent* component);
     virtual bool CompareWithBase(BaseFormComponent* component);
     virtual unsigned short GetSaveSize(unsigned int flags);
-    virtual void SaveGame(unsigned int flags);
-    virtual void LoadGame(unsigned int flags, unsigned int version);
+    virtual void SaveGame(unsigned int aiFlags);
+    virtual void LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags);
 
     void InitializeComponent();
     void ClearComponent();
@@ -32,49 +33,49 @@ public:
     {
         packages.FUN_0067e3a0();
     }
-    void BaseFormRecord(BaseFormComponent* component);
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
     bool IsEqualToBase(BaseFormComponent* component);
     void Save();
     void InitItem(TESForm* form);
-    void CopyAISettings(TESAIForm* source);
-    void CopyAIPackageList(TESAIForm* source);
-    void CopyAIPackageList(const TESAIForm* source);
+    void CopyAIData(TESAIForm* apAIForm);
+    void CopyAIPackageList(TESAIForm* apAIForm);
+    void CopyAIPackageList(const TESAIForm* apAIForm);
     void CopyAIDataFromAIDATA(PackedRecordData* data);
     void SetAIData(PackedRecordData* data);
     void FUN_0047f0b0(PackedRecordData* data);
     void TESAIForm_AddPackage(unsigned int package);
-    void TESAIForm_SetResponsibility(int value, bool addChange);
-    void TESAIForm_SetAggression(int value, bool addChange);
-    void TESAIForm_SetConfidence(int value, bool addChange);
-    void TESAIForm_SetEnergy(int value, bool addChange);
+    void TESAIForm_SetResponsibility(int acResponsibility, bool abAddChange);
+    void TESAIForm_SetAggression(int acAggression, bool abAddChange);
+    void TESAIForm_SetConfidence(int acConfidence, bool abAddChange);
+    void TESAIForm_SetEnergy(int acEnergy, bool abAddChange);
 
     unsigned char GetAggression();
-    void SetAggression(unsigned char value, bool addChange);
+    void SetAggression(unsigned char acAggression, bool abAddChange);
     unsigned char GetAssistance();
-    void SetAssistance(unsigned char value);
+    void SetAssistance(unsigned char acAssistance);
     static float GetConfidenceLevel(unsigned char confidence);
     float GetConfidenceLevel();
     unsigned char GetConfidence();
     unsigned char _GetByte05();
-    void SetConfidence(unsigned char value, bool addChange);
+    void SetConfidence(unsigned char acConfidence, bool abAddChange);
     unsigned char GetEnergy();
-    void SetEnergy(unsigned char value, bool addChange);
+    void SetEnergy(unsigned char acEnergy, bool abAddChange);
     unsigned char GetResponsibility();
-    void SetResponsibility(unsigned char value, bool addChange);
+    void SetResponsibility(unsigned char acResponsibility, bool abAddChange);
     unsigned char GetMood();
     unsigned char MenuTopic_GetTopicIsChoice();
-    void SetAIMood(unsigned char value);
+    void SetAIMood(unsigned char acMood);
     unsigned int GetServiceFlags();
-    void SetServiceFlags(unsigned int flags, bool addChange);
+    void SetServiceFlags(unsigned int aiServeFlags, bool abAddChange);
     bool GetOffersService(unsigned int service);
     void SetOffersService(unsigned int service, bool offered);
     int GetTrainingSkill();
     void SetTrainingSkill(int value);
     unsigned char GetTrainingSkillLevel();
-    void SetTrainingSkillLevel(unsigned char value);
+    void SetTrainingSkillLevel(unsigned char aiVal);
     bool IsObjectUsable(TESObject* object);
     bool HasAnAggroRadius();
-    void SetHasAggroRadius(bool value);
+    void SetHasAggroRadius(bool abAggro);
     unsigned int GetAggroRadius();
     void SetAggroRadius(unsigned int value);
 
@@ -83,7 +84,7 @@ public:
     bool MovePackage(TESPackage* package, bool moveUp);
     void InsertPackageAt(TESPackage* package, TESPackage* position, bool before);
     void DeletePackage(TESPackage* package);
-    static TESPackage* GetCurrentPackage(Actor* actor);
+    static TESPackage* GetCurrentPackage(Actor* apActor);
     static void FindAvailablePackages(Actor* actor, BSSimpleList<TESPackage*>* packages, float start, float hour);
     static void FindAvailablePackages(Actor* actor, void* packages, float start, float hour);
     PackageList* GetPackageList();

@@ -10,6 +10,7 @@ class PickRecord;
 class PickNode;
 class NiPoint3;
 
+// pdb: class NiPick, size 0x34, 13 members
 class NiPick
 {
 public:
@@ -21,15 +22,15 @@ public:
     class Record
     {
     public:
-        NiPointer<NiAVObject> m_pReferencedObject;
-        NiPointer<NiNode> m_pParentNode;
-        NiPoint3 m_vPoint;
-        float m_fHitDistance;
-        unsigned short m_usFlags;
-        unsigned short m_ausPadding[3];
+        NiPointer<NiAVObject> m_spObject;
+        NiPointer<NiNode> m_spProxyParent;
+        NiPoint3 m_intersect;
+        float m_fDistance;
+        unsigned short m_usTriangleIndex;
+        unsigned short m_usVertexIndex[3];
         float m_texture[2];
-        NiPoint3 m_vHitNormal;
-        float m_kDiffuseColor[4];
+        NiPoint3 m_normal;
+        float m_color[4];
 
         NiAVObject* AnimatingText_GetFullText();
         const NiPoint2* FUN_00891170();
@@ -65,37 +66,37 @@ public:
             m_pBase[index] = record;
         }
         Record* ProcessArray_GetItem(unsigned int);
-        void InvokeCallbacks();
-        void FindHighestPriorityCallback();
+        void NiPick_Results_SortResults();
+        void NiPick_Results_FindClosest();
         void Clear() throw();
     };
 
-    unsigned int pickType;
-    unsigned int sortType;
-    unsigned int intersectType;
-    unsigned int coordinateType;
-    unsigned char frontOnly;
-    unsigned char returnNormals;
+    unsigned int m_ePickType;
+    unsigned int m_eSortType;
+    unsigned int m_eIntersectType;
+    unsigned int m_eCoordinateType;
+    unsigned char m_bFrontOnly;
+    unsigned char m_bObserveAppCullFlag;
     unsigned char returnTextures;
     unsigned char returnColors;
-    void* root;
-    unsigned int resultVtable;
+    void* m_spRoot;
+    unsigned int m_pickResults;
     unsigned int resultData;
     unsigned int resultCapacity;
     unsigned int resultSize;
     unsigned int resultGrow;
-    unsigned int resultCount;
-    unsigned char flags30;
-    unsigned char flags31;
-    unsigned char flags32;
-    unsigned char flags33;
+    unsigned int m_pLastAddedRecord;
+    unsigned char m_bReturnTexture;
+    unsigned char m_bReturnNormal;
+    unsigned char m_bReturnSmoothNormal;
+    unsigned char m_bReturnColor;
 
     NiPick();
     NiPick(int, int);
     ~NiPick();
     NiAVObject* GetRoot() const
     {
-        return static_cast<NiAVObject*>(root);
+        return static_cast<NiAVObject*>(m_spRoot);
     }
     void SetTarget_00705fc0(NiAVObject*);
     void SetTarget_00705fc0(void*);

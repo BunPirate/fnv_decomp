@@ -65,8 +65,8 @@ struct This
     virtual void v43();
     virtual void v44();
     virtual Result* GetResult(char* output);
-    void bhkBvTreeShape_CopyMembers(int first, int second);
-    void bhkShape_CopyMembers(int first, int second);
+    void bhkBvTreeShape_CopyMembers(int apDest, int arCloneData);
+    void bhkShape_CopyMembers(int apDest, int arCloneData);
 };
 struct Resolved
 {
@@ -133,20 +133,23 @@ struct Child
 
 // @fnv 0x00ca4e50
 // src: XBOX_PDB 0x00ca4e50
-void This::bhkBvTreeShape_CopyMembers(int first, int second)
+// pdb: bhkBvTreeShape::CopyMembers | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: cinfo, ps, pnewS
+void This::bhkBvTreeShape_CopyMembers(int apDest, int arCloneData)
 {
     char output;
     Result* result = GetResult(&output);
     if (result->item)
     {
         Child* child = result->item->child;
-        if (child && !child->IsRejected(second))
+        if (child && !child->IsRejected(arCloneData))
         {
-            Resolved* found = child->Resolve(second);
+            Resolved* found = child->Resolve(arCloneData);
             result->item = (Item*)(found ? found->child : 0);
         }
     }
-    bhkShape_CopyMembers(first, second);
+    bhkShape_CopyMembers(apDest, arCloneData);
 }
 
 struct S_00ca4ec0_Stream
@@ -208,20 +211,23 @@ struct S_00ca4ec0_Base
     virtual void vac();
     virtual void vb0();
     virtual S_00ca4ec0_Out* vb4(int* out);
-    void bhkShape_LoadBinary(S_00ca4ec0_Stream& kStream);
+    void bhkShape_LoadBinary(S_00ca4ec0_Stream& arStream);
 };
 
 struct S_00ca4ec0 : S_00ca4ec0_Base
 {
-    void bhkBvTreeShape_LoadBinary(S_00ca4ec0_Stream& kStream);
+    void bhkBvTreeShape_LoadBinary(S_00ca4ec0_Stream& arStream);
 };
 
 // @fnv 0x00ca4ec0
 // src: XBOX_PDB 0x00ca4ec0
-void S_00ca4ec0::bhkBvTreeShape_LoadBinary(S_00ca4ec0_Stream& kStream)
+// pdb: bhkBvTreeShape::LoadBinary | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void S_00ca4ec0::bhkBvTreeShape_LoadBinary(S_00ca4ec0_Stream& arStream)
 {
-    kStream.ReadLinkID();
-    S_00ca4ec0_Base::bhkShape_LoadBinary(kStream);
+    arStream.ReadLinkID();
+    S_00ca4ec0_Base::bhkShape_LoadBinary(arStream);
     int tmp;
     vb4(&tmp)->m_04 = 0;
 }
@@ -276,11 +282,14 @@ struct HC1Base
     int unk14;
     int unk18;
     bool __thiscall BSPackedAdditionalGeometryData_RegisterStreamables(NiStream* stream);
-    void __thiscall bhkBvTreeShape_RegisterStreamables(NiStream* stream);
+    void __thiscall bhkBvTreeShape_RegisterStreamables(NiStream* arStream);
 };
 // @fnv 0x00ca4f40
 // src: XBOX_PDB 0x00ca4f40
-void HC1Base::bhkBvTreeShape_RegisterStreamables(NiStream* stream)
+// pdb: bhkBvTreeShape::RegisterStreamables | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: psc
+void HC1Base::bhkBvTreeShape_RegisterStreamables(NiStream* arStream)
 {
     if (this)
     {
@@ -295,12 +304,12 @@ void HC1Base::bhkBvTreeShape_RegisterStreamables(NiStream* stream)
                 {
                     SecondInterface* second = object->unk08;
                     if (second)
-                        second->FUN_00ca4f40_stream(stream);
+                        second->FUN_00ca4f40_stream(arStream);
                 }
             }
         }
     }
-    BSPackedAdditionalGeometryData_RegisterStreamables(stream);
+    BSPackedAdditionalGeometryData_RegisterStreamables(arStream);
 }
 
 struct Link
@@ -366,10 +375,13 @@ struct Owner
 };
 // @fnv 0x00ca4f80
 // src: XBOX_PDB 0x00ca4f80
-void Owner::bhkBvTreeShape_SaveBinary(Sink* sink)
+// pdb: bhkBvTreeShape::SaveBinary | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: psc
+void Owner::bhkBvTreeShape_SaveBinary(Sink* arStream)
 {
-    sink->set(getValue());
-    bhkShape_SaveBinary(sink);
+    arStream->set(getValue());
+    bhkShape_SaveBinary(arStream);
 }
 
 namespace fnv_00ca5010 {
@@ -392,6 +404,8 @@ struct Owner
 };
 // @fnv 0x00ca5010
 // src: XBOX_PDB 0x00ca5010
+// pdb: bhkBvTreeShape::DestroyDisplayGeometry | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb locals: psc
 void Owner::bhkBvTreeShape_DestroyDisplayGeometry()
 {
     if (this == 0)
@@ -463,15 +477,18 @@ struct Owner
     virtual void V44();
     virtual void V45(char*);
     void bhkBvTreeShape_CopyMembers(int, int);
-    void bhkTriSampledHeightFieldBvTreeShape_CopyMembers(int first, int second);
+    void bhkTriSampledHeightFieldBvTreeShape_CopyMembers(int apDest, int arCloneData);
 };
 // @fnv 0x00cafff0
 // src: XBOX_PDB 0x00cafff0
-void Owner::bhkTriSampledHeightFieldBvTreeShape_CopyMembers(int first, int second)
+// pdb: bhkTriSampledHeightFieldBvTreeShape::CopyMembers | bhkTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: bcreated
+void Owner::bhkTriSampledHeightFieldBvTreeShape_CopyMembers(int apDest, int arCloneData)
 {
     char local;
     V45(&local);
-    bhkBvTreeShape_CopyMembers(first, second);
+    bhkBvTreeShape_CopyMembers(apDest, arCloneData);
 }
 }  // namespace fnv_00cafff0
 
@@ -513,15 +530,18 @@ struct FUN_00cb0780_class
     int unk04;
     int unk08;
     void* memory;
-    void bhkTriSampledHeightFieldBvTreeShape_KillCinfo(bool release);
+    void bhkTriSampledHeightFieldBvTreeShape_KillCinfo(bool abCreated);
 };
 // @fnv 0x00cb0780
 // src: XBOX_PDB 0x00cb0780
-void FUN_00cb0780_class::bhkTriSampledHeightFieldBvTreeShape_KillCinfo(bool release)
+// pdb: bhkTriSampledHeightFieldBvTreeShape::KillCinfo | bhkTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: abCreated
+// pdb locals: tempMemContext, pi
+void FUN_00cb0780_class::bhkTriSampledHeightFieldBvTreeShape_KillCinfo(bool abCreated)
 {
     void* allocation;
     MemoryContextGuard guard;
-    if (release)
+    if (abCreated)
     {
         allocation = memory;
         if (allocation)
@@ -726,12 +746,12 @@ struct GlobalString
 {
     const char* value;
 };
-extern GlobalString g_01268350;
+extern GlobalString bhkTriSampledHeightFieldBvTreeShape_ms_RTTI;
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* text);
 struct StringBuilder
 {
-    void bhkBvTreeShape_GetViewerStrings(NiStringArray* array);
-    void bhkTriSampledHeightFieldBvTreeShape_GetViewerStrings(NiStringArray* array);
+    void bhkBvTreeShape_GetViewerStrings(NiStringArray* apStrings);
+    void bhkTriSampledHeightFieldBvTreeShape_GetViewerStrings(NiStringArray* apStrings);
 };
 struct ThreadStateGuard
 {
@@ -747,16 +767,19 @@ struct ThreadStateGuard
 };
 // @fnv 0x00cb09b0
 // src: XBOX_PDB 0x00cb09b0
-void StringBuilder::bhkTriSampledHeightFieldBvTreeShape_GetViewerStrings(NiStringArray* array)
+// pdb: bhkTriSampledHeightFieldBvTreeShape::GetViewerStrings | bhkTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void StringBuilder::bhkTriSampledHeightFieldBvTreeShape_GetViewerStrings(NiStringArray* apStrings)
 {
     ThreadStateGuard guard;
-    bhkBvTreeShape_GetViewerStrings(array);
-    char* value = NiViewerStrings_NiGetViewerString_Title(g_01268350.value);
-    unsigned int count = array->count;
-    unsigned int capacity = array->capacity;
+    bhkBvTreeShape_GetViewerStrings(apStrings);
+    char* value = NiViewerStrings_NiGetViewerString_Title(bhkTriSampledHeightFieldBvTreeShape_ms_RTTI.value);
+    unsigned int count = apStrings->count;
+    unsigned int capacity = apStrings->capacity;
     if (count >= capacity)
-        array->FUN_0096ad30(count + array->growth);
-    array->FUN_0096ae90(count, &value);
+        apStrings->FUN_0096ad30(count + apStrings->growth);
+    apStrings->FUN_0096ae90(count, &value);
 }
 
 struct EP
@@ -866,20 +889,23 @@ struct QTF
     virtual void f44();
     virtual int M45(void* p);
     void __thiscall bhkShape_LinkObject(EP* p);
-    void bhkBvTreeShape_LinkObject(EP* a1);
+    void bhkBvTreeShape_LinkObject(EP* arStream);
 };
 
 // @fnv 0x00ca4f00
 // src: XBOX_PDB 0x00ca4f00
-void QTF::bhkBvTreeShape_LinkObject(EP* a1)
+// pdb: bhkBvTreeShape::LinkObject | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo, psc
+void QTF::bhkBvTreeShape_LinkObject(EP* arStream)
 {
     char tmp;
     void* r;
     r = (void*)this->M45(&tmp);
-    int v = a1->FUN_00a63430();
+    int v = arStream->FUN_00a63430();
     if (v != 0)
         ((int*)r)[1] = ((int*)v)[2];
-    this->bhkShape_LinkObject(a1);
+    this->bhkShape_LinkObject(arStream);
 }
 
 struct FUN_00ca4fd0_Value
@@ -947,12 +973,15 @@ class FUN_00ca4fd0_cls
     int unk04;
     Node* m_pReferencedNode;
 
-    void bhkBvTreeShape_BuildDisplayGeometry(int first, int second);
+    void bhkBvTreeShape_BuildDisplayGeometry(int apNode, int arDefColor);
 };
 
 // @fnv 0x00ca4fd0
 // src: XBOX_PDB 0x00ca4fd0
-void FUN_00ca4fd0_cls::bhkBvTreeShape_BuildDisplayGeometry(int first, int second)
+// pdb: bhkBvTreeShape::BuildDisplayGeometry | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: apNode, arDefColor
+// pdb locals: psc
+void FUN_00ca4fd0_cls::bhkBvTreeShape_BuildDisplayGeometry(int apNode, int arDefColor)
 {
     Node* pNode;
     Link* m_pTaskletData;
@@ -983,7 +1012,7 @@ void FUN_00ca4fd0_cls::bhkBvTreeShape_BuildDisplayGeometry(int first, int second
     {
         return;
     }
-    ((FUN_00ca4fd0_Value*)pValue)->Target(first, second);
+    ((FUN_00ca4fd0_Value*)pValue)->Target(apNode, arDefColor);
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile* lpAddend);
@@ -999,14 +1028,16 @@ struct RefCounted
 struct Owner_Ext : public Owner
 {
     void bhkShape_Link(bool flag);
-    void bhkBvTreeShape_Link(bool flag);
+    void bhkBvTreeShape_Link(bool abAttach);
 };
 
 // @fnv 0x00ca5130
 // src: XBOX_PDB 0x00ca5130
-void Owner_Ext::bhkBvTreeShape_Link(bool flag)
+// pdb: bhkBvTreeShape::Link | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: abAttach
+void Owner_Ext::bhkBvTreeShape_Link(bool abAttach)
 {
-    if (flag)
+    if (abAttach)
     {
         RefCounted* val = (RefCounted*)getValue();
         if (val)
@@ -1018,7 +1049,7 @@ void Owner_Ext::bhkBvTreeShape_Link(bool flag)
     {
         bhkBvTreeShape_RembhkShapeRef();
     }
-    bhkShape_Link(flag);
+    bhkShape_Link(abAttach);
 }
 
 extern "C" void* __cdecl Object_DispatchCommandFour(unsigned int);
@@ -1108,17 +1139,20 @@ struct FUN_00cb05d0_cls
     virtual void v47();
     virtual void v48();
     virtual void v49(SpawnedObject* obj, int a1);
-    SpawnedObject* bhkTriSampledHeightFieldBvTreeShape_CreateClone(int a1);
+    SpawnedObject* bhkTriSampledHeightFieldBvTreeShape_CreateClone(int arCloneData);
 };
 
 // @fnv 0x00cb05d0
 // src: XBOX_PDB 0x00cb05d0
-SpawnedObject* FUN_00cb05d0_cls::bhkTriSampledHeightFieldBvTreeShape_CreateClone(int a1)
+// pdb: bhkTriSampledHeightFieldBvTreeShape::CreateClone | bhkTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+SpawnedObject* FUN_00cb05d0_cls::bhkTriSampledHeightFieldBvTreeShape_CreateClone(int arCloneData)
 {
     ThreadStateGuard guard;
     bhkSerializable_CloneCritLock();
     SpawnedObject* p = new SpawnedObject();
-    this->v49(p, a1);
+    this->v49(p, arCloneData);
     bhkSerializable_CloneCritUnlock();
     return p;
 }
@@ -1147,16 +1181,19 @@ struct FUN_00cb06c0_cls
     void* unk08;
     void* unk0c;
     void UpdateState_00cb0030(void* value);
-    void* bhkTriSampledHeightFieldBvTreeShape_CreateCinfo(bool* out);
+    void* bhkTriSampledHeightFieldBvTreeShape_CreateCinfo(bool* arCreated);
 };
 
 // @fnv 0x00cb06c0
 // src: XBOX_PDB 0x00cb06c0
-void* FUN_00cb06c0_cls::bhkTriSampledHeightFieldBvTreeShape_CreateCinfo(bool* out)
+// pdb: bhkTriSampledHeightFieldBvTreeShape::CreateCinfo | bhkTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+void* FUN_00cb06c0_cls::bhkTriSampledHeightFieldBvTreeShape_CreateCinfo(bool* arCreated)
 {
     ThreadStateGuard guard;
     bool empty = (unk0c == 0);
-    *out = empty;
+    *arCreated = empty;
     if (empty)
     {
         FUN_00cb06c0_Holder* holder = reinterpret_cast<FUN_00cb06c0_Holder*>(hkMemoryRouter_getInstance());
@@ -1303,7 +1340,7 @@ struct S00cb0820_Obj40 : S00cb0820_Ref
     int unk34;
     int unk38;
     int unk3c;
-    S00cb0820_Obj40(S00cb0820_Shape70* shape, float value);
+    S00cb0820_Obj40(S00cb0820_Shape70* shape, float radius);
 };
 
 struct S00cb0820_Tag
@@ -1327,7 +1364,7 @@ struct S00cb0820_Obj30 : S00cb0820_Ref
     int unk24;
     int unk28;
     int unk2c;
-    S00cb0820_Obj30(S00cb0820_Obj40* body, S00cb0820_Tag tag);
+    S00cb0820_Obj30(S00cb0820_Obj40* body, S00cb0820_Tag doAabbRejection);
 };
 
 struct S00cb0820_World
@@ -1380,22 +1417,25 @@ struct S00cb0820_World
     virtual void v45();
     virtual void v46();
     virtual void v47(S00cb0820_Outer* a1);
-    void bhkTriSampledHeightFieldBvTreeShape_Init(S00cb0820_Outer* a1);
+    void bhkTriSampledHeightFieldBvTreeShape_Init(S00cb0820_Outer* arInfo);
 };
 
 // @fnv 0x00cb0820
 // src: XBOX_PDB 0x00cb0820
-void S00cb0820_World::bhkTriSampledHeightFieldBvTreeShape_Init(S00cb0820_Outer* a1)
+// pdb: bhkTriSampledHeightFieldBvTreeShape::Init | bhkTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: po, pcol, tempMemContext, cinfo, ps
+void S00cb0820_World::bhkTriSampledHeightFieldBvTreeShape_Init(S00cb0820_Outer* arInfo)
 {
     ThreadStateGuard guard;
-    S00cb0820_Shape70* shape = new S00cb0820_Shape70(a1 ? &a1->src : 0);
+    S00cb0820_Shape70* shape = new S00cb0820_Shape70(arInfo ? &arInfo->src : 0);
     S00cb0820_Obj40* body = new S00cb0820_Obj40(shape, DAT_01016248);
     S00cb0820_Obj30* phantom = new S00cb0820_Obj30(body, S00cb0820_Tag());
     v35(phantom);
     phantom->FUN_00c905b0();
     body->FUN_00c905b0();
     shape->FUN_00c905b0();
-    v47(a1);
+    v47(arInfo);
 }
 
 #include <windows.h>
@@ -1433,6 +1473,8 @@ struct FUN_00ca5080_cls
 
 // @fnv 0x00ca5080
 // src: XBOX_PDB 0x00ca5080
+// pdb: bhkBvTreeShape::RembhkShapeRef | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, psc
 void FUN_00ca5080_cls::bhkBvTreeShape_RembhkShapeRef()
 {
     ThreadStateGuard guard;
@@ -1536,10 +1578,13 @@ struct FUN_00cb00a0_Class
 
 // @fnv 0x00cb00a0
 // src: XBOX_PDB 0x00cb00a0
-void FUN_00cb00a0_Class::bhkTriSampledHeightFieldBvTreeShape_LoadBinary(char* object)
+// pdb: bhkTriSampledHeightFieldBvTreeShape::LoadBinary | bhkTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void FUN_00cb00a0_Class::bhkTriSampledHeightFieldBvTreeShape_LoadBinary(char* arStream)
 {
-    this->bhkBvTreeShape_LoadBinary(object);
-    if (object[0x1e5] != 1)
+    this->bhkBvTreeShape_LoadBinary(arStream);
+    if (arStream[0x1e5] != 1)
     {
         void* out;
         volatile BinaryDataRecord* data = (volatile BinaryDataRecord*)this->getData(&out);
@@ -1555,6 +1600,7 @@ void FUN_00cb00a0_Class::bhkTriSampledHeightFieldBvTreeShape_LoadBinary(char* ob
     }
 }
 
+// pdb: structure T, size 0x8 (here 0x4), 1 members
 struct T
 {
     virtual void slot00() = 0;
@@ -1609,11 +1655,14 @@ struct T
 
 // @fnv 0x00cb0120
 // src: XBOX_PDB 0x00cb0120
-void T::bhkTriSampledHeightFieldBvTreeShape_SaveBinary(void* arg)
+// pdb: bhkTriSampledHeightFieldBvTreeShape::SaveBinary | bhkTriSampledHeightFieldBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void T::bhkTriSampledHeightFieldBvTreeShape_SaveBinary(void* arStream)
 {
     char local;
     volatile unsigned int* data = (volatile unsigned int*)Query(&local);
-    unsigned char* context = (unsigned char*)arg;
+    unsigned char* context = (unsigned char*)arStream;
     if (context[0x1e4] != 1)
     {
         data[0x4] = _byteswap_ulong(data[0x4]);
@@ -1626,7 +1675,7 @@ void T::bhkTriSampledHeightFieldBvTreeShape_SaveBinary(void* arg)
         data[0xb] = _byteswap_ulong(data[0xb]);
         data[0x10] = 0;
     }
-    bhkBvTreeShape_SaveBinary(arg);
+    bhkBvTreeShape_SaveBinary(arStream);
     if (context[0x1e4] != 1)
     {
         data[0x4] = _byteswap_ulong(data[0x4]);
@@ -1726,19 +1775,22 @@ struct ValueOwner
         }
         return 0;
     }
-    bool __thiscall bhkShape_CanShare(int a);
-    bool __thiscall bhkBvTreeShape_CanShare(int a);
+    bool __thiscall bhkShape_CanShare(int arCloneData);
+    bool __thiscall bhkBvTreeShape_CanShare(int arCloneData);
 };
 // @fnv 0x00ca5040
 // src: XBOX_PDB 0x00ca5040
-bool ValueOwner::bhkBvTreeShape_CanShare(int a)
+// pdb: bhkBvTreeShape::CanShare | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: psc
+bool ValueOwner::bhkBvTreeShape_CanShare(int arCloneData)
 {
     ValueObj* pkColl = static_cast<ValueObj*>(getValue());
     bool bResult;
     if (pkColl)
-        bResult = pkColl->vD0(a);
+        bResult = pkColl->vD0(arCloneData);
     else
-        bResult = bhkShape_CanShare(a);
+        bResult = bhkShape_CanShare(arCloneData);
     return bResult;
 }
 
@@ -1754,7 +1806,7 @@ struct StringArrayCalls_00ca5190
 };
 struct StringBuilderCalls_00ca5190
 {
-    void bhkShape_GetViewerStrings(NiStringArray* array);
+    void bhkShape_GetViewerStrings(NiStringArray* apStrings);
 };
 
 struct ValueObject_00ca5190
@@ -1788,23 +1840,26 @@ struct ValueObject_00ca5190
 
 struct StringBuilder_ca5190 : public StringBuilder
 {
-    void bhkBvTreeShape_GetViewerStrings(NiStringArray* array);
+    void bhkBvTreeShape_GetViewerStrings(NiStringArray* apStrings);
 };
 
 // @fnv 0x00ca5190
 // src: XBOX_PDB 0x00ca5190
-void StringBuilder_ca5190::bhkBvTreeShape_GetViewerStrings(NiStringArray* array)
+// pdb: bhkBvTreeShape::GetViewerStrings | bhkBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, psc
+void StringBuilder_ca5190::bhkBvTreeShape_GetViewerStrings(NiStringArray* apStrings)
 {
     ThreadStateGuard guard;
-    reinterpret_cast<StringBuilderCalls_00ca5190*>(this)->bhkShape_GetViewerStrings(array);
+    reinterpret_cast<StringBuilderCalls_00ca5190*>(this)->bhkShape_GetViewerStrings(apStrings);
 
     char* text = NiViewerStrings_NiGetViewerString_Title(DAT_012682d0);
-    unsigned int count = array->count;
-    if (count >= array->capacity)
+    unsigned int count = apStrings->count;
+    if (count >= apStrings->capacity)
     {
-        reinterpret_cast<StringArrayCalls_00ca5190*>(array)->FUN_0096ad30(count + array->growth);
+        reinterpret_cast<StringArrayCalls_00ca5190*>(apStrings)->FUN_0096ad30(count + apStrings->growth);
     }
-    reinterpret_cast<StringArrayCalls_00ca5190*>(array)->FUN_0096ae90(count, &text);
+    reinterpret_cast<StringArrayCalls_00ca5190*>(apStrings)->FUN_0096ae90(count, &text);
 
     if (this != 0)
     {
@@ -1820,7 +1875,7 @@ void StringBuilder_ca5190::bhkBvTreeShape_GetViewerStrings(NiStringArray* array)
                     void* value = header->value;
                     if (value != 0)
                     {
-                        reinterpret_cast<ValueObject_00ca5190*>(value)->v60(array);
+                        reinterpret_cast<ValueObject_00ca5190*>(value)->v60(apStrings);
                     }
                 }
             }

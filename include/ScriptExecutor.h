@@ -5,16 +5,17 @@ class ScriptLocals;
 class ScriptRunner;
 class TESObjectREFR;
 
-class ScriptExecutor
+// pdb: class ScriptRunManager, size 0x8, 2 members
+class ScriptRunManager
 {
 public:
-    ScriptRunner* m_pReusableScriptRunner;
-    ScriptRunner* m_pActiveScriptRunner;
+    ScriptRunner* m_pScriptRunner;
+    ScriptRunner* pCurrentRunner;
 
-    ScriptExecutor();
-    ~ScriptExecutor();
-    static ScriptExecutor* Instance();
-    bool ScriptRunManager_InitActionList(Script* script, TESObjectREFR* ref, ScriptLocals* locals); // returns bool (body in tesscriptrunmanager.cpp)
-    bool Run(Script* script, TESObjectREFR* reference, ScriptLocals* locals, TESObjectREFR* target,
-             bool arg5, bool arg6, bool arg7, float arg8);
+    ScriptRunManager();
+    ~ScriptRunManager();
+    static ScriptRunManager* Instance();
+    bool InitActionList(Script* script, TESObjectREFR* ref, ScriptLocals* locals); // returns bool (body in tesscriptrunmanager.cpp)
+    bool Run(Script* apScript, TESObjectREFR* apOwnerObject, ScriptLocals* apOwnerVars, TESObjectREFR* apOwnerContainer,
+             bool abIsPartialScript, bool abScriptEffectStart, bool abScriptEffectFinish, float afSecondsElapsed);
 };

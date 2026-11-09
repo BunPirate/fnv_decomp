@@ -238,7 +238,7 @@ class Act907
     bool FUN_00566950();
     int Actor_GetGoldAmount();
     bool Actor_IsInCombat();
-    float TESObjectREFR_GetDistanceFromReference(TESObjectREFR* ref, int a, int b);
+    float TESObjectREFR_GetDistanceFromReference(TESObjectREFR* ref, int abDisabled, int bSameSpace);
     bool Actor_HasObjects(TESBoundObject* item, int a, int b, int c, int* out);
     TESForm* BGSSaveFormBuffer_GetForm();
 };
@@ -246,7 +246,7 @@ class Act907
 class AcquireAIServiceQuery
 {
   public:
-    bool TESAIForm_SellBuysItem(TESBoundObject* item);
+    bool TESAIForm_SellBuysItem(TESBoundObject* apObject);
 };
 
 class AcquireActorBaseView
@@ -306,9 +306,12 @@ int __cdecl TESValueForm_GetFormValue(TESBoundObject* item);
 using namespace acquire907_rework;
 
 // @fnv 0x00907d90
+// pdb: LowProcess::EvaluateOrderAcquireList | LowProcess.obj | debug, object-file gap fill, medium
+// pdb params: apActor
+// pdb locals: ballowBuying, ballowStealing, pRefItem, ballowKilling, ppack, pObj, pObject, pRef, badd, pactor, bbuyit, bkill, bsteal, pnpc, ivalue, pbuyactor, eUseItem, blockpick
 void LowProcess::ProcessAcquire(Actor* arg)
 {
-    List907* itF = reinterpret_cast<List907*>(&this->m_kDetectionDataList);
+    List907* itF = reinterpret_cast<List907*>(&this->TempObjectList);
     Shell8e* pkg_h = (Shell8e*)static_cast<const LowProcess*>(this)->GetOneTimePackage();
     bool bA7 = pkg_h ? pkg_h->TESPackage_SearchGetAllowBuying() : false;
     bool bBI = pkg_h ? pkg_h->IsFlag400Set() : false;
@@ -461,7 +464,7 @@ void LowProcess::ProcessAcquire(Actor* arg)
         if (bValid7)
         {
             pNodeM->pObject->TESObjectREFR_SetTargeted(true);
-            reinterpret_cast<List907&>(this->ReferenceListNode).FUN_00905820(pNodeM);
+            reinterpret_cast<List907&>(this->ObjectList).FUN_00905820(pNodeM);
         }
         else
         {
@@ -469,6 +472,6 @@ void LowProcess::ProcessAcquire(Actor* arg)
         }
         itF = itF->FUN_00726070();
     }
-    reinterpret_cast<List907&>(this->m_kDetectionDataList).FUN_00470470();
+    reinterpret_cast<List907&>(this->TempObjectList).FUN_00470470();
 }
 

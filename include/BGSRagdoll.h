@@ -12,23 +12,24 @@
 
 class TESActorBase;
 
+// pdb: class BGSRagdoll, size 0x148, bases: TESForm, TESModel, 9 members
 class BGSRagdoll : public TESForm, public TESModel
 {
 public:
-    SaveMetadata ActorAnimationData;
+    SaveMetadata SaveStruct;
     unsigned char layoutPadding3E[2];
-    RagdollAnimationData m_kRagdollAnimationData;
-    FootIK_DATA m_kFootIKData;
-    LookIK_DATA m_kLookIKData;
-    GrabIK_DATA m_kGrabIKData;
-    RagdollFeedbackProfile m_kRagdollFeedbackProfile;
-    int m_iRagdollType;
-    BGSBodyPartData* m_pBodyPartDataCur;
-    TESActorBase* m_pActorBase;
+    RagdollAnimationData FeedbackData;
+    FootIK_DATA FootIKData;
+    LookIK_DATA LookIKData;
+    GrabIK_DATA GrabIKData;
+    RagdollFeedbackProfile PoseMatchingData;
+    int iSkeletonID;
+    BGSBodyPartData* pBodyPartData;
+    TESActorBase* pPreviewActor;
 
     BGSRagdoll();
     virtual ~BGSRagdoll();
-    virtual bool LoadForm(TESFile* file);
+    virtual bool LoadForm(TESFile* apFile);
     virtual void InitItem(void);
 
     void ResetFormData();

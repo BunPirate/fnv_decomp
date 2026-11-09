@@ -13,6 +13,7 @@
 #include <new>
 
 // @fnv 0x0052aaa0
+// pdb: TESClimate::TESClimate | TESClimate.obj | retail, upstream name already matches, high
 TESClimate::TESClimate()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x36));
@@ -20,6 +21,7 @@ TESClimate::TESClimate()
 }
 
 // @fnv 0x0052ac20
+// pdb: TESClimate::InitializeData | TESClimate.obj | retail, vtable slot, high
 void TESClimate::ResetFormData()
 {
     memset(m_ucTimeSettings, 0, sizeof(m_ucTimeSettings));
@@ -27,6 +29,8 @@ void TESClimate::ResetFormData()
 }
 
 // @fnv 0x0052b0f0
+// pdb: TESClimate::MakeDefault | TESClimate.obj | retail, string-set bridge, high
+// pdb locals: pEntry
 void TESClimate::MakeDefault()
 {
     m_kSunTextures[0].AssignTextureName("Sky\\Sun.dds");
@@ -42,9 +46,9 @@ void TESClimate::MakeDefault()
     SetMoonPhaseDays(3);
     weatherList.RemoveAll();
     WeatherEntry* weather = new WeatherEntry;
-    weather->m_pWeatherObject = dynamic_cast<TESWeather*>(TESForm::GetFormByID(0x15e));
-    weather->m_uiWeatherChance = 100;
-    if (weather->m_pWeatherObject)
+    weather->pWeather = dynamic_cast<TESWeather*>(TESForm::GetFormByID(0x15e));
+    weather->uiChance = 100;
+    if (weather->pWeather)
         weatherList.AddHead(weather);
     else
     {
@@ -55,31 +59,34 @@ void TESClimate::MakeDefault()
 
 #include <malloc.h>
 // @fnv 0x0052ac90
-bool TESClimate::Load(TESFile* file)
+// pdb: TESClimate::Load | TESClimate.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, icount
+bool TESClimate::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x36)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
         }
         break;
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x54534c57: {
             int warnings = Warning();
             SetWarningState(true);
-            TESWeatherList::LoadWeatherEntries(&weatherList, file, this);
+            TESWeatherList::LoadWeatherListChunk(&weatherList, apFile, this);
             SetWarningState(false);
             if (Warning() > warnings)
                 Warning("MASTERFILE: Warnings were encountered while loading weather list chunk from climate %s",
@@ -98,16 +105,16 @@ bool TESClimate::Load(TESFile* file)
         case 0x4d414e4f:
         case 0x4d414e50:
             if (chunk - 0x4d414e46 < 2)
-                TESTexture::ReadTextureData(&m_kSunTextures[chunk - 0x4d414e46], file);
+                TESTexture::ReadTextureData(&m_kSunTextures[chunk - 0x4d414e46], apFile);
             break;
         case 0x4c444f4d:
-            TESModel::LoadModelData(&m_kStarsModel, file);
+            TESModel::LoadModelData(&m_kStarsModel, apFile);
             break;
         case 0x4d414e54:
-            file->GetChunkData(m_ucTimeSettings, 6);
+            apFile->GetChunkData(m_ucTimeSettings, 6);
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -128,6 +135,8 @@ void TESClimate::SetUsesSecunda(bool abUses)
 int __cdecl MinInt(int, int);
 
 // @fnv 0x0052ac50
+// pdb: TESClimate::SetMoonPhaseDays | TESClimate.obj | debug, upstream name already matches, high
+// pdb params: auiDays
 void TESClimate::SetMoonPhaseDays(unsigned int auiDays)
 {
     m_ucTimeSettings[5] = (m_ucTimeSettings[5] & 0xC0) | MinInt(auiDays, 0xFFFFFF3F);
@@ -136,19 +145,24 @@ void TESClimate::SetMoonPhaseDays(unsigned int auiDays)
 void __cdecl TESForm_AddChunkArray(unsigned int, void*, unsigned int);
 
 // @fnv 0x0052ae80
+// pdb: TESClimate::Save | TESClimate.obj | retail, vtable slot, high
+// pdb locals: i
 void TESClimate::SaveForm()
 {
     TESForm::BeginFormRecord();
-    weatherList.WriteWeatherList(0x54534c57);
+    weatherList.TESWeatherList_Save(0x54534c57);
     int i = 0;
     for (; i < 2; ++i)
         m_kSunTextures[i].Save(0x4d414e46 + i);
-    m_kStarsModel.WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    m_kStarsModel.BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
     TESForm_AddChunkArray(0x4d414e54, m_ucTimeSettings, 6);
     TESForm::FinishFormRecord();
 }
 
 // @fnv 0x0052afe0
+// pdb: TESClimate::Compare | TESClimate.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp, i
 bool TESClimate::Compare(TESForm* apCompare)
 {
     int iIndex;
@@ -169,7 +183,7 @@ bool TESClimate::Compare(TESForm* apCompare)
     if (m_kStarsModel.CompareWithBase(static_cast<BaseFormComponent*>(&i->m_kStarsModel)))
         return true;
 
-    if (weatherList.IsDifferentFrom(&i->weatherList))
+    if (weatherList.TESWeatherList_CompareComponent(&i->weatherList))
         return true;
 
     if (memcmp(m_ucTimeSettings, i->m_ucTimeSettings, 6) != 0)
@@ -179,16 +193,20 @@ bool TESClimate::Compare(TESForm* apCompare)
 }
 
 // @fnv 0x0052ab80
+// pdb: TESClimate::~TESClimate | TESClimate.obj | retail, upstream name already matches, high
 TESClimate::~TESClimate()
 {
     TESForm::ClearData();
 }
 
 // @fnv 0x0052af10
-void TESClimate::CopyFrom(const TESForm* source)
+// pdb: TESClimate::Copy | TESClimate.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy, i
+void TESClimate::CopyFrom(const TESForm* apCopy)
 {
     TESClimate* climate;
-    climate = dynamic_cast<TESClimate*>(const_cast<TESForm*>(source));
+    climate = dynamic_cast<TESClimate*>(const_cast<TESForm*>(apCopy));
     if (!climate)
         return;
 

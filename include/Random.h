@@ -2,6 +2,7 @@
 
 class FloatIntPair;
 
+// pdb: class Random, size 0x4, 0 members
 class Random
 {
 public:
@@ -16,7 +17,7 @@ public:
     virtual void vf08(int a, int b, int c);
 
     static float Raw();
-    static void Set(double seed);
-    static void SetLong(long seed);
+    static void Set(double s);
+    static void SetLong(long s);
     void* __thiscall DestroyRandom(unsigned int flags);
 };

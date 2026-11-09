@@ -28,12 +28,14 @@ struct Base_00c517b0
 
 struct Wrapper_00878610 : Base_00c517b0
 {
-    void* SceneGraph_SceneGraph(char* apSceneGraphName, bool abMenuSceneGraph, void* apCamera);
+    void* SceneGraph_ctor(char* apSceneGraphName, bool abMenuSceneGraph, void* apCamera);
 };
 
 // @fnv 0x00878610
-// src: EXE 0x00878610
-void* Wrapper_00878610::SceneGraph_SceneGraph(char* apSceneGraphName, bool abMenuSceneGraph, void* apCamera)
+// src: XBOX_RETAIL_PDB 0x00878610
+// pdb: SceneGraph::SceneGraph | SceneGraph.obj | retail, upstream name already matches, high
+// pdb params: apSceneGraphName, abMenuSceneGraph, apCamera
+void* Wrapper_00878610::SceneGraph_ctor(char* apSceneGraphName, bool abMenuSceneGraph, void* apCamera)
 {
     FUN_00c517b0(apSceneGraphName, abMenuSceneGraph, apCamera);
     *(int**)this = &DAT_01083b5c;
@@ -57,6 +59,8 @@ float __cdecl LinearInterpolate(float, float, float, float, float);
 
 // @fnv 0x008786b0
 // src: XBOX_PDB 0x008786b0
+// pdb: SceneGraph::GetFarDistance | SceneGraph.obj | retail, upstream name already matches, high
+// pdb locals: ffar, ffarMax
 float FUN_008786b0_shell::SceneGraph_GetFarDistance()
 {
     float ffar;
@@ -107,6 +111,7 @@ struct StandIn
 void __cdecl _delete(void*, unsigned int);
 // Calls FUN_00878690, then frees this with _delete when flags has bit 1 set, and returns this.
 // @fnv 0x00878650
+// pdb: SceneGraph::`scalar deleting destructor' | SceneGraph.obj | retail, vtable slot, high
 void* StandIn::DestroyIfFlagged(unsigned int flags)
 {
     this->SetVtableAndProcessState_00878690();
@@ -125,6 +130,7 @@ struct FUN_00878690_shell
 
 // @fnv 0x00878690
 // src: GUESS 0x00878690 (confidence: low)
+// pdb: SceneGraph::~SceneGraph | SceneGraph.obj | debug, call graph, medium
 void FUN_00878690_shell::SetVtableAndProcessState_00878690()
 {
     *(int*)this = (int)&DAT_01083b5c;

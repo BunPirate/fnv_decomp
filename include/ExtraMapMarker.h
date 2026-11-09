@@ -4,6 +4,7 @@
 
 class MapMarkerData;
 
+// pdb: class ExtraMapMarker, size 0x10, bases: BSExtraData, 1 members
 class ExtraMapMarker : public BSExtraData
 {
 public:

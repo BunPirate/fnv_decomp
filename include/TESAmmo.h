@@ -34,14 +34,14 @@ public:
     virtual void InitItem();
     bool Load(TESFile* file);
     // TESForm vtable slot 8 (vftable 0x1026064 slot 8 = 0x502cd0)
-    bool LoadForm(TESFile* file);
+    bool LoadForm(TESFile* apFile);
     unsigned char GetByteAtOffsetB0();
     unsigned char GetFlag() const;
     const char* FUN_00772820();
 
     AmmoCharacteristics data;
-    AmmoProjectileData m_kProjectileData;
-    BSStringT<char> m_kPrimaryString;
-    BSStringT<char> m_kSecondaryString;
-    BSSimpleList<TESAmmoEffect*> m_kEffects;
+    AmmoProjectileData NVdata;
+    BSStringT<char> cDesc;
+    BSStringT<char> cAbbrev;
+    BSSimpleList<TESAmmoEffect*> pAmmoEffectList;
 };

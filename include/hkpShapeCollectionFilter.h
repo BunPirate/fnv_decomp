@@ -9,6 +9,7 @@ class hkpBvTreeShape;
 class hkpCdBody;
 struct ClassMemberDescriptor;
 
+// pdb: class hkpShapeCollectionFilter, size 0x4, 0 members
 class hkpShapeCollectionFilter
 {
 public:

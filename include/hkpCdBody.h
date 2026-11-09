@@ -9,21 +9,22 @@ class hkTransform;
 class hkpCollidable;
 struct hkFinishLoadedObjectFlagCD2C;
 
+// pdb: class hkpCdBody, size 0x10, 4 members
 class hkpCdBody
 {
 public:
-    const hkpShape* m_pCollisionShape;
-    unsigned int m_uiCollisionShapeKey;
-    const void* m_pMotionState;
+    const hkpShape* m_shape;
+    unsigned int m_shapeKey;
+    const void* m_motion;
     const hkpCdBody* m_parent;
 
     hkpCdBody();
     hkpCdBody(const void* shape, const void* motionState)
     {
-        m_pCollisionShape = static_cast<const hkpShape*>(shape);
-        m_pMotionState = motionState;
+        m_shape = static_cast<const hkpShape*>(shape);
+        m_motion = motionState;
         m_parent = 0;
-        m_uiCollisionShapeKey = 0xffffffff;
+        m_shapeKey = 0xffffffff;
     }
     explicit hkpCdBody(const hkpCdBody* parent);
     hkpCdBody(const hkpCdBody* parent, const void* motion);

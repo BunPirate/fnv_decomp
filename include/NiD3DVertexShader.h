@@ -6,6 +6,7 @@
 class RenderableGeometry;
 class COMUnknownInterface;
 
+// pdb: class NiD3DVertexShader, size 0x3c, bases: NiD3DShaderProgram, 4 members
 class NiD3DVertexShader : public NiD3DShaderProgram
 {
 public:
@@ -39,8 +40,8 @@ public:
 
     static const NiRTTI ms_kRTTI;
 
-    bool m_bIsInitialized;
-    unsigned int m_uiShaderUsage;
-    RenderableGeometry* m_pD3DPixelShader;
-    COMUnknownInterface* m_pD3DVertexShader;
+    bool m_bSoftwareVP;
+    unsigned int m_uiUsage;
+    RenderableGeometry* m_hShader;
+    COMUnknownInterface* m_hDecl;
 };

@@ -23,6 +23,8 @@ struct CFF9B0SmallArray
 // Iterates the array backwards and removes every entry whose pointer is null via removeAtAndCopy.
 // @fnv 0x00cff9b0
 // src: GUESS 0x00cff9b0 (confidence: high)
+// pdb: hkAllocateChunk<void> | hkpAgentNnMachine.obj | debug, object-file run extension, low
+// pdb params: numberOfObjects, cl
 static void Hkpentitycallbackutil_RemoveNullEntries(CFF9B0SmallArray& cleanupArray)
 {
     for (int i = cleanupArray.m_iElementCount - 1; i >= 0; i--)
@@ -226,11 +228,13 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 // Invokes HandleContactPointEvent on each non-null contact point listener in world->contactPointListeners, then removes null entries via FUN_00cff9b0.
 // @fnv 0x00cfff00
 // src: HAVOK_LIB 0x00cfff00
-void __cdecl hkpEntityCallbackUtil_fireContactPointCallbackInternal(World833* world, ContactPointEvent* event)
+// pdb: hkpEntityCallbackUtil::fireContactPointCallbackInternal | hkpEntityCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: entity, event
+void __cdecl hkpEntityCallbackUtil_fireContactPointCallbackInternal(World833* entity, ContactPointEvent* event)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = world->contactPointListeners;
+    Array833& listeners = entity->contactPointListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
@@ -434,11 +438,13 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 // Iterates world->contactPointListeners, calls finishedCollisionCallback on each non-null listener, then removes null entries via FUN_00cff9b0.
 // @fnv 0x00d00060
 // src: HAVOK_LIB 0x00d00060
-void __cdecl hkpEntityCallbackUtil_fireContactConstraintRemovedCallback(World833* world, ContactPointEvent* event)
+// pdb: hkpEntityCallbackUtil::fireContactConstraintRemovedCallback | hkpEntityCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: entity, event
+void __cdecl hkpEntityCallbackUtil_fireContactConstraintRemovedCallback(World833* entity, ContactPointEvent* event)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = world->contactPointListeners;
+    Array833& listeners = entity->contactPointListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
@@ -656,15 +662,18 @@ struct Class_00cffab0
     int unk210;
     Container_00cffab0* m_container214;
 
-    void UpdateNodeSlotIndices();
+    void hkpEntity_sortConstraintsSlavesDeterministically();
 };
 
 // Calls vfn2 on the container's listeners, then vfn4 / vfn6 on the other listener arrays until each is empty, with UpdateNodeSlotIndices in between.
 // @fnv 0x00cffab0
 // src: HAVOK_LIB 0x00cffab0
-void __cdecl hkpEntityCallbackUtil_fireEntityRemoved(Class_00cffab0* obj)
+// pdb: hkpEntityCallbackUtil::fireEntityRemoved | hkpEntityCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: entity
+// pdb locals: assertBuf, ostr
+void __cdecl hkpEntityCallbackUtil_fireEntityRemoved(Class_00cffab0* entity)
 {
-    Container_00cffab0* container = obj->m_container214;
+    Container_00cffab0* container = entity->m_container214;
     volatile unsigned int tb;
     if (container)
     {
@@ -673,32 +682,32 @@ void __cdecl hkpEntityCallbackUtil_fireEntityRemoved(Class_00cffab0* obj)
             if (container->listeners.m_data[i])
             {
                 timerBegin("TtentRemCb", tb);
-                ((Listener1*)container->listeners.m_data[i])->vfn2(obj);
+                ((Listener1*)container->listeners.m_data[i])->vfn2(entity);
                 timerEnd("Et");
             }
         }
     }
 
-    while (obj->m_smallArrayAC.m_iElementCount)
+    while (entity->m_smallArrayAC.m_iElementCount)
     {
         timerBegin("TtentRemCb", tb);
-        ((Listener2*)obj->m_smallArrayAC.m_data[0])->vfn4(obj);
+        ((Listener2*)entity->m_smallArrayAC.m_data[0])->vfn4(entity);
         timerEnd("Et");
     }
 
-    obj->UpdateNodeSlotIndices();
+    entity->hkpEntity_sortConstraintsSlavesDeterministically();
 
-    while (obj->m_arrayB4.m_iElementCount)
+    while (entity->m_arrayB4.m_iElementCount)
     {
         timerBegin("TtentRemCb", tb);
-        obj->m_arrayB4.m_data[0]->vfn4(obj);
+        entity->m_arrayB4.m_data[0]->vfn4(entity);
         timerEnd("Et");
     }
 
-    while (obj->m_smallArray208.m_iElementCount)
+    while (entity->m_smallArray208.m_iElementCount)
     {
         timerBegin("TtentRemCb", tb);
-        ((Listener4*)obj->m_smallArray208.m_data[0])->vfn6(obj);
+        ((Listener4*)entity->m_smallArray208.m_data[0])->vfn6(entity);
         timerEnd("Et");
     }
 }
@@ -775,10 +784,12 @@ extern const char g_CFFCF0TimerEnd[];
 // Iterates the owner's listener list in reverse and invokes each non-null listener's callback, bracketing each call with timer begin/end markers.
 // @fnv 0x00cffcf0
 // src: HAVOK_LIB 0x00cffcf0
-void __cdecl hkpEntityCallbackUtil_fireEntityShapeSet(CFFCF0Owner* owner)
+// pdb: hkpEntityCallbackUtil::fireEntityShapeSet | hkpEntityCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: entity
+void __cdecl hkpEntityCallbackUtil_fireEntityShapeSet(CFFCF0Owner* entity)
 {
     volatile CFFCF0TimerTicks ticks;
-    CFFCF0ListenerList* list = owner->m_listenerList;
+    CFFCF0ListenerList* list = entity->m_listenerList;
     if (list)
     {
         for (int i = list->m_uiItemCount - 1; i >= 0; i--)
@@ -786,7 +797,7 @@ void __cdecl hkpEntityCallbackUtil_fireEntityShapeSet(CFFCF0Owner* owner)
             if (list->m_kListeners[i] != 0)
             {
                 CFFCF0TimerBegin(g_CFFCF0TimerBegin, ticks.m_pRayStart);
-                list->m_kListeners[i]->callback(owner);
+                list->m_kListeners[i]->callback(entity);
                 CFFCF0TimerBegin(g_CFFCF0TimerEnd, ticks.m_kRayEnd);
             }
         }
@@ -845,10 +856,13 @@ typedef LPVOID(WINAPI* PFN_TlsGetValue)(DWORD dwTlsIndex);
 
 // Iterates the task list in reverse, profiling and calling vtbl10 on each non-null TaskObj with the owner.
 // @fnv 0x00cffda0
-void __cdecl InvokeMotionTypeCallbacks(TaskOwner* pOwner)
+// src: XBOX_RETAIL_PDB 0x00cffda0
+// pdb: hkpEntityCallbackUtil::fireEntitySetMotionType | hkpEntityCallbackUtil.obj | retail, call graph, high
+// pdb params: entity
+void __cdecl hkpEntityCallbackUtil_fireEntitySetMotionType(TaskOwner* entity)
 {
     volatile DWORD ticks[2];
-    TaskList* pList = pOwner->m_pEntries;
+    TaskList* pList = entity->m_pEntries;
     if (pList != 0)
     {
         int i = (int)pList->m_nCount - 1;
@@ -870,7 +884,7 @@ void __cdecl InvokeMotionTypeCallbacks(TaskOwner* pOwner)
                         pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
                     }
 
-                    pList->m_ppItems[i]->vtbl10(pOwner);
+                    pList->m_ppItems[i]->vtbl10(entity);
 
                     pBuf = (hkMonitorStream*)pfnTls(DAT_0126835c);
                     if (pBuf->m_end.m_storage < pBuf->m_capacityMinus16.m_storage)
@@ -937,10 +951,13 @@ struct ProfOwner
 
 // Iterates pOwner->m_pItems, writing TtentDelCb/Et profiling ticks around each item's vtbl14(pOwner) call.
 // @fnv 0x00cffe50
-void __cdecl DeleteCallbacks(ProfOwner* pOwner)
+// src: XBOX_RETAIL_PDB 0x00cffe50
+// pdb: hkpEntityCallbackUtil::fireEntityDeleted | hkpEntityCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: entity
+void __cdecl hkpEntityCallbackUtil_fireEntityDeleted(ProfOwner* entity)
 {
     LPVOID(WINAPI * pfnTlsGetValue)(DWORD) = TlsGetValue;
-    ItemList* pList = pOwner->m_pItems;
+    ItemList* pList = entity->m_pItems;
     int i;
     volatile DWORD ticks[2];
 
@@ -963,7 +980,7 @@ void __cdecl DeleteCallbacks(ProfOwner* pOwner)
                         pRec->m_time0 = ticks[0];
                         pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
                     }
-                    pList->m_ppItems[i]->vtbl14(pOwner);
+                    pList->m_ppItems[i]->vtbl14(entity);
                     hkMonitorStream* pBuf2 = (hkMonitorStream*)pfnTlsGetValue(DAT_0126835c);
                     if (pBuf2->m_end.m_storage < pBuf2->m_capacityMinus16.m_storage)
                     {
@@ -1043,10 +1060,12 @@ struct ListenerOwner
 // Sets event->m_pObservedSource to owner, calls callback on each non-null listener in reverse with timers, then calls FUN_00cff9b0 to remove null entries.
 // @fnv 0x00d00110
 // src: HAVOK_LIB 0x00d00110
-void __cdecl hkpEntityCallbackUtil_fireContactPointAddedInternal(ListenerOwner* owner, ListenerEvent* event)
+// pdb: hkpEntityCallbackUtil::fireContactPointAddedInternal | hkpEntityCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: entity, event
+void __cdecl hkpEntityCallbackUtil_fireContactPointAddedInternal(ListenerOwner* entity, ListenerEvent* event)
 {
-    CFF9B0SmallArray& kListeners = owner->m_kListeners;
-    event->m_pObservedSource = owner;
+    CFF9B0SmallArray& kListeners = entity->m_kListeners;
+    event->m_pObservedSource = entity;
     for (int i = kListeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (kListeners.m_data[i] != 0)
@@ -1223,10 +1242,12 @@ struct CManager
 // Sets ev->m_pOwnerObject to mgr, iterates mgr->m_kListeners in reverse calling m05 on each CListener with ev, then calls FUN_00cff9b0 on the listener array.
 // @fnv 0x00d001c0
 // src: HAVOK_LIB 0x00d001c0
-void hkpEntityCallbackUtil_fireContactPointRemovedInternal(CManager* mgr, CEvent* ev)
+// pdb: hkpEntityCallbackUtil::fireContactPointRemovedInternal | hkpEntityCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: entity, event
+void hkpEntityCallbackUtil_fireContactPointRemovedInternal(CManager* entity, CEvent* event)
 {
-    CFF9B0SmallArray* list = &mgr->m_kListeners;
-    ev->m_pOwnerObject = mgr;
+    CFF9B0SmallArray* list = &entity->m_kListeners;
+    event->m_pOwnerObject = entity;
 
     for (int i = list->m_iElementCount - 1; i >= 0; i--)
     {
@@ -1246,7 +1267,7 @@ void hkpEntityCallbackUtil_fireContactPointRemovedInternal(CManager* mgr, CEvent
             }
         }
 
-        ((CListener*)list->m_data[i])->m05(ev);
+        ((CListener*)list->m_data[i])->m05(event);
 
         {
             hkMonitorStream* tls = (hkMonitorStream*)TlsGetValue(g_tcpTlsIndex);
@@ -1314,10 +1335,13 @@ struct ProfOwner_cffa00
 // Iterates pOwner->m_pItems in reverse, writing TtentAddCb/Et rdtsc ticks to the TLS hkMonitorStream and calling vtbl04 on each item.
 // @fnv 0x00cffa00
 // src: HAVOK_LIB 0x00cffa00
-void __cdecl hkpEntityCallbackUtil_fireEntityAdded(ProfOwner_cffa00* pOwner)
+// pdb: hkpEntityCallbackUtil::fireEntityAdded | hkpEntityCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: entity
+// pdb locals: assertBuf, ostr
+void __cdecl hkpEntityCallbackUtil_fireEntityAdded(ProfOwner_cffa00* entity)
 {
     LPVOID(WINAPI * pfnTlsGetValue)(DWORD) = TlsGetValue;
-    ItemList_cffa00* pList = pOwner->m_pItems;
+    ItemList_cffa00* pList = entity->m_pItems;
     int i;
     volatile DWORD ticks[2];
 
@@ -1340,7 +1364,7 @@ void __cdecl hkpEntityCallbackUtil_fireEntityAdded(ProfOwner_cffa00* pOwner)
                         pRec->m_time0 = ticks[0];
                         pBuf->m_end.m_storage = (char*)(pRec + 1);
                     }
-                    pList->m_ppItems[i]->vtbl04(pOwner);
+                    pList->m_ppItems[i]->vtbl04(entity);
                     hkMonitorStream* pBuf2 = (hkMonitorStream*)pfnTlsGetValue(DAT_0126835c);
                     if (pBuf2->m_end.val() < pBuf2->m_capacityMinus16.val())
                     {
@@ -1384,9 +1408,11 @@ struct ItemTable
 // Iterates the owner's item table in reverse, calling each item's v04 with apParam and recording TtNewCollCb and Et profiler ticks.
 // @fnv 0x00cfffb0
 // src: HAVOK_LIB 0x00cfffb0
-void __cdecl hkpEntityCallbackUtil_fireContactConstraintAddedCallback(void* apOwner, void* apParam)
+// pdb: hkpEntityCallbackUtil::fireContactConstraintAddedCallback | hkpEntityCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: entity, event
+void __cdecl hkpEntityCallbackUtil_fireContactConstraintAddedCallback(void* entity, void* event)
 {
-    ItemTable* pItemTable = (ItemTable*)((char*)apOwner + 0x200);
+    ItemTable* pItemTable = (ItemTable*)((char*)entity + 0x200);
     int i = (int)pItemTable->m_wCount - 1;
     TraceTick tEnter;
     TraceTick tExit;
@@ -1409,7 +1435,7 @@ void __cdecl hkpEntityCallbackUtil_fireContactConstraintAddedCallback(void* apOw
                     pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
                 }
 
-                pItemTable->m_ppItems[i]->v04(apParam);
+                pItemTable->m_ppItems[i]->v04(event);
 
                 hkMonitorStream* pBuf2 = (hkMonitorStream*)pfnTlsGetValue(DAT_0126835c);
                 if (pBuf2->m_end.m_storage < pBuf2->m_capacityMinus16.m_storage)
@@ -1455,12 +1481,14 @@ typedef CFF9B0SmallArray TaskArray;
 // Stores pOwner in pContext, calls v06(pContext) on each non-null entry of the array at pOwner+0x200 in reverse with profiler records, then calls FUN_00cff9b0.
 // @fnv 0x00d00270
 // src: HAVOK_LIB 0x00d00270
-void __cdecl hkpEntityCallbackUtil_fireContactProcessInternal(void* pOwner, TaskContext* pContext)
+// pdb: hkpEntityCallbackUtil::fireContactProcessInternal | hkpEntityCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: entity, event
+void __cdecl hkpEntityCallbackUtil_fireContactProcessInternal(void* entity, TaskContext* event)
 {
     volatile DWORD t1;
     volatile DWORD* pEndTick = &t1;
-    TaskArray* pArr = (TaskArray*)((char*)pOwner + 0x200);
-    pContext->m_pSharedOwner = pOwner;
+    TaskArray* pArr = (TaskArray*)((char*)entity + 0x200);
+    event->m_pSharedOwner = entity;
     int i = (int)pArr->m_iElementCount - 1;
     if (i >= 0)
     {
@@ -1480,7 +1508,7 @@ void __cdecl hkpEntityCallbackUtil_fireContactProcessInternal(void* pOwner, Task
                     cur++;
                     pBuf->m_end.m_storage = reinterpret_cast<char*>(cur);
                 }
-                ((TaskObjV7*)pArr->m_data[i])->v06(pContext);
+                ((TaskObjV7*)pArr->m_data[i])->v06(event);
                 pBuf = (hkMonitorStream*)pfnTls(DAT_0126835c);
                 cur = reinterpret_cast<hkMonitorStream::TimerCommand*>(pBuf->m_end.m_storage);
                 if (reinterpret_cast<char*>(cur) < pBuf->m_capacityMinus16.m_storage)

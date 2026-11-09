@@ -27,17 +27,20 @@ struct FUN_00d26460_cls
     int unk2C;
     __m128 m_kTranslation;
     hkpSampledHeightFieldShape* hkpTriSampledHeightFieldCollection_getHeightFieldShape();
-    void hkpTriSampledHeightFieldCollection_getAabb(const hkTransform& kTransform, float fTolerance, hkAabb& kAabbOut);
+    void hkpTriSampledHeightFieldCollection_getAabb(const hkTransform& localToWorld, float tolerance, hkAabb& out);
 };
 // @fnv 0x00d26460
 // src: XBOX_PDB 0x00d26460
-void FUN_00d26460_cls::hkpTriSampledHeightFieldCollection_getAabb(const hkTransform& kTransform, float fTolerance, hkAabb& kAabbOut)
+// pdb: hkpTriSampledHeightFieldCollection::getAabbImpl | hkpTriSampledHeightFieldCollection.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: tempAabb
+void FUN_00d26460_cls::hkpTriSampledHeightFieldCollection_getAabb(const hkTransform& localToWorld, float tolerance, hkAabb& out)
 {
     hkAabb kAabb;
-    hkpTriSampledHeightFieldCollection_getHeightFieldShape()->CalculateAabb(kTransform,
-                               m_fBoundRadius + fTolerance, kAabb);
+    hkpTriSampledHeightFieldCollection_getHeightFieldShape()->CalculateAabb(localToWorld,
+                               m_fBoundRadius + tolerance, kAabb);
     __m128 kMaxPoint = _mm_add_ps(m_kTranslation, kAabb.m_kMaximumCorner.m_vComponents);
     __m128 kMinBoundsCur = _mm_add_ps(m_kTranslation, kAabb.m_kMinimumCorner.m_vComponents);
-    kAabbOut.m_kMinimumCorner.m_vComponents = _mm_min_ps(kAabb.m_kMinimumCorner.m_vComponents, kMinBoundsCur);
-    kAabbOut.m_kMaximumCorner.m_vComponents = _mm_max_ps(kAabb.m_kMaximumCorner.m_vComponents, kMaxPoint);
+    out.m_kMinimumCorner.m_vComponents = _mm_min_ps(kAabb.m_kMinimumCorner.m_vComponents, kMinBoundsCur);
+    out.m_kMaximumCorner.m_vComponents = _mm_max_ps(kAabb.m_kMaximumCorner.m_vComponents, kMaxPoint);
 }

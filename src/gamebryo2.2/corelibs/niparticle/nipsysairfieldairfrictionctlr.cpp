@@ -9,20 +9,20 @@
 #include "../../../../include/StrArr.h"
 #include "../../../../include/NiRTTI.h"
 
-extern int g_012027b8;
+extern int NiPSysAirFieldAirFrictionCtlr_ms_RTTI;
 
 // @fnv 0x00c307c0
 // src: COMMUNITY 0x00c307c0
 int* __cdecl NiPSysAirFieldAirFrictionCtlr_GetRTTI()
 {
-    return &g_012027b8;
+    return &NiPSysAirFieldAirFrictionCtlr_ms_RTTI;
 }
 
 // @fnv 0x00c307d0
 // src: XBOX_PDB 0x00c307d0
 void NiPSysAirFieldAirFrictionCtlr::GetTargetFloatValue_00c307d0(float& rfValue)
 {
-    NiPSysModifier* pTarget = m_pkTargetModifier;
+    NiPSysModifier* pTarget = m_pkModifier;
     rfValue = *(float*)((char*)pTarget + 0x58);
 }
 
@@ -30,10 +30,12 @@ void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr*);
 char* __cdecl _FUN_00a7d330(int);
 // @fnv 0x00c30880
 // src: XBOX_PDB 0x00c30880
+// pdb: NiPSysAirFieldAirFrictionCtlr::GetViewerStrings | NiPSysAirFieldAirFrictionCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysAirFieldAirFrictionCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
-    char* pcStr = _FUN_00a7d330(g_012027b8);
+    char* pcStr = _FUN_00a7d330(NiPSysAirFieldAirFrictionCtlr_ms_RTTI);
     unsigned int uiSize = pkStrings->m_usSize;
     unsigned int uiAlloc = pkStrings->m_usMaxSize;
     if (uiSize >= uiAlloc)
@@ -50,13 +52,15 @@ NiPSysModifier* __cdecl FUN_00c1b0f0();
 extern NiRTTI g_012027a8;
 
 // @fnv 0x00c306f0
+// pdb: NiPSysAirFieldInheritVelocityCtlr::IsEqual | NiPSysAirFieldInheritVelocityCtlr.obj | debug, object-file run extension, low
+// pdb params: pkObject
 bool __fastcall HasModifierAfter(NiPSysAirFieldAirFrictionCtlr* controller, void*, NiObjectNET* target)
 {
     typedef bool (__thiscall* CheckTarget)(NiPSysAirFieldAirFrictionCtlr*, NiObjectNET*);
     typedef NiPSysModifier* (__thiscall* FindModifier)(NiObjectNET*, const NiFixedString*);
     if (!((CheckTarget)&IsTargetParticleSystem)(controller, target))
         return false;
-    NiPSysModifier* modifier = ((FindModifier)&FUN_00c1b0f0)(target, &controller->m_kTargetModifierName);
+    NiPSysModifier* modifier = ((FindModifier)&FUN_00c1b0f0)(target, &controller->m_kModifierName);
     if (!modifier)
         return false;
     const NiRTTI* item = modifier->GetRTTI();
@@ -64,16 +68,18 @@ bool __fastcall HasModifierAfter(NiPSysAirFieldAirFrictionCtlr* controller, void
     {
         if (item == &g_012027a8)
             return true;
-        item = item->m_pBaseRTTI;
+        item = item->m_pkBaseRTTI;
     }
     return false;
 }
 
 // Clamps the air-field friction to [0,1].
 // @fnv 0x00c307e0
+// pdb: NiPSysAirFieldModifier::SetAirFriction | NiPSysAirFieldModifier.obj | debug, upstream name already matches, high
+// pdb params: fAirFriction
 void __fastcall SetAirFriction(NiPSysAirFieldAirFrictionCtlr* controller, void*, float value)
 {
-    NiPSysModifier* pTarget = controller->m_pkTargetModifier;
+    NiPSysModifier* pTarget = controller->m_pkModifier;
     float clamped = value;
     if (0.0 > clamped)
         clamped = 0.0f;
@@ -91,6 +97,10 @@ void __cdecl FUN_00c32de0();
 
 // Allocates and initializes an air-friction controller, then copies its members.
 // @fnv 0x00c30830
+// pdb: NiPSysAirFieldAirFrictionCtlr::CreateClone | NiPSysAirFieldAirFrictionCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysAirFieldModifier::SetInheritVelocity
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysAirFieldAirFrictionCtlr* __fastcall CreateSpawnedObject(NiPSysAirFieldAirFrictionCtlr* controller, void*, unsigned int arg)
 {
     typedef void (__thiscall* Initialize)(NiPSysAirFieldAirFrictionCtlr*);
@@ -113,6 +123,8 @@ void __cdecl LoadBinaryWithVersionCheck(NiPSysModifierCtlr*, int, NiStream&);
 
 // @fnv 0x00c29e80
 // src: XBOX_PDB 0x00c29e80
+// pdb: NiPSysAirFieldAirFrictionCtlr::LoadBinary | NiPSysAirFieldAirFrictionCtlr.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysAirFieldAirFrictionCtlr_LoadBinary(NiPSysModifierCtlr* a1, int a2, NiStream& a3)
 {
     LoadBinaryWithVersionCheck(a1, a2, a3);
@@ -122,6 +134,8 @@ extern "C" void __cdecl BSFrustumFOVController_RegisterStreamables();
 
 // @fnv 0x00c29f80
 // src: XBOX_PDB 0x00c29f80
+// pdb: NiPSysAirFieldAirFrictionCtlr::RegisterStreamables | NiPSysAirFieldAirFrictionCtlr.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysAirFieldAirFrictionCtlr_RegisterStreamables()
 {
     BSFrustumFOVController_RegisterStreamables();
@@ -131,6 +145,8 @@ void __cdecl FUN_00c32e10();
 
 // @fnv 0x00c2b450
 // src: XBOX_PDB 0x00c2b450
+// pdb: NiPSysAirFieldAirFrictionCtlr::LinkObject | NiPSysAirFieldAirFrictionCtlr.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysAirFieldAirFrictionCtlr_LinkObject()
 {
     FUN_00c32e10();
@@ -139,6 +155,8 @@ void __cdecl NiPSysAirFieldAirFrictionCtlr_LinkObject()
 void __cdecl NiColorExtraDataController_SaveBinary();
 // @fnv 0x00c2b8a0
 // src: XBOX_PDB 0x00c2b8a0
+// pdb: NiPSysAirFieldAirFrictionCtlr::SaveBinary | NiPSysAirFieldAirFrictionCtlr.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysAirFieldAirFrictionCtlr_SaveBinary()
 {
     NiColorExtraDataController_SaveBinary();
@@ -148,6 +166,8 @@ bool __cdecl NiPSysModifierBoolCtlr_IsEqual(int, int);
 
 // @fnv 0x00c2a190
 // src: XBOX_PDB 0x00c2a190
+// pdb: NiPSysAirFieldAirFrictionCtlr::IsEqual | NiPSysAirFieldAirFrictionCtlr.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 bool __cdecl NiPSysAirFieldAirFrictionCtlr_IsEqual(int param_1, int param_2)
 {
     return NiPSysModifierBoolCtlr_IsEqual(param_1, param_2);

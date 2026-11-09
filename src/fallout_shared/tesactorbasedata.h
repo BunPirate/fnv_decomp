@@ -101,12 +101,14 @@ FNV_STATIC_ASSERT(sizeof(ActorBaseAttributes) == 24);
 FNV_STATIC_ASSERT(sizeof(TESActorBaseData) == 52);
 
 // @fnv 0x0047c7d0
+// pdb: TESActorBaseData::GetIsGhost | TESActorBaseData.obj | debug, upstream name already matches, high
 bool TESActorBaseData::GetIsGhost() const
 {
     return GetFlag(0x20000000);
 }
 
 // @fnv 0x0047c7f0
+// pdb: TESActorBaseData::GetInvulnerable | TESActorBaseData.obj | debug, vtable slot, medium
 bool TESActorBaseData::GetIsInvulnerable() const
 {
     return GetFlag(0x80000000);
@@ -119,6 +121,7 @@ bool TESActorBaseData::GetNoKnockdowns() const
 }
 
 // @fnv 0x0047c830
+// pdb: TESActorBaseData::GetAutoCalcServiceFlags | TESActorBaseData.obj | debug, vtable slot, medium
 bool TESActorBaseData::GetNoHeadTracking() const
 {
     return GetFlag(0x800000);

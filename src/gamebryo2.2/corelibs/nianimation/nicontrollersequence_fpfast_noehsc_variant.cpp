@@ -269,7 +269,7 @@ struct S_00a30880_Foo : S_00a30880_Base
     void* unk40;
     void* unk44;
 
-    void ReleaseItems();
+    void ClearTargets();
 };
 extern "C" double __cdecl fmod(double, double);
 struct SequenceA30970 : NiObject
@@ -334,7 +334,7 @@ struct FUN_00a30cc0_cls
     unsigned char unk0C;
     unsigned char m_bFlag0D;
 
-    unsigned char Equals(FUN_00a30cc0_cls* other);
+    unsigned char NiControllerSequence_InterpArrayItem_IsEqual(FUN_00a30cc0_cls* kDest);
 };
 struct RefView
 {
@@ -451,13 +451,13 @@ struct FUN_00a312d0
     FixedStr m_kCtlrID;
     FixedStr m_kInterpolatorID;
     void ClearIdentifiers();
-    FUN_00a312d0(const FixedStr& a, const FixedStr& b, const FixedStr& c, const FixedStr& d, const FixedStr& e);
+    FUN_00a312d0(const FixedStr& kAVObjectName, const FixedStr& kPropertyType, const FixedStr& kCtlrType, const FixedStr& kCtlrID, const FixedStr& kInterpolatorID);
 };
 extern int DAT_0109b220;
 extern int(__stdcall* DAT_00fdf1c4)(void*);
 struct S_00aa4060_Class
 {
-    void MemoryManager_Deallocate(void* apMemory);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern S_00aa4060_Class DAT_011f6238;
 struct FUN_00a315b0_Elem
@@ -471,7 +471,7 @@ struct FUN_00a315b0_Elem
 class FUN_00a315b0_Base
 {
   public:
-    void NiControllerSequence_IDTag_Destroy();
+    void NiControllerSequence_IDTag_dtor();
 };
 class FUN_00a315b0_cls
 {
@@ -576,7 +576,7 @@ struct FUN_00a32bc0_cls
     SlotInfo* m_pInfos;
 
     bool NiControllerSequence_ReallocateArrays();
-    int AssignSlot(RefObj* p1, unsigned int p2, unsigned char p3);
+    int AddInterpolator(RefObj* pkInterpolator, unsigned int kIDTag, unsigned char ucPriority);
 };
 struct FUN_00a34480_obj
 {
@@ -604,7 +604,7 @@ struct FUN_00a34480_cls
     unsigned short unk26;
     float m_f28;
 
-    bool AssignControllers(void* a1, FUN_00a34480_obj* a2);
+    bool AssignControllers(void* pcObjectName, FUN_00a34480_obj* pkController);
     bool FUN_00a34480(void* a1, FUN_00a34480_obj* a2);
 };
 extern void* DAT_011f36dc;
@@ -648,7 +648,7 @@ struct TagItem
     const char* fifth;
 };
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
-void* __cdecl FormatStringWithType(const char*, void*);
+void* __cdecl NiControllerSequence_GetViewerString(const char*, void*);
 void* __cdecl NiGetViewerString_00a7d510(const char*, unsigned int);
 void* __cdecl NiGetViewerString_00a7d550(const char*, float);
 void* __cdecl NiTimeController_GetViewerString(const char*, void*);
@@ -753,7 +753,7 @@ struct SeqA34f20
         return bWasInactive;
     }
 
-    bool StartSequence(char m_ucRegionPriority, bool bStartOver, float fWeight, float fEaseInTime,
+    bool StartSequence(char cPriority, bool bStartOver, float fWeight, float fEaseInTime,
                        SeqA34f20* pkTimeSyncSeq, bool bTransition);
 };
 struct SomeObjectB3718
@@ -771,7 +771,7 @@ void __cdecl _NiFree_00aa10f0(void* pv);
 struct FUN_00a30750_shell
 {
     char* m_kPointA[5];
-    void NiControllerSequence_IDTag_Destroy();
+    void NiControllerSequence_IDTag_dtor();
 };
 extern int EmptyFS;
 struct EqObj
@@ -803,7 +803,7 @@ struct EqObj
 };
 struct TCEq
 {
-    bool IsSameAs(NiObject* other);
+    bool IsSameAs(NiObject* pObject);
 };
 struct SeqTagCmp
 {
@@ -817,7 +817,7 @@ struct SeqTagCmp
         return a == x.a && b == x.b && c == x.c && d == x.d && e == x.e;
     }
 };
-extern "C" int __cdecl FUN_00aa1360(const char* a, const char* b);
+extern "C" int __cdecl FUN_00aa1360(const char* s1, const char* s2);
 struct SeqTK
 {
     EqObj* p;
@@ -859,7 +859,7 @@ struct S_00a31140_Allocator
     void* __thiscall Game_DoHeapAlloc(unsigned int);
 };
 extern "C" void __cdecl FUN_00ec623a(void*, const char*, const char*, const char*);
-void* __cdecl FormatStringWithType(const char* arg1, void* arg2);
+void* __cdecl NiControllerSequence_GetViewerString(const char* apPrefix, void* aeState);
 // Copy a group of five ref-counted fixed strings (the ref count sits 8 bytes before the text).
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile* plAddend);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* plAddend);
@@ -979,8 +979,8 @@ struct AnimationSequence : S_00a30880_Base
     unsigned short unk6a;
     UpdateNote** notes;
     unsigned short noteCount;
-    float GetMorphedTime(AnimationSequence*, float);
-    float ComputeScaledTime_00a30970(float, bool);
+    float FindCorrespondingMorphFrame(AnimationSequence*, float);
+    float ComputeScaledTime(float, bool);
     void NiControllerSequence_SetInterpsWeightAndTime(float, float, float);
     void Update_00a34ba0(float time, bool update);
     __forceinline bool SetState(int value)
@@ -1090,7 +1090,7 @@ struct A33950Object
 extern "C" void* __cdecl Object_DispatchCommandFour(unsigned int size);
 struct FUN_00a344f0_cls
 {
-    void __thiscall NiControllerSequence_CopyMembers(void* obj, unsigned int param);
+    void __thiscall NiControllerSequence_CopyMembers(void* pkDest, unsigned int kCloning);
     void* FUN_00a344f0(unsigned int param);
 };
 extern const float DAT_010141cc;
@@ -1225,6 +1225,9 @@ struct ControllerSequence : SeqNiObject
 };
 
 // @fnv 0x00a32a10
+// pdb: NiControllerSequence::NiControllerSequence | NiControllerSequence.obj | retail, call graph, medium
+// pdb note: debug build links it to NiControllerSequence::GetKeyTimeAt
+// pdb params: kName, uiArraySize, uiArrayGrowBy
 ControllerSequence::ControllerSequence(const SeqFixedString& kName, unsigned int uiArraySize,
                                        unsigned int uiArrayGrowBy)
     : m_uiNumControlledBlocks(uiArraySize), m_uiNumIDTags(uiArrayGrowBy), m_pInterpArray(0), m_pkSeqTagArray(0),

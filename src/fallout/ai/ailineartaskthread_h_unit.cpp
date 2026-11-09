@@ -6,7 +6,9 @@
 #include "../../../include/hkMemoryRouter.h"
 
 // @fnv 0x008c7630
-AILinearTaskThread::AILinearTaskThread(void(__cdecl* taskFunction)())
+// pdb: AILinearTaskThread::AILinearTaskThread | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
+// pdb params: apfnTaskFunc
+AILinearTaskThread::AILinearTaskThread(void(__cdecl* apfnTaskFunc)())
 {
-    m_pTaskFunction = taskFunction;
+    m_pTaskFunction = apfnTaskFunc;
 }

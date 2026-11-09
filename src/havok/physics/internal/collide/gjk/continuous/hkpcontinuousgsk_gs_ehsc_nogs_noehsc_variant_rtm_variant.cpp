@@ -248,9 +248,9 @@ inline void hkVector4::setNeg3(const hkVector4& v)
 {
     m_vComponents = _mm_xor_ps(*(const hkQuadReal*)&DAT_010c4c00, v.m_vComponents);
 }
-inline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& v1)
+inline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(scalarBroadcast(r), v1.m_vComponents);
+    m_vComponents = _mm_mul_ps(scalarBroadcast(r), x.m_vComponents);
 }
 inline void hkVector4::addMul4(hkSimdRealParameter r, const hkVector4& v1)
 {
@@ -260,9 +260,9 @@ inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b, hkSimd
 {
     m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(scalarBroadcast(r), b.m_vComponents));
 }
-inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& x, const hkVector4& y)
+inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& x, const hkVector4& r)
 {
-    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(x.m_vComponents, y.m_vComponents));
+    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(x.m_vComponents, r.m_vComponents));
 }
 inline void hkVector4::setCross(const hkVector4& v0, const hkVector4& v1)
 {
@@ -321,9 +321,9 @@ inline void hkVector4::_setTransformedPos(const hkTransform& t, const hkVector4&
     hkQuadReal r2 = _mm_mul_ps(r.getColumn(2).m_vComponents, b2);
     m_vComponents = _mm_add_ps(_mm_add_ps(r0, r1), _mm_add_ps(r2, t.getTranslation().m_vComponents));
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    hkQuadReal x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    hkQuadReal x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     hkQuadReal xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, (((1) << 6) | ((1) << 4) | ((1) << 2) | ((1)))), x2);
     return scalarValue(_mm_add_ss(_mm_shuffle_ps(x2, x2, (((2) << 6) | ((2) << 4) | ((2) << 2) | ((2)))), xySum));
 }
@@ -398,7 +398,7 @@ __forceinline hkTransform::hkTransform(const hkTransform& t)
 
 __forceinline hkTime hkSweptTransform::getBaseTime() const
 {
-    return hkTime(m_vCenterOfMass0(3));
+    return hkTime(m_centerOfMass0(3));
 }
 __forceinline hkReal hkSweptTransform::getInvDeltaTime() const
 {
@@ -448,29 +448,29 @@ inline const hkSweptTransform& hkMotionState::getSweptTransform() const
 typedef hkUint16 hkContactPointId;
 inline hkContactPoint& hkContactPoint::operator=(const hkContactPoint& other)
 {
-    m_vContactPosition = other.m_vContactPosition;
-    m_vSeparatingNormal = other.m_vSeparatingNormal;
+    m_position = other.m_position;
+    m_separatingNormal = other.m_separatingNormal;
     return *this;
 }
 inline const hkVector4& hkContactPoint::getNormal() const
 {
-    return m_vSeparatingNormal;
+    return m_separatingNormal;
 }
 inline hkVector4& hkContactPoint::getPosition()
 {
-    return m_vContactPosition;
+    return m_position;
 }
 inline hkVector4& hkContactPoint::getSeparatingNormal()
 {
-    return m_vSeparatingNormal;
+    return m_separatingNormal;
 }
 inline void hkContactPoint::setSeparatingNormal(const hkVector4& separatingNormal)
 {
-    m_vSeparatingNormal = separatingNormal;
+    m_separatingNormal = separatingNormal;
 }
 inline void hkContactPoint::setDistance(hkReal d)
 {
-    m_vSeparatingNormal(3) = d;
+    m_separatingNormal(3) = d;
 }
 class Vector4WithInt24W : public hkVector4
 {
@@ -498,11 +498,11 @@ typedef hkUint16 hkpVertexId;
 typedef hkUint32 hkpShapeKey;
 const hkMotionState* hkpCdBody::GetMotionState() const
 {
-    return static_cast<const hkMotionState*>(m_pMotionState);
+    return static_cast<const hkMotionState*>(m_motion);
 }
 const hkpShape* hkpCdBody::getShape() const
 {
-    return m_pCollisionShape;
+    return m_shape;
 }
 struct GskAgentInput;
 struct WorldOperationEntry;
@@ -656,7 +656,7 @@ class ConvexFeaturePairCache
     hkUint16 m_kVertices[4];
 
   public:
-    void init(const hkpConvexShape* shapeA, const hkpConvexShape* shapeB, const hkTransform& btoa);
+    void init(const hkpConvexShape* shapeA, const hkpConvexShape* shapeB, const hkTransform& aTb);
 };
 __declspec(align(16)) class HeapContactFeatureCache : public ConvexFeaturePairCache
 {
@@ -838,7 +838,7 @@ struct WorldOperationEntry : public CollisionContactResults
     hkPadSpu<ContactPointBuffer*> m_akContactRecords;
 };
 namespace MotionUtilities {
-void __cdecl calcTransformFromSweptTransform(const hkSweptTransform& sweptTrans, hkTime t, hkReal tAddOn, hkTransform& transformOut);
+void __cdecl hkSweptTransformUtil_lerp2Ha(const hkSweptTransform& sweptTrans, hkTime t, hkReal tAddOn, hkTransform& transformOut);
 __forceinline void __cdecl calcAngularTimInfo(const hkMotionState& ms0, const hkMotionState& ms1, hkReal deltaTime,
                                               hkVector4* deltaAngleOut0, hkVector4* deltaAngleOut1);
 }
@@ -851,9 +851,9 @@ void __cdecl MotionUtilities::calcAngularTimInfo(const hkMotionState& ms0, const
     hkReal f0 = deltaTime * st0.getInvDeltaTime();
     hkReal f1 = deltaTime * st1.getInvDeltaTime();
     hkVector4 ang0;
-    ang0.setMul4(scalarValue(f0), ms0.m_kDeltaAngle);
+    ang0.setMul4(scalarValue(f0), ms0.m_deltaAngle);
     hkVector4 ang1;
-    ang1.setMul4(scalarValue(f1), ms1.m_kDeltaAngle);
+    ang1.setMul4(scalarValue(f1), ms1.m_deltaAngle);
     deltaAngleOut0[0] = ang0;
     deltaAngleOut1[0] = ang1;
 }
@@ -992,22 +992,22 @@ extern "C" void hk4dGskCollidePointsWithPlane(const ConvexCollisionQueryData& in
 __forceinline void hk4dGskCollPInputInitialize(const AgentSubtypeMarker& in3,
                                                ConvexCollisionQueryData& collPInput)
 {
-    const hkpConvexShape* shapeA = (const hkpConvexShape*)in3.m_pBodyA->getShape();
-    const hkpConvexShape* shapeB = (const hkpConvexShape*)in3.m_pBodyB->getShape();
-    const hkMotionState* msA = in3.m_pBodyA->GetMotionState();
-    const hkMotionState* msB = in3.m_pBodyB->GetMotionState();
+    const hkpConvexShape* shapeA = (const hkpConvexShape*)in3.m_bodyA->getShape();
+    const hkpConvexShape* shapeB = (const hkpConvexShape*)in3.m_bodyB->getShape();
+    const hkMotionState* msA = in3.m_bodyA->GetMotionState();
+    const hkMotionState* msB = in3.m_bodyB->GetMotionState();
     collPInput.m_pFirstQueryData = msA;
     collPInput.m_pSecondQueryData = msB;
     collPInput.m_kFourthBasisVector = shapeA->getRadius() + shapeB->getRadius();
     collPInput.m_vSubtypePosition = in3.m_vSubtypePosition;
-    collPInput.m_pStepInfo = &reinterpret_cast<const GskAgentInput*>(in3.m_pRayCastInput.val())->m_pStepInfo;
+    collPInput.m_pStepInfo = &reinterpret_cast<const GskAgentInput*>(in3.m_input.val())->m_pStepInfo;
     int numSpheres = shapeA->getNumCollisionSpheres();
     collPInput.m_iSecondPackedVertexCount = numSpheres;
     collPInput.m_iStridedVertexCount = numSpheres;
     collPInput.m_akPackedVerticesA = hkAllocateStack<hkVector4>(numSpheres);
     shapeA->getCollisionSpheres((hkSphere*)collPInput.m_akPackedVerticesA.val());
-    hkReal mA = msA->m_fObjectRadius * collPInput.m_avSubtypeVectors[0](3) * collPInput.m_avSubtypeVectors[0](3);
-    hkReal mB = msB->m_fObjectRadius * collPInput.m_avSubtypeVectors[1](3) * collPInput.m_avSubtypeVectors[1](3);
+    hkReal mA = msA->m_objectRadius * collPInput.m_avSubtypeVectors[0](3) * collPInput.m_avSubtypeVectors[0](3);
+    hkReal mB = msB->m_objectRadius * collPInput.m_avSubtypeVectors[1](3) * collPInput.m_avSubtypeVectors[1](3);
     collPInput.m_fSecondBasisScalar = mA + mB;
     collPInput.m_fThirdBasisScalar = 1.0f / (collPInput.m_fSecondBasisScalar + 1.192092896e-07F);
 }
@@ -1020,7 +1020,7 @@ __forceinline hkReal hk4dGskCalcPointVelocity(const hkMotionState* msA, const hk
     {
         hkReal relT = msA->getSweptTransform().getInterpolationValue(t);
         hkVector4 massCenter;
-        massCenter.setInterpolate4(msA->getSweptTransform().m_vCenterOfMass0, msA->getSweptTransform().m_vCenterOfMass1,
+        massCenter.setInterpolate4(msA->getSweptTransform().m_centerOfMass0, msA->getSweptTransform().m_vCenterOfMass1,
                                    scalarValue(relT));
         hkVector4 relPos;
         relPos.setSub4(separatingPoint, massCenter);
@@ -1031,7 +1031,7 @@ __forceinline hkReal hk4dGskCalcPointVelocity(const hkMotionState* msA, const hk
     {
         hkReal relT = msB->getSweptTransform().getInterpolationValue(t);
         hkVector4 massCenter;
-        massCenter.setInterpolate4(msB->getSweptTransform().m_vCenterOfMass0, msB->getSweptTransform().m_vCenterOfMass1,
+        massCenter.setInterpolate4(msB->getSweptTransform().m_centerOfMass0, msB->getSweptTransform().m_vCenterOfMass1,
                                    scalarValue(relT));
         hkVector4 relPos;
         relPos.setSub4(separatingPoint, massCenter);
@@ -1055,7 +1055,7 @@ static __declspec(noinline) hkReal
     {
         hkReal relT = msA->getSweptTransform().getInterpolationValue(t);
         hkVector4 massCenter;
-        massCenter.setInterpolate4(msA->getSweptTransform().m_vCenterOfMass0, msA->getSweptTransform().m_vCenterOfMass1,
+        massCenter.setInterpolate4(msA->getSweptTransform().m_centerOfMass0, msA->getSweptTransform().m_vCenterOfMass1,
                                    scalarValue(relT));
         hkVector4 relPos;
         relPos.setSub4(separatingPoint, massCenter);
@@ -1074,7 +1074,7 @@ static __declspec(noinline) hkReal
     {
         hkReal relT = msB->getSweptTransform().getInterpolationValue(t);
         hkVector4 massCenter;
-        massCenter.setInterpolate4(msB->getSweptTransform().m_vCenterOfMass0, msB->getSweptTransform().m_vCenterOfMass1,
+        massCenter.setInterpolate4(msB->getSweptTransform().m_centerOfMass0, msB->getSweptTransform().m_vCenterOfMass1,
                                    scalarValue(relT));
         hkVector4 relPos;
         relPos.setSub4(separatingPoint, massCenter);
@@ -1102,8 +1102,8 @@ __forceinline void hk4dGskCalcWorstCaseProjectedVelocity(const hkMotionState* ms
     crossAngleA.setCross(deltaAngles[0], separatingNormal);
     hkVector4 crossAngleB;
     crossAngleB.setCross(deltaAngles[1], separatingNormal);
-    hkReal lenA = scalarReal(crossAngleA.length3()) * msA->m_fObjectRadius;
-    hkReal lenB = scalarReal(crossAngleB.length3()) * msB->m_fObjectRadius;
+    hkReal lenA = scalarReal(crossAngleA.length3()) * msA->m_objectRadius;
+    hkReal lenB = scalarReal(crossAngleB.length3()) * msB->m_objectRadius;
     projectedAngularDelta = lenA + lenB;
     realProjectedLinearDelta = scalarReal(linearTimInfo.dot3(separatingNormal));
 }
@@ -1115,6 +1115,9 @@ static __forceinline void hkGskRecalcContact(ConvexShapePairCache* gsk, const hk
 }
 // @fnv 0x00db54b0
 // src: GUESS 0x00db54b0 (confidence: low)
+// pdb: hk4dGskCalcToiFinal | hkpContinuousGsk.obj | retail, object-file run extension, low
+// pdb params: in3, tol, gsk, featureChange, oldMasterNormal, deltaAngles, startRt, endRt, distance0, distance1, out
+// pdb locals: normalA, pointA, wTb, aTb, wTa, stepInfo, oldMasterNormalInA, assertBuf, ostr, cache, properties, separatingVelocity, cp, weldedNormal, pointWs, featurePoints, numFeaturePoints, pointOnA, collPInput, collidePointsOut, newPos
 static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSubtypeMarker& in3, ContactPointWeldingParameters& tol,
                                               ConvexShapePairCache& gsk, int featureChange,
                                               const hkVector4& oldMasterNormal, const hkVector4* deltaAngles,
@@ -1127,8 +1130,8 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSu
     hkTransform wTa;
     hkTransform wTb;
     hkTransform aTb;
-    const hkpConvexShape* shapeA = (const hkpConvexShape*)in3.m_pBodyA->getShape();
-    const hkpConvexShape* shapeB = (const hkpConvexShape*)in3.m_pBodyB->getShape();
+    const hkpConvexShape* shapeA = (const hkpConvexShape*)in3.m_bodyA->getShape();
+    const hkpConvexShape* shapeB = (const hkpConvexShape*)in3.m_bodyB->getShape();
     hkReal radiusSum = shapeA->getRadius();
     radiusSum += shapeB->getRadius();
     hkReal velocityBasedOnDistance = (distance1 - distance0) / (endRt - startRt);
@@ -1157,17 +1160,17 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSu
             rel = MathUtilities::min2(rel, 0.9f);
             Rt = (1.0f - rel) * startRt + endRt * rel;
         }
-        const hkStepInfo* stepInfo = &reinterpret_cast<const GskAgentInput*>(in3.m_pRayCastInput.val())->m_pStepInfo;
-        hkReal timeAddon = stepInfo->m_fTimeStep * Rt;
-        MotionUtilities::calcTransformFromSweptTransform(in3.m_pBodyA->GetMotionState()->getSweptTransform(), stepInfo->m_uiStartTime,
+        const hkStepInfo* stepInfo = &reinterpret_cast<const GskAgentInput*>(in3.m_input.val())->m_pStepInfo;
+        hkReal timeAddon = stepInfo->m_deltaTime * Rt;
+        MotionUtilities::hkSweptTransformUtil_lerp2Ha(in3.m_bodyA->GetMotionState()->getSweptTransform(), stepInfo->m_startTime,
                                  timeAddon, wTa);
-        MotionUtilities::calcTransformFromSweptTransform(in3.m_pBodyB->GetMotionState()->getSweptTransform(), stepInfo->m_uiStartTime,
+        MotionUtilities::hkSweptTransformUtil_lerp2Ha(in3.m_bodyB->GetMotionState()->getSweptTransform(), stepInfo->m_startTime,
                                  timeAddon, wTb);
         aTb.SetMulInverse(wTa, wTb);
         if (featureChange)
         {
-            const hkpConvexShape* shapeA = (const hkpConvexShape*)in3.m_pBodyA->getShape();
-            const hkpConvexShape* shapeB = (const hkpConvexShape*)in3.m_pBodyB->getShape();
+            const hkpConvexShape* shapeA = (const hkpConvexShape*)in3.m_bodyA->getShape();
+            const hkpConvexShape* shapeB = (const hkpConvexShape*)in3.m_bodyB->getShape();
             gsk.GetClosestPoint(shapeA, shapeB, aTb, normalA);
             gsk.getClosestPointAinA(normalA, pointA);
         }
@@ -1200,16 +1203,16 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSu
             distance0 = distance;
         }
     }
-    const hkStepInfo* stepInfo = &reinterpret_cast<const GskAgentInput*>(in3.m_pRayCastInput.val())->m_pStepInfo;
-    hkReal deltaTime = MathUtilities::max2(stepInfo->m_fTimeStep.val() * Rt, tol.m_fMaximumAngularVelocity.val());
-    hkReal toi = stepInfo->m_uiStartTime + deltaTime;
+    const hkStepInfo* stepInfo = &reinterpret_cast<const GskAgentInput*>(in3.m_input.val())->m_pStepInfo;
+    hkReal deltaTime = MathUtilities::max2(stepInfo->m_deltaTime.val() * Rt, tol.m_fMaximumAngularVelocity.val());
+    hkReal toi = stepInfo->m_startTime + deltaTime;
     ;
     ;
-    if (toi < out.m_fTimeOfImpact.m_uiCommandId && stepInfo->m_fEndTime - tol.m_fMaximumAngularVelocity > toi)
+    if (toi < out.m_fTimeOfImpact.m_uiCommandId && stepInfo->m_endTime - tol.m_fMaximumAngularVelocity > toi)
     {
         HeapContactFeatureCache cache;
         hkReal separatingVelocity;
-        const hkpConvexShape* shapeA = (const hkpConvexShape*)in3.m_pBodyA->getShape();
+        const hkpConvexShape* shapeA = (const hkpConvexShape*)in3.m_bodyA->getShape();
         hkpContactMgr::ToiAccept cbResult;
         __declspec(align(16)) char contactPointStorage[sizeof(hkContactPoint)];
         hkContactPoint& cp = *reinterpret_cast<hkContactPoint*>(contactPointStorage);
@@ -1224,7 +1227,7 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSu
             cp.setDistance(distance);
             weldResult = hkpConvexShape::WELD_RESULT_ACCEPT_CONTACT_POINT_UNMODIFIED;
             hkVector4 weldedNormal = cp.getSeparatingNormal();
-            if (in3.m_pBodyB->getShape()->getType() == HK_SHAPE_TRIANGLE)
+            if (in3.m_bodyB->getShape()->getType() == HK_SHAPE_TRIANGLE)
             {
                 {
                     hkpVertexId featurePoints[3];
@@ -1236,19 +1239,19 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSu
                         numFeaturePoints < 2 ? 0xffff : hkpVertexId(gsk.m_akPackedVerticesB[1].GetValueForType());
                     featurePoints[2] =
                         numFeaturePoints < 3 ? 0xffff : hkpVertexId(gsk.m_akPackedVerticesB[2].GetValueForType());
-                    shapeB = (const hkpConvexShape*)in3.m_pBodyB->getShape();
+                    shapeB = (const hkpConvexShape*)in3.m_bodyB->getShape();
                     weldResult = shapeB->weldContactPoint(featurePoints, numFeaturePoints, cp.getPosition(), &wTb,
                                                           shapeA, &wTa, weldedNormal);
                 }
                 cp.setSeparatingNormal(weldedNormal);
             EXAMINE_WELD_RESULTS:
                 if (weldResult == hkpConvexShape::WELD_RESULT_REJECT_CONTACT_POINT &&
-                    reinterpret_cast<const GskAgentInput*>(in3.m_pRayCastInput.val())->m_pCollisionQualityInfo->m_bEnableToiWeldRejection)
+                    reinterpret_cast<const GskAgentInput*>(in3.m_input.val())->m_pCollisionQualityInfo->m_enableToiWeldRejection)
                 {
                     return;
                 }
             }
-            else if (in3.m_pBodyA->getShape()->getType() == HK_SHAPE_TRIANGLE)
+            else if (in3.m_bodyA->getShape()->getType() == HK_SHAPE_TRIANGLE)
             {
                 hkpVertexId featurePoints[3];
                 hkUint8 numFeaturePoints;
@@ -1264,15 +1267,15 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSu
                 dist.setBroadcast(weldedNormal, 3);
                 pointOnA.setAddMul4(cp.getPosition(), weldedNormal, dist);
                 weldedNormal.setNeg3(weldedNormal);
-                shapeB = (const hkpConvexShape*)in3.m_pBodyB->getShape();
+                shapeB = (const hkpConvexShape*)in3.m_bodyB->getShape();
                 weldResult = shapeA->weldContactPoint(featurePoints, numFeaturePoints, pointOnA, &wTa, shapeB, &wTb,
                                                       weldedNormal);
                 weldedNormal.setNeg3(weldedNormal);
                 cp.setSeparatingNormal(weldedNormal);
                 goto EXAMINE_WELD_RESULTS;
             }
-            msA = in3.m_pBodyA->GetMotionState();
-            msB = in3.m_pBodyB->GetMotionState();
+            msA = in3.m_bodyA->GetMotionState();
+            msB = in3.m_bodyB->GetMotionState();
             separatingVelocity = hk4dGskCalcPointVelocity(msA, msB, cp.getPosition(), cp.getNormal(),
                                                           in3.m_vSubtypePosition, deltaAngles, toi);
             if (weldResult == hkpConvexShape::WELD_RESULT_ACCEPT_CONTACT_POINT_MODIFIED &&
@@ -1280,7 +1283,7 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSu
             {
                 ConvexCollisionQueryData collPInput;
                 collPInput.m_fFinalQueryParameter = Rt;
-                MotionUtilities::calcAngularTimInfo(*msA, *msB, reinterpret_cast<const GskAgentInput*>(in3.m_pRayCastInput.val())->m_pStepInfo.m_fTimeStep,
+                MotionUtilities::calcAngularTimInfo(*msA, *msB, reinterpret_cast<const GskAgentInput*>(in3.m_input.val())->m_pStepInfo.m_deltaTime,
                                                     &collPInput.m_avSubtypeVectors[0], &collPInput.m_avSubtypeVectors[1]);
                 {
                     hkReal realProjectedLinearDelta;
@@ -1315,24 +1318,24 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00db54b0(const AgentSu
                 else
                 {
                     separatingVelocity = CalcSeparatingVelocity(
-                        in3.m_pBodyA->GetMotionState(), in3.m_pBodyB->GetMotionState(), cp.getPosition(),
+                        in3.m_bodyA->GetMotionState(), in3.m_bodyB->GetMotionState(), cp.getPosition(),
                         cp.getNormal(), in3.m_vSubtypePosition, deltaAngles, toi);
                     separatingVelocity = MathUtilities::min2(0.0f, separatingVelocity);
                 }
             }
-            separatingVelocity *= stepInfo->m_fInverseDeltaTime;
+            separatingVelocity *= stepInfo->m_invDeltaTime;
         }
         ContactDataPhysicsMaterial properties;
         MemoryUtils::memClear16(&properties, 3);
         properties.m_uiUserData = DAT_010d5384;
         gsk.WriteContactFeatureCache(cache);
-        cbResult = in3.m_pContactManager->addToi(*in3.m_pBodyA, *in3.m_pBodyB, *reinterpret_cast<const GskAgentInput*>(in3.m_pRayCastInput.val()), out, toi, cp,
+        cbResult = in3.m_contactMgr->addToi(*in3.m_bodyA, *in3.m_bodyB, *reinterpret_cast<const GskAgentInput*>(in3.m_input.val()), out, toi, cp,
                                                  static_cast<const ConvexFeaturePairCache*>(&cache), separatingVelocity, static_cast<PhysicsMaterial&>(properties));
         if (cbResult == hkpContactMgr::TOI_ACCEPT)
         {
             if (out.hasToi())
             {
-                in3.m_pContactManager->removeToi(*out.m_pConstraintOwner, static_cast<PhysicsMaterial&>(out.m_fTimeOfImpact.m_kProperties));
+                in3.m_contactMgr->removeToi(*out.m_pConstraintOwner, static_cast<PhysicsMaterial&>(out.m_fTimeOfImpact.m_kProperties));
             }
             out.m_fTimeOfImpact.m_fSeparation = separatingVelocity;
             out.m_fTimeOfImpact.m_vContactPoint = cp;

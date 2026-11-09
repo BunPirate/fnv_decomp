@@ -9,14 +9,16 @@
 struct FUN_00726d50_class
 {
     void SetFlags(int a, int b);
-    void AnimatingText_SetFlash(bool a);
+    void AnimatingText_SetFlash(bool abOn);
 };
 
 // @fnv 0x00726d50
 // src: XBOX_PDB 0x00726d50
-void FUN_00726d50_class::AnimatingText_SetFlash(bool a)
+// pdb: AnimatingText::SetFlash | MovingText.obj | debug, upstream name already matches, high
+// pdb params: abOn
+void FUN_00726d50_class::AnimatingText_SetFlash(bool abOn)
 {
-    SetFlags(2, a);
+    SetFlags(2, abOn);
 }
 
 extern int DAT_01070660;
@@ -32,6 +34,7 @@ void GlobalObject_00869f00::Clear(bool)
 {}
 
 // @fnv 0x0072ce90
+// pdb: BSSimpleArray<TESRecipeCategory *,1024>::~BSSimpleArray<TESRecipeCategory *,1024> | RecipeMenu.obj | debug, object-file run extension, low
 void GlobalObject_00869f00::InitFromGlobal()
 {
     p = &DAT_01070660;
@@ -42,9 +45,11 @@ extern "C" void __cdecl FUN_00ecbc5b(char* apString, int aiSize);
 
 // @fnv 0x00730490
 // src: XBOX_PDB 0x00730490
-void BSstrupr(char* apString, int aiSize)
+// pdb: BSstrupr | BarterMenu.obj | debug, upstream name already matches, high
+// pdb params: apString1, aiSize
+void BSstrupr(char* apString1, int aiSize)
 {
-    FUN_00ecbc5b(apString, aiSize);
+    FUN_00ecbc5b(apString1, aiSize);
 }
 
 
@@ -56,12 +61,14 @@ struct FUN_00726cf0 : ::BSStringT<char>
 };
 // Destructor that deallocates the pointer stored at offset 0x24 of this object.
 // @fnv 0x00726cf0
+// pdb: AnimatingText::~AnimatingText | MovingText.obj | debug, call graph (shared callers), medium
 FUN_00726cf0::~FUN_00726cf0()
 {
     Deallocate(*(void**)((char*)this + 0x24));
 }
 
 // @fnv 0x00726d70
+// pdb: MovingText::Begin | MovingText.obj | debug, object-file gap fill, medium
 void FUN_00726d50_class::SetFlags(int auiFlags, int abSet)
 {
     if (*(unsigned char*)&abSet)
@@ -81,6 +88,8 @@ struct StandIn
 };
 // Sets the vtable to DAT_01070660, calls FUN_006b3eb0 with 0 and 0, and returns this.
 // @fnv 0x0072ce30
+// pdb: BSSimpleArray<TESRecipeCategory *,1024>::_Reallocate | RecipeMenu.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 StandIn* StandIn::Initialize()
 {
     vtable = &DAT_01070660;
@@ -96,6 +105,7 @@ struct GlobalObject_0072ce30
 
 // Runs the destructor on this object, frees it with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x0072ce60
+// pdb: BSSimpleArray<TESRecipeCategory *,1024>::`scalar deleting destructor' | RecipeMenu.obj | retail, vtable slot, high
 void* GlobalObject_0072ce30::DestroyAndFree(unsigned int flags)
 {
     this->GlobalObject_0072ce30::~GlobalObject_0072ce30();
@@ -119,12 +129,17 @@ struct FUN_007308e0 : public ListX
 };
 // Calls FUN_00730950, then passes this to p07::FUN_007211c0.
 // @fnv 0x007308e0
+// pdb: BarterMenu::RemoveTransactItem | BarterMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ListBox<ItemChange *>::~ListBox<ItemChange *>
+// pdb params: aiAmountSelected
+// pdb locals: ptransactItem, ptransactList, ptransactExtra
 FUN_007308e0::~FUN_007308e0()
 {
     ListBox_ItemChange_RemoveAll();
     p07::InterfaceManager_UnregisterListBox(this);
 }
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     int GetDaysPassed();
@@ -132,6 +147,9 @@ struct Calendar
 
 // Compares the days passed of two Calendar objects, returning 1 if the first is less, -1 if greater, and 0 if equal.
 // @fnv 0x0073b6e0
+// pdb: CaravanAIPackage::SortPackagesFunc | CaravanMenu.obj | debug, object-file run extension, low
+// pdb params: t1, t2
+// pdb locals: i2, i1
 int CompareCalendarDays(Calendar** apCalendarA, Calendar** apCalendarB)
 {
     int daysA = (*apCalendarA)->GetDaysPassed();
@@ -154,26 +172,29 @@ struct FUN_00726db0_class
     int m_kPointB;
     int m_iThirdValue;
     TileValue_00a0a270* m_t;
-    void AnimatingText_SetVisibility(bool a);
+    void AnimatingText_SetVisibility(bool abOn);
 };
 // If m_t is set, calls FUN_00a0a270 on it with 1.0f when a is true and 0.0f otherwise, passing true.
 // @fnv 0x00726db0
 // src: COMMUNITY 0x00726db0
-void FUN_00726db0_class::AnimatingText_SetVisibility(bool abEnabled)
+// pdb: AnimatingText::SetVisibility | MovingText.obj | debug, upstream name already matches, high
+// pdb params: abOn
+void FUN_00726db0_class::AnimatingText_SetVisibility(bool abOn)
 {
     if (m_t)
-        m_t->Tile_Value_SetFloat_00a0a270(abEnabled ? 1.0f : 0.0f, true);
+        m_t->Tile_Value_SetFloat_00a0a270(abOn ? 1.0f : 0.0f, true);
 }
 
 int GetTileValueID(char const*, int);
 
 
 // @fnv 0x00726b40
+// pdb: ListBox<unsigned int>::NumUnfiltered | MenuManager.obj | retail, call graph (shared callers), medium
 unsigned int VATSMenu::GetFilteredCount()
 {
     static int numFiltered = GetTileValueID("_num_filtered", -1);
     // This routine reads its tile from the template-list link slot (offset 0x0C).
-    return GetSelectedTargetIndex() - (unsigned int)reinterpret_cast<Tile*>(m_kTileTemplateList.m_pkNext)->GetFloat(numFiltered);
+    return GetSelectedTargetIndex() - (unsigned int)reinterpret_cast<Tile*>(xTemplates.m_pkNext)->GetFloat(numFiltered);
 }
 
 struct FUN_0073ac90_shell
@@ -183,6 +204,7 @@ struct FUN_0073ac90_shell
 };
 // @fnv 0x0073ac90
 // src: XBOX_PDB 0x0073ac90
+// pdb: BSSimpleList<BlackJackMenu::CardData *>::~BSSimpleList<BlackJackMenu::CardData *> | BlackJackMenu.obj | debug, object-file run extension, low
 void* FUN_0073ac90_shell::NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead()
 {
     return (char*)(void*)*(void**)this + 8;
@@ -213,7 +235,7 @@ struct FUN_00725aa0_cls
     unsigned short m_1c;
     float m_20;
 
-    void Log(Tile* v);
+    void Log(Tile* apNewTile);
     void Finish1();
     void Finish2();
     void ProcessSlots();
@@ -221,6 +243,8 @@ struct FUN_00725aa0_cls
 
 // Resets m_1c and m_20, iterates the node list calling Set(0xfac, m_1c++) and Log on each slot with m_08 == 0, then calls Finish1 and Finish2.
 // @fnv 0x00725aa0
+// pdb: ListBox<TESReputation *>::Synchronize | MenuManager.obj | retail, call graph, medium
+// pdb locals: pnode
 void FUN_00725aa0_cls::ProcessSlots()
 {
     m_1c = 0;
@@ -258,6 +282,8 @@ struct FUN_00725f40_shell
 // Reads a float from unk0c, computes a scroll delta from unk20 versus that value, and writes it plus an item count to unk0c and unk14.
 // @fnv 0x00725f40
 // src: GUESS 0x00725f40 (confidence: medium)
+// pdb: ListBox<TESReputation *>::SetTotalListHeight | MenuManager.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void FUN_00725f40_shell::UpdateScrollTraits()
 {
     if (unk0c != 0)
@@ -306,7 +332,7 @@ struct FUN_00726090_cls
     unsigned short unk1E;
     float m_20;
 
-    void Remove(void* p);
+    void Remove(void* apNewTile);
     void Flush();
     void Reset();
     void ListBox_unsigned_int_Synchronize();
@@ -315,6 +341,8 @@ struct FUN_00726090_cls
 // Clears m_1c and m_20, notifies and removes each linked object whose byte at offset 8 is zero, then calls Flush and Reset.
 // @fnv 0x00726090
 // src: XBOX_PDB 0x00726090
+// pdb: ListBox<unsigned int>::Synchronize | MenuManager.obj | retail, call graph, high
+// pdb locals: pnode
 void FUN_00726090_cls::ListBox_unsigned_int_Synchronize()
 {
     m_1c = 0;
@@ -365,7 +393,7 @@ struct FUN_0072c700_cls
     unsigned short unk1e;
     float m_20;
 
-    void AccumulateTileHeight(Tile* o);
+    void AccumulateTileHeight(Tile* apNewTile);
     void UpdateScrollTraits_0072cba0();
     void UpdateHighlightTraits();
     void UpdateEntryMetrics_0072c700();
@@ -373,6 +401,8 @@ struct FUN_0072c700_cls
 
 // @fnv 0x0072c700
 // src: GUESS 0x0072c700 (confidence: low)
+// pdb: ListBox<TESConditionItem *>::Synchronize | RecipeMenu.obj | retail, call graph, medium
+// pdb locals: pnode
 void FUN_0072c700_cls::UpdateEntryMetrics_0072c700()
 {
     m_1c = 0;
@@ -414,6 +444,8 @@ struct FUN_0072cba0_cls
 // Computes a scroll item count from the tile's float at 0xfb0 versus m_20 and stores _scroll_delta and _number_of_items on the tiles.
 // @fnv 0x0072cba0
 // src: GUESS 0x0072cba0 (confidence: medium)
+// pdb: ListBox<TESConditionItem *>::SetTotalListHeight | RecipeMenu.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void FUN_0072cba0_cls::UpdateScrollTraits_0072cba0()
 {
     if (unk0c)
@@ -454,7 +486,7 @@ struct InvEntry
     int iCountDelta;
     InvBoundObject* pType;
 
-    InvEntry(InvBoundObject* apType, int aiCount);
+    InvEntry(InvBoundObject* apObject, int aiNumber);
     InvExtraListList* GetExtendData();
     int GetCount();
     void SetCount(int aiCount);
@@ -549,6 +581,9 @@ struct InvOwner
 
 // Finds the pending inventory entry in the active list, adds aiCount to its count, or creates a new entry with the pending type and extra data and appends it.
 // @fnv 0x0072faa0
+// pdb: BarterMenu::AddTransactItem | BarterMenu.obj | debug, object-file gap fill, medium
+// pdb params: aiAmountSelected
+// pdb locals: ptransactItem, ptransactList, ptransactExtra, pextra
 void InvOwner::AddOrUpdateEntryCount(int aiCount)
 {
     InvEntryList* pList3 = (pCurrent == &iMarkerA8) ? &kListB : &kListA;

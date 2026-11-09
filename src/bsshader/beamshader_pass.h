@@ -100,7 +100,7 @@ class BeamPassShader
     NiPointer<NiD3DPass> pass;
     NiRefObject* vertex;
     NiRefObject* pixel;
-    void SetupPass();
-    bool InitializePass();
+    void BeamShader_PresetStages();
+    bool BeamShader_LoadStagesAndPasses();
 };
 #endif

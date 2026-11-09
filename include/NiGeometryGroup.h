@@ -6,6 +6,7 @@ class NiGeometryBufferData;
 class NiGeometryData;
 class NiScreenTexture;
 
+// pdb: class NiGeometryGroup, size 0xc, 2 members
 class NiGeometryGroup : public NiMemObject
 {
 public:
@@ -26,5 +27,5 @@ public:
     void RemoveAndDeleteBuffer(NiGeometryData*);
 
     unsigned int m_uiRefCount;
-    void* m_pD3DDevice;
+    void* m_pkD3DDevice;
 };

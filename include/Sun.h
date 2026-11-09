@@ -3,6 +3,7 @@
 #include "SkyObject.h"
 #include "NiAVObject.h"
 
+// pdb: class Sun, size 0x2c, bases: SkyObject, 9 members
 class Sun : public SkyObject
 {
 public:
@@ -12,13 +13,13 @@ public:
     void vfn04();
     void Init(NiNode*);
 
-    NiPointer<NiAVObject> m_pFirstSceneObject;
-    NiPointer<NiAVObject> m_pSecondSceneObject;
-    NiPointer<NiAVObject> m_pThirdSceneObject;
-    NiPointer<NiAVObject> m_pFourthSceneObject;
-    void* m_pSunGlarePick;
-    NiPointer<NiAVObject> m_pMenuLight;
-    float m_fSunGlareIntensity;
+    NiPointer<NiAVObject> spSunBaseNode;
+    NiPointer<NiAVObject> spSunGlareNode;
+    NiPointer<NiAVObject> spSunBase;
+    NiPointer<NiAVObject> spSunGlare;
+    void* pSunGlarePick;
+    NiPointer<NiAVObject> spLight;
+    float fGlareScale;
     bool bDoOcclusionTests;
-    NiPointer<NiAVObject> m_pSunShaderAccumulator;
+    NiPointer<NiAVObject> spSunAccumulator;
 };

@@ -35,6 +35,7 @@ struct FUN_00540700_Class
 
 // @fnv 0x00540700
 // src: COMMUNITY 0x00540700
+// pdb: NiTPointerMap<unsigned int,TESGrassAreaParam * *>::`default constructor closure' | TESLand.obj | debug, object-file run extension, low
 int FUN_00540700_Class::GrassAreaParamsMap_GrassAreaParamsMap()
 {
     return NiTPointerMap_unsigned_int_TESGrassAreaParam_NiTPointerMap(0x25);
@@ -56,19 +57,22 @@ struct FUN_00540830_class
 {
     const char* vtbl;
     void FUN_00540b00(int a, int b);
-    FUN_00540830_class* SetVtableAndProcessState_00540830(int a, int b);
+    FUN_00540830_class* SetVtableAndProcessState_00540830(int uiMaxSize, int uiGrowBy);
 };
 
 // Calls FUN_00540b00 with the two arguments, sets vtbl to "p\nT", and returns this.
 // @fnv 0x00540830
 // src: GUESS 0x00540830 (confidence: low)
-FUN_00540830_class* FUN_00540830_class::SetVtableAndProcessState_00540830(int aiArg1, int aiArg2)
+// pdb: NiTPrimitiveArray<NiAdditionalGeometryData::NiAGDDataBlock *>::NiTPrimitiveArray<NiAdditionalGeometryData::NiAGDDataBlock *> | TESLand.obj | debug, call graph, high
+// pdb params: uiMaxSize, uiGrowBy
+FUN_00540830_class* FUN_00540830_class::SetVtableAndProcessState_00540830(int uiMaxSize, int uiGrowBy)
 {
-    FUN_00540b00(aiArg1, aiArg2);
+    FUN_00540b00(uiMaxSize, uiGrowBy);
     vtbl = "p\nT";
     return this;
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool enabled, unsigned int flag);
@@ -84,20 +88,24 @@ void TaskQueueInterface::SetTaskFlag(bool enabled)
 
 struct FUN_00549610_Class
 {
-    void BSPortal_SetSharedGeometryNode(void* arg);
+    void BSPortal_SetSharedGeometryNode(void* apNode);
 };
 
 // @fnv 0x00549610
 // src: XBOX_PDB 0x00549610
-void FUN_00549610_Class::BSPortal_SetSharedGeometryNode(void* arg)
+// pdb: BSPortal::SetSharedGeometryNode | TESObjectCELL.obj | debug, upstream name already matches, high
+// pdb params: apNode
+void FUN_00549610_Class::BSPortal_SetSharedGeometryNode(void* apNode)
 {
-    *(GO*)((char*)this + 0x104) = arg;
+    *(GO*)((char*)this + 0x104) = apNode;
 }
 
-void __cdecl ourMemalign(unsigned int a, unsigned int b);
+void __cdecl ourMemalign(unsigned int acAlignment, unsigned int aSize);
 
 // @fnv 0x00553300
 // src: GUESS 0x00553300 (confidence: medium)
+// pdb: TargetEntry::operator new | BGSZoneTargetListener.obj | debug, call graph, medium
+// pdb params: blocksize
 void __cdecl Object_OurMemalign_Thunk(unsigned int blocksize)
 {
     ourMemalign(16, blocksize);
@@ -114,6 +122,7 @@ extern int DAT_0102f10c;
 
 // @fnv 0x00554590
 // src: GUESS 0x00554590 (confidence: low)
+// pdb: TESWindListener::TESWindListener | TESObjectCELL.obj | debug, object-file run extension, low
 void* __thiscall FUN_00554590_Class::SetVtableAndProcessState_00554590()
 {
     FUN_00c74760();
@@ -127,6 +136,7 @@ struct FUN_005545b0
     void Call();
 };
 // @fnv 0x005545b0
+// pdb: TESWindListener::~TESWindListener | TESObjectCELL.obj | debug, object-file run extension, low
 void FUN_005545b0::Call()
 {
     ForwardCall_005545d0();
@@ -140,6 +150,7 @@ struct FUN_005545d0_Class
 
 // @fnv 0x005545d0
 // src: GUESS 0x005545d0 (confidence: low)
+// pdb: bhkWindListener::~bhkWindListener | TESObjectCELL.obj | debug, object-file run extension, low
 void FUN_005545d0_Class::ForwardCall_005545d0()
 {
     FUN_005545f0();
@@ -157,13 +168,15 @@ void __thiscall FUN_00554650_Class::UpdateState_00554650()
     *(char**)((char*)this) = "pFU";
 }
 
-void __cdecl WriteRenderStatsFile(int);
+void __cdecl TESObjectCELL_SaveRenderFailureData(int);
 
 // @fnv 0x005586c0
 // src: COMMUNITY 0x005586c0
+// pdb: TESObjectCELL::DefaultRenderTestCallback | TESObjectCELL.obj | debug, upstream name already matches, high
+// pdb params: apFailureData, apParamData
 void __cdecl TESObjectCELL_DefaultRenderTestCallback(int a)
 {
-    WriteRenderStatsFile(a);
+    TESObjectCELL_SaveRenderFailureData(a);
 }
 
 extern int DAT_0102f448;
@@ -190,6 +203,7 @@ struct FUN_0055a020_Class
 
 // @fnv 0x0055a020
 // src: GUESS 0x0055a020 (confidence: medium)
+// pdb: NiTMap<NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::NewItem | TESObjectCELL.obj | retail, vtable slot, high
 void __thiscall FUN_0055a020_Class::CreateRuntimeWorkItem_Thunk()
 {
     ((FUN_0055a020_Class*)((char*)this + 0xc))->CreateRuntimeWorkItem();
@@ -206,6 +220,7 @@ struct FUN_0055a220 : FUN_0055a220_class
 };
 
 // @fnv 0x0055a220
+// pdb: DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >::AllocNode::AllocNode | TESObjectCELL.obj | debug, object-file run extension, low
 FUN_0055a220::FUN_0055a220()
 {
     EvaluateValue_0055a270();
@@ -219,6 +234,7 @@ struct FUN_0055a290_Class
 
 // @fnv 0x0055a290
 // src: GUESS 0x0055a290 (confidence: low)
+// pdb: DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >::AllocNode::~AllocNode | TESObjectCELL.obj | debug, object-file run extension, low
 void FUN_0055a290_Class::ForwardCall_0055a290()
 {
     ForwardCall_0055a2b0();
@@ -234,6 +250,7 @@ struct FUN_0055a2b0_Class
 
 // @fnv 0x0055a2b0
 // src: GUESS 0x0055a2b0 (confidence: low)
+// pdb: NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::~NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> | TESObjectCELL.obj | debug, object-file run extension, low
 void FUN_0055a2b0_Class::ForwardCall_0055a2b0()
 {
     ((FUN_0055a2b0_Class*)((char*)this + 8))->FUN_006208d0();
@@ -261,6 +278,7 @@ struct FUN_00540a10_cls : public NiTPointerMap<int, int>
 
 // @fnv 0x00540a10
 // src: GUESS 0x00540a10 (confidence: low)
+// pdb: NiTArray<NiAdditionalGeometryData::NiAGDDataBlock *,NiTMallocInterface<NiAdditionalGeometryData::NiAGDDataBlock *> >::~NiTArray<NiAdditionalGeometryData::NiAGDDataBlock *,NiTMallocInterface<NiAdditionalGeometryData::NiAGDDataBlock *> > | TESLand.obj | debug, object-file run extension, low
 void FUN_00540a10_cls::SetVtableAndProcessState_00540a10()
 {
     *(void**)this = &DAT_0102e47c;
@@ -277,11 +295,12 @@ struct FUN_00559230_class
     void* m_auiShapeKeys;
     void* pAudioItems;
     void RemoveAll();
-    void ReleaseStorage_00559230();
+    void NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_NiPointer_BSMultiBoundNode_TESObjectREFR_NiPointer_BSMultiBoundNode_dtor();
 };
 // @fnv 0x00559230
-// src: GUESS 0x00559230 (confidence: low)
-void FUN_00559230_class::ReleaseStorage_00559230()
+// src: XBOX_DEBUG_PDB 0x00559230
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,NiPointer<BSMultiBoundNode> > >,TESObjectREFR *,NiPointer<BSMultiBoundNode> >::~NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,NiPointer<BSMultiBoundNode> > >,TESObjectREFR *,NiPointer<BSMultiBoundNode> > | TESObjectCELL.obj | debug, call graph (shared callers), high
+void FUN_00559230_class::NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_NiPointer_BSMultiBoundNode_TESObjectREFR_NiPointer_BSMultiBoundNode_dtor()
 {
     m_vft = &DAT_0102f398;
     RemoveAll();
@@ -324,6 +343,7 @@ struct FUN_00559ff0_class
 // Resets the vtable pointer, clears the pointer map contents, and frees the data pointer.
 // @fnv 0x00559ff0
 // src: GUESS 0x00559ff0 (confidence: low)
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >,NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::~NiTMapBase<DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >,NiAVObject *,TESObjectCELL::QUEUED_ATTACH> | TESObjectCELL.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00559ff0_class::SetVtableAndProcessState_00559ff0()
 {
     vtbl = &DAT_0102f468;
@@ -340,6 +360,7 @@ struct FUN_005407d0_Class
 };
 // Calls FUN_005409b0, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x005407d0
+// pdb: NiTPointerMap<unsigned int,TESGrassAreaParam * *>::`scalar deleting destructor' | TESLand.obj | retail, vtable slot, high
 void* __thiscall FUN_005407d0_Class::FUN_005407d0(unsigned int flags)
 {
     FUN_005409b0();
@@ -358,6 +379,7 @@ struct FUN_00540a40_Class : public FUN_00540800_Class
 };
 // Calls the base class destructor, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x00540a40
+// pdb: NiTArray<NiAdditionalGeometryData::NiAGDDataBlock *,NiTMallocInterface<NiAdditionalGeometryData::NiAGDDataBlock *> >::`scalar deleting destructor' | TESLand.obj | debug, vtable slot, medium
 void* __thiscall FUN_00540a40_Class::FUN_00540a40(unsigned int flags)
 {
     FUN_00540800_Class::UpdateFields_00540800();
@@ -377,6 +399,7 @@ struct FUN_00540a70_Class : public FUN_00540800_Class
 };
 // Calls FUN_00537ce0, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x00540a70
+// pdb: NiTPrimitiveArray<NiAdditionalGeometryData::NiAGDDataBlock *>::`scalar deleting destructor' | TESLand.obj | debug, vtable slot, medium
 FUN_00540a70_Class* __thiscall FUN_00540a70_Class::FUN_00540a70(unsigned int flags)
 {
     ForwardCall_00537ce0();
@@ -395,6 +418,7 @@ struct FUN_00540aa0_Class : public FUN_00540a10_cls
 
 // Calls FUN_00540a10, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00540aa0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,TESGrassAreaParam * *>::`scalar deleting destructor' | TESLand.obj | retail, vtable slot, high
 void* FUN_00540aa0_Class::FUN_00540aa0(unsigned int flags)
 {
     SetVtableAndProcessState_00540a10();
@@ -412,6 +436,7 @@ struct FUN_00554670_Class : public FUN_00554650_Class
 
 // Calls the base cleanup, frees this object when flags has bit 0 set, and returns this.
 // @fnv 0x00554670
+// pdb: hkpEntityListener::`scalar deleting destructor' | TESObjectCELL.obj | debug, vtable slot, medium
 void* FUN_00554670_Class::FUN_00554670(unsigned int flags)
 {
     UpdateState_00554650();
@@ -423,31 +448,33 @@ void* FUN_00554670_Class::FUN_00554670(unsigned int flags)
 extern "C" void __cdecl _Deallocate(void*);
 struct FUN_00558f80
 {
-    void Init();
+    void NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_NiNode_TESObjectREFR_NiNode_dtor();
 };
 struct FUN_00559870_Class : public FUN_00558f80
 {
     FUN_00559870_Class* __thiscall InitAndMaybeFree(unsigned int flags);
 };
 // @fnv 0x00559870
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,NiNode *> >,TESObjectREFR *,NiNode *>::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 FUN_00559870_Class* __thiscall FUN_00559870_Class::InitAndMaybeFree(unsigned int flags)
 {
-    Init();
+    NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_NiNode_TESObjectREFR_NiNode_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
 }
 
-void __cdecl FUN_00559080();
+void __cdecl NiTMapBase_DFALL_NiTMapItem_TESForm_TESObjectREFR_TESForm_TESObjectREFR_dtor();
 struct FUN_005598a0_Class
 {
     void* __thiscall FUN_005598a0(unsigned int flags);
 };
 // Calls FUN_00559080 on this, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x005598a0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESForm *,TESObjectREFR *> >,TESForm *,TESObjectREFR *>::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 void* __thiscall FUN_005598a0_Class::FUN_005598a0(unsigned int flags)
 {
-    ((void(__thiscall*)(void*))FUN_00559080)(this);
+    ((void(__thiscall*)(void*))NiTMapBase_DFALL_NiTMapItem_TESForm_TESObjectREFR_TESForm_TESObjectREFR_dtor)(this);
     if (flags & 1)
         operator delete(this);
     return this;
@@ -456,14 +483,15 @@ void* __thiscall FUN_005598a0_Class::FUN_005598a0(unsigned int flags)
 void __cdecl Deallocate(void*);
 struct FUN_005598d0_Class
 {
-    void __thiscall ReleaseStorage_00559230();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_NiPointer_BSMultiBoundNode_TESObjectREFR_NiPointer_BSMultiBoundNode_dtor();
     void* __thiscall FUN_005598d0(unsigned int flags);
 };
 // Calls FUN_00559230, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x005598d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,NiPointer<BSMultiBoundNode> > >,TESObjectREFR *,NiPointer<BSMultiBoundNode> >::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 void* __thiscall FUN_005598d0_Class::FUN_005598d0(unsigned int flags)
 {
-    ReleaseStorage_00559230();
+    NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_NiPointer_BSMultiBoundNode_TESObjectREFR_NiPointer_BSMultiBoundNode_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -475,6 +503,7 @@ struct FUN_005422b0Class
     void* __thiscall FUN_00559940(unsigned int flags);
 };
 // @fnv 0x00559940
+// pdb: NiTArray<TESObjectREFR *,NiTMallocInterface<TESObjectREFR *> >::`scalar deleting destructor' | TESObjectCELL.obj | debug, vtable slot, medium
 void* __thiscall FUN_005422b0Class::FUN_00559940(unsigned int flags)
 {
     UpdateFields_00559460();
@@ -486,14 +515,15 @@ void* __thiscall FUN_005422b0Class::FUN_00559940(unsigned int flags)
 namespace fnv_00559970 {
 struct FUN_005422b0Class
 {
-    void ForwardCall_005422b0();
+    void NiTPrimitiveArray_TESObjectREFR_dtor();
     void* FUN_00559970(unsigned int flags);
 };
 void __cdecl operator delete(void*);
 // @fnv 0x00559970
+// pdb: NiTPrimitiveArray<TESObjectREFR *>::`scalar deleting destructor' | TESObjectCELL.obj | debug, vtable slot, medium
 void* __thiscall FUN_005422b0Class::FUN_00559970(unsigned int flags)
 {
-    ForwardCall_005422b0();
+    NiTPrimitiveArray_TESObjectREFR_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -506,6 +536,7 @@ struct GlobalObject_00559cc0
     void* __thiscall FUN_00559cf0(unsigned int flags);
 };
 // @fnv 0x00559cf0
+// pdb: NiTMap<TESObjectREFR *,TESObjectREFR *>::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 void* __thiscall GlobalObject_00559cc0::FUN_00559cf0(unsigned int flags)
 {
     this->FUN_00559d90();
@@ -525,6 +556,7 @@ struct FUN_0055a130_Class
 
 // Calls FUN_00559ff0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0055a130
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >,NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 void* FUN_0055a130_Class::FUN_0055a130(unsigned int flags)
 {
     SetVtableAndProcessState_00559ff0();
@@ -546,6 +578,8 @@ struct S
 };
 // Returns the unsigned int value stored at index a in the Flt array pointed to by p.
 // @fnv 0x00540540
+// pdb: BSShaderPPLightingProperty::GetDiffuseTexture | ModelLoader.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 unsigned int __thiscall S::GetElement(int aiIndex)
 {
     return p[aiIndex];
@@ -563,6 +597,8 @@ struct FUN_00540570_Owner
 };
 // Returns the unsigned int value of the Flt element at index from the Flt array stored at offset 0xb0 of this object.
 // @fnv 0x00540570
+// pdb: BSShaderPPLightingProperty::GetNormalTexture | ModelLoader.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 unsigned int FUN_00540570_Owner::GetFltValue(int index)
 {
     return (*(Flt**)((char*)this + 0xb0))[index];
@@ -587,12 +623,14 @@ void __cdecl MyDeallocate(void**);
 // Assigns the string literal "@\nT" to the object and deallocates the pointer stored at offset 4.
 // @fnv 0x00540800
 // src: GUESS 0x00540800 (confidence: low)
+// pdb: NiPointer<NiAdditionalGeometryData>::~NiPointer<NiAdditionalGeometryData> | TESLand.obj | debug, object-file run extension, low
 void __thiscall FUN_00540800_Class::UpdateFields_00540800()
 {
     *(const char**)this = "@\nT";
     MyDeallocate(*(void***)((char*)this + 4));
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     void hkArray_unsigned_char_hkContainerHeapAllocator_clearAndDeallocate();
@@ -647,6 +685,8 @@ struct FUN_00540b70_Class
 };
 // @fnv 0x00540b70
 // src: XBOX_PDB 0x00540b70
+// pdb: hkArrayBase<unsigned char>::_clearAndDeallocate | TESLand.obj | debug, call graph, low
+// pdb params: alloc
 void __thiscall FUN_00540b70_Class::hkArrayBase_unsigned_char_clearAndDeallocate(void* a)
 {
     DestroyRange();
@@ -674,6 +714,8 @@ struct FUN_00540c20_Holder
 };
 // Calls the virtual function vf with the two arguments and returns.
 // @fnv 0x00540c20
+// pdb: NiTMallocInterface<NiAdditionalGeometryData::NiAGDDataBlock *>::Allocate | TESLand.obj | debug, object-file run extension, low
+// pdb params: uiNumElements
 void __thiscall FUN_00540c20_Holder::CallVirtualWithArgs(int aiArg1, int aiArg2)
 {
     int v = 1;
@@ -695,17 +737,20 @@ struct DoorH
 };
 struct FUN_00547440_Class
 {
-    void TESObjectCELL_SetWaterHeight(float f);
+    void TESObjectCELL_SetWaterHeight(float afWaterHeight);
 };
 // @fnv 0x00547440
 // src: COMMUNITY 0x00547440
-void FUN_00547440_Class::TESObjectCELL_SetWaterHeight(float afValue)
+// pdb: TESObjectCELL::SetWaterHeight | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: afWaterHeight
+// pdb locals: pworld
+void FUN_00547440_Class::TESObjectCELL_SetWaterHeight(float afWaterHeight)
 {
     Sky* p = ((DoorH*)this)->GetParentWorldSpace();
-    if (p && FloatEQ(p->GetFieldCC(), afValue, 0.001f))
+    if (p && FloatEQ(p->GetFieldCC(), afWaterHeight, 0.001f))
         *(float*)((char*)this + 0x50) = 3.402823466e+38f;
     else
-        *(float*)((char*)this + 0x50) = afValue;
+        *(float*)((char*)this + 0x50) = afWaterHeight;
 }
 
 extern int DAT_011ca080;
@@ -713,13 +758,16 @@ int __cdecl TESObjectCELL_GetLastWaterCell();
 void __cdecl TESObjectCELL_SetLastWaterCell(int a);
 // If a is nonzero, clears DAT_011ca080 when it equals a, and calls FUN_00551100(0) when FUN_005510f0() returns a.
 // @fnv 0x005510b0
-void __cdecl ClearGlobalIfMatches(int aiValue)
+// src: XBOX_DEBUG_PDB 0x005510b0
+// pdb: TESObjectCELL::ClearOptimizationDataForCell | TESObjectCELL.obj | debug, call graph, high
+// pdb params: apCell
+void __cdecl TESObjectCELL_ClearOptimizationDataForCell(int apCell)
 {
-    if (aiValue)
+    if (apCell)
     {
-        if (aiValue == DAT_011ca080)
+        if (apCell == DAT_011ca080)
             DAT_011ca080 = 0;
-        if (TESObjectCELL_GetLastWaterCell() == aiValue)
+        if (TESObjectCELL_GetLastWaterCell() == apCell)
             TESObjectCELL_SetLastWaterCell(0);
     }
 }
@@ -738,6 +786,9 @@ struct FUN_005516f0_Class
 };
 // Reads the object's flags, sets or clears bit 0x400 based on set, and writes the flags back.
 // @fnv 0x005516f0
+// pdb: TESObjectCELL::SetPersistentCell | TESObjectCELL.obj | debug, object-file gap fill, medium
+// pdb params: abVal
+// pdb locals: iflags
 void FUN_005516f0_Class::SetFlag400(bool set)
 {
     unsigned int flags = ((TESObjectREFR*)this)->GetFlags();
@@ -752,12 +803,15 @@ MemoryManager* __cdecl MemoryManager_Instance(void);
 // If a is non-null, backs up by the size byte stored before it and deallocates the resulting block through the memory manager.
 // @fnv 0x00553380
 // src: COMMUNITY 0x00553380
-void __cdecl ourMemalignFree(void* apBlock)
+// pdb: ourMemalignFree | BGSZoneTargetListener.obj | debug, upstream name already matches, high
+// pdb params: apPtr
+// pdb locals: pmem
+void __cdecl ourMemalignFree(void* apPtr)
 {
     unsigned char* p;
-    if (apBlock != 0)
+    if (apPtr != 0)
     {
-        p = (unsigned char*)apBlock;
+        p = (unsigned char*)apPtr;
         p -= p[-1];
         MemoryManager_Instance()->Deallocate(p);
     }
@@ -824,6 +878,8 @@ struct Flt
 extern Flt g_011ca0d8;
 // If g_011ca0d8 is non-null, casts it to a Tgt pointer and calls its virtual method f49.
 // @fnv 0x00554780
+// pdb: TESObjectCELL::UpdateExteriorWorld | TESObjectCELL.obj | debug, object-file gap fill, medium
+// pdb params: afTime
 void __cdecl CallIfPresent()
 {
     if (g_011ca0d8)
@@ -837,6 +893,8 @@ void __cdecl CallIfPresent()
 bool __fastcall bhkWorld_QDebugDisplay(char const*);
 // @fnv 0x00554910
 // src: COMMUNITY 0x00554910
+// pdb: TESObjectCELL::ToggleCollisionGeometry | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb locals: pw, btd
 bool __thiscall ExtraDataList::TESObjectCELL_ToggleCollisionGeometry()
 {
     bool result = false;
@@ -863,6 +921,9 @@ struct TESObjectCELL_Ext : public TESObjectCELL
 // Returns 0.0f for exterior cells, otherwise the value from GetPrompt()->GetExtraFloatValue() when the cell is interior.
 // @fnv 0x00555ad0
 // src: XBOX_PDB 0x00555ad0
+// pdb: ExtraDataList::GetNorthRotation | ExtraDataList.obj | retail, call graph, low
+// pdb note: debug build links it to TESObjectCELL::GetNorthRotation
+// pdb locals: pextra
 float TESObjectCELL_Ext::TESObjectCELL_GetNorthRotation()
 {
     float result = 0.0f;
@@ -889,6 +950,7 @@ struct FUN_00558690 : S_base_558690
 };
 // Initializes the base object and then constructs both member references m1 and m2.
 // @fnv 0x00558690
+// pdb: TESObjectCELL::RENDER_FAILURE_DATA::RENDER_FAILURE_DATA | TESObjectCELL.obj | debug, call graph, high
 FUN_00558690::FUN_00558690()
 {
     FUN_00557d50();
@@ -909,6 +971,8 @@ struct FUN_00559900_Struct
     FUN_00559900_Struct& __thiscall AssignFrom(FUN_00559900_Struct const&);
 };
 // @fnv 0x00559900
+// pdb: TESObjectCELL::QUEUED_ATTACH::operator= | TESObjectCELL.obj | debug, call graph, medium
+// pdb params: __that
 FUN_00559900_Struct& __thiscall FUN_00559900_Struct::AssignFrom(FUN_00559900_Struct const& aOther)
 {
     m0 = &aOther.m0;
@@ -924,6 +988,7 @@ struct FUN_005596a0
 };
 // Runs the destructor, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x005599a0
+// pdb: BSMapBase<TESObjectREFR *,bool>::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 void* __thiscall FUN_005596a0::DestroyAndFreeIfFlagged(unsigned int flags)
 {
     this->FUN_005596a0::~FUN_005596a0();
@@ -939,6 +1004,7 @@ struct FUN_005596e0
 };
 // Runs the destructor, then frees this with _Deallocate when bit 0 of flags is set, and returns this.
 // @fnv 0x005599d0
+// pdb: BSScrapMap<TESObjectREFR *,bool>::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 void* __thiscall FUN_005596e0::FUN_005599d0(unsigned int flags)
 {
     this->FUN_005596e0::~FUN_005596e0();
@@ -949,6 +1015,7 @@ void* __thiscall FUN_005596e0::FUN_005599d0(unsigned int flags)
 
 // Fills count elements of dest with the single value pointed to by src.
 // @fnv 0x00559a00
+// pdb: DFALL<NiTMapItem<TESObjectREFR *,NiNode *> >::Allocate | TESObjectCELL.obj | debug, object-file run extension, low
 void __cdecl CopyRepeatedValue(int* dest, int count, int* src)
 {
     for (int i = 0; i < count; i++)
@@ -990,6 +1057,7 @@ struct FUN_00559c90_Class
 // Sets the int at offset 8 of a1 to 0, then calls unk8.FreeMemory(a1).
 // @fnv 0x00559c90
 // src: XBOX_PDB 0x00559c90
+// pdb: NiTPointerListBase<DFALL<NiTListItem<TESObjectREFR *> >,TESObjectREFR *>::~NiTPointerListBase<DFALL<NiTListItem<TESObjectREFR *> >,TESObjectREFR *> | TESObjectCELL.obj | debug, object-file run extension, low
 void __thiscall FUN_00559c90_Class::NiTPointerListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_DeleteItem(void* a1)
 {
     *reinterpret_cast<int*>(reinterpret_cast<char*>(a1) + 8) = 0;
@@ -1012,6 +1080,9 @@ struct FUN_00559d20_Class
 
 // Sets the vtable, stores the element count, allocates count*4 bytes for data and zeroes it.
 // @fnv 0x00559d20
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,TESObjectREFR *> >,TESObjectREFR *,TESObjectREFR *>::NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,TESObjectREFR *> >,TESObjectREFR *,TESObjectREFR *> | TESObjectCELL.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_00559d20_Class* __thiscall FUN_00559d20_Class::InitArray(int aiCount)
 {
     *reinterpret_cast<void**>(this) = &DAT_0102f428;
@@ -1031,6 +1102,7 @@ struct FUN_00559df0
 };
 // Calls the destructor and, when flags has bit 0 set, frees the object with operator delete; returns this.
 // @fnv 0x00559e20
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,TESObjectREFR *> >,TESObjectREFR *,TESObjectREFR *>::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 void* __thiscall FUN_00559df0::FUN_00559e20(unsigned int flags)
 {
     this->FUN_00559df0::~FUN_00559df0();
@@ -1047,6 +1119,8 @@ struct FUN_0055a0c0
     FUN_0055a0c0(int);
 };
 // @fnv 0x0055a0c0
+// pdb: TESObjectCELL::QUEUED_ATTACH::QUEUED_ATTACH | TESObjectCELL.obj | debug, call graph, medium
+// pdb params: aiVal
 FUN_0055a0c0::FUN_0055a0c0(int) : a(0), b(0)
 {
     c = 0;
@@ -1063,6 +1137,8 @@ struct FUN_0055a1e0_Class
 // If the passed object pointer is non-null, calls its FUN_0055a240 method with 1.
 // @fnv 0x0055a1e0
 // src: GUESS 0x0055a1e0 (confidence: low)
+// pdb: DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >::Deallocate | TESObjectCELL.obj | debug, call graph, medium
+// pdb params: p
 void __thiscall FUN_0055a1e0_Class::UpdateFields_0055a1e0(FUN_0055a240_Obj* pObj)
 {
     FUN_0055a240_Obj* m = pObj;
@@ -1143,6 +1219,9 @@ struct FUN_00559b40
 };
 // Sets the vtable, stores n in count, and if n is nonzero allocates count*4 bytes into data and zeroes them.
 // @fnv 0x00559b40
+// pdb: BSMapBase<TESObjectREFR *,bool>::BSMapBase<TESObjectREFR *,bool> | TESObjectCELL.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_00559b40* __thiscall FUN_00559b40::Init(int aiCount)
 {
     int* pAlloc;
@@ -1165,18 +1244,20 @@ struct FUN_0055a040_Class
     void* m0;
     void* m1;
     FUN_0055a2b0_Class m2;
-    void __thiscall ProcessState_0055a040(FUN_0055a240_Obj* a);
+    void __thiscall ProcessState_0055a040(FUN_0055a240_Obj* pkItem);
 };
 // Constructs a temporary FUN_0055a0c0 with 0, passes it to a's AssignFrom at offset 8, then calls FUN_0055a1e0 on this+12 with a.
 // @fnv 0x0055a040
 // src: GUESS 0x0055a040 (confidence: low)
-void __thiscall FUN_0055a040_Class::ProcessState_0055a040(FUN_0055a240_Obj* a)
+// pdb: NiTMap<NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::DeleteItem | TESObjectCELL.obj | retail, vtable slot, high
+// pdb params: pkItem
+void __thiscall FUN_0055a040_Class::ProcessState_0055a040(FUN_0055a240_Obj* pkItem)
 {
     {
         FUN_0055a0c0 t(0);
-        ((FUN_00559900_Struct*)((char*)a + 8))->AssignFrom(*(FUN_00559900_Struct*)&t);
+        ((FUN_00559900_Struct*)((char*)pkItem + 8))->AssignFrom(*(FUN_00559900_Struct*)&t);
     }
-    ((FUN_0055a1e0_Class*)((char*)this + 12))->UpdateFields_0055a1e0(a);
+    ((FUN_0055a1e0_Class*)((char*)this + 12))->UpdateFields_0055a1e0(pkItem);
 }
 
 struct ActorCombatGroup;
@@ -1216,6 +1297,8 @@ struct FUN_00551110_Cell : public TESObjectCELL
 // Locks cell refs, walks the list from FUN_009604f0 and returns the first entry whose GetNext equals DAT_011c3f40, then unlocks.
 // @fnv 0x00551110
 // src: COMMUNITY 0x00551110
+// pdb: TESObjectCELL::GetLootBag | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb locals: plist, plootbag, pref
 BGSPerkEntry* FUN_00551110_Cell::TESObjectCELL_GetLootBag()
 {
     BGSPerkEntry* result2 = 0;
@@ -1241,11 +1324,14 @@ struct P03MM
 };
 // @fnv 0x00553320
 // src: XBOX_PDB 0x00553320
-char* __cdecl ourMemalign(unsigned char count, unsigned int size)
+// pdb: ourMemalign | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: acAlignment, aSize
+// pdb locals: c, pmem
+char* __cdecl ourMemalign(unsigned char acAlignment, unsigned int aSize)
 {
-    char* ptr = (char*)((P03MM*)MemoryManager_Instance())->Allocate(count + size);
-    unsigned char len = (unsigned char)((count - 1) & (unsigned int)ptr);
-    len = count - len;
+    char* ptr = (char*)((P03MM*)MemoryManager_Instance())->Allocate(acAlignment + aSize);
+    unsigned char len = (unsigned char)((acAlignment - 1) & (unsigned int)ptr);
+    len = acAlignment - len;
     ptr += len;
     ptr[-1] = len;
     return ptr;
@@ -1265,6 +1351,8 @@ struct FUN_00559ad0_Class
 };
 // Sets the vtable, stores the two counts, zeroes the other fields, and allocates an array of count pointers or null when count is zero.
 // @fnv 0x00559ad0
+// pdb: NiTArray<TESObjectREFR *,NiTMallocInterface<TESObjectREFR *> >::SetAtGrow | TESObjectCELL.obj | debug, object-file run extension, low
+// pdb params: uiIndex, element
 FUN_00559ad0_Class::FUN_00559ad0_Class(unsigned short ausCount, unsigned short b)
 {
     vtbl = &DAT_0102f3b8;
@@ -1320,6 +1408,7 @@ struct FUN_0055a270_Class
 };
 // @fnv 0x0055a270
 // src: GUESS 0x0055a270 (confidence: low)
+// pdb: NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> | TESObjectCELL.obj | debug, object-file run extension, low
 void* __thiscall FUN_0055a270_Class::EvaluateValue_0055a270()
 {
     inner.FUN_0054acf0();
@@ -1376,6 +1465,8 @@ struct FUN_005405a0
 };
 
 // @fnv 0x005405a0
+// pdb: TESObjectLAND::LoadedLandData::LoadedLandData | TESLand.obj | debug, call graph, high
+// pdb locals: i
 FUN_005405a0::FUN_005405a0() : spObject14(0), spObject94(0)
 {
     unk00 = 0;
@@ -1432,6 +1523,7 @@ class B40AD0Owner
 // Calls Apply with the pointer returned by B40AD0Helper::Get for this object.
 // @fnv 0x00540ad0
 // src: XBOX_PDB 0x00540ad0
+// pdb: hkArray<unsigned char,hkContainerHeapAllocator>::clearAndDeallocate | TESLand.obj | debug, object-file run extension, low
 void B40AD0Owner::hkArray_unsigned_char_hkContainerHeapAllocator_clearAndDeallocate()
 {
     Apply(B40AD0Helper().Get(this));
@@ -1439,7 +1531,7 @@ void B40AD0Owner::hkArray_unsigned_char_hkContainerHeapAllocator_clearAndDealloc
 
 struct C540BC0Allocator;
 
-void C540BC0Reserve(C540BC0Allocator& kAlloc, void* apvArray, int iNumElements, int iSizeElem);
+void C540BC0Reserve(C540BC0Allocator& mem, void* array, int numElem, int sizeElem);
 
 // local form of hkArrayBase: 0x00540bc0 needs an out-of-line capacity call at 0x0062a100 under /Od; the shared inline reserve/capacity split changes bytes.
 class C540BC0Array
@@ -1456,6 +1548,9 @@ class C540BC0Array
 // reserve
 // Grows the array to hold at least n elements, doubling the current capacity or using n if larger, via C540BC0Reserve.
 // @fnv 0x00540bc0
+// pdb: hkArrayBase<unsigned char>::_reserve | TESLand.obj | debug, object-file run extension, low
+// pdb params: alloc, n
+// pdb locals: capacity, cap2, newSize
 void C540BC0Array::ReserveCapacity(C540BC0Allocator& kAlloc, int aiMinElements)
 {
     int capacity = getCapacity();
@@ -1467,10 +1562,12 @@ void C540BC0Array::ReserveCapacity(C540BC0Allocator& kAlloc, int aiMinElements)
     }
 }
 
-unsigned char* __cdecl BSTreeManager_GetInstance(bool enabled);
+unsigned char* __cdecl BSTreeManager_GetInstance(bool abCreateIfNotFound);
 
 // @fnv 0x0054ee60
 // src: COMMUNITY 0x0054ee60
+// pdb: BSTreeManager::SetTreesVisible | TESObjectCELL.obj | debug, call graph, medium
+// pdb params: abShowTrees
 void __cdecl BSTreeManager_SetTreesEnabled(char value)
 {
     BSTreeManager_GetInstance(true)[0x18] = value;
@@ -1507,6 +1604,7 @@ struct FUN_005545f0 : S_005545f0_Base
 
 // Destructor of the object; destroys its member and base subobjects and returns.
 // @fnv 0x005545f0
+// pdb: bhkEntityListener::~bhkEntityListener | TESObjectCELL.obj | debug, call graph (shared callers), high
 FUN_005545f0::~FUN_005545f0()
 {}
 
@@ -1578,19 +1676,22 @@ struct ExtraStandin
 {
     void __thiscall SetFlagOnChildren(bool flag);
 };
-void __cdecl EnsureLightingProperty(void* p);
+void __cdecl PrepareObjectWithNoLightingRecurse(void* p);
 
 // @fnv 0x00554960
 // src: COMMUNITY 0x00554960
-void __thiscall ExtraDataList::TESObjectCELL_SetCollisionGeometryDisplay(bool flag)
+// pdb: TESObjectCELL::SetCollisionGeometryDisplay | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: abTF
+// pdb locals: pw, p3d
+void __thiscall ExtraDataList::TESObjectCELL_SetCollisionGeometryDisplay(bool abTF)
 {
     void* world = TESObjectCELL_GetbhkWorld(this);
     void* a = ((CellStandin*)this)->Get3D_00545cb0();
     if (world && a)
     {
-        ((VObj*)world)->VCall(a, flag);
-        ((ExtraStandin*)this)->SetFlagOnChildren(flag);
-        EnsureLightingProperty(a);
+        ((VObj*)world)->VCall(a, abTF);
+        ((ExtraStandin*)this)->SetFlagOnChildren(abTF);
+        PrepareObjectWithNoLightingRecurse(a);
     }
 }
 
@@ -1598,7 +1699,7 @@ struct ObjB68;
 struct Cell68
 {
     bool __thiscall FUN_00425fd0();
-    Cell68* __thiscall TESObjectCELL_GetIntSeenSection(int a, int b, int c);
+    Cell68* __thiscall TESObjectCELL_GetIntSeenSection(int aiSectionX, int aiSectionY, int abCreate);
     ObjB68* __thiscall FUN_0054ddd0();
     bool __thiscall IsValueSeen(int a, int b);
     Cell68* __thiscall FUN_00555bc0();
@@ -1619,7 +1720,10 @@ void __cdecl WorldToCellOffset(float* pos, int a, int* outY, int* outX);
 // Counts how many of the four neighbouring cells around a position pass a cell check, using the player's current cell and grid offsets.
 // @fnv 0x00556870
 // src: XBOX_PDB 0x00556870
-int __cdecl TESObjectCELL_GetSeenValue(float* afPosition)
+// pdb: TESObjectCELL::GetSeenValue | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: aCoord
+// pdb locals: pcell, iretval, iposy, peastseen, pnorthseen, isecty, iposx, beast, isectx, pseen, bnorth, pnortheastseen, pworld, pcenterCell, peastCell, pnorthCell
+int __cdecl TESObjectCELL_GetSeenValue(float* aCoord)
 {
     unsigned int outX2;
     outX2 = 0;
@@ -1630,14 +1734,14 @@ int __cdecl TESObjectCELL_GetSeenValue(float* afPosition)
         if (n->FUN_00425fd0())
         {
             int s;
-            s = (FloatToInt(afPosition[0]) - 0x800) >> 12;
+            s = (FloatToInt(aCoord[0]) - 0x800) >> 12;
             long cy;
             int flagX;
-            cy = (FloatToInt(afPosition[1]) - 0x800) >> 12;
+            cy = (FloatToInt(aCoord[1]) - 0x800) >> 12;
             flagX = 0;
             int cellF;
             cellF = 0;
-            WorldToCellOffset(afPosition, 1, &flagX, &cellF);
+            WorldToCellOffset(aCoord, 1, &flagX, &cellF);
             Cell68* a;
             a = n->TESObjectCELL_GetIntSeenSection(s, cy, 0);
             if (a && a->IsValueSeen(flagX, cellF))
@@ -1702,14 +1806,14 @@ int __cdecl TESObjectCELL_GetSeenValue(float* afPosition)
             if (cellC)
             {
                 int cellD;
-                cellD = FloatToInt(afPosition[0]) >> 12;
+                cellD = FloatToInt(aCoord[0]) >> 12;
                 long cy2;
-                cy2 = FloatToInt(afPosition[1]) >> 12;
+                cy2 = FloatToInt(aCoord[1]) >> 12;
                 int diag;
                 diag = 0;
                 int j;
                 j = 0;
-                WorldToCellOffset(afPosition, 0, &diag, &j);
+                WorldToCellOffset(aCoord, 0, &diag, &j);
                 Cell68* objB;
                 objB = cellC->FUN_005875a0(cellD, cy2);
                 Cell68* cx2;
@@ -1841,6 +1945,7 @@ void __cdecl NiTMallocInterface_unsigned_int_Deallocate(int);
 // Sets the object's vtable pointer to DAT_0102f3b8 and calls FUN_004ede70 on the int at offset 4.
 // @fnv 0x00559460
 // src: GUESS 0x00559460 (confidence: low)
+// pdb: NiTArray<TESObjectREFR *,NiTMallocInterface<TESObjectREFR *> >::~NiTArray<TESObjectREFR *,NiTMallocInterface<TESObjectREFR *> > | TESObjectCELL.obj | debug, call graph (shared callers), medium
 void FUN_005422b0Class::UpdateFields_00559460()
 {
     *(int*)this = (int)&DAT_0102f3b8;
@@ -1871,6 +1976,8 @@ class FUN_00559bc0_cls
 // Calls v10 on every node in each of the m_04 buckets of m_08, then resets m_0c to 0.
 // @fnv 0x00559bc0
 // src: COMMUNITY 0x00559bc0
+// pdb: BSScrapMap<TESObjectREFR *,bool>::ClearAll | TESObjectCELL.obj | debug, call graph, medium
+// pdb locals: i, pitem
 void FUN_00559bc0_cls::BSScrapMap_TESObjectREFR_bool_ClearAll()
 {
     for (unsigned int i = 0; i < m_04; i++)
@@ -1908,15 +2015,17 @@ struct Obj
 
 struct FUN_00559f20_cls
 {
-    void SetValueAndHelper(Obj* p, unsigned int v, Vec12 s);
+    void SetValueAndHelper(Obj* pkItem, unsigned int key, Vec12 val);
 };
 
 // Stores v into p->m_04 and calls p->m_08.Helper with s.
 // @fnv 0x00559f20
-void FUN_00559f20_cls::SetValueAndHelper(Obj* pObj, unsigned int uiValue, Vec12 vecArg)
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >,NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::SetValue | TESObjectCELL.obj | retail, vtable slot, high
+// pdb params: pkItem, key, val
+void FUN_00559f20_cls::SetValueAndHelper(Obj* pkItem, unsigned int key, Vec12 val)
 {
-    pObj->m_04 = uiValue;
-    pObj->m_08.Helper(vecArg);
+    pkItem->m_04 = key;
+    pkItem->m_08.Helper(val);
 }
 
 // The target allocates 0x14 bytes.  These five unknown fields
@@ -1937,6 +2046,9 @@ struct RuntimeWorkItemFactory
 
 // Allocates and returns a new RuntimeWorkItem instance.
 // @fnv 0x0055a160
+// pdb: NiTArray<TESObjectREFR *,NiTMallocInterface<TESObjectREFR *> >::`scalar deleting destructor' | TESObjectCELL.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >::Allocate
+// pdb params: this
 RuntimeWorkItem* RuntimeWorkItemFactory::CreateRuntimeWorkItem()
 {
     return new RuntimeWorkItem;
@@ -1954,6 +2066,7 @@ struct FUN_0055a2d0_Class
 
 // @fnv 0x0055a2d0
 // src: GUESS 0x0055a2d0 (confidence: low)
+// pdb: BSSemaphore::~BSSemaphore | TESDataHandler.obj | debug, call graph, medium
 void FUN_0055a2d0_Class::ForwardCall_0055a2d0()
 {
     DAT_00fdf07c(this->m_pSecondPointer);
@@ -1992,9 +2105,12 @@ struct FUN_005512f0_shell
 };
 // @fnv 0x005512f0
 // src: COMMUNITY 0x005512f0
-void FUN_005512f0_shell::TESObjectCELL_FillLootBag(ItemRef* dest)
+// pdb: TESObjectCELL::FillLootBag | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: apBagRef
+// pdb locals: plist, pref, badd, etype, plight
+void FUN_005512f0_shell::TESObjectCELL_FillLootBag(ItemRef* apBagRef)
 {
-    if (dest && dest->BGSSaveFormBuffer_GetForm() == (ContainerType*)DAT_011c3f40)
+    if (apBagRef && apBagRef->BGSSaveFormBuffer_GetForm() == (ContainerType*)DAT_011c3f40)
     {
         FUN_00541ac0();
         ItemList* list = GetRefList_009604f0();
@@ -2019,7 +2135,7 @@ void FUN_005512f0_shell::TESObjectCELL_FillLootBag(ItemRef* dest)
                 }
                 if (allowed)
                 {
-                    dest->TESObjectREFR_AddReferenceItem(item, item->BSFile_GetDevice()->ExtraDataList_GetCount(), 0, 0);
+                    apBagRef->TESObjectREFR_AddReferenceItem(item, item->BSFile_GetDevice()->ExtraDataList_GetCount(), 0, 0);
                     item->TESObjectREFR_MarkAsPickedUp();
                 }
             }
@@ -2089,18 +2205,22 @@ struct Cell
     int FUN_00544c30();
     void TESObjectCELL_ClearSeenData();
     void TESObjectCELL_SetFullySeen(bool);
-    void UpdateLightingAtPoint(const NiPoint3*);
+    void TESObjectCELL_UpdateSeenData(const NiPoint3*);
 };
 // @fnv 0x00555f60
-void Cell::UpdateLightingAtPoint(const NiPoint3* apPoint)
+// src: XBOX_RETAIL_PDB 0x00555f60
+// pdb: TESObjectCELL::UpdateSeenData | TESObjectCELL.obj | retail, call graph, high
+// pdb params: aCoord
+// pdb locals: shiftcoord, iindex, pdata, pstart, isectionx, isectiony, idx, idy, i, sectionmax, sectionmin, iyshift, ixshift, cellstart, bfullySeen
+void Cell::TESObjectCELL_UpdateSeenData(const NiPoint3* aCoord)
 {
     // NiPoint3 assignment preserves the original bitwise copies under /Od.
     if (FUN_00425fd0())
     {
-        NiPoint3 point = *apPoint;
+        NiPoint3 point = *aCoord;
         if (TESObjectCELL_GetNorthRotation() != 0.0)
         {
-            AdjustCoordForNorthRotation(apPoint, &point, true);
+            AdjustCoordForNorthRotation(aCoord, &point, true);
             NiPoint3 centers3[9];
             LightData* lights[9];
             ourMemset(lights, 0, 36);
@@ -2186,8 +2306,8 @@ void Cell::UpdateLightingAtPoint(const NiPoint3* apPoint)
             GetExtraDataList()->ExtraDataList_SetSeenData(light);
             MarkChanged(0x80000000);
         }
-        NiPoint3 center2(FUN_00544c30() << 12, FUN_00544c60() << 12, apPoint->z);
-        bool changed = light->HasEnoughSeenPoints(apPoint, &center2);
+        NiPoint3 center2(FUN_00544c30() << 12, FUN_00544c60() << 12, aCoord->z);
+        bool changed = light->HasEnoughSeenPoints(aCoord, &center2);
         if (changed)
         {
             TESObjectCELL_ClearSeenData();
@@ -2227,12 +2347,15 @@ struct Target556ef0
     bool FUN_00425fd0();
     SeenData* FUN_00555bc0();
     Result556ef0* GetExtraDataList();
-    IntSeenData* __thiscall TESObjectCELL_GetIntSeenSection(int a, int b, bool create);
+    IntSeenData* __thiscall TESObjectCELL_GetIntSeenSection(int aiSectionX, int aiSectionY, bool abCreate);
 };
 // Searches the linked list from FUN_00555bc0 for a node matching a and b, appending a new IntSeenData when create is set and none matches.
 // @fnv 0x00556ef0
 // src: XBOX_PDB 0x00556ef0
-IntSeenData* Target556ef0::TESObjectCELL_GetIntSeenSection(int a, int b, bool create)
+// pdb: TESObjectCELL::GetIntSeenSection | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: aiSectionX, aiSectionY, abCreate
+// pdb locals: pdata, pprev
+IntSeenData* Target556ef0::TESObjectCELL_GetIntSeenSection(int aiSectionX, int aiSectionY, bool abCreate)
 {
     IntSeenData* node = 0;
     if (FUN_00425fd0())
@@ -2241,21 +2364,21 @@ IntSeenData* Target556ef0::TESObjectCELL_GetIntSeenSection(int a, int b, bool cr
         IntSeenData* previous = 0;
         while (node)
         {
-            if (node->field_24 == a && node->field_25 == b)
+            if (node->cSectionX == aiSectionX && node->cSectionY == aiSectionY)
                 break;
             previous = node;
-            node = node->field_28;
+            node = node->pNextSection;
         }
-        if (!node && create)
+        if (!node && abCreate)
         {
             if (previous)
             {
-                previous->field_28 = new IntSeenData((unsigned char)a, (unsigned char)b);
-                node = previous->field_28;
+                previous->pNextSection = new IntSeenData((unsigned char)aiSectionX, (unsigned char)aiSectionY);
+                node = previous->pNextSection;
             }
             else
             {
-                node = new IntSeenData((unsigned char)a, (unsigned char)b);
+                node = new IntSeenData((unsigned char)aiSectionX, (unsigned char)aiSectionY);
                 GetExtraDataList()->ExtraDataList_SetSeenData(node);
                 v48(0x80000000);
             }
@@ -2274,6 +2397,8 @@ struct FUN_00559810 : CleanupBase559810
     ~FUN_00559810();
 };
 // @fnv 0x00559810
+// pdb: BSScrapMap<TESObjectREFR *,bool>::~BSScrapMap<TESObjectREFR *,bool> | TESObjectCELL.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTPointerListBase<DFALL<NiTListItem<BSAnimGroupSequence const *> >,BSAnimGroupSequence const *>::Get
 FUN_00559810::~FUN_00559810()
 {
     NiTPointerListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_RemoveAll();
@@ -2290,6 +2415,10 @@ struct FUN_00559eb0
 };
 // Sets the vtable, stores arg as count, zeroes flags, allocates count*4 bytes and clears them.
 // @fnv 0x00559eb0
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >,NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::GetNext | TESObjectCELL.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >,NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::NiTMapBase<DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >,NiAVObject *,TESObjectCELL::QUEUED_ATTACH>
+// pdb params: pos, key, val
+// pdb locals: bfound, ihashIndex, pkItem, pcompItem, i
 FUN_00559eb0::FUN_00559eb0(int aiCount)
 {
     *(int*)this = (int)&DAT_0102f468;
@@ -2316,6 +2445,9 @@ struct FUN_00456fc0_cls
 bool __cdecl NiObject_IsExactKindOf(GlobalObject_00a7b610* g, NiAVObject* p);
 
 // @fnv 0x00554a20
+// pdb: TESObjectCELL::SetActorCollisionGeometry | TESObjectCELL.obj | debug, call graph, medium
+// pdb params: abTF
+// pdb locals: iactors, pactors, pmb, pactorAV, pmob, ui, pavobj, pmbnode, j, pref
 void ExtraStandin::SetFlagOnChildren(bool flag)
 {
     NiNode* node7 = reinterpret_cast<FUN_0054a050_shell*>(this)->GetActorNode();
@@ -2426,6 +2558,8 @@ struct CellQ
 // For each list entry with FUN_005651e0 false, FUN_00401170 equal to 0x25 and a Get3DQ() object, calls that object's GetHandlerQ()->Handle(obj).
 // @fnv 0x005570d0
 // src: COMMUNITY 0x005570d0
+// pdb: TESObjectCELL::UpdateTrees | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb locals: plist, pobj, ptreeNode
 void CellQ::TESObjectCELL_UpdateTrees()
 {
     FUN_00541ac0();
@@ -2460,6 +2594,7 @@ class FUN_00559f90 : public MapBase559F90
 
 // Destructor that calls RemoveAll.
 // @fnv 0x00559f90
+// pdb: NiTMap<NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::~NiTMap<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> | TESObjectCELL.obj | debug, object-file gap fill, medium
 FUN_00559f90::~FUN_00559f90()
 {
     RemoveAll();
@@ -2479,6 +2614,8 @@ void __cdecl ProgramFlow(int a, int b, Tag540 c);
 
 // Calls ReserveCapacity(a, b), runs FUN_0040fbe0 on the ranges between m4 and b, then sets m4 to b.
 // @fnv 0x00540860
+// pdb: hkArrayBase<unsigned char>::_setSize | TESLand.obj | debug, object-file run extension, low
+// pdb params: alloc, n
 void Sweep540::SetSize(int a, int b)
 {
     ReserveCapacity(a, b);
@@ -2496,6 +2633,7 @@ struct FUN_00559e80 : GlobalObject_00559e50
     virtual ~FUN_00559e80();
 };
 // @fnv 0x00559e80
+// pdb: NiTMap<NiAVObject *,TESObjectCELL::QUEUED_ATTACH>::`scalar deleting destructor' | TESObjectCELL.obj | retail, vtable slot, high
 FUN_00559e80::~FUN_00559e80()
 {}
 
@@ -2506,6 +2644,7 @@ struct FUN_0055a240_Class : public FUN_0055a290_Class
 };
 // Calls FUN_0055a290, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x0055a240
+// pdb: DFALL<NiTMapItem<NiAVObject *,TESObjectCELL::QUEUED_ATTACH> >::AllocNode::`scalar deleting destructor' | TESObjectCELL.obj | debug, object-file run extension, low
 void* __thiscall FUN_0055a240_Class::FUN_0055a240(unsigned int flags)
 {
     ForwardCall_0055a290();

@@ -15,6 +15,7 @@ class TreeLeafRef;
 class TreeModelInput;
 class LoaderX;
 
+// pdb: class BSTreeModel, size 0x50, bases: NiRefObject, 18 members
 class BSTreeModel : public NiRefObject
 {
   public:
@@ -28,7 +29,7 @@ class BSTreeModel : public NiRefObject
         CSpeedTreeRT* m_pTreeRuntime;
         CSpeedTreeRT* runtime;
     };
-    NiPointer<BSTreeModel> source;
+    NiPointer<BSTreeModel> spTreeParent;
     union
     {
         NiPointer<NiTriStripsData>* pLeafGeometry;
@@ -39,8 +40,8 @@ class BSTreeModel : public NiRefObject
         NiPointer<NiTriStripsData>* leafGeometry;
         NiPointer<NiTriStripsData>* m_pspLeafGeometry;
     };
-    NiPointer<NiNode> billboard;
-    NiPointer<NiAVObject> unk20;
+    NiPointer<NiNode> spBillboard;
+    NiPointer<NiAVObject> spLeafShaderData;
     union
     {
         NiPointer<NiTriStrips>* pLeafShapes;
@@ -51,18 +52,18 @@ class BSTreeModel : public NiRefObject
         NiPointer<NiTriStrips>* leafNodes;
         NiPointer<NiTriStrips>* m_pspLeafShaders;
     };
-    NiPointer<NiTexture> unk2c;
-    NiPointer<NiTexture> unk30;
-    NiPointer<NiTexture> unk34;
-    NiPointer<NiNode> collision;
+    NiPointer<NiTexture> spBranchTextureSet;
+    NiPointer<NiTexture> spLeafFrondTexture;
+    NiPointer<NiTexture> spBillboardTextureSet;
+    NiPointer<NiNode> spRigidBody;
     union
     {
         float unk3c;
         float m_fLeafScale;
         float scale;
     };
-    unsigned int unk40;
-    bool unk44;
+    unsigned int iSeed;
+    bool bInitialized;
     unsigned char unk45[3];
     union
     {

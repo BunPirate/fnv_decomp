@@ -5,6 +5,7 @@
 class TESForm;
 class TESImageSpaceModifier;
 
+// pdb: class TESImageSpaceModifiableForm, size 0x8, bases: BaseFormComponent, 1 members
 class TESImageSpaceModifiableForm : public BaseFormComponent
 {
 public:
@@ -14,7 +15,7 @@ public:
 
     virtual void Init();
     virtual void Free();
-    virtual void CopyFromBase(BaseFormComponent* component);
+    virtual void CopyFromBase(BaseFormComponent* apCopyFC);
     virtual bool CompareWithBase(BaseFormComponent* component);
 
     void InitializeComponent();
@@ -22,9 +23,9 @@ public:
     void BaseFormRecord(BaseFormComponent* component);
     bool IsEqualToBase(BaseFormComponent* component);
     void Save();
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     TESImageSpaceModifier* GetFormImageSpaceModifying();
     void SetFormImageSpaceModifying(TESImageSpaceModifier* modifier);
 
-    TESImageSpaceModifier* m_pImageSpaceModifier;
+    TESImageSpaceModifier* pFormImageSpaceModifying;
 };

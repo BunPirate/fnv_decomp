@@ -42,11 +42,11 @@ class bhkLimitedHingeOutput
 
 inline const float* bhkLimitedHingeConstraint::GetFirst() const
 {
-    return this && m_pHavokObject ? (const float*)((const char*)m_pHavokObject + 0x20) : &DAT_01267e30;
+    return this && phkObject ? (const float*)((const char*)phkObject + 0x20) : &DAT_01267e30;
 }
 
 inline const float* bhkLimitedHingeConstraint::GetSecond() const
 {
-    return this && m_pHavokObject ? (const float*)((const char*)m_pHavokObject + 0x30) : &DAT_01267e30;
+    return this && phkObject ? (const float*)((const char*)phkObject + 0x30) : &DAT_01267e30;
 }
 #endif

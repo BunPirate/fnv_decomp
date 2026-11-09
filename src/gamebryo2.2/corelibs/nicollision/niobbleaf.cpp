@@ -270,17 +270,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -310,29 +310,32 @@ struct S_00eb8250_Edges
     void* m_e2;
 };
 
-int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* tri, LocalVec3* n, float d, int p3, float p4, int p5,
-                         int p6);
+int __cdecl NiOBBLeaf_TestEdgeTri(void* edge0, void* edge1, S_00eb8250_Tri* pVer, LocalVec3* N, float fC, int V, float fDT, int fTMin,
+                         int pmin);
 
 // Computes the triangle's normal and plane offset, then tests it against all three edge pairs via FUN_00eb7dc0, OR-ing the results.
 // @fnv 0x00eb8250
 // src: GAMEBRYO_LIB 0x00eb8250
-int __cdecl NiOBBLeaf_FindIntersection(S_00eb8250_Edges* e, S_00eb8250_Tri* tri, int p3, float p4, int p5, int p6)
+// pdb: NiOBBLeaf::FindIntersection | NiOBBLeaf.obj | retail, object-file gap fill, high
+// pdb params: pVer0, pVer1, V, fDT, fTMin, pmin
+// pdb locals: edge1, N, iResult, edge0, fC
+int __cdecl NiOBBLeaf_FindIntersection(S_00eb8250_Edges* pVer0, S_00eb8250_Tri* pVer1, int V, float fDT, int fTMin, int pmin)
 {
     LocalVec3 u, v, n;
-    u.x = tri->m_kPointB->x - tri->m_kPointA->x;
-    u.y = tri->m_kPointB->y - tri->m_kPointA->y;
-    u.z = tri->m_kPointB->z - tri->m_kPointA->z;
-    v.x = tri->m_iThirdValue->x - tri->m_kPointA->x;
-    v.y = tri->m_iThirdValue->y - tri->m_kPointA->y;
-    v.z = tri->m_iThirdValue->z - tri->m_kPointA->z;
+    u.x = pVer1->m_kPointB->x - pVer1->m_kPointA->x;
+    u.y = pVer1->m_kPointB->y - pVer1->m_kPointA->y;
+    u.z = pVer1->m_kPointB->z - pVer1->m_kPointA->z;
+    v.x = pVer1->m_iThirdValue->x - pVer1->m_kPointA->x;
+    v.y = pVer1->m_iThirdValue->y - pVer1->m_kPointA->y;
+    v.z = pVer1->m_iThirdValue->z - pVer1->m_kPointA->z;
     n.x = u.y * v.z - u.z * v.y;
     n.y = u.z * v.x - u.x * v.z;
     n.z = u.x * v.y - u.y * v.x;
-    const LocalVec3& a = *tri->m_kPointA;
+    const LocalVec3& a = *pVer1->m_kPointA;
     float d = a.x * n.x + a.y * n.y + a.z * n.z;
-    int r = NiOBBLeaf_TestEdgeTri(e->m_e0, e->m_e1, tri, &n, d, p3, p4, p5, p6);
-    r |= NiOBBLeaf_TestEdgeTri(e->m_e0, e->m_e2, tri, &n, d, p3, p4, p5, p6);
-    r |= NiOBBLeaf_TestEdgeTri(e->m_e1, e->m_e2, tri, &n, d, p3, p4, p5, p6);
+    int r = NiOBBLeaf_TestEdgeTri(pVer0->m_e0, pVer0->m_e1, pVer1, &n, d, V, fDT, fTMin, pmin);
+    r |= NiOBBLeaf_TestEdgeTri(pVer0->m_e0, pVer0->m_e2, pVer1, &n, d, V, fDT, fTMin, pmin);
+    r |= NiOBBLeaf_TestEdgeTri(pVer0->m_e1, pVer0->m_e2, pVer1, &n, d, V, fDT, fTMin, pmin);
     return r;
 }
 
@@ -374,7 +377,7 @@ struct FNV_Vec3
 struct FNV_Body
 {
     int unk00;
-    void ProjectOntoAxes(FNV_Vec3* in, FNV_Vec3* out);
+    void NiOBBox_ComputeNormal(FNV_Vec3* p, FNV_Vec3* normal);
 };
 
 struct FNV_Node
@@ -414,33 +417,36 @@ struct FNV_PhysObj
     int unk88;
     FNV_Shape m_8c;
 
-    int RunSwapTests(FNV_Node* node);
-    int NiOBBLeaf_FaceFaceCollision(FNV_PhysObj* pObj, FNV_Shape* a2, FNV_Shape* a3, FNV_Shape* a4, FNV_Shape* a5, unsigned char* a6);
+    int NiOBBNode_CollisionCallback(FNV_Node* intr);
+    int NiOBBLeaf_FaceFaceCollision(FNV_PhysObj* pTestLeaf, FNV_Shape* pkRoot0, FNV_Shape* pkRoot1, FNV_Shape* pkObj0, FNV_Shape* pkObj1, unsigned char* bCollision);
 };
 
-extern int ComputeContactTime(FNV_PhysObj* a, FNV_PhysObj* b, int* c, FNV_Vec3* d);
+extern int ComputeContactTime(FNV_PhysObj* pLeaf0, FNV_PhysObj* pLeaf1, int* fT, FNV_Vec3* p);
 
 // @fnv 0x00eb85d0
 // src: GAMEBRYO_LIB 0x00eb85d0
-int FNV_PhysObj::NiOBBLeaf_FaceFaceCollision(FNV_PhysObj* pObj, FNV_Shape* pShape0, FNV_Shape* pShape1, FNV_Shape* pShape2,
-                              FNV_Shape* pShape3, unsigned char* pbResult)
+// pdb: NiOBBLeaf::FaceFaceCollision | NiOBBLeaf.obj | retail, upstream name already matches, high
+// pdb params: pTestLeaf, pkRoot0, pkRoot1, pkObj0, pkObj1, bCollision
+// pdb locals: intr, iIntersects
+int FNV_PhysObj::NiOBBLeaf_FaceFaceCollision(FNV_PhysObj* pTestLeaf, FNV_Shape* pkRoot0, FNV_Shape* pkRoot1, FNV_Shape* pkObj0,
+                              FNV_Shape* pkObj1, unsigned char* bCollision)
 {
     FNV_Node node;
     node.m_38 = 0;
     node.m_3c = 0;
-    node.m_00 = pShape0;
-    node.m_04 = pShape1;
-    node.m_08 = pShape2;
-    node.m_0c = pShape3;
+    node.m_00 = pkRoot0;
+    node.m_04 = pkRoot1;
+    node.m_08 = pkObj0;
+    node.m_0c = pkObj1;
 
-    if (ComputeContactTime(this, pObj, &node.m_10, &node.m_14))
+    if (ComputeContactTime(this, pTestLeaf, &node.m_10, &node.m_14))
     {
-        *pbResult = 1;
+        *bCollision = 1;
         node.m_38 = &this->m_8c;
-        node.m_3c = &pObj->m_8c;
-        this->m_04.ProjectOntoAxes(&node.m_14, &node.m_20);
-        pObj->m_04.ProjectOntoAxes(&node.m_14, &node.m_2c);
-        return this->RunSwapTests(&node);
+        node.m_3c = &pTestLeaf->m_8c;
+        this->m_04.NiOBBox_ComputeNormal(&node.m_14, &node.m_20);
+        pTestLeaf->m_04.NiOBBox_ComputeNormal(&node.m_14, &node.m_2c);
+        return this->NiOBBNode_CollisionCallback(&node);
     }
     return 0;
 }
@@ -478,8 +484,8 @@ struct S_00eb8680_Sub
     int unk70;
     int unk74;
     int unk78;
-    int NiOBBox_TestIntersection(S_00eb8680_Sub* other);
-    void UpdateWorldBounds(void* p);
+    int NiOBBox_TestIntersection(S_00eb8680_Sub* box);
+    void NiOBBox_Transform(void* xform);
 };
 
 struct S_00eb8680_Obj
@@ -495,31 +501,34 @@ struct S_00eb8680_Obj
     {
         return vfn2(p, a2, a3, a4, n, k1, k2);
     }
-    bool NiOBBLeaf_TestCollision(S_00eb8680_Obj* other, unsigned char* a2, unsigned char* a3, void* a4, unsigned count, int k1,
-                      int k2);
+    bool NiOBBLeaf_TestCollision(S_00eb8680_Obj* pTestNode, unsigned char* pkObj0, unsigned char* pkObj1, void* iMaxDepth, unsigned iTestMaxDepth, int uiChangeStamp0,
+                      int uiChangeStamp1);
 };
 
 // @fnv 0x00eb8680
 // src: XBOX_PDB 0x00eb8680
-bool S_00eb8680_Obj::NiOBBLeaf_TestCollision(S_00eb8680_Obj* other, unsigned char* pDataA, unsigned char* pDataB, void* a4,
-                                  unsigned count, int k1, int k2)
+// pdb: NiOBBLeaf::TestCollision | NiOBBLeaf.obj | retail, upstream name already matches, high
+// pdb params: pTestNode, pkObj0, pkObj1, iMaxDepth, iTestMaxDepth, uiChangeStamp0, uiChangeStamp1
+// pdb locals: iTMDm1
+bool S_00eb8680_Obj::NiOBBLeaf_TestCollision(S_00eb8680_Obj* pTestNode, unsigned char* pkObj0, unsigned char* pkObj1, void* iMaxDepth,
+                                  unsigned iTestMaxDepth, int uiChangeStamp0, int uiChangeStamp1)
 {
-    if (k1 != unk88)
+    if (uiChangeStamp0 != unk88)
     {
-        sub.UpdateWorldBounds(pDataA + 0x68);
-        unk88 = k1;
+        sub.NiOBBox_Transform(pkObj0 + 0x68);
+        unk88 = uiChangeStamp0;
     }
-    if (k2 != other->unk88)
+    if (uiChangeStamp1 != pTestNode->unk88)
     {
-        other->sub.UpdateWorldBounds(pDataB + 0x68);
-        other->unk88 = k2;
+        pTestNode->sub.NiOBBox_Transform(pkObj1 + 0x68);
+        pTestNode->unk88 = uiChangeStamp1;
     }
-    if (!sub.NiOBBox_TestIntersection(&other->sub))
+    if (!sub.NiOBBox_TestIntersection(&pTestNode->sub))
         return false;
-    if (other->vfn1() || count == 0 || (!other->unk80 && !other->unk84))
+    if (pTestNode->vfn1() || iTestMaxDepth == 0 || (!pTestNode->unk80 && !pTestNode->unk84))
         return true;
-    return S_try(other->unk80, pDataA, pDataB, a4, count - 1, k1, k2) ||
-           S_try(other->unk84, pDataA, pDataB, a4, count - 1, k1, k2);
+    return S_try(pTestNode->unk80, pkObj0, pkObj1, iMaxDepth, iTestMaxDepth - 1, uiChangeStamp0, uiChangeStamp1) ||
+           S_try(pTestNode->unk84, pkObj0, pkObj1, iMaxDepth, iTestMaxDepth - 1, uiChangeStamp0, uiChangeStamp1);
 }
 
 struct S_00eb8790_Transform
@@ -589,8 +598,8 @@ struct S_00eb8790_Volume
     int unk70;
     int unk74;
     int unk78;
-    void UpdateWorldBounds(const S_00eb8790_Transform& transform);
-    int NiOBBox_TestIntersection(const S_00eb8790_Volume& other);
+    void NiOBBox_Transform(const S_00eb8790_Transform& xform);
+    int NiOBBox_TestIntersection(const S_00eb8790_Volume& box);
 };
 
 struct S_00eb8790_Node
@@ -598,11 +607,11 @@ struct S_00eb8790_Node
     virtual void v0();
     virtual bool isLeaf();
     virtual void v2();
-    virtual int NiOBBLeaf_FindCollisions(S_00eb8790_Node* other, int a1, int a2, S_00eb8790_Body* bodyA, S_00eb8790_Body* bodyB,
-                             int a5, int depth, int stampA, int stampB, int a9);
+    virtual int NiOBBLeaf_FindCollisions(S_00eb8790_Node* pTestNode, int pkRoot0, int pkRoot1, S_00eb8790_Body* pkObj0, S_00eb8790_Body* pkObj1,
+                             int iMaxDepth, int iTestMaxDepth, int uiChangeStamp0, int uiChangeStamp1, int bCollision);
 
-    int NiOBBLeaf_FaceFaceCollision(S_00eb8790_Node* other, int a1, int a2, S_00eb8790_Body* bodyA, S_00eb8790_Body* bodyB, int a9);
-    int NiOBBNode_BoxBoxCollision(S_00eb8790_Node* other, int a1, int a2, S_00eb8790_Body* bodyA, S_00eb8790_Body* bodyB, int a9);
+    int NiOBBLeaf_FaceFaceCollision(S_00eb8790_Node* pTestLeaf, int pkRoot0, int pkRoot1, S_00eb8790_Body* pkObj0, S_00eb8790_Body* pkObj1, int bCollision);
+    int NiOBBNode_BoxBoxCollision(S_00eb8790_Node* pTestNode, int pkRoot0, int pkRoot1, S_00eb8790_Body* pkObj0, S_00eb8790_Body* pkObj1, int bCollision);
 
     S_00eb8790_Volume m_iBufferSize;  // 04
     S_00eb8790_Node* m_childA;        // 80
@@ -612,39 +621,42 @@ struct S_00eb8790_Node
 
 // @fnv 0x00eb8790
 // src: XBOX_PDB 0x00eb8790
-int S_00eb8790_Node::NiOBBLeaf_FindCollisions(S_00eb8790_Node* other, int a1, int a2, S_00eb8790_Body* bodyA,
-                                  S_00eb8790_Body* bodyB, int a5, int depth, int stampA, int stampB, int a9)
+// pdb: NiOBBLeaf::FindCollisions | NiOBBLeaf.obj | retail, upstream name already matches, high
+// pdb params: pTestNode, pkRoot0, pkRoot1, pkObj0, pkObj1, iMaxDepth, iTestMaxDepth, uiChangeStamp0, uiChangeStamp1, bCollision
+// pdb locals: ret
+int S_00eb8790_Node::NiOBBLeaf_FindCollisions(S_00eb8790_Node* pTestNode, int pkRoot0, int pkRoot1, S_00eb8790_Body* pkObj0,
+                                  S_00eb8790_Body* pkObj1, int iMaxDepth, int iTestMaxDepth, int uiChangeStamp0, int uiChangeStamp1, int bCollision)
 {
-    if (stampA != m_stamp)
+    if (uiChangeStamp0 != m_stamp)
     {
-        m_iBufferSize.UpdateWorldBounds(bodyA->m_kMotionTransform);
-        m_stamp = stampA;
+        m_iBufferSize.NiOBBox_Transform(pkObj0->m_kMotionTransform);
+        m_stamp = uiChangeStamp0;
     }
-    if (stampB != other->m_stamp)
+    if (uiChangeStamp1 != pTestNode->m_stamp)
     {
-        other->m_iBufferSize.UpdateWorldBounds(bodyB->m_kMotionTransform);
-        other->m_stamp = stampB;
+        pTestNode->m_iBufferSize.NiOBBox_Transform(pkObj1->m_kMotionTransform);
+        pTestNode->m_stamp = uiChangeStamp1;
     }
-    if (!m_iBufferSize.NiOBBox_TestIntersection(other->m_iBufferSize))
+    if (!m_iBufferSize.NiOBBox_TestIntersection(pTestNode->m_iBufferSize))
         return 0;
-    if (!other->isLeaf())
+    if (!pTestNode->isLeaf())
     {
-        if (depth && (other->m_childA || other->m_childB))
+        if (iTestMaxDepth && (pTestNode->m_childA || pTestNode->m_childB))
         {
-            int result = NiOBBLeaf_FindCollisions(other->m_childA, a1, a2, bodyA, bodyB, a5, depth - 1, stampA, stampB, a9);
+            int result = NiOBBLeaf_FindCollisions(pTestNode->m_childA, pkRoot0, pkRoot1, pkObj0, pkObj1, iMaxDepth, iTestMaxDepth - 1, uiChangeStamp0, uiChangeStamp1, bCollision);
             if (result >= 1)
                 return result;
-            S_00eb8790_Node* pChildB = other->m_childB;
-            result = NiOBBLeaf_FindCollisions(pChildB, a1, a2, bodyA, bodyB, a5, depth - 1, stampA, stampB, a9);
+            S_00eb8790_Node* pChildB = pTestNode->m_childB;
+            result = NiOBBLeaf_FindCollisions(pChildB, pkRoot0, pkRoot1, pkObj0, pkObj1, iMaxDepth, iTestMaxDepth - 1, uiChangeStamp0, uiChangeStamp1, bCollision);
             if (result >= 1)
                 return result;
             return 0;
         }
-        return NiOBBNode_BoxBoxCollision(other, a1, a2, bodyA, bodyB, a9);
+        return NiOBBNode_BoxBoxCollision(pTestNode, pkRoot0, pkRoot1, pkObj0, pkObj1, bCollision);
     }
-    if (a5 < 0 && depth < 0)
-        return NiOBBLeaf_FaceFaceCollision(other, a1, a2, bodyA, bodyB, a9);
-    return NiOBBNode_BoxBoxCollision(other, a1, a2, bodyA, bodyB, a9);
+    if (iMaxDepth < 0 && iTestMaxDepth < 0)
+        return NiOBBLeaf_FaceFaceCollision(pTestNode, pkRoot0, pkRoot1, pkObj0, pkObj1, bCollision);
+    return NiOBBNode_BoxBoxCollision(pTestNode, pkRoot0, pkRoot1, pkObj0, pkObj1, bCollision);
 }
 
 // ComputeBarycentric: barycentric-style solve over three edge vectors from a base point.
@@ -663,6 +675,9 @@ struct Vec3f
 
 // Computes barycentric coordinates of a4 relative to triangle (a1,a2,base) and writes them to out.
 // @fnv 0x00eb72b0
+// pdb: NiOBBLeaf::ComputeBarycenter | NiOBBLeaf.obj | debug, object-file run extension, low
+// pdb params: v0, v1, v2, p, pCenter
+// pdb locals: e1, fM01, fM11, fM00, e0, e2, fR0, fR1, fInvdet
 void ComputeBarycentric(const Vec3f* apVertex0, const Vec3f* apVertex1, const Vec3f* apVertex2, const Vec3f* apPoint,
                         Vec3f* apBarycentric)
 {
@@ -710,7 +725,7 @@ inline LocalVec3 LocalVec3::Cross(const LocalVec3& pt) const
 struct SubA
 {
     int unk00;
-    void UpdateWorldBounds(void* p);
+    void NiOBBox_Transform(void* xform);
 };
 
 struct Node
@@ -729,7 +744,7 @@ struct Node
 struct Helper
 {
     int unk00;
-    Node* GetTexture(void* p);
+    Node* GetTexture(void* pObject);
 };
 
 struct Rec
@@ -828,33 +843,36 @@ struct Obj5
 
 struct FUN_00eb8930_cls : Owner
 {
-    int NiOBBLeaf_FindIntersections(LocalVec3* a1, LocalVec3* a2, Rec* a3, unsigned char* out, Obj5* a5, int a6);
+    int NiOBBLeaf_FindIntersections(LocalVec3* origin, LocalVec3* dir, Rec* pick, unsigned char* bIntersects, Obj5* pObj, int uiChangeStamp);
 };
 
 // Calls an intersection helper and, on success, stores its returned point and parameter in a node, with an optional triangle normal.
 // @fnv 0x00eb8930
 // src: XBOX_PDB 0x00eb8930
-int FUN_00eb8930_cls::NiOBBLeaf_FindIntersections(LocalVec3* a1, LocalVec3* a2, Rec* apRec, unsigned char* pOutHit, Obj5* apObj5, int a6)
+// pdb: NiOBBLeaf::FindIntersections | NiOBBLeaf.obj | retail, upstream name already matches, high
+// pdb params: origin, dir, pick, bIntersects, pObj, uiChangeStamp
+// pdb locals: fTriParam2, fTriParam1, fLineParam, intersect, pRecord, v0, normal, v1
+int FUN_00eb8930_cls::NiOBBLeaf_FindIntersections(LocalVec3* origin, LocalVec3* dir, Rec* pick, unsigned char* bIntersects, Obj5* pObj, int uiChangeStamp)
 {
-    if (a6 != m_88)
+    if (uiChangeStamp != m_88)
     {
-        m_04.UpdateWorldBounds(&apObj5->m_68);
-        m_88 = a6;
+        m_04.NiOBBox_Transform(&pObj->m_68);
+        m_88 = uiChangeStamp;
     }
-    unsigned char flag = apRec->m_10;
+    unsigned char flag = pick->m_10;
     int index;
     float u;
     float t;
     LocalVec3 point;
-    unsigned char ok = FUN_00eadb90(a1, a2, m_8c, m_90, m_94, flag, &point, &t, &u, &index);
-    *pOutHit = ok;
+    unsigned char ok = FUN_00eadb90(origin, dir, m_8c, m_90, m_94, flag, &point, &t, &u, &index);
+    *bIntersects = ok;
     if (ok == 0)
         return 0;
-    Node* n = apRec->m_18.GetTexture(apObj5);
+    Node* n = pick->m_18.GetTexture(pObj);
     // The original point assignments copy all three float bit patterns.
     memcpy(&n->m_08, &point, sizeof(point));
     n->m_14 = t;
-    if (apRec->m_31 != 0)
+    if (pick->m_31 != 0)
     {
         LocalVec3 ub = *m_90 - *m_8c;
         LocalVec3 wa = *m_94 - *m_8c;
@@ -901,6 +919,9 @@ inline LocalVec ScaleVector(const LocalVec& v, float s)
 }
 // Finds up to two intersection times and points where the moving segment start+velocity*t to end+velocity*t crosses the plane defined by normal and plane.
 // @fnv 0x00eb7440
+// pdb: NiOBBLeaf::TentativeCollision | NiOBBLeaf.obj | retail, object-file run extension, low
+// pdb params: fDT, N, fC, V, q0, q1, fT0, p0, fT1, p1
+// pdb locals: fC11, fT, fC00, fC10, iFirstFound, fDelTime, fMinTime, fMaxTime, fS, fC01, p
 int __cdecl IntersectPlane(float duration, const LocalVec& normal, float plane, const LocalVec& velocity, const LocalVec& start,
                            const LocalVec& end, float& time0, LocalVec& point0, float& time1, LocalVec& point1)
 {
@@ -1116,7 +1137,7 @@ struct S_eb6b90_Box
     {
         m_pkTreeNode = 0;
     }
-    void UpdateWorldBounds(const S_eb6b90_Transform& kXform);  // Transform
+    void NiOBBox_Transform(const S_eb6b90_Transform& xform);  // Transform
 };
 
 struct S_eb6b90_Root;
@@ -1146,30 +1167,34 @@ struct S_eb6b90_Node
     }
 };
 
-struct FUN_00eb6b90 : S_eb6b90_Node
+// pdb: class NiOBBLeaf, size 0x98, bases: NiOBBNode, 1 members
+struct NiOBBLeaf : S_eb6b90_Node
 {
-    NiPoint3* m_apkWorldVertex[3];
+    NiPoint3* m_pWorldVertex[3];
 
-    FUN_00eb6b90(S_eb6b90_Root* pkRoot, unsigned short* pusTriList, NiPoint3* pkVertex,
+    NiOBBLeaf(S_eb6b90_Root* pkRoot, unsigned short* pusTriList, NiPoint3* pkVertex,
                  NiPoint3* pkWorldVertex, unsigned short m_usTriangleID);
 };
 
 // Initializes a triangle node by computing its bounding box center, basis axes, and extents from three vertices.
 // @fnv 0x00eb6b90
-FUN_00eb6b90::FUN_00eb6b90(S_eb6b90_Root* pkRoot, unsigned short* pusTriList, NiPoint3* pkVertex,
+// pdb: NiOBBLeaf::NiOBBLeaf | NiOBBLeaf.obj | debug, object-file run extension, low
+// pdb params: pRoot, pTriList, pVertex, pWVertex, usTriangle
+// pdb locals: v0, lower, I, delta, z, b, radius, v2, basis, proj, upper, v1, usStart, extent, x, y, usIndex, center
+NiOBBLeaf::NiOBBLeaf(S_eb6b90_Root* pkRoot, unsigned short* pusTriList, NiPoint3* pkVertex,
                            NiPoint3* pkWorldVertex, unsigned short m_usTriangleID)
 {
     unsigned short triStart = 3 * m_usTriangleID;
     unsigned short vi = pusTriList[triStart];
-    m_apkWorldVertex[0] = pkWorldVertex + vi;
+    m_pWorldVertex[0] = pkWorldVertex + vi;
     const NiPoint3& kP0 = pkVertex[vi];
     ++triStart;
     vi = pusTriList[triStart];
-    m_apkWorldVertex[1] = pkWorldVertex + vi;
+    m_pWorldVertex[1] = pkWorldVertex + vi;
     const NiPoint3& kP1 = pkVertex[vi];
     ++triStart;
     vi = pusTriList[triStart];
-    m_apkWorldVertex[2] = pkWorldVertex + vi;
+    m_pWorldVertex[2] = pkWorldVertex + vi;
     const NiPoint3& kMid = pkVertex[vi];
     NiPoint3& kTargetCenter = payload.m_kBoundsBox.Center();
     NiPoint3* akAxis = payload.m_kBoundsBox.m_akBasis;
@@ -1256,7 +1281,7 @@ FUN_00eb6b90::FUN_00eb6b90(S_eb6b90_Root* pkRoot, unsigned short* pusTriList, Ni
 
     S_eb6b90_Transform usIndex;
     usIndex.FUN_00a86bf0();
-    payload.m_kBoundsBox.UpdateWorldBounds(usIndex);
+    payload.m_kBoundsBox.NiOBBox_Transform(usIndex);
 
     payload.m_kBoundsBox.m_pkTreeNode = pkRoot;
 }
@@ -1266,8 +1291,11 @@ int __cdecl IntersectPlane(float, LocalVec3*, float, int, void*, void*, float*, 
 // Clips barycentric coordinates to the positive octant and updates the bound and point when a nearer candidate is found.
 // @fnv 0x00eb7dc0
 // src: GAMEBRYO_LIB 0x00eb7dc0
-int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, LocalVec3* apNormal, float d, int p3,
-                         float p4, volatile int apNearestDistance, int apHitPoint)
+// pdb: NiOBBLeaf::TestEdgeTri | NiOBBLeaf.obj | retail, upstream name already matches, high
+// pdb params: edge0, edge1, pVer, N, fC, V, fDT, fTMin, pmin
+// pdb locals: fT0, p1, p0, fT1, fT, pBary0, fA2, fA1, pBary1, fA0, fS
+int __cdecl NiOBBLeaf_TestEdgeTri(void* edge0, void* edge1, S_00eb8250_Tri* pVer, LocalVec3* N, float fC, int V,
+                         float fDT, volatile int fTMin, int pmin)
 {
     float t;
     struct Geometry
@@ -1276,11 +1304,11 @@ int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, 
         LocalVec3 coordA, distance, pointB, pointA;
     } g;
     (void)g.distanceB;
-    if (!IntersectPlane(p4, apNormal, d, p3, a, b, &g.distanceA, &g.coordA, &g.distanceB, &g.distance))
+    if (!IntersectPlane(fDT, N, fC, V, edge0, edge1, &g.distanceA, &g.coordA, &g.distanceB, &g.distance))
         goto noHit;
-    ComputeBarycentric((const Vec3f*)apTriangle->m_kPointA, (const Vec3f*)apTriangle->m_kPointB, (const Vec3f*)apTriangle->m_iThirdValue,
+    ComputeBarycentric((const Vec3f*)pVer->m_kPointA, (const Vec3f*)pVer->m_kPointB, (const Vec3f*)pVer->m_iThirdValue,
                        (const Vec3f*)&g.coordA, (Vec3f*)&g.pointA);
-    ComputeBarycentric((const Vec3f*)apTriangle->m_kPointA, (const Vec3f*)apTriangle->m_kPointB, (const Vec3f*)apTriangle->m_iThirdValue,
+    ComputeBarycentric((const Vec3f*)pVer->m_kPointA, (const Vec3f*)pVer->m_kPointB, (const Vec3f*)pVer->m_iThirdValue,
                        (const Vec3f*)&g.distance, (Vec3f*)&g.pointB);
     do
     {
@@ -1295,7 +1323,7 @@ int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, 
             float clippedz = t * g.pointB.z + (1.0f - t) * g.pointA.z;
             if (!(clippedz >= 0.0f))
                 goto noHit;
-            float* pNearestDistance = (float*)apNearestDistance;
+            float* pNearestDistance = (float*)fTMin;
             float fInterpDistance = t * g.distanceB + (1.0f - t) * g.distanceA;
             if (fInterpDistance < *pNearestDistance)
             {
@@ -1310,7 +1338,7 @@ int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, 
                 g.distance.x = static_cast<const volatile float&>(g.pointA.x) + g.pointB.x;
                 g.distance.y = g.pointA.y + g.pointB.y;
                 g.distance.z = g.pointA.z + g.pointB.z;
-                memcpy((LocalVec3*)apHitPoint, &g.distance, sizeof(LocalVec3));
+                memcpy((LocalVec3*)pmin, &g.distance, sizeof(LocalVec3));
             }
             return 1;
         }
@@ -1325,7 +1353,7 @@ int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, 
             float clippedz = t * g.pointB.z + (1.0f - t) * g.pointA.z;
             if (!(clippedz >= 0.0f))
                 return 0;
-            float* pNearestDistance = (float*)apNearestDistance;
+            float* pNearestDistance = (float*)fTMin;
             float fInterpDistance = t * g.distanceB + (1.0f - t) * g.distanceA;
             if (fInterpDistance < *pNearestDistance)
             {
@@ -1340,7 +1368,7 @@ int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, 
                 g.distance.x = static_cast<const volatile float&>(g.pointA.x) + g.pointB.x;
                 g.distance.y = g.pointA.y + g.pointB.y;
                 g.distance.z = g.pointA.z + g.pointB.z;
-                memcpy((LocalVec3*)apHitPoint, &g.distance, sizeof(LocalVec3));
+                memcpy((LocalVec3*)pmin, &g.distance, sizeof(LocalVec3));
             }
             return 1;
         }
@@ -1358,7 +1386,7 @@ int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, 
                 float clippedy = t * g.pointB.y + (1.0f - t) * g.pointA.y;
                 if (!(clippedy >= 0.0f))
                     return 0;
-                float* pNearestDistance = (float*)apNearestDistance;
+                float* pNearestDistance = (float*)fTMin;
                 float fInterpDistance = t * g.distanceB + g.distanceA * (1.0f - t);
                 if (fInterpDistance < *pNearestDistance)
                 {
@@ -1373,7 +1401,7 @@ int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, 
                     g.distance.x = static_cast<const volatile float&>(g.pointA.x) + g.pointB.x;
                     g.distance.y = g.pointA.y + g.pointB.y;
                     g.distance.z = g.pointA.z + g.pointB.z;
-                    memcpy((LocalVec3*)apHitPoint, &g.distance, sizeof(LocalVec3));
+                    memcpy((LocalVec3*)pmin, &g.distance, sizeof(LocalVec3));
                 }
                 return 1;
             }
@@ -1385,11 +1413,11 @@ int __cdecl NiOBBLeaf_TestEdgeTri(void* a, void* b, S_00eb8250_Tri* apTriangle, 
     } while (false);
     return 0;
 inside:
-    float* pNearestDistance = (float*)apNearestDistance;
+    float* pNearestDistance = (float*)fTMin;
     if (g.distanceA < *pNearestDistance)
     {
         *pNearestDistance = g.distanceA;
-        memcpy((LocalVec3*)apHitPoint, &g.coordA, sizeof(LocalVec3));
+        memcpy((LocalVec3*)pmin, &g.coordA, sizeof(LocalVec3));
     }
     return 1;
 }
@@ -1432,20 +1460,23 @@ struct PhysObj_eb83b0
 
 // Computes the earliest collision time and contact point between two physical objects using their shapes, velocities, and duration.
 // @fnv 0x00eb83b0
-int ComputeContactTime(PhysObj_eb83b0* apObjA, PhysObj_eb83b0* apObjB, float* pfTimeOut, NiPoint3* apContactOut)
+// pdb: NiOBBLeaf::FindIntersection | NiOBBLeaf.obj | retail, call graph, high
+// pdb params: pVer0, pVer1, V, fDT, fTMin, pmin
+// pdb locals: edge1, N, iResult, edge0, fC
+int ComputeContactTime(PhysObj_eb83b0* pLeaf0, PhysObj_eb83b0* pLeaf1, float* fT, NiPoint3* p)
 {
-    PhysObjInfo* pInfoA = apObjA->unk7c;
+    PhysObjInfo* pInfoA = pLeaf0->unk7c;
     float duration = pInfoA->duration;
-    NiPoint3* velocityB = &apObjB->unk7c->velocity;
+    NiPoint3* velocityB = &pLeaf1->unk7c->velocity;
     float timeA = 3.402823466e+38F;
     NiPoint3 vContactA, vContactB;
     NiPoint3 relativeVelocity;
     relativeVelocity = pInfoA->velocity - *velocityB;
-    int hitA = NiOBBLeaf_FindIntersection((S_00eb8250_Edges*)&apObjA->m_8c, (S_00eb8250_Tri*)&apObjB->m_8c, relativeVelocity,
+    int hitA = NiOBBLeaf_FindIntersection((S_00eb8250_Edges*)&pLeaf0->m_8c, (S_00eb8250_Tri*)&pLeaf1->m_8c, relativeVelocity,
                             duration, &timeA, &vContactA);
     float timeB = 3.402823466e+38F;
     relativeVelocity = *velocityB - pInfoA->velocity;
-    int hitB = NiOBBLeaf_FindIntersection((S_00eb8250_Edges*)&apObjB->m_8c, (S_00eb8250_Tri*)&apObjA->m_8c, relativeVelocity,
+    int hitB = NiOBBLeaf_FindIntersection((S_00eb8250_Edges*)&pLeaf1->m_8c, (S_00eb8250_Tri*)&pLeaf0->m_8c, relativeVelocity,
                             duration, &timeB, &vContactB);
     if (hitA)
     {
@@ -1453,27 +1484,27 @@ int ComputeContactTime(PhysObj_eb83b0* apObjA, PhysObj_eb83b0* apObjB, float* pf
         {
             if (timeA <= timeB)
             {
-                *pfTimeOut = timeA;
-                *apContactOut = vContactA + timeA * (*velocityB);
+                *fT = timeA;
+                *p = vContactA + timeA * (*velocityB);
             }
             else
             {
-                *pfTimeOut = timeB;
-                *apContactOut = vContactB + timeB * pInfoA->velocity;
+                *fT = timeB;
+                *p = vContactB + timeB * pInfoA->velocity;
             }
         }
         else
         {
-            *pfTimeOut = timeA;
-            *apContactOut = vContactA + timeA * (*velocityB);
+            *fT = timeA;
+            *p = vContactA + timeA * (*velocityB);
         }
     }
     else
     {
         if (hitB)
         {
-            *pfTimeOut = timeB;
-            *apContactOut = vContactB + timeB * pInfoA->velocity;
+            *fT = timeB;
+            *p = vContactB + timeB * pInfoA->velocity;
         }
     }
     return hitA || hitB;

@@ -70,6 +70,7 @@ class TeleportableReference
     NiPoint3* GetPosition();
     NiPoint3* GetRotation();
 };
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:

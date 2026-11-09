@@ -13,6 +13,8 @@ struct FUN_00759f20_shell
 };
 // Assigns the string s to this object, calls FUN_006ffda0, and returns this.
 // @fnv 0x00759f20
+// pdb: AnimatingText::operator= | ComputersMenu.obj | debug, call graph, medium
+// pdb params: apString
 FUN_00759f20_shell* FUN_00759f20_shell::AssignString(const char* apString)
 {
     *(Str6a70*)this = apString;
@@ -25,7 +27,7 @@ struct TwTile
     char pad00[8];
     float m_fAlpha;
     void Tile_Value_SetFloat_00a0a270(float fValue, int iPropagate);
-    void SetString(const char* pcText, int iPropagate);
+    void Tile_Value_SetString(const char* pcText, int abClearActions);
 };
 unsigned int __cdecl Cmd_GetSessionTime_Execute();
 int __cdecl BSstrlen(const char* pcStr);
@@ -49,13 +51,15 @@ struct TwTypewriter
     bool AnimatingText_GetFlashMode();
     const char* Modelloader_GetReferencedThis();
     unsigned int BSStringT_char_Length();
-    bool FUN_00700270(const char* pcText);
+    bool FUN_00700270(const char* apString);
     void AnimatingText_Update();
 };
 
 // Advances the typewriter text and cursor blink when the interval elapses, copying characters into the buffer and marking the effect done at the end.
 // @fnv 0x006ffea0
 // src: XBOX_PDB 0x006ffea0
+// pdb: AnimatingText::Update | AnimatingText.obj | retail, upstream name already matches, high
+// pdb locals: inumchars, istart
 void TwTypewriter::AnimatingText_Update()
 {
     if (AnimatingText_GetDisplayMode() && Cmd_GetSessionTime_Execute() >= m_uiNextTime && !m_bDone)
@@ -74,7 +78,7 @@ void TwTypewriter::AnimatingText_Update()
                 m_bDone = true;
             }
             FUN_00401460(m_pString + iStartTmp, Modelloader_GetReferencedThis() + iStartTmp, uiCountZ);
-            m_pkText->SetString(m_pString, 1);
+            m_pkText->Tile_Value_SetString(m_pString, 1);
         }
         else
         {
@@ -104,7 +108,7 @@ struct ObjC
 };
 struct ObjD
 {
-    void SetString(int a, int b);
+    void Tile_Value_SetString(int a, int abClearActions);
 };
 
 extern "C" int __cdecl BSstrlen(int v);
@@ -133,6 +137,7 @@ struct FUN_00700110_cls
 
 // @fnv 0x00700110
 // src: XBOX_PDB 0x00700110
+// pdb: AnimatingText::ForceFinish | AnimatingText.obj | retail, upstream name already matches, high
 void FUN_00700110_cls::AnimatingText_ForceFinish()
 {
     if (AnimatingText_GetDisplayMode())
@@ -153,7 +158,7 @@ void FUN_00700110_cls::AnimatingText_ForceFinish()
             if (m_08 != 0 && m_24 != 0)
             {
                 FUN_00401460(m_24, Modelloader_GetReferencedThis(), BSstrlen(Modelloader_GetReferencedThis()));
-                m_08->SetString(m_24, 1);
+                m_08->Tile_Value_SetString(m_24, 1);
                 m_29 = 1;
             }
         }

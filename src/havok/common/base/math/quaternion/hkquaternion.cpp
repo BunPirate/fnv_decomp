@@ -10,8 +10,8 @@
 class FUN_005611c0_t
 {
   public:
-    void normalize_005611c0();
-    void hkQuaternion_setAndNormalize(float* pts);
+    void hkQuaternion_normalize();
+    void hkQuaternion_setAndNormalize(float* r);
 };
 
 static float g_sink2550;
@@ -23,22 +23,25 @@ extern "C" double cb2550_clobber(double x);
 // register home and the private convention passes it in esi; obj is read
 // exactly once, late, so it stays on the stack.
 // src: COMMUNITY 0x00cb2550
-static __declspec(noinline) void quaternionFromRotatation(FUN_005611c0_t* obj, float* pts)
+static __declspec(noinline) void quaternionFromRotatation(FUN_005611c0_t* quatOut, float* r)
 {
-    float s = pts[0] * pts[1];
+    float s = r[0] * r[1];
     s = (float)cb2550_clobber(s);
-    s += pts[5];
+    s += r[5];
     g_sink2550 = s;
     if (s > 1.0e9f)
-        *(int*)obj = 0;
+        *(int*)quatOut = 0;
 }
 
 // @fnv 0x00cb2830
 // src: HAVOK_LIB 0x00cb2830
-void FUN_005611c0_t::hkQuaternion_setAndNormalize(float* apPoints)
+// pdb: hkQuaternion::setAndNormalize | hkQuaternion.obj | retail, upstream name already matches, high
+// pdb params: r
+// pdb locals: assertBuf, ostr
+void FUN_005611c0_t::hkQuaternion_setAndNormalize(float* r)
 {
-    quaternionFromRotatation(this, apPoints);
-    normalize_005611c0();
+    quaternionFromRotatation(this, r);
+    hkQuaternion_normalize();
 }
 
 #include <xmmintrin.h>
@@ -47,12 +50,14 @@ struct FUN_00cb24c0_cls
 {
     __m128 m_00;
     void hkVector4_isOk4(unsigned char* flag);
-    unsigned char* IsNormalized(unsigned char* flag);
+    unsigned char* hkQuaternion_isOk(unsigned char* flag);
 };
 
 // Checks whether the squared length is within 0.001 of 1.0, ANDs that with the existing flag, and stores the result.
 // @fnv 0x00cb24c0
-unsigned char* FUN_00cb24c0_cls::IsNormalized(unsigned char* apResult)
+// src: XBOX_RETAIL_PDB 0x00cb24c0
+// pdb: hkQuaternion::isOk | hkQuaternion.obj | retail, object-file gap fill, high
+unsigned char* FUN_00cb24c0_cls::hkQuaternion_isOk(unsigned char* apResult)
 {
     hkVector4_isOk4(apResult);
     __m128 t = _mm_mul_ps(m_00, m_00);
@@ -108,6 +113,8 @@ __declspec(align(16)) struct FUN_00cf5950_cls
 
 // Copies the four 128-bit vectors from src into m_block, then calls m_sub.CallSub on the copied block.
 // @fnv 0x00cf5950
+// pdb: hkpTransformShape::operator delete | hkpTransformShape.obj | debug, object-file run extension, low
+// pdb params: p
 void FUN_00cf5950_cls::CopyBlock(Block64* src)
 {
     Block64* dst = &m_block;
@@ -144,19 +151,22 @@ struct S00cb2550_Quat
 // Converts a rotation matrix to a quaternion and stores the quaternion in self->q.
 // @fnv 0x00cb2550
 // src: COMMUNITY 0x00cb2550
-static __declspec(noinline) void quaternionFromRotatation(S00cb2550_Quat* apQuat, const S00cb2550_Rot& arRot)
+// pdb: quaternionFromRotatation | hkQuaternion.obj | retail, upstream name already matches, high
+// pdb params: quatOut, r
+// pdb locals: u, next
+static __declspec(noinline) void quaternionFromRotatation(S00cb2550_Quat* quatOut, const S00cb2550_Rot& r)
 {
     S00cb2550_V4 v;
-    float trace = arRot(0, 0) + arRot(1, 1) + arRot(2, 2);
+    float trace = r(0, 0) + r(1, 1) + r(2, 2);
     if (trace > 0)
     {
         float s = sqrtf((float)(trace + 1.0));
         float t = (float)(0.5 / s);
-        v.v[0] = (arRot(2, 1) - arRot(1, 2)) * t;
-        v.v[1] = (arRot(0, 2) - arRot(2, 0)) * t;
-        v.v[2] = (arRot(1, 0) - arRot(0, 1)) * t;
+        v.v[0] = (r(2, 1) - r(1, 2)) * t;
+        v.v[1] = (r(0, 2) - r(2, 0)) * t;
+        v.v[2] = (r(1, 0) - r(0, 1)) * t;
         v.v[3] = (float)(0.5 * s);
-        apQuat->q.q = v.q;
+        quatOut->q.q = v.q;
     }
     else
     {
@@ -165,19 +175,19 @@ static __declspec(noinline) void quaternionFromRotatation(S00cb2550_Quat* apQuat
         next[1] = 2;
         next[2] = 0;
         int iMax = 0;
-        if (arRot(1, 1) > arRot(0, 0))
+        if (r(1, 1) > r(0, 0))
             iMax = 1;
-        if (arRot(2, 2) > arRot(iMax, iMax))
+        if (r(2, 2) > r(iMax, iMax))
             iMax = 2;
         int j = next[iMax];
         int k = next[j];
-        float s = sqrtf((float)(arRot(iMax, iMax) - (arRot(j, j) + arRot(k, k)) + 1.0));
+        float s = sqrtf((float)(r(iMax, iMax) - (r(j, j) + r(k, k)) + 1.0));
         float t = (float)(0.5 / s);
         v.v[iMax] = (float)(s * 0.5);
-        v.v[3] = (arRot(k, j) - arRot(j, k)) * t;
-        v.v[j] = (arRot(j, iMax) + arRot(iMax, j)) * t;
-        v.v[k] = (arRot(k, iMax) + arRot(iMax, k)) * t;
-        apQuat->q.q = v.q;
+        v.v[3] = (r(k, j) - r(j, k)) * t;
+        v.v[j] = (r(j, iMax) + r(iMax, j)) * t;
+        v.v[k] = (r(k, iMax) + r(iMax, k)) * t;
+        quatOut->q.q = v.q;
     }
 }
 

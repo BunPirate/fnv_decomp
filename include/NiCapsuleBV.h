@@ -5,6 +5,7 @@
 
 class NiTransform;
 
+// pdb: class NiCapsuleBV, size 0x3c, bases: NiBoundingVolume, 4 members
 class NiCapsuleBV : public NiBoundingVolume
 {
 public:
@@ -17,8 +18,8 @@ public:
     NiCapsuleBV* CopyConstruct(const NiCapsuleBV& source);
 
     NiPoint3 m_kCenter;
-    NiPoint3 m_kAxisDirection;
-    float m_fHalfLength;
+    NiPoint3 m_kAxis;
+    float m_fExtent;
     union
     {
         char _pad[0x18];

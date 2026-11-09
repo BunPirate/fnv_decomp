@@ -21,6 +21,9 @@ struct ResizableStrArr : StrArr
     void ResizeAndClear(int b);
 };
 // @fnv 0x0096aca0
+// pdb: ProcessArray::GrowArraySize | ProcessArray.obj | debug, object-file run extension, low
+// pdb params: aSize
+// pdb locals: lastsize, i
 void ResizableStrArr::ResizeAndClear(int aiCount)
 {
     unsigned int uiOldSize = GetSize();

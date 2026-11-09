@@ -19,6 +19,7 @@ public:
 
 // Destroys the effect, deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x0080d1e0
+// pdb: DisintegrateArmorEffect::`scalar deleting destructor' | DisintegrateArmorEffect.obj | retail, vtable slot, high
 void* DisintegrateArmorEffect::Destroy(unsigned int flags)
 {
     this->DisintegrateArmorEffect::~DisintegrateArmorEffect();
@@ -31,10 +32,13 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // Returns the save size: the base ActiveEffect size plus 4 when the save version is at least 0x37.
 // @fnv 0x0080d4f0
-unsigned short DisintegrateArmorEffect::GetSaveSize(Actor* actor)
+// pdb: DisintegrateArmorEffect::GetSaveSize | DisintegrateArmorEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: isize
+unsigned short DisintegrateArmorEffect::GetSaveSize(Actor* apActor)
 {
     unsigned short size = 0;
-    size += ActiveEffect::GetSaveSize(actor);
+    size += ActiveEffect::GetSaveSize(apActor);
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x37)
         size += 4;
     return size;
@@ -42,6 +46,8 @@ unsigned short DisintegrateArmorEffect::GetSaveSize(Actor* actor)
 
 // Copies this effect's source parameters and base effect data.
 // @fnv 0x0080d2a0
+// pdb: DisintegrateArmorEffect::Copy | DisintegrateArmorEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* DisintegrateArmorEffect::Copy()
 {
     DisintegrateArmorEffect* p = new DisintegrateArmorEffect(m_pEffectInstance, pSpell, pEffect);
@@ -51,29 +57,33 @@ ActiveEffect* DisintegrateArmorEffect::Copy()
 
 // Destructor that deletes the owned inventory item if the pointer is non-null.
 // @fnv 0x0080d210
+// pdb: DisintegrateArmorEffect::~DisintegrateArmorEffect | DisintegrateArmorEffect.obj | debug, upstream name already matches, high
 DisintegrateArmorEffect::~DisintegrateArmorEffect()
 {
-    if (m_pItem)
-        delete m_pItem;
+    if (pArmor)
+        delete pArmor;
 }
 
 extern char DAT_01183108[];
 extern char DAT_01183a34[];
 
 // @fnv 0x0080d540
-void DisintegrateArmorEffect::SaveGame(Actor* arg)
+// pdb: DisintegrateArmorEffect::SaveGame | DisintegrateArmorEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: earmorPosition, parmor, ibiped
+void DisintegrateArmorEffect::SaveGame(Actor* apActor)
 {
     unsigned int i2;
     TESObjectARMO* obj;
     int result;
 
-    ActiveEffect::SaveGame(arg);
+    ActiveEffect::SaveGame(apActor);
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x37)
     {
         result = -1;
-        if (m_pItem != 0 && m_pItem->FUN_0044ddc0() != 0)
+        if (pArmor != 0 && pArmor->FUN_0044ddc0() != 0)
         {
-            obj = dynamic_cast<TESObjectARMO*>(m_pItem->FUN_0044ddc0());
+            obj = dynamic_cast<TESObjectARMO*>(pArmor->FUN_0044ddc0());
             if (obj != 0)
             {
                 for (i2 = 0; i2 < 0x14; i2++)
@@ -105,7 +115,7 @@ struct Hub
 };
 struct Effect
 {
-    void* Create(int handle, int one);
+    void* Create(int aeBodyPart, int one);
 };
 struct Other
 {
@@ -115,24 +125,27 @@ struct Other
 }  // namespace fnv_0080d610
 
 // @fnv 0x0080d610
-void DisintegrateArmorEffect::LoadGame(Actor* pNode)
+// pdb: DisintegrateArmorEffect::LoadGame | DisintegrateArmorEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: earmorPosition, pinventory
+void DisintegrateArmorEffect::LoadGame(Actor* apActor)
 {
     using namespace fnv_0080d610;
-    ActiveEffect::LoadGame(pNode);
+    ActiveEffect::LoadGame(apActor);
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x37)
     {
         int handle;
         g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&handle, 4);
         if (handle != -1)
         {
-            Effect* fx = reinterpret_cast<fnv_0080d610::Node*>(pNode)->Resolve()->Find();
+            Effect* fx = reinterpret_cast<fnv_0080d610::Node*>(apActor)->Resolve()->Find();
             if (fx != 0)
             {
-                m_pItem = static_cast<InventoryItem*>(fx->Create(handle, 1));
+                pArmor = static_cast<InventoryItem*>(fx->Create(handle, 1));
             }
             void* obj;
             {
-                void* cur = m_pItem;
+                void* cur = pArmor;
                 obj = cur;
             }
             obj != 0 ? reinterpret_cast<Other*>(obj)->Make(1) : 0;
@@ -395,6 +408,8 @@ struct Node
 bool CombatController_GetShowVerboseMessages();
 int Interface_PrintLine(const char* fmt, ...);
 // @fnv 0x0080d340
+// pdb: DisintegrateArmorEffect::Start | DisintegrateArmorEffect.obj | retail, string-set bridge, high
+// pdb locals: pactor
 void DisintegrateArmorEffect::Start()
 {
     Result* p;
@@ -404,16 +419,16 @@ void DisintegrateArmorEffect::Start()
     if (p == 0)
         return;
     {
-        this->m_pItem = p->Actor_GetRandomWornArmor(0);
-        if (this->m_pItem != 0)
+        this->pArmor = p->Actor_GetRandomWornArmor(0);
+        if (this->pArmor != 0)
         {
-            p->FUN_slot242((void*)this->m_pItem, this->GetFloatAtOffset1C(1));
+            p->FUN_slot242((void*)this->pArmor, this->GetFloatAtOffset1C(1));
             if (CombatController_GetShowVerboseMessages())
             {
                 Interface_PrintLine("%s's %s takes %0.2f disintegrate armor damage!", p->TESObjectREFR_GetFullName(),
-                             this->m_pItem->GetTargetFullName(), this->GetFloatAtOffset1C());
+                             this->pArmor->GetTargetFullName(), this->GetFloatAtOffset1C());
             }
-            t = this->m_pItem;
+            t = this->pArmor;
             u = t;
             (void)((u != 0) ? u->FUN_004459e0(1) : 0);
         }

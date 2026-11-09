@@ -31,6 +31,7 @@ struct FUN_00c99fb0
 };
 // Deletes and frees the critical section when present, frees the buffer when count is nonnegative, then resets field0c, field08, and field10.
 // @fnv 0x00c99fb0
+// pdb: hkDebugDisplay::`scalar deleting destructor' | hkDebugDisplay.obj | retail, vtable slot, high
 FUN_00c99fb0::~FUN_00c99fb0()
 {
     if (field14)

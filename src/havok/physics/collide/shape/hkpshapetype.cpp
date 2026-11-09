@@ -6,6 +6,8 @@
 
 // @fnv 0x00d46410
 // src: GUESS 0x00d46410 (confidence: low)
+// pdb: hkRegisterAlternateShapeTypes | hkpShapeType.obj | retail, call graph, low
+// pdb params: dis
 void hkpCollisionDispatcher_ProcessState_00d46410(hkpCollisionDispatcher* dispatcher)
 {
     dispatcher->registerAlternateShapeType(1, 0x12);

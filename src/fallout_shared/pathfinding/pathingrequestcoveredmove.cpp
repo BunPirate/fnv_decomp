@@ -38,6 +38,7 @@ struct FUN_006dae90_shell
 };
 
 // @fnv 0x006e4d00
+// pdb: CombatCoverSearchInfo::~CombatCoverSearchInfo | PathingRequestCoveredMove.obj | debug, object-file gap fill, medium
 void FUN_006e4d00_shell::CallMemberFunction()
 {
     ((FUN_006dae90_shell*)((char*)this + 0x20))->UpdateState_006dae90();
@@ -69,6 +70,7 @@ struct FUN_006e4bb0_shell
 
 // Calls FUN_006e4bf0 on this, frees this with size 0x10c when flags has bit 0 set, and returns this.
 // @fnv 0x006e4bb0
+// pdb: PathingRequestCoveredMove::`scalar deleting destructor' | PathingRequestCoveredMove.obj | retail, vtable slot, high
 void* FUN_006e4bb0_shell::FUN_006e4bb0(unsigned int flags)
 {
     reinterpret_cast<FUN_006e4bf0_shell*>(this)->FUN_006e4bf0();
@@ -89,6 +91,7 @@ struct FUN_006e4cd0_shell
 
 // Calls CallMemberFunction on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006e4cd0
+// pdb: CombatCoverSearchInfo::`scalar deleting destructor' | PathingRequestCoveredMove.obj | debug, call graph, medium
 void* FUN_006e4cd0_shell::FUN_006e4cd0(unsigned int flags)
 {
     ((FUN_006e4d00_shell*)this)->CallMemberFunction();
@@ -164,7 +167,7 @@ struct BaseObject
     int unkbc;
     int unkc0;
     int unkc4;
-    BaseObject(Owner* apOwner);
+    BaseObject(Owner* aRequest);
     ~BaseObject();
 };
 
@@ -207,7 +210,7 @@ struct MemberD
 
 struct BaseObject_d006e2620 : BaseObject
 {
-    BaseObject_d006e2620(Owner* o) : BaseObject(o)
+    BaseObject_d006e2620(Owner* aRequest) : BaseObject(aRequest)
     {}
     ~BaseObject_d006e2620();
 };
@@ -217,20 +220,21 @@ struct FUN_006e4d20 : BaseObject_d006e2620
     MemberB m_kB;
     MemberC m_kC;
     MemberD m_kCubicCoefficient;
-    FUN_006e4d20(Owner* apOwner);
+    FUN_006e4d20(Owner* aRequest);
 };
 
 struct Owner
 {
-    void CopyTo(FUN_006e4d20* apChild);
+    void CopyTo(FUN_006e4d20* apDest);
 };
 
 // Constructs the object with its owner and registers it by calling the owner's CopyTo.
 // Constructs a cubic coefficient object by delegating to BaseObject_d006e2620 and then copying data from apOwner via CopyTo.
 // @fnv 0x006e4d20
-FUN_006e4d20::FUN_006e4d20(Owner* apOwner) : BaseObject_d006e2620(apOwner)
+// pdb: PathingRequestCoveredMove::PathingRequestCoveredMove | PathingRequestCoveredMove.obj | retail, call graph (shared callers), high
+FUN_006e4d20::FUN_006e4d20(Owner* aRequest) : BaseObject_d006e2620(aRequest)
 {
-    apOwner->CopyTo(this);
+    aRequest->CopyTo(this);
 }
 
 struct E4BF0OwnedA
@@ -343,6 +347,7 @@ class FUN_006e4bf0 : public E4BF0Base
 
 // Destructor that deletes the two owned objects m_pkOwnedA and m_pkOwnedB.
 // @fnv 0x006e4bf0
+// pdb: PathingRequestCoveredMove::~PathingRequestCoveredMove | PathingRequestCoveredMove.obj | retail, call graph (shared callers), high
 FUN_006e4bf0::~FUN_006e4bf0()
 {
     delete m_pkOwnedA;
@@ -417,12 +422,12 @@ struct FUN_006e4dd0_cls
     int unkF0;
     int unkF4;
 
-    void CopyTo(void* pTarget);
+    void CopyTo(void* apDest);
 };
 
 struct FUN_006e2750_cls
 {
-    void FUN_006e2750(void* p);
+    void FUN_006e2750(void* apDest);
 };
 struct FUN_00507610_cls
 {
@@ -462,14 +467,17 @@ struct FUN_006e5330_cls
 };
 struct FUN_0069cfe0_cls
 {
-    void CopyElementsTo(void* p);
+    void CopyElementsTo(void* aDestArray);
 };
 
 // Copies this object's float, int and byte members and the unkC8/unkD4/unkE4/unkF4 sub-objects into pTarget via its setter methods.
 // @fnv 0x006e4dd0
-void FUN_006e4dd0_cls::CopyTo(void* arg)
+// pdb: PathingRequestCoveredMove::CopyTo | PathingRequestCoveredMove.obj | retail, vtable slot, high
+// pdb params: apDest
+// pdb locals: pdest
+void FUN_006e4dd0_cls::CopyTo(void* apDest)
 {
-    void* pTarget = arg;
+    void* pTarget = apDest;
     ((FUN_006e2750_cls*)this)->FUN_006e2750(pTarget);
 
     ((FUN_00507610_cls*)pTarget)->PathingRequestClosePoint_SetMinDistance(m_b0);
@@ -529,38 +537,41 @@ struct FNVElements12
 };
 struct FUN_006e51a0_shell
 {
-    void FUN_006e34f0(FNVInputStream* stream);
-    void LoadFromStream(FNVInputStream* stream);
+    void FUN_006e34f0(FNVInputStream* apLoadGameBuffer);
+    void LoadFromStream(FNVInputStream* apLoadGameBuffer);
 };
 // @fnv 0x006e51a0
-void FUN_006e51a0_shell::LoadFromStream(FNVInputStream* stream)
+// pdb: PathingRequestCoveredMove::LoadGame | PathingRequestCoveredMove.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, i, icoverKey, targetLoc
+void FUN_006e51a0_shell::LoadFromStream(FNVInputStream* apLoadGameBuffer)
 {
-    FUN_006e34f0(stream);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xb0, 4);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xb4, 4);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xb8, 4);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xbc, 4);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xc0, 4);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xc4, 4);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xc8, 12);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xd4, 12);
-    stream->LoadData(reinterpret_cast<char*>(this) + 0xe0, 1);
+    FUN_006e34f0(apLoadGameBuffer);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xb0, 4);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xb4, 4);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xb8, 4);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xbc, 4);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xc0, 4);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xc4, 4);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xc8, 12);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xd4, 12);
+    apLoadGameBuffer->LoadData(reinterpret_cast<char*>(this) + 0xe0, 1);
 
-    unsigned int count4 = stream->FUN_00864a60();
+    unsigned int count4 = apLoadGameBuffer->FUN_00864a60();
     reinterpret_cast<FNVElements4*>(reinterpret_cast<char*>(this) + 0xe4)->FUN_006f2290(count4, 1);
     for (unsigned int i = 0; i < count4; ++i)
     {
         void* item = reinterpret_cast<FNVElements4*>(reinterpret_cast<char*>(this) + 0xe4)->BSSimpleArray_NiAVObject_1024_GetAt(i);
-        stream->LoadData(item, 4);
+        apLoadGameBuffer->LoadData(item, 4);
     }
     {
-        unsigned int count12 = stream->FUN_00864a60();
+        unsigned int count12 = apLoadGameBuffer->FUN_00864a60();
         reinterpret_cast<FNVElements12*>(reinterpret_cast<char*>(this) + 0xf4)->FUN_0069cea0(count12, 1);
         for (unsigned int uiIndex12 = 0; uiIndex12 < count12; ++uiIndex12)
         {
             void* item =
                 reinterpret_cast<FNVElements12*>(reinterpret_cast<char*>(this) + 0xf4)->BSSimpleArray_NiPoint3_1024_GetAt(uiIndex12);
-            stream->LoadData(item, 12);
+            apLoadGameBuffer->LoadData(item, 12);
         }
     }
 }
@@ -649,6 +660,7 @@ struct FUN_006e5510_cls : public BaseEmpty
 
 // Sets m_fd8 to DAT_0101e704 and calls m_a34.Init().
 // @fnv 0x006e5510
+// pdb: PathingRequestHide::PathingRequestHide | PathingRequestHide.obj | debug, call graph, medium
 FUN_006e5510_cls::FUN_006e5510_cls()
 {
     m_fd8 = DAT_0101e704;
@@ -672,7 +684,7 @@ struct Elements12Ex : FNVElements12
 };
 struct Base6e3230
 {
-    void PathingRequest_SaveGame(void* pkBuffer);
+    void PathingRequest_SaveGame(void* apSaveGameBuffer);
 };
 
 struct Saver6e4 : Base6e3230
@@ -690,39 +702,42 @@ struct Saver6e4 : Base6e3230
     Elements4Ex m_kList4;
     Elements12Ex m_kList12;
 
-    void SaveToBuffer(SaveBuffer6e4* pkBuffer);
+    void SaveToBuffer(SaveBuffer6e4* apSaveGameBuffer);
 };
 
 // Serializes the base object, six ints, two NiPoint3s, a bool, and two element lists (counts plus 4- and 12-byte items) into pkBuffer.
 // @fnv 0x006e4fd0
-void Saver6e4::SaveToBuffer(SaveBuffer6e4* pkBuffer)
+// pdb: PathingRequestCoveredMove::SaveGame | PathingRequestCoveredMove.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+// pdb locals: isaveGameCount, i, icoverKey, targetLoc
+void Saver6e4::SaveToBuffer(SaveBuffer6e4* apSaveGameBuffer)
 {
-    PathingRequest_SaveGame(pkBuffer);
-    pkBuffer->FUN_00865e50(&m_iB0, 4, 0);
-    pkBuffer->FUN_00865e50(&m_iB4, 4, 0);
-    pkBuffer->FUN_00865e50(&m_iB8, 4, 0);
-    pkBuffer->FUN_00865e50(&m_iBC, 4, 0);
-    pkBuffer->FUN_00865e50(&m_iC0, 4, 0);
-    pkBuffer->FUN_00865e50(&m_iC4, 4, 0);
-    pkBuffer->FUN_00865e50(&m_kC8, 0xc, 0);
-    pkBuffer->FUN_00865e50(&m_kD4, 0xc, 0);
-    pkBuffer->FUN_00865e50(&m_bE0, 1, 0);
+    PathingRequest_SaveGame(apSaveGameBuffer);
+    apSaveGameBuffer->FUN_00865e50(&m_iB0, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&m_iB4, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&m_iB8, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&m_iBC, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&m_iC0, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&m_iC4, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&m_kC8, 0xc, 0);
+    apSaveGameBuffer->FUN_00865e50(&m_kD4, 0xc, 0);
+    apSaveGameBuffer->FUN_00865e50(&m_bE0, 1, 0);
     {
         unsigned int ItemUpdateArray = &m_kList4 ? m_kList4.FUN_0044ddc0() : 0;
-        pkBuffer->SaveVariableSizedValue(ItemUpdateArray);
+        apSaveGameBuffer->SaveVariableSizedValue(ItemUpdateArray);
         for (unsigned int i = 0; i < ItemUpdateArray; i++)
         {
             void* pItem = m_kList4.BSSimpleArray_NiAVObject_1024_GetAt(i);
-            pkBuffer->FUN_00865e50(pItem, 4, 0);
+            apSaveGameBuffer->FUN_00865e50(pItem, 4, 0);
         }
     }
     {
         unsigned int ItemUpdateArray = &m_kList12 ? m_kList12.FUN_0044ddc0() : 0;
-        pkBuffer->SaveVariableSizedValue(ItemUpdateArray);
+        apSaveGameBuffer->SaveVariableSizedValue(ItemUpdateArray);
         for (unsigned int i = 0; i < ItemUpdateArray; i++)
         {
             void* pItem = m_kList12.BSSimpleArray_NiPoint3_1024_GetAt(i);
-            pkBuffer->FUN_00865e50(pItem, 0xc, 0);
+            apSaveGameBuffer->FUN_00865e50(pItem, 0xc, 0);
         }
     }
 }

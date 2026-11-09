@@ -5,6 +5,7 @@ typedef char* GlobalStringHandle;
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile* plAddend);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* plAddend);
 
+// pdb: class NiGlobalStringTable, size 0x2100 (here 0x1), 2 members
 class NiGlobalStringTable
 {
   public:

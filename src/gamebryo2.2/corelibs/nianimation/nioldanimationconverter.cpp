@@ -40,14 +40,16 @@ struct FUN_00a42460_cls
     unsigned int unk14;
     void* m_18;
     unsigned int m_1c;
-    void NiPoint3Interpolator_SetKeys(unsigned int a1, unsigned int a2, unsigned int a3);
+    void NiPoint3Interpolator_SetKeys(unsigned int pkKeys, unsigned int uiNumKeys, unsigned int eType);
 };
 
 // @fnv 0x00a42460
 // src: COMMUNITY 0x00a42460
-void FUN_00a42460_cls::NiPoint3Interpolator_SetKeys(unsigned int auiArg1, unsigned int auiArg2, unsigned int auiArg3)
+// pdb: NiPoint3Interpolator::SetKeys | NiOldAnimationConverter.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, eType
+void FUN_00a42460_cls::NiPoint3Interpolator_SetKeys(unsigned int pkKeys, unsigned int uiNumKeys, unsigned int eType)
 {
-    if (auiArg2 > 0)
+    if (uiNumKeys > 0)
     {
         if (m_18 == 0)
         {
@@ -67,7 +69,7 @@ void FUN_00a42460_cls::NiPoint3Interpolator_SetKeys(unsigned int auiArg1, unsign
             }
             ((FUN_00a5f860_cls*)&m_18)->FUN_00a5f860(o);
         }
-        ((FUN_00a48fe0_cls*)m_18)->FUN_00a48fe0(auiArg1, auiArg2, auiArg3);
+        ((FUN_00a48fe0_cls*)m_18)->FUN_00a48fe0(pkKeys, uiNumKeys, eType);
         m_1c = 0;
     }
     else
@@ -169,7 +171,7 @@ struct LcSourceInterp : LcObject
         return 0;
     }
     void* FUN_00a3f990(unsigned int& uiElementCount, int& eType, unsigned char& ucSize);
-    void* NiTransformInterpolator_GetScaleData(unsigned int& uiElementCount, int& eType, unsigned char& ucSize);
+    void* NiTransformInterpolator_GetScaleData(unsigned int& uiNumKeys, int& eType, unsigned char& ucSize);
 };
 
 struct LcCtlr : LcObject
@@ -235,14 +237,14 @@ struct LcKeys
 {
     char pad[0x20];
     LcKeys(int i);
-    void NiPoint3Interpolator_SetKeys(void* pkKeys, unsigned int uiElementCount, int eType);
+    void NiPoint3Interpolator_SetKeys(void* pkKeys, unsigned int uiNumKeys, int eType);
 };
 
 struct LcKeys2
 {
     char pad[0x18];
     LcKeys2(int i);
-    void NiFloatInterpolator_SetKeys(void* pkKeys, unsigned int uiElementCount, int eType);
+    void NiFloatInterpolator_SetKeys(void* pkKeys, unsigned int uiNumKeys, int eType);
 };
 
 struct LcInterp : LcCtlr
@@ -254,14 +256,14 @@ struct LcInterp : LcCtlr
     char pad14[0x44 - 0x14];
     LcInterp(int a, int b, int c);
     void SetLookAtName(const LcString& kName);
-    void NiLookAtInterpolator_SetTranslateInterpolator(LcKeys* pkKeys);
-    void NiLookAtInterpolator_SetScaleInterpolator(LcKeys2* pkKeys);
+    void NiLookAtInterpolator_SetTranslateInterpolator(LcKeys* pkInterp);
+    void NiLookAtInterpolator_SetScaleInterpolator(LcKeys2* pkInterp);
 };
 
 struct LcTarget
 {
     LcCtlr* NiObjectNET_GetController(const LcRTTI* pkRTTI) const;
-    void NiObjectNET_RemoveController(void* pkCtlr);
+    void NiObjectNET_RemoveController(void* pkControl);
 };
 
 struct LcOld
@@ -277,6 +279,9 @@ struct LcOld
 void CopyControllerSettings(LcOld* pkOld, LcCtlr* pkCtlr);
 
 // @fnv 0x00a42570
+// pdb: NiOldAnimationConverter::ConvertLookAtController | NiOldAnimationConverter.obj | retail, object-file run extension, low
+// pdb params: pkController
+// pdb locals: pkLookAtInterp, pkTransformController, spInterp, bSetOnTarget, pkTarget, pkOldInterp, uiNumKeys, pkKeys, ucSize, pkTranslateInterp, eType, pkScaleInterp
 extern "C" void __cdecl CreateInterpolator(LcOld* pkOld)
 {
     LcTarget* pkTarget = pkOld->m_pkTarget;
@@ -420,6 +425,8 @@ class Ctl424
 
 // Copies animation type, cycle type, playback direction, frequency, key times and active flag from pkSrc to pkDest.
 // @fnv 0x00a424e0
+// pdb: NiOldAnimationConverter::SynchronizeTimeControllers | NiOldAnimationConverter.obj | debug, call graph, low
+// pdb params: pkSrc, pkDest
 void __cdecl CopyControllerSettings(Ctl424* pkSrc, Ctl424* pkDest)
 {
     pkDest->SetAnimType(pkSrc->GetAnimType());

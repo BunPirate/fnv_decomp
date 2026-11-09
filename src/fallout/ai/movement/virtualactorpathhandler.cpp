@@ -39,14 +39,14 @@ inline NiPoint3 operator*(float scalar, const NiPoint3& point)
 // Actor.h lacks the player-comparison call at 0x008bc7f0; this adds no actor layout or virtual slots.
 struct PlayerComparisonCall : Actor
 {
-    bool Actor_IsFollowing_008bc7f0(PlayerCharacter*);
+    bool Actor_IsFollowing(PlayerCharacter*);
 };
 
 class UseDoorCalls
 {
   public:
     void QueueActorLocationTask();
-    void QueueActorTask();
+    void TaskQueueInterface_QueueActorMoveCharController();
 };
 class FullNameCall
 {
@@ -61,38 +61,45 @@ int Warning(const char*, ...);
 
 // Resets two members to 0 and clears a third member by setting it to 0.
 // @fnv 0x009eb040
+// pdb: VirtualActorPathHandler::ClearMovement | VirtualActorPathHandler.obj | retail, vtable slot, high
 void VirtualActorPathHandler::SetInitialPathState()
 {
     pCurrentPathingSolution.operator=(static_cast<PathingSolution*>(0));
-    m_pPathingRequest.operator=(static_cast<PathingRequest*>(0));
+    spRequest.operator=(static_cast<PathingRequest*>(0));
     m_uiPathPointIndex = 0;
 }
 
 // @fnv 0x009eb3e0
-void VirtualActorPathHandler::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: VirtualActorPathHandler::LoadGame | VirtualActorPathHandler.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void VirtualActorPathHandler::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    buffer->ReadTypedData((void*)&m_uiPathPointIndex, 4u);
-    buffer->ReadTypedData((void*)&m_fPathValue16, 4u);
-    buffer->ReadTypedData((void*)&m_fPathValue2, 4u);
+    apLoadGameBuffer->ReadTypedData((void*)&m_uiPathPointIndex, 4u);
+    apLoadGameBuffer->ReadTypedData((void*)&fDistanceTraveled, 4u);
+    apLoadGameBuffer->ReadTypedData((void*)&fPathLength, 4u);
 }
 
 // @fnv 0x009ea770
-VirtualActorPathHandler::VirtualActorPathHandler(Actor* actor, ActorMover* mover, NiPointer<PathingSolution>& path,
-                                                 PathingRequest* request)
-    : ActorPathHandler(actor, mover, path, request)
+// pdb: VirtualActorPathHandler::VirtualActorPathHandler | VirtualActorPathHandler.obj | retail, upstream name already matches, high
+// pdb params: apActor, apActorMover
+VirtualActorPathHandler::VirtualActorPathHandler(Actor* apActor, ActorMover* apActorMover, NiPointer<PathingSolution>& apPath,
+                                                 PathingRequest* apRequest)
+    : ActorPathHandler(apActor, apActorMover, apPath, apRequest)
 {
-    m_fPathValue16 = 0.0f;
-    m_fPathValue2 = 0.0f;
+    fDistanceTraveled = 0.0f;
+    fPathLength = 0.0f;
 }
 
 // @fnv 0x009ea820
-int VirtualActorPathHandler::Init(float startIndex, float amount)
+// pdb: VirtualActorPathHandler::Init | VirtualActorPathHandler.obj | retail, upstream name already matches, high
+// pdb params: afPercentTraveled, afDeltaT
+int VirtualActorPathHandler::Init(float afPercentTraveled, float afDeltaT)
 {
-    m_uiPathPointIndex = (unsigned int)startIndex;
-    m_fPathValue16 = 0.0f;
-    m_fPathValue2 = pCurrentPathingSolution.operator PathingSolution*()->CalculatePathLength();
-    if (startIndex == 0.0)
-        return vfn_0c(amount);
+    m_uiPathPointIndex = (unsigned int)afPercentTraveled;
+    fDistanceTraveled = 0.0f;
+    fPathLength = pCurrentPathingSolution.operator PathingSolution*()->ComputeVirtualPathLength();
+    if (afPercentTraveled == 0.0)
+        return vfn_0c(afDeltaT);
     else
         return 0;
 }
@@ -102,6 +109,7 @@ class PlayerS
   public:
     bool IsSleepingOrResting();
 };
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:
@@ -117,13 +125,16 @@ float __cdecl GetDirectionAngle(const NiPoint3&);
 
 // Advances the actor along its path solution by the distance it can travel this frame, updating position, angle and path index, and returns a status code.
 // @fnv 0x009ea8a0
+// pdb: VirtualActorPathHandler::Update | VirtualActorPathHandler.obj | retail, vtable slot, high
+// pdb params: afDeltaT
+// pdb locals: currentLoc, deltaToNode, fdistCanTravel, fdelta, fscale, fdistToNode, nextLoc, pprocess, fangle, pactorProcess
 int VirtualActorPathHandler::UpdatePathMovement(float afDeltaT)
 {
     float fdelta = afDeltaT;
     BaseProcess* pprocess = pActor->GetCurrentProcess();
     if (pprocess && pprocess->GetSitSleepState())
         return 0;
-    if (((PlayerS*)g_thePlayer)->IsSleepingOrResting() || ((PlayerComparisonCall*)pActor)->Actor_IsFollowing_008bc7f0(g_thePlayer))
+    if (((PlayerS*)g_thePlayer)->IsSleepingOrResting() || ((PlayerComparisonCall*)pActor)->Actor_IsFollowing(g_thePlayer))
     {
         fdelta = _DAT_01012640 / g_calendar.GetGameTimeScale();
     }
@@ -151,7 +162,7 @@ int VirtualActorPathHandler::UpdatePathMovement(float afDeltaT)
         fdistToNode = reinterpret_cast<NiPoint3&>(deltaToNode).Length();
         if (fdistCanTravel >= fdistToNode)
         {
-            m_fPathValue16 += fdistToNode;
+            fDistanceTraveled += fdistToNode;
             fdistCanTravel -= fdistToNode;
             currentLoc = reinterpret_cast<const NiPoint3&>(nextLoc);
             float fangle = GetDirectionAngle(deltaToNode);
@@ -159,7 +170,7 @@ int VirtualActorPathHandler::UpdatePathMovement(float afDeltaT)
             if (((PathingGraphNode*)((PathingSolution*)pCurrentPathingSolution)->GetVirtualNode(m_uiPathPointIndex))
                     ->IsTransitionNode())
             {
-                switch (GetVirtualNodeIndexAtPosition(currentLoc))
+                switch (UseDoorAtNode(currentLoc))
                 {
                 case -2:
                 case -1:
@@ -189,7 +200,7 @@ int VirtualActorPathHandler::UpdatePathMovement(float afDeltaT)
     float fscale = fdistToNode != _gModifierZero ? 1.0 - (fdistToNode - fdistCanTravel) / fdistToNode : 0.0;
     reinterpret_cast<NiPoint3&>(deltaToNode) *= fscale;
     reinterpret_cast<NiPoint3&>(currentLoc) += deltaToNode;
-    m_fPathValue16 += reinterpret_cast<NiPoint3&>(deltaToNode).Length();
+    fDistanceTraveled += reinterpret_cast<NiPoint3&>(deltaToNode).Length();
     float fangle = GetDirectionAngle(deltaToNode);
     pActor->SetFurnitureHeading(fangle);
     pActor->TESObjectREFR::Actor_MoveActorAndFollowers(currentLoc, fangle, pActor->GetParentCell(), pActor->GetParentWorldSpace(), 1,
@@ -198,7 +209,7 @@ int VirtualActorPathHandler::UpdatePathMovement(float afDeltaT)
         return 0;
     if (pCurrentPathingSolution &&
         m_uiPathPointIndex + 1 == ((PathingSolution*)pCurrentPathingSolution)->PathingSolution_GetVirtualNodeCount() &&
-        ((PathingRequest*)m_pPathingRequest)->FUN_009b0bd0() + fdistCanTravel >= fdistToNode)
+        ((PathingRequest*)spRequest)->FUN_009b0bd0() + fdistCanTravel >= fdistToNode)
     {
         m_uiPathPointIndex++;
         return 5;
@@ -211,6 +222,8 @@ extern "C" float __cdecl BSMAX_00404010(float, float);
 
 // @fnv 0x009eb070
 // src: XBOX_PDB 0x009eb070
+// pdb: VirtualActorPathHandler::GetDistanceRemaining | VirtualActorPathHandler.obj | debug, vtable slot, medium
+// pdb locals: flength
 float VirtualActorPathHandler::GetDistanceRemaining_009eb070()
 {
     float flength = ((float*)this)[7] - ((float*)this)[6];
@@ -221,6 +234,8 @@ float VirtualActorPathHandler::GetDistanceRemaining_009eb070()
 
 // Saves three 4-byte values at offsets 0x14, 0x18 and 0x1c of this object into the save buffer.
 // @fnv 0x009eb390
+// pdb: VirtualActorPathHandler::SaveGame | VirtualActorPathHandler.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
 void VirtualActorPathHandler::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     apSaveGameBuffer->SaveData((char*)this + 0x14, 4, 0);
@@ -231,6 +246,7 @@ void VirtualActorPathHandler::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 void __cdecl _Deallocate(void*);
 // Calls FUN_009ea7c0 on this, frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009ea740
+// pdb: VirtualActorPathHandler::`scalar deleting destructor' | VirtualActorPathHandler.obj | retail, vtable slot, high
 void* VirtualActorPathHandler::DestroyIfFlagged(unsigned int flags)
 {
     VirtualActorPathHandler::~VirtualActorPathHandler();
@@ -240,6 +256,7 @@ void* VirtualActorPathHandler::DestroyIfFlagged(unsigned int flags)
 }
 
 // @fnv 0x009ea7c0
+// pdb: VirtualActorPathHandler::~VirtualActorPathHandler | VirtualActorPathHandler.obj | debug, upstream name already matches, high
 VirtualActorPathHandler::~VirtualActorPathHandler()
 {
     ((VirtualActorPathHandler*)this)->SetInitialPathState();
@@ -248,6 +265,8 @@ VirtualActorPathHandler::~VirtualActorPathHandler()
 // Forwards the delta time to the virtual method V003 and returns its result.
 // @fnv 0x009ead60
 // src: XBOX_PDB 0x009ead60
+// pdb: VirtualActorPathHandler::UpdateWhilePlayerWaits | VirtualActorPathHandler.obj | debug, upstream name already matches, high
+// pdb params: afDeltaT
 int VirtualActorPathHandler::UpdateWhilePlayerWaits(float afDeltaT)
 {
     return vfn_0c(afDeltaT);
@@ -261,6 +280,7 @@ extern unsigned int __fastcall PathingSolution_GetVirtualNodeCount(char*);
 extern double gModifierZero;
 // @fnv 0x009eb0b0
 // src: XBOX_PDB 0x009eb0b0
+// pdb: VirtualActorPathHandler::GetPercentTraveled | VirtualActorPathHandler.obj | debug, upstream name already matches, high
 float VirtualActorPathHandler::GetPercentTraveled()
 {
     if (!reinterpret_cast<Flt*>(reinterpret_cast<char*>(this) + 0xc)->operator unsigned int())
@@ -268,14 +288,16 @@ float VirtualActorPathHandler::GetPercentTraveled()
     if (m_uiPathPointIndex >=
             PathingSolution_GetVirtualNodeCount(reinterpret_cast<char*>(
                 reinterpret_cast<Flt*>(reinterpret_cast<char*>(this) + 0xc)->operator unsigned int())) ||
-        m_fPathValue2 <= gModifierZero)
+        fPathLength <= gModifierZero)
         return 1.0f;
-    return m_fPathValue16 / m_fPathValue2;
+    return fDistanceTraveled / fPathLength;
 }
 
 // Returns the actor's position.
 // @fnv 0x009eb120
-NiPoint3 VirtualActorPathHandler::GetPoint(float afUnused)
+// pdb: VirtualActorPathHandler::ComputeApproximateLocation | VirtualActorPathHandler.obj | retail, vtable slot, high
+// pdb params: afDeltaT
+NiPoint3 VirtualActorPathHandler::GetPoint(float afDeltaT)
 {
     return *static_cast<const TESObjectREFR*>(pActor)->GetPos();
 }
@@ -287,6 +309,7 @@ PathingGraphNode* __fastcall GetLastVirtualPathNode(PathingSolution* solution);
 
 // Returns the position of the next path node, the virtual node, or the starting position when the solution has no nodes.
 // @fnv 0x009eb160
+// pdb: VirtualActorPathHandler::GetNextNodeLocation | VirtualActorPathHandler.obj | retail, vtable slot, high
 NiPoint3 VirtualActorPathHandler::GetNextPathPoint() const
 {
     if (((PathingSolution*)*(NiPointer<PathingSolution>*)((char*)this + 0xc))->GetNodeCount() >
@@ -316,6 +339,9 @@ NiPoint3 VirtualActorPathHandler::GetNextPathPoint() const
 
 // Prints the actor's starting position and, if a pathing solution exists, the current path node index and count; otherwise prints "No path".
 // @fnv 0x009eb2b0
+// pdb: VirtualActorPathHandler::PrintCurrentStatus | VirtualActorPathHandler.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aLoc, aJust
+// pdb locals: loc
 void VirtualActorPathHandler::PrintPathDebugInfo(IDebugText* apDebugText, DEBUGTEXT_LOCATION aLoc, DEBUGTEXT_JUSTIFY aJust)
 {
     NiPoint3 loc = *static_cast<const TESObjectREFR*>(pActor)->GetPos();
@@ -339,6 +365,8 @@ void* __fastcall Modelloader_GetReferencedThis(void* p);
 
 // If the container at unk0c is valid and index is in range, copies the NiPoint3 at that index into out and returns true; otherwise returns false.
 // @fnv 0x009eb230
+// pdb: VirtualActorPathHandler::GetNodeLocation | VirtualActorPathHandler.obj | debug, vtable slot, medium
+// pdb params: aiIndex, arLocation
 bool VirtualActorPathHandler::GetPointAtIndex(unsigned int index, NiPoint3* out)
 {
     if (Modelloader_GetReferencedThis(&pCurrentPathingSolution) != 0)
@@ -378,16 +406,20 @@ struct PointMagnitude : NiPoint3
 };
 // Advances the door path node, moves the actor through the door, and returns -1, -2, 1 or 0 depending on the next node and actor position checks.
 // @fnv 0x009ead90
-int VirtualActorPathHandler::GetVirtualNodeIndexAtPosition(NiPoint3& position)
+// src: XBOX_RETAIL_PDB 0x009ead90
+// pdb: VirtualActorPathHandler::UseDoorAtNode | VirtualActorPathHandler.obj | retail, string-set bridge, high
+// pdb params: aNewLoc
+// pdb locals: pdoor, movedLoc, fdiff
+int VirtualActorPathHandler::UseDoorAtNode(NiPoint3& aNewLoc)
 {
     if (AILinearTaskThreadManager_ShouldQueue3DTask())
     {
-        ((UseDoorCalls*)FUN_004537b0(pActor, position))->QueueActorLocationTask();
-        ((UseDoorCalls*)FUN_004537b0(pActor))->QueueActorTask();
+        ((UseDoorCalls*)FUN_004537b0(pActor, aNewLoc))->QueueActorLocationTask();
+        ((UseDoorCalls*)FUN_004537b0(pActor))->TaskQueueInterface_QueueActorMoveCharController();
     }
     else
     {
-        ((DoorReference*)pActor)->TESObjectREFR_SetLocationOnReference(position);
+        ((DoorReference*)pActor)->TESObjectREFR_SetLocationOnReference(aNewLoc);
     }
     DoorReference* pPathNodeDoor =
         (DoorReference*)((PathingGraphNode*)((PathingSolution*)pCurrentPathingSolution)->GetVirtualNode_006e78b0(m_uiPathPointIndex))->GetTeleportDoor();
@@ -405,7 +437,7 @@ int VirtualActorPathHandler::GetVirtualNodeIndexAtPosition(NiPoint3& position)
                 .GetSquaredXYLength();
         if (distance > DAT_0102f078)
         {
-            if (((PointComparison&)position).FUN_00439090(actorPosition))
+            if (((PointComparison&)aNewLoc).FUN_00439090(actorPosition))
             {
                 Warning(
                     "PATHFINDING: Actor %s used teleport door %s in cell %s and was not moved to the expected pathing location, check teleport marker",
@@ -420,11 +452,11 @@ int VirtualActorPathHandler::GetVirtualNodeIndexAtPosition(NiPoint3& position)
             return -2;
         }
     }
-    position = *static_cast<const TESObjectREFR*>(pActor)->GetPos();
+    aNewLoc = *static_cast<const TESObjectREFR*>(pActor)->GetPos();
     if (!((DoorReference*)pActor)->GetCellLoadState() && !((PlayerS*)g_thePlayer)->IsSleepingOrResting())
     {
         ++m_uiPathPointIndex;
-        m_fPathValue16 = 0.0f;
+        fDistanceTraveled = 0.0f;
         return 1;
     }
     return 0;

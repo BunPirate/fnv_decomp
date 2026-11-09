@@ -101,7 +101,7 @@ class FUN_00dcd310 : public hkpShapeCollection
     int unk58;
     int unk5C;
 
-    void hkpStorageMeshShape_addSubpart(const hkpMeshShapeSubpartD4B& kSubpart) throw();
+    void hkpStorageMeshShape_addSubpart(const hkpMeshShapeSubpartD4B& partIn) throw();
 };
 
 class FUN_00d4bab0 : public FUN_00dcd310
@@ -114,12 +114,14 @@ class FUN_00d4bab0 : public FUN_00dcd310
 };
 
 // @fnv 0x00d4bab0
+// pdb: hkpStorageMeshShape::hkpStorageMeshShape | hkpStorageMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numbits
 FUN_00d4bab0::FUN_00d4bab0(const FUN_00dcd310& kOther) throw()
     : FUN_00dcd310(kOther.m_fSphereRadius, kOther.m_iNumBitsForSubpartIndex)
 {
     m_kScaling = kOther.m_kScaling;
-    m_ulUserData = kOther.m_ulUserData;
-    m_bDisableWelding.m_cBooleanValue = kOther.m_bDisableWelding.m_cBooleanValue;
+    m_userData = kOther.m_userData;
+    m_disableWelding.m_cBooleanValue = kOther.m_disableWelding.m_cBooleanValue;
     for (int i = 0; i < kOther.m_kSubparts.GetLogicalSize(); i++)
         hkpStorageMeshShape_addSubpart(kOther.m_kSubparts[i]);
     m_kWeldingInfo = kOther.m_kWeldingInfo;
@@ -143,6 +145,7 @@ class FUN_00d4bc00 : public hkReferencedObject
 
 // Destructor that releases the six hkArray members of the object via their own destructors.
 // @fnv 0x00d4bc00
+// pdb: hkpStorageMeshShape::SubpartStorage::~SubpartStorage | hkpStorageMeshShape.obj | retail, object-file run extension, low
 FUN_00d4bc00::~FUN_00d4bc00() throw()
 {}
 }  // namespace fnv_00d4bc00
@@ -156,7 +159,7 @@ class FUN_00d4bc00 : public hkReferencedObject
 
     static void operator delete(void* p) throw()
     {
-        hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<FUN_00d4bc00*>(p)->m_usMemSizeAndFlags);
+        hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<FUN_00d4bc00*>(p)->m_memSizeAndFlags);
     }
 
     FUN_00d4bc00* DestroyAndFree(unsigned int uiFlags) throw();
@@ -164,6 +167,7 @@ class FUN_00d4bc00 : public hkReferencedObject
 
 // Runs the destructor, then frees the object through operator delete when bit 0 of uiFlags is set, and returns this.
 // @fnv 0x00d4bd30
+// pdb: hkpStorageMeshShape::SubpartStorage::`scalar deleting destructor' | hkpStorageMeshShape.obj | retail, vtable slot, high
 FUN_00d4bc00* FUN_00d4bc00::DestroyAndFree(unsigned int uiFlags) throw()
 {
     this->FUN_00d4bc00::~FUN_00d4bc00();
@@ -187,6 +191,7 @@ class FUN_00d4be00_cls : public FUN_00d4bab0
 };
 
 // @fnv 0x00d4be00
+// pdb: hkpStorageMeshShape::`scalar deleting destructor' | hkpStorageMeshShape.obj | retail, vtable slot, high
 FUN_00d4be00_cls* FUN_00d4be00_cls::FUN_00d4be00(int flags)
 {
     ((FUN_00d4b400_Obj*)this)->FUN_00d4b400();
@@ -194,7 +199,7 @@ FUN_00d4be00_cls* FUN_00d4be00_cls::FUN_00d4be00(int flags)
     {
         hkMemoryRouter* mem = &hkMemoryRouter_getInstance();
         hkMemoryAllocator* alloc = mem->m_heap;
-        alloc->blockFree(this, m_usMemSizeAndFlags);
+        alloc->blockFree(this, m_memSizeAndFlags);
     }
     return this;
 }
@@ -220,6 +225,7 @@ class FUN_00d4b400 : public FUN_00d4bd60
 
 // Destructor that calls FUN_00c905b0 on each element of m_children.
 // @fnv 0x00d4b400
+// pdb: hkpStorageMeshShape::~hkpStorageMeshShape | hkpStorageMeshShape.obj | retail, object-file run extension, low
 FUN_00d4b400::~FUN_00d4b400() throw()
 {
     for (int i = 0; i < m_children.GetLogicalSize(); i++)
@@ -258,8 +264,8 @@ struct Derived : hkpShape, hkpShapeContainer
 Derived::Derived() : hkpShape(HK_SHAPE_INVALID)
 {}
 
-void __cdecl ResizeAudioStream(void* heap, void* arr, int elemSize);
-void __cdecl hkArrayUtil__reserve(void* heap, void* arr, int newCap, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 extern float DAT_01267e30;
 struct SubpartFlags480
 {
@@ -357,130 +363,133 @@ struct Storage480 : hkReferencedObject
 // Copies a mesh subpart's vertex, index, material, and extra data into owned storage arrays and updates the subpart's pointers and strides.
 // @fnv 0x00d4b480
 // src: HAVOK_LIB 0x00d4b480
-void FUN_00dcd310::hkpStorageMeshShape_addSubpart(const hkpMeshShapeSubpartD4B& kSubpart) throw()
+// pdb: hkpStorageMeshShape::addSubpart | hkpStorageMeshShape.obj | retail, upstream name already matches, high
+// pdb params: partIn
+// pdb locals: assertBuf, ostr
+void FUN_00dcd310::hkpStorageMeshShape_addSubpart(const hkpMeshShapeSubpartD4B& partIn) throw()
 {
     hkpMeshShapeSubpartD4B* pSubpart = ExpandInit480(m_kSubparts);
 
     Storage480* storage = (Storage480*)hkMemoryRouter_getInstance().heap().blockAlloc(0x50);
-    storage->m_usMemSizeAndFlags = 0x50;
+    storage->m_memSizeAndFlags = 0x50;
     storage = storage->FUN_00d4bbb0();
 
     hkArray<Storage480*>& arr60 = (hkArray<Storage480*>&)static_cast<FUN_00d4bab0*>(this)->m_60;
     arr60.pushBack(storage);
     storage = arr60.m_data[arr60.m_iElementCount - 1];
-    int numFloats = kSubpart.unk08 * 3;
+    int numFloats = partIn.unk08 * 3;
 
     {
         hkArray<float>& verts = storage->verts;
         float* dst = verts.expandBy(numFloats);
-        const float* src = (const float*)kSubpart.unk00;
-        for (int i = 0; i < kSubpart.unk08; i++)
+        const float* src = (const float*)partIn.unk00;
+        for (int i = 0; i < partIn.unk08; i++)
         {
             dst[0] = src[0];
             dst[1] = src[1];
             dst[2] = src[2];
             dst += 3;
-            src = (const float*)((const char*)src + kSubpart.unk04);
+            src = (const float*)((const char*)src + partIn.unk04);
         }
         pSubpart->unk00 = (int)verts.m_data;
         pSubpart->unk04 = 12;
-        pSubpart->unk08 = kSubpart.unk08;
+        pSubpart->unk08 = partIn.unk08;
     }
 
     int idxDst;
-    if (((const SubpartFlags480*)&kSubpart)->indexType == 1)
+    if (((const SubpartFlags480*)&partIn)->indexType == 1)
     {
-        int a = (int)((unsigned int)kSubpart.unk14 >> 1);
+        int a = (int)((unsigned int)partIn.unk14 >> 1);
         int iClamped = a;
         if (iClamped > 2)
             iClamped = 3;
         pSubpart->unk14 = iClamped + iClamped;
-        int numIndices = storageMeshShape_numIndices(a, kSubpart.unk1C);
+        int numIndices = storageMeshShape_numIndices(a, partIn.unk1C);
         hkArray<unsigned short>& arr = storage->idx16;
         unsigned short* dst = arr.expandBy(numIndices);
         idxDst = (int)dst;
-        const unsigned short* src = (const unsigned short*)kSubpart.unk0C;
-        for (int i = 0; i < kSubpart.unk1C; i++)
+        const unsigned short* src = (const unsigned short*)partIn.unk0C;
+        for (int i = 0; i < partIn.unk1C; i++)
         {
             dst[0] = src[0];
             dst[1] = src[1];
             dst[2] = src[2];
             dst = (unsigned short*)((char*)dst + pSubpart->unk14);
-            src = (const unsigned short*)((const char*)src + kSubpart.unk14);
+            src = (const unsigned short*)((const char*)src + partIn.unk14);
         }
     }
     else
     {
-        int a = (int)((unsigned int)kSubpart.unk14 >> 2);
+        int a = (int)((unsigned int)partIn.unk14 >> 2);
         int iClamped = a;
         if (iClamped > 2)
             iClamped = 3;
         pSubpart->unk14 = (iClamped << 2);
-        int numIndices = storageMeshShape_numIndices(a, kSubpart.unk1C);
+        int numIndices = storageMeshShape_numIndices(a, partIn.unk1C);
         hkArray<int>& arr = storage->idx32;
         int* dst = arr.expandBy(numIndices);
         idxDst = (int)dst;
-        const int* src = (const int*)kSubpart.unk0C;
-        for (int i = 0; i < kSubpart.unk1C; i++)
+        const int* src = (const int*)partIn.unk0C;
+        for (int i = 0; i < partIn.unk1C; i++)
         {
             dst[0] = src[0];
             dst[1] = src[1];
             dst[2] = src[2];
             dst = (int*)((char*)dst + pSubpart->unk14);
-            src = (const int*)((const char*)src + kSubpart.unk14);
+            src = (const int*)((const char*)src + partIn.unk14);
         }
     }
 
-    ((SubpartFlags480*)pSubpart)->indexType = ((const SubpartFlags480*)&kSubpart)->indexType;
-    pSubpart->unk1C = kSubpart.unk1C;
-    pSubpart->unk18 = kSubpart.unk18;
+    ((SubpartFlags480*)pSubpart)->indexType = ((const SubpartFlags480*)&partIn)->indexType;
+    pSubpart->unk1C = partIn.unk1C;
+    pSubpart->unk18 = partIn.unk18;
     pSubpart->unk0C = idxDst;
-    ((SubpartFlags480*)pSubpart)->materialIndexType = ((const SubpartFlags480*)&kSubpart)->materialIndexType;
+    ((SubpartFlags480*)pSubpart)->materialIndexType = ((const SubpartFlags480*)&partIn)->materialIndexType;
 
-    const void* materialIndices = (const void*)kSubpart.unk20;
+    const void* materialIndices = (const void*)partIn.unk20;
     if (materialIndices != 0)
     {
-        if (((const SubpartFlags480*)&kSubpart)->materialIndexType == 1)
+        if (((const SubpartFlags480*)&partIn)->materialIndexType == 1)
         {
 
-            if (kSubpart.unk24 == 0)
+            if (partIn.unk24 == 0)
             {
                 storage->mat8.pushBack(*(const unsigned char*)materialIndices);
                 pSubpart->unk20 = (int)&storage->mat8.back();
             }
             else
             {
-                unsigned char* dst = storage->mat8.expandBy(kSubpart.unk1C);
+                unsigned char* dst = storage->mat8.expandBy(partIn.unk1C);
                 pSubpart->unk20 = (int)dst;
-                const unsigned char* src = (const unsigned char*)kSubpart.unk20;
-                for (int i = 0; i < kSubpart.unk1C; i++)
+                const unsigned char* src = (const unsigned char*)partIn.unk20;
+                for (int i = 0; i < partIn.unk1C; i++)
                 {
                     dst[i] = src[0];
-                    src += kSubpart.unk24;
+                    src += partIn.unk24;
                 }
             }
         }
         else
         {
             hkArray<unsigned short>& arr = storage->mat16;
-            if (kSubpart.unk24 == 0)
+            if (partIn.unk24 == 0)
             {
                 arr.pushBack(*(const unsigned short*)materialIndices);
                 pSubpart->unk20 = (int)(arr.m_data + arr.m_iElementCount - 1);
             }
             else
             {
-                unsigned short* dst = arr.expandBy(kSubpart.unk1C);
+                unsigned short* dst = arr.expandBy(partIn.unk1C);
                 pSubpart->unk20 = (int)dst;
-                const unsigned short* src = (const unsigned short*)kSubpart.unk20;
-                for (int i = 0; i < kSubpart.unk1C; i++)
+                const unsigned short* src = (const unsigned short*)partIn.unk20;
+                for (int i = 0; i < partIn.unk1C; i++)
                 {
                     dst[i] = src[0];
-                    src = (const unsigned short*)((const char*)src + kSubpart.unk24);
+                    src = (const unsigned short*)((const char*)src + partIn.unk24);
                 }
             }
         }
-        int matStride = kSubpart.unk24;
+        int matStride = partIn.unk24;
         pSubpart->unk24 = matStride;
         if (matStride != 0)
         {
@@ -504,24 +513,24 @@ void FUN_00dcd310::hkpStorageMeshShape_addSubpart(const hkpMeshShapeSubpartD4B& 
     if (pSubpart->unk20 != 0)
     {
         hkArray<int>& arr = storage->extra;
-        if (kSubpart.unk2C == 0)
+        if (partIn.unk2C == 0)
         {
-            const int* pExtraSrc = (const int*)kSubpart.unk28;
+            const int* pExtraSrc = (const int*)partIn.unk28;
             arr.pushBack(*pExtraSrc);
             pSubpart->unk2C = 0;
             pSubpart->unk30 = 1;
         }
         else
         {
-            int* dst = arr.expandBy(kSubpart.unk30);
-            const int* pExtraSrc = (const int*)kSubpart.unk28;
-            for (int i = 0; i < kSubpart.unk30; i++)
+            int* dst = arr.expandBy(partIn.unk30);
+            const int* pExtraSrc = (const int*)partIn.unk28;
+            for (int i = 0; i < partIn.unk30; i++)
             {
                 dst[i] = pExtraSrc[0];
-                pExtraSrc = (const int*)((const char*)pExtraSrc + kSubpart.unk2C);
+                pExtraSrc = (const int*)((const char*)pExtraSrc + partIn.unk2C);
             }
             pSubpart->unk2C = 4;
-            pSubpart->unk30 = kSubpart.unk30;
+            pSubpart->unk30 = partIn.unk30;
         }
         pSubpart->unk28 = (int)arr.m_data;
     }
@@ -532,7 +541,7 @@ void FUN_00dcd310::hkpStorageMeshShape_addSubpart(const hkpMeshShapeSubpartD4B& 
         pSubpart->unk2C = 0;
         pSubpart->unk20 = (int)&DAT_01267e30;
     }
-    pSubpart->unk34 = kSubpart.unk34;
+    pSubpart->unk34 = partIn.unk34;
 }
 
 namespace fnv_00d4ba30 {
@@ -602,6 +611,8 @@ class FUN_00d4ba30 : public FUN_00dcd380
 
 // Constructor: calls the base constructor and, if flag.m_bFinishing is set, points each subpart's data fields at the begin of the matching storage arrays.
 // @fnv 0x00d4ba30
+// pdb: hkpStorageMeshShape::hkpStorageMeshShape | hkpStorageMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numbits
 FUN_00d4ba30::FUN_00d4ba30(FinishingFlag flag) : FUN_00dcd380(flag), m_kStorage(flag)
 {
     if (flag.m_bFinishing)
@@ -661,6 +672,7 @@ class FUN_00d4bd60
 
 // Destructor for a triangle collection object that owns a shape collection, a triangle array, and a material index array.
 // @fnv 0x00d4bd60
+// pdb: hkpMeshShape::~hkpMeshShape | hkpStorageMeshShape.obj | retail, object-file run extension, low
 FUN_00d4bd60::~FUN_00d4bd60() throw()
 {}
 }  // namespace fnv_00d4bd60
@@ -687,27 +699,29 @@ struct FUN_00dcebd0_Class : hkpShapeCollection
     int m_iCapacityState;
 
     void FUN_00d06290(const FUN_00dcebd0_Class& source);
-    void hkpPhysicsSystemWithContacts_copy(const FUN_00dcebd0_Class& source);
+    void hkpPhysicsSystemWithContacts_copy(const FUN_00dcebd0_Class& toCopy);
 };
 // Calls FUN_00d06290(source), then copies source's int array into this, reallocating through the thread allocator when capacity is smaller.
 // @fnv 0x00dcebd0
 // src: HAVOK_LIB 0x00dcebd0
-void FUN_00dcebd0_Class::hkpPhysicsSystemWithContacts_copy(const FUN_00dcebd0_Class& source)
+// pdb: hkpPhysicsSystemWithContacts::copy | hkpPhysicsSystemWithContacts.obj | retail, upstream name already matches, high
+// pdb params: toCopy
+void FUN_00dcebd0_Class::hkpPhysicsSystemWithContacts_copy(const FUN_00dcebd0_Class& toCopy)
 {
-    FUN_00d06290(source);
+    FUN_00d06290(toCopy);
     hkMemoryAllocator* allocator = hkMemoryRouter_getInstance().m_heap;
     int capacity = m_iCapacityState & 0x3fffffff;
-    if (capacity < source.m_iElementCount)
+    if (capacity < toCopy.m_iElementCount)
     {
         if ((m_iCapacityState & 0x80000000u) == 0)
         {
             allocator->bufFree(m_data, capacity * sizeof(int));
         }
-        int bytes = source.m_iElementCount * sizeof(int);
+        int bytes = toCopy.m_iElementCount * sizeof(int);
         m_data = static_cast<int*>(allocator->bufAlloc(bytes));
         m_iCapacityState = bytes / 4;
     }
-    m_iElementCount = source.m_iElementCount;
-    CopyElements(m_data, source.m_data, m_iElementCount);
+    m_iElementCount = toCopy.m_iElementCount;
+    CopyElements(m_data, toCopy.m_data, m_iElementCount);
 }
 }  // namespace fnv_00dcebd0

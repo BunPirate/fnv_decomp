@@ -18,5 +18,5 @@ class PacketNodeRecord : public PathingGraphNode
     bool VirtualPathingNode_HasActualLocation();
 };
 
-int CollectNearbyEdges(PathingLocation*, int, TESObjectREFR*);
+int Pathing_FindClosestEdges(PathingLocation*, int, TESObjectREFR*);
 

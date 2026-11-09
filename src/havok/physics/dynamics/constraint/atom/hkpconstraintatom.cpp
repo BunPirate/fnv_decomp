@@ -49,15 +49,17 @@ struct GenericConstraintAtomScheme
 // Walks a linked list from self while the node's first ushort is at least 0x17, OR-ing each node's FUN_00d22090(a, b) result and returning it.
 // @fnv 0x00d22120
 // src: HAVOK_LIB 0x00d22120
-int __cdecl hkpModifierConstraintAtom_addAllModifierDataToConstraintInfo(void* pNode, void* a, void* b)
+// pdb: hkpModifierConstraintAtom::addAllModifierDataToConstraintInfo | hkpConstraintAtom.obj | retail, upstream name already matches, high
+// pdb params: modifier, cinfo, usedFlagsOut
+int __cdecl hkpModifierConstraintAtom_addAllModifierDataToConstraintInfo(void* modifier, void* cinfo, void* usedFlagsOut)
 {
     int result = 0;
-    if (*(unsigned short*)pNode >= 0x17)
+    if (*(unsigned short*)modifier >= 0x17)
     {
-        void* p = pNode;
+        void* p = modifier;
         do
         {
-            result |= ((hkpModifierConstraintAtom*)p)->addModifierDataToConstraintInfo(*(GenericConstraintAtomScheme*)a, *(unsigned char*)b);
+            result |= ((hkpModifierConstraintAtom*)p)->addModifierDataToConstraintInfo(*(GenericConstraintAtomScheme*)cinfo, *(unsigned char*)usedFlagsOut);
             p = *(void**)((char*)p + 0x14);
         } while (*(unsigned short*)p >= 0x17);
     }
@@ -91,12 +93,13 @@ FUN_00d21de0_cls* FUN_00d21de0_cls::hkpSimpleContactConstraintAtom_hkpSimpleCont
 }
 
 // TYPE_MODIFIER_IGNORE_CONSTRAINT (0x1b) calls this method at 0x00d22030.
+// pdb: structure hkpIgnoreModifierConstraintAtom, size 0x20 (here 0x18), bases: hkpModifierConstraintAtom, 0 members
 class hkpIgnoreModifierConstraintAtom : public hkpModifierConstraintAtom
 {
 public:
     int getConstraintInfo_00d22030(GenericConstraintAtomScheme* info);
 };
-void __cdecl hkpConstraintData_getConstraintInfoUtil(const hkpModifierConstraintAtom* atom, unsigned int count, GenericConstraintAtomScheme* result);
+void __cdecl hkpConstraintData_getConstraintInfoUtil(const hkpModifierConstraintAtom* atom, unsigned int count, GenericConstraintAtomScheme* infoOut);
 
 // Walks the atom chain while type >= 23, then subtracts the partial solver temps, results and schema size from info unless the atom type is 22 or 1.
 // @fnv 0x00d22030
@@ -230,12 +233,13 @@ void hkpMassChangerModifierConstraintAtomq::ScaleInverseInertia(const void* cp, 
 }  // namespace constraint_atom_simd
 
 // Moving-surface modifier: velocity at 0x20; its callback is bound to 0x00d21f50.
+// pdb: structure hkpMovingSurfaceModifierConstraintAtom, size 0x30, bases: hkpModifierConstraintAtom, 1 members
 class hkpMovingSurfaceModifierConstraintAtom : public hkpModifierConstraintAtom
 {
   public:
     void CopyMemory_00d21f50(const hkContactPoint& kCp, void* pvA, void* pvB, void* pvC, intptr_t kVelOut);
 
-    hkVector4 m_fVelocity;
+    hkVector4 m_velocity;
 };
 
 // Subtracts a copy of m_fVelocity scaled by its dot product with the separating normal from that copy, and adds the result to kVelOut.
@@ -247,8 +251,8 @@ void hkpMovingSurfaceModifierConstraintAtom::CopyMemory_00d21f50(const hkContact
     using namespace constraint_atom_simd;
     using constraint_atom_simd::LocalM128;
     hkVector4q kVel;
-    memcpy(&kVel, &m_fVelocity, sizeof(kVel));
-    const LocalM128 product = _mm_mul_ps(quad(reinterpret_cast<const hkVector4q&>(kCp.m_vSeparatingNormal)), quad(kVel));
+    memcpy(&kVel, &m_velocity, sizeof(kVel));
+    const LocalM128 product = _mm_mul_ps(quad(reinterpret_cast<const hkVector4q&>(kCp.m_separatingNormal)), quad(kVel));
     hkVector4q* out = (hkVector4q*)*(volatile intptr_t*)&kVelOut;
     const LocalM128 sum = _mm_add_ss(_mm_shuffle_ps(product, product, 0x55), product);
     const LocalM128 dot = _mm_add_ss(_mm_shuffle_ps(product, product, 0xaa), sum);
@@ -259,6 +263,10 @@ void hkpMovingSurfaceModifierConstraintAtom::CopyMemory_00d21f50(const hkContact
 
 // @fnv 0x00d22090
 // src: HAVOK_LIB 0x00d22090
+// pdb: hkpIgnoreModifierConstraintAtom::getConstraintInfo | hkpConstraintAtom.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkpModifierConstraintAtom::addModifierDataToConstraintInfo
+// pdb params: info
+// pdb locals: assertBuf, ostr, leafInfo
 int hkpModifierConstraintAtom::addModifierDataToConstraintInfo(GenericConstraintAtomScheme& kInfo, unsigned char& ucUsedFlagsOut)
 {
     int iCallbackRequest = 0;
@@ -349,6 +357,9 @@ struct ComChangerAtom
 
 // @fnv 0x00d22160
 // src: GUESS 0x00d22160 (confidence: low)
+// pdb: hkpCenterOfMassChangerModifierConstraintAtom::collisionResponseBeginCallback | hkpConstraintAtom.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkpMassChangerModifierConstraintAtom::collisionResponseBeginCallback
+// pdb params: cp, inA, velA, inB, velB
 void ComChangerAtom::UpdateFields_00d22160(const void* cp, InitInput& inA, BodyVelocity& velA, InitInput& inB,
                                   BodyVelocity& velB)
 {

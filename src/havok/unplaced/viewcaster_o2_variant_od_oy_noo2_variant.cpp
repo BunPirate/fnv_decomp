@@ -84,7 +84,7 @@ class Owner631
 {
   public:
     int GetType();
-    hkBool CastRay(RayInput631& kInput, RayOutput631& kOutput);
+    hkBool hkpShape_castRay(RayInput631& kInput, RayOutput631& kOutput);
 };
 
 class Collidable631
@@ -312,7 +312,7 @@ class Pick631
     Pick631();
     void SetFilter(Filter631 kFilter);
     void SetFrom(const hkVector4& kFrom);
-    void SetTo(const hkVector4& kTo);
+    void bhkPickData_SetTo(const hkVector4& arTo);
     void SetCollector(AllRayHits631* pkCollector);
     bool IsSingleHit();
     __m128 m_q00;
@@ -726,7 +726,7 @@ class Results631
 class List631
 {
   public:
-    List631(int iA, int iB);
+    List631(int uiResultsInitialSize, int uiResultsGrowBy);
     ~List631();
     void SetMode(int iMode);
     void SetSorted(int iSorted);
@@ -749,7 +749,7 @@ class List631
 class Scope631
 {
   public:
-    Scope631(int iType, int iFlag, const char* pcFile, int iLine);
+    Scope631(int memContext, int overridable, const char* pcFile, int aiLine);
     ~Scope631();
     int unk00;
 };
@@ -771,16 +771,17 @@ extern IntSetting631 g_kMaxRays631;
 extern int g_iLine631;
 extern void* g_pvLastHit631;
 
-void __cdecl NI2HK(hkVector4& kOut, const NiPoint3& kIn);
-NiAVObject* __cdecl GetAVObjectForCollidable(Collidable631* pkCollidable);
+void __cdecl NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
+NiAVObject* __cdecl GetAVObjectForCollidable(Collidable631* aphkCol);
 TESObjectREFR* __cdecl TESObjectREFR_FindReferenceFor3D(void* pvObject);
 Entity631* __cdecl hkpGetRigidBody(Collidable631* pkCollidable);
-void* __cdecl bhkEntity_Getbhk(Entity631* pkEntity);
-void __cdecl PickDistance(List631* pkList, const NiPoint3* pkOrigin, const NiPoint3* pkDir, float fImpulseRadiusSquared,
-                          NiAVObject* pkNode, int iFlags);
+void* __cdecl bhkEntity_Getbhk(Entity631* apEnt);
+void __cdecl PickDistance(List631* apPick, const NiPoint3* aOrigin, const NiPoint3* aDir, float afDistance,
+                          NiAVObject* apTarget, int abClearResults);
 float __cdecl HK2NI(float fValue);
 
 // ViewCaster has no shared include/ header yet; retain its declaration with its real name.
+// pdb: class ViewCaster, size 0xc (here 0x1), 3 members
 class ViewCaster
 {
   public:
@@ -788,14 +789,17 @@ class ViewCaster
     Shape631* GetShape();
     Caster631* GetCaster();
     void Prepare();
-    TESObjectREFR* FindActivateREFR(const NiPoint3* pkOrigin, const NiPoint3* pkDir, float fImpulseRadiusSquared, float* pfDistance,
-                                   bool* pbAlternate);
+    TESObjectREFR* FindActivateREFR(const NiPoint3* aOrigin, const NiPoint3* aDirection, float afPickDistance, float* afObjectDistance,
+                                   bool* abIsFuzzy);
 };
 
 // @fnv 0x00631d60
 // src: XBOX_PDB 0x00631d60
-TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* pkOrigin, const NiPoint3* pkDir, float fImpulseRadiusSquared,
-                                              float* pfDistance, bool* pbAlternate)
+// pdb: ViewCaster::FindActivateREFR | ViewCaster.obj | retail, upstream name already matches, high
+// pdb params: aOrigin, aDirection, afPickDistance, afObjectDistance, abIsFuzzy
+// pdb locals: tempMemContext, presult, pw, ihavokPicks, hkto, fshapeCastDistance, ifuzzyPicks, bhits, fhavokPickDistance, activatePick, PointCollector, phavokPickRef, buseFuzzy, pshapeCastRef, igamebryoPicks, nito, fshapeCastCenterPointDistance, hkfrom, pfuzzyBody, input, plastBody, plast, pcurrent, i ...
+TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* aOrigin, const NiPoint3* aDirection, float afPickDistance,
+                                              float* afObjectDistance, bool* abIsFuzzy)
 {
     Scope631 kScope(0x10, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Havok\\ViewCaster.cpp", 0x9b);
     g_pvLastHit631 = 0;
@@ -804,15 +808,15 @@ TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* pkOrigin, const NiPo
     {
         Query631 kQuery;
         Caster631* pkCaster = GetCaster();
-        NiPoint3 kEnd = *pkOrigin + *pkDir * fImpulseRadiusSquared;
-        *pbAlternate = false;
-        *pfDistance = 3.402823466e+38f;
+        NiPoint3 kEnd = *aOrigin + *aDirection * afPickDistance;
+        *abIsFuzzy = false;
+        *afObjectDistance = 3.402823466e+38f;
         List631 kList(0, 8);
         kList.SetMode(0);
         kList.SetSorted(1);
         g_iLine631 = 0xdad;
         hkVector4 kFrom;
-        NI2HK(kFrom, *pkOrigin);
+        NI2HK(kFrom, *aOrigin);
         hkVector4 kTo;
         NI2HK(kTo, kEnd);
         bool bHits = false;
@@ -899,7 +903,7 @@ TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* pkOrigin, const NiPo
                             RayOutput631 kOut;
                             kOut.Reset();
                             Owner631* pkShape = kHit.m_pkCollidable->GetOwner();
-                            pkShape->CastRay(kRay, kOut);
+                            pkShape->hkpShape_castRay(kRay, kOut);
                             if (kOut.HasHit().operator bool())
                             {
                                 if (kOut.m_fHitFraction < fClosest)
@@ -916,7 +920,7 @@ TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* pkOrigin, const NiPo
                         if (pkLast != pkRef && reinterpret_cast<NiAVObject*>(pkRef->GetNiNode()) && iTargets < *g_kMaxTargets631.GetInt())
                         {
                             iTargets++;
-                            PickDistance(&kList, pkOrigin, pkDir, fImpulseRadiusSquared, reinterpret_cast<NiAVObject*>(pkRef->GetNiNode()), 0);
+                            PickDistance(&kList, aOrigin, aDirection, afPickDistance, reinterpret_cast<NiAVObject*>(pkRef->GetNiNode()), 0);
                         }
                     }
                     bool bValid = true;
@@ -972,7 +976,7 @@ TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* pkOrigin, const NiPo
                                     Pick631 kPick;
                                     kPick.SetFilter(GetShape()->GetFilter());
                                     kPick.SetFrom(kFrom);
-                                    kPick.SetTo(kHit.GetPosition());
+                                    kPick.bhkPickData_SetTo(kHit.GetPosition());
                                     AllRayHits631 kRayHits;
                                     kPick.SetCollector(&kRayHits);
                                     pkCaster->CastRay(&kPick);
@@ -1012,7 +1016,7 @@ TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* pkOrigin, const NiPo
                 }
             }
         }
-        fClosest *= fImpulseRadiusSquared;
+        fClosest *= afPickDistance;
         g_iLine631 = 0xdb5;
         if (kList.GetResults()->GetCount() > 0)
         {
@@ -1021,17 +1025,17 @@ TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* pkOrigin, const NiPo
             g_iLine631 = 0xdb7;
             pkResult = TESObjectREFR_FindReferenceFor3D(pvObject);
             g_iLine631 = 0xdb8;
-            *pfDistance = kList.GetResults()->GetAt(0)->GetDistance();
+            *afObjectDistance = kList.GetResults()->GetAt(0)->GetDistance();
             g_iLine631 = 0xdb9;
-            if (*pfDistance > fClosest)
+            if (*afObjectDistance > fClosest)
             {
-                *pfDistance = fClosest;
+                *afObjectDistance = fClosest;
                 pkResult = pkClosest;
             }
         }
         else if (pkClosest)
         {
-            *pfDistance = fClosest;
+            *afObjectDistance = fClosest;
             pkResult = pkClosest;
         }
         g_iLine631 = 0xdba;
@@ -1056,9 +1060,9 @@ TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* pkOrigin, const NiPo
             }
             if (bUseAlternate && pkAlternate && pkResult != pkAlternate)
             {
-                *pfDistance = fAlternateDistance;
+                *afObjectDistance = fAlternateDistance;
                 pkResult = pkAlternate;
-                *pbAlternate = true;
+                *abIsFuzzy = true;
                 g_pvLastHit631 = pvAlternateHit;
             }
         }

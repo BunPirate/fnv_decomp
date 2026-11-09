@@ -380,6 +380,9 @@ class S00ce0290_LookAt
 
 // @fnv 0x00ce0290
 // src: COMMUNITY 0x00ce0290
+// pdb: hkaLookAtIkSolver::solve | hkaLookAtIkSolver.obj | retail, upstream name already matches, high
+// pdb params: setup, targetMS, gain, boneModelSpaceInOut, range
+// pdb locals: vecToTargetMS, assertBuf, ostr, cross, q, limitedVec, worldFromFSU, fsuFromWorld, sideAxisMS, vec, qCorrection, crossCorrection
 S00ce0290_hkBool __cdecl S00ce0290_LookAt::hkaLookAtIkSolver_solve(const Setup& setup, const S00ce0290_hkVector4& targetMS,
                                                         hkReal gain, S00ce0290_hkQsTransform& boneModelSpaceInOut,
                                                         const BoneTransformRange* range)

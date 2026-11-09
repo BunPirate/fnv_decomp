@@ -97,7 +97,7 @@ void FUN_00ca8910_class::hkpRigidBody_setRestitution(float v)
 // @fnv 0x00ca80b0
 const hkTransform& hkpRigidBody::getTransform() const
 {
-    return m_pMotionState.m_kMotionState.m_kMotionTransform;
+    return m_motion.m_kMotionState.m_transform;
 }
 
 extern float DAT_01016248;
@@ -117,9 +117,9 @@ void __fastcall ComputeScaledMinimum(const NiPoint3* values, hkpCollidable* resu
     float firstMinimum = lowerPair(values->x, values->y);
     float minimum = lowerPair(firstMinimum, values->z);
     if (DAT_01016248 > minimum)
-        result->m_fAllowedPenetrationDepth = 0.2 * minimum;
+        result->m_allowedPenetrationDepth = 0.2 * minimum;
     else
-        result->m_fAllowedPenetrationDepth = 0.1f;
+        result->m_allowedPenetrationDepth = 0.1f;
 }
 
 struct Owner
@@ -181,14 +181,17 @@ struct Owner
     unsigned int unkd8;
     unsigned int unkdc;
     hkpMotion subobjectE0;
-    void hkpRigidBody_updateCachedShapeInfo(unsigned int value, hkVector4* result);
-    void hkpRigidBody_setCenterOfMassLocal(unsigned int value);
+    void hkpRigidBody_updateCachedShapeInfo(unsigned int shape, hkVector4* extentOut);
+    void hkpRigidBody_setCenterOfMassLocal(unsigned int centerOfMass);
 };
 // @fnv 0x00ca85f0
 // src: HAVOK_LIB 0x00ca85f0
-void Owner::hkpRigidBody_setCenterOfMassLocal(unsigned int value)
+// pdb: hkpRigidBody::setCenterOfMassLocal | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: centerOfMass
+// pdb locals: dummyExtent
+void Owner::hkpRigidBody_setCenterOfMassLocal(unsigned int centerOfMass)
 {
-    motionVirtual<void(__thiscall*)(hkpMotion*, unsigned int)>(subobjectE0, 11)(&subobjectE0, value);
+    motionVirtual<void(__thiscall*)(hkpMotion*, unsigned int)>(subobjectE0, 11)(&subobjectE0, centerOfMass);
     unsigned int source = unk10;
     hkVector4 result;
     hkpRigidBody_updateCachedShapeInfo(source, &result);
@@ -398,15 +401,18 @@ struct FUN_00ca8800_Class
     int unkD8;
     int unkDC;
     hkpMotion interfaceE0;
-    void hkpRigidBody_setPosition(int value);
+    void hkpRigidBody_setPosition(int position);
 };
 extern "C" void __cdecl hkpRigidBody_updateBroadphaseAndResetCollisionInformationOfWarpedBody(FUN_00ca8800_Class* self);
 // Calls the interface's dispatch with value, then invokes FUN_00ca8700 on this object.
 // @fnv 0x00ca8800
 // src: HAVOK_LIB 0x00ca8800
-void FUN_00ca8800_Class::hkpRigidBody_setPosition(int value)
+// pdb: hkpRigidBody::setPosition | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: position
+// pdb locals: assertBuf, ostr
+void FUN_00ca8800_Class::hkpRigidBody_setPosition(int position)
 {
-    motionVirtual<void(__thiscall*)(hkpMotion*, int)>(interfaceE0, 12)(&interfaceE0, value);
+    motionVirtual<void(__thiscall*)(hkpMotion*, int)>(interfaceE0, 12)(&interfaceE0, position);
     hkpRigidBody_updateBroadphaseAndResetCollisionInformationOfWarpedBody(this);
 }
 
@@ -419,15 +425,18 @@ struct CA8830Object
     char unk000[0xe0];
     hkpMotion m_kMemberDescriptor;
 
-    void hkpRigidBody_setRotation(int value);
+    void hkpRigidBody_setRotation(int rotation);
 };
 
 // Calls setValue on the member with value, then passes this to FUN_00ca8700.
 // @fnv 0x00ca8830
 // src: HAVOK_LIB 0x00ca8830
-void CA8830Object::hkpRigidBody_setRotation(int value)
+// pdb: hkpRigidBody::setRotation | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: rotation
+// pdb locals: assertBuf, ostr
+void CA8830Object::hkpRigidBody_setRotation(int rotation)
 {
-    motionVirtual<void(__thiscall*)(hkpMotion*, int)>(m_kMemberDescriptor, 13)(&m_kMemberDescriptor, value);
+    motionVirtual<void(__thiscall*)(hkpMotion*, int)>(m_kMemberDescriptor, 13)(&m_kMemberDescriptor, rotation);
     hkpRigidBody_updateBroadphaseAndResetCollisionInformationOfWarpedBody(this);
 }
 
@@ -492,15 +501,18 @@ struct FUN_00ca8860_cls
     int unkd8;
     int unkdc;
     hkpMotion m_sub;
-    void hkpRigidBody_setPositionAndRotation(int aiFirst, int aiSecond);
+    void hkpRigidBody_setPositionAndRotation(int position, int rotation);
 };
 
 // Calls the sub-object's Do virtual with aiFirst and aiSecond, then invokes FUN_00ca8700 on this.
 // @fnv 0x00ca8860
 // src: HAVOK_LIB 0x00ca8860
-void FUN_00ca8860_cls::hkpRigidBody_setPositionAndRotation(int aiFirst, int aiSecond)
+// pdb: hkpRigidBody::setPositionAndRotation | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: position, rotation
+// pdb locals: assertBuf, ostr
+void FUN_00ca8860_cls::hkpRigidBody_setPositionAndRotation(int position, int rotation)
 {
-    motionVirtual<void(__thiscall*)(hkpMotion*, int, int)>(m_sub, 14)(&m_sub, aiFirst, aiSecond);
+    motionVirtual<void(__thiscall*)(hkpMotion*, int, int)>(m_sub, 14)(&m_sub, position, rotation);
     hkpRigidBody_updateBroadphaseAndResetCollisionInformationOfWarpedBody(this);
 }
 
@@ -619,26 +631,29 @@ struct CA8B80Object
     hkpMotion m_handler;
 
     void Update();
-    void hkpRigidBody_applyAngularImpulseAsCriticalOperation(const hkVector4& kPos);
+    void hkpRigidBody_applyAngularImpulseAsCriticalOperation(const hkVector4& imp);
 };
 
 // @fnv 0x00ca8b80
 // src: HAVOK_LIB 0x00ca8b80
-void CA8B80Object::hkpRigidBody_applyAngularImpulseAsCriticalOperation(const hkVector4& kPos)
+// pdb: hkpRigidBody::applyAngularImpulseAsCriticalOperation | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: imp
+// pdb locals: op
+void CA8B80Object::hkpRigidBody_applyAngularImpulseAsCriticalOperation(const hkVector4& imp)
 {
     if (m_queue && m_queue->m_bSlotEnabled)
     {
         CA8B80Command kCommand;
         kCommand.m_type = 0x1d;
-        kCommand.x = kPos.x;
+        kCommand.x = imp.x;
         kCommand.m_pOwnerObject = this;
-        kCommand.y = kPos.y;
-        kCommand.z = kPos.z;
+        kCommand.y = imp.y;
+        kCommand.z = imp.z;
         m_queue->Push(&kCommand);
         return;
     }
     Update();
-    motionVirtual<void(__thiscall*)(hkpMotion*, const hkVector4&)>(m_handler, 21)(&m_handler, kPos);
+    motionVirtual<void(__thiscall*)(hkpMotion*, const hkVector4&)>(m_handler, 21)(&m_handler, imp);
 }
 
 struct FUN_00ca9240_Base
@@ -657,6 +672,8 @@ struct FUN_00ca9240 : FUN_00ca9240_Base
 
 // Constructs the base with a and b and a zero, then sets type to 7.
 // @fnv 0x00ca9240
+// pdb: hkpCharacterMotion::hkpCharacterMotion | hkpRigidBody.obj | debug, object-file run extension, low
+// pdb params: position, rotation
 FUN_00ca9240::FUN_00ca9240(int aiValueA, int aiValueB) : FUN_00ca9240_Base(aiValueA, aiValueB, 0)
 {
     type = 7;
@@ -679,6 +696,8 @@ struct FUN_00ca9270 : BaseRecord
 
 // Constructs the object by forwarding apFirst and apSecond to BaseRecord with flag 0, then sets m_c08 to 2.
 // @fnv 0x00ca9270
+// pdb: hkpSphereMotion::hkpSphereMotion | hkpRigidBody.obj | debug, object-file run extension, low
+// pdb params: position, rotation
 FUN_00ca9270::FUN_00ca9270(void* apFirst, void* apSecond) : BaseRecord(apFirst, apSecond, 0)
 {
     m_c08 = 2;
@@ -781,6 +800,9 @@ struct S_00ca8630_Class
 };
 // @fnv 0x00ca8630
 // src: HAVOK_LIB 0x00ca8630
+// pdb: hkpRigidBody::setLinearVelocity | TESObjectREFR.obj | debug, call graph (shared callers), medium
+// pdb params: newVel
+// pdb locals: assertBuf, ostr
 void S_00ca8630_Class::hkpRigidBody_enableDeactivation(bool f)
 {
     if (f)
@@ -871,15 +893,18 @@ struct CA8890Object
     int unkDC;
     hkpMotion m_kMemberDescriptor;
 
-    void hkpRigidBody_setTransform(int value);
+    void hkpRigidBody_setTransform(int transform);
 };
 
 // Calls setValue on the member with value, then calls FUN_00ca8700 on this object.
 // @fnv 0x00ca8890
 // src: HAVOK_LIB 0x00ca8890
-void CA8890Object::hkpRigidBody_setTransform(int value)
+// pdb: hkpRigidBody::setTransform | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: transform
+// pdb locals: assertBuf, ostr
+void CA8890Object::hkpRigidBody_setTransform(int transform)
 {
-    motionVirtual<void(__thiscall*)(hkpMotion*, int)>(m_kMemberDescriptor, 15)(&m_kMemberDescriptor, value);
+    motionVirtual<void(__thiscall*)(hkpMotion*, int)>(m_kMemberDescriptor, 15)(&m_kMemberDescriptor, transform);
     hkpRigidBody_updateBroadphaseAndResetCollisionInformationOfWarpedBody(this);
 }
 
@@ -954,7 +979,7 @@ void FUN_00ca88e0_cls::hkpRigidBody_setMassInv(float afValue)
 }
 
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 
 struct CA92A0Element
 {
@@ -1052,6 +1077,9 @@ struct CA92A0Object
 
 // Copies the m_entries array from other into this object's m_entries via the array assignment operator.
 // @fnv 0x00ca92a0
+// pdb: hkpWorldObject::copyProperties | hkpRigidBody.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to hkMatrix3::operator()
+// pdb params: otherObj
 void CA92A0Object::CopyEntriesFrom(const CA92A0Object* other)
 {
     m_entries = other->m_entries;
@@ -1143,8 +1171,8 @@ struct FUN_00ca90c0_cls
     int unk0c;
 
     FUN_00ca90c0_cls* Clone();
-    void WriteToInfo(FnvScratch* pScratch);
-    FUN_00ca90c0_cls* AllocateStorage_00ca8c90(FnvScratch* pScratch);
+    void hkpRigidBody_getCinfo(FnvScratch* pScratch);
+    FUN_00ca90c0_cls* hkpRigidBody_ctor(FnvScratch* pScratch);
     virtual void v00();
     virtual void v04();
     virtual void v08();
@@ -1154,14 +1182,16 @@ struct FUN_00ca90c0_cls
 };
 
 // @fnv 0x00ca90c0
+// pdb: hkpRigidBody::clone | hkpRigidBody.obj | retail, vtable slot, high
+// pdb locals: currentData
 FUN_00ca90c0_cls* FUN_00ca90c0_cls::Clone()
 {
     FnvScratch cinfo;
     cinfo.InitializePhysicsFields();
-    WriteToInfo(&cinfo);
+    hkpRigidBody_getCinfo(&cinfo);
     FUN_00ca90c0_cls* pBlock = (FUN_00ca90c0_cls*)heapAllocator(hkMemoryRouter_getInstance()).blockAlloc(0x220);
     *(unsigned short*)((char*)pBlock + 4) = 0x220;
-    FUN_00ca90c0_cls* pCopy = pBlock->AllocateStorage_00ca8c90(&cinfo);
+    FUN_00ca90c0_cls* pCopy = pBlock->hkpRigidBody_ctor(&cinfo);
     memCpy16NonEmpty((char*)pCopy + 0xe0, (char*)this + 0xe0, 0x12);
     if (*(char**)((char*)this + 0x1f8))
     {
@@ -1193,13 +1223,15 @@ class HostCA8B
     int unkD0, unkD4, unkD8, unkDC, unkE0, unkE4;
     unsigned char m_bFlag;
 
-    hkBool CheckShapeTypeAndChildLimit() const;
+    hkBool hkpRigidBody_checkPerformance() const;
 };
 
 // Returns false for a null shape, type 0xf, or types 7, 8, 9, 10, 0x17 with over 100 child shapes (8 and 10 are skipped when m_bFlag is 4 or 5); else true.
 // @fnv 0x00ca8bf0
-// src: GUESS 0x00ca8bf0 (confidence: medium)
-hkBool HostCA8B::CheckShapeTypeAndChildLimit() const
+// src: XBOX_RETAIL_PDB 0x00ca8bf0
+// pdb: hkpRigidBody::checkPerformance | hkpRigidBody.obj | retail, object-file gap fill, high
+// pdb locals: assertBuf, ostr
+hkBool HostCA8B::hkpRigidBody_checkPerformance() const
 {
     const hkpShape* shape = m_pCollisionShape;
     if (!shape)
@@ -1318,7 +1350,7 @@ struct S_00ca84b0_Vector4
 
 void hkpWorldOperationUtil_removeEntityBP(S_00ca84b0_World* world, S_00ca84b0_Entity* entity);
 void hkpWorldOperationUtil_addEntityBP(S_00ca84b0_World* world, S_00ca84b0_Entity* entity);
-void NotifyShapeSet(S_00ca84b0_World* world, S_00ca84b0_Entity* entity);
+void hkpWorldCallbackUtil_fireEntityShapeSet(S_00ca84b0_World* world, S_00ca84b0_Entity* entity);
 void hkpEntityCallbackUtil_fireEntityShapeSet(S_00ca84b0_Entity* entity);
 // Same-unit static helper (0x00ca80d0): the allowed penetration depth is a fifth of the
 // smallest extent, or 0.1 once that extent reaches 0.5.
@@ -1372,6 +1404,9 @@ struct S_00ca84b0_Entity
 // Sets the entity's collision shape, updating penetration depth and notifying the owning world of the change.
 // @fnv 0x00ca84b0
 // src: HAVOK_LIB 0x00ca84b0
+// pdb: hkpRigidBody::setShape | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: shape
+// pdb locals: assertBuf, ostr, op, extent
 int S_00ca84b0_Entity::hkpRigidBody_setShape(hkpShape* shape)
 {
     if (m_pOwningWorld && m_pOwningWorld->unk94)
@@ -1409,7 +1444,7 @@ int S_00ca84b0_Entity::hkpRigidBody_setShape(hkpShape* shape)
     if (m_pOwningWorld)
         UpdateBoundingVolume(m_pOwningWorld, shape);
     if (m_pOwningWorld)
-        NotifyShapeSet(m_pOwningWorld, this);
+        hkpWorldCallbackUtil_fireEntityShapeSet(m_pOwningWorld, this);
     hkpEntityCallbackUtil_fireEntityShapeSet(this);
     if (m_pOwningWorld)
     {
@@ -1535,12 +1570,16 @@ struct FUN_00ca8af0_cls
     int unkDC;
     hkpMotion m_e0;
 
-    void DispatchEvent(void* a1, void* a2);
+    void hkpRigidBody_applyPointImpulseAsCriticalOperation(void* imp, void* p);
     void activate_00c9c1d0();
 };
 
 // @fnv 0x00ca8af0
-void FUN_00ca8af0_cls::DispatchEvent(void* a1, void* a2)
+// src: XBOX_RETAIL_PDB 0x00ca8af0
+// pdb: hkpRigidBody::applyPointImpulseAsCriticalOperation | hkpRigidBody.obj | retail, object-file gap fill, high
+// pdb params: imp, p
+// pdb locals: op
+void FUN_00ca8af0_cls::hkpRigidBody_applyPointImpulseAsCriticalOperation(void* imp, void* p)
 {
     if (m_08 != 0)
     {
@@ -1551,14 +1590,14 @@ void FUN_00ca8af0_cls::DispatchEvent(void* a1, void* a2)
             ev.m_pSender = this;
             hkMemoryRouter* holder = hkMemoryRouter_getInstance();
             ev.m_pData = holder->m_heap->blockAlloc(0x20);
-            *(__m128*)ev.m_pData = *(__m128*)a2;
-            *(__m128*)((char*)ev.m_pData + 0x10) = *(__m128*)a1;
+            *(__m128*)ev.m_pData = *(__m128*)p;
+            *(__m128*)((char*)ev.m_pData + 0x10) = *(__m128*)imp;
             m_08->hkpWorld_queueOperation(&ev);
             return;
         }
     }
     activate_00c9c1d0();
-    motionVirtual<void(__thiscall*)(hkpMotion*, void*, void*)>(m_e0, 20)(&m_e0, a1, a2);
+    motionVirtual<void(__thiscall*)(hkpMotion*, void*, void*)>(m_e0, 20)(&m_e0, imp, p);
 }
 }  // namespace fnv_00ca8af0
 
@@ -1600,7 +1639,7 @@ struct S_00ca8f50_Info
 struct S_00ca8f50_Src
 {
     bool hkpRigidBody_isDeactivationEnabled();
-    void WriteToInfo(S_00ca8f50_Info* info);
+    void hkpRigidBody_getCinfo(S_00ca8f50_Info* info);
     int unk0;
     int unk4;
     int unk8;
@@ -1681,7 +1720,10 @@ struct S_00ca8f50_Src
 
 // Copies fields from this S_00ca8f50_Src into the given S_00ca8f50_Info, including vectors, a transform, and lookup-table values.
 // @fnv 0x00ca8f50
-void S_00ca8f50_Src::WriteToInfo(S_00ca8f50_Info* info)
+// src: XBOX_RETAIL_PDB 0x00ca8f50
+// pdb: hkpRigidBody::getCinfo | hkpRigidBody.obj | retail, call graph (shared callers), high
+// pdb params: info
+void S_00ca8f50_Src::hkpRigidBody_getCinfo(S_00ca8f50_Info* info)
 {
     info->mBB = m21 & 1;
     info->mB8 = mD0;
@@ -1692,24 +1734,24 @@ void S_00ca8f50_Src::WriteToInfo(S_00ca8f50_Info* info)
     info->mA0 = m90;
     info->mC = m8C;
     info->mA4 = m94;
-    info->m94 = mE0.m_kMotionState.m_fLinearDamping;
-    info->m98 = mE0.m_kMotionState.m_fAngularDamping;
+    info->m94 = mE0.m_kMotionState.m_linearDamping;
+    info->m98 = mE0.m_kMotionState.m_angularDamping;
     info->m30.m_vComponents = mE0.m_kTranslationalVelocity.m_vComponents;
     info->m40.m_vComponents = mE0.m_kAngularVelocity.m_vComponents;
     info->m90 = mE0.GetMassValue();
     motionVirtual<void(__thiscall*)(hkpMotion*, hkRotation&)>(mE0, 5)(&mE0, info->m50);
     info->mB4 = *reinterpret_cast<unsigned char*>(&mE0.m_type);
-    info->mB6 = mE0.m_kMotionState.m_uiDeactivationClass;
-    info->mA8 = DAT_010c7948[*reinterpret_cast<const unsigned char*>(&mE0.m_kMotionState.m_fSurfaceFriction)];
-    info->mAC = DAT_010c7948[*reinterpret_cast<const unsigned char*>(&mE0.m_kMotionState.m_fRestitution)];
-    info->m10.m_vComponents = mE0.m_kMotionState.m_kMotionTransform.m_row3;
-    info->m20.m_vComponents = *reinterpret_cast<const __m128*>(&mE0.m_kMotionState.m_kSweptTransform.m_qRotation1);
-    info->m80.m_vComponents = mE0.m_kMotionState.m_kSweptTransform.m_vCenterOfMassLocal.m_vComponents;
+    info->mB6 = mE0.m_kMotionState.m_deactivationClass;
+    info->mA8 = DAT_010c7948[*reinterpret_cast<const unsigned char*>(&mE0.m_kMotionState.m_maxLinearVelocity)];
+    info->mAC = DAT_010c7948[*reinterpret_cast<const unsigned char*>(&mE0.m_kMotionState.m_maxAngularVelocity)];
+    info->m10.m_vComponents = mE0.m_kMotionState.m_transform.m_row3;
+    info->m20.m_vComponents = *reinterpret_cast<const __m128*>(&mE0.m_kMotionState.m_kSweptTransform.m_rotation1);
+    info->m80.m_vComponents = mE0.m_kMotionState.m_kSweptTransform.m_centerOfMassLocal.m_vComponents;
     info->m4 = m10;
     info->m0 = m2C;
     info->mB0 = m5C;
     info->mB7 = m2A;
-    int gravityBits = ((int)mE0.m_fGravityFactor.m_value) << 16;
+    int gravityBits = ((int)mE0.m_gravityFactor.m_value) << 16;
     info->m9C = *reinterpret_cast<float*>(&gravityBits);
 }
 
@@ -1724,11 +1766,12 @@ struct FUN_00ca9210 : hkReferencedObject
     static void operator delete(void* p)
     {
         hkReferencedObject* b = static_cast<hkReferencedObject*>(p);
-        heapAllocator(*hkMemoryRouter_getInstance()).blockFree(p, b->m_usMemSizeAndFlags);
+        heapAllocator(*hkMemoryRouter_getInstance()).blockFree(p, b->m_memSizeAndFlags);
     }
 };
 
 // @fnv 0x00ca9210
+// pdb: hkpRigidBody::`scalar deleting destructor' | hkpRigidBody.obj | retail, vtable slot, high
 FUN_00ca9210::FUN_00ca9210()
 {}
 }  // namespace fnv_00ca9210
@@ -1896,12 +1939,15 @@ struct Op
     void* entity;
 };
 
-extern void __cdecl hkpSimulation_collideEntitiesBroadPhaseDiscrete(void* ents, int count, World* world);
-extern void __cdecl NotifyEntityRemoved(World* world, Entity* entity);
+extern void __cdecl hkpSimulation_collideEntitiesBroadPhaseDiscrete(void* entities, int numEntities, World* world);
+extern void __cdecl hkpWorldCallbackUtil_fireInactiveEntityMoved(World* world, Entity* entity);
 
 // Processes an entity by dispatching an operation, updating the world manager, and handling post-processing callbacks based on world state.
 // @fnv 0x00ca8700
 // src: HAVOK_LIB 0x00ca8700
+// pdb: hkpRigidBody::updateBroadphaseAndResetCollisionInformationOfWarpedBody | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: entity
+// pdb locals: entities, op, assertBuf, ostr
 void __cdecl hkpRigidBody_updateBroadphaseAndResetCollisionInformationOfWarpedBody(Entity* apEntity)
 {
     Op op;
@@ -1934,7 +1980,7 @@ void __cdecl hkpRigidBody_updateBroadphaseAndResetCollisionInformationOfWarpedBo
     {
         if (world->m_d6 != 0 && apEntity->m_e8 != 5)
             apEntity->activate_00c9c1d0();
-        NotifyEntityRemoved(world, apEntity);
+        hkpWorldCallbackUtil_fireInactiveEntityMoved(world, apEntity);
     }
 
     if (world->m_5c != 0)

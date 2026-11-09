@@ -11,6 +11,7 @@ class TESIdleForm
     NiFormArray* AssignParentPath();
 };
 // @fnv 0x005fe770
+// pdb: TESIdleForm::CreateChildArray | TESIdleForm.obj | retail, call graph (shared callers), high
 NiFormArray* TESIdleForm::AssignParentPath()
 {
     return m_pParentPath ? m_pParentPath : (m_pParentPath = new NiFormArray);

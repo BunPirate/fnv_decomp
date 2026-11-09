@@ -9,6 +9,7 @@ struct hkDataClassMemberInfo;
 
 // The native and dictionary tables (0x010d62fc / 0x010d73c8) share this slot order.
 // Their inherited destructor precedes these eleven queries.
+// pdb: class hkDataClassImpl, size 0xc, bases: hkDataRefCounted, 0 members
 class hkDataClassImpl : public hkDataRefCounted
 {
 public:

@@ -10,24 +10,25 @@ extern TESDataHandler* g_dataHandler;
 
 // Save/load form-ID remapping table: forward map (formID -> save index),
 // reverse map (save index -> formID) and the next index to hand out.
-class FormIDConverter
+// pdb: class BGSSaveLoadFormIDMap, size 0x24, 3 members
+class BGSSaveLoadFormIDMap
 {
   public:
-    NiTPointerMap<unsigned int, unsigned int> m_kSourceToTargetFormIDMap;  // +0x0
-    NiTPointerMap<unsigned int, unsigned int> m_kTargetToSourceFormIDMap;  // +0x10
-    unsigned int m_uiFormIDCount;                                          // +0x20
+    NiTPointerMap<unsigned int, unsigned int> FormIDToIndexMap;  // +0x0
+    NiTPointerMap<unsigned int, unsigned int> IndexToFormIDMap;  // +0x10
+    unsigned int iCurrentIndex;                                          // +0x20
 
-    FormIDConverter(unsigned int uiHashSize);
-    ~FormIDConverter();
+    BGSSaveLoadFormIDMap(unsigned int iBucketCount);
+    ~BGSSaveLoadFormIDMap();
     void Clear();
-    unsigned int RegisterFormID(unsigned int formID);
+    unsigned int AddFormID(unsigned int aiFormID);
 };
 
-typedef char bgsSaveLoadFormIDMapSizeAssert[(sizeof(FormIDConverter) == 36) ? 1 : -1];
+typedef char bgsSaveLoadFormIDMapSizeAssert[(sizeof(BGSSaveLoadFormIDMap) == 36) ? 1 : -1];
 typedef char bgsSaveLoadFormIDMapIndexToFormIDMapOffsetAssert
-    [((int)&((FormIDConverter*)0)->m_kTargetToSourceFormIDMap == 0x10) ? 1 : -1];
+    [((int)&((BGSSaveLoadFormIDMap*)0)->IndexToFormIDMap == 0x10) ? 1 : -1];
 typedef char
-    bgsSaveLoadFormIDMapICurrentIndexOffsetAssert[((int)&((FormIDConverter*)0)->m_uiFormIDCount == 0x20) ? 1 : -1];
+    bgsSaveLoadFormIDMapICurrentIndexOffsetAssert[((int)&((BGSSaveLoadFormIDMap*)0)->iCurrentIndex == 0x20) ? 1 : -1];
 typedef char
     niTPointerMapUnsignedUnsignedSizeAssert[(sizeof(NiTPointerMap<unsigned int, unsigned int>) == 16) ? 1 : -1];
 

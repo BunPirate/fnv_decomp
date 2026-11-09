@@ -24,6 +24,8 @@ struct FUN_00682490_shell
 };
 // Calls FUN_006824c0, then frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x00682490
+// pdb: NiTask::`scalar deleting destructor' | BSTECreateTask.obj | retail, vtable slot, high
+// pdb params: this
 void* __thiscall FUN_00682490_shell::DestroyIfFlagged(unsigned int flags)
 {
     this->FUN_006824c0();
@@ -59,5 +61,6 @@ class FUN_006824c0 : public C0NiObject
 };
 
 // @fnv 0x006824c0
+// pdb: NiTask::~NiTask | BSTECreateTask.obj | debug, call graph, medium
 FUN_006824c0::~FUN_006824c0()
 {}

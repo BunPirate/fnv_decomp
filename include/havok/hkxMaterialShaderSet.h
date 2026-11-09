@@ -7,10 +7,11 @@
 #include "hkReferencedObject.h"
 class hkxMaterialShader;
 #pragma pack(push, 1)
+// pdb: class hkxMaterialShaderSet, size 0x14, bases: hkReferencedObject, 1 members
 class hkxMaterialShaderSet : public hkReferencedObject
 {
   public:
-    hkArray<hkxMaterialShader*> m_spPixelShaders;  // +0x8
+    hkArray<hkxMaterialShader*> m_shaders;  // +0x8
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkxMaterialShaderSet[(sizeof(hkxMaterialShaderSet) == 0x14) ? 1 : -1];

@@ -11,6 +11,7 @@ typedef short hkInt16;
 typedef unsigned int hkUint32;
 typedef unsigned char hkUint8;
 
+// pdb: class hkaSplineCompressedAnimation, size 0x84, bases: hkaAnimation, 13 members
 class hkaSplineCompressedAnimation : public hkaAnimation
 {
 public:
@@ -40,31 +41,31 @@ public:
             void operator=(E value) { m_kStorage = static_cast<hkUint8>(value); }
         };
 
-        hkReal m_fRotationTolerance;
-        hkReal m_fTranslationTolerance;
-        hkReal m_fScaleTolerance;
-        hkReal m_fFloatingTolerance;
-        unsigned short m_iRotationDegree;
-        unsigned short m_iTranslationDegree;
-        unsigned short m_iScaleDegree;
-        unsigned short m_iFloatingDegree;
-        Quantization<RotationQuantization> m_eRotationQuantizationType;
-        Quantization<ScalarQuantization> m_eTranslationQuantizationType;
-        Quantization<ScalarQuantization> m_eScaleQuantizationType;
-        Quantization<ScalarQuantization> m_eFloatQuantizationType;
+        hkReal m_rotationTolerance;
+        hkReal m_translationTolerance;
+        hkReal m_scaleTolerance;
+        hkReal m_floatingTolerance;
+        unsigned short m_rotationDegree;
+        unsigned short m_translationDegree;
+        unsigned short m_scaleDegree;
+        unsigned short m_floatingDegree;
+        Quantization<RotationQuantization> m_rotationQuantizationType;
+        Quantization<ScalarQuantization> m_translationQuantizationType;
+        Quantization<ScalarQuantization> m_scaleQuantizationType;
+        Quantization<ScalarQuantization> m_floatQuantizationType;
     };
 
     struct PerTrackCompressionParams
     {
-        hkArray<TrackCompressionParams> m_kTrackParams;
-        hkArray<hkInt32> m_kFirstIntArray;
-        hkArray<hkInt32> m_kSecondIntArray;
+        hkArray<TrackCompressionParams> m_parameterPalette;
+        hkArray<hkInt32> m_trackIndexToPaletteIndex;
+        hkArray<hkInt32> m_floatTrackIndexToPaletteIndex;
     };
 
     struct AnimationCompressionParams
     {
-        unsigned short m_iMaxFramesPerBlock;
-        hkBool m_bEnableSampleSingleTracks;
+        unsigned short m_maxFramesPerBlock;
+        hkBool m_enableSampleSingleTracks;
     };
 
     typedef TrackCompressionParams::RotationQuantization RotationQuantization;
@@ -81,11 +82,11 @@ public:
                         const hkUint8*& dataInOut, hkVector4& out) const;
     void ExtractFrame(hkReal blockTime, hkUint8 quantizedTime, hkUint8 mask, int quantization,
                       const hkUint8*& dataInOut, hkQuaternion& out) const;
-    void ExtractFrame(hkReal time, int quantization, int numItems, void* out,
+    void ExtractFrame(hkReal time, int quantizedTime, int mask, void* rotationQuantizationType,
                       const hkUint8*& dataInOut, int stride);
     void sampleScale(hkReal blockTime, hkUint8 quantizedTime, hkUint8 mask, int quantization,
                       const hkUint8*& dataInOut, hkVector4& out) const;
-    void hkaSplineCompressedAnimation_sampleFloat(hkReal blockTime, hkUint8 quantizedTime, hkUint8 mask, int quantization,
+    void hkaSplineCompressedAnimation_sampleFloat(hkReal u, hkUint8 quantizedTime, hkUint8 mask, int scalarQuantizationType,
                       const hkUint8*& dataInOut, hkReal& out) const;
     void sampleIndividualTransformTracks(hkReal time, const hkInt16* tracks, hkUint32 numTracks,
                       hkQsTransform* transformTracksOut) const;
@@ -121,19 +122,19 @@ public:
     static void Object_ProcessEntries_00e31180(const hkReal* floats, int numTracks, int numFrames,
                              int first, int track, hkArray<hkVector4>& values);
 
-    hkInt32 m_iFrameCount;
-    hkInt32 m_iBlockCount;
-    hkInt32 m_iMaxFramesPerBlock;
-    hkInt32 m_iMaskAndQuantizationSize;
-    hkReal m_fBlockDuration;
-    hkReal m_fBlockInverseDuration;
-    hkReal m_fPerFrameDuration;
-    hkArray<hkUint32> m_kFirstUInt32Array;
-    hkArray<hkUint32> m_kFloatBlockOffsets;
-    hkArray<hkUint32> m_kTransformOffsets;
-    hkArray<hkUint32> m_kFloatOffsets;
+    hkInt32 m_numFrames;
+    hkInt32 m_numBlocks;
+    hkInt32 m_maxFramesPerBlock;
+    hkInt32 m_maskAndQuantizationSize;
+    hkReal m_blockDuration;
+    hkReal m_blockInverseDuration;
+    hkReal m_frameDuration;
+    hkArray<hkUint32> m_blockOffsets;
+    hkArray<hkUint32> m_floatBlockOffsets;
+    hkArray<hkUint32> m_transformOffsets;
+    hkArray<hkUint32> m_floatOffsets;
     hkArray<hkUint8> m_data;
-    hkInt32 m_iEndian;
+    hkInt32 m_endian;
 };
 
 typedef hkaSplineCompressedAnimation::TrackCompressionParams

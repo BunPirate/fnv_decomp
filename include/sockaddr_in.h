@@ -2,6 +2,7 @@
 
 #include "in_addr.h"
 
+// pdb: structure sockaddr_in, size 0x10, 4 members
 class sockaddr_in
 {
 public:

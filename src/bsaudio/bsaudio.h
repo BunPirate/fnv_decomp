@@ -4,6 +4,8 @@
 typedef void (__thiscall* PlayerAIControlVirtual)(PlayerCharacter*, bool);
 
 // @fnv 0x0093a5f0
+// pdb: PlayerCharacter::SetAIControlledToPosition | PlayerCharacter.obj | debug, call graph, medium
+// pdb params: abTF
 void PlayerCharacter::SetUnderAIControl(bool enabled)
 {
     underAIControl = enabled;
@@ -13,6 +15,8 @@ void PlayerCharacter::SetUnderAIControl(bool enabled)
         reinterpret_cast<PlayerAIControlVirtual>((*reinterpret_cast<void***>(this))[0x258 / sizeof(void*)])(this, true);
 }
 // @fnv 0x00950290
+// pdb: PlayerCharacter::UpdateFirstPersonZoom | PlayerCharacter.obj | debug, call graph, high
+// pdb locals: bzooming
 void PlayerCharacter::UpdateCameraMode()
 {
     bool changed = thirdPerson != previousThirdPerson;

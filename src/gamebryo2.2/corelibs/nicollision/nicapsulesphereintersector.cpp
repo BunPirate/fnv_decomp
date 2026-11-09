@@ -70,6 +70,9 @@ struct S_00eaea50
 
 // @fnv 0x00eaea50
 // src: GAMEBRYO_LIB 0x00eaea50
+// pdb: NiCapsuleSphereIntersector::Pseudodistance | NiCapsuleSphereIntersector.obj | retail, upstream name already matches, high
+// pdb params: kV0, kV1, fTime
+// pdb locals: kMSegment, kMCenter, fPseudodistance
 float S_00eaea50::NiCapsuleSphereIntersector_Pseudodistance(const NiPoint3& kV0, const NiPoint3& kV1, float fTime)
 {
     OriginDirectionPair kSeg = m_pkCapsule->m_kOriginDirectionPair;
@@ -106,6 +109,9 @@ struct ContactGeometry
     void ComputeContactPoint(const NiPoint3& velocity0, const NiPoint3& velocity1);
 };
 // @fnv 0x00eaeb50
+// pdb: NiCapsuleSphereIntersector::ComputeContactInformation | NiCapsuleSphereIntersector.obj | retail, object-file run extension, low
+// pdb params: kV0, kV1
+// pdb locals: kCen, kSeg
 void ContactGeometry::ComputeContactPoint(const NiPoint3& velocity0, const NiPoint3& velocity1)
 {
     NiPoint3 kCapsulePoint =

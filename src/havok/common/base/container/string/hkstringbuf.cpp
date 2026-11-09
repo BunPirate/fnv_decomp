@@ -16,11 +16,13 @@ class BufferOwner
     unsigned int m_iReferenceCount;
     unsigned int m_uiObjectFlags;
 
-    BufferOwner* InitBuffer();
+    BufferOwner* hkStringBuf_ctor();
 };
 
 // @fnv 0x00cbbd80
-BufferOwner* BufferOwner::InitBuffer()
+// src: XBOX_RETAIL_PDB 0x00cbbd80
+// pdb: hkStringBuf::hkStringBuf | hkBaseSystem.obj | retail, call graph, high
+BufferOwner* BufferOwner::hkStringBuf_ctor()
 {
     m_pData = (char*)this + 0xc;
     m_iReferenceCount = 0;
@@ -83,6 +85,8 @@ struct StringBuf : public BufferOwner
 // Formats fmt into the buffer with va_list args, growing capacity until the write fits, then null-terminates.
 // @fnv 0x00d61d00
 // src: HAVOK_LIB 0x00d61d00
+// pdb: hkStringBuf::printf | hkStringBuf.obj | retail, upstream name already matches, high
+// pdb params: fmt, args
 void StringBuf::hkStringBuf_printf(const char* fmt, ...)
 {
     va_list args;

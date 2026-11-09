@@ -11,6 +11,7 @@ struct FUN_00ba3770_struct
 
 // @fnv 0x00ba3770
 // src: XBOX_PDB 0x00ba3770
+// pdb: ImageSpaceTexture::GetRenderedTexture | ImageSpaceTexture.obj | debug, upstream name already matches, high
 int __thiscall FUN_00ba3770_struct::ImageSpaceTexture_GetRenderedTexture()
 {
     if (reinterpret_cast<char*>(this)[1])
@@ -42,6 +43,8 @@ struct Holder00ba37f0
 };
 // @fnv 0x00ba37f0
 // src: COMMUNITY 0x00ba37f0
+// pdb: ImageSpaceTexture::SetTexture | ImageSpaceTexture.obj | debug, object-file gap fill, medium
+// pdb params: apTex
 void __thiscall Holder00ba37f0::ImageSpaceTexture_SetTexture_00ba37f0(Tex00ba37f0* apTex)
 {
     if (pTileTexture != apTex)
@@ -78,6 +81,8 @@ struct UnkBA38F0
 };
 // @fnv 0x00ba38f0
 // src: COMMUNITY 0x00ba38f0
+// pdb: ImageSpaceTexture::ApplyToStage | ImageSpaceTexture.obj | debug, object-file run extension, low
+// pdb params: apStage
 void UnkBA38F0::ImageSpaceTexture_SetupTexture(BeamStage* pkStage)
 {
     UnkBA38F0* pThis = this;
@@ -112,6 +117,7 @@ struct H_00ba39a0
 };
 // @fnv 0x00ba39a0
 // src: COMMUNITY 0x00ba39a0
+// pdb: ImageSpaceTexture::ReturnRenderedTexture | ImageSpaceTexture.obj | retail, upstream name already matches, high
 void H_00ba39a0::ImageSpaceTexture_ReturnRenderedTexture()
 {
     if (!b2)
@@ -157,6 +163,8 @@ struct OwnerStandIn
 };
 // @fnv 0x00ba37a0
 // src: COMMUNITY 0x00ba37a0
+// pdb: ImageSpaceTexture::SetTexture | ImageSpaceTexture.obj | retail, call graph, medium
+// pdb params: apRendTex
 void OwnerStandIn::ImageSpaceTexture_SetTexture(RefBase* p)
 {
     if (ptr != p)
@@ -190,6 +198,7 @@ struct Holder
 
 // @fnv 0x00ba38b0
 // src: COMMUNITY 0x00ba38b0
+// pdb: ImageSpaceTexture::ClearTexture | ImageSpaceTexture.obj | retail, upstream name already matches, high
 void __thiscall Holder::ImageSpaceTexture_ClearTexture()
 {
     RefObj* tmp = _4;
@@ -220,14 +229,17 @@ struct H_00ba3840
     bool b2;
     char _pad;
     Tex00ba37f0* pTileTexture;
-    void ImageSpaceTexture_BorrowRenderedTexture(int arg);
+    void ImageSpaceTexture_BorrowRenderedTexture(int aeType);
 };
 
 // @fnv 0x00ba3840
 // src: COMMUNITY 0x00ba3840
-void H_00ba3840::ImageSpaceTexture_BorrowRenderedTexture(int arg)
+// pdb: ImageSpaceTexture::BorrowRenderedTexture | ImageSpaceTexture.obj | retail, upstream name already matches, high
+// pdb params: aeType
+// pdb locals: ptex
+void H_00ba3840::ImageSpaceTexture_BorrowRenderedTexture(int aeType)
 {
-    Tex00ba37f0* pNew = ((TexMgr00ba3840*)DAT_011f91a8)->CreateRenderTargetTexture(DAT_011f9508, arg, 0, 0, 0);
+    Tex00ba37f0* pNew = ((TexMgr00ba3840*)DAT_011f91a8)->CreateRenderTargetTexture(DAT_011f9508, aeType, 0, 0, 0);
     if (pTileTexture != pNew)
     {
         if (pTileTexture)
@@ -263,6 +275,8 @@ struct FUN_00ba26f0_struct
 };
 // @fnv 0x00ba26f0
 // src: COMMUNITY 0x00ba26f0
+// pdb: ImageSpaceEffectWaterFFT::InitializeUtilityBuffers | ImageSpaceEffectWaterFFT.obj | retail, upstream name already matches, high
+// pdb locals: pInitBufferTask, pXRenderer
 void FUN_00ba26f0_struct::ImageSpaceEffectWaterFFT_InitializeUtilityBuffers()
 {
     if (!((ISTex*)((char*)this + 0x88))->GetTexture())
@@ -287,6 +301,8 @@ struct FUN_00ba3780_struct
 
 // @fnv 0x00ba3780
 // src: COMMUNITY 0x00ba3780
+// pdb: ImageSpaceTexture::GetTexture | ImageSpaceTexture.obj | debug, upstream name already matches, high
+// pdb locals: ptex
 TextureReceiver* FUN_00ba3780_struct::ImageSpaceTexture_GetTexture()
 {
     if (flag)
@@ -341,6 +357,8 @@ struct FUN_00ba3940_cls
 
 // @fnv 0x00ba3940
 // src: GUESS 0x00ba3940 (confidence: low)
+// pdb: ImageSpaceTexture::operator= | ImageSpaceTexture.obj | retail, call graph, low
+// pdb params: aTex
 FUN_00ba3940_cls* FUN_00ba3940_cls::InitializeFields_00ba3940(FUN_00ba3940_cls* src)
 {
     *(volatile unsigned char*)&m_01 = src->m_01;
@@ -645,7 +663,7 @@ struct HolderX
     HolderX() : b0(0), b1(0), b2(0), p(0), i1(0), i2(0)
     {}
     ~HolderX();
-    void ImageSpaceTexture_BorrowRenderedTexture(int arg);
+    void ImageSpaceTexture_BorrowRenderedTexture(int aeType);
     void InitializeFields_00ba3940(HolderX* other);
     void* ImageSpaceTexture_GetTexture();
     void ImageSpaceTexture_ReturnRenderedTexture();
@@ -703,7 +721,7 @@ struct Owner
     float m_b4;
     bool m_b8;
     void ImageSpaceEffectWaterFFT_InitializeUtilityBuffers();
-    void ImageSpaceEffectWaterFFT_Render(int a1, int a2, int a3, int a4);
+    void ImageSpaceEffectWaterFFT_Render(int apGeometry, int apRenderer, int apParam, int abEndFrame);
 };
 
 static __forceinline WorkObj* ToWork(WorkObj* p)
@@ -714,15 +732,18 @@ static __forceinline WorkObj* ToWork(WorkObj* p)
 
 // @fnv 0x00ba2760
 // src: COMMUNITY 0x00ba2760
-void Owner::ImageSpaceEffectWaterFFT_Render(int a1, int a2, int a3, int a4)
+// pdb: ImageSpaceEffectWaterFFT::Render | ImageSpaceEffectWaterFFT.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, apRenderer, apParam, abEndFrame
+// pdb locals: iLog2Resolution, pdst, pparam, pFourierSpectrum, psrc, peffect, tmpptr, i
+void Owner::ImageSpaceEffectWaterFFT_Render(int apGeometry, int apRenderer, int apParam, int abEndFrame)
 {
     if (!m_b8)
         ImageSpaceEffectWaterFFT_InitializeUtilityBuffers();
     int count = DAT_01200050;
-    int a2v = a2;
+    int a2v = apRenderer;
     int j;
     if (flag)
-        flag = W7(a3);
+        flag = W7(apParam);
     HolderX d;
     HolderX b;
     HolderX a;
@@ -736,13 +757,13 @@ void Owner::ImageSpaceEffectWaterFFT_Render(int a1, int a2, int a3, int a4)
     w->SetAccumulatorAt(0, &d, 0);
     w->SetAccumulatorAt(1, &s68, 0);
     w->SetAccumulatorAt(2, &s58, 0);
-    w->Vf1(a1, a2v, tex, 1);
+    w->Vf1(apGeometry, a2v, tex, 1);
     w = ToWork(m_iThirdValue->p3);
     tex = m_1c->t3;
     w->SetAccumulatorAt(0, &a, 0);
     w->SetAccumulatorAt(1, &s88, 0);
     w->SetAccumulatorAt(2, &d, 0);
-    w->Vf1(a1, a2v, tex, 1);
+    w->Vf1(apGeometry, a2v, tex, 1);
     c.InitializeFields_00ba3940(&b);
     b.InitializeFields_00ba3940(&a);
     a.InitializeFields_00ba3940(&c);
@@ -756,7 +777,7 @@ void Owner::ImageSpaceEffectWaterFFT_Render(int a1, int a2, int a3, int a4)
         w->SetAccumulatorAt(0, &a, 0);
         w->SetAccumulatorAt(1, &s78, 0);
         w->SetAccumulatorAt(2, &b, 0);
-        w->Vf1(a1, a2v, tex, 1);
+        w->Vf1(apGeometry, a2v, tex, 1);
         c.InitializeFields_00ba3940(&b);
         b.InitializeFields_00ba3940(&a);
         a.InitializeFields_00ba3940(&c);
@@ -766,7 +787,7 @@ void Owner::ImageSpaceEffectWaterFFT_Render(int a1, int a2, int a3, int a4)
     w->SetAccumulatorAt(0, &a, 0);
     w->SetAccumulatorAt(1, &s88, 0);
     w->SetAccumulatorAt(2, &b, 0);
-    w->Vf1(a1, a2v, tex, 1);
+    w->Vf1(apGeometry, a2v, tex, 1);
     c.InitializeFields_00ba3940(&b);
     b.InitializeFields_00ba3940(&a);
     a.InitializeFields_00ba3940(&c);
@@ -782,7 +803,7 @@ void Owner::ImageSpaceEffectWaterFFT_Render(int a1, int a2, int a3, int a4)
             w->SetAccumulatorAt(0, &a, 0);
         w->SetAccumulatorAt(1, &s78, 0);
         w->SetAccumulatorAt(2, &b, 0);
-        w->Vf1(a1, a2v, t2p, 1);
+        w->Vf1(apGeometry, a2v, t2p, 1);
         if (j != count - 1)
         {
             c.InitializeFields_00ba3940(&b);
@@ -797,7 +818,7 @@ void Owner::ImageSpaceEffectWaterFFT_Render(int a1, int a2, int a3, int a4)
         tex->FUN_00b8a790(2, DAT_0120004c, DAT_0101e570, 0.0f, 0.0f);
         w->SetAccumulatorAt(0, m_2c->p0, 0);
         w->SetAccumulatorAt(1, m_2c->p1, 0);
-        w->Vf1(a1, a2v, tex, 1);
+        w->Vf1(apGeometry, a2v, tex, 1);
     }
     else
     {
@@ -805,7 +826,7 @@ void Owner::ImageSpaceEffectWaterFFT_Render(int a1, int a2, int a3, int a4)
         tex = m_1c->t6;
         w->SetAccumulatorAt(0, m_2c->p0, 0);
         w->SetAccumulatorAt(1, m_2c->p1, 0);
-        w->Vf1(a1, a2v, tex, 1);
+        w->Vf1(apGeometry, a2v, tex, 1);
     }
     if (d.ImageSpaceTexture_GetTexture())
         d.ImageSpaceTexture_ReturnRenderedTexture();
@@ -889,6 +910,10 @@ struct TextureOwnerB63
 };
 // @fnv 0x00b63c60
 // src: COMMUNITY 0x00b63c60
+// pdb: BSSimpleList<unsigned short>::AddTail | BSShaderAccumulator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderVolumetricFog::GetVolumetricFogTexture
+// pdb params: item
+// pdb locals: pkCur
 int TextureOwnerB63::ImageSpaceShaderVolumetricFog_GetVolumetricFogTexture()
 {
     if (!container.node->receiver)
@@ -967,6 +992,7 @@ struct TextureOwnerB63D
 
 // @fnv 0x00b63d10
 // src: COMMUNITY 0x00b63d10
+// pdb: ImageSpaceShaderVolumetricFog::ReturnVolumetricFogTexture | BSShaderAccumulator.obj | retail, upstream name already matches, high
 void TextureOwnerB63D::ImageSpaceShaderVolumetricFog_ReturnVolumetricFogTexture()
 {
     TextureNodeB63D* current = node;

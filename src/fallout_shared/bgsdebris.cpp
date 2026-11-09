@@ -31,10 +31,11 @@ class DebrisModelEntry
 void Deallocate(void*);
 void* Allocate(unsigned int);
 template <class T> unsigned int BSStringLength(const T*);
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
-    void QueueFullWithNullResult(const char*, void*, int, void*, int, int, int, int);
+    void ModelLoader_QueueModel(const char*, void*, int, void*, int, int, int, int);
 };
 extern ModelLoader* g_modelLoader;
 
@@ -46,6 +47,8 @@ BSSimpleList<DebrisModelEntry*>* BGSDebris::GetDataList()
 
 // Iterates DataList, deallocating each entry's path and deleting the entry, then removes the head until the list is empty.
 // @fnv 0x004f9e30
+// pdb: BGSDebris::ClearData | BGSDebris.obj | retail, upstream name already matches, high
+// pdb locals: plist, pdata
 void BGSDebris::ClearData()
 {
     BSSimpleList<DebrisModelEntry*>* list = &DataList;
@@ -64,30 +67,37 @@ void BGSDebris::ClearData()
 
 // Iterates the debris data list and asks g_modelLoader to load each entry's non-empty path into its model with the given priority and file.
 // @fnv 0x004fa970
-void BGSDebris::QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* file)
+// pdb: BGSDebris::QueueFiles | BGSDebris.obj | retail, vtable slot, high
+// pdb params: aePriority, apParent
+// pdb locals: plist, pdebrisData
+void BGSDebris::QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent)
 {
     BSSimpleList<DebrisModelEntry*>* list = GetDataList();
     while (list)
     {
         DebrisModelEntry* data = list->GetItem();
         if (data && data->path && BSStringLength(data->path))
-            g_modelLoader->QueueFullWithNullResult(data->path, &data->model, priority, file, 1, 1, 0, 0);
+            g_modelLoader->ModelLoader_QueueModel(data->path, &data->model, aePriority, apParent, 1, 1, 0, 0);
         list = list->GetNext();
     }
 }
 
 // @fnv 0x004fa500
-DebrisModelEntry* BGSDebris::AddDebrisModel(char chance, const char* path, char flags)
+// src: XBOX_DEBUG_PDB 0x004fa500
+// pdb: BGSDebris::AddDebrisData | BGSDebris.obj | debug, call graph (shared callers), high
+// pdb params: acPercentage, apFileName, acFlags
+// pdb locals: ilength, pdata
+DebrisModelEntry* BGSDebris::AddDebrisData(char acPercentage, const char* apFileName, char acFlags)
 {
-    if (!path || !chance)
+    if (!apFileName || !acPercentage)
         return 0;
-    unsigned int length = BSStringLength(path);
+    unsigned int length = BSStringLength(apFileName);
     if (length)
     {
         DebrisModelEntry* data = new DebrisModelEntry;
-        data->chance = chance;
-        data->BGSDebrisData_SetFileName(path);
-        data->flags = flags;
+        data->chance = acPercentage;
+        data->BGSDebrisData_SetFileName(apFileName);
+        data->flags = acFlags;
         InsertDebrisIfValid(data);
         return data;
     }
@@ -96,35 +106,38 @@ DebrisModelEntry* BGSDebris::AddDebrisModel(char chance, const char* path, char 
 
 // Reads a BGSDebris record from a TESFile, handling EDID, OBND, DATA and MODL chunks, and returns false if the form type is not 0x52.
 // @fnv 0x004f9f10
-bool BGSDebris::LoadForm(TESFile* file)
+// pdb: BGSDebris::Load | BGSDebris.obj | retail, unique string literal, high
+// pdb params: apFile
+// pdb locals: echunkid, formid, plastDebrisData, pMessage, pdataEnd, isize, pdata, pdataSave, cflags, pfilename, cpercentage, tempList
+bool BGSDebris::LoadForm(TESFile* apFile)
 {
     // Local identifiers preserve MSVC9 stack-slot ordering.
-    unsigned char v0 = file->GetTESForm();
+    unsigned char v0 = apFile->GetTESForm();
     if (v0 != 0x52)
         return false;
     ClearData();
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     DebrisModelEntry* v1 = 0;  // most recently loaded debris entry
-    while (int v2 = file->GetChunkID())
+    while (int v2 = apFile->GetChunkID())
     {
         switch (v2)
         {
         case 0x44494445: {
-            char* v3 = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(v3, 512);
+            char* v3 = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(v3, 512);
             SetEditorID_AtRuntime(v3);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x41544144: {
             // v5: chunk size; v6: allocation; v4: parse cursor; v7: end.
-            unsigned int v5 = file->GetChunkSize();
+            unsigned int v5 = apFile->GetChunkSize();
             unsigned char* v6 = new unsigned char[v5];
             unsigned char* v4 = v6;
-            file->GetChunkData(v4, v5);
+            apFile->GetChunkData(v4, v5);
             unsigned char* v7 = v4 + v5;
             if (v4 < v7)
             {
@@ -139,23 +152,23 @@ bool BGSDebris::LoadForm(TESFile* file)
                     v8 = *v4;
                     v4++;
                 }
-                v1 = AddDebrisModel(v10, v9, v8);
+                v1 = AddDebrisData(v10, v9, v8);
             }
             delete[] v6;
             break;
         }
         case 0x54444f4d:
             if (v1)
-                v1->model.Load(file, this, v1->path);
+                v1->model.Load(apFile, this, v1->path);
             else
             {
                 Warning(DAT_01024988, GetName(), GetFormID());
                 FileEntryList v11;
-                v11.Load(file, this, DAT_01015890);
+                v11.Load(apFile, this, DAT_01015890);
             }
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -163,10 +176,12 @@ bool BGSDebris::LoadForm(TESFile* file)
 
 // Constructs a MagicItemForm object; the body is empty.
 // @fnv 0x00409190
+// pdb: MagicItemForm::MagicItemForm | EnchantmentItem.obj | retail, upstream name already matches, high
 MagicItemForm::MagicItemForm()
 {}
 
 // @fnv 0x004f9d90
+// pdb: BGSPreloadable::BGSPreloadable | BGSDebris.obj | debug, upstream name already matches, high
 BGSPreloadable::BGSPreloadable()
 {}
 
@@ -181,25 +196,28 @@ struct S_004fa4b0
 // Compares two entries by their char field, returning -1 or 1, and otherwise compares their string fields via FUN_00408b20.
 // @fnv 0x004fa4b0
 // src: COMMUNITY 0x004fa4b0
-int __cdecl DebrisSortFunction(const S_004fa4b0* apLeft, const S_004fa4b0* apRight)
+// pdb: DebrisSortFunction | BGSDebris.obj | debug, upstream name already matches, high
+// pdb params: apData1, apData2
+int __cdecl DebrisSortFunction(const S_004fa4b0* apData1, const S_004fa4b0* apData2)
 {
-    if (apLeft->c > apRight->c)
+    if (apData1->c > apData2->c)
     {
         return -1;
     }
-    else if (apLeft->c < apRight->c)
+    else if (apData1->c < apData2->c)
     {
         return 1;
     }
     else
     {
-        return BSstrcmp(apLeft->s, apRight->s);
+        return BSstrcmp(apData1->s, apData2->s);
     }
 }
 
 // Initializes the object: sets byte 0 to 10, byte 1 to 0, int at offset 4 to 0, constructs the object at offset 8, and returns pThis.
 // @fnv 0x004fa5e0
 // src: COMMUNITY 0x004fa5e0
+// pdb: BGSDebrisData::BGSDebrisData | BGSDebris.obj | debug, upstream name already matches, high
 void* __fastcall BGSDebrisData_BGSDebrisData(char* pObject)
 {
     pObject[0] = 10;
@@ -227,6 +245,8 @@ int __cdecl DebrisSortFunction(DebrisData*, DebrisData*);
 unsigned int __cdecl BSStringLength(const char*);
 // Checks that a.d, its flag, and its string are non-empty, then inserts a.d into the AEList at self+0x1c and returns true; otherwise returns false.
 // @fnv 0x004fa610
+// pdb: BGSDebris::AddDebrisData | BGSDebris.obj | debug, call graph, medium
+// pdb params: apDebrisData
 bool __fastcall InsertDebrisIfValid(char* self, DArg aDebrisArg)
 {
     if (!aDebrisArg.d || !aDebrisArg.d->c || !aDebrisArg.d->p || !BSStringLength(aDebrisArg.d->p))
@@ -243,6 +263,7 @@ struct FUN_004fa670_shell : public DebrisModelEntry
 void* __cdecl operator new(unsigned int);
 template <class T> unsigned int __cdecl BSStringLength(T const*);
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -251,6 +272,9 @@ class TaskQueueInterface
 
 // @fnv 0x004fa670
 // src: COMMUNITY 0x004fa670
+// pdb: BGSDebrisData::SetFileName | BGSDebris.obj | retail, upstream name already matches, high
+// pdb params: apFileName
+// pdb locals: iFilenameLen
 void FUN_004fa670_shell::BGSDebrisData_SetFileName(char* apFileName)
 {
     if (*(char**)((char*)this + 4))
@@ -268,6 +292,7 @@ void FUN_004fa670_shell::BGSDebrisData_SetFileName(char* apFileName)
 
 // Sets the form type to 0x52 and clears the form data.
 // @fnv 0x004f9cd0
+// pdb: BGSDebris::BGSDebris | BGSDebris.obj | retail, upstream name already matches, high
 BGSDebris::BGSDebris()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x52));
@@ -286,9 +311,12 @@ int __thiscall FUN_004fa950_shell::IsFlagSet()
 }
 
 // @fnv 0x004fa2f0
-void BGSDebris::CopyFrom(const TESForm* source)
+// pdb: BGSDebris::Copy | BGSDebris.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pcopy, pdebrisData
+void BGSDebris::CopyFrom(const TESForm* apCopy)
 {
-    BGSDebris* debris2 = dynamic_cast<BGSDebris*>(const_cast<TESForm*>(source));
+    BGSDebris* debris2 = dynamic_cast<BGSDebris*>(const_cast<TESForm*>(apCopy));
     if (!debris2)
         return;
     ClearData();
@@ -298,7 +326,7 @@ void BGSDebris::CopyFrom(const TESForm* source)
     {
         DebrisModelEntry* data = list->GetItem();
         if (data)
-            AddDebrisModel(data->chance, data->path, data->flags);
+            AddDebrisData(data->chance, data->path, data->flags);
         list = list->GetNext();
     }
 }
@@ -333,11 +361,14 @@ extern const double DAT_01020758;
 extern NiPoint3 DAT_011f426c;
 float __cdecl FUN_00476b70(float, float);
 
-void __cdecl BSTempEffectParticle_Spawn(void* a1, float f, void* m, NiPoint3 v1, NiPoint3 v2, float s, int k, int z);
+void __cdecl BSTempEffectParticle_Spawn(void* apCell, float afLifetime, void* apParticleFilename, NiPoint3 aVector, NiPoint3 aPosition, float afScale, int aiFlags, int apFollowObject);
 // @fnv 0x004fa6f0
-void BGSDebris::SpawnDebris(void* a1, NiPoint3* apPosition, unsigned int count, float scale)
+// pdb: BGSDebris::SpawnDebris | BGSDebris.obj | retail, upstream name already matches, high
+// pdb params: apCell, arLocation, aiNumParticles, afScale
+// pdb locals: plist, tempAutoEvent, inumParticlesSpawned, pdebrisData, inumparticles, i, debrisVector, velocity, pdebris
+void BGSDebris::SpawnDebris(void* apCell, NiPoint3* arLocation, unsigned int aiNumParticles, float afScale)
 {
-    if (!a1)
+    if (!apCell)
         return;
     unsigned int i8 = 0;
     DNode* node_ = (DNode*)GetDataList();
@@ -346,8 +377,8 @@ void BGSDebris::SpawnDebris(void* a1, NiPoint3* apPosition, unsigned int count, 
         DItem* d9 = (DItem*)*node_->FUN_006815c0();
         if (d9 && d9->model && d9->chance)
         {
-            unsigned int n = d9->chance * count / 100;
-            if (n == 0 && i8 < count)
+            unsigned int n = d9->chance * aiNumParticles / 100;
+            if (n == 0 && i8 < aiNumParticles)
                 n = 1;
             for (unsigned int j3 = 0; j3 < n; j3++)
             {
@@ -360,12 +391,12 @@ void BGSDebris::SpawnDebris(void* a1, NiPoint3* apPosition, unsigned int count, 
                 {
                     NiPoint3 dir = DAT_011f426c;
                     DebrisObj* o3 =
-                        new DebrisObj(a1, DAT_010249d8, d9->model, 0, apPosition, &v4, &dir, &dir, scale, 0, 0);
+                        new DebrisObj(apCell, DAT_010249d8, d9->model, 0, arLocation, &v4, &dir, &dir, afScale, 0, 0);
                     (void)o3;
                 }
                 else
                 {
-                    BSTempEffectParticle_Spawn(a1, DAT_01017b78, d9->model, v4, *apPosition, (float)(scale * DAT_01020758), 7, 0);
+                    BSTempEffectParticle_Spawn(apCell, DAT_01017b78, d9->model, v4, *arLocation, (float)(afScale * DAT_01020758), 7, 0);
                 }
                 i8++;
             }
@@ -388,9 +419,11 @@ struct DebrisEntry4fa
     DebrisModel4fa kModel;
 };
 
-void __cdecl TESForm_AddChunkArray(unsigned int uiType, void* pvData, unsigned int uiSize);
+void __cdecl TESForm_AddChunkArray(unsigned int aeChunkID, void* apData, unsigned int aiSize);
 
 // @fnv 0x004fa1a0
+// pdb: BGSDebris::Save | BGSDebris.obj | retail, vtable slot, high
+// pdb locals: plist, pdebrisData, pdata, pdataSave, idataSize
 void BGSDebris::WriteDebrisEntries()
 {
     BeginFormRecord();
@@ -429,9 +462,12 @@ struct DebrisListNode
 
 // Compares this debris list against another BGSDebris's list, returning true if counts, entries, chance, path or flags differ.
 // @fnv 0x004fa390
-bool BGSDebris::Compare(TESForm* form)
+// pdb: BGSDebris::Compare | BGSDebris.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp, pcompareList, plocalList, pcompareData, plocalData
+bool BGSDebris::Compare(TESForm* apCompare)
 {
-    BGSDebris* other7 = dynamic_cast<BGSDebris*>(form);
+    BGSDebris* other7 = dynamic_cast<BGSDebris*>(apCompare);
     if (!other7)
         return true;
     DebrisListNode* otherIter2 = (DebrisListNode*)other7->GetDataList();
@@ -460,6 +496,7 @@ bool BGSDebris::Compare(TESForm* form)
 }
 
 // @fnv 0x004f9db0
+// pdb: BGSDebris::~BGSDebris | BGSDebris.obj | debug, upstream name already matches, high
 BGSDebris::~BGSDebris()
 {
     ClearData();

@@ -8,6 +8,7 @@ class NiPoint3OB;
 struct Mat57;
 class Vec57;
 
+// pdb: class BSMultiBoundOBB, size 0x60 (here 0x48), bases: BSMultiBoundAABB, 1 members
 class BSMultiBoundOBB : public BSMultiBoundAABB
 {
 public:
@@ -19,7 +20,7 @@ public:
     const Vec57& extent();
     void setExtent(const Vec57& extent);
     void GetCorners(NiPoint3* corners);
-    void BSMultiBoundOBB_GetVertices(NiPoint3* corners);
+    void BSMultiBoundOBB_GetVertices(NiPoint3* apPoints);
     void BSMultiBoundOBB_GetVertices(NiPoint3OB* corners);
     bool BSMultiBoundOBB_CompletelyWithinFrustum(const NiFrustumPlanes& frustum);
     void DestroyBase_Thunk();

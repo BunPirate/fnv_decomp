@@ -4,6 +4,7 @@
 
 class LocationAccess;
 
+// pdb: class PathingRequestClosePoint, size 0xb8, bases: PathingRequest, 2 members
 class PathingRequestClosePoint : public PathingRequest
 {
 public:

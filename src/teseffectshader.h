@@ -12,8 +12,9 @@
 class TESTextureLoader
 {
   public:
-    static void ReadTextureData(TESTexture* texture, TESFile* file);
+    static void ReadTextureData(TESTexture* apTexture, TESFile* apFile);
 };
+// pdb: class ParticleShader, size 0x12c (here 0x1), bases: BSShader, 13 members
 class ParticleShader
 {
   public:

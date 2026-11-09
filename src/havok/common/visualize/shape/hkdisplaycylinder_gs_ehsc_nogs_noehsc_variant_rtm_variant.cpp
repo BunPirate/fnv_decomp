@@ -214,7 +214,7 @@ struct __declspec(align(16)) Quaternion
     {
         hkQuaternion_setAxisAngle(axis, theta);
     }
-    __declspec(noinline) void hkQuaternion_setAxisAngle(const MathVector& axis, float theta);
+    __declspec(noinline) void hkQuaternion_setAxisAngle(const MathVector& axis, float angle);
     __declspec(noinline) void setMul(const Quaternion& a, const Quaternion& b);
 };
 // src: XBOX_PDB 0x00cb2450
@@ -339,6 +339,8 @@ struct CachePair
 };
 // @fnv 0x00d58590
 // src: HAVOK_SRC 0x00d58590
+// pdb: hkDisplayCylinder::buildGeometry | hkDisplayCylinder.obj | retail, upstream name already matches, high
+// pdb locals: stepQuat, unitAxis, currQuat
 __declspec(noinline) void __fastcall hkDisplayCylinder_buildGeometry(CylinderMeshBuilder* self)
 {
     const int& heights = self->m_88;

@@ -11,7 +11,7 @@
 // @fnv 0x004fbb50
 void BGSMovableStatic::InitializeComponent()
 {
-    soundLoop = 0;
+    pSoundLoop = 0;
 }
 
 struct BGSLoadFormBuffer;
@@ -70,6 +70,7 @@ struct MovableStaticObject : TESFullName, BGSDestructibleObjectForm, TESObjectST
 };
 
 // @fnv 0x004fba00
+// pdb: BGSMovableStatic::BGSMovableStatic | BGSMovableStatic.obj | retail, call graph, high
 MovableStaticObject::MovableStaticObject()
 {
     MOVABLE_STATIC_DATA_MOVABLE_STATIC_DATA((char*)this + 0x70);
@@ -95,6 +96,7 @@ struct Unk004fc130
 };
 // Compares m0 with the byte pointed to by p and returns true if they differ.
 // @fnv 0x004fc130
+// pdb: BGSMovableStatic::`scalar deleting destructor' | BGSMovableStatic.obj | debug, object-file run extension, low
 bool Unk004fc130::IsByteDifferent(unsigned char* pucByte)
 {
     if (m0 != *pucByte)
@@ -118,6 +120,7 @@ void* Unk004fc170::DestroyIfFlagged(unsigned int flags)
     return this;
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -153,6 +156,8 @@ struct FUN_004fbf20_shell
     void Destroy();
 };
 // @fnv 0x004fbf20
+// pdb: BGSMovableStatic::Save | BGSMovableStatic.obj | retail, vtable slot, high
+// pdb locals: itempint
 void FUN_004fbf20_shell::Destroy()
 {
     unsigned int itempint;
@@ -175,6 +180,8 @@ void FUN_004fbf20_shell::Destroy()
 
 // Empty destructor for the class; performs no work.
 // @fnv 0x004fbac0
+// pdb: BGSMovableStatic::`scalar deleting destructor' | BGSMovableStatic.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSMovableStatic::~BGSMovableStatic
 MovableStaticObject::~MovableStaticObject()
 {}
 
@@ -192,7 +199,7 @@ struct AlchTexSwap
     unsigned int modelUnknown;
     unsigned int modelReserved;
     unsigned int modelState;
-    bool LoadTextureSwapList(void*, unsigned int, unsigned int);
+    bool UnpackTextureSwapChunkData(void*, unsigned int, unsigned int);
 };
 void FUN_004892d0(AlchTexSwap*, TESFile*);
 struct MovableRecord;
@@ -293,60 +300,63 @@ struct StaticRecord
 struct MovableRecord : TESFullName, BGSDestructibleObjectForm, StaticRecord, AlchTexSwap
 {
     unsigned char data;
-    virtual bool LoadRecordChunks(TESFile* file);
+    virtual bool LoadRecordChunks(TESFile* apFile);
 };
 // Reads the record header, then loops over chunks dispatching editor ID, bounds, full name, models, destruction, data and sound chunks, returning true.
 // @fnv 0x004fbc70
-bool MovableRecord::LoadRecordChunks(TESFile* file)
+// pdb: BGSMovableStatic::Load | BGSMovableStatic.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, itempint
+bool MovableRecord::LoadRecordChunks(TESFile* apFile)
 {
-    unsigned char p = file->GetTESForm();
-    LoadRecordHeader(file);
+    unsigned char p = apFile->GetTESForm();
+    LoadRecordHeader(apFile);
     int h;
     char* a;
     void* i;
     unsigned int s;
     unsigned int f;
-    while (h = file->GetChunkID())
+    while (h = apFile->GetChunkID())
     {
         switch (h)
         {
         case 0x44494445:
-            a = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(a, 512);
+            a = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(a, 512);
             SetEditorID(a);
             break;
         case 0x444e424f:
-            LoadBounds(file);
+            LoadBounds(apFile);
             break;
         case 0x4c4c5546:
-            TESFullName::LoadFullNameChunk(reinterpret_cast<TESFullName*>(this), file);
+            TESFullName::LoadFullNameChunk(reinterpret_cast<TESFullName*>(this), apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
-            FUN_004892d0(this, file);
+            FUN_004892d0(this, apFile);
             break;
         case 0x53444f4d:
-            s = file->GetChunkSize();
+            s = apFile->GetChunkSize();
             i = _alloca(s);
-            file->GetChunkData(i, s);
-            this->LoadTextureSwapList(i, s, file->GetFormVersion());
+            apFile->GetChunkData(i, s);
+            this->UnpackTextureSwapChunkData(i, s, apFile->GetFormVersion());
             break;
         case 0x54534544:
         case 0x44545344:
-            BGSDestructibleObjectForm::LoadDestructibleData(static_cast<BGSDestructibleObjectForm*>(this), file);
+            BGSDestructibleObjectForm::LoadDestructibleData(static_cast<BGSDestructibleObjectForm*>(this), apFile);
             break;
         case 0x41544144:
-            TESForm_LoadData(file, &this->data, 1);
+            TESForm_LoadData(apFile, &this->data, 1);
             break;
         case 0x4d414e53:
             f = 0;
-            file->GetChunkData(&f);
+            apFile->GetChunkData(&f);
             reinterpret_cast<FUN_004fbf00_shell*>(this)->MobileObject_SetTalkingActivatorRef(reinterpret_cast<TESSound*>(f));
             break;
         }
-        if (!file->GetNextChunk())
+        if (!apFile->GetNextChunk())
             break;
     }
     return true;
@@ -380,9 +390,12 @@ struct FUN_004fbfe0_shell : public TESObjectSTAT  // TESForm vftable slot 66 of 
 
 // @fnv 0x004fbfe0
 // src: COMMUNITY 0x004fbfe0
-void FUN_004fbfe0_shell::BGSMovableStatic_Copy(int arg)
+// pdb: BGSMovableStatic::Copy | BGSMovableStatic.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pcopy
+void FUN_004fbfe0_shell::BGSMovableStatic_Copy(int apCopy)
 {
-    int result = (int)FUN_00ec43fb(arg, 0, &DAT_01183028, &DAT_01189d4c, 0);
+    int result = (int)FUN_00ec43fb(apCopy, 0, &DAT_01183028, &DAT_01189d4c, 0);
 
     if (result == 0)
         return;
@@ -419,6 +432,9 @@ struct MovableStaticFormComparison : ::TESObjectSTAT  // TESForm vftable slot 67
 // Returns true if apCompare is not a BGSMovableStatic, either comparison helper returns true, or the sound results differ.
 // @fnv 0x004fc080
 // src: COMMUNITY 0x004fc080
+// pdb: BGSMovableStatic::Compare | BGSMovableStatic.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool MovableStaticFormComparison::BGSMovableStatic_TESObjectSTAT_Compare(::TESForm* apCompare)
 {
     ::BGSMovableStatic* pMovableStatic = dynamic_cast< ::BGSMovableStatic*>(apCompare);

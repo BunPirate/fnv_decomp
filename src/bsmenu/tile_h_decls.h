@@ -48,7 +48,7 @@ class Tile__BuildStorage
 {
   public:
     Tile__TileTemplate* pTemplate;
-    void SetTileTemplate(Tile__TileTemplate* newTemplate);
+    void SetTileTemplate(Tile__TileTemplate* apTemplate);
 };
 
 extern void FUN_00f1d2eb();

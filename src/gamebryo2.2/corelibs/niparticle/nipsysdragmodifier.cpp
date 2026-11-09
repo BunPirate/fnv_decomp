@@ -42,17 +42,18 @@ template <class T> __forceinline void ReadBinaryValue(NiStream& kStream, T& kVal
 
 struct StreamArray;
 
+// pdb: class NiPSysDragModifier, size 0x34, bases: NiPSysModifier, 5 members
 class NiPSysDragModifier : public NiPSysModifier
 {
   public:
     __declspec(noinline) __declspec(nothrow) NiPSysDragModifier();
     virtual void LoadBinary(NiStream& kStream);
-    virtual void SaveBinary(NiStream& stream);
-    virtual bool IsEqual(NiObject* object) const;
+    virtual void SaveBinary(NiStream& kStream);
+    virtual bool IsEqual(NiObject* pkObject) const;
     NiObject* CloneDragModifier(CloningProcess* process);
-    void GetDragViewerStrings(StreamArray& array);
+    void GetDragViewerStrings(StreamArray& pkStrings);
 
-    NiAVObject* m_pParent;
+    NiAVObject* m_pkDragObj;
     NiPoint3 m_kDragDirection;
     float m_fDragStrength;
     float m_fFirstLightParameter;
@@ -67,6 +68,8 @@ typedef char DragLayoutCheck111[(offsetof(NiPSysDragModifier, m_fFirstLightParam
 typedef char DragLayoutCheck112[(offsetof(NiPSysDragModifier, m_fSecondLightParameter) == 0x30) ? 1 : -1];
 
 // @fnv 0x00C2C450
+// pdb: NiPSysDragModifier::LoadBinary | NiPSysDragModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiPSysDragModifier::LoadBinary(NiStream& kStream)
 {
     NiPSysModifier::LoadBinary(kStream);
@@ -80,6 +83,8 @@ void NiPSysDragModifier::LoadBinary(NiStream& kStream)
 
 // @fnv 0x00c2c080
 // src: EXE 0x00c2c080
+// pdb: NiPSysDragModifier::CreateObject | NiPSysDragModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysDragModifier_CreateObject()
 {
     return new NiPSysDragModifier;
@@ -98,7 +103,7 @@ void* __cdecl NiPSysDragModifier_GetRTTI()
 NiObject* NiPSysDragModifier::CloneDragModifier(CloningProcess* kCloning)
 {
     NiPSysDragModifier* pkObject = new NiPSysDragModifier;
-    NiPSysModifier::CopyMemberData(pkObject, *kCloning);
+    NiPSysModifier::CopyMembers(pkObject, *kCloning);
     pkObject->m_kDragDirection = m_kDragDirection;
     pkObject->m_fDragStrength = m_fDragStrength;
     pkObject->m_fFirstLightParameter = m_fFirstLightParameter;
@@ -110,8 +115,10 @@ extern const NiPoint3 g_UNIT_X;
 static const float s_fInfinity = 3.402823466e+38F;
 
 // @fnv 0x00c2c030
+// pdb: NiPSysDragModifier::NiPSysDragModifier | NiPSysDragModifier.obj | retail, upstream name already matches, high
+// pdb params: pcName, pkDragObj, kDragAxis, fPercentage, fRange, fFalloff
 NiPSysDragModifier::NiPSysDragModifier()
-    : m_pParent(0), m_kDragDirection(g_UNIT_X), m_fDragStrength(0.05f), m_fFirstLightParameter(s_fInfinity),
+    : m_pkDragObj(0), m_kDragDirection(g_UNIT_X), m_fDragStrength(0.05f), m_fFirstLightParameter(s_fInfinity),
       m_fSecondLightParameter(s_fInfinity)
 {}
 
@@ -129,28 +136,33 @@ struct ParticleViewerStringsCall
 };
 
 // @fnv 0x00c2c4f0
-void NiPSysDragModifier::SaveBinary(NiStream& stream)
+// pdb: NiPSysDragModifier::SaveBinary | NiPSysDragModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysDragModifier::SaveBinary(NiStream& kStream)
 {
-    NiPSysModifier::FUN_00c31950(stream);
-    stream.SaveLinkID(reinterpret_cast<const NiObject*>(m_pParent));
-    m_kDragDirection.SaveBinary(&stream);
+    NiPSysModifier::FUN_00c31950(kStream);
+    kStream.SaveLinkID(reinterpret_cast<const NiObject*>(m_pkDragObj));
+    m_kDragDirection.SaveBinary(&kStream);
     // NiStream keeps this output-stream field opaque in the shared declaration.
-    WriteBinaryValue(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&stream) + 0x250), &m_fDragStrength);
-    WriteBinaryValue(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&stream) + 0x250), &m_fFirstLightParameter);
-    WriteBinaryValue(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&stream) + 0x250), &m_fSecondLightParameter);
+    WriteBinaryValue(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x250), &m_fDragStrength);
+    WriteBinaryValue(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x250), &m_fFirstLightParameter);
+    WriteBinaryValue(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x250), &m_fSecondLightParameter);
 }
 
 // @fnv 0x00c2c590
-bool NiPSysDragModifier::IsEqual(NiObject* object) const
+// pdb: NiPSysDragModifier::IsEqual | NiPSysDragModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool NiPSysDragModifier::IsEqual(NiObject* pkObject) const
 {
-    NiPSysDragModifier* other = static_cast<NiPSysDragModifier*>(object);
+    NiPSysDragModifier* other = static_cast<NiPSysDragModifier*>(pkObject);
     if (NiPSysModifier::IsEqual(other))
     {
-        if (m_pParent && !other->m_pParent)
+        if (m_pkDragObj && !other->m_pkDragObj)
             return false;
-        if (!m_pParent && other->m_pParent)
+        if (!m_pkDragObj && other->m_pkDragObj)
             return false;
-        if (m_pParent && other->m_pParent && !m_pParent->IsEqual(other->m_pParent))
+        if (m_pkDragObj && other->m_pkDragObj && !m_pkDragObj->IsEqual(other->m_pkDragObj))
             return false;
         if (!(other->m_kDragDirection != m_kDragDirection) && other->m_fDragStrength == m_fDragStrength &&
             other->m_fFirstLightParameter == m_fFirstLightParameter &&
@@ -186,19 +198,22 @@ extern char DAT_010bff00;
 extern char DAT_01062600;
 extern char DAT_010bfef0;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* object);
-void* __cdecl NiGetViewerString_00a7d5e0(const void* typeName, const void* value);
+void* __cdecl NiGetViewerString_00a7d5e0(const void* pcPrefix, const void* pcValue);
 void* __cdecl NiGetViewerString_00a7d550(const void* typeName, float value);
 // Appends the base modifier strings, drag object name, drag axis, percentage, range and falloff to the viewer array.
 // @fnv 0x00c2c620
-void NiPSysDragModifier::GetDragViewerStrings(StreamArray& array)
+// pdb: NiPSysDragModifier::GetViewerStrings | NiPSysDragModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: pcDragObj
+void NiPSysDragModifier::GetDragViewerStrings(StreamArray& pkStrings)
 {
     // NiPSysModifier does not yet declare its viewer-string override in the shared header.
-    reinterpret_cast<ParticleViewerStringsCall*>(this)->GetViewerStrings(array);
-    array.Append(NiViewerStrings_NiGetViewerString_Title(*reinterpret_cast<void**>(&g_01202768)));
-    const char* name = m_pParent ? m_pParent->m_kName.m_kHandle : &DAT_0102909c;
-    array.Append(NiGetViewerString_00a7d5e0(&DAT_010bff18, name));
-    array.Append(m_kDragDirection.GetViewerString_00a59af0(&DAT_010bff0c));
-    array.Append(NiGetViewerString_00a7d550(&DAT_010bff00, m_fDragStrength));
-    array.Append(NiGetViewerString_00a7d550(&DAT_01062600, m_fFirstLightParameter));
-    array.Append(NiGetViewerString_00a7d550(&DAT_010bfef0, m_fSecondLightParameter));
+    reinterpret_cast<ParticleViewerStringsCall*>(this)->GetViewerStrings(pkStrings);
+    pkStrings.Append(NiViewerStrings_NiGetViewerString_Title(*reinterpret_cast<void**>(&g_01202768)));
+    const char* name = m_pkDragObj ? m_pkDragObj->m_kName.m_kHandle : &DAT_0102909c;
+    pkStrings.Append(NiGetViewerString_00a7d5e0(&DAT_010bff18, name));
+    pkStrings.Append(m_kDragDirection.GetViewerString_00a59af0(&DAT_010bff0c));
+    pkStrings.Append(NiGetViewerString_00a7d550(&DAT_010bff00, m_fDragStrength));
+    pkStrings.Append(NiGetViewerString_00a7d550(&DAT_01062600, m_fFirstLightParameter));
+    pkStrings.Append(NiGetViewerString_00a7d550(&DAT_010bfef0, m_fSecondLightParameter));
 }

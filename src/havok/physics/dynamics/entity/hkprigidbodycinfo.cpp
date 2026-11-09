@@ -18,6 +18,7 @@ struct Owner
 // Resets position, rotation, velocity, and axes to defaults, sets physical properties, flags, and returns this.
 // @fnv 0x00cf5ea0
 // src: GUESS 0x00cf5ea0 (confidence: medium)
+// pdb: hkpRigidBodyCinfo::hkpRigidBodyCinfo | hkpRigidBodyCinfo.obj | retail, call graph, medium
 Owner* Owner::InitializePhysicsFields()
 {
     _mm_store_ps(reinterpret_cast<float*>(&position), _mm_setzero_ps());

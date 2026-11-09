@@ -74,7 +74,7 @@ struct RayPickQuery
     RayPickQuery();
     void bhkPickData_SetFilter(unsigned int filterValue);
     void bhkPickData_SetFrom(NiPoint3* origin);
-    void bhkPickData_SetLength(NiPoint3* direction);
+    void bhkPickData_SetLength(NiPoint3* arLength);
     void bhkPickData_SetAllCollector(void* collector);
 };
 struct HitEntry
@@ -119,7 +119,7 @@ struct Controller
     Controller* Sky_GetMode();
     bool Projectile_IsFlagSet(int);
     void Projectile_SetRange(float);
-    void Projectile_SetMovementDelta(NiPoint3 point, bool flag);
+    void Projectile_SetMovementDelta(NiPoint3 aDelta, bool abAddDistance);
     EventEntity* Projectile_GetShooter();
 };
 struct AudioPlaybackHandle
@@ -137,7 +137,7 @@ struct AudioPlaybackHandle
 };
 struct AudioSystem
 {
-    AudioPlaybackHandle BSAudio_GetSoundHandleByFilename(const char* path, int flags, SoundSource* source);
+    AudioPlaybackHandle BSAudio_GetSoundHandleByFilename(const char* apFilename, int aiTypeFlags, SoundSource* apSettingsContext);
     void* TESMain_GetThread();
 };
 struct WorldTarget
@@ -165,7 +165,7 @@ struct FloatSetting
     float* Setting_Float_00403e20();
 };
 struct FormTypeDescriptor;
-extern FormTypeDescriptor DAT_01268444;
+extern FormTypeDescriptor bhkCollisionBox_ms_RTTI;
 extern AudioController* DAT_011dea10;
 extern EventEntity* DAT_011dea3c;
 extern unsigned char DAT_011f20a4;
@@ -173,20 +173,20 @@ extern FloatSetting DAT_011f210c;
 extern float DAT_010162c0, DAT_01017870, DAT_0101712c;
 extern double DAT_010231b0, DAT_01088210;
 extern NiPoint3 DAT_011a9484;
-extern int GetAVObjectForCollidable(int handle);
+extern int GetAVObjectForCollidable(int aphkCol);
 extern EventEntity* TESObjectREFR_FindReferenceFor3D(int handle);
 extern int hkpGetPhantom(int handle);
-extern EventEntity* bhkEntity_Getbhk(int form);
+extern EventEntity* bhkEntity_Getbhk(int apEnt);
 extern void Script_SetActionFlag(Controller* player, void* sound, int flags);
 extern bool NiObject_IsKindOf(FormTypeDescriptor* descriptor, EventEntity* entity);
-extern EventEntity* FindFirstCollisionObject(int handle);
+extern EventEntity* FindFirstCollisionObject(int ap3D);
 struct ParentEntity : EventEntity
 {
     EventEntity* bhkNiCollisionObject_GetWorldObject();
 };
-extern bool CanProjectileHit(EventEntity* reference, int eventHandle, Controller* player, int eventOwner);
-extern bool Projectile_PickSceneGraph(RayPickQuery* packet, int handle, int arg3, int arg4);
-extern void HK2NINS(NiPoint3* out, EventInfo* info);
+extern bool Projectile_IsValidImpact(EventEntity* apCollidee, int apTargetCollidable, Controller* apProjectile, int apProjectileBase);
+extern bool Projectile_PickSceneGraph(RayPickQuery* apPickData, int apObject, int abIgnoreHead, int abSort);
+extern void HK2NINS(NiPoint3* arNiP, EventInfo* arhkV);
 extern AudioSystem* BSAudio_QInstance();
 extern RenderElement* CreateOctahedron(float scale, Color* color, int arg3);
 typedef int(__thiscall* GetKindFn)(EventEntity*);
@@ -196,26 +196,29 @@ typedef VisualNode*(__thiscall* GetVisualFn)(Controller*);
 typedef bool(__thiscall* DispatchFn)(Controller*, EventEntity*, NiPoint3*, NiPoint3*, int, int, int);
 // @fnv 0x009c0d80
 // src: XBOX_PDB 0x009c0d80
-int __cdecl Projectile_ProcessTargetPick(Scene* scene, Controller* player, int eventOwner, float* hitTime, bool acceptUnknown,
-                         float maximumTime)
+// pdb: Projectile::ProcessTargetPick | Projectile.obj | retail, upstream name already matches, high
+// pdb params: apPickData, apProjectile, apProjectileBase, apHitFraction, bUseCharacterController, afWaterHitRatio
+// pdb locals: bimpactFound, phitObject, ptargetRef, pickOrigin, bhitCollisionBox, pickLength, i, pav, pref, point, pphantom, pbp, bprocessImpact, pcol, pfirstbody, collector, from, bhit, length, pd, normal, outputShapeKey, contact, j ...
+int __cdecl Projectile_ProcessTargetPick(Scene* apPickData, Controller* apProjectile, int apProjectileBase, float* apHitFraction, bool bUseCharacterController,
+                         float afWaterHitRatio)
 {
-    if (eventOwner == 0 && player != 0)
-        eventOwner = (int)player->FUN_004181e0();
+    if (apProjectileBase == 0 && apProjectile != 0)
+        apProjectileBase = (int)apProjectile->FUN_004181e0();
     bool picked = false;
     int result = 0;
-    if (scene != 0 && scene->DialoguePackage_GetCurrentDialogItem() != 0)
+    if (apPickData != 0 && apPickData->DialoguePackage_GetCurrentDialogItem() != 0)
     {
         NiPoint3 initialPosition;
         NiPoint3 initialDirection;
-        scene->bhkPickData_NiGetFrom(&initialPosition);
-        scene->bhkPickData_NiGetLength(&initialDirection);
+        apPickData->bhkPickData_NiGetFrom(&initialPosition);
+        apPickData->bhkPickData_NiGetLength(&initialDirection);
         bool partialMatch = false;
         EventEntity* lastReference = 0;
-        for (int i = 0; !picked && i < scene->DialoguePackage_GetCurrentDialogItem()->TESDataHandler_GetWorldSpaceList()->FUN_00726070(); ++i)
+        for (int i = 0; !picked && i < apPickData->DialoguePackage_GetCurrentDialogItem()->TESDataHandler_GetWorldSpaceList()->FUN_00726070(); ++i)
         {
             EventInfo info;
-            info.hkpWorldRayCastOutput_hkpWorldRayCastOutput_00696c30(scene->DialoguePackage_GetCurrentDialogItem()->TESDataHandler_GetWorldSpaceList()->GetEntryAt(i));
-            if (info.time > maximumTime)
+            info.hkpWorldRayCastOutput_hkpWorldRayCastOutput_00696c30(apPickData->DialoguePackage_GetCurrentDialogItem()->TESDataHandler_GetWorldSpaceList()->GetEntryAt(i));
+            if (info.time > afWaterHitRatio)
                 continue;
             int handle = GetAVObjectForCollidable(info.eventHandle);
             EventEntity* reference = TESObjectREFR_FindReferenceFor3D(handle);
@@ -228,17 +231,17 @@ int __cdecl Projectile_ProcessTargetPick(Scene* scene, Controller* player, int e
                 {
                     candidate = false;
                     unsigned int filterA, filterB;
-                    if (player != 0 && reference != 0 &&
+                    if (apProjectile != 0 && reference != 0 &&
                         (entity2->bhkWorldObject_GetCollisionFilter(&filterA)->CFilter_GetLayer() == 0x17 ||
                          entity2->bhkWorldObject_GetCollisionFilter(&filterB)->CFilter_GetLayer() == 0x18))
                     {
-                        Script_SetActionFlag(player, reference->BSFile_GetDevice(), 0x80);
-                        if (player->Sky_GetMode() != 0)
-                            Script_SetActionFlag(player->Sky_GetMode(), reference->BSFile_GetDevice(), 0x100);
+                        Script_SetActionFlag(apProjectile, reference->BSFile_GetDevice(), 0x80);
+                        if (apProjectile->Sky_GetMode() != 0)
+                            Script_SetActionFlag(apProjectile->Sky_GetMode(), reference->BSFile_GetDevice(), 0x100);
                     }
                     unsigned int filterC;
-                    if (NiObject_IsKindOf(&DAT_01268444, entity2) ||
-                        (acceptUnknown && entity2->bhkWorldObject_GetCollisionFilter(&filterC)->CFilter_GetLayer() == 0x1e))
+                    if (NiObject_IsKindOf(&bhkCollisionBox_ms_RTTI, entity2) ||
+                        (bUseCharacterController && entity2->bhkWorldObject_GetCollisionFilter(&filterC)->CFilter_GetLayer() == 0x1e))
                     {
                         partialMatch = true;
                         lastReference = reference;
@@ -253,13 +256,13 @@ int __cdecl Projectile_ProcessTargetPick(Scene* scene, Controller* player, int e
                                 {
                                     RayPickQuery pickQuery;
                                     NiPoint3 origin;
-                                    scene->bhkPickData_NiGetFrom(&origin);
+                                    apPickData->bhkPickData_NiGetFrom(&origin);
                                     NiPoint3 direction;
-                                    scene->bhkPickData_NiGetLength(&direction);
+                                    apPickData->bhkPickData_NiGetLength(&direction);
                                     initialDirection *= DAT_010162c0;
                                     direction *= DAT_010162c0;
                                     Filter sceneFilter;
-                                    pickQuery.bhkPickData_SetFilter(scene->ConstructCF845(&sceneFilter)->value);
+                                    pickQuery.bhkPickData_SetFilter(apPickData->ConstructCF845(&sceneFilter)->value);
                                     pickQuery.bhkPickData_SetFrom(&origin);
                                     pickQuery.bhkPickData_SetLength(&direction);
                                     Collector collector;
@@ -279,27 +282,27 @@ int __cdecl Projectile_ProcessTargetPick(Scene* scene, Controller* player, int e
                     }
                 }
             labelAfterPartial:
-                if (!CanProjectileHit(reference, info.eventHandle, player, eventOwner))
+                if (!Projectile_IsValidImpact(reference, info.eventHandle, apProjectile, apProjectileBase))
                     candidate = false;
                 if (candidate)
                 {
-                    if (player != 0)
+                    if (apProjectile != 0)
                     {
                         NiPoint3 hitPoint = initialDirection * info.time;
                         NiPoint3 aimPoint = initialPosition + hitPoint;
                         NiPoint3 tempPoint;
                         HK2NINS(&tempPoint, &info);
-                        if (player->Projectile_IsFlagSet(1))
+                        if (apProjectile->Projectile_IsFlagSet(1))
                         {
-                            player->Projectile_SetRange(hitPoint.Length());
-                            player->Projectile_SetMovementDelta(hitPoint, false);
+                            apProjectile->Projectile_SetRange(hitPoint.Length());
+                            apProjectile->Projectile_SetMovementDelta(hitPoint, false);
                         }
                         int lastIndex = -1;
                         for (int k = 0; k < 8 && reinterpret_cast<int*>(info.indexBytes)[k] != -1; ++k)
                         {
                             lastIndex = reinterpret_cast<int*>(info.indexBytes)[k];
                         }
-                        picked = ((DispatchFn)player->vtable[0x32c / 4])(player, reference, &aimPoint, &tempPoint,
+                        picked = ((DispatchFn)apProjectile->vtable[0x32c / 4])(apProjectile, reference, &aimPoint, &tempPoint,
                                                                          info.eventHandle, lastIndex, 0x24);
                         if (picked)
                             result = handle;
@@ -309,25 +312,25 @@ int __cdecl Projectile_ProcessTargetPick(Scene* scene, Controller* player, int e
                         picked = true;
                         result = handle;
                     }
-                    if (picked && hitTime != 0)
-                        *hitTime = info.time;
+                    if (picked && apHitFraction != 0)
+                        *apHitFraction = info.time;
                 }
             }
         }
-        if (player != 0)
+        if (apProjectile != 0)
         {
             if (!picked)
             {
-                if (maximumTime != DAT_010231b0)
+                if (afWaterHitRatio != DAT_010231b0)
                 {
-                    NiPoint3 away = initialDirection * maximumTime;
+                    NiPoint3 away = initialDirection * afWaterHitRatio;
                     NiPoint3 dst = initialPosition + away;
-                    if (player->Projectile_IsFlagSet(1))
+                    if (apProjectile->Projectile_IsFlagSet(1))
                     {
-                        player->Projectile_SetRange(away.Length());
-                        player->Projectile_SetMovementDelta(away, false);
+                        apProjectile->Projectile_SetRange(away.Length());
+                        apProjectile->Projectile_SetMovementDelta(away, false);
                     }
-                    ((DispatchFn)player->vtable[0x32c / 4])(player, 0, &dst, &DAT_011a9484, 0, -1, 8);
+                    ((DispatchFn)apProjectile->vtable[0x32c / 4])(apProjectile, 0, &dst, &DAT_011a9484, 0, -1, 8);
                 }
             }
             if (!picked && partialMatch)
@@ -335,32 +338,32 @@ int __cdecl Projectile_ProcessTargetPick(Scene* scene, Controller* player, int e
                 if (lastReference != 0 && lastReference == DAT_011dea3c)
                 {
                     NiPoint3 impact;
-                    scene->bhkPickData_NiCalcHitPoint(&impact);
-                    if (player->FUN_004181e0() != 0)
+                    apPickData->bhkPickData_NiCalcHitPoint(&impact);
+                    if (apProjectile->FUN_004181e0() != 0)
                     {
-                        if (player->FUN_004181e0()->FUN_004fd3e0() != 0)
+                        if (apProjectile->FUN_004181e0()->FUN_004fd3e0() != 0)
                         {
                             int flags = 0x102;
                             AudioPlaybackHandle sound =
-                                BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(player->FUN_004181e0()->FUN_004fd3e0()->TESSound_GetFilename(),
-                                                             flags, player->FUN_004181e0()->FUN_004fd3e0());
+                                BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(apProjectile->FUN_004181e0()->FUN_004fd3e0()->TESSound_GetFilename(),
+                                                             flags, apProjectile->FUN_004181e0()->FUN_004fd3e0());
                             sound.FUN_00ad8b60(impact.x, impact.y, impact.z);
                             sound.FUN_00ad8830(0);
-                            if (DAT_011f20a4 != 0 && ((GetVisualFn)player->vtable[0x1d0 / 4])(player) != 0)
+                            if (DAT_011f20a4 != 0 && ((GetVisualFn)apProjectile->vtable[0x1d0 / 4])(apProjectile) != 0)
                             {
                                 Color color;
                                 color.FUN_00414430(0.0f, 1.0f, 1.0f, DAT_01017870);
                                 RenderElement* visual = CreateOctahedron(DAT_0101712c, &color, 1);
                                 visual->UpdateProperties();
-                                visual->NiAVObject_SetTranslate(((GetVisualFn)player->vtable[0x1d0 / 4])(player)->NiAVObject_GetWorldTranslate());
+                                visual->NiAVObject_SetTranslate(((GetVisualFn)apProjectile->vtable[0x1d0 / 4])(apProjectile)->NiAVObject_GetWorldTranslate());
                                 DAT_011dea10->FUN_00458e20(visual, *DAT_011f210c.Setting_Float_00403e20());
                             }
                         }
                     }
                 }
             }
-            else if (player->FUN_004181e0()->FUN_004fd3e0() != 0 &&
-                     ((picked && lastReference != DAT_011dea3c) || !picked) && player->Projectile_GetShooter() != DAT_011dea3c &&
+            else if (apProjectile->FUN_004181e0()->FUN_004fd3e0() != 0 &&
+                     ((picked && lastReference != DAT_011dea3c) || !picked) && apProjectile->Projectile_GetShooter() != DAT_011dea3c &&
                      BSAudio_QInstance()->TESMain_GetThread() != 0)
             {
                 NiPoint3 at, saved, direction, extra, position;
@@ -369,8 +372,8 @@ int __cdecl Projectile_ProcessTargetPick(Scene* scene, Controller* player, int e
                 if (lastReference != 0)
                     saved = *((GetPositionFn)lastReference->vtable[0x1f4 / 4])(lastReference);
                 else
-                    scene->bhkPickData_NiGetTo(&saved);
-                scene->bhkPickData_NiGetFrom(&at);
+                    apPickData->bhkPickData_NiGetTo(&saved);
+                apPickData->bhkPickData_NiGetFrom(&at);
                 direction = saved - at;
                 extra = position - at;
                 float mag = extra.Dot(direction);
@@ -382,8 +385,8 @@ int __cdecl Projectile_ProcessTargetPick(Scene* scene, Controller* player, int e
                 {
                     int flags = 0x102;
                     AudioPlaybackHandle sound =
-                        BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(player->FUN_004181e0()->FUN_004fd3e0()->TESSound_GetFilename(), flags,
-                                                     player->FUN_004181e0()->FUN_004fd3e0());
+                        BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(apProjectile->FUN_004181e0()->FUN_004fd3e0()->TESSound_GetFilename(), flags,
+                                                     apProjectile->FUN_004181e0()->FUN_004fd3e0());
                     sound.FUN_00ad8b60(projected.x, projected.y, projected.z);
                     sound.FUN_00ad8830(0);
                     if (DAT_011f20a4 != 0)

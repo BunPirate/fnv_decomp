@@ -73,6 +73,8 @@ class FnvTextureData
 
 // Initializes the object's vtables, three hash maps, stores the texture, calls its virtual method, and clears the maps.
 // @fnv 0x00e8fb20
+// pdb: NiXenonIndexBufferManager::NiXenonIndexBufferManager | NiXenonIBManager.obj | retail, call graph, high
+// pdb params: pkD3DDevice9
 FnvTextureData* FnvTextureData::AllocateData(FnvTextureReference* texture)
 {
     m_ppVirtualMethodTable = reinterpret_cast<void**>(&kVtbl_NiRefObject);
@@ -139,6 +141,8 @@ struct CreatorHLSL
 
 // Allocates a CreatorHLSL and registers it with the shader program factory under "hlsl".
 // @fnv 0x00e91af0
+// pdb: NiD3DShaderProgramCreatorHLSL::_SDMInit | NiXenonRendererSDM.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DShaderProgramCreatorHLSL::Shutdown
 void __cdecl CreateHLSLShaderProgramCreator()
 {
     DAT_0126fa3c = (NiD3DShaderProgramCreator*)new CreatorHLSL();
@@ -546,6 +550,8 @@ struct S00e90a80
 };
 // @fnv 0x00e90a80
 // src: COMMUNITY 0x00e90a80
+// pdb: NiXenonTextureManager::NiXenonTextureManager | NiXenonTextureManager.obj | retail, call graph, high
+// pdb params: pkRenderer
 void* S00e90a80::NiDX9TextureManager_NiDX9TextureManager(void* p)
 {
     f0 = &kVtbl_NiRefObject;
@@ -947,6 +953,8 @@ struct FUN_00e91190_Holder
 };
 // If b differs from the byte at this+0x1114 and the object at this+0x10FC has a nonzero byte at 0x5D5, stores b and calls two virtual methods.
 // @fnv 0x00e91190
+// pdb: NiXenonRenderState::SetD3DRenderer | NiXenonRenderState.obj | debug, object-file run extension, low
+// pdb params: pkD3DRenderer
 void FUN_00e91190_Holder::SetFlag(bool b)
 {
     if (b == *(unsigned char*)((char*)this + 0x1114))
@@ -1240,6 +1248,7 @@ struct R
     virtual void v86();
     virtual void At15C(int);
 };
+// pdb: structure T, size 0x8 (here 0x4), 1 members
 struct T
 {
     virtual void __stdcall u0();
@@ -1416,6 +1425,9 @@ template <class T> inline void ReadBinaryValue(NiStream& kStream, T& val)
 
 // Loads the sequence from a stream: base object, name, an unsigned int, then a key-name array sized by a count read from the stream.
 // @fnv 0x00a47660
+// pdb: NiSequence::LoadBinary | NiSequence.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiNumKeys, ui, pcKeyName
 void NiSequence::LoadBinary(NiStream& kStream)
 {
     NiObject::LoadBinary(kStream);
@@ -1895,6 +1907,7 @@ struct FUN_00e90ac0_cls
 
 // Releases m_pSub, resets the vtable, decrements DAT_011f4400, and optionally frees this with FUN_00aa1460 when acFlags bit 0 is set.
 // @fnv 0x00e90ac0
+// pdb: NiXenonTextureManager::~NiXenonTextureManager | NiXenonTextureManager.obj | retail, object-file run extension, low
 FUN_00e90ac0_cls* FUN_00e90ac0_cls::FUN_00e90ac0(unsigned char acFlags)
 {
     FUN_00e90ac0_Sub* pSub = m_pSub;
@@ -1944,6 +1957,7 @@ struct FUN_00e914e0_cls
 
 // Updates m_08, m_6c, m_70 and m_1114 from m_113c, m_1144, m_1148, m_1164 and the m_10fc sub-object's m_5d4/m_5d5 bytes.
 // @fnv 0x00e914e0
+// pdb: NiXenonRenderState::~NiXenonRenderState | NiXenonRenderState.obj | debug, object-file run extension, low
 void FUN_00e914e0_cls::UpdateFlags()
 {
     if ((m_113c & 0x100) != 0 && (m_113c & 0x100000) != 0)
@@ -2222,6 +2236,9 @@ struct FUN_00e90b10_shell
 };
 
 // @fnv 0x00e90b10
+// pdb: NiXenonTextureManager::PrepareTextureForRendering | NiXenonTextureManager.obj | retail, object-file run extension, low
+// pdb params: pkNewTexIm, bChanged, bMipmap, bNonPow2
+// pdb locals: pkSourceTexData, pkTexData, pkRendered
 void* FUN_00e90b10_shell::GetTextureData(Texture* pkTexture, bool* pbChanged, bool* pbMipmap, bool* pbNonPow2)
 {
     *pbChanged = false;
@@ -3585,6 +3602,9 @@ struct RenderStateCache : RenderStateStorage
 
 // Allocates a RenderStateCache, initializes it, updates matching entries in DAT_011bfce8, sets flag bit 2 when zenable, and stores the result of FUN_00e978a0.
 // @fnv 0x00e91590
+// pdb: NiXenonRenderState::Create | NiXenonRenderState.obj | debug, call graph, high
+// pdb params: pkRenderer, bZBuffer
+// pdb locals: pkRS, i
 RenderStateCache* __cdecl CreateRenderer(int adapter, CreateDesc* desc, bool zenable)
 {
     RenderStateCache* r = new RenderStateCache(adapter, desc);
@@ -3812,6 +3832,9 @@ struct FnvRendererOwner
 };
 
 // @fnv 0x00e90c70
+// pdb: NiXenonTextureManager::PrecacheTexture | NiXenonTextureManager.obj | debug, object-file run extension, low
+// pdb params: pkIm, bForceLoad, bLocked
+// pdb locals: pkRenderer, pkTexData, pkRendered, pkSourceTex
 bool FnvRendererOwner::IsObjectStatic(FnvObject* obj, void* arg2, void* arg3)
 {
     if (!obj)
@@ -3973,6 +3996,8 @@ struct RenderStateInitializer
 };
 // Compacts DAT_011bfce8 unless bit 0x4000 is set, then resets render states via SetState and packs DAT_011f4998 into packedColor.
 // @fnv 0x00e911e0
+// pdb: NiXenonRenderState::NiXenonRenderState | NiXenonRenderState.obj | debug, object-file run extension, low
+// pdb params: pkRenderer
 void RenderStateInitializer::InitializeRenderStates()
 {
     if (!(*(unsigned int*)((char*)this + 0x1138) & 0x4000))
@@ -4363,6 +4388,7 @@ class Device
                                             unsigned int format, unsigned int pool, CubeSurface** surface,
                                             void* shared);
 };
+// pdb: class Renderer, size 0x1 (here 0x80c), 0 members
 class Renderer
 {
   public:
@@ -6893,6 +6919,9 @@ static bool FnvIsPowerOfTwo(unsigned value)
 // Creates an FnvOutput for a source and device, resolving pixel data and texture resources while handling failures and reference counting.
 // @fnv 0x00e68ef0
 // src: COMMUNITY 0x00e68ef0
+// pdb: NiXenonSourceTextureData::Create | NiXenonSourceTextureData.obj | retail, string-set bridge, high
+// pdb params: pkTexture, pkRenderer
+// pdb locals: eTex, ppkPixFmts, pkPersistentSrcRendererData, eD3DFmt, pkThis, spSrcPixels, pkDestFmt, kPrefs, pkSrcPixels, pcFilename, bSuccess, kSrcFmt, eD3DRet, kPrefsUncompressed, pkD3DTexture, dwTextureSize, pkFormatted, spDestructor
 FnvOutput* __cdecl NiDX9SourceTextureData_Create(FnvSource* source, FnvDevice* device)
 {
     if (source)

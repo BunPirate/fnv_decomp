@@ -22,6 +22,9 @@ struct LogSink
 
 // @fnv 0x00aa0020
 // src: XBOX_PDB 0x00aa0020
+// pdb: NiShaderFactory::ReportError | NiShaderFactory.obj | retail, upstream name already matches, high
+// pdb params: eError, bRecoverable, pacFmt, acError
+// pdb locals: args
 int __cdecl NiShaderFactory_ReportError(int a1, int a2, const char* fmt, ...)
 {
     char buf[0x800];

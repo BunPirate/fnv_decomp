@@ -4,10 +4,11 @@
 
 struct CombatController;
 
+// pdb: class CombatActionIgnoreBlockedTarget, size 0x2c, bases: CombatAction, 0 members
 class CombatActionIgnoreBlockedTarget : public CombatAction
 {
 public:
-    CombatActionIgnoreBlockedTarget(COMBAT_ACTION type);
+    CombatActionIgnoreBlockedTarget(COMBAT_ACTION aeType);
 
     virtual void vfn_0();
 

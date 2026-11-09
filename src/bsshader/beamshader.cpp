@@ -40,11 +40,14 @@ class BloodSplatterBeamShader : public BeamShader
   public:
     static void* operator new(unsigned int) throw();
     BloodSplatterBeamShader(NiD3DVertexDeclaration*);
-    static BSShader* CreateShader();
+    static BSShader* BeamShader_CreateShader();
 };
 
 // @fnv 0x00bc4af0
-BSShader* BloodSplatterBeamShader::CreateShader()
+// src: XBOX_RETAIL_PDB 0x00bc4af0
+// pdb: BeamShader::CreateShader | BeamShader.obj | retail, call graph, high
+// pdb locals: spShaderDecl, pshader
+BSShader* BloodSplatterBeamShader::BeamShader_CreateShader()
 {
     NiD3DVertexDeclaration* declaration = NiD3DVertexDeclaration::Create((NiRenderer*)g_pkRenderer, 5, 1);
     declaration->SetEntry(0, 0, (NiShaderDeclaration::ShaderParameter)0, (NiShaderDeclaration::ShaderParameterType)2, 0);
@@ -97,6 +100,8 @@ class DistantLODShader
 
 // Creates the shader constant maps for the shader if not already present, setting constants on the first map.
 // @fnv 0x00bc4ed0
+// pdb: BeamShader::CreateConstantMaps | BeamShader.obj | retail, string-set bridge, high
+// pdb locals: uiDefinedMatrixFlags, uiConstantMatrixFlags
 void DistantLODShader::UpdateShaderConstants()
 {
     if (!m_spSecondShaderConstantMap.m_pShaderConstantMap)
@@ -117,7 +122,10 @@ void DistantLODShader::UpdateShaderConstants()
 #include "beamshader_pass.h"
 // Ensures the pass has a stage, then assigns vertex/pixel shaders and sets the pass render states.
 // @fnv 0x00bc4c00
-void BeamPassShader::SetupPass()
+// src: XBOX_RETAIL_PDB 0x00bc4c00
+// pdb: BeamShader::PresetStages | BeamShader.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage
+void BeamPassShader::BeamShader_PresetStages()
 {
     BeamPassPointer p;
     BeamStagePointer stage;
@@ -144,11 +152,13 @@ void BeamPassShader::SetupPass()
 }
 
 // @fnv 0x00bc4ea0
-bool BeamPassShader::InitializePass()
+// src: XBOX_RETAIL_PDB 0x00bc4ea0
+// pdb: BeamShader::LoadStagesAndPasses | BeamShader.obj | retail, object-file gap fill, high
+bool BeamPassShader::BeamShader_LoadStagesAndPasses()
 {
     if (!pass.m_pObject)
         NiD3DPass::CreateD3DPass(pass);
-    SetupPass();
+    BeamShader_PresetStages();
     return true;
 }
 
@@ -159,11 +169,13 @@ struct Holder
 void __cdecl _delete(void*, unsigned int);
 struct S
 {
-    void* DestroyIfFlagged(unsigned int);
+    void* BeamShader_ScalarDtor(unsigned int);
 };
 // Calls FUN_00bc49a0 on this, deletes this with size 0xc0 when flag has bit 0 set, and returns this.
 // @fnv 0x00bc4e70
-void* S::DestroyIfFlagged(unsigned int auiFlags)
+// src: XBOX_RETAIL_PDB 0x00bc4e70
+// pdb: BeamShader::`scalar deleting destructor' | BeamShader.obj | retail, object-file gap fill, high
+void* S::BeamShader_ScalarDtor(unsigned int auiFlags)
 {
     ((Holder*)this)->FUN_00bc49a0();
     if (auiFlags & 1)
@@ -201,6 +213,7 @@ class FUN_00bc49a0 : public BSShader
 
 // Clears the shared pointer and the pass and two other reference-counted pointers, releasing them.
 // @fnv 0x00bc49a0
+// pdb: BeamShader::~BeamShader | BeamShader.obj | retail, object-file run extension, low
 FUN_00bc49a0::~FUN_00bc49a0()
 {
     ms_spShared = 0;

@@ -19,6 +19,7 @@ enum NiUVKeyType
     NUMKEYTYPES
 };
 
+// pdb: class NiUVData, size 0x4c, bases: NiObject, 20 members
 class NiUVData : public NiObject
 {
 public:
@@ -31,14 +32,14 @@ public:
 
     void Destructor();
     void* FUN_00a45200(unsigned int flags);
-    void ReplaceUOffsetAnim(TimedAnimationKey* keys, unsigned int numKeys, unsigned int type);
-    void ReplaceVOffsetAnim(void* keys, unsigned int count, int type);
-    void ReplaceUTilingAnim(void* keys, unsigned int count, unsigned int type);
-    void ReplaceVTilingAnim(void* keys, unsigned int count, unsigned int type);
+    void ReplaceUOffsetAnim(TimedAnimationKey* pkKeys, unsigned int uiNumKeys, unsigned int eType);
+    void ReplaceVOffsetAnim(void* pkKeys, unsigned int uiNumKeys, int eType);
+    void ReplaceUTilingAnim(void* pkKeys, unsigned int uiNumKeys, unsigned int eType);
+    void ReplaceVTilingAnim(void* pkKeys, unsigned int uiNumKeys, unsigned int eType);
     bool IsEqual_00a45090(NiUVData* pkOther);
     void FUN_00a453a0(NiUVStream& kStream);
     void FUN_00a45610(NiStreamX& kStream);
-    void AppendKeyNames(StrArr* apViewerStrings);
+    void AppendKeyNames(StrArr* pStrings);
     void ReplaceUOffsetKeys(NiUVKey* pkKeys, unsigned int uiNumKeys, NiUVKeyType eType);
     void ReplaceVOffsetKeys(NiUVKey* pkKeys, unsigned int uiNumKeys, NiUVKeyType eType);
     void ReplaceUTilingKeys(NiUVKey* pkKeys, unsigned int uiNumKeys, NiUVKeyType eType);
@@ -46,23 +47,23 @@ public:
     static unsigned char* GetKeyPointerByIndex(unsigned char* pk, unsigned int i, unsigned char uc);
 
     unsigned int m_uiNumUOffsetKeys;
-    unsigned char* m_pUOffsetKeys;
-    unsigned int m_uiUOffsetKeyStride;
+    unsigned char* m_pkUOffsetKeys;
+    unsigned int m_eUOffsetType;
     unsigned int m_uiNumVOffsetKeys;
-    unsigned char* m_pVOffsetKeys;
-    unsigned int m_uiVOffsetKeyStride;
+    unsigned char* m_pkVOffsetKeys;
+    unsigned int m_eVOffsetType;
     unsigned int m_uiNumUTilingKeys;
-    unsigned char* m_pUTilingKeys;
-    unsigned int m_uiUTilingKeyStride;
+    unsigned char* m_pkUTilingKeys;
+    unsigned int m_eUTilingType;
     unsigned int m_uiNumVTilingKeys;
-    unsigned char* m_pVTilingKeys;
-    unsigned int m_uiVTilingKeyStride;
-    int unk38;
-    int unk3C;
-    int unk40;
-    int unk44;
-    unsigned char m_ucByte48;
-    unsigned char m_ucByte49;
-    unsigned char m_ucByte4A;
-    unsigned char m_ucByte4B;
+    unsigned char* m_pkVTilingKeys;
+    unsigned int m_eVTilingType;
+    int m_fLastUOffset;
+    int m_fLastVOffset;
+    int m_fLastUTiling;
+    int m_fLastVTiling;
+    unsigned char m_ucUOffsetSize;
+    unsigned char m_ucVOffsetSize;
+    unsigned char m_ucUTilingSize;
+    unsigned char m_ucVTilingSize;
 };

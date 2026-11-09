@@ -12,6 +12,8 @@ struct S
 };
 // @fnv 0x00c8d4a0
 // src: XBOX_PDB 0x00c8d4a0
+// pdb: bhkRigidBodyCinfo::GetQualityTypeString | bhkRigidBody.obj | debug, upstream name already matches, high
+// pdb locals: pstring
 const char* S::bhkRigidBodyCinfo_GetQualityTypeString()
 {
     const char* r = 0;

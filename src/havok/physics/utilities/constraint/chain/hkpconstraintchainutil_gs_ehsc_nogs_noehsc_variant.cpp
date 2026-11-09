@@ -46,7 +46,7 @@ struct FUN_00e5c460_cls
     int unk34;
     DispatchTarget m_38;
 
-    void hkpConstraintChainInstance_insertEntityAtFront(OutObject* a1);
+    void hkpConstraintChainInstance_insertEntityAtFront(OutObject* entity);
 };
 #include <xmmintrin.h>
 __declspec(align(16)) struct XfOut_cls
@@ -62,7 +62,7 @@ struct FUN_00c7f690_cls
 };
 struct XfSub_cls
 {
-    void Push(XfOut_cls* a, XfOut_cls* b);
+    void addConstraintInfoInBodySpace(XfOut_cls* pivotInA, XfOut_cls* pivotInB);
 };
 struct XfScene_cls
 {
@@ -82,7 +82,7 @@ struct XfScene_cls
     int unk34;
     char** m_38;
     int m_3c;
-    void AddReferencedObject(XfScene_cls* other);
+    void addEntity(XfScene_cls* entity);
 };
 static char* XfSelectRec(char* rec)
 {
@@ -92,7 +92,7 @@ static char* XfSelectRec(char* rec)
     }
     return 0;
 }
-void hkpConstraintChainUtil_addConstraintToBallSocketChain(XfScene_cls* a1, XfScene_cls* a2, const __m128* a3);
+void hkpConstraintChainUtil_addConstraintToBallSocketChain(XfScene_cls* instance, XfScene_cls* entityToAppend, const __m128* pivotWs);
 // FUN_00e5b8f0: __cdecl, 317 bytes
 // Two 16-byte keys are filled by FUN_00e5ad40; the sorted-list tail is compared against
 // the owner's keys; the matching branch hands a 32-byte pair to a sub-object or holder.
@@ -135,7 +135,7 @@ struct OwnerC
     unsigned int unk10;
     unsigned int unk14;
     Sub18 m_18;
-    void Push(Tmp16* a, Tmp16* b);
+    void addConstraintInfoInBodySpace(Tmp16* pivotInA, Tmp16* pivotInB);
 };
 struct ListB
 {
@@ -155,11 +155,11 @@ struct ListB
     unsigned int unk34;
     unsigned int* m_38;
     unsigned int m_3c;
-    void AddReferencedObject(unsigned int key);
-    void hkpConstraintChainInstance_insertEntityAtFront(unsigned int key);
+    void addEntity(unsigned int entity);
+    void hkpConstraintChainInstance_insertEntityAtFront(unsigned int entity);
 };
-int hkpConstraintUtils_getConstraintPivots(KeyOwnerA* a, Tmp16* p, Tmp16* q);
-int hkpConstraintChainUtil_addConstraintToChain(KeyOwnerA* a1, ListB* a2, OwnerC* a3, ...);
+int hkpConstraintUtils_getConstraintPivots(KeyOwnerA* a, Tmp16* pivotInAOut, Tmp16* pivotInBOut);
+int hkpConstraintChainUtil_addConstraintToChain(KeyOwnerA* newChildInstance, ListB* chainInstance, OwnerC* chainData, ...);
 inline void* operator new(unsigned int, void* p)
 {
     return p;
@@ -176,7 +176,7 @@ struct S_00e5c370_Elem
         reinterpret_cast<__m128&>(b) = reinterpret_cast<const __m128&>(o.b);
     }
 };
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 void __cdecl hkMemUtil_memMove(void* dst, const void* src, int nbytes);
 template <class T>
 static __forceinline void S_00e5c370_ArrayBase_GrowArrayCapacity(hkArrayBase<T>& self, hkMemoryAllocator& a, int n);
@@ -332,7 +332,7 @@ struct FUN_00dd0530 : Edge
     {
         return allocateObject(size);
     }
-    void AddReferencedObject(Node*);
+    void addEntity(Node*);
 };
 
 struct Stream
@@ -361,7 +361,7 @@ static const char unordered[] =
     "Constraints are not ordered properly ! Two consecutive constraint share no common hkpEntity.";
 static const char nomotors[] = "No motors extracted from the original constraint.";
 int __cdecl hkpConstraintUtils_getConstraintPivots(const Edge*, V4&, V4&);
-void __cdecl GetConstraintMotorValues(const void*, Body*&, Body*&, Body*&);
+void __cdecl hkpConstraintUtils_getConstraintMotors(const void*, Body*&, Body*&, Body*&);
 struct Buffer
 {
     void* words[128];
@@ -390,16 +390,19 @@ inline void __fastcall SetRelativeRotation(V4* result, void*, const V4* left, co
 
 // @fnv 0x00e5b510
 // src: XBOX_PDB 0x00e5b510
-FUN_00dd0530* __cdecl hkpConstraintChainUtil_buildPoweredChain(Edges& edges, ByteFlag clone)
+// pdb: hkpConstraintChainUtil::buildPoweredChain | hkpConstraintChainUtil.obj | retail, upstream name already matches, high
+// pdb params: constraints, cloneMotors
+// pdb locals: pivotB, pivotA, assertBuf, ostr, motors, aTb
+FUN_00dd0530* __cdecl hkpConstraintChainUtil_buildPoweredChain(Edges& constraints, ByteFlag cloneMotors)
 {
     FUN_00e3b8f0* chain = new FUN_00e3b8f0;
     FUN_00dd0530* result = new FUN_00dd0530(chain);
-    Node* start = edges.data[0]->getA();
-    if (edges.size > 1 && (start == edges.data[1]->getA() || start == edges.data[1]->getB()))
-        start = edges.data[0]->getB();
-    result->AddReferencedObject(start);
+    Node* start = constraints.data[0]->getA();
+    if (constraints.size > 1 && (start == constraints.data[1]->getA() || start == constraints.data[1]->getB()))
+        start = constraints.data[0]->getB();
+    result->addEntity(start);
     Buffer buffer;
-    for (int i = 0; i < edges.size; ++i)
+    for (int i = 0; i < constraints.size; ++i)
     {
         union
         {
@@ -413,7 +416,7 @@ FUN_00dd0530* __cdecl hkpConstraintChainUtil_buildPoweredChain(Edges& edges, Byt
         };
         V4 first;
         V4 second;
-        if (hkpConstraintUtils_getConstraintPivots(edges[i], first, second) == 1)
+        if (hkpConstraintUtils_getConstraintPivots(constraints[i], first, second) == 1)
         {
             validationStream.FUN_00cb1600(buffer, 512);
             validationStream.ProcessAndReturnValue_00cc01c0(unsupported);
@@ -423,10 +426,10 @@ FUN_00dd0530* __cdecl hkpConstraintChainUtil_buildPoweredChain(Edges& edges, Byt
             result->FUN_00c905b0();
             return 0;
         }
-        if (edges[i]->getA() != result->nodes.back())
+        if (constraints[i]->getA() != result->nodes.back())
         {
             exchangeValues(first, second);
-            if (edges[i]->getB() != result->nodes.back())
+            if (constraints[i]->getB() != result->nodes.back())
             {
                 validationStream.FUN_00cb1600(buffer, 512);
                 validationStream.ProcessAndReturnValue_00cc01c0(unordered);
@@ -439,8 +442,8 @@ FUN_00dd0530* __cdecl hkpConstraintChainUtil_buildPoweredChain(Edges& edges, Byt
         }
         V4 rotation;
         reinterpret_cast<void (__thiscall*)(V4*, const V4*, const V4*)>(SetRelativeRotation)(
-            &rotation, &edges[i]->getA()->position, &edges[i]->getB()->position);
-        GetConstraintMotorValues(edges[i]->data, a, b, c);
+            &rotation, &constraints[i]->getA()->position, &constraints[i]->getB()->position);
+        hkpConstraintUtils_getConstraintMotors(constraints[i]->data, a, b, c);
         if (!a)
         {
             Stream validationStream;
@@ -456,20 +459,20 @@ FUN_00dd0530* __cdecl hkpConstraintChainUtil_buildPoweredChain(Edges& edges, Byt
             b = a;
         if (!c)
             c = a;
-        if (clone)
+        if (cloneMotors)
         {
             a = a->v0c();
             b = b->v0c();
             c = c->v0c();
         }
         chain->addConstraintInfoInBodySpace(&first, &second, &rotation, a, b, c);
-        if (edges[i]->getA() == result->nodes.back())
+        if (constraints[i]->getA() == result->nodes.back())
         {
             chain->records[chain->count - 1].reversed = 1;
-            result->AddReferencedObject(edges[i]->getB());
+            result->addEntity(constraints[i]->getB());
         }
         else
-            result->AddReferencedObject(edges[i]->getA());
+            result->addEntity(constraints[i]->getA());
     }
     chain->FUN_00c905b0();
     return result;
@@ -501,7 +504,7 @@ struct S5ba30_HeapAllocator
     }
 };
 
-void __cdecl ResizeAudioStream(hkMemoryAllocator& alloc, void* arr, int sizeElem);
+void __cdecl ResizeAudioStream(hkMemoryAllocator& mem, void* array, int sizeElem);
 
 struct S5ba30_IsPod
 {
@@ -785,7 +788,7 @@ struct S5ba30_ConstraintInstance
     }
 };
 
-void __cdecl CollectConnectedNodesAndEdges(const S5ba30_Array<S5ba30_ConstraintInstance*>& allConstraints,
+void __cdecl hkpConstraintChainUtil_getAdjointEntities(const S5ba30_Array<S5ba30_ConstraintInstance*>& allConstraints,
                                            const S5ba30_Entity* entity, S5ba30_Array<S5ba30_Entity*>& entitiesOut,
                                            S5ba30_Array<S5ba30_ConstraintInstance*>& constraintsOut);
 
@@ -828,6 +831,9 @@ struct S5ba30_EntityInfo
 
 // @fnv 0x00e5ba30
 // src: XBOX_PDB 0x00e5ba30
+// pdb: hkpConstraintChainUtil::findConstraintLinkBetweenEntities | hkpConstraintChainUtil.obj | retail, string-set bridge, high
+// pdb params: allConstraints, entityA, entityB, entitiesOut, constraintsOut
+// pdb locals: m_adjointEntities, allEntities, infos, indexQueue, currQueueElem, m_entityIndexLookup, lastConstraint, endIdx, listSize, m_adjointConstraints, assertBuf, ostr, entityAidx, entityBidx, adIdx
 S5ba30_Result __cdecl hkpConstraintChainUtil_findConstraintLinkBetweenEntities(const S5ba30_Array<S5ba30_ConstraintInstance*>& allConstraints,
                                    S5ba30_Entity* entityA, S5ba30_Entity* entityB,
                                    S5ba30_Array<S5ba30_Entity*>& entitiesOut,
@@ -920,7 +926,7 @@ S5ba30_Result __cdecl hkpConstraintChainUtil_findConstraintLinkBetweenEntities(c
 
         adjEntities.clear();
         adjConstraints.clear();
-        CollectConnectedNodesAndEdges(allConstraints, entity, adjEntities, adjConstraints);
+        hkpConstraintChainUtil_getAdjointEntities(allConstraints, entity, adjEntities, adjConstraints);
 
         for (int a = 0; a < adjEntities.GetLogicalSize() && !done; a++)
         {

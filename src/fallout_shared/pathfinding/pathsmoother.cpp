@@ -10,6 +10,7 @@ struct FUN_006ed4e0_shell
 
 // Calls FUN_006ed510, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x006ed4e0
+// pdb: PathSmoother::UniqueVert::`scalar deleting destructor' | PathSmoother.obj | debug, object-file gap fill, medium
 void* FUN_006ed4e0_shell::DestroyIfFlagged(unsigned int flags)
 {
     ForwardCall_006ed510();
@@ -30,6 +31,7 @@ struct FUN_006ed510_shell
 
 // @fnv 0x006ed510
 // src: GUESS 0x006ed510 (confidence: low)
+// pdb: PathSmoother::UniqueVert::~UniqueVert | PathSmoother.obj | debug, object-file gap fill, medium
 void __thiscall FUN_006ed510_shell::ForwardCall_006ed510()
 {
     ((FUN_006f25d0_shell*)((char*)this + 0x2c))->FUN_006f25d0();
@@ -50,6 +52,7 @@ struct FUN_006f25d0 : FUN_006f25b0
 };
 // Destructor that calls Clear(true) on the global object.
 // @fnv 0x006f25d0
+// pdb: BSScrapArray<PathSmoother::PathEdge *,1024>::~BSScrapArray<PathSmoother::PathEdge *,1024> | PathSmoother.obj | debug, call graph, medium
 FUN_006f25d0::~FUN_006f25d0()
 {
     Clear(true);
@@ -111,6 +114,8 @@ struct FUN_006ed220
 };
 
 // @fnv 0x006ed220
+// pdb: PathSmoother::~PathSmoother | PathSmoother.obj | retail, call graph, high
+// pdb locals: i
 FUN_006ed220::~FUN_006ed220()
 {
     for (unsigned int i = 0; i < m_kActive.FUN_0044ddc0(); i++)
@@ -202,8 +207,8 @@ struct FUN_006ed530_cls
 
     void BuildInternalArrays();
     void PathSmoother_BuildShrunkEdgeLeftRightArrays();
-    bool CheckEdges();
-    void CopyNodePositions();
+    bool PathSmoother_CheckBoundsEdges();
+    void PathSmoother_SetLeftRightShrunkLocations();
     void PathSmoother_ComputeCenters();
     void SmoothNodes();
     void FlattenPathPoints();
@@ -212,37 +217,40 @@ struct FUN_006ed530_cls
     void AppendSegments(int aA, int aB);
     void SmoothPathDirections();
     void PathSmoother_AddPathingNode(Triple* apSrc, void* apRes);
-    bool PathSmoother_SmoothPath(NodeA* a1, ArgObj* a2, ArgObj* a3, Triple* a4, Triple* a5, int a6, Gate* a7, unsigned char a8);
+    bool PathSmoother_SmoothPath(NodeA* apRequest, ArgObj* aTriSolution, ArgObj* aLinks, Triple* aStartLocation, Triple* aGoalLocation, int apSolution, Gate* apBadNodeArray, unsigned char abAddNodesIfFail);
 };
 
 // @fnv 0x006ed530
 // src: COMMUNITY 0x006ed530
-bool FUN_006ed530_cls::PathSmoother_SmoothPath(NodeA* apNode, ArgObj* apArgObj, ArgObj* apArgObj2, Triple* apTripleA,
-                                    Triple* apTripleB, int aiValue, Gate* apGate, unsigned char abForce)
+// pdb: PathSmoother::SmoothPath | PathSmoother.obj | retail, upstream name already matches, high
+// pdb params: apRequest, aTriSolution, aLinks, aStartLocation, aGoalLocation, apSolution, apBadNodeArray, abAddNodesIfFail
+// pdb locals: bcanFit
+bool FUN_006ed530_cls::PathSmoother_SmoothPath(NodeA* apRequest, ArgObj* aTriSolution, ArgObj* aLinks, Triple* aStartLocation,
+                                    Triple* aGoalLocation, int apSolution, Gate* apBadNodeArray, unsigned char abAddNodesIfFail)
 {
     bool bResult;
 
-    m_04 = apNode;
-    m_08 = *apTripleA;
-    m_14 = *apTripleB;
-    m_20 = (int)apArgObj;
-    m_24 = (int)apArgObj2;
-    m_28 = aiValue;
-    m_00 = apGate;
+    m_04 = apRequest;
+    m_08 = *aStartLocation;
+    m_14 = *aGoalLocation;
+    m_20 = (int)aTriSolution;
+    m_24 = (int)aLinks;
+    m_28 = apSolution;
+    m_00 = apBadNodeArray;
     m_2c = m_04->GetFloatAtOffset68();
 
-    if (apArgObj->FUN_0044ddc0() == 1)
+    if (aTriSolution->FUN_0044ddc0() == 1)
     {
-        PathSmoother_AddPathingNode(apTripleA, (*(Holder**)apArgObj->GetIndexedValue_006b3160(0))->GetNavMeshInfo_0068efb0());
-        PathSmoother_AddPathingNode(apTripleB, (*(Holder**)apArgObj->GetIndexedValue_006b3160(0))->GetNavMeshInfo_0068efb0());
+        PathSmoother_AddPathingNode(aStartLocation, (*(Holder**)aTriSolution->GetIndexedValue_006b3160(0))->GetNavMeshInfo_0068efb0());
+        PathSmoother_AddPathingNode(aGoalLocation, (*(Holder**)aTriSolution->GetIndexedValue_006b3160(0))->GetNavMeshInfo_0068efb0());
         return true;
     }
 
-    m_40.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(apArgObj2->FUN_0044ddc0() << 1);
-    m_54.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(apArgObj2->FUN_0044ddc0() << 1);
-    m_68.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(apArgObj2->FUN_0044ddc0() << 1);
-    m_7c.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(apArgObj2->FUN_0044ddc0() << 1);
-    m_90.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(apArgObj2->FUN_0044ddc0() << 1);
+    m_40.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(aLinks->FUN_0044ddc0() << 1);
+    m_54.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(aLinks->FUN_0044ddc0() << 1);
+    m_68.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(aLinks->FUN_0044ddc0() << 1);
+    m_7c.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(aLinks->FUN_0044ddc0() << 1);
+    m_90.BSSimpleArray_TESObjectREFR_1024_SetReservedSize(aLinks->FUN_0044ddc0() << 1);
 
     m_40.FUN_008454f0(0);
     m_54.FUN_008454f0(0);
@@ -252,15 +260,15 @@ bool FUN_006ed530_cls::PathSmoother_SmoothPath(NodeA* apNode, ArgObj* apArgObj, 
 
     BuildInternalArrays();
     PathSmoother_BuildShrunkEdgeLeftRightArrays();
-    bResult = CheckEdges();
-    CopyNodePositions();
+    bResult = PathSmoother_CheckBoundsEdges();
+    PathSmoother_SetLeftRightShrunkLocations();
     PathSmoother_ComputeCenters();
     SmoothNodes();
     FlattenPathPoints();
     BuildLocations();
     ClipPathAgainstObstacles();
 
-    if (abForce != 0 || apGate->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
+    if (abAddNodesIfFail != 0 || apBadNodeArray->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
     {
         AppendSegments(1, 1);
         SmoothPathDirections();

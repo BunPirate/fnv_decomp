@@ -6,16 +6,17 @@
 struct SceneMatrix;
 struct SceneAnnotation;
 
+// pdb: class hkxNode, size 0x48, bases: hkxAttributeHolder, 7 members
 class hkxNode : public hkxAttributeHolder
 {
 public:
-    hkStringPtr name;
-    hkReferencedObject* object;
-    hkArray<SceneMatrix> keyFrames;
-    hkArray<hkxNode*> children;
-    hkArray<SceneAnnotation> annotations;
-    hkStringPtr userProperties;
-    bool selected;
+    hkStringPtr m_name;
+    hkReferencedObject* m_object;
+    hkArray<SceneMatrix> m_keyFrames;
+    hkArray<hkxNode*> m_children;
+    hkArray<SceneAnnotation> m_annotations;
+    hkStringPtr m_userProperties;
+    bool m_selected;
     bool bone;
 
     explicit hkxNode(FinishingFlag flag) throw();

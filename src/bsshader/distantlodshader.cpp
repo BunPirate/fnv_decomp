@@ -64,7 +64,7 @@ class DistantLODShader : public BSShader
     unsigned char m_alphaTestRef[0x10];
     unsigned char m_eyeVector[0x10];
     unsigned char m_eyeRightVector[0x10];
-    void UpdateShaderConstants();
+    void CreateConstantMaps();
     virtual void ClearAllTextureStages();
 };
 
@@ -85,6 +85,7 @@ inline void LodShaderConstantRow_00bd5670::operator=(const LodShaderConstantRow_
 
 // Initializes the base shader, then configures shader constants and the D3D pass.
 // @fnv 0x00be0870
+// pdb: BSShader::Initialize | BSShader.obj | retail, upstream name already matches, high
 bool BSShader::Initialize()
 {
     if (!NiD3DShader::Initialize())
@@ -96,7 +97,10 @@ bool BSShader::Initialize()
 }
 
 // @fnv 0x00bd5a60
-void DistantLODShader::UpdateShaderConstants()
+// src: XBOX_RETAIL_PDB 0x00bd5a60
+// pdb: DistantLODShader::CreateConstantMaps | DistantLODShader.obj | retail, unique string literal, high
+// pdb locals: uiDefinedMatrixFlags, uiConstantPoint4Flags, uiConstantMatrixFlags, uiConstantPoint1Flags
+void DistantLODShader::CreateConstantMaps()
 {
     if (m_spVertexConstantMap.m_pObject == 0)
     {
@@ -183,6 +187,8 @@ struct LodShaderBase
 };
 // Releases the objects in setA when field28 is set, releases the objects in setB, then calls FUN_00e814b0 on the shader.
 // @fnv 0x00bd4ed0
+// pdb: DistantLODShader::RecreateRendererData | DistantLODShader.obj | retail, object-file run extension, low
+// pdb locals: i
 void __fastcall ReleaseLodObjects(LodShaderBase* shader, int)
 {
     int i;
@@ -204,13 +210,13 @@ void __fastcall ReleaseLodObjects(LodShaderBase* shader, int)
     shader->FUN_00e814b0();
 }
 
-extern "C" void* g_012023c8;
+extern "C" void* DistantLODShader_ms_RTTI;
 
 // @fnv 0x00bd5460
 // src: XBOX_PDB 0x00bd5460
 void* __cdecl DistantLODShader_GetRTTI()
 {
-    return &g_012023c8;
+    return &DistantLODShader_ms_RTTI;
 }
 
 struct FUN_00bd5470_shell
@@ -230,11 +236,13 @@ void __cdecl _delete(void*, unsigned int);
 struct S_00bd58f0
 {
     void __thiscall FUN_00bd5330();
-    void* __thiscall DestroyIfFlagged(unsigned int);
+    void* __thiscall DistantLODShader_ScalarDtor(unsigned int);
 };
 // Calls FUN_00bd5330, then if bit 0 of flags is set deletes this with size 0x100, and returns this.
 // @fnv 0x00bd58f0
-void* __thiscall S_00bd58f0::DestroyIfFlagged(unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x00bd58f0
+// pdb: DistantLODShader::`scalar deleting destructor' | DistantLODShader.obj | retail, object-file gap fill, high
+void* __thiscall S_00bd58f0::DistantLODShader_ScalarDtor(unsigned int flags)
 {
     FUN_00bd5330();
     if (flags & 1)
@@ -430,6 +438,8 @@ extern unsigned int _data_011c16bc;
 
 // @fnv 0x00bd5920
 // src: COMMUNITY 0x00bd5920
+// pdb: DistantLODShader::CreateShader | DistantLODShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDecl, pshader
 FUN_00bd5670* DistantLODShader_CreateShader()
 {
     NiD3DVertexDeclaration* declaration = NiD3DVertexDeclaration::Create((NiRenderer*)DAT_011f9508, 4, 1);
@@ -486,7 +496,7 @@ struct FUN_00b66f20
 };
 struct MM_011f6238
 {
-    void MemoryManager_Deallocate(void* ptr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern MM_011f6238 DAT_011f6238;
 struct FUN_00bd5330 : BSShader
@@ -502,6 +512,8 @@ struct FUN_00bd5330 : BSShader
     virtual ~FUN_00bd5330();
 };
 // @fnv 0x00bd5330
+// pdb: DistantLODShader::~DistantLODShader | DistantLODShader.obj | debug, call graph, medium
+// pdb locals: i
 FUN_00bd5330::~FUN_00bd5330()
 {
     for (unsigned int i = 0; i < 4; ++i)
@@ -588,16 +600,16 @@ public:
 
 D3DRenderStateGroup* __cdecl RSCreateRenderState();
 void __cdecl RSGetTexture(RSTexturePtr* apTexture);
-void __cdecl RSSetupTexture(RSTexture* apTexture, int aiUnk1, int aiUnk2, int aiUnk3, int aiUnk4);
+void __cdecl RSSetupTexture(RSTexture* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 extern int g_iRSShaderLevel;
 
-inline void NiD3DPass::SetVertexShader(NiD3DVertexShader* shader)
+inline void NiD3DPass::SetVertexShader(NiD3DVertexShader* pkVertexShader)
 {
-    m_spVertexShader = shader;
+    m_spVertexShader = pkVertexShader;
 }
-inline void NiD3DPass::SetPixelShader(NiD3DPixelShader* shader)
+inline void NiD3DPass::SetPixelShader(NiD3DPixelShader* pkPixelShader)
 {
-    m_spPixelShader = shader;
+    m_spPixelShader = pkPixelShader;
 }
 inline D3DRenderStateGroup* NiD3DPass::GetRenderStateGroup()
 {
@@ -650,6 +662,8 @@ struct RSShader
 
 // Configures the shader's render pass by setting up a texture, binding vertex and pixel shaders, and applying several render state settings.
 // @fnv 0x00bd5490
+// pdb: DistantLODShader::~DistantLODShader | DistantLODShader.obj | retail, object-file run extension, low
+// pdb locals: i
 void RSShader::SetupRenderPass()
 {
     RSTexturePtr spTexture;
@@ -722,7 +736,7 @@ struct LodCompiler
     unsigned int dummy78;
     NiPointer<NiRefObject> vertex[4];
     NiPointer<NiRefObject> pixel[2];
-    void CompileDistanceLodShaders();
+    void DistantLODShader_LoadShaders();
     NiRefObject* FUN_00be0fe0(void*, void*, const char*, const char*);
     NiRefObject* FUN_00be1750(void*, void*, unsigned int, const char*);
 };
@@ -733,7 +747,10 @@ extern "C" int __cdecl BSsprintf(char*, unsigned int, const char*, ...);
 extern const char str_010bc23c[], str_010b8ba0[], str_010b8bc4[], str_010b8b7c[], str_010b8b74[];
 // Builds shader records and calls shader routines for the selected branch, using vs_1_1 or vs_2_0.
 // @fnv 0x00bd4f30
-void LodCompiler::CompileDistanceLodShaders()
+// src: XBOX_RETAIL_PDB 0x00bd4f30
+// pdb: DistantLODShader::LoadShaders | DistantLODShader.obj | retail, string-set bridge, high
+// pdb locals: pvs1Shader, ptempFName, ptarget, pcacheFName, i, pps1Shader
+void LodCompiler::DistantLODShader_LoadShaders()
 {
     ShaderRecord pix[2], vert[4];
     vert[0].name = str_010bc23c;
@@ -852,13 +869,16 @@ struct FUN_00bd5670_c : BSShader
     LodShaderConstantRow_00bd5670 m_eyeVector;
     LodShaderConstantRow_00bd5670 m_eyeRightVector;
 
-    FUN_00bd5670_c(NiRefObject* decl);
+    FUN_00bd5670_c(NiRefObject* apShaderDecl);
     virtual ~FUN_00bd5670_c();
 };
 
 // Initializes the shader by releasing map references, setting the declaration, and allocating instance data based on DAT_011f91c0.
 // @fnv 0x00bd5670
-FUN_00bd5670_c::FUN_00bd5670_c(NiRefObject* apDeclaration)
+// pdb: DistantLODShader::DistantLODShader | DistantLODShader.obj | retail, call graph, high
+// pdb params: apShaderDecl
+// pdb locals: i
+FUN_00bd5670_c::FUN_00bd5670_c(NiRefObject* apShaderDecl)
 {
     iShaderType = 7;
     for (int i = 0; i < 4; ++i)
@@ -877,7 +897,7 @@ FUN_00bd5670_c::FUN_00bd5670_c(NiRefObject* apDeclaration)
             maps8c[i].m_pObject = 0;
         }
     }
-    m_spShaderDecl = reinterpret_cast<NiD3DShaderDeclaration*>(apDeclaration);
+    m_spShaderDecl = reinterpret_cast<NiD3DShaderDeclaration*>(apShaderDecl);
     m_field70 = 0.0f;
     m_afAmbientColor = DAT_011a9bd0;
     if (DAT_011f91c0 >= 2)

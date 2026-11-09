@@ -24,6 +24,7 @@ struct CpuObject
     CpuObject* FUN_00dfe3e0(unsigned int flags);
 };
 // @fnv 0x00dfe3e0
+// pdb: hkaInterleavedUncompressedAnimation::`scalar deleting destructor' | hkaInterleavedUncompressedAnimationClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dfe3e0(unsigned int flags)
 {
     UpdateFields_00dfe360();

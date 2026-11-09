@@ -27,9 +27,11 @@ extern "C" void __cdecl CallSwappedArgs(BSAudio*, int);
 
 // @fnv 0x00cb13c0
 // src: HAVOK_LIB 0x00cb13c0
-void __cdecl hkString_strFree(int aiAudio)
+// pdb: hkString::strFree | hkString.obj | retail, upstream name already matches, high
+// pdb params: s
+void __cdecl hkString_strFree(int s)
 {
-    CallSwappedArgs((BSAudio*)aiAudio, (int)hkMemoryRouter_getInstance()->pListener);
+    CallSwappedArgs((BSAudio*)s, (int)hkMemoryRouter_getInstance()->pListener);
 }
 
 double __cdecl FUN_00ecdf2d(unsigned int value, int mode);
@@ -57,6 +59,8 @@ int __cdecl hkString_strLen(const char* text);
 
 // Compares the tail of text against suffix and stores whether text ends with suffix into result.
 // @fnv 0x00cb1340
+// pdb: hkString::strNdup | hkString.obj | retail, object-file run extension, low
+// pdb params: src, maxlen, alloc
 bool* __cdecl EndsWith(bool* result, const char* text, const char* suffix)
 {
     int textLength = hkString_strLen(text);
@@ -89,20 +93,24 @@ void __cdecl hkString_strNdup(int a, int b, int c);
 // Reads pListener from the BSAudio returned by FUN_00c85750 and passes it with a and b to FUN_00cb11b0.
 // @fnv 0x00cb13e0
 // src: HAVOK_LIB 0x00cb13e0
-void __cdecl hkString_strNdup_00cb13e0(int aiArg1, int aiArg2)
+// pdb: hkString::strNdup | hkString.obj | retail, object-file gap fill, high
+// pdb params: src, maxlen, alloc
+void __cdecl hkString_strNdup_00cb13e0(int src, int maxlen)
 {
     hkMemoryRouter router;
     int c = (int)hkMemoryRouter_getInstance()->pListener;
-    hkString_strNdup(aiArg1, aiArg2, c);
+    hkString_strNdup(src, maxlen, c);
 }
 
 // @fnv 0x00cb1090
 // src: HAVOK_LIB 0x00cb1090
-void __cdecl hkString_strCpy(char* pcDest, const char* pcSrc)
+// pdb: hkString::strCpy | hkString.obj | debug, upstream name already matches, high
+// pdb params: dst, src
+void __cdecl hkString_strCpy(char* dst, const char* pcSrc)
 {
     const char* s = pcSrc;
     char c;
-    char* d = pcDest;
+    char* d = dst;
     int iOffset = d - s;
     do
     {
@@ -157,9 +165,11 @@ const char* __cdecl hkString_strRchr(const char* str, int c);
 
 // @fnv 0x00cb1390
 // src: HAVOK_LIB 0x00cb1390
-int __cdecl hkString_lastIndexOf(const char* str, char acChar)
+// pdb: hkString::lastIndexOf | hkString.obj | retail, upstream name already matches, high
+// pdb params: str, c
+int __cdecl hkString_lastIndexOf(const char* str, char c)
 {
-    const char* p = hkString_strRchr(str, acChar);
+    const char* p = hkString_strRchr(str, c);
     return p ? (int)(p - str) : -1;
 }
 
@@ -168,6 +178,8 @@ int __cdecl hkString_strDup(int a, int b);
 // Constructs a local hkMemoryRouter, reads pListener from FUN_00c85750()'s result, and passes it with a to FUN_00cb1160.
 // @fnv 0x00cb1410
 // src: HAVOK_LIB 0x00cb1410
+// pdb: hkString::strDup | hkString.obj | retail, call graph, high
+// pdb params: src, alloc
 void __cdecl hkString_strDup_00cb1410(int aiValue)
 {
     hkMemoryRouter buf;
@@ -177,7 +189,7 @@ void __cdecl hkString_strDup_00cb1410(int aiValue)
 
 struct Sink
 {
-    void hkStringPtr_set(const char* p, int n);
+    void hkStringPtr_set(const char* s, int n);
 };
 
 const char* __cdecl hkString_strStr(const char* a, const char* b);
@@ -279,7 +291,10 @@ void __cdecl hkString_memSet(void* dest, int value, unsigned int count)
 extern "C" int __cdecl FUN_00ecddf1(char* buf, unsigned int n, const char* fmt, va_list args);
 
 // @fnv 0x00cb0f60
-int __cdecl Vsnprintf(char* buf, int n, const char* fmt, ...)
+// src: XBOX_RETAIL_PDB 0x00cb0f60
+// pdb: hkString::snprintf | hkString.obj | retail, call graph, high
+// pdb params: buf, len, fmt, vlist
+int __cdecl hkString_snprintf(char* buf, int n, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -292,6 +307,8 @@ int __cdecl Vsnprintf(char* buf, int n, const char* fmt, ...)
 namespace fnv_00cb10d0 {
 // @fnv 0x00cb10d0
 // src: HAVOK_LIB 0x00cb10d0
+// pdb: hkString::strLen | hkString.obj | debug, upstream name already matches, high
+// pdb params: src
 int __cdecl hkString_strLen(const char* apString)
 {
     return (int)strlen(apString);

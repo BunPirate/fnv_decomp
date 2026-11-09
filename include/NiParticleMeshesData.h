@@ -3,6 +3,7 @@
 #include "NiParticlesData.h"
 #include "NiAVObject.h"
 
+// pdb: class NiParticleMeshesData, size 0x78, bases: NiParticlesData, 2 members
 class NiParticleMeshesData : public NiParticlesData
 {
   public:
@@ -28,7 +29,7 @@ class NiParticleMeshesData : public NiParticlesData
     void RemoveParticleMesh(unsigned short);
     void UpdateParticleMeshes();
 
-    NiPointer<NiNode> m_spRootNode;
-    bool m_bModifierActive;
+    NiPointer<NiNode> m_spParticleMeshes;
+    bool m_bNeedsPropertyEffectUpdate;
     unsigned char unk75[3];
 };

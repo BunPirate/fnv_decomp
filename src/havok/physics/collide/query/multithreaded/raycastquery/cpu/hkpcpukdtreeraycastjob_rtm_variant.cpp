@@ -94,6 +94,7 @@ struct FUN_00e4e3c0
     FUN_00e4e3c0();
 
 // @fnv 0x00e4e3c0
+// pdb: hkKdTreeCpuBroadphaseBundleCastCollector::`scalar deleting destructor' | hkpCpuKdTreeRayCastJob.obj | retail, vtable slot, high
     virtual ~FUN_00e4e3c0()
     {}
 
@@ -222,12 +223,15 @@ struct FloatMatrix3
 };
 
 void __cdecl Object_ProcessAndReturnValue_00e2ab00(InputStruct* input, FloatMatrix3* m1, FloatMatrix3* m2);
-void __cdecl hkKdTreeUtils_castRayBundleIterative(unsigned char* out, void* a1, FloatMatrix3* m1, FloatMatrix3* m2, FUN_00e4dde0* obj,
+void __cdecl hkKdTreeUtils_castRayBundleIterative(unsigned char* out, void* a1, FloatMatrix3* end, FloatMatrix3* m2, FUN_00e4dde0* rayMask,
                           int flag);
 extern int DAT_011b3830[];
 
 // @fnv 0x00e2acf0
 // src: GUESS 0x00e2acf0 (confidence: low)
+// pdb: hkTreeRayCastJobUtil::castRayBundleKdTree | hkpRayCastQueryJobUtils.obj | retail, object-file run extension, low
+// pdb params: kdTree, command, filter, earlyHitFractionInOut, collidableCache, shapeCache, transformCache, resultLocalArray, numResultsInOut
+// pdb locals: kdFromBundle, localResults, kdCurrentBundledCommand, kBundleCollector, kdToBundle
 void hkKdTreeUtils_castRayBundleIterative_ProcessEntries_00e2acf0(void* a1, InputStruct* a2, void* a3, float* a4)
 {
     if (!a1)

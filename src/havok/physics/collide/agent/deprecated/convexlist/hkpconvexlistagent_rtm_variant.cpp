@@ -48,7 +48,7 @@ extern "C" void __cdecl hkpAgent1nSector_ProcessEntries_00da3510(void*, void*);
 extern "C" void __cdecl hkpConvexListAgent_QueryClosestPointsAfterHullTest(int, int, int, int);
 extern "C"
 {
-    void __cdecl hkpConvexListAgent_staticGetPenetrations(void* a, void* b, void* c, void* d);
+    void __cdecl hkpConvexListAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, void* collector);
 }
 extern void* __cdecl CreateConvexListAgent();
 extern void* __cdecl InitSpawnedBuffer();
@@ -100,8 +100,8 @@ inline void D338e0Dispatch(D338e0Local* local, int* ownerField, int result)
     local->field0C = result;
     hkAgent1nMachine_UpdateShapeCollectionFilter(ownerField, local);
 }
-void __cdecl ReleaseAllEntries(void* out, void* src, void* arg);
-void InitBlockPool(void* p);
+void __cdecl hkGskManifold_cleanup(void* manifold, void* mgr, void* constraintOwner);
+void hkAgent1nMachine_Create(void* agentTrack);
 class hkCollectorBaseD347
 {
   public:
@@ -135,7 +135,9 @@ struct hkMemberD337
 };
 void __cdecl _hkAgent1nMachine_WarpTime(hkMemberD337* member, float a, float b, int c);
 // @fnv 0x00d33890
-extern void __cdecl ReleaseAllEntries(void*, int, void*);
+// pdb: hkpConvexListAgent::cleanup | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
+extern void __cdecl hkGskManifold_cleanup(void*, int, void*);
 struct ContactAgent
 {
     virtual void Invalidate(int);
@@ -178,7 +180,7 @@ void ContactAgent::hkpConvexListAgent_cleanup(void* input)
 {
     if (flag84)
     {
-        ReleaseAllEntries(&contact30, collidable08, input);
+        hkGskManifold_cleanup(&contact30, collidable08, input);
     }
     else
     {
@@ -210,7 +212,7 @@ struct __declspec(align(16)) S00d33940_Out
 };
 struct S00d33940_Sub
 {
-    void hkpGskCache_init(int a, int b, S00d33940_Out* c);
+    void hkpGskCache_init(int shapeA, int shapeB, S00d33940_Out* aTb);
 };
 extern "C" unsigned __int64 __rdtsc(void);
 extern "C" void _ReadWriteBarrier(void);
@@ -225,7 +227,10 @@ void __cdecl TestGsk(void* a, void* b, void* c, HitCollector* col);
 void __cdecl hkCollectorD347_ProcessState_00d34790(void* a, void* b, void* c, void* d);
 // @fnv 0x00d33b90
 // src: HAVOK_LIB 0x00d33b90
-extern "C" void __cdecl hkpConvexListAgent_staticGetPenetrations(void* a, void* b, void* c, void* d)
+// pdb: hkpConvexListAgent::staticGetPenetrations | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: checker
+extern "C" void __cdecl hkpConvexListAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, void* collector)
 {
     volatile DWORD tick;
     hkMonitorStream* pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -243,7 +248,7 @@ extern "C" void __cdecl hkpConvexListAgent_staticGetPenetrations(void* a, void* 
     HitCollector col;
     col.m_vtbl = &DAT_010cebd0;
     col.m_bHit = false;
-    TestGsk(a, b, c, &col);
+    TestGsk(bodyA, bodyB, input, &col);
     if (col.m_bHit)
     {
         pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -256,7 +261,7 @@ extern "C" void __cdecl hkpConvexListAgent_staticGetPenetrations(void* a, void* 
             pRec->m_time0 = tick;
             pBuf->m_end.m_storage = reinterpret_cast<char*>((hkMonitorStream::TimerCommand*)((char*)pRec + 0xc));
         }
-        hkCollectorD347_ProcessState_00d34790(a, b, c, d);
+        hkCollectorD347_ProcessState_00d34790(bodyA, bodyB, input, collector);
     }
 
     pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -289,6 +294,9 @@ struct ContactPointPair
 };
 // @fnv 0x00d339d0
 // src: GUESS 0x00d339d0 (confidence: medium)
+// pdb: hkpConvexListAgent::staticGetClosestPoints | hkpConvexListAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: checker, closestPoint, hit
 extern "C" void __cdecl hkpConvexListAgent_QueryClosestPointsAfterHullTest(int a1, int a2, int a3, int a4)
 {
     {
@@ -331,13 +339,13 @@ extern "C" void __cdecl hkpConvexListAgent_QueryClosestPointsAfterHullTest(int a
         {
             goto timer_end;
         }
-        const hkpConvexListShape* shapeB = (const hkpConvexListShape*)((const hkpCdBody*)a2)->m_pCollisionShape;
-        if (x.m_kHitPoint.m_kPoint.getDistance() > shapeB->m_minDistanceToUseConvexHull)
+        const hkpConvexListShape* shapeB = (const hkpConvexListShape*)((const hkpCdBody*)a2)->m_shape;
+        if (x.m_hitPoint.m_kPoint.getDistance() > shapeB->m_minDistanceToUseConvexHull)
         {
             ContactPointPair point;
             point.m_pBodyA = (const void*)a1;
             point.m_pBodyB = (const void*)a2;
-            point.m_kPoint = x.m_kHitPoint.m_kPoint;
+            point.m_kPoint = x.m_hitPoint.m_kPoint;
             ((hkpCdPointCollector*)a4)->AddCdPoint(point);
             goto timer_end;
         }
@@ -592,7 +600,7 @@ struct Big
 void FUN_00d33670(void* a);
 void hkpProcessCollisionOutputBackup_rollbackOutput(void* a, void* b, void* c, void* d);
 void* hkTransform_setMulInverseMul(void* a, void* b);
-int hkpGsk_getClosestPoint(SStruct* a, void* b, void* c, void* d);
+int hkpGsk_getClosestPoint(SStruct* input, void* gskCache, void* separatingNormalOut, void* pointOnBOut);
 void hkpConvexListAgent_switchToGskMode(void* a);
 void hkpConvexListAgent_switchToStreamMode(void* a);
 void FUN_00d42020(void* a, void* b, void* c, void* d);
@@ -603,7 +611,7 @@ struct AddressValue
     {}
 };
 void hkAgent1nMachine_Process(void* a, const void* b, AddressValue wrapped, void* d, void* e);
-void ReleaseAllEntries(void* a, void* b, void* c);
+void hkGskManifold_cleanup(void* manifold, void* mgr, void* constraintOwner);
 
 typedef void(__thiscall* Ws70Fn)(void*, const void*);
 typedef void(__thiscall* Ws00Fn)(void*, const void*, const void*, const void*, void*);
@@ -667,7 +675,7 @@ struct Agent
     __forceinline void processCached(const Shape&, const Shape&, const Arg3&, Arg4&, const Vec4&, Workspace&, StackObj&,
                                      ScalarScratch&, bool&);
     void streamCollision(const Shape&, const Shape&, const Arg3&, Arg4&, const Vec4&, ShapeHead*);
-    void __thiscall hkpConvexListAgent_processCollision(const Shape& a, const Shape& b, const Arg3& c, Arg4& d);
+    void __thiscall hkpConvexListAgent_processCollision(const Shape& bodyA, const Shape& bodyB, const Arg3& input, Arg4& output);
 };
 
 __forceinline void projectDistance(Vec4& normal, const Vec4& vec)
@@ -759,7 +767,7 @@ __forceinline void Agent::processCached(const Shape& a, const Shape& b, const Ar
         if (m_20w.w > c.m_08)
         {
             if (m_32 != 0)
-                ReleaseAllEntries(&unkp30, m_08, d.m_04);
+                hkGskManifold_cleanup(&unkp30, m_08, d.m_04);
             return;
         }
     }
@@ -821,7 +829,10 @@ __forceinline void Agent::processCached(const Shape& a, const Shape& b, const Ar
 }
 // @fnv 0x00d33f40
 // src: HAVOK_SRC 0x00d33f40
-void __thiscall Agent::hkpConvexListAgent_processCollision(const Shape& a, const Shape& b, const Arg3& c, Arg4& d)
+// pdb: hkpConvexListAgent::processCollision | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, output
+// pdb locals: outputBackup, cls, timInfo, assertBuf, ostr, mappingMgr, in3, gskInput, aTb, pointOnB
+void __thiscall Agent::hkpConvexListAgent_processCollision(const Shape& bodyA, const Shape& bodyB, const Arg3& input, Arg4& output)
 {
     Workspace ws;
     Vec4 vec;
@@ -847,10 +858,10 @@ void __thiscall Agent::hkpConvexListAgent_processCollision(const Shape& a, const
             pBuf->m_end.m_storage = reinterpret_cast<char*>((hkMonitorStream::TimerCommand*)(pRec + 1));
         }
     }
-    scratch.last.shape = b.m_00;
-    scratch.first.dt = c.m_58;
-    calculateMotion(*a.m_08, *b.m_08, scratch, vec);
-    ws.FUN_00d33670(d);
+    scratch.last.shape = bodyB.m_00;
+    scratch.first.dt = input.m_58;
+    calculateMotion(*bodyA.m_08, *bodyB.m_08, scratch, vec);
+    ws.FUN_00d33670(output);
     if (m_84 != 0)
         goto project;
 stream: {
@@ -872,28 +883,28 @@ stream: {
         goto sqrtpath;
     m_86 = 0x19;
     {
-        co.hkTransform_setMulInverseMul(a.m_08, b.m_08);
+        co.hkTransform_setMulInverseMul(bodyA.m_08, bodyB.m_08);
         SStruct& s = temp.query;
         Vec4 objD;
-        s.a0 = a.m_00;
-        s.b0 = b.m_00;
+        s.a0 = bodyA.m_00;
+        s.b0 = bodyB.m_00;
         s.pCo = &co;
-        s.pObjA = a.m_08;
-        s.f = c.m_08;
+        s.pObjA = bodyA.m_08;
+        s.f = input.m_08;
         int res = hkpGsk_getClosestPoint(&s, &m_0c, &m_20w, &objD);
         if (res == 0)
         {
             streaming().distance = -m_20w.w;
             goto sqrtpath;
         }
-        hkpConvexListAgent_switchToGskMode(d.m_04);
-        ws.hkpProcessCollisionOutputBackup_rollbackOutput(a, b, d, m_08);
+        hkpConvexListAgent_switchToGskMode(output.m_04);
+        ws.hkpProcessCollisionOutputBackup_rollbackOutput(bodyA, bodyB, output, m_08);
     }
 }
 // Update cached separation before choosing GSK or cached-contact export.
 project: {
     bool retry = false;
-    processCached(a, b, c, d, vec, ws, temp.manager, scratch, retry);
+    processCached(bodyA, bodyB, input, output, vec, ws, temp.manager, scratch, retry);
     if (retry)
         goto stream;
     goto tail;
@@ -909,7 +920,7 @@ sqrtpath: {
     LocalM128 len = _mm_sqrt_ss(s2);
     _mm_store_ss(&scratch.radius, len);
     streaming().distance -= scratch.radius;
-    streamCollision(a, b, c, d, vec, scratch.last.shape);
+    streamCollision(bodyA, bodyB, input, output, vec, scratch.last.shape);
 }
 tail:
     m_85 = 1;

@@ -4,17 +4,21 @@
 
 struct FUN_00d541f0_class
 {
-    void __thiscall hkpBallAndSocketConstraintData_setBodyToNotify(int index);
+    void __thiscall hkpBallAndSocketConstraintData_setBodyToNotify(int bodyIdx);
 };
 
 // @fnv 0x00d541f0
 // src: HAVOK_LIB 0x00d541f0
-void __thiscall FUN_00d541f0_class::hkpBallAndSocketConstraintData_setBodyToNotify(int aiBitIndex)
+// pdb: hkpBallAndSocketConstraintData::setBodyToNotify | hkpBallAndSocketConstraintData.obj | debug, upstream name already matches, high
+// pdb params: bodyIdx
+// pdb locals: assertBuf, ostr
+void __thiscall FUN_00d541f0_class::hkpBallAndSocketConstraintData_setBodyToNotify(int bodyIdx)
 {
-    *(reinterpret_cast<char*>(this) + 0x42) = 1 << aiBitIndex;
+    *(reinterpret_cast<char*>(this) + 0x42) = 1 << bodyIdx;
 }
 
-extern void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int c);
+extern void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int infoOut);
+// pdb: class hkpBallAndSocketConstraintData, size 0x50 (here 0x1), bases: hkpConstraintData, 1 members
 struct hkpBallAndSocketConstraintData
 {
     void* hkpStiffSpringConstraintData_getConstraintInfo_00d54210(int a);
@@ -84,6 +88,8 @@ struct FUN_00d54200_class
 };
 // @fnv 0x00d54200
 // src: XBOX_PDB 0x00d54200
+// pdb: hkpBallAndSocketConstraintData::getNotifiedBodyIndex | hkpBallAndSocketConstraintData.obj | debug, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 unsigned char FUN_00d54200_class::hkpBallAndSocketConstraintData_getNotifiedBodyIndex()
 {
     return *(unsigned char*)((char*)this + 0x42) >> 1;

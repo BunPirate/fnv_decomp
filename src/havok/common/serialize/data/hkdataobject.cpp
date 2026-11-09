@@ -211,6 +211,8 @@ struct S_00dba890_Wrap
 };
 // @fnv 0x00dba890
 // src: GUESS 0x00dba890 (confidence: medium)
+// pdb: hkDataObject::operator[] | hkDataObject.obj | retail, call graph, high
+// pdb params: name
 S_00dba890_Vec S_00dba890_Wrap::Get_Thunk(int i)
 {
     return m_pClassImpl->Get(i);
@@ -279,6 +281,8 @@ struct Target
 };
 // If object is set, acquires a second interface, queries it with value, writes the result into a ResultData and returns its value field; otherwise returns 0.
 // @fnv 0x00dba920
+// pdb: hkDataObject::Value::getType | hkDataObject.obj | retail, call graph, medium
+// pdb locals: minfo
 int Target::QueryAndWriteResult()
 {
     if (object != 0)
@@ -370,6 +374,7 @@ struct FUN_00dba9c0_cls
 
 // @fnv 0x00dba9c0
 // src: XBOX_PDB 0x00dba9c0
+// pdb: hkDataObject::Value::asString | hkDataObject.obj | debug, upstream name already matches, high
 void FUN_00dba9c0_cls::hkDataObject_Value_asString()
 {
     target->Dispatch2c(payload);
@@ -1026,6 +1031,8 @@ struct FUN_00dbaea0_cls
 };
 // Calls invoke on the stored callback with argument, passes the result to output's FUN_00dbab50, and returns output.
 // @fnv 0x00dbaea0
+// pdb: hkDataArray::swizzleObjectMember | hkDataObject.obj | retail, call graph, medium
+// pdb params: name
 FUN_00dbab50_cls* __thiscall FUN_00dbaea0_cls::InvokeCallbackInto(FUN_00dbab50_cls* output, void* argument)
 {
     output->FUN_00dbab50(this->target->invoke(argument));
@@ -1052,6 +1059,9 @@ struct FUN_00dbaf10_cls
     void __thiscall DispatchRecords(void* records);
 };
 // @fnv 0x00dbaf10
+// pdb: hkDataClass::getAllDeclaredMemberInfo | hkDataObject.obj | retail, object-file run extension, low
+// pdb params: minfos
+// pdb locals: assertBuf, ostr
 void __thiscall FUN_00dbaf10_cls::DispatchRecords(void* records)
 {
     int count = ForwardCall_00dba6f0();
@@ -1110,6 +1120,9 @@ struct DBAFB0Handle
 
 // Returns a DBAFB0Result constructed from the value the source object returns for m_key.
 // @fnv 0x00dbafb0
+// pdb: BSOcclusionQuery::GetResult | BSOcclusionQuery.obj | retail, upstream name already matches, high
+// pdb params: pResult, bFlush
+// pdb locals: dwflags, hRes
 DBAFB0Result DBAFB0Handle::GetResult()
 {
     return DBAFB0Result(m_pObservedSource->getValue(m_key));
@@ -1168,6 +1181,7 @@ struct FUN_00dba6a0_cls
 };
 
 // @fnv 0x00dba6a0
+// pdb: hkDataClass::getParent | hkDataObject.obj | retail, call graph (shared callers), medium
 void* __thiscall FUN_00dba6a0_cls::SetShiftedValue(void* pTarget)
 {
     void* r = m_00->v10();
@@ -1242,13 +1256,16 @@ struct FUN_00dba780_cls
 {
     RefObj* m_pReference;
 
-    FUN_00dba780_cls* AssignRef(FUN_00dba780_cls* apOther);
+    FUN_00dba780_cls* hkDataObject_ctor(FUN_00dba780_cls* o);
 };
 
 // @fnv 0x00dba780
-FUN_00dba780_cls* FUN_00dba780_cls::AssignRef(FUN_00dba780_cls* apOther)
+// src: XBOX_DEBUG_PDB 0x00dba780
+// pdb: hkDataObject::hkDataObject | hkDataObject.obj | debug, call graph (shared callers), high
+// pdb params: o
+FUN_00dba780_cls* FUN_00dba780_cls::hkDataObject_ctor(FUN_00dba780_cls* o)
 {
-    RefObj* pRef = apOther->m_pReference;
+    RefObj* pRef = o->m_pReference;
     m_pReference = pRef;
     if (pRef != 0)
     {
@@ -1274,6 +1291,8 @@ struct FUN_00dba7a0_cls
 };
 
 // @fnv 0x00dba7a0
+// pdb: hkDataObject::operator= | hkDataObject.obj | debug, object-file run extension, low
+// pdb params: o
 void __thiscall FUN_00dba7a0_cls::AssignRefCounted(FUN_00dba7a0_cls* src)
 {
     RefCountedObj* newObj = src->m_pEntryObject;
@@ -1352,6 +1371,8 @@ struct FUN_00dba810_cls
 
 // Returns the pair from m_pSource->v1, or a zero pair when m_pSource is null.
 // @fnv 0x00dba810
+// pdb: hkDataObject::getHandle | hkDataObject.obj | retail, call graph (shared callers), high
+// pdb locals: h
 FUN_00dba810_pair FUN_00dba810_cls::GetSourcePair()
 {
     FUN_00dba810_pair zeroPair;
@@ -1386,6 +1407,8 @@ struct FUN_00dba870_cls
 
 // @fnv 0x00dba870
 // src: GUESS 0x00dba870 (confidence: low)
+// pdb: hkDataObject::operator[] | hkDataObject.obj | retail, call graph (shared callers), high
+// pdb params: name
 void* FUN_00dba870_cls::UpdateState_00dba870(void* a, void* b)
 {
     VTarget* target = this->m_pFlagTarget;
@@ -1562,6 +1585,7 @@ struct S_00dba990
 
 // @fnv 0x00dba990
 // src: GUESS 0x00dba990 (confidence: low)
+// pdb: hkDataObject::Value::asInt | hkDataObject.obj | retail, call graph, low
 int S_00dba990::ForwardCall_00dba990()
 {
     return m_pFlagTarget->v12(m_arg);
@@ -1595,6 +1619,7 @@ struct FUN_00dba9d0_cls
 // Calls v13 on m_00 with m_04, passes the result to arg's FUN_00dba760, and returns arg.
 // @fnv 0x00dba9d0
 // src: GUESS 0x00dba9d0 (confidence: medium)
+// pdb: hkDataObject::Value::asObject | hkDataObject.obj | retail, call graph (shared callers), low
 void* __thiscall FUN_00dba9d0_cls::GetWrappedDataObject(FUN_00dba760_cls* arg)
 {
     void* result = m_00->v13(m_04);
@@ -2259,16 +2284,20 @@ struct S_00dbaed0_Obj
 {
     S_00dbaed0_Target* m_target;
     int ForwardCall_00dba730();
-    void DispatchItems(S_00dbaed0_Elem** items);
+    void hkDataClass_getAllMemberInfo(S_00dbaed0_Elem** minfos);
 };
 
 // Calls FUN_00dba730 for a count, then for each index passes the corresponding element to m_target->vfn28.
 // @fnv 0x00dbaed0
-void S_00dbaed0_Obj::DispatchItems(S_00dbaed0_Elem** items)
+// src: XBOX_RETAIL_PDB 0x00dbaed0
+// pdb: hkDataClass::getAllMemberInfo | hkDataObject.obj | retail, call graph (shared callers), high
+// pdb params: minfos
+// pdb locals: assertBuf, ostr
+void S_00dbaed0_Obj::hkDataClass_getAllMemberInfo(S_00dbaed0_Elem** minfos)
 {
     int n = ForwardCall_00dba730();
     for (int i = 0; i < n; i++)
-        m_target->vfn28(i, *items + i);
+        m_target->vfn28(i, *minfos + i);
 }
 
 namespace fnv_00dbaf50 {
@@ -2286,6 +2315,9 @@ struct FUN_00dbaf50_cls
 
 // Fills two SpawnedPair values via Fill and returns whether both of their fields are equal.
 // @fnv 0x00dbaf50
+// pdb: hkDataObject::operator== | hkDataObject.obj | retail, object-file run extension, low
+// pdb params: o
+// pdb locals: oh, h
 bool FUN_00dbaf50_cls::Equals(FUN_00dbaf50_cls* apOther)
 {
     SpawnedPair aLeft;
@@ -2313,7 +2345,7 @@ struct S_Router
     }
 };
 S_Router* hkMemoryRouter_getInstance();
-void hkArrayUtil__reserve(S_Alloc& a, void* arr, int n, int esz);
+void hkArrayUtil__reserve(S_Alloc& mem, void* array, int numElem, int sizeElem);
 
 struct S_Obj
 {
@@ -2409,6 +2441,9 @@ struct S_00dbafe0
 
 // Fills an S_Out from iface: copies v2/v3, resolves v4's v2, sizes arr to v6 and stores each v7 item with its mc v2.
 // @fnv 0x00dbafe0
+// pdb: hkDataClass::getCinfo | hkDataObject.obj | retail, call graph, medium
+// pdb params: cinfo
+// pdb locals: msrc
 void S_00dbafe0::FillOutFromInterface(S_Out* out)
 {
     out->m0 = iface->v2();
@@ -2482,6 +2517,7 @@ struct ProviderWrapper
 };
 
 // @fnv 0x00dba850
+// pdb: hkDataObject::getClass | hkDataObject.obj | retail, call graph (shared callers), medium
 ObjectValue ProviderWrapper::GetObjectValue()
 {
     return ObjectValue(provider->GetObject());
@@ -2504,6 +2540,8 @@ struct FUN_00dbab50
 };
 
 // @fnv 0x00dbab50
+// pdb: hkDataArray::hkDataArray | hkDataObject.obj | debug, call graph, medium
+// pdb params: i
 FUN_00dbab50::FUN_00dbab50(DBAB50Object* apObject)
 {
     m_pRetainedObject = apObject;
@@ -2653,29 +2691,32 @@ struct DB8000_Self
     virtual void v8();
     virtual unsigned int vfn9(const char* name);
 
-    void hkDataWorldDict_renameClass(DB8000_Handle* h, const char* name);
-    void RenameClassMember(DB8000_Handle* h, int a, int b);
-    void FUN_00dc7d20(DB8000_Handle* h, int a, int b, int c, int d);
-    void ProcessEntries_00dc7600(DB8000_Handle* h, int a);
+    void hkDataWorldDict_renameClass(DB8000_Handle* klass, const char* newName);
+    void RenameClassMember(DB8000_Handle* klass, int oldName, int newName);
+    void addClassMember(DB8000_Handle* h, int name, int type, int typeName, int tupleCount);
+    void ProcessEntries_00dc7600(DB8000_Handle* klass, int name);
     void InitAndRun(const char* name, DB8000_PtrArrayLocalForm* out);
-    void AssignRefCountedSlot(DB8000_Handle* h1, DB8000_Handle* h2);
+    void AssignRefCountedSlot(DB8000_Handle* klass, DB8000_Handle* parent);
     void CallWithReset(const char* name, DB8000_PtrArrayLocalForm* out);
-    void hkDataWorldDict_castObject(DB8000_Ref* ref, DB8000_Handle* h);
-    void ReleaseRef(DB8000_Handle* h);
-    void hkDataWorldDict_setClassVersion(DB8000_Handle* h, int a);
+    void hkDataWorldDict_castObject(DB8000_Ref* obj, DB8000_Handle* castClass);
+    void ReleaseRef(DB8000_Handle* klass);
+    void hkDataWorldDict_setClassVersion(DB8000_Handle* klass, int newVersion);
 };
 
 // Iterates items, selects a name, and dispatches recognized operations through self; some item fields also control reference handling.
 // @fnv 0x00db8000
 // src: XBOX_PDB 0x00db8000
-static __declspec(noinline) int __cdecl applyPatchesFinally(DB8000_Self* self, DB8000_ItemArray* items)
+// pdb: applyPatchesFinally | hkVersionPatchManager.obj | retail, upstream name already matches, high
+// pdb params: worldToUpdate, patchInfos
+// pdb locals: patchIndex, klass, assertBuf, ostr, cinfo, objs, obj, newP, castClass
+static __declspec(noinline) int __cdecl applyPatchesFinally(DB8000_Self* worldToUpdate, DB8000_ItemArray* patchInfos)
 {
     int i = 0;
-    if (items->m_iElementCount > 0)
+    if (patchInfos->m_iElementCount > 0)
     {
         do
         {
-            DB8000_Item* item = items->m_data[i];
+            DB8000_Item* item = patchInfos->m_data[i];
             const char* name;
             if (item->m_name0 != 0)
             {
@@ -2690,21 +2731,21 @@ static __declspec(noinline) int __cdecl applyPatchesFinally(DB8000_Self* self, D
             {
                 DB8000_Out out;
                 out.init(name, item->m_unk0c);
-                if (self->vfn9(name) != 0)
+                if (worldToUpdate->vfn9(name) != 0)
                 {
                     out.ClearAndRelease();
                     return 1;
                 }
-                self->vfn3(&out);
+                worldToUpdate->vfn3(&out);
                 out.ClearAndRelease();
             }
 
             DB8000_Handle hMain;
-            hMain.SetField00(self->vfn9(name));
+            hMain.SetField00(worldToUpdate->vfn9(name));
 
             if (item->m_name0 != 0 && item->m_name1 != 0 && hkString_strCmp(item->m_name0, item->m_name1) != 0)
             {
-                self->hkDataWorldDict_renameClass(&hMain, item->m_name1);
+                worldToUpdate->hkDataWorldDict_renameClass(&hMain, item->m_name1);
             }
 
             int jIndex = 0;
@@ -2716,20 +2757,20 @@ static __declspec(noinline) int __cdecl applyPatchesFinally(DB8000_Self* self, D
                     switch (op->m_type)
                     {
                     case 3:
-                        self->RenameClassMember(&hMain, op->m_data->m_00, op->m_data->m_04);
+                        worldToUpdate->RenameClassMember(&hMain, op->m_data->m_00, op->m_data->m_04);
                         break;
                     case 1:
-                        self->FUN_00dc7d20(&hMain, op->m_data->m_00, op->m_data->m_04, op->m_data->m_08,
+                        worldToUpdate->addClassMember(&hMain, op->m_data->m_00, op->m_data->m_04, op->m_data->m_08,
                                            op->m_data->m_0c);
                         break;
                     case 2:
-                        self->ProcessEntries_00dc7600(&hMain, op->m_data->m_00);
+                        worldToUpdate->ProcessEntries_00dc7600(&hMain, op->m_data->m_00);
                         break;
                     case 4: {
                         DB8000_Callback pCallback = (DB8000_Callback)op->m_data->m_04;
                         DB8000_PtrArrayLocalForm arr4;
                         arr4.init();
-                        self->InitAndRun(name, &arr4);
+                        worldToUpdate->InitAndRun(name, &arr4);
                         for (int kIndex = 0; kIndex < arr4.m_iElementCount; ++kIndex)
                         {
                             DB8000_Ref ref4;
@@ -2742,25 +2783,25 @@ static __declspec(noinline) int __cdecl applyPatchesFinally(DB8000_Self* self, D
                     }
                     case 7: {
                         const char* pString = (const char*)op->m_data->m_04;
-                        unsigned int val = pString ? self->vfn9(pString) : 0;
+                        unsigned int val = pString ? worldToUpdate->vfn9(pString) : 0;
                         DB8000_Handle hSub7;
                         hSub7.SetField00(val);
-                        self->AssignRefCountedSlot(&hMain, &hSub7);
+                        worldToUpdate->AssignRefCountedSlot(&hMain, &hSub7);
                         hSub7.Object_DoNothing_00dba660();
                         break;
                     }
                     case 5: {
                         DB8000_OpData* d = op->m_data;
                         DB8000_Handle hSub5;
-                        hSub5.SetField00(self->vfn9((const char*)d->m_00));
+                        hSub5.SetField00(worldToUpdate->vfn9((const char*)d->m_00));
                         DB8000_PtrArrayLocalForm arr5;
                         arr5.init();
-                        self->CallWithReset(name, &arr5);
+                        worldToUpdate->CallWithReset(name, &arr5);
                         for (int kIndex = 0; kIndex < arr5.m_iElementCount; ++kIndex)
                         {
                             DB8000_Ref ref5;
                             ref5.hkDataObject_hkDataObject(arr5.m_data[kIndex]);
-                            self->hkDataWorldDict_castObject(&ref5, &hSub5);
+                            worldToUpdate->hkDataWorldDict_castObject(&ref5, &hSub5);
                             ref5.ReleaseStorage_00dba7f0();
                         }
                         arr5.ClearAndRelease();
@@ -2777,16 +2818,16 @@ static __declspec(noinline) int __cdecl applyPatchesFinally(DB8000_Self* self, D
             int unk0c = item->m_unk0c;
             if (unk0c == -1)
             {
-                self->ReleaseRef(&hMain);
+                worldToUpdate->ReleaseRef(&hMain);
             }
             else if (item->m_unk08 != -1 && item->m_unk08 != unk0c)
             {
-                self->hkDataWorldDict_setClassVersion(&hMain, unk0c);
+                worldToUpdate->hkDataWorldDict_setClassVersion(&hMain, unk0c);
             }
 
             hMain.Object_DoNothing_00dba660();
             ++i;
-        } while (i < items->m_iElementCount);
+        } while (i < patchInfos->m_iElementCount);
     }
     return 0;
 }
@@ -3048,6 +3089,8 @@ struct DataObjectHandle
 
 // @fnv 0x00dba760
 // src: XBOX_PDB 0x00dba760
+// pdb: hkDataObject::hkDataObject | hkDataObject.obj | debug, call graph, medium
+// pdb params: i
 DataObjectHandle* DataObjectHandle::hkDataObject_hkDataObject(RefObj* apObject)
 {
     object = apObject;

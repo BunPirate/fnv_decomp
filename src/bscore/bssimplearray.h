@@ -11,6 +11,9 @@ class Value;
 
 template <>
 // @fnv 0x00A0CB90
+// pdb: BSSimpleArray<Tile::Value *,8>::SortedFind | Tile.obj | debug, call graph (shared callers), medium
+// pdb params: aValue, apFunc
+// pdb locals: iindex, pfound
 unsigned int BSSimpleArray<Tile::Value*, 8>::BinarySearch(Tile::Value*& value, BSSimpleArrayCompare compare)
 {
     void* found = bsearch(&value, pBuffer, iSize, sizeof(Tile::Value*), compare);
@@ -46,6 +49,7 @@ template <class A, class B> class AStarNode;
 
 
 // @fnv 0x006B9760
+// pdb: BSSimpleArray<AStarNode<NavMeshInfo const *,TESObjectREFR *> *,1024>::BSSimpleArray<AStarNode<NavMeshInfo const *,TESObjectREFR *> *,1024> | NavMeshInfoSearch.obj | debug, object-file run extension, low
 template <> BSSimpleArray<AStarNode<const NavMeshInfo*, TESObjectREFR*>*, 1024>::BSSimpleArray()
 {
 
@@ -60,6 +64,7 @@ class GlobalObject_00719b80
     GlobalObject_00719b80();
 };
 // @fnv 0x00719B80
+// pdb: BSSimpleArray<Tile *,1024>::BSSimpleArray<Tile *,1024> | InterfaceManager.obj | debug, call graph, medium
 GlobalObject_00719b80::GlobalObject_00719b80()
 {
     vtable = &DAT_0106f798;
@@ -74,6 +79,8 @@ class GlobalObject_00788300
     GlobalObject_00788300();
 };
 // @fnv 0x00788300
+// pdb: BSSimpleArray<EffectItemData,1024>::_Deallocate | LevelUpMenu.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 GlobalObject_00788300::GlobalObject_00788300()
 {
     vtable = &DAT_01073e50;
@@ -85,6 +92,7 @@ class DebugTextLine;
 }
 
 // @fnv 0x00A11CD0
+// pdb: BSSimpleArray<DebugText::sPrintData *,1024>::BSSimpleArray<DebugText::sPrintData *,1024> | DebugText.obj | debug, object-file run extension, low
 template <> BSSimpleArray<DebugText::DebugTextLine*, 1024>::BSSimpleArray()
 {
     unsigned int unused1;
@@ -94,25 +102,33 @@ template <> BSSimpleArray<DebugText::DebugTextLine*, 1024>::BSSimpleArray()
 }
 
 // @fnv 0x0043B4A0
-NiAVObject* NiNode::GetAt(unsigned int index)
+// pdb: NiNode::GetAt | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: i
+NiAVObject* NiNode::GetAt(unsigned int i)
 {
-    return m_kChildren.GetAt(index).operator->();
+    return m_kChildren.GetAt(i).operator->();
 }
 
 template <>
 // @fnv 0x006CFE30
-void BSSimpleArray<PacketNodeRecord, 1024>::ReleaseElements(PacketNodeRecord* items, unsigned int count)
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::_DestructItems | PathBuilder.obj | debug, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void BSSimpleArray<PacketNodeRecord, 1024>::ReleaseElements(PacketNodeRecord* apFirstAddr, unsigned int aiCount)
 {
-    for (unsigned int i = 0; i < count; i = i + 1)
-        reinterpret_cast<BSSimpleArrayPacketNode*>(items + i)->FUN_006d0510(0);
+    for (unsigned int i = 0; i < aiCount; i = i + 1)
+        reinterpret_cast<BSSimpleArrayPacketNode*>(apFirstAddr + i)->FUN_006d0510(0);
 }
 
 template <>
 // @fnv 0x006CFF20
-void BSSimpleArray<PathingGraphNode, 1024>::ReleaseElements(PathingGraphNode* items, unsigned int count)
+// pdb: BSSimpleArray<PathingNode,1024>::_DestructItems | PathBuilder.obj | debug, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void BSSimpleArray<PathingGraphNode, 1024>::ReleaseElements(PathingGraphNode* apFirstAddr, unsigned int aiCount)
 {
-    for (unsigned int i = 0; i < count; i = i + 1)
-        reinterpret_cast<BSSimpleArrayPacketNode*>(items + i)->FUN_006d0510(0);
+    for (unsigned int i = 0; i < aiCount; i = i + 1)
+        reinterpret_cast<BSSimpleArrayPacketNode*>(apFirstAddr + i)->FUN_006d0510(0);
 }
 
 template <>
@@ -127,6 +143,8 @@ void BSSimpleArray<NavMeshInfo*, 1024>::InitializeItems(NavMeshInfo** items, uns
 
 template <>
 // @fnv 0x007CB2E0
+// pdb: BSSimpleArray<BGSBodyPart *,1024>::AddUninitialized | HitData.obj | retail, call graph, medium
+// pdb locals: inewSize
 unsigned int BSSimpleArray<NavMeshInfo*, 1024>::Add(NavMeshInfo*& value)
 {
     unsigned int index = reinterpret_cast<BSSimpleArrayPacketReserve*>(this)->FUN_00761540();
@@ -138,6 +156,9 @@ unsigned int BSSimpleArray<NavMeshInfo*, 1024>::Add(NavMeshInfo*& value)
 // Candidate address 00a0caf0, 155 bytes.
 template <>
 // @fnv 0x00A0CAF0
+// pdb: BSSimpleArray<Tile::Value *,8>::SortedInsert | Tile.obj | debug, object-file gap fill, medium
+// pdb params: aValue, apFunc
+// pdb locals: ifront, imid, iback
 void BSSimpleArray<Tile::Value*, 8>::InsertInSortedOrder(Tile::Value*& value, BSSimpleArrayCompare compare)
 {
     struct SearchBounds
@@ -172,6 +193,10 @@ void BSSimpleArray<Tile::Value*, 8>::InsertInSortedOrder(Tile::Value*& value, BS
 template <>
 template <>
 // @fnv 0x00719B20
+// pdb: BSSimpleArray<BGSBodyPart *,1024>::Find<BGSBodyPart *> | HitData.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<unsigned int,1024>::Find<unsigned int>
+// pdb params: aValue, aiStartIndex, apFunc
+// pdb locals: i
 unsigned int BSSimpleArray<BGSBodyPart*, 1024>::Find<BGSBodyPart*>(BGSBodyPart*& value, unsigned int start,
                                                                    bool(__cdecl* compare)(BGSBodyPart*&, BGSBodyPart*&))
 {
@@ -195,13 +220,15 @@ void BSScrapArray<OffsetData, 1024>::_Deallocate(OffsetData* items)
 // Do not add a ButtonIcon destructor definition to force the loop.
 template <>
 // @fnv 0x00A1BFA0
-void BSSimpleArray<ButtonIcon, 1024>::Clear(bool freeBuffer)
+// pdb: BSSimpleArray<ButtonIcon,1024>::Clear | Font.obj | debug, call graph, high
+// pdb params: abFreeMemory
+void BSSimpleArray<ButtonIcon, 1024>::Clear(bool abFreeMemory)
 {
     if (pBuffer)
     {
         for (unsigned int index = 0; index < iSize; index = index + 1)
             pBuffer[index].~ButtonIcon();
-        if (freeBuffer)
+        if (abFreeMemory)
         {
             _Deallocate(pBuffer);
             pBuffer = 0;
@@ -214,6 +241,9 @@ void BSSimpleArray<ButtonIcon, 1024>::Clear(bool freeBuffer)
 // Candidate address 009f6500, 53 bytes.
 // Constructor ownership is inferred as documented; no separate PC annotation claimed.
 // @fnv 0x009F6500
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::_DestructItems | SandBoxPackage.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 SandboxProcedureData::SandboxProcedureData()
 {
     pTarget = 0;
@@ -224,6 +254,7 @@ SandboxProcedureData::SandboxProcedureData()
 // Candidate address 006e3de0, 129 bytes; inferred owner/operation requires review.
 // Do not define the covered construction helper until its own callees are admissible.
 // @fnv 0x006E3DE0
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::_DeallocateBuffer | PathingRequest.obj | debug, object-file run extension, low
 void BSSimpleArray<PathingAvoidNode, 1024>::_InitialSetup(unsigned int capacity, unsigned int initialSize)
 {
     pBuffer = 0;

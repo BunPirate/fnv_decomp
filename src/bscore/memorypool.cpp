@@ -5,6 +5,9 @@
 #include "memorypool_decls.h"
 
 // @fnv 0x00aa6e00
+// pdb: MemoryPool::AddFreeBlock | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb params: apPointer
+// pdb locals: pfreeblock, pWalker, pEnd
 void MemoryPool::PushFreeBlock(void* apBlock)
 {
     MemoryPool__FreePoolBlock* block = reinterpret_cast<MemoryPool__FreePoolBlock*>(apBlock);
@@ -27,6 +30,8 @@ struct DummyClass_00aa6db0
 
 // @fnv 0x00aa6db0
 // src: COMMUNITY 0x00aa6db0
+// pdb: MemoryPool::GetFreePageIndex | MemoryPool.obj | debug, upstream name already matches, high
+// pdb locals: i
 unsigned int __fastcall MemoryPool_GetFreePageIndex(DummyClass_00aa6db0* pThis)
 {
     for (unsigned int i = 0; i < pThis->ItemUpdateArray; ++i)
@@ -54,6 +59,9 @@ struct FUN_00aa6e60_shell
 
 // Unlinks node from its doubly linked list by patching its neighbours' pointers and decrementing count.
 // @fnv 0x00aa6e60
+// pdb: MemoryPool::RemoveFreeBlock | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb params: apFreeBlock
+// pdb locals: pFreeCheck
 void FUN_00aa6e60_shell::UnlinkNode(Node_00aa6e60* node)
 {
     if (node->prev != 0)
@@ -86,6 +94,9 @@ struct DoublyLinkedListNode
 
 // @fnv 0x00aa6eb0
 // src: COMMUNITY 0x00aa6eb0
+// pdb: MemoryPool::FreePage | MemoryPool.obj | retail, upstream name already matches, high
+// pdb params: aiPageIndex, abSortRequired
+// pdb locals: ppageAddress, pfirstFreeBlock, ientriesPerPage, plastFreeBlock
 void FUN_00aa6eb0_shell::MemoryPool_FreePage(unsigned int aiPageIndex, bool abSortRequired)
 {
     char* ppageAddress = *(char**)((char*)this + 0x4) + (aiPageIndex << 12);
@@ -131,6 +142,8 @@ struct FUN_00aa6980_stub
     void RegisterInPools();
 };
 // @fnv 0x00aa6980
+// pdb: MemoryPool::AddToLookupArrays | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb locals: ibaseAddressIndex, isizeIndex, inumAddressIndices, i
 void FUN_00aa6980_stub::RegisterInPools()
 {
     unsigned int index = f40 >> 2;
@@ -152,6 +165,9 @@ struct FUN_00aa6c70_shell : public MemoryPool
 
 // @fnv 0x00aa6c70
 // src: EXE 0x00aa6c70
+// pdb: MemoryPool::Free | MemoryPool.obj | retail, upstream name already matches, high
+// pdb params: apPointer
+// pdb locals: ipageIndex
 void FUN_00aa6c70_shell::MemoryPool_Free(void* apPointer)
 {
     unsigned int ipageIndex;
@@ -186,6 +202,8 @@ struct Helper_00aa6eb0
 };
 // @fnv 0x00aa6f90
 // src: EXE 0x00aa6f90
+// pdb: MemoryPool::FreeUnusedPagesForAllPools | MemoryPool.obj | retail, string-set bridge, high
+// pdb locals: i
 void FUN_00aa6f90_shell::MemoryPool_FreeUnusedPagesForAllPools()
 {
     bool blistSorted;
@@ -233,6 +251,9 @@ struct MemoryPool_PCP
 // Locks the pool, allocates a new page and free list if empty, pops a free block, updates page usage, and returns the block or null.
 // @fnv 0x00aa6aa0
 // src: EXE 0x00aa6aa0
+// pdb: MemoryPool::Allocate | MemoryPool.obj | retail, upstream name already matches, high
+// pdb params: requested
+// pdb locals: pmem, inewPageIndex, ientriesPerPage, pfirstFreePage, i, ipageIndex, ptemp
 void* FUN_00aa6aa0_shell::MemoryPool_Allocate(unsigned int requested)
 {
     void* pmem;
@@ -331,6 +352,7 @@ struct FUN_00aa6800
 };
 
 // @fnv 0x00aa6800
+// pdb: MemoryPool::~MemoryPool | MemoryPool.obj | debug, object-file gap fill, medium
 FUN_00aa6800::~FUN_00aa6800()
 {
     if (m_pPoolBase)
@@ -374,6 +396,8 @@ struct FUN_00aa6d00_holder
 
 // Builds a PoolInfo from the holder's fields, computing f1 from m4c and f9 as f5 divided by m40 minus m54.
 // @fnv 0x00aa6d00
+// pdb: MemoryPool::GetStats | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb locals: stats
 PoolInfo FUN_00aa6d00_holder::GetPoolInfo()
 {
     PoolInfo info;
@@ -404,6 +428,7 @@ struct FUN_00aa7260_holder
 // If count is greater than 1, replaces ptr with the result of SortList(ptr).
 // @fnv 0x00aa7260
 // src: COMMUNITY 0x00aa7260
+// pdb: MemoryPool::SortFreeBlockList | MemoryPool.obj | debug, upstream name already matches, high
 void FUN_00aa7260_holder::MemoryPool_SortFreeBlockList()
 {
     if (count > 1)
@@ -431,6 +456,8 @@ struct FUN_00aa6a10_shell
 
 // Clears a pool entry indexed by f40>>2 and zeroes count slots starting at f4>>24, where count is f50>>24 plus one if f50 has a remainder.
 // @fnv 0x00aa6a10
+// pdb: MemoryPool::~MemoryPool | MemoryPool.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MemoryPool::RemoveFromLookupArrays
 void FUN_00aa6a10_shell::ClearPoolSlots()
 {
     unsigned int count;
@@ -504,6 +531,9 @@ struct FUN_00aa66a0
 
 // Initializes a memory pool: rounds the block size, allocates the page ref-count array, computes reserve counts and sets each page count to 0xffff.
 // @fnv 0x00aa66a0
+// pdb: MemoryPool::MemoryPool | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb params: aiBlockSize, aiPoolSize, apDesc
+// pdb locals: i
 FUN_00aa66a0::FUN_00aa66a0(unsigned int aiBlockSize, unsigned int aiPoolSize, const char* apDesc)
     : pDescription(apDesc), m_pPoolBase(0), m_pFreeBlockHead(0), m_uiPeakPageCount(0), m_pPageBlockCounts(0),
       m_uiPoolSize(aiPoolSize), m_uiFreeBlockCount(0), m_uiAllocatedPageCount(0)

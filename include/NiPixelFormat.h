@@ -2,6 +2,7 @@
 
 class NiStream;
 
+// pdb: class NiPixelFormat, size 0x44, 7 members
 class NiPixelFormat
 {
 public:
@@ -157,7 +158,7 @@ public:
     unsigned char GetShift(int);
     unsigned char GetShift(Component);
     unsigned char QBitsPerPixel();
-    void LoadBinary(NiStream*);
+    void NiPixelFormat_LoadBinary(NiStream*);
     void LoadBinary(NiStream&);
     void SaveBinary(NiStream*);
     void SaveBinary(NiStream&);

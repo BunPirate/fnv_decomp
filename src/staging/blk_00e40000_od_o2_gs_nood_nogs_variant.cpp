@@ -96,7 +96,7 @@ void __cdecl hkQuaternion_ComputeValues_00e526f0(const hkQuaternion* q, short* o
         scaleInitialized |= 1;
         packingScale = float(sqrt(2.0)) * 16383.0;
     }
-    LocalM128 a = _mm_and_ps(*reinterpret_cast<const LocalM128*>(&q->unk00), DAT_01017d10);
+    LocalM128 a = _mm_and_ps(*reinterpret_cast<const LocalM128*>(&q->m_vec), DAT_01017d10);
     short largest = 0;
     if (a.m128_f32[1] > a.m128_f32[0])
         largest = 1;
@@ -108,17 +108,17 @@ void __cdecl hkQuaternion_ComputeValues_00e526f0(const hkQuaternion* q, short* o
     int L = largest;
     int i = (L == 0);
     short v[3];
-    v[0] = (short)(int)(reinterpret_cast<const float*>(&q->unk00)[i] * packingScale) + 0x3fff;
+    v[0] = (short)(int)(reinterpret_cast<const float*>(&q->m_vec)[i] * packingScale) + 0x3fff;
     i++;
     i += (i == L);
-    v[1] = (short)(int)(reinterpret_cast<const float*>(&q->unk00)[i] * packingScale) + 0x3fff;
+    v[1] = (short)(int)(reinterpret_cast<const float*>(&q->m_vec)[i] * packingScale) + 0x3fff;
     i++;
     i += (i == L);
-    v[2] = (short)(int)(reinterpret_cast<const float*>(&q->unk00)[i] * packingScale) + 0x3fff;
+    v[2] = (short)(int)(reinterpret_cast<const float*>(&q->m_vec)[i] * packingScale) + 0x3fff;
 
     out[0] = (short)((largest << 15) | v[0]);
     out[1] = (short)(((largest >> 1) << 15) | v[1]);
-    int sign = (reinterpret_cast<const float*>(&q->unk00)[L] < 0.0f) ? 1 : 0;
+    int sign = (reinterpret_cast<const float*>(&q->m_vec)[L] < 0.0f) ? 1 : 0;
     out[2] = (short)((sign << 15) | v[2]);
 }
 }  // namespace fnv_00e526f0
@@ -210,11 +210,14 @@ void Runtime_ComputeValues_00e52c30(const unsigned char* p, PackedQuaternionOutp
 struct FNV_ALIGN(16) hkpMoppObbVirtualMachine_queryObb
 {
     int m[16];
-    void Query(int a1, int a2, int a3, float a4, int a5);
+    void Query(int code, int BvToWorld, int extent, float a4, int primitives_out);
 };
 
 // @fnv 0x00e5cfe0
 // src: HAVOK_LIB 0x00e5cfe0
+// pdb: hkMoppObbVirtualMachine_queryObb | hkpMoppMachine.obj | retail, object-file run extension, low
+// pdb params: code, BvToWorld, extent, radius, primitives_out
+// pdb locals: machine
 void _hkMoppObbVirtualMachine_queryObb(int a1, int a2, int a3, float a4, int a5)
 {
     hkpMoppObbVirtualMachine_queryObb obj;

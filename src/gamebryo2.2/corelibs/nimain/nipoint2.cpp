@@ -18,6 +18,8 @@ inline void NiBinaryStream::Write(float* value)
 
 // Reads two floats from the stream into the point's x and y coordinates.
 // @fnv 0x00a68c80
+// pdb: NiPoint2::LoadBinary | NiPoint2.obj | retail, call graph, high
+// pdb params: stream, pkValues, uiNumValues
 void NiPoint2::LoadBinary(NiStream& stream)
 {
     stream.m_pkIstr->ReadFloat(x);
@@ -25,6 +27,8 @@ void NiPoint2::LoadBinary(NiStream& stream)
 }
 
 // @fnv 0x00a68ce0
+// pdb: NiPoint2::SaveBinary | NiPoint2.obj | retail, call graph, high
+// pdb params: stream, pkValues, uiNumValues
 void NiPoint2::SaveBinary(NiStream* stream)
 {
     stream->m_pkOstr->Write(&x);

@@ -52,28 +52,34 @@ inline void AddViewerString(StrArr* array, char* element)
 
 // @fnv 0x00a7da80
 // src: XBOX_PDB 0x00a7da80
-void NiBillboardNode::UpdateSelectedDownwardPass_00a7da80(NiUpdateData& a, unsigned int b)
+// pdb: NiBillboardNode::UpdateSelectedDownwardPass | NiBillboardNode.obj | retail, vtable slot, high
+// pdb params: UpdateData, uFlags
+void NiBillboardNode::UpdateSelectedDownwardPass_00a7da80(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    *(float*)&unkB0 = a.fTime;
-    NiNode::UpdateSelectedDownwardPass(a, b);
+    *(float*)&unkB0 = UpdateData.fTime;
+    NiNode::UpdateSelectedDownwardPass(UpdateData, uFlags);
     UpdateWorldBound();
 }
 
 // @fnv 0x00a7dab0
 // src: XBOX_PDB 0x00a7dab0
-void NiBillboardNode::UpdateRigidDownwardPass_00a7dab0(NiUpdateData& data, unsigned int flags)
+// pdb: NiBillboardNode::UpdateRigidDownwardPass | NiBillboardNode.obj | retail, vtable slot, high
+// pdb params: UpdateData, uFlags
+void NiBillboardNode::UpdateRigidDownwardPass_00a7dab0(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    *(float*)&unkB0 = data.fTime;
-    NiNode::UpdateRigidDownwardPass(data, flags);
+    *(float*)&unkB0 = UpdateData.fTime;
+    NiNode::UpdateRigidDownwardPass(UpdateData, uFlags);
     UpdateWorldBound();
 }
 
 // @fnv 0x00a7e610
 // src: XBOX_PDB 0x00a7e610
-void NiBillboardNode::OnVisible_00a7e610(NiCullingProcess* process)
+// pdb: NiBillboardNode::OnVisible | NiBillboardNode.obj | retail, vtable slot, high
+// pdb params: kCuller
+void NiBillboardNode::OnVisible_00a7e610(NiCullingProcess* kCuller)
 {
-    RotateToCamera(*(NiCullingProcess**)((char*)process + 0xc));
-    NiNode::OnVisible(*process);
+    RotateToCamera(*(NiCullingProcess**)((char*)kCuller + 0xc));
+    NiNode::OnVisible(*kCuller);
 }
 
 // The shared NiNode lacks the unsigned-int constructor. Initialize its shared
@@ -84,10 +90,12 @@ inline void* __cdecl operator new(unsigned int, void* storage)
     return storage;
 }
 // The shared child array has no constructor declaration for this entry point.
-void __fastcall InitializeChildArray(void* storage, void*, unsigned int count, unsigned int growBy);
+void __fastcall InitializeChildArray(void* uiMaxSize, void*, unsigned int count, unsigned int growBy);
 extern const void* DAT_0109b5ac[];
 // The unused second register lets a free function receive this in ECX.
 // @fnv 0x00a5ecb0
+// pdb: NiNode::NiNode | NiNode.obj | retail, call graph, medium
+// pdb params: uiNumChildren
 __declspec(noinline) NiNode* __fastcall InitializeNiNode(NiNode* node, void*, unsigned int uiNumChildren)
 {
     ::new ((void*)node) NiAVObject;
@@ -99,34 +107,41 @@ __declspec(noinline) NiNode* __fastcall InitializeNiNode(NiNode* node, void*, un
 
 // @fnv 0x00a7dae0
 // src: XBOX_PDB 0x00a7dae0
-void NiBillboardNode::UpdateDownwardPass_00a7dae0(NiUpdateData& data, unsigned int flags)
+// pdb: NiBillboardNode::UpdateDownwardPass | NiBillboardNode.obj | retail, vtable slot, high
+// pdb params: UpdateData, uFlags
+void NiBillboardNode::UpdateDownwardPass_00a7dae0(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    *(float*)&unkB0 = data.fTime;
+    *(float*)&unkB0 = UpdateData.fTime;
     unsigned short& billboardFlags = *(unsigned short*)&unkAC;
-    if (*(bool*)((char*)&data + 4))
+    if (*(bool*)((char*)&UpdateData + 4))
         billboardFlags |= 8;
     else
         billboardFlags &= 0xFFF7;
-    NiNode::UpdateDownwardPass(data, flags);
+    NiNode::UpdateDownwardPass(UpdateData, uFlags);
     UpdateWorldBound();
 }
 
 // @fnv 0x00a7db30
 // src: XBOX_PDB 0x00a7db30
-unsigned char NiBillboardNode::IsEqual_00a7db30(NiObject* object)
+// pdb: NiBillboardNode::IsEqual | NiBillboardNode.obj | retail, vtable slot, high
+// pdb params: pkObject
+// pdb locals: pkNode
+unsigned char NiBillboardNode::IsEqual_00a7db30(NiObject* pkObject)
 {
-    NiBillboardNode* node = (NiBillboardNode*)object;
-    if (!NiNode::IsEqual(object))
+    NiBillboardNode* node = (NiBillboardNode*)pkObject;
+    if (!NiNode::IsEqual(pkObject))
         return 0;
     return ((((unsigned char*)&node->unkAC)[0] ^ ((unsigned char*)&unkAC)[0]) & 7) == 0;
 }
 
 // @fnv 0x00a7e850
 // src: XBOX_PDB 0x00a7e850
-void NiBillboardNode::SaveBinary_00a7e850(NiStream& stream)
+// pdb: NiBillboardNode::SaveBinary | NiBillboardNode.obj | retail, vtable slot, high
+// pdb params: kStream
+void NiBillboardNode::SaveBinary_00a7e850(NiStream& kStream)
 {
-    NiNode::SaveBinary(stream);
-    NiBinaryStream* __restrict output = *(NiBinaryStream**)((char*)&stream + 0x250);
+    NiNode::SaveBinary(kStream);
+    NiBinaryStream* __restrict output = *(NiBinaryStream**)((char*)&kStream + 0x250);
     unsigned int size = 2;
     *(unsigned int*)((char*)output + 4) += (*(NiBinaryStream::WriteFunction*)((char*)output + 12))(output, &unkAC, 2, &size, 1);
 }
@@ -139,31 +154,34 @@ inline float SqrLength3(float a, float b, float c)
 
 // @fnv 0x00a7dc40
 // src: COMMUNITY 0x00a7dc40
-bool __stdcall NiBillboardNode_RotateToCenter(const NiAVObject* pkCamera, const NiPoint3& kPos, NiPoint3& kWorldPosition, NiPoint3& kUp,
-                            NiPoint3& kRight)
+// pdb: NiBillboardNode::RotateToCenter | NiBillboardNode.obj | retail, upstream name already matches, high
+// pdb params: pkCamera, kWorldTranslate, kCamD, kCamU, kCamR
+// pdb locals: kAt, fDot, kAxis, fAngle, kRot
+bool __stdcall NiBillboardNode_RotateToCenter(const NiAVObject* pkCamera, const NiPoint3& kWorldTranslate, NiPoint3& kCamD, NiPoint3& kCamU,
+                            NiPoint3& kCamR)
 {
-    NiPoint3 kDelta = pkCamera->m_kWorld.m_Translate - kPos;
+    NiPoint3 kDelta = pkCamera->m_kWorld.m_Translate - kWorldTranslate;
     float fLenSq = SqrLength3(kDelta.x, kDelta.y, kDelta.z);
     if (fLenSq < 0.001f)
         return false;
 
     kDelta.Unitize();
-    kWorldPosition = -((const NiMatrix3_ColView&)pkCamera->m_kWorld.m_Rotate).GetCol(0);
-    kUp = ((const NiMatrix3_ColView&)pkCamera->m_kWorld.m_Rotate).GetCol(1);
-    kRight = ((const NiMatrix3_ColView&)pkCamera->m_kWorld.m_Rotate).GetCol(2);
+    kCamD = -((const NiMatrix3_ColView&)pkCamera->m_kWorld.m_Rotate).GetCol(0);
+    kCamU = ((const NiMatrix3_ColView&)pkCamera->m_kWorld.m_Rotate).GetCol(1);
+    kCamR = ((const NiMatrix3_ColView&)pkCamera->m_kWorld.m_Rotate).GetCol(2);
 
-    float fDot = kWorldPosition * kDelta;
+    float fDot = kCamD * kDelta;
     if (fDot < (double)0.999999f)
     {
         float rotationStorage[sizeof(NiMatrix3) / sizeof(float)];
         NiMatrix3& kRot = *(NiMatrix3*)rotationStorage;
         {
-            NiPoint3 kAxis = kDelta.FUN_0053d1a0(kWorldPosition);
+            NiPoint3 kAxis = kDelta.FUN_0053d1a0(kCamD);
             kRot.MakeRotation(NiACos(fDot), kAxis.x, kAxis.y, kAxis.z);
         }
-        kWorldPosition = kDelta;
-        kUp = ((const NiMatrix3&)kRot) * kUp;
-        kRight = ((const NiMatrix3&)kRot) * kRight;
+        kCamD = kDelta;
+        kCamU = ((const NiMatrix3&)kRot) * kCamU;
+        kCamR = ((const NiMatrix3&)kRot) * kCamR;
     }
     return true;
 }
@@ -176,14 +194,17 @@ template <class T> inline void ReadBinaryValue(NiStream& stream, T& value)
 
 // @fnv 0x00a7e7b0
 // src: XBOX_PDB 0x00a7e7b0
-void NiBillboardNode::LoadBinary_00a7e7b0(NiStream& stream)
+// pdb: NiBillboardNode::LoadBinary | NiBillboardNode.obj | retail, vtable slot, high
+// pdb params: kStream
+// pdb locals: usFlags
+void NiBillboardNode::LoadBinary_00a7e7b0(NiStream& kStream)
 {
-    NiNode::LoadBinary(stream);
+    NiNode::LoadBinary(kStream);
 #define m_usFlags (*(unsigned short*)&unkAC)
-    if (*(const unsigned int*)((const char*)&stream + 0xd8) < 0x0a000102)
+    if (*(const unsigned int*)((const char*)&kStream + 0xd8) < 0x0a000102)
     {
-        m_usFlags = *(unsigned short*)((char*)&stream + 0x284);
-        if (*(const unsigned int*)((const char*)&stream + 0xd8) < 0x04020003)
+        m_usFlags = *(unsigned short*)((char*)&kStream + 0x284);
+        if (*(const unsigned int*)((const char*)&kStream + 0xd8) < 0x04020003)
         {
             unsigned short us = m_usFlags;
             m_usFlags = (m_usFlags & 0xe000) << 1;
@@ -193,7 +214,7 @@ void NiBillboardNode::LoadBinary_00a7e7b0(NiStream& stream)
     }
     else
     {
-        ReadBinaryValue(stream, m_usFlags);
+        ReadBinaryValue(kStream, m_usFlags);
     }
     m_usFlags |= 8;
 #undef m_usFlags
@@ -222,6 +243,8 @@ inline void NiBound::SetCenterAndRadius(const NiPoint3& center, float radius)
 
 // @fnv 0x00a7e630
 // src: XBOX_PDB 0x00a7e630
+// pdb: NiBillboardNode::UpdateWorldBound | NiBillboardNode.obj | retail, vtable slot, high
+// pdb locals: kDiff
 void NiBillboardNode::UpdateWorldBound_00a7e630()
 {
 #define m_pkWorldBound (*(NiBound**)&m_kWorldBound)
@@ -250,16 +273,18 @@ class GlobalObjectO2_00a7b610
 };
 extern GlobalObjectO2_00a7b610 g_011f4aa0;
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(char* value);
-char* __cdecl NiBillboardNode_GetViewerString(const char* pName, unsigned int uiValue);
+char* __cdecl NiBillboardNode_GetViewerString(const char* pcPrefix, unsigned int eMode);
 
 // @fnv 0x00a7e890
 // src: XBOX_PDB 0x00a7e890
-void NiBillboardNode::GetViewerStrings_00a7e890(StrArr* array)
+// pdb: NiBillboardNode::GetViewerStrings | NiBillboardNode.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiBillboardNode::GetViewerStrings_00a7e890(StrArr* pkStrings)
 {
-    NiNode::GetViewerStrings((NiViewerStringsArray*)array);
-    AddViewerString(array, NiViewerStrings_NiGetViewerString_Title(g_011f4aa0.m_pString));
+    NiNode::GetViewerStrings((NiViewerStringsArray*)pkStrings);
+    AddViewerString(pkStrings, NiViewerStrings_NiGetViewerString_Title(g_011f4aa0.m_pString));
     unsigned int uiFlags = *(unsigned short*)&unkAC & 7;
-    AddViewerString(array, NiBillboardNode_GetViewerString("m_eMode", uiFlags));
+    AddViewerString(pkStrings, NiBillboardNode_GetViewerString("m_eMode", uiFlags));
 }
 
 extern "C" unsigned int __cdecl strlen(const char* s);
@@ -269,29 +294,32 @@ int __cdecl FUN_00a305b0(char* buffer, unsigned int size, const char* format, ..
 
 // @fnv 0x00a7db60
 // src: XBOX_PDB 0x00a7db60
-char* __cdecl NiBillboardNode_GetViewerString(const char* name, int type)
+// pdb: NiBillboardNode::GetViewerString | NiBillboardNode.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eMode
+// pdb locals: pcString, uiLen
+char* __cdecl NiBillboardNode_GetViewerString(const char* pcPrefix, int eMode)
 {
-    unsigned int size = strlen(name) + 0x16;
+    unsigned int size = strlen(pcPrefix) + 0x16;
     char* buffer = (char*)_NiMalloc_00aa1070(size);
-    switch (type)
+    switch (eMode)
     {
     case 0:
-        FUN_00a305b0(buffer, size, "%s = ALWAYS_FACE_CAMERA", name);
+        FUN_00a305b0(buffer, size, "%s = ALWAYS_FACE_CAMERA", pcPrefix);
         break;
     case 1:
-        FUN_00a305b0(buffer, size, "%s = ROTATE_ABOUT_UP", name);
+        FUN_00a305b0(buffer, size, "%s = ROTATE_ABOUT_UP", pcPrefix);
         break;
     case 2:
-        FUN_00a305b0(buffer, size, "%s = RIGID_FACE_CAMERA", name);
+        FUN_00a305b0(buffer, size, "%s = RIGID_FACE_CAMERA", pcPrefix);
         break;
     case 3:
-        FUN_00a305b0(buffer, size, "%s = ALWAYS_FACE_CENTER", name);
+        FUN_00a305b0(buffer, size, "%s = ALWAYS_FACE_CENTER", pcPrefix);
         break;
     case 4:
-        FUN_00a305b0(buffer, size, "%s = RIGID_FACE_CENTER", name);
+        FUN_00a305b0(buffer, size, "%s = RIGID_FACE_CENTER", pcPrefix);
         break;
     case 5:
-        FUN_00a305b0(buffer, size, "%s = BSROTATE_ABOUT_UP", name);
+        FUN_00a305b0(buffer, size, "%s = BSROTATE_ABOUT_UP", pcPrefix);
         break;
     }
     return buffer;
@@ -405,9 +433,12 @@ struct CompositionResult
 };
 // @fnv 0x00a7de40
 // src: XBOX_PDB 0x00a7de40
-void NiBillboardNode::RotateToCamera(const BoardObject* cameraObject)
+// pdb: NiBillboardNode::RotateToCamera | NiBillboardNode.obj | retail, upstream name already matches, high
+// pdb params: pkCamera
+// pdb locals: kParentXform, kFaceMat, UpdateData, pkParent, eFaceMode, fRoot, kCamD, kCamU, kCamR, fInvRoot, fCos, fSin, kCamLoc, fLength, i, pkChild
+void NiBillboardNode::RotateToCamera(const BoardObject* pkCamera)
 {
-    const NiAVObject* camera = (const NiAVObject*)cameraObject;
+    const NiAVObject* camera = (const NiAVObject*)pkCamera;
 #define world (*(BoardTransform*)&m_kWorld)
 #define local (*(BoardTransform*)&m_kLocal)
 #define flags (*(unsigned short*)&unkAC)
@@ -432,7 +463,7 @@ void NiBillboardNode::RotateToCamera(const BoardObject* cameraObject)
     case 3:
         if (mode == 3)
         {
-            if (!NiBillboardNode_RotateToCenter(cameraObject, world.translate, kWorldPosition, kUp, kRight))
+            if (!NiBillboardNode_RotateToCenter(pkCamera, world.translate, kWorldPosition, kUp, kRight))
                 break;
         }
         else
@@ -502,7 +533,7 @@ void NiBillboardNode::RotateToCamera(const BoardObject* cameraObject)
     case 4:
         if (mode == 4)
         {
-            if (!NiBillboardNode_RotateToCenter(cameraObject, world.translate, kRight, kUp, kWorldPosition))
+            if (!NiBillboardNode_RotateToCenter(pkCamera, world.translate, kRight, kUp, kWorldPosition))
                 break;
         }
         else
@@ -584,11 +615,14 @@ inline NiBillboardNode* InitializeBillboardClone(void* storage)
 
 // @fnv 0x00a7e710
 // src: XBOX_PDB 0x00a7e710
-BillboardClone* NiBillboardNode::CreateClone_00a7e710(void* context)
+// pdb: NiBillboardNode::CreateClone | NiBillboardNode.obj | retail, vtable slot, high
+// pdb params: kCloning
+// pdb locals: pkObject
+BillboardClone* NiBillboardNode::CreateClone_00a7e710(void* kCloning)
 {
     void* storage = Object_DispatchCommandFour(sizeof(NiBillboardNode));
     NiBillboardNode* clone = storage ? InitializeBillboardClone(storage) : 0;
-    NiNode::CopyMemberData(clone, *(CloningProcess*)context);
+    NiNode::CopyMemberData(clone, *(CloningProcess*)kCloning);
     *(short*)&clone->unkAC = *(short*)&unkAC;
     return (BillboardClone*)clone;
 }

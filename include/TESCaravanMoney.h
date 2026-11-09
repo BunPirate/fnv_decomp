@@ -24,14 +24,14 @@ public:
     virtual void InitItem();
     virtual void ClearData();
     virtual void SaveForm();
-    virtual bool Compare(TESForm* other);
+    virtual bool Compare(TESForm* apCompare);
 
     // Alternate names for inherited virtual slots.
     void VSlot00();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void ResetFormData();
     TESModelTextureSwap* GetModelTextureSwap(int index);
     void* Release(unsigned int flags);
 
-    TESModelTextureSwap m_kModelTextureSwaps[2];
+    TESModelTextureSwap anteModels[2];
 };

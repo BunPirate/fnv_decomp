@@ -4,12 +4,13 @@
 
 extern int __cdecl Warning();
 extern unsigned int __cdecl SetWarningState(bool);
+// pdb: structure WeatherEntry, size 0xc, 3 members
 class WeatherEntry
 {
   public:
-    TESWeather* m_pWeatherObject;
-    unsigned int m_uiWeatherChance;
-    TESGlobal* m_pWeatherChanceGlobal;
+    TESWeather* pWeather;
+    unsigned int uiChance;
+    TESGlobal* pChanceVar;
     WeatherEntry();
 };
 #include "../include/TESWeatherList.h"

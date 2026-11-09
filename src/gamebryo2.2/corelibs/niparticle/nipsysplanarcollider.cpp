@@ -23,13 +23,15 @@ inline void PlanarReadFloat(NiStream& stream, float& value)
 
 // Copies the base collider and the three collider parameters into dest, then clones and ref-counts the collider at offset 0x28.
 // @fnv 0x00c32510
+// pdb: NiPSysCollider::CopyMembers | NiPSysCollider.obj | retail, object-file run extension, low
+// pdb params: pkDest, kCloning
 void NiPSysPlanarCollider::CopyMemberData(NiPSysPlanarCollider* dest, CloningProcess& process)
 {
     NiPSysCollider::CreateVertexBufferSet(dest, process);
 
-    dest->m_fBounceFactor = m_fBounceFactor;
-    dest->m_bSpawnOnCollision = m_bSpawnOnCollision;
-    dest->m_bDieOnCollision = m_bDieOnCollision;
+    dest->m_fBounce = m_fBounce;
+    dest->m_bSpawnOnCollide = m_bSpawnOnCollide;
+    dest->m_bDieOnCollide = m_bDieOnCollide;
 
     NiPSysCollider* sourceNext = *reinterpret_cast<NiPSysCollider**>(reinterpret_cast<char*>(this) + 0x28);
     if (sourceNext)
@@ -52,32 +54,35 @@ void NiPSysPlanarCollider::CopyMemberData(NiPSysPlanarCollider* dest, CloningPro
 
 // Loads the planar collider's stream fields: two floats, then two NiColor values, after the base collider's LoadBinary.
 // @fnv 0x00c29770
-void NiPSysPlanarCollider::LoadBinary(NiStream& stream)
+// pdb: NiPSysPlanarCollider::LoadBinary | NiPSysPlanarCollider.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysPlanarCollider::LoadBinary(NiStream& kStream)
 {
-    NiPSysCollider::LoadBinary(stream);
-    stream.ResetStreamState();
-    PlanarReadFloat(stream, m_fOriginX);
-    PlanarReadFloat(stream, m_fOriginZ);
-    reinterpret_cast<NiColor*>(&m_kFirstVector)->LoadBinary(stream);
-    reinterpret_cast<NiColor*>(&m_kSecondPlaneVector)->LoadBinary(stream);
+    NiPSysCollider::LoadBinary(kStream);
+    kStream.ResetStreamState();
+    PlanarReadFloat(kStream, m_fWidth);
+    PlanarReadFloat(kStream, m_fHeight);
+    reinterpret_cast<NiColor*>(&m_kXAxis)->LoadBinary(kStream);
+    reinterpret_cast<NiColor*>(&m_kYAxis)->LoadBinary(kStream);
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_012026c8;
+extern GlobalObjectO2_00a7b610 NiPSysPlanarCollider_ms_RTTI;
 
 // @fnv 0x00c299d0
 void* __fastcall GetPlanarColliderRTTI(NiPSysPlanarCollider*, void*)
 {
-    return &g_012026c8;
+    return &NiPSysPlanarCollider_ms_RTTI;
 }
 
 void __cdecl _delete(void*, unsigned int);
 // Releases m_pObject, destroys the NiRefObject base, and frees this with _delete when uiFlags has bit 0 set; returns this.
 // @fnv 0x00c299e0
+// pdb: NiPSysPlanarCollider::`scalar deleting destructor' | NiPSysPlanarCollider.obj | retail, object-file run extension, low
 void* __fastcall DestroyPlanarCollider(NiPSysPlanarCollider* self, void*, unsigned int uiFlags)
 {
-    if (self->m_spNextController.m_pObject)
-        self->m_spNextController.m_pObject->DecRefCount();
+    if (self->m_spNext.m_pObject)
+        self->m_spNext.m_pObject->DecRefCount();
     ((NiRefObject*)self)->NiRefObject::~NiRefObject();
     if (uiFlags & 1)
         _delete(self, 0x100);
@@ -146,9 +151,9 @@ typedef void (__thiscall* ProcessColliderCollisionFunction)(NiPSysCollider*, flo
 void __fastcall ApplyPlanarCollision(NiPSysPlanarCollider* self, void*, float time, BoundDataBlock* particles, unsigned short index)
 {
     NiPoint3& velocity = particles->velocities[index].velocity;
-    float dot = reinterpret_cast<NiPoint3*>(&self->m_kHalfSpacePlane.x)->Dot(velocity);
-    NiPoint3 projection = *reinterpret_cast<NiPoint3*>(&self->m_kHalfSpacePlane.x) * dot;
-    if (self->m_fSpawnRate == time && dot < DAT_010beaf8)
+    float dot = reinterpret_cast<NiPoint3*>(&self->m_kPlane.m_kNormal)->Dot(velocity);
+    NiPoint3 projection = *reinterpret_cast<NiPoint3*>(&self->m_kPlane.m_kNormal) * dot;
+    if (self->m_fCollisionTime == time && dot < DAT_010beaf8)
     {
         velocity.x -= projection.x;
         velocity.y -= projection.y;
@@ -163,7 +168,7 @@ void __fastcall ApplyPlanarCollision(NiPSysPlanarCollider* self, void*, float ti
         velocity.x = (float)(velocity.x - twice.x);
         velocity.y = (float)(velocity.y - twice.y);
         velocity.z = (float)(velocity.z - twice.z);
-        velocity *= self->m_fBounceFactor;
+        velocity *= self->m_fBounce;
     }
     reinterpret_cast<ProcessColliderCollisionFunction>(&ProcessColliderCollision)(self, time, particles, index);
 }
@@ -173,22 +178,24 @@ extern "C" void SaveColliderBinary();
 typedef void (__thiscall* SaveColliderBinaryFunction)(NiPSysCollider*, NiStream&);
 
 // @fnv 0x00c297f0
+// pdb: NiPSysPlanarCollider::SaveBinary | NiPSysPlanarCollider.obj | retail, object-file run extension, low
+// pdb params: kStream
 void __fastcall SavePlanarColliderBinary(NiPSysPlanarCollider* self, void*, NiStream& stream)
 {
     reinterpret_cast<SaveColliderBinaryFunction>(&SaveColliderBinary)(self, stream);
-    stream.SaveLinkID(self->m_pkColliderObject);
+    stream.SaveLinkID(self->m_pkColliderObj);
     NiBinaryStream* io = stream.m_pkOstr;
     {
         unsigned int out1 = 4;
-        io->m_uiAbsoluteCurrentPos += io->m_pfnWrite(io, &self->m_fOriginX, 4, &out1, 1);
+        io->m_uiAbsoluteCurrentPos += io->m_pfnWrite(io, &self->m_fWidth, 4, &out1, 1);
     }
     io = stream.m_pkOstr;
     {
         unsigned int out2 = 4;
-        io->m_uiAbsoluteCurrentPos += io->m_pfnWrite(io, &self->m_fOriginZ, 4, &out2, 1);
+        io->m_uiAbsoluteCurrentPos += io->m_pfnWrite(io, &self->m_fHeight, 4, &out2, 1);
     }
-    self->m_kFirstVector.SaveBinary(&stream);
-    self->m_kSecondPlaneVector.SaveBinary(&stream);
+    self->m_kXAxis.SaveBinary(&stream);
+    self->m_kYAxis.SaveBinary(&stream);
 }
 
 extern float DAT_011a946c;
@@ -198,6 +205,9 @@ void* __fastcall InitializePlanarCollider(void*, int, float, int, int, void*, vo
 typedef NiPSysPlanarCollider* (__thiscall* InitializePlanarColliderFunction)(void*, float, int, int, void*, void*, float, float, NiPoint3, NiPoint3);
 
 // @fnv 0x00c29a30
+// pdb: NiPSysPlanarCollider::CreateClone | NiPSysPlanarCollider.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysPlanarCollider* __fastcall CreatePlanarColliderClone(NiPSysPlanarCollider* self, void*, CloningProcess& process)
 {
     NiPSysPlanarCollider* obj;
@@ -213,14 +223,16 @@ NiPSysPlanarCollider* __fastcall CreatePlanarColliderClone(NiPSysPlanarCollider*
         obj = 0;
     }
     self->CopyMemberData(obj, process);
-    obj->m_fOriginX = self->m_fOriginX;
-    obj->m_fOriginZ = self->m_fOriginZ;
-    obj->m_kFirstVector = self->m_kFirstVector;
-    obj->m_kSecondPlaneVector = self->m_kSecondPlaneVector;
+    obj->m_fWidth = self->m_fWidth;
+    obj->m_fHeight = self->m_fHeight;
+    obj->m_kXAxis = self->m_kXAxis;
+    obj->m_kYAxis = self->m_kYAxis;
     return obj;
 }
 
 // @fnv 0x00c29af0
+// pdb: NiPSysPlanarCollider::CreateObject | NiPSysPlanarCollider.obj | retail, object-file run extension, low
+// pdb locals: pkObject
 int __cdecl CreatePlanarCollider()
 {
     void* helper = Object_DispatchCommandFour(0x100);
@@ -237,14 +249,14 @@ int __cdecl CreatePlanarCollider()
 void __fastcall LinkPlanarColliderObject(NiPSysPlanarCollider* self, void*, NiStream& stream)
 {
     self->NiPSysCollider::LinkObject(stream);
-    self->m_pkColliderObject = (NiAVObject*)stream.GetLoadedObject();
+    self->m_pkColliderObj = (NiAVObject*)stream.GetLoadedObject();
 }
 
 struct GlobalObjectO2_00a7b610
 {
     const char* m_pcName;
 };
-extern GlobalObjectO2_00a7b610 g_012026c8;
+extern GlobalObjectO2_00a7b610 NiPSysPlanarCollider_ms_RTTI;
 
 char* NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 char* NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
@@ -278,16 +290,19 @@ struct PlanarColliderViewerStrings
 
 // Appends the base collider strings plus collider object name, width, height and X/Y axis strings to pkStrings.
 // @fnv 0x00c29b70
+// pdb: NiPSysPlanarCollider::GetViewerStrings | NiPSysPlanarCollider.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: pcColliderObj
 void __fastcall GetPlanarColliderViewerStrings(NiPSysPlanarCollider* self, void*, PlanarColliderViewerStrings* pkStrings)
 {
     self->NiPSysCollider::GetViewerStrings(reinterpret_cast<NiViewerStringsArray*>(pkStrings));
-    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(g_012026c8.m_pcName));
-    NiAVObject* pkObj = self->m_pkColliderObject;
+    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(NiPSysPlanarCollider_ms_RTTI.m_pcName));
+    NiAVObject* pkObj = self->m_pkColliderObj;
     pkStrings->Add(NiGetViewerString_00a7d5e0("Collider Object", pkObj ? pkObj->m_kName.m_kHandle : "None"));
-    pkStrings->Add(NiGetViewerString_00a7d550("Width", self->m_fOriginX));
-    pkStrings->Add(NiGetViewerString_00a7d550("Height", self->m_fOriginZ));
-    pkStrings->Add(static_cast<const NiPoint3&>(self->m_kFirstVector).FormatToBuffer("X-Axis"));
-    pkStrings->Add(static_cast<const NiPoint3&>(self->m_kSecondPlaneVector).FormatToBuffer("Y-Axis"));
+    pkStrings->Add(NiGetViewerString_00a7d550("Width", self->m_fWidth));
+    pkStrings->Add(NiGetViewerString_00a7d550("Height", self->m_fHeight));
+    pkStrings->Add(static_cast<const NiPoint3&>(self->m_kXAxis).FormatToBuffer("X-Axis"));
+    pkStrings->Add(static_cast<const NiPoint3&>(self->m_kYAxis).FormatToBuffer("Y-Axis"));
 }
 
 struct Call_439090_tgt : NiPoint3
@@ -299,18 +314,21 @@ extern "C" void AreCollidersEqual();
 typedef bool (__thiscall* AreCollidersEqualFunction)(NiPSysCollider*, NiPSysCollider*);
 
 // @fnv 0x00c29870
+// pdb: NiPSysPlanarCollider::IsEqual | NiPSysPlanarCollider.obj | retail, object-file gap fill, low
+// pdb params: pkObject
+// pdb locals: pkDest
 bool __fastcall ArePlanarCollidersEqual(NiPSysPlanarCollider* self, void*, NiPSysPlanarCollider* other)
 {
     if (!reinterpret_cast<AreCollidersEqualFunction>(&AreCollidersEqual)(self, other))
         return false;
-    if ((self->m_pkColliderObject && !other->m_pkColliderObject) ||
-        (!self->m_pkColliderObject && other->m_pkColliderObject) ||
-        (self->m_pkColliderObject && other->m_pkColliderObject &&
-         !self->m_pkColliderObject->IsEqual(other->m_pkColliderObject)))
+    if ((self->m_pkColliderObj && !other->m_pkColliderObj) ||
+        (!self->m_pkColliderObj && other->m_pkColliderObj) ||
+        (self->m_pkColliderObj && other->m_pkColliderObj &&
+         !self->m_pkColliderObj->IsEqual(other->m_pkColliderObj)))
         return false;
-    if (self->m_fOriginX != other->m_fOriginX || self->m_fOriginZ != other->m_fOriginZ ||
-        static_cast<Call_439090_tgt&>(self->m_kFirstVector).Call_439090(other->m_kFirstVector) ||
-        static_cast<Call_439090_tgt&>(self->m_kSecondPlaneVector).Call_439090(other->m_kSecondPlaneVector))
+    if (self->m_fWidth != other->m_fWidth || self->m_fHeight != other->m_fHeight ||
+        static_cast<Call_439090_tgt&>(self->m_kXAxis).Call_439090(other->m_kXAxis) ||
+        static_cast<Call_439090_tgt&>(self->m_kYAxis).Call_439090(other->m_kYAxis))
         return false;
     return true;
 }
@@ -413,10 +431,10 @@ inline float SpecialLength(const PlaneVector& p)
     d += c * c;
     return d;
 }
-inline float NiPlane::Distance(const NiPoint3& p) const
+inline float NiPlane::Distance(const NiPoint3& kPoint) const
 {
-    float d = *reinterpret_cast<const PlaneVector*>(&x) * reinterpret_cast<const PlaneVector&>(p);
-    return d - c;
+    float d = *reinterpret_cast<const PlaneVector*>(&m_kNormal) * reinterpret_cast<const PlaneVector&>(kPoint);
+    return d - m_fConstant;
 }
 struct RotationHelper
 {
@@ -438,7 +456,7 @@ NiPSysCollider* PlanarColliderFunctions::TestCollision(float time, float* collis
     bool bCollided = false;
     const PlaneVector& particle = reinterpret_cast<const PlaneVector*>(data->unk20)[particleId];
     const PlaneVector& velocity = reinterpret_cast<const PlaneVector&>(data->velocities[particleId].velocity);
-    const PlaneVector& normal = reinterpret_cast<const PlaneVector&>(*reinterpret_cast<NiPoint3*>(&m_kHalfSpacePlane.x));
+    const PlaneVector& normal = reinterpret_cast<const PlaneVector&>(*reinterpret_cast<NiPoint3*>(&m_kPlane.m_kNormal));
     double planeSum;
     planeSum = normal.y * particle.y;
     const float* planeN = &normal.y;
@@ -450,20 +468,20 @@ NiPSysCollider* PlanarColliderFunctions::TestCollision(float time, float* collis
     for (int j = 0; 1 > j; ++j)
         planeSum += nz[j + 1] * pz[j + 0];
     float distance = (float)planeSum;
-    distance -= m_kHalfSpacePlane.c;
+    distance -= m_kPlane.m_fConstant;
     if (DAT_010beaf8 > distance && DAT_010beaf8 > -distance)
     {
-        PlaneVector relative = particle - reinterpret_cast<const PlaneVector&>(m_kPathOffset);
+        PlaneVector relative = particle - reinterpret_cast<const PlaneVector&>(m_kPosition);
         PlaneVector xAxis, yAxis;
-        reinterpret_cast<RotationHelper*>(layoutPadding74)->FUN_004b4500(&xAxis, &m_kFirstVector);
-        reinterpret_cast<RotationHelper*>(layoutPadding74)->FUN_004b4500(&yAxis, &m_kSecondPlaneVector);
+        reinterpret_cast<RotationHelper*>(layoutPadding74)->FUN_004b4500(&xAxis, &m_kXAxis);
+        reinterpret_cast<RotationHelper*>(layoutPadding74)->FUN_004b4500(&yAxis, &m_kYAxis);
         NiPoint3 kAlongX = (NiPoint3)xAxis * (float)(double)(relative * xAxis);
         NiPoint3 kAlongY = (NiPoint3)yAxis * (float)(double)(yAxis * relative);
-        if (kAlongX.Dot(kAlongX) < m_fWidthSquared && kAlongY.Dot(kAlongY) < m_fHeightSquared)
+        if (kAlongX.Dot(kAlongX) < m_fHalfSqScaledWidth && kAlongY.Dot(kAlongY) < m_fHalfSqScaledHeight)
         {
             *collisionTime = time;
-            m_fSpawnRate = time;
-            reinterpret_cast<PlaneVector&>(m_kCollisionPosition) = particle;
+            m_fCollisionTime = time;
+            reinterpret_cast<PlaneVector&>(m_kCollisionPoint) = particle;
             return this;
         }
     }
@@ -506,7 +524,7 @@ NiPSysCollider* PlanarColliderFunctions::TestCollision(float time, float* collis
                 DAT_012026c0 = fTolInit;
             }
             float adjustedDistance;
-            adjustedDistance = m_kHalfSpacePlane.Distance(hit);
+            adjustedDistance = m_kPlane.Distance(hit);
             if (adjustedDistance * distance < DAT_01012060)
             {
                 double absX = absf(hit.x);
@@ -526,18 +544,18 @@ NiPSysCollider* PlanarColliderFunctions::TestCollision(float time, float* collis
                     hit += (maxCoord * DAT_012026c0) * normal;
                 }
             }
-            PlaneVector relative = hit - reinterpret_cast<const PlaneVector&>(m_kPathOffset);
+            PlaneVector relative = hit - reinterpret_cast<const PlaneVector&>(m_kPosition);
             PlaneVector xAxis, yAxis;
-            reinterpret_cast<RotationHelper*>(layoutPadding74)->FUN_004b4500(&xAxis, &m_kFirstVector);
-            reinterpret_cast<RotationHelper*>(layoutPadding74)->FUN_004b4500(&yAxis, &m_kSecondPlaneVector);
+            reinterpret_cast<RotationHelper*>(layoutPadding74)->FUN_004b4500(&xAxis, &m_kXAxis);
+            reinterpret_cast<RotationHelper*>(layoutPadding74)->FUN_004b4500(&yAxis, &m_kYAxis);
             PlaneVector kAlongX = xAxis * (relative * xAxis);
             PlaneVector kAlongY = yAxis * (yAxis * relative);
-            if (SpecialLength(kAlongX) < m_fWidthSquared && SpecialLength(kAlongY) < m_fHeightSquared)
+            if (SpecialLength(kAlongX) < m_fHalfSqScaledWidth && SpecialLength(kAlongY) < m_fHalfSqScaledHeight)
             {
                 *collisionTime = fraction + time;
-                reinterpret_cast<PlaneVector&>(m_kCollisionPosition) = hit;
+                reinterpret_cast<PlaneVector&>(m_kCollisionPoint) = hit;
                 bCollided = true;
-                m_fSpawnRate = fraction + time;
+                m_fCollisionTime = fraction + time;
             }
         }
     }
@@ -560,6 +578,8 @@ typedef void (__thiscall* InitializeColliderFunction)(NiPSysCollider*, float, in
 
 // Calls the base initializer, stores the collider object and axis vectors, initializes plane and matrix data, and resets two transforms.
 // @fnv 0x00c29900
+// pdb: NiPSysPlanarCollider::NiPSysPlanarCollider | NiPSysPlanarCollider.obj | retail, call graph, low
+// pdb params: fBounce, bSpawnOnCollide, bDieOnCollide, pkSpawnModifier, pkColliderObj, fWidth, fHeight, kXAxis, kYAxis
 void* __fastcall InitializePlanarCollider(void* this_ptr, int, float fBounce, int bSpawnOnCollide, int bDieOnCollide,
                               void* pkSpawnModifier, void* pkColliderObj, float m_fGlyphWidthInPixels, float m_fGlyphExtent, NiPoint3 kXAxis,
                               NiPoint3 kYAxis)

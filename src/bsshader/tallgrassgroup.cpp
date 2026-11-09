@@ -11,7 +11,7 @@ void* __cdecl fnv_zlib_memset(void* dst, void* src, unsigned int size);
 
 struct FUN_00bd8750_cls
 {
-    void UpdateBounds();
+    void TallGrassGroup_UpdateGroupBound();
 };
 
 struct FUN_00bd8a70_cls
@@ -30,6 +30,8 @@ struct FUN_00bd8a70_cls
 // Clears the two buffers sized by m_10, sets each entry's float at offset 8 to -10.0, subtracts m_12 from DAT_011f9ef8, zeroes m_12, then calls UpdateBounds.
 // @fnv 0x00bd8a70
 // src: COMMUNITY 0x00bd8a70
+// pdb: TallGrassGroup::Clear | TallGrassGroup.obj | retail, upstream name already matches, high
+// pdb locals: i
 void FUN_00bd8a70_cls::TallGrassGroup_Clear()
 {
     fnv_zlib_memset(m_18, 0, (unsigned int)m_10 * 4);
@@ -40,7 +42,7 @@ void FUN_00bd8a70_cls::TallGrassGroup_Clear()
 
     DAT_011f9ef8 -= m_12;
     m_12 = 0;
-    ((FUN_00bd8750_cls*)this)->UpdateBounds();
+    ((FUN_00bd8750_cls*)this)->TallGrassGroup_UpdateGroupBound();
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
@@ -80,7 +82,7 @@ template <class T> inline T* NiPointer<T>::operator->() const
 
 struct MM
 {
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 extern MM _g_memoryManager;
 
@@ -100,6 +102,7 @@ class FUN_00bd8f90
 };
 
 // @fnv 0x00bd8f90
+// pdb: TallGrassGroup::~TallGrassGroup | TallGrassGroup.obj | retail, call graph, high
 FUN_00bd8f90::~FUN_00bd8f90()
 {
     static_cast<NiNode*>(m_spNode.operator->())->RemoveObject(m_pReferencedObject);
@@ -648,18 +651,21 @@ struct FUN_00bd8ae0
 
 // Initializes the object from a ModelSource, allocating index arrays, building a GridBuffer, and attaching geometry and node sub-objects.
 // @fnv 0x00bd8ae0
-FUN_00bd8ae0::FUN_00bd8ae0(ModelSource* source, int mode, int variant, unsigned char auFlag)
+// pdb: TallGrassGroup::TallGrassGroup | TallGrassGroup.obj | retail, object-file gap fill, high
+// pdb params: apCachedGeometry, aiCellX, aiCellY, abLowDetail
+// pdb locals: pbaabb, pnewtrishape, pbound, pgrassprop, pnewtristrips, pstripsdata, pshapedata
+FUN_00bd8ae0::FUN_00bd8ae0(ModelSource* apCachedGeometry, int aiCellX, int aiCellY, unsigned char abLowDetail)
 {
 
-    tag44 = auFlag;
+    tag44 = abLowDetail;
 
-    strandCount = source->strandCount;
+    strandCount = apCachedGeometry->strandCount;
 
-    ResetShared(m08.m_pObject, source);
+    ResetShared(m08.m_pObject, apCachedGeometry);
 
-    tag3c = mode;
+    tag3c = aiCellX;
 
-    tag40 = variant;
+    tag40 = aiCellY;
 
     vertexIndices = new (DAT_011f6238) unsigned int[strandCount];
 
@@ -675,9 +681,9 @@ FUN_00bd8ae0::FUN_00bd8ae0(ModelSource* source, int mode, int variant, unsigned 
         m00.m_pObject = 0;
     }
 
-    RefObject* sourceBase = (RefObject*)source->unk08;
+    RefObject* sourceBase = (RefObject*)apCachedGeometry->unk08;
 
-    if (source->useStyleOne == 1)
+    if (apCachedGeometry->useStyleOne == 1)
     {
         ResetShared(m00.m_pObject, (C1AClass*)new StyleOne(sourceBase));
     }
@@ -688,21 +694,21 @@ FUN_00bd8ae0::FUN_00bd8ae0(ModelSource* source, int mode, int variant, unsigned 
 
     RefObject* property;
     if (DAT_011f91c0 >= 2 && DAT_011f941e)
-        property = (RefObject*)source->unk18;
+        property = (RefObject*)apCachedGeometry->unk18;
     else
-        property = (RefObject*)source->unk1c;
+        property = (RefObject*)apCachedGeometry->unk1c;
     if (property)
         m00->Attach(property);
-    if (source->unk20)
-        m00->Attach((RefObject*)source->unk20);
+    if (apCachedGeometry->unk20)
+        m00->Attach((RefObject*)apCachedGeometry->unk20);
 
     OutputData* geometry = new OutputData;
 
-    ResetSharedRef(geometry->m84, source->material);
+    ResetSharedRef(geometry->m84, apCachedGeometry->material);
 
     geometry->parent = this;
 
-    if (auFlag != 0)
+    if (abLowDetail != 0)
     {
 
         if (!(*(unsigned char*)&geometry->m20 & 4))
@@ -719,7 +725,7 @@ FUN_00bd8ae0::FUN_00bd8ae0(ModelSource* source, int mode, int variant, unsigned 
         geometry->m20 &= ~4;
     }
 
-    if (source->useTextureFlag)
+    if (apCachedGeometry->useTextureFlag)
     {
 
         if (!(*(unsigned int*)&geometry->m24 & 0x2000))
@@ -742,13 +748,13 @@ FUN_00bd8ae0::FUN_00bd8ae0(ModelSource* source, int mode, int variant, unsigned 
 
     ResetShared(m0c.m_pObject, geometry);
 
-    int total = source->vertexCount * *(int*)&source->strandCount;
+    int total = apCachedGeometry->vertexCount * *(int*)&apCachedGeometry->strandCount;
 
     GridBuffer* buffer = new GridBuffer(total, 1);
 
     buffer->SetSize_Thunk(1);
 
-    buffer->NiAdditionalGeometryData_SetDataBlock(0, source->vertices, total * 4, 0);
+    buffer->NiAdditionalGeometryData_SetDataBlock(0, apCachedGeometry->vertices, total * 4, 0);
 
     buffer->NiAdditionalGeometryData_SetDataStream(0, 0, 0, 1, total, 4, 4);
 

@@ -17,6 +17,7 @@ CombatProcedure::COMBAT_PROCEDURES CombatProcedureUseCombatItem::GetProcedureTyp
 extern void* DAT_0109214c;
 
 // @fnv 0x009daa90
+// pdb: CombatProcedureUseCombatItem::~CombatProcedureUseCombatItem | CombatProcedureUseCombatItem.obj | debug, object-file gap fill, medium
 void CombatProcedureUseCombatItem::SetVtableAndInit()
 {
     *reinterpret_cast<void**>(this) = &DAT_0109214c;
@@ -25,6 +26,7 @@ void CombatProcedureUseCombatItem::SetVtableAndInit()
 
 // Calls SetVtableAndInit, deletes this when flags has bit 1 set, and returns this.
 // @fnv 0x009daa60
+// pdb: CombatProcedureUseCombatItem::`scalar deleting destructor' | CombatProcedureUseCombatItem.obj | debug, vtable slot, medium
 void* CombatProcedureUseCombatItem::DestroyIfFlagged(unsigned int flags)
 {
     SetVtableAndInit();
@@ -35,20 +37,24 @@ void* CombatProcedureUseCombatItem::DestroyIfFlagged(unsigned int flags)
 
 // Calls the base constructor, installs the vtable, stores apItem in pItem and clears the flag.
 // @fnv 0x009daa10
+// pdb: CombatProcedureUseCombatItem::CombatProcedureUseCombatItem | CombatProcedureUseCombatItem.obj | debug, upstream name already matches, high
+// pdb params: apItem
 CombatProcedureUseCombatItem::CombatProcedureUseCombatItem(TESBoundObject* apItem)
 {
     pItem = apItem;
-    m_bItemFlag = 0;
+    bAnimating = 0;
 }
 
 TESForm* __cdecl _ref_004839c0(unsigned int aiID);
 // @fnv 0x009dac80
 // src: XBOX_PDB 0x009dac80
+// pdb: CombatProcedureUseCombatItem::LoadGame | CombatProcedureUseCombatItem.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void CombatProcedureUseCombatItem::LoadGame_009dac80(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     CombatProcedure::LoadGame(apLoadGameBuffer);
     pItem = dynamic_cast<TESBoundObject*>(_ref_004839c0(apLoadGameBuffer->ReadFormIdentifier()));
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_bItemFlag), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bAnimating), 1u);
 }
 
 typedef void(__cdecl* FnPrint4)(void*, unsigned int, unsigned int, const char*);
@@ -68,15 +74,17 @@ struct CombatItemDebugOutput
 
 // If the flag is set, prints "ANIMATING"; if pItem is set, prints the item's name (or a fallback) and its id via the object's print method.
 // @fnv 0x009dabd0
-void CombatProcedureUseCombatItem::PrintDebugInfo(CombatItemDebugOutput* pPrinter, unsigned int a2, unsigned int a3)
+// pdb: CombatProcedureUseCombatItem::DisplayDebugText | CombatProcedureUseCombatItem.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aeLocation, aeJustify
+void CombatProcedureUseCombatItem::PrintDebugInfo(CombatItemDebugOutput* apDebugText, unsigned int aeLocation, unsigned int aeJustify)
 {
-    if (this->m_bItemFlag)
+    if (this->bAnimating)
     {
-        pPrinter->v05(a2, a3, "ANIMATING");
+        apDebugText->v05(aeLocation, aeJustify, "ANIMATING");
     }
     if (this->pItem != 0)
     {
-        pPrinter->v05(a2, a3, "Item: '%s' (%08X)",
+        apDebugText->v05(aeLocation, aeJustify, "Item: '%s' (%08X)",
                       (this->pItem->GetFormEditorIDLength() != 0) ? this->pItem->GetName() : TESFullName_GetFullName(this->pItem),
                       this->pItem->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
@@ -88,7 +96,7 @@ struct UCIWeapon : TESBoundObject
 struct UCICombatProcess
 {
     int FUN_0045cd60();
-    void FindSpecialIdletoPlay(struct UCIActor* apActor, TESBoundObject* apItem, int aiUnk);
+    void FindSpecialIdletoPlay(struct UCIActor* apActor, TESBoundObject* apObject, int apRef);
 };
 struct UCIAmmo
 {
@@ -220,11 +228,11 @@ struct UCIActor
     virtual void v1E0();
     virtual UCIAmmo* GetAmmo();
     UCICombatProcess* FUN_008d8520();
-    void EquipItemWithCaster(UCIWeapon* apWeapon, int aiUnk, int aiFlag);
+    void EquipItemWithCaster(UCIWeapon* apPotion, int pextra, int abNow);
 };
 struct UCICombatState
 {
-    void CombatState_UsedCombatItem(TESBoundObject* apItem);
+    void CombatState_UsedCombatItem(TESBoundObject* apCombatItem);
     void SetAttacker(int aiFlag);
 };
 struct UCIController
@@ -235,6 +243,8 @@ void __cdecl FNV_Warning(const char* apFormat, ...);
 
 // Checks the actor's combat process and ammo, then applies the combat item to the actor and combat state based on its form type.
 // @fnv 0x009daab0
+// pdb: CombatProcedureUseCombatItem::Update | CombatProcedureUseCombatItem.obj | retail, string-set bridge, high
+// pdb locals: pcombatState, pattacker, panim, phighProcess, ppotion
 void CombatProcedureUseCombatItem::UpdateCombatItemUse()
 {
     UCIActor* pActor2;
@@ -242,17 +252,17 @@ void CombatProcedureUseCombatItem::UpdateCombatItemUse()
     UCIAmmo* pAmmo;
 
     pActor2 = CombatProcedure_GetAttacker();
-    pState2 = reinterpret_cast<UCIController*>(m_pCombatController)->CombatController_GetCombatState();
+    pState2 = reinterpret_cast<UCIController*>(pCombatController)->CombatController_GetCombatState();
     if (!pActor2->FUN_008d8520()->FUN_0045cd60())
     {
         pAmmo = pActor2->GetAmmo();
         if (pAmmo && (!pAmmo->Animation_SpecialIdleDonePlaying() || pAmmo->HasIdleForm(0)))
             return;
-        if (!m_bItemFlag)
+        if (!bAnimating)
         {
             UCICombatProcess* pProcess = pActor2->FUN_008d8520();
             pProcess->FindSpecialIdletoPlay(pActor2, pItem, 0);
-            m_bItemFlag = true;
+            bAnimating = true;
             return;
         }
     }

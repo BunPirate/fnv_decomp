@@ -16,7 +16,7 @@ public:
     TESTopicInfoData();
     ~TESTopicInfoData();
     BSSimpleList<TESTopic*>* GetLinkFromList();
-    void InitItem(TESForm* owner);
+    void TESConversationData_InitItem(TESForm* apOwner);
     void Copy(TESTopicInfo* info, TESTopicInfoData* data);
     BSSimpleList<TESTopic*>* GetLinkToList();
     BSSimpleList<TESTopicInfo*>* GetFollowUpInfoList();

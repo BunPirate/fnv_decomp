@@ -45,6 +45,7 @@ struct __declspec(novtable) FUN_00dfdb90 : S_00dfdb90_Base
 };
 // Destructor for the container: implicitly destroys the two int arrays, which deallocate their buffers through the heap allocator.
 // @fnv 0x00dfdb90
+// pdb: hkxSparselyAnimatedInt::~hkxSparselyAnimatedInt | hkxSparselyAnimatedEnumClass.obj | retail, call graph (shared callers), high
 FUN_00dfdb90::~FUN_00dfdb90() throw()
 {}
 
@@ -69,6 +70,7 @@ struct Owner
 extern hkMemoryRouter* hkMemoryRouter_getInstance();
 // Calls FUN_00dfdb90 on this, and if flags has bit 0 set, frees this through the holder's heap using unk04; returns this.
 // @fnv 0x00dfdc10
+// pdb: hkxSparselyAnimatedInt::`scalar deleting destructor' | hkxSparselyAnimatedEnumClass.obj | retail, vtable slot, high
 Owner* Owner::DestroyOwner(unsigned int flags)
 {
     ((Helper*)this)->FUN_00dfdb90();
@@ -137,6 +139,7 @@ struct __declspec(novtable) FUN_00dfdc40 : S_00dfdc40_Base
 };
 // Destructor of FUN_00dfdc40; the member array's destructor runs implicitly after this empty body.
 // @fnv 0x00dfdc40
+// pdb: hkxEnum::~hkxEnum | hkxSparselyAnimatedEnumClass.obj | retail, object-file gap fill, high
 FUN_00dfdc40::~FUN_00dfdc40() throw()
 {}
 }  // namespace fnv_00dfdc40
@@ -167,6 +170,7 @@ struct Owner
 extern hkMemoryRouter* hkMemoryRouter_getInstance();
 // Releases the reference at unk20, calls FUN_00dfdb90, and if flags bit 0 is set frees this through the holder's heap using unk04.
 // @fnv 0x00dfdcb0
+// pdb: hkxSparselyAnimatedEnum::`scalar deleting destructor' | hkxSparselyAnimatedEnumClass.obj | retail, vtable slot, high
 Owner* Owner::Destroy(unsigned int flags)
 {
     if (unk20)
@@ -200,6 +204,7 @@ struct FUN_00dfdcf0_cls
 
 // Calls FUN_00dfdc40, and if acFlags has bit 0 set, frees this via the hkMemoryAllocator from FUN_00c85750, then returns this.
 // @fnv 0x00dfdcf0
+// pdb: hkxEnum::`scalar deleting destructor' | hkxSparselyAnimatedEnumClass.obj | retail, vtable slot, high
 FUN_00dfdcf0_cls* FUN_00dfdcf0_cls::FUN_00dfdcf0(unsigned char acFlags)
 {
     FUN_00dfdc40();

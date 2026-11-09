@@ -168,7 +168,7 @@ NamedA8F9* NamedA8F9::FUN_00a8f9b0(unsigned int uiFlags)
 
 struct A8F910MemoryManager
 {
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 extern A8F910MemoryManager g_A8F910MemoryManager;
 
@@ -219,6 +219,8 @@ extern "C" CRITICAL_SECTION DAT_011f600c;
 // Locks DAT_011f600c, nulls every element of DAT_011ac040, resets its size to zero, and unlocks.
 // @fnv 0x00a9bb60
 // src: GAMEBRYO_LIB 0x00a9bb60
+// pdb: NiMetricsLayer::_SDMShutdown | NiMetricsLayer.obj | retail, upstream name already matches, high
+// pdb locals: i
 void __cdecl NiMetricsLayer__SDMShutdown()
 {
     EnterCriticalSection(&DAT_011f600c);

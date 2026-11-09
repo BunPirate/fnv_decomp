@@ -13,16 +13,16 @@
 // @fnv 0x00519b00
 int PackageTargetRecord::GetTargetKind()
 {
-    return (PACK_TARG_TYPE)m_uiTargetType;
+    return (PACK_TARG_TYPE)eTargType;
 }
 
 // @fnv 0x006800b0
 void PackageTargetRecord::SetTargetKind(PACK_TARG_TYPE aeTargetType)
 {
-    if (m_uiTargetType != aeTargetType)
+    if (eTargType != aeTargetType)
     {
-        m_uiTargetType = (unsigned char)aeTargetType;
-        switch (m_uiTargetType)
+        eTargType = (unsigned char)aeTargetType;
+        switch (eTargType)
         {
         case PACK_TARG_TYPE_PTT_REFERENCE:
             m_pWorldReferenceInfo = 0;
@@ -39,6 +39,7 @@ void PackageTargetRecord::SetTargetKind(PACK_TARG_TYPE aeTargetType)
 
 // Returns the target reference if the target type is PACK_TARG_TYPE_PTT_REFERENCE, otherwise returns null.
 // @fnv 0x00680020
+// pdb: PackageTarget::GetTargReference | PackageTarget.obj | debug, call graph (shared callers), high
 TESObjectREFR* PackageTargetRecord::GetReferenceTarget()
 {
     if (GetTargetKind() == PACK_TARG_TYPE_PTT_REFERENCE)
@@ -49,14 +50,17 @@ TESObjectREFR* PackageTargetRecord::GetReferenceTarget()
 
 // If the package target type is PACK_TARG_TYPE_PTT_REFERENCE, stores the given reference as the target.
 // @fnv 0x00680110
-void PackageTargetRecord::SetTargetObjectReference(TESObjectREFR* reference)
+// pdb: PackageTarget::SetTargReference | PackageTarget.obj | debug, call graph (shared callers), high
+// pdb params: apRef
+void PackageTargetRecord::SetTargetObjectReference(TESObjectREFR* apRef)
 {
     if (GetTargetKind() == PACK_TARG_TYPE_PTT_REFERENCE)
-        m_pWorldReferenceInfo = reference;
+        m_pWorldReferenceInfo = apRef;
 }
 
 // Returns pObject when the target type is PACK_TARG_TYPE_PTT_OBJECT, otherwise returns null.
 // @fnv 0x00680050
+// pdb: PackageTarget::GetTargObject | PackageTarget.obj | debug, call graph, high
 TESForm* PackageTargetRecord::GetTargetForm()
 {
     if (GetTargetKind() == PACK_TARG_TYPE_PTT_OBJECT)
@@ -66,6 +70,7 @@ TESForm* PackageTargetRecord::GetTargetForm()
 }
 
 // @fnv 0x00680080
+// pdb: PackageTarget::GetTargObjectType | PackageTarget.obj | debug, call graph, high
 int PackageTargetRecord::GetTargetObjectType()
 {
     if (GetTargetKind() == PACK_TARG_TYPE_PTT_TYPE)
@@ -76,6 +81,8 @@ int PackageTargetRecord::GetTargetObjectType()
 
 // Copies location data from source into this object when copy is set or source's location type is valid, dispatching on the location type.
 // @fnv 0x0067f4d0
+// pdb: PackageLocation::Copy | PackageLocation.obj | debug, call graph, medium
+// pdb params: apCopy, abNoneOK
 void LocationDescriptor::Copy(LocationDescriptor* source, bool copy)
 {
     if (source != 0)
@@ -121,24 +128,27 @@ char* Script::GetData()
 
 // Resolves the stored form ID against the owner's file and looks up the package target reference or object, warning if it is missing.
 // @fnv 0x006803b0
-void PackageTargetRecord::InitItem(TESForm* owner)
+// pdb: PackageTarget::InitItem | PackageTarget.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: tempint
+void PackageTargetRecord::InitItem(TESForm* apOwner)
 {
     unsigned int formID = (unsigned int)pTargetForm;
-    TESForm::RemapFormIDForFile(formID, owner->GetFile(-1));
-    switch (m_uiTargetType)
+    TESForm::RemapFormIDForFile(formID, apOwner->GetFile(-1));
+    switch (eTargType)
     {
     case 0:
         m_pWorldReferenceInfo = dynamic_cast<TESObjectREFR*>(GetFormByID(formID));
         if (!m_pWorldReferenceInfo)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (((BGSCameraPath*)owner)->HasNameForWarning())
+                if (((BGSCameraPath*)apOwner)->HasNameForWarning())
                     Warning("MASTERFILE: Unable to find Package Target Reference (%08X) on owner object \"%s\".",
-                            formID, owner->GetName());
+                            formID, apOwner->GetName());
                 else
                     Warning("MASTERFILE: Unable to find Package Target Reference (%08X) on owner object (%08X).",
-                            formID, owner->GetFormID());
+                            formID, apOwner->GetFormID());
             }
             else
                 Warning("MASTERFILE: Unable to find Package Target Reference (%08X) on unknown owner.", formID);
@@ -148,14 +158,14 @@ void PackageTargetRecord::InitItem(TESForm* owner)
         pObject = GetFormByID(formID);
         if (!pObject)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (((BGSCameraPath*)owner)->HasNameForWarning())
+                if (((BGSCameraPath*)apOwner)->HasNameForWarning())
                     Warning("MASTERFILE: Unable to find Package Target Object (%08X) on owner object \"%s\".", formID,
-                            owner->GetName());
+                            apOwner->GetName());
                 else
                     Warning("MASTERFILE: Unable to find Package Target Object (%08X) on owner object (%08X).", formID,
-                            owner->GetFormID());
+                            apOwner->GetFormID());
             }
             else
                 Warning("MASTERFILE: Unable to find Package Target Object (%08X) on unknown owner.", formID);
@@ -168,10 +178,10 @@ void PackageTargetRecord::InitItem(TESForm* owner)
 // @fnv 0x0067ff70
 PackageTargetRecord::PackageTargetRecord()
 {
-    m_uiTargetType = 2;
+    eTargType = 2;
     pTargetForm = 0;
     iValue = 0;
-    m_fTargetValue = 0.0f;
+    fAcquireRadius = 0.0f;
 }
 
 // The shared Copy declaration returns void; this entry returns the target pointer.
@@ -182,12 +192,14 @@ struct PackageTargetCopySource
 };
 
 // @fnv 0x0067ffa0
+// pdb: PackageTarget::PackageTarget | PackageTarget.obj | debug, object-file run extension, low
+// pdb params: apPTFile
 PackageTargetRecord* __fastcall CopyPackageTargetRecord(PackageTargetRecord* target, PackageTargetCopySource source)
 {
-    target->SetTargetKind(source.record->m_uiTargetType);
+    target->SetTargetKind(source.record->eTargType);
     target->SetTargValue(source.record->iValue);
-    target->SetTargAcquireRadius(source.record->m_fTargetValue);
-    switch (target->m_uiTargetType)
+    target->SetTargAcquireRadius(source.record->fAcquireRadius);
+    switch (target->eTargType)
     {
     case 0:
     case 1:
@@ -202,6 +214,8 @@ PackageTargetRecord* __fastcall CopyPackageTargetRecord(PackageTargetRecord* tar
 
 // If the package target type is PTT_OBJECT, stores apObj in pObject.
 // @fnv 0x00680140
+// pdb: PackageTarget::SetTargObject | PackageTarget.obj | debug, call graph, high
+// pdb params: apObj
 void PackageTargetRecord::SetTargObject(TESForm* apObj)
 {
     if (GetTargetKind() == PACK_TARG_TYPE_PTT_OBJECT)
@@ -210,6 +224,8 @@ void PackageTargetRecord::SetTargObject(TESForm* apObj)
 
 // Returns true if apCompare is null or any of the compared values differ; returns false when all compared values match.
 // @fnv 0x00680220
+// pdb: PackageTarget::Compare | PackageTarget.obj | debug, call graph (shared callers), high
+// pdb params: apCompare
 bool PackageTargetRecord::Compare(PackageTargetRecord* apCompare)
 {
     if (apCompare == 0)
@@ -245,15 +261,18 @@ extern "C" bool __cdecl TESForm_QEndianSwapOnSave();
 extern "C" void __cdecl AppendChunk(int id, FormValueEntry* data, unsigned int size);
 
 // @fnv 0x006802f0
-// src: XBOX_PDB 0x006802f0
-void PackageTargetRecord::PackageTarget_Save(int chunk)
+// src: XBOX_RETAIL_PDB 0x006802f0
+// pdb: PackageTarget::Save | PackageTarget.obj | retail, upstream name already matches, high
+// pdb params: aeChunk
+// pdb locals: ptfile
+void PackageTargetRecord::Save(int aeChunk)
 {
     FormValueEntry record;
     memset(&record, 0, 16);
     record.iValue = this->iValue;
-    record.m_fTargetValue = this->m_fTargetValue;
-    record.m_uiTargetType = this->m_uiTargetType;
-    switch (this->m_uiTargetType)
+    record.m_fTargetValue = this->fAcquireRadius;
+    record.m_uiTargetType = this->eTargType;
+    switch (this->eTargType)
     {
     case 2:
         record.iFormID = this->GetTargetObjectType();
@@ -266,7 +285,7 @@ void PackageTargetRecord::PackageTarget_Save(int chunk)
     }
     if (TESForm_QEndianSwapOnSave())
         ((ChunkPayload16*)&record)->OBJ_WEAP_VATS_SPECIAL_Endian();
-    AppendChunk(chunk, &record, 16);
+    AppendChunk(aeChunk, &record, 16);
     if (TESForm_QEndianSwapOnSave())
         ((ChunkPayload16*)&record)->OBJ_WEAP_VATS_SPECIAL_Endian();
 }
@@ -278,7 +297,7 @@ unsigned short PackageTargetRecord::GetSaveSize()
     usSize += 1;
     usSize += 4;
     usSize += 4;
-    switch (m_uiTargetType)
+    switch (eTargType)
     {
     case 3:
         break;
@@ -296,47 +315,53 @@ unsigned short PackageTargetRecord::GetSaveSize()
 
 // Writes the target type, value and radius, then the type-specific target.
 // @fnv 0x00680720
-void PackageTargetRecord::SaveGame(BGSSaveFormBuffer* pkBuffer)
+// pdb: PackageTarget::SaveGame | PackageTarget.obj | retail, call graph (shared callers), high
+// pdb locals: iformID
+void PackageTargetRecord::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    pkBuffer->SaveData(this, 1, 0);
-    pkBuffer->SaveData(&iValue, 4, 0);
-    pkBuffer->SaveData(&m_fTargetValue, 4, 0);
-    switch (m_uiTargetType)
+    apSaveGameBuffer->SaveData(this, 1, 0);
+    apSaveGameBuffer->SaveData(&iValue, 4, 0);
+    apSaveGameBuffer->SaveData(&fAcquireRadius, 4, 0);
+    switch (eTargType)
     {
         break;
     case 0:
     case 1:
-        pkBuffer->SerializeFormData(pTargetForm, 0);
+        apSaveGameBuffer->SerializeFormData(pTargetForm, 0);
         break;
     case 2:
-        pkBuffer->SaveData(&eObjType, 4, 0);
+        apSaveGameBuffer->SaveData(&eObjType, 4, 0);
         break;
     }
 }
 
 // @fnv 0x006807b0
-void PackageTargetRecord::LoadGame(BGSLoadFormBuffer* pStream)
+// pdb: PackageTarget::LoadGame | PackageTarget.obj | retail, call graph (shared callers), high
+// pdb locals: iformID
+void PackageTargetRecord::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    pStream->LoadData(this, 1);
-    pStream->LoadData(&iValue, 4);
-    pStream->LoadData(&m_fTargetValue, 4);
-    switch (m_uiTargetType)
+    apLoadGameBuffer->LoadData(this, 1);
+    apLoadGameBuffer->LoadData(&iValue, 4);
+    apLoadGameBuffer->LoadData(&fAcquireRadius, 4);
+    switch (eTargType)
     {
         break;
     case 0:
     case 1:
-        pStream->FUN_008648e0(&pTargetForm);
+        apLoadGameBuffer->FUN_008648e0(&pTargetForm);
         break;
     case 2:
-        pStream->LoadData(&pTargetForm, 4);
+        apLoadGameBuffer->LoadData(&pTargetForm, 4);
         break;
     }
 }
 
 // @fnv 0x00680830
-void PackageTargetRecord::InitLoadGame(BGSLoadFormBuffer* unused)
+// pdb: PackageTarget::InitLoadGame | PackageTarget.obj | retail, object-file run extension, high
+// pdb locals: iformID
+void PackageTargetRecord::InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    switch (m_uiTargetType)
+    switch (eTargType)
     {
     case PACK_TARG_TYPE_PTT_REFERENCE:
     case PACK_TARG_TYPE_PTT_OBJECT:
@@ -350,13 +375,15 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 // Legacy save/load entry points have no declarations in the shared class.
 // __fastcall passes the explicit target in ECX, matching their original no-argument thiscall ABI.
 // @fnv 0x00680590
+// pdb: PackageTarget::SaveGame | PackageTarget.obj | debug, object-file run extension, low
+// pdb locals: iformID
 void __fastcall SavePackageTargetRecordOLD(PackageTargetRecord* target)
 {
-    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&target->m_uiTargetType, 1);
+    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&target->eTargType, 1);
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&target->iValue, 4);
-    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&target->m_fTargetValue, 4);
+    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&target->fAcquireRadius, 4);
 
-    switch (target->m_uiTargetType)
+    switch (target->eTargType)
     {
         break;
     case 0:
@@ -379,9 +406,11 @@ TESForm* TESForm_GetFormByNumericID(unsigned int formID);
 
 // For reference or object target types, replaces pTargetForm with the TESForm resolved from its formID via FUN_004839c0.
 // @fnv 0x006806e0
+// pdb: PackageTarget::InitLoadGame | PackageTarget.obj | retail, object-file run extension, low
+// pdb locals: iformID
 void __fastcall ResolvePackageTargetForm(PackageTargetRecord* target)
 {
-    switch (target->m_uiTargetType)
+    switch (target->eTargType)
     {
     case PACK_TARG_TYPE_PTT_REFERENCE:
     case PACK_TARG_TYPE_PTT_OBJECT:
@@ -392,17 +421,19 @@ void __fastcall ResolvePackageTargetForm(PackageTargetRecord* target)
 
 struct SaveLoadStub
 {
-    void TESSaveLoadGame_LoadGameDataOLD(void* data, int size);
+    void TESSaveLoadGame_LoadGameDataOLD(void* apData, int aiSize);
     void FUN_00857aa0(void* data, int size);
 };
 extern SaveLoadStub* g_saveLoad_011de45c;
 // @fnv 0x00680640
+// pdb: PackageTarget::LoadGame | PackageTarget.obj | debug, object-file run extension, low
+// pdb locals: iformID
 void __fastcall LoadPackageTargetRecordOLD(PackageTargetRecord* target)
 {
     g_saveLoad_011de45c->TESSaveLoadGame_LoadGameDataOLD(target, 1);
     g_saveLoad_011de45c->TESSaveLoadGame_LoadGameDataOLD(&target->iValue, 4);
-    g_saveLoad_011de45c->TESSaveLoadGame_LoadGameDataOLD(&target->m_fTargetValue, 4);
-    switch (target->m_uiTargetType)
+    g_saveLoad_011de45c->TESSaveLoadGame_LoadGameDataOLD(&target->fAcquireRadius, 4);
+    switch (target->eTargType)
     {
         break;
     case 0:

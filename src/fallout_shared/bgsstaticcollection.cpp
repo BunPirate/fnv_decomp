@@ -5,28 +5,31 @@
 
 // Reads the record header and iterates chunks, handling EDID, OBND, model and texture-swap subrecords until no chunk remains, then returns true.
 // @fnv 0x004fe390
-bool BGSStaticCollection::LoadForm(TESFile* file)
+// pdb: BGSStaticCollection::Load | BGSStaticCollection.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata
+bool BGSStaticCollection::LoadForm(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     CHUNK_ID chunk;
-    while ((chunk = static_cast<CHUNK_ID>(file->GetChunkID())) != CHUNK_ID_NO_CHUNK)
+    while ((chunk = static_cast<CHUNK_ID>(apFile->GetChunkID())) != CHUNK_ID_NO_CHUNK)
     {
         switch (chunk)
         {
         case CHUNK_ID_EDID_ID: {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 512);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case CHUNK_ID_OBND_ID:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case CHUNK_ID_MODL_ID:
         case CHUNK_ID_MODD_ID:
         case CHUNK_ID_MOSD_ID:
         case CHUNK_ID_MODT_ID:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case CHUNK_ID_MODS_ID: {
             struct TextureSwapChunk
@@ -34,15 +37,15 @@ bool BGSStaticCollection::LoadForm(TESFile* file)
                 unsigned int size;
                 void* data;
             } textureSwapChunk;
-            textureSwapChunk.size = file->GetChunkSize();
+            textureSwapChunk.size = apFile->GetChunkSize();
             textureSwapChunk.data = _alloca(textureSwapChunk.size);
-            file->GetChunkData(textureSwapChunk.data, textureSwapChunk.size);
-            ParseTextureSwapData(textureSwapChunk.data, textureSwapChunk.size,
-                                 reinterpret_cast<TESFileFormVersion*>(file)->GetFormVersion());
+            apFile->GetChunkData(textureSwapChunk.data, textureSwapChunk.size);
+            UnpackTextureSwapChunkData(textureSwapChunk.data, textureSwapChunk.size,
+                                 reinterpret_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -50,6 +53,7 @@ bool BGSStaticCollection::LoadForm(TESFile* file)
 
 // Returns early if the item is already initialized; otherwise calls TESModelTextureSwap::InitItem and marks the item initialized.
 // @fnv 0x004fe560
+// pdb: BGSStaticCollection::InitItem | BGSStaticCollection.obj | retail, upstream name already matches, high
 void BGSStaticCollection::InitItem()
 {
     if (IsFormInitialized())
@@ -79,6 +83,7 @@ struct FUN_004fe260 : B1_4fe, B2_4fe
 };
 // Constructs the object and sets its form type to 0x21 via SetFormType.
 // @fnv 0x004fe260
+// pdb: BGSStaticCollection::BGSStaticCollection | BGSStaticCollection.obj | retail, call graph, high
 FUN_004fe260::FUN_004fe260()
 {
     SetFormType(0x21);
@@ -105,6 +110,7 @@ struct FUN_004fe520_shell
 // Calls M on this, then ProcessAndFreeData on the object at offset 0x30 with three tags, then M on this again.
 // @fnv 0x004fe520
 // src: XBOX_PDB 0x004fe520
+// pdb: BGSStaticCollection::Save | BGSStaticCollection.obj | retail, upstream name already matches, high
 void __thiscall FUN_004fe520_shell::BGSStaticCollection_Save(void)
 {
     ((FUN_004855a0*)this)->M();
@@ -120,6 +126,7 @@ struct Dummy
 void __cdecl _Deallocate(void*);
 // Calls FUN_004fe310, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004fe2e0
+// pdb: BGSStaticCollection::`scalar deleting destructor' | BGSStaticCollection.obj | retail, vtable slot, high
 void* Dummy::FUN_004fe2e0(unsigned int flags)
 {
     FUN_004fe310();
@@ -139,6 +146,9 @@ struct FUN_004fe5a0_t
 // Casts apCopy to BGSStaticCollection and, if the cast succeeds, forwards it to FUN_004851b0.
 // @fnv 0x004fe5a0
 // src: XBOX_PDB 0x004fe5a0
+// pdb: BGSStaticCollection::Copy | BGSStaticCollection.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void FUN_004fe5a0_t::BGSStaticCollection_Copy(TESForm* apCopy)
 {
     BGSStaticCollection* pcopy = dynamic_cast<BGSStaticCollection*>(apCopy);
@@ -154,6 +164,7 @@ struct FUN_004fe310 : B1_4fe, B2_4fe
 };
 
 // @fnv 0x004fe310
+// pdb: BGSStaticCollection::~BGSStaticCollection | BGSStaticCollection.obj | debug, object-file run extension, low
 FUN_004fe310::~FUN_004fe310()
 {
     BGSStaticCollection_ClearData();
@@ -162,21 +173,24 @@ FUN_004fe310::~FUN_004fe310()
 class FormComponentComparison : public TESForm
 {
   public:
-    bool TESForm_CompareAllComponents(TESForm* other);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 
 class StaticCollectionComparison : public BGSStaticCollection
 {
   public:
-    bool BGSStaticCollection_Compare(TESForm* other);
+    bool BGSStaticCollection_Compare(TESForm* apCompare);
 };
 
 // Returns true if other is not a BGSStaticCollection or FUN_00485270 returns true for the collection.
 // @fnv 0x004fe5e0
 // src: XBOX_PDB 0x004fe5e0
-bool StaticCollectionComparison::BGSStaticCollection_Compare(TESForm* other)
+// pdb: BGSStaticCollection::Compare | BGSStaticCollection.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool StaticCollectionComparison::BGSStaticCollection_Compare(TESForm* apCompare)
 {
-    BGSStaticCollection* collection = dynamic_cast<BGSStaticCollection*>(other);
+    BGSStaticCollection* collection = dynamic_cast<BGSStaticCollection*>(apCompare);
     if (!collection)
         return true;
     if (static_cast<FormComponentComparison*>(static_cast<TESForm*>(this))->TESForm_CompareAllComponents(collection))

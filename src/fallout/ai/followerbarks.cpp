@@ -5,6 +5,8 @@
 #include "followerbarks_decls.h"
 #include "../../../include/TESTopic.h"
 // @fnv 0x008d5bc0
+// pdb: FollowerBarks::ProcessFollowerBarks | FollowerBarks.obj | debug, object-file gap fill, medium
+// pdb locals: bDeleteEntry, nCurrentTime, pHistory, pEntry
 void BarkPlaybackEntry::UpdateBarks()
 {
     BSSimpleList<BGSPerkEntry*>* now;
@@ -46,9 +48,11 @@ extern TESForm* __cdecl FUN_00483a00(const char*);
 // Returns the TESTopic form mapped to kind, or null when no form is returned.
 // @fnv 0x008d5910
 // src: XBOX_PDB 0x008d5910
-TESTopic* __cdecl FollowerBarks_GetBarkTopicByType(unsigned int kind)
+// pdb: FollowerBarks::GetBarkTopicByType | FollowerBarks.obj | retail, string-set bridge, high
+// pdb params: aeBarkType
+TESTopic* __cdecl FollowerBarks_GetBarkTopicByType(unsigned int aeBarkType)
 {
-    switch (kind)
+    switch (aeBarkType)
     {
     case 3:
         return 0;

@@ -25,6 +25,7 @@ struct CpuObject
 };
 // Calls FUN_00dfed30, then if bit 0 of flags is set, invokes the allocator's Invoke on this with size, and returns this.
 // @fnv 0x00dfedb0
+// pdb: hkpVehicleDefaultTransmission::`scalar deleting destructor' | hkpVehicleDefaultTransmissionClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dfedb0(unsigned int flags)
 {
     SetVtableAndProcessState_00dfed30();

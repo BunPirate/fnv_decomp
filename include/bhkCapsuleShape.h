@@ -11,6 +11,7 @@ class hkTransform;
 class hkContactPoint;
 class hkGeometry;
 
+// pdb: class bhkCapsuleShape, size 0x14, bases: bhkConvexShape, 0 members
 class bhkCapsuleShape : public bhkConvexShape
 {
 public:
@@ -34,7 +35,7 @@ public:
     RigidBodyShape& GetCinfo();
     NiPoint3 GetVertex(int which);
     const hkVector4& GethkVertex(int which);
-    bool GetClosestPoints(const hkSphere& sphere, const hkTransform& transform, hkContactPoint& point);
+    bool GetClosestPoints(const hkSphere& arSphere, const hkTransform& arTrans, hkContactPoint& arCPoint);
     void GetDisplayGeometry(hkGeometry& geometry);
     void CopyCinfo(RigidBodyShape& cinfo);
     void bhkCapsuleShape_Init(const hkVector4& a, const hkVector4& b, float radius);

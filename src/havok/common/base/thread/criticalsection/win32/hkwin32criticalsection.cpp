@@ -5,12 +5,14 @@
 struct FUN_00cf6da0_cls
 {
     CRITICAL_SECTION m_00;
-    FUN_00cf6da0_cls* ProcessAndReturnValue_00cf6da0(DWORD spinCount);
+    FUN_00cf6da0_cls* hkCriticalSection_ctor(DWORD spinCount);
 };
 
 // @fnv 0x00cf6da0
-// src: GUESS 0x00cf6da0 (confidence: low)
-FUN_00cf6da0_cls* FUN_00cf6da0_cls::ProcessAndReturnValue_00cf6da0(DWORD spinCount)
+// src: XBOX_RETAIL_PDB 0x00cf6da0
+// pdb: hkCriticalSection::hkCriticalSection | hkWin32CriticalSection.obj | retail, call graph, high
+// pdb params: spinCount
+FUN_00cf6da0_cls* FUN_00cf6da0_cls::hkCriticalSection_ctor(DWORD spinCount)
 {
     InitializeCriticalSectionAndSpinCount((LPCRITICAL_SECTION)this, spinCount);
     return this;

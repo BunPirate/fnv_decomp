@@ -4,6 +4,7 @@
 
 class SoundMessageRecord;
 
+// pdb: class BSGameSound, size 0x198, 36 members
 class BSGameSound
 {
 public:
@@ -127,6 +128,6 @@ public:
     bool HasSoundFlagTwo();
     bool LoadFromFilename(bool);
     bool CanStartPlayback();
-    bool HasMaster(const char*, bool);
+    bool SetFilename(const char*, bool);
     static unsigned int ComputeSoundNameHash(const char* pName);
 };

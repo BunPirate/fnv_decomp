@@ -64,6 +64,8 @@ struct Simplex
 };
 // @fnv 0x00da98f0
 // src: XBOX_PDB 0x00da98f0
+// pdb: hkpGsk::reduceDimensionExtended | hkpGsk.obj | retail, upstream name already matches, high
+// pdb locals: result, edgeB, edgeA
 void Simplex::hkpGsk_reduceDimensionExtended()
 {
     if (countB == 3)
@@ -220,7 +222,10 @@ struct Collision_workspace
 
 // @fnv 0x00dabca0
 // src: XBOX_PDB 0x00dabca0
-int hkpGsk_getClosestPoint(Collision_ctx* self, Collision_in* in, Collision_vector* out, Collision_vector* out2)
+// pdb: hkpGsk::getClosestPoint | hkpGsk.obj | retail, upstream name already matches, high
+// pdb params: input, gskCache, separatingNormalOut, pointOnBOut
+// pdb locals: gsk, separatingNormalInA, dist
+int hkpGsk_getClosestPoint(Collision_ctx* input, Collision_in* gskCache, Collision_vector* separatingNormalOut, Collision_vector* pointOnBOut)
 {
     Collision_vector normal;
     Collision_workspace scratch;
@@ -228,62 +233,62 @@ int hkpGsk_getClosestPoint(Collision_ctx* self, Collision_in* in, Collision_vect
     float d;
     float bb;
 
-    Collision_vcls* shapeA = self->m_08;
-    Collision_vcls* shapeB = self->m_0c;
+    Collision_vcls* shapeA = input->m_08;
+    Collision_vcls* shapeB = input->m_0c;
 
-    scratch.countA = in->m_08;
-    scratch.countB = in->m_09;
+    scratch.countA = gskCache->m_08;
+    scratch.countB = gskCache->m_09;
     scratch.unk10 = 0;
-    scratch.low = in->m_0a & 0xf;
-    scratch.high = in->m_0a >> 4;
+    scratch.low = gskCache->m_0a & 0xf;
+    scratch.high = gskCache->m_0a >> 4;
     scratch.changed = 0;
 
-    shapeA->v0f((void*)in, (int)scratch.countA, &scratch.vector20);
-    shapeB->v0f((void*)((char*)in + scratch.countA * 2), (int)scratch.countB, &scratch.vectore0);
+    shapeA->v0f((void*)gskCache, (int)scratch.countA, &scratch.vector20);
+    shapeB->v0f((void*)((char*)gskCache + scratch.countA * 2), (int)scratch.countB, &scratch.vectore0);
 
-    scratch.hkpGsk_getClosestFeature(self->m_08, self->m_0c, (void*)self->m_vptr, &normal);
+    scratch.hkpGsk_getClosestFeature(input->m_08, input->m_0c, (void*)input->m_vptr, &normal);
     if (scratch.changed != 0)
     {
-        ((ThisClass*)&scratch)->hkpGsk_exitAndExportCacheImpl((Dest*)in);
+        ((ThisClass*)&scratch)->hkpGsk_exitAndExportCacheImpl((Dest*)gskCache);
     }
 
-    Collision_mat* M = self->m_04;
+    Collision_mat* M = input->m_04;
     w = normal.component[3];
-    d = (w - self->m_08->m_10) - self->m_0c->m_10;
+    d = (w - input->m_08->m_10) - input->m_0c->m_10;
 
     __m128 v = _mm_mul_ps(_mm_shuffle_ps(normal.value, normal.value, 0x55), M->m_10);
     v = _mm_add_ps(v, _mm_mul_ps(_mm_shuffle_ps(normal.value, normal.value, 0), M->m_00));
     v = _mm_add_ps(v, _mm_mul_ps(_mm_shuffle_ps(normal.value, normal.value, 0xaa), M->m_20));
-    out->value = v;
-    out->component[3] = d;
+    separatingNormalOut->value = v;
+    separatingNormalOut->component[3] = d;
 
-    if (self->m_10 > d)
+    if (input->m_10 > d)
     {
         __m128 finalVector;
         if (scratch.countA == 1)
         {
-            bb = self->m_0c->m_10 - w;
+            bb = input->m_0c->m_10 - w;
             finalVector = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(bb), normal.value), scratch.vector20);
         }
         else if (scratch.countB == 1)
         {
-            bb = self->m_0c->m_10;
+            bb = input->m_0c->m_10;
             finalVector = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(bb), normal.value), scratch.vectora0);
         }
         else
         {
-            bb = self->m_0c->m_10 - w;
+            bb = input->m_0c->m_10 - w;
             finalVector = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(bb), normal.value), scratch.vector130);
         }
 
-        M = self->m_04;
+        M = input->m_04;
         __m128 s = finalVector;
         __m128 o = _mm_mul_ps(_mm_shuffle_ps(s, s, 0x55), M->m_10);
         o = _mm_add_ps(o, _mm_mul_ps(_mm_shuffle_ps(s, s, 0), M->m_00));
         __m128 z = _mm_mul_ps(_mm_shuffle_ps(s, s, 0xaa), M->m_20);
         z = _mm_add_ps(z, M->m_30);
         o = _mm_add_ps(o, z);
-        out2->value = o;
+        pointOnBOut->value = o;
 
         return 0;
     }

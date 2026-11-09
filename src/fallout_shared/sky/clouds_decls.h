@@ -33,15 +33,16 @@ class CloudsColorController : public NiTimeController
 #include "../../../include/SettingT_GameSettingCollection_.h"
 extern SettingT_GameSettingCollection_ DAT_011cca6c;
 struct NiRTTI;
-extern NiRTTI DAT_012005b8;
+extern NiRTTI SkyShaderProperty_ms_RTTI;
 SkyShaderProperty* NiObject_DynamicCast(const NiRTTI*, NiProperty*);
 void AddToFloatArray(unsigned short, float);
+// pdb: class Model, size 0x10, 4 members
 class Model
 {
   public:
     char* pFilename;
-    int BackgroundTask, m_iActualRefCount;
-    NiPointer<NiNode> m_spNode;
+    int iRefCount, iManualRefCount;
+    NiPointer<NiNode> spObject3D;
     Model(const char*, BSStream*, bool, bool);
     ~Model();
     NiNode* GetObject3D();

@@ -7,6 +7,7 @@
 
 extern SettingT_GameSettingCollection_ fActionPointsRestoreRate;
 
+// pdb: class ActionPoints, size 0x1, 0 members
 class ActionPoints
 {
   public:
@@ -14,6 +15,9 @@ class ActionPoints
 };
 
 // @fnv 0x0066dda0
+// pdb: ActionPoints::GetActionPoints | ActionPoints.obj | debug, upstream name already matches, high
+// pdb params: aeAction, abVATS, afWeaponZoomFOV, abSpecialAttack
+// pdb locals: fresult
 float ActionPoints::GetActionPoints()
 {
     return fActionPointsRestoreRate.Float()->f;
@@ -97,7 +101,9 @@ extern StartMenu* DAT_0119bb50[];
 
 // @fnv 0x0066ddc0
 // src: COMMUNITY 0x0066ddc0
-char const* ActionPoints_GetActionPointsString(int index)
+// pdb: ActionPoints::GetActionPointsString | ActionPoints.obj | debug, upstream name already matches, high
+// pdb params: aeAction
+char const* ActionPoints_GetActionPointsString(int aeAction)
 {
-    return reinterpret_cast<char const*>(DAT_0119bb50[index]->GetMenuTitle());
+    return reinterpret_cast<char const*>(DAT_0119bb50[aeAction]->GetMenuTitle());
 }

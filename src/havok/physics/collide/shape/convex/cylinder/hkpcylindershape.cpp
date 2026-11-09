@@ -18,11 +18,11 @@ int __cdecl hkpCylinderShape_ReturnConstant_0x12()
 
 // @fnv 0x00d571a0
 hkReal hkpCylinderShape::getCylinderRadius() const {
-    return m_fCylinderRadius;
+    return m_cylRadius;
 }
 
 extern char DAT_01268940[];
-void __cdecl hkReferencedObject_calcContentStatistics(void* item, const char* type);
+void __cdecl hkReferencedObject_calcContentStatistics(void* collector, const char* cls);
 // @fnv 0x00d571c0
 // src: XBOX_PDB 0x00d571c0
 void __cdecl hkpCylinderShape_calcContentStatistics(void* item, const char*)
@@ -71,6 +71,8 @@ struct S00d57b20_Obj {
 
 // @fnv 0x00d57b20
 // src: HAVOK_LIB 0x00d57b20
+// pdb: hkpCylinderShape::hkpCylinderShape | hkpCylinderShape.obj | retail, object-file run extension, low
+// pdb params: flag
 S00d57b20_Obj* __thiscall S00d57b20_Obj::hkpCylinderShape_hkpCylinderShape_00d57b20(int condition)
 {
     unk00 = &DAT_010305a8;
@@ -177,6 +179,9 @@ struct Cyl_d57220 {
 
 // Computes the direction between m_kVertexA and m_kVertexB, then derives two perpendicular vectors stored in m_kPerpendicular1 and m_kPerpendicular2.
 // @fnv 0x00d57220
+// pdb: assertRoundUpThreshold | hkpCylinderShape.obj | debug, object-file run extension, low
+// pdb params: intRoundUpThreshold
+// pdb locals: assertBuf, ostr
 void Cyl_d57220::InitPerpendiculars()
 {
     Vec_d57220v dir;
@@ -253,6 +258,8 @@ namespace c571 { const float DAT_01056528 = 1.1f; }
 using namespace c571;
 // @fnv 0x00d571d0
 // src: HAVOK_LIB 0x00d571d0
+// pdb: minValueRoundedUpTo1 | hkpCylinderShape.obj | debug, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 float __cdecl minValueRoundedUpTo1()
 {
     for (float fValue = 0.0f; fValue < DAT_01056528; fValue += 0.009999999776482582)

@@ -5,10 +5,12 @@
 
 struct Twin_009c0070 : public BSFile
 {
-    unsigned int GetFilePosition();
+    unsigned int BGSSaveLoadFile_GetFilePosition();
 };
 // @fnv 0x009c0070
-unsigned int Twin_009c0070::GetFilePosition()
+// src: XBOX_DEBUG_PDB 0x009c0070
+// pdb: BGSSaveLoadFile::GetFilePosition | BGSSaveLoadFile.obj | debug, upstream name already matches, high
+unsigned int Twin_009c0070::BGSSaveLoadFile_GetFilePosition()
 {
     return m_uiValueId;
 }

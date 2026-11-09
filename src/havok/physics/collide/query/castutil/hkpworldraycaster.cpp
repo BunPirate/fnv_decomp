@@ -86,17 +86,17 @@ __forceinline void hkVector4::SetTransformedPosition(const hkTransform& a, const
 
 inline const hkpShape* hkpCdBody::getShape() const
 {
-    return m_pCollisionShape;
+    return m_shape;
 }
 
 inline const hkTransform& hkpCdBody::getTransform() const
 {
-    return *static_cast<const hkTransform*>(m_pMotionState);
+    return *static_cast<const hkTransform*>(m_motion);
 }
 
 inline void* hkpTypedBroadPhaseHandle::getOwner() const
 {
-    return (void*)((char*)this + m_iOwnerOffset);
+    return (void*)((char*)this + m_ownerOffset);
 }
 
 struct WorldRayCastInput
@@ -114,39 +114,42 @@ struct ShapeRayCastQuery
     unsigned int m_uiFilterInfo;
 };
 
+// pdb: class hkpWorldRayCaster, size 0x50, bases: hkpBroadPhaseCastCollector, 5 members
 class hkpWorldRayCaster
 {
   public:
     void* m_vtbl;
-    const WorldRayCastInput* m_pRayCastInput;
-    const hkpRayCollidableFilter* m_iFilter;
-    hkpRayHitCollector* m_pCollectorBase;
-    int m_iCollectorStriding;
-    ShapeRayCastQuery m_kShapeRayInput;
+    const WorldRayCastInput* m_input;
+    const hkpRayCollidableFilter* m_filter;
+    hkpRayHitCollector* m_collectorBase;
+    int m_collectorStriding;
+    ShapeRayCastQuery m_shapeInput;
 
     float CastRay(const hkpTypedBroadPhaseHandle* broadPhaseHandle, int castIndex);
 };
 
 // @fnv 0x00cbf710
+// pdb: hkpWorldRayCaster::addBroadPhaseHandle | hkpWorldRayCaster.obj | retail, vtable slot, high
+// pdb params: broadPhaseHandle, castIndex
 float hkpWorldRayCaster::CastRay(const hkpTypedBroadPhaseHandle* broadPhaseHandle, int castIndex)
 {
     const hkpCollidable* col = (const hkpCollidable*)broadPhaseHandle->getOwner();
     const hkpCdBody* body = reinterpret_cast<const hkpCdBody*>(col);
     const hkpShape* shape = body->getShape();
 
-    hkpRayHitCollector* collector = (hkpRayHitCollector*)((char*)m_pCollectorBase + m_iCollectorStriding * castIndex);
+    hkpRayHitCollector* collector = (hkpRayHitCollector*)((char*)m_collectorBase + m_collectorStriding * castIndex);
 
     if (shape)
     {
-        const WorldRayCastInput& input = m_pRayCastInput[castIndex];
-        if (m_iFilter->IsCollisionEnabled(input, *col))
+        const WorldRayCastInput& input = m_input[castIndex];
+        if (m_filter->IsCollisionEnabled(input, *col))
         {
             const hkTransform& trans = body->getTransform();
-            m_kShapeRayInput.m_vFrom.SetTransformedPosition(trans, m_pRayCastInput->m_vFrom);
-            m_kShapeRayInput.m_vTo.SetTransformedPosition(trans, input.m_vTo);
-            m_kShapeRayInput.m_uiFilterInfo = input.m_uiFilterInfo;
-            shape->CastRayWithCollector(m_kShapeRayInput, *body, *collector);
+            m_shapeInput.m_vFrom.SetTransformedPosition(trans, m_input->m_vFrom);
+            m_shapeInput.m_vTo.SetTransformedPosition(trans, input.m_vTo);
+            m_shapeInput.m_uiFilterInfo = input.m_uiFilterInfo;
+            shape->CastRayWithCollector(m_shapeInput, *body, *collector);
         }
     }
-    return collector->m_fEarlyOutHitFraction;
+    return collector->m_earlyOutHitFraction;
 }

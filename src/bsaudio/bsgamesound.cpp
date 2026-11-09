@@ -252,11 +252,13 @@ unsigned int BSGameSound::ComputeSoundNameHash(const char* pName)
 }
 
 // @fnv 0x00ae9d50
+// pdb: BSGameSound::CalculateHashes | BSGameSound.obj | debug, call graph, medium
+// pdb params: abAllowDiskAccess
 bool BSGameSound::LoadFromFilename(bool resolve)
 {
     if (pFilename)
     {
-        return HasMaster(pFilename, resolve);
+        return SetFilename(pFilename, resolve);
     }
     else
     {
@@ -270,6 +272,8 @@ bool BSGameSound::CanStartPlayback()
 }
 
 // @fnv 0x00ae9de0
+// pdb: BSGameSound::Prepare | BSGameSound.obj | retail, upstream name already matches, high
+// pdb locals: pos, dur
 bool BSGameSound::Prepare()
 {
     if (iModifierFlags & 2)
@@ -284,57 +288,63 @@ bool BSGameSound::Prepare()
 }
 
 // @fnv 0x00ae97a0
-void BSGameSound::Copy(BSGameSound* source, bool)
+// pdb: BSGameSound::Copy | BSGameSound.obj | retail, upstream name already matches, high
+// pdb params: apToCopy, abPlayable
+void BSGameSound::Copy(BSGameSound* apToCopy, bool)
 {
-    iSoundHash = source->iSoundHash;
-    iDirectoryHash = source->iDirectoryHash;
-    HasMaster(source->pFilename, false);
+    iSoundHash = apToCopy->iSoundHash;
+    iDirectoryHash = apToCopy->iDirectoryHash;
+    SetFilename(apToCopy->pFilename, false);
     iSoundID = BSAudioManager::GetRandomGenerator().GetNextID();
-    iStateFlags = source->iStateFlags;
-    iModifierFlags = source->iModifierFlags;
-    iDurationInMS = source->iDurationInMS;
-    iStaticAttenuation = source->iStaticAttenuation;
-    iReverbAttenuation = source->iReverbAttenuation;
-    iSystemAttenuation = source->iSystemAttenuation;
-    iDistanceAttenuation = source->iDistanceAttenuation;
-    fCurrentVolume = source->fCurrentVolume;
-    fBeginTime = source->fBeginTime;
-    fEndTime = source->fEndTime;
-    iWeatherFlags = source->iWeatherFlags;
-    iSamplesPerSecond = source->iSamplesPerSecond;
-    iModSamplesPerSecond = source->iModSamplesPerSecond;
-    fMaxDist = source->fMaxDist;
-    iSoundSize = source->iSoundSize;
-    iLoopStart = source->iLoopStart;
-    iLoopEnd = source->iLoopEnd;
-    fnCompletionCallback = source->fnCompletionCallback;
-    fnPlayedCallback = source->fnPlayedCallback;
-    pSoundCompletionContext = source->pSoundCompletionContext;
-    pSoundPlayContext = source->pSoundPlayContext;
+    iStateFlags = apToCopy->iStateFlags;
+    iModifierFlags = apToCopy->iModifierFlags;
+    iDurationInMS = apToCopy->iDurationInMS;
+    iStaticAttenuation = apToCopy->iStaticAttenuation;
+    iReverbAttenuation = apToCopy->iReverbAttenuation;
+    iSystemAttenuation = apToCopy->iSystemAttenuation;
+    iDistanceAttenuation = apToCopy->iDistanceAttenuation;
+    fCurrentVolume = apToCopy->fCurrentVolume;
+    fBeginTime = apToCopy->fBeginTime;
+    fEndTime = apToCopy->fEndTime;
+    iWeatherFlags = apToCopy->iWeatherFlags;
+    iSamplesPerSecond = apToCopy->iSamplesPerSecond;
+    iModSamplesPerSecond = apToCopy->iModSamplesPerSecond;
+    fMaxDist = apToCopy->fMaxDist;
+    iSoundSize = apToCopy->iSoundSize;
+    iLoopStart = apToCopy->iLoopStart;
+    iLoopEnd = apToCopy->iLoopEnd;
+    fnCompletionCallback = apToCopy->fnCompletionCallback;
+    fnPlayedCallback = apToCopy->fnPlayedCallback;
+    pSoundCompletionContext = apToCopy->pSoundCompletionContext;
+    pSoundPlayContext = apToCopy->pSoundPlayContext;
 }
 
 // @fnv 0x00ae9460
-bool BSGameSound::HasMaster(const char* filename, bool resolve)
+// src: XBOX_RETAIL_PDB 0x00ae9460
+// pdb: BSGameSound::SetFilename | BSGameSound.obj | retail, call graph, high
+// pdb params: apFilename, abAllowDiskAccess
+// pdb locals: breturnValue, len, pfncallback, brandomName
+bool BSGameSound::SetFilename(const char* apFilename, bool abAllowDiskAccess)
 {
     bool bResult = true;
-    if (!filename)
+    if (!apFilename)
         return false;
-    if (pFilename != filename)
-        strcpy_s(pFilename, 260, filename);
+    if (pFilename != apFilename)
+        strcpy_s(pFilename, 260, apFilename);
     BSAudio::GetRandomGenerator()->vfn_18(pFilename);
     void(__cdecl * pfnCallback)(char*) = BSAudio::GetRandomGenerator()->GetCallback();
     unsigned int iLength = strlen(pFilename);
     bool bDirectory = pFilename[iLength - 1] == '\\' || pFilename[iLength - 1] == '/';
     if (bDirectory && !iDirectoryHash)
         iDirectoryHash = ComputeSoundNameHash(pFilename);
-    if (resolve && bDirectory && pfnCallback)
+    if (abAllowDiskAccess && bDirectory && pfnCallback)
     {
         pfnCallback(pFilename);
         BSAudio::GetRandomGenerator()->vfn_18(pFilename);
     }
-    else if (bDirectory && !resolve)
+    else if (bDirectory && !abAllowDiskAccess)
         bResult = false;
-    if (!bDirectory || resolve)
+    if (!bDirectory || abAllowDiskAccess)
         iSoundHash = ComputeSoundNameHash(pFilename);
     else
         iSoundHash = 0;
@@ -346,6 +356,7 @@ extern float const g_011c7374_arg1;
 // Initializes the object's fields to zero/default values, sets flags at offset 0x10, and clears bit 0x8000.
 // @fnv 0x00ae95e0
 // src: XBOX_PDB 0x00ae95e0
+// pdb: BSGameSound::Init | BSGameSound.obj | debug, upstream name already matches, high
 void __fastcall BSGameSound_Init(BSGameSound* pObject)
 {
     pObject->iSoundID = 0;
@@ -442,6 +453,7 @@ struct OL4List : NiTPointerListBase_NiTPointerAllocator_unsigned_int__Tile__Tile
 };
 // The shared interface stores the message list as raw bytes.
 // @fnv 0x00ae93f0
+// pdb: BSGameSound::~BSGameSound | BSGameSound.obj | debug, upstream name already matches, high
 BSGameSound::~BSGameSound()
 {
     int unused[5];
@@ -474,6 +486,9 @@ struct BSGameSoundDeletion : BSGameSound
 };
 // Destroys the base object and, when bit 0 of flags is set, deallocates this via g_memoryManager, returning this.
 // @fnv 0x00ae9ec0
+// pdb: BSGameSound::BSGameSound | BSGameSound.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSGameSound::`scalar deleting destructor'
+// pdb params: apFilename
 void* BSGameSoundDeletion::DeleteThis(unsigned int flags)
 {
     this->BSGameSound::~BSGameSound();
@@ -585,6 +600,8 @@ NiPoint3* BSWin32GameSoundPosition::GetPos(NiPoint3* output)
 
 // Checks spatial and state flags to toggle v14/v30 and call v38 based on comparing fDistanceToListener against fMaxDist, then returns true.
 // @fnv 0x00ae9960
+// pdb: BSGameSound::Update | BSGameSound.obj | retail, object-file run extension, low
+// pdb params: adwTimeDelta
 bool BSGameSoundOperations::UpdateDistance(float unused)
 {
     float distance2, maximum2, distance, maximum;

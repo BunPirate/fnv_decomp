@@ -11,5 +11,5 @@ bool InitD3D9CreateFunctions();
 class ShaderPassRenderer
 {
   public:
-    static unsigned int Create(unsigned int);
+    static unsigned int NiXenonRenderer_CreateDirect3D9(unsigned int);
 };

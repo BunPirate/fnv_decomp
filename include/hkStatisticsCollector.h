@@ -7,6 +7,7 @@ class hkClass;
 template <class T, class Allocator>
 class hkArray;
 
+// pdb: class hkStatisticsCollector, size 0x14, bases: hkReferencedObject, 3 members
 class hkStatisticsCollector : public hkReferencedObject
 {
 public:
@@ -17,9 +18,9 @@ public:
     virtual void beginObject(const char* name) throw();
     virtual void endObject() throw();
 
-    int pad08;
-    int pad0C;
-    char m_reportInplaceAllocations;
+    int m_clientData;
+    int m_vtblRegistry;
+    char m_includeUnmanagedArrayMemory;
     unsigned char unk11[3];
 
     __forceinline void beginObject(const char* name, const void* obj, const hkClass* cls) throw()
@@ -32,5 +33,5 @@ public:
     template <class T, class Allocator>
     void addArray(const char* name, const hkArray<T, Allocator>& array);
 
-    void DispatchWithMode(const char* name, const void* ptr, int size, int unk) throw();
+    void hkStatisticsCollector_addNormalChunk(const char* name, const void* p, int size, int allocated) throw();
 };

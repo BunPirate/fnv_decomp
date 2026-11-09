@@ -171,6 +171,7 @@ void __cdecl operator delete(void* pvMem);
 class FUN_00d979a0
 {
 // @fnv 0x00d979a0
+// pdb: hkKdTreeBundleCastCollector::`scalar deleting destructor' | hkpKdTreeCollidableRaycaster.obj | retail, vtable slot, high
   public:
     FUN_00d979a0()
     {}
@@ -232,6 +233,8 @@ struct S00d97bf0_Obj
 // Records TtKdTreeCastRayIter and Et timing markers, stores a2 and a3, calls FUN_00d98ca0 and v2, then returns a0.
 // @fnv 0x00d97bf0
 // src: HAVOK_LIB 0x00d97bf0
+// pdb: hkpKdTreeCollidableRaycaster::castRayIterative | hkpKdTreeCollidableRaycaster.obj | retail, string-set bridge, high
+// pdb params: tree, input, output
 int __thiscall S00d97bf0_Obj::hkpKdTreeCollidableRaycaster_castRayIterative(int a0, int a1, int a2, int a3)
 {
     extern void* DAT_00fdf044;
@@ -331,6 +334,7 @@ struct FUN_00d98360 : D98360Base
 
 // Empty destructor for the FUN_00d98360 class.
 // @fnv 0x00d98360
+// pdb: hkKdTreeCollidableRayBundleCaster::`scalar deleting destructor' | hkpKdTreeCollidableRaycaster.obj | retail, vtable slot, high
 FUN_00d98360::~FUN_00d98360()
 {}
 

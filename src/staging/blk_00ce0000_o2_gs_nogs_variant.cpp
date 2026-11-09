@@ -65,7 +65,7 @@ struct FUN_00cf69c0_class
     int m_kPointA;
     int m_auiShapeKeys;
     int m_kPointB;
-    int __thiscall hkSingletonInitNode_findByName(int a);
+    int __thiscall hkSingletonInitNode_findByName(int name);
 };
 int __cdecl hkString_strCmp(int a, int b);
 struct FUN_00cf86e0_class
@@ -114,7 +114,7 @@ struct FnvProbe
     int m_04;
     int m_08;
     int m_0c;
-    unsigned char* Match(FnvSpawnedObject** ref);
+    unsigned char* hkQuaternion_isOk(FnvSpawnedObject** ref);
     unsigned char* Check(FnvSpawnedObject** ref);
 };
 struct FnvSpawnedObject
@@ -127,10 +127,10 @@ struct FnvSpawnedObject
     FnvProbe m_20;
     unsigned char* Check(FnvSpawnedObject** ref);
 };
-bool __cdecl hkaSkeletonMapper_checkTransform(int unused, FnvSpawnedObject* obj);
+bool __cdecl hkaSkeletonMapper_checkTransform(int type, FnvSpawnedObject* q);
 void __cdecl Object_UpdateFields_00ce2ca0(int a1, int a2, int* a3, int a4);
 void __cdecl hkaSkeletonMapper_mapExtractedMotion(int param_1, int param_2, int param_3);
-void __cdecl hkaSkeletonMapper_mapPoseLocalSpace(int a1, int a2, int a3, int a4, int a5, int a6);
+void __cdecl hkaSkeletonMapper_mapPoseLocalSpace(int poseALocalSpaceOriginal, int poseBLocalSpaceInOut, int boneToTrackIndicesA, int boneToTrackIndicesB, int a5, int a6);
 void __cdecl hkaSkeletonMapper_mapPoseLocalSpace_00ce4330(int a1, int a2, int a3, int a4);
 struct FnvKeyRec
 {
@@ -159,22 +159,22 @@ struct FUN_00ce5480_cls
     int m_uiItemCount;
 };
 void* __cdecl FindKeyRecord(unsigned short aKey, FUN_00ce5480_cls* pBox);
-void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(void* stream, void* self);
+void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(void* arStream, void* arMotor);
 struct FUN_00cf4490_cls
 {
     char unk00[0x14];
     unsigned int m_14;
     unsigned int m_18;
     unsigned char m_1c;
-    void bhkVelocityConstraintMotor_SaveBinary(void* stream);
+    void bhkVelocityConstraintMotor_SaveBinary(void* arStream);
 };
 struct CpuOpaque;
-extern CpuOpaque DAT_01268740;
+extern CpuOpaque bhkSpringDamperConstraintMotor_ms_RTTI;
 CpuOpaque* __cdecl bhkSpringDamperConstraintMotor_GetRTTI();
 struct SerializedObject
 {
     int base00, base04, base08, base0C, base10, word14, word18;
-    void __thiscall SerializeToStream(int source);
+    void __thiscall bhkSpringDamperConstraintMotor_SaveBinary(int arStream);
 };
 extern "C" void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(int, SerializedObject*);
 // Save a Havok-wrapped object: write its type id, then let a type-specific saver write the rest.
@@ -224,10 +224,10 @@ class CF4BC0Saver
     virtual void Unk_02();
     virtual void SaveBinary(NiStream& kStream);
 
-    void SetObject(CF4BC0Object* pkObject);
+    void SetObject(CF4BC0Object* apData);
 };
-CF4BC0Saver* __cdecl CF4BC0CreateSaver(unsigned int uiType);
-void __cdecl bhkConstraintManager_SaveBinary(NiStream& kStream, CF4BC0Object* pkObject);
+CF4BC0Saver* __cdecl CF4BC0CreateSaver(unsigned int aiType);
+void __cdecl bhkConstraintManager_SaveBinary(NiStream& arStream, CF4BC0Object* apData);
 extern int DAT_010cc2fc;
 extern int DAT_0102e388;
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
@@ -452,7 +452,7 @@ struct Saver13 : CF4840Saver
 {
     Saver13() throw();
 };
-CF4840Saver* __cdecl CreateSaver(unsigned int uiType);
+CF4840Saver* __cdecl CreateSaver(unsigned int aiType);
 // Build the Havok object for a serialized node: find its creator, run it, keep the result and delete the creator.
 extern __declspec(thread) int g_iF4A30AllocTag;
 struct F4A30AllocTagScope
@@ -493,12 +493,12 @@ class F4A30Creator
     virtual ~F4A30Creator();
     virtual void Create(int iFlags, void* pvContext);
 
-    void Init(F4A30Node* pkNode);
+    void Init(F4A30Node* apData);
 
     F4A30Result* m_pkResult;
 };
-F4A30Creator* __cdecl F4A30FindCreator(int iTypeID);
-F4A30Result* CreateF4A30Result(F4A30Node* pkNode, void* pvContext);
+F4A30Creator* __cdecl F4A30FindCreator(int aiType);
+F4A30Result* bhkConstraintManager_Clone(F4A30Node* apData, void* arCloneData);
 void __cdecl BuildMatrixFromRotationScaleAndPosition();
 void __cdecl Object_ForwardCall_00ce5300();
 class FUN_00ce5360_This
@@ -714,10 +714,13 @@ struct ArrayData
     int m_iElementCount;
 };
 // @fnv 0x00cf0e90
-extern "C" unsigned int __cdecl SaveUIntArray(NiStream& kStream, const ArrayData& kArray)
+// pdb: bhkStream::SaveBinary | bhkStream.obj | retail, object-file gap fill, high
+// pdb params: arStream, arArray
+// pdb locals: isize, ielements, I, hke
+extern "C" unsigned int __cdecl SaveUIntArray(NiStream& arStream, const ArrayData& arArray)
 {
-    unsigned int count = kArray.m_iElementCount;
-    CF4BC0SaveBinary(kStream, count);
+    unsigned int count = arArray.m_iElementCount;
+    CF4BC0SaveBinary(arStream, count);
 
     unsigned int totalSize = count * sizeof(unsigned int);
     int i = 0;
@@ -725,12 +728,12 @@ extern "C" unsigned int __cdecl SaveUIntArray(NiStream& kStream, const ArrayData
     {
         do
         {
-            unsigned int val = kArray.m_data[i];
-            if ((unsigned char)kStream.m_bSaveLittleEndian != 1)
+            unsigned int val = arArray.m_data[i];
+            if ((unsigned char)arStream.m_bSaveLittleEndian != 1)
             {
                 val = _byteswap_ulong(val);
             }
-            CF4BC0SaveBinary(kStream, val);
+            CF4BC0SaveBinary(arStream, val);
             ++i;
         } while (i < (int)count);
     }
@@ -749,24 +752,24 @@ struct FUN_00cf4190 : FUN_00cdf560
 {
     FUN_00cf4190();
 };
-extern int DAT_01268730;
+extern int bhkPositionConstraintMotor_ms_RTTI;
 int* bhkPositionConstraintMotor_GetRTTI();
-extern "C" void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(void* view, void* object);
+extern "C" void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(void* arStream, void* arMotor);
 struct SerializedRecord
 {
     unsigned int unk00, unk04, unk08, unk0c, unk10;
     unsigned int m_14, m_18, m_1c, m_20;
-    void bhkPositionConstraintMotor_LoadBinary(NiStream* view);
+    void bhkPositionConstraintMotor_LoadBinary(NiStream* arStream);
 };
 struct CpuOpaque;
-extern CpuOpaque DAT_01268738;
+extern CpuOpaque bhkVelocityConstraintMotor_ms_RTTI;
 CpuOpaque* __cdecl bhkVelocityConstraintMotor_GetRTTI();
 template <class T> inline void NiStreamSaveBinaryCF46(NiBinaryStream& kStream, const T& kValue)
 {
     unsigned int uiSize = sizeof(T);
     kStream.BinaryWrite(&kValue, sizeof(T), &uiSize, 1);
 }
-void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream* ar, void* obj);
+void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream* arStream, void* arMotor);
 class hkObjCF46
 {
   public:
@@ -1027,8 +1030,8 @@ class CE0020Subject
     virtual void Unk05();
     virtual void EnableConstraints();
 };
-void __cdecl hkpWorldConstraintUtil_removeAndDeleteModifier(CE0020Target* pTarget, CE0020Subject* pSubject, int iType);
-void __cdecl EnableConstraintsAndZeroArrays(CE0020Target* pTarget, CE0020Subject* pSubject);
+void __cdecl hkpWorldConstraintUtil_removeAndDeleteModifier(CE0020Target* pTarget, CE0020Subject* constraintOwner, int type);
+void __cdecl hkpResponseModifier_enableConstraint(CE0020Target* instance, CE0020Subject* constraintOwner);
 void __cdecl Runtime_ProcessEntries_00ce2d10();
 void __cdecl Runtime_ForwardCall_00ce2f30();
 template <class T> inline void NiStreamLoadBinaryCF42(NiBinaryStream& kStream, T& kValue)
@@ -1037,7 +1040,7 @@ template <class T> inline void NiStreamLoadBinaryCF42(NiBinaryStream& kStream, T
     kStream.BinaryRead(&kValue, sizeof(T), &uiSize, 1);
 }
 class SerializableCF42;
-void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(NiStream& kStream, SerializableCF42* pkObject);
+void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(NiStream& arStream, SerializableCF42* arMotor);
 class SerializableCF42
 {
   public:
@@ -1047,7 +1050,7 @@ class SerializableCF42
     unsigned int m_uiValue1C;
     unsigned int m_uiValue20;
 
-    void bhkPositionConstraintMotor_SaveBinary(NiStream& kStream);
+    void bhkPositionConstraintMotor_SaveBinary(NiStream& arStream);
 };
 // bhkVelocityConstraintMotor ctor (hkpVelocityConstraintMotor chain):
 // vptr(0), memSizeAndFlags(4), referenceCount(6), motor type(8), min/max force, tau, damping, velocity-clamp bool.
@@ -1077,7 +1080,7 @@ template <class T> inline void NiStreamLoadBinaryCF44(NiBinaryStream& kStream, T
     kStream.BinaryRead(&kValue, sizeof(T), &uiSize, 1);
 }
 class SerializableCF44;
-void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream& kStream, SerializableCF44* pkObject);
+void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream& arStream, SerializableCF44* arMotor);
 class SerializableCF44
 {
   public:
@@ -1086,7 +1089,7 @@ class SerializableCF44
     unsigned int m_uiValue18;
     unsigned char m_ucValue1C;
 
-    void bhkVelocityConstraintMotor_LoadBinary(NiStream& kStream);
+    void bhkVelocityConstraintMotor_LoadBinary(NiStream& arStream);
 };
 class CF4BC0SaverLoader
 {
@@ -1119,7 +1122,7 @@ struct AllocScope
         g_iCF4BC0AllocTag = saved;
     }
 };
-hkReferencedObject* __cdecl bhkConstraintManager_LoadBinary(NiStream& kStream);
+hkReferencedObject* __cdecl bhkConstraintManager_LoadBinary(NiStream& arStream);
 void Runtime_DoNothing_00cf6d10();
 class hkRefObjCF70 : public hkBaseObject
 {
@@ -1295,21 +1298,23 @@ extern "C" TransformOwner* cf8b60_self(void);
 extern "C" __m128* cf8b60_quat(void);
 
 // @fnv 0x00cf8b60
-// src: GUESS 0x00cf8b60 (confidence: low)
-static __declspec(noinline) void Object_UpdateFields_00cf8b60(TransformOwner* self, __m128* pQuat)
+// src: XBOX_RETAIL_PDB 0x00cf8b60
+// pdb: setRotationAroundCentreOfMass | hkpSimulation.obj | retail, object-file gap fill, high
+// pdb params: rb, newRotation
+static __declspec(noinline) void setRotationAroundCentreOfMass(TransformOwner* rb, __m128* newRotation)
 {
-    SubMatrix* m = &self->m_matrix;
-    m->hkRotation_set((const float*)pQuat);
-    __m128 q = self->m_quat170;
+    SubMatrix* m = &rb->m_matrix;
+    m->hkRotation_set((const float*)newRotation);
+    __m128 q = rb->m_quat170;
     __m128 v = _mm_mul_ps(_mm_shuffle_ps(q, q, _MM_SHUFFLE(1, 1, 1, 1)), m->m_row[1]);
     v = _mm_add_ps(v, _mm_mul_ps(_mm_shuffle_ps(q, q, _MM_SHUFFLE(0, 0, 0, 0)), m->m_row[0]));
     v = _mm_add_ps(v, _mm_mul_ps(_mm_shuffle_ps(q, q, _MM_SHUFFLE(2, 2, 2, 2)), m->m_row[2]));
-    m->m_row[3] = _mm_sub_ps(self->m_vec140, v);
+    m->m_row[3] = _mm_sub_ps(rb->m_vec140, v);
 }
 
 void cf8b60_caller(void)
 {
-    Object_UpdateFields_00cf8b60(cf8b60_self(), cf8b60_quat());
+    setRotationAroundCentreOfMass(cf8b60_self(), cf8b60_quat());
 }
 
 struct ResultByte

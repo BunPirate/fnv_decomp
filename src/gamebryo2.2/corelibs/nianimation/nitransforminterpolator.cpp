@@ -32,16 +32,16 @@ struct TransformWords
 };
 static inline void CopyTransformRotation(NiQuaternion& destination, const NiQuaternion& source)
 {
-    *(unsigned int*)&destination.m_fVectorX = *(const unsigned int*)&source.m_fVectorX;
-    *(unsigned int*)&destination.m_fVectorY = *(const unsigned int*)&source.m_fVectorY;
-    *(unsigned int*)&destination.m_fVectorZ = *(const unsigned int*)&source.m_fVectorZ;
-    *(unsigned int*)&destination.m_fScalarPart = *(const unsigned int*)&source.m_fScalarPart;
+    *(unsigned int*)&destination.m_fW = *(const unsigned int*)&source.m_fW;
+    *(unsigned int*)&destination.m_fX = *(const unsigned int*)&source.m_fX;
+    *(unsigned int*)&destination.m_fY = *(const unsigned int*)&source.m_fY;
+    *(unsigned int*)&destination.m_fZ = *(const unsigned int*)&source.m_fZ;
 }
 inline NiQuatTransform::NiQuatTransform()
 {
-    *(NiPoint3*)&x = DAT_011a8400;
-    CopyTransformRotation(*(NiQuaternion*)&qx, DAT_011f3704);
-    scale = DAT_01096b8c;
+    *(NiPoint3*)&m_kTranslate = DAT_011a8400;
+    CopyTransformRotation(*(NiQuaternion*)&m_kRotate, DAT_011f3704);
+    m_fScale = DAT_01096b8c;
 }
 inline NiQuatTransform& NiQuatTransform::operator=(const NiQuatTransform& rhs)
 {
@@ -100,39 +100,44 @@ struct TransformInterpolatorKeys : NiTransformInterpolator
 };
 
 // @fnv 0x00a3fae0
+// pdb: NiTransformInterpolator::NiTransformInterpolator | NiTransformInterpolator.obj | retail, call graph, medium
+// pdb params: pkData
 NiTransformInterpolator::NiTransformInterpolator(NiQuatTransform kTransform) throw()
-    : m_kDefaultTransform(kTransform), m_spTransformData(0)
+    : m_kTransformValue(kTransform), m_spData(0)
 {
-    m_usLastRotationKeyIndex = 0;
-    m_usLastPositionKeyIndex = 0;
-    m_usLastScaleKeyIndex = 0;
-    m_bPoseValid = false;
+    m_usLastTransIdx = 0;
+    m_usLastRotIdx = 0;
+    m_usLastScaleIdx = 0;
+    bPose = false;
 }
 
 static inline bool TransformIsValid(const NiQuatTransform& value)
 {
-    return value.scale != -3.4028234663852886e38 || value.qy != -3.4028234663852886e38 ||
-           value.x != -3.4028234663852886e38;
+    return value.m_fScale != -3.4028234663852886e38 || value.qy != -3.4028234663852886e38 ||
+           value.m_kTranslate != -3.4028234663852886e38;
 }
 static inline void SetTransformPosition(NiQuatTransform& transform, const NiPoint3& position)
 {
-    *(unsigned int*)&transform.x = *(const unsigned int*)&position.x;
+    *(unsigned int*)&transform.m_kTranslate = *(const unsigned int*)&position.x;
     *(unsigned int*)&transform.y = *(const unsigned int*)&position.y;
     *(unsigned int*)&transform.z = *(const unsigned int*)&position.z;
 }
 // @fnv 0x00a3fdb0
-bool NiTransformInterpolator::Update(float time, NiObjectNET* target, NiQuatTransform& value)
+// pdb: NiTransformInterpolator::Update | NiTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: uiNumKeys, pkTransKeys, eScaleType, uiTempLast, eRotType, ucSize, pkRotKeys, pkScaleKeys, eTransType
+bool NiTransformInterpolator::Update(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue)
 {
-    if (m_bPoseValid)
+    if (bPose)
     {
-        m_fLastTime = time;
-        value = m_kDefaultTransform;
+        m_fLastTime = fTime;
+        kValue = m_kTransformValue;
         return true;
     }
-    if (m_fLastTime == time)
+    if (m_fLastTime == fTime)
     {
-        value = m_kDefaultTransform;
-        if (!TransformIsValid(m_kDefaultTransform))
+        kValue = m_kTransformValue;
+        if (!TransformIsValid(m_kTransformValue))
             return false;
         return true;
     }
@@ -143,31 +148,31 @@ bool NiTransformInterpolator::Update(float time, NiObjectNET* target, NiQuatTran
     PositionKeyInterpolator* pTranslateKeys = ((TransformInterpolatorKeys*)this)->FUN_00a3f990(count, eKeyType, size);
     if (count > 0)
     {
-        last = m_usLastRotationKeyIndex;
-        SetTransformPosition(m_kDefaultTransform,
-            PositionKeyInterpolator::InterpolatePosition(time, pTranslateKeys, eKeyType, count, last, size));
-        m_usLastRotationKeyIndex = (unsigned short)last;
+        last = m_usLastTransIdx;
+        SetTransformPosition(m_kTransformValue,
+            PositionKeyInterpolator::InterpolatePosition(fTime, pTranslateKeys, eKeyType, count, last, size));
+        m_usLastTransIdx = (unsigned short)last;
     }
     TimedRotationKey* pRotateKeys = ((TransformInterpolatorKeys*)this)->NiTransformInterpolator_GetRotData(count, eKeyType, size);
     if (count > 0)
     {
-        last = m_usLastPositionKeyIndex;
-        CopyTransformRotation(*(NiQuaternion*)&m_kDefaultTransform.qx,
-            TimedRotationKey::InterpolatePosition(time, pRotateKeys, eKeyType, count, last, size));
-        m_usLastPositionKeyIndex = (unsigned short)last;
+        last = m_usLastRotIdx;
+        CopyTransformRotation(*(NiQuaternion*)&m_kTransformValue.m_kRotate,
+            TimedRotationKey::InterpolatePosition(fTime, pRotateKeys, eKeyType, count, last, size));
+        m_usLastRotIdx = (unsigned short)last;
     }
     TimedAnimationKey* pScaleKeys = ((TransformInterpolatorKeys*)this)->NiTransformInterpolator_GetScaleData(count, eKeyType, size);
     if (count > 0)
     {
-        last = m_usLastScaleKeyIndex;
-        m_kDefaultTransform.scale =
-            TimedAnimationKey::InterpolatePosition(time, pScaleKeys, eKeyType, count, last, size);
-        m_usLastScaleKeyIndex = (unsigned short)last;
+        last = m_usLastScaleIdx;
+        m_kTransformValue.m_fScale =
+            TimedAnimationKey::InterpolatePosition(fTime, pScaleKeys, eKeyType, count, last, size);
+        m_usLastScaleIdx = (unsigned short)last;
     }
-    value = m_kDefaultTransform;
-    if (!TransformIsValid(m_kDefaultTransform))
+    kValue = m_kTransformValue;
+    if (!TransformIsValid(m_kTransformValue))
         return false;
-    m_fLastTime = time;
+    m_fLastTime = fTime;
     return true;
 }
 
@@ -175,6 +180,7 @@ void __fastcall UpdateState_00a3ca30(void* pThis);
 void __cdecl FUN_00aa1460(void* p, unsigned int s);
 
 // @fnv 0x00a40410
+// pdb: NiTransformInterpolator::`scalar deleting destructor' | NiTransformInterpolator.obj | retail, object-file gap fill, high
 void* __fastcall FUN_00a40410(NiTransformInterpolator* pThis, int, unsigned int flags)
 {
     NiRefObject* pkData = *(NiRefObject**)((char*)pThis + 0x2c);
@@ -200,6 +206,8 @@ enum KeyContent
 // Maps a channel index to a KeyContent: 0 quaternion, 1 position, 2 none, otherwise tangent.
 // @fnv 0x00a3f570
 // src: XBOX_PDB 0x00a3f570
+// pdb: NiTransformInterpolator::GetKeyContent | NiTransformInterpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
 KeyContent __stdcall NiTransformInterpolator_GetKeyContent(unsigned short usChannel)
 {
     if (usChannel == 0)
@@ -269,6 +277,8 @@ NiAnimationKey* NiTransformInterpolator::GetChannelKeys(unsigned short aiIndex) 
 
 // Reads fields at offsets 0xa, 0x14, 0x1d and 0x24 from the object at this+0x2c into the out parameters and returns the last; zeroes them if that pointer is null.
 // @fnv 0x00a3f990
+// pdb: NiTransformInterpolator::GetPosData | NiTransformInterpolator.obj | debug, object-file run extension, low
+// pdb params: uiNumKeys, eType, ucSize
 // Pointer-based position-key accessor used by 0x00a3f990; the shared header lacks this overload.
 struct PositionChannelAccess : NiTransformInterpolator
 {
@@ -276,7 +286,7 @@ struct PositionChannelAccess : NiTransformInterpolator
 };
 int PositionChannelAccess::GetPositionKeys(unsigned int* puiValue, int* piValue, unsigned char* pucValue)
 {
-    void* p = m_spTransformData.m_pObject;
+    void* p = m_spData.m_pObject;
     if (p)
     {
         *puiValue = *(unsigned short*)((char*)p + 0xa);
@@ -301,7 +311,7 @@ const NiRTTI* NiTransformInterpolator::GetRTTI() const
 // Time-range operations not yet declared by the shared header.
 struct NiTransformDataTimeRange : NiTransformData
 {
-    void GetSequenceData(float, float, NiTransformData**);
+    void NiTransformData_GetSequenceData(float, float, NiTransformData**);
     void GuaranteeTimeRange(float, float);
 };
 // The shared class has no transform-data setter; this adapter adds only its declaration.
@@ -312,6 +322,9 @@ struct TransformDataAssignment : NiTransformInterpolator
 __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 
 // @fnv 0x00a3fd10
+// pdb: NiTransformInterpolator::GetSequenceInterpolator | NiTransformInterpolator.obj | debug, object-file run extension, low
+// pdb params: fStartTime, fEndTime
+// pdb locals: pkSeqInterp, spNewData
 NiInterpolator* NiTransformInterpolator::CloneForTimeRange(float m_fStartTime, float m_fMaximumDistance)
 {
     NiTransformInterpolator* pkSeqInterp =
@@ -319,7 +332,7 @@ NiInterpolator* NiTransformInterpolator::CloneForTimeRange(float m_fStartTime, f
     if (pkSeqInterp && *(void**)((char*)this + 0x2c))
     {
         NiTransformData* spNewData = 0;
-        ((NiTransformDataTimeRange*)m_spTransformData.m_pObject)->GetSequenceData(m_fStartTime, m_fMaximumDistance, &spNewData);
+        ((NiTransformDataTimeRange*)m_spData.m_pObject)->NiTransformData_GetSequenceData(m_fStartTime, m_fMaximumDistance, &spNewData);
         ((TransformDataAssignment*)pkSeqInterp)->SetTransformData(spNewData);
         *(unsigned short*)((char*)pkSeqInterp + 0x30) = 0;
         *(unsigned short*)((char*)pkSeqInterp + 0x32) = 0;
@@ -385,7 +398,7 @@ unsigned char NiTransformInterpolator::GetColorKeySize(unsigned short usChannel)
 // @fnv 0x00a3f6f0
 void NiTransformInterpolator::SetActiveTimeRange(float afArg1, float afArg2)
 {
-    NiTransformDataTimeRange* pkData = (NiTransformDataTimeRange*)m_spTransformData.m_pObject;
+    NiTransformDataTimeRange* pkData = (NiTransformDataTimeRange*)m_spData.m_pObject;
     if (pkData)
         pkData->GuaranteeTimeRange(afArg1, afArg2);
 }
@@ -393,21 +406,23 @@ void NiTransformInterpolator::SetActiveTimeRange(float afArg1, float afArg2)
 // Returns the scale key array from the interpolator's transform data, filling in key count, interpolation type and key size, or zeroes if no data exists.
 // @fnv 0x00a3f9e0
 // src: COMMUNITY 0x00a3f9e0
-TimedAnimationKey* TransformInterpolatorKeys::NiTransformInterpolator_GetScaleData(unsigned int& uiNumScaleKeys,
-                                                         NiAnimationKey::KeyType& eScaleKeyType,
-                                                         unsigned char& ucScaleKeySize)
+// pdb: NiTransformInterpolator::GetScaleData | NiTransformInterpolator.obj | debug, upstream name already matches, high
+// pdb params: uiNumKeys, eType, ucSize
+TimedAnimationKey* TransformInterpolatorKeys::NiTransformInterpolator_GetScaleData(unsigned int& uiNumKeys,
+                                                         NiAnimationKey::KeyType& eType,
+                                                         unsigned char& ucSize)
 {
-    NiTransformData* pkData = *(NiTransformData**)&m_spTransformData;
+    NiTransformData* pkData = *(NiTransformData**)&m_spData;
     if (pkData)
     {
-        uiNumScaleKeys = pkData->m_usNumScaleKeys;
-        eScaleKeyType = (NiAnimationKey::KeyType)pkData->m_eScaleKeyType;
-        ucScaleKeySize = pkData->m_ucScaleKeySize;
+        uiNumKeys = pkData->m_usNumScaleKeys;
+        eType = (NiAnimationKey::KeyType)pkData->m_eScaleType;
+        ucSize = pkData->m_ucScaleSize;
         return pkData->m_pkScaleKeyArray;
     }
-    uiNumScaleKeys = 0;
-    eScaleKeyType = NiAnimationKey::NOINTERP;
-    ucScaleKeySize = 0;
+    uiNumKeys = 0;
+    eType = NiAnimationKey::NOINTERP;
+    ucSize = 0;
     return 0;
 }
 
@@ -428,10 +443,13 @@ inline void* operator new(unsigned int, void* pkMem)
 }
 // Allocates a new NiTransformInterpolator and copies this interpolator's data into it via FUN_00a40360, returning it as a NiObject.
 // @fnv 0x00a40460
+// pdb: NiTransformInterpolator::CreateClone | NiTransformInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiTransformInterpolator::MakeClone(CloningProcess& kCloning)
 {
     NiTransformInterpolator* pkObject = ::new (BSFadeNode::operator new(sizeof(NiTransformInterpolator))) NiTransformInterpolator((NiTransformData*)0);
-    CopyMemberData(pkObject, kCloning);
+    CopyMembers(pkObject, kCloning);
     return (NiObject*)pkObject;
 }
 
@@ -439,31 +457,36 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volati
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
 // Replaces the held NiTransformData pointer with pkData, adjusting reference counts, and resets the three counters to zero.
 // @fnv 0x00a3f930
+// pdb: NiTransformInterpolator::SetTransformData | NiTransformInterpolator.obj | debug, object-file run extension, low
+// pdb params: pkData
 void TransformDataAssignment::SetTransformData(NiTransformData* pkData)
 {
-    if (m_spTransformData.m_pObject != pkData)
+    if (m_spData.m_pObject != pkData)
     {
-        if (m_spTransformData.m_pObject)
-            m_spTransformData.m_pObject->DecRefCount();
-        m_spTransformData.m_pObject = pkData;
+        if (m_spData.m_pObject)
+            m_spData.m_pObject->DecRefCount();
+        m_spData.m_pObject = pkData;
         if (pkData)
             pkData->IncRefCount();
     }
-    m_usLastPositionKeyIndex = 0;
-    m_usLastScaleKeyIndex = 0;
-    m_usLastRotationKeyIndex = 0;
+    m_usLastRotIdx = 0;
+    m_usLastScaleIdx = 0;
+    m_usLastTransIdx = 0;
 }
 
 // @fnv 0x00a3fa30
-NiTransformInterpolator::NiTransformInterpolator(NiTransformData* pkData) : m_spTransformData(pkData)
+// pdb: NiTransformInterpolator::NiTransformInterpolator | NiTransformInterpolator.obj | retail, call graph, low
+// pdb note: debug build links it to NiPointer<NiTransformData>::operator=
+// pdb params: pkData
+NiTransformInterpolator::NiTransformInterpolator(NiTransformData* pkData) : m_spData(pkData)
 {
-    m_kDefaultTransform.x = -3.402823466e+38F;
-    m_kDefaultTransform.qy = -3.402823466e+38F;
-    m_kDefaultTransform.scale = -3.402823466e+38F;
-    m_usLastRotationKeyIndex = 0;
-    m_usLastPositionKeyIndex = 0;
-    m_usLastScaleKeyIndex = 0;
-    m_bPoseValid = false;
+    m_kTransformValue.m_kTranslate = -3.402823466e+38F;
+    m_kTransformValue.qy = -3.402823466e+38F;
+    m_kTransformValue.m_fScale = -3.402823466e+38F;
+    m_usLastTransIdx = 0;
+    m_usLastRotIdx = 0;
+    m_usLastScaleIdx = 0;
+    bPose = false;
 }
 
 namespace fnv_00a3fb20 {
@@ -523,8 +546,8 @@ static inline char* TI_GetPos(NiTransformData* d, unsigned int& n, int& t, unsig
     if (d)
     {
         n = d->m_usNumPosKeys;
-        t = d->m_ePositionKeyType;
-        s = d->m_ucPositionKeySize;
+        t = d->m_ePosType;
+        s = d->m_ucPosSize;
         pk = (char*)d->m_pkPositionKeys;
     }
     else
@@ -540,7 +563,7 @@ static inline char* TI_GetRot(NiTransformData* d, unsigned int& n, int& t, unsig
     {
         n = d->m_usNumRotKeys;
         t = d->m_eRotationKeyType;
-        s = d->m_ucRotationKeySize;
+        s = d->m_ucRotSize;
         pk = (char*)d->m_pkRotationKeys;
     }
     else
@@ -555,8 +578,8 @@ static inline char* TI_GetScale(NiTransformData* d, unsigned int& n, int& t, uns
     if (d)
     {
         n = d->m_usNumScaleKeys;
-        t = d->m_eScaleKeyType;
-        s = d->m_ucScaleKeySize;
+        t = d->m_eScaleType;
+        s = d->m_ucScaleSize;
         pk = (char*)d->m_pkScaleKeyArray;
     }
     else
@@ -669,6 +692,8 @@ extern char* g_011f3ee0_arg1;
 }  // namespace fnv_00a404b0
 
 // @fnv 0x00a404b0
+// pdb: NiTransformInterpolator::GetViewerStrings | NiTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void NiTransformInterpolator::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
     using namespace fnv_00a404b0;
@@ -679,7 +704,7 @@ void NiTransformInterpolator::GetViewerStrings(NiViewerStringsArray* pkStrings)
     if (count >= size)
         ((StrArr*)pkStrings)->SetSize(((StrArr*)pkStrings)->m_usGrowBy + count);
     ((StrArr*)pkStrings)->SetAt(count, pString);
-    ((TransformViewerFields*)&m_kDefaultTransform)->GetTransformViewerStrings((StrArr*)pkStrings);
+    ((TransformViewerFields*)&m_kTransformValue)->GetTransformViewerStrings((StrArr*)pkStrings);
     void* pData = *(void**)((char*)this + 0x2c);
     if (pData)
         ((void(__thiscall*)(void*, StrArr*))(*(void***)pData)[24])(pData, (StrArr*)pkStrings);
@@ -696,31 +721,33 @@ struct TransformChannelPoseQuery : NiTransformInterpolator
 
 // For modes 0-2, rejects when m_2c is set and v56(mode) > 0, otherwise compares the mode's float field against DAT_010241b0.
 // @fnv 0x00a3f720
+// pdb: NiTransformInterpolator::GetChannelPosed | NiTransformInterpolator.obj | retail, object-file run extension, low
+// pdb params: usChannel
 bool TransformChannelPoseQuery::IsChannelPosed(unsigned short mode)
 {
     double value;
     switch (mode)
     {
     case 0:
-        if (m_spTransformData.m_pObject != 0 && GetColorKeyCount(mode) > 0)
+        if (m_spData.m_pObject != 0 && GetColorKeyCount(mode) > 0)
         {
             return false;
         }
-        value = m_kDefaultTransform.x;
+        value = m_kTransformValue.m_kTranslate;
         break;
     case 1:
-        if (m_spTransformData.m_pObject != 0 && GetColorKeyCount(mode) > 0)
+        if (m_spData.m_pObject != 0 && GetColorKeyCount(mode) > 0)
         {
             return false;
         }
-        value = m_kDefaultTransform.qy;
+        value = m_kTransformValue.qy;
         break;
     case 2:
-        if (m_spTransformData.m_pObject != 0 && GetColorKeyCount(mode) > 0)
+        if (m_spData.m_pObject != 0 && GetColorKeyCount(mode) > 0)
         {
             return false;
         }
-        value = m_kDefaultTransform.scale;
+        value = m_kTransformValue.m_fScale;
         break;
     default:
         return false;
@@ -737,14 +764,16 @@ struct InterpolatorRegistrationBase : NiKeyBasedInterpolator
 
 // Calls FUN_00aa0ad0(arg); if it succeeds, invokes v21(arg) on unk2c when non-null and returns true, otherwise returns false.
 // @fnv 0x00a3f870
-bool NiTransformInterpolator::RegisterStreamables(NiStream& stream)
+// pdb: NiTransformInterpolator::RegisterStreamables | NiTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+bool NiTransformInterpolator::RegisterStreamables(NiStream& kStream)
 {
-    if (!((InterpolatorRegistrationBase*)this)->RegisterBase(stream))
+    if (!((InterpolatorRegistrationBase*)this)->RegisterBase(kStream))
         return false;
 
-    NiTransformData* data = m_spTransformData.m_pObject;
+    NiTransformData* data = m_spData.m_pObject;
     if (data)
-        data->RegisterStreamables(stream);
+        data->RegisterStreamables(kStream);
 
     return true;
 }
@@ -770,16 +799,19 @@ struct InterpolatorComparisonBase : NiKeyBasedInterpolator
 };
 
 // @fnv 0x00a3f8d0
+// pdb: NiTransformInterpolator::IsEqual | NiTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiTransformInterpolator::IsEqual(NiObject* pkObject) const
 {
     if (!((const InterpolatorComparisonBase*)this)->BaseIsEqual(pkObject))
         return false;
     NiTransformInterpolator* pkOther = (NiTransformInterpolator*)pkObject;
-    if (!((const TransformComparison*)&m_kDefaultTransform)->Equals(pkOther->m_kDefaultTransform))
+    if (!((const TransformComparison*)&m_kTransformValue)->Equals(pkOther->m_kTransformValue))
         return false;
-    if ((m_spTransformData && !pkOther->m_spTransformData) || (!m_spTransformData && pkOther->m_spTransformData))
+    if ((m_spData && !pkOther->m_spData) || (!m_spData && pkOther->m_spData))
         return false;
-    if (m_spTransformData && !m_spTransformData->IsEqual(pkOther->m_spTransformData))
+    if (m_spData && !m_spData->IsEqual(pkOther->m_spData))
         return false;
     return true;
 }
@@ -791,11 +823,13 @@ struct TransformBinaryWriter : NiQuatTransform
 };
 
 // @fnv 0x00a3f8a0
-void NiTransformInterpolator::SaveBinary(NiStream& stream)
+// pdb: NiTransformInterpolator::SaveBinary | NiTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiTransformInterpolator::SaveBinary(NiStream& kStream)
 {
-    NiObject::SaveBinary(stream);
-    ((TransformBinaryWriter*)&m_kDefaultTransform)->SaveTransform(stream);
-    stream.SaveLinkID(m_spTransformData.m_pObject);
+    NiObject::SaveBinary(kStream);
+    ((TransformBinaryWriter*)&m_kTransformValue)->SaveTransform(kStream);
+    kStream.SaveLinkID(m_spData.m_pObject);
 }
 
 #include <string.h>
@@ -817,19 +851,22 @@ template <> inline NiPointer<NiTransformData>& NiPointer<NiTransformData>::opera
 
 // Calls FUN_00aa0ab0, then copies 32 bytes at offset 0x0c plus fields 0x38-0x40, the ref-counted pointer at 0x2c and the shorts at 0x30-0x34 into pkDest.
 // @fnv 0x00a40360
-void NiTransformInterpolator::CopyMemberData(NiTransformInterpolator* pkDest, CloningProcess& kCloning)
+// src: XBOX_RETAIL_PDB 0x00a40360
+// pdb: NiTransformInterpolator::CopyMembers | NiTransformInterpolator.obj | retail, object-file gap fill, high
+// pdb params: pkDest, kCloning
+void NiTransformInterpolator::CopyMembers(NiTransformInterpolator* pkDest, CloningProcess& kCloning)
 {
     NiKeyBasedInterpolator_CopyMembers(pkDest, &kCloning);
 
-    memcpy(&pkDest->m_kDefaultTransform, &m_kDefaultTransform, 32);
+    memcpy(&pkDest->m_kTransformValue, &m_kTransformValue, 32);
 
-    *(unsigned int*)&pkDest->m_kDefaultTranslation.x = *(unsigned int*)&m_kDefaultTranslation.x;
-    *(unsigned int*)&pkDest->m_kDefaultTranslation.y = *(unsigned int*)&m_kDefaultTranslation.y;
-    *(unsigned int*)&pkDest->m_kDefaultTranslation.z = *(unsigned int*)&m_kDefaultTranslation.z;
-    pkDest->m_spTransformData = m_spTransformData;
-    pkDest->m_usLastRotationKeyIndex = m_usLastRotationKeyIndex;
-    pkDest->m_usLastPositionKeyIndex = m_usLastPositionKeyIndex;
-    pkDest->m_usLastScaleKeyIndex = m_usLastScaleKeyIndex;
+    *(unsigned int*)&pkDest->m_origTranslate.x = *(unsigned int*)&m_origTranslate.x;
+    *(unsigned int*)&pkDest->m_origTranslate.y = *(unsigned int*)&m_origTranslate.y;
+    *(unsigned int*)&pkDest->m_origTranslate.z = *(unsigned int*)&m_origTranslate.z;
+    pkDest->m_spData = m_spData;
+    pkDest->m_usLastTransIdx = m_usLastTransIdx;
+    pkDest->m_usLastRotIdx = m_usLastRotIdx;
+    pkDest->m_usLastScaleIdx = m_usLastScaleIdx;
 }
 
 namespace fnv_00a403f0 {
@@ -840,6 +877,8 @@ inline void* __cdecl operator new(unsigned int, void* address)
 }
 // @fnv 0x00a403f0
 // src: EXE 0x00a403f0
+// pdb: NiTransformInterpolator::CreateObject | NiTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiTransformInterpolator* __cdecl NiTransformInterpolator_CreateObject()
 {
     void* storage = Object_DispatchCommandFour(sizeof(NiTransformInterpolator));
@@ -851,7 +890,7 @@ NiTransformInterpolator* __cdecl NiTransformInterpolator_CreateObject()
 
 inline bool NiQuatTransform::IsTranslateValid()
 {
-    return x != -3.4028234663852886e+38;
+    return m_kTranslate != -3.4028234663852886e+38;
 }
 inline bool NiQuatTransform::IsRotateValid()
 {
@@ -859,7 +898,7 @@ inline bool NiQuatTransform::IsRotateValid()
 }
 inline bool NiQuatTransform::IsScaleValid()
 {
-    return scale != -3.4028234663852886e+38;
+    return m_fScale != -3.4028234663852886e+38;
 }
 inline bool NiQuatTransform::IsMarkedInvalid()
 {
@@ -868,13 +907,15 @@ inline bool NiQuatTransform::IsMarkedInvalid()
 
 // Deserializes the default transform, data object, and pose flag after loading the base class.
 // @fnv 0x00a3f7b0
+// pdb: NiTransformInterpolator::LoadBinary | NiTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiTransformInterpolator::LoadBinary(NiStream& kStream)
 {
     NiKeyBasedInterpolator::LoadBinary(kStream);
-    m_kDefaultTransform.LoadBinary(kStream);
-    m_kDefaultTranslation = *(NiPoint3*)&m_kDefaultTransform.x;
-    m_spTransformData = (NiTransformData*)kStream.DeserializeObject();
-    m_bPoseValid = !m_spTransformData.m_pObject && !m_kDefaultTransform.IsMarkedInvalid();
+    m_kTransformValue.LoadBinary(kStream);
+    m_origTranslate = *(NiPoint3*)&m_kTransformValue.m_kTranslate;
+    m_spData = (NiTransformData*)kStream.DeserializeObject();
+    bPose = !m_spData.m_pObject && !m_kTransformValue.IsMarkedInvalid();
 }
 
 __declspec(noinline) bool NiPoint3::operator!=(const NiPoint3& p)
@@ -908,46 +949,48 @@ struct S00a3ffd0_FloatKey : NiAnimationKey
 };
 inline bool S00a3ffd0_QEq(const NiQuaternion& a, const NiQuaternion& q)
 {
-    return a.m_fVectorX == q.m_fVectorX && a.m_fVectorY == q.m_fVectorY && a.m_fVectorZ == q.m_fVectorZ &&
-           a.m_fScalarPart == q.m_fScalarPart;
+    return a.m_fW == q.m_fW && a.m_fX == q.m_fX && a.m_fY == q.m_fY &&
+           a.m_fZ == q.m_fZ;
 }
 static inline S00a3ffd0_PosKey* GetTransformPositionKeys(const NiTransformData* data, unsigned int& n, int& t, unsigned char& s)
 {
     n = data->m_usNumPosKeys;
-    t = data->m_ePositionKeyType;
-    s = data->m_ucPositionKeySize;
+    t = data->m_ePosType;
+    s = data->m_ucPosSize;
     return (S00a3ffd0_PosKey*)data->m_pkPositionKeys;
 }
 static inline S00a3ffd0_RotKey* GetTransformRotationKeys(const NiTransformData* data, unsigned int& n, int& t, unsigned char& s)
 {
     n = data->m_usNumRotKeys;
     t = data->m_eRotationKeyType;
-    s = data->m_ucRotationKeySize;
+    s = data->m_ucRotSize;
     return (S00a3ffd0_RotKey*)data->m_pkRotationKeys;
 }
 static inline S00a3ffd0_FloatKey* GetTransformScaleKeys(const NiTransformData* data, unsigned int& n, int& t, unsigned char& s)
 {
     n = data->m_usNumScaleKeys;
-    t = data->m_eScaleKeyType;
-    s = data->m_ucScaleKeySize;
+    t = data->m_eScaleType;
+    s = data->m_ucScaleSize;
     return (S00a3ffd0_FloatKey*)data->m_pkScaleKeyArray;
 }
 // Evaluates position, rotation, and scale keys to determine if they are constant, updating m_kDefaultTransform and clearing m_spTransformData if all are absent.
 // @fnv 0x00a3ffd0
+// pdb: NiTransformInterpolator::Collapse | NiTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: uiNumKeys, pkPosKeys, kCollapsedTransform, ucSize, pkRotKeys, pkScaleKeys, eType, kValue, bCollapse, ui, fValue
 void NiTransformInterpolator::Collapse()
 {
-    if (!m_spTransformData.m_pObject)
+    if (!m_spData.m_pObject)
         return;
     NiQuatTransform kTransform;
     unsigned int uiNumKeys;
     int eType;
     unsigned char ucSize;
-    S00a3ffd0_PosKey* pkPosKeys = GetTransformPositionKeys(m_spTransformData.m_pObject, uiNumKeys, eType, ucSize);
+    S00a3ffd0_PosKey* pkPosKeys = GetTransformPositionKeys(m_spData.m_pObject, uiNumKeys, eType, ucSize);
     if (uiNumKeys == 0)
     {
-        m_spTransformData.m_pObject->SetPositionKeys(0, 0, NiAnimationKey::NOINTERP);
-        if (m_kDefaultTransform.x != -3.4028234663852886e38)
-            (*(NiPoint3*)&kTransform.x) = (*(NiPoint3*)&m_kDefaultTransform.x);
+        m_spData.m_pObject->ReplacePosAnim(0, 0, NiAnimationKey::NOINTERP);
+        if (m_kTransformValue.m_kTranslate != -3.4028234663852886e38)
+            (*(NiPoint3*)&kTransform.m_kTranslate) = (*(NiPoint3*)&m_kTransformValue.m_kTranslate);
     }
     else
     {
@@ -968,18 +1011,18 @@ void NiTransformInterpolator::Collapse()
         }
         if (positionConstant)
         {
-            m_spTransformData.m_pObject->SetPositionKeys(0, 0, NiAnimationKey::NOINTERP);
-            (*(NiPoint3*)&kTransform.x) = kValue;
+            m_spData.m_pObject->ReplacePosAnim(0, 0, NiAnimationKey::NOINTERP);
+            (*(NiPoint3*)&kTransform.m_kTranslate) = kValue;
         }
-        else if (m_kDefaultTransform.x != -3.4028234663852886e38)
-            (*(NiPoint3*)&kTransform.x) = (*(NiPoint3*)&m_kDefaultTransform.x);
+        else if (m_kTransformValue.m_kTranslate != -3.4028234663852886e38)
+            (*(NiPoint3*)&kTransform.m_kTranslate) = (*(NiPoint3*)&m_kTransformValue.m_kTranslate);
     }
-    S00a3ffd0_RotKey* pkRotKeys = GetTransformRotationKeys(m_spTransformData.m_pObject, uiNumKeys, eType, ucSize);
+    S00a3ffd0_RotKey* pkRotKeys = GetTransformRotationKeys(m_spData.m_pObject, uiNumKeys, eType, ucSize);
     if (uiNumKeys == 0)
     {
-        m_spTransformData.m_pObject->SetRotationKeys((TimedRotationKey*)uiNumKeys, uiNumKeys, (NiAnimationKey::KeyType)uiNumKeys);
-        if (m_kDefaultTransform.qy != -3.4028234663852886e38)
-            CopyTransformRotation(*(NiQuaternion*)&kTransform.qx, *(NiQuaternion*)&m_kDefaultTransform.qx);
+        m_spData.m_pObject->ReplaceRotAnim((TimedRotationKey*)uiNumKeys, uiNumKeys, (NiAnimationKey::KeyType)uiNumKeys);
+        if (m_kTransformValue.qy != -3.4028234663852886e38)
+            CopyTransformRotation(*(NiQuaternion*)&kTransform.m_kRotate, *(NiQuaternion*)&m_kTransformValue.m_kRotate);
     }
     else
     {
@@ -1006,22 +1049,22 @@ void NiTransformInterpolator::Collapse()
         if (rotationConstant)
         {
         constant52:
-            m_spTransformData.m_pObject->SetRotationKeys(0, 0, NiAnimationKey::NOINTERP);
-            CopyTransformRotation(*(NiQuaternion*)&kTransform.qx, kValue);
+            m_spData.m_pObject->ReplaceRotAnim(0, 0, NiAnimationKey::NOINTERP);
+            CopyTransformRotation(*(NiQuaternion*)&kTransform.m_kRotate, kValue);
         }
         else
         {
         fallback52:
-            if (m_kDefaultTransform.qy != -3.4028234663852886e38)
-                CopyTransformRotation(*(NiQuaternion*)&kTransform.qx, *(NiQuaternion*)&m_kDefaultTransform.qx);
+            if (m_kTransformValue.qy != -3.4028234663852886e38)
+                CopyTransformRotation(*(NiQuaternion*)&kTransform.m_kRotate, *(NiQuaternion*)&m_kTransformValue.m_kRotate);
         }
     }
-    S00a3ffd0_FloatKey* pkScaleKeys = GetTransformScaleKeys(m_spTransformData.m_pObject, uiNumKeys, eType, ucSize);
+    S00a3ffd0_FloatKey* pkScaleKeys = GetTransformScaleKeys(m_spData.m_pObject, uiNumKeys, eType, ucSize);
     if (uiNumKeys == 0)
     {
-        m_spTransformData.m_pObject->SetScaleKeys(0, 0, NiAnimationKey::NOINTERP);
-        if (m_kDefaultTransform.scale != -3.4028234663852886e38)
-            kTransform.scale = m_kDefaultTransform.scale;
+        m_spData.m_pObject->ReplaceScaleAnim(0, 0, NiAnimationKey::NOINTERP);
+        if (m_kTransformValue.m_fScale != -3.4028234663852886e38)
+            kTransform.m_fScale = m_kTransformValue.m_fScale;
     }
     else
     {
@@ -1042,13 +1085,13 @@ void NiTransformInterpolator::Collapse()
         }
         if (scaleConstant)
         {
-            m_spTransformData.m_pObject->SetScaleKeys(0, 0, NiAnimationKey::NOINTERP);
-            kTransform.scale = kValue;
+            m_spData.m_pObject->ReplaceScaleAnim(0, 0, NiAnimationKey::NOINTERP);
+            kTransform.m_fScale = kValue;
         }
-        else if (m_kDefaultTransform.scale != -3.4028234663852886e38)
-            kTransform.scale = m_kDefaultTransform.scale;
+        else if (m_kTransformValue.m_fScale != -3.4028234663852886e38)
+            kTransform.m_fScale = m_kTransformValue.m_fScale;
     }
-    if (!m_spTransformData.m_pObject->m_usNumPosKeys && !m_spTransformData.m_pObject->m_usNumRotKeys && !m_spTransformData.m_pObject->m_usNumScaleKeys)
-        m_spTransformData = 0;
-    m_kDefaultTransform = kTransform;
+    if (!m_spData.m_pObject->m_usNumPosKeys && !m_spData.m_pObject->m_usNumRotKeys && !m_spData.m_pObject->m_usNumScaleKeys)
+        m_spData = 0;
+    m_kTransformValue = kTransform;
 }

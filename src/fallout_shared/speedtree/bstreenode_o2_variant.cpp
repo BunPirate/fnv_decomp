@@ -79,6 +79,9 @@ struct S_00c8c390
 };
 // @fnv 0x00c8c390
 // src: XBOX_PDB 0x00c8c390
+// pdb: bhkTransformShape::RegisterStreamables | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: ps
 bool S_00c8c390::bhkTransformShape_RegisterStreamables(NiStream* arStream)
 {
     if (this)
@@ -124,14 +127,16 @@ struct H_00c8c810
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
 // @fnv 0x00c8c810
 // src: XBOX_PDB 0x00c8c810
-void __thiscall H_00c8c810::bhkTransformShape_Link(bool b)
+// pdb: bhkTransformShape::Link | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: abAttach
+void __thiscall H_00c8c810::bhkTransformShape_Link(bool abAttach)
 {
-    if (b)
+    if (abAttach)
     {
         if (this && p && p->p && p->p->p)
         {
             InterlockedIncrement(&p->p->p->_ref);
-            bhkShape_Link(b);
+            bhkShape_Link(abAttach);
             return;
         }
     }
@@ -139,7 +144,7 @@ void __thiscall H_00c8c810::bhkTransformShape_Link(bool b)
     {
         bhkTransformShape_RembhkShapeRef();
     }
-    bhkShape_Link(b);
+    bhkShape_Link(abAttach);
 }
 
 struct Buf00cb7750
@@ -269,6 +274,8 @@ struct S00cb7750
 };
 // @fnv 0x00cb7750
 // src: XBOX_PDB 0x00cb7750
+// pdb: bhkSPCollisionObject::hktoNiTransform | bhkSPCollisionObject.obj | retail, upstream name already matches, high
+// pdb locals: psp, nit
 void __thiscall S00cb7750::bhkSPCollisionObject_hktoNiTransform()
 {
     if (m_10 && m_10->m_08)
@@ -294,6 +301,7 @@ struct CollisionNodeStub
 };
 // @fnv 0x00c87fc0
 // src: EXE 0x00c87fc0
+// pdb: bhkPCollisionObject::CreateObject | bhkPCollisionObject.obj | retail, upstream name already matches, high
 CollisionNodeStub* bhkPCollisionObject_CreateObject()
 {
     return new CollisionNodeStub;
@@ -321,6 +329,7 @@ struct NewObjA : CollisionNodeStub
 };
 // @fnv 0x00cb7640
 // src: EXE 0x00cb7640
+// pdb: bhkSPCollisionObject::CreateObject | bhkSPCollisionObject.obj | retail, upstream name already matches, high
 void* bhkSPCollisionObject_CreateObject()
 {
     return new NewObjA;
@@ -338,13 +347,16 @@ struct This
     int unk00;
     int unk04;
     Middle* middle;
-    void bhkShape_CopyCinfo(unsigned int* output);
+    void bhkShape_CopyCinfo(unsigned int* arInfo);
 };
 // @fnv 0x00c84e20
 // src: XBOX_PDB 0x00c84e20
-void This::bhkShape_CopyCinfo(unsigned int* output)
+// pdb: bhkShape::CopyCinfo | bhkShape.obj | debug, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: ps
+void This::bhkShape_CopyCinfo(unsigned int* arInfo)
 {
-    *output = (this != 0 && middle != 0) ? middle->value : 0;
+    *arInfo = (this != 0 && middle != 0) ? middle->value : 0;
 }
 
 struct LegacyLinker : NiCollisionObject
@@ -354,12 +366,14 @@ struct LegacyLinker : NiCollisionObject
 };
 // @fnv 0x00c87f80
 // src: XBOX_PDB 0x00c87f80
-void LegacyLinker::bhkPCollisionObject_LinkObject(NiStream* stream)
+// pdb: bhkPCollisionObject::LinkObject | bhkPCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void LegacyLinker::bhkPCollisionObject_LinkObject(NiStream* arStream)
 {
-    if (stream->m_kHeader.m_uiVersion >= 0x15)
-        FUN_00c6bb70(stream);
+    if (arStream->m_BSStreamHeader.uiVersion >= 0x15)
+        FUN_00c6bb70(arStream);
     else
-        NiCollisionObject::LinkObject(*stream);
+        NiCollisionObject::LinkObject(*arStream);
 }
 
 struct C8C330Source
@@ -430,18 +444,21 @@ struct C8C330Owner
     virtual C8C330Child* GetOrCreateChild(bool* pbCreated);
 
     void bhkShape_LinkObject(C8C330Node* pkNode);
-    void bhkTransformShape_LinkObject(C8C330Node* pkNode);
+    void bhkTransformShape_LinkObject(C8C330Node* arStream);
 };
 
 // @fnv 0x00c8c330
 // src: XBOX_PDB 0x00c8c330
-void C8C330Owner::bhkTransformShape_LinkObject(C8C330Node* pkNode)
+// pdb: bhkTransformShape::LinkObject | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo, ps
+void C8C330Owner::bhkTransformShape_LinkObject(C8C330Node* arStream)
 {
     bool bCreated;
     C8C330Child* pkChild = GetOrCreateChild(&bCreated);
-    C8C330Source* pkSource = pkNode->FUN_00a63430();
+    C8C330Source* pkSource = arStream->FUN_00a63430();
     pkChild->m_uiFilterValue = pkSource ? pkSource->m_uiFilterValue : 0;
-    bhkShape_LinkObject(pkNode);
+    bhkShape_LinkObject(arStream);
 }
 
 typedef unsigned int C8CA60size_t;
@@ -478,17 +495,20 @@ struct C8CA60Owner
     void* m_pParentNode;
     C8CA60Child* m_pkChild;
 
-    void bhkTransformShape_CopyCinfo(C8CA60Child* pkChild);
-    C8CA60Child* bhkTransformShape_CreateCinfo(bool* pbCreated);
+    void bhkTransformShape_CopyCinfo(C8CA60Child* arInfo);
+    C8CA60Child* bhkTransformShape_CreateCinfo(bool* arCreated);
 };
 
 // @fnv 0x00c8ca60
 // src: XBOX_PDB 0x00c8ca60
-C8CA60Child* C8CA60Owner::bhkTransformShape_CreateCinfo(bool* pbCreated)
+// pdb: bhkTransformShape::CreateCinfo | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+C8CA60Child* C8CA60Owner::bhkTransformShape_CreateCinfo(bool* arCreated)
 {
     AutoMemContext kScope(0x10);
-    *pbCreated = (m_pkChild == 0);
-    if (*pbCreated)
+    *arCreated = (m_pkChild == 0);
+    if (*arCreated)
     {
         m_pkChild = new (C8CA60AlignedAlloc(0x60)) C8CA60Child();
         if (m_pParentNode)
@@ -510,17 +530,17 @@ extern unsigned int DAT_0126fd98;
 extern __declspec(thread) unsigned int currentTask;
 inline AutoMemContext::AutoMemContext()
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(currentTask);
+    iOldMemContext = static_cast<MEM_CONTEXT>(currentTask);
     currentTask = 16;
 }
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(currentTask);
+    iOldMemContext = static_cast<MEM_CONTEXT>(currentTask);
     currentTask = context;
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    currentTask = m_eMemoryContext;
+    currentTask = iOldMemContext;
 }
 inline NiTransform::NiTransform() {}
 inline unsigned int StrArr::SetAtGrow(unsigned int index, char*& text)
@@ -607,20 +627,23 @@ struct Object
 };
 // @fnv 0x00c8cb20
 // src: XBOX_PDB 0x00c8cb20
-void Object::bhkTransformShape_GetViewerStrings(StrArr* output)
+// pdb: bhkTransformShape::GetViewerStrings | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, nit, ps
+void Object::bhkTransformShape_GetViewerStrings(StrArr* apStrings)
 {
     AutoMemContext task;
-    bhkShape_GetViewerStrings(output);
-    output->append(NiViewerStrings_NiGetViewerString_Title(*(void**)&g_012681b4));
+    bhkShape_GetViewerStrings(apStrings);
+    apStrings->append(NiViewerStrings_NiGetViewerString_Title(*(void**)&g_012681b4));
     const NativeTransform* world = this && state ? &state->world : &DAT_01268370;
     NiTransform transform;
     HK2NI_00624b10(&transform, (NiPoint3*)world);
     FUN_00458620(&transform.m_Translate, world->translation);
-    output->append(transform.m_Translate.GetViewerString_00a59af0("Trans"));
-    output->append(transform.ToString("Rot"));
+    apStrings->append(transform.m_Translate.GetViewerString_00a59af0("Trans"));
+    apStrings->append(transform.ToString("Rot"));
     Component* component = getComponent();
     if (component)
-        component->serialize(output);
+        component->serialize(apStrings);
 }
 
 struct CB7800RTTI
@@ -638,24 +661,27 @@ extern "C" char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcT
 
 struct CB7800Base
 {
-    void GetViewerStrings(StrArr* pkStrings);
+    void GetViewerStrings(StrArr* apStrings);
 };
 
 struct CB7800Object : CB7800Base
 {
     static CB7800RTTI ms_kRTTI;
 
-    void bhkSPCollisionObject_AddViewerStrings(StrArr* pkStrings);
+    void bhkSPCollisionObject_AddViewerStrings(StrArr* apStrings);
 };
 
 // @fnv 0x00cb7800
 // src: XBOX_PDB 0x00cb7800
-void CB7800Object::bhkSPCollisionObject_AddViewerStrings(StrArr* pkStrings)
+// pdb: bhkSPCollisionObject::AddViewerStrings | bhkSPCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void CB7800Object::bhkSPCollisionObject_AddViewerStrings(StrArr* apStrings)
 {
     AutoMemContext kScope(0x10);
-    CB7800Base::GetViewerStrings(pkStrings);
+    CB7800Base::GetViewerStrings(apStrings);
     char* pcString = NiViewerStrings_NiGetViewerString_Title(ms_kRTTI.GetName());
-    (pkStrings->*static_cast<unsigned int (StrArr::*)(char*&)>(&StrArr::Add))(pcString);
+    (apStrings->*static_cast<unsigned int (StrArr::*)(char*&)>(&StrArr::Add))(pcString);
 }
 
 struct S_00cb78b0_Base
@@ -671,6 +697,7 @@ struct FUN_00cb78b0 : S_00cb78b0_Base
 };
 
 // @fnv 0x00cb78b0
+// pdb: bhkMultiSphereShape::~bhkMultiSphereShape | bhkMultiSphereShape.obj | retail, object-file run extension, low
 FUN_00cb78b0::~FUN_00cb78b0()
 {
     bhkSerializable_Kill();
@@ -777,16 +804,19 @@ struct S_00cb79d0
     virtual void v047();
     virtual void v048();
     virtual void v049(S_00cb79d0_Base* obj, int arg);
-    S_00cb79d0_C* bhkMultiSphereShape_CreateClone(int arg);
+    S_00cb79d0_C* bhkMultiSphereShape_CreateClone(int arCloneData);
 };
 
 // @fnv 0x00cb79d0
 // src: XBOX_PDB 0x00cb79d0
-S_00cb79d0_C* S_00cb79d0::bhkMultiSphereShape_CreateClone(int arg)
+// pdb: bhkMultiSphereShape::CreateClone | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
+S_00cb79d0_C* S_00cb79d0::bhkMultiSphereShape_CreateClone(int arCloneData)
 {
     bhkSerializable_CloneCritLock();
     S_00cb79d0_C* obj = new S_00cb79d0_C;
-    v049(obj, arg);
+    v049(obj, arCloneData);
     bhkSerializable_CloneCritUnlock();
     return obj;
 }
@@ -794,30 +824,36 @@ S_00cb79d0_C* S_00cb79d0::bhkMultiSphereShape_CreateClone(int arg)
 void SwapByteQuadWords(void* buffer, int words);
 // @fnv 0x00cf0930
 // src: XBOX_PDB 0x00cf0930
-void __cdecl bhkStream_SwapHKArray(void* buffer, int bytes, NiPoint3* vector)
+// pdb: bhkStream::SwapHKArray | bhkStream.obj | retail, upstream name already matches, high
+// pdb params: apCInfo, aiSize, apArray
+// pdb locals: cBuff
+void __cdecl bhkStream_SwapHKArray(void* apCInfo, int aiSize, NiPoint3* apArray)
 {
-    int words = bytes / 4;
-    SwapByteQuadWords(buffer, words);
+    int words = aiSize / 4;
+    SwapByteQuadWords(apCInfo, words);
     char savedBytes[sizeof(NiPoint3)];
     NiPoint3* saved = reinterpret_cast<NiPoint3*>(savedBytes);
-    *saved = *vector;
-    SwapByteQuadWords(buffer, words);
-    *vector = *saved;
+    *saved = *apArray;
+    SwapByteQuadWords(apCInfo, words);
+    *apArray = *saved;
 }
 
 struct FUN_00c88210_cls
 {
-    void __thiscall bhkNiCollisionObject_CopyMembers(CollisionNodeStub* node, unsigned int flags);
-    CollisionNodeStub* bhkPCollisionObject_CreateClone(unsigned int flags);
+    void __thiscall bhkNiCollisionObject_CopyMembers(CollisionNodeStub* apDest, unsigned int arCloneData);
+    CollisionNodeStub* bhkPCollisionObject_CreateClone(unsigned int arCloneData);
 };
 
 // @fnv 0x00c88210
 // src: XBOX_PDB 0x00c88210
-CollisionNodeStub* FUN_00c88210_cls::bhkPCollisionObject_CreateClone(unsigned int flags)
+// pdb: bhkPCollisionObject::CreateClone | bhkPCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+CollisionNodeStub* FUN_00c88210_cls::bhkPCollisionObject_CreateClone(unsigned int arCloneData)
 {
     AutoMemContext guard(0x10);
     CollisionNodeStub* node = new CollisionNodeStub;
-    this->bhkNiCollisionObject_CopyMembers(node, flags);
+    this->bhkNiCollisionObject_CopyMembers(node, arCloneData);
     return node;
 }
 
@@ -828,18 +864,21 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 class FUN_00c882c0_cls
 {
   public:
-    void C882C0BaseGetViewerStrings(StrArr* pkArray);
-    void bhkPCollisionObject_AddViewerStrings(StrArr* pkArray);
+    void C882C0BaseGetViewerStrings(StrArr* apStrings);
+    void bhkPCollisionObject_AddViewerStrings(StrArr* apStrings);
 };
 
 // @fnv 0x00c882c0
 // src: XBOX_PDB 0x00c882c0
-void FUN_00c882c0_cls::bhkPCollisionObject_AddViewerStrings(StrArr* pkArray)
+// pdb: bhkPCollisionObject::AddViewerStrings | bhkPCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void FUN_00c882c0_cls::bhkPCollisionObject_AddViewerStrings(StrArr* apStrings)
 {
     AutoMemContext kScope(0x10);
-    C882C0BaseGetViewerStrings(pkArray);
+    C882C0BaseGetViewerStrings(apStrings);
     char* pcName = NiViewerStrings_NiGetViewerString_Title(g_pcC882C0Name);
-    pkArray->append(static_cast<char* const&>(pcName));
+    apStrings->append(static_cast<char* const&>(pcName));
 }
 
 struct ScaleMatrix
@@ -913,16 +952,19 @@ struct FUN_00caaea0_shell
     virtual void v43() = 0;
     virtual void v44() = 0;
     virtual ScaleMatrix* getMatrix(bool* outFlag) = 0;
-    void bhkShape_CopyMembers(void* context, SourceObject* source);
-    void bhkCapsuleShape_CopyMembers(void* context, SourceObject* source);
+    void bhkShape_CopyMembers(void* apDest, SourceObject* arCloneData);
+    void bhkCapsuleShape_CopyMembers(void* apDest, SourceObject* arCloneData);
 };
 // @fnv 0x00caaea0
 // src: XBOX_PDB 0x00caaea0
-void FUN_00caaea0_shell::bhkCapsuleShape_CopyMembers(void* context, SourceObject* source)
+// pdb: bhkCapsuleShape::CopyMembers | bhkCapsuleShape.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: fscale, cinfo
+void FUN_00caaea0_shell::bhkCapsuleShape_CopyMembers(void* apDest, SourceObject* arCloneData)
 {
     bool flag;
     ScaleMatrix* matrix = getMatrix(&flag);
-    float scale = source->scale;
+    float scale = arCloneData->scale;
     if (scale != 1.0f)
     {
         matrix->m10 *= scale;
@@ -935,7 +977,7 @@ void FUN_00caaea0_shell::bhkCapsuleShape_CopyMembers(void* context, SourceObject
         matrix->m2c *= scale;
         matrix->m04 *= scale;
     }
-    bhkShape_CopyMembers(context, source);
+    bhkShape_CopyMembers(apDest, arCloneData);
 }
 
 void bhkSerializable_CloneCritLock();
@@ -1004,17 +1046,20 @@ struct S_00caaf40
     virtual void vfn_bc();
     virtual void vfn_c0();
     virtual void vfn_c4(S_00caaf40_Obj* o, int a);
-    S_00caaf40_Obj* bhkCapsuleShape_CreateClone(int a);
+    S_00caaf40_Obj* bhkCapsuleShape_CreateClone(int arCloneData);
 };
 
 // @fnv 0x00caaf40
 // src: XBOX_PDB 0x00caaf40
-S_00caaf40_Obj* S_00caaf40::bhkCapsuleShape_CreateClone(int a)
+// pdb: bhkCapsuleShape::CreateClone | bhkCapsuleShape.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+S_00caaf40_Obj* S_00caaf40::bhkCapsuleShape_CreateClone(int arCloneData)
 {
     AutoMemContext ctx(0x10);
     bhkSerializable_CloneCritLock();
     S_00caaf40_Obj* o = new S_00caaf40_Obj;
-    vfn_c4(o, a);
+    vfn_c4(o, arCloneData);
     bhkSerializable_CloneCritUnlock();
     return o;
 }
@@ -1064,6 +1109,9 @@ struct ThisCallStub
 
 // @fnv 0x00cab000
 // src: XBOX_PDB 0x00cab000
+// pdb: bhkCapsuleShape::CreateCinfo | bhkCapsuleShape.obj | retail, upstream name already matches, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
 int __fastcall bhkCapsuleShape_CreateCinfo(bhkCapsuleShape* shape, void*, bool* out)
 {
     AutoMemContext guard(0x10);
@@ -1095,7 +1143,7 @@ int __fastcall bhkCapsuleShape_CreateCinfo(bhkCapsuleShape* shape, void*, bool* 
             p = 0;
         }
         shape->m_0c = (int)p;
-        if (shape->m_pHavokObject != 0)
+        if (shape->phkObject != 0)
         {
             union
             {
@@ -1131,7 +1179,7 @@ struct FUN_00d22590
     int unk34;
     int unk38;
     int unk3C;
-    FUN_00d22590(int a, int b, float c);
+    FUN_00d22590(int vertexA, int vertexB, float c);
     void FUN_00c905b0();
     static void* operator new(unsigned int size)
     {
@@ -1185,6 +1233,10 @@ struct Owner
 
 // @fnv 0x00cab0e0
 // src: COMMUNITY 0x00cab0e0
+// pdb: bhkCapsuleShape::Init | bhkCapsuleShape.obj | retail, object-file gap fill, medium
+// pdb note: debug build links it to bhkCapsuleShape::KillCinfo
+// pdb params: arInfo
+// pdb locals: hka, cinfo, hkb
 void Owner::bhkCapsuleShape_Init(int a, int b, float c)
 {
     AutoMemContext scope(0x10);
@@ -1199,20 +1251,23 @@ extern int DAT_0126832c;
 char* NiViewerStrings_NiGetViewerString_Title(int s);
 struct S_00cab8c0_Owner
 {
-    void bhkConvexShape_GetViewerStrings(StrArr* a);
-    void bhkCapsuleShape_GetViewerStrings(StrArr* a);
+    void bhkConvexShape_GetViewerStrings(StrArr* apStrings);
+    void bhkCapsuleShape_GetViewerStrings(StrArr* apStrings);
 };
 // @fnv 0x00cab8c0
 // src: XBOX_PDB 0x00cab8c0
-void S_00cab8c0_Owner::bhkCapsuleShape_GetViewerStrings(StrArr* a)
+// pdb: bhkCapsuleShape::GetViewerStrings | bhkCapsuleShape.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void S_00cab8c0_Owner::bhkCapsuleShape_GetViewerStrings(StrArr* apStrings)
 {
     AutoMemContext guard(0x10);
-    bhkConvexShape_GetViewerStrings(a);
+    bhkConvexShape_GetViewerStrings(apStrings);
     char* s = NiViewerStrings_NiGetViewerString_Title(DAT_0126832c);
-    unsigned idx = a->m_usSize;
-    if (idx >= a->m_usMaxSize)
-        a->SetSize(idx + a->m_usGrowBy);
-    a->SetAt(idx, s);
+    unsigned idx = apStrings->m_usSize;
+    if (idx >= apStrings->m_usMaxSize)
+        apStrings->SetSize(idx + apStrings->m_usGrowBy);
+    apStrings->SetAt(idx, s);
 }
 }  // namespace fnv_00cab8c0
 
@@ -1236,16 +1291,19 @@ struct SpawnedFade
 struct FUN_00cb76a0_cls
 {
     void __thiscall bhkPCollisionObject_CopyMembers(void* obj, unsigned int arg);
-    void* bhkSPCollisionObject_CreateClone(unsigned int arg);
+    void* bhkSPCollisionObject_CreateClone(unsigned int arCloneData);
 };
 
 // @fnv 0x00cb76a0
 // src: XBOX_PDB 0x00cb76a0
-void* FUN_00cb76a0_cls::bhkSPCollisionObject_CreateClone(unsigned int arg)
+// pdb: bhkSPCollisionObject::CreateClone | bhkSPCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+void* FUN_00cb76a0_cls::bhkSPCollisionObject_CreateClone(unsigned int arCloneData)
 {
     AutoMemContext guard(0x10);
     SpawnedFade* obj = new SpawnedFade;
-    this->bhkPCollisionObject_CopyMembers(obj, arg);
+    this->bhkPCollisionObject_CopyMembers(obj, arCloneData);
     return obj;
 }
 }  // namespace fnv_00cb76a0
@@ -1310,6 +1368,8 @@ struct FUN_00cb7790_class
 
 // @fnv 0x00cb7790
 // src: XBOX_PDB 0x00cb7790
+// pdb: bhkSPCollisionObject::NitohkTransform | bhkSPCollisionObject.obj | retail, upstream name already matches, high
+// pdb locals: psp, pobj, nit
 void FUN_00cb7790_class::bhkSPCollisionObject_NitohkTransform()
 {
     FUN_00cb7790_receiver* target = receiver;
@@ -1381,6 +1441,7 @@ void __cdecl opdelete(void*);
 
 // @fnv 0x00cb7920
 // src: EXE 0x00cb7920
+// pdb: bhkMultiSphereShape::CreateObject | bhkMultiSphereShape.obj | retail, upstream name already matches, high
 Node* bhkMultiSphereShape_CreateObject()
 {
     Node* p = (Node*)opnew(0x14);
@@ -1451,8 +1512,8 @@ struct Shader
     virtual void f43();
     virtual void f44();
     virtual int* f45(struct Pass** pass);
-    void bhkShape_LoadBinary(struct Pass* pass);
-    void bhkMultiSphereShape_LoadBinary(struct Pass* pass);
+    void bhkShape_LoadBinary(struct Pass* arStream);
+    void bhkMultiSphereShape_LoadBinary(struct Pass* arStream);
 };
 
 struct Pass
@@ -1461,16 +1522,19 @@ struct Pass
     char unk004;
 };
 
-void bhkStream_SwapHKArray(int* a, int b, int* c);
-void bhkStream_LoadBinary(Pass* pass, int* b);
+void bhkStream_SwapHKArray(int* apCInfo, int aiSize, int* apArray);
+void bhkStream_LoadBinary(Pass* arStream, int* arArray);
 
 // @fnv 0x00cb7b20
 // src: XBOX_PDB 0x00cb7b20
-void Shader::bhkMultiSphereShape_LoadBinary(Pass* pass)
+// pdb: bhkMultiSphereShape::LoadBinary | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo, iSize
+void Shader::bhkMultiSphereShape_LoadBinary(Pass* arStream)
 {
-    Pass* p = pass;
+    Pass* p = arStream;
     bhkShape_LoadBinary(p);
-    int* data = f45(&pass);
+    int* data = f45(&arStream);
     if (*((char*)p + 0x1e5) != 1)
     {
         int r = f42();
@@ -1596,19 +1660,22 @@ struct FUN_00cb7b80_cls
     virtual void v45();
     virtual void v46();
     virtual void v47(SpawnArgs* a);
-    void bhkMultiSphereShape_Init(SpawnArgs* a);
+    void bhkMultiSphereShape_Init(SpawnArgs* arInfo);
 };
 
 // @fnv 0x00cb7b80
 // src: XBOX_PDB 0x00cb7b80
-void FUN_00cb7b80_cls::bhkMultiSphereShape_Init(SpawnArgs* a)
+// pdb: bhkMultiSphereShape::Init | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: po, tempMemContext, cinfo
+void FUN_00cb7b80_cls::bhkMultiSphereShape_Init(SpawnArgs* arInfo)
 {
     AutoMemContext guard(0x10);
     unsigned int b, c;
-    SpawnedNode* n = new SpawnedNode(c = a->m_kPointA, b = a->m_kPointB);
+    SpawnedNode* n = new SpawnedNode(c = arInfo->m_kPointA, b = arInfo->m_kPointB);
     this->v35(n);
     n->Finish();
-    this->v47(a);
+    this->v47(arInfo);
 }
 }  // namespace fnv_00cb7b80
 
@@ -1639,23 +1706,26 @@ struct CbArr8150
     }
 };
 
-extern "C" unsigned char __stdcall bhkShape_IsEqual(void* a1);
-extern "C" unsigned char __cdecl bhkStream_IsEqual(int* pA, void** pB);
+extern "C" unsigned char __stdcall bhkShape_IsEqual(void* apObject);
+extern "C" unsigned char __cdecl bhkStream_IsEqual(int* arArray1, void** arArray2);
 
 struct FUN_00cb8150_cls
 {
     int unk00;
-    void bhkMultiSphereShape_CopyCinfo(CbArr8150* p);
+    void bhkMultiSphereShape_CopyCinfo(CbArr8150* arInfo);
 
-    unsigned char bhkMultiSphereShape_IsEqual(void* a1);
+    unsigned char bhkMultiSphereShape_IsEqual(void* apObject);
 };
 
 // @fnv 0x00cb8150
 // src: XBOX_PDB 0x00cb8150
-unsigned char FUN_00cb8150_cls::bhkMultiSphereShape_IsEqual(void* a1)
+// pdb: bhkMultiSphereShape::IsEqual | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres, dstInfo, srcInfo, pobj
+unsigned char FUN_00cb8150_cls::bhkMultiSphereShape_IsEqual(void* apObject)
 {
-    FUN_00cb8150_cls* other = (FUN_00cb8150_cls*)a1;
-    unsigned char r = bhkShape_IsEqual(a1);
+    FUN_00cb8150_cls* other = (FUN_00cb8150_cls*)apObject;
+    unsigned char r = bhkShape_IsEqual(apObject);
     if (r != 0)
     {
         CbArr8150 a;
@@ -1673,7 +1743,7 @@ namespace fnv_00cb8330 {
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 struct S_00cb8330_Pool
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern S_00cb8330_Pool DAT_011f6238;
 struct S_00cb8330_Obj
@@ -1689,14 +1759,17 @@ struct S_00cb8330_cls
     int unk04;
     int unk08;
     S_00cb8330_Obj* m_0c;
-    void bhkMultiSphereShape_KillCinfo(bool bFree);
+    void bhkMultiSphereShape_KillCinfo(bool abCreated);
 };
 // @fnv 0x00cb8330
 // src: XBOX_PDB 0x00cb8330
-void S_00cb8330_cls::bhkMultiSphereShape_KillCinfo(bool bFree)
+// pdb: bhkMultiSphereShape::KillCinfo | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: abCreated
+// pdb locals: tempMemContext, pi
+void S_00cb8330_cls::bhkMultiSphereShape_KillCinfo(bool abCreated)
 {
     AutoMemContext guard(0x10);
-    if (bFree)
+    if (abCreated)
     {
         S_00cb8330_Obj* p = m_0c;
         if (p)
@@ -1854,8 +1927,8 @@ struct OwnerB
     Triple m04;
 };
 
-void __cdecl bhkStream_SwapHKArray(void* a, void* b, void* c);
-void __cdecl bhkStream_SaveBinary(void* a, void* b);
+void __cdecl bhkStream_SwapHKArray(void* apCInfo, void* aiSize, void* apArray);
+void __cdecl bhkStream_SaveBinary(void* arStream, void* arArray);
 
 struct TmpGuard
 {
@@ -1930,13 +2003,16 @@ struct FUN_00cb8010_cls
     virtual void vB0();
     virtual OwnerB* v45(unsigned char* pFlag);
 
-    void __thiscall bhkShape_SaveBinary(A1Owner* a1);
-    void __thiscall bhkMultiSphereShape_SaveBinary(A1Owner* a1);
+    void __thiscall bhkShape_SaveBinary(A1Owner* arStream);
+    void __thiscall bhkMultiSphereShape_SaveBinary(A1Owner* arStream);
 };
 
 // @fnv 0x00cb8010
 // src: XBOX_PDB 0x00cb8010
-void __thiscall FUN_00cb8010_cls::bhkMultiSphereShape_SaveBinary(A1Owner* a1)
+// pdb: bhkMultiSphereShape::SaveBinary | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: bcreated, cinfo, spheres, iSize
+void __thiscall FUN_00cb8010_cls::bhkMultiSphereShape_SaveBinary(A1Owner* arStream)
 {
     unsigned int flagSlot;
     OwnerB* p = this->v45((unsigned char*)&flagSlot);
@@ -1954,15 +2030,15 @@ void __thiscall FUN_00cb8010_cls::bhkMultiSphereShape_SaveBinary(A1Owner* a1)
     tmp.m2 = s2;
     src->m08 = t2;
 
-    if (a1->m1E4 != 1)
+    if (arStream->m1E4 != 1)
     {
         void* r = this->v42();
         bhkStream_SwapHKArray(p, r, &p->m04);
     }
-    this->bhkShape_SaveBinary(a1);
-    bhkStream_SaveBinary(a1, &tmp);
+    this->bhkShape_SaveBinary(arStream);
+    bhkStream_SaveBinary(arStream, &tmp);
     this->v41(flagSlot);
-    if (*(unsigned char*)&flagSlot == 0 && a1->m1E4 != 1)
+    if (*(unsigned char*)&flagSlot == 0 && arStream->m1E4 != 1)
     {
         void* r = this->v42();
         bhkStream_SwapHKArray(p, r, &p->m04);
@@ -2049,10 +2125,10 @@ struct CObj
     int unk04;
     CLevel1* unk08;
 
-    bool __thiscall bhkTransformShape_CanShare(int value);
+    bool __thiscall bhkTransformShape_CanShare(int arCloneData);
 };
 
-bool __stdcall bhkShape_CanShare(void* value);
+bool __stdcall bhkShape_CanShare(void* arCloneData);
 
 inline bool Walk(CObj* o, int v, bool r)
 {
@@ -2074,31 +2150,36 @@ inline bool Walk(CObj* o, int v, bool r)
 }
 // @fnv 0x00c8c3d0
 // src: XBOX_PDB 0x00c8c3d0
-bool __thiscall CObj::bhkTransformShape_CanShare(int value)
+// pdb: bhkTransformShape::CanShare | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: bres, ps
+bool __thiscall CObj::bhkTransformShape_CanShare(int arCloneData)
 {
-    bool r = bhkShape_CanShare((void*)value);
+    bool r = bhkShape_CanShare((void*)arCloneData);
     if (r)
-        r = Walk(this, value, r);
+        r = Walk(this, arCloneData, r);
     return r;
 }
 
 extern "C" unsigned long __cdecl _byteswap_ulong(unsigned long);
 // @fnv 0x00c8c020
 // src: XBOX_PDB 0x00c8c020
-void __cdecl bhkStream_Endian(unsigned int* apData)
+// pdb: bhkStream::Endian | bhkTransformShape.obj | retail, call graph, high
+// pdb params: arVector
+void __cdecl bhkStream_Endian(unsigned int* arTrans)
 {
-    *(volatile unsigned int*)&apData[0] = _byteswap_ulong(*(volatile unsigned int*)&apData[0]);
-    *(volatile unsigned int*)&apData[1] = _byteswap_ulong(*(volatile unsigned int*)&apData[1]);
-    *(volatile unsigned int*)&apData[2] = _byteswap_ulong(*(volatile unsigned int*)&apData[2]);
-    *(volatile unsigned int*)&apData[3] = _byteswap_ulong(*(volatile unsigned int*)&apData[3]);
-    *(volatile unsigned int*)&apData[4] = _byteswap_ulong(*(volatile unsigned int*)&apData[4]);
-    *(volatile unsigned int*)&apData[5] = _byteswap_ulong(*(volatile unsigned int*)&apData[5]);
-    *(volatile unsigned int*)&apData[6] = _byteswap_ulong(*(volatile unsigned int*)&apData[6]);
-    *(volatile unsigned int*)&apData[7] = _byteswap_ulong(*(volatile unsigned int*)&apData[7]);
-    *(volatile unsigned int*)&apData[8] = _byteswap_ulong(*(volatile unsigned int*)&apData[8]);
-    *(volatile unsigned int*)&apData[9] = _byteswap_ulong(*(volatile unsigned int*)&apData[9]);
-    *(volatile unsigned int*)&apData[10] = _byteswap_ulong(*(volatile unsigned int*)&apData[10]);
-    *(volatile unsigned int*)&apData[11] = _byteswap_ulong(*(volatile unsigned int*)&apData[11]);
+    *(volatile unsigned int*)&arTrans[0] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[0]);
+    *(volatile unsigned int*)&arTrans[1] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[1]);
+    *(volatile unsigned int*)&arTrans[2] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[2]);
+    *(volatile unsigned int*)&arTrans[3] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[3]);
+    *(volatile unsigned int*)&arTrans[4] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[4]);
+    *(volatile unsigned int*)&arTrans[5] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[5]);
+    *(volatile unsigned int*)&arTrans[6] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[6]);
+    *(volatile unsigned int*)&arTrans[7] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[7]);
+    *(volatile unsigned int*)&arTrans[8] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[8]);
+    *(volatile unsigned int*)&arTrans[9] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[9]);
+    *(volatile unsigned int*)&arTrans[10] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[10]);
+    *(volatile unsigned int*)&arTrans[11] = _byteswap_ulong(*(volatile unsigned int*)&arTrans[11]);
 }
 
 struct FUN_00c8c1e0_arg
@@ -2262,7 +2343,7 @@ struct FUN_00c8c1e0_rec
     FUN_00c8c1e0_sub sub;
 };
 
-extern "C" void __cdecl bhkStream_Endian(void* p);
+extern "C" void __cdecl bhkStream_Endian(void* arTrans);
 
 struct FUN_00c8c1e0_cls
 {
@@ -2357,20 +2438,23 @@ struct FUN_00c8c1e0_cls
     virtual void v44()
     {}
     virtual FUN_00c8c1e0_rec* GetRec(FUN_00c8c1e0_arg*& a);
-    void bhkShape_LoadBinary(FUN_00c8c1e0_arg* a);
-    void bhkTransformShape_LoadBinary(FUN_00c8c1e0_arg* a1);
+    void bhkShape_LoadBinary(FUN_00c8c1e0_arg* arStream);
+    void bhkTransformShape_LoadBinary(FUN_00c8c1e0_arg* arStream);
 };
 
 // @fnv 0x00c8c1e0
 // src: XBOX_PDB 0x00c8c1e0
-void FUN_00c8c1e0_cls::bhkTransformShape_LoadBinary(FUN_00c8c1e0_arg* a1)
+// pdb: bhkTransformShape::LoadBinary | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void FUN_00c8c1e0_cls::bhkTransformShape_LoadBinary(FUN_00c8c1e0_arg* arStream)
 {
     FUN_00c8c1e0_rec* r;
-    FUN_00c8c1e0_arg* volatile* pa = &a1;
+    FUN_00c8c1e0_arg* volatile* pa = &arStream;
     FUN_00c8c1e0_arg* a = *pa;
     a->ReadLinkID();
     bhkShape_LoadBinary(a);
-    r = GetRec(a1);
+    r = GetRec(arStream);
     r->m04 = 0;
     if (a->m1E5 != 1)
     {
@@ -2398,7 +2482,7 @@ struct C8C260Block
     unsigned int m_iSlotIds[4];
 };
 
-void __cdecl bhkStream_Endian(int* header);
+void __cdecl bhkStream_Endian(int* arTrans);
 
 inline void C8C260Swap32(unsigned int* p)
 {
@@ -2627,8 +2711,8 @@ struct C8C260Shader
     int unk04;
     C8C260Link* m_link;
 
-    void bhkShape_SaveBinary(C8C260Renderer* pkRenderer);
-    void bhkTransformShape_SaveBinary(C8C260Renderer* pkRenderer);
+    void bhkShape_SaveBinary(C8C260Renderer* arStream);
+    void bhkTransformShape_SaveBinary(C8C260Renderer* arStream);
 };
 
 inline void* C8C260GetTarget(C8C260Shader* p)
@@ -2638,14 +2722,17 @@ inline void* C8C260GetTarget(C8C260Shader* p)
 
 // @fnv 0x00c8c260
 // src: XBOX_PDB 0x00c8c260
-void C8C260Shader::bhkTransformShape_SaveBinary(C8C260Renderer* pkRenderer)
+// pdb: bhkTransformShape::SaveBinary | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo, ps
+void C8C260Shader::bhkTransformShape_SaveBinary(C8C260Renderer* arStream)
 {
-    pkRenderer->SetTarget(C8C260GetTarget(this));
+    arStream->SetTarget(C8C260GetTarget(this));
     bool bCreated;
     C8C260Block* pkBlock = GetBlock(&bCreated);
-    C8C260Prepare(pkBlock, pkRenderer);
-    bhkShape_SaveBinary(pkRenderer);
-    C8C260Prepare(pkBlock, pkRenderer);
+    C8C260Prepare(pkBlock, arStream);
+    bhkShape_SaveBinary(arStream);
+    C8C260Prepare(pkBlock, arStream);
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
@@ -2654,6 +2741,8 @@ typedef void(__thiscall* ReleaseFn_t)(S_00c8c810_A* apObj);
 
 // @fnv 0x00c8c770
 // src: XBOX_PDB 0x00c8c770
+// pdb: bhkTransformShape::RembhkShapeRef | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, psc
 void H_00c8c810::bhkTransformShape_RembhkShapeRef()
 {
     AutoMemContext guard(0x10);
@@ -2826,17 +2915,20 @@ struct RenderProcessor
     virtual void method43();
     virtual void method44();
     virtual RenderResult* GetRendered(unsigned char*);
-    void bhkShape_CopyMembers(void* input, RenderArg* arg);
-    void bhkTransformShape_CopyMembers(void* input, RenderArg* arg);
+    void bhkShape_CopyMembers(void* apDest, RenderArg* arCloneData);
+    void bhkTransformShape_CopyMembers(void* apDest, RenderArg* arCloneData);
 };
 // @fnv 0x00c8c130
 // src: XBOX_PDB 0x00c8c130
-void RenderProcessor::bhkTransformShape_CopyMembers(void* input, RenderArg* arg)
+// pdb: bhkTransformShape::CopyMembers | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: fscale, bclone, cinfo, ps, pnewS
+void RenderProcessor::bhkTransformShape_CopyMembers(void* apDest, RenderArg* arCloneData)
 {
     unsigned char ignored;
     RenderResult* result = GetRendered(&ignored);
     RenderNode* node = result->holder04 ? result->holder04->node08 : 0;
-    float alpha = arg->alpha;
+    float alpha = arCloneData->alpha;
     if (alpha != 1.0f)
     {
         result->colour40 = result->colour40 * alpha;
@@ -2848,15 +2940,15 @@ void RenderProcessor::bhkTransformShape_CopyMembers(void* input, RenderArg* arg)
     {
         if (node == 0)
             goto complete;
-        if (node->NeedsRefresh(arg))
+        if (node->NeedsRefresh(arCloneData))
             goto complete;
     }
     {
-        HolderResult* replacement = node->Fetch(arg);
+        HolderResult* replacement = node->Fetch(arCloneData);
         result->holder04 = replacement ? replacement->link08 : 0;
     }
 complete:
-    bhkShape_CopyMembers(input, arg);
+    bhkShape_CopyMembers(apDest, arCloneData);
 }
 }  // namespace fnv_00c8c130
 
@@ -2946,17 +3038,20 @@ struct FUN_00c8c4d0_cls
     virtual void v47();
     virtual void v48();
     virtual void v49(SpawnedObject* obj, int a1);
-    SpawnedObject* bhkTransformShape_CreateClone(int a1);
+    SpawnedObject* bhkTransformShape_CreateClone(int arCloneData);
 };
 
 // @fnv 0x00c8c4d0
 // src: XBOX_PDB 0x00c8c4d0
-SpawnedObject* FUN_00c8c4d0_cls::bhkTransformShape_CreateClone(int a1)
+// pdb: bhkTransformShape::CreateClone | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+SpawnedObject* FUN_00c8c4d0_cls::bhkTransformShape_CreateClone(int arCloneData)
 {
     AutoMemContext guard(0x10);
     bhkSerializable_CloneCritLock();
     SpawnedObject* p = new SpawnedObject();
-    this->v49(p, a1);
+    this->v49(p, arCloneData);
     bhkSerializable_CloneCritUnlock();
     return p;
 }
@@ -2997,17 +3092,20 @@ struct S_00cb8270
 
     void bhkMultiSphereShape_CopyCinfo(S_00cb8270_Array*);
 
-    S_00cb8270_Array* bhkMultiSphereShape_CreateCinfo(bool& outCreated);
+    S_00cb8270_Array* bhkMultiSphereShape_CreateCinfo(bool& arCreated);
 };
 
 // @fnv 0x00cb8270
 // src: XBOX_PDB 0x00cb8270
-S_00cb8270_Array* S_00cb8270::bhkMultiSphereShape_CreateCinfo(bool& outCreated)
+// pdb: bhkMultiSphereShape::CreateCinfo | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+S_00cb8270_Array* S_00cb8270::bhkMultiSphereShape_CreateCinfo(bool& arCreated)
 {
     AutoMemContext memContext(0x10);
 
     bool created = (unk0C == 0);
-    outCreated = created;
+    arCreated = created;
     if (created)
     {
         S_00cb8270_Array* arr = new S_00cb8270_Array();
@@ -3023,25 +3121,27 @@ S_00cb8270_Array* S_00cb8270::bhkMultiSphereShape_CreateCinfo(bool& outCreated)
 
 struct CollisionStreamLoader : NiCollisionObject
 {
-    void __thiscall bhkNiCollisionObject_LoadBinary(NiStream& stream);
-    void __thiscall FUN_00a80fd0(NiStream& stream);
+    void __thiscall bhkNiCollisionObject_LoadBinary(NiStream& arStream);
+    void __thiscall FUN_00a80fd0(NiStream& kStream);
 };
 
 struct LegacyCollisionLoader : CollisionStreamLoader
 {
-    void __thiscall bhkPCollisionObject_LoadBinary(NiStream& stream);
+    void __thiscall bhkPCollisionObject_LoadBinary(NiStream& arStream);
 };
 
 // @fnv 0x00c87f60
 // src: XBOX_PDB 0x00c87f60
-void __thiscall LegacyCollisionLoader::bhkPCollisionObject_LoadBinary(NiStream& stream)
+// pdb: bhkPCollisionObject::LoadBinary | bhkPCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void __thiscall LegacyCollisionLoader::bhkPCollisionObject_LoadBinary(NiStream& arStream)
 {
-    if (stream.m_kHeader.m_uiVersion >= 0x15)
+    if (arStream.m_BSStreamHeader.uiVersion >= 0x15)
     {
-        bhkNiCollisionObject_LoadBinary(stream);
+        bhkNiCollisionObject_LoadBinary(arStream);
     }
     else
     {
-        FUN_00a80fd0(stream);
+        FUN_00a80fd0(arStream);
     }
 }

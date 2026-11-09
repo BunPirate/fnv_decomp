@@ -44,20 +44,21 @@ struct SunAccumulatorAllocation : BSShaderAccumulator
 
 // Initializes the Sun object's fields to zero and creates a BSShaderAccumulator for SunMode, disabling occlusion tests.
 // @fnv 0x006404f0
+// pdb: Sun::Sun | Sun.obj | retail, upstream name already matches, high
 Sun::Sun()
-    : m_pFirstSceneObject(0), m_pSecondSceneObject(0), m_pThirdSceneObject(0), m_pFourthSceneObject(0),
-      m_pMenuLight(0), m_pSunShaderAccumulator(0)
+    : spSunBaseNode(0), spSunGlareNode(0), spSunBase(0), spSunGlare(0),
+      spLight(0), spSunAccumulator(0)
 {
-    m_pRootNode = 0;
-    m_pFirstSceneObject = 0;
-    m_pSecondSceneObject = 0;
-    m_pThirdSceneObject = 0;
-    m_pFourthSceneObject = 0;
-    m_pMenuLight = 0;
-    m_pSunGlarePick = 0;
-    m_fSunGlareIntensity = 0.0f;
+    spRoot = 0;
+    spSunBaseNode = 0;
+    spSunGlareNode = 0;
+    spSunBase = 0;
+    spSunGlare = 0;
+    spLight = 0;
+    pSunGlarePick = 0;
+    fGlareScale = 0.0f;
     bDoOcclusionTests = false;
-    m_pSunShaderAccumulator = reinterpret_cast<NiAVObject*>(new SunAccumulatorAllocation(BSShaderManager::BRCM_NO_GROUPS, 1, 1));
+    spSunAccumulator = reinterpret_cast<NiAVObject*>(new SunAccumulatorAllocation(BSShaderManager::BRCM_NO_GROUPS, 1, 1));
 }
 
 // @fnv 0x00461110
@@ -76,6 +77,7 @@ int __fastcall Sky_GetSunLightSpecularColor(int this_ptr)
 
 // Destroys the NiPick object and, when flags has bit 0 set, frees its memory via operator delete; returns this.
 // @fnv 0x006407e0
+// pdb: NiPick::`scalar deleting destructor' | Sun.obj | debug, call graph, medium
 void* NiPick::ScalarDeletingDestructor(unsigned int flags)
 {
     NiPick::~NiPick();
@@ -90,6 +92,7 @@ struct SunDestruction
     void* ScalarDeletingDestructor(unsigned int);
 };
 // @fnv 0x00640670
+// pdb: Sun::`scalar deleting destructor' | Sun.obj | retail, vtable slot, high
 void* SunDestruction::ScalarDeletingDestructor(unsigned int flags)
 {
     ((Sun*)this)->Sun::~Sun();
@@ -99,9 +102,11 @@ void* SunDestruction::ScalarDeletingDestructor(unsigned int flags)
 }
 
 // @fnv 0x00642660
-void NiMatrix3::SetEntry(unsigned int aiRow, unsigned int aiColumn, float afValue)
+// pdb: NiMatrix3::SetEntry | Sun.obj | debug, upstream name already matches, high
+// pdb params: uiRow, uiCol, fEntry
+void NiMatrix3::SetEntry(unsigned int uiRow, unsigned int uiCol, float fEntry)
 {
-    reinterpret_cast<float (*)[3]>(&m_pEntry[0][0])[aiRow][aiColumn] = afValue;
+    reinterpret_cast<float (*)[3]>(&m_pEntry[0][0])[uiRow][uiCol] = fEntry;
 }
 
 class BSShaderNoLightingProperty;
@@ -233,7 +238,7 @@ struct FUN_00baf3c0_S
 };
 struct FUN_00bb0180_S
 {
-    void AddProperties(NiAVObject*, unsigned int);
+    void BSShaderData_Convert(NiAVObject*, unsigned int);
 };
 void* __cdecl _NiMalloc(unsigned int);
 
@@ -251,6 +256,9 @@ using namespace fnv_00640810;
 #pragma inline_depth(0)
 
 // @fnv 0x00640810
+// pdb: Sun::Initialize | Sun.obj | retail, vtable slot, high
+// pdb params: apSkyRoot
+// pdb locals: psunNormals, pglareNormals, psunColors, sglareVertOrder, pglareVertices, pglareColors, bsshaderdata, ssunVertOrder, psunVertices, psunTexture, pglareTexture, defaultColor
 void Sun::Init(NiNode* apSkyRoot)
 {
     NiPoint3* psunNormals;
@@ -335,54 +343,54 @@ void Sun::Init(NiNode* apSkyRoot)
     sglareVertOrder[4] = 1;
     sglareVertOrder[5] = 3;
 
-    (NP&)((Sun*)this)->m_pThirdSceneObject =
+    (NP&)((Sun*)this)->spSunBase =
         new NiTriShape(4, psunVertices, psunNormals, psunColors, psunTexture, 1, 0, 2, ssunVertOrder);
-    ((NiTriShape*)((const NP&)((Sun*)this)->m_pThirdSceneObject).Modelloader_GetReferencedThis())->NiAVObject_SetSelectiveUpdate(true);
+    ((NiTriShape*)((const NP&)((Sun*)this)->spSunBase).Modelloader_GetReferencedThis())->NiAVObject_SetSelectiveUpdate(true);
 
-    (NP&)((Sun*)this)->m_pFirstSceneObject = new SunBillboardNode;
-    ((SunBillboardNode*)((const NP&)((Sun*)this)->m_pFirstSceneObject).Modelloader_GetReferencedThis())->NiAVObject_SetSelectiveUpdate(true);
-    ((SunBillboardNode*)((const NP&)((Sun*)this)->m_pFirstSceneObject).Modelloader_GetReferencedThis())->SetMode_0051d000(2);
-    ((SunBillboardNode*)((const NP&)((Sun*)this)->m_pFirstSceneObject).Modelloader_GetReferencedThis())
-        ->AttachChildInAvailableSlot((NiTriShape*)((const NP&)((Sun*)this)->m_pThirdSceneObject).Modelloader_GetReferencedThis(), true);
+    (NP&)((Sun*)this)->spSunBaseNode = new SunBillboardNode;
+    ((SunBillboardNode*)((const NP&)((Sun*)this)->spSunBaseNode).Modelloader_GetReferencedThis())->NiAVObject_SetSelectiveUpdate(true);
+    ((SunBillboardNode*)((const NP&)((Sun*)this)->spSunBaseNode).Modelloader_GetReferencedThis())->SetMode_0051d000(2);
+    ((SunBillboardNode*)((const NP&)((Sun*)this)->spSunBaseNode).Modelloader_GetReferencedThis())
+        ->AttachChildInAvailableSlot((NiTriShape*)((const NP&)((Sun*)this)->spSunBase).Modelloader_GetReferencedThis(), true);
 
-    (NP&)((Sun*)this)->m_pFourthSceneObject =
+    (NP&)((Sun*)this)->spSunGlare =
         new NiTriShape(4, pglareVertices, pglareNormals, pglareColors, pglareTexture, 1, 0, 2, sglareVertOrder);
-    ((NiTriShape*)((const NP&)((Sun*)this)->m_pFourthSceneObject).Modelloader_GetReferencedThis())->NiAVObject_SetSelectiveUpdate(true);
+    ((NiTriShape*)((const NP&)((Sun*)this)->spSunGlare).Modelloader_GetReferencedThis())->NiAVObject_SetSelectiveUpdate(true);
 
-    (NP&)((Sun*)this)->m_pSecondSceneObject = new SunBillboardNode;
-    ((SunBillboardNode*)((const NP&)((Sun*)this)->m_pSecondSceneObject).Modelloader_GetReferencedThis())->NiAVObject_SetSelectiveUpdate(true);
-    ((SunBillboardNode*)((const NP&)((Sun*)this)->m_pSecondSceneObject).Modelloader_GetReferencedThis())->SetMode_0051d000(2);
-    ((SunBillboardNode*)((const NP&)((Sun*)this)->m_pSecondSceneObject).Modelloader_GetReferencedThis())
-        ->NiAVObject_SetScale(((Sun*)this)->m_fSunGlareIntensity);
-    ((SunBillboardNode*)((const NP&)((Sun*)this)->m_pSecondSceneObject).Modelloader_GetReferencedThis())
-        ->AttachChildInAvailableSlot((NiTriShape*)((const NP&)((Sun*)this)->m_pFourthSceneObject).Modelloader_GetReferencedThis(), true);
+    (NP&)((Sun*)this)->spSunGlareNode = new SunBillboardNode;
+    ((SunBillboardNode*)((const NP&)((Sun*)this)->spSunGlareNode).Modelloader_GetReferencedThis())->NiAVObject_SetSelectiveUpdate(true);
+    ((SunBillboardNode*)((const NP&)((Sun*)this)->spSunGlareNode).Modelloader_GetReferencedThis())->SetMode_0051d000(2);
+    ((SunBillboardNode*)((const NP&)((Sun*)this)->spSunGlareNode).Modelloader_GetReferencedThis())
+        ->NiAVObject_SetScale(((Sun*)this)->fGlareScale);
+    ((SunBillboardNode*)((const NP&)((Sun*)this)->spSunGlareNode).Modelloader_GetReferencedThis())
+        ->AttachChildInAvailableSlot((NiTriShape*)((const NP&)((Sun*)this)->spSunGlare).Modelloader_GetReferencedThis(), true);
 
-    ((NiNode*)((const NP&)((Sun*)this)->m_pRootNode).Modelloader_GetReferencedThis())
-        ->AttachChildInAvailableSlot((NiAVObject*)((const NP&)((Sun*)this)->m_pFirstSceneObject).Modelloader_GetReferencedThis(), true);
+    ((NiNode*)((const NP&)((Sun*)this)->spRoot).Modelloader_GetReferencedThis())
+        ->AttachChildInAvailableSlot((NiAVObject*)((const NP&)((Sun*)this)->spSunBaseNode).Modelloader_GetReferencedThis(), true);
 
-    (NP&)((Sun*)this)->m_pMenuLight = new SunAllocated<NiDirectionalLight>;
-    ((NiPointLight*)((const NP&)((Sun*)this)->m_pMenuLight).Modelloader_GetReferencedThis())->NiLight_SetDimmer(1.0f);
-    ((NiDirectionalLight*)((const NP&)((Sun*)this)->m_pMenuLight).Modelloader_GetReferencedThis())->SetAmbientColor(DAT_011a9b7c);
-    ((NiPointLight*)((const NP&)((Sun*)this)->m_pMenuLight).Modelloader_GetReferencedThis())
+    (NP&)((Sun*)this)->spLight = new SunAllocated<NiDirectionalLight>;
+    ((NiPointLight*)((const NP&)((Sun*)this)->spLight).Modelloader_GetReferencedThis())->NiLight_SetDimmer(1.0f);
+    ((NiDirectionalLight*)((const NP&)((Sun*)this)->spLight).Modelloader_GetReferencedThis())->SetAmbientColor(DAT_011a9b7c);
+    ((NiPointLight*)((const NP&)((Sun*)this)->spLight).Modelloader_GetReferencedThis())
         ->SetEffectColor((const NiPoint3&)DAT_011a9b7c);
-    ((NiNode*)((const NP&)((Sun*)this)->m_pRootNode).Modelloader_GetReferencedThis())
-        ->AttachChildInAvailableSlot((NiDirectionalLight*)((const NP&)((Sun*)this)->m_pMenuLight).Modelloader_GetReferencedThis(), true);
+    ((NiNode*)((const NP&)((Sun*)this)->spRoot).Modelloader_GetReferencedThis())
+        ->AttachChildInAvailableSlot((NiDirectionalLight*)((const NP&)((Sun*)this)->spLight).Modelloader_GetReferencedThis(), true);
 
-    ((Sun*)this)->m_pSunGlarePick = new NiPick(0, 8);
+    ((Sun*)this)->pSunGlarePick = new NiPick(0, 8);
     // NiPick.h lacks these two setters; retain their existing out-of-line calls.
-    ((QuantityData*)((Sun*)this)->m_pSunGlarePick)->SetQuantity(1);
-    ((TESObjectREFR*)((Sun*)this)->m_pSunGlarePick)->SetFlags(1);
-    ((NiPick*)((Sun*)this)->m_pSunGlarePick)->RadioEntry_Data_SetLastSignalStrength(true);
-    ((NiPick*)((Sun*)this)->m_pSunGlarePick)->SetByteAtOffset17(true);
+    ((QuantityData*)((Sun*)this)->pSunGlarePick)->SetQuantity(1);
+    ((TESObjectREFR*)((Sun*)this)->pSunGlarePick)->SetFlags(1);
+    ((NiPick*)((Sun*)this)->pSunGlarePick)->RadioEntry_Data_SetLastSignalStrength(true);
+    ((NiPick*)((Sun*)this)->pSunGlarePick)->SetByteAtOffset17(true);
 
     ((FUN_00baf3c0_S*)&bsshaderdata)->FUN_00baf3c0();
     bsshaderdata.m_iShaderType = 6;
     bsshaderdata.m_iShaderOptionIndex = 0;
     ((FUN_00bb0180_S*)&bsshaderdata)
-        ->AddProperties((NiTriShape*)((const NP&)((Sun*)this)->m_pThirdSceneObject).Modelloader_GetReferencedThis(), 1);
+        ->BSShaderData_Convert((NiTriShape*)((const NP&)((Sun*)this)->spSunBase).Modelloader_GetReferencedThis(), 1);
     bsshaderdata.m_iShaderOptionIndex = 1;
     ((FUN_00bb0180_S*)&bsshaderdata)
-        ->AddProperties((NiTriShape*)((const NP&)((Sun*)this)->m_pFourthSceneObject).Modelloader_GetReferencedThis(), 1);
+        ->BSShaderData_Convert((NiTriShape*)((const NP&)((Sun*)this)->spSunGlare).Modelloader_GetReferencedThis(), 1);
 }
 
 class Actor;
@@ -535,6 +543,9 @@ template <class T> struct SunUninitialized
 #define SUN_VALUE(type, name) (*reinterpret_cast<type*>(&name))
 
 // @fnv 0x00641830
+// pdb: Sun::Update | Sun.obj | retail, vtable slot, high
+// pdb params: apSky, afSecondsPassed
+// pdb locals: newLoc, fhour, tempMemContext, pcell, lightDir, rotmat, pLast, fAlphaInEnd, fDiscAlpha, pshadeProperty, fSunriseBegin, fhalftrans, pCurr, fGlareAlpha, fSunsetEnd, fAlphaOutBegin, fAlphaOutEnd, fAlphaInBegin, fCurrPct, ksundirection, newSunRot, fxNewAim, ftemp, origin ...
 void SunUpdate::UpdateSun(Sky* apSky, float afSecondsPassed)
 {
     AutoMemContext tempMemContext(0x21, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Sky\\Sun.cpp",
@@ -563,12 +574,12 @@ void SunUpdate::UpdateSun(Sky* apSky, float afSecondsPassed)
             SUN_VALUE(NiMatrix3, lightDir).SetEntry(1, 0, DAT_0104f2a8);
             SUN_VALUE(NiMatrix3, lightDir).SetEntry(2, 0, DAT_0104f2a8);
         }
-        ((NiAVObject*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())->SetLocalRotation(SUN_VALUE(NiMatrix3, lightDir));
-        ((NiDirectionalLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+        ((NiAVObject*)((const NP&)spLight).Modelloader_GetReferencedThis())->SetLocalRotation(SUN_VALUE(NiMatrix3, lightDir));
+        ((NiDirectionalLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
             ->SetAmbientColor(*(const NiColor*)((TESDataHandler*)apSky)->GetTESRaceList());
-        ((NiPointLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+        ((NiPointLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
             ->SetEffectColor(*(const NiPoint3*)((TESObjectTREE*)apSky)->GetData());
-        ((NiPointLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+        ((NiPointLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
             ->FUN_0050dd50(*(const NiPoint3*)((TESDataHandler*)apSky)->GetTESCaravanDeckList());
     }
     else if (apSky->Sky_GetMode() == 1)
@@ -591,18 +602,18 @@ void SunUpdate::UpdateSun(Sky* apSky, float afSecondsPassed)
             SUN_VALUE(NiMatrix3, lightDir).SetEntry(1, 0, DAT_0104f2a8);
             SUN_VALUE(NiMatrix3, lightDir).SetEntry(2, 0, DAT_0104f2a8);
         }
-        ((NiAVObject*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())->SetLocalRotation(SUN_VALUE(NiMatrix3, lightDir));
-        ((NiDirectionalLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+        ((NiAVObject*)((const NP&)spLight).Modelloader_GetReferencedThis())->SetLocalRotation(SUN_VALUE(NiMatrix3, lightDir));
+        ((NiDirectionalLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
             ->SetAmbientColor(*(const NiColor*)((TESDataHandler*)apSky)->GetTESRaceList());
-        ((NiPointLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+        ((NiPointLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
             ->SetEffectColor(*(const NiPoint3*)((TESObjectTREE*)apSky)->GetData());
-        ((NiPointLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+        ((NiPointLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
             ->FUN_0050dd50(*(const NiPoint3*)((TESDataHandler*)apSky)->GetTESCaravanDeckList());
     }
     else if (apSky->Sky_GetMode() == 3 || apSky->Sky_GetMode() == 2)
     {
-        ((NiAVObject*)((const NP&)m_pRootNode).Modelloader_GetReferencedThis())
-            ->SetAppCulled(!((NiAVObject*)((const NP&)m_pRootNode).Modelloader_GetReferencedThis())->GetDisplayObject());
+        ((NiAVObject*)((const NP&)spRoot).Modelloader_GetReferencedThis())
+            ->SetAppCulled(!((NiAVObject*)((const NP&)spRoot).Modelloader_GetReferencedThis())->GetDisplayObject());
         float fSunriseBegin = (Sky_GetSunriseEnd((char*)apSky) + Sky_GetSunriseBegin((char*)apSky)) / 2.0;
         float fSunsetEnd = (Sky_GetSunsetEnd(apSky) + Sky_GetSunsetBegin((char*)apSky)) / 2.0;
         float fhalftrans = *originalRuntimeFloatSetting82.Float() * DAT_01011588;
@@ -629,11 +640,11 @@ void SunUpdate::UpdateSun(Sky* apSky, float afSecondsPassed)
         float fGlareAlpha = (pCurr ? pCurr->GetWeatherData(4, fCurrPct * fDiscAlpha, 0.0f) : fDiscAlpha) +
                             (pLast ? pLast->GetWeatherData(4, (1.0f - fCurrPct) * fDiscAlpha, 0.0f) : 0.0f);
         void* pshadeProperty =
-            ((((PropHelper*)((const NP&)m_pThirdSceneObject).Modelloader_GetReferencedThis())->GetProperty(3) == 0)
+            ((((PropHelper*)((const NP&)spSunBase).Modelloader_GetReferencedThis())->GetProperty(3) == 0)
                  ? 0
-                 : (((BGSTerrainManager*)((PropHelper*)((const NP&)m_pThirdSceneObject).Modelloader_GetReferencedThis())->GetProperty(3))
+                 : (((BGSTerrainManager*)((PropHelper*)((const NP&)spSunBase).Modelloader_GetReferencedThis())->GetProperty(3))
                         ->GetMinLevel() == 13))
-                ? ((PropHelper*)((const NP&)m_pThirdSceneObject).Modelloader_GetReferencedThis())->GetProperty(3)
+                ? ((PropHelper*)((const NP&)spSunBase).Modelloader_GetReferencedThis())->GetProperty(3)
                 : 0;
         if (pshadeProperty)
         {
@@ -643,11 +654,11 @@ void SunUpdate::UpdateSun(Sky* apSky, float afSecondsPassed)
                           ((float*)((TESDataHandler*)apSky)->GetBGSCameraShotList())[2], fDiscAlpha);
         }
         pshadeProperty =
-            ((((PropHelper*)((const NP&)m_pFourthSceneObject).Modelloader_GetReferencedThis())->GetProperty(3) == 0)
+            ((((PropHelper*)((const NP&)spSunGlare).Modelloader_GetReferencedThis())->GetProperty(3) == 0)
                  ? 0
-                 : (((BGSTerrainManager*)((PropHelper*)((const NP&)m_pFourthSceneObject).Modelloader_GetReferencedThis())->GetProperty(3))
+                 : (((BGSTerrainManager*)((PropHelper*)((const NP&)spSunGlare).Modelloader_GetReferencedThis())->GetProperty(3))
                         ->GetMinLevel() == 13))
-                ? ((PropHelper*)((const NP&)m_pFourthSceneObject).Modelloader_GetReferencedThis())->GetProperty(3)
+                ? ((PropHelper*)((const NP&)spSunGlare).Modelloader_GetReferencedThis())->GetProperty(3)
                 : 0;
         if (pshadeProperty)
         {
@@ -681,20 +692,20 @@ void SunUpdate::UpdateSun(Sky* apSky, float afSecondsPassed)
             SUN_VALUE(NiPoint3, newLoc).y = ((GlobalObject_0044f440*)&originalRuntimeFloatSetting84)->FUN_00450410();
             SUN_VALUE(NiPoint3, newLoc).z = fabsf_00408860(((GlobalObject_0044f440*)&originalRuntimeFloatSetting83)->FUN_00450410()) -
                        fabsf_00408860(fxNewAim);
-            ((NiAVObject*)((const NP&)m_pRootNode).Modelloader_GetReferencedThis())->NiAVObject_SetTranslate((const NiPoint3&)SUN_VALUE(NiPoint3, newLoc));
-            ((NiAVObject*)((const NP&)m_pSecondSceneObject).Modelloader_GetReferencedThis())->NiAVObject_SetTranslate((const NiPoint3&)SUN_VALUE(NiPoint3, newLoc));
+            ((NiAVObject*)((const NP&)spRoot).Modelloader_GetReferencedThis())->NiAVObject_SetTranslate((const NiPoint3&)SUN_VALUE(NiPoint3, newLoc));
+            ((NiAVObject*)((const NP&)spSunGlareNode).Modelloader_GetReferencedThis())->NiAVObject_SetTranslate((const NiPoint3&)SUN_VALUE(NiPoint3, newLoc));
             ((NiPoint3*)&SUN_VALUE(NiPoint3, ksundirection))
                 ->Set(-fxNewAim, ((GlobalObject_0044f440*)&originalRuntimeFloatSetting84)->FUN_00450410(),
                       ((GlobalObject_0044f440*)&originalRuntimeFloatSetting85)->FUN_00450410());
             SUN_VALUE(NiPoint3, ksundirection).ComputeMagnitude();
             ((Transform::Mat*)&SUN_VALUE(NiMatrix3, newSunRot))
                 ->FUN_004769c0(0, (const NiPoint3&)SUN_VALUE(NiPoint3, ksundirection));
-            ((NiAVObject*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())->SetLocalRotation(SUN_VALUE(NiMatrix3, newSunRot));
-            ((NiDirectionalLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+            ((NiAVObject*)((const NP&)spLight).Modelloader_GetReferencedThis())->SetLocalRotation(SUN_VALUE(NiMatrix3, newSunRot));
+            ((NiDirectionalLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
                 ->SetAmbientColor(*(const NiColor*)((TESDataHandler*)apSky)->GetTESRaceList());
-            ((NiPointLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+            ((NiPointLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
                 ->SetEffectColor(*(const NiPoint3*)((TESObjectTREE*)apSky)->GetData());
-            ((NiPointLight*)((const NP&)m_pMenuLight).Modelloader_GetReferencedThis())
+            ((NiPointLight*)((const NP&)spLight).Modelloader_GetReferencedThis())
                 ->FUN_0050dd50(*(const NiPoint3*)((TESDataHandler*)apSky)->GetTESCaravanDeckList());
         }
         if (g_TES && _ref_0084e3a0(g_TES))
@@ -711,37 +722,37 @@ void SunUpdate::UpdateSun(Sky* apSky, float afSecondsPassed)
             this->Sun_StopSunOcclusion();
             if (bblocked || fscale < *originalRuntimeFloatSetting80.Float())
             {
-                if (this->m_fSunGlareIntensity - fscaleChange < *originalRuntimeFloatSetting80.Float())
+                if (this->fGlareScale - fscaleChange < *originalRuntimeFloatSetting80.Float())
                 {
-                    ((NiAVObject*)((const NP&)m_pSecondSceneObject).Modelloader_GetReferencedThis())->SetAppCulled(true);
-                    this->m_fSunGlareIntensity = 0.0f;
+                    ((NiAVObject*)((const NP&)spSunGlareNode).Modelloader_GetReferencedThis())->SetAppCulled(true);
+                    this->fGlareScale = 0.0f;
                 }
                 else
                 {
-                    ((NiAVObject*)((const NP&)m_pSecondSceneObject).Modelloader_GetReferencedThis())->SetAppCulled(false);
-                    this->m_fSunGlareIntensity -= fscaleChange;
-                    ((NiAVObject*)((const NP&)m_pSecondSceneObject).Modelloader_GetReferencedThis())
-                        ->NiAVObject_SetScale(this->m_fSunGlareIntensity);
+                    ((NiAVObject*)((const NP&)spSunGlareNode).Modelloader_GetReferencedThis())->SetAppCulled(false);
+                    this->fGlareScale -= fscaleChange;
+                    ((NiAVObject*)((const NP&)spSunGlareNode).Modelloader_GetReferencedThis())
+                        ->NiAVObject_SetScale(this->fGlareScale);
                 }
             }
             else
             {
-                if (this->m_fSunGlareIntensity + fscaleChange >= fscale ||
-                    this->m_fSunGlareIntensity >= fscale)
+                if (this->fGlareScale + fscaleChange >= fscale ||
+                    this->fGlareScale >= fscale)
                 {
-                    this->m_fSunGlareIntensity = fscale;
+                    this->fGlareScale = fscale;
                 }
                 else
                 {
-                    this->m_fSunGlareIntensity += fscaleChange;
+                    this->fGlareScale += fscaleChange;
                 }
-                ((NiAVObject*)((const NP&)m_pSecondSceneObject).Modelloader_GetReferencedThis())->SetAppCulled(false);
-                ((NiAVObject*)((const NP&)m_pSecondSceneObject).Modelloader_GetReferencedThis())
-                    ->NiAVObject_SetScale(this->m_fSunGlareIntensity);
+                ((NiAVObject*)((const NP&)spSunGlareNode).Modelloader_GetReferencedThis())->SetAppCulled(false);
+                ((NiAVObject*)((const NP&)spSunGlareNode).Modelloader_GetReferencedThis())
+                    ->NiAVObject_SetScale(this->fGlareScale);
             }
-            if (!((NiAVObject*)((const NP&)m_pSecondSceneObject).Modelloader_GetReferencedThis())->GetDisplayObject())
+            if (!((NiAVObject*)((const NP&)spSunGlareNode).Modelloader_GetReferencedThis())->GetDisplayObject())
             {
-                ((NiAVObject*)((const NP&)m_pSecondSceneObject).Modelloader_GetReferencedThis())->SetAppCulled(true);
+                ((NiAVObject*)((const NP&)spSunGlareNode).Modelloader_GetReferencedThis())->SetAppCulled(true);
             }
         }
         if (apSky->IsFlag4Set())
@@ -768,17 +779,18 @@ bool Sky::IsFlag4Set()
 }
 
 // @fnv 0x006406a0
+// pdb: Sun::~Sun | Sun.obj | retail, upstream name already matches, high
 Sun::~Sun()
 {
-    m_pRootNode = 0;
-    m_pFirstSceneObject = 0;
-    m_pSecondSceneObject = 0;
-    m_pThirdSceneObject = 0;
-    m_pFourthSceneObject = 0;
-    m_pMenuLight = 0;
-    if (m_pSunGlarePick)
-        delete static_cast<NiPick*>(m_pSunGlarePick);
-    m_pSunShaderAccumulator = 0;
+    spRoot = 0;
+    spSunBaseNode = 0;
+    spSunGlareNode = 0;
+    spSunBase = 0;
+    spSunGlare = 0;
+    spLight = 0;
+    if (pSunGlarePick)
+        delete static_cast<NiPick*>(pSunGlarePick);
+    spSunAccumulator = 0;
 }
 
 // Sun update: with a world and enabled, point the glare at the new target and run its update at a scaled time step.
@@ -808,6 +820,9 @@ class SunAccumulatorUpdate : public Sun
 };
 
 // @fnv 0x006426a0
+// pdb: Sun::CalculateSunGlare | Sun.obj | debug, call graph, medium
+// pdb params: aiTestNumber, apAccumulator, apCamera
+// pdb locals: tempMemContext, paccum, pgeometry
 void SunAccumulatorUpdate::UpdateAccumulator(void* pvArg0, A6A0Target* pkTarget, void* pvArg1)
 {
     AutoMemHelper kMem(0x21, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Sky\\Sun.cpp", 0x222);
@@ -816,7 +831,7 @@ void SunAccumulatorUpdate::UpdateAccumulator(void* pvArg0, A6A0Target* pkTarget,
         A6A0Target* pkCurrent = pkTarget;
         if (pkCurrent)
         {
-            ((NP*)&m_pSunShaderAccumulator)->Reset(pkTarget);
+            ((NP*)&spSunAccumulator)->Reset(pkTarget);
             A6A0World* pkWorld = GetWorld();
             pkWorld->SetTimeStep((float)(pkWorld->GetTimeStep() / g_dA6A0TimeScale));
             pkCurrent->Update(pkWorld, pvArg0, pvArg1);

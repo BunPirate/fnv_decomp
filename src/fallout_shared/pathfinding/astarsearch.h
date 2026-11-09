@@ -4,6 +4,7 @@
 #include "astarsearch_decls.h"
 
 // @fnv 0x00b00a00
+// pdb: BSTaskletManager::QInstance | BSTaskletManager_Xenon.obj | retail, call graph, high
 inline BSWin32TaskletManager& GetTaskletManager()
 {
     static BSWin32TaskletManager s_TaskletManager(6);
@@ -11,20 +12,23 @@ inline BSWin32TaskletManager& GetTaskletManager()
 }
 
 // @fnv 0x006a7e00
+// pdb: AStarSearch<NavMeshSearchNode,NavMeshSearchLink>::GetOrCreateAStarNode | NavMeshSearch.obj | debug, call graph, high
+// pdb params: aiKey, afCost, aRetNode
+// pdb locals: pBuckHead, pcurrent, pprev
 CREATE_ASTARNODE_RESULT AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdgeReference>::CreateOrUpdateNode(
-    unsigned int uiKey, float m_fPathingCostCur, AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>*& pNodeOut)
+    unsigned int aiKey, float afCost, AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>*& aRetNode)
 {
     AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>** ppBucket =
-        &m_kNodeHashTable.m_ppNodes[m_kNodeHashTable.AStarNodeMap_GetBucketIndex(uiKey)];
+        &m_kNodeHashTable.m_ppNodes[m_kNodeHashTable.AStarNodeMap_GetBucketIndex(aiKey)];
     if (*ppBucket)
     {
-        if ((*ppBucket)->iKey == uiKey)
+        if ((*ppBucket)->iKey == aiKey)
         {
-            if ((*ppBucket)->m_fPathingCostCur > m_fPathingCostCur)
+            if ((*ppBucket)->m_fPathingCostCur > afCost)
             {
-                pNodeOut = *ppBucket;
-                AStarBucketQueue.UnlinkNode(pNodeOut);
-                pNodeOut->m_fPathingCostCur = m_fPathingCostCur;
+                aRetNode = *ppBucket;
+                AStarBucketQueue.UnlinkNode(aRetNode);
+                aRetNode->m_fPathingCostCur = afCost;
                 return CREATE_ASTARNODE_RESULT_ASTAR_MUST_SET_LINKDATA;
             }
             else
@@ -37,13 +41,13 @@ CREATE_ASTARNODE_RESULT AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdg
             pCur = (*ppBucket)->m_pNextHashNode;
             while (pCur)
             {
-                if (pCur->iKey == uiKey)
+                if (pCur->iKey == aiKey)
                 {
-                    if (pCur->m_fPathingCostCur > m_fPathingCostCur)
+                    if (pCur->m_fPathingCostCur > afCost)
                     {
-                        pNodeOut = pCur;
-                        AStarBucketQueue.UnlinkNode(pNodeOut);
-                        pNodeOut->m_fPathingCostCur = m_fPathingCostCur;
+                        aRetNode = pCur;
+                        AStarBucketQueue.UnlinkNode(aRetNode);
+                        aRetNode->m_fPathingCostCur = afCost;
                         return CREATE_ASTARNODE_RESULT_ASTAR_MUST_SET_LINKDATA;
                     }
                     else
@@ -54,15 +58,19 @@ CREATE_ASTARNODE_RESULT AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdg
             }
         }
     }
-    pNodeOut = m_kNodeAllocator.CreateNode();
-    pNodeOut->iKey = uiKey;
-    pNodeOut->m_fPathingCostCur = m_fPathingCostCur;
-    pNodeOut->m_pNextHashNode = *ppBucket;
-    *ppBucket = pNodeOut;
+    aRetNode = m_kNodeAllocator.CreateNode();
+    aRetNode->iKey = aiKey;
+    aRetNode->m_fPathingCostCur = afCost;
+    aRetNode->m_pNextHashNode = *ppBucket;
+    *ppBucket = aRetNode;
     return CREATE_ASTARNODE_RESULT_ASTAR_CREATED_NEW_NODE;
 }
 
 // @fnv 0x006b8fe0
+// pdb: AStarSearch<CombatPlanNode *,CombatPlanLink *>::GetOrCreateAStarNode | CombatPlanner.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to AStarSearch<NavMeshInfo const *,TESObjectREFR *>::GetOrCreateAStarNode
+// pdb params: aiKey, afCost, aRetNode
+// pdb locals: pBuckHead, pcurrent, pprev
 CREATE_ASTARNODE_RESULT AStarSearch<AStarNodeData*, AStarNodeLink*>::CreateOrUpdateNode(
     unsigned int uiKey, float m_fPathingCostCur, AStarNode<AStarNodeData*, AStarNodeLink*>*& pNodeOut)
 {
@@ -115,15 +123,18 @@ CREATE_ASTARNODE_RESULT AStarSearch<AStarNodeData*, AStarNodeLink*>::CreateOrUpd
 }
 
 // @fnv 0x006a7c90
+// pdb: AStarSearch<NavMeshSearchNode,NavMeshSearchLink>::AddStartNode | NavMeshSearch.obj | debug, call graph, high
+// pdb params: aiKey, aNodeData, afHeuristic
+// pdb locals: pastarNode
 AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdgeReference>::FindOrCreateSearchNode(
-    unsigned int uiKey, const NavMeshTriangleReference& ObjectResolver, float m_fCost)
+    unsigned int aiKey, const NavMeshTriangleReference& aNodeData, float afHeuristic)
 {
     AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* pNode;
-    switch (((NavMeshSearch*)this)->CreateOrUpdateNode(uiKey, 0.0f, pNode))
+    switch (((NavMeshSearch*)this)->CreateOrUpdateNode(aiKey, 0.0f, pNode))
     {
     case CREATE_ASTARNODE_RESULT_ASTAR_CREATED_NEW_NODE:
-        pNode->m_fCost = m_fCost;
-        pNode->ObjectResolver = ObjectResolver;
+        pNode->m_fCost = afHeuristic;
+        pNode->ObjectResolver = aNodeData;
         AStarBucketQueue.InsertSortedNode(pNode);
         m_pLastCreatedNode = pNode;
         return pNode;
@@ -137,6 +148,8 @@ AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* AStarSearch<N
 }
 
 // @fnv 0x006a8010
+// pdb: AStarSearch<NavMeshSearchNode,NavMeshSearchLink>::BuildNodePath | NavMeshSearch.obj | debug, call graph, medium
+// pdb locals: iloopCount, ConnectedNodes, ptempLastSearchedNode, i, pconnectedNode
 AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdgeReference>::ComputePath()
 {
     AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* pCurNode;
@@ -186,7 +199,10 @@ AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* AStarSearch<N
 }
 
 // @fnv 0x006a7d60
-bool AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdgeReference>::Search(unsigned int uiParam1, unsigned int uiParam2, bool bUseBestNode)
+// pdb: AStarSearch<NavMeshSearchNode,NavMeshSearchLink>::Search | NavMeshSearch.obj | debug, call graph, high
+// pdb params: apReturnArray, apReturnLinkArray, abReturnBestPathIfFailed
+// pdb locals: pbestNode, psolutionNode, bretValue
+bool AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdgeReference>::Search(unsigned int apReturnArray, unsigned int apReturnLinkArray, bool abReturnBestPathIfFailed)
 {
     AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* pNode;
     bool bSuccess;
@@ -198,7 +214,7 @@ bool AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdgeReference>::Search
         bSuccess = true;
         pOutNode = pNode;
     }
-    else if (bUseBestNode)
+    else if (abReturnBestPathIfFailed)
     {
         bSuccess = false;
         pOutNode = m_pFirstNode;
@@ -209,7 +225,7 @@ bool AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdgeReference>::Search
         pOutNode = NULL;
     }
     if (pOutNode)
-        AStarSearch_NavMeshSearchNode_NavMeshSearchLink_GetPathToNode(pOutNode, uiParam1, uiParam2);
+        AStarSearch_NavMeshSearchNode_NavMeshSearchLink_GetPathToNode(pOutNode, apReturnArray, apReturnLinkArray);
     return bSuccess;
 }
 

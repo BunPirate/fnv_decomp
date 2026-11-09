@@ -2,6 +2,7 @@
 
 #include "INISettingCollection.h"
 
+// pdb: class INIPrefSettingCollection, size 0x114, bases: INISettingCollection, 0 members
 class INIPrefSettingCollection : public INISettingCollection
 {
 public:

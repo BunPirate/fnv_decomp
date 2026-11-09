@@ -5,6 +5,7 @@
 
 class TESObjectWEAP;
 
+// pdb: class CombatProcedureAttackLow, size 0x20, bases: CombatProcedure, 4 members
 class CombatProcedureAttackLow : public CombatProcedure
 {
 public:
@@ -23,8 +24,8 @@ public:
     void SaveGame_009cbfd0(BGSSaveFormBuffer* apSaveGameBuffer);
     void CombatProcedureAttackLow_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
-    int m_10;
-    int m_14;
-    int m_18;
+    int eState;
+    int fWeaponDPS;
+    int fWeaponCondition;
     TESObjectWEAP* pWeapon;
 };

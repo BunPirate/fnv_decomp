@@ -2,6 +2,7 @@
 
 #include "hkReferencedObject.h"
 
+// pdb: class hkpConstraintMotor, size 0xc, bases: hkReferencedObject, 1 members
 class hkpConstraintMotor : public hkReferencedObject
 {
 public:

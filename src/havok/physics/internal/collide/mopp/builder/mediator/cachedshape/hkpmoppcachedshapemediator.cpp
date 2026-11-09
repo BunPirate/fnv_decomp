@@ -53,14 +53,14 @@ struct S_00d54cd0_All : S_00d54cd0_Base
     int m_cap;
     void* unk14;
     int unk18;
-    S_00d54cd0_All(void* world) throw();
+    S_00d54cd0_All(void* shapeArray) throw();
     ~S_00d54cd0_All() throw();
 };
 struct S_00d54cd0_Closest : S_00d54cd0_Base
 {
     void* unk8;
     int unkC;
-    S_00d54cd0_Closest(void* world) throw();
+    S_00d54cd0_Closest(void* shapeArray) throw();
     ~S_00d54cd0_Closest() throw();
 };
 struct S_00d54cd0_Input
@@ -93,23 +93,26 @@ struct S_00d54cd0_Result
     int unk28;
     bool unk2C;
 };
-S_00d54cd0_Result* hkpMoppUtility_buildCodeInternal(S_00d54cd0_Base* col, void* world, S_00d54cd0_Input* in, void* out) throw();
+S_00d54cd0_Result* hkpMoppUtility_buildCodeInternal(S_00d54cd0_Base* mediator, void* shapeContainer, S_00d54cd0_Input* moppInput, void* reindexInfo) throw();
 // @fnv 0x00d54cd0
 // src: HAVOK_LIB 0x00d54cd0
-S_00d54cd0_Result* hkpMoppUtility_buildCode(void* world, S_00d54cd0_Input* pInput, void* out)
+// pdb: hkpMoppUtility::buildCode | hkpMoppUtility.obj | retail, upstream name already matches, high
+// pdb params: shapeContainer, moppInput, reindexInfo
+// pdb locals: mediator
+S_00d54cd0_Result* hkpMoppUtility_buildCode(void* shapeContainer, S_00d54cd0_Input* moppInput, void* reindexInfo)
 {
     S_00d54cd0_Result* r;
-    if (pInput->unk20)
+    if (moppInput->unk20)
     {
-        S_00d54cd0_All col(world);
-        r = hkpMoppUtility_buildCodeInternal(&col, world, pInput, out);
+        S_00d54cd0_All col(shapeContainer);
+        r = hkpMoppUtility_buildCodeInternal(&col, shapeContainer, moppInput, reindexInfo);
     }
     else
     {
-        S_00d54cd0_Closest col(world);
-        r = hkpMoppUtility_buildCodeInternal(&col, world, pInput, out);
+        S_00d54cd0_Closest col(shapeContainer);
+        r = hkpMoppUtility_buildCodeInternal(&col, shapeContainer, moppInput, reindexInfo);
     }
-    r->unk2C = pInput->unk1E == 0;
+    r->unk2C = moppInput->unk1E == 0;
     return r;
 }
 
@@ -184,6 +187,7 @@ struct FUN_00dd5d90 : RecordBase
 
 // Destructor that zeroes m_iExtra; the m_kArray member is destroyed afterwards by the compiler-generated code.
 // @fnv 0x00dd5d90
+// pdb: hkpMoppCachedShapeMediator::~hkpMoppCachedShapeMediator | hkpMoppCachedShapeMediator.obj | retail, call graph, high
 FUN_00dd5d90::~FUN_00dd5d90() throw()
 {
     m_iExtra = 0;
@@ -219,13 +223,16 @@ class FUN_00dd5cd0_cls
     int unk10;
     Mgr* m_pMgr;
 
-    void ComputeAxisRanges(Item* item, int m, int a, int b);
-    void ProcessItems(int a, int b);
+    void hkpMoppCachedShapeMediator_addConvexShape(Item* convexShape, int key, int directions, int numDirections);
+    void ProcessItems(int directions, int numDirections);
 };
 
 // Iterates count items from m_pMgr starting at m, calling ComputeAxisRanges on each item whose v14() is nonzero, advancing m via v0c.
 // @fnv 0x00dd5cd0
-void FUN_00dd5cd0_cls::ProcessItems(int aiArg1, int aiArg2)
+// pdb: hkpMoppCachedShapeMediator::setSplittingPlaneDirections | hkpMoppCachedShapeMediator.obj | retail, vtable slot, high
+// pdb params: directions, numDirections
+// pdb locals: buffer, assertBuf, ostr
+void FUN_00dd5cd0_cls::ProcessItems(int directions, int numDirections)
 {
     __declspec(align(16)) int slots[127];
     int i;
@@ -239,7 +246,7 @@ void FUN_00dd5cd0_cls::ProcessItems(int aiArg1, int aiArg2)
             Item* item = m_pMgr->v14(m, slots);
             if (item->v14())
             {
-                ComputeAxisRanges(item, m, aiArg1, aiArg2);
+                hkpMoppCachedShapeMediator_addConvexShape(item, m, directions, numDirections);
             }
             m = m_pMgr->v0c(m);
             i = i - 1;
@@ -277,7 +284,7 @@ struct DD5D50Source
 class FUN_00dd5d50 : public DD5D50ReferencedObject
 {
   public:
-    FUN_00dd5d50(DD5D50Source* source);
+    FUN_00dd5d50(DD5D50Source* shapeArray);
     virtual void unk00();
 
     DD5D50Array m_items;
@@ -286,9 +293,11 @@ class FUN_00dd5d50 : public DD5D50ReferencedObject
 };
 
 // @fnv 0x00dd5d50
-FUN_00dd5d50::FUN_00dd5d50(DD5D50Source* source) : m_pObservedSource(source)
+// pdb: hkpMoppCachedShapeMediator::hkpMoppCachedShapeMediator | hkpMoppCachedShapeMediator.obj | retail, call graph, high
+// pdb params: shapeArray
+FUN_00dd5d50::FUN_00dd5d50(DD5D50Source* shapeArray) : m_pObservedSource(shapeArray)
 {
-    m_uiItemCount = source->getCount();
+    m_uiItemCount = shapeArray->getCount();
 }
 
 struct FUN_00dd5660_cls
@@ -318,7 +327,7 @@ struct Vec4Bits
     unsigned int u3;
 };
 
-void __cdecl ResizeAudioStream(hkMemoryAllocator* apAllocator, void* apVector, int aiElemSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem);
 
 struct Src_00dd5b00
 {
@@ -368,7 +377,7 @@ struct Obj_00dd5b00
     int unk04;
     Vec_00dd5b00 m_kNode;
 
-    void ComputeAxisRanges(Src_00dd5b00* apSource, int aiId, Item_00dd5b00* apItems, int aiCount);
+    void hkpMoppCachedShapeMediator_addConvexShape(Src_00dd5b00* convexShape, int key, Item_00dd5b00* directions, int numDirections);
 };
 
 inline float Dot3_00dd5b00(const LocalM128& a, const LocalM128& b)
@@ -385,13 +394,16 @@ inline float Dot3_00dd5b00(const LocalM128& a, const LocalM128& b)
 
 // Fills scratch vectors from apSource, appends an entry, and stores each item's min and max of vertex dot product plus or minus w into that entry's ranges.
 // @fnv 0x00dd5b00
-void Obj_00dd5b00::ComputeAxisRanges(Src_00dd5b00* apSource, int aiId, Item_00dd5b00* apItems, int aiCount)
+// src: XBOX_RETAIL_PDB 0x00dd5b00
+// pdb: hkpMoppCachedShapeMediator::addConvexShape | hkpMoppCachedShapeMediator.obj | retail, object-file gap fill, high
+// pdb params: convexShape, key, directions, numDirections
+void Obj_00dd5b00::hkpMoppCachedShapeMediator_addConvexShape(Src_00dd5b00* convexShape, int key, Item_00dd5b00* directions, int numDirections)
 {
-    int nVerts = apSource->v2c();
+    int nVerts = convexShape->v2c();
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
     Vec4* m_pkDeltas = (Vec4*)pHolder->m_stack.m_next.m_storage;
     pHolder->m_stack.m_next.m_storage = (void*)((int)m_pkDeltas + ((nVerts * sizeof(Vec4) + 0x7f) & ~0x7f));
-    apSource->v30(m_pkDeltas);
+    convexShape->v30(m_pkDeltas);
 
     Vec_00dd5b00* pList = &m_kNode;
     hkMemoryRouter* pGrow = hkMemoryRouter_getInstance();
@@ -400,10 +412,10 @@ void Obj_00dd5b00::ComputeAxisRanges(Src_00dd5b00* apSource, int aiId, Item_00dd
         ResizeAudioStream(reinterpret_cast<hkMemoryAllocator*>(pGrow->m_heap), pList, 0x6c);
     }
     Entry_00dd5b00* pEntry = &pList->m_pData[pList->m_iArrayLength++];
-    pEntry->m_iOwnerObjectOffset = aiId;
+    pEntry->m_iOwnerObjectOffset = key;
 
     float zero = 0.0f;
-    for (int i = 0; i < aiCount; i++)
+    for (int i = 0; i < numDirections; i++)
     {
         int n = nVerts;
         float lo;
@@ -412,7 +424,7 @@ void Obj_00dd5b00::ComputeAxisRanges(Src_00dd5b00* apSource, int aiId, Item_00dd
         {
             float r = m_pkDeltas->w;
             __declspec(align(16)) Vec4Bits kBits;
-            kBits = apItems[i].m_kAxisEndPoints;
+            kBits = directions[i].m_kAxisEndPoints;
             LocalM128 p = _mm_load_ps((const float*)&kBits);
             float fDot = Dot3_00dd5b00(_mm_load_ps((const float*)m_pkDeltas), p);
             lo = fDot - r;
@@ -477,6 +489,7 @@ struct FUN_00dd5de0
 };
 
 // @fnv 0x00dd5de0
+// pdb: hkpMoppCachedShapeMediator::`scalar deleting destructor' | hkpMoppCachedShapeMediator.obj | retail, vtable slot, high
 FUN_00dd5de0::FUN_00dd5de0()
 {}
 
@@ -498,20 +511,22 @@ struct Owner
     unsigned int unk00, unk04, unk08, unk0c, unk10;
     OutCollection* collection;
     int count;
-    void hkpMoppCachedShapeMediator_getPrimitives(OutRecord* out);
+    void hkpMoppCachedShapeMediator_getPrimitives(OutRecord* primitives);
 };
 // Iterates the collection and writes each element's handle and index into the out array.
 // @fnv 0x00dd55f0
 // src: HAVOK_LIB 0x00dd55f0
-void Owner::hkpMoppCachedShapeMediator_getPrimitives(OutRecord* out)
+// pdb: hkpMoppCachedShapeMediator::getPrimitives | hkpMoppCachedShapeMediator.obj | retail, upstream name already matches, high
+// pdb params: primitives
+void Owner::hkpMoppCachedShapeMediator_getPrimitives(OutRecord* primitives)
 {
     int n = count;
     void* current = collection->Begin();
     for (int i = 0; i < n; ++i)
     {
-        out->handle = current;
-        out->index = i;
-        ++out;
+        primitives->handle = current;
+        primitives->index = i;
+        ++primitives;
         current = collection->Next(current);
     }
 }

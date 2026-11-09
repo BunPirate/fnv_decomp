@@ -9,6 +9,7 @@
 #include <new>
 
 // @fnv 0x00845550
+// pdb: BGSSaveLoadChangesMap::BGSSaveLoadChangesMap | BGSSaveLoadChangesMap.obj | retail, upstream name already matches, high
 // the base map constructor 0x00845b30 with 0x13af buckets, then the vftable 0x0107ed68
 BGSSaveLoadChangesMap::BGSSaveLoadChangesMap() : NiTPointerMap<unsigned int, FormChangeRecord*>(0x13AF)
 {
@@ -16,6 +17,9 @@ BGSSaveLoadChangesMap::BGSSaveLoadChangesMap() : NiTPointerMap<unsigned int, For
 
 // Looks up the actor in the map and returns its array of combat targets, or null if not present.
 // @fnv 0x009a4250
+// pdb: BGSSaveLoadChangesMap::GetChanges | BGSSaveLoadChangesMap.obj | debug, call graph, medium
+// pdb params: aiFormID
+// pdb locals: pchanges
 BSSimpleArray<Actor*, 1024>* CombatTargetMap::GetTargetsForActor(Actor* actor)
 {
     BSSimpleArray<Actor*, 1024>* array = 0;
@@ -25,75 +29,96 @@ BSSimpleArray<Actor*, 1024>* CombatTargetMap::GetTargetsForActor(Actor* actor)
 }
 
 // @fnv 0x00845720
-bool BGSSaveLoadChangesMap::ContainsChangeFlags(unsigned int formID, FormChangeMask flags)
+// src: XBOX_RETAIL_PDB 0x00845720
+// pdb: BGSSaveLoadChangesMap::CheckChangeFlags | BGSSaveLoadChangesMap.obj | retail, object-file run extension, high
+// pdb params: aiFormID, aiChangeFlags
+// pdb locals: pformChanges
+bool BGSSaveLoadChangesMap::CheckChangeFlags(unsigned int aiFormID, FormChangeMask aiChangeFlags)
 {
-    FormChangeRecord* changes = FUN_009a4250(formID);
+    FormChangeRecord* changes = FUN_009a4250(aiFormID);
     if (changes)
-        return ((FormChangeMask*)changes)->ContainsAnyFlags(flags.Modelloader_GetReferencedThis());
+        return ((FormChangeMask*)changes)->ContainsAnyFlags(aiChangeFlags.Modelloader_GetReferencedThis());
     return false;
 }
 
 // @fnv 0x008457b0
-void BGSSaveLoadChangesMap::AddFormChangeFlags(unsigned int formID, FormChangeMask flags)
+// src: XBOX_RETAIL_PDB 0x008457b0
+// pdb: BGSSaveLoadChangesMap::AddChangeFlags | BGSSaveLoadChangesMap.obj | retail, object-file run extension, high
+// pdb params: aiFormID, aiChangeFlags
+// pdb locals: pformChanges
+void BGSSaveLoadChangesMap::AddChangeFlags(unsigned int aiFormID, FormChangeMask aiChangeFlags)
 {
-    FormChangeRecord* changes = FUN_009a4250(formID);
+    FormChangeRecord* changes = FUN_009a4250(aiFormID);
     if (!changes)
     {
         changes = new FormChangeRecord();
-        SetAt(formID, changes);
+        SetAt(aiFormID, changes);
     }
     else if (((FormChangeMask*)((char*)changes + 4))->Modelloader_GetReferencedThis())
     {
         return;
     }
 
-    changes->FUN_00841100((char*)flags.Modelloader_GetReferencedThis());
+    changes->FUN_00841100((char*)aiChangeFlags.Modelloader_GetReferencedThis());
 }
 
 // @fnv 0x00845880
+// pdb: BGSFormChanges::BGSFormChanges | BGSSaveLoadChangesMap.obj | debug, object-file gap fill, medium
 FormChangeRecord::FormChangeRecord()
 {}
 
 // Looks up the change record for formID, creating and inserting a new one if absent, then sets its quantity from flags.
 // @fnv 0x008458b0
-void BGSSaveLoadChangesMap::ApplyFormQuantityChange(unsigned int formID, FormChangeMask flags)
+// src: XBOX_RETAIL_PDB 0x008458b0
+// pdb: BGSSaveLoadChangesMap::SetChangeFlags | BGSSaveLoadChangesMap.obj | retail, object-file run extension, high
+// pdb params: aiFormID, aiChangeFlags
+// pdb locals: pformChanges
+void BGSSaveLoadChangesMap::SetChangeFlags(unsigned int aiFormID, FormChangeMask aiChangeFlags)
 {
-    FormChangeRecord* changes = FUN_009a4250(formID);
+    FormChangeRecord* changes = FUN_009a4250(aiFormID);
     if (!changes)
     {
         changes = new FormChangeRecord();
-        SetAt(formID, changes);
+        SetAt(aiFormID, changes);
     }
-    ((QuantityData*)changes)->SetQuantity(flags.Modelloader_GetReferencedThis());
+    ((QuantityData*)changes)->SetQuantity(aiChangeFlags.Modelloader_GetReferencedThis());
 }
 
 // Looks up the change record for formID; if found, deletes it, removes it from the map, and returns true, otherwise returns false.
 // @fnv 0x00845a20
-bool BGSSaveLoadChangesMap::HasFormChanges(unsigned int formID)
+// src: XBOX_RETAIL_PDB 0x00845a20
+// pdb: BGSSaveLoadChangesMap::RemoveChanges | BGSSaveLoadChangesMap.obj | retail, call graph, high
+// pdb params: aiFormID
+// pdb locals: pformChanges
+bool BGSSaveLoadChangesMap::RemoveChanges(unsigned int aiFormID)
 {
-    FormChangeRecord* changes = FUN_009a4250(formID);
+    FormChangeRecord* changes = FUN_009a4250(aiFormID);
     if (changes)
     {
         delete changes;
-        RemoveAt(formID);
+        RemoveAt(aiFormID);
         return true;
     }
     return false;
 }
 
 // @fnv 0x00845a80
-bool BGSSaveLoadChangesMap::ClearChangeFlags(unsigned int formID, FormChangeMask flags)
+// src: XBOX_RETAIL_PDB 0x00845a80
+// pdb: BGSSaveLoadChangesMap::RemoveChangeFlags | BGSSaveLoadChangesMap.obj | retail, object-file gap fill, high
+// pdb params: aiFormID, aiChangeFlags
+// pdb locals: pformChanges
+bool BGSSaveLoadChangesMap::RemoveChangeFlags(unsigned int aiFormID, FormChangeMask aiChangeFlags)
 {
-    FormChangeRecord* changes = FUN_009a4250(formID);
+    FormChangeRecord* changes = FUN_009a4250(aiFormID);
     if (changes && !changes->flags.Modelloader_GetReferencedThis())
     {
-        changes->FUN_00562210(flags.Modelloader_GetReferencedThis());
+        changes->FUN_00562210(aiChangeFlags.Modelloader_GetReferencedThis());
         if (((FormChangeMask*)changes)->Modelloader_GetReferencedThis())
             return false;
-        if (((TESDataHandlerAccess*)g_dataHandler)->FormIDExists(formID))
+        if (((TESDataHandlerAccess*)g_dataHandler)->FormIDExists(aiFormID))
             return false;
         delete changes;
-        RemoveAt(formID);
+        RemoveAt(aiFormID);
     }
     return true;
 }
@@ -113,6 +138,9 @@ struct Ctm845
     CF845 GetFirstEntry(void* actor);
 };
 // @fnv 0x008456e0
+// pdb: BGSSaveLoadChangesMap::GetChangeFlags | BGSSaveLoadChangesMap.obj | retail, object-file run extension, low
+// pdb params: aiFormID
+// pdb locals: pformChanges
 CF845 Ctm845::GetFirstEntry(void* actor)
 {
     Arr845* a = GetTargetsForActor(actor);
@@ -133,6 +161,8 @@ void __fastcall FUN_005890c0(int* self, FUN_00845b30_arg a);
 // Calls FUN_005890c0 on self, then stores the address of DAT_01031fac into *self and returns self.
 // @fnv 0x00845b30
 // src: EXE 0x00845b30
+// pdb: NiTPointerMap<unsigned int,BGSFormChanges *>::NiTPointerMap<unsigned int,BGSFormChanges *> | BGSSaveLoadChangesMap.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 int* __fastcall NiTPointerMap_unsigned_int_BGSFormChanges_NiTPointerMap(int* self, FUN_00845b30_arg aArg)
 {
     FUN_005890c0(self, aArg);
@@ -155,6 +185,7 @@ struct FUN_00845c00 : FUN_009a5df0
 
 // Destructor that calls DeleteAllEntries on this object.
 // @fnv 0x00845c00
+// pdb: NiTPointerMap<unsigned int,BGSFormChanges *>::~NiTPointerMap<unsigned int,BGSFormChanges *> | BGSSaveLoadChangesMap.obj | debug, call graph (shared callers), high
 FUN_00845c00::~FUN_00845c00()
 {
     DeleteAllEntries(this);
@@ -172,6 +203,7 @@ struct DelStandIn
 };
 // Runs the destructor, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x00845580
+// pdb: BGSSaveLoadChangesMap::`scalar deleting destructor' | BGSSaveLoadChangesMap.obj | retail, vtable slot, high
 void* DelStandIn::DestroyAndFree(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -200,6 +232,8 @@ template <class K, class V> struct NiTPointerMapView
 }
 // Iterates the map's entries, deletes each stored change object, then clears the map.
 // @fnv 0x00845610
+// pdb: BGSSaveLoadChangesMap::RemoveAllChanges | BGSSaveLoadChangesMap.obj | debug, call graph, medium
+// pdb locals: it, iformID, pchanges
 void FUN_00845610_shell::DeleteAllChanges()
 {
     void* it = ((NavMeshVertexMap*)this)->GetFirstPos();
@@ -230,6 +264,9 @@ struct S845
 };
 // @fnv 0x00845760
 // src: COMMUNITY 0x00845760
+// pdb: BGSSaveLoadChangesMap::GetChangeBuffer | BGSSaveLoadChangesMap.obj | retail, upstream name already matches, high
+// pdb params: aiFormID
+// pdb locals: pformChanges
 CF845 S845::BGSSaveLoadChangesMap_GetChangeBuffer(unsigned int aiFormID)
 {
     FormChangeRecord* pEntry;
@@ -244,16 +281,20 @@ int __fastcall Modelloader_GetReferencedThis(int*);
 
 // Looks up or creates a per-form entry in the map, sets its quantity from FUN_00559450(quantity) and stores extra at offset 4.
 // @fnv 0x00845960
-void BGSSaveLoadChangesMap::SetCombatTargetQuantity(unsigned int formID, unsigned int quantity, unsigned int extra)
+// src: XBOX_RETAIL_PDB 0x00845960
+// pdb: BGSSaveLoadChangesMap::SetChangeBuffer | BGSSaveLoadChangesMap.obj | retail, object-file run extension, high
+// pdb params: aiFormID, aiChangeFlags, aUnloadedFormBuffer
+// pdb locals: pformChanges
+void BGSSaveLoadChangesMap::SetChangeBuffer(unsigned int aiFormID, unsigned int aiChangeFlags, unsigned int aUnloadedFormBuffer)
 {
-    BSSimpleArray<Actor*, 1024>* array = ((CombatTargetMap*)this)->GetTargetsForActor((Actor*)formID);
+    BSSimpleArray<Actor*, 1024>* array = ((CombatTargetMap*)this)->GetTargetsForActor((Actor*)aiFormID);
     if (!array)
     {
         array = (BSSimpleArray<Actor*, 1024>*)new FormChangeRecord;
-        ((BGSSaveLoadChangesMap*)this)->SetAt(formID, (FormChangeRecord*)array);
+        ((BGSSaveLoadChangesMap*)this)->SetAt(aiFormID, (FormChangeRecord*)array);
     }
-    ((QuantityData*)array)->SetQuantity(Modelloader_GetReferencedThis((int*)&quantity));
-    ((unsigned int*)((char*)array + 4))[0] = extra;
+    ((QuantityData*)array)->SetQuantity(Modelloader_GetReferencedThis((int*)&aiChangeFlags));
+    ((unsigned int*)((char*)array + 4))[0] = aUnloadedFormBuffer;
 }
 
 extern int DAT_0107eda8;
@@ -271,6 +312,9 @@ struct FUN_00845b90_shell
 
 // Sets the vtable, stores size in count_, allocates count_*4 bytes for data_, zeroes them, and returns this.
 // @fnv 0x00845b90
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BGSFormChanges *>::NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BGSFormChanges *> | BGSSaveLoadChangesMap.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_00845b90_shell* FUN_00845b90_shell::InitArray(int aiCount)
 {
     vtable_ = &DAT_0107eda8;
@@ -293,5 +337,6 @@ struct FUN_00845b60 : BGSSaveLoadChangesMapBase
     virtual ~FUN_00845b60();
 };
 // @fnv 0x00845b60
+// pdb: NiTPointerMap<unsigned int,BGSFormChanges *>::`scalar deleting destructor' | BGSSaveLoadChangesMap.obj | retail, vtable slot, high
 FUN_00845b60::~FUN_00845b60()
 {}

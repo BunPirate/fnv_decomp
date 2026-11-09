@@ -7,6 +7,8 @@
 
 // @fnv 0x00b402d0
 // src: GUESS 0x00b402d0 (confidence: low)
+// pdb: CBillboardLeaf::operator= | BillboardLeaf.obj | debug, object-file gap fill, medium
+// pdb params: cRight
 CIdvCamera& CIdvCameraClone::UpdateState_00b402d0(CIdvCamera const& src)
 {
     if (&src != this)
@@ -39,6 +41,8 @@ struct FUN_00b42980
 
 // Clears a, validates v against src's bounds (calling FUN_00ec7c56 on failure), then copies src.a into a and stores v into b.
 // @fnv 0x00b42980
+// pdb: std::_Vector_const_iterator<std::_Vector_val<CLeafLodEngine::SLodEntry,std::allocator<CLeafLodEngine::SLodEntry> > >::operator== | LeafLod.obj | debug, object-file run extension, low
+// pdb params: _Right
 FUN_00b42980& FUN_00b42980::Set(unsigned int v, FUN_00b42980 const& src)
 {
     a = 0;
@@ -55,6 +59,8 @@ void* operator new(unsigned int);
 
 // Allocates a new camera object, copies this camera into it via FUN_00b402d0, and returns the new object by reference.
 // @fnv 0x00b403a0
+// pdb: CBillboardLeaf::Clone | BillboardLeaf.obj | debug, object-file gap fill, medium
+// pdb locals: pClone
 CIdvCamera& CIdvCameraClone::CloneCamera()
 {
     CIdvCameraClone* p = new CIdvCameraClone;
@@ -73,6 +79,9 @@ struct FUN_00b40800_t
 
 // Returns the character at the current position, advances pos, and calls FUN_00ec7c56 if the index is out of range.
 // @fnv 0x00b40800
+// pdb: GetNextChar | XSettingsFile.obj | debug, upstream name already matches, high
+// pdb params: hFile, pChar
+// pdb locals: BytesRead, bSuccess
 char FUN_00b40800_t::GetNextChar()
 {
     int idx = pos;
@@ -128,7 +137,7 @@ CIdvCameraInitializer* __thiscall CIdvCameraInitializer::UpdateState_00b40070(Ni
     this->unk40 = 0;
     this->unk44 = value;
     this->unk48 = result;
-    reinterpret_cast<NiPoint3&>(this->m_kTranslation) = *position;
+    reinterpret_cast<NiPoint3&>(this->m_cPosition) = *position;
 
     return this;
 }
@@ -193,6 +202,7 @@ struct FUN_00b40a60_loc
 
 // @fnv 0x00b40a60
 // src: GUESS 0x00b40a60 (confidence: low)
+// pdb: SIdvTreeInfo::SIdvTreeInfo | TreeInfo.obj | debug, call graph, low
 FUN_00b40a60_cls* FUN_00b40a60_cls::InitializeFields_00b40a60()
 {
     unsigned int pad;
@@ -499,6 +509,7 @@ S_00b41ae0_Bits* S_00b41ae0_Bits::SetBit(bool bSet)
 // Divides the three low bytes of unk14 by 255.0, low byte first, writes them to pOut[0], pOut[1] and pOut[2], and returns pOut.
 // @fnv 0x00b40430
 // src: COMMUNITY 0x00b40430
+// pdb: CBillboardLeaf::GetColor | BillboardLeaf.obj | debug, upstream name already matches, high
 float* CIdvCamera::CBillboardLeaf_GetColor(float* pOut)
 {
     float fGr = (static_cast<unsigned int>(static_cast<CIdvCameraClone*>(this)->unk14) & 0xff) / 255.0;

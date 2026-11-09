@@ -5,6 +5,7 @@ class BGSSaveFormBuffer;
 class NiNode;
 class NiPoint3;
 
+// pdb: class SeenData, size 0x24, 1 members
 class SeenData
 {
 public:
@@ -21,7 +22,7 @@ public:
     bool IsBitSet(unsigned int index);
     bool SetSeenBit(unsigned int index, bool set);
     bool HasEnoughSeenPoints(const NiPoint3& point, const NiPoint3& offset);
-    void AttachMarkersForSeenData(NiNode* parent, const NiPoint3& offset, int unused);
+    void AttachMarkersForSeenData(NiNode* apDrawNode, const NiPoint3& aSeenStart, int abDrawSeen);
     void SaveFormData(void* buffer);
     void SetVtable();
     void* FUN_00879970(unsigned int flags);

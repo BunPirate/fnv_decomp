@@ -10,6 +10,7 @@
 // m_capacity, m_capacityMinus16, m_isBufferAllocatedOnTheHeap) and its command records. Declarations only: a unit
 // whose original inlines a body (Havok makes the accessors HK_FORCE_INLINE) defines it out of class.
 // src: HAVOK_SRC (class name, nested command structs, member names, layout and method list)
+// pdb: class hkMonitorStream, size 0x14, 5 members
 class hkMonitorStream
 {
 public:

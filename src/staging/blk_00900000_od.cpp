@@ -42,6 +42,7 @@ void GlobalObject_00869f00::Clear(bool)
 {}
 
 // @fnv 0x00905910
+// pdb: BSSimpleArray<TESIdleForm *,1024>::~BSSimpleArray<TESIdleForm *,1024> | HighProcess.obj | debug, call graph (shared callers), medium
 void GlobalObject_00869f00::InitFromGlobal()
 {
     m_p = &DAT_010159d4;
@@ -61,6 +62,7 @@ struct FUN_00905990_Class
 
 // Calls FUN_009059f0, sets the vtable pointer to DAT_01088418 and initializes field_4 to 0.
 // @fnv 0x00905990
+// pdb: BSTCommonMessageQueue<ActorPathingMessage>::BSTCommonMessageQueue<ActorPathingMessage> | HighProcess.obj | debug, object-file gap fill, medium
 FUN_00905990_Class::FUN_00905990_Class()
 {
     FUN_009059f0();
@@ -77,6 +79,7 @@ struct FUN_009059f0_Class
 };
 
 // @fnv 0x009059f0
+// pdb: BSSimpleList<ObjectstoAcquire *>::~BSSimpleList<ObjectstoAcquire *> | HighProcess.obj | debug, object-file gap fill, medium
 FUN_009059f0_Class::FUN_009059f0_Class()
 {
     pVftable = (int*)&DAT_01088438;
@@ -85,7 +88,7 @@ FUN_009059f0_Class::FUN_009059f0_Class()
 namespace p07 {
 struct DelStandIn
 {
-    void* Destroy(unsigned int);
+    void* ProjectileTarget_ScalarDtor(unsigned int);
     void* Destroy_Thunk();
 };
 }
@@ -94,7 +97,7 @@ struct DelStandIn
 // src: GUESS 0x00905ae0 (confidence: medium)
 void* p07::DelStandIn::Destroy_Thunk()
 {
-    return Destroy(0);
+    return ProjectileTarget_ScalarDtor(0);
 }
 
 extern "C" void __cdecl DAT_01088640();
@@ -123,6 +126,8 @@ struct FUN_009137b0_t
 };
 // Calls FUN_00913810 with a, sets m to point at DAT_01088fd4, and returns this.
 // @fnv 0x009137b0
+// pdb: NiTMap<LowProcess *,LP_LOCK_DATA>::NiTMap<LowProcess *,LP_LOCK_DATA> | LowProcess.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_009137b0_t* FUN_009137b0_t::Construct(int a)
 {
     ((FUN_00913810_t*)this)->FUN_00913810(a);
@@ -138,6 +143,7 @@ struct FUN_00913980_StandIn
 
 // Calls FUN_009138e0, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x00913980
+// pdb: NiTMapBase<DFALL<NiTMapItem<LowProcess *,LP_LOCK_DATA> >,LowProcess *,LP_LOCK_DATA>::`scalar deleting destructor' | LowProcess.obj | retail, vtable slot, high
 void* FUN_00913980_StandIn::FUN_00913980(unsigned int flags)
 {
     UpdateFields_009138e0();
@@ -156,6 +162,7 @@ struct FUN_009157c0
     void Method();
 };
 // @fnv 0x009157c0
+// pdb: QueuedItem::~QueuedItem | MiddleHighProcess.obj | debug, object-file run extension, low
 void FUN_009157c0::Method()
 {
     ((QHeadPtr*)((char*)this + 0x14))->dtor();
@@ -178,6 +185,9 @@ struct FUN_00905450_StandIn
 };
 // Appends a copy of the given node to the array and returns the index it was stored at.
 // @fnv 0x00905450
+// pdb: BSTCommonLLMessageQueue<ActorPathingMessage>::~BSTCommonLLMessageQueue<ActorPathingMessage> | HighProcess.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<PathingAvoidNode,1024>::Add
+// pdb locals: dummyMessage
 unsigned int FUN_00905450_StandIn::AppendNode(PathingAvoidNode* apNode)
 {
     unsigned int count = GetNextIndex();
@@ -195,11 +205,14 @@ struct BlkInterfaceView
 struct FUN_00905510_Class
 {
     void** vtbl;
-    char LockAndCall(int a);
+    char LockAndCall(int aMessage);
 };
 // Spins until the lock at this+1 is acquired, calls the virtual method at vtbl[6] with a, then releases the lock and returns its result.
 // @fnv 0x00905510
-char FUN_00905510_Class::LockAndCall(int aiArg)
+// pdb: BSTCommonMessageQueue<ActorPathingMessage>::Pop | HighProcess.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: bResult
+char FUN_00905510_Class::LockAndCall(int aMessage)
 {
     char r;
     while (true)
@@ -207,7 +220,7 @@ char FUN_00905510_Class::LockAndCall(int aiArg)
         if (BSAtomicCompareExchange((long volatile*)(this + 1), 0, 1) == 0)
         {
             BlkInterfaceView::PrintDebugMessage();
-            r = ((char(__thiscall*)(void*, int))vtbl[6])(this, aiArg);
+            r = ((char(__thiscall*)(void*, int))vtbl[6])(this, aMessage);
             BlkInterfaceView::PrintDebugMessage();
             BSAtomicCompareExchange((long volatile*)(this + 1), 1, 0);
             break;
@@ -223,6 +236,7 @@ struct FUN_00905690_Class
 };
 
 // @fnv 0x00905690
+// pdb: BSTCommonMessageQueue<ActorPathingMessage>::`scalar deleting destructor' | HighProcess.obj | debug, vtable slot, medium
 void* FUN_00905690_Class::FUN_00905690(unsigned int flags)
 {
     SetVtableAndProcessState_00905650();
@@ -240,6 +254,7 @@ struct FUN_009056c0_Class
 };
 
 // @fnv 0x009056c0
+// pdb: BSTMessageQueue<ActorPathingMessage>::`scalar deleting destructor' | HighProcess.obj | retail, vtable slot, high
 void* __thiscall FUN_009056c0_Class::FUN_009056c0(unsigned int flags)
 {
     SetVTable();
@@ -255,6 +270,7 @@ struct FUN_009055c0_Class
     void* __thiscall FUN_00905930(unsigned int flags);
 };
 // @fnv 0x00905930
+// pdb: BSTCommonLLMessageQueue<ActorPathingMessage>::`scalar deleting destructor' | HighProcess.obj | retail, vtable slot, high
 void* __thiscall FUN_009055c0_Class::FUN_00905930(unsigned int flags)
 {
     FUN_009055c0();
@@ -268,6 +284,7 @@ struct FUN_00905960_Class
     void* FUN_00905960(unsigned int flags);
 };
 // @fnv 0x00905960
+// pdb: BSSimpleArray<TESIdleForm *,1024>::`scalar deleting destructor' | HighProcess.obj | retail, vtable slot, high
 void* FUN_00905960_Class::FUN_00905960(unsigned int flags)
 {
     ((GlobalObject_00869f00*)this)->InitFromGlobal();
@@ -283,6 +300,7 @@ struct FUN_00906130_Class
 };
 // Calls FUN_00906110 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00906130
+// pdb: LockFreeMap<MobileObject *,NiPointer<LipTask> >::LockFreeMapIterator::`scalar deleting destructor' | LipSyncBackgroundManager.obj | retail, vtable slot, high
 void* FUN_00906130_Class::FUN_00906130(unsigned int flags)
 {
     reinterpret_cast<FUN_00906110_Class*>(this)->SetVtableAndProcessState_00906110();
@@ -334,13 +352,15 @@ struct S5460
     virtual void v4();
     bool BSSimpleArray_NavMeshInfo_1024_ShouldGrow();
     unsigned int BSSimpleArray_NavMeshInfo_1024_GetNewSizeForGrow();
-    void* BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(unsigned int a, unsigned int b);
+    void* BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
     void* m_iWordAt04;
     unsigned int m_8;
     unsigned int m_iThirdValue;
     unsigned int GetNextIndex();
 };
 // @fnv 0x00905a10
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::AddUninitialized | HighProcess.obj | debug, call graph, medium
+// pdb locals: inewSize
 unsigned int S5460::GetNextIndex()
 {
     if (BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -354,7 +374,7 @@ unsigned int S5460::GetNextIndex()
         else
         {
             unsigned int idx = BSSimpleArray_NavMeshInfo_1024_GetNewSizeForGrow();
-            BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(idx, m_8);
+            BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(idx, m_8);
             m_iThirdValue = idx;
         }
     }
@@ -371,6 +391,7 @@ struct FUN_00905c30 : _Base_00441d20
     ~FUN_00905c30();
 };
 // @fnv 0x00905c30
+// pdb: LipTask::~LipTask | LipSyncBackgroundManager.obj | debug, object-file run extension, low
 FUN_00905c30::~FUN_00905c30()
 {}
 
@@ -383,6 +404,8 @@ struct FUN_00906690_t
     FUN_00906690_t();
 };
 // @fnv 0x00906690
+// pdb: NiPointer<LipTask>::NiPointer<LipTask> | LipSyncBackgroundManager.obj | debug, object-file run extension, low
+// pdb params: pObject
 FUN_00906690_t::FUN_00906690_t()
 {
     m_iWordAt00 = (void*)&DAT_01088640;
@@ -413,6 +436,7 @@ struct GlobalObject_009137b0
 };
 // Runs the destructor, then frees the object with _Deallocate when flags has bit 0 set, and returns the object pointer.
 // @fnv 0x009137e0
+// pdb: NiTMap<LowProcess *,LP_LOCK_DATA>::`scalar deleting destructor' | LowProcess.obj | retail, vtable slot, high
 void* GlobalObject_009137b0::FUN_009137e0(unsigned int flags)
 {
     this->GlobalObject_009137b0::~GlobalObject_009137b0();
@@ -433,6 +457,7 @@ struct FUN_009138e0_Class
 };
 // @fnv 0x009138e0
 // src: GUESS 0x009138e0 (confidence: low)
+// pdb: NiTMapBase<DFALL<NiTMapItem<LowProcess *,LP_LOCK_DATA> >,LowProcess *,LP_LOCK_DATA>::~NiTMapBase<DFALL<NiTMapItem<LowProcess *,LP_LOCK_DATA> >,LowProcess *,LP_LOCK_DATA> | LowProcess.obj | debug, object-file run extension, low
 void FUN_009138e0_Class::UpdateFields_009138e0()
 {
     m_iWordAt00 = (void*)&DAT_01088ff4;
@@ -458,6 +483,7 @@ extern void* DAT_01088418;
 
 // @fnv 0x00905650
 // src: GUESS 0x00905650 (confidence: low)
+// pdb: BSTCommonMessageQueue<ActorPathingMessage>::~BSTCommonMessageQueue<ActorPathingMessage> | HighProcess.obj | debug, call graph, medium
 void FUN_00905690_Class::SetVtableAndProcessState_00905650()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_01088418);
@@ -496,7 +522,7 @@ void FUN_00905b00_cls::ConstructSpawnedObject(int a)
 struct FUN_00906400_Guard
 {
     int m_iWordAt00;
-    FUN_00906400_Guard(int a, int b, const char* file, int line);
+    FUN_00906400_Guard(int memContext, int overridable, const char* file, int aiLine);
     ~FUN_00906400_Guard();
 };
 
@@ -515,6 +541,9 @@ struct FUN_00906400_Owner
 
 // @fnv 0x00906400
 // src: COMMUNITY 0x00906400
+// pdb: LockFreeMap<MobileObject *,NiPointer<LipTask> >::LockFreeMapInterface::GetNext | LipSyncBackgroundManager.obj | retail, object-file run extension, low
+// pdb params: aiBucket, arKey, arData
+// pdb locals: bresult
 FUN_00906400_Sub* FUN_00906400_Owner::LockFreeMap_AllocateInterface(int aiIndex)
 {
     FUN_00906400_Guard guard(6, 1, "d:\\_fallout3\\platforms\\common\\code\\bsmain\\ThreadSafeStructures.h", 0x18e);
@@ -553,11 +582,14 @@ struct FUN_00906570_Class
     bool AdvanceRequest(Request9065*, void**, void*, bool);
 };
 // @fnv 0x00906570
-bool FUN_00906570_Class::AdvanceRequest(Request9065* request, void** ppOut, void* context, bool repeat)
+// pdb: LockFreeMap<MobileObject *,NiPointer<LipTask> >::GetNext | LipSyncBackgroundManager.obj | retail, call graph (shared callers), high
+// pdb params: arIterator, arKey, arData, abSwitchBuckets
+// pdb locals: bresult
+bool FUN_00906570_Class::AdvanceRequest(Request9065* arIterator, void** arKey, void* arData, bool abSwitchBuckets)
 {
     lock.Lock(0);
     bool success = false;
-    if (request->LockFreeMap_char_const_Model_LockFreeMapIterator_GetFinished())
+    if (arIterator->LockFreeMap_char_const_Model_LockFreeMapIterator_GetFinished())
     {
         success = false;
     }
@@ -565,29 +597,29 @@ bool FUN_00906570_Class::AdvanceRequest(Request9065* request, void** ppOut, void
     {
         while (true)
         {
-            if (!request->IsFlagSet())
+            if (!arIterator->IsFlagSet())
             {
-                success = LockFreeMap_GetInterface_0(request->index, &request->element, context)->ProcessEntry();
-                request->FUN_0044de40(true);
+                success = LockFreeMap_GetInterface_0(arIterator->index, &arIterator->element, arData)->ProcessEntry();
+                arIterator->FUN_0044de40(true);
             }
             else
             {
-                success = LockFreeMap_GetInterface_0(request->index, &request->element, context)->ProcessEntries_00906c10();
+                success = LockFreeMap_GetInterface_0(arIterator->index, &arIterator->element, arData)->ProcessEntries_00906c10();
             }
             if (!success)
             {
-                request->index = request->index + 1;
-                if (request->index >= FUN_0044ddc0())
-                    request->FUN_0044de80(true);
-                else if (repeat)
+                arIterator->index = arIterator->index + 1;
+                if (arIterator->index >= FUN_0044ddc0())
+                    arIterator->FUN_0044de80(true);
+                else if (abSwitchBuckets)
                 {
-                    request->FUN_0044de40(false);
+                    arIterator->FUN_0044de40(false);
                     continue;
                 }
             }
             else
             {
-                *ppOut = request->element;
+                *arKey = arIterator->element;
             }
             break;
         }
@@ -614,6 +646,9 @@ class FUN_00913810
 
 // Initializes the hash table: stores the hash size, zeroes the count, allocates the bucket array and clears it.
 // @fnv 0x00913810
+// pdb: NiTMapBase<DFALL<NiTMapItem<LowProcess *,LP_LOCK_DATA> >,LowProcess *,LP_LOCK_DATA>::NiTMapBase<DFALL<NiTMapItem<LowProcess *,LP_LOCK_DATA> >,LowProcess *,LP_LOCK_DATA> | LowProcess.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_00913810::FUN_00913810(unsigned int uiHashSize)
 {
     m_uiHashSize = uiHashSize;
@@ -661,6 +696,8 @@ class FUN_00913910_cls
 // Initializes a LocalPair with 0, copies it into pOut->m_pair, then calls m_sub.FreeMemory(pOut).
 // @fnv 0x00913910
 // src: GUESS 0x00913910 (confidence: medium)
+// pdb: NiTMap<LowProcess *,LP_LOCK_DATA>::DeleteItem | LowProcess.obj | debug, vtable slot, medium
+// pdb params: pkItem
 void FUN_00913910_cls::ResetPairAndFreeEntry(OutRecord* pOut)
 {
     LocalPair local;
@@ -810,6 +847,9 @@ struct FUN_009062e0_Class
 // Locks the spin lock, calls FUN_00528bb0 on the object returned by FUN_00449f80(a), unlocks, and returns the result.
 // @fnv 0x009062e0
 // src: COMMUNITY 0x009062e0
+// pdb: LockFreeMap<MobileObject *,NiPointer<LipTask> >::GetAt | LipSyncBackgroundManager.obj | debug, object-file run extension, low
+// pdb params: aKey, arData
+// pdb locals: bResult
 bool FUN_009062e0_Class::LockFreeMap_T_Key_NiPointer_IOTask_RemoveAt(void* a)
 {
     lock.Lock(0);
@@ -827,7 +867,7 @@ struct FUN_00528cb0_Guard
 };
 struct FUN_0044ac40_Service
 {
-    void __thiscall BSTaskManager_CancelTask(unsigned int value);
+    void __thiscall BSTaskManager_CancelTask(unsigned int apTask);
 };
 extern FUN_0044ac40_Service* DAT_01202d98;
 struct FUN_00906050_Class
@@ -836,17 +876,20 @@ struct FUN_00906050_Class
     virtual void v1();
     virtual unsigned char v2(int value, FUN_00528cb0_Guard* guard);
     void __thiscall CallVirtual5(int value);
-    void __thiscall LipSyncBackgroundManager_CancelLipFile(int value);
+    void __thiscall LipSyncBackgroundManager_CancelLipFile(int apActor);
 };
 // Creates a guard, calls v2 with the value and guard; if it succeeds, calls CallVirtual5 and passes the guard's flag result to DAT_01202d98.
 // @fnv 0x00906050
 // src: COMMUNITY 0x00906050
-void FUN_00906050_Class::LipSyncBackgroundManager_CancelLipFile(int value)
+// pdb: LipSyncBackgroundManager::CancelLipFile | LipSyncBackgroundManager.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: sptask
+void FUN_00906050_Class::LipSyncBackgroundManager_CancelLipFile(int apActor)
 {
     FUN_00528cb0_Guard guard(0);
-    if (v2(value, &guard))
+    if (v2(apActor, &guard))
     {
-        CallVirtual5(value);
+        CallVirtual5(apActor);
         DAT_01202d98->BSTaskManager_CancelTask(guard.Modelloader_GetReferencedThis(0));
     }
 }
@@ -868,6 +911,7 @@ class FUN_00913880 : public MapBase913880
 
 // Removes all entries from the hash table before the object is destroyed.
 // @fnv 0x00913880
+// pdb: NiTMap<LowProcess *,LP_LOCK_DATA>::~NiTMap<LowProcess *,LP_LOCK_DATA> | LowProcess.obj | debug, object-file run extension, low
 FUN_00913880::~FUN_00913880()
 {
     RemoveAll();
@@ -891,6 +935,9 @@ struct FUN_009064e0 : _Base_009064e0
 };
 
 // @fnv 0x009064e0
+// pdb: ThreadSpecificInterfaceManager<LockFreeMap<MobileObject *,NiPointer<LipTask> >::LockFreeMapInterface>::~ThreadSpecificInterfaceManager<LockFreeMap<MobileObject *,NiPointer<LipTask> >::LockFreeMapInterface> | LipSyncBackgroundManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to LockFreeMap<MobileObject *,NiPointer<LipTask> >::Remove
+// pdb locals: i
 FUN_009064e0::~FUN_009064e0()
 {
     unk04(1);

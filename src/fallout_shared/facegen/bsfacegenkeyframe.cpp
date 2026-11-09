@@ -19,9 +19,10 @@ float BSFaceGenKeyframe::GetTime()
 }
 
 // @fnv 0x0064f850
+// pdb: BSFaceGenKeyframeMultiple::SetToZero | BSFaceGenKeyframe.obj | debug, vtable slot, medium
 void BSFaceGenKeyframeMultiple::NormalizeFaceGenValues()
 {
-    BSFaceGenManager::NormalizeFaceGenValues(m_pfFaceGenValues, m_uiFaceGenValueCount);
+    BSFaceGenManager::NormalizeFaceGenValues(pQuantities, iNumQuantities);
 }
 
 // Sets eType to the given morph type and returns true if it changed, otherwise returns false.
@@ -49,6 +50,7 @@ bool BSFaceGenKeyframe::SetTime(float time)
 }
 
 // @fnv 0x0064ed00
+// pdb: BSFaceGenKeyframeMultiple::~BSFaceGenKeyframeMultiple | BSFaceGenKeyframe.obj | retail, upstream name already matches, high
 BSFaceGenKeyframeMultiple::~BSFaceGenKeyframeMultiple()
 {
     BSFaceGenKeyframeMultiple::ApplyFaceGenValues(0, true);
@@ -58,21 +60,23 @@ BSFaceGenKeyframeMultiple::~BSFaceGenKeyframeMultiple()
 // @fnv 0x0064fb90
 bool BSFaceGenKeyframeMultiple::IsQuantityInRange(unsigned int uiIndex)
 {
-    return uiIndex < m_uiFaceGenValueCount ? (m_pfFaceGenValues[uiIndex] >= 0.0 && m_pfFaceGenValues[uiIndex] <= 1.0)
+    return uiIndex < iNumQuantities ? (pQuantities[uiIndex] >= 0.0 && pQuantities[uiIndex] <= 1.0)
                                            : false;
 }
 
 // Returns the largest value among the keyframes whose validity check passes, or 0.0f if none do.
 // @fnv 0x0064f760
+// pdb: BSFaceGenKeyframeMultiple::GetStrength | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb locals: fmax, i
 float BSFaceGenKeyframeMultiple::GetAttributeStrength()
 {
     float fMaxValue = 0.0f;
-    for (unsigned int quantity = 0; quantity < m_uiFaceGenValueCount; ++quantity)
+    for (unsigned int quantity = 0; quantity < iNumQuantities; ++quantity)
     {
         if (IsQuantityInRange(quantity))
         {
-            if (m_pfFaceGenValues[quantity] > fMaxValue)
-                fMaxValue = m_pfFaceGenValues[quantity];
+            if (pQuantities[quantity] > fMaxValue)
+                fMaxValue = pQuantities[quantity];
         }
     }
     return fMaxValue;
@@ -81,9 +85,9 @@ float BSFaceGenKeyframeMultiple::GetAttributeStrength()
 // @fnv 0x0064f880
 bool BSFaceGenKeyframeMultiple::HasNonzeroQuantity()
 {
-    for (unsigned int i = 0; i < m_uiFaceGenValueCount; ++i)
+    for (unsigned int i = 0; i < iNumQuantities; ++i)
     {
-        float quantity = m_pfFaceGenValues[i];
+        float quantity = pQuantities[i];
         if (quantity < 0.0 || quantity > 1.0)
             continue;
         if (quantity > 0.0)
@@ -93,16 +97,21 @@ bool BSFaceGenKeyframeMultiple::HasNonzeroQuantity()
 }
 
 // @fnv 0x0064eb60
+// pdb: BSFaceGenKeyframeMultiple::BSFaceGenKeyframeMultiple | BSFaceGenKeyframe.obj | debug, object-file run extension, low
+// pdb params: aeType, aiNumQuantities
 BSFaceGenKeyframeMultiple::BSFaceGenKeyframeMultiple(BS_FACEGEN_MORPH_TYPE aeMorphType, unsigned int count)
     : BSFaceGenKeyframe(aeMorphType)
 {
-    m_pfFaceGenValues = 0;
-    m_uiFaceGenValueCount = 0;
+    pQuantities = 0;
+    iNumQuantities = 0;
     BSFaceGenKeyframeMultiple::ApplyFaceGenValues(count, true);
 }
 
 // @fnv 0x0064f480
-bool BSFaceGenKeyframeMultiple::ClearData(bool initialize)
+// pdb: BSFaceGenKeyframeMultiple::ClearData | BSFaceGenKeyframe.obj | retail, upstream name already matches, high
+// pdb params: abForceZero
+// pdb locals: breturn, i
+bool BSFaceGenKeyframeMultiple::ClearData(bool abForceZero)
 {
     bool changed = false;
     if (vfn_0c() != 0.0)
@@ -116,29 +125,31 @@ bool BSFaceGenKeyframeMultiple::ClearData(bool initialize)
             break;
         }
     }
-    ApplyFaceGenValues(GetCount(), initialize);
+    ApplyFaceGenValues(GetCount(), abForceZero);
     return changed;
 }
 
 // @fnv 0x0064fc00
-void BSFaceGenKeyframeMultiple::ApplyFaceGenValues(unsigned int count, bool initialize)
+// pdb: BSFaceGenKeyframeMultiple::ResetQuantityArray | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb params: aiNumQuantities, abForceZero
+void BSFaceGenKeyframeMultiple::ApplyFaceGenValues(unsigned int aiNumQuantities, bool abForceZero)
 {
-    if (count != m_uiFaceGenValueCount)
+    if (aiNumQuantities != iNumQuantities)
     {
-        if (m_pfFaceGenValues)
+        if (pQuantities)
         {
-            delete[] m_pfFaceGenValues;
-            m_pfFaceGenValues = 0;
+            delete[] pQuantities;
+            pQuantities = 0;
         }
-        m_uiFaceGenValueCount = count;
-        if (m_uiFaceGenValueCount > 0)
+        iNumQuantities = aiNumQuantities;
+        if (iNumQuantities > 0)
         {
-            m_pfFaceGenValues = new float[m_uiFaceGenValueCount];
-            BSFaceGenManager::ApplyFaceGenValues(m_pfFaceGenValues, m_uiFaceGenValueCount, initialize);
+            pQuantities = new float[iNumQuantities];
+            BSFaceGenManager::ApplyFaceGenValues(pQuantities, iNumQuantities, abForceZero);
         }
     }
-    if (m_uiFaceGenValueCount > 0)
-        BSFaceGenManager::ApplyFaceGenValues(m_pfFaceGenValues, m_uiFaceGenValueCount, initialize);
+    if (iNumQuantities > 0)
+        BSFaceGenManager::ApplyFaceGenValues(pQuantities, iNumQuantities, abForceZero);
 }
 
 // @fnv 0x0064ea80
@@ -155,6 +166,9 @@ BSFaceGenKeyframe::~BSFaceGenKeyframe()
 
 // Returns true if apOther is not a matching BSFaceGenKeyframeMultiple or any of its per-index values differ from this keyframe's.
 // @fnv 0x0064f690
+// pdb: BSFaceGenKeyframeMultiple::Compare | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb params: apOther
+// pdb locals: pkeyframe, i
 bool BSFaceGenKeyframeMultiple::DiffersFrom(BSFaceGenKeyframe* apOther)
 {
     BSFaceGenKeyframeMultiple* pkeyframe = (apOther && ((KeyframeMultipleSlot)(*(void***)apOther)[17])(apOther))
@@ -181,6 +195,7 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting1262;
 // Returns the float value of originalRuntimeFloatSetting1262 if it is greater than 0.0, otherwise returns 0.0f.
 // @fnv 0x0064fb10
 // src: XBOX_PDB 0x0064fb10
+// pdb: BSFaceGenAnimationData::GetExpressionTargetChangePerSec | BSFaceGenKeyframe.obj | debug, upstream name already matches, high
 float __cdecl BSFaceGenAnimationData_GetExpressionTargetChangePerSec()
 {
     return originalRuntimeFloatSetting1262.Float()->f > 0.0 ? originalRuntimeFloatSetting1262.Float()->f : 0.0f;
@@ -192,6 +207,7 @@ extern SettingT_GameSettingCollection_ g_011d577c;
 // Returns the float value from g_011d577c if it is greater than zero, otherwise returns 0.0f.
 // @fnv 0x0064fb50
 // src: XBOX_PDB 0x0064fb50
+// pdb: BSFaceGenAnimationData::GetExpressionStrengthAddPerSec | BSFaceGenKeyframe.obj | debug, upstream name already matches, high
 float __cdecl BSFaceGenAnimationData_GetExpressionStrengthAddPerSec()
 {
     return g_011d577c.Float()->f > 0.0 ? g_011d577c.Float()->f : 0.0f;
@@ -199,19 +215,24 @@ float __cdecl BSFaceGenAnimationData_GetExpressionStrengthAddPerSec()
 }  // namespace fnv_0064fb50
 
 // @fnv 0x0064ec10
+// pdb: BSFaceGenKeyframeMultiple::BSFaceGenKeyframeMultiple | BSFaceGenKeyframe.obj | retail, call graph (shared callers), high
+// pdb params: aeType, aiNumQuantities
 BSFaceGenKeyframeMultiple::BSFaceGenKeyframeMultiple(const BSFaceGenKeyframeMultiple& aOther)
     : BSFaceGenKeyframe((BS_FACEGEN_MORPH_TYPE)-1)
 {
     SetType(((KeyframeTypeSlot)(*(void***)&aOther)[1])(&aOther));
     SetTime(const_cast<BSFaceGenKeyframeMultiple&>(aOther).vfn_0c());
-    m_pfFaceGenValues = 0;
-    m_uiFaceGenValueCount = 0;
+    pQuantities = 0;
+    iNumQuantities = 0;
     BSFaceGenKeyframeMultiple::ApplyFaceGenValues(const_cast<BSFaceGenKeyframeMultiple&>(aOther).GetCount(), true);
-    for (unsigned int i = 0; i < m_uiFaceGenValueCount; i++)
+    for (unsigned int i = 0; i < iNumQuantities; i++)
         SetQuantity_0064a4d0(i, const_cast<BSFaceGenKeyframeMultiple&>(aOther).BSFaceGenKeyframeMultiple_GetQuantity(i));
 }
 
 // @fnv 0x0064f5b0
+// pdb: BSFaceGenKeyframeMultiple::CopyFrom | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb params: apFrom
+// pdb locals: pfromMultiple, i
 void BSFaceGenKeyframeMultiple::CopyFromKeyframe(BSFaceGenKeyframe* apFrom)
 {
     BSFaceGenKeyframeMultiple* pSourceMultiple = apFrom && ((KeyframeMultipleSlot)(*(void***)apFrom)[17])(apFrom)
@@ -222,13 +243,15 @@ void BSFaceGenKeyframeMultiple::CopyFromKeyframe(BSFaceGenKeyframe* apFrom)
     SetType(((KeyframeTypeSlot)(*(void***)pSourceMultiple)[1])(pSourceMultiple));
     vfn_10(pSourceMultiple->vfn_0c());
     ApplyFaceGenValues(pSourceMultiple->GetCount(), true);
-    for (unsigned int i = 0; i < m_uiFaceGenValueCount; i++)
+    for (unsigned int i = 0; i < iNumQuantities; i++)
         SetQuantity_0064a4d0(i, pSourceMultiple->BSFaceGenKeyframeMultiple_GetQuantity(i));
 }
 
 // Allocates a new keyframe by copying *this and returns the pointer.
 // @fnv 0x0064f530
 // src: XBOX_PDB 0x0064f530
+// pdb: BSFaceGenKeyframeMultiple::CreateCopy | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb locals: preturn
 BSFaceGenKeyframeMultiple* BSFaceGenKeyframeMultiple::CreateCopy_0064f530()
 {
     BSFaceGenKeyframeMultiple* preturn;
@@ -244,15 +267,18 @@ extern double _gModifierZero;
 bool BSFaceGenKeyframeMultiple::IsEmpty_0064f7e0()
 {
     unsigned int i;
-    for (i = 0; i < m_uiFaceGenValueCount; ++i)
+    for (i = 0; i < iNumQuantities; ++i)
     {
-        if (IsQuantityInRange(i) && m_pfFaceGenValues[i] > _gModifierZero)
+        if (IsQuantityInRange(i) && pQuantities[i] > _gModifierZero)
             return false;
     }
     return true;
 }
 
 // @fnv 0x0064ed60
+// pdb: BSFaceGenKeyframeMultiple::AddToList | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb params: apList
+// pdb locals: ptail, ptailMultiple, padd
 bool BSFaceGenKeyframeMultiple::AddToCompatibleList(NiTPointerList<BSFaceGenKeyframe*>* apList)
 {
     if (!apList)
@@ -275,13 +301,16 @@ bool BSFaceGenKeyframeMultiple::AddToCompatibleList(NiTPointerList<BSFaceGenKeyf
 
 // Blends this frame's quantities with frames a and b using weight clamped to [0,1], copying or interpolating per index, and returns the last SetQuantity result.
 // @fnv 0x0064f0b0
-bool BSFaceGenKeyframeMultiple::BlendWith(BSFaceGenKeyframe* apLeft, BSFaceGenKeyframe* apRight, float weight)
+// pdb: BSFaceGenKeyframeMultiple::MergeMorphDataFrom | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb params: apSource, afBlend, abMergeZeroes, abClearValueIfNoUpdate
+// pdb locals: bchanged, fblend, psource, i
+bool BSFaceGenKeyframeMultiple::BlendWith(BSFaceGenKeyframe* apSource1, BSFaceGenKeyframe* apSource2, float afBlend)
 {
-    BSFaceGenKeyframeMultiple* leftX = apLeft && ((KeyframeMultipleSlot)(*(void***)apLeft)[17])(apLeft)
-        ? static_cast<BSFaceGenKeyframeMultiple*>(apLeft)
+    BSFaceGenKeyframeMultiple* leftX = apSource1 && ((KeyframeMultipleSlot)(*(void***)apSource1)[17])(apSource1)
+        ? static_cast<BSFaceGenKeyframeMultiple*>(apSource1)
         : 0;
-    BSFaceGenKeyframeMultiple* right3 = apRight && ((KeyframeMultipleSlot)(*(void***)apRight)[17])(apRight)
-        ? static_cast<BSFaceGenKeyframeMultiple*>(apRight)
+    BSFaceGenKeyframeMultiple* right3 = apSource2 && ((KeyframeMultipleSlot)(*(void***)apSource2)[17])(apSource2)
+        ? static_cast<BSFaceGenKeyframeMultiple*>(apSource2)
         : 0;
     bool _deleteLeft = false;
     bool deleteRight = false;
@@ -300,19 +329,19 @@ bool BSFaceGenKeyframeMultiple::BlendWith(BSFaceGenKeyframe* apLeft, BSFaceGenKe
         deleteRight = true;
     }
     float blendA;
-    if (weight < 0.0)
+    if (afBlend < 0.0)
         blendA = 0.0f;
-    else if (weight > 1.0)
+    else if (afBlend > 1.0)
         blendA = 1.0f;
     else
-        blendA = weight;
+        blendA = afBlend;
     unsigned _maximum;
     if (leftX->GetCount() >= right3->GetCount())
         _maximum = leftX->GetCount();
     else
         _maximum = right3->GetCount();
     SetType(((KeyframeTypeSlot)(*(void***)leftX)[1])(leftX));
-    for (unsigned index = 0; index < m_uiFaceGenValueCount; ++index)
+    for (unsigned index = 0; index < iNumQuantities; ++index)
     {
         if (blendA == 0.0 || !right3->IsQuantityInRange(index))
         {
@@ -346,10 +375,13 @@ bool __cdecl FloatEQ(float a, float b, float c);
 }
 
 // @fnv 0x0064eea0
-bool BSFaceGenKeyframeMultiple::BlendFrom(BSFaceGenKeyframe* pOther, float f, bool b1, bool b2)
+// pdb: BSFaceGenKeyframeMultiple::MergeMorphDataFrom | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb params: apSource, afBlend, abMergeZeroes, abClearValueIfNoUpdate
+// pdb locals: bchanged, fblend, psource, i
+bool BSFaceGenKeyframeMultiple::BlendFrom(BSFaceGenKeyframe* apSource, float afBlend, bool abMergeZeroes, bool abClearValueIfNoUpdate)
 {
-    BSFaceGenKeyframeMultiple* pfOther = (pOther != 0 && ((KeyframeMultipleSlot)(*(void***)pOther)[17])(pOther))
-        ? static_cast<BSFaceGenKeyframeMultiple*>(pOther)
+    BSFaceGenKeyframeMultiple* pfOther = (apSource != 0 && ((KeyframeMultipleSlot)(*(void***)apSource)[17])(apSource))
+        ? static_cast<BSFaceGenKeyframeMultiple*>(apSource)
         : 0;
     float fClamped;
     bool bChanged = false;
@@ -361,28 +393,28 @@ bool BSFaceGenKeyframeMultiple::BlendFrom(BSFaceGenKeyframe* pOther, float f, bo
         return false;
     }
 
-    if (f < 0.0f)
+    if (afBlend < 0.0f)
     {
         fClamped = 0.0f;
     }
-    else if (f > 1.0f)
+    else if (afBlend > 1.0f)
     {
         fClamped = 1.0f;
     }
     else
     {
-        fClamped = f;
+        fClamped = afBlend;
     }
 
-    for (unsigned int i = 0; i < m_uiFaceGenValueCount; ++i)
+    for (unsigned int i = 0; i < iNumQuantities; ++i)
     {
-        if (!b1 && fnv_0064eea0::FloatEQ(pfOther->BSFaceGenKeyframeMultiple_GetQuantity(i), 0.0f, 0.001f))
+        if (!abMergeZeroes && fnv_0064eea0::FloatEQ(pfOther->BSFaceGenKeyframeMultiple_GetQuantity(i), 0.0f, 0.001f))
         {
             continue;
         }
         if (pfOther->BSFaceGenKeyframeMultiple_GetQuantity(i) < 3.4028234663852886e38)
         {
-            if (f < 1.0f && BSFaceGenKeyframeMultiple_GetQuantity(i) < 3.4028234663852886e38)
+            if (afBlend < 1.0f && BSFaceGenKeyframeMultiple_GetQuantity(i) < 3.4028234663852886e38)
             {
                 bChanged = bChanged | this->SetQuantity_0064a4d0(i, BSFaceGenKeyframeMultiple_GetQuantity(i) * (1.0 - fClamped) +
                                                               pfOther->BSFaceGenKeyframeMultiple_GetQuantity(i) * fClamped);
@@ -392,7 +424,7 @@ bool BSFaceGenKeyframeMultiple::BlendFrom(BSFaceGenKeyframe* pOther, float f, bo
                 bChanged = bChanged | this->SetQuantity_0064a4d0(i, pfOther->BSFaceGenKeyframeMultiple_GetQuantity(i));
             }
         }
-        else if (b2)
+        else if (abClearValueIfNoUpdate)
         {
             bChanged = bChanged | this->SetQuantity_0064a4d0(i, 3.402823466e38f);
         }
@@ -406,21 +438,24 @@ float xAbs(float f);
 
 // For compatible inputs, moves active values toward pOther by a time-scaled step and returns true.
 // @fnv 0x0064f900
-bool BSFaceGenKeyframeMultiple::Interpolate(float fTime, BSFaceGenKeyframe* pOther)
+// pdb: BSFaceGenKeyframeMultiple::UpdateToTarget | BSFaceGenKeyframe.obj | retail, vtable slot, high
+// pdb params: afTime, apTarget
+// pdb locals: bchanged, fdiff, pkeyframe, fchange, i
+bool BSFaceGenKeyframeMultiple::Interpolate(float afTime, BSFaceGenKeyframe* apTarget)
 {
     float qfTOqo;
-    BSFaceGenKeyframeMultiple* qsSDDgz = (pOther && ((KeyframeMultipleSlot)(*(void***)pOther)[17])(pOther))
-        ? static_cast<BSFaceGenKeyframeMultiple*>(pOther)
+    BSFaceGenKeyframeMultiple* qsSDDgz = (apTarget && ((KeyframeMultipleSlot)(*(void***)apTarget)[17])(apTarget))
+        ? static_cast<BSFaceGenKeyframeMultiple*>(apTarget)
         : 0;
     float qrEZrs;
     bool qpqRa = false;
     unsigned int qSVM;
-    if (fTime <= 0.0 || !qsSDDgz ||
+    if (afTime <= 0.0 || !qsSDDgz ||
         ((KeyframeTypeSlot)(*(void***)qsSDDgz)[1])(qsSDDgz) != ((KeyframeTypeSlot)(*(void***)this)[1])(this) ||
         qsSDDgz->GetCount() != GetCount() ||
         !((KeyframeCompatibilitySlot)(*(void***)this)[11])(this, qsSDDgz))
         return false;
-    qfTOqo = (xBaseRate() + xRateScale() * pOther->GetAttributeStrength()) * fTime;
+    qfTOqo = (xBaseRate() + xRateScale() * apTarget->GetAttributeStrength()) * afTime;
     for (qSVM = 0; qSVM < GetCount(); qSVM++)
     {
         if (!IsQuantityInRange(qSVM))

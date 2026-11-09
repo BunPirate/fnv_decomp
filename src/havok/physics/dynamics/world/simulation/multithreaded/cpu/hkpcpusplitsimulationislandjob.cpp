@@ -29,9 +29,12 @@ struct D942F0Island
     void markDirty();
 };
 
-void __cdecl hkpWorldOperationUtil_splitSimulationIsland(D942F0Island* island, void* world, void* context, D942F0Array* out);
+void __cdecl hkpWorldOperationUtil_splitSimulationIsland(D942F0Island* currentIsland, void* world, void* newIslandsOut, D942F0Array* oldEntitiesOut);
 
 // @fnv 0x00d942f0
+// pdb: hkCpuSplitSimulationIslandJobImpl | hkpCpuSplitSimulationIslandJob.obj | retail, object-file run extension, low
+// pdb params: island, newSplitIslands
+// pdb locals: buffer, assertBuf, ostr
 void __cdecl ClearFlagsAndMarkDirty(D942F0Island* island, void* context)
 {
     island->m_flags &= ~3;

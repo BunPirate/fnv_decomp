@@ -71,10 +71,10 @@ struct AudioStream
     int m_uCapacity;
 };
 extern "C" void* __cdecl FNV_block_copy(void* dst, const void* src, unsigned int size);
-void ResizeAudioStream(hkMemoryAllocator* pAlloc, AudioStream* pStream, int elemSize);
+void ResizeAudioStream(hkMemoryAllocator* mem, AudioStream* array, int sizeElem);
 typedef unsigned int hkUlong;
-extern void __cdecl hkArrayUtil__reserve(void* alloc, void* arr, int n, int sizeElem);
-extern void __cdecl ResizeAudioStream(void* alloc, void* arr, int sizeElem);
+extern void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
+extern void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 inline void* operator new(unsigned int, void* p)
 {
     return p;
@@ -137,8 +137,8 @@ struct Holder
     void* m_pAllocator;
 };
 Holder* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(void* pAllocator, void* pBuf, int newCap, int bFlag);
-void __cdecl ResizeAudioStream(void* pAllocator, void* pBuf, int bFlag);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 extern "C" void _ReadWriteBarrier(void);
 struct FUN_00e108b0_cls
 {
@@ -235,6 +235,9 @@ void __cdecl SortRecordsByKey(FNVRec_0f10* arr, int n);
 
 // @fnv 0x00da0f10
 // src: GUESS 0x00da0f10 (confidence: low)
+// pdb: `anonymous namespace'::hkWeldVertices | hkGeometryUtils.obj | retail, object-file run extension, low
+// pdb params: vertsIn, uniqueVerts, remap, tolerance
+// pdb locals: terminator, halfTol, aabb, currentPos
 void __cdecl hkMemoryRouter_getInstance_ProcessEntries_00da0f10(FNVCloud_0f10* cloud, AudioStream* out, AudioStream* idx, float radius)
 {
     int n = cloud->m_uiItemCount;

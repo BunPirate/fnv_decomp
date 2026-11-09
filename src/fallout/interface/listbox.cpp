@@ -5,7 +5,7 @@
 class HighlightValue_listbox
 {
 public:
-    void Tile_Value_AddRefValueAction(int trait, Tile* tile, int sourceTrait);
+    void Tile_Value_AddRefValueAction(int aiActionType, Tile* apSourceTile, int aeSourceTrait);
     void Tile_Value_AddRefValueAction(int trait, void* source, int sourceTrait);
     void Tile_Value_SetFloat(int value);
 };
@@ -88,6 +88,8 @@ struct G2
 extern G2 g_011d8b54;
 
 // @fnv 0x00721130
+// pdb: InterfaceManager::RegisterListBox | MenuManager.obj | debug, call graph (shared callers), medium
+// pdb params: apLB
 void AddToHeadList(int* arg)
 {
     g_011d8b54.AddHead(&arg);
@@ -102,9 +104,11 @@ DummyNode g_011d8b54;
 
 // @fnv 0x007211c0
 // src: XBOX_PDB 0x007211c0
-void InterfaceManager_UnregisterListBox(int* p)
+// pdb: InterfaceManager::UnregisterListBox | MenuManager.obj | debug, upstream name already matches, high
+// pdb params: apLB
+void InterfaceManager_UnregisterListBox(int* apLB)
 {
-    g_011d8b54.Remove(&p);
+    g_011d8b54.Remove(&apLB);
 }
 }  // namespace fnv_007211c0
 
@@ -122,6 +126,7 @@ struct FUN_00723f30_shell : GlobalObject_00869f00
 
 // @fnv 0x00723f30
 // src: GUESS 0x00723f30 (confidence: low)
+// pdb: BSSimpleArray<SPECIALBookMenu::SpecialBookTextItem *,1024>::~BSSimpleArray<SPECIALBookMenu::SpecialBookTextItem *,1024> | MenuManager.obj | debug, object-file run extension, low
 void FUN_00723f30_shell::SetVtableAndProcessState_00723f30()
 {
     *(int*)this = (int)&DAT_010703b4;
@@ -182,6 +187,8 @@ struct GlobalObject_00869f00
 
 // @fnv 0x00724020
 // src: GUESS 0x00724020 (confidence: medium)
+// pdb: BSSimpleArray<LoveTesterMenu::LoveTesterTextItem *,1024>::_Deallocate | MenuManager.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 void GlobalObject_00869f00::ResetVirtualTableAndClear_00724020()
 {
     m_str = "`Br";
@@ -219,6 +226,7 @@ struct FUN_00724140_shell
 
 // Calls FUN_00722880, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00724140
+// pdb: ListBox<StatsMenu::StatusEffect *>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00724140_shell::Destroy(unsigned int flags)
 {
     FUN_00722880();
@@ -241,6 +249,7 @@ struct FUN_007a61f0_shell
 
 // Calls FUN_007a51c0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x007a61f0
+// pdb: ListBox<TESChallenge *>::`scalar deleting destructor' | MapMenu.obj | retail, vtable slot, high
 void* FUN_007a61f0_shell::FUN_007a61f0(unsigned int flags)
 {
     ((FUN_007a51c0_shell*)this)->FUN_007a51c0();
@@ -260,6 +269,7 @@ struct FUN_007a62e0_shell
 // Stores param2 in a, the first int pointed to by param3 in b, sets c to 0, and returns this.
 // @fnv 0x007a62e0
 // src: GUESS 0x007a62e0 (confidence: low)
+// pdb: ListBox<TESChallenge *>::NumItems | MapMenu.obj | debug, object-file run extension, low
 FUN_007a62e0_shell* __thiscall FUN_007a62e0_shell::InitializeFields_007a62e0(int param2, int* pSource)
 {
     a = param2;
@@ -279,6 +289,8 @@ struct ListboxSelectionCallView
 
 // @fnv 0x007d8d80
 // src: GUESS 0x007d8d80 (confidence: medium)
+// pdb: ListBox<BGSSaveLoadFileEntry *>::Deselect | StartMenu.obj | debug, call graph, high
+// pdb params: apSelectItem
 bool ListboxSelectionCallView::SetSelection_Thunk(Tile* apSelectItem)
 {
     return SetSelection(apSelectItem, 1);
@@ -294,6 +306,7 @@ void __cdecl _Deallocate(void*);
 
 // Calls FUN_007d6f80 on this, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x007d8e80
+// pdb: ListBox<StartMenu::Option *>::`scalar deleting destructor' | StartMenu.obj | debug, vtable slot, medium
 void* FUN_007d8e80_shell::FUN_007d8e80(unsigned int flags)
 {
     FUN_007d6f80(this);
@@ -311,6 +324,7 @@ struct FUN_007d8eb0_shell
 void __cdecl _Deallocate(void*);
 
 // @fnv 0x007d8eb0
+// pdb: ListBox<BGSSaveLoadFileEntry *>::`scalar deleting destructor' | StartMenu.obj | retail, vtable slot, high
 void* FUN_007d8eb0_shell::FUN_007d8eb0(unsigned int flags)
 {
     FUN_007d7d30();
@@ -328,15 +342,17 @@ struct FUN_00721410_class
 {
     ListBoxSortList list;
     void __thiscall ListBox_enum_ActorValue_Index_Synchronize();
-    void __thiscall ListBox_enum_ActorValue_Index_Sort(void* param);
+    void __thiscall ListBox_enum_ActorValue_Index_Sort(void* apCompareFn);
 };
 
 // Sorts the list at offset 4 using the given comparator, then calls FUN_00724360.
 // @fnv 0x00721410
 // src: XBOX_PDB 0x00721410
-void FUN_00721410_class::ListBox_enum_ActorValue_Index_Sort(void* pComparator)
+// pdb: ListBox<enum ActorValue::Index>::Sort | MenuManager.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void FUN_00721410_class::ListBox_enum_ActorValue_Index_Sort(void* apCompareFn)
 {
-    reinterpret_cast<ListBoxSortList*>(reinterpret_cast<char*>(this) + 4)->Sort((int(__cdecl*)(void*, void*))pComparator);
+    reinterpret_cast<ListBoxSortList*>(reinterpret_cast<char*>(this) + 4)->Sort((int(__cdecl*)(void*, void*))apCompareFn);
     ListBox_enum_ActorValue_Index_Synchronize();
 }
 
@@ -354,16 +370,18 @@ struct FUN_00724f00_shell
 struct FUN_00722370_shell
 {
     ListBoxSortList m_kNode;
-    void __thiscall ListBox_enum_MiscStatManager_MiscStatID_Sort(int* pParam);
+    void __thiscall ListBox_enum_MiscStatManager_MiscStatID_Sort(int* apCompareFn);
 };
 
 // Sorts the ListBoxSortList at offset 4 using the given compare function, then calls RefreshTiles on this object.
 // @fnv 0x00722370
 // src: XBOX_PDB 0x00722370
-void __thiscall FUN_00722370_shell::ListBox_enum_MiscStatManager_MiscStatID_Sort(int* pCompare)
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::Sort | MenuManager.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void __thiscall FUN_00722370_shell::ListBox_enum_MiscStatManager_MiscStatID_Sort(int* apCompareFn)
 {
     reinterpret_cast<ListBoxSortList*>(reinterpret_cast<char*>(this) + 4)
-        ->Sort(reinterpret_cast<int(__cdecl*)(void*, void*)>(pCompare));
+        ->Sort(reinterpret_cast<int(__cdecl*)(void*, void*)>(apCompareFn));
     reinterpret_cast<FUN_00724f00_shell*>(this)->RefreshTiles();
 }
 }  // namespace fnv_00722370
@@ -382,15 +400,17 @@ struct FUN_00722b20_shell
 {
     void* m_auiShapeKeys;
     ListBoxSortList m_kNode;
-    void __thiscall ListBox_StatsMenu_StatusEffect_Sort(int(__cdecl* fp)(void*, void*));
+    void __thiscall ListBox_StatsMenu_StatusEffect_Sort(int(__cdecl* apCompareFn)(void*, void*));
 };
 
 // Sorts the list using the given comparison function, then calls FUN_007254d0 on this object.
 // @fnv 0x00722b20
 // src: COMMUNITY 0x00722b20
-void __thiscall FUN_00722b20_shell::ListBox_StatsMenu_StatusEffect_Sort(int(__cdecl* fp)(void*, void*))
+// pdb: ListBox<StatsMenu::StatusEffect *>::Sort | MenuManager.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void __thiscall FUN_00722b20_shell::ListBox_StatsMenu_StatusEffect_Sort(int(__cdecl* apCompareFn)(void*, void*))
 {
-    m_kNode.Sort(fp);
+    m_kNode.Sort(apCompareFn);
     reinterpret_cast<FUN_007254d0_t*>(this)->ListBox_StatsMenu_StatusEffect_Synchronize();
 }
 }  // namespace fnv_00722b20
@@ -406,6 +426,7 @@ struct FUN_00723fa0_shell : AX
 // Sets the vtable pointer to str_010703dc, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x00723fa0
 // src: GUESS 0x00723fa0 (confidence: low)
+// pdb: BSSimpleArray<LoveTesterMenu::LoveTesterTextItem *,1024>::BSSimpleArray<LoveTesterMenu::LoveTesterTextItem *,1024> | MenuManager.obj | debug, call graph, medium
 FUN_00723fa0_shell* __thiscall FUN_00723fa0_shell::SetVirtualTableAndProcessState_00723fa0()
 {
     vtable = (int*)&str_010703dc;
@@ -420,6 +441,9 @@ struct FUN_00723ff0_shell : AX
 };
 
 // @fnv 0x00723ff0
+// pdb: BSSimpleArray<LoveTesterMenu::LoveTesterTextItem *,1024>::_Allocate | MenuManager.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 FUN_00723ff0_shell* FUN_00723ff0_shell::Constructor()
 {
     vtable = (int*)"`Br";
@@ -436,6 +460,8 @@ struct FUN_00724070_shell : GlobalObject_00869f00
 
 // @fnv 0x00724070
 // src: GUESS 0x00724070 (confidence: low)
+// pdb: BSSimpleArray<LoveTesterMenu::LoveTesterButton *,1024>::_Reallocate | MenuManager.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 void FUN_00724070_shell::SetVtableAndProcessState_00724070()
 {
     *(int*)this = (int)&DAT_01070404;
@@ -449,6 +475,7 @@ struct FUN_007241d0_shell : FUN_00723f30_shell
 
 // Calls the base cleanup, then frees this object with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x007241d0
+// pdb: BSSimpleArray<SPECIALBookMenu::SpecialBookTextItem *,1024>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* FUN_007241d0_shell::FUN_007241d0(unsigned int flags)
 {
     this->SetVtableAndProcessState_00723f30();
@@ -465,6 +492,7 @@ struct FUN_00724290_shell
 
 // Calls FUN_00724070, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00724290
+// pdb: BSSimpleArray<LoveTesterMenu::LoveTesterButton *,1024>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* FUN_00724290_shell::FUN_00724290(unsigned int flags)
 {
     SetVtableAndProcessState_00724070();
@@ -481,6 +509,8 @@ struct FUN_007242c0_shell
 // Returns whether the bit at position flags is set in the 16-bit value at offset 0x2c of this object.
 // @fnv 0x007242c0
 // src: XBOX_PDB 0x007242c0
+// pdb: NiTMallocInterface<Tile *>::Allocate | MenuManager.obj | debug, object-file run extension, low
+// pdb params: uiNumElements
 bool __thiscall FUN_007242c0_shell::ListBox_unsigned_int_GetFlag(unsigned int uiFlagIndex)
 {
     return (*(unsigned short*)((char*)this + 0x2c) & (1 << uiFlagIndex)) != 0;
@@ -496,6 +526,7 @@ struct FUN_0071ae60_shell
 };
 // @fnv 0x0071ae60
 // src: XBOX_PDB 0x0071ae60
+// pdb: ListBox<ItemChange *>::NumUnfiltered | ListBox.obj | retail, call graph, high
 unsigned int __thiscall FUN_0071ae60_shell::ListBox_ItemChange_NumUnfiltered()
 {
     static int numFiltered = GetTileValueID("_num_filtered", -1);
@@ -506,15 +537,17 @@ void __cdecl ProcessEntries_00724930();
 struct FUN_00721bc0_shell
 {
     int x;
-    void __thiscall SortEntriesAndRefresh(int(__cdecl* param)(void*, void*));
+    void __thiscall SortEntriesAndRefresh(int(__cdecl* apCompareFn)(void*, void*));
     void __thiscall ProcessEntries_00724930();
 };
 // Sorts the ListBoxSortList at offset 4 using the given comparison function, then calls FUN_00724930 on this object.
 // @fnv 0x00721bc0
 // src: GUESS 0x00721bc0 (confidence: medium)
-void __thiscall FUN_00721bc0_shell::SortEntriesAndRefresh(int(__cdecl* param)(void*, void*))
+// pdb: ListBox<PerkRankData *>::Sort | MenuManager.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void __thiscall FUN_00721bc0_shell::SortEntriesAndRefresh(int(__cdecl* apCompareFn)(void*, void*))
 {
-    reinterpret_cast<ListBoxSortList*>((char*)this + 4)->Sort(param);
+    reinterpret_cast<ListBoxSortList*>((char*)this + 4)->Sort(apCompareFn);
     this->ProcessEntries_00724930();
 }
 
@@ -528,6 +561,8 @@ struct FUN_00723030_Holder
 };
 // Returns true when the tile exists and its menu equals the given menu.
 // @fnv 0x00723030
+// pdb: ListBox<StartMenu::Option *>::BelongsTo | StartMenu.obj | retail, vtable slot, high
+// pdb params: apMenu
 bool FUN_00723030_Holder::IsTileMenu(Menu* apMenu)
 {
     return _t && apMenu == _t->GetMenu();
@@ -540,28 +575,32 @@ struct FUN_00725aa0_shell
 struct FUN_00723310_shell
 {
     ListBoxSortList list;
-    void __thiscall SortListAndProcessSlots(int(__cdecl* cmp)(void*, void*));
+    void __thiscall SortListAndProcessSlots(int(__cdecl* apCompareFn)(void*, void*));
 };
 // Sorts the list at offset 4 using the given comparator, then calls ProcessSlots on this object.
 // @fnv 0x00723310
 // src: GUESS 0x00723310 (confidence: high)
-void __thiscall FUN_00723310_shell::SortListAndProcessSlots(int(__cdecl* cmp)(void*, void*))
+// pdb: ListBox<TESReputation *>::Sort | MenuManager.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void __thiscall FUN_00723310_shell::SortListAndProcessSlots(int(__cdecl* apCompareFn)(void*, void*))
 {
-    ((ListBoxSortList*)((char*)this + 4))->Sort(cmp);
+    ((ListBoxSortList*)((char*)this + 4))->Sort(apCompareFn);
     ((FUN_00725aa0_shell*)this)->ProcessSlots();
 }
 
 struct FUN_00723ac0_shell
 {
     void __thiscall ListBox_unsigned_int_Synchronize();
-    void __thiscall ListBox_unsigned_int_Sort(void* param);
+    void __thiscall ListBox_unsigned_int_Sort(void* apCompareFn);
 };
 // Sorts the ListBoxSortList at this+4 using the given comparison function, then calls FUN_00726090.
 // @fnv 0x00723ac0
 // src: XBOX_PDB 0x00723ac0
-void __thiscall FUN_00723ac0_shell::ListBox_unsigned_int_Sort(void* pCompareFunc)
+// pdb: ListBox<unsigned int>::Sort | MenuManager.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void __thiscall FUN_00723ac0_shell::ListBox_unsigned_int_Sort(void* apCompareFn)
 {
-    ((ListBoxSortList*)((char*)this + 4))->Sort((int(__cdecl*)(void*, void*))pCompareFunc);
+    ((ListBoxSortList*)((char*)this + 4))->Sort((int(__cdecl*)(void*, void*))apCompareFn);
     ListBox_unsigned_int_Synchronize();
 }
 
@@ -573,6 +612,7 @@ struct FUN_00723f00_shell : AX
 // Sets the vtable pointer, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x00723f00
 // src: GUESS 0x00723f00 (confidence: low)
+// pdb: BSSimpleArray<SPECIALBookMenu::SpecialBookTextItem *,1024>::BSSimpleArray<SPECIALBookMenu::SpecialBookTextItem *,1024> | MenuManager.obj | debug, call graph, medium
 FUN_00723f00_shell* __thiscall FUN_00723f00_shell::SetVirtualTableAndProcessState_00723f00()
 {
     vtable = &DAT_010703b4;
@@ -587,6 +627,7 @@ struct FUN_00723fd0_shell : GlobalObject_00869f00
 
 // @fnv 0x00723fd0
 // src: GUESS 0x00723fd0 (confidence: low)
+// pdb: BSSimpleArray<LoveTesterMenu::LoveTesterTextItem *,1024>::~BSSimpleArray<LoveTesterMenu::LoveTesterTextItem *,1024> | MenuManager.obj | debug, object-file run extension, low
 void __thiscall FUN_00723fd0_shell::UpdateState_00723fd0()
 {
     *(char**)(void*)this = str_010703dc;
@@ -601,6 +642,7 @@ struct FUN_00724090_shell
 
 // Calls FUN_00721150, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00724090
+// pdb: ListBox<enum ActorValue::Index>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* FUN_00724090_shell::FUN_00724090(unsigned int flags)
 {
     FUN_00721150();
@@ -619,6 +661,7 @@ struct FUN_007240e0_shell
 };
 // Calls FUN_00721920 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x007240e0
+// pdb: ListBox<PerkRankData *>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* FUN_007240e0_shell::FUN_007240e0(unsigned int flags)
 {
     ((FUN_00721920_shell*)this)->FUN_00721920();
@@ -634,6 +677,7 @@ struct FUN_00724110_This
 };
 // Calls FUN_007220d0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00724110
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00724110_This::FUN_00724110(unsigned int flags)
 {
     FUN_007220d0();
@@ -649,6 +693,7 @@ struct S_00724170
 };
 // Calls FUN_00723070, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00724170
+// pdb: ListBox<TESReputation *>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* __thiscall S_00724170::FUN_00724170(unsigned int flags)
 {
     FUN_00723070();
@@ -664,6 +709,7 @@ struct FUN_007241a0_shell
 };
 // Calls FUN_00723820, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x007241a0
+// pdb: ListBox<unsigned int>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* __thiscall FUN_007241a0_shell::FUN_007241a0(unsigned int flags)
 {
     FUN_00723820();
@@ -684,6 +730,7 @@ struct FUN_00724230_shell
 
 // Calls FUN_00723fd0 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00724230
+// pdb: BSSimpleArray<LoveTesterMenu::LoveTesterTextItem *,1024>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00724230_shell::FUN_00724230(unsigned int flags)
 {
     ((Helper_00723fd0*)this)->UpdateState_00723fd0();
@@ -699,6 +746,7 @@ struct FUN_00724260_shell
 };
 // Calls FUN_00724020, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00724260
+// pdb: BSSimpleArray<LoveTesterMenu::LoveTesterLightBulbGlows *,1024>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 void* FUN_00724260_shell::FUN_00724260(unsigned int flags)
 {
     ResetVirtualTableAndClear_00724020();
@@ -717,6 +765,7 @@ struct FUN_007643c0_p07 : Member_007a8b10
 };
 // Runs the base destructor, then frees this object with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00764e10
+// pdb: ListBox<int>::`scalar deleting destructor' | DialogMenu.obj | retail, vtable slot, high
 Member_007a8b10* __thiscall FUN_007643c0_p07::DestroySelf(unsigned int flags)
 {
     this->Member_007a8b10::~Member_007a8b10();
@@ -728,19 +777,21 @@ Member_007a8b10* __thiscall FUN_007643c0_p07::DestroySelf(unsigned int flags)
 struct ListBoxSortList;
 struct FUN_007a6480_shell
 {
-    void __thiscall ProcessEntries_007a6480();
+    void __thiscall ListBox_TESQuest_Synchronize();
 };
 struct FUN_007a22a0_shell
 {
-    void __thiscall SortEntriesAndRefresh_007a22a0(int(__cdecl* cmp)(void*, void*));
+    void __thiscall SortEntriesAndRefresh_007a22a0(int(__cdecl* apCompareFn)(void*, void*));
 };
 // Sorts the ListBoxSortList at offset 4 using cmp, then calls FUN_007a6480 on this.
 // @fnv 0x007a22a0
 // src: GUESS 0x007a22a0 (confidence: medium)
-void __thiscall FUN_007a22a0_shell::SortEntriesAndRefresh_007a22a0(int(__cdecl* cmp)(void*, void*))
+// pdb: ListBox<TESQuest *>::Sort | MapMenu.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void __thiscall FUN_007a22a0_shell::SortEntriesAndRefresh_007a22a0(int(__cdecl* apCompareFn)(void*, void*))
 {
-    ((ListBoxSortList*)((char*)this + 4))->Sort(cmp);
-    ((FUN_007a6480_shell*)this)->ProcessEntries_007a6480();
+    ((ListBoxSortList*)((char*)this + 4))->Sort(apCompareFn);
+    ((FUN_007a6480_shell*)this)->ListBox_TESQuest_Synchronize();
 }
 
 struct FUN_007a30a0_Holder
@@ -751,41 +802,47 @@ struct FUN_007a30a0_Holder
 // Calls FindNodeValue with the given arguments and returns the pointed-to int, or 0 if the returned pointer is null.
 // @fnv 0x007a30a0
 // src: COMMUNITY 0x007a30a0
-int __thiscall FUN_007a30a0_Holder::ListBox_ItemChange_GetTileAt(int param1, unsigned char param2)
+// pdb: ListBox<StartMenu::Option *>::GetTileAt | StartMenu.obj | retail, vtable slot, high
+// pdb params: aiIndex, abLiteral
+// pdb locals: pitem
+int __thiscall FUN_007a30a0_Holder::ListBox_ItemChange_GetTileAt(int aiIndex, unsigned char abLiteral)
 {
-    int* p = FindNodeValue(param1, param2);
+    int* p = FindNodeValue(aiIndex, abLiteral);
     return p ? *p : 0;
 }
 
 struct FUN_007a80e0_shell
 {
-    int* __thiscall InitSceneNodes();
+    int* __thiscall ListBox_TESChallenge_Synchronize();
 };
 struct FUN_007a5700_shell
 {
-    int* __thiscall SortEntriesAndInitializeSceneNodes(int(__cdecl* cmp)(void*, void*));
+    int* __thiscall SortEntriesAndInitializeSceneNodes(int(__cdecl* apCompareFn)(void*, void*));
 };
 // Sorts the ListBoxSortList at offset 4 using cmp, then returns the result of InitSceneNodes on this object.
 // @fnv 0x007a5700
 // src: GUESS 0x007a5700 (confidence: medium)
-int* __thiscall FUN_007a5700_shell::SortEntriesAndInitializeSceneNodes(int(__cdecl* cmp)(void*, void*))
+// pdb: ListBox<TESChallenge *>::Sort | MapMenu.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+int* __thiscall FUN_007a5700_shell::SortEntriesAndInitializeSceneNodes(int(__cdecl* apCompareFn)(void*, void*))
 {
-    reinterpret_cast<ListBoxSortList*>(reinterpret_cast<char*>(this) + 4)->Sort(cmp);
-    return reinterpret_cast<FUN_007a80e0_shell*>(this)->InitSceneNodes();
+    reinterpret_cast<ListBoxSortList*>(reinterpret_cast<char*>(this) + 4)->Sort(apCompareFn);
+    return reinterpret_cast<FUN_007a80e0_shell*>(this)->ListBox_TESChallenge_Synchronize();
 }
 
 struct FUN_007a1aa0_shell
 {
-    void ResetVirtualTableAndClear_007a1aa0();
+    void BSSimpleArray_BSStringT_char_1024_dtor();
 };
 struct FUN_007a6100_shell : FUN_007a1aa0_shell
 {
     void* __thiscall FUN_007a6100(unsigned int flags);
 };
 // @fnv 0x007a6100
+// pdb: BSSimpleArray<BSStringT<char>,1024>::`scalar deleting destructor' | MapMenu.obj | retail, vtable slot, high
 void* __thiscall FUN_007a6100_shell::FUN_007a6100(unsigned int flags)
 {
-    ResetVirtualTableAndClear_007a1aa0();
+    BSSimpleArray_BSStringT_char_1024_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -797,6 +854,7 @@ struct FUN_007a6130_This
     void* __thiscall FUN_007a6130(unsigned int flags);
 };
 // @fnv 0x007a6130
+// pdb: ListBox<TESQuest *>::`scalar deleting destructor' | MapMenu.obj | retail, vtable slot, high
 void* __thiscall FUN_007a6130_This::FUN_007a6130(unsigned int flags)
 {
     FUN_007a1d60();
@@ -812,6 +870,7 @@ struct FUN_007a6190Owner
 };
 // Calls FUN_007a37b0, then deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x007a6190
+// pdb: ListBox<TESObjectREFR *>::`scalar deleting destructor' | MapMenu.obj | retail, vtable slot, high
 void* __thiscall FUN_007a6190Owner::FUN_007a6190(unsigned int flags)
 {
     FUN_007a37b0();
@@ -846,6 +905,9 @@ struct FUN_007a63f0_shell
 };
 // @fnv 0x007a63f0
 // src: GUESS 0x007a63f0 (confidence: low)
+// pdb: ListBox<TESQuest *>::IsListItem | MapMenu.obj | debug, object-file run extension, low
+// pdb params: apTile
+// pdb locals: pnode
 void __thiscall FUN_007a63f0_shell::UpdateState_007a63f0(unsigned int uiRequestedSize, unsigned int savedSize)
 {
     *(int*)((char*)this + 4) = 0;
@@ -878,6 +940,8 @@ struct FUN_007d7a80_shell
 };
 // @fnv 0x007d7a80
 // src: COMMUNITY 0x007d7a80
+// pdb: ListBox<StartMenu::Option *>::Select | StartMenu.obj | debug, object-file run extension, low
+// pdb params: apSelectItem
 void __thiscall FUN_007d7a80_shell::ListBox_StartMenu_Option_Select(int a)
 {
     ((FUN_007d9000_shell*)this)->ApplySelectionAction(a, 0);
@@ -887,14 +951,16 @@ void __cdecl UpdateSaveLoadList();
 struct FUN_007d8420_shell
 {
     ListBoxSortList list;
-    void __thiscall SortList(int(__cdecl* cmp)(void*, void*));
+    void __thiscall SortList(int(__cdecl* apCompareFn)(void*, void*));
     void __thiscall UpdateSaveLoadList();
 };
 // Sorts the list at offset 4 using the given comparison function, then calls UpdateSaveLoadList.
 // @fnv 0x007d8420
-void __thiscall FUN_007d8420_shell::SortList(int(__cdecl* cmp)(void*, void*))
+// pdb: ListBox<BGSSaveLoadFileEntry *>::Sort | StartMenu.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void __thiscall FUN_007d8420_shell::SortList(int(__cdecl* apCompareFn)(void*, void*))
 {
-    ((ListBoxSortList*)((char*)this + 4))->Sort(cmp);
+    ((ListBoxSortList*)((char*)this + 4))->Sort(apCompareFn);
     UpdateSaveLoadList();
 }
 
@@ -908,6 +974,9 @@ struct FUN_007d86c0_shell
 };
 // @fnv 0x007d86c0
 // src: COMMUNITY 0x007d86c0
+// pdb: ListBox<BGSSaveLoadFileEntry *>::GetDataAt | StartMenu.obj | debug, call graph, medium
+// pdb params: aiIndex, abLiteral
+// pdb locals: pitem
 int* __thiscall FUN_007d86c0_shell::ListBox_BGSSaveLoadFileEntry_GetDataAt(int* apItem, unsigned char apSelect)
 {
     FUN_007a6fa0_shell* result = (FUN_007a6fa0_shell*)((FUN_007a6fa0_shell*)this)->FindNodeValue(apItem, apSelect);
@@ -951,7 +1020,7 @@ struct FUN_007a3cf0_shell
 {
     char pad[4];
     ListBoxSortList m_kNode;
-    void __thiscall SortNodesAndRefresh(int(__cdecl* compare)(void*, void*));
+    void __thiscall SortNodesAndRefresh(int(__cdecl* apCompareFn)(void*, void*));
 };
 
 struct FUN_007a7260_shell
@@ -961,9 +1030,11 @@ struct FUN_007a7260_shell
 
 // @fnv 0x007a3cf0
 // src: GUESS 0x007a3cf0 (confidence: medium)
-void __thiscall FUN_007a3cf0_shell::SortNodesAndRefresh(int(__cdecl* compare)(void*, void*))
+// pdb: ListBox<TESObjectREFR *>::Sort | MapMenu.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void __thiscall FUN_007a3cf0_shell::SortNodesAndRefresh(int(__cdecl* apCompareFn)(void*, void*))
 {
-    m_kNode.Sort(compare);
+    m_kNode.Sort(apCompareFn);
     reinterpret_cast<FUN_007a7260_shell*>(this)->ProcessEntries_007a7260();
 }
 }  // namespace fnv_007a3cf0
@@ -985,6 +1056,8 @@ struct ListBox_71ad30 : ListBoxBase
 };
 
 // @fnv 0x0071ad30
+// pdb: ListBox<ItemChange *>::SetTotalListHeight | ListBox.obj | retail, call graph, high
+// pdb locals: inumPages, flistHeight
 void ListBox_71ad30::UpdateScrollPages()
 {
     if (m_pListTile)
@@ -1042,6 +1115,8 @@ struct FUN_00723890_this
 
 // @fnv 0x00723890
 // src: XBOX_PDB 0x00723890
+// pdb: ListBox<unsigned int>::RemoveAll | MenuManager.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void FUN_00723890_this::ListBox_unsigned_int_RemoveAll()
 {
     while (m_next && *m_next->FUN_006815c0())
@@ -1085,6 +1160,8 @@ struct FUN_007d74f0_shell
 // Sets the "_enabled" trait on the tile via the helper at this+0xc.
 // @fnv 0x007d74f0
 // src: XBOX_PDB 0x007d74f0
+// pdb: ListBox<StartMenu::Option *>::SetEnabled | StartMenu.obj | retail, call graph, high
+// pdb params: abVal
 void __thiscall FUN_007d74f0_shell::ListBox_StartMenu_Option_SetEnabled(bool abVal)
 {
     static int s_trait = GetTileValueID("_enabled", -1);
@@ -1103,6 +1180,8 @@ struct FUN_007d8810_shell
 // Sets the _enabled trait on the Tile at mC to abVal using the cached trait ID.
 // @fnv 0x007d8810
 // src: COMMUNITY 0x007d8810
+// pdb: ListBox<BGSSaveLoadFileEntry *>::SetEnabled | StartMenu.obj | retail, call graph, high
+// pdb params: abVal
 void __thiscall FUN_007d8810_shell::ListBox_BGSSaveLoadFileEntry_SetEnabled(bool abVal)
 {
     static int sTraitID = GetTileValueID("_enabled", -1);
@@ -1118,6 +1197,7 @@ struct FUN_00765340_shell
     unsigned int __thiscall GetUnfilteredCount();
 };
 // @fnv 0x00765340
+// pdb: ListBox<int>::NumUnfiltered | DialogMenu.obj | debug, object-file run extension, low
 unsigned int __thiscall FUN_00765340_shell::GetUnfilteredCount()
 {
     static int numFiltered = GetTileValueID("_num_filtered", -1);
@@ -1137,6 +1217,7 @@ struct FUN_007d8700_shell
 
 // Returns the difference between the current count and the tile's float value for the _num_filtered setting.
 // @fnv 0x007d8700
+// pdb: ListBox<BGSSaveLoadFileEntry *>::NumUnfiltered | StartMenu.obj | retail, call graph (shared callers), high
 unsigned int FUN_007d8700_shell::GetFilteredItemCount()
 {
     static int numFiltered = GetTileValueID("_num_filtered", -1);
@@ -1174,6 +1255,7 @@ struct FUN_00721060 : FUN_007240c0
 };
 
 // @fnv 0x00721060
+// pdb: ListBox<enum ActorValue::Index>::ListBox<enum ActorValue::Index> | MenuManager.obj | retail, call graph (shared callers), high
 FUN_00721060::FUN_00721060()
 {
     vptr = &DAT_01070220;
@@ -1231,6 +1313,7 @@ FUN_007240c0::FUN_007240c0()
 
 // Initializes the object's fields to zero, sets value to str_01070364, calls SetSelectedTile(0, true) and AddToHeadList.
 // @fnv 0x00722f60
+// pdb: ListBox<TESReputation *>::ListBox<TESReputation *> | MenuManager.obj | debug, call graph, medium
 FUN_00722f60::FUN_00722f60()
 {
     value = str_01070364;
@@ -1254,7 +1337,7 @@ struct TileValue;
 
 
 
-Tile* __cdecl FindNamedTile(Tile* tile, const char* name);
+Tile* __cdecl FindNamedTile(Tile* apTarget, const char* apName);
 
 extern "C" char str_0106f87c[];
 extern "C" char str_0106f884[];
@@ -1274,6 +1357,8 @@ struct FUN_00725c20_shell
 };
 
 // @fnv 0x00725c20
+// pdb: ListBox<TESReputation *>::UpdateHighlightBoxPos | MenuManager.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void FUN_00725c20_shell::UpdateHighlightTiles()
 {
     static int highlightY = GetTileValueID(str_0106f8c0, -1);
@@ -1391,6 +1476,7 @@ struct FUN_007a43a0 : FUN_007240c0, SL
 
 // Initialises the object's fields to zero, sets the vtable, clears the selected tile and calls AddToHeadList.
 // @fnv 0x007a43a0
+// pdb: ListBox<BGSQuestObjective *>::ListBox<BGSQuestObjective *> | MapMenu.obj | debug, call graph, medium
 FUN_007a43a0::FUN_007a43a0() : FUN_007240c0(), SL()
 {
     *(int**)this = DAT_010755bc;
@@ -1419,6 +1505,7 @@ struct FUN_007a6bd0_shell
 // Returns true if the tile pointer is non-null and its _enabled trait evaluates to true.
 // @fnv 0x007a6bd0
 // src: GUESS 0x007a6bd0 (confidence: high)
+// pdb: ListBox<BGSNote *>::IsEnabled | MapMenu.obj | retail, call graph (shared callers), high
 bool FUN_007a6bd0_shell::HasEnabledTrait()
 {
     static int enabledTrait = GetTileValueID("_enabled", -1);
@@ -1436,6 +1523,7 @@ struct FUN_007a79b0_shell
 // Returns true if the stored Tile pointer is non-null and its _enabled trait evaluates to true.
 // @fnv 0x007a79b0
 // src: GUESS 0x007a79b0 (confidence: high)
+// pdb: ListBox<BGSQuestObjective *>::IsEnabled | MapMenu.obj | retail, call graph (shared callers), high
 bool FUN_007a79b0_shell::HasEnabledTrait()
 {
     static int userTrait = GetTileValueID("_enabled", -1);
@@ -1471,7 +1559,7 @@ struct FunctionOwner
 {
     int unk00;
     ListboxListNodeView entries;
-    void RemoveTile(int id);
+    void ListBox_ItemChange_RemoveItem(int apItem);
     void ListBox_ItemChange_RemoveItemGroup(int entryType);
 };
 // @fnv 0x0071a200
@@ -1496,13 +1584,13 @@ void FunctionOwner::ListBox_ItemChange_RemoveItemGroup(int entryType)
         matched = &selected;
         for (; matched && *matched->FUN_006815c0(); matched = matched->FUN_00726070())
         {
-            RemoveTile((*matched->FUN_006815c0())->id);
+            ListBox_ItemChange_RemoveItem((*matched->FUN_006815c0())->id);
         }
     }
     selected.FUN_00470470();
 }
 
-void __cdecl InterfaceManager_UnregisterListBox(void* p);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
 
 struct FUN_00721150_cls
 {
@@ -1513,6 +1601,7 @@ struct FUN_00721150_cls
 };
 
 // @fnv 0x00721150
+// pdb: ListBox<enum ActorValue::Index>::~ListBox<enum ActorValue::Index> | MenuManager.obj | debug, call graph, medium
 FUN_00721150_cls::~FUN_00721150_cls()
 {
     ListBox_enum_ActorValue_Index_RemoveAll();
@@ -1533,15 +1622,17 @@ struct FUN_00721440_class
     bool __thiscall ListBox_enum_ActorValue_Index_IsEnabled();
     bool __thiscall ContainsKey(Tile* object);
     void __thiscall ListBox_enum_ActorValue_Index_UpdateHighlightBoxPos();
-    bool __thiscall SelectObject(Tile* object);
+    bool __thiscall SelectObject(Tile* apHighlightItem);
 };
 
 // @fnv 0x00721440
-bool FUN_00721440_class::SelectObject(Tile* object)
+// pdb: ListBox<enum ActorValue::Index>::Highlight | MenuManager.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool FUN_00721440_class::SelectObject(Tile* apHighlightItem)
 {
-    if (ListBox_enum_ActorValue_Index_IsEnabled() && (!object || (ContainsKey(object) && object->IsTraitNonZero(Tile_AddUserTrait(str_01070244, -1)))))
+    if (ListBox_enum_ActorValue_Index_IsEnabled() && (!apHighlightItem || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(Tile_AddUserTrait(str_01070244, -1)))))
     {
-        selected = object;
+        selected = apHighlightItem;
         ListBox_enum_ActorValue_Index_UpdateHighlightBoxPos();
         return true;
     }
@@ -1576,6 +1667,7 @@ struct FUN_00721850_cls : FUN_007240c0
 
 // Initializes the object's vtable pointer, clears its Tile pointers, template name, flags, and float fields, then calls FUN_007a1950 and AddToHeadList.
 // @fnv 0x00721850
+// pdb: ListBox<PerkRankData *>::ListBox<PerkRankData *> | MenuManager.obj | debug, call graph, medium
 FUN_00721850_cls::FUN_00721850_cls()
 {
     vptr = &DAT_010702ec;
@@ -1599,7 +1691,7 @@ struct FUN_00721920
     void __thiscall ReleaseStorage_00721990();
 };
 
-void __cdecl InterfaceManager_UnregisterListBox(void* object);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
 
 // Calls FUN_00721990, then passes this to FUN_007211c0.
 // @fnv 0x00721920
@@ -1626,12 +1718,14 @@ struct TargetMenu
 };
 // @fnv 0x00721bf0
 // src: GUESS 0x00721bf0 (confidence: low)
-bool TargetMenu::UpdateState_00721bf0(Tile* item)
+// pdb: ListBox<PerkRankData *>::Highlight | MenuManager.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool TargetMenu::UpdateState_00721bf0(Tile* apHighlightItem)
 {
     if (IsScrollBarTraitEnabled() &&
-        (item == 0 || (ContainsKey(item) && item->IsTraitNonZero(reinterpret_cast<int>(Tile_AddUserTrait(str_01070244, -1))))))
+        (apHighlightItem == 0 || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(reinterpret_cast<int>(Tile_AddUserTrait(str_01070244, -1))))))
     {
-        selected = item;
+        selected = apHighlightItem;
         UpdateTraitDisplay();
         return true;
     }
@@ -1642,7 +1736,7 @@ bool TargetMenu::UpdateState_00721bf0(Tile* item)
 }
 }  // namespace fnv_00721bf0
 
-void __cdecl InterfaceManager_UnregisterListBox(void* p);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
 
 class FUN_007220d0_cls
 {
@@ -1696,6 +1790,8 @@ struct LBListBox
 
 // @fnv 0x00722140
 // src: XBOX_PDB 0x00722140
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::RemoveAll | MenuManager.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void LBListBox::ListBox_enum_MiscStatManager_MiscStatID_RemoveAll()
 {
     while (pNext && *pNext->GetItem())
@@ -1751,16 +1847,18 @@ struct ListBox_7223a0
     bool ListBox_enum_MiscStatManager_MiscStatID_IsEnabled();
     bool ContainsKey(Tile*);
     void ListBox_enum_MiscStatManager_MiscStatID_UpdateHighlightBoxPos();
-    bool ListBox_enum_MiscStatManager_MiscStatID_Highlight(Tile* apTile);
+    bool ListBox_enum_MiscStatManager_MiscStatID_Highlight(Tile* apHighlightItem);
 };
 
 // @fnv 0x007223a0
 // src: XBOX_PDB 0x007223a0
-bool ListBox_7223a0::ListBox_enum_MiscStatManager_MiscStatID_Highlight(Tile* apTile)
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::Highlight | MenuManager.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool ListBox_7223a0::ListBox_enum_MiscStatManager_MiscStatID_Highlight(Tile* apHighlightItem)
 {
-    if (ListBox_enum_MiscStatManager_MiscStatID_IsEnabled() && (!apTile || (ContainsKey(apTile) && apTile->IsTraitNonZero(Tile_AddUserTrait(_DAT_01070244, -1)))))
+    if (ListBox_enum_MiscStatManager_MiscStatID_IsEnabled() && (!apHighlightItem || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(Tile_AddUserTrait(_DAT_01070244, -1)))))
     {
-        m_pSelected = apTile;
+        m_pSelected = apHighlightItem;
         ListBox_enum_MiscStatManager_MiscStatID_UpdateHighlightBoxPos();
         return true;
     }
@@ -1796,6 +1894,7 @@ struct FUN_007227b0_cls : FUN_007240c0
 };
 
 // @fnv 0x007227b0
+// pdb: ListBox<StatsMenu::StatusEffect *>::ListBox<StatsMenu::StatusEffect *> | MenuManager.obj | debug, call graph, medium
 FUN_007227b0_cls::FUN_007227b0_cls()
 {
     vptr = (int*)"P+r";
@@ -1849,11 +1948,13 @@ struct Holder
 extern int DAT_01070244;
 extern "C" void* __cdecl Tile_AddUserTrait(const void*, int);
 // @fnv 0x00722b50
-bool Holder::SelectEntry(Tile* pEntry)
+// pdb: ListBox<StatsMenu::StatusEffect *>::Highlight | MenuManager.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool Holder::SelectEntry(Tile* apHighlightItem)
 {
-    if (HasEnabledTrait() && (!pEntry || (ContainsKey(pEntry) && pEntry->IsTraitNonZero(reinterpret_cast<int>(Tile_AddUserTrait(&DAT_01070244, -1))))))
+    if (HasEnabledTrait() && (!apHighlightItem || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(reinterpret_cast<int>(Tile_AddUserTrait(&DAT_01070244, -1))))))
     {
-        selected = pEntry;
+        selected = apHighlightItem;
         UpdateSpeechChallengeTrait();
         return true;
     }
@@ -1870,10 +1971,11 @@ struct FUN_00723070
     SL cleanupMember;
     void ProcessEntries_007230e0();
 };
-void __cdecl InterfaceManager_UnregisterListBox(FUN_00723070* self);
+void __cdecl InterfaceManager_UnregisterListBox(FUN_00723070* apLB);
 
 // Calls FUN_007230e0 then FUN_007211c0 on this object during destruction.
 // @fnv 0x00723070
+// pdb: ListBox<TESReputation *>::~ListBox<TESReputation *> | MenuManager.obj | debug, object-file run extension, low
 FUN_00723070::~FUN_00723070()
 {
     ProcessEntries_007230e0();
@@ -1891,16 +1993,18 @@ struct FUN_00723340_cls
     bool IsEnabled();
     bool ContainsKey(Tile* arg);
     void UpdateHighlightTiles();
-    bool ProcessAndReturnValue_00723340(Tile* arg);
+    bool ProcessAndReturnValue_00723340(Tile* apHighlightItem);
 };
 
 // @fnv 0x00723340
 // src: GUESS 0x00723340 (confidence: low)
-bool FUN_00723340_cls::ProcessAndReturnValue_00723340(Tile* arg)
+// pdb: ListBox<TESReputation *>::Highlight | MenuManager.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool FUN_00723340_cls::ProcessAndReturnValue_00723340(Tile* apHighlightItem)
 {
-    if (IsEnabled() && (arg == 0 || (ContainsKey(arg) && arg->IsTraitNonZero(reinterpret_cast<int>(Tile_AddUserTrait("_enabled", -1))))))
+    if (IsEnabled() && (apHighlightItem == 0 || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(reinterpret_cast<int>(Tile_AddUserTrait("_enabled", -1))))))
     {
-        m_pArg = arg;
+        m_pArg = apHighlightItem;
         UpdateHighlightTiles();
         return true;
     }
@@ -1931,6 +2035,7 @@ struct FUN_00723750 : FUN_007240c0, SL
 
 // Initialises the object's vtable pointer and zeroes its integer, short and float members, then calls FUN_007a1950(0, 1) and AddToHeadList.
 // @fnv 0x00723750
+// pdb: ListBox<unsigned int>::ListBox<unsigned int> | MenuManager.obj | debug, call graph, medium
 FUN_00723750::FUN_00723750()
 {
     *(void**)this = &DAT_0107038c;
@@ -1947,7 +2052,7 @@ FUN_00723750::FUN_00723750()
     AddToHeadList((int*)this);
 }
 
-void __cdecl InterfaceManager_UnregisterListBox(void* p);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
 
 class FUN_00723820_cls
 {
@@ -1958,6 +2063,8 @@ class FUN_00723820_cls
 };
 
 // @fnv 0x00723820
+// pdb: ListBox<unsigned int>::BelongsTo | MenuManager.obj | debug, object-file gap fill, medium
+// pdb params: apMenu
 FUN_00723820_cls::~FUN_00723820_cls()
 {
     Reset();
@@ -1974,7 +2081,7 @@ class B23AF0ListBox
     bool IsEnabled();
     bool Contains(Tile* pkTile);
     void Refresh();
-    bool ListBox_unsigned_int_Highlight(Tile* pkTile);
+    bool ListBox_unsigned_int_Highlight(Tile* apHighlightItem);
 
     int unk00;
     int unk04;
@@ -1986,11 +2093,13 @@ class B23AF0ListBox
 // If the list box is enabled and the tile is null or contained and passes the enabled check, stores it as m_pkSelected, refreshes, and returns true.
 // @fnv 0x00723af0
 // src: XBOX_PDB 0x00723af0
-bool B23AF0ListBox::ListBox_unsigned_int_Highlight(Tile* pkTile)
+// pdb: ListBox<unsigned int>::Highlight | MenuManager.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool B23AF0ListBox::ListBox_unsigned_int_Highlight(Tile* apHighlightItem)
 {
-    if (IsEnabled() && (!pkTile || (Contains(pkTile) && pkTile->IsTraitNonZero(Tile_AddUserTrait(kListBoxEnabled, -1)))))
+    if (IsEnabled() && (!apHighlightItem || (Contains(apHighlightItem) && apHighlightItem->IsTraitNonZero(Tile_AddUserTrait(kListBoxEnabled, -1)))))
     {
-        m_pkSelected = pkTile;
+        m_pkSelected = apHighlightItem;
         Refresh();
         return true;
     }
@@ -2051,13 +2160,15 @@ struct FUN_00724360_cls
     unsigned short unk1e;
     float m_20;
     void ListBox_enum_ActorValue_Index_Synchronize();
-    void AccumulateTileHeight(int v);
+    void AccumulateTileHeight(int apNewTile);
     void ListBox_enum_ActorValue_Index_SetTotalListHeight();
     void ListBox_enum_ActorValue_Index_UpdateHighlightBoxPos();
 };
 
 // @fnv 0x00724360
 // src: XBOX_PDB 0x00724360
+// pdb: ListBox<enum ActorValue::Index>::Synchronize | MenuManager.obj | retail, call graph, high
+// pdb locals: pnode
 void FUN_00724360_cls::ListBox_enum_ActorValue_Index_Synchronize()
 {
     FUN_00724360_Item* cur;
@@ -2089,6 +2200,7 @@ struct Owner_00724430
 };
 // @fnv 0x00724430
 // src: XBOX_PDB 0x00724430
+// pdb: ListBox<enum ActorValue::Index>::IsEnabled | MenuManager.obj | retail, call graph (shared callers), high
 bool Owner_00724430::ListBox_enum_ActorValue_Index_IsEnabled()
 {
     static int selectedValue = Tile_AddUserTrait(str_01070244, -1);
@@ -2121,7 +2233,7 @@ struct FUN_00724930_cls
     unsigned short unk1e;
     float m_20;
 
-    void __thiscall AccumulateTileHeight(Tile* p);
+    void __thiscall AccumulateTileHeight(Tile* apNewTile);
     void __thiscall UpdateState_00724dd0();
     void __thiscall UpdateTraitDisplay();
     void ProcessEntries_00724930();
@@ -2129,6 +2241,8 @@ struct FUN_00724930_cls
 
 // @fnv 0x00724930
 // src: GUESS 0x00724930 (confidence: low)
+// pdb: ListBox<PerkRankData *>::Synchronize | MenuManager.obj | retail, call graph, medium
+// pdb locals: pnode
 void FUN_00724930_cls::ProcessEntries_00724930()
 {
     m_1c = 0;
@@ -2169,6 +2283,8 @@ struct ScrollPageList
 
 // @fnv 0x00724dd0
 // src: GUESS 0x00724dd0 (confidence: low)
+// pdb: ListBox<PerkRankData *>::SetTotalListHeight | MenuManager.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void ScrollPageList::UpdateState_00724dd0()
 {
     if (pScrollTile)
@@ -2208,6 +2324,8 @@ struct OwnerProxy
 // Reads a value from tile0c, computes a scroll delta from range and that value, applies it to tile0c, and passes the count to tile14.
 // @fnv 0x007253a0
 // src: XBOX_PDB 0x007253a0
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::SetTotalListHeight | MenuManager.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void OwnerProxy::ListBox_enum_MiscStatManager_MiscStatID_SetTotalListHeight()
 {
     if (tile0c)
@@ -2242,6 +2360,7 @@ int __cdecl Tile_AddUserTrait(const char* name, int len);
 // Returns 1 if m_0c is non-null and its IsTraitNonZero returns true for the cached "_enabled" setting, otherwise 0.
 // @fnv 0x007255a0
 // src: GUESS 0x007255a0 (confidence: medium)
+// pdb: ListBox<StatsMenu::StatusEffect *>::IsEnabled | MenuManager.obj | retail, call graph (shared callers), high
 unsigned char FUN_007255a0_cls::HasEnabledTrait()
 {
     static int enabledRef = Tile_AddUserTrait("_enabled", -1);
@@ -2266,6 +2385,8 @@ struct S725970
 };
 // @fnv 0x00725970
 // src: GUESS 0x00725970 (confidence: low)
+// pdb: ListBox<StatsMenu::StatusEffect *>::SetTotalListHeight | MenuManager.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void S725970::UpdateState_00725970()
 {
     int n;
@@ -2303,6 +2424,7 @@ class B726160Menu
 // Returns true if m_pkTile exists and its GetBool returns true for the cached s_iEnabled setting.
 // @fnv 0x00726160
 // src: XBOX_PDB 0x00726160
+// pdb: ListBox<unsigned int>::IsEnabled | MenuManager.obj | retail, call graph (shared callers), high
 bool B726160Menu::ListBox_unsigned_int_IsEnabled()
 {
     static int s_iEnabled = Tile_AddUserTrait(kListBoxEnabled, -1);
@@ -2333,6 +2455,7 @@ extern void* DAT_01070890;
 void __cdecl AddToHeadList(FUN_00730810*);
 // Initialises the object's vtable, clears its pointers, flags, indices and floats, then calls FUN_007a1950(0,1) and AddToHeadList.
 // @fnv 0x00730810
+// pdb: ListBox<ItemChange *>::ListBox<ItemChange *> | BarterMenu.obj | retail, call graph (shared callers), medium
 FUN_00730810::FUN_00730810()
 {
     vptr = &DAT_01070890;
@@ -2362,6 +2485,7 @@ int __cdecl Tile_AddUserTrait(const char* s, int n);
 
 // @fnv 0x00730e20
 // src: XBOX_PDB 0x00730e20
+// pdb: ListBox<ItemChange *>::IsEnabled | BarterMenu.obj | retail, call graph (shared callers), high
 bool FUN_00730e20_cls::ListBox_ItemChange_IsEnabled()
 {
     static void* sKey = (void*)Tile_AddUserTrait("_enabled", -1);
@@ -2383,6 +2507,7 @@ struct Cls_764e40
 // Returns true if m_pTile0c is set and its IsTraitNonZero check passes for the cached s_trait value.
 // @fnv 0x00764e40
 // src: XBOX_PDB 0x00764e40
+// pdb: ListBox<int>::IsEnabled | DialogMenu.obj | retail, call graph, high
 bool Cls_764e40::ListBox_int_IsEnabled()
 {
     static int s_trait = Tile_AddUserTrait(_DAT_01070244, -1);
@@ -2407,6 +2532,9 @@ struct Owner
 };
 // Walks the head node list, comparing each item's key to *key, and returns the matching item's data pointer or 0.
 // @fnv 0x007a22d0
+// pdb: ListBox<StartMenu::Option *>::GetTileFor | StartMenu.obj | debug, call graph, medium
+// pdb params: aData
+// pdb locals: pnode
 int* Owner::FindItemData(int* piKey)
 {
     Node* iter = this ? &head : 0;
@@ -2429,18 +2557,20 @@ struct FUN_007a23e0_cls
     bool HasEnabledTrait();
     bool __thiscall ContainsKey(Tile* arg);
     void UpdateHighlightTraits_007a6600();
-    bool ListBox_TESQuest_Destroy(Tile* arg);
+    bool ListBox_TESQuest_Destroy(Tile* apHighlightItem);
 };
 
 int __cdecl Tile_AddUserTrait(const char* name, int len);
 
 // @fnv 0x007a23e0
 // src: COMMUNITY 0x007a23e0
-bool FUN_007a23e0_cls::ListBox_TESQuest_Destroy(Tile* arg)
+// pdb: ListBox<TESQuest *>::Highlight | MapMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool FUN_007a23e0_cls::ListBox_TESQuest_Destroy(Tile* apHighlightItem)
 {
-    if (HasEnabledTrait() && (arg == 0 || (ContainsKey(arg) && arg->IsTraitNonZero(Tile_AddUserTrait(str_01070244, -1)))))
+    if (HasEnabledTrait() && (apHighlightItem == 0 || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(Tile_AddUserTrait(str_01070244, -1)))))
     {
-        m_10 = arg;
+        m_10 = apHighlightItem;
         UpdateHighlightTraits_007a6600();
         return true;
     }
@@ -2519,6 +2649,7 @@ struct FUN_007a36e0_cls : FUN_007240c0
 };
 
 // @fnv 0x007a36e0
+// pdb: ListBox<TESObjectREFR *>::ListBox<TESObjectREFR *> | MapMenu.obj | retail, object-file gap fill, high
 FUN_007a36e0_cls::FUN_007a36e0_cls() : FUN_007240c0(), m_04()
 {
     vptr = (int*)&DAT_01075594;
@@ -2556,6 +2687,8 @@ struct FUN_007a6310_cls
 
 // Default-constructs count FUN_007a6310_Elem8 objects in place at arr.
 // @fnv 0x007a6310
+// pdb: BSSimpleArray<BSStringT<char>,1024>::AddUninitialized | MapMenu.obj | debug, object-file run extension, low
+// pdb locals: inewSize
 void FUN_007a6310_cls::ConstructElements(int apElements, unsigned int count)
 {
     for (unsigned int i = 0; i < count; ++i)
@@ -2595,15 +2728,17 @@ struct FUN_007a6480_cls
     unsigned short unk1c;
     float unk20;
 
-    void AccumulateTileHeight(Tile* p);
+    void AccumulateTileHeight(Tile* apNewTile);
     void UpdateScrollTraits_007a6920();
     void UpdateHighlightTraits_007a6600();
-    void ProcessEntries_007a6480();
+    void ListBox_TESQuest_Synchronize();
 };
 
 // @fnv 0x007a6480
-// src: GUESS 0x007a6480 (confidence: low)
-void FUN_007a6480_cls::ProcessEntries_007a6480()
+// src: XBOX_RETAIL_PDB 0x007a6480
+// pdb: ListBox<TESQuest *>::Synchronize | MapMenu.obj | retail, call graph, high
+// pdb locals: pnode
+void FUN_007a6480_cls::ListBox_TESQuest_Synchronize()
 {
     unk1c = 0;
     unk20 = 0.0f;
@@ -2636,6 +2771,7 @@ struct FUN_007a6550_shell
 // Returns true when target is non-null and its IsTraitNonZero check passes for the cached value from FUN_00a00940(str_01070244, -1).
 // @fnv 0x007a6550
 // src: GUESS 0x007a6550 (confidence: medium)
+// pdb: ListBox<TESQuest *>::IsEnabled | MapMenu.obj | retail, call graph (shared callers), high
 bool FUN_007a6550_shell::HasEnabledTrait()
 {
     static int value = Tile_AddUserTrait(str_01070244, -1);
@@ -2693,6 +2829,7 @@ struct FUN_007a7330_cls
 // Returns 1 if m_0c is non-null and its IsTraitNonZero returns true for the cached "_enabled" handle, otherwise 0.
 // @fnv 0x007a7330
 // src: GUESS 0x007a7330 (confidence: high)
+// pdb: ListBox<TESObjectREFR *>::IsEnabled | MapMenu.obj | retail, call graph (shared callers), high
 unsigned char FUN_007a7330_cls::IsEnabled()
 {
     static int s_handle = Tile_AddUserTrait("_enabled", -1);
@@ -2712,6 +2849,7 @@ int __cdecl Tile_AddUserTrait(const char* s, int n);
 
 // @fnv 0x007a81b0
 // src: GUESS 0x007a81b0 (confidence: high)
+// pdb: ListBox<TESChallenge *>::IsEnabled | MapMenu.obj | retail, call graph (shared callers), high
 bool FUN_007a81b0_cls::IsEnabled()
 {
     static void* sKey = (void*)Tile_AddUserTrait("_enabled", -1);
@@ -2742,6 +2880,7 @@ struct FUN_007d7c60 : FUN_007240c0_Base
 };
 // Constructor: sets the vtable, zero-initialises the fields, calls FUN_007a1950 with null and true, then AddToHeadList on this.
 // @fnv 0x007d7c60
+// pdb: ListBox<BGSSaveLoadFileEntry *>::ListBox<BGSSaveLoadFileEntry *> | StartMenu.obj | debug, call graph, medium
 FUN_007d7c60::FUN_007d7c60()
 {
     vtbl00 = &DAT_01077094;
@@ -2769,6 +2908,7 @@ struct FUN_007d7d30
 
 // Calls FUN_007d81f0 on this, then passes this to FUN_007211c0.
 // @fnv 0x007d7d30
+// pdb: ListBox<BGSSaveLoadFileEntry *>::~ListBox<BGSSaveLoadFileEntry *> | StartMenu.obj | debug, call graph, medium
 FUN_007d7d30::~FUN_007d7d30()
 {
     this->ListBox_BGSSaveLoadFileEntry_RemoveAll();
@@ -2780,18 +2920,21 @@ void* __fastcall FUN_00726070(void* node);
 
 struct FUN_007d8da0_cls
 {
-    void ListBox_BGSSaveLoadFileEntry_DeselectAll(bool bFlag);
+    void ListBox_BGSSaveLoadFileEntry_DeselectAll(bool abUnfilteredOnly);
 };
 
 // Iterates the list starting at this+4 and calls FUN_007d8d80 on each tile, skipping entries whose byte at offset 8 is set when bFlag is true.
 // @fnv 0x007d8da0
 // src: COMMUNITY 0x007d8da0
-void FUN_007d8da0_cls::ListBox_BGSSaveLoadFileEntry_DeselectAll(bool abSkipFlagged)
+// pdb: ListBox<BGSSaveLoadFileEntry *>::DeselectAll | StartMenu.obj | debug, call graph, high
+// pdb params: abUnfilteredOnly
+// pdb locals: pnode
+void FUN_007d8da0_cls::ListBox_BGSSaveLoadFileEntry_DeselectAll(bool abUnfilteredOnly)
 {
     for (void* cur = (this != 0) ? (void*)((char*)this + 4) : 0; cur != 0 && *FUN_006815c0(cur) != 0;
          cur = FUN_00726070(cur))
     {
-        if (!abSkipFlagged || ((unsigned char*)*FUN_006815c0(cur))[8] == 0)
+        if (!abUnfilteredOnly || ((unsigned char*)*FUN_006815c0(cur))[8] == 0)
         {
             ((ListboxSelectionCallView*)this)->SetSelection_Thunk((Tile*)*(void**)*FUN_006815c0(cur));
         }
@@ -2812,6 +2955,9 @@ struct SelectionList
 };
 // If the list is ready and contains the item, reads its _selected state and sets it to 1, 0 or toggled depending on action 0/1/2, returning true on success.
 // @fnv 0x007d9000
+// pdb: ListBox<StartMenu::Option *>::SetSelection | StartMenu.obj | debug, object-file gap fill, medium
+// pdb params: apSelectItem, aeMode
+// pdb locals: bselected
 bool SelectionList::ApplySelectionAction(SelectionTile* item, int action)
 {
     if (ListBox_StartMenu_Option_IsEnabled() && item && ContainsKey(item))
@@ -2860,6 +3006,8 @@ struct HeightList
 };
 // @fnv 0x007d9460
 // src: XBOX_PDB 0x007d9460
+// pdb: ListBox<StartMenu::Option *>::SetTotalListHeight | StartMenu.obj | retail, call graph, high
+// pdb locals: inumPages, flistHeight
 void HeightList::ListBox_StartMenu_Option_SetTotalListHeight()
 {
     if (container)
@@ -2894,6 +3042,9 @@ struct SelectionList
 // Checks the list and item, reads the item's _selected trait, and sets, clears, or toggles it based on operation, returning whether it changed.
 // @fnv 0x007d9660
 // src: GUESS 0x007d9660 (confidence: medium)
+// pdb: ListBox<BGSSaveLoadFileEntry *>::Remove | StartMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ListBox<BGSSaveLoadFileEntry *>::SetSelection
+// pdb params: pkFirst, pkSecond
 bool SelectionList::SetItemSelectionTrait(SelectionTile* item, int operation)
 {
     if (ListBox_BGSSaveLoadFileEntry_IsEnabled() && item && ContainsKey(item))
@@ -2951,6 +3102,8 @@ struct ListBoxScroll : ListBoxScrollBase
 
 // @fnv 0x007d9d50
 // src: XBOX_PDB 0x007d9d50
+// pdb: ListBox<BGSSaveLoadFileEntry *>::SetTotalListHeight | StartMenu.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void ListBoxScroll::ListBox_BGSSaveLoadFileEntry_SetTotalListHeight()
 {
     if (m_pListTile)
@@ -2996,6 +3149,8 @@ struct RecordList
 };
 // @fnv 0x00851540
 // src: COMMUNITY 0x00851540
+// pdb: BGSSaveLoadManager::DeleteSaveGameList | BGSSaveLoadManager.obj | retail, call graph, high
+// pdb locals: plist
 void RecordList::BGSSaveLoadManager_FreeSavesList()
 {
     OwnedRecordList* current = head;
@@ -3029,10 +3184,11 @@ struct InventoryEntry
     InventoryEntry();
     int FUN_00726070();
     TESBoundObject* GetObject();
-    bool FUN_004bd820();
+    bool ItemChange_GetModSlots();
     void ItemChange_Copy2(InventoryEntry*);
     void FUN_006ecd40(int);
 };
+// pdb: class InventoryList, size 0x18 (here 0x1), bases: BSSimpleList<ItemChange *>, 3 members
 struct InventoryList
 {
     ~InventoryList();
@@ -3060,11 +3216,14 @@ struct InventoryListBox
     void ListBox_ItemChange_SetFlag(int, bool);
     bool ListBox_unsigned_int_GetFlag(unsigned int);
     Tile* ListBox_ItemChange_AddItem(InventoryEntry*, const char*, int, int);
-    void UpdateItems();
+    void ListBox_ItemChange_Synchronize();
     void PopulateInventoryList(InventoryOwner*, bool(__cdecl*)(InventoryEntry*), int,
                                void(__cdecl*)(Tile*, InventoryEntry*), bool, bool);
 };
 // @fnv 0x00719ef0
+// pdb: ListBox<ItemChange *>::BuildFromContainer | ListBox.obj | retail, call graph, medium
+// pdb params: apContainer, apFilterFn, apCompareFn, apInitFn, abNoStack, abBarter
+// pdb locals: pitem, bsaveSetting, i, iperItemCt, itemName, pfull, uilength, ptile
 void InventoryListBox::PopulateInventoryList(InventoryOwner* owner, bool(__cdecl* filter)(InventoryEntry*), int sort,
                                              void(__cdecl* callback)(Tile*, InventoryEntry*), bool split, bool include)
 {
@@ -3095,7 +3254,7 @@ void InventoryListBox::PopulateInventoryList(InventoryOwner* owner, bool(__cdecl
                     i = BSStringLength(s->GetFullName());
                     char name[128];
                     ListBoxStrings::strcpy_s(name, i + 1, s->GetFullName());
-                    if (entry->FUN_004bd820())
+                    if (entry->ItemChange_GetModSlots())
                         ListBoxStrings::strcat_s(name, i + 2, "+");
                     if (split)
                     {
@@ -3122,7 +3281,7 @@ void InventoryListBox::PopulateInventoryList(InventoryOwner* owner, bool(__cdecl
         delete h;
     }
     if (sort)
-        UpdateItems();
+        ListBox_ItemChange_Synchronize();
     ListBox_ItemChange_SetFlag(0, a);
 }
 
@@ -3150,7 +3309,7 @@ struct RemovalList : RemovalHeader, RemovalNode
     Tile* container;
     Tile* selected;
     bool ListBox_unsigned_int_GetFlag(unsigned int);
-    void UpdateItems();
+    void ListBox_ItemChange_Synchronize();
     bool RemoveNode(RemovalNode* node, RemovalNode* previous);
 };
 struct RemovalInterface
@@ -3161,6 +3320,9 @@ RemovalInterface* InterfaceManager_GetSingleton();
 extern "C" char str_0106f8d0[];
 
 // @fnv 0x0071aaa0
+// pdb: ListBox<ItemChange *>::InitTilePosition | ListBox.obj | debug, object-file run extension, low
+// pdb params: apNewTile
+// pdb locals: ftileHeight, ptextTile, xelem, ptile, fwrapWidth
 bool RemovalList::RemoveNode(RemovalNode* node, RemovalNode* previous)
 {
     if (node)
@@ -3201,7 +3363,7 @@ bool RemovalList::RemoveNode(RemovalNode* node, RemovalNode* previous)
             delete node;
         }
         if (ListBox_unsigned_int_GetFlag(0))
-            UpdateItems();
+            ListBox_ItemChange_Synchronize();
         return true;
     }
     return false;
@@ -3399,6 +3561,7 @@ struct FUN_0071f700 : MenuBase_71f700
 
 // Clears DAT_011dace0, deletes the four owned pointers p74/p80/p7c/p78, then calls FUN_0071f8c0.
 // @fnv 0x0071f700
+// pdb: StatsMenu::~StatsMenu | MenuManager.obj | debug, object-file run extension, low
 FUN_0071f700::~FUN_0071f700()
 {
     DAT_011dace0 = 0;
@@ -3445,6 +3608,8 @@ struct OwnerS
 
 // @fnv 0x007211e0
 // src: XBOX_PDB 0x007211e0
+// pdb: ListBox<enum ActorValue::Index>::RemoveAll | MenuManager.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void OwnerS::ListBox_enum_ActorValue_Index_RemoveAll()
 {
     while (pHead != 0 && *pHead->FUN_006815c0() != 0)
@@ -3539,16 +3704,19 @@ struct NavigationList : NavigationBase, NavigationNode
     const char* templateName;
     unsigned short count;
     bool ListBox_enum_ActorValue_Index_IsEnabled();
-    Tile* ListBox_enum_ActorValue_Index_GetHighlightTarget(unsigned int action);
+    Tile* ListBox_enum_ActorValue_Index_GetHighlightTarget(unsigned int aeButton);
 };
 float __cdecl FUN_004bd510(float value, float step);
 // @fnv 0x007214b0
 // src: XBOX_PDB 0x007214b0
-Tile* NavigationList::ListBox_enum_ActorValue_Index_GetHighlightTarget(unsigned int action)
+// pdb: ListBox<enum ActorValue::Index>::GetHighlightTarget | MenuManager.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* NavigationList::ListBox_enum_ActorValue_Index_GetHighlightTarget(unsigned int aeButton)
 {
     Tile* result = 0;
     int delta = 0;
-    switch (action)
+    switch (aeButton)
     {
     case 2:
         delta = 1;
@@ -3637,6 +3805,8 @@ struct LBClearList : LBListBox
 
 // @fnv 0x00721990
 // src: GUESS 0x00721990 (confidence: low)
+// pdb: ListBox<PerkRankData *>::RemoveAll | MenuManager.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void LBClearList::ReleaseStorage_00721990()
 {
     while (pNext && *pNext->GetItem())
@@ -3704,18 +3874,21 @@ struct Class_721c60 : Base_721c60, Node_721c60
     unsigned short m_usItemCount;
 
     bool IsScrollBarTraitEnabled();
-    Tile* ListBox_PerkRankData_HandleKeyboardInput(int action);
+    Tile* ListBox_PerkRankData_HandleKeyboardInput(int aeButton);
 };
 
 // Computes a target index from the action delta, scans sibling nodes for a matching enabled tile, and returns it unless it equals m_pSelected.
 // @fnv 0x00721c60
 // src: COMMUNITY 0x00721c60
-Tile* Class_721c60::ListBox_PerkRankData_HandleKeyboardInput(int action)
+// pdb: ListBox<PerkRankData *>::GetHighlightTarget | MenuManager.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* Class_721c60::ListBox_PerkRankData_HandleKeyboardInput(int aeButton)
 {
     Tile* pTargetTile2 = 0;
     int iDelta = 0;
 
-    switch (action)
+    switch (aeButton)
     {
     case 2:
         iDelta = 1;
@@ -3830,6 +4003,7 @@ struct FUN_00722000 : FUN_007240c0
 };
 
 // @fnv 0x00722000
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::ListBox<enum MiscStatManager::MiscStatID> | MenuManager.obj | debug, call graph, medium
 FUN_00722000::FUN_00722000()
 {
     vptr = &DAT_01070314;
@@ -3855,6 +4029,8 @@ struct ListBox_007228f0 : LBListBox
 
 // @fnv 0x007228f0
 // src: COMMUNITY 0x007228f0
+// pdb: ListBox<StatsMenu::StatusEffect *>::RemoveAll | MenuManager.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void ListBox_007228f0::ListBox_StatsMenu_StatusEffect_FreeAllTiles()
 {
     while (this->pNext != 0 && *this->pNext->GetItem() != 0)
@@ -3917,6 +4093,8 @@ struct ListBoxClear
 
 // @fnv 0x007230e0
 // src: GUESS 0x007230e0 (confidence: low)
+// pdb: ListBox<TESReputation *>::RemoveAll | MenuManager.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void ListBoxClear::ProcessEntries_007230e0()
 {
     while (pNext && *pNext->GetItem())
@@ -3983,17 +4161,20 @@ struct LBKListBox : LBKBase, LBKNode
     unsigned short usItemCount;
 
     bool IsEnabled();
-    Tile* GetTileByKey(int aiKey);
+    Tile* GetTileByKey(int aeButton);
 };
 
 // Maps a navigation key to a scroll delta, finds the matching enabled tile by index, and returns it unless it is already selected.
 // @fnv 0x007233b0
-Tile* LBKListBox::GetTileByKey(int aiKey)
+// pdb: ListBox<TESReputation *>::GetHighlightTarget | MenuManager.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* LBKListBox::GetTileByKey(int aeButton)
 {
     Tile* pTile = 0;
     int iDelta_ = 0;
 
-    switch (aiKey)
+    switch (aeButton)
     {
     case 2:
         iDelta_ = 1;
@@ -4084,12 +4265,15 @@ struct ListBoxHelper
     int unk18;
     unsigned short m_1c;
     bool ListBox_unsigned_int_IsEnabled();
-    Tile* ListBox_unsigned_int_GetHighlightTarget(int code);
+    Tile* ListBox_unsigned_int_GetHighlightTarget(int aeButton);
 };
 
 // @fnv 0x00723b60
 // src: XBOX_PDB 0x00723b60
-Tile* ListBoxHelper::ListBox_unsigned_int_GetHighlightTarget(int code)
+// pdb: ListBox<unsigned int>::GetHighlightTarget | MenuManager.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* ListBoxHelper::ListBox_unsigned_int_GetHighlightTarget(int aeButton)
 {
     Tile* delta3 = 0;
     int found = 0;
@@ -4098,7 +4282,7 @@ Tile* ListBoxHelper::ListBox_unsigned_int_GetHighlightTarget(int code)
     int base2;
     ListboxListNodeView* node;
 
-    switch (code)
+    switch (aeButton)
     {
     case 2:
         found = 1;
@@ -4198,6 +4382,8 @@ extern "C" char str_0106f87c[], str_0106f884[], str_0106f88c[], str_0106f894[], 
 Tile* __cdecl FindNamedTile(Tile*, const char*);
 // @fnv 0x007244e0
 // src: XBOX_PDB 0x007244e0
+// pdb: ListBox<enum ActorValue::Index>::UpdateHighlightBoxPos | MenuManager.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void HighlightList_listbox::ListBox_enum_ActorValue_Index_UpdateHighlightBoxPos()
 {
     static int index = Tile_AddUserTrait(str_0106f8c0, -1);
@@ -4291,6 +4477,8 @@ struct ListBoxScroll
 
 // @fnv 0x00724800
 // src: XBOX_PDB 0x00724800
+// pdb: ListBox<enum ActorValue::Index>::SetTotalListHeight | MenuManager.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void ListBoxScroll::ListBox_enum_ActorValue_Index_SetTotalListHeight()
 {
     if (m_pListTile)
@@ -4321,6 +4509,8 @@ void ListBoxScroll::ListBox_enum_ActorValue_Index_SetTotalListHeight()
 
 // Sets the selected and index trait tile values, then shows or hides the speech-challenge failure child tiles based on GetSpeechChallengeFailure.
 // @fnv 0x00724ab0
+// pdb: ListBox<PerkRankData *>::UpdateHighlightBoxPos | MenuManager.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void FUN_00724930_cls::UpdateTraitDisplay()
 {
     static int selectedTrait = GetTileValueID(str_0106f8c0, -1);
@@ -4418,7 +4608,7 @@ class MenuBase724
 class ListBox724 : public MenuBase724, public ItemList724
 {
   public:
-    void AddTile(Tile* pkTile);
+    void AddTile(Tile* apNewTile);
     void SortTiles();
     void UpdateScroll();
     void RefreshTiles();
@@ -4434,6 +4624,8 @@ class ListBox724 : public MenuBase724, public ItemList724
 
 // Resets the count and scroll, assigns sequential indices to visible item tiles, adds them, then sorts tiles and updates the scroll.
 // @fnv 0x00724f00
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::Synchronize | MenuManager.obj | retail, call graph, medium
+// pdb locals: pnode
 void ListBox724::RefreshTiles()
 {
     m_usElementCount = 0;
@@ -4468,6 +4660,7 @@ class C4FD0ListBox
 // Returns true if m_pkTile exists and its _enabled trait value is set, using a cached trait ID.
 // @fnv 0x00724fd0
 // src: XBOX_PDB 0x00724fd0
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::IsEnabled | MenuManager.obj | retail, call graph (shared callers), high
 bool C4FD0ListBox::ListBox_enum_MiscStatManager_MiscStatID_IsEnabled()
 {
     static int s_iEnabledTrait = C4FD0TraitNameToID("_enabled", -1);
@@ -4478,6 +4671,8 @@ Tile* __cdecl Tile_GetTileByName(Tile*, const char*);
 // Updates the highlight and height values on the container's selected tile and toggles the child box elements based on the selected tile's state.
 // @fnv 0x00725080
 // src: XBOX_PDB 0x00725080
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::UpdateHighlightBoxPos | MenuManager.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void HighlightList_listbox::ListBox_enum_MiscStatManager_MiscStatID_UpdateHighlightBoxPos()
 {
     static int highlight = Tile_AddUserTrait(str_0106f8c0, -1);
@@ -4559,6 +4754,8 @@ struct FUN_007254d0_t
     void UpdateSpeechChallengeTrait();
 };
 // @fnv 0x00725650
+// pdb: ListBox<StatsMenu::StatusEffect *>::UpdateHighlightBoxPos | MenuManager.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void FUN_007254d0_t::UpdateSpeechChallengeTrait()
 {
     static int selectedTrait = Tile_AddUserTrait(str_0106f8c0, -1);
@@ -4644,6 +4841,7 @@ int __cdecl Tile_AddUserTrait(const char* s, int n);
 // Returns true when m_0c is non-null and its IsTraitNonZero lookup of the static "_enabled" key succeeds.
 // @fnv 0x00725b70
 // src: GUESS 0x00725b70 (confidence: high)
+// pdb: ListBox<TESReputation *>::IsEnabled | MenuManager.obj | retail, call graph (shared callers), high
 bool FUN_00725b70_cls::IsEnabled()
 {
     static void* sKey = (void*)Tile_AddUserTrait("_enabled", -1);
@@ -4663,6 +4861,8 @@ struct ListBox726210
 
 // @fnv 0x00726210
 // src: XBOX_PDB 0x00726210
+// pdb: ListBox<unsigned int>::UpdateHighlightBoxPos | MenuManager.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void ListBox726210::ListBox_unsigned_int_UpdateHighlightBoxPos()
 {
     static int traitHighlightY = GetTileValueID(str_0106f8c0, -1);
@@ -4772,23 +4972,26 @@ struct VLList
     int unk1C;
     float fTotalHeight;
 
-    void AccumulateTileHeight(Tile* apTile);
+    void AccumulateTileHeight(Tile* apNewTile);
 };
 
 // Sets the tile's _y to fTotalHeight, measures the child text tile's height if unset, stores it in trait 0xfb0 and adds it to fTotalHeight.
 // @fnv 0x007269d0
-void VLList::AccumulateTileHeight(Tile* apTile)
+// pdb: ListBox<StartMenu::Option *>::InitTilePosition | StartMenu.obj | retail, unique string literal, high
+// pdb params: apNewTile
+// pdb locals: ftileHeight, ptextTile, xelem, ptile, fwrapWidth
+void VLList::AccumulateTileHeight(Tile* apNewTile)
 {
     float fHeight4 = 0.0f;
-    apTile->SetFloat(VLTraitNameToID("_y", -1), fTotalHeight, true);
-    fHeight4 = apTile->GetFloat(0xfb0);
+    apNewTile->SetFloat(VLTraitNameToID("_y", -1), fTotalHeight, true);
+    fHeight4 = apNewTile->GetFloat(0xfb0);
     if (fHeight4 == 0.0)
     {
         Tile* pText = 0;
-        VLListNode* pPosVal = reinterpret_cast<VLTileList*>(&apTile->m_kChildTileList)->GetHeadPos();
+        VLListNode* pPosVal = reinterpret_cast<VLTileList*>(&apNewTile->xChildren)->GetHeadPos();
         while (pPosVal && !pText)
         {
-            Tile* pChild2 = reinterpret_cast<VLTileList*>(&apTile->m_kChildTileList)->GetNext(pPosVal);
+            Tile* pChild2 = reinterpret_cast<VLTileList*>(&apNewTile->xChildren)->GetNext(pPosVal);
             if (pChild2->GetType() == 0x387)
                 pText = pChild2;
         }
@@ -4799,10 +5002,10 @@ void VLList::AccumulateTileHeight(Tile* apTile)
                            ->GetStringDimensions(pText->GetString(0xfc4), (int)pText->GetFloat(0xfb9),
                                                  (fWrapWidth > 0.0) ? fWrapWidth : 3.402823466e+38F, 0)
                            .y;
-            fHeight4 += apTile->GetFloat(VLTraitNameToIDSimple("_VerticalSpacing"));
+            fHeight4 += apNewTile->GetFloat(VLTraitNameToIDSimple("_VerticalSpacing"));
         }
     }
-    apTile->SetFloat(0xfb0, fHeight4, false);
+    apNewTile->SetFloat(0xfb0, fHeight4, false);
     fTotalHeight += fHeight4;
 }
 
@@ -4850,6 +5053,9 @@ struct Owner050
 };
 extern "C" char kListBoxNumFiltered[];
 // @fnv 0x00754690
+// pdb: ListBox<enum ActorValue::Index>::AddItem | CharGenMenu.obj | retail, call graph (shared callers), medium
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
 Tile* Owner050::AddListEntry(int data, const char* text, int compare, const char* name)
 {
     if (container && (templateName || name))
@@ -4944,26 +5150,29 @@ struct IntListBox
 };
 // @fnv 0x00764430
 // src: XBOX_PDB 0x00764430
-ItemTile* IntListBox::ListBox_int_AddItem(int data, const char* text, int(__cdecl* compare)(BoxItem*, BoxItem*),
-                                   const char* name)
+// pdb: ListBox<int>::AddItem | DialogMenu.obj | retail, call graph (shared callers), high
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
+ItemTile* IntListBox::ListBox_int_AddItem(int aAssociatedData, const char* apcItemString, int(__cdecl* apCompareFn)(BoxItem*, BoxItem*),
+                                   const char* apcTemplateName)
 {
-    if (container && (templateName || name))
+    if (container && (templateName || apcTemplateName))
     {
-        ItemTile* tile_2 = container->GetMenu()->Create(container, name ? name : templateName, 0);
+        ItemTile* tile_2 = container->GetMenu()->Create(container, apcTemplateName ? apcTemplateName : templateName, 0);
         ItemValue* value;
         if (!tile_2->GetValue(0xfaa))
             tile_2->Set(0xfaa, -1);
-        if (text)
-            tile_2->Set(0xfc4, text, true);
-        if (compare)
+        if (apcItemString)
+            tile_2->Set(0xfc4, apcItemString, true);
+        if (apCompareFn)
         {
-            items.InsertSorted(new BoxItem(tile_2, &data), compare);
+            items.InsertSorted(new BoxItem(tile_2, &aAssociatedData), apCompareFn);
             if (ListBox_unsigned_int_GetFlag(0))
                 Synchronize();
         }
         else
         {
-            items.AppendItem(new BoxItem(tile_2, &data));
+            items.AppendItem(new BoxItem(tile_2, &aAssociatedData));
             if (ListBox_unsigned_int_GetFlag(0))
             {
                 AccumulateTileHeight(tile_2);
@@ -5018,6 +5227,8 @@ struct ClearOwner
 };
 // @fnv 0x007646d0
 // src: XBOX_PDB 0x007646d0
+// pdb: ListBox<int>::RemoveAll | DialogMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void ClearOwner::ListBox_int_RemoveAll()
 {
     while (next && *next->FUN_006815c0())
@@ -5082,7 +5293,7 @@ class C764930MenuBase
 class C764930ListMenu : public C764930MenuBase, public C764930ListNode
 {
   public:
-    void AddTile(C764930Tile* pkTile);
+    void AddTile(C764930Tile* apNewTile);
     void UpdateScrollBar();
     void UpdateSelection();
 
@@ -5099,6 +5310,8 @@ class C764930ListMenu : public C764930MenuBase, public C764930ListNode
 
 // Resets the visible count and scroll, adds each non-hidden item's tile with its index, then updates the scroll bar and selection.
 // @fnv 0x00764930
+// pdb: ListBox<int>::Synchronize | DialogMenu.obj | retail, call graph, high
+// pdb locals: pnode
 void C764930ListMenu::RebuildVisibleTiles()
 {
     m_usNumVisible = 0;
@@ -5127,6 +5340,8 @@ struct Cls_764ef0
 };
 
 // @fnv 0x00764ef0
+// pdb: ListBox<int>::UpdateHighlightBoxPos | DialogMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void Cls_764ef0::UpdateHighlightTile()
 {
     static int trait1 = Tile_AddUserTrait(str_0106f8c0, -1);
@@ -5216,6 +5431,8 @@ struct ScrollList
 // Computes a scrollbar height from total and container count, stores the scroll delta on the container and the item count on the scrollbar.
 // @fnv 0x00765210
 // src: XBOX_PDB 0x00765210
+// pdb: ListBox<int>::SetTotalListHeight | DialogMenu.obj | retail, call graph, high
+// pdb locals: inumPages, flistHeight
 void ScrollList::ListBox_int_SetTotalListHeight()
 {
     if (container)
@@ -5274,6 +5491,8 @@ struct ClearList
 
 // @fnv 0x007a2070
 // src: GUESS 0x007a2070 (confidence: low)
+// pdb: ListBox<TESQuest *>::RemoveAll | MapMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void ClearList::ReleaseStorage_007a2070()
 {
     while (tail && *tail->FUN_006815c0())
@@ -5338,16 +5557,19 @@ struct NavigationList : NavigationVirtual, NavigationLink
     unsigned int unk14, unk18;
     unsigned short count, unk1e;
     bool HasEnabledTrait();
-    Tile* GetNavigationTileForEvent(unsigned int event);
+    Tile* GetNavigationTileForEvent(unsigned int aeButton);
 };
 
 // Maps a navigation event to a scroll delta, finds the tile at the resulting index that is enabled, and returns it unless it equals selected.
 // @fnv 0x007a2450
-Tile* NavigationList::GetNavigationTileForEvent(unsigned int event)
+// pdb: ListBox<TESQuest *>::GetHighlightTarget | MapMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* NavigationList::GetNavigationTileForEvent(unsigned int aeButton)
 {
     Tile* foundVal = 0;
     int delta8 = 0;
-    switch (event)
+    switch (aeButton)
     {
     case 2:
         delta8 = 1;
@@ -5444,13 +5666,15 @@ class FUN_007a3ac0_ListBox
     float m_fFirstListValue;
 
     bool ListBox_unsigned_int_GetFlag(unsigned int flags);
-    void UpdateScrollTraits_007a7700();
+    void ListBox_TESObjectREFR_SetTotalListHeight();
     void UpdateHighlightTraits_007a73e0();
     void ProcessEntries_007a3ac0();
 };
 
 // @fnv 0x007a3ac0
 // src: GUESS 0x007a3ac0 (confidence: low)
+// pdb: ListBox<TESObjectREFR *>::RemoveAll | MapMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void FUN_007a3ac0_ListBox::ProcessEntries_007a3ac0()
 {
     while (pNext && *pNext->GetItem())
@@ -5480,7 +5704,7 @@ void FUN_007a3ac0_ListBox::ProcessEntries_007a3ac0()
     m_fFirstListValue = 0.0f;
     if (m_pListTile)
         m_pListTile->Set(Tile_TextToTrait("_num_filtered"), 0.0f, true);
-    UpdateScrollTraits_007a7700();
+    ListBox_TESObjectREFR_SetTotalListHeight();
     unk10 = 0;
     UpdateHighlightTraits_007a73e0();
 }
@@ -5514,15 +5738,18 @@ struct Navigation
     int unk18;
     unsigned short count;
     bool Active();
-    Tile* ProcessEntries_007a4000(int key);
+    Tile* ProcessEntries_007a4000(int aeButton);
 };
 // @fnv 0x007a4000
 // src: GUESS 0x007a4000 (confidence: low)
-Tile* Navigation::ProcessEntries_007a4000(int key)
+// pdb: ListBox<TESObjectREFR *>::GetHighlightTarget | MapMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* Navigation::ProcessEntries_007a4000(int aeButton)
 {
     Tile* result = 0;
     int delta = 0;
-    switch (key)
+    switch (aeButton)
     {
     case 2:
         delta = 1;
@@ -5624,6 +5851,8 @@ struct ClearListBox
 };
 // @fnv 0x007a54d0
 // src: GUESS 0x007a54d0 (confidence: low)
+// pdb: ListBox<TESChallenge *>::RemoveAll | MapMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void ClearListBox::ReleaseStorage_007a54d0()
 {
     while (next && *next->FUN_006815c0())
@@ -5690,14 +5919,17 @@ struct NavList : NavNode
     int templateName;
     unsigned short count;
     bool CanNavigate();
-    Tile* GetNavigationTarget(int action);
+    Tile* GetNavigationTarget(int aeButton);
 };
 // @fnv 0x007a5ad0
-Tile* NavList::GetNavigationTarget(int action)
+// pdb: ListBox<TESChallenge *>::GetHighlightTarget | MapMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* NavList::GetNavigationTarget(int aeButton)
 {
     Tile* result = 0;
     int delta = 0;
-    switch (action)
+    switch (aeButton)
     {
     case 2:
         delta = 1;
@@ -5778,6 +6010,8 @@ Tile* NavList::GetNavigationTarget(int action)
 void FNV_Warning(const char*);
 // @fnv 0x007a5e70
 // src: COMMUNITY 0x007a5e70
+// pdb: ListBox<StartMenu::Option *>::ScrollToHighlight | StartMenu.obj | retail, vtable slot, high
+// pdb locals: bcodeScroll, bAboveList, bBelowList, fprevScrollbarValue, idelta
 void HighlightList_listbox::ListBox_ItemChange_ScrollToHighlight()
 {
     if (selected && (*reinterpret_cast<HighlightTile_listbox**>(reinterpret_cast<char*>(this) + sizeof(HighlightList_listbox))) && container && reinterpret_cast<HighlightTile_listbox*>(container)->FUN_00a011b0(0xfb0) > 0.0)
@@ -5818,6 +6052,8 @@ struct ListBox_7a6600
 // Applies trait values to the highlight tile and shows or hides the speech-challenge box and its children based on the selected tile's speech challenge failure.
 // @fnv 0x007a6600
 // src: GUESS 0x007a6600 (confidence: medium)
+// pdb: ListBox<TESQuest *>::UpdateHighlightBoxPos | MapMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void ListBox_7a6600::UpdateHighlightTraits_007a6600()
 {
     static int trait1 = Tile_AddUserTrait(str_0106f8c0, -1);
@@ -5906,6 +6142,8 @@ struct ScrollList
 // Computes a scroll step from totalHeight and the container's count, applies it via _scroll_delta, and sets _number_of_items on the scrollbar.
 // @fnv 0x007a6920
 // src: GUESS 0x007a6920 (confidence: medium)
+// pdb: ListBox<TESQuest *>::SetTotalListHeight | MapMenu.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void ScrollList::UpdateScrollTraits_007a6920()
 {
     if (container)
@@ -5928,6 +6166,8 @@ void ScrollList::UpdateScrollTraits_007a6920()
 // Binds the highlight and selected-height traits to the selected tile and toggles the lb_highlight_box borders based on the speech challenge failure state.
 // @fnv 0x007a73e0
 // src: GUESS 0x007a73e0 (confidence: medium)
+// pdb: ListBox<TESObjectREFR *>::UpdateHighlightBoxPos | MapMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void HighlightList_listbox::UpdateHighlightTraits_007a73e0()
 {
     static int highlightY = Tile_AddUserTrait("_highlight_y", -1);
@@ -6033,6 +6273,8 @@ struct ClearList
 // Deletes every node and item in the list, resets count, height and selection, and updates the container's _num_filtered value.
 // @fnv 0x007d7290
 // src: XBOX_PDB 0x007d7290
+// pdb: ListBox<StartMenu::Option *>::RemoveAll | StartMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void ClearList::ListBox_StartMenu_Option_RemoveAll()
 {
     while (next && *next->FUN_006815c0())
@@ -6084,6 +6326,7 @@ class D7580ListBox
 // Returns true when m_pkTile exists and its _enabled trait bool value is set.
 // @fnv 0x007d7580
 // src: XBOX_PDB 0x007d7580
+// pdb: ListBox<StartMenu::Option *>::IsEnabled | StartMenu.obj | retail, call graph, high
 bool D7580ListBox::ListBox_StartMenu_Option_IsEnabled()
 {
     static int s_iEnabledTrait = D7580TraitNameToID("_enabled", -1);
@@ -6143,30 +6386,33 @@ struct ItemBox
     void Select(ItemTile*);
     void Refresh();
     int GetMode();
-    ItemTile* SavesListBox_Insert(int, const char*, int(__cdecl*)(BoxEntry*, BoxEntry*), const char*);
+    ItemTile* ListBox_BGSSaveLoadFileEntry_AddItem(int, const char*, int(__cdecl*)(BoxEntry*, BoxEntry*), const char*);
 };
 // Creates a tile in the container's menu, sets its values, inserts it into entries (sorted or appended), and updates the filtered-count value when in mode 1.
 // @fnv 0x007d7da0
-// src: COMMUNITY 0x007d7da0
-ItemTile* ItemBox::SavesListBox_Insert(int data, const char* text, int(__cdecl* compare)(BoxEntry*, BoxEntry*),
-                                const char* name)
+// src: XBOX_DEBUG_PDB 0x007d7da0
+// pdb: ListBox<BGSSaveLoadFileEntry *>::AddItem | StartMenu.obj | debug, call graph (shared callers), high
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
+ItemTile* ItemBox::ListBox_BGSSaveLoadFileEntry_AddItem(int aAssociatedData, const char* apcItemString, int(__cdecl* apCompareFn)(BoxEntry*, BoxEntry*),
+                                const char* apcTemplateName)
 {
-    if (container && (templateName || name))
+    if (container && (templateName || apcTemplateName))
     {
-        ItemTile* tile = container->GetMenu()->Create(container, name ? name : templateName, 0);
+        ItemTile* tile = container->GetMenu()->Create(container, apcTemplateName ? apcTemplateName : templateName, 0);
         if (!tile->GetValue(0xfaa))
             tile->SetInt(0xfaa, -1);
-        if (text)
-            tile->SetString(0xfc4, text, true);
-        if (compare)
+        if (apcItemString)
+            tile->SetString(0xfc4, apcItemString, true);
+        if (apCompareFn)
         {
-            entries.Insert(new BoxEntry(tile, &data), compare);
+            entries.Insert(new BoxEntry(tile, &aAssociatedData), apCompareFn);
             if (Test(0))
                 SortRefresh();
         }
         else
         {
-            entries.AddTail(new BoxEntry(tile, &data));
+            entries.AddTail(new BoxEntry(tile, &aAssociatedData));
             if (Test(0))
             {
                 Select(tile);
@@ -6216,6 +6462,8 @@ struct ClearList
 };
 // @fnv 0x007d81f0
 // src: XBOX_PDB 0x007d81f0
+// pdb: ListBox<BGSSaveLoadFileEntry *>::RemoveAll | StartMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void ClearList::ListBox_BGSSaveLoadFileEntry_RemoveAll()
 {
     while (next && *next->FUN_006815c0())
@@ -6290,11 +6538,14 @@ struct P240Owner : P240Base, P240List
     void ListBox_BGSSaveLoadFileEntry_SetTotalListHeight();
     P240Tile* SelectLast();
     void ListBox_BGSSaveLoadFileEntry_UpdateHighlightBoxPos();
-    void ApplyFilter(bool(__cdecl* predicate)(void*));
+    void ApplyFilter(bool(__cdecl* apFilterFn)(void*));
 };
 // Applies predicate to each list item, hides matches, renumbers visible tiles, updates the container count and reselects a tile.
 // @fnv 0x007d8450
-void P240Owner::ApplyFilter(bool(__cdecl* predicate)(void*))
+// pdb: ListBox<BGSSaveLoadFileEntry *>::Filter | StartMenu.obj | retail, call graph (shared callers), high
+// pdb params: apFilterFn
+// pdb locals: isaveHLIndex, uifilterCount, pnode
+void P240Owner::ApplyFilter(bool(__cdecl* apFilterFn)(void*))
 {
     int iHiddenCount = 0;
     int iSelectedIndex = -1;
@@ -6303,7 +6554,7 @@ void P240Owner::ApplyFilter(bool(__cdecl* predicate)(void*))
     height = 0.0f;
     for (P240List* node = this; node && *node->FUN_006815c0(); node = node->FUN_00726070())
     {
-        (*node->FUN_006815c0())->hidden = predicate && predicate((*node->FUN_006815c0())->data);
+        (*node->FUN_006815c0())->hidden = apFilterFn && apFilterFn((*node->FUN_006815c0())->data);
         if ((*node->FUN_006815c0())->hidden)
         {
             if ((*node->FUN_006815c0())->tile == selected)
@@ -6347,17 +6598,19 @@ class C7D8950ListBox
     bool IsActive();
     bool Contains(Tile* pkTile);
     void UpdateSelection();
-    bool SetSelectedTileIfEnabled(Tile* pkTile);
+    bool SetSelectedTileIfEnabled(Tile* apHighlightItem);
 };
 
 // If active and the tile is null or contained and enabled, sets m_pkSelected to the tile, updates the selection and returns true; otherwise returns false.
 // @fnv 0x007d8950
 // src: GUESS 0x007d8950 (confidence: high)
-bool C7D8950ListBox::SetSelectedTileIfEnabled(Tile* pkTile)
+// pdb: ListBox<BGSSaveLoadFileEntry *>::Highlight | StartMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool C7D8950ListBox::SetSelectedTileIfEnabled(Tile* apHighlightItem)
 {
-    if (IsActive() && (!pkTile || (Contains(pkTile) && pkTile->IsTraitNonZero(C7D8950TraitNameToID("_enabled", -1)))))
+    if (IsActive() && (!apHighlightItem || (Contains(apHighlightItem) && apHighlightItem->IsTraitNonZero(C7D8950TraitNameToID("_enabled", -1)))))
     {
-        m_pkSelected = pkTile;
+        m_pkSelected = apHighlightItem;
         UpdateSelection();
         return true;
     }
@@ -6397,15 +6650,18 @@ struct NavigationList : NavigationBase, NavigationNode
     const char* templateName;
     unsigned short count;
     bool ListBox_BGSSaveLoadFileEntry_IsEnabled();
-    Tile* ListBox_BGSSaveLoadFileEntry_HandleKeyboardInput(int direction);
+    Tile* ListBox_BGSSaveLoadFileEntry_HandleKeyboardInput(int aeButton);
 };
 // @fnv 0x007d89c0
 // src: COMMUNITY 0x007d89c0
-Tile* NavigationList::ListBox_BGSSaveLoadFileEntry_HandleKeyboardInput(int direction)
+// pdb: ListBox<BGSSaveLoadFileEntry *>::GetHighlightTarget | StartMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* NavigationList::ListBox_BGSSaveLoadFileEntry_HandleKeyboardInput(int aeButton)
 {
     Tile* tile = 0;
     int step = 0;
-    switch (direction)
+    switch (aeButton)
     {
     case 2:
         step = 1;
@@ -6482,7 +6738,7 @@ Tile* NavigationList::ListBox_BGSSaveLoadFileEntry_HandleKeyboardInput(int direc
 
 struct TileValue
 {
-    void Tile_Value_AddRefValueAction(int index, Tile* tile, int value);
+    void Tile_Value_AddRefValueAction(int aiActionType, Tile* apSourceTile, int aeSourceTrait);
     void Tile_Value_SetFloat(int value);
 };
 
@@ -6498,6 +6754,8 @@ struct ListBoxExt
 };
 
 // @fnv 0x007d9140
+// pdb: ListBox<StartMenu::Option *>::UpdateHighlightBoxPos | StartMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void ListBoxExt::UpdateHighlightBox()
 {
     static int s_highlightY = Tile_AddUserTrait("_highlight_y", -1);
@@ -6584,6 +6842,8 @@ struct ListBoxX
 
 // @fnv 0x007d97a0
 // src: XBOX_PDB 0x007d97a0
+// pdb: ListBox<BGSSaveLoadFileEntry *>::UpdateHighlightBoxPos | StartMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void ListBoxX::ListBox_BGSSaveLoadFileEntry_UpdateHighlightBoxPos()
 {
     static int traitHighlightY = GetTileValueID(str_0106f8c0, -1);
@@ -6691,53 +6951,56 @@ struct LBThis
     TileObj* selected;
     bool ListBox_unsigned_int_GetFlag(unsigned int);
     void UpdateSaveLoadList();
-    bool RemoveItemNode(FUN_004ee7d0_node* p1, FUN_004ee7d0_node* p2);
+    bool ListBox_BGSSaveLoadFileEntry_Remove(FUN_004ee7d0_node* pkFirst, FUN_004ee7d0_node* pkSecond);
 };
 
 // @fnv 0x007d9ac0
-bool LBThis::RemoveItemNode(FUN_004ee7d0_node* pNodeToRemove, FUN_004ee7d0_node* p2)
+// src: XBOX_DEBUG_PDB 0x007d9ac0
+// pdb: ListBox<BGSSaveLoadFileEntry *>::Remove | StartMenu.obj | debug, call graph (shared callers), high
+// pdb params: pkFirst, pkSecond
+bool LBThis::ListBox_BGSSaveLoadFileEntry_Remove(FUN_004ee7d0_node* pkFirst, FUN_004ee7d0_node* pkSecond)
 {
-    if (pNodeToRemove)
+    if (pkFirst)
     {
         TileObj* selObj;
         TileObj* selTmp;
         InventoryStackRecord* elemA;
         InventoryStackRecord* had;
         ListBoxItem_t* itemB;
-        if ((*pNodeToRemove->FUN_006815c0())->f0 == selected)
+        if ((*pkFirst->FUN_006815c0())->f0 == selected)
         {
-            selected = pNodeToRemove->FUN_00726070() ? (*pNodeToRemove->FUN_00726070()->FUN_006815c0())->f0
-                                                     : ((p2 && p2 != pNodeToRemove) ? (*p2->FUN_006815c0())->f0 : 0);
+            selected = pkFirst->FUN_00726070() ? (*pkFirst->FUN_00726070()->FUN_006815c0())->f0
+                                                     : ((pkSecond && pkSecond != pkFirst) ? (*pkSecond->FUN_006815c0())->f0 : 0);
             if (selected)
             {
                 ((IMObjX*)InterfaceManager_GetSingleton())->InterfaceManager_SetCurrentFocusTarget((int)selected, 0xfc3, 1);
             }
         }
-        if (container && (*pNodeToRemove->FUN_006815c0())->f8)
+        if (container && (*pkFirst->FUN_006815c0())->f8)
         {
             container->Tile_Set(Tile_TextToTrait("_num_filtered"),
                                     container->FUN_00a011b0(Tile_TextToTrait("_num_filtered")) - 1.0, true);
         }
-        selTmp = (*pNodeToRemove->FUN_006815c0())->f0;
+        selTmp = (*pkFirst->FUN_006815c0())->f0;
         selObj = selTmp;
         (void)(selObj ? selObj->FirstVirtual(1) : 0);
         if (ListBox_unsigned_int_GetFlag(1))
         {
-            had = (*pNodeToRemove->FUN_006815c0())->f4;
+            had = (*pkFirst->FUN_006815c0())->f4;
             elemA = had;
             (void)(elemA ? elemA->FUN_004459e0(1) : 0);
         }
-        itemB = *pNodeToRemove->FUN_006815c0();
+        itemB = *pkFirst->FUN_006815c0();
         FormHeapFreeAndLog_00401030(itemB);
-        if (pNodeToRemove == (this ? &head : 0))
+        if (pkFirst == (this ? &head : 0))
         {
             if (head.next)
             {
-                p2 = head.next;
-                head.next = p2->FUN_00726070();
-                head.item = *p2->FUN_006815c0();
-                p2->FUN_006ecd40(0);
-                FUN_004ee7d0_node* node2 = p2;
+                pkSecond = head.next;
+                head.next = pkSecond->FUN_00726070();
+                head.item = *pkSecond->FUN_006815c0();
+                pkSecond->FUN_006ecd40(0);
+                FUN_004ee7d0_node* node2 = pkSecond;
                 FUN_004ee7d0_node* nodeA = node2;
                 (void)(nodeA ? nodeA->FUN_004702f0(1) : 0);
             }
@@ -6748,9 +7011,9 @@ bool LBThis::RemoveItemNode(FUN_004ee7d0_node* pNodeToRemove, FUN_004ee7d0_node*
         }
         else
         {
-            p2->FUN_006ecd40((unsigned int)pNodeToRemove->FUN_00726070());
-            pNodeToRemove->FUN_006ecd40(0);
-            FUN_004ee7d0_node* nodeBTmp = pNodeToRemove;
+            pkSecond->FUN_006ecd40((unsigned int)pkFirst->FUN_00726070());
+            pkFirst->FUN_006ecd40(0);
+            FUN_004ee7d0_node* nodeBTmp = pkFirst;
             FUN_004ee7d0_node* nodeB = nodeBTmp;
             (void)(nodeB ? nodeB->FUN_004702f0(1) : 0);
         }
@@ -6769,8 +7032,8 @@ struct EntryTile;
 struct TileAction
 {
     void RemoveFromReactions();
-    void Tile_Value_AddRefValueAction(int trait, EntryTile* tile, int value);
-    void AppendFloatAction(int trait, float value);
+    void Tile_Value_AddRefValueAction(int aiActionType, EntryTile* apSourceTile, int aeSourceTrait);
+    void AppendFloatAction(int trait, float afActionVal);
     void Tile_Value_SetFloat(int value);
 };
 struct CreatedTile
@@ -6782,7 +7045,7 @@ struct EntryTile
     CreatedTile* Tile_GetMenu(EntryTile* parent, const char* name, int flags);
     void* Tile_GetValue(int trait);
     void FUN_00700320(int trait, int value);
-    void Tile_Set_00a01350(int trait, const char* value, bool propagate);
+    void Tile_Set_00a01350(int trait, const char* apString, bool propagate);
     float FUN_00a011b0(int trait);
     TileAction* FindTraitValue(int trait);
 };
@@ -6870,17 +7133,21 @@ struct N6815c0
 
 struct RList71a5 : RemovalList
 {
-    bool RemoveTile(Tile* tile);
+    bool ListBox_ItemChange_RemoveItem(Tile* apItem);
 };
 
 // @fnv 0x0071a5c0
-bool RList71a5::RemoveTile(Tile* tile)
+// src: XBOX_DEBUG_PDB 0x0071a5c0
+// pdb: ListBox<ItemChange *>::RemoveItem | ListBox.obj | debug, call graph (shared callers), high
+// pdb params: apItem
+// pdb locals: pkSecond, pkFirst
+bool RList71a5::ListBox_ItemChange_RemoveItem(Tile* apItem)
 {
-    if (!tile || FUN_008256d0((ContNode*)&item))
+    if (!apItem || FUN_008256d0((ContNode*)&item))
         return false;
     RemovalNode* posCur = this;
     RemovalNode* prev = this;
-    while (posCur && (*((N6815c0*)posCur)->FUN_006815c0())->tile != tile)
+    while (posCur && (*((N6815c0*)posCur)->FUN_006815c0())->tile != apItem)
     {
         prev = posCur;
         posCur = posCur->FUN_00726070();
@@ -6915,15 +7182,18 @@ struct Box118
     int unk14, unk18;
     unsigned short count, flags;
     bool ListBox_enum_MiscStatManager_MiscStatID_IsEnabled();
-    Tile* ListBox_enum_MiscStatManager_MiscStatID_GetHighlightTarget(unsigned int action);
+    Tile* ListBox_enum_MiscStatManager_MiscStatID_GetHighlightTarget(unsigned int aeButton);
 };
 // @fnv 0x00722410
 // src: XBOX_PDB 0x00722410
-Tile* Box118::ListBox_enum_MiscStatManager_MiscStatID_GetHighlightTarget(unsigned int action)
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::GetHighlightTarget | MenuManager.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* Box118::ListBox_enum_MiscStatManager_MiscStatID_GetHighlightTarget(unsigned int aeButton)
 {
     Tile* pFound = 0;
     int delta8 = 0;
-    switch (action)
+    switch (aeButton)
     {
     case 2:
         delta8 = 1;
@@ -7016,14 +7286,17 @@ struct ListBox_71a : ListBoxBase, SimpleList_71a<ListItem_71a*>
     const char* pTemplateName;
     unsigned short usItemCount;
     float m_fFirstListValue;
-    void UpdateItems();
-    void AccumulateTileHeight(Tile* apTile);
+    void ListBox_ItemChange_Synchronize();
+    void AccumulateTileHeight(Tile* apNewTile);
     void UpdateScrollPages();
     void ListBox_ItemChange_UpdateHighlightBoxPos();
 };
 // Resets the item count and a float, assigns trait 0xfac with an incrementing index to each unflagged list item's tile, then calls UpdateScrollPages and FUN_0071a740.
 // @fnv 0x0071a670
-void ListBox_71a::UpdateItems()
+// src: XBOX_RETAIL_PDB 0x0071a670
+// pdb: ListBox<ItemChange *>::Synchronize | ListBox.obj | retail, call graph, high
+// pdb locals: pnode
+void ListBox_71a::ListBox_ItemChange_Synchronize()
 {
     usItemCount = 0;
     m_fFirstListValue = 0.0f;
@@ -7040,7 +7313,7 @@ void ListBox_71a::UpdateItems()
 }
 
 int Tile_AddUserTrait(const char* pcName, int iDefault);
-Tile* Tile_GetTileByName(Tile* pkParent, const char* pcName);
+Tile* Tile_GetTileByName(Tile* apTarget, const char* apName);
 struct ListBoxZ
 {
     char pad[0xc];
@@ -7051,6 +7324,8 @@ struct ListBoxZ
 // Sets highlight and selected-height properties from m_pkItem, then sets the highlight box and its sides visible according to the item's boolean result.
 // @fnv 0x0071a740
 // src: XBOX_PDB 0x0071a740
+// pdb: ListBox<ItemChange *>::UpdateHighlightBoxPos | ListBox.obj | retail, call graph, medium
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void ListBoxZ::ListBox_ItemChange_UpdateHighlightBoxPos()
 {
     static int s_iHighlightY = Tile_AddUserTrait("_highlight_y", -1);
@@ -7127,6 +7402,7 @@ int __cdecl Tile_AddUserTrait(const char* name, int fallback);
 
 // Returns whether m_pScrollBar exists and has the trait identified by str_01070244 set to a non-zero value.
 // @fnv 0x00724a00
+// pdb: ListBox<PerkRankData *>::IsEnabled | MenuManager.obj | retail, call graph (shared callers), high
 bool Class_721c60::IsScrollBarTraitEnabled()
 {
     static int enabledTrait = Tile_AddUserTrait(str_01070244, -1);
@@ -7144,16 +7420,18 @@ struct FUN_007d7670_cls
     bool ListBox_StartMenu_Option_IsEnabled();
     bool ContainsKey(Tile* pkTile);
     void UpdateHighlightBox();
-    bool ListBox_StartMenu_Option_Highlight(Tile* pkTile);
+    bool ListBox_StartMenu_Option_Highlight(Tile* apHighlightItem);
 };
 // When the class is active, assigns pkTile if null or contained with a nonzero trait, then updates the highlight box.
 // @fnv 0x007d7670
 // src: XBOX_PDB 0x007d7670
-bool FUN_007d7670_cls::ListBox_StartMenu_Option_Highlight(Tile* pkTile)
+// pdb: ListBox<StartMenu::Option *>::Highlight | StartMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool FUN_007d7670_cls::ListBox_StartMenu_Option_Highlight(Tile* apHighlightItem)
 {
-    if (ListBox_StartMenu_Option_IsEnabled() && (!pkTile || (ContainsKey(pkTile) && pkTile->IsTraitNonZero(Tile_AddUserTrait(str_01070244, -1)))))
+    if (ListBox_StartMenu_Option_IsEnabled() && (!apHighlightItem || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(Tile_AddUserTrait(str_01070244, -1)))))
     {
-        m_pkSelected = pkTile;
+        m_pkSelected = apHighlightItem;
         UpdateHighlightBox();
         return true;
     }
@@ -7168,8 +7446,8 @@ struct L71Tile;
 struct L71Value
 {
     void RemoveFromReactions();
-    void Tile_Value_AddRefValueAction(int op, L71Tile* tile, int id);
-    void AppendFloatAction(int op, float value);
+    void Tile_Value_AddRefValueAction(int aiActionType, L71Tile* apSourceTile, int aeSourceTrait);
+    void AppendFloatAction(int op, float afActionVal);
     void Tile_Value_SetFloat(int a);
 };
 struct L71Created;
@@ -7177,7 +7455,7 @@ struct L71Tile
 {
     int Tile_GetValue(int id);
     void FUN_00700320(int id, int value);
-    void Tile_Set_00a01350(int id, const char* text, int a);
+    void Tile_Set_00a01350(int id, const char* apString, int a);
     float FUN_00a011b0(int id);
     L71Value* FindTraitValue(int id);
     L71Created* Tile_GetMenu(L71Tile* parent, L71Tile* tmpl, int a);
@@ -7210,11 +7488,11 @@ struct L71Menu
     L71Tile* pTemplate;
     unsigned short m_usPassCountLocal;
     bool ListBox_unsigned_int_GetFlag(int a);
-    void UpdateItems();
-    void AccumulateTileHeight(L71Tile* tile);
+    void ListBox_ItemChange_Synchronize();
+    void AccumulateTileHeight(L71Tile* apNewTile);
     void UpdateScrollPages();
     int GetRaceCount();
-    L71Tile* ListBox_ItemChange_AddItem(int data, const char* text, int (*compare)(L71Item*, L71Item*), L71Tile* tmpl);
+    L71Tile* ListBox_ItemChange_AddItem(int aAssociatedData, const char* apcItemString, int (*apCompareFn)(L71Item*, L71Item*), L71Tile* apcTemplateName);
 };
 }
 using namespace list71a;
@@ -7222,33 +7500,36 @@ using namespace list71a;
 // Creates a tile under pRoot, optionally sets trait 0xfc4, inserts it into kItems, and updates menu layout and trait 0xfb0.
 // @fnv 0x0071a320
 // src: XBOX_PDB 0x0071a320
-L71Tile* L71Menu::ListBox_ItemChange_AddItem(int data, const char* apLabel, int (*compare)(L71Item*, L71Item*), L71Tile* apTemplate)
+// pdb: ListBox<ItemChange *>::AddItem | ListBox.obj | retail, call graph, high
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
+L71Tile* L71Menu::ListBox_ItemChange_AddItem(int aAssociatedData, const char* apcItemString, int (*apCompareFn)(L71Item*, L71Item*), L71Tile* apcTemplateName)
 {
     L71Tile* pTile;
     L71Value* pTraitValue;
 
-    if (pRoot && (pTemplate || apTemplate))
+    if (pRoot && (pTemplate || apcTemplateName))
     {
-        pTile = pRoot->Tile_GetMenu(pRoot, apTemplate ? apTemplate : pTemplate, 0)->FUN_00a1ddb0();
+        pTile = pRoot->Tile_GetMenu(pRoot, apcTemplateName ? apcTemplateName : pTemplate, 0)->FUN_00a1ddb0();
         if (!pTile->Tile_GetValue(0xfaa))
         {
             pTile->FUN_00700320(0xfaa, -1);
         }
-        if (apLabel)
+        if (apcItemString)
         {
-            pTile->Tile_Set_00a01350(0xfc4, apLabel, 1);
+            pTile->Tile_Set_00a01350(0xfc4, apcItemString, 1);
         }
-        if (compare)
+        if (apCompareFn)
         {
-            kItems.BSSimpleList_ActiveEffect_Insert(new L71Item(pTile, data), compare);
+            kItems.BSSimpleList_ActiveEffect_Insert(new L71Item(pTile, aAssociatedData), apCompareFn);
             if (ListBox_unsigned_int_GetFlag(0))
             {
-                UpdateItems();
+                ListBox_ItemChange_Synchronize();
             }
         }
         else
         {
-            kItems.FUN_00905820(new L71Item(pTile, data));
+            kItems.FUN_00905820(new L71Item(pTile, aAssociatedData));
             if (ListBox_unsigned_int_GetFlag(0))
             {
                 AccumulateTileHeight(pTile);
@@ -7301,7 +7582,7 @@ struct S722Menu : public MenuBase, public S722Node
     int unk18;
     unsigned short m_usPassCountLocal;
     bool HasEnabledTrait();
-    Tile* ListBox_StatsMenu_StatusEffect_HandleKeyboardInput(int code);
+    Tile* ListBox_StatsMenu_StatusEffect_HandleKeyboardInput(int aeButton);
 };
 }
 using namespace scroll722;
@@ -7309,12 +7590,15 @@ using namespace scroll722;
 // Finds a tile at the index offset derived from code and returns it unless it matches pSelected.
 // @fnv 0x00722bc0
 // src: COMMUNITY 0x00722bc0
-Tile* S722Menu::ListBox_StatsMenu_StatusEffect_HandleKeyboardInput(int code)
+// pdb: ListBox<StatsMenu::StatusEffect *>::GetHighlightTarget | MenuManager.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* S722Menu::ListBox_StatsMenu_StatusEffect_HandleKeyboardInput(int aeButton)
 {
     Tile* pFound5 = 0;
     int iDelta = 0;
 
-    switch (code)
+    switch (aeButton)
     {
     case 2:
         iDelta = 1;
@@ -7425,6 +7709,9 @@ struct LBList_7314c0 : LBBase_7314c0, LBNode_7314c0
 // Iterates the linked list, calling callback on each tile whose index is within [minIndex, maxIndex).
 // @fnv 0x007314c0
 // src: XBOX_PDB 0x007314c0
+// pdb: ListBox<enum MiscStatManager::MiscStatID>::Traverse | StatsMenu.obj | retail, call graph, medium
+// pdb params: apTraversalFn, aiStart, aiEnd
+// pdb locals: pnode
 void LBList_7314c0::ListBox_ItemChange_Traverse(void(__cdecl* callback)(Tile*, void*), int minIndex, int maxIndex)
 {
     for (LBNode_7314c0* node = this;
@@ -7465,7 +7752,7 @@ struct S764Menu : public MenuBase, public S764Node
     int unk18;
     unsigned short m_usPassCountLocal;
     bool ListBox_int_IsEnabled();
-    Tile* ListBox_int_GetHighlightTarget(int code);
+    Tile* ListBox_int_GetHighlightTarget(int aeButton);
 };
 }
 using namespace scroll764;
@@ -7473,12 +7760,15 @@ using namespace scroll764;
 // Finds an enabled tile at an index offset derived from code and returns it, or 0 if it matches pSelected.
 // @fnv 0x00764a70
 // src: XBOX_PDB 0x00764a70
-Tile* S764Menu::ListBox_int_GetHighlightTarget(int aiScrollCode)
+// pdb: ListBox<int>::GetHighlightTarget | DialogMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* S764Menu::ListBox_int_GetHighlightTarget(int aeButton)
 {
     Tile* pFound5 = 0;
     int iDelta = 0;
 
-    switch (aiScrollCode)
+    switch (aeButton)
     {
     case 2:
         iDelta = 1;
@@ -7578,16 +7868,18 @@ struct MenuChk_a3f90
     bool IsEnabled();
     bool ContainsKey(Tile* tile);
     void UpdateHighlightTraits_007a73e0();
-    bool ListBox_TESObjectREFR_Destroy(Tile* tile);
+    bool ListBox_TESObjectREFR_Destroy(Tile* apHighlightItem);
 };
 // If FUN_007a7330 is true and tile is null or contained with a nonzero trait, assigns unk10, calls FUN_007a73e0, and returns true.
 // @fnv 0x007a3f90
 // src: COMMUNITY 0x007a3f90
-bool MenuChk_a3f90::ListBox_TESObjectREFR_Destroy(Tile* tile)
+// pdb: ListBox<TESObjectREFR *>::Highlight | MapMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool MenuChk_a3f90::ListBox_TESObjectREFR_Destroy(Tile* apHighlightItem)
 {
-    if (IsEnabled() && (!tile || (ContainsKey(tile) && tile->IsTraitNonZero(Tile_AddUserTrait(str_01070244, -1)))))
+    if (IsEnabled() && (!apHighlightItem || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(Tile_AddUserTrait(str_01070244, -1)))))
     {
-        unk10 = tile;
+        unk10 = apHighlightItem;
         UpdateHighlightTraits_007a73e0();
         return true;
     }
@@ -7625,6 +7917,7 @@ struct FUN_007a50f0 : public FUN_007240c0, public SL
 using namespace menu7a5;
 
 // @fnv 0x007a50f0
+// pdb: ListBox<TESChallenge *>::ListBox<TESChallenge *> | MapMenu.obj | debug, call graph, medium
 FUN_007a50f0::FUN_007a50f0()
 {
     unk14 = 0;
@@ -7650,18 +7943,20 @@ struct Owner_007a5a60
     bool IsEnabled();
     bool ContainsKey(Tile* pkTarget);
     void UpdateHighlight();
-    bool SetEnabledHighlightTarget(Tile* pkTarget);
+    bool SetEnabledHighlightTarget(Tile* apHighlightItem);
 };
 
 // When FUN_007a81b0 is true and pkTarget is null or contained with a nonzero _enabled trait, assigns m_pkTarget and calls UpdateHighlight.
 // @fnv 0x007a5a60
 // src: GUESS 0x007a5a60 (confidence: medium)
-bool Owner_007a5a60::SetEnabledHighlightTarget(Tile* pkTarget)
+// pdb: ListBox<TESChallenge *>::Highlight | MapMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool Owner_007a5a60::SetEnabledHighlightTarget(Tile* apHighlightItem)
 {
     if (IsEnabled() &&
-        (!pkTarget || (ContainsKey(pkTarget) && pkTarget->IsTraitNonZero(Tile_AddUserTrait("_enabled", -1)))))
+        (!apHighlightItem || (ContainsKey(apHighlightItem) && apHighlightItem->IsTraitNonZero(Tile_AddUserTrait("_enabled", -1)))))
     {
-        m_pkTarget = pkTarget;
+        m_pkTarget = apHighlightItem;
         UpdateHighlight();
         return true;
     }
@@ -7700,17 +7995,20 @@ struct Class_7d76e0 : Base_7d76e0, Node_7d76e0
     unsigned short count;
 
     bool ListBox_StartMenu_Option_IsEnabled();
-    Tile* ListBox_StartMenu_Option_GetHighlightTarget(int action);
+    Tile* ListBox_StartMenu_Option_GetHighlightTarget(int aeButton);
 };
 
 // Finds a tile at the index offset derived from action and returns it unless it matches selected.
 // @fnv 0x007d76e0
 // src: XBOX_PDB 0x007d76e0
-Tile* Class_7d76e0::ListBox_StartMenu_Option_GetHighlightTarget(int action)
+// pdb: ListBox<StartMenu::Option *>::GetHighlightTarget | StartMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* Class_7d76e0::ListBox_StartMenu_Option_GetHighlightTarget(int aeButton)
 {
     Tile* result = 0;
     int delta = 0;
-    switch (action)
+    switch (aeButton)
     {
     case 2:
         delta = 1;
@@ -7810,6 +8108,7 @@ struct FUN_007240c0_shell
 
 // @fnv 0x007240c0
 // src: GUESS 0x007240c0 (confidence: high)
+// pdb: BSSimpleList<ListBoxItem<enum ActorValue::Index> *>::`scalar deleting destructor' | MenuManager.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_007240c0_shell::DoNothing_007240c0()
 {
     vtable = FUN_01070418;
@@ -7830,5 +8129,6 @@ struct FUN_00724200 : FUN_00723f80
 };
 
 // @fnv 0x00724200
+// pdb: BSSimpleArray<SPECIALBookMenu::SpecialBookButton *,1024>::`scalar deleting destructor' | MenuManager.obj | retail, vtable slot, high
 FUN_00724200::~FUN_00724200()
 {}

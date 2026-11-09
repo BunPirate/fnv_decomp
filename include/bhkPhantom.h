@@ -4,6 +4,7 @@
 
 class NiTransform;
 
+// pdb: class bhkPhantom, size 0x18 (here 0x14), bases: bhkWorldObject, 1 members
 class bhkPhantom : public bhkWorldObject
 {
 public:

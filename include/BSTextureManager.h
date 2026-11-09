@@ -9,6 +9,7 @@ class NiRenderer;
 class NiDepthStencilBuffer;
 class NiRefObject;
 
+// pdb: class BSTextureManager, size 0x9c (here 0xb0), 9 members
 class BSTextureManager
 {
 public:
@@ -134,6 +135,6 @@ public:
                                                  BSRenderedTexture* alias, unsigned int aliasOffset);
     void RemoveRenderedTexture(BSRenderedTexture*);
     void BSTextureManager_ReturnFrustumShadowTexture(NiRefObject*);
-    void ReleaseByName(const char* name);
+    void ReleaseByName(const char* apTexToReturn);
     void* BSTextureManager_BorrowRenderedTexture(void* a1, int a2, int a3, int a4, int a5);
 };

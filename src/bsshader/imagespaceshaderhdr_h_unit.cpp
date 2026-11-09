@@ -14,6 +14,7 @@ struct S00b90150
     void* FUN_00b90150(unsigned int);
 };
 // @fnv 0x00b90150
+// pdb: ImageSpaceShaderHDRBlendInShader::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* S00b90150::FUN_00b90150(unsigned int auiFlags)
 {
     *(void**)this = (void*)&DAT_010b3598;
@@ -36,6 +37,7 @@ struct StandIn00b904e0
     void* DestroyImageSpaceShader(unsigned int);
 };
 // @fnv 0x00b904e0
+// pdb: ImageSpaceShaderHDRBlendInShaderCinematicAlphamask::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* StandIn00b904e0::DestroyImageSpaceShader(unsigned int auiFlags)
 {
     *(void**)this = (void*)&vftable_ImageSpaceShaderHDRBlendInShaderCinematicAlphamask;
@@ -58,6 +60,7 @@ struct StandIn
     void* FUN_00b907f0(unsigned int);
 };
 // @fnv 0x00b907f0
+// pdb: ImageSpaceShaderHDRBrightPassFilter::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* StandIn::FUN_00b907f0(unsigned int auiFlags)
 {
     *(void**)this = (void*)&DAT_010b3c58;
@@ -81,6 +84,7 @@ struct S00b90e30
 };
 // Sets the vtable and a field, calls FUN_00c03a20, and if flags bit 0 is set frees this with size 0xd0; returns this.
 // @fnv 0x00b90e30
+// pdb: ImageSpaceShaderHDRLightAdapt::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* S00b90e30::DestroyImageSpaceShaderHDRLightAdapt(unsigned int flags)
 {
     *(void**)this = (void*)&vftable_ImageSpaceShaderHDRLightAdapt;
@@ -100,6 +104,7 @@ struct FUN_00b90980_shell
     void* DestroyImageSpaceShaderHDRDownSample16(unsigned int);
 };
 // @fnv 0x00b90980
+// pdb: ImageSpaceShaderHDRDownSample16::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* FUN_00b90980_shell::DestroyImageSpaceShaderHDRDownSample16(unsigned int auiFlags)
 {
     *(void**)this = &vftable_ImageSpaceShaderHDRDownSample16;
@@ -120,6 +125,7 @@ struct Unk914
 };
 // Sets the vtable and a member pointer, calls FUN_00c03a20, and if flags bit 0 is set deletes this with size 0xd0, returning this.
 // @fnv 0x00b914a0
+// pdb: ImageSpaceShaderHDRDownSample16LightAdapt::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* Unk914::FUN_00b914a0(unsigned int flags)
 {
     *(void**)this = &vftable_ImageSpaceShaderHDRDownSample16LightAdapt;
@@ -140,6 +146,7 @@ struct FUN_00b90b10_shell
 };
 
 // @fnv 0x00b90b10
+// pdb: ImageSpaceShaderHDRDownSample9::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* FUN_00b90b10_shell::DestroyImageSpaceShaderHDRDownSample9(unsigned int flags)
 {
     *(int*)this = (int)&vftable_ImageSpaceShaderHDRDownSample9;
@@ -158,6 +165,7 @@ struct Candidate : ImageSpaceShaderHDRVariantFour
 };
 // Sets two vtable pointers, calls FUN_00c03a20, and if flags bit 0 is set frees this with size 0xd0; returns this.
 // @fnv 0x00b902f0
+// pdb: ImageSpaceShaderHDRBlendInShaderCinematic::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* Candidate::FUN_00b902f0(unsigned int flags)
 {
     *reinterpret_cast<void**>(this) = &DAT_010b37a8;
@@ -205,6 +213,7 @@ struct Target
     Target* FUN_00b90670(unsigned int flags);
 };
 // @fnv 0x00b90670
+// pdb: ImageSpaceShaderHDRBlur::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 Target* Target::FUN_00b90670(unsigned int flags)
 {
     table = &DAT_010b3af0;
@@ -254,6 +263,7 @@ struct FUN_00b91300_cls
 };
 
 // @fnv 0x00b91300
+// pdb: ImageSpaceShaderHDRDownSample4LumClamp::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 FUN_00b91300_cls* FUN_00b91300_cls::FUN_00b91300(unsigned int flags)
 {
     table = reinterpret_cast<void*>(&DAT_010b47a0);
@@ -586,6 +596,7 @@ struct FUN_00b90ca0 : FUN_00b90ca0_Base
 };
 
 // @fnv 0x00b90ca0
+// pdb: ImageSpaceShaderHDRDownSample4::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 FUN_00b90ca0::~FUN_00b90ca0()
 {}
 
@@ -756,6 +767,7 @@ struct FUN_00b90fc0 : FUN_00b90fc0_Base
 };
 
 // @fnv 0x00b90fc0
+// pdb: ImageSpaceShaderHDRLumClamp::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 FUN_00b90fc0::~FUN_00b90fc0()
 {}
 
@@ -855,6 +867,7 @@ class FUN_00b91160 : public B91160Primary, public B91160Secondary
 {
     // The constructor body is empty.
 // @fnv 0x00b91160
+// pdb: ImageSpaceShaderHDRDownSample4LightAdapt::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
   public:
     FUN_00b91160()
     {}

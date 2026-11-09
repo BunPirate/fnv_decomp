@@ -7,6 +7,7 @@ class EffectVirt;
 class RBodyAccess;
 class TESObjectREFR;
 
+// pdb: class ReanimateEffect, size 0x70, bases: ActiveEffect, 5 members
 class ReanimateEffect : public ActiveEffect
 {
 public:
@@ -40,12 +41,12 @@ public:
         int m_4c;
         int unk4c;
     };
-    float m_50;
-    unsigned char m_54[12];
-    unsigned char m_60[16];
+    float fSaveTime;
+    unsigned char StartPos[12];
+    unsigned char StartRot[16];
 
-    ReanimateEffect(MagicCaster* a, MagicItem* b, EffectItem* c);
-    void UpdateReanimation(Actor* actor);
+    ReanimateEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect);
+    void UpdateReanimation(Actor* apActor);
     void StartReanimation();
 
     unsigned short __thiscall FUN_00804f80(Actor* apActor);
@@ -56,5 +57,5 @@ public:
     ActiveEffect* Copy_008266a0();
     void __thiscall Finish_00827230();
     void FUN_00805760(Actor* actor);
-    bool __thiscall CheckTarget_00827340(TESObjectREFR* apRef);
+    bool __thiscall CheckTarget_00827340(TESObjectREFR* apTarget);
 };

@@ -27,13 +27,13 @@ public:
 
 extern "C"
 {
-    extern const void* g_011f4100;
+    extern const void* NiGeomMorpherUpdateTask_ms_RTTI;
 }
 
 // @fnv 0x00a56c00
 const NiRTTI* NiGeomMorpherUpdateTask::GetRTTI() const
 {
-    return reinterpret_cast<const NiRTTI*>(&g_011f4100);
+    return reinterpret_cast<const NiRTTI*>(&NiGeomMorpherUpdateTask_ms_RTTI);
 }
 
 extern int DAT_011a9414;
@@ -112,10 +112,11 @@ struct MorphController
 };
 // If the global flag is clear and the geometry's reference count exceeds one, calls MorphFunc on the morph controller, then releases the task.
 // @fnv 0x00a56bb0
+// pdb: NiAlphaController::`scalar deleting destructor' | NiAlphaController.obj | debug, object-file run extension, low
 void NiGeomMorpherUpdateTask::vf35()
 {
-    if (!DAT_011f5b08 && m_spReferencedObject->m_ref > 1)
-        m_pkMorphController->MorphFunc();
+    if (!DAT_011f5b08 && m_spTarget->m_ref > 1)
+        m_spMorphController->MorphFunc();
     vf37();
 }
 
@@ -130,13 +131,13 @@ extern int DAT_01069674;
 void __fastcall ReleaseMorpherRefObjects(NiGeomMorpherUpdateTask* task, void*)
 {
     int(__stdcall * f)(void*) = DAT_00fdf1c4;
-    NiRefObject* p = reinterpret_cast<NiRefObject*>(task->m_spReferencedObject);
+    NiRefObject* p = reinterpret_cast<NiRefObject*>(task->m_spTarget);
     if (p)
     {
         if (f(&p->m_uiRefCount) == 0)
             p->DeleteThis();
     }
-    p = reinterpret_cast<NiRefObject*>(task->m_pkMorphController);
+    p = reinterpret_cast<NiRefObject*>(task->m_spMorphController);
     if (p)
     {
         if (f(&p->m_uiRefCount) == 0)
@@ -152,7 +153,7 @@ extern int(__stdcall* DAT_00fdf1c0)(void*);
 void __fastcall SetMorpherRefObjects(NiGeomMorpherUpdateTask* task, void*, NiRefObject* nextFirst, NiRefObject* nextSecond)
 {
     int(__stdcall * decrement)(void*) = DAT_00fdf1c4;
-    NiRefObject* previous = reinterpret_cast<NiRefObject*>(task->m_pkMorphController);
+    NiRefObject* previous = reinterpret_cast<NiRefObject*>(task->m_spMorphController);
     if (previous != nextFirst)
     {
         if (previous != 0)
@@ -160,12 +161,12 @@ void __fastcall SetMorpherRefObjects(NiGeomMorpherUpdateTask* task, void*, NiRef
             if (decrement(&previous->m_uiRefCount) == 0)
                 previous->DeleteThis();
         }
-        task->m_pkMorphController = reinterpret_cast<MorphController*>(nextFirst);
+        task->m_spMorphController = reinterpret_cast<MorphController*>(nextFirst);
         if (nextFirst != 0)
             DAT_00fdf1c0(&nextFirst->m_uiRefCount);
     }
 
-    previous = reinterpret_cast<NiRefObject*>(task->m_spReferencedObject);
+    previous = reinterpret_cast<NiRefObject*>(task->m_spTarget);
     if (previous != nextSecond)
     {
         if (previous != 0)
@@ -173,7 +174,7 @@ void __fastcall SetMorpherRefObjects(NiGeomMorpherUpdateTask* task, void*, NiRef
             if (decrement(&previous->m_uiRefCount) == 0)
                 previous->DeleteThis();
         }
-        task->m_spReferencedObject = reinterpret_cast<FakeGeo*>(nextSecond);
+        task->m_spTarget = reinterpret_cast<FakeGeo*>(nextSecond);
         if (nextSecond != 0)
             DAT_00fdf1c0(&nextSecond->m_uiRefCount);
     }
@@ -196,12 +197,12 @@ NiGeomMorpherUpdateTask* __fastcall DestroyMorpherUpdateTask(NiGeomMorpherUpdate
             do
             {
                 p = (NiGeomMorpherUpdateTask*)((char*)p - sizeof(NiGeomMorpherUpdateTask));
-                NiRefObject* a = reinterpret_cast<NiRefObject*>(p->m_spReferencedObject);
+                NiRefObject* a = reinterpret_cast<NiRefObject*>(p->m_spTarget);
                 if (a != 0 && DAT_00fdf1c4(&a->m_uiRefCount) == 0)
                 {
                     a->DeleteThis();
                 }
-                NiRefObject* b = reinterpret_cast<NiRefObject*>(p->m_pkMorphController);
+                NiRefObject* b = reinterpret_cast<NiRefObject*>(p->m_spMorphController);
                 if (b != 0 && DAT_00fdf1c4(&b->m_uiRefCount) == 0)
                 {
                     b->DeleteThis();
@@ -229,7 +230,7 @@ NiGeomMorpherUpdateTask* __fastcall DestroyMorpherUpdateTask(NiGeomMorpherUpdate
 class A56DF0Heap
 {
   public:
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 
 extern A56DF0Heap g_kA56DF0Heap;
@@ -288,19 +289,19 @@ struct MorpherTaskList
 bool NiGeomMorpherUpdateTask::vf37()
 {
     int(__stdcall * dec)(void*) = DAT_00fdf1c4;
-    NiRefObject* a = reinterpret_cast<NiRefObject*>(m_pkMorphController);
+    NiRefObject* a = reinterpret_cast<NiRefObject*>(m_spMorphController);
     if (a)
     {
         if (!dec(&a->m_uiRefCount))
             a->DeleteThis();
-        m_pkMorphController = 0;
+        m_spMorphController = 0;
     }
-    NiRefObject* b = reinterpret_cast<NiRefObject*>(m_spReferencedObject);
+    NiRefObject* b = reinterpret_cast<NiRefObject*>(m_spTarget);
     if (b)
     {
         if (!dec(&b->m_uiRefCount))
             b->DeleteThis();
-        m_spReferencedObject = 0;
+        m_spTarget = 0;
     }
     EnterCriticalSection(&DAT_011f4180);
     NiGeomMorpherUpdateTask* self = this;

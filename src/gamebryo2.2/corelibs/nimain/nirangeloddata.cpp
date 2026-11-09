@@ -33,6 +33,9 @@ GlobalObjectO2_00a7b610* __cdecl NiRangeLODData_GetRTTI()
 extern "C" void* __cdecl _memmove(void* dst, const void* src, unsigned int size);
 
 // @fnv 0x00a97ba0
+// pdb: NiRangeLODData::CopyMembers | NiRangeLODData.obj | retail, object-file run extension, low
+// pdb params: pkDest, kCloning
+// pdb locals: uiDestSize
 void NiRangeLODData::CopyTo(NiRangeLODData* pkDest, CloningProcess* kCloning)
 {
     pkDest->m_kCenter = this->m_kCenter;
@@ -129,6 +132,8 @@ struct Base00aa09a0
 extern int DAT_010a073c;
 extern NiPoint3 _NiPoint3_ZERO;
 // @fnv 0x00a97c00
+// pdb: NiRangeLODData::CreateObject | NiRangeLODData.obj | retail, object-file run extension, low
+// pdb locals: pkObject
 NiRangeLODData* CreateRangeLODData()
 {
     NiRangeLODData* p = (NiRangeLODData*)BSFadeNode::operator new(0x28);
@@ -145,6 +150,8 @@ NiRangeLODData* CreateRangeLODData()
 }
 
 // @fnv 0x00a97c50
+// pdb: NiRangeLODData::Duplicate | NiRangeLODData.obj | retail, object-file run extension, low
+// pdb locals: pkData, uiDestSize
 NiRangeLODData* __fastcall CopyRangeLODData(NiRangeLODData* self, int)
 {
     NiRangeLODData* pkData = (NiRangeLODData*)BSFadeNode::operator new(0x28);
@@ -167,6 +174,9 @@ NiRangeLODData* __fastcall CopyRangeLODData(NiRangeLODData* self, int)
 const float DAT_01015f5c = -3.402823466e+38F;
 const float DAT_010a0730 = 3.402823466e+38F;
 // @fnv 0x00a979e0
+// pdb: NiRangeLODData::GetLODIndex | NiRangeLODData.obj | retail, object-file run extension, low
+// pdb params: iLODLevel
+// pdb locals: iLastIndex, fMinDistance, iLLoop, fMinNear, iRLoop
 int __fastcall SelectLODRange(NiRangeLODData* self, int, int rank)
 {
     if (rank <= 0)
@@ -198,6 +208,9 @@ inline NiRangeLODData::NiRangeLODData() throw() : m_kCenter(g_kA97CE0Zero), m_ui
 
 // @fnv 0x00a97ce0
 // src: XBOX_PDB 0x00a97ce0
+// pdb: NiRangeLODData::CreateClone | NiRangeLODData.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiRangeLODData::CreateClone_00a97ce0(CloningProcess& kCloning)
 {
     NiRangeLODData* pkClone = new NiRangeLODData;
@@ -411,6 +424,10 @@ class A97E20LODData
 };
 
 // @fnv 0x00a97e20
+// pdb: NiRangeLODData::LoadBinary | NiRangeLODData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiRangeLODData::SaveBinary
+// pdb params: kStream
+// pdb locals: uiRanges, i
 void __fastcall LoadRangeLODData(NiRangeLODData* self, int, A97E20Stream& kStream)
 {
     ((A97E20LODData*)self)->LoadBinary(kStream);
@@ -426,6 +443,7 @@ void __fastcall LoadRangeLODData(NiRangeLODData* self, int, A97E20Stream& kStrea
 }
 
 // @fnv 0x00aa09a0
+// pdb: NiLODData::NiLODData | NiLODData.obj | retail, upstream name already matches, high
 __declspec(noinline) NiLODData::NiLODData()
 {}
 
@@ -628,6 +646,9 @@ class D60Base
 
 // Saves the base data, color, key count and each key's time and value to the stream.
 // @fnv 0x00a97d60
+// pdb: NiRangeLODData::SaveBinary | NiRangeLODData.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: i
 void RangeLODDataOperations::SaveRanges(D60Stream& kStream)
 {
     ((D60Base*)this)->SaveBinary(kStream);
@@ -696,6 +717,9 @@ int A97EF0Sprintf(char* buf, unsigned int size, const char* fmt, ...);
 
 // Appends formatted strings for m_kCenter, m_kWorldCenter, and each range entry to pkStrings.
 // @fnv 0x00a97ef0
+// pdb: NiRangeLODData::GetViewerStrings | NiRangeLODData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: i, pcString
 void __fastcall GetRangeLODDataViewerStrings(NiRangeLODData* self, int, A97EF0Strings* pkStrings)
 {
     pkStrings->Add(A97EF0GetViewerString(DAT_011f5ef8));
@@ -887,6 +911,9 @@ struct S_P3
 };
 // Computes a scaled absolute dot product and returns the first index whose lower bound is at most it and upper bound is greater.
 // @fnv 0x00a97910
+// pdb: NiRangeLODData::SetNumRanges | NiRangeLODData.obj | retail, object-file run extension, low
+// pdb params: uiNumRanges
+// pdb locals: pkNewRanges, uiDestSize
 int __fastcall FindRangeIndex(NiRangeLODData* self, int, S_00a97910_Object* object, float unused)
 {
     S_P3 vOffset;

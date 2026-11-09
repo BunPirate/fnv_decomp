@@ -10,6 +10,7 @@ class ObstacleSource;
 class bhkRigidBody;
 class NavMeshInfo;
 
+// pdb: class ObstacleData, size 0xa0 (here 0x8c), bases: NiRefObject, 12 members
 class ObstacleData : public NiRefObject
 {
   public:

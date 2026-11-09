@@ -11,16 +11,17 @@ class BGSSaveFormBuffer;
 class BGSLoadFormBuffer;
 template <class T> class BSSimpleList;
 
+// pdb: class ScriptLocals, size 0x14, 5 members
 class ScriptLocals
 {
 public:
-    Script* m_pOwnerScript;
-    char m_cActionFlags;
+    Script* m_pMasterScript;
+    char m_cFlags;
     unsigned char layoutPadding5;
     unsigned short layoutPadding6;
-    BSSimpleList<FormFlagRecord*>* m_pLocalVariableList;
-    BSSimpleList<ScriptLocalVariable*>* m_pVariableList;
-    ScriptDefinition* m_pExtendedLocals;
+    BSSimpleList<FormFlagRecord*>* m_pActionList;
+    BSSimpleList<ScriptLocalVariable*>* m_pLocalList;
+    ScriptDefinition* m_pScriptEffectData;
 
     ScriptLocals();
     ~ScriptLocals();
@@ -34,7 +35,7 @@ public:
     void ClearActionFlagsForForm(TESForm*);
     bool CheckActionFlag(TESForm*, unsigned int);
     FormFlagRecord* GetActionEntry(TESForm*, bool);
-    TESBoundObject* GetActionEntry();
+    TESBoundObject* bhkWorld_GetahkpWorld();
     void Save(ScriptHeaderData*);
     void ClearActionList();
     void InitializeActionList();
@@ -45,7 +46,7 @@ public:
     double GetVariable(unsigned int, Script*);
     BSSimpleList<ScriptLocalVariable*>* GetLocalList();
     bool IsReferenceVariable(unsigned int);
-    unsigned short GetSaveSize();
+    unsigned short ScriptLocals_GetSaveSize();
     void SaveGame(BGSSaveFormBuffer*);
     void SaveGame();
     void LoadGame(BGSLoadFormBuffer*);
@@ -54,6 +55,6 @@ public:
     void Revert();
     static void ProcessPendingTasks();
     FormFlagRecord* ScriptLocals_GetActionObject(ScriptLocals* locals, bool create);
-    bool SetActionFlag(TESForm* form, unsigned int flag);
+    bool SetActionFlag(TESForm* apActionForm, unsigned int aiFlag);
     void FUN_005a85c0();
 };

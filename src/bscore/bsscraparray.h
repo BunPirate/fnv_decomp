@@ -4,6 +4,8 @@
 #include "bsscraparray_decls.h"
 template <>
 // @fnv 0x0087d1b0
+// pdb: BSSimpleArray<ActorHavokSyncData,1024>::operator[] | TaskQueueInterface.obj | debug, object-file run extension, low
+// pdb params: aiIndex
 ScrapArrayWithBase<NiPointer<NiAVObject>, 1024>::ScrapArrayWithBase()
 {
 
@@ -12,6 +14,7 @@ ScrapArrayWithBase<NiPointer<NiAVObject>, 1024>::ScrapArrayWithBase()
 }
 template <>
 // @fnv 0x009789e0
+// pdb: BSScrapArray<Actor *,1024>::BSScrapArray<Actor *,1024> | ProcessLists.obj | retail, object-file run extension, low
 ScrapArrayWithBase<Animation*, 1024>::ScrapArrayWithBase()
 {
 

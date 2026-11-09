@@ -30,6 +30,7 @@ GETHIT_STATIC_ASSERT(offsetof(GetHitEffectParamLocalForm, m_ppVirtualMethodTable
 GETHIT_STATIC_ASSERT(offsetof(GetHitEffectParamLocalForm, m_kTextureTypes) == 4);
 GETHIT_STATIC_ASSERT(offsetof(GetHitEffectParamLocalForm, m_kFilterModes) == 20);
 #pragma pack(push, 4)
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public GetHitEffectParamLocalForm
 {
   public:

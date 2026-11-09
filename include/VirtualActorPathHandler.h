@@ -12,6 +12,7 @@ class PathingRequest;
 class PathingSolution;
 template <class T> class NiPointer;
 
+// pdb: class VirtualActorPathHandler, size 0x20, bases: ActorPathHandler, 3 members
 class VirtualActorPathHandler : public ActorPathHandler
 {
 public:
@@ -22,7 +23,7 @@ public:
     void SetInitialPathState();
     void LoadGame(BGSLoadFormBuffer*);
     int Init(float, float);
-    int GetVirtualNodeIndexAtPosition(NiPoint3&);
+    int UseDoorAtNode(NiPoint3&);
     virtual bool GetPathingDelta(NiPoint3* delta);
     int UpdatePathMovement(float);
     float GetDistanceRemaining_009eb070();
@@ -36,6 +37,6 @@ public:
     bool GetPointAtIndex(unsigned int, NiPoint3*);
 
     unsigned int m_uiPathPointIndex;
-    float m_fPathValue16;
-    float m_fPathValue2;
+    float fDistanceTraveled;
+    float fPathLength;
 };

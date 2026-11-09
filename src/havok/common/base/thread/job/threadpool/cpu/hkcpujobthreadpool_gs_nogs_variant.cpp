@@ -13,9 +13,9 @@ struct FUN_00d2ced0
 };
 struct FUN_00d2d330_shell
 {
-    void InitializeWorkerThread();
+    void hkCpuJobThreadPool_addThread();
     void hkCpuJobThreadPool_removeThread();
-    void hkCpuJobThreadPool_setNumThreads(int desired);
+    void hkCpuJobThreadPool_setNumThreads(int numThreads);
 };
 struct FUN_00d2ce30_shell
 {
@@ -107,7 +107,7 @@ class OwnerD2CD
     int unk134[2];
     hkBool m_13C;
 
-    void hkCpuJobThreadPool_processAllJobs(int value, int unused);
+    void hkCpuJobThreadPool_processAllJobs(int queue, int firstJobType_unused);
 };
 extern char DAT_010ce774;
 extern char DAT_0102e388;
@@ -176,24 +176,27 @@ struct Thr_00d87940
     unsigned int m4;
     unsigned int m8;
     unsigned int mC;
-    int hkThread_startThread(unsigned long a0, unsigned long a1, const char* a2, unsigned long a3);
+    int hkThread_startThread(unsigned long func, unsigned long arg, const char* name, unsigned long stackSize);
 };
 
 // @fnv 0x00d87940
 // src: HAVOK_LIB 0x00d87940
-int Thr_00d87940::hkThread_startThread(unsigned long a0, unsigned long a1, const char* a2, unsigned long a3)
+// pdb: hkThread::startThread | hkWin32Thread.obj | retail, upstream name already matches, high
+// pdb params: func, arg, name, stackSize
+// pdb locals: tempThreadId, info
+int Thr_00d87940::hkThread_startThread(unsigned long func, unsigned long arg, const char* name, unsigned long stackSize)
 {
-    m0 = (unsigned int)CreateThread(0, a3, (unsigned long(__stdcall*)(void*))a0, (void*)a1, 0, &a1);
+    m0 = (unsigned int)CreateThread(0, stackSize, (unsigned long(__stdcall*)(void*))func, (void*)arg, 0, &arg);
     if (m0 == 0)
     {
         return 1;
     }
-    m8 = a1;
+    m8 = arg;
     mC = 0;
     THREADNAME_INFO info;
     info.dwType = 0x1000;
-    info.szName = a2;
-    info.dwThreadID = a1;
+    info.szName = name;
+    info.dwThreadID = arg;
     info.dwFlags = 0;
     __try
     {

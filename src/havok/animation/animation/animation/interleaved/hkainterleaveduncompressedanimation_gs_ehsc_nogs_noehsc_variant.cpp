@@ -58,9 +58,9 @@ __forceinline void hkVector4::setCross(const hkVector4& v1, const hkVector4& v2)
     m_vComponents = _mm_sub_ps(cross0, cross1);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(1, 1, 1, 1)), x2);
     return hkSimdReal(_mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(2, 2, 2, 2)), sum));
 }
@@ -119,6 +119,8 @@ class FUN_00e401d0Owner
 
 // @fnv 0x00e401d0
 // src: GUESS 0x00e401d0 (confidence: low)
+// pdb: hkaInterleavedUncompressedAnimation::transformTrack | hkaInterleavedUncompressedAnimation.obj | retail, object-file run extension, low
+// pdb params: track, transform
 void FUN_00e401d0Owner::ProcessEntries_00e401d0(int iTrack, const hkQsTransform& kTransform)
 {
     int iTransformCountPerTrack = m_iNumTransforms / m_iNumTracks;

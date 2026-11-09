@@ -58,9 +58,9 @@ struct Pt
             z = 0.0f;
         }
     }
-    Pt FUN_004b3800(const Pt& kPt) const
+    Pt FUN_004b3800(const Pt& pt) const
     {
-        return Pt(y * kPt.z - z * kPt.y, z * kPt.x - x * kPt.z, x * kPt.y - y * kPt.x);
+        return Pt(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
     }
 };
 
@@ -82,9 +82,12 @@ inline float NiAbs(float fValue)
 
 // @fnv 0x00c4b600
 // src: XBOX_PDB 0x00c4b600
-Mat3 __cdecl BSUtilities_GetRotationZToVector(Pt kWorldPosition)
+// pdb: BSUtilities::GetRotationZToVector | BSUtilities.obj | retail, upstream name already matches, high
+// pdb params: apVector
+// pdb locals: absT, R, S, krot, T
+Mat3 __cdecl BSUtilities_GetRotationZToVector(Pt apVector)
 {
-    Pt kAt = kWorldPosition;
+    Pt kAt = apVector;
     kAt.Unitize_004a0c10();
     float fX = NiAbs(kAt.x);
     float fY2 = NiAbs(kAt.y);

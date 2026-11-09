@@ -8,16 +8,17 @@
 class NiPoint3;
 class NiInterpolator;
 
+// pdb: class NiMorphData, size 0x18, bases: NiObject, 4 members
 class NiMorphData : public NiObject
 {
   public:
     class MorphTarget : public NiMemObject
     {
       public:
-        NiPoint3* m_pkVertexPositions;
+        NiPoint3* m_aTargetVerts;
         NiFixedString m_kName;
-        float m_fMorphWeight;
-        NiPointer<NiInterpolator> m_spTargetInterpolator;
+        float m_fLegacyWeight;
+        NiPointer<NiInterpolator> m_spLegacyInterpolator;
 
         const NiFixedString& GetName();
         void SetTargetInterpolator(NiInterpolator*);
@@ -29,7 +30,7 @@ class NiMorphData : public NiObject
 
     unsigned int m_uiNumTargets;
     unsigned int m_uiNumVertsPerTarget;
-    MorphTarget* m_pMorphTargets;
-    bool m_bTargetsAreRelative;
+    MorphTarget* m_aMorphTargets;
+    bool m_bRelativeTargets;
     unsigned char m_aucPad[3];
 };

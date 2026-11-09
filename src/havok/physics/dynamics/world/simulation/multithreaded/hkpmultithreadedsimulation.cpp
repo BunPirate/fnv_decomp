@@ -39,6 +39,8 @@ struct FUN_00d04300
 };
 
 // @fnv 0x00d04300
+// pdb: hkpMultiThreadedSimulation::MtEntityEntityBroadPhaseListener::`scalar deleting destructor' | hkpMultithreadedSimulation.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00d04300::FUN_00d04300(bool del)
 {
     m_p = &DAT_010c63bc;
@@ -102,6 +104,8 @@ struct S_00d02020_Handle
 // For each handle in the pair whose m_type is 2, calls v24 on the owner's owner with the other handle's owner as argument.
 // @fnv 0x00d02020
 // src: XBOX_PDB 0x00d02020
+// pdb: hkpMultiThreadedSimulation::MtPhantomBroadPhaseListener::removeCollisionPair | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high
+// pdb params: pair
 void __stdcall hkpMultiThreadedSimulation_MtPhantomBroadPhaseListener_removeCollisionPair(Pair* pair)
 {
     if (((S_00d02020_Handle*)pair->a)->m_type == 2)
@@ -344,6 +348,8 @@ struct FUN_00d02c80 : FUN_00d0d020
     FUN_00d02c80(World*);
 };
 // @fnv 0x00d02c80
+// pdb: hkpMultiThreadedSimulation::hkpMultiThreadedSimulation | hkpMultithreadedSimulation.obj | retail, object-file gap fill, high
+// pdb params: world
 FUN_00d02c80::FUN_00d02c80(World* world)
     : FUN_00d0d020(world), firstLock(4000), secondLock(4000), queueLock(4000), workLock(4000)
 {
@@ -423,25 +429,27 @@ struct SubNode
 // For each handle in the pair whose type is 2, resolves its node and calls v07 on the target with the other handle's adjusted pointer.
 // @fnv 0x00d01fc0
 // src: XBOX_PDB 0x00d01fc0
-void __stdcall hkpMultiThreadedSimulation_MtPhantomBroadPhaseListener_addCollisionPair(HandlePair* pHandlePair)
+// pdb: hkpMultiThreadedSimulation::MtPhantomBroadPhaseListener::addCollisionPair | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high
+// pdb params: pair
+void __stdcall hkpMultiThreadedSimulation_MtPhantomBroadPhaseListener_addCollisionPair(HandlePair* pair)
 {
-    Handle* h = pHandlePair->first;
+    Handle* h = pair->first;
     if (h->type == 2)
     {
         // the sub node of the first handle and the object behind it
         char* node = (char*)h + h->off;
-        Handle* other = pHandlePair->second;
+        Handle* other = pair->second;
         HandleTarget* target = (HandleTarget*)(node + ((SubNode*)node)->off10);
         // the second handle is passed on, offset by its own byte offset
         target->v07((Handle*)((char*)other + other->off));
     }
 
-    Handle* h2 = pHandlePair->second;
+    Handle* h2 = pair->second;
     if (h2->type == 2)
     {
         // the sub node of the second handle and the object behind it
         char* node = (char*)h2 + h2->off;
-        Handle* other = pHandlePair->first;
+        Handle* other = pair->first;
         HandleTarget* target = (HandleTarget*)(node + ((SubNode*)node)->off10);
         // the first handle is passed on, offset by its own byte offset
         target->v07((Handle*)((char*)other + other->off));
@@ -450,11 +458,13 @@ void __stdcall hkpMultiThreadedSimulation_MtPhantomBroadPhaseListener_addCollisi
 
 // @fnv 0x00d02160
 // src: HAVOK_LIB 0x00d02160
-bool pairLessThan(int* apPairA, int* apPairB)
+// pdb: pairLessThan | hkpMultithreadedSimulation.obj | debug, upstream name already matches, high
+// pdb params: A, B
+bool pairLessThan(int* A, int* B)
 {
-    char* p1 = (char*)*apPairA;
+    char* p1 = (char*)*A;
     char* b1 = p1 + p1[5];
-    char* p2 = (char*)*apPairB;
+    char* p2 = (char*)*B;
     char* b2 = p2 + p2[5];
     int v1 = *(int*)(b1 + b1[0x10] + 0xd4);
     int iValueB = *(int*)(b2 + b2[0x10] + 0xd4);
@@ -462,10 +472,10 @@ bool pairLessThan(int* apPairA, int* apPairB)
         return true;
     if (v1 == iValueB)
     {
-        char* q1 = (char*)apPairA[1];
+        char* q1 = (char*)A[1];
         char* c1 = q1 + q1[5];
         int iValueA2 = *(int*)(c1 + c1[0x10] + 0xd4);
-        char* q2 = (char*)apPairB[1];
+        char* q2 = (char*)B[1];
         char* c2 = q2 + q2[5];
         int iValueB2 = *(int*)(c2 + c2[0x10] + 0xd4);
         return iValueA2 < iValueB2;
@@ -487,23 +497,25 @@ struct PairArray
 };
 
 char* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, PairArray* arr, int elemSize);
-void __cdecl hkpWorldAgentUtil_addAgent(char* a, char* b, char* c);
+void __cdecl ResizeAudioStream(void* mem, PairArray* array, int sizeElem);
+void __cdecl hkpWorldAgentUtil_addAgent(char* collA, char* collB, char* input);
 
 struct FUN_00d026e0_cls
 {
     int unk00;
     char* m_04;
-    void ProcessPair(int* pr);
+    void ProcessPair(int* pair);
 };
 
 // Resolves two records from pr, and either appends the pair to the array at world+0x6c or updates sub+0x14 and calls FUN_00cc0f40 based on a grid lookup.
 // @fnv 0x00d026e0
-void FUN_00d026e0_cls::ProcessPair(int* aiPair)
+// pdb: hkpMultiThreadedSimulation::MtEntityEntityBroadPhaseListener::addCollisionPair | hkpMultithreadedSimulation.obj | retail, vtable slot, high
+// pdb params: pair
+void FUN_00d026e0_cls::ProcessPair(int* pair)
 {
-    int a = aiPair[0];
+    int a = pair[0];
     int x = a + *(signed char*)(a + 5);
-    int b = aiPair[1];
+    int b = pair[1];
     int y = b + *(signed char*)(b + 5);
     int x2 = x + *(signed char*)(x + 0x10);
     int y2 = y + *(signed char*)(y + 0x10);
@@ -522,8 +534,8 @@ void FUN_00d026e0_cls::ProcessPair(int* aiPair)
         PairEntry* slot = arr->m_data + arr->m_iElementCount;
         if (slot != 0)
         {
-            slot->first = aiPair[0];
-            slot->second = aiPair[1];
+            slot->first = pair[0];
+            slot->second = pair[1];
         }
         arr->m_iElementCount++;
         return;
@@ -558,7 +570,7 @@ struct PairList
 };
 
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* allocator, PairList* list, unsigned int elemSize);
+void ResizeAudioStream(void* mem, PairList* array, unsigned int sizeElem);
 char* FindEntryValue(char* a, char* b);
 void hkpWorldAgentUtil_removeAgent(char* p);
 
@@ -567,14 +579,16 @@ struct FUN_00d027c0_cls
     int unk00;
     char* m_pSharedOwner;
 
-    void ProcessPairEntry(PairEntry* entry);
+    void ProcessPairEntry(PairEntry* pair);
 };
 
 // @fnv 0x00d027c0
-void FUN_00d027c0_cls::ProcessPairEntry(PairEntry* entry)
+// pdb: hkpMultiThreadedSimulation::MtEntityEntityBroadPhaseListener::removeCollisionPair | hkpMultithreadedSimulation.obj | retail, vtable slot, high
+// pdb params: pair
+void FUN_00d027c0_cls::ProcessPairEntry(PairEntry* pair)
 {
-    char* a = (char*)entry->m_pHeadNode;
-    char* b = (char*)entry->m_iSecondInteger;
+    char* a = (char*)pair->m_pHeadNode;
+    char* b = (char*)pair->m_iSecondInteger;
     char* pFirstRec = a + (signed char)a[5];
     char* pSecondRec = b + (signed char)b[5];
     char* na = pFirstRec + (signed char)pFirstRec[0x10];
@@ -593,8 +607,8 @@ void FUN_00d027c0_cls::ProcessPairEntry(PairEntry* entry)
             PairEntry* slot = &list->m_data[list->m_uiItemCount];
             if (slot != 0)
             {
-                slot->m_pHeadNode = entry->m_pHeadNode;
-                slot->m_iSecondInteger = entry->m_iSecondInteger;
+                slot->m_pHeadNode = pair->m_pHeadNode;
+                slot->m_iSecondInteger = pair->m_iSecondInteger;
             }
             list->m_uiItemCount++;
             return;
@@ -634,7 +648,7 @@ inline HkMemRouter& GetMemRouter()
 {
     return *hkMemoryRouter_getInstance()->m10;
 }
-void* __cdecl AllocateBlockHeader(int count, int blockSize);
+void* __cdecl hkpAgentSectorHeader_allocate(int numTasks, int numAgentNnEntriesPerTask);
 
 struct HkFloatHolder
 {
@@ -897,7 +911,7 @@ struct HkCollector
     int* unk11c;
 };
 
-void __cdecl AccumulateShapes(HkCollector* c, int flags, HkInput2* in);
+void __cdecl hkCpuPostCollideJob(HkCollector* tl, int jobQueue, HkInput2* nextJobOut);
 
 struct HkDispatcher
 {
@@ -957,51 +971,54 @@ struct HkProcessor
     int unkbc;
     HkDispatcher* dispatcher;
 
-    void hkpContinuousSimulation_processAgentNnEntries(int* data, int n, HkSource* src, HkParam* param, char flag);
-    void hkpMultiThreadedSimulation_processAgentNnEntries(int* data, int n, HkSource* src, HkParam* param, char flag);
+    void hkpContinuousSimulation_processAgentNnEntries(int* entries, int numEntries, HkSource* collisionInput, HkParam* island, char forceManifoldQualityType);
+    void hkpMultiThreadedSimulation_processAgentNnEntries(int* entries, int numEntries, HkSource* collisionInput, HkParam* island, char forceManifoldQualityType);
 };
 
 // @fnv 0x00d03030
 // src: XBOX_PDB 0x00d03030
-void HkProcessor::hkpMultiThreadedSimulation_processAgentNnEntries(int* paiData, int aiCount, HkSource* pSource, HkParam* param, char flag)
+// pdb: hkpMultiThreadedSimulation::processAgentNnEntries | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high
+// pdb params: entries, numEntries, collisionInput, island, forceManifoldQualityType
+// pdb locals: agentEntryJob, assertBuf, ostr, postCollideJob, tl
+void HkProcessor::hkpMultiThreadedSimulation_processAgentNnEntries(int* entries, int numEntries, HkSource* collisionInput, HkParam* island, char forceManifoldQualityType)
 {
-    if (dispatcher == 0 || aiCount <= world->unkec)
+    if (dispatcher == 0 || numEntries <= world->unkec)
     {
-        hkpContinuousSimulation_processAgentNnEntries(paiData, aiCount, pSource, param, flag);
+        hkpContinuousSimulation_processAgentNnEntries(entries, numEntries, collisionInput, island, forceManifoldQualityType);
         return;
     }
 
     int perBlock = world->unke8;
-    int capacity = aiCount | 0x80000000;
+    int capacity = numEntries | 0x80000000;
 
     HkInput in;
     in.unk04 = 0x50;
     in.unk06 = -1;
     in.unk14 = 0;
     in.unk18 = 0;
-    in.unk30 = pSource->unk50;
+    in.unk30 = collisionInput->unk50;
     in.unk10 = 0;
     in.unk24 = 0;
     in.unk20 = 0;
     in.unk00 = 0xf;
     in.unk02 = 1;
-    in.unk2c = (int)paiData;
-    in.unk40 = flag;
-    in.unk28 = (short)aiCount;
+    in.unk2c = (int)entries;
+    in.unk40 = forceManifoldQualityType;
+    in.unk28 = (short)numEntries;
     in.unk2a = (short)perBlock;
     in.unk01 = 1;
     in.unk1c = world->unk74;
 
-    if (aiCount > 0)
+    if (numEntries > 0)
     {
-        in.unk20 = AllocateBlockHeader((aiCount - 1) / perBlock + 1, perBlock);
-        in.unk10 = param->unk20;
+        in.unk20 = hkpAgentSectorHeader_allocate((numEntries - 1) / perBlock + 1, perBlock);
+        in.unk10 = island->unk20;
         in.unk02 = 2;
         dispatcher->AddObjectCopy(&in, 1);
     }
     dispatcher->hkJobQueue_processAllJobs();
 
-    if (aiCount > 0)
+    if (numEntries > 0)
     {
         HkInput2 input2;
         input2.unk04 = 0x30;
@@ -1011,7 +1028,7 @@ void HkProcessor::hkpMultiThreadedSimulation_processAgentNnEntries(int* paiData,
         input2.unk10 = in.unk10;
         input2.unk01 = 0;
         input2.unk20 = in.unk20;
-        input2.unk14 = param;
+        input2.unk14 = island;
         input2.unk00 = 0xe;
         input2.unk02 = 2;
 
@@ -1025,7 +1042,7 @@ void HkProcessor::hkpMultiThreadedSimulation_processAgentNnEntries(int* paiData,
         collector.unk118 = world->unk78->unk8;
         collector.unk11c = &DAT_01269210;
         collector.world = world;
-        AccumulateShapes(&collector, 0, &input2);
+        hkCpuPostCollideJob(&collector, 0, &input2);
         if (collector.sub2.unk64)
         {
             HkMemHolder* h = hkMemoryRouter_getInstance();
@@ -1037,7 +1054,7 @@ void HkProcessor::hkpMultiThreadedSimulation_processAgentNnEntries(int* paiData,
     HkMemRouter* pMemRouter = holder->m10;
     if ((capacity & 0x80000000) == 0)
     {
-        pMemRouter->freeSized(paiData, (capacity & 0x3fffffff) * 4);
+        pMemRouter->freeSized(entries, (capacity & 0x3fffffff) * 4);
     }
 }
 }  // namespace fnv_00d03030
@@ -1052,6 +1069,10 @@ typedef bool(__cdecl* SortPairLess)(const SortPair8* lhs, const SortPair8* rhs);
 
 // Sorts arr[lo..hi] in place with a Hoare-style quicksort using cmp, recursing on the left part and looping on the right.
 // @fnv 0x00d04200
+// pdb: hkAlgorithm::quickSortRecursive<hkpTypedBroadPhaseHandlePair,bool (__cdecl*)(hkpTypedBroadPhaseHandlePair const &,hkpTypedBroadPhaseHandlePair const &)> | hkpMultithreadedSimulation.obj | retail, call graph, low
+// pdb note: debug build links it to hkAlgorithm::quickSortRecursive<hkpLinkedCollidable::CollisionEntry,bool (__cdecl*)(hkpLinkedCollidable::CollisionEntry const &,hkpLinkedCollidable::CollisionEntry const &)>
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str
 void __cdecl QuickSortPairs(SortPair8* apPairs, int lo, int hi, SortPairLess apLess)
 {
     int i;
@@ -1127,6 +1148,7 @@ struct CpuObject
 };
 // Calls FUN_00d02da0, then if bit 0 of flags is set, invokes the allocator from FUN_00c85750 on this with size, and returns this.
 // @fnv 0x00d04320
+// pdb: hkpMultiThreadedSimulation::`scalar deleting destructor' | hkpMultithreadedSimulation.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00d04320(unsigned int flags)
 {
     FUN_00d02da0();
@@ -1144,6 +1166,8 @@ CpuObject* CpuObject::FUN_00d04320(unsigned int flags)
 // For each pair member of type 3, calls v24 on the other member's owner's owner, passing the non-phantom member's owner.
 // @fnv 0x00d020f0
 // src: XBOX_PDB 0x00d020f0
+// pdb: hkpMultiThreadedSimulation::MtBroadPhaseBorderListener::removeCollisionPair | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high
+// pdb params: pair
 void __stdcall hkpMultiThreadedSimulation_MtBroadPhaseBorderListener_removeCollisionPair(Pair* pair)
 {
     if (((S_00d02020_Handle*)pair->a)->m_type == 3 && ((S_00d02020_Handle*)pair->b)->m_type == 3)
@@ -1164,12 +1188,16 @@ void __stdcall hkpMultiThreadedSimulation_MtBroadPhaseBorderListener_removeColli
 
 // @fnv 0x00d02200
 // src: COMMUNITY 0x00d02200
+// pdb: hkpMultiThreadedSimulation::assertThereIsNoCollisionInformationForAgent | hkpMultithreadedSimulation.obj | debug, vtable slot, medium
+// pdb params: agent
 void __stdcall hkpMultiThreadedSimulation_61(int)
 {}
 
 // Empty function that takes three int arguments and does nothing.
 // @fnv 0x00d02210
 // src: COMMUNITY 0x00d02210
+// pdb: hkpMultiThreadedSimulation::assertThereIsNoCollisionInformationForEntities | hkpMultithreadedSimulation.obj | debug, upstream name already matches, high
+// pdb params: entities, numEntities, world
 void __stdcall hkpMultiThreadedSimulation_assertThereIsNoCollisionInformationForEntities(int, int, int)
 {}
 
@@ -1213,19 +1241,21 @@ struct CollidableD020
 
 // Unless both collidables have type 3, calls v07 on the phantom of each type-3 collidable with the other collidable's owner.
 // @fnv 0x00d02080
-void __stdcall NotifyPhantomCollision(Pair* pkPair)
+// pdb: hkpMultiThreadedSimulation::MtBroadPhaseBorderListener::addCollisionPair | hkpMultithreadedSimulation.obj | retail, vtable slot, high
+// pdb params: pair
+void __stdcall NotifyPhantomCollision(Pair* pair)
 {
-    if (((CollidableD020*)pkPair->a)->m_cType == 3 && ((CollidableD020*)pkPair->b)->m_cType == 3)
+    if (((CollidableD020*)pair->a)->m_cType == 3 && ((CollidableD020*)pair->b)->m_cType == 3)
         return;
-    if (((CollidableD020*)pkPair->a)->m_cType == 3)
+    if (((CollidableD020*)pair->a)->m_cType == 3)
     {
-        OwnerD020* pkOther = ((CollidableD020*)pkPair->b)->GetOwner();
-        ((CollidableD020*)pkPair->a)->GetOwner()->GetPhantom()->v07(pkOther);
+        OwnerD020* pkOther = ((CollidableD020*)pair->b)->GetOwner();
+        ((CollidableD020*)pair->a)->GetOwner()->GetPhantom()->v07(pkOther);
     }
-    if (((CollidableD020*)pkPair->b)->m_cType == 3)
+    if (((CollidableD020*)pair->b)->m_cType == 3)
     {
-        PhantomD020* pkPhantom = ((CollidableD020*)pkPair->b)->GetOwner()->GetPhantom();
-        pkPhantom->v07(((CollidableD020*)pkPair->a)->GetOwner());
+        PhantomD020* pkPhantom = ((CollidableD020*)pair->b)->GetOwner()->GetPhantom();
+        pkPhantom->v07(((CollidableD020*)pair->a)->GetOwner());
     }
 }
 
@@ -1390,7 +1420,7 @@ struct ThreadState
         return *allocator;
     }
 };
-void* __cdecl AllocateBlockHeader(int, int);
+void* __cdecl hkpAgentSectorHeader_allocate(int, int);
 extern int DAT_01269210;
 struct Processor;
 struct __declspec(align(16)) ProcessingContext
@@ -1404,7 +1434,7 @@ struct __declspec(align(16)) ProcessingContext
     float delta;
     int* shared;
 };
-void __cdecl AccumulateShapes(ProcessingContext*, JobQueue*, ResultJob*);
+void __cdecl hkCpuPostCollideJob(ProcessingContext*, JobQueue*, ResultJob*);
 struct Processor
 {
     int unk00, unk04, unk08;
@@ -1417,7 +1447,7 @@ struct Processor
     int unkB0, unkB4, unkB8, unkBC;
     JobQueue* active;
 
-    void ProcessGroups(int**, int, struct Group*, int, TaskInput*, hkBool);
+    void hkpMultiThreadedSimulation_processAgentNnEntriesFromMultipleIslands(int**, int, struct Group*, int, TaskInput*, hkBool);
     void hkpContinuousSimulation_processAgentNnEntries(int**, int, TaskInput*, GroupIdentity*, hkBool);
 };
 struct Group
@@ -1429,30 +1459,34 @@ struct Group
 };
 // Processes physics groups by creating and executing BuildJobs for large batches or calling FUN_00d0c9c0 directly for small ones.
 // @fnv 0x00d02930
-void Processor::ProcessGroups(int** items, int total, Group* groups, int count, TaskInput* input, hkBool flag)
+// src: XBOX_RETAIL_PDB 0x00d02930
+// pdb: hkpMultiThreadedSimulation::processAgentNnEntriesFromMultipleIslands | hkpMultithreadedSimulation.obj | retail, object-file gap fill, high
+// pdb params: allEntries, numAllEntries, islandEntriesInfos, numInfos, collisionInput, forceManifoldQualityType
+// pdb locals: fixedIslandInfo, assertBuf, ostr, postCollideJob, tl
+void Processor::hkpMultiThreadedSimulation_processAgentNnEntriesFromMultipleIslands(int** allEntries, int numAllEntries, Group* islandEntriesInfos, int numInfos, TaskInput* collisionInput, hkBool forceManifoldQualityType)
 {
-    if (active && total > owner->threshold)
+    if (active && numAllEntries > owner->threshold)
     {
         int batch = owner->batchSize;
         Group* pSpecialGroup = 0;
         ThreadState* pThreadState = (ThreadState*)hkMemoryRouter_getInstance();
         BuildJob* jobs = (BuildJob*)pThreadState->top;
-        pThreadState->top += (count * sizeof(BuildJob) + 127) & ~127;
-        for (int i = 0; i < count; ++i)
+        pThreadState->top += (numInfos * sizeof(BuildJob) + 127) & ~127;
+        for (int i = 0; i < numInfos; ++i)
         {
-            Group* group = groups + i;
+            Group* group = islandEntriesInfos + i;
             if (group->id == owner->unk20)
             {
                 pSpecialGroup = group;
                 continue;
             }
-            int** p = items + group->start;
+            int** p = allEntries + group->start;
             int n = group->count;
-            BuildJob* job = new (jobs + i) BuildJob(p, n, input, batch, flag);
+            BuildJob* job = new (jobs + i) BuildJob(p, n, collisionInput, batch, forceManifoldQualityType);
             job->header = owner->unk74;
             if (n > 0)
             {
-                job->results = AllocateBlockHeader((n - 1) / batch + 1, batch);
+                job->results = hkpAgentSectorHeader_allocate((n - 1) / batch + 1, batch);
                 job->spu = 2;
                 job->count = group->id->count;
                 ((JobQueue*)active)->AddObjectCopy(job, 1);
@@ -1460,9 +1494,9 @@ void Processor::ProcessGroups(int** items, int total, Group* groups, int count, 
             }
         }
         ((JobQueue*)active)->hkJobQueue_processAllJobs();
-        for (int i = 0; i < count; ++i)
+        for (int i = 0; i < numInfos; ++i)
         {
-            Group* group = groups + i;
+            Group* group = islandEntriesInfos + i;
             if (group->job)
             {
                 ResultJob job(group->job);
@@ -1480,23 +1514,23 @@ void Processor::ProcessGroups(int** items, int total, Group* groups, int count, 
                 context.delta = *(float*)&world->input->unk08;
                 context.owner = world;
                 context.shared = &DAT_01269210;
-                AccumulateShapes(&context, 0, &job);
+                hkCpuPostCollideJob(&context, 0, &job);
                 if (context.input.scratch)
                     ((ThreadState*)hkMemoryRouter_getInstance())->heap().freeBlock(context.input.scratch, 512);
             }
         }
         if (pSpecialGroup)
-            hkpContinuousSimulation_processAgentNnEntries(items + pSpecialGroup->start, pSpecialGroup->count, input, pSpecialGroup->id, false);
+            hkpContinuousSimulation_processAgentNnEntries(allEntries + pSpecialGroup->start, pSpecialGroup->count, collisionInput, pSpecialGroup->id, false);
         ((ThreadState*)hkMemoryRouter_getInstance())->top = (char*)jobs;
     }
     else
     {
-        for (int i = 0; i < count; ++i)
-            hkpContinuousSimulation_processAgentNnEntries(items + groups[i].start, groups[i].count, input, groups[i].id, flag);
+        for (int i = 0; i < numInfos; ++i)
+            hkpContinuousSimulation_processAgentNnEntries(allEntries + islandEntriesInfos[i].start, islandEntriesInfos[i].count, collisionInput, islandEntriesInfos[i].id, forceManifoldQualityType);
     }
 }
 
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 extern "C" void __cdecl hkString_memSet(void* p, int v, int n);
 
 __forceinline hkMemoryRouterQ_hkpmultithreadedsimulation& getRouter()
@@ -1629,7 +1663,7 @@ struct CollidableQ
 
 struct LinkedCollidableQ
 {
-    void CopyAndSortGeometryList(hkArray<CollisionEntryQ>& entries);
+    void hkpLinkedCollidable_getCollisionEntriesSorted(hkArray<CollisionEntryQ>& entries);
 };
 
 struct EntityQ
@@ -1668,14 +1702,17 @@ struct CollideSimQ
     int m_3c;
     int unk40[0x20];
     int m_c0;
-    void hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly(EntityQ** entities, int numEntities, void* input, int* out);
-    void hkpMultiThreadedSimulation_processAgentNnEntries(AgentEntryQ** entries, int numEntries, void* input, SimulationIslandQ* island, hkBool flag);
-    void ProcessCollisionEntries(EntityQ** entities, int numEntities, void* input, InputQ* collInput) throw();
+    void hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly(EntityQ** entities, int numEntities, void* input, int* entitiesNeedingPsiCollisionDetection);
+    void hkpMultiThreadedSimulation_processAgentNnEntries(AgentEntryQ** entries, int numEntries, void* collisionInput, SimulationIslandQ* island, hkBool forceManifoldQualityType);
+    void ProcessCollisionEntries(EntityQ** entities, int numEntities, void* input, InputQ* entitiesNeedingPsiCollisionDetection) throw();
 };
 
 // If m_c0 is set, queues each entity's agent entries for FUN_00d03030 or adds the entity to collInput's hash; otherwise calls FUN_00d0db40.
 // @fnv 0x00d03970
-void CollideSimQ::ProcessCollisionEntries(EntityQ** entities, int numEntities, void* input, InputQ* collInput) throw()
+// pdb: hkpMultiThreadedSimulation::collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly | hkpMultithreadedSimulation.obj | retail, vtable slot, high
+// pdb params: entities, numEntities, input, entitiesNeedingPsiCollisionDetection
+// pdb locals: commonIsland, entries, totalNumEntities, collisionEntriesTmp, isProcessed
+void CollideSimQ::ProcessCollisionEntries(EntityQ** entities, int numEntities, void* input, InputQ* entitiesNeedingPsiCollisionDetection) throw()
 {
     if (m_c0 != 0)
     {
@@ -1691,7 +1728,7 @@ void CollideSimQ::ProcessCollisionEntries(EntityQ** entities, int numEntities, v
         {
             EntityQ* entity = entities[i];
             marked.m_data[entity->m_usStorageIndex] = 1;
-            entity->m_kCollidable.CopyAndSortGeometryList(entries.array());
+            entity->m_kCollidable.hkpLinkedCollidable_getCollisionEntriesSorted(entries.array());
 
             for (int j = 0; j < entries.m_iElementCount; j++)
             {
@@ -1710,11 +1747,11 @@ void CollideSimQ::ProcessCollisionEntries(EntityQ** entities, int numEntities, v
                 else
                 {
                     int key = entity->m_d4;
-                    if (!collInput->LookupHashEntry(key, 0))
+                    if (!entitiesNeedingPsiCollisionDetection->LookupHashEntry(key, 0))
                     {
                         entity->FUN_00c90510();
                         key = entity->m_d4;
-                        collInput->hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(getRouter().m_pStreamAllocator, key, entity);
+                        entitiesNeedingPsiCollisionDetection->hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(getRouter().m_pStreamAllocator, key, entity);
                     }
                 }
             }
@@ -1780,13 +1817,15 @@ struct S00d02880_Key
 // Linearly searches m_data for a matching key, otherwise grows the array if full and appends a new element with that key.
 // @fnv 0x00d02880
 // src: HAVOK_LIB 0x00d02880
-static __declspec(noinline) S00d02880_Elem* getIslandEntriesInfo(S00d02880_Arr* apArray, S00d02880_Key aKey)
+// pdb: getIslandEntriesInfo | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high
+// pdb params: island, islandEntriesInfos
+static __declspec(noinline) S00d02880_Elem* getIslandEntriesInfo(S00d02880_Arr* island, S00d02880_Key islandEntriesInfos)
 {
-    int key = aKey.v;
+    int key = islandEntriesInfos.v;
     long i = 0;
-    if (apArray->m_uiItemCount > 0)
+    if (island->m_uiItemCount > 0)
     {
-        S00d02880_Elem* base = apArray->m_data;
+        S00d02880_Elem* base = island->m_data;
         S00d02880_Elem* p = base;
         do
         {
@@ -1795,17 +1834,17 @@ static __declspec(noinline) S00d02880_Elem* getIslandEntriesInfo(S00d02880_Arr* 
                 return &base[i];
             i++;
             p++;
-        } while (i < apArray->m_uiItemCount);
+        } while (i < island->m_uiItemCount);
     }
     S00d02880_Heap* h = reinterpret_cast<S00d02880_Heap*>(hkMemoryRouter_getInstance());
-    if (apArray->m_uiItemCount == (int)(0x3fffffffu & apArray->m_capFlags))
+    if (island->m_uiItemCount == (int)(0x3fffffffu & island->m_capFlags))
     {
-        ResizeAudioStream(h->unk10, reinterpret_cast<PairArray*>(apArray), 0x18u);
+        ResizeAudioStream(h->unk10, reinterpret_cast<PairArray*>(island), 0x18u);
     }
-    S00d02880_Zero(apArray->m_data + apArray->m_uiItemCount);
-    S00d02880_Zero(apArray->m_data + apArray->m_uiItemCount++);
-    apArray->m_data[apArray->m_uiItemCount - 1].key = key;
-    return &apArray->m_data[apArray->m_uiItemCount - 1];
+    S00d02880_Zero(island->m_data + island->m_uiItemCount);
+    S00d02880_Zero(island->m_data + island->m_uiItemCount++);
+    island->m_data[island->m_uiItemCount - 1].key = key;
+    return &island->m_data[island->m_uiItemCount - 1];
 }
 
 S00d02880_Elem* S00d02880_Call(S00d02880_Arr* a, S00d02880_Key key)
@@ -1885,7 +1924,7 @@ struct SimBase
     int unk48;
     int unk4c;
     virtual void onEvent();
-    void BaseTeardown();
+    void hkpContinuousSimulation_dtor();
 };
 
 struct FUN_00d02da0 : SimBase
@@ -1934,6 +1973,7 @@ struct FUN_00d02da0 : SimBase
 
 // Destructor: deletes four critical sections, releases two buffers through the sink, resets three listener vtables, and calls BaseTeardown.
 // @fnv 0x00d02da0
+// pdb: hkpMultiThreadedSimulation::~hkpMultiThreadedSimulation | hkpMultithreadedSimulation.obj | retail, object-file gap fill, high
 FUN_00d02da0::~FUN_00d02da0()
 {
     DeleteCriticalSection(&m_critical140);
@@ -1959,7 +1999,7 @@ FUN_00d02da0::~FUN_00d02da0()
         m_audio6c.Clear();
     }
     m_listenerA.vptr = m_listenerB.vptr = m_listenerC.vptr = &DAT_010c63bc;
-    BaseTeardown();
+    hkpContinuousSimulation_dtor();
 }
 }  // namespace fnv_00d02da0
 
@@ -2008,7 +2048,7 @@ struct MessageBuilder
     char* buffer;
     unsigned int capacity;
     char* cursor;
-    __declspec(nothrow) MessageBuilder(char* buffer, unsigned int capacity);
+    __declspec(nothrow) MessageBuilder(char* buf, unsigned int bufSize);
     void ProcessAndReturnValue_00cc01c0(const char* text);
     void FUN_00cc00e0();
 };
@@ -2108,12 +2148,16 @@ struct FUN_00d02e70_cls
     Event* items30;
     int count34;
     unsigned int capacity38;
-    void AddToiEvent(char* input, EventMeta* meta, CRITICAL_SECTION* cs);
+    void hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(char* processOutput, EventMeta* entry, CRITICAL_SECTION* criticalSection);
 };
 
 // If the event array is full, logs a TOI queue-full message and returns; otherwise appends an Event under cs and fills it from input and meta.
 // @fnv 0x00d02e70
-void FUN_00d02e70_cls::AddToiEvent(char* input, EventMeta* meta, CRITICAL_SECTION* cs)
+// src: XBOX_RETAIL_PDB 0x00d02e70
+// pdb: hkpMultiThreadedSimulation::addToiEventWithCriticalSectionLock | hkpMultithreadedSimulation.obj | retail, string-set bridge, high
+// pdb params: processOutput, entry, criticalSection
+// pdb locals: assertBuf, ostr
+void FUN_00d02e70_cls::hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(char* processOutput, EventMeta* entry, CRITICAL_SECTION* criticalSection)
 {
     if (count34 == (capacity38 & 0x3fffffff))
     {
@@ -2127,7 +2171,7 @@ void FUN_00d02e70_cls::AddToiEvent(char* input, EventMeta* meta, CRITICAL_SECTIO
         return;
     }
     WriteTrace("TtAgentJob.addToi");
-    EnterCriticalSection(cs);
+    EnterCriticalSection(criticalSection);
     int ecx = count34;
     Event* edx = items30;
     int eax = ecx + 1;
@@ -2151,24 +2195,24 @@ void FUN_00d02e70_cls::AddToiEvent(char* input, EventMeta* meta, CRITICAL_SECTIO
         } while (eax);
     }
     Event* dest = (Event*)((char*)items30 + ecx);
-    LeaveCriticalSection(cs);
+    LeaveCriticalSection(criticalSection);
     WriteTrace("Et");
-    dest->x = *reinterpret_cast<float*>(input + 0x3030);
-    dest->kind = owner0c->subTable80[0x1c34 + (meta->unk0c << 6)];
-    int* pSrc = reinterpret_cast<int*>(input + 0x3064);
+    dest->x = *reinterpret_cast<float*>(processOutput + 0x3030);
+    dest->kind = owner0c->subTable80[0x1c34 + (entry->unk0c << 6)];
+    int* pSrc = reinterpret_cast<int*>(processOutput + 0x3064);
     dest->y = *reinterpret_cast<float*>(reinterpret_cast<char*>(pSrc) - 0x30);
     dest->mat50 = *reinterpret_cast<__m128*>(reinterpret_cast<char*>(pSrc) - 0x54);
     dest->mat60 = *reinterpret_cast<__m128*>(reinterpret_cast<char*>(pSrc) - 0x44);
-    char* b10 = meta->begin10;
+    char* b10 = entry->begin10;
     dest->ptr0c = b10 + b10[0x10];
-    char* b14 = meta->begin14;
+    char* b14 = entry->begin14;
     dest->ptr10 = b14 + b14[0x10];
     *reinterpret_cast<int*>(&dest->u) = *reinterpret_cast<int*>(reinterpret_cast<char*>(pSrc) - 0x14);
     *reinterpret_cast<int*>(&dest->v) = *reinterpret_cast<int*>(reinterpret_cast<char*>(pSrc) - 0x10);
     dest->unk20 = *reinterpret_cast<int*>(reinterpret_cast<char*>(pSrc) - 0xc);
     dest->unk24 = *reinterpret_cast<int*>(reinterpret_cast<char*>(pSrc) - 0x8);
     dest->unk28 = *reinterpret_cast<int*>(reinterpret_cast<char*>(pSrc) - 0x4);
-    dest->count14 = meta->resource08;
+    dest->count14 = entry->resource08;
     int* d = reinterpret_cast<int*>(reinterpret_cast<char*>(dest) + 0x2c);
     int count = 7;
     do
@@ -2247,10 +2291,12 @@ template <class T, class L> inline void sortPairs(T* data, int count, L less)
 // Swaps each pair's handles so the left key is not greater than the right key, then sorts the pair list using FUN_00d02160.
 // @fnv 0x00d02250
 // src: HAVOK_LIB 0x00d02250
-void __cdecl sortPairList(PairList<TypedPair>& list)
+// pdb: sortPairList | hkpMultithreadedSimulation.obj | debug, upstream name already matches, high
+// pdb params: pairs
+void __cdecl sortPairList(PairList<TypedPair>& pairs)
 {
-    TypedPair* item = list.begin();
-    TypedPair* end = item + list.size();
+    TypedPair* item = pairs.begin();
+    TypedPair* end = item + pairs.size();
     while (item < end)
     {
         Handle* a = item->left();
@@ -2261,7 +2307,7 @@ void __cdecl sortPairList(PairList<TypedPair>& list)
         }
         ++item;
     }
-    sortPairs(list.begin(), list.size(), pairLessThan);
+    sortPairs(pairs.begin(), pairs.size(), pairLessThan);
 }
 
 extern int DAT_01269200;
@@ -3546,7 +3592,7 @@ struct Stepper
 
     int f100;
 
-    void AddToiEvent(Output*, Agent*, void*);
+    void hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(Output*, Agent*, void*);
 
     int hkpMultiThreadedSimulation_finishMtStep(Job*, Jobs*);
 };
@@ -3554,7 +3600,10 @@ struct Stepper
 // Advances the physics world by one step, processing added/removed contact pairs, dispatching collision agents, and invoking post-collision callbacks.
 // @fnv 0x00d03290
 // src: HAVOK_LIB 0x00d03290
-int Stepper::hkpMultiThreadedSimulation_finishMtStep(Job* job, Jobs* jobs)
+// pdb: hkpMultiThreadedSimulation::finishMtStep | hkpMultithreadedSimulation.obj | retail, string-set bridge, high
+// pdb params: jobQueue, threadPool
+// pdb locals: origFinishingFlags, assertBuf, ostr, processOutput, physicsStepInfo
+int Stepper::hkpMultiThreadedSimulation_finishMtStep(Job* jobQueue, Jobs* threadPool)
 {
 
     volatile unsigned pairStamp;
@@ -3597,12 +3646,12 @@ int Stepper::hkpMultiThreadedSimulation_finishMtStep(Job* job, Jobs* jobs)
 
     jobState.prior = 0;
 
-    if (job && jobs)
+    if (jobQueue && threadPool)
     {
-        jobState.prior = job->hkJobQueue_getMasterThreadFinishingFlags();
-        job->SetSimulationEnabled(1);
-        job->SetValue(2);
-        jobs->start(job, 11);
+        jobState.prior = jobQueue->hkJobQueue_getMasterThreadFinishingFlags();
+        jobQueue->SetSimulationEnabled(1);
+        jobQueue->SetValue(2);
+        threadPool->start(jobQueue, 11);
     }
 
     const int size = f00c->f02c - f0b8;
@@ -3722,7 +3771,7 @@ int Stepper::hkpMultiThreadedSimulation_finishMtStep(Job* job, Jobs* jobs)
                         agent->manager->process(*savedA, *scratch.db, *d, out);
 
                     if (out.hasToi())
-                        AddToiEvent(&out, agent, &f100);
+                        hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(&out, agent, &f100);
                 }
             }
 
@@ -3870,7 +3919,7 @@ int Stepper::hkpMultiThreadedSimulation_finishMtStep(Job* job, Jobs* jobs)
         }
 
         if (f00c->f0e4)
-            f0c0 = (int)job;
+            f0c0 = (int)jobQueue;
 
         f00c->hkpWorld_unlock();
         v18();
@@ -3880,7 +3929,7 @@ int Stepper::hkpMultiThreadedSimulation_finishMtStep(Job* job, Jobs* jobs)
             result = 3;
     }
 
-    if (jobs)
+    if (threadPool)
     {
 
         {
@@ -3895,9 +3944,9 @@ int Stepper::hkpMultiThreadedSimulation_finishMtStep(Job* job, Jobs* jobs)
                 p->next = (TraceRecord*)((char*)r + 12);
             }
         }
-        job->SetSimulationEnabled(0);
-        job->SetValue(jobState.prior);
-        jobs->wait();
+        jobQueue->SetSimulationEnabled(0);
+        jobQueue->SetValue(jobState.prior);
+        threadPool->wait();
         {
             TraceBuffer* p = (TraceBuffer*)TlsGetValue(DAT_0126835c);
             TraceRecord* r = p->next;
@@ -5995,7 +6044,7 @@ struct ElemSub
 {
     SubNode* first;
     SubNode* second;
-    void CopyAndSortGeometryList(ArrPair* out);
+    void hkpLinkedCollidable_getCollisionEntriesSorted(ArrPair* entries);
 };
 
 struct Elem
@@ -6366,14 +6415,17 @@ struct ThisCls
     int m_04;
     int m_08;
     SubObj* m_0c;
-    void hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly(ParamObj* p0, ParamObj* p1);
-    void ProcessGroups(int* a, int b, Group* c, int d, void* e, CollisionFlag f);
+    void hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly(ParamObj* input, ParamObj* entitiesNeedingPsiCollisionDetection);
+    void hkpMultiThreadedSimulation_processAgentNnEntriesFromMultipleIslands(int* allEntries, int numAllEntries, Group* islandEntriesInfos, int numInfos, void* collisionInput, CollisionFlag forceManifoldQualityType);
 };
 
 // Collects contact pairs from p1 elements, groups them by identity, and calls ProcessGroups with the results.
 // @fnv 0x00d03c20
 // src: HAVOK_LIB 0x00d03c20
-void ThisCls::hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly(ParamObj* apUnused, ParamObj* p1)
+// pdb: hkpMultiThreadedSimulation::collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high
+// pdb params: input, entitiesNeedingPsiCollisionDetection
+// pdb locals: islandEntriesInfos, entriesToCollideMap, numAllEntries, entriesToCollide, it, collisionEntriesTmp, assertBuf, ostr
+void ThisCls::hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly(ParamObj* input, ParamObj* entitiesNeedingPsiCollisionDetection)
 {
     TraceBuffer* pTraceBuf = (TraceBuffer*)TlsGetValue(DAT_0126835c);
     if (pTraceBuf->next < pTraceBuf->end)
@@ -6412,14 +6464,14 @@ void ThisCls::hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetec
     groups.m_iArrayLength = 0;
     groups.m_iCapacity = sentinel;
     total = 0;
-    i = p1->First();
-    while (i <= p1->m_iArrayLength)
+    i = entitiesNeedingPsiCollisionDetection->First();
+    while (i <= entitiesNeedingPsiCollisionDetection->m_iArrayLength)
     {
-        savedElem = (Elem*)p1->m_pData[i].b;
+        savedElem = (Elem*)entitiesNeedingPsiCollisionDetection->m_pData[i].b;
         L.contacts.m_pData = 0;
         L.contacts.m_iArrayLength = 0;
         L.contacts.m_iCapacity = sentinel;
-        savedElem->links.CopyAndSortGeometryList(&L.contacts);
+        savedElem->links.hkpLinkedCollidable_getCollisionEntriesSorted(&L.contacts);
         iContactCount = L.contacts.m_iArrayLength;
         j = 0;
         if (iContactCount > 0)
@@ -6457,7 +6509,7 @@ void ThisCls::hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetec
             }
         }
         savedElem->FUN_00c905b0();
-        i = p1->Next(i);
+        i = entitiesNeedingPsiCollisionDetection->Next(i);
         Singleton* pSingleton4 = GetSingleton();
         DeallocCtx* ctx = pSingleton4->m_10;
         int iContactCap = L.contacts.m_iCapacity;
@@ -6467,7 +6519,7 @@ void ThisCls::hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetec
         L.contacts.m_pData = 0;
         L.contacts.m_iCapacity = sentinel;
     }
-    p1->ResetEntries();
+    entitiesNeedingPsiCollisionDetection->ResetEntries();
     int acc = 0;
     for (int k2 = 0; k2 < groups.m_iArrayLength; k2++)
     {
@@ -6476,8 +6528,8 @@ void ThisCls::hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetec
         acc += groups.m_pData[k2].count;
     }
     Singleton* pSingleton5 = GetSingleton();
-    p1 = (ParamObj*)pSingleton5->m_00;
-    pSingleton5->m_00 = (int*)((char*)p1 + ((total * 4 + 0x7f) & ~0x7f));
+    entitiesNeedingPsiCollisionDetection = (ParamObj*)pSingleton5->m_00;
+    pSingleton5->m_00 = (int*)((char*)entitiesNeedingPsiCollisionDetection + ((total * 4 + 0x7f) & ~0x7f));
     for (int pi = 0; pi < pairs.m_iArrayLength; pi++)
     {
         void* pfirst = (void*)pairs.m_pData[pi].a;
@@ -6485,9 +6537,9 @@ void ThisCls::hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetec
         Group& triple = groups.FindOrAdd(pkey);
         int slot = triple.unk0C;
         triple.unk0C = slot + 1;
-        ((int*)p1)[slot] = (int)pfirst;
+        ((int*)entitiesNeedingPsiCollisionDetection)[slot] = (int)pfirst;
     }
-    ProcessGroups((int*)p1, total, groups.m_pData, groups.m_iArrayLength, m_0c->GetIn(), (char)0);
+    hkpMultiThreadedSimulation_processAgentNnEntriesFromMultipleIslands((int*)entitiesNeedingPsiCollisionDetection, total, groups.m_pData, groups.m_iArrayLength, m_0c->GetIn(), (char)0);
     SubObj* sub = m_0c;
     sub->m_94--;
     if (sub->m_94 == 0 && sub->m_9c == 0)
@@ -6508,7 +6560,7 @@ void ThisCls::hkpMultiThreadedSimulation_collideEntitiesNeedingPsiCollisionDetec
         pTraceBuf2->next = pTraceRec2 + 1;
     }
     Singleton* pSingleton7 = GetSingleton();
-    pSingleton7->m_00 = (int*)p1;
+    pSingleton7->m_00 = (int*)entitiesNeedingPsiCollisionDetection;
     Singleton* pSingleton8 = GetSingleton();
     DeallocCtx* pDeallocCtx8 = pSingleton8->m_10;
     int iGroupCap = groups.m_iCapacity;

@@ -13,7 +13,8 @@ class QuantityData
     void SetQuantity(unsigned int quantity);
 };
 
-extern unsigned int __cdecl ReadEncodedInteger(char*, unsigned int&);
+extern unsigned int __cdecl LoadVariableSizedValueFromBuffer(char*, unsigned int&);
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:

@@ -44,6 +44,9 @@ struct FUN_008799c0_shell
 
 // Computes an offset from arg1 and arg2 and forwards it to mSeenData.IsBitSet, returning its result.
 // @fnv 0x008799c0
+// pdb: SeenData::IsSeenBitTrue | SeenData.obj | debug, call graph, medium
+// pdb params: aiX, aiY
+// pdb locals: iwhichbit
 bool FUN_008799c0_shell::IsValueSeen(void* pBase, unsigned int uiIndex)
 {
     unsigned int nValue = (uiIndex << 4) + (unsigned int)pBase;
@@ -58,6 +61,7 @@ struct FUN_00878450_shell : FUN_00878430_shell
 };
 
 // @fnv 0x00878450
+// pdb: IMemoryManagerFile::`scalar deleting destructor' | MemoryManagerFile.obj | retail, vtable slot, high
 void* __thiscall FUN_00878450_shell::FUN_00878450(unsigned int flags)
 {
     SetPtr();
@@ -73,6 +77,7 @@ struct FUN_00878480_shell : FUN_00878450_shell
 };
 // Calls FUN_008784d0, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00878480
+// pdb: MemoryManagerFile::`scalar deleting destructor' | MemoryManagerFile.obj | retail, vtable slot, high
 void* __thiscall FUN_00878480_shell::FUN_00878480(unsigned int flags)
 {
     FUN_008784d0();
@@ -83,14 +88,17 @@ void* __thiscall FUN_00878480_shell::FUN_00878480(unsigned int flags)
 
 struct FileSizeInfo
 {
-    void __thiscall SetFromCall(void* apData, unsigned __int64 aSize, unsigned __int64* apRead);
+    void __thiscall BSSystemFile_Read(void* apData, unsigned __int64 aSize, unsigned __int64* apRead);
 };
 // Reads aSize bytes from the inner file into apData and returns the number of bytes read.
 // @fnv 0x00878530
+// pdb: MemoryManagerFile::Read | MemoryManagerFile.obj | retail, upstream name already matches, high
+// pdb params: apData, aSize
+// pdb locals: uiread
 int __thiscall MemoryManagerFile::Read(void* apData, unsigned int aSize)
 {
     unsigned __int64 uiBytesRead;
-    reinterpret_cast<FileSizeInfo*>(reinterpret_cast<char*>(this) + 4)->SetFromCall(apData, aSize, &uiBytesRead);
+    reinterpret_cast<FileSizeInfo*>(reinterpret_cast<char*>(this) + 4)->BSSystemFile_Read(apData, aSize, &uiBytesRead);
     return (int)uiBytesRead;
 }
 
@@ -103,6 +111,9 @@ struct FileInner
 }  // namespace fnv_00878560
 // Writes aSize bytes from apData through the inner file object and returns the number of bytes written.
 // @fnv 0x00878560
+// pdb: MemoryManagerFile::Write | MemoryManagerFile.obj | retail, upstream name already matches, high
+// pdb params: apData, aSize
+// pdb locals: uiwritten
 int MemoryManagerFile::Write(const void* apData, unsigned int aSize)
 {
     fnv_00878560::uint64 uiwritten;
@@ -122,6 +133,8 @@ struct FUN_00878590_shell : FileSizeInfo
 };
 // @fnv 0x00878590
 // src: XBOX_PDB 0x00878590
+// pdb: MemoryManagerFile::Size | MemoryManagerFile.obj | retail, upstream name already matches, high
+// pdb locals: uisize
 int __thiscall FUN_00878590_shell::MemoryManagerFile_Size()
 {
     unsigned __int64 size;
@@ -138,6 +151,9 @@ struct FUN_008785e0_holder
 };
 }  // namespace fnv_008785b0
 // @fnv 0x008785b0
+// pdb: MemoryManagerFile::Seek | MemoryManagerFile.obj | retail, vtable slot, high
+// pdb params: aiPos
+// pdb locals: uipos
 void __thiscall MemoryManagerFile::vf04(int aiPos)
 {
     fnv_008785b0::uint64 uipos;
@@ -168,5 +184,6 @@ class FUN_008784d0 : public FUN_00878430
 };
 
 // @fnv 0x008784d0
+// pdb: MemoryManagerFile::~MemoryManagerFile | MemoryManagerFile.obj | retail, object-file run extension, high
 FUN_008784d0::~FUN_008784d0()
 {}

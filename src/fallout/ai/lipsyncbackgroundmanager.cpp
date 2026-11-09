@@ -8,12 +8,14 @@
 
 struct FUN_00c3d0e0_stub
 {
-    bool __thiscall QueuedFileEntry_GetDescription(char* apDescription, unsigned int aiBufferSize, const char* apTag);
+    bool __thiscall QueuedFileEntry_GetDescription(char* apDescription, unsigned int aiBufferSize, const char* apFileEntryTypeDescription);
 };
 
 
 // @fnv 0x00905e00
 // src: XBOX_PDB 0x00905e00
+// pdb: LipTask::GetDescription | LipSyncBackgroundManager.obj | debug, unique string literal, high
+// pdb params: apDescription, aiBufferSize
 bool LipTask::GetDescription_00905e00(char* apDescription, unsigned int aiBufferSize)
 {
     return reinterpret_cast<FUN_00c3d0e0_stub*>(this)->QueuedFileEntry_GetDescription(apDescription, aiBufferSize, "liptask");
@@ -31,6 +33,8 @@ struct FUN_009060f0_shell
 };
 
 // @fnv 0x009060f0
+// pdb: LipSyncBackgroundManager::RemoveTask | LipSyncBackgroundManager.obj | debug, call graph, medium
+// pdb params: apActor
 void FUN_009060f0_shell::CallVirtual5(int arg)
 {
     this->v5(arg);
@@ -52,6 +56,7 @@ struct FUN_00905e30_shell : FUN_00906160_shell
 };
 // @fnv 0x00905e30
 // src: GUESS 0x00905e30 (confidence: low)
+// pdb: LipSyncBackgroundManager::LipSyncBackgroundManager | LipSyncBackgroundManager.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_00905e30_shell::EvaluateValue_00905e30()
 {
     FUN_00906160(10, 37, 12);
@@ -69,6 +74,8 @@ struct FUN_00905dc0_shell
 };
 // Calls FUN_00c3cb70 with the previous state and task owner, then, unless the previous state is 5, calls CallVirtual5 on _m38 with _m30.
 // @fnv 0x00905dc0
+// pdb: LipTask::Cancel | LipSyncBackgroundManager.obj | retail, vtable slot, high
+// pdb params: aePreviousState, apTaskOwner
 void FUN_00905dc0_shell::HandleStateChange(int aePreviousState, void* apTaskOwner)
 {
     QueuedFile_Cancel(aePreviousState, apTaskOwner);
@@ -333,6 +340,7 @@ struct FUN_00905d20_cls
 // If the holder's object exists, calls v224 with m_34, v220 with 0, and v221 with 1 when m_34 is 0, then calls m_38 with m_30.
 // @fnv 0x00905d20
 // src: XBOX_PDB 0x00905d20
+// pdb: LipTask::Finish | LipSyncBackgroundManager.obj | retail, upstream name already matches, high
 void FUN_00905d20_cls::LipTask_Finish()
 {
     if (m_30->FUN_008d8520() != 0)
@@ -382,12 +390,14 @@ struct FUN_00905e50_Class : public BaseMap
 {
     FUN_00905e50_Class();
     ~FUN_00905e50_Class();
-    bool AdvanceRequest(It* a, int* b, G* c, int d);
+    bool AdvanceRequest(It* arIterator, int* arKey, G* arData, int abSwitchBuckets);
     void CallVirtual5(int a);
 };
 
 // Destructor iterates an It until done, and for each successful AdvanceRequest call invokes CallVirtual5 and FUN_0044ac40 on the result of FUN_00559450.
 // @fnv 0x00905e50
+// pdb: LipSyncBackgroundManager::~LipSyncBackgroundManager | LipSyncBackgroundManager.obj | debug, object-file gap fill, medium
+// pdb locals: iterator, pactor, sptask
 FUN_00905e50_Class::~FUN_00905e50_Class()
 {
     {
@@ -694,12 +704,15 @@ struct S_00905f30_Owner
     virtual void v2();
     virtual void v3();
     virtual bool Enqueue(S_00905f30_Actor* a, const S_00905f30_Ref& r, int f);
-    void LipSyncBackgroundManager_CancelLipFile(S_00905f30_Actor* a);
+    void LipSyncBackgroundManager_CancelLipFile(S_00905f30_Actor* apActor);
     void StartLipSyncTask(S_00905f30_Actor* actor, const char* tag);
 };
 
 // Creates a task for the actor and tag, enqueues it, clears the actor's proc target and adds the task to the manager.
 // @fnv 0x00905f30
+// pdb: LipSyncBackgroundManager::BuildLipSynicFile | LipSyncBackgroundManager.obj | debug, object-file gap fill, medium
+// pdb params: apActor, apFilename
+// pdb locals: pnewtask, tempMemContext, bresult
 void S_00905f30_Owner::StartLipSyncTask(S_00905f30_Actor* actor, const char* tag)
 {
     AutoMemContext ctx(0x35, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Ai\\LipSyncBackgroundManager.cpp",
@@ -741,6 +754,8 @@ struct FUN_00905c50_Class
 BGSTerrainManager* __cdecl ReadAnimationFromStream(void* apFile);
 
 // @fnv 0x00905c50
+// pdb: LipTask::Run | LipSyncBackgroundManager.obj | retail, vtable slot, high
+// pdb locals: pfile, tempMemContext
 void FUN_00905c50_Class::InitTerrainManager()
 {
     void* file;

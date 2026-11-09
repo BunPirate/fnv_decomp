@@ -14,18 +14,21 @@ char Calendar::GetGameHour()
 }
 
 // @fnv 0x00867950
+// pdb: Calendar::GetTimeScale | calendar.obj | debug, call graph, high
 float Calendar::GetGameTimeScale()
 {
     return reinterpret_cast<TESGlobalValueReader*>(pHourGlobal)->GetValue();
 }
 
 // @fnv 0x00867ef0
+// pdb: Calendar::GetDayOfTheWeek | calendar.obj | debug, call graph, medium
 DAYS_OF_THE_WEEK Calendar::GetGameDayOfWeek()
 {
-    return (DAYS_OF_THE_WEEK)(GetGameDaysPassed() % 7);
+    return (DAYS_OF_THE_WEEK)(GetDaysPassed() % 7);
 }
 
 // @fnv 0x00867d60
+// pdb: Calendar::GetDay | calendar.obj | debug, call graph, medium
 int Calendar::GetDayOfMonth()
 {
     return (int)(m_pDayGlobal ? reinterpret_cast<TESGlobalValueReader*>(m_pDayGlobal)->GetValue() : 17.0f);
@@ -44,7 +47,9 @@ void Calendar::ResetCachedValues()
 
 // Returns the game days passed as an unsigned int from the global value reader, or 1 if the reader is null.
 // @fnv 0x00867de0
-unsigned int Calendar::GetGameDaysPassed()
+// src: XBOX_DEBUG_PDB 0x00867de0
+// pdb: Calendar::GetDaysPassed | calendar.obj | debug, call graph, high
+unsigned int Calendar::GetDaysPassed()
 {
     return (unsigned int)(m_pGameDaysPassedGlobal
                               ? reinterpret_cast<TESGlobalValueReader*>(m_pGameDaysPassedGlobal)->GetValue()
@@ -53,6 +58,7 @@ unsigned int Calendar::GetGameDaysPassed()
 
 // Returns the value read from the global value reader if present, otherwise 12.0f.
 // @fnv 0x00867da0
+// pdb: Calendar::GetHour | calendar.obj | debug, call graph, medium
 float Calendar::GetGameTime()
 {
     return m_pHourGlobal ? reinterpret_cast<TESGlobalValueReader*>(m_pHourGlobal)->GetValue() : 12.0f;
@@ -60,6 +66,7 @@ float Calendar::GetGameTime()
 
 // Returns the month from the calendar's global value reader, or August when no reader is set.
 // @fnv 0x00867d20
+// pdb: Calendar::GetMonth | calendar.obj | debug, call graph, medium
 CALENDAR_MONTH Calendar::GetCurrentMonth()
 {
     return m_pMonthGlobal ? (CALENDAR_MONTH)(char)reinterpret_cast<TESGlobalValueReader*>(m_pMonthGlobal)->GetValue()
@@ -67,6 +74,8 @@ CALENDAR_MONTH Calendar::GetCurrentMonth()
 }
 
 // @fnv 0x00867e30
+// pdb: Calendar::GetHoursPassed | calendar.obj | debug, call graph, high
+// pdb locals: fdays
 unsigned int Calendar::GetGameHoursPassed()
 {
     float fDays =
@@ -76,10 +85,13 @@ unsigned int Calendar::GetGameHoursPassed()
 
 // Advances the calendar clock by afDeltaTime, rolling hours into days, months and years and updating the related global values.
 // @fnv 0x00867a40
-void Calendar::Update(float afDeltaTime)
+// pdb: Calendar::Update | calendar.obj | retail, upstream name already matches, high
+// pdb params: afSeconds
+// pdb locals: fHour, fhourfraction, fYear, fMonth, fDay, sDaysInMonth
+void Calendar::Update(float afSeconds)
 {
     float fHour;
-    float fHoursPassed = reinterpret_cast<TESGlobalValueReader*>(pHourGlobal)->GetValue() * afDeltaTime / DAT_01012640;
+    float fHoursPassed = reinterpret_cast<TESGlobalValueReader*>(pHourGlobal)->GetValue() * afSeconds / DAT_01012640;
     fHour = reinterpret_cast<TESGlobalValueReader*>(m_pHourGlobal)->GetValue() + fHoursPassed;
 
     if (!(DAT_011de7e8 & 1))
@@ -138,6 +150,9 @@ struct FUN_00867c60_shell : public Calendar
 // Returns the value read by the TESGlobalValueReader stored at the start of the object, or 77.0f when that pointer is null.
 // @fnv 0x00867c60
 // src: XBOX_PDB 0x00867c60
+// pdb: Calendar::GetHoursPassed | calendar.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Calendar::GetYear
+// pdb locals: fdays
 unsigned int FUN_00867c60_shell::Calendar_GetYear()
 {
     return (int)(*(TESGlobalValueReader**)this ? (*(TESGlobalValueReader**)this)->GetValue() : 77.0f);
@@ -171,11 +186,14 @@ void __fastcall Menu_SetRenderedMenu(void* aThis)
 extern StartMenu* DAT_011895b8[7];
 struct CalendarProxy : public Calendar
 {
-    const char* GetDayName();
+    const char* Calendar_GetDayOfWeekString();
 };
 // Gets the current day of the week, returns its name from DAT_011895b8, or "Bad Day" if the day is invalid.
 // @fnv 0x00867f10
-const char* CalendarProxy::GetDayName()
+// src: XBOX_DEBUG_PDB 0x00867f10
+// pdb: Calendar::GetDayOfWeekString | calendar.obj | debug, unique string literal, high
+// pdb locals: eday
+const char* CalendarProxy::Calendar_GetDayOfWeekString()
 {
     DAYS_OF_THE_WEEK eday;
     eday = GetGameDayOfWeek();
@@ -197,6 +215,8 @@ struct FUN_00867ea0_shell
 };
 // @fnv 0x00867ea0
 // src: COMMUNITY 0x00867ea0
+// pdb: Calendar::GetMinutesPassed | calendar.obj | debug, upstream name already matches, high
+// pdb locals: fdays
 float FUN_00867ea0_shell::Calendar_GetMinutesPassed()
 {
     float days = m_ptr ? m_ptr->BSMultiBoundCapsule_QMultiBoundRadius() : 1.0f;
@@ -222,12 +242,15 @@ struct CalendarDateFormatter : public Calendar
     unsigned int GetYearNumber();
     char GetDayNumber();
     int GetMonthIndex();
-    DateString FormatDate();
+    DateString Calendar_GetDateString();
 };
 
 // Builds a DateString formatted as "%02d.%02d.%02d" from the month index plus one, day number, and year modulo 100, and returns it.
 // @fnv 0x00867970
-DateString CalendarDateFormatter::FormatDate()
+// src: XBOX_RETAIL_PDB 0x00867970
+// pdb: Calendar::GetDateString | calendar.obj | retail, unique string literal, high
+// pdb locals: xstr
+DateString CalendarDateFormatter::Calendar_GetDateString()
 {
     DateString kDate;
     kDate.PrintfString("%02d.%02d.%02d", GetMonthIndex() + 1, GetDayNumber(), GetYearNumber() % 100);
@@ -243,6 +266,8 @@ struct Thing
 // Maps values 0 through 11 to results 0 through 3 using a switch.
 // @fnv 0x00867ca0
 // src: COMMUNITY 0x00867ca0
+// pdb: Calendar::GetSeason | calendar.obj | debug, upstream name already matches, high
+// pdb locals: eretval
 int Thing::Calendar_GetSeason()
 {
     int result = 0;

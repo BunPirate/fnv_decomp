@@ -68,12 +68,12 @@ __forceinline void hkVector4::_setRotatedDir(const hkRotation& r, const hkVector
 
 __forceinline const hkVector4& hkpRigidBody::getLinearVelocity() const
 {
-    return m_pMotionState.m_kTranslationalVelocity;
+    return m_motion.m_kTranslationalVelocity;
 }
 
 __forceinline hkpRigidBody* hkpVehicleInstance::getChassis() const
 {
-    return static_cast<hkpRigidBody*>(m_pEntity);
+    return static_cast<hkpRigidBody*>(m_entity);
 }
 
 struct AerodynamicsDragOutputE443
@@ -83,29 +83,32 @@ struct AerodynamicsDragOutputE443
 };
 
 // @fnv 0x00e44370
-void hkpVehicleDefaultAerodynamics::vf03(const float fMoveElapsedTime,
+// pdb: hkpVehicleDefaultAerodynamics::calcAerodynamics | hkpVehicleDefaultAerodynamics.obj | retail, vtable slot, high
+// pdb params: deltaTime, vehicle, dragInfoOut
+// pdb locals: lift, drag
+void hkpVehicleDefaultAerodynamics::vf03(const float deltaTime,
                                         const hkpVehicleInstanceE443* pkVehicle,
-                                        AerodynamicsDragOutputE443& kDragInfoOut) throw()
+                                        AerodynamicsDragOutputE443& dragInfoOut) throw()
 {
     // The approved method declaration retains an opaque name for the vehicle parameter.
     const hkpVehicleInstance* vehicle = reinterpret_cast<const hkpVehicleInstance*>(pkVehicle);
     hkpRigidBody* pkChassis = vehicle->getChassis();
-    const hkRotation& kRotationBasis = pkChassis->m_pMotionState.m_kMotionState.m_kMotionTransform.m_rotation;
+    const hkRotation& kRotationBasis = pkChassis->m_motion.m_kMotionState.m_transform.m_rotation;
 
     // The old data proxy began its basis at +0x20; the actual orientation begins at +0x30.
     hkVector4 kForward;
-    kForward._setRotatedDir(kRotationBasis, vehicle->m_data->m_kChassisOrientation.m_kColumn1);
+    kForward._setRotatedDir(kRotationBasis, vehicle->m_data->m_chassisOrientation.m_kColumn1);
     hkVector4 kUp;
-    kUp._setRotatedDir(kRotationBasis, vehicle->m_data->m_kChassisOrientation.m_kColumn0);
+    kUp._setRotatedDir(kRotationBasis, vehicle->m_data->m_chassisOrientation.m_kColumn0);
 
     const float m_fGain = pkChassis->getLinearVelocity().dot3scalar(kForward);
     const float fDragForce = calcDragForce(m_fGain);
     const float fLiftForce = calcLiftForce(m_fGain);
 
-    kDragInfoOut.m_kForce.setMul4(fDragForce, kForward);
-    kDragInfoOut.m_kForce.addMul4(hkSimdReal(fLiftForce), kUp);
+    dragInfoOut.m_kForce.setMul4(fDragForce, kForward);
+    dragInfoOut.m_kForce.addMul4(hkSimdReal(fLiftForce), kUp);
 
-    const float fMass = pkChassis->m_pMotionState.GetMassValue();
-    kDragInfoOut.m_kForce.addMul4(hkSimdReal(fMass), m_vExtraGravityWorldSpace);
-    kDragInfoOut.m_kTorque.setZero4();
+    const float fMass = pkChassis->m_motion.GetMassValue();
+    dragInfoOut.m_kForce.addMul4(hkSimdReal(fMass), m_extraGravityws);
+    dragInfoOut.m_kTorque.setZero4();
 }

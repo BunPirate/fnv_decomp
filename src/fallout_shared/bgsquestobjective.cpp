@@ -19,24 +19,27 @@ extern const char g_emptyTopicInfoPrompt[];
 struct QuestObjectiveLocalMethods : BGSQuestObjective
 {
     void Clear();
-    void Save();
+    void BGSQuestObjective_Save();
     unsigned int GetDisplayTextLength();
-    void SetDisplayText(const char* text);
+    void BGSQuestObjective_SetDisplayText(const char* apDisplayText);
     void ClearTargets();
 };
 
 // If not yet initialized, stores quest and calls InitItem on each entry of the target list, then marks the objective initialized.
 // @fnv 0x005ec210
-void BGSQuestObjective::InitItem(TESQuest* quest)
+// pdb: BGSQuestObjective::InitItem | BGSQuestObjective.obj | retail, upstream name already matches, high
+// pdb params: apUser
+// pdb locals: pTargetList
+void BGSQuestObjective::InitItem(TESQuest* apUser)
 {
     if (bInitialized)
         return;
-    m_pOwnerQuest = quest;
+    m_pOwnerQuest = apUser;
     BSSimpleList<RegionObjectEntry*>* targets = GetTargetList();
     while (targets && !reinterpret_cast<BSSimpleList<const char*>*>(targets)->IsEmpty())
     {
         reinterpret_cast<RegionObjectEntry*>(reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(targets)->GetItem())
-            ->InitItem(reinterpret_cast<TESForm*>(quest));
+            ->InitItem(reinterpret_cast<TESForm*>(apUser));
         targets = reinterpret_cast<BSSimpleList<RegionObjectEntry*>*>(
             reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(targets)->GetNext());
     }
@@ -44,16 +47,18 @@ void BGSQuestObjective::InitItem(TESQuest* quest)
 }
 
 // @fnv 0x005ec1b0
+// pdb: BGSQuestObjective::InitializeData | BGSQuestObjective.obj | debug, object-file gap fill, medium
 void BGSQuestObjective::Initialize()
 {
     iIndex = 0;
-    m_kDisplayText = g_emptyTopicInfoPrompt;
+    cDisplayText = g_emptyTopicInfoPrompt;
     bInitialized = false;
     eState = QOS_DORMANT;
     m_pOwnerQuest = 0;
 }
 
 // @fnv 0x005ec090
+// pdb: BGSQuestObjective::BGSQuestObjective | BGSQuestObjective.obj | retail, upstream name already matches, high
 BGSQuestObjective::BGSQuestObjective()
 {
     Initialize();
@@ -61,15 +66,19 @@ BGSQuestObjective::BGSQuestObjective()
 
 // Returns the string stored at offset 8 of this objective, or g_emptyTopicInfoPrompt when that string is empty.
 // @fnv 0x005ec330
+// pdb: BGSQuestObjective::GetDisplayText | BGSQuestObjective.obj | debug, upstream name already matches, high
 const char* BGSQuestObjective::GetDisplayText()
 {
-    return (reinterpret_cast<const StrMem*>(&m_kDisplayText)->Modelloader_GetReferencedThis() ? reinterpret_cast<const StrMem*>(&m_kDisplayText)->Modelloader_GetReferencedThis()
+    return (reinterpret_cast<const StrMem*>(&cDisplayText)->Modelloader_GetReferencedThis() ? reinterpret_cast<const StrMem*>(&cDisplayText)->Modelloader_GetReferencedThis()
                                                           : g_emptyTopicInfoPrompt);
 }
 
 extern "C" void* __cdecl _alloca(unsigned int);
 // Reads chunks from apFile: stores the QOBJ chunk's int in iIndex, and on the NNAM chunk passes its data (or null) to SetDisplayText, then returns.
 // @fnv 0x005ec370
+// pdb: BGSQuestObjective::Load | BGSQuestObjective.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage
 void BGSQuestObjective::Load(TESFile* apFile)
 {
     int chunkid;
@@ -85,11 +94,11 @@ void BGSQuestObjective::Load(TESFile* apFile)
             {
                 char* pMessage = (char*)_alloca(apFile->GetChunkSize());
                 apFile->GetChunkData(pMessage, 0);
-                static_cast<QuestObjectiveLocalMethods*>(this)->SetDisplayText(pMessage);
+                static_cast<QuestObjectiveLocalMethods*>(this)->BGSQuestObjective_SetDisplayText(pMessage);
             }
             else
             {
-                static_cast<QuestObjectiveLocalMethods*>(this)->SetDisplayText(0);
+                static_cast<QuestObjectiveLocalMethods*>(this)->BGSQuestObjective_SetDisplayText(0);
             }
             return;
         }
@@ -128,6 +137,9 @@ extern PlayerCharacter* g_thePlayer;
 
 // If the objective's object reference is 1, walks the target list and appends targets whose condition passes to apListToFill, calling the player op on each.
 // @fnv 0x005ec500
+// pdb: BGSQuestObjective::UpdateCurrentTargetList | BGSQuestObjective.obj | retail, call graph (shared callers), high
+// pdb params: apListToFill
+// pdb locals: pTarget, pMasterList
 void BGSQuestObjective::AddMatchingTargetsToList(void* apListToFill)
 {
     if (GetState() != QOS_DISPLAYED)
@@ -148,9 +160,10 @@ void BGSQuestObjective::AddMatchingTargetsToList(void* apListToFill)
 }
 
 // @fnv 0x005ec310
+// pdb: BGSQuestObjective::GetDisplayTextLength | BGSQuestObjective.obj | debug, object-file gap fill, medium
 unsigned int QuestObjectiveLocalMethods::GetDisplayTextLength()
 {
-    return reinterpret_cast<StrMem*>(&m_kDisplayText)->BSStringT_char_Length();
+    return reinterpret_cast<StrMem*>(&cDisplayText)->BSStringT_char_Length();
 }
 
 struct StandIn
@@ -161,6 +174,7 @@ struct StandIn
 void __cdecl _Deallocate(void*);
 // Calls FUN_0060ffe0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x005ec4d0
+// pdb: TESQuestTarget::`scalar deleting destructor' | BGSQuestObjective.obj | debug, object-file run extension, low
 void* StandIn::FUN_005ec4d0(unsigned int flags)
 {
     FUN_0060ffe0();
@@ -170,15 +184,19 @@ void* StandIn::FUN_005ec4d0(unsigned int flags)
 }
 
 // @fnv 0x005ec1f0
+// pdb: BGSQuestObjective::ClearData | BGSQuestObjective.obj | debug, call graph, medium
 void QuestObjectiveLocalMethods::Clear()
 {
     ClearTargets();
 }
 
 // @fnv 0x005ec440
-void QuestObjectiveLocalMethods::SetDisplayText(const char* name)
+// src: XBOX_DEBUG_PDB 0x005ec440
+// pdb: BGSQuestObjective::SetDisplayText | BGSQuestObjective.obj | debug, call graph, high
+// pdb params: apDisplayText
+void QuestObjectiveLocalMethods::BGSQuestObjective_SetDisplayText(const char* apDisplayText)
 {
-    reinterpret_cast<StrMem*>(&m_kDisplayText)->Set(name, 0);
+    reinterpret_cast<StrMem*>(&cDisplayText)->Set(apDisplayText, 0);
 }
 
 namespace fnv_005ec280 {
@@ -197,7 +215,10 @@ struct Date
 }  // namespace fnv_005ec280
 
 // @fnv 0x005ec280
-void QuestObjectiveLocalMethods::Save()
+// src: XBOX_RETAIL_PDB 0x005ec280
+// pdb: BGSQuestObjective::Save | BGSQuestObjective.obj | retail, object-file run extension, high
+// pdb locals: pTargetList
+void QuestObjectiveLocalMethods::BGSQuestObjective_Save()
 {
     fnv_005ec280::FUN_00485910_shell::TESForm_AddChunk_00485910(0x4a424f51, ((BSSimpleList<RegionObjectEntry*>*)this)->GetNext());
     fnv_005ec280::FUN_004856f0_shell::TESForm_AddChunkArray(0x4d414e4e, GetDisplayText(),
@@ -214,8 +235,8 @@ namespace fnv_005ec5d0 {
 // Objective notification flags are not declared by the shared quest header yet.
 struct QuestObjectiveFlags : TESQuest
 {
-    bool HasFlag20();
-    void SetFlag20(bool);
+    bool TESQuest_GetDisplayedInHUD();
+    void TESQuest_SetDisplayedInHUD(bool);
 };
 
 extern PlayerCharacter* _g_thePlayer;
@@ -226,6 +247,9 @@ void __cdecl HUDMainMenu_ShowQuestObjective(char const*, int, int);
 }  // namespace fnv_005ec5d0
 
 // @fnv 0x005ec5d0
+// pdb: BGSQuestObjective::SetState | BGSQuestObjective.obj | retail, upstream name already matches, high
+// pdb params: aeNewState
+// pdb locals: powner
 void BGSQuestObjective::SetState(QUEST_OBJECTIVE_STATE aeNewState)
 {
     using namespace fnv_005ec5d0;
@@ -248,10 +272,10 @@ void BGSQuestObjective::SetState(QUEST_OBJECTIVE_STATE aeNewState)
 
             HUDMainMenu_ShowQuestObjective(GetDisplayText(), 0, 0);
 
-            if (!static_cast<QuestObjectiveFlags*>(powner)->HasFlag20())
+            if (!static_cast<QuestObjectiveFlags*>(powner)->TESQuest_GetDisplayedInHUD())
             {
                 HUDMainMenu_ShowQuestName(powner);
-                static_cast<QuestObjectiveFlags*>(powner)->SetFlag20(true);
+                static_cast<QuestObjectiveFlags*>(powner)->TESQuest_SetDisplayedInHUD(true);
             }
         }
 
@@ -267,6 +291,7 @@ void BGSQuestObjective::SetState(QUEST_OBJECTIVE_STATE aeNewState)
 }
 
 // @fnv 0x005ec140
+// pdb: BGSQuestObjective::~BGSQuestObjective | BGSQuestObjective.obj | debug, upstream name already matches, high
 BGSQuestObjective::~BGSQuestObjective()
 {
     static_cast<QuestObjectiveLocalMethods*>(this)->Clear();
@@ -279,6 +304,8 @@ struct FUN_005ec460_List
     void FUN_0063f7b0();
 };
 // @fnv 0x005ec460
+// pdb: BGSQuestObjective::ClearTargetList | BGSQuestObjective.obj | debug, object-file run extension, low
+// pdb locals: pList
 void QuestObjectiveLocalMethods::ClearTargets()
 {
     FUN_005ec460_List* list = reinterpret_cast<FUN_005ec460_List*>(GetTargetList());

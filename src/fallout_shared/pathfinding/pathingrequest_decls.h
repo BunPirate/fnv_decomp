@@ -25,6 +25,7 @@ class BGSLoadFormBufferView
     virtual TESObjectREFR* GetReference();
     virtual Actor* GetActor();
 };
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:

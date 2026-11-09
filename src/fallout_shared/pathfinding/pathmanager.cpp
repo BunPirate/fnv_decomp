@@ -23,16 +23,21 @@
 
 // Copies the two fields of source into this object and returns a reference to this object.
 // @fnv 0x006e9c60
+// pdb: ActorPathingMessage::operator= | PathManager.obj | debug, call graph, medium
+// pdb params: aMsg
 ActorPathingMessage& ActorPathingMessage::operator=(const ActorPathingMessage& source)
 {
-    m_eMessageType = source.m_eMessageType;
-    m_pPathingSolution = source.m_pPathingSolution;
+    msgType = source.msgType;
+    spSolution = source.spSolution;
     return *this;
 }
 
 // Locks the object at offset 0x20, checks that every entry in the array at offset 0x50 has state != 0, unlocks, and returns whether all are ready.
 // @fnv 0x006ea490
-bool PathingTaskData::HasPendingMessages()
+// src: XBOX_RETAIL_PDB 0x006ea490
+// pdb: PathingTaskData::AllRayCastPathComputed | PathManager.obj | retail, call graph (shared callers), high
+// pdb locals: i
+bool PathingTaskData::AllRayCastPathComputed()
 {
     ((RecursiveSpinLock*)((char*)this + 0x20))->Lock(0);
     for (unsigned int i = 0; i < ((BSSimpleArray<ParentSpaceNode, 1024>*)((char*)this + 0x50))->GetSize(); ++i)
@@ -48,39 +53,45 @@ bool PathingTaskData::HasPendingMessages()
 }
 
 // @fnv 0x006eb820
+// pdb: PathManager::PathManager | PathManager.obj | debug, upstream name already matches, high
 PathManager::PathManager()
 {
-    m_kPerformanceTimerManager.Register(DAT_0103a1bc, DAT_0106d624, false, true);
-    m_pPathManagerImpl = 0;
+    PerformanceTimer.Register(DAT_0103a1bc, DAT_0106d624, false, true);
+    pImpl = 0;
 }
 
 // Creates a new PathManagerImpl and returns the result of its Initialize call.
 // @fnv 0x006eb8c0
+// pdb: PathManager::Initialize | PathManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 bool PathManager::Initialize()
 {
     AutoMemContext context(static_cast<MEM_CONTEXT>(0x2d), true, DAT_0106d560, 1386);
-    m_pPathManagerImpl = new PathManagerImpl;
-    return m_pPathManagerImpl->Initialize();
+    pImpl = new PathManagerImpl;
+    return pImpl->Initialize();
 }
 
 // @fnv 0x006eb9d0
-bool PathManager::BuildPath(NiPointer<PathingRequest> m_pPathingRequest, NiPointer<ActorPathingMessageQueue> spQueue,
-                            bool bAsync)
+// pdb: PathManager::BuildPath | PathManager.obj | retail, upstream name already matches, high
+// pdb params: aspRequest, aspMessageQueue, abQueue
+// pdb locals: spSolution
+bool PathManager::BuildPath(NiPointer<PathingRequest> aspRequest, NiPointer<ActorPathingMessageQueue> aspMessageQueue,
+                            bool abQueue)
 {
-    if (*g_011d77cc.Bool() && bAsync)
+    if (*g_011d77cc.Bool() && abQueue)
     {
-        return m_pPathManagerImpl->BuildPath(m_pPathingRequest, spQueue);
+        return pImpl->BuildPath(aspRequest, aspMessageQueue);
     }
     else
     {
         NiPointer<PathingSolution> m_pPathingSolution = new PathingSolution();
-        if (Pathing::BuildPath(m_pPathingRequest, m_pPathingSolution))
+        if (Pathing::BuildPath(aspRequest, m_pPathingSolution))
         {
-            ((ActorPathingMessageQueue*)spQueue)->Push(QueuedMessage(PATHING_MESSAGE_TYPE_PMT_OK, m_pPathingSolution));
+            ((ActorPathingMessageQueue*)aspMessageQueue)->Push(QueuedMessage(PATHING_MESSAGE_TYPE_PMT_OK, m_pPathingSolution));
         }
         else
         {
-            ((ActorPathingMessageQueue*)spQueue)
+            ((ActorPathingMessageQueue*)aspMessageQueue)
                 ->Push(QueuedMessage(PATHING_MESSAGE_TYPE_PMT_ERROR, m_pPathingSolution));
         }
 
@@ -89,6 +100,8 @@ bool PathManager::BuildPath(NiPointer<PathingRequest> m_pPathingRequest, NiPoint
 }
 
 // @fnv 0x006e9fc0
+// pdb: PathingTaskData::Process | PathManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, iallocBefore, imemBefore, iallocAfter, bresult, imemAfter, a
 void PathingTaskData::Process()
 {
     AutoMemContext context(static_cast<MEM_CONTEXT>(0x2d), true, DAT_0106d560, 355);
@@ -96,7 +109,7 @@ void PathingTaskData::Process()
 
     if (PathManager::GetRandomGenerator()->Modelloader_GetReferencedThis()->PathManagerImpl_TaskTryLock())
     {
-        if (!HasPendingMessages())
+        if (!AllRayCastPathComputed())
         {
             SetTaskYielded();
         }
@@ -112,9 +125,9 @@ void PathingTaskData::Process()
             {
                 if (bSuccess)
                 {
-                    if (m_bTaskYielded)
+                    if (bYielding)
                     {
-                        m_bTaskYielded = false;
+                        bYielding = false;
                     }
                     ((ActorPathingMessageQueue*)spQueue)
                         ->Push(QueuedMessage(PATHING_MESSAGE_TYPE_PMT_OK, m_pPathingSolution));
@@ -176,12 +189,13 @@ struct S006e9bd0
 {
     int a;
     G006e9bd0 g;
-    S006e9bd0* ActorPathingMessage_ActorPathingMessage_0();
+    S006e9bd0* ActorPathingMessage_ctor();
 };
 // Sets a to -1, constructs g with 0, and returns this.
 // @fnv 0x006e9bd0
-// src: COMMUNITY 0x006e9bd0
-S006e9bd0* S006e9bd0::ActorPathingMessage_ActorPathingMessage_0()
+// src: XBOX_DEBUG_PDB 0x006e9bd0
+// pdb: ActorPathingMessage::ActorPathingMessage | PathManager.obj | debug, call graph (shared callers), high
+S006e9bd0* S006e9bd0::ActorPathingMessage_ctor()
 {
     a = -1;
     g.FUN_ctor(0);
@@ -201,6 +215,8 @@ struct S006e9c00
 };
 // @fnv 0x006e9c00
 // src: COMMUNITY 0x006e9c00
+// pdb: ActorPathingMessage::ActorPathingMessage | PathManager.obj | debug, object-file gap fill, medium
+// pdb params: aType, aspSolution
 S006e9c00* S006e9c00::ActorPathingMessage_ActorPathingMessage(int aiType, N006e9c00* apSource)
 {
     type = aiType;
@@ -265,6 +281,8 @@ struct FUN_006e9e20 : public Base_006e9e20
 
 // Destructor that iterates over the size of m40 and deletes each element from both m40 and m50.
 // @fnv 0x006e9e20
+// pdb: PathingTaskData::~PathingTaskData | PathManager.obj | debug, object-file gap fill, medium
+// pdb locals: i
 FUN_006e9e20::~FUN_006e9e20()
 {
     for (unsigned int i = 0; i < m40.GetSize(); ++i)
@@ -339,6 +357,7 @@ struct FUN_006eaa30 : public PathManagerHead_0044dee0
 };
 // Initializes the object's members: sets i1 and i2 to 0, x.c to 0, and constructs m2 from m1 and a with (0xc, 0x25, 0xc).
 // @fnv 0x006eaa30
+// pdb: PathManagerImpl::PathManagerImpl | PathManager.obj | debug, call graph, medium
 FUN_006eaa30::FUN_006eaa30() : m2(&m1), a(0xc, 0x25, 0xc)
 {
     i1 = 0;
@@ -356,6 +375,7 @@ bool __fastcall BSTaskletGroup_Open(void*);
 
 // @fnv 0x006eabe0
 // src: COMMUNITY 0x006eabe0
+// pdb: PathManagerImpl::Initialize | PathManager.obj | retail, upstream name already matches, high
 bool FUN_006eabe0_shell::PathManagerImpl_Initialize()
 {
     if (!GetTaskletManager().GetTaskletValue(this))
@@ -377,6 +397,7 @@ bool __fastcall BSReadWriteLock_TryLockForRead(void* pThis);
 
 // @fnv 0x006eb790
 // src: COMMUNITY 0x006eb790
+// pdb: PathManagerImpl::TaskTryLock | PathManager.obj | debug, upstream name already matches, high
 bool FUN_006eb790_shell::PathManagerImpl_TaskTryLock()
 {
     return BSReadWriteLock_TryLockForRead((char*)this + 0xc2c);
@@ -391,6 +412,7 @@ void __fastcall BSReadWriteLock_UnlockRead(void* pThis);
 
 // @fnv 0x006eb7b0
 // src: COMMUNITY 0x006eb7b0
+// pdb: PathManagerImpl::TaskUnlock | PathManager.obj | debug, upstream name already matches, high
 void FUN_006eb7b0_shell::PathManagerImpl_TaskUnlock()
 {
     BSReadWriteLock_UnlockRead((char*)this + 0xc2c);
@@ -430,6 +452,7 @@ void __fastcall PathManagerImpl_Pause(void*);
 
 // @fnv 0x006ebc70
 // src: XBOX_PDB 0x006ebc70
+// pdb: PathManager::Pause | PathManager.obj | debug, upstream name already matches, high
 void FUN_006ebc70_shell::PathManager_Pause()
 {
     PathManagerImpl_Pause(*reinterpret_cast<void**>(this));
@@ -444,6 +467,7 @@ bool __fastcall PathManagerImpl_QPaused(void*);
 
 // @fnv 0x006ebc90
 // src: XBOX_PDB 0x006ebc90
+// pdb: PathManager::QPaused | PathManager.obj | debug, upstream name already matches, high
 bool FUN_006ebc90_shell::PathManager_QPaused()
 {
     return PathManagerImpl_QPaused(*reinterpret_cast<void**>(this));
@@ -458,6 +482,7 @@ void __fastcall PathManagerImpl_Resume(void*);
 
 // @fnv 0x006ebcd0
 // src: XBOX_PDB 0x006ebcd0
+// pdb: PathManager::Resume | PathManager.obj | retail, upstream name already matches, high
 void FUN_006ebcd0_shell::PathManager_Resume()
 {
     PathManagerImpl_Resume(*reinterpret_cast<void**>(this));
@@ -470,13 +495,15 @@ struct T006ebd10
 struct S006ebd10
 {
     T006ebd10* p;
-    void PathManager_CancelCurrentPathsAndPause_0(int a);
+    void PathManager_CancelCurrentPathsAndPause_0(int apInventory);
 };
 // @fnv 0x006ebd10
 // src: COMMUNITY 0x006ebd10
-void S006ebd10::PathManager_CancelCurrentPathsAndPause_0(int a)
+// pdb: PathManager::ClearInventoryPointersFromCurrentRequests | PathManager.obj | debug, call graph, high
+// pdb params: apInventory
+void S006ebd10::PathManager_CancelCurrentPathsAndPause_0(int apInventory)
 {
-    p->PathManagerImpl_CancelCurrentPathsAndPause_0(a);
+    p->PathManagerImpl_CancelCurrentPathsAndPause_0(apInventory);
 }
 
 struct G006ebf30
@@ -488,14 +515,16 @@ struct G006ebf30
 struct S006ebf30
 {
     G006ebf30* p;
-    S006ebf30* CopyPointerAndAddReference(S006ebf30* o);
+    S006ebf30* NiPointer_ActorPathingMessageQueue_ctor(S006ebf30* ptr);
 };
 // Copies the pointer from o into this object and, if it is non-null, calls FUN_0040f6e0 on the sub-object at offset 0x14; returns this.
 // @fnv 0x006ebf30
-// src: GUESS 0x006ebf30 (confidence: medium)
-S006ebf30* S006ebf30::CopyPointerAndAddReference(S006ebf30* apSource)
+// src: XBOX_DEBUG_PDB 0x006ebf30
+// pdb: NiPointer<ActorPathingMessageQueue>::NiPointer<ActorPathingMessageQueue> | PathManager.obj | debug, call graph, high
+// pdb params: ptr
+S006ebf30* S006ebf30::NiPointer_ActorPathingMessageQueue_ctor(S006ebf30* ptr)
 {
-    p = apSource->p;
+    p = ptr->p;
     if (p)
         ((G006ebf30*)((char*)p + 0x14))->NiRefObject_IncRefCount();
     return this;
@@ -504,8 +533,9 @@ S006ebf30* S006ebf30::CopyPointerAndAddReference(S006ebf30* apSource)
 
 // If the stored pointer is non-null, calls FUN_00401970 on the NiAVObject at offset 0x14 of it.
 // @fnv 0x006ebf90
-// src: GUESS 0x006ebf90 (confidence: medium)
-void __fastcall NiAVObject_ReleaseStoredSceneObjectReference(char** apObjectPtr)
+// src: XBOX_DEBUG_PDB 0x006ebf90
+// pdb: NiPointer<ActorPathingMessageQueue>::~NiPointer<ActorPathingMessageQueue> | PathManager.obj | debug, call graph, high
+void __fastcall NiPointer_ActorPathingMessageQueue_dtor(char** apObjectPtr)
 {
     if (*apObjectPtr)
         ((NiAVObject*)(*apObjectPtr + 0x14))->NiRefObject_DecRefCount();
@@ -523,6 +553,7 @@ struct DelStandIn
 };
 // Runs the destructor on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006e9c90
+// pdb: PathingTaskData::`scalar deleting destructor' | PathManager.obj | retail, vtable slot, high
 void* DelStandIn::DestroyAndFree(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -540,6 +571,7 @@ struct FUN_006e9f60_shell
 
 // Calls FUN_006cb410, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x006e9f60
+// pdb: RayCastPathRequest::`scalar deleting destructor' | PathManager.obj | debug, object-file gap fill, medium
 void* FUN_006e9f60_shell::FUN_006e9f60(unsigned int flags)
 {
     FUN_006cb410();
@@ -602,11 +634,13 @@ struct FUN_006eb420_t
 struct FUN_006ebcb0_shell
 {
     FUN_006eb420_t* m0;
-    void __thiscall CallMemberFunction();
+    void __thiscall PathManager_QIdle();
 };
 
 // @fnv 0x006ebcb0
-void __thiscall FUN_006ebcb0_shell::CallMemberFunction()
+// src: XBOX_DEBUG_PDB 0x006ebcb0
+// pdb: PathManager::QIdle | PathManager.obj | debug, call graph, high
+void __thiscall FUN_006ebcb0_shell::PathManager_QIdle()
 {
     m0->IsFieldZero();
 }
@@ -647,12 +681,13 @@ extern void* DAT_0106d650;
 struct FUN_006ebec0_shell
 {
     void* m_data;
-    void ResetVirtualTableAndClear_006ebec0();
+    void BSSimpleArray_RayCastPathRequest_1024_dtor();
 };
 
 // @fnv 0x006ebec0
-// src: GUESS 0x006ebec0 (confidence: medium)
-void FUN_006ebec0_shell::ResetVirtualTableAndClear_006ebec0()
+// src: XBOX_DEBUG_PDB 0x006ebec0
+// pdb: BSSimpleArray<RayCastPathRequest *,1024>::~BSSimpleArray<RayCastPathRequest *,1024> | PathManager.obj | debug, call graph, high
+void FUN_006ebec0_shell::BSSimpleArray_RayCastPathRequest_1024_dtor()
 {
     m_data = &DAT_0106d650;
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -674,6 +709,7 @@ struct FUN_006ebee0_shell : AX
 // Sets the vtable to DAT_0106d664, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x006ebee0
 // src: EXE 0x006ebee0
+// pdb: BSSimpleArray<RayCastPath *,1024>::BSSimpleArray<RayCastPath *,1024> | PathManager.obj | debug, object-file run extension, low
 AX* FUN_006ebee0_shell::BSSimpleArray_RayCastPath_1024_BSSimpleArray()
 {
     vtable = &DAT_0106d664;
@@ -685,7 +721,7 @@ namespace fnv_006ebf10 {
 struct GlobalObject_00869f00
 {
     void Clear(bool);
-    void SetVtableAndProcessState_006ebf10();
+    void BSSimpleArray_RayCastPath_1024_dtor();
 };
 
 extern int DAT_0106d664;
@@ -694,8 +730,9 @@ void GlobalObject_00869f00::Clear(bool)
 {}
 
 // @fnv 0x006ebf10
-// src: GUESS 0x006ebf10 (confidence: low)
-void GlobalObject_00869f00::SetVtableAndProcessState_006ebf10()
+// src: XBOX_DEBUG_PDB 0x006ebf10
+// pdb: BSSimpleArray<RayCastPath *,1024>::~BSSimpleArray<RayCastPath *,1024> | PathManager.obj | debug, call graph, high
+void GlobalObject_00869f00::BSSimpleArray_RayCastPath_1024_dtor()
 {
     *(int*)this = (int)&DAT_0106d664;
     Clear(true);
@@ -739,6 +776,7 @@ struct FUN_006ebe60_shell
 
 // Calls SetVtable on this, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006ebe60
+// pdb: LockFreeMap<PathingRequest *,PathingTaskData *>::LockFreeMapIterator::`scalar deleting destructor' | PathManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006ebe60_shell::FUN_006ebe60(unsigned int flags)
 {
     ((FUN_006ebdc0_shell*)this)->SetVtable();
@@ -761,6 +799,7 @@ struct FUN_006ebe90_shell
 // Sets the vtable to DAT_0106d650, calls FUN_006b3eb0 with 0 and false, and returns this.
 // @fnv 0x006ebe90
 // src: EXE 0x006ebe90
+// pdb: BSSimpleArray<RayCastPathRequest *,1024>::BSSimpleArray<RayCastPathRequest *,1024> | PathManager.obj | debug, object-file run extension, low
 FUN_006ebe90_shell* FUN_006ebe90_shell::BSSimpleArray_RayCastPathRequest_1024_BSSimpleArray()
 {
     vtable = &DAT_0106d650;
@@ -780,20 +819,23 @@ struct FUN_006e9c30
 };
 // Copy constructor: copies m0 from a and constructs m1 from the address of a.m1.
 // @fnv 0x006e9c30
+// pdb: ActorPathingMessage::ActorPathingMessage | PathManager.obj | debug, object-file gap fill, medium
+// pdb params: aMsg
 FUN_006e9c30::FUN_006e9c30(const FUN_006e9c30& aOther) : m0(aOther.m0), m1((unsigned int*)&aOther.m1)
 {}
 
 void _Deallocate(void*);
 struct Holder006e9f90
 {
-    void ClearLOSArray();
+    void RayCastPath_dtor();
     void* ReleaseIfFlagged(unsigned int);
 };
 // Calls ClearLOSArray, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006e9f90
+// pdb: RayCastPath::`scalar deleting destructor' | PathManager.obj | debug, object-file gap fill, medium
 void* Holder006e9f90::ReleaseIfFlagged(unsigned int flags)
 {
-    ClearLOSArray();
+    RayCastPath_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -803,12 +845,14 @@ struct FUN_006ea9d0_shell
 {
     int f0;
     int f4;
-    FUN_006ea9d0_shell* PathingMessage_PathingMessage();
+    FUN_006ea9d0_shell* PathingMessage_ctor();
 };
 // Sets f0 to -1 and f4 to 0, then returns this.
 // @fnv 0x006ea9d0
-// src: COMMUNITY 0x006ea9d0
-FUN_006ea9d0_shell* FUN_006ea9d0_shell::PathingMessage_PathingMessage()
+// src: XBOX_DEBUG_PDB 0x006ea9d0
+// pdb: PathingMessage::PathingMessage | PathManager.obj | debug, upstream name already matches, high
+// pdb params: aType, apTaskData
+FUN_006ea9d0_shell* FUN_006ea9d0_shell::PathingMessage_ctor()
 {
     f0 = -1;
     f4 = 0;
@@ -841,10 +885,11 @@ struct FUN_006eac40_Holder
 // Calls FUN_006c09d0 on this, then passes this to the tasklet manager's ReleaseItem.
 // @fnv 0x006eac40
 // src: COMMUNITY 0x006eac40
+// pdb: PathManagerImpl::Release | PathManager.obj | debug, upstream name already matches, high
 void FUN_006eac40_Holder::PathManagerImpl_Release()
 {
     BSTaskletGroup_Close(this);
-    GetTaskletManager().ReleaseItem(this);
+    GetTaskletManager().BSTaskletManager_DestroyTaskGroup(this);
 }
 }  // namespace fnv_006eac40
 
@@ -863,6 +908,9 @@ struct HostA
 };
 // Calls f1(a) on _a when b is true, otherwise on _b, and returns true.
 // @fnv 0x006eb200
+// pdb: PathManagerImpl::ClearInventoryPointersFromCurrentRequests | PathManager.obj | retail, object-file run extension, low
+// pdb params: apInventory
+// pdb locals: it, prequest, ptaskData
 bool HostA::DispatchToInner(int aiValue, bool abUseFirst)
 {
     if (abUseFirst)
@@ -879,13 +927,15 @@ struct FUN_006eb670_Holder
 };
 // @fnv 0x006eb670
 // src: COMMUNITY 0x006eb670
-void FUN_006eb670_Holder::BSTaskletGroup_WaitForCompletion(bool a1)
+// pdb: BSTaskletGroup::WaitForCompletion | PathManager.obj | debug, upstream name already matches, high
+// pdb params: abPoll
+void FUN_006eb670_Holder::BSTaskletGroup_WaitForCompletion(bool abPoll)
 {
     if (field0 != 0)
     {
         if (!field0->IsPatrolling())
         {
-            field0->SetReferenceTarget(reinterpret_cast<TESObjectREFR*>(a1));
+            field0->SetReferenceTarget(reinterpret_cast<TESObjectREFR*>(abPoll));
         }
     }
 }
@@ -902,6 +952,7 @@ struct Holder_6eb850
 // If ptr is non-null, calls FUN_006eb890(1) on it.
 // @fnv 0x006eb850
 // src: GUESS 0x006eb850 (confidence: low)
+// pdb: PathManager::~PathManager | PathManager.obj | debug, object-file gap fill, medium
 void Holder_6eb850::UpdateState_006eb850()
 {
     Obj_6eb890* b;
@@ -921,6 +972,7 @@ struct Tmp_006eb890
 void __cdecl _Deallocate(void*);
 // Calls FUN_006eab30, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006eb890
+// pdb: PathManagerImpl::`scalar deleting destructor' | PathManager.obj | debug, object-file gap fill, medium
 void* __thiscall Tmp_006eb890::FUN_006eb890(unsigned int flags)
 {
     FUN_006eab30();
@@ -950,6 +1002,7 @@ struct S006ebe00
     void* FUN_006ebe00(unsigned int);
 };
 // @fnv 0x006ebe00
+// pdb: BSTStaticFreeList<PathingMessage,256>::`scalar deleting destructor' | PathManager.obj | debug, vtable slot, medium
 void* S006ebe00::FUN_006ebe00(unsigned int flags)
 {
     FUN_006ebd30();
@@ -965,6 +1018,9 @@ struct Class_006ebe30
 };
 void __cdecl _Deallocate(void*);
 // @fnv 0x006ebe30
+// pdb: BSTMessageQueue<NiPointer<NiAVObject> >::`scalar deleting destructor' | PathManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSTFreeList<PathingMessage>::`scalar deleting destructor'
+// pdb params: this
 void* Class_006ebe30::FUN_006ebe30(unsigned int flags)
 {
     SetVirtualTable_006ebda0();
@@ -981,14 +1037,16 @@ struct G00559a40
 struct S006ebf60
 {
     int f;
-    S006ebf60* NiPointer_ActorPathingMessageQueue_NiPointer_ActorPathingMessageQueue(int);
+    S006ebf60* NiPointer_ActorPathingMessageQueue_ctor(int);
 };
 // Stores a into f and, when a is non-zero, calls FUN_0040f6e0 on the object at a+0x14; returns this.
 // @fnv 0x006ebf60
-// src: XBOX_PDB 0x006ebf60
-S006ebf60* S006ebf60::NiPointer_ActorPathingMessageQueue_NiPointer_ActorPathingMessageQueue(int aiValue)
+// src: XBOX_DEBUG_PDB 0x006ebf60
+// pdb: NiPointer<ActorPathingMessageQueue>::NiPointer<ActorPathingMessageQueue> | PathManager.obj | debug, call graph (shared callers), high
+// pdb params: pObject
+S006ebf60* S006ebf60::NiPointer_ActorPathingMessageQueue_ctor(int pObject)
 {
-    f = aiValue;
+    f = pObject;
     if (f != 0)
         ((G00559a40*)(f + 0x14))->NiRefObject_IncRefCount();
     return this;
@@ -1038,6 +1096,10 @@ struct PathManagerImpl_t
 
 // Creates a tasklet from the request and message queue, adds it to kQueue, and removes and deletes it if FUN_006c5ec0 fails.
 // @fnv 0x006eac70
+// pdb: PathingTaskData::GetRayCastPathToNavmesh | PathManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathManagerImpl::BuildPath
+// pdb params: aEdges, aGoalLocation, aRetPath, abStart
+// pdb locals: prequest, eret, ppath, i
 bool PathManagerImpl_t::QueueTaskletRequest(GO aspRequest, Ptr2_006e9e20 aspMessageQueue)
 {
     BSTaskletData* ptaskData = new FUN_006e9cc0(aspRequest, aspMessageQueue);
@@ -1070,6 +1132,8 @@ struct PathingTaskShell : PathingTaskData
     void AssignRequestAndQueue(PathingRequest* request, NiPointer<ActorPathingMessageQueue> queue);
 };
 // @fnv 0x006e9db0
+// pdb: PathingTaskData::Setup | PathManager.obj | debug, object-file gap fill, medium
+// pdb params: aspRequest, aspMessageQueue
 void PathingTaskShell::AssignRequestAndQueue(PathingRequest* request, NiPointer<ActorPathingMessageQueue> queue)
 {
     reinterpret_cast<RequestAssigner*>(&m_pPathingRequest)->FUN_006e5cc0(request);
@@ -1120,6 +1184,8 @@ struct ManagerView
 };
 // @fnv 0x006ea350
 // src: COMMUNITY 0x006ea350
+// pdb: PathingTaskData::ComputeRayCasts | PathManager.obj | retail, upstream name already matches, high
+// pdb locals: itotalRayCasts, i, rayCastSearch
 int ManagerView::PathingTaskData_ComputeRayCasts()
 {
     int total = 0;
@@ -1129,7 +1195,7 @@ int ManagerView::PathingTaskData_ComputeRayCasts()
         if (second.FUN_00877a30(i)->flags == 0)
         {
             PathingSearchRayCast rayCast;
-            rayCast.ProcessRayCast(first.FUN_00877a30(i), second.FUN_00877a30(i));
+            rayCast.BuildPath(first.FUN_00877a30(i), second.FUN_00877a30(i));
             total += rayCast.FUN_004fd3e0();
             if (total > 10)
                 break;
@@ -2522,6 +2588,8 @@ struct FUN_006eb250_Class
 
 // Calls vf2 on the object at this+0x1480; if it succeeds, forwards arg2-arg5 to RequestLocationStatus on the returned object, otherwise returns 2.
 // @fnv 0x006eb250
+// pdb: PathManager::GetRayCastPathToNavMesh | PathManager.obj | retail, object-file run extension, low
+// pdb params: apRequest, aEdges, aGoalLocation, aRetPath, abStart
 unsigned int __thiscall FUN_006eb250_Class::CallVirtualObjectMethod(int aiValue, int arg2, int arg3, int arg4,
                                                                     bool arg5)
 {
@@ -3888,7 +3956,7 @@ extern const char g_acB6EB310Name[];
 class B6EB310Lock
 {
   public:
-    void Lock(const char* pcName);
+    void Lock(const char* apName);
     void Unlock();
 };
 
@@ -4684,6 +4752,7 @@ class B6EB310Manager
 
 // @fnv 0x006eb310
 // src: EXE 0x006eb310
+// pdb: PathManagerImpl::Pause | PathManager.obj | retail, upstream name already matches, high
 void B6EB310Manager::PathManagerImpl_Pause()
 {
     m_kLock.Lock(g_acB6EB310Name);
@@ -4706,7 +4775,7 @@ extern const char g_acB6EB3B0Name[];
 class B6EB3B0Lock
 {
   public:
-    void Lock(const char* pcName);
+    void Lock(const char* apName);
     void Unlock();
 };
 
@@ -5502,6 +5571,7 @@ class B6EB3B0Manager
 
 // @fnv 0x006eb3b0
 // src: EXE 0x006eb3b0
+// pdb: PathManagerImpl::Resume | PathManager.obj | debug, upstream name already matches, high
 void B6EB3B0Manager::PathManagerImpl_Resume()
 {
     m_kLock.Lock(g_acB6EB3B0Name);
@@ -5533,6 +5603,7 @@ struct Shell_006eb980
 // Calls FUN_006eac40 on m0, then FUN_006eb890(1) on m0 if non-null, and clears m0.
 // @fnv 0x006eb980
 // src: GUESS 0x006eb980 (confidence: medium)
+// pdb: PathManager::Release | PathManager.obj | debug, object-file gap fill, medium
 void Shell_006eb980::ReleaseAndClearObject()
 {
     m0->PathManagerImpl_Release();
@@ -5550,11 +5621,13 @@ struct Inner006eb440
 struct FUN_006ebcf0_cls
 {
     Inner006eb440* m0;
-    void __thiscall CallInner();
+    void __thiscall PathManager_CancelCurrentPathsAndPause();
 };
 
 // @fnv 0x006ebcf0
-void FUN_006ebcf0_cls::CallInner()
+// src: XBOX_DEBUG_PDB 0x006ebcf0
+// pdb: PathManager::CancelCurrentPathsAndPause | PathManager.obj | debug, call graph, high
+void FUN_006ebcf0_cls::PathManager_CancelCurrentPathsAndPause()
 {
     m0->Drain();
 }
@@ -5588,12 +5661,12 @@ struct PathingLocation17
 {
     int v[10];
     PathingLocation17& operator=(const PathingLocation17& other);
-    bool Test(const PathingLocation17& other, float f);
+    bool Test(const PathingLocation17& aOtherLoc, float afTolerance);
 };
 struct Sub17
 {
     int v[4];
-    void Activate(int arg);
+    void Activate(int aDestArray);
 };
 struct Big17
 {
@@ -5650,6 +5723,9 @@ struct Host17
 
 // Locks the spin, scans arr50 for a type 2 entry whose loc8/loc30 match a1/a2 within 0.1, acts on its code4, or appends new Big17/Small17 entries and notifies.
 // @fnv 0x006ea510
+// pdb: PathingTaskData::GetRayCastPath | PathManager.obj | debug, object-file gap fill, medium
+// pdb params: aStartLocation, aGoalLocation, aRetPath
+// pdb locals: prequest, eret, ppath, i
 int Host17::FindOrAddPathingEntry(PathingLocation17& a1, PathingLocation17& a2, int iActivateArg)
 {
     int result = 0;
@@ -5705,14 +5781,14 @@ void __cdecl operator delete(void*);
 struct RequestLocation
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24;
-    bool IsWithinDistanceOfSameLocation(int location, float tolerance);
+    bool IsWithinDistanceOfSameLocation(int aOtherLoc, float afTolerance);
     void FUN_006dcce0(int location);
 };
 struct RequestShape
 {
     int unk00, unk04, unk08, unk0c;
-    void BSSimpleArray_CopyTo_0(int result);
-    void ProcessItems(RequestShape* result);
+    void BSSimpleArray_CopyTo_0(int aDestArray);
+    void ProcessItems(RequestShape* aDestArray);
 };
 struct FUN_006cb3a0
 {
@@ -5748,6 +5824,9 @@ struct RequestManager
 };
 // Locks the manager, searches statuses for a matching type and location, updates or creates the request/status entries, unlocks, and returns the status.
 // @fnv 0x006ea780
+// pdb: PathingTaskData::GetRayCastPathToNavmesh | PathManager.obj | debug, object-file gap fill, medium
+// pdb params: aEdges, aGoalLocation, aRetPath, abStart
+// pdb locals: prequest, eret, ppath, i
 unsigned int FUN_006ea780_Obj::RequestLocationStatus(int pShape, int iLocation, int a3, int bTypeFlag)
 {
     unsigned int status = 0;
@@ -5861,7 +5940,7 @@ struct QueueView
     virtual void v3();
     virtual bool Pop(PathTaskCompletionRecord&);
     virtual void Remove(QueueTarget*);
-    bool Next(IteratorView&, int*, TaskView**, bool);
+    bool LockFreeMap_PathingRequest_PathingTaskData_GetNext(IteratorView&, int*, TaskView**, bool);
     void Clear(int);
 };
 struct TimerView
@@ -7197,6 +7276,8 @@ struct DrainManager
 };
 // Starts the timer, enters tasks, drains incoming messages, replies to outgoing tasks, clears the queue, releases the lock and resets state.
 // @fnv 0x006eb440
+// pdb: PathManagerImpl::CancelCurrentPathsAndPause | PathManager.obj | debug, object-file run extension, low
+// pdb locals: msg, it, prequest, ptaskData
 void DrainManager::Drain()
 {
     timer.Begin(taskName);
@@ -7220,7 +7301,7 @@ void DrainManager::Drain()
     {
         int key;
         TaskView* pTask;
-        if (outgoing.Next(iter, &key, &pTask, true))
+        if (outgoing.LockFreeMap_PathingRequest_PathingTaskData_GetNext(iter, &key, &pTask, true))
         {
             pTask->queue.Get()->Push(ReplyView(1, &pTask->solution));
             delete pTask;
@@ -7250,7 +7331,7 @@ class F55C0Queue
 {
   public:
     virtual ~F55C0Queue();
-    bool Pop(F55C0Item& rkItem);
+    bool Pop(F55C0Item& aMessage);
 };
 
 class FUN_009055c0 : public F55C0Queue
@@ -7261,6 +7342,8 @@ class FUN_009055c0 : public F55C0Queue
 
 // Destructor that repeatedly pops items from the queue until Pop returns false.
 // @fnv 0x009055c0
+// pdb: BSTCommonLLMessageQueue<ActorPathingMessage>::~BSTCommonLLMessageQueue<ActorPathingMessage> | HighProcess.obj | debug, call graph (shared callers), high
+// pdb locals: dummyMessage
 FUN_009055c0::~FUN_009055c0()
 {
     F55C0Item kItem;
@@ -7319,6 +7402,8 @@ struct FUN_006e9cc0 : PathTaskBase
 };
 // Constructs a path task, default-initializes its members, then calls Initialize with the given mode and handle.
 // @fnv 0x006e9cc0
+// pdb: PathingTaskData::PathingTaskData | PathManager.obj | debug, object-file gap fill, medium
+// pdb params: aspRequest, aspMessageQueue
 FUN_006e9cc0::FUN_006e9cc0(int mode, PathHandle value) : first(0), second(0), handle(0), enabled(false)
 {
     Initialize(mode, value);

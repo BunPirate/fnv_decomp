@@ -17,9 +17,11 @@ struct E02A40StreamWriter
 
 // Calls writer->write with buf and nbytes and returns nonzero if the number of bytes written differs from nbytes.
 // @fnv 0x00e02a40
-int __stdcall WriteAllOrFail(E02A40StreamWriter* writer, const void* buf, int aiNumBytes)
+// pdb: hkPlatformObjectWriter::writeRaw | hkPlatformObjectWriter.obj | retail, vtable slot, high
+// pdb params: writer, data, dataLen
+int __stdcall WriteAllOrFail(E02A40StreamWriter* writer, const void* data, int dataLen)
 {
-    return writer->write(buf, aiNumBytes) != aiNumBytes;
+    return writer->write(data, dataLen) != dataLen;
 }
 
 struct OffsetView
@@ -38,7 +40,7 @@ char* OffsetView::hkPlatformObjectWriter_getLayout()
 
 struct FUN_00e02d40_helper
 {
-    __declspec(nothrow) void ClearAndFreeData();
+    __declspec(nothrow) void hkPlatformObjectWriter_Cache_dtor();
 };
 struct FUN_00e02c70_audio_iface
 {
@@ -53,21 +55,23 @@ struct BaseE02c70
     virtual __declspec(nothrow) ~BaseE02c70()
     {}
 };
-struct FUN_00e02c70_Class : BaseE02c70
+// pdb: class hkPlatformObjectWriter, size 0x10, bases: hkObjectWriter, 2 members
+struct hkPlatformObjectWriter : BaseE02c70
 {
-    hkReferencedObject* unk08;
-    FUN_00e02d40_helper* unk0c;
-    virtual __declspec(nothrow) ~FUN_00e02c70_Class();
+    hkReferencedObject* m_copier;
+    FUN_00e02d40_helper* m_cache;
+    virtual __declspec(nothrow) ~hkPlatformObjectWriter();
 };
 // @fnv 0x00e02c70
-FUN_00e02c70_Class::~FUN_00e02c70_Class()
+// pdb: hkPlatformObjectWriter::~hkPlatformObjectWriter | hkPlatformObjectWriter.obj | retail, call graph, high
+hkPlatformObjectWriter::~hkPlatformObjectWriter()
 {
-    hkReferencedObject* reference = unk08;
+    hkReferencedObject* reference = m_copier;
     reference->removeReference();
-    FUN_00e02d40_helper* pHelper = unk0c;
+    FUN_00e02d40_helper* pHelper = m_cache;
     if (pHelper)
     {
-        pHelper->ClearAndFreeData();
+        pHelper->hkPlatformObjectWriter_Cache_dtor();
         hkMemoryRouter* pAudioHolder = (hkMemoryRouter*)hkMemoryRouter_getInstance();
         reinterpret_cast<FUN_00e02c70_audio_iface*>(pAudioHolder->m_heap)->v2(pHelper, 0x24);
     }
@@ -123,13 +127,15 @@ struct FUN_00e02bb0_cls
     void* m_p0c;
 
     char* hkPlatformObjectWriter_getLayout();
-    FUN_00e02bb0_cls* hkPlatformObjectWriter_hkPlatformObjectWriter(int a1);
+    FUN_00e02bb0_cls* hkPlatformObjectWriter_ctor(int layout);
 };
 
 // Sets the vtable and flag, allocates and initialises a blob from a key and a1, and conditionally allocates a small object whose Make result is stored in m_p0c.
 // @fnv 0x00e02bb0
-// src: XBOX_PDB 0x00e02bb0
-FUN_00e02bb0_cls* FUN_00e02bb0_cls::hkPlatformObjectWriter_hkPlatformObjectWriter(int a1)
+// src: XBOX_RETAIL_PDB 0x00e02bb0
+// pdb: hkPlatformObjectWriter::hkPlatformObjectWriter | hkPlatformObjectWriter.obj | retail, upstream name already matches, high
+// pdb params: layout
+FUN_00e02bb0_cls* FUN_00e02bb0_cls::hkPlatformObjectWriter_ctor(int layout)
 {
     m_w06 = 1;
     m_vptr = DAT_010ea370;
@@ -138,7 +144,7 @@ FUN_00e02bb0_cls* FUN_00e02bb0_cls::hkPlatformObjectWriter_hkPlatformObjectWrite
     blob->m_w04 = 0x18;
     KeyRef key;
     key.Set(&DAT_011b7b88);
-    m_p08 = blob->Init(&key, a1, IntTemp(2));
+    m_p08 = blob->Init(&key, layout, IntTemp(2));
 
     unsigned char* pucData = (unsigned char*)hkPlatformObjectWriter_getLayout();
     SpawnedSmall* small = 0;
@@ -195,7 +201,7 @@ hkObjectE02* __cdecl CreateObjectE02(const char* pcName, hkRegistryE02* pkRegist
 class hkTrackerE02
 {
   public:
-    void Track(hkObjectE02* pkObject, void* pvOwner, int iUnk);
+    void hkStructureLayout_computeMemberOffsetsInplace(hkObjectE02* klass, void* classesDone, int recurse);
 };
 
 enum hkResultE02
@@ -208,7 +214,7 @@ class hkLoaderE02
 {
   public:
     hkResultE02 Get(const char* pcName, hkObjectE02** ppkOut);
-    hkObjectE02* GetOrCreateObject(const char* pcName, hkTrackerE02* pkTracker);
+    hkObjectE02* GetOrCreateObject(const char* klass, hkTrackerE02* layout);
 
     int unk00;
     int unk04;
@@ -221,15 +227,18 @@ class hkLoaderE02
 
 // Looks up pcName via Get; if not found, creates the object, appends it to the array, tracks it with pkTracker, and returns it.
 // @fnv 0x00e02cb0
-hkObjectE02* hkLoaderE02::GetOrCreateObject(const char* pcName, hkTrackerE02* pkTracker)
+// pdb: hkPlatformObjectWriter::Cache::get | hkPlatformObjectWriter.obj | retail, object-file gap fill, high
+// pdb params: klass, layout
+// pdb locals: ret
+hkObjectE02* hkLoaderE02::GetOrCreateObject(const char* klass, hkTrackerE02* layout)
 {
     hkObjectE02* pkObject;
-    if (Get(pcName, &pkObject) == HK_SUCCESS_E02)
+    if (Get(klass, &pkObject) == HK_SUCCESS_E02)
         return pkObject;
 
-    hkObjectE02* pkNew = CreateObjectE02(pcName, &g_kRegistryE02, this, 0, 0, hkFlagsE02(0));
+    hkObjectE02* pkNew = CreateObjectE02(klass, &g_kRegistryE02, this, 0, 0, hkFlagsE02(0));
     m_kThirdFollowingStreamField.pushBack(pkNew);
-    pkTracker->Track(pkNew, &m_kOwner, 1);
+    layout->hkStructureLayout_computeMemberOffsetsInplace(pkNew, &m_kOwner, 1);
     return pkNew;
 }
 
@@ -264,13 +273,15 @@ struct FUN_00e02d40_cls
     int m_iArrayLength;
     unsigned int m_uCapBits;
 
-    void ClearAndFreeData();
+    void hkPlatformObjectWriter_Cache_dtor();
     void ProcessArgument(void* value);
     void Object_DoNothing();
 };
 
 // @fnv 0x00e02d40
-void FUN_00e02d40_cls::ClearAndFreeData()
+// src: XBOX_RETAIL_PDB 0x00e02d40
+// pdb: hkPlatformObjectWriter::Cache::~Cache | hkPlatformObjectWriter.obj | retail, object-file gap fill, high
+void FUN_00e02d40_cls::hkPlatformObjectWriter_Cache_dtor()
 {
     int i = 0;
     if (m_iArrayLength > 0)
@@ -331,6 +342,7 @@ struct FUN_00e02de0
 
 // Initializes the two maps and the array member by running their default constructors.
 // @fnv 0x00e02de0
+// pdb: hkPlatformObjectWriter::Cache::Cache | hkPlatformObjectWriter.obj | retail, object-file gap fill, high
 FUN_00e02de0::FUN_00e02de0()
 {}
 
@@ -361,6 +373,7 @@ struct FUN_00e02e40
 
 // Default constructor with an empty body; the object layout includes m_usMemSizeAndFlags and m_sReferenceCount.
 // @fnv 0x00e02e40
+// pdb: hkPlatformObjectWriter::`scalar deleting destructor' | hkPlatformObjectWriter.obj | retail, vtable slot, high
 FUN_00e02e40::FUN_00e02e40()
 {}
 }  // namespace fnv_00e02e40
@@ -382,7 +395,7 @@ int __cdecl hkString_strCmp(const char* name, const char* s);
 
 struct E02A80Helper
 {
-    E02A80Helper* Resolve(void* a, char* p);
+    E02A80Helper* Resolve(void* klass, char* layout);
     const char* Name();
 };
 
@@ -442,31 +455,34 @@ struct E02A80_cls
     E02A80Iface* unk08;
     E02A80Helper* unk0c;
 
-    int hkPlatformObjectWriter_writeObject(E02A80Arg* arg1, int arg2, E02A80Helper* arg3, int arg4);
+    int hkPlatformObjectWriter_writeObject(E02A80Arg* writer, int dataIn, E02A80Helper* klass, int reloc);
 };
 
 // Resolves a helper, optionally seeks and builds a box via the iface, then calls unk0C and returns whether the result string is empty.
 // @fnv 0x00e02a80
 // src: HAVOK_SRC 0x00e02a80
-int E02A80_cls::hkPlatformObjectWriter_writeObject(E02A80Arg* apArg, int aiValue, E02A80Helper* apHelper, int arg4)
+// pdb: hkPlatformObjectWriter::writeObject | hkPlatformObjectWriter.obj | retail, string-set bridge, high
+// pdb params: writer, dataIn, klass, reloc
+// pdb locals: dummyWriter, dummyReloc
+int E02A80_cls::hkPlatformObjectWriter_writeObject(E02A80Arg* writer, int dataIn, E02A80Helper* klass, int reloc)
 {
     E02A80Helper* pResolvedHelper;
     E02A80Helper* pHelper = unk0c;
     if (pHelper != 0)
     {
-        pResolvedHelper = pHelper->Resolve(apHelper, reinterpret_cast<E02A80LayoutView*>(this)->hkPlatformObjectWriter_getLayout());
+        pResolvedHelper = pHelper->Resolve(klass, reinterpret_cast<E02A80LayoutView*>(this)->hkPlatformObjectWriter_getLayout());
     }
     else
     {
-        pResolvedHelper = apHelper;
+        pResolvedHelper = klass;
     }
     E02A80Local a;
     void* b;
     E02A80Arg* e;
     if (unk0c != 0 && hkString_strCmp(pResolvedHelper->Name(), str_010d66fc) == 0)
     {
-        b = unk0c->Resolve(reinterpret_cast<void*>(aiValue), reinterpret_cast<E02A80LayoutView*>(this)->hkPlatformObjectWriter_getLayout());
-        e = apArg;
+        b = unk0c->Resolve(reinterpret_cast<void*>(dataIn), reinterpret_cast<E02A80LayoutView*>(this)->hkPlatformObjectWriter_getLayout());
+        e = writer;
         a.Seek(e->unk20(), 0);
         E02A80Box box;
         box.unk08 = (int)0x80000000;
@@ -482,15 +498,15 @@ int E02A80_cls::hkPlatformObjectWriter_writeObject(E02A80Arg* apArg, int aiValue
         box.unk24 = 0;
         box.unk28 = 0;
         box.unk30 = 0;
-        unk08->unk0C(b, apHelper, apArg, pResolvedHelper, &box);
+        unk08->unk0C(b, klass, writer, pResolvedHelper, &box);
         e = reinterpret_cast<E02A80Arg*>(&a);
         box.Finish();
     }
     else
     {
-        e = apArg;
+        e = writer;
     }
-    unk08->unk0C(reinterpret_cast<void*>(aiValue), apHelper, e, pResolvedHelper, reinterpret_cast<void*>(arg4));
-    char* p = e->unk0C(&apHelper);
+    unk08->unk0C(reinterpret_cast<void*>(dataIn), klass, e, pResolvedHelper, reinterpret_cast<void*>(reloc));
+    char* p = e->unk0C(&klass);
     return *p == 0;
 }

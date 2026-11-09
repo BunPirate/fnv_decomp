@@ -60,19 +60,22 @@ struct CollisionPair
 {
     CollisionPointer first;
     CollisionPointer second;
-    void CameraCaster_Init(float radius, unsigned int filter);
+    void CameraCaster_Init(float afRadius, unsigned int aiGroup);
 };
 // @fnv 0x00620930
 // src: COMMUNITY 0x00620930
-void CollisionPair::CameraCaster_Init(float radius, unsigned int filter)
+// pdb: CameraCaster::Init | CameraCaster.obj | retail, upstream name already matches, high
+// pdb params: afRadius, aiGroup
+// pdb locals: pplayerShape, csi2, ihorseFilter, iplayerFilter, csi1
+void CollisionPair::CameraCaster_Init(float afRadius, unsigned int aiGroup)
 {
-    bhkSphereShape* sphere = new bhkSphereShape(radius, true);
+    bhkSphereShape* sphere = new bhkSphereShape(afRadius, true);
     CollisionInfo firstInfo;
     CollisionInfo secondInfo;
     CollisionFilter firstFilter(0);
     CollisionFilter secondFilter(0);
     firstFilter.CFilter_SetLayer(35);
-    firstFilter.CFilter_SetGroup(filter);
+    firstFilter.CFilter_SetGroup(aiGroup);
     secondFilter.CFilter_SetLayer(35);
     secondFilter.CFilter_SetGroup(bhkCollisionFilter_GetNewSystemGroup());
     firstInfo.filter = firstFilter.Modelloader_GetReferencedThis();
@@ -145,19 +148,22 @@ class xPick
     xSP<xPhantom> m_spPhantom;
     bool m_b3a4;
     unsigned int m_ui3a8;
-    void HitCaster_Init(float fRadius, unsigned int uiLayer);
+    void HitCaster_Init(float afRadius, unsigned int aiGroup);
 };
 
 // @fnv 0x006269a0
 // src: COMMUNITY 0x006269a0
-void xPick::HitCaster_Init(float fRadius, unsigned int uiLayer)
+// pdb: HitCaster::Init | HitCaster.obj | retail, upstream name already matches, high
+// pdb params: afRadius, aiGroup
+// pdb locals: pshape, csi, ifilter
+void xPick::HitCaster_Init(float afRadius, unsigned int aiGroup)
 {
-    bhkSphereShape* qfTOqo = new bhkSphereShape(fRadius, true);
+    bhkSphereShape* qfTOqo = new bhkSphereShape(afRadius, true);
     xCinfo qsSDDgz;
     xFilter qrEZrs(0);
     qrEZrs.SetLayer(0x27);
-    qrEZrs.SetGroup(uiLayer);
-    m_ui3a8 = uiLayer;
+    qrEZrs.SetGroup(aiGroup);
+    m_ui3a8 = aiGroup;
     qsSDDgz.m_uiFilter = qrEZrs;
     qsSDDgz.m_pShape = qfTOqo->Bipedanim_GetReferenceFlagsOrZero();
     qsSDDgz.m_kSub.Init();
@@ -206,7 +212,7 @@ struct Obj_006286f0
 
 struct Src_006286f0
 {
-    void GetBox(Box_006286f0* out);
+    void GetBox(Box_006286f0* arB);
 };
 
 struct Ptr_006286f0
@@ -232,13 +238,15 @@ struct CellBoundaryCollector
 #pragma strict_gs_check(push, on)
 // @fnv 0x006286f0
 // src: XBOX_PDB 0x006286f0
+// pdb: LoadedAreaBound::CheckForDynamicBodiesOutsideBound | LoadedAreaBound.obj | retail, upstream name already matches, high
+// pdb locals: pcell, minExtent, maxExtent, pbhkWorld, pworld, boundAABB, ui, phantomAABB, activeSimIslandA, inactiveSimIslandA, phantomA
 void CellBoundaryCollector::LoadedAreaBound_CheckForDynamicBodiesOutsideBound()
 {
     Box_006286f0 box;
     hkVector4 mn;
     hkVector4 mx;
-    mx.SetAllComponents(DAT_0104e148);
-    mn.SetAllComponents(DAT_0104da48);
+    mx.setAll(DAT_0104e148);
+    mn.setAll(DAT_0104da48);
     for (unsigned int i = 0; i < 6; i++)
     {
         Box_006286f0 b;
@@ -431,12 +439,15 @@ class WorkOwner
     int unk2C;
     int unk30;
     WorkList list;
-    void TESWaterListener_RemoveReferenceFromZone(WorkItem* item);
-    void TESWaterListener_HandleQueuedRemovals(WorkActor* actor, bool checkDist, bool skip);
+    void TESWaterListener_RemoveReferenceFromZone(WorkItem* apQR);
+    void TESWaterListener_HandleQueuedRemovals(WorkActor* apSpecificReference, bool abCheckBound, bool abCancel);
 };
 // @fnv 0x00631370
 // src: COMMUNITY 0x00631370
-void WorkOwner::TESWaterListener_HandleQueuedRemovals(WorkActor* actor, bool checkDist, bool skip)
+// pdb: TESWaterListener::HandleQueuedRemovals | TESWaterListener.obj | retail, upstream name already matches, high
+// pdb params: apSpecificReference, abCheckBound, abCancel
+// pdb locals: next, iter, pqr, bpasses, aabb
+void WorkOwner::TESWaterListener_HandleQueuedRemovals(WorkActor* apSpecificReference, bool abCheckBound, bool abCancel)
 {
     void* it = list.Modelloader_GetReferencedThis();
     void* next = 0;
@@ -454,8 +465,8 @@ void WorkOwner::TESWaterListener_HandleQueuedRemovals(WorkActor* actor, bool che
             }
             else
             {
-                bool match = !actor || item->actor == actor || item->target == actor;
-                if (checkDist)
+                bool match = !apSpecificReference || item->actor == apSpecificReference || item->target == apSpecificReference;
+                if (abCheckBound)
                 {
                     FUN_00437c10 bounds;
                     item->src->GetBounds(&bounds);
@@ -463,7 +474,7 @@ void WorkOwner::TESWaterListener_HandleQueuedRemovals(WorkActor* actor, bool che
                 }
                 if (match)
                 {
-                    if (!skip)
+                    if (!abCancel)
                         TESWaterListener_RemoveReferenceFromZone(item);
                     list.RemoveNode(&it);
                     delete item;
@@ -637,7 +648,7 @@ class ImpactEvent620
   public:
     void SetCollision(CollisionInfo620* pkInfo);
     void SetBody(void* pvBody);
-    void SetPosition(hkVector4* pkPos);
+    void SetPosition(hkVector4* arPos);
 };
 
 class FormRef620
@@ -651,46 +662,49 @@ class ImpactHandler620
   public:
     virtual ImpactEvent620* CreateEvent(void* pvTarget, void* pvBody, void* pvInfo);
     FormRef620 m_kSource;
-    ImpactEvent620* CreateEventDirect(void* pvTarget, void* pvBody, void* pvInfo);
+    ImpactEvent620* CreateEventDirect(void* apTarget, void* apCol, void* aiFlags);
 };
 
-void* __cdecl GetAVObjectForCollidable(void* pvBody);
+void* __cdecl GetAVObjectForCollidable(void* aphkCol);
 void* __cdecl TESObjectREFR_FindReferenceFor3D(void* pvObject);
 CollisionBodyVectorSource* __cdecl hkpGetRigidBody(void* pvForm);
-void* __cdecl bhkEntity_Getbhk(const void* pvRef);
+void* __cdecl bhkEntity_Getbhk(const void* apEnt);
 
 class ImpactManager620
 {
   public:
-    ImpactHandler620* FindHandler(void* pvSource, void* pvBody);
-    ImpactHandler620* BGSZoneTargetListener_AddZoneTargetPair(CollisionInfo620* pkInfo, void* pvSource, void* pvTarget, void* pvData,
-                                   bool bDirect);
+    ImpactHandler620* FindHandler(void* apZone, void* apCol);
+    ImpactHandler620* BGSZoneTargetListener_AddZoneTargetPair(CollisionInfo620* arPoint, void* apZone, void* apTarget, void* aiFlags,
+                                   bool abTrap);
 };
 
 // Preserve the original stack-cookie instrumentation with the shared vector layout.
 #pragma strict_gs_check(push, on)
 // @fnv 0x00620340
 // src: COMMUNITY 0x00620340
-ImpactHandler620* ImpactManager620::BGSZoneTargetListener_AddZoneTargetPair(CollisionInfo620* pkInfo, void* pvSource, void* pvTarget, void* pvData,
-                                                 bool bDirect)
+// pdb: BGSZoneTargetListener::AddZoneTargetPair | BGSZoneTargetListener.obj | retail, upstream name already matches, high
+// pdb params: arPoint, apZone, apTarget, aiFlags, abTrap
+// pdb locals: pe, pcolidableTarget, prefA, pcolidableZone, prefB, pavA, pavB, pt, vel, emat, prb, pcoll, pbody, pshape
+ImpactHandler620* ImpactManager620::BGSZoneTargetListener_AddZoneTargetPair(CollisionInfo620* arPoint, void* apZone, void* apTarget, void* aiFlags,
+                                                 bool abTrap)
 {
-    void* pvObjA = GetAVObjectForCollidable(pkInfo->m_pvBodyA);
-    void* pvObjB = GetAVObjectForCollidable(pkInfo->m_pvBodyB);
+    void* pvObjA = GetAVObjectForCollidable(arPoint->m_pvBodyA);
+    void* pvObjB = GetAVObjectForCollidable(arPoint->m_pvBodyB);
     void* pvRefA = TESObjectREFR_FindReferenceFor3D(pvObjA);
     void* pvRefB = TESObjectREFR_FindReferenceFor3D(pvObjB);
-    void* pvSourceBody = pvRefA == pvSource ? pkInfo->m_pvBodyA : (pvRefB == pvSource ? pkInfo->m_pvBodyB : 0);
-    void* pvTargetBody = pvRefA == pvTarget ? pkInfo->m_pvBodyA : (pvRefB == pvTarget ? pkInfo->m_pvBodyB : 0);
-    ImpactHandler620* pkHandler = FindHandler(pvSource, pvSourceBody);
+    void* pvSourceBody = pvRefA == apZone ? arPoint->m_pvBodyA : (pvRefB == apZone ? arPoint->m_pvBodyB : 0);
+    void* pvTargetBody = pvRefA == apTarget ? arPoint->m_pvBodyA : (pvRefB == apTarget ? arPoint->m_pvBodyB : 0);
+    ImpactHandler620* pkHandler = FindHandler(apZone, pvSourceBody);
     if (pkHandler)
     {
         ImpactEvent620* pkEvent = 0;
-        if (bDirect)
-            pkEvent = pkHandler->CreateEventDirect(pvTarget, pvTargetBody, pvData);
+        if (abTrap)
+            pkEvent = pkHandler->CreateEventDirect(apTarget, pvTargetBody, aiFlags);
         else
-            pkEvent = pkHandler->CreateEvent(pvTarget, pvTargetBody, pvData);
+            pkEvent = pkHandler->CreateEvent(apTarget, pvTargetBody, aiFlags);
         if (pkEvent)
         {
-            pkEvent->SetCollision(pkInfo->GetCollision());
+            pkEvent->SetCollision(arPoint->GetCollision());
             CollisionBodyVectorSource* pkRef = hkpGetRigidBody(pkHandler->m_kSource.GetForm());
             hkVector4 kPos;
             int iSize = 0x24;
@@ -701,8 +715,8 @@ ImpactHandler620* ImpactManager620::BGSZoneTargetListener_AddZoneTargetPair(Coll
                 bhkWorldObject* pkWorldObject = (bhkWorldObject*)bhkEntity_Getbhk(pkRef);
                 bhkNode620* pkNode = pkWorldObject ? reinterpret_cast<bhkNode620*>(pkWorldObject->bhkWorldObject_GetShape()) : 0;
                 bhkCharacter620* pkCharacter = pkNode ? pkNode->GetCharacter() : 0;
-                if (pkCharacter && pkInfo->m_iBodyIndex != -1)
-                    pkEvent->SetBody(pkCharacter->GetBody(pkInfo->m_iBodyIndex));
+                if (pkCharacter && arPoint->m_iBodyIndex != -1)
+                    pkEvent->SetBody(pkCharacter->GetBody(arPoint->m_iBodyIndex));
                 else if (pkNode)
                     pkEvent->SetBody(pkNode->GetBody());
             }
@@ -1232,7 +1246,7 @@ struct xEffItem
 };
 struct xCaster2
 {
-    void DestroyDate();
+    void bhkWorld_MarkForRead();
     xEffItem* FUN_00541c80();
 };
 struct xSrc
@@ -1255,35 +1269,38 @@ struct xCaster
 {
     xBodyPtr m_iWordAt00;
     xBodyPtr m_iWordAt04;
-    bool CameraCaster_KeepOutOfCharacter(xRef* apRef, const NiPoint3& akPos, float afA, float afB);
+    bool CameraCaster_KeepOutOfCharacter(xRef* apController, const NiPoint3& arPoint, float afRadius, float afScaleOffset);
 };
 // Preserve the original stack-cookie instrumentation with the shared vector layout.
 #pragma strict_gs_check(push, on)
 // @fnv 0x006214d0
 // src: XBOX_PDB 0x006214d0
-bool xCaster::CameraCaster_KeepOutOfCharacter(xRef* apRef, const NiPoint3& akPos, float afA, float afB)
+// pdb: CameraCaster::KeepOutOfCharacter | CameraCaster.obj | retail, upstream name already matches, high
+// pdb params: apController, arPoint, afRadius, afScaleOffset
+// pdb locals: collector, capsulePos, pw, pphantom, bres, pcb, input, pca, cameraPos, delta, pdis, pfunc, ps, foldRad
+bool xCaster::CameraCaster_KeepOutOfCharacter(xRef* apController, const NiPoint3& arPoint, float afRadius, float afScaleOffset)
 {
     bool RESULT = false;
     hkVector4 POSV;
     hkVector4 DIRV;
-    if (apRef->bhkCharacterController_QChaseBip() && xg_player_11dea3c && xg_player_11dea3c->FUN_008d8520() &&
+    if (apController->bhkCharacterController_QChaseBip() && xg_player_11dea3c && xg_player_11dea3c->FUN_008d8520() &&
         xg_player_11dea3c->FUN_008d8520()->FUN_6d4())
     {
-        NiPoint3 DIFF = akPos - *xFUN_0045bb80(xg_player_11dea3c->FUN_008d8520()->FUN_6d4());
+        NiPoint3 DIFF = arPoint - *xFUN_0045bb80(xg_player_11dea3c->FUN_008d8520()->FUN_6d4());
         if (DIFF.FUN_00457990() < *xg_11cc188.Setting_Float_00403e20())
             RESULT = true;
         return RESULT;
     }
-    xFUN_004a3e00(&POSV, akPos);
-    DIRV = *static_cast<const hkVector4*>(apRef->bhkCharacterProxy_GethkPosition());
+    xFUN_004a3e00(&POSV, arPoint);
+    DIRV = *static_cast<const hkVector4*>(apController->bhkCharacterProxy_GethkPosition());
     xBody* BODY = 0;
-    if (apRef == xg_player_11dea3c->FUN_009306d0())
+    if (apController == xg_player_11dea3c->FUN_009306d0())
     {
         BODY = m_iWordAt00.Modelloader_GetReferencedThis();
         if (POSV.getComponent(2).getReal() > DIRV.getComponent(2).getReal())
         {
-            POSV(2) -= xFUN_004a3e90(afB);
-            DIRV(2) -= xFUN_004a3e90(afB);
+            POSV(2) -= xFUN_004a3e90(afScaleOffset);
+            DIRV(2) -= xFUN_004a3e90(afScaleOffset);
         }
     }
     else
@@ -1292,19 +1309,19 @@ bool xCaster::CameraCaster_KeepOutOfCharacter(xRef* apRef, const NiPoint3& akPos
     xCollector COL;
     EV.hkpCollisionInput_setTolerance(0.0f);
     xModelPtr* WMODEL = BODY->GetSourceFilesFromObject();
-    xModelPtr* SMODEL = apRef->bhkCharacterProxy_GethkShapePhantom()->TESDataHandler_GetWorldSpaceList();
-    xCaster2* CAST = apRef->bhkCharacterController_GetWorld();
+    xModelPtr* SMODEL = apController->bhkCharacterProxy_GethkShapePhantom()->TESDataHandler_GetWorldSpaceList();
+    xCaster2* CAST = apController->bhkCharacterController_GetWorld();
     if (CAST)
     {
-        CAST->DestroyDate();
+        CAST->bhkWorld_MarkForRead();
         xEffect* EFF = CAST->FUN_00541c80()->FUN_004fb070();
-        CAST->DestroyDate();
+        CAST->bhkWorld_MarkForRead();
         if (EFF)
         {
             EV.m_iWordAt00.FUN_00537e90((unsigned int)EFF);
-            CAST->DestroyDate();
+            CAST->bhkWorld_MarkForRead();
             EV.m_iThirdValue.FUN_00537e90(CAST->FUN_00541c80()->FUN_00407840());
-            CAST->DestroyDate();
+            CAST->bhkWorld_MarkForRead();
             BODY->bhkShapePhantom_SetPosition(&POSV);
             xMotion* MOTION = xFUN_004ae6c0(BODY);
             xCastFn FN =
@@ -1312,7 +1329,7 @@ bool xCaster::CameraCaster_KeepOutOfCharacter(xRef* apRef, const NiPoint3& akPos
             if (FN)
             {
                 float SAVED = MOTION->ActorPackage_GetPackageStartTime();
-                MOTION->NiTimeController_SetPhase(afA);
+                MOTION->NiTimeController_SetPhase(afRadius);
                 FN(WMODEL, SMODEL, &EV, &COL);
                 RESULT = COL.hkpAllCdPointCollector_hasHit().FUN_005609f0();
                 MOTION->NiTimeController_SetPhase(SAVED);
@@ -1372,17 +1389,20 @@ struct xCaster
 {
     char m_auiShapeKeys[0x3a0];
     xPtr m_3a0;
-    void DecalCaster_Init(float afRadius, unsigned int auiLayer);
+    void DecalCaster_Init(float afRadius, unsigned int aiGroup);
 };
 // @fnv 0x00622d60
 // src: XBOX_PDB 0x00622d60
-void xCaster::DecalCaster_Init(float afRadius, unsigned int auiLayer)
+// pdb: DecalCaster::Init | DecalCaster.obj | retail, string-set bridge, high
+// pdb params: afRadius, aiGroup
+// pdb locals: uimultiLayer, pshape, csi, ifilter
+void xCaster::DecalCaster_Init(float afRadius, unsigned int aiGroup)
 {
     bhkSphereShape* SHAPE = new bhkSphereShape(afRadius, true);
     xCinfo CINFO;
     xFilter FILTER(0);
     FILTER.CFilter_SetLayer(0x27);
-    FILTER.CFilter_SetGroup(auiLayer);
+    FILTER.CFilter_SetGroup(aiGroup);
     CINFO.m_uiFilterInfo = FILTER.Modelloader_GetReferencedThis();
     CINFO.m_pCollisionShape = (int)SHAPE->Bipedanim_GetReferenceFlagsOrZero();
     CINFO.m_20.bhkTransform_setIdentity();
@@ -1478,26 +1498,29 @@ struct MotionOwner
     int unk394, unk398, unk39c;
     MotionPointer world;
     void DecalCaster_SetRadius(float);
-    void FUN_006233c0(int);
+    void DecalCaster_SetCustomPickCollisions(int);
     MotionStatus* hkpAllCdPointCollector_hasHit(bool&);
     void DecalCaster_GetNumCollisions();
     void DecalCaster_Pick(const void*, const void*, float);
 };
 // @fnv 0x00622f80
 // src: COMMUNITY 0x00622f80
-void MotionOwner::DecalCaster_Pick(const void* origin, const void* rotation, float time)
+// pdb: DecalCaster::Pick | DecalCaster.obj | retail, upstream name already matches, high
+// pdb params: arFrom, arTo, afRadius
+// pdb locals: bres, hkFrom, input
+void MotionOwner::DecalCaster_Pick(const void* arFrom, const void* arTo, float afRadius)
 {
     bool result = false;
-    if (time != 0.0)
-        DecalCaster_SetRadius(time);
-    FUN_006233c0(0);
+    if (afRadius != 0.0)
+        DecalCaster_SetRadius(afRadius);
+    DecalCaster_SetCustomPickCollisions(0);
     Update();
     if (world.Modelloader_GetReferencedThis())
     {
         hkVector4 vector;
         MotionFrame frame;
-        NI2HK(&vector, origin);
-        NI2HK(&frame, rotation);
+        NI2HK(&vector, arFrom);
+        NI2HK(&frame, arTo);
         world.Modelloader_GetReferencedThis()->InvokeInterfaceCall(vector, frame, this, 0);
         bool temporary;
         result = hkpAllCdPointCollector_hasHit(temporary)->FUN_005609f0();
@@ -1506,23 +1529,26 @@ void MotionOwner::DecalCaster_Pick(const void* origin, const void* rotation, flo
 }
 
 
-const hkVector4* __cdecl NI2HK(hkVector4* pOut, const NiPoint3* pSource);
+const hkVector4* __cdecl NI2HK(hkVector4* arhkTran, const NiPoint3* arNiTran);
 
 class S006230f0_Object
 {
   public:
-    void bhkShapePhantom_SetPosition(const hkVector4* pValue);
-    void bhkShapePhantom_setPositionNi(const NiPoint3* pSource);
+    void bhkShapePhantom_SetPosition(const hkVector4* arPos);
+    void bhkShapePhantom_setPositionNi(const NiPoint3* arPos);
 };
 
 // Preserve the original stack-cookie instrumentation with the shared vector layout.
 #pragma strict_gs_check(push, on)
 // @fnv 0x006230f0
 // src: COMMUNITY 0x006230f0
-void S006230f0_Object::bhkShapePhantom_setPositionNi(const NiPoint3* pSource)
+// pdb: bhkShapePhantom::SetPosition | DecalCaster.obj | debug, call graph (shared callers), high
+// pdb params: arPos
+// pdb locals: hkp
+void S006230f0_Object::bhkShapePhantom_setPositionNi(const NiPoint3* arPos)
 {
     hkVector4 kValue;
-    bhkShapePhantom_SetPosition(NI2HK(&kValue, pSource));
+    bhkShapePhantom_SetPosition(NI2HK(&kValue, arPos));
 }
 #pragma strict_gs_check(pop)
 
@@ -1689,7 +1715,7 @@ struct Owner
     int unk34, unk38, unk3c;
     float distance;
     bool LoadedAreaBound_GetBoundFromCell(Cell*, int, FUN_00437c10*);
-    void BuildWalls(Cell*, FUN_00437c10*);
+    void LoadedAreaBound_Create(Cell*, FUN_00437c10*);
     void LoadedAreaBound_CheckForDynamicBodiesOutsideBound();
     void FUN_00628da0();
     void LoadedAreaBound_WarpActor(Ref*);
@@ -1698,20 +1724,23 @@ struct Owner
 };
 // @fnv 0x006271b0
 // src: XBOX_PDB 0x006271b0
-void Owner::LoadedAreaBound_Update(Cell* next, int flag)
+// pdb: LoadedAreaBound::Update | LoadedAreaBound.obj | retail, upstream name already matches, high
+// pdb params: apCell, apCellGrid
+// pdb locals: removeBodyA, uscurrentFlag, pbody, usborderFlags, curhitMap, it, loadedAreaAABB, ui, pphantom, rcols, buseWarp, bodyA, isize, warpedChildBodies, phantomA, i, prb, pp, pref, filter, pactor, pbhkRb, usbodyCurrFlags, bcontains ...
+void Owner::LoadedAreaBound_Update(Cell* apCell, int apCellGrid)
 {
-    if (next != cell && next)
+    if (apCell != cell && apCell)
     {
         FUN_00437c10 bounds;
-        if (!LoadedAreaBound_GetBoundFromCell(next, flag, &bounds))
+        if (!LoadedAreaBound_GetBoundFromCell(apCell, apCellGrid, &bounds))
             return;
-        BuildWalls(next, &bounds);
-        cell = next;
+        LoadedAreaBound_Create(apCell, &bounds);
+        cell = apCell;
         LoadedAreaBound_CheckForDynamicBodiesOutsideBound();
     }
-    if (!next)
+    if (!apCell)
     {
-        cell = next;
+        cell = apCell;
         FUN_00628da0();
         return;
     }
@@ -1985,7 +2014,7 @@ class GridB
 {
   public:
     unsigned int GetSize();
-    CellB** GetContainingCell(unsigned int i, unsigned int j);
+    CellB** GetContainingCell(unsigned int aiX, unsigned int aiY);
 };
 
 class PartB
@@ -2036,24 +2065,27 @@ class TESObjectREFRB
 class SpawnAreaB
 {
   public:
-    bool LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* pkRef, GridB* pkGrid, hkAabbB* pkOut);
+    bool LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* apCell, GridB* apCellGrid, hkAabbB* arBound);
 };
 
 // @fnv 0x006281d0
 // src: XBOX_PDB 0x006281d0
-bool SpawnAreaB::LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* pkRef, GridB* pkGrid, hkAabbB* pkOut)
+// pdb: LoadedAreaBound::GetBoundFromCell | LoadedAreaBound.obj | retail, upstream name already matches, high
+// pdb params: apCell, apCellGrid, arBound
+// pdb locals: bret, pbhkWorld, pworld, minExtent, maxExtent, aabb, fixedEntitiesA, pfixedIsland, i, pcol, idim, x, y, pgridcell, cellRBA, pcellMopp, ui, pshape, rbTransf
+bool SpawnAreaB::LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* apCell, GridB* apCellGrid, hkAabbB* arBound)
 {
     bool bResult = false;
-    RootB* pkRoot = pkRef->GetRoot();
+    RootB* pkRoot = apCell->GetRoot();
     Node3DB* pk3D = pkRoot ? pkRoot->Get3D() : 0;
     if (pk3D)
     {
         hkAabbB kAabb;
         hkVector4 kMinBoundsCur;
         hkVector4 kMaxPoint;
-        kMaxPoint.SetAllComponents(-3.40282e38f);
-        kMinBoundsCur.SetAllComponents(3.40282e38f);
-        if (pkRef->IsActor())
+        kMaxPoint.setAll(-3.40282e38f);
+        kMinBoundsCur.setAll(3.40282e38f);
+        if (apCell->IsActor())
         {
             SkeletonB* pkSkeleton = pk3D->GetSkeleton();
             PartListB* pkParts = pkSkeleton->GetParts();
@@ -2069,14 +2101,14 @@ bool SpawnAreaB::LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* pkRef, GridB* 
                 }
             }
         }
-        else if (pkGrid)
+        else if (apCellGrid)
         {
-            unsigned int uiSize = pkGrid->GetSize();
+            unsigned int uiSize = apCellGrid->GetSize();
             for (unsigned int i = 0; i < uiSize; i++)
             {
                 for (unsigned int j = 0; j < uiSize; j++)
                 {
-                    CellB** ppkCell = pkGrid->GetContainingCell(i, j);
+                    CellB** ppkCell = apCellGrid->GetContainingCell(i, j);
                     if (*ppkCell)
                     {
                         CellObjectB* pkObject = (*ppkCell)->GetObject();
@@ -2108,8 +2140,8 @@ bool SpawnAreaB::LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* pkRef, GridB* 
                 }
             }
         }
-        pkOut->m_kMinimumCorner = kMinBoundsCur;
-        pkOut->m_kMaximumCorner = kMaxPoint;
+        arBound->m_kMinimumCorner = kMinBoundsCur;
+        arBound->m_kMaximumCorner = kMaxPoint;
         bResult = kMaxPoint(0) != (double)-3.40282e38f && kMinBoundsCur(0) != (double)3.40282e38f;
     }
     return bResult;
@@ -2120,7 +2152,7 @@ const hkVector4& hkVector4_getZero();  // shared zero vector
 
 struct S006288c0_Aabb
 {
-    S006288c0_Aabb& Construct(const hkVector4& min, const hkVector4& max);  // FUN_00628950
+    S006288c0_Aabb& hkAabb_ctor(const hkVector4& min, const hkVector4& max);  // FUN_00628950
     hkVector4 m_kMinimumCorner;
     hkVector4 m_kMaximumCorner;
 };
@@ -2142,26 +2174,29 @@ class S006288c0_Object
   public:
     S006288c0_Shape* Bipedanim_GetReferenceFlagsOrZero();
     void Object_DoNothing();
-    void bhkAabbPhantom_GetAabb(S006288c0_Bounds* bounds);
+    void bhkAabbPhantom_GetAabb(S006288c0_Bounds* arB);
 };
 
 // Preserve the original stack-cookie instrumentation with the shared vector layout.
 #pragma strict_gs_check(push, on)
 // @fnv 0x006288c0
 // src: XBOX_PDB 0x006288c0
-void S006288c0_Object::bhkAabbPhantom_GetAabb(S006288c0_Bounds* bounds)
+// pdb: bhkAabbPhantom::GetAabb | LoadedAreaBound.obj | retail, upstream name already matches, high
+// pdb params: arB
+// pdb locals: pp
+void S006288c0_Object::bhkAabbPhantom_GetAabb(S006288c0_Bounds* arB)
 {
     S006288c0_Shape* shape = Bipedanim_GetReferenceFlagsOrZero();
     if (shape)
     {
         Object_DoNothing();
-        bounds->AssignFields_006281a0(shape->hkpAabbPhantom_getAabb());
+        arB->AssignFields_006281a0(shape->hkpAabbPhantom_getAabb());
         Object_DoNothing();
     }
     else
     {
         LocalM128 zeroBounds[2];
-        bounds->AssignFields_006281a0(reinterpret_cast<S006288c0_Aabb*>(zeroBounds)->Construct(hkVector4_getZero(), hkVector4_getZero()));
+        arB->AssignFields_006281a0(reinterpret_cast<S006288c0_Aabb*>(zeroBounds)->hkAabb_ctor(hkVector4_getZero(), hkVector4_getZero()));
     }
 }
 #pragma strict_gs_check(pop)
@@ -2238,6 +2273,9 @@ int __fastcall hkpRigidBody_getMotionType(void*);
 
 // @fnv 0x00628980
 // src: GUESS 0x00628980 (confidence: low)
+// pdb: LoadedAreaBound::SetBodiesMotionOutsideAABB | LoadedAreaBound.obj | debug, object-file run extension, low
+// pdb params: boundAABB, arSimIslandA
+// pdb locals: aabb, bodiesToBeWarped, warpedChildBodies, pworld, i, entitiesA, j, pcol, prb, pref, pbhkRb, warpedBodies
 void Owner628980::ProcessEntries_00628980(Filter628980* filter, List628980* input)
 {
     Text628980 text;
@@ -2298,6 +2336,9 @@ class S00628c50_Box
 
 // @fnv 0x00628c50
 // src: COMMUNITY 0x00628c50
+// pdb: hkAabb::overlaps | LoadedAreaBound.obj | debug, upstream name already matches, high
+// pdb params: other
+// pdb locals: maxcomp, both, mincomp, assertBuf, ostr
 bool S00628c50_Box::hkAabb_overlaps(const S00628c50_Box* other) const
 {
     S00628c50_Vector a;
@@ -2311,7 +2352,7 @@ bool S00628c50_Box::hkAabb_overlaps(const S00628c50_Box* other) const
 
 
 
-const hkVector4* __cdecl NI2HK(hkVector4* pkOut, const NiPoint3* pkIn);
+const hkVector4* __cdecl NI2HK(hkVector4* arhkTran, const NiPoint3* arNiTran);
 
 class TESObjectCELLP;
 
@@ -2492,7 +2533,7 @@ class TESObjectCELLP
 {
   public:
     void* GetLandData();
-    void ResolvePoint(NiPoint3* pkOut, NiPoint3* pkNormal);
+    void ResolvePoint(NiPoint3* aOutPos, NiPoint3* aOutRot);
 };
 
 bool __cdecl Pathing_GetNavMeshZForLocation(NiPoint3* pkPos, TESObjectCELLP* pkCell, void* pvLand, float* pfZ);
@@ -2548,7 +2589,7 @@ class ShapeCastP
   public:
     ShapeCastP();
     void Reset();
-    void AddShape(const void* pvShape);
+    void AddShape(const void* point);
     int Cast(hkVector4* pkFrom);
     LocalM128 m_kFrom;
     LocalM128 m_kTo;
@@ -2572,6 +2613,9 @@ class SpawnPlacerP
 
 // @fnv 0x006296d0
 // src: COMMUNITY 0x006296d0
+// pdb: LoadedAreaBound::FindWarpLocation | LoadedAreaBound.obj | debug, object-file run extension, low
+// pdb params: apRef, arCurLoc, arWarpLoc
+// pdb locals: pcell, pact, blocFound, rot, fheightNavMesh, tmpLoc, plocForm, warpLoc, boundAabb
 void SpawnPlacerP::LoadedAreaBound_GetGroundPos(TESObjectREFRP* pkRef, const NiPoint3* pkPos, NiPoint3* pkOut)
 {
     int iCell = 0;
@@ -2635,6 +2679,9 @@ class S00629930_Box
 
 // @fnv 0x00629930
 // src: COMMUNITY 0x00629930
+// pdb: hkAabb::containsPoint | LoadedAreaBound.obj | debug, upstream name already matches, high
+// pdb params: other
+// pdb locals: maxcomp, both, mincomp
 bool S00629930_Box::hkAabb_containsPoint(const S00629930_Box* other) const
 {
     S00629930_Vector a;
@@ -2669,7 +2716,7 @@ extern SettingV g_kSmoothTimeV;
 class MotionV
 {
   public:
-    void SetLinearVelocity(const hkVector4& kMotionVelocity);
+    void SetLinearVelocity(const hkVector4& centerOfMass);
     void Activate();
 };
 
@@ -2770,9 +2817,12 @@ extern SmoothListV g_kSmoothListV;
 
 // @fnv 0x0062a7e0
 // src: COMMUNITY 0x0062a7e0
-void __cdecl TESArrowTargetListener_AddArrowTarget(const hkVector4& kTarget, void* pvRef)
+// pdb: TESArrowTargetListener::AddArrowTarget | TESArrowTargetListener.obj | debug, upstream name already matches, high
+// pdb params: aArrowCenterOfMassWorld, apTargetObject
+// pdb locals: ptargetBody, localArrowPos, pcol, ptarget, arrowTransform, oldCenterOfMass, fmass, targetTransformInverse, targetTransform, arrowTransformLocal, newCenterOfMass, pcurrent, pitem
+void __cdecl TESArrowTargetListener_AddArrowTarget(const hkVector4& aArrowCenterOfMassWorld, void* apTargetObject)
 {
-    NodeV* pkNode = pvRef ? FUN_0043b610(pvRef) : 0;
+    NodeV* pkNode = apTargetObject ? FUN_0043b610(apTargetObject) : 0;
     BodyV* pkBody = pkNode ? pkNode->GetBody() : 0;
     if (!pkBody)
         return;
@@ -2792,7 +2842,7 @@ void __cdecl TESArrowTargetListener_AddArrowTarget(const hkVector4& kTarget, voi
     {
         pkEntry = new SmoothEntryV;
         pkEntry->m_pkBody = pkBody;
-        pkEntry->m_pvRef = pvRef;
+        pkEntry->m_pvRef = apTargetObject;
         pkEntry->m_fTime = pkBody->GetTime();
         pkEntry->m_iArrayLength = 0;
         g_kSmoothListV.AddHead(pkEntry);
@@ -2800,7 +2850,7 @@ void __cdecl TESArrowTargetListener_AddArrowTarget(const hkVector4& kTarget, voi
     float fTime = pkEntry->m_fTime;
     hkTransform kBodyTransform;
     hkTransform kInverse;
-    hkTransform kTargetTransform(reinterpret_cast<const hkQuaternion&>(hkQuaternion_getIdentity()), kTarget);
+    hkTransform kTargetTransform(reinterpret_cast<const hkQuaternion&>(hkQuaternion_getIdentity()), aArrowCenterOfMassWorld);
     hkTransform kDelta;
     pkBody->GetTransform(kBodyTransform);
     kInverse.SetConjugate(kBodyTransform);
@@ -2846,7 +2896,7 @@ extern SettingV g_kSmoothTimeV;
 class MotionV
 {
   public:
-    void SetLinearVelocity(const hkVector4& kMotionVelocity);
+    void SetLinearVelocity(const hkVector4& centerOfMass);
     void Activate();
 };
 
@@ -2917,7 +2967,7 @@ class BodyV
     virtual void GetTransform(hkTransform& kOut);
     float GetTime();
     const hkVector4& GetPosition();
-    void SetPosition(const hkVector4& kPos);
+    void SetPosition(const hkVector4& arVel);
     MotionV* GetMotion();
 };
 
@@ -2951,6 +3001,9 @@ extern SmoothListV g_kSmoothListV;
 
 // @fnv 0x0062ab60
 // src: GUESS 0x0062ab60 (confidence: low)
+// pdb: TESArrowTargetListener::RemoveArrowTarget | TESArrowTargetListener.obj | debug, object-file gap fill, medium
+// pdb params: aArrowCenterOfMassWorld, apTargetObject
+// pdb locals: ptargetBody, velocity, localArrowPos, ptarget, pcol, arrowTransform, oldCenterOfMass, fmass, targetTransformInverse, targetTransform, arrowTransformLocal, newCenterOfMass, pcurrent, pitem
 void __cdecl hkVector4_ProcessEntries_0062ab60(const hkVector4& kTarget, void* pvRef)
 {
     SmoothEntryV* pkEntry = 0;
@@ -3009,13 +3062,16 @@ void __cdecl hkVector4_ProcessEntries_0062ab60(const hkVector4& kTarget, void* p
 }  // namespace fnv_0062ab60
 
 
-hkVector4& NI2HK(hkVector4& out, const NiPoint3& in);
-void TESHavokUtilities_AddAngularVelocity_0062bae0(void* obj, hkVector4& v, int flag);
+hkVector4& NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
+void TESHavokUtilities_AddAngularVelocity_0062bae0(void* apObject, hkVector4& aVelocity, int abReset);
 
 // Preserve the original stack-cookie instrumentation with the shared vector layout.
 #pragma strict_gs_check(push, on)
 // @fnv 0x0062ba80
 // src: XBOX_PDB 0x0062ba80
+// pdb: TESHavokUtilities::AddAngularVelocity | TEShavokUtilities.obj | debug, object-file gap fill, medium
+// pdb params: apObject, aVelocity, abReset
+// pdb locals: vec
 void TESHavokUtilities_AddAngularVelocity(void* obj, const NiPoint3& pos, bool flag)
 {
     hkVector4 v;
@@ -3027,7 +3083,7 @@ void TESHavokUtilities_AddAngularVelocity(void* obj, const NiPoint3& pos, bool f
 struct WorldObject62BAE0
 {
     void* bhkRigidBody_GetAngularVelocity();
-    void bhkRigidBody_SetAngularVelocity_005617c0(hkVector4& kVector);
+    void bhkRigidBody_SetAngularVelocity(hkVector4& arVel);
 };
 struct Collision62BAE0
 {
@@ -3052,30 +3108,33 @@ Collision62BAE0* __cdecl FUN_0043b610(Object62BAE0* pkObject);
 #pragma strict_gs_check(push, on)
 // @fnv 0x0062bae0
 // src: COMMUNITY 0x0062bae0
-void __cdecl TESHavokUtilities_AddAngularVelocity_0062bae0(Object62BAE0* pkObject, hkVector4* pkPoint, bool bLocal)
+// pdb: TESHavokUtilities::AddAngularVelocity | TEShavokUtilities.obj | retail, object-file run extension, high
+// pdb params: apObject, aVelocity, abReset
+// pdb locals: vec
+void __cdecl TESHavokUtilities_AddAngularVelocity_0062bae0(Object62BAE0* apObject, hkVector4* aVelocity, bool abReset)
 {
-    if (pkObject)
+    if (apObject)
     {
-        Collision62BAE0* pkCollision = FUN_0043b610(pkObject);
+        Collision62BAE0* pkCollision = FUN_0043b610(apObject);
         if (pkCollision)
         {
             WorldObject62BAE0* pkWorldObject = pkCollision->bhkNiCollisionObject_GetWorldObject();
             if (pkWorldObject)
             {
                 hkVector4 kVector;
-                kVector.set((*pkPoint)(0), (*pkPoint)(1), (*pkPoint)(2), 0.0f);
-                if (!bLocal)
+                kVector.set((*aVelocity)(0), (*aVelocity)(1), (*aVelocity)(2), 0.0f);
+                if (!abReset)
                     kVector.add4(*static_cast<const hkVector4*>(pkWorldObject->bhkRigidBody_GetAngularVelocity()));
-                pkWorldObject->bhkRigidBody_SetAngularVelocity_005617c0(kVector);
+                pkWorldObject->bhkRigidBody_SetAngularVelocity(kVector);
             }
         }
-        Node62BAE0* pkNode = pkObject->GetAsNode();
+        Node62BAE0* pkNode = apObject->GetAsNode();
         if (pkNode)
         {
             for (unsigned int i = 0; i < pkNode->FUN_0043b480(); i++)
             {
                 Object62BAE0* pkChild = pkNode->FUN_0043b4a0(i);
-                TESHavokUtilities_AddAngularVelocity_0062bae0(pkChild, pkPoint, bLocal);
+                TESHavokUtilities_AddAngularVelocity_0062bae0(pkChild, aVelocity, abReset);
             }
         }
     }
@@ -3133,19 +3192,22 @@ struct xCaster
     xPtr m_iWordAt00;
     bool m_iWordAt04;
     unsigned int m_8;
-    void ViewCaster_Init(float afRadius, unsigned int auiLayer);
+    void ViewCaster_Init(float afRadius, unsigned int aiGroup);
 };
 // @fnv 0x00631ab0
 // src: COMMUNITY 0x00631ab0
-void xCaster::ViewCaster_Init(float afRadius, unsigned int auiLayer)
+// pdb: ViewCaster::Init | ViewCaster.obj | retail, upstream name already matches, high
+// pdb params: afRadius, aiGroup
+// pdb locals: tempMemContext, pshape, csi, ifilter
+void xCaster::ViewCaster_Init(float afRadius, unsigned int aiGroup)
 {
     xAutoMem MEM(0x10, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Havok\\ViewCaster.cpp", 0x49);
     bhkSphereShape* SHAPE = new bhkSphereShape(afRadius, true);
     xCinfo CINFO;
     xFilter FILTER(0);
     FILTER.CFilter_SetLayer(0x28);
-    FILTER.CFilter_SetGroup(auiLayer);
-    m_8 = auiLayer;
+    FILTER.CFilter_SetGroup(aiGroup);
+    m_8 = aiGroup;
     CINFO.m_uiFilterInfo = FILTER.Modelloader_GetReferencedThis();
     CINFO.m_pCollisionShape = (int)SHAPE->Bipedanim_GetReferenceFlagsOrZero();
     CINFO.m_20.bhkTransform_setIdentity();
@@ -3171,6 +3233,9 @@ class FUN_00632b40 : public hkRotation
 // Preserve the original stack-cookie instrumentation with the shared vector layout.
 #pragma strict_gs_check(push, on)
 // @fnv 0x00632b40
+// pdb: hkTransform::hkTransform | ViewCaster.obj | debug, call graph, high
+// pdb params: t
+// pdb locals: r3, r0, r2, r1
 FUN_00632b40::FUN_00632b40(const FUN_00632b40& t)
 {
     hkVector4 c0(t.getColumn(0));
@@ -3213,7 +3278,7 @@ class ShapePhantom
   public:
     void InvokeInterfaceCall(hkVector4* pFrom, InitFloats* pRay, class ShapeCaster* pCollector, int i);
 };
-void NI2HK(void* pOut, const NiPoint3& kIn);
+void NI2HK(void* arhkTran, const NiPoint3& arNiTran);
 
 class ShapeCaster
 {
@@ -3456,16 +3521,19 @@ class ShapeCaster
     void HitCaster_SetCustomPickCollisions();
     xHitRes* hkpAllCdPointCollector_hasHit(xHitFlag* pFlag);
     void hkpAllCdPointCollector_sortHits();
-    bool HitCaster_CastShape(const NiPoint3& kFrom, const NiPoint3& kWorldPosition, float fDist);
+    bool HitCaster_CastShape(const NiPoint3& aOrigin, const NiPoint3& aDirection, float afPickDistance);
 };
 
 // Preserve the original stack-cookie instrumentation with the shared vector layout.
 #pragma strict_gs_check(push, on)
 // @fnv 0x00626b30
 // src: XBOX_PDB 0x00626b30
-bool ShapeCaster::HitCaster_CastShape(const NiPoint3& kFrom, const NiPoint3& kWorldPosition, float fDist)
+// pdb: HitCaster::CastShape | HitCaster.obj | retail, upstream name already matches, high
+// pdb params: aOrigin, aDirection, afPickDistance
+// pdb locals: to, hkFrom, input
+bool ShapeCaster::HitCaster_CastShape(const NiPoint3& aOrigin, const NiPoint3& aDirection, float afPickDistance)
 {
-    NiPoint3 qfTOqo = kFrom + kWorldPosition * fDist;
+    NiPoint3 qfTOqo = aOrigin + aDirection * afPickDistance;
     HitCaster_SetCustomPickCollisions();
     if (m_spWorld.Modelloader_GetReferencedThis())
     {
@@ -3473,7 +3541,7 @@ bool ShapeCaster::HitCaster_CastShape(const NiPoint3& kFrom, const NiPoint3& kWo
         InitFloats qAhbO;
         qAhbO.m_fB = 0.0099999998f;
         qAhbO.m_fCoefficientA = 0.0099999998f;
-        NI2HK(&qxQHW, kFrom);
+        NI2HK(&qxQHW, aOrigin);
         NI2HK(&qAhbO, qfTOqo);
         Reset2();
         m_spWorld.Modelloader_GetReferencedThis()->InvokeInterfaceCall(&qxQHW, &qAhbO, this, 0);
@@ -3495,6 +3563,8 @@ using ::_mm_min_ps;
 
 
 // @fnv 0x006285e0
+// pdb: hkpShape::getAabb | LoadedAreaBound.obj | debug, object-file run extension, low
+// pdb params: localToWorld, tolerance, out
 void hkVector4::setMin4(const hkVector4& a, const hkVector4& b)
 {
     m_vComponents = _mm_min_ps(a.getQuad(), b.getQuad());
@@ -3523,6 +3593,8 @@ struct VectorComponentConstruction
 
 // @fnv 0x0062af00
 // src: COMMUNITY 0x0062af00
+// pdb: hkVector4::lengthInverse3 | TESArrowTargetListener.obj | debug, upstream name already matches, high
+// pdb locals: zero, lenInv3, temp, mask, res
 hkSimdReal* VectorNormalizeOperations::hkVector4_lengthInverse3(hkSimdReal* target) const
 {
     LocalM128 first = _mm_set_ss(DAT_01016248);

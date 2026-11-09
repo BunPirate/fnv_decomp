@@ -6,6 +6,9 @@
 #include "../../../include/TESSaveLoadGame.h"
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 // @fnv 0x0082a390
+// pdb: SunDamageEffect::GetSaveSize | SunDamageEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: isize
 unsigned short SunDamageEffect::GetSaveSize(Actor* apActor)
 {
     unsigned short usSize = 0;
@@ -16,11 +19,13 @@ unsigned short SunDamageEffect::GetSaveSize(Actor* apActor)
 }
 
 // @fnv 0x0082a420
+// pdb: SunDamageEffect::LoadGame | SunDamageEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void SunDamageEffect::LoadGame(Actor* apActor)
 {
     ActiveEffect::LoadGame(apActor);
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x71)
-        g_TESSaveLoadGame->ReadTypedData(&fValue, 4);
+        g_TESSaveLoadGame->ReadTypedData(&fGlowEffect, 4);
 }
 
 struct PC7d
@@ -30,6 +35,7 @@ struct PC7d
 extern PC7d* g_thePlayer;
 // @fnv 0x0082a150
 // src: XBOX_PDB 0x0082a150
+// pdb: SunDamageEffect::IsCausingDamage | SunDamageEffect.obj | retail, upstream name already matches, high
 bool SunDamageEffect::IsCausingDamage()
 {
     if ((unsigned int)FUN_0059bb30() ==
@@ -42,29 +48,35 @@ bool SunDamageEffect::IsCausingDamage()
 }
 
 // @fnv 0x0082a3e0
+// pdb: SunDamageEffect::SaveGame | SunDamageEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void SunDamageEffect::SaveGame(Actor* apActor)
 {
     ActiveEffect::SaveGame(apActor);
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x71)
-        g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&fValue, 4);
+        g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&fGlowEffect, 4);
 }
 
 // @fnv 0x00829a70
-SunDamageEffect::SunDamageEffect(MagicCaster* a, MagicItem* pItem, EffectItem* pEffect) : ActiveEffect(a, pItem, pEffect)
+// pdb: SunDamageEffect::SunDamageEffect | SunDamageEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+SunDamageEffect::SunDamageEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect) : ActiveEffect(apCaster, apSpell, apEffect)
 {
-    fValue = 0.0f;
-    bFlag4D = 0;
-    bFlag4C = 0;
+    fGlowEffect = 0.0f;
+    bDoNotTakeDamageNextUpdate = 0;
+    bHitEffectApplied = 0;
 }
 
 // @fnv 0x00829ac0
+// pdb: SunDamageEffect::Copy | SunDamageEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* SunDamageEffect::Copy()
 {
     SunDamageEffect* pkClone = new SunDamageEffect(m_pEffectInstance, pSpell, pEffect);
     CopyData(pkClone);
-    pkClone->fValue = fValue;
-    pkClone->bFlag4C = bFlag4C;
-    pkClone->bFlag4D = bFlag4D;
+    pkClone->fGlowEffect = fGlowEffect;
+    pkClone->bHitEffectApplied = bHitEffectApplied;
+    pkClone->bDoNotTakeDamageNextUpdate = bDoNotTakeDamageNextUpdate;
     return pkClone;
 }
 
@@ -297,7 +309,7 @@ struct S_00829bb0_Actor
     S_00829bb0_Cell* FUN_008d6f30();
     bool TESObjectREFR_GetInterior();
     S_00829bb0_Proc* FUN_008d8520();
-    void Actor_TriggerPain(int a, int b);
+    void Actor_TriggerPain(int abVoice, int abBlur);
 };
 
 struct S_00829bb0_Caster
@@ -319,11 +331,14 @@ extern float DAT_011a14f8;
 
 // Toggles the effect based on the caster's actor and cell, and when the actor is DAT_011dea3c updates DAT_011a14f8 and blends proc values.
 // @fnv 0x00829bb0
-void SunDamageEffect::UpdateEffect(float arg)
+// pdb: SunDamageEffect::Update | SunDamageEffect.obj | retail, vtable slot, high
+// pdb params: afSecondsElapsed
+// pdb locals: pcell, pref, fdamage, fweatherScale, psky, fratio
+void SunDamageEffect::UpdateEffect(float afSecondsElapsed)
 {
-    if (bFlag4D)
+    if (bDoNotTakeDamageNextUpdate)
     {
-        bFlag4D = 0;
+        bDoNotTakeDamageNextUpdate = 0;
     }
     else if (FUN_0059bb30() && reinterpret_cast<S_00829bb0_Caster*>(FUN_0059bb30())->GetActor())
     {
@@ -344,7 +359,7 @@ void SunDamageEffect::UpdateEffect(float arg)
             {
                 if (f > 0.01f)
                 {
-                    DAT_011dea3c->v338(f * arg, 0.0f, 0);
+                    DAT_011dea3c->v338(f * afSecondsElapsed, 0.0f, 0);
                     if (DAT_011a14f8 < 0.0)
                     {
                         DAT_011dea3c->Actor_TriggerPain(1, 1);
@@ -354,7 +369,7 @@ void SunDamageEffect::UpdateEffect(float arg)
                     {
                         DAT_011a14f8 = *DAT_011d1944.Setting_Float_00403e20();
                     }
-                    DAT_011a14f8 = DAT_011a14f8 - arg;
+                    DAT_011a14f8 = DAT_011a14f8 - afSecondsElapsed;
                 }
                 proc = DAT_011dea10->FUN_008d8520();
                 float fValue = proc->TESMain_GetThread() ? proc->TESMain_GetThread()->TESWeather_GetWeatherData(5, 1.0f, 0.0f) : 0.0f;
@@ -468,7 +483,7 @@ struct S_00829e00_HitEffect
 struct S_00829e00_Effect : S_00829e00_HitEffect
 {
     static void* operator new(unsigned int size);
-    S_00829e00_Effect(S_00829e00_Target* target, void* form, float duration);
+    S_00829e00_Effect(S_00829e00_Target* target, void* apEffectData, float afTime);
 };
 
 struct S_00829e00_List
@@ -485,19 +500,22 @@ struct S_00829e00_List
 
 struct S_00829e00_Manager
 {
-    void ProcessLists_AddTempEffect(S_00829e00_HitEffect* effect);
+    void ProcessLists_AddTempEffect(S_00829e00_HitEffect* apTempEffect);
     void ProcessLists_FinishMagicShaderHitEffect(S_00829e00_Target* target, void* form);
 };
 extern S_00829e00_Manager DAT_011e0e80;
 
 // @fnv 0x00829e00
 // src: XBOX_PDB 0x00829e00
-void SunDamageEffect::UpdateHitEffect(bool abApply)
+// pdb: SunDamageEffect::UpdateHitEffect | SunDamageEffect.obj | retail, upstream name already matches, high
+// pdb params: abDamaging
+// pdb locals: pEffectData, peffect, plist
+void SunDamageEffect::UpdateHitEffect(bool abDamaging)
 {
     void* form = reinterpret_cast<S_00829e00_Setting*>(FUN_007df1d0())->GetEffectShader_00407820();
     if (!form || !FUN_0059bb30() || FUN_0055b980() != 4)
         return;
-    if (abApply)
+    if (abDamaging)
     {
         if (!reinterpret_cast<S_00829e00_List*&>(pHitEffectList) || reinterpret_cast<S_00829e00_List*&>(pHitEffectList)->FUN_008256d0())
         {
@@ -541,6 +559,8 @@ void SunDamageEffect::UpdateHitEffect(bool abApply)
 // Allocates and constructs a SunDamageEffect from the given caster, item and effect item.
 // @fnv 0x0082a0d0
 // src: COMMUNITY 0x0082a0d0
+// pdb: SunDamageEffect::Instantiate | SunDamageEffect.obj | debug, object-file gap fill, medium
+// pdb params: apCaster, apSpell, apEffect
 SunDamageEffect* SunDamageEffect_Create(MagicCaster* apCaster, MagicItem* apItem, EffectItem* apEffect)
 {
     return new SunDamageEffect(apCaster, apItem, apEffect);
@@ -701,6 +721,8 @@ float MagicFormulas_CalcSunDamage(float, float, float, float, bool, float, bool)
 // Calls FUN_00649390 with values read from this, DAT_011dea10, and p; returns 0.0 when the guard fails.
 // @fnv 0x0082a1b0
 // src: XBOX_PDB 0x0082a1b0
+// pdb: SunDamageEffect::GetDamageAmount | SunDamageEffect.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pref, fweatherScale, psky, ftimeOfDay, fsunsetTime, bunderWater, fsunriseTime, bsunVisible, fratio
 double SunDamageEffect::GetDamageAmount()
 {
     H_Calls* p;

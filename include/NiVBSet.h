@@ -12,6 +12,7 @@ public:
     void FUN_00a93c50(unsigned int);
 };
 
+// pdb: class NiVBSet, size 0x34 (here 0x24), 10 members
 class NiVBSet
 {
 public:
@@ -29,5 +30,5 @@ public:
     VbNode* NiVBSet_AllocateChip(unsigned int size, bool flag);
     void RemoveNode(NiVBBlock*);
     void NiVBSet_FreeBlock(NiVBBlock*);
-    void FreeChip(unsigned int uiArrayIndex, unsigned int uiChipIndex);
+    void FreeChip(unsigned int uiBlockIndex, unsigned int uiChipIndex);
 };

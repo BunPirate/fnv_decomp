@@ -14,7 +14,7 @@ void FalloutRadio_NewCellEntered();
 void TESWaterSystem_SetPlayerForceUnderwater(unsigned char value);
 float BSAudio_GetMinDialogDist();
 float BSAudio_GetMaxDialogDist();
-void CheckWithinMultiBoundTask_CancelAttachment(unsigned int index);
+void CheckWithinMultiBoundTask_CancelAttachment(unsigned int apMoribundRef);
 
 struct BGSLoadFormBuffer;
 struct BGSSaveFormBuffer;
@@ -195,6 +195,8 @@ struct VRefStandin
 
 // @fnv 0x00565730
 // src: XBOX_PDB 0x00565730
+// pdb: TESObjectREFR::InitScript | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pObj, pExtra, pScript, pCont, tempMemContext, pinventory
 void FUN_00565730_shell::TESObjectREFR_InitScript()
 {
     TESBoundObject* pObj;

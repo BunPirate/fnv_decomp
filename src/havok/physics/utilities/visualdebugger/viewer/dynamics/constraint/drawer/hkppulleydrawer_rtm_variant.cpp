@@ -140,7 +140,7 @@ void ConstraintVisualizer::ProcessEntries_00de6550(hkpConstraintInstance* constr
     int numRopes = int(hkMax2(pulley->m_fRopeLength, 1.0f));
     hkVector4 offset(0.0f, 0.0f, 0.0f, 0.0f);
     offset.set(0.07f, 0.0f, 0.0f, 0.0f);
-    offset.hkVector4_setRotatedDir(constraint->m_kActorEntries[1]->m_pMotionState.m_kMotionState.m_kMotionTransform.getRotation(), offset);
+    offset.hkVector4_setRotatedDir(constraint->m_entities[1]->m_motion.m_kMotionState.m_transform.getRotation(), offset);
     hkVector4 start(0.0f, 0.0f, 0.0f, 0.0f);
     start.setMul4_b(hkReal((numRopes - 1) * DAT_01011598), offset);
     for (int i = 0; i < numRopes; i++)

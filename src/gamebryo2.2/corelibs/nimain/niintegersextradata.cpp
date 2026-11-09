@@ -6,11 +6,14 @@
 #include "../../../../include/NiFixedString.h"
 // Loads the extra data from the stream: reads a count, resizes entries, then reads and appends that many NiIntegerStreamEntry objects.
 // @fnv 0x00c540a0
-void NiIntegersExtraData::LoadBinary(NiStream& stream)
+// pdb: BSFurnitureMarker::LoadBinary | BSFurnitureMarker.obj | retail, vtable slot, high
+// pdb params: arStream
+// pdb locals: imarks, loadMark, I
+void NiIntegersExtraData::LoadBinary(NiStream& arStream)
 {
-    NiExtraData::LoadBinary(stream);
+    NiExtraData::LoadBinary(arStream);
     unsigned int count;
-    ReadBinaryValue(stream, count);
+    ReadBinaryValue(arStream, count);
     if (count)
     {
         entries.SetSize(count);
@@ -24,7 +27,7 @@ void NiIntegersExtraData::LoadBinary(NiStream& stream)
         NiIntegerStreamEntry streamEntry;
         for (unsigned int i = 0; i < count; ++i)
         {
-            streamEntry.FurnitureMark_LoadBinary(stream);
+            streamEntry.FurnitureMark_LoadBinary(arStream);
             entries.Add(streamEntry);
             // Preserve the original frame's 176-byte unused local region.
             struct ReservedStreamLocals
@@ -87,6 +90,7 @@ struct NiExtraDataNameInitializer : NiExtraData
 
 // @fnv 0x00c543e0
 // src: COMMUNITY 0x00c543e0
+// pdb: BSFurnitureMarker::Init | BSFurnitureMarker.obj | debug, call graph, medium
 void NiExtraDataNameInitializer::BSFurnitureMarker_SetName()
 {
     reinterpret_cast<NiAVObject*>(this)->SetName(*DAT_012031c0);
@@ -124,13 +128,15 @@ struct FUN_00a7b290_shell
 };
 struct FUN_00c54150_shell
 {
-    void __thiscall BSFurnitureMarker_RegisterStreamables(int param_1);
+    void __thiscall BSFurnitureMarker_RegisterStreamables(int arStream);
 };
 // @fnv 0x00c54150
 // src: XBOX_PDB 0x00c54150
-void __thiscall FUN_00c54150_shell::BSFurnitureMarker_RegisterStreamables(int param_1)
+// pdb: BSFurnitureMarker::RegisterStreamables | BSFurnitureMarker.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void __thiscall FUN_00c54150_shell::BSFurnitureMarker_RegisterStreamables(int arStream)
 {
-    ((FUN_00a7b290_shell*)this)->FUN_00a7b290(param_1);
+    ((FUN_00a7b290_shell*)this)->FUN_00a7b290(arStream);
 }
 
 struct C00c541e0
@@ -141,9 +147,12 @@ struct C00c541e0
 // Calls FUN_00a7b3d0 with the given int and returns its bool result.
 // @fnv 0x00c541e0
 // src: XBOX_PDB 0x00c541e0
-bool C00c541e0::BSFurnitureMarker_IsEqual(int a)
+// pdb: BSFurnitureMarker::IsEqual | BSFurnitureMarker.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres
+bool C00c541e0::BSFurnitureMarker_IsEqual(int apObject)
 {
-    bool b = FUN_00a7b3d0(a);
+    bool b = FUN_00a7b3d0(apObject);
     return b;
 }
 
@@ -158,6 +167,8 @@ struct FUN_00c54660_shell
 };
 // @fnv 0x00c54660
 // src: GUESS 0x00c54660 (confidence: low)
+// pdb: FurnitureMark::SaveBinary | BSFurnitureMarker.obj | debug, object-file gap fill, medium
+// pdb params: arStream
 void __thiscall FUN_00c54660_shell::ProcessState_00c54660(NiStream& aStream)
 {
     color.SaveBinary(aStream);
@@ -177,6 +188,7 @@ struct S_FUN_00c547e0
 };
 // Calls FUN_00c53fa0 on this, then frees this with _delete when bit 0 of flags is set, and returns this.
 // @fnv 0x00c547e0
+// pdb: BSFurnitureMarker::`scalar deleting destructor' | BSFurnitureMarker.obj | retail, vtable slot, high
 void* __thiscall S_FUN_00c547e0::FUN_00c547e0(unsigned int flags)
 {
     reinterpret_cast<S_FUN_00c53fa0*>(this)->FUN_00c53fa0();
@@ -200,6 +212,7 @@ struct S
 // Sets the object's vtable pointer to DAT_010c2b2c and deallocates its ptr through g_memoryManager.
 // @fnv 0x00c54810
 // src: GUESS 0x00c54810 (confidence: low)
+// pdb: NiTObjectArray<FurnitureMark>::~NiTObjectArray<FurnitureMark> | BSFurnitureMarker.obj | debug, object-file gap fill, medium
 void __thiscall S::SetVtableAndProcessState_00c54810()
 {
     *(int*)this = (int)&DAT_010c2b2c;
@@ -216,13 +229,16 @@ struct NiExtraDataSaveHelperShell : NiExtraData
 };
 // @fnv 0x00c54170
 // src: XBOX_PDB 0x00c54170
-void NiExtraDataSaveHelperShell::BSFurnitureMarker_SaveBinary(NiStream& stream)
+// pdb: BSFurnitureMarker::SaveBinary | BSFurnitureMarker.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: imarks, I
+void NiExtraDataSaveHelperShell::BSFurnitureMarker_SaveBinary(NiStream& arStream)
 {
-    NiExtraData::SaveBinary(stream);
+    NiExtraData::SaveBinary(arStream);
     unsigned int count = *(unsigned short*)((char*)this + 0x18);
-    NiStreamSaveBinary_unsigned_int(stream, count);
+    NiStreamSaveBinary_unsigned_int(arStream, count);
     for (unsigned int i = 0; i < count; ++i)
-        (*(FUN_00c54660_shell**)((char*)this + 0x10))[i].ProcessState_00c54660(stream);
+        (*(FUN_00c54660_shell**)((char*)this + 0x10))[i].ProcessState_00c54660(arStream);
 }
 
 struct A51BF0Base
@@ -241,6 +257,8 @@ extern NiFixedString DAT_011f49e0;
 // Allocates a FUN_00c53f10 object, sets its name to DAT_011f49e0, and returns it as an NiAVObject pointer.
 // @fnv 0x00c54210
 // src: EXE 0x00c54210
+// pdb: BSFurnitureMarker::CreateObject | BSFurnitureMarker.obj | retail, upstream name already matches, high
+// pdb locals: pf
 NiAVObject* BSFurnitureMarker_CreateObject()
 {
     NiAVObject* object = reinterpret_cast<NiAVObject*>(new FUN_00c53f10);
@@ -265,6 +283,9 @@ struct FUN_00c54040_cls
 // Calls FUN_00a7b330, then loops over count entries and passes each entry to FUN_00c54b70 on the stream's array at offset 0xc.
 // @fnv 0x00c54040
 // src: GUESS 0x00c54040 (confidence: low)
+// pdb: BSFurnitureMarker::CopyMembers | BSFurnitureMarker.obj | debug, object-file run extension, low
+// pdb params: pDest, arCloneData
+// pdb locals: imarks, I
 void FUN_00c54040_cls::ProcessEntries_00c54040(NiStream& stream, unsigned int flags)
 {
     unsigned char pad[0x58];
@@ -280,15 +301,17 @@ void FUN_00c54040_cls::ProcessEntries_00c54040(NiStream& stream, unsigned int fl
 
 struct S_00c54130
 {
-    void FUN_00a7b3b0(int a);
-    void BSFurnitureMarker_LinkObject(int a);
+    void FUN_00a7b3b0(int kStream);
+    void BSFurnitureMarker_LinkObject(int arStream);
 };
 
 // @fnv 0x00c54130
 // src: XBOX_PDB 0x00c54130
-void S_00c54130::BSFurnitureMarker_LinkObject(int a)
+// pdb: BSFurnitureMarker::LinkObject | BSFurnitureMarker.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void S_00c54130::BSFurnitureMarker_LinkObject(int arStream)
 {
-    FUN_00a7b3b0(a);
+    FUN_00a7b3b0(arStream);
 }
 
 extern double DAT_01012060;
@@ -307,6 +330,8 @@ struct S_00c54550_Foo
 
 // @fnv 0x00c54550
 // src: XBOX_PDB 0x00c54550
+// pdb: NiStreamLoadBinary<unsigned short> | BSFurnitureMarker.obj | retail, object-file run extension, low
+// pdb params: kStream, value
 void __thiscall S_00c54550_Foo::FurnitureMark_SetHeading(float param_1)
 {
     while (param_1 < DAT_01012060)
@@ -332,18 +357,21 @@ struct FUN_00c545d0_cls
     unsigned short fldC;
     unsigned short fldE;
     void __thiscall FurnitureMark_SetHeading(float);
-    void __thiscall FurnitureMark_LoadBinary(NiStream& s);
+    void __thiscall FurnitureMark_LoadBinary(NiStream& arStream);
 };
 
 // @fnv 0x00c545d0
 // src: COMMUNITY 0x00c545d0
-void FUN_00c545d0_cls::FurnitureMark_LoadBinary(NiStream& aStream)
+// pdb: FurnitureMark::LoadBinary | BSFurnitureMarker.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cpad, shead, fhead
+void FUN_00c545d0_cls::FurnitureMark_LoadBinary(NiStream& arStream)
 {
     unsigned char flag;
-    FUN_00a59be0(aStream);
-    NiStreamLoadBinary_unsigned_short(aStream, &fldC);
-    NiStreamLoadBinary_char_00a643b0(aStream, &fldE);
-    NiStreamLoadBinary_char_00a643b0(aStream, &flag);
+    FUN_00a59be0(arStream);
+    NiStreamLoadBinary_unsigned_short(arStream, &fldC);
+    NiStreamLoadBinary_char_00a643b0(arStream, &fldE);
+    NiStreamLoadBinary_char_00a643b0(arStream, &flag);
     short sValue = (short)fldC;
     if (sValue < 0)
     {
@@ -361,12 +389,14 @@ struct FUN_00c54b70_cls
     unsigned short m_0e;
     void AllocateStorage_00c54850(unsigned int n);
     void FUN_00c54a30(unsigned int idx, NiIntegerStreamEntry& e);
-    unsigned int NiTArray_FurnitureMark_NiTNewInterface_FurnitureMark_Add(NiIntegerStreamEntry& e);
+    unsigned int NiTArray_FurnitureMark_NiTNewInterface_FurnitureMark_Add(NiIntegerStreamEntry& element);
 };
 
 // @fnv 0x00c54b70
 // src: COMMUNITY 0x00c54b70
-unsigned int FUN_00c54b70_cls::NiTArray_FurnitureMark_NiTNewInterface_FurnitureMark_Add(NiIntegerStreamEntry& aEntry)
+// pdb: NiTArray<FurnitureMark,NiTNewInterface<FurnitureMark> >::Add | BSFurnitureMarker.obj | debug, call graph, high
+// pdb params: element
+unsigned int FUN_00c54b70_cls::NiTArray_FurnitureMark_NiTNewInterface_FurnitureMark_Add(NiIntegerStreamEntry& element)
 {
     unsigned int scratch[0x16];
     unsigned int tmp;
@@ -376,7 +406,7 @@ unsigned int FUN_00c54b70_cls::NiTArray_FurnitureMark_NiTNewInterface_FurnitureM
         {
             AllocateStorage_00c54850(m_0e + index);
         }
-        FUN_00c54a30(index, aEntry);
+        FUN_00c54a30(index, element);
         return index;
     }
 }
@@ -398,6 +428,8 @@ void* __cdecl Object_GetIndexedValue_00c54bc0(unsigned int);
 
 // @fnv 0x00c54c50
 // src: EXE 0x00c54c50
+// pdb: NiTObjectArray<FurnitureMark>::NiTObjectArray<FurnitureMark> | BSFurnitureMarker.obj | debug, call graph, medium
+// pdb params: uiMaxSize, uiGrowBy
 FUN_00c54c50_shell* __thiscall FUN_00c54c50_shell::NiTArray_FurnitureMark_NiTNewInterface_FurnitureMark_NiTArray(unsigned short param_1, unsigned short param_2)
 {
     int unk04;
@@ -492,7 +524,10 @@ extern char* __cdecl NiGetViewerString_00a7d550(char const*, float);
 // Appends marker count and per-marker number, position, and heading strings to the viewer strings array.
 // @fnv 0x00c542a0
 // src: XBOX_PDB 0x00c542a0
-void FUN_00c542a0_shell::BSFurnitureMarker_GetViewerStrings(ViewerStringsArray* strings)
+// pdb: BSFurnitureMarker::GetViewerStrings | BSFurnitureMarker.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: imarks, I, rmark
+void FUN_00c542a0_shell::BSFurnitureMarker_GetViewerStrings(ViewerStringsArray* apStrings)
 {
     unsigned long iMarkers;
     unsigned int aIndex;
@@ -506,31 +541,31 @@ void FUN_00c542a0_shell::BSFurnitureMarker_GetViewerStrings(ViewerStringsArray* 
     int aNameValue;
     MarkerText_00c542a0 val;
 
-    FUN_00a7b580(strings);
+    FUN_00a7b580(apStrings);
 
     aNameValue = g_012031c4;
     aRtti = NiViewerStrings_NiGetViewerString_Title(aNameValue);
-    strings->AddFirstEmpty(aRtti);
+    apStrings->AddFirstEmpty(aRtti);
 
     iMarkers = count;
     pMark = NiGetViewerString_00a7d510("iMarks", iMarkers);
-    strings->AddFirstEmpty(pMark);
+    apStrings->AddFirstEmpty(pMark);
 
     for (aIndex = 0; aIndex < iMarkers; ++aIndex)
     {
         aPMarker = NiGetViewerString_00a7d510("Mark", aIndex);
-        strings->AddFirstEmpty(aPMarker);
+        apStrings->AddFirstEmpty(aPMarker);
 
         marker = &entries[aIndex];
         val.numberValue = marker->number;
         animationType = NiGetViewerString_00a7d510(" Number", val.numberValue);
-        strings->AddFirstEmpty(animationType);
+        apStrings->AddFirstEmpty(animationType);
 
         aCurrentPos = marker->pos.GetViewerString_00a59af0(" Pos");
-        strings->AddFirstEmpty(aCurrentPos);
+        apStrings->AddFirstEmpty(aCurrentPos);
 
         val.headingValue = (float)(marker->heading / 1000.0);
         aHeadingY = NiGetViewerString_00a7d550(" Heading", val.headingValue);
-        strings->AddFirstEmpty(aHeadingY);
+        apStrings->AddFirstEmpty(aHeadingY);
     }
 }

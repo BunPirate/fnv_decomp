@@ -24,6 +24,7 @@ class FUN_00480400
 };
 
 // @fnv 0x00480400
+// pdb: TESBipedModelForm::~TESBipedModelForm | TESBipedModelForm.obj | retail, call graph (shared callers), high
 FUN_00480400::~FUN_00480400()
 {
     FreeModels();

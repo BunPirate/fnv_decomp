@@ -6,6 +6,7 @@ class IOQueue;
 class QIOTask;
 class RefObj;
 
+// pdb: class IOManager, size 0x5c (here 0x7c), bases: BSTaskManager<__int64>, 9 members
 class IOManager : public BSTaskManager<__int64>
 {
 public:
@@ -38,17 +39,17 @@ public:
     unsigned int CallSlotMethod(int);
     void CallElementAt(int);
     void SubmitTask();
-    void RunQueuedTask(unsigned int, int);
+    void BSTaskManager_int64_TryCancelTask(unsigned int, int);
     void IOManager_LoadAllQueuedPriorities();
     void BSTaskManager_CancelTask(RefObj*, void*);
     void BSTaskManager_CancelTask(int);
     void RequeuePrioritiesToNewPriority(int, int);
     bool UpdateQueue();
-    void LoadQueuedPriority(int mode);
+    void LoadQueuedPriority(int aePriority);
     void IOManager_PauseThread(int);
     void IOManager_ForceHighestPriority();
     void IOManager_Resume();
-    void IOManager_AddPostProcessTask(IOManager* task);
+    void IOManager_AddPostProcessTask(IOManager* apTask);
     void ProcessEntries_00c3fce0();
     void CancelAllTasks();
 

@@ -6,6 +6,7 @@
 
 class TESNPC;
 
+// pdb: class TESEyes, size 0x34, bases: TESForm, TESFullName, TESTexture, 1 members
 class TESEyes : public TESForm, public TESFullName, public TESTexture
 {
 public:

@@ -48,25 +48,28 @@ template <typename T, typename A> __forceinline hkArray<T, A>::~hkArray()
 }
 
 // No shared hkaMeshBinding header exists yet; retain its complete local layout.
+// pdb: class hkaMeshBinding, size 0x2c, bases: hkReferencedObject, 5 members
 class hkaMeshBinding : public hkReferencedObject
 {
   public:
     virtual ~hkaMeshBinding() throw();
     void* FUN_00e34920(int flags);
 
-    hkE348::ReferenceCountedPointer<hkReferencedObject> m_pMesh;
-    hkStringPtr m_name;
-    hkE348::ReferenceCountedPointer<hkReferencedObject> m_pSkeleton;
-    hkArray<hkArray<short> > m_kMappings;
-    hkArray<hkTransform> m_kBoneFromSkinningTransforms;
+    hkE348::ReferenceCountedPointer<hkReferencedObject> m_mesh;
+    hkStringPtr m_originalSkeletonName;
+    hkE348::ReferenceCountedPointer<hkReferencedObject> m_skeleton;
+    hkArray<hkArray<short> > m_mappings;
+    hkArray<hkTransform> m_boneFromSkinMeshTransforms;
 };
 
 // @fnv 0x00e34820
+// pdb: hkaMeshBinding::~hkaMeshBinding | hkaMeshBinding.obj | retail, upstream name already matches, high
 hkaMeshBinding::~hkaMeshBinding() throw()
 {}
 
 // Calls the destructor, optionally frees the allocation, and returns this.
 // @fnv 0x00e34920
+// pdb: hkaMeshBinding::`scalar deleting destructor' | hkaMeshBinding.obj | retail, vtable slot, high
 void* hkaMeshBinding::FUN_00e34920(int flags)
 {
     hkaMeshBinding::~hkaMeshBinding();
@@ -74,7 +77,7 @@ void* hkaMeshBinding::FUN_00e34920(int flags)
     if (flags & 1)
     {
         hkMemoryRouter* router = &hkMemoryRouter::getInstance();
-        router->m_heap->blockFree(this, m_usMemSizeAndFlags);
+        router->m_heap->blockFree(this, m_memSizeAndFlags);
     }
 
     return this;

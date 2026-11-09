@@ -15,6 +15,7 @@ struct LimbListM;
 struct TargetListM;
 
 
+// pdb: class VATSMenu, size 0x144, bases: Menu, 26 members
 class VATSMenu : public Menu
 {
 public:
@@ -65,35 +66,35 @@ public:
         char layoutExtension_pad28[128];
         Tile* m_pTiles[32];
     };
-    void* m_pAdditionalHudTile;
-    bool m_bStateFlag8;
+    void* pActive;
+    bool bDebounceMenuButton;
     char layoutExtension_padad[3];
-    ActionList m_acMenuText;
-    float m_fOverrideActionPoints;
-    float m_fValue1;
-    float m_fValue2;
-    float m_fValue3;
-    float m_fValue4;
-    float m_fValue5;
-    bool m_bFirstFlag;
-    bool m_bStateFlag1;
-    bool m_bStateFlag2;
-    bool m_bStateFlag3;
-    float m_fHitChance;
-    void* m_pTargetChance;
-    bool m_bStateFlag4;
+    ActionList lbActions;
+    float fActionPoints;
+    float fActionPointsBase;
+    float fClipAmmo;
+    float fTotalAmmo;
+    float fQueuedClipAmmo;
+    float fQueuedTotalAmmo;
+    bool bHeadingReached;
+    bool bMetersShown;
+    bool bTargetsLit;
+    bool bClosing;
+    float fProbableEnemyDamage;
+    void* pCurrentLimb;
+    bool bConcentratedFirePerk;
     char layoutExtension_pad105[3];
-    void* m_pSelectedChance;
-    bool m_bStateFlag5;
-    bool m_bStateFlag9;
-    bool m_bAdditionalStateFlag;
-    bool m_bStateFlag10;
-    bool m_bStateFlag6;
+    void* pLastLimb;
+    bool bStickReset;
+    bool bTargetStickReset;
+    bool bMouseOverButton;
+    bool bSelectLeftHeld;
+    bool bSelectRightHeld;
     char layoutExtension_pad111[3];
-    unsigned int m_uiTargetCount;
-    bool m_bStateFlag7;
+    unsigned int uiSelectTimer;
+    bool bDataInTemporaryVATSCommand;
     char layoutExtension_pad119[3];
-    TargetCommand m_acTargetText;
+    TargetCommand pTemporaryVATSCommand;
 
     VATSMenu();
     void AttachTileByID(int aiID, Tile* apTile);
@@ -113,18 +114,18 @@ public:
 
     BSSimpleList<TargetX*>* FindListEntryForTarget(ActorX* apTarget);
     TargetListM* FindListEntryForTarget(ActorM* apTarget);
-    void AssignActionTiles(BSSimpleList<TargetX*>* apNode);
+    void VATSMenu_BuildMetersForTarget(BSSimpleList<TargetX*>* apTarget);
     BSSimpleList<ChanceX*>* FindEntryForRef();
     LimbListM* FindListEntryByValue(int aiLimb);
     void UpdateLimbHighlight();
-    void UpdateQueueEntry(TargetCommand* apCmd, bool abArg2, bool abArg3);
+    void VATSMenu_UpdateQueuedActionList(TargetCommand* apCommand, bool abForcedReload, bool bSpecialAttack);
     float CalculateProbableEnemyHealth();
-    void UpdateHitChanceDisplay();
+    void SetMeterChance();
     bool UpdateVatsTargeting();
     void VATSMenu_SetTargetLimb();
     bool UpdateAmmo();
     bool VATSMenu_PickNewTarget();
-    int VATSMenu_GetActorValueFromBodyPart(int aiLimb);
+    int VATSMenu_GetActorValueFromBodyPart(int aeBodyPart);
     int GetConsecutiveMatchCount();
     void UpdateLimbTiles();
     float CalculateVATSChance(LimbListM* apTarget);

@@ -89,6 +89,7 @@ class DismemberLimbTaskData
     int iDismembermentOption;
     Actor* pActor;
 };
+// pdb: class BipedAnim, size 0x2b4 (here 0x1), 6 members
 class BipedAnim
 {
   public:
@@ -101,11 +102,11 @@ void Script_SetPosBase(TESObjectREFR*, unsigned char, float);  // @ref 0x005c074
 void Script_SetAngleBase(TESObjectREFR*, unsigned char, float);  // @ref 0x005c0b10 FUN_005c0b10
 void Script_SetRigidBodyMassBase(TESObjectREFR*, float);                 // @ref 0x005d3c20 FUN_005d3c20
 void Script_DamageObjectBase(TESObjectREFR*, float);                 // @ref 0x005d4c20 FUN_005d4c20
-void UpdateSceneGraph(NiAVObject*);                       // @ref 0x005526f0 UpdateSceneGraph
+void TESObjectCELL_UpdateParticlesOnly(NiAVObject*);                       // @ref 0x005526f0 UpdateSceneGraph
 void UpdateControllersRecursive(NiAVObject*);             // @ref 0x00552790 UpdateControllersRecursive
 void Actor_RemovePickedUpObjectFromWorld(TESObjectREFR*, bool);                  // @ref 0x00892460 FUN_00892460
 void bhkWorld_Activate(NiAVObject*, bool, bool, int);          // @ref 0x00c6a270 FUN_00c6a270
-void _bhkWorld_AdjustForceAddCount(NiAVObject*, bool, bool, bool);         // @ref 0x00c69fc0 FUN_00c69fc0
+void bhkWorld_AdjustForceAddCount(NiAVObject*, bool, bool, bool);         // @ref 0x00c69fc0 FUN_00c69fc0
 void* GetObjectFromNode(NiAVObject*, bool, int);  // @ref 0x00c69ee0 GetObjectFromNode
 void* hkVector4_getZero();  // @ref 0x00458b20 FUN_00458b20
 class TaskQueueParallelWork
@@ -282,6 +283,7 @@ FNV_STATIC_ASSERT(offsetof(PackedTaskQueueProcessor, m_bIsProcessing) == 36);
 class PackedTaskQueueProcessor;
 class TaskQueueInterface;
 #pragma pack(push, 4)
+// pdb: class TaskQueueInterface, size 0x10, 4 members
 class TaskQueueInterface
 {
   public:
@@ -296,7 +298,7 @@ class TaskQueueInterface
     void QueueReferenceStateTask(bool abOpen);
     void SetTaskFlagDWord(bool abSet, unsigned int auiMask);
     void SetTaskFlagWord(bool abSet, unsigned short ausMask);
-    static void ProcessQueuedTask(const BSPackedTask&);
+    static void TaskUnpackFunc(const BSPackedTask&);
     void ProcessPackedTask(const BSPackedTask&);
     static void ThreadProcessInput(unsigned int);
     static void ThreadProcessSecondaryInput();
@@ -383,18 +385,24 @@ extern "C" int strcpy_s(char* apDestination, unsigned int auiSize, const char* a
 unsigned int gm_GetCurrentThreadId();
 
 // @fnv 0x00406d30
+// pdb: BSstrcpy | EffectItemList.obj | debug, call graph, medium
+// pdb params: apString1, aiSize, apString2
 void TaskQueueInterface::CopyStringToBuffer(char* apBuffer, unsigned int auiSize, const char* apSource)
 {
     strcpy_s(apBuffer, auiSize, apSource);
 }
 
 // @fnv 0x00450f90
+// pdb: NiAVObject::SetAppCulled | TES.obj | debug, call graph, medium
+// pdb params: bAppCulled
 void TaskQueueInterface::QueueActorDisarm(bool abCritical)
 {
     SetTaskFlagDWord(abCritical, 1);
 }
 
 // @fnv 0x0047aa40
+// pdb: NiTimeController::SetActive | BGSOpenCloseForm.obj | debug, call graph, high
+// pdb params: bActive
 void TaskQueueInterface::QueueReferenceStateTask(bool abOpen)
 {
     SetTaskFlagWord(abOpen, 8);
@@ -408,6 +416,7 @@ NiPoint3& TaskQueueInterface::QueueActorAnimationTask(NiPoint3& akDest)
 }
 
 // @fnv 0x0087a850
+// pdb: TaskQueueInterface::ProcessSecondaryQueue | TaskQueueInterface.obj | debug, object-file run extension, low
 void TaskQueueInterface::ProcessTaskQueue()
 {
     m_uiTaskFlags = gm_GetCurrentThreadId();
@@ -417,6 +426,8 @@ void TaskQueueInterface::ProcessTaskQueue()
 }
 
 // @fnv 0x0087d160
+// pdb: TaskQueueInterface::QueueIfActive | TaskQueueInterface.obj | debug, call graph, medium
+// pdb params: arTask
 void TaskQueueInterface::ProcessPackedTask(const BSPackedTask& task)
 {
     if (DAT_011a31f4)
@@ -428,12 +439,14 @@ void TaskQueueInterface::ProcessPackedTask(const BSPackedTask& task)
     }
     else
     {
-        ProcessQueuedTask(task);
+        TaskUnpackFunc(task);
     }
 }
 
 // If FUN_004b7210() returns an object whose GetIndex() is nonzero, forwards input to its FUN_00984f60 method.
 // @fnv 0x007034c0
+// pdb: Interface::SetPickDistance | Interface.obj | debug, object-file run extension, low
+// pdb params: aiDistance
 void TaskQueueInterface::ThreadProcessInput(unsigned int input)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<QuestStage*>(InterfaceManager_GetSingleton())->GetIndex())
@@ -441,6 +454,7 @@ void TaskQueueInterface::ThreadProcessInput(unsigned int input)
 }
 
 // @fnv 0x00703490
+// pdb: Interface::RefreshActivateREFR | Interface.obj | debug, object-file run extension, low
 void TaskQueueInterface::ThreadProcessSecondaryInput()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<QuestStage*>(InterfaceManager_GetSingleton())->GetIndex())
@@ -455,65 +469,69 @@ struct CallTarget
 struct FUN_0087ce50_cls
 {
     CallTarget* Head();
-    float GetHeadTail();
+    float NiAVObject_GetWorldBoundRadius();
 };
 
 // Dispatches a packed task by its opcode, calling the matching engine routine for each case.
 // @fnv 0x0087b990
-void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
+// src: XBOX_DEBUG_PDB 0x0087b990
+// pdb: TaskQueueInterface::TaskUnpackFunc | TaskQueueInterface.obj | debug, unique string literal, high
+// pdb params: arTask
+// pdb locals: emittanceColor, tempAutoEvent, pnode, pweap, pref, iformid, fZ, fY, ptargetref, fX, iFade, pactor, phighProcess, actorHavokSyncTask, cellUpdateTask, cellNodeArray, pactornode, bmbtest, pparent, bupdateProperties, pchild, bfirstAvailable, pobject, pssn ...
+void TaskQueueInterface::TaskUnpackFunc(const BSPackedTask& arTask)
 {
-    switch (akTask.m_akPackedTaskVariantData[0].iData)
+    switch (arTask.m_akPackedTaskVariantData[0].iData)
     {
     case 0:
-        Warning("Float %.2f", akTask.m_akPackedTaskVariantData[1].fData);
+        Warning("Float %.2f", arTask.m_akPackedTaskVariantData[1].fData);
         break;
     case 1:
-        Warning("Int %d", akTask.m_akPackedTaskVariantData[1].iData);
+        Warning("Int %d", arTask.m_akPackedTaskVariantData[1].iData);
         break;
     case 2: {
-        NiAVObject* pTaskObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
-        NiPoint3 kColor(akTask.m_akPackedTaskVariantData[2].fData, akTask.m_akPackedTaskVariantData[3].fData,
-                        akTask.m_akPackedTaskVariantData[4].fData);
+        NiAVObject* pTaskObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
+        NiPoint3 kColor(arTask.m_akPackedTaskVariantData[2].fData, arTask.m_akPackedTaskVariantData[3].fData,
+                        arTask.m_akPackedTaskVariantData[4].fData);
         BipedAnim::SetNodeTranslation(pTaskObject, kColor);
         break;
     }
     case 32: {
-        TESObjectWEAP* pWeapon = static_cast<TESObjectWEAP*>(akTask.m_akPackedTaskVariantData[1].pData);
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[2].pData);
+        TESObjectWEAP* pWeapon = static_cast<TESObjectWEAP*>(arTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[2].pData);
         pWeapon->Fire(m_pWorldReferenceInfo);
         break;
     }
     case 31: {
-        unsigned int auiFormId = akTask.m_akPackedTaskVariantData[2].iData;
+        unsigned int auiFormId = arTask.m_akPackedTaskVariantData[2].iData;
         TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(TESForm::GetFormByID(auiFormId));
         if (m_pWorldReferenceInfo)
         {
-            switch (akTask.m_akPackedTaskVariantData[1].iData)
+            switch (arTask.m_akPackedTaskVariantData[1].iData)
             {
             case 0x1007:
-                Script_SetPosBase(m_pWorldReferenceInfo, akTask.m_akPackedTaskVariantData[3].pcDataA[0],
-                             akTask.m_akPackedTaskVariantData[4].fData);
+                Script_SetPosBase(m_pWorldReferenceInfo, arTask.m_akPackedTaskVariantData[3].pcDataA[0],
+                             arTask.m_akPackedTaskVariantData[4].fData);
                 break;
             case 0x1009:
-                Script_SetAngleBase(m_pWorldReferenceInfo, akTask.m_akPackedTaskVariantData[3].pcDataA[0],
-                             akTask.m_akPackedTaskVariantData[4].fData);
+                Script_SetAngleBase(m_pWorldReferenceInfo, arTask.m_akPackedTaskVariantData[3].pcDataA[0],
+                             arTask.m_akPackedTaskVariantData[4].fData);
                 break;
             case 0x113c:
-                Script::SetReferenceScale(m_pWorldReferenceInfo, akTask.m_akPackedTaskVariantData[3].fData);
+                Script::SetScaleBase(m_pWorldReferenceInfo, arTask.m_akPackedTaskVariantData[3].fData);
                 break;
             case 0x1156:
-                Script_SetRigidBodyMassBase(m_pWorldReferenceInfo, akTask.m_akPackedTaskVariantData[3].fData);
+                Script_SetRigidBodyMassBase(m_pWorldReferenceInfo, arTask.m_akPackedTaskVariantData[3].fData);
                 break;
             case 0x109e:
             case 0x124f: {
                 float fY;
-                auiFormId = akTask.m_akPackedTaskVariantData[3].iData;
+                auiFormId = arTask.m_akPackedTaskVariantData[3].iData;
                 TESObjectREFR* target = static_cast<TESObjectREFR*>(TESForm::GetFormByID(auiFormId));
-                float fX = akTask.m_akPackedTaskVariantData[4].fData;
-                fY = akTask.m_akPackedTaskVariantData[5].fData;
-                float fZ = akTask.m_akPackedTaskVariantData[6].fData;
+                float fX = arTask.m_akPackedTaskVariantData[4].fData;
+                fY = arTask.m_akPackedTaskVariantData[5].fData;
+                float fZ = arTask.m_akPackedTaskVariantData[6].fData;
                 int iFade = 0;
-                if (akTask.m_akPackedTaskVariantData[1].iData == 0x124f)
+                if (arTask.m_akPackedTaskVariantData[1].iData == 0x124f)
                     iFade = 1;
                 if (m_pWorldReferenceInfo->IsActor() && m_pWorldReferenceInfo != g_thePlayer)
                 {
@@ -544,12 +562,12 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
                 break;
             }
             case 0x116c:
-                Script_DamageObjectBase(m_pWorldReferenceInfo, akTask.m_akPackedTaskVariantData[3].fData);
+                Script_DamageObjectBase(m_pWorldReferenceInfo, arTask.m_akPackedTaskVariantData[3].fData);
                 break;
             case 0x11df: {
-                auiFormId = akTask.m_akPackedTaskVariantData[3].iData;
+                auiFormId = arTask.m_akPackedTaskVariantData[3].iData;
                 TESObjectREFR* target = static_cast<TESObjectREFR*>(TESForm::GetFormByID(auiFormId));
-                Script::MatchFaceGeometry(m_pWorldReferenceInfo, target, akTask.m_akPackedTaskVariantData[4].iData);
+                Script::MatchFaceGeometry(m_pWorldReferenceInfo, target, arTask.m_akPackedTaskVariantData[4].iData);
                 break;
             }
             }
@@ -578,33 +596,33 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 3: {
-        NiNode* pNode = static_cast<NiNode*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiNode* pNode = static_cast<NiNode*>(arTask.m_akPackedTaskVariantData[1].pData);
         DetailedActorPathHandler::UpdateSceneNode(pNode);
         break;
     }
     case 5: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         bool bTestMultibounds = false;
-        if (reinterpret_cast<FUN_0087ce50_cls*>(pObject)->GetHeadTail() == 0.0)
+        if (reinterpret_cast<FUN_0087ce50_cls*>(pObject)->NiAVObject_GetWorldBoundRadius() == 0.0)
             bTestMultibounds = true;
-        UpdateSceneGraph(pObject);
-        if (bTestMultibounds && reinterpret_cast<FUN_0087ce50_cls*>(pObject)->GetHeadTail() > 0.0)
+        TESObjectCELL_UpdateParticlesOnly(pObject);
+        if (bTestMultibounds && reinterpret_cast<FUN_0087ce50_cls*>(pObject)->NiAVObject_GetWorldBoundRadius() > 0.0)
             reinterpret_cast<DetailedActorPathHandler*>(g_TES->GetDetailedActorPathHandler())
                 ->HandleReferenceUpdate(TESObjectREFR::GetReferenceFromNiAVObject(pObject), false, false);
         pObject->NiRefObject_DecRefCount();
         break;
     }
     case 6: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         UpdateControllersRecursive(pObject);
         pObject->NiRefObject_DecRefCount();
         break;
     }
     case 7: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
-        NiNode* pParent = static_cast<NiNode*>(akTask.m_akPackedTaskVariantData[2].pData);
-        bool bFirstFree = akTask.m_akPackedTaskVariantData[3].bData;
-        bool bUpdate = akTask.m_akPackedTaskVariantData[4].bData;
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
+        NiNode* pParent = static_cast<NiNode*>(arTask.m_akPackedTaskVariantData[2].pData);
+        bool bFirstFree = arTask.m_akPackedTaskVariantData[3].bData;
+        bool bUpdate = arTask.m_akPackedTaskVariantData[4].bData;
         pParent->AttachChildInAvailableSlot(pObject, bFirstFree);
         pObject->CompleteAttachUpdate();
         if (bUpdate)
@@ -614,7 +632,7 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 8: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         NiNode* pParent = pObject->GetParent();
         if (pParent)
             pParent->RemoveObject(pObject);
@@ -622,30 +640,30 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 47: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         BipedAnim::SetNodeTranslation(pObject);
         pObject->NiRefObject_DecRefCount();
         break;
     }
     case 9: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         ShadowSceneNode* pScene =
-            NiAdditionalGeometryData::GetShadowSceneNodeForIndex(akTask.m_akPackedTaskVariantData[2].iData);
+            NiAdditionalGeometryData::GetShadowSceneNodeForIndex(arTask.m_akPackedTaskVariantData[2].iData);
         if (pScene)
             pScene->ShadowSceneNode::RemoveObject(pObject);
         pObject->NiRefObject_DecRefCount();
         break;
     }
     case 10: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         NiUpdateData kUpdate(0.0f, false, false);
         pObject->Update(static_cast<const NiUpdateData&>(kUpdate));
         pObject->NiRefObject_DecRefCount();
         break;
     }
     case 11: {
-        Actor* pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        BooleanFloatQuery* hitData = static_cast<BooleanFloatQuery*>(akTask.m_akPackedTaskVariantData[2].pData);
+        Actor* pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        BooleanFloatQuery* hitData = static_cast<BooleanFloatQuery*>(arTask.m_akPackedTaskVariantData[2].pData);
         pActor->ProcessActorDamage(hitData->afDamageAmount, hitData);
         if (hitData->m_pkAttacker)
             hitData->m_pkAttacker->Actor_CreateBloodOnWeapon(hitData->afDamageAmount, hitData, pActor);
@@ -653,7 +671,7 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 12: {
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
         if (m_pWorldReferenceInfo->IsExplosion())
         {
             Actor* pActor = static_cast<Actor*>(m_pWorldReferenceInfo);
@@ -673,9 +691,9 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
             bool bAllowDestroyed;
             void* point;
         } state;
-        state.ref = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
-        state.fAmount = akTask.m_akPackedTaskVariantData[2].fData;
-        state.bAllowDestroyed = akTask.m_akPackedTaskVariantData[3].bData;
+        state.ref = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
+        state.fAmount = arTask.m_akPackedTaskVariantData[2].fData;
+        state.bAllowDestroyed = arTask.m_akPackedTaskVariantData[3].bData;
         state.bFound = false;
         state.pMap = BGSDestructibleObjectForm_GetDestructibleObjects();
         state.point = state.pMap->GetFirstPos();
@@ -702,17 +720,17 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 48: {
-        TESObjectREFR* reference = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
-        bool bFlag = akTask.m_akPackedTaskVariantData[2].bData;
+        TESObjectREFR* reference = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
+        bool bFlag = arTask.m_akPackedTaskVariantData[2].bData;
         Actor_RemovePickedUpObjectFromWorld(reference, bFlag);
         break;
     }
     case 14: {
-        Actor* pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        float* afDamageAmount = static_cast<float*>(akTask.m_akPackedTaskVariantData[2].pData);
-        pActor->Kill(pActor->m_pActorReference, *afDamageAmount);
+        Actor* pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        float* afDamageAmount = static_cast<float*>(arTask.m_akPackedTaskVariantData[2].pData);
+        pActor->Kill(pActor->pMyKiller, *afDamageAmount);
         DismemberLimbTaskData* pLimbData =
-            static_cast<DismemberLimbTaskData*>(akTask.m_akPackedTaskVariantData[3].pData);
+            static_cast<DismemberLimbTaskData*>(arTask.m_akPackedTaskVariantData[3].pData);
         if (pLimbData)
         {
             pActor->HandleDismembermentTask(pLimbData->iDismembermentOption, pLimbData->uiLimb, pLimbData->pActor);
@@ -722,9 +740,9 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 15: {
-        Actor* pQueuedActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        bool bPower = akTask.m_akPackedTaskVariantData[2].bData;
-        bool fForce = akTask.m_akPackedTaskVariantData[3].bData;
+        Actor* pQueuedActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        bool bPower = arTask.m_akPackedTaskVariantData[2].bData;
+        bool fForce = arTask.m_akPackedTaskVariantData[3].bData;
         pQueuedActor->ProcessQueuedHit(bPower, fForce);
         break;
     }
@@ -734,31 +752,31 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
             float fForce;
             Actor* pActor;
         } request;
-        request.pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        NiPoint3 kPosition(akTask.m_akPackedTaskVariantData[2].fData, akTask.m_akPackedTaskVariantData[3].fData,
-                           akTask.m_akPackedTaskVariantData[4].fData);
-        request.fForce = akTask.m_akPackedTaskVariantData[5].fData;
+        request.pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        NiPoint3 kPosition(arTask.m_akPackedTaskVariantData[2].fData, arTask.m_akPackedTaskVariantData[3].fData,
+                           arTask.m_akPackedTaskVariantData[4].fData);
+        request.fForce = arTask.m_akPackedTaskVariantData[5].fData;
         if (request.pActor && TASK_PROCESS(request.pActor))
             TASK_PROCESS(request.pActor)->PushActorAway(request.pActor, kPosition, request.fForce);
         break;
     }
     case 17: {
-        Actor* pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        BooleanFloatQuery* hitData = static_cast<BooleanFloatQuery*>(akTask.m_akPackedTaskVariantData[2].pData);
+        Actor* pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        BooleanFloatQuery* hitData = static_cast<BooleanFloatQuery*>(arTask.m_akPackedTaskVariantData[2].pData);
         if (pActor)
             pActor->ProcessHitData(hitData, 0);
         hitData->DecRefCount();
         break;
     }
     case 18: {
-        ActiveEffect* pEffect = static_cast<ActiveEffect*>(akTask.m_akPackedTaskVariantData[1].pData);
+        ActiveEffect* pEffect = static_cast<ActiveEffect*>(arTask.m_akPackedTaskVariantData[1].pData);
         if (pEffect)
             reinterpret_cast<Script*>(pEffect)->SetOwnerQuest(
-                reinterpret_cast<TESQuest*>(MagicHitEffect::GetEffectsForActiveEffect(pEffect)));
+                reinterpret_cast<TESQuest*>(MagicHitEffect::MagicHitEffect_InstantiateHitEffects(pEffect)));
         break;
     }
     case 19: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         if (pObject)
         {
             TESObjectREFR* m_pWorldReferenceInfo = TESObjectREFR::GetReferenceFromNiAVObject(pObject);
@@ -771,7 +789,7 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 20: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         if (pObject)
         {
             bhkWorld_Activate(pObject, true, true, 0);
@@ -781,14 +799,14 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 21: {
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
-        TESObjectWEAP* pWeapon = static_cast<TESObjectWEAP*>(akTask.m_akPackedTaskVariantData[2].pData);
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectWEAP* pWeapon = static_cast<TESObjectWEAP*>(arTask.m_akPackedTaskVariantData[2].pData);
         m_pWorldReferenceInfo->SetExtraDataString(pWeapon);
         break;
     }
     case 22: {
-        Actor* pTargetActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        unsigned int uiObjectID = akTask.m_akPackedTaskVariantData[2].iData;
+        Actor* pTargetActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        unsigned int uiObjectID = arTask.m_akPackedTaskVariantData[2].iData;
         if (TASK_PROCESS(pTargetActor) && TASK_PROCESS(pTargetActor)->GetActiveWeapon())
         {
             BSSimpleArray<ParentSpaceNode, 1024>* pEntry =
@@ -803,68 +821,68 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 24: {
-        Actor* m_pAttachedReference = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        unsigned int uiAV = akTask.m_akPackedTaskVariantData[2].iData;
-        unsigned int uiLimb = akTask.m_akPackedTaskVariantData[3].iData;
-        bool bFlagA = akTask.m_akPackedTaskVariantData[3].bData;
-        bool bDismember = akTask.m_akPackedTaskVariantData[4].bData;
+        Actor* m_pAttachedReference = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        unsigned int uiAV = arTask.m_akPackedTaskVariantData[2].iData;
+        unsigned int uiLimb = arTask.m_akPackedTaskVariantData[3].iData;
+        bool bFlagA = arTask.m_akPackedTaskVariantData[3].bData;
+        bool bDismember = arTask.m_akPackedTaskVariantData[4].bData;
         m_pAttachedReference->DismemberLimb(uiAV, uiLimb, bFlagA, bDismember, true, false);
         break;
     }
     case 23: {
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
         m_pWorldReferenceInfo->Set3D(0, false);
         break;
     }
     case 25: {
-        TESObjectREFR* ref = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
-        TESObjectREFR* pWaterReference = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[2].pData);
-        float fRate = akTask.m_akPackedTaskVariantData[3].fData;
-        g_TES->GetActorScale()->SetWaterHeight(ref, pWaterReference, fRate);
+        TESObjectREFR* ref = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* pWaterReference = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[2].pData);
+        float fRate = arTask.m_akPackedTaskVariantData[3].fData;
+        g_TES->GetActorScale()->TESWaterSystem_AddTESObjectToWaterGroup(ref, pWaterReference, fRate);
         break;
     }
     case 26: {
-        TESObjectREFR* ref = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
-        TESObjectREFR* pWaterReference = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[2].pData);
-        float fRate = akTask.m_akPackedTaskVariantData[3].fData;
+        TESObjectREFR* ref = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* pWaterReference = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[2].pData);
+        float fRate = arTask.m_akPackedTaskVariantData[3].fData;
         g_TES->GetActorScale()->UpdateWaterZone(ref, pWaterReference, fRate);
         break;
     }
     case 27: {
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
         NavMeshObstacleManager::GetSingleton()->RemoveObstacleReference(m_pWorldReferenceInfo);
         break;
     }
     case 28: {
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
         NavMeshObstacleManager::GetSingleton()->AddObstacleReference(m_pWorldReferenceInfo);
         break;
     }
     case 29: {
-        Character* pCharacter = static_cast<Character*>(akTask.m_akPackedTaskVariantData[1].pData);
+        Character* pCharacter = static_cast<Character*>(arTask.m_akPackedTaskVariantData[1].pData);
         if (pCharacter)
             pCharacter->Reset3D();
         break;
     }
     case 30: {
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
-        bool isOpen = akTask.m_akPackedTaskVariantData[2].bData;
-        bool bSnap = akTask.m_akPackedTaskVariantData[3].bData;
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
+        bool isOpen = arTask.m_akPackedTaskVariantData[2].bData;
+        bool bSnap = arTask.m_akPackedTaskVariantData[3].bData;
         if (m_pWorldReferenceInfo)
             BGSOpenCloseForm::SetOpenState(m_pWorldReferenceInfo, isOpen, bSnap);
         break;
     }
     case 33: {
-        Actor* pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        NiPoint3 kPosition(akTask.m_akPackedTaskVariantData[2].fData, akTask.m_akPackedTaskVariantData[3].fData,
-                           akTask.m_akPackedTaskVariantData[4].fData);
+        Actor* pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        NiPoint3 kPosition(arTask.m_akPackedTaskVariantData[2].fData, arTask.m_akPackedTaskVariantData[3].fData,
+                           arTask.m_akPackedTaskVariantData[4].fData);
         if (pActor)
             pActor->SetPos(&kPosition);
         break;
     }
     case 34: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
-        int iFlags = akTask.m_akPackedTaskVariantData[2].iData;
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
+        int iFlags = arTask.m_akPackedTaskVariantData[2].iData;
         if (pObject)
         {
             Creature::SetNodeFlagsRecursive(pObject, iFlags, true, false, true);
@@ -873,58 +891,58 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 35: {
-        Actor* pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        bool bFlag = akTask.m_akPackedTaskVariantData[2].bData;
+        Actor* pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        bool bFlag = arTask.m_akPackedTaskVariantData[2].bData;
         if (pActor)
             pActor->Actor_SetHavokWeapon(bFlag);
         break;
     }
     case 36: {
-        float fWaterLevelItem = akTask.m_akPackedTaskVariantData[1].fData;
-        NiPoint3 kPosition(akTask.m_akPackedTaskVariantData[2].fData, akTask.m_akPackedTaskVariantData[3].fData,
-                           akTask.m_akPackedTaskVariantData[4].fData);
+        float fWaterLevelItem = arTask.m_akPackedTaskVariantData[1].fData;
+        NiPoint3 kPosition(arTask.m_akPackedTaskVariantData[2].fData, arTask.m_akPackedTaskVariantData[3].fData,
+                           arTask.m_akPackedTaskVariantData[4].fData);
         TESWaterListener::UpdateWaterHeightAtPosition(fWaterLevelItem, kPosition);
         break;
     }
     case 37: {
-        float rippleRadius = akTask.m_akPackedTaskVariantData[1].fData;
-        NiPoint3 kPosition(akTask.m_akPackedTaskVariantData[2].fData, akTask.m_akPackedTaskVariantData[3].fData,
-                           akTask.m_akPackedTaskVariantData[4].fData);
+        float rippleRadius = arTask.m_akPackedTaskVariantData[1].fData;
+        NiPoint3 kPosition(arTask.m_akPackedTaskVariantData[2].fData, arTask.m_akPackedTaskVariantData[3].fData,
+                           arTask.m_akPackedTaskVariantData[4].fData);
         g_TES->GetActorScale()->AddWaterRipple(kPosition, rippleRadius);
         break;
     }
     case 38: {
-        Actor* pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
-        bool bFirstFlag = akTask.m_akPackedTaskVariantData[2].bData;
-        bool bFlagB = akTask.m_akPackedTaskVariantData[3].bData;
+        Actor* pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
+        bool bFirstFlag = arTask.m_akPackedTaskVariantData[2].bData;
+        bool bFlagB = arTask.m_akPackedTaskVariantData[3].bData;
         if (pActor)
             pActor->RefreshActorInteraction(bFirstFlag, bFlagB);
         break;
     }
     case 39: {
-        Actor* pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
+        Actor* pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
         if (pActor)
             pActor->ProcessQueuedActorUpdate();
         break;
     }
     case 40: {
-        Actor* pActor = static_cast<Actor*>(akTask.m_akPackedTaskVariantData[1].pData);
+        Actor* pActor = static_cast<Actor*>(arTask.m_akPackedTaskVariantData[1].pData);
         if (pActor)
             pActor->OnLifeStateChanged();
         break;
     }
     case 41: {
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
         m_pWorldReferenceInfo->vfn_01fc(false);
         break;
     }
     case 45: {
-        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(akTask.m_akPackedTaskVariantData[1].pData);
+        TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
         m_pWorldReferenceInfo->AnimateNiNode();
         break;
     }
     case 42: {
-        TESForm* pForm = TESForm::GetFormByID(akTask.m_akPackedTaskVariantData[1].iData);
+        TESForm* pForm = TESForm::GetFormByID(arTask.m_akPackedTaskVariantData[1].iData);
         if (pForm && pForm->GetIsReference())
         {
             TESObjectREFR* m_pWorldReferenceInfo = static_cast<TESObjectREFR*>(pForm);
@@ -933,14 +951,14 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
         break;
     }
     case 49: {
-        NiAVObject* pObject = static_cast<NiAVObject*>(akTask.m_akPackedTaskVariantData[1].pData);
-        _bhkWorld_AdjustForceAddCount(pObject, akTask.m_akPackedTaskVariantData[2].bData, akTask.m_akPackedTaskVariantData[3].bData,
-                     akTask.m_akPackedTaskVariantData[4].bData);
+        NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
+        bhkWorld_AdjustForceAddCount(pObject, arTask.m_akPackedTaskVariantData[2].bData, arTask.m_akPackedTaskVariantData[3].bData,
+                     arTask.m_akPackedTaskVariantData[4].bData);
         pObject->NiRefObject_DecRefCount();
         break;
     }
     case 44: {
-        MobileObject* pActor = static_cast<MobileObject*>(akTask.m_akPackedTaskVariantData[1].pData);
+        MobileObject* pActor = static_cast<MobileObject*>(arTask.m_akPackedTaskVariantData[1].pData);
         bhkCharacterController* pController = pActor->GetPhysicsCharacterController();
         if (pController)
         {
@@ -948,12 +966,12 @@ void TaskQueueInterface::ProcessQueuedTask(const BSPackedTask& akTask)
             pController->bhkCharacterProxy_SetLinearVelocity(hkVector4_getZero());
             pController->bhkCharacterController_GetFallStartHeight();
             pController->bhkCharacterController_QHitDamage();
-            pController->ResetState();
+            pController->bhkCharacterController_ClearManifold();
         }
         break;
     }
     case 46: {
-        ActiveEffect* pEffect = static_cast<ActiveEffect*>(akTask.m_akPackedTaskVariantData[1].pData);
+        ActiveEffect* pEffect = static_cast<ActiveEffect*>(arTask.m_akPackedTaskVariantData[1].pData);
         delete pEffect;
         break;
     }
@@ -996,11 +1014,15 @@ void FUN_0047aa60_cls::NiTimeController_SetBit(bool set, unsigned short ausMask)
 
 struct FUN_0087b190_shell : public TaskQueueInterface
 {
-    void QueueActorTask(Actor*);
+    void TaskQueueInterface_QueueActorMoveCharController(Actor*);
 };
 
 // @fnv 0x0087b190
-void FUN_0087b190_shell::QueueActorTask(Actor* apActor)
+// src: XBOX_RETAIL_PDB 0x0087b190
+// pdb: TaskQueueInterface::QueueActorMoveCharController | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apActor
+// pdb locals: task
+void FUN_0087b190_shell::TaskQueueInterface_QueueActorMoveCharController(Actor* apActor)
 {
     char task[sizeof(BSPackedTask)];
     if (apActor)
@@ -1013,11 +1035,15 @@ void FUN_0087b190_shell::QueueActorTask(Actor* apActor)
 
 struct FUN_0087b270_shell : public TaskQueueInterface
 {
-    void QueueRefTask(TESObjectREFR*);
+    void TaskQueueInterface_QueueHavokMove(TESObjectREFR*);
 };
 
 // @fnv 0x0087b270
-void FUN_0087b270_shell::QueueRefTask(TESObjectREFR* apRef)
+// src: XBOX_RETAIL_PDB 0x0087b270
+// pdb: TaskQueueInterface::QueueHavokMove | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apRef
+// pdb locals: task
+void FUN_0087b270_shell::TaskQueueInterface_QueueHavokMove(TESObjectREFR* apRef)
 {
     union
     {
@@ -1037,6 +1063,9 @@ struct FUN_0087b2b0_shell : public TaskQueueInterface
 
 // @fnv 0x0087b2b0
 // src: XBOX_PDB 0x0087b2b0
+// pdb: TaskQueueInterface::QueueHavokDetach | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: task
 void FUN_0087b2b0_shell::TaskQueueInterface_QueueHavokDetach(TESObjectREFR* apRef)
 {
     union
@@ -1056,6 +1085,9 @@ struct FUN_0087b400_shell : public TaskQueueInterface
 
 // @fnv 0x0087b400
 // src: COMMUNITY 0x0087b400
+// pdb: TaskQueueInterface::QueueSet3DNull | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: task
 void FUN_0087b400_shell::TaskQueueInterface_QueueSet3DNull(TESObjectREFR* apRef)
 {
     union
@@ -1074,6 +1106,9 @@ struct FUN_0087b650_shell : public TaskQueueInterface
 };
 
 // @fnv 0x0087b650
+// pdb: TaskQueueInterface::QueueActorSetPosition | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apActor, aLocation
+// pdb locals: task
 void FUN_0087b650_shell::QueueActorLocationTask(Actor* apActor, void* aLocation)
 {
     union
@@ -1101,6 +1136,7 @@ struct DummyFlags
 
 // @fnv 0x0087cee0
 // src: XBOX_PDB 0x0087cee0
+// pdb: bhkCharacterController::QHitDamage | TaskQueueInterface.obj | debug, upstream name already matches, high
 bool FUN_0087cee0_shell::bhkCharacterController_QHitDamage()
 {
     return ((DummyFlags*)((char*)this + 0x410))->FUN_00621270(0x80) != 0;
@@ -1148,10 +1184,13 @@ struct MobileObjectDialogueView
     bool IsInDialogueWithPlayer() const;
 };
 
-void __cdecl SetTlsValueAndReset(BSFadeNode* apNode, int aiState);
+void __cdecl SetTlsValueAndReset(BSFadeNode* apObject, int aeMode);
 
 // @fnv 0x0087cfb0
 // src: COMMUNITY 0x0087cfb0
+// pdb: ActorHavokSyncParallelArrayTaskFunc | TaskQueueInterface.obj | debug, object-file run extension, low
+// pdb params: apData, aiIndex
+// pdb locals: actorHavokSyncData, parray
 void __cdecl BSParallelTask_UpdateHavokSync(void* apData, int aiIndex)
 {
     FUN_00844160_shell* pshell = static_cast<FUN_00844160_shell*>(apData);
@@ -1171,21 +1210,27 @@ struct FUN_0087adf0_shell
 };
 
 // @fnv 0x0087adf0
+// pdb: TaskQueueInterface::QueueIfActive | TaskQueueInterface.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to HitData::IncRefCount
+// pdb params: arTask
 int __thiscall FUN_0087adf0_shell::InitScriptRunLockForSelf()
 {
     return InitScriptRunLock((char*)this + 0x60);
 }
 
-float __cdecl GetFloatByType(int, int, int);
+float __cdecl GamePlayFormulas_GetDifficultyMultiplier(int, int, int);
 // Multiplies a by the rating returned by GetFloatByType(b, 0x18, 1) and returns the product.
 // @fnv 0x00648c80
 // src: XBOX_PDB 0x00648c80
-float __cdecl GamePlayFormulas_AdjustExperiencePoints(float afConditionMult, int b)
+// pdb: GamePlayFormulas::AdjustExperiencePoints | GamePlayFormulas.obj | debug, upstream name already matches, high
+// pdb params: afXP, aeDifficulty
+// pdb locals: fresult, fmult
+float __cdecl GamePlayFormulas_AdjustExperiencePoints(float afXP, int aeDifficulty)
 {
     float fRating;
     float fConditionMult;
-    fConditionMult = afConditionMult;
-    fRating = GetFloatByType(b, 0x18, 1);
+    fConditionMult = afXP;
+    fRating = GamePlayFormulas_GetDifficultyMultiplier(aeDifficulty, 0x18, 1);
     fConditionMult *= fRating;
     return fConditionMult;
 }
@@ -1196,12 +1241,15 @@ struct FUN_0087aa40_Holder
 };
 // @fnv 0x0087aa40
 // src: XBOX_PDB 0x0087aa40
-void FUN_0087aa40_Holder::TaskQueueInterface_QueueWeaponFire(int aiArg0, int aiArg1)
+// pdb: TaskQueueInterface::QueueWeaponFire | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apWeapon, apRefObject
+// pdb locals: task
+void FUN_0087aa40_Holder::TaskQueueInterface_QueueWeaponFire(int apWeapon, int apRefObject)
 {
     char buf[32];
     ((int*)buf)[0] = 0x20;
-    ((int*)buf)[1] = aiArg0;
-    ((int*)buf)[2] = aiArg1;
+    ((int*)buf)[1] = apWeapon;
+    ((int*)buf)[2] = apRefObject;
     ((TaskQueueInterface*)this)->ProcessPackedTask(*(BSPackedTask*)buf);
 }
 
@@ -1211,6 +1259,8 @@ struct FUN_0087aa90_shell : TaskQueueInterface
 };
 // @fnv 0x0087aa90
 // src: COMMUNITY 0x0087aa90
+// pdb: TaskQueueInterface::QueueParallelTaskProcessing | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb locals: task
 void FUN_0087aa90_shell::TaskQueueInterface_QueueParallelTaskProcessing()
 {
     char task[32];
@@ -1264,12 +1314,15 @@ struct FUN_0087abb0_shell : public TaskQueueInterface
 // Builds a task with type 6 and the given object, calls the object's FUN_0040f6e0, then queues the packed task.
 // @fnv 0x0087abb0
 // src: COMMUNITY 0x0087abb0
-void FUN_0087abb0_shell::TaskQueueInterface_QueueMorphControllerUpdate(G00559a40* pObject)
+// pdb: TaskQueueInterface::QueueMorphControllerUpdate | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: task
+void FUN_0087abb0_shell::TaskQueueInterface_QueueMorphControllerUpdate(G00559a40* apNode)
 {
     FakeTask task;
     task.i0 = 6;
-    task.p1 = pObject;
-    pObject->NiRefObject_IncRefCount();
+    task.p1 = apNode;
+    apNode->NiRefObject_IncRefCount();
     ProcessPackedTask(reinterpret_cast<BSPackedTask&>(task));
 }
 
@@ -1280,10 +1333,14 @@ struct G00559a40
 };
 struct Owner0087ac00 : public TaskQueueInterface
 {
-    void QueueTaskWithTwoObjects(G00559a40*, G00559a40*, bool, bool);
+    void TaskQueueInterface_QueueNodeAttach(G00559a40*, G00559a40*, bool, bool);
 };
 // @fnv 0x0087ac00
-void Owner0087ac00::QueueTaskWithTwoObjects(G00559a40* pFirstObject, G00559a40* pSecondObject, bool bFlag1, bool bFlag2)
+// src: XBOX_RETAIL_PDB 0x0087ac00
+// pdb: TaskQueueInterface::QueueNodeAttach | TaskQueueInterface.obj | retail, call graph (shared callers), high
+// pdb params: apChildNode, apNewParetNode, abFirstAvailable, abUpdateProperties
+// pdb locals: task
+void Owner0087ac00::TaskQueueInterface_QueueNodeAttach(G00559a40* apChildNode, G00559a40* apNewParetNode, bool abFirstAvailable, bool abUpdateProperties)
 {
     union U
     {
@@ -1292,12 +1349,12 @@ void Owner0087ac00::QueueTaskWithTwoObjects(G00559a40* pFirstObject, G00559a40* 
     };
     U u;
     u.task.m_akPackedTaskVariantData[0].iData = 7;
-    u.task.m_akPackedTaskVariantData[1].pData = pFirstObject;
-    u.task.m_akPackedTaskVariantData[2].pData = pSecondObject;
-    u.task.m_akPackedTaskVariantData[3].bData = bFlag1;
-    u.task.m_akPackedTaskVariantData[4].bData = bFlag2;
-    pFirstObject->NiRefObject_IncRefCount();
-    pSecondObject->NiRefObject_IncRefCount();
+    u.task.m_akPackedTaskVariantData[1].pData = apChildNode;
+    u.task.m_akPackedTaskVariantData[2].pData = apNewParetNode;
+    u.task.m_akPackedTaskVariantData[3].bData = abFirstAvailable;
+    u.task.m_akPackedTaskVariantData[4].bData = abUpdateProperties;
+    apChildNode->NiRefObject_IncRefCount();
+    apNewParetNode->NiRefObject_IncRefCount();
     ProcessPackedTask(u.task);
 }
 }  // namespace fnv_0087ac00
@@ -1314,9 +1371,12 @@ struct FUN_0087AC60_Holder
 // If a1 is non-null, builds a BSPackedTask with id 8 and a1 as data, calls a1->FUN_0040f6e0(), then queues the task via this.
 // @fnv 0x0087ac60
 // src: XBOX_PDB 0x0087ac60
-void FUN_0087AC60_Holder::TaskQueueInterface_QueueNodeDetach(G00559a40* pObject)
+// pdb: TaskQueueInterface::QueueNodeDetach | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: task
+void FUN_0087AC60_Holder::TaskQueueInterface_QueueNodeDetach(G00559a40* apObject)
 {
-    if (pObject)
+    if (apObject)
     {
         union
         {
@@ -1324,8 +1384,8 @@ void FUN_0087AC60_Holder::TaskQueueInterface_QueueNodeDetach(G00559a40* pObject)
             char buf[32];
         };
         task.m_akPackedTaskVariantData[0].iData = 8;
-        task.m_akPackedTaskVariantData[1].pData = pObject;
-        pObject->NiRefObject_IncRefCount();
+        task.m_akPackedTaskVariantData[1].pData = apObject;
+        apObject->NiRefObject_IncRefCount();
         ((TaskQueueInterface*)this)->ProcessPackedTask(task);
     }
 }
@@ -1342,9 +1402,12 @@ struct FUN_0087acb0_host : TaskQueueInterface
 };
 // @fnv 0x0087acb0
 // src: XBOX_PDB 0x0087acb0
-void FUN_0087acb0_host::TaskQueueInterface_QueueBiped3DDetach(G00559a40* pObject)
+// pdb: TaskQueueInterface::QueueBiped3DDetach | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: task
+void FUN_0087acb0_host::TaskQueueInterface_QueueBiped3DDetach(G00559a40* apObject)
 {
-    if (pObject)
+    if (apObject)
     {
         union UU
         {
@@ -1352,8 +1415,8 @@ void FUN_0087acb0_host::TaskQueueInterface_QueueBiped3DDetach(G00559a40* pObject
             char c[32];
         } packedTask;
         packedTask.t.m_akPackedTaskVariantData[0].iData = 47;
-        packedTask.t.m_akPackedTaskVariantData[1].pData = pObject;
-        pObject->NiRefObject_IncRefCount();
+        packedTask.t.m_akPackedTaskVariantData[1].pData = apObject;
+        apObject->NiRefObject_IncRefCount();
         ProcessPackedTask(packedTask.t);
     }
 }
@@ -1373,18 +1436,21 @@ struct TaskBuf0087ad00
 };
 struct H0087ad00
 {
-    void TaskQueueInterface_QueueSSNRemoveObject(G00559a40* a1, void* a2);
+    void TaskQueueInterface_QueueSSNRemoveObject(G00559a40* a1, void* aiIndex);
 };
 // @fnv 0x0087ad00
 // src: COMMUNITY 0x0087ad00
-void H0087ad00::TaskQueueInterface_QueueSSNRemoveObject(G00559a40* apObject, void* apData)
+// pdb: TaskQueueInterface::QueueSSNRemoveObject | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apObject, aiIndex
+// pdb locals: task
+void H0087ad00::TaskQueueInterface_QueueSSNRemoveObject(G00559a40* apObject, void* aiIndex)
 {
     if (apObject)
     {
         TaskBuf0087ad00 task;
         task.v0 = 9;
         task.v1 = apObject;
-        task.v2 = apData;
+        task.v2 = aiIndex;
         apObject->NiRefObject_IncRefCount();
         ((TaskQueueInterface*)this)->ProcessPackedTask((const BSPackedTask&)task);
     }
@@ -1432,15 +1498,18 @@ struct FUN_0087ada0_shell : public TaskQueueInterface
 };
 // @fnv 0x0087ada0
 // src: XBOX_PDB 0x0087ada0
-void FUN_0087ada0_shell::TaskQueueInterface_QueueActorCreateBlood(int aiTaskArg, FUN_0087adf0_shell* a2)
+// pdb: TaskQueueInterface::QueueActorCreateBlood | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apHitData
+// pdb locals: task
+void FUN_0087ada0_shell::TaskQueueInterface_QueueActorCreateBlood(int apTarget, FUN_0087adf0_shell* apHitData)
 {
     char buf[32];
-    if (a2)
+    if (apHitData)
     {
         ((BSPackedTask*)buf)->m_akPackedTaskVariantData[0].iData = 11;
-        ((BSPackedTask*)buf)->m_akPackedTaskVariantData[1].iData = aiTaskArg;
-        ((BSPackedTask*)buf)->m_akPackedTaskVariantData[2].pData = a2;
-        a2->InitScriptRunLockForSelf();
+        ((BSPackedTask*)buf)->m_akPackedTaskVariantData[1].iData = apTarget;
+        ((BSPackedTask*)buf)->m_akPackedTaskVariantData[2].pData = apHitData;
+        apHitData->InitScriptRunLockForSelf();
         ProcessPackedTask(*(BSPackedTask*)buf);
     }
 }
@@ -1457,15 +1526,18 @@ struct FUN_0087ae10_shell : TaskQueueInterface
 };
 // @fnv 0x0087ae10
 // src: COMMUNITY 0x0087ae10
-void FUN_0087ae10_shell::TaskQueueInterface_QueueActorHitMe(int a, FUN_0087adf0_shell* b)
+// pdb: TaskQueueInterface::QueueActorHitMe | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apHitData
+// pdb locals: task
+void FUN_0087ae10_shell::TaskQueueInterface_QueueActorHitMe(int apTarget, FUN_0087adf0_shell* apHitData)
 {
     char task[32];
-    if (b)
+    if (apHitData)
     {
         ((int*)task)[0] = 17;
-        ((int*)task)[1] = a;
-        ((FUN_0087adf0_shell**)task)[2] = b;
-        b->InitScriptRunLockForSelf();
+        ((int*)task)[1] = apTarget;
+        ((FUN_0087adf0_shell**)task)[2] = apHitData;
+        apHitData->InitScriptRunLockForSelf();
         ProcessPackedTask(*(BSPackedTask*)task);
     }
 }
@@ -1473,16 +1545,20 @@ void FUN_0087ae10_shell::TaskQueueInterface_QueueActorHitMe(int a, FUN_0087adf0_
 
 struct Host
 {
-    void QueueCheckTask(TESObjectREFR* p);
+    void TaskQueueInterface_QueueMobileObjectInitialize(TESObjectREFR* apTarget);
 };
 // @fnv 0x0087ae60
-void Host::QueueCheckTask(TESObjectREFR* pObj)
+// src: XBOX_RETAIL_PDB 0x0087ae60
+// pdb: TaskQueueInterface::QueueMobileObjectInitialize | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apTarget
+// pdb locals: task
+void Host::TaskQueueInterface_QueueMobileObjectInitialize(TESObjectREFR* apTarget)
 {
-    if (pObj && pObj->IsExplosion())
+    if (apTarget && apTarget->IsExplosion())
     {
         char buf[32];
         ((int*)buf)[0] = 12;
-        ((TESObjectREFR**)buf)[1] = pObj;
+        ((TESObjectREFR**)buf)[1] = apTarget;
         ((TaskQueueInterface*)this)->ProcessPackedTask(*(BSPackedTask*)buf);
     }
 }
@@ -1500,6 +1576,9 @@ struct TaskQueueProxy : public TaskQueueInterface
     void QueueDamageTask(TESObjectREFR* apObject, float afDamage, bool abSelfDamage);
 };
 // @fnv 0x0087af50
+// pdb: TaskQueueInterface::QueueUpdateDestructibleObject | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apObject, afDamage, abSelfDamage
+// pdb locals: task
 void TaskQueueProxy::QueueDamageTask(TESObjectREFR* apObject, float afDamage, bool abSelfDamage)
 {
     TaskBuf task;
@@ -1523,30 +1602,37 @@ struct FUN_0087aff0_Buf
 };
 struct FUN_0087aff0_This : TaskQueueInterface
 {
-    void TaskQueueInterface_QueueActorKill(void* a1, void* a2, void* a3);
+    void TaskQueueInterface_QueueActorKill(void* apActor, void* afDamage, void* apDismemberData);
 };
 // @fnv 0x0087aff0
 // src: COMMUNITY 0x0087aff0
-void FUN_0087aff0_This::TaskQueueInterface_QueueActorKill(void* a1, void* a2, void* a3)
+// pdb: TaskQueueInterface::QueueActorKill | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apActor, afDamage, apDismemberData
+// pdb locals: task
+void FUN_0087aff0_This::TaskQueueInterface_QueueActorKill(void* apActor, void* afDamage, void* apDismemberData)
 {
-    if (a1)
+    if (apActor)
     {
         FUN_0087aff0_Buf b;
         b.i0 = 14;
-        b.p1 = a1;
-        b.p2 = a2;
-        b.p3 = a3;
+        b.p1 = apActor;
+        b.p2 = afDamage;
+        b.p3 = apDismemberData;
         ProcessPackedTask(reinterpret_cast<BSPackedTask&>(b));
     }
 }
 
 struct FUN_0087b040_shell : public TaskQueueInterface
 {
-    void QueuePowerAttackTask(Actor* apActor, bool abPowerAttack, bool abInCombatAttack);
+    void TaskQueueInterface_QueueActorMeleeAttack(Actor* apActor, bool abPowerAttack, bool abInCombatAttack);
 };
 // If apActor is non-null, packs a task with id 15, the actor, and the two attack flags, then queues it.
 // @fnv 0x0087b040
-void FUN_0087b040_shell::QueuePowerAttackTask(Actor* apActor, bool abPowerAttack, bool abInCombatAttack)
+// src: XBOX_RETAIL_PDB 0x0087b040
+// pdb: TaskQueueInterface::QueueActorMeleeAttack | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apActor, abPowerAttack, abInCombatAttack
+// pdb locals: task
+void FUN_0087b040_shell::TaskQueueInterface_QueueActorMeleeAttack(Actor* apActor, bool abPowerAttack, bool abInCombatAttack)
 {
     if (apActor)
     {
@@ -1570,14 +1656,17 @@ struct FUN_0087b0f0_shell : TaskQueueInterface
 };
 // @fnv 0x0087b0f0
 // src: XBOX_PDB 0x0087b0f0
-void FUN_0087b0f0_shell::TaskQueueInterface_QueueHavokAdd(G00559a40* p)
+// pdb: TaskQueueInterface::QueueHavokAdd | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: ap3D
+// pdb locals: task
+void FUN_0087b0f0_shell::TaskQueueInterface_QueueHavokAdd(G00559a40* ap3D)
 {
-    if (p)
+    if (ap3D)
     {
-        p->NiRefObject_IncRefCount();
+        ap3D->NiRefObject_IncRefCount();
         char task[32];
         ((BSPackedTask*)task)->m_akPackedTaskVariantData[0].iData = 0x13;
-        ((BSPackedTask*)task)->m_akPackedTaskVariantData[1].pData = p;
+        ((BSPackedTask*)task)->m_akPackedTaskVariantData[1].pData = ap3D;
         ProcessPackedTask(*(BSPackedTask*)task);
     }
 }
@@ -1590,17 +1679,21 @@ struct G00559a40
 };
 struct FUN_0087b140_Holder : public TaskQueueInterface
 {
-    void QueueTaskIfPresent(G00559a40*);
+    void TaskQueueInterface_QueueHavokRemove(G00559a40*);
 };
 // @fnv 0x0087b140
-void FUN_0087b140_Holder::QueueTaskIfPresent(G00559a40* a)
+// src: XBOX_RETAIL_PDB 0x0087b140
+// pdb: TaskQueueInterface::QueueHavokRemove | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: ap3D
+// pdb locals: task
+void FUN_0087b140_Holder::TaskQueueInterface_QueueHavokRemove(G00559a40* ap3D)
 {
     char buf[32];
-    if (a)
+    if (ap3D)
     {
-        a->NiRefObject_IncRefCount();
+        ap3D->NiRefObject_IncRefCount();
         ((int*)buf)[0] = 20;
-        ((G00559a40**)buf)[1] = a;
+        ((G00559a40**)buf)[1] = ap3D;
         ProcessPackedTask(*(BSPackedTask*)buf);
     }
 }
@@ -1618,19 +1711,22 @@ union TaskUnion
 };
 struct Holder : TaskQueueInterface
 {
-    void TaskQueueInterface_QueueHavokMotionChange(G00559a40* a1, int a2);
+    void TaskQueueInterface_QueueHavokMotionChange(G00559a40* ap3D, int aiType);
 };
 // @fnv 0x0087b1e0
 // src: XBOX_PDB 0x0087b1e0
-void Holder::TaskQueueInterface_QueueHavokMotionChange(G00559a40* apObject, int aiValue)
+// pdb: TaskQueueInterface::QueueHavokMotionChange | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: ap3D, aiType
+// pdb locals: task
+void Holder::TaskQueueInterface_QueueHavokMotionChange(G00559a40* ap3D, int aiType)
 {
-    if (apObject)
+    if (ap3D)
     {
-        apObject->NiRefObject_IncRefCount();
+        ap3D->NiRefObject_IncRefCount();
         TaskUnion task;
         task.task.m_akPackedTaskVariantData[0].iData = 0x22;
-        task.task.m_akPackedTaskVariantData[1].pData = apObject;
-        task.task.m_akPackedTaskVariantData[2].iData = aiValue;
+        task.task.m_akPackedTaskVariantData[1].pData = ap3D;
+        task.task.m_akPackedTaskVariantData[2].iData = aiType;
         ProcessPackedTask(task.task);
     }
 }
@@ -1642,11 +1738,14 @@ struct FUN_0087b230_Holder : TaskQueueInterface
 };
 // @fnv 0x0087b230
 // src: COMMUNITY 0x0087b230
-void FUN_0087b230_Holder::TaskQueueInterface_QueueHavokInit(int aiValue)
+// pdb: TaskQueueInterface::QueueHavokInit | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: task
+void FUN_0087b230_Holder::TaskQueueInterface_QueueHavokInit(int apRef)
 {
     char task[32];
     ((int*)task)[0] = 45;
-    ((int*)task)[1] = aiValue;
+    ((int*)task)[1] = apRef;
     ProcessPackedTask(*reinterpret_cast<BSPackedTask*>(task));
 }
 
@@ -1656,49 +1755,58 @@ struct FUN_0087b440_holder
 };
 // @fnv 0x0087b440
 // src: COMMUNITY 0x0087b440
-void FUN_0087b440_holder::TaskQueueInterface_QueueDismemberLimb(int aiArg0, int aiArg1, int aiArg2, bool abFlag0, bool abFlag1)
+// pdb: TaskQueueInterface::QueueDismemberLimb | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apActor, aeDismemberLocation, aeLimb, abExplode, abBodyBloodSpray
+// pdb locals: task
+void FUN_0087b440_holder::TaskQueueInterface_QueueDismemberLimb(int apActor, int aeDismemberLocation, int aeLimb, bool abExplode, bool abBodyBloodSpray)
 {
     char buf[32];
     ((int*)buf)[0] = 0x18;
-    ((int*)buf)[1] = aiArg0;
-    ((int*)buf)[2] = aiArg1;
-    ((int*)buf)[3] = aiArg2;
-    buf[16] = abFlag0;
-    buf[20] = abFlag1;
+    ((int*)buf)[1] = apActor;
+    ((int*)buf)[2] = aeDismemberLocation;
+    ((int*)buf)[3] = aeLimb;
+    buf[16] = abExplode;
+    buf[20] = abBodyBloodSpray;
     reinterpret_cast<TaskQueueInterface*>(this)->ProcessPackedTask(*reinterpret_cast<BSPackedTask*>(buf));
 }
 
 struct FakeTaskQueue
 {
-    void TaskQueueInterface_QueueWaterObjectForAdd(int a, int b, float c);
+    void TaskQueueInterface_QueueWaterObjectForAdd(int apWaterRef, int apObjectRef, float afWaterHeight);
 };
 // Builds a 32-byte task with opcode 0x19 and the three arguments, then passes it to the queue interface.
 // @fnv 0x0087b4a0
 // src: COMMUNITY 0x0087b4a0
-void FakeTaskQueue::TaskQueueInterface_QueueWaterObjectForAdd(int aiArg1, int aiArg2, float afArg3)
+// pdb: TaskQueueInterface::QueueWaterObjectForAdd | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apWaterRef, apObjectRef, afWaterHeight
+// pdb locals: task
+void FakeTaskQueue::TaskQueueInterface_QueueWaterObjectForAdd(int apWaterRef, int apObjectRef, float afWaterHeight)
 {
     char task[32];
     ((int*)task)[0] = 0x19;
-    ((int*)task)[1] = aiArg1;
-    ((int*)task)[2] = aiArg2;
-    ((float*)task)[3] = afArg3;
+    ((int*)task)[1] = apWaterRef;
+    ((int*)task)[2] = apObjectRef;
+    ((float*)task)[3] = afWaterHeight;
     ((TaskQueueInterface*)this)->ProcessPackedTask(*(BSPackedTask*)task);
 }
 
 struct Holder0087b4f0
 {
-    void TaskQueueInterface_QueueWaterObjectForRemove(int a, int b, float c);
+    void TaskQueueInterface_QueueWaterObjectForRemove(int apWaterRef, int apObjectRef, float afWaterHeight);
 };
 // Builds a BSPackedTask with id 26 and the three arguments, then queues it via TaskQueueInterface.
 // @fnv 0x0087b4f0
 // src: COMMUNITY 0x0087b4f0
-void Holder0087b4f0::TaskQueueInterface_QueueWaterObjectForRemove(int aiArg0, int aiArg1, float afArg2)
+// pdb: TaskQueueInterface::QueueWaterObjectForRemove | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apWaterRef, apObjectRef, afWaterHeight
+// pdb locals: task
+void Holder0087b4f0::TaskQueueInterface_QueueWaterObjectForRemove(int apWaterRef, int apObjectRef, float afWaterHeight)
 {
     char task[32];
     ((BSPackedTask*)task)->m_akPackedTaskVariantData[0].iData = 26;
-    ((BSPackedTask*)task)->m_akPackedTaskVariantData[1].iData = aiArg0;
-    ((BSPackedTask*)task)->m_akPackedTaskVariantData[2].iData = aiArg1;
-    ((BSPackedTask*)task)->m_akPackedTaskVariantData[3].fData = afArg2;
+    ((BSPackedTask*)task)->m_akPackedTaskVariantData[1].iData = apWaterRef;
+    ((BSPackedTask*)task)->m_akPackedTaskVariantData[2].iData = apObjectRef;
+    ((BSPackedTask*)task)->m_akPackedTaskVariantData[3].fData = afWaterHeight;
     ((TaskQueueInterface*)this)->ProcessPackedTask(*(BSPackedTask*)task);
 }
 
@@ -1708,11 +1816,14 @@ struct FUN_0087b540_Holder : public TaskQueueInterface
 };
 // @fnv 0x0087b540
 // src: XBOX_PDB 0x0087b540
-void FUN_0087b540_Holder::TaskQueueInterface_QueueObstacleDoorOpen(int a1)
+// pdb: TaskQueueInterface::QueueObstacleDoorOpen | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apDoorRef
+// pdb locals: task
+void FUN_0087b540_Holder::TaskQueueInterface_QueueObstacleDoorOpen(int apDoorRef)
 {
     char buf[32];
     *reinterpret_cast<int*>(buf) = 0x1B;
-    *reinterpret_cast<int*>(buf + 4) = a1;
+    *reinterpret_cast<int*>(buf + 4) = apDoorRef;
     ProcessPackedTask(*reinterpret_cast<BSPackedTask*>(buf));
 }
 
@@ -1729,11 +1840,14 @@ struct Holder87b580
 // Builds a task buffer with type 0x1c and the given value, then queues it through the task queue interface.
 // @fnv 0x0087b580
 // src: XBOX_PDB 0x0087b580
-void Holder87b580::TaskQueueInterface_QueueObstacleDoorClose(int aiValue)
+// pdb: TaskQueueInterface::QueueObstacleDoorClose | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apDoorRef
+// pdb locals: task
+void Holder87b580::TaskQueueInterface_QueueObstacleDoorClose(int apDoorRef)
 {
     TaskBuf87580 t;
     t.i0 = 0x1c;
-    t.i1 = aiValue;
+    t.i1 = apDoorRef;
     reinterpret_cast<TaskQueueInterface*>(this)->ProcessPackedTask(*reinterpret_cast<const BSPackedTask*>(&t));
 }
 
@@ -1743,42 +1857,51 @@ struct Unnamed_0087b5c0 : TaskQueueInterface
 };
 // @fnv 0x0087b5c0
 // src: COMMUNITY 0x0087b5c0
-void Unnamed_0087b5c0::TaskQueueInterface_QueueCharacterReset3D(int aiArg)
+// pdb: TaskQueueInterface::QueueCharacterReset3D | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: task
+void Unnamed_0087b5c0::TaskQueueInterface_QueueCharacterReset3D(int apActor)
 {
     char task[32];
     *(int*)&task[0] = 29;
-    *(int*)&task[4] = aiArg;
+    *(int*)&task[4] = apActor;
     ProcessPackedTask(*(const BSPackedTask*)task);
 }
 
 struct FUN_0087b600_Holder : TaskQueueInterface
 {
-    void TaskQueueInterface_QueueSetOpenState(int a, bool b, bool c);
+    void TaskQueueInterface_QueueSetOpenState(int apRef, bool abOpen, bool abSnap);
 };
 // @fnv 0x0087b600
 // src: XBOX_PDB 0x0087b600
-void FUN_0087b600_Holder::TaskQueueInterface_QueueSetOpenState(int aiValue, bool abFlag1, bool abFlag2)
+// pdb: TaskQueueInterface::QueueSetOpenState | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apRef, abOpen, abSnap
+// pdb locals: task
+void FUN_0087b600_Holder::TaskQueueInterface_QueueSetOpenState(int apRef, bool abOpen, bool abSnap)
 {
     char buf[32];
     ((int*)buf)[0] = 30;
-    ((int*)buf)[1] = aiValue;
-    buf[8] = abFlag1;
-    buf[12] = abFlag2;
+    ((int*)buf)[1] = apRef;
+    buf[8] = abOpen;
+    buf[12] = abSnap;
     ProcessPackedTask(*(BSPackedTask*)buf);
 }
 
 struct FUN_0087b6b0_shell : TaskQueueInterface
 {
-    void TaskQueueInterface_QueueActorSetHavokWeapon(int a1, bool b1);
+    void TaskQueueInterface_QueueActorSetHavokWeapon(int apActor, bool abConstrain);
 };
 // @fnv 0x0087b6b0
 // src: XBOX_PDB 0x0087b6b0
-void FUN_0087b6b0_shell::TaskQueueInterface_QueueActorSetHavokWeapon(int aiValue, bool abFlag)
+// pdb: TaskQueueInterface::QueueActorSetHavokWeapon | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apActor, abConstrain
+// pdb locals: task
+void FUN_0087b6b0_shell::TaskQueueInterface_QueueActorSetHavokWeapon(int apActor, bool abConstrain)
 {
     char task[32];
     ((BSPackedTask*)task)->m_akPackedTaskVariantData[0].iData = 0x23;
-    ((BSPackedTask*)task)->m_akPackedTaskVariantData[1].iData = aiValue;
-    ((BSPackedTask*)task)->m_akPackedTaskVariantData[2].bData = abFlag;
+    ((BSPackedTask*)task)->m_akPackedTaskVariantData[1].iData = apActor;
+    ((BSPackedTask*)task)->m_akPackedTaskVariantData[2].bData = abConstrain;
     ProcessPackedTask(*(BSPackedTask*)task);
 }
 
@@ -1788,14 +1911,17 @@ struct FUN_0087b700_shell : TaskQueueInterface
 };
 // @fnv 0x0087b700
 // src: XBOX_PDB 0x0087b700
-void FUN_0087b700_shell::TaskQueueInterface_QueueWaterSplashEffects(float afValue, NiPoint3* apPoint)
+// pdb: TaskQueueInterface::QueueWaterSplashEffects | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: afSplashingBodySize, aSplashLocation
+// pdb locals: task
+void FUN_0087b700_shell::TaskQueueInterface_QueueWaterSplashEffects(float afSplashingBodySize, NiPoint3* aSplashLocation)
 {
     char task[32];
     ((BSPackedTask&)task).m_akPackedTaskVariantData[0].iData = 0x24;
-    ((BSPackedTask&)task).m_akPackedTaskVariantData[1].fData = afValue;
-    ((BSPackedTask&)task).m_akPackedTaskVariantData[2].fData = ((float*)apPoint)[0];
-    ((BSPackedTask&)task).m_akPackedTaskVariantData[3].fData = ((float*)apPoint)[1];
-    ((BSPackedTask&)task).m_akPackedTaskVariantData[4].fData = ((float*)apPoint)[2];
+    ((BSPackedTask&)task).m_akPackedTaskVariantData[1].fData = afSplashingBodySize;
+    ((BSPackedTask&)task).m_akPackedTaskVariantData[2].fData = ((float*)aSplashLocation)[0];
+    ((BSPackedTask&)task).m_akPackedTaskVariantData[3].fData = ((float*)aSplashLocation)[1];
+    ((BSPackedTask&)task).m_akPackedTaskVariantData[4].fData = ((float*)aSplashLocation)[2];
     ProcessPackedTask((BSPackedTask&)task);
 }
 
@@ -1806,39 +1932,49 @@ struct Holder
 // Builds a 0x25 task from a float and a NiPoint3 and queues it through TaskQueueInterface.
 // @fnv 0x0087b760
 // src: XBOX_PDB 0x0087b760
-void Holder::TaskQueueInterface_QueueAddRipple(float afValue, NiPoint3* apPoint)
+// pdb: TaskQueueInterface::QueueAddRipple | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: afSize, aLocation
+// pdb locals: task
+void Holder::TaskQueueInterface_QueueAddRipple(float afSize, NiPoint3* aLocation)
 {
     char task[32];
     ((int*)task)[0] = 0x25;
-    ((float*)task)[1] = afValue;
-    ((float*)task)[2] = ((float*)apPoint)[0];
-    ((float*)task)[3] = ((float*)apPoint)[1];
-    ((float*)task)[4] = ((float*)apPoint)[2];
+    ((float*)task)[1] = afSize;
+    ((float*)task)[2] = ((float*)aLocation)[0];
+    ((float*)task)[3] = ((float*)aLocation)[1];
+    ((float*)task)[4] = ((float*)aLocation)[2];
     ((TaskQueueInterface*)this)->ProcessPackedTask(*(BSPackedTask*)task);
 }
 
 struct FUN_0087b7c0_Proxy : TaskQueueInterface
 {
-    void TaskQueueInterface_QueueActorTriggerPain(int a, bool b, bool c);
+    void TaskQueueInterface_QueueActorTriggerPain(int apActor, bool abVoice, bool abBlur);
 };
 // @fnv 0x0087b7c0
 // src: COMMUNITY 0x0087b7c0
-void FUN_0087b7c0_Proxy::TaskQueueInterface_QueueActorTriggerPain(int aiValue, bool abFlag1, bool abFlag2)
+// pdb: TaskQueueInterface::QueueActorTriggerPain | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apActor, abVoice, abBlur
+// pdb locals: task
+void FUN_0087b7c0_Proxy::TaskQueueInterface_QueueActorTriggerPain(int apActor, bool abVoice, bool abBlur)
 {
     char buf[32];
     ((int*)buf)[0] = 0x26;
-    ((int*)buf)[1] = aiValue;
-    buf[8] = abFlag1;
-    buf[12] = abFlag2;
+    ((int*)buf)[1] = apActor;
+    buf[8] = abVoice;
+    buf[12] = abBlur;
     ProcessPackedTask(*(BSPackedTask*)buf);
 }
 
 struct FUN_0087b810_Host : TaskQueueInterface
 {
-    void QueueTaskWithId(int);
+    void TaskQueueInterface_QueueActorApplyCriticalStage(int);
 };
 // @fnv 0x0087b810
-void FUN_0087b810_Host::QueueTaskWithId(int aiValue)
+// src: XBOX_RETAIL_PDB 0x0087b810
+// pdb: TaskQueueInterface::QueueActorApplyCriticalStage | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apActor
+// pdb locals: task
+void FUN_0087b810_Host::TaskQueueInterface_QueueActorApplyCriticalStage(int apActor)
 {
     union U
     {
@@ -1846,7 +1982,7 @@ void FUN_0087b810_Host::QueueTaskWithId(int aiValue)
         BSPackedTask task;
     } u;
     u.task.m_akPackedTaskVariantData[0].iData = 39;
-    u.task.m_akPackedTaskVariantData[1].iData = aiValue;
+    u.task.m_akPackedTaskVariantData[1].iData = apActor;
     ProcessPackedTask(u.task);
 }
 
@@ -1857,11 +1993,14 @@ struct Holder
 };
 // @fnv 0x0087b850
 // src: COMMUNITY 0x0087b850
-void Holder::TaskQueueInterface_QueueActorResetLoadedAnims(int aiValue)
+// pdb: TaskQueueInterface::QueueActorResetLoadedAnims | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: task
+void Holder::TaskQueueInterface_QueueActorResetLoadedAnims(int apActor)
 {
     char task[32];
     *reinterpret_cast<int*>(task) = 0x28;
-    *reinterpret_cast<int*>(task + 4) = aiValue;
+    *reinterpret_cast<int*>(task + 4) = apActor;
     reinterpret_cast<TaskQueueInterface*>(this)->ProcessPackedTask(*reinterpret_cast<const BSPackedTask*>(task));
 }
 }  // namespace fnv_0087b850
@@ -1871,6 +2010,9 @@ struct MyOwner : public TaskQueueInterface
     void QueueTaskWithValue(int);
 };
 // @fnv 0x0087b890
+// pdb: TaskQueueInterface::QueueDeleteActiveEffect | TaskQueueInterface.obj | debug, object-file gap fill, medium
+// pdb params: apEffect
+// pdb locals: task
 void MyOwner::QueueTaskWithValue(int aiValue)
 {
     union
@@ -1891,6 +2033,7 @@ struct S_0087cea0
 };
 // Releases the script run lock at offset 0x60; if that fails, deallocates this object.
 // @fnv 0x0087cea0
+// pdb: HitData::DecRefCount | TaskQueueInterface.obj | debug, call graph (shared callers), high
 void S_0087cea0::ReleaseScriptRunLock()
 {
     if (!FinishScriptRunLock((void*)((char*)this + 0x60)))
@@ -1908,6 +2051,8 @@ struct Unk_0097fa10
 };
 // @fnv 0x0097fa10
 // src: XBOX_PDB 0x0097fa10
+// pdb: CombatController::IsActoraCombatTarget | CombatController.obj | debug, upstream name already matches, high
+// pdb params: apActor
 bool Unk_0097fa10::CombatController_IsActoraCombatTarget(Actor* apActor)
 {
     return m_pGroup ? m_pGroup->ContainsActor(apActor) : false;
@@ -1927,11 +2072,14 @@ void __thiscall FUN_0087a890_shell::CallVirtualMethod1(int a)
 
 struct FUN_0087afa0_Holder : TaskQueueInterface
 {
-    void TaskQueueInterface_QueuePickedUpObjectRemoval(void* a1, bool a2);
+    void TaskQueueInterface_QueuePickedUpObjectRemoval(void* apPickUpRef, bool abDelete);
 };
 // @fnv 0x0087afa0
 // src: COMMUNITY 0x0087afa0
-void FUN_0087afa0_Holder::TaskQueueInterface_QueuePickedUpObjectRemoval(void* apTaskData, bool abFlag)
+// pdb: TaskQueueInterface::QueuePickedUpObjectRemoval | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apPickUpRef, abDelete
+// pdb locals: task
+void FUN_0087afa0_Holder::TaskQueueInterface_QueuePickedUpObjectRemoval(void* apPickUpRef, bool abDelete)
 {
     struct TaskBuf
     {
@@ -1941,11 +2089,11 @@ void FUN_0087afa0_Holder::TaskQueueInterface_QueuePickedUpObjectRemoval(void* ap
         char pad[23];
     };
     TaskBuf task;
-    if (apTaskData)
+    if (apPickUpRef)
     {
         task.i0 = 0x30;
-        task.p1 = apTaskData;
-        task.b2 = abFlag;
+        task.p1 = apPickUpRef;
+        task.b2 = abDelete;
         ProcessPackedTask(reinterpret_cast<BSPackedTask&>(task));
     }
 }
@@ -1966,11 +2114,13 @@ struct FUN_0087aad0_s
 // If the global flag at DAT_011df1b8 is set, constructs a GO from a and passes it to FUN_006c61b0 on DAT_011df1c4.
 // @fnv 0x0087aad0
 // src: COMMUNITY 0x0087aad0
-void FUN_0087aad0_s::TaskQueueInterface_QueueCellTransformChildTask(int a)
+// pdb: TaskQueueInterface::QueueCellTransformChildTask | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apNode
+void FUN_0087aad0_s::TaskQueueInterface_QueueCellTransformChildTask(int apNode)
 {
     if (*(unsigned char*)((GlobalObject_0045cf30*)(void*)&DAT_011df1b8)->Bool())
     {
-        GO t(a);
+        GO t(apNode);
         ((S2f850*)(void*)&DAT_011df1c4)->BSSimpleArray_NiPointer_NiAVObject_1024_Add(t);
     }
 }
@@ -1987,16 +2137,20 @@ extern FNVFloatSource* DAT_0119b338[];
 
 // Returns a float from one of three FNVFloatSource arrays selected by type (0x10 or 0x18) and useAlt, defaulting to 1.0f.
 // @fnv 0x00648cb0
-float __cdecl GetFloatByType(int index, int type, int useAlt)
+// src: XBOX_DEBUG_PDB 0x00648cb0
+// pdb: GamePlayFormulas::GetDifficultyMultiplier | GamePlayFormulas.obj | debug, call graph (shared callers), high
+// pdb params: aeDifficulty, aiWhich, abToPC
+// pdb locals: fresult
+float __cdecl GamePlayFormulas_GetDifficultyMultiplier(int aeDifficulty, int aiWhich, int abToPC)
 {
     float result = 1.0f;
-    switch (type)
+    switch (aiWhich)
     {
     case 0x10:
-        result = ((unsigned char)useAlt != 0) ? *DAT_0119b310[index]->GetValue() : *DAT_0119b324[index]->GetValue();
+        result = ((unsigned char)abToPC != 0) ? *DAT_0119b310[aeDifficulty]->GetValue() : *DAT_0119b324[aeDifficulty]->GetValue();
         break;
     case 0x18:
-        result = *DAT_0119b338[index]->GetValue();
+        result = *DAT_0119b338[aeDifficulty]->GetValue();
         break;
     }
     return result;
@@ -2015,23 +2169,26 @@ struct FunTask090
 struct FUN_0087b090_shell
 {
     void Q160(FunTask090*);
-    void TaskQueueInterface_QueueActorKnockExplosion(unsigned int a1, float a2, float a3, float a4, float a5);
+    void TaskQueueInterface_QueueActorKnockExplosion(unsigned int apActor, float afLocationX, float afLocationY, float afLocationZ, float afMagnitude);
 };
 
 // Fills a FunTask090 with the given pointer and four floats and passes it to Q160 when the pointer is non-null.
 // @fnv 0x0087b090
 // src: XBOX_PDB 0x0087b090
-void FUN_0087b090_shell::TaskQueueInterface_QueueActorKnockExplosion(unsigned int a1, float a2, float a3, float a4, float a5)
+// pdb: TaskQueueInterface::QueueActorKnockExplosion | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apActor, afLocationX, afLocationY, afLocationZ, afMagnitude
+// pdb locals: task
+void FUN_0087b090_shell::TaskQueueInterface_QueueActorKnockExplosion(unsigned int apActor, float afLocationX, float afLocationY, float afLocationZ, float afMagnitude)
 {
     FunTask090 task;
-    if (a1 != 0)
+    if (apActor != 0)
     {
         task.i0 = 0x10;
-        task.p1 = (void*)a1;
-        task.f[0] = a2;
-        task.f[1] = a3;
-        task.f[2] = a4;
-        task.f[3] = a5;
+        task.p1 = (void*)apActor;
+        task.f[0] = afLocationX;
+        task.f[1] = afLocationY;
+        task.f[2] = afLocationZ;
+        task.f[3] = afMagnitude;
         this->Q160(&task);
     }
 }
@@ -2048,9 +2205,11 @@ extern FUN_0087a670* DAT_011df1a8;
 // Allocates a FUN_0087a670 task object with the two given values and stores it in DAT_011df1a8.
 // @fnv 0x0087b8d0
 // src: COMMUNITY 0x0087b8d0
-void __cdecl TaskQueueInterface_Instantiate(unsigned int first, unsigned int second)
+// pdb: TaskQueueInterface::Instantiate | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apQueue, apSecondayQueue
+void __cdecl TaskQueueInterface_Instantiate(unsigned int apQueue, unsigned int apSecondayQueue)
 {
-    DAT_011df1a8 = new FUN_0087a670(first, second);
+    DAT_011df1a8 = new FUN_0087a670(apQueue, apSecondayQueue);
 }
 
 namespace fnv_0087b950 {
@@ -2064,6 +2223,9 @@ extern FNVTaskQueueStub* DAT_011df1a8;
 
 // Calls FUN_007b3fa0_stub(1) on DAT_011df1a8 if non-null, then sets DAT_011df1a8 to null.
 // @fnv 0x0087b950
+// pdb: ActorHavokSyncParallelArrayTaskFunc | TaskQueueInterface.obj | retail, object-file run extension, low
+// pdb params: apData, aiIndex
+// pdb locals: actorHavokSyncData, parray
 void __cdecl ClearTaskQueue()
 {
     FNVTaskQueueStub* queue = DAT_011df1a8;
@@ -2083,7 +2245,9 @@ void __cdecl ClearTaskQueue()
 
 
 // @fnv 0x0087ce50
-float FUN_0087ce50_cls::GetHeadTail()
+// src: XBOX_DEBUG_PDB 0x0087ce50
+// pdb: NiAVObject::GetWorldBoundRadius | TaskQueueInterface.obj | debug, call graph, high
+float FUN_0087ce50_cls::NiAVObject_GetWorldBoundRadius()
 {
     return Head()->Tail();
 }
@@ -2166,6 +2330,9 @@ struct AnimObj
 };
 
 // @fnv 0x0087cf50
+// pdb: CellUpdateParallelArrayTaskFunc | TaskQueueInterface.obj | debug, object-file run extension, low
+// pdb params: apData, aiIndex
+// pdb locals: pobj, parray, updateData
 void UpdateAnimObjFromTask(unsigned int auiTask, void* pvArg)
 {
     TaskShell* pTask = reinterpret_cast<TaskShell*>(auiTask);
@@ -2307,28 +2474,31 @@ struct EntityRef
 };
 struct FUN_0087aec0_shell : TaskQueueInterface
 {
-    void TaskQueueInterface_QueueMHEInstantiateHitEffects(EntityRef* reference);
+    void TaskQueueInterface_QueueMHEInstantiateHitEffects(EntityRef* apTarget);
     void FUN_0087d160(const FakeTask& task);
 };
 // @fnv 0x0087aec0
 // src: XBOX_PDB 0x0087aec0
-void FUN_0087aec0_shell::TaskQueueInterface_QueueMHEInstantiateHitEffects(EntityRef* reference)
+// pdb: TaskQueueInterface::QueueMHEInstantiateHitEffects | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apTarget
+// pdb locals: task
+void FUN_0087aec0_shell::TaskQueueInterface_QueueMHEInstantiateHitEffects(EntityRef* apTarget)
 {
-    if (reference)
+    if (apTarget)
     {
         FakeTask task;
         task.i0 = 0x12;
-        if (reference->FUN_0059bb30()->FUN_00822b40())
+        if (apTarget->FUN_0059bb30()->FUN_00822b40())
         {
-            if (reference->FUN_0059bb30()->FUN_00822b40()->IsEligible())
+            if (apTarget->FUN_0059bb30()->FUN_00822b40()->IsEligible())
             {
-                task.p1 = reference;
+                task.p1 = apTarget;
                 FUN_0087d160(task);
             }
         }
         else
         {
-            task.p1 = reference;
+            task.p1 = apTarget;
             FUN_0087d160(task);
         }
     }
@@ -2373,14 +2543,17 @@ struct PlainPackedTask
 // Packs a script command opcode, form ID, and variadic parameters into a 32-byte task buffer and submits it to the task queue.
 // @fnv 0x0087a8b0
 // src: XBOX_PDB 0x0087a8b0
-void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface* queue, unsigned int opcode, FormTaskRef* form, ...)
+// pdb: TaskQueueInterface::QueueScriptFunctionCall | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: aeFunc, apRefObject, argList
+// pdb locals: task, sparamcount, idataindex, ifunc, i, pref
+void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface* aeFunc, unsigned int apRefObject, FormTaskRef* form, ...)
 {
     int h;
     int p;
     unsigned short a;
     char task[32];
     ((int*)task)[0] = 31;
-    ((int*)task)[1] = opcode;
+    ((int*)task)[1] = apRefObject;
     if (form)
         ((int*)task)[2] = form->GetFormID();
     else
@@ -2389,7 +2562,7 @@ void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface* queu
         va_list args;
         va_start(args, form);
         h = 3;
-        p = opcode - 0x1000;
+        p = apRefObject - 0x1000;
         a = scriptCommands[p].numParams;
         for (int s = 0; s < a; s++)
         {
@@ -2419,7 +2592,7 @@ void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface* queu
         }
         va_end(args);
     }
-    queue->ProcessPackedTask(*(const BSPackedTask*)&task);
+    aeFunc->ProcessPackedTask(*(const BSPackedTask*)&task);
 }
 
 // Use the game's out-of-line smart-pointer constructor and destructor.
@@ -2433,7 +2606,7 @@ class FUN_0087d030_NodeChildren : public NiNode
 {
   public:
     unsigned int FUN_0043b480();
-    NiAVObject* GetAt(unsigned int index);
+    NiAVObject* GetAt(unsigned int i);
 };
 
 class FUN_0087d030_ParentArray
@@ -2461,6 +2634,9 @@ class FUN_0087d030_ObjectArray
 // Iterates a global parent array, adding each child (or the parent itself when it has ten or fewer children) to apArray, then clears the global array.
 // @fnv 0x0087d030
 // src: COMMUNITY 0x0087d030
+// pdb: CreateDeferredCellNodeArray | TaskQueueInterface.obj | retail, upstream name already matches, high
+// pdb params: apArray
+// pdb locals: inumDeferredCells, icurCell, pNode, inumChildren, i, pChild
 void CreateDeferredCellNodeArray(BSScrapArray<NiPointer<NiAVObject>, 1024>* apArray)
 {
     unsigned int uiParentCount = ((FUN_0087d030_ParentArray&)DAT_011df1c4).GetSize();

@@ -9,6 +9,7 @@ class TESObjectREFR;
 class NiMatrix3;
 class hkVector4;
 
+// pdb: class BGSLoadGameBuffer, size 0x10, 3 members
 class BGSLoadGameBuffer
 {
 public:
@@ -40,7 +41,7 @@ public:
     int Load(SaveLoadFile* file);
     int Load(SaveLoadFile* file, unsigned int size);
     void ReadAndVerifySize(SaveLoadFile* file);
-    void ResetReadPosition();
+    void DeleteBuffer();
     void SetBuffer(char* buffer, unsigned int size, unsigned int position);
     char* GetCurrentBufferPointer();
     char* GetCombinedValue();
@@ -61,7 +62,7 @@ public:
     void ReadTypedData(int* value, unsigned int count);
     void ReadTypedData(unsigned short* value, unsigned int count);
     void ReadTypedData(short* value, unsigned int count);
-    void ReadTypedData(NiMatrix3* value, unsigned int count);
+    void ReadTypedData(NiMatrix3* apData, unsigned int aiSize);
     void ReadTypedData(void* value, unsigned int count);
 
     char* LoadString(char* string);

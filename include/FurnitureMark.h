@@ -4,14 +4,15 @@
 
 class NiPoint3;
 
+// pdb: class FurnitureMark, size 0x10, 3 members
 class FurnitureMark
 {
 public:
-    float fX;
+    float Position;
     float fY;
     float fZ;
-    unsigned short usHeading;
-    unsigned char cMarkerType;
+    unsigned short sHeading;
+    unsigned char cNumber;
 
     unsigned int QNumber();
     void SetNumber(unsigned int);

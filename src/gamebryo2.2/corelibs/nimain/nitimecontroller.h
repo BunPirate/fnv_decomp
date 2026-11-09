@@ -25,7 +25,7 @@ __forceinline void NiRefObject::DecRefCount()
         DeleteThis();
 }
 inline NiTimeController* NiObjectNET::GetControllers() const { return m_spControllers; }
-inline NiTimeController* NiTimeController::GetNext() const { return m_spNextController.m_pObject; }
+inline NiTimeController* NiTimeController::GetNext() const { return m_spNext.m_pObject; }
 inline NiGeometryData* NiGeometry::GetModelData() const { return m_spModelData.m_pObject; }
 inline NiGeometryData* NiGeometry::GetModelData() { return m_spModelData.m_pObject; }
 inline unsigned int NiStream::GetFileVersion() const { return m_uiNifFileVersion; }

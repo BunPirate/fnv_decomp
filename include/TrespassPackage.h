@@ -6,6 +6,7 @@ class BGSSaveFormBuffer;
 
 // 0x9c bytes (object_sizes.csv; the new in HighProcess::ShouldProcessActor pushes 0x9c); fields from the ctor 0x009f9250
 // and the save/load routines in trespasspackage.cpp.
+// pdb: class TrespassPackage, size 0x9c, bases: TESPackage, 7 members
 class TrespassPackage : public TESPackage
 {
 public:
@@ -33,11 +34,11 @@ public:
     void __thiscall LoadGame_009f9840(BGSLoadFormBuffer*);
     void __thiscall InitLoadGame_009f98e0(unsigned int);
 
-    float fUnk80;                // 0x80
-    unsigned int uiUnk84;        // 0x84 (ctor 0)
+    float fwarningtimer;                // 0x80
+    unsigned int iwarning;        // 0x84 (ctor 0)
     TESForm* pOwner;             // 0x88 (ctor arg 2)
-    TESObjectCELL* pCell;        // 0x8c (ctor arg 3)
-    int iUnk90;                  // 0x90 (ctor -1)
-    int iType;                   // 0x94 (ctor arg 4)
-    unsigned int uiUnk98;        // 0x98 (ctor 0)
+    TESObjectCELL* pObjectOwned;        // 0x8c (ctor arg 3)
+    int iCrimeNumber;                  // 0x90 (ctor -1)
+    int iwarninglevel;                   // 0x94 (ctor arg 4)
+    unsigned int iNumberActors;        // 0x98 (ctor 0)
 };

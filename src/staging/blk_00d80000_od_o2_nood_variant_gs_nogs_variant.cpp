@@ -299,7 +299,7 @@ struct S00d9db60_BuildRecursiveInput
 };
 
 void __cdecl FillAabbArray(S00d9db60_Mediator*, int, int, S00d9db60_ProjectedEntry*);
-void __cdecl MixChannels(S00d9db60_WorkingSet&, S00d9db60_Node*, S00d9db60_ProjectedEntry*, int, int, int, int&);
+void __cdecl hkKdTreeBuildingUtils_buildTree(S00d9db60_WorkingSet&, S00d9db60_Node*, S00d9db60_ProjectedEntry*, int, int, int, int&);
 void __cdecl ProcessEntries_00df37b0(const S00d9db60_WorkingSet&, S00d9db60_Node*, int, int, S00d9db60_BuildRecursiveInput*, int*,
                           S00d9db60_ProjectedEntry&);
 int __cdecl hkKdTreeBuilder_hkKdTreeProjectedEntry_const_hkKdTreeProjectedEntry_restrict_0_buildTreeRecursive(const S00d9db60_BuildRecursiveInput&, S00d9db60_TreeStream*, S00d9db60_ProjectedEntry*, int*,
@@ -327,7 +327,7 @@ void __cdecl Object_ProcessEntries_00d9db60(S00d9db60_Mediator& mediator, S00d9d
     if (mediator.GetNumEntries() < 8)
     {
         int numReservedEmptyNodes = tree->getNumReservedEmptyNodes();
-        MixChannels(buffers, tree->m_kNodeCollection.begin(), tree->getProjectedEntries(),
+        hkKdTreeBuildingUtils_buildTree(buffers, tree->m_kNodeCollection.begin(), tree->getProjectedEntries(),
                     tree->m_kNodeCollection.GetLogicalSize(), mediator.GetNumEntries(), numReservedEmptyNodes,
                     tree->m_iNumNodes);
         S00d9db60_Array_ClearAndRelease(entriesB);

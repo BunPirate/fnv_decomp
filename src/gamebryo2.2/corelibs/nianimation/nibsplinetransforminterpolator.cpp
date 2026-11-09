@@ -39,7 +39,7 @@ public:
 class BSplineInterpolatorCalls : public NiBSplineInterpolator
 {
 public:
-    void CopyBSplineFields(NiBSplineInterpolator*, CloningProcess&);
+    void NiBSplineInterpolator_CopyMembers(NiBSplineInterpolator*, CloningProcess&);
     bool EqualBSplineFields(NiBSplineInterpolator*);
     void DestroyBSplineInterpolator();
     void SaveBSplineFields(NiStream&);
@@ -62,13 +62,15 @@ public:
 };
 // Loads the base interpolator and transform, then reads the translation, rotation and scale handles from the stream.
 // @fnv 0x00a50470
-void NiBSplineTransformInterpolator::LoadBinary(NiStream& stream)
+// pdb: NiBSplineTransformInterpolator::LoadBinary | NiBSplineTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiBSplineTransformInterpolator::LoadBinary(NiStream& kStream)
 {
-    NiBSplineInterpolator::LoadBinary(stream);
-    m_kDefaultTransform.LoadBinary(stream);
-    stream.m_pkIstr->ReadScalar(&m_kTransCPHandle, 4);
-    stream.m_pkIstr->ReadScalar(&m_kRotCPHandle, 4);
-    stream.m_pkIstr->ReadScalar(&m_kScaleCPHandle, 4);
+    NiBSplineInterpolator::LoadBinary(kStream);
+    m_kTransformValue.LoadBinary(kStream);
+    kStream.m_pkIstr->ReadScalar(&m_kTransCPHandle, 4);
+    kStream.m_pkIstr->ReadScalar(&m_kRotCPHandle, 4);
+    kStream.m_pkIstr->ReadScalar(&m_kScaleCPHandle, 4);
 }
 
 // Maps channel 0 to 3, 1 to 4 and 2 to 1, returning 0 for any other channel.
@@ -125,6 +127,7 @@ unsigned int __fastcall GetChannelHandle(NiBSplineTransformInterpolator* self, i
 
 // Stores kControlHandle into the translation, rotation or scale control-point handle field selected by usChannel (0, 1 or 2).
 // @fnv 0x00a4fe80
+// pdb: NiBSplineTransformInterpolator::~NiBSplineTransformInterpolator | NiBSplineTransformInterpolator.obj | debug, object-file run extension, low
 void __fastcall SetControlPointHandle(NiBSplineTransformInterpolator* self, int, unsigned int kControlHandle,
                                       unsigned short usChannel)
 {
@@ -147,6 +150,8 @@ extern double _DAT_010241b0;
 // Returns true when the given channel has no control points and its stored value differs from _DAT_010241b0; false otherwise.
 // @fnv 0x00a50090
 // src: XBOX_PDB 0x00a50090
+// pdb: NiBSplineTransformInterpolator::GetChannelPosed | NiBSplineTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: usChannel
 bool __fastcall NiBSplineTransformInterpolator_GetChannelPosed(NiBSplineTransformInterpolator* self, int, unsigned short usChannel)
 {
     switch (usChannel)
@@ -154,15 +159,15 @@ bool __fastcall NiBSplineTransformInterpolator_GetChannelPosed(NiBSplineTransfor
     case 0:
         if (self->vf56(usChannel) > 0)
             return false;
-        return self->m_kDefaultTransform.x != _DAT_010241b0;
+        return self->m_kTransformValue.m_kTranslate != _DAT_010241b0;
     case 1:
         if (self->vf56(usChannel) > 0)
             return false;
-        return self->m_kDefaultTransform.qy != _DAT_010241b0;
+        return self->m_kTransformValue.qy != _DAT_010241b0;
     case 2:
         if (self->vf56(usChannel) > 0)
             return false;
-        return self->m_kDefaultTransform.scale != _DAT_010241b0;
+        return self->m_kTransformValue.m_fScale != _DAT_010241b0;
     default:
         return false;
     }
@@ -173,11 +178,14 @@ bool __fastcall NiBSplineTransformInterpolator_GetChannelPosed(NiBSplineTransfor
 
 // @fnv 0x00a50110
 // src: XBOX_PDB 0x00a50110
+// pdb: NiBSplineTransformInterpolator::CreateClone | NiBSplineTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiBSplineTransformInterpolator* __fastcall NiBSplineTransformInterpolator_CreateClone(NiBSplineTransformInterpolator* self, int, CloningProcess* kCloning)
 {
     NiBSplineTransformInterpolator* pkObject = ::new (BSFadeNode::operator new(sizeof(NiBSplineTransformInterpolator))) BSplineTransformConstruction(0, 0xffff, 0xffff, 0xffff, 0);
-    reinterpret_cast<BSplineInterpolatorCalls*>(self)->CopyBSplineFields(pkObject, *kCloning);
-    pkObject->m_kDefaultTransform = self->m_kDefaultTransform;
+    reinterpret_cast<BSplineInterpolatorCalls*>(self)->NiBSplineInterpolator_CopyMembers(pkObject, *kCloning);
+    pkObject->m_kTransformValue = self->m_kTransformValue;
     pkObject->m_kTransCPHandle = self->m_kTransCPHandle;
     pkObject->m_kRotCPHandle = self->m_kRotCPHandle;
     pkObject->m_kScaleCPHandle = self->m_kScaleCPHandle;
@@ -187,6 +195,8 @@ NiBSplineTransformInterpolator* __fastcall NiBSplineTransformInterpolator_Create
 // Allocates and constructs a spline transform interpolator with invalid control-point handles.
 // @fnv 0x00a50180
 // src: EXE 0x00a50180
+// pdb: NiBSplineTransformInterpolator::CreateObject | NiBSplineTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiBSplineTransformInterpolator* NiBSplineTransformInterpolator_CreateObject()
 {
     return ::new (BSFadeNode::operator new(sizeof(NiBSplineTransformInterpolator))) BSplineTransformConstruction(0, 0xffff, 0xffff, 0xffff, 0);
@@ -197,9 +207,12 @@ NiBSplineTransformInterpolator* NiBSplineTransformInterpolator_CreateObject()
 // Returns true if the object passes FUN_00a57e90, its quaternion matches, and the trans, rot and scale CP handles all match the other object's.
 // @fnv 0x00a501b0
 // src: GAMEBRYO_LIB 0x00a501b0
+// pdb: NiBSplineTransformInterpolator::IsEqual | NiBSplineTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool __fastcall NiBSplineTransformInterpolator_IsEqual(NiBSplineTransformInterpolator* self, int, NiBSplineTransformInterpolator* pkObject)
 {
-    if (reinterpret_cast<BSplineInterpolatorCalls*>(self)->EqualBSplineFields(pkObject) && static_cast<QuatTransformCalls&>(self->m_kDefaultTransform).EqualQuatTransform(&pkObject->m_kDefaultTransform) &&
+    if (reinterpret_cast<BSplineInterpolatorCalls*>(self)->EqualBSplineFields(pkObject) && static_cast<QuatTransformCalls&>(self->m_kTransformValue).EqualQuatTransform(&pkObject->m_kTransformValue) &&
         pkObject->m_kTransCPHandle == self->m_kTransCPHandle && pkObject->m_kRotCPHandle == self->m_kRotCPHandle &&
         pkObject->m_kScaleCPHandle == self->m_kScaleCPHandle)
         return true;
@@ -211,6 +224,7 @@ void __cdecl FUN_00aa1460(void* apMemory, unsigned int auiSize);
 
 
 // @fnv 0x00a50070
+// pdb: NiBSplineTransformInterpolator::`scalar deleting destructor' | NiBSplineTransformInterpolator.obj | retail, object-file gap fill, high
 NiBSplineTransformInterpolator* __fastcall DestroyBSplineTransform(NiBSplineTransformInterpolator* self, int, unsigned char acFlags)
 {
     reinterpret_cast<BSplineInterpolatorCalls*>(self)->DestroyBSplineInterpolator();
@@ -235,12 +249,12 @@ struct SplineQuaternion
         Set(a, b, c, d);
     }
     void Set(float, float, float, float);
-    void NormalizeQuaternion();
+    void FastNormalize();
 };
 inline bool IsTransformValid(const NiQuatTransform& transform)
 {
-    return transform.scale != -3.4028234663852886e+38 || transform.qy != -3.4028234663852886e+38 ||
-           transform.x != -3.4028234663852886e+38;
+    return transform.m_fScale != -3.4028234663852886e+38 || transform.qy != -3.4028234663852886e+38 ||
+           transform.m_kTranslate != -3.4028234663852886e+38;
 }
 class BSplineDataCalls : public NiBSplineData
 {
@@ -249,12 +263,15 @@ public:
 };
 // Samples translation, rotation and scale from the spline data at the given time, caches the transform, and returns whether it is valid.
 // @fnv 0x00a50200
+// pdb: NiBSplineTransformInterpolator::Update | NiBSplineTransformInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: fNormTime, afValues, kQuat
 bool __fastcall EvaluateSpline(NiBSplineTransformInterpolator* self, int, float time, void*, NiQuatTransform& output)
 {
     if (self->m_fLastTime == time)
     {
-        output = self->m_kDefaultTransform;
-        if (!IsTransformValid(self->m_kDefaultTransform))
+        output = self->m_kTransformValue;
+        if (!IsTransformValid(self->m_kTransformValue))
             return false;
         return true;
     }
@@ -262,23 +279,23 @@ bool __fastcall EvaluateSpline(NiBSplineTransformInterpolator* self, int, float 
     float values[4];
     if (self->m_kTransCPHandle != 0xffff)
     {
-        static_cast<BSplineDataCalls*>(self->m_spTransformData.m_pObject)->EvaluateSplineData(ratio, values, 3, self->m_spSplineBasisData.m_pObject, self->m_kTransCPHandle);
-        reinterpret_cast<SplineVector&>(self->m_kDefaultTransform.x) = SplineVector(values[0], values[1], values[2]);
+        static_cast<BSplineDataCalls*>(self->m_spData.m_pObject)->EvaluateSplineData(ratio, values, 3, self->m_spBasisData.m_pObject, self->m_kTransCPHandle);
+        reinterpret_cast<SplineVector&>(self->m_kTransformValue.m_kTranslate) = SplineVector(values[0], values[1], values[2]);
     }
     if (self->m_kRotCPHandle != 0xffff)
     {
-        static_cast<BSplineDataCalls*>(self->m_spTransformData.m_pObject)->EvaluateSplineData(ratio, values, 4, self->m_spSplineBasisData.m_pObject, self->m_kRotCPHandle);
+        static_cast<BSplineDataCalls*>(self->m_spData.m_pObject)->EvaluateSplineData(ratio, values, 4, self->m_spBasisData.m_pObject, self->m_kRotCPHandle);
         SplineQuaternion quat(values[0], values[1], values[2], values[3]);
-        quat.NormalizeQuaternion();
-        reinterpret_cast<SplineQuaternion&>(self->m_kDefaultTransform.qx) = quat;
+        quat.FastNormalize();
+        reinterpret_cast<SplineQuaternion&>(self->m_kTransformValue.m_kRotate) = quat;
     }
     if (self->m_kScaleCPHandle != 0xffff)
     {
-        static_cast<BSplineDataCalls*>(self->m_spTransformData.m_pObject)->EvaluateSplineData(ratio, values, 1, self->m_spSplineBasisData.m_pObject, self->m_kScaleCPHandle);
-        self->m_kDefaultTransform.scale = values[0];
+        static_cast<BSplineDataCalls*>(self->m_spData.m_pObject)->EvaluateSplineData(ratio, values, 1, self->m_spBasisData.m_pObject, self->m_kScaleCPHandle);
+        self->m_kTransformValue.m_fScale = values[0];
     }
-    output = self->m_kDefaultTransform;
-    if (!IsTransformValid(self->m_kDefaultTransform))
+    output = self->m_kTransformValue;
+    if (!IsTransformValid(self->m_kTransformValue))
         return false;
     self->m_fLastTime = time;
     return true;
@@ -298,10 +315,12 @@ template <class T> inline void SaveBinaryValue(NiStream& stream, const T& value)
 
 // Saves the base interpolator, default transform and control-point handles.
 // @fnv 0x00a503e0
+// pdb: NiBSplineTransformInterpolator::SaveBinary | NiBSplineTransformInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void __fastcall SaveBSplineTransform(NiBSplineTransformInterpolator* self, int, NiStream& stream)
 {
     reinterpret_cast<BSplineInterpolatorCalls*>(self)->SaveBSplineFields(stream);
-    self->m_kDefaultTransform.SaveBinary(&stream);
+    self->m_kTransformValue.SaveBinary(&stream);
     SaveBinaryValue(stream, self->m_kTransCPHandle);
     SaveBinaryValue(stream, self->m_kRotCPHandle);
     SaveBinaryValue(stream, self->m_kScaleCPHandle);
@@ -318,6 +337,8 @@ unsigned int __cdecl NiGetViewerString_00a7d510(const unsigned char*, unsigned i
 #include "../../../../include/NiTPrimitiveArray.h"
 // Loads the base interpolator, the quaternion transform and the translation, rotation and scale handles from the stream.
 // @fnv 0x00a50500
+// pdb: NiBSplineTransformInterpolator::GetViewerStrings | NiBSplineTransformInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall GetBSplineTransformViewerStrings(NiBSplineTransformInterpolator* self, int, NiViewerStringsArray* strings)
 {
     reinterpret_cast<BSplineInterpolatorCalls*>(self)->AddBSplineViewerStrings(strings);
@@ -328,7 +349,7 @@ void __fastcall GetBSplineTransformViewerStrings(NiBSplineTransformInterpolator*
         pos.SetSize(index + pos.m_usGrowBy);
     pos.SetAt(index, value);
 
-    self->m_kDefaultTransform.GetViewerStrings(strings);
+    self->m_kTransformValue.GetViewerStrings(strings);
     value = (const char*)NiGetViewerString_00a7d510(&_DAT_010996bc, self->m_kTransCPHandle);
     index = pos.m_usSize;
     if (index >= pos.m_usMaxSize)
@@ -354,19 +375,22 @@ extern int g_vtable_00a57f20;
 extern long(__stdcall* g_pfnInterlockedIncrement)(long volatile* value);
 
 // @fnv 0x00a57f20
-NiBSplineInterpolator* __fastcall ConstructBSplineInterpolator(NiBSplineInterpolator* self, int, NiBSplineData* pFirst, NiBSplineBasisData* pSecond)
+// src: XBOX_RETAIL_PDB 0x00a57f20
+// pdb: NiBSplineInterpolator::NiBSplineInterpolator | NiBSplineInterpolator.obj | retail, call graph, high
+// pdb params: pkData, pkBasisData
+NiBSplineInterpolator* __fastcall NiBSplineInterpolator_ctor(NiBSplineInterpolator* self, int, NiBSplineData* pFirst, NiBSplineBasisData* pSecond)
 {
     reinterpret_cast<InterpolatorCalls*>(self)->ConstructInterpolator();
     self->m_fStartTime = g_fInitA;
     long(__stdcall * pfnInterlockedIncrement)(long volatile*) = g_pfnInterlockedIncrement;
     self->m_fEndTime = g_fInitB;
     *(int**)self = &g_vtable_00a57f20;
-    self->m_spTransformData.m_pObject = pFirst;
+    self->m_spData.m_pObject = pFirst;
     if (pFirst != 0)
     {
         pfnInterlockedIncrement((long volatile*)((char*)pFirst + 4));
     }
-    self->m_spSplineBasisData.m_pObject = pSecond;
+    self->m_spBasisData.m_pObject = pSecond;
     if (pSecond != 0)
     {
         pfnInterlockedIncrement((long volatile*)((char*)pSecond + 4));
@@ -378,32 +402,35 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile lo
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 
 // @fnv 0x00a57fd0
-void BSplineInterpolatorCalls::CopyBSplineFields(NiBSplineInterpolator* target, CloningProcess& cloning)
+// src: XBOX_RETAIL_PDB 0x00a57fd0
+// pdb: NiBSplineInterpolator::CopyMembers | NiBSplineInterpolator.obj | retail, call graph, high
+// pdb params: pkDest, kCloning
+void BSplineInterpolatorCalls::NiBSplineInterpolator_CopyMembers(NiBSplineInterpolator* pkDest, CloningProcess& kCloning)
 {
     NiBSplineInterpolator* source = this;
-    reinterpret_cast<InterpolatorCalls*>(source)->CopyInterpolatorFields(target, cloning);
-    target->m_fEndTime = source->m_fEndTime;
-    *reinterpret_cast<volatile float*>(&target->m_fStartTime) = *reinterpret_cast<volatile float*>(&source->m_fStartTime);
+    reinterpret_cast<InterpolatorCalls*>(source)->CopyInterpolatorFields(pkDest, kCloning);
+    pkDest->m_fEndTime = source->m_fEndTime;
+    *reinterpret_cast<volatile float*>(&pkDest->m_fStartTime) = *reinterpret_cast<volatile float*>(&source->m_fStartTime);
 
-    NiBSplineData* previous = *reinterpret_cast<NiBSplineData* volatile*>(&target->m_spTransformData.m_pObject);
-    if (previous != source->m_spTransformData.m_pObject)
+    NiBSplineData* previous = *reinterpret_cast<NiBSplineData* volatile*>(&pkDest->m_spData.m_pObject);
+    if (previous != source->m_spData.m_pObject)
     {
         if (previous && InterlockedDecrement(reinterpret_cast<volatile long*>(&previous->m_uiRefCount)) == 0)
             previous->DeleteThis();
-        target->m_spTransformData.m_pObject = source->m_spTransformData.m_pObject;
-        if (target->m_spTransformData.m_pObject)
-            InterlockedIncrement(reinterpret_cast<volatile long*>(&target->m_spTransformData.m_pObject->m_uiRefCount));
+        pkDest->m_spData.m_pObject = source->m_spData.m_pObject;
+        if (pkDest->m_spData.m_pObject)
+            InterlockedIncrement(reinterpret_cast<volatile long*>(&pkDest->m_spData.m_pObject->m_uiRefCount));
     }
 
-    if (source->m_spSplineBasisData.m_pObject)
+    if (source->m_spBasisData.m_pObject)
     {
-        NiBSplineBasisData* clone = static_cast<BSplineBasisCalls*>(source->m_spSplineBasisData.m_pObject)->CloneBasis(cloning);
-        NiBSplineBasisData* existing = target->m_spSplineBasisData.m_pObject;
+        NiBSplineBasisData* clone = static_cast<BSplineBasisCalls*>(source->m_spBasisData.m_pObject)->CloneBasis(kCloning);
+        NiBSplineBasisData* existing = pkDest->m_spBasisData.m_pObject;
         if (existing != clone)
         {
             if (existing && InterlockedDecrement(reinterpret_cast<volatile long*>(&existing->m_uiRefCount)) == 0)
                 existing->DeleteThis();
-            target->m_spSplineBasisData.m_pObject = clone;
+            pkDest->m_spBasisData.m_pObject = clone;
             if (clone)
                 InterlockedIncrement(reinterpret_cast<volatile long*>(&clone->m_uiRefCount));
         }

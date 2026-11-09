@@ -160,13 +160,16 @@ struct Obj
     void NextFloat4(Vec4* p);
 };
 
-void __cdecl ResizeAudioStream(void* allocator, Vec4Array* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, Vec4Array* array, int sizeElem);
 
 extern Vec4 DAT_01267e30;
 
 // @fnv 0x00dedbb0
 // src: XBOX_PDB 0x00dedbb0
-bool __cdecl hkGeometryProcessingInternals_generateRandomDistribution(Owner* self, int count, Vec4Array* out, Obj* obj)
+// pdb: hkGeometryProcessingInternals::generateRandomDistribution | hkGeometryProcessing.obj | retail, upstream name already matches, high
+// pdb params: mesh, numPoints, points, rndGenerator
+// pdb locals: boundingBox, normal, inside, location
+bool __cdecl hkGeometryProcessingInternals_generateRandomDistribution(Owner* mesh, int numPoints, Vec4Array* points, Obj* rndGenerator)
 {
     // Preserve the original uninitialized SIMD storage without invoking Vec4 constructors.
     __m128 pairStorage[2];
@@ -183,32 +186,32 @@ bool __cdecl hkGeometryProcessingInternals_generateRandomDistribution(Owner* sel
     unsigned char flag;
     int tries;
 
-    self->ProcessEntries_00e11530(&pair);
+    mesh->ProcessEntries_00e11530(&pair);
     base = pair.a;
     _mm_store_ps((float*)(void*)&delta,
                  _mm_sub_ps(pairStorage[1], pairStorage[0]));
     tries = 0;
-    limit = count * 8;
-    while (count != 0)
+    limit = numPoints * 8;
+    while (numPoints != 0)
     {
         cur = DAT_01267e30;
         flag = 1;
-        obj->NextFloat4(&cur);
+        rndGenerator->NextFloat4(&cur);
         _mm_store_ps((float*)(void*)&cur, _mm_add_ps(_mm_mul_ps(*(__m128*)&cur, *(__m128*)&delta), *(__m128*)&base));
-        self->ProcessAndReturnValue_00e13660(&cur, &scratch, &flag);
+        mesh->ProcessAndReturnValue_00e13660(&cur, &scratch, &flag);
         if (flag != 0)
         {
             cur.w = 1.0f;
             hkMemoryRouter* holder = hkMemoryRouter_getInstance();
-            if (out->m_04 == (int)(out->m_08 & 0x3fffffff))
+            if (points->m_04 == (int)(points->m_08 & 0x3fffffff))
             {
-                ResizeAudioStream(holder->m_heap, out, 0x10);
+                ResizeAudioStream(holder->m_heap, points, 0x10);
             }
-            Vec4* __restrict dst = out->m_00 + out->m_04;
+            Vec4* __restrict dst = points->m_00 + points->m_04;
             _mm_store_ps((float*)dst, _mm_load_ps((const float*)&cur));
-            count--;
+            numPoints--;
             _ReadBarrier();
-            out->m_04++;
+            points->m_04++;
             tries = 0;
         }
         else
@@ -220,5 +223,5 @@ bool __cdecl hkGeometryProcessingInternals_generateRandomDistribution(Owner* sel
             }
         }
     }
-    return count == 0;
+    return numPoints == 0;
 }

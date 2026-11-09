@@ -16,6 +16,7 @@ struct FUN_00b274a0_class
 
 // Calls FUN_00b02c90, clears the byte at offset 0x3c and the int at offset 0x40, and returns this.
 // @fnv 0x00b274a0
+// pdb: CLeafGeometry::SLodGeometry::SLodGeometry | LeafGeometry.obj | debug, object-file run extension, low
 FUN_00b274a0_class* __thiscall FUN_00b274a0_class::ResetState()
 {
     FUN_00b02c90();
@@ -91,6 +92,7 @@ struct FUN_00b393b0_Class
 };
 
 // @fnv 0x00b393b0
+// pdb: std::_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> >,0> >::begin | IdvSpline.obj | debug, object-file run extension, low
 int FUN_00b393b0_Class::GetVtblAndValue(int pOut)
 {
     int* p = *(int**)((char*)this + 0x18);
@@ -183,6 +185,8 @@ struct FUN_00b27660_class
 
 // Initializes the object's fields: stores the argument in i4, sets w8 to 3, and zeroes the remaining members.
 // @fnv 0x00b27660
+// pdb: CLeafGeometry::CLeafGeometry | LeafGeometry.obj | debug, object-file run extension, low
+// pdb params: pWindEngine
 FUN_00b27660_class::FUN_00b27660_class(int aiValue)
 {
     b0 = 0;
@@ -406,6 +410,7 @@ struct FUN_00b3f030_Class
 
 // Constructor: sets vtbl to DAT_010a5890 and zeroes three floats stored after the object.
 // @fnv 0x00b3f030
+// pdb: CIdvCamera::CIdvCamera | Camera.obj | debug, call graph, low
 FUN_00b3f030_Class::FUN_00b3f030_Class()
 {
     vtbl = &DAT_010a5890;
@@ -420,6 +425,8 @@ void _Deallocate(void*);
 
 // Sets the vtable pointer to vftable_Random and, if flags has bit 0 set, deallocates this; returns this.
 // @fnv 0x00b3f2e0
+// pdb: Random::`scalar deleting destructor' | IdvRandom.obj | retail, vtable slot, high
+// pdb params: this
 void* __thiscall Random::DestroyRandom(unsigned int flags)
 {
     *reinterpret_cast<const int**>(this) = vftable_Random;
@@ -480,6 +487,7 @@ struct ResourceBufferOwner
 
 // Deletes all owned buffer arrays, nulls their pointers, then calls ClearFields.
 // @fnv 0x00b274d0
+// pdb: CLeafGeometry::SLodGeometry::~SLodGeometry | LeafGeometry.obj | debug, object-file run extension, low
 void ResourceBufferOwner::FreeBuffers()
 {
     delete[] buffer10;
@@ -540,6 +548,7 @@ extern void __cdecl FormHeapFreeAndLog_00401030(void* p);
 
 // Releases the objects held in m_20, m_24, m_2c and m_18, calls Destroy(3) on m_2c, then zeroes m_0c, m_14, m_20, m_24, m_2c and m_18.
 // @fnv 0x00b276f0
+// pdb: CLeafGeometry::~CLeafGeometry | LeafGeometry.obj | debug, object-file run extension, low
 void FUN_00b276f0_cls::Reset()
 {
     void* a = (void*)m_20;
@@ -571,6 +580,7 @@ extern "C" void __stdcall FUN_00ec5fce(void* object, int elementSize, int count,
 extern "C" void __cdecl FormHeapFreeAndLog_00401030(void* apMemory);
 
 // @fnv 0x00b277b0
+// pdb: CLeafGeometry::SLodGeometry::`vector deleting destructor' | LeafGeometry.obj | debug, object-file run extension, low
 void* FUN_00b277b0_cls::Destroy(unsigned int flags)
 {
     if (flags & 2)
@@ -733,6 +743,9 @@ struct FUN_00b335c0_cls
 
 // @fnv 0x00b335c0
 // src: GUESS 0x00b335c0 (confidence: low)
+// pdb: std::vector<unsigned short,std::allocator<unsigned short> >::push_back | IndexedGeometry.obj | retail, object-file run extension, low
+// pdb params: _Val
+// pdb locals: _Idx
 ProbePair FUN_00b335c0_cls::ProcessAndReturnValue_00b335c0(unsigned int auiUnused, unsigned int a3, unsigned int auiUnused2,
                                          unsigned int a5)
 {
@@ -811,6 +824,8 @@ extern "C" unsigned int __cdecl Runtime_EvaluateValue_00b35c30(unsigned int, uns
 
 // @fnv 0x00b33af0
 // src: GUESS 0x00b33af0 (confidence: low)
+// pdb: std::_Copy<std::vector<unsigned short *,std::allocator<unsigned short *> > *,std::vector<unsigned short *,std::allocator<unsigned short *> > *> | IndexedGeometry.obj | retail, object-file run extension, low
+// pdb params: _First, _Last, _Dest
 FUN_00b33af0_pair* FUN_00b33af0_cls::UpdateState_00b33af0(FUN_00b33af0_pair* out, unsigned int unk0c, unsigned int a,
                                                   unsigned int unk14, unsigned int b)
 {
@@ -1017,6 +1032,10 @@ struct LocalScratch
 };
 // Constructs the object, initializing m_00 to 0.0f, m_04 to 1.0f, m_08 to 0.0f and default-constructing m_0c, m_24, m_3c, m_54 and m_6c.
 // @fnv 0x00b37590
+// pdb: std::map<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> > >::operator[] | IdvSpline.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CIdvBezierSpline::CIdvBezierSpline
+// pdb params: _Keyval
+// pdb locals: _Where
 FUN_00b37590::FUN_00b37590() : m_00(0.0f), m_04(1.0f), m_08(0.0f), m_0c(), m_24(), m_3c(), m_54(), m_6c()
 {
     LocalScratch scratch;
@@ -1161,6 +1180,7 @@ struct FUN_00b3c930_Obj
 };
 
 // @fnv 0x00b3c930
+// pdb: CRegion::CRegion | Region.obj | retail, call graph (shared callers), high
 FUN_00b3c930_Obj::FUN_00b3c930_Obj()
 {
     FNV_00b3cc30();
@@ -1197,6 +1217,7 @@ struct FUN_00b3cd60
 
 // Constructor initializing flags, floats and integer fields to their default values.
 // @fnv 0x00b3cd60
+// pdb: SIdvLeafInfo::SIdvLeafInfo | LeafInfo.obj | debug, object-file run extension, low
 FUN_00b3cd60::FUN_00b3cd60()
     : m_b00(true), m_f04(1.0f), m_i0c(2), m_f28(0.5f), m_f2c(0.75f), m_f30(0.8f), m_i34(1), m_i40(3), m_i44(4),
       m_i48(0), m_i4c(0), m_i50(0), m_i54(0)
@@ -1310,18 +1331,20 @@ struct FUN_00b3fdd0_class
     int unk54;
     int unk58;
     FUN_00b37880_class* unk5c;
-    void __thiscall UpdateState_00b3fdd0(FUN_00b37880_class* value);
+    void __thiscall SIdvBranchInfo_SetFlexibilityScale(FUN_00b37880_class* pSpline);
 };
 // @fnv 0x00b3fdd0
-// src: GUESS 0x00b3fdd0 (confidence: low)
-void __thiscall FUN_00b3fdd0_class::UpdateState_00b3fdd0(FUN_00b37880_class* value)
+// src: XBOX_DEBUG_PDB 0x00b3fdd0
+// pdb: SIdvBranchInfo::SetFlexibilityScale | BranchInfo.obj | debug, call graph, high
+// pdb params: pSpline
+void __thiscall FUN_00b3fdd0_class::SIdvBranchInfo_SetFlexibilityScale(FUN_00b37880_class* pSpline)
 {
-    if (unk5c != value)
+    if (unk5c != pSpline)
     {
         FUN_00b37880_class* ptr = unk5c;
         FUN_00b37880_class* old = ptr;
         old ? ((((old->FUN_00b37880(), 1) & 1) ? _Deallocate(old) : (void)0), old) : 0;
-        unk5c = value;
+        unk5c = pSpline;
     }
 }
 
@@ -1414,13 +1437,16 @@ struct Mat
     float m22;
     void __thiscall CRotTransform_CRotTransform();
     Mat* __thiscall Multiply(Mat* out, Mat* rhs);
-    void __thiscall CRotTransform_RotateY(float angle);
+    void __thiscall CRotTransform_RotateY(float fAngle);
 };
 
 // Builds a 2D rotation matrix from angle and multiplies it into the current matrix.
 // @fnv 0x00b273d0
 // src: COMMUNITY 0x00b273d0
-void __thiscall Mat::CRotTransform_RotateY(float angle)
+// pdb: CRotTransform::RotateY | Branch.obj | retail, upstream name already matches, high
+// pdb params: fAngle
+// pdb locals: cRotMatrix, fCosine, fSine
+void __thiscall Mat::CRotTransform_RotateY(float fAngle)
 {
     Mat hold;
     Mat buf;
@@ -1428,8 +1454,8 @@ void __thiscall Mat::CRotTransform_RotateY(float angle)
     float fCos;
     float fSin;
     rot.CRotTransform_CRotTransform();
-    fCos = (float)(double)(float)FUN_00ec9f30((double)(float)(angle / DAT_010a4d90));
-    fSin = (float)(double)(float)FUN_00eca060((double)(float)(angle / DAT_010a4d90));
+    fCos = (float)(double)(float)FUN_00ec9f30((double)(float)(fAngle / DAT_010a4d90));
+    fSin = (float)(double)(float)FUN_00eca060((double)(float)(fAngle / DAT_010a4d90));
     rot.m00 = fCos;
     rot.m01 = fSin;
     rot.m02 = 0.0f;
@@ -1466,6 +1492,8 @@ class IntVector
 
 // @fnv 0x00b32600
 // src: GUESS 0x00b32600 (confidence: low)
+// pdb: std::vector<unsigned short *,std::allocator<unsigned short *> >::operator[] | IndexedGeometry.obj | debug, object-file run extension, low
+// pdb params: _Pos
 void IntVector::UpdateFields_00b32600(unsigned int ItemUpdateArray, const int& kVal)
 {
     int aiUnused[0x26];
@@ -1536,6 +1564,7 @@ extern void __cdecl Object_ProcessEntries_00b360a0(SequenceRecord*, int, const S
 // If FUN_00b1f590(n) succeeds, calls FUN_00b360a0 on m_0c with n and value and sets m_10 to m_0c + n; on exception calls FUN_00b32c60 and rethrows.
 // @fnv 0x00b32780
 // src: GUESS 0x00b32780 (confidence: medium)
+// pdb: std::vector<unsigned short *,std::allocator<unsigned short *> >::clear | IndexedGeometry.obj | debug, object-file run extension, low
 void RecordSequence::InitializeFilledElements_00b32780(int n, const SequenceRecord* value)
 {
     int filler[25];
@@ -1675,13 +1704,15 @@ struct FUN_00b29fd0_cls
     int unk74;
     int unk78;
     FUN_00b29fd0_Params m_7c;
-    FUN_00b29fd0_cls* CLightingEngine_CLightingEngine();
+    FUN_00b29fd0_cls* CLightingEngine_ctor();
 };
 
 // Initializes the object's fields and copies three default parameter blocks into m_04, m_3c, and m_7c.
 // @fnv 0x00b29fd0
-// src: XBOX_PDB 0x00b29fd0
-FUN_00b29fd0_cls* FUN_00b29fd0_cls::CLightingEngine_CLightingEngine()
+// src: XBOX_RETAIL_PDB 0x00b29fd0
+// pdb: CLightingEngine::CLightingEngine | LightingEngine.obj | retail, upstream name already matches, high
+// pdb locals: afDefaultLeafMaterial, afDefaultFrondMaterial, afDefaultBranchMaterial
+FUN_00b29fd0_cls* FUN_00b29fd0_cls::CLightingEngine_ctor()
 {
     unk00 = 0;
     unk38 = 0;
@@ -1852,6 +1883,10 @@ struct Scratch60
 
 // Sets flag00 and value04 from its arguments, initializes the listed scalar fields, and default-constructs the list members; the Scratch60 local is unused.
 // @fnv 0x00b2e810
+// pdb: std::vector<std::vector<unsigned short *,std::allocator<unsigned short *> >,std::allocator<std::vector<unsigned short *,std::allocator<unsigned short *> > > >::operator= | IndexedGeometry.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CIndexedGeometry::CIndexedGeometry
+// pdb params: _Right
+// pdb locals: _Ptr
 FUN_00b2e810::FUN_00b2e810(int value, unsigned char flag)
     : flag00(flag), value04(value), flag08(false), flag09(false), unk0C(0), unk10(0), flag12(true), unk14(2), unk20(0),
       unk22(0), unk24(0), unk26(0)
@@ -1891,19 +1926,21 @@ class OwnerB3ff90
     unsigned int unk0064;
     unsigned int unk0068;
     FUN_00b37880_class* m_6c;
-    void UpdateState_00b3ff90(FUN_00b37880_class* a);
+    void SIdvBranchInfo_SetStartAngle(FUN_00b37880_class* pSpline);
 };
 
 // If a differs from m_6c, calls FUN_00b37880 then FUN_00401030 on the old m_6c, and stores a in m_6c.
 // @fnv 0x00b3ff90
-// src: GUESS 0x00b3ff90 (confidence: low)
-void OwnerB3ff90::UpdateState_00b3ff90(FUN_00b37880_class* a)
+// src: XBOX_DEBUG_PDB 0x00b3ff90
+// pdb: SIdvBranchInfo::SetStartAngle | BranchInfo.obj | debug, call graph, high
+// pdb params: pSpline
+void OwnerB3ff90::SIdvBranchInfo_SetStartAngle(FUN_00b37880_class* pSpline)
 {
-    if (m_6c != a)
+    if (m_6c != pSpline)
     {
         FUN_00b37880_class* saved = m_6c;
         FUN_00b37880_class* old = saved;
         old ? ((((old->FUN_00b37880(), 1) & 1) ? FormHeapFreeAndLog_00401030(old) : (void)0), old) : 0;
-        m_6c = a;
+        m_6c = pSpline;
     }
 }

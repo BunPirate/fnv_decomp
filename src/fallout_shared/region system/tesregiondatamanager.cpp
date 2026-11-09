@@ -111,10 +111,13 @@ template <class T> void BSSimpleList<T>::AddHead(T& item)
 
 // Allocates and returns a new TESRegionData subclass instance matching the given REGION_DATA_ID, or null for unknown IDs.
 // @fnv 0x004f3690
-TESRegionData* TESRegionDataManager::GetRegionDataForID(REGION_DATA_ID aeID)
+// pdb: TESRegionDataManager::ConstructRegionData | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: aType
+// pdb locals: pdata
+TESRegionData* TESRegionDataManager::GetRegionDataForID(REGION_DATA_ID aType)
 {
     TESRegionData* pData = 0;
-    switch (aeID)
+    switch (aType)
     {
     case REGION_DATA_ID_REGION_DATA_WEATHER_ID:
         pData = new TESRegionDataWeather;
@@ -140,6 +143,8 @@ TESRegionData* TESRegionDataManager::GetRegionDataForID(REGION_DATA_ID aeID)
 
 // Returns apData cast to TESRegionDataWeather if it is non-null and of the weather region data type, otherwise returns 0.
 // @fnv 0x004f38e0
+// pdb: TESRegionDataManager::IsRegionDataWeather | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: apData
 TESRegionDataWeather* TESRegionDataManager::GetRegionDataWeather(TESRegionData* apData)
 {
     if (!apData || apData->GetType() != REGION_DATA_ID_REGION_DATA_WEATHER_ID)
@@ -149,6 +154,8 @@ TESRegionDataWeather* TESRegionDataManager::GetRegionDataWeather(TESRegionData* 
 
 // Returns apData cast to TESRegionDataMap if it is non-null and its type is REGION_DATA_ID_REGION_DATA_MAP_ID, otherwise returns 0.
 // @fnv 0x004f3910
+// pdb: TESRegionDataManager::IsRegionDataMap | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: apData
 TESRegionDataMap* TESRegionDataManager::GetRegionDataMap(TESRegionData* apData)
 {
     if (!apData || apData->GetType() != REGION_DATA_ID_REGION_DATA_MAP_ID)
@@ -158,6 +165,8 @@ TESRegionDataMap* TESRegionDataManager::GetRegionDataMap(TESRegionData* apData)
 
 // Returns apData cast to TESRegionDataLandscape if its type is REGION_DATA_ID_REGION_DATA_LANDSCAPE_ID, otherwise null.
 // @fnv 0x004f3940
+// pdb: TESRegionDataManager::IsRegionDataLandscape | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: apData
 TESRegionDataLandscape* TESRegionDataManager::GetRegionDataLandscape(TESRegionData* apData)
 {
     if (!apData || apData->GetType() != REGION_DATA_ID_REGION_DATA_LANDSCAPE_ID)
@@ -167,6 +176,8 @@ TESRegionDataLandscape* TESRegionDataManager::GetRegionDataLandscape(TESRegionDa
 
 // Returns apData cast to TESRegionDataSound if it is non-null and its type is REGION_DATA_ID_REGION_DATA_SOUND_ID, otherwise returns 0.
 // @fnv 0x004f39a0
+// pdb: TESRegionDataManager::IsRegionDataSound | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: apData
 TESRegionDataSound* TESRegionDataManager::GetRegionDataSound(TESRegionData* apData)
 {
     if (!apData || apData->GetType() != REGION_DATA_ID_REGION_DATA_SOUND_ID)
@@ -176,6 +187,8 @@ TESRegionDataSound* TESRegionDataManager::GetRegionDataSound(TESRegionData* apDa
 
 // Returns apData cast to TESRegionDataImposter if it is non-null and of type REGION_DATA_ID_REGION_DATA_IMPOSTER_ID, otherwise returns 0.
 // @fnv 0x004f39d0
+// pdb: TESRegionDataManager::IsRegionDataImposter | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: apData
 TESRegionDataImposter* TESRegionDataManager::GetRegionDataImposter(TESRegionData* apData)
 {
     if (!apData || apData->GetType() != REGION_DATA_ID_REGION_DATA_IMPOSTER_ID)
@@ -184,6 +197,9 @@ TESRegionDataImposter* TESRegionDataManager::GetRegionDataImposter(TESRegionData
 }
 
 // @fnv 0x004f3a00
+// pdb: TESRegionDataManager::LoadRegionData | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: apFile, apRegion
+// pdb locals: data, pRegDataWea, pRegDataMap, pRegDataGrass, pRegDataSound, pRegDataLandscape, pRegDataImposter
 bool TESRegionDataManager::ApplyEntry(TESFile* apFile, TESRegion* apRegion)
 {
     if (!apFile || !apRegion)
@@ -241,6 +257,8 @@ struct RegionDataManager_StandIn
     RegionDataBlock* GetRegionObjectsData(TESRegionData* apData);
 };
 // @fnv 0x004f38b0
+// pdb: TESRegionDataManager::IsRegionDataObjects | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: apData
 RegionDataBlock* RegionDataManager_StandIn::GetRegionObjectsData(TESRegionData* apData)
 {
     if (!apData || apData->GetType() != REGION_DATA_ID_REGION_DATA_OBJECTS_ID)
@@ -254,6 +272,8 @@ struct MyMgr
 };
 // Returns apData cast to TESRegionDataGrass if it is non-null and its type is REGION_DATA_ID_REGION_DATA_GRASS_ID, otherwise returns 0.
 // @fnv 0x004f3970
+// pdb: TESRegionDataManager::IsRegionDataGrass | TESRegionDataManager.obj | retail, vtable slot, high
+// pdb params: apData
 TESRegionDataGrass* MyMgr::GetGrassData(TESRegionData* apData)
 {
     if (!apData || apData->GetType() != REGION_DATA_ID_REGION_DATA_GRASS_ID)

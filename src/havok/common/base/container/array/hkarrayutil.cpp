@@ -40,6 +40,9 @@ struct CB1BC0Map
 
 // Grows the table if needed, probes for the key, stores key/val, and returns whether the key was newly inserted.
 // @fnv 0x00cb1bc0
+// pdb: hkMapBase<unsigned __int64,unsigned __int64,hkMapOperations<unsigned __int64> >::insert | hkMap.obj | retail, call graph (shared callers), high
+// pdb params: alloc, key, val
+// pdb locals: assertBuf, ostr
 int CB1BC0Map::InsertKeyValue(hkMemoryAllocator& alloc, CB1BC0Key key, CB1BC0Key val)
 {
     {
@@ -78,21 +81,24 @@ void __cdecl FUN_00ec44d0(int a, int b, int c);
 
 // @fnv 0x00c908c0
 // src: HAVOK_LIB 0x00c908c0
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* apObject, SpawnedArray* apArray, int aiSize, int stride)
+// pdb: hkArrayUtil::_reserve | hkArrayUtil.obj | retail, upstream name already matches, high
+// pdb params: mem, array, numElem, sizeElem
+// pdb locals: reqNumBytes, assertBuf, ostr
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, SpawnedArray* array, int numElem, int sizeElem)
 {
-    int iNewSize = aiSize * stride;
-    if ((apArray->m_08 & 0x80000000u) == 0)
+    int iNewSize = numElem * sizeElem;
+    if ((array->m_08 & 0x80000000u) == 0)
     {
-        int n = (int)(apArray->m_08 & 0x3fffffffu) * stride;
-        apArray->m_00 = (int)apObject->bufRealloc((void*)apArray->m_00, n, iNewSize);
-        apArray->m_08 = (unsigned int)(iNewSize / stride);
+        int n = (int)(array->m_08 & 0x3fffffffu) * sizeElem;
+        array->m_00 = (int)mem->bufRealloc((void*)array->m_00, n, iNewSize);
+        array->m_08 = (unsigned int)(iNewSize / sizeElem);
     }
     else
     {
-        int pNewData = (int)apObject->bufAlloc(iNewSize);
-        FUN_00ec44d0(pNewData, apArray->m_00, apArray->m_04 * stride);
-        apArray->m_00 = pNewData;
-        apArray->m_08 = (unsigned int)(iNewSize / stride);
+        int pNewData = (int)mem->bufAlloc(iNewSize);
+        FUN_00ec44d0(pNewData, array->m_00, array->m_04 * sizeElem);
+        array->m_00 = pNewData;
+        array->m_08 = (unsigned int)(iNewSize / sizeElem);
     }
 }
 
@@ -114,27 +120,30 @@ struct AudioStream
 extern "C" void* __cdecl FNV_block_copy(void* dst, const void* src, unsigned int size);
 
 // @fnv 0x00c90940
-void ResizeAudioStream(hkMemoryAllocator* pAlloc, AudioStream* pStream, int elemSize)
+// pdb: hkArrayUtil::_reserveMore | hkArrayUtil.obj | retail, call graph, high
+// pdb params: mem, array, sizeElem
+// pdb locals: reqNumBytes, assertBuf, ostr
+void ResizeAudioStream(hkMemoryAllocator* mem, AudioStream* array, int sizeElem)
 {
-    int n = (pStream->m_iArrayLength ? pStream->m_iArrayLength * 2 : 1) * elemSize;
-    if (!(pStream->m_uCapacity & 0x80000000))
+    int n = (array->m_iArrayLength ? array->m_iArrayLength * 2 : 1) * sizeElem;
+    if (!(array->m_uCapacity & 0x80000000))
     {
-        pStream->m_pData = pAlloc->bufRealloc(pStream->m_pData, (pStream->m_uCapacity & 0x3fffffff) * elemSize, n);
-        pStream->m_uCapacity = n / elemSize;
+        array->m_pData = mem->bufRealloc(array->m_pData, (array->m_uCapacity & 0x3fffffff) * sizeElem, n);
+        array->m_uCapacity = n / sizeElem;
     }
     else
     {
-        void* pBlock = pAlloc->bufAlloc(n);
-        FNV_block_copy(pBlock, pStream->m_pData, pStream->m_iArrayLength * elemSize);
-        pStream->m_pData = pBlock;
-        pStream->m_uCapacity = n / elemSize;
+        void* pBlock = mem->bufAlloc(n);
+        FNV_block_copy(pBlock, array->m_pData, array->m_iArrayLength * sizeElem);
+        array->m_pData = pBlock;
+        array->m_uCapacity = n / sizeElem;
     }
 }
 
 typedef unsigned int hkUlong;
 
-extern void __cdecl hkArrayUtil__reserve(void* alloc, void* arr, int n, int sizeElem);
-extern void __cdecl ResizeAudioStream(void* alloc, void* arr, int sizeElem);
+extern void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
+extern void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 inline void* operator new(unsigned int, void* p)
 {
@@ -192,6 +201,8 @@ struct S_00da2bd0_CallTree
 };
 
 // @fnv 0x00da2bd0
+// pdb: hkStackTracer::CallTree::insertCallStack | hkStackTracer.obj | debug, call graph, low
+// pdb params: addrs, numAddrs
 int S_00da2bd0_CallTree::FindOrAddCallTrace(const hkUlong* trace, int depth)
 {
     if (m_iElementCount == 0)
@@ -238,8 +249,8 @@ struct Holder
 };
 
 Holder* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(void* pAllocator, void* pBuf, int newCap, int bFlag);
-void __cdecl ResizeAudioStream(void* pAllocator, void* pBuf, int bFlag);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 extern "C" void _ReadWriteBarrier(void);
 
 struct FUN_00e108b0_cls
@@ -254,6 +265,8 @@ struct FUN_00e108b0_cls
 // Initialises the string buffer (data, length, capacity), grows it to at least 0x40 if needed, appends a null terminator and returns this.
 // @fnv 0x00e108b0
 // src: GUESS 0x00e108b0 (confidence: medium)
+// pdb: hkArray<hkMonitorStreamAnalyzer::Node *,hkContainerHeapAllocator>::reserveExactly | hkMonitorStreamAnalyzer.obj | debug, object-file run extension, low
+// pdb params: size
 FUN_00e108b0_cls* FUN_00e108b0_cls::InitializeStringBuffer()
 {
     m_pData = 0;
@@ -404,18 +417,21 @@ struct S00c70de0_ArrayLocalForm
 // Builds 18 vertices using scaled start coordinates, end z, radius, and height, then passes them to CreateFromSource.
 // @fnv 0x00c70de0
 // src: XBOX_PDB 0x00c70de0
-int __cdecl MakeConvex(float* end, float* start, float radius, float height)
+// pdb: MakeConvex | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: arTop, arBottom, afRadius, afStepHeight
+// pdb locals: I, pnt, fstep, tempMemContext, temp, hullA, ps, frad
+int __cdecl MakeConvex(float* arTop, float* arBottom, float afRadius, float afStepHeight)
 {
     S00c70de0_Guard memGuard(16);
-    float fScaledRadius = radius * DAT_01267bcc;
+    float fScaledRadius = afRadius * DAT_01267bcc;
     S00c70de0_ArrayLocalForm mesh;
     mesh.reserve(18);
 
     ArrayVectorLocal_00c70de0 vertex;
     ArrayVectorLocal_00c70de0 ringVertex;
-    vertex.component(0) = start[0] * DAT_01267bcc;
-    vertex.component(1) = start[1] * DAT_01267bcc;
-    vertex.component(2) = start[2] * DAT_01267bcc;
+    vertex.component(0) = arBottom[0] * DAT_01267bcc;
+    vertex.component(1) = arBottom[1] * DAT_01267bcc;
+    vertex.component(2) = arBottom[2] * DAT_01267bcc;
     vertex.component(3) = 0.0f;
     vertex.component(2) -= fScaledRadius;
     {
@@ -424,7 +440,7 @@ int __cdecl MakeConvex(float* end, float* start, float radius, float height)
         {
             ResizeAudioStream(&a, &mesh, sizeof(ArrayVectorLocal_00c70de0));
         }
-        double fTopZ = height + DAT_0101ffa0 + vertex.component(2);
+        double fTopZ = afStepHeight + DAT_0101ffa0 + vertex.component(2);
         mesh.m_data[mesh.m_iElementCount] = vertex;
         mesh.m_iElementCount++;
         vertex.component(2) = (float)fTopZ;
@@ -437,9 +453,9 @@ int __cdecl MakeConvex(float* end, float* start, float radius, float height)
         mesh.AddBack(ringVertex);
     }
 
-    vertex.component(0) = end[0] * DAT_01267bcc;
-    vertex.component(1) = end[1] * DAT_01267bcc;
-    vertex.component(2) = end[2] * DAT_01267bcc;
+    vertex.component(0) = arTop[0] * DAT_01267bcc;
+    vertex.component(1) = arTop[1] * DAT_01267bcc;
+    vertex.component(2) = arTop[2] * DAT_01267bcc;
     vertex.component(3) = 0.0f;
 
     double halfRadius = fScaledRadius * DAT_01011588;
@@ -471,22 +487,25 @@ extern "C" void* __cdecl memcpy(void*, const void*, size_t);
 // Reallocates an hkArrayVoid buffer to requestedCapacity, reusing inplaceMem when provided, otherwise calling BufRealloc on the allocator.
 // @fnv 0x00c909d0
 // src: HAVOK_LIB 0x00c909d0
-void __cdecl hkArrayUtil__reduce(hkMemoryAllocator& alloc, void* array, int aiElementSize, void* apInPlaceMemory,
+// pdb: hkArrayUtil::_reduce | hkArrayUtil.obj | retail, upstream name already matches, high
+// pdb params: mem, array, sizeElem, inplaceMem, requestedCapacity
+// pdb locals: assertBuf, ostr, reqNumBytes
+void __cdecl hkArrayUtil__reduce(hkMemoryAllocator& mem, void* array, int sizeElem, void* inplaceMem,
                           int requestedCapacity)
 {
     hkArrayVoid& arr = *static_cast<hkArrayVoid*>(array);
-    if (apInPlaceMemory && arr.m_iElementCount < requestedCapacity)
+    if (inplaceMem && arr.m_iElementCount < requestedCapacity)
     {
-        memcpy(apInPlaceMemory, arr.m_data, arr.m_iElementCount * aiElementSize);
-        alloc.bufFree(arr.m_data, (arr.m_iCapacityState & 0x3fffffff) * aiElementSize);
+        memcpy(inplaceMem, arr.m_data, arr.m_iElementCount * sizeElem);
+        mem.bufFree(arr.m_data, (arr.m_iCapacityState & 0x3fffffff) * sizeElem);
         arr.m_iCapacityState = requestedCapacity | 0x80000000;
-        arr.m_data = apInPlaceMemory;
+        arr.m_data = inplaceMem;
     }
     else
     {
-        int iRequestedBytes = requestedCapacity * aiElementSize;
-        arr.m_data = alloc.bufRealloc(arr.m_data, arr.m_iCapacityState * aiElementSize, iRequestedBytes);
-        arr.m_iCapacityState = iRequestedBytes / aiElementSize;
+        int iRequestedBytes = requestedCapacity * sizeElem;
+        arr.m_data = mem.bufRealloc(arr.m_data, arr.m_iCapacityState * sizeElem, iRequestedBytes);
+        arr.m_iCapacityState = iRequestedBytes / sizeElem;
     }
 }
 }  // namespace fnv_00c909d0
@@ -625,6 +644,9 @@ void __cdecl hkMemoryRouter_getInstance_ProcessEntries_00da0f10(ScriptProgram*, 
 
 // @fnv 0x00da12b0
 // src: GUESS 0x00da12b0 (confidence: low)
+// pdb: hkGeometryUtils::weldVertices | hkGeometryUtils.obj | retail, object-file run extension, low
+// pdb params: meshGeometry, threshold, keepVertexOrder, vertexRemapOut, triangleRemapOut
+// pdb locals: originalNumTriangles, uniqueVerts, extraMap, orderedVerts
 void __cdecl hkMemoryAllocator_ProcessEntries_00da12b0(ScriptProgram* mesh, float tolerance, bool unique, MeshArray<int>* vertexMap,
                           MeshArray<int>* triangleMap)
 {

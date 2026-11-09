@@ -6,23 +6,24 @@ typedef float hkReal;
 typedef int hkBool32;
 
 // src: XBOX_PDB; hkpCollisionQualityInfo is 0x40 bytes. Exe continuous GSK reads TOI fields through +0x3e.
+// pdb: structure hkpCollisionQualityInfo, size 0x40, 17 members
 struct hkpCollisionQualityInfo
 {
-    __declspec(align(16)) hkReal m_fMinimumCollisionSeparation;
-    hkReal m_fMinimumExtraSeparation;
-    hkReal m_fMaximumExtraSeparation;
-    hkReal m_fTimeOfImpactSeparation;
-    hkPadSpu<hkBool32> m_iQualityInfoValue10;
-    hkBool m_bUseContinuousPhysics;
-    hkReal m_fCreateContactThreshold;
-    hkReal m_fManifoldTimeDistance;
-    hkReal m_fMinimumSafeDeltaTime;
-    hkReal m_fMinimumAbsoluteTimeOfImpact;
-    hkReal m_fMinimumTimeOfImpactDelta;
-    hkReal m_fMaximumTimeOfImpactDelta;
-    hkReal m_fMaximumConstraintViolation;
-    hkReal m_fMaximumLinearVelocity;
-    hkReal m_fMaximumAngularVelocity;
-    unsigned short m_usValueAtOffset3C;
-    hkBool m_bEnableToiWeldRejection;
+    __declspec(align(16)) hkReal m_keepContact;
+    hkReal m_create4dContact;
+    hkReal m_createContact;
+    hkReal m_manifoldTimDistance;
+    hkPadSpu<hkBool32> m_useContinuousPhysics;
+    hkBool m_useSimpleToiHandling;
+    hkReal m_minSeparation;
+    hkReal m_minExtraSeparation;
+    hkReal m_minSafeDeltaTime;
+    hkReal m_minAbsoluteSafeDeltaTime;
+    hkReal m_toiSeparation;
+    hkReal m_toiExtraSeparation;
+    hkReal m_toiAccuracy;
+    hkReal m_maxContraintViolation;
+    hkReal m_minToiDeltaTime;
+    unsigned short m_constraintPriority;
+    hkBool m_enableToiWeldRejection;
 };

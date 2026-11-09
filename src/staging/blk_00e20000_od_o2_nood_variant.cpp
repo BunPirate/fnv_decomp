@@ -125,6 +125,9 @@ struct E29Out2 { E29Item items[4]; int count; char flagC4; void* ptrs[4]; int un
 
 // @fnv 0x00e29a10
 // src: GUESS 0x00e29a10 (confidence: low)
+// pdb: writeCommands | hkTreeBundleRaycastUtil.obj | retail, object-file run extension, low
+// pdb params: clusters, rayFrom, rayTo, resultBuffer, singleCommandsOut, numSingleCommandsOut, bundledCommandsOut, numBundledCommandsOut
+// pdb locals: nBundledCommands, sizeofClusters, ic
 void Runtime_ProcessEntries_00e29a10(E29SrcList* src, const LocalM128* posA, const LocalM128* posB, char* base, E29Out1* out1, int* outCount1, E29Out2* out2, int* outCount2)
 {
     int n1 = 0;
@@ -175,6 +178,8 @@ extern "C" { LocalM128 _mm_load_ps(const LocalM128*); void _mm_store_ps(LocalM12
 
 // @fnv 0x00e2ab00
 // src: GUESS 0x00e2ab00 (confidence: low)
+// pdb: hkKdTreeRayCastJobUtil::makeBundleFromInputs | hkpRayCastQueryJobUtils.obj | retail, object-file run extension, low
+// pdb params: inputs, fromBundle, toBundle
 LocalM128* Object_ProcessAndReturnValue_00e2ab00(LocalM128* src, LocalM128* out1, LocalM128* out2) {
     out1[0] = src[0];
     out2[0] = src[1];
@@ -235,14 +240,17 @@ struct Track_e3a1 {
     int m_numKeys;
     int m_pRayCursor;
     hkArray<Key_e3a1> m_keys;
-    void hkpTyremarksWheel_setNumPoints(int numKeys);
+    void hkpTyremarksWheel_setNumPoints(int num_points);
 };
 
 // @fnv 0x00e3a1e0
 // src: HAVOK_LIB 0x00e3a1e0
-void Track_e3a1::hkpTyremarksWheel_setNumPoints(int numKeys)
+// pdb: hkpTyremarksWheel::setNumPoints | hkpTyremarksInfo.obj | retail, upstream name already matches, high
+// pdb params: num_points
+// pdb locals: tyrePoint
+void Track_e3a1::hkpTyremarksWheel_setNumPoints(int num_points)
 {
-    m_pRayCursor = numKeys;
+    m_pRayCursor = num_points;
     m_numKeys = 0;
     for (int i = 0; i < m_pRayCursor; i++) {
         Key_e3a1 key;
@@ -325,6 +333,9 @@ struct FractionArg { FourFloatVector* ptr; };
 struct Owner { unsigned unk00, unk04, unk08, unk0c; void* context; };
 // @fnv 0x00e2b510
 // src: GUESS 0x00e2b510 (confidence: low)
+// pdb: hkTreeRayCastJobUtil::castRayBundleAabbTree<hkAabbTreeData::hkAabbTreeAabb16> | hkpRayCastQueryJobUtils.obj | retail, object-file run extension, low
+// pdb params: aabbTree, command, filter, earlyHitFractionInOut, collidableCache, shapeCache, transformCache, resultLocalArray, numResultsOut
+// pdb locals: bundleInput, collector, earlyHitFractions, treeCollectors, singleCommands
 void __cdecl Runtime_ProcessEntries_00e2b510(Owner* owner, RayBatch* input, int mode, FourFloatVector& fractions) {
     if (!owner) return;
     Bundle bundle;
@@ -561,14 +572,17 @@ template <class T> __forceinline void ArrClearFree(hkArrayBase<T>& arr)
 
 // @fnv 0x00e2a390
 // src: XBOX_PDB 0x00e2a390
-void __cdecl hkTreeBundleRayCastUtil_startWorldRayCastWithAutoBundleJobs(int a, int b, int n, float f1, float f2, JobSource* pSrc,
-                          JobQueue* m_pPrimaryTaskProcessor, JobWaiter* pWaiter, int iParam, bool bAuto)
+// pdb: hkTreeBundleRayCastUtil::startWorldRayCastWithAutoBundleJobs | hkTreeBundleRaycastUtil.obj | retail, string-set bridge, high
+// pdb params: rayFrom, rayTo, numRays, angleVariance, distanceVariance2, worldRayCastJob, jobQueue, jobThreadPool, resultBuffer, scanAllInJobs
+// pdb locals: counter, autoBundleJob
+void __cdecl hkTreeBundleRayCastUtil_startWorldRayCastWithAutoBundleJobs(int rayFrom, int rayTo, int numRays, float angleVariance, float distanceVariance2, JobSource* worldRayCastJob,
+                          JobQueue* jobQueue, JobWaiter* jobThreadPool, int resultBuffer, bool scanAllInJobs)
 {
-    if (bAuto)
+    if (scanAllInJobs)
     {
         ProfMark2("LtAutoJob", "StAddJobs");
-        int off1 = pSrc->m_i24;
-        int off2 = pSrc->m_i2C;
+        int off1 = worldRayCastJob->m_i24;
+        int off2 = worldRayCastJob->m_i2C;
         for (int i = 0; i < 8; i++)
         {
             AutoJob job;
@@ -583,30 +597,30 @@ void __cdecl hkTreeBundleRayCastUtil_startWorldRayCastWithAutoBundleJobs(int a, 
             job.m_i20 = (int*)0;
             job.m_i24 = i;
             job.m_i28 = 0;
-            job.m_i2C = a;
-            job.m_i30 = b;
-            job.m_i34 = n;
-            job.m_f38 = f1;
-            job.m_f3C = f2;
-            job.m_i40 = iParam;
+            job.m_i2C = rayFrom;
+            job.m_i30 = rayTo;
+            job.m_i34 = numRays;
+            job.m_f38 = angleVariance;
+            job.m_f3C = distanceVariance2;
+            job.m_i40 = resultBuffer;
             job.m_i44 = off1;
             job.m_i4C = off2;
-            job.m_i54 = pSrc->m_i1C;
-            job.m_i58 = pSrc->m_i14;
-            job.m_p5C = pSrc->m_p10;
-            job.m_i60 = pSrc->m_i34;
-            job.m_i64 = pSrc->m_i38;
-            job.m_i68 = pSrc->m_i3C;
-            job.m_i6C = pSrc->m_i40;
-            m_pPrimaryTaskProcessor->AddObjectCopy(&job, 1);
-            off1 += n << 6;
-            off2 += n << 8;
+            job.m_i54 = worldRayCastJob->m_i1C;
+            job.m_i58 = worldRayCastJob->m_i14;
+            job.m_p5C = worldRayCastJob->m_p10;
+            job.m_i60 = worldRayCastJob->m_i34;
+            job.m_i64 = worldRayCastJob->m_i38;
+            job.m_i68 = worldRayCastJob->m_i3C;
+            job.m_i6C = worldRayCastJob->m_i40;
+            jobQueue->AddObjectCopy(&job, 1);
+            off1 += numRays << 6;
+            off2 += numRays << 8;
         }
-        pWaiter->Start(m_pPrimaryTaskProcessor, 0xb);
+        jobThreadPool->Start(jobQueue, 0xb);
         ProfMark("StWaitThreads");
-        pWaiter->Wait();
+        jobThreadPool->Wait();
         ProfMark("lt");
-        pSrc->m_p10->hkSemaphore_acquire();
+        worldRayCastJob->m_p10->hkSemaphore_acquire();
         return;
     }
 
@@ -623,8 +637,8 @@ void __cdecl hkTreeBundleRayCastUtil_startWorldRayCastWithAutoBundleJobs(int a, 
     int* pData5;
     unsigned int uiCap5;
     {
-    ArrInit(pData1, uiCap1, n);
-    ArrInit(pData2, uiCap2, n);
+    ArrInit(pData1, uiCap1, numRays);
+    ArrInit(pData2, uiCap2, numRays);
     {
         hkMemoryRouter* pHolder = &hkMemoryRouter::getInstance();
         int cap = 8;
@@ -643,12 +657,12 @@ void __cdecl hkTreeBundleRayCastUtil_startWorldRayCastWithAutoBundleJobs(int a, 
         }
     }
     SplitResult out;
-    Object_ProcessEntries_00e29b80(a, b, n, pData1, pData2, pData3, &out);
+    Object_ProcessEntries_00e29b80(rayFrom, rayTo, numRays, pData1, pData2, pData3, &out);
     ArrInit(pData4, uiCap4, 8);
     ArrInit(pData5, uiCap5, 8);
 
-    int off1 = pSrc->m_i24;
-    int off2 = pSrc->m_i2C;
+    int off1 = worldRayCastJob->m_i24;
+    int off2 = worldRayCastJob->m_i2C;
     for (int j = 0; j < 8; j++)
     {
         if (pData3[j].m_iElementCount == 0)
@@ -658,32 +672,32 @@ void __cdecl hkTreeBundleRayCastUtil_startWorldRayCastWithAutoBundleJobs(int a, 
             InitJob(job);
             job.m_i20 = pData3[j].m_data;
             job.m_i28 = pData3[j].m_iElementCount;
-            job.m_i2C = a;
-            job.m_i30 = b;
-            job.m_i34 = n;
-            job.m_f38 = f1;
-            job.m_f3C = f2;
-            job.m_i40 = iParam;
+            job.m_i2C = rayFrom;
+            job.m_i30 = rayTo;
+            job.m_i34 = numRays;
+            job.m_f38 = angleVariance;
+            job.m_f3C = distanceVariance2;
+            job.m_i40 = resultBuffer;
             job.m_i44 = off1;
             job.m_i4C = off2;
-            job.m_i54 = pSrc->m_i1C;
-            job.m_i58 = pSrc->m_i14;
-            job.m_p5C = pSrc->m_p10;
-            job.m_i60 = pSrc->m_i34;
-            job.m_i64 = pSrc->m_i38;
-            job.m_i68 = pSrc->m_i3C;
-            job.m_i6C = pSrc->m_i40;
-            m_pPrimaryTaskProcessor->AddObjectCopy(&job, 1);
-            off1 += n << 6;
-            off2 += n << 8;
+            job.m_i54 = worldRayCastJob->m_i1C;
+            job.m_i58 = worldRayCastJob->m_i14;
+            job.m_p5C = worldRayCastJob->m_p10;
+            job.m_i60 = worldRayCastJob->m_i34;
+            job.m_i64 = worldRayCastJob->m_i38;
+            job.m_i68 = worldRayCastJob->m_i3C;
+            job.m_i6C = worldRayCastJob->m_i40;
+            jobQueue->AddObjectCopy(&job, 1);
+            off1 += numRays << 6;
+            off2 += numRays << 8;
         }
     }
     }
     ProfMark("Et");
     ProfMark("TtAutoBundleJobs");
-    pWaiter->Start(m_pPrimaryTaskProcessor, 0xb);
-    pWaiter->Wait();
-    pSrc->m_p10->hkSemaphore_acquire();
+    jobThreadPool->Start(jobQueue, 0xb);
+    jobThreadPool->Wait();
+    worldRayCastJob->m_p10->hkSemaphore_acquire();
     ProfMark("Et");
 
     ArrFree(pData5, uiCap5);

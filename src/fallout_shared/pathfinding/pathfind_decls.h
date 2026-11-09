@@ -14,7 +14,7 @@ class MobileObject;
 class PathfindQueueStorage_pathfind_decls
 {
 public:
-    void ProcessArray_RemoveActor_0096aaf0(MobileObject* apObject, int aeLevel);
+    void ProcessArray_RemoveActor_0096aaf0(MobileObject* apActor, int aWhichList);
 };
 
 class MobileObject;
@@ -61,4 +61,4 @@ class PacketNodeRecord : public PathingGraphNode
     bool VirtualPathingNode_HasActualLocation();
 };
 #include "../../../include/BSSimpleArray.h"
-int CollectNearbyEdges(PathingLocation*, int, TESObjectREFR*);
+int Pathing_FindClosestEdges(PathingLocation*, int, TESObjectREFR*);

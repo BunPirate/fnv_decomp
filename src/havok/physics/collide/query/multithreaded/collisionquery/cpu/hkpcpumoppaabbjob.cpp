@@ -76,7 +76,7 @@ struct S_00df7010_Router
 };
 
 S_00df7010_Router* hkMemoryRouter_getInstance() throw();
-void ResizeAudioStream(S_00df7010_Allocator& alloc, void* array, int sizeElem) throw();
+void ResizeAudioStream(S_00df7010_Allocator& mem, void* array, int sizeElem) throw();
 
 static __forceinline void S_00df7010_HitArray_destroy(hkArrayBase<unsigned int>& self) throw();
 
@@ -198,30 +198,34 @@ struct S_00df7010_VirtualMachine
     int unk34;
     int unk38;
     int unk3C;
-    void hkpMoppObbVirtualMachine_queryAabb(const S_00df7010_MoppCode* code, const S_00df7010_Aabb& aabb, hkArray<unsigned int, S_00df7010_HitArrayPolicy>* hits) throw();
+    void hkpMoppObbVirtualMachine_queryAabb(const S_00df7010_MoppCode* code, const S_00df7010_Aabb& aabb, hkArray<unsigned int, S_00df7010_HitArrayPolicy>* primitives_out) throw();
 };
 
 struct S_00df7010_Output
 {
-    void ProcessCallback(const S_00df7010_Input* a, const S_00df7010_Input* b, int c) throw();
+    void ProcessCallback(const S_00df7010_Input* oldJob, const S_00df7010_Input* jobOut, int waitStatus) throw();
 };
 
 // Runs MOPP AABB queries against the input code data, appending a sentinel to each result buffer, then forwards the input to the output.
 // @fnv 0x00df7010
-void __cdecl ExecuteMoppAabbQuery(S_00df7010_Output* out, const S_00df7010_Input* input) throw()
+// src: XBOX_RETAIL_PDB 0x00df7010
+// pdb: hkCpuMoppAabbQueryJob | hkpCpuMoppAabbJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: rootCodePtrBuffer, query
+void __cdecl hkCpuMoppAabbQueryJob(S_00df7010_Output* jobQueue, const S_00df7010_Input* nextJobOut) throw()
 {
     S_00df7010_MonitorStream::GetMonitorStream().timer("TtCollQueryMoppAabbQuery");
 
     // aligned storage for a stand-in MOPP code object (non-char buffer: no GS cookie)
     unsigned int buffer[16];
     S_00df7010_MoppCode* code = (S_00df7010_MoppCode*)(((unsigned int)buffer + 15) & ~15);
-    code->m_offset = input->m_codeOffset;
-    S_00df7010_ByteArray_set(code->m_data, input->m_codeData, 0x200, 0x200);
+    code->m_offset = nextJobOut->m_codeOffset;
+    S_00df7010_ByteArray_set(code->m_data, nextJobOut->m_codeData, 0x200, 0x200);
     code->m_eBuildType = 2;
 
-    for (int i = 0; i < input->m_numQueries; i++)
+    for (int i = 0; i < nextJobOut->m_numQueries; i++)
     {
-        S_00df7010_Query& query = input->m_queries[i];
+        S_00df7010_Query& query = nextJobOut->m_queries[i];
         hkArray<unsigned int, S_00df7010_HitArrayPolicy> hits(query.m_pResultBuffer, 0, 0x1000);
         S_00df7010_VirtualMachine vm;
         vm.hkpMoppObbVirtualMachine_queryAabb(code, query.m_kBounds, &hits);
@@ -229,7 +233,7 @@ void __cdecl ExecuteMoppAabbQuery(S_00df7010_Output* out, const S_00df7010_Input
     }
 
     S_00df7010_MonitorStream::GetMonitorStream().timer("Et");
-    out->ProcessCallback(input, input, 0);
+    jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
 }
 
 

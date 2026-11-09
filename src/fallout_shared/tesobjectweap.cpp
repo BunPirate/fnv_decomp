@@ -18,30 +18,33 @@
 #include "tesobjectweap_decls.h"
 // Reads a weapon record from the file: validates form type 40, then dispatches each chunk to its loader and fixes up invalid weapon data.
 // @fnv 0x0051f630
-bool TESObjectWEAP::LoadForm(TESFile* file)
+// pdb: TESObjectWEAP::Load | TESObjectWEAP.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, tempint, stempval, itempint, pfilename, ptemp, itemp
+bool TESObjectWEAP::LoadForm(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if(formType != 40) return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     CHUNK_ID chunk;
-    while((chunk = (CHUNK_ID)file->GetChunkID()) != 0) {
+    while((chunk = (CHUNK_ID)apFile->GetChunkID()) != 0) {
         switch(chunk) {
         case 0x44494445: // EDID
         {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID,512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID,512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f: // OBND
         {
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         }
         case 0x4c4c5546: // FULL
         {
-            TESFullNameLoader::LoadFullNameChunk(this,file);
+            TESFullNameLoader::LoadFullNameChunk(this,apFile);
             break;
         }
         case 0x44444f4d: // MODD
@@ -49,31 +52,31 @@ bool TESObjectWEAP::LoadForm(TESFile* file)
         case 0x4c444f4d: // MODL
         case 0x54444f4d: // MODT
         {
-            TESModel::LoadModelData(this,file);
+            TESModel::LoadModelData(this,apFile);
             break;
         }
         case 0x53444f4d: // MODS
         {
-            unsigned int textureSwapSize = file->GetChunkSize();
+            unsigned int textureSwapSize = apFile->GetChunkSize();
             void* textureSwaps = _alloca(textureSwapSize);
-            file->GetChunkData(textureSwaps,textureSwapSize);
-            ParseTextureSwapData(textureSwaps,textureSwapSize,((TESFileFormVersion*)file)->GetFormVersion());
+            apFile->GetChunkData(textureSwaps,textureSwapSize);
+            UnpackTextureSwapChunkData(textureSwaps,textureSwapSize,((TESFileFormVersion*)apFile)->GetFormVersion());
             break;
         }
         case 0x4e4f4349: // ICON
         {
-            TESTexture::ReadTextureData(this,file);
+            TESTexture::ReadTextureData(this,apFile);
             break;
         }
         case 0x4f43494d: // MICO
         {
-            BGSMessageIcon::LoadMessageIconChunk(this,file);
+            BGSMessageIcon::LoadMessageIconChunk(this,apFile);
             break;
         }
         case 0x49524353: // SCRI
         {
             Script* script = (Script*)0;
-            file->GetChunkData((unsigned int*)&script);
+            apFile->GetChunkData((unsigned int*)&script);
             TESScriptableForm::SetScript(script);
             TESScriptableForm::InitItem(this);
             break;
@@ -82,7 +85,7 @@ bool TESObjectWEAP::LoadForm(TESFile* file)
         case 0x4d414e45: // ENAM
         {
             EnchantmentItem* enchantment = (EnchantmentItem*)0;
-            file->GetChunkData((unsigned int*)&enchantment);
+            apFile->GetChunkData((unsigned int*)&enchantment);
             SetFormEnchanting(enchantment);
             break;
         }
@@ -90,88 +93,88 @@ bool TESObjectWEAP::LoadForm(TESFile* file)
         case 0x544d4145: // EAMT
         {
             unsigned short enchantmentAmount = 0;
-            ((TESFileChunkData16*)file)->GetChunkData(&enchantmentAmount);
+            ((TESFileChunkData16*)apFile)->GetChunkData(&enchantmentAmount);
             FUN_00483170(enchantmentAmount);
             break;
         }
         case 0x304d414e: // NAM0
         {
             TESAmmo* ammo = (TESAmmo*)0;
-            file->GetChunkData((unsigned int*)&ammo);
+            apFile->GetChunkData((unsigned int*)&ammo);
             SetAmmo(ammo);
             break;
         }
         case 0x44545344: // DSTD
         case 0x54534544: // DEST
         {
-            BGSDestructibleObjectForm::LoadDestructibleData(this,file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this,apFile);
             break;
         }
         case 0x4c504552: // REPL
         {
             BGSListForm* repairList = (BGSListForm*)0;
-            file->GetChunkData((unsigned int*)&repairList);
+            apFile->GetChunkData((unsigned int*)&repairList);
             SetRepairItemList(repairList);
             break;
         }
         case 0x50595445: // ETYP
         {
             BGSEquipType__EQUIP_TYPE equipType = (BGSEquipType__EQUIP_TYPE)0;
-            file->GetChunkData((unsigned int*)&equipType);
+            apFile->GetChunkData((unsigned int*)&equipType);
             SetEquipType(equipType);
             break;
         }
         case 0x4c504942: // BIPL
         {
             BGSListForm* bipedList = (BGSListForm*)0;
-            file->GetChunkData((unsigned int*)&bipedList);
+            apFile->GetChunkData((unsigned int*)&bipedList);
             SetBipedModelList(bipedList);
             break;
         }
         case 0x4d414e59: // YNAM
         {
             TESSound* pickupSound = (TESSound*)0;
-            file->GetChunkData((unsigned int*)&pickupSound);
+            apFile->GetChunkData((unsigned int*)&pickupSound);
             SetPickupSound(pickupSound);
             break;
         }
         case 0x4d414e5a: // ZNAM
         {
             TESSound* putdownSound = (TESSound*)0;
-            file->GetChunkData((unsigned int*)&putdownSound);
+            apFile->GetChunkData((unsigned int*)&putdownSound);
             SetPutdownSound(putdownSound);
             break;
         }
         case 0x41544144: // DATA
         {
-            ((BGSImpactData*)this)->ReadTypedData(file,0,0);
+            ((BGSImpactData*)this)->ReadTypedData(apFile,0,0);
             break;
         }
         case 0x4d414e44: // DNAM
         {
-            if (((TESFileFormVersion*)file)->GetFormVersion() < 12) {
+            if (((TESFileFormVersion*)apFile)->GetFormVersion() < 12) {
                 memset(&data,0,sizeof(data));
                 data.m_fMinimumSemiAutomaticFireDelay = 0.1f;
                 data.m_fMaximumSemiAutomaticFireDelay = 0.5f;
-                file->GetChunkData(&data,file->GetChunkSize());
-                if(file->IsEndianConversionRequired()) data.Endian();
+                apFile->GetChunkData(&data,apFile->GetChunkSize());
+                if(apFile->IsEndianConversionRequired()) data.Endian();
                 if(data.m_ucAttackAnimation < 168 && data.m_ucAttackAnimation >= 56) {
                     data.m_ucAttackAnimation += 18;
                     if(data.m_ucAttackAnimation < 168 && data.m_ucAttackAnimation >= 86) data.m_ucAttackAnimation += 6;
                 }
-            } else if (((TESFileFormVersion*)file)->GetFormVersion() < 14) {
+            } else if (((TESFileFormVersion*)apFile)->GetFormVersion() < 14) {
                 memset(&data,0,sizeof(data));
                 data.m_fMinimumSemiAutomaticFireDelay = 0.1f;
                 data.m_fMaximumSemiAutomaticFireDelay = 0.5f;
-                file->GetChunkData(&data,file->GetChunkSize());
-                if(file->IsEndianConversionRequired()) data.Endian();
+                apFile->GetChunkData(&data,apFile->GetChunkSize());
+                if(apFile->IsEndianConversionRequired()) data.Endian();
                 if(data.m_ucAttackAnimation < 168 && data.m_ucAttackAnimation >= 86) data.m_ucAttackAnimation += 6;
             } else {
                 memset(&data,0,sizeof(data));
                 data.m_fMinimumSemiAutomaticFireDelay = 0.1f;
                 data.m_fMaximumSemiAutomaticFireDelay = 0.5f;
-                file->GetChunkData(&data,sizeof(data));
-                if(file->IsEndianConversionRequired()) data.Endian();
+                apFile->GetChunkData(&data,sizeof(data));
+                if(apFile->IsEndianConversionRequired()) data.Endian();
                 if(data.m_fLimbDamageMultiplier <= 0.0) data.m_fLimbDamageMultiplier = 1.0f;
                 switch(data.m_ucGripAnimation) {
                 case 230: case 231: case 232: case 233: case 234: case 235: case 255: break;
@@ -185,265 +188,265 @@ bool TESObjectWEAP::LoadForm(TESFile* file)
         case 0x4d414e57: // WNAM
         {
             TESObjectSTAT* firstPersonObject0 = 0;
-            file->GetChunkData((unsigned int*)&firstPersonObject0);
+            apFile->GetChunkData((unsigned int*)&firstPersonObject0);
             Set1stPersonObject(firstPersonObject0);
             break;
         }
         case 0x314d4e57: // WNM1
         {
             TESObjectSTAT* firstPersonObject1 = 0;
-            file->GetChunkData((unsigned int*)&firstPersonObject1);
+            apFile->GetChunkData((unsigned int*)&firstPersonObject1);
             SetModObject(1,firstPersonObject1);
             break;
         }
         case 0x324d4e57: // WNM2
         {
             TESObjectSTAT* firstPersonObject2 = 0;
-            file->GetChunkData((unsigned int*)&firstPersonObject2);
+            apFile->GetChunkData((unsigned int*)&firstPersonObject2);
             SetModObject(2,firstPersonObject2);
             break;
         }
         case 0x334d4e57: // WNM3
         {
             TESObjectSTAT* firstPersonObject3 = 0;
-            file->GetChunkData((unsigned int*)&firstPersonObject3);
+            apFile->GetChunkData((unsigned int*)&firstPersonObject3);
             SetModObject(3,firstPersonObject3);
             break;
         }
         case 0x344d4e57: // WNM4
         {
             TESObjectSTAT* firstPersonObject4 = 0;
-            file->GetChunkData((unsigned int*)&firstPersonObject4);
+            apFile->GetChunkData((unsigned int*)&firstPersonObject4);
             SetModObject(4,firstPersonObject4);
             break;
         }
         case 0x354d4e57: // WNM5
         {
             TESObjectSTAT* firstPersonObject5 = 0;
-            file->GetChunkData((unsigned int*)&firstPersonObject5);
+            apFile->GetChunkData((unsigned int*)&firstPersonObject5);
             SetModObject(5,firstPersonObject5);
             break;
         }
         case 0x364d4e57: // WNM6
         {
             TESObjectSTAT* firstPersonObject6 = 0;
-            file->GetChunkData((unsigned int*)&firstPersonObject6);
+            apFile->GetChunkData((unsigned int*)&firstPersonObject6);
             SetModObject(6,firstPersonObject6);
             break;
         }
         case 0x374d4e57: // WNM7
         {
             TESObjectSTAT* firstPersonObject7 = 0;
-            file->GetChunkData((unsigned int*)&firstPersonObject7);
+            apFile->GetChunkData((unsigned int*)&firstPersonObject7);
             SetModObject(7,firstPersonObject7);
             break;
         }
         case 0x31494d57: // WMI1
         {
             TESObjectIMOD* modItem1 = 0;
-            file->GetChunkData((unsigned int*)&modItem1);
+            apFile->GetChunkData((unsigned int*)&modItem1);
             SetModItem((unsigned char)1,modItem1);
             break;
         }
         case 0x32494d57: // WMI2
         {
             TESObjectIMOD* modItem2 = 0;
-            file->GetChunkData((unsigned int*)&modItem2);
+            apFile->GetChunkData((unsigned int*)&modItem2);
             SetModItem((unsigned char)2,modItem2);
             break;
         }
         case 0x33494d57: // WMI3
         {
             TESObjectIMOD* modItem3 = 0;
-            file->GetChunkData((unsigned int*)&modItem3);
+            apFile->GetChunkData((unsigned int*)&modItem3);
             SetModItem((unsigned char)4,modItem3);
             break;
         }
         case 0x314d414e: // NAM1
         case 0x32444f4d: // MOD2
         {
-            if(file->GetChunkSize()) {
-                char* modelPath0 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath0,0);
-                m_kModel.SetModelFilePath(modelPath0);
-            } else m_kModel.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath0 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath0,0);
+                ShellCasingModel.SetModelFilePath(modelPath0);
+            } else ShellCasingModel.SetModelFilePath(0);
             break;
         }
         case 0x54324f4d: // MO2T
         {
-            TESModel::LoadTextureSwapData(&m_kModel,file);
+            TESModel::LoadTextureSwapData(&ShellCasingModel,apFile);
             break;
         }
         case 0x33444f4d: // MOD3
         {
-            if(file->GetChunkSize()) {
-                char* modelPath1 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath1,0);
-                m_kModel1stPerson.SetModelFilePath(modelPath1);
-            } else m_kModel1stPerson.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath1 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath1,0);
+                ScopeModel.SetModelFilePath(modelPath1);
+            } else ScopeModel.SetModelFilePath(0);
             break;
         }
         case 0x54334f4d: // MO3T
         {
-            TESModel::LoadTextureSwapData(&m_kModel1stPerson,file);
+            TESModel::LoadTextureSwapData(&ScopeModel,apFile);
             break;
         }
         case 0x34444f4d: // MOD4
         {
-            if(file->GetChunkSize()) {
-                char* modelPath2 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath2,0);
-                m_kModel3rdPerson.SetModelFilePath(modelPath2);
-            } else m_kModel3rdPerson.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath2 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath2,0);
+                WorldModel.SetModelFilePath(modelPath2);
+            } else WorldModel.SetModelFilePath(0);
             break;
         }
         case 0x54344f4d: // MO4T
         {
-            TESModel::LoadTextureSwapData(&m_kModel3rdPerson,file);
+            TESModel::LoadTextureSwapData(&WorldModel,apFile);
             break;
         }
         case 0x3144574d: // MWD1
         {
-            if(file->GetChunkSize()) {
-                char* modelPath3 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath3,0);
-                m_kWeaponModTextureSwap1.SetModelFilePath(modelPath3);
-            } else m_kWeaponModTextureSwap1.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath3 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath3,0);
+                WorldModelMod1.SetModelFilePath(modelPath3);
+            } else WorldModelMod1.SetModelFilePath(0);
             break;
         }
         case 0x3154574d: // MWT1
         {
-            TESModel::LoadTextureSwapData(&m_kWeaponModTextureSwap1,file);
+            TESModel::LoadTextureSwapData(&WorldModelMod1,apFile);
             break;
         }
         case 0x3244574d: // MWD2
         {
-            if(file->GetChunkSize()) {
-                char* modelPath4 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath4,0);
-                m_kWeaponModTextureSwap2.SetModelFilePath(modelPath4);
-            } else m_kWeaponModTextureSwap2.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath4 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath4,0);
+                WorldModelMod2.SetModelFilePath(modelPath4);
+            } else WorldModelMod2.SetModelFilePath(0);
             break;
         }
         case 0x3254574d: // MWT2
         {
-            TESModel::LoadTextureSwapData(&m_kWeaponModTextureSwap2,file);
+            TESModel::LoadTextureSwapData(&WorldModelMod2,apFile);
             break;
         }
         case 0x3444574d: // MWD4
         {
-            if(file->GetChunkSize()) {
-                char* modelPath5 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath5,0);
-                m_kWeaponModTextureSwap3.SetModelFilePath(modelPath5);
-            } else m_kWeaponModTextureSwap3.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath5 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath5,0);
+                WorldModelMod3.SetModelFilePath(modelPath5);
+            } else WorldModelMod3.SetModelFilePath(0);
             break;
         }
         case 0x3454574d: // MWT4
         {
-            TESModel::LoadTextureSwapData(&m_kWeaponModTextureSwap3,file);
+            TESModel::LoadTextureSwapData(&WorldModelMod3,apFile);
             break;
         }
         case 0x3344574d: // MWD3
         {
-            if(file->GetChunkSize()) {
-                char* modelPath6 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath6,0);
-                m_kWeaponModTextureSwap4.SetModelFilePath(modelPath6);
-            } else m_kWeaponModTextureSwap4.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath6 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath6,0);
+                WorldModelMod12.SetModelFilePath(modelPath6);
+            } else WorldModelMod12.SetModelFilePath(0);
             break;
         }
         case 0x3354574d: // MWT3
         {
-            TESModel::LoadTextureSwapData(&m_kWeaponModTextureSwap4,file);
+            TESModel::LoadTextureSwapData(&WorldModelMod12,apFile);
             break;
         }
         case 0x3544574d: // MWD5
         {
-            if(file->GetChunkSize()) {
-                char* modelPath7 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath7,0);
-                m_kWeaponModTextureSwap5.SetModelFilePath(modelPath7);
-            } else m_kWeaponModTextureSwap5.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath7 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath7,0);
+                WorldModelMod13.SetModelFilePath(modelPath7);
+            } else WorldModelMod13.SetModelFilePath(0);
             break;
         }
         case 0x3554574d: // MWT5
         {
-            TESModel::LoadTextureSwapData(&m_kWeaponModTextureSwap5,file);
+            TESModel::LoadTextureSwapData(&WorldModelMod13,apFile);
             break;
         }
         case 0x3644574d: // MWD6
         {
-            if(file->GetChunkSize()) {
-                char* modelPath8 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath8,0);
-                m_kWeaponModTextureSwap6.SetModelFilePath(modelPath8);
-            } else m_kWeaponModTextureSwap6.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath8 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath8,0);
+                WorldModelMod23.SetModelFilePath(modelPath8);
+            } else WorldModelMod23.SetModelFilePath(0);
             break;
         }
         case 0x3654574d: // MWT6
         {
-            TESModel::LoadTextureSwapData(&m_kWeaponModTextureSwap6,file);
+            TESModel::LoadTextureSwapData(&WorldModelMod23,apFile);
             break;
         }
         case 0x3744574d: // MWD7
         {
-            if(file->GetChunkSize()) {
-                char* modelPath9 = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(modelPath9,0);
-                m_kWeaponModTextureSwap7.SetModelFilePath(modelPath9);
-            } else m_kWeaponModTextureSwap7.SetModelFilePath(0);
+            if(apFile->GetChunkSize()) {
+                char* modelPath9 = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(modelPath9,0);
+                WorldModelMod123.SetModelFilePath(modelPath9);
+            } else WorldModelMod123.SetModelFilePath(0);
             break;
         }
         case 0x3754574d: // MWT7
         {
-            TESModel::LoadTextureSwapData(&m_kWeaponModTextureSwap7,file);
+            TESModel::LoadTextureSwapData(&WorldModelMod123,apFile);
             break;
         }
         case 0x44534645: // EFSD
         {
             TESEffectShader* scopeEffect = 0;
-            file->GetChunkData((unsigned int*)&scopeEffect);
+            apFile->GetChunkData((unsigned int*)&scopeEffect);
             SetEffectShader(scopeEffect);
             break;
         }
         case 0x4d414e4e: // NNAM
         {
-            char* embeddedWeaponNodeText = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(embeddedWeaponNodeText,0);
-            m_kEmbeddedWeaponNodeName.Set(embeddedWeaponNodeText,0);
+            char* embeddedWeaponNodeText = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(embeddedWeaponNodeText,0);
+            EmbeddedWeaponNode.Set(embeddedWeaponNodeText,0);
             break;
         }
         case 0x4d4e4156: // VANM
         {
-            char* vATSAttackNameText = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(vATSAttackNameText,0);
+            char* vATSAttackNameText = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(vATSAttackNameText,0);
             VATSAttackName.Set(vATSAttackNameText,0);
             break;
         }
         case 0x54445243: // CRDT
         {
-            file->GetChunkData(&m_kCriticalData,sizeof(m_kCriticalData));
-            if(file->IsEndianConversionRequired()) m_kCriticalData.OBJ_WEAP_CRITICAL_Endian();
+            apFile->GetChunkData(&criticalData,sizeof(criticalData));
+            if(apFile->IsEndianConversionRequired()) criticalData.OBJ_WEAP_CRITICAL_Endian();
             break;
         }
         case 0x53544156: // VATS
         {
-            file->GetChunkData(&m_kVATSData,sizeof(m_kVATSData));
-            if(file->IsEndianConversionRequired()) m_kVATSData.OBJ_WEAP_VATS_SPECIAL_Endian();
+            apFile->GetChunkData(&specialVATSData,sizeof(specialVATSData));
+            if(apFile->IsEndianConversionRequired()) specialVATSData.OBJ_WEAP_VATS_SPECIAL_Endian();
             break;
         }
         case 0x4d414e49: // INAM
         {
             BGSImpactDataSet* impactDataSet = 0;
-            file->GetChunkData((unsigned int*)&impactDataSet);
+            apFile->GetChunkData((unsigned int*)&impactDataSet);
             SetImpactDataSet(impactDataSet);
             break;
         }
         case 0x4d414e53: // SNAM
         {
             TESSound* attackSound = 0;
-            file->GetChunkData((unsigned int*)&attackSound);
+            apFile->GetChunkData((unsigned int*)&attackSound);
             if(GetAttackSound(false)) SetDistantAttackSound(attackSound);
             else SetAttackSound(attackSound);
             break;
@@ -451,56 +454,56 @@ bool TESObjectWEAP::LoadForm(TESFile* file)
         case 0x4d414e58: // XNAM
         {
             TESSound* attackSound2 = 0;
-            file->GetChunkData((unsigned int*)&attackSound2);
+            apFile->GetChunkData((unsigned int*)&attackSound2);
             SetAttackSound2(attackSound2);
             break;
         }
         case 0x374d414e: // NAM7
         {
             TESSound* attackLoop = 0;
-            file->GetChunkData((unsigned int*)&attackLoop);
+            apFile->GetChunkData((unsigned int*)&attackLoop);
             TESObjectWEAP_SetAttackLoop(attackLoop);
             break;
         }
         case 0x4d414e54: // TNAM
         {
             TESSound* attackFail = 0;
-            file->GetChunkData((unsigned int*)&attackFail);
+            apFile->GetChunkData((unsigned int*)&attackFail);
             SetAttackFailSound(attackFail);
             break;
         }
         case 0x364d414e: // NAM6
         {
             TESSound* meleeBlock = 0;
-            file->GetChunkData((unsigned int*)&meleeBlock);
+            apFile->GetChunkData((unsigned int*)&meleeBlock);
             SetMeleeBlockSound(meleeBlock);
             break;
         }
         case 0x4d414e55: // UNAM
         {
             TESSound* idleSound = 0;
-            file->GetChunkData((unsigned int*)&idleSound);
+            apFile->GetChunkData((unsigned int*)&idleSound);
             SetIdleSound(idleSound);
             break;
         }
         case 0x394d414e: // NAM9
         {
             TESSound* equipSound = 0;
-            file->GetChunkData((unsigned int*)&equipSound);
+            apFile->GetChunkData((unsigned int*)&equipSound);
             SetEquipSound(equipSound);
             break;
         }
         case 0x384d414e: // NAM8
         {
             TESSound* unequipSound = 0;
-            file->GetChunkData((unsigned int*)&unequipSound);
+            apFile->GetChunkData((unsigned int*)&unequipSound);
             SetUnequipSound(unequipSound);
             break;
         }
         case 0x31534d57: // WMS1
         {
             TESSound* modAttackSound = 0;
-            file->GetChunkData((unsigned int*)&modAttackSound);
+            apFile->GetChunkData((unsigned int*)&modAttackSound);
             if(GetModDistantAttackSound()) SetModAttackSound2(modAttackSound);
             else SetModAttackSound(modAttackSound);
             break;
@@ -508,20 +511,20 @@ bool TESObjectWEAP::LoadForm(TESFile* file)
         case 0x32534d57: // WMS2
         {
             TESSound* modDistantAttackSound = 0;
-            file->GetChunkData((unsigned int*)&modDistantAttackSound);
+            apFile->GetChunkData((unsigned int*)&modDistantAttackSound);
             SetModDistantAttackSound2(modDistantAttackSound);
             break;
         }
         case 0x4d414e56: // VNAM
         {
             unsigned int soundLevel;
-            file->GetChunkData(&soundLevel);
-            if(soundLevel > 3) m_eSoundLevel = (TESObjectWEAP::SOUND_LEVEL)_SoundLevel::NORMAL;
-            else m_eSoundLevel = (TESObjectWEAP::SOUND_LEVEL)soundLevel;
+            apFile->GetChunkData(&soundLevel);
+            if(soundLevel > 3) eSoundLevel = (TESObjectWEAP::SOUND_LEVEL)_SoundLevel::NORMAL;
+            else eSoundLevel = (TESObjectWEAP::SOUND_LEVEL)soundLevel;
             break;
         }
         }
-        if(!file->NextChunk()) break;
+        if(!apFile->NextChunk()) break;
     }
     if(!GetDamageForActor(false,true,0) && GetProjectileData(0)) TESObjectWEAP_SetNumProjectiles(1);
     if(data.eType >= 14) {
@@ -532,6 +535,8 @@ bool TESObjectWEAP::LoadForm(TESFile* file)
 }
 
 // @fnv 0x0051e420
+// pdb: TESObjectWEAP::InitItem | TESObjectWEAP.obj | retail, string-set bridge, high
+// pdb locals: itempInt
 void TESObjectWEAP::InitItem()
 {
     if(IsFormInitialized()) return;
@@ -567,83 +572,83 @@ void TESObjectWEAP::InitItem()
         TESObjectWEAP_SetVATSEffect(dynamic_cast<SpellItem*>(TESForm::GetFormByID(formID)));
         if(!GetVATSSpecialEffect()) Warning("MASTERFILE: Could not find vats Spell Item (%08X) on weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponSound1;
+    formID = (unsigned int)pAttackSound;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponSound1 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponSound1) Warning("MASTERFILE: Could not find open sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pAttackSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pAttackSound) Warning("MASTERFILE: Could not find open sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponSound2;
+    formID = (unsigned int)pAttackSound2;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponSound2 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponSound2) Warning("MASTERFILE: Could not find open sound2 (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pAttackSound2 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pAttackSound2) Warning("MASTERFILE: Could not find open sound2 (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponSound3;
+    formID = (unsigned int)pAttackSound2D;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponSound3 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponSound3) Warning("MASTERFILE: Could not find open sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pAttackSound2D = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pAttackSound2D) Warning("MASTERFILE: Could not find open sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponSound4;
+    formID = (unsigned int)pAttackLoop;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponSound4 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponSound4) Warning("MASTERFILE: Could not find sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pAttackLoop = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pAttackLoop) Warning("MASTERFILE: Could not find sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponSound5;
+    formID = (unsigned int)pAttackFailSound;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponSound5 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponSound5) Warning("MASTERFILE: Could not find open sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pAttackFailSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pAttackFailSound) Warning("MASTERFILE: Could not find open sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponSound6;
+    formID = (unsigned int)pMeleeBlockSound;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponSound6 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponSound6) Warning("MASTERFILE: Could not find open sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pMeleeBlockSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pMeleeBlockSound) Warning("MASTERFILE: Could not find open sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponSound7;
+    formID = (unsigned int)pIdleSound;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponSound7 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponSound7) Warning("MASTERFILE: Could not find idle sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pIdleSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pIdleSound) Warning("MASTERFILE: Could not find idle sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponSound8;
+    formID = (unsigned int)pEquipSound;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponSound8 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponSound8) Warning("MASTERFILE: Could not find equip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pEquipSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pEquipSound) Warning("MASTERFILE: Could not find equip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponUnequipSound;
+    formID = (unsigned int)pUnEquipSound;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponUnequipSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponUnequipSound) Warning("MASTERFILE: Could not find unequip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pUnEquipSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pUnEquipSound) Warning("MASTERFILE: Could not find unequip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponEquipSound;
+    formID = (unsigned int)pModSilencedSound;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponEquipSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponEquipSound) Warning("MASTERFILE: Could not find unequip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pModSilencedSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pModSilencedSound) Warning("MASTERFILE: Could not find unequip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponPickupSound;
+    formID = (unsigned int)pModSilencedSound2;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponPickupSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponPickupSound) Warning("MASTERFILE: Could not find unequip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pModSilencedSound2 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pModSilencedSound2) Warning("MASTERFILE: Could not find unequip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponDropSound;
+    formID = (unsigned int)pModSilencedSound2D;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponDropSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponDropSound) Warning("MASTERFILE: Could not find unequip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pModSilencedSound2D = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if(!pModSilencedSound2D) Warning("MASTERFILE: Could not find unequip sound (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pImpactDataSet;
+    formID = (unsigned int)pImpactDataSet;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pImpactDataSet = dynamic_cast<BGSImpactDataSet*>(TESForm::GetFormByID(formID));
-        if(!m_pImpactDataSet) Warning("MASTERFILE: Could not find impact data set (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pImpactDataSet = dynamic_cast<BGSImpactDataSet*>(TESForm::GetFormByID(formID));
+        if(!pImpactDataSet) Warning("MASTERFILE: Could not find impact data set (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
     formID = (unsigned int)p1stPersonObject;
     if(formID) {
@@ -693,34 +698,35 @@ void TESObjectWEAP::InitItem()
         p1stPersonMod123Object = dynamic_cast<TESObjectSTAT*>(TESForm::GetFormByID(formID));
         if(!p1stPersonMod123Object) Warning("MASTERFILE: Could not find 1st person model object (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponMod1;
+    formID = (unsigned int)pModObjectOne;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponMod1 = dynamic_cast<TESObjectIMOD*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponMod1) Warning("MASTERFILE: Could not find misc object (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pModObjectOne = dynamic_cast<TESObjectIMOD*>(TESForm::GetFormByID(formID));
+        if(!pModObjectOne) Warning("MASTERFILE: Could not find misc object (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponMod2;
+    formID = (unsigned int)pModObjectTwo;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponMod2 = dynamic_cast<TESObjectIMOD*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponMod2) Warning("MASTERFILE: Could not find misc object (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pModObjectTwo = dynamic_cast<TESObjectIMOD*>(TESForm::GetFormByID(formID));
+        if(!pModObjectTwo) Warning("MASTERFILE: Could not find misc object (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
-    formID = (unsigned int)m_pWeaponMod3;
+    formID = (unsigned int)pModObjectThree;
     if(formID) {
         TESForm::RemapFormIDForFile(formID,GetFile(-1));
-        m_pWeaponMod3 = dynamic_cast<TESObjectIMOD*>(TESForm::GetFormByID(formID));
-        if(!m_pWeaponMod3) Warning("MASTERFILE: Could not find misc object (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
+        pModObjectThree = dynamic_cast<TESObjectIMOD*>(TESForm::GetFormByID(formID));
+        if(!pModObjectThree) Warning("MASTERFILE: Could not find misc object (%08X) for weapon '%s' (%08X).",formID,GetName(),GetFormID());
     }
     if(data.fSpeed <= 0.0) data.fSpeed = 1.0f;
     if(data.m_fAnimationAttackMultiplier <= 0.0) data.m_fAnimationAttackMultiplier = 1.0f;
     if(*DAT_011c94d0.Bool()) SetNPCsUseAmmo(true);
-    m_bHasReloadAnimation = false;
-    if(data.m_ucReloadAnimation >= 19) m_bHasReloadAnimation = true;
+    bIsLoopingReload = false;
+    if(data.m_ucReloadAnimation >= 19) bIsLoopingReload = true;
     SetInitializationState(true);
 }
 
 // Resets the weapon's data block to defaults, initializes embedded sub-structures, sets casting type and sound level, and flags a reload-anim condition.
 // @fnv 0x0051ddf0
+// pdb: TESObjectWEAP::InitializeData | TESObjectWEAP.obj | retail, vtable slot, high
 void TESObjectWEAP::ResetFormData()
 {
     memset(&data,0,sizeof(data));
@@ -761,30 +767,30 @@ void TESObjectWEAP::ResetFormData()
     data.m_ucPowerAttackAnimationOverride = 255;
     data.m_cReloadAnimationMod = -1;
     data.m_cUnknownByte = -1;
-    m_kCriticalData.m_usCriticalDamage = 0;
-    m_kCriticalData.m_fCriticalChanceMultiplier = 1.0f;
-    m_kCriticalData.m_bEffectOnDeath = true;
-    m_kCriticalData.pEffect = 0;
-    m_kVATSData.m_fSkill = 0.0f;
-    m_kVATSData.m_fDamageMultiplier = 0.0f;
-    m_kVATSData.m_pVATSAttackSpell = 0;
-    m_kVATSData.m_fActionPointCost = 0.0f;
-    m_kVATSData.bSilent = true;
-    m_kVATSData.m_bModRequired = false;
-    m_pWeaponEffectShader = 0;
-    m_pWeaponSound1 = 0;
-    m_pWeaponSound2 = 0;
-    m_pWeaponSound3 = 0;
-    m_pWeaponSound4 = 0;
-    m_pWeaponSound5 = 0;
-    m_pWeaponSound6 = 0;
-    m_pWeaponSound7 = 0;
-    m_pWeaponSound8 = 0;
-    m_pWeaponUnequipSound = 0;
-    m_pWeaponEquipSound = 0;
-    m_pWeaponPickupSound = 0;
-    m_pWeaponDropSound = 0;
-    m_pImpactDataSet = 0;
+    criticalData.m_usCriticalDamage = 0;
+    criticalData.m_fCriticalChanceMultiplier = 1.0f;
+    criticalData.m_bEffectOnDeath = true;
+    criticalData.pEffect = 0;
+    specialVATSData.m_fSkill = 0.0f;
+    specialVATSData.m_fDamageMultiplier = 0.0f;
+    specialVATSData.m_pVATSAttackSpell = 0;
+    specialVATSData.m_fActionPointCost = 0.0f;
+    specialVATSData.bSilent = true;
+    specialVATSData.m_bModRequired = false;
+    pScopeEffect = 0;
+    pAttackSound = 0;
+    pAttackSound2 = 0;
+    pAttackSound2D = 0;
+    pAttackLoop = 0;
+    pAttackFailSound = 0;
+    pMeleeBlockSound = 0;
+    pIdleSound = 0;
+    pEquipSound = 0;
+    pUnEquipSound = 0;
+    pModSilencedSound = 0;
+    pModSilencedSound2 = 0;
+    pModSilencedSound2D = 0;
+    pImpactDataSet = 0;
     p1stPersonObject = 0;
     p1stPersonMod1Object = 0;
     p1stPersonMod2Object = 0;
@@ -793,26 +799,27 @@ void TESObjectWEAP::ResetFormData()
     p1stPersonMod13Object = 0;
     p1stPersonMod23Object = 0;
     p1stPersonMod123Object = 0;
-    m_pWeaponMod1 = 0;
-    m_pWeaponMod2 = 0;
-    m_pWeaponMod3 = 0;
-    m_kModel.Init();
-    m_kModel1stPerson.Init();
-    m_kModel3rdPerson.Init();
-    m_kWeaponModTextureSwap1.Init();
-    m_kWeaponModTextureSwap2.Init();
-    m_kWeaponModTextureSwap3.Init();
-    m_kWeaponModTextureSwap4.Init();
-    m_kWeaponModTextureSwap5.Init();
-    m_kWeaponModTextureSwap6.Init();
-    m_kWeaponModTextureSwap7.Init();
+    pModObjectOne = 0;
+    pModObjectTwo = 0;
+    pModObjectThree = 0;
+    ShellCasingModel.Init();
+    ScopeModel.Init();
+    WorldModel.Init();
+    WorldModelMod1.Init();
+    WorldModelMod2.Init();
+    WorldModelMod3.Init();
+    WorldModelMod12.Init();
+    WorldModelMod13.Init();
+    WorldModelMod23.Init();
+    WorldModelMod123.Init();
     SetCastingType(MagicSystem__CastingType_WHEN_STRIKES);
-    m_eSoundLevel = (TESObjectWEAP::SOUND_LEVEL)_SoundLevel::NORMAL;
-    m_bHasReloadAnimation = false;
-    if(GetReloadAnim(false) >= 196) m_bHasReloadAnimation = true;
+    eSoundLevel = (TESObjectWEAP::SOUND_LEVEL)_SoundLevel::NORMAL;
+    bIsLoopingReload = false;
+    if(GetReloadAnim(false) >= 196) bIsLoopingReload = true;
 }
 
 // @fnv 0x0051d770
+// pdb: TESObjectWEAP::TESObjectWEAP | TESObjectWEAP.obj | retail, upstream name already matches, high
 TESObjectWEAP::TESObjectWEAP()
 {
     SetFormType(ENUM_FORM_ID_WEAP_ID);
@@ -820,19 +827,20 @@ TESObjectWEAP::TESObjectWEAP()
 }
 
 // @fnv 0x0051e300
+// pdb: TESObjectWEAP::ClearData | TESObjectWEAP.obj | retail, upstream name already matches, high
 void TESObjectWEAP::ClearData()
 {
-    m_kModel.Free();
-    m_kModel1stPerson.Free();
-    m_kModel3rdPerson.Free();
-    m_kWeaponModTextureSwap1.Free();
-    m_kWeaponModTextureSwap2.Free();
-    m_kWeaponModTextureSwap3.Free();
-    m_kWeaponModTextureSwap4.Free();
-    m_kWeaponModTextureSwap5.Free();
-    m_kWeaponModTextureSwap6.Free();
-    m_kWeaponModTextureSwap7.Free();
-    m_kEmbeddedWeaponNodeName.Set(0,0);
+    ShellCasingModel.Free();
+    ScopeModel.Free();
+    WorldModel.Free();
+    WorldModelMod1.Free();
+    WorldModelMod2.Free();
+    WorldModelMod3.Free();
+    WorldModelMod12.Free();
+    WorldModelMod13.Free();
+    WorldModelMod23.Free();
+    WorldModelMod123.Free();
+    EmbeddedWeaponNode.Set(0,0);
     VATSAttackName.Set(0,0);
 }
 // BGSProjectile and BGSImpactDataSet reached through their BGSPreloadable base (the original calls the inherited
@@ -846,23 +854,28 @@ struct ImpactDataSetPreloadView : public TESForm, public BGSPreloadable
 
 
 // @fnv 0x00525510
+// pdb: TESObjectWEAP::QueueFiles | TESObjectWEAP.obj | retail, object-file run extension, low
+// pdb params: aePriority, apParent
 void TESObjectWEAP::QueueResourceLoad(int priority, QueuedFile* file, bool includeScope)
 {
-    if(m_kModel.GetModelLength())
-        g_modelLoader->ProcessModelRequest(&m_kModel,priority,file,false,true,false,false);
-    if(includeScope && GetHasScope() && m_kModel1stPerson.GetModelLength())
-        g_modelLoader->ProcessModelRequest(&m_kModel1stPerson,priority,file,TES::GetModelResourceType(this),true,false,false);
+    if(ShellCasingModel.GetModelLength())
+        g_modelLoader->ProcessModelRequest(&ShellCasingModel,priority,file,false,true,false,false);
+    if(includeScope && GetHasScope() && ScopeModel.GetModelLength())
+        g_modelLoader->ProcessModelRequest(&ScopeModel,priority,file,TES::GetModelResourceType(this),true,false,false);
     if(GetProjectileData(0)) reinterpret_cast<ProjectilePreloadView*>(GetProjectileData(0))->QueueResourceLoad((IO_TASK_PRIORITY)priority,file);
-    if(m_pImpactDataSet) reinterpret_cast<ImpactDataSetPreloadView*>(m_pImpactDataSet)->QueueResourceLoad((IO_TASK_PRIORITY)priority,file);
+    if(pImpactDataSet) reinterpret_cast<ImpactDataSetPreloadView*>(pImpactDataSet)->QueueResourceLoad((IO_TASK_PRIORITY)priority,file);
 }
 
 // @fnv 0x00525b20
-unsigned char TESObjectWEAP::GetDamageForActor(bool includeMods, bool ignoreAmmo, Actor* actor)
+// pdb: TESObjectWEAP::GetNumProjectiles | TESObjectWEAP.obj | retail, call graph, high
+// pdb params: bUseModValue, bIgnoreAmmo, apWeaponHolder
+// pdb locals: cNumProjectiles
+unsigned char TESObjectWEAP::GetDamageForActor(bool bUseModValue, bool bIgnoreAmmo, Actor* apWeaponHolder)
 {
     unsigned char count = data.m_ucProjectileCount;
-    if(!ignoreAmmo && GetCurrentAmmo(actor) && GetCurrentAmmo(actor)->GetByteAtOffsetB0() > 0)
-        count = GetCurrentAmmo(actor)->GetByteAtOffsetB0() * GetAmmoPerShot();
-    if(includeMods) count += GetModdedWeaponValue(WEAPON_MOD_EFFECT_WEAPON_MOD_SPLIT_BEAM,0);
+    if(!bIgnoreAmmo && GetCurrentAmmo(apWeaponHolder) && GetCurrentAmmo(apWeaponHolder)->GetByteAtOffsetB0() > 0)
+        count = GetCurrentAmmo(apWeaponHolder)->GetByteAtOffsetB0() * GetAmmoPerShot();
+    if(bUseModValue) count += GetModdedWeaponValue(WEAPON_MOD_EFFECT_WEAPON_MOD_SPLIT_BEAM,0);
     return count;
 }
 
@@ -892,7 +905,7 @@ struct FUN_0051f570_shell : public TESObjectWEAP {
 // @fnv 0x0051f570
 void FUN_0051f570_shell::SetEffectShader(TESEffectShader* apEffect)
 {
-    m_pWeaponEffectShader = apEffect;
+    pScopeEffect = apEffect;
 }
 
 struct FUN_005214d0_shell : public TESObjectWEAP {
@@ -901,6 +914,8 @@ struct FUN_005214d0_shell : public TESObjectWEAP {
 
 // Stores apObject into the first-person mod object slot selected by the bitmask iModSlots (bits 1, 2 and 4).
 // @fnv 0x005214d0
+// pdb: TESObjectWEAP::GetSpreadDegrees | TESObjectWEAP.obj | retail, object-file run extension, low
+// pdb params: bModValue
 void FUN_005214d0_shell::SetFirstPersonModObject(unsigned char iModSlots, TESObjectSTAT* apObject)
 {
     if (iModSlots & 1) {
@@ -932,12 +947,15 @@ struct FUN_005215a0_shell : public TESObjectWEAP {
 // Returns one of two TESSound pointers depending on bModSound.
 // @fnv 0x005215a0
 // src: XBOX_PDB 0x005215a0
+// pdb: BSAudio::Precache | BSAudio.obj | retail, call graph, medium
+// pdb params: apSoundName, aiFlags
+// pdb locals: tempMemContext
 TESSound* FUN_005215a0_shell::TESObjectWEAP_GetAttackSound(bool bModSound)
 {
     if (bModSound)
-        return m_pWeaponEquipSound;
+        return pModSilencedSound;
     else
-        return m_pWeaponSound1;
+        return pAttackSound;
 }
 
 struct FUN_005215d0_shell : public TESObjectWEAP {
@@ -948,7 +966,7 @@ struct FUN_005215d0_shell : public TESObjectWEAP {
 // src: XBOX_PDB 0x005215d0
 void FUN_005215d0_shell::TESObjectWEAP_SetAttackSound(TESSound* apSnd)
 {
-    m_pWeaponSound1 = apSnd;
+    pAttackSound = apSnd;
 }
 
 struct FUN_005215f0_shell : public TESObjectWEAP {
@@ -959,7 +977,7 @@ struct FUN_005215f0_shell : public TESObjectWEAP {
 // src: XBOX_PDB 0x005215f0
 void FUN_005215f0_shell::TESObjectWEAP_SetAttackSound2(TESSound* apSnd)
 {
-    m_pWeaponSound2 = apSnd;
+    pAttackSound2 = apSnd;
 }
 
 struct FUN_00521610_shell : public TESObjectWEAP {
@@ -970,7 +988,7 @@ struct FUN_00521610_shell : public TESObjectWEAP {
 // src: XBOX_PDB 0x00521610
 void FUN_00521610_shell::TESObjectWEAP_SetModAttackSound(TESSound* apSnd)
 {
-    m_pWeaponEquipSound = apSnd;
+    pModSilencedSound = apSnd;
 }
 
 struct FUN_00521650_shell : public TESObjectWEAP {
@@ -981,7 +999,7 @@ struct FUN_00521650_shell : public TESObjectWEAP {
 // src: XBOX_PDB 0x00521650
 void FUN_00521650_shell::TESObjectWEAP_SetAttackLoop(TESSound* apSnd)
 {
-    m_pWeaponSound4 = apSnd;
+    pAttackLoop = apSnd;
 }
 
 struct FUN_00521670_shell : public TESObjectWEAP {
@@ -992,7 +1010,7 @@ struct FUN_00521670_shell : public TESObjectWEAP {
 // src: XBOX_PDB 0x00521670
 void FUN_00521670_shell::TESObjectWEAP_SetAttackFailSound(TESSound* apSnd)
 {
-    m_pWeaponSound5 = apSnd;
+    pAttackFailSound = apSnd;
 }
 
 struct FUN_005216b0_shell : public TESObjectWEAP {
@@ -1003,7 +1021,7 @@ struct FUN_005216b0_shell : public TESObjectWEAP {
 // src: XBOX_PDB 0x005216b0
 void FUN_005216b0_shell::TESObjectWEAP_SetIdleSound(TESSound* apSnd)
 {
-    m_pWeaponSound7 = apSnd;
+    pIdleSound = apSnd;
 }
 
 struct FUN_005216d0_shell : public TESObjectWEAP {
@@ -1014,7 +1032,7 @@ struct FUN_005216d0_shell : public TESObjectWEAP {
 // src: XBOX_PDB 0x005216d0
 void FUN_005216d0_shell::TESObjectWEAP_SetEquipSound(TESSound* apSnd)
 {
-    m_pWeaponSound8 = apSnd;
+    pEquipSound = apSnd;
 }
 
 struct FUN_005216f0_shell : public TESObjectWEAP {
@@ -1025,7 +1043,7 @@ struct FUN_005216f0_shell : public TESObjectWEAP {
 // src: XBOX_PDB 0x005216f0
 void FUN_005216f0_shell::TESObjectWEAP_SetUnEquipSound(TESSound* apSnd)
 {
-    m_pWeaponUnequipSound = apSnd;
+    pUnEquipSound = apSnd;
 }
 
 void __cdecl NiSinCos_004169a0(float, float &, float &);
@@ -1034,10 +1052,13 @@ void __cdecl NiSinCos_004169a0(float, float &, float &);
 #define WEAP_M3_ROW(r, a, b, c) m_pEntry[r][0] = a; m_pEntry[r][1] = b; m_pEntry[r][2] = c;
 // Builds a rotation matrix about the X axis from the sine and cosine of the given angle.
 // @fnv 0x00524ac0
-void NiMatrix3::MakeXRotation(float afAngle)
+// pdb: NiMatrix3::MakeXRotation | TESObjectWEAP.obj | retail, upstream name already matches, high
+// pdb params: fAngle
+// pdb locals: cs, sn
+void NiMatrix3::MakeXRotation(float fAngle)
 {
     float sn, cs;
-    NiSinCos_004169a0(afAngle, sn, cs);
+    NiSinCos_004169a0(fAngle, sn, cs);
 
     WEAP_M3_ROW(0, 1.0f, 0.0f, 0.0f)
     WEAP_M3_ROW(1, 0.0f, cs, sn)
@@ -1047,6 +1068,7 @@ void NiMatrix3::MakeXRotation(float afAngle)
 
 // @fnv 0x00524cf0
 // src: COMMUNITY 0x00524cf0
+// pdb: TESObjectCELL::MarkerNode | TESObjectWEAP.obj | debug, call graph, medium
 NiAVObject* __fastcall TESObjectCELL_GetMarkerNode(TESObjectCELL* apCell)
 {
     return (NiAVObject*)apCell->GetCellChildAt(1);
@@ -1211,6 +1233,7 @@ struct GlobalObject_00633c90 { char pad[4]; };
 extern GlobalObject_00633c90 g_011deb7c;
 // @fnv 0x00524c90
 // src: XBOX_PDB 0x00524c90
+// pdb: Main::WorldRootCamera | TESObjectWEAP.obj | debug, upstream name already matches, high
 BSFaceGenAnimationData* Main_WorldRootCamera()
 {
     return ((BSFaceGenNiNode*)(((Flt*)&g_011deb7c)->GetNode()))->BSFaceGenNiNode::GetAnimationData();
@@ -1284,14 +1307,16 @@ struct FUN_0048ea80_t {
 void FUN_0048ea80_t::FUN_0048ea80(BGSLoadFormBuffer* b) {}
 
 struct FUN_00523120_shell : public TESForm {
-    void LoadGame(BGSLoadFormBuffer* buffer);
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 
 // @fnv 0x00523120
-void FUN_00523120_shell::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESObjectWEAP::LoadGame | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void FUN_00523120_shell::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::LoadGame(buffer);
-    reinterpret_cast<FUN_0048ea80_t*>(reinterpret_cast<char*>(this) + 0x84)->FUN_0048ea80(buffer);
+    TESForm::LoadGame(apLoadGameBuffer);
+    reinterpret_cast<FUN_0048ea80_t*>(reinterpret_cast<char*>(this) + 0x84)->FUN_0048ea80(apLoadGameBuffer);
 }
 
 extern void* DAT_011c621c;
@@ -1410,6 +1435,7 @@ struct FUN_00522c00_shell {
 
 // @fnv 0x00522c00
 // src: XBOX_PDB 0x00522c00
+// pdb: TESObjectWEAP::GetEmbeddedWeaponNode | TESObjectWEAP.obj | debug, call graph (shared callers), medium
 unsigned int FUN_00522c00_shell::TESObjectWEAP_GetEmbeddedWeaponNode()
 {
     if (TESObjectWEAP_IsEmbeddedWeapon())
@@ -1431,10 +1457,12 @@ struct WeaponRecordLoadAccess : TESObjectWEAP {
 
 // Loads the base form and value component using the same change flags.
 // @fnv 0x005230b0
-void WeaponRecordLoadAccess::LoadRecordArguments(unsigned int auiArg1, unsigned int auiArg2)
+// pdb: TESObjectWEAP::LoadGame | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void WeaponRecordLoadAccess::LoadRecordArguments(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    reinterpret_cast<FormRecordLoadAccess*>(this)->LoadRecordArguments(auiArg1, auiArg2);
-    TESValueForm::LoadGame_0048ea10(auiArg1, auiArg2);
+    reinterpret_cast<FormRecordLoadAccess*>(this)->LoadRecordArguments(aiFlags, aiCurrentFlags);
+    TESValueForm::LoadGame_0048ea10(aiFlags, aiCurrentFlags);
 }
 
 struct BGSSaveFormBuffer;
@@ -1444,15 +1472,17 @@ struct FUN_00484d60_holder {
 };
 
 struct FUN_005230f0_shell : TESObjectWEAP {
-    void TESObjectWEAP_SaveGame_005230f0(BGSSaveFormBuffer* buffer);
+    void TESObjectWEAP_SaveGame_005230f0(BGSSaveFormBuffer* apSaveGameBuffer);
 };
 
 // @fnv 0x005230f0
 // src: XBOX_PDB 0x005230f0
-void FUN_005230f0_shell::TESObjectWEAP_SaveGame_005230f0(BGSSaveFormBuffer* buffer)
+// pdb: TESObjectWEAP::SaveGame | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void FUN_005230f0_shell::TESObjectWEAP_SaveGame_005230f0(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    reinterpret_cast<FUN_00484d60_holder*>(this)->SaveIfChanged(buffer);
-    TESValueForm::SaveGameBGS_0048ea40(buffer);
+    reinterpret_cast<FUN_00484d60_holder*>(this)->SaveIfChanged(apSaveGameBuffer);
+    TESValueForm::SaveGameBGS_0048ea40(apSaveGameBuffer);
 }
 
 struct FUN_00524cd0_shell
@@ -1484,6 +1514,7 @@ struct FUN_0051dad0_This {
 };
 // Calls FUN_0051db00 on this, frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0051dad0
+// pdb: TESObjectWEAP::`scalar deleting destructor' | TESObjectWEAP.obj | retail, vtable slot, high
 void* FUN_0051dad0_This::FUN_0051dad0(unsigned int flags)
 {
     this->FUN_0051db00();
@@ -1497,11 +1528,14 @@ struct FUN_00522ba0_obj { int TESObjectWEAP_GetImpactData(int); };
 // If the object at offset 0x24C is non-null, forwards a1 to its FUN_004fb7a0 and returns the result; otherwise returns 0.
 // @fnv 0x00522ba0
 // src: XBOX_PDB 0x00522ba0
-int FUN_00522ba0_obj::TESObjectWEAP_GetImpactData(int a1)
+// pdb: TESObjectWEAP::GetImpactData | TESObjectWEAP.obj | retail, upstream name already matches, high
+// pdb params: aehkMatType
+// pdb locals: pimpactData
+int FUN_00522ba0_obj::TESObjectWEAP_GetImpactData(int aehkMatType)
 {
     int val = 0;
     if (*reinterpret_cast<FUN_004fb7a0_obj**>(reinterpret_cast<char*>(this) + 0x24C) != 0)
-        val = (*reinterpret_cast<FUN_004fb7a0_obj**>(reinterpret_cast<char*>(this) + 0x24C))->BGSImpactDataSet_GetImpactData(a1);
+        val = (*reinterpret_cast<FUN_004fb7a0_obj**>(reinterpret_cast<char*>(this) + 0x24C))->BGSImpactDataSet_GetImpactData(aehkMatType);
     return val;
 }
 
@@ -1512,6 +1546,7 @@ struct FUN_00522be0_shell {
 };
 // @fnv 0x00522be0
 // src: COMMUNITY 0x00522be0
+// pdb: TESObjectWEAP::GetVATSAttackName | TESObjectWEAP.obj | debug, upstream name already matches, high
 unsigned int FUN_00522be0_shell::TESObjectWEAP_GetVATSAttackName()
 {
     return ((Flt*)((char*)this + 0x368))->operator unsigned int();
@@ -1523,6 +1558,8 @@ struct FUN_00523080_shell { void TESObjectWEAP_SaveGame(unsigned int); };
 // Forwards aiFlags to FUN_00484c20 on this and to FUN_0048e9e0 on the object at offset 0x84.
 // @fnv 0x00523080
 // src: XBOX_PDB 0x00523080
+// pdb: TESObjectWEAP::SaveGame | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb params: aiFlags
 void FUN_00523080_shell::TESObjectWEAP_SaveGame(unsigned int aiFlags)
 {
     ((FUN_0051b070_shell*)this)->TESForm_SaveGame(aiFlags);
@@ -1530,13 +1567,15 @@ void FUN_00523080_shell::TESObjectWEAP_SaveGame(unsigned int aiFlags)
 }
 
 float __cdecl BSMAX_00404010(float, float);
-struct FUN_00524b80_This : TESObjectWEAP { float TESObjectWEAP_GetMinSpread(bool); };
+struct FUN_00524b80_This : TESObjectWEAP { float TESObjectWEAP_GetMinSpreadDegrees(bool); };
 // Returns the weapon's spread at offset 0x104, reduced by the weapon-mod decrease-spread effect when bModValue is set.
 // @fnv 0x00524b80
-// src: COMMUNITY 0x00524b80
-float FUN_00524b80_This::TESObjectWEAP_GetMinSpread(bool abApplyMod)
+// src: XBOX_DEBUG_PDB 0x00524b80
+// pdb: TESObjectWEAP::GetMinSpreadDegrees | TESObjectWEAP.obj | debug, call graph (shared callers), high
+// pdb params: bModValue
+float FUN_00524b80_This::TESObjectWEAP_GetMinSpreadDegrees(bool bModValue)
 {
-	if (abApplyMod)
+	if (bModValue)
 		return BSMAX_00404010(0.0f, *(float*)((char*)this + 0x104) - GetModdedWeaponValue(WEAPON_MOD_EFFECT_WEAPON_MOD_DECREASE_SPREAD, 0));
 	else
 		return *(float*)((char*)this + 0x104);
@@ -1547,6 +1586,8 @@ struct FUN_00524be0_shell : TESObjectWEAP { float TESObjectWEAP_GetSpread(bool);
 // Returns the weapon's spread at offset 0x108, reduced by the weapon-mod decrease-spread effect when bModValue is set.
 // @fnv 0x00524be0
 // src: COMMUNITY 0x00524be0
+// pdb: TESObjectWEAP::GetSpreadDegrees | TESObjectWEAP.obj | debug, object-file run extension, low
+// pdb params: bModValue
 float FUN_00524be0_shell::TESObjectWEAP_GetSpread(bool abApplyMod)
 {
 	if (abApplyMod)
@@ -1573,6 +1614,7 @@ struct Unk005256b0 {
 };
 // Returns the result of FUN_00522c00 if FUN_0046e8c0 and FUN_00522c00 succeed and the string is non-empty, otherwise "ProjectileNode".
 // @fnv 0x005256b0
+// pdb: TESObjectWEAP::GetFireNodeName | TESObjectWEAP.obj | debug, call graph, medium
 const char* Unk005256b0::GetProjectileNodeName()
 {
     return TESObjectWEAP_IsEmbeddedWeapon() && TESObjectWEAP_GetEmbeddedWeaponNode() && *TESObjectWEAP_GetEmbeddedWeaponNode() ? TESObjectWEAP_GetEmbeddedWeaponNode() : "ProjectileNode";
@@ -1582,6 +1624,9 @@ struct SceneObjectLookup { static NiAVObject* __cdecl GetObjectByName(NiAVObject
 struct UnkClass25700 { const char* GetProjectileNodeName(); NiAVObject* TESObjectWEAP_GetFireNode(NiAVObject*); };
 // @fnv 0x00525700
 // src: XBOX_PDB 0x00525700
+// pdb: TESObjectWEAP::GetFireNode | TESObjectWEAP.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pfireObject, pfireNodeName
 NiAVObject* UnkClass25700::TESObjectWEAP_GetFireNode(NiAVObject* apObject)
 {
     NiAVObject* pFoundObject;
@@ -1642,6 +1687,9 @@ struct WeaponRecordSaveSizeAccess : TESObjectWEAP {
 
 // Returns the sum of the save sizes reported by the two embedded objects for the given flags.
 // @fnv 0x00523020
+// pdb: TESObjectWEAP::GetSaveSize | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short WeaponRecordSaveSizeAccess::GetRecordSaveSize(unsigned int aiFlags)
 {
     unsigned short usSize = 0;
@@ -1660,17 +1708,21 @@ struct ModelPathIface {
 };
 struct FUN_00522df0_shell : public TESObjectWEAP {
     int FUN_00446390();
-    TESModel* GetModelForModFlags(unsigned char acModFlags, bool abNoWorldModel);
+    TESModel* TESObjectWEAP_GetModTESModel(unsigned char acModFlags, bool abNoWorldModel);
 };
 
 // @fnv 0x00522df0
-TESModel* FUN_00522df0_shell::GetModelForModFlags(unsigned char acModFlags, bool abNoWorldModel)
+// src: XBOX_RETAIL_PDB 0x00522df0
+// pdb: TESObjectWEAP::GetModTESModel | TESObjectWEAP.obj | retail, call graph, high
+// pdb params: iSlots
+// pdb locals: pmodel
+TESModel* FUN_00522df0_shell::TESObjectWEAP_GetModTESModel(unsigned char acModFlags, bool abNoWorldModel)
 {
     TESModel* m_kModelObjectsItem = 0;
     if (FUN_00446390() == 0 && !abNoWorldModel)
     {
-        if (*((ModelPathIface*)&m_kModel3rdPerson)->GetModelFilePath())
-            return &m_kModel3rdPerson;
+        if (*((ModelPathIface*)&WorldModel)->GetModelFilePath())
+            return &WorldModel;
         else
             return this;
     }
@@ -1680,26 +1732,26 @@ TESModel* FUN_00522df0_shell::GetModelForModFlags(unsigned char acModFlags, bool
         {
             if (acModFlags & 4)
             {
-                if (*((ModelPathIface*)&m_kWeaponModTextureSwap7)->GetModelFilePath())
-                    m_kModelObjectsItem = &m_kWeaponModTextureSwap7;
+                if (*((ModelPathIface*)&WorldModelMod123)->GetModelFilePath())
+                    m_kModelObjectsItem = &WorldModelMod123;
             }
             else
             {
-                if (*((ModelPathIface*)&m_kWeaponModTextureSwap4)->GetModelFilePath())
-                    m_kModelObjectsItem = &m_kWeaponModTextureSwap4;
+                if (*((ModelPathIface*)&WorldModelMod12)->GetModelFilePath())
+                    m_kModelObjectsItem = &WorldModelMod12;
             }
         }
         else
         {
             if (acModFlags & 4)
             {
-                if (*((ModelPathIface*)&m_kWeaponModTextureSwap5)->GetModelFilePath())
-                    m_kModelObjectsItem = &m_kWeaponModTextureSwap5;
+                if (*((ModelPathIface*)&WorldModelMod13)->GetModelFilePath())
+                    m_kModelObjectsItem = &WorldModelMod13;
             }
             else
             {
-                if (*((ModelPathIface*)&m_kWeaponModTextureSwap1)->GetModelFilePath())
-                    m_kModelObjectsItem = &m_kWeaponModTextureSwap1;
+                if (*((ModelPathIface*)&WorldModelMod1)->GetModelFilePath())
+                    m_kModelObjectsItem = &WorldModelMod1;
             }
         }
     }
@@ -1709,19 +1761,19 @@ TESModel* FUN_00522df0_shell::GetModelForModFlags(unsigned char acModFlags, bool
         {
             if (acModFlags & 4)
             {
-                if (*((ModelPathIface*)&m_kWeaponModTextureSwap6)->GetModelFilePath())
-                    m_kModelObjectsItem = &m_kWeaponModTextureSwap6;
+                if (*((ModelPathIface*)&WorldModelMod23)->GetModelFilePath())
+                    m_kModelObjectsItem = &WorldModelMod23;
             }
             else
             {
-                if (*((ModelPathIface*)&m_kWeaponModTextureSwap2)->GetModelFilePath())
-                    m_kModelObjectsItem = &m_kWeaponModTextureSwap2;
+                if (*((ModelPathIface*)&WorldModelMod2)->GetModelFilePath())
+                    m_kModelObjectsItem = &WorldModelMod2;
             }
         }
         else if (acModFlags & 4)
         {
-            if (*((ModelPathIface*)&m_kWeaponModTextureSwap3)->GetModelFilePath())
-                m_kModelObjectsItem = &m_kWeaponModTextureSwap3;
+            if (*((ModelPathIface*)&WorldModelMod3)->GetModelFilePath())
+                m_kModelObjectsItem = &WorldModelMod3;
         }
     }
     if (!m_kModelObjectsItem || GetFormID() == 0x1735d4)
@@ -1734,29 +1786,33 @@ struct FUN_00525450_shell {
 };
 
 // @fnv 0x00525450
-void FUN_00525450_shell::QueueModelsForLoad(int aiIndex, class QueuedFile* apFile)
+// pdb: TESObjectWEAP::QueueFiles | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb params: aePriority, apParent
+void FUN_00525450_shell::QueueModelsForLoad(int aePriority, class QueuedFile* apParent)
 {
     if (reinterpret_cast<TESModel*>(reinterpret_cast<char*>(this) + 0x104)->GetModelLength())
-        g_modelLoader->ProcessModelRequest(reinterpret_cast<TESModel*>(reinterpret_cast<char*>(this) + 0x104), aiIndex, apFile, 0, true, false, false);
+        g_modelLoader->ProcessModelRequest(reinterpret_cast<TESModel*>(reinterpret_cast<char*>(this) + 0x104), aePriority, apParent, 0, true, false, false);
     if (reinterpret_cast<TESObjectWEAP*>(reinterpret_cast<char*>(this) - 0xcc)->GetProjectileData(0))
-        reinterpret_cast<BGSPreloadable*>(reinterpret_cast<char*>(reinterpret_cast<TESObjectWEAP*>(reinterpret_cast<char*>(this) - 0xcc)->GetProjectileData(0)) + 0x54)->QueueResourceLoad((IO_TASK_PRIORITY)aiIndex, apFile);
+        reinterpret_cast<BGSPreloadable*>(reinterpret_cast<char*>(reinterpret_cast<TESObjectWEAP*>(reinterpret_cast<char*>(this) - 0xcc)->GetProjectileData(0)) + 0x54)->QueueResourceLoad((IO_TASK_PRIORITY)aePriority, apParent);
     if (*reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x180))
-        reinterpret_cast<BGSPreloadable*>(reinterpret_cast<char*>(*reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x180)) + 0x18)->QueueResourceLoad((IO_TASK_PRIORITY)aiIndex, apFile);
+        reinterpret_cast<BGSPreloadable*>(reinterpret_cast<char*>(*reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x180)) + 0x18)->QueueResourceLoad((IO_TASK_PRIORITY)aePriority, apParent);
 }
 
 struct GlobalObject_0045cfe0 { int* Int(); };
 extern GlobalObject_0045cfe0 g_011cd3b4;
 extern GlobalObject_0045cfe0 g_011cd538;
 extern GlobalObject_0045cfe0 g_011cdde0;
-struct FUN_00525620_shell { int GetStateValue(bool a, bool b); };
+struct FUN_00525620_shell { int GetStateValue(bool aiValue, bool aiUnsatisfiedValue); };
 // Reads a state value from offset 0x364, overridden to 2 or 1 by the flags, and returns the int from the matching global.
 // @fnv 0x00525620
-int FUN_00525620_shell::GetStateValue(bool abForceState2, bool abForceState1)
+// pdb: CombatWorldStateArray::GetStateValue | CombatPlan.obj | debug, upstream name already matches, high
+// pdb params: aiValue, aiUnsatisfiedValue
+int FUN_00525620_shell::GetStateValue(bool aiValue, bool aiUnsatisfiedValue)
 {
     int r7 = 0;
     int s = *(int*)((char*)this + 0x364);
-    if (abForceState2) s = 2;
-    if (abForceState1) s = 1;
+    if (aiValue) s = 2;
+    if (aiUnsatisfiedValue) s = 1;
     switch (s) {
     case 2: r7 = *g_011cd3b4.Int(); break;
     case 1: r7 = *g_011cd538.Int(); break;
@@ -1835,6 +1891,7 @@ struct FUN_0051db00 :
 
 // Destructor that clears the weapon's data via TESObjectWEAP::ClearData.
 // @fnv 0x0051db00
+// pdb: TESObjectWEAP::~TESObjectWEAP | TESObjectWEAP.obj | debug, object-file gap fill, medium
 FUN_0051db00::~FUN_0051db00()
 {
     reinterpret_cast<TESObjectWEAP*>(this)->TESObjectWEAP::ClearData();
@@ -1932,7 +1989,7 @@ typedef unsigned int UInt32;
 
 
 void __cdecl WriteChunkU32(UInt32 chunk, UInt32 value);
-void __cdecl WriteChunkStr(UInt32 chunk, const char* str, UInt32 len);
+void __cdecl WriteChunkStr(UInt32 aeChunkID, const char* apData, UInt32 aiSize);
 void __cdecl WriteChunkBuf(UInt32 chunk, void* buf, UInt32 len);
 bool __cdecl IsBigEndian();
 
@@ -1946,21 +2003,21 @@ struct WeaponStringView
     const char* CStr();
 };
 struct FullName { char pad[0xc]; void Save(); };
-struct ModelSwap { char pad[0x20]; void Save(UInt32 a, UInt32 b, UInt32 c); void SaveSwap(UInt32 a); };
+struct ModelSwap { char pad[0x20]; void Save(UInt32 aeModelID, UInt32 aeTextureID, UInt32 aeSwapID); void SaveSwap(UInt32 aeFlagsID); };
 struct Icon { char pad[0xc]; void Save(UInt32 a); };
 struct Scriptable { char pad[0xc]; void Save(); };
 struct Enchantable { char pad[0x30]; void Save(); };
 struct ValueForm { char pad[0x10]; void Save(); };
 struct WeightForm { char pad[0x8]; void Save(); };
-struct HealthForm { char pad[0x8]; void Save(); };
+struct HealthForm { char pad[0x8]; void BGSRepairItemList_Save(); };
 struct AttackDamage { char pad[0xc]; void Save(); };
-struct MessageFullNameRecord { char pad[0x10]; void Save(UInt32 a); };
+struct MessageFullNameRecord { char pad[0x10]; void Save(UInt32 aeTextureID); };
 struct AmmoForm { char pad[0x8]; void Save(); };
-struct ClipRounds { char pad[0xc]; void Save(); };
+struct ClipRounds { char pad[0xc]; void BGSPickupPutdownSounds_Save(); };
 struct WeapData { char pad[0x24]; TESForm* pProjectile; char pad2[0xa4]; void Swap(); };
 struct CritData { char pad[0xc]; TESForm* pEffect; void Swap(); };
-struct Model { char pad[0x18]; void Save(UInt32 a, UInt32 b); };
-struct ModModel { char pad[0x20]; void Save(UInt32 a, UInt32 b, UInt32 c); };
+struct Model { char pad[0x18]; void BSSendSceneGraphCommand_WriteToBuffer(UInt32 a, UInt32 b); };
+struct ModModel { char pad[0x20]; void Save(UInt32 aeModelID, UInt32 aeTextureID, UInt32 aeSwapID); };
 struct VATSData { TESForm* pEffect; char pad[0x10]; void Swap(); };
 
 struct Weapon
@@ -2028,6 +2085,8 @@ struct Weapon
 };
 
 // @fnv 0x00521730
+// pdb: TESObjectWEAP::Save | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb locals: psaveProjectile, psaveVATSSpecialEffect, psaveCriticalEffect, itempint
 void Weapon::Save()
 {
     UInt32 savedProj;
@@ -2044,19 +2103,19 @@ void Weapon::Save()
     enchant.Save();
     value.Save();
     weight.Save();
-    health.Save();
+    health.BGSRepairItemList_Save();
     damage.Save();
     ammo.Save();
-    clip.Save();
-    shellModel.Save(0x32444f4d, 0x54324f4d);
+    clip.BGSPickupPutdownSounds_Save();
+    shellModel.BSSendSceneGraphCommand_WriteToBuffer(0x32444f4d, 0x54324f4d);
     if (HasScope()) {
-        scopeModel.Save(0x33444f4d, 0x54334f4d);
+        scopeModel.BSSendSceneGraphCommand_WriteToBuffer(0x33444f4d, 0x54334f4d);
         if (m_pWeaponEffectShader) {
             UInt32 a = m_pWeaponEffectShader->GetFormID();
             WriteChunkU32(0x44534645, a);
         }
     }
-    worldModel.Save(0x34444f4d, 0x54344f4d);
+    worldModel.BSSendSceneGraphCommand_WriteToBuffer(0x34444f4d, 0x54344f4d);
     mod1.Save(0x3144574d, 0x3154574d, 0x53444f4d);
     mod2.Save(0x3244574d, 0x3254574d, 0x53444f4d);
     mod3.Save(0x3444574d, 0x3454574d, 0x53444f4d);
@@ -2140,7 +2199,7 @@ struct WeaponCopyAccess;
 extern "C" void __fastcall TESForm_CopyAllComponents(WeaponCopyAccess*, StackWord);
 extern "C" void* __fastcall FUN_008d8ac0(WeaponCopyAccess*);
 struct WeaponCopyAccess : TESObjectWEAP {
-    void CopyFromWeapon(unsigned int id);
+    void CopyFromWeapon(unsigned int apCopy);
     void FUN_008d8ae0(void*);
     BGSImpactDataSet* FUN_008d8b00();
     TESObjectSTAT* GetModSlotStat(unsigned char);
@@ -2168,19 +2227,22 @@ struct WeaponCopyAccess : TESObjectWEAP {
 };
 // Copies weapon data, strings, mods, sounds and flags from the weapon with the given id into this object.
 // @fnv 0x00522020
-void WeaponCopyAccess::CopyFromWeapon(unsigned int id)
+// pdb: TESObjectWEAP::Copy | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: weap
+void WeaponCopyAccess::CopyFromWeapon(unsigned int apCopy)
 {
-    WeaponCopyAccess* source = (WeaponCopyAccess*)FUN_00ec43fb(id, 0, &DAT_01183028, &DAT_01183998, 0);
+    WeaponCopyAccess* source = (WeaponCopyAccess*)FUN_00ec43fb(apCopy, 0, &DAT_01183028, &DAT_01183998, 0);
     if (source == 0) return;
     {
-        TESForm_CopyAllComponents(this, *(StackWord*)&id);
-        m_kModel.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kModel));
-        ((StringCopyAccess*)&m_kEmbeddedWeaponNodeName)->FUN_004037f0(
-            ((StringCopyAccess*)&source->m_kEmbeddedWeaponNodeName)->Modelloader_GetReferencedThis(false));
+        TESForm_CopyAllComponents(this, *(StackWord*)&apCopy);
+        ShellCasingModel.CopyFromBase(static_cast<BaseFormComponent*>(&source->ShellCasingModel));
+        ((StringCopyAccess*)&EmbeddedWeaponNode)->FUN_004037f0(
+            ((StringCopyAccess*)&source->EmbeddedWeaponNode)->Modelloader_GetReferencedThis(false));
         ((StringCopyAccess*)&VATSAttackName)->FUN_004037f0(
             ((StringCopyAccess*)&source->VATSAttackName)->Modelloader_GetReferencedThis(false));
-        m_kModel3rdPerson.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kModel3rdPerson));
-        m_kModel1stPerson.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kModel1stPerson));
+        WorldModel.CopyFromBase(static_cast<BaseFormComponent*>(&source->WorldModel));
+        ScopeModel.CopyFromBase(static_cast<BaseFormComponent*>(&source->ScopeModel));
         SetEffectShader(source->GetScopeEffect());
         FUN_008d8ae0(FUN_008d8ac0(source));
         FUN_00521710(source->FUN_008d8b00());
@@ -2194,16 +2256,16 @@ void WeaponCopyAccess::CopyFromWeapon(unsigned int id)
         SetModItem((unsigned char)1, source->FUN_004bd570(1));
         SetModItem((unsigned char)2, source->FUN_004bd570(2));
         SetModItem((unsigned char)4, source->FUN_004bd570(4));
-        m_kWeaponModTextureSwap1.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kWeaponModTextureSwap1));
-        m_kWeaponModTextureSwap2.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kWeaponModTextureSwap2));
-        m_kWeaponModTextureSwap3.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kWeaponModTextureSwap3));
-        m_kWeaponModTextureSwap4.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kWeaponModTextureSwap4));
-        m_kWeaponModTextureSwap5.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kWeaponModTextureSwap5));
-        m_kWeaponModTextureSwap6.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kWeaponModTextureSwap6));
-        m_kWeaponModTextureSwap7.CopyFromBase(static_cast<BaseFormComponent*>(&source->m_kWeaponModTextureSwap7));
+        WorldModelMod1.CopyFromBase(static_cast<BaseFormComponent*>(&source->WorldModelMod1));
+        WorldModelMod2.CopyFromBase(static_cast<BaseFormComponent*>(&source->WorldModelMod2));
+        WorldModelMod3.CopyFromBase(static_cast<BaseFormComponent*>(&source->WorldModelMod3));
+        WorldModelMod12.CopyFromBase(static_cast<BaseFormComponent*>(&source->WorldModelMod12));
+        WorldModelMod13.CopyFromBase(static_cast<BaseFormComponent*>(&source->WorldModelMod13));
+        WorldModelMod23.CopyFromBase(static_cast<BaseFormComponent*>(&source->WorldModelMod23));
+        WorldModelMod123.CopyFromBase(static_cast<BaseFormComponent*>(&source->WorldModelMod123));
         memcpy(&data, &source->data, sizeof(data));
-        memcpy(&m_kCriticalData, &source->m_kCriticalData, sizeof(m_kCriticalData));
-        memcpy(&m_kVATSData, &source->m_kVATSData, sizeof(m_kVATSData));
+        memcpy(&criticalData, &source->criticalData, sizeof(criticalData));
+        memcpy(&specialVATSData, &source->specialVATSData, sizeof(specialVATSData));
         SetAttackSound(source->GetAttackSound(false));
         TESObjectWEAP_SetAttackSound2(source->GetValueByFlag(false));
         FUN_005c8a30(source->GetPointerByFlag(false));
@@ -2216,7 +2278,7 @@ void WeaponCopyAccess::CopyFromWeapon(unsigned int id)
         TESObjectWEAP_SetModAttackSound(source->FUN_00521630());
         FUN_008d8a80(source->GetField244());
         FUN_008d8aa0(source->FUN_005224a0());
-        m_eSoundLevel = source->ComputeValue_00522560(false);
+        eSoundLevel = source->ComputeValue_00522560(false);
         FUN_004f15a0(source->FUN_00401170());
     }
 }
@@ -2242,6 +2304,8 @@ struct FUN_00522d80_shell {
 // Returns field200 if its v05()[0] is nonzero, otherwise returns field3C (or null if this is null).
 // @fnv 0x00522d80
 // src: XBOX_PDB 0x00522d80
+// pdb: TESObjectWEAP::GetWorldTESModel | TESObjectWEAP.obj | retail, upstream name already matches, high
+// pdb locals: pmodel
 FUN_00522d80_virtual_object* FUN_00522d80_shell::TESObjectWEAP_GetWorldTESModel() {
     FUN_00522d80_virtual_object* result = 0;
 
@@ -2315,6 +2379,7 @@ struct ResetAccess {
 // Calls SwapField on most of the object's int fields, skipping field00, field0C, field20, field24, field28, fieldA4 and fieldAC.
 // @fnv 0x00520ff0
 // src: XBOX_PDB 0x00520ff0
+// pdb: OBJ_WEAP::Endian | TESObjectWEAP.obj | retail, upstream name already matches, high
 void ResetAccess::OBJ_WEAP_Endian() {
     SwapField(&field04, ConversionTag());
     SwapField(&field08, ConversionTag());
@@ -2388,20 +2453,23 @@ struct WeaponStringCompare {
 int __cdecl memcmp(const void*, const void*, unsigned int);
 // Compares this weapon against another TESObjectWEAP across many fields and accessors, returning true on the first difference or when the form is not a weapon.
 // @fnv 0x00522590
-bool WeaponCompareAccess::IsDifferentFrom(TESForm* form) {
-    WeaponCompareAccess* other = (WeaponCompareAccess*)dynamic_cast<TESObjectWEAP*>(form);
+// pdb: TESObjectWEAP::Compare | TESObjectWEAP.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pComp
+bool WeaponCompareAccess::IsDifferentFrom(TESForm* apCompare) {
+    WeaponCompareAccess* other = (WeaponCompareAccess*)dynamic_cast<TESObjectWEAP*>(apCompare);
     if (!other) return true;
     if (TESForm_CompareAllComponents(other)) return true;
-    if (m_kModel.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kModel))) return true;
-    if (m_kModel3rdPerson.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kModel3rdPerson))) return true;
-    if (m_kWeaponModTextureSwap1.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kWeaponModTextureSwap1))) return true;
-    if (m_kWeaponModTextureSwap2.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kWeaponModTextureSwap2))) return true;
-    if (m_kWeaponModTextureSwap3.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kWeaponModTextureSwap3))) return true;
-    if (m_kWeaponModTextureSwap4.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kWeaponModTextureSwap4))) return true;
-    if (m_kWeaponModTextureSwap5.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kWeaponModTextureSwap5))) return true;
-    if (m_kWeaponModTextureSwap6.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kWeaponModTextureSwap6))) return true;
-    if (m_kWeaponModTextureSwap7.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kWeaponModTextureSwap7))) return true;
-    if (m_kModel1stPerson.CompareWithBase(static_cast<BaseFormComponent*>(&other->m_kModel1stPerson))) return true;
+    if (ShellCasingModel.CompareWithBase(static_cast<BaseFormComponent*>(&other->ShellCasingModel))) return true;
+    if (WorldModel.CompareWithBase(static_cast<BaseFormComponent*>(&other->WorldModel))) return true;
+    if (WorldModelMod1.CompareWithBase(static_cast<BaseFormComponent*>(&other->WorldModelMod1))) return true;
+    if (WorldModelMod2.CompareWithBase(static_cast<BaseFormComponent*>(&other->WorldModelMod2))) return true;
+    if (WorldModelMod3.CompareWithBase(static_cast<BaseFormComponent*>(&other->WorldModelMod3))) return true;
+    if (WorldModelMod12.CompareWithBase(static_cast<BaseFormComponent*>(&other->WorldModelMod12))) return true;
+    if (WorldModelMod13.CompareWithBase(static_cast<BaseFormComponent*>(&other->WorldModelMod13))) return true;
+    if (WorldModelMod23.CompareWithBase(static_cast<BaseFormComponent*>(&other->WorldModelMod23))) return true;
+    if (WorldModelMod123.CompareWithBase(static_cast<BaseFormComponent*>(&other->WorldModelMod123))) return true;
+    if (ScopeModel.CompareWithBase(static_cast<BaseFormComponent*>(&other->ScopeModel))) return true;
     if (GetScopeEffect() != other->GetScopeEffect()) return true;
     if (FUN_008d8ac0() != other->FUN_008d8ac0()) return true;
     if (FUN_008d8b00() != other->FUN_008d8b00()) return true;
@@ -2415,11 +2483,11 @@ bool WeaponCompareAccess::IsDifferentFrom(TESForm* form) {
     if (FUN_004bd570(1) != other->FUN_004bd570(1)) return true;
     if (FUN_004bd570(2) != other->FUN_004bd570(2)) return true;
     if (FUN_004bd570(4) != other->FUN_004bd570(4)) return true;
-    if (((WeaponStringCompare*)&m_kEmbeddedWeaponNodeName)->CompareString(&other->m_kEmbeddedWeaponNodeName, true)) return true;
+    if (((WeaponStringCompare*)&EmbeddedWeaponNode)->CompareString(&other->EmbeddedWeaponNode, true)) return true;
     if (((WeaponStringCompare*)&VATSAttackName)->CompareString(&other->VATSAttackName, true)) return true;
     if (memcmp(&data, other->GetOffsetF4(), 0xcc)) return true;
-    if (memcmp(&m_kCriticalData, &other->m_kCriticalData, 0x10)) return true;
-    if (memcmp(&m_kVATSData, &other->m_kVATSData, 0x14)) return true;
+    if (memcmp(&criticalData, &other->criticalData, 0x10)) return true;
+    if (memcmp(&specialVATSData, &other->specialVATSData, 0x14)) return true;
     if (GetAttackSound(false) != other->GetAttackSound(false)) return true;
     if (GetValueByFlag(false) != other->GetValueByFlag(false)) return true;
     if (GetPointerByFlag(false) != other->GetPointerByFlag(false)) return true;
@@ -2432,7 +2500,7 @@ bool WeaponCompareAccess::IsDifferentFrom(TESForm* form) {
     if (GetModDistantAttackSound() != other->GetModDistantAttackSound()) return true;
     if (GetField244() != other->GetField244()) return true;
     if (FUN_005224a0() != other->FUN_005224a0()) return true;
-    if (m_eSoundLevel != other->ComputeValue_00522560(false)) return true;
+    if (eSoundLevel != other->ComputeValue_00522560(false)) return true;
     return false;
 }
 
@@ -2545,18 +2613,21 @@ extern PlayerCharacter* g_thePlayer;
 struct WeapAimShell : public TESObjectWEAP {
     int FUN_00446390();
     WeapNode* TESObjectWEAP_GetFireNode(void* root);
-    NiPoint3 TESObjectWEAP_CalculateReleasePoint(TESObjectREFR* ref);
+    NiPoint3 TESObjectWEAP_CalculateReleasePoint(TESObjectREFR* apSource);
 };
 
 // Returns the reference's position raised by its height, or the world position of its weapon or 3D node when a process exists.
 // @fnv 0x005257a0
 // src: COMMUNITY 0x005257a0
-NiPoint3 WeapAimShell::TESObjectWEAP_CalculateReleasePoint(TESObjectREFR* ref)
+// pdb: TESObjectWEAP::CalculateReleasePoint | TESObjectWEAP.obj | retail, upstream name already matches, high
+// pdb params: apSource
+// pdb locals: pactorAIProcess, pfireObject, releasePoint, bisPlayer, pactor, pbiped, pweapBone
+NiPoint3 WeapAimShell::TESObjectWEAP_CalculateReleasePoint(TESObjectREFR* apSource)
 {
-    Actor* actor2 = ref->IsActor() ? (Actor*)ref : 0;
+    Actor* actor2 = apSource->IsActor() ? (Actor*)apSource : 0;
     WeapProcess* process = actor2 ? (WeapProcess*)((const Actor*)actor2)->GetCurrentProcess() : 0;
     bool isPlayer_2 = (void*)actor2 == g_thePlayer;
-    NiPoint3 pos5 = *ref->GetPos();
+    NiPoint3 pos5 = *apSource->GetPos();
     if (actor2)
         pos5.z += actor2->GetHeight();
     WeapNode* node9 = 0;
@@ -2567,9 +2638,9 @@ NiPoint3 WeapAimShell::TESObjectWEAP_CalculateReleasePoint(TESObjectREFR* ref)
             pos5 = *weapNode->GetWorldPos();
     } else {
         if (process)
-            node9 = (WeapNode*)ref->Unk_83();
+            node9 = (WeapNode*)apSource->Unk_83();
         else
-            node9 = TESObjectWEAP_GetFireNode(isPlayer_2 ? g_thePlayer->GetPlayerNode() : ref->GetNiNode());
+            node9 = TESObjectWEAP_GetFireNode(isPlayer_2 ? g_thePlayer->GetPlayerNode() : apSource->GetNiNode());
         if (node9)
             pos5 = *node9->GetWorldPos();
     }
@@ -2597,12 +2668,14 @@ struct CombatProjectile
 struct CombatWeapon
 {
 	int GetWeaponType();
-	CombatProjectile* GetProjectileData(Actor* pkActor);
+	CombatProjectile* GetProjectileData(Actor* apWeaponHolder);
 	int TESObjectWEAP_GetCombatWeaponType();
 };
 
 // @fnv 0x00522c80
 // src: EXE 0x00522c80
+// pdb: TESObjectWEAP::GetCombatWeaponType | TESObjectWEAP.obj | retail, string-set bridge, high
+// pdb locals: pprojectile
 int CombatWeapon::TESObjectWEAP_GetCombatWeaponType()
 {
 	switch (GetWeaponType())
@@ -3119,7 +3192,7 @@ struct FireRef {
  FireNode* PlayerCharacter_GetCurrentNode();
  bool Actor_GetIronSights();
  bool PlayerCharacter_IsActually3rdPerson();
- float GetCachedSpeed(int);
+ float Actor_GetGunSkill(int);
  void* FUN_008d6f30();
  FirePackage* GetCurrentPackage();
  char GetByteAtOffset1F8(); void SetByteAtOffset1F8(char);
@@ -3471,18 +3544,18 @@ unsigned int DialogueRandom();
 void ApplyPerkModifiers(int,FireRef*,...);
 struct AmmoComponentAccess : BGSAmmoForm { TESAmmo* GetAmmoHelper(); };
 struct FireWeapon : TESObjectWEAP {
- TESAmmo* GetCurrentAmmo(Actor* who);
+ TESAmmo* GetCurrentAmmo(Actor* apWeaponHolder);
 
  void TESObjectWEAP_Fire(FireRef*);
  int GetWeaponType() const;
  FireNode* TESObjectWEAP_GetFireNode(FireNode*);
  bool FUN_004ad030();
  struct FireString* TESCasino_GetData();
- float TESObjectWEAP_GetMinSpread(bool); float TESObjectWEAP_GetSpread(bool);
+ float TESObjectWEAP_GetMinSpreadDegrees(bool); float TESObjectWEAP_GetSpread(bool);
  bool TESObjectWEAP_IsThrownWeapon();
  struct FireRefData* GetOrFallback(FireRef*);
  bool GetIsAutomaticWeapon();
- void TESObjectWEAP_EjectShellCasing(FireRef*);
+ void TESObjectWEAP_ExpelShellCasing(FireRef*);
  bool TESObjectWEAP_IsEmbeddedWeapon();
  float GetFloatAt144(); float TESObjectWEAP_GetFiringRumbleRightMotorStrength(); float TESEffectShader_GetAddOnScaleStart();
  float GetEffectValue(int,unsigned char);
@@ -3515,9 +3588,9 @@ struct FireMatrix { float xx,xy,xz,yx,yy,yz,zx,zy,zz; FireMatrix(); void FUN_005
 struct FireUpdate { float time; bool a,b; int flags; FireUpdate(float,bool,bool); };
 void* get_g_LaserSight();
 FireNode* BSTestObjects_CreateCylinder(float,float,float,int,int,FireColor*);
-void AttachLightingPropertyRecursive(FireNode*);
+void AddNoLightingPropertyRecurse(FireNode*);
 void FUN_00b57e30(FireNode*,int,int);
-void PlayWeaponSound(FireWeapon*,FireRef*,FireNode*,bool);
+void ImpactMixer_PlayGunshot(FireWeapon*,FireRef*,FireNode*,bool);
 
 struct FireTarget { bool CallHelperFoo(FirePoint*,FirePoint*); };
 struct FireList {
@@ -3534,14 +3607,14 @@ float NiASin_004b54c0(float);
 
 FireNode* BSTestObjects_CreateBox(FirePoint*,FirePoint*,float,float,float,float,FireColor*,int);
 FirePoint ComputeTrajectory(FireRef*,FireRef*,int,FireRefData*,float,bool);
-FirePoint GetTargetLocationWithOffset(FireRef*,bool);
+FirePoint CombatUtilities_GetTargetFiringLocation(FireRef*,bool);
 void NiSinCos_004169a0(float,float&,float&);
 struct FireControls { void Controls_Rumble(float,float,int,int,int,int,int); };
 struct FireOS { FireControls* Main_GetControls(); };
 extern FireOS* g_osGlobals;
 bool Interface_IsInMenuMode();
 float ComputeAmmoEffectValue(int,void*,float);
-struct FireAmmoFlag { bool FUN_00474a80(); };
+struct FireAmmoFlag { bool BGSAmmoForm_IsRockItLauncher(); };
 
 
 struct WeaponAmmoView { int field000; int field004; int field008; int field00c; int field010; int field014; int field018; int field01c; int field020; int field024; int field028; int field02c; int field030; int field034; int field038; int field03c; int field040; int field044; int field048; int field04c; int field050; int field054; int field058; int field05c; int field060; int field064; int field068; int field06c; int field070; int field074; int field078; int field07c; int field080; int field084; int field088; int field08c; int field090; int field094; int field098; int field09c; int field0a0; FireAmmoFlag ammoForm; };
@@ -3555,16 +3628,19 @@ bool ActionPoints_IsAttackAction(int);
 float RandomFloat(float,float);
 float sin_004e44b0(float);
 float FireCos(float);
-FireRefData* CreateProjectile(FireRefData*,FireRef*,FireTarget*,FireWeapon*,FirePoint,float,float,FireNode*,FireRef*,bool,bool,float,float,int);
+FireRefData* Projectile_Launch(FireRefData*,FireRef*,FireTarget*,FireWeapon*,FirePoint,float,float,FireNode*,FireRef*,bool,bool,float,float,int);
 extern FireSetting originalRuntimeFloatSetting538,originalRuntimeFloatSetting539;
 float CombatFormulas_CalcDamageToWeapon(FireRef*);
 
 // Fires the weapon for the given reference: resolves ammo and muzzle, computes spread and aim, spawns projectiles per shot, and updates ammo counts and recoil.
 // @fnv 0x00523150
 // src: XBOX_PDB 0x00523150
-void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
- if (reference) {
-  FireRef* actor19 = reference->isActor() ? reference : 0;
+// pdb: TESObjectWEAP::Fire | TESObjectWEAP.obj | retail, upstream name already matches, high
+// pdb params: apSource
+// pdb locals: psnd, soundHand, apMod, pactorAIProcess, pcombatController, bstranger, bUseSpreadMod, pweapon, cnumShots, faimLooking, fdriftRad, irealShots, pfireObject, bdoNoDamage, itotalProjectiles, pweaponItem, releasePoint, fskill, spcache, bisPlayer, pactor, pforcedTarget, bfakeShots, faimHeading ...
+void FireWeapon::TESObjectWEAP_Fire(FireRef* apSource) {
+ if (apSource) {
+  FireRef* actor19 = apSource->isActor() ? apSource : 0;
   if (actor19 == _g_thePlayer) {
    FireAmmo* ammo3 = (FireAmmo*)GetCurrentAmmo((Actor*)_g_thePlayer);
    if (ammo3) {
@@ -3588,9 +3664,9 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
   FireProcess* process39 = actor19 ? actor19->GetCurrentAIProcess() : 0;
   const int unusedResult10 = 0;
   FireExtra* extra13 = process39 ? process39->extra() : 0;
-  FirePoint position6 = actor19 ? *((FirePositionRef*)reference)->FUN_00436aa0() + DAT_011a9484 * 96.0f : *((FirePositionRef*)reference)->FUN_00436aa0();
-  float pitch37 = actor19 ? actor19->GetLooking() : ((FirePositionRef*)reference)->GetAngleOnReference().x;
-  float yaw21 = actor19 ? actor19->heading(0) : ((FirePositionRef*)reference)->GetAngleOnReference().z;
+  FirePoint position6 = actor19 ? *((FirePositionRef*)apSource)->FUN_00436aa0() + DAT_011a9484 * 96.0f : *((FirePositionRef*)apSource)->FUN_00436aa0();
+  float pitch37 = actor19 ? actor19->GetLooking() : ((FirePositionRef*)apSource)->GetAngleOnReference().x;
+  float yaw21 = actor19 ? actor19->heading(0) : ((FirePositionRef*)apSource)->GetAngleOnReference().z;
   FireNode* muzzle11 = 0;
   if (process39 && (GetWeaponType()==10 || GetWeaponType()==11 || GetWeaponType()==12 || GetWeaponType()==13)) {
    float unusedPad[18];
@@ -3602,8 +3678,8 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
    if (muzzle11) position6 = *muzzle11->NiAVObject_GetWorldTranslate();
    if (player12) _g_thePlayer->PlayerCharacter_ClearAutoAim();
   } else {
-   if (process39) muzzle11 = reference->muzzle();
-   else muzzle11 = TESObjectWEAP_GetFireNode(player12 ? _g_thePlayer->PlayerCharacter_GetCurrentNode() : reference->root());
+   if (process39) muzzle11 = apSource->muzzle();
+   else muzzle11 = TESObjectWEAP_GetFireNode(player12 ? _g_thePlayer->PlayerCharacter_GetCurrentNode() : apSource->root());
    if (muzzle11) {
     position6 = *muzzle11->NiAVObject_GetWorldTranslate();
     if (DAT_011f2250.FUN_0044ddc0()!=4 && actor19==_g_thePlayer && _g_thePlayer->Actor_GetIronSights() && TESCasino_GetData()->GetModelLength()) {
@@ -3618,7 +3694,7 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
       position6 = face31->NiAVObject_GetWorldRotate()->ComputeValue_00524c40(offset);
      }
     }
-    if (reference && reference==_g_thePlayer && !_g_thePlayer->PlayerCharacter_IsActually3rdPerson()) {
+    if (apSource && apSource==_g_thePlayer && !_g_thePlayer->PlayerCharacter_IsActually3rdPerson()) {
      yaw21 = _g_thePlayer->heading(0);
      pitch37 = _g_thePlayer->GetLooking();
     } else {
@@ -3637,7 +3713,7 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
        FireMatrix rotation;
        rotation.FUN_00524ac0(1.57079637f);
        ((FireNode*)marker)->SetRotate_0043fa80(&rotation);
-       AttachLightingPropertyRecursive(marker);
+       AddNoLightingPropertyRecurse(marker);
        FUN_00b57e30(marker,0,0);
        root->attach(marker,true);
        ((FireNode*)marker)->UpdateProperties();
@@ -3646,14 +3722,14 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
       }
      }
     }
-    PlayWeaponSound(this,reference,muzzle11,player12);
+    ImpactMixer_PlayGunshot(this,apSource,muzzle11,player12);
    }
   }
 
-  float accuracy5 = actor19 ? actor19->GetCachedSpeed(1) : *g_011ce23c.Float();
+  float accuracy5 = actor19 ? actor19->Actor_GetGunSkill(1) : *g_011ce23c.Float();
   bool modSpread31 = false;
   if (actor19 && actor19->GetCurrentAIProcess() && extra13 && extra13->HasEffect(3)) modSpread31 = true;
-  float spread50 = (TESObjectWEAP_GetMinSpread(modSpread31) + TESObjectWEAP_GetSpread(modSpread31)*accuracy5) * 0.01745329238474369;
+  float spread50 = (TESObjectWEAP_GetMinSpreadDegrees(modSpread31) + TESObjectWEAP_GetSpread(modSpread31)*accuracy5) * 0.01745329238474369;
   if (actor19 && actor19->GetCurrentAIProcess()) {
    spread50 = ComputeAmmoEffectValue(3,GetCurrentAmmo((Actor*)actor19) ? ((FireAmmo*)GetCurrentAmmo((Actor*)actor19))->TESAmmo_GetAmmoEffectList() : 0,spread50);
   }
@@ -3695,7 +3771,7 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
      if (projectile) {
       float speed = projectile->GetFloatAtOffset68()*(lob ? *originalRuntimeFloatSetting375.Float() : 1.0f);
       targetPosition = ComputeTrajectory(actor19,packageTarget,0,projectile,speed,lob);
-     } else targetPosition = GetTargetLocationWithOffset(packageTarget,true);
+     } else targetPosition = CombatUtilities_GetTargetFiringLocation(packageTarget,true);
      FirePoint direction = targetPosition-position6;
      if (process39->package()->GetLocationReference_00676140(actor19)==packageTarget) {
       direction.z=0;
@@ -3707,12 +3783,12 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
      pitch37=-NiASin_004b54c0(direction.z/direction.Length());
     }
    }
-   float aim = actor19->GetCachedSpeed(2);
+   float aim = actor19->Actor_GetGunSkill(2);
    spread50 += aim * *originalRuntimeFloatSetting393.Float() * 0.01745329238474369;
    processSpread1 = actor19->GetCurrentAIProcess()->spread();
    spread50 += processSpread1;
   }
-  if ((reference==_g_thePlayer && process39 && process39->weapons()) || ((WeaponAmmoView*)this)->ammoForm.FUN_00474a80()) {
+  if ((apSource==_g_thePlayer && process39 && process39->weapons()) || ((WeaponAmmoView*)this)->ammoForm.BGSAmmoForm_IsRockItLauncher()) {
    if (!Interface_IsInMenuMode()) {
     FireControls* controls = g_osGlobals->Main_GetControls();
     if (GetFloatAt144()>0.0) controls->Controls_Rumble(TESEffectShader_GetAddOnScaleStart(),TESObjectWEAP_GetFiringRumbleRightMotorStrength(),(int)(GetFloatAt144()*1000.0),0,0,0,0);
@@ -3770,8 +3846,8 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
      shotYaw16+=yawOffset5;
     }
     FireRef* shooter2=0;
-    if (reference->isActor()) shooter2=reference;
-    spawned19=CreateProjectile(GetOrFallback(shooter2),reference,target20,this,position6,shotYaw16,shotPitch5,lastNode23,aimTarget25,aimed26,(bool)(specialFlag19 || useSpecial62),yawOffset5,pitchOffset13,0);
+    if (apSource->isActor()) shooter2=apSource;
+    spawned19=Projectile_Launch(GetOrFallback(shooter2),apSource,target20,this,position6,shotYaw16,shotPitch5,lastNode23,aimTarget25,aimed26,(bool)(specialFlag19 || useSpecial62),yawOffset5,pitchOffset13,0);
     if (shot16 && (shot16->ammo || shot16->special) && ActionPoints_IsAttackAction(shot16->id) && !useSpecial62) {
      if (!GetIsAutomaticWeapon() || (!DAT_011f2250.FUN_00441110() && GetIsAutomaticWeapon())) DAT_011f2250.VATS_SetFirstProjectile(spawned19);
     }
@@ -3828,13 +3904,15 @@ void FireWeapon::TESObjectWEAP_Fire(FireRef* reference) {
     }
     break;
   }
-  if (GetIsAutomaticWeapon()) TESObjectWEAP_EjectShellCasing(reference);
+  if (GetIsAutomaticWeapon()) TESObjectWEAP_ExpelShellCasing(apSource);
 
  }
 }
 
 // @fnv 0x004169a0
 // src: XBOX_PDB 0x004169a0
+// pdb: NiSinCos | TESObjectWEAP.obj | debug, call graph, medium
+// pdb params: fRadians, fSin, fCos
 void __cdecl NiSinCos_004169a0(float fRadians, float& fSin, float& fCos)
 {
     float s, c;
@@ -4029,16 +4107,19 @@ float __cdecl BSMIN(float, float);
 void __cdecl NiPoint3_UnitizeVector(P12*);
 struct ThisObj {
     SubA* FUN_004600d0();
-    void TESObjectWEAP_EjectShellCasing(Param* param);
+    void TESObjectWEAP_ExpelShellCasing(Param* apSource);
 };
 
 // Creates an XObj using node data, settings, and a call on param when the conditions pass.
 // @fnv 0x00524db0
-// src: COMMUNITY 0x00524db0
-void ThisObj::TESObjectWEAP_EjectShellCasing(Param* param)
+// src: XBOX_RETAIL_PDB 0x00524db0
+// pdb: TESObjectWEAP::ExpelShellCasing | TESObjectWEAP.obj | retail, string-set bridge, high
+// pdb params: apSource
+// pdb locals: pfireNode, pactor, p3d, bshootCasing, distance, shellAngularVelocity, pfilename, shellLocation, shellRotation, shellLinearVelocity, flower, fupper, actorVelocity, force, angle
+void ThisObj::TESObjectWEAP_ExpelShellCasing(Param* apSource)
 {
-    if (param != 0) {
-    if (param->Unk_40()) {
+    if (apSource != 0) {
+    if (apSource->Unk_40()) {
     if (this->FUN_004600d0()->FUN_0048cee0() > 0) {
     if (!Main_GetSceneIsComplex()) {
     P12 bufC3;
@@ -4062,7 +4143,7 @@ void ThisObj::TESObjectWEAP_EjectShellCasing(Param* param)
     NodeObj* node3;
     Param* paramHome8;
     void* pR;
-    paramHome8 = param;
+    paramHome8 = apSource;
     pR = (paramHome8 == DAT_011dea3c) ? DAT_011dea3c->PlayerCharacter_GetCurrentNode() : paramHome8->Unk_74();
     node3 = BSUtilities_GetObjectByName(pR, (const char*)&DAT_0102cb00);
     if (node3 != 0) {
@@ -4096,10 +4177,10 @@ void ThisObj::TESObjectWEAP_EjectShellCasing(Param* param)
     temp6.SetComponents(*DAT_011cf1d4.Setting_Float_00403e20() * vecA0.x, 0.0f, *DAT_011cf1d4.Setting_Float_00403e20() * vecA0.z);
     obj14 = *node3->NiAVObject_GetWorldRotate()->FUN_004b4500(&bufC3, &temp6);
     if (paramHome8 == DAT_011dea3c && !DAT_011dea3c->PlayerCharacter_Is3rdPerson() && !DAT_011f2250.VATS_IsInVats()) {
-        qA7 = new XObj(param->FUN_008d6f30(), BSMIN(*DAT_011ce7c0.Setting_Float_00403e20(), DAT_010162c0), dword4, param, &point1, &matTmp, &obj34, &obj14, 1.0f, 0, 1);
+        qA7 = new XObj(apSource->FUN_008d6f30(), BSMIN(*DAT_011ce7c0.Setting_Float_00403e20(), DAT_010162c0), dword4, apSource, &point1, &matTmp, &obj34, &obj14, 1.0f, 0, 1);
         qA7->FUN_007e6580(1);
     } else {
-        qB7 = new XObj(param->FUN_008d6f30(), *DAT_011ce7c0.Setting_Float_00403e20(), dword4, param, &point1, &matTmp, &obj34, &obj14, 1.0f, 0, 1);
+        qB7 = new XObj(apSource->FUN_008d6f30(), *DAT_011ce7c0.Setting_Float_00403e20(), dword4, apSource, &point1, &matTmp, &obj34, &obj14, 1.0f, 0, 1);
     }
     }
     }

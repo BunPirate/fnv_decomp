@@ -55,8 +55,8 @@ template <typename TYPE> __forceinline void hkMemoryAllocator::_bufFree(void* p,
     const int SIZE_ELEM = sizeof(TYPE);
     bufFree(p, numElem * SIZE_ELEM);
 }
-void ResizeAudioStream(hkMemoryAllocator& a, void* array, int sizeElem);
-void hkArrayUtil__reserve(hkMemoryAllocator& a, void* array, int reqElem, int sizeElem);
+void ResizeAudioStream(hkMemoryAllocator& mem, void* array, int sizeElem);
+void hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 struct Se31d50_ContainerHeap
 {
@@ -235,9 +235,9 @@ __forceinline const float& hkVector4::operator()(int i) const
 {
     return reinterpret_cast<const float*>(&m_vComponents)[i];
 }
-__forceinline hkSimdReal hkVector4::dot4(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot4(const hkVector4& x) const
 {
-    __m128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 sum0 = _mm_add_ps(_mm_shuffle_ps(x2, x2, 0x4e), x2);
     __m128 sum1 = _mm_shuffle_ps(sum0, sum0, 0xb1);
     return _mm_add_ps(sum0, sum1);
@@ -424,11 +424,11 @@ struct Se31d50_Anim
     static hkVector4 Runtime_ProcessEntries_00e31410(const Se31d50_VecArr& d);
     static hkVector4 hkArrayBase_ProcessEntries_00e31470(const Se31d50_VecArr& d);
     static hkVector4 hkArrayBase_ProcessEntries_00e314c0(const Se31d50_VecArr& d);
-    static unsigned char hkaSplineCompressedAnimation_isStatic(const hkVector4& mean, const hkVector4& mn, const hkVector4& mx,
-                                      float tol, const hkVector4& id);
+    static unsigned char hkaSplineCompressedAnimation_isStatic(const hkVector4& mean, const hkVector4& minp, const hkVector4& maxp,
+                                      float tol, const hkVector4& I);
     static unsigned char PackBitFields(Se31d50_ScalQ t, Se31d50_RotQ r, Se31d50_ScalQ s);
-    static unsigned char hkaSplineCompressedAnimation_packMaskAndQuantizationType(unsigned char mask, Se31d50_ScalQ f);
-    static void hkaSplineCompressedAnimation_writeZeros(int n, Se31d50_ByteArr& out);
+    static unsigned char hkaSplineCompressedAnimation_packMaskAndQuantizationType(unsigned char mask, Se31d50_ScalQ floatQuatization);
+    static void hkaSplineCompressedAnimation_writeZeros(int n, Se31d50_ByteArr& data);
     static void hkaSplineCompressedAnimation_writeAlign(int align, Se31d50_ByteArr& out);
     static void FillInterpolatedValues(int n, Se31d50_FltArr& U, float a, float b);
     static void hkVector4_ProcessEntries_00e310c0(const hkQsTransform* t, int numTracks, int numFrames, int first, int track, Se31d50_VecArr& a,
@@ -473,18 +473,18 @@ __declspec(noinline) hkVector4 Se31d50_Anim::hkArrayBase_ProcessEntries_00e314c0
     return m;
 }
 // src: HAVOK_LIB 0x00e311f0
-__declspec(noinline) unsigned char Se31d50_Anim::hkaSplineCompressedAnimation_isStatic(const hkVector4& mean, const hkVector4& mn,
-                                                              const hkVector4& mx, float tol,
-                                                              const hkVector4& id)
+__declspec(noinline) unsigned char Se31d50_Anim::hkaSplineCompressedAnimation_isStatic(const hkVector4& mean, const hkVector4& minp,
+                                                              const hkVector4& maxp, float tol,
+                                                              const hkVector4& I)
 {
     unsigned char mask = 0;
     for (int i = 0; i < 4; i++)
     {
-        if ((float)fabs(mean(i) - mn(i)) > tol || (float)fabs(mean(i) - mx(i)) > tol)
+        if ((float)fabs(mean(i) - minp(i)) > tol || (float)fabs(mean(i) - maxp(i)) > tol)
         {
             mask |= (1 << (i + 4));
         }
-        else if ((float)fabs(mean(i) - id(i)) > tol)
+        else if ((float)fabs(mean(i) - I(i)) > tol)
         {
             mask |= (1 << i);
         }
@@ -496,9 +496,9 @@ __declspec(noinline) unsigned char Se31d50_Anim::PackBitFields(Se31d50_ScalQ t, 
     return (unsigned char)(t | (r << 2) | (s << 6));
 }
 // src: HAVOK_LIB 0x00e30f40
-__declspec(noinline) unsigned char Se31d50_Anim::hkaSplineCompressedAnimation_packMaskAndQuantizationType(unsigned char mask, Se31d50_ScalQ f)
+__declspec(noinline) unsigned char Se31d50_Anim::hkaSplineCompressedAnimation_packMaskAndQuantizationType(unsigned char mask, Se31d50_ScalQ floatQuatization)
 {
-    return (unsigned char)(mask | (f << 1));
+    return (unsigned char)(mask | (floatQuatization << 1));
 }
 __declspec(noinline) void Se31d50_Anim::FillInterpolatedValues(int n, Se31d50_FltArr& U, float a, float b)
 {
@@ -541,6 +541,9 @@ __forceinline int Se31d50_min2(int x, int y)
 
 // @fnv 0x00e31d50
 // src: XBOX_PDB 0x00e31d50
+// pdb: hkaSplineCompressedAnimation::initialize | hkaSplineCompressedAnimationCtor.obj | retail, upstream name already matches, high
+// pdb params: raw, trackParams, animationParams
+// pdb locals: lastFrame, enableSampleSingleTracks, assertBuf, ostr, c, maskOffset, blockFrames, trackType, numTracks, numComponents, t, samplePoints, tolerance, sampleTimes, degree, I, maxp, minp, mean, controlPoints, knots, numKnots, numControlPoints, reportBuf
 void Se31d50_Anim::hkaSplineCompressedAnimation_initialize(const Se31d50_Raw& raw, const Se31d50_PerTrack& trackParams,
                                 const Se31d50_AnimParams& animationParams)
 {

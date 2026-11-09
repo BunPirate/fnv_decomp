@@ -36,7 +36,10 @@ class CombatStateValues
     bool CombatWorldStateArray_IsTrue(int, int);
 };
 // @fnv 0x009843b0
-bool CombatGoal::vf00(CombatStateValues* values)
+// pdb: CombatGoal::IsActive | CombatGoal.obj | retail, vtable slot, high
+// pdb params: apWorldStateArray
+// pdb locals: plist, estate, ivalue, pstate
+bool CombatGoal::vf00(CombatStateValues* apWorldStateArray)
 {
     BSSimpleList<UnsignedIdHandle*>* current = GetWorldStateList();
     UnsignedIdHandle* value;
@@ -49,17 +52,17 @@ bool CombatGoal::vf00(CombatStateValues* values)
         type = value->FUN_00726070();
         if (state == 21)
         {
-            if (values->GetCombatGoal(type))
+            if (apWorldStateArray->GetCombatGoal(type))
                 return false;
         }
         else if (state == 22)
         {
-            if (!values->GetCombatGoal(type))
+            if (!apWorldStateArray->GetCombatGoal(type))
                 return false;
         }
         else
         {
-            if (!values->CombatWorldStateArray_IsTrue(state, type))
+            if (!apWorldStateArray->CombatWorldStateArray_IsTrue(state, type))
                 return false;
         }
         current = reinterpret_cast<BSSimpleList<UnsignedIdHandle*>*>(reinterpret_cast<CombatWorldStateListNode*>(current)->GetNext());  // 0x0062d990

@@ -5,6 +5,7 @@
 class NiFloatKey;
 class StrArr;
 
+// pdb: class NiRollController, size 0x3c, bases: NiFloatController, 0 members
 class NiRollController : public NiFloatController
 {
 public:

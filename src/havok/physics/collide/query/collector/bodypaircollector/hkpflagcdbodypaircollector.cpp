@@ -8,11 +8,14 @@ struct DAFc80
 {
     int unk00;
     unsigned char unk04;
-    void hkpFlagCdBodyPairCollector_addCdBodyPair(int a, int b);
+    void hkpFlagCdBodyPairCollector_addCdBodyPair(int bodyA, int bodyB);
 };
 // @fnv 0x00dafc80
 // src: XBOX_PDB 0x00dafc80
-void DAFc80::hkpFlagCdBodyPairCollector_addCdBodyPair(int a, int b)
+// pdb: hkpFlagCdBodyPairCollector::addCdBodyPair | hkpFlagCdBodyPairCollector.obj | debug, upstream name already matches, high
+// pdb params: bodyA, bodyB
+// pdb locals: assertBuf, ostr
+void DAFc80::hkpFlagCdBodyPairCollector_addCdBodyPair(int bodyA, int bodyB)
 {
     unk04 = 1;
 }
@@ -26,6 +29,7 @@ struct FUN_00d34900
     FUN_00d34900();
 
 // @fnv 0x00d34900
+// pdb: hkpFlagCdBodyPairCollector::`scalar deleting destructor' | hkpConvexListAgent.obj | debug, vtable slot, medium
     virtual ~FUN_00d34900()
     {}
 

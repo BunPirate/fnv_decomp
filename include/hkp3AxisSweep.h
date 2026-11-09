@@ -20,6 +20,7 @@ class ItemList;
 class Blk;
 class RemovedHandleList;
 
+// pdb: class hkp3AxisSweep, size 0xe0, bases: hkpBroadPhase, 13 members
 class hkp3AxisSweep : public hkpBroadPhase
 {
 public:
@@ -90,35 +91,35 @@ public:
     int getAabbCacheSize();
     void getAabb_00d119c0(UnkHandle* handle);
     void getAabbFromNode(const Node& node, hkAabb& aabb) const;
-    void FixNodeEdges(unsigned int index);
-    void FixNodeEdges(int index);
-    void BuildBroadPhasePairs(Node* nodesA, int numNodesA, Node* nodesB, int numNodesB, int mode, BroadPhasePairArray& pairs);
-    void queryBatchAabbSub(unsigned int* bits, PairVec* out, char flag);
-    void getExtents(__m128* out0, __m128* out1);
-    bool __thiscall areAabbsOverlapping(int* first, int* second);
+    void _fixDeterministicOrderAfterNodeIdWasDecreased(unsigned int nodeIndex);
+    void _fixDeterministicOrderAfterNodeIdWasDecreased(int nodeIndex);
+    void collide1Axis(Node* pa, int numA, Node* pb, int numB, int markerHandlingForNodesB, BroadPhasePairArray& pairsOut);
+    void queryBatchAabbSub(unsigned int* bitFieldOfQueryNodes, PairVec* pairsOut, char addMode);
+    void getExtents(__m128* worldMinOut, __m128* worldMaxOut);
+    bool __thiscall areAabbsOverlapping(int* bhA, int* bhB);
     void defragment();
     void GetValues(__m128* out0, __m128* out1);
-    void hkp3AxisSweep_setBitsBasedOnXInterval(int numRecords, unsigned short code, SweepRecord* rec, int index, void* buffer);
-    void hkp3AxisSweep_setBitsBasedOnXInterval(int count, int key, SweepNodeX* node, unsigned int index, unsigned int* bits);
-    void hkp3AxisSweep_setBitsBasedOnXInterval(int count, unsigned int key, Node16* node, int index, void* buffer);
-    void hkp3AxisSweep_updateNodesAfterDelete(SweepNodeX* base, int count, SweepNodeX* node);
-    void reQuerySingleObject(int* index, EventList* events);
-    void removeObject(unsigned int* handle, SweepPairsX* pairs);
-    void calcAabbCache(ItemList* items, unsigned int out);
-    __declspec(noinline) void calcAabbCacheInternal(Blk* array, unsigned int out);
+    void hkp3AxisSweep_setBitsBasedOnXInterval(int numRecords, unsigned short x_value, SweepRecord* queryNode, int queryNodeIndex, void* bitField);
+    void hkp3AxisSweep_setBitsBasedOnXInterval(int count, int x_value, SweepNodeX* queryNode, unsigned int queryNodeIndex, unsigned int* bitField);
+    void hkp3AxisSweep_setBitsBasedOnXInterval(int count, unsigned int x_value, Node16* queryNode, int queryNodeIndex, void* bitField);
+    void hkp3AxisSweep_updateNodesAfterDelete(SweepNodeX* base, int numNodes, SweepNodeX* oldNode);
+    void reQuerySingleObject(int* object, EventList* pairs_out);
+    void removeObject(unsigned int* object, SweepPairsX* delPairsOut);
+    void calcAabbCache(ItemList* overlappingCollidables, unsigned int AabbCacheOut);
+    __declspec(noinline) void calcAabbCacheInternal(Blk* overlaps, unsigned int AabbCacheOut);
     __declspec(noinline) void Hkp3axissweepGsEhscNogsNoehsc_ProcessEntries_00d10b30(Node16* buf, int index, Node16* node);
-    void addObject_00d142b0(int* handle, Input* input, PairArr* outPairs);
-    void removeObjectBatch(RemovedHandleList* removed, int pairs);
+    void addObject_00d142b0(int* object, Input* aabbIn, PairArr* newPairs);
+    void removeObjectBatch(RemovedHandleList* removeObjectList, int delPairsOut);
 
     unsigned char unk10[0x10];
-    int lowBound[4];
+    int m_aabb[4];
     int highBound[4];
     union { __m128 offset; __m128 m_negSrc; };
-    __m128 offset2;
+    __m128 m_offsetHigh;
     union { __m128 scale; __m128 m_recipSrc; };
-    __m128 m_v70;
-    __m128 m_v80;
-    __m128 unk90;
+    __m128 m_offsetLow32bit;
+    __m128 m_offsetHigh32bit;
+    __m128 m_scale32bit;
     union
     {
         NodeArray m_kNodeCollection;
@@ -158,5 +159,5 @@ public:
         struct { unsigned short shiftBits; unsigned short unkD6; };
     };
     union { OverlappingMarkerInfo* m_pOverlappingMarkerInfo; void* unkD8; char* m_markerBase; };
-    float correction;
+    float m_intToFloatFloorCorrection;
 };

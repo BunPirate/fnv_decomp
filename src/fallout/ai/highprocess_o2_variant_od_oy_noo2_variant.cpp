@@ -816,6 +816,9 @@ struct xController
 
 // @fnv 0x008e4e50
 // src: XBOX_PDB 0x008e4e50
+// pdb: HighProcess::SetupPhantom | HighProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: pw, pplayerShape, actorScale, playerextents, ifilter, csi, pcon
 void xController::HighProcess_SetupPhantom(xActor* apActor)
 {
     if (apActor->m_68->FUN_5f0())
@@ -879,6 +882,9 @@ struct xBoxShape : xConvexShape
     int m_10;
 };
 // @fnv 0x008e5100
+// pdb: bhkBoxShape::bhkBoxShape | HighProcess.obj | debug, object-file gap fill, medium
+// pdb params: arExt
+// pdb locals: hkext
 xBoxShape::xBoxShape(const xP3& akHalfExtents)
 {
     ++xg_126825c;

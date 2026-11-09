@@ -5,6 +5,7 @@
 
 #include "../../../include/SETTING_VALUE.h"
 #include "../../../include/SettingT_GameSettingCollection_.h"
+// pdb: class SystemColorManager, size 0x10 (here 0x1), 2 members
 class SystemColorManager
 {
   public:
@@ -12,7 +13,7 @@ class SystemColorManager
     {
       public:
         unsigned char padding[12];
-        SettingT_GameSettingCollection_* setting;
+        SettingT_GameSettingCollection_* pSetting;
         unsigned int GetColor();
     };
 };

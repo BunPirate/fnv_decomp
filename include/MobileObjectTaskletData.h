@@ -11,22 +11,23 @@ template <class T> class BSTFreeListElem;
 
 
 
+// pdb: class MobileObjectTaskletData, size 0x38, bases: BSXenonTaskletData, 4 members
 class MobileObjectTaskletData : public BSWin32TaskletData
 {
 public:
-    MobileObjectTaskletData(BSTFreeList<MobileObjectTaskletContext>* apList);
+    MobileObjectTaskletData(BSTFreeList<MobileObjectTaskletContext>* apPool);
     virtual ~MobileObjectTaskletData();
     virtual void Process();
     virtual void SetMobileObjectCount(unsigned int auiObjectCount);
     virtual void ProcessMobileObject(MobileObject* apObject);
     virtual void SetThreadNumber(unsigned int auiThreadNumber);
 
-    BSSimpleList<MobileObject*>* pMobList;
-    BSTCommonLLMessageQueue<MobileObjectTaskletContext> kMessageQueue;
-    unsigned int MobileObjectTaskletState;
-    unsigned int eType;
+    BSSimpleList<MobileObject*>* pmoblist;
+    BSTCommonLLMessageQueue<MobileObjectTaskletContext> msgqueue;
+    unsigned int uiHighActorCount;
+    unsigned int iThread;
 
     void FUN_008c83a0();
-    bool ProcessMessage(void* apMessage, int aiThread);
+    bool HandleMessage(void* apMessage, int aiThread);
     void ProcessMessages(int aiType);
 };

@@ -96,6 +96,7 @@ struct FUN_00e0c310_s
 
 // @fnv 0x00e0c310
 // src: HAVOK_LIB 0x00e0c310
+// pdb: hkMonitorStreamAnalyzer::getStreamBegin | hkMonitorStreamAnalyzer.obj | debug, upstream name already matches, high
 int FUN_00e0c310_s::hkMonitorStreamAnalyzer_getStreamBegin()
 {
     if (*(int*)((char*)this + 0x10) == 0)
@@ -119,6 +120,9 @@ struct FUN_00cc01a0_class
     FUN_00cc01a0_class* __thiscall InvokeSubObject(int value);
 };
 // @fnv 0x00cc01a0
+// pdb: hkOstream::operator<< | hkOStream.obj | retail, call graph, medium
+// pdb params: p
+// pdb locals: buf
 FUN_00cc01a0_class* __thiscall FUN_00cc01a0_class::InvokeSubObject(int value)
 {
     unk08->invoke(&value, 1);
@@ -192,12 +196,14 @@ struct Node
 // Multiplies the value at index by factor, clears the matching flag, and recurses into all children.
 // @fnv 0x00e0c700
 // src: HAVOK_LIB 0x00e0c700
-void __cdecl reduceMainTree(Node* node, int index, float factor)
+// pdb: reduceMainTree | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: node, destTimerId, smoothingFactor
+void __cdecl reduceMainTree(Node* node, int destTimerId, float smoothingFactor)
 {
-    (&node->value0)[index] *= factor;
-    (&node->flag0)[index] = 0;
+    (&node->value0)[destTimerId] *= smoothingFactor;
+    (&node->flag0)[destTimerId] = 0;
     for (int i = 0; i < node->childCount; ++i)
-        reduceMainTree(node->children[i], index, factor);
+        reduceMainTree(node->children[i], destTimerId, smoothingFactor);
 }
 
 extern "C" int __cdecl hkString_strLen(const char* str);
@@ -244,14 +250,17 @@ struct E0C860Node
 };
 
 // @fnv 0x00e0c860
-int __cdecl GetTreeWidth(E0C860Node* node, int depth, int indent, bool onlyExpanded)
+// src: XBOX_RETAIL_PDB 0x00e0c860
+// pdb: hkMonitorStreamAnalyzer::findMaxTimerNameIndent | hkMonitorStreamAnalyzer.obj | retail, call graph, high
+// pdb params: node, recursionDepth, spacing, displayPartialTree
+int __cdecl hkMonitorStreamAnalyzer_findMaxTimerNameIndent(E0C860Node* node, int recursionDepth, int spacing, bool displayPartialTree)
 {
-    int width = hkString_strLen(node->m_name) + depth * indent + 8;
-    if (!onlyExpanded || (node->m_flags & 1))
+    int width = hkString_strLen(node->m_name) + recursionDepth * spacing + 8;
+    if (!displayPartialTree || (node->m_flags & 1))
     {
         for (int i = 0; i < node->m_children.GetLogicalSize(); i++)
         {
-            int childWidth = GetTreeWidth(node->m_children[i], depth + 1, indent, onlyExpanded);
+            int childWidth = hkMonitorStreamAnalyzer_findMaxTimerNameIndent(node->m_children[i], recursionDepth + 1, spacing, displayPartialTree);
             if (childWidth > width)
                 width = childWidth;
         }
@@ -265,7 +274,7 @@ inline void* operator new(unsigned int, void* p)
 }
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(hkMemoryAllocator* alloc, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem);
 void __cdecl hkString_memCpy(void* dst, const void* src, int n);
 
 struct S_e0ce00_Block
@@ -358,11 +367,13 @@ struct Owner
     Entry** items;
     int count;
     unsigned int flags;
-    void ClearItems();
+    void hkMonitorStreamAnalyzer_Node_dtor();
 };
 // Calls FUN_00ddeff0(1) on each non-null item, resets count, and releases the items buffer via the device unless the high flag bit is set.
 // @fnv 0x00e0d0a0
-void Owner::ClearItems()
+// src: XBOX_RETAIL_PDB 0x00e0d0a0
+// pdb: hkMonitorStreamAnalyzer::Node::~Node | hkMonitorStreamAnalyzer.obj | retail, call graph, high
+void Owner::hkMonitorStreamAnalyzer_Node_dtor()
 {
     int index = 0;
     int zero = 0;
@@ -392,15 +403,17 @@ void Owner::ClearItems()
 }
 }  // namespace fnv_00e0d0a0
 
-extern "C" void __cdecl reduceMainTree(void* object, int index, float amount);
-extern "C" void __cdecl mergeSubTree(void* first, void* second, int index, int limit, float amount);
+extern "C" void __cdecl reduceMainTree(void* object, int destTimerId, float smoothingFactor);
+extern "C" void __cdecl mergeSubTree(void* mainTree, void* subTree, int destTimerId, int sourceTimerId, float smoothingFactor);
 // Calls FUN_00e0c700 on first, then FUN_00e0d180 on first and second with index, limit and amount.
 // @fnv 0x00e0d280
 // src: HAVOK_LIB 0x00e0d280
-void __cdecl hkMonitorStreamAnalyzer_mergeTreesForCombinedThreadSummary(void* first, void* second, int index, int limit, float amount)
+// pdb: hkMonitorStreamAnalyzer::mergeTreesForCombinedThreadSummary | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: mainTree, subTree, destTimerId, sourceTimerId, smoothingFactor
+void __cdecl hkMonitorStreamAnalyzer_mergeTreesForCombinedThreadSummary(void* mainTree, void* subTree, int destTimerId, int sourceTimerId, float smoothingFactor)
 {
-    reduceMainTree(first, index, amount);
-    mergeSubTree(first, second, index, limit, amount);
+    reduceMainTree(mainTree, destTimerId, smoothingFactor);
+    mergeSubTree(mainTree, subTree, destTimerId, sourceTimerId, smoothingFactor);
 }
 
 class BSAudio;
@@ -413,7 +426,7 @@ inline hkMemoryRouter* audio()
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
 
-extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* arr, int capacity, int elemSize);
+extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 
 extern float DAT_010eaa58;
 extern float DAT_011bdd84;
@@ -453,22 +466,24 @@ struct FUN_00e0f800
     int m18;
     int m1c;
     void* m20;
-    FUN_00e0f800(int n, int a, int b);
-    void hkMonitorStreamAnalyzer_resetNumThreads(int a, int b);
+    FUN_00e0f800(int memorySize, int numThreads, int numSpus);
+    void hkMonitorStreamAnalyzer_resetNumThreads(int numThreads, int numSpus);
 };
 
 // Sets DAT_011bdd84 to 16666.6f, reserves n elements in m0c, points m20 at DAT_010cb2c0, then calls FUN_00e0f710(a, b).
 // @fnv 0x00e0f800
-FUN_00e0f800::FUN_00e0f800(int aiCapacity, int a, int b)
+// pdb: hkMonitorStreamAnalyzer::hkMonitorStreamAnalyzer | hkMonitorStreamAnalyzer.obj | retail, object-file gap fill, high
+// pdb params: memorySize, numThreads, numSpus
+FUN_00e0f800::FUN_00e0f800(int memorySize, int numThreads, int numSpus)
 {
     DAT_011bdd84 = 16666.6f;
-    m0c.reserve(aiCapacity);
+    m0c.reserve(memorySize);
     m20 = DAT_010cb2c0;
-    hkMonitorStreamAnalyzer_resetNumThreads(a, b);
+    hkMonitorStreamAnalyzer_resetNumThreads(numThreads, numSpus);
 }
 }  // namespace fnv_00e0f800
 
-int __cdecl Vsnprintf(char* buffer, unsigned int size, const char* format, ...);
+int __cdecl hkString_snprintf(char* buffer, unsigned int size, const char* format, ...);
 void __cdecl hkOstream_printf(void* stream, const char* format, ...);
 
 struct S_00e0bfe0_Item
@@ -487,39 +502,43 @@ struct S_00e0bfe0_Item
 
 // Formats the item's name, max count and percentage into a buffer, then writes the values with nonzero counts to the stream.
 // @fnv 0x00e0bfe0
-void __cdecl WriteItemStats(void* stream, float totalTime, const S_00e0bfe0_Item* item)
+// src: XBOX_RETAIL_PDB 0x00e0bfe0
+// pdb: printSingleNodeValues | hkMonitorStreamAnalyzer.obj | retail, unique string literal, high
+// pdb params: outstream, maxMem, node
+// pdb locals: buffer
+void __cdecl printSingleNodeValues(void* outstream, float maxMem, const S_00e0bfe0_Item* node)
 {
     int maxCount = 0;
     for (int i = 0; i < 8; ++i)
     {
-        if (item->counts[i] && item->counts[i] > maxCount)
+        if (node->counts[i] && node->counts[i] > maxCount)
         {
-            maxCount = item->counts[i];
+            maxCount = node->counts[i];
         }
     }
 
     __declspec(align(64)) unsigned int buf[50];
 
-    if (totalTime > 0.0f)
+    if (maxMem > 0.0f)
     {
-        Vsnprintf((char*)buf, 200, "%s (%i) %4.1f%%", item->name, maxCount, (item->values[1] * 100.0) / totalTime);
+        hkString_snprintf((char*)buf, 200, "%s (%i) %4.1f%%", node->name, maxCount, (node->values[1] * 100.0) / maxMem);
     }
     else
     {
-        Vsnprintf((char*)buf, 200, "%s (%i)", item->name, maxCount);
+        hkString_snprintf((char*)buf, 200, "%s (%i)", node->name, maxCount);
     }
 
-    hkOstream_printf(stream, "%-34s%s", (char*)buf, "\t\t\t");
+    hkOstream_printf(outstream, "%-34s%s", (char*)buf, "\t\t\t");
 
     for (int i = 0; i < 8; ++i)
     {
-        if (item->counts[i] != 0)
+        if (node->counts[i] != 0)
         {
-            hkOstream_printf(stream, "% 12.3f: ", item->values[i]);
+            hkOstream_printf(outstream, "% 12.3f: ", node->values[i]);
         }
     }
 
-    hkOstream_printf(stream, "\n");
+    hkOstream_printf(outstream, "\n");
 }
 
 extern "C" void __cdecl hkString_memSet(void* dst, int c, int n);
@@ -576,11 +595,15 @@ class FUN_00e0c320_cls
     int m_i18;
     int m_i1c;
     int m_i20;
-    FUN_00e0c320_cls* InitHeading();
+    FUN_00e0c320_cls* hkMonitorStreamAnalyzer_captureFrameDetails();
 };
 
 // @fnv 0x00e0c320
-FUN_00e0c320_cls* FUN_00e0c320_cls::InitHeading()
+// src: XBOX_RETAIL_PDB 0x00e0c320
+// pdb: hkMonitorStreamAnalyzer::captureFrameDetails | hkMonitorStreamAnalyzer.obj | retail, string-set bridge, high
+// pdb params: monitorStreamBegin, monitorStreamEnd, info
+// pdb locals: assertBuf, ostr
+FUN_00e0c320_cls* FUN_00e0c320_cls::hkMonitorStreamAnalyzer_captureFrameDetails()
 {
     float one = 1.0f;
     float* pf10 = (float*)((char*)this + 0x10);
@@ -632,24 +655,27 @@ struct S_00e0c750_Node
 
 // Moves from node p through the tree according to the keys flags (up, down, collapse, expand) and returns the resulting node.
 // @fnv 0x00e0c750
-S_00e0c750_Node* __cdecl NavigateTree(const S_00e0c750_Keys* keys, S_00e0c750_Node* pNode)
+// src: XBOX_RETAIL_PDB 0x00e0c750
+// pdb: hkMonitorStreamAnalyzer::navigateMonitors | hkMonitorStreamAnalyzer.obj | retail, object-file gap fill, high
+// pdb params: keys, activeNodeIn
+S_00e0c750_Node* __cdecl hkMonitorStreamAnalyzer_navigateMonitors(const S_00e0c750_Keys* keys, S_00e0c750_Node* activeNodeIn)
 {
     S_00e0c750_Node* parent;
-    parent = pNode;
-    if (pNode == 0)
+    parent = activeNodeIn;
+    if (activeNodeIn == 0)
     {
         return 0;
     }
     if (keys->m_vStart)
     {
         S_00e0c750_Node* pParent;
-        pParent = pNode->m_parent;
+        pParent = activeNodeIn->m_parent;
         S_00e0c750_Node* prev = pParent->m_children[0];
-        if (prev != pNode)
+        if (prev != activeNodeIn)
         {
             for (int i = 0; i < pParent->m_numChildren; ++i)
             {
-                if (pParent->m_children[i] == pNode)
+                if (pParent->m_children[i] == activeNodeIn)
                 {
                     prev = pParent->m_children[i - 1];
                     break;
@@ -727,18 +753,21 @@ struct E0CC40Node
     double m_base;
 };
 
-E0CC40Node* __cdecl findChildNode(E0CC40Node* node, double time, int axis);
+E0CC40Node* __cdecl findChildNode(E0CC40Node* currentNode, double sampleTime, int absoluteTimeIndex);
 
 // Walks down from hint (or root if hint is null or its axis value plus base is below time) via FUN_00e10820 until no child is returned, then returns the node.
 // @fnv 0x00e0cc40
-E0CC40Node* __cdecl FindNodeAtTime(E0CC40Node* root, E0CC40Node* hint, double time, int axis)
+// src: XBOX_RETAIL_PDB 0x00e0cc40
+// pdb: getNodeAtSample | hkMonitorStreamAnalyzer.obj | retail, object-file gap fill, high
+// pdb params: currentNode, lastHit, sampleTime, absoluteTimeIndex
+E0CC40Node* __cdecl getNodeAtSample(E0CC40Node* currentNode, E0CC40Node* lastHit, double sampleTime, int absoluteTimeIndex)
 {
-    E0CC40Node* node = hint;
-    if (!node || !(node->m_iSlotIds[axis] + node->m_base >= time))
-        node = root;
+    E0CC40Node* node = lastHit;
+    if (!node || !(node->m_iSlotIds[absoluteTimeIndex] + node->m_base >= sampleTime))
+        node = currentNode;
     while (node)
     {
-        E0CC40Node* child = findChildNode(node, time, axis);
+        E0CC40Node* child = findChildNode(node, sampleTime, absoluteTimeIndex);
         if (!child)
             break;
         node = child;
@@ -785,6 +814,7 @@ static __forceinline EntryRef MakeRef(SpawnedEntry* e)
 
 // @fnv 0x00e0ccf0
 // src: HAVOK_LIB 0x00e0ccf0
+// pdb: hkMonitorStreamAnalyzer::reset | hkMonitorStreamAnalyzer.obj | debug, upstream name already matches, high
 void FUN_00e0ccf0_cls::hkMonitorStreamAnalyzer_reset()
 {
     m_unk10 = 0;
@@ -817,6 +847,9 @@ struct Sink
 };
 
 // @fnv 0x00e0cd20
+// pdb: hkMonitorStreamAnalyzer::extractStringMap | hkMonitorStreamAnalyzer.obj | debug, object-file run extension, low
+// pdb params: frameStart, frameEnd, map
+// pdb locals: assertBuf, ostr
 void __cdecl ProcessRecords(unsigned char* pRecords, unsigned char* end, Sink* sink)
 {
     while (pRecords < end)
@@ -887,12 +920,12 @@ struct S_Flag
     }
 };
 
-void* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForMultipleFrames(void* apSelf, int aIndex, S_Flag aFlag);
-void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int a0, void* pArray, int a2, int a3, int a4, int a5, int a6);
+void* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForMultipleFrames(void* threadId, int reuseNodesIfPossible, S_Flag aFlag);
+void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int outstream, void* nodes, int numThreads, int numSpus, int reportLevel, int nodeIdForFrameOverview, int showMultithreadedSummary);
 
 struct FUN_00e0d0a0_s
 {
-    void ClearItems();
+    void hkMonitorStreamAnalyzer_Node_dtor();
 };
 
 struct Array_e10630
@@ -918,6 +951,9 @@ struct FUN_00e10630_cls
 
 // Collects m_count04 items via FUN_00e0ee00 into a temporary array, passes it to FUN_00e0fec0, then calls ClearItems and frees each item through the allocator.
 // @fnv 0x00e10630
+// pdb: hkMonitorStreamAnalyzer::writeStatistics | hkMonitorStreamAnalyzer.obj | retail, object-file run extension, low
+// pdb params: outStream, reportLevel
+// pdb locals: nodes, node
 void FUN_00e10630_cls::ProcessItems(int a1, int a2)
 {
     Array_e10630 arr;
@@ -943,7 +979,7 @@ void FUN_00e10630_cls::ProcessItems(int a1, int a2)
         void* item = arr.m_data[j];
         if (item)
         {
-            ((FUN_00e0d0a0_s*)item)->ClearItems();
+            ((FUN_00e0d0a0_s*)item)->hkMonitorStreamAnalyzer_Node_dtor();
             hkMemoryRouter* holder = hkMemoryRouter_getInstance();
             holder->m_heap->blockFree(item, 0x58);
         }
@@ -1019,24 +1055,26 @@ extern "C" int __cdecl hkString_strCmp(int a, unsigned int b);
 // Checks the cached index, then scans entries for a matching m_4c; stores the scanned index on a match.
 // @fnv 0x00e0c690
 // src: HAVOK_LIB 0x00e0c690
-static __declspec(noinline) unsigned char findChildWithHint(unsigned int uiKey, int* piIndex, FUN_00e0c690_owner* apOwner)
+// pdb: findChildWithHint | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: mainNode, childName, childId
+static __declspec(noinline) unsigned char findChildWithHint(unsigned int mainNode, int* childName, FUN_00e0c690_owner* childId)
 {
-    unsigned int* pa = &uiKey;
-    int idx = *piIndex;
-    if (apOwner->m_34 > idx)
+    unsigned int* pa = &mainNode;
+    int idx = *childName;
+    if (childId->m_34 > idx)
     {
-        S00e0c690_entry*& e = apOwner->m_30[idx];
+        S00e0c690_entry*& e = childId->m_30[idx];
         if (hkString_strCmp(e->m_4c, *pa) == 0)
         {
             return 1;
         }
     }
-    for (int i = 0; i < apOwner->m_34; ++i)
+    for (int i = 0; i < childId->m_34; ++i)
     {
-        S00e0c690_entry*& e = apOwner->m_30[i];
+        S00e0c690_entry*& e = childId->m_30[i];
         if (hkString_strCmp(e->m_4c, *pa) == 0)
         {
-            *piIndex = i;
+            *childName = i;
             return 1;
         }
     }
@@ -1119,87 +1157,90 @@ struct __declspec(align(64)) LineBuf_e0c8e0
 // Writes the node name, maximum nonzero count, and scaled values to stream, then processes each child at depth + 1.
 // @fnv 0x00e0c8e0
 // src: HAVOK_LIB 0x00e0c8e0
-void __cdecl hkWriteRec(void* stream, Node_e0c8e0* item, int depth, float scale)
+// pdb: hkWriteRec | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: outstream, node, RecDepth, factor
+// pdb locals: buffer
+void __cdecl hkWriteRec(void* outstream, Node_e0c8e0* node, int RecDepth, float factor)
 {
-    if (depth != 0)
+    if (RecDepth != 0)
     {
-        if (depth > 1)
+        if (RecDepth > 1)
         {
-            int n = depth - 1;
+            int n = RecDepth - 1;
             do
             {
-                hkOstream_printf(stream, "\t");
+                hkOstream_printf(outstream, "\t");
                 --n;
             } while (n != 0);
         }
 
-        unsigned short* pCounts = item->counts;
+        unsigned short* pCounts = node->counts;
         int maxv = 0;
         int iNonZero = 0;
-        if (item->counts[0] != 0)
+        if (node->counts[0] != 0)
         {
             ++iNonZero;
-            if ((int)item->counts[0] > maxv)
-                maxv = (int)item->counts[0];
+            if ((int)node->counts[0] > maxv)
+                maxv = (int)node->counts[0];
         }
-        if (item->counts[1] != 0)
+        if (node->counts[1] != 0)
         {
             ++iNonZero;
-            if ((int)item->counts[1] > maxv)
-                maxv = (int)item->counts[1];
+            if ((int)node->counts[1] > maxv)
+                maxv = (int)node->counts[1];
         }
-        if (item->counts[2] != 0)
+        if (node->counts[2] != 0)
         {
             ++iNonZero;
-            if ((int)item->counts[2] > maxv)
-                maxv = (int)item->counts[2];
+            if ((int)node->counts[2] > maxv)
+                maxv = (int)node->counts[2];
         }
-        if (item->counts[3] != 0)
+        if (node->counts[3] != 0)
         {
             ++iNonZero;
-            if ((int)item->counts[3] > maxv)
-                maxv = (int)item->counts[3];
+            if ((int)node->counts[3] > maxv)
+                maxv = (int)node->counts[3];
         }
-        if (item->counts[4] != 0)
+        if (node->counts[4] != 0)
         {
             ++iNonZero;
-            if ((int)item->counts[4] > maxv)
-                maxv = (int)item->counts[4];
+            if ((int)node->counts[4] > maxv)
+                maxv = (int)node->counts[4];
         }
-        if (item->counts[5] != 0)
+        if (node->counts[5] != 0)
         {
             ++iNonZero;
-            if ((int)item->counts[5] > maxv)
-                maxv = (int)item->counts[5];
+            if ((int)node->counts[5] > maxv)
+                maxv = (int)node->counts[5];
         }
-        if (item->counts[6] != 0)
+        if (node->counts[6] != 0)
         {
             ++iNonZero;
-            if ((int)item->counts[6] > maxv)
-                maxv = (int)item->counts[6];
+            if ((int)node->counts[6] > maxv)
+                maxv = (int)node->counts[6];
         }
-        if (item->counts[7] != 0)
+        if (node->counts[7] != 0)
         {
             ++iNonZero;
-            if ((int)item->counts[7] > maxv)
-                maxv = (int)item->counts[7];
+            if ((int)node->counts[7] > maxv)
+                maxv = (int)node->counts[7];
         }
 
         LineBuf_e0c8e0 buf;
-        Vsnprintf((char*)&buf, 200, "%s(%i)", item->name, maxv);
+        hkString_snprintf((char*)&buf, 200, "%s(%i)", node->name, maxv);
         if (maxv <= 1)
-            Vsnprintf((char*)&buf, 200, "%s", item->name);
-        else if (scale == 1.0f)
-            Vsnprintf((char*)&buf, 200, "%s (%i)", item->name, maxv);
+            hkString_snprintf((char*)&buf, 200, "%s", node->name);
+        else if (factor == 1.0f)
+            hkString_snprintf((char*)&buf, 200, "%s (%i)", node->name, maxv);
         else
-            Vsnprintf((char*)&buf, 200, "%s (%4.1f)", item->name, scale * maxv);
+            hkString_snprintf((char*)&buf, 200, "%s (%4.1f)", node->name, factor * maxv);
 
-        hkOstream_printf(stream, "%-32s", &buf);
+        hkOstream_printf(outstream, "%-32s", &buf);
 
         int tabs = 3;
         do
         {
-            hkOstream_printf(stream, "\t");
+            hkOstream_printf(outstream, "\t");
             --tabs;
         } while (tabs != 0);
 
@@ -1212,25 +1253,25 @@ void __cdecl hkWriteRec(void* stream, Node_e0c8e0* item, int depth, float scale)
                 int c = *p;
                 if (c != 0)
                 {
-                    float v = item->values[i] * scale;
+                    float v = node->values[i] * factor;
                     if (c < maxv)
                         v *= (float)maxv / (float)c;
                     --iRemaining;
                     if (iRemaining != 0)
-                        hkOstream_printf(stream, "% 12.3f: ", v);
+                        hkOstream_printf(outstream, "% 12.3f: ", v);
                     else
-                        hkOstream_printf(stream, "% 12.3f\n", v);
+                        hkOstream_printf(outstream, "% 12.3f\n", v);
                 }
             }
         }
         else
         {
-            hkOstream_printf(stream, "% 12.3f\n", 0.0);
+            hkOstream_printf(outstream, "% 12.3f\n", 0.0);
         }
     }
 
-    for (int i = 0; i < item->childCount; ++i)
-        hkWriteRec(stream, item->children[i], depth + 1, scale);
+    for (int i = 0; i < node->childCount; ++i)
+        hkWriteRec(outstream, node->children[i], RecDepth + 1, factor);
 }
 
 struct S_00e0cbe0_Entry
@@ -1280,30 +1321,32 @@ int __cdecl hkString_strCmp(int a, int b);
 // Searches owner->unk30 for an entry matching key, then returns the first subsequent entry whose unk4c fails FUN_00cb0fa0 against value.
 // @fnv 0x00e0cbe0
 // src: HAVOK_LIB 0x00e0cbe0
-static __declspec(noinline) int __cdecl hkFindNextChildByName(S_00e0cbe0_Owner* owner, S_00e0cbe0_Entry* key, int value)
+// pdb: hkFindNextChildByName | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: node, childName, oldChild
+static __declspec(noinline) int __cdecl hkFindNextChildByName(S_00e0cbe0_Owner* node, S_00e0cbe0_Entry* childName, int oldChild)
 {
     int index;
-    int* piValue = &value;
+    int* piValue = &oldChild;
 
     index = 0;
-    while (index < owner->unk34)
+    while (index < node->unk34)
     {
-        if (owner->unk30[index] == key)
+        if (node->unk30[index] == childName)
             break;
         ++index;
     }
 
     ++index;
-    if (index >= owner->unk34)
+    if (index >= node->unk34)
         return 0;
 
     do
     {
-        S_00e0cbe0_Entry** slot = &owner->unk30[index];
+        S_00e0cbe0_Entry** slot = &node->unk30[index];
         if (!hkString_strCmp(*piValue, (*slot)->unk4c))
-            return reinterpret_cast<int>(owner->unk30[index]);
+            return reinterpret_cast<int>(node->unk30[index]);
         ++index;
-    } while (index < owner->unk34);
+    } while (index < node->unk34);
 
     return 0;
 }
@@ -1313,8 +1356,8 @@ int __cdecl S00e0cbe0_Call(S_00e0cbe0_Owner* owner, S_00e0cbe0_Entry* key, int v
     return hkFindNextChildByName(owner, key, value);
 }
 
-void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetailsToTga(void* array, void* name, void* owner, int argument, int flags);
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int count, int size);
+void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetailsToTga(void* nodeList, void* input, void* frameInfos, int outStream, int sampleInfo);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 struct TempArray830
 {
     void** data;
@@ -1343,17 +1386,20 @@ struct TempArray830
             heap.bufFree(data, (capacity & 0x3fffffff) * 4);
     }
 };
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int count, int size);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 struct Owner830
 {
     void* data;
     int count;
-    void hkMonitorStreamAnalyzer_drawThreadsToTga(void* name, int argument);
+    void hkMonitorStreamAnalyzer_drawThreadsToTga(void* input, int outStream);
 };
 // Builds a TempArray830 of item pointers from count, calls FUN_00e0e470, then clears and frees each item and releases the array.
 // @fnv 0x00e0f5e0
 // src: HAVOK_LIB 0x00e0f5e0
-void Owner830::hkMonitorStreamAnalyzer_drawThreadsToTga(void* name, int argument)
+// pdb: hkMonitorStreamAnalyzer::drawThreadsToTga | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: input, outStream
+// pdb locals: nodeList
+void Owner830::hkMonitorStreamAnalyzer_drawThreadsToTga(void* input, int outStream)
 {
     TempArray830 temp;
     int iCount = count;
@@ -1361,13 +1407,13 @@ void Owner830::hkMonitorStreamAnalyzer_drawThreadsToTga(void* name, int argument
     temp.size = iCount;
     for (int i = 0; i < iCount; i++)
         temp.data[i] = hkMonitorStreamAnalyzer_makeStatisticsTreeForMultipleFrames(this, i, S_Flag());
-    hkMonitorStreamAnalyzer_writeStatisticsDetailsToTga(&temp, name, this, argument, 0);
+    hkMonitorStreamAnalyzer_writeStatisticsDetailsToTga(&temp, input, this, outStream, 0);
     for (int j = 0; j < iCount; j++)
     {
         FUN_00e0d0a0_s* p = (FUN_00e0d0a0_s*)temp.data[j];
         if (p)
         {
-            p->ClearItems();
+            p->hkMonitorStreamAnalyzer_Node_dtor();
             hkMemoryAllocator& heap = hkMemoryRouter_getInstance()->heap();
             heap.blockFree(p, 0x58);
         }
@@ -1461,23 +1507,25 @@ __forceinline FUN_00e0d000* findOrAdd(FUN_00e0d000Array& array, const char* name
 // Recursively accumulates node stats into a total entry in the map, including its children and linked node.
 // @fnv 0x00e0f880
 // src: HAVOK_LIB 0x00e0f880
-void __cdecl hkBuildSizePerName(FUN_00e0d000* node, FUN_00e0d000Map* map)
+// pdb: hkBuildSizePerName | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: node, mapOut
+void __cdecl hkBuildSizePerName(FUN_00e0d000* node, FUN_00e0d000Map* mapOut)
 {
     const char* name = node->name;
-    FUN_00e0d000Total* total = map->GetValue(name, 0);
+    FUN_00e0d000Total* total = mapOut->GetValue(name, 0);
     if (!total)
     {
         total =
             new (debugHeap(hkMemoryRouter_getInstance()).blockAlloc(sizeof(FUN_00e0d000Total)))
                 FUN_00e0d000Total;
         total->name = name;
-        map->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(name, total);
+        mapOut->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(name, total);
     }
     total->accumulate(*node);
     for (int i = 0; i < node->childCount; ++i)
     {
         FUN_00e0d000* child = node->children[i];
-        hkBuildSizePerName(child, map);
+        hkBuildSizePerName(child, mapOut);
         FUN_00e0d000* childTotal = findOrAdd(total->childFUN_00e0d000, child->name);
         childTotal->accumulate(*child);
     }
@@ -1557,6 +1605,8 @@ static __declspec(noinline) void drawDigit(S00e0c210_Obj* self, int digit, int* 
 // Computes four decimal digits from thousands through ones, passing each to FUN_00e0c1c0 and advancing out by seven integers.
 // @fnv 0x00e0c210
 // src: HAVOK_LIB 0x00e0c210
+// pdb: drawNumber | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: nr, currentY, outputPixelWidth, texture
 static __declspec(noinline) void __cdecl drawNumber(int value, S00e0c210_Obj* self, int* out)
 {
     int place = 1000;
@@ -1655,18 +1705,21 @@ __forceinline bool isSmallTag(CommandWord* c, unsigned int tag, hkBool swap)
 // Walks a command buffer, resolves command and object tags to names via map, and byte-swaps timing and value fields when needed.
 // @fnv 0x00e0c350
 // src: HAVOK_LIB 0x00e0c350
-void __cdecl hkMonitorStreamAnalyzer_applyStringMap(char* apBuffer, const char* end, SomeMap* map, hkBool swapBytes)
+// pdb: hkMonitorStreamAnalyzer::applyStringMap | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: frameStart, frameEnd, map, endianSwap
+// pdb locals: assertBuf, ostr
+void __cdecl hkMonitorStreamAnalyzer_applyStringMap(char* frameStart, const char* frameEnd, SomeMap* map, hkBool endianSwap)
 {
-    if (apBuffer >= end)
+    if (frameStart >= frameEnd)
         return;
 loop:
-    unsigned int tag = ((CommandWord*)apBuffer)->tag;
-    if (!isSmallTag((CommandWord*)apBuffer, tag, swapBytes))
+    unsigned int tag = ((CommandWord*)frameStart)->tag;
+    if (!isSmallTag((CommandWord*)frameStart, tag, endianSwap))
         goto do_command;
 advance:
-    apBuffer += 4;
+    frameStart += 4;
 next:
-    if (apBuffer < end)
+    if (frameStart < frameEnd)
         goto loop;
     return;
 do_command:
@@ -1675,7 +1728,7 @@ do_command:
     {
         return;
     }
-    ((CommandWord*)apBuffer)->name = str;
+    ((CommandWord*)frameStart)->name = str;
 
     switch (str[0])
     {
@@ -1683,9 +1736,9 @@ do_command:
     case 'S':
     case 'T':
     case 'l': {
-        char* cur = apBuffer;
-        apBuffer += 12;
-        if (swapBytes)
+        char* cur = frameStart;
+        frameStart += 12;
+        if (endianSwap)
         {
             swapInPlace(((hkMonitorStream::TimerCommand*)cur)->m_time0);
             swapInPlace(((hkMonitorStream::TimerCommand*)cur)->m_time1);
@@ -1699,15 +1752,15 @@ do_command:
         goto advance;
 
     case 'O': {
-        char* cur = apBuffer;
-        apBuffer += 16;
+        char* cur = frameStart;
+        frameStart += 16;
         unsigned int key = ((NamedCommand*)cur)->object.tag;
         const char* pObjectName;
         if (map->LookupBucketValue(key, &pObjectName) == 0)
         {
             ((NamedCommand*)cur)->object.name = pObjectName;
         }
-        if (swapBytes)
+        if (endianSwap)
         {
             swapInPlace(((hkMonitorStream::TimerCommand*)cur)->m_time0);
             swapInPlace(((hkMonitorStream::TimerCommand*)cur)->m_time1);
@@ -1715,15 +1768,15 @@ do_command:
         goto next;
     }
     case 'L': {
-        char* cur = apBuffer;
-        apBuffer += 16;
+        char* cur = frameStart;
+        frameStart += 16;
         unsigned int key = ((NamedCommand*)cur)->object.tag;
         const char* pObjectName;
         if (map->LookupBucketValue(key, &pObjectName) == 0)
         {
             ((NamedCommand*)cur)->object.name = pObjectName;
         }
-        if (swapBytes)
+        if (endianSwap)
         {
             swapInPlace(((hkMonitorStream::TimerCommand*)cur)->m_time0);
             swapInPlace(((hkMonitorStream::TimerCommand*)cur)->m_time1);
@@ -1731,9 +1784,9 @@ do_command:
         goto next;
     }
     case 'M': {
-        char* cur = apBuffer;
-        apBuffer += 8;
-        if (swapBytes)
+        char* cur = frameStart;
+        frameStart += 8;
+        if (endianSwap)
         {
             swapInPlace(((ValueCommand*)cur)->value);
         }
@@ -1792,17 +1845,19 @@ struct NameArg
 // Searches box->unk30 for a RecEntry whose unk4c matches name.unk00, returning the first match or the first entry when flag is set and no match is found.
 // @fnv 0x00e0cb80
 // src: HAVOK_LIB 0x00e0cb80
-static __declspec(noinline) RecEntry* hkFindChildByName(RecBox* box, NameArg name, bool abFallbackToFirst)
+// pdb: hkFindChildByName | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: node, childName, searchAnyChild
+static __declspec(noinline) RecEntry* hkFindChildByName(RecBox* node, NameArg childName, bool searchAnyChild)
 {
-    const char* n = name.unk00;
-    for (int i = 0; i < box->unk34; ++i)
+    const char* n = childName.unk00;
+    for (int i = 0; i < node->unk34; ++i)
     {
-        RecEntry*& e = box->unk30[i];
+        RecEntry*& e = node->unk30[i];
         if (hkString_strCmp(n, e->unk4c) == 0)
-            return box->unk30[i];
+            return node->unk30[i];
     }
-    if (abFallbackToFirst && box->unk34 > 0)
-        return box->unk30[0];
+    if (searchAnyChild && node->unk34 > 0)
+        return node->unk30[0];
     return 0;
 }
 volatile int g_in_name;
@@ -1839,11 +1894,13 @@ __forceinline FUN_00e0d000*& childAt(FUN_00e0d000* parent, int i)
 // Searches the parent's children by name when findExisting is true, then allocates and constructs a child if no match is returned.
 // @fnv 0x00e0d100
 // src: HAVOK_LIB 0x00e0d100
-static __declspec(noinline) FUN_00e0d000* createNewNode(FUN_00e0d000* parent, NameArg name, IntArg extra,
-                                                       BoolArg findExisting)
+// pdb: createNewNode | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: parent, name, type, wantNodeReuse
+static __declspec(noinline) FUN_00e0d000* createNewNode(FUN_00e0d000* parent, NameArg name, IntArg type,
+                                                       BoolArg wantNodeReuse)
 {
     const char* key = name.value;
-    if (findExisting.value)
+    if (wantNodeReuse.value)
     {
         int i = 0;
         {
@@ -1857,7 +1914,7 @@ static __declspec(noinline) FUN_00e0d000* createNewNode(FUN_00e0d000* parent, Na
     }
     void* storage = ((hkMemoryRouter*)hkMemoryRouter_getInstance())->heap().blockAlloc(0x58);
     if (storage)
-        return new (storage) FUN_00e0d000((int)parent, key, extra.value);
+        return new (storage) FUN_00e0d000((int)parent, key, type.value);
     return 0;
 }
 FUN_00e0d000* CallCreate(FUN_00e0d000* parent, NameArg name, IntArg extra, BoolArg findExisting)
@@ -1941,16 +1998,19 @@ struct DumpState
     char* commands;
     int size, cap;
     int threads, spus;
-    void hkMonitorStreamAnalyzer_writeRawStatistics(void* stream);
+    void hkMonitorStreamAnalyzer_writeRawStatistics(void* os);
 };
 // Writes statistics dump info, frame headers, and indented timer/value/alloc commands to a stream, freeing the indent buffer on exit.
 // @fnv 0x00e0eef0
 // src: HAVOK_LIB 0x00e0eef0
-void DumpState::hkMonitorStreamAnalyzer_writeRawStatistics(void* stream)
+// pdb: hkMonitorStreamAnalyzer::writeRawStatistics | hkMonitorStreamAnalyzer.obj | retail, string-set bridge, high
+// pdb params: os
+// pdb locals: indenter, threadIndex, assertBuf, ostr
+void DumpState::hkMonitorStreamAnalyzer_writeRawStatistics(void* os)
 {
     hkMemoryAllocator* cleanupAllocator;
     FUN_00e108b0 indent;
-    hkOstream_printf(stream, "StatisticsDumpInfo(num_threads=%i, num_spus=%i, num_frames=%i)\n", threads, spus,
+    hkOstream_printf(os, "StatisticsDumpInfo(num_threads=%i, num_spus=%i, num_frames=%i)\n", threads, spus,
                  frames->size);
     for (int i = 0; i < count; i++)
     {
@@ -1958,7 +2018,7 @@ void DumpState::hkMonitorStreamAnalyzer_writeRawStatistics(void* stream)
         for (int j = 0; j < f.size; j++)
         {
             DumpFrame& frame = f.data[j];
-            hkOstream_printf(stream, "FrameInfo(heading='%s', frame=%i, thread_id=%i, time_counter=%i)\n", frame.heading, j,
+            hkOstream_printf(os, "FrameInfo(heading='%s', frame=%i, thread_id=%i, time_counter=%i)\n", frame.heading, j,
                          frame.thread, frame.time);
             DumpCommand* p = (DumpCommand*)(commands + frame.begin);
             DumpCommand* end = (DumpCommand*)(commands + frame.end);
@@ -1969,7 +2029,7 @@ void DumpState::hkMonitorStreamAnalyzer_writeRawStatistics(void* stream)
                 switch (*p->name)
                 {
                 case 'T':
-                    hkOstream_printf(stream, "%sTimerBegin('%s',%u,%u)\n", indent.data, p->name + 2, p->first.timer,
+                    hkOstream_printf(os, "%sTimerBegin('%s',%u,%u)\n", indent.data, p->name + 2, p->first.timer,
                                  p->second);
                     indent.data[indent.size - 1] = ' ';
                     indent.append(' ');
@@ -1979,14 +2039,14 @@ void DumpState::hkMonitorStreamAnalyzer_writeRawStatistics(void* stream)
                 case 'E':
                     indent.size -= 2;
                     indent.data[indent.size - 1] = 0;
-                    hkOstream_printf(stream, "%sTimerEnd('%s',%u,%u)\n", indent.data, p->name + 2, p->first.timer,
+                    hkOstream_printf(os, "%sTimerEnd('%s',%u,%u)\n", indent.data, p->name + 2, p->first.timer,
                                  p->second);
                     p = (DumpCommand*)((char*)p + 12);
                     break;
                 case 'L':
-                    hkOstream_printf(stream, "%sTimerBegin('%s', %u, %u)\n", indent.data, p->name + 2, p->first.timer,
+                    hkOstream_printf(os, "%sTimerBegin('%s', %u, %u)\n", indent.data, p->name + 2, p->first.timer,
                                  p->second);
-                    hkOstream_printf(stream, "%sTimerSplit('%s', %u, %u)\n", indent.data, p->split + 2, p->first.timer,
+                    hkOstream_printf(os, "%sTimerSplit('%s', %u, %u)\n", indent.data, p->split + 2, p->first.timer,
                                  p->second);
                     indent.data[indent.size - 1] = ' ';
                     indent.append(' ');
@@ -1996,7 +2056,7 @@ void DumpState::hkMonitorStreamAnalyzer_writeRawStatistics(void* stream)
                 case 'S':
                     indent.size -= 2;
                     indent.data[indent.size - 1] = 0;
-                    hkOstream_printf(stream, "%sTimerSplit('%s', %u, %u)\n", indent.data, p->name + 2, p->first.timer,
+                    hkOstream_printf(os, "%sTimerSplit('%s', %u, %u)\n", indent.data, p->name + 2, p->first.timer,
                                  p->second);
                     indent.data[indent.size - 1] = ' ';
                     indent.append(' ');
@@ -2006,12 +2066,12 @@ void DumpState::hkMonitorStreamAnalyzer_writeRawStatistics(void* stream)
                 case 'l':
                     indent.size -= 2;
                     indent.data[indent.size - 1] = 0;
-                    hkOstream_printf(stream, "%sTimerEnd('%s', %u, %u)\n", indent.data, p->name + 2, p->first.timer,
+                    hkOstream_printf(os, "%sTimerEnd('%s', %u, %u)\n", indent.data, p->name + 2, p->first.timer,
                                  p->second);
                     p = (DumpCommand*)((char*)p + 12);
                     break;
                 case 'M':
-                    hkOstream_printf(stream, "%sAddValue(%s,%f)\n", indent.data, p->name + 1, p->first.value);
+                    hkOstream_printf(os, "%sAddValue(%s,%f)\n", indent.data, p->name + 1, p->first.value);
                     p = (DumpCommand*)((char*)p + 8);
                     break;
                 case 'N':
@@ -2020,7 +2080,7 @@ void DumpState::hkMonitorStreamAnalyzer_writeRawStatistics(void* stream)
                 case 'm': {
                     int bytes = p->second & 0x7fffffff;
                     const char* operation = (p->second & 0x80000000u) ? "Free" : "Alloc";
-                    hkOstream_printf(stream, "%s%s%s(ptr=0x%p, nbytes=%i)\n", indent.data, operation, p->name + 1,
+                    hkOstream_printf(os, "%s%s%s(ptr=0x%p, nbytes=%i)\n", indent.data, operation, p->name + 1,
                                  p->first.pointer, bytes);
                     p = (DumpCommand*)((char*)p + 12);
                     break;
@@ -2101,18 +2161,18 @@ struct AggObj
     int unk4c;
     int unk50;
     int unk54;
-    AggObj* DoNothing_00e0d000(int a, const char* name, int b);
-    void ClearItems();
+    AggObj* hkMonitorStreamAnalyzer_Node_ctor(int parent, const char* name, int type);
+    void hkMonitorStreamAnalyzer_Node_dtor();
 };
 void __cdecl ext_free(int);
 int __cdecl ext_init(int, const char*, int);
 // src: GUESS 0x00e0d000 (confidence: high)
-__declspec(noinline) AggObj* AggObj::DoNothing_00e0d000(int a, const char* name, int b)
+__declspec(noinline) AggObj* AggObj::hkMonitorStreamAnalyzer_Node_ctor(int parent, const char* name, int type)
 {
-    unk00 = ext_init(a, name, b);
+    unk00 = ext_init(parent, name, type);
     return this;
 }
-__declspec(noinline) void AggObj::ClearItems()
+__declspec(noinline) void AggObj::hkMonitorStreamAnalyzer_Node_dtor()
 {
     ext_free(unk00);
 }
@@ -2144,10 +2204,10 @@ struct CfgObj
 };
 void __cdecl ext_merge(int, int);
 // src: HAVOK_LIB 0x00e0d880
-__declspec(noinline) void __cdecl hkMakeSumRecursive(AggObj* agg, TimerObj* timer)
+__declspec(noinline) void __cdecl hkMakeSumRecursive(AggObj* sum, TimerObj* tree)
 {
-    ext_merge(agg->unk04, (int)timer->m_name);
-    agg->unk08 = 1;
+    ext_merge(sum->unk04, (int)tree->m_name);
+    sum->unk08 = 1;
 }
 struct SearchKey
 {
@@ -2155,41 +2215,41 @@ struct SearchKey
 };
 int __cdecl hkString_strCmp(const char*, const char*);
 // src: HAVOK_LIB 0x00e0cb80
-static __declspec(noinline) TimerObj* hkFindChildByName(TimerObj* root, SearchKey key, S_Flag flag)
+static __declspec(noinline) TimerObj* hkFindChildByName(TimerObj* node, SearchKey childName, S_Flag searchAnyChild)
 {
-    for (int i = 0; i < root->m_children.m_iElementCount; ++i)
+    for (int i = 0; i < node->m_children.m_iElementCount; ++i)
     {
-        if (!hkString_strCmp((const char*)key.value, root->m_children.m_data[i]->m_name))
-            return root->m_children.m_data[i];
+        if (!hkString_strCmp((const char*)childName.value, node->m_children.m_data[i]->m_name))
+            return node->m_children.m_data[i];
     }
-    if (flag.b && root->m_children.m_iElementCount > 0)
-        return root->m_children.m_data[0];
+    if (searchAnyChild.b && node->m_children.m_iElementCount > 0)
+        return node->m_children.m_data[0];
     return 0;
 }
 
 // src: HAVOK_LIB 0x00e0cbe0
-static __declspec(noinline) TimerObj* hkFindNextChildByName(TimerObj* root, TimerObj* node, SearchKey key)
+static __declspec(noinline) TimerObj* hkFindNextChildByName(TimerObj* node, TimerObj* childName, SearchKey oldChild)
 {
     int i = 0;
-    while (i < root->m_children.m_iElementCount && root->m_children.m_data[i] != node)
+    while (i < node->m_children.m_iElementCount && node->m_children.m_data[i] != childName)
         ++i;
-    for (++i; i < root->m_children.m_iElementCount; ++i)
+    for (++i; i < node->m_children.m_iElementCount; ++i)
     {
-        if (!hkString_strCmp((const char*)key.value, root->m_children.m_data[i]->m_name))
-            return root->m_children.m_data[i];
+        if (!hkString_strCmp((const char*)oldChild.value, node->m_children.m_data[i]->m_name))
+            return node->m_children.m_data[i];
     }
     return 0;
 }
 void __cdecl ext_show(void*, int, int, float);
 // src: HAVOK_LIB 0x00e0c8e0
-__declspec(noinline) void __cdecl hkWriteRec(void* stream, void* agg, int a, float f)
+__declspec(noinline) void __cdecl hkWriteRec(void* outstream, void* node, int RecDepth, float factor)
 {
-    ext_show(stream, ((AggObj*)agg)->unk08, a, f);
+    ext_show(outstream, ((AggObj*)node)->unk08, RecDepth, factor);
 }
-void __cdecl hkMonitorStreamAnalyzer_mergeTreesForCombinedThreadSummary(void* first, void* second, int index, int limit, float amount);
-void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(void* a, int a2, int a3, void* stream, CfgObj* cfg);
+void __cdecl hkMonitorStreamAnalyzer_mergeTreesForCombinedThreadSummary(void* mainTree, void* subTree, int destTimerId, int sourceTimerId, float smoothingFactor);
+void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(void* node, int numThreads, int numSpus, void* os, CfgObj* options);
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* arr, int count, int elemSize);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 extern "C" void __cdecl hkString_memSet(void* dst, int c, int n);
 void* __cdecl fnv_zlib_memset(void* dst, int c, int n);
 
@@ -2241,7 +2301,7 @@ void __cdecl hkBuildSizePerName(void* node, TypeMap* map);
 int __cdecl hkCompareInfosBySize(const TypeItem*, const TypeItem*);
 void __cdecl hkAlgorithm_quickSortRecursive_hkMonitorStreamAnalyzerPrintByTypeInfo_bool_cdecl_hkMonitorStreamAnalyzerPrintByTypeInfo_const_hkMonitorStreamAnalyzerPrintByTypeInfo_const(TypeItem** data, int lo, int hi, int(__cdecl* compare)(const TypeItem*, const TypeItem*));
 // src: HAVOK_LIB 0x00e0fc50
-static __declspec(noinline) void printStatisticsByType(void* stream, void* rootNode, float fraction)
+static __declspec(noinline) void printStatisticsByType(void* outstream, void* rootNode, float maxImportance)
 {
     TypeMap map;
     S_Flag flag;
@@ -2273,27 +2333,27 @@ static __declspec(noinline) void printStatisticsByType(void* stream, void* rootN
         hkAlgorithm_quickSortRecursive_hkMonitorStreamAnalyzerPrintByTypeInfo_bool_cdecl_hkMonitorStreamAnalyzerPrintByTypeInfo_const_hkMonitorStreamAnalyzerPrintByTypeInfo_const(arr.data, 0, arr.size - 1, hkCompareInfosBySize);
     map.FreeBuffer();
     float maxTime = arr.data[arr.size - 1]->values[1];
-    hkOstream_printf(stream, "\n\n");
-    hkOstream_printf(stream, "************************************\n");
-    hkOstream_printf(stream, "********** Per Type Times    *******\n");
-    hkOstream_printf(stream, "************************************\n");
+    hkOstream_printf(outstream, "\n\n");
+    hkOstream_printf(outstream, "************************************\n");
+    hkOstream_printf(outstream, "********** Per Type Times    *******\n");
+    hkOstream_printf(outstream, "************************************\n");
     for (int i = arr.size - 1; i >= 0; --i)
     {
         TypeItem* item = arr.data[i];
-        if (item->values[1] > maxTime * fraction)
+        if (item->values[1] > maxTime * maxImportance)
         {
-            hkOstream_printf(stream, "\n");
-            hkOstream_printf(stream, "************************************\n\n");
+            hkOstream_printf(outstream, "\n");
+            hkOstream_printf(outstream, "************************************\n\n");
             for (int j = 0; j < item->size; ++j)
             {
-                hkOstream_printf(stream, "\t\t");
-                WriteItemStats(stream, 0.0f, (S_00e0bfe0_Item*)&item->entries[j]);
+                hkOstream_printf(outstream, "\t\t");
+                printSingleNodeValues(outstream, 0.0f, (S_00e0bfe0_Item*)&item->entries[j]);
             }
-            WriteItemStats(stream, maxTime, (S_00e0bfe0_Item*)item);
+            printSingleNodeValues(outstream, maxTime, (S_00e0bfe0_Item*)item);
             for (int k = 0; k < item->otherSize; ++k)
             {
-                hkOstream_printf(stream, "\t\t");
-                WriteItemStats(stream, 0.0f, (S_00e0bfe0_Item*)&item->other[k]);
+                hkOstream_printf(outstream, "\t\t");
+                printSingleNodeValues(outstream, 0.0f, (S_00e0bfe0_Item*)&item->other[k]);
             }
         }
         item->ProcessEntries_00e10930();
@@ -2325,22 +2385,25 @@ struct ReportMetrics
 // Writes a Havok timer report to a stream, printing total times, per-frame ASCII bars, and optional per-frame or per-thread detail sections based on flags.
 // @fnv 0x00e0fec0
 // src: HAVOK_LIB 0x00e0fec0
-void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* apArray, int aiThreadCount, int aiSpuCount, int aiFlags, int aiKey, int a6)
+// pdb: hkMonitorStreamAnalyzer::writeStatisticsDetails | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: outstream, nodes, numThreads, numSpus, reportLevel, nodeIdForFrameOverview, showMultithreadedSummary
+// pdb locals: sum, buffer, singleFrameNodes, options
+void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int outstream, void* nodes, int numThreads, int numSpus, int reportLevel, int nodeIdForFrameOverview, int showMultithreadedSummary)
 {
-    void* stream = (void*)aStream;
-    ArrayArg* pArray = (ArrayArg*)apArray;
+    void* stream = (void*)outstream;
+    ArrayArg* pArray = (ArrayArg*)nodes;
     hkOstream_printf(stream, "Havok version: %s\n", "Havok-7.1.0-r1");
     ReportMetrics metrics;
     metrics.total = 0.0f;
     float time;
 
     metrics.first = &pArray->m_data[0]->m_children;
-    SearchKey key = {aiKey};
-    int flags = aiFlags;
+    SearchKey key = {nodeIdForFrameOverview};
+    int flags = reportLevel;
     {
 
         AggObj sum;
-        sum.DoNothing_00e0d000(0, "Sum", 1);
+        sum.hkMonitorStreamAnalyzer_Node_ctor(0, "Sum", 1);
         metrics.row = metrics.first->m_iElementCount;
         time = 1.0f / (float)metrics.row;
         int i = 0;
@@ -2374,7 +2437,7 @@ void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* a
             hkOstream_printf(stream, "Timers are added together\n");
             hkWriteRec(stream, &sum, 0, time);
         }
-        sum.ClearItems();
+        sum.hkMonitorStreamAnalyzer_Node_dtor();
     }
     if (flags & 2)
     {
@@ -2458,7 +2521,7 @@ void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* a
     if (flags & 4)
     {
         ArrayArg* pa = pArray;
-        if (pa->m_iElementCount != 1 && (char)a6 != 0)
+        if (pa->m_iElementCount != 1 && (char)showMultithreadedSummary != 0)
         {
             ThreadObj* pThread0 = pa->m_data[0];
             int iFrame = 0;
@@ -2499,7 +2562,7 @@ void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* a
                         hkMemoryAllocator* pHeap3 = pRouter3->m_heap;
                         AggObj* obj = (AggObj*)pHeap3->blockAlloc(0x58);
                         if (obj)
-                            obj = obj->DoNothing_00e0d000(0, "", 1);
+                            obj = obj->hkMonitorStreamAnalyzer_Node_ctor(0, "", 1);
                         else
                             obj = 0;
                         arr.m_data[k] = obj;
@@ -2517,7 +2580,7 @@ void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* a
                     pCfg->b1a = 0;
                     for (; m < arr.m_iElementCount; m++)
                         hkMonitorStreamAnalyzer_mergeTreesForCombinedThreadSummary(arr.m_data[0], arr.m_data[m], m, 0, 0.0f);
-                    hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(arr.m_data[0], aiThreadCount, aiSpuCount, stream, pCfg);
+                    hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(arr.m_data[0], numThreads, numSpus, stream, pCfg);
                     if (metrics.flag8)
                     {
                         printStatisticsByType(stream, arr.m_data[0], 0.01f);
@@ -2527,7 +2590,7 @@ void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* a
                         AggObj* obj = arr.m_data[k];
                         if (obj)
                         {
-                            obj->ClearItems();
+                            obj->hkMonitorStreamAnalyzer_Node_dtor();
                             hkMemoryRouter* pRouter4 = (hkMemoryRouter*)hkMemoryRouter_getInstance();
                             pRouter4->m_heap->blockFree(obj, 0x58);
                         }
@@ -2569,7 +2632,7 @@ void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* a
                             {
 
                                 AggObj sum2;
-                                sum2.DoNothing_00e0d000(0, "Sum", 1);
+                                sum2.hkMonitorStreamAnalyzer_Node_ctor(0, "Sum", 1);
                                 hkMakeSumRecursive(&sum2, pThread->m_children.m_data[ebp]);
                                 hkOstream_printf(stream, "\n");
                                 hkOstream_printf(stream, "****************************************\n");
@@ -2583,7 +2646,7 @@ void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* a
                                 {
                                     printStatisticsByType(stream, &sum2, 0.01f);
                                 }
-                                sum2.ClearItems();
+                                sum2.hkMonitorStreamAnalyzer_Node_dtor();
                             }
                             ebx++;
                         } while (ebx < pa->m_iElementCount);
@@ -2611,11 +2674,11 @@ void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetails(int aStream, void* a
                         {
                             hkOstream_printf(stream, "\n\n");
                             hkOstream_printf(stream, "***************************************\n");
-                            if (ebx < aiThreadCount)
+                            if (ebx < numThreads)
                                 hkOstream_printf(stream, "***** Details Frame-%i Thread:%i ******\n", edi, ebx);
                             else
                                 hkOstream_printf(stream, "***** Details Frame-%i Spu:%i ******\n", edi,
-                                             ebx - aiThreadCount);
+                                             ebx - numThreads);
                             hkOstream_printf(stream, "***************************************\n");
                             hkOstream_printf(stream, "%s\n", pThread->m_children.m_data[edi]->m_name);
                             float one = 1.0f;
@@ -2658,18 +2721,20 @@ struct FUN_00e0cc90_cls
     int m_iArrayLength;       // +0x0c
     int unk10;
     int m_iFallback;  // +0x14
-    int hkMonitorStreamColorTable_findColor(int arg);
+    int hkMonitorStreamColorTable_findColor(int color);
 };
 
 // Searches m_pEntries for a case-insensitive key match and returns its value, or m_iFallback if not found.
 // @fnv 0x00e0cc90
 // src: HAVOK_LIB 0x00e0cc90
-int FUN_00e0cc90_cls::hkMonitorStreamColorTable_findColor(int aiKey)
+// pdb: hkMonitorStreamColorTable::findColor | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: color
+int FUN_00e0cc90_cls::hkMonitorStreamColorTable_findColor(int color)
 {
     for (int i = 0; i < m_iArrayLength; ++i)
     {
         unsigned int key = m_pEntries[i].key & 0xfffffffe;
-        if (CompareStringsCaseInsensitive(key, aiKey) != 0)
+        if (CompareStringsCaseInsensitive(key, color) != 0)
         {
         }
         else
@@ -2709,17 +2774,20 @@ struct S00e0d180_Node
         return reinterpret_cast<hkMemoryAllocator&>(hkMemoryRouter_getInstance()->heap()).blockAlloc(size);
     }
 
-    S00e0d180_Node(S00e0d180_Node* parent, const char* name, int flags);
+    S00e0d180_Node(S00e0d180_Node* parent, const char* name, int type);
 };
 
 // Recursively updates destination values from source values and copies source counts at each visited level.
 // @fnv 0x00e0d180
 // src: HAVOK_LIB 0x00e0d180
-extern "C" void __cdecl mergeSubTree(void* apDestNode, void* apSrcNode, int index, int aiSrcLevel, float afBlendAmount)
+// pdb: mergeSubTree | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: mainTree, subTree, destTimerId, sourceTimerId, smoothingFactor
+// pdb locals: childId, assertBuf, ostr
+extern "C" void __cdecl mergeSubTree(void* mainTree, void* subTree, int destTimerId, int sourceTimerId, float smoothingFactor)
 
 {
 
-    int lvl = index;
+    int lvl = destTimerId;
 
     if (lvl > 6)
     {
@@ -2727,33 +2795,33 @@ extern "C" void __cdecl mergeSubTree(void* apDestNode, void* apSrcNode, int inde
         lvl = 6;
     }
 
-    index = 0;
+    destTimerId = 0;
 
     int i = 0;
 
-    if (((S00e0d180_Node*)apSrcNode)->children.m_iElementCount > 0)
+    if (((S00e0d180_Node*)subTree)->children.m_iElementCount > 0)
     {
 
-        double d = 1.0 - afBlendAmount;
+        double d = 1.0 - smoothingFactor;
 
         int n = 0;
 
         do
         {
 
-            S00e0d180_Node* src = ((S00e0d180_Node*)apSrcNode)->children[i];
+            S00e0d180_Node* src = ((S00e0d180_Node*)subTree)->children[i];
 
             S00e0d180_Node* dst;
 
-            if (!findChildWithHint((unsigned int)((S00e0d180_Node*)apSrcNode)->children[i]->name, &index,
-                              (FUN_00e0c690_owner*)apDestNode))
+            if (!findChildWithHint((unsigned int)((S00e0d180_Node*)subTree)->children[i]->name, &destTimerId,
+                              (FUN_00e0c690_owner*)mainTree))
             {
 
                 void* slot = S00e0d180_Node::operator new(sizeof(S00e0d180_Node));
                 if (slot)
                 {
                     int f = src->unk54;
-                    dst = ::new (slot) S00e0d180_Node((S00e0d180_Node*)apDestNode, src->name, f);
+                    dst = ::new (slot) S00e0d180_Node((S00e0d180_Node*)mainTree, src->name, f);
                 }
                 else
                     dst = 0;
@@ -2761,21 +2829,21 @@ extern "C" void __cdecl mergeSubTree(void* apDestNode, void* apSrcNode, int inde
             else
             {
 
-                dst = ((S00e0d180_Node*)apDestNode)->children[index];
+                dst = ((S00e0d180_Node*)mainTree)->children[destTimerId];
             }
 
-            dst->values[lvl] = (float)((double)src->values[aiSrcLevel] * d + (double)dst->values[lvl]);
+            dst->values[lvl] = (float)((double)src->values[sourceTimerId] * d + (double)dst->values[lvl]);
 
-            dst->counts[lvl] = src->counts[aiSrcLevel];
+            dst->counts[lvl] = src->counts[sourceTimerId];
 
-            mergeSubTree(dst, src, lvl, aiSrcLevel, afBlendAmount);
+            mergeSubTree(dst, src, lvl, sourceTimerId, smoothingFactor);
 
-            n = ((S00e0d180_Node*)apSrcNode)->children.m_iElementCount;
+            n = ((S00e0d180_Node*)subTree)->children.m_iElementCount;
 
-            if (index < n - 1)
+            if (destTimerId < n - 1)
             {
 
-                ++index;
+                ++destTimerId;
             }
 
             ++i;
@@ -2797,7 +2865,7 @@ struct PrintStream
     short unk04;
     short unk06;
     int unk08;
-    void __thiscall FUN_00cc0630(PrintArray* a1);
+    void __thiscall FUN_00cc0630(PrintArray* buf);
     void __thiscall InvokeSubObject(char a1);
     void __thiscall ProcessAndReturnValue_00cc01c0(const char* a1);
     void __thiscall FUN_00cc00e0();
@@ -2834,8 +2902,11 @@ struct PrintConfig
 // Recursively prints a PrintNode and its children to a PrintStream, formatting values, counts, and averages with configurable spacing.
 // @fnv 0x00e0d2c0
 // src: HAVOK_LIB 0x00e0d2c0
-void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(PrintStream* stream, PrintNode* node, int depth, const int threads, const int spus,
-                          PrintConfig* apConfig)
+// pdb: hkMonitorStreamAnalyzer::showCombinedThreadSummaryRec | hkMonitorStreamAnalyzer.obj | retail, string-set bridge, high
+// pdb params: os, node, recursionDepth, numThreads, numSpus, options
+// pdb locals: textLine, lineOs
+void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(PrintStream* os, PrintNode* node, int recursionDepth, const int numThreads, const int numSpus,
+                          PrintConfig* options)
 {
     PrintArray pad;
     PrintStream line;
@@ -2843,21 +2914,21 @@ void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(PrintStream* s
     pad.size = 0;
     pad.m_iCapacity = 0x80000000;
     line.FUN_00cc0630(&pad);
-    int numFields = threads + spus;
-    if (0 != depth)
+    int numFields = numThreads + numSpus;
+    if (0 != recursionDepth)
     {
-        if (apConfig->unk10)
+        if (options->unk10)
         {
-            line.InvokeSubObject(apConfig->unk14 == node ? apConfig->unk18 : ' ');
+            line.InvokeSubObject(options->unk14 == node ? options->unk18 : ' ');
         }
-        int spacing = apConfig->unk08 * (depth - 1);
+        int spacing = options->unk08 * (recursionDepth - 1);
         for (int k = 0; k < spacing; ++k)
             line.InvokeSubObject(' ');
-        if (apConfig->unk10)
+        if (options->unk10)
         {
             if (0 < node->childCount)
             {
-                line.InvokeSubObject((node->flags & 1) ? apConfig->unk19 : apConfig->unk18);
+                line.InvokeSubObject((node->flags & 1) ? options->unk19 : options->unk18);
             }
             else
             {
@@ -2875,18 +2946,18 @@ void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(PrintStream* s
         int countSpus = 0;
         for (int i = 0; i < numFields; ++i)
         {
-            if (apConfig->unk1a)
+            if (options->unk1a)
             {
                 line.InvokeSubObject('\t');
             }
             else
             {
-                int kIter = (depth - 1) * apConfig->unk0c + apConfig->unk04 * i - pad.size + apConfig->unk00;
+                int kIter = (recursionDepth - 1) * options->unk0c + options->unk04 * i - pad.size + options->unk00;
                 for (int k = 0; kIter > k; ++k)
                     line.InvokeSubObject(' ');
             }
             hkOstream_printf(&line, "%-6.3f (%i)", (double)node->values[i], (*(i + node->counts)));
-            if (i < threads)
+            if (i < numThreads)
             {
                 total += node->values[i];
                 j += (*(node->counts + i));
@@ -2898,42 +2969,42 @@ void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(PrintStream* s
             }
         }
         unsigned int col = numFields;
-        if (threads > 1)
+        if (numThreads > 1)
         {
-            if (apConfig->unk1a)
+            if (options->unk1a)
             {
                 line.InvokeSubObject('\t');
             }
             else
             {
-                int kIter = apConfig->unk0c * (depth - 1) + apConfig->unk04 * col - pad.size + apConfig->unk00;
+                int kIter = options->unk0c * (recursionDepth - 1) + options->unk04 * col - pad.size + options->unk00;
                 for (int k = 0; k < kIter; ++k)
                     line.InvokeSubObject(' ');
             }
             col += 1;
-            hkOstream_printf(&line, "%-6.3f (%i)", (double)(total / threads), j);
+            hkOstream_printf(&line, "%-6.3f (%i)", (double)(total / numThreads), j);
         }
-        if (spus > 1)
+        if (numSpus > 1)
         {
-            if (apConfig->unk1a)
+            if (options->unk1a)
             {
                 line.InvokeSubObject('\t');
             }
             else
             {
-                int kIter = apConfig->unk0c * (depth - 1) + apConfig->unk04 * col - pad.size + apConfig->unk00;
+                int kIter = options->unk0c * (recursionDepth - 1) + options->unk04 * col - pad.size + options->unk00;
                 for (int k = 0; k < kIter; ++k)
                     line.InvokeSubObject(' ');
             }
-            hkOstream_printf(&line, "%-6.3f (%i)", (double)(idx / spus), countSpus);
+            hkOstream_printf(&line, "%-6.3f (%i)", (double)(idx / numSpus), countSpus);
         }
-        stream->ProcessAndReturnValue_00cc01c0(pad.data);
-        stream->InvokeSubObject('\n');
+        os->ProcessAndReturnValue_00cc01c0(pad.data);
+        os->InvokeSubObject('\n');
     }
-    if (!apConfig->unk10 || (node->flags & 1))
+    if (!options->unk10 || (node->flags & 1))
     {
         for (int i = 0; i < node->childCount; ++i)
-            hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(stream, ((*(i + (node->children)))), depth + 1, threads, spus, apConfig);
+            hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(os, ((*(i + (node->children)))), recursionDepth + 1, numThreads, numSpus, options);
     }
     line.FUN_00cc00e0();
     hkMemoryAllocator& heap = hkMemoryRouter_getInstance()->heap();
@@ -2980,6 +3051,7 @@ struct AnimationTimingInfo
         return m_startTimeOffset;
     }
 };
+// pdb: structure FrameInfo, size 0xc (here 0x24), 3 members
 struct FrameInfo
 {
     const char* m_pHeading;
@@ -3051,12 +3123,15 @@ static __forceinline float getOffset(const AnimationTimingInfo& i)
 // Fills startTimes with per-frame minimum node values, computes maxFrameTime, applies a start offset, and adjusts maxFrameTime for single-frame cases.
 // @fnv 0x00e0dd30
 // src: HAVOK_LIB 0x00e0dd30
-void __cdecl hkMonitorStreamAnalyzer_getTimerLimits(const MonNodeList& threadNodes, const AnimationTimingInfo& input,
+// pdb: hkMonitorStreamAnalyzer::getTimerLimits | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: nodeList, input, frameInfos, maxFrameTime, startTimes
+// pdb locals: numFrames, frameEnd
+void __cdecl hkMonitorStreamAnalyzer_getTimerLimits(const MonNodeList& nodeList, const AnimationTimingInfo& input,
                           const FrameInfoArrays& frameInfos, float& maxFrameTime, FloatArrayLocalForm& startTimes)
 {
-    int numThreads = threadNodes.GetLogicalSize();
+    int numThreads = nodeList.GetLogicalSize();
     int frameEnd = input.m_iValueAt00 + input.m_iFrameCount;
-    int numFrames = threadNodes[0]->m_children.GetLogicalSize();
+    int numFrames = nodeList[0]->m_children.GetLogicalSize();
     int numFramesToDraw = input.m_iFrameCount;
     if (frameEnd > numFrames)
     {
@@ -3094,7 +3169,7 @@ void __cdecl hkMonitorStreamAnalyzer_getTimerLimits(const MonNodeList& threadNod
         startTimes[idx] = 1e30f;
         for (int t = 0; t < numThreads; ++t)
         {
-            hkArrayBase<MonNode*>& children = threadNodes[t]->m_children[f]->m_children;
+            hkArrayBase<MonNode*>& children = nodeList[t]->m_children[f]->m_children;
             if (children.GetLogicalSize() <= 0)
                 continue;
             for (int c = 0; c < children.GetLogicalSize(); ++c)
@@ -3176,20 +3251,23 @@ struct PixelSource
     int m_10;
     int m_14;
 };
-int __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetailsToTexture(int a1, PixelSource* a2, int a3, void** out1, int* out2, int a6);
+int __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetailsToTexture(int nodeList, PixelSource* a2, int a3, void** out1, int* out2, int a6);
 void __cdecl hkMemoryRouter_easyFree(hkMemoryAllocator* alloc, void* p);
 // Calls FUN_00e0e0c0, passes its output buffer and q to WriteTgaImage, then calls FUN_00c856c0 with the allocator and buffer.
 // @fnv 0x00e0e470
 // src: HAVOK_LIB 0x00e0e470
-void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetailsToTga(int a1, PixelSource* apPixelSource, int a3, E0C150Stream* apStream, int a5)
+// pdb: hkMonitorStreamAnalyzer::writeStatisticsDetailsToTga | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: nodeList, input, frameInfos, outStream, sampleInfo
+// pdb locals: height, texture
+void __cdecl hkMonitorStreamAnalyzer_writeStatisticsDetailsToTga(int nodeList, PixelSource* input, int frameInfos, E0C150Stream* outStream, int sampleInfo)
 {
     void* out1 = 0;
     int q = 0;
-    hkMonitorStreamAnalyzer_writeStatisticsDetailsToTexture(a1, apPixelSource, a3, &out1, &q, a5);
+    hkMonitorStreamAnalyzer_writeStatisticsDetailsToTexture(nodeList, input, frameInfos, &out1, &q, sampleInfo);
     void* p = *(void* volatile*)&out1;
     if (p != 0)
     {
-        WriteTgaImage(p, apStream, apPixelSource->m_14, q);
+        WriteTgaImage(p, outStream, input->m_14, q);
         hkMemoryRouter* h = hkMemoryRouter_getInstance();
         hkMemoryRouter_easyFree(h->m_heap, (void*)p);
     }
@@ -3262,13 +3340,16 @@ void __cdecl hkBuildSizePerName(FUN_00e0d000*, ReportMap*);
 // Collects and sorts report nodes, then writes per-type timing stats for nodes exceeding the threshold-scaled last node value.
 // @fnv 0x00e0fc50
 // src: HAVOK_LIB 0x00e0fc50
-static __declspec(noinline) void printStatisticsByType(FUN_00e0d000* root, float threshold, void* stream)
+// pdb: printStatisticsByType | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: outstream, rootNode, maxImportance
+// pdb locals: stats, map
+static __declspec(noinline) void printStatisticsByType(FUN_00e0d000* outstream, float threshold, void* maxImportance)
 {
     ReportArray nodes;
     {
         ReportMap map;
         map.FUN_00d87790(ReportFlag());
-        hkBuildSizePerName(root, &map);
+        hkBuildSizePerName(outstream, &map);
         nodes.reserve(map.size);
         int it = map.hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator();
         while (map.valid(it))
@@ -3285,27 +3366,27 @@ static __declspec(noinline) void printStatisticsByType(FUN_00e0d000* root, float
         map.FreeBuffer();
     }
     float totalTime = nodes.data[nodes.size - 1]->values[1];
-    hkOstream_printf(stream, "\n\n");
-    hkOstream_printf(stream, "************************************\n");
-    hkOstream_printf(stream, "********** Per Type Times    *******\n");
-    hkOstream_printf(stream, "************************************\n");
+    hkOstream_printf(maxImportance, "\n\n");
+    hkOstream_printf(maxImportance, "************************************\n");
+    hkOstream_printf(maxImportance, "********** Per Type Times    *******\n");
+    hkOstream_printf(maxImportance, "************************************\n");
     for (int i = nodes.size - 1; i >= 0; --i)
     {
         ReportNode* node = nodes.data[i];
         if (node->values[1] > totalTime * threshold)
         {
-            hkOstream_printf(stream, "\n");
-            hkOstream_printf(stream, "************************************\n\n");
+            hkOstream_printf(maxImportance, "\n");
+            hkOstream_printf(maxImportance, "************************************\n\n");
             for (int j = 0; j < node->linkedFUN_00e0d000.size; ++j)
             {
-                hkOstream_printf(stream, "\t\t");
-                WriteItemStats(stream, 0.0f, reinterpret_cast<S_00e0bfe0_Item*>(&node->linkedFUN_00e0d000.data[j]));
+                hkOstream_printf(maxImportance, "\t\t");
+                printSingleNodeValues(maxImportance, 0.0f, reinterpret_cast<S_00e0bfe0_Item*>(&node->linkedFUN_00e0d000.data[j]));
             }
-            WriteItemStats(stream, totalTime, reinterpret_cast<S_00e0bfe0_Item*>(node));
+            printSingleNodeValues(maxImportance, totalTime, reinterpret_cast<S_00e0bfe0_Item*>(node));
             for (int j = 0; j < node->childFUN_00e0d000.size; ++j)
             {
-                hkOstream_printf(stream, "\t\t");
-                WriteItemStats(stream, 0.0f, reinterpret_cast<S_00e0bfe0_Item*>(&node->childFUN_00e0d000.data[j]));
+                hkOstream_printf(maxImportance, "\t\t");
+                printSingleNodeValues(maxImportance, 0.0f, reinterpret_cast<S_00e0bfe0_Item*>(&node->childFUN_00e0d000.data[j]));
             }
         }
         node->ProcessEntries_00e10930();
@@ -3326,7 +3407,7 @@ namespace fnv_00e0d000 {
 
 extern "C" void _ReadWriteBarrier(void);
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl ResizeAudioStream(int aiHeap, void* apList, int aiGrow);
+void __cdecl ResizeAudioStream(int mem, void* array, int sizeElem);
 
 struct FUN_00e0d000_cls;
 
@@ -3368,24 +3449,26 @@ struct FUN_00e0d000_cls
     int m_i50;
     int m_i54;
 
-    FUN_00e0d000_cls* DoNothing_00e0d000(OwnerNode* apOwner, int aiA, int aiB);
+    FUN_00e0d000_cls* hkMonitorStreamAnalyzer_Node_ctor(OwnerNode* parent, int aiA, int type);
 };
 
 // Initializes fields, registers this in apOwner's SubList if needed, and zeroes the m_af00/m_au20 arrays and m_d40.
 // @fnv 0x00e0d000
-// src: GUESS 0x00e0d000 (confidence: high)
-FUN_00e0d000_cls* FUN_00e0d000_cls::DoNothing_00e0d000(OwnerNode* apOwner, int aiA, int aiB)
+// src: XBOX_RETAIL_PDB 0x00e0d000
+// pdb: hkMonitorStreamAnalyzer::Node::Node | hkMonitorStreamAnalyzer.obj | retail, object-file gap fill, high
+// pdb params: parent, name, type
+FUN_00e0d000_cls* FUN_00e0d000_cls::hkMonitorStreamAnalyzer_Node_ctor(OwnerNode* parent, int aiA, int type)
 {
     m_i30 = 0;
     m_i34 = 0;
     m_u38 = 0x80000000u;
-    m_pSharedOwner = apOwner;
+    m_pSharedOwner = parent;
     m_i4c = aiA;
     m_i50 = 0;
-    m_i54 = aiB;
-    if (apOwner != 0)
+    m_i54 = type;
+    if (parent != 0)
     {
-        SubList* list = &apOwner->m_kNode;
+        SubList* list = &parent->m_kNode;
         hkMemoryRouter* holder = hkMemoryRouter_getInstance();
         if (list->m_iArrayLength == (int)(list->m_uCapFlags & 0x3fffffffu))
         {
@@ -3416,7 +3499,7 @@ struct FUN_00e0d640_buf
     int m_iLen;
     int m_uiObjectFlags;
     void Destroy();
-    void Init(char** pp);
+    void Init(char** buf);
     void PutChar(int c);
     void Assign(char* p);
 };
@@ -3430,34 +3513,37 @@ struct FUN_00e0d640_cfg
     char unk11[9];
     char m_bTab;
 };
-int GetTreeWidth(int a, int b, int c, int d);
+int hkMonitorStreamAnalyzer_findMaxTimerNameIndent(int a, int recursionDepth, int spacing, int displayPartialTree);
 void hkOstream_printf(FUN_00e0d640_buf* b, const char* fmt, ...);
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(FUN_00e0d640_buf* a, int b, int c, int d, int e, FUN_00e0d640_cfg* f);
+void hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(FUN_00e0d640_buf* os, int b, int recursionDepth, int numThreads, int numSpus, FUN_00e0d640_cfg* options);
 
 // Formats a CPU timing header with thread and spu labels into a4, then appends the timing data via FUN_00e0d2c0.
 // @fnv 0x00e0d640
 // src: HAVOK_LIB 0x00e0d640
-void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(int a1, int aiThreadCount, int aiSpuCount, FUN_00e0d640_buf* apOutput,
-                          FUN_00e0d640_cfg* apConfig)
+// pdb: hkMonitorStreamAnalyzer::showCombinedThreadSummaryForSingleFrame | hkMonitorStreamAnalyzer.obj | retail, string-set bridge, high
+// pdb params: node, numThreads, numSpus, os, options
+// pdb locals: textLine, lineOs
+void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(int node, int numThreads, int numSpus, FUN_00e0d640_buf* os,
+                          FUN_00e0d640_cfg* options)
 {
     int i = 0;
-    apConfig->m_iBase = GetTreeWidth(a1, i, apConfig->m_iVal, apConfig->m_bFlag);
+    options->m_iBase = hkMonitorStreamAnalyzer_findMaxTimerNameIndent(node, i, options->m_iVal, options->m_bFlag);
     FUN_00e0d640_buf buf;
     buf.m_pData = (char*)i;
     buf.m_iLen = i;
     buf.m_uiObjectFlags = (int)0x80000000;
     buf.Init(&buf.m_pData);
     hkOstream_printf(&buf, "Timer Name");
-    if (aiThreadCount > 1 || aiSpuCount > 0)
+    if (numThreads > 1 || numSpus > 0)
     {
-        for (i = 0; i < aiThreadCount; i++)
+        for (i = 0; i < numThreads; i++)
         {
-            if (apConfig->m_bTab)
+            if (options->m_bTab)
                 buf.PutChar(9);
             else
             {
-                int n = apConfig->m_iStep * i - buf.m_iLen + apConfig->m_iBase;
+                int n = options->m_iStep * i - buf.m_iLen + options->m_iBase;
                 if (n > 0)
                 {
                     int c = n;
@@ -3470,13 +3556,13 @@ void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(int
             }
             hkOstream_printf(&buf, "Thread %d", i);
         }
-        for (i = 0; i < aiSpuCount; i++)
+        for (i = 0; i < numSpus; i++)
         {
-            if (apConfig->m_bTab)
+            if (options->m_bTab)
                 buf.PutChar(9);
             else
             {
-                int n = (i + aiThreadCount) * apConfig->m_iStep - buf.m_iLen + apConfig->m_iBase;
+                int n = (i + numThreads) * options->m_iStep - buf.m_iLen + options->m_iBase;
                 if (n > 0)
                 {
                     int c = n;
@@ -3489,14 +3575,14 @@ void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(int
             }
             hkOstream_printf(&buf, "Spu %d", i);
         }
-        int k = aiThreadCount + aiSpuCount;
-        if (aiThreadCount > 1)
+        int k = numThreads + numSpus;
+        if (numThreads > 1)
         {
-            if (apConfig->m_bTab)
+            if (options->m_bTab)
                 buf.PutChar(9);
             else
             {
-                int n = apConfig->m_iStep * k - buf.m_iLen + apConfig->m_iBase;
+                int n = options->m_iStep * k - buf.m_iLen + options->m_iBase;
                 if (n > 0)
                 {
                     int c = n;
@@ -3510,13 +3596,13 @@ void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(int
             k++;
             hkOstream_printf(&buf, "Average Cpu");
         }
-        if (aiSpuCount > 1)
+        if (numSpus > 1)
         {
-            if (apConfig->m_bTab)
+            if (options->m_bTab)
                 buf.PutChar(9);
             else
             {
-                int n = apConfig->m_iStep * k - buf.m_iLen + apConfig->m_iBase;
+                int n = options->m_iStep * k - buf.m_iLen + options->m_iBase;
                 if (n > 0)
                 {
                     int c = n;
@@ -3530,9 +3616,9 @@ void __cdecl hkMonitorStreamAnalyzer_showCombinedThreadSummaryForSingleFrame(int
             hkOstream_printf(&buf, "Average Spu");
         }
     }
-    apOutput->Assign(buf.m_pData);
-    hkOstream_printf(apOutput, "\n\n");
-    hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(apOutput, a1, 0, aiThreadCount, aiSpuCount, apConfig);
+    os->Assign(buf.m_pData);
+    hkOstream_printf(os, "\n\n");
+    hkMonitorStreamAnalyzer_showCombinedThreadSummaryRec(os, node, 0, numThreads, numSpus, options);
     buf.Destroy();
     hkMemoryRouter* h = hkMemoryRouter_getInstance();
     hkMemoryAllocator* pAllocator = h->m_heap;
@@ -3557,19 +3643,19 @@ struct StatsValue
 
 struct NodeInitializer
 {
-    FUN_00e0d000* DoNothing_00e0d000(int parent, const char* name, StatsValue value);
+    FUN_00e0d000* hkMonitorStreamAnalyzer_Node_ctor(int parent, const char* name, StatsValue type);
 };
 
 // src: HAVOK_LIB 0x00e0cb80
-static __declspec(noinline) FUN_00e0d000* hkFindChildByName(FUN_00e0d000* owner, const char* key, S_Flag fallback)
+static __declspec(noinline) FUN_00e0d000* hkFindChildByName(FUN_00e0d000* node, const char* childName, S_Flag searchAnyChild)
 {
-    for (int n = 0; n < owner->childCount; ++n)
+    for (int n = 0; n < node->childCount; ++n)
     {
-        if (hkString_strCmp(loadKey(key), owner->children[n]->name) == 0)
-            return owner->children[n];
+        if (hkString_strCmp(loadKey(childName), node->children[n]->name) == 0)
+            return node->children[n];
     }
-    if (fallback.b && owner->childCount > 0)
-        return owner->children[0];
+    if (searchAnyChild.b && node->childCount > 0)
+        return node->children[0];
     return 0;
 }
 
@@ -3582,22 +3668,24 @@ __forceinline int asLocal(const volatile int& v)
 // Recursively copies each child node from source into parentArg, creating missing nodes via the stats allocator before accumulating values.
 // @fnv 0x00e0d880
 // src: HAVOK_LIB 0x00e0d880
-void __cdecl hkMakeSumRecursive(int aiParent, FUN_00e0d000* source)
+// pdb: hkMakeSumRecursive | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: sum, tree
+void __cdecl hkMakeSumRecursive(int sum, FUN_00e0d000* tree)
 {
-    for (int i = 0; i < source->childCount; ++i)
+    for (int i = 0; i < tree->childCount; ++i)
     {
-        FUN_00e0d000* item = source->children[i];
-        FUN_00e0d000* dst = hkFindChildByName((FUN_00e0d000*)aiParent, item->name, S_Flag());
+        FUN_00e0d000* item = tree->children[i];
+        FUN_00e0d000* dst = hkFindChildByName((FUN_00e0d000*)sum, item->name, S_Flag());
 
         if (!dst)
         {
-            int parent = aiParent;
+            int parent = sum;
             hkMemoryRouter* holder = hkMemoryRouter_getInstance();
             void* mem = ((hkMemoryAllocator*)holder->m_heap)->blockAlloc(sizeof(FUN_00e0d000));
 
             if (mem)
             {
-                dst = ((NodeInitializer*)mem)->DoNothing_00e0d000(parent, item->name, StatsValue(item->unk54));
+                dst = ((NodeInitializer*)mem)->hkMonitorStreamAnalyzer_Node_ctor(parent, item->name, StatsValue(item->unk54));
             }
             else
             {
@@ -3616,13 +3704,13 @@ inline void* __cdecl operator new(unsigned int, void* where) throw()
     return where;
 }
 hkMemoryRouter* hkMemoryRouter_getInstance() throw();
-void ResizeAudioStream(hkMemoryAllocator& h, void* arr, int elemSize) throw();
+void ResizeAudioStream(hkMemoryAllocator& mem, void* array, int sizeElem) throw();
 
 struct S_e0d980_Str
 {
     int unk0;
-    S_e0d980_Str(int a) throw();
-    S_e0d980_Str(const S_e0d980_Str& o) throw();
+    S_e0d980_Str(int string) throw();
+    S_e0d980_Str(const S_e0d980_Str& strRef) throw();
     ~S_e0d980_Str() throw();
 };
 struct S_e0d980_Item
@@ -3657,15 +3745,17 @@ struct S_e0d980_Obj
     int unk0;
     int unk4;
     S_e0d980_Arr arr;
-    void hkMonitorStreamColorTable_addColor(int a, int b) throw();
+    void hkMonitorStreamColorTable_addColor(int name, int color) throw();
 };
 // Creates an S_e0d980_Item from a and b, then pushes it onto arr.
 // @fnv 0x00e0d980
 // src: HAVOK_LIB 0x00e0d980
-void S_e0d980_Obj::hkMonitorStreamColorTable_addColor(int aiName, int aiValue) throw()
+// pdb: hkMonitorStreamColorTable::addColor | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: name, color
+void S_e0d980_Obj::hkMonitorStreamColorTable_addColor(int name, int color) throw()
 {
-    S_e0d980_Item t(aiName);
-    t.value = aiValue;
+    S_e0d980_Item t(name);
+    t.value = color;
     arr.push(t);
 }
 }  // namespace fnv_00e0d980
@@ -3731,9 +3821,9 @@ struct S00e0e4e0_Layout
     int m_height;
 };
 
-void __cdecl hkMonitorStreamAnalyzer_getTimerLimits(S00e0e4e0_NodeArr& img, S00e0e4e0_Layout* lay, S00e0e4e0_EntryList* list, float* f,
+void __cdecl hkMonitorStreamAnalyzer_getTimerLimits(S00e0e4e0_NodeArr& nodeList, S00e0e4e0_Layout* lay, S00e0e4e0_EntryList* list, float* f,
                           S00e0e4e0_FArr* out);
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* arr, int n, int elemSize);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 static __forceinline void S00e0e4e0_push(S00e0e4e0_PArrLocalForm* out, void* v)
 {
     hkMemoryAllocator& a = hkMemoryRouter_getInstance()->heap();
@@ -3743,13 +3833,13 @@ static __forceinline void S00e0e4e0_push(S00e0e4e0_PArrLocalForm* out, void* v)
     out->m_iElementCount++;
 }
 
-static void outputStatsForFrame(float value, float step, int axis, S00e0e4e0_Node* node, int n, S00e0e4e0_PArrLocalForm* out);
+static void outputStatsForFrame(float root, float startTime, int timeInc, S00e0e4e0_Node* maxFrames, int timerNodesAtTicks, S00e0e4e0_PArrLocalForm* absoluteTimeIndex);
 
 // src: HAVOK_LIB 0x00e0da00
-static __declspec(noinline) int getNodeSampledAtTick(int row, int col, const S00e0e4e0_NodeArr& nodes, int height, float range,
-                                             float value, S00e0e4e0_Info* info)
+static __declspec(noinline) int getNodeSampledAtTick(int row, int frameIndex, const S00e0e4e0_NodeArr& tick, int height, float maxX,
+                                             float frameTime, S00e0e4e0_Info* absoluteFrameStartTimes)
 {
-    float step = range / height;
+    float step = maxX / height;
     S00e0e4e0_PArrLocalForm arr;
     arr.m_data = 0;
     arr.m_iElementCount = 0;
@@ -3758,12 +3848,12 @@ static __declspec(noinline) int getNodeSampledAtTick(int row, int col, const S00
     if ((arr.m_iCapacityState & 0x3fffffff) < height)
         hkArrayUtil__reserve(&a, &arr, height, 4);
     int res = 0;
-    if (nodes[row]->m_children.GetLogicalSize() > 0)
+    if (tick[row]->m_children.GetLogicalSize() > 0)
     {
         arr.m_iElementCount = 0;
-        outputStatsForFrame(value, step, info->unk0c == 0 ? info->unk04 : info->unk08, nodes[row], height, &arr);
-        if (col < arr.m_iElementCount)
-            res = (int)arr.m_data[col];
+        outputStatsForFrame(frameTime, step, absoluteFrameStartTimes->unk0c == 0 ? absoluteFrameStartTimes->unk04 : absoluteFrameStartTimes->unk08, tick[row], height, &arr);
+        if (frameIndex < arr.m_iElementCount)
+            res = (int)arr.m_data[frameIndex];
     }
     hkMemoryAllocator& a2 = hkMemoryRouter_getInstance()->heap();
     arr.m_iElementCount = 0;
@@ -3775,18 +3865,21 @@ static __declspec(noinline) int getNodeSampledAtTick(int row, int col, const S00
 // Resolves a slot id at pixel coordinates by mapping to a level and row, then querying the node tree via FUN_00e0da00.
 // @fnv 0x00e0e4e0
 // src: HAVOK_LIB 0x00e0e4e0
-int __cdecl hkMonitorStreamAnalyzer_reverseLookupNodeAtTgaSample(int x, int y, S00e0e4e0_NodeArr& img, S00e0e4e0_Layout* lay, S00e0e4e0_EntryList* list)
+// pdb: hkMonitorStreamAnalyzer::reverseLookupNodeAtTgaSample | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: x, y, nodeList, input, frameInfos
+// pdb locals: maxFrameTime, startTimes
+int __cdecl hkMonitorStreamAnalyzer_reverseLookupNodeAtTgaSample(int x, int y, S00e0e4e0_NodeArr& nodeList, S00e0e4e0_Layout* input, S00e0e4e0_EntryList* frameInfos)
 {
-    int numLevels = img.GetLogicalSize();
-    int numPages = lay->m_numPages;
+    int numLevels = nodeList.GetLogicalSize();
+    int numPages = input->m_numPages;
     if (numLevels < 1)
         return 0;
     int border = (numPages > 1) ? 0x20 : 0;
-    if (x < border || x >= lay->m_height)
+    if (x < border || x >= input->m_height)
         return 0;
-    int w = lay->m_width1 + lay->m_width0;
-    int h = lay->m_height - border;
-    int stride = w * numLevels + lay->m_extra;
+    int w = input->m_width1 + input->m_width0;
+    int h = input->m_height - border;
+    int stride = w * numLevels + input->m_extra;
     int total = stride * numPages;
     if (y < 0 || y >= total)
         return 0;
@@ -3798,9 +3891,9 @@ int __cdecl hkMonitorStreamAnalyzer_reverseLookupNodeAtTgaSample(int x, int y, S
     arr.m_data = 0;
     arr.m_iElementCount = 0;
     arr.m_iCapacityState = 0x80000000;
-    hkMonitorStreamAnalyzer_getTimerLimits(img, lay, list, &range, &arr);
-    S00e0e4e0_Node** slot = &img.m_data[lvl];
-    S00e0e4e0_Info* info = list->m_data[lvl].m_info;
+    hkMonitorStreamAnalyzer_getTimerLimits(nodeList, input, frameInfos, &range, &arr);
+    S00e0e4e0_Node** slot = &nodeList.m_data[lvl];
+    S00e0e4e0_Info* info = frameInfos->m_data[lvl].m_info;
     int res = getNodeSampledAtTick(row, x - border, (*slot)->m_children, h, range, arr.m_data[row], info);
     hkMemoryAllocator& a = hkMemoryRouter_getInstance()->heap();
     arr.m_iElementCount = 0;
@@ -3834,11 +3927,11 @@ struct BoolArg
 };
 // src: HAVOK_LIB 0x00e0d100
 static __declspec(noinline) __declspec(nothrow) FUN_00e0d000* createNewNode(FUN_00e0d000* parent, const char* name,
-                                                                           hkMonitorStreamAnalyzer::Node::NodeType type, BoolArg reuse)
+                                                                           hkMonitorStreamAnalyzer::Node::NodeType type, BoolArg wantNodeReuse)
 {
     const char* const* pn = &name;
     const char* text = *pn;
-    if (reuse.b)
+    if (wantNodeReuse.b)
     {
         for (int i = 0; parent && text && i < parent->childCount; ++i)
         {
@@ -3911,16 +4004,19 @@ struct RecordArray
 // Processes tagged records between begin and end, creating or reusing FUN_00e0d000 nodes and passing record pairs to AccumNode::FUN_00e0c5e0.
 // @fnv 0x00e0e630
 // src: HAVOK_LIB 0x00e0e630
-FUN_00e0d000* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(const char* begin, const char* end, AxisData* info, const char* name, S_Flag reuse)
+// pdb: hkMonitorStreamAnalyzer::makeStatisticsTreeForSingleFrame | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: frameStart, frameEnd, frameInfo, rootNodeName, reuseNodesIfPossible
+// pdb locals: rootNode, timerStack, debugMismatchCheckerTimerStack, assertBuf, ostr, com2
+FUN_00e0d000* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(const char* frameStart, const char* frameEnd, AxisData* frameInfo, const char* rootNodeName, S_Flag reuseNodesIfPossible)
 {
-    const char* cursor = begin;
+    const char* cursor = frameStart;
     const char* tag;
     void* mem = StatHeap::hkMemoryRouter_getInstance()->heap().blockAlloc(sizeof(FUN_00e0d000));
-    FUN_00e0d000* node = mem ? new (mem) FUN_00e0d000(0, name, 1) : 0;
+    FUN_00e0d000* node = mem ? new (mem) FUN_00e0d000(0, rootNodeName, 1) : 0;
     FUN_00e0d000* root = node;
     RecordArray frames;
     RecordArray openFrames;
-    while (cursor < end)
+    while (cursor < frameEnd)
     {
         const Record* r = (const Record*)cursor;
         tag = r->name;
@@ -3932,7 +4028,7 @@ FUN_00e0d000* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(c
         switch (*tag)
         {
         case 'T': {
-            BoolArg bReuse(reuse.b != 0);
+            BoolArg bReuse(reuseNodesIfPossible.b != 0);
             node = createNewNode(node, tag += 2, hkMonitorStreamAnalyzer::Node::NODE_TYPE_TIMER, bReuse);
             frames.push(*r);
             openFrames.push(*r);
@@ -3947,7 +4043,7 @@ FUN_00e0d000* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(c
             {
                 return root;
             }
-            ((AccumNode*)node)->Accumulate(info, (hkMonitorStream::TimerCommand*)start, (hkMonitorStream::TimerCommand*)r);
+            ((AccumNode*)node)->Accumulate(frameInfo, (hkMonitorStream::TimerCommand*)start, (hkMonitorStream::TimerCommand*)r);
             node = node->linked;
             --frames.size;
             openFrames.resize(openFrames.size - 1);
@@ -3956,20 +4052,20 @@ FUN_00e0d000* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(c
         }
         case 'O':
             frames.push(*r);
-            node = createNewNode(node, ((const ExtendedRecord*)r)->extraName, hkMonitorStreamAnalyzer::Node::NODE_TYPE_TIMER, BoolArg(reuse.b != 0));
+            node = createNewNode(node, ((const ExtendedRecord*)r)->extraName, hkMonitorStreamAnalyzer::Node::NODE_TYPE_TIMER, BoolArg(reuseNodesIfPossible.b != 0));
             openFrames.push(*r);
             cursor += 16;
             break;
         case 'L': {
             frames.push(*r);
             openFrames.push(*r);
-            BoolArg bReuse(reuse.b != 0);
+            BoolArg bReuse(reuseNodesIfPossible.b != 0);
             node = createNewNode(node, tag += 2, hkMonitorStreamAnalyzer::Node::NODE_TYPE_TIMER, bReuse);
             Record section = *r;
             section.name = ((const ExtendedRecord*)r)->extraName;
             frames.push(section);
             openFrames.push(section);
-            BoolArg bReuse2(reuse.b != 0);
+            BoolArg bReuse2(reuseNodesIfPossible.b != 0);
             node = createNewNode(node, section.name += 2, hkMonitorStreamAnalyzer::Node::NODE_TYPE_TIMER, bReuse2);
             cursor += 16;
             break;
@@ -3978,9 +4074,9 @@ FUN_00e0d000* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(c
             if (!frames.size)
                 return root;
             Record* start = &frames.data[frames.size - 1];
-            ((AccumNode*)node)->Accumulate(*(AxisData* volatile*)&info, (hkMonitorStream::TimerCommand*)start, (hkMonitorStream::TimerCommand*)r);
+            ((AccumNode*)node)->Accumulate(*(AxisData* volatile*)&frameInfo, (hkMonitorStream::TimerCommand*)start, (hkMonitorStream::TimerCommand*)r);
             node = node->linked;
-            BoolArg bReuse(reuse.b != 0);
+            BoolArg bReuse(reuseNodesIfPossible.b != 0);
             node = createNewNode(node, tag += 2, hkMonitorStreamAnalyzer::Node::NODE_TYPE_TIMER, bReuse);
             *start = *r;
             cursor += 12;
@@ -3989,18 +4085,18 @@ FUN_00e0d000* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(c
         case 'l':
             if (frames.size <= 1 || frames.data[frames.size - 1].name[0] != 'S')
                 return root;
-            ((AccumNode*)node)->Accumulate(info, (hkMonitorStream::TimerCommand*)&frames.data[frames.size - 1], (hkMonitorStream::TimerCommand*)r);
+            ((AccumNode*)node)->Accumulate(frameInfo, (hkMonitorStream::TimerCommand*)&frames.data[frames.size - 1], (hkMonitorStream::TimerCommand*)r);
             node = node->linked;
             --frames.size;
             openFrames.resize(openFrames.size - 1);
-            ((AccumNode*)node)->Accumulate(info, (hkMonitorStream::TimerCommand*)&frames.data[frames.size - 1], (hkMonitorStream::TimerCommand*)r);
+            ((AccumNode*)node)->Accumulate(frameInfo, (hkMonitorStream::TimerCommand*)&frames.data[frames.size - 1], (hkMonitorStream::TimerCommand*)r);
             node = node->linked;
             --frames.size;
             openFrames.resize(openFrames.size - 1);
             cursor += 12;
             break;
         case 'M': {
-            BoolArg bReuse(reuse.b != 0);
+            BoolArg bReuse(reuseNodesIfPossible.b != 0);
             FUN_00e0d000* metric = createNewNode(node, tag += 2, hkMonitorStreamAnalyzer::Node::NODE_TYPE_SINGLE, bReuse);
             metric->values[0] += ((const MetricRecord*)r)->value;
             ++metric->counts[0];
@@ -4008,7 +4104,7 @@ FUN_00e0d000* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(c
             break;
         }
         case 'P': {
-            BoolArg bReuse(reuse.b != 0);
+            BoolArg bReuse(reuseNodesIfPossible.b != 0);
             node = createNewNode(node, tag += 2, hkMonitorStreamAnalyzer::Node::NODE_TYPE_DIRECTORY, bReuse);
             cursor += 4;
             break;
@@ -4072,31 +4168,33 @@ struct S00e0ee00_Root
     int unk28;
     int unk2C;
     S00e0ee00_ChildrenLocalForm m_children;
-    S00e0ee00_Root(int a, const char* name, int b);
+    S00e0ee00_Root(int parent, const char* name, int type);
 };
 extern const char DAT_01063cbc[];
-E0C860Node* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(char* begin, char* end, S_e0ce00_Block* record, int unk0, hkBool flag);
+E0C860Node* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame(char* frameStart, char* frameEnd, S_e0ce00_Block* frameInfo, int rootNodeName, hkBool reuseNodesIfPossible);
 
 struct S00e0ee00_Analyzer : public S_e0ce00
 {
-    S00e0ee00_Root* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForMultipleFrames(int aIndex, hkBool aFlag);
+    S00e0ee00_Root* __cdecl hkMonitorStreamAnalyzer_makeStatisticsTreeForMultipleFrames(int threadId, hkBool reuseNodesIfPossible);
 };
 // Allocates a root, sizes its children array to the selected array's size, and fills each slot with FUN_00e0e630's result.
 // @fnv 0x00e0ee00
 // src: HAVOK_LIB 0x00e0ee00
-S00e0ee00_Root* __cdecl S00e0ee00_Analyzer::hkMonitorStreamAnalyzer_makeStatisticsTreeForMultipleFrames(int aIndex, hkBool aFlag)
+// pdb: hkMonitorStreamAnalyzer::makeStatisticsTreeForMultipleFrames | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: threadId, reuseNodesIfPossible
+S00e0ee00_Root* __cdecl S00e0ee00_Analyzer::hkMonitorStreamAnalyzer_makeStatisticsTreeForMultipleFrames(int threadId, hkBool reuseNodesIfPossible)
 {
     S00e0ee00_Root* root = new (((hkMemoryAllocator&)hkMemoryRouter_getInstance()->heap()).blockAlloc(0x58)) S00e0ee00_Root(0, DAT_01063cbc, 1);
-    root->m_children.SetSize(m_arrays[aIndex].m_iElementCount);
-    for (int i = 0; i < m_arrays[aIndex].m_iElementCount; i++)
+    root->m_children.SetSize(m_arrays[threadId].m_iElementCount);
+    for (int i = 0; i < m_arrays[threadId].m_iElementCount; i++)
     {
-        S_e0ce00_Block& b = m_arrays[aIndex].m_data[i];
+        S_e0ce00_Block& b = m_arrays[threadId].m_data[i];
         char* begin = m_buf + b.unk1C;
         char* end = m_buf + b.unk20;
         E0C860Node*& slot = root->m_children[i];
         // Preserve the full stack word when forwarding the one-byte flag.
         typedef E0C860Node* (__cdecl *ParseCommand)(char*, char*, S_e0ce00_Block*, int, int);
-        slot = reinterpret_cast<ParseCommand>(static_cast<E0C860Node* (__cdecl *)(char*, char*, S_e0ce00_Block*, int, hkBool)>(hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame))(begin, end, &b, b.unk0, reinterpret_cast<const int&>(aFlag));
+        slot = reinterpret_cast<ParseCommand>(static_cast<E0C860Node* (__cdecl *)(char*, char*, S_e0ce00_Block*, int, hkBool)>(hkMonitorStreamAnalyzer_makeStatisticsTreeForSingleFrame))(begin, end, &b, b.unk0, reinterpret_cast<const int&>(reuseNodesIfPossible));
     }
     return root;
 }
@@ -4109,7 +4207,7 @@ inline void* __cdecl operator new(unsigned int, void* w) throw()
 
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
-int __cdecl hkArrayUtil__reserve(hkMemoryAllocator& heap, void* arr, int newCap, int elemSize);
+int __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 struct S_00e0f710_Elem
 {
@@ -4144,16 +4242,19 @@ struct S_00e0f710_Cls
     int m_kPointB;
 
     void hkMonitorStreamAnalyzer_reset();
-    void hkMonitorStreamAnalyzer_resetNumThreads(int a, int b);
+    void hkMonitorStreamAnalyzer_resetNumThreads(int numThreads, int numSpus);
 };
 
 // Sets the element count to a + b, releasing elements beyond that count and default-constructing elements when it grows.
 // @fnv 0x00e0f710
 // src: HAVOK_LIB 0x00e0f710
-void S_00e0f710_Cls::hkMonitorStreamAnalyzer_resetNumThreads(int a, int b)
+// pdb: hkMonitorStreamAnalyzer::resetNumThreads | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: numThreads, numSpus
+// pdb locals: assertBuf, ostr
+void S_00e0f710_Cls::hkMonitorStreamAnalyzer_resetNumThreads(int numThreads, int numSpus)
 {
     hkMemoryAllocator& h = hkMemoryRouter_getInstance()->heap();
-    int n = a + b;
+    int n = numThreads + numSpus;
     int cap = m_cap & 0x3fffffff;
     if (cap < n)
     {
@@ -4179,8 +4280,8 @@ void S_00e0f710_Cls::hkMonitorStreamAnalyzer_resetNumThreads(int a, int b)
         ++q;
     }
     m_iElementCount = n;
-    m_kPointB = b;
-    m_kPointA = a;
+    m_kPointB = numSpus;
+    m_kPointA = numThreads;
     hkMonitorStreamAnalyzer_reset();
 }
 }  // namespace fnv_00e0f710
@@ -4211,7 +4312,7 @@ struct S_00e0d0a0
     int unk50;
     int unk54;
 
-    void ClearItems();
+    void hkMonitorStreamAnalyzer_Node_dtor();
 };
 
 
@@ -4244,7 +4345,7 @@ void S_00e10930_Foo::ProcessEntries_00e10930()
         int ebx = eax;
         do
         {
-            edi->ClearItems();
+            edi->hkMonitorStreamAnalyzer_Node_dtor();
             edi++;
             ebx--;
         } while (ebx != 0);
@@ -4269,7 +4370,7 @@ void S_00e10930_Foo::ProcessEntries_00e10930()
         int ebx = eax;
         do
         {
-            edi->ClearItems();
+            edi->hkMonitorStreamAnalyzer_Node_dtor();
             edi++;
             ebx--;
         } while (ebx != 0);
@@ -4285,11 +4386,11 @@ void S_00e10930_Foo::ProcessEntries_00e10930()
     unk58 = 0;
     unk60 = 0x80000000;
 
-    ClearItems();
+    hkMonitorStreamAnalyzer_Node_dtor();
 }
 }  // namespace fnv_00e10930
 
-__declspec(noinline) E0CC40Node* __cdecl FindNodeAtTime(E0CC40Node*, E0CC40Node*, double, int);
+__declspec(noinline) E0CC40Node* __cdecl getNodeAtSample(E0CC40Node*, E0CC40Node*, double, int);
 
 template <class T> __forceinline void copyFrameTicks(T* dst, int count, const T& value)
 {
@@ -4346,35 +4447,38 @@ template <class T> struct FrameTickArray : FrameTickArrayBase<T>
 // Appends nulls while the first node time is ahead, then appends lookup results at successive steps before the computed end bound.
 // @fnv 0x00e0cec0
 // src: HAVOK_LIB 0x00e0cec0
-static __declspec(noinline) void outputStatsForFrame(float start, float step, int axis, S00e0e4e0_Node* inputNode, int count,
-                                              S00e0e4e0_PArrLocalForm* output)
+// pdb: outputStatsForFrame | hkMonitorStreamAnalyzer.obj | retail, upstream name already matches, high
+// pdb params: root, startTime, timeInc, maxFrames, timerNodesAtTicks, absoluteTimeIndex
+// pdb locals: node
+static __declspec(noinline) void outputStatsForFrame(float root, float startTime, int timeInc, S00e0e4e0_Node* maxFrames, int timerNodesAtTicks,
+                                              S00e0e4e0_PArrLocalForm* absoluteTimeIndex)
 
 {
 
-    MonNode* node = reinterpret_cast<MonNode*>(inputNode);
+    MonNode* node = reinterpret_cast<MonNode*>(maxFrames);
 
-    FrameTickArray<MonNode*>& out = *reinterpret_cast<FrameTickArray<MonNode*>*>(output);
+    FrameTickArray<MonNode*>& out = *reinterpret_cast<FrameTickArray<MonNode*>*>(absoluteTimeIndex);
     MonNode* first = ((FrameTickArray<MonNode*>&)node->m_children)[0];
     MonNode* last = ((FrameTickArray<MonNode*>&)node->m_children).back();
-    double leading = first->m_dValue - start;
+    double leading = first->m_dValue - root;
     double t = 0.0;
-    int n = count;
+    int n = timerNodesAtTicks;
     while (n != 0 && leading > t)
     {
-        t += step;
+        t += startTime;
         out.AddBack(0);
         --n;
     }
-    double end = last->m_uiFilterValue[axis] + last->m_dValue - start;
+    double end = last->m_uiFilterValue[timeInc] + last->m_dValue - root;
     node->m_dValue = first->m_dValue;
-    node->m_uiFilterValue[axis] = (float)(start + end - node->m_dValue + 1.0);
+    node->m_uiFilterValue[timeInc] = (float)(root + end - node->m_dValue + 1.0);
     MonNode* hint = 0;
     while (n != 0 && t < end)
     {
-        hint = (MonNode*)::FindNodeAtTime((E0CC40Node*)node, (E0CC40Node*)hint, t + start, axis);
+        hint = (MonNode*)::getNodeAtSample((E0CC40Node*)node, (E0CC40Node*)hint, t + root, timeInc);
         if (hint)
             out.AddBack(hint);
-        t += step;
+        t += startTime;
         --n;
     }
 }

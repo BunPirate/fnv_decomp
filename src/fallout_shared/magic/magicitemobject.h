@@ -10,9 +10,11 @@
 #include "../../../include/MagicItemForm.h"
 
 // @fnv 0x00402990
-void MagicItemForm::SetAltered(bool bAltered)
+// pdb: MagicItemForm::SetAltered | EnchantmentItem.obj | debug, upstream name already matches, high
+// pdb params: abValue
+void MagicItemForm::SetAltered(bool abValue)
 {
-    TESForm::SetAltered(bAltered);
+    TESForm::SetAltered(abValue);
 }
 
 #endif

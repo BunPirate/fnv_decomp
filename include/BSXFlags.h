@@ -2,6 +2,7 @@
 
 #include "NiIntegerExtraData.h"
 
+// pdb: class BSXFlags, size 0x10, bases: NiIntegerExtraData, 0 members
 class BSXFlags : public NiIntegerExtraData
 {
   public:

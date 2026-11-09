@@ -5,6 +5,7 @@
 
 class TilePX;
 
+// pdb: class FORenderedTerminal, size 0xf0, bases: FORenderedMenu, 4 members
 class FORenderedTerminal : public FORenderedMenu
 {
 public:
@@ -29,9 +30,9 @@ public:
     void SetTarget_00705fc0(NiNode* node);
     void Refresh();
 
-    NiPoint3 pt;
-    NodeHandle node;
-    float unkE8;
-    unsigned char unkEC;
+    NiPoint3 OriginalPos;
+    NodeHandle spExitButton;
+    float fLastFadePercent;
+    unsigned char bFadingOut;
     unsigned char unkED[3];
 };

@@ -3,7 +3,10 @@
 #include "ZeroOverheadHeap.h"
 
 // @fnv 0x00aa7530
-void* ZeroOverheadHeap::Allocate(unsigned int size, unsigned int alignment)
+// pdb: ZeroOverheadHeap::Allocate | ZeroOverheadHeap.obj | retail, upstream name already matches, high
+// pdb params: aiSize, __formal
+// pdb locals: pmem
+void* ZeroOverheadHeap::Allocate(unsigned int aiSize, unsigned int alignment)
 {
     if (!m_pPoolBase)
         return 0;
@@ -16,12 +19,12 @@ void* ZeroOverheadHeap::Allocate(unsigned int size, unsigned int alignment)
     } local;
     RecursiveSpinLock* pLock;
     local.allocation = 0;
-    if (static_cast<char*>(m_pCurrent) + size + sizeof(unsigned int) < static_cast<char*>(m_pPoolBase) + iSize)
+    if (static_cast<char*>(m_pCurrent) + aiSize + sizeof(unsigned int) < static_cast<char*>(m_pPoolBase) + iSize)
     {
         lock.Lock(0);
-        *static_cast<unsigned int*>(m_pCurrent) = size;
+        *static_cast<unsigned int*>(m_pCurrent) = aiSize;
         local.allocation = static_cast<char*>(m_pCurrent) + sizeof(unsigned int);
-        m_pCurrent = static_cast<char*>(local.allocation) + size;
+        m_pCurrent = static_cast<char*>(local.allocation) + aiSize;
         ++m_iAllocationCount;
         pLock = &lock;
         --pLock->m_uiRecursionCount;
@@ -32,10 +35,14 @@ void* ZeroOverheadHeap::Allocate(unsigned int size, unsigned int alignment)
 }
 
 // @fnv 0x00aa75e0
-void ZeroOverheadHeap::Deallocate(void* pointer, unsigned int alignment)
+// pdb: ZeroOverheadHeap::Deallocate | ZeroOverheadHeap.obj | debug, upstream name already matches, high
+// pdb params: apMem, __formal
+void ZeroOverheadHeap::Deallocate(void* apMem, unsigned int alignment)
 {}
 
 // @fnv 0x00aa75f0
+// pdb: ZeroOverheadHeap::PointerInHeap | ZeroOverheadHeap.obj | debug, object-file gap fill, medium
+// pdb params: apPointer
 bool ZeroOverheadHeap::ContainsBlockImpl(const void* pointer)
 {
     return static_cast<const char*>(pointer) > static_cast<const char*>(m_pPoolBase) &&
@@ -72,6 +79,8 @@ struct FUN_00aa7630_t
 };
 // @fnv 0x00aa7630
 // src: XBOX_PDB 0x00aa7630
+// pdb: ZeroOverheadHeap::GetHeapStats | ZeroOverheadHeap.obj | retail, upstream name already matches, high
+// pdb params: apStats, abFullBlockInfo
 void FUN_00aa7630_t::ZeroOverheadHeap_GetHeapStats(MemoryHeapStats* apStats, bool abFullBlockInfo)
 {
     if (!apStats)
@@ -92,6 +101,7 @@ void FUN_00aa7630_t::ZeroOverheadHeap_GetHeapStats(MemoryHeapStats* apStats, boo
     apStats->m_iTotalFree = 0;
 }
 
+// pdb: structure Reader, size 0x3c (here 0x4), 6 members
 struct Reader
 {
     virtual void v0();
@@ -104,6 +114,8 @@ struct FUN_00aa7700_t
 };
 // Returns 0 if reader is null, otherwise reads a 4-byte int through reader->Read and returns its result.
 // @fnv 0x00aa7700
+// pdb: ZeroOverheadHeap::TotalSize | ZeroOverheadHeap.obj | retail, object-file run extension, low
+// pdb params: apMem
 int FUN_00aa7700_t::ReadInt(Reader* reader)
 {
     if (!reader)

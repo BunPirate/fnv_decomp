@@ -24,14 +24,15 @@ struct Object
 {
     void* unk00;
     unsigned short unk04;
-    void ProcessEntries_00cc0ae0();
+    void hkpHavokSnapshot_ConvertListener_dtor();
     Object* FUN_00cc0dd0(unsigned int flags);
 };
 // Calls FUN_00cc0ae0, and if flags has bit 0 set, notifies the interface from FUN_00c85750 with this and unk04; returns this.
 // @fnv 0x00cc0dd0
+// pdb: hkpHavokSnapshot::ConvertListener::`scalar deleting destructor' | hkpHavokSnapshot.obj | retail, vtable slot, high
 Object* Object::FUN_00cc0dd0(unsigned int flags)
 {
-    ProcessEntries_00cc0ae0();
+    hkpHavokSnapshot_ConvertListener_dtor();
     if (flags & 1)
     {
         State* state = hkMemoryRouter_getInstance();
@@ -103,9 +104,12 @@ CC0D30Result __cdecl hkpHavokSnapshot_saveUnderRootLevel(const void* data, const
 
 // @fnv 0x00cc0d30
 // src: HAVOK_LIB 0x00cc0d30
-CC0D30Result __cdecl hkpHavokSnapshot_save_00cc0d30(const void* data, const void* pClassInfo, void* out, int flags)
+// pdb: hkpHavokSnapshot::save | hkpHavokSnapshot.obj | retail, object-file gap fill, high
+// pdb params: data, dataClass, writer, binaryFormat, targetLayout, userListener
+// pdb locals: defaultConvertListener
+CC0D30Result __cdecl hkpHavokSnapshot_save_00cc0d30(const void* data, const void* writer, void* binaryFormat, int targetLayout)
 {
-    return hkpHavokSnapshot_saveUnderRootLevel(data, g_CC0D30DefaultRegistry, pClassInfo, out, flags);
+    return hkpHavokSnapshot_saveUnderRootLevel(data, g_CC0D30DefaultRegistry, writer, binaryFormat, targetLayout);
 }
 
 struct S_00cc0d60_R
@@ -123,12 +127,16 @@ struct S_00cc0d60_A
     int unk10;
     int unk14;
     void FUN_00d4c220();
-    void hkpPhysicsData_populateFromWorld(void* a, int b);
+    void hkpPhysicsData_populateFromWorld(void* world, int saveContactPoints);
     void FUN_00d4c250();
 };
-S_00cc0d60_R* hkpHavokSnapshot_save_00cc0d30(void** pa, S_00cc0d60_A* a, void* b, int c, int d);
+S_00cc0d60_R* hkpHavokSnapshot_save_00cc0d30(void** pa, S_00cc0d60_A* writer, void* binaryFormat, int targetLayout, int d);
 // @fnv 0x00cc0d60
 // src: HAVOK_LIB 0x00cc0d60
+// pdb: hkpHavokSnapshot::save | hkpHavokSnapshot.obj | retail, call graph, medium
+// pdb note: debug build links it to hkArrayBase<hkRootLevelContainer::NamedVariant>::clear
+// pdb params: data, dataClass, writer, binaryFormat, targetLayout, userListener
+// pdb locals: defaultConvertListener
 S_00cc0d60_R hkpHavokSnapshot_save_00cc0d60(void* a2, void* a3, int a4, int a5, int a6)
 {
     S_00cc0d60_R res;
@@ -158,7 +166,7 @@ struct Allocator
 
 
 struct PtrList;
-void __cdecl ResizeAudioStream(void* a, PtrList* l, unsigned int n);
+void __cdecl ResizeAudioStream(void* mem, PtrList* array, unsigned int sizeElem);
 
 struct PtrList
 {
@@ -203,7 +211,7 @@ struct Obj80
 
 struct TypeMatcher
 {
-    hkBool hkClass_isSuperClass(void* v);
+    hkBool hkClass_isSuperClass(void* k);
 };
 
 struct GlobalObjectO2_00d472a0 : TypeMatcher
@@ -213,9 +221,9 @@ extern GlobalObjectO2_00d472a0 g_01268f2c;
 extern GlobalObjectO2_00d472a0 g_01268e24;
 extern GlobalObjectO2_00d472a0 g_01268c5c;
 extern GlobalObjectO2_00d472a0 g_01268bcc;
-extern GlobalObjectO2_00d472a0 g_01268eb4;
-extern GlobalObjectO2_00d472a0 g_01268d4c;
-extern GlobalObjectO2_00d472a0 g_01268c14;
+extern GlobalObjectO2_00d472a0 hkpStorageMeshShapeClass;
+extern GlobalObjectO2_00d472a0 hkpStorageExtendedMeshShapeClass;
+extern GlobalObjectO2_00d472a0 hkpStorageSampledHeightFieldShapeClass;
 
 struct FUN_00cc08f0_cls
 {
@@ -223,21 +231,23 @@ struct FUN_00cc08f0_cls
     unsigned int unk04;
     PtrList m_08;
 
-    void hkpHavokSnapshot_ConvertListener_addObjectCallback(void** a1, void** a2);
+    void hkpHavokSnapshot_ConvertListener_addObjectCallback(void** p, void** k);
 };
 
 // Checks type matchers on *a2, allocates and links a new object into m_08, or clears the pointer when the back-reference matches.
 // @fnv 0x00cc08f0
 // src: XBOX_PDB 0x00cc08f0
-void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void** a1, void** a2)
+// pdb: hkpHavokSnapshot::ConvertListener::addObjectCallback | hkpHavokSnapshot.obj | retail, upstream name already matches, high
+// pdb params: p, k
+void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void** p, void** k)
 {
-    void** cur = a2;
+    void** cur = k;
 
     if (g_01268f2c.hkClass_isSuperClass(*cur))
     {
-        if (*cur != (void*)&g_01268eb4)
+        if (*cur != (void*)&hkpStorageMeshShapeClass)
         {
-            void* v = *a1;
+            void* v = *p;
             State* h = hkMemoryRouter_getInstance();
             Obj70* o = (Obj70*)((Allocator*)h->interface10)->allocate(0x70);
             o->m_04 = 0x70;
@@ -249,16 +259,16 @@ void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void**
                 ResizeAudioStream(h2->interface10, list, 4);
             }
             list->Add(o);
-            *a1 = o;
-            *a2 = (void*)&g_01268eb4;
-            cur = a2;
+            *p = o;
+            *k = (void*)&hkpStorageMeshShapeClass;
+            cur = k;
         }
     }
     if (g_01268e24.hkClass_isSuperClass(*cur))
     {
-        if (*cur != (void*)&g_01268d4c)
+        if (*cur != (void*)&hkpStorageExtendedMeshShapeClass)
         {
-            void* v = *a1;
+            void* v = *p;
             State* h = hkMemoryRouter_getInstance();
             Obj110* o = (Obj110*)((Allocator*)h->interface10)->allocate(0x110);
             o->m_04 = 0x110;
@@ -270,14 +280,14 @@ void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void**
                 ResizeAudioStream(h2->interface10, list, 4);
             }
             list->Add(o);
-            *a1 = o;
-            *a2 = (void*)&g_01268d4c;
+            *p = o;
+            *k = (void*)&hkpStorageExtendedMeshShapeClass;
             return;
         }
     }
     if (g_01268c5c.hkClass_isSuperClass(*cur))
     {
-        void* v = *a1;
+        void* v = *p;
         if (((unsigned char*)v)[0x1d] == 2)
         {
             State* h = hkMemoryRouter_getInstance();
@@ -291,18 +301,18 @@ void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void**
                 ResizeAudioStream(h2->interface10, list, 4);
             }
             list->Add(o);
-            *a1 = o;
-            *a2 = (void*)&g_01268c14;
+            *p = o;
+            *k = (void*)&hkpStorageSampledHeightFieldShapeClass;
         }
         return;
     }
     if (g_01268bcc.hkClass_isSuperClass(*cur))
     {
-        void* v = *a1;
+        void* v = *p;
         unsigned int* back = (unsigned int*)((unsigned int*)v)[2];
         if (back != 0 && back[9] == (unsigned int)v)
         {
-            *a1 = 0;
+            *p = 0;
             *cur = 0;
         }
     }
@@ -335,13 +345,14 @@ struct FUN_00cc0ae0_cls
     int m_iArrayLength;
     unsigned int m_uCapBits;
 
-    void ProcessEntries_00cc0ae0();
+    void hkpHavokSnapshot_ConvertListener_dtor();
 };
 
 // Sets the vtable pointer, calls v00(1) on each non-null item, frees the item array, empties it, and sets the vtable pointer to DAT_0102e388.
 // @fnv 0x00cc0ae0
-// src: GUESS 0x00cc0ae0 (confidence: low)
-void FUN_00cc0ae0_cls::ProcessEntries_00cc0ae0()
+// src: XBOX_RETAIL_PDB 0x00cc0ae0
+// pdb: hkpHavokSnapshot::ConvertListener::~ConvertListener | hkpHavokSnapshot.obj | retail, object-file gap fill, high
+void FUN_00cc0ae0_cls::hkpHavokSnapshot_ConvertListener_dtor()
 {
     m_vptr00 = (int)&DAT_010c93e4;
     for (int i = 0; i < m_iArrayLength; i++)
@@ -380,7 +391,7 @@ struct SpawnedObject
 {
     virtual void* v00();
     SlotRec m_slot;
-    void ProcessEntries_00cc0ae0();
+    void hkpHavokSnapshot_ConvertListener_dtor();
     SpawnedObject()
     {
         m_slot.m_flag = 1;
@@ -390,7 +401,7 @@ struct SpawnedObject
     }
 };
 
-int Object_ProcessAndReturnValue_00d485a0(unsigned int a, unsigned int b, unsigned int c, int d, SpawnedObject* e);
+int hkSerializeUtil_saveTagfile(unsigned int object, unsigned int klass, unsigned int writer, int binary, SpawnedObject* userListener);
 
 struct InputBool223
 {
@@ -403,6 +414,10 @@ struct InputBool223
 // Calls FUN_00d485a0 with a2, a3, a4, (bool)a5 and ctx (or a local object if null), stores whether it returned 0 into *out, and returns out.
 // @fnv 0x00cc0b50
 // src: HAVOK_LIB 0x00cc0b50
+// pdb: hkpHavokSnapshot::save | hkpHavokSnapshot.obj | retail, object-file gap fill, medium
+// pdb note: debug build links it to hkSerializeUtil::saveTagfile
+// pdb params: data, dataClass, writer, binaryFormat, targetLayout, userListener
+// pdb locals: defaultConvertListener
 unsigned char* hkpHavokSnapshot_save(unsigned char* apResult, unsigned int a2, unsigned int a3, unsigned int a4,
                             InputBool223 abFlag, unsigned int unk2c, SpawnedObject* ctx)
 {
@@ -412,9 +427,9 @@ unsigned char* hkpHavokSnapshot_save(unsigned char* apResult, unsigned int a2, u
     {
         pCtx = &localCtx;
     }
-    int r = Object_ProcessAndReturnValue_00d485a0(a2, a3, a4, (bool)abFlag, pCtx);
+    int r = hkSerializeUtil_saveTagfile(a2, a3, a4, (bool)abFlag, pCtx);
     *apResult = (unsigned char)(r == 0);
-    localCtx.ProcessEntries_00cc0ae0();
+    localCtx.hkpHavokSnapshot_ConvertListener_dtor();
     return apResult;
 }
 }  // namespace fnv_00cc0b50

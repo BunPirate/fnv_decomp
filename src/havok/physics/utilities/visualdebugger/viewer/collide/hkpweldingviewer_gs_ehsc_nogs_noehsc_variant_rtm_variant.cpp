@@ -196,9 +196,9 @@ hkQuadReal r1=_mm_mul_ps(r.getColumn(1).m_vComponents,b1);
 hkQuadReal b2=_mm_shuffle_ps(b.m_vComponents,b.m_vComponents,(((2)<<6)|((2)<<4)|((2)<<2)|((2))));
 hkQuadReal r2=_mm_mul_ps(r.getColumn(2).m_vComponents,b2);
 out.m_vComponents=_mm_add_ps(_mm_add_ps(r0,r1),_mm_add_ps(r2,t.getTranslation().m_vComponents));}
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4&a)const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4&x)const
 {
-hkQuadReal x2=_mm_mul_ps(m_vComponents,a.m_vComponents);
+hkQuadReal x2=_mm_mul_ps(m_vComponents,x.m_vComponents);
 hkQuadReal xySum=_mm_add_ss(_mm_shuffle_ps(x2,x2,(((1)<<6)|((1)<<4)|((1)<<2)|((1)))),x2);
 hkQuadReal result=_mm_add_ss(_mm_shuffle_ps(x2,x2,(((2)<<6)|((2)<<4)|((2)<<2)|((2)))),xySum); __declspec(align(16)) hkSimdReal component; *reinterpret_cast<__m128*>(&component)=result; return component;}
 __forceinline hkSimdReal lengthInverse3(const hkVector4& vector)
@@ -259,7 +259,7 @@ public:
 hkUint32 m_uiConstraintCount;
 class hkpConstraintInstance*m_ppConstraints[CAPACITY];};const hkTransform&hkMotionState::getTransform()const
 {
-return m_kMotionTransform;
+return m_transform;
 }
 const hkTransform&hkpMotion::getTransform()const
 {
@@ -288,10 +288,11 @@ class hkDisplayGeometry;
 class hkProcessHandler;
 
 
+// pdb: class hkpWeldingViewer, size 0x2c, bases: hkpWorldViewerBase, hkpWorldPostSimulationListener, 0 members
 class hkpWeldingViewer:public hkpWorldViewerBase,public hkpWorldPostSimulationListener
 {
 public:
-__forceinline void*__cdecl operator new(hk_size_t nbytes){;hkReferencedObject*b=static_cast<hkReferencedObject*>(hkMemoryRouter::getInstance().heap().blockAlloc(static_cast<int>(nbytes)));b->m_usMemSizeAndFlags=static_cast<hkUint16>(nbytes);;return b;}__forceinline void __cdecl operator delete(void*p){hkReferencedObject*b=static_cast<hkReferencedObject*>(p);;hkMemoryRouter::getInstance().heap().blockFree(p,b->m_usMemSizeAndFlags);}__forceinline void*__cdecl operator new(hk_size_t,void*p){return p;}__forceinline void*__cdecl operator new[](hk_size_t,void*p){__debugbreak();return p;}__forceinline void __cdecl operator delete(void*,void*){}__forceinline void __cdecl operator delete[](void*,void*){__debugbreak();}class CommandArgument;
+__forceinline void*__cdecl operator new(hk_size_t nbytes){;hkReferencedObject*b=static_cast<hkReferencedObject*>(hkMemoryRouter::getInstance().heap().blockAlloc(static_cast<int>(nbytes)));b->m_memSizeAndFlags=static_cast<hkUint16>(nbytes);;return b;}__forceinline void __cdecl operator delete(void*p){hkReferencedObject*b=static_cast<hkReferencedObject*>(p);;hkMemoryRouter::getInstance().heap().blockFree(p,b->m_memSizeAndFlags);}__forceinline void*__cdecl operator new(hk_size_t,void*p){return p;}__forceinline void*__cdecl operator new[](hk_size_t,void*p){__debugbreak();return p;}__forceinline void __cdecl operator delete(void*,void*){}__forceinline void __cdecl operator delete[](void*,void*){__debugbreak();}class CommandArgument;
 static hkProcess*__cdecl create(const hkArray<hkProcessContext*>&contexts);
 static void __cdecl RegisterViewer(void);
 static inline const char*__cdecl getName(void){return "WeldingViewer";}
@@ -312,11 +313,11 @@ struct EmptyPayload
 
 inline const hkArray<hkpRigidBody*>&hkpPhysicsSystem::getRigidBodies()const
 {
-return m_ppRigidBodies;
+return m_rigidBodies;
 }
 inline hkpMotion*hkpRigidBody::getRigidMotion()const
 {
-return const_cast<hkpMaxSizeMotion*>(&m_pMotionState);
+return const_cast<hkpMaxSizeMotion*>(&m_motion);
 }
 inline const hkTransform&hkpRigidBody::getTransform()const
 {
@@ -350,22 +351,23 @@ calcSnapVector(triangleNormal,edge,edgeBitcode,(int)weldingType,snapVectorOut);
 
 inline const hkpShapeCollection*hkpMoppBvTreeShape::getShapeCollection()const
 {
-return static_cast<const hkpShapeCollection*>(m_pChildAtom.getChild());
+return static_cast<const hkpShapeCollection*>(m_child.getChild());
 }
 
 __forceinline hkUint16 hkpTriangleShape::getWeldingInfo()const
 {
-return m_kWeldingInfo;
+return m_weldingInfo;
 }
 __forceinline hkpWeldingUtility::WeldingType hkpTriangleShape::getWeldingType()const
 {
-return static_cast<hkpWeldingUtility::WeldingType>(*reinterpret_cast<const hkUint8*>(&m_eWeldingType));
+return static_cast<hkpWeldingUtility::WeldingType>(*reinterpret_cast<const hkUint8*>(&m_weldingType));
 }
 __forceinline const hkVector4&hkpTriangleShape::getVertex(int i)const
 {
 ;
 return(&m_kVertexA)[i];
 }
+// pdb: class hkpMeshWeldingUtility, size 0x1, 0 members
 class hkpMeshWeldingUtility
 {
 public:
@@ -387,6 +389,9 @@ extern const double DAT_010d1640;
 // display-handler pointer used by this callback.
 // @fnv 0x00d62780
 // src: GUESS 0x00d62780 (confidence: low)
+// pdb: hkpWeldingViewer::postSimulationCallback | hkpWeldingViewer.obj | retail, vtable slot, high
+// pdb params: world
+// pdb locals: system, i, key, buffer, triangleCenter, triangleNormal, vertices, p1, edgeCenter, p0, ep0, ep1
 void hkpWeldingViewer::ProcessEntries_00d62780(hkpWorld*world)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "hkpActiveContactPointViewer::postSimulationCallback";h->setTime();mStream.setEnd((char*)(h+1));}};ScopedTimer timeblock18;
@@ -417,9 +422,9 @@ hkVector4 vertices[3];
 setTransformedPos(vertices[0],bodyTransform,triangle->getVertex(0));
 setTransformedPos(vertices[1],bodyTransform,triangle->getVertex(1));
 setTransformedPos(vertices[2],bodyTransform,triangle->getVertex(2));
-reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->unk10)->DisplayLine(vertices[0],vertices[1],hkColor::RED,collidableId,m_ucOperationType);
-reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->unk10)->DisplayLine(vertices[1],vertices[2],hkColor::RED,collidableId,m_ucOperationType);
-reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->unk10)->DisplayLine(vertices[2],vertices[0],hkColor::RED,collidableId,m_ucOperationType);
+reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->m_displayHandler)->DisplayLine(vertices[0],vertices[1],hkColor::RED,collidableId,m_ucOperationType);
+reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->m_displayHandler)->DisplayLine(vertices[1],vertices[2],hkColor::RED,collidableId,m_ucOperationType);
+reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->m_displayHandler)->DisplayLine(vertices[2],vertices[0],hkColor::RED,collidableId,m_ucOperationType);
 hkVector4 triangleCenter;
 triangleCenter.setAdd4(vertices[0],vertices[1]);
 triangleCenter.add4(vertices[2]);
@@ -449,9 +454,9 @@ continue;
 hkVector4 p0,p1;
 p0.setAdd4(edgeCenter,snapVector0);
 p1.setAdd4(edgeCenter,triangleNormal);
-reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->unk10)->DisplayLine(edgeCenter,p0,hkColor::ORANGE,collidableId,m_ucOperationType);
-reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->unk10)->DisplayLine(edgeCenter,p1,hkColor::ORANGE,collidableId,m_ucOperationType);
-reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->unk10)->DisplayLine(edgeCenter,triangleCenter,hkColor::GREEN,collidableId,m_ucOperationType);
+reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->m_displayHandler)->DisplayLine(edgeCenter,p0,hkColor::ORANGE,collidableId,m_ucOperationType);
+reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->m_displayHandler)->DisplayLine(edgeCenter,p1,hkColor::ORANGE,collidableId,m_ucOperationType);
+reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->m_displayHandler)->DisplayLine(edgeCenter,triangleCenter,hkColor::GREEN,collidableId,m_ucOperationType);
 hkVector4 start;start=snapVector0;
 const int kSteps=10;
 for(int s=0;s<kSteps;s++)
@@ -462,7 +467,7 @@ interp.normalize3();
 hkVector4 ep0,ep1;
 ep0.setAdd4(edgeCenter,start);
 ep1.setAdd4(edgeCenter,interp);
-reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->unk10)->DisplayLine(ep0,ep1,hkColor::ORANGE,collidableId,m_ucOperationType);
+reinterpret_cast<hkDebugDisplayHandler*>(reinterpret_cast<const hkProcess*>(reinterpret_cast<const char*>(this)-0x20)->m_displayHandler)->DisplayLine(ep0,ep1,hkColor::ORANGE,collidableId,m_ucOperationType);
 start=interp;
 }
 }

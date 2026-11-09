@@ -7,6 +7,7 @@ class SpawnedArg;
 class PositionKey;
 class NiMatrix3;
 
+// pdb: class NiPathController, size 0x64, bases: NiTimeController, 12 members
 class NiPathController : public NiTimeController
 {
 public:
@@ -35,19 +36,19 @@ public:
 
     void* InvokeIndexedCallback(void* result, int first, int second, float time);
     void InvokeIndexedCallback(NiPoint3* result, int first, int second, float time);
-    float GetKeyDerivativeLength(int first, int second, float time);
-    float GetKeyDerivativeLength(unsigned int first, unsigned int second, float time);
-    float PathLength(int first, int second, float scale);
-    double PathLength(unsigned int first, unsigned int second, float scale);
-    float GetTotalLength();
+    float PathSpeed(int iI0, int iI1, float time);
+    float PathSpeed(unsigned int iI0, unsigned int iI1, float time);
+    float PathLength(int iI0, int iI1, float fTime);
+    double PathLength(unsigned int iI0, unsigned int iI1, float fTime);
+    float GetTotalPathLength();
     void GetLengths(unsigned int* keys, unsigned int* count, int* type, unsigned char* stride);
     PositionKey* GetKeys(unsigned int& count, int& type, unsigned char& stride) const;
-    void GetPercentLoc_00a4a980(float time, unsigned int* first, unsigned int* second, float* position);
-    void GetPercentLoc_00a4a980(float time, unsigned int& first, unsigned int& second, float& position);
-    void GetLoc(float time, int* first, int* second, float* position);
-    void GetLoc(float time, unsigned int& first, unsigned int& second, float& position);
-    void CalcRefFrame(int first, int second, float time, NiMatrix3* rotation);
-    void CalcRefFrame(unsigned int first, unsigned int second, float time, NiMatrix3& rotation);
+    void GetPercentLoc(float fPercent, unsigned int* uiI1, unsigned int* uiI2, float* fNormTime);
+    void GetPercentLoc(float fPercent, unsigned int& uiI1, unsigned int& uiI2, float& fNormTime);
+    void GetLoc(float fTime, int* uiI1, int* uiI2, float* fNormTime);
+    void GetLoc(float fTime, unsigned int& uiI1, unsigned int& uiI2, float& fNormTime);
+    void CalcRefFrame(int ui1, int ui2, float fNormTime, NiMatrix3* kRefFrame);
+    void CalcRefFrame(unsigned int ui1, unsigned int ui2, float fNormTime, NiMatrix3& kRefFrame);
     void UpdatePathTarget(float* time);
 
     bool GetFollow() const;
@@ -80,8 +81,8 @@ public:
         int m3c;
         int unk3c;
     };
-    NiPointer<NiTimeController> m_pPathObject;
-    NiPointer<NiTimeController> m_pPathInterp;
+    NiPointer<NiTimeController> m_spPathData;
+    NiPointer<NiTimeController> m_spPctData;
     union
     {
         float* m_pfPathLengths;

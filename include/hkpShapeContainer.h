@@ -7,6 +7,7 @@ struct ClassMemberDescriptor;
 
 typedef unsigned int hkpShapeKey;
 
+// pdb: class hkpShapeContainer, size 0x4, 0 members
 class hkpShapeContainer
 {
 public:

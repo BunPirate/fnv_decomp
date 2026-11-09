@@ -1,6 +1,7 @@
 #pragma once
 #include "NiRefObject.h"
 
+// pdb: class PathingLOSGridMap, size 0x54 (here 0x48), bases: NiRefObject, 6 members
 class PathingLOSGridMap : public NiRefObject
 {
 public:
@@ -24,7 +25,7 @@ public:
     virtual ~PathingLOSGridMap();
 
     void __thiscall ClearMap();
-    void __thiscall Initialize_006e0320(void* p, float f);
+    void __thiscall Initialize(void* arCenter, float afRadius);
     void __thiscall Reset();
     void __thiscall FUN_006e02a0();
     void __thiscall Animation_ResetVtableAndFinishScriptRunLock();

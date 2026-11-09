@@ -74,6 +74,8 @@ class FileObject
 
 // @fnv 0x00aff490
 // src: XBOX_PDB 0x00aff490
+// pdb: BSFile::CheckIsGood | BSFile.obj | retail, upstream name already matches, high
+// pdb locals: bloadCompleteFile, tempMemContext, iread
 void FileObject::BSFile_CheckIsGood()
 {
     if (IsOpen())
@@ -231,6 +233,9 @@ struct BinaryWriter
 };
 // @fnv 0x00affbb0
 // src: XBOX_PDB 0x00affbb0
+// pdb: BSFile::Write | BSFile.obj | debug, vtable slot, medium
+// pdb params: arString, abBinary
+// pdb locals: ibytesWritten
 unsigned int BinaryWriter::BSFile_Write_00affbb0(const StreamString* string, bool abWriteNullTerminator)
 {
     unsigned int result = WriteString(*string, abWriteNullTerminator);

@@ -18,6 +18,7 @@ extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 
 // @fnv 0x00884c60
 // src: COMMUNITY 0x00884c60
+// pdb: Actor::ClearMoveModeAll | Actor.obj | debug, upstream name already matches, high
 void Actor::ClearMoveModeAll()
 {
     StopMoving();
@@ -79,34 +80,39 @@ struct FUN_00620760_class
 
 struct FUN_00891130_class
 {
-    void SetFlags_Thunk(unsigned char a);
+    void TargetEntry_SetHit(unsigned char abTF);
 };
 
 // @fnv 0x00891130
-// src: GUESS 0x00891130 (confidence: medium)
-void FUN_00891130_class::SetFlags_Thunk(unsigned char aValue)
+// src: XBOX_DEBUG_PDB 0x00891130
+// pdb: TargetEntry::SetHit | Actor.obj | debug, call graph, high
+// pdb params: abTF
+void FUN_00891130_class::TargetEntry_SetHit(unsigned char abTF)
 {
-    ((FUN_00620760_class*)((char*)this + 0x10))->SetFlags(1, (int)aValue);
+    ((FUN_00620760_class*)((char*)this + 0x10))->SetFlags(1, (int)abTF);
 }
 
 
 struct FUN_008859e0_Class
 {
-    bool __thiscall Actor_CanChildUseObject(TESObject* a);
+    bool __thiscall Actor_CanChildUseObject(TESObject* apObjectRef);
 };
 
 // Returns true unless the next form's type is 0x15, 0x27 or 0x30, in which case it returns the result of IsFlag20000000Set on that form.
 // @fnv 0x008859e0
 // src: XBOX_PDB 0x008859e0
-bool __thiscall FUN_008859e0_Class::Actor_CanChildUseObject(TESObject* pObject)
+// pdb: Actor::CanChildUseObject | Actor.obj | debug, upstream name already matches, high
+// pdb params: apObjectRef
+// pdb locals: bcanuseit
+bool __thiscall FUN_008859e0_Class::Actor_CanChildUseObject(TESObject* apObjectRef)
 {
     bool result = true;
-    switch (pObject->GetNext()->FNV_GetFormType())
+    switch (apObjectRef->GetNext()->FNV_GetFormType())
     {
     case 0x15:
     case 0x27:
     case 0x30:
-        result = ((FUN_00885a30_Class*)pObject->GetNext())->IsFlag20000000Set();
+        result = ((FUN_00885a30_Class*)apObjectRef->GetNext())->IsFlag20000000Set();
         break;
     }
     return result;
@@ -122,6 +128,7 @@ struct FUN_00891150_Class
 };
 // @fnv 0x00891150
 // src: XBOX_PDB 0x00891150
+// pdb: TargetEntry::QHit | Actor.obj | debug, upstream name already matches, high
 bool FUN_00891150_Class::TargetEntry_QHit()
 {
     return ((FUN_008c1be0_Class*)((char*)this + 0x10))->bhkTTNode_TESObjectREFR_GetFlags(1) != 0;
@@ -144,6 +151,8 @@ struct LocationDescriptor
 
 // @fnv 0x008984c0
 // src: COMMUNITY 0x008984c0
+// pdb: Actor::InitiateSurfacePackage | Actor.obj | retail, upstream name already matches, high
+// pdb locals: ploc, ppack
 void TESObjectREFR::Actor_InitiateSurfacePackage()
 {
     Actor_ForceStopMoving(this);
@@ -345,6 +354,8 @@ class FUN_00884ae0_cls
 };
 // @fnv 0x00884ae0
 // src: COMMUNITY 0x00884ae0
+// pdb: Actor::IsFightingOrAlarmed | Actor.obj | retail, upstream name already matches, high
+// pdb locals: ppackage, bretval
 bool FUN_00884ae0_cls::Actor_IsFightingOrAlarmed()
 {
     bool result = false;
@@ -361,7 +372,7 @@ bool FUN_00884ae0_cls::Actor_IsFightingOrAlarmed()
 
 struct FUN_004939d0_Class
 {
-    void __thiscall UpdateAnimationForRef(void*);
+    void __thiscall Animation_UpdateMovementNoWorldUpdate(void*);
 };
 
 struct FUN_008885a0_Class
@@ -498,7 +509,7 @@ void __thiscall FUN_008885a0_Class::Actor_UpdateAnimMovement()
 {
     FUN_004939d0_Class* result = FUN_008885a0_Get();
     if (result)
-        result->UpdateAnimationForRef(this);
+        result->Animation_UpdateMovementNoWorldUpdate(this);
 }
 
 const NiFixedString& FixedStrings_QDVPG();
@@ -542,7 +553,7 @@ struct BipedView
 struct EffectView
 {
     float BGSImpactData_GetDecalMinWidth();
-    float GetModifierValue();
+    float BGSImpactData_GetDecalMaxWidth();
     float FUN_004a40e0();
     float FUN_00598040();
     float TESCombatStyle_GetWeaponMinRangeMult();
@@ -1109,28 +1120,31 @@ float RandomFloatTwoPi();
 unsigned int FUN_00944460(int, int);
 // @fnv 0x0088fb00
 // src: XBOX_PDB 0x0088fb00
-void SpellActor::Actor_CreateBloodOnWeapon(float distance, HitSource* hit, SpellActor* target)
+// pdb: Actor::CreateBloodOnWeapon | Actor.obj | retail, string-set bridge, high
+// pdb params: afDamage, apHitData, apTarget
+// pdb locals: bhitHead, bpowerArmorOnTarget, pbodyPart, pcreature, iindex, bbloodyMess, pbodyPartData, pset, pimpactdata, pprocess, pimpactSet, eimpactMaterial, pcurrweapon, pweaponBone, csubtex, frotation, data, fdecalSize, bloodvector, kdummyorigin, radius, pcloneweap, kpos, kBloodDirection ...
+void SpellActor::Actor_CreateBloodOnWeapon(float afDamage, HitSource* apHitData, SpellActor* apTarget)
 {
     TESCreature* creature5 = dynamic_cast<TESCreature*>(FUN_004181e0());
     if (((creature5 && creature5->IsHumanoidCreature()) || isCreature()) && *DAT_011df7f8.FUN_00408d60())
         return;
-    bool specialTmp = hit->node && ((ValueView*)((char*)hit->node + 0xa4))->get(55) > 0 ? true : false;
+    bool specialTmp = apHitData->node && ((ValueView*)((char*)apHitData->node + 0xa4))->get(55) > 0 ? true : false;
     int index7 = -1;
     ProcessView* process = FUN_008d8520();
-    bool alternateVal = hit && (hit->kind == 1 || hit->kind == 2);
-    bool invalid3 = alternateVal ? ((TargetView*)target)->Actor_IsPowerArmorHelmetWorn() : ((TargetView*)target)->Actor_IsPowerBodyArmorWorn();
-    int type = invalid3 ? 4 : ((const TESActorBaseData*)((char*)target->FUN_004181e0() + 0x30))->GetBloodImpactMaterial();
-    EquipmentView* equipment3 = target ? ((TargetView*)target)->FUN_004181e0()->equipment() : 0;
-    InventoryView* item = equipment3 ? equipment3->GetValueByIndex(hit->kind) : 0;
+    bool alternateVal = apHitData && (apHitData->kind == 1 || apHitData->kind == 2);
+    bool invalid3 = alternateVal ? ((TargetView*)apTarget)->Actor_IsPowerArmorHelmetWorn() : ((TargetView*)apTarget)->Actor_IsPowerBodyArmorWorn();
+    int type = invalid3 ? 4 : ((const TESActorBaseData*)((char*)apTarget->FUN_004181e0() + 0x30))->GetBloodImpactMaterial();
+    EquipmentView* equipment3 = apTarget ? ((TargetView*)apTarget)->FUN_004181e0()->equipment() : 0;
+    InventoryView* item = equipment3 ? equipment3->GetValueByIndex(apHitData->kind) : 0;
     EffectList* effects2 = item ? item->GetAVEffect() : 0;
     MaterialImpactRecord* _projectile = effects2 ? effects2->FUN_0058e9d0(type) : 0;
     EffectView* effect = _projectile ? _projectile->FUN_006733e0() : 0;
-    if (hit && target && effect && !invalid3 && !process->blocked())
+    if (apHitData && apTarget && effect && !invalid3 && !process->blocked())
     {
         NodeView* node2;
         node2 = process ? node2 = process->getNode(mode()) : 0;
         WeaponView* weapon = owner->weapon() ? owner->weapon()->FUN_0044ddc0() : 0;
-        if (node2 && weapon && !weapon->TESObjectWEAP_IsRangedWeapon() && distance > BSMAX_00404010(1.0f, *DAT_011df748.Setting_Float_00403e20()))
+        if (node2 && weapon && !weapon->TESObjectWEAP_IsRangedWeapon() && afDamage > BSMAX_00404010(1.0f, *DAT_011df748.Setting_Float_00403e20()))
         {
             NodeView* other_2 = 0;
             NiPoint3 point, playerNormal4, FlushUsageData;
@@ -1180,12 +1194,12 @@ void SpellActor::Actor_CreateBloodOnWeapon(float distance, HitSource* hit, Spell
             }
             char randomIndex2 = (char)(int)FUN_00406cc0(FUN_00476b70(0.0f, 4.0f));
             float global = RandomFloatTwoPi();
-            float size = FUN_00476b70(_projectile->BGSImpactData_GetDecalMinWidth(), _projectile->GetModifierValue());
+            float size = FUN_00476b70(_projectile->BGSImpactData_GetDecalMinWidth(), _projectile->BGSImpactData_GetDecalMaxWidth());
             NiPoint3 normal9;
             if (this == DAT_011dea3c)
                 memcpy(&normal9, &playerNormal4, sizeof(normal9));
             else
-                memcpy(&normal9, &hit->normal.GetNegatedVector(), sizeof(normal9));
+                memcpy(&normal9, &apHitData->normal.GetNegatedVector(), sizeof(normal9));
             FUN_004a37b0 data;
             memcpy(&data.point, &point, sizeof(data.point));
             memcpy(&data.normal, &normal9, sizeof(data.normal));
@@ -1352,28 +1366,31 @@ struct FnvHolder
     void TESObjectCELL_RemoveReference(FnvActorProxy* a1);
 };
 
-void __cdecl bhkWorld_Activate(int a, int b, int c, int d);
-void __cdecl GarbageCollector_Add_TESObjectREFR(FnvActorProxy* a1);
+void __cdecl bhkWorld_Activate(int apObject, int abActivate, int abRecurse, int d);
+void __cdecl GarbageCollector_Add_TESObjectREFR(FnvActorProxy* apRef);
 
 // @fnv 0x00892460
 // src: COMMUNITY 0x00892460
-void __cdecl Actor_RemovePickedUpObjectFromWorld(FnvActorProxy* a1, unsigned char a2)
+// pdb: Actor::RemovePickedUpObjectFromWorld | Actor.obj | retail, upstream name already matches, high
+// pdb params: apPickedUpRef, abDelete
+// pdb locals: pparentcell
+void __cdecl Actor_RemovePickedUpObjectFromWorld(FnvActorProxy* apPickedUpRef, unsigned char abDelete)
 {
     FnvHolder* holder;
-    bhkWorld_Activate(a1->vfn_01D0(), 1, 1, 0);
-    if (a2 != 0)
+    bhkWorld_Activate(apPickedUpRef->vfn_01D0(), 1, 1, 0);
+    if (abDelete != 0)
     {
-        holder = a1->FUN_008d6f30();
-        a1->vfn_01C0();
-        GarbageCollector_Add_TESObjectREFR(a1);
+        holder = apPickedUpRef->FUN_008d6f30();
+        apPickedUpRef->vfn_01C0();
+        GarbageCollector_Add_TESObjectREFR(apPickedUpRef);
         if (holder != 0)
         {
-            holder->TESObjectCELL_RemoveReference(a1);
+            holder->TESObjectCELL_RemoveReference(apPickedUpRef);
         }
     }
     else
     {
-        a1->TESObjectREFR_MarkAsPickedUp();
+        apPickedUpRef->TESObjectREFR_MarkAsPickedUp();
     }
 }
 
@@ -1747,6 +1764,8 @@ struct SubActor
 
 // @fnv 0x00884b50
 // src: COMMUNITY 0x00884b50
+// pdb: Actor::IsAllowedToSwim | Actor.obj | retail, upstream name already matches, high
+// pdb locals: bretval, pcont, ppackage
 bool SubActor::Actor_IsAllowedToSwim()
 {
     if (this->unk14c)
@@ -1798,7 +1817,7 @@ extern FloatSetting DAT_011cdf9c;
 extern FloatSetting DAT_011cd354;
 extern double DAT_01021798;
 
-float __cdecl AiFormulas_GetFollowRadiusStop(float a);
+float __cdecl AiFormulas_GetFollowRadiusStop(float afbasePackRadius);
 float __cdecl fSelf(float a);
 float __cdecl AddRuntimeFloatSetting(float a);
 float __cdecl BSMAX_00404010(float a, float b);
@@ -1879,12 +1898,15 @@ struct Refr
     float __thiscall Actor_GetCurrentSpeed();
     float __thiscall TESObjectREFR_GetScale_00567400();
     unsigned int __thiscall GetVtbl20Result();
-    void __thiscall Actor_AdjustSpeedForFollowing(float* a, float b, float c);
+    void __thiscall Actor_AdjustSpeedForFollowing(float* fspeed, float afBaseRadius, float afDistToTarget);
 };
 
 // @fnv 0x008855f0
 // src: COMMUNITY 0x008855f0
-void __thiscall Refr::Actor_AdjustSpeedForFollowing(float* pfValue, float b, float c)
+// pdb: Actor::AdjustSpeedForFollowing | Actor.obj | retail, upstream name already matches, high
+// pdb params: fspeed, afBaseRadius, afDistToTarget
+// pdb locals: ptarg, pmyWorld, pmyCell, ptargCell, ptargWorld, bsameCell, binterior, ppack, fslowdownZoneOuterRadius, eMoveModeMovingAndRunning, fminSpeed, bRunning, fstopZoneOuterRadius, fmaxSpeed, ftargspeed, fmatchSpeedZoneOuterRadius, fdistFromStopZone, fslowdownZoneWidth, fmatchSpeedZoneWidth, fdistFromSlowDownZone
+void __thiscall Refr::Actor_AdjustSpeedForFollowing(float* fspeed, float afBaseRadius, float afDistToTarget)
 {
     TargetInfo* tInfoX = FUN_009344a0();
     Refr* obj3 = Actor_GetCurrentPackageTarget();
@@ -1898,31 +1920,31 @@ void __thiscall Refr::Actor_AdjustSpeedForFollowing(float* pfValue, float b, flo
     bool b2 = b8 ? (cellObj5 == cellThis) : (worldObj6 == TESObjectREFR_GetWorldSpace());
     if (b2)
     {
-        float f2 = AiFormulas_GetFollowRadiusStop(b);
-        float f7 = fSelf(b);
-        float fd0 = AddRuntimeFloatSetting(b);
+        float f2 = AiFormulas_GetFollowRadiusStop(afBaseRadius);
+        float f7 = fSelf(afBaseRadius);
+        float fd0 = AddRuntimeFloatSetting(afBaseRadius);
         float scale = obj3->fn64() ? obj3->Actor_GetCurrentSpeed() : 0.0f;
         scale = (obj3->TESObjectREFR_GetScale_00567400() / TESObjectREFR_GetScale_00567400()) * scale;
         int mask9 = 0x20f;
         bool flag = (GetVtbl20Result() & mask9) == mask9;
-        float out28 = *pfValue * (flag ? *DAT_011cd744.Setting_Float_00403e20() : *DAT_011cd9b4.Setting_Float_00403e20());
-        float out34 = *pfValue * (flag ? *DAT_011cd5f0.Setting_Float_00403e20() : *DAT_011cdf9c.Setting_Float_00403e20());
-        if (c < f7)
+        float out28 = *fspeed * (flag ? *DAT_011cd744.Setting_Float_00403e20() : *DAT_011cd9b4.Setting_Float_00403e20());
+        float out34 = *fspeed * (flag ? *DAT_011cd5f0.Setting_Float_00403e20() : *DAT_011cdf9c.Setting_Float_00403e20());
+        if (afDistToTarget < f7)
         {
-            float rA = BSMAX_00404010(0.0f, c - f2);
+            float rA = BSMAX_00404010(0.0f, afDistToTarget - f2);
             float denomA3 = f7 - f2;
-            *pfValue = BSMIN(*pfValue, scale) * (rA / denomA3);
+            *fspeed = BSMIN(*fspeed, scale) * (rA / denomA3);
         }
-        else if (c >= fd0 && flag)
+        else if (afDistToTarget >= fd0 && flag)
         {
-            *pfValue = scale * DAT_01021798;
+            *fspeed = scale * DAT_01021798;
         }
         else
         {
-            float d8 = c - f7;
+            float d8 = afDistToTarget - f7;
             float d2 = fd0 - f7;
-            *pfValue = (1.0f + *DAT_011cd354.Setting_Float_00403e20() * (d8 / d2)) * scale;
+            *fspeed = (1.0f + *DAT_011cd354.Setting_Float_00403e20() * (d8 / d2)) * scale;
         }
-        BSClamp_float(pfValue, out34, out28);
+        BSClamp_float(fspeed, out34, out28);
     }
 }

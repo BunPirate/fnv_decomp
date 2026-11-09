@@ -41,14 +41,16 @@ struct CharacterEquipmentWeight : Character
 };
 // @fnv 0x008d2110
 // src: COMMUNITY 0x008d2110
+// pdb: Character::GetArmorThreshold | Character.obj | retail, object-file gap fill, high
+// pdb locals: iarmorFoundCount, parmorFound, pinventory, pchange, i, parmo, balreadyCounted, j
 float CharacterEquipmentWeight::Character_GetArmorDamageThreshold()
 {
     int count = 0;
     ::TESObjectARMO* forms3[20];
     forms3[0] = 0;
-    if (m_fSecondValue < _gModifierZero)
+    if (fArmorThreshold < _gModifierZero)
     {
-        m_fSecondValue = 0.0f;
+        fArmorThreshold = 0.0f;
         EquipmentList536* list6 = static_cast<ExtraList536*>(Actor::BSFile_GetDevice())->FUN_00418520();
         FUN_004bc5f0* item7 = 0;
         if (list6)
@@ -69,7 +71,7 @@ float CharacterEquipmentWeight::Character_GetArmorDamageThreshold()
                         }
                         if (!found4)
                         {
-                            m_fSecondValue += item7->FUN_004be0b0(static_cast<ActorValueOwner*>(this));
+                            fArmorThreshold += item7->FUN_004be0b0(static_cast<ActorValueOwner*>(this));
                             forms3[count] = armor;
                             ++count;
                         }
@@ -80,7 +82,7 @@ float CharacterEquipmentWeight::Character_GetArmorDamageThreshold()
             }
         }
     }
-    return m_fSecondValue;
+    return fArmorThreshold;
 }
 
 float __cdecl BSMIN(float a, float b);
@@ -91,11 +93,11 @@ struct InventoryEntry_8d22b0
 {
     ~InventoryEntry_8d22b0();
     TESBoundObject* GetBaseObject();
-    float GetEntryWeight(ActorValueOwner* owner);
+    float ItemChange_GetModifiedArmorRating(ActorValueOwner* apActor);
 };
 struct InventoryData_8d22b0
 {
-    InventoryEntry_8d22b0* GetEquippedEntry(int index, int flags);
+    InventoryEntry_8d22b0* GetEquippedEntry(int aeBodyPart, int flags);
 };
 struct ContainerChanges_8d22b0
 {
@@ -111,14 +113,16 @@ struct CharacterArmorWeight : public Character
 
 // @fnv 0x008d22b0
 // src: COMMUNITY 0x008d22b0
+// pdb: Character::GetArmorRating | Character.obj | retail, object-file gap fill, high
+// pdb locals: iarmorFoundCount, parmorFound, pinventory, pchange, i, parmo, balreadyCounted, j
 float CharacterArmorWeight::Character_GetArmorDamageResistance()
 {
     int iCount = 0;
     ::TESObjectARMO* armors[20];
     armors[0] = 0;
-    if (m_fFirstResetValue < 0.0)
+    if (fArmorRating < 0.0)
     {
-        m_fFirstResetValue = 0.0f;
+        fArmorRating = 0.0f;
         InventoryData_8d22b0* items = static_cast<ContainerChanges_8d22b0*>(Actor::BSFile_GetDevice())->GetData();
         InventoryEntry_8d22b0* entry = 0;
         if (items)
@@ -141,7 +145,7 @@ float CharacterArmorWeight::Character_GetArmorDamageResistance()
                         }
                         if (!found)
                         {
-                            m_fFirstResetValue += entry->GetEntryWeight(this);
+                            fArmorRating += entry->ItemChange_GetModifiedArmorRating(this);
                             armors[iCount++] = armor;
                         }
                     }
@@ -152,8 +156,8 @@ float CharacterArmorWeight::Character_GetArmorDamageResistance()
         }
     }
     return *originalRuntimeFloatSetting1016.GetFloat() > 0.0
-               ? BSMIN(m_fFirstResetValue, *originalRuntimeFloatSetting1016.GetFloat())
-               : m_fFirstResetValue;
+               ? BSMIN(fArmorRating, *originalRuntimeFloatSetting1016.GetFloat())
+               : fArmorRating;
 }
 
 struct InventoryEntryWeight534
@@ -175,6 +179,8 @@ struct CharacterClothingWeight : Character
 };
 // @fnv 0x008d3110
 // src: XBOX_PDB 0x008d3110
+// pdb: Character::GetClothingValue | Character.obj | retail, upstream name already matches, high
+// pdb locals: pinventory, afReturnValue, pchange, i, pcloth, parmo
 float CharacterClothingWeight::Character_GetClothingValue()
 {
     float weight = 0.0f;

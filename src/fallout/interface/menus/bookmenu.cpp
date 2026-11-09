@@ -16,6 +16,7 @@ extern unsigned int DAT_01070ecc;
 
 // Initializes the Menu base and sets the vtable pointer to DAT_01070ecc, then clears the two pointer fields.
 // @fnv 0x0073acb0
+// pdb: BookMenu::BookMenu | BookMenu.obj | retail, upstream name already matches, high
 BookMenu::BookMenu() : Menu()
 {
     m_pHighlightedTile = 0;
@@ -41,11 +42,13 @@ bool __thiscall BookMenu::IsWellFormedMenu()
 
 // Handles the space key (0x20) by calling UpdateMenuTile and returning true; returns false for any other key.
 // @fnv 0x0073b6b0
+// pdb: BookMenu::DoKey | BookMenu.obj | retail, vtable slot, high
+// pdb params: aikey
 bool BookMenu::HandleKey(int aikey)
 {
     if (aikey == 0x20)
     {
-        this->UpdateMenuTile();
+        this->Close();
         return true;
     }
     return false;
@@ -54,6 +57,7 @@ bool BookMenu::HandleKey(int aikey)
 void __cdecl _Deallocate(void*);
 // Calls FUN_0073ad30, then deallocates this if flags has bit 1 set, and returns this.
 // @fnv 0x0073ad00
+// pdb: BookMenu::`scalar deleting destructor' | BookMenu.obj | retail, vtable slot, high
 void* __thiscall BookMenu::FUN_0073ad00(unsigned int flags)
 {
     SetVtableAndProcessState_0073ad30();
@@ -94,6 +98,7 @@ struct FUN_0073b020_shell : public InterfaceManager
 float __cdecl InterfaceManager_GetScreenHeight();
 // @fnv 0x0073b020
 // src: COMMUNITY 0x0073b020
+// pdb: InterfaceManager::GetCursorY | BookMenu.obj | retail, upstream name already matches, high
 int FUN_0073b020_shell::InterfaceManager_GetCursorY()
 {
     return (int)(InterfaceManager_GetScreenHeight() - (InterfaceManager_GetScreenHeight() / 2.0 + *(float*)((char*)this + 0x34)));
@@ -133,6 +138,9 @@ InterfaceManager* __cdecl InterfaceManager_GetSingleton();
 // For tile ID 12, stores the difference between the current tile's value and the interface manager's value.
 // @fnv 0x0073afd0
 // src: XBOX_PDB 0x0073afd0
+// pdb: BookMenu::DoDownClick | BookMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
+// pdb locals: pim
 void BookMenu::DoDownClick(int aiID, Tile* apTarget)
 {
     InterfaceManager* pim;
@@ -163,6 +171,7 @@ struct Holder73b430
     void __thiscall CallInnerFoo();
 };
 // @fnv 0x0073b430
+// pdb: TESObjectBOOK::GetText | BookMenu.obj | debug, object-file run extension, low
 void __thiscall Holder73b430::CallInnerFoo()
 {
     inner.foo(0, 0x43534544);
@@ -173,7 +182,10 @@ void __cdecl InterfaceManager_PlayMenuSound(int);
 
 // Gets tile 0x402, sets it to 0x1772/1, invokes its menu, then calls FUN_00717280 with 0x19 or 0x1b depending on FUN_00409700.
 // @fnv 0x0073b480
-void BookMenu::UpdateMenuTile()
+// src: XBOX_RETAIL_PDB 0x0073b480
+// pdb: BookMenu::Close | BookMenu.obj | retail, call graph, high
+// pdb locals: ptile
+void BookMenu::Close()
 {
     Tile* ptile = FindMenuById(0x402);
     if (ptile && ptile->GetMenu())
@@ -196,6 +208,7 @@ struct FUN_007e7a80 : Menu
 };
 // Initialises the menu object: sets the vtable pointer, then sets m_78 and m_7c to -1.
 // @fnv 0x007e7a80
+// pdb: TraitSelectMenu::TraitSelectMenu | TraitSelectMenu.obj | debug, call graph, high
 FUN_007e7a80::FUN_007e7a80()
 {
     m_78 = -1;
@@ -207,6 +220,9 @@ int __cdecl __ftol2_sse(double);
 
 // @fnv 0x0073b050
 // src: XBOX_PDB 0x0073b050
+// pdb: BookMenu::DoStillDown | BookMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
+// pdb locals: imarker, pim
 void BookMenu::DoStillDown(int aiID, Tile* apTarget)
 {
     float imarker;
@@ -226,6 +242,7 @@ void BookMenu::DoStillDown(int aiID, Tile* apTarget)
 
 // @fnv 0x0073ad30
 // src: GUESS 0x0073ad30 (confidence: low)
+// pdb: BookMenu::~BookMenu | BookMenu.obj | debug, object-file gap fill, medium
 void BookMenu::SetVtableAndProcessState_0073ad30()
 {
     *reinterpret_cast<unsigned int*>(this) = (unsigned int)&DAT_01070ecc;
@@ -491,18 +508,20 @@ struct VT_0073b0f0
 extern VT_0073b0f0* DAT_011dea3c;
 // Handles message 0x1f by calling UpdateMenuTile; for 0x20, passes a value from unk30 to DAT_011dea3c's vSlot, then calls UpdateMenuTile.
 // @fnv 0x0073b0f0
-void __thiscall BookMenu::HandleMessage(int msg, int unused)
+// pdb: BookMenu::DoClick | BookMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void __thiscall BookMenu::HandleMessage(int aiID, int apTarget)
 {
-    if (msg == 0x1f)
+    if (aiID == 0x1f)
     {
-        UpdateMenuTile();
+        Close();
         return;
     }
-    if (msg == 0x20)
+    if (aiID == 0x20)
     {
 
         DAT_011dea3c->vSlot(reinterpret_cast<Obj30_0073b0f0*>(unk30), reinterpret_cast<Obj30_0073b0f0*>(unk30)->BSFile_GetDevice(0)->ExtraDataList_GetCount());
-        UpdateMenuTile();
+        Close();
     }
 }
 
@@ -514,6 +533,9 @@ struct BookInput
 };
 // Updates the book menu tile: sets tile 0x1004 from input state, sets tile 0x1006 text, stores value in unk30, and sets tile 0x1007 and 0x100a.
 // @fnv 0x0073b2f0
+// pdb: BookMenu::UpdateBook | BookMenu.obj | debug, object-file run extension, low
+// pdb params: apTarget, apRef
+// pdb locals: xstr
 void BookMenu::UpdateBookMenu(BookInput* input, int value)
 {
     if (input->TESObjectBOOK_GetScroll())
@@ -534,7 +556,10 @@ void BookMenu::UpdateBookMenu(BookInput* input, int value)
 void __cdecl InterfaceManager_PlayMenuSound(int);
 
 // @fnv 0x0073b150
-void BookMenu::HandleScrollInput(int a1, int a2)
+// pdb: BookMenu::DoWheelMove | BookMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: pim, imarker, iold_y, ipage, isound_type
+void BookMenu::HandleScrollInput(int aiID, int apTarget)
 {
     InterfaceManager* interfaceManager6 = InterfaceManager::Instance();
     if (!static_cast<Tile*>(this->FUN_00726070())->IsTraitNonZero(0x1004))
@@ -545,7 +570,7 @@ void BookMenu::HandleScrollInput(int a1, int a2)
         this->m_pObject->Set(0x100d, 0);
         if (iVar1 != this->m_pHighlightedTile->FUN_00a011b0(0x100b))
         {
-            this->HandleMouseoverTileAlt(a1, reinterpret_cast<Tile*>(a2));
+            this->HandleMouseoverTileAlt(aiID, reinterpret_cast<Tile*>(apTarget));
             InterfaceManager::Instance()->SetMenuFocusEnabled(false);
         }
     }
@@ -579,6 +604,8 @@ extern const char DAT_01070f84[];
 extern void __cdecl Interface_PrintLine(const char*, ...);
 // Opens the book file, logs an error and returns if it fails, otherwise reads its text and passes it to the book tile with two 0x100a settings.
 // @fnv 0x0073b500
+// pdb: BookMenu::UseWorkbook | BookMenu.obj | retail, string-set bridge, high
+// pdb locals: xdata, xinput, idatalen, axWorkbookPath
 void BookMenu::LoadBookFile()
 {
     BSStringT<char> path2(DAT_01070fa8);

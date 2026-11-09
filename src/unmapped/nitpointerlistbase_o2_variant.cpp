@@ -41,6 +41,9 @@ struct AlphaList
 
 // @fnv 0x00e7db70
 // src: COMMUNITY 0x00e7db70
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,char *>::Remove | NiD3DShaderProgramFactory.obj | debug, call graph, medium
+// pdb params: element
+// pdb locals: kPos
 unsigned int AlphaList::NiTPointerListBase_Remove(unsigned int* keyPtr)
 {
     AlphaNode* sel;
@@ -211,6 +214,8 @@ class FUN_00a5e930 : public A5E930Base
 };
 
 // @fnv 0x00a5e930
+// pdb: NiNode::~NiNode | NiNode.obj | retail, call graph, high
+// pdb locals: i
 FUN_00a5e930::~FUN_00a5e930() throw()
 {
     for (unsigned int i = 0; i < m_usChildCount; i++)

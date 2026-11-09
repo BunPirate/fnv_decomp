@@ -39,6 +39,8 @@ struct FUN_00d47a80_class
 };
 
 // @fnv 0x00d47a80
+// pdb: hkStringMap<hkClass const *,hkContainerHeapAllocator>::isValid | hkBuiltinTypeRegistry.obj | debug, object-file gap fill, medium
+// pdb params: i
 void* FUN_00d47a80_class::ForwardToOffsetMember(void* apArg)
 {
     return ((FUN_00d47a80_class*)((char*)this + 0xc))->GetValue(apArg, 0);
@@ -68,14 +70,16 @@ struct FUN_00d47aa0_s
     int a;
     int b;
     int c;
-    void hkDynamicClassNameRegistry_registerClass(int a, const char* name);
+    void hkDynamicClassNameRegistry_registerClass(int klass, const char* name);
 };
 // Calls FUN_00d874d0 on the object at this+0xc with the given name (or the name from a) and a.
 // @fnv 0x00d47aa0
 // src: HAVOK_LIB 0x00d47aa0
-void FUN_00d47aa0_s::hkDynamicClassNameRegistry_registerClass(int a, const char* name)
+// pdb: hkDynamicClassNameRegistry::registerClass | hkBuiltinTypeRegistry.obj | retail, upstream name already matches, high
+// pdb params: klass, name
+void FUN_00d47aa0_s::hkDynamicClassNameRegistry_registerClass(int klass, const char* name)
 {
-    ((FUN_00d874d0_s*)((char*)this + 0xc))->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(name ? name : ((D481D0Class*)a)->getName(), a);
+    ((FUN_00d874d0_s*)((char*)this + 0xc))->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(name ? name : ((D481D0Class*)klass)->getName(), klass);
 }
 
 struct FUN_00d87440_Class
@@ -97,21 +101,23 @@ struct FUN_00d87410_Class
 
 struct FUN_00d47ad0_class
 {
-    void ProcessRegistryEntries(FUN_00d874b0_class* reg);
+    void ProcessRegistryEntries(FUN_00d874b0_class* mergeFromMap);
 };
 
 // @fnv 0x00d47ad0
-void FUN_00d47ad0_class::ProcessRegistryEntries(FUN_00d874b0_class* reg)
+// pdb: hkDynamicClassNameRegistry::merge | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
+// pdb params: mergeFromMap
+void FUN_00d47ad0_class::ProcessRegistryEntries(FUN_00d874b0_class* mergeFromMap)
 {
-    int key = ((FUN_00d87410_Class*)reg)->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator();
+    int key = ((FUN_00d87410_Class*)mergeFromMap)->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator();
     char flag;
-    reg->SetBoolFromThreshold(&flag, key);
+    mergeFromMap->SetBoolFromThreshold(&flag, key);
     while (flag)
     {
-        int val = ((FUN_00d87440_Class*)reg)->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(key);
+        int val = ((FUN_00d87440_Class*)mergeFromMap)->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(key);
         (*(void(__thiscall**)(void*, int, int))(*(int*)this + 0x1c))(this, val, 0);
-        key = ((SlotBitmap*)reg)->FindNextUsedSlot(key);
-        reg->SetBoolFromThreshold(&flag, key);
+        key = ((SlotBitmap*)mergeFromMap)->FindNextUsedSlot(key);
+        mergeFromMap->SetBoolFromThreshold(&flag, key);
     }
 }
 
@@ -124,16 +130,19 @@ struct FUN_00d47c60_class
 {
     int x, y;
     DepthLimit z;
-    void hkVtableClassRegistry_registerVtable(void* key, int def);
+    void hkVtableClassRegistry_registerVtable(void* vtable, int klass);
 };
 // Gets the memory router, takes its manager's first field as a pointer, and passes it with key and def to FUN_00cb1870.
 // @fnv 0x00d47c60
 // src: HAVOK_LIB 0x00d47c60
-void FUN_00d47c60_class::hkVtableClassRegistry_registerVtable(void* key, int aiDefault)
+// pdb: hkVtableClassRegistry::registerVtable | hkBuiltinTypeRegistry.obj | retail, upstream name already matches, high
+// pdb params: vtable, klass
+// pdb locals: assertBuf, ostr
+void FUN_00d47c60_class::hkVtableClassRegistry_registerVtable(void* vtable, int klass)
 {
     hkMemoryRouter* r = D1A0E0GetMemoryRouter();
     void* p = r->m_heap;
-    z.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(p, key, aiDefault);
+    z.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(p, vtable, klass);
 }
 
 extern int DAT_01269b18;
@@ -199,16 +208,18 @@ struct D477C0RegistryC
     virtual void registerLink(void*, D477C0Source*);
 };
 // @fnv 0x00d477c0
-void __stdcall RegisterInputSource(D477C0Input* input, D477C0Source* source)
+// pdb: hkBuiltinTypeRegistry::addType | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
+// pdb params: info, klass
+void __stdcall RegisterInputSource(D477C0Input* info, D477C0Source* klass)
 {
     D477C0RegistryA* registryA = *(D477C0RegistryA**)&DAT_01269b14;
-    registryA->registerObject(source, source->FUN_00d46d40());
+    registryA->registerObject(klass, klass->FUN_00d46d40());
     D477C0RegistryB* registryB = *(D477C0RegistryB**)&DAT_01269b18;
-    registryB->registerInput(input);
-    if (source->SumLinkedValues() > 0)
+    registryB->registerInput(info);
+    if (klass->SumLinkedValues() > 0)
     {
         D477C0RegistryC* registryC = *(D477C0RegistryC**)&DAT_01269b10;
-        registryC->registerLink(input->value0c, source);
+        registryC->registerLink(info->value0c, klass);
     }
 }
 
@@ -256,18 +267,20 @@ struct hkObjD479
     int m_10;
     int m_14;
     int m_18;
-    FinishLoadedTypeInfoView* FindEntryAndCall(void* a, void* key);
+    FinishLoadedTypeInfoView* FindEntryAndCall(void* obj, void* className);
 };
 
 // Looks up key in m_map; if found, calls the entry's m_func with a and m_18, then returns the entry, else returns 0.
 // @fnv 0x00d47900
-FinishLoadedTypeInfoView* hkObjD479::FindEntryAndCall(void* apArg, void* key)
+// pdb: hkTypeInfoRegistry::finishLoadedObject | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
+// pdb params: obj, className
+FinishLoadedTypeInfoView* hkObjD479::FindEntryAndCall(void* obj, void* className)
 {
-    FinishLoadedTypeInfoView* p = (FinishLoadedTypeInfoView*)m_map.GetValue(key, 0);
+    FinishLoadedTypeInfoView* p = (FinishLoadedTypeInfoView*)m_map.GetValue(className, 0);
     if (p)
     {
         if (p->m_func)
-            p->m_func(apArg, m_18);
+            p->m_func(obj, m_18);
         return p;
     }
     return 0;
@@ -290,19 +303,22 @@ struct FUN_00d47940_Obj
     int unk00;
     int unk04;
     FUN_00d47940_Registry unk08;
-    void* __thiscall hkTypeInfoRegistry_cleanupLoadedObject(int param1, int param2);
+    void* __thiscall hkTypeInfoRegistry_cleanupLoadedObject(int obj, int className);
 };
 
 // Looks up a result by key in the registry, and if found and it has a callback, invokes that callback with param1; returns the result.
 // @fnv 0x00d47940
 // src: HAVOK_LIB 0x00d47940
-void* __thiscall FUN_00d47940_Obj::hkTypeInfoRegistry_cleanupLoadedObject(int param1, int aKey)
+// pdb: hkTypeInfoRegistry::cleanupLoadedObject | hkBuiltinTypeRegistry.obj | retail, upstream name already matches, high
+// pdb params: obj, className
+// pdb locals: assertBuf, ostr
+void* __thiscall FUN_00d47940_Obj::hkTypeInfoRegistry_cleanupLoadedObject(int obj, int className)
 {
-    FUN_00d47940_Result* result = (FUN_00d47940_Result*)this->unk08.GetValue((const void*)aKey, 0);
+    FUN_00d47940_Result* result = (FUN_00d47940_Result*)this->unk08.GetValue((const void*)className, 0);
 
     if (result != 0 && result->unk08 != 0)
     {
-        result->unk08(param1);
+        result->unk08(obj);
     }
 
     return result;
@@ -318,17 +334,19 @@ struct FUN_00d47970_Class
     int unk04;
     FUN_00d874d0_s m_map08;
 
-    void hkTypeInfoRegistry_merge(void* iterator);
+    void hkTypeInfoRegistry_merge(void* mergeFrom);
 };
 
 // @fnv 0x00d47970
 // src: HAVOK_LIB 0x00d47970
-void FUN_00d47970_Class::hkTypeInfoRegistry_merge(void* iterator)
+// pdb: hkTypeInfoRegistry::merge | hkBuiltinTypeRegistry.obj | retail, upstream name already matches, high
+// pdb params: mergeFrom
+void FUN_00d47970_Class::hkTypeInfoRegistry_merge(void* mergeFrom)
 {
-    FUN_00d87410_Class* registry = (FUN_00d87410_Class*)((char*)iterator + 8);
+    FUN_00d87410_Class* registry = (FUN_00d87410_Class*)((char*)mergeFrom + 8);
     int index = registry->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator();
-    ((FUN_00d874b0_class*)registry)->SetBoolFromThreshold((char*)&iterator, index);
-    if (*(char*)&iterator != 0)
+    ((FUN_00d874b0_class*)registry)->SetBoolFromThreshold((char*)&mergeFrom, index);
+    if (*(char*)&mergeFrom != 0)
     {
         FUN_00d874d0_s* destination = &m_map08;
         do
@@ -337,8 +355,8 @@ void FUN_00d47970_Class::hkTypeInfoRegistry_merge(void* iterator)
             int value = ((FUN_00d87430_Class*)registry)->GetEntry(index);
             destination->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert((const char*)value, key);
             index = ((SlotBitmap*)registry)->FindNextUsedSlot(index);
-            ((FUN_00d874b0_class*)registry)->SetBoolFromThreshold((char*)&iterator, index);
-        } while (*(char*)&iterator != 0);
+            ((FUN_00d874b0_class*)registry)->SetBoolFromThreshold((char*)&mergeFrom, index);
+        } while (*(char*)&mergeFrom != 0);
     }
 }
 
@@ -354,15 +372,17 @@ class hkObjD47A
     virtual void V6();
     virtual void add(const char* pcName, int iFlags);
 
-    void AddNames(const char* const* ppcNames);
+    void AddNames(const char* const* classes);
 };
 
 // Calls add on each name in the null-terminated array ppcNames with flags 0.
 // @fnv 0x00d47a50
-void hkObjD47A::AddNames(const char* const* ppcNames)
+// pdb: hkDynamicClassNameRegistry::registerList | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
+// pdb params: classes
+void hkObjD47A::AddNames(const char* const* classes)
 {
-    for (; *ppcNames; ++ppcNames)
-        add(*ppcNames, 0);
+    for (; *classes; ++classes)
+        add(*classes, 0);
 }
 
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
@@ -377,7 +397,7 @@ template <class T> T& RouterHeap(hkMemoryRouter* router)
 inline void hkReferencedObject::operator delete(void* p)
 {
     RouterHeap<hkMemoryAllocator>(hkMemoryRouter_getInstance()).blockFree(
-        p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+        p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 struct EmbeddedRegistry
@@ -396,6 +416,8 @@ struct RegistryImpl : hkReferencedObject
 };
 // Destroys the embedded registry and base, then if flags bit 0 is set releases this object through the Havok heap using allocatedSize.
 // @fnv 0x00d47b30
+// pdb: hkDynamicClassNameRegistry::`scalar deleting destructor' | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
+// pdb params: this
 RegistryImpl* RegistryImpl::DestroyRegistry(unsigned int flags)
 {
     embedded.~EmbeddedRegistry();
@@ -403,13 +425,13 @@ RegistryImpl* RegistryImpl::DestroyRegistry(unsigned int flags)
     if (flags & 1)
     {
         hkMemoryRouter* router = hkMemoryRouter_getInstance();
-        ((hkMemoryAllocator*)router->m_heap)->blockFree(this, m_usMemSizeAndFlags);
+        ((hkMemoryAllocator*)router->m_heap)->blockFree(this, m_memSizeAndFlags);
     }
     return this;
 }
 
 namespace fnv_00d47bb0 {
-void __cdecl ResizeAudioStream(void* allocator, hkArray<int>* array, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, hkArray<int>* array, int sizeElem);
 
 struct D47Map
 {
@@ -424,11 +446,13 @@ struct D47Owner
     int field04;
     int field08;
     D47Map entries;
-    void AppendEntryValues(hkArray<int>* values);
+    void AppendEntryValues(hkArray<int>* classes);
 };
 // Iterates the entries map and appends each entry's value to the values array, growing it via the router's heap when full.
 // @fnv 0x00d47bb0
-void D47Owner::AppendEntryValues(hkArray<int>* values)
+// pdb: hkDynamicClassNameRegistry::getClasses | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
+// pdb params: classes
+void D47Owner::AppendEntryValues(hkArray<int>* classes)
 {
     unsigned char hasItem;
     int iterator = entries.hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator();
@@ -437,12 +461,12 @@ void D47Owner::AppendEntryValues(hkArray<int>* values)
     {
         int value = entries.hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(iterator);
         hkMemoryRouter* router = hkMemoryRouter_getInstance();
-        if (values->m_iElementCount == (values->m_iCapacityState & 0x3fffffff))
+        if (classes->m_iElementCount == (classes->m_iCapacityState & 0x3fffffff))
         {
-            ResizeAudioStream(router->m_heap, values, 4);
+            ResizeAudioStream(router->m_heap, classes, 4);
         }
-        int* insertion = values->m_data + values->m_iElementCount;
-        ++values->m_iElementCount;
+        int* insertion = classes->m_data + classes->m_iElementCount;
+        ++classes->m_iElementCount;
         *insertion = value;
         iterator = entries.FindNextUsedSlot(iterator);
         entries.SetBoolFromThreshold(&hasItem, iterator);
@@ -467,6 +491,8 @@ struct FUN_00d47c90_cls
     FUN_00d47c90_cls* Destroy(unsigned char flags);
 };
 // @fnv 0x00d47c90
+// pdb: hkCommandRouter::`scalar deleting destructor' | hkServerProcessHandler.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00d47c90_cls* FUN_00d47c90_cls::Destroy(unsigned char flags)
 {
     sub.ProcessArgument((hkMemoryAllocator*)hkMemoryRouter_getInstance()->m_heap);
@@ -583,15 +609,17 @@ class FUN_00d47ce0_class
     int unk04;
     hkPointerMapD47C m_map;
 
-    void CollectMapValues(hkArray<int>& kValuesOut) const;
+    void CollectMapValues(hkArray<int>& classes) const;
 };
 
 // Iterates the pointer map and appends each valid entry's value to kValuesOut.
 // @fnv 0x00d47ce0
-void FUN_00d47ce0_class::CollectMapValues(hkArray<int>& kValuesOut) const
+// pdb: hkVtableClassRegistry::getClasses | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
+// pdb params: classes
+void FUN_00d47ce0_class::CollectMapValues(hkArray<int>& classes) const
 {
     for (hkMapIteratorD47C it = m_map.GetFirstIterator(); m_map.isValid(it); it = m_map.getNext(it))
-        kValuesOut.pushBack(m_map.getValue(it));
+        classes.pushBack(m_map.getValue(it));
 }
 }  // namespace fnv_00d47ce0
 
@@ -612,7 +640,7 @@ extern "C" void __fastcall ReleaseReference(void* ecx);
 struct MapHelper
 {
     int m00, m04, m08, m0c;
-    void FUN_00d87790(int dummy);
+    void FUN_00d87790(int ops);
 };
 
 struct DepthHelper
@@ -651,6 +679,7 @@ struct Obj3
 }  // namespace fnv_00d47d70
 
 // @fnv 0x00d47d70
+// pdb: hkDefaultBuiltinTypeRegistry::reinitialize | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
 void hkDefaultBuiltinTypeRegistry::InitGlobalObjects()
 {
     using namespace fnv_00d47d70;
@@ -739,15 +768,17 @@ class hkpEntityContainerD47E
     virtual void V6() throw();
     virtual void RegisterEntity(hkpEntityD47E* pkEntity, int iFlags) throw();
 
-    void AddEntitiesFromSource(hkpEntitySourceD47E* pkSource) throw();
+    void AddEntitiesFromSource(hkpEntitySourceD47E* mergeFrom) throw();
 };
 
 // Collects entities from pkSource into a local array and adds each one to this container with flags 0.
 // @fnv 0x00d47eb0
-void hkpEntityContainerD47E::AddEntitiesFromSource(hkpEntitySourceD47E* pkSource) throw()
+// pdb: hkDynamicClassNameRegistry::merge | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
+// pdb params: mergeFromMap
+void hkpEntityContainerD47E::AddEntitiesFromSource(hkpEntitySourceD47E* mergeFrom) throw()
 {
     hkArray<hkpEntityD47E*> kEntities;
-    pkSource->GetEntities(kEntities);
+    mergeFrom->GetEntities(kEntities);
     for (int i = 0; i < kEntities.m_iElementCount; i++)
         RegisterEntity(kEntities.m_data[i], 0);
 }
@@ -770,6 +801,7 @@ class hkObjectD47B : public hkReferencedObject
 
 // Frees the member buffer, runs the base destructor, and optionally deallocates the object when uiFlags has bit 0 set.
 // @fnv 0x00d47b70
+// pdb: hkTypeInfoRegistry::`scalar deleting destructor' | hkBuiltinTypeRegistry.obj | retail, vtable slot, high
 hkObjectD47B* hkObjectD47B::FUN_00d47b70(unsigned int uiFlags) throw()
 {
     m_kMemberDescriptor.FreeBuffer();
@@ -802,7 +834,7 @@ struct RuntimeTypeInfoRegistry
 };
 struct NameRegistryTable
 {
-    void hkVtableClassRegistry_registerList(void** entries, void* info);
+    void hkVtableClassRegistry_registerList(void** infos, void* classes);
 };
 extern int DAT_01268b0c;
 extern void* DAT_010d5430[];

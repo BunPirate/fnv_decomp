@@ -316,17 +316,21 @@ struct S_00d94c40_Context
 
 struct S_00d94c40_JobQueue
 {
-    void ProcessCallback(S_00d94c40_Job* finishedJob, S_00d94c40_Job& jobOut, int waitStatus);
+    void ProcessCallback(S_00d94c40_Job* oldJob, S_00d94c40_Job& jobOut, int waitStatus);
 };
 
 void __cdecl hkSimpleContactConstraintData_fireCallbacks(S_00d94c40_Data* data, S_00d94c40_Input* input, S_00d94c40_Node* node, int mode);
 
 // For each callback, fills input from its constraint and runs FUN_00d92900 and/or update per its flags, frees the array, then calls jobQueue->ProcessCallback.
 // @fnv 0x00d94c40
-void __cdecl ExecuteConstraintCallbacks(S_00d94c40_Context* context, S_00d94c40_JobQueue* jobQueue, S_00d94c40_Job* job)
+// src: XBOX_RETAIL_PDB 0x00d94c40
+// pdb: hkpSingleThreadedJobsOnIsland::cpuFireJacobianSetupCallbackJob | hkpCpuFireJacobianSetupCallbackJob.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+// pdb locals: in, assertBuf, ostr
+void __cdecl hkpSingleThreadedJobsOnIsland_cpuFireJacobianSetupCallbackJob(S_00d94c40_Context* tl, S_00d94c40_JobQueue* jobQueue, S_00d94c40_Job* jobInOut)
 {
-    S_00d94c40_TaskData* taskData = job->m_taskData;
-    S_00d94c40_Input input = context->m_pRayCastInput;
+    S_00d94c40_TaskData* taskData = jobInOut->m_taskData;
+    S_00d94c40_Input input = tl->m_pRayCastInput;
     if (taskData->m_numCallbacks > 0)
     {
         S_00d94c40_TimerBeginList("LtIntegrate", "StConstraintCallbacks");
@@ -370,5 +374,5 @@ void __cdecl ExecuteConstraintCallbacks(S_00d94c40_Context* context, S_00d94c40_
         taskData->m_numCallbacks = 0;
         S_00d94c40_Timer("lt");
     }
-    jobQueue->ProcessCallback(job, *job, 0);
+    jobQueue->ProcessCallback(jobInOut, *jobInOut, 0);
 }

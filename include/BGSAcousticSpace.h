@@ -41,19 +41,20 @@ enum CELL_ENVIRO_TYPE
     CELL_ENVIRO_TYPE_CET_COUNT = 31
 };
 
+// pdb: class BGSAcousticSpace, size 0x54, bases: TESBoundObject, 9 members
 class BGSAcousticSpace : public TESBoundObject
 {
 public:
-    bool m_bIsInterior;
+    bool bIsInterior;
     unsigned char layoutPadding31[3];
     TESSound* pDawnSound;
     TESSound* pNoonSound;
     TESSound* pDuskSound;
     TESSound* pNightSound;
     TESSound* pWallaSound;
-    TESRegion* pRegion;
-    CELL_ENVIRO_TYPE m_eCellEnvironmentType;
-    int m_iFlags;
+    TESRegion* pSoundRegion;
+    CELL_ENVIRO_TYPE eEnvType;
+    int iWallaPop;
 
     BGSAcousticSpace();
 
@@ -62,7 +63,7 @@ public:
     virtual void InitItem(void);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void m_Virtual00();
     void m_Virtual04();
     void m_Virtual08();
@@ -74,7 +75,7 @@ public:
     void SetNightSound(TESSound* apSound);
     void SetWallaSound(TESSound* apSound);
     void SetRegion(TESRegion* apRegion);
-    void SetListenerID(CELL_ENVIRO_TYPE aeType);
+    void SetListenerID(CELL_ENVIRO_TYPE afSound);
     bool GetByteAtOffset48();
     int GetField4C();
 };

@@ -6,6 +6,7 @@ class NiNode;
 class SkyShaderProperty;
 struct PrecipQueuedObject;
 
+// pdb: class Precipitation, size 0x18, 5 members
 class Precipitation
 {
 public:
@@ -16,14 +17,14 @@ public:
     void InitParent();
     void QueuePrecipitationObject(PrecipQueuedObject* object);
 
-    NiPointer<NiNode> m_pPrecipitationNode;
-    NiPointer<NiNode> m_pPreviousNode;
+    NiPointer<NiNode> spCurrentPrecipRoot;
+    NiPointer<NiNode> spLastPrecipRoot;
     NiNode* pParent;
-    float fEmissionRate;
-    const void* m_pPrecipitationData;
+    float fBirthRate;
+    const void* pQueuedModel;
 
-    void Load(const char* path);
-    NiAVObject* CreateParticleShape(SkyShaderProperty* property, NiAVObject* object);
-    void Update(float secondsPassed);
+    void Load(const char* apFilename);
+    NiAVObject* Precipitation_CreateShaderGeometry(SkyShaderProperty* apParticleSystem, NiAVObject* akWorldTransform);
+    void Update(float afSecondsPassed);
     void FlushAll();
 };

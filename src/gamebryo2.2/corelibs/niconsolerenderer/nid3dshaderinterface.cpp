@@ -3,6 +3,8 @@
 #include "nid3dshaderinterface_decls.h"
 
 // @fnv 0x00e81a90
+// pdb: NiD3DShaderInterface::Initialize | NiD3DShaderInterface.obj | retail, upstream name already matches, high
+// pdb locals: pkRenderer
 bool NiD3DShaderInterface::Initialize()
 {
     if (!NiRenderer::ms_pRenderer)
@@ -12,12 +14,14 @@ bool NiD3DShaderInterface::Initialize()
 }
 
 // @fnv 0x00e818d0
-void NiD3DShaderInterface::SetShaderObject(GraphicsRenderer* renderer)
+// pdb: NiD3DShaderInterface::SetD3DRenderer | NiD3DShaderInterface.obj | retail, call graph, high
+// pdb params: pkD3DRenderer
+void NiD3DShaderInterface::SetShaderObject(GraphicsRenderer* pkD3DRenderer)
 {
-    m_pkD3DRenderer = renderer;
-    if (renderer)
+    m_pkD3DRenderer = pkD3DRenderer;
+    if (pkD3DRenderer)
     {
-        ShaderPassRenderer* state = renderer->m_pCurrentRenderState;
+        ShaderPassRenderer* state = pkD3DRenderer->m_pCurrentRenderState;
         if (m_pkD3DDevice)
         {
             typedef void(__stdcall * ReleaseFunction)(ShaderPassRenderer*);
@@ -47,24 +51,28 @@ void NiD3DShaderInterface::SetShaderObject(GraphicsRenderer* renderer)
 }
 
 // @fnv 0x00e81940
-unsigned int NiD3DShaderInterface::InitializeShaderRenderer(GraphicsRenderer* renderer)
+// src: XBOX_RETAIL_PDB 0x00e81940
+// pdb: NiD3DShaderInterface::InitializeShaderSystem | NiD3DShaderInterface.obj | retail, string-set bridge, high
+// pdb params: pkD3DRenderer
+// pdb locals: pkShaderFactory, pkD3DDevice, pkRS, pkShaderProgramFactory
+unsigned int NiD3DShaderInterface::InitializeShaderSystem(GraphicsRenderer* pkD3DRenderer)
 {
-    Direct3DDeviceInterface* device = renderer->m_pD3DDevice;
-    NiD3DPass_SetD3DRenderer(renderer);
-    NiD3DTextureStage_SetD3DRenderer(renderer);
+    Direct3DDeviceInterface* device = pkD3DRenderer->m_pD3DDevice;
+    NiD3DPass_SetD3DRenderer(pkD3DRenderer);
+    NiD3DTextureStage_SetD3DRenderer(pkD3DRenderer);
     DAT_0126f99c = device;
-    NiD3DShaderProgramFactory_SetD3DRenderer(renderer);
-    NiD3DShaderProgramCreator_SetD3DRenderer(renderer);
-    NiD3DPass::SetActiveRenderer(renderer);
+    NiD3DShaderProgramFactory_SetD3DRenderer(pkD3DRenderer);
+    NiD3DShaderProgramCreator_SetD3DRenderer(pkD3DRenderer);
+    NiD3DPass::SetActiveRenderer(pkD3DRenderer);
     device->vfn_100();
     NiD3DShaderFactory* factory = NiD3DShaderFactory::GetShaderFactory();
     if (factory)
-        factory->vfn_70(renderer);
-    if (!DAT_0126fa10)
+        factory->vfn_70(pkD3DRenderer);
+    if (!NiD3DShaderProgramFactory_ms_pkFactory)
     {
         Program* p = (Program*)NiMemObject::operator new(28);
-        DAT_0126fa10 = p ? p->FUN_00e93ad0() : 0;
-        if (!DAT_0126fa10)
+        NiD3DShaderProgramFactory_ms_pkFactory = p ? p->FUN_00e93ad0() : 0;
+        if (!NiD3DShaderProgramFactory_ms_pkFactory)
             NiD3DDefaultShader::SetShaderName("Failed to create shader program factory!");
     }
     return 0;
@@ -78,8 +86,9 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volati
 
 // Sets the vtable and clears fields of the object, increments the global counter, then assigns the second vtable and initializes the remaining fields.
 // @fnv 0x00a8f440
-// src: EXE 0x00a8f440
-void* __fastcall NiShader_NiShader(void* apObject)
+// src: XBOX_DEBUG_PDB 0x00a8f440
+// pdb: NiShader::NiShader | NiShader.obj | debug, upstream name already matches, high
+void* __fastcall NiShader_ctor(void* apObject)
 {
     *(int**)apObject = &vftable_NiRefObject;
     *((int*)apObject + 1) = 0;
@@ -111,6 +120,8 @@ void NiShaderFactory_ReleaseAllShaders();
 void DestroyProgram();
 // @fnv 0x00e819f0
 // src: XBOX_PDB 0x00e819f0
+// pdb: NiD3DShaderInterface::ShutdownShaderSystem | NiD3DShaderInterface.obj | retail, upstream name already matches, high
+// pdb locals: pkShaderFactory
 int NiD3DShaderInterface_ShutdownShaderSystem()
 {
     NiD3DShaderFactory* pShaderFactory = NiD3DShaderFactory::GetShaderFactory();
@@ -139,8 +150,9 @@ struct Rel
 void __fastcall FUN_00a8f490(NiD3DShaderInterface*);
 // Sets the object's vtable, clears r and s, releases dev if set, nulls dev, then calls FUN_00a8f490.
 // @fnv 0x00e81a50
-// src: GUESS 0x00e81a50 (confidence: high)
-void __fastcall NiD3DShaderInterface_ReleaseD3DDeviceAndClearRendererState(NiD3DShaderInterface* pObj, int)
+// src: XBOX_RETAIL_PDB 0x00e81a50
+// pdb: NiD3DShaderInterface::~NiD3DShaderInterface | NiD3DShaderInterface.obj | retail, call graph, high
+void __fastcall NiD3DShaderInterface_dtor(NiD3DShaderInterface* pObj, int)
 {
     *(int**)pObj = &DAT_010ef39c;
     Rel* d = (Rel*)pObj->m_pkD3DDevice;
@@ -163,6 +175,7 @@ struct Rel
 void __fastcall FUN_00a8f490(NiD3DShaderInterface*);
 void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 // @fnv 0x00e81ab0
+// pdb: NiD3DShaderInterface::`scalar deleting destructor' | NiD3DShaderInterface.obj | retail, object-file run extension, low
 NiD3DShaderInterface* __fastcall FUN_00e81ab0(NiD3DShaderInterface* o, int, unsigned int flags)
 {
     *(int**)o = &DAT_010ef39c;
@@ -190,12 +203,14 @@ extern Rf* DAT_0126fa28;
 // Stores r in DAT_0126fa2c and, if r is non-null, releases the old DAT_0126fa28 and AddRefs the object at r+0x288; otherwise releases and clears DAT_0126fa28.
 // @fnv 0x00e93f50
 // src: COMMUNITY 0x00e93f50
-void NiD3DShaderProgramCreator_SetD3DRenderer(void* apObject)
+// pdb: NiD3DShaderProgramCreator::SetD3DRenderer | NiD3DShaderProgramCreator.obj | retail, upstream name already matches, high
+// pdb params: pkD3DRenderer
+void NiD3DShaderProgramCreator_SetD3DRenderer(void* pkD3DRenderer)
 {
-    DAT_0126fa2c = apObject;
-    if (apObject)
+    DAT_0126fa2c = pkD3DRenderer;
+    if (pkD3DRenderer)
     {
-        Rf* pRef = *(Rf**)((char*)apObject + 0x288);
+        Rf* pRef = *(Rf**)((char*)pkD3DRenderer + 0x288);
         if (DAT_0126fa28)
             DAT_0126fa28->Release();
         DAT_0126fa28 = pRef;
@@ -227,6 +242,7 @@ struct FUN_00a8f190_cls
 };
 
 // @fnv 0x00a8f190
+// pdb: Ni2DBuffer::Ni2DBuffer | Ni2DBuffer.obj | retail, call graph, medium
 FUN_00a8f190_cls::FUN_00a8f190_cls()
 {
     Init();

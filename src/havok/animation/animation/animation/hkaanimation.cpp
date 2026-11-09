@@ -21,18 +21,19 @@ struct FUN_00cb0c30_s
     char* m_pcString;
     void UpdateState_00cb0c30(const FUN_00cb0c30_s& kOther) throw();
 };
+// pdb: class hkaAnnotationTrack, size 0x10, 2 members
 class hkaAnnotationTrack
 {
   public:
     struct Annotation
     {
-        hkReal m_uiCommandId;
-        FUN_00cb0c30_s m_pText;
+        hkReal m_time;
+        FUN_00cb0c30_s m_text;
 
         Annotation& operator=(const Annotation& kOther)
         {
-            m_uiCommandId = kOther.m_uiCommandId;
-            m_pText.UpdateState_00cb0c30(kOther.m_pText);
+            m_time = kOther.m_time;
+            m_text.UpdateState_00cb0c30(kOther.m_text);
             return *this;
         }
     };
@@ -40,8 +41,8 @@ class hkaAnnotationTrack
     ~hkaAnnotationTrack();
     hkaAnnotationTrack& operator=(const hkaAnnotationTrack& other);
 
-    FUN_00cb0c30_s m_kTrackName;
-    hkArray<Annotation> m_kAnnotations;
+    FUN_00cb0c30_s m_trackName;
+    hkArray<Annotation> m_annotations;
 };
 class hkaAnimatedReferenceFrame;
 
@@ -73,9 +74,9 @@ class LocalhkaAnimation : public hkReferencedObject
 
     virtual ~LocalhkaAnimation();
     LocalhkaAnimation(const LocalhkaAnimation& other) throw();
-    int CountAnnotationsInRange(float from, float delta);
-    hkUint32 GetAnnotationsInRange(hkReal fStartTime, hkReal fMoveElapsedTime,
-                                  TrackAnnotation* pkAnnotationsOut, hkUint32 uiMaxAnnotations) const throw();
+    int CountAnnotationsInRange(float startTime, float deltaTime);
+    hkUint32 GetAnnotationsInRange(hkReal startTime, hkReal deltaTime,
+                                  TrackAnnotation* annotations, hkUint32 maxNumAnnotations) const throw();
 
     int m_type;
     float m_fAnimationDuration;
@@ -88,20 +89,22 @@ class LocalhkaAnimation : public hkReferencedObject
 static const double kNegOne = -3.402820018375656e+38;
 
 // @fnv 0x00e2f280
-int LocalhkaAnimation::CountAnnotationsInRange(float from, float delta)
+// pdb: hkaAnimation::getNumAnnotations | hkaAnimation.obj | retail, vtable slot, high
+// pdb params: startTime, deltaTime
+int LocalhkaAnimation::CountAnnotationsInRange(float startTime, float deltaTime)
 {
-    float to = from + delta;
+    float to = startTime + deltaTime;
     float wrapped = (to > m_fAnimationDuration) ? (to - m_fAnimationDuration) : kNegOne;
 
     int count = 0;
     for (int i = 0; i < m_kAnnotationTracks.m_iElementCount; ++i)
     {
         hkaAnnotationTrack& track = m_kAnnotationTracks.m_data[i];
-        for (int j = 0; j < track.m_kAnnotations.m_iElementCount; ++j)
+        for (int j = 0; j < track.m_annotations.m_iElementCount; ++j)
         {
-            if ((track.m_kAnnotations.m_data[j].m_uiCommandId >= from &&
-                 track.m_kAnnotations.m_data[j].m_uiCommandId < to) ||
-                track.m_kAnnotations.m_data[j].m_uiCommandId < wrapped)
+            if ((track.m_annotations.m_data[j].m_time >= startTime &&
+                 track.m_annotations.m_data[j].m_time < to) ||
+                track.m_annotations.m_data[j].m_time < wrapped)
             {
                 count++;
             }
@@ -165,6 +168,8 @@ __forceinline hkArray<T, Allocator>& hkArray<T, Allocator>::operator=(const hkAr
 }
 
 // @fnv 0x00e2f500
+// pdb: hkaAnimation::hkaAnimation | hkaAnimation.obj | retail, object-file run extension, low
+// pdb params: that
 LocalhkaAnimation::LocalhkaAnimation(const LocalhkaAnimation& other) throw()
 {
     m_type = other.m_type;
@@ -176,13 +181,15 @@ LocalhkaAnimation::LocalhkaAnimation(const LocalhkaAnimation& other) throw()
 }
 
 // @fnv 0x00e2f3e0
-hkUint32 LocalhkaAnimation::GetAnnotationsInRange(hkReal m_fStartTime, hkReal fMoveElapsedTime,
-                                             TrackAnnotation* pkAnnotationsOut,
-                                             hkUint32 uiMaxAnnotations) const throw()
+// pdb: hkaAnimation::getAnnotations | hkaAnimation.obj | retail, vtable slot, high
+// pdb params: startTime, deltaTime, annotations, maxNumAnnotations
+hkUint32 LocalhkaAnimation::GetAnnotationsInRange(hkReal startTime, hkReal deltaTime,
+                                             TrackAnnotation* annotations,
+                                             hkUint32 maxNumAnnotations) const throw()
 {
-    if (uiMaxAnnotations == 0)
+    if (maxNumAnnotations == 0)
         return 0;
-    const hkReal m_fMaximumDistance = m_fStartTime + fMoveElapsedTime;
+    const hkReal m_fMaximumDistance = startTime + deltaTime;
     const hkReal fWrappedEndTime =
         (m_fMaximumDistance > m_fAnimationDuration) ? m_fMaximumDistance - m_fAnimationDuration : -3.40282e+38f;
     hkUint32 uiNumAnnotations = 0;
@@ -190,16 +197,16 @@ hkUint32 LocalhkaAnimation::GetAnnotationsInRange(hkReal m_fStartTime, hkReal fM
     for (hkUint16 i = 0; i < iNumTracks; i++)
     {
         const hkaAnnotationTrack& kTrack = m_kAnnotationTracks.m_data[i];
-        const int iNumTrackAnnotations = kTrack.m_kAnnotations.m_iElementCount;
+        const int iNumTrackAnnotations = kTrack.m_annotations.m_iElementCount;
         for (int j = 0; j < iNumTrackAnnotations; j++)
         {
-            const hkReal& fTime = kTrack.m_kAnnotations.m_data[j].m_uiCommandId;
-            if ((fTime >= m_fStartTime && fTime < m_fMaximumDistance) || fTime < fWrappedEndTime)
+            const hkReal& fTime = kTrack.m_annotations.m_data[j].m_time;
+            if ((fTime >= startTime && fTime < m_fMaximumDistance) || fTime < fWrappedEndTime)
             {
-                pkAnnotationsOut[uiNumAnnotations].m_usTrackIndex = i;
-                pkAnnotationsOut[uiNumAnnotations].m_kAnnotation = kTrack.m_kAnnotations.m_data[j];
+                annotations[uiNumAnnotations].m_usTrackIndex = i;
+                annotations[uiNumAnnotations].m_kAnnotation = kTrack.m_annotations.m_data[j];
                 uiNumAnnotations++;
-                if (uiNumAnnotations == uiMaxAnnotations)
+                if (uiNumAnnotations == maxNumAnnotations)
                     return uiNumAnnotations;
             }
         }

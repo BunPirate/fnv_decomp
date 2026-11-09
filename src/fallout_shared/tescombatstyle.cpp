@@ -2,6 +2,7 @@
 
 #include "tescombatstyle_decls.h"
 // @fnv 0x00505010
+// pdb: TESCombatStyle::TESCombatStyle | TESCombatStyle.obj | retail, upstream name already matches, high
 TESCombatStyle::TESCombatStyle()
 {
     SetFormType((ENUM_FORM_ID)0x4a);
@@ -9,19 +10,21 @@ TESCombatStyle::TESCombatStyle()
 }
 // Copies 0x5c, 0x54 and 0x40 bytes from the combat style returned by FUN_00505000 into Data and two other members, or zeroes them if none.
 // @fnv 0x005050d0
+// pdb: TESCombatStyle::InitializeData | TESCombatStyle.obj | retail, vtable slot, high
+// pdb locals: pdefaultCombatStyle
 void TESCombatStyle::ResetFormData()
 {
     TESCombatStyle* style = TESCombatStyle_GetDefaultCombatStyle();
     if (style)
     {
         memcpy(&Data, &GetCombatStyleData(style), 0x5c);
-        memcpy(&m_kUInt32ChunkData, GetCombatStyleAdvancedData(style), 0x54);
+        memcpy(&AdvancedData, GetCombatStyleAdvancedData(style), 0x54);
         memcpy(&m_kUnsignedIntArray16, GetHungerStageData((BGSHungerStage*)style), 0x40);
     }
     else
     {
         memset(&Data, 0, 0x5c);
-        memset(&m_kUInt32ChunkData, 0, 0x54);
+        memset(&AdvancedData, 0, 0x54);
         memset(&m_kUnsignedIntArray16, 0, 0x40);
     }
 }
@@ -29,44 +32,47 @@ extern "C" void* __cdecl _alloca(unsigned int);
 #pragma intrinsic(_alloca)
 // Reads a combat style record from the file, loading its editor ID, OBND, and CSDT/CSAD/CSSD chunks, then applies version-dependent defaults.
 // @fnv 0x00505180
-bool TESCombatStyle::Load(TESFile* file)
+// pdb: TESCombatStyle::Load | TESCombatStyle.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: echunkid, formid, pMessage, ichunksize, tempData
+bool TESCombatStyle::Load(TESFile* apFile)
 {
-    unsigned char type = file->GetTESForm();
+    unsigned char type = apFile->GetTESForm();
     if (type != 0x4a)
         return false;
     ClearData();
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while (chunk = file->GetChunkID())
+    while (chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0x200);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0x200);
             SetEditorID_AtRuntime(name);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x44545343:
-            file->GetChunkData(&Data, 0x5c);
-            if (((TESFileExtra*)file)->FUN_00401680())
+            apFile->GetChunkData(&Data, 0x5c);
+            if (((TESFileExtra*)apFile)->FUN_00401680())
                 Data.SwapEndianFields();
             break;
         case 0x44415343:
-            file->GetChunkData(&m_kUInt32ChunkData, 0x54);
-            if (((TESFileExtra*)file)->FUN_00401680())
-                SwapUInt32ChunkData(&m_kUInt32ChunkData);
+            apFile->GetChunkData(&AdvancedData, 0x54);
+            if (((TESFileExtra*)apFile)->FUN_00401680())
+                SwapUInt32ChunkData(&AdvancedData);
             break;
         case 0x44535343:
-            file->GetChunkData(&m_kUnsignedIntArray16, 0x40);
-            if (((TESFileExtra*)file)->FUN_00401680())
+            apFile->GetChunkData(&m_kUnsignedIntArray16, 0x40);
+            if (((TESFileExtra*)apFile)->FUN_00401680())
             {
                 UnsignedIntArray16 saved;
-                unsigned int size = file->GetChunkSize();
+                unsigned int size = apFile->GetChunkSize();
                 if (size < 0x40)
                     memcpy(&saved, &m_kUnsignedIntArray16, 0x40);
                 m_kUnsignedIntArray16.SwapEndianFields();
@@ -75,10 +81,10 @@ bool TESCombatStyle::Load(TESFile* file)
             }
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
-    if (((TESFileFormVersion*)file)->GetFormVersion() < 12)
+    if (((TESFileFormVersion*)apFile)->GetFormVersion() < 12)
     {
         ((float*)&m_kUnsignedIntArray16)[8] = 1.0f;
         ((float*)&m_kUnsignedIntArray16)[11] = 1.0f;
@@ -95,9 +101,12 @@ struct CombatStyleFormArgument
     TESForm* form;
 };
 
-bool __fastcall CompareCombatStyleBase(TESCombatStyle* self, void*, TESCombatStyle* other);
+bool __fastcall CompareCombatStyleBase(TESCombatStyle* apCompare, void*, TESCombatStyle* other);
 
 // @fnv 0x00505550
+// pdb: TESCombatStyle::Compare | TESCombatStyle.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool __fastcall IsCombatStyleDifferent(TESCombatStyle* self, CombatStyleFormArgument apCompare)
 {
     TESCombatStyle* pcomp = dynamic_cast<TESCombatStyle*>(apCompare.form);
@@ -118,6 +127,7 @@ void __fastcall DestroyCombatStyle(TESCombatStyle* self);
 void _Deallocate(void*);
 // Destroys the combat style, then deallocates it when flags has bit 0 set.
 // @fnv 0x00505080
+// pdb: TESCombatStyle::`scalar deleting destructor' | TESCombatStyle.obj | retail, vtable slot, high
 void* __fastcall DeleteCombatStyle(TESCombatStyle* self, void*, unsigned int flags)
 {
     DestroyCombatStyle(self);
@@ -131,6 +141,7 @@ bool __cdecl TESForm_QEndianSwapOnSave();
 void __cdecl AppendChunk(unsigned int, void*, unsigned int);
 
 // @fnv 0x005053c0
+// pdb: TESCombatStyle::Save | TESCombatStyle.obj | retail, vtable slot, high
 void __fastcall SaveCombatStyle(TESCombatStyle* self)
 {
     self->BeginFormRecord();
@@ -140,10 +151,10 @@ void __fastcall SaveCombatStyle(TESCombatStyle* self)
     if (TESForm_QEndianSwapOnSave())
         self->Data.SwapEndianFields();
     if (TESForm_QEndianSwapOnSave())
-        SwapUInt32ChunkData(&self->m_kUInt32ChunkData);
-    AppendChunk(0x44415343, &self->m_kUInt32ChunkData, 0x54);
+        SwapUInt32ChunkData(&self->AdvancedData);
+    AppendChunk(0x44415343, &self->AdvancedData, 0x54);
     if (TESForm_QEndianSwapOnSave())
-        SwapUInt32ChunkData(&self->m_kUInt32ChunkData);
+        SwapUInt32ChunkData(&self->AdvancedData);
     if (TESForm_QEndianSwapOnSave())
         self->m_kUnsignedIntArray16.SwapEndianFields();
     AppendChunk(0x44535343, &self->m_kUnsignedIntArray16, 0x40);
@@ -158,6 +169,9 @@ void __fastcall CopyCombatStyleBase(TESCombatStyle* self, void*, TESForm* apCopy
 
 // Casts apCopy to TESCombatStyle, calls FUN_004851b0, then memcpy's three sub-objects (0x5c, 0x54, 0x40 bytes) from the copy into this.
 // @fnv 0x005054b0
+// pdb: TESCombatStyle::Copy | TESCombatStyle.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void __fastcall CopyFromCombatStyle(TESCombatStyle* self, CombatStyleFormArgument apCopy)
 {
     TESForm* pcopy = dynamic_cast<TESForm*>(dynamic_cast<TESCombatStyle*>(apCopy.form));
@@ -180,6 +194,7 @@ typedef EndianSizeTag<0> BSIntToType0;
 void __cdecl BSEndian(unsigned char*, BSIntToType0);
 
 // @fnv 0x005057a0
+// pdb: AdvancedCombatStyleData::Endian | TESCombatStyle.obj | debug, object-file gap fill, medium
 void __fastcall SwapUInt32ChunkData(UInt32ChunkData* self)
 {
     BSEndian((unsigned char*)self + 0x00, BSIntToType0());
@@ -216,6 +231,7 @@ void __cdecl BSEndian(unsigned char*, EndianSizeTag<9>);
 }  // namespace fnv_005059c0
 
 // @fnv 0x005059c0
+// pdb: CombatStyleData::Endian | TESCombatStyle.obj | debug, object-file gap fill, medium
 void StatsChunkData::SwapEndianFields()
 {
 
@@ -242,6 +258,7 @@ void __cdecl BSEndianUInt(unsigned int* apData, BSIntToType0);
 
 // Byte-swaps each of the 15 data words in place via BSEndianUInt.
 // @fnv 0x00505610
+// pdb: SimpleCombatStyleData::Endian | TESCombatStyle.obj | debug, object-file gap fill, medium
 void UnsignedIntArray16::SwapEndianFields()
 {
     BSEndianUInt(&data[0], BSIntToType0());

@@ -73,7 +73,7 @@ struct IRFormStack
     int iCount;
     IRForm* pType;
 
-    IRFormStack(IRForm* apType, int aiCount);
+    IRFormStack(IRForm* apObject, int aiNumber);
     IRExtraNode* GetExtendData();
     int GetCount();
     void SetCount(int aiCount);
@@ -989,7 +989,7 @@ struct IRContainer
     float fWeight;
 
     bool IsHardcore();
-    IRFormStack* PlayerCharacter_RemoveRockItAmmo(IRForm* apItem, IRExtraList* apExtra, int aiCount, bool abReturnEntry);
+    IRFormStack* PlayerCharacter_RemoveRockItAmmo(IRForm* apObj, IRExtraList* apExtra, int aiNumRemoved, bool abReturnRemovedItem);
 };
 
 namespace RockItAmmoCountDetail {
@@ -1011,6 +1011,8 @@ struct PlayerView : IRContainer
 
 // @fnv 0x00969040
 // src: XBOX_PDB 0x00969040
+// pdb: PlayerCharacter::GetNumRockItAmmo | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: iammoCt, iitemCt
 int PlayerView::PlayerCharacter_GetNumRockItAmmo()
 {
     int iitemCt = 0;
@@ -1843,7 +1845,7 @@ struct PlayerSave
     FormRecord* BGSSaveFormBuffer_GetForm();
     const char* TESObjectREFR_GetFullName();
     FormRecord* FUN_004181e0();
-    void PlayerCharacter_SaveGame(unsigned int flags);
+    void PlayerCharacter_SaveGame(unsigned int aiFlags);
 };
 
 // Read-only strings shared with the original save logging code.
@@ -1860,7 +1862,10 @@ extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 
 // @fnv 0x00955620
 // src: XBOX_PDB 0x00955620
-void PlayerSave::PlayerCharacter_SaveGame(unsigned int flags)
+// pdb: PlayerCharacter::SaveGame | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: aiFlags
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition, playerMarkerLoc, pMiscStats, bironSights, sizeoflist, icasinochipID, cdl, icardID, iprisonMarkerID, idesiredTargetID, iselectedSpellID, iconversationID, ioccupiedRegionID, icurrentSpellID, iselectedScrollID, idefaultClassID, ipendingPoisonID ...
+void PlayerSave::PlayerCharacter_SaveGame(unsigned int aiFlags)
 {
     {
         unsigned short blockSize3 = 0;
@@ -1906,7 +1911,7 @@ void PlayerSave::PlayerCharacter_SaveGame(unsigned int flags)
             *(unsigned short*)blockStart9 = (unsigned short)(endPositionA - sizePosition);
         }
     }
-    Character_SaveGame(flags);
+    Character_SaveGame(aiFlags);
     {
         unsigned short blockSize3 = 0;
         unsigned char* blockStart9 = 0;
@@ -1921,7 +1926,7 @@ void PlayerSave::PlayerCharacter_SaveGame(unsigned int flags)
             reinterpret_cast<SaveStream*>(g_TESSaveLoadGame)->TESSaveLoadGame_SaveGameDataOLD(&blockSize3, 2);
         }
         {
-            if (flags & 0x10000000)
+            if (aiFlags & 0x10000000)
                 Animation_SaveAnimation(this, unk690);
             // Serialize the original raw vector copy without calling the shared NiPoint3 copy constructor.
             unsigned int position[3];
@@ -2184,7 +2189,7 @@ void PlayerSave::PlayerCharacter_SaveGame(unsigned int flags)
             *(unsigned short*)countPos8 = count73;
         }
         ActiveEffect_SaveActiveEffectList(unk210, this);
-        unk878.SaveValueAndFollowingBytes(flags);
+        unk878.SaveValueAndFollowingBytes(aiFlags);
         {
             unsigned int activeQuestID = 0;
             if (unk6b8)

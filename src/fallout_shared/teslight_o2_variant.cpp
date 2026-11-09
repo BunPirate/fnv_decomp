@@ -11,7 +11,7 @@ extern "C" void* __cdecl memset(void* destination, int value, unsigned int size)
 extern "C" const char DAT_01029064[];
 extern int __cdecl Warning(const char* format, ...);
 extern float DAT_010249d8;
-NiLight* FindLightInNode(NiNode* node);
+NiLight* FindLightInNode(NiNode* apNode);
 
 struct PrimaryBase
 {
@@ -170,7 +170,7 @@ struct ThunkDerived : ThunkPrimaryBase, ThunkSecondaryBase
 {
     ThunkDerived();
 // @fnv 0x0050e6a0
-    virtual void* FUN_0050e6a0(unsigned int flags);
+    virtual void* FUN_0050e6a0(unsigned int aiFlags);
 };
 
 ThunkDerived::ThunkDerived()

@@ -49,22 +49,25 @@ struct TestClass
     int unk48;
     int unk4c;
 
-    float NiBoxCapsuleIntersector_Pseudodistance(const NiPoint3& a1, const NiPoint3& a2, float a3);
+    float NiBoxCapsuleIntersector_Pseudodistance(const NiPoint3& kV0, const NiPoint3& kV1, float fTime);
 };
 
 // Scales both points by a3, offsets copies of unk38->data and unk3c->bounds, calls sub_eb50f0 and returns its result times unk40 minus 1.0.
 // @fnv 0x00eb38f0
 // src: GAMEBRYO_LIB 0x00eb38f0
-float TestClass::NiBoxCapsuleIntersector_Pseudodistance(const NiPoint3& a1, const NiPoint3& a2, float afScale)
+// pdb: NiBoxCapsuleIntersector::Pseudodistance | NiBoxCapsuleIntersector.obj | retail, upstream name already matches, high
+// pdb params: kV0, kV1, fTime
+// pdb locals: kMSegment, fPseudodistance, fS, kMBox
+float TestClass::NiBoxCapsuleIntersector_Pseudodistance(const NiPoint3& kV0, const NiPoint3& kV1, float fTime)
 {
-    NiPoint3 vOffset = a1 * afScale;
+    NiPoint3 vOffset = kV0 * fTime;
 
     Struct60 dataCopy = unk38->data;
     dataCopy.pos += vOffset;
 
     Struct24 boundsCopy = unk3c->bounds;
 
-    vOffset = a2 * afScale;
+    vOffset = kV1 * fTime;
     boundsCopy.min += vOffset;
 
     float res;
@@ -89,7 +92,7 @@ struct FUN_00eb3a00_cls
     int unk3c, unk40;
     float k0, k1, k2;
 
-    void NiBoxCapsuleIntersector_ComputeContactInformation(const NiPoint3* a, const NiPoint3* b);
+    void NiBoxCapsuleIntersector_ComputeContactInformation(const NiPoint3* kV0, const NiPoint3* kV1);
 };
 
 inline void Accumulate(NiPoint3& result, const NiPoint3& v)
@@ -111,10 +114,13 @@ inline void Scale(NiPoint3& result, const NiPoint3& v, float s)
 // Sets pos from *a scaled by s0 plus in->a, b, c, and d weighted by k0, k1, and k2, then stores in->Compute's result in out.
 // @fnv 0x00eb3a00
 // src: GAMEBRYO_LIB 0x00eb3a00
-void FUN_00eb3a00_cls::NiBoxCapsuleIntersector_ComputeContactInformation(const NiPoint3* a, const NiPoint3* b)
+// pdb: NiBoxCapsuleIntersector::ComputeContactInformation | NiBoxCapsuleIntersector.obj | retail, upstream name already matches, high
+// pdb params: kV0, kV1
+// pdb locals: aiSign, i, kRelVel
+void FUN_00eb3a00_cls::NiBoxCapsuleIntersector_ComputeContactInformation(const NiPoint3* kV0, const NiPoint3* kV1)
 {
     NiPoint3 t;
-    Scale(t, *a, s0);
+    Scale(t, *kV0, s0);
     const NiPoint3* base = &in->a;
     NiPoint3 r;
     r.x = base->x + t.x;
@@ -143,8 +149,8 @@ void FUN_00eb3a00_cls::NiBoxCapsuleIntersector_ComputeContactInformation(const N
     p = in;
     int z = (k2 == -p->lz) ? -1 : ((k2 == p->lz) ? 1 : 0);
 
-    r.x = b->x - a->x;
-    r.y = b->y - a->y;
-    r.z = b->z - a->z;
+    r.x = kV1->x - kV0->x;
+    r.y = kV1->y - kV0->y;
+    r.z = kV1->z - kV0->z;
     out = *in->Compute(&r, x, y, z, r);
 }

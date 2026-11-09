@@ -20,6 +20,7 @@ struct MagicEffectEntry
     void Endian();
 };
 
+// pdb: class EffectItem, size 0x24, 4 members
 class EffectItem
 {
 public:
@@ -103,13 +104,13 @@ public:
     int GetEffectID();                               // 0x00404650
     BSStringT<char> GetEffectName();                 // 0x00404670
     bool IsHostile();                                // 0x00404710
-    bool IsScriptBasedEffect();                      // 0x00404730
-    bool IsDetrimental();                            // 0x00405e40
+    bool IsUsageMonitorEffect();                      // 0x00404730
+    bool IsDisabled();                            // 0x00405e40
     PerkEntryConditionSet* GetConditions();          // 0x00409140
     void Process(TESObjectREFR* target, int arg);    // 0x0062e500
     bool IsScriptEffect_008231f0();                             // 0x008231f0
     EffectSetting* GetEffectSetting();               // 0x00825c00
     int GetRange();                                  // 0x0084e3a0 (folded int getter)
-    bool Load(TESFile* file, const char* actorEffect);
-    EffectItem* Delete(unsigned int flags);
+    bool Load(TESFile* apFile, const char* apSpellName);
+    EffectItem* EffectItem_ScalarDtor(unsigned int flags);
 };

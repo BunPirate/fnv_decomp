@@ -47,9 +47,9 @@ public:
 // plain `inline` VC9 /O2 keeps it out of line in 0x00e46a30 (after an inlined hkArray push-back).
 __forceinline const hkSmallArray<hkpEntityListener*>& hkpEntity::getEntityListeners() const
 {
-    if (!m_pExtendedListeners)
+    if (!m_extendedListeners)
     {
-        m_pExtendedListeners = new ExtendedListeners;
+        m_extendedListeners = new ExtendedListeners;
     }
-    return m_pExtendedListeners->m_entityListeners;
+    return m_extendedListeners->m_entityListeners;
 }

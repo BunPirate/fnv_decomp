@@ -84,7 +84,7 @@ struct ZZ12
 };
 struct TgtShell
 {
-    void UpdateTargetUnits(Actor* a, int b, int c);
+    void Actor_TrespassAlarm(Actor* a, int b, int c);
 };
 struct Pl20c
 {
@@ -313,7 +313,7 @@ struct MidProc
                       bool l, TESPackage* m);
     char pad[0x3c];
     TESObjectREFR* pTarget;
-    void MiddleHighProcess_ProcessPursue(Actor* a, int b, int c, int d);
+    void MiddleHighProcess_ProcessPursue(Actor* apActor, int abNewpackage, int abInterateIndex, int emovemode);
 };
 
 struct V448
@@ -732,14 +732,17 @@ extern "C" double DAT_010179e0;
 
 // @fnv 0x00918120
 // src: XBOX_PDB 0x00918120
-void MidProc::MiddleHighProcess_ProcessPursue(Actor* pActor, int a2, int a3, int a4)
+// pdb: MiddleHighProcess::ProcessPursue | MiddleHighProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor, abNewpackage, abInterateIndex, emovemode
+// pdb locals: pTresPack, apact, pchar, ptargetactor, pprocess, pact, bcombat
+void MidProc::MiddleHighProcess_ProcessPursue(Actor* apActor, int abNewpackage, int abInterateIndex, int emovemode)
 {
     if (this->pTarget == 0)
-        this->v035(pActor);
+        this->v035(apActor);
 
     if (this->pTarget == g_thePlayer && ((FUN_005a03f0_obj*)g_thePlayer)->FUN_005a03f0(8))
     {
-        this->v165(pActor);
+        this->v165(apActor);
         return;
     }
 
@@ -752,21 +755,21 @@ void MidProc::MiddleHighProcess_ProcessPursue(Actor* pActor, int a2, int a3, int
         return;
     }
 
-    if (pActor->TESObjectREFR::TESObjectREFR_GetDistanceFromReference(this->pTarget, 0, 0) > DAT_010179e0)
+    if (apActor->TESObjectREFR::TESObjectREFR_GetDistanceFromReference(this->pTarget, 0, 0) > DAT_010179e0)
     {
-        this->v166(pActor, false, a4, true);
+        this->v166(apActor, false, emovemode, true);
         return;
     }
 
-    if (!pActor->FUN_008b3bb0())
-        this->v165(pActor);
+    if (!apActor->FUN_008b3bb0())
+        this->v165(apActor);
 
     if (this->pTarget)
     {
-        HighProcess* pHi = dynamic_cast<HighProcess*>(pActor->GetProcess());
-        if (pHi && pActor->GetProcess() && !pActor->GetProcess()->GetSitSleepState())
+        HighProcess* pHi = dynamic_cast<HighProcess*>(apActor->GetProcess());
+        if (pHi && apActor->GetProcess() && !apActor->GetProcess()->GetSitSleepState())
         {
-            ((ActShell*)pActor)->Actor_RequestRotate(*((V1f4*)this->pTarget)->v1f4(), 0);
+            ((ActShell*)apActor)->Actor_RequestRotate(*((V1f4*)this->pTarget)->v1f4(), 0);
         }
     }
 
@@ -775,7 +778,7 @@ void MidProc::MiddleHighProcess_ProcessPursue(Actor* pActor, int a2, int a3, int
         Actor* pA = dynamic_cast<Actor*>(this->pTarget);
         if (pA && !((V448*)pA)->v448())
         {
-            this->v162(pActor, 2);
+            this->v162(apActor, 2);
             return;
         }
         if (!pPkg->FUN_009185e0() ||
@@ -783,13 +786,13 @@ void MidProc::MiddleHighProcess_ProcessPursue(Actor* pActor, int a2, int a3, int
         {
             if (pTgt)
             {
-                ((TgtShell*)pTgt)->UpdateTargetUnits(pActor, 0, -1);
+                ((TgtShell*)pTgt)->Actor_TrespassAlarm(apActor, 0, -1);
                 return;
             }
         }
         if (pPkg->BGSProjectile_GetExplosionTimer() <= 0.0)
         {
-            this->v162(pActor, 1);
+            this->v162(apActor, 1);
             return;
         }
         pPkg->TrespassPackage_ModWarningTimer((float)(DAT_011f6394.FUN_0084d030() * -1.0));
@@ -800,7 +803,7 @@ void MidProc::MiddleHighProcess_ProcessPursue(Actor* pActor, int a2, int a3, int
     Character* pChr = dynamic_cast<Character*>(this->pTarget);
     Actor* pA2 = dynamic_cast<Actor*>(this->pTarget);
 
-    if (pActor->IsInDeadState() && pA2)
+    if (apActor->IsInDeadState() && pA2)
     {
         if (pChr == g_thePlayer)
         {
@@ -812,14 +815,14 @@ void MidProc::MiddleHighProcess_ProcessPursue(Actor* pActor, int a2, int a3, int
             }
             if (!this->v182() && !g_thePlayer->GetByteAt7C4())
             {
-                if (g_thePlayer->TESObjectREFR::Activate(pActor, 0, (TESBoundObject*)0, 1))
-                    this->v162(pActor, 1);
+                if (g_thePlayer->TESObjectREFR::Activate(apActor, 0, (TESBoundObject*)0, 1))
+                    this->v162(apActor, 1);
             }
             else
             {
                 if (g_thePlayer->GetByteAt7C4())
                 {
-                    bool bCombat = this->v207(pActor, g_thePlayer, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+                    bool bCombat = this->v207(apActor, g_thePlayer, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
                 }
             }
             if (0)
@@ -828,8 +831,8 @@ void MidProc::MiddleHighProcess_ProcessPursue(Actor* pActor, int a2, int a3, int
         }
         else
         {
-            this->v162(pActor, 2);
-            this->v207(pActor, pA2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+            this->v162(apActor, 2);
+            this->v207(apActor, pA2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
         }
     }
 }
@@ -1651,12 +1654,15 @@ struct FleeProcedure
     int unk38;
     int unk3c;
     TESObjectREFR* pTarget;
-    void MiddleHighProcess_ProcessFleeNonCombat(Actor* actor);
+    void MiddleHighProcess_ProcessFleeNonCombat(Actor* apActor);
 };
 
 // @fnv 0x00918600
 // src: XBOX_PDB 0x00918600
-void FleeProcedure::MiddleHighProcess_ProcessFleeNonCombat(Actor* actor)
+// pdb: MiddleHighProcess::ProcessFleeNonCombat | MiddleHighProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: ppackage, fradius, pact, pPack, pcell, point
+void FleeProcedure::MiddleHighProcess_ProcessFleeNonCombat(Actor* apActor)
 {
     float fRadius;
     TESPackage* pPackage2;
@@ -1669,9 +1675,9 @@ void FleeProcedure::MiddleHighProcess_ProcessFleeNonCombat(Actor* actor)
         pPackage2 = GetAssignedPackage();
         if (!pTarget)
         {
-            Begin8c(actor);
+            Begin8c(apActor);
         }
-        Begin90(actor, 0);
+        Begin90(apActor, 0);
         fRadius = 0.0f;
         if (pPackage2->GetLocation())
         {
@@ -1679,11 +1685,11 @@ void FleeProcedure::MiddleHighProcess_ProcessFleeNonCombat(Actor* actor)
         }
         else
         {
-            fRadius = (float)pPackage2->FUN_00676280(actor);
+            fRadius = (float)pPackage2->FUN_00676280(apActor);
         }
-        if (pTarget && actor->TESObjectREFR::TESObjectREFR_GetDistanceFromReference(pTarget, 0, 0) > fRadius)
+        if (pTarget && apActor->TESObjectREFR::TESObjectREFR_GetDistanceFromReference(pTarget, 0, 0) > fRadius)
         {
-            ((FleeActorView*)actor)->Set410(actor, 1, 1, 1, 0, 0, -1.0f, -1.0f);
+            ((FleeActorView*)apActor)->Set410(apActor, 1, 1, 1, 0, 0, -1.0f, -1.0f);
             pFlee2 = 0;
             pFlee2 = dynamic_cast<FleePackage*>(GetAssignedPackage());
             pTargetActor = dynamic_cast<Actor*>(pTarget);
@@ -1693,30 +1699,30 @@ void FleeProcedure::MiddleHighProcess_ProcessFleeNonCombat(Actor* actor)
             }
             return;
         }
-        else if (!pTarget && !pPackage2->IsActorWithinPackageRadius(actor, false, -1.0f, false))
+        else if (!pTarget && !pPackage2->IsActorWithinPackageRadius(apActor, false, -1.0f, false))
         {
-            pCell4 = pPackage2->GetPackageLocationCell(actor);
+            pCell4 = pPackage2->GetPackageLocationCell(apActor);
             // Spell out the ABI return buffer so the shared method fills kPos directly.
             (pPackage2->*reinterpret_cast<void (TESPackage::*)(FleeVec3*, Actor*)>(
-                &TESPackage::GetPackageLocationPosition))(&kPos, actor);
-            if (actor->FUN_008b3bb0())
+                &TESPackage::GetPackageLocationPosition))(&kPos, apActor);
+            if (apActor->FUN_008b3bb0())
             {
-                if (!Move824(actor, kPos, pCell4, actor->TESObjectREFR::TESObjectREFR_GetWorldSpace()))
+                if (!Move824(apActor, kPos, pCell4, apActor->TESObjectREFR::TESObjectREFR_GetWorldSpace()))
                 {
                     return;
                 }
             }
             else
             {
-                Run350(actor, 0x201, 1);
+                Run350(apActor, 0x201, 1);
             }
             return;
         }
         else
         {
-            if (!actor->FUN_008b3bb0())
+            if (!apActor->FUN_008b3bb0())
             {
-                Fail294(actor);
+                Fail294(apActor);
             }
         }
     }
@@ -2378,12 +2384,15 @@ struct Process
     int unka0;
     float countdown;
     float FUN_007df1f0();
-    void MiddleHighProcess_ProcessFlee(::Actor* actor);
+    void MiddleHighProcess_ProcessFlee(::Actor* apActor);
 };
 }
 // @fnv 0x00918860
 // src: COMMUNITY 0x00918860
-void FleeUpdate::Process::MiddleHighProcess_ProcessFlee(::Actor* actor)
+// pdb: MiddleHighProcess::ProcessFlee | MiddleHighProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: bflag, pPack, pRef, pcell, fFleetime, pactor, fFleeDist, fDistance, bdoor, pfleeDest, fleeRequest, ftimedelta, fhour, ptimescale
+void FleeUpdate::Process::MiddleHighProcess_ProcessFlee(::Actor* apActor)
 {
     Package* packageTmp = 0;
     packageTmp = (Package*)dynamic_cast<FleePackage*>(v27c());
@@ -2394,8 +2403,8 @@ void FleeUpdate::Process::MiddleHighProcess_ProcessFlee(::Actor* actor)
         if (v04c()->FUN_0040b470())
         {
             // Address the shared caster/target subobjects without nullable base conversions.
-            reinterpret_cast<AnimationOwner*>((char*)actor + (offsetof(::Actor, apTargetLight) - sizeof(void*)))->
-                MagicCaster_CastSpell(v04c(), actor ? (char*)actor + (offsetof(::Actor, m_bLeadingFlag) - sizeof(void*)) : 0, 0);
+            reinterpret_cast<AnimationOwner*>((char*)apActor + (offsetof(::Actor, apTargetLight) - sizeof(void*)))->
+                MagicCaster_CastSpell(v04c(), apActor ? (char*)apActor + (offsetof(::Actor, m_bLeadingFlag) - sizeof(void*)) : 0, 0);
             v04c()->FUN_0040b800(0);
             v050(0);
         }
@@ -2414,25 +2423,25 @@ void FleeUpdate::Process::MiddleHighProcess_ProcessFlee(::Actor* actor)
     if (targetTmp)
     {
         float elapsed4 = packageTmp->GetField90Float();
-        ::Actor* destinationTmp = packageTmp->FindNearestRef(actor);
+        ::Actor* destinationTmp = packageTmp->FindNearestRef(apActor);
         if (!destinationTmp)
         {
             packageTmp->bhkCharacterControllerCinfo_SetAvoidBox(1);
             packageTmp->FleePackage_ModFleeTimer(DAT_011f6394.FUN_0084d030());
             if (elapsed4 >= *DAT_011cd348.Setting_Float_00403e20())
-                v288(actor, 1);
+                v288(apActor, 1);
             return;
         }
-        if (actor->GetSitSleepState() == 4 || actor->GetSitSleepState() == 9)
+        if (apActor->GetSitSleepState() == 4 || apActor->GetSitSleepState() == 9)
         {
-            actor->Unk_106();
+            apActor->Unk_106();
             return;
         }
-        Weapon* weapon6 = reinterpret_cast<Weapon*>(actor->FUN_008d6f30());
+        Weapon* weapon6 = reinterpret_cast<Weapon*>(apActor->FUN_008d6f30());
         if (weapon6)
         {
             packageTmp->FleePackage_ModFleeTimer((float)(DAT_011f6394.FUN_0084d030() * -1.0));
-            float distance = actor->TESObjectREFR_GetDistanceFromReference(destinationTmp, 0, 0);
+            float distance = apActor->TESObjectREFR_GetDistanceFromReference(destinationTmp, 0, 0);
             float threshold = 0;
             if (weapon6->FUN_00425fd0())
             {
@@ -2441,7 +2450,7 @@ void FleeUpdate::Process::MiddleHighProcess_ProcessFlee(::Actor* actor)
             }
             else
                 threshold = *DAT_011cf998.Setting_Float_00403e20();
-            if (distance < threshold && actor->FUN_008b3bb0())
+            if (distance < threshold && apActor->FUN_008b3bb0())
             {
                 ::Actor* reference = packageTmp->FUN_005e3fc0();
                 bool expired = false;
@@ -2451,31 +2460,31 @@ void FleeUpdate::Process::MiddleHighProcess_ProcessFlee(::Actor* actor)
                     countdown -= DAT_011f6394.FUN_0084d030();
                 if (!reference)
                 {
-                    packageTmp->FindTeleportDoor(actor, destinationTmp);
+                    packageTmp->FindTeleportDoor(apActor, destinationTmp);
                     PathingRequestFlee request;
-                    request.InitFromActor(actor);
-                    request.SetInitialPathHeading(actor->GetCurrentTargetDistance(false));
-                    if (actor->IsCreature())
-                        request.SetCantOpenDoors(reinterpret_cast<ActorData*>(actor->FUN_004181e0())->race.v028());
-                    request.FUN_006d3b00((float)packageTmp->FUN_00676280(actor));
+                    request.PathingRequest_SetOrigin(apActor);
+                    request.SetInitialPathHeading(apActor->GetCurrentTargetDistance(false));
+                    if (apActor->IsCreature())
+                        request.SetCantOpenDoors(reinterpret_cast<ActorData*>(apActor->FUN_004181e0())->race.v028());
+                    request.FUN_006d3b00((float)packageTmp->FUN_00676280(apActor));
                     request.FUN_006d61e0(packageTmp->BuildAvoidNodeArray());
                     request.PathingRequestClosePoint_SetMinDistance(1000.0f);
                     if (reference)
                         request.FUN_006d1bc0(PathingLocation((TESObjectREFR*)reference));
                     else
                         request.PathingRequest_SetNoDestination();
-                    actor->Actor_SetPathfindingFlee((PathingRequest*)&request);
+                    apActor->Actor_SetPathfindingFlee((PathingRequest*)&request);
                 }
                 else
                 {
-                    if (!v824(actor, *reinterpret_cast<NiPoint3*>(static_cast<const TESObjectREFR*>(reference)->GetPos()),
+                    if (!v824(apActor, *reinterpret_cast<NiPoint3*>(static_cast<const TESObjectREFR*>(reference)->GetPos()),
                               reinterpret_cast<Weapon*>(reference->FUN_008d6f30()), reference->TESObjectREFR_GetWorldSpace()))
                         return;
                 }
                 packageTmp->bhkCharacterControllerCinfo_SetAvoidBox(0);
                 packageTmp->FleePackage_ModFleeTimer((float)(packageTmp->GetField90Float() * -1.0));
             }
-            if (!actor->FUN_008b3bb0())
+            if (!apActor->FUN_008b3bb0())
             {
                 NamedType* type = TESForm_GetFormByNumericID(0x3a);
                 float hour = DAT_011de7b8.FUN_00867da0();
@@ -2489,7 +2498,7 @@ void FleeUpdate::Process::MiddleHighProcess_ProcessFlee(::Actor* actor)
                 packageTmp->bhkCharacterControllerCinfo_SetAvoidBox(1);
                 packageTmp->FleePackage_ModFleeTimer(DAT_011f6394.FUN_0084d030());
                 if (elapsed4 >= *DAT_011cd348.Setting_Float_00403e20())
-                    v288(actor, 1);
+                    v288(apActor, 1);
             }
         }
     }

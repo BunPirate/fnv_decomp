@@ -4,5 +4,5 @@
 
 #include "../../include/NiRenderedTexture.h"
 
-extern NiRTTI DAT_012708e4;
+extern NiRTTI NiRenderedCubeMap_ms_RTTI;
 #endif

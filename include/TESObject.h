@@ -9,6 +9,7 @@ class TESFormList;
 class TESObjectREFR;
 class TESWaterForm;
 
+// pdb: class TESObject, size 0x24 (here 0x18), bases: TESForm, 3 members
 class TESObject : public TESForm
 {
 public:

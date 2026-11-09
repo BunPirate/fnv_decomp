@@ -20,6 +20,7 @@ class PortalEntry
   public:
     void BSMasterParticleSystem_ResetSystems();
 };
+// pdb: class ScreenCustomSplatter, size 0x1, 0 members
 class ScreenCustomSplatter
 {
   public:
@@ -61,6 +62,8 @@ extern double DAT_01011598, DAT_01011588;
 
 // Releases each non-null portal entry; this is not the complete BSPortal destructor.
 // @fnv 0x00c50930
+// pdb: BSParticleSystemManager::ClearAllParticles | BSParticleSystemManager.obj | debug, object-file gap fill, medium
+// pdb locals: isize, i, pkChild, pmasterPSys
 void __fastcall ClearPortalEntries(BSPortal* portal)
 {
     unsigned int count = portal->entries.count;
@@ -76,6 +79,7 @@ void __fastcall ClearPortalEntries(BSPortal* portal)
     }
 }
 // @fnv 0x004defb0
+// pdb: ScreenCustomSplatter::Clear | ScreenCustomSplatter.obj | retail, upstream name already matches, high
 void ScreenCustomSplatter::Clear()
 {
     if (DAT_011c77e8)
@@ -84,13 +88,15 @@ void ScreenCustomSplatter::Clear()
         DAT_011c77dc = 0;
         DAT_011c77ec = 0.0f;
         DAT_011c77e9 = 0;
-        SkyTextureManager::LoadTextureFromPath(&DAT_011c7808, DAT_011ce918.String());
-        SkyTextureManager::LoadTextureFromPath(&DAT_011c7804, DAT_011ce284.String());
+        SkyTextureManager::LoadTextureInBackground(&DAT_011c7808, DAT_011ce918.String());
+        SkyTextureManager::LoadTextureInBackground(&DAT_011c7804, DAT_011ce284.String());
         if (DAT_011f941e)
-            SkyTextureManager::LoadTextureFromPath(&DAT_011c780c, DAT_011cede8.String());
+            SkyTextureManager::LoadTextureInBackground(&DAT_011c780c, DAT_011cede8.String());
     }
 }
 // @fnv 0x004deb30
+// pdb: ScreenCustomSplatter::Init | ScreenCustomSplatter.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, faspectratio, frustum, prenderer, UpdateData1, UpdateData2
 void ScreenCustomSplatter::Init()
 {
     AutoMemContext mem(MEM_CONTEXT_MEM_CONTEXT_EFFECTS_OVERHEAD, true,
@@ -123,16 +129,17 @@ void ScreenCustomSplatter::Init()
         DAT_011c77e9 = 0;
         reinterpret_cast<NiPointer<NiAVObject>&>(DAT_011c7810) = new SplatterNode(0);
         DAT_011c77dc = 0;
-        SkyTextureManager::LoadTextureFromPath(&DAT_011c7808, DAT_011ce918.String());
-        SkyTextureManager::LoadTextureFromPath(&DAT_011c7804, DAT_011ce284.String());
+        SkyTextureManager::LoadTextureInBackground(&DAT_011c7808, DAT_011ce918.String());
+        SkyTextureManager::LoadTextureInBackground(&DAT_011c7804, DAT_011ce284.String());
         if (DAT_011f941e)
-            SkyTextureManager::LoadTextureFromPath(&DAT_011c780c, DAT_011cede8.String());
+            SkyTextureManager::LoadTextureInBackground(&DAT_011c780c, DAT_011cede8.String());
     }
 }
 
 extern NiFixedString* DAT_011c77e4;
 // Allocates the "CSD" extra-data key and stores it in DAT_011c77e4.
 // @fnv 0x004de580
+// pdb: BSCustomSplatterExtraData::InitSDM | ScreenCustomSplatter.obj | retail, call graph, medium
 void CreateCSDFadeNode()
 {
     DAT_011c77e4 = new NiFixedString("CSD");
@@ -191,19 +198,24 @@ const NiRTTI* BSCustomSplatterExtraData::GetRTTI() const
 
 // @fnv 0x004deb10
 // src: GUESS 0x004deb10 (confidence: low)
+// pdb: BSSplatterExtraData::~BSSplatterExtraData | ScreenSplatter.obj | debug, call graph, medium
 void BSCustomSplatterExtraData::ForwardCall_004deb10()
 {
     DestroyFields_00a7b300();
 }
 
 // @fnv 0x004dea80
-BSCustomSplatterExtraData::BSCustomSplatterExtraData(SplatterWordsView* apSource) : NiExtraData(*BSCustomSplatterExtraData_GetTag())
+// pdb: BSCustomSplatterExtraData::BSCustomSplatterExtraData | ScreenCustomSplatter.obj | retail, upstream name already matches, high
+// pdb params: aSplatterData
+BSCustomSplatterExtraData::BSCustomSplatterExtraData(SplatterWordsView* aSplatterData) : NiExtraData(*BSCustomSplatterExtraData_GetTag())
 {
-    q = *apSource;
+    SplatterData = *aSplatterData;
 }
 
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x004deae0
+// pdb: BSSplatterExtraData::`scalar deleting destructor' | ScreenSplatter.obj | retail, vtable slot, high
+// pdb params: this
 void* BSCustomSplatterExtraData::DestroyIfFlagged(unsigned int flags)
 {
     ForwardCall_004deb10();
@@ -231,6 +243,8 @@ float BSMIN(float, float);
 // Advances each splatter child's elapsed time, removes expired ones, updates opacity and NiUpdateData, then advances the fade value toward 1.
 // @fnv 0x004de600
 // src: COMMUNITY 0x004de600
+// pdb: ScreenCustomSplatter::Update | ScreenCustomSplatter.obj | retail, upstream name already matches, high
+// pdb locals: ui, fglobalAlpha, uichildCount, felapsedtime, pchild, splatterData, ped, UpdateData, fComputedFadePct
 void ScreenCustomSplatter_Update()
 {
     if (DAT_011c77e8)
@@ -362,25 +376,28 @@ extern NiPointer<SplatterRoot> g_spSplatterRoot;
 extern SettingT_GameSettingCollection_ g_fSplatterDefaultAlpha;
 
 SplatterGeometry* CreateDebrisNode(unsigned int ItemUpdateArray, float fSizeMin, float fSizeMax);
-void BSShaderBloodSplatterProperty_SetFadeSourceRecurse(SplatterGeometry* pGeom, void* pList);
+void BSShaderBloodSplatterProperty_SetFadeSourceRecurse(SplatterGeometry* apObject, void* apfAlphaSource);
 
 // @fnv 0x004de8e0
 // src: COMMUNITY 0x004de8e0
-void ScreenCustomSplatter_Activate(unsigned int ItemUpdateArray, float fAlpha, int iUnused, float fSizeMin, float fSizeMax)
+// pdb: ScreenCustomSplatter::Activate | ScreenCustomSplatter.obj | retail, upstream name already matches, high
+// pdb params: auiCount, afDuration, aeType, fSplatScale, fOpacityScale
+// pdb locals: uicount, splatterData, UpdateData, pnode, ped
+void ScreenCustomSplatter_Activate(unsigned int auiCount, float afDuration, int aeType, float fSplatScale, float fOpacityScale)
 {
     if (DAT_011c77e8)
     {
-        unsigned int uiNum_2 = ItemUpdateArray;
+        unsigned int uiNum_2 = auiCount;
         if (uiNum_2 > 0)
         {
-            SplatterGeometry* pGeom = CreateDebrisNode(uiNum_2, fSizeMin, fSizeMax);
+            SplatterGeometry* pGeom = CreateDebrisNode(uiNum_2, fSplatScale, fOpacityScale);
             DAT_011c77dc += uiNum_2;
             SplatterParams kParams2;
             kParams2.fScale = 1.0f;
             kParams2.fStart = 0.0f;
-            if (fAlpha > 0.0)
+            if (afDuration > 0.0)
             {
-                kParams2.fAlpha = fAlpha;
+                kParams2.fAlpha = afDuration;
             }
             else
             {

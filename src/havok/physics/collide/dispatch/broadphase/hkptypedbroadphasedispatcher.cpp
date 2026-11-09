@@ -20,19 +20,21 @@ struct Handler
 struct Dispatcher
 {
     Handler* m_table[64];
-    void DispatchPairs(Pair* pairs, int n);
+    void DispatchPairs(Pair* deletedPairs, int numDeletedPairs);
 };
 
 // For each of n pairs, looks up a handler by the pair's two body types and calls Process on it.
 // @fnv 0x00cf70f0
-void Dispatcher::DispatchPairs(Pair* pairs, int aiCount)
+// pdb: hkpTypedBroadPhaseDispatcher::removePairs | hkpTypedBroadPhaseDispatcher.obj | retail, call graph, high
+// pdb params: deletedPairs, numDeletedPairs
+void Dispatcher::DispatchPairs(Pair* deletedPairs, int numDeletedPairs)
 {
-    while (--aiCount >= 0)
+    while (--numDeletedPairs >= 0)
     {
-        Body* a = reinterpret_cast<Body*>(pairs->a);
-        Body* b = reinterpret_cast<Body*>(pairs->b);
-        m_table[a->m_type * 8 + b->m_type]->Process(pairs);
-        pairs++;
+        Body* a = reinterpret_cast<Body*>(deletedPairs->a);
+        Body* b = reinterpret_cast<Body*>(deletedPairs->b);
+        m_table[a->m_type * 8 + b->m_type]->Process(deletedPairs);
+        deletedPairs++;
     }
 }
 
@@ -59,25 +61,27 @@ struct HandlerCF7080
 struct DispatcherCF7080
 {
     HandlerCF7080* m_handlers[8][8];
-    void hkpTypedBroadPhaseDispatcher_addPairs(Pair* pairs, int numPairs, const FilterCF7080* filter);
+    void hkpTypedBroadPhaseDispatcher_addPairs(Pair* newPairs, int numNewPairs, const FilterCF7080* filter);
 };
 
 // Iterates over collision pairs, filters them with filter->IsCollisionEnabled, and forwards accepted pairs to the handler for each type combination.
 // @fnv 0x00cf7080
 // src: HAVOK_LIB 0x00cf7080
-void DispatcherCF7080::hkpTypedBroadPhaseDispatcher_addPairs(Pair* pairs, int numPairs, const FilterCF7080* filter)
+// pdb: hkpTypedBroadPhaseDispatcher::addPairs | hkpTypedBroadPhaseDispatcher.obj | retail, upstream name already matches, high
+// pdb params: newPairs, numNewPairs, filter
+void DispatcherCF7080::hkpTypedBroadPhaseDispatcher_addPairs(Pair* newPairs, int numNewPairs, const FilterCF7080* filter)
 {
-    while (--numPairs >= 0)
+    while (--numNewPairs >= 0)
     {
-        const void* a = reinterpret_cast<HandleCF7080*>(pairs->a)->getOwner();
-        const void* b = reinterpret_cast<HandleCF7080*>(pairs->b)->getOwner();
+        const void* a = reinterpret_cast<HandleCF7080*>(newPairs->a)->getOwner();
+        const void* b = reinterpret_cast<HandleCF7080*>(newPairs->b)->getOwner();
         if (filter->IsCollisionEnabled(a, b).m_cBooleanValue)
         {
-            int typeA = reinterpret_cast<HandleCF7080*>(pairs->a)->m_type;
-            int typeB = reinterpret_cast<HandleCF7080*>(pairs->b)->m_type;
-            m_handlers[typeA][typeB]->addPair(*pairs);
+            int typeA = reinterpret_cast<HandleCF7080*>(newPairs->a)->m_type;
+            int typeB = reinterpret_cast<HandleCF7080*>(newPairs->b)->m_type;
+            m_handlers[typeA][typeB]->addPair(*newPairs);
         }
-        pairs++;
+        newPairs++;
     }
 }
 
@@ -143,7 +147,7 @@ struct GlobalPool
 };
 extern "C" void* __cdecl hkMemoryRouter_getInstance();
 unsigned int __cdecl hkMapBase_unsigned_int64_unsigned_int64_hkMapOperations_unsigned_int64_getSizeInBytesFor(int);
-void __cdecl hkArrayUtil__reserve(void* allocator, EdgeArray* array, int length, int elementSize);
+void __cdecl hkArrayUtil__reserve(void* mem, EdgeArray* array, int numElem, int sizeElem);
 
 template <typename T> static __forceinline void Swap(T& x, T& y)
 {
@@ -207,36 +211,39 @@ static __forceinline int FindEdge(EdgeArray* a, const Edge& v)
 // Removes edges that appear in both arrays from each, treating an edge as equal in either vertex order.
 // @fnv 0x00cf7130
 // src: HAVOK_LIB 0x00cf7130
-void __cdecl hkpTypedBroadPhaseDispatcher_removeDuplicates(EdgeArray* apEdgesA, EdgeArray* apEdgesB)
+// pdb: hkpTypedBroadPhaseDispatcher::removeDuplicates | hkpTypedBroadPhaseDispatcher.obj | retail, upstream name already matches, high
+// pdb params: newPairs, delPairs
+// pdb locals: newPairsMap, pair, assertBuf, ostr
+void __cdecl hkpTypedBroadPhaseDispatcher_removeDuplicates(EdgeArray* newPairs, EdgeArray* delPairs)
 {
-    int iCountA = apEdgesA->count;
-    int nb = apEdgesB->count;
+    int iCountA = newPairs->count;
+    int nb = delPairs->count;
     if (Min2(iCountA, nb) < 32)
     {
         int size = 0;
-        for (nb = 0; nb < apEdgesB->count; ++nb)
+        for (nb = 0; nb < delPairs->count; ++nb)
         {
             int i = 0;
-            for (; i < apEdgesA->count; ++i)
+            for (; i < newPairs->count; ++i)
             {
-                if (SameEdge(apEdgesA->data[i], apEdgesB->data[nb]))
+                if (SameEdge(newPairs->data[i], delPairs->data[nb]))
                     break;
             }
-            if (i == apEdgesA->count)
+            if (i == newPairs->count)
             {
                 if (size != nb)
-                    apEdgesB->data[size] = apEdgesB->data[nb];
+                    delPairs->data[size] = delPairs->data[nb];
                 ++size;
             }
             else
             {
-                RemoveAt(apEdgesA, i);
+                RemoveAt(newPairs, i);
             }
         }
-        ShrinkEdges(apEdgesB, size, GetPool()->allocator);
+        ShrinkEdges(delPairs, size, GetPool()->allocator);
         return;
     }
-    int val = hkMapBase_unsigned_int64_unsigned_int64_hkMapOperations_unsigned_int64_getSizeInBytesFor(apEdgesA->count);
+    int val = hkMapBase_unsigned_int64_unsigned_int64_hkMapOperations_unsigned_int64_getSizeInBytesFor(newPairs->count);
     ScratchAllocator* pScratch = GetPool()->scratch;
     void* pBuffer;
     int descriptor = 0;
@@ -254,16 +261,16 @@ void __cdecl hkpTypedBroadPhaseDispatcher_removeDuplicates(EdgeArray* apEdgesA, 
         descriptor = (int)0x80000000;
     HashTableBase table;
     table.hkMultiMap_unsigned_int64_unsigned_int64_struct_hkMultiMapOperations_unsigned_int64_struct_hkContainerHeapAllocator_hkMultiMap_unsigned_int64_unsigned_int64_struct_hkMultiMapOperations_unsigned_int64_struct_hkContainerHeapAllocator(pBuffer, val);
-    for (int i = 0; i < apEdgesA->count; ++i)
+    for (int i = 0; i < newPairs->count; ++i)
     {
-        Edge e = apEdgesA->data[i];
+        Edge e = newPairs->data[i];
         if (e.first > e.second)
             Swap(e.first, e.second);
         int found = table.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_findKey(e.first, e.second);
         if (found <= table.capacity)
         {
             ++table.entries[found].value;
-            apEdgesA->data[i].first = 0;
+            newPairs->data[i].first = 0;
         }
         else
         {
@@ -271,9 +278,9 @@ void __cdecl hkpTypedBroadPhaseDispatcher_removeDuplicates(EdgeArray* apEdgesA, 
         }
     }
     int size = 0;
-    for (int j = 0; j < apEdgesB->count; ++j)
+    for (int j = 0; j < delPairs->count; ++j)
     {
-        Edge e = apEdgesB->data[j];
+        Edge e = delPairs->data[j];
         if (e.first > e.second)
             Swap(e.first, e.second);
         int found = table.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_findKey(e.first, e.second);
@@ -287,22 +294,22 @@ void __cdecl hkpTypedBroadPhaseDispatcher_removeDuplicates(EdgeArray* apEdgesA, 
             else
             {
                 table.hkMapBase_unsigned_int64_unsigned_int64_hkMapOperations_unsigned_int64_remove(found);
-                apEdgesA->data[(unsigned int)countA >> 8].first = 0;
+                newPairs->data[(unsigned int)countA >> 8].first = 0;
             }
         }
         else
         {
-            apEdgesB->data[size++] = apEdgesB->data[j];
+            delPairs->data[size++] = delPairs->data[j];
         }
     }
-    ShrinkEdges(apEdgesB, size, GetPool()->allocator);
+    ShrinkEdges(delPairs, size, GetPool()->allocator);
     size = 0;
-    for (int i = 0; i < apEdgesA->count; ++i)
+    for (int i = 0; i < newPairs->count; ++i)
     {
-        if (apEdgesA->data[i].first ? true : false)
-            apEdgesA->data[size++] = apEdgesA->data[i];
+        if (newPairs->data[i].first ? true : false)
+            newPairs->data[size++] = newPairs->data[i];
     }
-    ShrinkEdges(apEdgesA, size, GetPool()->allocator);
+    ShrinkEdges(newPairs, size, GetPool()->allocator);
     table.hkMapBase_unsigned_int64_unsigned_int64_hkMapOperations_unsigned_int64_clearAndDeallocate(GetPool()->allocator);
     table.Object_DoNothing();
     ScratchAllocator& scratchRef = GetPool()->Scratch();

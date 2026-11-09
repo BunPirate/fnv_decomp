@@ -7,5 +7,5 @@ public:
     unsigned int m_uiValueAt04;
     unsigned int iFlags;
 
-    void UpdateAccumulatedTime(); // exe: 0x00aea100
+    void BSAudioSynchTimer_Update(); // exe: 0x00aea100
 };

@@ -19,6 +19,7 @@ struct ConstraintRuntimeInfo;
 template <typename T> class ResizableArray;
 template <typename T> class hkSmallArray;
 
+// pdb: class hkpEntity, size 0x220, bases: hkpWorldObject, 21 members
 class hkpEntity : public hkpWorldObject
 {
 public:
@@ -72,12 +73,12 @@ public:
     hkUint32 GetUid() const;
     const ResizableArray<ConstraintRuntimeInfo>& getConstraintMastersImpl() const;
     hkpSimulationIsland* GetSimulationIsland() const;
-    void __thiscall hkpRigidBody_getPointVelocity(const SpringVector* point, SpringVector* velocity);
+    void __thiscall hkpRigidBody_getPointVelocity(const SpringVector* p, SpringVector* vecOut);
     unsigned char* __thiscall isActive_00c9bff0(unsigned char* out);
     void __thiscall activate_00c9c1d0();
     void removeEntityListener_00c9c670(void* arg1);
     void ApplyForceAtPoint(float dt, const hkVector4& force, const SpringVector& point);
-    void __thiscall AddContactListener(void* listener);
+    void __thiscall addContactListener(void* cl);
     void __thiscall RemoveContactListener(void* listener);
     void __thiscall AddEntityListener(void* listener);
     void __thiscall RemoveEntityListener(void* listener);
@@ -93,27 +94,27 @@ public:
     void activate();
     void deactivate();
 
-    hkpMaterial m_iMaterialIndex;
-    void* m_pEntityUserData;
-    hkReal m_fBulletSpread;
-    hkpBreakableBody* m_pShape;
-    hkUint32 m_uiFilterInfo;
-    hkUint16 m_usStorageIndex;
-    hkUint16 m_usNextProcessCallbackDelay;
-    hkpEntitySmallArraySerializeOverrideType m_eSmallArraySerializeOverrideType;
-    hkArray<hkpConstraintInstance*> m_kSlaveConstraints;
-    hkArray<hkUint8> m_pByteBuffer;
-    hkpSimulationIsland* m_pSimulationIsland;
-    hkInt8 m_iAutoRemoveLevel;
-    hkUint8 m_ucNumShapeKeysInContactPointProperties;
-    hkUint8 m_ucResponseModifierFlags;
+    hkpMaterial m_material;
+    void* m_limitContactImpulseUtil;
+    hkReal m_damageMultiplier;
+    hkpBreakableBody* m_breakableBody;
+    hkUint32 m_solverData;
+    hkUint16 m_storageIndex;
+    hkUint16 m_contactPointCallbackDelay;
+    hkpEntitySmallArraySerializeOverrideType m_constraintsMaster;
+    hkArray<hkpConstraintInstance*> m_constraintsSlave;
+    hkArray<hkUint8> m_constraintRuntime;
+    hkpSimulationIsland* m_simulationIsland;
+    hkInt8 m_autoRemoveLevel;
+    hkUint8 m_numShapeKeysInContactPointProperties;
+    hkUint8 m_responseModifierFlags;
     char padD3[1];
-    hkUint32 m_uiUniqueId;
-    hkpEntitySpuCollisionCallback m_kSpuCollisionCallback;
-    hkpMaxSizeMotion m_pMotionState;
-    hkpEntitySmallArraySerializeOverrideType m_kContactListeners;
-    ActionArray m_ppActions;
-    hkLocalFrame* m_pLocalFrame;
-    mutable hkpEntityExtendedListeners* m_pExtendedListeners;
+    hkUint32 m_uid;
+    hkpEntitySpuCollisionCallback m_spuCollisionCallback;
+    hkpMaxSizeMotion m_motion;
+    hkpEntitySmallArraySerializeOverrideType m_contactListeners;
+    ActionArray m_actions;
+    hkLocalFrame* m_localFrame;
+    mutable hkpEntityExtendedListeners* m_extendedListeners;
     char pad218[8];
 };

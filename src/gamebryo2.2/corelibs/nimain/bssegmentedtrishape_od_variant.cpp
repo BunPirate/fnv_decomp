@@ -4,7 +4,7 @@
 
 // src/gamebryo2.2/corelibs/nimain/bssegmentedtrishape.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nimain/bssegmentedtrishape.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
-extern "C" void* g_011f5b40;
+extern "C" void* BSSegmentedTriShape_ms_RTTI;
 void* __cdecl BSSegmentedTriShape_GetRTTI();
 void __cdecl FinalizeEntries();
 void __cdecl FUN_00a745c0();
@@ -38,6 +38,10 @@ struct HitRect
 
 // @fnv 0x006fede0
 // src: COMMUNITY 0x006fede0
+// pdb: BGSTerrainNode::UpdateWaterVisibility | BGSTerrainNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSTerrainNode::CheckIntersectsLoadedRange
+// pdb params: apWater, abDebugOutput
+// pdb locals: psegments, pactualWorld, x, y, pcell, isegment, icellx, icelly
 bool HitRect::BGSTerrainNode_CheckIntersectsLoadedRange()
 {
     int y;

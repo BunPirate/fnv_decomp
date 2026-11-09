@@ -5,6 +5,7 @@
 
 class ScreenSink;
 
+// pdb: class NiScreenElements, size 0xf0 (here 0xc4), bases: NiTriShape, 0 members
 class NiScreenElements : public NiTriShape
 {
   public:
@@ -28,7 +29,7 @@ class NiScreenElements : public NiTriShape
 
     void UpdateProperties();
     void NiAVObject_Update(NiUpdateData* data);
-    void NiScreenElements_Draw(ScreenSink* sink);
+    void NiScreenElements_Draw(ScreenSink* pkRenderer);
     void __fastcall FUN_00a89760();
     NiScreenElements* __thiscall FUN_00a87830(unsigned int flags);
 

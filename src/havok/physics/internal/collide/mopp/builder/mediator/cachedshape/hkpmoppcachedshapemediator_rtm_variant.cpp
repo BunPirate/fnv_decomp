@@ -21,14 +21,14 @@ struct S_00d54cd0_All : S_00d54cd0_Base
     int m_cap;
     void* unk14;
     int unk18;
-    S_00d54cd0_All(void* world) throw();
+    S_00d54cd0_All(void* shapeArray) throw();
     ~S_00d54cd0_All() throw();
 };
 struct S_00d54cd0_Closest : S_00d54cd0_Base
 {
     void* unk8;
     int unkC;
-    S_00d54cd0_Closest(void* world) throw();
+    S_00d54cd0_Closest(void* shapeArray) throw();
     ~S_00d54cd0_Closest() throw();
 };
 struct S_00d54cd0_Input
@@ -61,8 +61,8 @@ struct S_00d54cd0_Result
     int unk28;
     bool unk2C;
 };
-S_00d54cd0_Result* hkpMoppUtility_buildCodeInternal(S_00d54cd0_Base* col, void* world, S_00d54cd0_Input* in, void* out) throw();
-S_00d54cd0_Result* hkpMoppUtility_buildCode(void* world, S_00d54cd0_Input* pInput, void* out);
+S_00d54cd0_Result* hkpMoppUtility_buildCodeInternal(S_00d54cd0_Base* mediator, void* shapeContainer, S_00d54cd0_Input* moppInput, void* reindexInfo) throw();
+S_00d54cd0_Result* hkpMoppUtility_buildCode(void* shapeContainer, S_00d54cd0_Input* moppInput, void* reindexInfo);
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
 struct Record
 {
@@ -155,8 +155,8 @@ class FUN_00dd5cd0_cls
     int unk10;
     Mgr* m_pMgr;
 
-    void ComputeAxisRanges(Item* item, int m, int a, int b);
-    void ProcessItems(int a, int b);
+    void hkpMoppCachedShapeMediator_addConvexShape(Item* convexShape, int key, int directions, int numDirections);
+    void ProcessItems(int directions, int numDirections);
 };
 class DD5D50ReferencedObject
 {
@@ -185,7 +185,7 @@ struct DD5D50Source
 class FUN_00dd5d50 : public DD5D50ReferencedObject
 {
   public:
-    FUN_00dd5d50(DD5D50Source* source);
+    FUN_00dd5d50(DD5D50Source* shapeArray);
     virtual void unk00();
 
     DD5D50Array m_items;
@@ -203,7 +203,7 @@ struct FUN_00dd5660_cls
     int unk18;
     int GetUnk18_00dd5660();
 };
-void __cdecl ResizeAudioStream(hkMemoryAllocator* apAllocator, void* apVector, int aiElemSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem);
 struct Src_00dd5b00
 {
     virtual void v00();
@@ -247,7 +247,7 @@ struct Obj_00dd5b00
     int unk04;
     Vec_00dd5b00 m_kNode;
 
-    void ComputeAxisRanges(Src_00dd5b00* apSource, int aiId, Item_00dd5b00* apItems, int aiCount);
+    void hkpMoppCachedShapeMediator_addConvexShape(Src_00dd5b00* convexShape, int key, Item_00dd5b00* directions, int numDirections);
 };
 inline float Dot3_00dd5b00(const __m128& a, const __m128& b)
 {
@@ -292,7 +292,7 @@ struct Owner
     unsigned int unk00, unk04, unk08, unk0c, unk10;
     OutCollection* collection;
     int count;
-    void hkpMoppCachedShapeMediator_getPrimitives(OutRecord* out);
+    void hkpMoppCachedShapeMediator_getPrimitives(OutRecord* primitives);
 };
 
 struct Entry
@@ -312,29 +312,31 @@ struct IntervalSet : Obj_00dd5b00
         hi = m_kNode.m_pData[e.index].m_ranges[axis].m_fHi;
     }
 
-    void hkpMoppCachedShapeMediator_projectPrimitives(int a1, int axis, Entry* entries, int count, float* outMin, float* outMax);
+    void hkpMoppCachedShapeMediator_projectPrimitives(int direction, int directionIndex, Entry* primitives, int numPrimitives, float* absMinOut, float* absMaxOut);
 };
 
 // @fnv 0x00dd5670
 // src: HAVOK_LIB 0x00dd5670
-void IntervalSet::hkpMoppCachedShapeMediator_projectPrimitives(int a1, int axis, Entry* entries, int count, float* outMin, float* outMax)
+// pdb: hkpMoppCachedShapeMediator::projectPrimitives | hkpMoppCachedShapeMediator.obj | retail, upstream name already matches, high
+// pdb params: direction, directionIndex, primitives, numPrimitives, absMinOut, absMaxOut
+void IntervalSet::hkpMoppCachedShapeMediator_projectPrimitives(int direction, int directionIndex, Entry* primitives, int numPrimitives, float* absMinOut, float* absMaxOut)
 {
     float lo, hi;
-    GetRange(entries[0], axis, lo, hi);
-    entries[0].iv.m_fLo = lo;
-    entries[0].iv.m_fHi = hi;
+    GetRange(primitives[0], directionIndex, lo, hi);
+    primitives[0].iv.m_fLo = lo;
+    primitives[0].iv.m_fHi = hi;
     float mn = lo;
     float mx = hi;
-    for (int i = 1; i < count; i++)
+    for (int i = 1; i < numPrimitives; i++)
     {
-        GetRange(entries[i], axis, lo, hi);
-        entries[i].iv.m_fLo = lo;
-        entries[i].iv.m_fHi = hi;
+        GetRange(primitives[i], directionIndex, lo, hi);
+        primitives[i].iv.m_fLo = lo;
+        primitives[i].iv.m_fHi = hi;
         mn = (mn < lo) ? mn : lo;
         mx = (mx > hi) ? mx : hi;
     }
-    *outMin = mn;
-    *outMax = mx;
+    *absMinOut = mn;
+    *absMaxOut = mx;
 }
 
 struct Ent
@@ -349,24 +351,26 @@ struct Lst
 };
 struct CachedRangeMediator : Obj_00dd5b00
 {
-    void __thiscall hkpMoppCachedShapeMediator_findExtents(int unused, int k, Lst* l, int count, float* outMin, float* outMax);
+    void __thiscall hkpMoppCachedShapeMediator_findExtents(int direction, int directionIndex, Lst* primitives, int numPrimitives, float* absMinOut, float* absMaxOut);
 };
 // @fnv 0x00dd58d0
 // src: HAVOK_LIB 0x00dd58d0
-void CachedRangeMediator::hkpMoppCachedShapeMediator_findExtents(int unused, int k, Lst* l, int count, float* outMin, float* outMax)
+// pdb: hkpMoppCachedShapeMediator::findExtents | hkpMoppCachedShapeMediator.obj | retail, upstream name already matches, high
+// pdb params: direction, directionIndex, primitives, numPrimitives, absMinOut, absMaxOut
+void CachedRangeMediator::hkpMoppCachedShapeMediator_findExtents(int direction, int directionIndex, Lst* primitives, int numPrimitives, float* absMinOut, float* absMaxOut)
 {
-    float mn = m_kNode.m_pData[l->e[0].idx].m_ranges[k].m_fLo;
-    float mx = m_kNode.m_pData[l->e[0].idx].m_ranges[k].m_fHi;
-    Ent* p = l->e;
-    for (int i = 1; i < count; i++)
+    float mn = m_kNode.m_pData[primitives->e[0].idx].m_ranges[directionIndex].m_fLo;
+    float mx = m_kNode.m_pData[primitives->e[0].idx].m_ranges[directionIndex].m_fHi;
+    Ent* p = primitives->e;
+    for (int i = 1; i < numPrimitives; i++)
     {
-        float a0 = m_kNode.m_pData[p[i].idx].m_ranges[k].m_fLo;
-        float a1 = m_kNode.m_pData[p[i].idx].m_ranges[k].m_fHi;
+        float a0 = m_kNode.m_pData[p[i].idx].m_ranges[directionIndex].m_fLo;
+        float a1 = m_kNode.m_pData[p[i].idx].m_ranges[directionIndex].m_fHi;
         if (!(mn < a0))
             mn = a0;
         if (!(mx > a1))
             mx = a1;
     }
-    *outMin = mn;
-    *outMax = mx;
+    *absMinOut = mn;
+    *absMaxOut = mx;
 }

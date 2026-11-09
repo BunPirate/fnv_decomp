@@ -26,7 +26,7 @@ struct FUN_00828da0_shell
 #include "../../../include/hkVector4.h"
 
 
-hkVector4& __cdecl NiPoint3ToHkVector4(hkVector4& kOut, const NiPoint3& kIn);
+hkVector4& __cdecl NiPoint3ToHkVector4(hkVector4& arhkTran, const NiPoint3& arNiTran);
 
 
 
@@ -45,7 +45,7 @@ struct CollisionFilterInfo
 {
     unsigned int m_uiFilterInfo;
 
-    CollisionFilterInfo(int iLayer, int iSystemGroup, int iPart);
+    CollisionFilterInfo(int aeLayer, int aiGroup, int aePart);
     operator unsigned int() const;
 };
 
@@ -101,7 +101,7 @@ struct ShapePhantom
 
     ShapePhantom(const void* pkCollidable);
     ~ShapePhantom();
-    void SetWorld(bhkWorld* pkWorld);
+    void SetWorld(bhkWorld* apWorld);
     void LinearCast(const hkVector4& kFrom, const void* pkInput, void* pkCastCollector, void* pkStartCollector);
     void Remove();
 };
@@ -415,12 +415,15 @@ struct SummonCreatureEffectHelper : SummonCreatureEffect
 {
     EffectTarget* GetTarget();
     TESForm* GetBaseForm();
-    bool SummonCreatureEffect_CheckSummonLocation(int iUnused, NiPoint3* pkPos);
+    bool SummonCreatureEffect_CheckSummonLocation(int apSummoned, NiPoint3* location);
 };
 
 // @fnv 0x00828f00
 // src: XBOX_PDB 0x00828f00
-bool SummonCreatureEffectHelper::SummonCreatureEffect_CheckSummonLocation(int iUnused, NiPoint3* pkPos)
+// pdb: SummonCreatureEffect::CheckSummonLocation | SummonCreatureEffect.obj | debug, upstream name already matches, high
+// pdb params: apSummoned, location
+// pdb locals: from, spShapePhantom, fltr, pitemObject, pownerActor, greatestDimension, pshape, hkFrom, input, ifilter, csi, to, startCol, col, pd
+bool SummonCreatureEffectHelper::SummonCreatureEffect_CheckSummonLocation(int apSummoned, NiPoint3* location)
 {
     MobileObject* pkActor = GetTarget() ? GetTarget()->GetActor() : 0;
     TESBoundObject* pkBound = dynamic_cast<TESBoundObject*>(GetBaseForm());
@@ -442,8 +445,8 @@ bool SummonCreatureEffectHelper::SummonCreatureEffect_CheckSummonLocation(int iU
     CdPointCollector kStartCollector;
     CdPointCollector kCastCollector;
     LinearCastInput kInput;
-    NiPoint3ToHkVector4(kFrom, *pkPos + NiPoint3(0.0f, 0.0f, fRadius * 0.5 + 10.0));
-    NiPoint3ToHkVector4(kInput.m_vTo, *pkPos + NiPoint3(0.0f, 0.0f, fRadius * 0.5 + 10.0));
+    NiPoint3ToHkVector4(kFrom, *location + NiPoint3(0.0f, 0.0f, fRadius * 0.5 + 10.0));
+    NiPoint3ToHkVector4(kInput.m_vTo, *location + NiPoint3(0.0f, 0.0f, fRadius * 0.5 + 10.0));
     kPhantom.LinearCast(kFrom, &kInput, &kCastCollector, &kStartCollector);
     if (kStartCollector.HasHit())
     {
@@ -463,7 +466,7 @@ bool SummonCreatureEffectHelper::SummonCreatureEffect_CheckSummonLocation(int iU
     kPick.SetFilter(kPickFilter);
     NiPoint3 kStart = *static_cast<const MobileObject*>(pkActor)->GetPos();
     kStart.z += 64.0;
-    NiPoint3 kEnd = *pkPos;
+    NiPoint3 kEnd = *location;
     kEnd.z += 64.0;
     kPick.SetFrom(kStart);
     kPick.SetTo(kEnd);

@@ -94,11 +94,12 @@ template <class T, class TAlloc> inline unsigned int NiTArray<T, TAlloc>::Add(co
 
 typedef NiTArray<char*, NiTMallocInterface<char*> > C27A30StringArray;
 
+// pdb: class NiPSysTurbulenceFieldModifier, size 0x3c, bases: NiPSysFieldModifier, 3 members
 struct NiPSysTurbulenceFieldModifier : NiPSysFieldModifier
 {
     float m_fFrequency;
-    float m_fFieldMagnitude;
-    float m_fFieldDistance;
+    float m_fFrequencyUpdateTime;
+    float m_fLastUpdateTime;
     bool __thiscall IsEqual_00c27390(NiObject* pkObject);
     static C27A30RTTI ms_kRTTI;
     void FieldViewerStrings(C27A30StringArray* pkStrings);
@@ -110,12 +111,15 @@ struct NiPSysTurbulenceFieldModifier : NiPSysFieldModifier
 
     float ReadScalar() const
     {
-        return m_fInfluence;
+        return m_fMagnitude;
     }
 };
 
 // @fnv 0x00c27390
 // src: XBOX_PDB 0x00c27390
+// pdb: NiPSysTurbulenceFieldModifier::IsEqual | NiPSysTurbulenceFieldModifier.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkDest
 bool __thiscall NiPSysTurbulenceFieldModifier::IsEqual_00c27390(NiObject* pkObject)
 {
     NiPSysTurbulenceFieldModifier* pkDest;
@@ -136,6 +140,9 @@ extern float DAT_01022958;
 extern double DAT_01032980;
 extern int DAT_010be774;
 // @fnv 0x00c27670
+// pdb: NiPSysTurbulenceFieldModifier::CreateClone | NiPSysTurbulenceFieldModifier.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysTurbulenceFieldModifier* __fastcall CloneFieldModifier(NiPSysTurbulenceFieldModifier* self, int,
                                                             CloningProcess* kCloning)
 {
@@ -145,17 +152,17 @@ NiPSysTurbulenceFieldModifier* __fastcall CloneFieldModifier(NiPSysTurbulenceFie
         pkObject->NiPSysFieldModifier::NiPSysFieldModifier();
         pkObject->m_fFrequency = 0.0f;
         *(int**)pkObject = &DAT_010be774;
-        pkObject->m_fFieldDistance = DAT_01015f5c;
-        pkObject->m_fFieldMagnitude = DAT_01022958;
+        pkObject->m_fLastUpdateTime = DAT_01015f5c;
+        pkObject->m_fFrequencyUpdateTime = DAT_01022958;
     }
     else
         pkObject = 0;
     self->NiPSysFieldModifier::CopyMemberData(pkObject, *kCloning);
     pkObject->m_fFrequency = self->m_fFrequency;
     if (pkObject->m_fFrequency < DAT_01032980)
-        pkObject->m_fFieldMagnitude = DAT_01022958;
+        pkObject->m_fFrequencyUpdateTime = DAT_01022958;
     else
-        pkObject->m_fFieldMagnitude = 1.0f / pkObject->m_fFrequency;
+        pkObject->m_fFrequencyUpdateTime = 1.0f / pkObject->m_fFrequency;
     return pkObject;
 }
 
@@ -178,6 +185,8 @@ char* __cdecl NiGetViewerString_00a7d550(const char* pcPrefix, float fValue);
 // Appends the RTTI name and a formatted "Frequency" string for m_fFrequency to pkStrings after calling the base handler.
 // @fnv 0x00c27a30
 // src: XBOX_PDB 0x00c27a30
+// pdb: NiPSysTurbulenceFieldModifier::GetViewerStrings | NiPSysTurbulenceFieldModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void NiPSysTurbulenceFieldModifier::GetViewerStrings_00c27a30(C27A30StringArray* pkStrings)
 {
     FieldViewerStrings(pkStrings);
@@ -204,15 +213,18 @@ extern double DAT_01032980;
 extern float DAT_01022958;
 // Reads a float from the stream at object+0x24c and stores its reciprocal, or a fallback constant when the value is below DAT_01032980.
 // @fnv 0x00c27700
+// pdb: NiPSysTurbulenceFieldModifier::LoadBinary | NiPSysTurbulenceFieldModifier.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysTurbulenceFieldModifier::CopyMembers
+// pdb params: kStream
 void __thiscall NiPSysTurbulenceFieldModifier::ReadFloatAndComputeInverse(void* object)
 {
     NiPSysFieldModifier::LoadBinary(*static_cast<NiStream*>(object));
     FieldReadState* stream = *(FieldReadState**)((char*)object + 0x24c);
     stream->ReadFloat(&m_fFrequency);
     if (m_fFrequency < DAT_01032980)
-        m_fFieldMagnitude = DAT_01022958;
+        m_fFrequencyUpdateTime = DAT_01022958;
     else
-        m_fFieldMagnitude = 1.0f / m_fFrequency;
+        m_fFrequencyUpdateTime = 1.0f / m_fFrequency;
 }
 
 // FUN_00c274c0: NiPSysTurbulenceFieldModifier::Update - random velocity kick
@@ -228,10 +240,13 @@ inline float SymmetricRandom()
 // Applies a random offset scaled by m_fInfluence to particle values whose squared distance from the transformed field position is at most m_fFieldStrength.
 // @fnv 0x00c274c0
 // src: XBOX_PDB 0x00c274c0
+// pdb: NiPSysTurbulenceFieldModifier::UpateNoAttenuation | NiPSysTurbulenceFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkData
+// pdb locals: kParticlePosition, kTurbulence, kTurbulenceToPSys, kInvPSys, kPosition, kPSys, kDeltaV, us, pkCurrentParticle
 void NiPSysTurbulenceFieldModifier::UpateNoAttenuation(float fTime, NiPSysData* pkData)
 {
     NiTransform kFieldXform;
-    memcpy(&kFieldXform, &m_spFieldObject->m_kWorld, sizeof(kFieldXform));
+    memcpy(&kFieldXform, &m_pkFieldObj->m_kWorld, sizeof(kFieldXform));
     NiTransform kInvPSys;
     {
         NiTransform kPSysXform;
@@ -246,13 +261,13 @@ void NiPSysTurbulenceFieldModifier::UpateNoAttenuation(float fTime, NiPSysData* 
             Point3ParameterData* pkInfo = &pkData->GetParticleInfo()[i];
             NiPoint3 kPos = pkData->GetVertices()[i];
             NiPoint3 kDiff = kPos - kFieldToPSys.m_Translate;
-            if (kDiff.SqrLength() <= m_fFieldStrength)
+            if (kDiff.SqrLength() <= m_fMaxDistanceSqr)
             {
                 NiPoint3 kRand;
                 kRand.x = SymmetricRandom();
                 kRand.y = SymmetricRandom();
                 kRand.z = SymmetricRandom();
-                NiPoint3 kOffset = kRand * m_fInfluence;
+                NiPoint3 kOffset = kRand * m_fMagnitude;
                 pkInfo->m_kValue.x = pkInfo->m_kValue.x + kOffset.x;
                 pkInfo->m_kValue.y = pkInfo->m_kValue.y + kOffset.y;
                 pkInfo->m_kValue.z = pkInfo->m_kValue.z + kOffset.z;
@@ -276,19 +291,22 @@ inline float NiPoint3::Length() const
 
 // Applies random turbulence offsets to particle values based on distance from the field object, scaling by influence and attenuation.
 // @fnv 0x00c277b0
+// pdb: NiPSysTurbulenceFieldModifier::Update | NiPSysTurbulenceFieldModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: kParticlePosition, kTurbulence, kTurbulenceToPSys, kInvPSys, kPosition, kPSys, kDeltaV, fDistance, us, pkCurrentParticle
 void __thiscall NiPSysTurbulenceFieldModifier::UpdateTurbulence(float fTime, NiPSysData* pkData)
 {
-    if (fTime >= m_fFieldDistance && fTime < m_fFieldDistance + m_fFieldMagnitude)
+    if (fTime >= m_fLastUpdateTime && fTime < m_fLastUpdateTime + m_fFrequencyUpdateTime)
         return;
 
-    m_fFieldDistance = fTime;
+    m_fLastUpdateTime = fTime;
 
-    if (ReadScalar() == 0.0f || pkData->GetShaderParticleCount() == 0 || !m_spFieldObject)
+    if (ReadScalar() == 0.0f || pkData->GetShaderParticleCount() == 0 || !m_pkFieldObj)
         return;
 
-    if (m_fFieldAttenuation == 0.0f)
+    if (m_fAttenuation == 0.0f)
     {
-        if (m_bEnableMaxDistance)
+        if (m_bUseMaxDistance)
             UpateNoAttenuation(fTime, pkData);
         else
             ApplyRandomOffset(fTime, pkData);
@@ -296,7 +314,7 @@ void __thiscall NiPSysTurbulenceFieldModifier::UpdateTurbulence(float fTime, NiP
     else
     {
         NiTransform kField;
-        memcpy(&kField, &m_spFieldObject->GetWorldTransform(), sizeof(kField));
+        memcpy(&kField, &m_pkFieldObj->GetWorldTransform(), sizeof(kField));
         NiTransform kInv;
         {
             NiTransform kTarget;
@@ -314,14 +332,14 @@ void __thiscall NiPSysTurbulenceFieldModifier::UpdateTurbulence(float fTime, NiP
 
                 float fDist = kDiff.Length();
 
-                if (!m_bEnableMaxDistance || fDist <= m_fDistanceLimit)
+                if (!m_bUseMaxDistance || fDist <= m_fMaxDistance)
                 {
                     NiPoint3 kRandom;
                     kRandom.x = (float)((rand() * 2.0 / 32767.0) - 1.0);
                     kRandom.y = (float)((rand() * 2.0 / 32767.0) - 1.0);
                     kRandom.z = (float)((double)((double)((rand() * 2.0 / 32767.0) - 1.0)));
 
-                    float fFactor = ReadScalar() / (1.0f + m_fFieldAttenuation * fDist);
+                    float fFactor = ReadScalar() / (1.0f + m_fAttenuation * fDist);
 
                     kRandom *= fFactor;
                     pkInfo->m_kValue += kRandom;
@@ -340,6 +358,9 @@ inline float C273D0SymmetricRandom()
 
 // Adds a random 3D offset scaled by m_fInfluence to each particle's m_kValue in pkData.
 // @fnv 0x00c273d0
+// pdb: NiPSysTurbulenceFieldModifier::UpateNoAttenuationNoDistance | NiPSysTurbulenceFieldModifier.obj | retail, call graph, low
+// pdb params: fTime, pkData
+// pdb locals: kDeltaV, us, pkCurrentParticle
 void NiPSysTurbulenceFieldModifier::ApplyRandomOffset(float fTime, NiPSysData* pkData)
 {
     for (unsigned short us = 0; us < pkData->m_usActive; us++)
@@ -349,6 +370,6 @@ void NiPSysTurbulenceFieldModifier::ApplyRandomOffset(float fTime, NiPSysData* p
         kWorldPosition.x = C273D0SymmetricRandom();
         kWorldPosition.y = C273D0SymmetricRandom();
         kWorldPosition.z = C273D0SymmetricRandom();
-        pkInfo->m_kValue += kWorldPosition * m_fInfluence;
+        pkInfo->m_kValue += kWorldPosition * m_fMagnitude;
     }
 }

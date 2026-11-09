@@ -2,7 +2,7 @@
 
 #include "hkMemoryAllocator.h"
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 void* __cdecl _fnv_zlib_memset(void* dst, int val, int n);
 
 class hkCharArray

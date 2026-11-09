@@ -74,18 +74,21 @@ struct FUN_00e5c460_cls
     int unk34;
     DispatchTarget m_38;
 
-    void hkpConstraintChainInstance_insertEntityAtFront(OutObject* a1);
+    void hkpConstraintChainInstance_insertEntityAtFront(OutObject* entity);
 };
 
 // Gets an hkMemoryRouter, passes its allocator to m_38.CallWithFlag, then calls FUN_00c90510 on a1.
 // @fnv 0x00e5c460
 // src: HAVOK_LIB 0x00e5c460
-void FUN_00e5c460_cls::hkpConstraintChainInstance_insertEntityAtFront(OutObject* pOutObject)
+// pdb: hkpConstraintChainInstance::insertEntityAtFront | hkpConstraintChainUtil.obj | retail, upstream name already matches, high
+// pdb params: entity
+// pdb locals: assertBuf, ostr
+void FUN_00e5c460_cls::hkpConstraintChainInstance_insertEntityAtFront(OutObject* entity)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
     void* pValue = pHolder->m_heap;
-    m_38.CallWithFlag(pValue, 0, &pOutObject);
-    pOutObject->FUN_00c90510();
+    m_38.CallWithFlag(pValue, 0, &entity);
+    entity->FUN_00c90510();
 }
 
 #include <xmmintrin.h>
@@ -104,7 +107,7 @@ struct FUN_00c7f690_cls
 
 struct XfSub_cls
 {
-    void Push(XfOut_cls* a, XfOut_cls* b);
+    void addConstraintInfoInBodySpace(XfOut_cls* pivotInA, XfOut_cls* pivotInB);
 };
 
 struct XfScene_cls
@@ -125,7 +128,7 @@ struct XfScene_cls
     int unk34;
     char** m_38;
     int m_3c;
-    void AddReferencedObject(XfScene_cls* other);
+    void addEntity(XfScene_cls* entity);
 };
 
 static char* XfSelectRec(char* rec)
@@ -139,16 +142,19 @@ static char* XfSelectRec(char* rec)
 
 // @fnv 0x00e5b3a0
 // src: HAVOK_LIB 0x00e5b3a0
-void hkpConstraintChainUtil_addConstraintToBallSocketChain(XfScene_cls* a1, XfScene_cls* a2, const __m128* a3)
+// pdb: hkpConstraintChainUtil::addConstraintToBallSocketChain | hkpConstraintChainUtil.obj | retail, upstream name already matches, high
+// pdb params: instance, entityToAppend, pivotWs
+// pdb locals: info, assertBuf, ostr
+void hkpConstraintChainUtil_addConstraintToBallSocketChain(XfScene_cls* instance, XfScene_cls* entityToAppend, const __m128* pivotWs)
 {
-    XfSub_cls* sub = a1->m_0c;
-    char* p1 = XfSelectRec(a1->m_38[a1->m_3c - 1] + 0x10);
-    char* p2 = XfSelectRec((char*)a2 + 0x10);
+    XfSub_cls* sub = instance->m_0c;
+    char* p1 = XfSelectRec(instance->m_38[instance->m_3c - 1] + 0x10);
+    char* p2 = XfSelectRec((char*)entityToAppend + 0x10);
     XfOut_cls outs[2];
-    ((FUN_00c7f690_cls*)&outs[0])->hkVector4_setTransformedInversePos((const __m128*)(p1 + 0xf0), a3);
-    ((FUN_00c7f690_cls*)&outs[1])->hkVector4_setTransformedInversePos((const __m128*)(p2 + 0xf0), a3);
-    sub->Push(&outs[0], &outs[1]);
-    a1->AddReferencedObject(a2);
+    ((FUN_00c7f690_cls*)&outs[0])->hkVector4_setTransformedInversePos((const __m128*)(p1 + 0xf0), pivotWs);
+    ((FUN_00c7f690_cls*)&outs[1])->hkVector4_setTransformedInversePos((const __m128*)(p2 + 0xf0), pivotWs);
+    sub->addConstraintInfoInBodySpace(&outs[0], &outs[1]);
+    instance->addEntity(entityToAppend);
 }
 
 namespace fnv_00e5b440 {
@@ -174,13 +180,13 @@ struct __declspec(align(16)) RelativeOrientationData
     int argument4;
     int argument5;
     int argument6;
-    void setMulInverse(char* a, char* b);
+    void setMulInverse(char* q0, char* q1);
 };
 
 struct Callee
 {
     int unk00;
-    void addConstraintInfoInBodySpace(void* p1, void* p2, void* p3, int a4, int a5, int a6);
+    void addConstraintInfoInBodySpace(void* pivotInA, void* pivotInB, void* aTc, int xMotor, int yMotor, int zMotor);
 };
 
 struct Owner
@@ -201,22 +207,26 @@ struct Owner
     int unk34;
     void** m_38;
     int m_3c;
-    void AddReferencedObject(char* a);
+    void addEntity(char* entity);
 };
 
 // Computes relative orientation between two objects and applies it via a Callee, then adds a reference to a2.
 // @fnv 0x00e5b440
-void ApplyRelativeOrientation(Owner* a1, char* a2, const __m128* a3, int a4, int a5, int a6)
+// src: XBOX_RETAIL_PDB 0x00e5b440
+// pdb: hkpConstraintChainUtil::addConstraintToPoweredChain | hkpConstraintChainUtil.obj | retail, object-file gap fill, high
+// pdb params: instance, entityToAppend, pivotWs, motor0, motor1, motor2
+// pdb locals: info, assertBuf, ostr
+void hkpConstraintChainUtil_addConstraintToPoweredChain(Owner* instance, char* entityToAppend, const __m128* pivotWs, int motor0, int motor1, int motor2)
 {
-    Callee* pCallee = a1->m_0c;
+    Callee* pCallee = instance->m_0c;
     char* e1;
     char* e2;
     {
-        char* p = (char*)a1->m_38[a1->m_3c - 1] + 0x10;
+        char* p = (char*)instance->m_38[instance->m_3c - 1] + 0x10;
         e1 = (*(unsigned char*)(p + 0x18) == 1) ? p + (signed char)p[0x10] : 0;
     }
     {
-        char* p = a2 + 0x10;
+        char* p = entityToAppend + 0x10;
         e2 = (*(unsigned char*)(p + 0x18) == 1) ? p + (signed char)p[0x10] : 0;
     }
     // The two transformed points form one adjacent pair consumed by the callback.
@@ -225,16 +235,16 @@ void ApplyRelativeOrientation(Owner* a1, char* a2, const __m128* a3, int a4, int
         FUN_00c7f690_cls first;
         FUN_00c7f690_cls second;
     } points;
-    points.first.hkVector4_setTransformedInversePos((const __m128*)(e1 + 0xf0), a3);
-    points.second.hkVector4_setTransformedInversePos((const __m128*)(e2 + 0xf0), a3);
+    points.first.hkVector4_setTransformedInversePos((const __m128*)(e1 + 0xf0), pivotWs);
+    points.second.hkVector4_setTransformedInversePos((const __m128*)(e2 + 0xf0), pivotWs);
     // Helper writes the quaternion at offset 0; original also stores arguments at 0x20/24/28.
     RelativeOrientationData relativeOrientation;
     relativeOrientation.setMulInverse(e2 + 0x160, e1 + 0x160);
-    relativeOrientation.argument4 = a4;
-    relativeOrientation.argument5 = a5;
-    relativeOrientation.argument6 = a6;
-    pCallee->addConstraintInfoInBodySpace(&points.first, &points.second, (void*)&relativeOrientation, a4, a5, a6);
-    a1->AddReferencedObject(a2);
+    relativeOrientation.argument4 = motor0;
+    relativeOrientation.argument5 = motor1;
+    relativeOrientation.argument6 = motor2;
+    pCallee->addConstraintInfoInBodySpace(&points.first, &points.second, (void*)&relativeOrientation, motor0, motor1, motor2);
+    instance->addEntity(entityToAppend);
 }
 }  // namespace fnv_00e5b440
 
@@ -286,7 +296,7 @@ struct OwnerC
     unsigned int unk10;
     unsigned int unk14;
     Sub18 m_18;
-    void Push(Tmp16* a, Tmp16* b);
+    void addConstraintInfoInBodySpace(Tmp16* pivotInA, Tmp16* pivotInB);
 };
 
 struct ListB
@@ -307,58 +317,61 @@ struct ListB
     unsigned int unk34;
     unsigned int* m_38;
     unsigned int m_3c;
-    void AddReferencedObject(unsigned int key);
-    void hkpConstraintChainInstance_insertEntityAtFront(unsigned int key);
+    void addEntity(unsigned int entity);
+    void hkpConstraintChainInstance_insertEntityAtFront(unsigned int entity);
 };
 
-int hkpConstraintUtils_getConstraintPivots(KeyOwnerA* a, Tmp16* p, Tmp16* q);
+int hkpConstraintUtils_getConstraintPivots(KeyOwnerA* a, Tmp16* pivotInAOut, Tmp16* pivotInBOut);
 
 // Returns 1 if FUN_00e5ad40 is nonzero or no key matches; else matches a1's m_14/m_18 to a2's list ends, calls a3 helpers, updates a2 and returns 0.
 // @fnv 0x00e5b8f0
 // src: XBOX_PDB 0x00e5b8f0
-int hkpConstraintChainUtil_addConstraintToChain(KeyOwnerA* a1, ListB* a2, OwnerC* a3, ...)
+// pdb: hkpConstraintChainUtil::addConstraintToChain | hkpConstraintChainUtil.obj | retail, upstream name already matches, high
+// pdb params: newChildInstance, chainInstance, chainData
+// pdb locals: pivotB, pivotA, assertBuf, ostr, info
+int hkpConstraintChainUtil_addConstraintToChain(KeyOwnerA* newChildInstance, ListB* chainInstance, OwnerC* chainData, ...)
 {
     Pair32 keyPair;
 
-    if (hkpConstraintUtils_getConstraintPivots(a1, &keyPair.lo, &keyPair.hi) != 0)
+    if (hkpConstraintUtils_getConstraintPivots(newChildInstance, &keyPair.lo, &keyPair.hi) != 0)
     {
         return 1;
     }
-    if (a2->m_3c == 0)
+    if (chainInstance->m_3c == 0)
     {
-        a2->AddReferencedObject(a1->m_14);
+        chainInstance->addEntity(newChildInstance->m_14);
     }
-    unsigned int uiLastKey = a2->m_38[a2->m_3c - 1];
-    if (uiLastKey == a1->m_14)
+    unsigned int uiLastKey = chainInstance->m_38[chainInstance->m_3c - 1];
+    if (uiLastKey == newChildInstance->m_14)
     {
-        a3->Push(&keyPair.lo, &keyPair.hi);
-        a2->AddReferencedObject(a1->m_18);
+        chainData->addConstraintInfoInBodySpace(&keyPair.lo, &keyPair.hi);
+        chainInstance->addEntity(newChildInstance->m_18);
         return 0;
     }
-    if (uiLastKey == a1->m_18)
+    if (uiLastKey == newChildInstance->m_18)
     {
-        a3->Push(&keyPair.hi, &keyPair.lo);
-        a2->AddReferencedObject(a1->m_14);
+        chainData->addConstraintInfoInBodySpace(&keyPair.hi, &keyPair.lo);
+        chainInstance->addEntity(newChildInstance->m_14);
         return 0;
     }
-    if (a2->m_38[0] == a1->m_14)
+    if (chainInstance->m_38[0] == newChildInstance->m_14)
     {
         Pair32 p;
         CopyTmp16(&p.lo, &keyPair.hi);
         CopyTmp16(&p.hi, &keyPair.lo);
         hkMemoryRouter* h = hkMemoryRouter_getInstance();
-        a3->m_18.ProcessAndReturnValue_00e5c440(reinterpret_cast<hkMemoryAllocator*>(h->m_heap), 0, &p);
-        a2->hkpConstraintChainInstance_insertEntityAtFront(a1->m_18);
+        chainData->m_18.ProcessAndReturnValue_00e5c440(reinterpret_cast<hkMemoryAllocator*>(h->m_heap), 0, &p);
+        chainInstance->hkpConstraintChainInstance_insertEntityAtFront(newChildInstance->m_18);
         return 0;
     }
-    if (a2->m_38[0] == a1->m_18)
+    if (chainInstance->m_38[0] == newChildInstance->m_18)
     {
         Pair32 p;
         CopyTmp16(&p.lo, &keyPair.lo);
         CopyTmp16(&p.hi, &keyPair.hi);
         hkMemoryRouter* h = hkMemoryRouter_getInstance();
-        a3->m_18.ProcessAndReturnValue_00e5c440(reinterpret_cast<hkMemoryAllocator*>(h->m_heap), 0, &p);
-        a2->hkpConstraintChainInstance_insertEntityAtFront(a1->m_14);
+        chainData->m_18.ProcessAndReturnValue_00e5c440(reinterpret_cast<hkMemoryAllocator*>(h->m_heap), 0, &p);
+        chainInstance->hkpConstraintChainInstance_insertEntityAtFront(newChildInstance->m_14);
         return 0;
     }
     return 1;
@@ -386,7 +399,7 @@ struct S_00e5c370_Elem
         reinterpret_cast<__m128&>(b) = reinterpret_cast<const __m128&>(o.b);
     }
 };
-void __cdecl hkArrayUtil__reserve(S_00e5c370_Alloc& alloc, void* arr, int numElem, int sizeElem);
+void __cdecl hkArrayUtil__reserve(S_00e5c370_Alloc& mem, void* array, int numElem, int sizeElem);
 void __cdecl hkMemUtil_memMove(void* dst, const void* src, int nbytes);
 
 template <class T>

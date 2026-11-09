@@ -5,6 +5,7 @@
 #include "hkBase.h"
 #include "hkpVehicleCastBatchingManager.h"
 #pragma pack(push, 1)
+// pdb: class hkpVehicleRayCastBatchingManager, size 0x18, bases: hkpVehicleCastBatchingManager, 0 members
 class hkpVehicleRayCastBatchingManager : public hkpVehicleCastBatchingManager
 {
   public:

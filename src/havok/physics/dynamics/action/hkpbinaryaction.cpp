@@ -21,13 +21,14 @@ extern int _DAT_0102e388;
 
 struct FUN_00cf4de0_class
 {
-    void ReleaseReferencedObjectsAndLock(void);
+    void hkpBinaryAction_dtor(void);
 };
 
 // Resets the vtable, releases the two referenced objects at offsets 0x18 and 0x1c, then destroys the lock at 0x14 and resets the vtable again.
 // @fnv 0x00cf4de0
-// src: GUESS 0x00cf4de0 (confidence: medium)
-void FUN_00cf4de0_class::ReleaseReferencedObjectsAndLock(void)
+// src: XBOX_RETAIL_PDB 0x00cf4de0
+// pdb: hkpBinaryAction::~hkpBinaryAction | hkpBinaryAction.obj | retail, object-file gap fill, high
+void FUN_00cf4de0_class::hkpBinaryAction_dtor(void)
 {
     *(void**)this = &DAT_010cc320;
     if (*(void**)((char*)this + 0x18))
@@ -52,12 +53,14 @@ struct FUN_00c97510
 
 struct FUN_00cf4cc0_class
 {
-    void hkpBinaryAction_entityRemovedCallback(void* arg);
+    void hkpBinaryAction_entityRemovedCallback(void* entity);
 };
 
 // @fnv 0x00cf4cc0
 // src: HAVOK_SRC 0x00cf4cc0
-void FUN_00cf4cc0_class::hkpBinaryAction_entityRemovedCallback(void* arg)
+// pdb: hkpBinaryAction::entityRemovedCallback | hkpBinaryAction.obj | debug, upstream name already matches, high
+// pdb params: entity
+void FUN_00cf4cc0_class::hkpBinaryAction_entityRemovedCallback(void* entity)
 {
     void* p = *(void**)((char*)this + 8);
     if (p)
@@ -66,7 +69,7 @@ void FUN_00cf4cc0_class::hkpBinaryAction_entityRemovedCallback(void* arg)
 
 struct FUN_00cf4d30_class
 {
-    void SetRefObject(void* arg);
+    void hkpBinaryAction_setEntityB(void* entityB);
 };
 struct RefObj
 {
@@ -80,9 +83,13 @@ struct WorldObj
 
 // Releases the current reference object, stores arg as the new one, and notifies the world object of the change.
 // @fnv 0x00cf4d30
-void FUN_00cf4d30_class::SetRefObject(void* arg)
+// src: XBOX_RETAIL_PDB 0x00cf4d30
+// pdb: hkpBinaryAction::setEntityB | hkpBinaryAction.obj | retail, call graph, high
+// pdb params: entityB
+// pdb locals: assertBuf, ostr
+void FUN_00cf4d30_class::hkpBinaryAction_setEntityB(void* entityB)
 {
-    ((RefObj*)arg)->RetainReference();
+    ((RefObj*)entityB)->RetainReference();
     if (*(void**)((char*)this + 0x1c))
     {
         WorldObj* pWorld = (WorldObj*)*(void**)((char*)this + 8);
@@ -91,10 +98,10 @@ void FUN_00cf4d30_class::SetRefObject(void* arg)
         ((DDCC60World*)*(void**)((char*)this + 0x1c))->removeReference();
         *(void**)((char*)this + 0x1c) = 0;
     }
-    *(void**)((char*)this + 0x1c) = arg;
+    *(void**)((char*)this + 0x1c) = entityB;
     WorldObj* w2 = (WorldObj*)*(void**)((char*)this + 8);
     if (w2)
-        w2->HandleObjectPointerPair(this, arg);
+        w2->HandleObjectPointerPair(this, entityB);
 }
 
 namespace fnv_00d4f850 {
@@ -109,6 +116,8 @@ struct FUN_00d4f850_class : hkReferencedObject
 };
 
 // @fnv 0x00d4f850
+// pdb: hkpPrismaticConstraintData::setMotor | hkpPrismaticConstraintData.obj | debug, call graph (shared callers), medium
+// pdb params: motor
 void FUN_00d4f850_class::SetReferencedObject(hkReferencedObject* apObject)
 {
     if (apObject)
@@ -128,7 +137,7 @@ struct FUN_00cf4ce0_class
     int unk10;
     int unk14;
     void* unk18;
-    void hkpBinaryAction_setEntityA(void* newAction);
+    void hkpBinaryAction_setEntityA(void* entityA);
 };
 
 struct FUN_00c90510_class
@@ -153,9 +162,12 @@ struct FUN_00c92bd0_class
 
 // @fnv 0x00cf4ce0
 // src: HAVOK_LIB 0x00cf4ce0
-void FUN_00cf4ce0_class::hkpBinaryAction_setEntityA(void* newAction)
+// pdb: hkpBinaryAction::setEntityA | hkpBinaryAction.obj | retail, upstream name already matches, high
+// pdb params: entityA
+// pdb locals: assertBuf, ostr
+void FUN_00cf4ce0_class::hkpBinaryAction_setEntityA(void* entityA)
 {
-    ((FUN_00c90510_class*)newAction)->FUN_00c90510();
+    ((FUN_00c90510_class*)entityA)->FUN_00c90510();
     if (unk18)
     {
         if (unk08)
@@ -165,10 +177,10 @@ void FUN_00cf4ce0_class::hkpBinaryAction_setEntityA(void* newAction)
         ((FUN_00c905b0_class*)unk18)->FUN_00c905b0();
         unk18 = 0;
     }
-    unk18 = newAction;
+    unk18 = entityA;
     if (unk08)
     {
-        ((FUN_00c92bd0_class*)unk08)->hkpWorld_attachActionToEntity(this, newAction);
+        ((FUN_00c92bd0_class*)unk08)->hkpWorld_attachActionToEntity(this, entityA);
     }
 }
 
@@ -200,11 +212,13 @@ struct FUN_00cf4d80 : Act
     void* b;
     void Init() throw();
     virtual ~FUN_00cf4d80();
-    FUN_00cf4d80(void* x, void* y, unsigned long u);
+    FUN_00cf4d80(void* entityA, void* entityB, unsigned long userData);
 };
 // Constructs the object from two pointers and a userData value, calling Init() when either pointer is non-null.
 // @fnv 0x00cf4d80
-FUN_00cf4d80::FUN_00cf4d80(void* x, void* y, unsigned long uiUserData) : Act(uiUserData), a(x), b(y)
+// pdb: hkpBinaryAction::hkpBinaryAction | hkpBinaryAction.obj | retail, call graph (shared callers), high
+// pdb params: flag
+FUN_00cf4d80::FUN_00cf4d80(void* entityA, void* entityB, unsigned long userData) : Act(userData), a(entityA), b(entityB)
 {
     if (b || a)
         Init();
@@ -233,7 +247,7 @@ struct hkMemoryRouterXcf4e30
 namespace hkRouterXcf4e30 {
 extern "C" hkMemoryRouterXcf4e30& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T>
 static __forceinline void hkArrayXcf4e30_AddBack(hkArrayBase<T>& self, const T& e)
@@ -252,12 +266,14 @@ class hkOwnerXcf4e30
     void* m_kPointA;
     void* m_kPointB;
 
-    void GetPointers(hkArrayBase<void*>& out);
+    void GetPointers(hkArrayBase<void*>& entitiesOut);
 };
 
 // @fnv 0x00cf4e30
-void hkOwnerXcf4e30::GetPointers(hkArrayBase<void*>& out)
+// pdb: hkpBinaryAction::getEntities | hkpBinaryAction.obj | retail, vtable slot, high
+// pdb params: entitiesOut
+void hkOwnerXcf4e30::GetPointers(hkArrayBase<void*>& entitiesOut)
 {
-    hkArrayXcf4e30_AddBack(out, m_kPointA);
-    hkArrayXcf4e30_AddBack(out, m_kPointB);
+    hkArrayXcf4e30_AddBack(entitiesOut, m_kPointA);
+    hkArrayXcf4e30_AddBack(entitiesOut, m_kPointB);
 }

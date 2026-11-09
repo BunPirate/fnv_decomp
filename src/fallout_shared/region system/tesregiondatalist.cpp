@@ -16,6 +16,8 @@ class RegionDataList : public BSSimpleList<TESRegionData*>
 };
 
 // @fnv 0x004f3400
+// pdb: TESRegionDataList::Clear | TESRegionDataList.obj | retail, object-file run extension, low
+// pdb locals: pdelete
 void RegionDataList::Clear()
 {
     TESRegionData* pkRegionData = 0;
@@ -45,13 +47,16 @@ struct Dummy
 // Walks the region data list from GetName and calls FUN_004f24e0 on each non-null entry with a1 and a2.
 // @fnv 0x004f2480
 // src: COMMUNITY 0x004f2480
-void Dummy::TESRegionDataImposter_SetImpostersVisible(unsigned char aucArg1, unsigned char aucArg2)
+// pdb: TESRegionDataImposter::SetImpostersVisible | TESRegionDataImposter.obj | retail, upstream name already matches, high
+// pdb params: abVisible, abInstantly
+// pdb locals: pList
+void Dummy::TESRegionDataImposter_SetImpostersVisible(unsigned char abVisible, unsigned char abInstantly)
 {
     BSSimpleList<TESRegionData*>* pcurrent = ((SeqObj*)this)->GetName();
     while (pcurrent)
     {
         if (((NodeTmp*)pcurrent)->_ref_006815c0())
-            TESRegionDataImposter_SetImposterVisible(((NodeTmp*)pcurrent)->_ref_006815c0(), aucArg1, aucArg2);
+            TESRegionDataImposter_SetImposterVisible(((NodeTmp*)pcurrent)->_ref_006815c0(), abVisible, abInstantly);
         pcurrent = ((NodeTmp*)pcurrent)->_ref_00726070();
     }
 }
@@ -82,20 +87,22 @@ struct ProbeBase
 class FUN_004f33c0_cls
 {
   public:
-    int TESRegionDataList_Find(unsigned int aValue);
+    int TESRegionDataList_Find(unsigned int aFind);
     void FUN_005ae3d0(ProbeBase** appProbe);
 
-    bool TESRegionDataList_Add(ProbeBase* apProbe);
+    bool TESRegionDataList_Add(ProbeBase* apData);
 };
 
 // @fnv 0x004f33c0
 // src: COMMUNITY 0x004f33c0
-bool FUN_004f33c0_cls::TESRegionDataList_Add(ProbeBase* apProbe)
+// pdb: TESRegionDataList::Add | TESRegionDataList.obj | debug, upstream name already matches, high
+// pdb params: apData
+bool FUN_004f33c0_cls::TESRegionDataList_Add(ProbeBase* apData)
 {
-    if (apProbe == 0 || TESRegionDataList_Find(apProbe->v10()))
+    if (apData == 0 || TESRegionDataList_Find(apData->v10()))
     {
         return false;
     }
-    FUN_005ae3d0(&apProbe);
+    FUN_005ae3d0(&apData);
     return true;
 }

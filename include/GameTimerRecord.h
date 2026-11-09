@@ -3,17 +3,17 @@
 class GameTimerRecord
 {
 public:
-    unsigned char m_ucFirstTimerByte;
+    unsigned char cDisableCounter;
     unsigned char layoutPadding1;
     unsigned short layoutPadding2;
-    float m_fFirstTimerValue;
-    float m_fSecondTimerValue;
-    float fTimeSinceScaleStart;
-    float m_fFourthTimerValue;
-    unsigned int m_uiFirstTimerValue;
-    unsigned int m_uiSecondTimerValue;
-    bool m_bFirstTimerFlag;
-    bool m_bSecondTimerFlag;
+    float fClamp;
+    float fClampRemainder;
+    float fDelta;
+    float fDeltaUnmodified;
+    unsigned int iLastTime;
+    unsigned int iFirstTime;
+    bool bUseGlobalTimeMultiplierTarget;
+    bool bZeroDelta;
     unsigned short layoutPadding1E;
 
     void Update();

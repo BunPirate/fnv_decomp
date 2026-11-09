@@ -20,13 +20,13 @@ struct Updater
     virtual void v04();
     virtual int update(int x, int y);
 };
-static void extractChildShapes_00da4a50(Updater* self, int flag, Pair* dest, Pair* src, Updater* other, int y, Out* out2, Out* out1);
+static void extractChildShapes_00da4a50(Updater* shapeKeyPair, int extractedShapeKeys, Pair* shapeContainerA, Pair* shapeContainerB, Updater* shapeBufferA, int shapeBufferB, Out* modifiedBodyA, Out* modifiedBodyB);
 void S00da4a50_Wrap(Updater* self, int flag, Pair* dest, Pair* src, Updater* other, int y, Out* out2, Out* out1);
 
 #include <xmmintrin.h>
 struct S00da4920_Sub
 {
-    void hkTransform_setInverse(void* arg);
+    void hkTransform_setInverse(void* t);
 };
 
 struct S00da4920_Blob

@@ -9,17 +9,19 @@ extern int DAT_0109ec0c;
 #include "../../../../include/NiExtraData.h"
 #include "../../../../include/NiFloatsExtraData.h"
 
-extern "C" void* g_011f5b60;
+extern "C" void* NiFloatsExtraData_ms_RTTI;
 
 // @fnv 0x00a89120
 // src: COMMUNITY 0x00a89120
 void* __cdecl NiFloatsExtraData_GetRTTI()
 {
-    return &g_011f5b60;
+    return &NiFloatsExtraData_ms_RTTI;
 }
 
 // @fnv 0x00a89190
 // src: EXE 0x00a89190
+// pdb: NiFloatsExtraData::CreateObject | NiFloatsExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiFloatsExtraData_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x14);
@@ -76,6 +78,8 @@ extern int DAT_0109ec0c;
 void __cdecl operator delete(void*, unsigned int);
 // Releases the float array, resets the vtable, runs base cleanup, and optionally frees the object when flags has bit 0 set.
 // @fnv 0x00a891d0
+// pdb: NiFloatsExtraData::`scalar deleting destructor' | NiFloatsExtraData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatsExtraData::RegisterStreamables
 void* __thiscall NiFloatsExtraData::DestroyNiFloatsExtraData(unsigned int flags)
 {
     NiFloatsExtraData* p = (NiFloatsExtraData*)this;
@@ -323,6 +327,8 @@ template <class T> inline void A89210SaveBinary(A89210Stream& kStream, const T& 
 // Saves the base extra data, then writes the float array size and values to the stream.
 // @fnv 0x00a89210
 // src: XBOX_PDB 0x00a89210
+// pdb: NiFloatsExtraData::SaveBinary | NiFloatsExtraData.obj | retail, vtable slot, high
+// pdb params: kStream
 void NiFloatsExtraData::SaveBinary_00a89210(NiStream& stream)
 {
     NiExtraData::SaveBinary(stream);
@@ -331,7 +337,7 @@ void NiFloatsExtraData::SaveBinary_00a89210(NiStream& stream)
     A89210BinaryStreamSave(*kStream.m_pBackingStream, m_pfValue, m_uiSize);
 }
 
-extern "C" void* g_011f5b60;
+extern "C" void* NiFloatsExtraData_ms_RTTI;
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 char* __cdecl NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);
 char* __cdecl NiGetViewerString_00a7d550(const char* pcPrefix, float fValue);
@@ -383,14 +389,17 @@ void __cdecl GetExtraDataViewerStrings();
 // Appends the base viewer strings, the m_uiSize entry and one entry per element of m_pfValue to pkStrings.
 // @fnv 0x00a89280
 // src: XBOX_PDB 0x00a89280
-void NiFloatsExtraData::GetViewerStrings_00a89280(NiFloatsViewerStringsArray* pkStrings)
+// pdb: NiFloatsExtraData::GetViewerStrings | NiFloatsExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
+// pdb locals: i
+void NiFloatsExtraData::GetViewerStrings_00a89280(NiFloatsViewerStringsArray* pStrings)
 {
     typedef void (__thiscall* GetViewerStringsFunction)(NiExtraData*, NiFloatsViewerStringsArray*);
-    reinterpret_cast<GetViewerStringsFunction>(&GetExtraDataViewerStrings)(this, pkStrings);
-    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title((const char*)g_011f5b60));
-    pkStrings->Add(NiGetViewerString_00a7d510("m_uiSize", m_uiSize));
+    reinterpret_cast<GetViewerStringsFunction>(&GetExtraDataViewerStrings)(this, pStrings);
+    pStrings->Add(NiViewerStrings_NiGetViewerString_Title((const char*)NiFloatsExtraData_ms_RTTI));
+    pStrings->Add(NiGetViewerString_00a7d510("m_uiSize", m_uiSize));
     for (unsigned int i = 0; i < m_uiSize; i++)
-        pkStrings->Add(NiGetViewerString_00a7d550("m_pfValue[i]", m_pfValue[i]));
+        pStrings->Add(NiGetViewerString_00a7d550("m_pfValue[i]", m_pfValue[i]));
 }
 
 class BA99A90BinaryStream
@@ -577,6 +586,8 @@ void* __cdecl NiMalloc(unsigned int uiSize);
 
 // Loads the base extra data, then allocates and reads the float array (or clears it when empty).
 // @fnv 0x00a99a90
+// pdb: NiFloatsExtraData::LoadBinary | NiFloatsExtraData.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiFloatsExtraData::LoadBinary(NiStream& stream)
 {
     NiExtraData::LoadBinary(stream);
@@ -596,6 +607,9 @@ void NiFloatsExtraData::LoadBinary(NiStream& stream)
 
 void* __cdecl Object_DispatchCommandFour(unsigned int uiSize);
 // @fnv 0x00a89130
+// pdb: NiFloatsExtraData::CreateClone | NiFloatsExtraData.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiFloatsExtraData* NiFloatsExtraData::CreateNiFloatsExtraData(CloningProcess* pCloning)
 {
     NiFloatsExtraData* pExtraData = (NiFloatsExtraData*)Object_DispatchCommandFour(0x14);

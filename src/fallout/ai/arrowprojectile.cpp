@@ -26,6 +26,9 @@ extern ProcessLists DAT_011e0e80;
 
 // @fnv 0x008cddd0
 // src: XBOX_PDB 0x008cddd0
+// pdb: ArrowProjectile::DeleteAttachedArrows | ArrowProjectile.obj | retail, call graph (shared callers), medium
+// pdb params: apRef, abInstant
+// pdb locals: bdoMiddleHigh, bdoHigh, pactor, pprocess, plist, parrow, pmob, i, bremoved
 void ArrowProjectile_DeleteAttachedArrows(MobileObject* owner, bool bFlag)
 {
     if (owner == 0 || owner->IsProjectile())

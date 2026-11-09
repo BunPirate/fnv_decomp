@@ -428,7 +428,7 @@ void SetCollisionScale(Node8*, const hkVector4&, float, int);
 void NiPoint3_UnitizeVector(NiPoint3*);
 Node8* ArrowProjectile_PickSceneGraph(Node8*, NiPoint3, NiPoint3, float*, bool);
 Form8* FindFirstCollisionObject(Node8*);
-bool IsTargetInCone(Ref8*, Ref8*, int);
+bool CombatUtilities_IsTargetWithinStrikeAngle(Ref8*, Ref8*, int);
 Link8* FindPhysicsBodyByLayer(Node8*, int);
 Link8* bhkUtilFunctions_GetClosestBody(Node8*, const FUN_006240d0*, bool);
 Form8* FUN_004b5a20(Form8*);
@@ -437,14 +437,17 @@ unsigned int FUN_00487f50();
 
 // @fnv 0x008cba30
 // src: XBOX_PDB 0x008cba30
-void Ref8::ArrowProjectile_CollideActor(const NiPoint3* start, const NiPoint3* end, Ref8* victim)
+// pdb: ArrowProjectile::CollideActor | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aContactPoint, aContactNormal, apCollidee
+// pdb locals: velocity, dir, tmpRot, rb, origin, fpickLength, rotation, proot, parrow3D, btryHandleBlock, bsuccess, ptargetObject, bdead, p3d, fmagnitude, UpdateData, moveBack, loc, invertTrans, move, pcol, invertRot, location, pos ...
+void Ref8::ArrowProjectile_CollideActor(const NiPoint3* aContactPoint, const NiPoint3* aContactNormal, Ref8* apCollidee)
 {
     state = new FUN_008cc6f0;
     state->mode = 0;
     state->node = 0;
     state->victim = 0;
-    state->end = *end;
-    state->target = *start;
+    state->end = *aContactNormal;
+    state->target = *aContactPoint;
     state->rotation = DAT_011a9448;
     state->direction = DAT_011f426c;
     if (FUN_009306d0())
@@ -459,23 +462,23 @@ void Ref8::ArrowProjectile_CollideActor(const NiPoint3* start, const NiPoint3* e
             FUN_00458620(&state->direction, &direction);
     }
     active = 1;
-    if (victim)
+    if (apCollidee)
     {
         Node8* root = v1d0();
         if (actor && actor->v428())
-            actor->v428()->FUN_008d0600(victim->v1f4(), 1);
-        state->victim = victim;
-        if (victim)
-            victim->CallProcessAt778();
+            actor->v428()->FUN_008d0600(apCollidee->v1f4(), 1);
+        state->victim = apCollidee;
+        if (apCollidee)
+            apCollidee->CallProcessAt778();
         Script_SetActionFlag(BGSSaveFormBuffer_GetForm(), state->victim->BSFile_GetDevice(), 0x100);
         if (actor)
         {
             if (actor != DAT_011dea3c && !actor->Actor_IsInCombat())
                 goto sceneReady;
-            bool blocked = victim->v22c(0);
-            if (!blocked && victim->v22c(0) && (!victim->v21c() || victim->v38c()))
+            bool blocked = apCollidee->v22c(0);
+            if (!blocked && apCollidee->v22c(0) && (!apCollidee->v21c() || apCollidee->v38c()))
             {
-                Node8* scene = victim->TESObjectREFR_Get3D();
+                Node8* scene = apCollidee->TESObjectREFR_Get3D();
                 if (scene)
                 {
                     float setting = RemapValueBySettings(*DAT_011cf624.Setting_Float_00403e20(), 1);
@@ -495,10 +498,10 @@ void Ref8::ArrowProjectile_CollideActor(const NiPoint3* start, const NiPoint3* e
     sceneReady:
         Link8* linked = 0;
         Node8* victimScene;
-        if (victim == DAT_011dea3c)
+        if (apCollidee == DAT_011dea3c)
             victimScene = DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(0);
         else
-            victimScene = victim->TESObjectREFR_Get3D();
+            victimScene = apCollidee->TESObjectREFR_Get3D();
         float range = DAT_010231a0;
         NiPoint3 direction;
         NiMatrix3 pitch;
@@ -510,7 +513,7 @@ void Ref8::ArrowProjectile_CollideActor(const NiPoint3* start, const NiPoint3* e
         NiPoint3_UnitizeVector(&direction);
         NiPoint3 ray = *v1f4() - (direction * range).ProcessAndReturnValue_0053d280(DAT_010162c0);
         bool found = false;
-        Node8* hit = ArrowProjectile_PickSceneGraph(victim->v1d0(), ray, direction, &range, !victim->v22c(1));
+        Node8* hit = ArrowProjectile_PickSceneGraph(apCollidee->v1d0(), ray, direction, &range, !apCollidee->v22c(1));
         if (hit)
         {
             NiPoint3 scaled = direction * (float)(range + DAT_010356f0);
@@ -527,25 +530,25 @@ void Ref8::ArrowProjectile_CollideActor(const NiPoint3* start, const NiPoint3* e
             found = true;
         }
         bool overrideHit = false;
-        if (victim->GetBlocked() && victim->FUN_008d8520() && IsTargetInCone(victim, this, 0))
+        if (apCollidee->GetBlocked() && apCollidee->FUN_008d8520() && CombatUtilities_IsTargetWithinStrikeAngle(apCollidee, this, 0))
         {
-            NiPoint3 position = *victim->FUN_00436aa0();
-            float top = victim->GetActorHeight() / DAT_01011590 + position.z;
-            if (top <= start->z)
+            NiPoint3 position = *apCollidee->FUN_00436aa0();
+            float top = apCollidee->GetActorHeight() / DAT_01011590 + position.z;
+            if (top <= aContactPoint->z)
                 overrideHit = true;
         }
         if (!found || overrideHit)
         {
             FUN_006240d0 bound;
             hkVector4 center;
-            NI2HK(&center, start);
+            NI2HK(&center, aContactPoint);
             bound.hkSphere_setPosition(center);
             bound.hkSphere_setRadius(DAT_0102226c);
             Link8* candidate = 0;
             if (overrideHit)
                 candidate = FindPhysicsBodyByLayer(victimScene, 7);
             else
-                candidate = bhkUtilFunctions_GetClosestBody(victimScene, &bound, !victim->v22c(1));
+                candidate = bhkUtilFunctions_GetClosestBody(victimScene, &bound, !apCollidee->v22c(1));
             if (candidate)
             {
                 linked = candidate;
@@ -565,12 +568,12 @@ void Ref8::ArrowProjectile_CollideActor(const NiPoint3* start, const NiPoint3* e
             }
             if (!state->node)
             {
-                ArrowProjectile_Simulate(victim);
+                ArrowProjectile_Simulate(apCollidee);
                 return;
             }
         }
         if (linked)
-            ArrowProjectile_ApplyCollisionForce(*start, root->NiAVObject_GetWorldRotate()->FUN_004b4500(DAT_011a9478), linked);
+            ArrowProjectile_ApplyCollisionForce(*aContactPoint, root->NiAVObject_GetWorldRotate()->FUN_004b4500(DAT_011a9478), linked);
         if (state->node)
         {
             Form8* form = FUN_0043b610(state->node);
@@ -587,16 +590,16 @@ void Ref8::ArrowProjectile_CollideActor(const NiPoint3* start, const NiPoint3* e
                 case 11:
                 case 13:
                 case 15:
-                    ArrowProjectile_Bounce(start, end);
+                    ArrowProjectile_Bounce(aContactPoint, aContactNormal);
                     return;
                 default:
                     break;
                 }
             }
         }
-        if (victim->v21c() && !victim->v38c())
+        if (apCollidee->v21c() && !apCollidee->v38c())
         {
-            ArrowProjectile_Simulate(victim);
+            ArrowProjectile_Simulate(apCollidee);
             EffectSetting_SetAreaSound(3);
             return;
         }
@@ -604,7 +607,7 @@ void Ref8::ArrowProjectile_CollideActor(const NiPoint3* start, const NiPoint3* e
         {
             if (!DialoguePackage_GetCurrentDialogItem() && FUN_00487f50() % 100 < *DAT_011cf510.Setting_Int())
             {
-                victim->v190(BGSSaveFormBuffer_GetForm(), 0, 1);
+                apCollidee->v190(BGSSaveFormBuffer_GetForm(), 0, 1);
                 requested = true;
             }
         }

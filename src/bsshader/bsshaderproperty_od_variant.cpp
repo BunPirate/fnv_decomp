@@ -23,6 +23,10 @@ struct FUN_0043a010_shell
 };
 // @fnv 0x0043a010
 // src: COMMUNITY 0x0043a010
+// pdb: MultiBoundMarkerData::Load | MultiBoundMarkerData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTPointerListBase<NiTPointerAllocator<unsigned int>,BSSoundMessage *>::AddTail
+// pdb params: apFile
+// pdb locals: bsuccess
 FUN_0043a010_t* FUN_0043a010_shell::NiGeometry_AddProperty()
 {
     g_011c5f80.Lock(0);

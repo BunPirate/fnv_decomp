@@ -30,21 +30,22 @@ public:
 
 // RTTI: BSArchive has the single base BSArchiveHeader. Archive's constructor (0x00af7eb0) builds it at +0x160:
 // the BSArchiveHeader constructor 0x00afd8b0, then the folder record array at +0x24 set to 0.
+// pdb: class BSArchive, size 0x28, bases: BSArchiveHeader, 1 members
 class BSArchive : public BSArchiveHeader
 {
 public:
     BSArchive()
     {
-        pEntries = 0;
+        pDirectories = 0;
     }
     void SetFiles(unsigned int auiIndex, ArchiveEntry* apFiles)
     {
-        pEntries[auiIndex].SetFiles(apFiles);
+        pDirectories[auiIndex].SetFiles(apFiles);
     }
     unsigned int GetFileCount(unsigned int auiIndex)
     {
-        return pEntries[auiIndex].m_uiCount;
+        return pDirectories[auiIndex].m_uiCount;
     }
 
-    ArchiveEntry* pEntries;  // +0x24 folder records (0x10 each)
+    ArchiveEntry* pDirectories;  // +0x24 folder records (0x10 each)
 };

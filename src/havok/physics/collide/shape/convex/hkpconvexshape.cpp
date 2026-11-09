@@ -22,16 +22,16 @@ int __stdcall hkpConvexShape_weldContactPointImpl(int a1, int a2, int a3, int a4
 template <typename ENUM, typename STORAGE>
 inline hkEnum<ENUM, STORAGE>::hkEnum() {}
 
-inline hkpShape::hkpShape() { m_ulUserData = 0; }
+inline hkpShape::hkpShape() { m_userData = 0; }
 
 inline hkpConvexShape::hkpConvexShape(int type, float radius)
 {
-    m_fSphereRadius = radius;
+    m_radius = radius;
     *reinterpret_cast<unsigned int*>(&m_type) = type;
 }
 
 inline hkpSingleShapeContainer::hkpSingleShapeContainer(hkpShape* child, int ref)
-    : m_pContainedShape(child)
+    : m_childShape(child)
 {
     if (ref == 1)
         child->addReference();
@@ -47,6 +47,8 @@ class FUN_00c9e340 : public hkpConvexShape
 };
 
 // @fnv 0x00c9e340
+// pdb: hkpConvexTransformShapeBase::hkpConvexTransformShapeBase | hkpConvexShape.obj | retail, object-file run extension, low
+// pdb params: type, radius, childShape, ref
 FUN_00c9e340::FUN_00c9e340(int iShapeType, hkReal fRadius, hkpShape* pkChild, int iRef) throw()
     : hkpConvexShape(iShapeType, fRadius), m_pContainedShape(pkChild, iRef)
 {}
@@ -55,6 +57,9 @@ FUN_00c9e340::FUN_00c9e340(int iShapeType, hkReal fRadius, hkpShape* pkChild, in
 // The shared convex shape lacks this projection override; keep its body as a helper.
 // The unused register parameter preserves the original member-call ABI without a stand-in class.
 // @fnv 0x00c9e1f0
+// pdb: hkpConvexShape::getMaximumProjection | hkpConvexShape.obj | retail, vtable slot, high
+// pdb params: direction
+// pdb locals: supportingVertex
 float __fastcall ConvexMaximumProjection(const hkpConvexShape* shape, void*, int arg)
 {
     __declspec(align(16)) float buf[4];
@@ -73,7 +78,7 @@ float __fastcall ConvexMaximumProjection(const hkpConvexShape* shape, void*, int
 
     float dot;
     _mm_store_ss(&dot, s2);
-    return shape->m_fSphereRadius + dot;
+    return shape->m_radius + dot;
 }
 
 // hkRotation layout (three Vec4 columns).
@@ -136,31 +141,34 @@ class Shape
 
 struct FN : public Shape
 {
-    void hkpBoxShape_castRayWithCollectorImpl(int p1, int p2, Cb* p3);
+    void hkpBoxShape_castRayWithCollectorImpl(int inputLocal, int cdBody, Cb* collector);
 };
 
 // Calls v8 to fill out.v, multiplies it by the Mat3 in P2, stores the result back, then invokes the VTable callback fn on Cb.
 // @fnv 0x00c9e2a0
 // src: HAVOK_SRC 0x00c9e2a0
-void FN::hkpBoxShape_castRayWithCollectorImpl(int p1, int p2, Cb* apCb)
+// pdb: hkpConvexShape::castRayWithCollectorImpl | hkpConvexShape.obj | retail, vtable slot, high
+// pdb params: inputLocal, cdBody, collector
+// pdb locals: results, assertBuf, ostr
+void FN::hkpBoxShape_castRayWithCollectorImpl(int inputLocal, int cdBody, Cb* collector)
 {
     bool ok;
     Out out;
 
-    out.t = apCb->f;
+    out.t = collector->f;
     out.flags = -1;
     out.b = -1;
     out.c = 0;
 
-    this->v8(&ok, (void*)(*(volatile int*)&p1), &out);
+    this->v8(&ok, (void*)(*(volatile int*)&inputLocal), &out);
 
     if (ok)
     {
         __m128 v = _mm_load_ps(&out.v.x);
-        int p2Value = p2;
+        int p2Value = cdBody;
         P2* pP2 = (P2*)p2Value;
         ConvexRotation* m = pP2->m;
-        VTable* vt = apCb->vt;
+        VTable* vt = collector->vt;
         void(__thiscall * fn)(Cb*, P2*, Vec4*) = vt->fn;
 
         __m128 c0 = _mm_load_ps(&m->c0.x);
@@ -171,6 +179,6 @@ void FN::hkpBoxShape_castRayWithCollectorImpl(int p1, int p2, Cb* apCb)
         r = _mm_add_ps(r, _mm_mul_ps(_mm_shuffle_ps(v, v, 0xaa), c2));
 
         _mm_store_ps(&out.v.x, r);
-        fn(apCb, pP2, &out.v);
+        fn(collector, pP2, &out.v);
     }
 }

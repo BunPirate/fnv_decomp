@@ -8,6 +8,7 @@ class TESObject;
 #include "../../include/TESBoundObject.h"
 #include "../../include/TESContainer.h"
 #include "../../include/TESForm.h"
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
@@ -29,8 +30,8 @@ class InventoryItemEntry
     int count;
     void* object;
     ContainerItemExtra* extra;
-    void Copy(InventoryItemEntry* other);
-    void InitItem(TESForm* form);
+    void ContainerObject_Copy(InventoryItemEntry* apCopy);
+    void InitItem(TESForm* apOwner);
 };
 struct ContainerCountState
 {
@@ -45,7 +46,7 @@ struct CopyComponentState
 class B81390Extra
 {
   public:
-    void ResolveFormReferences(TESForm* pkOwner);
+    void ContainerItemExtra_InitItem(TESForm* apOwner);
 };
 
 void __cdecl ResolveFormID(unsigned int* puiFormID, TESFile* file);
@@ -55,7 +56,7 @@ void __cdecl Warning_005b5e40(const char* pcFormat, ...);
 class B81390ContainerObject
 {
   public:
-    void ContainerObject_InitItem(TESForm* pkOwner);
+    void ContainerObject_InitItem(TESForm* apOwner);
 
     int m_iArrayLength;
     TESBoundObject* m_pPointer;
@@ -64,21 +65,24 @@ class B81390ContainerObject
 
 // @fnv 0x00481390
 // src: XBOX_PDB 0x00481390
-void B81390ContainerObject::ContainerObject_InitItem(TESForm* pkOwner)
+// pdb: ContainerObject::InitItem | TESContainer.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: tempint
+void B81390ContainerObject::ContainerObject_InitItem(TESForm* apOwner)
 {
     unsigned int auiFormId = (unsigned int)m_pPointer;
-    ResolveFormID(&auiFormId, pkOwner->FUN_00484e60(-1));
+    ResolveFormID(&auiFormId, apOwner->FUN_00484e60(-1));
     m_pPointer = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(auiFormId));
     if (!m_pPointer)
     {
-        if (pkOwner)
+        if (apOwner)
         {
-            if (pkOwner->GetFormEditorIDLength())
+            if (apOwner->GetFormEditorIDLength())
                 Warning_005b5e40("MASTERFILE: Unable to find container object (%08X) on owner object \"%s\".", auiFormId,
-                             pkOwner->GetName());
+                             apOwner->GetName());
             else
                 Warning_005b5e40("MASTERFILE: Unable to find container object (%08X) on owner object (%08X).", auiFormId,
-                             pkOwner->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                             apOwner->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
         }
         else
         {
@@ -86,5 +90,5 @@ void B81390ContainerObject::ContainerObject_InitItem(TESForm* pkOwner)
         }
     }
     if (m_pkExtra)
-        m_pkExtra->ResolveFormReferences(pkOwner);
+        m_pkExtra->ContainerItemExtra_InitItem(apOwner);
 }

@@ -31,10 +31,12 @@ struct S_00cf6f10_Obj
 
 // @fnv 0x00cf6f10
 // src: GUESS 0x00cf6f10 (confidence: low)
-int __stdcall Hkpbroadphaseborderlistener_UpdateState_00cf6f10(Pair* pRec)
+// pdb: hkpBroadPhaseBorderListener::removeCollisionPair | hkpBroadPhaseBorderListener.obj | retail, vtable slot, high
+// pdb params: pair
+int __stdcall Hkpbroadphaseborderlistener_UpdateState_00cf6f10(Pair* pair)
 {
-    S_00cf6f10_Node* a = (S_00cf6f10_Node*)pRec->a;
-    if (a->type == 3 && ((S_00cf6f10_Node*)pRec->b)->type == 3)
+    S_00cf6f10_Node* a = (S_00cf6f10_Node*)pair->a;
+    if (a->type == 3 && ((S_00cf6f10_Node*)pair->b)->type == 3)
     {
     }
     else
@@ -42,17 +44,17 @@ int __stdcall Hkpbroadphaseborderlistener_UpdateState_00cf6f10(Pair* pRec)
         if (a->type == 3)
         {
             S_00cf6f10_Node* pFirstBase = (S_00cf6f10_Node*)((char*)a + a->off);
-            S_00cf6f10_Node* pSecond = (S_00cf6f10_Node*)pRec->b;
+            S_00cf6f10_Node* pSecond = (S_00cf6f10_Node*)pair->b;
             void* pSecondBase = (char*)pSecond + pSecond->off;
             S_00cf6f10_Obj* y = (S_00cf6f10_Obj*)((char*)pFirstBase + pFirstBase->off10);
             y->v24(pSecondBase);
         }
-        S_00cf6f10_Node* b = (S_00cf6f10_Node*)pRec->b;
+        S_00cf6f10_Node* b = (S_00cf6f10_Node*)pair->b;
         if (b->type == 3)
         {
             S_00cf6f10_Node* pSecondBase2 = (S_00cf6f10_Node*)((char*)b + b->off);
             S_00cf6f10_Obj* y = (S_00cf6f10_Obj*)((char*)pSecondBase2 + pSecondBase2->off10);
-            S_00cf6f10_Node* pFirst2 = (S_00cf6f10_Node*)pRec->a;
+            S_00cf6f10_Node* pFirst2 = (S_00cf6f10_Node*)pair->a;
             return y->v24((char*)pFirst2 + pFirst2->off);
         }
     }
@@ -86,19 +88,21 @@ static inline Disp* GetDisp(Sh* s)
     return (Disp*)(p + p[0x10]);
 }
 // @fnv 0x00cf6ea0
-void __stdcall DispatchPairByType(Pair* p)
+// pdb: hkpBroadPhaseBorderListener::addCollisionPair | hkpBroadPhaseBorderListener.obj | retail, vtable slot, high
+// pdb params: pair
+void __stdcall DispatchPairByType(Pair* pair)
 {
-    if (((Sh*)p->a)->type == 3 && ((Sh*)p->b)->type == 3)
+    if (((Sh*)pair->a)->type == 3 && ((Sh*)pair->b)->type == 3)
         return;
-    if (((Sh*)p->a)->type == 3)
+    if (((Sh*)pair->a)->type == 3)
     {
-        char* ob = Base((Sh*)p->b);
-        GetDisp((Sh*)p->a)->v7(ob);
+        char* ob = Base((Sh*)pair->b);
+        GetDisp((Sh*)pair->a)->v7(ob);
     }
-    if (((Sh*)p->b)->type == 3)
+    if (((Sh*)pair->b)->type == 3)
     {
-        Disp* d = GetDisp((Sh*)p->b);
-        d->v7(Base((Sh*)p->a));
+        Disp* d = GetDisp((Sh*)pair->b);
+        d->v7(Base((Sh*)pair->a));
     }
 }
 }

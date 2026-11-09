@@ -5,6 +5,7 @@
 #include "_RTL_CRITICAL_SECTION___unnamed_type_Synchronization_.h"
 #ifndef _WINNT_  // the Win32 SDK, when included first, defines this type
 #pragma pack(push, 4)
+// pdb: structure _RTL_CRITICAL_SECTION, size 0x1c, 4 members
 class _RTL_CRITICAL_SECTION
 {
   public:

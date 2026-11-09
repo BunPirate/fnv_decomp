@@ -58,19 +58,23 @@ extern double DAT_010241b0;
 
 // Returns a table color directly when count is one or f matches DAT_010241b0; otherwise interpolates adjacent entries and updates pIdx.
 // @fnv 0x00a296c0
-NiColorA __cdecl InterpolateColor(float afTime, const char* table, unsigned int interp, unsigned int count,
-                                   unsigned int* pIdx, unsigned char stride)
+// src: XBOX_RETAIL_PDB 0x00a296c0
+// pdb: NiColorKey::GenInterp | NiColorKey.obj | retail, call graph (shared callers), high
+// pdb params: fTime, pkKeys, eType, uiNumKeys, uiLastIdx, ucSize
+// pdb locals: fLastTime, uiNextIdx, fNormTime, uiNumKeysM1, kResult, interp, fNextTime, uiLastIdxCopy
+NiColorA __cdecl NiColorKey_GenInterp(float fTime, const char* pkKeys, unsigned int eType, unsigned int uiNumKeys,
+                                   unsigned int* uiLastIdx, unsigned char ucSize)
 {
-    if (count == 1 || afTime == DAT_010241b0)
+    if (uiNumKeys == 1 || fTime == DAT_010241b0)
     {
-        return *(const NiColorA*)(table + 4);
+        return *(const NiColorA*)(pkKeys + 4);
     }
-    unsigned int idx = *pIdx;
-    unsigned int last = count - 1;
-    float prevVal = *(const float*)(table + stride * idx);
-    if (afTime < prevVal)
+    unsigned int idx = *uiLastIdx;
+    unsigned int last = uiNumKeys - 1;
+    float prevVal = *(const float*)(pkKeys + ucSize * idx);
+    if (fTime < prevVal)
     {
-        prevVal = *(const float*)table;
+        prevVal = *(const float*)pkKeys;
         idx = 0;
     }
     float fCurTime = 0.0f;
@@ -78,8 +82,8 @@ NiColorA __cdecl InterpolateColor(float afTime, const char* table, unsigned int 
     __assume(i <= last);
     for (; i <= last; ++i, ++idx)
     {
-        fCurTime = *(const float*)(table + stride * i);
-        if (afTime <= fCurTime)
+        fCurTime = *(const float*)(pkKeys + ucSize * i);
+        if (fTime <= fCurTime)
             break;
         prevVal = fCurTime;
     }
@@ -90,8 +94,8 @@ NiColorA __cdecl InterpolateColor(float afTime, const char* table, unsigned int 
     color.g = 0.0f;
     color.b = 0.0f;
     color.a = 0.0f;
-    float t = (afTime - prevVal) / (fCurTime - prevVal);
-    DAT_011f3cd8[interp](t, table + stride * idx, table + stride * i, &color);
-    *pIdx = idx;
+    float t = (fTime - prevVal) / (fCurTime - prevVal);
+    DAT_011f3cd8[eType](t, pkKeys + ucSize * idx, pkKeys + ucSize * i, &color);
+    *uiLastIdx = idx;
     return color;
 }

@@ -26,6 +26,7 @@ extern SleepWaitMenu* DAT_011da618;
 // If DAT_011da618 is set, sets its tile to 0x1772/1, then calls FUN_00a1d9e0 or FUN_00a1d910 depending on FUN_00707ad0.
 // @fnv 0x007abdf0
 // src: XBOX_PDB 0x007abdf0
+// pdb: QuantityMenu::Close | QuantityMenu.obj | retail, upstream name already matches, high
 void QuantityMenu_Close()
 {
     if (DAT_011da618)
@@ -41,6 +42,9 @@ void QuantityMenu_Close()
 
 // Handles button 0xA by calling HandleSelection(5, 0) and returns whether the button was handled.
 // @fnv 0x007ac130
+// pdb: QuantityMenu::DoGamepadUpEvent | QuantityMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
 bool QuantityMenu::HandleButton(int aiButton, float afValue)
 {
     bool bhandled = false;
@@ -66,6 +70,7 @@ struct MenuValueWatcher
     void UpdateThresholdCheck();
 };
 // @fnv 0x007ac170
+// pdb: QuantityMenu::DoIdle | QuantityMenu.obj | retail, vtable slot, high
 void MenuValueWatcher::UpdateThresholdCheck()
 {
     if (NiAbs_00408820(valueSource->FUN_00a011b0(0xfc4) - lastValue) >= thresholdSource->FUN_00a011b0(0x1007))
@@ -99,7 +104,11 @@ static const char kChild1_7aba00[] = "QM_HowManyText";
 static const char kChild2_7aba00[] = "QM_Background";
 // Loads quantity_menu.xml, builds the quantity menu, sets its max/initial/step values and labels, stores the callback, and returns the tile or 0 on failure.
 // @fnv 0x007aba00
-Tile* __cdecl CreateQuantityMenu(int max, void* callback, int initial)
+// src: XBOX_RETAIL_PDB 0x007aba00
+// pdb: QuantityMenu::Create | QuantityMenu.obj | retail, unique string literal, high
+// pdb params: aiMaxAmount, afpCallback, aiStartAmount
+// pdb locals: pin, boverMenu, ptile, pold_menu_tile, ijumpSize, istepSize, istartQuantity
+Tile* __cdecl QuantityMenu_Create(int aiMaxAmount, void* afpCallback, int aiStartAmount)
 {
     InterfaceManager* im4 = InterfaceManager_GetSingleton();
     bool flag_ = false;
@@ -123,17 +132,17 @@ Tile* __cdecl CreateQuantityMenu(int max, void* callback, int initial)
         {
             tile6->Tile_Set(0xfad, FUN_00a01530(), true);
         }
-        int value9 = MinInt(initial, max);
-        int bigStep = BSMAX_00647b70(max / 20, 1);
-        int smallStep = BSMAX_00647b70(max / 4, 1);
+        int value9 = MinInt(aiStartAmount, aiMaxAmount);
+        int bigStep = BSMAX_00647b70(aiMaxAmount / 20, 1);
+        int smallStep = BSMAX_00647b70(aiMaxAmount / 4, 1);
         if (bigStep > 10)
             bigStep -= bigStep % 10;
-        DAT_011da618->m_pTiles[0]->FUN_00700320(0x1004, max);
+        DAT_011da618->m_pTiles[0]->FUN_00700320(0x1004, aiMaxAmount);
         DAT_011da618->m_pTiles[0]->FUN_00700320(0x1006, value9);
         DAT_011da618->m_pTiles[0]->FUN_00700320(0x1007, bigStep);
         DAT_011da618->m_pTiles[0]->FUN_00700320(0x1008, smallStep);
         DAT_011da618->m_pTiles[0]->Tile_Set(0xff0, 0.0f, true);
-        DAT_011da614 = callback;
+        DAT_011da614 = afpCallback;
         tile6->GetNamedChild(kChild1_7aba00)->Tile_Set_00a01350(0xfc4, DAT_011d3ac8.FUN_00403df0(), true);
         DAT_011da618->m_pTiles[4]->Tile_Set_00a01350(0xfc4, DAT_011d38b8.FUN_00403df0(), true);
         DAT_011da618->m_pTiles[5]->Tile_Set_00a01350(0xfc4, DAT_011d29f4.FUN_00403df0(), true);
@@ -163,24 +172,27 @@ extern const float kNegOne;
 
 
 // @fnv 0x007abe40
-void SleepWaitMenu::HandleSelection(int index, Tile* tile)
+// pdb: QuantityMenu::DoClick | QuantityMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: fquantity, fmaxAmount
+void SleepWaitMenu::HandleSelection(int aiID, Tile* apTarget)
 {
     float fValue = m_pTiles[3]->GetFloat(0xfc4);
-    if (!tile && index >= 0 && index < 6)
-        tile = m_pTiles[index];
-    switch (index)
+    if (!apTarget && aiID >= 0 && aiID < 6)
+        apTarget = m_pTiles[aiID];
+    switch (aiID)
     {
     case 4:
     case 5:
         if (g_pSleepWaitCallback)
-            g_pSleepWaitCallback(index == 4 ? TruncateFloatToInt(fValue) : 0);
+            g_pSleepWaitCallback(aiID == 4 ? TruncateFloatToInt(fValue) : 0);
         SleepWaitRefresh();
         break;
     case 1:
     case 2: {
         float fScaledValue = m_pTiles[0]->GetFloat(0x1004);
         m_pTiles[0]->SetFloat(
-            0x1006, BSMIN(BSMAX_00404010(fValue + (index == 2 ? 1.0f : kNegOne), 0.0f), fScaledValue), true);
+            0x1006, BSMIN(BSMAX_00404010(fValue + (aiID == 2 ? 1.0f : kNegOne), 0.0f), fScaledValue), true);
         m_pTiles[0]->SetFloat(0xff0, 0.0f, true);
     }
     break;
@@ -197,14 +209,17 @@ struct QtyMenuStub : public Menu
     Tile* pTile30;
     Tile* pBarTile;
 
-    bool HandleQuantityKey(int aiKey, int aiUnused);
+    bool HandleQuantityKey(int aiButton, int afValue);
 };
 
 // @fnv 0x007abf80
-bool QtyMenuStub::HandleQuantityKey(int aiKey, int aiUnused)
+// pdb: QuantityMenu::DoGamepad | QuantityMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled, fjumpSize, fquantity, fmaxAmount, fstepSize
+bool QtyMenuStub::HandleQuantityKey(int aiButton, int afValue)
 {
     bool bHandled = false;
-    switch (aiKey)
+    switch (aiButton)
     {
     case 13:
     case 14: {
@@ -212,7 +227,7 @@ bool QtyMenuStub::HandleQuantityKey(int aiKey, int aiUnused)
         float fScaledValue = pScrollTile->GetFloat(0x1004);
         float fStep = pScrollTile->GetFloat(0x1008);
         pScrollTile->SetFloat(
-            0x1006, BSMIN(BSMAX_00404010(fCur4 + (aiKey == 14 ? fStep : -fStep), 0.0f), fScaledValue), true);
+            0x1006, BSMIN(BSMAX_00404010(fCur4 + (aiButton == 14 ? fStep : -fStep), 0.0f), fScaledValue), true);
         pScrollTile->SetFloat(0xFF0, 0.0f, true);
         bHandled = true;
     }
@@ -223,7 +238,7 @@ bool QtyMenuStub::HandleQuantityKey(int aiKey, int aiUnused)
         float fMax2 = pScrollTile->GetFloat(0x1004);
         float fStep9 = pScrollTile->GetFloat(0x1007);
         pScrollTile->SetFloat(
-            0x1006, BSMIN(BSMAX_00404010(fCur3 + (aiKey == 16 ? fStep9 : -fStep9), 0.0f), fMax2), true);
+            0x1006, BSMIN(BSMAX_00404010(fCur3 + (aiButton == 16 ? fStep9 : -fStep9), 0.0f), fMax2), true);
         pScrollTile->SetFloat(0xFF0, 0.0f, true);
         bHandled = true;
     }

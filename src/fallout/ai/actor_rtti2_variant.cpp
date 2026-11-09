@@ -112,6 +112,9 @@ struct PickupAlchemySoundView
 int __fastcall _FNV_GetFormType(void* pThis);
 // @fnv 0x008adcf0
 // src: XBOX_PDB 0x008adcf0
+// pdb: Actor::GetPickUpSoundName | Actor.obj | retail, string-set bridge, high
+// pdb params: apobjREFR, abPickUp, abUse
+// pdb locals: eformType, ppickupPutdownSound, soundname, ping
 char* __thiscall PickupSoundActorView::Actor_GetPickUpSoundName(::TESBoundObject* apobjREFR, bool abPickUp, bool abUse)
 {
     const char* soundname;

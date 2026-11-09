@@ -3,6 +3,7 @@
 #include "BGSPrimitive.h"
 #include "NiPoint3.h"
 
+// pdb: class BGSPrimitiveBox, size 0x4c, bases: BGSPrimitive, 1 members
 class BGSPrimitiveBox : public BGSPrimitive
 {
 public:
@@ -11,10 +12,10 @@ public:
     virtual void vf06();
 
     void NormalizeRadii(NiPoint3& radii);
-    void SetColor(NiColorA& color);
+    void SetColor(NiColorA& aColor);
     void Build();
     void SetSize(int value);
     void SetPosition(NiPoint3& position);
 
-    void* m_apBoxData[6];
+    void* pFacePlanes[6];
 };

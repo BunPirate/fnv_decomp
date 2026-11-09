@@ -5,6 +5,7 @@
 struct ClassMemberDescriptor;
 class hkClass;
 
+// pdb: structure hkpVehicleFrictionStatus, size 0x48, 1 members
 class hkpVehicleFrictionStatus
 {
 public:
@@ -22,18 +23,18 @@ public:
         static void __cdecl operator delete(void* p, void* place);
         static void __cdecl operator delete[](void* p, void* place);
 
-        float m_fAxisStatusMetric1;
-        float m_fAxisStatusMetric2;
-        float m_fAxisStatusMetric3;
-        float m_fAxisStatusMetric4;
-        float m_fAxisStatusMetric5;
-        float m_fAxisStatusMetric6;
-        float m_fAxisStatusMetric7;
-        float m_fAxisStatusMetric8;
-        float m_fAxisStatusMetric9;
+        float m_forward_slip_velocity;
+        float m_side_slip_velocity;
+        float m_skid_energy_density;
+        float m_side_force;
+        float m_delayed_forward_impulse;
+        float m_sideRhs;
+        float m_forwardRhs;
+        float m_relativeSideForce;
+        float m_relativeForwardForce;
 
         void init();
     };
 
-    AxisStatus m_kAxisEndPoints[2];
+    AxisStatus m_axis[2];
 };

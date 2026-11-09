@@ -10,6 +10,8 @@
 
 // @fnv 0x009f9840
 // src: XBOX_PDB 0x009f9840
+// pdb: TrespassPackage::LoadGame | TrespassPackage.obj | retail, vtable slot, high
+// pdb locals: iobjectOwnedID, iownerID
 void __thiscall TrespassPackage::LoadGame_009f9840(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     TESPackage::LoadGame(apLoadGameBuffer);
@@ -24,6 +26,7 @@ void __thiscall TrespassPackage::LoadGame_009f9840(BGSLoadFormBuffer* apLoadGame
 
 // Calls FUN_009f9450, then deletes this when flags has bit 1 set, and returns this.
 // @fnv 0x009f9220
+// pdb: TrespassPackage::`scalar deleting destructor' | TrespassPackage.obj | retail, vtable slot, high
 void* __thiscall TrespassPackage::FUN_009f9220(unsigned int flags)
 {
     FUN_009f9450();
@@ -41,9 +44,11 @@ struct FUN_00679a90_shell
 
 // @fnv 0x009f98e0
 // src: XBOX_PDB 0x009f98e0
-void __thiscall TrespassPackage::InitLoadGame_009f98e0(unsigned int a)
+// pdb: TrespassPackage::InitLoadGame | TrespassPackage.obj | retail, vtable slot, high
+// pdb locals: iobjectOwnedID, iownerID
+void __thiscall TrespassPackage::InitLoadGame_009f98e0(unsigned int apLoadGameBuffer)
 {
-    ((FUN_00679a90_shell*)this)->DispatchToSubobjects((void*)a);
+    ((FUN_00679a90_shell*)this)->DispatchToSubobjects((void*)apLoadGameBuffer);
     *(TESForm**)((char*)this + 0x88) =
         *(TESForm**)((char*)this + 0x88) ? _ref_004839c0(*(TESForm**)((char*)this + 0x88)) : 0;
     *(TESForm**)((char*)this + 0x8c) =
@@ -64,6 +69,8 @@ struct Base009f8770
 };
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 // @fnv 0x009f9660
+// pdb: TrespassPackage::LoadGame | TrespassPackage.obj | retail, vtable slot, high
+// pdb locals: iobjectOwnedID, iownerID
 void __thiscall TrespassPackage::LoadTrespassPackage()
 {
     ((Base009f8770*)this)->TESPackage_LoadGame();
@@ -89,6 +96,8 @@ struct FUN_006797c0_shell
 };
 // Calls the base save routine, then writes five 4-byte fields at offsets 0x80-0x98 and two pointers at 0x88/0x8c to the save buffer.
 // @fnv 0x009f9790
+// pdb: TrespassPackage::SaveGame | TrespassPackage.obj | retail, vtable slot, high
+// pdb locals: iobjectOwnedID, iownerID
 void __thiscall TrespassPackage::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     ((FUN_006797c0_shell*)this)->TESPackage_SaveGame(apSaveGameBuffer);
@@ -108,6 +117,8 @@ struct Saver
 // Computes the save size: adds FUN_00678fd0's result, 12, 8, and two 4-byte blocks when g_TESSaveLoadGame's version is at least 108.
 // @fnv 0x009f9500
 // src: XBOX_PDB 0x009f9500
+// pdb: TrespassPackage::GetSaveSize | TrespassPackage.obj | retail, vtable slot, high
+// pdb locals: isize
 unsigned short TrespassPackage::GetSaveSize_009f9500()
 {
     unsigned short usSize = 0;
@@ -142,6 +153,8 @@ extern TESSaveLoadGame* DAT_011de45c;
 unsigned int __fastcall _ref_0084e3a0(void*);
 
 // @fnv 0x009f9570
+// pdb: TrespassPackage::SaveGame | TrespassPackage.obj | retail, vtable slot, high
+// pdb locals: iobjectOwnedID, iownerID
 void TrespassPackage::SaveFormRefs()
 {
     unsigned int iobjectOwnedID;

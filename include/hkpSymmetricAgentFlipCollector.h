@@ -2,6 +2,7 @@
 
 #include "hkpCdPointCollector.h"
 
+// pdb: class hkpSymmetricAgentFlipCollector, size 0xc, bases: hkpCdPointCollector, 1 members
 class hkpSymmetricAgentFlipCollector : public hkpCdPointCollector
 {
 public:
@@ -13,5 +14,5 @@ public:
     void process(void* value);
     void unk00();
 
-    void* unk08;
+    void* m_collector;
 };

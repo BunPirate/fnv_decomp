@@ -14,6 +14,8 @@
 
 #include "../../../../include/NiPosData.h"
 // @fnv 0x004a3760
+// pdb: operator* | BGSDecalManager.obj | debug, call graph, medium
+// pdb params: fScalar, pt
 NiPoint3* NiPosData::ComputePositionAtTime(NiPoint3* pOut, float fTime, const NiPoint3* pIn)
 {
     pOut->Set(fTime * pIn->x, fTime * pIn->y, fTime * pIn->z);

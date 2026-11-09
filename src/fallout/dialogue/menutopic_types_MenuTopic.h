@@ -7,6 +7,7 @@
 #include "../../../include/TESTopic.h"
 #include "../../../include/TESTopicInfo.h"
 #pragma pack(push, 4)
+// pdb: class MenuTopic, size 0x2c, 12 members
 class MenuTopic
 {
   public:

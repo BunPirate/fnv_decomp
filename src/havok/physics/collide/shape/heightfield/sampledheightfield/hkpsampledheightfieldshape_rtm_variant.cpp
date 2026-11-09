@@ -93,7 +93,7 @@ struct Val1 {
 };
 struct Host {
     void hkpSampledHeightFieldShape_castRayInternal(int a1, int a2, Val1 v, float f, Local12* pLocal);
-    void hkpSampledHeightFieldShape_castRayWithCollectorImpl(int a1, int a2, const Arg3* a3);
+    void hkpSampledHeightFieldShape_castRayWithCollectorImpl(int input, int cdBody, const Arg3* collector);
 };
 struct __declspec(align(16)) RayData {
     float x; float y; float z; float w;
@@ -118,7 +118,7 @@ struct Obj {
     float unk24;
 
     void hkpSampledHeightFieldShape_castRayInternal(RayData* data, void* arg2, hkBool arg3, float arg4, void* arg5);
-    void hkpSampledHeightFieldShape_castSphere(Input* input, void* arg2, void* arg3);
+    void hkpSampledHeightFieldShape_castSphere(Input* input, void* cdBody, void* collector);
 };
 extern "C" LocalM128 _mm_mul_ps(LocalM128, LocalM128);
 struct SampledHeightField : hkpSampledHeightFieldShape {
@@ -135,7 +135,7 @@ struct SampledHeightField : hkpSampledHeightFieldShape {
     virtual void slot11();
     virtual void slot12();
     virtual float getHeightAt(int x, int z);
-    void hkpSampledHeightFieldShape_getAabbImpl(hkUlong transform, float tolerance, hkUlong aabb);
+    void hkpSampledHeightFieldShape_getAabbImpl(hkUlong localToWorld, float tolerance, hkUlong out);
 };
 void __cdecl hkAabbUtil_calcAabb_00d26230(hkUlong, const hkVector4&, const hkVector4&, float, hkUlong);
 
@@ -242,4 +242,7 @@ __forceinline HeightField::HeightField(const hkSampledHeightFieldShapeCinfo& ci,
 
 // @fnv 0x00d248a0
 // src: GUESS 0x00d248a0 (confidence: low)
+// pdb: hkpSampledHeightFieldShape::hkpSampledHeightFieldShape | hkpSampledHeightFieldShape.obj | retail, object-file run extension, low
+// pdb params: ci, hfType
+// pdb locals: c, c4, assertBuf, ostr
 HeightField* HeightField::ProcessAndReturnValue_00d248a0(const hkSampledHeightFieldShapeCinfo& ci, HeightFieldType hfType) { __assume(this != 0); return new(this) HeightField(ci,hfType); }

@@ -158,17 +158,17 @@ __forceinline hkpShapeType hkpShape::getType() const
 
 __forceinline const hkpShape* hkpCdBody::getShape() const
 {
-    return m_pCollisionShape;
+    return m_shape;
 }
 __forceinline hkpCdBody::hkpCdBody(const hkpCdBody* parent)
 {
     m_parent = parent;
-    m_pMotionState = parent->m_pMotionState;
+    m_motion = parent->m_motion;
 }
 __forceinline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape* shape, hkpShapeKey key)
 {
-    m_pCollisionShape = shape;
-    m_uiCollisionShapeKey = key;
+    m_shape = shape;
+    m_shapeKey = key;
 }
 class hkpContactMgr;
 class hkpCollisionAgent;
@@ -201,7 +201,7 @@ __forceinline hkpCollisionDispatcher::LinearCastFunc hkpCollisionDispatcher::get
 
 __forceinline hkReal_X hkpCdPointCollector::getEarlyOutDistance() const
 {
-    return m_fEarlyOutDistance;
+    return m_earlyOutDistance;
 }
 struct ShapeSweepParameters : public CollisionAgentContext
 {
@@ -209,7 +209,7 @@ struct ShapeSweepParameters : public CollisionAgentContext
 
 __forceinline const hkpShapeCollection* hkpMoppBvTreeShape::getShapeCollection() const
 {
-    return static_cast<const hkpShapeCollection*>(m_pChildAtom.getChild());
+    return static_cast<const hkpShapeCollection*>(m_child.getChild());
 }
 
 enum hkpMoppCommands
@@ -287,7 +287,7 @@ class MoppCastMachine : public MoppPrimitiveQueryContext
 
   protected:
     void AddHit(hkUint32_X id, const hkUint32_X properties[1], unsigned long extra);
-    void ProcessMoppCommands_00da71c0(const VectorPropertyRecord* query, const unsigned char* PC,
+    void hkpMoppAabbCastVirtualMachine_queryRayOnTree(const VectorPropertyRecord* query, const unsigned char* PC,
                       TwoPointVectorBundles fQuery[1], int chunkOffset);
 };
 __forceinline void MoppCastMachine::AddHit(hkUint32_X key, const hkUint32_X properties[1],
@@ -315,8 +315,11 @@ __forceinline void MoppCastMachine::AddHit(hkUint32_X key, const hkUint32_X prop
     m_fFirstRayCastValue = m_pPointCollector->getEarlyOutDistance();
 }
 // @fnv 0x00da71c0
-// src: GUESS 0x00da71c0 (confidence: low)
-void MoppCastMachine::ProcessMoppCommands_00da71c0(const VectorPropertyRecord* query, const unsigned char* PC,
+// src: XBOX_RETAIL_PDB 0x00da71c0
+// pdb: hkpMoppAabbCastVirtualMachine::queryRayOnTree | hkpMoppAabbCastVirtualMachine.obj | retail, string-set bridge, high
+// pdb params: query, PC, fQuery, chunkOffset
+// pdb locals: scaledQuery, leftFloat, ratio, fraction, f4, assertBuf, ostr
+void MoppCastMachine::hkpMoppAabbCastVirtualMachine_queryRayOnTree(const VectorPropertyRecord* query, const unsigned char* PC,
                                    TwoPointVectorBundles fQuery[1], int chunkOffset)
 {
     VectorPropertyRecord scaledQuery;
@@ -503,7 +506,7 @@ void MoppCastMachine::ProcessMoppCommands_00da71c0(const VectorPropertyRecord* q
                         leftFloat.m_kPointBundles[1].setInterpolate4(fQuery->m_kPointBundles[0],
                                                                      fQuery->m_kPointBundles[1], ScalarValue(ratio));
                     }
-                    ProcessMoppCommands_00da71c0(query, PC - offsetRB + offsetLB, &leftFloat, chunkOffset);
+                    hkpMoppAabbCastVirtualMachine_queryRayOnTree(query, PC - offsetRB + offsetLB, &leftFloat, chunkOffset);
                     if (ha * hb < 0.0)
                     {
                         const hkReal_X ratio = ha / (ha - hb);
@@ -536,7 +539,7 @@ void MoppCastMachine::ProcessMoppCommands_00da71c0(const VectorPropertyRecord* q
                         leftFloat.m_kPointBundles[1].setInterpolate4(fQuery->m_kPointBundles[0],
                                                                      fQuery->m_kPointBundles[1], ScalarValue(ratio));
                     }
-                    ProcessMoppCommands_00da71c0(query, PC, &leftFloat, chunkOffset);
+                    hkpMoppAabbCastVirtualMachine_queryRayOnTree(query, PC, &leftFloat, chunkOffset);
                     if (la * lb < 0.0)
                     {
                         const hkReal_X ratio = la / (la - lb);

@@ -4,10 +4,11 @@
 
 class ReconstructFormData;
 
+// pdb: class BGSReconstructFormsMap, size 0x14, bases: NiTMap<unsigned int, 1 members
 class BGSReconstructFormsMap : public NiTMap<unsigned int, ReconstructFormData>
 {
 public:
-    int unk10;
+    int iFlags;
 
     BGSReconstructFormsMap();
     virtual ~BGSReconstructFormsMap();

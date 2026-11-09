@@ -6,28 +6,29 @@
 #include "NiPalette.h"
 #include <stddef.h>
 
+// pdb: class NiPixelData, size 0x74, bases: NiObject, 11 members
 class NiPixelData : public NiObject
 {
 public:
-    NiPixelData(unsigned int width, unsigned int height, const NiPixelFormat& format,
-                unsigned int mipmapLevels = 1, unsigned int faces = 1);
-    NiPixelData(unsigned int width, unsigned int height, const NiPixelFormat* format,
-                unsigned int mipmapLevels, unsigned int faces);
+    NiPixelData(unsigned int uiWidth, unsigned int uiHeight, const NiPixelFormat& kFormat,
+                unsigned int uiMipmapLevels = 1, unsigned int uiFaces = 1);
+    NiPixelData(unsigned int uiWidth, unsigned int uiHeight, const NiPixelFormat* kFormat,
+                unsigned int uiMipmapLevels, unsigned int uiFaces);
     virtual ~NiPixelData();
     virtual void DeleteThis();
     virtual const NiRTTI* GetRTTI() const;
     virtual void LoadBinary(NiStream& stream);
     virtual void LinkObject(NiStream& stream);
-    virtual bool RegisterStreamables(NiStream& stream);
+    virtual bool RegisterStreamables(NiStream& kStream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* object) const;
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
 
     static unsigned int CalculateMipmapLevels(unsigned int width, unsigned int height);
-    void AllocateData(unsigned int mipmapLevels, unsigned int faces, unsigned int totalBytes);
+    void NiPixelData_AllocateData(unsigned int uiLevels, unsigned int uiFaces, unsigned int uiBytes);
     NiPalette* GetPalette() const throw();
     void SetPalette(NiPalette* palette);
-    void SetOwnsPixelData(bool value) { m_bOwnsPixelData = value; }
+    void SetOwnsPixelData(bool value) { bNoConvert = value; }
     unsigned int GetWidth(unsigned int level = 0) const throw()
     {
         return m_puiWidth[level];
@@ -71,6 +72,6 @@ public:
     unsigned int m_uiPixelStride;
     unsigned int m_uiRevID;
     unsigned int m_uiFaces;
-    bool m_bOwnsPixelData;
+    bool bNoConvert;
     unsigned char m_ucUnknownByte[3];
 };

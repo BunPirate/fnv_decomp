@@ -7,6 +7,7 @@ struct ShapeCallbackDispatchTable;
 
 typedef const hkVector4& hkVector4Parameter;
 
+// pdb: class hkpCapsuleShape, size 0x40, bases: hkpConvexShape, 2 members
 class hkpCapsuleShape : public hkpConvexShape
 {
 public:
@@ -56,6 +57,6 @@ public:
                                                               hkVector4& p, hkVector4& q);
 
     char pad14[0xC];
-    hkVector4 m_kVertexA;
-    hkVector4 m_kVertexB;
+    hkVector4 m_vertexA;
+    hkVector4 m_vertexB;
 };

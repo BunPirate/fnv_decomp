@@ -14,7 +14,7 @@ public:
     void AddTail(TESResponse*);
     void Remove(TESResponse*);
     unsigned int GetListCount();
-    void ClearResponses();
+    void ResponseListWrapper_ClearResponseList();
     void SetResponseList(TESResponse*);
     void ResetFaceGen();
     void InsertBefore(TESResponse*, TESResponse*);

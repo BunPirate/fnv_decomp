@@ -106,7 +106,7 @@ struct PairOutD1E850
 };
 struct ShapeD1E850 : hkpBoxMotion
 {
-    void hkpBoxMotion_getInertiaInvWorld(int pkOutRaw);
+    void hkpBoxMotion_getInertiaInvWorld(int inertiaInv);
 };
 
 static const __m128& QuadD1E850(const hkVector4& value)
@@ -116,18 +116,21 @@ static const __m128& QuadD1E850(const hkVector4& value)
 
 // @fnv 0x00d1e850
 // src: HAVOK_SRC 0x00d1e850
-void ShapeD1E850::hkpBoxMotion_getInertiaInvWorld(int pkOutRaw)
+// pdb: hkpBoxMotion::getInertiaInvWorld | hkpBoxMotion.obj | retail, upstream name already matches, high
+// pdb params: inertiaInv
+// pdb locals: in
+void ShapeD1E850::hkpBoxMotion_getInertiaInvWorld(int inertiaInv)
 {
     RotationD1E850 kScaled;
     kScaled.m_kColumn0.Vector4f() =
-        _mm_mul_ps(_mm_shuffle_ps(QuadD1E850(m_kInertiaAndMassInv), QuadD1E850(m_kInertiaAndMassInv), 0x00),
-                   QuadD1E850(m_kMotionState.m_kMotionTransform.m_rotation.m_kColumn0));
+        _mm_mul_ps(_mm_shuffle_ps(QuadD1E850(m_inertiaAndMassInv), QuadD1E850(m_inertiaAndMassInv), 0x00),
+                   QuadD1E850(m_kMotionState.m_transform.m_rotation.m_kColumn0));
     kScaled.m_kColumn1.Vector4f() =
-        _mm_mul_ps(_mm_shuffle_ps(QuadD1E850(m_kInertiaAndMassInv), QuadD1E850(m_kInertiaAndMassInv), 0x55),
-                   QuadD1E850(m_kMotionState.m_kMotionTransform.m_rotation.m_kColumn1));
+        _mm_mul_ps(_mm_shuffle_ps(QuadD1E850(m_inertiaAndMassInv), QuadD1E850(m_inertiaAndMassInv), 0x55),
+                   QuadD1E850(m_kMotionState.m_transform.m_rotation.m_kColumn1));
     kScaled.m_kColumn2.Vector4f() =
-        _mm_mul_ps(_mm_shuffle_ps(QuadD1E850(m_kInertiaAndMassInv), QuadD1E850(m_kInertiaAndMassInv), 0xaa),
-                   QuadD1E850(m_kMotionState.m_kMotionTransform.m_rotation.m_kColumn2));
-    (reinterpret_cast<PairOutD1E850*>(*(volatile int*)&pkOutRaw))
-        ->FUN_00cd5610(&kScaled, &m_kMotionState.m_kMotionTransform.m_rotation.m_kColumn0);
+        _mm_mul_ps(_mm_shuffle_ps(QuadD1E850(m_inertiaAndMassInv), QuadD1E850(m_inertiaAndMassInv), 0xaa),
+                   QuadD1E850(m_kMotionState.m_transform.m_rotation.m_kColumn2));
+    (reinterpret_cast<PairOutD1E850*>(*(volatile int*)&inertiaInv))
+        ->FUN_00cd5610(&kScaled, &m_kMotionState.m_transform.m_rotation.m_kColumn0);
 }

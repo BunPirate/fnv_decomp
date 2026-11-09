@@ -91,12 +91,15 @@ class bhkCharacterController;
 #include "mobileobject_private/mobileobject_interface.h"
 
 // @fnv 0x00931d30
-void MobileObject::AdvanceMovement(float delta)
+// pdb: MobileObject::ModHeading | MobileObject.obj | debug, call graph, high
+// pdb params: afModAngle
+void MobileObject::AdvanceMovement(float afModAngle)
 {
-    SetFurnitureHeading(GetCurrentTargetDistance(false) + delta);
+    SetFurnitureHeading(GetCurrentTargetDistance(false) + afModAngle);
 }
 
 // @fnv 0x00931d70
+// pdb: MobileObject::GetLooking | MobileObject.obj | debug, upstream name already matches, high
 float MobileObject::GetLooking() const
 {
     return GetAngleOnReference().x;
@@ -104,14 +107,16 @@ float MobileObject::GetLooking() const
 
 // Returns true if the interface is in dialogue and the stored object pointer is non-null and its check returns true.
 // @fnv 0x00933840
+// pdb: MobileObject::IsInDialoguewithPlayer | MobileObject.obj | retail, call graph (shared callers), high
 bool MobileObject::IsInDialogueWithPlayer() const
 {
-    if (Interface::IsInDialog() && m_pBaseProcess && m_pBaseProcess->IsDetectionEnabled())
+    if (Interface::IsInDialog() && pCurrentProcess && pCurrentProcess->IsDetectionEnabled())
         return true;
     return false;
 }
 
 // @fnv 0x009316c0
+// pdb: MobileObject::SetPackageStartLocationFromCurrentLocation | MobileObject.obj | retail, call graph, high
 void MobileObject::ProcessAnimation()
 {
     RelocateTo(GetParentWorldSpace(), GetParentCell(), *static_cast<const MobileObject*>(this)->GetPos(), GetAngleOnReference().z);
@@ -119,6 +124,8 @@ void MobileObject::ProcessAnimation()
 
 // Returns true if the current package exists and its pack type is IN_GAME_DIALOGUE, otherwise false.
 // @fnv 0x009336c0
+// pdb: MobileObject::IsinDialogue | MobileObject.obj | debug, call graph, high
+// pdb locals: pbasepack
 bool MobileObject::IsCombatStateActive() const
 {
     TESPackage* package = GetCurrentPackage();
@@ -132,34 +139,36 @@ bool MobileObject::IsCombatStateActive() const
 // @fnv 0x008b0190
 bool Actor::IsVisible(int flags)
 {
-    return (flags & ~(m_iActorStateValue & flags)) ? false : true;
+    return (flags & ~(iVisFlags & flags)) ? false : true;
 }
 
 // @fnv 0x0087d810
 void Actor::SetActorEssentialState(int value)
 {
-    ActorProjectileState = value;
+    iEmotionValue = value;
 }
 
 // Calls TESObjectREFR::Revert, reverts the stored reference if present, then resets the object's state flags and values to defaults.
 // @fnv 0x00932f60
-void MobileObject::Revert(BGSLoadFormBuffer* buffer)
+// pdb: MobileObject::Revert | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void MobileObject::Revert(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESObjectREFR::Revert(buffer);
-    if (m_pBaseProcess)
-        m_pBaseProcess->RevertBGS(buffer);
+    TESObjectREFR::Revert(apLoadGameBuffer);
+    if (pCurrentProcess)
+        pCurrentProcess->RevertBGS(apLoadGameBuffer);
     SetChaseMode(false);
-    m_cCharacterValue = -1;
-    m_bNinthFlag = false;
-    m_bFirstFlag = true;
-    m_bFourthBooleanValue = true;
-    m_bFifthFlag = true;
-    m_bSecondBooleanValue = false;
-    m_bThirdFlag = false;
-    m_bTenthFlag = true;
-    ProcessReferenceState = 0.0f;
-    ReferenceMobileState = 0.0f;
-    m_bEighthFlag = false;
+    cSoundCallBackSet = -1;
+    bSoundCallBackSuccess = false;
+    bSpeakingDone = true;
+    bSoundFileDone = true;
+    bVoiceFileDone = true;
+    bTalkingToPlayer = false;
+    bIgnoreChangeAnimationCall = false;
+    bUseEmotion = true;
+    fUpdateTargetTimer = 0.0f;
+    fSayToFailVoiceTimer = 0.0f;
+    bDoNotRunSayToCallBack = false;
 }
 
 #include "../../../include/BSAudio.h"
@@ -167,24 +176,27 @@ extern TESDataHandler* g_dataHandler;
 
 // Looks up a sound form by editor name, gets a sound handle by form ID, optionally positions and attaches it to the node, sets volume to 1.0 and plays it.
 // @fnv 0x00933270
-BSSoundHandle MobileObject::PlaySoundByEditorName(const char* editorName, bool loop, unsigned int flags, bool)
+// pdb: MobileObject::PlaySoundByEditorName | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: apEditorName, abLoop, aiSoundType, abAllowCopy
+// pdb locals: soundHand, psnd, loc
+BSSoundHandle MobileObject::PlaySoundByEditorName(const char* apEditorName, bool abLoop, unsigned int aiSoundType, bool)
 {
     BSSoundHandle soundHandle;
     if (GetNiNode())
     {
         // TESSound's evidenced primary TESForm base is at offset zero.
-        TESForm* sound = reinterpret_cast<TESForm*>(g_dataHandler->GetSoundByEditorID(editorName));
+        TESForm* sound = reinterpret_cast<TESForm*>(g_dataHandler->GetSound(apEditorName));
         if (sound)
         {
-            soundHandle = BSAudio::GetSingleton()->GetSoundHandleByFormID(sound->GetFormID(), flags);
-            if (flags & 2)
+            soundHandle = BSAudio::GetSingleton()->GetSoundHandleByFormID(sound->GetFormID(), aiSoundType);
+            if (aiSoundType & 2)
             {
                 NiPoint3 position = *static_cast<const TESObjectREFR*>(this)->GetPos();
                 soundHandle.SetPosition(position.x, position.y, position.z);
                 soundHandle.SetObjectToFollow(reinterpret_cast<NiAVObject*>(GetNiNode()));
             }
             soundHandle.SetVolume(1.0f);
-            soundHandle.Play(loop);
+            soundHandle.Play(abLoop);
         }
     }
     return soundHandle;
@@ -218,18 +230,24 @@ bool MobileObject::GetCharControllerFlag() const
 // @fnv 0x00920fb0
 void Actor::SetCurrentSitSleepState(SIT_SLEEP_STATE state)
 {
-    m_eSitSleepState = state;
+    cCurrentSitSleepState = state;
 }
 // Checks the reference's ExtraDismemberedLimbs extra data and returns whether the given limb is dismembered.
 // @fnv 0x00573090
-bool TESObjectREFR::IsLimbMissing(int limb)
+// src: XBOX_RETAIL_PDB 0x00573090
+// pdb: TESObjectREFR::GetDismembered | TESObjectREFR.obj | retail, object-file gap fill, high
+// pdb params: aeLimb
+// pdb locals: pextraLimbs
+bool TESObjectREFR::GetDismembered(int aeLimb)
 {
     ExtraDismemberedLimbs* extra = GetExtraData()->GetDismemberedLimbs();
     if (!extra)
         return false;
-    return extra->IsBitSet(limb);
+    return extra->IsBitSet(aeLimb);
 }
 // @fnv 0x009307d0
+// pdb: MobileObject::DetachCharController | MobileObject.obj | retail, vtable slot, high
+// pdb locals: bres, pcon
 bool MobileObject::IsActorDead()
 {
     MobileObjectRemovalState state;
@@ -245,13 +263,15 @@ bool MobileObject::IsActorDead()
 }
 // Copies the x, y and z components of point into the first three elements of output and sets the fourth element to 0.0f, then returns output.
 // @fnv 0x00553fc0
-bhkCharacterController* CopyCharacterControllerVector(bhkCharacterController* output, const NiPoint3& point)
+// pdb: NI2HKNS | TESObjectCELL.obj | debug, call graph (shared callers), high
+// pdb params: arhkV, arNiP
+bhkCharacterController* CopyCharacterControllerVector(bhkCharacterController* arhkV, const NiPoint3& arNiP)
 {
-    output->GetVectorElement(0) = point.x;
-    output->GetVectorElement(1) = point.y;
-    output->GetVectorElement(2) = point.z;
-    output->GetVectorElement(3) = 0.0f;
-    return output;
+    arhkV->GetVectorElement(0) = arNiP.x;
+    arhkV->GetVectorElement(1) = arNiP.y;
+    arhkV->GetVectorElement(2) = arNiP.z;
+    arhkV->GetVectorElement(3) = 0.0f;
+    return arhkV;
 }
 
 struct NiAVObject;
@@ -363,23 +383,27 @@ MobileVectorLocal_0092f260& __cdecl NI2HK(MobileVectorLocal_0092f260&, const NiP
 
 struct FUN_004a3f40_helper
 {
-    void bhkPickData_SetTo_004a3f40(const MobileVectorLocal_0092f260&);
+    void bhkPickData_SetTo(const MobileVectorLocal_0092f260&);
 };
 
 // @fnv 0x004a3eb0
 // src: XBOX_PDB 0x004a3eb0
+// pdb: bhkPickData::SetTo | BGSDecalManager.obj | debug, call graph, medium
+// pdb params: arTo
+// pdb locals: hkv
 void FUN_004a3eb0_shell::bhkPickData_SetTo(void* arTo)
 {
     MobileVectorLocal_0092f260 hkv;
-    ((FUN_004a3f40_helper*)this)->bhkPickData_SetTo_004a3f40(NI2HK(hkv, *(const NiPoint3*)arTo));
+    ((FUN_004a3f40_helper*)this)->bhkPickData_SetTo(NI2HK(hkv, *(const NiPoint3*)arTo));
 }
 
 extern int DAT_0108a490;
 extern int DAT_0108a49c;
 
 // @fnv 0x0092eb50
-// src: GUESS 0x0092eb50 (confidence: low)
-void* __fastcall TESObjectREFR_UpdateState_0092eb50(char* this_ptr)
+// src: XBOX_RETAIL_PDB 0x0092eb50
+// pdb: MobileObject::MobileObject | MobileObject.obj | retail, call graph, high
+void* __fastcall MobileObject_ctor(char* this_ptr)
 {
     ((TESObjectREFR*)this_ptr)->TESObjectREFR::TESObjectREFR();
     *(int**)(this_ptr + 0x00) = &DAT_0108a49c;
@@ -765,9 +789,12 @@ struct VTableHelper
 
 // @fnv 0x00931b60
 // src: COMMUNITY 0x00931b60
+// pdb: MobileObject::SetHeading | MobileObject.obj | retail, vtable slot, medium
+// pdb note: debug build links it to MobileObject::SetRotation
+// pdb params: afAngle
 void VTableHelper::MobileObject_SetRotation(float afAngle)
 {
-    if (((Actor*)this)->m_pBaseProcess)
+    if (((Actor*)this)->pCurrentProcess)
     {
         if (this->v230())
             return;
@@ -778,7 +805,7 @@ void VTableHelper::MobileObject_SetRotation(float afAngle)
         case 5:
         case 9:
         case 10:
-            if (((VTableHelper*)((Actor*)this)->m_pBaseProcess)->v4c8() && this->v100())
+            if (((VTableHelper*)((Actor*)this)->pCurrentProcess)->v4c8() && this->v100())
                 return;
             break;
         }
@@ -802,7 +829,7 @@ void VTableHelper::MobileObject_SetRotation(float afAngle)
 
 struct FUN_00931d90_shell : public MobileObject
 {
-    void ClampLookAngle(float);
+    void MobileObject_SetLooking(float);
 };
 
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting231;
@@ -816,7 +843,11 @@ struct ST_00931d90
 };
 // Clamps afAngle between a lower limit and a per-actor-type maximum derived from a game setting, then applies it via FUN_00575770.
 // @fnv 0x00931d90
-void FUN_00931d90_shell::ClampLookAngle(float afAngle)
+// src: XBOX_RETAIL_PDB 0x00931d90
+// pdb: MobileObject::SetLooking | MobileObject.obj | retail, call graph, high
+// pdb params: afAngle
+// pdb locals: fmaxLookingDown, pactor
+void FUN_00931d90_shell::MobileObject_SetLooking(float afAngle)
 {
     float fMaxAngle = DAT_0108a7f8;
     if (IsActor())
@@ -848,13 +879,16 @@ struct FUN_00931e50_shell : public MobileObject
 
 struct ST_00931e50
 {
-    void ClampLookAngle(float);
+    void MobileObject_SetLooking(float);
 };
 // Adds afModAngle to the object's looking angle and passes the result to ClampLookAngle.
 // @fnv 0x00931e50
+// pdb: MobileObject::ModHeading | MobileObject.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to MobileObject::ModLooking
+// pdb params: afModAngle
 void FUN_00931e50_shell::AddModAngle(float afModAngle)
 {
-    ((ST_00931e50*)this)->ClampLookAngle(GetLooking() + afModAngle);
+    ((ST_00931e50*)this)->MobileObject_SetLooking(GetLooking() + afModAngle);
 }
 
 struct FUN_00931e80_shell : public MobileObject
@@ -863,10 +897,11 @@ struct FUN_00931e80_shell : public MobileObject
 };
 
 // @fnv 0x00931e80
+// pdb: MobileObject::GetCurrentProcessType | MobileObject.obj | debug, call graph (shared callers), low
 void FUN_00931e80_shell::DeleteAndClear()
 {
-    delete m_pBaseProcess;
-    m_pBaseProcess = 0;
+    delete pCurrentProcess;
+    pCurrentProcess = 0;
 }
 
 struct FUN_00931fb0_shell : public MobileObject
@@ -881,6 +916,9 @@ struct Helper_00629670
 
 // @fnv 0x00931fb0
 // src: XBOX_PDB 0x00931fb0
+// pdb: MobileObject::SetChaseBip | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: abTF
+// pdb locals: pcon
 void FUN_00931fb0_shell::MobileObject_SetChaseBip(bool abTF)
 {
     bhkCharacterController* pcon = GetPhysicsCharacterController();
@@ -951,11 +989,11 @@ struct TESObjectREFR_Accessor : public TESObjectREFR
 {
     int GetReferenceType(void);
     void TESObjectREFR_FinishLoadGame(BGSLoadFormBuffer*);
-    void MobileObject_SetProcessLevel(int);
+    void MobileObject_ChangeProcessLevel(int);
 };
 
 int __fastcall ExtraDataList_GetSayToExtra(const void* this_ptr);
-void __cdecl MobileObject_DialogueConversationCallBack(unsigned int formID, int a2);
+void __cdecl MobileObject_DialogueConversationCallBack(unsigned int apContext, int abSucceeded);
 
 extern RecursiveSpinLock DAT_011f11a0;
 extern ProcessLists DAT_011e0e80;
@@ -965,23 +1003,26 @@ extern PlayerCharacter* pPlayer;
 
 // @fnv 0x00932d60
 // src: XBOX_PDB 0x00932d60
+// pdb: MobileObject::FinishLoadGame | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: bshouldHaveNo3D, edesiredProcessLevel, pprojectile
 void FUN_00932d60_shell::MobileObject_FinishLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     ((TESObjectREFR_Accessor*)this)->TESObjectREFR_FinishLoadGame(apLoadGameBuffer);
-    if (m_pBaseProcess != 0)
+    if (pCurrentProcess != 0)
     {
-        reinterpret_cast<VTableHelper*>(m_pBaseProcess)->ApplyLoadBuffer(apLoadGameBuffer);
+        reinterpret_cast<VTableHelper*>(pCurrentProcess)->ApplyLoadBuffer(apLoadGameBuffer);
         if (((Actor_Accessor*)this)->TESForm_GetDisabledOrDeleted())
         {
             DAT_011f11a0.Lock(0);
-            ((ProcessLists*)&DAT_011e0e80)->ProcessLists_RemoveReference(this, (int)((Getter28View*)m_pBaseProcess)->GetNext());
-            delete m_pBaseProcess;
+            ((ProcessLists*)&DAT_011e0e80)->ProcessLists_RemoveReference(this, (int)((Getter28View*)pCurrentProcess)->GetNext());
+            delete pCurrentProcess;
             DAT_011f11a0.Unlock();
-            m_pBaseProcess = 0;
+            pCurrentProcess = 0;
         }
         else if (((TESObjectREFR_Accessor*)this)->GetReferenceType() == 0 && (PlayerCharacter*)this != pPlayer &&
-                 (((Getter28View*)m_pBaseProcess)->GetNext() == 0 ||
-                  (int)((Getter28View*)m_pBaseProcess)->GetNext() == 1))
+                 (((Getter28View*)pCurrentProcess)->GetNext() == 0 ||
+                  (int)((Getter28View*)pCurrentProcess)->GetNext() == 1))
         {
             PROCESS_TYPE edesiredProcessLevel = static_cast<PROCESS_TYPE>(GetProcessTier());
             if (edesiredProcessLevel == PROCESS_TYPE_PROCESS_TYPE_MIDDLE_LOW ||
@@ -993,8 +1034,8 @@ void FUN_00932d60_shell::MobileObject_FinishLoadGame(BGSLoadFormBuffer* apLoadGa
                         Unk_92();
                     else
                         Unk_91();
-                    ((ActiveEffect*)m_pBaseProcess)->BaseProcess_SetLastTimeProcessed(g_calendar.GetGameTime() - 0.5);
-                    DAT_011e0e80.RemoveMobileObjectFromList(this);
+                    ((ActiveEffect*)pCurrentProcess)->BaseProcess_SetLastTimeProcessed(g_calendar.GetGameTime() - 0.5);
+                    DAT_011e0e80.RemoveActorFromTempChangeList(this);
                 }
                 else
                 {
@@ -1009,7 +1050,7 @@ void FUN_00932d60_shell::MobileObject_FinishLoadGame(BGSLoadFormBuffer* apLoadGa
     }
     if (g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading() && !((Actor_Accessor*)this)->TESForm_GetDisabledOrDeleted())
     {
-        ((TESObjectREFR_Accessor*)this)->MobileObject_SetProcessLevel(GetProcessTier());
+        ((TESObjectREFR_Accessor*)this)->MobileObject_ChangeProcessLevel(GetProcessTier());
     }
 }
 }  // namespace fnv_00932d60
@@ -1029,6 +1070,9 @@ struct ST_009333e0
 bool __cdecl TESMagicCasterForm_CanBeMagicCaster(MobileObject*);
 // @fnv 0x009333e0
 // src: XBOX_PDB 0x009333e0
+// pdb: MobileObject::SetDelete | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: abDeleted
+// pdb locals: bcaster
 void FUN_009333e0_shell::MobileObject_SetDelete(bool abDeleted)
 {
     ((ST_009333e0*)this)->TESObjectREFR_SetDelete(abDeleted);
@@ -1054,7 +1098,11 @@ void __fastcall MobileObject_SetSoundCallBackSuccess(MobileObject_Helper*, int, 
 
 // Looks up the form for the given id; if it is a mobile object, either clears its flag or calls SetAccumulate and FUN_00936aa0 with abSucceeded.
 // @fnv 0x00936a20
-void __cdecl HandleMobileObjectResult(void* apContext, bool abSucceeded)
+// src: XBOX_RETAIL_PDB 0x00936a20
+// pdb: MobileObject::SayToCallBack | MobileObject.obj | retail, call graph (shared callers), high
+// pdb params: apContext, abSucceeded
+// pdb locals: iactorid, pform, pactor
+void __cdecl MobileObject_SayToCallBack(void* apContext, bool abSucceeded)
 {
     MobileObject* pactor;
     unsigned int iactorid = (unsigned int)apContext;
@@ -1103,7 +1151,7 @@ struct CharCtl_S
 {
     void SetPosition_005620e0(void*);
     void bhkCharacterProxy_SetLinearVelocity(void*);
-    void ResetState();
+    void bhkCharacterController_ClearManifold();
 };
 void* __cdecl hkVector4_getZero();
 float __fastcall bhkCharacterController_GetFallStartHeight(const char*);
@@ -1111,22 +1159,25 @@ float __fastcall bhkCharacterController_GetFallStartHeight(const char*);
 // Sets the reference location from arVel, then forwards arVel to the character controller and to the object at offset 0x64 when its float at 0x14 is non-zero.
 // @fnv 0x00931620
 // src: COMMUNITY 0x00931620
-void FUN_00931620_shell::MobileObject_SetPos(NiPoint3* arVel)
+// pdb: MobileObject::SetPosition | MobileObject.obj | retail, vtable slot, high
+// pdb params: arPos
+// pdb locals: pcon
+void FUN_00931620_shell::MobileObject_SetPos(NiPoint3* arPos)
 {
-    reinterpret_cast<SetLoc_S*>(this)->SetLocationOnReference(*arVel);
+    reinterpret_cast<SetLoc_S*>(this)->SetLocationOnReference(*arPos);
     bhkCharacterController* pcon = GetPhysicsCharacterController();
     if (pcon)
     {
-        reinterpret_cast<CharCtl_S*>(pcon)->SetPosition_005620e0(arVel);
+        reinterpret_cast<CharCtl_S*>(pcon)->SetPosition_005620e0(arPos);
         reinterpret_cast<CharCtl_S*>(pcon)->bhkCharacterProxy_SetLinearVelocity(hkVector4_getZero());
         bhkCharacterController_GetFallStartHeight(reinterpret_cast<const char*>(pcon));
         reinterpret_cast<FUN_0087cee0_shell*>(pcon)->bhkCharacterController_QHitDamage();
-        reinterpret_cast<CharCtl_S*>(pcon)->ResetState();
+        reinterpret_cast<CharCtl_S*>(pcon)->bhkCharacterController_ClearManifold();
     }
     if (*(int*)((char*)this + 0x64) && (unsigned int)*(Flt*)(*(char**)((char*)this + 0x64) + 0x14))
     {
         reinterpret_cast<FUN_00440460_S*>((unsigned int)*(Flt*)(*(char**)((char*)this + 0x64) + 0x14))
-            ->NiAVObject_SetTranslate(arVel);
+            ->NiAVObject_SetTranslate(arPos);
     }
 }
 
@@ -1149,7 +1200,7 @@ struct MobileStandIn
 };
 struct CellStandIn
 {
-    bool HasCellExtraData();
+    bool GetLowestProcessMiddleLow();
 };
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 extern PlayerCharacter* g_thePlayer;
@@ -1157,6 +1208,8 @@ extern TES* g_TES;
 extern ModelLoader* g_modelLoader;
 // Returns a state code based on save-loading, sleeping/resting, the target cell, model loading and cell checks.
 // @fnv 0x009334b0
+// pdb: MobileObject::GetDesiredProcessLevel | MobileObject.obj | retail, call graph (shared callers), high
+// pdb locals: pparentCell
 int FUN_009334b0_shell::GetCellLoadState()
 {
     TESObjectCELL* pTargetCell;
@@ -1171,7 +1224,7 @@ int FUN_009334b0_shell::GetCellLoadState()
         else if (g_TES->IsCellBuffered(pTargetCell, false))
             return 1;
     }
-    if ((pTargetCell && ((CellStandIn*)pTargetCell)->HasCellExtraData()) || g_TES->IsCellBuffered(pTargetCell, false))
+    if ((pTargetCell && ((CellStandIn*)pTargetCell)->GetLowestProcessMiddleLow()) || g_TES->IsCellBuffered(pTargetCell, false))
         return 2;
     return 3;
 }
@@ -1205,7 +1258,9 @@ struct DummyFlags
 };
 
 // @fnv 0x00930570
-int __fastcall HasFlag40000(DummyFlags* this_)
+// src: XBOX_DEBUG_PDB 0x00930570
+// pdb: bhkCharacterController::QFarAway | MobileObject.obj | debug, call graph, high
+int __fastcall bhkCharacterController_QFarAway(DummyFlags* this_)
 {
     return ((DummyFlags*)((char*)this_ + 0x410))->FUN_00621270(0x40000) != 0;
 }
@@ -1216,6 +1271,7 @@ void __fastcall SetField558(void* thisPtr, float value)
     *(float*)((char*)thisPtr + 0x558) = value;
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, const char*);
@@ -1223,17 +1279,20 @@ struct TaskQueueInterface
 char* __cdecl strrchr_0040ab30(char*, int);
 
 // @fnv 0x004d5ad0
-bool BuildLipPath(BSStringT<char>& path)
+// pdb: LipSynchAnim::ChangeFilenameToLipSynch | LipSynchAnim.obj | retail, string-set bridge, high
+// pdb params: aFilename
+// pdb locals: pext, pnewname
+bool BuildLipPath(BSStringT<char>& aFilename)
 {
     char fileName[260];
-    TaskQueueInterface::CopyStringToBuffer(fileName, 260, path.String());
+    TaskQueueInterface::CopyStringToBuffer(fileName, 260, aFilename.String());
     {
         char* dot = strrchr_0040ab30(fileName, '.');
         if (!dot)
             return false;
         *dot = 0;
     }
-    path.PrintfString("%s.lip", fileName);
+    aFilename.PrintfString("%s.lip", fileName);
     return true;
 }
 
@@ -1262,6 +1321,7 @@ void* __cdecl Deallocate(void* p);
 
 // Calls FUN_0092ec40, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x0092ec10
+// pdb: MobileObject::`scalar deleting destructor' | MobileObject.obj | retail, vtable slot, high
 void* __thiscall FUN_0092ec10_shell::DestroyIfFlagged(unsigned int flags)
 {
     FUN_0092ec40();
@@ -1328,6 +1388,8 @@ struct FUN_009edd80 : public TESPackage
 };
 
 // @fnv 0x009edd80
+// pdb: DialoguePackage::DialoguePackage | DialoguePackage.obj | debug, object-file run extension, low
+// pdb params: apConversation, apAct, apTarg, apTalkActivator, abCreated, abUseIdleManager
 FUN_009edd80::FUN_009edd80(FUN_0083b9a0_shell* apTopic, Actor* apSpeaker, Actor* apTarget, int aiUnk, bool abUnkBD,
                            bool abUnkA0)
 {
@@ -1398,6 +1460,7 @@ struct FUN_0056f6b0_t
 };
 // Returns true if GetNext() is non-null and the next object's AtA0() is also true.
 // @fnv 0x0056f6b0
+// pdb: TESObjectREFR::GetRandomAnim | TESObjectREFR.obj | retail, vtable slot, high
 bool FUN_0056f6b0_t::HasNextWithAtA0()
 {
     return ((TESObject*)this)->GetNext() && ((TESObject*)this)->GetNext()->Unk_28();
@@ -1410,6 +1473,8 @@ struct StandIn_00672760 : public TESPackage
 // If the package type is 0xF or 0x1C, returns the TESPackage stored at offset 8 of the object at this+0x28; otherwise returns null.
 // @fnv 0x00672760
 // src: XBOX_PDB 0x00672760
+// pdb: TESPackage::GetDialogueTopic | Package.obj | debug, upstream name already matches, high
+// pdb locals: ptopic, pdata
 TESPackage* StandIn_00672760::TESPackage_GetDialogueTopic()
 {
     TESPackage* result = 0;
@@ -1454,10 +1519,12 @@ struct Ths810
 // If the stored Flt value is non-zero, treats it as an Unk626 and calls FUN_00626cb0 with a.
 // @fnv 0x00810ff0
 // src: XBOX_PDB 0x00810ff0
-void Ths810::bhkCharacterController_SetCollisionFilter(int a)
+// pdb: bhkCharacterController::SetCollisionFilter | MagicBallProjectile.obj | retail, upstream name already matches, high
+// pdb params: aiFilter
+void Ths810::bhkCharacterController_SetCollisionFilter(int aiFilter)
 {
     if ((unsigned int)f)
-        ((Unk626*)(unsigned int)f)->bhkWorldObject_SetCollisionFilter(a);
+        ((Unk626*)(unsigned int)f)->bhkWorldObject_SetCollisionFilter(aiFilter);
 }
 }  // namespace fnv_00810ff0
 
@@ -1470,6 +1537,8 @@ void __cdecl ImpactMixer_PlayJump(Holder_00884aa0*, int);
 // Calls UpdateControllerScale; if it returns nonzero, calls FUN_00838780 with this and 0, then returns that result.
 // @fnv 0x00884aa0
 // src: COMMUNITY 0x00884aa0
+// pdb: Actor::Jump | Actor.obj | retail, upstream name already matches, high
+// pdb locals: presult
 int Holder_00884aa0::Actor_Jump()
 {
     int result = 0;
@@ -1527,18 +1596,21 @@ extern int DAT_011e0e80;
 
 struct FUN_0092f1c0_shell : MobileObject
 {
-    void MobileObject_Process(bool m_bChangeDetected);
+    void MobileObject_Process(bool afDelta);
 };
 
 // @fnv 0x0092f1c0
 // src: XBOX_PDB 0x0092f1c0
-void FUN_0092f1c0_shell::MobileObject_Process(bool abUnused)
+// pdb: MobileObject::Process | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: ptalkingactivator
+void FUN_0092f1c0_shell::MobileObject_Process(bool afDelta)
 {
     vfn_140();
 
-    if (m_pBaseProcess)
+    if (pCurrentProcess)
     {
-        ((Process_Shell_0x10*)m_pBaseProcess)->VirtualMethod_10(this);
+        ((Process_Shell_0x10*)pCurrentProcess)->VirtualMethod_10(this);
     }
 
     if (IsTalkingActivator() && !IsCombatStateActive())
@@ -1568,6 +1640,7 @@ struct FUN_009305a0_Holder
 };
 // @fnv 0x009305a0
 // src: XBOX_PDB 0x009305a0
+// pdb: bhkCharacterController::QCanPitch | MobileObject.obj | debug, upstream name already matches, high
 bool FUN_009305a0_Holder::bhkCharacterController_QCanPitch()
 {
     return m410.FUN_00621270(0x2000000) != 0;
@@ -1584,9 +1657,12 @@ struct FUN_00934f90_shell
 };
 // Stores this into out, then returns the temp ref of the next TESObject if it has one, otherwise returns this.
 // @fnv 0x00934f90
-void* FUN_00934f90_shell::GetTempRefOrSelf(unsigned int, void** out)
+// pdb: MobileObject::SetUpTalkingActivatorActor | MobileObject.obj | retail, vtable slot, high
+// pdb params: apTarget, aptalkingactivator
+// pdb locals: pactitalk
+void* FUN_00934f90_shell::GetTempRefOrSelf(unsigned int, void** aptalkingactivator)
 {
-    *out = this;
+    *aptalkingactivator = this;
     BGSTalkingActivator* tmp = (BGSTalkingActivator*)_ptr->GetNext();
     if (tmp->GetTempRef())
     {
@@ -1604,6 +1680,7 @@ struct FUN_009bc8c0_shell
 };
 // @fnv 0x009bc8c0
 // src: COMMUNITY 0x009bc8c0
+// pdb: Projectile::IsTransient | Projectile.obj | retail, upstream name already matches, high
 bool FUN_009bc8c0_shell::Projectile_IsTransient()
 {
     if (g_dataHandler->FormIDExists(reinterpret_cast<TESForm*>(this)->GetFormID()))
@@ -1618,6 +1695,8 @@ struct FUN_0080f790_shell : public TESObjectREFR
 };
 
 // @fnv 0x0080f790
+// pdb: MobileObject::GetHeading | MagicBallProjectile.obj | debug, call graph, medium
+// pdb params: abIgnoreImmobile
 float __thiscall FUN_0080f790_shell::GetAngleZOnReference(int dummy)
 {
     return GetAngleOnReference().z;
@@ -1939,6 +2018,7 @@ struct S0092f160
 // Calls Talk on the proc object, passing this, and returns its result.
 // @fnv 0x0092f160
 // src: XBOX_PDB 0x0092f160
+// pdb: MobileObject::IsTalking | MobileObject.obj | debug, upstream name already matches, high
 bool S0092f160::MobileObject_IsTalking()
 {
     return proc->Talk(this);
@@ -1982,15 +2062,17 @@ struct FUN_00930540_shell
 {
     char pad[0x410];
     FUN_00629670_T m_410;
-    void __thiscall bhkCharacterController_SetSupported(unsigned char param);
+    void __thiscall bhkCharacterController_SetSupported(unsigned char abTF);
 };
 
 // Forwards the given byte and the constant 0x100 to the member's FUN_00629670.
 // @fnv 0x00930540
 // src: XBOX_PDB 0x00930540
-void __thiscall FUN_00930540_shell::bhkCharacterController_SetSupported(unsigned char abValue)
+// pdb: bhkCharacterController::SetSupported | MobileObject.obj | debug, upstream name already matches, high
+// pdb params: abTF
+void __thiscall FUN_00930540_shell::bhkCharacterController_SetSupported(unsigned char abTF)
 {
-    m_410.bhkCharacterListener_SetFlag(0x100, abValue);
+    m_410.bhkCharacterListener_SetFlag(0x100, abTF);
 }
 
 namespace fnv_009305d0 {
@@ -2011,6 +2093,7 @@ class FUN_009305d0_shell
 
 // @fnv 0x009305d0
 // src: XBOX_PDB 0x009305d0
+// pdb: bhkCharacterController::QCanRoll | MobileObject.obj | debug, upstream name already matches, high
 bool FUN_009305d0_shell::bhkCharacterController_QCanRoll()
 {
     return m_flags.FUN_00621270(0x4000000) != 0;
@@ -2181,6 +2264,8 @@ struct FUN_00931880_shell : MobileObject
 
 // @fnv 0x00931880
 // src: COMMUNITY 0x00931880
+// pdb: MobileObject::ChangeProcessLevel | MobileObject.obj | retail, vtable slot, high
+// pdb locals: bChange
 bool FUN_00931880_shell::MobileObject_UpdateProcessLevel()
 {
     bool result = true;
@@ -2189,7 +2274,7 @@ bool FUN_00931880_shell::MobileObject_UpdateProcessLevel()
     {
         if (g_TES->IsCellBuffered(reinterpret_cast< ::TESObjectCELL*>(((LowProcess*)this)->LowProcess::GetTarget()), true))
         {
-            if (((TESResponse*)m_pBaseProcess)->GetNext())
+            if (((TESResponse*)pCurrentProcess)->GetNext())
             {
                 ((Vtable_Shell*)this)->VirtualMethod_240();
             }
@@ -2369,19 +2454,22 @@ struct Vtable_Shell
 
 struct FUN_00931920_shell : MobileObject
 {
-    bool CheckTargetAndDelete(bool bCheck);
+    bool MobileObject_ChangeProcessLevel(bool bIgnoreBuffer);
 };
 
 // @fnv 0x00931920
-bool FUN_00931920_shell::CheckTargetAndDelete(bool bCheck)
+// src: XBOX_RETAIL_PDB 0x00931920
+// pdb: MobileObject::ChangeProcessLevel | MobileObject.obj | retail, object-file gap fill, high
+// pdb locals: bChange
+bool FUN_00931920_shell::MobileObject_ChangeProcessLevel(bool bIgnoreBuffer)
 {
     bool result = true;
 
     if (((Vtable_Shell*)this)->VirtualMethod_1d0())
     {
-        if (g_TES->IsCellBuffered(reinterpret_cast< ::TESObjectCELL*>(((LowProcess*)this)->LowProcess::GetTarget()), bCheck))
+        if (g_TES->IsCellBuffered(reinterpret_cast< ::TESObjectCELL*>(((LowProcess*)this)->LowProcess::GetTarget()), bIgnoreBuffer))
         {
-            if (((Getter28View*)m_pBaseProcess)->GetNext())
+            if (((Getter28View*)pCurrentProcess)->GetNext())
             {
                 ((Vtable_Shell*)this)->VirtualMethod_240();
             }
@@ -2875,13 +2963,15 @@ struct FUN_00932490_shell : MobileObject
 };
 
 // @fnv 0x00932490
+// pdb: MobileObject::InitLoadGame | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
 void FUN_00932490_shell::SetProcessFlags(unsigned int aiFlags, unsigned int aiOldFlags)
 {
     TESObjectREFR_InitLoadGame(aiFlags, aiOldFlags);
 
-    if (m_pBaseProcess)
+    if (pCurrentProcess)
     {
-        ((Process_Shell*)m_pBaseProcess)->VirtualMethod_560(aiFlags, aiOldFlags, this);
+        ((Process_Shell*)pCurrentProcess)->VirtualMethod_560(aiFlags, aiOldFlags, this);
     }
 
     if ((aiFlags & 0) || (aiOldFlags & 0))
@@ -2979,6 +3069,7 @@ struct FUN_009358f0_Host
 };
 // Calls the Target virtual method on the object pointed to by p.
 // @fnv 0x009358f0
+// pdb: MobileObject::GetCurrentTarget | MobileObject.obj | debug, object-file run extension, low
 void FUN_009358f0_Host::InvokeTarget()
 {
     p->Target();
@@ -2987,7 +3078,7 @@ void FUN_009358f0_Host::InvokeTarget()
 namespace fnv_009319c0 {
 struct FUN_009319c0_shell : public MobileObject
 {
-    bool MobileObject_SetProcessLevel(int);
+    bool MobileObject_ChangeProcessLevel(int);
 };
 
 extern RecursiveSpinLock DAT_011f11a0;
@@ -3157,8 +3248,10 @@ struct FUN_009319c0_vt
 
 // Locks, deletes the queued object at offset 0x68 and enqueues its response when level is -1; otherwise allocates it and dispatches a start method by level.
 // @fnv 0x009319c0
-// src: COMMUNITY 0x009319c0
-bool FUN_009319c0_shell::MobileObject_SetProcessLevel(int aeProcessLevel)
+// src: XBOX_RETAIL_PDB 0x009319c0
+// pdb: MobileObject::ChangeProcessLevel | MobileObject.obj | retail, call graph (shared callers), high
+// pdb locals: bChange
+bool FUN_009319c0_shell::MobileObject_ChangeProcessLevel(int aeProcessLevel)
 {
     bool bresult = false;
     if (aeProcessLevel == -1)
@@ -3598,6 +3691,9 @@ struct FUN_00932520_shell : MobileObject
 
 // Calls the base flag update, then updates the character controller or actor deletion queue depending on the actor state and flags.
 // @fnv 0x00932520
+// pdb: MobileObject::FinishInitLoadGame | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: pactor, pcon, pos
 void FUN_00932520_shell::UpdateFlags(unsigned int aiFlags, unsigned int aiOldFlags)
 {
     ((FUN_0055f780_cls*)this)->TESObjectREFR_FinishInitLoadGame(aiFlags, aiOldFlags);
@@ -3633,7 +3729,7 @@ void FUN_00932520_shell::UpdateFlags(unsigned int aiFlags, unsigned int aiOldFla
         {
             Unk_92();
             ((ActiveEffect*)*(Proc_00932520**)((char*)this + 0x68))->BaseProcess_SetLastTimeProcessed(g_calendar.GetGameTime() - 0.5);
-            DAT_011e0e80.RemoveMobileObjectFromList(this);
+            DAT_011e0e80.RemoveActorFromTempChangeList(this);
         }
         DAT_011f11a0.Unlock();
         if (*(Proc_00932520**)((char*)this + 0x68))
@@ -4013,17 +4109,20 @@ struct ProcLoad_00932a00
 };
 struct FUN_00932a00_t : public MobileObject
 {
-    void MobileObject_SetProcessLevel(int);
+    void MobileObject_ChangeProcessLevel(int);
     void ApplyChanges(BGSLoadFormBuffer*);
     void MobileObject_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // @fnv 0x00932a00
 // src: XBOX_PDB 0x00932a00
+// pdb: MobileObject::LoadGame | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: cprocesslevel
 void FUN_00932a00_t::MobileObject_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     char cprocessLevel = -1;
     apLoadGameBuffer->ReadTypedData((void*)&cprocessLevel, 1);
-    MobileObject_SetProcessLevel(cprocessLevel);
+    MobileObject_ChangeProcessLevel(cprocessLevel);
     ApplyChanges(apLoadGameBuffer);
     apLoadGameBuffer->ReadTypedData((void*)((char*)this + 0x84), 1);
     apLoadGameBuffer->ReadTypedData((void*)((char*)this + 0x85), 1);
@@ -4075,7 +4174,7 @@ struct S_00562660
 };
 struct S_009319c0
 {
-    void MobileObject_SetProcessLevel(int);
+    void MobileObject_ChangeProcessLevel(int);
 };
 struct RefX
 {
@@ -4587,6 +4686,8 @@ struct Ref_00932b70
 
 // @fnv 0x00932b70
 // src: XBOX_PDB 0x00932b70
+// pdb: MobileObject::InitLoadGame | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
 void FUN_00932b70_shell::MobileObject_InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     ((S_00562660*)this)->TESObjectREFR_InitLoadGameBGS(apLoadGameBuffer);
@@ -4605,7 +4706,7 @@ void FUN_00932b70_shell::MobileObject_InitLoadGame(BGSLoadFormBuffer* apLoadGame
     if (!*(void**)((char*)this + 0x68) && !((RefX*)this)->TESForm_GetDisabledOrDeleted())
     {
         *(Base_0092c950**)((char*)this + 0x68) = new Base_0092c950;
-        ((S_009319c0*)this)->MobileObject_SetProcessLevel(GetProcessTier());
+        ((S_009319c0*)this)->MobileObject_ChangeProcessLevel(GetProcessTier());
     }
     if (((RefA*)this)->GetReferenceType())
     {
@@ -4619,22 +4720,25 @@ void FUN_00932b70_shell::MobileObject_InitLoadGame(BGSLoadFormBuffer* apLoadGame
 struct FUN_00933150_shell : TESObjectREFR
 {
     int GetReferenceType();
-    BSSoundHandle PlaySoundByFormID(unsigned int formID, bool loop, unsigned int flags, bool follow);
+    BSSoundHandle PlaySoundByFormID(unsigned int aiSoundFormID, bool abLoop, unsigned int aiSoundType, bool abAllowCopy);
 };
 
 // Looks up a sound handle by form ID, positions it at this reference's position when flags has bit 2 and a node exists, then plays it and returns the handle.
 // @fnv 0x00933150
-BSSoundHandle FUN_00933150_shell::PlaySoundByFormID(unsigned int formID, bool loop, unsigned int flags, bool follow)
+// pdb: MobileObject::PlaySound | MobileObject.obj | retail, call graph (shared callers), high
+// pdb params: apSoundFileName, abLoop, aiSoundType
+// pdb locals: soundHand, loc
+BSSoundHandle FUN_00933150_shell::PlaySoundByFormID(unsigned int aiSoundFormID, bool abLoop, unsigned int aiSoundType, bool abAllowCopy)
 {
     BSSoundHandle sound;
-    sound = BSAudio::GetSingleton()->GetSoundHandleByFormID(formID, flags);
-    if (GetReferenceType() && (flags & 2))
+    sound = BSAudio::GetSingleton()->GetSoundHandleByFormID(aiSoundFormID, aiSoundType);
+    if (GetReferenceType() && (aiSoundType & 2))
     {
         NiPoint3 position = *static_cast<const TESObjectREFR*>(this)->GetPos();
         sound.SetPosition(position.x, position.y, position.z);
         sound.SetObjectToFollow(reinterpret_cast<NiAVObject*>(GetReferenceType()));
     }
-    sound.Play(loop);
+    sound.Play(abLoop);
     return sound;
 }
 
@@ -4688,6 +4792,8 @@ extern PlayerCharacter* _g_thePlayer;
 bool __fastcall TESTopicInfo_IsRunImmediately(char const*);
 // @fnv 0x00934250
 // src: XBOX_PDB 0x00934250
+// pdb: MobileObject::StopCurrentDialogue | MobileObject.obj | retail, upstream name already matches, high
+// pdb locals: pproc, pinfo, ptopic, pactor
 void FUN_00934250_shell::MobileObject_StopCurrentDialogue()
 {
     BaseProcess* pProcess = ((Actor*)this)->GetProcess();
@@ -4951,6 +5057,8 @@ struct MobileVtbl
 // Compares the current level with a level derived from cell load state and switches, queues for deletion, or resets the object accordingly.
 // @fnv 0x009c45d0
 // src: XBOX_PDB 0x009c45d0
+// pdb: Projectile::ChangeProcessLevel | Projectile.obj | retail, upstream name already matches, high
+// pdb locals: pcell, bchange, enewLevel, bisPermanent, eoldLevel, aeCurrentList
 bool FUN_009c45d0_t::Projectile_ChangeProcessLevel()
 {
     bool result2 = true;
@@ -4983,7 +5091,7 @@ bool FUN_009c45d0_t::Projectile_ChangeProcessLevel()
         {
             if (bLoadedTmp)
             {
-                g_BGSSaveLoadGame->FUN_00849730(this, 0);
+                g_BGSSaveLoadGame->BGSSaveLoadGame_UnloadForm(this, 0);
             }
             ((MobileVtbl*)this)->MarkForDeletion(true);
             result2 = false;
@@ -5085,7 +5193,7 @@ struct Act_009e3520
 };
 struct FUN_008b8f90_S
 {
-    void ProcessTargets();
+    void Explosion_ProcessTargets();
 };
 
 float __fastcall FUN_004a7290(const NiPoint3&);
@@ -5218,7 +5326,7 @@ struct bhkCharControllerVT
     virtual void vfn_C8(MovementPose* apMoveData);
     bool bhkCharacterController_QSupported();
     int bhkCharacterController_GetWorld();
-    bool HasFlag40000();
+    bool bhkCharacterController_QFarAway();
     bool bhkCharacterController_QCanPitch();
     bool bhkCharacterController_QCanRoll();
     bool bhkCharacterController_QChaseBip();
@@ -5542,6 +5650,9 @@ struct MobileObjectVT
 #pragma strict_gs_check(push, on)
 // @fnv 0x0092f260
 // src: XBOX_PDB 0x0092f260
+// pdb: MobileObject::Move | MobileObject.obj | retail, string-set bridge, high
+// pdb params: afDeltaTime, arDeltaMove, aiMoveDir
+// pdb locals: pos, diff, esitState, flengthSqr, bisImmobile, bisProjectile, fanglex, fanglez, pactor, bsittingCheckSupport, bdynamicMotionActor, pcon, fangley, bshouldSitStateUpdate, iFrameCounter, rot, largeDelta, pws, tmpMove, pc, tmpLoc, fheightNavMesh, fheightWater, loc ...
 bhkCharacterController* FUN_0092f260_shell::MobileObject_Move(float afDeltaTime, NiPoint3* arDeltaMove,
                                                          unsigned int aiMoveDir)
 {
@@ -5663,7 +5774,7 @@ bhkCharacterController* FUN_0092f260_shell::MobileObject_Move(float afDeltaTime,
             {
                 tmpLoc.z = fheightNavMesh;
             }
-            if (pcon && ((bhkCharControllerVT*)pcon)->bhkCharacterController_GetWorld() && !((bhkCharControllerVT*)pcon)->HasFlag40000() &&
+            if (pcon && ((bhkCharControllerVT*)pcon)->bhkCharacterController_GetWorld() && !((bhkCharControllerVT*)pcon)->bhkCharacterController_QFarAway() &&
                 (((bhkCharControllerVT*)pcon)->bhkCharacterController_QCanPitch() || ((bhkCharControllerVT*)pcon)->bhkCharacterController_QCanPitch() ||
                  bhkCharacterListener_QQuadruped((CharFlags*)((char*)pcon + 0x410))))
             {
@@ -5770,7 +5881,7 @@ bhkCharacterController* FUN_0092f260_shell::MobileObject_Move(float afDeltaTime,
                 }
             }
             if (pactor)
-                ((FUN_008b8f90_S*)pactor)->ProcessTargets();
+                ((FUN_008b8f90_S*)pactor)->Explosion_ProcessTargets();
         }
         else
         {
@@ -5854,6 +5965,8 @@ struct FUN_00935ae0_t : public MobileObject
 // Removes and deletes each stored say-once topic info whose date and hour have already passed relative to the current game date and time.
 // @fnv 0x00935ae0
 // src: XBOX_PDB 0x00935ae0
+// pdb: MobileObject::UpdateTopicInfoSayOnce | MobileObject.obj | retail, upstream name already matches, high
+// pdb locals: pextra, pList, icurrentyear, fhour, psayonceinfo, icurrentmonth, iday, fcurrenthour, imonth, iyear, bremove, icurrentday
 void FUN_00935ae0_t::MobileObject_UpdateTopicInfoSayOnce()
 {
     ExtraSayTopicInfoOnceADay* pextra9 = 0;
@@ -5953,6 +6066,7 @@ struct FUN_009c4da0_shell
 };
 
 // @fnv 0x009c4da0
+// pdb: Projectile::CleanUpPointersOnDisable | Projectile.obj | retail, vtable slot, high
 void FUN_009c4da0_shell::ClearCombatStyleAndActorCause()
 {
     while (!((BSSimpleList_standin*)((char*)this + 0x88))->_ref_008256d0())
@@ -5982,13 +6096,16 @@ struct FUN_00931ff0_shell : public MobileObject
 
 // @fnv 0x00931ff0
 // src: XBOX_PDB 0x00931ff0
+// pdb: MobileObject::GetSaveSize | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short __thiscall FUN_00931ff0_shell::MobileObject_GetSaveSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
     isize += 1;
     isize += ((FUN_0055e730_shell*)this)->TESObjectREFR_GetSaveSize(aiFlags);
-    if (m_pBaseProcess)
-        isize += m_pBaseProcess->GetSaveSize(aiFlags, this);
+    if (pCurrentProcess)
+        isize += pCurrentProcess->GetSaveSize(aiFlags, this);
     return isize;
 }
 
@@ -6839,32 +6956,35 @@ struct FUN_00932880_shell
 
 // @fnv 0x00932880
 // src: XBOX_PDB 0x00932880
-void FUN_00932880_shell::MobileObject_SaveGame(BGSSaveFormBuffer* pSaveGameBuffer)
+// pdb: MobileObject::SaveGame | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: cprocesslevel
+void FUN_00932880_shell::MobileObject_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     char cprocessLevel = -1;
 
     if (m_pBaseProcess)
         cprocessLevel = m_pBaseProcess->GetNext();
 
-    pSaveGameBuffer->SaveData(&cprocessLevel, 1, 0);
-    this->TESObjectREFR_SaveGame_00562230(pSaveGameBuffer);
-    pSaveGameBuffer->SaveData(&field84, 1, 0);
-    pSaveGameBuffer->SaveData(&field85, 1, 0);
-    pSaveGameBuffer->SaveData(&field7c, 1, 0);
-    pSaveGameBuffer->SaveData(&field7f, 1, 0);
-    pSaveGameBuffer->SaveData(&field80, 1, 0);
-    pSaveGameBuffer->SaveData(&field7d, 1, 0);
-    pSaveGameBuffer->SaveData(&field7e, 1, 0);
-    pSaveGameBuffer->SaveData(&field86, 1, 0);
-    pSaveGameBuffer->SaveData(&field74, 4, 0);
-    pSaveGameBuffer->SaveData(&field78, 4, 0);
-    pSaveGameBuffer->SaveData(&field81, 1, 0);
-    pSaveGameBuffer->SaveData(&field83, 1, 0);
-    pSaveGameBuffer->SerializeFormData(m_pLinkedReference, 0);
-    pSaveGameBuffer->SerializeFormData(m_pMobileObject, 0);
+    apSaveGameBuffer->SaveData(&cprocessLevel, 1, 0);
+    this->TESObjectREFR_SaveGame_00562230(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData(&field84, 1, 0);
+    apSaveGameBuffer->SaveData(&field85, 1, 0);
+    apSaveGameBuffer->SaveData(&field7c, 1, 0);
+    apSaveGameBuffer->SaveData(&field7f, 1, 0);
+    apSaveGameBuffer->SaveData(&field80, 1, 0);
+    apSaveGameBuffer->SaveData(&field7d, 1, 0);
+    apSaveGameBuffer->SaveData(&field7e, 1, 0);
+    apSaveGameBuffer->SaveData(&field86, 1, 0);
+    apSaveGameBuffer->SaveData(&field74, 4, 0);
+    apSaveGameBuffer->SaveData(&field78, 4, 0);
+    apSaveGameBuffer->SaveData(&field81, 1, 0);
+    apSaveGameBuffer->SaveData(&field83, 1, 0);
+    apSaveGameBuffer->SerializeFormData(m_pLinkedReference, 0);
+    apSaveGameBuffer->SerializeFormData(m_pMobileObject, 0);
 
     if (m_pBaseProcess)
-        reinterpret_cast<V330*>(m_pBaseProcess)->SaveGame(pSaveGameBuffer);
+        reinterpret_cast<V330*>(m_pBaseProcess)->SaveGame(apSaveGameBuffer);
 }
 }  // namespace fnv_00932880
 
@@ -6879,6 +6999,7 @@ class B5725B0Form
 // Returns true when GetFormType() is one of 0x3d, 0x3e, 0x3f, 0x40 or 0x69, otherwise false.
 // @fnv 0x005725b0
 // src: COMMUNITY 0x005725b0
+// pdb: TESObjectREFR::IsProjectile | TESObjectREFR.obj | debug, upstream name already matches, high
 bool B5725B0Form::TESObjectREFR_IsProjectile()
 {
     switch (GetFormType())
@@ -6902,7 +7023,7 @@ struct Gen_vec3_local
 
 struct Gen_probe_target
 {
-    bool TESObjectCELL_GetLandHeight(Gen_vec3_local* v, float* f);
+    bool TESObjectCELL_GetLandHeight(Gen_vec3_local* arPos, float* arHeight);
 };
 
 class FUN_00576470_cls
@@ -7041,6 +7162,8 @@ class FUN_00576470_cls
 
 // Gets a probe target, tests the object's position against it, and if it hits, stores the returned height in z and applies the position.
 // @fnv 0x00576470
+// pdb: TESObjectREFR::ClampToGround | TESObjectREFR.obj | retail, vtable slot, high
+// pdb locals: pcell, bres, pos, fheight
 bool FUN_00576470_cls::ProbeAndApplyHeight()
 {
     bool result2 = false;
@@ -7325,17 +7448,20 @@ class E6C0Owner
 
     E6C0Node* GetNode();
     void Hide();
-    void SetShown(bool bShow);
+    void SetShown(bool abTF);
 };
 
 // Gets the node; if showing, makes it visible, sets its data to 1 and refreshes, otherwise calls FUN_00c6ffc0 on it and hides.
 // @fnv 0x0081e6c0
-void E6C0Owner::SetShown(bool bShow)
+// pdb: MagicProjectile::SetDisplayGeometry | MagicProjectile.obj | retail, vtable slot, high
+// pdb params: abTF
+// pdb locals: pcon
+void E6C0Owner::SetShown(bool abTF)
 {
     E6C0Node* pkNode = GetNode();
     if (pkNode)
     {
-        if (bShow)
+        if (abTF)
         {
             pkNode->SetVisible(0);
             CopyBlock48(pkNode->GetData(), (const void*)1);
@@ -7434,12 +7560,13 @@ struct FUN_0092ec40 : RefStub
 };
 
 // @fnv 0x0092ec40
+// pdb: MobileObject::~MobileObject | MobileObject.obj | retail, call graph (shared callers), high
 FUN_0092ec40::~FUN_0092ec40()
 {
     g_refLock.Lock(0);
     if (!IsTemporary())
     {
-        g_processLists.RemoveMobileObjectFromList(reinterpret_cast<MobileObject*>(this));
+        g_processLists.RemoveActorFromTempChangeList(reinterpret_cast<MobileObject*>(this));
         if (!g_dataHandlerStub->IsClearing())
         {
             ClearRef();
@@ -7475,6 +7602,7 @@ struct FUN_009304d0_shell
 // Initialises the object's fields: zeroes unk00 and unk20, copies DAT_011f426c into unk04 and unk10, sets unk24 to true, and returns this.
 // @fnv 0x009304d0
 // src: XBOX_PDB 0x009304d0
+// pdb: bhkCharacterListener::QStuckQuadruped | MobileObject.obj | debug, object-file run extension, low
 void* __thiscall FUN_009304d0_shell::MoveData_MoveData()
 {
     unk00 = 0.0f;
@@ -7665,16 +7793,18 @@ struct FUN_00931cc0_obj
     virtual void v2BC();
     virtual void v2C0();
     virtual void v2C4(float f);
-    void MobileObject_SetHeadingToRef(FUN_00931cc0_obj* other);
+    void MobileObject_SetHeadingToRef(FUN_00931cc0_obj* apTargetReference);
 };
 float __cdecl GetDirectionAngle(const NiPoint3* p);
 
 // Computes the distance between this object's and other's v1F4 points and passes it to v2C4.
 // @fnv 0x00931cc0
 // src: COMMUNITY 0x00931cc0
-void FUN_00931cc0_obj::MobileObject_SetHeadingToRef(FUN_00931cc0_obj* other)
+// pdb: MobileObject::SetHeading | MobileObject.obj | retail, vtable slot, high
+// pdb params: afAngle
+void FUN_00931cc0_obj::MobileObject_SetHeadingToRef(FUN_00931cc0_obj* apTargetReference)
 {
-    NiPoint3 offset = *other->v1F4() - *v1F4();
+    NiPoint3 offset = *apTargetReference->v1F4() - *v1F4();
     float dist = GetDirectionAngle(&offset);
     v2C4(dist);
 }
@@ -7963,6 +8093,8 @@ struct AngleView
 };
 float WrapAngle(float);
 // @fnv 0x00936da0
+// pdb: MobileObject::GetActualHeading | MobileObject.obj | retail, call graph, high
+// pdb locals: fheading, p3d, pyawBone, pblendCol, pcol, prigid, pactCon, porientAction
 float AngleView::GetAdjustedAngle()
 {
     float angle = f175(0);
@@ -8188,6 +8320,9 @@ struct VoiceHost
     BSSoundHandle PlayVoiceTopic(VoiceTopic*, void*, bool, bool, bool, void*, bool);
 };
 // @fnv 0x00578a80
+// pdb: TESObjectREFR::VoiceSoundFunction | TESObjectREFR.obj | retail, vtable slot, high
+// pdb params: apTopic, apTarget, abPlayerhead, abAlwaysPlay, abForceCorrectDuration, abSayTo
+// pdb locals: aSoundHand, pVoice, ivoiceEffectFlag, ftime, fSoundDuration, ptalker, pResponse, ptopicinfo, wavFileName, filename, panim, loc
 BSSoundHandle VoiceHost::PlayVoiceTopic(VoiceTopic* topic, void* listener, bool force, bool bUseAlternateFlags,
                                         bool bComputeDuration, void* unused, bool finalFlag)
 {
@@ -8502,6 +8637,8 @@ struct ProcessLevelReferenceView : RefStandIn
 
 // Compares the actor's current process level with a desired level derived from its cell and moves it high/low, or deletes it when the level is not applicable.
 // @fnv 0x008cdbf0
+// pdb: ArrowProjectile::ChangeProcessLevel | ArrowProjectile.obj | debug, object-file run extension, low
+// pdb locals: pcell, bchange, bhighProcessOnly, enewLevel, eoldLevel
 bool ProcessLevelReferenceView::UpdateProcessLevel()
 {
     bool bResult = true;
@@ -8690,19 +8827,21 @@ struct FUN_008cf8f0_shell : MobileObject
     bool SwitchProcess();
 };
 // @fnv 0x008cf8f0
+// pdb: ArrowProjectile::MovetoMiddleHigh | ArrowProjectile.obj | debug, object-file gap fill, medium
+// pdb locals: pNewProcess, aeCurrentList
 bool FUN_008cf8f0_shell::SwitchProcess()
 {
-    if (m_pBaseProcess && m_pBaseProcess->GetProcessLevel() == 1)
+    if (pCurrentProcess && pCurrentProcess->GetProcessLevel() == 1)
         return true;
-    int type = m_pBaseProcess->GetProcessLevel();
+    int type = pCurrentProcess->GetProcessLevel();
     ((ProcessLists*)&DAT_011e0e80)->ProcessLists_RemoveReference(this, type);
     MiddleHighProcess* process = new MiddleHighProcess();
-    process->Copy(m_pBaseProcess);
-    delete m_pBaseProcess;
-    m_pBaseProcess = (BaseProcess*)process;
+    process->Copy(pCurrentProcess);
+    delete pCurrentProcess;
+    pCurrentProcess = (BaseProcess*)process;
     ((ProcessLists*)&DAT_011e0e80)->ProcessLists_AddReference(this, 1, 0, 0, 0);
     ((MobileObjectVT*)this)->v127(0);
-    m_pBaseProcess->ClearIdleAnimation();
+    pCurrentProcess->ClearIdleAnimation();
     return true;
 }
 
@@ -8719,10 +8858,12 @@ struct FUN_00c6d4b0_Class
 {
     void bhkCharacterController_Jump(float);
 };
-bool __fastcall bhkCharacterController_GetIsSwimming(bhkCharacterController* pController);
+bool __fastcall bhkCharacterController_QIsSwimming(bhkCharacterController* pController);
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting847;
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting848;
 // @fnv 0x00930640
+// pdb: MobileObject::Jump | MobileObject.obj | retail, vtable slot, high
+// pdb locals: pcon, fjumpHeight
 int Holder_00884aa0::UpdateControllerScale()
 {
     bhkCharacterController* controller = reinterpret_cast<Obj930A*>(this)->FUN_009306d0();
@@ -8730,7 +8871,7 @@ int Holder_00884aa0::UpdateControllerScale()
     {
         float scale =
             Setting_Float_00403e20((float*)&originalRuntimeFloatSetting847) * reinterpret_cast<ActorV_S*>(this)->GetScale();
-        if (bhkCharacterController_GetIsSwimming(controller))
+        if (bhkCharacterController_QIsSwimming(controller))
         {
             scale = scale * Setting_Float_00403e20((float*)&originalRuntimeFloatSetting848);
         }
@@ -8765,35 +8906,38 @@ struct WorkerMobile : MobileObject
 };
 // @fnv 0x00932750
 // src: COMMUNITY 0x00932750
-void WorkerMobile::MobileObject_RevertTES(unsigned int flags)
+// pdb: MobileObject::Revert | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void WorkerMobile::MobileObject_RevertTES(unsigned int aiFlags)
 {
-    if (flags & 0x20)
+    if (aiFlags & 0x20)
     {
         FUN_00571b50();
         FUN_00483710();
         FUN_004534f0(0);
         FUN_00483710();
     }
-    TESObjectREFR_Revert(flags);
-    if (m_pBaseProcess)
-        m_pBaseProcess->RevertTES(flags, this);
-    if (DAT_011de45c->TESSaveLoadGame_GetRevertBefore() && DAT_011de45c->FUN_0047c850() && m_pBaseProcess &&
+    TESObjectREFR_Revert(aiFlags);
+    if (pCurrentProcess)
+        pCurrentProcess->RevertTES(aiFlags, this);
+    if (DAT_011de45c->TESSaveLoadGame_GetRevertBefore() && DAT_011de45c->FUN_0047c850() && pCurrentProcess &&
         (FUN_00440da0() || FUN_00440d80()))
     {
         DAT_011f11a0.BSSpinLock_Lock(0);
         ((ProcessLists*)&DAT_011e0e80)->ProcessLists_RemoveReference(this, FUN_00931850());
-        delete m_pBaseProcess;
-        m_pBaseProcess = 0;
+        delete pCurrentProcess;
+        pCurrentProcess = 0;
         DAT_011f11a0.Unlock();
     }
 }
 
+// pdb: class Conversation, size 0xc, 2 members
 class Conversation
 {
   public:
-    Character* conversation;
+    Character* lDialogueItems;
     PlayerCharacter* listener;
-    TESTopic* topic;
+    TESTopic* pCurrentItem;
     Conversation(Character*, PlayerCharacter*, TESTopic*);
     bool Conversation_FirstItem();
 };
@@ -8871,8 +9015,8 @@ struct DialogueHost : TESObjectREFR
     virtual MobileObject* GetDialogueSpeaker(MobileObject*, int*);
     int FUN_00931850();
     void MobileObject_StopCurrentDialogue();
-    bool MobileObject_StartConversation(MobileObject* target, int p2, int p3, int p4, int p5, bool refresh, TESTopic* topic, int p8,
-                      int p9);
+    bool MobileObject_StartConversation(MobileObject* apTarget, int pPackLoc, int pPackSecondLoc, int bHeadTrack, int bMove, bool bflag, TESTopic* pTopic, int abTargetContinueMoving,
+                      int abTargetMoveTowardStarter);
 };
 struct DialogueLocation : FUN_00670b30
 {
@@ -8886,40 +9030,43 @@ struct FUN_0067f030
 };
 // @fnv 0x00934fd0
 // src: COMMUNITY 0x00934fd0
-bool DialogueHost::MobileObject_StartConversation(MobileObject* target, int aiUnused2, int aiUnused3, int aiUnused4, int aiUnused5,
-                                bool refresh, TESTopic* topic, int aiUnused8, int aiUnused9)
+// pdb: MobileObject::InitiateDialogue | MobileObject.obj | retail, vtable slot, high
+// pdb params: apTarget, pPackLoc, pPackSecondLoc, bHeadTrack, bMove, bflag, pTopic, abTargetContinueMoving, abTargetMoveTowardStarter
+// pdb locals: pTempPack, pConversation, pSpeakAs, ptalkactivator, pnew, ploc, ppack
+bool DialogueHost::MobileObject_StartConversation(MobileObject* apTarget, int pPackLoc, int pPackSecondLoc, int bHeadTrack, int bMove,
+                                bool bflag, TESTopic* pTopic, int abTargetContinueMoving, int abTargetMoveTowardStarter)
 {
-    if (FUN_00931850() || ((DialogueHost*)target)->FUN_00931850())
+    if (FUN_00931850() || ((DialogueHost*)apTarget)->FUN_00931850())
         return false;
     TESPackage* context = ((MobileObject*)this)->GetCurrentAIProcess()->GetCurrentPackage();
     Conversation* speaker = 0;
-    if (!target || (target->GetSitSleepState() != 0 && target->GetSitSleepState() != 4 && target->GetSitSleepState() != 9))
+    if (!apTarget || (apTarget->GetSitSleepState() != 0 && apTarget->GetSitSleepState() != 4 && apTarget->GetSitSleepState() != 9))
         return false;
     MobileObject* conversation = (MobileObject*)this;
     int previous = 0;
     if (((MobileObject*)this)->IsTalkingActivator())
-        conversation = GetDialogueSpeaker(target, &previous);
-    if (target != (MobileObject*)g_thePlayer)
-        speaker = new Conversation((Character*)conversation, (PlayerCharacter*)target, topic);
+        conversation = GetDialogueSpeaker(apTarget, &previous);
+    if (apTarget != (MobileObject*)g_thePlayer)
+        speaker = new Conversation((Character*)conversation, (PlayerCharacter*)apTarget, pTopic);
     MobileObject_StopCurrentDialogue();
     process->StopRunOncePackage();
-    if (target == (MobileObject*)g_thePlayer || speaker->Conversation_FirstItem())
+    if (apTarget == (MobileObject*)g_thePlayer || speaker->Conversation_FirstItem())
     {
         ((MobileObject*)this)->GetCurrentAIProcess()->SetProcessReference((MobileObject*)this);
         ((MobileObject*)this)->GetCurrentAIProcess()->ClearCachedTargetReferences(true);
-        ((MobileObject*)this)->GetCurrentAIProcess()->ClearHighProcessState(target);
-        target->GetCurrentAIProcess()->ClearCachedTargetReferences(true);
-        target->GetCurrentAIProcess()->ClearHighProcessState(this);
+        ((MobileObject*)this)->GetCurrentAIProcess()->ClearHighProcessState(apTarget);
+        apTarget->GetCurrentAIProcess()->ClearCachedTargetReferences(true);
+        apTarget->GetCurrentAIProcess()->ClearHighProcessState(this);
         FUN_009edd80* location =
-            new FUN_009edd80((FUN_0083b9a0_shell*)speaker, (Actor*)this, (Actor*)target, previous, true, true);
-        location->iUnk8C = (int)topic;
+            new FUN_009edd80((FUN_0083b9a0_shell*)speaker, (Actor*)this, (Actor*)apTarget, previous, true, true);
+        location->iUnk8C = (int)pTopic;
         if (context)
             ((PackageMethods*)location)->CopyAllFlags(context);
         ((PackageMethods*)location)->SetPackageType(28);
         ((PackageMethods*)location)->FUN_00826b40(true);
         ((PackageMethods*)location)->FUN_00826b90(true);
         FUN_00670b30* package = (FUN_00670b30*)new FUN_0067f030;
-        package->PackageLocation_SetLocReference(target);
+        package->PackageLocation_SetLocReference(apTarget);
         ((PackageMethods*)location)->SetPackageLocation(package);
         delete package;
         PackageTargetRecord* destination = new PackageTargetRecord;
@@ -8927,14 +9074,14 @@ bool DialogueHost::MobileObject_StartConversation(MobileObject* target, int aiUn
         delete destination;
         ((PackageMethods*)location)->FUN_00984f60(10);
         ((PackageMethods*)location)->FUN_00671d10()->SetTargetKind(0);
-        ((PackageMethods*)location)->FUN_00671d10()->SetTargetObjectReference(reinterpret_cast<TESObjectREFR*>(target));
+        ((PackageMethods*)location)->FUN_00671d10()->SetTargetObjectReference(reinterpret_cast<TESObjectREFR*>(apTarget));
         if (GetSitSleepState() == 4)
             ((PackageMethods*)location)->FUN_00671d10()->SetTargValue(200);
         else
             ((PackageMethods*)location)->FUN_00671d10()->SetTargValue(90);
         ((MobileObject*)this)->GetCurrentAIProcess()->ResetPackageState();
         SetDialoguePackage(location, false, true);
-        if (refresh)
+        if (bflag)
             ((MobileObject*)this)->GetCurrentAIProcess()->SetProcessTarget((Actor*)this, 1);
         return true;
     }
@@ -8955,10 +9102,12 @@ class FUN_009b1450_Mobile : public MobileObject
 
 // @fnv 0x009b1450
 // src: COMMUNITY 0x009b1450
+// pdb: Explosion::ChangeProcessLevel | Explosion.obj | retail, upstream name already matches, high
+// pdb locals: pcell, bchange, enewLevel, eoldLevel
 bool FUN_009b1450_Mobile::Explosion_ChangeProcessLevel()
 {
     bool bResult = true;
-    int eCurrent = m_pBaseProcess->GetProcessLevel();
+    int eCurrent = pCurrentProcess->GetProcessLevel();
     int eDesired2 = 3;
     TESObjectCELL* pkCell = GetParentCell();
     if ((GetNiNode() || g_pModelLoader->ModelLoader_IsReferenceQueued(this)) && g_TES->IsCellBuffered(pkCell, true))
@@ -8989,18 +9138,20 @@ struct FUN_009c4920_shell : public MobileObject
     bool __thiscall ReplaceProcessWithMiddleHigh();
 };
 // @fnv 0x009c4920
+// pdb: Projectile::MovetoMiddleHigh | Projectile.obj | retail, vtable slot, high
+// pdb locals: pNewProcess, aeCurrentList
 bool FUN_009c4920_shell::ReplaceProcessWithMiddleHigh()
 {
     g_011f11a0.Lock(0);
-    if (m_pBaseProcess)
+    if (pCurrentProcess)
     {
-        PROCESS_TYPE level = m_pBaseProcess->GetProcessLevel();
+        PROCESS_TYPE level = pCurrentProcess->GetProcessLevel();
         ((ProcessLists*)&DAT_011e0e80)->ProcessLists_RemoveReference(this, level);
     }
     BaseProcess* process = new MiddleHighProcess;
-    process->Copy(m_pBaseProcess);
-    delete m_pBaseProcess;
-    m_pBaseProcess = process;
+    process->Copy(pCurrentProcess);
+    delete pCurrentProcess;
+    pCurrentProcess = process;
     ((ProcessLists*)&DAT_011e0e80)->ProcessLists_AddReference(this, 1, false, false, 0);
     g_011f11a0.Unlock();
     return true;
@@ -9147,6 +9298,9 @@ struct Owner277
 };
 
 // @fnv 0x00933010
+// pdb: MobileObject::PlaySound | MobileObject.obj | debug, object-file gap fill, medium
+// pdb params: apSoundFileName, abLoop, aiSoundType
+// pdb locals: soundHand, loc
 BSSoundHandle Owner277::PlaySoundAtOwner(int aiID, bool abFlag, unsigned int auiFlags)
 {
     BSSoundHandle kHandle;
@@ -9584,82 +9738,85 @@ class FUN_009320e0_class : public Actor
 {
   public:
     void TESForm_LoadGameDataOLD(void* pData, int size);
-    void TESObjectREFR_LoadGame(void* arg1, void* arg2);
-    void SetProcessLevel(void* arg1, void* arg2);
+    void TESObjectREFR_LoadGame(void* aiFlags, void* aiCurrentFlags);
+    void SetProcessLevel(void* aiFlags, void* aiCurrentFlags);
 };
 
 // @fnv 0x009320e0
-void FUN_009320e0_class::SetProcessLevel(void* arg1, void* arg2)
+// pdb: MobileObject::LoadGame | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: cprocesslevel
+void FUN_009320e0_class::SetProcessLevel(void* aiFlags, void* aiCurrentFlags)
 {
     char processType;
     TESForm_LoadGameDataOLD(&processType, 1);
     switch (processType)
     {
     case PROCESS_TYPE_PROCESS_TYPE_NONE:
-        if (m_pBaseProcess)
+        if (pCurrentProcess)
         {
             DAT_011f11a0.Lock(0);
-            ((ProcessLists*)&DAT_011e0e80)->ProcessLists_RemoveReference(this, m_pBaseProcess->GetProcessLevel());
-            delete m_pBaseProcess;
+            ((ProcessLists*)&DAT_011e0e80)->ProcessLists_RemoveReference(this, pCurrentProcess->GetProcessLevel());
+            delete pCurrentProcess;
             DAT_011f11a0.Unlock();
-            m_pBaseProcess = 0;
+            pCurrentProcess = 0;
         }
         break;
     case PROCESS_TYPE_PROCESS_TYPE_HIGH:
-        if (m_pBaseProcess)
+        if (pCurrentProcess)
         {
-            if (m_pBaseProcess->GetProcessLevel() != PROCESS_TYPE_PROCESS_TYPE_HIGH)
+            if (pCurrentProcess->GetProcessLevel() != PROCESS_TYPE_PROCESS_TYPE_HIGH)
             {
                 StartHighProcess();
             }
         }
         else
         {
-            m_pBaseProcess = new HighProcess();
+            pCurrentProcess = new HighProcess();
             ((ProcessLists*)&DAT_011e0e80)->ProcessLists_AddReference(this, PROCESS_TYPE_PROCESS_TYPE_HIGH, false, false, false);
         }
         break;
     case PROCESS_TYPE_PROCESS_TYPE_MIDDLE_HIGH:
-        if (m_pBaseProcess)
+        if (pCurrentProcess)
         {
-            if (m_pBaseProcess->GetProcessLevel() != PROCESS_TYPE_PROCESS_TYPE_MIDDLE_HIGH)
+            if (pCurrentProcess->GetProcessLevel() != PROCESS_TYPE_PROCESS_TYPE_MIDDLE_HIGH)
             {
                 Unk_93();
             }
         }
         else
         {
-            m_pBaseProcess = new MiddleHighProcess();
+            pCurrentProcess = new MiddleHighProcess();
             ((ProcessLists*)&DAT_011e0e80)
                 ->ProcessLists_AddReference(this, PROCESS_TYPE_PROCESS_TYPE_MIDDLE_HIGH, false, false, false);
         }
         break;
     case PROCESS_TYPE_PROCESS_TYPE_MIDDLE_LOW:
-        if (m_pBaseProcess)
+        if (pCurrentProcess)
         {
-            if (m_pBaseProcess->GetProcessLevel() != PROCESS_TYPE_PROCESS_TYPE_MIDDLE_LOW)
+            if (pCurrentProcess->GetProcessLevel() != PROCESS_TYPE_PROCESS_TYPE_MIDDLE_LOW)
             {
                 Unk_92();
             }
         }
         else
         {
-            m_pBaseProcess = new FUN_0092c950();
+            pCurrentProcess = new FUN_0092c950();
             ((ProcessLists*)&DAT_011e0e80)
                 ->ProcessLists_AddReference(this, PROCESS_TYPE_PROCESS_TYPE_MIDDLE_LOW, false, false, false);
         }
         break;
     case PROCESS_TYPE_PROCESS_TYPE_LOW:
-        if (m_pBaseProcess)
+        if (pCurrentProcess)
         {
-            if (m_pBaseProcess->GetProcessLevel() != PROCESS_TYPE_PROCESS_TYPE_LOW)
+            if (pCurrentProcess->GetProcessLevel() != PROCESS_TYPE_PROCESS_TYPE_LOW)
             {
                 Unk_91();
             }
         }
         else
         {
-            m_pBaseProcess = new MobileObjectLowProcess();
+            pCurrentProcess = new MobileObjectLowProcess();
             ((ProcessLists*)&DAT_011e0e80)->ProcessLists_AddReference(this, PROCESS_TYPE_PROCESS_TYPE_LOW, false, false, false);
         }
         break;
@@ -9673,11 +9830,11 @@ void FUN_009320e0_class::SetProcessLevel(void* arg1, void* arg2)
         }
     }
 
-    TESObjectREFR_LoadGame(arg1, arg2);
+    TESObjectREFR_LoadGame(aiFlags, aiCurrentFlags);
 
-    if (m_pBaseProcess)
+    if (pCurrentProcess)
     {
-        ((ProcessVTableFix*)m_pBaseProcess)->Method_0x558(arg1, arg2, this);
+        ((ProcessVTableFix*)pCurrentProcess)->Method_0x558(aiFlags, aiCurrentFlags, this);
     }
 }
 }  // namespace fnv_009320e0
@@ -9967,7 +10124,10 @@ struct Obj
 };
 // @fnv 0x009339a0
 // src: XBOX_PDB 0x009339a0
-void Obj::MobileObject_UpdateInDialogue(float delta, Obj* target, bool skip)
+// pdb: MobileObject::UpdateInDialogue | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: afDelta, pResponse, abChangeAnimationEndVoice
+// pdb locals: pcell, btalkflag, panim, pdia, pbasepack, bPlayIdle, phan, bnosound, handle, isoundFileID, mgr, pref, fdelay
+void Obj::MobileObject_UpdateInDialogue(float afDelta, Obj* pResponse, bool abChangeAnimationEndVoice)
 {
     Obj* data7 = v1e4();
     Obj* actor_ = 0;
@@ -9976,16 +10136,16 @@ void Obj::MobileObject_UpdateInDialogue(float delta, Obj* target, bool skip)
         actor_ = form4;
     bool aUnused4 = false;
     bool changedVal = false;
-    if (target && FUN_008d8520() && unk7C)
+    if (pResponse && FUN_008d8520() && unk7C)
     {
         GlobalObject_0041a250 sound;
         changedVal = true;
         DAT_011e0548 = this;
         unk7D = 1;
         bool pending = true;
-        if (target->BGSSaveFormBuffer_GetForm())
+        if (pResponse->BGSSaveFormBuffer_GetForm())
         {
-            unsigned id2 = target->BGSSaveFormBuffer_GetForm()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+            unsigned id2 = pResponse->BGSSaveFormBuffer_GetForm()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
             GlobalObject_0041a250 _other;
             if (FUN_005e3fa0())
             {
@@ -10005,20 +10165,20 @@ void Obj::MobileObject_UpdateInDialogue(float delta, Obj* target, bool skip)
         }
         if (pending & unk7F)
         {
-            float volumeA = v284(target->TESDataHandler_GetWorldSpaceList()->Modelloader_GetReferencedThis(
-                &sound, target->FUN_0044ddc0(), target->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), target->FUN_006815c0()->BSStringT_char_Length(),
-                target->NiAVObject_GetParent(), target->FUN_00441110(DAT_011dea3c), 1, 1, 0, 1, 1));
+            float volumeA = v284(pResponse->TESDataHandler_GetWorldSpaceList()->Modelloader_GetReferencedThis(
+                &sound, pResponse->FUN_0044ddc0(), pResponse->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), pResponse->FUN_006815c0()->BSStringT_char_Length(),
+                pResponse->NiAVObject_GetParent(), pResponse->FUN_00441110(DAT_011dea3c), 1, 1, 0, 1, 1));
             Audio* manager3 = BSAudioManager_QInstance_00ad9060();
             manager3->BSAudioManager_SetCompletionCallback(sound.Modelloader_GetReferencedThis((void*)MobileObject_ChangeDialogueAnimation, GetHavokWorldObjectCountInSceneGraph_0084e3a0()));
             unk80 = 0;
             FUN_008d8520()->v318(volumeA);
         }
     }
-    if (!skip)
-        v268(delta);
+    if (!abChangeAnimationEndVoice)
+        v268(afDelta);
     v140();
-    if (!skip)
-        v2f8(delta);
+    if (!abChangeAnimationEndVoice)
+        v2f8(afDelta);
     if (changedVal && actor_)
         actor_->unk94 = (int)this;
     Obj* item_ = FUN_008d6f30();
@@ -10052,6 +10212,8 @@ class FUN_0081e3d0_C
 
 // @fnv 0x0081e3d0
 // src: COMMUNITY 0x0081e3d0
+// pdb: MagicProjectile::ChangeProcessLevel | MagicProjectile.obj | retail, vtable slot, high
+// pdb locals: bchange
 bool FUN_0081e3d0_C::MagicProjectile_UpdateProcessLevel()
 {
     bool bResult = true;
@@ -10270,6 +10432,8 @@ struct Owner : OwnerBase
 };
 // Calls v2a0, then if m_pBaseProcess is set, assigns a null bhkCharacterController to it and returns the result of v2a0.
 // @fnv 0x00930810
+// pdb: MobileObject::RemoveCharController | MobileObject.obj | retail, vtable slot, high
+// pdb locals: bres
 bool Owner::ReleaseCharacterController()
 {
     bool result = v2a0();
@@ -10750,7 +10914,7 @@ class xConv
 {
   public:
     int m_ai[3];
-    xConv(class xActorD* pA, class xActorD* pB, void* pTopic);
+    xConv(class xActorD* apSpeaker, class xActorD* apTarget, void* apStartingTopic);
     bool Start();
 };
 class xPkg
@@ -10966,13 +11130,16 @@ class xActorD
     void StopTalk();
     void SetSpeaker(xActorD* p);
     xPkg* GetCurrentPackage();
-    bool StartConversation(xInfo* pInfo);
+    bool StartConversation(xInfo* pDialoguePackage);
 };
 extern xActorD* xThePlayer;
 
 // On success, builds a package from pInfo, updates process state, and adds packages for the actors when applicable.
 // @fnv 0x00935480
-bool xActorD::StartConversation(xInfo* pInfo)
+// pdb: MobileObject::InitiateDialogue | MobileObject.obj | retail, vtable slot, high
+// pdb params: apTarget, pPackLoc, pPackSecondLoc, bHeadTrack, bMove, bflag, pTopic, abTargetContinueMoving, abTargetMoveTowardStarter
+// pdb locals: pTempPack, pConversation, pSpeakAs, ptalkactivator, pnew, ploc, ppack
+bool xActorD::StartConversation(xInfo* pDialoguePackage)
 {
     int qrEZrs = GetProcess()->GetStateX();
     xConv* qsSDDgz = 0;
@@ -10983,22 +11150,22 @@ bool xActorD::StartConversation(xInfo* pInfo)
     m_pkProc->Refresh();
     if (qfTOqo == xThePlayer || qsSDDgz->Start())
     {
-        if (!pInfo->IsSilent())
+        if (!pDialoguePackage->IsSilent())
         {
             GetProcess()->SetTalking(1);
             GetProcess()->SetPartner(qfTOqo);
             qfTOqo->GetProcess()->SetTalking(1);
             qfTOqo->GetProcess()->SetPartner(this);
         }
-        xPkg* qxQHW = new xPkg(qsSDDgz, this, qfTOqo, 0, 0, pInfo->GetPrevPath() == 0);
-        if (pInfo)
-            qxQHW->CopyFrom(pInfo);
+        xPkg* qxQHW = new xPkg(qsSDDgz, this, qfTOqo, 0, 0, pDialoguePackage->GetPrevPath() == 0);
+        if (pDialoguePackage)
+            qxQHW->CopyFrom(pDialoguePackage);
         qxQHW->SetFlag(0x1c);
-        qxQHW->SetMustReach(pInfo->MustReach());
-        qxQHW->SetMustComplete(pInfo->MustComplete());
-        qxQHW->SetLoc(pInfo->GetLocationPointer());
-        qxQHW->SetLoc2(pInfo->GetLoc2());
-        qxQHW->SetTarget(pInfo->GetTarget());
+        qxQHW->SetMustReach(pDialoguePackage->MustReach());
+        qxQHW->SetMustComplete(pDialoguePackage->MustComplete());
+        qxQHW->SetLoc(pDialoguePackage->GetLocationPointer());
+        qxQHW->SetLoc2(pDialoguePackage->GetLoc2());
+        qxQHW->SetTarget(pDialoguePackage->GetTarget());
         qxQHW->SetProcType(10);
         GetProcess()->Reset();
         AddPackage(qxQHW, 0, 1);
@@ -11024,24 +11191,27 @@ class FUN_00932070_MobileObject : public MobileObject
 {
   public:
     void TESForm_SaveGameDataOLD(char* data, unsigned int size);
-    void TESObjectREFR_SaveGame(unsigned int saveID);
-    void SaveProcess(unsigned int saveID);
+    void TESObjectREFR_SaveGame(unsigned int aiFlags);
+    void SaveProcess(unsigned int aiFlags);
 };
 
 // Saves the base process level and calls SaveGame on m_pBaseProcess with the given saveID.
 // @fnv 0x00932070
-void FUN_00932070_MobileObject::SaveProcess(unsigned int saveID)
+// pdb: MobileObject::SaveGame | MobileObject.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: cprocesslevel
+void FUN_00932070_MobileObject::SaveProcess(unsigned int aiFlags)
 {
     char level = -1;
-    if (m_pBaseProcess)
+    if (pCurrentProcess)
     {
-        level = m_pBaseProcess->GetProcessLevel();
+        level = pCurrentProcess->GetProcessLevel();
     }
     TESForm_SaveGameDataOLD(&level, 1);
-    TESObjectREFR_SaveGame(saveID);
-    if (m_pBaseProcess)
+    TESObjectREFR_SaveGame(aiFlags);
+    if (pCurrentProcess)
     {
-        m_pBaseProcess->SaveGameTES(saveID, this);
+        pCurrentProcess->SaveGameTES(aiFlags, this);
     }
 }
 
@@ -11476,6 +11646,8 @@ class MagicProjectileObject
 
 // @fnv 0x00933630
 // src: COMMUNITY 0x00933630
+// pdb: MobileObject::GetBoundMin | MobileObject.obj | retail, upstream name already matches, high
+// pdb locals: pbsBound
 NiPoint3 __thiscall MagicProjectileObject::MobileObject_GetBoundMin()
 {
     if (unk68 && unk68->vf5f0())
@@ -11497,6 +11669,7 @@ struct Mid83b9a0
 // Sets _p8 to this, then returns whether the value pointed to by _ref_006815c0() is non-zero.
 // @fnv 0x0083b9a0
 // src: XBOX_PDB 0x0083b9a0
+// pdb: Conversation::FirstItem | Conversation.obj | debug, upstream name already matches, high
 bool Mid83b9a0::Conversation_FirstItem()
 {
     _p8 = this;
@@ -11540,7 +11713,7 @@ struct Item
     ~Item();
     unsigned int Modelloader_GetReferencedThis();
     void FUN_004d5930(void*, float);
-    double GetNegativeMagnitude();
+    double LipSynchAnim_LoadFromFile();
     int FUN_004d5850(int);
 };
 struct ActorObject;
@@ -12286,10 +12459,13 @@ double __cdecl BSFaceGenAnimationData_GetSpeechDelay();
 // Creates and queues a named sound, configures playback parameters, and returns a computed float.
 // @fnv 0x009344d0
 // src: COMMUNITY 0x009344d0
-float ActorObject::MobileObject_DoSpeechLoadLipFiles(const char* apSoundName, SoundRef* apSoundRef, unsigned int arg3, unsigned int arg4,
-                                int duration, int target, int otherTarget, ActorObject* other, unsigned char update,
-                                unsigned char playerSound, unsigned char arg11, unsigned char arg12,
-                                unsigned char force)
+// pdb: MobileObject::SpeakSoundFunction | MobileObject.obj | retail, vtable slot, high
+// pdb params: apSoundFile, aSoundHand, aeEmotiontype, aiEmotionValue, aiStringLength, apResponseSpeakerIdle, apResponseListenerIdle, apTarget, abSetEmotion, ab2D, abQueue, abLip, abUseIdleManager
+// pdb locals: fplaydelay, isoundFlags, pact, panimdata, tempstring, fSoundDuration, bisPlayer, fdelay, ptalkingactivator, wavFileName, panim, b2D, panimation, mgr, pidle, buseidleman, pmobil, ptargact, ptargpack, ptalker, loc
+float ActorObject::MobileObject_DoSpeechLoadLipFiles(const char* apSoundFile, SoundRef* aSoundHand, unsigned int aeEmotiontype, unsigned int aiEmotionValue,
+                                int aiStringLength, int apResponseSpeakerIdle, int apResponseListenerIdle, ActorObject* apTarget, unsigned char abSetEmotion,
+                                unsigned char ab2D, unsigned char abQueue, unsigned char abLip,
+                                unsigned char abUseIdleManager)
 {
     AudioManager* mgr;
     int activeVal;
@@ -12302,29 +12478,29 @@ float ActorObject::MobileObject_DoSpeechLoadLipFiles(const char* apSoundName, So
         {
             char text[512];
             float elapsed = 0.0f;
-            FUN_0040c0e0 callState2(apSoundName);
+            FUN_0040c0e0 callState2(apSoundFile);
             curItem = GetProcess()->v223();
             ActorObject* isPlayer = 0;
-            v181(arg3);
-            v183(arg4);
-            if (apSoundName == 0)
+            v181(aeEmotiontype);
+            v183(aiEmotionValue);
+            if (apSoundFile == 0)
                 return 0.0f;
-            FUN_00406d30(text, 512, apSoundName);
+            FUN_00406d30(text, 512, apSoundFile);
             MobileObject_StopCurrentDialogue();
             unsigned char child = (unsigned char)(int)(this == (void*)_g_thePlayer);
             float active = 0.0f;
             float timeMs;
-            playFlag = child ? (unsigned char)1 : playerSound;
+            playFlag = child ? (unsigned char)1 : ab2D;
             if (TESObjectREFR_GetDistanceFromReference(_g_thePlayer, 0, 0) < *g_011cd378.Setting_Int() &&
                 (!child || (child && ((PlayerCharacter*)_g_thePlayer)->PlayerCharacter_Is3rdPerson())))
                 isPlayer = v110(0);
             if (!curItem)
             {
-                if (arg12 && !GetProcess()->v222())
+                if (abLip && !GetProcess()->v222())
                 {
                     if (BuildLipPath(callState2))
                     {
-                        if (arg11)
+                        if (abQueue)
                         {
                             GetProcess()->v220(1);
                             GetProcess()->v85(1);
@@ -12358,13 +12534,13 @@ float ActorObject::MobileObject_DoSpeechLoadLipFiles(const char* apSoundName, So
             {
                 if (activeVal)
                 {
-                    unsigned int a = target;
-                    if (target || force)
-                        process->v17(this, a, (!!target) + 2, 0, 1, 1);
+                    unsigned int a = apResponseSpeakerIdle;
+                    if (apResponseSpeakerIdle || abUseIdleManager)
+                        process->v17(this, a, (!!apResponseSpeakerIdle) + 2, 0, 1, 1);
                 }
-                if (other && other != this && (other->v63() || other->v64()))
+                if (apTarget && apTarget != this && (apTarget->v63() || apTarget->v64()))
                 {
-                    ActorObject* tmp = other;
+                    ActorObject* tmp = apTarget;
                     unsigned char next = 1;
                     if (tmp->v64())
                     {
@@ -12373,8 +12549,8 @@ float ActorObject::MobileObject_DoSpeechLoadLipFiles(const char* apSoundName, So
                         if (kIter && kIter->FUN_005f36f0())
                             next = 0;
                     }
-                    if (otherTarget || next)
-                        tmp->GetProcess()->v17(tmp, otherTarget, (otherTarget != 0) + 2, 0, 1, 1);
+                    if (apResponseListenerIdle || next)
+                        tmp->GetProcess()->v17(tmp, apResponseListenerIdle, (apResponseListenerIdle != 0) + 2, 0, 1, 1);
                 }
             }
             if (curItem)
@@ -12382,8 +12558,8 @@ float ActorObject::MobileObject_DoSpeechLoadLipFiles(const char* apSoundName, So
                 active = (float)((double)curItem->Modelloader_GetReferencedThis() / DAT_0101db88);
                 curItem->FUN_004d5930(isPlayer, g_011c56fc_arg1);
             }
-            if (update && GetProcess())
-                GetProcess()->v187(arg3);
+            if (abSetEmotion && GetProcess())
+                GetProcess()->v187(aeEmotiontype);
             unsigned int flagsZ = 0x104;
             Node* node2 = (Node*)FUN_005e3fa0();
             if (node2 && node2->BGSSaveFormBuffer_GetForm())
@@ -12394,44 +12570,44 @@ float ActorObject::MobileObject_DoSpeechLoadLipFiles(const char* apSoundName, So
                 flagsZ |= 2;
             else
                 flagsZ |= 1;
-            *apSoundRef = BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(text, flagsZ, 0);
+            *aSoundHand = BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(text, flagsZ, 0);
             mgr = BSAudioManager_QInstance_00ad9060();
             ActorObject* kSource;
             kSource = this;
-            if (other && other->v64())
-                kSource = other;
-            mgr->BSAudioManager_SetPlayCallback(apSoundRef->Modelloader_GetReferencedThis(), SetFormAccumulate, kSource->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            if (apTarget && apTarget->v64())
+                kSource = apTarget;
+            mgr->BSAudioManager_SetPlayCallback(aSoundHand->Modelloader_GetReferencedThis(), SetFormAccumulate, kSource->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
             if (!playFlag)
             {
                 NiPoint3 pos = *v125();
-                apSoundRef->FUN_00ad8be0(BSAudio_GetMinDialogDist(), BSAudio_GetMaxDialogDist());
-                apSoundRef->FUN_00ad8b60(pos.x, pos.y, pos.z);
-                apSoundRef->FUN_00ad8f20(v116());
+                aSoundHand->FUN_00ad8be0(BSAudio_GetMinDialogDist(), BSAudio_GetMaxDialogDist());
+                aSoundHand->FUN_00ad8b60(pos.x, pos.y, pos.z);
+                aSoundHand->FUN_00ad8f20(v116());
             }
             else
-                apSoundRef->SetStaticAttenuation((int)(*g_011e060c.Setting_Float_00403e20() * DAT_01017a40));
+                aSoundHand->SetStaticAttenuation((int)(*g_011e060c.Setting_Float_00403e20() * DAT_01017a40));
             if (curItem)
             {
-                timeMs = (float)((curItem->GetNegativeMagnitude() + BSFaceGenAnimationData_GetSpeechDelay()) * DAT_01017b70);
-                apSoundRef->FUN_00ad8870((int)timeMs, 0);
-                elapsed = (float)(curItem->GetNegativeMagnitude() + BSFaceGenAnimationData_GetSpeechDelay());
+                timeMs = (float)((curItem->LipSynchAnim_LoadFromFile() + BSFaceGenAnimationData_GetSpeechDelay()) * DAT_01017b70);
+                aSoundHand->FUN_00ad8870((int)timeMs, 0);
+                elapsed = (float)(curItem->LipSynchAnim_LoadFromFile() + BSFaceGenAnimationData_GetSpeechDelay());
                 if (active > DAT_01012060)
                     elapsed += active;
-                else if (apSoundRef->FUN_00ad8b30())
-                    elapsed = (float)(apSoundRef->FUN_00ad8b30() / DAT_01017b70 + elapsed);
+                else if (aSoundHand->FUN_00ad8b30())
+                    elapsed = (float)(aSoundHand->FUN_00ad8b30() / DAT_01017b70 + elapsed);
                 else
-                    elapsed = (float)((double)duration * *originalRuntimeFloatSetting184.Setting_Float_00403e20() + elapsed);
+                    elapsed = (float)((double)aiStringLength * *originalRuntimeFloatSetting184.Setting_Float_00403e20() + elapsed);
                 GetProcess()->v467(g_timeGlobal.FUN_00825c00() + (int)timeMs);
                 GetProcess()->v465(curItem);
             }
             else
             {
-                apSoundRef->FUN_00ad8870(1, 0);
-                elapsed = (float)((double)duration * *originalRuntimeFloatSetting184.Setting_Float_00403e20());
+                aSoundHand->FUN_00ad8870(1, 0);
+                elapsed = (float)((double)aiStringLength * *originalRuntimeFloatSetting184.Setting_Float_00403e20());
             }
             if (flag7d)
                 flag7c = 0;
-            GetProcess()->v292(0, *apSoundRef);
+            GetProcess()->v292(0, *aSoundHand);
             if (curItem)
             {
                 if (curItem != GetProcess()->v466())
@@ -12894,7 +13070,10 @@ class FNVCurrent : public TESObjectREFR
 // Iterates topic arrays and the player, calling refresh actions and clearing matching flags on other references.
 // @fnv 0x0092ed60
 // src: XBOX_PDB 0x0092ed60
-void FNVCurrent::MobileObject_CleanUpOtherMobileObjects(bool refresh)
+// pdb: MobileObject::CleanUpOtherMobileObjects | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: abMagicCaster
+// pdb locals: pMobArray, pmob, i, pactor, pprojectile, pexplosion
+void FNVCurrent::MobileObject_CleanUpOtherMobileObjects(bool abMagicCaster)
 {
     TopicInfoArray* topicInfoArray = reinterpret_cast<FNVTreeRoot*>(&DAT_011e0e80)->FUN_00717e50();
     TESObjectREFR* index = 0;
@@ -12909,7 +13088,7 @@ void FNVCurrent::MobileObject_CleanUpOtherMobileObjects(bool refresh)
                 TESObjectREFR* first = index;
 
                 reinterpret_cast<FNVPoly*>(reinterpret_cast<Actor*>(first)->GetProcess())->v664(this);
-                if (refresh)
+                if (abMagicCaster)
                 {
                     reinterpret_cast<FNVReferenceActions*>(first)->Actor_CheckDeletedCaster(
                         reinterpret_cast<FNVPoly*>(this)->v198());
@@ -12932,7 +13111,7 @@ void FNVCurrent::MobileObject_CleanUpOtherMobileObjects(bool refresh)
                 TESObjectREFR* other = index;
                 reinterpret_cast<FUN_009b28a0_t*>(other)->Explosion_CheckRefDeleted(this);
             }
-            else if (refresh)
+            else if (abMagicCaster)
             {
                 void* mobile = FNV_DynamicCast(index, 0, &DAT_01184920, &DAT_011a0e88, 0);
                 if (mobile)
@@ -12953,7 +13132,7 @@ void FNVCurrent::MobileObject_CleanUpOtherMobileObjects(bool refresh)
                 Actor* target = dynamic_cast<Actor*>(reinterpret_cast<MobileObject*>(index));
                 if (target)
                 {
-                    if (refresh)
+                    if (abMagicCaster)
                     {
 
                         reinterpret_cast<FNVReferenceActions*>(target)->Actor_CheckDeletedCaster(
@@ -12967,7 +13146,7 @@ void FNVCurrent::MobileObject_CleanUpOtherMobileObjects(bool refresh)
                         reinterpret_cast<FNVPoly*>(reinterpret_cast<Actor*>(target)->GetProcess())->v3d4(0);
                     }
                 }
-                else if (refresh)
+                else if (abMagicCaster)
                 {
                     void* mobile2 = FNV_DynamicCast(index, 0, &DAT_01184920, &DAT_011a0e88, 0);
                     if (mobile2)
@@ -12986,7 +13165,7 @@ void FNVCurrent::MobileObject_CleanUpOtherMobileObjects(bool refresh)
 
             reinterpret_cast<FNVPoly*>(reinterpret_cast<Actor*>(_g_thePlayer)->GetProcess())->v664(this);
         }
-        if (refresh)
+        if (abMagicCaster)
         {
 
             reinterpret_cast<FNVReferenceActions*>(_g_thePlayer)
@@ -13015,7 +13194,9 @@ extern int _DAT_01183028;
 void* __cdecl FNV_DynamicCast(void*, int, void*, void*, int);
 // @fnv 0x00933480
 // src: COMMUNITY 0x00933480
-int TESMagicCasterForm_CanBeMagicCaster(void* apObject)
+// pdb: TESMagicCasterForm::CanBeMagicCaster | MobileObject.obj | debug, upstream name already matches, high
+// pdb params: apForm
+int TESMagicCasterForm_CanBeMagicCaster(void* apForm)
 {
-    return FNV_DynamicCast(apObject, 0, &_DAT_01183028, &DAT_0118a690, 0) != 0;
+    return FNV_DynamicCast(apForm, 0, &_DAT_01183028, &DAT_0118a690, 0) != 0;
 }

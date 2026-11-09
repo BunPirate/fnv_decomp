@@ -79,6 +79,7 @@ struct __declspec(novtable) S_00dfc080 : S_00dfc080_RefObj
 
 // Runs the destructor and, when bit 0 of flags is set, frees the object; returns this.
 // @fnv 0x00dfc080
+// pdb: hkpVehicleDefaultBrake::`scalar deleting destructor' | hkpVehicleDefaultBrakeClass.obj | retail, vtable slot, high
 S_00dfc080* S_00dfc080::DestroyAndFree(unsigned int flags)
 {
     this->S_00dfc080::~S_00dfc080();

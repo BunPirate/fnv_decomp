@@ -14,11 +14,11 @@
 // @fnv 0x006733e0
 ActorValue::Index ValueModifierEffect::GetActorValue()
 {
-    return m_eActorValue;
+    return eWhichActorValue;
 }
 
 // @fnv 0x00673400
 void ValueModifierEffect::SetActorValue(ActorValue::Index value)
 {
-    m_eActorValue = value;
+    eWhichActorValue = value;
 }

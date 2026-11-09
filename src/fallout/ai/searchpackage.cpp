@@ -7,6 +7,7 @@ extern void __cdecl _Deallocate(void*);
 
 // Calls the destructor, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x009f6680
+// pdb: SearchPackage::`scalar deleting destructor' | SearchPackage.obj | retail, vtable slot, high
 void* SearchPackage::DestroyIfFlagged(unsigned int flags)
 {
     SearchPackage::~SearchPackage();
@@ -17,21 +18,23 @@ void* SearchPackage::DestroyIfFlagged(unsigned int flags)
 
 // Initializes a TESPackage-derived object: sets position from a, b, c, stores d, and zeroes the float fields.
 // @fnv 0x009f66b0
-SearchPackage::SearchPackage(float afX, float afY, float afZ, int aiValue, int aiUnused) : TESPackage(), unk94(), unka8()
+// pdb: SearchPackage::SearchPackage | SearchPackage.obj | retail, upstream name already matches, high
+SearchPackage::SearchPackage(float afX, float afY, float afZ, int aiValue, int aiUnused) : TESPackage(), LocationCenter(), coverRequest()
 {
-    unk80 = 0.0f;
-    unk84 = 1;
-    unk88 = 0.0f;
-    unk90 = 0.0f;
-    unk94.y = afY;
-    unk94.x = afX;
-    unk94.z = afZ;
-    unka0 = aiValue;
-    unka4 = 1;
-    unk8c = 0;
+    fSearchStageTimer = 0.0f;
+    iAlertLevel = 1;
+    fCommentTimer = 0.0f;
+    fIdleTimer = 0.0f;
+    LocationCenter.y = afY;
+    LocationCenter.x = afX;
+    LocationCenter.z = afZ;
+    pThreatObject = aiValue;
+    bLocationStart = 1;
+    iCurrentCover = 0;
 }
 
 // Destructor for the package class; the body is empty, leaving member destruction to the compiler-generated code.
 // @fnv 0x009f67b0
+// pdb: SearchPackage::~SearchPackage | SearchPackage.obj | debug, upstream name already matches, high
 SearchPackage::~SearchPackage()
 {}

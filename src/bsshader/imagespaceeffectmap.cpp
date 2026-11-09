@@ -71,12 +71,15 @@ struct S_00baa330_Cls
     int unk24;
     int unk28;
     S_Mid* m2c;
-    bool ImageSpaceEffectMap_UpdateParams(int a);
+    bool ImageSpaceEffectMap_UpdateParams(int apParam);
 };
 
 // @fnv 0x00baa330
 // src: COMMUNITY 0x00baa330
-bool S_00baa330_Cls::ImageSpaceEffectMap_UpdateParams(int aiUnused)
+// pdb: ImageSpaceEffectMap::UpdateParams | ImageSpaceEffectMap.obj | retail, upstream name already matches, high
+// pdb params: apParam
+// pdb locals: pparam, psrcTex
+bool S_00baa330_Cls::ImageSpaceEffectMap_UpdateParams(int apParam)
 {
     S_Dst* dst = *m1c;
     S_Obj* pObj = m2c->m4->ImageSpaceTexture_GetTexture();
@@ -187,9 +190,9 @@ struct FUN_00b8a9e0
     {
         return DAT_011f6238.Game_DoHeapAlloc(size);
     }
-    void FUN_00b8ab10(int a1, int a2);
+    void FUN_00b8ab10(int aiVSize, int aiPSize);
     void FUN_00b8a790(int a1, float f0, float f1, float f2, float f3);
-    void FUN_00b8a8d0(int a1, int a2);
+    void FUN_00b8a8d0(int auiState, int auiValue);
 };
 
 struct Sub18_cls
@@ -220,13 +223,16 @@ struct FUN_00baa240_cls
     Sub18_cls m_18;
     Sub28_cls m_28;
 
-    void SetTextureArraySize(int a1);
+    void SetTextureArraySize(int aiCount);
     void SetEffectParamAt(int a1, int a2, int a3);
     void FUN_00ba3c70(int a1, int a2, FUN_00b8a9e0* a3, int a4);
     void Initialize(FUN_00baa240_cls* a1, int a2);
 };
 
 // @fnv 0x00baa240
+// pdb: ImageSpaceEffectMap::Setup | ImageSpaceEffectMap.obj | retail, object-file run extension, low
+// pdb params: apManager, apParam
+// pdb locals: pparam
 void FUN_00baa240_cls::Initialize(FUN_00baa240_cls* a1, int aiArg)
 {
     SetTextureArraySize(1);

@@ -20,6 +20,8 @@ extern GlobalObjectO2_00a7b610 g_011f3e58;
 
 // @fnv 0x00639b60
 // src: XBOX_PDB 0x00639b60
+// pdb: NiPSysEmitterCtlr::GetBirthRateInterpolator | Precipitation.obj | retail, upstream name already matches, high
+// pdb locals: pkFloatInterp, pkBlendInterp, ucIndex
 NiBoolInterpolator* EmitterRateLookup::NiPSysEmitterCtlr_GetBirthRateInterpolator()
 {
     NiBoolInterpolator* pkBoolInterp;
@@ -27,7 +29,7 @@ NiBoolInterpolator* EmitterRateLookup::NiPSysEmitterCtlr_GetBirthRateInterpolato
 
     pkBoolInterp = reinterpret_cast<NiBoolInterpolator*>(_UseSaveGameBlocks(
         &g_011f3738, reinterpret_cast<unsigned int>(
-            static_cast<const NiPointer<NiInterpolator>&>(m_spControllerInterpolator).operator NiInterpolator*())));
+            static_cast<const NiPointer<NiInterpolator>&>(m_spInterpolator).operator NiInterpolator*())));
 
     if (pkBoolInterp)
         return pkBoolInterp;
@@ -35,7 +37,7 @@ NiBoolInterpolator* EmitterRateLookup::NiPSysEmitterCtlr_GetBirthRateInterpolato
     pkBlendInterp =
         reinterpret_cast<NiBlendBoolInterpolator*>(_UseSaveGameBlocks(
             &g_011f3e58, reinterpret_cast<unsigned int>(
-                static_cast<const NiPointer<NiInterpolator>&>(m_spControllerInterpolator).operator NiInterpolator*())));
+                static_cast<const NiPointer<NiInterpolator>&>(m_spInterpolator).operator NiInterpolator*())));
 
     if (pkBlendInterp)
     {

@@ -68,7 +68,7 @@ struct FUN_0066d510_shell
 {
     const void* bhkMultiSphereShape_GetRTTI();
 };
-extern const void* g_012683e0;
+extern const void* bhkMultiSphereShape_ms_RTTI;
 struct FUN_0066d520_shell
 {
     void FUN_00cb78b0();
@@ -316,7 +316,7 @@ struct This
     int unk00;
     int unk04;
     Middle* middle;
-    void bhkShape_CopyCinfo(unsigned int* output);
+    void bhkShape_CopyCinfo(unsigned int* arInfo);
 };
 struct LegacyLinker : NiCollisionObject
 {
@@ -388,7 +388,7 @@ struct C8C330Owner
     virtual C8C330Child* GetOrCreateChild(bool* pbCreated);
 
     void bhkShape_LinkObject(C8C330Node* pkNode);
-    void bhkTransformShape_LinkObject(C8C330Node* pkNode);
+    void bhkTransformShape_LinkObject(C8C330Node* arStream);
 };
 typedef unsigned int C8CA60size_t;
 struct C8CA60MemoryManager
@@ -435,8 +435,8 @@ struct C8CA60Owner
     void* m_pParentNode;
     C8CA60Child* m_pkChild;
 
-    void bhkTransformShape_CopyCinfo(C8CA60Child* pkChild);
-    C8CA60Child* bhkTransformShape_CreateCinfo(bool* pbCreated);
+    void bhkTransformShape_CopyCinfo(C8CA60Child* arInfo);
+    C8CA60Child* bhkTransformShape_CreateCinfo(bool* arCreated);
 };
 struct NativeTransform
 {
@@ -665,10 +665,10 @@ struct S_00cb79d0
     virtual void v047();
     virtual void v048();
     virtual void v049(S_00cb79d0_Base* obj, int arg);
-    S_00cb79d0_C* bhkMultiSphereShape_CreateClone(int arg);
+    S_00cb79d0_C* bhkMultiSphereShape_CreateClone(int arCloneData);
 };
 void SwapByteQuadWords(void* buffer, int words);
-void __cdecl bhkStream_SwapHKArray(void* buffer, int bytes, NiPoint3* vector);
+void __cdecl bhkStream_SwapHKArray(void* apCInfo, int aiSize, NiPoint3* apArray);
 struct TlsBlock_t
 {
     int unk000;
@@ -962,8 +962,8 @@ struct FUN_00caaea0_shell
     virtual void v43() = 0;
     virtual void v44() = 0;
     virtual ScaleMatrix* getMatrix(bool* outFlag) = 0;
-    void bhkShape_CopyMembers(void* context, SourceObject* source);
-    void bhkCapsuleShape_CopyMembers(void* context, SourceObject* source);
+    void bhkShape_CopyMembers(void* apDest, SourceObject* arCloneData);
+    void bhkCapsuleShape_CopyMembers(void* apDest, SourceObject* arCloneData);
 };
 struct S_00caaf40_Tls
 {
@@ -1221,7 +1221,7 @@ struct S_00caaf40
     virtual void vfn_bc();
     virtual void vfn_c0();
     virtual void vfn_c4(S_00caaf40_Obj* o, int a);
-    S_00caaf40_Obj* bhkCapsuleShape_CreateClone(int a);
+    S_00caaf40_Obj* bhkCapsuleShape_CreateClone(int arCloneData);
 };
 struct AudioTlsState
 {
@@ -1282,7 +1282,7 @@ struct FUN_00d22590
     int unk34;
     int unk38;
     int unk3C;
-    FUN_00d22590(int a, int b, float c);
+    FUN_00d22590(int vertexA, int vertexB, float c);
     void FUN_00c905b0();
     static void* operator new(unsigned int size)
     {
@@ -1478,16 +1478,16 @@ struct Shader
     virtual void f43();
     virtual void f44();
     virtual int* f45(struct Pass** pass);
-    void bhkShape_LoadBinary(struct Pass* pass);
-    void bhkMultiSphereShape_LoadBinary(struct Pass* pass);
+    void bhkShape_LoadBinary(struct Pass* arStream);
+    void bhkMultiSphereShape_LoadBinary(struct Pass* arStream);
 };
 struct Pass
 {
     int unk000;
     char unk004;
 };
-void bhkStream_SwapHKArray(int* a, int b, int* c);
-void bhkStream_LoadBinary(Pass* pass, int* b);
+void bhkStream_SwapHKArray(int* apCInfo, int aiSize, int* apArray);
+void bhkStream_LoadBinary(Pass* arStream, int* arArray);
 struct A1Owner
 {
     unsigned int unk00;
@@ -1624,8 +1624,8 @@ struct OwnerB
     unsigned int unk00;
     Triple m04;
 };
-void __cdecl bhkStream_SwapHKArray(void* a, void* b, void* c);
-void __cdecl bhkStream_SaveBinary(void* a, void* b);
+void __cdecl bhkStream_SwapHKArray(void* apCInfo, void* aiSize, void* apArray);
+void __cdecl bhkStream_SaveBinary(void* arStream, void* arArray);
 struct TmpGuard
 {
     unsigned int m0;
@@ -1698,8 +1698,8 @@ struct FUN_00cb8010_cls
     virtual void vB0();
     virtual OwnerB* v45(unsigned char* pFlag);
 
-    void __thiscall bhkShape_SaveBinary(A1Owner* a1);
-    void __thiscall bhkMultiSphereShape_SaveBinary(A1Owner* a1);
+    void __thiscall bhkShape_SaveBinary(A1Owner* arStream);
+    void __thiscall bhkMultiSphereShape_SaveBinary(A1Owner* arStream);
 };
 
 
@@ -1715,7 +1715,7 @@ class __declspec(align(16)) CollisionShapePoint
 class Filter66C
 {
   public:
-    Filter66C(int iLayer, int iSystem, int iPart);
+    Filter66C(int aeLayer, int aiGroup, int aePart);
     unsigned int GetValue();
     unsigned int m_uiBits;
 };
@@ -1803,7 +1803,7 @@ class Shape66C
 class SphereShape66C : public Shape66C
 {
   public:
-    SphereShape66C(float fRadius, int iFlags);
+    SphereShape66C(float afRadius, int abBS);
 };
 
 class BoxShape66C : public Shape66C
@@ -1815,7 +1815,7 @@ class BoxShape66C : public Shape66C
 class TransformShape66C : public Shape66C
 {
   public:
-    TransformShape66C(TransformShapeInfo66C& kInfo);
+    TransformShape66C(TransformShapeInfo66C& arInfo);
 };
 
 class CapsuleShape66C : public Shape66C
@@ -1849,8 +1849,8 @@ class Object66C
   public:
     static void* operator new(unsigned int uiSize);
     static void operator delete(void* pvMem, unsigned int);
-    Object66C(void* pvOwner);
-    void SetBody(Body66C* pkBody);
+    Object66C(void* apObject);
+    void SetBody(Body66C* apWorldObject);
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
@@ -1862,14 +1862,14 @@ class Object66C
 class SpeedTreeCollisionVolumes
 {
   public:
-    unsigned int GetCount();
-    void GetBound(unsigned int uiIndex, int* piType, float* pfCenter, float* pfSize);
+    unsigned int CSpeedTreeRT_GetCollisionObjectCount();
+    void GetBound(unsigned int nIndex, int* piType, float* pfCenter, float* pfSize);
 };
 
 class Havok66C
 {
   public:
-    bool IsEnabled(int iFlag);
+    bool IsEnabled(int abRef);
 };
 extern Havok66C g_kHavok66C;
 
@@ -1947,19 +1947,22 @@ class Tree66C
     virtual void v100();
     virtual void v104();
     virtual void* GetOwner();
-    void BSTreeNode_MakeHavokLeaves(SpeedTreeCollisionVolumes* pkBounds, float fScale);
+    void BSTreeNode_MakeHavokLeaves(SpeedTreeCollisionVolumes* apST, float afScale);
 };
 
 // @fnv 0x0066cb40
 // src: XBOX_PDB 0x0066cb40
-void Tree66C::BSTreeNode_MakeHavokLeaves(SpeedTreeCollisionVolumes* pkBounds, float fScale)
+// pdb: BSTreeNode::MakeHavokLeaves | BSTreeNode.obj | retail, upstream name already matches, high
+// pdb params: apST, afScale
+// pdb locals: uiCount, sspci, icf, pln, fsize, pp, pcl, eObjType, fDim, fPos, pTS, pSphere, vSpherePos, tsci, pCap, csci, pBox, vBoxHalfExtents, vBoxPos, i, mssci, pmss, ui, vSphere
+void Tree66C::BSTreeNode_MakeHavokLeaves(SpeedTreeCollisionVolumes* apST, float afScale)
 {
     if (g_kHavok66C.IsEnabled(1))
     {
-        unsigned int ItemUpdateArray = pkBounds->GetCount();
+        unsigned int ItemUpdateArray = apST->CSpeedTreeRT_GetCollisionObjectCount();
         if (!ItemUpdateArray)
             return;
-        float fHavokScale = BSTreeManager_GetSizeConversion() * fScale;
+        float fHavokScale = BSTreeManager_GetSizeConversion() * afScale;
         void* pvOwner = GetOwner();
         BodyCinfo66C kInfo;
         if (ItemUpdateArray == 1)
@@ -1967,7 +1970,7 @@ void Tree66C::BSTreeNode_MakeHavokLeaves(SpeedTreeCollisionVolumes* pkBounds, fl
             float afSize[3];
             float afCenter[3];
             int iType;
-            pkBounds->GetBound(0, &iType, afCenter, afSize);
+            apST->GetBound(0, &iType, afCenter, afSize);
             afCenter[0] = NI2HK_004a3e90(afCenter[0]) * fHavokScale;
             afCenter[1] = NI2HK_004a3e90(afCenter[1]) * fHavokScale;
             afCenter[2] = NI2HK_004a3e90(afCenter[2]) * fHavokScale;
@@ -2018,7 +2021,7 @@ void Tree66C::BSTreeNode_MakeHavokLeaves(SpeedTreeCollisionVolumes* pkBounds, fl
                 float afSize[3];
                 float afCenter[3];
                 int iType;
-                pkBounds->GetBound(i, &iType, afCenter, afSize);
+                apST->GetBound(i, &iType, afCenter, afSize);
                 if (iType == 0)
                 {
                     afCenter[0] = NI2HK_004a3e90(afCenter[0]) * fHavokScale;
@@ -2243,6 +2246,9 @@ struct xEffect
 };
 // @fnv 0x0066c160
 // src: XBOX_PDB 0x0066c160
+// pdb: BSTreeNode::UpdateBSTreeNode | BSTreeNode.obj | retail, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: pTree, collector, collArray, pCollisionFreq, fCollFreq, i, phkpPhantom, pRigidBody, pMobObj, pc, normal, dum, vLocation, csdata, point, vLV, vAV, pShape, fNewZ, vNewVel, fNewX, fNewY, fNewMag
 void xEffect::BSTreeNode_UpdateBSTreeNode(float afTime)
 {
     if (m_e4.Modelloader_GetReferencedThis())

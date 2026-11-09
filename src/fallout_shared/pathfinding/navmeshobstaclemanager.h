@@ -14,6 +14,8 @@ const char kGetProcessedTaskCountLabel[] = "NavMeshObstacleManager::GetProcessed
 const char kGetBackgroundTaskCountLabel[] = "NavMeshObstacleManager::GetBackgroundTaskCount()";
 
 // @fnv 0x006c3920
+// pdb: NavMeshObstacleManager::GetProcessedTaskCount | NavMeshObstacleManager.obj | retail, string-set bridge, high
+// pdb locals: iret
 unsigned int NavMeshObstacleManager::GetProcessedTaskCount()
 {
     m_kTaskLock.Lock(kGetProcessedTaskCountLabel);
@@ -23,6 +25,8 @@ unsigned int NavMeshObstacleManager::GetProcessedTaskCount()
 }
 
 // @fnv 0x006c3970
+// pdb: NavMeshObstacleManager::GetBackgroundTaskCount | NavMeshObstacleManager.obj | retail, string-set bridge, high
+// pdb locals: iret
 unsigned int NavMeshObstacleManager::GetBackgroundTaskCount()
 {
     m_kTaskLock.Lock(kGetBackgroundTaskCountLabel);

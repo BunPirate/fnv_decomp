@@ -13,6 +13,8 @@ struct FUN_00d87210_class
 
 // @fnv 0x00d87210
 // src: XBOX_PDB 0x00d87210
+// pdb: hkClassMemberAccessor::asPointer | hkClassMemberAccessor.obj | debug, upstream name already matches, high
+// pdb params: index
 char* __thiscall FUN_00d87210_class::hkClassMemberAccessor_asPointer(int index)
 {
     return m_p + index * 4;
@@ -20,6 +22,8 @@ char* __thiscall FUN_00d87210_class::hkClassMemberAccessor_asPointer(int index)
 
 // @fnv 0x00d87220
 // src: XBOX_PDB 0x00d87220
+// pdb: hkClassMemberAccessor::asCstring | hkClassMemberAccessor.obj | debug, upstream name already matches, high
+// pdb params: index
 char* __fastcall hkClassMemberAccessor_asCstring(char* self, int edx, int index)
 {
     return *(char**)self + index * 4;
@@ -27,14 +31,16 @@ char* __fastcall hkClassMemberAccessor_asCstring(char* self, int edx, int index)
 
 struct FUN_00d87260_cls
 {
-    char* __thiscall hkClassMemberAccessor_asHalf(int a);
+    char* __thiscall hkClassMemberAccessor_asHalf(int index);
 };
 
 // @fnv 0x00d87260
 // src: XBOX_PDB 0x00d87260
-char* __thiscall FUN_00d87260_cls::hkClassMemberAccessor_asHalf(int a)
+// pdb: hkClassMemberAccessor::asHalf | hkClassMemberAccessor.obj | debug, upstream name already matches, high
+// pdb params: index
+char* __thiscall FUN_00d87260_cls::hkClassMemberAccessor_asHalf(int index)
 {
-    return *reinterpret_cast<char**>(this) + a * 2;
+    return *reinterpret_cast<char**>(this) + index * 2;
 }
 
 // @fnv 0x00d87290
@@ -85,6 +91,8 @@ void* __fastcall Hkclassmemberaccessor_GetElementPointer48(void* self, int, int 
 
 // @fnv 0x00d87350
 // src: XBOX_PDB 0x00d87350
+// pdb: hkClassMemberAccessor::asHomogeneousArray | hkClassMemberAccessor.obj | debug, upstream name already matches, high
+// pdb params: index
 int __fastcall hkClassMemberAccessor_asHomogeneousArray(int* self, int, int idx)
 {
     int base = *self;
@@ -161,6 +169,8 @@ struct FUN_00d87360_class
 };
 // @fnv 0x00d87360
 // src: XBOX_PDB 0x00d87360
+// pdb: hkClassMemberAccessor::asVariant | hkClassMemberAccessor.obj | debug, upstream name already matches, high
+// pdb params: index
 char* FUN_00d87360_class::hkClassMemberAccessor_asVariant(int index)
 {
     return m_p + index * 8;
@@ -185,15 +195,17 @@ struct D871A0Array
 struct D871A0Buffer
 {
     void append(const void* data, int size, int flags);
-    D871A0Buffer& ProcessAndReturnValue_00d871a0(const D871A0Array& a, int flags);
+    D871A0Buffer& hkClassMemberAccessor_ctor(const D871A0Array& var, int memberName);
 };
 
 // Appends the array's data buffer with its size and flags to this buffer, then returns this buffer.
 // @fnv 0x00d871a0
-// src: GUESS 0x00d871a0 (confidence: low)
-D871A0Buffer& D871A0Buffer::ProcessAndReturnValue_00d871a0(const D871A0Array& apArray, int flags)
+// src: XBOX_RETAIL_PDB 0x00d871a0
+// pdb: hkClassMemberAccessor::hkClassMemberAccessor | hkClassMemberAccessor.obj | retail, call graph (shared callers), high
+// pdb params: obj, mem
+D871A0Buffer& D871A0Buffer::hkClassMemberAccessor_ctor(const D871A0Array& var, int memberName)
 {
-    append(apArray.m_data, apArray.m_iElementCount, flags);
+    append(var.m_data, var.m_iElementCount, memberName);
     return *this;
 }
 
@@ -276,6 +288,8 @@ struct FUN_00d87340_cls
 
 // @fnv 0x00d87340
 // src: XBOX_PDB 0x00d87340
+// pdb: hkClassMemberAccessor::asSimpleArray | hkClassMemberAccessor.obj | debug, upstream name already matches, high
+// pdb params: index
 Pair* FUN_00d87340_cls::hkClassMemberAccessor_asSimpleArray(int index)
 {
     return m_p + index;
@@ -301,6 +315,7 @@ struct FUN_00d87200_cls
 
 // @fnv 0x00d87200
 // src: XBOX_PDB 0x00d87200
+// pdb: hkClassMemberAccessor::getAddress | hkClassMemberAccessor.obj | debug, upstream name already matches, high
 void* FUN_00d87200_cls::hkClassMemberAccessor_getAddress()
 {
     return m_data;
@@ -315,6 +330,7 @@ struct D87370Obj
 
 // @fnv 0x00d87370
 // src: XBOX_PDB 0x00d87370
+// pdb: hkClassMemberAccessor::getClassMember | hkClassMemberAccessor.obj | debug, upstream name already matches, high
 int __thiscall D87370Obj::hkClassMemberAccessor_getClassMember()
 {
     return unk04;
@@ -328,6 +344,8 @@ struct StringMemberAccessor
 
 // @fnv 0x00d87230
 // src: XBOX_PDB 0x00d87230
+// pdb: hkClassMemberAccessor::asStringPtr | hkClassMemberAccessor.obj | debug, upstream name already matches, high
+// pdb params: index
 int* StringMemberAccessor::hkClassMemberAccessor_asStringPtr(int index)
 {
     return values + index;

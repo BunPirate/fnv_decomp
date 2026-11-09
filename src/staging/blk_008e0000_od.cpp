@@ -212,19 +212,22 @@ class SlotHost
 class FUN_008f3550_cls : public SlotHost
 {
   public:
-    bool HighProcess_ProcessSleepOneHour(SlotHost* a1, int a2);
+    bool HighProcess_ProcessSleepOneHour(SlotHost* apActor, int afTimeDelta);
 };
 // @fnv 0x008f3550
 // src: COMMUNITY 0x008f3550
-bool FUN_008f3550_cls::HighProcess_ProcessSleepOneHour(SlotHost* a1, int a2)
+// pdb: HighProcess::ProcessSleepOneHour | HighProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor, afTimeDelta
+// pdb locals: pPack
+bool FUN_008f3550_cls::HighProcess_ProcessSleepOneHour(SlotHost* apActor, int afTimeDelta)
 {
     SlotHost* p = this->vf27c();
     if (p == 0)
     {
         return false;
     }
-    this->vf294(a1);
-    if (p->vf13c(a1, 0, DAT_01012054, 0) || a1->vf214() == 9)
+    this->vf294(apActor);
+    if (p->vf13c(apActor, 0, DAT_01012054, 0) || apActor->vf214() == 9)
     {
         this->vf118(1);
         return false;
@@ -493,18 +496,22 @@ class C8F3600Actor
     virtual void av0A4();
     virtual void SetTarget(C8F3600Actor* pkTarget);
 
-    bool StartCombatWithTarget(C8F3600Actor* pkTarget, int iUnused);
+    bool HighProcess_ProcessEatOneHour(C8F3600Actor* apActor, int afTimeDelta);
 };
 
 // @fnv 0x008f3600
-bool C8F3600Actor::StartCombatWithTarget(C8F3600Actor* pkTarget, int iUnused)
+// src: XBOX_RETAIL_PDB 0x008f3600
+// pdb: HighProcess::ProcessEatOneHour | HighProcess.obj | retail, object-file run extension, high
+// pdb params: apActor, afTimeDelta
+// pdb locals: pPack
+bool C8F3600Actor::HighProcess_ProcessEatOneHour(C8F3600Actor* apActor, int afTimeDelta)
 {
     C8F3600Process* pkProcess = 0;
     pkProcess = GetProcess();
     if (!pkProcess)
         return false;
-    SetTarget(pkTarget);
-    if (pkProcess->StartCombat(pkTarget, 0, -1.0f, 0) || pkTarget->GetLifeState() == 4)
+    SetTarget(apActor);
+    if (pkProcess->StartCombat(apActor, 0, -1.0f, 0) || apActor->GetLifeState() == 4)
     {
         SetAlert(true);
         return false;

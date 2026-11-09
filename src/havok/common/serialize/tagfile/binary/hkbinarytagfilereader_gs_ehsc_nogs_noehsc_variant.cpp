@@ -18,6 +18,8 @@ struct DataObjectImplReference
 
 // @fnv 0x00dc6e50
 // src: GUESS 0x00dc6e50 (confidence: low)
+// pdb: Reader::readObjectTree | hkBinaryTagfileReader.obj | retail, string-set bridge, high
+// pdb locals: assertBuf, ostr
 DataObjectImplReference hkBinaryTagfileReader::ProcessEntries_00dc6e50()
 {
     char buf[512];
@@ -45,7 +47,7 @@ DataObjectImplReference hkBinaryTagfileReader::ProcessEntries_00dc6e50()
                 break;
             }
             case 2: {
-                if (readMetadata() == 1)
+                if (Reader_readClass() == 1)
                 {
                     return DataObjectImplReference(0);
                 }
@@ -54,7 +56,7 @@ DataObjectImplReference hkBinaryTagfileReader::ProcessEntries_00dc6e50()
             case 3:
             case 4:
             case 6: {
-                return readObjectTopLevel(tag);
+                return Reader_readObject(tag);
             }
             default: {
                 return DataObjectImplReference(0);

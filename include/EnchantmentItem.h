@@ -2,6 +2,7 @@
 
 #include "MagicItemForm.h"
 
+// pdb: class EnchantmentItem, size 0x44, bases: MagicItemForm, 1 members
 class EnchantmentItem : public MagicItemForm
 {
 public:

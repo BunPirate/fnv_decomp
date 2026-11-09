@@ -17,6 +17,7 @@ struct RayOutput;
 struct hkBoolRet;
 template <class T> struct hkArrayq;
 
+// pdb: class hkpConvexVerticesShape, size 0x70 (here 0x64), bases: hkpConvexShape, 7 members
 class hkpConvexVerticesShape : public hkpConvexShape
 {
 public:

@@ -2,6 +2,7 @@
 
 #include "CACHEDRIVE_STATUS.h"
 
+// pdb: class BSCacheDriveSystemUtility, size 0x42c, 3 members
 class BSCacheDriveSystemUtility
 {
 public:
@@ -12,7 +13,7 @@ public:
     bool bIsActive;
     unsigned char layoutPadding5;
     unsigned short layoutPadding6;
-    CACHEDRIVE_STATUS m_eDriveStatus;
-    char m_acDrivePath[1055];
+    CACHEDRIVE_STATUS eCacheDriveStatus_;
+    char cCacheDriveDir[1055];
     unsigned char layoutPadding42B;
 };

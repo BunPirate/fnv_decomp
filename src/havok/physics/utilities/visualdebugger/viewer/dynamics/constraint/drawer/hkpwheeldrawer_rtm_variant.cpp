@@ -43,12 +43,12 @@ struct Sub
 struct Ops
 {
     void setTransformedPos_00c7f640(const Matrix* p, const LocalM128* q);
-    void hkVector4_setRotatedDir(const LocalM128* p, const LocalM128* q);
+    void hkVector4_setRotatedDir(const LocalM128* quat, const LocalM128* direction);
 };
 struct Ex
 {
-    void hkpConstraintDrawer_updateCommonParameters(void* a, Matrix* b, Matrix* c);
-    void hkpConstraintDrawer_drawBodyFrames(int a, int b);
+    void hkpConstraintDrawer_updateCommonParameters(void* a, Matrix* refLocalToWorld, Matrix* attLocalToWorld);
+    void hkpConstraintDrawer_drawBodyFrames(int id, int tag);
     void hkpConstraintDrawer_drawPivots(int a, int b);
 };
 

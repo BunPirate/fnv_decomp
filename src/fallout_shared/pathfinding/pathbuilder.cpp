@@ -52,6 +52,9 @@ __if_not_exists(BaseFormComponent::Init)
 #include "../../../include/BSWin32TaskletManager.h"
 
 // @fnv 0x006cd5c0
+// pdb: CheckLineOfSightFilterWater::CanCrossEdge | PathBuilder.obj | debug, vtable slot, medium
+// pdb params: hEdge, hMatchingEdge
+// pdb locals: ptri
 bool CheckLineOfSightFilterWater::IsLineOfSightClear(unsigned int firstMesh, unsigned int firstTriangle,
                                                      unsigned int firstEdge, unsigned int secondMesh,
                                                      unsigned int secondTriangle, unsigned int secondEdge)
@@ -70,16 +73,20 @@ bool CheckLineOfSightFilterWater::IsLineOfSightClear(unsigned int firstMesh, uns
 }
 
 // @fnv 0x006c8d30
-PathBuilder::PathBuilder(PathingRequest* request, PathingSolution* solution)
+// pdb: PathBuilder::PathBuilder | PathBuilder.obj | retail, upstream name already matches, high
+// pdb params: apRequest, apSolution
+PathBuilder::PathBuilder(PathingRequest* apRequest, PathingSolution* apSolution)
 {
     m_pAllocator = MemoryManager_Instance()->GetGeneralAllocator();
-    pRequest = request;
-    m_pOutputSolution = solution;
+    pRequest = apRequest;
+    m_pOutputSolution = apSolution;
     m_bPathFound = false;
 }
 
 // Builds a path by comparing navmesh info from the request and its conditions, then validates the actor; returns false on mismatch or validation failure.
 // @fnv 0x006c8e10
+// pdb: PathBuilder::BuildPath | PathBuilder.obj | retail, upstream name already matches, high
+// pdb locals: actor, actor_name, pGoalMesh, pStartMesh
 bool PathBuilder::BuildPath()
 {
     struct BuildPathLocals
@@ -157,8 +164,9 @@ void __fastcall FindTriangleForLocationFilter_FindTriangleForLocationFilter(void
 extern int DAT_0106c92c;
 
 // @fnv 0x006c8dd0
-// src: EXE 0x006c8dd0
-void* __fastcall PathBuilder_FindTriangleForLocationWaterFilter_FindTriangleForLocationWaterFilter(void* pThis)
+// src: XBOX_DEBUG_PDB 0x006c8dd0
+// pdb: PathBuilder::FindTriangleForLocationWaterFilter::FindTriangleForLocationWaterFilter | PathBuilder.obj | debug, upstream name already matches, high
+void* __fastcall PathBuilder_FindTriangleForLocationWaterFilter_ctor(void* pThis)
 {
     FindTriangleForLocationFilter_FindTriangleForLocationFilter(pThis);
     *(int**)pThis = &DAT_0106c92c;
@@ -184,11 +192,14 @@ struct Item48
 };
 
 // @fnv 0x006c90d0
-PathingInfoEntry* PathingSolution::GetPathingInfoEntry(PathingInfoEntry& aItem)
+// pdb: PathingSolution::AddVirtualPathingNode | PathBuilder.obj | debug, call graph (shared callers), high
+// pdb params: apLocation
+// pdb locals: pnode, inewNodeIndex
+PathingInfoEntry* PathingSolution::GetPathingInfoEntry(PathingInfoEntry& apLocation)
 {
     void* v1 = ((PathBuilder*)((char*)this + 8))->AdvanceCounter();
     void* v2 = ((PathBuilder*)((char*)this + 8))->GetElementAddress30_006e8f40(v1);
-    new (v2) Item48(aItem);
+    new (v2) Item48(apLocation);
     return (PathingInfoEntry*)v1;
 }
 
@@ -208,6 +219,7 @@ struct Dummy_006c93a0
 // Calls FUN_006cf120 with 1, then sets f18 and f1c to -1.
 // @fnv 0x006c93a0
 // src: COMMUNITY 0x006c93a0
+// pdb: PathingSolution::ClearCurrentDetailedPath | PathBuilder.obj | retail, upstream name already matches, high
 void __fastcall PathingSolution_ClearCurrentDetailedPath(Dummy_006c93a0* pThis)
 {
     pThis->f20.FUN_006cf120(1);
@@ -226,6 +238,8 @@ PathingActorData* PathingRequest::GetActorLockData()
 
 // @fnv 0x006ca4c0
 // src: COMMUNITY 0x006ca4c0
+// pdb: PathingSolution::GetNode | PathBuilder.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 char __fastcall PathingRequest_GetInitialPathHeading(char* this_ptr)
 {
     return this_ptr[0xa0];
@@ -256,6 +270,7 @@ void __fastcall SetVtable(void* pThis);
 
 // @fnv 0x006cd5a0
 // src: GUESS 0x006cd5a0 (confidence: low)
+// pdb: CheckLineOfSightFilterWater::CheckLineOfSightFilterWater | PathBuilder.obj | debug, object-file gap fill, medium
 void* __fastcall Object_InitializeFields_006cd5a0(void* pThis)
 {
     SetVtable(pThis);
@@ -320,11 +335,15 @@ struct Item48
 
 // Gets an index and memory from the PathBuilder at offset 8, constructs an Item48 in that memory from a and b, and returns the index.
 // @fnv 0x006c99c0
-unsigned int PathingSolution::AddPathingItem(void* a, TESObjectREFR* pRefr)
+// src: XBOX_DEBUG_PDB 0x006c99c0
+// pdb: PathingSolution::AddVirtualPathingNode | PathBuilder.obj | debug, call graph (shared callers), high
+// pdb params: aLocation, apNavMeshInfo
+// pdb locals: pnode, inewNodeIndex
+unsigned int PathingSolution::AddVirtualPathingNode(void* aLocation, TESObjectREFR* apNavMeshInfo)
 {
     void* idx = ((PathBuilder*)((char*)this + 8))->AdvanceCounter();
     void* mem = ((PathBuilder*)((char*)this + 8))->GetElementAddress30_006e8f40(idx);
-    new (mem) fnv_006c99c0::Item48(a, pRefr);
+    new (mem) fnv_006c99c0::Item48(aLocation, apNavMeshInfo);
     return (unsigned int)idx;
 }
 
@@ -333,13 +352,15 @@ struct FUN_006f4d00
     unsigned int flags;
     PathingLocation loc;
     int pad[1];
-    FUN_006f4d00(const PathingLocation& l);
+    FUN_006f4d00(const PathingLocation& aLocation);
 };
 
 // @fnv 0x006f4d00
-FUN_006f4d00::FUN_006f4d00(const PathingLocation& l)
+// pdb: VirtualPathingNode::VirtualPathingNode | VirtualPathingNode.obj | debug, call graph (shared callers), high
+// pdb params: aLocation
+FUN_006f4d00::FUN_006f4d00(const PathingLocation& aLocation)
 {
-    loc.PathingLocation::operator=(l);
+    loc.PathingLocation::operator=(aLocation);
     pad[0] = 0;
     flags = 2;
     if (((PathingLocation*)&loc)->FindContainingTriangle(0))
@@ -347,6 +368,7 @@ FUN_006f4d00::FUN_006f4d00(const PathingLocation& l)
 }
 
 // @fnv 0x006abfc0
+// pdb: BSSimpleArray<PathingLocation,1024>::~BSSimpleArray<PathingLocation,1024> | NavMeshSearchMultipleGoals.obj | debug, call graph (shared callers), medium
 template <> BSSimpleArray<PathingLocation, 1024>::~BSSimpleArray()
 {
     Clear(true);
@@ -363,6 +385,7 @@ void __fastcall PathingSolution_ClearCurrentDetailedPath(Dummy_006c93a0*);
 
 // @fnv 0x006c93d0
 // src: COMMUNITY 0x006c93d0
+// pdb: PathBuilder::UpdatePathMoveToLow | PathBuilder.obj | retail, upstream name already matches, high
 int __fastcall PathBuilder_UpdatePathMoveToLow(Dummy_006c93a0* obj)
 {
     PathingSolution_ClearCurrentDetailedPath((Dummy_006c93a0*)obj->vtable);
@@ -373,7 +396,7 @@ int __fastcall PathBuilder_UpdatePathMoveToLow(Dummy_006c93a0* obj)
 // @fnv 0x006c9fa0
 void __thiscall PathingSolution::SetByteAtOffset40(int aucValue)
 {
-    *reinterpret_cast<unsigned char*>(&m_bHasValidPath) = (unsigned char)aucValue;
+    *reinterpret_cast<unsigned char*>(&bIncompletePath) = (unsigned char)aucValue;
 }
 
 struct FUN_006cc5a0_shell
@@ -383,6 +406,8 @@ struct FUN_006cc5a0_shell
 };
 
 // @fnv 0x006cc5a0
+// pdb: PathingNode::SetTransitionFlag | PathBuilder.obj | debug, object-file gap fill, medium
+// pdb params: abFlag
 void FUN_006cc5a0_shell::SetFlag4(bool abEnabled)
 {
     if (abEnabled)
@@ -460,6 +485,9 @@ float __cdecl abs(float);
 
 // @fnv 0x006cc5e0
 // src: COMMUNITY 0x006cc5e0
+// pdb: PathBuilder::AddNodesFromNavMesh | PathBuilder.obj | retail, upstream name already matches, high
+// pdb params: aStartLocation, aGoalLocation, aiFirstVirtualNodeIndex, aiLastVirtualNodeIndex
+// pdb locals: imaxPassCount, BadNodes, bAddNodesFromNavMeshIncomplete, i, spmesh, pass, icurrentNodeCount, nodes, smoothingGoalLocation, links, smoothingStartLocation, loadedNavmeshes, lastLoc, lastNode, delta, plastVirtualNode, ftargetRadius, loc, plastNode
 int FUN_006cc5e0_shell::PathBuilder_AddNodesFromNavMesh(PathingLocation* aStartLocation, PathingLocation* aGoalLocation,
                                      unsigned int aiFirstVirtualNodeIndex, unsigned int aiLastVirtualNodeIndex)
 {
@@ -636,11 +664,13 @@ struct FUN_006cb4a0_shell
     void* m_uiStandInValue;
     void* m_iValueAfterStandIn;
     BSSimpleArray<PathingLocation, 1024> m_losArray;
-    void ClearLOSArray();
+    void RayCastPath_dtor();
 };
 
 // @fnv 0x006cb4a0
-void FUN_006cb4a0_shell::ClearLOSArray()
+// src: XBOX_DEBUG_PDB 0x006cb4a0
+// pdb: RayCastPath::~RayCastPath | PathBuilder.obj | debug, call graph, high
+void FUN_006cb4a0_shell::RayCastPath_dtor()
 {
     m_losArray.BSSimpleArray<PathingLocation, 1024>::~BSSimpleArray();
 }
@@ -654,6 +684,7 @@ struct FUN_006cee10_shell
 };
 
 // @fnv 0x006cedf0
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::GetFirst | PathBuilder.obj | debug, call graph, medium
 char* FUN_006cee10_shell::GetFirstEntry()
 {
     return BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(0);
@@ -663,6 +694,7 @@ char* FUN_006cee10_shell::GetFirstEntry()
 // Calls RemoveAt on the object at this+0x20 with its current size minus one and 1.
 // @fnv 0x006c9350
 // src: COMMUNITY 0x006c9350
+// pdb: PathingSolution::RemoveLastNode | PathBuilder.obj | debug, upstream name already matches, high
 void PathingSolution::RemoveLastNode()
 {
     ((BSSimpleArray<PathingGraphNode, 1024>*)((char*)this + 0x20))
@@ -671,17 +703,19 @@ void PathingSolution::RemoveLastNode()
 
 struct FUN_006cf000_shell
 {
-    void RemoveAt(int a, int b);
+    void RemoveAt(int aiIndex, int abShrink);
 };
 struct FUN_006c9380_shell
 {
-    void PathingSolution_RemoveNode(int a);
+    void PathingSolution_RemoveNode(int aiIndex);
 };
 // @fnv 0x006c9380
 // src: COMMUNITY 0x006c9380
-void FUN_006c9380_shell::PathingSolution_RemoveNode(int aiValue)
+// pdb: PathingSolution::RemoveNode | PathBuilder.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+void FUN_006c9380_shell::PathingSolution_RemoveNode(int aiIndex)
 {
-    ((FUN_006cf000_shell*)((char*)this + 0x20))->RemoveAt(aiValue, 1);
+    ((FUN_006cf000_shell*)((char*)this + 0x20))->RemoveAt(aiIndex, 1);
 }
 
 void __fastcall FUN_006cf180(void*);
@@ -693,6 +727,7 @@ struct FUN_006cb480_shell
 
 // @fnv 0x006cb480
 // src: GUESS 0x006cb480 (confidence: low)
+// pdb: RayCastPath::RayCastPath | PathBuilder.obj | debug, object-file gap fill, medium
 void* FUN_006cb480_shell::ProcessAndReturnValue_006cb480()
 {
     FUN_006cf180(this + 8);
@@ -714,6 +749,8 @@ struct Mid
 };
 // @fnv 0x006cc560
 // src: COMMUNITY 0x006cc560
+// pdb: PathingNode::SetTeleportDoor | PathBuilder.obj | debug, object-file gap fill, medium
+// pdb params: apDoor
 void Mid::PathingNode_SetActionAtNode(int aiValue)
 {
     *(int*)((char*)this + 0x38) = aiValue;
@@ -753,6 +790,7 @@ struct P4_6cb4c0
 extern SettingT<INISettingCollection> g_011d7404;
 BSWin32TaskletManager& GetTaskletManager();
 unsigned int __cdecl gm_GetCurrentThreadId();
+// pdb: class PathManager, size 0x8 (here 0x1), 2 members
 class PathManager
 {
   public:
@@ -789,6 +827,9 @@ struct FUN_006cb480
 
 // @fnv 0x006cb4c0
 // src: COMMUNITY 0x006cb4c0
+// pdb: PathBuilder::BuildStraightPathUsingRayCasts | PathBuilder.obj | retail, upstream name already matches, high
+// pdb params: aStartLocation, aGoalLocation, aRetPath
+// pdb locals: retPath, rayCastSearch, rayCastRequest
 int PathBuilder::BuildStraightPathUsingRayCasts(PathingLocation& aStartLocation, PathingLocation& aGoalLocation, void* aRetPath)
 {
     if (*(unsigned char*)g_011d7404.Bool())
@@ -806,7 +847,7 @@ int PathBuilder::BuildStraightPathUsingRayCasts(PathingLocation& aStartLocation,
             rayCastRequest.pRequest = pRequest;
             FUN_006cb480 retPath;
             PathingSearchRayCast rayCastSearch;
-            if (rayCastSearch.ProcessRayCast((RayCastParam*)&rayCastRequest, (PathingSolutionExt*)&retPath) == 1)
+            if (rayCastSearch.BuildPath((RayCastParam*)&rayCastRequest, (PathingSolutionExt*)&retPath) == 1)
             {
                 retPath.kPath.BSSimpleArray_CopyTo_0(aRetPath);
                 return 1;
@@ -839,6 +880,8 @@ struct FUN_006cef10_shell : S5460
     unsigned int AdvanceCounter();
 };
 // @fnv 0x006cef10
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::AddUninitialized | PathBuilder.obj | debug, call graph, high
+// pdb locals: inewSize
 unsigned int FUN_006cef10_shell::AdvanceCounter()
 {
     if (BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -862,6 +905,7 @@ unsigned int FUN_006cef10_shell::AdvanceCounter()
 
 // @fnv 0x006cedd0
 // src: COMMUNITY 0x006cedd0
+// pdb: BSSimpleArray<PathingLocation,1024>::GetLast | PathBuilder.obj | debug, call graph, medium
 void __fastcall BSSimpleArray_PathingLocation_1024_GetTail(BSSimpleArray<NavMeshStaticAvoidNode, 1024>* self)
 {
     self->GetAt((int)self->iSize - 1);
@@ -902,6 +946,9 @@ struct FUN_006c9920_cls
 
 // Gets a buffer from m_08, constructs a FUN_006c9920_thing in it with a, and returns the buffer pointer.
 // @fnv 0x006c9920
+// pdb: PathingSolution::AddVirtualPathingNode | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: apNavMeshInfo
+// pdb locals: pnode, inewNodeIndex
 void* FUN_006c9920_cls::ConstructThing(unsigned int auiValue)
 {
     void* r7 = m_08.GetA();
@@ -944,6 +991,9 @@ struct FUN_006c9fc0_cls
 
 // Checks the path node at a1, then scans forward from a1+1 until a node is invalid or flagged, storing the start in p1 and the end index in p2.
 // @fnv 0x006c9fc0
+// pdb: PathBuilder::FindLoadedNodeIndices | PathBuilder.obj | debug, call graph, medium
+// pdb params: aiFirstHighLevelNode, apFirstLoadedNodeIndex, apLastLoadedNodeIndex
+// pdb locals: pcell
 bool FUN_006c9fc0_cls::FindPathSegmentEnd(int aiStartIndex, int* piStartOut, int* piEndOut)
 {
     void* pFirstNode = reinterpret_cast<PathingStepC_006dd4f0*>(
@@ -1004,7 +1054,7 @@ struct PathLoc
     int unk20;
     int unk24;
     PathLoc();
-    PathLoc(const PathPoint3& pos, const NavMeshInfo* info, unsigned short tri);
+    PathLoc(const PathPoint3& aLocation, const NavMeshInfo* apNavMeshInfo, unsigned short ausTriangleIndex);
     ~PathLoc();
     PathLoc& operator=(const PathLoc&);
     bool FUN_006dd6f0(int);
@@ -1045,7 +1095,7 @@ struct DoorEntryList
     DoorEntry* BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(int);
 };
 
-int __cdecl CollectNearbyEdges(PathLoc*, int, DoorEntryList*);
+int __cdecl Pathing_FindClosestEdges(PathLoc*, int, DoorEntryList*);
 
 struct PathBuilderCore
 {
@@ -1053,17 +1103,21 @@ struct PathBuilderCore
     PathingSolution* m_pOutputSolution;
     bool ComputePathingLocation(VirtualNode*, VirtualNode*, PathLoc&);
     int PathBuilder_BuildPathToValidNavMeshTriangle(PathLoc*, PathLocArray*, int, DoorEntryList*);
-    int ProcessPathNode(int aIndex, PathLocArray* aArray, DoorEntryList* aDoors);
+    int PathBuilder_BuildPathFromNavMeshSearchGoal(int aiLastVirtualNodeIndex, PathLocArray* aRetPath, DoorEntryList* aRetEdges);
 };
 
 // @fnv 0x006cac90
-int PathBuilderCore::ProcessPathNode(int aIndex, PathLocArray* aArray, DoorEntryList* aDoors)
+// src: XBOX_DEBUG_PDB 0x006cac90
+// pdb: PathBuilder::BuildPathFromNavMeshSearchGoal | PathBuilder.obj | debug, call graph, high
+// pdb params: aiLastVirtualNodeIndex, aRetPath, aRetEdges
+// pdb locals: plastNode, pnextNode, exitLoc, lastNodeLoc, i, deltaToEdge, retPathLoc
+int PathBuilderCore::PathBuilder_BuildPathFromNavMeshSearchGoal(int aiLastVirtualNodeIndex, PathLocArray* aRetPath, DoorEntryList* aRetEdges)
 {
-    VirtualNode* pNode = (VirtualNode*)m_pOutputSolution->GetVirtualNode(aIndex);
-    if (aIndex != (int)m_pOutputSolution->PathingSolution_GetVirtualNodeCount() - 1)
+    VirtualNode* pNode = (VirtualNode*)m_pOutputSolution->GetVirtualNode(aiLastVirtualNodeIndex);
+    if (aiLastVirtualNodeIndex != (int)m_pOutputSolution->PathingSolution_GetVirtualNodeCount() - 1)
     {
-        VirtualNode* pNext = (VirtualNode*)m_pOutputSolution->GetVirtualNode(aIndex + 1);
-        if (aIndex < (int)m_pOutputSolution->FUN_00441110())
+        VirtualNode* pNext = (VirtualNode*)m_pOutputSolution->GetVirtualNode(aiLastVirtualNodeIndex + 1);
+        if (aiLastVirtualNodeIndex < (int)m_pOutputSolution->FUN_00441110())
         {
             if (VirtualPathingNode_HasActualLocation(pNext))
             {
@@ -1071,7 +1125,7 @@ int PathBuilderCore::ProcessPathNode(int aIndex, PathLocArray* aArray, DoorEntry
                 if (ComputePathingLocation(pNode, pNext, kLoc))
                 {
                     *pNode->FUN_00717e50() = kLoc;
-                    aArray->FUN_006cf1b0(kLoc);
+                    aRetPath->FUN_006cf1b0(kLoc);
                     return 1;
                 }
             }
@@ -1082,7 +1136,7 @@ int PathBuilderCore::ProcessPathNode(int aIndex, PathLocArray* aArray, DoorEntry
             if (ComputePathingLocation(pNode, pNext, kLoc2))
             {
                 *pNode->FUN_00717e50() = kLoc2;
-                aArray->FUN_006cf1b0(kLoc2);
+                aRetPath->FUN_006cf1b0(kLoc2);
                 return 1;
             }
         }
@@ -1096,29 +1150,29 @@ int PathBuilderCore::ProcessPathNode(int aIndex, PathLocArray* aArray, DoorEntry
         }
         if (pLoc->FUN_006dd6a0())
         {
-            aArray->FUN_006cf1b0(*pLoc);
+            aRetPath->FUN_006cf1b0(*pLoc);
         }
         else
         {
-            switch (CollectNearbyEdges(pLoc, 10, aDoors))
+            switch (Pathing_FindClosestEdges(pLoc, 10, aRetEdges))
             {
             case 1:
-                aArray->FUN_006cf1b0(*pLoc);
+                aRetPath->FUN_006cf1b0(*pLoc);
                 return 1;
             case 2:
-                for (unsigned int i = 0; i < aDoors->FUN_0044ddc0(); i++)
+                for (unsigned int i = 0; i < aRetEdges->FUN_0044ddc0(); i++)
                 {
-                    PathPoint3 kDiff = pLoc->FUN_005c3420() - aDoors->BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(i)->kPos;
+                    PathPoint3 kDiff = pLoc->FUN_005c3420() - aRetEdges->BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(i)->kPos;
                     if (kDiff.Length() < pRequest->GetCenterRadius() * pRequest->GetCenterRadius() && kDiff.z > -64.0 &&
                         kDiff.z < 180.0)
                     {
-                        PathLoc kDoorLoc(aDoors->BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(i)->kPos, aDoors->BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(i)->pInfo,
-                                         aDoors->BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(i)->m_usTriangleID);
-                        aArray->FUN_006cf1b0(kDoorLoc);
+                        PathLoc kDoorLoc(aRetEdges->BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(i)->kPos, aRetEdges->BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(i)->pInfo,
+                                         aRetEdges->BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(i)->m_usTriangleID);
+                        aRetPath->FUN_006cf1b0(kDoorLoc);
                         return 1;
                     }
                 }
-                return PathBuilder_BuildPathToValidNavMeshTriangle(pLoc, aArray, 0, aDoors);
+                return PathBuilder_BuildPathToValidNavMeshTriangle(pLoc, aRetPath, 0, aRetEdges);
             }
             return 2;
         }
@@ -1169,6 +1223,7 @@ struct FUN_006cb3a0_cls
 };
 
 // @fnv 0x006cb3a0
+// pdb: RayCastPathRequest::RayCastPathRequest | PathBuilder.obj | debug, object-file gap fill, medium
 FUN_006cb3a0_cls::FUN_006cb3a0_cls()
 {
     m_58.Call0();
@@ -1220,6 +1275,7 @@ class FUN_006cb410_cls : public FUN_006cb410_pad, public FUN_006cb410_sub
 
 // Destructor for the class; the compiler-generated body destroys the base subobject and the m_30 and m_58 members.
 // @fnv 0x006cb410
+// pdb: RayCastPathRequest::~RayCastPathRequest | PathBuilder.obj | debug, call graph, high
 FUN_006cb410_cls::~FUN_006cb410_cls()
 {}
 
@@ -1238,16 +1294,18 @@ struct S_006cb900
     int unk08;
     S_006cb900_Vec m_0c;
     void FastNavMeshEdgeHandle_FastNavMeshEdgeHandle(const S_006cb900* p);
-    S_006cb900& NavMeshEdgeLocation_NavMeshEdgeLocation(const S_006cb900* other);
+    S_006cb900& NavMeshEdgeLocation_ctor(const S_006cb900* aFastEdgeLocation);
 };
 
 // @fnv 0x006cb900
-// src: COMMUNITY 0x006cb900
-S_006cb900& S_006cb900::NavMeshEdgeLocation_NavMeshEdgeLocation(const S_006cb900* other)
+// src: XBOX_RETAIL_PDB 0x006cb900
+// pdb: NavMeshEdgeLocation::NavMeshEdgeLocation | NavMeshHandles.obj | retail, upstream name already matches, high
+// pdb params: aTriHandle
+S_006cb900& S_006cb900::NavMeshEdgeLocation_ctor(const S_006cb900* aFastEdgeLocation)
 {
-    FastNavMeshEdgeHandle_FastNavMeshEdgeHandle(other);
+    FastNavMeshEdgeHandle_FastNavMeshEdgeHandle(aFastEdgeLocation);
     m_0c.FUN_006815c0();
-    m_0c = other->m_0c;
+    m_0c = aFastEdgeLocation->m_0c;
     return *this;
 }
 
@@ -1263,7 +1321,7 @@ struct PLocShell
     int m_1c;
     int m_20;
     int m_24;
-    PLocShell(const NiPoint3& pt, const NavMeshInfo* info, unsigned short w);
+    PLocShell(const NiPoint3& aLocation, const NavMeshInfo* apNavMeshInfo, unsigned short ausTriangleIndex);
     ~PLocShell();
 };
 struct PtCtor
@@ -1276,7 +1334,7 @@ struct PtCtor
 };
 struct Inner2
 {
-    bool FUN_0069ad00(NavMeshPtr* p);
+    bool FUN_0069ad00(NavMeshPtr* aReturnNavMeshPtr);
     int m_00;
     int m_04;
     int m_08;
@@ -1335,6 +1393,9 @@ struct ThisCls
 };
 
 // @fnv 0x006ce2d0
+// pdb: PathBuilder::FindExitPoint | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: apCurrentNode, apNextNode, aRetLocation
+// pdb locals: pcurrentMesh, fdist, iedge, usTriIndex, fwaterHeight, point1, loc, point2, center, ibestTri, portalTriangles, fbestDist, i, triCenter, ptri
 bool ThisCls::ComputePathingLocation(ArgObj* a0, ArgObj* a1, PathingLocation* apOutLocation)
 {
     a0->FUN_00717e50()->FUN_006de250();
@@ -1436,7 +1497,7 @@ struct MeshObj
 struct MeshPtr
 {
     MeshObj* m_pObject;
-    MeshPtr(MeshObj* apObject);
+    MeshPtr(MeshObj* ptr);
     ~MeshPtr();
     MeshObj* operator->();
 };
@@ -1476,7 +1537,7 @@ struct EdgeCandidateList
     unsigned int GetSize();
     bool IsEmpty();
     EdgeCandidate* GetAt(unsigned int aIndex);
-    void Add(const EdgeCandidate& arItem);
+    void BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_Add(const EdgeCandidate& aValue);
 };
 
 struct MeshEdgeRecord
@@ -1496,7 +1557,7 @@ struct EdgeHandleList
 
 struct PathActor
 {
-    void Prepare(int aiFlag);
+    void Prepare(int apFilter);
     bool IsDone();
     NiPoint3 GetPosition();
 };
@@ -1504,25 +1565,29 @@ struct PathActor
 extern SettingT<INISettingCollection> gSearchRadius;
 extern float fCenterBias;
 
-void __cdecl CollectMeshes(PathActor* apActor, float afRadius, MeshList* apList);
-void __cdecl ClosestPointOnSegment(NiPoint3* apOut, const NiPoint3& arPoint, MeshVert* apA, MeshVert* apB);
+void __cdecl CollectMeshes(PathActor* aLocation, float afRadius, MeshList* apRetNavMeshes);
+void __cdecl ClosestPointOnSegment(NiPoint3* aPoint, const NiPoint3& aLineStart, MeshVert* aLineEnd, MeshVert* apB);
 int __cdecl CompareEdgeCandidates(const void* apA, const void* apB);
 extern "C" void __cdecl qsort(void* base, unsigned int num, unsigned int width,
                               int(__cdecl* compare)(const void*, const void*));
 unsigned int __cdecl MinCount(unsigned int a, unsigned int b);
 
 // @fnv 0x006d4120
-int __cdecl CollectNearbyEdges(PathActor* apActor, unsigned int auiMax, EdgeHandleList* apOut)
+// src: XBOX_RETAIL_PDB 0x006d4120
+// pdb: Pathing::FindClosestEdges | Pathfind.obj | retail, call graph (shared callers), high
+// pdb params: aLocation, aiMaxCount, aRetEdges
+// pdb locals: icount, navmeshes, fSqrMaxDist, fMaxDist, FoundEdges, n, spmesh, t, ptri, e, delta, pvert2, pvert1, f, closestPoint, fsqrDist, edgeProxy, i
+int __cdecl Pathing_FindClosestEdges(PathActor* aLocation, unsigned int aiMaxCount, EdgeHandleList* aRetEdges)
 {
-    apActor->Prepare(0);
-    if (apActor->IsDone())
+    aLocation->Prepare(0);
+    if (aLocation->IsDone())
     {
         return 1;
     }
     float fRadius = *gSearchRadius.Float();
     float fRadiusSq2 = fRadius * fRadius;
     MeshList kMeshes5;
-    CollectMeshes(apActor, fRadius, &kMeshes5);
+    CollectMeshes(aLocation, fRadius, &kMeshes5);
     EdgeCandidateList kEdges;
     for (unsigned int aI = 0; aI < kMeshes5.GetSize(); aI++)
     {
@@ -1542,8 +1607,8 @@ int __cdecl CollectNearbyEdges(PathActor* apActor, unsigned int auiMax, EdgeHand
                     }
                     MeshVert* pV2 = spMesh_->GetVertex(pTri_->GetVertexIndex(iNext2));
                     PointStorage kClosest5;
-                    ClosestPointOnSegment(&reinterpret_cast<NiPoint3&>(kClosest5), apActor->GetPosition(), _pV0, pV2);
-                    NiPoint3 kDiff_ = apActor->GetPosition() - reinterpret_cast<NiPoint3&>(kClosest5);
+                    ClosestPointOnSegment(&reinterpret_cast<NiPoint3&>(kClosest5), aLocation->GetPosition(), _pV0, pV2);
+                    NiPoint3 kDiff_ = aLocation->GetPosition() - reinterpret_cast<NiPoint3&>(kClosest5);
                     float fDistA = static_cast<SegmentDelta&>(kDiff_).SqrLength();
                     if (fDistA < fRadiusSq2)
                     {
@@ -1555,7 +1620,7 @@ int __cdecl CollectNearbyEdges(PathActor* apActor, unsigned int auiMax, EdgeHand
                             reinterpret_cast<NiPoint3&>(kClosest5) + (spMesh_->GetTriangleCenter((unsigned short)t3) - reinterpret_cast<NiPoint3&>(kClosest5)) * fCenterBias;
                         kItem6.fZ = kDiff_.z;
                         kItem6.fDist = fDistA;
-                        kEdges.Add(kItem6);
+                        kEdges.BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_Add(kItem6);
                     }
                 }
             }
@@ -1566,10 +1631,10 @@ int __cdecl CollectNearbyEdges(PathActor* apActor, unsigned int auiMax, EdgeHand
         return 0;
     }
     qsort(kEdges.GetAt(0), kEdges.GetSize(), 0x20, CompareEdgeCandidates);
-    unsigned int uiCount5 = MinCount(auiMax, kEdges.GetSize());
+    unsigned int uiCount5 = MinCount(aiMaxCount, kEdges.GetSize());
     for (unsigned int j = 0; j < uiCount5; j++)
     {
-        apOut->Add(MeshEdgeRecord(*kEdges.GetAt(j)));
+        aRetEdges->Add(MeshEdgeRecord(*kEdges.GetAt(j)));
     }
     if (uiCount5 > 0)
     {
@@ -1586,13 +1651,13 @@ struct PathingVirtualNode;
 // Retained only for TrimNodes (0x006c9380), which include/PathingSolution.h does not declare.
 struct PathingSolutionData : public PathingSolution
 {
-    void TrimNodes(int count);
+    void TrimNodes(int aiIndex);
 };
 
 struct PathingVirtualNode
 {
     PathingLocation* GetLocation();
-    void SetLocation(PathingLocation* loc);
+    void VirtualPathingNode_SetLocation(PathingLocation* arLocation);
 };
 
 struct PathingNodeLocation
@@ -1607,7 +1672,7 @@ struct PathingNodeLocation
     unsigned short m_usTriangleID;
     unsigned char uiFlags;
     unsigned char ucPad27;
-    PathingNodeLocation(const NiPoint3* point, PathingLocation* base);
+    PathingNodeLocation(const NiPoint3* aLocation, PathingLocation* aHintLoc);
     ~PathingNodeLocation();
 };
 
@@ -1615,13 +1680,16 @@ struct PathBuilderUpdate : public PathBuilder
 {
     bool FindUpdateRange(unsigned int index, int* start, int* end);
     bool RebuildDetailedPath(bool flag);
-    bool RebuildFromIndex(bool flag, unsigned int index);
+    bool RebuildFromIndex(bool pActor, unsigned int aiFirstHighLevelNode);
     int UpdatePathFromIndex(unsigned int index, const NiPoint3* point);
 };
 
 void __fastcall PathingSolution_ClearCurrentDetailedPath(Dummy_006c93a0* pThis);
 
 // @fnv 0x006c9170
+// pdb: PathBuilder::UpdateDetailedPath | PathBuilder.obj | debug, object-file gap fill, medium
+// pdb params: aiCurrentVirtualNodeIndex, aCurrentActorLocation
+// pdb locals: inewFirstLoadedNodeIndex, inewLastLoadedNodeIndex, ilastNodeIndex, actorLocation
 int PathBuilderUpdate::UpdatePathFromIndex(unsigned int index, const NiPoint3* point)
 {
     int iStart = -1;
@@ -1647,7 +1715,7 @@ int PathBuilderUpdate::UpdatePathFromIndex(unsigned int index, const NiPoint3* p
         m_pOutputSolution->unk18 = index;
         PathingNodeLocation kTargetPoint(
             point, ((PathingVirtualNode*)m_pOutputSolution->GetVirtualNode(index))->GetLocation());
-        ((PathingVirtualNode*)m_pOutputSolution->GetVirtualNode(index))->SetLocation((PathingLocation*)&kTargetPoint);
+        ((PathingVirtualNode*)m_pOutputSolution->GetVirtualNode(index))->VirtualPathingNode_SetLocation((PathingLocation*)&kTargetPoint);
         int iCount = m_pOutputSolution->GetObjectFlags() - 1;
         m_pOutputSolution->RemoveLastNode();
         m_pOutputSolution->unk1c = iEnd;
@@ -1701,22 +1769,25 @@ struct PathBuilderDirect : PathBuilderCore
 };
 // @fnv 0x006cb050
 // src: COMMUNITY 0x006cb050
-int PathBuilderCore::PathBuilder_BuildPathToValidNavMeshTriangle(PathLoc* start, PathLocArray* output, int allowPartial, DoorEntryList* doors)
+// pdb: PathBuilder::BuildPathToValidNavMeshTriangle | PathBuilder.obj | retail, upstream name already matches, high
+// pdb params: aStartLocation, aRetPath, abStart, aRetEdges
+// pdb locals: retPath, rayCastSearch, rayCastRequest, res, goalLoc
+int PathBuilderCore::PathBuilder_BuildPathToValidNavMeshTriangle(PathLoc* aStartLocation, PathLocArray* aRetPath, int abStart, DoorEntryList* aRetEdges)
 {
     if (*g_011d7404.Bool())
     {
-        switch (CollectNearbyEdges(start, 10, doors))
+        switch (Pathing_FindClosestEdges(aStartLocation, 10, aRetEdges))
         {
         case 0:
             return 2;
         case 1:
-            output->FUN_006cf1b0(*start);
+            aRetPath->FUN_006cf1b0(*aStartLocation);
             return 1;
         case 2:
             if (GetTaskletManager().IsTaskletThread(gm_GetCurrentThreadId()))
             {
                 return static_cast<PathManagerDirect*>(PathManager::GetRandomGenerator())
-                    ->PathManager_GetRayCastPathToNavmesh(pRequest, doors, start, output, *reinterpret_cast<bool*>(&allowPartial));
+                    ->PathManager_GetRayCastPathToNavmesh(pRequest, aRetEdges, aStartLocation, aRetPath, *reinterpret_cast<bool*>(&abStart));
             }
             else
             {
@@ -1724,20 +1795,20 @@ int PathBuilderCore::PathBuilder_BuildPathToValidNavMeshTriangle(PathLoc* start,
                 {
                     PathQuery query;
                     {
-                        reinterpret_cast<PathingLocation&>(query.kGoal) = *reinterpret_cast<PathingLocation*>(start);
-                        query.eType = !*reinterpret_cast<bool*>(&allowPartial);
+                        reinterpret_cast<PathingLocation&>(query.kGoal) = *reinterpret_cast<PathingLocation*>(aStartLocation);
+                        query.eType = !*reinterpret_cast<bool*>(&abStart);
                         query.pRequest = pRequest;
-                        reinterpret_cast<DoorListCopy*>(doors)->ProcessItems(&query.x1);
+                        reinterpret_cast<DoorListCopy*>(aRetEdges)->ProcessItems(&query.x1);
                         FUN_006cb480 result;
                         PathingSearchRayCast search;
-                        status = search.ProcessRayCast((RayCastParam*)&query, (PathingSolutionExt*)&result);
+                        status = search.BuildPath((RayCastParam*)&query, (PathingSolutionExt*)&result);
                         while (status == 0)
                         {
-                            status = search.ProcessRayCast((RayCastParam*)&query, (PathingSolutionExt*)&result);
+                            status = search.BuildPath((RayCastParam*)&query, (PathingSolutionExt*)&result);
                         }
                         if (status == 1)
                         {
-                            result.kPath.BSSimpleArray_CopyTo_0(output);
+                            result.kPath.BSSimpleArray_CopyTo_0(aRetPath);
                             return 1;
                         }
                         else
@@ -1754,10 +1825,10 @@ int PathBuilderCore::PathBuilder_BuildPathToValidNavMeshTriangle(PathLoc* start,
     {
         DirectLocation goal;
         if (static_cast<PathBuilderDirect*>(this)->FindNearestMeshLocation(
-                *reinterpret_cast<DirectLocation*>(start), &goal, *reinterpret_cast<bool*>(&allowPartial)))
+                *reinterpret_cast<DirectLocation*>(aStartLocation), &goal, *reinterpret_cast<bool*>(&abStart)))
         {
-            output->FUN_006cf1b0(*start);
-            output->FUN_006cf1b0(*reinterpret_cast<PathLoc*>(&goal));
+            aRetPath->FUN_006cf1b0(*aStartLocation);
+            aRetPath->FUN_006cf1b0(*reinterpret_cast<PathLoc*>(&goal));
             return 1;
         }
         else
@@ -1778,7 +1849,7 @@ struct Edge501
     unsigned short flags;
     int edge;
     PointStorage position;
-    Edge501& NavMeshEdgeLocation_NavMeshEdgeLocation(const Edge501*);
+    Edge501& NavMeshEdgeLocation_ctor(const Edge501*);
 };
 struct EdgeInput501
 {
@@ -1800,14 +1871,18 @@ struct Builder501
 {
     PathRequest* request;
     Solution501* solution;
-    bool TryAddClosestPoint(unsigned int, EdgeInput501*, BSSimpleArray<PathingLocation, 1024>*);
+    bool PathBuilder_CheckClosestEdgeToGoal(unsigned int, EdgeInput501*, BSSimpleArray<PathingLocation, 1024>*);
 };
 void __cdecl GetClosestPointOnSegment(NiPoint3*, const NiPoint3&, const NiPoint3&, const NiPoint3&);
 // @fnv 0x006cb6a0
-bool Builder501::TryAddClosestPoint(unsigned int index, EdgeInput501* input, BSSimpleArray<PathingLocation, 1024>* output)
+// src: XBOX_RETAIL_PDB 0x006cb6a0
+// pdb: PathBuilder::CheckClosestEdgeToGoal | PathBuilder.obj | retail, object-file run extension, high
+// pdb params: aiLastVirtualNodeIndex, aEndEdges, aEndNodes
+// pdb locals: closestEdge, vert2, spmesh, vert1, goalLoc, pointOnEdge, newClosestEdge, center
+bool Builder501::PathBuilder_CheckClosestEdgeToGoal(unsigned int aiLastVirtualNodeIndex, EdgeInput501* aEndEdges, BSSimpleArray<PathingLocation, 1024>* aEndNodes)
 {
     Edge501 edge;
-    edge.NavMeshEdgeLocation_NavMeshEdgeLocation(input->GetFirstEntry());
+    edge.NavMeshEdgeLocation_ctor(aEndEdges->GetFirstEntry());
     PointStorage mesh;
     ((NiPoint3&)mesh).FUN_006815c0();
     PointStorage start;
@@ -1816,7 +1891,7 @@ bool Builder501::TryAddClosestPoint(unsigned int index, EdgeInput501* input, BSS
     if (edge.info->FUN_0069ad00(&end))
     {
         end.Modelloader_GetReferencedThis()->GetEdgeVertices_0068f0c0(edge.triangle, edge.edge, (NiPoint3&)mesh, (NiPoint3&)start);
-        NiPoint3 position = solution->GetVirtualNode_006e78b0(index)->FUN_00717e50()->FUN_005c3420();
+        NiPoint3 position = solution->GetVirtualNode_006e78b0(aiLastVirtualNodeIndex)->FUN_00717e50()->FUN_005c3420();
         PointStorage closest;
         GetClosestPointOnSegment((NiPoint3*)&closest, position, (NiPoint3&)mesh, (NiPoint3&)start);
         if (((NiPoint3&)closest - position).GetSquaredXYLength() < request->GetCenterRadius() * request->GetCenterRadius() &&
@@ -1825,9 +1900,9 @@ bool Builder501::TryAddClosestPoint(unsigned int index, EdgeInput501* input, BSS
             PointStorage center;
             end.Modelloader_GetReferencedThis()->FUN_00558220((NiPoint3*)&center, edge.triangle);
             ((NiPoint3&)closest).ComputeValue_0063c8a0(((NiPoint3&)center - (NiPoint3&)closest) * DAT_0101e2bc);
-            output->Clear(false);
+            aEndNodes->Clear(false);
             PathLoc location((const PathPoint3&)closest, (const NavMeshInfo*)edge.info, edge.triangle);
-            output->AppendElement((const PathingLocation&)location);
+            aEndNodes->AppendElement((const PathingLocation&)location);
             return true;
         }
     }
@@ -1897,13 +1972,13 @@ struct SolS
     void* GetVirtualNode_006e78b0(unsigned int idx);
     void* PathingSolution_GetLastNode();
     bool IsIncomplete();
-    void PathingSolution_AddPathingNode(void* elem, const NiPoint3& z);
+    void PathingSolution_AddPathingNode(void* aLocation, const NiPoint3& aTangent);
 };
 struct PBX
 {
     int FUN_006caa40(unsigned int a, void* arr, void* loc);
-    int ProcessPathNode(unsigned int a, void* arr, void* loc);
-    bool TryAddClosestPoint(unsigned int a, void* arr, void* loc);
+    int PathBuilder_BuildPathFromNavMeshSearchGoal(unsigned int aiLastVirtualNodeIndex, void* aRetPath, void* aRetEdges);
+    bool PathBuilder_CheckClosestEdgeToGoal(unsigned int aiLastVirtualNodeIndex, void* aEndEdges, void* aEndNodes);
     int PathBuilder_AddNodesFromNavMesh(int a);
 };
 struct ReqX
@@ -1923,7 +1998,7 @@ struct _Mem_2064
     unsigned short triangle;
     unsigned char flags;
     unsigned char padding;
-    _Mem_2064(const NiPoint3& p, const void* nm, unsigned short tri);
+    _Mem_2064(const NiPoint3& aLocation, const void* apNavMeshInfo, unsigned short ausTriangleIndex);
     ~_Mem_2064();
 };
 struct PLArr
@@ -1934,6 +2009,9 @@ bool __cdecl Pathing_CheckLineOfSight(PathingLocation& a, PathingLocation& b, Pa
 
 // Checks whether entries a and b can be connected, then updates m_pOutputSolution using path results and intermediate entries.
 // @fnv 0x006cb950
+// pdb: PathBuilder::BuildNavMeshPathForVirtualNodes | PathBuilder.obj | debug, object-file gap fill, medium
+// pdb params: aiFirstVirtualNodeIndex, aiLastVirtualNodeIndex
+// pdb locals: fdistFromStartToClosestEdge, endEdges, startNodes, startEdges, efoundPathToGoal, efoundPathToStart, endNodes, fdistFromStartToGoal, btryRayCastPath, fdistFromGoalToClosestEdge, res, closestStartEdgeCenter, closestGoalEdgeCenter, rayCastPath, plastVirtualNode, i, endLoc
 bool PathBuilder::TryConnectPathNodes(unsigned int a, unsigned int b)
 {
     struct FUN_006cf200 distA;  // Start door handles.
@@ -1944,7 +2022,7 @@ bool PathBuilder::TryConnectPathNodes(unsigned int a, unsigned int b)
     struct FUN_006cf200 flag;  // Goal door handles.
     struct FUN_006cf180 locA;  // Goal path.
     // Goal path result.
-    distB = ((PBX*)this)->ProcessPathNode(b, &locA, &flag);
+    distB = ((PBX*)this)->PathBuilder_BuildPathFromNavMeshSearchGoal(b, &locA, &flag);
     if (distC == 0 || distB == 0)
     {
         return false;
@@ -2034,7 +2112,7 @@ bool PathBuilder::TryConnectPathNodes(unsigned int a, unsigned int b)
         {
             return false;
         }
-        if (!((PBX*)this)->TryAddClosestPoint(b, &flag, &locA))
+        if (!((PBX*)this)->PathBuilder_CheckClosestEdgeToGoal(b, &flag, &locA))
             m_pOutputSolution->SetByteAtOffset40(1);
         {
             _Mem_2064 tmpPL(((LocAcc*)&flag)->GetFirstEntry()->position, ((LocAcc*)&flag)->GetFirstEntry()->mesh,
@@ -4238,7 +4316,7 @@ struct SearchLocal
     SearchLocal();
     ~SearchLocal();
     void SetMode(int);
-    bool Search(void*, SearchPointLocal*, SearchPointLocal*, int, int, void*);
+    bool BuildNodePath(void*, SearchPointLocal*, SearchPointLocal*, int, int, void*);
 };
 struct BuilderLocal
 {
@@ -4270,7 +4348,7 @@ bool BuilderLocal::FindPath(LocationLocal* start, LocationLocal* goal, int mode,
     goalPoint3.triangle = goalTriangle;
     SearchLocal search;
     search.SetMode(mode);
-    bool result3 = search.Search(request, &startPoint7, &goalPoint3, a, b, &infos);
+    bool result3 = search.BuildNodePath(request, &startPoint7, &goalPoint3, a, b, &infos);
     if (!result3)
         return false;
     return true;
@@ -4335,6 +4413,9 @@ struct PathBuilderSearch : PathBuilder
 };
 // Searches the path infos for a mesh whose point is closest to the location, then stores the best match into result and returns whether one was found.
 // @fnv 0x006cdb40
+// pdb: PathBuilder::FindClosestOpenEdge | PathBuilder.obj | debug, call graph, medium
+// pdb params: aStartLocation, aRetLocation, abStart
+// pdb locals: bestLoc, infos, isize, fminDistToPointSqr, usbestTri, ibestNavMesh, i, spmesh, iedge, usTriIndex, fsqrtDist, loc, verts, center
 bool PathBuilderSearch::FindNearestMeshLocation(SearchLocation searchLocation, SearchLocation& resultLocation,
                                                 bool option)
 {
@@ -4397,28 +4478,32 @@ struct This152
     Req152* request;
     int field04;
     int field08;
-    bool FindNavMeshLocation(ArgObj* from, ArgObj* to, Out152* output);
+    bool PathBuilder_FindEntryPoint(ArgObj* apPrevNode, ArgObj* apCurrentNode, Out152* aRetLocation);
 };
 // @fnv 0x006cde50
-bool This152::FindNavMeshLocation(ArgObj* from, ArgObj* to, Out152* output)
+// src: XBOX_DEBUG_PDB 0x006cde50
+// pdb: PathBuilder::FindEntryPoint | PathBuilder.obj | debug, call graph, high
+// pdb params: apPrevNode, apCurrentNode, aRetLocation
+// pdb locals: pcurrentMesh, fdist, iedge, usTriIndex, point1, point2, center, ibestTri, portalTriangles, fbestDist, i, triCenter, ptri
+bool This152::PathBuilder_FindEntryPoint(ArgObj* apPrevNode, ArgObj* apCurrentNode, Out152* aRetLocation)
 {
-    to->FUN_00717e50()->FUN_006de250();
+    apCurrentNode->FUN_00717e50()->FUN_006de250();
     NavMeshPtr mesh;
-    if (!to->FUN_00717e50()->FUN_006dd540()->FUN_0069ad00(&mesh))
+    if (!apCurrentNode->FUN_00717e50()->FUN_006dd540()->FUN_0069ad00(&mesh))
         return false;
-    if (VirtualPathingNode_HasActualLocation((const int*)to))
+    if (VirtualPathingNode_HasActualLocation((const int*)apCurrentNode))
     {
-        float edge = (from->FUN_00717e50()->FUN_005c3420() - to->FUN_00717e50()->FUN_006dd540()->m_10).Length();
+        float edge = (apPrevNode->FUN_00717e50()->FUN_005c3420() - apCurrentNode->FUN_00717e50()->FUN_006dd540()->m_10).Length();
         unsigned short triangle = 0xffff;
         int distance = -1;
         if (mesh.Modelloader_GetReferencedThis()
-                ->FindClosestOpenEdgeForLocation(from->FUN_00717e50()->FUN_005c3420(), edge * 2.0f, &triangle, &distance, 1))
+                ->FindClosestOpenEdgeForLocation(apPrevNode->FUN_00717e50()->FUN_005c3420(), edge * 2.0f, &triangle, &distance, 1))
         {
             PtCtor b;
             PtCtor a;
             mesh.Modelloader_GetReferencedThis()->GetEdgeVertices_0068f0c0(triangle, distance, (NiPoint3&)b, (NiPoint3&)a);
             NiPoint3 center = mesh.Modelloader_GetReferencedThis()->FUN_00558220(triangle);
-            output->FUN_006dcce0(Loc152((((NiPoint3&)b + (NiPoint3&)a) * DAT_0104e2b8) + center * DAT_0101e2bc,
+            aRetLocation->FUN_006dcce0(Loc152((((NiPoint3&)b + (NiPoint3&)a) * DAT_0104e2b8) + center * DAT_0101e2bc,
                                         mesh.Modelloader_GetReferencedThis()->GetNavMeshInfo_0068efb0(), triangle));
             return true;
         }
@@ -4426,7 +4511,7 @@ bool This152::FindNavMeshLocation(ArgObj* from, ArgObj* to, Out152* output)
     else
     {
         TriArr triangles(0, 0, field08);
-        mesh.Modelloader_GetReferencedThis()->CollectTrianglesForDoor((unsigned int)from->FUN_00717e50()->FUN_006dd540(), (BSSimpleArray<unsigned int, 1024>*)&triangles);
+        mesh.Modelloader_GetReferencedThis()->CollectTrianglesForDoor((unsigned int)apPrevNode->FUN_00717e50()->FUN_006dd540(), (BSSimpleArray<unsigned int, 1024>*)&triangles);
         unsigned int minDistance = 0xffff;
         float best = DAT_01016970;
         for (unsigned int i = 0; i < triangles.FUN_0044ddc0(); ++i)
@@ -4449,8 +4534,8 @@ bool This152::FindNavMeshLocation(ArgObj* from, ArgObj* to, Out152* output)
         }
         if (minDistance != 0xffff)
         {
-            output->FUN_006dcce0(Loc152(mesh.Modelloader_GetReferencedThis()->FUN_00558220((unsigned short)minDistance),
-                                        (NavMeshInfo*)to->FUN_00717e50()->FUN_006dd540(), (unsigned short)minDistance));
+            aRetLocation->FUN_006dcce0(Loc152(mesh.Modelloader_GetReferencedThis()->FUN_00558220((unsigned short)minDistance),
+                                        (NavMeshInfo*)apCurrentNode->FUN_00717e50()->FUN_006dd540(), (unsigned short)minDistance));
             return true;
         }
     }
@@ -4464,7 +4549,7 @@ struct FUN_006c93f0_Stage
 struct FUN_006c93f0_Node
 {
     FUN_006c93f0_Stage* FUN_00717e50();
-    void UpdateProxyFlag();
+    void VirtualPathingNode_UpdateNode();
 };
 struct FUN_006c93f0_Collection
 {
@@ -4476,10 +4561,13 @@ struct FUN_006c93f0_Object
     int unk00;
     FUN_006c93f0_Collection* collection;
     bool FindPathSegmentEnd(int index, int* firstIndex, int* lastIndex);
-    bool PathBuilder_BuildDetailedPath(int flag, int index);
+    bool PathBuilder_BuildDetailedPath(int pActor, int aiFirstHighLevelNode);
     int ProcessIndexRange(int index);
 };
 // @fnv 0x006c93f0
+// pdb: PathBuilder::UpdatePathMoveToHigh | PathBuilder.obj | debug, call graph, medium
+// pdb params: aiCurrentVirtualNodeIndex
+// pdb locals: inewFirstLoadedNodeIndex, inewLastLoadedNodeIndex, i
 int FUN_006c93f0_Object::ProcessIndexRange(int index)
 {
     int firstIndex = -1;
@@ -4489,7 +4577,7 @@ int FUN_006c93f0_Object::ProcessIndexRange(int index)
     for (unsigned int i = 0; i < collection->PathingSolution_GetVirtualNodeCount(); ++i)
         collection->GetVirtualNode_006e78b0(i)->FUN_00717e50()->FUN_006ddbe0();
     for (int j = firstIndex; j <= lastIndex; ++j)
-        collection->GetVirtualNode_006e78b0(j)->UpdateProxyFlag();
+        collection->GetVirtualNode_006e78b0(j)->VirtualPathingNode_UpdateNode();
     if (!PathBuilder_BuildDetailedPath(0, index))
         return -1;
     return 2;
@@ -4518,11 +4606,12 @@ class NavMeshInfo_
     FNVHashMap map34;
 };
 
+// pdb: structure ParentSpaceNode, size 0xc, 3 members
 struct ParentSpaceNode
 {
-    int iStart;
-    int iEnd;
-    bool bNew;
+    int bWorldSpace;
+    int pWorldSpace;
+    bool pInteriorCell;
 };
 
 struct OutNodes
@@ -4590,9 +4679,9 @@ bool PathBuilder::BuildPathSpans(OutNodes& aOutNodes)
                 if (iOpen_2 > i)
                 {
                     ParentSpaceNode gap;
-                    gap.iStart = i;
-                    gap.iEnd = iOpen_2 - 1;
-                    gap.bNew = false;
+                    gap.bWorldSpace = i;
+                    gap.pWorldSpace = iOpen_2 - 1;
+                    gap.pInteriorCell = false;
                     aOutNodes.Add(gap);
                 }
 
@@ -4617,9 +4706,9 @@ bool PathBuilder::BuildPathSpans(OutNodes& aOutNodes)
                         pInfo8->map34.Find(pInfoX, 0, Actor_AreReferencedValuesEqual) == (unsigned int)-1)
                     {
                         ParentSpaceNode span7;
-                        span7.iStart = iSpanStartB;
-                        span7.iEnd = m2;
-                        span7.bNew = true;
+                        span7.bWorldSpace = iSpanStartB;
+                        span7.pWorldSpace = m2;
+                        span7.pInteriorCell = true;
                         aOutNodes.Add(span7);
                         iSpanStartB = m2 + 1;
                     }
@@ -4627,18 +4716,18 @@ bool PathBuilder::BuildPathSpans(OutNodes& aOutNodes)
                 }
 
                 ParentSpaceNode tail;
-                tail.iStart = iSpanStartB;
-                tail.iEnd = iClose3;
-                tail.bNew = true;
+                tail.bWorldSpace = iSpanStartB;
+                tail.pWorldSpace = iClose3;
+                tail.pInteriorCell = true;
                 aOutNodes.Add(tail);
                 i = iClose3 + 1;
             }
             else
             {
                 ParentSpaceNode node;
-                node.iStart = i;
-                node.iEnd = iLastA;
-                node.bNew = false;
+                node.bWorldSpace = i;
+                node.pWorldSpace = iLastA;
+                node.pInteriorCell = false;
                 aOutNodes.Add(node);
                 i = iLastA + 1;
             }
@@ -4697,42 +4786,45 @@ class PathBuilderMethods : public PathBuilder
 
 // @fnv 0x006cd1f0
 // src: COMMUNITY 0x006cd1f0
-bool PathBuilderMethods::PathBuilder_TryBuildStraightPath(PathingLocation* pStart, PathingLocation* pEndLocation)
+// pdb: PathBuilder::TryBuildStraightPath | PathBuilder.obj | retail, upstream name already matches, high
+// pdb params: aStartLocation, aGoalLocation
+// pdb locals: startLeft, goalRight, delta, startRight, rightVec, goalLeft, losWaterFilter
+bool PathBuilderMethods::PathBuilder_TryBuildStraightPath(PathingLocation* aStartLocation, PathingLocation* aGoalLocation)
 {
     FUN_006cd5a0 filter;
     filter.m_bCheckWater = ((PathingRequest*)pRequest)->GetFloatAtOffset68() > *DAT_011d6ef0.Setting_Float_00403e20();
-    if (!Pathing_CheckLineOfSight(pStart, pEndLocation, 0, &filter))
+    if (!Pathing_CheckLineOfSight(aStartLocation, aGoalLocation, 0, &filter))
         return false;
 
-    if (g_TES->GetCellHeightAtPosition(((PathingLocation*)pStart)->FUN_005c3420(),
-                                       ((PathingLocation*)pStart)->FUN_006dd4f0()) +
+    if (g_TES->GetCellHeightAtPosition(((PathingLocation*)aStartLocation)->FUN_005c3420(),
+                                       ((PathingLocation*)aStartLocation)->FUN_006dd4f0()) +
                 25.0 >
-            ((PathingLocation*)pStart)->FUN_005c3420().z ||
-        g_TES->GetCellHeightAtPosition(((PathingLocation*)pEndLocation)->FUN_005c3420(),
-                                       ((PathingLocation*)pEndLocation)->FUN_006dd4f0()) +
+            ((PathingLocation*)aStartLocation)->FUN_005c3420().z ||
+        g_TES->GetCellHeightAtPosition(((PathingLocation*)aGoalLocation)->FUN_005c3420(),
+                                       ((PathingLocation*)aGoalLocation)->FUN_006dd4f0()) +
                 25.0 >
-            ((PathingLocation*)pEndLocation)->FUN_005c3420().z)
+            ((PathingLocation*)aGoalLocation)->FUN_005c3420().z)
     {
-        m_pOutputSolution->ReserveIndex(*pStart, *(const NiPoint3*)&DAT_011f426c);
+        m_pOutputSolution->ReserveIndex(*aStartLocation, *(const NiPoint3*)&DAT_011f426c);
         return true;
     }
 
     NiPoint3 kDelta =
-        ((PathingLocation*)pEndLocation)->FUN_005c3420() - ((PathingLocation*)pStart)->FUN_005c3420();
+        ((PathingLocation*)aGoalLocation)->FUN_005c3420() - ((PathingLocation*)aStartLocation)->FUN_005c3420();
     NiPoint3 sideOffset = ((VectorMethods*)&kDelta)->FUN_0053d1a0(DAT_011a9484) *
                           (float)((PathingRequest*)pRequest)->GetFloatAtOffset68();
 
-    FUN_006dd0d0 kEndPlus(((PathingLocation*)pStart)->FUN_005c3420() - sideOffset, pStart);
-    FUN_006dd0d0 kStartMinus(((PathingLocation*)pEndLocation)->FUN_005c3420() - sideOffset, pEndLocation);
+    FUN_006dd0d0 kEndPlus(((PathingLocation*)aStartLocation)->FUN_005c3420() - sideOffset, aStartLocation);
+    FUN_006dd0d0 kStartMinus(((PathingLocation*)aGoalLocation)->FUN_005c3420() - sideOffset, aGoalLocation);
     if (!Pathing_CheckLineOfSight((const PathingLocation*)&kEndPlus, (const PathingLocation*)&kStartMinus, 0, 0))
         return false;
 
-    FUN_006dd0d0 kStartPlus(((PathingLocation*)pStart)->FUN_005c3420() + sideOffset, pStart);
-    FUN_006dd0d0 kEndMinus(((PathingLocation*)pEndLocation)->FUN_005c3420() + sideOffset, pEndLocation);
+    FUN_006dd0d0 kStartPlus(((PathingLocation*)aStartLocation)->FUN_005c3420() + sideOffset, aStartLocation);
+    FUN_006dd0d0 kEndMinus(((PathingLocation*)aGoalLocation)->FUN_005c3420() + sideOffset, aGoalLocation);
     if (!Pathing_CheckLineOfSight((const PathingLocation*)&kStartPlus, (const PathingLocation*)&kEndMinus, 0, 0))
         return false;
 
-    m_pOutputSolution->ReserveIndex(*pStart, *(const NiPoint3*)&DAT_011f426c);
+    m_pOutputSolution->ReserveIndex(*aStartLocation, *(const NiPoint3*)&DAT_011f426c);
     return true;
 }
 }  // namespace fnv_006cd1f0
@@ -4757,7 +4849,7 @@ struct RayCastItem
     unsigned int unk08;
     NiPoint3 location;
 
-    RayCastItem(const RayCastItem& other);
+    RayCastItem(const RayCastItem& aFastEdgeLocation);
 };
 
 
@@ -4785,7 +4877,7 @@ struct PathingLocationSub
     unsigned char uiFlags;
     unsigned char layoutPadding27;
 
-    PathingLocationSub(const NiPoint3& pt, const NavMeshInfo* info, unsigned short tri);
+    PathingLocationSub(const NiPoint3& aLocation, const NavMeshInfo* apNavMeshInfo, unsigned short ausTriangleIndex);
     ~PathingLocationSub();
     NiPoint3 GetLocation() const;
     TESObjectCELL* FUN_006dd4f0() const;
@@ -4831,110 +4923,114 @@ struct PathingSolutionExt
 
 // Sets up the ray cast from the request, then either handles the direct start/end case or walks the path array to build pathing locations and a status.
 // @fnv 0x006e6320
-unsigned int PathingSearchRayCast::ProcessRayCast(RayCastParam* pRayCastParam, PathingSolutionExt* param2)
+// src: XBOX_RETAIL_PDB 0x006e6320
+// pdb: PathingSearchRayCast::BuildPath | PathingSearchRayCast.obj | retail, call graph (shared callers), high
+// pdb params: aRequest, aRetPath
+// pdb locals: delta, fmax, fzmax, fzmin, center, braycastPassed, edge, spmesh, startLoc, pointOnEdge
+unsigned int PathingSearchRayCast::BuildPath(RayCastParam* aRequest, PathingSolutionExt* aRetPath)
 {
-    this->unk58 = pRayCastParam->type;
-    this->pRequest = pRayCastParam->pRequest;
-    param2->unk00 = this->unk58;
-    this->f74 = BSMAX_00404010(((PathingRequestExt*)this->pRequest)->GetRadius(), 32.0f);
-    this->unk88 = 0;
+    this->eType = aRequest->type;
+    this->pRequest = aRequest->pRequest;
+    aRetPath->unk00 = this->eType;
+    this->fActorRadius = BSMAX_00404010(((PathingRequestExt*)this->pRequest)->GetRadius(), 32.0f);
+    this->iRayCastCount = 0;
 
-    switch (pRayCastParam->type)
+    switch (aRequest->type)
     {
     case 1:
-        this->loc2C = pRayCastParam->endLoc;
-        this->ComputeBounds(pRayCastParam->pathArray);
+        this->GoalLocation = aRequest->endLoc;
+        this->ComputeBounds(aRequest->pathArray);
         break;
     case 0:
-        this->loc2C = pRayCastParam->endLoc;
-        this->ComputeBounds(pRayCastParam->pathArray);
+        this->GoalLocation = aRequest->endLoc;
+        this->ComputeBounds(aRequest->pathArray);
         break;
     case 2: {
-        this->loc2C = pRayCastParam->endLoc;
-        this->loc04 = pRayCastParam->startLoc;
+        this->GoalLocation = aRequest->endLoc;
+        this->StartLocation = aRequest->startLoc;
 
         NiPoint3 kDiff =
-            ((PathingLocationSub*)&this->loc2C)->GetLocation() - ((PathingLocationSub*)&this->loc04)->GetLocation();
+            ((PathingLocationSub*)&this->GoalLocation)->GetLocation() - ((PathingLocationSub*)&this->StartLocation)->GetLocation();
         float fExtent2 = BSMAX_00404010(std::abs(kDiff.x), std::abs(kDiff.y));
-        float minZ2 = BSMIN(((PathingLocationSub*)&this->loc04)->GetLocation().z,
-                                   ((PathingLocationSub*)&this->loc2C)->GetLocation().z);
-        float maxZ7 = BSMAX_00404010(((PathingLocationSub*)&this->loc04)->GetLocation().z,
-                                   ((PathingLocationSub*)&this->loc2C)->GetLocation().z);
+        float minZ2 = BSMIN(((PathingLocationSub*)&this->StartLocation)->GetLocation().z,
+                                   ((PathingLocationSub*)&this->GoalLocation)->GetLocation().z);
+        float maxZ7 = BSMAX_00404010(((PathingLocationSub*)&this->StartLocation)->GetLocation().z,
+                                   ((PathingLocationSub*)&this->GoalLocation)->GetLocation().z);
         NiPoint3 ptCenter2 =
-            (((PathingLocationSub*)&this->loc2C)->GetLocation() + ((PathingLocationSub*)&this->loc04)->GetLocation()) *
+            (((PathingLocationSub*)&this->GoalLocation)->GetLocation() + ((PathingLocationSub*)&this->StartLocation)->GetLocation()) *
             0.5f;
 
-        this->pt5C = ptCenter2 - NiPoint3Ext(fExtent2 * 0.5, fExtent2 * 0.5, 0.0f);
-        this->pt68 = ptCenter2 + NiPoint3Ext(fExtent2 * 0.5, fExtent2 * 0.5, 0.0f);
-        this->pt5C.z = minZ2;
-        this->pt68.z = maxZ7;
+        this->BoundsMin = ptCenter2 - NiPoint3Ext(fExtent2 * 0.5, fExtent2 * 0.5, 0.0f);
+        this->BoundsMax = ptCenter2 + NiPoint3Ext(fExtent2 * 0.5, fExtent2 * 0.5, 0.0f);
+        this->BoundsMin.z = minZ2;
+        this->BoundsMax.z = maxZ7;
 
-        if (!this->SetupFromCellWorld())
+        if (!this->PathingSearchRayCast_InitRayCasts())
         {
-            param2->status = 2;
+            aRetPath->status = 2;
             return 2;
         }
 
-        if (((PathingLocationSub*)&this->loc04)->FUN_006dd4f0() &&
-            ((PathingLocationSub*)&this->loc2C)->FUN_006dd4f0() &&
-            ((PathingLocationSub*)&this->loc04)->GetLocation().z <
-                ((TESObjectCELLExt*)((PathingLocationSub*)&this->loc04)->FUN_006dd4f0())->UpdateTESState() &&
-            ((PathingLocationSub*)&this->loc2C)->GetLocation().z <
-                ((TESObjectCELLExt*)((PathingLocationSub*)&this->loc2C)->FUN_006dd4f0())->UpdateTESState())
+        if (((PathingLocationSub*)&this->StartLocation)->FUN_006dd4f0() &&
+            ((PathingLocationSub*)&this->GoalLocation)->FUN_006dd4f0() &&
+            ((PathingLocationSub*)&this->StartLocation)->GetLocation().z <
+                ((TESObjectCELLExt*)((PathingLocationSub*)&this->StartLocation)->FUN_006dd4f0())->UpdateTESState() &&
+            ((PathingLocationSub*)&this->GoalLocation)->GetLocation().z <
+                ((TESObjectCELLExt*)((PathingLocationSub*)&this->GoalLocation)->FUN_006dd4f0())->UpdateTESState())
         {
-            if (this->UpdateAndCheck(((PathingLocationSub*)&this->loc04)->GetLocation(),
-                                     ((PathingLocationSub*)&this->loc2C)->GetLocation()))
+            if (this->UpdateAndCheck(((PathingLocationSub*)&this->StartLocation)->GetLocation(),
+                                     ((PathingLocationSub*)&this->GoalLocation)->GetLocation()))
             {
-                param2->locations.FUN_006cf1b0(pRayCastParam->startLoc);
-                param2->locations.FUN_006cf1b0(pRayCastParam->endLoc);
-                param2->status = 1;
+                aRetPath->locations.FUN_006cf1b0(aRequest->startLoc);
+                aRetPath->locations.FUN_006cf1b0(aRequest->endLoc);
+                aRetPath->status = 1;
             }
             else
             {
-                param2->status = 2;
+                aRetPath->status = 2;
             }
         }
         else
         {
-            if (this->CheckPathClear(((PathingLocationSub*)&pRayCastParam->startLoc)->GetLocation(),
-                                     ((PathingLocationSub*)&pRayCastParam->endLoc)->GetLocation()))
+            if (this->CheckPathClear(((PathingLocationSub*)&aRequest->startLoc)->GetLocation(),
+                                     ((PathingLocationSub*)&aRequest->endLoc)->GetLocation()))
             {
-                param2->locations.FUN_006cf1b0(pRayCastParam->startLoc);
-                param2->locations.FUN_006cf1b0(pRayCastParam->endLoc);
-                param2->status = 1;
+                aRetPath->locations.FUN_006cf1b0(aRequest->startLoc);
+                aRetPath->locations.FUN_006cf1b0(aRequest->endLoc);
+                aRetPath->status = 1;
             }
             else
             {
-                param2->status = 2;
+                aRetPath->status = 2;
             }
         }
         this->PathingSearchRayCast_CleanUpRayCasts();
-        return param2->status;
+        return aRetPath->status;
     }
     }
 
-    if (!this->SetupFromCellWorld())
+    if (!this->PathingSearchRayCast_InitRayCasts())
     {
         return 2;
     }
 
-    for (this->unk88 = 0; this->unk88 < 10 && !pRayCastParam->pathArray.IsEmpty();)
+    for (this->iRayCastCount = 0; this->iRayCastCount < 10 && !aRequest->pathArray.IsEmpty();)
     {
         bool bFlag8 = false;
-        if (this->unk58 == 0)
+        if (this->eType == 0)
         {
-            bFlag8 = this->CheckPathClear(((PathingLocationSub*)&this->loc2C)->GetLocation(),
-                                          pRayCastParam->pathArray.Front().location);
+            bFlag8 = this->CheckPathClear(((PathingLocationSub*)&this->GoalLocation)->GetLocation(),
+                                          aRequest->pathArray.Front().location);
         }
         else
         {
-            bFlag8 = this->CheckPathClear(pRayCastParam->pathArray.Front().location,
-                                          ((PathingLocationSub*)&this->loc2C)->GetLocation());
+            bFlag8 = this->CheckPathClear(aRequest->pathArray.Front().location,
+                                          ((PathingLocationSub*)&this->GoalLocation)->GetLocation());
         }
 
         if (bFlag8)
         {
-            RayCastItem item_ = pRayCastParam->pathArray.Front();
+            RayCastItem item_ = aRequest->pathArray.Front();
             NavMeshPtr spMesh8;
             if (item_.m_pNavigationMesh->ResolveNavMesh(spMesh8))
             {
@@ -4943,36 +5039,36 @@ unsigned int PathingSearchRayCast::ProcessRayCast(RayCastParam* pRayCastParam, P
                 ((NavMeshExt*)(NavMesh*)spMesh8)->FUN_00558220(reinterpret_cast<NiPoint3&>(kKNormal), item_.triangleIndex);
                 ptPos4 += (reinterpret_cast<NiPoint3&>(kKNormal) - ptPos4) * 0.1f;
                 PathingLocationSub loc(ptPos4, item_.m_pNavigationMesh, item_.triangleIndex);
-                param2->locations.FUN_006cf1b0(this->loc2C);
-                param2->locations.FUN_006cf1b0(loc);
-                param2->locations.BSSimpleArray_PathingLocation_1024_GetTail(0)->FUN_006dd6f0();
-                param2->status = 1;
+                aRetPath->locations.FUN_006cf1b0(this->GoalLocation);
+                aRetPath->locations.FUN_006cf1b0(loc);
+                aRetPath->locations.BSSimpleArray_PathingLocation_1024_GetTail(0)->FUN_006dd6f0();
+                aRetPath->status = 1;
                 break;
             }
             else
             {
-                pRayCastParam->pathArray.Clear(true);
-                param2->status = 2;
+                aRequest->pathArray.Clear(true);
+                aRetPath->status = 2;
                 break;
             }
         }
         else
         {
-            pRayCastParam->pathArray.BSSimpleArray_NavMeshEdgeLocation_1024_Remove(0, 1);
-            if (pRayCastParam->pathArray.IsEmpty())
+            aRequest->pathArray.BSSimpleArray_NavMeshEdgeLocation_1024_Remove(0, 1);
+            if (aRequest->pathArray.IsEmpty())
             {
-                param2->status = 2;
+                aRetPath->status = 2;
                 break;
             }
             else
             {
-                param2->status = 0;
+                aRetPath->status = 0;
             }
         }
     }
 
     this->PathingSearchRayCast_CleanUpRayCasts();
-    return param2->status;
+    return aRetPath->status;
 }
 
 struct FormX
@@ -4988,7 +5084,7 @@ struct ListX
 };
 struct GroupX
 {
-    void FUN_006c90d0(FormX* pkForm);
+    void FUN_006c90d0(FormX* apLocation);
     char pad[8];
     ListX kList;
 };
@@ -5002,23 +5098,26 @@ struct DialX
     GroupX* m_pkActorGroup;
     bool BuildRoute(void* pkA, void* pkB);
     bool PathBuilder_BuildTeleportDoorPath();
-    bool PathBuilder_BuildHighLevelPath(void* pkA, void* pkB);
+    bool PathBuilder_BuildHighLevelPath(void* apStartMesh, void* apGoalMesh);
 };
 // For equal non-null arguments, adds two actor offsets; otherwise may call BuildRoute, then clear a list and call FUN_006c9b20.
 // @fnv 0x006c8f50
 // src: COMMUNITY 0x006c8f50
-bool DialX::PathBuilder_BuildHighLevelPath(void* pkA, void* pkB)
+// pdb: PathBuilder::BuildHighLevelPath | PathBuilder.obj | retail, upstream name already matches, high
+// pdb params: apStartMesh, apGoalMesh
+// pdb locals: bhighPathFound
+bool DialX::PathBuilder_BuildHighLevelPath(void* apStartMesh, void* apGoalMesh)
 {
     bool bResult = false;
-    if (pkA && pkB)
+    if (apStartMesh && apGoalMesh)
     {
-        if (pkA == pkB)
+        if (apStartMesh == apGoalMesh)
         {
             m_pkActorGroup->FUN_006c90d0((FormX*)&m_pkActor->GetOffsetC());
             m_pkActorGroup->FUN_006c90d0((FormX*)m_pkActor->NiAVObject_GetRotate_006a9540());
             bResult = true;
         }
-        else if (BuildRoute(pkA, pkB))
+        else if (BuildRoute(apStartMesh, apGoalMesh))
         {
             bResult = true;
         }
@@ -7194,7 +7293,7 @@ struct RouteSolution
 {
     void FUN_006c90d0(const RouteInfo&);
     void CreateEntry(RouteInfo*, const RoutePoint&, RoutePortal*);
-    void AddPathingItem(const RoutePoint&, RouteInfo*);
+    void AddVirtualPathingNode(const RoutePoint&, RouteInfo*);
     void ConstructThing(RouteInfo*);
 };
 struct RouteBuilder
@@ -7206,6 +7305,9 @@ struct RouteBuilder
 };
 // Runs a nav-mesh search between two points and builds the route solution from the resulting infos and portals.
 // @fnv 0x006c94c0
+// pdb: PathBuilder::BuildNavMeshInfoPath | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: apStartMesh, apGoalMesh
+// pdb locals: infos, binfoSearchSucceeded, portals, plockData, doorLockDisp, highSearch, pTelDoor, teleportLoc, markerLoc, i
 bool RouteBuilder::BuildRoute(void* from, void* to)
 {
     RouteSearch search7;
@@ -7238,7 +7340,7 @@ bool RouteBuilder::BuildRoute(void* from, void* to)
             RoutePoint exit = portalRes->TESObjectREFR_GetLinkedDoorTeleportPosition();
             solution->CreateEntry(infos.FUN_00877a30(0), exit, portalRes);
             RoutePoint entry = portalRes->FUN_00568e50()->FUN_00717e50();
-            solution->AddPathingItem(entry, infos.FUN_00877a30(1));
+            solution->AddVirtualPathingNode(entry, infos.FUN_00877a30(1));
         }
         for (unsigned i2 = 1; i2 < infos.FUN_0044ddc0() - 1; ++i2)
         {
@@ -7250,7 +7352,7 @@ bool RouteBuilder::BuildRoute(void* from, void* to)
                     RoutePoint exit = portalRes->TESObjectREFR_GetLinkedDoorTeleportPosition();
                     solution->CreateEntry(infos.FUN_00877a30(i2), exit, portalRes);
                     RoutePoint entry = portalRes->FUN_00568e50()->FUN_00717e50();
-                    solution->AddPathingItem(entry, infos.FUN_00877a30(i2 + 1));
+                    solution->AddVirtualPathingNode(entry, infos.FUN_00877a30(i2 + 1));
                 }
             }
             else
@@ -7297,21 +7399,21 @@ struct SearchA
     int pad[0x20f4 / 4];
     SearchA();
     ~SearchA();
-    bool NavMeshPOVSearch_BuildPath(LocX* a, LocX* b, ArrX* c, void* d, int e);
+    bool NavMeshPOVSearch_BuildPath(LocX* a, LocX* b, ArrX* apList, void* apRequest, int apSolution);
 };
 struct SearchB
 {
     int pad[0xb8 / 4];
     SearchB();
     ~SearchB();
-    bool PathSmoother_SmoothPath(void* a, ListX* b, int c, PosX* d, PosX* e, int f, int g, int h);
+    bool PathSmoother_SmoothPath(void* apRequest, ListX* aTriSolution, int aLinks, PosX* aStartLocation, PosX* aGoalLocation, int apSolution, int apBadNodeArray, int abAddNodesIfFail);
 };
 struct SearchC
 {
     int pad[0x2110 / 4];
     SearchC();
     ~SearchC();
-    bool FUN_006ad770(void* a, ListX* b, int c, PosX* d, PosX* e, int f, int g, void* h);
+    bool SmoothPath(void* apRequest, ListX* aTriSolution, int aLinks, PosX* aStartLocation, PosX* aGoalLocation, int apSolution, int apBadNodeArray, void* apDetailedPathInfos);
 };
 struct BoolSet
 {
@@ -7326,32 +7428,35 @@ struct PathX
     int m8;
     char padc[8];
     char m14[4];
-    bool PathBuilder_RunPathSmoother(LocX* pkStart, LocX* pkEnd, int iC, ListX* pkList, int iE);
+    bool PathBuilder_RunPathSmoother(LocX* aStartLocation, LocX* aGoalLocation, int aBadNodes, ListX* aNodes, int aLinks);
 };
 // Selects among three search calls using global booleans and, in one branch, a float threshold; passes endpoints and a node list.
 // @fnv 0x006cd8a0
 // src: COMMUNITY 0x006cd8a0
-bool PathX::PathBuilder_RunPathSmoother(LocX* pkStart, LocX* pkEnd, int iC, ListX* pkList, int iE)
+// pdb: PathBuilder::RunPathSmoother | PathBuilder.obj | retail, upstream name already matches, high
+// pdb params: aStartLocation, aGoalLocation, aBadNodes, aNodes, aLinks
+// pdb locals: pathTriangles, povSearch, i, pathSmoother
+bool PathX::PathBuilder_RunPathSmoother(LocX* aStartLocation, LocX* aGoalLocation, int aBadNodes, ListX* aNodes, int aLinks)
 {
     if (*DAT_011d7444.FUN_00408d60() && m0->GetFloatAtOffset68() > 150.0)
     {
-        ArrX kArr_ilg(pkList->FUN_0044ddc0(), 0, m8);
-        for (unsigned i = 0; i < pkList->FUN_0044ddc0(); i++)
+        ArrX kArr_ilg(aNodes->FUN_0044ddc0(), 0, m8);
+        for (unsigned i = 0; i < aNodes->FUN_0044ddc0(); i++)
         {
-            kArr_ilg.BSSimpleArray_NavMeshTriHandle_1024_Add(EdgeX(pkList->GetIndexedValue_006b3160(i)->pkNode, pkList->GetIndexedValue_006b3160(i)->usIdx));
+            kArr_ilg.BSSimpleArray_NavMeshTriHandle_1024_Add(EdgeX(aNodes->GetIndexedValue_006b3160(i)->pkNode, aNodes->GetIndexedValue_006b3160(i)->usIdx));
         }
         SearchA kSearchA_xmkn;
-        return kSearchA_xmkn.NavMeshPOVSearch_BuildPath(pkStart, pkEnd, &kArr_ilg, m0, m4);
+        return kSearchA_xmkn.NavMeshPOVSearch_BuildPath(aStartLocation, aGoalLocation, &kArr_ilg, m0, m4);
     }
     else if (*DAT_011d7434.FUN_00408d60())
     {
         SearchB kSearchB;
-        return kSearchB.PathSmoother_SmoothPath(m0, pkList, iE, &pkStart->FUN_005c3420(), &pkEnd->FUN_005c3420(), m4, iC, 1);
+        return kSearchB.PathSmoother_SmoothPath(m0, aNodes, aLinks, &aStartLocation->FUN_005c3420(), &aGoalLocation->FUN_005c3420(), m4, aBadNodes, 1);
     }
     else
     {
         SearchC kSearchC;
-        return kSearchC.FUN_006ad770(m0, pkList, iE, &pkStart->FUN_005c3420(), &pkEnd->FUN_005c3420(), m4, iC, m14);
+        return kSearchC.SmoothPath(m0, aNodes, aLinks, &aStartLocation->FUN_005c3420(), &aGoalLocation->FUN_005c3420(), m4, aBadNodes, m14);
     }
 }
 }  // namespace fnv_006cd8a0
@@ -7371,22 +7476,25 @@ S6Point FUN_004a3760(float scale, const S6Point& point);
 
 // Returns the closest point on the segment from start to end to the given point, clamping the projection parameter to the [0,1] range.
 // @fnv 0x006b9c20
-S6Point GetClosestPointOnSegment(const S6Point& point, const S6Point& start, const S6Point& end)
+// pdb: NavMeshMath::ProjectPointOntoSegment | NavMeshMath.obj | debug, call graph (shared callers), high
+// pdb params: aPoint, aLineStart, aLineEnd
+// pdb locals: b, c2, c1, v, w
+S6Point GetClosestPointOnSegment(const S6Point& aPoint, const S6Point& aLineStart, const S6Point& aLineEnd)
 {
-    S6Point kDir7 = end.SubtractIntoVector(start);
-    S6Point kRel = point.SubtractIntoVector(start);
+    S6Point kDir7 = aLineEnd.SubtractIntoVector(aLineStart);
+    S6Point kRel = aPoint.SubtractIntoVector(aLineStart);
     double dDot5 = kRel.DotProduct(kDir7);
     if (dDot5 <= 0.0)
     {
-        return start;
+        return aLineStart;
     }
     double _dLenSq = kDir7.DotProduct(kDir7);
     if (_dLenSq <= dDot5)
     {
-        return end;
+        return aLineEnd;
     }
     double dT = dDot5 / _dLenSq;
-    return start.FUN_00439e90(FUN_004a3760((float)dT, kDir7));
+    return aLineStart.FUN_00439e90(FUN_004a3760((float)dT, kDir7));
 }
 }
 
@@ -7431,20 +7539,23 @@ class PathBuilder_Child : public PathBuilder
   public:
     bool FindPathSegmentEnd(unsigned int, unsigned int&, unsigned int&);
     bool FUN_006ca850(Actor*);
-    bool PathBuilder_BuildDetailedPath(Actor* a1, unsigned int a2);
+    bool PathBuilder_BuildDetailedPath(Actor* pActor, unsigned int aiFirstHighLevelNode);
 };
 
 // Calls FindPathSegmentEnd, stores its indices, invokes FUN_006ca850, and may update endpoint node colors when adjacent nodes are over 4096 units apart.
 // @fnv 0x006ca0e0
 // src: COMMUNITY 0x006ca0e0
-bool PathBuilder_Child::PathBuilder_BuildDetailedPath(Actor* apActor, unsigned int aiSegmentIndex)
+// pdb: PathBuilder::BuildDetailedPath | PathBuilder.obj | retail, upstream name already matches, high
+// pdb params: pActor, aiFirstHighLevelNode
+// pdb locals: bbuildDetailedPathRes, ilastLoadedNode, ifirstLoadedNode, pnode0, pnode1, startLoc, nextLoc, tangent, pnodeN1, pnodeN, prevLoc, endLoc, goalLoc
+bool PathBuilder_Child::PathBuilder_BuildDetailedPath(Actor* pActor, unsigned int aiFirstHighLevelNode)
 {
     ((PathingSolutionExt*)this->m_pOutputSolution)->PathingSolution_ClearCurrentDetailedPath();
 
     unsigned int iStart = 0xffffffff;
     {
         unsigned int iEnd = 0xffffffff;
-        if (!this->FindPathSegmentEnd(aiSegmentIndex, iStart, iEnd))
+        if (!this->FindPathSegmentEnd(aiFirstHighLevelNode, iStart, iEnd))
         {
             return true;
         }
@@ -7454,7 +7565,7 @@ bool PathBuilder_Child::PathBuilder_BuildDetailedPath(Actor* apActor, unsigned i
     }
     {
 
-        bool bResult = this->FUN_006ca850(apActor);
+        bool bResult = this->FUN_006ca850(pActor);
         if (!bResult && this->m_pOutputSolution->GetObjectFlags() == 0)
         {
             return false;
@@ -7517,13 +7628,14 @@ extern SettingT<GameSettingCollection> DAT_011cff94;
 extern float DAT_0101e340;
 // Constructor that zeroes four integer fields and initializes two float fields from DAT_011cff94 and DAT_0101e340.
 // @fnv 0x006e61a0
+// pdb: PathingSearchRayCast::PathingSearchRayCast | PathingSearchRayCast.obj | retail, upstream name already matches, high
 PathingSearchRayCast::PathingSearchRayCast()
 {
     // pt5C and pt68 are built by the out-of-line NiPoint3 constructor before this body.
-    unk7C = 0;
-    unk84 = 0;
-    unk80 = 0;
-    unk88 = 0;
-    f8C = *DAT_011cff94.Setting_Float_00403e20();
-    f90 = DAT_0101e340;
+    pHavokWorld = 0;
+    pCollector = 0;
+    pPickData = 0;
+    iRayCastCount = 0;
+    fMaxDrop = *DAT_011cff94.Setting_Float_00403e20();
+    fMaxStep = DAT_0101e340;
 }

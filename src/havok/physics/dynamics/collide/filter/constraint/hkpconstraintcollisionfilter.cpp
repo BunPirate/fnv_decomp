@@ -50,12 +50,13 @@ void Owner::hkpConstraintCollisionFilter__constraintBreakingCallbackImmediate(in
         p->v1(value);
 }
 
+// pdb: class hkpPairCollisionFilter, size 0x40, bases: hkpCollisionFilter, 2 members
 struct hkpPairCollisionFilter : hkpCollisionFilter
 {
     unsigned int unk30;
     unsigned int unk34;
     unsigned int unk38;
-    unsigned int unk3C;
+    unsigned int m_disabledPairs;
     hkpPairCollisionFilter(void*);
 };
 struct Secondary
@@ -64,6 +65,7 @@ struct Secondary
     Secondary()
     {}
 };
+// pdb: class hkpConstraintCollisionFilter, size 0x44 (here 0x50), bases: hkpPairCollisionFilter, hkpConstraintListener, 0 members
 struct hkpConstraintCollisionFilter : hkpPairCollisionFilter, Secondary
 {
     hkpConstraintCollisionFilter(void*);
@@ -71,24 +73,26 @@ struct hkpConstraintCollisionFilter : hkpPairCollisionFilter, Secondary
 };
 // Constructs the constraint filter from p and sets the filter type.
 // @fnv 0x00d87c50
-hkpConstraintCollisionFilter::hkpConstraintCollisionFilter(void* p) : hkpPairCollisionFilter(p)
+// pdb: hkpConstraintCollisionFilter::hkpConstraintCollisionFilter | hkpConstraintCollisionFilter.obj | retail, upstream name already matches, high
+// pdb params: childFilter
+hkpConstraintCollisionFilter::hkpConstraintCollisionFilter(void* childFilter) : hkpPairCollisionFilter(childFilter)
 {
     m_type = HK_FILTER_CONSTRAINT;
 }
 
 __forceinline void hkpWorld::lockCriticalOperations()
 {
-    m_iCriticalOperationsLockCount++;
+    m_criticalOperationsLockCount++;
 }
 
 __forceinline void hkpWorld::unlockAndAttemptToExecutePendingOperations()
 {
-    m_iCriticalOperationsLockCount--;
-    if (m_iCriticalOperationsLockCount == 0 && !m_bBlockExecutingPendingOperations.m_cBooleanValue)
+    m_criticalOperationsLockCount--;
+    if (m_criticalOperationsLockCount == 0 && !m_blockExecutingPendingOperations.m_cBooleanValue)
     {
-        if (m_iPendingOperationCount)
+        if (m_pendingOperationsCount)
             FUN_00c91120();
-        if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount)
+        if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount)
             UpdateFields_00c91140();
     }
 }
@@ -146,29 +150,31 @@ struct S_00d87e30_Listener
 };
 struct S_00d87e30 : S_00d87e30_Base, S_00d87e30_Listener
 {
-    int DecrementPairCount(hkpEntity* a, hkpEntity* b);
-    virtual void ProcessCollisionEvent(S_00d87e30_Event* pEvent);
+    int hkpPairCollisionFilter_enableCollisionsBetween(hkpEntity* entityA, hkpEntity* entityB);
+    virtual void ProcessCollisionEvent(S_00d87e30_Event* constraint);
 };
 // Validates the event's two entities and collision filter, then locks the world, dispatches the collision pair, and unlocks it.
 // @fnv 0x00d87e30
-void S_00d87e30::ProcessCollisionEvent(S_00d87e30_Event* pEvent)
+// pdb: hkpConstraintCollisionFilter::constraintRemovedCallback | hkpConstraintCollisionFilter.obj | retail, vtable slot, high
+// pdb params: constraint
+void S_00d87e30::ProcessCollisionEvent(S_00d87e30_Event* constraint)
 {
-    if (!pEvent || pEvent->m_typed->getType() == 11)
+    if (!constraint || constraint->m_typed->getType() == 11)
         return;
-    if (!pEvent->m_pEntityA->m_kCollidable.m_pCollisionShape || !pEvent->m_pEntityB->m_kCollidable.m_pCollisionShape)
+    if (!constraint->m_pEntityA->m_kCollidable.m_pCollisionShape || !constraint->m_pEntityB->m_kCollidable.m_pCollisionShape)
         return;
-    hkpEntity* a = pEvent->m_pEntityA;
-    hkpEntity* b = pEvent->m_pEntityB;
-    if (DecrementPairCount(a, b) > 0)
+    hkpEntity* a = constraint->m_pEntityA;
+    hkpEntity* b = constraint->m_pEntityB;
+    if (hkpPairCollisionFilter_enableCollisionsBetween(a, b) > 0)
         return;
     if (m_pCollisionFilter &&
         !static_cast<CollidableFilterView*>(m_pCollisionFilter)->IsCollisionEnabled(a->m_kCollidable, b->m_kCollidable).m_cBooleanValue)
         return;
-    hkpWorld* world = static_cast<hkpWorld*>(a->m_pOwningWorld);
+    hkpWorld* world = static_cast<hkpWorld*>(a->m_world);
     if (!world)
         return;
     world->lockCriticalOperations();
-    world->ProcessPair(a, b);
+    world->hkpWorld_reenableCollisionBetweenEntityPair(a, b);
     world->unlockAndAttemptToExecutePendingOperations();
 }
 
@@ -201,76 +207,78 @@ struct A
 class Cls40
 {
   public:
-    int CheckPair(hkpEntity* b, hkpEntity* c);
+    int hkpPairCollisionFilter_disableCollisionsBetween(hkpEntity* entityA, hkpEntity* entityB);
 };
 
 int __cdecl CallA(void* a, void* b);
-void __cdecl CallB(void* p);
+void __cdecl CallB(void* agent);
 
 class FUN_00d87d70_cls
 {
   public:
-    void hkpConstraintCollisionFilter_constraintAddedCallback(A* p);
+    void hkpConstraintCollisionFilter_constraintAddedCallback(A* constraint);
 };
 
 // Validates the two entities, calls CallA on their collidables, then runs CallB and processes pending world operations when the lock count drops to zero.
 // @fnv 0x00d87d70
 // src: HAVOK_LIB 0x00d87d70
-void FUN_00d87d70_cls::hkpConstraintCollisionFilter_constraintAddedCallback(A* p)
+// pdb: hkpConstraintCollisionFilter::constraintAddedCallback | hkpConstraintCollisionFilter.obj | retail, upstream name already matches, high
+// pdb params: constraint
+void FUN_00d87d70_cls::hkpConstraintCollisionFilter_constraintAddedCallback(A* constraint)
 {
-    if (p == 0)
+    if (constraint == 0)
     {
         return;
     }
-    if (p->m_prov->unk20() == 0xb)
+    if (constraint->m_prov->unk20() == 0xb)
     {
         return;
     }
-    hkpEntity* b = p->m_kPointB;
+    hkpEntity* b = constraint->m_kPointB;
     if (b->m_kCollidable.m_pCollisionShape == 0)
     {
         return;
     }
-    if (p->m_iThirdValue->m_kCollidable.m_pCollisionShape == 0)
+    if (constraint->m_iThirdValue->m_kCollidable.m_pCollisionShape == 0)
     {
         return;
     }
-    if (((Cls40*)((char*)this - 0x40))->CheckPair(b, p->m_iThirdValue) != 1)
+    if (((Cls40*)((char*)this - 0x40))->hkpPairCollisionFilter_disableCollisionsBetween(b, constraint->m_iThirdValue) != 1)
     {
         return;
     }
-    hkpEntity* pC = p->m_iThirdValue;
-    hkpEntity* pB = p->m_kPointB;
+    hkpEntity* pC = constraint->m_iThirdValue;
+    hkpEntity* pB = constraint->m_kPointB;
     void* pResult = (void*)CallA(&pB->m_kCollidable, &pC->m_kCollidable);
     if (pResult == 0)
     {
         return;
     }
-    hkpWorld* d = static_cast<hkpWorld*>(b->m_pOwningWorld);
+    hkpWorld* d = static_cast<hkpWorld*>(b->m_world);
     if (d == 0)
     {
         return;
     }
-    d->m_iCriticalOperationsLockCount += 1;
+    d->m_criticalOperationsLockCount += 1;
     CallB(pResult);
-    d->m_iCriticalOperationsLockCount -= 1;
-    if (d->m_iCriticalOperationsLockCount != 0)
+    d->m_criticalOperationsLockCount -= 1;
+    if (d->m_criticalOperationsLockCount != 0)
     {
         return;
     }
-    if (d->m_bBlockExecutingPendingOperations.m_cBooleanValue != 0)
+    if (d->m_blockExecutingPendingOperations.m_cBooleanValue != 0)
     {
         return;
     }
-    if (d->m_iPendingOperationCount != 0)
+    if (d->m_pendingOperationsCount != 0)
     {
         d->FUN_00c91120();
     }
-    if (d->m_iPendingOperationQueueCount != 1)
+    if (d->m_pendingOperationQueueCount != 1)
     {
         return;
     }
-    if (d->m_iQueuedOperationCount == 0)
+    if (d->m_pendingBodyOperationsCount == 0)
     {
         return;
     }
@@ -317,21 +325,24 @@ struct S_00d87f60
 };
 // @fnv 0x00d87f60
 // src: HAVOK_LIB 0x00d87f60
-void S_00d87f60::hkpConstraintCollisionFilter_constraintRepairedCallback(S_00d87f60_Arg* arg)
+// pdb: hkpConstraintCollisionFilter::constraintRepairedCallback | hkpConstraintCollisionFilter.obj | retail, upstream name already matches, high
+// pdb params: event
+// pdb locals: op
+void S_00d87f60::hkpConstraintCollisionFilter_constraintRepairedCallback(S_00d87f60_Arg* event)
 {
-    hkpWorld* obj = arg->unk00;
-    if (obj->m_iCriticalOperationsLockCount != 0)
+    hkpWorld* obj = event->unk00;
+    if (obj->m_criticalOperationsLockCount != 0)
     {
         S_00d87f60_Data d;
         d.unk00 = 0x23;
         d.unk04 = (char*)this - 0x40;
-        d.unk08 = arg->unk04;
+        d.unk08 = event->unk04;
         d.unk0c = 0;
         reinterpret_cast<PendingWorldOperationReceiver*>(obj)->hkpWorld_queueOperation(&d);
     }
     else
     {
-        ((S_00d87f60_Base*)((char*)this - 0x40))->hkpConstraintCollisionFilter__constraintBreakingCallbackImmediate(arg->unk04, S_00d87f60_Flag(0));
+        ((S_00d87f60_Base*)((char*)this - 0x40))->hkpConstraintCollisionFilter__constraintBreakingCallbackImmediate(event->unk04, S_00d87f60_Flag(0));
     }
 }
 
@@ -420,16 +431,18 @@ struct WorldOpTask
     int unk38;
     int unk3C;
     Sec_b1297 m_40;
-    void hkpConstraintCollisionFilter_updateFromWorld(Arg_b1297* a1);
+    void hkpConstraintCollisionFilter_updateFromWorld(Arg_b1297* world);
 };
 
 // Initializes m_30, then iterates both lists in a1 and calls m_40.v1 on every item of each Sub_b1297 found in each Elem_b1297.
 // @fnv 0x00d87ca0
 // src: HAVOK_LIB 0x00d87ca0
-void WorldOpTask::hkpConstraintCollisionFilter_updateFromWorld(Arg_b1297* a1)
+// pdb: hkpConstraintCollisionFilter::updateFromWorld | hkpConstraintCollisionFilter.obj | retail, upstream name already matches, high
+// pdb params: world
+void WorldOpTask::hkpConstraintCollisionFilter_updateFromWorld(Arg_b1297* world)
 {
     this->m_30.Init();
-    ListE_b1297* pList = &a1->m_28;
+    ListE_b1297* pList = &world->m_28;
     for (int pass = 0; pass < 2; ++pass)
     {
         for (int i = 0; i < pList->m_04; ++i)
@@ -443,7 +456,7 @@ void WorldOpTask::hkpConstraintCollisionFilter_updateFromWorld(Arg_b1297* a1)
                     this->m_40.v1(pSub->GetItem(j));
             }
         }
-        pList = &a1->m_34;
+        pList = &world->m_34;
     }
 }
 
@@ -626,28 +639,31 @@ struct Owner_d87f00
 struct S_00d87f00
 {
     int unk00;
-    void hkpConstraintCollisionFilter_constraintBreakingCallback(ConstraintFilterWorldCallbackContext* apPair);
+    void hkpConstraintCollisionFilter_constraintBreakingCallback(ConstraintFilterWorldCallbackContext* event);
 };
 
 // Dispatches a pair event to the head node when m_94 is set, otherwise forwards the second integer and a flag to the owner.
 // @fnv 0x00d87f00
 // src: HAVOK_LIB 0x00d87f00
-void S_00d87f00::hkpConstraintCollisionFilter_constraintBreakingCallback(ConstraintFilterWorldCallbackContext* apPair)
+// pdb: hkpConstraintCollisionFilter::constraintBreakingCallback | hkpConstraintCollisionFilter.obj | retail, upstream name already matches, high
+// pdb params: event
+// pdb locals: op
+void S_00d87f00::hkpConstraintCollisionFilter_constraintBreakingCallback(ConstraintFilterWorldCallbackContext* event)
 {
-    hkpWorld* obj = apPair->m_pHeadNode;
-    if (obj->m_iCriticalOperationsLockCount != 0)
+    hkpWorld* obj = event->m_pHeadNode;
+    if (obj->m_criticalOperationsLockCount != 0)
     {
         Event_d87f00 ev;
         ev.m_ptr = (char*)this - 0x40;
         ev.m_kind = 0x23;
-        ev.m_val = apPair->m_iSecondInteger;
+        ev.m_val = event->m_iSecondInteger;
         ev.m_flag = 1;
         reinterpret_cast<PendingWorldOperationReceiver*>(obj)->hkpWorld_queueOperation(&ev);
     }
     else
     {
         Flag_d87f00 f(1);
-        reinterpret_cast<Owner_d87f00*>((char*)this - 0x40)->hkpConstraintCollisionFilter__constraintBreakingCallbackImmediate(apPair->m_iSecondInteger, f);
+        reinterpret_cast<Owner_d87f00*>((char*)this - 0x40)->hkpConstraintCollisionFilter__constraintBreakingCallbackImmediate(event->m_iSecondInteger, f);
     }
 }
 
@@ -661,6 +677,7 @@ struct ConstraintFilterDeleteReceiver
 };
 // Calls FUN_00d87bf0, then if flags has bit 0 set, releases this object via the BSAudio allocator using size4 bytes, and returns this.
 // @fnv 0x00d88000
+// pdb: hkpConstraintCollisionFilter::`scalar deleting destructor' | hkpConstraintCollisionFilter.obj | retail, vtable slot, high
 ConstraintFilterDeleteReceiver* ConstraintFilterDeleteReceiver::FUN_00d88000(unsigned int flags)
 {
     FUN_00d87bf0();

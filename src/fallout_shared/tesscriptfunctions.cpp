@@ -538,12 +538,13 @@ class ScriptHeaderData;
 #include "../../include/ANIM_GROUP_SECTION.h"
 
 class BGSMusicType;
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
 public:
     static void PlayMedia(BGSMusicType*);
     static void EndMediaUpdate();
-    static void Update();
+    static void FalloutAudioMedia_Update();
 };
 
 
@@ -558,59 +559,71 @@ public:
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, ...);
 
 // @fnv 0x005c7010
-bool Script::GetQuestCompleted(const ScriptParameter* parameters, const char* scriptData,
-                               TESObjectREFR* thisObject, TESObjectREFR* container,
-                               Script* script, ScriptLocals* locals, double& result,
-                               unsigned int& opcodeOffset)
+// pdb: Script::GetQuestCompleted | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pQuest
+bool Script::GetQuestCompleted(const ScriptParameter* apParameters, const char* apCompiledParams,
+                               TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                               Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                               unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return EvaluateReferenceCondition(thisObject,
-                                              reinterpret_cast<void*>(formID), 0, result);
+    return EvaluateReferenceCondition(apRefObject,
+                                              reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c6fb0
-bool Script::GetQuestRunning(const ScriptParameter* parameters, const char* scriptData,
-                             TESObjectREFR* thisObject, TESObjectREFR* container,
-                             Script* script, ScriptLocals* locals, double& result,
-                             unsigned int& opcodeOffset)
+// pdb: Script::GetQuestRunning | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pQuest
+bool Script::GetQuestRunning(const ScriptParameter* apParameters, const char* apCompiledParams,
+                             TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                             Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                             unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return CheckActorCondition(thisObject,
-                                            reinterpret_cast<void*>(formID), 0, result);
+    return CheckActorCondition(apRefObject,
+                                            reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c7070
-bool Script::GetStage(const ScriptParameter* parameters, const char* scriptData,
-                      TESObjectREFR* thisObject, TESObjectREFR* container,
-                      Script* script, ScriptLocals* locals, double& result,
-                      unsigned int& opcodeOffset)
+// pdb: Script::GetStage | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pQuest
+bool Script::GetStage(const ScriptParameter* apParameters, const char* apCompiledParams,
+                      TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                      Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                      unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return EvaluateReferenceFlag(thisObject,
-                                     reinterpret_cast<void*>(formID), 0, result);
+    return Script_GetStageConditionFunction(apRefObject,
+                                     reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c85c0
-bool Script::GetDeadCount(const ScriptParameter* parameters, const char* scriptData,
-                          TESObjectREFR* thisObject, TESObjectREFR* container,
-                          Script* script, ScriptLocals* locals, double& result,
-                          unsigned int& opcodeOffset)
+// pdb: Script::GetDeadCount | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactorbase
+bool Script::GetDeadCount(const ScriptParameter* apParameters, const char* apCompiledParams,
+                          TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                          Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                          unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return EvaluateFirstReferenceOperand(thisObject,
-                                         reinterpret_cast<void*>(formID), 0, result);
+    return EvaluateFirstReferenceOperand(apRefObject,
+                                         reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c6d90
@@ -628,6 +641,9 @@ bool Script::GetQuestCompletedStatus(const ScriptParameter* parameters, const ch
 }
 
 // @fnv 0x005c0590
+// pdb: Script::GetPosFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cAxis
 bool Script::InvokeScriptFunction(const ScriptParameter* parameters, const char* scriptData,
                             TESObjectREFR* thisObject, TESObjectREFR* container,
                             Script* script, ScriptLocals* locals, double& result,
@@ -637,11 +653,14 @@ bool Script::InvokeScriptFunction(const ScriptParameter* parameters, const char*
     if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
                      script, locals, &value))
         return false;
-    return ReadScriptOperand(thisObject,
+    return Script_GetPosConditionFunction(thisObject,
                                    reinterpret_cast<void*>(static_cast<int>(value)), 0, result);
 }
 
 // @fnv 0x005c0900
+// pdb: Script::GetAngleFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cAxis
 bool Script::GetQuestCompletionState(const ScriptParameter* parameters, const char* scriptData,
                               TESObjectREFR* thisObject, TESObjectREFR* container,
                               Script* script, ScriptLocals* locals, double& result,
@@ -656,19 +675,22 @@ bool Script::GetQuestCompletionState(const ScriptParameter* parameters, const ch
 }
 
 // @fnv 0x005c70d0
-bool Script::GetStageDone(const ScriptParameter* parameters, const char* scriptData,
-                          TESObjectREFR* thisObject, TESObjectREFR* container,
-                          Script* script, ScriptLocals* locals, double& result,
-                          unsigned int& opcodeOffset)
+// pdb: Script::GetStageDone | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iIndex, pQuest
+bool Script::GetStageDone(const ScriptParameter* apParameters, const char* apCompiledParams,
+                          TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                          Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                          unsigned int& auiOffset)
 {
     unsigned int stage = 0;
     unsigned int done = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &stage, &done))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &stage, &done))
         return false;
-    return ResolveScriptReference(thisObject,
+    return ResolveScriptReference(apRefObject,
                                          reinterpret_cast<void*>(stage),
-                                         reinterpret_cast<void*>(done), result);
+                                         reinterpret_cast<void*>(done), afReturnValue);
 }
 
 // @fnv 0x005cea30
@@ -681,95 +703,116 @@ bool Script::ConvertScriptValue(const ScriptParameter* parameters, const char* s
     if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
                      script, locals, &formID))
         return false;
-    return CheckScriptCondition(thisObject,
+    return Script_HasMagicEffectConditionFunction(thisObject,
                                           reinterpret_cast<void*>(formID), 0, result);
 }
 
 // @fnv 0x005c7600
-bool Script::GetInWorldspace(const ScriptParameter* parameters, const char* scriptData,
-                             TESObjectREFR* thisObject, TESObjectREFR* container,
-                             Script* script, ScriptLocals* locals, double& result,
-                             unsigned int& opcodeOffset)
+// pdb: Script::GetInWorldspace | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pworld
+bool Script::GetInWorldspace(const ScriptParameter* apParameters, const char* apCompiledParams,
+                             TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                             Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                             unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return EvaluateSeventhReferenceOperand(thisObject,
-                                            reinterpret_cast<void*>(formID), 0, result);
+    return EvaluateSeventhReferenceOperand(apRefObject,
+                                            reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c76d0
-bool Script::GetInSameCell(const ScriptParameter* parameters, const char* scriptData,
-                           TESObjectREFR* thisObject, TESObjectREFR* container,
-                           Script* script, ScriptLocals* locals, double& result,
-                           unsigned int& opcodeOffset)
+// pdb: Script::GetInSameCell | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ptargetref
+bool Script::GetInSameCell(const ScriptParameter* apParameters, const char* apCompiledParams,
+                           TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                           Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                           unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return GetScriptParameter(thisObject,
-                                          reinterpret_cast<void*>(formID), 0, result);
+    return GetScriptParameter(apRefObject,
+                                          reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c69f0
-bool Script::GetDetected(const ScriptParameter* parameters, const char* scriptData,
-                         TESObjectREFR* thisObject, TESObjectREFR* container,
-                         Script* script, ScriptLocals* locals, double& result,
-                         unsigned int& opcodeOffset)
+// pdb: Script::GetDetected | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargActor
+bool Script::GetDetected(const ScriptParameter* apParameters, const char* apCompiledParams,
+                         TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                         Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                         unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return HandleScriptExpression(thisObject,
-                                        reinterpret_cast<void*>(formID), 0, result);
+    return HandleScriptExpression(apRefObject,
+                                        reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c83f0
-bool Script::GetGlobalValue(const ScriptParameter* parameters, const char* scriptData,
-                            TESObjectREFR* thisObject, TESObjectREFR* container,
-                            Script* script, ScriptLocals* locals, double& result,
-                            unsigned int& opcodeOffset)
+// pdb: Script::GetGlobalValue | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pglobal
+bool Script::GetGlobalValue(const ScriptParameter* apParameters, const char* apCompiledParams,
+                            TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                            Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                            unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return GetScriptResult(thisObject,
-                                           reinterpret_cast<void*>(formID), 0, result);
+    return GetScriptResult(apRefObject,
+                                           reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c6e70
-bool Script::IsCurrentFurnitureRef(const ScriptParameter* parameters, const char* scriptData,
-                                   TESObjectREFR* thisObject, TESObjectREFR* container,
-                                   Script* script, ScriptLocals* locals, double& result,
-                                   unsigned int& opcodeOffset)
+// pdb: Script::IsCurrentFurnitureRef | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pref
+bool Script::IsCurrentFurnitureRef(const ScriptParameter* apParameters, const char* apCompiledParams,
+                                   TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                                   Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                                   unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return AdvanceScriptInstruction(thisObject,
-                                                 reinterpret_cast<void*>(formID), 0, result);
+    return AdvanceScriptInstruction(apRefObject,
+                                                 reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005c7bb0
-bool Script::GetIsID(const ScriptParameter* parameters, const char* scriptData,
-                     TESObjectREFR* thisObject, TESObjectREFR* container,
-                     Script* script, ScriptLocals* locals, double& result,
-                     unsigned int& opcodeOffset)
+// pdb: Script::GetIsID | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pobject
+bool Script::GetIsID(const ScriptParameter* apParameters, const char* apCompiledParams,
+                     TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                     Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                     unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    return HandleScriptReference(thisObject,
-                                    reinterpret_cast<void*>(formID), 0, result);
+    return HandleScriptReference(apRefObject,
+                                    reinterpret_cast<void*>(formID), 0, afReturnValue);
 }
 
 // @fnv 0x005ce130
+// pdb: Script::GetPlayerEnemyofFactionFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction
 bool Script::EvaluateScriptExpression(const ScriptParameter* parameters,
                                              const char* scriptData,
                                              TESObjectREFR* thisObject,
@@ -781,27 +824,33 @@ bool Script::EvaluateScriptExpression(const ScriptParameter* parameters,
     if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
                      script, locals, &formID))
         return false;
-    ExecuteScriptCommand(thisObject,
+    Script_GetPlayerEnemyofFactionConditionFunction(thisObject,
                                              reinterpret_cast<void*>(formID), 0, result);
     return true;
 }
 
 // @fnv 0x005d2590
-bool Script::GetPCMiscStat(const ScriptParameter* parameters, const char* scriptData,
-                           TESObjectREFR* thisObject, TESObjectREFR* container,
-                           Script* script, ScriptLocals* locals, double& result,
-                           unsigned int& opcodeOffset)
+// pdb: Script::GetPCMiscStat | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: eid
+bool Script::GetPCMiscStat(const ScriptParameter* apParameters, const char* apCompiledParams,
+                           TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                           Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                           unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID))
         return false;
-    EvaluateReferencePredicate(thisObject,
-                                   reinterpret_cast<void*>(formID), 0, result);
+    Script_GetPCMiscStatConditionFunction(apRefObject,
+                                   reinterpret_cast<void*>(formID), 0, afReturnValue);
     return true;
 }
 
 // @fnv 0x005cd440
+// pdb: Script::GetIsCurrentPackageFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pPackage
 bool Script::HandleScriptVariable(const ScriptParameter* parameters,
                                         const char* scriptData, TESObjectREFR* thisObject,
                                         TESObjectREFR* container, Script* script,
@@ -819,6 +868,9 @@ bool Script::HandleScriptVariable(const ScriptParameter* parameters,
 }
 
 // @fnv 0x005d9270
+// pdb: Script::GetFactionRelationFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ptargact
 bool Script::ReadScriptReference(const ScriptParameter* parameters,
                                         const char* scriptData, TESObjectREFR* thisObject,
                                         TESObjectREFR* container, Script* script,
@@ -830,21 +882,27 @@ bool Script::ReadScriptReference(const ScriptParameter* parameters,
                      script, locals, &formID))
         return false;
     if (thisObject && formID)
-        return WriteScriptValue(thisObject,
+        return Script_GetFactionRelationConditionFunction(thisObject,
                                                    reinterpret_cast<void*>(formID), 0, result);
     return true;
 }
 
 // @fnv 0x005c1c10
-void Script::SetReferenceScale(TESObjectREFR* reference, float scale)
+// src: XBOX_DEBUG_PDB 0x005c1c10
+// pdb: Script::SetScaleBase | TESScriptFunctions.obj | debug, call graph, high
+// pdb params: apRefObject, afValue
+void Script::SetScaleBase(TESObjectREFR* reference, float afValue)
 {
     if (reference) {
-        reference->SetScale(scale);
+        reference->SetScale(afValue);
         reference->SetAltered(true);
     }
 }
 
 // @fnv 0x005c24b0
+// pdb: Script::PlayMusicFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pmusic
 bool Script::EvaluateScriptCallback(const ScriptParameter* parameters, const char* scriptData,
                                TESObjectREFR* thisObject, TESObjectREFR* container,
                                Script* script, ScriptLocals* locals, double& result,
@@ -855,7 +913,7 @@ bool Script::EvaluateScriptCallback(const ScriptParameter* parameters, const cha
                     script, locals, &musicID)) {
         FalloutAudioMedia::PlayMedia(reinterpret_cast<BGSMusicType*>(musicID));
         FalloutAudioMedia::EndMediaUpdate();
-        FalloutAudioMedia::Update();
+        FalloutAudioMedia::FalloutAudioMedia_Update();
     }
     return true;
 }
@@ -870,28 +928,35 @@ bool Script::EvaluateParsedScriptFunction(const ScriptParameter* parameters, con
     if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
                      script, locals, &mode))
         return false;
-    return EvaluateReferenceProperty(0, reinterpret_cast<void*>(mode), 0, result);
+    return Script_GetMenuModeConditionFunction(0, reinterpret_cast<void*>(mode), 0, result);
 }
 
 // @fnv 0x005c7140
-bool Script::EvaluateScriptFunctionCall(const ScriptParameter* parameters, const char* scriptData,
-                              TESObjectREFR* thisObject, TESObjectREFR* container,
-                              Script* script, ScriptLocals* locals, double& result,
-                              unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c7140
+// pdb: Script::SetStageFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iIndex, pQuest
+bool Script::SetStageFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                              TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                              Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                              unsigned int& auiOffset)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     unsigned int uiChunkType = 0;
     unsigned int stage = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &uiChunkType, &stage))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &uiChunkType, &stage))
         return false;
-    if (uiChunkType && reinterpret_cast<TESQuest*>(uiChunkType)->IsStageComplete(
+    if (uiChunkType && reinterpret_cast<TESQuest*>(uiChunkType)->SetStageDone(
                        static_cast<unsigned char>(stage)))
-        result = 1.0;
+        afReturnValue = 1.0;
     return true;
 }
 
 // @fnv 0x005ca3f0
+// pdb: Script::OnActivateFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
 bool Script::EvaluateScriptCall(const ScriptParameter* parameters, const char* scriptData,
                                 TESObjectREFR* thisObject, TESObjectREFR* container,
                                 Script* script, ScriptLocals* locals, double& result,
@@ -914,132 +979,167 @@ bool Script::EvaluateScriptCall(const ScriptParameter* parameters, const char* s
 
 
 // @fnv 0x005c0db0
-bool Script::GetCurrentTimeFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetCurrentTimeFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetCurrentTimeFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return SetScriptCondition(0, 0, 0, result);
+    return SetScriptCondition(0, 0, 0, afReturnValue);
 }
 
 // @fnv 0x005c0dd0
-bool Script::GetSecondsPassedFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetSecondsPassedFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetSecondsPassedFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return EvaluateScriptResult(0, script, 0, result);
+    return EvaluateScriptResult(0, apScript, 0, afReturnValue);
 }
 
 // @fnv 0x005c6a50
-bool Script::GetDead(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetDead | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetDead(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return ResetScript(thisObject, 0, 0, result);
+    return ResetScript(apRefObject, 0, 0, afReturnValue);
 }
 
 // @fnv 0x005c6a70
-bool Script::GetItemCount(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetItemCount | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pform
+bool Script::GetItemCount(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    return HandleScriptLocals(thisObject, form, 0, result);
+    return HandleScriptLocals(apRefObject, form, 0, afReturnValue);
 }
 
 // @fnv 0x005c6e30
-bool Script::GetSitting(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetSitting | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetSitting(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return ReadScriptArguments(thisObject, 0, 0, result);
+    return ReadScriptArguments(apRefObject, 0, 0, afReturnValue);
 }
 
 // @fnv 0x005c6f30
-bool Script::GetTalkedToPC(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetTalkedToPC | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetTalkedToPC(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return FindScriptVariable(thisObject, 0, 0, result);
+    return FindScriptVariable(apRefObject, 0, 0, afReturnValue);
 }
 
 // @fnv 0x005c73b0
-bool Script::GetIsRaining(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetIsRaining | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetIsRaining(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return EvaluateWeatherCondition(thisObject, 0, 0, result);
+    return Script_GetIsRainingConditionFunction(apRefObject, 0, 0, afReturnValue);
 }
 
 // @fnv 0x005c7530
-bool Script::GetInCell(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetInCell | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell
+bool Script::GetInCell(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESObjectCELL* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    return EvaluateCellMembership(thisObject, form, 0, result);
+    return EvaluateCellMembership(apRefObject, form, 0, afReturnValue);
 }
 
 // @fnv 0x005c79d0
-bool Script::GetInFaction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetInFaction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction
+bool Script::GetInFaction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESFaction* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    return GetScriptOperand(thisObject, form, 0, result);
+    return GetScriptOperand(apRefObject, form, 0, afReturnValue);
 }
 
 // @fnv 0x005c84b0
-bool Script::GetRandomPercent(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetRandomPercent | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetRandomPercent(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return EvaluateRandomPercentage(thisObject, 0, 0, result);
+    return EvaluateRandomPercentage(apRefObject, 0, 0, afReturnValue);
 }
 
 // @fnv 0x005c84d0
-bool Script::GetLevel(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetLevel | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetLevel(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return EvaluateReferenceLevel(thisObject, 0, 0, result);
+    return EvaluateReferenceLevel(apRefObject, 0, 0, afReturnValue);
 }
 
 // @fnv 0x005ca200
-bool Script::OnAddFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnAddFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pContainer
+bool Script::OnAddFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x1U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x1U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca260
-bool Script::OnSellFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnSellFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pSeller
+bool Script::OnSellFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x4000U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x4000U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca2d0
+// pdb: Script::ActorOnEquipFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::OnEquipFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pObject
 bool Script::OnEquipFunction(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -1053,6 +1153,10 @@ bool Script::OnEquipFunction(const ScriptParameter* parameters, const char* scri
 }
 
 // @fnv 0x005ca330
+// pdb: Script::ActorOnUnequipFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::OnUnequipFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pObject
 bool Script::OnUnequipFunction(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -1066,237 +1170,289 @@ bool Script::OnUnequipFunction(const ScriptParameter* parameters, const char* sc
 }
 
 // @fnv 0x005ca510
-bool Script::OnFireFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnFireFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::OnFireFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    result = 0.0;
-    CheckFlagFunction(0x400000U, thisObject, 0, locals, result);
+    afReturnValue = 0.0;
+    CheckFlagFunction(0x400000U, apRefObject, 0, apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca540
-bool Script::OnOpenFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnOpenFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::OnOpenFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    result = 0.0;
-    CheckFlagFunction(0x10000U, thisObject, 0, locals, result);
+    afReturnValue = 0.0;
+    CheckFlagFunction(0x10000U, apRefObject, 0, apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca570
-bool Script::OnCloseFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnCloseFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::OnCloseFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    result = 0.0;
-    CheckFlagFunction(0x20000U, thisObject, 0, locals, result);
+    afReturnValue = 0.0;
+    CheckFlagFunction(0x20000U, apRefObject, 0, apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca5a0
-bool Script::OnGrabFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnGrabFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::OnGrabFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    result = 0.0;
-    CheckFlagFunction(0x80000U, thisObject, 0, locals, result);
+    afReturnValue = 0.0;
+    CheckFlagFunction(0x80000U, apRefObject, 0, apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca5d0
-bool Script::OnReleaseFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnReleaseFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::OnReleaseFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    result = 0.0;
-    CheckFlagFunction(0x100000U, thisObject, 0, locals, result);
+    afReturnValue = 0.0;
+    CheckFlagFunction(0x100000U, apRefObject, 0, apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca600
-bool Script::OnDestructionStageChangeFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnDestructionStageChangeFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: istage
+bool Script::OnDestructionStageChangeFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     int stage = (-2147483647 - 1);
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &stage))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &stage))
         return false;
-    CheckFlagFunction(0x200000U, thisObject, 0, locals, result);
-    if (result != 0.0) {
+    CheckFlagFunction(0x200000U, apRefObject, 0, apScriptLocals, afReturnValue);
+    if (afReturnValue != 0.0) {
     }
     return true;
 }
 
 // @fnv 0x005ca670
-bool Script::OnHitFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnHitFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
+bool Script::OnHitFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x80U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x80U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca800
-bool Script::OnDeathFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnDeathFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
+bool Script::OnDeathFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x10U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x10U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca860
-bool Script::OnStartCombatFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnStartCombatFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
+bool Script::OnStartCombatFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x8000U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x8000U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca930
-bool Script::OnCombatEndFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnCombatEndFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::OnCombatEndFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    CheckFlagFunction(0x40U, thisObject, 0, locals, result);
+    CheckFlagFunction(0x40U, apRefObject, 0, apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca950
-bool Script::OnSayToDoneFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnSayToDoneFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTopic
+bool Script::OnSayToDoneFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form);
-    CheckFlagFunction(0x40000U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form);
+    CheckFlagFunction(0x40000U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005ca9b0
-bool Script::OnPackageStartFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnPackageStartFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pPackage
+bool Script::OnPackageStartFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x200U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x200U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005caa20
-bool Script::OnPackageEndFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnPackageEndFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pPackage
+bool Script::OnPackageEndFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x400U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x400U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005caa90
-bool Script::OnPackageChangeFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnPackageChangeFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pPackage
+bool Script::OnPackageChangeFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x800U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x800U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005cab00
-bool Script::OnLoadFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnLoadFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::OnLoadFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    CheckFlagFunction(0x1000U, thisObject, 0, locals, result);
+    CheckFlagFunction(0x1000U, apRefObject, 0, apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005cab30
-bool Script::OnResetFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnResetFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::OnResetFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    CheckFlagFunction(0x80000000U, thisObject, 0, locals, result);
+    CheckFlagFunction(0x80000000U, apRefObject, 0, apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005cab60
-bool Script::OnMagicEffectHitFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnMagicEffectHitFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: peffectSetting
+bool Script::OnMagicEffectHitFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x2000U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x2000U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005cabd0
-bool Script::OnTriggerFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnTriggerFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTriggerRef
+bool Script::OnTriggerFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x10000000U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x10000000U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005cac40
-bool Script::OnTriggerEnterFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnTriggerEnterFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTriggerRef
+bool Script::OnTriggerEnterFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x20000000U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x20000000U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
 // @fnv 0x005cacb0
-bool Script::OnTriggerLeaveFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnTriggerLeaveFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTriggerRef
+bool Script::OnTriggerLeaveFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    CheckFlagFunction(0x40000000U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+    CheckFlagFunction(0x40000000U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     return true;
 }
 
@@ -1304,98 +1460,123 @@ bool Script::OnTriggerLeaveFunction(const ScriptParameter* parameters, const cha
 // Bodies independently derived from queue076 disassembly; no community executable implementation copied.
 
 // @fnv 0x005cb8b0
-bool Script::IsIdlePlayingFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::IsIdlePlayingFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::IsIdlePlayingFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    if (thisObject)
-        return CheckIdlePlaying(thisObject, 0, 0, result);
+    if (apRefObject)
+        return CheckIdlePlaying(apRefObject, 0, 0, afReturnValue);
     return true;
 }
 
 
 // @fnv 0x005cc3a0
-bool Script::IsTalkingFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::IsTalkingFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::IsTalkingFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    if (!thisObject)
+    if (!apRefObject)
         return false;
-    return CheckTalkingState(thisObject, 0, 0, result);
+    return Script_IsTalkingConditionFunction(apRefObject, 0, 0, afReturnValue);
 }
 
 
 // @fnv 0x005cd570
-bool Script::GetDayOfWeekFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetDayOfWeekFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetDayOfWeekFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return ParseScript(0, 0, 0, result);
+    return ParseScript(0, 0, 0, afReturnValue);
 }
 
 
 // @fnv 0x005cd590
-bool Script::IsPCSleepingFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::IsPCSleepingFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::IsPCSleepingFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return IsPlayerAsleep(0, 0, 0, result);
+    return IsPlayerAsleep(0, 0, 0, afReturnValue);
 }
 
 
 // @fnv 0x005ce2d0
-bool Script::GetDestroyedFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetDestroyedFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetDestroyedFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    HandleScriptOperation(thisObject, 0, 0, result);
+    HandleScriptOperation(apRefObject, 0, 0, afReturnValue);
     return true;
 }
 
 
 // @fnv 0x005cfdd0
-bool Script::HasBeenEatenFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::HasBeenEatenFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::HasBeenEatenFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return GetScriptObject(thisObject, 0, 0, result);
+    return Script_HasBeenEatenConditionFunction(apRefObject, 0, 0, afReturnValue);
 }
 
 
 // @fnv 0x005d0900
-bool Script::GetUnconsciousFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetUnconsciousFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::GetUnconsciousFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    return ResolveScriptValue(thisObject, 0, 0, result);
+    return ResolveScriptValue(apRefObject, 0, 0, afReturnValue);
 }
 
 
 // @fnv 0x005d1a90
-bool Script::IsInCombatFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::IsInCombatFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::IsInCombatFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    GetScriptFunctionValue(thisObject, 0, 0, result);
+    Script_IsInCombatConditionFunction(apRefObject, 0, 0, afReturnValue);
     return true;
 }
 
 
 // @fnv 0x005d2500
-bool Script::IsInInteriorFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::IsInInteriorFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::IsInInteriorFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    EvaluateReferenceQuery(thisObject, 0, 0, result);
+    Script_IsInInteriorConditionFunction(apRefObject, 0, 0, afReturnValue);
     return true;
 }
 
 
 // @fnv 0x005cd8f0
-void TESActorBaseData::SetEssential(bool value)
+// pdb: TESActorBaseData::SetEssential | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void TESActorBaseData::SetEssential(bool abVal)
 {
-    UpdateFlagBit(2, value, true);
+    UpdateFlagBit(2, abVal, true);
 }
 
 // @fnv 0x005d1070
-void TESActorBaseData::SetMatchesPCLevel(bool value)
+// pdb: TESActorBaseData::SetMatchesPCLevel | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void TESActorBaseData::SetMatchesPCLevel(bool abVal)
 {
-    UpdateFlagBit(128, value, true);
+    UpdateFlagBit(128, abVal, true);
 }
 
 
 
 
 // @fnv 0x005c7220
-bool Script::StopQuestFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::StopQuestFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pQuest
+bool Script::StopQuestFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESQuest* quest = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &quest))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &quest))
         return false;
     if (quest)
         quest->SetEnabled(false);
@@ -1403,20 +1584,25 @@ bool Script::StopQuestFunction(const ScriptParameter* parameters, const char* sc
 }
 
 // @fnv 0x005c4360
-bool Script::ScriptEffectUpdateFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::ScriptEffectUpdateFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script::ScriptEffectUpdateFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    result = 0.0;
-    if (script && script->GetHeader() && script->GetHeader()->m_bEffect)
-        result = 1.0;
+    afReturnValue = 0.0;
+    if (apScript && apScript->GetHeader() && apScript->GetHeader()->m_bEffect)
+        afReturnValue = 1.0;
     return true;
 }
 
 // @fnv 0x005c8120
-bool Script::SetAllyFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::SetAllyFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pFaction, pFactionTarget, iTargReaction, iReaction
+bool Script::SetAllyFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     struct {
         TESFaction* firstFaction;
@@ -1428,11 +1614,11 @@ bool Script::SetAllyFunction(const ScriptParameter* parameters, const char* scri
     relationship.secondFaction = 0;
     relationship.firstIsFriend = 0;
     relationship.secondIsFriend = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &relationship.firstFaction, &relationship.secondFaction,
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &relationship.firstFaction, &relationship.secondFaction,
                      &relationship.firstIsFriend, &relationship.secondIsFriend))
         return false;
-    result = 0.0;
+    afReturnValue = 0.0;
     if (relationship.secondFaction && relationship.firstFaction) {
         if (!relationship.firstIsFriend)
             relationship.firstFaction->SetFactionFightReaction(relationship.secondFaction, _FightReaction::ALLY);
@@ -1447,32 +1633,38 @@ bool Script::SetAllyFunction(const ScriptParameter* parameters, const char* scri
 }
 
 // @fnv 0x005ce2f0
-bool Script::SetDestroyedFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::SetDestroyedFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ivalue
+bool Script::SetDestroyedFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int destroyed = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &destroyed))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &destroyed))
         return false;
-    if (thisObject) {
+    if (apRefObject) {
         if (destroyed)
-            thisObject->SetDestroyed(true);
+            apRefObject->SetDestroyed(true);
         else
-            thisObject->SetDestroyed(false);
+            apRefObject->SetDestroyed(false);
     }
     return true;
 }
 
 
 // @fnv 0x005ca6e0
-bool Script::OnHitWithFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::OnHitWithFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: phitform, plist, pformlist, pobject, pform
+bool Script::OnHitWithFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
     if (form && form->GetFormType() == ENUM_FORM_ID_FLST_ID) {
         BGSListForm* listForm = reinterpret_cast<BGSListForm*>(form);
@@ -1487,12 +1679,12 @@ bool Script::OnHitWithFunction(const ScriptParameter* parameters, const char* sc
             current.object = 0;
             if (current.item->IsActor_InEditor())
                 current.object = current.item;
-            CheckFlagFunction(0x100U, thisObject, reinterpret_cast<SharedForm*>(current.object), locals, result);
-            if (result != 0.0)
+            CheckFlagFunction(0x100U, apRefObject, reinterpret_cast<SharedForm*>(current.object), apScriptLocals, afReturnValue);
+            if (afReturnValue != 0.0)
                 break;
         }
     } else {
-        CheckFlagFunction(0x100U, thisObject, reinterpret_cast<SharedForm*>(form), locals, result);
+        CheckFlagFunction(0x100U, apRefObject, reinterpret_cast<SharedForm*>(form), apScriptLocals, afReturnValue);
     }
     return true;
 }
@@ -1503,6 +1695,8 @@ int __cdecl FinishScriptRunLock(void*);
 
 // @fnv 0x0043b2b0
 // src: XBOX_PDB 0x0043b2b0
+// pdb: MessageHandler::IncDisableWarningCount | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: abTF
 void MessageHandler_IncDisableWarningCount(bool abTF) {
     int result;
     if (abTF) {
@@ -1521,6 +1715,8 @@ struct S0042fa20 {
 };
 // @fnv 0x0045ce80
 // src: GUESS 0x0045ce80 (confidence: low)
+// pdb: SettingT<INISettingCollection>::operator= | GridCell.obj | debug, call graph, medium
+// pdb params: aiValue
 S0042fa20* S0042fa20::ProcessAndReturnValue_0045ce80(int a)
 {
     NiPointer_NavMesh_NiPointer_NavMesh(a);
@@ -1540,6 +1736,9 @@ extern __declspec(thread) TLSData tlsData;
 
 // @fnv 0x005b5950
 // src: XBOX_PDB 0x005b5950
+// pdb: Script::IsActionRefFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargRef
 bool __cdecl Script_IsActionRefFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     afReturnValue = 0.0;
@@ -1566,6 +1765,9 @@ __declspec(thread) unsigned int _tls_uActivateDepth;
 
 // @fnv 0x005b59f0
 // src: XBOX_PDB 0x005b59f0
+// pdb: Script::ActivateFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iNormalActivate, pTargRef, bwasdefault
 bool __cdecl Script_ActivateFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESObjectREFR* pTargRef = 0;
@@ -1656,6 +1858,7 @@ bool __cdecl BSShaderManager_GetUseRefractionShader();
 
 // @fnv 0x005b9b00
 // src: XBOX_PDB 0x005b9b00
+// pdb: BSShaderManager::IsRefractionEnabled | TESScriptFunctions.obj | debug, upstream name already matches, high
 bool __cdecl BSShaderManager_IsRefractionEnabled()
 {
     return BSShaderManager_GetUseRefractionShader() && BSShaderManager::GetSupportedShaderLevel(false) >= 2;
@@ -1722,6 +1925,7 @@ public:
     int* Int(void);
 };
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface {
 public:
     static TaskQueueInterface* __cdecl GetSingleton(void);
@@ -1751,6 +1955,9 @@ __declspec(thread) extern TLSData_005c05f0 tls_005c05f0;
 
 // @fnv 0x005c05f0
 // src: EXE 0x005c05f0
+// pdb: Script::SetPosFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cAxis, fPos
 bool __cdecl Cmd_SetPos_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
 {
     char axis;
@@ -1792,6 +1999,7 @@ int __fastcall hkpCharacterContext_getState(char*);
 
 // @fnv 0x005c0880
 // src: XBOX_PDB 0x005c0880
+// pdb: bhkCharacterController::GetState | TESScriptFunctions.obj | debug, upstream name already matches, high
 int __fastcall bhkCharacterController_GetState(char* this_ptr)
 {
     return hkpCharacterContext_getState(this_ptr + 0x3e0);
@@ -1815,6 +2023,9 @@ void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface*, int
 
 // @fnv 0x005c1b80
 // src: EXE 0x005c1b80
+// pdb: Script::SetScaleFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fScale
 bool __cdecl Cmd_SetScale_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
 {
     float scale = 0.0f;
@@ -1823,7 +2034,7 @@ bool __cdecl Cmd_SetScale_Execute(const ScriptParameter* paramInfo, const char* 
     if (*g_011c3ea4.Int() > 1) {
         TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface::GetSingleton(), 0x113c, thisObj, scale);
     } else {
-        Script::SetReferenceScale(thisObj, scale);
+        Script::SetScaleBase(thisObj, scale);
     }
     return true;
 }
@@ -1837,6 +2048,7 @@ void* __fastcall ComputeValue_005a8080(void*);
 
 // @fnv 0x005c3bd0
 // src: XBOX_PDB 0x005c3bd0
+// pdb: TESQuest::GetPriority | TESScriptFunctions.obj | debug, upstream name already matches, high
 unsigned int FUN_005c3bd0_shell::TESQuest_GetPriority()
 {
     return *((unsigned char*)ComputeValue_005a8080(this) + 1);
@@ -1892,6 +2104,9 @@ struct TlsBlock005c7800 { char pad[0x268]; unsigned char flag; };
 __declspec(thread) TlsBlock005c7800 g_tls005c7800;
 // @fnv 0x005c7800
 // src: EXE 0x005c7800
+// pdb: Script::GetIsRace | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: prace
 bool __cdecl Cmd_GetInCharGen_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& result, unsigned int& g)
 {
     result = 0.0;
@@ -1914,6 +2129,9 @@ bool __fastcall PlayerCharacter_GetInChargen(const char* pThis)
 
 // @fnv 0x005c9670
 // src: EXE 0x005c9670
+// pdb: Script::SetAlertFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iIsAlert, pActor
 bool __cdecl Cmd_SetAlert_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
 {
     int val = 0;
@@ -1935,6 +2153,8 @@ struct FUN_005a8ef0_helper {
 
 // @fnv 0x005ca1c0
 // src: COMMUNITY 0x005ca1c0
+// pdb: Script::CheckFlagFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: aiFlag, apRefObject, apActionForm, apScriptLocals, afReturnValue
 void __cdecl Script_CheckFlagFunction(unsigned int aiFlag, TESObjectREFR* apRefObject, TESForm* apActionForm, ScriptLocals* apScriptLocals, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -1948,6 +2168,7 @@ void __cdecl Script_CheckFlagFunction(unsigned int aiFlag, TESObjectREFR* apRefO
 }
 
 struct BGSReconstructFormsMap;
+// pdb: structure OffsetData, size 0x8, 2 members
 struct OffsetData {
     bool IsValid();
     void Clear();
@@ -1997,12 +2218,13 @@ struct RegionObjectEntry {
 };
 typedef char _sizecheck_TESQuestTarget[sizeof(RegionObjectEntry) == 72 ? 1 : -1];
 struct FUN_005cbb70_shell : public RegionObjectEntry {
-    TESObjectREFR* TESQuestTarget_GetTrackingRef();
+    TESObjectREFR* TESQuestTarget_QTrackingRef();
 };
 
 // @fnv 0x005cbb70
-// src: COMMUNITY 0x005cbb70
-TESObjectREFR* FUN_005cbb70_shell::TESQuestTarget_GetTrackingRef()
+// src: XBOX_DEBUG_PDB 0x005cbb70
+// pdb: TESQuestTarget::QTrackingRef | TESScriptFunctions.obj | debug, call graph (shared callers), high
+TESObjectREFR* FUN_005cbb70_shell::TESQuestTarget_QTrackingRef()
 {
     return reinterpret_cast<BSSimpleArray<TESObjectREFR*, 1024>*>(reinterpret_cast<char*>(this) + 0x20)->GetSize() > 0 ?
         reinterpret_cast<BSSimpleArray<TESObjectREFR*, 1024>*>(reinterpret_cast<char*>(this) + 0x20)->GetAt(0) :
@@ -2011,6 +2233,9 @@ TESObjectREFR* FUN_005cbb70_shell::TESQuestTarget_GetTrackingRef()
 
 // @fnv 0x005cd870
 // src: EXE 0x005cd870
+// pdb: Script::ShowNameMenu | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::SetEssentialFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_SetEssential_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
 {
     result = 0.0;
@@ -2040,6 +2265,9 @@ char* __fastcall _ref_00726070(char*);
 
 // @fnv 0x005cf490
 // src: XBOX_PDB 0x005cf490
+// pdb: Script::IsPlayerInRegion | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: region, rlist
 bool __cdecl Script_IsPlayerInRegion(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     TESSound* region;
@@ -2088,6 +2316,8 @@ struct FUN_005d14d0_arg
 
 // @fnv 0x005d14d0
 // src: COMMUNITY 0x005d14d0
+// pdb: Script::GetArmorRatingUpperFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __fastcall PlayerCharacter_SetHasScriptNotDisabledFastTravel(char* pThis, FUN_005d14d0_arg a)
 {
     a.b ? (pThis[0x66d] |= 1) : (pThis[0x66d] &= ~1);
@@ -2104,15 +2334,19 @@ void S1530::PlayerCharacter_SetDisableFastTravelResetsOnCellChange(bool e)
 struct S5d { void BSAudio_Mute(unsigned int a, unsigned int b); };
 // @fnv 0x005d1720
 // src: XBOX_PDB 0x005d1720
+// pdb: BSAudio::Mute | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: aiFadeTimeMS, aiMillibels
 void S5d::BSAudio_Mute(unsigned int a, unsigned int b)
 {
-    ((BSAudio*)this)->SetAudioProperty(0xFFFFFFFF, a, b);
+    ((BSAudio*)this)->MuteType(0xFFFFFFFF, a, b);
 }
 
-struct S1740 { void FUN_00ad84b0(int, int); void BSAudio_UnMute(int a); };
+struct S1740 { void UnMuteType(int, int); void BSAudio_UnMute(int a); };
 // @fnv 0x005d1740
 // src: XBOX_PDB 0x005d1740
-void S1740::BSAudio_UnMute(int a) { FUN_00ad84b0(-1, a); }
+// pdb: BSAudio::UnMute | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: aiFadeTimeMS
+void S1740::BSAudio_UnMute(int a) { UnMuteType(-1, a); }
 
 void* __fastcall Bipedanim_GetReferenceFlagsOrZero(void*);
 void* __fastcall hkpRigidBody_getStoredDynamicMotion_00ca86c0(void*);
@@ -2124,6 +2358,8 @@ struct FUN_005d3d10_This
 
 // @fnv 0x005d3d10
 // src: XBOX_PDB 0x005d3d10
+// pdb: bhkRigidBody::GetStoredDynamicMotion | TESScriptFunctions.obj | debug, call graph, medium
+// pdb locals: pb
 void* FUN_005d3d10_This::hkpRigidBody_getStoredDynamicMotion()
 {
     void* pb = Bipedanim_GetReferenceFlagsOrZero(this);
@@ -2132,11 +2368,14 @@ void* FUN_005d3d10_This::hkpRigidBody_getStoredDynamicMotion()
 
 
 // @fnv 0x005d3d50
-// src: EXE 0x005d3d50
-bool __cdecl Cmd_SetIgnoreFriendlyHits_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005d3d50
+// pdb: Script::SetIgnoreFriendlyHitsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iindex
+bool __cdecl Script_SetIgnoreFriendlyHitsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int flag = -1;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, locals, &flag))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &flag))
     {
         return false;
     }
@@ -2152,35 +2391,41 @@ bool __cdecl Cmd_SetIgnoreFriendlyHits_Execute(const ScriptParameter* paramInfo,
 // @fnv 0x005d43e0
 BSSimpleList<ScriptVariableInfo*>* Script::GetVariableList()
 {
-    return &m_kVariableList;
+    return &listVariables;
 }
 
-bool __cdecl Cmd_GetHasNote_Eval(TESObjectREFR*, void*, void*, double&);
+bool __cdecl Script_GetHasNoteConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005d5330
-// src: EXE 0x005d5330
-bool __cdecl Cmd_GetHasNote_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005d5330
+// pdb: Script::GetHasNoteFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pNote
+bool __cdecl Script_GetHasNoteFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     void* arg = 0;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &arg))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &arg))
         return false;
-    return Cmd_GetHasNote_Eval(thisObj, arg, 0, result);
+    return Script_GetHasNoteConditionFunction(thisObj, arg, 0, afReturnValue);
 }
 
 class ScriptActorPackageActions : public TESObjectREFR
 {
 public:
 
-    void Actor_AddFaction(void* arg1, int arg2);
+    void Actor_AddFaction(void* apFaction, int aiRank);
 };
 
 // @fnv 0x005d5390
-// src: EXE 0x005d5390
-bool __cdecl Cmd_AddToFaction_Execute(const ScriptParameter* paramInfo, const char* scriptData, ScriptActorPackageActions* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005d5390
+// pdb: Script::AddFactionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfac, irank, pactor
+bool __cdecl Script_AddFactionFunction(const ScriptParameter* apParameters, const char* apCompiledParams, ScriptActorPackageActions* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     void* arg1 = 0;
     int arg2 = -1;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, locals, &arg1, &arg2))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &arg1, &arg2))
     {
         return false;
     }
@@ -2195,11 +2440,14 @@ bool __cdecl Cmd_AddToFaction_Execute(const ScriptParameter* paramInfo, const ch
 
 
 // @fnv 0x005d5420
-// src: EXE 0x005d5420
-bool __cdecl Cmd_RemoveFromFaction_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005d5420
+// pdb: Script::RemoveFactionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfac, pactor
+bool __cdecl Script_RemoveFactionFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     void* pPackage = 0;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, locals, &pPackage))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &pPackage))
         return false;
 
     if (pPackage && ((ScriptActorActions*)thisObj)->IsActor())
@@ -2256,12 +2504,14 @@ unsigned int __cdecl bhkCollisionFilter_GetNewSystemGroup()
 }
 
 struct RotationValues { float BSFaceGenKeyframeMultiple_GetQuantity(unsigned int); };
-struct Sd4a0 { char pad[0xa8]; RotationValues rv; float BSFaceGenAnimationData_GetModifierValue(int m); };
+struct Sd4a0 { char pad[0xa8]; RotationValues rv; float BSFaceGenAnimationData_GetModifierValue(int aeModifier); };
 // @fnv 0x005dd4a0
 // src: XBOX_PDB 0x005dd4a0
-float Sd4a0::BSFaceGenAnimationData_GetModifierValue(int m)
+// pdb: BSFaceGenAnimationData::GetModifierValue | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: aeModifier
+float Sd4a0::BSFaceGenAnimationData_GetModifierValue(int aeModifier)
 {
-    return m < 17 ? rv.BSFaceGenKeyframeMultiple_GetQuantity(m) : 0.0f;
+    return aeModifier < 17 ? rv.BSFaceGenKeyframeMultiple_GetQuantity(aeModifier) : 0.0f;
 }
 
 struct Sd4e0 { char pad[0xc]; float* data; unsigned int count; float BSFaceGenKeyframeMultiple_GetQuantity(unsigned int i); };
@@ -2373,8 +2623,9 @@ public:
 extern int DAT_0103d428;
 
 // @fnv 0x005e04c0
-// src: GUESS 0x005e04c0 (confidence: low)
-void* __fastcall Object_InitializeFields_005e04c0(void* pThis)
+// src: XBOX_DEBUG_PDB 0x005e04c0
+// pdb: BSSimpleArray<TESObjectREFR *,1024>::BSSimpleArray<TESObjectREFR *,1024> | TESScriptFunctions.obj | debug, call graph, high
+void* __fastcall BSSimpleArray_TESObjectREFR_1024_ctor(void* pThis)
 {
     *reinterpret_cast<int**>(pThis) = &DAT_0103d428;
     reinterpret_cast<ScriptNavMeshInfoArray*>(pThis)->BSSimpleArray_float_1024_InitialSetup(0, false);
@@ -2391,6 +2642,7 @@ extern int DAT_0103d428;
 
 // @fnv 0x005e04f0
 // src: GUESS 0x005e04f0 (confidence: low)
+// pdb: BSSimpleArray<TESObjectREFR *,1024>::~BSSimpleArray<TESObjectREFR *,1024> | TESScriptFunctions.obj | debug, call graph, medium
 void __fastcall Tesscriptfunctions_UpdateState_005e04f0(GlobalObject_00869f00* pThis)
 {
     *(int**)pThis = &DAT_0103d428;
@@ -2407,8 +2659,9 @@ public:
 extern int DAT_0103d43c;
 
 // @fnv 0x005e0540
-// src: GUESS 0x005e0540 (confidence: medium)
-void __fastcall Object_ResetVirtualTableAndClear(GlobalObject_00869f00* _this)
+// src: XBOX_DEBUG_PDB 0x005e0540
+// pdb: BSSimpleArray<NavMeshInfo const *,1024>::~BSSimpleArray<NavMeshInfo const *,1024> | TESScriptFunctions.obj | debug, call graph, high
+void __fastcall BSSimpleArray_NavMeshInfo_const_1024_dtor(GlobalObject_00869f00* _this)
 {
     *(int**)_this = &DAT_0103d43c;
     _this->Clear(true);
@@ -2420,6 +2673,7 @@ extern int DAT_0106c92c;
 
 // @fnv 0x00709840
 // src: GUESS 0x00709840 (confidence: low)
+// pdb: TileRect::TileRect | TESScriptFunctions.obj | debug, call graph, high
 void* __fastcall Object_InitializeFields_00709840(void* pThis)
 {
 	FindTriangleForLocationFilter_FindTriangleForLocationFilter(pThis);
@@ -2465,6 +2719,8 @@ struct MobileObjectArray_00877a30
 
 // @fnv 0x00968670
 // src: XBOX_PDB 0x00968670
+// pdb: ProcessArray::GetItem | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: auiIndex
 MobileObject* FUN_00968670_shell::ProcessArray_GetItem(unsigned int auiIndex)
 {
     return ((MobileObjectArray_00877a30*)this)->FUN_00877a30(auiIndex);
@@ -2495,6 +2751,9 @@ bool __cdecl Cmd_StopCombat_Execute(const ScriptParameter* p, const char* s, TES
 struct Helper { bool GetDisabled(); bool IsDeleted() const; void Actor_EvaluatePackage(int, int); };
 // @fnv 0x005c9530
 // src: EXE 0x005c9530
+// pdb: Script::ResetAIFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
 bool __cdecl Cmd_ResetAI_Execute(int a, int b, TESObjectREFR* c)
 {
     Actor* actor = dynamic_cast<Actor*>(c);
@@ -2507,6 +2766,9 @@ namespace fnv_005c95a0 {
 struct Helper { bool GetDisabled(); bool IsDeleted() const; void Actor_EvaluatePackage(int, int); };
 // @fnv 0x005c95a0
 // src: EXE 0x005c95a0
+// pdb: Script::EvaluatePackageFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
 bool __cdecl Cmd_EvaluatePackage_Execute(int a, int b, TESObjectREFR* c)
 {
     Actor* actor = dynamic_cast<Actor*>(c);
@@ -2521,14 +2783,17 @@ struct ScriptH { static void __cdecl CopyIdentifierBitsToValue(unsigned int cons
 extern __declspec(thread) bool DAT_tlsflag;
 // @fnv 0x005ce360
 // src: XBOX_PDB 0x005ce360
-bool __cdecl Script_GetActionRefFunction(const ScriptParameter* p, const char* s, TESObjectREFR* ref, TESObjectREFR* cont, Script* scr, ScriptLocals* loc, double& ret, unsigned int& off)
+// pdb: Script::GetActionRefFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iid
+bool __cdecl Script_GetActionRefFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int iid;
-    ret = 0.0;
+    afReturnValue = 0.0;
     iid = 0;
-    if (ref && TESObjectREFR_GetActionRef(ref)) {
-        iid = ((SoundH*)TESObjectREFR_GetActionRef(ref))->Deallocate();
-        ScriptH::CopyIdentifierBitsToValue(iid, ret);
+    if (apRefObject && TESObjectREFR_GetActionRef(apRefObject)) {
+        iid = ((SoundH*)TESObjectREFR_GetActionRef(apRefObject))->Deallocate();
+        ScriptH::CopyIdentifierBitsToValue(iid, afReturnValue);
     }
     if (DAT_tlsflag)
         DebugLog("GetActionRef >> (%08x)", iid);
@@ -2548,6 +2813,7 @@ extern TESImageSpaceModifier* DAT_011c9700;
 TESForm* _ref_004839c0(unsigned int);
 // @fnv 0x005d2860
 // src: XBOX_PDB 0x005d2860
+// pdb: TESImageSpaceModifier::GetGetHit | TESScriptFunctions.obj | retail, upstream name already matches, high
 TESImageSpaceModifier* TESImageSpaceModifier_GetGetHit()
 {
     if (!DAT_0118abb1)
@@ -2564,6 +2830,7 @@ struct DelStandIn {
     void* FUN_00709980(unsigned int flags);
 };
 // @fnv 0x00709980
+// pdb: TileRect::`scalar deleting destructor' | Interface.obj | retail, vtable slot, high
 void* DelStandIn::FUN_00709980(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -2580,6 +2847,7 @@ struct FUN_007099b0 : public Tile
     bool FUN_00709a20();
 };
 // @fnv 0x007099b0
+// pdb: TileRect::~TileRect | TESScriptFunctions.obj | debug, object-file run extension, low
 FUN_007099b0::~FUN_007099b0()
 {
     if (!FUN_00709a20())
@@ -2594,6 +2862,7 @@ struct DelStandIn {
     void* FUN_00709a60(unsigned int flags);
 };
 // @fnv 0x00709a60
+// pdb: TileMenu::`scalar deleting destructor' | Interface.obj | retail, vtable slot, high
 void* DelStandIn::FUN_00709a60(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -2621,6 +2890,9 @@ class ActorCombatGroup;
 
 // @fnv 0x005b8fc0
 // src: XBOX_PDB 0x005b8fc0
+// pdb: NiTexturingProperty::SetBaseTexture | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: pkTexture
+// pdb locals: pkBaseMap
 void NiTexturingProperty::SetBaseTexture(void* pkTexture) {
     FUN_00a69dd0* pkBaseMap = (FUN_00a69dd0*)(*((Arr*)((char*)this + 0x1c))->GetAt(0));
     if (!pkBaseMap) {
@@ -2648,6 +2920,9 @@ extern __declspec(thread) TLS_Data g_tls;
 
 // @fnv 0x005ce3e0
 // src: XBOX_PDB 0x005ce3e0
+// pdb: Script::GetSelfFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iid
 bool Script_GetSelfFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     afReturnValue = 0.0;
     unsigned int iid = 0;
@@ -2670,8 +2945,11 @@ struct TESQuestObjectiveView { BGSQuestObjective* GetObjective(unsigned int); };
 struct ThreadFlags { char pad[0x268]; unsigned char bLogScripts; };
 __declspec(thread) ThreadFlags g_threadFlags;
 // @fnv 0x005d7e30
-// src: EXE 0x005d7e30
-bool __cdecl Cmd_GetObjectiveCompleted_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
+// src: XBOX_RETAIL_PDB 0x005d7e30
+// pdb: Script::GetObjectiveCompletedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival, iindex, pquest, pobjective
+bool __cdecl Script_GetObjectiveCompletedFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     BGSQuestObjective* pObjective;
     int ival;
@@ -2724,8 +3002,11 @@ struct TLS_Data {
 extern __declspec(thread) TLS_Data g_tls;
 
 // @fnv 0x005d7ef0
-// src: EXE 0x005d7ef0
-bool Cmd_GetObjectiveDisplayed_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+// src: XBOX_RETAIL_PDB 0x005d7ef0
+// pdb: Script::GetObjectiveDisplayedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival, iindex, pquest, pobjective
+bool Script_GetObjectiveDisplayedFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     TESQuest* pquest;
     int iElementIndex;
     int ival;
@@ -2749,9 +3030,11 @@ extern char* __cdecl __strlwr_s(char*, unsigned int);
 
 // @fnv 0x004afb00
 // src: COMMUNITY 0x004afb00
-char* __cdecl BSstrlwr(char* a1, unsigned int a2)
+// pdb: BSstrlwr | BipedAnim.obj | debug, upstream name already matches, high
+// pdb params: apString1, aiSize
+char* __cdecl BSstrlwr(char* apString1, unsigned int aiSize)
 {
-    return __strlwr_s(a1, a2);
+    return __strlwr_s(apString1, aiSize);
 }
 
 struct FUN_004b1050Class
@@ -2761,6 +3044,7 @@ struct FUN_004b1050Class
 
 // @fnv 0x004b1050
 // src: COMMUNITY 0x004b1050
+// pdb: BSSimpleList<TESQuestStageItem *>::~BSSimpleList<TESQuestStageItem *> | TESScriptFunctions.obj | debug, call graph (shared callers), low
 short __thiscall FUN_004b1050Class::Date_GetYear()
 {
     return *reinterpret_cast<short*>(this + 2);
@@ -2778,6 +3062,7 @@ struct FUN_004f8940_class
 
 // @fnv 0x004f8940
 // src: XBOX_PDB 0x004f8940
+// pdb: Setting::DataType | XGameSetting.obj | debug, upstream name already matches, high
 void FUN_004f8940_class::Setting_DataType()
 {
     Setting_DataType_00c33090(m_field_08);
@@ -2787,6 +3072,8 @@ void __cdecl DebugLog(const char* fmt, ...);
 
 // @fnv 0x005b5b90
 // src: XBOX_PDB 0x005b5b90
+// pdb: Script::ToggleCombatStatsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleCombatStatsFunction()
 {
     DebugLog("Command removed. Use TDT and switch to COMBAT INFO page.");
@@ -2806,8 +3093,10 @@ bool Cmd_ShowRenderPasses_Execute()
 void __cdecl DebugLog(const char* format, ...);
 
 // @fnv 0x005b5db0
-// src: EXE 0x005b5db0
-bool __cdecl Cmd_FreezeRenderAccumulation_Execute()
+// src: XBOX_RETAIL_PDB 0x005b5db0
+// pdb: Script::FreezeRendererAccumulation | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_FreezeRendererAccumulation()
 {
     DebugLog("Deprecated, use TFC 2 instead");
     return 1;
@@ -2816,8 +3105,10 @@ bool __cdecl Cmd_FreezeRenderAccumulation_Execute()
 void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005b5e20
-// src: EXE 0x005b5e20
-bool __cdecl Cmd_Shared_Execute_5b5e20(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&)
+// src: XBOX_RETAIL_PDB 0x005b5e20
+// pdb: Script::OutputMemContexts | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_OutputMemContexts(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&)
 {
     DebugLog("OutputMemContexts is no longer supported.  Use Sherlock or OutputMemStats for context info.");
     return true;
@@ -2904,8 +3195,10 @@ bool __cdecl Interface_GetFullHelp();
 void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005b9170
-// src: EXE 0x005b9170
-bool __cdecl Cmd_ToggleFullHelp_Execute()
+// src: XBOX_RETAIL_PDB 0x005b9170
+// pdb: Script::ToggleFullHelp | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_ToggleFullHelp()
 {
     char* s;
     ToggleFullHelp();
@@ -2924,8 +3217,10 @@ bool __cdecl Cmd_ToggleFullHelp_Execute()
 extern "C" void __cdecl Interface_ToggleSafeZone(int);
 
 // @fnv 0x005b9520
-// src: EXE 0x005b9520
-char __cdecl Cmd_ToggleSafeZone_Execute()
+// src: XBOX_RETAIL_PDB 0x005b9520
+// pdb: Script::ToggleSafeZoneFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+char __cdecl Script_ToggleSafeZoneFunction()
 {
     Interface_ToggleSafeZone(2);
     return 1;
@@ -2950,9 +3245,11 @@ extern RuntimeByteFlag g_01267c30;
 
 // @fnv 0x005ba110
 // src: XBOX_PDB 0x005ba110
-void __cdecl bhkRagdollController_SetFootIK(unsigned char value)
+// pdb: bhkRagdollController::SetFootIK | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: abEnable
+void __cdecl bhkRagdollController_SetFootIK(unsigned char abEnable)
 {
-    *g_01267c30.GetLifeStateControlFlag() = value;
+    *g_01267c30.GetLifeStateControlFlag() = abEnable;
 }
 
 struct FUN_005ba180_Class
@@ -2978,6 +3275,7 @@ extern GlobalObjectO2_0045cf30 g_01267c3c;
 
 // @fnv 0x005ba2d0
 // src: XBOX_PDB 0x005ba2d0
+// pdb: bhkRagdollController::QGrabIK | TESScriptFunctions.obj | debug, upstream name already matches, high
 char bhkRagdollController_QGrabIK()
 {
     return g_01267c3c.GetLifeStateControlFlag()[0];
@@ -2994,9 +3292,11 @@ extern GlobalObjectO2_0045cf30 g_01267c3c;
 
 // @fnv 0x005ba2f0
 // src: XBOX_PDB 0x005ba2f0
-void bhkRagdollController_SetGrabIK(unsigned char value)
+// pdb: bhkRagdollController::SetGrabIK | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: abEnable
+void bhkRagdollController_SetGrabIK(unsigned char abEnable)
 {
-    *g_01267c3c.GetLifeStateControlFlag() = value;
+    *g_01267c3c.GetLifeStateControlFlag() = abEnable;
 }
 }  // namespace fnv_005ba2f0
 
@@ -3022,6 +3322,7 @@ GlobalObjectO2_0045cf30 g_01267c48;
 
 // @fnv 0x005ba4b0
 // src: XBOX_PDB 0x005ba4b0
+// pdb: bhkRagdollController::QLookIK | TESScriptFunctions.obj | debug, upstream name already matches, high
 unsigned char bhkRagdollController_QLookIK()
 {
     return *g_01267c48.GetLifeStateControlFlag();
@@ -3036,9 +3337,11 @@ extern GlobalObjectO2_0045cf30 g_01267c48;
 
 // @fnv 0x005ba4d0
 // src: XBOX_PDB 0x005ba4d0
-void __cdecl bhkRagdollController_SetLookIK(unsigned char value)
+// pdb: bhkRagdollController::SetLookIK | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: abEnable
+void __cdecl bhkRagdollController_SetLookIK(unsigned char abEnable)
 {
-    *g_01267c48.GetLifeStateControlFlag() = value;
+    *g_01267c48.GetLifeStateControlFlag() = abEnable;
 }
 
 struct FUN_005ba540_Class
@@ -3167,9 +3470,11 @@ extern G7d1 g_011c75a4;
 
 // @fnv 0x005bf840
 // src: COMMUNITY 0x005bf840
-void Renderer_SetDoCanopyShadowPass(bool param)
+// pdb: Renderer::SetDoCanopyShadowPass | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void Renderer_SetDoCanopyShadowPass(bool abVal)
 {
-    g_011c75a4.Setting_SetValueB(param);
+    g_011c75a4.Setting_SetValueB(abVal);
 }
 
 extern unsigned char DAT_0118c000;
@@ -3335,6 +3640,8 @@ bool __cdecl Script_GetDisabledConditionFunction(TESObjectREFR*, void*, void*, d
 
 // @fnv 0x005c48c0
 // src: EXE 0x005c48c0
+// pdb: Script::GetDisabledFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetDisabled_Execute(const ScriptParameter* aParam, const char* aName, TESObjectREFR* aRef, TESObjectREFR* aRef2, Script* aScript, ScriptLocals* aLocals, double& aResult, unsigned int& aIndex)
 {
     return Script_GetDisabledConditionFunction(aRef, aLocals, 0, aResult);
@@ -3350,6 +3657,8 @@ extern GlobalObject_0045cf30 g_011de29c;
 
 // @fnv 0x005c5560
 // src: EXE 0x005c5560
+// pdb: Script::Autosave | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_Autosave_Execute()
 {
     if (*g_011de29c.GetLifeStateControlFlag())
@@ -3372,6 +3681,8 @@ void __cdecl DebugLog(char const*, ...);
 
 // @fnv 0x005c5a00
 // src: COMMUNITY 0x005c5a00
+// pdb: ConsoleShaderError | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apErrorString, apObject
 void __cdecl ConsoleShaderError(const char* message)
 {
     DebugLog(PrepareScriptMessage(message, false));
@@ -3385,6 +3696,8 @@ void BSShaderManager_ReloadShaders();
 
 // @fnv 0x005c5a20
 // src: EXE 0x005c5a20
+// pdb: Script::ReloadShaders | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 char __cdecl Cmd_RefreshShaders_Execute()
 {
     void* v = BSShaderManager_GetShaderErrorCallback();
@@ -3423,28 +3736,35 @@ void FUN_005c6b40_Class::PlayerCharacter_SetShowQuestItems(bool b) {
     *reinterpret_cast<char*>(this + 0x240) = b;
 }
 
-extern "C" bool __cdecl Cmd_IsSnowing_Eval(TESObjectREFR*, void*, void*, double&);
+extern "C" bool __cdecl Script_GetIsSnowingConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005c73d0
 // src: EXE 0x005c73d0
+// pdb: Script::GetIsSnowing | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_IsSnowing_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h)
 {
-    return Cmd_IsSnowing_Eval(c, 0, 0, g);
+    return Script_GetIsSnowingConditionFunction(c, 0, 0, g);
 }
 
 extern "C" bool __cdecl Script_GetIsCreatureConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005c74b0
 // src: EXE 0x005c74b0
+// pdb: Script::GetIsCreature | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetIsCreature_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h)
 {
     return Script_GetIsCreatureConditionFunction(c, 0, 0, g);
 }
 
-extern bool __cdecl Cmd_GetIsReference_Eval(TESObjectREFR*, void*, void*, double&);
+extern bool __cdecl Script_GetIsRefConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005c7da0
 // src: EXE 0x005c7da0
+// pdb: Script::GetIsRef | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pobjRef
 bool __cdecl Cmd_GetIsReference_Execute(const ScriptParameter* apParameters, const char* apCompiledParams,
                           TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                           Script* apScript, ScriptLocals* apScriptLocals,
@@ -3454,7 +3774,7 @@ bool __cdecl Cmd_GetIsReference_Execute(const ScriptParameter* apParameters, con
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
                      apScript, apScriptLocals, &pobjRef))
         return false;
-    return Cmd_GetIsReference_Eval(apRefObject, pobjRef, 0, afReturnValue);
+    return Script_GetIsRefConditionFunction(apRefObject, pobjRef, 0, afReturnValue);
 }
 
 struct S5
@@ -3470,6 +3790,7 @@ struct S4
 
 // @fnv 0x005c9bf0
 // src: XBOX_PDB 0x005c9bf0
+// pdb: ImageSpaceManager::GetHDRBrightScale | TESScriptFunctions.obj | debug, upstream name already matches, high
 S5* S4::ImageSpaceManager_GetHDRBrightScale()
 {
     return GetEffect_004ebbc0(1)->ImageSpaceEffectHDR_GetBrightScale();
@@ -3488,6 +3809,9 @@ float FUN_005c9c90::Method()
 
 // @fnv 0x005ca390
 // src: COMMUNITY 0x005ca390
+// pdb: Script::OnDropFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pContainer
 bool Event_OnDrop(const ScriptParameter* pParams, const char* pName, TESObjectREFR* pSource, TESObjectREFR* pTarget, Script* pScript, ScriptLocals* pLocals, double& fResult, unsigned int& uFlags)
 {
     TESForm* pForm = 0;
@@ -3514,6 +3838,8 @@ extern "C" void __cdecl FUN_00eca903(void*, void*, void*);
 
 // @fnv 0x005cbd90
 // src: COMMUNITY 0x005cbd90
+// pdb: _tcsncpy | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: _Dst, _Source, _Count
 void __cdecl _mbsnbcpy_(void* c, void* b, void* a)
 {
     FUN_00eca903(c, b, a);
@@ -3659,6 +3985,7 @@ void FleePackage::SetEvaluatePoint(int value)
 }
 
 // @fnv 0x005d2780
+// pdb: TESActorBaseData::GetNoRumors | TESScriptFunctions.obj | debug, upstream name already matches, high
 bool TESActorBaseData::GetNoRumors()
 {
     return GetFlag(0x2000);
@@ -3681,6 +4008,7 @@ void __cdecl MapMenu_RenderLocalMapGrid(bool);
 
 // @fnv 0x005d45e0
 // src: COMMUNITY 0x005d45e0
+// pdb: MapMenu::RenderNextGridToDisk | TESScriptFunctions.obj | debug, object-file run extension, low
 void __cdecl DumpLocalMapTextures()
 {
     if (DAT_011da368) {
@@ -3746,13 +4074,16 @@ char __cdecl Cmd_ResetPerformanceTimers_Execute()
 }
 }  // namespace fnv_005d74d0
 
-extern unsigned char DAT_0118abb0;
+extern unsigned char TESImageSpaceModifier_bEnable;
 
 // @fnv 0x005d7930
-// src: COMMUNITY 0x005d7930
-void SetImageSpaceModifiersEnable(unsigned char value)
+// src: XBOX_RETAIL_PDB 0x005d7930
+// pdb: Script::SetImageSpaceModifiersEnable | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival
+void Script_SetImageSpaceModifiersEnable(unsigned char value)
 {
-    DAT_0118abb0 = value;
+    TESImageSpaceModifier_bEnable = value;
 }
 
 
@@ -3833,6 +4164,9 @@ void __cdecl Interface_QueueMenuCreate(int, int, int, int, int, int);
 
 // @fnv 0x005da540
 // src: EXE 0x005da540
+// pdb: Script::GetPlayerName | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pmenu, ptile
 char __cdecl Cmd_GetPlayerName_Execute()
 {
     Interface_CloseConsole();
@@ -3961,10 +4295,13 @@ bool __thiscall FUN_005dbe40_Class::bhkShape_GetMaterialVarType(OBJECT_ACTION aA
 }
 
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, ...);
-extern "C" bool __cdecl Cmd_IsInCriticalStage_Eval(TESObjectREFR*, unsigned int, void*, double&);
+extern "C" bool __cdecl Script_IsInCritStageConditionFunction(TESObjectREFR*, unsigned int, void*, double&);
 
 // @fnv 0x005dc090
 // src: EXE 0x005dc090
+// pdb: Script::IsInCritStageFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: estage
 bool Cmd_IsInCriticalStage_Execute(const ScriptParameter* apParameters, const char* apCompiledParams,
                   TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                   Script* apScript, ScriptLocals* apScriptLocals,
@@ -3973,7 +4310,7 @@ bool Cmd_IsInCriticalStage_Execute(const ScriptParameter* apParameters, const ch
     unsigned int estage = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &estage))
         return false;
-    return Cmd_IsInCriticalStage_Eval(apRefObject, estage, 0, afReturnValue);
+    return Script_IsInCritStageConditionFunction(apRefObject, estage, 0, afReturnValue);
 }
 
 namespace fnv_005dc580 {
@@ -4002,15 +4339,16 @@ void FUN_005dc710_class::PlayerCharacter_SetPCCanUsePowerArmor(unsigned char val
 
 struct FUN_005dd810_Class
 {
-    void FUN_005e02e0();
-    void NiTObjectArray_NiPointer_NiTexture_Free();
+    void NiTArray_NiPointer_NiTexture_NiTNewInterface_NiPointer_NiTexture_dtor();
+    void NiTObjectArray_NiPointer_NiTexture_dtor();
 };
 
 // @fnv 0x005dd810
-// src: COMMUNITY 0x005dd810
-void FUN_005dd810_Class::NiTObjectArray_NiPointer_NiTexture_Free()
+// src: XBOX_DEBUG_PDB 0x005dd810
+// pdb: NiTObjectArray<NiPointer<NiTexture> >::~NiTObjectArray<NiPointer<NiTexture> > | TESScriptFunctions.obj | debug, call graph (shared callers), high
+void FUN_005dd810_Class::NiTObjectArray_NiPointer_NiTexture_dtor()
 {
-    FUN_005e02e0();
+    NiTArray_NiPointer_NiTexture_NiTNewInterface_NiPointer_NiTexture_dtor();
 }
 
 extern const char* const DAT_0119b41c[];
@@ -4147,26 +4485,28 @@ struct GlobalObject_00869f00
 {
     void* m_pSomething;
     void Clear(bool);
-    void UpdateState_005e0590();
+    void BSSimpleArray_TESNPC_1024_dtor();
 };
 
 extern GlobalObject_00869f00 DAT_0103d450;
 
 // @fnv 0x005e0590
-// src: GUESS 0x005e0590 (confidence: low)
-void GlobalObject_00869f00::UpdateState_005e0590()
+// src: XBOX_DEBUG_PDB 0x005e0590
+// pdb: BSSimpleArray<TESNPC *,1024>::~BSSimpleArray<TESNPC *,1024> | TESScriptFunctions.obj | debug, call graph, high
+void GlobalObject_00869f00::BSSimpleArray_TESNPC_1024_dtor()
 {
     m_pSomething = &DAT_0103d450;
     Clear(true);
 }
 }  // namespace fnv_005e0590
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier {
     unsigned char GetKey();
 };
 
 void* __cdecl InterfaceManager_GetSingleton(void);
-void CharGenMenu_Create(int a1, int a2, unsigned char a3, unsigned char a4);
+void CharGenMenu_Create(int aiItemType, int aiMaxPoints, unsigned char abOnlyAddValues, unsigned char abShowTaggedSkills);
 
 // @fnv 0x007062a0
 // src: COMMUNITY 0x007062a0
@@ -4186,6 +4526,9 @@ struct FUN_00aa47c0_Class
 
 // @fnv 0x00aa47c0
 // src: COMMUNITY 0x00aa47c0
+// pdb: MemoryManager::OutputDebugInfo | MemoryManager.obj | debug, upstream name already matches, high
+// pdb params: apFile, abOutputWalk
+// pdb locals: imemUsed, bhasTracker, bmemDebugInfo, bhasPoolInfo, bhasAllocationLog, imemInThreadStacks, iwritten, imemInSysAllocs, MAGIC_HEADER
 int __thiscall FUN_00aa47c0_Class::MemoryManager_OutputDebugInfo(int, int)
 {
     int unused = 0;
@@ -4198,8 +4541,11 @@ void __cdecl SetDemiGodMode(bool);
 unsigned char __cdecl GetDemigodeMode(void);
 
 // @fnv 0x005b7000
-// src: EXE 0x005b7000
-char __cdecl Cmd_ToggleDemigodMode_Execute()
+// src: XBOX_RETAIL_PDB 0x005b7000
+// pdb: Script::ToggleDemigodModeFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bIsDemigod
+char __cdecl Script_ToggleDemigodModeFunction()
 {
     unsigned char bIsDemigod = GetDemigodeMode();
     SetDemiGodMode(!bIsDemigod);
@@ -4237,8 +4583,10 @@ struct CP_008c48d0 {
 __declspec(thread) unsigned char g_tls_flag;
 
 // @fnv 0x005b9370
-// src: EXE 0x005b9370
-bool __cdecl Cmd_ToggleBorders_Execute(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&)
+// src: XBOX_RETAIL_PDB 0x005b9370
+// pdb: Script::ToggleBordersFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_ToggleBordersFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&)
 {
     DAT_011cae44 ^= 1;
     if (!reinterpret_cast<CP_008c48d0*>(g_TES)->GetPrevPath()) {
@@ -4259,8 +4607,10 @@ struct FUN_00456aa0_Class
 };
 
 // @fnv 0x005b9500
-// src: EXE 0x005b9500
-bool __cdecl Cmd_TogglePrimitives_Execute()
+// src: XBOX_RETAIL_PDB 0x005b9500
+// pdb: Script::TogglePrimitivesFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_TogglePrimitivesFunction()
 {
     ((FUN_00456aa0_Class*)g_TES)->TES_TogglePrimitive();
     return true;
@@ -4277,6 +4627,7 @@ struct FUN_005bbc10_Class {
 
 // @fnv 0x005bbc10
 // src: XBOX_PDB 0x005bbc10
+// pdb: BSPortalGraph::RemoveAllOccluders | TESScriptFunctions.obj | debug, upstream name already matches, high
 void FUN_005bbc10_Class::BSPortalGraph_RemoveAllOccluders()
 {
     ((M788*)((char*)this + 8))->FUN_004ed900();
@@ -4309,6 +4660,9 @@ extern "C" int _ref_00ec408c();
 
 // @fnv 0x005c2460
 // src: EXE 0x005c2460
+// pdb: Script::StreamMusicFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fileName
 bool __cdecl Cmd_StreamMusic_Execute(const ScriptParameter* params, const char* name, TESObjectREFR* source, TESObjectREFR* target, Script* script, ScriptLocals* locals, double& result, unsigned int& errorOffset)
 {
     char buf[0x200];
@@ -4319,8 +4673,11 @@ bool __cdecl Cmd_StreamMusic_Execute(const ScriptParameter* params, const char* 
 extern void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005c3c90
-// src: EXE 0x005c3c90
-bool Cmd_Show_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005c3c90
+// pdb: Script::ShowFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fValue
+bool Script_ShowFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     float fValue = 0.0f;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &fValue))
@@ -4336,6 +4693,9 @@ extern bool __cdecl Script_GetIsVoiceTypeConditionFunction(TESObjectREFR*, void*
 
 // @fnv 0x005c4a10
 // src: EXE 0x005c4a10
+// pdb: Script::GetIsVoiceTypeFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pobject
 bool Cmd_GetIsVoiceType_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* reference, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -4361,33 +4721,41 @@ extern "C" bool __cdecl Script_GetFurnitureMarkerIDConditionFunction(TESObjectRE
 
 // @fnv 0x005c6e50
 // src: EXE 0x005c6e50
+// pdb: Script::GetFurnitureMarkerID | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetFurnitureMarkerID_Execute(const ScriptParameter* aScriptParameter, const char* aString, TESObjectREFR* aSource, TESObjectREFR* aDest, Script* aScript, ScriptLocals* aLocals, double& aResult, unsigned int& aIndex)
 {
     return Script_GetFurnitureMarkerIDConditionFunction(aSource, 0, 0, aResult);
 }
 
-extern "C" bool __cdecl Cmd_IsCloudy_Eval(TESObjectREFR*, void*, void*, double&);
+extern "C" bool __cdecl Script_GetIsCloudyConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005c7390
 // src: EXE 0x005c7390
+// pdb: Script::GetIsCloudy | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_IsCloudy_Execute(const ScriptParameter* apParams, const char* apName, TESObjectREFR* apThisForm, TESObjectREFR* apBaseForm, Script* apSourceScript, ScriptLocals* apLocals, double& afResult, unsigned int& aiStack)
 {
-    return Cmd_IsCloudy_Eval(apThisForm, 0, 0, afResult);
+    return Script_GetIsCloudyConditionFunction(apThisForm, 0, 0, afResult);
 }
 
-extern "C" bool __cdecl Cmd_GetCurrentWeatherPercent_Eval(TESObjectREFR*, void*, void*, double&);
+extern "C" bool __cdecl Script_GetWeatherPercentConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005c7410
 // src: EXE 0x005c7410
+// pdb: Script::GetWeatherPercentFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetCurrentWeatherPercent_Execute(TESObjectREFR* a1, void* a2, TESObjectREFR* a3, void* a4, void* a5, void* a6, double& a7)
 {
-    return Cmd_GetCurrentWeatherPercent_Eval(a3, 0, 0, a7);
+    return Script_GetWeatherPercentConditionFunction(a3, 0, 0, a7);
 }
 
 extern "C" void __cdecl Script_GetArmorRatingConditionFunction(void*, void*, void*, void*);
 
 // @fnv 0x005c84f0
 // src: EXE 0x005c84f0
+// pdb: Script::GetArmorRating | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void Cmd_GetArmorRating_Execute(void* p1, void* p2, void* p3, void* p4, void* p5, void* p6, void* p7)
 {
     Script_GetArmorRatingConditionFunction(p3, 0, 0, p7);
@@ -4397,6 +4765,8 @@ bool __cdecl Script_IsPCAMurdererConditionFunction(TESObjectREFR*, void*, void*,
 
 // @fnv 0x005cd630
 // src: EXE 0x005cd630
+// pdb: Script::IsPCAMurdererFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_IsPCAMurderer_Execute(const ScriptParameter* param, const char* name, TESObjectREFR* refr, TESObjectREFR* refr2, Script* script, ScriptLocals* locals, double& result, unsigned int& index)
 {
     return Script_IsPCAMurdererConditionFunction(0, 0, 0, result);
@@ -4406,7 +4776,7 @@ bool __cdecl Cmd_IsPCAMurderer_Execute(const ScriptParameter* param, const char*
 // src: XBOX_PDB 0x005ce9d0
 void Actor::SetForceSneak(bool value)
 {
-    ActorReferenceData = value;
+    bForceSneak = value;
 }
 
 class PC7d;
@@ -4430,6 +4800,9 @@ extern PC7d* g_thePlayer;
 
 // @fnv 0x005cefe0
 // src: EXE 0x005cefe0
+// pdb: Script::ShowSPECIALBookMenu | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ispecialPoints
 bool __cdecl Cmd_Shared_Execute_5cefe0(const ScriptParameter* parameters, const char* scriptData,
                           TESObjectREFR* thisObject, TESObjectREFR* container,
                           Script* script, ScriptLocals* locals, double& result,
@@ -4448,13 +4821,15 @@ bool __cdecl Cmd_Shared_Execute_5cefe0(const ScriptParameter* parameters, const 
     return true;
 }
 
-bool Cmd_GetIsGhost_Eval(TESObjectREFR*, void*, void*, double&);
+bool Script_GetGhostConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005cff90
 // src: EXE 0x005cff90
+// pdb: Script::GetGhostFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetIsGhost_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h)
 {
-    return Cmd_GetIsGhost_Eval(c, 0, 0, g);
+    return Script_GetGhostConditionFunction(c, 0, 0, g);
 }
 
 bool __cdecl Script_IsTimePassingConditionFunction(TESObjectREFR*, void*, void*, double&);
@@ -4478,33 +4853,38 @@ void FUN_005d1590_Class::PlayerCharacter_SetCanWait(unsigned char bValue)
     ((unsigned char*)this)[0x66e] = bValue;
 }
 
-extern "C" bool __cdecl Cmd_GetArmorRatingUpperBody_Eval(TESObjectREFR*, void*, void*, double&);
+extern "C" bool __cdecl Script_GetArmorRatingUpperConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005d15b0
 // src: EXE 0x005d15b0
 bool Cmd_GetArmorRatingUpperBody_Execute(TESObjectREFR* a, void* b, TESObjectREFR* c, void* d, void* e, void* f, double& g)
 {
-    return Cmd_GetArmorRatingUpperBody_Eval(c, 0, 0, g);
+    return Script_GetArmorRatingUpperConditionFunction(c, 0, 0, g);
 }
 
-extern "C" bool __cdecl Cmd_IsActorAVictim_Eval(double& afResult, int a1, int a2, unsigned int& aiStackIndex);
+extern "C" bool __cdecl Script_IsActorVictimConditionFunction(double& apRefObject, int apParam1, int apParam2, unsigned int& afReturnValue);
 
 // @fnv 0x005d2610
 // src: EXE 0x005d2610
+// pdb: Script::IsActorVictimFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_IsActorAVictim_Execute(int a1, int a2, double& afResult, int a4, int a5, int a6, unsigned int& aiStackIndex)
 {
-    return Cmd_IsActorAVictim_Eval(afResult, 0, 0, aiStackIndex);
+    return Script_IsActorVictimConditionFunction(afResult, 0, 0, aiStackIndex);
 }
 
 namespace fnv_005d2800 {
 
 
 // @fnv 0x005d2800
-// src: EXE 0x005d2800
-bool __cdecl Cmd_TriggerHitShader_Execute(const ScriptParameter* params, const char* funcName, TESObjectREFR* ref, TESObjectREFR* target, Script* script, ScriptLocals* locals, double& result, unsigned int& index)
+// src: XBOX_RETAIL_PDB 0x005d2800
+// pdb: Script::TriggerHitShaderFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fstrength
+bool __cdecl Script_TriggerHitShaderFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     float scale = 1.0f;
-    if (!ExtractArgs(params, funcName, &index, ref, target, script, locals, &scale))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &scale))
     {
         return 0;
     }
@@ -4524,6 +4904,9 @@ struct FUN_00ca88c0_T {
 extern "C" void __cdecl hkpRigidBody_setMass(void*, float);
 
 // @fnv 0x005d3ce0
+// pdb: bhkRigidBody::SetMass | TESScriptFunctions.obj | debug, call graph, medium
+// pdb params: afMass
+// pdb locals: pb
 void RigidBodyTimeScaleAccess::SetTimeScale(float f) {
     void* obj = this->GetHavokBody();
     if (obj)
@@ -4534,6 +4917,9 @@ extern "C" void __cdecl Renderer_SetGamma(float);
 
 // @fnv 0x005d4600
 // src: EXE 0x005d4600
+// pdb: Script::SetGamma | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fgamma
 bool __cdecl Cmd_SetGamma_Execute(const ScriptParameter* params, const char* name, TESObjectREFR* refr, TESObjectREFR* refr2, Script* script, ScriptLocals* locals, double& val, unsigned int& index)
 {
     float f = 0.0f;
@@ -4550,6 +4936,8 @@ __declspec(thread) unsigned char g_tlsDebugFlag;
 
 // @fnv 0x005d4af0
 // src: XBOX_PDB 0x005d4af0
+// pdb: Script::IsPlayerMovingIntoNewSpaceFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_IsPlayerMovingIntoNewSpaceFunction(const ScriptParameter*, const char*, TESObjectREFR* apRefObject, TESObjectREFR*, Script*, ScriptLocals*, double& afReturnValue, unsigned int&)
 {
     IsPlayerEnteringSpaceConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -4584,6 +4972,8 @@ extern BSAudio* g_osGlobals;
 
 // @fnv 0x005d7850
 // src: XBOX_PDB 0x005d7850
+// pdb: Script::ToggleDecalRendering | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleDecalRendering()
 {
     if (FOPipboyManager_GetPipBoyManagerReset(reinterpret_cast<char*>(g_osGlobals->Main_QDrawWorldAccum())))
@@ -4612,6 +5002,8 @@ struct ScriptHelper
 
 // @fnv 0x005d7940
 // src: EXE 0x005d7940
+// pdb: Script::GetIsMovingFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_IsMoving_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     ScriptHelper::GetActorSexConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -4636,7 +5028,7 @@ int __cdecl BSTestObjects_GetColor(unsigned int a)
     return (int)&DAT_01203258 + ((a % 10) << 4);
 }
 
-extern "C" bool __cdecl Script_GetDialogueEmotionValueConditionFunction(TESObjectREFR* apThis, void* apArg1, void* apArg2, double& afValue);
+extern "C" bool __cdecl Script_GetDialogueEmotionValueConditionFunction(TESObjectREFR* apThis, void* apParam1, void* apParam2, double& afReturnValue);
 
 // @fnv 0x005d8620
 // src: EXE 0x005d8620
@@ -4668,7 +5060,7 @@ unsigned int FUN_005da7d0_Class::TESRace_GetYoungerRace()
     return ((unsigned int*)this)[0x508 / 4];
 }
 
-extern "C" bool __cdecl Script_GetRadiationLevelConditionFunction(TESObjectREFR* apSourceObject, void* apLocalData, void* apScript, double& afResult);
+extern "C" bool __cdecl Script_GetRadiationLevelConditionFunction(TESObjectREFR* apSourceObject, void* apParam1, void* apParam2, double& afReturnValue);
 
 // @fnv 0x005daaa0
 // src: EXE 0x005daaa0
@@ -4711,19 +5103,20 @@ char Cmd_TriggerLODApocalypse_Execute()
 
 struct FUN_005dd7d0_Class
 {
-    void ForwardCall_005dd7d0();
+    void NiTPrimitiveArray_TESTexture_dtor();
 };
 
 struct FUN_005e03a0_Class
 {
-    void SetVirtualTable_005e03a0();
+    void NiTArray_TESTexture_NiTMallocInterface_TESTexture_dtor();
 };
 
 // @fnv 0x005dd7d0
-// src: GUESS 0x005dd7d0 (confidence: low)
-void __thiscall FUN_005dd7d0_Class::ForwardCall_005dd7d0()
+// src: XBOX_DEBUG_PDB 0x005dd7d0
+// pdb: NiTPrimitiveArray<TESTexture *>::~NiTPrimitiveArray<TESTexture *> | TESScriptFunctions.obj | debug, call graph (shared callers), high
+void __thiscall FUN_005dd7d0_Class::NiTPrimitiveArray_TESTexture_dtor()
 {
-    reinterpret_cast<FUN_005e03a0_Class*>(this)->SetVirtualTable_005e03a0();
+    reinterpret_cast<FUN_005e03a0_Class*>(this)->NiTArray_TESTexture_NiTMallocInterface_TESTexture_dtor();
 }
 
 extern void* _pme;
@@ -4741,13 +5134,13 @@ void __thiscall FUN_005de380_Class::HUDMainMenu_KillQuestUpdates()
         *(char*)((char*)_pme + 0x254) = 1;
 }
 
-bool __cdecl Cmd_IsAlwaysHardcore_Eval(TESObjectREFR*, void*, void*, double&);
+bool __cdecl Script_IsAlwaysHardcoreConditionalFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005dea80
 // src: EXE 0x005dea80
 bool Cmd_IsAlwaysHardcore_Execute(const ScriptParameter* a_param, const char* a_name, TESObjectREFR* a_refr, TESObjectREFR* a_refr2, Script* a_script, ScriptLocals* a_locals, double& a_double, unsigned int& a_uint)
 {
-    return Cmd_IsAlwaysHardcore_Eval(a_refr, 0, 0, a_double);
+    return Script_IsAlwaysHardcoreConditionalFunction(a_refr, 0, 0, a_double);
 }
 
 extern "C" void* DAT_0103d450;
@@ -4762,6 +5155,7 @@ struct FUN_005e0560 : AX {
 };
 
 // @fnv 0x005e0560
+// pdb: BSSimpleArray<TESNPC *,1024>::BSSimpleArray<TESNPC *,1024> | TESScriptFunctions.obj | debug, call graph, high
 FUN_005e0560::FUN_005e0560()
 {
     this->vtable = &DAT_0103d450;
@@ -4774,6 +5168,8 @@ extern int DAT_011e0e80;
 void __cdecl DebugLog(const char*);
 // @fnv 0x005b5cc0
 // src: XBOX_PDB 0x005b5cc0
+// pdb: Script::ShowWhoDetectsPlayer | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ShowWhoDetectsPlayer()
 {
     ((SkyObject*)&DAT_011e0e80)->Update(1, -1);
@@ -4787,8 +5183,10 @@ extern int DAT_011e0e80;
 extern void __cdecl DebugLog(const char*);
 
 // @fnv 0x005b5cf0
-// src: EXE 0x005b5cf0
-bool __cdecl Cmd_PrintAiList_Execute()
+// src: XBOX_RETAIL_PDB 0x005b5cf0
+// pdb: Script::PrintAILists | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_PrintAILists()
 {
     ((SkyObject*)&DAT_011e0e80)->Update((Sky*)0, -1);
     DebugLog("Ai Lists Printed");
@@ -4841,13 +5239,13 @@ void FUN_005b9f80::SetScanlines(float scale)
     scanlineScale = scale;
 }
 
-void __cdecl Cmd_HasLoaded3D_Eval(void* p0, void* p1, void* p2, void* p3);
+void __cdecl Script_HasLoaded3DConditionFunction(void* p0, void* apParam1, void* apParam2, void* afReturnValue);
 
 // @fnv 0x005bd880
 // src: EXE 0x005bd880
 void __cdecl Cmd_HasLoaded3D_Execute(void* p0, void* p1, void* p2, void* p3, void* p4, void* p5, void* p6)
 {
-    Cmd_HasLoaded3D_Eval(p2, 0, 0, p6);
+    Script_HasLoaded3DConditionFunction(p2, 0, 0, p6);
 }
 
 extern "C" bool __cdecl Script_GetFatiguePercentageConditionFunction(TESObjectREFR*, void*, void*, double&);
@@ -4871,6 +5269,7 @@ struct FUN_005bf820_Class {
 
 // @fnv 0x005bf820
 // src: COMMUNITY 0x005bf820
+// pdb: ShadowSceneLight::GetShadowScene | TESScriptFunctions.obj | debug, upstream name already matches, high
 unsigned int FUN_005bf820_Class::ShadowSceneLight_GetShadowScene() const
 {
     return static_cast<unsigned int>(f);
@@ -4883,6 +5282,7 @@ struct FUN_005c0860Class
 };
 // @fnv 0x005c0860
 // src: XBOX_PDB 0x005c0860
+// pdb: bhkCharacterController::QIsFlying | TESScriptFunctions.obj | debug, upstream name already matches, high
 bool FUN_005c0860Class::bhkCharacterController_QIsFlying()
 {
     return bhkCharacterController_GetState((char*)this) == 4;
@@ -4892,6 +5292,8 @@ bool __cdecl Script_GetIsLockBrokenConditionFunction(TESObjectREFR*, void*, void
 
 // @fnv 0x005c4920
 // src: EXE 0x005c4920
+// pdb: Script::GetIsLockBrokenFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetIsLockBroken_Execute(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -4915,6 +5317,8 @@ extern "C" bool __cdecl Script_GetVampireConditionFunction(TESObjectREFR*, void*
 
 // @fnv 0x005c6800
 // src: EXE 0x005c6800
+// pdb: Script::GetVampire | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetVampire_Execute(const ScriptParameter*, const char*, TESObjectREFR* refr, TESObjectREFR*, Script*, ScriptLocals*, double& result, unsigned int&)
 {
     return Script_GetVampireConditionFunction(refr, (void*)0, 0, result);
@@ -4925,6 +5329,9 @@ extern "C" void* g_thePlayer;
 bool __cdecl Script_SameRaceConditionFunction(void*, void*, void*, void*);
 // @fnv 0x005c6990
 // src: EXE 0x005c6990
+// pdb: Script::SameRaceAsPC | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargActor
 bool Cmd_SameRaceAsPC_Execute(TESObjectREFR* a1, TESObjectREFR* a2, TESObjectREFR* a3,
     TESObjectREFR* a4, TESObjectREFR* a5, TESObjectREFR* a6, TESObjectREFR* a7,
     TESObjectREFR* a8)
@@ -4949,6 +5356,8 @@ bool __cdecl Script_GetAlarmedConditionFunction(TESObjectREFR*, void*, void*, do
 
 // @fnv 0x005c7350
 // src: EXE 0x005c7350
+// pdb: Script::GetAlarmed | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetAlarmed_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     return Script_GetAlarmedConditionFunction(thisObject, 0, 0, result);
@@ -4958,6 +5367,8 @@ extern "C" void __cdecl Script_GetWindSpeedConditionFunction(int, int, int, int)
 
 // @fnv 0x005c73f0
 // src: EXE 0x005c73f0
+// pdb: Script::GetWindSpeedFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_GetWindSpeed_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
     Script_GetWindSpeedConditionFunction(a3, 0, 0, a7);
@@ -4976,6 +5387,8 @@ bool __cdecl Script_GetXPForNextLevelConditionFunction(TESObjectREFR*, void*, vo
 
 // @fnv 0x005c83d0
 // src: EXE 0x005c83d0
+// pdb: Script::GetXPForNextLevelFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetXPForNextLevel_Execute(const ScriptParameter* params, const char* scriptData,
                    TESObjectREFR* thisObject, TESObjectREFR* container,
                    Script* script, ScriptLocals* locals, double& result,
@@ -4988,6 +5401,8 @@ extern "C" void __cdecl Cmd_GetPlantedExplosive_Eval(void*, void*, void*, void*)
 
 // @fnv 0x005c9720
 // src: EXE 0x005c9720
+// pdb: Script::GetPlantedExplosiveFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_GetPlantedExplosive_Execute(void* a, void* b, void* c, void* d, void* e, void* f, void* g)
 {
     Cmd_GetPlantedExplosive_Eval(c, 0, 0, g);
@@ -4999,6 +5414,7 @@ struct S4 { S5* GetEffect_004ebbc0(int); };
 struct S3 { void ImageSpaceManager_GetHDREmissiveMult(); };
 // @fnv 0x005c9b30
 // src: XBOX_PDB 0x005c9b30
+// pdb: ImageSpaceManager::GetHDREmissiveMult | TESScriptFunctions.obj | debug, upstream name already matches, high
 void S3::ImageSpaceManager_GetHDREmissiveMult()
 {
     ((S4*)this)->GetEffect_004ebbc0(1)->ImageSpaceEffectHDR_GetEmissiveMult();
@@ -5025,6 +5441,7 @@ struct FUN_005c9b70_Class {
 };
 // @fnv 0x005c9b70
 // src: XBOX_PDB 0x005c9b70
+// pdb: ImageSpaceManager::GetHDRBlurRadius | TESScriptFunctions.obj | debug, upstream name already matches, high
 void FUN_005c9b70_Class::ImageSpaceManager_GetHDRBlurRadius()
 {
     ((S4*)this)->GetEffect_004ebbc0(1)->ImageSpaceEffectHDR_GetBlurRadius();
@@ -5057,6 +5474,7 @@ struct S4 { S5* GetEffect_004ebbc0(int); };
 struct FUN_005c9bb0_Class { void ImageSpaceManager_GetHDRBrightClamp(); };
 // @fnv 0x005c9bb0
 // src: XBOX_PDB 0x005c9bb0
+// pdb: ImageSpaceManager::GetHDRBrightClamp | TESScriptFunctions.obj | debug, upstream name already matches, high
 void FUN_005c9bb0_Class::ImageSpaceManager_GetHDRBrightClamp()
 {
     ((S4*)this)->GetEffect_004ebbc0(1)->ImageSpaceEffectHDR_GetBrightClamp();
@@ -5094,6 +5512,7 @@ struct S4 { S5* GetEffect_004ebbc0(int); };
 struct S6 : S4 { void ImageSpaceManager_GetHDREyeAdaptSpeed(); };
 // @fnv 0x005c9c30
 // src: XBOX_PDB 0x005c9c30
+// pdb: ImageSpaceManager::GetHDREyeAdaptSpeed | TESScriptFunctions.obj | debug, upstream name already matches, high
 void S6::ImageSpaceManager_GetHDREyeAdaptSpeed()
 {
     GetEffect_004ebbc0(1)->ImageSpaceEffectHDR_GetEyeAdaptSpeed();
@@ -5128,6 +5547,7 @@ struct FUN_005c9c70Class
 };
 // @fnv 0x005c9c70
 // src: XBOX_PDB 0x005c9c70
+// pdb: ImageSpaceManager::GetHDRTargetLUM | TESScriptFunctions.obj | debug, upstream name already matches, high
 float FUN_005c9c70Class::ImageSpaceManager_GetHDRTargetLUM()
 {
     return ((FUN_005c9c90*)((S4*)this)->GetEffect_004ebbc0(1))->Method();
@@ -5219,6 +5639,8 @@ bool __cdecl Cmd_GetCurrentAIPackage_Execute(const ScriptParameter* parameters, 
 extern "C" bool __cdecl Script_IsGuardConditionFunction(TESObjectREFR*, void*, void*, double&);
 // @fnv 0x005cc370
 // src: EXE 0x005cc370
+// pdb: Script::IsGuard | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_IsGuard_Execute(const ScriptParameter* p, const char* s, TESObjectREFR* a, TESObjectREFR* b, Script* c, ScriptLocals* d, double& e, unsigned int& f)
 {
     if (!a)
@@ -5250,7 +5672,7 @@ bool Cmd_GetTrespassWarningLevel_Execute(const ScriptParameter* p1, const char* 
     return true;
 }
 
-bool __cdecl Script_IsTrespassingConditionFunction(TESObjectREFR* self, void* a, void* b, double& result);
+bool __cdecl Script_IsTrespassingConditionFunction(TESObjectREFR* self, void* a, void* b, double& afReturnValue);
 
 // @fnv 0x005cc460
 // src: EXE 0x005cc460
@@ -5287,6 +5709,8 @@ extern "C" bool __cdecl Script_IsSwimmingConditionFunction(TESObjectREFR*, void*
 
 // @fnv 0x005cd9f0
 // src: EXE 0x005cd9f0
+// pdb: Script::IsSwimming | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_IsSwimming_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -5297,12 +5721,12 @@ bool Cmd_IsSwimming_Execute(const ScriptParameter* parameters, const char* scrip
     return Script_IsSwimmingConditionFunction(thisObject, 0, 0, result);
 }
 
-extern "C" bool __cdecl Cmd_GetAmountSoldStolen_Eval(void*, void*, void*, double*);
+extern "C" bool __cdecl Script_GetAmountStolenSoldConditionFunction(void*, void*, void*, double*);
 // @fnv 0x005cdea0
 // src: EXE 0x005cdea0
 bool __cdecl Cmd_GetAmountSoldStolen_Execute(void* a, void* b, void* c, void* d, void* e, void* f, double* g)
 {
-    Cmd_GetAmountSoldStolen_Eval(c, 0, 0, g);
+    Script_GetAmountStolenSoldConditionFunction(c, 0, 0, g);
     return true;
 }
 
@@ -5314,6 +5738,8 @@ struct FUN_005ce040_class
 
 // @fnv 0x005ce040
 // src: GUESS 0x005ce040 (confidence: low)
+// pdb: TESFaction::SetPCExpelled | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: abVal
 void FUN_005ce040_class::ForwardCall_005ce040(bool b)
 {
     FUN_005fc970(8, b);
@@ -5351,16 +5777,16 @@ bool __cdecl Cmd_GetRestrained_Execute(const ScriptParameter* parameters, const 
     return Script_GetRestrainedConditionFunction(thisObject, 0, 0, result);
 }
 
-bool Cmd_GetOffersServicesNow_Eval(TESObjectREFR*, void*, void*, unsigned int*);
+bool Script_GetOffersServiceConditionFunction(TESObjectREFR*, void*, void*, unsigned int*);
 
 // @fnv 0x005d0c70
 // src: EXE 0x005d0c70
 bool Cmd_GetOffersServicesNow_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, unsigned int& opcodeOffset, double& result)
 {
-    return Cmd_GetOffersServicesNow_Eval(thisObject, 0, 0, &opcodeOffset);
+    return Script_GetOffersServiceConditionFunction(thisObject, 0, 0, &opcodeOffset);
 }
 
-bool __cdecl Cmd_IsXBox_Eval(TESObjectREFR*, void*, void*, double&);
+bool __cdecl Script_IsXboxConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005d1110
 // src: EXE 0x005d1110
@@ -5369,16 +5795,16 @@ bool Cmd_IsXBox_Execute(const ScriptParameter* parameters, const char* scriptDat
                   Script* script, ScriptLocals* locals, double& result,
                   unsigned int& opcodeOffset)
 {
-    return Cmd_IsXBox_Eval(thisObject, 0, 0, result);
+    return Script_IsXboxConditionFunction(thisObject, 0, 0, result);
 }
 
-bool __cdecl Cmd_IsPS3_Eval(TESObjectREFR*, void*, void*, unsigned int&);
+bool __cdecl Script_IsPS3ConditionFunction(TESObjectREFR*, void*, void*, unsigned int&);
 
 // @fnv 0x005d1130
 // src: EXE 0x005d1130
 bool __cdecl Cmd_IsPS3_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, unsigned int& h, double& g)
 {
-    return Cmd_IsPS3_Eval(c, 0, 0, h);
+    return Script_IsPS3ConditionFunction(c, 0, 0, h);
 }
 
 extern "C" void __cdecl Script_IsActorUsingATorchConditionFunction(void*, void*, void*, void*);
@@ -5394,6 +5820,8 @@ bool __cdecl Script_IsSneakingConditionFunction(TESObjectREFR*, void*, void*, do
 
 // @fnv 0x005d1a30
 // src: EXE 0x005d1a30
+// pdb: Script::IsSneakingFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_IsSneaking_Execute(void* a, void* b, void* c, void* d, void* e, void* f, double& g)
 {
     Script_IsSneakingConditionFunction((TESObjectREFR*)c, 0, 0, g);
@@ -5404,6 +5832,8 @@ bool __cdecl Script_IsRunningConditionFunction(TESObjectREFR*, void*, void*, dou
 
 // @fnv 0x005d1a50
 // src: EXE 0x005d1a50
+// pdb: Script::IsRunningFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_IsRunning_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     Script_IsRunningConditionFunction(thisObject, 0, 0, result);
@@ -5414,28 +5844,34 @@ extern "C" void __cdecl Script_GetFriendHitConditionFunction(TESObjectREFR*, int
 
 // @fnv 0x005d1a70
 // src: EXE 0x005d1a70
+// pdb: Script::GetFriendHitFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetFriendHit_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, unsigned int opcodeOffset)
 {
     Script_GetFriendHitConditionFunction(thisObject, 0, 0, opcodeOffset);
     return true;
 }
 
-void Cmd_GetIdleDoneOnce_Eval(void* a, void* b, void* c, void* d);
+void Script_GetIdleDoneOnceConditionFunction(void* a, void* b, void* c, void* d);
 
 // @fnv 0x005d2630
 // src: EXE 0x005d2630
+// pdb: Script::GetIdleDoneOnceFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void Cmd_GetIdleDoneOnce_Execute(void* a, void* b, void* c, void* d, void* e, void* f, void* g)
 {
-    Cmd_GetIdleDoneOnce_Eval(c, 0, 0, g);
+    Script_GetIdleDoneOnceConditionFunction(c, 0, 0, g);
 }
 
-extern "C" void __cdecl Cmd_GetLastPlayerAction_Eval(int, int, int, int);
+extern "C" void __cdecl Script_GetLastPlayerActionConditionFunction(int, int, int, int);
 
 // @fnv 0x005d4c40
 // src: EXE 0x005d4c40
+// pdb: Script::GetLastPlayerActionFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_GetLastPlayerAction_Execute(int a, int b, int c, int d, int e, int f, int g)
 {
-    Cmd_GetLastPlayerAction_Eval(c, 0, 0, g);
+    Script_GetLastPlayerActionConditionFunction(c, 0, 0, g);
 }
 
 struct FUN_005d5120_StandIn
@@ -5466,6 +5902,8 @@ __declspec(thread) TLSDebugFlag g_tlsDebug;
 
 // @fnv 0x005d56d0
 // src: XBOX_PDB 0x005d56d0
+// pdb: Script::IsPC1stPersonFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_IsPC1stPersonFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     Script_IsPC1stPersonConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -5479,6 +5917,8 @@ bool __cdecl Script_IsPC1stPersonFunction(const ScriptParameter* apParameters, c
 void __cdecl Cmd_GetGroupTargetCount_Eval(int a, int b, int c, int d);
 // @fnv 0x005d7c00
 // src: EXE 0x005d7c00
+// pdb: Script::GetGroupTargetCountFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_GetGroupTargetCount_Execute(int a, int b, int c, int d, int e, int f, int g)
 {
     Cmd_GetGroupTargetCount_Eval(c, 0, 0, g);
@@ -5538,6 +5978,8 @@ bool __cdecl Script_GetDestructionStageConditionFunction(TESObjectREFR*, void*, 
 
 // @fnv 0x005d9aa0
 // src: EXE 0x005d9aa0
+// pdb: Script::GetDestructionStageFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetDestructionStage_Execute(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -5609,36 +6051,40 @@ bool Cmd_IsGoreDisabled_Execute(const ScriptParameter* params, const char* scrip
 }
 
 struct FUN_005dd7b0_class {
-    void ReleaseStorage_005e0340();
-    void ForwardCall_005dd7b0();
+    void NiTArray_TESModel_NiTMallocInterface_TESModel_dtor();
+    void NiTPrimitiveArray_TESModel_dtor();
 };
 // @fnv 0x005dd7b0
-// src: GUESS 0x005dd7b0 (confidence: low)
-void FUN_005dd7b0_class::ForwardCall_005dd7b0()
+// src: XBOX_DEBUG_PDB 0x005dd7b0
+// pdb: NiTPrimitiveArray<TESModel *>::~NiTPrimitiveArray<TESModel *> | TESScriptFunctions.obj | debug, call graph (shared callers), high
+void FUN_005dd7b0_class::NiTPrimitiveArray_TESModel_dtor()
 {
-    ReleaseStorage_005e0340();
+    NiTArray_TESModel_NiTMallocInterface_TESModel_dtor();
 }
 
 struct FUN_005e0460_class {
-    void UpdateFields_005e0460();
+    void NiTArray_char_const_NiTMallocInterface_char_const_dtor();
 };
 struct FUN_005dd7f0_class : public FUN_005e0460_class {
-    void NiTPrimitiveArray_char_const_Free();
+    void NiTPrimitiveArray_char_const_dtor();
 };
 // @fnv 0x005dd7f0
-// src: COMMUNITY 0x005dd7f0
-void FUN_005dd7f0_class::NiTPrimitiveArray_char_const_Free()
+// src: XBOX_DEBUG_PDB 0x005dd7f0
+// pdb: NiTPrimitiveArray<char const *>::~NiTPrimitiveArray<char const *> | TESScriptFunctions.obj | debug, call graph (shared callers), high
+void FUN_005dd7f0_class::NiTPrimitiveArray_char_const_dtor()
 {
-    UpdateFields_005e0460();
+    NiTArray_char_const_NiTMallocInterface_char_const_dtor();
 }
 
-bool __cdecl Cmd_IsHardcore_Eval(TESObjectREFR*, void*, void*, double&);
+bool __cdecl Script_IsHardcoreConditionalFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005de900
 // src: EXE 0x005de900
+// pdb: Script::IsHardcoreFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_IsHardcore_Execute(TESObjectREFR* a, TESObjectREFR* b, TESObjectREFR* c, TESObjectREFR* d, TESObjectREFR* e, TESObjectREFR* f, double& g)
 {
-    return Cmd_IsHardcore_Eval(c, 0, 0, g);
+    return Script_IsHardcoreConditionalFunction(c, 0, 0, g);
 }
 
 
@@ -5653,6 +6099,7 @@ void TESChallenge::RemoveRecurringFromChallenge(bool b)
 
 // @fnv 0x005e0190
 // src: GUESS 0x005e0190 (confidence: medium)
+// pdb: BlendSettingCollection::~BlendSettingCollection | XBlendSettings.obj | debug, object-file run extension, low
 Setting& Setting::AssignStringValue(const char* name)
 {
     SetStringAndPromoteKeyOwnership(name);
@@ -5666,6 +6113,8 @@ struct FUN_005e0430 {
     FUN_005e0430* __thiscall Init(void* a, void* b);
 };
 // @fnv 0x005e0430
+// pdb: NiTPrimitiveArray<TESTexture *>::NiTPrimitiveArray<TESTexture *> | TESScriptFunctions.obj | debug, call graph, low
+// pdb params: uiMaxSize, uiGrowBy
 FUN_005e0430* __thiscall FUN_005e0430::Init(void* a, void* b)
 {
     FUN_005e09c0(a, b);
@@ -5681,6 +6130,7 @@ struct S_004b1070
 };
 // @fnv 0x004b1070
 // src: COMMUNITY 0x004b1070
+// pdb: Date::GetDay | Date.obj | retail, upstream name already matches, high
 unsigned short __thiscall S_004b1070::Date_GetDay()
 {
     __int64 q = Date_CalculateFullDate(f0);
@@ -5695,6 +6145,7 @@ struct Str004b10a0
 };
 // @fnv 0x004b10a0
 // src: COMMUNITY 0x004b10a0
+// pdb: Date::GetMonth | Date.obj | retail, upstream name already matches, high
 int Str004b10a0::Date_GetMonth()
 {
     __int64 v = Date_CalculateFullDate(f0);
@@ -5706,13 +6157,17 @@ int Str004b10a0::Date_GetMonth()
 __declspec(thread) bool g_bDebugLog;
 void __cdecl DebugLog(const char*, ...);
 // @fnv 0x0059bfa0
-bool GetDistanceCondition(TESObjectREFR* pSource, void* pTarget, void* pUnused, double& distance)
+// src: XBOX_RETAIL_PDB 0x0059bfa0
+// pdb: Script::GetDistanceConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pTarget
+bool Script_GetDistanceConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    void* pTarget2 = pTarget;
-    if (pSource && pTarget2)
-        distance = pSource->GetDistanceToReference(static_cast<TESObjectREFR*>(pTarget2), true, false);
+    void* pTarget2 = apParam1;
+    if (apRefObject && pTarget2)
+        afReturnValue = apRefObject->GetDistanceToReference(static_cast<TESObjectREFR*>(pTarget2), true, false);
     if (g_bDebugLog)
-        DebugLog("GetDistance >> %0.2f", distance);
+        DebugLog("GetDistance >> %0.2f", afReturnValue);
     return true;
 }
 
@@ -5738,6 +6193,9 @@ extern double _gModifierZero;
 
 // @fnv 0x005b78a0
 // src: EXE 0x005b78a0
+// pdb: Script::TestSeenData | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell, UpdateData, pnode, pdata, coord, frot, rot, x, y
 bool Cmd_TestSeenData_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     NiNode* pNode = new NiNode(0);
@@ -5813,6 +6271,9 @@ struct FUN_005c1fe0_Spell
 
 // @fnv 0x005c1fe0
 // src: EXE 0x005c1fe0
+// pdb: Script::CastImmediateOnSelfFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pSpell, pcaster, ptarget, pparentCell
 bool Cmd_CastImmediateOnSelf_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
 {
     FUN_005c1fe0_Spell* spell = 0;
@@ -5824,7 +6285,7 @@ bool Cmd_CastImmediateOnSelf_Execute(const ScriptParameter* paramInfo, const cha
         MagicCaster* caster = thisObj->GetMagicCaster();
         // The shared 0x67 slot has no typed magic-target return declaration.
         TESObjectREFR* targetVal = reinterpret_cast<TESObjectREFR* (__thiscall*)(TESObjectREFR*)>((*reinterpret_cast<void***>(thisObj))[0x67])(thisObj);
-        caster->RemoveCastingArt();
+        caster->InterruptCast();
         TESObjectCELL* pCell8 = (TESObjectCELL*)((BSOcclusionPlane*)thisObj)->GetCullResult();
         if (pCell8 && ((TES*)g_TES)->IsCellBuffered(pCell8, true) && ((TES*)g_TES)->IsCellBuffered(pCell8, false))
             caster->CastMagicItem((MagicItem*)spell, false, (MagicTarget*)targetVal, 1.0f, false);
@@ -5851,6 +6312,7 @@ struct CalleeObj
 };
 // @fnv 0x005c53f0
 // src: COMMUNITY 0x005c53f0
+// pdb: hkpWorldRayCastOutput::hasHit | TESScriptFunctions.obj | debug, upstream name already matches, high
 CalleeObj* CalleeObj::hkpWorldRayCastOutput_hasHit(CalleeObj* a)
 {
     a->UpdateState_00622570(m50 != 0);
@@ -5861,6 +6323,9 @@ bool __cdecl Script_SameFactionConditionFunction(TESObjectREFR*, void*, void*, d
 extern TESObjectREFR* _g_thePlayer;
 // @fnv 0x005c6960
 // src: EXE 0x005c6960
+// pdb: Script::SameFactionAsPC | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargActor
 bool __cdecl Cmd_SameFactionAsPC_Execute(const ScriptParameter* a1, const char* a2, TESObjectREFR* a3, TESObjectREFR* a4, Script* a5, ScriptLocals* a6, double& a7, unsigned int& a8)
 {
     TESObjectREFR* player = _g_thePlayer;
@@ -5871,27 +6336,36 @@ bool __cdecl Script_SameSexConditionFunction(TESObjectREFR*, void*, void*, doubl
 extern TESObjectREFR* _g_thePlayer;
 // @fnv 0x005c69c0
 // src: EXE 0x005c69c0
+// pdb: Script::SameSexAsPC | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargActor
 bool __cdecl Cmd_SameSexAsPC_Execute(const ScriptParameter* a1, const char* a2, TESObjectREFR* a3, TESObjectREFR* a4, Script* a5, ScriptLocals* a6, double& a7, unsigned int& a8)
 {
     TESObjectREFR* player = _g_thePlayer;
     return Script_SameSexConditionFunction(a3, player, 0, a7);
 }
 
-bool __cdecl Cmd_IsChild_Eval(TESObjectREFR*, void*, void*, double&);
+bool __cdecl Script_GetIsChildConditionFunction(TESObjectREFR*, void*, void*, double&);
 // @fnv 0x005c7c70
 // src: EXE 0x005c7c70
+// pdb: Script::GetIsChild | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pobject
 bool __cdecl Cmd_IsChild_Execute(const ScriptParameter* a1, const char* a2, TESObjectREFR* a3, TESObjectREFR* a4, Script* a5, ScriptLocals* a6, double& a7, unsigned int& a8)
 {
     void* loc = 0;
-    return Cmd_IsChild_Eval(a3, loc, 0, a7);
+    return Script_GetIsChildConditionFunction(a3, loc, 0, a7);
 }
 
 namespace fnv_005cad20 {
 struct CameraPathManager { void SetCameraPathEnabled(bool, unsigned int); };
 extern CameraPathManager* g_thePlayer;
 // @fnv 0x005cad20
-// src: EXE 0x005cad20
-bool Cmd_EnablePlayerControls_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005cad20
+// pdb: Script::EnablePlayerControlsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: isneaking, ipov, ipipboy, ibit, imovement, ilooking, irollover, ifighting
+bool Script_EnablePlayerControlsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int iLooking = 0;
     int iPipBoy = 1;
@@ -5902,7 +6376,7 @@ bool Cmd_EnablePlayerControls_Execute(const ScriptParameter* paramInfo, const ch
     int iMovement = 1;
     {
     int uiFlags = 1;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &iPipBoy, &iFighting, &iSneaking, &iRollover, &iPOV, &iMovement, &uiFlags))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &iPipBoy, &iFighting, &iSneaking, &iRollover, &iPOV, &iMovement, &uiFlags))
         return false;
     if (iPipBoy)
         iLooking |= 1;
@@ -5950,7 +6424,7 @@ namespace fnv_005cb8e0 {
 class RegionObjectEntry {
 public:
     TESObjectREFR* GetReference(bool);
-    TESObjectREFR* TESQuestTarget_GetTrackingRef();
+    TESObjectREFR* TESQuestTarget_QTrackingRef();
 };
 struct BSSimpleListTESRaceSize {
     int GetSize();
@@ -5959,7 +6433,7 @@ struct BSSimpleListTESRaceSize {
 };
 struct FUN_005cb8e0_Player {
     TESQuest* PlayerCharacter_GetActiveQuest();
-    BSSimpleListTESRaceSize* PlayerCharacter_GetCurrentQuestTargets();
+    BSSimpleListTESRaceSize* PlayerCharacter_GetCurrentTargetList();
 };
 extern FUN_005cb8e0_Player* g_thePlayer;
 void DebugLog(const char*, ...);
@@ -5967,13 +6441,16 @@ struct SoundH { unsigned int Deallocate(); };
 
 
 // @fnv 0x005cb8e0
-// src: EXE 0x005cb8e0
-bool Cmd_ShowQuestTargets_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005cb8e0
+// pdb: Script::ShowQuestTargetsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargetList, iTargetCount, cDoorName, ptargref, porigtargref, pItem, cRefName, ptrackingRef
+bool Script_ShowQuestTargetsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     if (g_thePlayer->PlayerCharacter_GetActiveQuest())
     {
         DebugLog("Active quest: %s", g_thePlayer->PlayerCharacter_GetActiveQuest()->GetEditorName());
-        BSSimpleListTESRaceSize* pActiveTargetList = g_thePlayer->PlayerCharacter_GetCurrentQuestTargets();
+        BSSimpleListTESRaceSize* pActiveTargetList = g_thePlayer->PlayerCharacter_GetCurrentTargetList();
         if (!pActiveTargetList)
             DebugLog("No current targets");
         else
@@ -5995,7 +6472,7 @@ bool Cmd_ShowQuestTargets_Execute(const ScriptParameter* apParameters, const cha
                 else
                     cRefName.PrintfString("%s (%08X) (carrying %s (%08X))", ((TESForm*)ptargref)->GetName(), ((SoundH*)ptargref)->Deallocate(), ((TESForm*)porigtargref)->GetName(), ((SoundH*)porigtargref)->Deallocate());
             }
-            TESObjectREFR* ptrackingRef = pItem->TESQuestTarget_GetTrackingRef();
+            TESObjectREFR* ptrackingRef = pItem->TESQuestTarget_QTrackingRef();
             if (ptrackingRef && ((TESForm*)((TESObject*)ptrackingRef)->GetNext())->GetFormType() == 0x1c)
                 cDoorName.PrintfString("%s (%08X)", ((TESForm*)ptrackingRef)->GetName(), ((SoundH*)ptrackingRef)->Deallocate());
             DebugLog("Target %d:  Reference: %s, load door: %s", iTargetCount, cRefName.String(), cDoorName.String());
@@ -6023,10 +6500,12 @@ bool __cdecl Cmd_IsInMyOwnedCell_Execute(const ScriptParameter* a, const char* b
 bool __cdecl Script_GetOpenStateConditionFunction(TESObjectREFR*, void*, void*, double&);
 // @fnv 0x005ccaf0
 // src: XBOX_PDB 0x005ccaf0
-bool __cdecl Script_GetOpenStateFunction(const ScriptParameter*, const char*, TESObjectREFR* p, TESObjectREFR*, Script*, ScriptLocals*, double& d, unsigned int&)
+// pdb: Script::GetOpenStateFunction | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_GetOpenStateFunction(const ScriptParameter*, const char*, TESObjectREFR* apRefObject, TESObjectREFR*, Script*, ScriptLocals*, double& d, unsigned int&)
 {
-    if (p)
-        return Script_GetOpenStateConditionFunction(p, 0, 0, d);
+    if (apRefObject)
+        return Script_GetOpenStateConditionFunction(apRefObject, 0, 0, d);
     return true;
 }
 
@@ -6062,6 +6541,9 @@ extern MoviePlaybackThread* DAT_0126fac4;
 
 // @fnv 0x005d15d0
 // src: EXE 0x005d15d0
+// pdb: Script::PlayBinkFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fileName, iletterBoxed, iinterruptable, ipauseGameMusic, imuteGameAudio, baudioWasMultiThreaded
 bool Cmd_PlayBink_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffset)
 {
     bool bThreaded;
@@ -6138,15 +6620,18 @@ extern TESObjectREFR* _g_thePlayer;
 struct FUN_00974a50_shell { void ProcessLists_FinishMagicShaderHitEffect(void*, void*); };
 void _DebugLog(const char*, ...);
 // @fnv 0x005d2130
-// src: EXE 0x005d2130
-bool __cdecl Cmd_StopMagicShaderVisuals_Execute(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* reference, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d2130
+// pdb: Script::StopMagicShader | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ftime, pshader
+bool __cdecl Script_StopMagicShader(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* reference, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int shader = 0;
     float time = -1.0f;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, reference, container,
-                     script, locals, &shader, &time))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, reference, apContainer,
+                     apScript, apScriptLocals, &shader, &time))
         return false;
     if (!reference)
         reference = _g_thePlayer;
@@ -6186,8 +6671,10 @@ struct V18Caller
     virtual void v18(unsigned int);
 };
 // @fnv 0x005d6d10
-// src: EXE 0x005d6d10
-bool __cdecl Cmd_ClearOwnership_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h)
+// src: XBOX_RETAIL_PDB 0x005d6d10
+// pdb: Script::ClearOwnershipFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_ClearOwnershipFunction(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& afReturnValue, unsigned int& h)
 {
     if (c) {
         ((XActor*)c)->GetExtra()->ExtraDataList_RemoveOwnership();
@@ -6204,11 +6691,14 @@ public:
 };
 
 // @fnv 0x005d7b50
-// src: EXE 0x005d7b50
-bool __cdecl Cmd_EvaluateSpellConditions_Execute(const ScriptParameter* a1, const char* a2, TESObjectREFR* a3, TESObjectREFR* a4, Script* a5, ScriptLocals* a6, double& a7, unsigned int& a8)
+// src: XBOX_RETAIL_PDB 0x005d7b50
+// pdb: Script::EvaluateSpellConditionsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ptarget
+bool __cdecl Script_EvaluateSpellConditionsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     // Preserve the magic-target return signature without a local reference vtable.
-    MT* tmp = reinterpret_cast<MT* (__thiscall*)(TESObjectREFR*)>((*reinterpret_cast<void***>(a3))[0x67])(a3);
+    MT* tmp = reinterpret_cast<MT* (__thiscall*)(TESObjectREFR*)>((*reinterpret_cast<void***>(apRefObject))[0x67])(apRefObject);
     if (tmp)
         tmp->MagicTarget_EvaluateSpellConditions();
     return true;
@@ -6237,6 +6727,9 @@ float __cdecl sqrt_004019b0(float);
 
 // @fnv 0x005dc350
 // src: EXE 0x005dc350
+// pdb: Script::SqrtFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: farg
 bool __cdecl Cmd_Sqrt_Execute(const ScriptParameter* parameters, const char* scriptData,
                           TESObjectREFR* thisObject, TESObjectREFR* container,
                           Script* script, ScriptLocals* locals, double& result,
@@ -6252,13 +6745,16 @@ bool __cdecl Cmd_Sqrt_Execute(const ScriptParameter* parameters, const char* scr
 
 namespace std { float __cdecl abs(float); }
 // @fnv 0x005dc480
-// src: EXE 0x005dc480
-bool __cdecl Cmd_Abs_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005dc480
+// pdb: Script::AbsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: farg
+bool __cdecl Script_AbsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     float value = 0.0f;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container, script, locals, &value))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &value))
         return false;
-    result = std::abs(value);
+    afReturnValue = std::abs(value);
     return true;
 }
 
@@ -6267,6 +6763,9 @@ struct BGSSaveLoadUIApi { void XGamerProfile_RevokeCode(char*); };
 BGSSaveLoadUIApi* XGamerProfile_Instance();
 // @fnv 0x005dda00
 // src: EXE 0x005dda00
+// pdb: Script::RevokeCodeFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cCode
 bool Cmd_RevokeCode_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -6284,11 +6783,12 @@ extern int DAT_0103d418;
 void __cdecl NiTMallocInterface_unsigned_int_Deallocate(void*);
 struct S005e0460
 {
-    void UpdateFields_005e0460();
+    void NiTArray_char_const_NiTMallocInterface_char_const_dtor();
 };
 // @fnv 0x005e0460
-// src: GUESS 0x005e0460 (confidence: low)
-void S005e0460::UpdateFields_005e0460()
+// src: XBOX_DEBUG_PDB 0x005e0460
+// pdb: NiTArray<char const *,NiTMallocInterface<char const *> >::~NiTArray<char const *,NiTMallocInterface<char const *> > | TESScriptFunctions.obj | debug, call graph (shared callers), high
+void S005e0460::NiTArray_char_const_NiTMallocInterface_char_const_dtor()
 {
     *(void**)this = (void*)&DAT_0103d418;
     NiTMallocInterface_unsigned_int_Deallocate(*(void**)((char*)this + 4));
@@ -6317,6 +6817,9 @@ extern signed char DAT_0118c684;
 extern int DAT_011cac64;
 // @fnv 0x005b4a80
 // src: EXE 0x005b4a80
+// pdb: Script::GetButtonPressedFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iRequester
 bool Cmd_GetButtonPressed_Execute(const ScriptParameter* p1, const char* p2, TESObjectREFR* p3, TESObjectREFR* p4, Script* p5, ScriptLocals* p6, double& result, unsigned int& p7)
 {
     unsigned int id = 0;
@@ -6383,6 +6886,9 @@ extern double DAT_0101ece0;
 void __cdecl BGSSceneInfo_CollectSceneDataForLoadedArea(float* a, float* b, int c, int d);
 // @fnv 0x005b9070
 // src: XBOX_PDB 0x005b9070
+// pdb: Script::TestCode | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fTnumber, fMnumber, fval
 bool __cdecl Script_TestCode(const ScriptParameter* apParameters, const char* apCompiledParams,
     TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
     ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
@@ -6423,6 +6929,9 @@ extern __declspec(thread) bool bScriptConsoleEcho;
 
 // @fnv 0x005bee90
 // src: EXE 0x005bee90
+// pdb: Script::SetINISettingFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: settingName, pIS, settingValue
 bool Cmd_SetINISetting_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     char settingName[512];
@@ -6478,6 +6987,9 @@ extern double DAT_01011588;
 extern float _DAT_010162c0;
 // @fnv 0x005c1c40
 // src: EXE 0x005c1c40
+// pdb: Script::ModScaleFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fScale
 bool Cmd_ModScale_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -6493,7 +7005,7 @@ bool Cmd_ModScale_Execute(const ScriptParameter* parameters, const char* scriptD
             scale = _DAT_010162c0;
         else if (scale < DAT_01011588)
             scale = 0.5f;
-        Script::SetReferenceScale(thisObject, scale);
+        Script::SetScaleBase(thisObject, scale);
     }
     return true;
 }
@@ -6516,13 +7028,16 @@ struct FUN_0056aac0_t { TESObjectREFR* GetEnableParent(); };
 
 struct FUN_00705b10_Dummy { void Set(int); };
 struct FUN_00565090_shell { bool TESObjectREFR_GetIsInvisibleLODMultType(); };
-struct FUN_005650d0_s { void TESObjectREFR_SetIsInvisible(bool); };
+struct FUN_005650d0_s { void TESObjectREFR_SetIsInvisibleLODMultType(bool); };
 struct DisableLocalsFlagsView { void* m_pOwnerScript; char m_cActionFlags; };
 void __cdecl Script_AddPendingDisabledReference(TESObjectREFR*, bool);
 void __cdecl _FNV_Warning(const char*, ...);
 // @fnv 0x005c45e0
-// src: EXE 0x005c45e0
-bool __cdecl Cmd_Disable_Execute(const ::ScriptParameter* apParameters, const char* apCompiledParams, ::TESObjectREFR* apRefObject, ::TESObjectREFR* apContainer, ::Script* apScript, ::ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005c45e0
+// pdb: Script::DisableFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iFade, pfade, pav
+bool __cdecl Script_DisableFunction(const ::ScriptParameter* apParameters, const char* apCompiledParams, ::TESObjectREFR* apRefObject, ::TESObjectREFR* apContainer, ::Script* apScript, ::ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iFade = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &iFade))
@@ -6550,7 +7065,7 @@ bool __cdecl Cmd_Disable_Execute(const ::ScriptParameter* apParameters, const ch
                 if (pfade)
                     ((FUN_00705b10_Dummy*)pfade)->Set(9);
                 if (!((FUN_00565090_shell*)apRefObject)->TESObjectREFR_GetIsInvisibleLODMultType())
-                    ((FUN_005650d0_s*)apRefObject)->TESObjectREFR_SetIsInvisible(true);
+                    ((FUN_005650d0_s*)apRefObject)->TESObjectREFR_SetIsInvisibleLODMultType(true);
             }
             Script_AddPendingDisabledReference(apRefObject, iFade != 0);
         }
@@ -6590,12 +7105,15 @@ void __cdecl TESNPC_FillCharGenPresetList(TESRace*, int, FUN_005e0560*);
 
 // @fnv 0x005c65a0
 // src: XBOX_PDB 0x005c65a0
-bool __cdecl Script_SexChange(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
+// pdb: Script::SexChange | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: isex, iuseDefaultPreset, pactor, pnpc, esex, proot, pobj, presets, message
+bool __cdecl Script_SexChange(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iSex_2 = -1;
     ::Actor* pTarget3;
     unsigned int bResetHead = 0;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &iSex_2, &bResetHead))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &iSex_2, &bResetHead))
         return false;
     pTarget3 = _g_thePlayer;
     if (thisObj && thisObj->IsCharacter())
@@ -6644,25 +7162,28 @@ extern __declspec(thread) unsigned char gFactionReactionDebug[];
 
 // @fnv 0x005c7fd0
 // src: XBOX_PDB 0x005c7fd0
-bool __cdecl Script_GetFactionReaction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::GetFactionReaction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction, pfactionTarget
+bool __cdecl Script_GetFactionReaction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     TESFaction* target;
     {
     TESFaction* faction;
     faction = 0;
     target = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &faction, &target))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &faction, &target))
         return false;
     if (faction && target)
-        result = (double)faction->GetFactionReaction(target);
+        afReturnValue = (double)faction->TESFaction_GetFactionReaction(target);
     if (gFactionReactionDebug[0x268])
         _DebugLog("%.20s reaction to %.20s is %.1f",
                   ((FNStub*)((char*)faction + 0x18))->GetFullName(),
-                  ((FNStub*)((char*)target + 0x18))->GetFullName(), result);
+                  ((FNStub*)((char*)target + 0x18))->GetFullName(), afReturnValue);
     }
     return true;}
 
@@ -6676,14 +7197,17 @@ extern __declspec(thread) bool DAT_tls_0268;
 void __cdecl _DebugLog(const char*, const char*);
 // @fnv 0x005cb580
 // src: XBOX_PDB 0x005cb580
-bool __cdecl Script_PlayVATSCamerasFunction(const ScriptParameter* parameters, const char* scriptData,
-                          TESObjectREFR* thisObject, TESObjectREFR* container,
-                          Script* script, ScriptLocals* locals, double& result,
-                          unsigned int& opcodeOffset)
+// pdb: Script::PlayVATSCamerasFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcameraPathFormName, pform
+bool __cdecl Script_PlayVATSCamerasFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                          TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                          Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                          unsigned int& auiOffset)
 {
     char cameraPathFormName[512];
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, cameraPathFormName))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, cameraPathFormName))
         return false;
     TESForm* form4 = TESFormInitFlag::LookupFormByEditorID(cameraPathFormName);
     DAT_011f21c0 = (int)dynamic_cast<BGSCameraPath*>(form4);
@@ -6792,21 +7316,24 @@ struct ScriptMoveHelper { static void __cdecl MoveReferenceToPosition(TESObjectR
 extern __declspec(thread) bool g_bTlsDebugMove;
 
 // @fnv 0x005ccf50
-// src: EXE 0x005ccf50
-bool Cmd_MoveToMarker_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005ccf50
+// pdb: Script::MoveToFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fZ, fY, fX, pTargRef
+bool Script_MoveToFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESObjectREFR* pTeleportMarker = 0;
     float fX = 0;
     float fY = 0;
     float fZ = 0;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &pTeleportMarker, &fX, &fY, &fZ))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &pTeleportMarker, &fX, &fY, &fZ))
         return false;
     if (thisObj && !::TESObjectREFR_CanBeMoved(thisObj)) {
         if (g_bTlsDebugMove)
             DebugLog("%s cannot be moved.", ((RefVT*)thisObj)->GetEditorName());
-        if (!((DataHandler5ccf50*)g_dataHandler)->FormIDExists(((FormIDView5ccf50*)scriptObj)->Deallocate()))
+        if (!((DataHandler5ccf50*)g_dataHandler)->FormIDExists(((FormIDView5ccf50*)apScript)->Deallocate()))
             _FNV_Warning("SCRIPTS: Script '%s' (%08X) is attempting to move reference '%s' (%08X), but it cannot be moved",
-                ((RefVT*)scriptObj)->GetEditorName(), ((FormIDView5ccf50*)scriptObj)->Deallocate(),
+                ((RefVT*)apScript)->GetEditorName(), ((FormIDView5ccf50*)apScript)->Deallocate(),
                 ((RefVT*)thisObj)->GetEditorName(), ((FormIDView5ccf50*)thisObj)->Deallocate());
         return true;
     }
@@ -6826,6 +7353,9 @@ struct XActor { FUN_00422aa0_shell* GetExtra() const; };
 
 // @fnv 0x005ced30
 // src: EXE 0x005ced30
+// pdb: Script::SetOpenStateFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ivalue
 bool __cdecl Cmd_SetOpenState_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     unsigned int formID = 0;
@@ -7317,6 +7847,9 @@ struct S_008ace10 { void Actor_SetUnconscious(bool); };
 
 // @fnv 0x005d0760
 // src: EXE 0x005d0760
+// pdb: Script::SetUnconsciousFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, pactor
 bool Cmd_SetUnconscious_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj,
     TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result,
     unsigned int& opcodeOffsetPtr)
@@ -7389,6 +7922,9 @@ void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface*, int
 void __cdecl Script_SetRigidBodyMassBase(TESObjectREFR*, float);
 // @fnv 0x005d3b90
 // src: EXE 0x005d3b90
+// pdb: Script::SetRigidBodyMass | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fMass
 bool Cmd_SetRigidBodyMass_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     float value;
@@ -7422,6 +7958,9 @@ extern __declspec(thread) bool g_bDebugLog;
 extern void _DebugLog(const char*, double);
 // @fnv 0x005d41f0
 // src: XBOX_PDB 0x005d41f0
+// pdb: Script::StartAllQuests | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: plist, pquest
 bool Script_StartAllQuests(const ScriptParameter* apParameters, const char* apCompiledParams,
                   TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                   Script* apScript, ScriptLocals* apScriptLocals,
@@ -7446,8 +7985,11 @@ extern unsigned int DAT_011ad82c;
 extern __declspec(thread) bool g_bConsoleEcho;
 
 // @fnv 0x005d4870
-// src: EXE 0x005d4870
-bool __cdecl Cmd_ToggleCastShadows_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005d4870
+// pdb: Script::ToggleCastShadows | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iWhichType, ptypetext, ptypetotext
+bool __cdecl Script_ToggleCastShadows(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iWhichType = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &iWhichType))
@@ -7479,6 +8021,10 @@ void TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface*, int, Actor*
 
 // @fnv 0x005d4b90
 // src: EXE 0x005d4b90
+// pdb: Script::IsPlayerActionActiveFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::DamageObjectFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iAction
 bool Cmd_DamageObject_Execute(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -7504,14 +8050,17 @@ struct Holder { void MenuConsole_SetFileOutputName(const char*); };
 extern "C" void _DebugLog(const char*, ...);
 __declspec(thread) bool _gOutputDisabled;
 // @fnv 0x005d9170
-// src: EXE 0x005d9170
-bool __cdecl Cmd_SetConsoleOuputFile_Execute(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d9170
+// pdb: Script::SetConsoleOutputFileFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfilename, boff
+bool __cdecl Script_SetConsoleOutputFileFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     char filename[260];
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, filename))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, filename))
         return false;
     bool disabled = false;
     if (filename[0] == 0 || filename[0] == '0') {
@@ -7539,6 +8088,9 @@ extern int __tls_index;
 __declspec(thread) unsigned char g_debugFlag;
 // @fnv 0x005d9670
 // src: EXE 0x005d9670
+// pdb: Script::IsPlayerTagSkillFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: eskill
 bool Cmd_IsPlayerTagSkill_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -7631,8 +8183,11 @@ extern DH* g_dataHandler;
 void CopyIdentifierBitsToValue(const unsigned int&, double&);
 
 // @fnv 0x005d9810
-// src: EXE 0x005d9810
-bool __cdecl Cmd_PlaceLeveledActorAtMe_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+// src: XBOX_RETAIL_PDB 0x005d9810
+// pdb: Script::PlaceLeveledActorAtMeFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ilevmod, pItem, pforcezone, pplacedref, pbase, iid, pint, pworld
+bool __cdecl Script_PlaceLeveledActorAtMeFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
     Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     BGSEncounterZone* pforcezone;
@@ -7680,7 +8235,7 @@ bool __cdecl Cmd_PlaceLeveledActorAtMe_Execute(const ScriptParameter* apParamete
             pplacedref->SetParentCell(((BSOcclusionPlane*)apRefObject)->GetCullResult());
             ((Fn575690*)pplacedref)->TESObjectREFR_SetObjectReference(pbase);
             if (((TESActorBaseData*)((char*)pbase + 0x30))->GetUsesLeveledTemplate())
-                ((TESActorBaseData*)((char*)pbase + 0x30))->SetTemplateReference((TESObjectREFR*)pplacedref);
+                ((TESActorBaseData*)((char*)pbase + 0x30))->CalcTemplateForRef((TESObjectREFR*)pplacedref);
             pint = (TESObjectCELL*)((BSOcclusionPlane*)apRefObject)->GetCullResult();
             if (pint && !((TESObjectCELL_Ext*)pint)->IsInterior())
                 pint = 0;
@@ -7741,6 +8296,9 @@ extern float DAT_0103d018;
 
 // @fnv 0x005dc3b0
 // src: EXE 0x005dc3b0
+// pdb: Script::LogFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fbase, farg
 bool __cdecl Cmd_Log_Execute(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -7764,14 +8322,17 @@ void _FNV_Warning(const char*);
 
 // @fnv 0x005de920
 // src: XBOX_PDB 0x005de920
-bool Script_SetHardcoreFunction(const ScriptParameter* parameters, const char* scriptData,
-                  TESObjectREFR* thisObject, TESObjectREFR* container,
-                  Script* script, ScriptLocals* locals, double& result,
-                  unsigned int& opcodeOffset)
+// pdb: Script::SetHardcoreFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iHardcore
+bool Script_SetHardcoreFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                  unsigned int& auiOffset)
 {
     int value = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject,
-                     container, script, locals, &value))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject,
+                     apContainer, apScript, apScriptLocals, &value))
         return false;
     if (_g_thePlayer && value >= 0 && value <= 1) {
         reinterpret_cast<ScriptPlayerActions*>(_g_thePlayer)->PlayerCharacter_SetHardcore(value, 0);
@@ -7796,14 +8357,17 @@ extern "C" {
     void _DebugLog(const char*);
 }
 // @fnv 0x005df930
-// src: EXE 0x005df930
-bool __cdecl Cmd_GetDLCCount_Execute(const ScriptParameter* apParameters, const char* apScriptData,
-    TESObjectREFR* apThisObject, TESObjectREFR* apContainer, Script* apScript,
-    ScriptLocals* apScriptLocals, double& afResult, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005df930
+// pdb: Script::GetDLCCountFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: list, tmp
+bool __cdecl Script_GetDLCCountFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    if (!ExtractArgs(apParameters, apScriptData, &auiOffset, apThisObject, apContainer,
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
         apScript, apScriptLocals, 0)) {
-        afResult = 0.0;
+        afReturnValue = 0.0;
         return false;
     }
     BSSimpleListTESRaceSize* list =
@@ -7812,12 +8376,12 @@ bool __cdecl Cmd_GetDLCCount_Execute(const ScriptParameter* apParameters, const 
                 static_cast<const BSSystemUtility*>(_Immortalize::StandardLibrarySingletonObject())->QDLCUtility())
                 ->GetOrigin());
     if (list) {
-        afResult = list->GetSize();
+        afReturnValue = list->GetSize();
     } else {
-        afResult = 0.0;
+        afReturnValue = 0.0;
     }
     char tmp[64];
-    _sprintf_s(tmp, 64, "There are %u DLC packages available", (unsigned int)afResult);
+    _sprintf_s(tmp, 64, "There are %u DLC packages available", (unsigned int)afReturnValue);
     _DebugLog(tmp);
     return true;
 }
@@ -7864,7 +8428,7 @@ struct PkgListStub {
 };
 typedef BSSimpleList<ContentMountRecord*> PkgList;
 
-struct FUN_00b008d0_StandIn { const wchar_t* BSContentPackage_DisplayName(); };
+struct FUN_00b008d0_StandIn { const wchar_t* DisplayName(); };
 struct FUN_00b008e0_class { const char* BSContentPackage_FileName(); };
 int _sprintf_s(char*, unsigned int, const char*, ...);
 int BSstricmp(const char*, const char*);
@@ -7872,6 +8436,9 @@ int FUN_00ecad86(unsigned int*, char*, unsigned int, const wchar_t*, unsigned in
 
 // @fnv 0x005dfa20
 // src: XBOX_PDB 0x005dfa20
+// pdb: Script::IsDLCInstalledFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: list, pName, tmp, package, num
 bool Script_IsDLCInstalledFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     PkgList* list;
@@ -7889,9 +8456,9 @@ bool Script_IsDLCInstalledFunction(const ScriptParameter* apParameters, const ch
         ContentMountRecord* package = *((PkgListStub*)list)->_ref_006815c0();
         if (package)
         {
-            _sprintf_s(tmp, 200, "     Examining '%S' [%s]", ((FUN_00b008d0_StandIn*)package)->BSContentPackage_DisplayName(), ((FUN_00b008e0_class*)package)->BSContentPackage_FileName());
+            _sprintf_s(tmp, 200, "     Examining '%S' [%s]", ((FUN_00b008d0_StandIn*)package)->DisplayName(), ((FUN_00b008e0_class*)package)->BSContentPackage_FileName());
             unsigned int num = 0;
-            FUN_00ecad86(&num, tmp, 200, ((FUN_00b008d0_StandIn*)package)->BSContentPackage_DisplayName(), 200);
+            FUN_00ecad86(&num, tmp, 200, ((FUN_00b008d0_StandIn*)package)->DisplayName(), 200);
             if (BSstricmp(tmp, pName) == 0)
             {
                 *afReturnValue = 1;
@@ -7935,21 +8502,27 @@ namespace fnv_005b4b20 {
 
 // @fnv 0x005b4b20
 // src: EXE 0x005b4b20
+// pdb: Script::GetDistanceFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargRef
 bool Cmd_GetDistance_Execute(const ScriptParameter* params, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     TESObjectREFR* target = 0;
     if (!ExtractArgs(params, scriptData, &opcodeOffset, thisObject, container, script, locals, &target))
         return false;
-    return GetDistanceCondition(thisObject, target, 0, result);
+    return Script_GetDistanceConditionFunction(thisObject, target, 0, result);
 }
 }  // namespace fnv_005b4b20
 
 namespace fnv_005b5760 {
 
 extern TESObject* _g_thePlayer;
-struct FUN_005a2e20 { static bool Call(TESObjectREFR*, void*, void*, double*); };
+struct FUN_005a2e20 { static bool Script_GetOwnershipConditionFunction(TESObjectREFR*, void*, void*, double*); };
 // @fnv 0x005b5760
 // src: EXE 0x005b5760
+// pdb: Script::GetOwnershipFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: powner
 bool Cmd_IsOwner_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h)
 {
     g = 0.0;
@@ -7958,7 +8531,7 @@ bool Cmd_IsOwner_Execute(const ScriptParameter* a, const char* b, TESObjectREFR*
         return false;
     if (!i)
         i = (TESObjectREFR*)(unsigned int)_g_thePlayer->GetNext();
-    FUN_005a2e20::Call(c, i, 0, &g);
+    FUN_005a2e20::Script_GetOwnershipConditionFunction(c, i, 0, &g);
     return true;
 }
 }  // namespace fnv_005b5760
@@ -7983,6 +8556,8 @@ void __cdecl DebugLog(const char* fmt, ...);
 
 // @fnv 0x005b5dd0
 // src: XBOX_PDB 0x005b5dd0
+// pdb: Script::ToggleOcclusion | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleOcclusion()
 {
     DAT_011f9181 = !DAT_011f9181;
@@ -7995,8 +8570,10 @@ unsigned char __cdecl CombatController_GetShowVerboseMessages(void);
 void __cdecl _DebugLog(const char*, const char*);
 
 // @fnv 0x005b6f10
-// src: EXE 0x005b6f10
-bool __cdecl Cmd_Verbose_Execute()
+// src: XBOX_RETAIL_PDB 0x005b6f10
+// pdb: Script::ToggleVerboseFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_ToggleVerboseFunction()
 {
     CombatController_SetShowVerboseMessages(!CombatController_GetShowVerboseMessages());
     _DebugLog("Verbose messages %s", CombatController_GetShowVerboseMessages() ? "shown." : "hidden.");
@@ -8011,8 +8588,10 @@ bool PlayerCharacter_IsGodMode();
 void SetDemiGodMode(bool);
 unsigned char GetDemigodeMode();
 // @fnv 0x005b6f80
-// src: EXE 0x005b6f80
-bool Cmd_ToggleGodMode_Execute()
+// src: XBOX_RETAIL_PDB 0x005b6f80
+// pdb: Script::ToggleGodModeFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_ToggleGodModeFunction()
 {
     PlayerCharacter_SetGodMode(!PlayerCharacter_IsGodMode());
     if (!PlayerCharacter_IsGodMode() && GetDemigodeMode())
@@ -8030,8 +8609,10 @@ void __cdecl Script_SetProcessScripts(bool);
 void _DebugLog(const char*, const char*);
 
 // @fnv 0x005b7070
-// src: EXE 0x005b7070
-bool Cmd_ToggleScripts_Execute()
+// src: XBOX_RETAIL_PDB 0x005b7070
+// pdb: Script::ToggleScriptsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_ToggleScriptsFunction()
 {
     Script_SetProcessScripts(!FUN_005ac740::IsConsolePlatform());
     _DebugLog("Script processing %s", FUN_005ac740::IsConsolePlatform() ? "enabled." : "disabled.");
@@ -8047,10 +8628,13 @@ void _DebugLog(const char*, const char*);
 
 // @fnv 0x005b71b0
 // src: XBOX_PDB 0x005b71b0
-bool Script_TestAllCellsFunction(const ScriptParameter* p, const char* s, TESObjectREFR* a, TESObjectREFR* b, Script* c, ScriptLocals* d, double* afReturnValue, unsigned int* f)
+// pdb: Script::TestAllCellsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: itestValue
+bool Script_TestAllCellsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* a, TESObjectREFR* b, Script* c, ScriptLocals* d, double* afReturnValue, unsigned int* f)
 {
     int i = 0;
-    if (!ExtractArgs(p, s, f, a, b, c, d, &i))
+    if (!ExtractArgs(apParameters, apCompiledParams, f, a, b, c, d, &i))
         return false;
     if (i == 0)
         i = -1;
@@ -8068,6 +8652,8 @@ void TESObjectCELL_RenderTestCell(int, int, int);
 
 // @fnv 0x005b7250
 // src: EXE 0x005b7250
+// pdb: Script::RenderTestCellFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_RenderTestCell_Execute()
 {
     if (_g_thePlayer->GetCullResult())
@@ -8087,8 +8673,10 @@ struct DebugLogStub { static void _DebugLog(const char*, const char*); };
 unsigned char __cdecl BSFaceGenManager_GetUseEmotions(void);
 void __cdecl SetNPCEmotionsEnabled(unsigned char);
 // @fnv 0x005b7420
-// src: EXE 0x005b7420
-bool Cmd_ToggleEmotions_Execute()
+// src: XBOX_RETAIL_PDB 0x005b7420
+// pdb: Script::ToggleEmotionsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_ToggleEmotionsFunction()
 {
     SetNPCEmotionsEnabled(!BSFaceGenManager_GetUseEmotions());
     DebugLogStub::_DebugLog("NPC Facial Emotions %s", BSFaceGenManager_GetUseEmotions() ? "Enabled." : "Disabled.");
@@ -8117,6 +8705,9 @@ bool Cmd_ForceWeather_Execute(const ScriptParameter* parameters, const char* scr
 
 // @fnv 0x005b76f0
 // src: EXE 0x005b76f0
+// pdb: Script::ApplyImageSpaceModifier | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pmod, fstrength
 bool Cmd_ApplyImageSpaceModifier_Execute(const ScriptParameter* params, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     struct { TESImageSpaceModifier* modifier; float strength; } form;
@@ -8133,6 +8724,9 @@ namespace fnv_005b7760 {
 
 // @fnv 0x005b7760
 // src: EXE 0x005b7760
+// pdb: Script::RemoveImageSpaceModifier | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pmod, fstrength
 bool Cmd_RemoveImageSpaceModifier_Execute(const ScriptParameter* a, const char* b,
                   TESObjectREFR* c, TESObjectREFR* d, Script* e,
                   ScriptLocals* f, double& g, unsigned int& h)
@@ -8151,8 +8745,10 @@ unsigned char __cdecl GetIsConversationsStatsEnabled(void);
 void __cdecl _DebugLog(const char*, const char*);
 
 // @fnv 0x005b9100
-// src: EXE 0x005b9100
-bool __cdecl Cmd_ToggleConversations_Execute()
+// src: XBOX_RETAIL_PDB 0x005b9100
+// pdb: Script::ToggleConversationStatsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_ToggleConversationStatsFunction()
 {
     SetbIsConversationStats(!GetIsConversationsStatsEnabled());
     _DebugLog("Conversation stats %s", GetIsConversationsStatsEnabled() ? "shown." : "hidden.");
@@ -8163,8 +8759,10 @@ void __cdecl SetIsMagicStatsEnabled(unsigned char);
 bool __cdecl GetLimbConditionEffectInitialized();
 void __cdecl _DebugLog(const char*, ...);
 // @fnv 0x005b91b0
-// src: EXE 0x005b91b0
-bool Cmd_ToggleMagicStats_Execute()
+// src: XBOX_RETAIL_PDB 0x005b91b0
+// pdb: Script::ToggleMagicStatsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_ToggleMagicStatsFunction()
 {
     SetIsMagicStatsEnabled(!GetLimbConditionEffectInitialized());
     _DebugLog("Magic stats %s", GetLimbConditionEffectInitialized() ? "shown." : "hidden.");
@@ -8177,6 +8775,8 @@ void _DebugLog(const char*);
 extern __declspec(thread) unsigned char g_tls_00268;
 // @fnv 0x005b9400
 // src: XBOX_PDB 0x005b9400
+// pdb: Script::ToggleProjectileDebugFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleProjectileDebugFunction()
 {
     Projectile_ToggleDebug();
@@ -8200,8 +8800,11 @@ extern unsigned char DAT_011cae46;
 __declspec(thread) unsigned char g_bDebugLogEnabled;
 
 // @fnv 0x005b97f0
-// src: EXE 0x005b97f0
-bool Cmd_ToggleWireframe_Execute()
+// src: XBOX_RETAIL_PDB 0x005b97f0
+// pdb: Script::ToggleWireframeFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pRoot, pScene
+bool Script_ToggleWireframeFunction()
 {
     DAT_011cae46 ^= 1;
     FUN_005b9870_This* pRoot = (FUN_005b9870_This*)Main_GetWorldSceneGraph();
@@ -8250,6 +8853,8 @@ void _DebugLog(const char*, ...);
 
 // @fnv 0x005ba560
 // src: XBOX_PDB 0x005ba560
+// pdb: Script::ToggleRagdollAnim | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleRagdollAnim()
 {
     bhkRagdollController_SetRagdollAnim(1 ^ bhkRagdollController_QRagdollAnim());
@@ -8272,6 +8877,9 @@ extern __declspec(thread) FUN_005ba6d0_TLS g_fun005ba6d0TLS;
 
 // @fnv 0x005ba6d0
 // src: XBOX_PDB 0x005ba6d0
+// pdb: Script::ToggleLiteBriteFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: boldLiteBrite
 bool __cdecl Script_ToggleLiteBriteFunction()
 {
     unsigned char pProcessData = BSShaderManager_GetLiteBrite();
@@ -8305,8 +8913,10 @@ struct TLSStandIn
 __declspec(thread) TLSStandIn g_tlsStandIn;
 
 // @fnv 0x005bbda0
-// src: EXE 0x005bbda0
-bool Cmd_ToggleDetection_Execute()
+// src: XBOX_RETAIL_PDB 0x005bbda0
+// pdb: Script::ToggleAiDetection | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_ToggleAiDetection()
 {
     DAT_011f1221 = !DAT_011f1221;
     if (g_tlsStandIn.m_bEnableAiDetection)
@@ -8321,6 +8931,9 @@ extern "C" __declspec(thread) TLSStandIn g_tlsStandIn;
 unsigned char __cdecl CombatController_ToggleCombatAI(void);
 // @fnv 0x005bc0d0
 // src: XBOX_PDB 0x005bc0d0
+// pdb: Script::ToggleCombatAI | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bresult
 unsigned char Script_ToggleCombatAI()
 {
     unsigned char bresult = CombatController_ToggleCombatAI();
@@ -8334,6 +8947,9 @@ extern unsigned char DAT_012682f8;
 
 // @fnv 0x005bc200
 // src: EXE 0x005bc200
+// pdb: Script::SetNoAvoidance | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival
 bool Cmd_SetNoAvoidance_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -8360,6 +8976,8 @@ struct LowProcessState
 __declspec(thread) LowProcessState g_LowProcessState;
 // @fnv 0x005bc430
 // src: XBOX_PDB 0x005bc430
+// pdb: Script::ToggleLowProcess | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleLowProcess()
 {
     DAT_011f1229 = !DAT_011f1229;
@@ -8376,6 +8994,8 @@ extern "C" __declspec(thread) unsigned char g_tlsFlags[0x269];
 
 // @fnv 0x005bc4a0
 // src: XBOX_PDB 0x005bc4a0
+// pdb: Script::ToggleMiddleLowProcess | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleMiddleLowProcess()
 {
     DAT_011f122b = !DAT_011f122b;
@@ -8391,6 +9011,9 @@ struct TESLoadScreenFlags {
 
 // @fnv 0x005c2580
 // src: EXE 0x005c2580
+// pdb: Script::SetLocationSpecificLoadScreensOnlyFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival
 bool Cmd_SetLocationSpecificLoadScreensOnly_Execute(const ScriptParameter* params, const char* scriptData,
                   TESObjectREFR* container, TESObjectREFR* thisObject,
                   Script* script, ScriptLocals* locals, double& result,
@@ -8410,6 +9033,9 @@ bool Cmd_SetLocationSpecificLoadScreensOnly_Execute(const ScriptParameter* param
 bool __cdecl Script_SameFactionConditionFunction(TESObjectREFR*, void*, void*, double&);
 // @fnv 0x005c6840
 // src: EXE 0x005c6840
+// pdb: Script::SameFaction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargActor
 bool Cmd_SameFaction_Execute(const ScriptParameter* apParameters, const char* apCompiledParams,
                   TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                   Script* apScript, ScriptLocals* apScriptLocals,
@@ -8426,6 +9052,9 @@ bool __cdecl Script_SameSexConditionFunction(TESObjectREFR*, void*, void*, doubl
 
 // @fnv 0x005c6900
 // src: EXE 0x005c6900
+// pdb: Script::SameSex | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargActor
 bool Cmd_SameSex_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* reference, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -8439,8 +9068,11 @@ bool Cmd_SameSex_Execute(const ScriptParameter* parameters, const char* scriptDa
 }
 
 // @fnv 0x005c71c0
-// src: EXE 0x005c71c0
-bool Cmd_StartQuest_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h)
+// src: XBOX_RETAIL_PDB 0x005c71c0
+// pdb: Script::StartQuestFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pQuest
+bool Script_StartQuestFunction(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& afReturnValue, unsigned int& h)
 {
     TESQuest* q = 0;
     if (!ExtractArgs(a, b, &h, c, d, e, f, &q))
@@ -8453,15 +9085,18 @@ bool Cmd_StartQuest_Execute(const ScriptParameter* a, const char* b, TESObjectRE
 struct QuestHelper { void MarkCompleted(bool); };
 
 // @fnv 0x005c7280
-// src: EXE 0x005c7280
-bool Cmd_CompleteQuest_Execute(const ScriptParameter* parameters, const char* scriptData,
-                  TESObjectREFR* thisObject, TESObjectREFR* container,
-                  Script* script, ScriptLocals* locals, double& result,
-                  unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c7280
+// pdb: Script::CompleteQuestFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pQuest
+bool Script_CompleteQuestFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                  unsigned int& auiOffset)
 {
     TESObjectREFR* quest = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject,
-                     container, script, locals, &quest))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject,
+                     apContainer, apScript, apScriptLocals, &quest))
         return false;
     if (quest)
         reinterpret_cast<QuestHelper*>(quest)->MarkCompleted(true);
@@ -8472,6 +9107,9 @@ bool Cmd_CompleteQuest_Execute(const ScriptParameter* parameters, const char* sc
 struct FUN_0059ebb0_stub { static bool __cdecl Script_GetIsCurrentWeatherConditionFunction(TESObjectREFR*, TESWeather*, unsigned int, double&); };
 // @fnv 0x005c7430
 // src: EXE 0x005c7430
+// pdb: Script::GetIsCurrentWeatherFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pWeather
 bool Cmd_GetIsCurrentWeather_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESWeather* m_pWeatherObject = 0;
@@ -8483,8 +9121,11 @@ bool Cmd_GetIsCurrentWeather_Execute(const ScriptParameter* apParameters, const 
 bool __cdecl Script_GetShouldAttackConditionFunction(TESObjectREFR*, void*, void*, double*);
 
 // @fnv 0x005c74d0
-// src: EXE 0x005c74d0
-bool __cdecl Cmd_GetShouldAttack_Execute(const ScriptParameter* apParameters, const char* apCompiledParams,
+// src: XBOX_RETAIL_PDB 0x005c74d0
+// pdb: Script::GetShouldAttack | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
+bool __cdecl Script_GetShouldAttack(const ScriptParameter* apParameters, const char* apCompiledParams,
     TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
     ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
@@ -8500,6 +9141,9 @@ bool __cdecl Script_GetIsClassConditionFunction(PlayerCharacter*, void*, void*, 
 
 // @fnv 0x005c7730
 // src: EXE 0x005c7730
+// pdb: Script::GetIsClass | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pclass
 bool Cmd_GetIsClass_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -8531,17 +9175,20 @@ namespace fnv_005c7a30 {
 extern PlayerCharacter* _g_thePlayer;
 bool __cdecl Script_GetIsClassConditionFunction(PlayerCharacter*, void*, void*, double&);
 // @fnv 0x005c7a30
-// src: EXE 0x005c7a30
-bool Cmd_GetPCIsClass_Execute(const ScriptParameter* parameters, const char* scriptData,
-                  TESObjectREFR* thisObject, TESObjectREFR* container,
-                  Script* script, ScriptLocals* locals, double& result,
-                  unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c7a30
+// pdb: Script::GetPCIsClass | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pclass
+bool Script_GetPCIsClass(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                  unsigned int& auiOffset)
 {
     void* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form))
         return false;
-    return fnv_005c7a30::Script_GetIsClassConditionFunction(_g_thePlayer, form, 0, result);
+    return fnv_005c7a30::Script_GetIsClassConditionFunction(_g_thePlayer, form, 0, afReturnValue);
 }
 }  // namespace fnv_005c7a30
 
@@ -8550,13 +9197,16 @@ namespace fnv_005c7a90 {
 extern PlayerCharacter* _g_thePlayer;
 bool __cdecl Script_GetIsRaceConditionFunction(PlayerCharacter*, void*, void*, double&);
 // @fnv 0x005c7a90
-// src: EXE 0x005c7a90
-bool Cmd_GetPCIsRace_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c7a90
+// pdb: Script::GetPCIsRace | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: prace
+bool Script_GetPCIsRace(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     void* form = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container, script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &form))
         return false;
-    return Script_GetIsRaceConditionFunction(_g_thePlayer, form, 0, result);
+    return Script_GetIsRaceConditionFunction(_g_thePlayer, form, 0, afReturnValue);
 }
 }  // namespace fnv_005c7a90
 
@@ -8568,38 +9218,47 @@ struct SexHelper
 };
 
 // @fnv 0x005c7af0
-// src: EXE 0x005c7af0
-bool Cmd_GetPCIsSex_Execute(const ScriptParameter* parameters, const char* scriptData,
-                  TESObjectREFR* thisObject, TESObjectREFR* container,
-                  Script* script, ScriptLocals* locals, double& result,
-                  unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c7af0
+// pdb: Script::GetPCIsSex | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: esex
+bool Script_GetPCIsSex(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                  unsigned int& auiOffset)
 {
     TESObjectREFR* form;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject,
-                     container, script, locals, &form))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject,
+                     apContainer, apScript, apScriptLocals, &form))
         return false;
-    return SexHelper::IsSexConditionFunction(_g_thePlayer, form, 0, result);
+    return SexHelper::IsSexConditionFunction(_g_thePlayer, form, 0, afReturnValue);
 }
 
 extern TESObjectREFR* _g_thePlayer;
 
 // @fnv 0x005c7b50
-// src: EXE 0x005c7b50
-bool Cmd_GetPCInFaction_Execute(const ScriptParameter* parameters, const char* scriptData,
-                  TESObjectREFR* thisObject, TESObjectREFR* container,
-                  Script* script, ScriptLocals* locals, double& result,
-                  unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c7b50
+// pdb: Script::GetPCInFaction | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction
+bool Script_GetPCInFaction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                  unsigned int& auiOffset)
 {
     TESObjectREFR* faction = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &faction))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &faction))
         return false;
-    return Script::GetScriptOperand(_g_thePlayer, faction, 0, result);
+    return Script::GetScriptOperand(_g_thePlayer, faction, 0, afReturnValue);
 }
 
 bool __cdecl Script_GetIsUsedItemTypeConditionFunction(TESObjectREFR*, void*, void*, double&);
 // @fnv 0x005c7d00
 // src: EXE 0x005c7d00
+// pdb: Script::GetIsUsedItemType | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: formtype
 bool Cmd_GetIsUsedItemType_Execute(const ScriptParameter* apParameters, const char* apCompiledParams,
                   TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                   Script* apScript, ScriptLocals* apScriptLocals,
@@ -8612,14 +9271,17 @@ bool Cmd_GetIsUsedItemType_Execute(const ScriptParameter* apParameters, const ch
     return Script_GetIsUsedItemTypeConditionFunction(apRefObject, (void*)formtype, 0, afReturnValue);
 }
 
-struct Unk_005fd3d0 { void FUN_005fd3d0(TESForm*, int); };
+struct Unk_005fd3d0 { void TESFaction_SetFactionReaction(TESForm*, int); };
 
 // @fnv 0x005c80a0
-// src: EXE 0x005c80a0
-bool Cmd_SetFactionReaction_Execute(const ScriptParameter* parameters, const char* scriptData,
-                  TESObjectREFR* thisObject, TESObjectREFR* container,
-                  Script* script, ScriptLocals* locals, double& result,
-                  unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c80a0
+// pdb: Script::SetFactionReaction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pFaction, pFactionTarget, iReaction
+bool Script_SetFactionReaction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                  unsigned int& auiOffset)
 {
     TESForm* form;
     TESForm* form2;
@@ -8627,12 +9289,12 @@ bool Cmd_SetFactionReaction_Execute(const ScriptParameter* parameters, const cha
     form = 0;
     form2 = 0;
     value = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &form, &form2, &value))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &form, &form2, &value))
         return false;
-    result = 0.0;
+    afReturnValue = 0.0;
     if (form2 && form)
-        ((Unk_005fd3d0*)form)->FUN_005fd3d0(form2, value);
+        ((Unk_005fd3d0*)form)->TESFaction_SetFactionReaction(form2, value);
     return true;
 }
 
@@ -8641,6 +9303,9 @@ struct FUN_00952830_Class { bool PlayerCharacter_AddTopic(BSAudio*, unsigned int
 extern FUN_00952830_Class* _g_thePlayer;
 // @fnv 0x005c9610
 // src: EXE 0x005c9610
+// pdb: Script::AddTopicFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ptopic
 bool __cdecl Cmd_AddTopic_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     BSAudio* form = 0;
@@ -8652,20 +9317,26 @@ bool __cdecl Cmd_AddTopic_Execute(const ScriptParameter* parameters, const char*
 }  // namespace fnv_005c9610
 
 // @fnv 0x005ca8d0
-// src: COMMUNITY 0x005ca8d0
-bool Event_OnMurder(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005ca8d0
+// pdb: Script::OnMurderFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
+bool Script_OnMurderFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int formID = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container, script, locals, &formID))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &formID))
         return false;
-    Script::CheckFlagFunction(0x20, thisObject, reinterpret_cast<SharedForm*>(formID), locals, result);
+    Script::CheckFlagFunction(0x20, apRefObject, reinterpret_cast<SharedForm*>(formID), apScriptLocals, afReturnValue);
     return true;
 }
 
 bool __cdecl Script_GetHeadingAngleConditionFunction(TESObjectREFR*, void*, void*, double*);
 // @fnv 0x005cb050
-// src: EXE 0x005cb050
-bool __cdecl Cmd_GetHeadingAngle_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
+// src: XBOX_RETAIL_PDB 0x005cb050
+// pdb: Script::GetHeadingAngleFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTarget
+bool __cdecl Script_GetHeadingAngleFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     TESObjectREFR* pTarget = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pTarget))
@@ -8683,6 +9354,9 @@ extern FUN_005c1a00* _g_thePlayer;
 extern "C" void __cdecl Object_UpdateFields_007055c0();
 // @fnv 0x005cd5b0
 // src: EXE 0x005cd5b0
+// pdb: Script::WakeUpPCFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iHours
 bool Cmd_WakeUpPC_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     int value = 0;
@@ -8724,6 +9398,9 @@ struct FUN_0047ebd0_Class { void TESFaction_SetPCAttack(bool); };
 
 // @fnv 0x005ce260
 // src: EXE 0x005ce260
+// pdb: Script::SetPCFactionAttackFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction, ivalue
 bool Cmd_SetPCFactionAttack_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -8749,6 +9426,9 @@ void __cdecl CopyIdentifierBitsToValue(unsigned int const&, double&);
 
 // @fnv 0x005ce5c0
 // src: XBOX_PDB 0x005ce5c0
+// pdb: Script::GetContainerFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iid
 bool __cdecl Script_GetContainerFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     afReturnValue = 0.0;
@@ -8782,6 +9462,9 @@ void _DebugLog(const char* apFormat, ...);
 
 // @fnv 0x005ce6b0
 // src: XBOX_PDB 0x005ce6b0
+// pdb: Script::GetLinkedRefFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iid
 bool Script_GetLinkedRefFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     afReturnValue = 0.0;
@@ -8806,6 +9489,8 @@ extern TESObjectREFR* g_thePlayer;
 __declspec(thread) bool tls_0268;
 // @fnv 0x005cedf0
 // src: EXE 0x005cedf0
+// pdb: Script::ShowRaceMenu | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_ShowRaceMenu_Execute()
 {
     if (g_thePlayer)
@@ -8821,8 +9506,11 @@ bool Cmd_ShowRaceMenu_Execute()
 
 struct CellDetachTime { void SetDetachTime(unsigned int, bool); };
 // @fnv 0x005d24a0
-// src: EXE 0x005d24a0
-bool __cdecl Cmd_ResetInterior_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h)
+// src: XBOX_RETAIL_PDB 0x005d24a0
+// pdb: Script::ResetCellFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell
+bool __cdecl Script_ResetCellFunction(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& afReturnValue, unsigned int& h)
 {
     TESObjectCELL* cell = 0;
     if (!ExtractArgs(a, b, &h, c, d, e, f, &cell))
@@ -8843,6 +9531,9 @@ bool Script_GetNoRumorsConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005d2650
 // src: XBOX_PDB 0x005d2650
+// pdb: Script::GetNoRumorsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bretval
 bool Script_GetNoRumorsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     bool bretval = Script_GetNoRumorsConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -8855,8 +9546,11 @@ bool __cdecl Cmd_WhichServiceMenu_Eval(TESObjectREFR* apRefObject, void* apConta
 void __cdecl _DebugLog(const char* apFormat, ...);
 extern __declspec(thread) bool g_DebugLogEnabled;
 // @fnv 0x005d27a0
-// src: EXE 0x005d27a0
-bool __cdecl Cmd_WhichServiceMenu_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005d27a0
+// pdb: Script::GetWhichServiceFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bretval
+bool __cdecl Script_GetWhichServiceFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     bool bretval = Cmd_WhichServiceMenu_Eval(apRefObject, 0, 0, afReturnValue);
     if (g_DebugLogEnabled)
@@ -8869,6 +9563,9 @@ void __cdecl _DebugLog(const char*, ...);
 __declspec(thread) bool g_bDebugLava;
 // @fnv 0x005d2970
 // src: XBOX_PDB 0x005d2970
+// pdb: Script::IsInDangerousWaterFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bretval
 bool __cdecl Script_IsInDangerousWaterFunction(const ScriptParameter*, const char*, TESObjectREFR* apRefObject, TESObjectREFR*, Script*, ScriptLocals*, double& afReturnValue, unsigned int&)
 {
     bool bretval = Script_IsInDangerousWaterConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -8882,6 +9579,9 @@ struct FUN_00af2420_class { bool BSAwardsSystemUtility_Unlock(int); };
 extern bool DAT_011d8ce4;
 // @fnv 0x005d3b20
 // src: EXE 0x005d3b20
+// pdb: Script::AddAchievement | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iachivement, bStuff
 bool Cmd_AddAchievement_Execute(const ScriptParameter* apParameters, const char* apCompiledParams,
                   TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                   Script* apScript, ScriptLocals* apScriptLocals,
@@ -8906,6 +9606,8 @@ __declspec(thread) unsigned char __tls_index[0x269];
 
 // @fnv 0x005d4510
 // src: XBOX_PDB 0x005d4510
+// pdb: Script::ToggleFogOfWar | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleFogOfWar()
 {
     Interface_SetFogOfWarEnabled(!Interface_GetFogOfWarEnabled());
@@ -8922,6 +9624,9 @@ void TESMain_SetIsSceneComplex(unsigned char);
 
 // @fnv 0x005d49c0
 // src: EXE 0x005d49c0
+// pdb: Script::SetSceneIsComplex | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iComplex
 bool Cmd_SetSceneIsComplex_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     unsigned int value;
@@ -8947,6 +9652,8 @@ __declspec(thread) bool g_bDebugIsActor;
 
 // @fnv 0x005d4aa0
 // src: XBOX_PDB 0x005d4aa0
+// pdb: Script::IsActorFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_IsActorFunction(const ScriptParameter*, const char*, TESObjectREFR* apRefObject, TESObjectREFR*, Script*, ScriptLocals*, double& afReturnValue, unsigned int&)
 {
     Script_IsActorConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -8963,8 +9670,11 @@ struct DebugStub { bool bDebug; };
 extern __declspec(thread) DebugStub _g_theDebugStub;
 extern bool __cdecl _DebugLog(const char*, ...);
 // @fnv 0x005d52a0
-// src: EXE 0x005d52a0
-bool __cdecl Cmd_RemoveNote_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, unsigned int& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005d52a0
+// pdb: Script::RemoveNoteFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pNote
+bool __cdecl Script_RemoveNoteFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, unsigned int& afReturnValue, unsigned int& auiOffset)
 {
     void* pNote = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pNote))
@@ -8981,7 +9691,7 @@ struct DebugLogStandIn {
     static void _DebugLog(const char*, ...);
 };
 struct GetLastHitLocationStandIn {
-    static bool GetLastHitLocationConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool Script_GetHitLocationConditionFunction(TESObjectREFR*, void*, void*, double&);
 };
 struct DebugFlagsStandIn {
     bool bDebugScripts;
@@ -8989,9 +9699,11 @@ struct DebugFlagsStandIn {
 __declspec(thread) DebugFlagsStandIn g_DebugFlags;
 // @fnv 0x005d5630
 // src: XBOX_PDB 0x005d5630
+// pdb: Script::GetHitLocationFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_GetHitLocationFunction(const ScriptParameter*, const char*, TESObjectREFR* apRefObject, TESObjectREFR*, Script*, ScriptLocals*, double& afReturnValue, unsigned int&)
 {
-    GetLastHitLocationStandIn::GetLastHitLocationConditionFunction(apRefObject, 0, 0, afReturnValue);
+    GetLastHitLocationStandIn::Script_GetHitLocationConditionFunction(apRefObject, 0, 0, afReturnValue);
     if (g_DebugFlags.bDebugScripts)
         DebugLogStandIn::_DebugLog("GetHitLocation >> %0.2f", afReturnValue);
     return true;
@@ -9001,6 +9713,9 @@ extern "C" void __cdecl Interface_CreateLockPickMenu(int, int, int);
 
 // @fnv 0x005d7480
 // src: EXE 0x005d7480
+// pdb: Script::ShowLockpickMenuDebug | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ilockDifficulty
 bool __cdecl Cmd_ShowLockpickMenuDebug_Execute(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -9012,7 +9727,7 @@ bool __cdecl Cmd_ShowLockpickMenuDebug_Execute(const ScriptParameter* parameters
     return true;
 }
 
-extern void SetImageSpaceModifiersEnable(unsigned char);
+extern void Script_SetImageSpaceModifiersEnable(unsigned char);
 
 // @fnv 0x005d78c0
 // src: EXE 0x005d78c0
@@ -9025,25 +9740,27 @@ bool Cmd_SetImageSpaceModifiersEnable_Execute(const ScriptParameter* parameters,
                      script, locals, &argument))
         return false;
     if (argument == 0)
-        SetImageSpaceModifiersEnable(0);
+        Script_SetImageSpaceModifiersEnable(0);
     if (argument == 1)
-        SetImageSpaceModifiersEnable(1);
+        Script_SetImageSpaceModifiersEnable(1);
     return true;
 }
 
 struct FUN_005a4160
 {
-    static bool EvaluateReference(TESObjectREFR*, void*, void*, double&);
+    static bool Script_GetIsTurningConditionFunction(TESObjectREFR*, void*, void*, double&);
 };
 
 void __cdecl _DebugLog(const char*, ...);
 extern __declspec(thread) bool g_bDebugEnabled;
 
 // @fnv 0x005d7990
-// src: EXE 0x005d7990
-bool __cdecl Cmd_IsTurning_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005d7990
+// pdb: Script::GetIsTurningFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_GetIsTurningFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    FUN_005a4160::EvaluateReference(apRefObject, 0, 0, afReturnValue);
+    FUN_005a4160::Script_GetIsTurningConditionFunction(apRefObject, 0, 0, afReturnValue);
     if (g_bDebugEnabled)
         _DebugLog("IsTurning >> %0.0f", afReturnValue);
     return true;
@@ -9060,6 +9777,8 @@ bool __cdecl Script_GetAnimActionConditionFunction(TESObjectREFR*, void*, void*,
 
 // @fnv 0x005d79e0
 // src: XBOX_PDB 0x005d79e0
+// pdb: Script::GetAnimActionFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_GetAnimActionFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
                    TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                    Script* apScript, ScriptLocals* apScriptLocals,
@@ -9075,17 +9794,20 @@ bool Script_GetAnimActionFunction(const ScriptParameter* apParameters, const cha
 bool __cdecl Cmd_Exists_Eval(void*, void*, void*, double*);
 
 // @fnv 0x005d7b80
-// src: EXE 0x005d7b80
-bool Cmd_Exists_Execute(const ScriptParameter* parameters, const char* scriptData,
-                  TESObjectREFR* thisObject, TESObjectREFR* container,
-                  Script* script, ScriptLocals* locals, double& result,
-                  unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d7b80
+// pdb: Script::ExistsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargRef
+bool Script_ExistsFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                  unsigned int& auiOffset)
 {
     TESObjectREFR* ref = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container,
-                     script, locals, &ref))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &ref))
         return false;
-    Cmd_Exists_Eval(thisObject, ref, 0, &result);
+    Cmd_Exists_Eval(apRefObject, ref, 0, &afReturnValue);
 }
 
 struct FUN_0056a9b0_host
@@ -9146,6 +9868,9 @@ __declspec(thread) bool g_bDebugLogEnabled;
 void CopyIdentifierBitsToValue(const unsigned int&, double&);
 // @fnv 0x005d9730
 // src: XBOX_PDB 0x005d9730
+// pdb: Script::GetPlayerGrabbedRefFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iid
 bool Script_GetPlayerGrabbedRefFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int iid;
@@ -9165,16 +9890,18 @@ bool Script_GetPlayerGrabbedRefFunction(const ScriptParameter* apParameters, con
 
 void __cdecl _Deallocate(void*);
 void __stdcall FUN_0065ee50_Helper(void*, unsigned int, int, void (__cdecl*)(void));
-void __cdecl Object_ForwardCall_00449680(void);
+void __cdecl FR2MatrixVTC_float_dtor(void);
 struct FUN_005d9ff0_Class {
-    void* __thiscall FUN_005d9ff0(unsigned int flags);
+    void* __thiscall FR2MatrixVTC_float_VectorDtor(unsigned int flags);
 };
 // @fnv 0x005d9ff0
-void* __thiscall FUN_005d9ff0_Class::FUN_005d9ff0(unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x005d9ff0
+// pdb: FR2MatrixVTC<float>::`vector deleting destructor' | TESScriptFunctions.obj | retail, call graph, high
+void* __thiscall FUN_005d9ff0_Class::FR2MatrixVTC_float_VectorDtor(unsigned int flags)
 {
     if (flags & 2)
     {
-        FUN_0065ee50_Helper(this, 0x20, *(int*)((char*)this - 4), Object_ForwardCall_00449680);
+        FUN_0065ee50_Helper(this, 0x20, *(int*)((char*)this - 4), FR2MatrixVTC_float_dtor);
         if (flags & 1)
             _Deallocate((char*)this - 4);
         return (char*)this - 4;
@@ -9191,6 +9918,9 @@ struct FUN_0060d720 {
 
 // @fnv 0x005da180
 // src: EXE 0x005da180
+// pdb: Script::ResetQuestFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pquest
 bool __cdecl Cmd_ResetQuest_Execute(const ScriptParameter* parameters, const char* scriptData,
                           TESObjectREFR* thisObject, TESObjectREFR* container,
                           Script* script, ScriptLocals* locals, double& result,
@@ -9210,13 +9940,16 @@ bool __cdecl Cmd_Default_Execute(void);
 
 // @fnv 0x005da630
 // src: EXE 0x005da630
+// pdb: Script::ShowTutorialMenu | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pmessage
 bool __cdecl Cmd_ShowTutorialMenu_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     if (Cmd_Default_Execute())
     {
         unsigned int pmessage = 0;
         ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pmessage);
-        TutorialMenu::Create(pmessage, 0);
+        TutorialMenu::TutorialMenu_Create(pmessage, 0);
     }
     return true;
 }
@@ -9242,8 +9975,11 @@ struct Tile_ { Menu* GetMenu(); };
 Menu* __cdecl FindMenuById(int);
 
 // @fnv 0x005dc4e0
-// src: EXE 0x005dc4e0
-bool Cmd_ForceTerminalBack_Execute()
+// src: XBOX_RETAIL_PDB 0x005dc4e0
+// pdb: Script::ForceTerminalBackFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pmenutile, pmenu
+bool Script_ForceTerminalBackFunction()
 {
     Tile_* pmenutile;
     FUN_00758a80_shell* pmenu;
@@ -9261,8 +9997,10 @@ extern const char* const g_011d4dec_arg1;
 extern bool DAT_011ad80f;
 
 // @fnv 0x005dc530
-// src: EXE 0x005dc530
-bool Cmd_ToggleDepthBias_Execute()
+// src: XBOX_RETAIL_PDB 0x005dc530
+// pdb: Script::ToggleDepthBiasFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_ToggleDepthBiasFunction()
 {
     DAT_011ad80f = !DAT_011ad80f;
     const char* state;
@@ -9283,6 +10021,9 @@ struct BGSSaveLoadUIApi {
 BGSSaveLoadUIApi* __cdecl XGamerProfile_Instance(void);
 // @fnv 0x005dd960
 // src: EXE 0x005dd960
+// pdb: Script::RedeemCodeFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cCode, ok
 bool Cmd_RedeemCode_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     char buffer[0x100];
@@ -9308,6 +10049,10 @@ struct ReputationHelper
 
 // @fnv 0x005dde10
 // src: EXE 0x005dde10
+// pdb: Script::RemoveReputationExactFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::RemoveReputationFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iPosNeg, fValue, pRep
 bool Cmd_RemoveReputation_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -9374,8 +10119,11 @@ void __cdecl BSTaskThread_SetPauseSleepValue(int);
 void _DebugLog(const char*, ...);
 
 // @fnv 0x005de3a0
-// src: EXE 0x005de3a0
-bool __cdecl BSTaskThread_sPauseSleepValue(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005de3a0
+// pdb: Script::SetTaskThreadSleepFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival
+bool __cdecl Script_SetTaskThreadSleepFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int ival = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &ival))
@@ -9390,8 +10138,11 @@ extern "C" void _DebugLog(const char*, ...);
 void BSTaskThread_SetUpdateSleepValue(int);
 
 // @fnv 0x005de420
-// src: EXE 0x005de420
-bool BSTaskThread_sUpdateSleepValue(const ScriptParameter* apParameters, const char* apCompiledParams,
+// src: XBOX_RETAIL_PDB 0x005de420
+// pdb: Script::SetTaskThreadUpdateSleepFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival
+bool Script_SetTaskThreadUpdateSleepFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
                   TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                   Script* apScript, ScriptLocals* apScriptLocals,
                   double& afReturnValue, unsigned int& auiOffset)
@@ -9408,10 +10159,13 @@ bool BSTaskThread_sUpdateSleepValue(const ScriptParameter* apParameters, const c
 
 struct ScriptAddedFormHelper
 {
-    void IncludeForm(TESForm*);
+    void AddScriptAddedForm(TESForm*);
 };
 // @fnv 0x005de600
 // src: EXE 0x005de600
+// pdb: Script::AddFormToFormListFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pformlist, pform
 bool Cmd_AddFormToFormList_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject,
                   TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result,
                   unsigned int& opcodeOffset)
@@ -9423,7 +10177,7 @@ bool Cmd_AddFormToFormList_Execute(const ScriptParameter* parameters, const char
                      locals, &formB, &formA))
         return false;
     if (formA && formB)
-        ((ScriptAddedFormHelper*)formB)->IncludeForm(formA);
+        ((ScriptAddedFormHelper*)formB)->AddScriptAddedForm(formA);
     return true;
 }
 
@@ -9474,6 +10228,8 @@ struct FUN_008783c0 : FUN_008784b0
 };
 
 // @fnv 0x008783c0
+// pdb: MemoryManagerFile::MemoryManagerFile | MemoryManagerFile.obj | debug, call graph (shared callers), medium
+// pdb params: apFileName
 FUN_008783c0::FUN_008783c0(const char* path) : file(path, 1, 2, false)
 {
 }
@@ -9491,8 +10247,10 @@ extern TES* g_TES;
 void _DebugLog(const char*, const char*);
 extern __declspec(thread) unsigned char g_tls[0x269];
 // @fnv 0x005b9540
-// src: EXE 0x005b9540
-bool Cmd_ToggleSky_Execute()
+// src: XBOX_RETAIL_PDB 0x005b9540
+// pdb: Script::ToggleSkyFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_ToggleSkyFunction()
 {
     DAT_011cae45 ^= 1;
     if (g_TES) {
@@ -9546,6 +10304,9 @@ extern int _sscanf(char*, const char*, ...);
 
 // @fnv 0x005bd300
 // src: EXE 0x005bd300
+// pdb: Script::EnableNavMesh | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pformIDstr, iformID
 bool Cmd_EnableNavMesh_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     char buffer[0x200];
@@ -9569,16 +10330,19 @@ bool Cmd_EnableNavMesh_Execute(const ScriptParameter* parameters, const char* sc
 }  // namespace fnv_005bd300
 
 // @fnv 0x005c81f0
-// src: EXE 0x005c81f0
-bool Cmd_SetEnemy_Execute(const ScriptParameter* pParams, const char* pScriptData, TESObjectREFR* pThisObject, TESObjectREFR* pContainer, Script* pScript, ScriptLocals* pLocals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c81f0
+// pdb: Script::SetEnemyFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pFaction, pFactionTarget, iTargReaction, iReaction
+bool Script_SetEnemyFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESFaction* pEnemy = 0;
     TESFaction* pFaction = 0;
     TESFaction* pAlly = 0;
     TESFaction* pFriend = 0;
-    if (!ExtractArgs(pParams, pScriptData, &opcodeOffset, pThisObject, pContainer, pScript, pLocals, &pEnemy, &pFaction, &pAlly, &pFriend))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pEnemy, &pFaction, &pAlly, &pFriend))
         return false;
-    result = 0.0;
+    afReturnValue = 0.0;
     if (pFaction && pEnemy)
     {
         if (!pAlly)
@@ -9602,6 +10366,9 @@ __declspec(thread) unsigned char g_tlsDebugFlag;
 
 // @fnv 0x005d5560
 // src: XBOX_PDB 0x005d5560
+// pdb: Script::SetGlobalTimeMultiplierFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bIgnoreAudio, fmultiplier
 bool Script_SetGlobalTimeMultiplierFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     float fmultiplier = 1.0f;
@@ -9639,6 +10406,8 @@ extern int DAT_011f2250;
 
 // @fnv 0x005d8660
 // src: XBOX_PDB 0x005d8660
+// pdb: Script::ToggleVATSLight | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleVATSLight()
 {
     if (((VATS*)&DAT_011f2250)->VATS_GetVATSLight())
@@ -9690,7 +10459,7 @@ bool Cmd_SetNoActivationSound_Execute(const ScriptParameter* apScriptParameters,
 namespace fnv_005b5500 {
 struct XCont
 {
-    void ExtraContainerChangeData_DuplicateAllItem(TESObjectREFR*, TESObjectREFR*);
+    void InventoryChanges_DuplicateAllItems(TESObjectREFR*, TESObjectREFR*);
 };
 
 struct XExtraList
@@ -9705,6 +10474,9 @@ struct XActor
 
 // @fnv 0x005b5500
 // src: EXE 0x005b5500
+// pdb: Script::DuplicateAllItemsFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pMoveToContainer, iownership, bowner, pinventory
 bool __cdecl Cmd_DuplicateAllItems_Execute(const ScriptParameter* scriptParameter, const char* scriptName,
                           TESObjectREFR* reference, TESObjectREFR* target,
                           Script* script, ScriptLocals* scriptLocals,
@@ -9729,7 +10501,7 @@ bool __cdecl Cmd_DuplicateAllItems_Execute(const ScriptParameter* scriptParamete
                 reinterpret_cast<XActor*>(reference)->GetExtra())->GetContainerChangeData();
 
             if (pChanges)
-                pChanges->ExtraContainerChangeData_DuplicateAllItem(reference, pTarget);
+                pChanges->InventoryChanges_DuplicateAllItems(reference, pTarget);
         }
     }
 
@@ -9768,6 +10540,9 @@ FUN_00952c30_stand* _g_thePlayer;
 
 // @fnv 0x005b5690
 // src: EXE 0x005b5690
+// pdb: Script::RemoveAllItemsFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pMoveToContainer, iownership, ihidden, bowner, pinventory
 bool Cmd_RemoveAllItems_Execute(const ScriptParameter* scriptParameter, const char* formatString,
                  TESObjectREFR* actorRef, TESObjectREFR* actorRef2, Script* script,
                  ScriptLocals* scriptLocals, double& result, unsigned int& opcode)
@@ -9844,6 +10619,9 @@ TESObject* _g_thePlayer;
 
 // @fnv 0x005b57e0
 // src: EXE 0x005b57e0
+// pdb: Script::SetOwnershipFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: powner
 bool Cmd_SetOwnership_Execute(const ScriptParameter* parameter, const char* functionName,
                   TESObjectREFR* object, TESObjectREFR* object2, Script* script,
                   ScriptLocals* scriptLocals, double& result,
@@ -9878,6 +10656,9 @@ bool Cmd_SetOwnership_Execute(const ScriptParameter* parameter, const char* func
 
 // @fnv 0x005b58d0
 // src: EXE 0x005b58d0
+// pdb: Script::DropItemFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, pItem
 bool Cmd_Drop_Execute(const ScriptParameter *parameter, const char *name,
                   TESObjectREFR *reference, TESObjectREFR *reference2,
                   Script *script, ScriptLocals *locals, double &,
@@ -9910,21 +10691,23 @@ class ScriptINISettingActions : public INISettingCollection
 {
 public:
     void* GetPosition();
-    bool INISettingCollection_SaveAll(char const*);
+    bool SettingCollection_Setting_WriteSettingsToFile(char const*);
 };
 
 
 using ::SettingT;
 
 // @fnv 0x005b6c50
-// src: EXE 0x005b6c50
-bool Cmd_SaveIniFiles_Execute()
+// src: XBOX_RETAIL_PDB 0x005b6c50
+// pdb: Script::SaveIniFiles | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_SaveIniFiles()
 {
-    reinterpret_cast<ScriptINISettingActions*>(SettingT<INISettingCollection>::GetCollection())->INISettingCollection_SaveAll(
+    reinterpret_cast<ScriptINISettingActions*>(SettingT<INISettingCollection>::GetCollection())->SettingCollection_Setting_WriteSettingsToFile(
         static_cast<const char*>(
             reinterpret_cast<ScriptINISettingActions*>(SettingT<INISettingCollection>::GetCollection())->GetPosition()));
 
-    reinterpret_cast<ScriptINISettingActions*>(SettingT<INIPrefSettingCollection>::GetCollection())->INISettingCollection_SaveAll(
+    reinterpret_cast<ScriptINISettingActions*>(SettingT<INIPrefSettingCollection>::GetCollection())->SettingCollection_Setting_WriteSettingsToFile(
         static_cast<const char*>(
             reinterpret_cast<ScriptINISettingActions*>(SettingT<INIPrefSettingCollection>::GetCollection())->GetPosition()));
 
@@ -9940,6 +10723,8 @@ int __cdecl TESObjectCELL_RenderTestCell(int, int, int);
 
 // @fnv 0x005b72a0
 // src: EXE 0x005b72a0
+// pdb: Script::RenderTestHereFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_RenderTestHere_Execute(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&)
 {
     if (reinterpret_cast<int>(reinterpret_cast<Actor*>(_g_thePlayer)->FUN_008d6f30()))
@@ -10032,6 +10817,9 @@ void __fastcall FUN_00b8b500(void*);
 
 // @fnv 0x005b7820
 // src: EXE 0x005b7820
+// pdb: Script::SetImageSpace | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pimagespace
 bool Cmd_SetImageSpace_Execute(const ScriptParameter* parameter, const char* name,
                   TESObjectREFR* object1, TESObjectREFR* object2,
                   Script* script, ScriptLocals* locals,
@@ -10059,6 +10847,9 @@ extern unsigned int __tls_index;
 void _DebugLog(const char*);
 
 // @fnv 0x005b9ea0
+// src: XBOX_RETAIL_PDB 0x005b9ea0
+// pdb: Script::SetTargetDOF | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 __declspec(thread) struct FUN_005b9ea0_TLS_DATA
 {
     unsigned char pad[0x268];
@@ -10066,7 +10857,7 @@ __declspec(thread) struct FUN_005b9ea0_TLS_DATA
 } FUN_005b9ea0_tlsData;
 
 // src: EXE 0x005b9ea0
-bool Cmd_Shared_Execute_5b9ea0(
+bool Script_SetTargetDOF(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
     TESObjectREFR* apRefObject,
@@ -10223,6 +11014,9 @@ void __cdecl TESHavokUtilities_AddVelocity(void*, NiPoint3*, int);
 
 // @fnv 0x005ba5d0
 // src: EXE 0x005ba5d0
+// pdb: Script::SetVelFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cAxis, fPos, pos
 bool Cmd_SetVel_Execute(const ScriptParameter* scriptParameter, const char* scriptName,
     TESObjectREFR* reference, TESObjectREFR* reference2, Script* script,
     ScriptLocals* scriptLocals, double& result, unsigned int& optionalArg)
@@ -10434,6 +11228,9 @@ void __cdecl _DebugLog(char const*, ...);
 
 // @fnv 0x005beb00
 // src: EXE 0x005beb00
+// pdb: Script::SetGameSettingFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: settingName, settingValue, pGS
 bool Cmd_SetGameSetting_Execute(const ScriptParameter* apParameters, const char* apCompiledParams,
     TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
     ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
@@ -10516,6 +11313,9 @@ void __cdecl _DebugLog(const char*, ...);
 
 // @fnv 0x005becf0
 // src: EXE 0x005becf0
+// pdb: Script::GetINISettingFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: settingName, pIS
 bool __cdecl Cmd_GetINISetting_Execute(const ScriptParameter* parameter, const char* name,
                          TESObjectREFR* reference1, TESObjectREFR* reference2,
                          Script* script, ScriptLocals* locals,
@@ -10573,6 +11373,7 @@ int DAT_011f91d8;
 
 // @fnv 0x005bf7b0
 // src: COMMUNITY 0x005bf7b0
+// pdb: BSShaderManager::GetShadows | TESScriptFunctions.obj | debug, upstream name already matches, high
 unsigned char BSShaderManager_GetShadows()
 {
     int result;
@@ -10657,7 +11458,7 @@ void __fastcall _ref_00ec408c(unsigned int cookie);
 extern __declspec(thread) unsigned char FUN_005c4940_TLS[0x269];
 
 // src: EXE 0x005c4940
-bool __cdecl Cmd_GetIsFormType_Execute(
+bool __cdecl Script_GetIsFormTypeFunction(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
     TESObjectREFR* apRefObject,
@@ -10694,6 +11495,10 @@ bool __cdecl Cmd_GetIsFormType_Execute(
     }
 
 // @fnv 0x005c4940
+// src: XBOX_RETAIL_PDB 0x005c4940
+// pdb: Script::GetIsFormTypeFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: input
     if (FUN_005c4940_TLS[0x268])
     {
         _DebugLog("Get Is Form Type >> %0.2f", afReturnValue);
@@ -10745,6 +11550,8 @@ void __fastcall BGSSaveLoadManager_SetForceSaveTimer(void*);
 
 // @fnv 0x005c5590
 // src: EXE 0x005c5590
+// pdb: Script::ForceSave | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_ForceSave_Execute()
 {
     if (g_011de2b8.Bool()[0] &&
@@ -10763,8 +11570,10 @@ void __cdecl BSTreeManager_SetTreesEnabled(bool);
 void __cdecl _DebugLog(const char*, const char*);
 
 // @fnv 0x005c57f0
-// src: EXE 0x005c57f0
-bool __cdecl Cmd_ToggleTrees_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005c57f0
+// pdb: Script::ToggleTrees | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_ToggleTrees(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     BSTreeManager_SetTreesEnabled(!_FUN_0054ee20());
     const char* result;
@@ -10787,6 +11596,9 @@ extern void* _g_thePlayer;
 
 // @fnv 0x005c6ad0
 // src: EXE 0x005c6ad0
+// pdb: Script::SetShowQuestItemsFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: icount
 bool Cmd_SetShowQuestItems_Execute(const ScriptParameter* param1, const char* param2, TESObjectREFR* param3, TESObjectREFR* param4, Script* param5, ScriptLocals* param6, double& param7, unsigned int& param8)
 {
     int showItems = 0;
@@ -10895,11 +11707,14 @@ struct XActor
 };
 
 // @fnv 0x005c8340
-// src: EXE 0x005c8340
-bool Cmd_RemoveFromAllFactions_Execute(const ScriptParameter* parameter, const char* name,
-                  TESObjectREFR* reference, TESObjectREFR* reference2,
-                  Script* script, ScriptLocals* locals,
-                  double& result, unsigned int& resultID)
+// src: XBOX_RETAIL_PDB 0x005c8340
+// pdb: Script::RemoveFromAllFactionsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pextra, pactor
+bool Script_RemoveFromAllFactionsFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* reference, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals,
+                  double& afReturnValue, unsigned int& auiOffset)
 {
     if (reference && reinterpret_cast<XActor*>(reference)->V64()) {
         XActor* actor = reinterpret_cast<XActor*>(reference);
@@ -10939,6 +11754,9 @@ extern BSOcclusionPlane* _g_thePlayer;
 
 // @fnv 0x005cdfb0
 // src: EXE 0x005cdfb0
+// pdb: Script::SetPCExpelledFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction, ivalue, pcell
 bool Cmd_SetPCExpelled_Execute(const ScriptParameter* parameter, const char* name,
                   TESObjectREFR* reference, TESObjectREFR* reference2,
                   Script* script, ScriptLocals* scriptLocals,
@@ -10973,6 +11791,9 @@ bool __cdecl Script_GetPCFactionAttackConditionFunction(TESObjectREFR*, TESFacti
 
 // @fnv 0x005ce200
 // src: EXE 0x005ce200
+// pdb: Script::GetPCFactionAttackFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction
 bool __cdecl Cmd_GetPCFactionAttack_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESFaction* pfaction;
@@ -10993,8 +11814,11 @@ void __cdecl RouletteMenu_Create(TESCasino*, int, int, int, int);
 TESObjectREFR* _g_thePlayer;
 
 // @fnv 0x005cf1a0
-// src: EXE 0x005cf1a0
-bool Cmd_Shared_Execute_5cf1a0(const ScriptParameter* apParameters, const char* apCompiledParams,
+// src: XBOX_RETAIL_PDB 0x005cf1a0
+// pdb: Script::ShowRouletteMenu | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pCasino, iMaxBet, iMinBet, iMinWinnings
+bool Script_ShowRouletteMenu(const ScriptParameter* apParameters, const char* apCompiledParams,
                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                  Script* apScript, ScriptLocals* apScriptLocals,
                  double& afReturnValue, unsigned int& auiOffset)
@@ -11255,6 +12079,9 @@ struct FUN_005cfef0_Virtuals
 
 // @fnv 0x005cfef0
 // src: EXE 0x005cfef0
+// pdb: Script::StartCannibalFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, pact
 bool Cmd_StartCannibal_Execute(const ScriptParameter* param, const char* name,
                   TESObjectREFR* ref1, TESObjectREFR* ref2, Script* script,
                   ScriptLocals* locals, double& result, unsigned int& arg)
@@ -11280,7 +12107,7 @@ bool Cmd_StartCannibal_Execute(const ScriptParameter* param, const char* name,
 namespace fnv_005d4400 {
 struct FUN_00976030_ProcessLists
 {
-    void ProcessLists_FlushNonPersistentActors(int count);
+    void ProcessLists_FlushNonPersistentActors(int aiSeverity);
 };
 
 FUN_00976030_ProcessLists DAT_011e0e80;
@@ -11291,7 +12118,7 @@ __declspec(thread) unsigned char FUN_005d4400_tls_padding[0x268];
 __declspec(thread) unsigned char FUN_005d4400_tls_flag;
 
 // src: EXE 0x005d4400
-bool Cmd_FlushNonPersistActors_Execute(const ScriptParameter* apParameters,
+bool Script_FlushPersistantActors(const ScriptParameter* apParameters,
                   const char* apCompiledParams,
                   TESObjectREFR* apRefObject,
                   TESObjectREFR* apContainer,
@@ -11312,6 +12139,10 @@ bool Cmd_FlushNonPersistActors_Execute(const ScriptParameter* apParameters,
     DAT_011e0e80.ProcessLists_FlushNonPersistentActors(iCount);
 
 // @fnv 0x005d4400
+// src: XBOX_RETAIL_PDB 0x005d4400
+// pdb: Script::FlushPersistantActors | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount
     if (FUN_005d4400_tls_flag)
     {
         _DebugLog("Deleted all non persistent actors in high process.");
@@ -11351,6 +12182,9 @@ FUN_ReferenceDeleter::~FUN_ReferenceDeleter()
 
 // @fnv 0x005d4480
 // src: XBOX_PDB 0x005d4480
+// pdb: Script::DeleteReference | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pref
 bool Script_DeleteReference(const ScriptParameter* apParameters, const char* apCompiledParams,
                   TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                   Script* apScript, ScriptLocals* apScriptLocals,
@@ -11384,6 +12218,9 @@ extern void __cdecl Script_IsPlayerActionActiveConditionFunction(TESObjectREFR*,
 
 // @fnv 0x005d4c60
 // src: EXE 0x005d4c60
+// pdb: Script::IsPlayerActionActiveFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iAction
 bool __cdecl Cmd_IsPlayerActionActive_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     int iAction;
@@ -11398,6 +12235,9 @@ void __cdecl CharGenMenu_Create_(int, int, unsigned char, unsigned char);
 
 // @fnv 0x005d71f0
 // src: EXE 0x005d71f0
+// pdb: Script::ShowCharGenMenuModValues | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: itraitPoints, itagSkillPoints, breturn, iattributePoints
 bool Cmd_ShowChargenMenuModValues_Execute(const ScriptParameter* parameter, const char* functionName,
     TESObjectREFR* object, TESObjectREFR* object2, Script* script,
     ScriptLocals* locals, double& result, unsigned int* arguments)
@@ -11704,11 +12544,14 @@ struct VFinal : VDerived
 };
 
 // @fnv 0x005d7a30
-// src: EXE 0x005d7a30
-bool Cmd_UseWeapon_Execute(const ScriptParameter* parameter, const char* format,
-                  TESObjectREFR* reference, TESObjectREFR* reference2,
-                  Script* script, ScriptLocals* scriptLocals,
-                  double& result, unsigned int& resultCode)
+// src: XBOX_RETAIL_PDB 0x005d7a30
+// pdb: Script::UseWeaponFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ptargetLocRef, bholdFire, pweapon, prefTarget, bcrouch, bdoNoDamage, plocRef, inumattack, balwaysHit, pactor
+bool Script_UseWeaponFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* reference, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals,
+                  double& afReturnValue, unsigned int& auiOffset)
 {
     int a;
     int b;
@@ -11730,8 +12573,8 @@ bool Cmd_UseWeapon_Execute(const ScriptParameter* parameter, const char* format,
     f = 0;
     e = 0;
 
-    if (!ExtractArgs(parameter, format, &resultCode, reference, reference2,
-                     script, scriptLocals, &d, &i, &b, &a, &g, &c, &h, &f, &e))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, reference, apContainer,
+                     apScript, apScriptLocals, &d, &i, &b, &a, &g, &c, &h, &f, &e))
     {
         return false;
     }
@@ -11825,6 +12668,9 @@ extern Obj_009529d0* _g_thePlayer;
 
 // @fnv 0x005d9ac0
 // src: EXE 0x005d9ac0
+// pdb: Script::ForceActiveQuestFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pquest
 bool Cmd_ForceActiveQuest_Execute(const ScriptParameter* param, const char* paramName, TESObjectREFR* ref, TESObjectREFR* ref2, Script* script, ScriptLocals* locals, double& result, unsigned int& flags)
 {
     TESQuest* quest = 0;
@@ -11843,6 +12689,9 @@ struct Controller
 
 // @fnv 0x005da1e0
 // src: EXE 0x005da1e0
+// pdb: Script::SetQuestDelayFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pquest, fval
 bool Cmd_SetQuestDelay_Execute(const ScriptParameter* param1, const char* param2, TESObjectREFR* param3, TESObjectREFR* param4, Script* param5, ScriptLocals* param6, double& param7, unsigned int& param8)
 {
     Controller* pController = 0;
@@ -12048,6 +12897,9 @@ void __cdecl _FNV_Warning(const char*, unsigned int);
 
 // @fnv 0x005dc5e0
 // src: XBOX_PDB 0x005dc5e0
+// pdb: Script::SetMinimalUseFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iflag
 bool Script_SetMinimalUseFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                  Script* apScript, ScriptLocals* apScriptLocals,
@@ -12133,6 +12985,9 @@ class ContainerItemExtra;
 
 // @fnv 0x005de670
 // src: EXE 0x005de670
+// pdb: Script::AddNPCToLeveledListFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: plevlist, pform, ilevel
 bool Cmd_Shared_Execute_5de670(ScriptParameter* parameter, const char* name,
                   TESObjectREFR* reference, TESObjectREFR* actor,
                   Script* script, ScriptLocals* locals, double* result,
@@ -12181,6 +13036,9 @@ struct ContainerItemExtra
 
 // @fnv 0x005de700
 // src: EXE 0x005de700
+// pdb: Script::AddItemToLeveledListFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: icount, fhealthperc, plevlist, pform, ilevel, pextra
 bool Cmd_AddItemToLeveledList_Execute(const ScriptParameter* parameter, const char* functionName,
     TESObjectREFR* reference, TESObjectREFR* reference2, Script* script,
     ScriptLocals* scriptLocals, double& result, unsigned int& resultCode)
@@ -12254,6 +13112,8 @@ public:
 
 // @fnv 0x00977540
 // src: XBOX_PDB 0x00977540
+// pdb: ProcessLists::UnloadAllActorPermanentMagic | ProcessLists.obj | retail, upstream name already matches, high
+// pdb locals: pMob, i, pactor
 void ProcessManager::ProcessLists_UnloadAllActorPermanentMagic()
 {
     MobileObject* pProcess = 0;
@@ -12266,7 +13126,7 @@ void ProcessManager::ProcessLists_UnloadAllActorPermanentMagic()
         if (pProcess && pProcess->IsActor())
             pTarget = pProcess;
         if (pTarget)
-            pTarget->FUN_008c30a0();
+            pTarget->Actor_UnloadPermanentMagic();
     }
 
     for (unsigned int j = processes.GetHead(static_cast<PROCESS_TYPE>(1));
@@ -12280,11 +13140,11 @@ void ProcessManager::ProcessLists_UnloadAllActorPermanentMagic()
                 pTarget2 = pProcess;
         }
         if (pTarget2)
-            pTarget2->FUN_008c30a0();
+            pTarget2->Actor_UnloadPermanentMagic();
     }
 
     if (_g_thePlayer)
-        _g_thePlayer->FUN_008c30a0();
+        _g_thePlayer->Actor_UnloadPermanentMagic();
 }
 }  // namespace fnv_00977540
 
@@ -12487,9 +13347,12 @@ __int64 __cdecl Date_CalculateFullDate(int param)
     return *(__int64*)&r;
 }
 
-bool __cdecl Cmd_GetVATSValue_Eval(TESObjectREFR*, unsigned int, unsigned int, double&);
+bool __cdecl FOScriptFunctions_GetVATSValueConditionFunction(TESObjectREFR*, unsigned int, unsigned int, double&);
 // @fnv 0x00594dc0
 // src: EXE 0x00594dc0
+// pdb: FOScriptFunctions::GetVATSValueFunction | FOScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival2, bresult, ival1
 bool __cdecl Cmd_GetVATSValue_Execute(const ScriptParameter* parameters, const char* compiledParams,
     TESObjectREFR* reference, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& offset)
@@ -12500,7 +13363,7 @@ bool __cdecl Cmd_GetVATSValue_Execute(const ScriptParameter* parameters, const c
     if (!ExtractArgs(parameters, compiledParams, &offset,
         reference, container, script, locals, &iParam1, &iParam2))
         return false;
-    bResult = Cmd_GetVATSValue_Eval(reference, iParam1, iParam2, result);
+    bResult = FOScriptFunctions_GetVATSValueConditionFunction(reference, iParam1, iParam2, result);
     return bResult;
 }
 
@@ -12620,106 +13483,109 @@ bool Interface_IsConsoleVisible();
 void Interface_PrintLine(const char*,...);
 extern const char DAT_01034044[];
 // @fnv 0x00594e40
-// src: EXE 0x00594e40
-bool Cmd_GetVATSValue_Eval(void* unused,int value,void* parameter,double& result) {
- result=0;
+// src: XBOX_RETAIL_PDB 0x00594e40
+// pdb: FOScriptFunctions::GetVATSValueConditionFunction | FOScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: bresult, pvatsCommand, equery, plist, pweapon, pcheck, etype
+bool FOScriptFunctions_GetVATSValueConditionFunction(void* apRefObject,int apParam1,void* apParam2,double& afReturnValue) {
+ afReturnValue=0;
  bool h=true;
  h=false;
  Context17* p=DAT_011f2250.FUN_0044ddc0()==4 ? DAT_011f2250.VATS_GetCurrentAction() : ((DAT_011f2250.FUN_0044ddc0()==2 || DAT_011f2250.FUN_0044ddc0()==3) ? VATSMenu_GetCurrentQueuedAction() : 0);
  if(p) {
-  int a=value;
+  int a=apParam1;
   if(a>=0 && a<18) {
    switch(a) {
    case 1: {
-    FormList17* a=(FormList17*)parameter;
+    FormList17* a=(FormList17*)apParam2;
     Weapon17* h=p->info->weapon;
     if(a && h) {
-     if(a->FUN_00500940()->BSSimpleList_TESLevSpell_IsInList((Form17*)h)) result=1;
+     if(a->FUN_00500940()->BSSimpleList_TESLevSpell_IsInList((Form17*)h)) afReturnValue=1;
     }
     break;
    }
    case 3: {
     if(p->reference) {
-     FormList17* a=(FormList17*)parameter;
+     FormList17* a=(FormList17*)apParam2;
      if(a) {
-      if(a->FUN_00500940()->BSSimpleList_TESLevSpell_IsInList(reinterpret_cast<Form17*>(p->reference->BGSSaveFormBuffer_GetForm()))) result=1;
+      if(a->FUN_00500940()->BSSimpleList_TESLevSpell_IsInList(reinterpret_cast<Form17*>(p->reference->BGSSaveFormBuffer_GetForm()))) afReturnValue=1;
      }
     }
     break;
    }
    case 10: {
     if(p->info->target) {
-     FormList17* a=(FormList17*)parameter;
+     FormList17* a=(FormList17*)apParam2;
      if(a) {
-      if(a->FUN_00500940()->BSSimpleList_TESLevSpell_IsInList((Form17*)p->info->target)) result=1;
+      if(a->FUN_00500940()->BSSimpleList_TESLevSpell_IsInList((Form17*)p->info->target)) afReturnValue=1;
      }
     }
     break;
    }
    case 0: {
-    Weapon17* a=(Weapon17*)parameter;
+    Weapon17* a=(Weapon17*)apParam2;
     if(a) {
      Weapon17* h=p->info->weapon;
-     if(a==h) result=1;
+     if(a==h) afReturnValue=1;
     }
     break;
    }
    case 15: {
-    int a=(int)parameter;
+    int a=(int)apParam2;
     if(p->info->weapon) {
-     if(p->info->weapon->FUN_00446390()==a) result=1;
-    } else if(a==0) result=1;
+     if(p->info->weapon->FUN_00446390()==a) afReturnValue=1;
+    } else if(a==0) afReturnValue=1;
     break;
    }
    case 2: {
-    Form17* a=(Form17*)parameter;
-    if(a && p->reference && p->reference->BGSSaveFormBuffer_GetForm() && !a->Rejects(reinterpret_cast<Form17*>(p->reference->BGSSaveFormBuffer_GetForm()))) result=1;
+    Form17* a=(Form17*)apParam2;
+    if(a && p->reference && p->reference->BGSSaveFormBuffer_GetForm() && !a->Rejects(reinterpret_cast<Form17*>(p->reference->BGSSaveFormBuffer_GetForm()))) afReturnValue=1;
     break;
    }
    case 5:
-    if(parameter==p->other) result=1;
+    if(apParam2==p->other) afReturnValue=1;
     break;
    case 6:
-    if(parameter==p->form) result=1;
+    if(apParam2==p->form) afReturnValue=1;
     break;
    case 7:
-    result=p->flag04?1.0f:0.0f;
+    afReturnValue=p->flag04?1.0f:0.0f;
     break;
    case 8:
-    result=p->info->EffectSetting_IsFlagSetAny(4)?1.0f:0.0f;
+    afReturnValue=p->info->EffectSetting_IsFlagSetAny(4)?1.0f:0.0f;
     break;
    case 9: {
-    Form17* a=(Form17*)parameter;
-    if(a && p->info->target && !a->Rejects((Form17*)p->info->target)) result=1;
+    Form17* a=(Form17*)apParam2;
+    if(a && p->info->target && !a->Rejects((Form17*)p->info->target)) afReturnValue=1;
     break;
    }
    case 4:
-    result=CombatUtilities_GetDistanceBetweenFacingActors(DAT_011dea3c,p->reference,0);
+    afReturnValue=CombatUtilities_GetDistanceBetweenFacingActors(DAT_011dea3c,p->reference,0);
     break;
    case 11:
-    result=p->info->EffectSetting_IsFlagSetAny(0x10)?1.0f:0.0f;
+    afReturnValue=p->info->EffectSetting_IsFlagSetAny(0x10)?1.0f:0.0f;
     break;
    case 12:
-    result=p->info->EffectSetting_IsFlagSetAny(0x40)?1.0f:0.0f;
+    afReturnValue=p->info->EffectSetting_IsFlagSetAny(0x40)?1.0f:0.0f;
     break;
    case 13:
-    result=p->info->EffectSetting_IsFlagSetAny(0x20)?1.0f:0.0f;
+    afReturnValue=p->info->EffectSetting_IsFlagSetAny(0x20)?1.0f:0.0f;
     break;
    case 14:
-    result=p->info->EffectSetting_IsFlagSetAny(0x80)?1.0f:0.0f;
+    afReturnValue=p->info->EffectSetting_IsFlagSetAny(0x80)?1.0f:0.0f;
     break;
    case 16:
-    result=p->flag06?1.0f:0.0f;
-    result=p->flag24?1.0:result;
+    afReturnValue=p->flag06?1.0f:0.0f;
+    afReturnValue=p->flag24?1.0:afReturnValue;
     break;
    case 17:
-    result=p->flag07?1.0f:0.0f;
+    afReturnValue=p->flag07?1.0f:0.0f;
     break;
    }
    h=true;
   }
  }
- if(Interface_IsConsoleVisible()) Interface_PrintLine(DAT_01034044,value,parameter,result);
+ if(Interface_IsConsoleVisible()) Interface_PrintLine(DAT_01034044,apParam1,apParam2,afReturnValue);
  return h;
 }
 
@@ -12734,6 +13600,9 @@ bool __cdecl Script_GetInZoneConditionFunction(TESObjectREFR*, unsigned int, voi
 
 // @fnv 0x005b4b80
 // src: EXE 0x005b4b80
+// pdb: Script::GetInZoneFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pzone
 bool __cdecl Cmd_GetInZone_Execute(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* container, TESObjectREFR* scriptOwner, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -12766,6 +13635,8 @@ void __cdecl Interface_UpdateInventory();
 
 // @fnv 0x005b5860
 // src: EXE 0x005b5860
+// pdb: Script::DropMeFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_DropMe_Execute(const ScriptParameter*, const char*,
                            ScriptReferenceItemActions* source, ScriptReferenceItemActions* target,
                            Script*, ScriptLocals*, double&, unsigned int&)
@@ -13054,6 +13925,9 @@ extern SpellPlayer* DAT_011dea3c;
 void DebugLog(const char*, ...);
 // @fnv 0x005b5bb0
 // src: XBOX_PDB 0x005b5bb0
+// pdb: Script::PlayerSpellBook | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: plist, icount
 bool Script_PlayerSpellBook()
 {
     SpellList* list = DAT_011c3f2c->FUN_0087eaa0();
@@ -13152,8 +14026,11 @@ void Interface_PrintLine(const char* fmt, const char* s);
 void TESTerrainLODManager_UpdateGrass(Vec3f a, Vec3f b, float c);
 
 // @fnv 0x005b70c0
-// src: EXE 0x005b70c0
-bool Cmd_ToggleGrass_Execute()
+// src: XBOX_RETAIL_PDB 0x005b70c0
+// pdb: Script::ToggleGrassFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pgnode, bgrassoff, pcam
+bool Script_ToggleGrassFunction()
 {
     GrassProbe* obj = (GrassProbe*)TESTerrainLODManager_GetGrassNode();
     if (obj != 0) {
@@ -13183,6 +14060,9 @@ bool __cdecl Script_ParseParameters(void* pvParamInfo, void* pvScriptData, void*
 
 // @fnv 0x005b77c0
 // src: EXE 0x005b77c0
+// pdb: Script::SetCellImageSpace | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell, pimagespace
 bool __cdecl Cmd_SetCellImageSpace_Execute(void* pvParamInfo, void* pvScriptData, void* pvThisObj, void* pvContainingObj,
                           void* pvScript, void* pvLocals, double* pdResult, void* pvEventList)
 {
@@ -13197,12 +14077,15 @@ bool __cdecl Cmd_SetCellImageSpace_Execute(void* pvParamInfo, void* pvScriptData
 
 namespace fnv_005b9300 {
 struct ConsoleOutput {
-    void TES_SaveWorld(char* buffer);
+    void TES_SaveWorld(char* apFileName);
 };
 extern ConsoleOutput* DAT_011dea10;
 bool __cdecl Script_ParseParameters(const void* parameters, const char* scriptText, unsigned int& offset, void* subject, void* target, void* script, void* locals, char* message);
 // @fnv 0x005b9300
 // src: EXE 0x005b9300
+// pdb: Script::SaveWorldFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfileName
 bool __cdecl Cmd_SaveWorld_Execute(const void* parameters, const char* scriptText, void* subject, void* target, void* script, void* locals, double& result, unsigned int& offset) {
     char message[512];
     if (!Script_ParseParameters(parameters, scriptText, offset, subject, target, script, locals, message)) {
@@ -13239,6 +14122,7 @@ ObjHolder19* __cdecl BSTreeManager_GetInstance(int);
 
 // @fnv 0x005b9790
 // src: XBOX_PDB 0x005b9790
+// pdb: BSTreeManager::AreLeavesVisible | TESScriptFunctions.obj | retail, upstream name already matches, high
 unsigned char __cdecl BSTreeManager_AreLeavesVisible()
 {
     int result;
@@ -13262,10 +14146,13 @@ struct FUN_00664840_Class
     bool unk19;
 };
 
-FUN_00664840_Class* __cdecl BSTreeManager_GetInstance(int a1);
+FUN_00664840_Class* __cdecl BSTreeManager_GetInstance(int abCreateIfNotFound);
 
 // @fnv 0x005b97d0
 // src: COMMUNITY 0x005b97d0
+// pdb: Script::ReleaseWeatherOverride | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSTreeManager::SetLeavesVisible
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl BSTreeManager_SetLeavesEnabled(bool a1)
 {
     BSTreeManager_GetInstance(1)->unk19 = a1;
@@ -13393,10 +14280,13 @@ struct VirtualTarget
     virtual void* v116();
 };
 
-void __cdecl BSShaderProperty_ToggleMotionBlurRecurse(void* p);
+void __cdecl BSShaderProperty_ToggleMotionBlurRecurse(void* apObject);
 
 // @fnv 0x005b9fa0
 // src: EXE 0x005b9fa0
+// pdb: Script::ToggleMotionBlur | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pobj3D
 bool __cdecl Cmd_ToggleMotionBlur_Execute(int a, int b, VirtualTarget* p)
 {
     if (p != 0)
@@ -13643,6 +14533,8 @@ extern __declspec(thread) DebugTextTlsBlock005ba760 g_debugTextTls;
 
 // @fnv 0x005ba760
 // src: XBOX_PDB 0x005ba760
+// pdb: Script::ToggleDebugTextFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleDebugTextFunction()
 {
     const char* text;
@@ -13663,7 +14555,7 @@ bool __cdecl Script_ToggleDebugTextFunction()
 }
 
 bool __cdecl Script_ParseParameters(void*,void*,void*,void*,void*,void*,void*,float*,float*,float*,unsigned int*);
-void __cdecl SetTerminalMenuPos(float,float,float);
+void __cdecl SurgeryMenu_SetSurgeryPlayer3DPosition(float,float,float);
 // @fnv 0x005bb4f0
 // src: EXE 0x005bb4f0
 bool __cdecl Cmd_SetTerminalMenuPos_Execute(void* context,void* scriptData,void* firstValue,void* secondValue,void* thirdValue,void* fourthValue,void* unusedArgument,void* lastArgument)
@@ -13676,7 +14568,7 @@ bool __cdecl Cmd_SetTerminalMenuPos_Execute(void* context,void* scriptData,void*
     d = 0.0f;
     c = 1.0f;
     if (!Script_ParseParameters(context,scriptData,lastArgument,firstValue,secondValue,thirdValue,fourthValue,&a,&d,&c,&b)) return false;
-    SetTerminalMenuPos(a,d,c);
+    SurgeryMenu_SetSurgeryPlayer3DPosition(a,d,c);
     return true;
 }
 
@@ -13920,8 +14812,11 @@ struct TLSData_5bbc50 {
 extern __declspec(thread) TLSData_5bbc50 tlsData_5bbc50;
 
 // @fnv 0x005bbc50
-// src: EXE 0x005bbc50
-bool Cmd_SetGlobalRadialBlur_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005bbc50
+// pdb: Script::SetGlobalRadialBlur | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bret, frampup, fstrength, fdownstart, frampdown, fstart
+bool Script_SetGlobalRadialBlur(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     bool bResult = true;
     float fStrength3;
@@ -13964,15 +14859,18 @@ extern __declspec(thread) bool g_bConsoleEcho;
 extern void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005bbe10
-// src: EXE 0x005bbe10
-bool __cdecl Cmd_ToggleActorsAI_Execute(
-    const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container,
-    Script* script, ScriptLocals* locals, double& result,
-    unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005bbe10
+// pdb: Script::ToggleActorAI | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
+bool __cdecl Script_ToggleActorAI(
+    const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+    Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+    unsigned int& auiOffset)
 {
     ToggleTarget* target = 0;
-    target = FUN_00ec43fb(thisObject, 0, &DAT_011841cc, &DAT_011846d4, 0);
+    target = FUN_00ec43fb(apRefObject, 0, &DAT_011841cc, &DAT_011846d4, 0);
     if (target != 0) {
         reinterpret_cast<bool*>(target)[0xbc] = !reinterpret_cast<bool*>(target)[0xbc];
         if (g_bConsoleEcho) {
@@ -13992,6 +14890,9 @@ bool Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int 
 
 // @fnv 0x005bc150
 // src: EXE 0x005bc150
+// pdb: Script::SetAllReachable | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival
 bool Cmd_Shared_Execute_5bc150(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {
     unsigned int local = 0;
     if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &local)) {
@@ -14006,6 +14907,9 @@ bool Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int 
 
 // @fnv 0x005bc1a0
 // src: EXE 0x005bc1a0
+// pdb: Script::SetAllVisible | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival
 bool Cmd_SetAllVisible_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int unused, int a8)
 {
     int flag = 0;
@@ -14023,7 +14927,7 @@ bool Cmd_SetAllVisible_Execute(int a1, int a2, int a3, int a4, int a5, int a6, i
 namespace fnv_005bc260 {
 class FUN_005bc260_cls {
 public:
-    bool PlayerCharacter_ToggleFlyCam(bool flag);
+    bool PlayerCharacter_ToggleFlyCam(bool abFreezeTime);
 };
 
 extern FUN_005bc260_cls* DAT_011dea3c;
@@ -14032,6 +14936,9 @@ extern "C" void __cdecl BSShaderProperty_PreviousTransform_SetFreeze(bool flag);
 
 // @fnv 0x005bc260
 // src: EXE 0x005bc260
+// pdb: Script::ToggleFlyCam | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ifreezeTime, bisFlyCam, pssn, pmultibound, passes
 bool __cdecl Cmd_ToggleFlyCam_Execute(ScriptParameter* parameter, const char* name, TESObjectREFR* reference, TESObjectREFR* actor, Script* script, ScriptLocals* locals, double* result, unsigned int* argument)
 {
     int count = 0;
@@ -14066,6 +14973,8 @@ void __cdecl DebugLog(char const* fmt, ...);
 
 // @fnv 0x005bc510
 // src: XBOX_PDB 0x005bc510
+// pdb: Script::ToggleMiddleHighProcess | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleMiddleHighProcess()
 {
     DAT_011f122a = !DAT_011f122a;
@@ -14092,8 +15001,10 @@ struct PathingHandle {
 PathingHandle* __stdcall DebugTextManager_GetSingleton(const char* name, int flags);
 
 // @fnv 0x005bd3c0
-// src: EXE 0x005bd3c0
-bool __cdecl Cmd_TogglePathingInfoFunction_Execute()
+// src: XBOX_RETAIL_PDB 0x005bd3c0
+// pdb: Script::TogglePathingInfoFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_TogglePathingInfoFunction()
 {
     if (DAT_011d73cc == 0) {
         DAT_011d73cc = 1;
@@ -14117,7 +15028,7 @@ struct CellStandIn;
 
 struct WorldSpaceStandIn {
     CellStandIn* GetCellAtCoord(int x, int y);
-    CellStandIn* LoadCellAtCoord(int x, int y);
+    CellStandIn* LoadCellAtCoord(int aiX, int aiY);
 };
 
 struct WorldSpaceNode {
@@ -14142,7 +15053,7 @@ struct QueuedCellManagerStandIn {
 };
 
 struct PlayerStandIn5bd {
-    void CenterOnCell(int unk, CellStandIn* cell);
+    void CenterOnCell(int unk, CellStandIn* apCellIn);
 };
 
 extern TESStandIn5bd* g_TES5bd;
@@ -14180,10 +15091,13 @@ bool Cmd_CenterOnExterior_Execute(const ScriptParameter* parameters, const char*
 }
 
 bool Helper_5accb0(int a, int b, int c, int d, int e, int f, int g, int* out);
-bool Helper_59c4f0(int a, int b, int zero, int g);
+bool Helper_59c4f0(int a, int b, int apParam2, int afReturnValue);
 
 // @fnv 0x005bd8a0
 // src: EXE 0x005bd8a0
+// pdb: Script::GetActorValueFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iActorValueIndex
 bool __cdecl Cmd_GetActorValue_Execute(int p1, int p2, int p3, int p4, int p5, int p6, int p7, int p8)
 {
     int out = 0;
@@ -14202,6 +15116,9 @@ extern bool __cdecl Script_GetPermanentActorValueConditionFunction(TESObjectREFR
 
 // @fnv 0x005bd900
 // src: EXE 0x005bd900
+// pdb: Script::GetPermanentActorValueFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iActorValueIndex
 bool __cdecl Cmd_GetPermanentActorValue_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     int value = 0;
@@ -14612,11 +15529,14 @@ public:
 bool __cdecl Script_ParseParameters(const ScriptParameter* apParameters, const char* apCompiledParams, unsigned int& auiOffset, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, unsigned int* puiA, unsigned int* puiB);
 ScriptEditTarget* __cdecl FUN_00ec43fb(TESObjectREFR* apRef, int aUnk1, const char* aStr1, const char* aStr2, int aUnk2);
 bool __cdecl ActorValue_IsFlagSet(unsigned int uiA, unsigned int uiB);
-const char* __cdecl ActorValue_GetActorValueScriptName(unsigned int uiA);
+const char* __cdecl ActorValue_GetActorValueScriptName(unsigned int aiIndex);
 void __cdecl Interface_PrintLine(const char* apFmt, ...);
 
 // @fnv 0x005bdcd0
 // src: EXE 0x005bdcd0
+// pdb: Script::SetActorValueFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, iActorValueIndex, iValue
 bool __cdecl Cmd_SetActorValue_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int uiA = 0;
@@ -14947,6 +15867,9 @@ extern int DAT_011dea3c;
 
 // @fnv 0x005be870
 // src: EXE 0x005be870
+// pdb: Script::FriendDispositionBoostFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor, idispos, imod
 bool Cmd_FriendDispositionBoost_Execute(int a1, int a2, FUN_005be870_obj* obj)
 {
     if (obj != 0) {
@@ -14970,12 +15893,15 @@ bool Script_ParseParameters(int a0, int a1, int a7, int a2, int a3, int a4, int 
 void Interface_PrintLine_00703c80(BSStringT<char> text);
 
 // @fnv 0x005bfbf0
-// src: EXE 0x005bfbf0
-bool Cmd_SetTreeMipmapBias_Execute(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7)
+// src: XBOX_RETAIL_PDB 0x005bfbf0
+// pdb: Script::SetTreeMipmapBias | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: foldlodtrees, floadedtrees, foldloadedtrees, temp, flodtrees
+bool Script_SetTreeMipmapBias(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset)
 {
     float lodTrees9 = DAT_011f9480;
     float localTrees = DAT_011f9484;
-    if (!Script_ParseParameters(a0, a1, a7, a2, a3, a4, a5, &localTrees, &lodTrees9))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &localTrees, &lodTrees9))
         return false;
     float oldLod = DAT_011f9480;
     float oldLocal = DAT_011f9484;
@@ -15004,6 +15930,9 @@ bool Script_ParseParameters(int a0, int a1, int a2, int a3, int a4, int a5, int 
 
 // @fnv 0x005c0300
 // src: EXE 0x005c0300
+// pdb: Script::HairTint | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iG, iR, iB
 bool Cmd_HairTint_Execute(int p0, int p1, int p2, int p3, int p4, int p5, int p6, int p7)
 {
     int b = 0;
@@ -15020,10 +15949,13 @@ bool Cmd_HairTint_Execute(int p0, int p1, int p2, int p3, int p4, int p5, int p6
 }
 
 bool Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, char* out);
-bool Script_GetStartingPosConditionFunction(int a1, int a2, int a3, int a4);
+bool Script_GetStartingPosConditionFunction(int a1, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005c08a0
 // src: EXE 0x005c08a0
+// pdb: Script::GetStartingPosFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cAxis
 bool __cdecl Cmd_GetStartingPos_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {
     char flag;
     if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &flag)) {
@@ -15033,10 +15965,13 @@ bool __cdecl Cmd_GetStartingPos_Execute(int a1, int a2, int a3, int a4, int a5, 
 }
 
 bool __cdecl Script_ParseParameters(int first, int second, int last, int third, int fourth, int fifth, int sixth, signed char* extracted);
-bool __cdecl Script_GetStartingAngleConditionFunction(int third, int component, int zero, int seventh);
+bool __cdecl Script_GetStartingAngleConditionFunction(int third, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005c0960
 // src: EXE 0x005c0960
+// pdb: Script::GetStartingAngleFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cAxis
 bool __cdecl Cmd_GetStartingAngle_Execute(int first, int second, int third, int fourth, int fifth, int sixth, int seventh, int last)
 {
     signed char component;
@@ -15063,34 +15998,37 @@ void __cdecl bhkNiCollisionObject_ResetSim(NiNode* pkNode, bool bValue);
 class ScriptReferenceRotationActions : public TESObjectREFR
 {
 public:
-    void SetAngleY(float fAngleDifference);
+    void SetAngleY(float afy);
     void SetAngleZ(float fAngleDifference);
     NiMatrix3 GetRotationMatrix();
 };
 
 // @fnv 0x005c0b10
 // src: COMMUNITY 0x005c0b10
-void __cdecl Script_SetAngleBase(ScriptReferenceRotationActions* pkRef, char cAxis, float fDegrees)
+// pdb: Script::SetAngleBase | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, acAxis, afValue
+// pdb locals: obj3D, fAngle, UpdateData
+void __cdecl Script_SetAngleBase(ScriptReferenceRotationActions* apRefObject, char cAxis, float fDegrees)
 {
-    if (pkRef) {
+    if (apRefObject) {
         float fRadians = fDegrees * 0.01745329238474369;
         switch (cAxis) {
         case 'X':
-            pkRef->TESObjectREFR_SetAngleOnReferenceX(fRadians);
+            apRefObject->TESObjectREFR_SetAngleOnReferenceX(fRadians);
             break;
         case 'Y':
-            pkRef->SetAngleY(fRadians);
+            apRefObject->SetAngleY(fRadians);
             break;
         case 'Z':
-            pkRef->SetAngleZ(fRadians);
+            apRefObject->SetAngleZ(fRadians);
             break;
         }
 
-        NiNode* pkNode = reinterpret_cast<NiNode*>(pkRef->GetNiNode());
+        NiNode* pkNode = reinterpret_cast<NiNode*>(apRefObject->GetNiNode());
         if (pkNode) {
-            pkNode->SetLocalRotation(pkRef->GetRotationMatrix());
+            pkNode->SetLocalRotation(apRefObject->GetRotationMatrix());
             bhkNiCollisionObject_ResetSim(pkNode, true);
-            if (!pkRef || !pkRef->GetAnimData()) {
+            if (!apRefObject || !apRefObject->GetAnimData()) {
                 C0B10UpdateData kData(0.0f, false, false);
                 pkNode->Update(reinterpret_cast<const NiUpdateData&>(kData));
             }
@@ -15130,8 +16068,10 @@ struct S_005c1710_Result
 
 
 // @fnv 0x005c1710
-// src: EXE 0x005c1710
-bool __cdecl Cmd_SkipAnim_Execute(
+// src: XBOX_RETAIL_PDB 0x005c1710
+// pdb: Script::SkipAnimFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_SkipAnimFunction(
     void*,
     void*,
     TESObjectREFR* apRefObject)
@@ -15148,17 +16088,20 @@ bool __cdecl Cmd_SkipAnim_Execute(
 }
 
 bool Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int* a8);
-bool Cmd_GetLineOfSight_Eval(int a1, int a2, int a3, int a4);
+bool Script_GetLOSConditionFunction(int a1, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005c1ce0
 // src: EXE 0x005c1ce0
+// pdb: Script::GetLOSFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTarget
 bool Cmd_GetLineOfSight_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
     int local = 0;
     if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &local)) {
         return false;
     }
-    return Cmd_GetLineOfSight_Eval(a3, local, 0, a7);
+    return Script_GetLOSConditionFunction(a3, local, 0, a7);
 }
 
 namespace fnv_005c1f00 {
@@ -15194,17 +16137,20 @@ extern char DAT_011846d4[];
 
 // @fnv 0x005c1f00
 // src: XBOX_PDB 0x005c1f00
-bool __cdecl Script_RemoveSpellFunction(int a1, int a2, int a3, int a4, int a5, int a6, double* a7, int a8)
+// pdb: Script::RemoveSpellFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pSpellItem, pActor
+bool __cdecl Script_RemoveSpellFunction(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, double* afReturnValue, int auiOffset)
 {
     ActorEffectEntry* pEffect = 0;
-    if (!FindActorEffect(a1, a2, a8, a3, a4, a5, a6, &pEffect)) {
+    if (!FindActorEffect(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pEffect)) {
         return false;
     }
-    if (a3 != 0) {
-        ActorRefName* pRef = LookupEffectRef(a3, 0, DAT_011841cc, DAT_011846d4, 0);
+    if (apRefObject != 0) {
+        ActorRefName* pRef = LookupEffectRef(apRefObject, 0, DAT_011841cc, DAT_011846d4, 0);
         if (pRef != 0) {
             if (((bool (__thiscall*)(void*, ActorEffectEntry*))(*(void***)pRef)[249])(pRef, pEffect)) {
-                *a7 = 1.0;
+                *afReturnValue = 1.0;
                 ReportMessage("Actor Effect '%s' removed from %s", pEffect->sub.GetName(), pRef->GetRefName());
             } else {
                 ReportMessage("Actor Effect '%s' not found in %s", pEffect->sub.GetName(), pRef->GetRefName());
@@ -15233,6 +16179,9 @@ public:
 
 // @fnv 0x005c20e0
 // src: EXE 0x005c20e0
+// pdb: Script::DispelFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pSpell, pTarget, pact
 unsigned char __cdecl Cmd_Dispel_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
     int v8 = 0;
@@ -15260,11 +16209,14 @@ extern const char DAT_011841cc[];
 
 class ScriptLinkBase {
 public:
-    void MagicTarget_DispelAllSpells(int a1);
+    void MagicTarget_DispelAllSpells(int abnow);
 };
 
 // @fnv 0x005c2190
 // src: EXE 0x005c2190
+// pdb: Script::DispelAllSpellsFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pact
 bool __cdecl Cmd_DispelAllSpells_Execute(int param_0, int param_1, void* param_2)
 {
     ScriptLinkBase* result;
@@ -15320,6 +16272,9 @@ void __cdecl Script_AddPendingDisabledReference(void*, int);
 
 // @fnv 0x005c47e0
 // src: EXE 0x005c47e0
+// pdb: Script::DisableAllActors | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pkeepActor, i, pmob, pactor
 bool __cdecl Cmd_DisableAllActors_Execute(int unk08, int unk0c, void* a3, int unk14, int unk18, char* a6)
 {
     void* found = 0;
@@ -15349,6 +16304,8 @@ extern "C" bool __cdecl Script_GetLockedConditionFunction(TESObjectREFR* object,
 
 // @fnv 0x005c48e0
 // src: EXE 0x005c48e0
+// pdb: Script::GetLockedFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetLocked_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
                   ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -15363,6 +16320,9 @@ void __cdecl FUN_005acc70(int* out, double* d);
 
 // @fnv 0x005c4a70
 // src: EXE 0x005c4a70
+// pdb: Script::PlaceAtMeFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, pplacedref, iDistance, iDirection, pItem, iid
 bool __cdecl Cmd_PlaceAtMe_Execute(int a8, int a0c, int a10, int a14, int a18, int a1c, double* a20, int a24)
 {
     *a20 = 0.0;
@@ -15399,11 +16359,14 @@ struct TESStub {
 extern TESStub* g_pTESStub;
 
 // @fnv 0x005c5680
-// src: EXE 0x005c5680
-bool Cmd_ToggleCellNode_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double* result, unsigned int* opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c5680
+// pdb: Script::ToggleCellNode | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iindex, pnodename, bval
+bool Script_ToggleCellNode(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     unsigned int nodeIndex = -1;
-    if (!ExtractArgs(parameters, scriptData, opcodeOffset, thisObject, container, script, locals, &nodeIndex))
+    if (!ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &nodeIndex))
         return false;
     if (nodeIndex != -1) {
         const char* nodeName = 0;
@@ -15529,12 +16492,15 @@ extern void __cdecl Warning_005b5e40(const char*);
 extern void __cdecl BSsprintf(char*, unsigned int, const char*, const char*);
 extern Service* __cdecl FUN_00652110();
 // @fnv 0x005c6430
-// src: EXE 0x005c6430
-bool __cdecl Cmd_DumpModelMap_Execute(void* p1,void* p2,void* p3,void* p4,void* p5,void* p6,void* p7,void* p8) {
+// src: XBOX_RETAIL_PDB 0x005c6430
+// pdb: Script::DumpModelMap | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfileName, input, outfile
+bool __cdecl Script_DumpModelMap(void* apParameters,void* apCompiledParams,void* apRefObject,void* apContainer,void* apScript,void* apScriptLocals,void* afReturnValue,void* auiOffset) {
     char filename[260];
     char buffer[512];
     buffer[0] = 0;
-    if (p1 && !Script_ParseParameters(p1,p2,p8,p3,p4,p5,p6,buffer))
+    if (apParameters && !Script_ParseParameters(apParameters,apCompiledParams,auiOffset,apRefObject,apContainer,apScript,apScriptLocals,buffer))
         return false;
     MessageHandler_IncDisableWarningCount(true);
     Warning_005b5e40(&DAT_0103b294);
@@ -15554,10 +16520,12 @@ struct C5C67E0Ref;
 struct C5C67E0Script;
 struct C5C67E0EventList;
 
-bool C5C67E0Evaluate(C5C67E0Ref* pkThisObj, void* pvArg1, void* pvArg2, double* pdResult);
+bool C5C67E0Evaluate(C5C67E0Ref* pkThisObj, void* apParam1, void* apParam2, double* afReturnValue);
 
 // @fnv 0x005c67e0
 // src: EXE 0x005c67e0
+// pdb: Script::GetDisease | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetDisease_Execute(C5C67E0ParamInfo* pkParamInfo, void* pvScriptData, C5C67E0Ref* pkThisObj, C5C67E0Ref* pkContainingObj,
                   C5C67E0Script* pkScript, C5C67E0EventList* pkEventList, double* pdResult)
 {
@@ -15568,6 +16536,8 @@ int Script_GetClothingValueConditionFunction(int a1, int a2, int a3, int a4);
 
 // @fnv 0x005c6820
 // src: EXE 0x005c6820
+// pdb: Script::GetClothingValue | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void Cmd_GetClothingValue_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
     Script_GetClothingValueConditionFunction(a3, 0, 0, a7);
@@ -15586,15 +16556,18 @@ bool __cdecl B5C6ED0ExtractArgs(B5C6ED0ParamInfo* pkParamInfo, B5C6ED0ScriptData
 bool __cdecl Script_IsCurrentFurnitureObjConditionFunction(B5C6ED0Ref* pkThisObj, B5C6ED0Form* pkForm, int iUnk, double* pdResult);
 
 // @fnv 0x005c6ed0
-// src: EXE 0x005c6ed0
-bool __cdecl Cmd_IsCurrentFurnitureObj_Execute(B5C6ED0ParamInfo* pkParamInfo, B5C6ED0ScriptData* pkScriptData, B5C6ED0Ref* pkThisObj,
-    B5C6ED0Ref* pkContainingObj, B5C6ED0Script* pkScript, B5C6ED0EventList* pkEventList, double* pdResult,
-    unsigned int* puiOpcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c6ed0
+// pdb: Script::IsCurrentFurnitureObj | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfurniture
+bool __cdecl Script_IsCurrentFurnitureObj(B5C6ED0ParamInfo* apParameters, B5C6ED0ScriptData* apCompiledParams, B5C6ED0Ref* apRefObject,
+    B5C6ED0Ref* apContainer, B5C6ED0Script* apScript, B5C6ED0EventList* apScriptLocals, double* afReturnValue,
+    unsigned int* auiOffset)
 {
     B5C6ED0Form* pkForm = 0;
-    if (!B5C6ED0ExtractArgs(pkParamInfo, pkScriptData, puiOpcodeOffset, pkThisObj, pkContainingObj, pkScript, pkEventList, &pkForm))
+    if (!B5C6ED0ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pkForm))
         return false;
-    return Script_IsCurrentFurnitureObjConditionFunction(pkThisObj, pkForm, 0, pdResult);
+    return Script_IsCurrentFurnitureObjConditionFunction(apRefObject, pkForm, 0, afReturnValue);
 }
 
 class C6F50Form;
@@ -15604,15 +16577,18 @@ bool __cdecl Script_ParseParameters(void* pvParamInfo, void* pvScriptData, void*
 bool __cdecl Cmd_Shared_Eval_59e0f0(C6F50Form* pkForm, C6F50Form* pkTarget, void* pvUnused, double& rdResult);
 
 // @fnv 0x005c6f50
-// src: EXE 0x005c6f50
-bool __cdecl Cmd_GetTalkedToPCParam_Execute(void* pvParamInfo, void* pvScriptData, void* pvThisObj, void* pvContainingObj,
-                          void* pvScript, void* pvLocals, double& rdResult, void* pvEventList)
+// src: XBOX_RETAIL_PDB 0x005c6f50
+// pdb: Script::GetTalkedToPCParam | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTarget
+bool __cdecl Script_GetTalkedToPCParam(void* apParameters, void* apCompiledParams, void* apRefObject, void* apContainer,
+                          void* apScript, void* apScriptLocals, double& afReturnValue, void* auiOffset)
 {
     C6F50Form* pkForm = 0;
-    if (!Script_ParseParameters(pvParamInfo, pvScriptData, pvEventList, pvThisObj, pvContainingObj, pvScript, pvLocals,
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals,
                       &pkForm))
         return false;
-    return Cmd_Shared_Eval_59e0f0(0, pkForm, 0, rdResult);
+    return Cmd_Shared_Eval_59e0f0(0, pkForm, 0, afReturnValue);
 }
 
 class ScriptParameter;
@@ -15622,6 +16598,8 @@ extern "C" bool __cdecl Script_GetAttackedConditionFunction(TESObjectREFR*, void
 
 // @fnv 0x005c7490
 // src: EXE 0x005c7490
+// pdb: Script::GetAttacked | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetAttacked_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     return Script_GetAttackedConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -15631,17 +16609,20 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 extern bool __cdecl Cmd_Shared_Eval_59ef60(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005c7590
-// src: EXE 0x005c7590
-bool Cmd_GetInCellParam_Execute(const ScriptParameter* parameters, const char* scriptData,
-                  TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-                  ScriptLocals* locals, double& result, unsigned int* opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c7590
+// pdb: Script::GetInCellParam | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell, pref
+bool Script_GetInCellParam(const ScriptParameter* apParameters, const char* apCompiledParams,
+                  TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+                  ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int* auiOffset)
 {
     unsigned int secondValue = 0;
     unsigned int firstValue = 0;
-    if (!ExtractArgs(parameters, scriptData, opcodeOffset, thisObject, container, script, locals,
+    if (!ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals,
                      &firstValue, &secondValue))
         return false;
-    return Cmd_Shared_Eval_59ef60(thisObject, (void*)firstValue, (void*)secondValue, result);
+    return Cmd_Shared_Eval_59ef60(apRefObject, (void*)firstValue, (void*)secondValue, afReturnValue);
 }
 
 namespace fnv_005c7790 {
@@ -15655,6 +16636,9 @@ extern unsigned char Script_ParseParameters(int a0, int a1, int a2, int a3, int 
 
 // @fnv 0x005c7790
 // src: EXE 0x005c7790
+// pdb: Script::SetChargenValue | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ivalue
 bool Cmd_SetInChargen_Execute(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
     int flag = 0;
@@ -15698,12 +16682,15 @@ extern "C" unsigned char __cdecl Script_ParseParameters(int,int,int,int,int,int,
 extern "C" int __cdecl Script_IsInListConditionFunction(int,int,int,int);
 
 // @fnv 0x005c7c10
-// src: EXE 0x005c7c10
-unsigned char __cdecl Cmd_IsInList_Execute(int a,int b,int c,int d,int e,int f,int g,int h)
+// src: XBOX_RETAIL_PDB 0x005c7c10
+// pdb: Script::IsInListFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pformlist
+unsigned char __cdecl Script_IsInListFunction(int a,int b,int c,int d,int e,int f,int afReturnValue,int h)
 {
     int tmp = 0;
     if (!Script_ParseParameters(a, b, h, c, d, e, f, &tmp)) return 0;
-    return Script_IsInListConditionFunction(c, tmp, 0, g);
+    return Script_IsInListConditionFunction(c, tmp, 0, afReturnValue);
 }
 }  // namespace fnv_005c7c10
 
@@ -15714,10 +16701,13 @@ class ScriptParameter;
 class C7CA0Form;
 
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, ...);
-bool __cdecl C7CA0Evaluate(TESObjectREFR* pkRef, C7CA0Form* pkForm, void* pvUnused, double& rdResult);
+bool __cdecl C7CA0Evaluate(TESObjectREFR* pkRef, C7CA0Form* apParam1, void* apParam2, double& afReturnValue);
 
 // @fnv 0x005c7ca0
 // src: EXE 0x005c7ca0
+// pdb: Script::GetIsUsedItem | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pobject
 bool Cmd_GetIsUsedItem_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     C7CA0Form* pkForm = 0;
@@ -15735,6 +16725,8 @@ bool Script_GetUsedItemLevelConditionFunction(B5C7D60Ref* pkRef, void* pvArgA, v
 
 // @fnv 0x005c7d60
 // src: EXE 0x005c7d60
+// pdb: Script::GetUsedItemLevelFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Cmd_GetUsedItemLevel_Execute(B5C7D60ParamInfo* pkParamInfo, void* pvScriptData, B5C7D60Ref* pkThisObj, B5C7D60Ref* pkContainingObj,
                   B5C7D60Script* pkScript, B5C7D60Locals* pkLocals, double* pdResult, unsigned int* puiOpcodeOffset) {
     return Script_GetUsedItemLevelConditionFunction(pkThisObj, 0, 0, pdResult);
@@ -15746,6 +16738,8 @@ bool __cdecl GetIsHardcoreCondition(TESObjectREFR* apThisObject, void* apUnused1
 
 // @fnv 0x005c7d80
 // src: EXE 0x005c7d80
+// pdb: Script::GetUsedItemActivateFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetUsedItemActivate_Execute(const ScriptParameter* apParameters, const char* apScriptData,
                           TESObjectREFR* apThisObject, TESObjectREFR* apContainer, Script* apScript,
                           ScriptLocals* apLocals, double* apResult, unsigned int& auiOpcodeOffset)
@@ -15758,6 +16752,9 @@ bool __cdecl Script_GetFactionRankConditionFunction(unsigned int a1, unsigned in
 
 // @fnv 0x005c7e00
 // src: EXE 0x005c7e00
+// pdb: Script::GetFactionRank | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction
 bool __cdecl Cmd_GetFactionRank_Execute(unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, unsigned int p5, unsigned int p6, unsigned int p7, unsigned int p8)
 {
     unsigned int local = 0;
@@ -15784,6 +16781,9 @@ extern CommandTarget* DAT_011dea3c;
 
 // @fnv 0x005c7f10
 // src: EXE 0x005c7f10
+// pdb: Script::ModFactionRank | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pFaction, pact, pactorbase, iModify
 bool __cdecl Cmd_ModFactionRank_Execute(const ScriptParameter* parameters,
                           const char* scriptData, TESObjectREFR* reference,
                           TESObjectREFR* container, Script* script,
@@ -15815,12 +16815,15 @@ extern unsigned char __cdecl Script_ParseParameters(const ScriptParameter*, cons
 
 struct Unk_005fd400
 {
-    void FUN_005fd400(int, int);
+    void TESFaction_ModFactionReaction(int, int);
 };
 
 // @fnv 0x005c82c0
-// src: EXE 0x005c82c0
-bool __cdecl Cmd_ModFactionReaction_Execute(const ScriptParameter* params, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c82c0
+// pdb: Script::ModFactionReaction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pFaction, pFactionTarget, iReaction
+bool __cdecl Script_ModFactionReaction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int auiOffset)
 {
     int arg2;
     int arg1;
@@ -15828,48 +16831,56 @@ bool __cdecl Cmd_ModFactionReaction_Execute(const ScriptParameter* params, const
     obj = 0;
     arg1 = 0;
     arg2 = 0;
-    if (Script_ParseParameters(params, scriptData, opcodeOffset, thisObject, container, script, locals, &obj, &arg1, &arg2) == 0)
+    if (Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &obj, &arg1, &arg2) == 0)
         return false;
-    result = 0.0;
+    afReturnValue = 0.0;
     if (arg1 != 0 && obj != 0)
     {
-        ((Unk_005fd400*)obj)->FUN_005fd400(arg1, arg2);
+        ((Unk_005fd400*)obj)->TESFaction_ModFactionReaction(arg1, arg2);
     }
     return true;
 }
 
 bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, unsigned int* a8);
-bool __cdecl Script_GetDispositionConditionFunction(int a1, unsigned int a2, int a3, int a4);
+bool __cdecl Script_GetDispositionConditionFunction(int a1, unsigned int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005c8450
-// src: EXE 0x005c8450
-bool __cdecl Cmd_GetDisposition_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {
+// src: XBOX_RETAIL_PDB 0x005c8450
+// pdb: Script::GetDisposition | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
+bool __cdecl Script_GetDisposition(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset) {
     unsigned int local = 0;
-    if (Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &local) == 0) {
+    if (Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &local) == 0) {
         return false;
     }
-    return Script_GetDispositionConditionFunction(a3, local, 0, a7);
+    return Script_GetDispositionConditionFunction(apRefObject, local, 0, afReturnValue);
 }
 
-bool __cdecl Cmd_GetIsAlerted_Eval(void* pkObject, void* pArg1, void* pArg2, double* pResult);
+bool __cdecl Script_GetAlertConditionFunction(void* pkObject, void* pArg1, void* pArg2, double* pResult);
 
 // @fnv 0x005c9700
 // src: EXE 0x005c9700
+// pdb: Script::GetAlertFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetIsAlerted_Execute(void* pParamInfo, void* pScriptData, void* pkThisObject, void* pkContainingObj, void* pkScript,
                           void* pkEventList, double* pResult, unsigned int* pOffset)
 {
-    return Cmd_GetIsAlerted_Eval(pkThisObject, 0, 0, pResult);
+    return Script_GetAlertConditionFunction(pkThisObject, 0, 0, pResult);
 }
 
 class FUN_005c9740_obj {
 public:
-    void SetAllObjectivesComplete(int value);
+    void SetAllObjectivesComplete(int abComplete);
 };
 
 extern unsigned char Script_ParseParameters(int a0, int a1, int a2, int a3, int a4, int a5, int a6, FUN_005c9740_obj** out);
 
 // @fnv 0x005c9740
 // src: EXE 0x005c9740
+// pdb: Script::CompleteAllObjectivesFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pquest
 bool Cmd_CompleteAllObjectives_Execute(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
     FUN_005c9740_obj* obj = 0;
@@ -15888,6 +16899,9 @@ extern float DAT_011ad87c;
 
 // @fnv 0x005c9980
 // src: EXE 0x005c9980
+// pdb: Script::SetSkyParamFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fLUMRamp, fsunlightDimmer
 bool Cmd_SetSkyParam_Execute(int p8, int pC, int p10, int p14, int p18, int p1C, int p20, int p24)
 {
     float fB;
@@ -15924,6 +16938,9 @@ extern float fGrassDimmer;
 
 // @fnv 0x005c9a00
 // src: XBOX_PDB 0x005c9a00
+// pdb: Script::PrintHDRParamFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pismanager
 bool Script_PrintHDRParamFunction() {
     HDRParamsManager* pManager = GetImageSpaceManager();
     DebugLog("Current HDR Params:");
@@ -15952,13 +16969,14 @@ struct S_005c9cb0_Foo
 
 // @fnv 0x005c9cb0
 // src: XBOX_PDB 0x005c9cb0
+// pdb: ImageSpaceManager::GetHDRUpperLUMClamp | TESScriptFunctions.obj | debug, upstream name already matches, high
 void S_005c9cb0_Foo::ImageSpaceManager_GetHDRUpperLUMClamp()
 {
     GetEffect_004ebbc0(1)->ImageSpaceEffectHDR_GetUpperLUMClamp();
 }
 
 struct PlayerStub5cae30 {
-    void SetControlFlags5cae30(int a, unsigned int flags);
+    void SetControlFlags5cae30(int a, unsigned int aeDPC);
 };
 
 extern PlayerStub5cae30* g_player5cae30;
@@ -15967,8 +16985,11 @@ bool ParseControlArgs5cae30(void* a1, void* a2, void* a7, void* a3, void* a4, vo
                             int* p1, int* p2, int* p3, int* p4, int* p5, int* p6, int* p7);
 
 // @fnv 0x005cae30
-// src: EXE 0x005cae30
-bool Cmd_DisablePlayerControls_Execute(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8)
+// src: XBOX_RETAIL_PDB 0x005cae30
+// pdb: Script::DisablePlayerControlsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: isneaking, ipov, ipipboy, ibit, imovement, ilooking, irollover, ifighting
+bool Script_DisablePlayerControlsFunction(void* apParameters, void* apCompiledParams, void* apRefObject, void* apContainer, void* apScript, void* apScriptLocals, void* afReturnValue, void* auiOffset)
 {
     unsigned int looking = 0;
     int fighting = 1;
@@ -15978,7 +16999,7 @@ bool Cmd_DisablePlayerControls_Execute(void* a1, void* a2, void* a3, void* a4, v
     int flags = 0;
     int pipboy = 0;
     int crouch = 0;
-    if (!ParseControlArgs5cae30(a1, a2, a8, a3, a4, a5, a6, &fighting, &movement, &rolloverText, &pov, &flags, &pipboy, &crouch))
+    if (!ParseControlArgs5cae30(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &fighting, &movement, &rolloverText, &pov, &flags, &pipboy, &crouch))
         return false;
     if (fighting)
         looking |= 1;
@@ -16004,22 +17025,25 @@ bool __cdecl Script_ParseParameters(const ScriptParameter*, const char*, unsigne
 bool __cdecl Script_GetCrimeConditionFunction(TESObjectREFR*, unsigned int, unsigned int, double&);
 
 // @fnv 0x005cc2f0
-// src: EXE 0x005cc2f0
-bool __cdecl Cmd_GetCrime_Execute(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* reference, TESObjectREFR* container,
-    Script* script, ScriptLocals* locals, double& result,
-    unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005cc2f0
+// pdb: Script::GetCrimeFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pCriminal, iCrime
+bool __cdecl Script_GetCrimeFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* reference, TESObjectREFR* apContainer,
+    Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+    unsigned int& auiOffset)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     unsigned int firstIndex;
     unsigned int lastIndex;
     lastIndex = 0xFFFFFFFF;
     firstIndex = 0;
-    if (!Script_ParseParameters(parameters, scriptData, opcodeOffset,
-        reference, container, script, locals, &firstIndex, &lastIndex))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset,
+        reference, apContainer, apScript, apScriptLocals, &firstIndex, &lastIndex))
         return false;
     if (reference)
-        return Script_GetCrimeConditionFunction(reference, firstIndex, lastIndex, result);
+        return Script_GetCrimeConditionFunction(reference, firstIndex, lastIndex, afReturnValue);
     return true;
 }
 
@@ -16051,30 +17075,33 @@ public:
 
 
 
-bool __cdecl TESObjectREFR_AddAddonNodes(NiNode* pkNode);
+bool __cdecl TESObjectREFR_AddAddonNodes(NiNode* apNode);
 void __cdecl B5CC970DebugLog(const char* pcFormat, ...);
 
 extern __declspec(thread) bool g_bB5CC970ConsoleEcho;
 
 // @fnv 0x005cc970
 // src: XBOX_PDB 0x005cc970
-bool __cdecl Script_AddFlamesFunction(B5CC970ParamInfo* pkParamInfo, B5CC970ScriptData* pkScriptData, TESObjectREFR* pkThisObj,
-    TESObjectREFR* pkContainingObj, B5CC970Script* pkScript, B5CC970EventList* pkEventList, double* pdResult,
-    unsigned int* puiOpcodeOffset)
+// pdb: Script::AddFlamesFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pav, pnode, UpdateData
+bool __cdecl Script_AddFlamesFunction(B5CC970ParamInfo* apParameters, B5CC970ScriptData* apCompiledParams, TESObjectREFR* apRefObject,
+    TESObjectREFR* apContainer, B5CC970Script* apScript, B5CC970EventList* apScriptLocals, double* afReturnValue,
+    unsigned int* auiOffset)
 {
-    if (pkThisObj && pkThisObj->GetNiNode()) {
-        B5CC970AVObject* pkRoot = reinterpret_cast<B5CC970AVObject*>(pkThisObj->GetNiNode());
+    if (apRefObject && apRefObject->GetNiNode()) {
+        B5CC970AVObject* pkRoot = reinterpret_cast<B5CC970AVObject*>(apRefObject->GetNiNode());
         NiNode* pkNode = 0;
         if (pkRoot)
             pkNode = pkRoot->GetAsNiNode();
-        *pdResult = TESObjectREFR_AddAddonNodes(pkNode);
-        if (*pdResult != 0.0) {
+        *afReturnValue = TESObjectREFR_AddAddonNodes(pkNode);
+        if (*afReturnValue != 0.0) {
             pkNode->UpdateProperties();
             B5CC970UpdateData kUpdateData(0.0f, true, false);
             pkNode->Update(reinterpret_cast<const NiUpdateData&>(kUpdateData));
         }
         if (g_bB5CC970ConsoleEcho)
-            B5CC970DebugLog("AddFlames >> %0.2f", *pdResult);
+            B5CC970DebugLog("AddFlames >> %0.2f", *afReturnValue);
     }
     return true;
 }
@@ -16211,18 +17238,21 @@ void __cdecl _DebugLog(const char*, ...);
 
 // @fnv 0x005cca50
 // src: XBOX_PDB 0x005cca50
-bool __cdecl Script_RemoveFlamesFunction(const void* parameters, const char* scriptData,
-                          Reference* reference, Reference* container,
-                          void* script, void* locals, double& result,
-                          unsigned int& opcodeOffset)
+// pdb: Script::RemoveFlamesFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pav
+bool __cdecl Script_RemoveFlamesFunction(const void* apParameters, const char* apCompiledParams,
+                          Reference* reference, Reference* apContainer,
+                          void* apScript, void* apScriptLocals, double& afReturnValue,
+                          unsigned int& auiOffset)
 {
     if (reference != 0 && reference->GetBaseForm() != 0) {
         FormObject* form = reference->GetBaseForm();
         if (form != 0) {
-            result = (double)TESObjectREFR_RemoveAddonNodes(form->V3());
+            afReturnValue = (double)TESObjectREFR_RemoveAddonNodes(form->V3());
         }
         if (DAT_tls_0268) {
-            _DebugLog(g_0103b654, result);
+            _DebugLog(g_0103b654, afReturnValue);
         }
     }
     return true;
@@ -16235,6 +17265,9 @@ bool __cdecl Script_ParseParameters(const ScriptParameter* apParameters, const c
 
 // @fnv 0x005cd4b0
 // src: EXE 0x005cd4b0
+// pdb: Script::AddFaceAnimNoteFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: note, panimdata
 bool __cdecl Cmd_AddFaceAnimNote_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     char buf[0x200];
@@ -16407,6 +17440,9 @@ BSFormObj* __cdecl FUN_00ec43fb(void*, int, const char*, const char*, int);
 
 // @fnv 0x005cd650
 // src: EXE 0x005cd650
+// pdb: Script::SetCombatStyleFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcombatStyle, pactor, pcreature, pnpc
 bool __cdecl Cmd_SetCombatStyle_Execute(int a1, int a2, void* a3, int a4, int a5, int a6, int unk20, int a8)
 {
     int outVal = 0;
@@ -16492,6 +17528,9 @@ bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int 
 
 // @fnv 0x005cd910
 // src: EXE 0x005cd910
+// pdb: Script::SetQuestObjectFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pobject, iIsQuestObject
 bool __cdecl Cmd_SetQuestObject_Execute(int p1, int p2, int p3, int p4, int p5, int p6, double* out, int p8) {
     *out = 0.0;
     FNVScriptObj* obj = 0;
@@ -16510,6 +17549,9 @@ bool __cdecl Script_GetDetectionLevelConditionFunction(int a0, int a1, int a2, i
 
 // @fnv 0x005cd990
 // src: EXE 0x005cd990
+// pdb: Script::GetDetectionLevelFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTarget
 bool __cdecl Cmd_GetDetectionLevel_Execute(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
     int out = 0;
@@ -16525,6 +17567,9 @@ extern void __cdecl Script_GetPCExpelledConditionFunction(void* a3, void* local_
 
 // @fnv 0x005cdf50
 // src: EXE 0x005cdf50
+// pdb: Script::GetPCExpelledFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction
 bool __cdecl Cmd_GetPCExpelled_Execute(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8) {
     void* local_4 = 0;
     if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &local_4)) {
@@ -16535,10 +17580,13 @@ bool __cdecl Cmd_GetPCExpelled_Execute(void* a1, void* a2, void* a3, void* a4, v
 }
 
 bool Script_ParseParameters(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int* out);
-void Script_GetPCFactionMurderConditionFunction(int a0, int a1, int a2, int a3);
+void Script_GetPCFactionMurderConditionFunction(int apRefObject, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005ce060
 // src: EXE 0x005ce060
+// pdb: Script::GetPCFactionMurderFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction
 bool Cmd_GetPCFactionMurder_Execute(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
     int out = 0;
     if (!Script_ParseParameters(a0, a1, a7, a2, a3, a4, a5, &out)) {
@@ -16558,6 +17606,9 @@ extern "C" unsigned char __cdecl Script_ParseParameters(
 
 // @fnv 0x005ce190
 // src: EXE 0x005ce190
+// pdb: Script::SetPlayerEnemyofFactionFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction, ivalue
 bool __cdecl Cmd_SetPCEnemyofFaction_Execute(unsigned int arg1, unsigned int arg2, unsigned int arg3,
                           unsigned int arg4, unsigned int arg5, unsigned int arg6,
                           unsigned int arg7, unsigned int arg8)
@@ -16741,6 +17792,9 @@ void __cdecl Interface_PrintLine(const char* fmt, unsigned int value);
 
 // @fnv 0x005ce630
 // src: XBOX_PDB 0x005ce630
+// pdb: Script::GetParentRefFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iid
 bool __cdecl Script_GetParentRefFunction(unsigned int a0, unsigned int a1, void* apRef, unsigned int a3, unsigned int a4, unsigned int a5, double* afOut)
 {
     *afOut = 0.0;
@@ -16773,10 +17827,10 @@ public:
 
 class FNVSubB5202 {
 public:
-    void ApplyB5202(int value);
+    void ApplyB5202(int asValue);
 };
 
-void FNVFlushB5202();
+void Interface_CreateLevelUpMenu();
 
 // @fnv 0x005ce9f0
 // src: EXE 0x005ce9f0
@@ -16784,7 +17838,7 @@ bool Cmd_AdvancePCLevel_Execute()
 {
     if (g_pHolderB5202 != 0) {
         ((FNVSubB5202*)((char*)g_pHolderB5202->GetOffsetB5202() + 0x30))->ApplyB5202((int)g_pHolderB5202->GetCountB5202() + 1);
-        FNVFlushB5202();
+        Interface_CreateLevelUpMenu();
     }
     return true;
 }
@@ -16802,7 +17856,7 @@ bool __cdecl Cmd_IsSpellTarget_Execute(const ScriptParameter* apParameters, cons
 }
 
 bool Script_ParseParameters(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, TESObjectREFR* e, ScriptLocals* f, double* g, unsigned int* h);
-bool Cmd_GetSpellUsageNum_Eval(TESObjectREFR* a, unsigned int b, int c, void* d);
+bool Script_GetSpellUsageNumberConditionFunction(TESObjectREFR* a, unsigned int b, int c, void* d);
 // @fnv 0x005ceaf0
 // src: EXE 0x005ceaf0
 bool Cmd_GetSpellUsageNum_Execute(const ScriptParameter* p1, const char* p2, TESObjectREFR* p3, TESObjectREFR* p4, ScriptLocals* p5, double* p6, void* p7, TESObjectREFR* p8)
@@ -16810,7 +17864,7 @@ bool Cmd_GetSpellUsageNum_Execute(const ScriptParameter* p1, const char* p2, TES
     unsigned int local = 0;
     if (!Script_ParseParameters(p1, p2, p8, p3, p4, p5, p6, &local))
         return false;
-    return Cmd_GetSpellUsageNum_Eval(p3, local, 0, p7);
+    return Script_GetSpellUsageNumberConditionFunction(p3, local, 0, p7);
 }
 
 struct B5CEB50ParamInfo;
@@ -16818,7 +17872,7 @@ class B5CEB50Ref;
 class B5CEB50Script;
 class B5CEB50Locals;
 
-bool Script_GetVATSModeConditionFunction(B5CEB50Ref* pkRef, void* pvArgA, void* pvArgB, double* pdResult);
+bool Script_GetVATSModeConditionFunction(B5CEB50Ref* pkRef, void* apParam1, void* apParam2, double* afReturnValue);
 
 // @fnv 0x005ceb50
 // src: EXE 0x005ceb50
@@ -16904,6 +17958,9 @@ void __cdecl SayToHelper(RefStub*, RefStub*);
 
 // @fnv 0x005ceeb0
 // src: EXE 0x005ceeb0
+// pdb: Script::ShowBarterMenu | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: idiscount, pmob, pactor, ptalkActi
 bool Cmd_ShowBarterMenu_Execute(const ScriptParameter* paramInfo, const char* scriptData, RefStub* thisObj, RefStub* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
 {
     RefStub* target = 0;
@@ -17285,17 +18342,19 @@ void Script_GetBarterGoldConditionFunction(int a, int b, int c, int d);
 
 // @fnv 0x005d0e10
 // src: EXE 0x005d0e10
+// pdb: Script::GetBarterGoldFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void Cmd_GetBarterGold_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
     Script_GetBarterGoldConditionFunction(a3, 0, 0, a7);
 }
 
-int Cmd_IsWin32_Eval(int a1, int a2, int a3, int a4);
+int Script_IsPCConditionFunction(int a1, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005d1150
 // src: EXE 0x005d1150
 void Cmd_IsWin32_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
-    Cmd_IsWin32_Eval(a3, 0, 0, a7);
+    Script_IsPCConditionFunction(a3, 0, 0, a7);
 }
 
 namespace fnv_005d11b0 {
@@ -17669,6 +18728,9 @@ extern int DAT_011846d4;
 
 // @fnv 0x005d1290
 // src: EXE 0x005d1290
+// pdb: Script::DamageWeaponFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: famount, pactor, pweapon
 bool __cdecl Cmd_DamageWeapon_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
 {
     float pActor = 0.0f;
@@ -17692,10 +18754,13 @@ struct ScriptFallback {
 };
 extern ScriptFallback* DAT_011dea3c;
 bool __cdecl Script_ParseParameters(int, int, int, int, int, int, int, int*, int*);
-void __cdecl Cmd_IsCellOwner_Eval(int, int, int, double*);
+void __cdecl Script_GetCellOwnershipConditionFunction(int, int, int, double*);
 
 // @fnv 0x005d1760
 // src: EXE 0x005d1760
+// pdb: Script::GetCellOwnershipFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell, powner
 bool __cdecl Cmd_IsCellOwner_Execute(int a1, int a2, int a3, int a4,
                            int a5, int a6, double* result, int a8)
 {
@@ -17711,7 +18776,7 @@ bool __cdecl Cmd_IsCellOwner_Execute(int a1, int a2, int a3, int a4,
         if (fallback == 0) {
             fallback = DAT_011dea3c->BGSSaveFormBuffer_GetForm();
         }
-        Cmd_IsCellOwner_Eval(a3, parsedValue, fallback, result);
+        Script_GetCellOwnershipConditionFunction(a3, parsedValue, fallback, result);
         return true;
     }
 }
@@ -17731,11 +18796,14 @@ public:
 
 class DecObj {
 public:
-    void Attach(void* p);
+    void TESObjectCELL_SetCellOwnership(void* pform);
 };
 
 // @fnv 0x005d17f0
 // src: EXE 0x005d17f0
+// pdb: Script::SetCellOwnershipFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell, powner
 bool __cdecl Cmd_SetCellOwnership_Execute(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* unk20, void* a8) {
     void* v4 = 0;
     DecObj* v8 = 0;
@@ -17746,7 +18814,7 @@ bool __cdecl Cmd_SetCellOwnership_Execute(void* a1, void* a2, void* a3, void* a4
         v4 = DAT_011dea3c->GetInstance();
     }
     if (v8 != 0) {
-        v8->Attach(v4);
+        v8->TESObjectCELL_SetCellOwnership(v4);
     }
     return true;
 }
@@ -17789,8 +18857,8 @@ struct ScriptScopeLoc {
 };
 
 struct ScriptSingleton {
-    bool ModelLoader_FindModel(int aArg);
-    void ModelLoader_QueueModel_00444040(int aA, int aB, int aC, int aD, int aE, int aF, int aG);
+    bool ModelLoader_FindModel(int apFilename);
+    void ModelLoader_QueueModel_00444040(int apModelFileName, int aePriority, int apParent, int aD, int aE, int aF, int aG);
 };
 
 extern ScriptSingleton* DAT_011c3b3c;
@@ -17798,10 +18866,13 @@ extern ScriptSingleton* DAT_011c3b3c;
 bool __cdecl Script_ParseParameters(int aA, int aB, int aC, int aD, int aE, int aF, int aG, ScriptOwner** aOut);
 
 // @fnv 0x005d22d0
-// src: EXE 0x005d22d0
-bool __cdecl Cmd_PreloadMagicEffect_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {
+// src: XBOX_RETAIL_PDB 0x005d22d0
+// pdb: Script::PreloadMagicEffect | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: peffectSetting, spmodel
+bool __cdecl Script_PreloadMagicEffect(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset) {
     ScriptOwner* obj = 0;
-    if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &obj)) {
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &obj)) {
         return false;
     }
     if (obj != 0) {
@@ -18197,23 +19268,26 @@ float __cdecl BSMAX_00404010(float a, float b);
 float __cdecl BSMIN(float a, float b);
 
 // @fnv 0x005d23d0
-// src: EXE 0x005d23d0
-bool Cmd_SetActorAlpha_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+// src: XBOX_RETAIL_PDB 0x005d23d0
+// pdb: Script::SetActorAlpha | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fpercent
+bool Script_SetActorAlpha(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset)
 {
     float f = 0.0f;
-    if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &f)) {
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &f)) {
         return false;
     }
-    if (a3 == 0) {
-        a3 = DAT_011dea3c;
+    if (apRefObject == 0) {
+        apRefObject = DAT_011dea3c;
     }
-    if (((ObjVtbl*)a3)->vtbl_slot_064() == 0 || FUN_008d8520((ObjVtbl*)a3) == 0) {
+    if (((ObjVtbl*)apRefObject)->vtbl_slot_064() == 0 || FUN_008d8520((ObjVtbl*)apRefObject) == 0) {
         return true;
     }
     f = BSMIN(1.0f, BSMAX_00404010(0.0f, f));
-    ObjVtbl* p2 = FUN_008d8520((ObjVtbl*)a3);
+    ObjVtbl* p2 = FUN_008d8520((ObjVtbl*)apRefObject);
     p2->vtbl_slot_364(f);
-    FUN_008c4640((ObjVtbl*)a3);
+    FUN_008c4640((ObjVtbl*)apRefObject);
     return true;
 }
 }  // namespace fnv_005d23d0
@@ -18225,6 +19299,8 @@ extern "C" bool __cdecl Script_IsActorEvilConditionFunction(TESObjectREFR*, void
 
 // @fnv 0x005d25f0
 // src: EXE 0x005d25f0
+// pdb: Script::IsActorEvilFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_IsActorEvil_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     Script_IsActorEvilConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -18234,7 +19310,7 @@ void __cdecl Cmd_IsActorEvil_Execute(const ScriptParameter* apParameters, const 
 
 class D29D0WaterManager {
 public:
-    void Disable(int iRemove, int iUnk);
+    void TESWaterSystem_DisableWaterSystem(int iRemove, int iUnk);
     void Enable();
 };
 
@@ -18250,12 +19326,14 @@ void __cdecl DebugLog(const char* pFormat, ...);
 
 // @fnv 0x005d29d0
 // src: XBOX_PDB 0x005d29d0
+// pdb: Script::ToggleWaterSystem | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Script_ToggleWaterSystem()
 {
     g_pkD29D0TES->GetWaterManager();
     if (D29D0IsWaterSystemOn()) {
         DebugLog("Water System Off");
-        g_pkD29D0TES->GetWaterManager()->Disable(1, 0);
+        g_pkD29D0TES->GetWaterManager()->TESWaterSystem_DisableWaterSystem(1, 0);
         return;
     } else {
         DebugLog("Water System On");
@@ -18314,13 +19392,16 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 extern NiColorA g_DefaultColor;
 
 // @fnv 0x005d3780
-// src: EXE 0x005d3780
-bool Cmd_WaterDeepColor_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d3780
+// pdb: Script::ModifyWaterShaderDeepColor | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: r, g, b, pkWaterProp, pnode, pobj, pprop
+bool Script_ModifyWaterShaderDeepColor(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iRed7;
     int iGreen_2;
     int kIBlue;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffset, thisObj, containingObj, scriptObj, locals, &iRed7, &iGreen_2, &kIBlue))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &iRed7, &iGreen_2, &kIBlue))
         return false;
     FogPropertyStandIn* pProperty4 = 0;
     if (thisObj) {
@@ -18353,21 +19434,24 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 extern NiColorA g_kDefaultImageSpaceColor;
 
 // @fnv 0x005d3930
-// src: EXE 0x005d3930
-bool Cmd_WaterReflectionColor_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d3930
+// pdb: Script::ModifyWaterShaderReflectionColor | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: r, g, b, pkWaterProp, pnode, pobj, pprop
+bool Script_ModifyWaterShaderReflectionColor(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iRed7;
     int iGreen_2;
     int kIBlue;
     NiProperty* pProperty4;
 
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container, script, locals, &iRed7, &iGreen_2, &kIBlue))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &iRed7, &iGreen_2, &kIBlue))
         return false;
 
     pProperty4 = 0;
-    if (thisObject)
+    if (apRefObject)
     {
-        NiNode* p3D = reinterpret_cast<NiNode*>(thisObject->GetNiNode());
+        NiNode* p3D = reinterpret_cast<NiNode*>(apRefObject->GetNiNode());
         NiAVObject* pChild = p3D->GetAt(0);
         NiProperty* pProp = pChild->GetProperty(3);
         pProperty4 = pProp;
@@ -18391,6 +19475,8 @@ void __fastcall ExtraDataList_RemoveSavedHavokData(void* p);
 
 // @fnv 0x005d3ae0
 // src: EXE 0x005d3ae0
+// pdb: Script::Reset3DStateFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_Reset3DState_Execute(int a, int b, void* p)
 {
     if (p != 0)
@@ -18423,7 +19509,10 @@ int __cdecl _bhkWorld_DoObjects(int, S_005d3c20_Local*, S_005d3c70_Callback);
 
 // @fnv 0x005d3c20
 // src: COMMUNITY 0x005d3c20
-void __cdecl Script_SetRigidBodyMassBase(TESObjectREFR* apObject, float afValue)
+// pdb: Script::SetRigidBodyMassBase | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, afValue
+// pdb locals: recData
+void __cdecl Script_SetRigidBodyMassBase(TESObjectREFR* apRefObject, float afValue)
 {
     S_005d3c20_Local local;
 
@@ -18432,7 +19521,7 @@ void __cdecl Script_SetRigidBodyMassBase(TESObjectREFR* apObject, float afValue)
     local.unk04 = 1;
     local.unk0c = afValue;
 
-    _bhkWorld_DoObjects(reinterpret_cast<int>(apObject->GetNiNode()), &local, SetRBMass);
+    _bhkWorld_DoObjects(reinterpret_cast<int>(apRefObject->GetNiNode()), &local, SetRBMass);
 }
 
 struct FUN_005d3c70_Owner
@@ -18465,17 +19554,20 @@ extern char DAT_012681c0;
 
 // @fnv 0x005d3c70
 // src: COMMUNITY 0x005d3c70
-void __cdecl SetRBMass(FUN_005d3c70_Owner* a1, FUN_005d3c70_Src* a2)
+// pdb: SetRBMass | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: prb, pwo, pm
+void __cdecl SetRBMass(FUN_005d3c70_Owner* apCollision, FUN_005d3c70_Src* arData)
 {
-    void* p = a1->bhkNiCollisionObject_GetWorldObject();
+    void* p = apCollision->bhkNiCollisionObject_GetWorldObject();
     FUN_005d3c70_Holder* h = (FUN_005d3c70_Holder*)NiObject_DynamicCast(&DAT_012681c0, p);
     if (h != 0)
     {
-        h->FUN_005d3ce0(a2->fValue);
+        h->FUN_005d3ce0(arData->fValue);
         FUN_005d3c70_Virt* v = (FUN_005d3c70_Virt*)h->hkpRigidBody_getStoredDynamicMotion();
         if (v != 0)
         {
-            v->V3(a2->fValue);
+            v->V3(arData->fValue);
         }
     }
 }
@@ -18490,6 +19582,9 @@ void __cdecl Interface_PrintLine(const char* apFmt, ...);
 
 // @fnv 0x005d3dc0
 // src: XBOX_PDB 0x005d3dc0
+// pdb: Script::GetIgnoreFriendlyHitsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bretval
 bool __cdecl Script_GetIgnoreFriendlyHitsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     bool bResult = Script_GetIgnoreFriendlyHitsConditionFunction(apRefObject, 0, 0, &afReturnValue);
@@ -18511,6 +19606,9 @@ void __cdecl DumpLocalMapTextures();
 
 // @fnv 0x005d4580
 // src: EXE 0x005d4580
+// pdb: Script::OutputLocalMapPictures | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: i
 bool __cdecl Cmd_OutputLocalMapPictures_Execute()
 {
     DAT_012004fc = true;
@@ -18529,6 +19627,8 @@ extern "C" unsigned char __cdecl Script_ParseParameters(unsigned int, unsigned i
 extern const double DAT_01012060;
 // @fnv 0x005d4740
 // src: EXE 0x005d4740
+// pdb: Script::SetDepthOfFieldRange | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 unsigned char __cdecl Cmd_WasteMemory_Execute(unsigned int first, unsigned int second, unsigned int third, unsigned int fourth, unsigned int fifth, unsigned int sixth, unsigned int seventh, unsigned int eighth)
 {
     float position = 0.0f;
@@ -18545,14 +19645,16 @@ unsigned char __cdecl Cmd_WasteMemory_Execute(unsigned int first, unsigned int s
 
 // @fnv 0x005d4c20
 // src: COMMUNITY 0x005d4c20
-void __cdecl Script_DamageObjectBase(TESObjectREFR* p, float f)
+// pdb: Script::DamageObjectBase | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: apRef, afValue
+void __cdecl Script_DamageObjectBase(TESObjectREFR* apRef, float f)
 {
-    p->DamageObject(f, true);
+    apRef->DamageObject(f, true);
 }
 
 struct SpecialActorState {
     int FUN_00401170();
-    void BGSTalkingActivator_SetTempRef(unsigned int index);
+    void BGSTalkingActivator_SetTempRef(unsigned int pref);
 };
 struct RefActor {
     SpecialActorState* BGSSaveFormBuffer_GetForm();
@@ -18565,6 +19667,9 @@ extern void __cdecl Script_ParseParameters(
 
 // @fnv 0x005d4cc0
 // src: EXE 0x005d4cc0
+// pdb: Script::SetTalkingActivatorActorFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor, pTalkingact
 bool __cdecl Cmd_SetTalkingActivatorActor_Execute(
     void* parameters, const char* text, RefActor* target,
     void* speaker, void* script, void* variables,
@@ -18582,17 +19687,20 @@ bool __cdecl Cmd_SetTalkingActivatorActor_Execute(
 }
 
 bool __cdecl Script_ParseParameters(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7, unsigned int* a8);
-bool __cdecl Cmd_IsTalkingActivatorActor_Eval(void* a1, unsigned int a2, unsigned int a3, void* a4);
+bool __cdecl Script_GetTalkingActivatorActorConditionFunction(void* apRefObject, unsigned int a2, unsigned int apParam2, void* afReturnValue);
 
 // @fnv 0x005d4d30
 // src: EXE 0x005d4d30
+// pdb: Script::GetTalkingActivatorActorFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
 bool __cdecl Cmd_IsTalkingActivatorActor_Execute(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8)
 {
     unsigned int local = 0;
     if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &local)) {
         return false;
     }
-    return Cmd_IsTalkingActivatorActor_Eval(a3, local, 0, a7);
+    return Script_GetTalkingActivatorActorConditionFunction(a3, local, 0, a7);
 }
 
 class VirtHolder {
@@ -18899,6 +20007,9 @@ bool __cdecl Script_ParseParameters(void* a1, void* a2, void* a3, void* a4, void
 
 // @fnv 0x005d4f00
 // src: EXE 0x005d4f00
+// pdb: Script::RemovePerkFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pperk, bAlt, iVal, pactor
 bool __cdecl Cmd_RemovePerk_Execute(void* a8, void* ac, VirtHolder* a10, void* a14, void* a18, void* a1c, int a20, void* a24)
 {
     void* result = 0;
@@ -18938,8 +20049,11 @@ extern "C" DebugPageOwner* __stdcall FUN_005ba8d1(unsigned char*, int);
 extern int DAT_011dea3c;
 
 // @fnv 0x005d5020
-// src: EXE 0x005d5020
-bool __cdecl Cmd_SendSherlockDebugText_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+// src: XBOX_RETAIL_PDB 0x005d5020
+// pdb: Script::SendSherlockDebugPage | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bret, ptextPage, ppageName
+bool __cdecl Script_SendSherlockDebugPage(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset)
 {
     DebugTextBuffer buf;
     bool flag;
@@ -18949,7 +20063,7 @@ bool __cdecl Cmd_SendSherlockDebugText_Execute(int a1, int a2, int a3, int a4, i
     flag = false;
     buf.first = 0;
     FUN_00ec61c0(buf.text, 0, 0x7fc);
-    if (Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &buf) != 0)
+    if (Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &buf) != 0)
     {
         if (!Interface_IsDebugTextVisible() && buf.first == 0)
         {
@@ -18965,11 +20079,11 @@ bool __cdecl Cmd_SendSherlockDebugText_Execute(int a1, int a2, int a3, int a4, i
             {
                 page = (unsigned char*)&buf;
             }
-            if (a3 == 0)
+            if (apRefObject == 0)
             {
-                a3 = DAT_011dea3c;
+                apRefObject = DAT_011dea3c;
             }
-            FUN_005ba8d1(page, a3)->Flush();
+            FUN_005ba8d1(page, apRefObject)->Flush();
             flag = true;
         }
     }
@@ -19333,8 +20447,11 @@ public:
 };
 struct ProbeResult { void FUN_0097fb80(); };
 // @fnv 0x005d5720
-// src: EXE 0x005d5720
-bool Cmd_DebugCombatPlan_Execute(int a, int b, ProbeRef* ref) {
+// src: XBOX_RETAIL_PDB 0x005d5720
+// pdb: Script::DebugCombatPlanFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor, pcombatController
+bool Script_DebugCombatPlanFunction(int a, int b, ProbeRef* ref) {
     ProbeRef* obj = 0;
     if (ref->v64()) {
         obj = ref;
@@ -19422,8 +20539,11 @@ extern const char DAT_010399bc;
 extern const char DAT_01039f58;
 extern __declspec(thread) unsigned char isScriptDebugging;
 // @fnv 0x005d6a60
-// src: EXE 0x005d6a60
-bool __cdecl Cmd_SetActorsAI_Execute(int a, int b, ScriptContextObject* context, int d, int e, int f, int unused, int h)
+// src: XBOX_RETAIL_PDB 0x005d6a60
+// pdb: Script::SetActorsAIFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, iComplex
+bool __cdecl Script_SetActorsAIFunction(int a, int b, ScriptContextObject* context, int d, int e, int f, int afReturnValue, int h)
 {
     ScriptNode* scriptNode = 0;
     int didParse;
@@ -19646,6 +20766,9 @@ void __cdecl _FNV_Warning(const char*, ...);
 
 // @fnv 0x005d6b60
 // src: XBOX_PDB 0x005d6b60
+// pdb: Script::PushActorAwayFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: preftarget, ivalue, ptarget, fpushAwaySpeed, pbp, php, pWeap, pItem
 bool __cdecl Script_PushActorAwayFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     RefS* pRef = 0;
@@ -19678,6 +20801,9 @@ void __cdecl CharGenMenu_Create_(int, int, unsigned char, unsigned char);
 
 // @fnv 0x005d72f0
 // src: EXE 0x005d72f0
+// pdb: Script::AddSPECIALPoints | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxPoints, breturn
 bool __cdecl Cmd_AddSPECIALPoints_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int unk20, int a8)
 {
     bool result = true;
@@ -19699,6 +20825,9 @@ void __cdecl CharGenMenu_Create_(int, int, unsigned char, unsigned char);
 
 // @fnv 0x005d7350
 // src: EXE 0x005d7350
+// pdb: Script::SetTagSkills | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxPoints, breturn, ishowTaggedSkills
 bool __cdecl Cmd_SetTagSkills_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
     bool result3 = true;
@@ -19718,6 +20847,9 @@ extern void __cdecl CharGenMenu_Create_(int a, int b, int c, int d);
 
 // @fnv 0x005d73d0
 // src: EXE 0x005d73d0
+// pdb: Script::AddTagSkills | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxPoints, breturn
 bool __cdecl Cmd_AddTagSkills_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
     bool success = true;
@@ -19738,6 +20870,9 @@ extern "C" void __cdecl Interface_CreateLockPickMenu(int, int, int);
 
 // @fnv 0x005d7430
 // src: EXE 0x005d7430
+// pdb: Script::ShowLockpickMenu | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ilockDifficulty
 bool __cdecl Cmd_ShowLockpickMenu_Execute(const ScriptParameter* parameters, const char* scriptData,
                           TESObjectREFR* thisObject, TESObjectREFR* container,
                           Script* script, ScriptLocals* locals, double& result,
@@ -19750,15 +20885,18 @@ bool __cdecl Cmd_ShowLockpickMenu_Execute(const ScriptParameter* parameters, con
 }
 
 bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int* a8);
-bool __cdecl Cmd_IsKillerObject_Eval(int a1, int a2, int a3, int a4);
+bool __cdecl Script_GetKillerObjectConditionFunction(int a1, int apParam1, int apParam2, int afReturnValue);
 // @fnv 0x005d7540
 // src: EXE 0x005d7540
+// pdb: Script::GetKillerObjectFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pformlist
 bool __cdecl Cmd_IsKillerObject_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {
     int local = 0;
     if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &local)) {
         return false;
     }
-    return Cmd_IsKillerObject_Eval(a3, local, 0, a7);
+    return Script_GetKillerObjectConditionFunction(a3, local, 0, a7);
 }
 
 class ScriptParameter;
@@ -19767,10 +20905,13 @@ extern bool __cdecl Script_ParseParameters(
     const ScriptParameter*, const char*, unsigned int&,
     TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*,
     int*, int*);
-extern bool __cdecl Cmd_GetFactionCombatReaction_Eval(TESObjectREFR*, int, int, double&);
+extern bool __cdecl Script_GetFactionCombatReactionConditionFunction(TESObjectREFR*, int, int, double&);
 
 // @fnv 0x005d75a0
 // src: EXE 0x005d75a0
+// pdb: Script::GetFactionCombatReactionFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pFaction, pFactionTarget
 bool __cdecl Cmd_GetFactionCombatReaction_Execute(
     const ScriptParameter* params, const char* arguments,
     TESObjectREFR* object, TESObjectREFR* container,
@@ -19783,7 +20924,7 @@ bool __cdecl Cmd_GetFactionCombatReaction_Execute(
                      script, locals, &parsedB, &parsedA)) {
         return false;
     }
-    return Cmd_GetFactionCombatReaction_Eval(object, parsedB, parsedA, result);
+    return Script_GetFactionCombatReactionConditionFunction(object, parsedB, parsedA, result);
 }
 
 class NiCallbackHost {
@@ -19856,11 +20997,14 @@ public:
 };
 
 bool Script_ParseParameters(int a1, int a2, int a3, NiCallbackHost* a4, int a5, int a6, int a7, int* a8, unsigned int* a9);
-void FalloutRadio_EnableNPCRadio(NiCallbackHost* a1, unsigned int a2);
+void FalloutRadio_EnableNPCRadio(NiCallbackHost* apNPCRadio, unsigned int apTargetStation);
 void FalloutRadio_DisableNPCRadio(NiCallbackHost* a1);
 // @fnv 0x005d8100
-// src: EXE 0x005d8100
-bool Cmd_SetNPCRadio_Execute(int a1, int a2, NiCallbackHost* a3, int a4, int a5, int a6, int a7, int a8)
+// src: XBOX_RETAIL_PDB 0x005d8100
+// pdb: Script::SetNPCRadio | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pstation, istate, ptarget
+bool Script_SetNPCRadio(int apParameters, int apCompiledParams, NiCallbackHost* apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset)
 {
     unsigned int local4;
     {
@@ -19869,23 +21013,23 @@ bool Cmd_SetNPCRadio_Execute(int a1, int a2, NiCallbackHost* a3, int a4, int a5,
     ptrOut = 0;
     local4 = 0;
     status = 0;
-    if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &status, &ptrOut)) {
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &status, &ptrOut)) {
         return false;
     }
-    if (a3 == 0 || !a3->v64() || ptrOut == 0) {
+    if (apRefObject == 0 || !apRefObject->v64() || ptrOut == 0) {
         return false;
     }
     if (status == 1) {
-        FalloutRadio_EnableNPCRadio(a3, ptrOut);
+        FalloutRadio_EnableNPCRadio(apRefObject, ptrOut);
     } else if (status == 0) {
-        FalloutRadio_DisableNPCRadio(a3);
+        FalloutRadio_DisableNPCRadio(apRefObject);
     }
     }
     return true;
 }
 
 bool Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, unsigned int* out);
-bool FalloutRadio_StartRadioConversation(int a1, unsigned int value);
+bool FalloutRadio_StartRadioConversation(int apTargetStation, unsigned int apTopic);
 
 // @fnv 0x005d82a0
 // src: EXE 0x005d82a0
@@ -19941,7 +21085,7 @@ bool __cdecl Cmd_SetAudioMultithreading_Execute(const ScriptParameter* parameter
     return true;
 }
 
-void __cdecl Script_IsWaterObjectConditionFunction(int arg1, int arg2, int arg3, int arg4);
+void __cdecl Script_IsWaterObjectConditionFunction(int arg1, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005d8640
 // src: EXE 0x005d8640
@@ -19954,6 +21098,9 @@ void ScreenSplatter_Activate(int value, float f, int flag);
 
 // @fnv 0x005d8730
 // src: EXE 0x005d8730
+// pdb: Script::TriggerScreenBlood | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ibloodcount
 bool __cdecl Cmd_TriggerScreenBlood_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int unk20, int a8)
 {
     int result = 0;
@@ -20004,7 +21151,7 @@ struct MobIter3D {
 };
 
 struct ProcListsStub {
-    void ResetMobs(MobIter3D* apIter);
+    void ProcessLists_IterateMobs(MobIter3D* arIterOp);
 };
 extern ProcListsStub g_procLists;
 
@@ -20053,7 +21200,7 @@ void __cdecl FinishReset3D();
 bool __cdecl Cmd_ResetDialogueFlags_Execute()
 {
     MobIter3D iter;
-    g_procLists.ResetMobs(&iter);
+    g_procLists.ProcessLists_IterateMobs(&iter);
     g_playerStub->Reset3DStub();
     CellStub* pCellA_2 = LookupCellStub(6, 0xc);
     CellStub* pCellB4 = LookupCellStub(1, 0);
@@ -20223,10 +21370,13 @@ bool __cdecl Cmd_ClearActorsFactionsPlayerEnemyFlag_Execute(const void* paramete
 }
 
 bool __cdecl Script_ParseParameters(int a0, int a1, int a2, int a3, int a4, int a5, int a6, unsigned int* out);
-bool __cdecl Script_GetThreatRatioConditionFunction(int a0, int a1, int a2, int a3);
+bool __cdecl Script_GetThreatRatioConditionFunction(int a0, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005da0c0
 // src: EXE 0x005da0c0
+// pdb: Script::GetThreatRatioFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
 bool __cdecl Cmd_GetThreatRatio_Execute(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
     unsigned int local = 0;
@@ -20242,6 +21392,9 @@ bool __cdecl Script_GetIsAlignmentConditionFunction(int, int, int, double*);
 
 // @fnv 0x005da120
 // src: EXE 0x005da120
+// pdb: Script::GetIsAlignmentFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: echeck
 bool __cdecl Cmd_GetIsAlignment_Execute(int a, int b, int c, int d, int e, int f, double* g, int h) {
     int local = 1;
     if (!Script_ParseParameters(a, b, h, c, d, e, f, &local))
@@ -20251,16 +21404,18 @@ bool __cdecl Cmd_GetIsAlignment_Execute(int a, int b, int c, int d, int e, int f
 
 // Script opcode handler: hands the reference form and the result slot to the
 // shared helper FUN_005a4f30, which fills in the returned value.
-void __cdecl Cmd_GetActorAggroRadiusViolated_Eval(TESObjectREFR* apReference, int unusedFlags1, int unusedFlags2, double* apResult);
+void __cdecl Script_GetAggroRadiusViolatedConditionFunction(TESObjectREFR* apRefObject, int apParam1, int apParam2, double* afReturnValue);
 
 // @fnv 0x005da280
 // src: EXE 0x005da280
+// pdb: Script::ClearDestructionFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_GetActorAggroRadiusViolated_Execute(const ScriptParameter* apParameters, const char* apScriptData,
                           TESObjectREFR* apThisObject, TESObjectREFR* apContainer,
                           Script* apScript, ScriptLocals* apScriptLocals,
                           double& afReturnValue, unsigned int& auiOpcodeOffset)
 {
-    Cmd_GetActorAggroRadiusViolated_Eval(apThisObject, 0, 0, &afReturnValue);
+    Script_GetAggroRadiusViolatedConditionFunction(apThisObject, 0, 0, &afReturnValue);
 }
 
 class ScriptParameter;
@@ -20344,7 +21499,7 @@ bool Cmd_MatchRace_Execute(const ScriptParameter* apParams, const char* apScript
 
 class ScriptNotifier {
 public:
-    void Notify(bool value);
+    void PlayerCharacter_SetPCToddler(bool abVal);
 };
 
 extern ScriptNotifier* g_pScriptNotifier;
@@ -20359,7 +21514,7 @@ bool __cdecl Cmd_SetPCToddler_Execute(void* a1, void* a2, void* a3, void* a4, vo
     if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, local)) {
         return false;
     }
-    g_pScriptNotifier->Notify(local != 0);
+    g_pScriptNotifier->PlayerCharacter_SetPCToddler(local != 0);
     return true;
 }
 
@@ -20439,7 +21594,7 @@ bool __cdecl Cmd_GetVATSFrontAreaFree_Execute(const ScriptParameter* apParameter
 }
 
 extern bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, unsigned int* a8);
-extern bool __cdecl Script_GetVATSRightTargetVisibleConditionFunction(int a1, unsigned int a2, int a3, int a4);
+extern bool __cdecl Script_GetVATSRightTargetVisibleConditionFunction(int a1, unsigned int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005db6f0
 // src: EXE 0x005db6f0
@@ -20480,7 +21635,7 @@ bool Cmd_GetVATSBackTargetVisible_Execute(int a0, int a1, int a2, int a3, int a4
 }
 
 extern bool Script_ParseParameters(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int* pLocal);
-extern bool Script_GetVATSFrontTargetVisibleConditionFunction(int a0, int a1, int a2, int a3);
+extern bool Script_GetVATSFrontTargetVisibleConditionFunction(int apRefObject, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005db810
 // src: EXE 0x005db810
@@ -20567,6 +21722,9 @@ struct FUN_005dc010_obj
 
 // @fnv 0x005dc010
 // src: EXE 0x005dc010
+// pdb: Script::SetCritStageFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: estage, pactor
 bool __cdecl Cmd_SetCriticalStage_Execute(int a0, int a1, FUN_005dc010_obj* a2, int a3, int a4, int a5, int a6, int a7)
 {
     unsigned int out = 0;
@@ -20584,10 +21742,12 @@ bool __cdecl Cmd_SetCriticalStage_Execute(int a0, int a1, FUN_005dc010_obj* a2, 
 
 // Script opcode handler: forwards the calling reference object and the result
 // slot to the shared condition helper, which fills in the returned value.
-void __cdecl Script_GetActorsInHighConditionFunction(TESObjectREFR* apThisObject, int iUnused1, int iUnused2, double* apResult);
+void __cdecl Script_GetActorsInHighConditionFunction(TESObjectREFR* apThisObject, int apParam1, int apParam2, double* afReturnValue);
 
 // @fnv 0x005dc5c0
 // src: EXE 0x005dc5c0
+// pdb: Script::RadioShutOffFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_GetActorsInHigh_Execute(const ScriptParameter* apParameters, const char* apScriptData,
                           TESObjectREFR* apThisObject, TESObjectREFR* apContainer,
                           Script* apScript, ScriptLocals* apScriptLocals,
@@ -20671,6 +21831,8 @@ extern bool __cdecl Script_ParseParameters(const ScriptParameter* param, const c
 
 // @fnv 0x005dda70
 // src: EXE 0x005dda70
+// pdb: Script::GetForceHitReactionFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetForceHitReaction_Execute(const ScriptParameter* param, const char* name, TESObjectREFR* ref1, TESObjectREFR* ref2, Script* script, ScriptLocals* locals, double* result, unsigned int* offset)
 {
     if (!Script_ParseParameters(param, name, offset, ref1, ref2, script, locals))
@@ -20785,6 +21947,9 @@ bool __cdecl Script_ParseParameters(const ScriptParameter* param, const char* na
 
 // @fnv 0x005ddae0
 // src: EXE 0x005ddae0
+// pdb: Script::GetReputationFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iPosNeg, pRep
 bool __cdecl Cmd_EnableWeaponMod_Execute(const ScriptParameter* param, const char* name, TESObjectREFR* ref1, TESObjectREFR* ref2, Script* script, ScriptLocals* locals, double& resultValue, unsigned int& opcode) {
     int slot = 0;
     int result = 0;
@@ -20812,6 +21977,10 @@ bool __cdecl func_0x005accb0(
 
 // @fnv 0x005ddc20
 // src: EXE 0x005ddc20
+// pdb: Script::GetReputationThresholdFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::GetReputationPctFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iAxis, pRep
 bool __cdecl Cmd_GetReputationPct_Execute(
     const void* params, const char* sourceText,
     void* reference, void* container, void* script, void* locals,
@@ -20835,6 +22004,10 @@ struct FUN_00616a90_Obj { char TESReputation_GetReputationThreshold(unsigned cha
 bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, FUN_00616a90_Obj** a8, int* a9);
 // @fnv 0x005ddc90
 // src: EXE 0x005ddc90
+// pdb: Script::AddReputationFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::GetReputationThresholdFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iPosNeg, iValue, pRep
 bool __cdecl Cmd_GetReputationThreshold_Execute(int a1, int a2, int a3, int a4, int a5, int a6, double* a7, int a8) {
     FUN_00616a90_Obj* kObj = 0;
     int opcode;
@@ -20859,6 +22032,10 @@ bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int 
 
 // @fnv 0x005ddd10
 // src: EXE 0x005ddd10
+// pdb: Script::AddReputationExactFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::AddReputationFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iPosNeg, fValue, pRep
 bool Cmd_AddReputation_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int unk20, int a8)
 {
     int loc[3] = { 0, 0, 0 };
@@ -20884,13 +22061,17 @@ class ScriptParameter;
 
 class ScriptValueTarget {
 public:
-    bool SetValue(int iIndex, float fValue);
+    bool SetValue(int RepType, float fValue);
 };
 
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, ...);
 
 // @fnv 0x005ddd90
 // src: EXE 0x005ddd90
+// pdb: Script::RemoveReputationFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::AddReputationExactFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iPosNeg, iValue, pRep
 bool Cmd_AddReputationExact_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iIndex = 0;
@@ -20916,6 +22097,10 @@ bool __cdecl Script_ParseParameters(const ScriptParameter* param, const char* na
 
 // @fnv 0x005dde90
 // src: EXE 0x005dde90
+// pdb: Script::SetReputationFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::RemoveReputationExactFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iPosNeg, fValue, pRep
 bool __cdecl Cmd_RemoveReputationExact_Execute(const ScriptParameter* param, const char* name, TESObjectREFR* ref1, TESObjectREFR* ref2, Script* script, ScriptLocals* locals, double& resultValue, unsigned int& opcode) {
     int index = 0;
     float value = 0.0f;
@@ -20938,6 +22123,10 @@ struct FUN_00615580_Class
 
 // @fnv 0x005ddf10
 // src: EXE 0x005ddf10
+// pdb: Script::SetEmitterParticleMax | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::SetReputationFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxParticles
 bool __cdecl Cmd_SetReputation_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int uStack_8 = 0;
@@ -21035,16 +22224,19 @@ extern void __cdecl Interface_PrintLine(const char*);
 
 // @fnv 0x005de4a0
 // src: XBOX_PDB 0x005de4a0
+// pdb: Script::IsImageSpaceActiveFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: plist, pmod, fstrength, spmodInstance, pformInstance
 bool __cdecl Script_IsImageSpaceActiveFunction(
-    const ScriptParameter* params, const char* scriptData,
-    TESObjectREFR* actor, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+    const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int formID = 0;
     float scale = 1.0f;
-    result = 0.0;
-    if (!ExtractArgs(params, scriptData, &opcodeOffset, actor, container,
-                     script, locals, &formID, &scale))
+    afReturnValue = 0.0;
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, &formID, &scale))
         return false;
 
     IdleNode* node = DAT_011dea10->FUN_0043b5d0();
@@ -21054,13 +22246,13 @@ bool __cdecl Script_IsImageSpaceActiveFunction(
             IdleAnimation* pCurrentAnimation = handle.operator IdleAnimation*();
             IdleForm* pBaseIdleForm = pCurrentAnimation->GetBase();
             if (pBaseIdleForm && pBaseIdleForm->FUN_00441110() == formID) {
-                result = 1.0;
+                afReturnValue = 1.0;
                 break;
             }
         }
         node = node->FUN_00726070();
     }
-    if (result != 0.0)
+    if (afReturnValue != 0.0)
         Interface_PrintLine(DAT_0103d174);
     else
         Interface_PrintLine(DAT_0103d158);
@@ -21315,8 +22507,11 @@ struct PlayerActor {
 };
 // @fnv 0x005de9f0
 // src: XBOX_PDB 0x005de9f0
-bool __cdecl Script_ResetXPFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* reference, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& offset) {
-    Script_ParseParameters(parameters, scriptData, offset, reference, container, script, locals);
+// pdb: Script::ResetXPFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fXP
+bool __cdecl Script_ResetXPFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* reference, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+    Script_ParseParameters(apParameters, apCompiledParams, auiOffset, reference, apContainer, apScript, apScriptLocals);
     if (_g_thePlayer) {
         float currentValue = reinterpret_cast<ActorValueOwner*>(reinterpret_cast<char*>(_g_thePlayer) + 0xa4)->GetCurrentActorValue((ActorValue::Index)0x18);
         reinterpret_cast<PlayerActor*>(_g_thePlayer)->ChangeActorValue(0x18, -currentValue, 0);
@@ -21593,12 +22788,12 @@ struct RecFile {
     unsigned char GetRecordType();
     unsigned int GetChunkID();
     unsigned int GetChunkSize();
-    bool GetChunkData(void* buffer, unsigned int size);
+    bool GetChunkData(void* pdata, unsigned int maxSize);
     bool NextChunk();
 };
 
 struct RecForm {
-    RecFile* GetFile(int index);
+    RecFile* GetFile(int aiIndex);
     unsigned int GetFormType();
 };
 
@@ -21644,26 +22839,29 @@ struct ResponseOwner {
     unsigned int uiFileOffset;
     unsigned char ucResponseIndex;
 
-    const char* TESQuestStageItem_GetLogEntry(RecForm* form);
+    const char* TESQuestStageItem_GetLogEntry(RecForm* apOwner);
 };
 
 // @fnv 0x0060fdb0
 // src: COMMUNITY 0x0060fdb0
-const char* ResponseOwner::TESQuestStageItem_GetLogEntry(RecForm* form)
+// pdb: TESQuestStageItem::GetLogEntry | TESQuestStage.obj | retail, upstream name already matches, high
+// pdb params: apOwner
+// pdb locals: bFound, chunkid, stageCount, pFile, formid, isize, pMessage
+const char* ResponseOwner::TESQuestStageItem_GetLogEntry(RecForm* apOwner)
 {
-    if (!form)
+    if (!apOwner)
         return 0;
     if (this != g_pLastResponseOwner) {
         g_pLastResponseOwner = this;
         g_ResponseText.Set(0, 0);
-        RecFile* fileA = form->GetFile(-1);
+        RecFile* fileA = apOwner->GetFile(-1);
         if (!fileA || !uiFileOffset)
             return 0;
         fileA = fileA->GetRealFile();
         if (!fileA->SetOffset(uiFileOffset))
             return 0;
         unsigned char recType = fileA->GetRecordType();
-        if (recType != g_FormTypeInfoTable[form->GetFormType()].type)
+        if (recType != g_FormTypeInfoTable[apOwner->GetFormType()].type)
             return 0;
         bool found6 = false;
         unsigned char index = 0;
@@ -21696,7 +22894,7 @@ const char* ResponseOwner::TESQuestStageItem_GetLogEntry(RecForm* form)
 #include <string.h>
 
 struct MessageConditions {
-    bool FUN_00680c60(void*, int, bool*, int);
+    bool IsTrue(void*, int, bool*, int);
 };
 struct MessageButton {
     BSStringT<char> text;
@@ -21771,7 +22969,7 @@ bool __cdecl Cmd_ShowMessage_Execute(const ScriptParameter* parameters, const ch
     memset(a, 0, sizeof(a));
     while (eb && *eb->FUN_006815c0() && h < 10) {
         bool conditionResult;
-        if ((*eb->FUN_006815c0())->conditions.FUN_00680c60(DAT_011dea3c, 0, &conditionResult, 0)) {
+        if ((*eb->FUN_006815c0())->conditions.IsTrue(DAT_011dea3c, 0, &conditionResult, 0)) {
             a[h] = (*eb->FUN_006815c0())->text.String();
             f = false;
         } else {
@@ -21846,7 +23044,7 @@ struct ContainerB {
     void FUN_004818e0(ObjB*, int, void*);
     void ApplyHealthPercentToContainer(float);
     void AddContainerToReference(ObjB*, bool);
-    void FUN_00487f70(unsigned short, unsigned short, ContainerB*, int);
+    void CalculateCurrentFormList(unsigned short, unsigned short, ContainerB*, int);
 };
 struct HelpersB {
     static bool Script_ParseParameters(void*, void*, void*, ObjB*, unsigned*, ObjB*, void*, FormB**, int*, int*);
@@ -21858,6 +23056,9 @@ extern "C" char DAT_010231e0;
 extern "C" char DAT_011dea3c;
 // @fnv 0x005b4be0
 // src: EXE 0x005b4be0
+// pdb: Script::AddItemFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, iSilent, pform, pobject, plevitem, bWeap, tempcont, pformlist, icalclevel, plist, paddform, pWeap, pactor
 bool HelpersB::Cmd_AddItem_Execute(void* a, void* b, ObjB* c, unsigned* d, ObjB* e, void* f, void* g, void* h) {
     FormB* form_ = 0;
     int count = 0;
@@ -21877,7 +23078,7 @@ bool HelpersB::Cmd_AddItem_Execute(void* a, void* b, ObjB* c, unsigned* d, ObjB*
         default: if (form_->v57()) itemB = form_;
         }
         if (leveled) {
-            ((ContainerB*)((char*)leveled + 0x30))->FUN_00487f70((unsigned short)value4,(unsigned short)count,&container,0);
+            ((ContainerB*)((char*)leveled + 0x30))->CalculateCurrentFormList((unsigned short)value4,(unsigned short)count,&container,0);
         } else if (listform && count) {
             ListB* node6 = listform->FUN_00500940();
             while (node6 && !node6->FUN_008256d0()) {
@@ -21924,6 +23125,9 @@ void __cdecl CmdRefreshInventoryMenu();
 
 // @fnv 0x005b53d0
 // src: EXE 0x005b53d0
+// pdb: Script::RemoveMeFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pContainer, pextra, pactor, pinventory
 bool __cdecl Cmd_RemoveMe_Execute(const ScriptParameter* apParamInfo, const char* apScriptData, CmdRef* apThisObj,
                           TESObjectREFR* apContainingObj, Script* apScript, ScriptLocals* apEventList, double* apResult,
                           unsigned int* apOpcodeOffset)
@@ -21950,13 +23154,16 @@ bool __cdecl Cmd_RemoveMe_Execute(const ScriptParameter* apParamInfo, const char
 }
 
 namespace fnv_005b55a0 {
-struct PerkTarget { float InventoryChanges_RemoveAllTypedItems(TESObjectREFR* ref, int first, bool unusedA, bool hasSecond, bool unusedB, bool hasThird, int fourth, int fifth); };
+struct PerkTarget { float InventoryChanges_RemoveAllTypedItems(TESObjectREFR* apRef, int apStolenContainer, bool abStealing, bool abowner, bool abRemoveOwnership, bool abSilent, int aiFormType, int apDoNotRemoveList); };
 struct ScriptTargetBase { PerkTarget* FUN_00418520(); };
 struct ScriptReference { ScriptTargetBase* BSFile_GetDevice(); };
 struct ActorUpdateQueue { void PlayerCharacter_CheckForQuestTargetUpdate(TESObjectREFR* reference); };
 extern ActorUpdateQueue* DAT_011dea3c;
 // @fnv 0x005b55a0
 // src: EXE 0x005b55a0
+// pdb: Script::RemoveAllTypedItemsFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pMoveToContainer, iownership, iFormId, ihidden, pDoNotRemoveList, bowner, pinventory
 bool __cdecl Cmd_RemoveAllTypedItems_Execute(const ScriptParameter* args, const char* raw, TESObjectREFR* reference, TESObjectREFR* other, Script* script, ScriptLocals* locals, double& result, unsigned int& offset)
 {
     int firstValue = 0;
@@ -22006,7 +23213,7 @@ void* __fastcall FUN_0059bb30(void*);
 void* __fastcall FUN_0055b980(void*);
 void* __fastcall FUN_007d6bb0(void*);
 int __cdecl FUN_00e7bd20(void*);
-char* __cdecl FUN_00e7a9a0(int);
+char* __cdecl NiXenonRenderer_GetD3DFormatString(int);
 int __fastcall NiTexture_GetTextureQualityLevel(void*);
 struct TextureManager { void BSFaceGenModelMap_OutputModelMapContents(void*); };
 void* __cdecl NiTexture_GetListHead();
@@ -22077,6 +23284,9 @@ struct FormR
 };
 // @fnv 0x005b5e60
 // src: EXE 0x005b5e60
+// pdb: Script::OutputMemStats | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxtex, pTex, file, input, outfile, ultotalMemory, pLargestTex, outfile2, uitexCount, ptemp, itexsize, idx, i, icompsize, bsystemtex, pcattext, ptextext, buf, pfmt, prtti, eFormat, psrctex, ptexname
 bool __cdecl Cmd_OutputMemStats_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     char tmp[0x104];
@@ -22225,7 +23435,7 @@ bool __cdecl Cmd_OutputMemStats_Execute(const ScriptParameter* apParameters, con
                     }
                     unsigned int sz9 = (unsigned int)Warning_005b5e40(Modelloader_GetReferencedThis(&arr19[i]));
                     int t18 = FUN_00e7bd20(FUN_007d6bb0(FUN_0059bb30(Modelloader_GetReferencedThis(&arr19[i]))));
-                    char* t2620 = FUN_00e7a9a0(t18);
+                    char* t2620 = NiXenonRenderer_GetD3DFormatString(t18);
                     char* s261c3 = (char*)Modelloader_GetReferencedThis(((FormV*)Modelloader_GetReferencedThis(&arr19[i]))->V08());
                     char line6[0x200];
                     _sprintf_s(line6, 0x200, "TEXTURES: %d:\t%s\t%s\t%dx%d\t%d\t%s\trefcount %d\t%s\t%s\r\n",
@@ -22376,14 +23586,17 @@ struct Collector {
     Collector();
     ~Collector();
     void* BGSTextureUseMap_BGSTextureUseMap();
-    void BGSTextureUseMap_CollectTexUseDataRecursive(int value, char flag);
-    void BGSTextureUseMap_CollectTextureUseDataForLoadedArea(int value);
-    bool BGSTextureUseMap_WriteToFile(char* name);
+    void CollectTexUseDataRecursive(int value, char flag);
+    void BGSTextureUseMap_CollectTextureUseDataForLoadedArea(int abCheckActors);
+    bool BGSTextureUseMap_WriteToFile(char* apFilename);
     unsigned int BGSTextureUseMap_GetTotalTextureSize();
 };
 bool __cdecl Script_ParseParameters(const ScriptParameter* p0, const char* p1, unsigned int& offset, RefVirt* ref, TESObjectREFR* cont, Script* script, ScriptLocals* locals, char* buf);
 // @fnv 0x005b6800
 // src: XBOX_PDB 0x005b6800
+// pdb: Script::OutputTextureUseMap | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: texusemap, pfilename, itotsize, output
 bool __cdecl Script_OutputTextureUseMap(const ScriptParameter* apParameters, const char* apCompiledParams, RefVirt* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     char buf[512];
@@ -22394,7 +23607,7 @@ bool __cdecl Script_OutputTextureUseMap(const ScriptParameter* apParameters, con
         strcpy_s(buf, 0x200, "TextureUseMap.txt");
     Collector coll;
     if (apRefObject && apRefObject->GetUse())
-        coll.BGSTextureUseMap_CollectTexUseDataRecursive(apRefObject->GetUse(), 1);
+        coll.CollectTexUseDataRecursive(apRefObject->GetUse(), 1);
     else
         coll.BGSTextureUseMap_CollectTextureUseDataForLoadedArea(1);
     if (coll.BGSTextureUseMap_WriteToFile(buf))
@@ -22420,7 +23633,7 @@ bool __cdecl Script_OutputTextureUseMap(const ScriptParameter* apParameters, con
 }  // namespace fnv_005b6800
 
 extern "C" void* __cdecl fnv_zlib_memset(void*, int, unsigned int);
-void BSstrncpy(char* dst, const char* src, unsigned int size);
+void BSstrncpy(char* apString1, const char* apString2, unsigned int aiLen);
 
 struct MemStatsFile
 {
@@ -22436,12 +23649,15 @@ struct MemStatsFile
 
 struct MemStatsWriter
 {
-    int Write(MemStatsFile* file, int flag);
+    int Write(MemStatsFile* apFile, int abOutputWalk);
 };
 MemStatsWriter* __cdecl GetMemStatsWriter();
 
 // @fnv 0x005b6a30
 // src: EXE 0x005b6a30
+// pdb: Script::OutputMemStatsFullWalk | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: file, input
 bool __cdecl Cmd_OutputMemStats_Execute_005b6a30(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     char fileName4[0x200];
@@ -22472,6 +23688,7 @@ public:
     void RemoveHead();
 };
 
+// pdb: class MapMarkerData, size 0x14 (here 0x1), 5 members
 class MapMarkerData {
 public:
     bool IsHiddenFlag();
@@ -22506,7 +23723,7 @@ public:
 
 class MarkerWorld {
 public:
-    MarkerList<MarkerRef*>* GetMapMarkers(bool);
+    MarkerList<MarkerRef*>* TESWorldSpace_BuildMapMarkerList(bool);
 };
 
 class MarkerDataHandler {
@@ -22674,8 +23891,11 @@ struct ConsoleTLS {
 extern __declspec(thread) ConsoleTLS g_consoleTLS;
 
 // @fnv 0x005b6d40
-// src: EXE 0x005b6d40
-bool __cdecl Cmd_ShowAllMapMarkers_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005b6d40
+// pdb: Script::ToggleMapMarkersFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pworldlist, ienabletravel, iturnon, ishowall, pmarkerlist, pworld, pdata, pref
+bool __cdecl Script_ToggleMapMarkersFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iShowA = 1;
     int iTravel_2 = 1;
@@ -22687,7 +23907,7 @@ bool __cdecl Cmd_ShowAllMapMarkers_Execute(const ScriptParameter* apParameters, 
     while (pWorldIterA && !pWorldIterA->IsEmpty()) {
         MarkerWorld* pWorld6 = pWorldIterA->GetItem();
         pWorldIterA = pWorldIterA->GetNext();
-        MarkerList<MarkerRef*>* pMarkers4 = pWorld6->GetMapMarkers(false);
+        MarkerList<MarkerRef*>* pMarkers4 = pWorld6->TESWorldSpace_BuildMapMarkerList(false);
         if (pMarkers4) {
             while (!pMarkers4->IsEmpty()) {
                 MarkerRef* pRef = pMarkers4->GetItem();
@@ -22905,6 +24125,9 @@ NiAVObject* MakeTriangle(NiPoint3,NiPoint3,NiPoint3,NiColorA*,bool);
 
 // @fnv 0x005b7b40
 // src: EXE 0x005b7b40
+// pdb: Script::TestLocalMap | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imapsize, itileside, mapworldcenter, UpdateData, itilecount, iseensize, playeroffset, pointn, pmark, itilesize, pnode, iarraysize, fmapratio, pointse, imaparraysize, imapside, fpossize, playerpos, pointsw, markrot, ifog, playerloc, itrisize, itri ...
 bool Cmd_TestLocalMap_Execute(int form,int flags,int option,int source,int destination,int quality,int unused,int mode)
 {
  int modeOut29=0;
@@ -23045,10 +24268,12 @@ void __cdecl Interface_SetMenuSystemVisible(bool bShow);
 
 // Script command: ToggleMenus.
 // @fnv 0x005b9490
-// src: EXE 0x005b9490
-bool __cdecl Cmd_ToggleMenus_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apThisObject,
-                          TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apLocals, double* apResult,
-                          unsigned int* apOffset)
+// src: XBOX_RETAIL_PDB 0x005b9490
+// pdb: Script::ToggleMenusFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_ToggleMenusFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject,
+                          TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue,
+                          unsigned int* auiOffset)
 {
     DAT_0118c6f0 ^= 1;
     Interface_SetMenuSystemVisible(DAT_0118c6f0);
@@ -23065,8 +24290,10 @@ extern const char str_010399b8[];
 extern const char str_010399bc[];
 
 // @fnv 0x005b9720
-// src: EXE 0x005b9720
-bool __cdecl Cmd_ToggleLeaves_Execute(void)
+// src: XBOX_RETAIL_PDB 0x005b9720
+// pdb: Script::ToggleLeavesFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_ToggleLeavesFunction(void)
 {
     const char* puStack_8;
 
@@ -23089,11 +24316,14 @@ void __cdecl BSShaderPPLightingProperty_SetRefractionRecurse(void*,bool,float,bo
 
 
 // @fnv 0x005b9950
-// src: EXE 0x005b9950
-bool __cdecl Cmd_SetTargetRefraction_Execute(const ScriptParameter* parameters,const char* scriptData,TESObjectREFR* reference,TESObjectREFR* container,Script* script,ScriptLocals* locals,double& result,unsigned int& offset) {
+// src: XBOX_RETAIL_PDB 0x005b9950
+// pdb: Script::SetTargetRefraction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: famount, pactor, benabled, pobj3D
+bool __cdecl Script_SetTargetRefraction(const ScriptParameter* apParameters,const char* apCompiledParams,TESObjectREFR* reference,TESObjectREFR* apContainer,Script* apScript,ScriptLocals* apScriptLocals,double& afReturnValue,unsigned int& auiOffset) {
  if (BSShaderManager_IsRefractionEnabled()) {
   float enabled=0.0f;
-  if (!Script_ParseParameters(parameters,scriptData,&offset,reference,container,script,locals,&enabled)) return false;
+  if (!Script_ParseParameters(apParameters,apCompiledParams,&auiOffset,reference,apContainer,apScript,apScriptLocals,&enabled)) return false;
   if (!reference) reference=_g_thePlayer;
   enabled=BSMAX_00404010(BSMIN(enabled,1.0f),0.0f);
   bool alpha=enabled>0.0;
@@ -23282,12 +24512,15 @@ void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005b9b40
 // src: XBOX_PDB 0x005b9b40
-bool __cdecl Script_SetTargetRefractionFire(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// pdb: Script::SetTargetRefractionFire | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: irefractionPeriod, famount, benabled, pobj3D
+bool __cdecl Script_SetTargetRefractionFire(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     if (BSShaderManager_IsRefractionEnabled()) {
         float fValue = 0.0f;
         int iPeriod = 0;
-        if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, locals, &fValue, &iPeriod))
+        if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &fValue, &iPeriod))
             return false;
         if (!dynamic_cast<Actor*>(thisObj)) {
             fValue = BSMAX_00404010(BSMIN(fValue, 1.0f), 0.0f);
@@ -23326,6 +24559,9 @@ void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005b9c90
 // src: XBOX_PDB 0x005b9c90
+// pdb: Script::SetTargetFalloff | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pobj3D, FalloffData
 bool __cdecl Script_SetTargetFalloff(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     if (apRefObject) {
@@ -23385,7 +24621,10 @@ struct ReferenceView : TESObjectREFR {
 };
 // @fnv 0x005b9fe0
 // src: XBOX_PDB 0x005b9fe0
-bool __cdecl Script_ToggleFootIK(const ScriptParameter* parameters, const char* compiled, TESObjectREFR* reference, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& offset) {
+// pdb: Script::ToggleFootIK | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
+bool __cdecl Script_ToggleFootIK(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* reference, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     if (!reference) {
         bhkRagdollController_SetFootIK(bhkRagdollController_QFootIK() ^ 1);
         if (tlsData.bConsoleEcho)
@@ -23493,8 +24732,11 @@ struct GrabIKRefView {
 
 // @fnv 0x005ba1a0
 // src: XBOX_PDB 0x005ba1a0
-bool __cdecl Script_ToggleGrabIK(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj,
-    TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// pdb: Script::ToggleGrabIK | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
+bool __cdecl Script_ToggleGrabIK(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj,
+    TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     if (!thisObj) {
         bhkRagdollController_SetGrabIK(bhkRagdollController_QGrabIK() ^ true);
@@ -23677,6 +24919,9 @@ struct LookTls {
 extern __declspec(thread) LookTls lookTls;
 // @fnv 0x005ba380
 // src: XBOX_PDB 0x005ba380
+// pdb: Script::ToggleLookIK | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
 bool Script_ToggleLookIK(const ScriptParameter*,const char*,TESObjectREFR* reference,TESObjectREFR*,Script*,ScriptLocals*,double&,unsigned int&) {
  if (!reference) {
   bhkRagdollController_SetLookIK(bhkRagdollController_QLookIK() ^ 1);
@@ -24028,11 +25273,14 @@ struct DiagnosticRef {
 extern char collisionRTTI;
 DiagnosticObject* CastCollision(const void*, DiagnosticObject*);
 // @fnv 0x005bade0
-// src: EXE 0x005bade0
-bool __cdecl Cmd_ShowViewerStrings_Execute(const ScriptParameter* params, const char* data, DiagnosticRef* ref, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& offset)
+// src: XBOX_RETAIL_PDB 0x005bade0
+// pdb: Script::ShowViewerStringsFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: strings, pobj, pnode, i, phkcol, pcol
+bool __cdecl Script_ShowViewerStringsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, DiagnosticRef* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    if (ref && ref->GetObject()) {
-        DiagnosticObject* h = ref->GetObject();
+    if (apRefObject && apRefObject->GetObject()) {
+        DiagnosticObject* h = apRefObject->GetObject();
         h = h;
         DiagnosticArray* a = new DiagnosticArray(0, 1);
         DiagnosticObject* f;
@@ -24089,14 +25337,17 @@ int BSstrcmp(const char*, const char*);
 bool Script_ParseParameters(int, int, int, int, int, int, int, char*);
 
 // @fnv 0x005bb030
-// src: EXE 0x005bb030
-bool __cdecl Cmd_ToggleLODLand_Execute(int parameters, int scriptData, int reference,
-    int container, int script, int locals, double* result, int opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005bb030
+// pdb: Script::ToggleLODLandFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bwater, bland, btrees, pm, bobjects, input
+bool __cdecl Script_ToggleLODLandFunction(int apParameters, int apCompiledParams, int reference,
+    int apContainer, int apScript, int apScriptLocals, double* afReturnValue, int auiOffset)
 {
     char ba[512];
     ba[0] = 0;
-    if (parameters && !Script_ParseParameters(parameters, scriptData, opcodeOffset,
-        reference, container, script, locals, ba))
+    if (apParameters && !Script_ParseParameters(apParameters, apCompiledParams, auiOffset,
+        reference, apContainer, apScript, apScriptLocals, ba))
         return false;
     LODModel* l = ((LODTES*)g_TES)->FUN_004fd3e0()->FUN_00586170();
     if (!l)
@@ -24282,6 +25533,9 @@ struct WorkerPlayer {
 };
 // @fnv 0x005bb390
 // src: EXE 0x005bb390
+// pdb: Script::SetLODObjectDistanceFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: f1, updatePos, pm, f0
 bool Cmd_SetLODObjectDistance_Execute(const ScriptParameter* params, const char* data, TESObjectREFR* reference, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int* offset) {
  float position = 0.0f;
  float terrain = 0.0f;
@@ -24483,17 +25737,20 @@ void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005bbec0
 // src: XBOX_PDB 0x005bbec0
-bool __cdecl Script_IsActorsAIOff(void* parameters, const char* scriptData, TESObjectREFR* target, void* container, void* script, void* locals, double& result, unsigned int& offset)
+// pdb: Script::IsActorsAIOff | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
+bool __cdecl Script_IsActorsAIOff(void* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, void* apContainer, void* apScript, void* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     Actor* actor = 0;
-    actor = dynamic_cast<Actor*>(target);
+    actor = dynamic_cast<Actor*>(apRefObject);
     if (actor) {
-        if (!actor->m_bFirstActorFlag)
-            result = 1;
+        if (!actor->bProcessMe)
+            afReturnValue = 1;
         else
-            result = 0;
+            afReturnValue = 0;
         if (scriptThreadState.consoleEcho)
-            DebugLog("%s processing is  %s", actor->GetFullName(), actor->m_bFirstActorFlag ? "On" : "Off");
+            DebugLog("%s processing is  %s", actor->GetFullName(), actor->bProcessMe ? "On" : "Off");
     }
     return true;
 }
@@ -24504,14 +25761,17 @@ struct ProcessReset { void ProcessLists_TurnOffMovementinHigh(); };
 extern bool DAT_011f1220;
 // @fnv 0x005bbf70
 // src: XBOX_PDB 0x005bbf70
-bool Script_ToggleAI(const ScriptParameter* params, const char* scriptData, TESObjectREFR* ref, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& offset) {
+// pdb: Script::ToggleAI | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
+bool Script_ToggleAI(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
  Actor* actor = 0;
- if (!ExtractArgs(params,scriptData,&offset,ref,container,script,locals,&actor)) return false;
- if (!actor) actor = dynamic_cast<Actor*>(ref);
+ if (!ExtractArgs(apParameters,apCompiledParams,&auiOffset,apRefObject,apContainer,apScript,apScriptLocals,&actor)) return false;
+ if (!actor) actor = dynamic_cast<Actor*>(apRefObject);
  if (actor) {
-  actor->m_bFirstActorFlag = !actor->m_bFirstActorFlag;
+  actor->bProcessMe = !actor->bProcessMe;
   ((ScriptActorActions*)actor)->Actor_EndMovement();
-  if (tlsData.bConsoleEcho) DebugLog("%s processing is  %s",actor->TESObjectREFR_GetFullName(),actor->m_bFirstActorFlag ? "On" : "Off");
+  if (tlsData.bConsoleEcho) DebugLog("%s processing is  %s",actor->TESObjectREFR_GetFullName(),actor->bProcessMe ? "On" : "Off");
  } else {
   DAT_011f1220 = !DAT_011f1220;
   if (tlsData.bConsoleEcho) DebugLog("All AI Processing is  %s",DAT_011f1220 ? "On" : "Off");
@@ -24532,9 +25792,12 @@ extern const char g_pcNoLinkedRefFormat5BC[];
 
 // @fnv 0x005bc310
 // src: XBOX_PDB 0x005bc310
-bool __cdecl Script_ShowHeadTrackTarget(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj,
-    TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result,
-    unsigned int& opcodeOffsetPtr)
+// pdb: Script::ShowHeadTrackTarget | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, pref
+bool __cdecl Script_ShowHeadTrackTarget(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj,
+    TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+    unsigned int& auiOffset)
 {
     Actor* pkActor = 0;
     pkActor = dynamic_cast<Actor*>(thisObj);
@@ -24563,7 +25826,9 @@ extern ProcMgr DAT_011e0e80;
 extern bool DAT_011f1228;
 // @fnv 0x005bc3b0
 // src: XBOX_PDB 0x005bc3b0
-bool Script_ToggleHighProcess(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int* opcodeOffsetPtr)
+// pdb: Script::ToggleHighProcess | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool Script_ToggleHighProcess(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int* auiOffset)
 {
     DAT_011f1228 = !DAT_011f1228;
     if (DAT_0126fd98.bDebug)
@@ -24582,6 +25847,8 @@ void __cdecl Interface_PrintLine(const char* format, const char* value);
 
 // @fnv 0x005bc580
 // src: XBOX_PDB 0x005bc580
+// pdb: Script::ToggleAISchedules | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleAISchedules()
 {
     DAT_011f122c = !DAT_011f122c;
@@ -24828,7 +26095,10 @@ struct SpeakActor : public TESObjectREFR
 
 // @fnv 0x005bc5f0
 // src: XBOX_PDB 0x005bc5f0
-bool __cdecl Script_SpeakSoundFunction(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// pdb: Script::SpeakSoundFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: handle, filename, iemotion, input, pcurrent, pactor, fdelay, wavFileName, iemotionValue
+bool __cdecl Script_SpeakSoundFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     char* pName = 0;
     BSSoundHandle handle;
@@ -24840,7 +26110,7 @@ bool __cdecl Script_SpeakSoundFunction(const ScriptParameter* paramInfo, const c
     SpeakActor* actor;
     float fScaleMultiplier;
 
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, locals, voiceFile, &emotion, &value))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, voiceFile, &emotion, &value))
         return false;
 
     pName = voiceFile;
@@ -24894,12 +26164,15 @@ struct SettingCollection {
 SettingCollection* __cdecl FUN_00404a70();
 SettingCollection* __cdecl FUN_0044f560();
 // @fnv 0x005bc950
-// src: EXE 0x005bc950
-bool __cdecl Cmd_Help_Execute(const ScriptParameter* params,const char* data,TESObjectREFR* ref,TESObjectREFR* container,Script* script,ScriptLocals* locals,double& result,unsigned int& offset) {
+// src: XBOX_RETAIL_PDB 0x005bc950
+// pdb: Script::HelpFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: unused, n, helpSearchString, iniArray, gsArray, i, pdesc
+bool __cdecl Script_HelpFunction(const ScriptParameter* apParameters,const char* apCompiledParams,TESObjectREFR* apRefObject,TESObjectREFR* apContainer,Script* apScript,ScriptLocals* apScriptLocals,double& afReturnValue,unsigned int& auiOffset) {
  char search[512]; search[0]=0;
  {
  int mode;
- Script_ParseParameters(params,data,&offset,ref,container,script,locals,search,&mode);
+ Script_ParseParameters(apParameters,apCompiledParams,&auiOffset,apRefObject,apContainer,apScript,apScriptLocals,search,&mode);
  DebugLog("----CONSOLE COMMANDS--------------------");
  unsigned i;
  for(i=0;i<205;i++) {
@@ -24958,7 +26231,7 @@ struct CellHandle { ModeCell* FUN_005875a0(); };
 struct ModeManager {
     bool NavMeshRender_GetDraw();
     void NavMeshRender_SetDraw(bool enabled);
-    void NavMeshRender_SetTransparentOverLayMode(bool enabled);
+    void NavMeshRender_SetTransparentOverLayMode(bool abTransparent);
     void NavMeshRender_AddDrawOnlyNavMeshes(ModeCell* cell, bool enabled);
 };
 ModeManager* NavMeshRender_GetSingleton();
@@ -25053,6 +26326,9 @@ struct CommandDebugText {
 void Interface_SetTargetREFR(CommandForm*);
 // @fnv 0x005bd410
 // src: EXE 0x005bd410
+// pdb: Script::PickRefByIDFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pPickRef, ifontHeight, message, inameLoc
 bool Cmd_PickRefByID_Execute(void* p1,void* p2,void* p3,void* p4,void* p5,void* p6,void* p7,void* p8) {
     CommandForm* form=0;
     if(!Script_ParseParameters(p1,p2,p8,p3,p4,p5,p6,&form)) return false;
@@ -25073,7 +26349,7 @@ bool Cmd_PickRefByID_Execute(void* p1,void* p2,void* p3,void* p4,void* p5,void* 
 namespace fnv_005bd5e0 {
 extern "C" bool __cdecl Script_ParseParameters(int,int,int,int,int,int,int,void*);
 extern void __cdecl Interface_CloseConsole();
-struct Player5bd { void __thiscall CenterOnCell(void* cell, int flag); };
+struct Player5bd { void __thiscall CenterOnCell(void* cell, int apCellIn); };
 extern Player5bd* g_thePlayer;
 // @fnv 0x005bd5e0
 // src: EXE 0x005bd5e0
@@ -25158,29 +26434,32 @@ struct OtherActor_005bd960 {
 
 extern bool __cdecl Script_ParseParameters(const ScriptParameter*, const char*, unsigned int&, Actor*, TESObjectREFR*, Script*, ScriptLocals*, int*);
 extern const char* __cdecl ActorValue_GetActorValueScriptName(int);
-extern bool __cdecl FUN_0066ed60(ActorValueOwner*, int, float*);
+extern bool __cdecl ActorValue_GetDerivedActorValue(ActorValueOwner*, int, float*);
 extern bool __cdecl ActorValue_IsFlagSet(int, unsigned int);
 void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005bd960
 // src: XBOX_PDB 0x005bd960
-bool __cdecl Script_GetActorValueInfoFunction(const ScriptParameter* paramInfo, const char* scriptData,
-                        Actor* actor, TESObjectREFR* container,
-                        Script* script, ScriptLocals* locals, double& result, unsigned int& offset)
+// pdb: Script::GetActorValueInfoFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iActorValueIndex, fderivedBase, bderived, fbaseValueOverride, pactor, fcomputedBase, iwhich, frawBase, boverrideExists
+bool __cdecl Script_GetActorValueInfoFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+                        Actor* apRefObject, TESObjectREFR* apContainer,
+                        Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int requestedValue2 = 0;
-    if (!Script_ParseParameters(paramInfo, scriptData, offset, actor, container, script, locals, &requestedValue2))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &requestedValue2))
         return false;
-    if (DAT_tls_0268 && actor && actor->IsActor() &&
+    if (DAT_tls_0268 && apRefObject && apRefObject->IsActor() &&
         requestedValue2 >= 0 && requestedValue2 < 0x4d) {
-        Actor* actorLocal = actor;
+        Actor* actorLocal = apRefObject;
         int id4 = requestedValue2;
         float initial_2 = actorLocal->GetBaseActorValueFloat((ActorValue::Index)id4);
         DebugLog("GetActorValueInfo: %s on %s", ActorValue_GetActorValueScriptName(id4), actorLocal->TESObjectREFR_GetFullName());
         DebugLog("...Current Value: %.2f Computed Base: %.2f ", actorLocal->GetCurrentActorValue((ActorValue::Index)id4), (double)initial_2);
         float current4 = reinterpret_cast<OtherActor_005bd960*>(actorLocal->FUN_004181e0())->values.GetCurrentActorValue((ActorValue::Index)id4);
         float delta = 0.0f;
-        bool hasDelta4 = FUN_0066ed60(static_cast<ActorValueOwner*>(actorLocal), id4, &delta);
+        bool hasDelta4 = ActorValue_GetDerivedActorValue(static_cast<ActorValueOwner*>(actorLocal), id4, &delta);
         unsigned char hasModifier = 0;
         typedef float (__thiscall *ScriptGetActorValueModifier)(Actor*, int, unsigned char*);
         float modifier = ((ScriptGetActorValueModifier)(*(void***)actorLocal)[0x48c / 4])(actorLocal, id4, &hasModifier);
@@ -25206,7 +26485,7 @@ extern __declspec(thread) bool g_bConsoleEcho;
 namespace ActorValue {
     bool GetFlag(int aiActorValue, unsigned int auiFlag);
 }
-const char* ActorValue_GetActorValueScriptName(unsigned int aiActorValue);
+const char* ActorValue_GetActorValueScriptName(unsigned int aiIndex);
 
 struct ActorModAVStandIn {
     virtual void v000(); virtual void v001(); virtual void v002(); virtual void v003();
@@ -25292,6 +26571,9 @@ struct ActorModAVStandIn {
 
 // @fnv 0x005bdf20
 // src: EXE 0x005bdf20
+// pdb: Script::DamageActorValueFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, iActorValueIndex, fValue, fdelta
 bool __cdecl Cmd_DamageActorValue_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int m_eAssociatedActorValue = 0;
@@ -25321,11 +26603,14 @@ bool __cdecl Cmd_DamageActorValue_Execute(const ScriptParameter* apParameters, c
 namespace ActorValue {
     bool GetFlag(Index eAV, unsigned int uiFlag);
 }
-const char* ActorValue_GetActorValueScriptName(ActorValue::Index eAV);   // the actor value's name
+const char* ActorValue_GetActorValueScriptName(ActorValue::Index aiIndex);   // the actor value's name
 
 
 // @fnv 0x005be080
 // src: EXE 0x005be080
+// pdb: Script::RestoreActorValueFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, iActorValueIndex, fValue
 bool __cdecl Cmd_RestoreActorValue_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr) {
     ActorValue::Index eAV = ActorValue::ActorValue__Index_AGGRESSION;
     float fValue = 0.0f;
@@ -25353,6 +26638,9 @@ extern const char DAT_0103a310[];
 typedef void (__thiscall *ActorValueChange)(Actor*, unsigned int, float, int);
 // @fnv 0x005be190
 // src: EXE 0x005be190
+// pdb: Script::ForceActorValueFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, iActorValueIndex, iValue, fmodValue
 bool __cdecl Cmd_ForceActorValue_Execute(const ScriptParameter* parameters, const char* compiledParams, TESObjectREFR* reference, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& offset)
 {
     unsigned int actorValue = 0;
@@ -25530,7 +26818,7 @@ public:
     unsigned short GetLevel();
     int GameSettingCollection_File();
     void FUN_008a1800(int);
-    void Kill(TESObjectREFR* apKiller, float afDelay);
+    void Kill(TESObjectREFR* apAttacker, float afDamage);
     void Actor_GibLimb(int, int, TESObjectREFR*);
 };
 
@@ -25830,7 +27118,7 @@ public:
 };
 
 struct KillTaskQueue {
-    void TaskQueueInterface_QueueActorKill(KillActor* apActor, float* apDelay, KillData* apData);
+    void TaskQueueInterface_QueueActorKill(KillActor* apActor, float* afDamage, KillData* apDismemberData);
 };
 
 bool __cdecl AILinearTaskThreadManager_ShouldQueue3DTask();
@@ -25842,6 +27130,9 @@ KillTaskQueue* __cdecl FUN_004537b0();
 
 // @fnv 0x005be2a0
 // src: EXE 0x005be2a0
+// pdb: Script::KillActorFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, pKiller, eCauseDeath, eLimb, bqueuekill, fdamage, pdisdata
 bool __cdecl Cmd_KillActor_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr) {
     TESObjectREFR* pKillerRef = 0;
     int iBodyPart = -1;
@@ -25947,6 +27238,9 @@ struct GameSettingValue {
 GameSettingCollection* GetGameSettingCollection();
 // @fnv 0x005be900
 // src: EXE 0x005be900
+// pdb: Script::GetGameSettingFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: settingName, pGS
 bool Cmd_GetGameSetting_Execute(const ScriptParameter* parameters, const char* scriptData,
     TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -26212,6 +27506,9 @@ extern TimeGlobal g_timeGlobal;
 bool __cdecl Script_ParseParameters(void*,const char*,unsigned int*,RotationReference*,void*,void*,void*,char*,int*);
 // @fnv 0x005c03d0
 // src: EXE 0x005c03d0
+// pdb: Script::RotateFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cAxis, iSpeed, obj3D, fAngle, UpdateData
 bool __cdecl Cmd_Rotate_Execute(void* info,const char* data,RotationReference* reference,void* other,void* script,void* locals,double* result,unsigned int* offset) {
  int axis=0;
  char amount;
@@ -26384,6 +27681,9 @@ struct ScriptReference {
 };
 // @fnv 0x005c0bf0
 // src: EXE 0x005c0bf0
+// pdb: Script::SetAtStartFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: obj3D, rotMatrix, tmp, UpdateData
 bool Cmd_SetAtStart_Execute(void* unusedA,void* unusedB,ScriptReference* reference) {
  if (reference) {
   ScriptSceneObject* object = reference->SceneObject();
@@ -26425,6 +27725,7 @@ public:
     virtual NiNode* Get3D();
 };
 
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation {
 public:
     BSAnimGroupSequence* PlayGroup(unsigned short ausGroupID, int aeFlags, int aiSection, int aiUnk);
@@ -26587,8 +27888,11 @@ void __cdecl _FNV_Warning(const char*, ...);
 int __cdecl _stricmp(const char*, const char*);
 
 // @fnv 0x005c0df0
-// src: EXE 0x005c0df0
-bool __cdecl Cmd_PlayGroup_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005c0df0
+// pdb: Script::PlayGroupFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: eAnimGroup, iFlags, pactor, obj3D, pobj, pmanager, po, pseq, n, pdisableSeq
+bool __cdecl Script_PlayGroupFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iGroup;
     int iFlags = 0;
@@ -26682,8 +27986,11 @@ int _stricmp(const char*, const char*);
 
 
 // @fnv 0x005c12a0
-// src: EXE 0x005c12a0
-bool __cdecl Cmd_PlayExplosion_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005c12a0
+// pdb: Script::PlayExplosionFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: obj3D, pobj, pmanager, po, pseq, n, pdisableSeq
+bool __cdecl Script_PlayExplosionFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     if (apRefObject) {
         AnimHolder5c* pHolder = reinterpret_cast<AnimHolder5c*>(apRefObject->GetNiNode());
@@ -26752,28 +28059,31 @@ struct AnimGroupEntry5C14 {
 extern AnimGroupEntry5C14 DAT_011977d8[];
 
 // @fnv 0x005c14a0
-// src: EXE 0x005c14a0
-bool __cdecl Cmd_IsAnimPlaying_Execute(int p0, int p1, ScriptReferenceRotationActions* ref, int p3, int p4, int p5, double& result, int p7)
+// src: XBOX_RETAIL_PDB 0x005c14a0
+// pdb: Script::IsAnimPlayingFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: eAnimGroup, iFlags, panim, n, pav, pnode, pmanager, po, pseq
+bool __cdecl Script_IsAnimPlayingFunction(int apParameters, int apCompiledParams, ScriptReferenceRotationActions* apRefObject, int apContainer, int apScript, int apScriptLocals, double& afReturnValue, int auiOffset)
 {
     int unused = 255;
     int group = 0;
-    if (!Script_ParseParameters(p0, p1, p7, (int)ref, p3, p4, p5, &unused))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, (int)apRefObject, apContainer, apScript, apScriptLocals, &unused))
         return false;
-    result = 0.0;
-    if (ref) {
-        if (ref->GetAnimData()) {
-            Animation* animation = (Animation*)ref->GetAnimData();
+    afReturnValue = 0.0;
+    if (apRefObject) {
+        if (apRefObject->GetAnimData()) {
+            Animation* animation = (Animation*)apRefObject->GetAnimData();
             if (unused == 255) {
                 for (int i = 0; i < 8; i++) {
                     if (animation->Animation_GetCurrentSequence(i))
-                        result = 1.0;
+                        afReturnValue = 1.0;
                 }
             } else {
                 if (animation->Animation_GetCurrentSequence(DAT_011977d8[unused].section))
-                    result = 1.0;
+                    afReturnValue = 1.0;
             }
         } else {
-            NiNode* scene = (NiNode*)ref->GetNiNode();
+            NiNode* scene = (NiNode*)apRefObject->GetNiNode();
             NiNode* model = scene ? scene->IsSceneNode() : 0;
             if (model && model->GetControllers()) {
                 NiTimeController* manager = static_cast<NiTimeController*>(model->GetControllers());
@@ -26783,18 +28093,18 @@ bool __cdecl Cmd_IsAnimPlaying_Execute(int p0, int p1, ScriptReferenceRotationAc
                         for (unsigned int j = 0; j < controller->GetSequenceCount_00495d00(); j++) {
                             NiControllerSequence* sequence = controller->GetSequenceAt_00495d20(j);
                             if (sequence && sequence->GetState())
-                                result = 1.0;
+                                afReturnValue = 1.0;
                         }
                     } else {
                         NiControllerSequence* sequence = controller->NiControllerManager_GetSequenceByName(NiFixedString(DAT_011977d8[unused].name));
                         if (sequence && sequence->GetState())
-                            result = 1.0;
+                            afReturnValue = 1.0;
                     }
                 }
             }
         }
         if (DAT_tls_0268)
-            DebugLog("IsAnimPlaying -> %1.0f", result);
+            DebugLog("IsAnimPlaying -> %1.0f", afReturnValue);
     }
     return true;
 }
@@ -27163,20 +28473,23 @@ struct CommandActor : CommandActorBody, CommandMagicTarget, CommandValueOwner {
     void FUN_005c1a00(bool, int);
     void PlayerCharacter_SetBeingChased(int);
 };
-struct CommandManager { void FUN_0096f400(CommandActor*); };
+struct CommandManager { void RemoveActorFromTempChangeList(CommandActor*); };
 void __cdecl FNV_Warning(const char*, ...);
 
 // @fnv 0x005c1750
 // src: XBOX_PDB 0x005c1750
-bool __cdecl Script_StartCombatFunction(const ScriptParameter* parameters, const char* data,
-    TESObjectREFR* self, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& offset)
+// pdb: Script::StartCombatFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTarget, pAttacker, bagressor
+bool __cdecl Script_StartCombatFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     CommandActor* target = 0;
-    if (!ExtractArgs(parameters, data, &offset, self, container, script, locals, &target))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &target))
         return false;
-    if (self) {
-        CommandActor* actor = reinterpret_cast<CommandActor*>(dynamic_cast<Actor*>(self));
+    if (apRefObject) {
+        CommandActor* actor = reinterpret_cast<CommandActor*>(dynamic_cast<Actor*>(apRefObject));
         if (actor && !actor->HasHealth(0) && target && !target->HasHealth(0)
             && actor->FUN_008d8520() && target->FUN_008d8520()) {
             if (actor->FUN_009336c0() && target != DAT_011dea3c) {
@@ -27185,7 +28498,7 @@ bool __cdecl Script_StartCombatFunction(const ScriptParameter* parameters, const
             }
             if (target == DAT_011dea3c && static_cast<CommandActor*>(DAT_011dea3c)->FUN_0094df60()) {
                 static_cast<CommandActor*>(DAT_011dea3c)->FUN_005c1a00(false, 1);
-                reinterpret_cast<CommandManager*>(&DAT_011e0e80)->FUN_0096f400(actor);
+                reinterpret_cast<CommandManager*>(&DAT_011e0e80)->RemoveActorFromTempChangeList(actor);
             }
             bool force = false;
             if (!actor->IsReady())
@@ -27223,11 +28536,14 @@ extern const char g_011cba00_arg1[];
 bool __cdecl QueueUIMessage(const char* pcMessage, int iType, const char* pcIcon, const char* pcSound, float fDuration, bool bInstant);
 
 // @fnv 0x005c1d40
-// src: EXE 0x005c1d40
-bool __cdecl Cmd_AddSpell_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005c1d40
+// pdb: Script::AddSpellFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pSpellItem, pActor, xstring, xicon
+bool __cdecl Script_AddSpellFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     SpellItem* pkSpell = 0;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &pkSpell))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &pkSpell))
         return false;
     if (thisObj)
     {
@@ -27237,7 +28553,7 @@ bool __cdecl Cmd_AddSpell_Execute(const ScriptParameter* paramInfo, const char* 
             typedef bool (__thiscall *ScriptAddSpell)(Actor*, SpellItem*);
             if (((ScriptAddSpell)(*(void***)pkActor)[0x3e0 / 4])(pkActor, pkSpell))
             {
-                result = 1.0;
+                afReturnValue = 1.0;
                 DebugLog("Actor Effect '%s' added to %s", pkSpell->TESModel_GetModel(), pkActor->TESObjectREFR_GetFullName());
                 if (reinterpret_cast<void*>(pkActor) == _g_thePlayer)
                 {
@@ -27272,6 +28588,9 @@ bool __cdecl CmdExtractArgs(void* apParamInfo, void* apScriptData, unsigned int*
 
 // @fnv 0x005c21e0
 // src: EXE 0x005c21e0
+// pdb: Script::PlaySoundFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pSound, isystem, SoundHandle, isystemFlag
 bool __cdecl Cmd_PlaySound_Execute(void* apParamInfo, void* apScriptData, void* apThisObj, void* apContainingObj, void* apScript,
                           void* apEventList, double* apResult, unsigned int* apOpcodeOffset)
 {
@@ -27438,6 +28757,9 @@ bool __cdecl ExtractArgsSnd(void* paramInfo, void* scriptData, unsigned int* opc
 
 // @fnv 0x005c22f0
 // src: EXE 0x005c22f0
+// pdb: Script::PlaySound3DFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: breturnValue, pSound, SoundHandle, loc
 bool __cdecl Cmd_PlaySound3D_Execute(void* paramInfo, void* scriptData, SndRef* thisObj, void* containingObj, void* scriptObj,
                           void* eventList, double* result, unsigned int* opcodeOffsetPtr)
 {
@@ -27484,7 +28806,7 @@ struct FUN_004bde40_shell {
     ScrS* FUN_004bde40();
 };
 struct ItemChangeShell {
-    ScriptLocals* FUN_004bdea0();
+    ScriptLocals* GetScriptLocals();
 };
 
 struct FUN_00529ea0_shell {
@@ -27589,8 +28911,11 @@ TESContainer* __fastcall TESObjectREFR_HasContainer(TESObjectREFR*);
 
 
 // @fnv 0x005c3450
-// src: EXE 0x005c3450
-bool __cdecl Cmd_ShowVars_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* localsArg, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005c3450
+// pdb: Script::ShowVarsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bglobal, pCont, ownerScript, ownerLocals, pList, pVar, iid, fval, iCount, pinventory, i, pitem, pGlobal
+bool __cdecl Script_ShowVarsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     bool flag = true;
     if (thisObj != 0) {
@@ -27628,7 +28953,7 @@ bool __cdecl Cmd_ShowVars_Execute(const ScriptParameter* paramInfo, const char* 
                 ItemChangeShell* item = v->InventoryChanges_GetItembyIndex(k);
                 if (item != 0 && ((FUN_004bde40_shell*)item)->FUN_004bde40() != 0) {
                     ScrS* script = ((FUN_004bde40_shell*)item)->FUN_004bde40();
-                    ScriptLocals* locals = item->FUN_004bdea0();
+                    ScriptLocals* locals = item->GetScriptLocals();
                     if (((NodeS*)script->GetVariableList())->_ref_008256d0()) {
                         _DebugLog("No variables in script %s", script->GetName());
                     } else {
@@ -27778,11 +29103,14 @@ bool __cdecl ExtractQuest(int,int,int,int,int,int,int,QuestView**);
 void __cdecl Script_GetNumericIDFromDouble(unsigned int*, const double*);
 void __cdecl DebugLog(const char*,...);
 // @fnv 0x005c3960
-// src: EXE 0x005c3960
-bool __cdecl Cmd_ShowQuestVars_Execute(int a0,int a1,int a2,int a3,int a4,int a5,int a6,int a7)
+// src: XBOX_RETAIL_PDB 0x005c3960
+// pdb: Script::ShowQuestVarsFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pQuest, ownerScript, ownerLocals, pList, pVar, iid, fval
+bool __cdecl Script_ShowQuestVarsFunction(int apParameters,int apCompiledParams,int apRefObject,int apContainer,int apScript,int apScriptLocals,int afReturnValue,int auiOffset)
 {
     QuestView* quest = 0;
-    if (!ExtractQuest(a0,a1,a7,a2,a3,a4,a5,&quest)) return false;
+    if (!ExtractQuest(apParameters,apCompiledParams,auiOffset,apRefObject,apContainer,apScript,apScriptLocals,&quest)) return false;
     if (quest) {
         if (quest->script.FUN_00726070()) {
             Script* script = quest->script.FUN_00726070();
@@ -27840,6 +29168,9 @@ void Interface_PrintLine(const char* fmt, ...);
 
 // @fnv 0x005c3bf0
 // src: XBOX_PDB 0x005c3bf0
+// pdb: Script::ShowQuestsFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pList, pQuest
 bool Script_ShowQuestsFunction()
 {
     ListNode5c3bf0* node = DAT_011c3f2c->FUN_00455600();
@@ -28032,7 +29363,7 @@ public:
     int unk120;
     NiPointer<IdleHolder> spIdle;
     NiPointer<IdleHolder> spQueuedIdle;
-    int GetCount();
+    int Animation_GetAnimsLoadingCount();
     AnimSeq* GetControllerSequence(int aiSection);
     unsigned short GetGroupID(int aiSection);
 };
@@ -28073,10 +29404,13 @@ struct AnimationData2 {
 
 // @fnv 0x005c3cf0
 // src: XBOX_PDB 0x005c3cf0
-bool Script_ShowAnimFunction(const ScriptParameter* apParams, const char* apData, TESObjectREFR* apThis, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apLocals, double& afResult, unsigned int& auiOffset)
+// pdb: Script::ShowAnimFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor, panim, esection, pseq, sanimGroup
+bool Script_ShowAnimFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    if (apThis && reinterpret_cast<Animation*>(apThis->GetAnimData()) && apThis->IsActor()) {
-        Actor* pActor = (Actor*)dynamic_cast<Actor*>(apThis);
+    if (apRefObject && reinterpret_cast<Animation*>(apRefObject->GetAnimData()) && apRefObject->IsActor()) {
+        Actor* pActor = (Actor*)dynamic_cast<Actor*>(apRefObject);
         if (pActor) {
             DebugLog("--- Actor Variables -----------------------------");
             if (pActor->FUN_00931850() != -1)
@@ -28093,10 +29427,10 @@ bool Script_ShowAnimFunction(const ScriptParameter* apParams, const char* apData
             if (pActor->GetCombatOpponent())
                 DebugLog("Current package target \"%s\" (%08x)", pActor->GetCombatOpponent()->GetFullName(), pActor->GetCombatOpponent()->GetFormID());
         }
-        Animation* pAnim = reinterpret_cast<Animation*>(apThis->GetAnimData());
+        Animation* pAnim = reinterpret_cast<Animation*>(apRefObject->GetAnimData());
         if (pAnim) {
             DebugLog("--- Animation -------------------------------");
-            DebugLog("Anims Loading: %d", pAnim->GetCount());
+            DebugLog("Anims Loading: %d", pAnim->Animation_GetAnimsLoadingCount());
             for (int i = 0; i < 8; i++) {
                 AnimSeq* pForwardSequence = pAnim->GetControllerSequence(i);
                 if (pForwardSequence) {
@@ -28261,7 +29595,7 @@ public:
     void TESForm_SetDisableFade(int);
     int TESObjectREFR_GetEnableStateParent();
     bool TESObjectREFR_GetIsInvisibleLODMultType();
-    void TESObjectREFR_SetIsInvisible(int);
+    void TESObjectREFR_SetIsInvisibleLODMultType(int);
     void* GetObjectReference();
 };
 
@@ -28358,52 +29692,55 @@ extern "C" char DAT_0103ae48;
 
 // @fnv 0x005c43d0
 // src: XBOX_PDB 0x005c43d0
-bool __cdecl Script_EnableFunction(int a1, int a2, Ref* ref, int a4, Ref* scr, Extra* ex, int a7, int a8) {
+// pdb: Script::EnableFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iFade, pfade, pav
+bool __cdecl Script_EnableFunction(int apParameters, int apCompiledParams, Ref* apRefObject, int apContainer, Ref* apScript, Extra* apScriptLocals, int afReturnValue, int auiOffset) {
     int flagTmp = 1;
     NodeLike* node2;
     LodObj* RunSeventhVirtualOperation;
     const char* name;
     const char* name2;
-    if (!Script_ParseParameters(a1, a2, a8, ref, a4, (ScriptObj*)scr, ex, &flagTmp)) {
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, (ScriptObj*)apScript, apScriptLocals, &flagTmp)) {
         return false;
     }
     if (flagTmp == 0) {
-        ref->TESForm_SetDisableFade(1);
+        apRefObject->TESForm_SetDisableFade(1);
     }
-    if (ref) {
-        if (ref->TESObjectREFR_GetEnableStateParent() != 0) {
-            if (scr != 0 && ((ScriptObj*)scr)->GetFormID() != 0) {
-                if (ref->HasNameForWarning()) {
-                    name = ref->v130();
+    if (apRefObject) {
+        if (apRefObject->TESObjectREFR_GetEnableStateParent() != 0) {
+            if (apScript != 0 && ((ScriptObj*)apScript)->GetFormID() != 0) {
+                if (apRefObject->HasNameForWarning()) {
+                    name = apRefObject->v130();
                 } else {
-                    name = ref->GetFullName();
+                    name = apRefObject->GetFullName();
                 }
-                Warning_005b5e40(&DAT_0103aef0, ref->GetFormID(), name, ((ScriptObj*)scr)->GetFormID(), ((ScriptObj*)scr)->v130());
+                Warning_005b5e40(&DAT_0103aef0, apRefObject->GetFormID(), name, ((ScriptObj*)apScript)->GetFormID(), ((ScriptObj*)apScript)->v130());
             } else {
-                if (ref->HasNameForWarning()) {
-                    name2 = ref->v130();
+                if (apRefObject->HasNameForWarning()) {
+                    name2 = apRefObject->v130();
                 } else {
-                    name2 = ref->GetFullName();
+                    name2 = apRefObject->GetFullName();
                 }
-                Warning_005b5e40(&DAT_0103ae48, ref->GetFormID(), name2, ((ScriptObj*)scr)->GetFormID(), ((ScriptObj*)scr)->v130());
+                Warning_005b5e40(&DAT_0103ae48, apRefObject->GetFormID(), name2, ((ScriptObj*)apScript)->GetFormID(), ((ScriptObj*)apScript)->v130());
             }
             return true;
         } else {
-            Script_RemoveDelayedScriptActionReference(ref);
-            if (ref->GetDisabled()) {
-                Script_AddPendingEnabledReference((int)ref);
+            Script_RemoveDelayedScriptActionReference(apRefObject);
+            if (apRefObject->GetDisabled()) {
+                Script_AddPendingEnabledReference((int)apRefObject);
             }
-            node2 = ref->v1d0();
+            node2 = apRefObject->v1d0();
             RunSeventhVirtualOperation = node2 ? node2->v10() : 0;
             if (RunSeventhVirtualOperation != 0 && RunSeventhVirtualOperation->GetLODMultType() == 9) {
-                RunSeventhVirtualOperation->Set(TES_GetLODMult(ref->GetObjectReference()));
+                RunSeventhVirtualOperation->Set(TES_GetLODMult(apRefObject->GetObjectReference()));
             }
-            if (ref->TESObjectREFR_GetIsInvisibleLODMultType() == 1) {
-                ref->TESObjectREFR_SetIsInvisible(0);
+            if (apRefObject->TESObjectREFR_GetIsInvisibleLODMultType() == 1) {
+                apRefObject->TESObjectREFR_SetIsInvisibleLODMultType(0);
             }
         }
     }
-    ex->flags = ex->flags & ~1;
+    apScriptLocals->flags = apScriptLocals->flags & ~1;
     return true;
 }
 
@@ -28432,6 +29769,9 @@ extern FOVSetting_5c5840 g_fDefault1stPersonFOV_5c5840;
 
 // @fnv 0x005c5840
 // src: EXE 0x005c5840
+// pdb: Script::SetCameraFOV | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: f1stFOV, ffov, f1stfov, fFOV
 bool __cdecl Cmd_SetCameraFOV_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     float fFov1 = 0.0f;
@@ -28522,16 +29862,19 @@ extern bool __cdecl NiObject_IsKindOf(void*,NiTexture*);
 extern char* __cdecl BSstrlwr(char*,unsigned int);
 extern int __cdecl FUN_004812f0(const char*, const char*);
 extern unsigned int __cdecl FUN_00e7bd20(unsigned int);
-extern unsigned int __cdecl FUN_00e7a9a0(unsigned int);
+extern unsigned int __cdecl NiXenonRenderer_GetD3DFormatString(unsigned int);
 extern unsigned int __cdecl FUN_00ec6130(const char*);
 // @fnv 0x005c5a70
-// src: EXE 0x005c5a70
-unsigned char __cdecl Cmd_DumpTexturePalette_Execute(void* source, void* callback, void* third, void* fourth,
-                                     void* fifth, void* sixth, void* seventh, void* eighth) {
+// src: XBOX_RETAIL_PDB 0x005c5a70
+// pdb: Script::DumpTexturePalette | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxtex, pTex, input, outfile, ultotalMemory, pLargestTex, uitexCount, pcell, pworld, itexsize, idx, i, icompsize, bsystemtex, pcattext, ptextext, buf, pfmt, prtti, eFormat, psrctex, ptexname
+unsigned char __cdecl Script_DumpTexturePalette(void* apParameters, void* apCompiledParams, void* apRefObject, void* apContainer,
+                                     void* apScript, void* apScriptLocals, void* afReturnValue, void* auiOffset) {
     char outPath[512];
     outPath[0]=0;
-    if (source) {
-        if (!Script_ParseParameters(source,callback,eighth,third,fourth,fifth,sixth,outPath))
+    if (apParameters) {
+        if (!Script_ParseParameters(apParameters,apCompiledParams,auiOffset,apRefObject,apContainer,apScript,apScriptLocals,outPath))
             return 0;
     }
     if (!outPath[0]) {
@@ -28615,7 +29958,7 @@ unsigned char __cdecl Cmd_DumpTexturePalette_Execute(void* source, void* callbac
             }
             unsigned int count=Warning_005b5e40((void*)largest[i].operator NiTexture*());
             unsigned int rawFormat=FUN_00e7bd20(reinterpret_cast<TextureAccessor*>(largest[i].operator NiTexture*()->FUN_0059bb30())->FUN_007d6bb0());
-            unsigned int uiBits=FUN_00e7a9a0(rawFormat);
+            unsigned int uiBits=NiXenonRenderer_GetD3DFormatString(rawFormat);
             const char* pkImage=largest[i].operator NiTexture*()->GetRTTI()->GetName();
             BSsprintf(line,0x200,&DAT_0103952c,i+1,category,temp,
                          largest[i].operator NiTexture*()->GetWidth(),
@@ -28647,6 +29990,9 @@ bool __cdecl C5C68A0Apply(C5C68A0Ref* pkThis, C5C68A0Form* pkForm, int iFlags, d
 
 // @fnv 0x005c68a0
 // src: EXE 0x005c68a0
+// pdb: Script::SameRace | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargActor
 bool __cdecl Cmd_SameRace_Execute(C5C68A0ParamInfo* paParams, C5C68A0ScriptData* pScriptData, C5C68A0Ref* pkThis,
     C5C68A0Ref* pkContainer, C5C68A0Script* pkScript, C5C68A0EventList* pkEventList, double* pdResult,
     unsigned int* puiOffset)
@@ -28715,34 +30061,40 @@ bool __cdecl B5C72E0ExtractArgs(B5C72E0ParamInfo* pkParamInfo, B5C72E0ScriptData
 bool __cdecl Script_GetFactionRankDifferenceConditionFunction(B5C72E0Ref* pkThisObj, B5C72E0Form* pkCurrentObject, B5C72E0Form* pkSecond, double* pdResult);
 
 // @fnv 0x005c72e0
-// src: EXE 0x005c72e0
-bool __cdecl Cmd_GetFactionRankDifference_Execute(B5C72E0ParamInfo* pkParamInfo, B5C72E0ScriptData* pkScriptData, B5C72E0Ref* pkThisObj,
-    B5C72E0Ref* pkContainingObj, B5C72E0Script* pkScript, B5C72E0EventList* pkEventList, double* pdResult,
-    unsigned int* puiOpcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005c72e0
+// pdb: Script::GetFactionRankDifference | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction, pactor
+bool __cdecl Script_GetFactionRankDifference(B5C72E0ParamInfo* apParameters, B5C72E0ScriptData* apCompiledParams, B5C72E0Ref* apRefObject,
+    B5C72E0Ref* apContainer, B5C72E0Script* apScript, B5C72E0EventList* apScriptLocals, double* afReturnValue,
+    unsigned int* auiOffset)
 {
     B5C72E0Form* pkForm = 0;
     B5C72E0Form* pkTarget = 0;
-    if (!B5C72E0ExtractArgs(pkParamInfo, pkScriptData, puiOpcodeOffset, pkThisObj, pkContainingObj, pkScript, pkEventList, &pkForm, &pkTarget))
+    if (!B5C72E0ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pkForm, &pkTarget))
         return false;
-    return Script_GetFactionRankDifferenceConditionFunction(pkThisObj, pkForm, pkTarget, pdResult);
+    return Script_GetFactionRankDifferenceConditionFunction(apRefObject, pkForm, pkTarget, afReturnValue);
 }
 
 struct FUN_00544340_Obj {
-    void TESObjectCELL_SetPublic(bool a1);
+    void TESObjectCELL_SetPublic(bool abVal);
 };
 
 bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int* a8, int* a9);
 
 // @fnv 0x005c7660
-// src: EXE 0x005c7660
-bool __cdecl Cmd_SetCellPublicFlag_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int unk20, int a8)
+// src: XBOX_RETAIL_PDB 0x005c7660
+// pdb: Script::SetCellPublicFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iFlag, pCell
+bool __cdecl Script_SetCellPublicFunction(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset)
 {
     int v4;
     int v8;
 
     v4 = 0;
     v8 = 0;
-    if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &v4, &v8)) {
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &v4, &v8)) {
         return false;
     }
     if (v4 != 0) {
@@ -28761,6 +30113,9 @@ void* FUN_00ec43fb(void*, int, void*, void*, int);
 class FormX { public: int FUN_004181e0(); void Actor_SetFactionRank(void*, unsigned char); };
 // @fnv 0x005c7e60
 // src: EXE 0x005c7e60
+// pdb: Script::SetFactionRank | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iRank, pFaction, pact, pactorbase
 bool Cmd_SetFactionRank_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int* opcodeOffsetPtr)
 {
     FormX* h;
@@ -28783,17 +30138,20 @@ bool Cmd_SetFactionRank_Execute(const ScriptParameter* paramInfo, const char* sc
 
 extern bool __cdecl Script_GetDispositionConditionFunction(TESObjectREFR*, void*, int, double&);
 // @fnv 0x005c8510
-// src: EXE 0x005c8510
-bool __cdecl Cmd_ModDisposition_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* ref, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset) {
+// src: XBOX_RETAIL_PDB 0x005c8510
+// pdb: Script::ModDisposition | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ptarget, pactor, iValue
+bool __cdecl Script_ModDisposition(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     void* target = 0;
     int count = 0;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffset, ref, container, script, locals, &target, &count)) return false;
-    Actor* actor = dynamic_cast<Actor*>(ref);
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &target, &count)) return false;
+    Actor* actor = dynamic_cast<Actor*>(apRefObject);
     if (actor && target) {
         // The shared slot lacks this script-specific parameter signature.
         typedef void (__thiscall *ScriptSetValue)(Actor*, void*, float);
         ((ScriptSetValue)(*(void***)actor)[0x460 / 4])(actor, target, (float)count);
-        return Script_GetDispositionConditionFunction(ref, target, 0, result);
+        return Script_GetDispositionConditionFunction(apRefObject, target, 0, afReturnValue);
     }
     return false;
 }
@@ -28826,12 +30184,15 @@ extern WorkerSetting DAT_011d4768;
 bool __cdecl QueueUIMessage(const char*,int,const char*,const char*,float,bool);
 // @fnv 0x005c8620
 // src: XBOX_PDB 0x005c8620
-bool Script_ShowMap(const ScriptParameter* params,const char* data,TESObjectREFR* reference,TESObjectREFR* container,Script* script,ScriptLocals* locals,double& result,unsigned int* offset) {
+// pdb: Script::ShowMap | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pmarker, iEnableFastTravel, bmarker_added
+bool Script_ShowMap(const ScriptParameter* apParameters,const char* apCompiledParams,TESObjectREFR* reference,TESObjectREFR* apContainer,Script* apScript,ScriptLocals* apScriptLocals,double& afReturnValue,unsigned int* auiOffset) {
  bool marker = false;
  {
  WorkerReference* travel = 0;
  int changed = 0;
- if (!ExtractArgs(params,data,offset,reference,container,script,locals,&travel,&changed))
+ if (!ExtractArgs(apParameters,apCompiledParams,auiOffset,reference,apContainer,apScript,apScriptLocals,&travel,&changed))
      return false;
  if (travel && travel->TESObjectREFR_GetMapMarkerData()) {
      if (!travel->TESObjectREFR_GetMapMarkerData()->GetVisible())
@@ -28846,7 +30207,7 @@ bool Script_ShowMap(const ScriptParameter* params,const char* data,TESObjectREFR
  }
  if (marker)
      QueueUIMessage(DAT_011d4768.String(),0,"Interface\\Icons\\Message Icons\\glow_message_map.dds","UIPopUpMapMarkerAdded",2.0f,false);
- result = 1.0;
+ afReturnValue = 1.0;
  return true;
 }
 }
@@ -29023,6 +30384,9 @@ bool Parse(int,int,int,Ref*,int,int,int,Ref**,int*,void**,void**,int*,int*);
 bool Blocked(Ref*);
 // @fnv 0x005c8740
 // src: EXE 0x005c8740
+// pdb: Script::StartConversation | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pLocationTarget, ptarget, ptopic, bHeadTrack, bMove, pLocationSpeaker, tempSecondLoc, ploc1, ploc2, pactor, tempFirstLoc, ptargetchar, ppack, pdial
 bool __cdecl Cmd_StartConversation_Execute(int a,int b,Ref* source,int d,int e,int f,double* result,int h) {
  Ref* target7=0; int modeB=0; void* aData1=0; void* data7=0; int value=1; int mode_=0;
  if(!Parse(a,b,h,source,d,e,f,&target7,&modeB,&aData1,&data7,&value,&mode_)) return false;
@@ -29472,6 +30836,9 @@ struct Manager {bool FUN_0094df60();};extern Manager* DAT_011dea3c;
 bool Script_ParseParameters(void*,void*,void*,Actor*,void*,void*,void*,Actor**,Idle**,int*,int*);void Script_SetActionFlag(Idle*,void*,int);
 // @fnv 0x005c9100
 // src: EXE 0x005c9100
+// pdb: Script::SayToFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: isubtitle, iDoNotForceTargetHeadTrack, ptarget, bforcesub, ptopic, pactor, ioldLipDistance, pVoice, pResponse, aSoundHand
 bool Cmd_SayTo_Execute(void* a,void* b,Actor* object,void* d,void* e,void* f,double* result,void* h){
 *result=0;Actor* target=0;Idle* idleSlot10=0;int flag=0;int optionSlot33=0;bool enabledSlot10=false;
 if(!Script_ParseParameters(a,b,h,object,d,e,f,&target,&idleSlot10,&flag,&optionSlot33))return false;
@@ -30146,11 +31513,14 @@ public:
     virtual void MarkChanged(unsigned int);
     ProcessVT* GetCurrentProcess() const;
     ExtraListVT* BSFile_GetDevice();
-    void Actor_SetLookAtTarget(NiPoint3 aPos);
+    void Actor_SetLookAtTarget(NiPoint3 aPoint);
 };
 
 // @fnv 0x005c9790
 // src: EXE 0x005c9790
+// pdb: Script::LookFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iFaceTarget, pTarget, pActor
 bool Cmd_Look_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
 {
     RefVT* pItem = 0;
@@ -30250,6 +31620,9 @@ struct LineRef {
 
 // @fnv 0x005c9cf0
 // src: EXE 0x005c9cf0
+// pdb: Script::ShowPivotFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: flag, fsize, vertex, color, plines, frad
 bool Cmd_ShowPivot_Execute(void* a1, void* a2, LineRef* pRef)
 {
     if (pRef) {
@@ -30301,6 +31674,9 @@ public:
 
 // @fnv 0x005ca470
 // src: COMMUNITY 0x005ca470
+// pdb: Script::OnNPCActivateFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: tPlayer
 bool __cdecl Cmd_OnNPCActivate_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
 {
     result = 0.0;
@@ -30988,9 +32364,12 @@ void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005cb0c0
 // src: XBOX_PDB 0x005cb0c0
-bool __cdecl Script_PickIdleFunction(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::PickIdleFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor, pidle, bplaying, panim
+bool __cdecl Script_PickIdleFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    Actor* actor = dynamic_cast<Actor*>(thisObject);
+    Actor* actor = dynamic_cast<Actor*>(apRefObject);
     if (actor && reinterpret_cast<AIProcess*>(static_cast<const Actor*>(actor)->GetCurrentProcess())) {
         IdleForm* idle = DAT_011cb6a0->FUN_00600950(actor, reinterpret_cast<AIProcess*>(static_cast<const Actor*>(actor)->GetCurrentProcess())->GetValue128());
         if (idle) {
@@ -31124,14 +32503,17 @@ TESForm* __cdecl FUN_00483a00(const char*);
 
 // @fnv 0x005cb2d0
 // src: XBOX_PDB 0x005cb2d0
-bool __cdecl Script_PlayIdleFunction(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* thisObject, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::PlayIdleFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pidleFormName, pactor, pidle, pform, bplaying, panim
+bool __cdecl Script_PlayIdleFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    Actor* actor = dynamic_cast<Actor*>(thisObject);
+    Actor* actor = dynamic_cast<Actor*>(apRefObject);
     char editorID[512];
-    if (!Script_ParseParameters(parameters, scriptData, opcodeOffset, thisObject, container,
-                     script, locals, editorID))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer,
+                     apScript, apScriptLocals, editorID))
         return false;
     if (actor && actor->MobileObject::FUN_008d8520()) {
         TESForm* form = FUN_00483a00(editorID);
@@ -31191,7 +32573,7 @@ class Ref5CB;
 
 bool __cdecl Evaluate5CB(void* pvFirst, void* pvSecond, void* pvExtra, Ref5CB* pkRef, int iArg1, int iArg2,
     int iArg3, int* piResult);
-bool __cdecl Apply5CB(Ref5CB* pkRef, int iResult, int iFlags, int iMode);
+bool __cdecl Script_IsWeaponSkillTypeConditionFunction(Ref5CB* pkRef, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005cb7e0
 // src: EXE 0x005cb7e0
@@ -31202,7 +32584,7 @@ bool __cdecl Cmd_IsWeaponSkillType_Execute(void* pvFirst, void* pvSecond, Ref5CB
     if (!Evaluate5CB(pvFirst, pvSecond, pvExtra, pkRef, iArg1, iArg2, iArg3, &iResult))
         return false;
     if (pkRef)
-        return Apply5CB(pkRef, iResult, 0, iMode);
+        return Script_IsWeaponSkillTypeConditionFunction(pkRef, iResult, 0, iMode);
     return true;
 }
 
@@ -31233,7 +32615,7 @@ extern ChalSetting5cb* DAT_01189588[];
 struct Challenge5cb
 {
     ChalTarget5cb* FUN_005e3fa0();
-    char* TESQuestStageItem_GetLogEntry(ChalTarget5cb* pkTarget);
+    char* TESQuestStageItem_GetLogEntry(ChalTarget5cb* apOwner);
     ChalValue5cb* FUN_008d8520();
 };
 
@@ -31243,12 +32625,15 @@ struct ChalNode5cb
     ChalNode5cb* FUN_00726070();
 };
 
-void __cdecl TESQuest_GetQuestLog(BSSimpleList<const char*>* pkList, int iA, bool bAll, int iB, int iC);
+void __cdecl TESQuest_GetQuestLog(BSSimpleList<const char*>* apListToFill, int iA, bool abShowCompleted, int abNewestFirst, int abShowAll);
 void __cdecl ourMemset(void* pvDest, int iValue, unsigned int uiSize);
 void __cdecl _mbsnbcpy_(char* pcDest, const char* pcSrc, unsigned int uiSize);
 
 // @fnv 0x005cbbb0
 // src: EXE 0x005cbbb0
+// pdb: Script::ShowQuestLogFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bShowCompleted, questLog, pList, iShowCompleted, message, pItem, pOwner, pLogDate
 bool __cdecl Cmd_ShowQuestLog_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
 {
     int iAll2 = 0;
@@ -31305,6 +32690,9 @@ void __cdecl TESQuest_GetQuestLog(InventoryList*,TESObjectREFR*,int,int,int);
 void __cdecl ourMemset(void*,int,unsigned int);
 // @fnv 0x005cbdb0
 // src: EXE 0x005cbdb0
+// pdb: Script::ShowFullQuestLogFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pQuest, questLog, pList, message, pItem, pOwner, pLogDate
 bool __cdecl Cmd_ShowFullQuestLog_Execute(const ScriptParameter* param,const char* text,TESObjectREFR* reference,TESObjectREFR* target,Script* script,ScriptLocals* locals,double& result,unsigned int& offset) {
  ExtraInfo* object;
  TESObjectREFR* info=0;
@@ -31338,7 +32726,7 @@ struct LockExtraData {
 
 
 struct LockDoorForm {
-    void BGSTerminal_SetRawDifficulty(TESObjectREFR* apRef, int aiLevel);
+    void BGSTerminal_SetRawDifficulty(TESObjectREFR* apRef, int aeVal);
 };
 
 
@@ -31355,23 +32743,26 @@ void __fastcall TESObjectREFR_AddLockChange(void* apRef);
 
 // @fnv 0x005cbf80
 // src: XBOX_PDB 0x005cbf80
-bool Script_LockFunction(const ScriptParameter* parameters, const char* scriptData, LockRefr* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::LockFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, pLock, iLockAsOwner, pterminal, ell, ptel
+bool Script_LockFunction(const ScriptParameter* apParameters, const char* apCompiledParams, LockRefr* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    if (!thisObject)
+    if (!apRefObject)
         return false;
 
     int iLockLevel = 0;
     int iAsOwner = 0;
-    if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObject, container, script, locals, &iLockLevel, &iAsOwner))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &iLockLevel, &iAsOwner))
         return false;
 
-    if (thisObject->GetAction((OBJECT_ACTION)4))
-        BGSOpenCloseForm::SetOpenState(thisObject, false, true);
+    if (apRefObject->GetAction((OBJECT_ACTION)4))
+        BGSOpenCloseForm::SetOpenState(apRefObject, false, true);
 
-    LockExtraData* pLock = thisObject->GetLockData();
+    LockExtraData* pLock = apRefObject->GetLockData();
     if (!pLock) {
-        if (thisObject->GetBaseForm()->GetFormType() == 0x17) {
-            LockDoorForm* pPathNodeDoor = (LockDoorForm*)thisObject->GetBaseForm();
+        if (apRefObject->GetBaseForm()->GetFormType() == 0x17) {
+            LockDoorForm* pPathNodeDoor = (LockDoorForm*)apRefObject->GetBaseForm();
             int iLevel;
             if (iLockLevel < 0)
                 iLevel = 0;
@@ -31379,11 +32770,11 @@ bool Script_LockFunction(const ScriptParameter* parameters, const char* scriptDa
                 iLevel = 5;
             else
                 iLevel = iLockLevel;
-            pPathNodeDoor->BGSTerminal_SetRawDifficulty(thisObject, iLevel);
-            BGSTerminal_SetHacked(thisObject, false);
+            pPathNodeDoor->BGSTerminal_SetRawDifficulty(apRefObject, iLevel);
+            BGSTerminal_SetHacked(apRefObject, false);
             iLockLevel = iLevel;
         } else {
-            pLock = thisObject->CreateLockData();
+            pLock = apRefObject->CreateLockData();
         }
     }
 
@@ -31391,17 +32782,17 @@ bool Script_LockFunction(const ScriptParameter* parameters, const char* scriptDa
         if (iLockLevel)
             pLock->m_uiLockState = (char)iLockLevel;
         pLock->FUN_00430a90(true);
-        TESObjectREFR_AddLockChange(thisObject);
+        TESObjectREFR_AddLockChange(apRefObject);
         if (iAsOwner > 0) {
-            ExtraLock* pExtra = thisObject->FindExtraLock();
+            ExtraLock* pExtra = apRefObject->FindExtraLock();
             if (pExtra)
-                pExtra->FUN_0043a210(reinterpret_cast<TESObjectREFR*>(thisObject), false);
+                pExtra->SetConnectedCellsPublic(reinterpret_cast<TESObjectREFR*>(apRefObject), false);
         }
-        thisObject->SetAltered(true);
+        apRefObject->SetAltered(true);
     }
 
     if (tlsData.bConsoleEcho)
-        DebugLog("Locked %s with lock level %d", thisObject->GetDisplayName(), iLockLevel);
+        DebugLog("Locked %s with lock level %d", apRefObject->GetDisplayName(), iLockLevel);
 
     return true;
 }
@@ -31415,26 +32806,29 @@ int __cdecl FUN_00ec43fb(int a1, int a2, int a3, int a4, int a5);
 class GlobalCaller6
 {
 public:
-    bool Call6(int a1, int a2, int a3, int a4, int a5, int a6);
+    bool ProcessLists_IsCrimeinGlobalCrimeList(int a1, int a2, int a3, int a4, int a5, int a6);
 };
 
 // @fnv 0x005cc240
-// src: EXE 0x005cc240
-bool __cdecl Cmd_GetCrimeKnown_Execute(int a1, int a2, int a3, int a4, int a5, int a6, double* pOut, int a8)
+// src: XBOX_RETAIL_PDB 0x005cc240
+// pdb: Script::GetCrimeKnownFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pCriminal, pVictim, iCrime
+bool __cdecl Script_GetCrimeKnownFunction(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, double* afReturnValue, int auiOffset)
 {
-    *pOut = 0.0;
+    *afReturnValue = 0.0;
     int a = 0;
     int c = 0;
     int b = 0;
-    if (!Script_ParseParameters(a1, a2, a8, a3, a4, a5, a6, &a, &c, &b))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &a, &c, &b))
     {
         return false;
     }
-    if (reinterpret_cast<GlobalCaller6*>(&DAT_011e0e80)->Call6(b, c,
-            FUN_00ec43fb(a3, 0, reinterpret_cast<int>(&DAT_011841cc), reinterpret_cast<int>(&DAT_011846d4), 0),
+    if (reinterpret_cast<GlobalCaller6*>(&DAT_011e0e80)->ProcessLists_IsCrimeinGlobalCrimeList(b, c,
+            FUN_00ec43fb(apRefObject, 0, reinterpret_cast<int>(&DAT_011841cc), reinterpret_cast<int>(&DAT_011846d4), 0),
             a, 0, -1))
     {
-        *pOut = 1.0;
+        *afReturnValue = 1.0;
     }
     return true;
 }
@@ -32408,7 +33802,7 @@ virtual void v228();
 virtual bool v22c(int);
 Process* FUN_008d8520(); void Actor_GetOutofFurnitureQuick(); Cell* FUN_008d6f30(); World* TESObjectREFR_GetWorldSpace(); const NiPoint3& FUN_00430830();
 void PlayerCharacter_RequestPositionPlayer(MoveRequest*); void TESObjectREFR_SetLocationOnReference(NiPoint3*); void TESObjectREFR_SetAngleOnReferenceZ(float); void TESObjectREFR_SetAngleOnReferenceX(float); Matrix TESObjectREFR_GetOrientation();
-Motion* FUN_009306d0(); void StopMoving_008b3ab0(); void FadeIn_008bcd20(); void FUN_008c4640(); void PlayerCharacter_CheckForQuestTargetUpdate(Reference*);
+Motion* FUN_009306d0(); void StopMoving_008b3ab0(); void FadeIn(); void FUN_008c4640(); void PlayerCharacter_CheckForQuestTargetUpdate(Reference*);
 };
 extern Reference* DAT_011dea3c;
 struct ActorManager { void ProcessLists_StopCombatandAlarmonActor(Reference*,int); };
@@ -32420,9 +33814,12 @@ void __cdecl TESObjectREFR_MoveRefToNewSpace(Reference*,Cell*,World*);
 void __cdecl Warning_005b5e40(const char*);
 // @fnv 0x005ccb20
 // src: XBOX_PDB 0x005ccb20
-void __cdecl Script_MoveToFunctionBase(Reference* moved,Reference* destination,float dx,float dy,float dz) {
+// pdb: Script::MoveToFunctionBase | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apMoveRef, apTargetRef, afX, afY, afZ
+// pdb locals: bactor, rotation, position, pCell, pWorld, pact, pcurProc, ploc, bmob, p3D, UpdateData, pmob, pcon, pactor
+void __cdecl Script_MoveToFunctionBase(Reference* moved,Reference* apTargetRef,float afX,float afY,float afZ) {
  if(moved==DAT_011dea3c && DAT_011dea3c->v22c(0)) return;
- if(moved && destination) {
+ if(moved && apTargetRef) {
    bool actorSlot46=moved->v100();
    if(actorSlot46) {
      Reference* source=moved;
@@ -32430,11 +33827,11 @@ void __cdecl Script_MoveToFunctionBase(Reference* moved,Reference* destination,f
      Process* process=source->FUN_008d8520();
      if(process && process->v4bc()) source->Actor_GetOutofFurnitureQuick();
    }
-   Cell* cellSlot7=destination->FUN_008d6f30();
-   World* worldSlot0=destination->TESObjectREFR_GetWorldSpace();
-   NiPoint3 rotationSlot1=destination->FUN_00430830();
-   NiPoint3 positionSlot4=destination->v1f4();
-   positionSlot4.x+=dx;positionSlot4.y+=dy;positionSlot4.z+=dz;
+   Cell* cellSlot7=apTargetRef->FUN_008d6f30();
+   World* worldSlot0=apTargetRef->TESObjectREFR_GetWorldSpace();
+   NiPoint3 rotationSlot1=apTargetRef->FUN_00430830();
+   NiPoint3 positionSlot4=apTargetRef->v1f4();
+   positionSlot4.x+=afX;positionSlot4.y+=afY;positionSlot4.z+=afZ;
    if(moved==DAT_011dea3c) {
      MoveRequest* request=new MoveRequest;
      request->position=positionSlot4;
@@ -32443,7 +33840,7 @@ void __cdecl Script_MoveToFunctionBase(Reference* moved,Reference* destination,f
      request->enabled=true;
      if(worldSlot0) request->world=worldSlot0;
      else if(cellSlot7 && cellSlot7->FUN_00425fd0()) request->cell=cellSlot7;
-     request->destination=destination;
+     request->destination=apTargetRef;
      DAT_011dea3c->PlayerCharacter_RequestPositionPlayer(request);
      Interface_CloseConsole();
    } else {
@@ -32474,7 +33871,7 @@ void __cdecl Script_MoveToFunctionBase(Reference* moved,Reference* destination,f
          actorSource->FUN_008d8520()->v028();
          actorSource->StopMoving_008b3ab0();
          actorSource->FUN_008d8520()->v024(actorSource,1);
-         actorSource->FadeIn_008bcd20();
+         actorSource->FadeIn();
          actorSource->FUN_008c4640();
        } else Warning_005b5e40("AI: Actor being moved is Disabled he has no process");
      }
@@ -32528,40 +33925,43 @@ extern void Warning_005b5e40(const char*, ...);
 extern void* FUN_004537b0();
 extern void TaskQueueInterface_QueueScriptFunctionCall(void*, int, RefCD*, ...);
 extern void Script_MoveToFunctionBase(RefCD*, int, float, float, float);
-struct CmdCD { static bool Cmd_MoveToMarkerWithFade_Execute(void*, void*, RefCD*, RefCD*, RefCD*, void*, void*, void*); };
+struct CmdCD { static bool Script_MoveToFadeFunction(void*, void*, RefCD*, RefCD*, RefCD*, void*, void*, void*); };
 // @fnv 0x005cd0e0
-// src: EXE 0x005cd0e0
-bool CmdCD::Cmd_MoveToMarkerWithFade_Execute(void* p1, void* p2, RefCD* p3, RefCD* p4, RefCD* p5, void* p6, void* p7, void* p8) {
+// src: XBOX_RETAIL_PDB 0x005cd0e0
+// pdb: Script::MoveToFadeFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fZ, fY, fX, pTargRef, pactor, phighProcess
+bool CmdCD::Script_MoveToFadeFunction(void* apParameters, void* apCompiledParams, RefCD* apRefObject, RefCD* apContainer, RefCD* apScript, void* apScriptLocals, void* afReturnValue, void* auiOffset) {
     int p = 0;
     float h = 0.0f;
     float a = 0.0f;
     float i = 0.0f;
-    if (!Script_ParseParameters(p1,p2,p8,p3,p4,p5,p6,&p,&h,&a,&i)) return false;
-    if (p3 && !p3->TESObjectREFR_CanBeMoved()) {
+    if (!Script_ParseParameters(apParameters,apCompiledParams,auiOffset,apRefObject,apContainer,apScript,apScriptLocals,&p,&h,&a,&i)) return false;
+    if (apRefObject && !apRefObject->TESObjectREFR_CanBeMoved()) {
         if (tlsCD.logging)
-            Interface_PrintLine(&DAT_0103a598,p3->v76());
-        if (!(*(ManagerCD**)&DAT_011c3f2c)->FUN_00469860(p5->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
-            Warning_005b5e40(&DAT_0103a538,p5->v76(),p5->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),p3->v76(),p3->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            Interface_PrintLine(&DAT_0103a598,apRefObject->v76());
+        if (!(*(ManagerCD**)&DAT_011c3f2c)->FUN_00469860(apScript->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
+            Warning_005b5e40(&DAT_0103a538,apScript->v76(),apScript->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),apRefObject->v76(),apRefObject->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
         return true;
     }
     if (p) {
         if (*((SettingCD*)&DAT_011c3ea4)->Setting_Int() > 1) {
-            TaskQueueInterface_QueueScriptFunctionCall(FUN_004537b0(),0x124f,p3,p,h,a,i);
+            TaskQueueInterface_QueueScriptFunctionCall(FUN_004537b0(),0x124f,apRefObject,p,h,a,i);
         } else {
-            if (p3->v64()) {
-                ActorCD* actor = (ActorCD*)p3;
+            if (apRefObject->v64()) {
+                ActorCD* actor = (ActorCD*)apRefObject;
                 if (actor->FUN_008d8520()) {
                     if (!actor->FUN_00931850()) {
                         ProcCD* process = actor->FUN_008d8520();
                         process->HighProcess_FadeOutAndMove(actor,p,h,a,i);
                     } else {
-                        Script_MoveToFunctionBase(p3,p,h,a,i);
+                        Script_MoveToFunctionBase(apRefObject,p,h,a,i);
                     }
                 } else {
-                    Script_MoveToFunctionBase(p3,p,h,a,i);
+                    Script_MoveToFunctionBase(apRefObject,p,h,a,i);
                 }
             } else {
-                Script_MoveToFunctionBase(p3,p,h,a,i);
+                Script_MoveToFunctionBase(apRefObject,p,h,a,i);
             }
         }
     }
@@ -32584,11 +33984,14 @@ public:
 void __cdecl MovePlayerToRef(QuestPlayer*, TESObjectREFR*, float, float, float);
 
 // @fnv 0x005cd330
-// src: EXE 0x005cd330
-bool __cdecl Cmd_MoveToQuestTarget_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005cd330
+// pdb: Script::MoveToQuestTargetFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pTargRef, iTargetNumber, pTargetList, iTargetCount, pItem
+bool __cdecl Script_MoveToQuestTargetFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int iTarget = 1;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, locals, &iTarget))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &iTarget))
         return false;
 
     TESObjectREFR* pRef = 0;
@@ -32626,7 +34029,7 @@ struct SpellMagicPart : public SpellFullNamePart
 struct PlayerSpellStub
 {
     void SetPlayerSpell(SpellMagicPart* apSpell);
-    void SetPlayerBook(TESObjectBOOK* apBook);
+    void PlayerCharacter_SetSelectedScroll(TESObjectBOOK* apScroll);
 };
 
 extern PlayerSpellStub* g_pSpellPlayer;
@@ -32635,8 +34038,11 @@ void __cdecl DebugLog(const char*, ...);
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, ...);
 
 // @fnv 0x005cd750
-// src: EXE 0x005cd750
-bool __cdecl Cmd_SelectPlayerSpell_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005cd750
+// pdb: Script::SelectPlayerSpellFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pparamForm, pspell, pbook
+bool __cdecl Script_SelectPlayerSpellFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* pForm = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pForm))
@@ -32647,7 +34053,7 @@ bool __cdecl Cmd_SelectPlayerSpell_Execute(const ScriptParameter* apParameters, 
         if (!pBookForm)
             g_pSpellPlayer->SetPlayerSpell(reinterpret_cast<SpellMagicPart*>(static_cast<MagicItem*>(pSpell)));
         else
-            g_pSpellPlayer->SetPlayerBook(pBookForm);
+            g_pSpellPlayer->PlayerCharacter_SetSelectedScroll(pBookForm);
         if (g_bDebugLog)
             DebugLog("Player Spell set to %s", !pSpell ? "NONE" : pSpell->GetFullName());
     }
@@ -32673,7 +34079,7 @@ public:
 class PlayerStub
 {
 public:
-    bool IsFollowerStub(Actor* apActor);
+    bool PlayerCharacter_IsPlayerFollower(Actor* apActor);
     int GetFollowerCountStub();
 };
 
@@ -32700,6 +34106,9 @@ void FNV_Warning(const char*, ...);
 
 // @fnv 0x005cdc10
 // src: EXE 0x005cdc10
+// pdb: Script::StopWaitingFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, pPackage, ptarget
 bool Cmd_StopWaiting_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
 {
     TESPackage* pPackage = 0;
@@ -32713,19 +34122,19 @@ bool Cmd_StopWaiting_Execute(const ScriptParameter* paramInfo, const char* scrip
         {
             if (pPackage->GetPackType() == 2)
             {
-                pPackage->SetWaiting(false);
+                pPackage->TESPackage_SetWaiting(false);
                 pActor_2->GetCurrentProcess()->SetAnimationState(static_cast<unsigned int>(3));
             }
             else if (pPackage->GetPackType() == 7 || pPackage->GetPackType() == 1)
             {
                 Actor* pTarget = dynamic_cast<Actor*>(pActor_2->GetCurrentProcess()->GetTarget());
-                if (pTarget == (Actor*)g_thePlayer && !((PlayerStub*)g_thePlayer)->IsFollowerStub(pActor_2) && ((PlayerStub*)g_thePlayer)->GetFollowerCountStub() > *g_011cdad0.Int())
+                if (pTarget == (Actor*)g_thePlayer && !((PlayerStub*)g_thePlayer)->PlayerCharacter_IsPlayerFollower(pActor_2) && ((PlayerStub*)g_thePlayer)->GetFollowerCountStub() > *g_011cdad0.Int())
                 {
                     QueueUIMessage(g_011d3d54.String(), 0, 0, 0, 2.0f, false);
                 }
                 else
                 {
-                    pPackage->SetWaiting(false);
+                    pPackage->TESPackage_SetWaiting(false);
                 }
             }
             else
@@ -32762,13 +34171,16 @@ class ScriptParameter;
 
 class CE0C0Form {
 public:
-    void SetEnabled(int iEnabled);
+    void SetEnabled(int abVal);
 };
 
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, ...);
 
 // @fnv 0x005ce0c0
 // src: EXE 0x005ce0c0
+// pdb: Script::SetPCFactionMurderFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction, ivalue
 bool Cmd_SetPCFactionMurder_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     CE0C0Form* pkForm = 0;
@@ -32791,16 +34203,19 @@ extern char DAT_0103b76c;
 typedef ValueContext* (__thiscall *ActorContextMethod)(Actor*);
 // @fnv 0x005ce480
 // src: XBOX_PDB 0x005ce480
-bool __cdecl Script_GetCombatTargetFunction(const ScriptParameter* parameters, const char* compiled, TESObjectREFR* object,
-    TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& offset) {
-    result = 0.0;
-    Actor* actor = dynamic_cast<Actor*>(object);
+// pdb: Script::GetCombatTargetFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, iid, pTarget
+bool __cdecl Script_GetCombatTargetFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject,
+    TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+    afReturnValue = 0.0;
+    Actor* actor = dynamic_cast<Actor*>(apRefObject);
     int value = 0;
     if (actor) {
         ValueContext* context = reinterpret_cast<ActorContextMethod>((*reinterpret_cast<void***>(actor))[0x42c / 4])(actor);
         if (context) {
             value = context->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-            FUN_005acc70(&value, &result);
+            FUN_005acc70(&value, &afReturnValue);
         }
     }
     if (tlsData.bConsoleEcho)
@@ -32817,18 +34232,21 @@ extern char str_0103b804[];
 
 // @fnv 0x005ce7b0
 // src: XBOX_PDB 0x005ce7b0
+// pdb: Script::SetForceRun | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, ivalue
 bool __cdecl Script_SetForceRun(
-    const ScriptParameter* parameters, const char* compiled,
-    TESObjectREFR* reference, TESObjectREFR* container,
-    Script* script, ScriptLocals* locals, double& result, unsigned int& offset)
+    const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* reference, TESObjectREFR* apContainer,
+    Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     FUN_005bf800_Class* action = static_cast<FUN_005bf800_Class*>(
         FUN_00ec43fb(reference, 0, &DAT_011841cc, &DAT_011846d4, 0));
     if (action) {
-        result = 1.0;
+        afReturnValue = 1.0;
         int set = 0;
-        if (!ExtractArgs(parameters, compiled, &offset, reference,
-                         container, script, locals, &set))
+        if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, reference,
+                         apContainer, apScript, apScriptLocals, &set))
             return false;
         if (set) {
             action->Actor_SetForceRun(true);
@@ -32847,6 +34265,9 @@ bool __fastcall FUN_005ce8f0(Actor*);
 
 // @fnv 0x005ce870
 // src: XBOX_PDB 0x005ce870
+// pdb: Script::GetForceSneak | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
 bool __cdecl Script_GetForceSneak(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     afReturnValue = 0.0;
     Actor* pActor = dynamic_cast<Actor*>(apRefObject);
@@ -32861,13 +34282,16 @@ bool __cdecl Script_GetForceSneak(const ScriptParameter* apParameters, const cha
 
 // @fnv 0x005ce910
 // src: XBOX_PDB 0x005ce910
-bool __cdecl Script_SetForceSneak(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// pdb: Script::SetForceSneak | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, ivalue
+bool __cdecl Script_SetForceSneak(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     Actor* actor = dynamic_cast<Actor*>(thisObj);
     if (actor) {
-        result = 1.0;
+        afReturnValue = 1.0;
         int value = 0;
-        if (!ExtractArgs(parameters, scriptData, &opcodeOffset, thisObj, containingObj, script, locals, &value)) {
+        if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &value)) {
             return false;
         }
         if (value) {
@@ -32916,8 +34340,8 @@ struct SDO_Ref
     virtual void V17();
     virtual void ClearChanged(unsigned int auiFlags);
     virtual void SetChanged(unsigned int auiFlags);
-    bool GetActionFlag(int aeAction);
-    void GetLocalData(int aeAction);
+    bool GetActionFlag(int type);
+    void GetLocalData(int type);
     void ClearActionFlag(int aeAction);
 };
 
@@ -32942,30 +34366,33 @@ void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005cebf0
 // src: XBOX_PDB 0x005cebf0
-bool __cdecl Script_SetDefaultOpenFunction(void* apParams, void* apCompiled, SDO_Ref* apRef, SDO_Ref* apContainer,
-                          void* apScript, void* apLocals, double* apResult, unsigned int* apOffset)
+// pdb: Script::SetDefaultOpenFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ivalue, bnewOpenByDefault, bopenByDefault
+bool __cdecl Script_SetDefaultOpenFunction(void* apParameters, void* apCompiledParams, SDO_Ref* apRefObject, SDO_Ref* apContainer,
+                          void* apScript, void* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     int iOpen2 = 0;
-    if (!SDO_ExtractArgs(apParams, apCompiled, apOffset, apRef, apContainer, apScript, apLocals, &iOpen2))
+    if (!SDO_ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &iOpen2))
         return false;
-    if (apRef)
+    if (apRefObject)
     {
-        bool bWasOpen3 = apRef->GetActionFlag(8);
+        bool bWasOpen3 = apRefObject->GetActionFlag(8);
         if (iOpen2)
-            apRef->GetLocalData(8);
+            apRefObject->GetLocalData(8);
         else
-            apRef->ClearActionFlag(8);
-        bool bIsOpen = apRef->GetActionFlag(8);
-        SDO_GetExtraList(apRef)->FUN_00422aa0_lock();
-        SDO_GetExtraList(apRef)->FUN_00422920_unlock();
+            apRefObject->ClearActionFlag(8);
+        bool bIsOpen = apRefObject->GetActionFlag(8);
+        SDO_GetExtraList(apRefObject)->FUN_00422aa0_lock();
+        SDO_GetExtraList(apRefObject)->FUN_00422920_unlock();
         if (bWasOpen3 != bIsOpen)
         {
-            if (g_pSDOSaveLoadGame->IsFormCreated(apRef, 0x400000))
-                apRef->SetChanged(0x400000);
+            if (g_pSDOSaveLoadGame->IsFormCreated(apRefObject, 0x400000))
+                apRefObject->SetChanged(0x400000);
             else
-                apRef->ClearChanged(0x400000);
+                apRefObject->ClearChanged(0x400000);
         }
-        SDO_OpenCloseForm::SetOpenState(apRef, bIsOpen, true);
+        SDO_OpenCloseForm::SetOpenState(apRefObject, bIsOpen, true);
     }
     if (g_bDebugLog)
         DebugLog("SetDefaultOpen >> %0.2f", iOpen2);
@@ -33098,11 +34525,14 @@ struct CommandReference {
     virtual void slot114();
     virtual void slot115();
     virtual void* GetSceneNode();
-    CommandExtraData* FUN_00527080(unsigned int type);
+    CommandExtraData* FUN_00527080(unsigned int aType);
     CommandAttachResult* BSFile_GetDevice(CommandExtraData* data);
 };
 // @fnv 0x005cf680
 // src: EXE 0x005cf680
+// pdb: Script::SetSecuritronExpression | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pSecuritron, Personality, ptarget, Mood, pMesh, pFaceExtra
 bool Cmd_SetSecuritronExpression_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* reference, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& offset) {
     CommandReference* target = 0;
     char firstPath2[512];
@@ -33136,6 +34566,9 @@ bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int 
 
 // @fnv 0x005cfc50
 // src: EXE 0x005cfc50
+// pdb: Script::AutoDisplayObjectives | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: objFlags
 bool __cdecl Cmd_AutoDisplayObjectives_Execute(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
     if (DAT_011dea3c != 0)
@@ -33157,6 +34590,9 @@ typedef void (__thiscall* ApplyActorValues)(ScriptActorPackageActions*, ScriptAc
 bool __cdecl Script_ParseParameters(const ScriptParameter*, const char*, unsigned int&, ScriptActorPackageActions*, TESObjectREFR*, Script*, ScriptLocals*, ScriptActorPackageActions**);
 // @fnv 0x005cfdf0
 // src: EXE 0x005cfdf0
+// pdb: Script::StartSandmanFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, pact
 bool __cdecl Cmd_StartMisterSandMan_Execute(const ScriptParameter* parameters, const char* script,
     ScriptActorPackageActions* target, TESObjectREFR* container, Script* scriptObject,
     ScriptLocals* locals, double& result, unsigned int& offset) {
@@ -33266,14 +34702,17 @@ struct ShaderEffectQueue { void ProcessLists_AddTempEffect(ShaderEffect*); };
 bool __cdecl Script_ParseParameters(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, TESForm**, float*);
 
 // @fnv 0x005d1b80
-// src: EXE 0x005d1b80
-bool __cdecl Cmd_PlayMagicShaderVisuals_Execute(const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* reference, TESObjectREFR* container, Script* script, ScriptLocals* locals,
-    double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d1b80
+// pdb: Script::PlayMagicShader | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell, ftime, tempMemContext, pshader, peffect
+bool __cdecl Script_PlayMagicShader(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* reference, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals,
+    double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* effect = 0;
     float context = -1.0f;
-    if (!Script_ParseParameters(parameters, scriptData, &opcodeOffset, reference, container, script, locals, &effect, &context))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, &auiOffset, reference, apContainer, apScript, apScriptLocals, &effect, &context))
         return false;
     if (!reference)
         reference = _g_thePlayer;
@@ -33525,12 +34964,15 @@ float NiCos(float);
 float NiSin_005c53d0(float);
 EffectInstance* BSTempEffectParticle_Spawn(TESObjectCELL*,float,void*,EffectVector,EffectVector,float,int,int);
 // @fnv 0x005d1dc0
-// src: EXE 0x005d1dc0
-bool Cmd_PlayMagicEffectVisuals_Execute(const ScriptParameter* parameters, const char* scriptData, EffectReference* reference, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d1dc0
+// pdb: Script::PlayMagicEffect | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell, ftime, peffect, peffectSetting, rotation, location, direction
+bool Script_PlayMagicEffect(const ScriptParameter* apParameters, const char* apCompiledParams, EffectReference* reference, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
  EffectDefinition* applied = 0;
  float duration = -1.0f;
- if (!Script_ParseParameters(parameters,scriptData,&opcodeOffset,reference,container,script,locals,&applied,&duration))
+ if (!Script_ParseParameters(apParameters,apCompiledParams,&auiOffset,reference,apContainer,apScript,apScriptLocals,&applied,&duration))
   return false;
  if (!reference) reference = (EffectReference*)_g_thePlayer;
  TESObjectCELL* cell = reference->FUN_008d6f30();
@@ -33570,30 +35012,36 @@ bool Cmd_PlayMagicEffectVisuals_Execute(const ScriptParameter* parameters, const
 void __cdecl FUN_004d5e10(TESForm* apTarget, TESForm* apSource);
 
 // @fnv 0x005d2520
-// src: EXE 0x005d2520
-bool __cdecl Cmd_ModPCMiscStat_Execute(const ScriptParameter* apParams, const char* apScriptData, TESObjectREFR* apThisObj,
-    TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apLocals, double* apResult, unsigned int* apOpcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d2520
+// pdb: Script::ModPCMiscStat | TESScriptFunctions.obj | retail, object-file gap fill, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: eid, iamount
+bool __cdecl Script_ModPCMiscStat(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject,
+    TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     TESForm* pTarget = 0;
     TESForm* pSource = 0;
-    if (!ExtractArgs(apParams, apScriptData, apOpcodeOffset, apThisObj, apContainer, apScript, apLocals, &pTarget, &pSource))
+    if (!ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pTarget, &pSource))
         return false;
     FUN_004d5e10(pTarget, pSource);
     return true;
 }
 
-bool __cdecl Cmd_IsRidingHorse_Eval(TESObjectREFR* apRef, int aiUnk1, int aiUnk2, double* apResult);
+bool __cdecl Script_IsActorRidingHorseConditionFunction(TESObjectREFR* apRef, int aiUnk1, int aiUnk2, double* apResult);
 
 // Script command: Is actor riding horse.
 // @fnv 0x005d28b0
-// src: EXE 0x005d28b0
-bool __cdecl Cmd_IsRidingHorse_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apThisObject,
-                          TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apLocals, double* apResult,
-                          unsigned int* apOffset)
+// src: XBOX_RETAIL_PDB 0x005d28b0
+// pdb: Script::IsActorRidingHorseFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bretval
+bool __cdecl Script_IsActorRidingHorseFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject,
+                          TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue,
+                          unsigned int* auiOffset)
 {
-    bool bResult = Cmd_IsRidingHorse_Eval(apThisObject, 0, 0, apResult);
+    bool bResult = Script_IsActorRidingHorseConditionFunction(apRefObject, 0, 0, afReturnValue);
     if (tlsData.bConsoleEcho)
-        static_cast<void (__cdecl*)(const char*, ...)>(Interface_PrintLine)("Is actor riding horse >> %0.2f", *apResult);
+        static_cast<void (__cdecl*)(const char*, ...)>(Interface_PrintLine)("Is actor riding horse >> %0.2f", *afReturnValue);
     return bResult;
 }
 
@@ -33605,6 +35053,9 @@ extern __declspec(thread) unsigned char g_debugLoggingFlag;
 
 // @fnv 0x005d2910
 // src: XBOX_PDB 0x005d2910
+// pdb: Script::IsPlayersLastRiddenHorseFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bretval
 extern "C" bool __cdecl Script_IsPlayersLastRiddenHorseFunction(void* first, void* second, void* condition, void* fourth, void* fifth, void* sixth, double* result)
 {
     bool success = Cmd_Shared_Eval_5a2a50(condition, 0, 0, result);
@@ -33752,20 +35203,23 @@ extern "C" __declspec(dllimport) int __stdcall QueryPerformanceCounter(long long
 extern "C" __declspec(dllimport) int __stdcall QueryPerformanceFrequency(long long*);
 
 // @fnv 0x005d2a80
-// src: EXE 0x005d2a80
-bool __cdecl Cmd_ModWaterShader_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005d2a80
+// pdb: Script::ModifyWaterShader | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: input, value, pkWaterProp, pobj, pprop, Ticks, End, TicksPerSecond, pcmsg, Start, fTicksPerMicrosecond
+bool __cdecl Script_ModifyWaterShader(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     extern void __cdecl Interface_PrintLine(const char*, ...);
     WaterObj* p;
     float value = 0.0f;
     char buf[512];
-    if (!Script_ParseParameters(parameters, scriptData, &opcodeOffset, thisObject, container, script, locals, buf, &value)) {
+    if (!Script_ParseParameters(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, buf, &value)) {
         Interface_PrintLine("reflectamt, fresnel, opacity, speed, noise, reflect, refract, lod");
         return false;
     }
     p = 0;
-    if (thisObject) {
-        ObjB* water = ((Host5d*)DAT_011dea10)->DetailedActorPathHandler_GetCurrentNodeIndex(thisObject)->TESWaterSystem_GetWaterGeometry();
+    if (apRefObject) {
+        ObjB* water = ((Host5d*)DAT_011dea10)->DetailedActorPathHandler_GetCurrentNodeIndex(apRefObject)->TESWaterSystem_GetWaterGeometry();
         WaterObj* waterNode = water->FUN_00a59d30(3);
         p = waterNode;
     }
@@ -33988,14 +35442,17 @@ namespace fnv_005d35d0 {
 extern NiColorA DAT_011ff3b8;
 
 // @fnv 0x005d35d0
-// src: EXE 0x005d35d0
-bool Cmd_WaterShallowColor_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj,
-                  TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result,
-                  unsigned int& opcodeOffsetPtr) {
+// src: XBOX_RETAIL_PDB 0x005d35d0
+// pdb: Script::ModifyWaterShaderShallowColor | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: r, g, b, pkWaterProp, pnode, pobj, pprop
+bool Script_ModifyWaterShaderShallowColor(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj,
+                  TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue,
+                  unsigned int& auiOffset) {
     int iRed;
     int iG;
     int iB;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &iRed, &iG, &iB))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &iRed, &iG, &iB))
         return false;
     NiProperty* pMaterial = 0;
     if (thisObj) {
@@ -34021,8 +35478,11 @@ struct FUN_005d4190_helper {
 };
 
 // @fnv 0x005d4190
-// src: EXE 0x005d4190
-bool __cdecl Cmd_RunCellTest_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+// src: XBOX_RETAIL_PDB 0x005d4190
+// pdb: Script::RunCellTest | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ioptions
+bool __cdecl Script_RunCellTest(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     unsigned int uiForm = 0;
     if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &uiForm)) {
         return false;
@@ -34051,7 +35511,10 @@ struct DH {
 
 // @fnv 0x005d4280
 // src: XBOX_PDB 0x005d4280
-bool Script_CompleteAllQuestStages(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double* result, unsigned int* opcodeOffset)
+// pdb: Script::CompleteAllQuestStages | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: plist, bwason, pobjlist, pstagelist, pquest, pstage, pobj
+bool Script_CompleteAllQuestStages(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     bool bProcess_ = FUN_005ac740::IsConsolePlatform();
     Script_SetProcessScripts(false);
@@ -34075,7 +35538,7 @@ bool Script_CompleteAllQuestStages(const ScriptParameter* paramInfo, const char*
     }
     Script_SetProcessScripts(bProcess_);
     if (DAT_tls_0268) {
-        DebugLog("All Quest Stages Completed.", *result);
+        DebugLog("All Quest Stages Completed.", *afReturnValue);
     }
     return true;
 }
@@ -34084,17 +35547,19 @@ namespace s5d4a50 {
 
 extern __declspec(thread) bool tls_bEchoConsole;
 
-void FUN_005a3980(void* pvRef, int iArg0, int iArg1, double* pdResult);
+void Script_IsEssentialConditionFunction(void* pvRef, int apParam1, int apParam2, double* afReturnValue);
 void Interface_PrintLine(const char* pcFormat, ...);
 
 static const char s_szIsEssentialFormat[] = "IsEssential >> %0.2f";
 
 // @fnv 0x005d4a50
 // src: XBOX_PDB 0x005d4a50
+// pdb: Script::IsEssentialFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_IsEssentialFunction(void* pvParamInfo, void* pvScriptData, void* pvThisObj, void* pvContainingObj,
                   void* pvScript, void* pvEventList, double* pdResult)
 {
-    FUN_005a3980(pvThisObj, 0, 0, pdResult);
+    Script_IsEssentialConditionFunction(pvThisObj, 0, 0, pdResult);
     if (tls_bEchoConsole)
         Interface_PrintLine(s_szIsEssentialFormat, *pdResult);
     return true;
@@ -34108,6 +35573,8 @@ void _DebugLog(const char* apFormat, ...);
 bool Script_GetTimeDeadConditionFunction(TESObjectREFR*, void*, void*, double&);
 // @fnv 0x005d4b40
 // src: XBOX_PDB 0x005d4b40
+// pdb: Script::GetTimeDeadFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_GetTimeDeadFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     Script_GetTimeDeadConditionFunction(apRefObject, 0, 0, afReturnValue);
@@ -34438,6 +35905,9 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 
 // @fnv 0x005d4d90
 // src: XBOX_PDB 0x005d4d90
+// pdb: Script::AddPerkFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pperk, bAlt, iVal, pactor, ccurrentRank
 bool Script_AddPerkFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     PerkStub* pkPerk = 0;
@@ -34472,6 +35942,9 @@ bool Script_HasPerkConditionFunction(void* pvThisObj, int iTmpB, int iTmpA, doub
 
 // @fnv 0x005d4fa0
 // src: EXE 0x005d4fa0
+// pdb: Script::HasPerkFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pperk, iVal, bAlt
 bool Cmd_HasPerk_Execute(void* pvParamInfo, void* pvScriptData, void* pvThisObj, void* pvContainingObj, void* pvScript,
                   void* pvEventList, double* pdResult, unsigned int* puiOpcodeOffset)
 {
@@ -34488,16 +35961,18 @@ bool Cmd_HasPerk_Execute(void* pvParamInfo, void* pvScriptData, void* pvThisObj,
 
 }
 
-void __cdecl Script_GetLastHitCriticalConditionFunction(TESObjectREFR* pkRef, int iUnused0, int iUnused1, double& rfResult);
+void __cdecl Script_GetLastHitCriticalConditionFunction(TESObjectREFR* pkRef, int apParam1, int apParam2, double& afReturnValue);
 
 // @fnv 0x005d5680
 // src: XBOX_PDB 0x005d5680
-bool __cdecl Script_GetLastHitCriticalFunction(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj,
-    TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// pdb: Script::GetLastHitCriticalFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_GetLastHitCriticalFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj,
+    TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
-    Script_GetLastHitCriticalConditionFunction(thisObj, 0, 0, result);
+    Script_GetLastHitCriticalConditionFunction(thisObj, 0, 0, afReturnValue);
     if (tlsData.bConsoleEcho)
-        DebugLog("GetLastHitCritical >> %0.2f", result);
+        DebugLog("GetLastHitCritical >> %0.2f", afReturnValue);
     return true;
 }
 
@@ -34669,8 +36144,11 @@ void __cdecl Interface_PrintLine(const char* format, ...);
 void __cdecl Interface_PrintLine(const char* format, double val);
 
 // @fnv 0x005d5850
-// src: EXE 0x005d5850
-bool __cdecl Cmd_ToggleCombatDebug_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005d5850
+// pdb: Script::ToggleCombatDebugFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pdebug, boff
+bool __cdecl Script_ToggleCombatDebugFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 
 {
 
@@ -34931,7 +36409,7 @@ struct CombatStrategy {
 // Call surface of ActorCombatGroup; the shared header cannot be read in this unit (its own layout_support template copies).
 struct ActorCombatGroupApi {
     unsigned int CombatGroup_GetMemberCount();
-    void CombatGroup_ForceGroupStrategy(CombatStrategy* strategy);
+    void CombatGroup_ForceCombatGroupStrategy(CombatStrategy* apStrategy);
 };
 
 struct StrategyReference : ScriptActorPackageActions {
@@ -35063,17 +36541,20 @@ struct StrategyReference : ScriptActorPackageActions {
     virtual CombatController* GetCombatController();
 };
 void __cdecl ourStrcpy(char*, const char*);
-CombatStrategy* __cdecl CombatGroupStrategy_LookupByName(const char*);
+CombatStrategy* __cdecl CombatGroupStrategy_GetCombatGroupStrategyByName(const char*);
 
 // @fnv 0x005d67f0
-// src: EXE 0x005d67f0
-bool __cdecl Cmd_ForceGroupStrategy_Execute(const ScriptParameter* parameters, const char* compiled,
-    TESObjectREFR* reference, TESObjectREFR* container, Script* script,
-    ScriptLocals* locals, double& result, unsigned int& offset)
+// src: XBOX_RETAIL_PDB 0x005d67f0
+// pdb: Script::ForceCombatGroupStrategyFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pgroup, pcombatController, pactor, pstrategyName, pstrategy
+bool __cdecl Script_ForceCombatGroupStrategyFunction(const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* reference, TESObjectREFR* apContainer, Script* apScript,
+    ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     char strategyName[512];
     ourStrcpy(strategyName, "");
-    if (!ExtractArgs(parameters, compiled, &offset, reference, container, script, locals, strategyName))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, reference, apContainer, apScript, apScriptLocals, strategyName))
         return false;
     if (!static_cast<StrategyReference*>(reference)->IsActor()) {
         DebugLog("%s is not an actor", static_cast<StrategyReference*>(reference)->GetFormEditorIDLength()
@@ -35098,13 +36579,13 @@ bool __cdecl Cmd_ForceGroupStrategy_Execute(const ScriptParameter* parameters, c
         return true;
     }
     if (!strlen(strategyName)) {
-        group->CombatGroup_ForceGroupStrategy(0);
+        group->CombatGroup_ForceCombatGroupStrategy(0);
         if (tlsData.bConsoleEcho)
             DebugLog("Group strategy cleared");
     } else {
-        CombatStrategy* strategy = CombatGroupStrategy_LookupByName(strategyName);
+        CombatStrategy* strategy = CombatGroupStrategy_GetCombatGroupStrategyByName(strategyName);
         if (strategy) {
-            group->CombatGroup_ForceGroupStrategy(strategy);
+            group->CombatGroup_ForceCombatGroupStrategy(strategy);
             if (tlsData.bConsoleEcho)
                 DebugLog("Group strategy set to: %s", strategy->CombatGroupStrategy_GetName());
         } else if (tlsData.bConsoleEcho) {
@@ -35221,7 +36702,7 @@ struct InventoryDiagnosticList {
 struct InventoryDiagnosticEnchant {
     InventoryDiagnosticForm* FUN_00726070();
 };
-InventoryDiagnosticEnchant* FUN_00475020(InventoryDiagnosticForm*);
+InventoryDiagnosticEnchant* GetFormAsBipedModelList(InventoryDiagnosticForm*);
 const char* TESFullName_GetFullName(InventoryDiagnosticForm*);
 void Interface_PrintLine(const char*,...);
 extern const char DAT_0103cc6c[];
@@ -35236,7 +36717,10 @@ extern const char DAT_0103cbd4[];
 
 // @fnv 0x005d6d40
 // src: XBOX_PDB 0x005d6d40
-bool Script_ShowInventoryFunction(const ScriptParameter* parameters,const char* data,InventoryDiagnosticForm* reference,TESObjectREFR* container,Script* script,ScriptLocals* locals,double& result,unsigned int& offset) {
+// pdb: Script::ShowInventoryFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: icount, pactor, i, pitem, plist, pobj, pbgsList, pformList, pchild
+bool Script_ShowInventoryFunction(const ScriptParameter* apParameters,const char* apCompiledParams,InventoryDiagnosticForm* reference,TESObjectREFR* apContainer,Script* apScript,ScriptLocals* apScriptLocals,double& afReturnValue,unsigned int& auiOffset) {
     if(reference) {
         InventoryDiagnosticForm* actor_11=0;
         if(reference->IsActor()) actor_11=reference;
@@ -35258,7 +36742,7 @@ bool Script_ShowInventoryFunction(const ScriptParameter* parameters,const char* 
                         Interface_PrintLine(DAT_0103cbfc,entry->FUN_00726070(),form3->GetFormEditorIDLength()?form3->GetName():TESFullName_GetFullName(form3),form3->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),entry->ItemChange_GetWorn(0)?DAT_0103cc54:DAT_01011584);
                         break;
                     }
-                    InventoryDiagnosticEnchant* enchant=FUN_00475020(form3);
+                    InventoryDiagnosticEnchant* enchant=GetFormAsBipedModelList(form3);
                     if(enchant) {
                         InventoryDiagnosticForm* effect=enchant->FUN_00726070();
                         if(effect) {
@@ -35293,6 +36777,9 @@ void __cdecl D7150ShowReward(int iType, int iAmount, unsigned char ucFlag, unsig
 
 // @fnv 0x005d7150
 // src: EXE 0x005d7150
+// pdb: Script::ShowCharGenMenu | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: itraitPoints, itagSkillPoints, breturn, iattributePoints
 bool Cmd_Shared_Execute_5d7150(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     bool bResult = true;
@@ -35318,6 +36805,9 @@ bool __cdecl unkCb0(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int*
 
 // @fnv 0x005d7290
 // src: EXE 0x005d7290
+// pdb: Script::SetSPECIALPoints | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxPoints, breturn
 bool __cdecl Cmd_SetSPECIALPoints_Execute(int p1, int p2, int p3, int p4, int p5, int p6, int p7, int p8) {
     bool result = true;
     int out = 0;
@@ -35334,10 +36824,13 @@ extern bool DAT_011f9442;
 extern void Interface_PrintLine(const char*, ...);
 
 // @fnv 0x005d7610
-// src: EXE 0x005d7610
-bool Cmd_ToggleDebugDecal_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr) {
+// src: XBOX_RETAIL_PDB 0x005d7610
+// pdb: Script::ToggleDecalDebug | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iindex
+bool Script_ToggleDecalDebug(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     int val = -1;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, locals, &val)) {
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &val)) {
         return false;
     }
     if (val != -1) {
@@ -35487,8 +36980,11 @@ struct QuestView {
  virtual const char* vfn78();
  ObjectiveView* FUN_0060c8e0(unsigned int); bool FUN_0059e400(); unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0(); };
 // @fnv 0x005d7c20
-// src: EXE 0x005d7c20
-bool Cmd_SetObjectiveCompleted_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h) {
+// src: XBOX_RETAIL_PDB 0x005d7c20
+// pdb: Script::SetObjectiveCompletedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival, iindex, pquest, pobjective
+bool Script_SetObjectiveCompletedFunction(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& afReturnValue, unsigned int& h) {
  QuestView* index; unsigned int show; int quest;
  if (!ExtractArgs(a,b,&h,c,d,e,f,&index,&show,&quest)) return false;
  if (index) {
@@ -35515,13 +37011,16 @@ class Objective { public: bool FUN_005a5e70(); void FUN_005ec5d0(bool); };
 class QuestX { public: virtual void V0();virtual void V1();virtual void V2();virtual void V3();virtual void V4();virtual void V5();virtual void V6();virtual void V7();virtual void V8();virtual void V9();virtual void V10();virtual void V11();virtual void V12();virtual void V13();virtual void V14();virtual void V15();virtual void V16();virtual void V17();virtual void V18();virtual void V19();virtual void V20();virtual void V21();virtual void V22();virtual void V23();virtual void V24();virtual void V25();virtual void V26();virtual void V27();virtual void V28();virtual void V29();virtual void V30();virtual void V31();virtual void V32();virtual void V33();virtual void V34();virtual void V35();virtual void V36();virtual void V37();virtual void V38();virtual void V39();virtual void V40();virtual void V41();virtual void V42();virtual void V43();virtual void V44();virtual void V45();virtual void V46();virtual void V47();virtual void V48();virtual void V49();virtual void V50();virtual void V51();virtual void V52();virtual void V53();virtual void V54();virtual void V55();virtual void V56();virtual void V57();virtual void V58();virtual void V59();virtual void V60();virtual void V61();virtual void V62();virtual void V63();virtual void V64();virtual void V65();virtual void V66();virtual void V67();virtual void V68();virtual void V69();virtual void V70();virtual void V71();virtual void V72();virtual void V73();virtual void V74();virtual void V75();virtual void V76();virtual void V77(); virtual const char* GetName();
   Objective* FUN_0060c8e0(int); bool FUN_0059e400(); unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0(); };
 // @fnv 0x005d7d30
-// src: EXE 0x005d7d30
-bool Cmd_SetObjectiveDisplayed_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int* opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005d7d30
+// pdb: Script::SetObjectiveDisplayedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival, iindex, pquest, pobjective
+bool Script_SetObjectiveDisplayedFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int* auiOffset)
 {
     QuestX* pQuest;
     int iObjective;
     int iSet;
-    if (!Script_ParseParameters(paramInfo, scriptData, opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &pQuest, &iObjective, &iSet))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, thisObj, apContainer, apScript, apScriptLocals, &pQuest, &iObjective, &iSet))
         return false;
     if (pQuest) {
         Objective* pObj = pQuest->FUN_0060c8e0(iObjective);
@@ -35546,7 +37045,9 @@ extern "C" bool __cdecl FalloutRadio_GetBroadcastState(TESObjectREFR* ref);
 
 // @fnv 0x005d81b0
 // src: XBOX_PDB 0x005d81b0
-bool __cdecl Script_GetBroadcastState(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr)
+// pdb: Script::GetBroadcastState | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_GetBroadcastState(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     double value;
     if (FalloutRadio_GetBroadcastState(thisObj)) {
@@ -35554,18 +37055,21 @@ bool __cdecl Script_GetBroadcastState(const ScriptParameter* paramInfo, const ch
     } else {
         value = 0.0;
     }
-    result = value;
+    afReturnValue = value;
     if (bPrintConditionDebug) {
-        DebugLog("GetBroadcastState >> %0.2f", result);
+        DebugLog("GetBroadcastState >> %0.2f", afReturnValue);
     }
     return true;
 }
 
 bool __cdecl Script_ParseParameters(void* pArg1, void* pArg2, void* pArg8, void* pTarget, void* pArg4, void* pArg5, void* pArg6, int* piCount);
-void __cdecl FalloutRadio_SetBroadcastState(void* pTarget, bool bAny);
+void __cdecl FalloutRadio_SetBroadcastState(void* apTargetStation, bool abEnabled);
 
 // @fnv 0x005d8220
 // src: EXE 0x005d8220
+// pdb: Script::SetBroadcastState | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: istate
 bool __cdecl Cmd_SetBroadcastState_Execute(void* pArg1, void* pArg2, void* pTarget, void* pArg4, void* pArg5, void* pArg6, void* pUnused, void* pArg8)
 {
     int iCount = 0;
@@ -35955,7 +37459,7 @@ bool Cmd_ExitGame_Execute()
 
 
 struct ScriptReferenceActivationActions : TESObjectREFR {
-    void ActivateForm(TESForm* form);  // 0x572e10
+    void ActivateForm(TESForm* apRefIn);  // 0x572e10
 };
 
 struct ActivateTls_5d8cf0
@@ -36022,7 +37526,7 @@ struct AddItemReference : TESObjectREFR {
 
 
 struct AddItemLeveledList {
-    void FUN_00487f70(unsigned short, unsigned short, TESContainer*, bool);
+    void CalculateCurrentFormList(unsigned short, unsigned short, TESContainer*, bool);
 };
 struct AddItemLeveledForm : TESForm {
 
@@ -36083,7 +37587,7 @@ bool __cdecl Cmd_AddItemHealthPercent_Execute(const ScriptParameter* parameters,
             break;
         }
         if (leveled) {
-            leveled->leveledList.FUN_00487f70((unsigned short)level, (unsigned short)count, &items, false);
+            leveled->leveledList.CalculateCurrentFormList((unsigned short)level, (unsigned short)count, &items, false);
         } else if (list && count) {
             BSSimpleList<TESForm*>* node = reinterpret_cast<BSSimpleList<TESForm*>*>(list->GetList());
             while (node && !node->IsEmpty()) {
@@ -36119,17 +37623,20 @@ class ScriptParameter;
 class D92E0Form;
 
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, ...);
-bool __cdecl D92E0Evaluate(TESObjectREFR* pkRef, D92E0Form* pkForm, void* pvUnused, double& rdResult);
+bool __cdecl Script_IsLastPlayedIdleConditionFunction(TESObjectREFR* pkRef, D92E0Form* apParam1, void* apParam2, double& afReturnValue);
 
 // @fnv 0x005d92e0
 // src: EXE 0x005d92e0
+// pdb: Script::IsLastPlayedIdleFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pidle
 bool Cmd_IsLastIdlePlayed_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     D92E0Form* pkForm = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pkForm))
         return false;
     if (apRefObject && pkForm)
-        return D92E0Evaluate(apRefObject, pkForm, 0, afReturnValue);
+        return Script_IsLastPlayedIdleConditionFunction(apRefObject, pkForm, 0, afReturnValue);
     return true;
 }
 
@@ -36143,8 +37650,11 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 bool __cdecl D97B0Evaluate(TESObjectREFR* pkRef, D97B0Form* pkForm, void* pvUnused, double& rdResult);
 
 // @fnv 0x005d97b0
-// src: EXE 0x005d97b0
-bool Cmd_IsPlayerGrabbedRef_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005d97b0
+// pdb: Script::IsPlayerGrabbedRefFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pref
+bool Script_IsPlayerGrabbedRefFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     D97B0Form* pkForm = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pkForm))
@@ -36185,24 +37695,27 @@ struct FaceGenArray
 
 
 
-void __cdecl TESNPC_FillCharGenPresetList(void* race, int sex, FaceGenArray* outArr);
+void __cdecl TESNPC_FillCharGenPresetList(void* apRace, int aeSex, FaceGenArray* apOutList);
 void __cdecl BSFaceGenManager_OffsetFaceGenCoord(void* p1, void* p2, void* p3, int p4);
 float __cdecl BSFaceGenManager_GetFaceCoordAttribute(void* p1, int p2, int p3);
-void __cdecl FUN_006521f0(void* p1);
-void __cdecl BSFaceGenManager_ScaleFaceCoord(float p1, void* p2, int p3);
-void __cdecl BSFaceGenManager_MergeFaceGenCoord(void* p1, void* p2, void* p3, int p4, float p5);
+void __cdecl FUN_006521f0(void* apCoord);
+void __cdecl BSFaceGenManager_ScaleFaceCoord(float afScaleAmount, void* apCoordToScale, int abNoTextureScale);
+void __cdecl BSFaceGenManager_MergeFaceGenCoord(void* apCopyFromCoord1, void* apCopyFromCoord2, void* apCopyToCoord, int abNoTextureMerge, float afClampVal);
 void __cdecl BSFaceGenManager_SetFaceCoordAttribute(void* p1, int p2, int p3, float p4);
 void __cdecl BSFaceGenManager_CopyFaceGenCoord(void* p1, void* p2, int p3, int p4);
 
 // @fnv 0x005d9bc0
 // src: COMMUNITY 0x005d9bc0
-void __cdecl Script_MatchFaceGeometryBase(TESObjectREFR* apTarget, TESObjectREFR* apSource, int aiPercent)
+// pdb: Script::MatchFaceGeometryBase | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRef, apMatchActor, aiValue
+// pdb locals: blendedcoord, xPresetHeads, pnpcToChange, chargenoffset, pnpcToMatch, coordToMatch, ppresetNPC, pcoord, coordToChange, fvalOldGeo, fval, presetOffsetCoord, pactor
+void __cdecl Script_MatchFaceGeometryBase(TESObjectREFR* apTarget, TESObjectREFR* apMatchActor, int aiValue)
 {
-    if (!apTarget || !apSource)
+    if (!apTarget || !apMatchActor)
         return;
 
-    float fPercentB = (float)((double)aiPercent / 100.0);
-    TESNPC* pSourceNPCC = dynamic_cast<TESNPC*>(apSource->GetObjectReference());
+    float fPercentB = (float)((double)aiValue / 100.0);
+    TESNPC* pSourceNPCC = dynamic_cast<TESNPC*>(apMatchActor->GetObjectReference());
     TESNPC* pTargetNPC_ = dynamic_cast<TESNPC*>(apTarget->GetObjectReference());
     FUN_00449610 arr1_[4];
     FUN_00449610 arr2_[4];
@@ -36246,10 +37759,13 @@ void __cdecl Script_MatchFaceGeometryBase(TESObjectREFR* apTarget, TESObjectREFR
 }
 
 bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int* a8);
-bool __cdecl Script_GetIsUsedItemEquipTypeConditionFunction(int a1, int a2, int a3, int a4);
+bool __cdecl Script_GetIsUsedItemEquipTypeConditionFunction(int a1, int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005da060
 // src: EXE 0x005da060
+// pdb: Script::GetIsUsedItemEquipTypeFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: etype
 bool __cdecl Cmd_GetIsUsedItemEquipType_Execute(int p1, int p2, int p3, int p4, int p5, int p6, int p7, int p8)
 {
     int tmp = -1;
@@ -36547,13 +38063,16 @@ struct DialogueActor : FUN_005d9550_cls {
     TESForm* TESObjectREFR_GetOwner();
 };
 struct DialogueActorLookup {
-    DialogueActor* ProcessLists_GetActorRefInHigh_00970b30(TESForm*, int, int);
+    DialogueActor* ProcessLists_GetActorRefInHigh(TESForm*, int, int);
     DialogueActor* ProcessLists_GetActorRefInHigh(TESForm*, int);
 };
 bool __cdecl Script_ParseParameters(const ScriptParameter*, const char*, unsigned int*, DialogueActor*, TESObjectREFR*, Script*, ScriptLocals*, DialogueActor**, TESForm**);
 
 // @fnv 0x005da2a0
 // src: EXE 0x005da2a0
+// pdb: Script::SendAssaultAlarmFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfaction, pActorRef, pactor, pSender, pact, pform, pnpc
 bool __cdecl Cmd_SendAssaultAlarm_Execute(const ScriptParameter* parameters, const char* scriptData,
     DialogueActor* thisObject, TESObjectREFR* container, Script* script,
     ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
@@ -36572,7 +38091,7 @@ bool __cdecl Cmd_SendAssaultAlarm_Execute(const ScriptParameter* parameters, con
             inputActor->Actor_AttackAlarm(_g_thePlayer, 0, 1);
             inputActor->FUN_008d8520()->SetDialogueActor(inputActor, _g_thePlayer, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
         } else if (actor) {
-            inputActor = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh_00970b30(actor, 1, 1);
+            inputActor = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh(actor, 1, 1);
             if (inputActor) {
                 if (inputActor->IsOwnedReference()) {
                     if (inputActor->TESObjectREFR_GetOwner()) {
@@ -36580,7 +38099,7 @@ bool __cdecl Cmd_SendAssaultAlarm_Execute(const ScriptParameter* parameters, con
                         TESForm* resolvedActor = inputActor->TESObjectREFR_GetOwner();
                         if (resolvedActor->GetFormType() == 8) {
                             TESForm* ownerActor = resolvedActor;
-                            owner = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh_00970b30(ownerActor, 0, 1);
+                            owner = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh(ownerActor, 0, 1);
                         } else {
                             TESForm* ownerFaction = resolvedActor;
                             owner = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh(ownerFaction, 0);
@@ -36667,6 +38186,9 @@ struct ScriptActorV
 
 // @fnv 0x005da690
 // src: EXE 0x005da690
+// pdb: Script::AgeRaceFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: isteps, pnpc, prace, pnewrace, pactor
 bool __cdecl Cmd_AgeRace_Execute(const ScriptParameter* apParams, const char* apData, TESObjectREFR* apThis, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apLocals, double& afResult, unsigned int& auiOffset)
 {
     int iSteps;
@@ -36708,7 +38230,7 @@ bool __cdecl Cmd_AgeRace_Execute(const ScriptParameter* apParams, const char* ap
     return true;
 }
 
-struct FUN_00969820_Obj { void PlayerCharacter_SetPCYoung(bool bValue); };
+struct FUN_00969820_Obj { void PlayerCharacter_SetPCYoung(bool abVal); };
 bool __cdecl Script_ParseParameters(int, int, int, int, int, int, int, int*);
 // @fnv 0x005da980
 // src: EXE 0x005da980
@@ -37197,7 +38719,7 @@ struct HealthEntry5da
     float ItemChange_GetItemHealth(bool bPercent);
     TESForm* FUN_0044ddc0();
     HealthItemList5da* Modelloader_GetReferencedThis();
-    void ItemChange_SetItemHealth(float fHealthPercent, int iExtra, bool bUpdate);
+    void ItemChange_SetItemHealth(float afHealth, int pchange, bool apextra);
 };
 
 struct HealthProcess5da
@@ -37328,7 +38850,7 @@ bool Script_ParseParameters(int a0, int a1, int a2, int a3, int a4, int a5, int 
 
 // The shared ragdoll layout lacks only this nonvirtual script control entry.
 struct ScriptRagdollControls : public bhkRagdollController {
-    void SetFlags(bool a, bool b, bool c);
+    void bhkRagdollController_UpdateDebugSkeleton(bool a, bool b, bool c);
 };
 
 
@@ -37353,7 +38875,7 @@ bool __cdecl Cmd_DrawSkeleton_Execute(int paramInfo, int scriptData, TESObjectRE
                 ((ScriptActorActions*)actor)->FUN_008bd630(obj, DAT_01016248);
             else
                 ((ScriptActorActions*)actor)->FUN_008bd630(obj, 1.0f);
-            ((ScriptRagdollControls*)actor->m_pRagdollController)->SetFlags(bB, bC, bA);
+            ((ScriptRagdollControls*)actor->m_pRagdollController)->bhkRagdollController_UpdateDebugSkeleton(bB, bC, bA);
         }
     }
     return true;
@@ -37389,6 +38911,9 @@ extern "C" bool __cdecl Script_ParseParameters(const ScriptParameter* parameters
 
 // @fnv 0x005dc6a0
 // src: EXE 0x005dc6a0
+// pdb: Script::SetPCCanUsePowerArmorFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iflag, bpower
 bool Cmd_SetPCCanUsePowerArmor_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals,
@@ -37418,9 +38943,12 @@ extern const char DAT_0103d08c[],DAT_0103d088[],DAT_0103d07c[],DAT_01012630[],DA
 extern int __cdecl BSsprintf(char*,unsigned int,const char*,...);
 // @fnv 0x005dc730
 // src: XBOX_PDB 0x005dc730
-bool __cdecl Script_ShowQuestStagesFunction(int p0,int p1,int p2,int p3,int p4,int p5,int p6,int p7) {
+// pdb: Script::ShowQuestStagesFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: buf, pquest, line, plist, pstage, pilist, pitem
+bool __cdecl Script_ShowQuestStagesFunction(int apParameters,int apCompiledParams,int apRefObject,int apContainer,int apScript,int apScriptLocals,int afReturnValue,int auiOffset) {
  int found=0;
- if(!Script_ParseParameters(p0,p1,p7,p2,p3,p4,p5,&found))return false;
+ if(!Script_ParseParameters(apParameters,apCompiledParams,auiOffset,apRefObject,apContainer,apScript,apScriptLocals,&found))return false;
  BSStringT<char> line5;
  char buffer2[32];
  if(g_threadFlags.bLogScripts) {
@@ -37502,13 +39030,13 @@ struct xProc {
 };
 
 struct xRace {
-    void ApplyFaceGen(xNpc* pkNpc, xFaceGenData* pkData, int m_eSex, bool bArg);
+    void TESRace_GetFaceGenData(xNpc* apNPC, xFaceGenData* arNpcData, int aeSex, bool abNoModTextures);
 };
 
 struct xNpc {
     void ResetFace();
-    void GetHeadParts(int* a, int* b);
-    void SetHeadParts(xRef* pkRef, int iSex);
+    void InitHead(int* a, int* b);
+    void AttachHead(xRef* apRef, int apBipedAnim);
     xRace* GetRace();
 };
 
@@ -37528,7 +39056,7 @@ struct xFace {
     virtual void SetModifiers(float* afValues, float afBlendWeight);
     virtual void v0f4(); virtual void v0f8(); virtual void v0fc(); virtual void v100(); virtual void v104(); virtual void v108(); virtual void v10c(); virtual void v110();
     virtual void SetExpression(int iIndex, float fValue);
-    float GetModifierValue(int iIndex);
+    float GetModifierValue(int aeModifier);
 };
 
 struct xRef {
@@ -37649,24 +39177,27 @@ const char* __cdecl xExpressionName(int i);
 int xModifierName(int i);
 int __cdecl xPhonemeName(int i);
 void xSetFaceGenFlag(unsigned char c);
-void xAttachDays(xProc* p, int iSeq);
+void xAttachDays(xProc* apObj3D, int apPalette);
 extern int xg_iCoordValue;
 
 // @fnv 0x005dc9a0
 // src: XBOX_PDB 0x005dc9a0
-bool Script_ModifyFaceGen(const void* pParams, const char* pData, xRef* pThis, xRef* pContainer, void* pScript, void* pLocals, double* pResult, unsigned int* pOffset)
+// pdb: Script::ModifyFaceGen | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: input, type, value, panimdata, buf, scomp, iexp, ip, pphons, im, pmods, pfacenode, pactor, npcData, UpdateData, pnpc, pbip, proot, pobj, pskin, premove, ppal, ptmpPal
+bool Script_ModifyFaceGen(const void* apParameters, const char* apCompiledParams, xRef* apRefObject, xRef* apContainer, void* apScript, void* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     char acMode[512];
     acMode[0] = 0;
     FUN_00ec61c0(&acMode[1], 0, 0x1ff);
     int iIndex = -1;
     int iValue = 0;
-    if (!xExtractArgs(pParams, pData, pOffset, pThis, pContainer, pScript, pLocals, acMode, &iIndex, &iValue))
+    if (!xExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, acMode, &iIndex, &iValue))
         return false;
     if (!acMode[0]) {
         xDebugLog("expression");
     } else {
-        xFace* pkFace = pThis ? pThis->GetFace(0) : 0;
+        xFace* pkFace = apRefObject ? apRefObject->GetFace(0) : 0;
         if (pkFace) {
             if (!xStricmp(acMode, "expression")) {
                 if (iIndex == -1) {
@@ -37733,7 +39264,7 @@ bool Script_ModifyFaceGen(const void* pParams, const char* pData, xRef* pThis, x
             } else if (!xStricmp(acMode, "coord")) {
                 switch (iIndex) {
                 case -1: {
-                    xRef* pkRef = pThis;
+                    xRef* pkRef = apRefObject;
                     xProc* pkProc = pkRef->GetProc(0);
                     pkProc->pOwner = pkRef;
                     pkProc->bFlag = false;
@@ -37742,8 +39273,8 @@ bool Script_ModifyFaceGen(const void* pParams, const char* pData, xRef* pThis, x
                     break;
                 }
                 case 0: {
-                    if (pThis && pThis->IsActor()) {
-                        xRef* qsSDDgz = pThis;
+                    if (apRefObject && apRefObject->IsActor()) {
+                        xRef* qsSDDgz = apRefObject;
                         xNpc* qdqWL = qsSDDgz->GetBase();
                         xNode* qrEZrs = qsSDDgz->Get3D();
                         void* qpqRa = qrEZrs ? qrEZrs->GetRoot() : 0;
@@ -37770,17 +39301,17 @@ bool Script_ModifyFaceGen(const void* pParams, const char* pData, xRef* pThis, x
                         qdqWL->ResetFace();
                         int qfTOqo = 0;
                         int qSVM = qfTOqo;
-                        qdqWL->GetHeadParts(&qSVM, &qfTOqo);
-                        qdqWL->SetHeadParts(qsSDDgz, qsSDDgz->GetSex(qSVM, qfTOqo));
+                        qdqWL->InitHead(&qSVM, &qfTOqo);
+                        qdqWL->AttachHead(qsSDDgz, qsSDDgz->GetSex(qSVM, qfTOqo));
                         xFaceGenData qvyWyw;
-                        qdqWL->GetRace()->ApplyFaceGen(qdqWL, &qvyWyw, 0, 0);
+                        qdqWL->GetRace()->TESRace_GetFaceGenData(qdqWL, &qvyWyw, 0, 0);
                         xUpdateData qpTd(0.0f, 0, 0);
                         qrEZrs->Update(qpTd);
                     }
                     break;
                 }
                 case 1: {
-                    xRef* pkRef = pThis;
+                    xRef* pkRef = apRefObject;
                     xProc* pkProc = pkRef->GetProc(0);
                     pkProc->pOwner = pkRef;
                     pkProc->bFlag = true;
@@ -37816,6 +39347,7 @@ struct FUN_005dd6f0 {
     ~FUN_005dd6f0();
 };
 // @fnv 0x005dd6f0
+// pdb: FaceGenNpcData::~FaceGenNpcData | TESScriptFunctions.obj | debug, call graph, high
 FUN_005dd6f0::~FUN_005dd6f0() { mE4.RemoveAll(); }
 
 class Form5DD {
@@ -37828,6 +39360,10 @@ bool __cdecl ExtractArgs5DD(void* pvParams, void* pvScriptData, void* pvOffset, 
 
 // @fnv 0x005ddbb0
 // src: EXE 0x005ddbb0
+// pdb: Script::GetReputationPctFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::GetReputationFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iPosNeg, pRep
 bool __cdecl Cmd_GetReputation_Execute(void* pvParams, void* pvScriptData, void* pvThisObj, void* pvContainer, void* pvScript,
     void* pvEventList, double* pdResult, void* pvOffset)
 {
@@ -38011,6 +39547,10 @@ public:
 
 // @fnv 0x005ddf90
 // src: EXE 0x005ddf90
+// pdb: Script::SetMPSParticleMax | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::DetonatePlacedExplosivesFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxParticles
 bool Cmd_DetonatePlacedExplosives_Execute(int a0, int a1, RefLike* param) {
     if (param != 0) {
         ProcMgr* mgr = ((ProcHolder*)&DAT_011e0e80)->Get();
@@ -38134,7 +39674,7 @@ bool Cmd_SetCasinoWinningsLevel_Execute(const ScriptParameter* paramInfo, const 
 
 namespace fnv_005dee30 {
 void __cdecl Script_ParseParameters(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void** out);
-void __cdecl TESChallengeManager_UnlockChallenge(void* p);
+void __cdecl TESChallengeManager_UnlockChallenge(void* pChallenge);
 // @fnv 0x005dee30
 // src: EXE 0x005dee30
 bool __cdecl Cmd_UnlockChallenge_Execute(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8)
@@ -38179,6 +39719,8 @@ unsigned char FUN_00705ea0();
 
 // @fnv 0x005dfc10
 // src: EXE 0x005dfc10
+// pdb: NiTArray<TESModel *,NiTMallocInterface<TESModel *> >::`scalar deleting destructor' | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: this
 bool Cmd_IsLoadingMenuEnabled_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffsetPtr) {
     result = (FUN_00705ea0() != 0);
     if (tls_bEchoConsole) {
@@ -38309,12 +39851,13 @@ struct AX {
 
 struct FUN_005e0510_Class {
     virtual void vf00() {}
-    unsigned int* __thiscall SetVtableAndProcessState_005e0510();
+    unsigned int* __thiscall BSSimpleArray_NavMeshInfo_const_1024_ctor();
 };
 
 // @fnv 0x005e0510
-// src: GUESS 0x005e0510 (confidence: low)
-unsigned int* __thiscall FUN_005e0510_Class::SetVtableAndProcessState_005e0510() {
+// src: XBOX_DEBUG_PDB 0x005e0510
+// pdb: BSSimpleArray<NavMeshInfo const *,1024>::BSSimpleArray<NavMeshInfo const *,1024> | TESScriptFunctions.obj | debug, call graph, high
+unsigned int* __thiscall FUN_005e0510_Class::BSSimpleArray_NavMeshInfo_const_1024_ctor() {
     *(int**)this = (int*)&DAT_0103d43c;
     reinterpret_cast<AX*>(this)->BSSimpleArray_float_1024_InitialSetup(0, 0);
     return reinterpret_cast<unsigned int*>(this);
@@ -38326,18 +39869,19 @@ struct S_00703c80_Ctx {
 };
 struct S_00703c80_Mgr {
     bool MenuConsole_IsVisible();
-    void Console_Print(const char* e, int* b);
+    void MenuConsole_PrintLine(const char* e, int* b);
 };
 S_00703c80_Mgr* __cdecl FUN_0071b160(int which);
 
 // @fnv 0x00703c80
 // src: XBOX_PDB 0x00703c80
+// pdb: Interface::PrintLine | Interface.obj | debug, call graph, medium
 void __cdecl Interface_PrintLine_00703c80(BSStringT<char> a, int b)
 {
     if (InterfaceManager_GetSingleton() && ((S_00703c80_Ctx*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount()) {
         if ((FUN_0071b160(0) && FUN_0071b160(1)->MenuConsole_IsVisible()) || CombatController_GetShowVerboseMessages()) {
             int* p = &b;
-            FUN_0071b160(1)->Console_Print(a.String(), p);
+            FUN_0071b160(1)->MenuConsole_PrintLine(a.String(), p);
             p = 0;
         }
     }
@@ -38674,6 +40218,8 @@ struct Target8d3f {
 };
 // @fnv 0x008d3fa0
 // src: COMMUNITY 0x008d3fa0
+// pdb: Character::Reset3D | Character.obj | retail, call graph, high
+// pdb locals: p3D
 void Target8d3f::Hook_Update3D_Execute() {
     void* object = TESObjectREFR_Get3D();
     if (object) {
@@ -38702,12 +40248,12 @@ extern void* DAT_011dea3c;
 extern float DAT_01012054;
 
 extern unsigned char UNK_005790f0;
-FNVWipResource* __cdecl FollowerBarks_GetBarkTopicByType(unsigned int handle);
+FNVWipResource* __cdecl FollowerBarks_GetBarkTopicByType(unsigned int aeBarkType);
 void __cdecl Script_SetActionFlag(FNVWipResource* resource, void* value, unsigned int flags);
-FNVWipAllocation* __cdecl TESObjectREFR_CreateReference(int size, int flags);
+FNVWipAllocation* __cdecl TESObjectREFR_CreateReference(int aeType, int abadd);
 struct FNVWipResource {
     void* vtable;
-    int TESTopic_GetMatchingInfo(FNVWipGame* player, void* audio);
+    int TESTopic_GetMatchingInfo(FNVWipGame* apSpeaker, void* apTarget);
     FNVWipGame* TESTopic_CreateDialogueItem(void* owner, int a, int b, int c, int d);
 };
 struct FNVWipController {
@@ -39530,7 +41076,7 @@ struct FNVWipEffect {
     int unk04;
     int unk08;
     ~FNVWipEffect();
-    void FUN_00ad8e60(unsigned char* callback, int handle);
+    void FUN_00ad8e60(unsigned char* apfnCallback, int handle);
 };
 struct FNVWipScreenManager {
     FNVWipGame* player;
@@ -39539,6 +41085,8 @@ struct FNVWipScreenManager {
 };
 // @fnv 0x008d6050
 // src: XBOX_PDB 0x008d6050
+// pdb: FollowerBarks::FollowerBarkEntry::Trigger | FollowerBarks.obj | retail, upstream name already matches, high
+// pdb locals: pTopic, pInfo, iPCHead, bforcesub, pNpc, bplayerhead, balwaysplay, pcurrentScriptTarget, pVoice, aSoundHand, pResponse, ptempactor
 void FNVWipScreenManager::FollowerBarks_FollowerBarkEntry_Trigger() {
     FNVWipResource* resource = FollowerBarks_GetBarkTopicByType(handle);
     if (resource) {
@@ -39721,6 +41269,8 @@ public:
 void __cdecl VATSMenu_RemoveTarget(Projectile*);
 // @fnv 0x009bc8f0
 // src: XBOX_PDB 0x009bc8f0
+// pdb: Projectile::Kill | Projectile.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, ptargetCol, ptargetObject
 void ScriptProjectile::Projectile_Kill() {
  if(*((SettingAccess*)&g_011f20b8)->FUN_00408d60() && reinterpret_cast<TargetList*>(&kImpacts)->FUN_008256d0() && MiddleHighProcess_GetCurrentFurniture()) {
   PartLookup* part = FindFirstCollisionObject(MiddleHighProcess_GetCurrentFurniture()->name.String());
@@ -39755,8 +41305,11 @@ char* __cdecl FUN_004812f0(char const*, char const*);
 void __cdecl _DebugLog(char const*, ...);
 
 // @fnv 0x005b6b50
-// src: EXE 0x005b6b50
-bool __cdecl Cmd_OutputArchiveProfile_Execute(
+// src: XBOX_RETAIL_PDB 0x005b6b50
+// pdb: Script::OutputArchiveProfile | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: input
+bool __cdecl Script_OutputArchiveProfile(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
     TESObjectREFR* apRefObject,
@@ -39824,6 +41377,9 @@ void _DebugLog(const char* format, ...);
 
 // @fnv 0x005b9640
 // src: XBOX_PDB 0x005b9640
+// pdb: Script::ToggleCollisionFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bcol
 bool __cdecl Script_ToggleCollisionFunction(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
@@ -39881,6 +41437,9 @@ void _DebugLog(const char*, ...);
 
 // @fnv 0x005b98a0
 // src: XBOX_PDB 0x005b98a0
+// pdb: Script::ToggleDetectionStats | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
 bool Script_ToggleDetectionStats(const ScriptParameter* apParameters,
                   const char* apCompiledParams,
                   TESObjectREFR* apRefObject,
@@ -39942,16 +41501,19 @@ extern "C" __declspec(dllimport) int __stdcall WritePrivateProfileStringA(
     char const*, char const*, char const*, char const*);
 
 // @fnv 0x005ba7c0
-// src: EXE 0x005ba7c0
-bool __cdecl Cmd_SetDebugText_Execute(
-    const ScriptParameter* parameter,
-    const char* functionName,
+// src: XBOX_RETAIL_PDB 0x005ba7c0
+// pdb: Script::SetDebugTextFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ptextPage, isubPage
+bool __cdecl Script_SetDebugTextFunction(
+    const ScriptParameter* apParameters,
+    const char* apCompiledParams,
     TESObjectREFR* reference,
-    TESObjectREFR* reference2,
-    Script* script,
-    ScriptLocals* locals,
-    double& result,
-    unsigned int& uintResult)
+    TESObjectREFR* apContainer,
+    Script* apScript,
+    ScriptLocals* apScriptLocals,
+    double& afReturnValue,
+    unsigned int& auiOffset)
 {
     char customIni[260];
     char debugText[512];
@@ -39961,8 +41523,8 @@ bool __cdecl Cmd_SetDebugText_Execute(
     _fnv_zlib_memset(debugText + 1, 0, 0x1ff);
     value = 0;
 
-    if (!ExtractArgs(parameter, functionName, &uintResult, reference,
-            reference2, script, locals, debugText, &value)) {
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, reference,
+            apContainer, apScript, apScriptLocals, debugText, &value)) {
         return false;
     }
 
@@ -39990,7 +41552,7 @@ class LLD_Cell;
 class ScriptWorldSpaceCellLookup : public TESWorldSpace
 {
 public:
-    TESObjectCELL* LookupExteriorCell(int x, int y);
+    TESObjectCELL* LookupExteriorCell(int aiX, int aiY);
 };
 
 // Call surface of TESQueuedCellManager; the shared header cannot be read in this unit (its own layout_support template copies).
@@ -40013,7 +41575,7 @@ class DH : public LLD_DataHandler
 class LLD_PlayerCharacter
 {
 public:
-    void PlayerCharacter_CenterOnCell(int a, LLD_Cell* cell);
+    void PlayerCharacter_CenterOnCell(int a, LLD_Cell* apCellIn);
 };
 
 extern DH* g_dataHandler;
@@ -40112,7 +41674,7 @@ bool Cmd_IsLimbGone_Execute(const ScriptParameter* scriptParameter,
             for (int index = start; index <= end; ++index)
             {
                 if (reinterpret_cast<TESObjectREFR*>(dismemberedObject)->
-                        IsLimbMissing(index))
+                        GetDismembered(index))
                 {
                     result = 1.0;
                     return true;
@@ -40134,7 +41696,7 @@ struct FUN_00450b40_Class
 
 struct DH : public FUN_00450b40_Class
 {
-    TESFile* LookupTESFile(char const*);
+    TESFile* GetListFile(char const*);
 };
 
 extern DH* g_dataHandler;
@@ -40151,8 +41713,11 @@ void __fastcall FUN_00471130(void*);
 void __cdecl _DebugLog(char const*, ...);
 
 // @fnv 0x005bfd50
-// src: EXE 0x005bfd50
-bool Cmd_CloseFile_Execute(
+// src: XBOX_RETAIL_PDB 0x005bfd50
+// pdb: Script::ForceCloseFile | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pfilename, pfile
+bool Script_ForceCloseFile(
     const ScriptParameter* apParameters,
     char const* apCompiledParams,
     TESObjectREFR* apRefObject,
@@ -40182,7 +41747,7 @@ bool Cmd_CloseFile_Execute(
 
     if (pfilename[0])
     {
-        pfile = g_dataHandler->LookupTESFile(pfilename);
+        pfile = g_dataHandler->GetListFile(pfilename);
         if (pfile)
         {
             g_dataHandler->TESDataHandler_SetClearingData(1);
@@ -40216,6 +41781,9 @@ bool Cmd_CloseFile_Execute(
 
 // @fnv 0x005c11f0
 // src: EXE 0x005c11f0
+// pdb: Script::LoopGroupFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iLoops, eAnimGroup, iFlags
 bool Cmd_LoopGroup_Execute(
     const ScriptParameter* parameter,
     const char* functionName,
@@ -40263,6 +41831,9 @@ namespace fnv_005c2500 {
 
 // @fnv 0x005c2500
 // src: EXE 0x005c2500
+// pdb: Script::FadeSFXFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: fseconds
 bool __cdecl Cmd_FadeSFX_Execute(
     const ScriptParameter* scriptParams,
     const char* functionName,
@@ -40285,7 +41856,7 @@ bool __cdecl Cmd_FadeSFX_Execute(
             scriptLocals,
             &fadeTime))
     {
-        BSAudio::GetSingleton()->SetAudioProperty(
+        BSAudio::GetSingleton()->MuteType(
             0x18002003,
             static_cast<unsigned int>(fadeTime) * 1000,
             0x1770);
@@ -40330,6 +41901,8 @@ void _DebugLog(const char*);
 
 // @fnv 0x005c40d0
 // src: XBOX_PDB 0x005c40d0
+// pdb: Script::Show1stPersonFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_Show1stPersonFunction(
     const ScriptParameter*,
     const char*,
@@ -40375,10 +41948,12 @@ bool Script_Show1stPersonFunction(
 struct ScriptParameter;
 
 
-bool __cdecl Script_GetLockLevelConditionFunction(TESObjectREFR* reference, ScriptLocals* locals, void* unused, double& result);
+bool __cdecl Script_GetLockLevelConditionFunction(TESObjectREFR* reference, ScriptLocals* apParam1, void* apParam2, double& afReturnValue);
 
 // @fnv 0x005c4900
 // src: EXE 0x005c4900
+// pdb: Script::GetLockLevelFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Cmd_GetLockLevel_Execute(
     const ScriptParameter* parameters,
     const char* compiledParams,
@@ -40399,6 +41974,9 @@ extern void* DAT_011de134;
 
 // @fnv 0x005c54d0
 // src: EXE 0x005c54d0
+// pdb: Script::LoadGame | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iflag, pfilename
 bool Cmd_LoadGame_Execute(const ScriptParameter* apParameters,
                  const char* apCompiledParams,
                  TESObjectREFR* apRefObject,
@@ -40440,6 +42018,10 @@ extern void* DAT_011de134;
 
 // @fnv 0x005c55d0
 // src: EXE 0x005c55d0
+// pdb: Script::CopySaveGames | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::ExportBetaComment
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: parg
 bool __cdecl Cmd_CopySaves_Execute(
     const ScriptParameter* scriptParams,
     const char* formatString,
@@ -40478,10 +42060,12 @@ bool __cdecl Cmd_CopySaves_Execute(
 }
 }  // namespace fnv_005c55d0
 
-int __cdecl Cmd_IsPleasant_Eval(int, int, int, int);
+int __cdecl Script_GetIsPleasantConditionFunction(int, int, int, int);
 
 // @fnv 0x005c7370
 // src: EXE 0x005c7370
+// pdb: Script::GetIsPleasant | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_IsPleasant_Execute(
     int arg0,
     int arg1,
@@ -40491,14 +42075,17 @@ void __cdecl Cmd_IsPleasant_Execute(
     int arg5,
     int arg6)
 {
-    Cmd_IsPleasant_Eval(arg2, 0, 0, arg6);
+    Script_GetIsPleasantConditionFunction(arg2, 0, 0, arg6);
 }
 
 bool __cdecl Script_GetPlayerControlsDisabledConditionFunction(TESObjectREFR*, unsigned int, void*, double&);
 
 // @fnv 0x005caf40
-// src: EXE 0x005caf40
-bool __cdecl Cmd_GetPlayerControlsDisabled_Execute(const ScriptParameter* apParameters,
+// src: XBOX_RETAIL_PDB 0x005caf40
+// pdb: Script::GetPlayerControlsDisabledFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: isneaking, ipov, ipipboy, ibit, imovement, ilooking, irollover, ifighting
+bool __cdecl Script_GetPlayerControlsDisabledFunction(const ScriptParameter* apParameters,
                           const char* apCompiledParams,
                           TESObjectREFR* apRefObject,
                           TESObjectREFR* apContainer,
@@ -40555,7 +42142,7 @@ bool __cdecl Cmd_GetPlayerControlsDisabled_Execute(const ScriptParameter* apPara
 
 struct FUN_00973460_Standin
 {
-    bool ProcessLists_IsActorDetected(Actor* actor);
+    bool ProcessLists_IsActorDetected(Actor* apActor);
 };
 
 extern int DAT_011e0e80;
@@ -40566,6 +42153,9 @@ void _DebugLog(const char* format, const char* value);
 
 // @fnv 0x005cda20
 // src: XBOX_PDB 0x005cda20
+// pdb: Script::IsActorDetected | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
 bool Script_IsActorDetected(const ScriptParameter* apParameters,
                   const char* apCompiledParams,
                   TESObjectREFR* apRefObject,
@@ -40604,15 +42194,18 @@ void __cdecl _FNV_Warning(const char*);
 void __cdecl SlotMachineMenu_Create(TESCasino*, int, int, int, int);
 
 // @fnv 0x005cf040
-// src: EXE 0x005cf040
-bool Cmd_Shared_Execute_5cf040(const ScriptParameter* apParameters,
+// src: XBOX_RETAIL_PDB 0x005cf040
+// pdb: Script::ShowSlotMachineMenu | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pCasino, iMaxBet, iMinBet, iMinWinnings
+bool Script_ShowSlotMachineMenu(const ScriptParameter* apParameters,
                   const char* apCompiledParams,
                   TESObjectREFR* apRefObject,
                   TESObjectREFR* apContainer,
                   Script* apScript,
                   ScriptLocals* apScriptLocals,
-                  double* apReturnValue,
-                  unsigned int* apOffset)
+                  double* afReturnValue,
+                  unsigned int* auiOffset)
 {
     if (_g_thePlayer)
     {
@@ -40623,7 +42216,7 @@ bool Cmd_Shared_Execute_5cf040(const ScriptParameter* apParameters,
 
         if (!ExtractArgs(apParameters,
                          apCompiledParams,
-                         apOffset,
+                         auiOffset,
                          apRefObject,
                          apContainer,
                          apScript,
@@ -40655,8 +42248,11 @@ void __cdecl _FNV_Warning(const char*);
 void __cdecl BlackJackMenu_Create(unsigned int, int, int, int, int);
 
 // @fnv 0x005cf0f0
-// src: EXE 0x005cf0f0
-bool __cdecl Cmd_Shared_Execute_5cf0f0(
+// src: XBOX_RETAIL_PDB 0x005cf0f0
+// pdb: Script::ShowBlackJackMenu | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pCasino, iMaxBet, iMinBet, iMinWinnings
+bool __cdecl Script_ShowBlackJackMenu(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
     TESObjectREFR* apRefObject,
@@ -40728,19 +42324,22 @@ void __cdecl B5CF3D0ConsolePrint(const char* pcFormat, ...);
 
 // @fnv 0x005cf3d0
 // src: XBOX_PDB 0x005cf3d0
-bool __cdecl Script_AddCardToPlayer(B5CF3D0ParamInfo* pkParamInfo, B5CF3D0ScriptData* pkScriptData, TESObjectREFR* pkThisObj,
-    TESObjectREFR* pkContainingObj, B5CF3D0Script* pkScript, B5CF3D0EventList* pkEventList, double* pdResult,
-    unsigned int* puiOpcodeOffset)
+// pdb: Script::AddCardToPlayer | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pCaravanCard
+bool __cdecl Script_AddCardToPlayer(B5CF3D0ParamInfo* apParameters, B5CF3D0ScriptData* apCompiledParams, TESObjectREFR* apRefObject,
+    TESObjectREFR* apContainer, B5CF3D0Script* apScript, B5CF3D0EventList* apScriptLocals, double* afReturnValue,
+    unsigned int* auiOffset)
 {
     TESCaravanCard* pkCard = 0;
-    if (!B5CF3D0ExtractArgs(pkParamInfo, pkScriptData, puiOpcodeOffset, pkThisObj, pkContainingObj, pkScript, pkEventList))
+    if (!B5CF3D0ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals))
         B5CF3D0ConsolePrint("Invalid Parameter used in script AddCardToPlayer");
-    if (pkThisObj && pkThisObj->GetObjectReference()) {
-        pkCard = dynamic_cast<TESCaravanCard*>(pkThisObj->GetObjectReference());
+    if (apRefObject && apRefObject->GetObjectReference()) {
+        pkCard = dynamic_cast<TESCaravanCard*>(apRefObject->GetObjectReference());
         if (pkCard)
             g_pkB5CF3D0Player->AddCard(pkCard);
         else
-            B5CF3D0ConsolePrint("%s is not a valid CaravanCard object", static_cast<const TESForm*>(pkThisObj)->GetName());
+            B5CF3D0ConsolePrint("%s is not a valid CaravanCard object", static_cast<const TESForm*>(apRefObject)->GetName());
     }
     return true;
 }
@@ -40750,6 +42349,9 @@ void Object_CreateLoveTesterMenu_Thunk();
 int _FUN_007915f0(int);
 // @fnv 0x005cf5e0
 // src: EXE 0x005cf5e0
+// pdb: Script::SetCasinoCheatLevel | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: icheatlevel
 bool Cmd_Shared_Execute_5cf5e0(const ScriptParameter* params, const char* scriptData, TESObjectREFR* form1, TESObjectREFR* form2, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     if (g_thePlayer)
@@ -40804,16 +42406,19 @@ extern void FNV_Warning(const char*, ...);
 ExtraDataList* __fastcall BSFile_GetDevice(TESObjectREFR*);
 
 // @fnv 0x005d0060
-// src: EXE 0x005d0060
-bool Cmd_EquipItem_Execute(
-    const ScriptParameter* paramInfo,
-    const char* argStr,
+// src: XBOX_RETAIL_PDB 0x005d0060
+// pdb: Script::EquipItemFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iFlag, pItem, iHideMessageFlag, pactor, abforce, pinventory, bequip, pchange, plist, pextra, pstring
+bool Script_EquipItemFunction(
+    const ScriptParameter* apParameters,
+    const char* apCompiledParams,
     TESObjectREFR* thisObj,
-    TESObjectREFR* containerObj,
-    Script* scriptObj,
-    ScriptLocals* locals,
-    double& result,
-    unsigned int& opcodeOffsetPtr)
+    TESObjectREFR* apContainer,
+    Script* apScript,
+    ScriptLocals* apScriptLocals,
+    double& afReturnValue,
+    unsigned int& auiOffset)
 {
     int kISilent;
     {
@@ -40823,7 +42428,7 @@ bool Cmd_EquipItem_Execute(
     iLock2 = 0;
     kISilent = 0;
 
-    if (!ExtractArgs(paramInfo, argStr, &opcodeOffsetPtr, thisObj, containerObj, scriptObj, locals, &pItem_2, &iLock2, &kISilent))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &pItem_2, &iLock2, &kISilent))
         return false;
 
     if (thisObj) {
@@ -40867,7 +42472,7 @@ bool Cmd_EquipItem_Execute(
                 }
             }
         } else {
-            FNV_Warning("SCRIPTS: EquipItem in script '%s' failed to generate an item.", static_cast<TESForm*>(scriptObj)->GetName());
+            FNV_Warning("SCRIPTS: EquipItem in script '%s' failed to generate an item.", static_cast<TESForm*>(apScript)->GetName());
         }
     }
     }
@@ -40877,6 +42482,9 @@ bool Cmd_EquipItem_Execute(
 
 // @fnv 0x005d0920
 // src: EXE 0x005d0920
+// pdb: Script::SetRestrainedFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, pactor
 bool Cmd_SetRestrained_Execute(const ScriptParameter* parameters, const char* scriptData, TESObjectREFR* thisObject, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset)
 {
     unsigned int formID = 0;
@@ -40900,6 +42508,9 @@ float __fastcall bhkCharacterController_GetFallStartHeight(char const*);
 
 // @fnv 0x005d10a0
 // src: EXE 0x005d10a0
+// pdb: Script::ResetFallDamageTimerFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor, ftime
 bool Cmd_ResetFallDamageTimer_Execute(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& g, unsigned int& h)
 {
     float result;
@@ -40934,6 +42545,9 @@ bool __cdecl Script_ParseParameters(
     int* firstFlag);
 // @fnv 0x005d13e0
 // src: EXE 0x005d13e0
+// pdb: Script::SetCanPCFastTravelFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, iCanWait
 bool __cdecl Cmd_EnableFastTravel_Execute(
     const ScriptArgs* parameters,
     const char* source,
@@ -41002,8 +42616,11 @@ extern __declspec(thread) unsigned char DAT_tls[0x269];
 void __cdecl _DebugLog(const char*, ...);
 
 // @fnv 0x005d21e0
-// src: EXE 0x005d21e0
-bool Cmd_StopMagicEffectVisuals_Execute(
+// src: XBOX_RETAIL_PDB 0x005d21e0
+// pdb: Script::StopMagicEffect | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ftime, peffectSetting
+bool Script_StopMagicEffect(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
     TESObjectREFR* apRefObject,
@@ -41055,8 +42672,11 @@ extern __declspec(thread) bool __tls_index;
 extern int DAT_011a9608;
 
 // @fnv 0x005d4660
-// src: EXE 0x005d4660
-bool Cmd_SetMaxAniso_Execute(const ScriptParameter* apParameters,
+// src: XBOX_RETAIL_PDB 0x005d4660
+// pdb: Script::SetDepthOfField | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: imaxaniso, fmaxaniso
+bool Script_SetDepthOfField(const ScriptParameter* apParameters,
                   const char* apCompiledParams,
                   TESObjectREFR* apRefObject,
                   TESObjectREFR* apContainer,
@@ -41121,6 +42741,9 @@ extern __declspec(thread) bool g_bConsoleEcho;
 
 // @fnv 0x005d5230
 // src: EXE 0x005d5230
+// pdb: Script::AddNoteFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pNote
 bool __cdecl Cmd_AddNote_Execute(
     const ScriptParameter* parameters,
     const char* compiledParams,
@@ -41223,26 +42846,29 @@ struct DispositionReferenceSlots<221> : DispositionReferenceSlots<220>
 };
 
 // @fnv 0x005d54a0
-// src: EXE 0x005d54a0
-bool Cmd_SetDisposition_Execute(const ScriptParameter* scriptParameter,
-                 const char* scriptName,
-                 TESObjectREFR* object,
+// src: XBOX_RETAIL_PDB 0x005d54a0
+// pdb: Script::SetDispositionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ptarg, ivalue, pactor, imod, idispos
+bool Script_SetDispositionFunction(const ScriptParameter* apParameters,
+                 const char* apCompiledParams,
+                 TESObjectREFR* apRefObject,
                  TESObjectREFR* reference,
-                 Script* script,
-                 ScriptLocals* scriptLocals,
-                 double& result,
-                 unsigned int& flags)
+                 Script* apScript,
+                 ScriptLocals* apScriptLocals,
+                 double& afReturnValue,
+                 unsigned int& auiOffset)
 {
     TESObjectREFR* uiDisposition = 0;
 
-    if (object->IsActor())
-        uiDisposition = object;
+    if (apRefObject->IsActor())
+        uiDisposition = apRefObject;
 
     TESObjectREFR* uiCurrentDisposition = 0;
     int pTarget = 0;
 
-    if (!ExtractArgs(scriptParameter, scriptName, &flags, object, reference,
-                     script, scriptLocals, &uiCurrentDisposition, &pTarget))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, reference,
+                     apScript, apScriptLocals, &uiCurrentDisposition, &pTarget))
         return false;
 
     if (uiCurrentDisposition && uiDisposition) {
@@ -41264,8 +42890,11 @@ bool __cdecl CombatAction_SetCombatActionCost(const char*, float);
 void __cdecl _DebugLog(const char*, ...);
 
 // @fnv 0x005d5780
-// src: EXE 0x005d5780
-bool __cdecl Cmd_SetCombatActionCost_Execute(const ScriptParameter* apParameters,
+// src: XBOX_RETAIL_PDB 0x005d5780
+// pdb: Script::SetCombatActionCostFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactionName, fcost, bsuccess
+bool __cdecl Script_SetCombatActionCostFunction(const ScriptParameter* apParameters,
                          const char* apCompiledParams,
                          TESObjectREFR* apRefObject,
                          TESObjectREFR* apContainer,
@@ -41303,10 +42932,13 @@ bool __cdecl Script_ParseParameters(
     const ScriptParameter*, const char*, unsigned int*,
     TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, unsigned int*);
 
-bool __cdecl Cmd_IsKiller_Eval(TESObjectREFR*, unsigned int, int, double*);
+bool __cdecl Script_GetKillerConditionFunction(TESObjectREFR*, unsigned int, int, double*);
 
 // @fnv 0x005d74e0
 // src: EXE 0x005d74e0
+// pdb: Script::GetKillerFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor
 bool __cdecl Cmd_IsKiller_Execute(
     const ScriptParameter* parameters,
     const char* commandText,
@@ -41322,13 +42954,15 @@ bool __cdecl Cmd_IsKiller_Execute(
                        containingReference, script, locals, &extractedValue)) {
         return false;
     }
-    return Cmd_IsKiller_Eval(reference, extractedValue, 0, result);
+    return Script_GetKillerConditionFunction(reference, extractedValue, 0, result);
 }
 
 extern int __cdecl Cmd_GetGroupMemberCount_Eval(int, int, int, int);
 
 // @fnv 0x005d7be0
 // src: EXE 0x005d7be0
+// pdb: Script::GetGroupMemberCountFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 void __cdecl Cmd_GetGroupMemberCount_Execute(
     unsigned int arg1,
     unsigned int arg2,
@@ -41351,8 +42985,11 @@ extern unsigned int _data_011c16bc;
 extern char const g_011c3248_arg1[];
 
 // @fnv 0x005d7fb0
-// src: EXE 0x005d7fb0
-bool __cdecl Cmd_PipboyRadio_Execute(
+// src: XBOX_RETAIL_PDB 0x005d7fb0
+// pdb: Script::PipboyRadio | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bfastOff, input, bfastOn, pTarg
+bool __cdecl Script_PipboyRadio(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
     TESObjectREFR* apRefObject,
@@ -41517,6 +43154,9 @@ struct ScriptMatchFaceGeometryBaseHelper
 
 // @fnv 0x005d9b20
 // src: EXE 0x005d9b20
+// pdb: Script::MatchFaceGeometryFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ival, pactorToMatch
 bool __cdecl Cmd_MatchFaceGeometry_Execute(
     const ScriptParameter* parameter,
     const char* scriptName,
@@ -41580,6 +43220,9 @@ extern char const g_011d34f8_arg1[];
 
 // @fnv 0x005dd870
 // src: XBOX_PDB 0x005dd870
+// pdb: Script::IsCodeRedeemedFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: msg, cCode, ok
 bool __cdecl Script_IsCodeRedeemedFunction(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
@@ -41630,6 +43273,9 @@ void __cdecl _FNV_Warning(const char* message);
 
 // @fnv 0x005de840
 // src: XBOX_PDB 0x005de840
+// pdb: Script::RemapWaterTypeFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: poldform, pnewform
 bool Script_RemapWaterTypeFunction(const ScriptParameter* apParameters,
                   const char* apCompiledParams,
                   TESObjectREFR* apRefObject,
@@ -41711,7 +43357,7 @@ bool __cdecl Cmd_ShowSleepWaitMenu_Execute(const ScriptParameter* parameters,
 
 struct ContainerCountStandIn
 {
-    int __thiscall TESObjectREFR_GetInventoryCount(int type, int mode);
+    int __thiscall TESObjectREFR_GetInventoryCount(int abBarter, int abPlayableCount);
 };
 
 struct ThreadFlags_005e0100
@@ -41750,6 +43396,7 @@ void __cdecl DebugLog(const char* apFormat, ...);
 
 // @fnv 0x005e0100
 // src: EXE 0x005e0100
+// pdb: BlendSettingCollection::BlendSettingCollection | XBlendSettings.obj | debug, object-file run extension, low
 bool __cdecl Cmd_GetContainerInventoryCount_Execute(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
@@ -41777,21 +43424,23 @@ extern char DAT_0103b84c;
 
 // @fnv 0x005ceb90
 // src: XBOX_PDB 0x005ceb90
+// pdb: Script::GetDefaultOpenFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_GetDefaultOpenFunction(
-    const ScriptParameter* parameters,
-    const char* scriptData,
-    TESObjectREFR* thisObject,
-    TESObjectREFR* container,
-    Script* script,
-    ScriptLocals* locals,
-    double& result,
-    unsigned int& opcodeOffset)
+    const ScriptParameter* apParameters,
+    const char* apCompiledParams,
+    TESObjectREFR* apRefObject,
+    TESObjectREFR* apContainer,
+    Script* apScript,
+    ScriptLocals* apScriptLocals,
+    double& afReturnValue,
+    unsigned int& auiOffset)
 {
-    if (!Script_GetDefaultOpenConditionFunction(thisObject, 0, 0, result))
+    if (!Script_GetDefaultOpenConditionFunction(apRefObject, 0, 0, afReturnValue))
         return false;
 
     if (g_tls.bDebug)
-        _DebugLog(&DAT_0103b84c, result);
+        _DebugLog(&DAT_0103b84c, afReturnValue);
 
     return true;
 }
@@ -41805,7 +43454,7 @@ typedef void (__thiscall *SetTextureFunction)(NiShadeProperty*, int, int, void*)
 
 class GlobalObjectO2_00a7b610;
 extern GlobalObjectO2_00a7b610 g_011f5ae0;
-extern GlobalObjectO2_00a7b610 g_011fa05c;
+extern GlobalObjectO2_00a7b610 BSShaderNoLightingProperty_ms_RTTI;
 
 
 // SetTexture must dispatch through virtual slot 61 in 0x005cf860.
@@ -41847,16 +43496,19 @@ bool __cdecl ExtractArgs(
 );
 
 // @fnv 0x005cf860
-// src: EXE 0x005cf860
-bool __cdecl Cmd_SwapTextureOnRef_Execute(
-    const ScriptParameter* apParamInfo,
-    const char* apScriptData,
-    TESObjectREFR* apThisObj,
-    TESObjectREFR* apContainingObj,
-    Script* apScriptObj,
-    ScriptLocals* apLocals,
-    double& arResult,
-    unsigned int& arOpcodeOffset
+// src: XBOX_RETAIL_PDB 0x005cf860
+// pdb: Script::SwapTextureOnRef | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pRef, GeometryName, strtmp, BSNewTextureName, NewTextureName, BSGeometryName, pfilepath, pMesh, pGeom, pLightShader, TexPtr, pNoLightShader
+bool __cdecl Script_SwapTextureOnRef(
+    const ScriptParameter* apParameters,
+    const char* apCompiledParams,
+    TESObjectREFR* apRefObject,
+    TESObjectREFR* apContainer,
+    Script* apScript,
+    ScriptLocals* apScriptLocals,
+    double& afReturnValue,
+    unsigned int& auiOffset
 ) {
     TESObjectREFR* targetRef = 0;
     BSStringT<char> str3;
@@ -41867,7 +43519,7 @@ bool __cdecl Cmd_SwapTextureOnRef_Execute(
     char buffer2[512];
     char path2[260];
 
-    if (!ExtractArgs(apParamInfo, apScriptData, &arOpcodeOffset, apThisObj, apContainingObj, apScriptObj, apLocals, &targetRef, buffer5, buffer2)) {
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &targetRef, buffer5, buffer2)) {
         return false;
     }
 
@@ -41901,7 +43553,7 @@ bool __cdecl Cmd_SwapTextureOnRef_Execute(
                         shadeProp4, 0, 0, (NiSourceTexture*)spTexture);
                 }
 
-                BSShaderNoLightingProperty* noLightingProp3 = (BSShaderNoLightingProperty*)NiObject_DynamicCast(&g_011fa05c, targetObjVal->GetProperty(NiShadeProperty_GetType()));
+                BSShaderNoLightingProperty* noLightingProp3 = (BSShaderNoLightingProperty*)NiObject_DynamicCast(&BSShaderNoLightingProperty_ms_RTTI, targetObjVal->GetProperty(NiShadeProperty_GetType()));
                 if (noLightingProp3) {
                     reinterpret_cast<SetNoLightingBaseTextureFunction>(&SetNoLightingBaseTexture)(
                         noLightingProp3, reinterpret_cast<NiTexture*>((NiSourceTexture*)spTexture));
@@ -41936,6 +43588,9 @@ struct FX : NiMemObject {
 };
 // @fnv 0x005bb9e0
 // src: EXE 0x005bb9e0
+// pdb: Script::AddOcclusionPlane | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: kcamerafunk, ksize, kpos, kcamerarot, spoccluder, pdebug, icount, ichild
 bool __cdecl Cmd_AddOcclusionPlane_Execute(const ScriptParameter* params, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* container, Script* script, ScriptLocals* locals, double& result, unsigned int& opcodeOffset) {
     NiPoint2 _v(-1.0f, -1.0f);
     if (!ExtractArgs(params, scriptData, &opcodeOffset, thisObj, container, script, locals, &_v.y, &_v.x)) return false;
@@ -42428,6 +44083,9 @@ class SpeedObj { public: float Actor_GetCurrentSpeed(); };
 
 // @fnv 0x005c25f0
 // src: XBOX_PDB 0x005c25f0
+// pdb: Script::CalcLowPathToPointFunction | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: startLoc, teleportPath, iallowdisabled, goalLoc, lockData, iignorelocks, iignoreminuse, bhasNavmeshPath, ftravelDistance, fpathLength, ptimescale, ftime, i, ptel, flagtext, pdoor, infos, doors, infoSearch, d, plines
 bool __cdecl Script_CalcLowPathToPointFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     int outA8 = 0;
@@ -42559,7 +44217,7 @@ struct DecalParams {
 struct DecalEffect {void TESObjectCELL_AddDecal(DecalParams*,int,int);};
 struct DecalImpact {
     void* FUN_006733e0();
-    float FUN_004a40c0();
+    float BGSImpactData_GetDecalMaxWidth();
     float BGSImpactData_GetDecalMinWidth();
 };
 struct DecalImpactSet {DecalImpact* BGSImpactDataSet_GetImpactData(int);};
@@ -42749,6 +44407,9 @@ extern float DAT_0101e570,DAT_01013974,DAT_010249d8;
 
 // @fnv 0x005bfe90
 // src: EXE 0x005bfe90
+// pdb: Script::AddDecal | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pcell, data, pcamera, pweap, pset, pimpactdata, pgeom, fDecalSize, pActor, bpowerArmor, pimpactSet, eimpactMaterial, emat, i
 bool Cmd_AddDecal_Execute(const ScriptParameter* parameters,const char* data,DecalReference* reference,TESObjectREFR* container,Script* script,ScriptLocals* locals,double& result,unsigned int& offset) {
     DecalEffect* effect4=0;
     DecalCamera* camera3=Main_GetWorldSceneGraph()->FUN_006629f0();
@@ -42784,7 +44445,7 @@ bool Cmd_AddDecal_Execute(const ScriptParameter* parameters,const char* data,Dec
             params.category=-1;
             params.rotation=RandomFloatTwoPi();
             params.angle=(int)floor(FUN_00476b70(0.0f,DAT_0101e570));
-            size=FUN_00476b70(impact->BGSImpactData_GetDecalMinWidth(),impact->FUN_004a40c0());
+            size=FUN_00476b70(impact->BGSImpactData_GetDecalMinWidth(),impact->BGSImpactData_GetDecalMaxWidth());
             params.height=size;
             params.width=params.height;
             params.depth=DAT_01013974;
@@ -42860,16 +44521,19 @@ struct GameState {
 };
 typedef int (__thiscall *GetRefValueFn)(TESObjectREFR*);
 // @fnv 0x005bf130
-// src: EXE 0x005bf130
-bool __cdecl Cmd_SetLightingPasses_Execute(
-    const ScriptParameter* parameters, const char* scriptData,
-    TESObjectREFR* reference, TESObjectREFR* container,
-    Script* script, ScriptLocals* locals, double* result,
-    unsigned int* opcodeOffset)
+// src: XBOX_RETAIL_PDB 0x005bf130
+// pdb: Script::SetLightingPassesFunction | TESScriptFunctions.obj | retail, unique string literal, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: input, pcurrent, passes, toggle, imode, imaxtex, pssn, pssl
+bool __cdecl Script_SetLightingPassesFunction(
+    const ScriptParameter* apParameters, const char* apCompiledParams,
+    TESObjectREFR* reference, TESObjectREFR* apContainer,
+    Script* apScript, ScriptLocals* apScriptLocals, double* afReturnValue,
+    unsigned int* auiOffset)
 {
     char extracted[512];
-    if (!Script_ParseParameters(parameters, scriptData, opcodeOffset, reference,
-                      container, script, locals, extracted))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, reference,
+                      apContainer, apScript, apScriptLocals, extracted))
         return false;
     char* command = extracted;
     unsigned short flags = 0;
@@ -43012,7 +44676,7 @@ public:
 class TaskQueue5da
 {
 public:
-    void TaskQueueInterface_QueueWeaponFire(TESObjectWEAP* pkWeapon, TESObjectREFR* pkRef);
+    void TaskQueueInterface_QueueWeaponFire(TESObjectWEAP* apWeapon, TESObjectREFR* apRefObject);
 };
 
 int __fastcall FNV_GetFormType(TESForm* pkForm);
@@ -43023,11 +44687,14 @@ bool Script_ParseParameters(const ScriptParameter*, const char*, unsigned int*, 
 
 // @fnv 0x005da570
 // src: XBOX_PDB 0x005da570
-bool Script_FireWeaponFunction(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj,
-    TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
+// pdb: Script::FireWeaponFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pweaponObject, pweapon
+bool Script_FireWeaponFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj,
+    TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* pkForm = 0;
-    if (!Script_ParseParameters(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &pkForm))
+    if (!Script_ParseParameters(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &pkForm))
         return false;
 
     if (thisObj)
@@ -43042,7 +44709,7 @@ bool Script_FireWeaponFunction(const ScriptParameter* paramInfo, const char* scr
         }
         else
         {
-            Warning_005b5e40("SCRIPTS: FireWeapon in script '%s' called with non-weapon parameter.", ((ScriptV5da*)scriptObj)->GetEditorID());
+            Warning_005b5e40("SCRIPTS: FireWeapon in script '%s' called with non-weapon parameter.", ((ScriptV5da*)apScript)->GetEditorID());
         }
     }
     return true;
@@ -43067,11 +44734,14 @@ int __fastcall GetHavokWorldObjectCountInSceneGraph_0084e3a0(void* obj);
 int Interface_PrintLine(const char* fmt, int arg);
 int Warning_005b5e40(const char* fmt, int a, int b, int c, int d);
 int FUN_004537b0();
-int TaskQueueInterface_QueueScriptFunctionCall(int v, int id, TESObjectREFR* r, int b, double f);
-int Script_SetAngleBase(TESObjectREFR* r, unsigned char b, float f);
+int TaskQueueInterface_QueueScriptFunctionCall(int aeFunc, int apRefObject, TESObjectREFR* r, int b, double f);
+int Script_SetAngleBase(TESObjectREFR* apRefObject, unsigned char b, float f);
 
 // @fnv 0x005c09c0
 // src: EXE 0x005c09c0
+// pdb: Script::SetAngleFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: cAxis, fDegrees
 bool Cmd_SetAngle_Execute(const ScriptParameter* p1, const char* p2, TESObjectREFR* a3, TESObjectREFR* a4,
                   Script* a5, ScriptLocals* a6, double& a7, unsigned int& a8)
 {
@@ -43322,11 +44992,14 @@ extern char DAT_011841cc;
 extern "C" void* __cdecl FUN_00ec43fb(void*, int, const void*, const void*, int);
 
 // @fnv 0x005d26b0
-// src: EXE 0x005d26b0
-bool Cmd_SetNoRumors_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
+// src: XBOX_RETAIL_PDB 0x005d26b0
+// pdb: Script::SetNoRumorsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pactor, ibool, bnorumors
+bool Script_SetNoRumorsFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int value = 0;
-    if (!ExtractArgs(paramInfo, scriptData, &opcodeOffsetPtr, thisObj, containingObj, scriptObj, eventList, &value))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &value))
         return false;
     NoRumorsActorAccess* actor = (NoRumorsActorAccess*)FUN_00ec43fb(thisObj, 0, &DAT_011841cc, &DAT_011846d4, 0);
     if (actor) {
@@ -43736,8 +45409,11 @@ float FUN_004b3ab0(float, float, float, float, float);
 void DebugLog(const char*, ...);
 
 // @fnv 0x005d3f10
-// src: EXE 0x005d3f10
-bool Cmd_SetActorRefraction_Execute(const ScriptParameter* paramInfo, const char* arg2, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* script, ScriptLocals* scriptLocals, double& result, unsigned int& opcodeOffsetPtr) {
+// src: XBOX_RETAIL_PDB 0x005d3f10
+// pdb: Script::SetActorRefractionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: famount, pactor, finvisibility, fchameleon, fpower
+bool Script_SetActorRefractionFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     Actor* actor;
     float fRefraction;
     fRefraction = 0.0f;
@@ -43747,7 +45423,7 @@ bool Cmd_SetActorRefraction_Execute(const ScriptParameter* paramInfo, const char
     float cnt;
     float f1c;
 
-    if (!ExtractArgs(paramInfo, arg2, &opcodeOffsetPtr, thisObj, containingObj, script, scriptLocals, &fRefraction)) {
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &fRefraction)) {
         return false;
     }
 
@@ -43796,12 +45472,16 @@ struct ClassChangeRefAccess {
     TESBoundObject* __thiscall BGSSaveFormBuffer_GetForm();
 };
 struct ClassChangeNPCAccess {
-    void __thiscall SetClass(unsigned int value);
-    void __thiscall FUN_00603be0(int flags);
+    void __thiscall SetClass(unsigned int apClass);
+    void __thiscall FUN_00603be0(int abPC);
 };
 
 // @fnv 0x005d06a0
 // src: EXE 0x005d06a0
+// pdb: Script::ShowWarningFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Script::SetClassFunction
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pwarningtext, cMessage
 bool __cdecl Cmd_SetClass_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     unsigned int uiValue = 0;
@@ -44309,11 +45989,14 @@ bool Cmd_AddScriptPackage_Execute(const ScriptParameter* params, const char* dat
 
 TESBoundObject* __fastcall _FNV_GetObjectReference(TESObjectREFR* apRef);
 struct FUN_005d47e0_Target {
-    void FUN_008c0ec0(Actor* pkActor, TESBoundObject* pkBaseObject, int iIndex);
+    void Actor_TrespassAlarm(Actor* pkActor, TESBoundObject* pkBaseObject, int iIndex);
 };
 
 // @fnv 0x005d47e0
 // src: EXE 0x005d47e0
+// pdb: Script::SendCrimeAlarmFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, pSender
 bool Cmd_SendTrespassAlarm_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj, TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result, unsigned int& opcodeOffsetPtr)
 {
     FUN_005d47e0_Target* pkForm = 0;
@@ -44321,13 +46004,13 @@ bool Cmd_SendTrespassAlarm_Execute(const ScriptParameter* paramInfo, const char*
         return false;
     Actor* pkActor = dynamic_cast<Actor*>(thisObj);
     if (pkForm && pkActor)
-        pkForm->FUN_008c0ec0(pkActor, _FNV_GetObjectReference(reinterpret_cast<TESObjectREFR*>(pkActor)), -1);
+        pkForm->Actor_TrespassAlarm(pkActor, _FNV_GetObjectReference(reinterpret_cast<TESObjectREFR*>(pkActor)), -1);
     return true;
 }
 
 class ScriptReferenceSetterView {
 public:
-    void TESObjectREFR_SetMerchantContainer(int value);
+    void TESObjectREFR_SetMerchantContainer(int apRef);
 };
 
 
@@ -44357,7 +46040,7 @@ bool __cdecl Cmd_IsCombatTarget_Execute(const ScriptParameter* apParameters, con
 
 class BarterSub_b10016 {
 public:
-    void FUN_0047e240(unsigned short v);
+    void FUN_0047e240(unsigned short ausNewgold);
     unsigned short FUN_0047d3f0();
 };
 
@@ -44371,13 +46054,16 @@ void Interface_PrintLine(const char* fmt, unsigned int v);
 
 // @fnv 0x005d0d30
 // src: XBOX_PDB 0x005d0d30
-bool Script_SetBarterGoldFunction(int p0, int p1, int p2, int p3, int p4, int p5, int p6, int p7) {
+// pdb: Script::SetBarterGoldFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, pactor, pnpc
+bool Script_SetBarterGoldFunction(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset) {
     unsigned int wordSlot = 0;
-    Actor* obj1 = dynamic_cast<Actor*>((TESObjectREFR*)p2);
+    Actor* obj1 = dynamic_cast<Actor*>((TESObjectREFR*)apRefObject);
     if (obj1 != 0) {
         TESNPC* obj2 = dynamic_cast<TESNPC*>(((BaseProcessX_b10016*)obj1)->BGSSaveFormBuffer_GetForm());
         if (obj2 != 0) {
-            if (!Script_ParseParameters(p0, p1, p7, p2, p3, p4, p5, (unsigned short*)&wordSlot)) {
+            if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, (unsigned short*)&wordSlot)) {
                 return false;
             }
             ((BarterSub_b10016*)((char*)obj2 + 0x30))->FUN_0047e240((unsigned short)wordSlot);
@@ -44432,7 +46118,7 @@ bool Cmd_ResurrectActor_Execute(const ScriptParameter* scriptParameter,
 }
 
 struct UnlockLockAccess { void FUN_00430a90(bool); };
-struct UnlockDoorAccess { void FUN_0043a210(TESObjectREFR*, bool); };
+struct UnlockDoorAccess { void SetConnectedCellsPublic(TESObjectREFR*, bool); };
 struct UnlockRefAccess {
     UnlockLockAccess* TESObjectREFR_GetLock();
     UnlockDoorAccess* FUN_00568e50();
@@ -44441,13 +46127,16 @@ struct UnlockBaseAccess { TESForm* BGSSaveFormBuffer_GetForm(); };
 struct UnlockNameAccess { const char* TESObjectREFR_GetFullName(); };
 struct UnlockTerminalAccess { void BGSTerminal_SetUnlocked(Script*); };
 void __fastcall TESObjectREFR_AddLockChange(void*);
-void __cdecl FUN_00501930(Script*, bool);
+void __cdecl BGSTerminal_LockOut(Script*, bool);
 void DebugLog(const char*, ...);
 extern __declspec(thread) bool bDebugLogEnabled;
 
 // @fnv 0x005cc120
-// src: EXE 0x005cc120
-bool Cmd_UnLock_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
+// src: XBOX_RETAIL_PDB 0x005cc120
+// pdb: Script::UnlockFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pLock, iUnlockAsOwner, ptel, pterm
+bool Script_UnlockFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     if (!apRefObject)
         return false;
@@ -44461,13 +46150,13 @@ bool Cmd_UnLock_Execute(const ScriptParameter* apParameters, const char* apCompi
         if (iUnlockAsOwner > 0) {
             UnlockDoorAccess* ptel = ((UnlockRefAccess*)apRefObject)->FUN_00568e50();
             if (ptel)
-                ptel->FUN_0043a210(apRefObject, true);
+                ptel->SetConnectedCellsPublic(apRefObject, true);
         }
         apRefObject->SetAltered(true);
     } else if (((UnlockBaseAccess*)apRefObject)->BGSSaveFormBuffer_GetForm()->GetFormType() == 0x17) {
         UnlockTerminalAccess* pNextTerm = (UnlockTerminalAccess*)((UnlockBaseAccess*)apRefObject)->BGSSaveFormBuffer_GetForm();
         pNextTerm->BGSTerminal_SetUnlocked((Script*)apRefObject);
-        FUN_00501930((Script*)apRefObject, false);
+        BGSTerminal_LockOut((Script*)apRefObject, false);
     }
     if (bDebugLogEnabled)
         DebugLog("Unlocked %s ", ((UnlockNameAccess*)apRefObject)->TESObjectREFR_GetFullName());
@@ -44480,6 +46169,9 @@ extern "C" __declspec(thread) unsigned char g_tlsFlags[0x269];
 
 // @fnv 0x005ce730
 // src: XBOX_PDB 0x005ce730
+// pdb: Script::GetForceRun | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
 bool Script_GetForceRun(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     afReturnValue = 0.0;
@@ -44658,8 +46350,11 @@ __declspec(thread) GhostCommandTLS ghostCommandTLS;
 void __cdecl _DebugLog(const char* format, ...);
 
 // @fnv 0x005cffb0
-// src: EXE 0x005cffb0
-bool Cmd_SetGhost_Execute(
+// src: XBOX_RETAIL_PDB 0x005cffb0
+// pdb: Script::SetGhostFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: ivalue, pactor
+bool Script_SetGhostFunction(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
     TESObjectREFR* apRefObject,
@@ -44758,6 +46453,8 @@ extern int g_TES;
 
 // @fnv 0x005dfba0
 // src: EXE 0x005dfba0
+// pdb: NiTArray<char *,NiTMallocInterface<char *> >::`scalar deleting destructor' | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: this
 bool Cmd_EnableLoadingMenu_Execute(const ScriptParameter* parameters, const char* scriptData,
                   TESObjectREFR* thisObject, TESObjectREFR* container,
                   Script* script, ScriptLocals* locals, double& result,
@@ -44789,6 +46486,9 @@ extern "C" __declspec(thread) bool _DebugLogEnabled;
 
 // @fnv 0x005ce520
 // src: XBOX_PDB 0x005ce520
+// pdb: Script::GetPackageTargetFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, iid, pTarget
 bool Script_GetPackageTargetFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     Actor* pActor;
@@ -45311,8 +47011,11 @@ extern __declspec(thread) PackageDurationTLS g_packageDurationTLS;
 void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005d1ab0
-// src: EXE 0x005d1ab0
-bool Cmd_SetPackDuration_Execute(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+// src: XBOX_RETAIL_PDB 0x005d1ab0
+// pdb: Script::SetPackageDurationFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, fvalue
+bool Script_SetPackageDurationFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
     float fDuration = 0.0f;
     Actor* pActor = dynamic_cast<Actor*>(apRefObject);
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &fDuration)) {
@@ -45346,8 +47049,10 @@ bool Cmd_RewardKarma_Execute(const ::ScriptParameter* a, const char* b, ::TESObj
 }
 
 // @fnv 0x005b6c90
-// src: EXE 0x005b6c90
-bool __cdecl Cmd_QuitGame_Execute()
+// src: XBOX_RETAIL_PDB 0x005b6c90
+// pdb: Script::QuitGame | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+bool __cdecl Script_QuitGame()
 {
     DebugLog("Bye.");
     reinterpret_cast<FUN_005b6cb0_Class*>(g_osGlobals)->kExitGameViaQQQRetnAddr();
@@ -45356,6 +47061,9 @@ bool __cdecl Cmd_QuitGame_Execute()
 
 // @fnv 0x005cdad0
 // src: EXE 0x005cdad0
+// pdb: Script::WaitFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, pPackage
 extern "C" bool __cdecl Cmd_Wait_Execute(const ::ScriptParameter* apParameters, const char* apCompiledParams,
     ::TESObjectREFR* apRefObject, ::TESObjectREFR* apContainer, ::Script* apScript,
     ::ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
@@ -45378,12 +47086,12 @@ extern "C" bool __cdecl Cmd_Wait_Execute(const ::ScriptParameter* apParameters, 
         {
             if (pPackage->GetPackType() == 2)
             {
-                pPackage->SetWaiting(true);
+                pPackage->TESPackage_SetWaiting(true);
                 pActor->GetCurrentProcess()->SetAnimationState(static_cast<unsigned int>(2));
             }
             else if (pPackage->GetPackType() == 7 || pPackage->GetPackType() == 1)
             {
-                pPackage->SetWaiting(true);
+                pPackage->TESPackage_SetWaiting(true);
             }
             else
             {
@@ -45408,6 +47116,9 @@ struct BarterGoldActorView
 
 // @fnv 0x005d0c90
 // src: XBOX_PDB 0x005d0c90
+// pdb: Script::ModBarterGoldFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, pactor
 bool __cdecl Script_ModBarterGoldFunction(const ::ScriptParameter* apParameters, const char* apCompiledParams,
     ::TESObjectREFR* apRefObject, ::TESObjectREFR* apContainer, ::Script* apScript,
     ::ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
@@ -45431,10 +47142,10 @@ bool __cdecl Script_ModBarterGoldFunction(const ::ScriptParameter* apParameters,
 
 class SetLevelContainerView;
 struct SetLevelBaseDataView {
-    void FUN_0047dfe0(unsigned short level);
-    void FUN_005d1070(bool value);
-    void FUN_0047de40(unsigned short level);
-    void FUN_0047de70(unsigned short level);
+    void FUN_0047dfe0(unsigned short asValue);
+    void FUN_005d1070(bool abVal);
+    void FUN_0047de40(unsigned short asVal);
+    void FUN_0047de70(unsigned short asVal);
 };
 class SetLevelBaseView : public ::TESForm {
 public:
@@ -45444,8 +47155,8 @@ public:
 };
 class SetLevelNPCView {
 public:
-    void InitDefaultWorn(::TESObjectREFR* ref, bool a, bool b, bool c, bool d);
-    void FUN_00603be0(bool value);
+    void InitDefaultWorn(::TESObjectREFR* apRef, bool a, bool b, bool c, bool d);
+    void FUN_00603be0(bool abPC);
 };
 class SetLevelCreatureView {
 public:
@@ -45554,6 +47265,9 @@ bool Script_ParseParameters(const ::ScriptParameter*, const char*, unsigned int*
 
 // @fnv 0x005d0e30
 // src: EXE 0x005d0e30
+// pdb: Script::SetLevelFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iMax, iMin, iLevelToPlayer, pactor, iLevel, pBase, pinfo, pchanges, pcont, pcreature, pnpc
 extern "C" bool __cdecl Cmd_SetLevel_Execute(const ::ScriptParameter* params, const char* scriptData, ::TESObjectREFR* thisObj, ::TESObjectREFR* containingObj, ::Script* script, ::ScriptLocals* locals, double& result, unsigned int& offset)
 {
     int level = 0;
@@ -45605,9 +47319,12 @@ extern "C" bool __cdecl Cmd_SetLevel_Execute(const ::ScriptParameter* params, co
 
 // @fnv 0x005d1340
 // src: XBOX_PDB 0x005d1340
-bool __cdecl Script_GetWeaponHealthFunction(const ::ScriptParameter* parameters, const char* compiledParams,
-    ::TESObjectREFR* reference, ::TESObjectREFR* container,
-    ::Script* script, ::ScriptLocals* locals, double& result, unsigned int& offset)
+// pdb: Script::GetWeaponHealthFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: bresult, pactor, pweapon
+bool __cdecl Script_GetWeaponHealthFunction(const ::ScriptParameter* apParameters, const char* apCompiledParams,
+    ::TESObjectREFR* reference, ::TESObjectREFR* apContainer,
+    ::Script* apScript, ::ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     bool bresult = true;
     ::Actor* pactor;
@@ -45634,6 +47351,9 @@ class type_info;
 void BarterMenu_ForceBarterUpdate(bool);
 // @fnv 0x005d3e30
 // src: XBOX_PDB 0x005d3e30
+// pdb: Script::SetItemValueFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, pItem, pvalue
 bool Script_SetItemValueFunction(const ::ScriptParameter* apParameters, const char* apCompiledParams, ::TESObjectREFR* apRefObject, ::TESObjectREFR* apContainer, ::Script* apScript, ::ScriptLocals* apScriptLocals, double* afReturnValue, unsigned int* auiOffset)
 {
     ::TESObject* pItem = 0;
@@ -45730,12 +47450,15 @@ struct TalkRef {
 };
 
 void __cdecl _FNV_Warning(const char*, ...);
-void ShowCaravanMenu(TalkRef* apTarget, void* apCard, int aiCount, float afValue, bool abFlag);
+void ShowCaravanMenu(TalkRef* apNPCChallenger, void* apNPCDeck, int aiDiffLevel, float afBetPercentage, bool abDebugMode);
 
 
 // @fnv 0x005cf250
 // src: XBOX_PDB 0x005cf250
-bool Script_ShowCaravanMenu(const ScriptParameter* apParams, const char* apData, TESObjectREFR* apRef, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apLocals, double& afResult, unsigned int* apOffset)
+// pdb: Script::ShowCaravanMenu | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pDeck, pmob, pactor, iDiffLevel, fBetPerc, ptalkActi
+bool Script_ShowCaravanMenu(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int* auiOffset)
 {
     if (g_thePlayer) {
         void* card3 = 0;
@@ -45743,15 +47466,15 @@ bool Script_ShowCaravanMenu(const ScriptParameter* apParams, const char* apData,
         TalkRef* target2 = 0;
         int count = 0;
         float value = 0.0f;
-        if (!ExtractArgs(apParams, apData, apOffset, apRef, apContainer, apScript, apLocals, &card3, &count, &value)) {
+        if (!ExtractArgs(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &card3, &count, &value)) {
             _FNV_Warning("Invalid Parameters used in script ShowCaravanMenu ");
             return true;
         }
-        if (apRef && apRef != (TESObjectREFR*)g_thePlayer && card3) {
-            if (((TalkRef*)apRef)->IsActorRef()) {
-                ref = (TalkRef*)apRef;
+        if (apRefObject && apRefObject != (TESObjectREFR*)g_thePlayer && card3) {
+            if (((TalkRef*)apRefObject)->IsActorRef()) {
+                ref = (TalkRef*)apRefObject;
             } else {
-                BGSTalkingActivator* act = dynamic_cast<BGSTalkingActivator*>(((TalkRef*)apRef)->GetBaseForm());
+                BGSTalkingActivator* act = dynamic_cast<BGSTalkingActivator*>(((TalkRef*)apRefObject)->GetBaseForm());
                 target2 = act ? (TalkRef*)act->GetTempRef() : 0;
             }
             if (ref) {
@@ -45776,6 +47499,9 @@ struct CC_00931f80
 
 // @fnv 0x005bddb0
 // src: EXE 0x005bddb0
+// pdb: Script::SetSizeFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, fvalue, pcon
 bool __cdecl Cmd_SetSize_Execute(const ScriptParameter* pParams, const char* pName, TESObjectREFR* pSource, TESObjectREFR* pTarget, Script* pScript, ScriptLocals* pLocals, double& result, unsigned int& pStackIndex)
 {
     float fValue = 0.0f;
@@ -46152,6 +47878,9 @@ extern "C" bool __cdecl Cmd_RemoveScriptPackage_Execute(const ::ScriptParameter*
 
 // @fnv 0x005bde40
 // src: EXE 0x005bde40
+// pdb: Script::ModActorValueFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor, iActorValueIndex, iValue
 bool Cmd_ModActorValue_Execute(
     const ::ScriptParameter* parameter,
     const char* functionName,
@@ -46215,11 +47944,14 @@ struct Mob_005c0740 { Ctl_005c0740* GetPhysicsCharacterController(); };
 
 // @fnv 0x005c0740
 // src: COMMUNITY 0x005c0740
-extern "C" void __cdecl Script_SetPosBase(::TESObjectREFR* apRef, char acAxis, float afValue)
+// pdb: Script::SetPosBase | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, acAxis, afValue
+// pdb locals: pos, obj3D, pmob, pcon, UpdateData
+extern "C" void __cdecl Script_SetPosBase(::TESObjectREFR* apRefObject, char acAxis, float afValue)
 {
-    if (apRef)
+    if (apRefObject)
     {
-        NiPoint3 pos = *static_cast<const TESObjectREFR*>(apRef)->GetPos();
+        NiPoint3 pos = *static_cast<const TESObjectREFR*>(apRefObject)->GetPos();
         switch (acAxis)
         {
         case 'X':
@@ -46232,16 +47964,16 @@ extern "C" void __cdecl Script_SetPosBase(::TESObjectREFR* apRef, char acAxis, f
             pos.z = afValue;
             break;
         }
-        apRef->SetLocationOnReference(pos);
+        apRefObject->SetLocationOnReference(pos);
         NiNode* pNode;
-        ::MobileObject* pMobile = dynamic_cast<::MobileObject*>(apRef);
+        ::MobileObject* pMobile = dynamic_cast<::MobileObject*>(apRefObject);
         if (pMobile)
         {
             Ctl_005c0740* pController = ((Mob_005c0740*)pMobile)->GetPhysicsCharacterController();
             if (pController && !((::FUN_005c0860Class*)pController)->bhkCharacterController_QIsFlying())
                 pController->SetPosition_005620e0(&pos);
         }
-        pNode = apRef->GetNiNode();
+        pNode = apRefObject->GetNiNode();
         if (pNode)
         {
             pNode->NiAVObject_SetTranslate(&pos);

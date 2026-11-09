@@ -88,7 +88,7 @@ FUN_00d107b0::FUN_00d107b0()
 
 struct FUN_00c9ce00_cls
 {
-    void FUN_00c9ce00(int);
+    void hkpEntity_ctor(int);
 };
 
 // @fnv 0x00d1f180
@@ -96,7 +96,7 @@ struct FUN_00c9ce00_cls
 void __cdecl Object_ProcessState_00d1f180(FUN_00c9ce00_cls* obj, int v)
 {
     if (obj)
-        obj->FUN_00c9ce00(v);
+        obj->hkpEntity_ctor(v);
 }
 
 struct FUN_00d1fa20_t
@@ -132,22 +132,25 @@ struct FUN_00d06c30_cls
 
 // @fnv 0x00d06c30
 // src: HAVOK_LIB 0x00d06c30
-extern "C" void __cdecl hkSmallArrayUtil__reserve(FUN_00d06c30_cls* self, unsigned int newCap, unsigned int elemSize)
+// pdb: hkSmallArrayUtil::_reserve | hkSmallArray.obj | retail, upstream name already matches, high
+// pdb params: array, numElem, sizeElem
+// pdb locals: assertBuf, ostr
+extern "C" void __cdecl hkSmallArrayUtil__reserve(FUN_00d06c30_cls* array, unsigned int numElem, unsigned int sizeElem)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     Allocator* alloc = reinterpret_cast<Allocator*>(holder->m_heap);
-    char* newBuf = (char*)alloc->Alloc(newCap * elemSize);
-    FUN_00ec44d0(newBuf, self->m_pData, self->m_usElementCount * elemSize);
-    if ((self->m_usCap & 0x8000) == 0)
+    char* newBuf = (char*)alloc->Alloc(numElem * sizeElem);
+    FUN_00ec44d0(newBuf, array->m_pData, array->m_usElementCount * sizeElem);
+    if ((array->m_usCap & 0x8000) == 0)
     {
-        unsigned int size = (self->m_usCap & 0x3fff) * elemSize;
-        char* oldBuf = self->m_pData;
+        unsigned int size = (array->m_usCap & 0x3fff) * sizeElem;
+        char* oldBuf = array->m_pData;
         holder = hkMemoryRouter_getInstance();
         alloc = reinterpret_cast<Allocator*>(holder->m_heap);
         alloc->Free(oldBuf, size);
     }
-    self->m_pData = newBuf;
-    self->m_usCap = (unsigned short)((self->m_usCap & 0x4000) | (unsigned short)newCap);
+    array->m_pData = newBuf;
+    array->m_usCap = (unsigned short)((array->m_usCap & 0x4000) | (unsigned short)numElem);
 }
 
 class FUN_00d07910_cls;
@@ -210,6 +213,7 @@ class FUN_00d07910_cls
 
 // Iterates the m_98 element array backwards and calls v10(this) on each non-null element.
 // @fnv 0x00d07910
+// pdb: hkpPhantom::firePhantomDeleted | hkpPhantom.obj | retail, object-file run extension, low
 void FUN_00d07910_cls::NotifyElements()
 {
     for (int i = m_9C - 1; i >= 0; --i)
@@ -238,31 +242,31 @@ unsigned int D10AB0NextOdd(const unsigned int* puiValue)
     return Runtime_EvaluateValue_00d10ab0(*puiValue);
 }
 
-extern int DAT_01268838;
+extern int hkpEntitySmallArraySerializeOverrideTypeClass;
 
 // @fnv 0x00d1f110
 // src: GUESS 0x00d1f110 (confidence: low)
 int* __cdecl Runtime_GetDAT01268838Address()
 {
-    return &DAT_01268838;
+    return &hkpEntitySmallArraySerializeOverrideTypeClass;
 }
 
-extern int g_unk01268868;
+extern int hkpEntitySpuCollisionCallbackClass;
 
 // @fnv 0x00d1f130
 // src: GUESS 0x00d1f130 (confidence: low)
 void* __cdecl Runtime_GetUnk01268868Address()
 {
-    return &g_unk01268868;
+    return &hkpEntitySpuCollisionCallbackClass;
 }
 
 // FUN_00d1f140 : a one-line function - getter
-extern int g_target_00d1f140;
+extern int hkpEntityExtendedListenersClass;
 // @fnv 0x00d1f140
 // src: GUESS 0x00d1f140 (confidence: low)
 void* Object_GetGlobalObjectAddress_00d1f140()
 {
-    return &g_target_00d1f140;
+    return &hkpEntityExtendedListenersClass;
 }
 
 class D1F150Object
@@ -415,7 +419,7 @@ struct S_00d1f730_Flag
 
 struct FUN_00d1f730 : S_00d1f730_Base
 {
-    FUN_00d1f730(int a, int b, int c);
+    FUN_00d1f730(int shape, int transform, int collisionFilterInfo);
     virtual void vfn00();
     S_00d1f730_Arr unk160;
     S_00d1f730_Flag unk16c;
@@ -423,9 +427,11 @@ struct FUN_00d1f730 : S_00d1f730_Base
 
 // Constructs the object from the base constructor and stores the third argument into unk2c.
 // @fnv 0x00d1f730
-FUN_00d1f730::FUN_00d1f730(int aiArg1, int aiArg2, int aiValue) : S_00d1f730_Base(aiArg1, aiArg2)
+// pdb: hkpSimpleShapePhantom::hkpSimpleShapePhantom | hkpSimpleShapePhantom.obj | retail, object-file gap fill, high
+// pdb params: flag
+FUN_00d1f730::FUN_00d1f730(int shape, int transform, int collisionFilterInfo) : S_00d1f730_Base(shape, transform)
 {
-    unk2c = aiValue;
+    unk2c = collisionFilterInfo;
 }
 
 struct D01E50Node
@@ -444,17 +450,17 @@ struct D01E50Node
 };
 int __cdecl integrateJob(int, void*, D01E50Node*);
 int __cdecl hkCpuBuildAccumulatorsJob(int, void*, D01E50Node*);
-int __cdecl ExecuteConstraintCallbacks(int, void*, D01E50Node*);
+int __cdecl hkpSingleThreadedJobsOnIsland_cpuFireJacobianSetupCallbackJob(int, void*, D01E50Node*);
 int __cdecl hkCpuBuildJacobiansJob(int, void*, D01E50Node*);
 int __cdecl hkCpuSolveConstraintsJob(int, void*, D01E50Node*);
 int __cdecl hkCpuSolveApplyGravityJob(int, void*, D01E50Node*);
 int __cdecl hkCpuSolveConstraintBatchJob(int, void*, D01E50Node*);
-int __cdecl LogIntegrateVelocity(int, void*, D01E50Node*);
+int __cdecl hkCpuSolveIntegrateVelocitiesJob(int, void*, D01E50Node*);
 int __cdecl hkCpuSolveExportResultsJob(int, void*, D01E50Node*);
 int __cdecl hkCpuIntegrateMotionJob(int, void*, D01E50Node*);
 int __cdecl hkpSingleThreadedJobsOnIsland_cpuBroadPhaseJob(int, void*, D01E50Node*);
 int __cdecl hkCpuAgentSectorJob(int, void*, D01E50Node*);
-int __cdecl AccumulateShapes(int, void*, D01E50Node*);
+int __cdecl hkCpuPostCollideJob(int, void*, D01E50Node*);
 int __cdecl hkCpuSplitSimulationIslandJob(int, void*, D01E50Node*);
 
 // Dispatches on node->kind to one of several handlers, passing node->payload, ctx and node; returns 1 for unknown kinds.
@@ -468,7 +474,7 @@ int __cdecl DispatchNodeByKind(void* pContext, D01E50Node* node)
     case 1:
         return hkCpuBuildAccumulatorsJob(node->payload, pContext, node);
     case 3:
-        return ExecuteConstraintCallbacks(node->payload, pContext, node);
+        return hkpSingleThreadedJobsOnIsland_cpuFireJacobianSetupCallbackJob(node->payload, pContext, node);
     case 4:
         return hkCpuBuildJacobiansJob(node->payload, pContext, node);
     case 6:
@@ -478,7 +484,7 @@ int __cdecl DispatchNodeByKind(void* pContext, D01E50Node* node)
     case 8:
         return hkCpuSolveConstraintBatchJob(node->payload, pContext, node);
     case 9:
-        return LogIntegrateVelocity(node->payload, pContext, node);
+        return hkCpuSolveIntegrateVelocitiesJob(node->payload, pContext, node);
     case 10:
         return hkCpuSolveExportResultsJob(node->payload, pContext, node);
     case 11:
@@ -491,7 +497,7 @@ int __cdecl DispatchNodeByKind(void* pContext, D01E50Node* node)
     case 13:
         return hkCpuAgentSectorJob(node->payload, pContext, node);
     case 14:
-        return AccumulateShapes(node->payload, pContext, node);
+        return hkCpuPostCollideJob(node->payload, pContext, node);
     default:
         return 1;
     }
@@ -507,6 +513,9 @@ int __cdecl hkSemaphore_acquire_ForwardCall_00d043b0(void* ap)
 
 // @fnv 0x00d043d0
 // src: COMMUNITY 0x00d043d0
+// pdb: hkDefaultPopJobFunc | hkJobQueue.obj | debug, upstream name already matches, high
+// pdb params: queue, data, jobIn, jobOut
+// pdb locals: assertBuf, ostr
 int __cdecl hkDefaultPopJobFunc()
 {
     return 0;
@@ -564,6 +573,8 @@ struct FnvCpu_FUN_00d04440_CpuObject
 };
 // @fnv 0x00d04440
 // src: COMMUNITY 0x00d04440
+// pdb: hkJobQueue::getMasterThreadFinishingFlags | hkJobQueue.obj | debug, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 int FnvCpu_FUN_00d04440_CpuObject::hkJobQueue_getMasterThreadFinishingFlags()
 {
     return value->value;
@@ -589,6 +600,7 @@ struct FUN_00d07070_s : FUN_00d06f70_s
 };
 
 // @fnv 0x00d07070
+// pdb: hkStatisticsCollector::`scalar deleting destructor' | hkStatisticsCollector.obj | debug, vtable slot, medium
 int __thiscall FUN_00d07070_s::FUN_00d07070(unsigned char flag)
 {
     this->InitializeFields_00d06f70();
@@ -692,6 +704,8 @@ struct FUN_00d1bab0_t
     FUN_00d1bab0_t(bool fInit);
 };
 // @fnv 0x00d1bab0
+// pdb: hkgpMeshInternals::TriangleOverlap::`scalar deleting destructor' | hkgpMesh.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00d1bab0_t::FUN_00d1bab0_t(bool fInit)
 {
     m_vft = (int)&DAT_010cd664;
@@ -746,7 +760,7 @@ struct Holder
     ArrayAllocator* allocator;
 };
 Holder* __cdecl _FUN_00c85750();
-void __cdecl hkArrayUtil__reserve(ArrayAllocator* allocator, void* array, int capacity, int elementSize);
+void __cdecl hkArrayUtil__reserve(ArrayAllocator* mem, void* array, int numElem, int sizeElem);
 
 struct IntArray
 {
@@ -862,6 +876,9 @@ struct ArrayRecord
 // Copies type, flag, value and arrays from source into this ArrayRecord and returns a reference to this.
 // @fnv 0x00d05b50
 // src: GUESS 0x00d05b50 (confidence: low)
+// pdb: hkJobQueueHwSetup::operator= | hkJobQueue.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkArray<hkJobQueue::CustomJobTypeSetup,hkContainerHeapAllocator>::~hkArray<hkJobQueue::CustomJobTypeSetup,hkContainerHeapAllocator>
+// pdb params: __that
 ArrayRecord& ArrayRecord::UpdateState_00d05b50(const ArrayRecord& source)
 {
     type = source.type;
@@ -881,24 +898,26 @@ extern "C" int __cdecl hkStringBuf_printf(void* dst, const char* format, ...);
 // Writes a human-readable size string (Bytes, Kb, or Mb) into dst using FUN_00d61d00 based on the value of size.
 // @fnv 0x00d06eb0
 // src: HAVOK_LIB 0x00d06eb0
-void __cdecl hkStatisticsCollector_memorySizeToText(int size, void* dst)
+// pdb: hkStatisticsCollector::memorySizeToText | hkStatisticsCollector.obj | retail, string-set bridge, high
+// pdb params: size, string
+void __cdecl hkStatisticsCollector_memorySizeToText(int size, void* string)
 {
     if (size < 0x400)
     {
-        hkStringBuf_printf(dst, "%i Bytes", size);
+        hkStringBuf_printf(string, "%i Bytes", size);
     }
     else if (size < 0x2800)
     {
-        hkStringBuf_printf(dst, "%.1f Kb", (double)size * (1.0 / 1024.0));
+        hkStringBuf_printf(string, "%.1f Kb", (double)size * (1.0 / 1024.0));
     }
     else if (size < 0x100000)
     {
-        hkStringBuf_printf(dst, "%i Kb", size / 1024);
+        hkStringBuf_printf(string, "%i Kb", size / 1024);
     }
     else
     {
         float mb = (float)((double)size * (1.0 / 1048576.0));
-        hkStringBuf_printf(dst, "%.2f Mb", mb);
+        hkStringBuf_printf(string, "%.2f Mb", mb);
     }
 }
 
@@ -946,6 +965,8 @@ struct FUN_00d0bc20_Outer
 // Sets bit 0 of object->unk27, calls the virtual Method on object->unk14, and stores the negation of bit 3 of unk27 into result.
 // @fnv 0x00d0bc20
 // src: HAVOK_LIB 0x00d0bc20
+// pdb: hkpContinuousSimulation::fireEarliestToiCallbacksAndCheckEnabled | hkpContinuousSimulation.obj | retail, upstream name already matches, high
+// pdb params: event, rotateNormal
 unsigned char* __stdcall hkpContinuousSimulation_fireEarliestToiCallbacksAndCheckEnabled(unsigned char* result, FUN_00d0bc20_Outer* object, unsigned int value)
 {
     object->unk27 |= 1;
@@ -1026,26 +1047,32 @@ extern "C" void __cdecl QueryKdTree(int a, int b, int c, const LocalM128* d, con
 
 // Subtracts the vector at p+0x30 from the one at p+0x40 and calls QueryKdTree with p->m00 twice, p->m1C, the difference and the p+0x30 values.
 // @fnv 0x00d1b7f0
-// src: GUESS 0x00d1b7f0 (confidence: low)
-void __cdecl Runtime_ComputeValues_00d1b7f0(S00d1b7f0_Input* p, int argB, int argC)
+// src: XBOX_RETAIL_PDB 0x00d1b7f0
+// pdb: hkKdTreeAabbQueryUtils::queryAabbRecursive | hkKdTreeAabbQueryUtils.obj | retail, object-file gap fill, high
+// pdb params: tree, aabb, hits
+// pdb locals: offset, scale
+void __cdecl hkKdTreeAabbQueryUtils_queryAabbRecursive(S00d1b7f0_Input* tree, int aabb, int hits)
 {
     S00d1b7f0_Frame frame;
 
-    int first = p->m00;
-    frame.v0 = p->m30;
-    frame.v1 = p->m34;
-    frame.v2 = p->m38;
-    frame.v3 = p->m3C;
+    int first = tree->m00;
+    frame.v0 = tree->m30;
+    frame.v1 = tree->m34;
+    frame.v2 = tree->m38;
+    frame.v3 = tree->m3C;
 
-    int m1c = p->m1C;
+    int m1c = tree->m1C;
 
-    frame.diff = _mm_sub_ps(*reinterpret_cast<const LocalM128*>(&p->m40), *reinterpret_cast<const LocalM128*>(&p->m30));
+    frame.diff = _mm_sub_ps(*reinterpret_cast<const LocalM128*>(&tree->m40), *reinterpret_cast<const LocalM128*>(&tree->m30));
 
-    QueryKdTree(first, first, m1c, &frame.diff, &frame.v0, argB, argC);
+    QueryKdTree(first, first, m1c, &frame.diff, &frame.v0, aabb, hits);
 }
 
 // @fnv 0x00d043e0
 // src: COMMUNITY 0x00d043e0
+// pdb: hkDefaultFinishJobFunc | hkJobQueue.obj | debug, upstream name already matches, high
+// pdb params: queue, data, jobIn, newJobCreatedOut
+// pdb locals: assertBuf, ostr
 int hkDefaultFinishJobFunc()
 {
     return 1;
@@ -1236,12 +1263,15 @@ struct QueryObj
     LocalM128 max;
 };
 
-void __cdecl hkKdTreeAabbQueryUtils_queryAabbInternal(const void* a, int b, const Vec4* c, const Vec4* d, int e, int f, int g, int h, int i, int j);
+void __cdecl hkKdTreeAabbQueryUtils_queryAabbInternal(const void* root, int projectedEntries, const Vec4* c, const Vec4* d, int aabbIn, int stackSize, int hitArray, int collector, int hitsOut, int maxHits);
 
 // Records two HkTimer profiling markers around a call to FUN_00d1b4d0 with the QueryObj vertex data and bounds.
 // @fnv 0x00d1b850
 // src: XBOX_PDB 0x00d1b850
-void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative(QueryObj* obj, int arg1, int arg2)
+// pdb: hkKdTreeAabbQueryUtils::queryAabbIterative | hkKdTreeAabbQueryUtils.obj | retail, object-file gap fill, high
+// pdb params: tree, aabbIn, hits
+// pdb locals: offset, scale
+void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative(QueryObj* tree, int aabbIn, int hits)
 {
     HkTimer* prof = (HkTimer*)TlsGetValue(DAT_0126835c);
     char* cur = prof->head;
@@ -1254,13 +1284,13 @@ void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative(QueryObj* obj, int arg1, 
         prof->head = cur + 12;
     }
 
-    void* verts = obj->unk00;
-    int vcount = obj->unk1c;
-    Vec4 mn = *(const Vec4*)&obj->min;
-    LocalM128 dv = _mm_sub_ps(obj->max, obj->min);
+    void* verts = tree->unk00;
+    int vcount = tree->unk1c;
+    Vec4 mn = *(const Vec4*)&tree->min;
+    LocalM128 dv = _mm_sub_ps(tree->max, tree->min);
     const Vec4* delta = (const Vec4*)&dv;
-    int count = obj->unk0c > 0 ? obj->unk0c : 128;
-    hkKdTreeAabbQueryUtils_queryAabbInternal(verts, vcount, delta, &mn, arg1, count, arg2, 0, 0, 0);
+    int count = tree->unk0c > 0 ? tree->unk0c : 128;
+    hkKdTreeAabbQueryUtils_queryAabbInternal(verts, vcount, delta, &mn, aabbIn, count, hits, 0, 0, 0);
 
     prof = (HkTimer*)TlsGetValue(DAT_0126835c);
     cur = prof->head;
@@ -1279,7 +1309,10 @@ extern "C" void __cdecl hkKdTreeAabbQueryUtils_queryAabbInternal(int, int, const
 // Builds a frame from the vectors at p->m30 and p->m40 (start and difference) and calls FUN_00d1b4d0 with count m0C, or 128 if that is not positive.
 // @fnv 0x00d1b930
 // src: XBOX_PDB 0x00d1b930
-void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(S00d1b7f0_Input* p, int argB, int argC, int argD)
+// pdb: hkKdTreeAabbQueryUtils::queryAabbIterative | hkKdTreeAabbQueryUtils.obj | retail, call graph, high
+// pdb params: tree, aabbIn, hits
+// pdb locals: offset, scale
+void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(S00d1b7f0_Input* p, int aabbIn, int hitsOut, int maxHits)
 {
     S00d1b7f0_Frame frame;
     LocalM128 end = _mm_load_ps(reinterpret_cast<const float*>(&p->m40));
@@ -1295,7 +1328,7 @@ void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(S00d1b7f0_Input*
     int count = p->m0C;
     if (count <= 0)
         count = 128;
-    hkKdTreeAabbQueryUtils_queryAabbInternal(first, second, &frame.diff, &frame.v0, argB, count, 0, 0, argC, argD);
+    hkKdTreeAabbQueryUtils_queryAabbInternal(first, second, &frame.diff, &frame.v0, aabbIn, count, 0, 0, hitsOut, maxHits);
 }
 
 struct FUN_00d1ba90
@@ -1303,6 +1336,8 @@ struct FUN_00d1ba90
     virtual ~FUN_00d1ba90();
 };
 // @fnv 0x00d1ba90
+// pdb: hkgpMesh::PrismPolicy::`scalar deleting destructor' | hkgpMesh.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00d1ba90::~FUN_00d1ba90()
 {}
 
@@ -1379,7 +1414,7 @@ extern float DAT_010cd644;
 extern LocalM128 DAT_011b3810;
 extern "C" void _ReadWriteBarrier(void);
 
-void __cdecl ResizeAudioStream(void* allocator, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct MemSource
 {
@@ -1464,6 +1499,9 @@ struct ChildInfo
     KdNode* right;
 };
 // @fnv 0x00d1b290
+// pdb: hkKdTreeAabbQueryUtils::_queryAabbRecursive | hkKdTreeAabbQueryUtils.obj | retail, object-file run extension, low
+// pdb params: root, ppuNode, projectedEntries, scale, offset, aabb, hits
+// pdb locals: spuNode, primId, primAabb
 void __cdecl QueryKdTree(void* tree, KdNode* node, const Aabb16* prims, const float* scale, const float* offset,
                          const QueryAabb* __restrict query, PrimIds* hits)
 {
@@ -1653,6 +1691,9 @@ struct HkRayBundle
 // Transposes four from vectors and four to vectors into bundles, then returns an HkRayBundle built from them with the given mask.
 // @fnv 0x00d1bb50
 // src: GUESS 0x00d1bb50 (confidence: low)
+// pdb: hkAabbTreeQueryUtilsData::bundleRays | hkAabbTreeQueryUtils.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkAabbTreeQueryUtils<hkAabbTreeData::hkAabbTreeAabb,unsigned short>::AllHitsNodeCollector::addLeaf
+// pdb params: from0, to0, from1, to1, from2, to2, from3, to3, mask
 HkRayBundle __cdecl Runtime_UpdateState_00d1bb50(const HkVec4& from0, const HkVec4& to0, const HkVec4& from1, const HkVec4& to1,
                                  const HkVec4& from2, const HkVec4& to2, const HkVec4& from3, const HkVec4& to3,
                                  int mask)
@@ -1703,6 +1744,9 @@ typedef void*(__stdcall* S00d1b9b0_TlsGet)(unsigned long dwTlsIndex);
 // Records a TtqueryAabb timer, calls FUN_00d1b4d0 with the query AABB and count, then records an Et timer.
 // @fnv 0x00d1b9b0
 // src: XBOX_PDB 0x00d1b9b0
+// pdb: hkKdTreeAabbQueryUtils::queryAabbIterative | hkKdTreeAabbQueryUtils.obj | retail, object-file run extension, low
+// pdb params: tree, aabbIn, hits
+// pdb locals: offset, scale
 void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b9b0(QueryObj* pQuery, int p1, int p2)
 {
     volatile unsigned int tick;
@@ -1751,6 +1795,7 @@ extern "C" float _mm_cvtss_f32(LocalM128 a);
 // Returns the squared distance from the point at b to the box with min at a and max at a+4 floats, or 0.0f when the point is inside.
 // @fnv 0x00d1bad0
 // src: GUESS 0x00d1bad0 (confidence: low)
+// pdb: hkgpMeshInternals::RayCaster::`scalar deleting destructor' | hkgpMesh.obj | debug, object-file run extension, low
 float __cdecl Runtime_ComputeValues_00d1bad0(float* a, float* b)
 {
     LocalM128 va2 = *reinterpret_cast<LocalM128*>(a + 4);
@@ -1916,20 +1961,23 @@ static __forceinline void copyResult(unsigned* target, int count, const unsigned
 }
 // @fnv 0x00d1b4d0
 // src: XBOX_PDB 0x00d1b4d0
-int __cdecl hkKdTreeAabbQueryUtils_queryAabbInternal(S00d1b4d0_Node* node, S00d1b4d0_Entry* entries, const RealVec& scale, const RealVec& offset,
-                         S00d1b4d0_Bounds* query, int capacity, S00d1b4d0_List* list, S00d1b4d0_Callback* callback,
-                         unsigned** output, int limit)
+// pdb: hkKdTreeAabbQueryUtils::queryAabbInternal | hkKdTreeAabbQueryUtils.obj | retail, upstream name already matches, high
+// pdb params: root, projectedEntries, scale, offset, aabbIn, stackSize, hitArray, collector, hitsOut, maxHits
+// pdb locals: aabb, stackPtr, currentHits, spuNode, primId, primAabb
+int __cdecl hkKdTreeAabbQueryUtils_queryAabbInternal(S00d1b4d0_Node* root, S00d1b4d0_Entry* projectedEntries, const RealVec& scale, const RealVec& offset,
+                         S00d1b4d0_Bounds* aabbIn, int stackSize, S00d1b4d0_List* hitArray, S00d1b4d0_Callback* collector,
+                         unsigned** hitsOut, int maxHits)
 {
-    S00d1b4d0_Node* cur = node;
+    S00d1b4d0_Node* cur = root;
     S00d1b4d0_Id id;
     __declspec(align(16)) S00d1b4d0_NodeCopy n;
     n.set(cur);
     hkMemoryRouter* alloc = hkMemoryRouter_getInstance();
     S00d1b4d0_Node** base = (S00d1b4d0_Node**)alloc->m_stack.m_next.m_storage;
     S00d1b4d0_Node** top = base;
-    int bytes = (capacity * 4 + 127) & ~127;
+    int bytes = (stackSize * 4 + 127) & ~127;
     alloc->m_stack.m_next.m_storage = (void*)((int)((char*)base + bytes));
-    S00d1b4d0_Bounds bounds = *query;
+    S00d1b4d0_Bounds bounds = *aabbIn;
     int found = 0;
     for (;;)
     {
@@ -1973,7 +2021,7 @@ int __cdecl hkKdTreeAabbQueryUtils_queryAabbInternal(S00d1b4d0_Node* node, S00d1
                 biasHi.m128_f32[2] = 1e16f;
                 biasHi.m128_f32[3] = 1e16f;
                 zeroData = _mm_setzero_si128();
-                unsigned short* p = &entries[n.code & 0x7fffffff].unk0e;
+                unsigned short* p = &projectedEntries[n.code & 0x7fffffff].unk0e;
                 do
                 {
                     id.lo = p[-4];
@@ -2002,27 +2050,27 @@ int __cdecl hkKdTreeAabbQueryUtils_queryAabbInternal(S00d1b4d0_Node* node, S00d1
                     S00d1b4d0_Aabb box;
                     box.m_kMinimumCorner = vmin.q;
                     box.m_kMaximumCorner = vmax.q;
-                    LocalM128 mincomp = _mm_cmple_ps(box.m_kMinimumCorner, *(const LocalM128*)query->max);
-                    LocalM128 maxcomp = _mm_cmple_ps(*(const LocalM128*)query->min, box.m_kMaximumCorner);
+                    LocalM128 mincomp = _mm_cmple_ps(box.m_kMinimumCorner, *(const LocalM128*)aabbIn->max);
+                    LocalM128 maxcomp = _mm_cmple_ps(*(const LocalM128*)aabbIn->min, box.m_kMaximumCorner);
                     if ((_mm_movemask_ps(_mm_and_ps(mincomp, maxcomp)) & 7) == 7)
                     {
-                        if (callback)
+                        if (collector)
                         {
-                            if (callback->slot1(id))
+                            if (collector->slot1(id))
                                 goto done;
                         }
-                        else if (list)
+                        else if (hitArray)
                         {
                             hkMemoryRouter* grow = hkMemoryRouter_getInstance();
-                            if (list->size == (int)(list->capacity & 0x3fffffff))
-                                ResizeAudioStream((void*)grow->m_temp, list, 4);
-                            copyResult(list->data + list->size, 1, *(unsigned*)&id);
-                            list->size++;
+                            if (hitArray->size == (int)(hitArray->capacity & 0x3fffffff))
+                                ResizeAudioStream((void*)grow->m_temp, hitArray, 4);
+                            copyResult(hitArray->data + hitArray->size, 1, *(unsigned*)&id);
+                            hitArray->size++;
                         }
-                        else if (output)
+                        else if (hitsOut)
                         {
-                            *(*output)++ = *(unsigned*)&id;
-                            if (++found >= limit)
+                            *(*hitsOut)++ = *(unsigned*)&id;
+                            if (++found >= maxHits)
                                 goto done;
                         }
                     }

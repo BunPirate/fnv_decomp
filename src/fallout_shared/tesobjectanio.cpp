@@ -3,62 +3,67 @@
 #include "tesobjectanio_decls.h"
 
 // @fnv 0x00511a90
+// pdb: TESObjectANIO::InitItem | TESObjectANIO.obj | retail, upstream name already matches, high
+// pdb locals: itempint
 void TESObjectANIO::InitItem()
 {
     if (IsFormInitialized())
         return;
     ((TESModelTextureSwap*)((char*)this + 0x18))->InitItem(this);
-    if (pObject)
+    if (pIdleAnim)
     {
-        unsigned int formID = (unsigned int)pObject;
+        unsigned int formID = (unsigned int)pIdleAnim;
         TESForm::RemapFormIDForFile(formID, GetFile(-1));
-        pObject = dynamic_cast<TESObjectANIO*>(TESForm::GetFormByID(formID));
+        pIdleAnim = dynamic_cast<TESObjectANIO*>(TESForm::GetFormByID(formID));
     }
     SetInitializationState(true);
 }
 
 // @fnv 0x00511b20
-bool TESObjectANIO::LoadForm(TESFile* file)  // TESForm vslot 8
+// pdb: TESObjectANIO::Load | TESObjectANIO.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: echunkid, formid, pMessage, isize, pdata, itempint
+bool TESObjectANIO::LoadForm(TESFile* apFile)  // TESForm vslot 8
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x4d)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     int chunk;
-    while (chunk = file->GetChunkID())
+    while (chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {
-            unsigned int size = file->GetChunkSize();
+            unsigned int size = apFile->GetChunkSize();
             void* textureData = _alloca(size);
-            file->GetChunkData(textureData, size);
-            ParseTextureSwapData(textureData, size, file->GetFormVersion());
+            apFile->GetChunkData(textureData, size);
+            UnpackTextureSwapChunkData(textureData, size, apFile->GetFormVersion());
             break;
         }
         case 0x41544144: {
             unsigned int formID = 0;
-            file->GetChunkData(&formID);
-            pObject = (TESObjectANIO*)formID;
+            apFile->GetChunkData(&formID);
+            pIdleAnim = (TESObjectANIO*)formID;
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -84,6 +89,7 @@ struct FUN_00511950 : public TESForm, public B2_4fe
 
 // Sets the form type to 0x4d and initializes pAnim to 0.
 // @fnv 0x00511950
+// pdb: TESObjectANIO::TESObjectANIO | TESObjectANIO.obj | retail, call graph, high
 FUN_00511950::FUN_00511950()
 {
     ((SFTX*)this)->SetFormType(0x4d);
@@ -100,6 +106,7 @@ struct FUN_005119e0_obj
 
 // Calls FUN_00511a10, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x005119e0
+// pdb: TESObjectANIO::`scalar deleting destructor' | TESObjectANIO.obj | retail, vtable slot, high
 void* FUN_005119e0_obj::Destroy(unsigned int flags)
 {
     FUN_00511a10();
@@ -133,6 +140,8 @@ struct FUN_00511d10_shell
 
 // @fnv 0x00511d10
 // src: XBOX_PDB 0x00511d10
+// pdb: TESObjectANIO::Save | TESObjectANIO.obj | retail, upstream name already matches, high
+// pdb locals: iid
 void __thiscall FUN_00511d10_shell::TESObjectANIO_Save()
 {
     ((FUN_004855a0*)this)->M();
@@ -180,6 +189,7 @@ class FUN_00511a10_cls : public B511A10Form, public B511A10TextureSwap
 };
 
 // @fnv 0x00511a10
+// pdb: TESObjectANIO::~TESObjectANIO | TESObjectANIO.obj | debug, object-file gap fill, medium
 FUN_00511a10_cls::~FUN_00511a10_cls()
 {
     ClearData();

@@ -115,6 +115,7 @@ ANIM_GROUP_ENUM TESAnimGroup::GetType(unsigned short group)
 }
 
 // @fnv 0x005f2420
+// pdb: TESAnimGroup::GetType | TESAnimGroup.obj | debug, upstream name already matches, high
 ANIM_GROUP_ENUM TESAnimGroup::GetType() const
 {
     return GetType(sType);
@@ -139,11 +140,14 @@ bool TESAnimGroup::IsActionTypeValid(ANIM_GROUP_ACTION_TYPE aeActionType)
 
 // Returns true if group is not ANIM_GROUP_NONE and its type falls between ANIM_GROUP_AIM and ANIM_GROUP_AIM_IS_DOWN.
 // @fnv 0x005f2630
-bool TESAnimGroup::IsAimAnimation(unsigned short group)
+// pdb: TESAnimGroup::IsAimAction | TESAnimGroup.obj | debug, call graph, high
+// pdb params: asGroup
+// pdb locals: eanimGroup
+bool TESAnimGroup::IsAimAnimation(unsigned short asGroup)
 {
-    if (group == ANIM_GROUP_ENUM_ANIM_GROUP_NONE)
+    if (asGroup == ANIM_GROUP_ENUM_ANIM_GROUP_NONE)
         return false;
-    ANIM_GROUP_ENUM type = GetType(group);
+    ANIM_GROUP_ENUM type = GetType(asGroup);
     if (type >= ANIM_GROUP_ENUM_ANIM_GROUP_AIM && type <= ANIM_GROUP_ENUM_ANIM_GROUP_AIM_IS_DOWN)
         return true;
     return false;
@@ -157,7 +161,9 @@ bool TESAnimGroup::IsValidAnimationGroup(ANIM_GROUP_ACTION_TYPE type)
 
 // Returns true if the animation group type is one of the jump-loop variants, false otherwise.
 // @fnv 0x005f4d60
-bool TESAnimGroup::IsJumpAnimation() const
+// src: XBOX_DEBUG_PDB 0x005f4d60
+// pdb: TESAnimGroup::IsJumpingLoopAnim | TESAnimGroup.obj | debug, call graph, high
+bool TESAnimGroup::IsJumpingLoopAnim() const
 {
     switch (GetType(sType))
     {
@@ -173,23 +179,28 @@ bool TESAnimGroup::IsJumpAnimation() const
 }
 
 // @fnv 0x005f4c70
+// pdb: TESAnimGroup::GetSpeed | TESAnimGroup.obj | debug, call graph, medium
 float TESAnimGroup::GetAnimationSpeed() const
 {
     return speed.Length();
 }
 
 // @fnv 0x005f3870
-char* TESAnimGroup::FindNextLine(char* pcText)
+// src: XBOX_RETAIL_PDB 0x005f3870
+// pdb: TESAnimGroup::GetTextKey | TESAnimGroup.obj | retail, object-file gap fill, high
+// pdb params: apKeyText
+char* TESAnimGroup::GetTextKey(char* apKeyText)
 {
-    pcText = strchr(pcText, '\n');
-    while (pcText && *pcText && (*pcText == '\r' || *pcText == '\n'))
-        ++pcText;
-    if (pcText && *pcText)
-        return pcText;
+    apKeyText = strchr(apKeyText, '\n');
+    while (apKeyText && *apKeyText && (*apKeyText == '\r' || *apKeyText == '\n'))
+        ++apKeyText;
+    if (apKeyText && *apKeyText)
+        return apKeyText;
     return 0;
 }
 
 // @fnv 0x0048f7f0
+// pdb: BSAnimGroupSequence::GetAnimGroup | Animation.obj | debug, upstream name already matches, high
 TESAnimGroup* BSAnimGroupSequence::GetAnimGroup() const
 {
     return m_spAnimGroup;
@@ -197,17 +208,22 @@ TESAnimGroup* BSAnimGroupSequence::GetAnimGroup() const
 
 // Returns false for ANIM_GROUP_ENUM_ANIM_GROUP_NONE, otherwise recurses on the action of the group's type entry in DAT_011977e4.
 // @fnv 0x005f2670
-bool TESAnimGroup::IsValidAnimationGroup(unsigned short group)
+// pdb: TESAnimGroup::IsPowerAttackAction | TESAnimGroup.obj | debug, call graph (shared callers), high
+// pdb params: asGroup
+bool TESAnimGroup::IsValidAnimationGroup(unsigned short asGroup)
 {
-    if (group == ANIM_GROUP_ENUM_ANIM_GROUP_NONE)
+    if (asGroup == ANIM_GROUP_ENUM_ANIM_GROUP_NONE)
         return false;
-    return IsValidAnimationGroup(DAT_011977e4[GetType(group)].action);
+    return IsValidAnimationGroup(DAT_011977e4[GetType(asGroup)].action);
 }
 
 // @fnv 0x005f2540
-bool TESAnimGroup::IsActionTypeValid(unsigned short group)
+// pdb: TESAnimGroup::IsAttackAction | TESAnimGroup.obj | debug, call graph, high
+// pdb params: asGroup
+// pdb locals: egroup
+bool TESAnimGroup::IsActionTypeValid(unsigned short asGroup)
 {
-    ANIM_GROUP_ENUM type = GetType(group);
+    ANIM_GROUP_ENUM type = GetType(asGroup);
     if (type == ANIM_GROUP_ENUM_ANIM_GROUP_NONE)
         return false;
     switch (type)
@@ -224,9 +240,13 @@ bool TESAnimGroup::IsActionTypeValid(unsigned short group)
 }
 
 // @fnv 0x005f4d00
-void TESAnimGroup::SetSoundsFromSequence(NiControllerSequence* sequence)
+// src: XBOX_DEBUG_PDB 0x005f4d00
+// pdb: TESAnimGroup::FillPriorityArray | TESAnimGroup.obj | debug, call graph, high
+// pdb params: apSeq
+// pdb locals: pfakeBSSeq, n
+void TESAnimGroup::FillPriorityArray(NiControllerSequence* apSeq)
 {
-    BSAnimGroupSequence* animSequence = static_cast<BSAnimGroupSequence*>(sequence);
+    BSAnimGroupSequence* animSequence = static_cast<BSAnimGroupSequence*>(apSeq);
     for (int i = 0; i < 8; ++i)
     {
         if (DAT_01199bcc[i])
@@ -243,6 +263,7 @@ unsigned short TESAnimGroup::GetAnimGroupType_0047d3b0()
 
 // Calls the destructor, frees this when flags has bit 1 set, and returns this.
 // @fnv 0x005f22a0
+// pdb: TESAnimGroup::`scalar deleting destructor' | TESAnimGroup.obj | retail, vtable slot, high
 void* TESAnimGroup::FUN_005f22a0(unsigned int flags)
 {
     this->FUN_005f22d0();
@@ -275,6 +296,8 @@ extern AnimGroupInfo_011977d8 DAT_011977d8[];
 
 // Validates groupAction against frameCount, warns on out-of-range or NaN times, and returns times[groupAction] or 0.0f.
 // @fnv 0x005f3780
+// pdb: TESAnimGroup::GetTime | TESAnimGroup.obj | retail, string-set bridge, high
+// pdb params: groupAction
 float TESAnimGroup::GetActionTime(int groupAction)
 {
     if (groupAction < 0)
@@ -311,6 +334,9 @@ extern const char* DAT_011977a4[];
 
 // @fnv 0x005f38d0
 // src: COMMUNITY 0x005f38d0
+// pdb: TESAnimGroup::ParseAnimGroupFilename | TESAnimGroup.obj | retail, upstream name already matches, high
+// pdb params: apModelName, aeMove, aeWeapon, abPowerArmor
+// pdb locals: plastSlash, n
 void __cdecl TESAnimGroup_ParseAnimGroupFilename(const char* apModelName, unsigned int* aeMove, unsigned int* aeWeapon, bool* abPowerArmor)
 {
     unsigned int n;
@@ -363,6 +389,9 @@ void __cdecl operator delete(void*);
 void* __cdecl memset(void*, int, unsigned int);
 
 // @fnv 0x005f2450
+// pdb: TESAnimGroup::SetType | TESAnimGroup.obj | debug, object-file run extension, low
+// pdb params: asType
+// pdb locals: n
 void __fastcall SetAnimGroupType(TESAnimGroup* self, UShortArg type)
 {
     self->sType = type.v;
@@ -391,6 +420,8 @@ extern int DAT_010484e8;
 void __cdecl operator delete(void*);
 
 // @fnv 0x005f22d0
+// pdb: TESAnimGroup::~TESAnimGroup | TESAnimGroup.obj | retail, upstream name already matches, high
+// pdb locals: eprocessType, j, pmob, panim, pmanager, iseqCount, i, pbsSeq, pseq
 TESAnimGroup::~TESAnimGroup()
 {
     void* p = times;
@@ -402,6 +433,7 @@ TESAnimGroup::~TESAnimGroup()
 }
 
 // @fnv 0x005f23a0
+// pdb: TESAnimGroup::GetMove | TESAnimGroup.obj | debug, call graph, medium
 int TESAnimGroup::GetMoveAnimGroup()
 {
     return TESAnimGroup::GetMoveType(this->sType);
@@ -411,6 +443,7 @@ extern "C" unsigned short __cdecl TESAnimGroup_GetWeapon(unsigned short);
 
 // @fnv 0x005f23e0
 // src: COMMUNITY 0x005f23e0
+// pdb: TESAnimGroup::GetWeapon | TESAnimGroup.obj | debug, upstream name already matches, high
 unsigned short __thiscall TESAnimGroup::GetWeapon()
 {
     return TESAnimGroup_GetWeapon(sType);
@@ -447,6 +480,8 @@ bool __cdecl IsIronSightsAction(ANIM_GROUP_ENUM);
 
 // Returns false for anim group 0xff, otherwise checks whether the group's type is an iron sights action.
 // @fnv 0x005f2720
+// pdb: TESAnimGroup::IsReloadAction | TESAnimGroup.obj | debug, object-file run extension, low
+// pdb params: asGroup
 bool IsIronSightsAnimGroup(unsigned short usAnimGroup)
 {
     if (usAnimGroup == 0xff)
@@ -460,11 +495,13 @@ bool __cdecl IsNine(int);
 // Returns false for type 0xff, otherwise looks up the type's entry and returns the result of IsNine on its stored value.
 // @fnv 0x005f25d0
 // src: XBOX_PDB 0x005f25d0
-bool TESAnimGroup_IsAttackSpinAction(unsigned short ausType)
+// pdb: TESAnimGroup::IsAttackSpinAction | TESAnimGroup.obj | debug, upstream name already matches, high
+// pdb params: asGroup
+bool TESAnimGroup_IsAttackSpinAction(unsigned short asGroup)
 {
-    if (ausType == 0xff)
+    if (asGroup == 0xff)
         return false;
-    return IsNine(*(int*)(GetType(ausType) * 0x24 + (int)DAT_011977e4));
+    return IsNine(*(int*)(GetType(asGroup) * 0x24 + (int)DAT_011977e4));
 }
 
 void* __cdecl _Deallocate(void*);
@@ -473,6 +510,9 @@ void* __cdecl _Reallocate(void*, unsigned int);
 
 // Resizes the sounds array to count entries, copying existing entries and initialising new ones with default time, type and volume values.
 // @fnv 0x005f2820
+// pdb: TESAnimGroup::SetSoundCount | TESAnimGroup.obj | debug, object-file run extension, low
+// pdb params: aiCount
+// pdb locals: oldSoundCount, cnt, sounds_old, n
 void TESAnimGroup::ResizeSoundList(unsigned int count)
 {
     unsigned int oldSoundCount = m_uiSoundEntryCount;
@@ -589,6 +629,9 @@ extern TESDataHandler* g_dataHandler;
 // Parses a controller sequence's text keys to build a TESAnimGroup, setting parent, morph, blend, decal and sound data and warning on bad notes.
 // @fnv 0x005f3a20
 // src: COMMUNITY 0x005f3a20
+// pdb: TESAnimGroup::LoadAnimGroup | TESAnimGroup.obj | retail, upstream name already matches, high
+// pdb params: apSequence, apModelName
+// pdb locals: m, iactionIndex, message, lastGroup, eanimWeapon, panimGroup, bpowerArmor, eanimMove, plastSlash, inonAccumIndex, paccumName, iaccumIndex, n, bshowWarning, cnonAccumName, ptestName, numKeys, key, plocalKeyText, keyText, time, pfirstLineOfKeyText, ptoken, benum ...
 TESAnimGroup* TESAnimGroup_LoadAnimGroup(NiControllerSequence* apSequence, const char* apModelName)
 {
     ANIM_GROUP_ENUM m;
@@ -662,7 +705,7 @@ TESAnimGroup* TESAnimGroup_LoadAnimGroup(NiControllerSequence* apSequence, const
                 while (ptoken && BSStringLength(ptoken))
                 {
                     if (*ptoken == '\r')
-                        ptoken = TESAnimGroup::FindNextLine(ptoken);
+                        ptoken = TESAnimGroup::GetTextKey(ptoken);
                     if (!__strnicmp(ptoken, DAT_011a8244, BSStringLength(DAT_011a8244)))
                     {
                         if (!panimGroup->GetMorphKey())
@@ -767,7 +810,7 @@ TESAnimGroup* TESAnimGroup_LoadAnimGroup(NiControllerSequence* apSequence, const
                             }
                             else
                             {
-                                TESSound* openSound = g_dataHandler->GetSoundByEditorID(message);
+                                TESSound* openSound = g_dataHandler->GetSound(message);
                                 if (openSound)
                                 {
                                     BSAudio::GetSingleton()->ForwardToManager(openSound->GetSoundID(), false);
@@ -872,14 +915,14 @@ TESAnimGroup* TESAnimGroup_LoadAnimGroup(NiControllerSequence* apSequence, const
                         }
                     }
                     if (ptoken)
-                        ptoken = TESAnimGroup::FindNextLine(ptoken);
+                        ptoken = TESAnimGroup::GetTextKey(ptoken);
                 }
             }
         }
 
         if (panimGroup)
         {
-            panimGroup->SetSoundsFromSequence(apSequence);
+            panimGroup->FillPriorityArray(apSequence);
             ANIM_GROUP_ACTION estartAction = (ANIM_GROUP_ACTION)0;
             ANIM_GROUP_ACTION eendAction = (ANIM_GROUP_ACTION)1;
             switch (DAT_011977d8[panimGroup->GetType()].iSequenceType)
@@ -965,9 +1008,11 @@ bool TESAnimGroup::IsPowerAttack_005f26c0()
 // FUN_005f2750: switch over a byte-coded action id; true for the listed action ids.
 // @fnv 0x005f2750
 // src: XBOX_PDB 0x005f2750
-bool __cdecl TESAnimGroup_IsIronSightsAction(int a)
+// pdb: TESAnimGroup::IsIronSightsAction | TESAnimGroup.obj | debug, upstream name already matches, high
+// pdb params: asGroup
+bool __cdecl TESAnimGroup_IsIronSightsAction(int asGroup)
 {
-    switch (a)
+    switch (asGroup)
     {
     case 0x14:
     case 0x15:

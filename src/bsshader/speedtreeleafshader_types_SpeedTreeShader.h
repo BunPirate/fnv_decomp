@@ -7,7 +7,7 @@ class SpeedTreeLeafShaderConstantMapSetup;
 class SpeedTreeLeafShaderConstantMapSetup
 {
   public:
-    static void ConfigureShaderConstantMap(NiD3DShaderConstantMap* map, int index);
+    static void SpeedTreeShader_SetShaderConstants(NiD3DShaderConstantMap* apVertexConstantMap, int aiStartRegister);
     // void __cdecl SpeedTreeLeafShaderConstantMapSetup::*()
     // void __cdecl SpeedTreeLeafShaderConstantMapSetup::*()
     // bool __cdecl SpeedTreeLeafShaderConstantMapSetup::*(const unsigned int, float&, float&)

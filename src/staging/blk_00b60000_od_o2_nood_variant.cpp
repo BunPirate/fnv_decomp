@@ -133,20 +133,23 @@ Matrix132* __stdcall D3DXMatrixMultiply_00ee6de0(Matrix132*, const Matrix132*, c
 Matrix132* __stdcall D3DXMatrixTranspose_00ee6dd4(Matrix132*, const Matrix132*);
 // @fnv 0x00b7b730
 // src: COMMUNITY 0x00b7b730
-void Owner132::ShadowLightShader_SetupGeometryConstants_ObjToCube(Group132* group, unsigned int slot, int skipLoad, const char* name)
+// pdb: ShadowLightShader::SetupGeometryConstants_ObjToCube | ShadowLightShader.obj | retail, upstream name already matches, high
+// pdb params: apRenderPass, epass, apSkin, aWorld
+// pdb locals: kD3DMat, kobjtoworld, rposAdj, kobjtoshadow
+void Owner132::ShadowLightShader_SetupGeometryConstants_ObjToCube(Group132* apRenderPass, unsigned int epass, int apSkin, const char* aWorld)
 {
     Matrix132 matrix, result, temporary;
     if (!DAT_011febdc->enabled)
         return;
-    if (!group->objects || (group->count > 0u && group->objects[0] && group->objects[0]->special) ||
-        (slot >= 0x244 && slot <= 0x24b) || (slot >= 0x2d8 && slot <= 0x2ef) || slot == 0xfe || slot == 0x10b)
+    if (!apRenderPass->objects || (apRenderPass->count > 0u && apRenderPass->objects[0] && apRenderPass->objects[0]->special) ||
+        (epass >= 0x244 && epass <= 0x24b) || (epass >= 0x2d8 && epass <= 0x2ef) || epass == 0xfe || epass == 0x10b)
     {
         temporary = context->transform;
         D3DXMatrixTranspose_00ee6dd4(&DAT_011fecc8, &temporary);
         return;
     }
     Group132* geometry = DAT_011f91e0;
-    if (!geometry->objects || group->count <= 0u)
+    if (!geometry->objects || apRenderPass->count <= 0u)
         return;
     matrix.m12 = matrix.m13 = matrix.m14 = matrix.m21 = matrix.m23 = matrix.m24 = matrix.m31 = matrix.m32 = matrix.m34 =
         matrix.m41 = matrix.m42 = matrix.m43 = 0.0f;
@@ -154,8 +157,8 @@ void Owner132::ShadowLightShader_SetupGeometryConstants_ObjToCube(Group132* grou
     result.m11 = result.m22 = result.m33 = result.m44 = 1.0f;
     result.m12 = result.m13 = result.m14 = result.m21 = result.m23 = result.m24 = result.m31 = result.m32 = result.m34 =
         result.m41 = result.m42 = result.m43 = 0.0f;
-    if (!skipLoad)
-        NiD3DUtility_GetD3DFromNi_(&matrix, name);
+    if (!apSkin)
+        NiD3DUtility_GetD3DFromNi_(&matrix, aWorld);
     matrix.m41 += DAT_011f474c.x;
     matrix.m42 += DAT_011f474c.y;
     matrix.m43 += DAT_011f474c.z;
@@ -332,7 +335,7 @@ struct ClipManager
 {
     unsigned int unk000, unk004, unk008, unk00c, unk010, unk014;
     ClipRenderData* renderer;
-    void ShadowLightShader_SetupGeometryConstants_SimpleShadowClipPlanes(unsigned int state);
+    void ShadowLightShader_SetupGeometryConstants_SimpleShadowClipPlanes(unsigned int epass);
 };
 extern ClipMatrix* __stdcall D3DXMatrixInverse_00ee6dda(ClipMatrix*, float*, const ClipMatrix*);
 extern ClipPlane16* __stdcall D3DXPlaneNormalize_00ee6dce(ClipPlane16*, const ClipPlane16*);
@@ -341,9 +344,12 @@ extern "C" void* __cdecl FUN_00ec44d0(void*, const void*, unsigned int);
 
 // @fnv 0x00b7be00
 // src: COMMUNITY 0x00b7be00
-void ClipManager::ShadowLightShader_SetupGeometryConstants_SimpleShadowClipPlanes(unsigned int state)
+// pdb: ShadowLightShader::SetupGeometryConstants_SimpleShadowClipPlanes | ShadowLightShader.obj | retail, upstream name already matches, high
+// pdb params: epass
+// pdb locals: pdevice, plight, prenderpass, pplanes, kD3DView, kclipplane, kD3DProj, kview, kinv, kprojection, kworldtoclip, i, knormal, kplane, koutplane, pclipplane
+void ClipManager::ShadowLightShader_SetupGeometryConstants_SimpleShadowClipPlanes(unsigned int epass)
 {
-    if (state >= 0x231 && state <= 0x234)
+    if (epass >= 0x231 && epass <= 0x234)
     {
         ClipState* clip = (ClipState*)DAT_011f91e0->objects[0];
         if (!clip->cacheValid)
@@ -501,6 +507,7 @@ class ShaderConstantDevice
 };
 
 
+// pdb: structure D3DXVECTOR4, size 0x10, 4 members
 struct D3DXVECTOR4
 {
     float x;
@@ -650,14 +657,17 @@ class BSShaderPass
     NiD3DShaderConstantMap* m_pkPixelConstantMap;
     NiD3DShaderConstantMap* m_pkVertexConstantMap;
 
-    void ShadowLightShader_SetupPassConstants(unsigned int uiPass);
+    void ShadowLightShader_SetupPassConstants(unsigned int auiCurrentPass);
 };
 
 // @fnv 0x00b7b450
 // src: COMMUNITY 0x00b7b450
-void BSShaderPass::ShadowLightShader_SetupPassConstants(unsigned int uiPass)
+// pdb: ShadowLightShader::SetupPassConstants | ShadowLightShader.obj | retail, upstream name already matches, high
+// pdb params: auiCurrentPass
+// pdb locals: i, pgeom, pbsfog, knear, fpower, kfar, kfogcolor, mat
+void BSShaderPass::ShadowLightShader_SetupPassConstants(unsigned int auiCurrentPass)
 {
-    if (uiPass == 0x250 || uiPass == 0x251)
+    if (auiCurrentPass == 0x250 || auiCurrentPass == 0x251)
         return;
 
     int i;
@@ -665,25 +675,25 @@ void BSShaderPass::ShadowLightShader_SetupPassConstants(unsigned int uiPass)
     {
         NiShaderConstantMapEntry* pkEntry = DAT_011febd8[i];
         if (pkEntry)
-            *reinterpret_cast<bool*>(&pkEntry->unk08) = (DAT_011fcc80[uiPass] & (1 << (i + 1))) != 0;
+            *reinterpret_cast<bool*>(&pkEntry->m_bEnabled) = (DAT_011fcc80[auiCurrentPass] & (1 << (i + 1))) != 0;
     }
     for (i = 0; i < 22; i++)
     {
         NiShaderConstantMapEntry* pkEntry = DAT_011fec30[i];
         if (pkEntry)
-            *reinterpret_cast<bool*>(&pkEntry->unk08) = (DAT_011fc0a0[uiPass] & (1 << (i + 1))) != 0;
+            *reinterpret_cast<bool*>(&pkEntry->m_bEnabled) = (DAT_011fc0a0[auiCurrentPass] & (1 << (i + 1))) != 0;
     }
 
     m_pkVertexConstantMap->vf09();
     m_pkPixelConstantMap->vf09();
 
-    if (*reinterpret_cast<bool*>(&DAT_011febf8->unk08))
+    if (*reinterpret_cast<bool*>(&DAT_011febf8->m_bEnabled))
     {
         BSFogProperty* pkFog = BSShaderManager_GetFogProperty(DAT_011f91c4);
         if (pkFog)
         {
             float fNear = pkFog->nearDepth;
-            float fFar = pkFog->farDepth;
+            float fFar = pkFog->fEndDistance;
             float m_fAlpha = pkFog->density;
             if (fFar == 0.0f && fNear == 0.0f)
             {
@@ -707,7 +717,7 @@ void BSShaderPass::ShadowLightShader_SetupPassConstants(unsigned int uiPass)
         pkDevice->SetVertexShaderConstantF(1, &kWorld.m11, 4);
     }
 
-    if (*reinterpret_cast<bool*>(&DAT_011febf8->unk08))
+    if (*reinterpret_cast<bool*>(&DAT_011febf8->m_bEnabled))
     {
         DAT_011fd9b8 = DAT_011a9bd0;
         DAT_011fd9c8 = DAT_011a9bd0;

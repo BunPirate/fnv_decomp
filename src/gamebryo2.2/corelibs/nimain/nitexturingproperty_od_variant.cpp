@@ -4,12 +4,15 @@
 
 // @fnv 0x00533f40
 // src: COMMUNITY 0x00533f40
-void NiTexturingProperty::SetBaseMap(Map* v)
+// pdb: NiTexturingProperty::SetBaseMap | TESLand.obj | debug, upstream name already matches, high
+// pdb params: pkMap
+// pdb locals: pkOld
+void NiTexturingProperty::SetBaseMap(Map* pkMap)
 {
-    Map* old = m_kStringArray.GetAt(0);
-    if (v != old)
+    Map* old = m_kMaps.GetAt(0);
+    if (pkMap != old)
     {
         delete old;
-        static_cast<NiTArray<Map*, NiTMallocInterface<Map*> >&>(m_kStringArray).SetAt(0, v);
+        static_cast<NiTArray<Map*, NiTMallocInterface<Map*> >&>(m_kMaps).SetAt(0, pkMap);
     }
 }

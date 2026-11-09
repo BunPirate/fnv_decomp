@@ -14,16 +14,17 @@ struct BoolResult;
 
 typedef unsigned long hkUlong;
 
+// pdb: class hkpPhysicsSystem, size 0x44, bases: hkReferencedObject, 7 members
 class hkpPhysicsSystem : public hkReferencedObject
 {
 public:
-    hkArray<hkpRigidBody*> m_ppRigidBodies;
-    hkArray<hkpConstraintInstance*> m_ppConstraints;
-    hkArray<hkpAction*> m_ppActions;
-    hkArray<hkpPhantom*> m_kPhantoms;
+    hkArray<hkpRigidBody*> m_rigidBodies;
+    hkArray<hkpConstraintInstance*> m_constraints;
+    hkArray<hkpAction*> m_actions;
+    hkArray<hkpPhantom*> m_phantoms;
     hkStringPtr m_name;
-    hkUlong m_ulUserData;
-    hkBool m_bSlotEnabled;
+    hkUlong m_userData;
+    hkBool m_active;
     char pad41[3];
 
     hkpPhysicsSystem();
@@ -40,7 +41,7 @@ public:
     void __thiscall AddAction(hkpAction* action);
     void __thiscall hkpPhysicsSystem_addPhantom(void* phantom);
     void __thiscall hkpPhysicsSystem_addConstraint(hkpConstraintInstance* constraint);
-    void __thiscall hkpPhysicsSystem_addAction(hkpAction* action);
+    void __thiscall hkpPhysicsSystem_addAction(hkpAction* a);
     void __thiscall hkpPhysicsSystem_removeRigidBody(int index);
     void __thiscall hkpPhysicsSystem_removeConstraint(int index);
     void __thiscall hkpPhysicsSystem_removeAction(int index);

@@ -7,18 +7,19 @@ class Actor;
 class BGSLoadGameBuffer;
 class DetectionViewData;
 
+// pdb: class ActorCause, size 0x1c, 5 members
 class ActorCause
 {
 public:
-    Actor* m_00;
-    BSSimpleList<DetectionViewData*>* m_04;
-    NiPoint3 m_08;
+    Actor* pActor;
+    BSSimpleList<DetectionViewData*>* pWitnesses;
+    NiPoint3 kOrigin;
     union
     {
         unsigned int m_14;
         int m_iFadeIndex;
     };
-    int m_18;
+    int iRefCount;
 
     ActorCause(Actor* actor);
     ~ActorCause();
@@ -26,7 +27,7 @@ public:
     void IncRefCount();
     unsigned int DecRefCount();
     unsigned short GetCount();
-    void Update(int arg);
+    void ActorCause_InitLoadGame(int apLoadGameBuffer);
     unsigned short GetRefCount_0047d3d0();
     ActorCause* UpdateState_0066e010(Actor* actor);
 

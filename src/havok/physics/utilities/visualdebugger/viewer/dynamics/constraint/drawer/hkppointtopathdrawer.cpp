@@ -176,7 +176,7 @@ struct LineDrawer
     virtual void drawLine(const hkVector4& a, const hkVector4& b, int color, int id, int tag);
 };
 
-int __cdecl PackColorBigEndian(float r, float g, float b, float a);
+int __cdecl PackColorBigEndian(float red, float green, float blue, float alpha);
 extern float DAT_0101622c;
 
 struct Processor
@@ -230,7 +230,7 @@ struct Viewer
     int unkbc;
     Processor m_processor;
 
-    void hkpConstraintDrawer_updateCommonParameters(Input* input, hkTransform* transform, hkTransform* extra);
+    void hkpConstraintDrawer_updateCommonParameters(Input* input, hkTransform* refLocalToWorld, hkTransform* attLocalToWorld);
     void hkpConstraintDrawer_drawBodyFrames(int id, int tag);
     void hkpConstraintDrawer_drawPivots(int id, int tag);
     void UpdateViewerAndDrawPointLines(Input* input, LineDrawer* drawer, int id, int tag);

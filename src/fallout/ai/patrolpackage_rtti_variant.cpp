@@ -32,6 +32,7 @@ class LocationDescriptor
     void SetLocRef(TESObjectREFR*);
     TESObjectREFR* GetLocationReference();
 };
+// pdb: class ArchiveManager, size 0x1, 0 members
 class ArchiveManager
 {
   public:
@@ -63,26 +64,29 @@ struct PatrolLoadShell
     bool bFlag2C;
     int unk30;
     int unk34;
-    void PatrolActorPackageData_LoadGame(BGSLoadFormBuffer* apBuffer);
+    void PatrolActorPackageData_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // @fnv 0x009f34e0
 // src: XBOX_PDB 0x009f34e0
-void PatrolLoadShell::PatrolActorPackageData_LoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: PatrolActorPackageData::LoadGame | PatrolPackage.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, i, pref
+void PatrolLoadShell::PatrolActorPackageData_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    apBuffer->ReadDataBlock(&iState, 4);
+    apLoadGameBuffer->ReadDataBlock(&iState, 4);
     iState = (iState >= 0 && iState <= 2) ? iState : 0;
-    apBuffer->ReadDataBlock(&unk08, 4);
-    apBuffer->ReadDataBlock(&unk34, 4);
-    apBuffer->ReadDataBlock(&bFlag0C, 1);
-    apBuffer->ReadDataBlock(&bFlag2C, 1);
-    apBuffer->ReadDataBlock(&unk30, 4);
-    pPackage = dynamic_cast<TESPackage*>(TESForm::GetFormByID(apBuffer->ReadFormIdentifier()));
-    unsigned int ItemUpdateArray = apBuffer->ReadElementCount();
+    apLoadGameBuffer->ReadDataBlock(&unk08, 4);
+    apLoadGameBuffer->ReadDataBlock(&unk34, 4);
+    apLoadGameBuffer->ReadDataBlock(&bFlag0C, 1);
+    apLoadGameBuffer->ReadDataBlock(&bFlag2C, 1);
+    apLoadGameBuffer->ReadDataBlock(&unk30, 4);
+    pPackage = dynamic_cast<TESPackage*>(TESForm::GetFormByID(apLoadGameBuffer->ReadFormIdentifier()));
+    unsigned int ItemUpdateArray = apLoadGameBuffer->ReadElementCount();
     kArray.SetSize(ItemUpdateArray, true);
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
     {
         NavMeshInfo*& rEntry = kArray.GetAt(i);
-        apBuffer->ReadFormIdentifier(&rEntry);
+        apLoadGameBuffer->ReadFormIdentifier(&rEntry);
     }
 }
 
@@ -251,14 +255,17 @@ struct PatrolData9f3610
     int unk30;
     unsigned int uiIndex;
 
-    bool SetPatrolRefIndex(unsigned int);
+    bool SetCurrentReference(unsigned int);
     void SelectClosestPatrolPoint(void*);
-    void PatrolActorPackageData_InitLoadGame(BGSLoadFormBuffer* apBuf);
+    void PatrolActorPackageData_InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 
 // @fnv 0x009f3610
 // src: XBOX_PDB 0x009f3610
-void PatrolData9f3610::PatrolActorPackageData_InitLoadGame(BGSLoadFormBuffer* apBuf)
+// pdb: PatrolActorPackageData::InitLoadGame | PatrolPackage.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: bremovedAny, isaveGameCount, i, pref, bremove, ppatrolRef, ppatrolExtra
+void PatrolData9f3610::PatrolActorPackageData_InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     bool bAnyRemoved = false;
     unsigned int ItemUpdateArray = kRefs.GetSize();
@@ -286,14 +293,14 @@ void PatrolData9f3610::PatrolActorPackageData_InitLoadGame(BGSLoadFormBuffer* ap
             ItemUpdateArray--;
         }
     }
-    pActor = reinterpret_cast<PatrolActor*>(apBuf->GetActor());
+    pActor = reinterpret_cast<PatrolActor*>(apLoadGameBuffer->GetActor());
     if (pPackage)
     {
         if (!pPatrolRefData)
         {
             pPatrolRefData = pPackage->GetPatrolData();
         }
-        if (!SetPatrolRefIndex(uiIndex))
+        if (!SetCurrentReference(uiIndex))
         {
             SelectClosestPatrolPoint(pActor->GetPatrolTarget());
         }

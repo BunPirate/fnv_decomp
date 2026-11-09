@@ -17,7 +17,10 @@ unsigned long TallGrassShaderProperty::GetCacheIdentifier()
 #pragma optimize("", on)
 // Iterates the grass map, destroys each grass entry, then clears the map and resets two globals.
 // @fnv 0x00b62970
-void TallGrassShaderProperty::ClearCacheData()
+// src: XBOX_RETAIL_PDB 0x00b62970
+// pdb: TallGrassShaderProperty::RemoveAllGrass | TallGrassShaderProperty.obj | retail, call graph, high
+// pdb locals: ikey, kiter, pcgrass
+void TallGrassShaderProperty::RemoveAllGrass()
 {
     struct Traversal
     {
@@ -43,9 +46,11 @@ void TallGrassShaderProperty::ClearCacheData()
 
 // Iterates the cached geometry entries, releasing unowned geometries and their data, then removes all entries from the map.
 // @fnv 0x00b62a20
+// pdb: TallGrassShaderProperty::ClearStaticMaps | TallGrassShaderProperty.obj | retail, call graph, high
+// pdb locals: pcache, kiter, pckey
 void TallGrassShaderProperty::ClearCaches()
 {
-    ClearCacheData();
+    RemoveAllGrass();
     void* initial = GetGeometryCacheMap()->GetFirstPos();
     void* pos = initial;
     NiPointer<GeometryCacheEntry> value;
@@ -102,13 +107,13 @@ extern __declspec(thread) int g_tlsMemContext;
 
 inline AutoMemContext::AutoMemContext(int aiContext)
 {
-    m_eMemoryContext = (MEM_CONTEXT)g_tlsMemContext;
+    iOldMemContext = (MEM_CONTEXT)g_tlsMemContext;
     g_tlsMemContext = aiContext;
 }
 
 inline AutoMemContext::~AutoMemContext()
 {
-    g_tlsMemContext = m_eMemoryContext;
+    g_tlsMemContext = iOldMemContext;
 }
 
 struct IntegerDataBlock
@@ -188,7 +193,7 @@ struct FUN_00bd8f90
     int m_aiIntegerPair[2];
     int m_44;
     ~FUN_00bd8f90();
-    void CopySettings(IntegerDataBlock* p);
+    void TallGrassGroup_SetGrassParam(IntegerDataBlock* apGrassParam);
     unsigned short GetRemaining() const
     {
         return m_usFirstValue - m_usSecondValue;
@@ -204,7 +209,7 @@ struct FUN_00bd8f90
 };
 struct FUN_00bd8ae0 : FUN_00bd8f90
 {
-    FUN_00bd8ae0(GeometryCacheEntry* geom, int x, int y, int z);
+    FUN_00bd8ae0(GeometryCacheEntry* apCachedGeometry, int aiCellX, int aiCellY, int abLowDetail);
 };
 
 // The 0x00b61170 cache is keyed by unsigned-long grass IDs; its lookup at 0x00a53c30 is NiTMapBase::GetAt.
@@ -212,11 +217,14 @@ template <> __declspec(noalias) bool NiTMapBase<NiTPointerAllocator<unsigned int
     TallGrassShaderProperty::TallGrassCacheData*>::GetAt(unsigned long,
     TallGrassShaderProperty::TallGrassCacheData*&) const;
 
-GeometryCacheEntry* __cdecl TallGrassShaderProperty_GetCachedGeometry(IntegerDataBlock* p);
+GeometryCacheEntry* __cdecl TallGrassShaderProperty_GetCachedGeometry(IntegerDataBlock* apGrassParam);
 void* __cdecl _memmove(void*, const void*, unsigned int);
 
 // Looks up a cached grass group for the cell, creating and attaching a new one to the node when none has remaining capacity, and returns its remaining count.
 // @fnv 0x00b62bd0
+// pdb: TallGrassShaderProperty::GetGrassGroup | TallGrassShaderProperty.obj | retail, object-file run extension, low
+// pdb params: apGrassParam, aiCellX, aiCellY, apGrassGroup, apGrassNode
+// pdb locals: plist, tempMemContext, piter, pgrass, pcachedGeom, pgrassgroup
 unsigned short __cdecl GetOrCreateGrassGroup(IntegerDataBlock* apGrassParam, int aiCellX, int aiCellY,
                                              FUN_00bd8f90** apGrassGroup, NiNode* apGrassNode)
 {
@@ -256,7 +264,7 @@ unsigned short __cdecl GetOrCreateGrassGroup(IntegerDataBlock* apGrassParam, int
         delete *apGrassGroup;
         *apGrassGroup = new FUN_00bd8ae0(pcachedGeom, aiCellX, aiCellY, 0);
         ++DAT_011f9ef4;
-        (*apGrassGroup)->CopySettings(apGrassParam);
+        (*apGrassGroup)->TallGrassGroup_SetGrassParam(apGrassParam);
         pCurrentElementNext->NiTPointerListBase_AddTail(apGrassGroup);
         apGrassNode->AttachChildInAvailableSlot(static_cast<NiAVObject*>((*apGrassGroup)->m_pSecondObject), true);
     }
@@ -347,6 +355,9 @@ struct PointerMap
 };
 // @fnv 0x00b61010
 // src: COMMUNITY 0x00b61010
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,NiPointer<TallGrassShaderProperty::CachedGeometry> >,NiPointer<TallGrassShaderProperty::CachedGeometry> >::SetAt | TallGrassShaderProperty.obj | debug, call graph, medium
+// pdb params: pcKey, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void PointerMap::CachedGeometryMap_SetAt(const char* key, NiPointer<NiRefObject> value)
 {
     unsigned int hash = Hash(key);
@@ -397,10 +408,10 @@ struct GrassGroupStub
     int unk2c;
     NiVBSet kVBSet;
     void PushEntry(float* apInstance, void* apKey);
-    void UpdateBounds();
+    void TallGrassGroup_UpdateGroupBound();
 };
 
-int __cdecl PackFloatPairToInt(float* apPos);
+int __cdecl TallGrassShaderProperty_Hash_2DPosition(float* arPos);
 void __cdecl FUN_00ecada6(int aiSeed);
 int __cdecl FUN_00ecadb8();
 NiTMapBase<NiTPointerAllocator<unsigned int>, unsigned long,
@@ -416,6 +427,9 @@ inline float FloorF(float f)
 
 // Adds entries using supplied positions and scales, derives a fourth instance value from parameters and random values, then creates a vertex buffer set.
 // @fnv 0x00b62de0
+// pdb: TallGrassShaderProperty::AddGrass | TallGrassShaderProperty.obj | retail, object-file run extension, low
+// pdb params: alTerrainChunkSeed, aiCellX, aiCellY, apGrassNode, apGrassParam, apPositions, afColors, aiNumPositions
+// pdb locals: pcachedgrass, tempMemContext, cnt, pgrassgroup, i, ilen, grassinstance, rseed, rndm
 void __cdecl PopulateGrassInstances(void* apKey, int aiCellX, int aiCellY, NiNode* apGrassNode,
                                     GrassParamF* apParam, float (*apPositions)[3], float* apScales,
                                     unsigned short auiCount)
@@ -436,7 +450,7 @@ void __cdecl PopulateGrassInstances(void* apKey, int aiCellX, int aiCellY, NiNod
         {
             if (auiCount <= 0)
                 break;
-            FUN_00ecada6(PackFloatPairToInt(apPositions[iIndex]));
+            FUN_00ecada6(TallGrassShaderProperty_Hash_2DPosition(apPositions[iIndex]));
             float afInstance[4];
             afInstance[0] = apPositions[iIndex][0];
             afInstance[1] = apPositions[iIndex][1];
@@ -454,7 +468,7 @@ void __cdecl PopulateGrassInstances(void* apKey, int aiCellX, int aiCellY, NiNod
             auiCount--;
             iIndex++;
         }
-        pGroup->UpdateBounds();
+        pGroup->TallGrassGroup_UpdateGroupBound();
     }
 
     apGrassNode->UpdateWorldBound();
@@ -495,6 +509,7 @@ struct ArrayHolder : ArrayHolderBase
 
 // Returns a pointer to a static ArrayHolder instance.
 // @fnv 0x00b61170
+// pdb: TallGrassShaderProperty::GetGrassMap | TallGrassShaderProperty.obj | retail, call graph, high
 ArrayHolder* __cdecl GetArrayHolder()
 {
     static ArrayHolder obj;

@@ -28,7 +28,7 @@ struct FUN_00c9e1b0_class
 hkMemoryRouter* __cdecl _D1A0E0GetMemoryRouter();
 int __stdcall Object_Return0x30(int a1, int a2);
 extern "C" int DAT_01268940;
-void __cdecl hkReferencedObject_calcContentStatistics(int a, int* b);
+void __cdecl hkReferencedObject_calcContentStatistics(int collector, int* cls);
 void __cdecl hkpBoxShape_calcContentStatistics(int a, int* b);
 struct hkAabb;
 void __cdecl ComputeAabbFromTransform(const hkTransform& transform, const hkVector4& halfExtents, hkReal tolerance,

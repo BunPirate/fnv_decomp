@@ -29,7 +29,7 @@ struct State
     int count;
     int context;
 };
-void hkpInertiaTensorComputer_computeConvexHullMassProperties(void* state, float zero, void* receiver);
+void hkpInertiaTensorComputer_computeConvexHullMassProperties(void* vertices, float radius, void* result);
 int __cdecl ApplyLimitToReceiver(int owner, int context, int count, float limit, Receiver* receiver, float value);
 struct FUN_00cebe80_Struct
 {
@@ -153,8 +153,8 @@ struct S_00cee1c0_Arr
     unsigned int* m_pTrailingData;
 };
 S_00cee1c0_Router* hkMemoryRouter_getInstance();
-float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* arr, int unk, float value);
-void __cdecl ProcessArrayWithValue(unsigned int* source, int count, int unk, float value);
+float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* constraints, int unk, float inertiaFactorHint);
+void __cdecl hkpInertiaTensorComputer_optimizeInertiasOfConstraintTree(unsigned int* constraints, int numConstraints, int rootBody, float inertiaFactorHint);
 namespace fnv_anon_00cec3d0 {}
 using namespace fnv_anon_00cec3d0;
 namespace fnv_anon_00cec3d0 {
@@ -192,7 +192,7 @@ struct S00cec3d0_Face : S00cec3d0_Base
     float m_fVertex2X;
     float m_fVertex2Y;
     float m_fVertex2Z;
-    void InternalInertiaTensorComputer_compFaceIntegrals(const float* verts, const float* n);
+    void InternalInertiaTensorComputer_compFaceIntegrals(const float* v, const float* n);
 };
 static inline float S00cec3d0_Sqr(float x)
 {
@@ -277,6 +277,9 @@ static __declspec(noinline) void hkMatrix3_mul(CE50Body* body, float scale)
 }
 // @fnv 0x00cece50
 // src: GUESS 0x00cece50 (confidence: low)
+// pdb: hkpInertiaTensorComputer::computeBoxSurfaceMassProperties | hkpInertiaTensorComputer.obj | retail, object-file run extension, low
+// pdb params: halfExtents, mass, surfaceThickness, result
+// pdb locals: resultSmall, resultBig, halfExtentsSmall, assertBuf, ostr
 int __cdecl hkVector4_UpdateState_00cece50(float* src, float mass, float thickness, CE50Body* out, ...)
 {
     if (!(mass <= 0.0f) && src[0] > thickness && src[1] > thickness && src[2] > thickness && !(thickness <= 0.0f))
@@ -592,6 +595,9 @@ static __declspec(noinline) void hkMatrix3_mul(S00cf0690_Mass* p, float density)
 }
 // @fnv 0x00cf0690
 // src: XBOX_PDB 0x00cf0690
+// pdb: hkpInertiaTensorComputer::computeShapeVolumeMassProperties | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: shape, mass, result
+// pdb locals: element, assertBuf, ostr
 void __cdecl hkpInertiaTensorComputer_computeShapeVolumeMassProperties(void* shape, float mass, S00cf0690_Mass* result)
 {
     S00cf0690_Mass props;

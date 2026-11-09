@@ -2,6 +2,7 @@
 
 #include "ValueModifierEffect.h"
 
+// pdb: class FrenzyEffect, size 0x50, bases: ValueModifierEffect, 1 members
 class FrenzyEffect : public ValueModifierEffect
 {
 public:
@@ -24,5 +25,5 @@ public:
     void Start_0080dd30();
     void Finish_0080ddd0();
 
-    unsigned char exhausted;
+    unsigned char bStartedInCombat;
 };

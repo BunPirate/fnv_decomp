@@ -12,6 +12,7 @@
 
 #include "MiscStatManager.h"
 
+// pdb: class StatsMenu, size 0x2a4, bases: Menu, 16 members
 class StatsMenu : public Menu
 {
 public:
@@ -40,44 +41,44 @@ public:
     virtual void AssignTileByID(int, Tile*);
     virtual int GetClass();
 
-    StatsMenu__HealingOption m_kHealingOptions[4];
-    StatsMenu__NamedEffectsList m_kNamedEffectsList;
-    StatsMenu__StatusEffect* m_pStatusEffectAtIndex0;
-    StatsMenu__StatusEffect* m_pStatusEffectAtIndex1;
-    StatsMenu__StatusEffect* m_pStatusEffectAtIndex2;
-    StatsMenu__StatusEffect* m_pStatusEffectAtIndex3;
-    StatsMenu__StatusEffectList m_kStatusEffectEntries;
+    StatsMenu__HealingOption pHealingOptionsA[4];
+    StatsMenu__NamedEffectsList xNamedEffects;
+    StatsMenu__StatusEffect* pRadiationEffect;
+    StatsMenu__StatusEffect* pDehydrationEffect;
+    StatsMenu__StatusEffect* pHungerEffect;
+    StatsMenu__StatusEffect* pSleepEffect;
+    StatsMenu__StatusEffectList xStatusEffects;
 
-    Tile* m_pTiles[60];
-    ListBox_enum_ActorValue__Index_ m_kPrimaryActorValueList;
-    ListBox_enum_ActorValue__Index_ m_kSecondaryActorValueList;
-    ListBox_PerkRankData___ m_kPerkRankList;
-    ListBox_enum_MiscStatManager__MiscStatID_ m_kMiscStatList;
-    ListBox_StatsMenu__StatusEffect___ m_kStatusEffectList;
-    ListBox_TESReputation___ m_kReputationList;
+    Tile* pTiles[60];
+    ListBox_enum_ActorValue__Index_ lbSpecial;
+    ListBox_enum_ActorValue__Index_ lbSkills;
+    ListBox_PerkRankData___ lbPerks;
+    ListBox_enum_MiscStatManager__MiscStatID_ lbGeneral;
+    ListBox_StatsMenu__StatusEffect___ lbStatusEffects;
+    ListBox_TESReputation___ lbReputation;
     union
     {
         bool m_bUpdateOption;
         unsigned char m_bHealingMode;
     };
-    bool m_bStatUpdatePending;
+    bool bActiveEffectsUpdatedThisFrame;
     unsigned char unk2A2[2];
 
     static StatsMenu* ms_pInventoryMenu;
     static float GetChartScale();
     static void SetStatsPage(unsigned char page);
     static bool SetTileFlashing(Tile*, unsigned int);
-    static void UpdatePrimaryActorValueTile(Tile* tile, ActorValue::Index value);
+    static void SPECIALUpdateFn(Tile* apTile, ActorValue::Index aeIndex);
     static void UpdateSecondaryActorValueTile(Tile* tile, ActorValue::Index value);
     static void UpdateMiscStatTile(Tile* tile, MiscStatManager__MiscStatID value);
-    static void __cdecl UpdateStatusEffects();
+    static void __cdecl UpdatePlayerTitle();
     static void ClearPerks();
 
-    void SetCurrentPage(Page page);
+    void SetCurrentPage(Page aiPage);
     Page GetCurrentPage();
     void SetCurrentPageFromChar(char a);
     int GetTraitForValue(ActorValue::Index value);
-    void UpdateActorValueTiles();
+    void UpdateAllActorValues();
     void RefreshActorValueTile(ActorValue::Index value);
     void RefreshMiscStat(MiscStatManager__MiscStatID value);
     void RefreshMiscStat(MiscStatManager::MiscStat value);

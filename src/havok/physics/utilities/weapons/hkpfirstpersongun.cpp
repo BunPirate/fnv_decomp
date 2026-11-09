@@ -93,7 +93,7 @@ void FUN_00e463c0_cls::hkpFirstPersonGun_quitGun(int a)
 struct FUN_00cb0b80
 {
     char* m_kStringBuffer;
-    FUN_00cb0b80(const char* s) throw();
+    FUN_00cb0b80(const char* string) throw();
 };
 class FUN_00e46660 : public hkReferencedObject
 {
@@ -108,6 +108,7 @@ class FUN_00e46660 : public hkReferencedObject
     virtual ~FUN_00e46660();
 };
 // @fnv 0x00e46660
+// pdb: hkpFirstPersonGun::hkpFirstPersonGun | hkpFirstPersonGun.obj | retail, call graph (shared callers), high
 FUN_00e46660::FUN_00e46660() : m_type(0), m_name(""), m_uiKeyboardKey(0x71)
 {}
 
@@ -137,6 +138,7 @@ class FUN_00e466a0 : public hkReferencedObject
 };
 
 // @fnv 0x00e466a0
+// pdb: hkpFirstPersonGun::hkpFirstPersonGun | hkpFirstPersonGun.obj | retail, object-file gap fill, high
 FUN_00e466a0::FUN_00e466a0(FinishingFlag flag) : hkReferencedObject(flag), m_name(flag)
 {
     if (flag.m_bFinishing)
@@ -170,6 +172,7 @@ class FUN_00e466e0_class : public hkReferencedObject
 
 // Destructor releases every child in m_children by calling removeReference on each element.
 // @fnv 0x00e466e0
+// pdb: hkpFirstPersonGun::~hkpFirstPersonGun | hkpFirstPersonGun.obj | retail, call graph (shared callers), high
 FUN_00e466e0_class::~FUN_00e466e0_class() throw()
 {
     for (int i = 0; i < m_children.m_iElementCount; i++)
@@ -192,6 +195,7 @@ class FUN_00e46750_Obj : public hkpFirstPersonGun
 };
 
 // @fnv 0x00e46750
+// pdb: hkpFirstPersonGun::`scalar deleting destructor' | hkpFirstPersonGun.obj | retail, vtable slot, high
 int FUN_00e46750_Obj::FUN_00e46750(unsigned char flag)
 {
     FUN_00e466e0();
@@ -199,7 +203,7 @@ int FUN_00e46750_Obj::FUN_00e46750(unsigned char flag)
     if (flag & 1)
     {
         hkMemoryRouter* router = &hkMemoryRouter::getInstance();
-        router->m_heap->blockFree(this, m_usMemSizeAndFlags);
+        router->m_heap->blockFree(this, m_memSizeAndFlags);
     }
 
     return (int)this;
@@ -391,7 +395,7 @@ struct hkpClosestCdPointCollectorq
 struct hkpWorldq
 {
     void hkpWorld_linearCast(const hkpCollidableq* collA, const hkpLinearCastInputq& input,
-                      hkpClosestCdPointCollectorq& castCollector, void* startCollector);
+                      hkpClosestCdPointCollectorq& castCollector, void* startPointCollector);
 };
 
 struct LinearCastResult
@@ -406,6 +410,9 @@ struct LinearCastResult
 // Performs a sphere linear cast in the physics world and stores the hit point, normal, rigid body, and shape key in the result.
 // @fnv 0x00e464e0
 // src: GUESS 0x00e464e0 (confidence: medium)
+// pdb: hkpFirstPersonGun::sweepSphere | hkpFirstPersonGun.obj | retail, object-file run extension, low
+// pdb params: world, sweepStart, radius, sweepEnd, out
+// pdb locals: collidable, castCollector, startTransform, linearCastInput
 hkResult hkpWorldq_CastSphereAndStoreHit(hkpWorldq* world, const hkVector4q& from, float radius, const hkVector4q& to,
                       LinearCastResult* result)
 {

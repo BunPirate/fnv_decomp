@@ -6,22 +6,26 @@
 #include <stddef.h>
 // Returns the biped model list of a TESForm if it is an NPC or armor, otherwise null.
 // @fnv 0x00475020
-BGSBipedModelList* BGSBipedModelList::GetBipedModelList(TESForm* form)
+// src: XBOX_DEBUG_PDB 0x00475020
+// pdb: BGSBipedModelList::GetFormAsBipedModelList | BGSBipedModelList.obj | debug, call graph (shared callers), high
+// pdb params: apForm
+// pdb locals: pretval, prepform
+BGSBipedModelList* BGSBipedModelList::GetFormAsBipedModelList(TESForm* apForm)
 {
     BGSBipedModelList* result = 0;
-    if (form)
+    if (apForm)
     {
-        switch (static_cast<const TESForm*>(form)->GetFormType())
+        switch (static_cast<const TESForm*>(apForm)->GetFormType())
         {
         case ENUM_FORM_ID_WEAP_ID: {
-            TESNPC* npc = static_cast<TESNPC*>(form);
+            TESNPC* npc = static_cast<TESNPC*>(apForm);
             // Use the shared component view offset without an accessor call in /Od code.
             result = npc ? reinterpret_cast<BGSBipedModelList*>(
                 reinterpret_cast<unsigned char*>(npc) + offsetof(TESNPC, data) - 0x34) : 0;
             break;
         }
         case ENUM_FORM_ID_ARMO_ID: {
-            TESObjectARMO* armor = static_cast<TESObjectARMO*>(form);
+            TESObjectARMO* armor = static_cast<TESObjectARMO*>(apForm);
             result = static_cast<BGSBipedModelList*>(armor);
             break;
         }
@@ -32,23 +36,26 @@ BGSBipedModelList* BGSBipedModelList::GetBipedModelList(TESForm* form)
 
 // Resolves the list form by ID, warns if it is missing or not a BGSListForm, and validates each entry as a biped model.
 // @fnv 0x00474da0
-void BGSBipedModelList::InitItem(TESForm* owner)
+// pdb: BGSBipedModelList::InitItem | BGSBipedModelList.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: itempint, pownerFile, plist, bbadlist, pbip, pform
+void BGSBipedModelList::InitItem(TESForm* apOwner)
 {
     unsigned int formID = (unsigned int)pListForm;
     if (formID)
     {
-        TESFile* file = owner ? owner->GetFile(-1) : 0;
+        TESFile* file = apOwner ? apOwner->GetFile(-1) : 0;
         TESForm::RemapFormIDForFile(formID, file);
         pListForm = dynamic_cast<BGSListForm*>(TESForm::GetFormByID(formID));
         bool bad;
         if (!pListForm)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (((BGSCameraPath*)owner)->HasNameForWarning())
-                    Warning(DAT_0101a5f0, formID, owner->GetName());
+                if (((BGSCameraPath*)apOwner)->HasNameForWarning())
+                    Warning(DAT_0101a5f0, formID, apOwner->GetName());
                 else
-                    Warning(DAT_0101a5a0, formID, owner->GetFormID());
+                    Warning(DAT_0101a5a0, formID, apOwner->GetFormID());
             }
             else
                 Warning(DAT_0101a558, formID);
@@ -66,7 +73,7 @@ void BGSBipedModelList::InitItem(TESForm* owner)
                 if (!model)
                 {
                     Warning(DAT_0101a4d8, entry->GetName(), entry->GetFormID(), pListForm->GetName(), pListForm->GetFormID(),
-                            owner->GetName(), owner->GetFormID());
+                            apOwner->GetName(), apOwner->GetFormID());
                     pListForm = 0;
                     break;
                 }
@@ -79,6 +86,7 @@ void BGSBipedModelList::InitItem(TESForm* owner)
 }
 
 // @fnv 0x00474d10
+// pdb: BGSBipedModelList::BGSBipedModelList | BGSBipedModelList.obj | debug, upstream name already matches, high
 BGSBipedModelList::BGSBipedModelList()
 {
     BGSBipedModelList::Init();
@@ -89,6 +97,8 @@ extern "C" void __cdecl _FUN_00485910(unsigned int, unsigned int);
 // Save is not declared by the shared component; retain it as a typed helper.
 // @fnv 0x00474d60
 // src: COMMUNITY 0x00474d60
+// pdb: BGSBipedModelList::Save | BGSBipedModelList.obj | debug, upstream name already matches, high
+// pdb locals: tempint
 void __fastcall BGSBipedModelList_Save(BGSBipedModelList* component)
 {
     if (component->pListForm)
@@ -105,6 +115,8 @@ struct FUN_00479350_shell
 };
 // @fnv 0x00479350
 // src: COMMUNITY 0x00479350
+// pdb: BGSEquipType::Save | BGSEquipType.obj | debug, upstream name already matches, high
+// pdb locals: itempint
 void FUN_00479350_shell::BGSEquipType_Save()
 {
     unsigned int tempint;
@@ -116,6 +128,7 @@ void FUN_00479350_shell::BGSEquipType_Save()
 void __fastcall FUN_00483710(BaseFormComponent* component);
 
 // @fnv 0x00474d40
+// pdb: BGSBipedModelList::~BGSBipedModelList | BGSBipedModelList.obj | debug, upstream name already matches, high
 BGSBipedModelList::~BGSBipedModelList()
 {
     FUN_00483710(this);
@@ -123,6 +136,9 @@ BGSBipedModelList::~BGSBipedModelList()
 
 // Returns true if the other component is not a biped model list or references a different list.
 // @fnv 0x00474fc0
+// pdb: BGSBipedModelList::CompareComponent | BGSBipedModelList.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcomp
 bool BGSBipedModelList::CompareWithBase(BaseFormComponent* apCompareFC)
 {
     BGSBipedModelList* pcomp = dynamic_cast<BGSBipedModelList*>(apCompareFC);
@@ -135,6 +151,9 @@ bool BGSBipedModelList::CompareWithBase(BaseFormComponent* apCompareFC)
 
 // Copies the list reference from another biped model list component.
 // @fnv 0x00474f70
+// pdb: BGSBipedModelList::CopyComponent | BGSBipedModelList.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
 void BGSBipedModelList::CopyFromBase(BaseFormComponent* apCopyFC)
 {
     BGSBipedModelList* pCopyFC = dynamic_cast<BGSBipedModelList*>(apCopyFC);

@@ -36,6 +36,8 @@ struct FUN_00408b60 : ListX
 };
 
 // @fnv 0x00408b60
+// pdb: EffectSettingCollection::ClearData | EffectSettingCollection.obj | debug, object-file run extension, low
+// pdb locals: psetting, pnode
 FUN_00408b60::~FUN_00408b60()
 {
     DestroyAllItems();
@@ -48,6 +50,7 @@ struct FUN_004b0880 : SL
 
 // Constructs the object and clears its list by calling RemoveAll.
 // @fnv 0x004b0880
+// pdb: BSClonePools::~BSClonePools | BSClonePool.obj | debug, object-file run extension, low
 FUN_004b0880::FUN_004b0880()
 {
     RemoveAll();
@@ -67,6 +70,8 @@ extern FUN_004ee7d0_node g_011c7d20;
 // Walks the node list from g_011c7d20, calling FUN_004ee770 on each node's referenced object when non-null.
 // @fnv 0x004ee7d0
 // src: COMMUNITY 0x004ee7d0
+// pdb: BGSDecalNode::RemoveAllDecals | BGSDecalNode.obj | retail, upstream name already matches, high
+// pdb locals: plist, pdecalNode
 void BGSDecalNode_RemoveAllDecals()
 {
     FUN_004ee7d0_node* node = &g_011c7d20;
@@ -91,6 +96,9 @@ struct FUN_004f66c0_shell
 // Walks the node chain starting at this+4 and returns the first item whose FUN_0084e3a0() equals id, or 0 if none matches.
 // @fnv 0x004f66c0
 // src: COMMUNITY 0x004f66c0
+// pdb: TESRegionList::Find | TESRegionList.obj | debug, object-file run extension, low
+// pdb params: aiID
+// pdb locals: pcurrent
 TESForm* FUN_004f66c0_shell::TESRegionList_HasRegion(int id)
 {
     FUN_004f66c0_node* node = this ? (FUN_004f66c0_node*)((char*)this + 4) : 0;
@@ -120,6 +128,9 @@ struct FUN_005549d0_shell
 // Walks the linked list starting at this+0xac and calls FUN_00577390(flag) on each referenced object while the reference is non-null.
 // @fnv 0x005549d0
 // src: COMMUNITY 0x005549d0
+// pdb: TESObjectCELL::ShowPrimitives | TESObjectCELL.obj | debug, object-file gap fill, medium
+// pdb params: abShow
+// pdb locals: plist
 void FUN_005549d0_shell::TESObjectCELL_TogglePrimitives(bool flag)
 {
     FUN_005549d0_node* node = (FUN_005549d0_node*)((char*)this + 0xac);
@@ -173,6 +184,9 @@ struct FUN_006137b0_shell
 
 // Walks the node chain from this shell and returns the first object whose FUN_0084e3a0() equals key, or 0 if none is found.
 // @fnv 0x006137b0
+// pdb: TESRace::GetRaceHair | TESRace.obj | debug, object-file run extension, low
+// pdb params: aiFormID
+// pdb locals: plist
 TESForm* FUN_006137b0_shell::FindByKey(int key)
 {
     FUN_006137b0_node* node = NiAVObject_GetWorldTranslate(this);
@@ -192,18 +206,20 @@ struct SoundListView
 struct FUN_00613810_shell
 {
     int FindByKey(int);
-    void TESRace_AddHair(char* item);
+    void TESRace_AddHair(char* apHair);
 };
 SoundListView* __fastcall NiAVObject_GetWorldTranslate(FUN_00613810_shell*);
 
 // Adds item to the list returned by FUN_0045bb80 unless item is null or FindByKey reports it already present.
 // @fnv 0x00613810
 // src: COMMUNITY 0x00613810
-void FUN_00613810_shell::TESRace_AddHair(char* item)
+// pdb: TESRace::AddHair | TESRace.obj | retail, upstream name already matches, high
+// pdb params: apHair
+void FUN_00613810_shell::TESRace_AddHair(char* apHair)
 {
-    if (item == 0 || FindByKey(((TESForm*)item)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
+    if (apHair == 0 || FindByKey(((TESForm*)apHair)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
         return;
-    NiAVObject_GetWorldTranslate(this)->AddTail(item);
+    NiAVObject_GetWorldTranslate(this)->AddTail(apHair);
 }
 
 struct FUN_006138b0_node
@@ -218,6 +234,9 @@ struct FUN_006138b0_shell
 };
 // Walks the recipe category list and returns the item whose referenced id equals id, or null if none matches.
 // @fnv 0x006138b0
+// pdb: TESRace::GetRaceEyeColor | TESRace.obj | debug, object-file run extension, low
+// pdb params: aiFormID
+// pdb locals: plist
 TESForm* FUN_006138b0_shell::FindRecipeCategoryById(int id)
 {
     FUN_006138b0_node* node = GetBGSRecipeCategoryList();
@@ -238,18 +257,20 @@ struct SoundListView
 struct FUN_00613910_shell
 {
     int FindRecipeCategoryById(int);
-    void TESRace_AddEyeColor(char* item);
+    void TESRace_AddEyeColor(char* apEyes);
 };
 SoundListView* __fastcall GetBackTexture(FUN_00613910_shell*);
 
 // Adds item to the list returned by FUN_00503650 unless item is null or FindRecipeCategoryById on its FUN_0084e3a0 result is nonzero.
 // @fnv 0x00613910
 // src: COMMUNITY 0x00613910
-void FUN_00613910_shell::TESRace_AddEyeColor(char* item)
+// pdb: TESRace::AddEyeColor | TESRace.obj | retail, upstream name already matches, high
+// pdb params: apEyes
+void FUN_00613910_shell::TESRace_AddEyeColor(char* apEyes)
 {
-    if (item == 0 || FindRecipeCategoryById(((TESForm*)item)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
+    if (apEyes == 0 || FindRecipeCategoryById(((TESForm*)apEyes)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
         return;
-    GetBackTexture(this)->AddTail(item);
+    GetBackTexture(this)->AddTail(apEyes);
 }
 }  // namespace fnv_00613910
 
@@ -300,6 +321,7 @@ extern int DAT_011d60cc;
 extern G2 g_011d6124;
 // Initializes prev/next to null, pos to zero, flags to 0, assigns a fresh id from DAT_011d60cc, increments it, and adds this to g_011d6124.
 // @fnv 0x0066deb0
+// pdb: ActorCause::ActorCause | ActorCause.obj | debug, call graph, medium
 FUN_0066deb0::FUN_0066deb0()
 {
     prev = 0;
@@ -325,6 +347,7 @@ struct FUN_0083b8d0 : ListX
 };
 
 // @fnv 0x0083b8d0
+// pdb: Conversation::~Conversation | Conversation.obj | debug, object-file gap fill, medium
 FUN_0083b8d0::~FUN_0083b8d0()
 {
     Conversation_ClearList();
@@ -345,6 +368,7 @@ struct FUN_0083e110_shell
 
 // Advances cur to cur->FUN_00726070() when set, then returns whether cur is non-null and its referenced value is non-zero.
 // @fnv 0x0083e110
+// pdb: MenuTopic::NextResponse | MenuTopic.obj | debug, object-file gap fill, medium
 bool FUN_0083e110_shell::AdvanceAndCheckNode()
 {
     if (cur)
@@ -363,19 +387,22 @@ struct FUN_008c5000_node
 };
 struct FUN_008c5000_shell
 {
-    FUN_008c5000_item* Actor_GetCastPowerItem(int id);
+    FUN_008c5000_item* Actor_GetCastPowerItem(int apPower);
 };
 // @fnv 0x008c5000
 // src: COMMUNITY 0x008c5000
-FUN_008c5000_item* FUN_008c5000_shell::Actor_GetCastPowerItem(int id)
+// pdb: Actor::GetCastPowerItem | Actor_Magic.obj | debug, upstream name already matches, high
+// pdb params: apPower
+// pdb locals: pitem, plist
+FUN_008c5000_item* FUN_008c5000_shell::Actor_GetCastPowerItem(int apPower)
 {
     FUN_008c5000_item* found = 0;
-    if (id && *((FUN_008c5000_node*)((char*)this + 0xf4))->_ref_006815c0())
+    if (apPower && *((FUN_008c5000_node*)((char*)this + 0xf4))->_ref_006815c0())
     {
         FUN_008c5000_node* node = (FUN_008c5000_node*)((char*)this + 0xf4);
         while (node && !found)
         {
-            if (*node->_ref_006815c0() && (*node->_ref_006815c0())->id == id)
+            if (*node->_ref_006815c0() && (*node->_ref_006815c0())->id == apPower)
                 found = *node->_ref_006815c0();
             node = node->FUN_00726070();
         }
@@ -391,11 +418,14 @@ struct FUN_008c5090_node
 };
 struct FUN_008c5090_shell
 {
-    void DeleteAllItems();
+    void Actor_DeleteCastPowers();
 };
 // Walks the node list at offset 0xf4, deletes each referenced item, then removes all nodes from the list.
 // @fnv 0x008c5090
-void FUN_008c5090_shell::DeleteAllItems()
+// src: XBOX_RETAIL_PDB 0x008c5090
+// pdb: Actor::DeleteCastPowers | Actor_Magic.obj | retail, call graph, high
+// pdb locals: plist, pitem
+void FUN_008c5090_shell::Actor_DeleteCastPowers()
 {
     FUN_008c5090_node* node = (FUN_008c5090_node*)((char*)this + 0xf4);
     while (node)
@@ -425,6 +455,8 @@ typedef void(__thiscall* FUN_008d1560_fn)(void*);
 // Loops while g_011dfe14._ref_008256d0() is false, calling a virtual slot on each element from _ref_006815c0() and then _ref_0063f7b0().
 // @fnv 0x008d1560
 // src: COMMUNITY 0x008d1560
+// pdb: BSDoorHavokController::ReenableDoors | BSDoorHavokController.obj | retail, upstream name already matches, high
+// pdb locals: pref
 void BSDoorHavokController_ReenableDoors()
 {
     while (!g_011dfe14._ref_008256d0())
@@ -446,12 +478,15 @@ struct FUN_00964100_node
 };
 struct FUN_00964100_shell
 {
-    FUN_00964100_item* PlayerCharacter_GetPlayerAction(int id);
+    FUN_00964100_item* PlayerCharacter_GetPlayerAction(int aeAction);
 };
 // Walks the node list starting at this+0x60c and returns the first item whose id matches, or null if none is found.
 // @fnv 0x00964100
 // src: XBOX_PDB 0x00964100
-FUN_00964100_item* FUN_00964100_shell::PlayerCharacter_GetPlayerAction(int id)
+// pdb: PlayerCharacter::GetPlayerAction | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: aeAction
+// pdb locals: plist, pobject, pAction
+FUN_00964100_item* FUN_00964100_shell::PlayerCharacter_GetPlayerAction(int aeAction)
 {
     FUN_00964100_item* item = 0;
     if (!*(FUN_00964100_node**)((char*)this + 0x60c))
@@ -461,7 +496,7 @@ FUN_00964100_item* FUN_00964100_shell::PlayerCharacter_GetPlayerAction(int id)
     while (node && *node->_ref_006815c0() && !item)
     {
         found = *node->_ref_006815c0();
-        if (found && found->id == id)
+        if (found && found->id == aeAction)
             item = found;
         node = node->FUN_00726070();
     }
@@ -480,6 +515,9 @@ struct FUN_00966bb0_shell
 };
 // Walks the linked list starting at this+0x5e4 and returns the item at the given index, or 0 if the index is out of range.
 // @fnv 0x00966bb0
+// pdb: PlayerCharacter::GetNotebyIndex | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex
+// pdb locals: plist, index
 FUN_00966bb0_item* FUN_00966bb0_shell::GetItemAt(int index)
 {
     FUN_00966bb0_node* node = (FUN_00966bb0_node*)((char*)this + 0x5e4);
@@ -507,6 +545,7 @@ struct FUN_00978990_shell
 
 // Walks the linked list from this node, counting nodes whose referenced Flt is non-zero, and returns the count.
 // @fnv 0x00978990
+// pdb: BSScrapArray<Animation *,1024>::BSScrapArray<Animation *,1024> | ProcessLists.obj | retail, object-file run extension, low
 unsigned int FUN_00978990_shell::CountReferencedNodes()
 {
     FUN_00978990_shell* pNode;
@@ -543,6 +582,7 @@ struct FUN_009ac940
 
 // Destructor that clears the contained list by calling RemoveAll on it.
 // @fnv 0x009ac940
+// pdb: Explosion::ExplosionTarget::~ExplosionTarget | Explosion.obj | debug, object-file run extension, low
 FUN_009ac940::~FUN_009ac940()
 {
     list.RemoveAll();
@@ -670,29 +710,34 @@ struct Standin_ListBase
 struct FUN_007d8040_shell : public Standin_ListBase
 {
     virtual void Dummy();
-    bool RemoveItemNode(Standin_ListBase* cur, Standin_ListBase* prev);
-    bool RemoveByKey(void* param1);
+    bool ListBox_BGSSaveLoadFileEntry_Remove(Standin_ListBase* pkFirst, Standin_ListBase* pkSecond);
+    bool ListBox_BGSSaveLoadFileEntry_RemoveItem(void* apItem);
 };
 
 // Searches the list for the node whose item key equals param1 and removes it via RemoveItemNode, returning false if param1 is null or the list is empty.
 // @fnv 0x007d8040
-bool FUN_007d8040_shell::RemoveByKey(void* pKey)
+// src: XBOX_DEBUG_PDB 0x007d8040
+// pdb: ListBox<BGSSaveLoadFileEntry *>::RemoveItem | StartMenu.obj | debug, call graph, high
+// pdb params: apItem
+// pdb locals: pkSecond, pkFirst
+bool FUN_007d8040_shell::ListBox_BGSSaveLoadFileEntry_RemoveItem(void* apItem)
 {
-    if (!pKey || _ref_008256d0())
+    if (!apItem || _ref_008256d0())
         return false;
 
     Standin_ListBase* _pNode = this;
     Standin_ListBase* pPrevNode = this;
-    while (_pNode && (*_pNode->_ref_006815c0())->m_key != pKey)
+    while (_pNode && (*_pNode->_ref_006815c0())->m_key != apItem)
     {
         pPrevNode = _pNode;
         _pNode = _pNode->FUN_00726070();
     }
-    return RemoveItemNode(_pNode, pPrevNode);
+    return ListBox_BGSSaveLoadFileEntry_Remove(_pNode, pPrevNode);
 }
 
 struct BGSLoadFormBuffer;
 
+// pdb: class Conversation, size 0xc (here 0x1), 2 members
 struct Conversation
 {
     void InitLoadGame_0083c420(BGSLoadFormBuffer*);
@@ -722,6 +767,9 @@ struct FUN_008363a0_shell
 
 // @fnv 0x008363a0
 // src: GUESS 0x008363a0 (confidence: low)
+// pdb: FalloutRadio::StationState::InitLoadGame | FalloutRadio.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: plist, plastList, preceiver, bremove
 void FUN_008363a0_shell::ProcessEntries_008363a0(BGSLoadFormBuffer* pBuffer)
 {
     if (m_conv)
@@ -789,6 +837,8 @@ struct FUN_0083dec0 : ::BSStringT<char>
 };
 
 // @fnv 0x0083dec0
+// pdb: MenuTopic::~MenuTopic | MenuTopic.obj | debug, object-file gap fill, medium
+// pdb locals: pList
 FUN_0083dec0::~FUN_0083dec0()
 {
     if (!m_flag)
@@ -827,38 +877,41 @@ struct Container_009b1630
 
 struct FUN_009b1630_shell
 {
-    void Explosion_AddLimbTarget(Container_009b1630* container, int id, float value);
+    void Explosion_AddLimbTarget(Container_009b1630* apTarget, int aeLimb, float afDistance);
 };
 
 // @fnv 0x009b1630
 // src: XBOX_PDB 0x009b1630
-void FUN_009b1630_shell::Explosion_AddLimbTarget(Container_009b1630* container, int id, float value)
+// pdb: Explosion::AddLimbTarget | Explosion.obj | retail, upstream name already matches, high
+// pdb params: apTarget, aeLimb, afDistance
+// pdb locals: icount, plist, pcandidate, plimb
+void FUN_009b1630_shell::Explosion_AddLimbTarget(Container_009b1630* apTarget, int aeLimb, float afDistance)
 {
     int iNodeCount = 0;
     FUN_009b1630_node* pNode;
     Item_009b1630* pItem = 0;
-    pNode = (FUN_009b1630_node*)&container->list;
-    while (pNode && !pNode->_ref_008256d0() && (!pItem || pItem->id != id))
+    pNode = (FUN_009b1630_node*)&apTarget->list;
+    while (pNode && !pNode->_ref_008256d0() && (!pItem || pItem->id != aeLimb))
     {
         iNodeCount++;
         Item_009b1630* item = *pNode->_ref_006815c0();
         pNode = pNode->FUN_00726070();
-        if (!pItem || pItem->value > item->value || pItem->id == id)
+        if (!pItem || pItem->value > item->value || pItem->id == aeLimb)
         {
             pItem = item;
         }
     }
     if (pItem && iNodeCount >= 2)
     {
-        pItem->id = id;
-        pItem->value = value;
+        pItem->id = aeLimb;
+        pItem->value = afDistance;
     }
     else
     {
         pItem = new Item_009b1630;
-        pItem->id = id;
-        pItem->value = value;
-        container->list.AddHead((FUN_0066deb0* const&)pItem);
+        pItem->id = aeLimb;
+        pItem->value = afDistance;
+        apTarget->list.AddHead((FUN_0066deb0* const&)pItem);
     }
 }
 
@@ -871,12 +924,15 @@ void __fastcall Projectile_SpawnMuzzleFlash(void*);
 
 struct Standin_009b3400
 {
-    void ClearList();
+    void FlameProjectile_ResetExpirationTimer();
 };
 
 // Sets the float at offset 0x150 to zero, deletes every item in the list at 0x88, calls FUN_009c2ff0, and clears the byte at 0x90.
 // @fnv 0x009b3400
-void Standin_009b3400::ClearList()
+// src: XBOX_RETAIL_PDB 0x009b3400
+// pdb: FlameProjectile::ResetExpirationTimer | FlameProjectile.obj | retail, object-file run extension, high
+// pdb locals: pdata
+void Standin_009b3400::FlameProjectile_ResetExpirationTimer()
 {
     *(float*)((char*)this + 0x150) = 0.0f;
     while (!((FUN_0060f3a0_node*)((char*)this + 0x88))->_ref_008256d0())
@@ -957,6 +1013,9 @@ struct S009b0e00
 
 // Searches the linked list for an item with matching m_iKey, updates its m_bA/m_bB flags, or allocates a new item and adds it to the list.
 // @fnv 0x009b0e00
+// pdb: Explosion::GetDamage | Explosion.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Explosion::AddTarget
+// pdb locals: pownerActor, fskill, fdamageMult
 Item_009b0e00* S009b0e00::FindOrCreateItem(int iKey, bool bA, bool bB)
 {
     Node_009b0e00* pNode;
@@ -1007,6 +1066,8 @@ class B3B930List
 
 // @fnv 0x0083b930
 // src: XBOX_PDB 0x0083b930
+// pdb: Conversation::ClearList | Conversation.obj | retail, upstream name already matches, high
+// pdb locals: pList
 void B3B930List::Conversation_ClearList()
 {
     B3B930List* pkList = this;
@@ -1032,6 +1093,9 @@ struct CleanupList
 };
 // Iterates the linked list from this, calls Destroy(true) on each referenced item, then invokes FUN_00470470 on this.
 // @fnv 0x00408bc0
+// pdb: EffectSettingCollection::ClearData | EffectSettingCollection.obj | retail, object-file run extension, low
+// pdb note: debug build links it to EffectSettingCollection::ClearKnownEffects
+// pdb locals: psetting, pnode
 void FUN_00408b60::DestroyAllItems()
 {
     CleanupItem* item;
@@ -1070,30 +1134,33 @@ struct RangeHolder : RangeHeader, RangeNode
 };
 struct RangeConsumer
 {
-    void AddIfAbsent(void*);
+    void TESRegionGrassObjectList_Add(void*);
     void TESRegionGrassObjectList_MergeLists(float, RangeHolder*, float);
 };
 // @fnv 0x004f61d0
 // src: XBOX_PDB 0x004f61d0
-void RangeConsumer::TESRegionGrassObjectList_MergeLists(float input, RangeHolder* holder, float other)
+// pdb: TESRegionGrassObjectList::MergeLists | TESRegionGrassObjectList.obj | retail, upstream name already matches, high
+// pdb params: afPriority, apOtherList, afOtherPriority
+// pdb locals: pcurrent, fpriority, pobjCopy, fpriorityOther
+void RangeConsumer::TESRegionGrassObjectList_MergeLists(float afPriority, RangeHolder* apOtherList, float afOtherPriority)
 {
     RangeNode* position4 = 0;
     void* item = 0;
     float first3;
     float second;
-    if (input > 1.0)
-        first3 = (float)(input / 100.0);
+    if (afPriority > 1.0)
+        first3 = (float)(afPriority / 100.0);
     else
-        first3 = input;
-    if (other > 1.0)
-        second = (float)(other / 100.0);
+        first3 = afPriority;
+    if (afOtherPriority > 1.0)
+        second = (float)(afOtherPriority / 100.0);
     else
-        second = other;
-    if (!holder || first3 < 0.0 || first3 > 1.0 || second < 0.0 || second > 1.0)
+        second = afOtherPriority;
+    if (!apOtherList || first3 < 0.0 || first3 > 1.0 || second < 0.0 || second > 1.0)
     {
         return;
     }
-    position4 = static_cast<RangeNode*>(holder);
+    position4 = static_cast<RangeNode*>(apOtherList);
     while (position4 && *position4->FUN_006815c0())
     {
         if (!(*position4->FUN_006815c0())->Enabled())
@@ -1102,7 +1169,7 @@ void RangeConsumer::TESRegionGrassObjectList_MergeLists(float input, RangeHolder
             continue;
         }
         item = (*position4->FUN_006815c0())->Get(0);
-        AddIfAbsent(item);
+        TESRegionGrassObjectList_Add(item);
         position4 = position4->FUN_00726070();
     }
 }
@@ -1203,13 +1270,16 @@ struct CopyOwner
     void CopyFromSource(CopySource*);
 };
 // @fnv 0x005a8f40
-void CopyOwner::CopyFromSource(CopySource* source)
+// pdb: ScriptLocals::CopyActionList | TESScript.obj | retail, object-file run extension, high
+// pdb params: pCopy
+// pdb locals: pCopyList, pList, used, puse
+void CopyOwner::CopyFromSource(CopySource* pCopy)
 {
     if (list)
         ScriptLocals_ClearActionList();
-    if (source)
+    if (pCopy)
     {
-        CopyList* input9 = source->FUN_0044ddc0();
+        CopyList* input9 = pCopy->FUN_0044ddc0();
         if (input9 && !input9->FUN_008256d0())
         {
             CopyList* output = list;
@@ -1274,6 +1344,8 @@ void FUN_008329a0(int);
 
 // @fnv 0x00832010
 // src: COMMUNITY 0x00832010
+// pdb: FalloutRadio::Shutdown | FalloutRadio.obj | retail, upstream name already matches, high
+// pdb locals: pactStations, pactReceivers
 void FalloutRadio_Shutdown()
 {
     DAT_011dd436 = 1;
@@ -1318,6 +1390,8 @@ struct FUN_0095ec40_shell
     void ClearActorList();
 };
 // @fnv 0x0095ec40
+// pdb: PlayerCharacter::CastQueuedEnchantments | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb locals: plist, penchantment, penchantable
 void FUN_0095ec40_shell::ClearActorList()
 {
     if (pList)
@@ -1407,7 +1481,7 @@ struct Obj_009b1510
     virtual void vF8();
     virtual void vFC();
     virtual bool IsReady();
-    int Actor_GetDamageLocation(int key);
+    int Actor_GetDamageLocation(int apNode);
 };
 struct Key_009b1510
 {
@@ -1424,18 +1498,21 @@ struct Cont_009b1510
 };
 struct Shell_009b1510 : FUN_009b1630_shell
 {
-    void Explosion_CheckLimbTarget(Cont_009b1510* cont, Key_009b1510* key, float value);
+    void Explosion_CheckLimbTarget(Cont_009b1510* apTarget, Key_009b1510* apTargetObject, float afDistance);
 };
 // @fnv 0x009b1510
 // src: COMMUNITY 0x009b1510
-void Shell_009b1510::Explosion_CheckLimbTarget(Cont_009b1510* pContainer, Key_009b1510* key, float value)
+// pdb: Explosion::CheckLimbTarget | Explosion.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apTargetObject, afDistance
+// pdb locals: icount, pfarthestLimb, plist, ptargetActor, plimb, elimb
+void Shell_009b1510::Explosion_CheckLimbTarget(Cont_009b1510* apTarget, Key_009b1510* apTargetObject, float afDistance)
 {
-    if (pContainer && pContainer->obj && pContainer->obj->IsReady())
+    if (apTarget && apTarget->obj && apTarget->obj->IsReady())
     {
-        Obj_009b1510* kObj = pContainer->obj;
+        Obj_009b1510* kObj = apTarget->obj;
         int count2 = 0;
         Item_009b1630* best3 = 0;
-        FUN_009b1630_node* node2 = &pContainer->list;
+        FUN_009b1630_node* node2 = &apTarget->list;
         while (node2 && !node2->_ref_008256d0())
         {
             count2++;
@@ -1444,11 +1521,11 @@ void Shell_009b1510::Explosion_CheckLimbTarget(Cont_009b1510* pContainer, Key_00
             if (!best3 || best3->value > item3->value)
                 best3 = item3;
         }
-        if (count2 < 2 || !best3 || best3->value > value)
+        if (count2 < 2 || !best3 || best3->value > afDistance)
         {
-            int idx = kObj->Actor_GetDamageLocation(key->GetKey());
+            int idx = kObj->Actor_GetDamageLocation(apTargetObject->GetKey());
             if (idx != -1 && idx != 14)
-                Explosion_AddLimbTarget(reinterpret_cast<Container_009b1630*>(pContainer), idx, value);
+                Explosion_AddLimbTarget(reinterpret_cast<Container_009b1630*>(apTarget), idx, afDistance);
         }
     }
 }
@@ -1468,11 +1545,13 @@ struct Thing
     bool NavMeshObstacleManager_ProcessDisabledNavMeshes();
 };
 
-extern "C" void NavMesh_SetDisableNavMesh(int value, int flag);
+extern "C" void NavMesh_SetDisableNavMesh(int aiID, int abDisable);
 
 // Iterates m_pFirstNode, calling FUN_00694500 on each node's value, then calls FUN_00470470 on m_pFirstNode and returns true.
 // @fnv 0x006c4970
 // src: COMMUNITY 0x006c4970
+// pdb: NavMeshObstacleManager::ProcessDisabledNavMeshes | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: plist, meshID
 bool Thing::NavMeshObstacleManager_ProcessDisabledNavMeshes()
 {
     Node* node = &m_pFirstNode;
@@ -1535,16 +1614,19 @@ void FUN_004d65a0_Class::ProcessTreeItemHandles_004d65a0(unsigned int key)
 // The original texture-list getter shares the no-argument thiscall body at 0x00500940.
 // The shared class has no declaration for it; fastcall passes the model in ECX.
 BSSimpleList<TESModelTextureSwap::Texture*>* __fastcall GetTextureSwapList(TESModelTextureSwap* model);
-TESModelTextureSwap* __cdecl TESBipedModelForm_GetWorldTESModel(void* form, int variant);
+TESModelTextureSwap* __cdecl TESBipedModelForm_GetWorldTESModel(void* apObj, int apRef);
 
 // @fnv 0x0048b310
 // src: COMMUNITY 0x0048b310
-bool TESModelTextureSwap_HasTextureSwap(void* form, int variant)
+// pdb: TESModelTextureSwap::HasTextureSwap | TESModelTextureSwap.obj | retail, upstream name already matches, high
+// pdb params: apForm, apRequester
+// pdb locals: bretval, pmodelswap
+bool TESModelTextureSwap_HasTextureSwap(void* apForm, int apRequester)
 {
     bool bFound = false;
-    TESModelTextureSwap* pkPath = TESBipedModelForm_GetWorldTESModel(form, variant);
+    TESModelTextureSwap* pkPath = TESBipedModelForm_GetWorldTESModel(apForm, apRequester);
     if (!pkPath)
-        pkPath = dynamic_cast<TESModelTextureSwap*>(static_cast<TESForm*>(form));
+        pkPath = dynamic_cast<TESModelTextureSwap*>(static_cast<TESForm*>(apForm));
     if (pkPath && !GetTextureSwapList(pkPath)->IsEmpty())
         bFound = true;
     return bFound;

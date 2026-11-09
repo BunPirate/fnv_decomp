@@ -8,10 +8,10 @@
 // src: GAMEBRYO_LIB 0x00aa2d70
 void __thiscall NiMemStream::Seek_00aa2d70(int iNumBytes)
 {
-    int iValue = m_pos + iNumBytes;
+    int iValue = m_uiPos + iNumBytes;
     if (iValue >= 0 && iValue < m_uiSize)
     {
-        m_pos = (unsigned int)iValue;
+        m_uiPos = (unsigned int)iValue;
         m_uiAbsoluteCurrentPos = (unsigned int)iValue;
     }
 }
@@ -22,34 +22,37 @@ void* __cdecl _memmove(void* dst, const void* src, unsigned int count);
 
 // @fnv 0x00aa2dd0
 // src: COMMUNITY 0x00aa2dd0
-unsigned int __thiscall NiMemStream::MemWrite(const void* data, unsigned int numBytes)
+// pdb: NiMemStream::MemWrite | NiMemStream.obj | retail, upstream name already matches, high
+// pdb params: pBuffer, uiBytes
+// pdb locals: uiUnwrittenBytes, pNewBuffer, uiNewSize
+unsigned int __thiscall NiMemStream::MemWrite(const void* pBuffer, unsigned int uiBytes)
 {
     if (m_bFlag20)
         return 0;
 
-    unsigned int freeSpace = m_uiSize - m_pos;
-    if (numBytes > freeSpace)
+    unsigned int freeSpace = m_uiSize - m_uiPos;
+    if (uiBytes > freeSpace)
     {
         unsigned int oldEnd = m_uiSize;
         unsigned int newSize;
-        if (numBytes <= oldEnd + freeSpace)
+        if (uiBytes <= oldEnd + freeSpace)
             newSize = oldEnd * 2;
         else
-            newSize = (oldEnd - freeSpace) + numBytes;
+            newSize = (oldEnd - freeSpace) + uiBytes;
 
         void* newBuffer = _NiMalloc(newSize);
-        _memmove(newBuffer, m_kRayStart, m_kRayEnd);
-        _NiFreeAlias(m_kRayStart);
-        m_kRayStart = (char*)newBuffer;
+        _memmove(newBuffer, m_pBuffer, m_kRayEnd);
+        _NiFreeAlias(m_pBuffer);
+        m_pBuffer = (char*)newBuffer;
         m_uiSize = newSize;
     }
 
-    _memmove(m_kRayStart + m_pos, data, numBytes);
-    m_pos += numBytes;
-    if (m_pos > m_kRayEnd)
-        m_kRayEnd = m_pos;
+    _memmove(m_pBuffer + m_uiPos, pBuffer, uiBytes);
+    m_uiPos += uiBytes;
+    if (m_uiPos > m_kRayEnd)
+        m_kRayEnd = m_uiPos;
 
-    return numBytes;
+    return uiBytes;
 }
 
 namespace fnv_00aa2e60 {
@@ -58,49 +61,57 @@ extern "C" void* __cdecl _memmove(void* dest, const void* src, unsigned int size
 // Copies up to count bytes from the stream's buffer at m_pos into dest, advances m_pos, and returns the number of bytes copied.
 // @fnv 0x00aa2e60
 // src: COMMUNITY 0x00aa2e60
+// pdb: NiMemStream::ReadNoSwap | NiMemStream.obj | debug, upstream name already matches, high
+// pdb params: pkThis, pvBuffer, uiBytes, __formal, __formal
 unsigned int NiMemStream_ReadNoSwap(NiMemStream* stream, void* dest, unsigned int count)
 {
-    unsigned int available = stream->m_kRayEnd - stream->m_pos;
+    unsigned int available = stream->m_kRayEnd - stream->m_uiPos;
     if (count > available)
         count = available;
-    _memmove(dest, stream->m_kRayStart + stream->m_pos, count);
-    stream->m_pos += count;
+    _memmove(dest, stream->m_pBuffer + stream->m_uiPos, count);
+    stream->m_uiPos += count;
     return count;
 }
 }  // namespace fnv_00aa2e60
 
-int __cdecl SwapBufferBySizes(void*, unsigned int, void*, void*);
+int __cdecl NiBinaryStream_DoByteSwap(void*, unsigned int, void*, void*);
 // Copies up to uLen bytes from the stream's buffer at its current position into pData, advances the position, and calls SwapBufferBySizes on the data.
 // @fnv 0x00aa2ec0
 // src: COMMUNITY 0x00aa2ec0
-unsigned int __cdecl NiMemStream_ReadAndSwap(NiMemStream* pStream, void* apBuffer, unsigned int auiLength, void* apArgA,
-                                  void* apArgB)
+// pdb: NiMemStream::ReadAndSwap | NiMemStream.obj | retail, upstream name already matches, high
+// pdb params: pkThis, pvBuffer, uiBytes, puiComponentSizes, uiNumComponents
+// pdb locals: uiBytesRead
+unsigned int __cdecl NiMemStream_ReadAndSwap(NiMemStream* pkThis, void* pvBuffer, unsigned int uiBytes, void* puiComponentSizes,
+                                  void* uiNumComponents)
 {
-    if (auiLength <= 0)
+    if (uiBytes <= 0)
         return 0;
-    unsigned int uiPosition = pStream->m_pos;
-    unsigned int uiAvailable = pStream->m_kRayEnd - uiPosition;
-    unsigned int uiCopied = auiLength;
+    unsigned int uiPosition = pkThis->m_uiPos;
+    unsigned int uiAvailable = pkThis->m_kRayEnd - uiPosition;
+    unsigned int uiCopied = uiBytes;
     if (uiCopied > uiAvailable)
         uiCopied = uiAvailable;
-    char* pBufferBase = pStream->m_kRayStart;
-    _memmove(apBuffer, pBufferBase + uiPosition, uiCopied);
-    pStream->m_pos += uiCopied;
-    SwapBufferBySizes(apBuffer, auiLength, apArgA, apArgB);
+    char* pBufferBase = pkThis->m_pBuffer;
+    _memmove(pvBuffer, pBufferBase + uiPosition, uiCopied);
+    pkThis->m_uiPos += uiCopied;
+    NiBinaryStream_DoByteSwap(pvBuffer, uiBytes, puiComponentSizes, uiNumComponents);
     return uiCopied;
 }
 
 // Copies uSize bytes from pSrc into a temporary buffer, passes it to SwapBufferBySizes, writes it to pStream, frees the buffer and returns the write result.
 // @fnv 0x00aa2f20
 // src: COMMUNITY 0x00aa2f20
-unsigned int __cdecl NiMemStream_WriteAndSwap(NiMemStream* pStream, const void* pSrc, unsigned int uSize, void* pA, void* pB)
+// pdb: NiMemStream::WriteAndSwap | NiMemStream.obj | retail, upstream name already matches, high
+// pdb params: pkThis, pvBuffer, uiBytes, puiComponentSizes, uiNumComponents
+// pdb locals: uiBytesWritten, pucTmpArray
+unsigned int __cdecl NiMemStream_WriteAndSwap(NiMemStream* pkThis, const void* pvBuffer, unsigned int uiBytes, void* puiComponentSizes, void* uiNumComponents)
 {
-    if (uSize <= 0)
+    if (uiBytes <= 0)
         return 0;
-    void* pBuffer = _NiMalloc(uSize);
-    _memmove(pBuffer, pSrc, uSize);
-    SwapBufferBySizes(pBuffer, uSize, pA, pB);
-    unsigned int uRet = pStream->MemWrite(pBuffer, uSize);
+    void* pBuffer = _NiMalloc(uiBytes);
+    _memmove(pBuffer, pvBuffer, uiBytes);
+    NiBinaryStream_DoByteSwap(pBuffer, uiBytes, puiComponentSizes, uiNumComponents);
+    unsigned int uRet = pkThis->MemWrite(pBuffer, uiBytes);
     _NiFreeAlias(pBuffer);
     return uRet;
 }
@@ -132,6 +143,8 @@ void NiMemStream::SetSwapMode(bool bDoSwap)
 
 // @fnv 0x00aa2ea0
 // src: COMMUNITY 0x00aa2ea0
+// pdb: NiMemStream::WriteNoSwap | NiMemStream.obj | debug, upstream name already matches, high
+// pdb params: pkThis, pvBuffer, uiBytes, __formal, __formal
 void __cdecl NiMemStream_WriteNoSwap(NiMemStream* pThis, const void* pData, unsigned int uLen)
 {
     pThis->MemWrite(pData, uLen);
@@ -139,7 +152,7 @@ void __cdecl NiMemStream_WriteNoSwap(NiMemStream* pThis, const void* pData, unsi
 
 struct NiAlloc
 {
-    void __thiscall MemoryManager_Deallocate(void* ptr);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 extern NiAlloc DAT_011f6238;
 void __cdecl _NiFree_00aa10f0(void* ptr);
@@ -148,12 +161,15 @@ extern void* NiMemStream_vftable[];
 
 // Scalar deleting destructor: release the owned buffer, destroy the base, and optionally free the stream.
 // @fnv 0x00aa2d90
+// pdb: NiMemStream::MemRead | NiMemStream.obj | retail, object-file run extension, low
+// pdb params: pBuffer, uiBytes
+// pdb locals: uiUnreadBytes
 void* __fastcall DestroyNiMemStream(NiMemStream* stream, void*, unsigned int flags)
 {
     *(void***)stream = NiMemStream_vftable;
     if (!stream->m_bFlag20 && !stream->m_bFlag21)
     {
-        _NiFree_00aa10f0(stream->m_kRayStart);
+        _NiFree_00aa10f0(stream->m_pBuffer);
     }
     stream->NiBinaryStream::~NiBinaryStream();
     if (flags & 1)

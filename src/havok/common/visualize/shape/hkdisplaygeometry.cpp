@@ -50,6 +50,7 @@ struct FUN_00da2560 : S_00da2560_Base
 
 // Destructor deletes the m_8 member object and clears the pointer.
 // @fnv 0x00da2560
+// pdb: hkDisplayGeometry::~hkDisplayGeometry | hkDisplayGeometry.obj | retail, call graph (shared callers), high
 FUN_00da2560::~FUN_00da2560() throw()
 {
     if (m_8)

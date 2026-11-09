@@ -16,6 +16,7 @@ class NonActorMagicCaster;
 class TESObjectWEAP;
 class bhkSimpleShapePhantom;
 
+// pdb: class Explosion, size 0x104, bases: MobileObject, 26 members
 class Explosion : public MobileObject
 {
 public:
@@ -31,36 +32,36 @@ public:
     virtual void Update(float delta);
     virtual void Initialize();
 
-    float m_fFirstFloatValue;
-    float f3DLifetime;
-    float fInnerRadius;
-    float fOuterRadius;
-    float ExplosionRuntimeData;
-    float m_fFourthRecordValue;
-    NiPointer<bhkSimpleShapePhantom> m_pExplosionPhantom;
-    BSSimpleList<ExplosionParameters*> kTargets;
-    BSSoundHandle kSoundHandles[2];
-    NiPointer<NiLight> m_pMenuLight;
-    TESObjectREFR* pOwnerRef;
-    TESObjectREFR* ReferenceSoundCauseData;
-    NiPointer<ActorCause> m_pActorCause;
-    bool ReferenceCauseInfo;
-    bool m_bFlagD5;
-    bool m_bFlagD6;
-    bool m_bFlagD7;
-    bool MagicWeaponState;
-    bool bUnderwater;
-    NonActorMagicCaster* m_pEffectInstance;
-    TESObjectWEAP* m_pFiringWeapon;
-    int m_iValueE4;
-    NiPoint3 kClosestPoint;
-    NiPoint3 kClosestPointNormal;
-    float m_fClosestPointScalar;
+    float fAge;
+    float fLifetime;
+    float fBuildTime;
+    float fRadius;
+    float fImageSpaceRadius;
+    float fWeaponCondition;
+    NiPointer<bhkSimpleShapePhantom> spPhantom;
+    BSSimpleList<ExplosionParameters*> TargetList;
+    BSSoundHandle Sound1[2];
+    NiPointer<NiLight> spLight;
+    TESObjectREFR* pOwner;
+    TESObjectREFR* pExplodedRef;
+    NiPointer<ActorCause> spActorCause;
+    bool bDecalsPlaced;
+    bool bTargetsFound;
+    bool bTargetsProcessed;
+    bool bForcesApplied;
+    bool bIgnoreImageSpaceSwap;
+    bool bUnderWater;
+    NonActorMagicCaster* pCaster;
+    TESObjectWEAP* pWeaponSource;
+    int iFrameCount;
+    NiPoint3 ClosestPoint;
+    NiPoint3 ClosestPointNormal;
+    float fCalculatedDamage;
 
     float GetEffectiveValue();
     int* FindEntryResultByCategory(int category);
 
-    bool IsNotCulled();
+    bool Explosion_IsDistant();
     float Explosion_GetRadius();
     Proj* FUN_004181e0();
     NiPoint3* FUN_00430830();
@@ -71,11 +72,11 @@ public:
     void ApplyBlastEffects();
     void* Destroy(unsigned int flags);
 
-    void WriteToSaveBuffer(BGSSaveFormBuffer* buffer);
+    void WriteToSaveBuffer(BGSSaveFormBuffer* apSaveGameBuffer);
     void LoadGame_009b22c0(BGSLoadFormBuffer* apLoadGameBuffer);
-    void InitLoadGame_009b25b0(void* apBuffer);
+    void InitLoadGame_009b25b0(void* apLoadGameBuffer);
     void FinishLoadGame_009b2770(BGSLoadFormBuffer* apLoadGameBuffer);
-    void RevertBGS_009b2790(BGSLoadFormBuffer* apBuffer);
+    void RevertBGS_009b2790(BGSLoadFormBuffer* apLoadGameBuffer);
 
     void ProcessMovement(float afDelta);
     void Update3D(int iUnused);

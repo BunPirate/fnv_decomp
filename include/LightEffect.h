@@ -3,10 +3,11 @@
 #include "ActiveEffect.h"
 #include "NiPointLight.h"
 
+// pdb: class LightEffect, size 0x4c, bases: ActiveEffect, 1 members
 class LightEffect : public ActiveEffect
 {
 public:
-    LightEffect(void* caster, void* item, void* effect);
+    LightEffect(void* apCaster, void* apSpell, void* apEffect);
 
     virtual ~LightEffect();
     virtual ActiveEffect* Copy();
@@ -15,14 +16,14 @@ public:
     virtual void Revert(Actor* apActor);
     virtual void Revert(BGSLoadFormBuffer* apBuffer);
     virtual void ApplyLoadBuffer(BGSLoadFormBuffer* apBuffer);
-    virtual void CopyData(ActiveEffect* apOther);
+    virtual void CopyData(ActiveEffect* apDestination);
     virtual void Start();
     virtual void Finish();
 
     float GetFloatAtOffset1C();
-    void AttachLightEffect();
+    void AttachLight();
     void FUN_0080f030(Actor* apActor);
     void DetachLight();
 
-    NiPointer<NiPointLight> m_spLight;
+    NiPointer<NiPointLight> spPointLight;
 };

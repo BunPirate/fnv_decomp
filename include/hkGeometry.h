@@ -4,21 +4,22 @@
 #include "hkaAnimation.h"
 #include "hkVector4.h"
 
+// pdb: structure hkGeometry, size 0x18, 2 members
 class hkGeometry
 {
 public:
     struct Triangle
     {
-        int m_kPointA;
-        int m_kPointB;
-        int m_iThirdValue;
-        int m_iMaterialIndex;
+        int m_a;
+        int m_b;
+        int m_c;
+        int m_material;
 
         void set(int a, int b, int c, int material = -1);
     };
 
-    hkArray<hkVector4> m_kVertices;
-    hkArray<Triangle> m_uiTriangleCount;
+    hkArray<hkVector4> m_vertices;
+    hkArray<Triangle> m_triangles;
 
     hkGeometry();
     ~hkGeometry();

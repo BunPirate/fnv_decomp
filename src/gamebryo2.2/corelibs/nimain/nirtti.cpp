@@ -9,7 +9,7 @@ FNV_STATIC_ASSERT(sizeof(NiRTTI) == 0x8);
 NiRTTI::NiRTTI(const char* pcName, const NiRTTI* pkBaseRTTI)
 {
     m_pcName = pcName;
-    m_pBaseRTTI = pkBaseRTTI;
+    m_pkBaseRTTI = pkBaseRTTI;
 }
 
 void __fastcall Construct(void*);
@@ -19,6 +19,7 @@ extern int DAT_01267b60;
 // Calls Construct on pThis, installs the DAT_010c4314 vtable, zeroes field at offset 16, increments DAT_01267b60 and sets a ushort at offset 12 to 0x41.
 // @fnv 0x00c6b910
 // src: GUESS 0x00c6b910 (confidence: low)
+// pdb: bhkNiCollisionObject::bhkNiCollisionObject | bhkNiCollisionObject.obj | retail, call graph, high
 void* __fastcall NiRTTI_UpdateState_00c6b910(void* apObject)
 {
     Construct(apObject);

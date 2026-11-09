@@ -22,6 +22,7 @@ typedef unsigned short hkContactPointId;
 typedef float hkReal;
 typedef hkReal hkTime;
 
+// pdb: class hkpContactMgr, size 0xc, bases: hkReferencedObject, 1 members
 class hkpContactMgr : public hkReferencedObject
 {
 public:

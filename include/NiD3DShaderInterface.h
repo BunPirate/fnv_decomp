@@ -7,6 +7,7 @@ class GraphicsRenderer;
 class ShaderPassRenderer;
 class NiD3DShaderDeclaration;
 
+// pdb: class NiD3DShaderInterface, size 0x24, bases: NiShader, 4 members
 class NiD3DShaderInterface : public NiShader
 {
   public:
@@ -29,8 +30,8 @@ class NiD3DShaderInterface : public NiShader
 
     bool IsExactKindOf(const NiRTTI* type);
     bool IsDefault();
-    void SetShaderObject(GraphicsRenderer* renderer);
-    static unsigned int InitializeShaderRenderer(GraphicsRenderer* renderer);
+    void SetShaderObject(GraphicsRenderer* pkD3DRenderer);
+    static unsigned int InitializeShaderSystem(GraphicsRenderer* pkD3DRenderer);
 
     Direct3DDeviceInterface* m_pkD3DDevice;
     GraphicsRenderer* m_pkD3DRenderer;

@@ -11,7 +11,7 @@ class SaveLoadChangeHistory
 {
   public:
     BSSimpleArray<char*, 1024> Notes;  // +0x0, 16 bytes
-    void Load(SaveLoadFile* file);
+    void BGSSaveLoadHistory_Load(SaveLoadFile* apFile);
     void Init();
     bool MatchesHistory(SaveLoadChangeHistory* history);
     void AddNote(const char* format, ...);

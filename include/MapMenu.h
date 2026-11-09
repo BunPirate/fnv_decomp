@@ -44,6 +44,7 @@ public:
     ~MapSoundList();
 };
 
+// pdb: class MapMenu, size 0x230, bases: Menu, 38 members
 class MapMenu : public Menu
 {
 public:
@@ -67,52 +68,52 @@ public:
     virtual void HandleControllerConnectOrDisconnect(bool);
 
     Tile* m_pTiles[22];
-    int m_iMapDisplayMode;
-    Tile* m_pMapTile;
-    float m_fMapRotation;
-    bool m_bMapMenuActive;
+    int iCurrentPage;
+    Tile* pMapTile;
+    float fWaveformAnimationStartTime;
+    bool bShowingAllNotes;
     char pad8d[3];
     BGSNote* m_pSelectedNote;
-    unsigned int m_uiMapState;
+    unsigned int uiNoteEnterStartTime;
     MapSoundList m_kSoundList;
     MapArray<BSStringT<char> > SubtitlesToShow;
     BSSimpleList<BSSoundHandle>* m_pkActiveSoundList;
-    bool m_bMapListUpdatePending;
+    bool bSoundsLoading;
     char padbd[3];
-    float m_fMapZoom;
-    int m_iMapSelectionIndex;
-    float m_fSavedMusicVolume;
-    TESQuest* m_pSelectedQuest;
-    RegionObjectEntry* m_pSelectedMapMarkerInfo;
-    Tile* m_pSelectedMarkerTile;
-    BSSimpleList<TESObjectREFR*> m_kMapMarkerList, LocalMapMarkerList;
-    NiPoint2 m_kMapMinimumPoint, m_kMapMaximumPoint;
-    TESForm* m_pCurrentMapSpace;
-    NiPoint3 m_kPlayerWorldPosition;
-    TESForm* m_pCurrentMapForm;
-    TESWorldSpace* m_pCurrentWorldspace;
-    bool m_bLocalMapMode;
+    float fSoundDurationMillis;
+    int iSoundPlayStartTime;
+    float fOldPipboyRadioVolume;
+    TESQuest* pDisplayedQuest;
+    RegionObjectEntry* pDisplayedQuestTarget;
+    Tile* pHighlightedMapMarker;
+    BSSimpleList<TESObjectREFR*> WorldMapMarkerList, LocalMapMarkerList;
+    NiPoint2 MapNWCorner, MapSECorner;
+    TESForm* PlayerMarkerSpace;
+    NiPoint3 PlayerMarkerPos;
+    TESForm* pMapSpace;
+    TESWorldSpace* pRootMapSpace;
+    bool bRootSpaceChanged;
     char pad111[3];
-    TESObjectREFR* m_pFirstMapReference;
-    TESObjectREFR* m_pSecondMapReference;
+    TESObjectREFR* pMapPlayerRef;
+    TESObjectREFR* pFastTravelMarker;
     TESObjectCELL* pAdjustNorthRotationCell;
-    NiPoint2 m_kMapOffset;
-    unsigned int m_uiMapMarkerCount;
-    bool m_bNeedsMapUpdate;
+    NiPoint2 WorldMapDragStart;
+    unsigned int uiNextLocalMapGrid;
+    bool bFogOfWarEnabled;
     char pad12d[3];
-    ListBox<TESQuest*> m_kQuestListBox;
-    ListBox<BGSNote*> m_kNoteListBox;
-    ListBox<TESObjectREFR*> m_kMapMarkerListBox;
-    ListBox<BGSQuestObjective*> m_kObjectiveListBox;
-    ListBox<TESChallenge*> m_kChallengeListBox;
-    MapArray<Tile*> m_kMapMarkerTiles;
+    ListBox<TESQuest*> lbQuestsList;
+    ListBox<BGSNote*> lbNotesList;
+    ListBox<TESObjectREFR*> lbRadioStationsList;
+    ListBox<BGSQuestObjective*> lbQuestObjectivesList;
+    ListBox<TESChallenge*> lbChallengeList;
+    MapArray<Tile*> debugWaypoints;
 
     void UpdateLocalMap();
-    void RefreshMap();
+    void UpdateWorldMap();
     void UpdateQuestObjectiveList();
-    void RefreshNotesList();
-    void RefreshChallengeList();
-    void SetNote(BGSNote* note);
+    void UpdateNotes();
+    void UpdateChallenges();
+    void SetNote(BGSNote* apNote);
     void RefreshRadioList();
     void SetCurrentPage(unsigned char);
     void SetCurrentPage(int);
@@ -127,8 +128,8 @@ public:
     void RefreshMapMenu(bool selected);
     MapMenu();
     static Tile* Create();
-    static void MenuDepthController();
-    static void StopMapMenuSounds();
+    static void UpdateMenu();
+    static void ClearAudioLogSubtites();
     static void SetMapPositionToPlayer();
     static void UpdateMapPosition();
     static void OpenMap();
@@ -139,7 +140,7 @@ public:
     NiPoint3 WorldToMapPosition(NiPoint3, TESWorldSpace*);
     NiPoint3 MapToWorldPosition(NiPoint3, TESWorldSpace*);
     MapPoint3 WorldToMapPosition(MapPoint3, TESWorldSpace*);
-    MapPoint3 MapToWorldPosition(MapPoint3, TESWorldSpace*);
+    MapPoint3 MapToWorldCoord(MapPoint3, TESWorldSpace*);
     TESObjectREFR* GetTeleportDestination(TESObjectREFR*, PathingPath*);
     void RefreshMapMarkers();
     void UpdateMapObjectives();

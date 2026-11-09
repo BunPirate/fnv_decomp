@@ -136,9 +136,9 @@ __forceinline void hkVector4::setCross(const hkVector4& v1, const hkVector4& v2)
                    _mm_mul_ps(_mm_shuffle_ps(v1.m_vComponents, v1.m_vComponents, _MM_SHUFFLE(3, 1, 0, 2)),
                               _mm_shuffle_ps(v2.m_vComponents, v2.m_vComponents, _MM_SHUFFLE(3, 0, 2, 1))));
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const __m128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    const __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const __m128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(1, 1, 1, 1)), x2);
     const __m128 z = _mm_shuffle_ps(x2, x2, _MM_SHUFFLE(2, 2, 2, 2));
     return _mm_add_ss(z, xySum);
@@ -188,155 +188,158 @@ static __forceinline void calcEdgeAxis(const hkVector4& a0, const hkVector4& a1,
 
 // @fnv 0x00deab10
 // src: XBOX_PDB 0x00deab10
-int __cdecl hkGeometryProcessing_checkTrianglesIntersection(const hkVector4* triA, const hkVector4* triB)
+// pdb: hkGeometryProcessing::checkTrianglesIntersection | hkGeometryProcessing.obj | retail, upstream name already matches, high
+// pdb params: triangleA, triangleB
+// pdb locals: spanB, spanA
+int __cdecl hkGeometryProcessing_checkTrianglesIntersection(const hkVector4* triangleA, const hkVector4* triangleB)
 {
     hkVector4 axis;
     Interval a;
     Interval b;
     {
         hkVector4 e0;
-        e0.setSub4(triA[1], triA[0]);
+        e0.setSub4(triangleA[1], triangleA[0]);
         hkVector4 e1;
-        e1.setSub4(triA[2], triA[0]);
+        e1.setSub4(triangleA[2], triangleA[0]);
         axis.setCross(e0, e1);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
         hkVector4 e0;
-        e0.setSub4(triB[1], triB[0]);
+        e0.setSub4(triangleB[1], triangleB[0]);
         hkVector4 e1;
-        e1.setSub4(triB[2], triB[0]);
+        e1.setSub4(triangleB[2], triangleB[0]);
         axis.setCross(e0, e1);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[0], triA[1], triB[0], triB[1], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[0], triangleA[1], triangleB[0], triangleB[1], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[0], triA[1], triB[1], triB[2], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[0], triangleA[1], triangleB[1], triangleB[2], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[0], triA[1], triB[2], triB[0], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[0], triangleA[1], triangleB[2], triangleB[0], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[1], triA[2], triB[0], triB[1], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[1], triangleA[2], triangleB[0], triangleB[1], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[1], triA[2], triB[1], triB[2], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[1], triangleA[2], triangleB[1], triangleB[2], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[1], triA[2], triB[2], triB[0], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[1], triangleA[2], triangleB[2], triangleB[0], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[2], triA[0], triB[0], triB[1], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[2], triangleA[0], triangleB[0], triangleB[1], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[2], triA[0], triB[1], triB[2], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[2], triangleA[0], triangleB[1], triangleB[2], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        calcEdgeAxis(triA[2], triA[0], triB[2], triB[0], axis);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        calcEdgeAxis(triangleA[2], triangleA[0], triangleB[2], triangleB[0], axis);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[0], triB[0]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[0], triangleB[0]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[0], triB[1]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[0], triangleB[1]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[0], triB[2]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[0], triangleB[2]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[1], triB[0]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[1], triangleB[0]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[1], triB[1]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[1], triangleB[1]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[1], triB[2]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[1], triangleB[2]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[2], triB[0]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[2], triangleB[0]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[2], triB[1]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[2], triangleB[1]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
     }
     {
-        axis.setSub4(triA[2], triB[2]);
-        if (isSeparatingAxis(triA, triB, axis, a, b))
+        axis.setSub4(triangleA[2], triangleB[2]);
+        if (isSeparatingAxis(triangleA, triangleB, axis, a, b))
         {
             return 0;
         }
@@ -380,6 +383,9 @@ struct FourPointArray
 void __cdecl hkArrayUtil__reserve(hkMemoryAllocator*, void*, int, int);
 // @fnv 0x00dedcf0
 // src: XBOX_PDB 0x00dedcf0
+// pdb: hkGeometryProcessing::buildTransposedArray | hkGeometryProcessing.obj | retail, upstream name already matches, high
+// pdb params: vertices, output
+// pdb locals: packet
 void __cdecl hkGeometryProcessing_buildTransposedArray(const VertexArray& vertices, FourPointArray& output)
 {
     Point4 points[4];

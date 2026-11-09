@@ -5,6 +5,7 @@
 
 class TESForm;
 
+// pdb: class TESSoundFile, size 0xc, bases: BaseFormComponent, 1 members
 class TESSoundFile : public BaseFormComponent
 {
 public:
@@ -31,5 +32,5 @@ public:
     char* GetSoundFile();
     const char* GetSoundFile() const;
 
-    BSStringT<char> m_kSoundFile;
+    BSStringT<char> cSoundFile;
 };

@@ -48,26 +48,32 @@ bool Tile::IsPointInside(float x,float y)
 // @fnv 0x0071aa80
 bool Tile::GetSpeechChallengeFailure()
 {
-    return m_bSpeechChallengeFailure;
+    return bSpeechChallengeFailure;
 }
 
 // @fnv 0x00a04620
-void Tile::SetSpeechChallengeFailure(bool recursive)
+// src: XBOX_DEBUG_PDB 0x00a04620
+// pdb: Tile::UpdateChildren | Tile.obj | debug, call graph, high
+// pdb params: abParentWillUpdate
+void Tile::UpdateChildren(bool abParentWillUpdate)
 {
     UpdateAll(false);
 }
 
 // Sets the given trait to the integer value cast to float, delegating to the float overload with the third argument true.
 // @fnv 0x00700320
+// pdb: Tile::Set | Tile.obj | retail, call graph, high
+// pdb params: aiTrait, aiValue
 void Tile::Set(int trait,int value)
 {
     Set(trait,(float)value,true);
 }
 
 // @fnv 0x00a03c60
+// pdb: Tile::GetRenderedMenu | Tile.obj | debug, object-file gap fill, medium
 bool Tile::IsMenuRendered()
 {
-    Menu* menu=GetMenu(); bool rendered=menu->m_bIsSpecial; return rendered;
+    Menu* menu=GetMenu(); bool rendered=menu->bRenderedMenu; return rendered;
 }
 
 // Returns true if the bit at position trait is set in usFlags.
@@ -76,6 +82,9 @@ bool LoadingMenu::GetFloat(int trait) { return (usFlags & (1 << trait)) != 0; }
 
 // Returns the element of the given list item and advances pos to the item's previous node.
 // @fnv 0x00683520
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::GetPrev | Interface.obj | debug, call graph, medium
+// pdb params: kPos
+// pdb locals: element
 template <>
 Tile* const& NiTPointerListBase<NiTPointerAllocator<unsigned int>, Tile*>::GetPrev(void*& pos) const
 {
@@ -86,9 +95,11 @@ Tile* const& NiTPointerListBase<NiTPointerAllocator<unsigned int>, Tile*>::GetPr
 
 // Sets the given trait to the given unsigned value by forwarding to the float overload with the third argument true.
 // @fnv 0x00715c60
-void Tile::Set(int trait,unsigned int value)
+// pdb: Tile::Set | InterfaceManager.obj | debug, call graph, high
+// pdb params: aiTrait, aiValue
+void Tile::Set(int aiTrait,unsigned int aiValue)
 {
-    Set(trait,(float)value,true);
+    Set(aiTrait,(float)aiValue,true);
 }
 
 // Returns the float value of the tile's value for the given trait, or 0.0f if no such value exists.
@@ -129,6 +140,7 @@ extern Dummy_00718c90* DAT_011d8a88;
 // Returns the global Dummy_00718c90 instance, allocating and constructing it first if it is null.
 // @fnv 0x00718b60
 // src: XBOX_PDB 0x00718b60
+// pdb: SystemColorManager::GetInstance | InterfaceManager.obj | retail, upstream name already matches, high
 Dummy_00718c90* __cdecl SystemColorManager_GetInstance()
 {
     if (!DAT_011d8a88)
@@ -142,8 +154,11 @@ struct FUN_00a011f0_shell : public Tile {
 
 // @fnv 0x00a011f0
 // src: XBOX_PDB 0x00a011f0
-char* FUN_00a011f0_shell::Tile_GetString(int trait) {
-    Tile::Value* pvalue = GetValue(trait);
+// pdb: Tile::GetString | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiTrait
+// pdb locals: pvalue
+char* FUN_00a011f0_shell::Tile_GetString(int aiTrait) {
+    Tile::Value* pvalue = GetValue(aiTrait);
     if (pvalue) {
         char* result = *reinterpret_cast<char**>(reinterpret_cast<char*>(pvalue) + 0xc);
         return result;
@@ -157,6 +172,9 @@ struct FUN_00a01230_shell : public Tile {
 
 // Looks up the Value for aeTrait and returns whether its fValue is non-zero, or false if no Value exists.
 // @fnv 0x00a01230
+// pdb: Tile::IsTrue | Tile.obj | retail, call graph, high
+// pdb params: aeTrait
+// pdb locals: pvalue
 bool FUN_00a01230_shell::IsTraitNonZero(int aeTrait)
 {
     Value* pvalue = GetValue(aeTrait);
@@ -174,6 +192,8 @@ struct FUN_00a01290_shell : public Tile {
 
 // Sets the given trait to afValue and then immediately resets it to 0.0f, both with the third argument true.
 // @fnv 0x00a01290
+// pdb: Tile::Poke | Tile.obj | retail, call graph, high
+// pdb params: aiTrait, afValue
 void FUN_00a01290_shell::SetTraitAndReset(int aiTrait, float afValue)
 {
     Set(aiTrait, afValue, true);
@@ -186,6 +206,8 @@ struct FUN_00a013d0_shell : public Tile {
 
 // Sums GetFloat(0xfa1) for this tile and each linked tile whose GetFloat(0xfa8) is nonzero, returning the total.
 // @fnv 0x00a013d0
+// pdb: Tile::GetRealX | Tile.obj | debug, call graph, high
+// pdb locals: fx, ptile
 float FUN_00a013d0_shell::GetTotalFloat()
 {
     float fTotal = GetFloat(0xfa1);
@@ -209,6 +231,8 @@ extern const double gModifierZero;
 
 // Sums GetFloat(0xfa2) over this tile and its 0x28-linked chain, adding each linked tile's 0xfa2 when its 0xfa8 differs from gModifierZero.
 // @fnv 0x00a01440
+// pdb: Tile::GetRealY | Tile.obj | retail, call graph, high
+// pdb locals: fy, ptile
 float FUN_00a01440_shell::GetAccumulatedFloat()
 {
     float fTotal = GetFloat(0xfa2);
@@ -228,7 +252,11 @@ int __cdecl Tile_TextToTrait(const char*);
 
 // Copies characters before '(' into text and characters inside parentheses into apParam, then passes text to FUN_00a01860 and returns its result.
 // @fnv 0x00a018d0
-int __cdecl ParseTextAndParams(const char* apText, char* apParam)
+// src: XBOX_RETAIL_PDB 0x00a018d0
+// pdb: Tile::TextToTraitAndParam | Tile.obj | retail, call graph, high
+// pdb params: apText, apParam
+// pdb locals: isubindex, text, a
+int __cdecl Tile_TextToTraitAndParam(const char* apText, char* apParam)
 {
     if (!apText || !*apText || !apParam)
         return 0x80000000;
@@ -270,6 +298,9 @@ long __cdecl FUN_00eca6d3(const char*);
 // Finds the last '_' in apTraitName and returns FUN_00eca6d3 of the text after it, -1 if that text is empty, or 0 if there is no '_'.
 // @fnv 0x00a01a20
 // src: COMMUNITY 0x00a01a20
+// pdb: Tile::GetExtraDataFromTraitName | Tile.obj | retail, upstream name already matches, high
+// pdb params: apTraitName
+// pdb locals: plast_
 int __cdecl Tile_GetExtraDataFromTraitName(const char* apTraitName)
 {
     const char* plast_ = tile_crt::strrchr(apTraitName, '_');
@@ -284,8 +315,9 @@ extern int DAT_011f3330;
 __declspec(dllimport) void __stdcall EnterCriticalSection(void* lpCriticalSection);
 
 // @fnv 0x00a044f0
-// src: XBOX_PDB 0x00a044f0
-void __cdecl AutoTileLock_AutoTileLock()
+// src: XBOX_DEBUG_PDB 0x00a044f0
+// pdb: AutoTileLock::AutoTileLock | Tile.obj | debug, upstream name already matches, high
+void __cdecl AutoTileLock_ctor()
 {
     EnterCriticalSection(&DAT_011f3330);
 }
@@ -296,6 +328,7 @@ extern void (__stdcall * const __imp__LeaveCriticalSection)(_RTL_CRITICAL_SECTIO
 
 // @fnv 0x00a04500
 // src: GUESS 0x00a04500 (confidence: medium)
+// pdb: AutoTileLock::~AutoTileLock | Tile.obj | debug, call graph, medium
 void __cdecl Object___imp__LeaveCriticalSection_Thunk()
 {
     __imp__LeaveCriticalSection(&DAT_011f3330);
@@ -310,6 +343,9 @@ void __cdecl Tile_AddDirtyTile(Tile*);
 
 // @fnv 0x00a074d0
 // src: XBOX_PDB 0x00a074d0
+// pdb: Tile::SetNeedsUpdate | Tile.obj | debug, upstream name already matches, high
+// pdb params: aiFlag
+// pdb locals: iold
 void FUN_00a074d0_shell::Tile_SetNeedsUpdate(int aiFlag)
 {
     if ((unsigned int)aiFlag > 0x3ff) {
@@ -332,6 +368,9 @@ void __cdecl Tile_AddDirtyTile(Tile*);
 // ORs aiFlag into the flags at offset 0x30 when aiFlag is at most 0x3ff, and calls FUN_00a07690 if the flags changed.
 // @fnv 0x00a07530
 // src: COMMUNITY 0x00a07530
+// pdb: Tile::AddNeedsUpdate | Tile.obj | debug, call graph, medium
+// pdb params: aiFlag
+// pdb locals: iold
 void FUN_00a07530_shell::Tile_SetChangeFlag(int aiFlag)
 {
     if ((unsigned int)aiFlag > 0x3ff)
@@ -362,6 +401,9 @@ extern FadeControlNode DAT_011f3348;
 // Walks the DAT_011f3348 fade-control list and returns true if an item matches aiTrait and points to this tile.
 // @fnv 0x00a07ed0
 // src: XBOX_PDB 0x00a07ed0
+// pdb: Tile::HasFadeControl | Tile.obj | debug, upstream name already matches, high
+// pdb params: aiTrait
+// pdb locals: pfade
 bool FUN_00a07ed0_shell::Tile_HasFadeControl(int aiTrait)
 {
     for (FadeControlNode* pfade = &DAT_011f3348; pfade && pfade->m_item; pfade = pfade->m_pkNext) {
@@ -394,6 +436,9 @@ struct FadeNode_00a07f30 {
 extern FadeNode_00a07f30 DAT_011f3348;
 
 // @fnv 0x00a07f30
+// pdb: Tile::GetFadeEndFor | Tile.obj | retail, call graph (shared callers), high
+// pdb params: aiTrait
+// pdb locals: iendValue, pfade
 float FUN_00a07f30_shell::GetTraitFloat(int aiTrait)
 {
     int iendValue = -1;
@@ -432,6 +477,9 @@ extern FadeListDummy DAT_011f3348;
 
 // @fnv 0x00a07fc0
 // src: XBOX_PDB 0x00a07fc0
+// pdb: Tile::GetFadeFinished | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiTrait
+// pdb locals: pfade
 bool FUN_00a07fc0_shell::Tile_GetFadeFinished(int aiTrait)
 {
     for (FadeListDummy* pfade = &DAT_011f3348; pfade && pfade->m_item; pfade = pfade->m_pkNext)
@@ -455,17 +503,19 @@ bool FUN_00a07fc0_shell::Tile_GetFadeFinished(int aiTrait)
 
 // Walks up the parent chain until a tile with a non-null NiNode is found and returns that NiNode, or null if none exists.
 // @fnv 0x00a089c0
+// pdb: Tile::GetParentModel | Tile.obj | debug, call graph, high
+// pdb locals: ptile
 NiNode* Tile::GetUnderlyingNode()
 {
     Tile* ptile = this;
     NiNode* m;
-    while (ptile && (m = ptile->m_pRenderedNodeEntry.m_pObject, !m)) {
+    while (ptile && (m = ptile->spModel.m_pObject, !m)) {
         ptile = ptile->pParent;
     }
     if (ptile) {
-        NiNode* a = ptile->m_pRenderedNodeEntry.m_pObject;
+        NiNode* a = ptile->spModel.m_pObject;
         if (a) {
-            NiNode* b = ptile->m_pRenderedNodeEntry.m_pObject;
+            NiNode* b = ptile->spModel.m_pObject;
             return b;
         }
     }
@@ -483,6 +533,9 @@ int __cdecl Tile_TextToTrait(const char*);
 // Builds a value name from the base trait name and ID, then returns the value looked up by that name.
 // @fnv 0x00a0a0b0
 // src: GUESS 0x00a0a0b0 (confidence: high)
+// pdb: Tile::GetUnderscoreValue | Tile.obj | debug, object-file run extension, low
+// pdb params: aiBaseTrait, aiID
+// pdb locals: strValueName, strBaseName
 void* FUN_00a0a0b0_shell::GetIndexedTraitValue(int aiBaseTrait, int aiID)
 {
     char strValueName[260];
@@ -496,6 +549,7 @@ extern MemoryManager g_memoryManager;
 struct TileDeletionFlags { unsigned int value; };
 // Calls FUN_00a20650, deallocates this via g_memoryManager when flags has bit 1 set, and returns this.
 // @fnv 0x00a0bde0
+// pdb: Tile3D::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
 Tile3D* __fastcall DeleteTile3D(Tile3D* self, TileDeletionFlags flags)
 {
     self->Tile3D::~Tile3D();
@@ -515,10 +569,12 @@ typedef char _sizecheck_MenuValueDescriptor[sizeof(MenuValueDescriptor) == 8 ? 1
 extern MemoryManager g_memoryManager;
 // 0x00a0be10 frees the +4 buffer of an eight-byte XML record (XmlFile in tile_ob1_variant), not an XMLStorage class.
 struct OwnedXmlBuffer : public MenuValueDescriptor {
-    MenuValueDescriptor* FUN_00a0be10(unsigned int flags);
+    MenuValueDescriptor* XMLStorage_ScalarDtor(unsigned int flags);
 };
 // @fnv 0x00a0be10
-MenuValueDescriptor* OwnedXmlBuffer::FUN_00a0be10(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x00a0be10
+// pdb: XMLStorage::`scalar deleting destructor' | Tile.obj | debug, call graph, high
+MenuValueDescriptor* OwnedXmlBuffer::XMLStorage_ScalarDtor(unsigned int flags)
 {
     if (m_pName) {
         char* p = m_pName;
@@ -539,6 +595,8 @@ extern XL DAT_011f3324;
 // Iterates the tile list, and for each visible tile clears flags 0x800 and 0x1000, calls FUN_00a07690, and removes it from the list.
 // @fnv 0x00a078e0
 // src: COMMUNITY 0x00a078e0
+// pdb: Tile::CheckHibernatingTiles | Tile.obj | retail, upstream name already matches, high
+// pdb locals: xelem, ptile
 void Tile_CheckHibernatingTiles()
 {
     void* xelem = DAT_011f3324.head;
@@ -568,6 +626,8 @@ struct ListNode_00a079d0 {
 
 // Walks the linked list at this+4 and, for each Tile, calls FUN_00a07530(0x80) if IsTraitNonZero(0xfa6) is true, otherwise recurses into UpdateTileChildren.
 // @fnv 0x00a079d0
+// pdb: Tile::UpdateClipwindows | Tile.obj | debug, object-file gap fill, medium
+// pdb locals: xelem, pitem
 void FUN_00a079d0_shell::UpdateTileChildren()
 {
     ListNode_00a079d0* kPos;
@@ -618,6 +678,8 @@ struct NP_0081c630 { NP_0081c630& operator=(void*); };
 struct TileStandIn_009ff600 { void SetParent(Tile*, Tile*); };
 
 // @fnv 0x009ff600
+// pdb: Tile::Init | Tile.obj | retail, vtable slot, high
+// pdb params: apParent, apName, apReplacedTile
 void FUN_009ff600_shell::InitTile(Tile* apParent, char* apName, Tile* apReplacedTile)
 {
     *(Tile**)((char*)this + 0x28) = 0;
@@ -647,6 +709,9 @@ extern int DAT_011f3330;
 __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
 __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
 // @fnv 0x00a00e90
+// pdb: Tile::GetValueQ | Tile.obj | retail, call graph, high
+// pdb params: aiTrait
+// pdb locals: pret, i
 void* FUN_00a00e90_shell::FindTraitValue(int aiTrait)
 {
  unsigned int uiIndex;
@@ -697,6 +762,9 @@ extern void* DAT_011f339c;
 extern unsigned int DAT_011f33a0;
 // Looks up a P09Value by aiTrait in the map at this+0x10, allocating and inserting a new one if absent, under a critical section.
 // @fnv 0x00a01000
+// pdb: Tile::GetOrCreateValue | Tile.obj | retail, call graph, high
+// pdb params: aiTrait
+// pdb locals: preturnVal, uifoundIndex
 void* FUN_00a01000_shell::GetOrCreateTraitValue(int aiTrait)
 {
     P09Value* preturnVal = 0;
@@ -733,7 +801,7 @@ void* FUN_00a01000_shell::GetOrCreateTraitValue(int aiTrait)
 }  // namespace fnv_00a01000
 
 struct FUN_00a031b0_shell : public Tile {
-    Tile* CreateMenuTiles(void*);
+    Tile* Tile_BuildAndNameTree(void*);
 };
 
 struct P09Item { int eType; float fValue; void* pName; int i0c; Tile* pTile; };
@@ -745,7 +813,11 @@ extern double DAT_01094a80;
 Tile* __cdecl Tile_CreateByID(int);
 void __cdecl _FNV_Warning(const char*, ...);
 // @fnv 0x00a031b0
-Tile* FUN_00a031b0_shell::CreateMenuTiles(void* apTemplate)
+// src: XBOX_RETAIL_PDB 0x00a031b0
+// pdb: Tile::BuildAndNameTree | Tile.obj | retail, string-set bridge, high
+// pdb params: apTemplate
+// pdb locals: pparent, xelem, pitem, pfirst_tile, ptile
+Tile* FUN_00a031b0_shell::Tile_BuildAndNameTree(void* apTemplate)
 {
  Tile* pfirst_tile;
  {
@@ -815,14 +887,16 @@ struct FUN_00a03d40_shell : public Tile {
     Tile* Tile_GetMenuTile();
 };
 
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 namespace fnv_00a04500 { void __cdecl Object___imp__LeaveCriticalSection_Thunk(); }
 
 // @fnv 0x00a03d40
 // src: XBOX_PDB 0x00a03d40
+// pdb: Tile::GetMenuTile | Tile.obj | retail, upstream name already matches, high
+// pdb locals: __my_auto_tile_lock, ptile
 Tile* FUN_00a03d40_shell::Tile_GetMenuTile()
 {
-    AutoTileLock_AutoTileLock();
+    AutoTileLock_ctor();
     Tile* ptile = this;
     EmptyPolymorphicObject lock;
     Tile* r;
@@ -850,6 +924,8 @@ extern void** DAT_011f3328;
 // If apTile is valid, lacks flag 0x800 and is not the excluded list entry, adds it to DAT_011f332c, increments DAT_011f32d8, sets flag 0x800 and clears 0x1000.
 // @fnv 0x00a077c0
 // src: COMMUNITY 0x00a077c0
+// pdb: Tile::AddHibernatingTile | Tile.obj | retail, upstream name already matches, high
+// pdb params: apTile
 void Tile_AddHibernatingTile(Tile* apTile)
 {
     void* pNode;
@@ -917,6 +993,9 @@ extern double _gModifierZero;
 __declspec(dllimport) unsigned long __stdcall GetTickCount();
 // Starts a fade on this tile: allocates a P09Fade, fills start/end/length/type and tick, sets flash traits for types 2 and 3, then queues it via DAT_011f3348.
 // @fnv 0x00a07c60
+// pdb: Tile::AddFadeControl | Tile.obj | retail, call graph, high
+// pdb params: aiTrait, afStart, afEnd, afLength, aeFadeType
+// pdb locals: pnewFade, ftotalFlashes
 void FUN_00a07c60_shell::StartFade(int aiTrait, float afStart, float afEnd, float afLength, int aeFadeType)
 {
     P09Fade* pFade;
@@ -969,6 +1048,9 @@ extern P03FadeList DAT_011f3348;
 struct FUN_00a0c7c0_Helper { void AddToHead(Tile__TileTemplate**); };
 struct FUN_00ae83e0 { P03FadeItem* item; P03FadeNode* next; ~FUN_00ae83e0(); };
 // @fnv 0x00a07dc0
+// pdb: Tile::RemoveFadeControl | Tile.obj | retail, call graph, high
+// pdb params: aiTrait
+// pdb locals: removeList, pfade, premove, ptoBeDeleted
 void FUN_00a07dc0_shell::RemoveFadeItemsForTile(int aiTrait)
 {
     FUN_00ae83e0 ptoBeDeleted = { 0, 0 };
@@ -995,7 +1077,11 @@ int __cdecl __stricmp(const char*, const char*);
 struct P03Node { P03Node* next; P03Node* prev; Tile* data; };
 // Recursively searches apTarget and its linked child tiles for one whose name matches apName case-insensitively, returning the match or null.
 // @fnv 0x00a08f20
-Tile* __cdecl FindTileByName(Tile* apTarget, const char* apName)
+// src: XBOX_DEBUG_PDB 0x00a08f20
+// pdb: Tile::SearchForTileByName | Tile.obj | debug, call graph, high
+// pdb params: apTarget, apName
+// pdb locals: xelem, pitem
+Tile* __cdecl Tile_SearchForTileByName(Tile* apTarget, const char* apName)
 {
     Tile* xelem;
     P03Node* pitem;
@@ -1016,7 +1102,7 @@ Tile* __cdecl FindTileByName(Tile* apTarget, const char* apName)
     while (pitem) {
         Tile** ppData = &pitem->data;
         pitem = pitem->next;
-        xelem = FindTileByName(*ppData, apName);
+        xelem = Tile_SearchForTileByName(*ppData, apName);
         if (xelem)
             return xelem;
     }
@@ -1026,10 +1112,13 @@ Tile* __cdecl FindTileByName(Tile* apTarget, const char* apName)
 extern MemoryManager g_memoryManager;
 extern void* DAT_01094c2c;
 extern void* DAT_01094c38;
-struct P03Value { void AppendFloatAction(int aiActionType, float afValue); };
+struct P03Value { void AppendFloatAction(int aiActionType, float afActionVal); };
 // Allocates a Tile__FloatAction with the given action type and value, then appends it to the end of the action list at this+0x10 or sets it as the head.
 // @fnv 0x00a09080
-void P03Value::AppendFloatAction(int aiActionType, float afValue)
+// pdb: Tile::Value::AddAction | Tile.obj | retail, call graph, high
+// pdb params: aiActionType, afActionVal
+// pdb locals: ptail, pnewAction
+void P03Value::AppendFloatAction(int aiActionType, float afActionVal)
 {
     Tile__Action* pNew = *(Tile__Action**)((char*)this + 0x10);
     Tile__FloatAction* pMem;
@@ -1041,7 +1130,7 @@ void P03Value::AppendFloatAction(int aiActionType, float afValue)
         (Tile__FloatAction*)ptail) : 0;
     pMem = pnewAction;
     pMem->eActionType = (Tile::VALUE_ACTION)aiActionType;
-    pMem->fValue = afValue;
+    pMem->fValue = afActionVal;
     if (pNew) {
         while (pNew->m_pActionSuccessor)
             pNew = pNew->m_pActionSuccessor;
@@ -1073,6 +1162,8 @@ struct Value_00a09200 {
 
 // Walks the action list, removes this value from each referenced reaction list, updates or clears the map entry, and deletes the actions.
 // @fnv 0x00a09200
+// pdb: Tile::Value::ClearActions | Tile.obj | retail, call graph, high
+// pdb locals: ppcurrAction, pcurrAction, preactionListA, pprevhead, ppcurrReaction, pcurrReaction
 void Value_00a09200::RemoveFromReactions()
 {
     Action_00a09200* pcurrAction;
@@ -1156,6 +1247,7 @@ struct OH2TileTemplate {
     void ClearList();
 };
 // @fnv 0x00a0ab70
+// pdb: Tile::TileTemplate::Clear | Tile.obj | debug, object-file gap fill, medium
 void OH2TileTemplate::ClearList()
 {
     SoundMessageRecord* p;
@@ -1189,6 +1281,9 @@ struct BuildStorage_00a0af10
 
 // Looks up a template in the list at this+4 by name, comparing interned strings, and returns the matching template or null.
 // @fnv 0x00a0af10
+// pdb: Tile::BuildStorage::GetSubTemplateByName | Tile.obj | debug, object-file gap fill, medium
+// pdb params: pName
+// pdb locals: plist, nm
 TileTemplate_00a0af10* BuildStorage_00a0af10::FindTemplateByName(const char* pName)
 {
     GlobalStringHandle nm;
@@ -1273,7 +1368,10 @@ struct OH3Child {
     virtual void v4(); virtual void v5(); virtual PropHelper* v6();
 };
 // @fnv 0x00a0b280
-void FUN_00a0b280_shell::ApplyAlphaAndColorToChildren(NiNode* apNode, float afAlpha, NiColorA* apColor)
+// pdb: Tile::SetAlphaAndColor | Tile.obj | retail, vtable slot, high
+// pdb params: apNode, afAlpha, aColor
+// pdb locals: ui, pchild, pgeom, ptsp, pprop
+void FUN_00a0b280_shell::ApplyAlphaAndColorToChildren(NiNode* apNode, float afAlpha, NiColorA* aColor)
 {
     if (!apNode)
         return;
@@ -1295,7 +1393,7 @@ void FUN_00a0b280_shell::ApplyAlphaAndColorToChildren(NiNode* apNode, float afAl
                 pprop = pgeom->GetProperty(3);
                 ptsp = (char*)pprop;
                 *(float*)(ptsp + 0x78) = afAlpha;
-                *(NiColorA*)(ptsp + 0x68) = *apColor;
+                *(NiColorA*)(ptsp + 0x68) = *aColor;
             }
         }
     }
@@ -1323,6 +1421,9 @@ extern int DAT_011f3384;
 // Locks a global, stores aiTrait in it, looks up the matching Tile::Value in the array at offset 0x10 and returns it, or null if not found.
 // @fnv 0x00a00f30
 // src: XBOX_PDB 0x00a00f30
+// pdb: Tile::GetValue | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiTrait
+// pdb locals: preturnVal, uifoundIndex
 void* FUN_00a00f30_shell::Tile_GetValue(int aiTrait)
 {
     Tile::Value* preturnVal = 0;
@@ -1375,6 +1476,9 @@ struct FUN_00a09330_shell {
 };
 // Calls RemoveFromReactions, clears matching action values and frees the preaction list nodes, then frees pBuf and resets fValue and iVal4.
 // @fnv 0x00a09330
+// pdb: Tile::Value::~Value | Tile.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<Tile::Value *,8>::operator[]
+// pdb locals: preactionListA, pcurrAction, premove
 void FUN_00a09330_shell::ClearActionsAndFreeBuffer()
 {
     Node_00a09330* preactionListA = 0;
@@ -1419,6 +1523,10 @@ struct FUN_00a0c900_shell {
 };
 // @fnv 0x00a0c900
 // src: COMMUNITY 0x00a0c900
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,NiShader *>,NiShader *>::SetAt | NiD3DShaderFactory.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiTStringTemplateMap<NiTPointerMap<char const *,int>,int>::SetAt
+// pdb params: pcKey, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void FUN_00a0c900_shell::NiTStringPointerMap_XMLStorage_SetAt(const char* pcKey, int val)
 {
     unsigned int uiIndex = KeyToHashIndex(pcKey);
@@ -1448,6 +1556,7 @@ struct FUN_007000b0_shell {
 };
 // @fnv 0x007000b0
 // src: XBOX_PDB 0x007000b0
+// pdb: AnimatingText::GetDisplayMode | AnimatingText.obj | debug, upstream name already matches, high
 void FUN_007000b0_shell::AnimatingText_GetDisplayMode()
 {
     HasFlag(1);
@@ -1459,6 +1568,7 @@ struct FUN_007000d0_shell {
 };
 // @fnv 0x007000d0
 // src: XBOX_PDB 0x007000d0
+// pdb: AnimatingText::GetFlashMode | AnimatingText.obj | debug, upstream name already matches, high
 void FUN_007000d0_shell::AnimatingText_GetFlashMode()
 {
     HasFlag(2);
@@ -1480,7 +1590,7 @@ int __cdecl GetTileValueID(const char* apName, int aiIndex);
 int VATSMenu::ListBox_enum_MiscStatManager_MiscStatID_NumUnfiltered()
 {
     static int iNumFilteredTrait = GetTileValueID("_num_filtered", -1);
-    return GetSelectedTargetIndex() - (unsigned int)reinterpret_cast<Tile*>(m_kTileTemplateList.m_pkNext)->GetFloat(iNumFilteredTrait);
+    return GetSelectedTargetIndex() - (unsigned int)reinterpret_cast<Tile*>(xTemplates.m_pkNext)->GetFloat(iNumFilteredTrait);
 }
 
 // @fnv 0x00a01160
@@ -1551,6 +1661,7 @@ struct FUN_00a0c090_Class {
 
 // Calls FUN_00a0abe0, then if bit 0 of flags is set calls __Dummy_00b6fef0 with this and 0x14, and returns this.
 // @fnv 0x00a0c090
+// pdb: Tile::Extra::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
 void* FUN_00a0c090_Class::FUN_00a0c090(unsigned int flags)
 {
     this->FUN_00a0abe0();
@@ -1566,6 +1677,7 @@ struct FUN_00a0d260_Class {
 };
 
 // @fnv 0x00a0d260
+// pdb: Tile::MenuStringMap::~MenuStringMap | Tile.obj | debug, object-file run extension, low
 unsigned int __thiscall FUN_00a0d260_Class::Modulo(unsigned int auiValue) {
     return auiValue % m_iWordAt04;
 }
@@ -1578,6 +1690,8 @@ struct FUN_00a04100_shell {
 // Walks the Tile chain via offset 0x28, checking GetFloat(0xfaa) against 110.0, and always returns false.
 // @fnv 0x00a04100
 // src: GUESS 0x00a04100 (confidence: medium)
+// pdb: Tile::IsInGlowBranch | Tile.obj | debug, object-file gap fill, medium
+// pdb locals: pparent
 bool FUN_00a04100_shell::ScanTileChainAndReturnFalse()
 {
     Tile* t = pTile;
@@ -1679,6 +1793,7 @@ int __cdecl Tile_AddUserTrait(const char* name, int len);
 // Returns the result of GetRaceCount minus the value FUN_00a011b0 computes from the cached "_num_filtered" setting.
 // @fnv 0x007a71b0
 // src: GUESS 0x007a71b0 (confidence: medium)
+// pdb: ListBox<TESObjectREFR *>::NumUnfiltered | MapMenu.obj | retail, object-file run extension, low
 int FUN_007a71b0_cls::GetUnfilteredRaceCount()
 {
     static int numFiltered = Tile_AddUserTrait("_num_filtered", -1);
@@ -1747,14 +1862,17 @@ extern FNVSearchNode g_fnvSearchHead;
 
 class FNVSearchOwner {
 public:
-    int FindValueByKey(int key);
+    int FindValueByKey(int aiTrait);
 };
 
 // Walks the global search list and returns m_iValue18 of the first item whose m_iKey10 equals key and whose m_pOwner14 is this, else 0.
 // @fnv 0x00a08070
-int FNVSearchOwner::FindValueByKey(int key) {
+// pdb: Tile::GetFadeType | Tile.obj | debug, call graph, high
+// pdb params: aiTrait
+// pdb locals: pfade
+int FNVSearchOwner::FindValueByKey(int aiTrait) {
     for (FNVSearchNode* node = &g_fnvSearchHead; node != 0 && node->m_pInventoryEntryData != 0; node = node->m_pNext) {
-        if (node->m_pInventoryEntryData->m_iKey10 == key && node->m_pInventoryEntryData->m_pOwner14 == (void*)this) {
+        if (node->m_pInventoryEntryData->m_iKey10 == aiTrait && node->m_pInventoryEntryData->m_pOwner14 == (void*)this) {
             return node->m_pInventoryEntryData->m_iValue18;
         }
     }
@@ -1765,6 +1883,9 @@ struct TileNode; struct TileNodeList { TileNodeList* next; TileNode* parent; Til
 struct TileNode { void* virtualTable; TileNodeList* children; float __thiscall FUN_00a011b0(int trait); };
 // Recursively searches root and its child nodes for the first TileNode whose trait 0xFAA equals target, returning it or null.
 // @fnv 0x00a08fb0
+// pdb: Tile::SearchForTileByID | Tile.obj | debug, object-file gap fill, medium
+// pdb params: apTarget, aiID
+// pdb locals: xelem, pitem
 TileNode* __cdecl FindTileNodeByTrait(TileNode* root, int target) {
     TileNodeList* cursor;
     {
@@ -1803,6 +1924,9 @@ extern A0A220HandlerMap g_kA0A220Handlers;
 
 // Looks up the handler list for uiKey and calls Notify(0) on each handler in the chain.
 // @fnv 0x00a0a220
+// pdb: Tile::ValueChangeEvent | Tile.obj | debug, object-file gap fill, medium
+// pdb params: apChangedVal
+// pdb locals: pcurrReactionListA
 void __cdecl NotifyHandlersByKey(unsigned int uiKey)
 {
     A0A220Node* pkIter = 0;
@@ -1876,18 +2000,22 @@ struct BarterCategoryLabelView {
     int unk98;
     int primaryCategory;
     int secondaryCategory;
-    void UpdateTileText(P09TileS* tile);
+    void BarterMenu_SetFilterModeTitle(P09TileS* apTitleTile);
 };
 
 // @fnv 0x007301f0
-void BarterCategoryLabelView::UpdateTileText(P09TileS* tile)
+// src: XBOX_DEBUG_PDB 0x007301f0
+// pdb: BarterMenu::SetFilterModeTitle | BarterMenu.obj | debug, call graph, high
+// pdb params: apTitleTile
+// pdb locals: bFIGS, emode, strtemp
+void BarterCategoryLabelView::BarterMenu_SetFilterModeTitle(P09TileS* apTitleTile)
 {
     char text[260];
-    int selection = tile == primaryTile ? primaryCategory : secondaryCategory;
+    int selection = apTitleTile == primaryTile ? primaryCategory : secondaryCategory;
     bool isLocalized = BSstrcmp(gSystemLocaleState.FUN_00403df0(), "ENGLISH") != 0;
     switch (selection) {
     case 0:
-        if (tile == primaryTile) {
+        if (apTitleTile == primaryTile) {
             tile_crt::strcpy_s(text, 260, g_011d4378.FUN_00403df0());
             if (!isLocalized)
                 BSstrupr(text, 260);
@@ -1921,7 +2049,7 @@ void BarterCategoryLabelView::UpdateTileText(P09TileS* tile)
             BSstrupr(text, 260);
         break;
     }
-    tile->Set(0xfc4, text, true);
+    apTitleTile->Set(0xfc4, text, true);
 }
 
 namespace TraitRegistration {
@@ -2152,6 +2280,7 @@ extern char DAT_01094860;
 extern char DAT_01094868;
 // @fnv 0x009ff970
 // src: COMMUNITY 0x009ff970
+// pdb: Tile::LoadTextTable | Tile.obj | retail, upstream name already matches, high
 void Tile_LoadTextTable(){
 Tile_AddToTable(&DAT_01094868, -1);
 Tile_AddToTable(&DAT_0106ec74, 0);
@@ -2405,13 +2534,16 @@ struct UpdateTreeNode {
 };
 // @fnv 0x00a037e0
 // src: XBOX_PDB 0x00a037e0
-UpdateTreeNode* UpdateTreeNode::Tile_FinalPostParse(int trait, float value, int unused)
+// pdb: Tile::FinalPostParse | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiTrait, afValue, axString
+// pdb locals: pparent, fthickness, pmenu, ptile, xelem
+UpdateTreeNode* UpdateTreeNode::Tile_FinalPostParse(int aiTrait, float afValue, int axString)
 {
  UpdateTreeNode* aBound; MenuDepthController* aCurrent; float aLast; UpdateTreeNode* aReadObject;
  UpdateNode* aBipedNode; MenuDepthController* aOther; UpdateTreeNode* aContext; UpdateTreeNode* aList1; UpdateTreeNode* aPrevious; int aMargin; UpdateNode* aOuter2; UpdateTreeNode** aLocation;
- if (trait == 0xfa1 || trait == 0xfa2 || trait == 0xfad) {
-  if (trait == 0xfad) {
-   aLast = value;
+ if (aiTrait == 0xfa1 || aiTrait == 0xfa2 || aiTrait == 0xfad) {
+  if (aiTrait == 0xfad) {
+   aLast = afValue;
    aReadObject = this;
    while ((aContext = aReadObject->parent) && (aList1 = aReadObject->parent, aPrevious = aList1->parent)) {
     if (aReadObject->FUN_00a011b0(0xfa8) != 0.0) aLast += aReadObject->FUN_00a011b0(0xfad);
@@ -2424,15 +2556,15 @@ UpdateTreeNode* UpdateTreeNode::Tile_FinalPostParse(int trait, float value, int 
   if (FUN_00a011b0(0xfa6) != 0.0) Tile_SetChangeFlag(0x80);
   Tile_SetChangeFlag(1); return this;
  }
- if (GetType() == 0x387 && (trait == 0xfba || trait == 0xfbb || trait == 0xfbc || trait == 0xff7 || trait == 0xfbd || trait == 0xfbe || trait == 0xfb9 || trait == 0xfb7)) {
+ if (GetType() == 0x387 && (aiTrait == 0xfba || aiTrait == 0xfbb || aiTrait == 0xfbc || aiTrait == 0xff7 || aiTrait == 0xfbd || aiTrait == 0xfbe || aiTrait == 0xfb9 || aiTrait == 0xfb7)) {
   Tile_SetChangeFlag(2); return this;
  }
- if ((trait == 0xfb1 || trait == 0xfb0 || trait == 0xfc0 || trait == 0xfbf) && GetType() == 0x386) {
+ if ((aiTrait == 0xfb1 || aiTrait == 0xfb0 || aiTrait == 0xfc0 || aiTrait == 0xfbf) && GetType() == 0x386) {
   if (FUN_00a011b0(0xfa6) != 0.0) Tile_SetChangeFlag(0x80);
   Tile_SetChangeFlag(0x10); return this;
  }
- if (trait == 0xfa6 && (GetType() == 0x386 || GetType() == 0x385)) { Tile_SetChangeFlag(0x80); return this; }
- if (trait == 0xfae && (GetType() == 0x386 || GetType() == 0x387)) {
+ if (aiTrait == 0xfa6 && (GetType() == 0x386 || GetType() == 0x385)) { Tile_SetChangeFlag(0x80); return this; }
+ if (aiTrait == 0xfae && (GetType() == 0x386 || GetType() == 0x387)) {
   Tile_SetChangeFlag(0x100);
   aOuter2 = children;
   aBipedNode = aOuter2;
@@ -2443,19 +2575,19 @@ UpdateTreeNode* UpdateTreeNode::Tile_FinalPostParse(int trait, float value, int 
   }
   return this;
  }
- if (trait == 0xfa3) { Tile_SetChangeFlag(4); return this; }
- if (trait == 0xfa9 || trait == 0xfb2 || trait == 0xfb3 || trait == 0xfb4 || trait == 0xff4 || trait == 0xff5) {
+ if (aiTrait == 0xfa3) { Tile_SetChangeFlag(4); return this; }
+ if (aiTrait == 0xfa9 || aiTrait == 0xfb2 || aiTrait == 0xfb3 || aiTrait == 0xfb4 || aiTrait == 0xff4 || aiTrait == 0xff5) {
   if (GetType() == 0x386 || GetType() == 0x387) Tile_SetChangeFlag(8);
   return this;
  }
- if (trait == 0xfcc && GetType() == 0x386 && Tile_GetString(0xfcc)) { Tile_SetChangeFlag(0x20); return this; }
- if (trait == 0xfcc && GetType() == 0x388 && Tile_GetString(0xfcc)) { Tile_SetChangeFlag(0x40); return this; }
- if (trait == 0xfa8) { Tile_SetChangeFlag(0x200); return this; }
- if (trait == 0xfaa) {
+ if (aiTrait == 0xfcc && GetType() == 0x386 && Tile_GetString(0xfcc)) { Tile_SetChangeFlag(0x20); return this; }
+ if (aiTrait == 0xfcc && GetType() == 0x388 && Tile_GetString(0xfcc)) { Tile_SetChangeFlag(0x40); return this; }
+ if (aiTrait == 0xfa8) { Tile_SetChangeFlag(0x200); return this; }
+ if (aiTrait == 0xfaa) {
   aOther = Tile_GetMenu();
-  if (aOther) aOther->SetDepth((int)value,this);
+  if (aOther) aOther->SetDepth((int)afValue,this);
  }
- if (trait == 0xffa || trait == 0xffb || trait == 0xffc) { Tile_SetChangeFlag(1); return this; }
+ if (aiTrait == 0xffa || aiTrait == 0xffb || aiTrait == 0xffc) { Tile_SetChangeFlag(1); return this; }
  return 0;
 }
 
@@ -2471,11 +2603,15 @@ struct TileValueStr {
     char* pString;
     void RefreshA();
     void RefreshB(bool);
-    void SetString(const char* apString, bool abUpdate);
+    void Tile_Value_SetString(const char* apString, bool abClearActions);
 };
 
 // @fnv 0x00a0a300
-void TileValueStr::SetString(const char* apString, bool abUpdate)
+// src: XBOX_RETAIL_PDB 0x00a0a300
+// pdb: Tile::Value::SetString | Tile.obj | retail, upstream name already matches, high
+// pdb params: apString, abClearActions
+// pdb locals: bforceUpdate, uiLen
+void TileValueStr::Tile_Value_SetString(const char* apString, bool abClearActions)
 {
     const char* pCur;
     char* pOld;
@@ -2497,7 +2633,7 @@ void TileValueStr::SetString(const char* apString, bool abUpdate)
         strcpy_s(pDest4, uiLen6 + 1, apString);
     }
     fValue = 0.0f;
-    if (abUpdate)
+    if (abClearActions)
         RefreshA();
     RefreshB(kBChanged);
 }
@@ -2514,6 +2650,9 @@ struct FUN_00a0d1b0_cls {
 
 // Computes a rolling hash of the lowercased characters of key and returns it modulo m_04.
 // @fnv 0x00a0d1b0
+// pdb: Tile::MenuStringMap::KeyToHashIndex | Tile.obj | debug, vtable slot, medium
+// pdb params: apKey
+// pdb locals: iretVal
 unsigned int FUN_00a0d1b0_cls::HashKey(const char* key) {
     unsigned int hash = 0;
     while (*key) {
@@ -2532,6 +2671,10 @@ struct ListOwner { int Mode(); };
 struct FUN_00726920_StandIn { char pad0[0xc]; Tile* pTile; int GetUnfilteredItemCount(); };
 // @fnv 0x00726920
 // src: GUESS 0x00726920 (confidence: medium)
+// pdb: ListBox<StartMenu::Option *>::SetSelection | StartMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ListBox<StartMenu::Option *>::GetAt
+// pdb params: apSelectItem, aeMode
+// pdb locals: bselected
 int FUN_00726920_StandIn::GetUnfilteredItemCount()
 {
     static int numFiltered = GetTrait("_num_filtered", -1);
@@ -2621,6 +2764,7 @@ struct ItemCounter {
 // Returns the race count minus the trait value from the tile's TraitSource for the static trait id.
 // @fnv 0x007a8030
 // src: XBOX_PDB 0x007a8030
+// pdb: ListBox<TESChallenge *>::NumUnfiltered | MapMenu.obj | debug, call graph (shared callers), high
 unsigned int ItemCounter::ListBox_TESChallenge_NumUnfiltered() {
     static int trait = Tile_AddUserTrait(DAT_0106f8d0, -1);
     return GetRaceCount() - (unsigned int)tile->FUN_00a011b0(trait);
@@ -2645,6 +2789,8 @@ using namespace filt7a8;
 // Returns the total race count minus the number of races filtered out by the _num_filtered trait.
 // @fnv 0x007a86e0
 // src: GUESS 0x007a86e0 (confidence: medium)
+// pdb: BSSimpleList<ListBoxItem<TESChallenge *> *>::ItemsInList | MapMenu.obj | debug, object-file run extension, low
+// pdb locals: uiItems, plist
 int F7Menu::GetUnfilteredRaceCount_007a86e0()
 {
     static int s_iNumFiltered = Tile_AddUserTrait("_num_filtered", -1);
@@ -2661,6 +2807,8 @@ struct S00a014b0_Tile : Tile {
 // Adds this tile's 0xfad value, then linked tiles' values when 0xfa8 is nonzero or the next pointer matches FUN_00706cd0().
 // @fnv 0x00a014b0
 // src: GUESS 0x00a014b0 (confidence: medium)
+// pdb: Tile::GetRealDepth | Tile.obj | debug, object-file run extension, low
+// pdb locals: fdepth, ptile
 float S00a014b0_Tile::SumLinkedTileTraitFAD()
 {
     Tile* pChild;
@@ -2712,6 +2860,8 @@ struct Owner {
 
 // Walks the m_pkFirst linked list of Child nodes and returns true if no node has bit 0 of m_uiValue1 set.
 // @fnv 0x00a040a0
+// pdb: Tile::IsVisible | Tile.obj | debug, call graph, medium
+// pdb locals: pmodel, bculled
 bool Owner::IsAllChildrenFlag0()
 {
     Child* pkChild = m_pkFirst;
@@ -2731,6 +2881,8 @@ extern int DAT_011f3320;
 
 // @fnv 0x00a04510
 // src: COMMUNITY 0x00a04510
+// pdb: Tile::PromoteHibernators | Tile.obj | retail, upstream name already matches, high
+// pdb locals: xelem, ihow_many, ptile
 void Tile_PromoteHibernators()
 {
     int iCount;

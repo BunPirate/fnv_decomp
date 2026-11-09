@@ -41,13 +41,17 @@ void TESSound::ResetFormData()
 }
 
 // @fnv 0x005e3600
-void TESSound::InitializeMagicSystem()
+// src: XBOX_DEBUG_PDB 0x005e3600
+// pdb: TESSound::GenerateDefaultObjects | TESSound.obj | debug, unique string literal, high
+// pdb locals: tempMemContext
+void TESSound::GenerateDefaultObjects()
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TES_DEFAULT_OBJECTS, true, kTESSoundFileLabel,
                            kGenerateDefaultObjectsSourceLine);
 }
 
 // @fnv 0x005e2b70
+// pdb: TESSound::TESSound | TESSound.obj | retail, upstream name already matches, high
 TESSound::TESSound()
 {
     SetFormType(ENUM_FORM_ID_SOUN_ID);
@@ -57,47 +61,50 @@ TESSound::TESSound()
 
 // Loads a SOUN record: reads the header, then handles EDID, OBND, FNAM, RNAM, SNDD, SNDX, ANAM, GNAM and HNAM chunks, converting endianness where required.
 // @fnv 0x005e3160
-bool TESSound::Load(TESFile* file)
+// pdb: TESSound::Load | TESSound.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, pmessage, tmpData
+bool TESSound::Load(TESFile* apFile)
 {
-    if (static_cast<TESFileFormInt*>(file)->GetTESForm() != ENUM_FORM_ID_SOUN_ID)
+    if (static_cast<TESFileFormInt*>(apFile)->GetTESForm() != ENUM_FORM_ID_SOUN_ID)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     int iChunkID;
-    while ((iChunkID = file->GetChunkID()) != 0)
+    while ((iChunkID = apFile->GetChunkID()) != 0)
     {
         switch (iChunkID)
         {
         case 0x44494445:  // EDID
         {
-            char* pChunkBuffer = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(pChunkBuffer, 0x200);
+            char* pChunkBuffer = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(pChunkBuffer, 0x200);
             SetEditorID_AtRuntime(pChunkBuffer);
             break;
         }
         case 0x444E424F:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4D414E46:  // FNAM
         {
-            char* pChunkBuffer = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(pChunkBuffer, 0);
+            char* pChunkBuffer = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(pChunkBuffer, 0);
             SetSoundFile(static_cast<const char*>(pChunkBuffer));
             break;
         }
         case 0x4D414E52:  // RNAM
-            ReadTypedData(file, &m_cSoundFlag, sizeof(m_cSoundFlag));
+            ReadTypedData(apFile, &m_cSoundFlag, sizeof(m_cSoundFlag));
             break;
         case 0x44444E53:  // SNDD
             // SNDD stores the 36-byte prefix, before frequencyVariance.
-            ReadTypedData(file, &data, offsetof(TESSound__SOUND_DATA, frequencyVariance));
-            if (file->IsEndianConversionRequired())
+            ReadTypedData(apFile, &data, offsetof(TESSound__SOUND_DATA, frequencyVariance));
+            if (apFile->IsEndianConversionRequired())
                 data.Endian();
             break;
         case 0x58444E53:  // SNDX
         {
             TESSound__SOUND_DATA2 oldSoundData;
-            ReadTypedData(file, &oldSoundData, sizeof(oldSoundData));
-            if (file->IsEndianConversionRequired())
+            ReadTypedData(apFile, &oldSoundData, sizeof(oldSoundData));
+            if (apFile->IsEndianConversionRequired())
                 oldSoundData.Endian();
             data.minAttenuation = oldSoundData.iMin;
             data.maxAttenuation = oldSoundData.iMax;
@@ -108,8 +115,8 @@ bool TESSound::Load(TESFile* file)
             break;
         }
         case 0x4D414E41:  // ANAM
-            ReadTypedData(file, data.attenuationCurve, sizeof(data.attenuationCurve));
-            if (file->IsEndianConversionRequired())
+            ReadTypedData(apFile, data.attenuationCurve, sizeof(data.attenuationCurve));
+            if (apFile->IsEndianConversionRequired())
             {
                 BSEndian(&data.attenuationCurve[0], EndianSizeTag<2>());
                 BSEndian(&data.attenuationCurve[1], EndianSizeTag<2>());
@@ -129,13 +136,13 @@ bool TESSound::Load(TESFile* file)
             }
             break;
         case 0x4D414E47:  // GNAM
-            ReadTypedData(file, &data.reverbAttenuation, sizeof(data.reverbAttenuation));
+            ReadTypedData(apFile, &data.reverbAttenuation, sizeof(data.reverbAttenuation));
             break;
         case 0x4D414E48:  // HNAM
-            ReadTypedData(file, &data.unk18, sizeof(data.unk18));
+            ReadTypedData(apFile, &data.unk18, sizeof(data.unk18));
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;

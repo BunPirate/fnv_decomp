@@ -12,6 +12,8 @@ struct OriginDirectionPair
 };
 // @fnv 0x00eb6090
 // src: GAMEBRYO_LIB 0x00eb6090
+// pdb: NiSegment::GetPoint | NiSegment.obj | debug, upstream name already matches, high
+// pdb params: fS
 NiPoint3 OriginDirectionPair::NiSegment_GetPoint(float fS)
 {
     NiPoint3 p;

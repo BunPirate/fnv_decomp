@@ -108,6 +108,7 @@ void FUN_00822a20_shell::CheckModifierNonZero(float a)
 void _Deallocate(void*);
 
 // @fnv 0x0080f7e0
+// pdb: MagicBallProjectile::`scalar deleting destructor' | MagicBallProjectile.obj | retail, vtable slot, high
 void* MagicBallProjectile::FUN_0080f7e0(unsigned int flags)
 {
     FUN_0080fb30();
@@ -127,6 +128,7 @@ struct FUN_00811030_shell
 // Returns true when the int at offset 0xac is not 2 and the object is not deleted.
 // @fnv 0x00811030
 // src: COMMUNITY 0x00811030
+// pdb: MagicBallProjectile::IsActive | MagicBallProjectile.obj | debug, upstream name already matches, high
 bool FUN_00811030_shell::MagicBallProjectile_IsActive()
 {
     return *reinterpret_cast<const int*>(reinterpret_cast<const char*>(this) + 0xac) != 2 &&
@@ -148,6 +150,9 @@ struct FUN_00811070_shell
 
 // @fnv 0x00811070
 // src: XBOX_PDB 0x00811070
+// pdb: MagicBallProjectile::GetSaveSize | MagicBallProjectile.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short FUN_00811070_shell::MagicBallProjectile_GetSaveSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -171,6 +176,7 @@ struct FUN_008229d0_shell
 void _Deallocate(void*);
 // Calls FUN_00822a00, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x008229d0
+// pdb: MagicSprayProjectile::`scalar deleting destructor' | MagicSprayProjectile.obj | debug, object-file run extension, low
 void* FUN_008229d0_shell::FUN_008229d0(unsigned int flags)
 {
     ForwardCall_00822a00();
@@ -189,6 +195,7 @@ struct FUN_00822a00_shell
 };
 // @fnv 0x00822a00
 // src: GUESS 0x00822a00 (confidence: low)
+// pdb: MagicSprayProjectile::~MagicSprayProjectile | MagicSprayProjectile.obj | debug, object-file run extension, low
 void FUN_00822a00_shell::ForwardCall_00822a00()
 {
     reinterpret_cast<FUN_0081de70_shell*>(this)->FUN_0081de70();
@@ -224,6 +231,8 @@ struct Owner008cf740
 // Calls FUN_00932750 with a, then if g_TESSaveLoadGame->FUN_0055f5b0() is true, deallocates f88 and sets it to 0.
 // @fnv 0x008cf740
 // src: COMMUNITY 0x008cf740
+// pdb: ArrowProjectile::Revert | ArrowProjectile.obj | debug, object-file gap fill, medium
+// pdb params: aiFlags
 void Owner008cf740::ArrowProjectile_RevertTES(int a)
 {
     ((S00932750*)this)->MobileObject_RevertTES(a);
@@ -441,7 +450,10 @@ struct FUN_008cb380_shell
 };
 // @fnv 0x008cb380
 // src: XBOX_PDB 0x008cb380
-void FUN_008cb380_shell::ArrowProjectile_Process(float afUnused)
+// pdb: ArrowProjectile::Process | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: fdeltaTime
+void FUN_008cb380_shell::ArrowProjectile_Process(float afDelta)
 {
     float fTime = g_timeGlobal.GetStoredFloatValue();
     v190(fTime);
@@ -476,6 +488,9 @@ extern SaveManager* DAT_011de45c;
 
 // @fnv 0x00811110
 // src: XBOX_PDB 0x00811110
+// pdb: MagicBallProjectile::SaveGame | MagicBallProjectile.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: ffadeTimer
 void FUN_00811110_shell::MagicBallProjectile_SaveGame(unsigned int aiFlags)
 {
     reinterpret_cast<FUN_0081e8c0_shell_standin*>(this)->SaveGame_0081e8c0(aiFlags);
@@ -655,6 +670,9 @@ struct FUN_008111e0_shell : FUN_008111e0_vtable
 void* __memcpy(void*, const void*, unsigned int);
 
 // @fnv 0x008111e0
+// pdb: MagicBallProjectile::LoadGame | MagicBallProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: ffadeTimer
 void FUN_008111e0_shell::LoadFromSave(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     float ffadeTimer;
@@ -722,7 +740,7 @@ struct ImpactAudio
 ImpactAudio* __cdecl BSAudio_QInstance();
 struct ProjectileEvent
 {
-    void ApplySpellEffects(int, void*, ImpactPoint, void*, int, int, float, float);
+    void MagicCaster_FindTargets(int, void*, ImpactPoint, void*, int, int, float, float);
 };
 struct ProjectileImpact
 {
@@ -903,6 +921,9 @@ struct ProjectileImpact
     void TriggerImpact(int, int, int, int, int, bool);
 };
 // @fnv 0x0081a760
+// pdb: MagicFogProjectile::Collide | MagicFogProjectile.obj | retail, vtable slot, high
+// pdb params: aContactPoint, apTargetBody, apCollidee, abFizzle
+// pdb locals: fpower, filter, isoundFileID, soundHand, loc
 void ProjectileImpact::TriggerImpact(int aiUnused1, int aiUnused2, int aiUnused3, int aiUnused4, int aiEventArg,
                                      bool abSuppress)
 {
@@ -913,7 +934,7 @@ void ProjectileImpact::TriggerImpact(int aiUnused1, int aiUnused2, int aiUnused3
     float b = (duration - elapsed) / duration;
     if (!abSuppress && b > 0.0)
     {
-        FUN_009185e0()->ApplySpellEffects(GetArchetype(), GetParentCell(), position(), this, aiEventArg, 0, b, 1.0f);
+        FUN_009185e0()->MagicCaster_FindTargets(GetArchetype(), GetParentCell(), position(), this, aiEventArg, 0, b, 1.0f);
     }
     if (GetAVEffect()->GetAreaSound() && !abSuppress)
     {
@@ -1091,6 +1112,8 @@ struct Self
 };
 // @fnv 0x008cf7a0
 // src: COMMUNITY 0x008cf7a0
+// pdb: ArrowProjectile::MovetoHigh | ArrowProjectile.obj | debug, object-file gap fill, medium
+// pdb locals: pNewProcess, aeCurrentList
 bool Self::ArrowProjectile_MoveToHigh()
 {
     if (m68 && !m68->FUN_0045cd60())
@@ -1111,12 +1134,14 @@ bool Self::ArrowProjectile_MoveToHigh()
 struct NiRTTI;
 
 NiObject* NiObject_DynamicCast(const NiRTTI* pkRTTI, NiObject* pkObject);
-void BSUtilities_ProcessSelectiveUpdate(NiAVObject* pkObject);
+void BSUtilities_ProcessSelectiveUpdate(NiAVObject* apObject);
 extern NiRTTI DAT_011f36ac;
 extern const float DAT_0107a510;
 extern float DAT_011c3c08;
 
 // @fnv 0x0080fcf0
+// pdb: MagicBallProjectile::Init3D | MagicBallProjectile.obj | retail, string-set bridge, high
+// pdb locals: pn, pmanager, angle, rot, pseq, UpdateData
 void TESObjectREFR::ResetProjectileIdleAnimation()
 {
     NiAVObject* pNode = GetNiNode();
@@ -1172,7 +1197,7 @@ struct Model
 };
 struct Effect
 {
-    void UpdateLightFade(float);
+    void MagicLight_Update(float);
 };
 struct Info
 {
@@ -1432,16 +1457,19 @@ struct AreaProjectile
     bool FUN_00440d80() const;
     Info* FUN_009306d0();
     void TESForm_SetDisabled(int);
-    void MagicBallProjectile_Update(float dt);
+    void MagicBallProjectile_Update(float afDelta);
 };
 // Advances the projectile by dt: kills it on large dt, moves it along its speed, accumulates distance, and handles the idle/effect state.
 // @fnv 0x008106d0
 // src: XBOX_PDB 0x008106d0
-void AreaProjectile::MagicBallProjectile_Update(float afDeltaTime)
+// pdb: MagicBallProjectile::Update | MagicBallProjectile.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: newLoc, rdeltaMove, oldLoc, ptopav, pmanager, po, pseqStop
+void AreaProjectile::MagicBallProjectile_Update(float afDelta)
 {
-    if (afDeltaTime >= 60.0)
+    if (afDelta >= 60.0)
         Kill(1);
-    if (afDeltaTime >= 0.0)
+    if (afDelta >= 0.0)
     {
         switch (state)
         {
@@ -1452,9 +1480,9 @@ void AreaProjectile::MagicBallProjectile_Update(float afDeltaTime)
                 break;
             if (HK2NI(FUN_009306d0()->GetFloatAtOffset53C()) >= Position().z)
                 SetPosition(Position(), 0, 0, 1);
-            NiPoint3 newPosition(0.0f, speed * afDeltaTime, 0.0f);
+            NiPoint3 newPosition(0.0f, speed * afDelta, 0.0f);
             NiPoint3 oldPosition = Position();
-            Move(afDeltaTime, &newPosition, 15);
+            Move(afDelta, &newPosition, 15);
             if (!Active())
                 break;
             NiPoint3 velocity = Position();
@@ -1464,7 +1492,7 @@ void AreaProjectile::MagicBallProjectile_Update(float afDeltaTime)
             if (distance > *originalRuntimeFUN_00403e20Setting1130.Setting_Float_00403e20())
                 Kill(1);
             if (effect)
-                effect->UpdateLightFade(afDeltaTime);
+                effect->MagicLight_Update(afDelta);
             break;
         }
         case 2: {
@@ -1488,7 +1516,7 @@ void AreaProjectile::MagicBallProjectile_Update(float afDeltaTime)
                 TESForm_SetDisabled(1);
             }
             if (effect)
-                effect->UpdateLightFade(afDeltaTime);
+                effect->MagicLight_Update(afDelta);
             break;
         }
         }
@@ -1805,14 +1833,17 @@ struct Cls
     void UpdateFlags(int, int);
     Ctrl* FUN_009306d0();
     Refr* FUN_009185e0();
-    void MagicBallProjectile_FinishInitLoadGameTES(int a1, int a2);
+    void MagicBallProjectile_FinishInitLoadGameTES(int aiFlags, int aiOldFlags);
 };
 
 // @fnv 0x008115c0
 // src: COMMUNITY 0x008115c0
-void Cls::MagicBallProjectile_FinishInitLoadGameTES(int aiArg1, int aiArg2)
+// pdb: MagicBallProjectile::FinishInitLoadGame | MagicBallProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: pcaster, pcon, igroup, filter, pref, pactor, pcol, prb
+void Cls::MagicBallProjectile_FinishInitLoadGameTES(int aiFlags, int aiOldFlags)
 {
-    UpdateFlags(aiArg1, aiArg2);
+    UpdateFlags(aiFlags, aiOldFlags);
     Ctrl* ctrl4 = FUN_009306d0();
     if (ctrl4)
     {
@@ -1991,9 +2022,12 @@ struct Sound
 // The legacy magic fields share the storage described by the shared impact layout.
 // Advances the projectile each frame: moves it, updates its animation and links, rotates toward the target, and marks it for removal when finished.
 // @fnv 0x00812b60
-void Projectile::UpdateMotion(float delta)
+// pdb: MagicBoltProjectile::Update | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb params: afDelta
+// pdb locals: startingLocation, newLoc, rdeltaMove, oldLoc, pbranch, pprevious, pnext, pparent, bpostHit, fz, toTarget, rot, fxy, endLocation, fBoltLength, filter
+void Projectile::UpdateMotion(float afDelta)
 {
-    if (delta == 0.0)
+    if (afDelta == 0.0)
         return;
     if (FUN_00440d80())
         return;
@@ -2002,11 +2036,11 @@ void Projectile::UpdateMotion(float delta)
     {
         if (HK2NI(FUN_009306d0()->GetFloatAtOffset53C()) >= (*reinterpret_cast<NiPoint3*>(static_cast<const TESObjectREFR*>(this)->GetPos())).z)
             reinterpret_cast<void (__thiscall*)(Projectile*, NiPoint3, int, int, int)>((*reinterpret_cast<void***>(this))[193])(this, (*reinterpret_cast<NiPoint3*>(static_cast<const TESObjectREFR*>(this)->GetPos())), 0, 0, 1);
-        NiPoint3 movementVal(0.0f, reinterpret_cast<NiPoint2&>(kImpacts).x * delta, 0.0f);
+        NiPoint3 movementVal(0.0f, reinterpret_cast<NiPoint2&>(kImpacts).x * afDelta, 0.0f);
         NiPoint3 before = NiPoint3_ZERO;
         if (FUN_009306d0())
             FUN_009306d0()->bhkCharacterController_GetPosition(before);
-        static_cast<MobileObject*>(this)->Move(delta, reinterpret_cast<NiPoint3*>(&movementVal), 15);
+        static_cast<MobileObject*>(this)->Move(afDelta, reinterpret_cast<NiPoint3*>(&movementVal), 15);
         NiPoint3 after = NiPoint3_ZERO;
         if (FUN_009306d0())
             FUN_009306d0()->bhkCharacterController_GetPosition(after);
@@ -2023,7 +2057,7 @@ void Projectile::UpdateMotion(float delta)
         Link* next = 0;
         while (current3)
         {
-            MagicBoltProjectile_UpdateBranch(delta, current3);
+            MagicBoltProjectile_UpdateBranch(afDelta, current3);
             next = current3->next;
             if (((Anim*)current3->anim)->TestFlagAndFloatRange())
             {
@@ -2056,7 +2090,7 @@ void Projectile::UpdateMotion(float delta)
             NiPoint3 difference2 = ((ParentNode*)reinterpret_cast<Ptr<ParentNode>&>(m_kImpactTransform.m_Translate.y))->NiAVObject_GetWorldTranslate() - original;
             if (!moving ||
                 GetField90Float() * reinterpret_cast<NiPoint2&>(kImpacts).x > ((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->MiddleHighProcess_GetCurrentFurniture() * ((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->GetFloatAt144())
-                ((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->DispatchFloatPair(delta, difference2.FUN_00457990(), reinterpret_cast<NiPoint2&>(kImpacts).x, moving);
+                ((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->DispatchFloatPair(afDelta, difference2.FUN_00457990(), reinterpret_cast<NiPoint2&>(kImpacts).x, moving);
             Matrix rotation;
             float vertical = difference2.z;
             difference2.z = 0.0f;
@@ -2072,7 +2106,7 @@ void Projectile::UpdateMotion(float delta)
             float length = (original - position).FUN_00457990();
             if (!moving ||
                 GetField90Float() * reinterpret_cast<NiPoint2&>(kImpacts).x > ((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->MiddleHighProcess_GetCurrentFurniture() * ((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->GetFloatAt144())
-                ((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->DispatchFloatPair(delta, length, reinterpret_cast<NiPoint2&>(kImpacts).x, moving);
+                ((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->DispatchFloatPair(afDelta, length, reinterpret_cast<NiPoint2&>(kImpacts).x, moving);
             if (((Anim*)reinterpret_cast<Ptr<Anim>&>(m_kImpactTransform.m_Rotate.m_pEntry[1][2]))->NiObject_StreamCanSkip())
             {
                 MagicBoltProjectile_SetState(2);
@@ -2105,7 +2139,7 @@ struct FUN_008106b0_shell : FUN_00810a80_shell
 
 struct FUN_0081c320_shell
 {
-    void UpdateLightFade(float);
+    void MagicLight_Update(float);
 };
 
 struct FUN_00ad8ce0_shell
@@ -2120,7 +2154,7 @@ struct FUN_00ad8ce0_shell
 
 struct FUN_00817160_shell
 {
-    void ApplySpellEffects();
+    void MagicCaster_FindTargets();
 };
 
 extern Setting DAT_011d1ad8, DAT_011d1d00, DAT_011d17f4;
@@ -2639,18 +2673,21 @@ struct FUN_0081a320_class
 
     FUN_00817160_shell* FUN_009185e0(int);
 
-    void MagicFogProjectile_Update(float dt);
+    void MagicFogProjectile_Update(float afDelta);
 };
 
 // @fnv 0x0081a320
 // src: COMMUNITY 0x0081a320
-void FUN_0081a320_class::MagicFogProjectile_Update(float afDeltaTime)
+// pdb: MagicFogProjectile::Update | MagicFogProjectile.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: flastAge, newLoc, rdeltaMove, fdistance, oldLoc, fhalfDuration, fpower
+void FUN_0081a320_class::MagicFogProjectile_Update(float afDelta)
 {
 
-    if (afDeltaTime >= DAT_01012638)
+    if (afDelta >= DAT_01012638)
         v49(1);
 
-    if (afDeltaTime >= DAT_01012060)
+    if (afDelta >= DAT_01012060)
     {
 
         switch (m_b4)
@@ -2666,15 +2703,15 @@ void FUN_0081a320_class::MagicFogProjectile_Update(float afDeltaTime)
             float distanceTraveled;
             float aim[3];
 
-            reinterpret_cast<NiPoint3*>(aim)->SetComponents(0.0f, m_88 * afDeltaTime, 0.0f);
+            reinterpret_cast<NiPoint3*>(aim)->SetComponents(0.0f, m_88 * afDelta, 0.0f);
 
             ((FUN_009306d0_shell*)this)
                 ->FUN_009306d0()
-                ->bhkCharacterController_SetFallTime(1.0f - afDeltaTime * *DAT_011d1ad8.Setting_Float_00403e20());
+                ->bhkCharacterController_SetFallTime(1.0f - afDelta * *DAT_011d1ad8.Setting_Float_00403e20());
 
             NiPoint3 start = reinterpret_cast<const NiPoint3&>(*v125());
 
-            v148(afDeltaTime, reinterpret_cast<NiPoint3*>(aim), 15);
+            v148(afDelta, reinterpret_cast<NiPoint3*>(aim), 15);
 
             if (!v195())
             {
@@ -2692,7 +2729,7 @@ void FUN_0081a320_class::MagicFogProjectile_Update(float afDeltaTime)
                 if (m_8c > *DAT_011d1d00.Setting_Float_00403e20())
                     v49(1);
 
-                if ((double)(distanceTraveled / afDeltaTime) < DAT_01020998)
+                if ((double)(distanceTraveled / afDelta) < DAT_01020998)
                     v193(reinterpret_cast<const NiPoint3&>(DAT_011f426c), 0, 0, 0);
             }
         }
@@ -2700,7 +2737,7 @@ void FUN_0081a320_class::MagicFogProjectile_Update(float afDeltaTime)
         }
         float fPreviousTime = m_a8;
 
-        m_a8 += afDeltaTime;
+        m_a8 += afDelta;
 
         if (m_a8 > m_ac)
         {
@@ -2710,7 +2747,7 @@ void FUN_0081a320_class::MagicFogProjectile_Update(float afDeltaTime)
         {
 
             if (m_cc)
-                m_cc->UpdateLightFade(afDeltaTime);
+                m_cc->MagicLight_Update(afDelta);
 
             if (m_bc.FUN_00ad8ce0())
             {
@@ -2730,7 +2767,7 @@ void FUN_0081a320_class::MagicFogProjectile_Update(float afDeltaTime)
                 if (DAT_01012060 < ratio)
                 {
 
-                    FUN_009185e0(FUN_00810fd0(FUN_008d6f30(reinterpret_cast<const NiPoint3&>(*v125()), this, 0, 0, ratio, 1.0f)))->ApplySpellEffects();
+                    FUN_009185e0(FUN_00810fd0(FUN_008d6f30(reinterpret_cast<const NiPoint3&>(*v125()), this, 0, 0, ratio, 1.0f)))->MagicCaster_FindTargets();
                 }
             }
         }
@@ -2770,7 +2807,7 @@ extern "C" int __cdecl TESForm_GetFormByNumericID(int);
 
 extern "C" int __cdecl bhkNiCollisionObject_GetbhkNiCollisionObject(int);
 
-extern "C" unsigned short __cdecl FUN_004b66d0(int, int, int, int);
+extern "C" unsigned short __cdecl GetCollisionObjectCountInSceneGraph(int, int, int, int);
 
 extern "C" unsigned short __cdecl FilterByFlags(int, int, int, int, int);
 
@@ -2831,10 +2868,13 @@ struct FUN_008ce610_owner : PC7d
 
 // @fnv 0x008ce610
 // src: XBOX_PDB 0x008ce610
-void FUN_008ce610_owner::ArrowProjectile_SaveGame(int arg)
+// pdb: ArrowProjectile::SaveGame | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: ienchantmentID, ipoisonID, itempStartPosition, iblockSize, ishooterID, pblockSize, bsaveCollisionData, iblockHeader, quat, icollisionObjectCount, icollideeID, icollisionObjectIndex, pcol, bignoreWeaponBoneAndFadeNodes, itemp, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void FUN_008ce610_owner::ArrowProjectile_SaveGame(int aiFlags)
 {
 
-    SaveProcess(arg);
+    SaveProcess(aiFlags);
 
     unsigned short idB = 0;
 
@@ -2954,7 +2994,7 @@ void FUN_008ce610_owner::ArrowProjectile_SaveGame(int arg)
                     bool invert =
                         (*reinterpret_cast<MotionStateRecord**>(reinterpret_cast<char*>(this) + 0x88))->type == 0;
 
-                    low = FUN_004b66d0((*reinterpret_cast<MotionStateRecord**>(reinterpret_cast<char*>(this) + 0x88))
+                    low = GetCollisionObjectCountInSceneGraph((*reinterpret_cast<MotionStateRecord**>(reinterpret_cast<char*>(this) + 0x88))
                                            ->handle->TESObjectREFR_Get3D(),
                                        invert, invert, 1);
 
@@ -3215,9 +3255,12 @@ struct Loaded
 // Loads the block header, mode, refs, position and extra data (with optional rotation and name) from the loader, then warns on buffer overrun or underrun.
 // @fnv 0x008ceb50
 // src: XBOX_PDB 0x008ceb50
-void Loaded::ArrowProjectile_LoadGame(void* arg1, void* arg2)
+// pdb: ArrowProjectile::LoadGame | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: ienchantmentID, ipoisonID, istartBufferPosition, iblockSize, ishooterID, bsaveCollisionData, iblockHeader, pheader, pform, quat, rot, icollideeID, itemp, icollisionObjectCount, icollisionObjectIndex, pstring, clength, icurrentBufferPosition
+void Loaded::ArrowProjectile_LoadGame(void* aiFlags, void* aiCurrentFlags)
 {
-    baseLoad(arg1, arg2);
+    baseLoad(aiFlags, aiCurrentFlags);
     unsigned short a = 0;
     unsigned i = 0;
     if (loaderState->active())
@@ -3454,7 +3497,7 @@ struct Mgr85
 {
     void AddActorToList(int*);
 };
-unsigned short __cdecl FUN_004b66d0(void*, int, int, int);
+unsigned short __cdecl GetCollisionObjectCountInSceneGraph(void*, int, int, int);
 FlagObj* __cdecl GetCollisionObjectByIndexInSceneGraph(void*, int, int, int, int);
 void* __cdecl BSUtilities_GetObjectByName(void*, int);
 int __cdecl Warning_005b5e40(const char*, ...);
@@ -3572,7 +3615,10 @@ struct Cls
 
 // @fnv 0x008cf440
 // src: XBOX_PDB 0x008cf440
-void Cls::ArrowProjectile_FinishInitLoadGame(int a1, int a2)
+// pdb: ArrowProjectile::FinishInitLoadGame | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: pobj3D, icollisionObjectCount, icollisionObjectIndex, bignoreWeaponBoneAndFadeNodes, icollisionObjectCount2, pcol, pstring
+void Cls::ArrowProjectile_FinishInitLoadGame(int aiFlags, int aiOldFlags)
 {
     void* saved;
     int saved2c5;
@@ -3592,11 +3638,11 @@ void Cls::ArrowProjectile_FinishInitLoadGame(int a1, int a2)
             return;
         }
         fc0 = 1;
-        fc4 = a1;
+        fc4 = aiFlags;
         return;
     }
     ArrowProjectile_InitHavok(fa4, 1.0f);
-    UpdateFlags(a1, a2);
+    UpdateFlags(aiFlags, aiOldFlags);
     if (f88 != 0 && (f88->f00 == 1 || f88->f00 == 0))
     {
         if ((int)DAT_011de45c->FUN_008df040() >= 0x20)
@@ -3607,7 +3653,7 @@ void Cls::ArrowProjectile_FinishInitLoadGame(int a1, int a2)
             f88->f2c = 0;
             if (f88->f28 != 0)
             {
-                wordres = FUN_004b66d0(f88->f28->TESObjectREFR_Get3D(), _flag, _flag, 1);
+                wordres = GetCollisionObjectCountInSceneGraph(f88->f28->TESObjectREFR_Get3D(), _flag, _flag, 1);
                 if (hi5 != (int)wordres)
                 {
                     Warning_005b5e40(DAT_01085d9c, f88->f28->slot76(), f88->f28->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
@@ -3661,6 +3707,8 @@ struct Self_931710 : Self
 
 // @fnv 0x00931710
 // src: COMMUNITY 0x00931710
+// pdb: MobileObject::MovetoHigh | MobileObject.obj | retail, vtable slot, high
+// pdb locals: pNewProcess, aeCurrentList
 bool Self_931710::MobileObject_MoveToLowProcess()
 {
     int level = this->m68->FUN_0045cd60();
@@ -3686,12 +3734,15 @@ extern "C" int LengthCheck_004b5470(NiPoint3* point, float value);
 
 struct ProjectileImpactCandidate : ProjectileImpact
 {
-    bool IsPointWithinImpactRange(const NiPoint3& point, float value, bool adjust, int unused_stack);
+    bool IsPointWithinImpactRange(const NiPoint3& point, float afRadius, bool abExpandRadius, int abAlwaysTestHeight);
 };
 
 // @fnv 0x00935820
-bool ProjectileImpactCandidate::IsPointWithinImpactRange(const NiPoint3& point, float value, bool adjust,
-                                                         int unused_stack)
+// pdb: MobileObject::IsAtPoint | MobileObject.obj | retail, vtable slot, high
+// pdb params: aPoint, afRadius, abExpandRadius, abAlwaysTestHeight
+// pdb locals: diff, loc, fmax, fmin, fheight, freach
+bool ProjectileImpactCandidate::IsPointWithinImpactRange(const NiPoint3& point, float afRadius, bool abExpandRadius,
+                                                         int abAlwaysTestHeight)
 {
     float upper;
     float lower;
@@ -3708,12 +3759,12 @@ bool ProjectileImpactCandidate::IsPointWithinImpactRange(const NiPoint3& point, 
         {
             result.z = 0.0f;
         }
-        if (adjust)
+        if (abExpandRadius)
         {
             float adjustment = DAT_0101e340;
-            value += adjustment;
+            afRadius += adjustment;
         }
-        return LengthCheck_004b5470(&result, value) <= 0;
+        return LengthCheck_004b5470(&result, afRadius) <= 0;
     }
 }
 }  // namespace fnv_00935820
@@ -3865,10 +3916,13 @@ struct ArrowSave
 // Computes the serialized save size of an ArrowSave, adding field sizes conditionally on save version and projectile type, and logs the result.
 // @fnv 0x008ce3b0
 // src: XBOX_PDB 0x008ce3b0
-unsigned short ArrowSave::ArrowProjectile_GetSaveSize(unsigned flags)
+// pdb: ArrowProjectile::GetSaveSize | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize, itempStartSize, bsaveCollisionData, pheader, pform
+unsigned short ArrowSave::ArrowProjectile_GetSaveSize(unsigned aiFlags)
 {
     unsigned short size7 = 0;
-    size7 += MobileObject_GetSaveSize(flags);
+    size7 += MobileObject_GetSaveSize(aiFlags);
     unsigned short start = size7;
     if (((SaveState*)g_TESSaveLoadGame)->TESSaveLoadGame_UseSaveGameBlocks())
     {
@@ -4232,9 +4286,12 @@ struct FUN_004b4500_Vec3View : public NiMatrix3
 };
 
 // @fnv 0x00810aa0
-void ContinuousBeamProjectile::ApplyAreaEffect(NiPoint3 point, unsigned int variant, TESObjectREFR* target, bool silent)
+// pdb: MagicBallProjectile::Collide | MagicBallProjectile.obj | retail, vtable slot, high
+// pdb params: aContactPoint, apTargetBody, apCollidee, abFizzle
+// pdb locals: ptopav, pact, pmanager, po, pav, pareaParticles, filter, pseqArea, isoundFileID, soundHand, loc
+void ContinuousBeamProjectile::ApplyAreaEffect(NiPoint3 point, unsigned int variant, TESObjectREFR* apCollidee, bool abFizzle)
 {
-    Actor* pActor2 = (target && ((Actor*)target)->IsActor()) ? (Actor*)target : 0;
+    Actor* pActor2 = (apCollidee && ((Actor*)apCollidee)->IsActor()) ? (Actor*)apCollidee : 0;
     if (pActor2 && pActor2->GetGhost())
         return;
 
@@ -4258,7 +4315,7 @@ void ContinuousBeamProjectile::ApplyAreaEffect(NiPoint3 point, unsigned int vari
                 (const FUN_004b4500_Vec3View&)pNode2->NiAVObject_GetWorldRotate().m_Rotate * reinterpret_cast<const NiPoint3&>(DAT_011a9478)), variant);
     }
 
-    if (pNode2 && !silent)
+    if (pNode2 && !abFizzle)
     {
         pNode2->NiAVObject_SetTranslate(point);
         NiAVObject* effect20 = pNode2->GetObjectByName(NiFixedString("AreaEffect"));
@@ -4271,7 +4328,7 @@ void ContinuousBeamProjectile::ApplyAreaEffect(NiPoint3 point, unsigned int vari
     if (reinterpret_cast<Sound&>(m_kImpactTransform.m_Rotate.m_pEntry[2][2]).FUN_00ad8ce0())
         reinterpret_cast<Sound&>(m_kImpactTransform.m_Rotate.m_pEntry[2][2]).FUN_00ad88f0();
 
-    if (this->FUN_009306d0() && !silent)
+    if (this->FUN_009306d0() && !abFizzle)
     {
         if (this->FUN_009306d0()->sub410.FUN_00621270(0x8000))
         {
@@ -4283,10 +4340,10 @@ void ContinuousBeamProjectile::ApplyAreaEffect(NiPoint3 point, unsigned int vari
     }
 
     reinterpret_cast<int&>(m_kImpactTransform.m_Rotate.m_pEntry[2][0]) = 2;
-    if (!silent)
+    if (!abFizzle)
     {
-        this->FUN_009185e0()->ApplySpellEffects(this->GetArchetype(), this->FUN_008d6f30(),
-                                                *(ImpactPoint*)static_cast<const TESObjectREFR*>(this)->GetPos(), this, (int)target, 0, 1.0f, 1.0f);
+        this->FUN_009185e0()->MagicCaster_FindTargets(this->GetArchetype(), this->FUN_008d6f30(),
+                                                *(ImpactPoint*)static_cast<const TESObjectREFR*>(this)->GetPos(), this, (int)apCollidee, 0, 1.0f, 1.0f);
     }
 
     NiAVObject* pRoot4 = this->GetNiNode();
@@ -4308,7 +4365,7 @@ void ContinuousBeamProjectile::ApplyAreaEffect(NiPoint3 point, unsigned int vari
         }
     }
 
-    if (this->GetAVEffect()->GetAreaSound() && !silent)
+    if (this->GetAVEffect()->GetAreaSound() && !abFizzle)
     {
         unsigned int soundID3 = this->GetAVEffect()->GetAreaSound()->GetFormID();
         ImpactHandle handleA = BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0(soundID3, 0x102);
@@ -4973,7 +5030,10 @@ struct Host
 // If active, finds the controller and sequence for the global time, advances the sequence by the elapsed time, and updates the node.
 // @fnv 0x00936b20
 // src: XBOX_PDB 0x00936b20
-void Host::MobileObject_UpdateAnimation(int aiUnused)
+// pdb: MobileObject::UpdateAnimation | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: pref, pmanager, updateData, pseq, iframe, flipPercent
+void Host::MobileObject_UpdateAnimation(int afDelta)
 {
     if (MobileObject_IsTalkingActivator())
     {
@@ -5021,7 +5081,10 @@ unsigned int FUN_004873d0(BaseForm* pkForm);
 
 // @fnv 0x005722c0
 // src: XBOX_PDB 0x005722c0
-bool Actor::TESObjectREFR_IsDead(int iUnused)
+// pdb: TESObjectREFR::IsDead | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: bNotEssential
+// pdb locals: bretval, fhealth
+bool Actor::TESObjectREFR_IsDead(int bNotEssential)
 {
     bool bResult = false;
     if (IsActor() && GetHavokWorldObjectCountInSceneGraph_0084e3a0() != 7)
@@ -5946,10 +6009,13 @@ struct Cls8112c0
 // Calls FUN_0081ea40 and FUN_0080fcf0, updates m_b4 from an Obj30 result, and may allocate C0Obj using the named SpecialIdle_AreaEffect entry.
 // @fnv 0x008112c0
 // src: XBOX_PDB 0x008112c0
-void Cls8112c0::MagicBallProjectile_InitLoadGame(int aiParam1, int aiParam2)
+// pdb: MagicBallProjectile::InitLoadGame | MagicBallProjectile.obj | retail, upstream name already matches, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: ffadeTimer, isoundFileID, ptopav, pmanager, po, pseqArea
+void Cls8112c0::MagicBallProjectile_InitLoadGame(int aiFlags, int aiOldFlags)
 {
     float f10;
-    ResolveMagicReferences(aiParam1, aiParam2);
+    ResolveMagicReferences(aiFlags, aiOldFlags);
     ResetProjectileIdleAnimation();
     FUN_008d6f30(this, 0)->FUN_00548230();
     if (m_ac != 2)
@@ -6057,7 +6123,7 @@ extern Clock DAT_011ce684;
 extern const double DAT_01012060, DAT_01011588, DAT_01021928;
 extern double __cdecl HK2NI(float);
 extern float __cdecl NiASin_004b54c0(float);
-extern void __cdecl FUN_00b6bb30(PackageNodeHandler*, float);
+extern void __cdecl RecursiveSetPropertyFadeAlpha(PackageNodeHandler*, float);
 
 struct Controller
 {
@@ -6265,6 +6331,9 @@ struct Controller
 // Updates elapsed time, position, orientation, and fadeLeft, with phase-dependent calls to v27, v49, and other handlers.
 // @fnv 0x008cb3c0
 // src: COMMUNITY 0x008cb3c0
+// pdb: ArrowProjectile::Update | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: p3d, bready, newLoc, rdeltaMove, oldLoc, ratio, enextState, fy, z, fz, len, rot, fx, ecolType, pcell, UpdateData
 void Controller::ArrowProjectile_Update(float afDelta)
 {
     if (pending)
@@ -6381,7 +6450,7 @@ void Controller::ArrowProjectile_Update(float afDelta)
             }
             if (actor)
             {
-                FUN_00b6bb30(actor, fadeLeft);
+                RecursiveSetPropertyFadeAlpha(actor, fadeLeft);
             }
         }
     }
@@ -6432,19 +6501,22 @@ struct FUN_009ae5d0_shell
     unsigned int GetFieldC8();
     float GetGoalZDelta();
     void UpdateMatchingActors();
-    bool IsNotCulled();
+    bool Explosion_IsDistant();
     void Explosion_UpdateRadiation();
     void UpdateLightFade();
     float BGSProjectile_GetMuzzleFlashDuration();
     FUN_004e3cc0_Class* GetActorBase();
-    void Explosion_MarkForDeletion();
-    void Explosion_Update(int a1);
+    void Explosion_Kill();
+    void Explosion_Update(int afDelta);
 };
 
 // Checks iE4, goal Z delta, bD5, and actor-base values while conditionally calling four functions.
 // @fnv 0x009ae5d0
 // src: COMMUNITY 0x009ae5d0
-void FUN_009ae5d0_shell::Explosion_Update(int a1)
+// pdb: Explosion::Update | Explosion.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: pObjectHit
+void FUN_009ae5d0_shell::Explosion_Update(int afDelta)
 {
     if (iE4 == 0)
     {
@@ -6460,20 +6532,21 @@ void FUN_009ae5d0_shell::Explosion_Update(int a1)
         UpdateMatchingActors();
     }
     iE4 = iE4 + 1;
-    if (!IsNotCulled())
+    if (!Explosion_IsDistant())
     {
         Explosion_UpdateRadiation();
         UpdateLightFade();
     }
     if (GetGoalZDelta() > BGSProjectile_GetMuzzleFlashDuration() && GetGoalZDelta() > GetActorBase()->GetFloatAtOffset9C())
     {
-        Explosion_MarkForDeletion();
+        Explosion_Kill();
     }
 }
 }  // namespace fnv_009ae5d0
 
 struct DialogueActor;
 struct DialogueProcess;
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 struct Animation
 {
     void SpecialIdleFree(bool, bool);
@@ -7149,6 +7222,8 @@ extern ActorDeletionQueue_magicballprojectile actorQueue;
 // Cancels the process; for package type 28, handles both participants, frees special idles, and deletes the dialogue package.
 // @fnv 0x00933d20
 // src: XBOX_PDB 0x00933d20
+// pdb: MobileObject::EndDialogue | MobileObject.obj | retail, upstream name already matches, high
+// pdb locals: pdpack, bother, pmobile, pconact, ptaract, panim, ptalkingactivator, pdialogHeadTarget
 void DialogueActor::MobileObject_EndDialogue()
 {
     if (!process || saveState->GetLoading())
@@ -7251,9 +7326,12 @@ struct Data88
 // Calls FUN_00932490, resolves three form fields and unk88->unk28 through FUN_004839c0, then calls two functions on DAT_011e0e80.
 // @fnv 0x008cf2c0
 // src: XBOX_PDB 0x008cf2c0
-void MobileObject::ArrowProjectile_InitLoadGame(unsigned int auiArg1, unsigned int auiArg2)
+// pdb: ArrowProjectile::InitLoadGame | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: ienchantmentID, ipoisonID, ishooterID, icollideeID
+void MobileObject::ArrowProjectile_InitLoadGame(unsigned int aiFlags, unsigned int aiOldFlags)
 {
-    SetProcessFlags(auiArg1, auiArg2);
+    SetProcessFlags(aiFlags, aiOldFlags);
     // Legacy save-extension fields lie beyond the shared MobileObject base.
     unsigned int enchantment = (unsigned int)(*reinterpret_cast<Actor**>(reinterpret_cast<char*>(this) + 0xa4));
     if (enchantment)

@@ -29,6 +29,7 @@ struct TelekinesisDeletionFlags
 void __cdecl _Deallocate(void*);
 
 // @fnv 0x0082a510
+// pdb: TelekinesisEffect::`scalar deleting destructor' | TelekinesisEffect.obj | retail, vtable slot, high
 void* __fastcall DestroyTelekinesisEffect(TelekinesisEffect* effect, TelekinesisDeletionFlags flags)
 {
     effect->TelekinesisEffect::~TelekinesisEffect();
@@ -46,6 +47,7 @@ void PlayerCharacter::SetField644(float value)
 // The shared header has no declaration for this getter. Its sole ECX argument
 // preserves the original parameterless member ABI without a player stand-in.
 // @fnv 0x0082af40
+// pdb: bhkUnaryAction::Gethk | TelekinesisEffect.obj | debug, object-file gap fill, medium
 float __fastcall GetTelekinesisStrength(PlayerCharacter* player)
 {
     return *reinterpret_cast<float*>(reinterpret_cast<char*>(player) + 0x644);
@@ -56,6 +58,9 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 // Returns the effect's save size: base size from FUN_00802d90 plus 4, plus 8 more when the save version is at least 0x40.
 // @fnv 0x0082b190
 // src: XBOX_PDB 0x0082b190
+// pdb: TelekinesisEffect::GetSaveSize | TelekinesisEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isize
 unsigned short __thiscall TelekinesisEffect::GetSaveSize_0082b190(Actor* apActor)
 {
     unsigned short uiSaveSize = 0;
@@ -71,6 +76,9 @@ unsigned short __thiscall TelekinesisEffect::GetSaveSize_0082b190(Actor* apActor
 
 
 // @fnv 0x0082b290
+// pdb: TelekinesisEffect::LoadGame | TelekinesisEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: irefID
 void TelekinesisEffect::LoadFromSave(Actor* apActor)
 {
     ValueModifierEffect::FUN_00802dd0(apActor);
@@ -91,11 +99,12 @@ void __fastcall StartValueModifierEffect(ValueModifierEffect* effect);
 // Calls FUN_0082c000, stores the result of FUN_00703390 at offset 0x58, calls StartTelekinesisEffect, and clears the byte at offset 0x5d.
 // @fnv 0x0082a670
 // src: XBOX_PDB 0x0082a670
+// pdb: TelekinesisEffect::Start | TelekinesisEffect.obj | retail, vtable slot, high
 void __thiscall TelekinesisEffect::Start_0082a670()
 {
     StartValueModifierEffect(this);
     target = static_cast<TESObjectREFR*>(Interface_GetTelekinesisREFR());
-    StartTelekinesisEffect();
+    CreateSpring();
     m_5d = 0;
 }
 
@@ -105,6 +114,7 @@ struct Flt
 };
 
 // @fnv 0x0082aa90
+// pdb: PlayerCharacter::GetGrabSpring | TelekinesisEffect.obj | debug, call graph, medium
 MagicCaster* __thiscall PlayerCharacter::GetFloatAsUInt()
 {
     return reinterpret_cast<MagicCaster*>(((Flt*)((char*)this + 0x634))->operator unsigned int());
@@ -121,6 +131,8 @@ struct FUN_0082aeb0_shell
 // Calls FUN_0082aee0 and passes its result to FUN_004b5a80, returning that value.
 // @fnv 0x0082aeb0
 // src: XBOX_PDB 0x0082aeb0
+// pdb: bhkUnaryAction::GetRigidBody | TelekinesisEffect.obj | debug, upstream name already matches, high
+// pdb locals: pb
 void* __thiscall FUN_0082aeb0_shell::bhkUnaryAction_GetRigidBody()
 {
     void* result = bhkUnaryAction_GethkRigidBody();
@@ -129,6 +141,7 @@ void* __thiscall FUN_0082aeb0_shell::bhkUnaryAction_GetRigidBody()
 
 // Destroys the GO and ValueModifierEffect subobjects without changing the vtable.
 // @fnv 0x0082a540
+// pdb: TelekinesisEffect::~TelekinesisEffect | TelekinesisEffect.obj | retail, upstream name already matches, high
 TelekinesisEffect::~TelekinesisEffect()
 {}
 
@@ -137,6 +150,7 @@ struct NullableReferenceFlagsAccessor
 {
     void* __thiscall GetLocalData();
 };
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     unsigned int __thiscall GetDaysPassed();
@@ -147,6 +161,8 @@ struct FUN_0082aee0_shell
 };
 // @fnv 0x0082aee0
 // src: XBOX_PDB 0x0082aee0
+// pdb: bhkUnaryAction::GethkRigidBody | TelekinesisEffect.obj | debug, upstream name already matches, high
+// pdb locals: pa
 unsigned int FUN_0082aee0_shell::bhkUnaryAction_GethkRigidBody()
 {
     Calendar* calendar = reinterpret_cast<Calendar*>((reinterpret_cast<NullableReferenceFlagsAccessor*>(this))->GetLocalData());
@@ -155,6 +171,7 @@ unsigned int FUN_0082aee0_shell::bhkUnaryAction_GethkRigidBody()
 
 // As above, retain the unsupported getter locally with its original ECX ABI.
 // @fnv 0x0082af20
+// pdb: bhkUnaryAction::operator* | TelekinesisEffect.obj | debug, object-file gap fill, medium
 unsigned int __fastcall GetField63C(PlayerCharacter* player)
 {
     return *(unsigned int*)((char*)player + 0x63c);
@@ -167,6 +184,7 @@ struct FUN_00974a50_shell
 extern int DAT_011e0e80;
 // @fnv 0x0082af60
 // src: XBOX_PDB 0x0082af60
+// pdb: TelekinesisEffect::Finish | TelekinesisEffect.obj | retail, vtable slot, high
 void __thiscall TelekinesisEffect::Finish_0082af60()
 {
     RemoveSpring();
@@ -177,12 +195,17 @@ void __thiscall TelekinesisEffect::Finish_0082af60()
 
 // Allocates and constructs a TelekinesisEffect from x, y and z.
 // @fnv 0x0082b110
+// pdb: TelekinesisEffect::Instantiate | TelekinesisEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 TelekinesisEffect* __cdecl CreateTelekinesisEffect(int x, int y, int z)
 {
     return new TelekinesisEffect(x, y, z);
 }
 
 // @fnv 0x0082b200
+// pdb: TelekinesisEffect::SaveGame | TelekinesisEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: irefID
 void TelekinesisEffect::SaveLoad(Actor* apActor)
 {
     unsigned int irefID;
@@ -202,6 +225,9 @@ TESForm* __cdecl GetFormByID(unsigned int id);
 
 // @fnv 0x0082b300
 // src: XBOX_PDB 0x0082b300
+// pdb: TelekinesisEffect::FinishInitLoadGame | TelekinesisEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: irefID
 void TelekinesisEffect::FinishInitLoadGame_0082b300(Actor* apActor)
 {
     ValueModifierEffect::ValueModifierEffect_FinishInitLoadGame(apActor);
@@ -209,13 +235,15 @@ void TelekinesisEffect::FinishInitLoadGame_0082b300(Actor* apActor)
     if (pRef)
         target = dynamic_cast<TESObjectREFR*>(GetFormByID(reinterpret_cast<unsigned int>(pRef)));
     if (target)
-        StartTelekinesisEffect();
+        CreateSpring();
     m_5d = 1;
 }
 
 void* __cdecl operator new(unsigned int);
 
 // @fnv 0x0082a5a0
+// pdb: TelekinesisEffect::Copy | TelekinesisEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 ActiveEffect* TelekinesisEffect::CreateCopy()
 {
     ActiveEffect* copy = new TelekinesisEffect(reinterpret_cast<int>(m_pEffectInstance),
@@ -375,7 +403,7 @@ extern NiRTTI DAT_011f9140;
 NiObject* __cdecl NiObject_DynamicCast(const NiRTTI*, SceneObject*);
 struct CasterPosition
 {
-    void ApplyTurnUndeadEffect(NiPoint3*);
+    void bhkMouseSpringAction_GetMousePositionInWorld(NiPoint3*);
 };
 extern PlayerCharacter* g_thePlayer;
 extern float DAT_01022958;
@@ -469,7 +497,10 @@ struct EffectManager
 
 // Validates the target's collision object, creates a TelekinesisConstraint, applies the telekinesis effect to the player, and starts the effect shader.
 // @fnv 0x0082a6a0
-void TelekinesisEffect::StartTelekinesisEffect()
+// src: XBOX_RETAIL_PDB 0x0082a6a0
+// pdb: TelekinesisEffect::CreateSpring | TelekinesisEffect.obj | retail, call graph (shared callers), high
+// pdb locals: dir, origin, pbody, pcol, pav, phkbody, pavlod, location, originToRef, peffect
+void TelekinesisEffect::CreateSpring()
 {
     if (!target || !GetTelekinesisCaster(this))
     {
@@ -508,7 +539,7 @@ void TelekinesisEffect::StartTelekinesisEffect()
     if (!g_TESSaveLoadGame->FUN_0047c850())
     {
         NiPoint3 casterPosition;
-        ((CasterPosition*)g_thePlayer->GetFloatAsUInt())->ApplyTurnUndeadEffect(&casterPosition);
+        ((CasterPosition*)g_thePlayer->GetFloatAsUInt())->bhkMouseSpringAction_GetMousePositionInWorld(&casterPosition);
         NiPoint3 p = casterPosition - s;
         magnitude = f.Dot(p);
         g_thePlayer->SetField644(magnitude);
@@ -573,6 +604,9 @@ extern Setting originalRuntimeFloatSetting1112;
 extern Setting g_011d18fc;
 // Advances the grab effect: checks the player's grab target and world, updates velocity/strength from input and settings, applies strength and charges cost.
 // @fnv 0x0082aad0
+// pdb: TelekinesisEffect::Update | TelekinesisEffect.obj | retail, vtable slot, high
+// pdb params: afSecondsElapsed
+// pdb locals: grabSpring, pcasterWorld, pobjectWorld
 void TelekinesisEffect::UpdateGrabEffect(float delta)
 {
     ValueModifierEffect::Update(delta);
@@ -642,12 +676,14 @@ extern void* TelekinesisEffectVtable[];
 
 // Initializes the base, handle, vtable, and telekinesis state.
 // @fnv 0x0082a460
-TelekinesisEffect::TelekinesisEffect(int aiParam1, int aiParam2, int aiParam3)
-    : ValueModifierEffect(reinterpret_cast<void*>(aiParam1), reinterpret_cast<void*>(aiParam2),
-                          reinterpret_cast<void*>(aiParam3)),
-      m_4c((*(void***)this = TelekinesisEffectVtable, 0))
+// pdb: TelekinesisEffect::TelekinesisEffect | TelekinesisEffect.obj | retail, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+TelekinesisEffect::TelekinesisEffect(int apCaster, int apSpell, int apEffect)
+    : ValueModifierEffect(reinterpret_cast<void*>(apCaster), reinterpret_cast<void*>(apSpell),
+                          reinterpret_cast<void*>(apEffect)),
+      spSpring((*(void***)this = TelekinesisEffectVtable, 0))
 {
-    reinterpret_cast<TelekinesisHandleOperations*>(&m_4c)->Apply(0);
+    reinterpret_cast<TelekinesisHandleOperations*>(&spSpring)->Apply(0);
     m_50 = 0.0f;
     m_54 = 0.0f;
     m_58 = 0;

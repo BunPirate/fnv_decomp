@@ -36,7 +36,7 @@ struct Flt
 };
 struct FUN_004a8070_shell
 {
-    int GetScriptText();
+    int NiGeometry_GetTextures();
 };
 extern unsigned char DAT_0118868c;
 unsigned char __cdecl BGSSceneInfo_GetAggregateInstances();
@@ -44,7 +44,7 @@ int __cdecl MinInt(int iA, int iB);
 struct FUN_004a8f50_shell
 {
     void NiTMap_NiTexture_TEX_USER_DATA_NiTMap(int a);
-    void* BGSTextureUseMap_BGSTextureUseMap();
+    void* BGSTextureUseMap_ctor();
 };
 struct GlobalObject2_0040c150
 {
@@ -102,18 +102,21 @@ struct Node
 
 // @fnv 0x004a9240
 // src: XBOX_PDB 0x004a9240
-int __cdecl BGSSceneInfo_GetHavokFaceCount(Node* node)
+// pdb: BGSSceneInfo::GetHavokFaceCount | BGSSceneInfo.obj | retail, upstream name already matches, high
+// pdb params: apShape
+// pdb locals: ret, ptreeshape, key, pcont, buffer, pshape, plistshape, pcoll
+int __cdecl BGSSceneInfo_GetHavokFaceCount(Node* apShape)
 {
-    if (node == 0)
+    if (apShape == 0)
         return 0;
     int count = 0;
-    switch (node->NiObjectNET_GetControllers())
+    switch (apShape->NiObjectNET_GetControllers())
     {
     case 3:
         return 1;
         break;
     case 10: {
-        Node* obj = node;
+        Node* obj = apShape;
         SceneChildListView* list = obj->GetChildren();
         int index = list->GetFirst();
         while (index != -1)
@@ -129,7 +132,7 @@ int __cdecl BGSSceneInfo_GetHavokFaceCount(Node* node)
     }
     break;
     case 9: {
-        Node* obj = node;
+        Node* obj = apShape;
         SceneChildListView* list = obj->GetChildren();
         int index = list->GetFirst();
         while (index != -1)
@@ -145,7 +148,7 @@ int __cdecl BGSSceneInfo_GetHavokFaceCount(Node* node)
     }
     break;
     case 22: {
-        Node* obj = node;
+        Node* obj = apShape;
         SceneChildListView* list = obj->GetChildren();
         int index = list->GetFirst();
         while (index != -1)
@@ -161,7 +164,7 @@ int __cdecl BGSSceneInfo_GetHavokFaceCount(Node* node)
     }
     break;
     case 23: {
-        Node* obj = node;
+        Node* obj = apShape;
         SceneChildListView* list = obj->GetChildren();
         int index = list->GetFirst();
         while (index != -1)

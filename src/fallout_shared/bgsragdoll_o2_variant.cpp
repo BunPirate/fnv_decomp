@@ -14,6 +14,9 @@ public:
 };
 
 // @fnv 0x00c74fb0
+// pdb: RagdollFeedbackData::Compare | bhkRagdollController.obj | debug, call graph, medium
+// pdb params: arData
+// pdb locals: bret, ui
 bool RagdollAnimationDataComparison::Diff(const RagdollAnimationData& other) const
 {
     bool diff = false;

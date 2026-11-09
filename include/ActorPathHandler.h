@@ -14,6 +14,7 @@ template <class T> class NiPointer;
 // src: XBOX_PDB (NiPointer<PathingSolution> and NiPointer<PathingRequest>).
 #include "NiPointer.h"
 
+// pdb: class ActorPathHandler, size 0x14, 4 members
 class ActorPathHandler
 {
 public:
@@ -78,7 +79,7 @@ public:
     void* FUN_009dfe10(unsigned int flags);
 
     Actor* pActor;
-    ActorMover* m_pActorMover;
+    ActorMover* pActorMover;
     NiPointer<PathingSolution> pCurrentPathingSolution;
-    NiPointer<PathingRequest> m_pPathingRequest;
+    NiPointer<PathingRequest> spRequest;
 };

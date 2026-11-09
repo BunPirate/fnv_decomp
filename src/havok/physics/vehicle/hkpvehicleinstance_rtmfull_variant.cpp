@@ -206,11 +206,11 @@ struct VUC_Instance
     void* m_pEntity;
     VUC_Data* m_data;
     void FUN_00e37aa0(float dt, void* det) throw();
-    void hkpVehicleInstance_updateDriverInput(float dt, VUC_Filtered& f) throw();
-    void UpdateSteering(float dt, const VUC_Filtered& f) throw();
-    void hkpVehicleInstance_updateTransmission(float dt, VUC_Transmission& t) throw();
-    void hkpVehicleInstance_updateEngine(float dt, const VUC_Filtered& f, VUC_Transmission& t) throw();
-    void UpdateVehicleState(float dt, const VUC_Filtered& f, FUN_00e39400& b) throw();
+    void hkpVehicleInstance_updateDriverInput(float deltaTime, VUC_Filtered& filteredDriverInputInfo) throw();
+    void hkpVehicleInstance_updateSteering(float deltaTime, const VUC_Filtered& filteredDriverInputInfo) throw();
+    void hkpVehicleInstance_updateTransmission(float deltaTime, VUC_Transmission& transmissionInfo) throw();
+    void hkpVehicleInstance_updateEngine(float deltaTime, const VUC_Filtered& filteredDriverInputInfo, VUC_Transmission& transmissionInfo) throw();
+    void hkpVehicleInstance_updateBrake(float deltaTime, const VUC_Filtered& filteredDriverInputInfo, FUN_00e39400& wheelBreakingInfo) throw();
     void NotifyListener(float dt, void* det, hkArrayBase<float>& s) throw();
     void hkpVehicleInstance_updateAerodynamics(float dt, void* aero) throw();
     void UpdateVehicleComponents(const VUC_StepInfo& stepInfo, void* det, void* aero,
@@ -218,6 +218,10 @@ struct VUC_Instance
 };
 
 // @fnv 0x00e38e60
+// src: XBOX_RETAIL_PDB 0x00e38e60
+// pdb: hkpVehicleInstance::updateComponents | hkpVehicleInstance.obj | retail, string-set bridge, high
+// pdb params: stepInfo, cdInfo, aerodynamicsDragInfo, suspensionForceAtWheel, totalLinearForceAtWheel
+// pdb locals: wheelBreakingInfo, transmissionInfo, filteredDriverInputInfo
 void VUC_Instance::UpdateVehicleComponents(const VUC_StepInfo& stepInfo, void* det, void* aero,
                                            hkArrayBase<float>& suspensionForceAtWheel,
                                            hkArrayBase<float>& totalLinearForceAtWheel)
@@ -250,10 +254,10 @@ void VUC_Instance::UpdateVehicleComponents(const VUC_StepInfo& stepInfo, void* d
 
     FUN_00e37aa0(deltaTime, det);
     hkpVehicleInstance_updateDriverInput(deltaTime, filteredInput);
-    UpdateSteering(deltaTime, filteredInput);
+    hkpVehicleInstance_updateSteering(deltaTime, filteredInput);
     hkpVehicleInstance_updateTransmission(deltaTime, transmission);
     hkpVehicleInstance_updateEngine(deltaTime, filteredInput, transmission);
-    UpdateVehicleState(deltaTime, filteredInput, breakingInfo);
+    hkpVehicleInstance_updateBrake(deltaTime, filteredInput, breakingInfo);
     NotifyListener(deltaTime, det, suspensionForceAtWheel);
     hkpVehicleInstance_updateAerodynamics(deltaTime, aero);
 
@@ -319,6 +323,8 @@ struct VUC_VehicleInstance
 
 // @fnv 0x00e378e0
 // src: HAVOK_LIB 0x00e378e0
+// pdb: hkpVehicleInstance::addToWorld | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb params: world
 void VUC_VehicleInstance::hkpVehicleInstance_addToWorld(void* world)
 {
     reinterpret_cast<VUC_World*>(world)->hkpWorld_addEntity(m_pEntity, 1);
@@ -340,18 +346,21 @@ struct FUN_00e38080StandIn
     unsigned char m_unknown20[0x34];
     void* m_object54;
 
-    void hkpVehicleInstance_applyFrictionSolver(const VUC_StepInfo& stepInfo, void* arg2);
+    void hkpVehicleInstance_applyFrictionSolver(const VUC_StepInfo& stepInfo, void* frictionParams);
 };
 
 // @fnv 0x00e38080
 // src: HAVOK_LIB 0x00e38080
-void FUN_00e38080StandIn::hkpVehicleInstance_applyFrictionSolver(const VUC_StepInfo& stepInfo, void* apArg)
+// pdb: hkpVehicleInstance::applyFrictionSolver | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb params: stepInfo, frictionParams
+// pdb locals: vehStepInfo
+void FUN_00e38080StandIn::hkpVehicleInstance_applyFrictionSolver(const VUC_StepInfo& stepInfo, void* frictionParams)
 {
     VUC_DeltaTime deltaTime;
     deltaTime.m_fTimeStep = stepInfo.m_fTimeStep;
     deltaTime.m_fInverseDeltaTime = stepInfo.m_fInverseDeltaTime;
 
-    hkpVehicleFrictionDescription_ProcessEntries_00e59a40(&deltaTime, m_data + 0xa4, apArg, &m_object54);
+    hkpVehicleFrictionDescription_ProcessEntries_00e59a40(&deltaTime, m_data + 0xa4, frictionParams, &m_object54);
 }
 
 struct DDCC60World
@@ -376,7 +385,7 @@ struct VUC_Router
 
 extern int DAT_010df34c;
 VUC_Router* _D1A0E0GetMemoryRouter();
-void __fastcall ReleaseReference_00d2b2b0(void*);
+void __fastcall hkpUnaryAction_dtor(void*);
 
 struct FUN_00e38bf0
 {
@@ -418,6 +427,7 @@ struct FUN_00e38bf0
 
 // Resets the vtable, releases the twelve referenced objects, frees the three dynamic arrays through the memory router allocator, and calls FUN_00d2b2b0.
 // @fnv 0x00e38bf0
+// pdb: hkpVehicleInstance::~hkpVehicleInstance | hkpVehicleInstance.obj | retail, object-file gap fill, high
 FUN_00e38bf0::~FUN_00e38bf0()
 {
     m_vtbl = &DAT_010df34c;
@@ -483,7 +493,7 @@ FUN_00e38bf0::~FUN_00e38bf0()
     m_data48 = 0;
     m_capacity50 = 0x80000000;
 
-    ReleaseReference_00d2b2b0(this);
+    hkpUnaryAction_dtor(this);
 }
 
 struct FnvCpu_FUN_00e36f50_CpuInterface
@@ -608,19 +618,22 @@ struct Instance
     char m_pAuxiliaryObject[0xb4 - 0x2c];
     float m_b4;
     float m_b8;
-    void hkpVehicleInstance_updateEngine(float dt, const Filtered& f, Transmission& t) throw();
+    void hkpVehicleInstance_updateEngine(float deltaTime, const Filtered& filteredDriverInputInfo, Transmission& transmissionInfo) throw();
 };
 // Passes dt, this, f, t and a Pair built from m_b4/m_b8 to m_target->s3, then stores the returned Pair back into m_b4/m_b8.
 // @fnv 0x00e37020
 // src: HAVOK_LIB 0x00e37020
-void Instance::hkpVehicleInstance_updateEngine(float afDeltaTime, const Filtered& f, Transmission& t) throw()
+// pdb: hkpVehicleInstance::updateEngine | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, filteredDriverInputInfo, transmissionInfo
+// pdb locals: engineInfo
+void Instance::hkpVehicleInstance_updateEngine(float deltaTime, const Filtered& filteredDriverInputInfo, Transmission& transmissionInfo) throw()
 {
     // This callback uses the Pair slots as float bits, with no constructor call.
     float storage[sizeof(Pair) / sizeof(float)];
     Pair& p = *reinterpret_cast<Pair*>(storage);
     reinterpret_cast<float&>(p.b) = m_b8;
     reinterpret_cast<float&>(p.a) = m_b4;
-    m_target->s3(afDeltaTime, this, &f, &t, &p);
+    m_target->s3(deltaTime, this, &filteredDriverInputInfo, &transmissionInfo, &p);
     m_b8 = reinterpret_cast<float&>(p.b);
     m_b4 = reinterpret_cast<float&>(p.a);
 }
@@ -711,13 +724,15 @@ class FUN_00e37910_cls
 // Calls V9 on the stored action, then calls ProcessTarget on the entity's world with the stored entity.
 // @fnv 0x00e37910
 // src: HAVOK_LIB 0x00e37910
+// pdb: hkpVehicleInstance::removeFromWorld | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 void FUN_00e37910_cls::hkpVehicleInstance_removeFromWorld()
 {
     m_pAction->V9();
     m_pEntity->getWorld()->ProcessTarget(reinterpret_cast<hkpRigidBody*>(m_pEntity));
 }
 
-void __cdecl hkArrayUtil__reserve(VUC_Allocator* allocator, hkArrayBase<float>* array, int capacity, int stride);
+void __cdecl hkArrayUtil__reserve(VUC_Allocator* mem, hkArrayBase<float>* array, int numElem, int sizeElem);
 struct VUC_BrakingStrategy
 {
     virtual void slot0();
@@ -726,11 +741,14 @@ struct VUC_BrakingStrategy
     virtual void calculate(float dt, VUC_Instance* vehicle, const VUC_Filtered& input, FUN_00e39400& output);
 };
 // @fnv 0x00e38a30
-void VUC_Instance::UpdateVehicleState(float afDeltaTime, const VUC_Filtered& input, FUN_00e39400& output) throw()
+// src: XBOX_RETAIL_PDB 0x00e38a30
+// pdb: hkpVehicleInstance::updateBrake | hkpVehicleInstance.obj | retail, object-file gap fill, high
+// pdb params: deltaTime, filteredDriverInputInfo, wheelBreakingInfo
+void VUC_Instance::hkpVehicleInstance_updateBrake(float deltaTime, const VUC_Filtered& filteredDriverInputInfo, FUN_00e39400& wheelBreakingInfo) throw()
 {
     hkpVehicleInstance* vehicle = reinterpret_cast<hkpVehicleInstance*>(this);
-    hkArrayBase<float>& rFixedArray = output.m_kSecondRealArray;
-    int count = vehicle->m_kSecondRealArray.m_iElementCount;
+    hkArrayBase<float>& rFixedArray = wheelBreakingInfo.m_kSecondRealArray;
+    int count = vehicle->m_isFixed.m_iElementCount;
     VUC_Router* router = reinterpret_cast<VUC_Router*>(hkMemoryRouter_getInstance());
     VUC_Allocator* alloc = router->m_pThreadAllocator;
     int capacity = rFixedArray.m_iCapacityState & 0x3fffffff;
@@ -742,32 +760,32 @@ void VUC_Instance::UpdateVehicleState(float afDeltaTime, const VUC_Filtered& inp
         hkArrayUtil__reserve(alloc, &rFixedArray, capacity, 1);
     }
     rFixedArray.m_iElementCount = count;
-    count = vehicle->m_kSecondRealArray.m_iElementCount;
+    count = vehicle->m_isFixed.m_iElementCount;
     router = reinterpret_cast<VUC_Router*>(hkMemoryRouter_getInstance());
     alloc = router->m_pThreadAllocator;
-    capacity = output.m_kFirstRealArray.m_iCapacityState & 0x3fffffff;
+    capacity = wheelBreakingInfo.m_kFirstRealArray.m_iCapacityState & 0x3fffffff;
     if (capacity < count)
     {
         capacity *= 2;
         if (count >= capacity)
             capacity = count;
-        hkArrayUtil__reserve(alloc, &output.m_kFirstRealArray, capacity, 4);
+        hkArrayUtil__reserve(alloc, &wheelBreakingInfo.m_kFirstRealArray, capacity, 4);
     }
-    output.m_kFirstRealArray.m_iElementCount = count;
-    for (int i = 0; i < vehicle->m_kSecondRealArray.m_iElementCount; ++i)
-        reinterpret_cast<char*>(rFixedArray.m_data)[i] = vehicle->m_kSecondRealArray.m_data[i].m_cBooleanValue;
-    output.m_unk18 = vehicle->m_fBrakeState;
-    reinterpret_cast<VUC_BrakingStrategy*>(vehicle->m_pBrake)->calculate(afDeltaTime, this, input, output);
-    for (int i = 0; i < output.m_kSecondRealArray.m_iElementCount; ++i)
-        vehicle->m_kSecondRealArray.m_data[i].m_cBooleanValue = reinterpret_cast<char*>(output.m_kSecondRealArray.m_data)[i];
-    vehicle->m_fBrakeState = output.m_unk18;
+    wheelBreakingInfo.m_kFirstRealArray.m_iElementCount = count;
+    for (int i = 0; i < vehicle->m_isFixed.m_iElementCount; ++i)
+        reinterpret_cast<char*>(rFixedArray.m_data)[i] = vehicle->m_isFixed.m_data[i].m_cBooleanValue;
+    wheelBreakingInfo.m_unk18 = vehicle->m_wheelsTimeSinceMaxPedalInput;
+    reinterpret_cast<VUC_BrakingStrategy*>(vehicle->m_brake)->calculate(deltaTime, this, filteredDriverInputInfo, wheelBreakingInfo);
+    for (int i = 0; i < wheelBreakingInfo.m_kSecondRealArray.m_iElementCount; ++i)
+        vehicle->m_isFixed.m_data[i].m_cBooleanValue = reinterpret_cast<char*>(wheelBreakingInfo.m_kSecondRealArray.m_data)[i];
+    vehicle->m_wheelsTimeSinceMaxPedalInput = wheelBreakingInfo.m_unk18;
 }
 
 
 
 
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 
 
@@ -781,23 +799,27 @@ struct hkpVehicleSteeringAnglesOutputE38D
 
 // Copies the steering angles into a temporary output, runs the steering component's update, then writes the resulting angle and array back.
 // @fnv 0x00e38d50
+// src: XBOX_RETAIL_PDB 0x00e38d50
+// pdb: hkpVehicleInstance::updateSteering | hkpVehicleInstance.obj | retail, object-file gap fill, high
+// pdb params: deltaTime, filteredDriverInputInfo
+// pdb locals: steeringInfo
 void __fastcall UpdateVehicleSteering(hkpVehicleInstance* vehicle, void*, hkReal fMoveElapsedTime,
                                       const hkpFilteredDriverInputOutputE38D& kFilteredInfo) throw()
 {
     hkpVehicleSteeringAnglesOutputE38D kSteeringOutput;
-    kSteeringOutput.m_fMainSteeringAngle = vehicle->m_fMainSteeringAngle;
-    kSteeringOutput.m_kWheelSteeringAngles.setSize(vehicle->m_kWheelSteeringAngles.m_iElementCount);
-    for (int i = 0; i < vehicle->m_kWheelSteeringAngles.m_iElementCount; i++)
-        kSteeringOutput.m_kWheelSteeringAngles.m_data[i] = vehicle->m_kWheelSteeringAngles.m_data[i];
+    kSteeringOutput.m_fMainSteeringAngle = vehicle->m_mainSteeringAngle;
+    kSteeringOutput.m_kWheelSteeringAngles.setSize(vehicle->m_wheelsSteeringAngle.m_iElementCount);
+    for (int i = 0; i < vehicle->m_wheelsSteeringAngle.m_iElementCount; i++)
+        kSteeringOutput.m_kWheelSteeringAngles.m_data[i] = vehicle->m_wheelsSteeringAngle.m_data[i];
     // The shared header omits virtual dispatch; CalcSteering occupies vtable slot 3.
     typedef void (__thiscall* CalcSteeringVirtual)(hkpVehicleSteering*, hkReal, const hkpVehicleInstance*,
                                                  const hkpFilteredDriverInputOutputE38D&,
                                                  hkpVehicleSteeringAnglesOutputE38D&);
-    ((CalcSteeringVirtual)(*(void***)vehicle->m_pSteering)[3])(vehicle->m_pSteering, fMoveElapsedTime, vehicle,
+    ((CalcSteeringVirtual)(*(void***)vehicle->m_steering)[3])(vehicle->m_steering, fMoveElapsedTime, vehicle,
                                                    kFilteredInfo, kSteeringOutput);
-    vehicle->m_fMainSteeringAngle = kSteeringOutput.m_fMainSteeringAngle;
-    for (int i = 0; i < vehicle->m_kWheelSteeringAngles.m_iElementCount; i++)
-        vehicle->m_kWheelSteeringAngles.m_data[i] = kSteeringOutput.m_kWheelSteeringAngles.m_data[i];
+    vehicle->m_mainSteeringAngle = kSteeringOutput.m_fMainSteeringAngle;
+    for (int i = 0; i < vehicle->m_wheelsSteeringAngle.m_iElementCount; i++)
+        vehicle->m_wheelsSteeringAngle.m_data[i] = kSteeringOutput.m_kWheelSteeringAngles.m_data[i];
 }
 
 struct VUC_InplaceRealArray16 : hkArrayBase<float>
@@ -833,13 +855,16 @@ struct VUC_StepInstance : VUC_Instance
     void hkpVehicleInstance_simulateVehicle(const VUC_StepInfo& stepInfo, const VUC_AeroOutput& aero,
                       const hkArrayBase<float>& suspensionForceAtWheel,
                       const hkArrayBase<float>& totalLinearForceAtWheel) throw();
-    void hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(const VUC_StepInfo& stepInfo, void* det);
+    void hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(const VUC_StepInfo& stepInfo, void* cdInfo);
 };
 
 // Times a vehicle step: starts a "TtDoVehicle" timer, runs UpdateVehicleComponents and FUN_00e385e0 with in-place force arrays, stops the "Et" timer and releases the arrays.
 // @fnv 0x00e39030
 // src: HAVOK_LIB 0x00e39030
-void VUC_StepInstance::hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(const VUC_StepInfo& stepInfo, void* det)
+// pdb: hkpVehicleInstance::stepVehicleUsingWheelCollideOutput | hkpVehicleInstance.obj | retail, string-set bridge, high
+// pdb params: stepInfo, cdInfo
+// pdb locals: aerodynamicsDragInfo, suspensionForceAtWheel, totalLinearForceAtWheel, assertBuf, ostr
+void VUC_StepInstance::hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(const VUC_StepInfo& stepInfo, void* cdInfo)
 {
     VUC_Mon* mon = (VUC_Mon*)TlsGetValue(DAT_0126835c);
     if (mon->m_kRayEnd < mon->m_capMinus16)
@@ -861,7 +886,7 @@ void VUC_StepInstance::hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(con
     totalLinearForceAtWheel.m_data = totalLinearForceAtWheel.m_kStorage;
     totalLinearForceAtWheel.m_iCapacityState = 0x80000010;
 
-    UpdateVehicleComponents(stepInfo, det, &stepLocals.aerodynamicsInfo, stepLocals.suspensionForceAtWheel,
+    UpdateVehicleComponents(stepInfo, cdInfo, &stepLocals.aerodynamicsInfo, stepLocals.suspensionForceAtWheel,
                             totalLinearForceAtWheel);
     hkpVehicleInstance_simulateVehicle(stepInfo, stepLocals.aerodynamicsInfo, stepLocals.suspensionForceAtWheel, totalLinearForceAtWheel);
 
@@ -945,12 +970,14 @@ struct VehicleInstance
     void* m_pAerodynamics;
     VehicleWheelCollide* m_pWheelCollide;
     void hkpVehicleInstance_updateBeforeCollisionDetection();
-    void hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(const VehicleStepInfo* stepInfo, void* scratch);
+    void hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(const VehicleStepInfo* stepInfo, void* cdInfo);
     void hkpVehicleInstance_stepVehicle(const VehicleStepInfo* stepInfo);
 };
 
 // @fnv 0x00e39190
 // src: HAVOK_LIB 0x00e39190
+// pdb: hkpVehicleInstance::stepVehicle | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb params: stepInfo
 void VehicleInstance::hkpVehicleInstance_stepVehicle(const VehicleStepInfo* stepInfo)
 {
     hkpVehicleInstance_updateBeforeCollisionDetection();
@@ -1062,7 +1089,7 @@ class FUN_00e38b20
         return b;
     }
 
-    FUN_00e38b20(const hkShapeE392* pkShape) throw();
+    FUN_00e38b20(const hkShapeE392* chassis) throw();
     void CopyVehicleFields(const hkSourceE392* pkOther) throw();
 };
 
@@ -1077,21 +1104,23 @@ class hkSourceE392
     char unk44[0x58];
     hkClonableE392* m_9c;
 
-    FUN_00e38b20* hkpVehicleInstance_clone(const hkInputE392* pkInput, int iFlags) throw();
+    FUN_00e38b20* hkpVehicleInstance_clone(const hkInputE392* newEntities, int newPhantoms) throw();
 };
 
 // Allocates a clone of this source for the given input, copies the shape, creates an agent, clones m_9c and calls FUN_00c90510 on the clone's reference objects.
 // @fnv 0x00e39210
 // src: HAVOK_LIB 0x00e39210
-FUN_00e38b20* hkSourceE392::hkpVehicleInstance_clone(const hkInputE392* pkInput, int iFlags) throw()
+// pdb: hkpVehicleInstance::clone | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb params: newEntities, newPhantoms
+FUN_00e38b20* hkSourceE392::hkpVehicleInstance_clone(const hkInputE392* newEntities, int newPhantoms) throw()
 {
-    const hkShapeE392* pkShape = pkInput->m_info->m_pCollisionShape;
+    const hkShapeE392* pkShape = newEntities->m_info->m_pCollisionShape;
     FUN_00e38b20* pkClone = new FUN_00e38b20(pkShape);
     pkClone->CopyVehicleFields(this);
     pkClone->m_08 = 0;
     pkClone->m_0c = 0;
     pkClone->m_pCollisionShape = pkShape;
-    pkClone->m_pCollisionAgent = m_factory->createAgent(pkShape, iFlags);
+    pkClone->m_pCollisionAgent = m_factory->createAgent(pkShape, newPhantoms);
     pkClone->m_pCollisionAgent->m_sState = 1;
     pkClone->m_9c = m_9c->clone();
     pkClone->m_1c->FUN_00c90510();
@@ -1139,10 +1168,12 @@ struct VUC_Transmission8
 
 // @fnv 0x00e36fa0
 // src: HAVOK_LIB 0x00e36fa0
-void VUC_Instance::hkpVehicleInstance_updateTransmission(float dt, VUC_Transmission& t) throw()
+// pdb: hkpVehicleInstance::updateTransmission | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, transmissionInfo
+void VUC_Instance::hkpVehicleInstance_updateTransmission(float deltaTime, VUC_Transmission& transmissionInfo) throw()
 {
     unsigned char* base = reinterpret_cast<unsigned char*>(this);
-    VUC_Transmission8& s = reinterpret_cast<VUC_Transmission8&>(t);
+    VUC_Transmission8& s = reinterpret_cast<VUC_Transmission8&>(transmissionInfo);
 
     unsigned char* data = *reinterpret_cast<unsigned char**>(base + 0x1c);
     s.m_iGearCount = static_cast<signed char>(data[0x20]);
@@ -1152,7 +1183,7 @@ void VUC_Instance::hkpVehicleInstance_updateTransmission(float dt, VUC_Transmiss
     s.m_extra = *reinterpret_cast<float*>(base + 0xd0);
 
     VUC_TransmissionTarget10* target = *reinterpret_cast<VUC_TransmissionTarget10**>(base + 0x2c);
-    target->hkpVehicleInstance_addToWorld(dt, this, &t);
+    target->hkpVehicleInstance_addToWorld(deltaTime, this, &transmissionInfo);
 
     *reinterpret_cast<signed char*>(base + 0xcc) = s.m_iGearCapacity;
     *reinterpret_cast<signed char*>(base + 0xcd) = s.m_gear2;
@@ -1252,7 +1283,10 @@ struct Q_e380c0_cls
     void UpdateFields_00e380c0(const hkVector4* in);
 };
 // @fnv 0x00e380c0
-// src: GUESS 0x00e380c0 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00e380c0
+// pdb: hkpVehicleInstance::applyResultsToChassis | hkpVehicleInstance.obj | retail, object-file gap fill, high
+// pdb params: accumulatorForChassis
+// pdb locals: angVelWs
 void Q_e380c0_cls::UpdateFields_00e380c0(const hkVector4* in)
 {
     Q_e380c0_Sub& s = a->sub;
@@ -1457,7 +1491,7 @@ struct VehStep_Damper
     virtual void ApplyVelocityDamping(float dt, struct VehStep_Vehicle& vehicle);
 };
 
-void __stdcall hkpVehicleInstance_applyFrictionSolver(const VUC_StepInfo& stepInfo, VehStep_FrictionParams& params);
+void __stdcall hkpVehicleInstance_applyFrictionSolver(const VUC_StepInfo& stepInfo, VehStep_FrictionParams& frictionParams);
 
 struct VehStep_Vehicle
 {
@@ -1486,15 +1520,18 @@ struct VehStep_Vehicle
                       VehStep_Accumulators& accs, VehStep_FrictionParams& params);
     void UpdateFields_00e37740(const VUC_StepInfo& stepInfo, VehStep_FrictionParams& params);
     void UpdateFields_00e376e0(float dt, VehStep_Accumulator& chassis);
-    void UpdateFields_00e380c0(VehStep_Accumulator& chassis);
-    void UpdateGroundBodyVelocities(float dt, VehStep_FrictionParams& params, VehStep_Ground& ground);
-    void ProcessEntries_00e38310(float dt, VehStep_Ground& ground, VehStep_FrictionParams& params);
-    void hkpVehicleInstance_simulateVehicle(const VUC_StepInfo& stepInfo, VehStep_Output* out, void* a2, void* a3);
+    void hkpVehicleInstance_applyResultsToChassis(VehStep_Accumulator& accumulatorForChassis);
+    void hkpVehicleInstance_applyResultsToGround(float deltaTime, VehStep_FrictionParams& axleParams, VehStep_Ground& ground);
+    void hkpVehicleInstance_applyResultsToWheelInfo(float dt, VehStep_Ground& ground, VehStep_FrictionParams& frictionParams);
+    void hkpVehicleInstance_simulateVehicle(const VUC_StepInfo& stepInfo, VehStep_Output* aerodynamicsDragInfo, void* suspensionForceAtWheel, void* totalLinearForceAtWheel);
 };
 
 // @fnv 0x00e385e0
 // src: XBOX_PDB 0x00e385e0
-void VehStep_Vehicle::hkpVehicleInstance_simulateVehicle(const VUC_StepInfo& stepInfo, VehStep_Output* out, void* a2, void* a3)
+// pdb: hkpVehicleInstance::simulateVehicle | hkpVehicleInstance.obj | retail, string-set bridge, high
+// pdb params: stepInfo, aerodynamicsDragInfo, suspensionForceAtWheel, totalLinearForceAtWheel
+// pdb locals: groundBody, groundAccum, frictionParams, groundAccumAtIntegration, assertBuf, ostr
+void VehStep_Vehicle::hkpVehicleInstance_simulateVehicle(const VUC_StepInfo& stepInfo, VehStep_Output* aerodynamicsDragInfo, void* suspensionForceAtWheel, void* totalLinearForceAtWheel)
 {
     volatile unsigned int ticks;
     {
@@ -1512,8 +1549,8 @@ void VehStep_Vehicle::hkpVehicleInstance_simulateVehicle(const VUC_StepInfo& ste
     }
 
     float dt = stepInfo.m_fTimeStep;
-    m_pEntity->getMotion()->slot5c(dt, &out->m_transform0);
-    m_pEntity->getMotion()->slot60(dt, &out->m_transform1);
+    m_pEntity->getMotion()->slot5c(dt, &aerodynamicsDragInfo->m_transform0);
+    m_pEntity->getMotion()->slot60(dt, &aerodynamicsDragInfo->m_transform1);
 
     if (m_pVelocityDamper)
         m_pVelocityDamper->ApplyVelocityDamping(dt, *this);
@@ -1526,15 +1563,15 @@ void VehStep_Vehicle::hkpVehicleInstance_simulateVehicle(const VUC_StepInfo& ste
     ground.m_kPointA = 0;
     ground.m_kPointB = 0;
 
-    UpdateWheelContactsAndAxleBodies(dt, a2, a3, ground, frictionParams);
+    UpdateWheelContactsAndAxleBodies(dt, suspensionForceAtWheel, totalLinearForceAtWheel, ground, frictionParams);
     frictionParams.m_fTorquePitchFactor = m_data->m_fTorquePitchFactor;
     ProcessEntries_00e37d60(stepInfo, ground, frictionParams.m_kSecondAccumulator, accumulators, frictionParams);
     UpdateFields_00e37740(stepInfo, frictionParams);
     UpdateFields_00e376e0(dt, frictionParams.m_pChassisCollidable);
     hkpVehicleInstance_applyFrictionSolver(stepInfo, frictionParams);
-    UpdateFields_00e380c0(frictionParams.m_pChassisCollidable);
-    UpdateGroundBodyVelocities(dt, frictionParams, ground);
-    ProcessEntries_00e38310(dt, ground, frictionParams);
+    hkpVehicleInstance_applyResultsToChassis(frictionParams.m_pChassisCollidable);
+    hkpVehicleInstance_applyResultsToGround(dt, frictionParams, ground);
+    hkpVehicleInstance_applyResultsToWheelInfo(dt, ground, frictionParams);
 
     {
         VUC_Mon* mon = (VUC_Mon*)TlsGetValue(DAT_0126835c);
@@ -1592,7 +1629,7 @@ inline void* operator new(unsigned int, void* pvWhere)
 
 
 hkMemoryRouter& __cdecl GetMemoryRouterE39() throw();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* pArray, int iNumElements, int iSizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 template <class T> __forceinline void destructE39(T* pArr, int n)
 {
@@ -1796,10 +1833,12 @@ class VehicleDataE39 : public hkReferencedObject
 
 // @fnv 0x00e39480
 // src: GUESS 0x00e39480 (confidence: medium)
+// pdb: hkpVehicleInstance::operator= | hkpVehicleInstance.obj | retail, call graph, high
+// pdb params: __that
 VehicleDataE39& VehicleDataE39::CopyVehicleFields(const VehicleDataE39& kOther)
 {
-    m_usMemSizeAndFlags = kOther.m_usMemSizeAndFlags;
-    m_sReferenceCount = kOther.m_sReferenceCount;
+    m_memSizeAndFlags = kOther.m_memSizeAndFlags;
+    m_referenceCount = kOther.m_referenceCount;
     m_i08 = kOther.m_i08;
     m_i0C = kOther.m_i0C;
     m_i10 = kOther.m_i10;
@@ -1914,6 +1953,7 @@ struct FUN_00e39400_Router
 };
 
 // @fnv 0x00e39400
+// pdb: hkpVehicleBrake::WheelBreakingOutput::~WheelBreakingOutput | hkpVehicleInstance.obj | retail, object-file run extension, low
 FUN_00e39400::~FUN_00e39400() throw()
 {
     FUN_00e39400_Router* m = (FUN_00e39400_Router*)hkMemoryRouter_getInstance();
@@ -2286,16 +2326,19 @@ struct VehFr_Vehicle
 
     VehFr_Data* m_data;
 
-    void UpdateGroundBodyVelocities(float dt, VehFr_FrictionParams& params, VehFr_Ground& ground);
+    void hkpVehicleInstance_applyResultsToGround(float deltaTime, VehFr_FrictionParams& axleParams, VehFr_Ground& ground);
 };
 
 // @fnv 0x00e38140
-// src: GUESS 0x00e38140 (confidence: medium)
-void VehFr_Vehicle::UpdateGroundBodyVelocities(float dt, VehFr_FrictionParams& params, VehFr_Ground& ground)
+// src: XBOX_RETAIL_PDB 0x00e38140
+// pdb: hkpVehicleInstance::applyResultsToGround | hkpVehicleInstance.obj | retail, object-file gap fill, high
+// pdb params: deltaTime, axleParams, groundBody
+// pdb locals: angVelWs, linVelWs, maxVelChange
+void VehFr_Vehicle::hkpVehicleInstance_applyResultsToGround(float deltaTime, VehFr_FrictionParams& axleParams, VehFr_Ground& ground)
 
 {
 
-    VehFr_AxleParams* axle = params.m_akAxleParams;
+    VehFr_AxleParams* axle = axleParams.m_akAxleParams;
     for (int i = 0; i < m_data->m_iWheelCount; i++)
 
     {
@@ -2368,7 +2411,7 @@ void VehFr_Vehicle::UpdateGroundBodyVelocities(float dt, VehFr_FrictionParams& p
             VehFr_Vector4 cur = ((VehFr_MotionData*)motion)->m_kAngularVelocity;
 
             VehFr_Vector4 maxV;
-            maxV.SetAllComponents(dt * 10.0);
+            maxV.SetAllComponents(deltaTime * 10.0);
 
             LocalM128 d = _mm_sub_ps(angVel.m_vComponents, cur.m_vComponents);
 
@@ -2384,7 +2427,7 @@ void VehFr_Vehicle::UpdateGroundBodyVelocities(float dt, VehFr_FrictionParams& p
             VehFr_Vector4 cur = ((VehFr_MotionData*)motion)->m_kTranslationalVelocity;
 
             VehFr_Vector4 maxV;
-            maxV.SetAllComponents(dt * 10.0);
+            maxV.SetAllComponents(deltaTime * 10.0);
 
             LocalM128 d = _mm_sub_ps(linVel.m_vComponents, cur.m_vComponents);
 
@@ -2470,12 +2513,14 @@ class FUN_00e38b20 : public FUN_00d2b260
     float m_fMainSteeringAngle;
     hkArray<float> m_kWheelSteeringAngles;
 
-    FUN_00e38b20(void* pkChassis) throw();
+    FUN_00e38b20(void* chassis) throw();
     virtual ~FUN_00e38b20() throw();
 };
 
 // @fnv 0x00e38b20
-FUN_00e38b20::FUN_00e38b20(void* pkChassis) throw() : FUN_00d2b260(pkChassis, 0)
+// pdb: hkpVehicleInstance::hkpVehicleInstance | hkpVehicleInstance.obj | retail, object-file gap fill, high
+// pdb params: f
+FUN_00e38b20::FUN_00e38b20(void* chassis) throw() : FUN_00d2b260(chassis, 0)
 {
     m_data = 0;
     m_pDriverInput = 0;
@@ -2759,7 +2804,7 @@ struct VehicleSpeedE378 : hkpVehicleInstance
 float VehicleSpeedE378::hkpVehicleInstance_calcKMPH()
 {
     return float(
-        (double(_mm_cvtss_f32(reinterpret_cast<const SpeedBodyE378*>(m_pEntity)->linearVelocity().length3PacketCall())) / DAT_01017b70) *
+        (double(_mm_cvtss_f32(reinterpret_cast<const SpeedBodyE378*>(m_entity)->linearVelocity().length3PacketCall())) / DAT_01017b70) *
         DAT_01012640);
 }
 
@@ -2992,10 +3037,12 @@ struct VUC_DriverInputStandIn
 
 // @fnv 0x00e36f60
 // src: HAVOK_LIB 0x00e36f60
-__declspec(noinline) void VUC_Instance::hkpVehicleInstance_updateDriverInput(float dt, VUC_Filtered& f) throw()
+// pdb: hkpVehicleInstance::updateDriverInput | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, filteredDriverInputInfo
+__declspec(noinline) void VUC_Instance::hkpVehicleInstance_updateDriverInput(float deltaTime, VUC_Filtered& filteredDriverInputInfo) throw()
 {
     unsigned char* instanceByte = reinterpret_cast<unsigned char*>(this) + 0xb0;
-    unsigned char* filteredByte = reinterpret_cast<unsigned char*>(&f) + 0x0d;
+    unsigned char* filteredByte = reinterpret_cast<unsigned char*>(&filteredDriverInputInfo) + 0x0d;
 
     unsigned int value = *instanceByte;
     *filteredByte = static_cast<unsigned char>(value);
@@ -3005,7 +3052,7 @@ __declspec(noinline) void VUC_Instance::hkpVehicleInstance_updateDriverInput(flo
     VUC_DriverInputStandIn* driverInput =
         *reinterpret_cast<VUC_DriverInputStandIn**>(reinterpret_cast<unsigned char*>(this) + 0x20);
 
-    driverInput->UpdateDriverInput(dt, this, deviceStatus, f);
+    driverInput->UpdateDriverInput(deltaTime, this, deviceStatus, filteredDriverInputInfo);
 
     *instanceByte = *filteredByte;
 }
@@ -3028,7 +3075,7 @@ class VehicleAeroInstance : public hkpVehicleInstance
 // src: HAVOK_LIB 0x00e37080
 void VehicleAeroInstance::hkpVehicleInstance_updateAerodynamics(float deltaTime, void* output) throw()
 {
-    VehicleAeroDispatch* aerodynamics = reinterpret_cast<VehicleAeroDispatch*>(m_pAerodynamics);
+    VehicleAeroDispatch* aerodynamics = reinterpret_cast<VehicleAeroDispatch*>(m_aerodynamics);
     aerodynamics->calculate(deltaTime, this, output);
 }
 #pragma optimize("", on)
@@ -3246,12 +3293,14 @@ class VehicleInitHostInitE387 : public ::hkpVehicleInstance
 
 // @fnv 0x00e387e0
 // src: HAVOK_SRC 0x00e387e0
+// pdb: hkpVehicleInstance::init | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb locals: matrix, diagonal, assertBuf, ostr
 void VehicleInitHostInitE387::hkpVehicleInstance_init()
 {
     if (!reinterpret_cast<hkpVehicleDataInitE387*>(m_data)->m_bWheelsUseChassisForGround)
         reinterpret_cast<hkpVehicleDataInitE387*>(m_data)->init(
-            reinterpret_cast<hkpVehicleSuspensionInitE387*>(m_pSuspension)->m_kWheelParams,
-            reinterpret_cast<hkpEntityInitE387*>(m_pEntity));
+            reinterpret_cast<hkpVehicleSuspensionInitE387*>(m_suspension)->m_kWheelParams,
+            reinterpret_cast<hkpEntityInitE387*>(m_entity));
 
     hkpVehicleDataInitE387* r = reinterpret_cast<hkpVehicleDataInitE387*>(m_data);
     __declspec(align(16)) hkVector4 diag;
@@ -3268,14 +3317,14 @@ void VehicleInitHostInitE387::hkpVehicleInstance_init()
     cnt = (::_mm_add_ps)(cnt, (::_mm_mul_ps)((_mm_and_ps)(r->m_orient1.v, mask), (::_mm_shuffle_ps)(rr, rr, 0)));
     cnt = (::_mm_add_ps)(cnt, (::_mm_mul_ps)((_mm_and_ps)(r->m_orient2.v, mask), (::_mm_shuffle_ps)(p, p, 0)));
     (::_mm_store_ps)(&diag.x, cnt);
-    hkpEntityInitE387* chassis = reinterpret_cast<hkpEntityInitE387*>(m_pEntity);
+    hkpEntityInitE387* chassis = reinterpret_cast<hkpEntityInitE387*>(m_entity);
     float mass = chassis->m_pMotionState.FUN_00c86430();
     VehicleInitSimd massVec;
     massVec = (_mm_load_ss)(&mass);
     (::_mm_store_ps)(&diag.x, (::_mm_mul_ps)((::_mm_shuffle_ps)(massVec, massVec, 0), *(VehicleInitSimd*)&diag));
 
     hkpEntityInitE387* nextChassis;
-    nextChassis = reinterpret_cast<hkpEntityInitE387*>(m_pEntity);
+    nextChassis = reinterpret_cast<hkpEntityInitE387*>(m_entity);
     Mat3InitE387 z;
     VehicleInitSimd inertia = (::_mm_setzero_ps)();
     (::_mm_store_ps)(&z.c0.x, inertia);
@@ -3286,33 +3335,33 @@ void VehicleInitHostInitE387::hkpVehicleInstance_init()
     z.c2.z = diag.z;
 
     volatile float roundedMass = nextChassis->m_pMotionState.FUN_00c86430();
-    reinterpret_cast<hkpEntityInitE387*>(m_pEntity)->hkpRigidBody_setMass(roundedMass);
-    reinterpret_cast<hkpEntityInitE387*>(m_pEntity)->hkpRigidBody_setInertiaLocal(&z);
+    reinterpret_cast<hkpEntityInitE387*>(m_entity)->hkpRigidBody_setMass(roundedMass);
+    reinterpret_cast<hkpEntityInitE387*>(m_entity)->hkpRigidBody_setInertiaLocal(&z);
 
-    vehicleSetSizeInitE387(m_kWheelInfoArray, reinterpret_cast<hkpVehicleDataInitE387*>(m_data)->m_iWheelCount);
-    for (int i = 0; i < m_kWheelInfoArray.m_iElementCount; ++i)
-        ::hkpVehicleInstance_WheelInfo_init(&m_kWheelInfoArray.m_data[i]);
+    vehicleSetSizeInitE387(m_wheelsInfo, reinterpret_cast<hkpVehicleDataInitE387*>(m_data)->m_iWheelCount);
+    for (int i = 0; i < m_wheelsInfo.m_iElementCount; ++i)
+        ::hkpVehicleInstance_WheelInfo_init(&m_wheelsInfo.m_data[i]);
 
-    vehicleSetSizeInitE387(m_kSecondRealArray, reinterpret_cast<hkpVehicleDataInitE387*>(m_data)->m_iWheelCount);
-    for (int i = 0; i < m_kSecondRealArray.m_iElementCount; ++i)
-        m_kSecondRealArray.m_data[i].m_cBooleanValue = 0;
+    vehicleSetSizeInitE387(m_isFixed, reinterpret_cast<hkpVehicleDataInitE387*>(m_data)->m_iWheelCount);
+    for (int i = 0; i < m_isFixed.m_iElementCount; ++i)
+        m_isFixed.m_data[i].m_cBooleanValue = 0;
 
-    m_fBrakeState = 0.0f;
-    m_fMainSteeringAngle = 0.0f;
+    m_wheelsTimeSinceMaxPedalInput = 0.0f;
+    m_mainSteeringAngle = 0.0f;
 
-    vehicleSetSizeInitE387(m_kWheelSteeringAngles, reinterpret_cast<hkpVehicleDataInitE387*>(m_data)->m_iWheelCount);
-    for (int i = 0; i < m_kWheelSteeringAngles.m_iElementCount; ++i)
-        m_kWheelSteeringAngles.m_data[i] = 0.0f;
+    vehicleSetSizeInitE387(m_wheelsSteeringAngle, reinterpret_cast<hkpVehicleDataInitE387*>(m_data)->m_iWheelCount);
+    for (int i = 0; i < m_wheelsSteeringAngle.m_iElementCount; ++i)
+        m_wheelsSteeringAngle.m_data[i] = 0.0f;
 
     volatile VehicleInitHostInitE387* vthis = this;
-    vthis->m_fFirstValueBeforeSteeringAngle = 0.0f;
-    vthis->m_fSecondValueBeforeSteeringAngle = 0.0f;
-    vthis->m_iGearCount.m_cBooleanValue = 0;
-    vthis->m_iGearCapacity = 0;
-    vthis->m_bGearShiftActive.m_cBooleanValue = 0;
-    vthis->m_fGearShiftTime = 0.0f;
-    reinterpret_cast<hkpVehicleWheelCollideInitE387*>(vthis->m_pWheelCollide)->init(this);
-    reinterpret_cast<hkpVehicleWheelCollideInitE387*>(m_pWheelCollide)->m_bWheelsUseChassisForGround.m_cBooleanValue = 1;
+    vthis->m_torque = 0.0f;
+    vthis->m_rpm = 0.0f;
+    vthis->m_isReversing.m_cBooleanValue = 0;
+    vthis->m_currentGear = 0;
+    vthis->m_delayed.m_cBooleanValue = 0;
+    vthis->m_clutchDelayCountdown = 0.0f;
+    reinterpret_cast<hkpVehicleWheelCollideInitE387*>(vthis->m_wheelCollide)->init(this);
+    reinterpret_cast<hkpVehicleWheelCollideInitE387*>(m_wheelCollide)->m_bWheelsUseChassisForGround.m_cBooleanValue = 1;
 }
 
 }

@@ -44,6 +44,9 @@ __forceinline int GetInspectionPairCount(hkProcess* process)
 // The entry receives hkProcess's subobject (+8); the shared hkInspectProcess has no step override.
 // This ABI adapter keeps ECX and the one stack argument without another process class.
 // @fnv 0x00ddba20
+// pdb: hkInspectProcess::step | hkInspectProcess.obj | retail, vtable slot, high
+// pdb params: frameTimeInMs
+// pdb locals: recursionStack
 void __fastcall StepInspectionProcess(hkProcess* process, void*, float unused)
 {
     hkArray<hkWrittenObjectQ> written;
@@ -51,8 +54,8 @@ void __fastcall StepInspectionProcess(hkProcess* process, void*, float unused)
     {
         SetInspectionArraySize(written, 0);
         reinterpret_cast<hkInspectProcess*>(reinterpret_cast<char*>(process) - 8)->writeObject(
-            reinterpret_cast<hkWrittenObjectQ*>(reinterpret_cast<hkInspectProcess*>(reinterpret_cast<char*>(process) - 8)->unk20)[i].m_object,
-            reinterpret_cast<hkWrittenObjectQ*>(reinterpret_cast<hkInspectProcess*>(reinterpret_cast<char*>(process) - 8)->unk20)[i].m_class,
+            reinterpret_cast<hkWrittenObjectQ*>(reinterpret_cast<hkInspectProcess*>(reinterpret_cast<char*>(process) - 8)->m_autoUpdateList)[i].m_object,
+            reinterpret_cast<hkWrittenObjectQ*>(reinterpret_cast<hkInspectProcess*>(reinterpret_cast<char*>(process) - 8)->m_autoUpdateList)[i].m_class,
             false, reinterpret_cast<hkArrQLocalForm<hkWrittenObjectQ>*>(&written));
     }
 }

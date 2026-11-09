@@ -9,6 +9,7 @@ class EffectSetting;
 class ProjectileEvent;
 class ProjectileNodeStandin;
 
+// pdb: class ContinuousBeamProjectile, size 0x180 (here 0x154), bases: Projectile, 2 members
 class ContinuousBeamProjectile : public Projectile
 {
 public:
@@ -29,14 +30,14 @@ public:
     int Initialize();
     void InitContinuousBeam();
     void UpdateAlignment();
-    bool AddImpact_009ab9c0(void* arg1, NiPoint3* arg2, void* arg3,
-                      void* arg4, void* arg5, void* arg6);
-    bool ProcessHit(void* arg1, NiPoint3* arg2, void* arg3,
-                    void* arg4, void* arg5, void* arg6);
+    bool AddImpact_009ab9c0(void* apCollidee, NiPoint3* aContactPoint, void* aContactNormal,
+                      void* apTargetCollidable, void* aiKey, void* aeForceMaterial);
+    bool ProcessHit(void* apCollidee, NiPoint3* aContactPoint, void* aContactNormal,
+                    void* apTargetCollidable, void* aiKey, void* aeForceMaterial);
     void MarkGeometryDataMutable(NiAVObject* object);
     void ScaleObject(NiAVObject* object, float scale);
     void fn_9ABD00_Recurse(NiAVObject* object, float scale, float previousScale);
-    float FindBeamGeometryLength(NiAVObject* object);
+    float FindBeamGeometryLength(NiAVObject* apGeometry);
     void* GetActorBase();
     bool Projectile_IsFlagSet(int flags);
     void Projectile_SetRange(float distance);
@@ -53,7 +54,7 @@ public:
     ProjectileEvent* FUN_009185e0();
     EffectSetting* GetAVEffect();
     void ApplyAreaEffect(NiPoint3 point, unsigned int variant,
-                         TESObjectREFR* target, bool silent);
+                         TESObjectREFR* apCollidee, bool abFizzle);
 
     NiPointer<AnimIdle> m_spUnk150;
 };

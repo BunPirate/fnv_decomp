@@ -24,7 +24,7 @@ extern void* g_01268358;
 // @fnv 0x00cb0a60
 hkStringPtr::hkStringPtr() throw()
 {
-    m_pcText = static_cast<const char*>(g_01268358);
+    m_stringAndFlag = static_cast<const char*>(g_01268358);
 }
 
 int __cdecl hkMemoryRouter_easyFree(int, int);
@@ -40,12 +40,14 @@ int __cdecl hkString_strLen(const char* s);
 // Writes the string s to w, or the literal "(null)" when s is null.
 // @fnv 0x00cc0080
 // src: HAVOK_LIB 0x00cc0080
-static __declspec(noinline) void writeString(hkStreamWriter* apWriter, const char* apString)
+// pdb: writeString | hkOStream.obj | retail, upstream name already matches, high
+// pdb params: sb, s
+static __declspec(noinline) void writeString(hkStreamWriter* sb, const char* s)
 {
-    if (apString)
-        apWriter->write(apString, hkString_strLen(apString));
+    if (s)
+        sb->write(s, hkString_strLen(s));
     else
-        apWriter->write("(null)", 6);
+        sb->write("(null)", 6);
 }
 
 volatile int g_wcc0;
@@ -62,7 +64,7 @@ void CallTarget_cc0080()
 // src: GUESS 0x00cc01c0 (confidence: low)
 __declspec(nothrow) hkOstream& hkOstream::ProcessAndReturnValue_00cc01c0(const char* text) throw()
 {
-    writeString(m_pStreamWriter, text);
+    writeString(m_writer, text);
     return *this;
 }
 

@@ -16,7 +16,7 @@ unsigned short MaxUnsignedShort(unsigned short ausLeft, unsigned short ausRight)
 BSAudio* __cdecl hkMemoryRouter_getInstance();
 void __cdecl ResizeAudioStream(void*, void*, int);
 struct UnkRet { int x; int y; };
-void __fastcall AppendPairToBuffer(UnkRet* apFirst, UnkRet* apSecond, void* apBuffer);
+void __fastcall hkp3AxisSweep_beginOverlap(UnkRet* apFirst, UnkRet* b, void* newPairsOut);
 void __fastcall ToggleBit(int aiBitIndex, void* apBits);
 struct Entry {
     unsigned short key;
@@ -26,7 +26,7 @@ Entry* __stdcall LowerBoundEntry(Entry* first, Entry* last, unsigned short key);
 struct FUN_00d11960_cls {
     int* m_pEntryData;
     int m_iArrayLength;
-    void hkp3AxisSweep_hkpBpAxis_remove(int aiFirst, int aiSecond);
+    void hkp3AxisSweep_hkpBpAxis_remove(int minPosition, int maxPosition);
 };
 struct D1A0E0Allocator;
 void __cdecl hkArrayUtil__reserve(D1A0E0Allocator* alloc, void* array, int numElements, int sizeElem);
@@ -174,7 +174,7 @@ struct SweepEntry { // 16-byte entry, matches shl eax,4 stride
 };
 // Tail-call target observed forwarding (this, handle, entry) with edx = handle kept live:
 // __fastcall helper taking (self in ecx, handle in edx, entry on stack).
-void __fastcall getAabbFromNode(void* self, UnkHandle* handle, SweepEntry* entry);
+void __fastcall getAabbFromNode(void* self, UnkHandle* aabb, SweepEntry* entry);
 // Stand-in owner class for the __thiscall thunk; fnvcheck matches the name FUN_00d119c0.
 struct FUN_00d119c0_owner {
     int unk00;
@@ -243,11 +243,11 @@ struct FUN_00d11c10_cls {
     int unk08;
     int m_0C;
 };
-void __fastcall AppendPairEntry(FUN_00d11c10_cls* pFirst, FUN_00d11c10_cls* pSecond, PairArray* arr);
+void __fastcall hkp3AxisSweep_endOverlap(FUN_00d11c10_cls* pFirst, FUN_00d11c10_cls* b, PairArray* deletedPairsOut);
 unsigned short MaxUnsignedShort(unsigned short a, unsigned short b);
 BSAudio* __cdecl hkMemoryRouter_getInstance();
 void __cdecl ResizeAudioStream(void*, void*, int);
-void __fastcall AppendPairToBuffer(UnkRet* a, UnkRet* b, void* c);
+void __fastcall hkp3AxisSweep_beginOverlap(UnkRet* a, UnkRet* b, void* newPairsOut);
 struct FnvNode {
     unsigned int m_00;
     unsigned int m_04;
@@ -270,7 +270,7 @@ struct FnvHolderTail {
     int unk0c;
     void* m_pAllocator;
 };
-void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(void* base, FnvNode* pNode, unsigned short ausValue, FnvNode* pOther, FnvArr* pPairArr);
+void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(void* markers, FnvNode* pNode, unsigned short nodeIndexA, FnvNode* b, FnvArr* newPairsOut);
 struct FUN_00d11da0_cls;
 struct FUN_00d11da0_holder {
     int unk00;
@@ -283,14 +283,14 @@ struct FUN_00d11da0_entry {
     unsigned short key;
     unsigned short value;
 };
-void __cdecl hkArrayUtil__reserve(void* allocator, FUN_00d11da0_cls* self, unsigned int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, FUN_00d11da0_cls* array, unsigned int numElem, int sizeElem);
 struct FUN_00d11da0_cls {
     FUN_00d11da0_entry* m_data;
     int m_uiItemCount;
     unsigned int m_capFlags;
 
-    void InsertPair(unsigned int a1, unsigned int a2, unsigned short a3,
-                      unsigned short a4, unsigned short* outIndex2, unsigned short* outIndex);
+    void hkp3AxisSweep_hkpBpAxis_insert(unsigned int nodes, unsigned int nodeIndex, unsigned short minPosition,
+                      unsigned short maxPosition, unsigned short* minInsertPositionOut, unsigned short* maxInsertPositionOut);
 };
 struct S_00d138a0_Pair {
     int unk00;
@@ -308,7 +308,7 @@ struct S_00d138a0_Node {
     unsigned short unk0a;
     int unk0c;
 };
-void __cdecl CollectNodePairs(int unused, S_00d138a0_Node* node, int count, S_00d138a0_Array* out);
+void __cdecl hkp3AxisSweep_collide1Axis(int unused, S_00d138a0_Node* node, int count, S_00d138a0_Array* out);
 struct AllocIface {
     virtual void* unk00();
     virtual void* Alloc(unsigned int size);
@@ -317,9 +317,9 @@ struct SpawnedObject {
     int unk00;
     unsigned short m_wSize;
 
-    SpawnedObject* Init(int a, int b, int c);
+    SpawnedObject* Init(int worldMin, int worldMax, int numMarkers);
 };
-SpawnedObject* hk3AxisSweep16CreateBroadPhase(int a, int b, int c);
+SpawnedObject* hk3AxisSweep16CreateBroadPhase(int worldMin, int worldMax, int numMarkers);
 int __cdecl getMinComponent(const float* afValues, float* pfMin);
 extern int DAT_011b37a4[];
 struct hkp3AxisSweep;
@@ -348,7 +348,7 @@ extern int DAT_011b37a4[];
 class FUN_00d11120_cls {
 public:
     Endpoint* m_endpoints;
-    void MergeEndpoints(char* cells, int n, int m,
+    void hkp3AxisSweep_hkpBpAxis_mergeBatch(char* nodes, int indexOfNewEps, int newNum,
                       unsigned int axis, Endpoint* scratch);
 };
 // Adapted from an unverified prior attempt by another contributor; original author/model unknown.
@@ -423,9 +423,9 @@ struct S_d11790_Sweep {
     int unkbc;
     int unkc0;
     S_d11790_Edge* axis2;
-    void FixNodeEdges(unsigned h);
+    void _fixDeterministicOrderAfterNodeIdWasDecreased(unsigned nodeIndex);
 };
-extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const void* ptr, int size);
+extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size);
 struct FourIntegerBlock {
     int unk00;
     int unk04;
@@ -638,7 +638,7 @@ struct C_00d13620 {
     int unkD4;
     void* m_unkD8;
 
-    void BuildBroadPhasePairs(S_00d138a0_Node* nodesA, int numNodesA, S_00d138a0_Node* nodesB, int numNodesB, int mode, BroadPhasePairArray& pairs);
+    void collide1Axis(S_00d138a0_Node* pa, int numA, S_00d138a0_Node* pb, int numB, int markerHandlingForNodesB, BroadPhasePairArray& pairsOut);
 };
 #include "fnv_asm_helpers.h"   // project x87 helpers (fnv_SinCos, fnv_FloatToInt), kept last so earlier code is unchanged
 #include "../../../../../../include/hkAabb.h"
@@ -836,13 +836,13 @@ struct S00d11470_Object {
 struct S00d11470_Owner {
     bool __thiscall areAabbsOverlapping(int* first, int* second);
 };
-void __cdecl hkArrayUtil__reserve(void* alloc, void* self, int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 struct FUN_00d11e80_cls {
     S_00d1a180_EndPoint* m_data;
     int m_iElementCount;
     int m_iCapacityState;
 
-    int InsertEndpoints(char* nodes, int axis, S_00d1a180_EndPoint* newEndpoints, int numNew);
+    int hkp3AxisSweep_hkpBpAxis_insertTail(char* nodes, int axis, S_00d1a180_EndPoint* newNodes, int numNewEndPoints);
 };
 extern "C" void _ReadWriteBarrier(void);
 struct d11Out {
@@ -1095,7 +1095,7 @@ struct Sweep {
     Sub* m_d8;
 
     void defragment();
-    void FixNodeEdges(int) throw();
+    void _fixDeterministicOrderAfterNodeIdWasDecreased(int) throw();
     __forceinline void setNodeIndex(Elem& node, int i) throw() {
         int* const& h = node.h;
         if (((unsigned)h & 1) == 0) {
@@ -1331,7 +1331,7 @@ struct SweepNodesX {
 };
 struct SweepAxisX {
  Endpoint* data; int size; int capacity;
- void hkp3AxisSweep_hkpBpAxis_remove(int a,int b);
+ void hkp3AxisSweep_hkpBpAxis_remove(int minPosition,int maxPosition);
 };
 struct SweepOwnerX {
  int unk00;
@@ -1381,7 +1381,7 @@ struct SweepOwnerX {
  SweepGroupX* groups;
  void hkp3AxisSweep_setBitsBasedOnXInterval(int count,int key,SweepNodeX* node,unsigned int index,unsigned int* bits);
  void hkp3AxisSweep_updateNodesAfterDelete(SweepNodeX* base,int count,SweepNodeX* node);
- void FixNodeEdges(unsigned int index);
+ void _fixDeterministicOrderAfterNodeIdWasDecreased(unsigned int nodeIndex);
  void removeObject(unsigned int* handle,SweepPairsX* pairs);
 };
 struct CacheNode { unsigned short minY,minZ,maxY,maxZ,minX,maxX; unsigned int handle; };
@@ -1487,8 +1487,8 @@ struct Heap {
     template<class T> void ReleaseTemp(Arr<T>& arr);
 };
 static Heap* GetHeap() { return (Heap*)hkMemoryRouter_getInstance(); }
-void __cdecl hkArrayUtil__reserve(IAlloc* a, void* arr, int cap, int esz);
-void __cdecl hkRadixSort_sort16(void* a, int n, void* scratch);
+void __cdecl hkArrayUtil__reserve(IAlloc* mem, void* array, int numElem, int sizeElem);
+void __cdecl hkRadixSort_sort16(void* a, int numObjects, void* buffer);
 template<class T> struct Arr {
     T* data;
     int size;
@@ -1534,7 +1534,7 @@ struct Node { unsigned short idx, pad; Arr<unsigned short> arr; };
 struct Stub_00d1a040 { int a, b, c; void hkp3AxisSweep_hkpBpAxis_removeBatch_0(Box*, Arr<int>*); };
 struct Stub_00d1a0e0 { int a, b, c; void hkp3AxisSweep_hkpBpAxis_removeBatch_1(Box*, Arr<int>*); };
 struct Stub_00d1a180 { int a, b, c; void RemapEndPoints(Box*, Arr<int>*); };
-void __cdecl CollectNodePairs(void*, Box*, int, int);
+void __cdecl hkp3AxisSweep_collide1Axis(void*, Box*, int, int);
 struct AssignedSweep {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
     int unk20, unk24, unk28, unk2c, unk30, unk34, unk38, unk3c;
@@ -1548,7 +1548,7 @@ struct AssignedSweep {
     int nodeCount;
     int unkD4;
     Node* nodes;
-    void BuildBroadPhasePairs(Box*, int, Box*, int, int, int);
+    void collide1Axis(Box*, int, Box*, int, int, int);
     void FixNodeEdges(int);
     void removeObjectBatch(RemovedHandleList*, int);
 };
@@ -1561,8 +1561,8 @@ struct __declspec(align(16)) SweepBounds { unsigned v[4]; };
 struct SweepBoundsPair { SweepBounds low,high; };
 struct SweepBox { unsigned lo[4],hi[4]; };
 void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(void*,CacheNode*,unsigned,CacheNode*,void*);
-void __fastcall RemoveOrAppendTagEntry(void*,CacheNode*,unsigned,CacheNode*,void*);
-void __fastcall AppendPairEntry(CacheNode*,CacheNode*,void*);
+void __fastcall hkp3AxisSweep_endOverlapCheckMarker(void*,CacheNode*,unsigned,CacheNode*,void*);
+void __fastcall hkp3AxisSweep_endOverlap(CacheNode*,CacheNode*,void*);
 struct SweepTarget {
  unsigned unk00;
  unsigned unk04;
@@ -1621,11 +1621,11 @@ struct SweepTarget {
  }
  template<int Axis> __forceinline void added(CacheNode* a,CacheNode* b,unsigned index,void* out) {
   if(Axis==0) hkp3AxisSweep_beginOverlapCheckMarker(pairs,a,index,b,out);
-  else AppendPairToBuffer((UnkRet*)a,(UnkRet*)b,out);
+  else hkp3AxisSweep_beginOverlap((UnkRet*)a,(UnkRet*)b,out);
  }
  template<int Axis> __forceinline void removed(CacheNode* a,CacheNode* b,unsigned index,void* out) {
-  if(Axis==0) RemoveOrAppendTagEntry(pairs,a,index,b,out);
-  else AppendPairEntry(a,b,out);
+  if(Axis==0) hkp3AxisSweep_endOverlapCheckMarker(pairs,a,index,b,out);
+  else hkp3AxisSweep_endOverlap(a,b,out);
  }
  template<int Axis> __forceinline void updateAxis(CacheNode* allNodes,SweepAxis& axis,CacheNode* node,unsigned index,unsigned low,unsigned high,void* add,void* remove) {
   CacheNode* leftNeighbor; (void)leftNeighbor;
@@ -1702,19 +1702,22 @@ struct SweepTarget {
 };
 // @fnv 0x00d12b80
 // src: HAVOK_LIB 0x00d12b80
-void SweepTarget::hkp3AxisSweep_updateAabbsUint32(SweepHandle** handles,const SweepBox* boxes,int count,void* add,void* remove) {
+// pdb: hkp3AxisSweep::updateAabbsUint32 | hkp3AxisSweep.obj | retail, upstream name already matches, high
+// pdb params: objects, aabbs, numObjects, addedPairsOut, removedPairsOut
+// pdb locals: oEnd, o, aabb
+void SweepTarget::hkp3AxisSweep_updateAabbsUint32(SweepHandle** objects,const SweepBox* aabbs,int numObjects,void* addedPairsOut,void* removedPairsOut) {
  SweepHandle** end; (void)end;
  CacheNode* node; (void)node;
  SweepHandle** current; (void)current;
  CacheNode* base; (void)base;
  unsigned index; (void)index;
 
- end=handles+count;
- for(current=handles;current<end;++current,++boxes) {
+ end=objects+numObjects;
+ for(current=objects;current<end;++current,++aabbs) {
   SweepBoundsPair bounds;
-  for(int k=0;k<3;++k) bounds.low.v[k]=boxes->lo[k]>>15;
+  for(int k=0;k<3;++k) bounds.low.v[k]=aabbs->lo[k]>>15;
   for(int k=0;k<3;++k) {
-   unsigned v=boxes->hi[k]>>15;
+   unsigned v=aabbs->hi[k]>>15;
    if(v!=0xffff) ++v;
    bounds.high.v[k]=v|1;
   }
@@ -1723,8 +1726,8 @@ void SweepTarget::hkp3AxisSweep_updateAabbsUint32(SweepHandle** handles,const Sw
   base=nodes;
   index=(*current)->index;
   node=base+index;
-  updateAxis<0>(base,xAxis,node,index,bounds.low.v[0],bounds.high.v[0],add,remove);
-  updateAxis<1>(base,yAxis,node,index,bounds.low.v[1],bounds.high.v[1],add,remove);
-  updateAxis<2>(base,zAxis,node,index,bounds.low.v[2],bounds.high.v[2],add,remove);
+  updateAxis<0>(base,xAxis,node,index,bounds.low.v[0],bounds.high.v[0],addedPairsOut,removedPairsOut);
+  updateAxis<1>(base,yAxis,node,index,bounds.low.v[1],bounds.high.v[1],addedPairsOut,removedPairsOut);
+  updateAxis<2>(base,zAxis,node,index,bounds.low.v[2],bounds.high.v[2],addedPairsOut,removedPairsOut);
  }
 }

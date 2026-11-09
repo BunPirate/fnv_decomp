@@ -33,6 +33,9 @@ void __cdecl hkAgent1nMachine_UpdateShapeCollectionFilter(int context, DA6E60Inp
 // Reads the collidable's shape type, fills a DA6E60Input from the arguments, and passes it to FUN_00da48e0 with the context.
 // @fnv 0x00da6e60
 // src: GUESS 0x00da6e60 (confidence: low)
+// pdb: hkListAgent3::updateFilter | hkpListAgent3.obj | retail, object-file run extension, low
+// pdb params: entry, agentData, bodyA, bodyB, input, mgr, constraintOwner
+// pdb locals: vin
 void __cdecl Object_UpdateFields_00da6e60(int unused, int context, int a, DA6E60Collidable* collidable, int b, int c, int d)
 {
     int shapeType = collidable->m_pCollisionShape->getType();
@@ -72,14 +75,16 @@ struct hkListAgent3
 
 extern const char g_hkListAgent3_typeName[];
 
-extern void __cdecl hkpAgentMachineUtil_calc1nStatistics(int a1, int a2, void* a3);
+extern void __cdecl hkpAgentMachineUtil_calc1nStatistics(int agentTrack, int input, void* collector);
 
 // Calls self->v18 with the hkListAgent3 type name, then FUN_00d97250 with a2, a3 and self, and returns self->v1c().
 // @fnv 0x00da6de0
-// src: GUESS 0x00da6de0 (confidence: low)
-unsigned int __cdecl hkListAgent3_ProcessAndReturnValue_00da6de0(int a1, int a2, int a3, hkListAgent3* self)
+// src: XBOX_RETAIL_PDB 0x00da6de0
+// pdb: hkListAgent3::calcStatistics | hkpListAgent3.obj | retail, string-set bridge, high
+// pdb params: entry, agentData, input, collector
+unsigned int __cdecl hkListAgent3_calcStatistics(int entry, int agentData, int input, hkListAgent3* collector)
 {
-    self->v18(g_hkListAgent3_typeName);
-    hkpAgentMachineUtil_calc1nStatistics(a2, a3, self);
-    return self->v1c();
+    collector->v18(g_hkListAgent3_typeName);
+    hkpAgentMachineUtil_calc1nStatistics(agentData, input, collector);
+    return collector->v1c();
 }

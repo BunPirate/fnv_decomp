@@ -7,11 +7,12 @@ enum MEM_CONTEXT;
 class QueuedChildren;
 class QueuedParents;
 
+// pdb: class QueuedFile, size 0x28, bases: IOTask, 4 members
 class QueuedFile : public IOTask
 {
 public:
-    QueuedFile(IO_TASK_PRIORITY priority);
-    QueuedFile(int priority);
+    QueuedFile(IO_TASK_PRIORITY aePriority);
+    QueuedFile(int aePriority);
 
     virtual ~QueuedFile();
     virtual void Run();
@@ -37,8 +38,8 @@ public:
     void DecRefCount();
     bool QueuedFile_GetAllChildrenFinished();
 
-    MEM_CONTEXT aeMemoryContext;        // 0x18
-    NiPointer<QueuedFile> m_pParent;     // 0x1C
+    MEM_CONTEXT eContext;        // 0x18
+    NiPointer<QueuedFile> spParent;     // 0x1C
     QueuedChildren* pChildren;          // 0x20
     QueuedParents* pAdditionalParents;  // 0x24
 };

@@ -10,6 +10,7 @@ struct FakeBase
 extern int DAT_0102e1dc;
 // @fnv 0x00a7f740
 // src: EXE 0x00a7f740
+// pdb: BSPackedAdditionalGeometryData::CreateObject | BSPackedAdditionalGeometryData.obj | retail, upstream name already matches, high
 void* BSPackedAdditionalGeometryData_CreateObject()
 {
     void* p = BSFadeNode::operator new(52);
@@ -52,32 +53,34 @@ struct Owner
     void NiAdditionalGeometryData_GetViewerStrings(StringList*);
     void AppendNameStrings(StringList*);
 };
-extern "C" const char* g_011f4aac;
+extern "C" const char* BSPackedAdditionalGeometryData_ms_RTTI;
 extern const char str_0109deec[];
 extern char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 extern char* __cdecl NiGetViewerString_00a7d510(const char*, const char*);
 // Calls FUN_00a73e40 on list, then appends the strings from FUN_00a7d330(g_011f4aac) and FUN_00a7d510(str_0109deec, name), growing the list as needed.
 // @fnv 0x00a7f780
-void Owner::AppendNameStrings(StringList* list)
+// pdb: BSPackedAdditionalGeometryData::GetViewerStrings | BSPackedAdditionalGeometryData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void Owner::AppendNameStrings(StringList* pkStrings)
 {
     char* text;
     unsigned int index;
-    NiAdditionalGeometryData_GetViewerStrings(list);
-    text = NiViewerStrings_NiGetViewerString_Title(g_011f4aac);
-    index = list->count;
-    if (index >= list->capacity)
-        list->FUN_0096ad30(list->growth + index);
-    list->FUN_0096ae90(index, &text);
+    NiAdditionalGeometryData_GetViewerStrings(pkStrings);
+    text = NiViewerStrings_NiGetViewerString_Title(BSPackedAdditionalGeometryData_ms_RTTI);
+    index = pkStrings->count;
+    if (index >= pkStrings->capacity)
+        pkStrings->FUN_0096ad30(pkStrings->growth + index);
+    pkStrings->FUN_0096ae90(index, &text);
     text = NiGetViewerString_00a7d510(str_0109deec, name);
-    index = list->count;
-    if (index >= list->capacity)
-        list->FUN_0096ad30(list->growth + index);
-    list->FUN_0096ae90(index, &text);
+    index = pkStrings->count;
+    if (index >= pkStrings->capacity)
+        pkStrings->FUN_0096ad30(pkStrings->growth + index);
+    pkStrings->FUN_0096ae90(index, &text);
 }
 
 struct S_00a7f680_Base
 {
-    void NiAdditionalGeometryData_SaveBinary(void* p);
+    void NiAdditionalGeometryData_SaveBinary(void* kStream);
 };
 struct S_00a7f680_Out
 {
@@ -108,15 +111,17 @@ struct FUN_00a7f680_cls : S_00a7f680_Base
     int unk28;
     int unk2c;
     int unk30;
-    void SaveFields(void* p);
+    void SaveFields(void* kStream);
 };
 
 // @fnv 0x00a7f680
-void FUN_00a7f680_cls::SaveFields(void* p)
+// pdb: BSPackedAdditionalGeometryData::SaveBinary | BSPackedAdditionalGeometryData.obj | retail, vtable slot, high
+// pdb params: kStream
+void FUN_00a7f680_cls::SaveFields(void* kStream)
 {
-    NiAdditionalGeometryData_SaveBinary(p);
-    S_00a7f680_Save(*(S_00a7f680_Out**)((char*)p + 0x250), &unk2c);
-    S_00a7f680_Save(*(S_00a7f680_Out**)((char*)p + 0x250), &unk30);
+    NiAdditionalGeometryData_SaveBinary(kStream);
+    S_00a7f680_Save(*(S_00a7f680_Out**)((char*)kStream + 0x250), &unk2c);
+    S_00a7f680_Save(*(S_00a7f680_Out**)((char*)kStream + 0x250), &unk30);
 }
 
 class A7F6E0BinaryStream
@@ -322,6 +327,8 @@ class A7F6E0Object
 
 // Loads the base object data from kStream, then reads m_fValue0 and m_fValue1 as binary values.
 // @fnv 0x00a7f6e0
+// pdb: BSPackedAdditionalGeometryData::LoadBinary | BSPackedAdditionalGeometryData.obj | retail, vtable slot, high
+// pdb params: kStream
 void A7F6E0Object::LoadBinary(A7F6E0Stream& kStream)
 {
     LoadBinaryBase(kStream);

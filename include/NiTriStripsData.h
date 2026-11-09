@@ -2,6 +2,7 @@
 
 #include "NiTriBasedGeomData.h"
 
+// pdb: class NiTriStripsData, size 0x50, bases: NiTriBasedGeomData, 3 members
 class NiTriStripsData : public NiTriBasedGeomData
 {
   public:

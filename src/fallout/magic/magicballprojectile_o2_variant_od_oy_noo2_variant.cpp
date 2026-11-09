@@ -516,12 +516,15 @@ struct xActor
     xCharCtl* FUN_009306d0();
     xCell* FUN_008d6f30();
     xFilter FUN_00931ed0();
-    void ArrowProjectile_InitHavok(xActor* apOther, float afVal);
+    void ArrowProjectile_InitHavok(xActor* apShooter, float afPower);
 };
 
 // @fnv 0x008caea0
 // src: XBOX_PDB 0x008caea0
-void xActor::ArrowProjectile_InitHavok(xActor* apOther, float afVal)
+// pdb: ArrowProjectile::InitHavok | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: apShooter, afPower
+// pdb locals: pcell, pw, pcon, info, pos, poldW, poldAV, pav, badd, icolFilter, igroup
+void xActor::ArrowProjectile_InitHavok(xActor* apShooter, float afPower)
 {
     if (!m_68 || m_68->FUN_0045cd60())
         return;
@@ -532,15 +535,15 @@ void xActor::ArrowProjectile_InitHavok(xActor* apOther, float afVal)
     {
         xCtlCinfo CI(1);
         CI.bhkCharacterControllerCinfo_SetAcrobatics(0.0f);
-        if (apOther)
-            CI.bhkCharacterControllerCinfo_SetGravity(xFUN_00646660(afVal, 50.0f, apOther->m_a4.FUN_0066ef20(0xb)));
+        if (apShooter)
+            CI.bhkCharacterControllerCinfo_SetGravity(xFUN_00646660(afPower, 50.0f, apShooter->m_a4.FUN_0066ef20(0xb)));
         CI.SetWaterForm(FUN_1d0());
         CI.bhkCharacterControllerCinfo_SetPosition(*FUN_1f4());
         CI.SetSound(WORLD);
         CI.SetPointer(new xShape(0.1f, true));
         CI.bhkCharacterControllerCinfo_SetAvoidBox(false);
-        if (apOther)
-            CI.bhkCharacterControllerCinfo_SetColFilter(6, apOther->FUN_00931ed0().CFilter_GetGroup());
+        if (apShooter)
+            CI.bhkCharacterControllerCinfo_SetColFilter(6, apShooter->FUN_00931ed0().CFilter_GetGroup());
         else
             CI.bhkCharacterControllerCinfo_SetColFilter(6, xFUN_008cddb0());
         CI.SetAssociatedActorValue(6);

@@ -50,20 +50,24 @@ inline void NiBinaryStream::Write(float* value)
 
 // Constructs a NiPSysEmitter, initializing speed, declination, planar angle, color, radius, lifespan and unknown to their defaults.
 // @fnv 0x00c21f00
+// pdb: NiPSysEmitter::NiPSysEmitter | NiPSysEmitter.obj | retail, upstream name already matches, high
+// pdb params: pcName, uiOrder, fSpeed, fSpeedVar, fDeclination, fDeclinationVar, fPlanarAngle, fPlanarAngleVar, kInitialColor, fInitialRadius, fLifeSpan, fLifeSpanVar, fRadiusVar
 NiPSysEmitter::NiPSysEmitter()
-    : m_fEmissionSpeed(0.0f), m_fSpeedVariation(0.0f), m_fEmissionDeclination(0.0f),
-      m_fDeclinationVariation(0.0f), m_fEmissionPlanarAngle(0.0f), m_fPlanarAngleVariation(0.0f),
-      m_kParticleColor(DAT_011a9be0), m_fEmissionRadius(1.0f), m_fRadiusVariation(0.0f),
-      m_fYValue(0.0f), m_fLifeSpanVariation(0.0f), m_fScale(1.0f)
+    : m_fSpeed(0.0f), m_fSpeedVar(0.0f), m_fDeclination(0.0f),
+      m_fDeclinationVar(0.0f), m_fPlanarAngle(0.0f), m_fPlanarAngleVar(0.0f),
+      m_kInitialColor(DAT_011a9be0), m_fInitialRadius(1.0f), m_fRadiusVar(0.0f),
+      m_fLifeSpan(0.0f), m_fLifeSpanVar(0.0f), m_fScale(1.0f)
 {}
 // Loads the box emitter's width, height and depth floats from the stream after the base volume emitter data.
 // @fnv 0x00c203b0
-void NiPSysBoxEmitter::LoadBinary(NiStream& stream)
+// pdb: NiPSysBoxEmitter::LoadBinary | NiPSysBoxEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysBoxEmitter::LoadBinary(NiStream& kStream)
 {
-    NiPSysVolumeEmitter::LoadBinary(stream);
-    stream.m_pkIstr->ReadFloat(width);
-    stream.m_pkIstr->ReadFloat(height);
-    stream.m_pkIstr->ReadFloat(depth);
+    NiPSysVolumeEmitter::LoadBinary(kStream);
+    kStream.m_pkIstr->ReadFloat(m_fEmitterWidth);
+    kStream.m_pkIstr->ReadFloat(m_fEmitterHeight);
+    kStream.m_pkIstr->ReadFloat(m_fEmitterDepth);
 }
 
 struct GlobalObjectO2_00a7b618
@@ -82,6 +86,8 @@ extern int DAT_010bda2c;
 // Allocates a 100-byte BSFadeNode, runs its constructor, zeroes the floats at offsets 0x58-0x60, sets its vtable, and returns it (or null).
 // @fnv 0x00c20350
 // src: EXE 0x00c20350
+// pdb: NiPSysBoxEmitter::CreateObject | NiPSysBoxEmitter.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl NiPSysBoxEmitter_CreateObject()
 {
     BSFadeNode* node = (BSFadeNode*)BSFadeNode::operator new(100);
@@ -104,6 +110,7 @@ struct S
     void* __thiscall DestroyIfFlagged(unsigned int);
 };
 // @fnv 0x00c20390
+// pdb: NiPSysBoxEmitter::`scalar deleting destructor' | NiPSysBoxEmitter.obj | retail, object-file gap fill, high
 void* __thiscall S::DestroyIfFlagged(unsigned int uiFlags)
 {
     FUN_00c31750();
@@ -118,11 +125,13 @@ struct EmitterHack : NiPSysBoxEmitter
 };
 // Calls FUN_00c31b80 on pkObject and returns true only if that succeeds and the three floats at offsets 0x58, 0x5c and 0x60 match the other object's.
 // @fnv 0x00c20170
+// pdb: NiPSysBoxEmitter::RegisterStreamables | NiPSysBoxEmitter.obj | debug, object-file run extension, low
+// pdb params: kStream
 bool EmitterHack::IsEqual(NiObject* pkObject)
 {
     EmitterHack* pkDest = (EmitterHack*)pkObject;
-    if (((BaseHack_nipsysboxemitter*)this)->FUN_00c31b80(pkObject) && width == pkDest->width &&
-        height == pkDest->height && depth == pkDest->depth)
+    if (((BaseHack_nipsysboxemitter*)this)->FUN_00c31b80(pkObject) && m_fEmitterWidth == pkDest->m_fEmitterWidth &&
+        m_fEmitterHeight == pkDest->m_fEmitterHeight && m_fEmitterDepth == pkDest->m_fEmitterDepth)
         return true;
     return false;
 }
@@ -140,6 +149,9 @@ struct BoxEmitterClone : NiPSysBoxEmitter
 };
 
 // @fnv 0x00c202f0
+// pdb: NiPSysBoxEmitter::CreateClone | NiPSysBoxEmitter.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* BoxEmitterClone::Clone(CloningProcess& kCloning)
 {
     BSFadeNode* pkObject = (BSFadeNode*)NiObject::operator new(0x64);
@@ -157,32 +169,34 @@ NiObject* BoxEmitterClone::Clone(CloningProcess& kCloning)
     }
     static_cast<VolumeEmitterCloneData*>(static_cast<NiPSysVolumeEmitter*>(this))->CopyTo(
         reinterpret_cast<NiPSysVolumeEmitter*>(pkObject), kCloning);
-    *(float*)((char*)pkObject + 0x58) = width;
-    *(float*)((char*)pkObject + 0x5c) = height;
-    *(float*)((char*)pkObject + 0x60) = depth;
+    *(float*)((char*)pkObject + 0x58) = m_fEmitterWidth;
+    *(float*)((char*)pkObject + 0x5c) = m_fEmitterHeight;
+    *(float*)((char*)pkObject + 0x60) = m_fEmitterDepth;
     return (NiObject*)pkObject;
 }
 
 // The shared headers do not declare these emitter-specific save overrides.
 struct VolumeEmitterSerialization : NiPSysVolumeEmitter
 {
-    void SaveBinary(NiStream& stream);
+    void SaveBinary(NiStream& kStream);
 };
 
 struct BoxEmitterSerialization : NiPSysBoxEmitter
 {
-    void SaveBinary(NiStream& stream);
+    void SaveBinary(NiStream& kStream);
 };
 
 // Saves the volume emitter base stream, then writes width, height and depth.
 // @fnv 0x00c20440
-void BoxEmitterSerialization::SaveBinary(NiStream& stream)
+// pdb: NiPSysBoxEmitter::SaveBinary | NiPSysBoxEmitter.obj | retail, object-file gap fill, high
+// pdb params: kStream
+void BoxEmitterSerialization::SaveBinary(NiStream& kStream)
 {
     static_cast<VolumeEmitterSerialization*>(static_cast<NiPSysVolumeEmitter*>(this))
-        ->VolumeEmitterSerialization::SaveBinary(stream);
-    stream.m_pkOstr->Write(&width);
-    stream.m_pkOstr->Write(&height);
-    stream.m_pkOstr->Write(&depth);
+        ->VolumeEmitterSerialization::SaveBinary(kStream);
+    kStream.m_pkOstr->Write(&m_fEmitterWidth);
+    kStream.m_pkOstr->Write(&m_fEmitterHeight);
+    kStream.m_pkOstr->Write(&m_fEmitterDepth);
 }
 
 inline void StrArr::AppendInline(char* value)
@@ -209,13 +223,15 @@ struct BoxViewer : NiPSysBoxEmitter
 // Appends the base volume emitter's debug strings, then the box emitter's width, height and depth values to the string array.
 // @fnv 0x00c204d0
 // src: XBOX_PDB 0x00c204d0
-void BoxViewer::NiPSysBoxEmitter_GetViewerStrings(StrArr* strings)
+// pdb: NiPSysBoxEmitter::GetViewerStrings | NiPSysBoxEmitter.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void BoxViewer::NiPSysBoxEmitter_GetViewerStrings(StrArr* pkStrings)
 {
-    ((VolumeViewer*)this)->FUN_00c31db0(strings);
-    strings->AppendInline(NiViewerStrings_NiGetViewerString_Title(DAT_01202518));
-    strings->AppendInline(NiGetViewerString_00a7d550(DAT_0109dc8c, width));
-    strings->AppendInline(NiGetViewerString_00a7d550(DAT_0109dc84, height));
-    strings->AppendInline(NiGetViewerString_00a7d550(DAT_010a0eb4, depth));
+    ((VolumeViewer*)this)->FUN_00c31db0(pkStrings);
+    pkStrings->AppendInline(NiViewerStrings_NiGetViewerString_Title(DAT_01202518));
+    pkStrings->AppendInline(NiGetViewerString_00a7d550(DAT_0109dc8c, m_fEmitterWidth));
+    pkStrings->AppendInline(NiGetViewerString_00a7d550(DAT_0109dc84, m_fEmitterHeight));
+    pkStrings->AppendInline(NiGetViewerString_00a7d550(DAT_010a0eb4, m_fEmitterDepth));
 }
 
 struct FUN_00c61f60_class
@@ -236,6 +252,8 @@ void FUN_00c1fdd0::NiPSysAirFieldModifier_RegisterStreamables(int a)
 void __cdecl FUN_00c31c90();
 // @fnv 0x00c20150
 // src: XBOX_PDB 0x00c20150
+// pdb: NiPSysBoxEmitter::ProcessClone | NiPSysBoxEmitter.obj | debug, upstream name already matches, high
+// pdb params: kCloning
 void __cdecl NiPSysBoxEmitter_ProcessClone()
 {
     FUN_00c31c90();
@@ -245,6 +263,8 @@ extern void __cdecl FUN_00c31b40();
 
 // @fnv 0x00c20160
 // src: XBOX_PDB 0x00c20160
+// pdb: NiPSysBoxEmitter::LinkObject | NiPSysBoxEmitter.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysBoxEmitter_LinkObject()
 {
     FUN_00c31b40();
@@ -256,23 +276,25 @@ extern double DAT_01029790;
 
 struct BoxEmitterInit : NiPSysBoxEmitter
 {
-    void NiPSysBoxEmitter_ComputeVolumeInitialPositionAndVelocity(const NiTransform& kTransform, NiPoint3& kPos, NiPoint3& kWorldPosition);
+    void NiPSysBoxEmitter_ComputeVolumeInitialPositionAndVelocity(const NiTransform& kEmitterToPSys, NiPoint3& kPosition, NiPoint3& kVelocity);
 };
 
 // Generates a random point from the box dimensions, transforms it, and rotates kWorldPosition.
 // @fnv 0x00c201d0
 // src: XBOX_PDB 0x00c201d0
-void BoxEmitterInit::NiPSysBoxEmitter_ComputeVolumeInitialPositionAndVelocity(const NiTransform& kTransform, NiPoint3& kPos, NiPoint3& kWorldPosition)
+// pdb: NiPSysBoxEmitter::ComputeVolumeInitialPositionAndVelocity | NiPSysBoxEmitter.obj | retail, upstream name already matches, high
+// pdb params: kEmitterToPSys, kPosition, kVelocity
+void BoxEmitterInit::NiPSysBoxEmitter_ComputeVolumeInitialPositionAndVelocity(const NiTransform& kEmitterToPSys, NiPoint3& kPosition, NiPoint3& kVelocity)
 {
-    const NiMatrix3& kRot = kTransform.m_Rotate;
+    const NiMatrix3& kRot = kEmitterToPSys.m_Rotate;
     float fX = rand() / DAT_01029790;
     float fY = rand() / DAT_01029790;
     float fZ = rand() / DAT_01029790;
-    kPos = NiPoint3((fZ - 0.5f) * width, (fY - 0.5f) * height, (fX - 0.5f) * depth);
-    kPos = kTransform.ComputeValue_00524c40(kPos);
-    kWorldPosition = NiPoint3(reinterpret_cast<const NiPoint3*>(&kRot.m_pEntry[0][0])->Dot(kWorldPosition),
-                              kRot.m_pEntry[1][0] * kWorldPosition.x + kRot.m_pEntry[1][1] * kWorldPosition.y +
-                                  kRot.m_pEntry[1][2] * kWorldPosition.z,
-                              reinterpret_cast<const NiPoint3*>(&kRot.m_pEntry[2][0])->Dot(kWorldPosition));
+    kPosition = NiPoint3((fZ - 0.5f) * m_fEmitterWidth, (fY - 0.5f) * m_fEmitterHeight, (fX - 0.5f) * m_fEmitterDepth);
+    kPosition = kEmitterToPSys.ComputeValue_00524c40(kPosition);
+    kVelocity = NiPoint3(reinterpret_cast<const NiPoint3*>(&kRot.m_pEntry[0][0])->Dot(kVelocity),
+                              kRot.m_pEntry[1][0] * kVelocity.x + kRot.m_pEntry[1][1] * kVelocity.y +
+                                  kRot.m_pEntry[1][2] * kVelocity.z,
+                              reinterpret_cast<const NiPoint3*>(&kRot.m_pEntry[2][0])->Dot(kVelocity));
 }
 }  // namespace fnv_00c201d0

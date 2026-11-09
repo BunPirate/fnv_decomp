@@ -75,7 +75,7 @@ bool GetLimbConditionEffectInitialized();
 extern PlayerCharacter* g_thePlayer;
 void DebugLog(const char*, ...);
 void ApplyPerkModifiers(int, Actor*, ...);
-int GetStatusResult();
+int StatsMenu_GetTargetedBodyPart();
 bool MagicSystem_CheckBoundItemEffects(EffectItem*, EffectItem*);
 // Getter bodies are folded in the original executable. These expressions use
 // their existing canonical bindings while retaining each receiver's layout.
@@ -233,6 +233,10 @@ TESBoundObject* __fastcall GetEffectSource(ActiveEffect*);
 
 // Returns the owning Actor when IsActor() is true, otherwise NULL.
 // @fnv 0x00822b40
+// pdb: MagicTarget::QueueSpellDispel | MagicTarget.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MagicTarget::GetTargetAsActor
+// pdb params: apSpell, apCaster, apActiveEffect
+// pdb locals: pnewItem
 Actor* MagicTarget::GetOwnerActor() const
 {
     return const_cast<MagicTarget*>(this)->IsActor() ? (this ? (Actor*)((char*)this - 0x94) : NULL) : NULL;
@@ -240,6 +244,9 @@ Actor* MagicTarget::GetOwnerActor() const
 
 // Validates a spell effect against the target, applies perk modifiers, dispels or clones the effect, and inserts the new ActiveEffect into the active effect list.
 // @fnv 0x00823210
+// pdb: MagicTarget::CheckAddEffect | MagicTarget.obj | retail, string-set bridge, high
+// pdb params: apCaster, apSpell, apActiveEffect
+// pdb locals: bdoSpellDispel, bextendDuration, bresetElapsedTime, bignoreResistance, pusageEffect, pingredient, ptargetRefr, fresistance, pactiveEffect, plist, bfound, pitem, pactor, fduration, ppotion, pvacEffect, plimbEffect, pactiveEffects, peffect, penchant, psource
 bool MagicTarget::AddActiveEffect(MagicCaster* caster, MagicItem* spell, ActiveEffect* effect)
 {
     // These short local names preserve MSVC9's name-dependent stack ordering.
@@ -271,7 +278,7 @@ bool MagicTarget::AddActiveEffect(MagicCaster* caster, MagicItem* spell, ActiveE
                      ((TESSoundFile*)spell)->GetSoundFile(), EFFECT_ITEM(effect)->GetEffectName().String());
         return false;
     }
-    EffectItem* usageMonitor = ((EffectItemList*)((char*)spell + sizeof(TESFullName)))->GetScriptEffect();
+    EffectItem* usageMonitor = ((EffectItemList*)((char*)spell + sizeof(TESFullName)))->GetUsageMonitorEffect();
     if (EFFECT_ITEM(effect) == usageMonitor)
     {
         if (!ContainsSpell(spell, true))
@@ -323,13 +330,13 @@ bool MagicTarget::AddActiveEffect(MagicCaster* caster, MagicItem* spell, ActiveE
     {
         ValueAndConditionsEffect* parts = dynamic_cast<ValueAndConditionsEffect*>(effect);
         if (parts)
-            ((BGSImpactData*)parts)->SetSound1((TESSound*)GetStatusResult());
+            ((BGSImpactData*)parts)->SetSound1((TESSound*)StatsMenu_GetTargetedBodyPart());
     }
     else if (effect->GetEffectSetting()->GetArchetype() == 35)
     {
         LimbConditionEffect* limb = dynamic_cast<LimbConditionEffect*>(effect);
         if (limb)
-            ((BGSImpactData*)limb)->SetSound1((TESSound*)GetStatusResult());
+            ((BGSImpactData*)limb)->SetSound1((TESSound*)StatsMenu_GetTargetedBodyPart());
     }
     bool e = true;   // dispel an existing matching effect
     bool c = false;  // stack its duration
@@ -382,12 +389,12 @@ bool MagicTarget::AddActiveEffect(MagicCaster* caster, MagicItem* spell, ActiveE
         Dispel(spell, caster, effect);
     else if (c)
     {
-        if (CanAcceptEffect(spell, caster, effect))
+        if (StackEffectDuration(spell, caster, effect))
             return true;
     }
     else if (d)
     {
-        if (CanAddEffect(spell, caster, effect))
+        if (ResetEffectElapsedTime(spell, caster, effect))
             return true;
     }
     ActiveEffect* h = effect->Copy();  // new effect owned by the target list
@@ -399,7 +406,7 @@ bool MagicTarget::AddActiveEffect(MagicCaster* caster, MagicItem* spell, ActiveE
         h->SetEffectiveness(a);
     if (GetActiveEffectList())
     {
-        GetActiveEffectList()->Insert(h, CompareActiveEffects);
+        GetActiveEffectList()->Insert(h, ActiveEffectListCompareFn);
         OnEffectStarted(h);
         h->Finalize();
         if (GetLimbConditionEffectInitialized())
@@ -418,7 +425,10 @@ bool MagicTarget::AddActiveEffect(MagicCaster* caster, MagicItem* spell, ActiveE
 
 // Iterates the active effect list, updating each effect and removing finished ones, with wear-off messages for the player.
 // @fnv 0x00823c40
-void MagicTarget::UpdateActiveEffects(float delta)
+// pdb: MagicTarget::UpdateTarget | MagicTarget.obj | retail, string-set bridge, high
+// pdb params: afSecondsElapsed
+// pdb locals: plist, plistHead, ptarget, pactor, pnext, peffect, bdead, bshouldUpdate, pspell, strMessage, bshowMessage, ppotion, pwearOffMod
+void MagicTarget::UpdateActiveEffects(float afSecondsElapsed)
 {
     BSSimpleList<ActiveEffect*>* list = GetActiveEffectList();
     BSSimpleList<ActiveEffect*>* node = list;
@@ -431,7 +441,7 @@ void MagicTarget::UpdateActiveEffects(float delta)
         if (!((PlayerQuestData*)actor)->GetLogDate())
             return;
     }
-    m_bSecondFlag = true;
+    bUpdating = true;
     while (node && !((BSSimpleList<PerkButtonEntry*>*)node)->IsEmpty())
     {
         BSSimpleList<ActiveEffect*>* nextNode =
@@ -447,7 +457,7 @@ void MagicTarget::UpdateActiveEffects(float delta)
                 bShouldUpdate = pEffect->HasConditions() || ((LowProcess*)pEffect)->LowProcess::GetActiveCombatTarget();
             }
             if (bShouldUpdate)
-                pEffect->UpdateEffect(delta);
+                pEffect->UpdateEffect(afSecondsElapsed);
             if (!done && pEffect->FUN_00705cf0())
             {
                 MagicItem* spell = EFFECT_SPELL(pEffect);
@@ -481,7 +491,7 @@ void MagicTarget::UpdateActiveEffects(float delta)
                             TESImageSpaceModifier* modifier = dynamic_cast<TESImageSpaceModifier*>(
                                 BGSDefaultObjectManager::GetDefaultObjectByIndex(20));
                             if (modifier)
-                                ImageSpaceModifierInstanceForm::ApplyImageSpaceModifier(modifier, 1.0f, 0);
+                                ImageSpaceModifierInstanceForm::ImageSpaceModifierInstanceForm_TriggerIfNotActive(modifier, 1.0f, 0);
                         }
                     }
                 }
@@ -495,12 +505,16 @@ void MagicTarget::UpdateActiveEffects(float delta)
         }
         node = nextNode;
     }
-    m_bSecondFlag = false;
-    ClearActiveEffects();
+    bUpdating = false;
+    DispelQueuedSpells();
 }
 
 // @fnv 0x00825270
-int MagicTarget::CompareActiveEffects(ActiveEffect* first, ActiveEffect* second)
+// src: XBOX_RETAIL_PDB 0x00825270
+// pdb: MagicTarget::ActiveEffectListCompareFn | MagicTarget.obj | retail, string-set bridge, high
+// pdb params: apCompare1, apCompare2
+// pdb locals: ucompare1, pitem, ucompare2
+int MagicTarget::ActiveEffectListCompareFn(ActiveEffect* first, ActiveEffect* second)
 {
     char buffer1[256];
     char buffer2[256];
@@ -516,6 +530,9 @@ int MagicTarget::CompareActiveEffects(ActiveEffect* first, ActiveEffect* second)
 }
 
 // @fnv 0x00824400
+// pdb: MagicTarget::Dispel | MagicTarget.obj | retail, call graph (shared callers), high
+// pdb params: apSpell, apCaster, apActiveEffect
+// pdb locals: plist, pnext, peffect
 void MagicTarget::Dispel(MagicItem* spell, MagicCaster* caster, ActiveEffect* effect)
 {
     BSSimpleList<ActiveEffect*>* node = GetActiveEffectList();
@@ -532,7 +549,7 @@ void MagicTarget::Dispel(MagicItem* spell, MagicCaster* caster, ActiveEffect* ef
             {
                 if (!EFFECT_ITEM(current)->Compare(EFFECT_ITEM(effect)))
                 {
-                    if (m_bSecondFlag)
+                    if (bUpdating)
                         AddWeatherEntry(spell, caster, current);
                     else
                         current->Dispel(true);
@@ -541,7 +558,7 @@ void MagicTarget::Dispel(MagicItem* spell, MagicCaster* caster, ActiveEffect* ef
             }
             else
             {
-                if (m_bSecondFlag)
+                if (bUpdating)
                     AddWeatherEntry(spell, caster, current);
                 else
                     current->Dispel(true);
@@ -552,38 +569,44 @@ void MagicTarget::Dispel(MagicItem* spell, MagicCaster* caster, ActiveEffect* ef
 }
 
 // @fnv 0x008230f0
-bool MagicTarget::AddEffectToTarget(MagicCaster* caster, MagicItem* spell, ActiveEffect* effect, bool immediate)
+// pdb: MagicTarget::AddTarget | MagicTarget.obj | retail, vtable slot, high
+// pdb params: apCaster, apSpell, apActiveEffect, abAreaTarget
+// pdb locals: bignoreResistance
+bool MagicTarget::AddEffectToTarget(MagicCaster* apCaster, MagicItem* apSpell, ActiveEffect* effect, bool abAreaTarget)
 {
     if (((TESForm*)EFFECT_ITEM(effect))->GetFormID())
     {
-        bool permanent = EFFECT_ITEM(effect)->IsScriptEffect_008231f0() ? spell->IgnoreResistance() : false;
-        if (!permanent && !spell->GetNoAbsorbOrReflect())
+        bool permanent = EFFECT_ITEM(effect)->IsScriptEffect_008231f0() ? apSpell->IgnoreResistance() : false;
+        if (!permanent && !apSpell->GetNoAbsorbOrReflect())
         {
-            if (ExecuteEffect(caster, spell, effect))
+            if (ExecuteEffect(apCaster, apSpell, effect))
             {
-                OnEffectAdded(caster, effect);
+                OnEffectAdded(apCaster, effect);
                 return false;
             }
-            if (IsImmuneToEffect(caster, spell, effect, false))
+            if (IsImmuneToEffect(apCaster, apSpell, effect, false))
             {
-                OnEffectRemoved(caster, effect);
+                OnEffectRemoved(apCaster, effect);
                 return false;
             }
         }
     }
-    return AddActiveEffect(caster, spell, effect);
+    return AddActiveEffect(apCaster, apSpell, effect);
 }
 
 // Walks the active effect list and returns true if any ActiveEffect's EffectSetting matches setting.
 // @fnv 0x00822d80
-bool MagicTarget::HasEffect(const EffectSetting* setting)
+// pdb: MagicTarget::HasEffect | MagicTarget.obj | retail, upstream name already matches, high
+// pdb params: apSetting
+// pdb locals: plist, bfound, pitem
+bool MagicTarget::HasEffect(const EffectSetting* apSetting)
 {
     BSSimpleList<ActiveEffect*>* node = GetActiveEffectList();
     bool found = false;
     while (node && !((BSSimpleList<PerkButtonEntry*>*)node)->IsEmpty() && !found)
     {
         ActiveEffect* effect = (ActiveEffect*)((BSSimpleList<BGSPerkEntry*>*)node)->GetItem();
-        if (effect && effect->GetEffectSetting() == setting)
+        if (effect && effect->GetEffectSetting() == apSetting)
             found = true;
         node = (BSSimpleList<ActiveEffect*>*)((BSSimpleList<BGSPerkEntry*>*)node)->GetNext();
     }
@@ -592,9 +615,12 @@ bool MagicTarget::HasEffect(const EffectSetting* setting)
 
 // Looks up the TESForm for id and, if it is a reference, returns that reference's magic target; otherwise returns null.
 // @fnv 0x00825550
-MagicTarget* MagicTarget::GetMagicTargetByID(unsigned int id)
+// pdb: MagicTarget::GetMagicTargetByNumericID | MagicTarget.obj | retail, call graph, high
+// pdb params: aiFormID
+// pdb locals: pform, pref
+MagicTarget* MagicTarget::GetMagicTargetByID(unsigned int aiFormID)
 {
-    TESForm* form = TESForm::GetFormByID(id);
+    TESForm* form = TESForm::GetFormByID(aiFormID);
     if (form && ((MagicTargetFormDispatch*)form)->GetIsReference())
     {
         TESObjectREFR* reference = (TESObjectREFR*)form;
@@ -606,6 +632,7 @@ MagicTarget* MagicTarget::GetMagicTargetByID(unsigned int id)
 // The coverage entry labels this MagicTarget, but the PC vtable and both
 // NonActorMagicCaster constructors identify the receiving class as MagicCaster.
 // @fnv 0x00815300
+// pdb: MagicCaster::MagicCaster | MagicCaster.obj | debug, upstream name already matches, high
 MagicCaster::MagicCaster()
 {
     SetSelectedMagicItem((MagicItem*)0);
@@ -623,18 +650,21 @@ SpellItem* MagicSystem::GetPipBoyLightSpell()
 
 // @fnv 0x00822f70
 // src: COMMUNITY 0x00822f70
-bool MagicTarget::HasRecoverableActorValueEffect(ActorValue::Index aeActorValue)
+// pdb: MagicTarget::HasRecoverableActorValueEffect | MagicTarget.obj | retail, upstream name already matches, high
+// pdb params: aeWhich
+// pdb locals: plist, bresult, pactor, pitem, babilityCheck
+bool MagicTarget::HasRecoverableActorValueEffect(ActorValue::Index aeWhich)
 {
     // Short local names retain the original MSVC9 stack layout.
     bool b = false;  // found a hostile effect
     Actor* a = IsActor() ? (this ? (Actor*)((char*)this - 0x94) : NULL) : NULL;
-    if (!a || aeActorValue == -1 || aeActorValue == 77)
+    if (!a || aeWhich == -1 || aeWhich == 77)
         return false;
     BSSimpleList<ActiveEffect*>* node = GetActiveEffectList();
     while (node && !b && !((BSSimpleList<PerkButtonEntry*>*)node)->IsEmpty())
     {
         ActiveEffect* effect = (ActiveEffect*)((BSSimpleList<BGSPerkEntry*>*)node)->GetItem();
-        if (effect && EFFECT_ITEM(effect)->GetAffectedActorValue() == aeActorValue)
+        if (effect && EFFECT_ITEM(effect)->GetAffectedActorValue() == aeWhich)
         {
             bool permanent = (int)((LocationDescriptor*)effect)->SetLocRef() == 4 && !effect->HasConditions() ? 1 : 0;
             if (a->IsPlayerRef() && permanent &&
@@ -650,15 +680,18 @@ bool MagicTarget::HasRecoverableActorValueEffect(ActorValue::Index aeActorValue)
     return b;
 }
 // @fnv 0x00822b90
-bool MagicTarget::HasSpell(MagicItem* spell, bool includeInactive)
+// pdb: MagicTarget::IsSpellTarget | MagicTarget.obj | retail, call graph, high
+// pdb params: apSpell, abIncludeInactiveSpells
+// pdb locals: plist, bfound, pitem
+bool MagicTarget::HasSpell(MagicItem* apSpell, bool abIncludeInactiveSpells)
 {
     BSSimpleList<ActiveEffect*>* node = GetActiveEffectList();
     bool found = false;
     while (node && !found)
     {
         ActiveEffect* effect = (ActiveEffect*)((BSSimpleList<BGSPerkEntry*>*)node)->GetItem();
-        if (effect && EFFECT_SPELL(effect) == spell && (includeInactive || effect->ActiveEffect_IsActive()) &&
-            !EFFECT_ITEM(effect)->IsScriptBasedEffect())
+        if (effect && EFFECT_SPELL(effect) == apSpell && (abIncludeInactiveSpells || effect->ActiveEffect_IsActive()) &&
+            !EFFECT_ITEM(effect)->IsUsageMonitorEffect())
             found = true;
         node = (BSSimpleList<ActiveEffect*>*)((BSSimpleList<BGSPerkEntry*>*)node)->GetNext();
     }
@@ -666,6 +699,9 @@ bool MagicTarget::HasSpell(MagicItem* spell, bool includeInactive)
 }
 // Walks the active effect list and dispels each ActiveEffect with true, advancing to the next node.
 // @fnv 0x00824970
+// pdb: MagicTarget::Dispel | MagicTarget.obj | retail, call graph (shared callers), high
+// pdb params: apSpell, apCaster, apActiveEffect
+// pdb locals: plist, pnext, peffect
 void MagicTarget::DispelAllEffects()
 {
     BSSimpleList<ActiveEffect*>* node = GetActiveEffectList();
@@ -679,6 +715,7 @@ void MagicTarget::DispelAllEffects()
 }
 // @fnv 0x008231f0
 // src: XBOX_PDB 0x008231f0
+// pdb: EffectItem::IsScriptEffect | MagicTarget.obj | debug, call graph (shared callers), high
 bool EffectItem::IsScriptEffect_008231f0()
 {
     return m_pEffectSetting->FUN_007df1b0();
@@ -714,6 +751,7 @@ struct FUN_00823c20_shell : FlaggedData
 
 // @fnv 0x00823c20
 // src: COMMUNITY 0x00823c20
+// pdb: EnchantmentItem::IsExtendDuration | MagicTarget.obj | debug, object-file gap fill, medium
 int FUN_00823c20_shell::ActiveEffect_IsExtendDuration()
 {
     return ContainsAnyFlag(2);
@@ -731,18 +769,22 @@ void ActiveEffect::SetFlag(bool abSet)
 // Keep those receiver declarations local until the shared interface supports them.
 struct FUN_00822cf0_shell : public MagicTarget
 {
-    bool HasActiveEffectOfArchetype(int archetype, bool include);
+    bool MagicTarget_IsEffectTarget(int aeID, bool abIncludeInactiveSpells);
 };
 
 // @fnv 0x00822cf0
-bool FUN_00822cf0_shell::HasActiveEffectOfArchetype(int archetype, bool include)
+// src: XBOX_RETAIL_PDB 0x00822cf0
+// pdb: MagicTarget::IsEffectTarget | MagicTarget.obj | retail, object-file gap fill, high
+// pdb params: aeID, abIncludeInactiveSpells
+// pdb locals: plist, bfound, pitem
+bool FUN_00822cf0_shell::MagicTarget_IsEffectTarget(int aeID, bool abIncludeInactiveSpells)
 {
     BSSimpleList<ActiveEffect*>* list = GetActiveEffectList();
     bool found = false;
     while (list && !found)
     {
         ActiveEffect* effect = list->GetItem();
-        if (effect && effect->GetEffectSetting()->GetArchetype() == archetype && (include || effect->ActiveEffect_IsActive()))
+        if (effect && effect->GetEffectSetting()->GetArchetype() == aeID && (abIncludeInactiveSpells || effect->ActiveEffect_IsActive()))
             found = true;
         list = list->GetNext();
     }
@@ -765,9 +807,12 @@ struct List_009e03e0
 
 // Iterates the spell dispel list, dispels each entry's spell via its caster and active effect, deallocates the entry, then clears the list.
 // @fnv 0x00824370
-void MagicTarget::ClearActiveEffects()
+// src: XBOX_RETAIL_PDB 0x00824370
+// pdb: MagicTarget::DispelQueuedSpells | MagicTarget.obj | retail, call graph, high
+// pdb locals: plist, pdata
+void MagicTarget::DispelQueuedSpells()
 {
-    BSSimpleList<MagicEffectContext*>* list = &m_kActiveEffectList;
+    BSSimpleList<MagicEffectContext*>* list = &PostUpdateDispelList;
     while (list && !list->IsEmpty())
     {
         MagicEffectContext* data = list->GetItem();
@@ -779,7 +824,7 @@ void MagicTarget::ClearActiveEffects()
         }
         list = list->GetNext();
     }
-    ((List_009e03e0*)&m_kActiveEffectList)->RemoveAll();
+    ((List_009e03e0*)&PostUpdateDispelList)->RemoveAll();
 }
 
 // Exe 0x00824570: local storage view; GetFlags binds the folded DWORD-at-+8 accessor 0x0044ddc0.
@@ -795,6 +840,9 @@ struct FUN_00824570_shell : MagicTarget
 
 // Walks the active effect list and dispels each effect whose flags and form ID match, optionally restricted to a given caster.
 // @fnv 0x00824570
+// pdb: MagicTarget::Dispel | MagicTarget.obj | debug, object-file run extension, low
+// pdb params: apEffect, apSpell, apCaster
+// pdb locals: plist, pnext, peffect
 void FUN_00824570_shell::DispelMatchingActiveEffects(unsigned int formID, unsigned int flags, TESResponse* caster)
 {
     BSSimpleList<ActiveEffect*>* effect = GetActiveEffectList();
@@ -812,14 +860,17 @@ void FUN_00824570_shell::DispelMatchingActiveEffects(unsigned int formID, unsign
 
 struct FUN_008248e0_shell : public MagicTarget
 {
-    void MagicTarget_Dispel_008248e0(MagicItem* apItem, bool abImmediate);
+    void MagicTarget_Dispel_008248e0(MagicItem* apEnchantmentSource, bool abNow);
 };
 
 // @fnv 0x008248e0
 // src: XBOX_PDB 0x008248e0
-void FUN_008248e0_shell::MagicTarget_Dispel_008248e0(MagicItem* apItem, bool abImmediate)
+// pdb: MagicTarget::Dispel | MagicTarget.obj | retail, call graph, high
+// pdb params: apSpell, apCaster, apActiveEffect
+// pdb locals: plist, pnext, peffect
+void FUN_008248e0_shell::MagicTarget_Dispel_008248e0(MagicItem* apEnchantmentSource, bool abNow)
 {
-    if (!apItem)
+    if (!apEnchantmentSource)
         return;
 
     BSSimpleList<ActiveEffect*>* apList = GetActiveEffectList();
@@ -830,8 +881,8 @@ void FUN_008248e0_shell::MagicTarget_Dispel_008248e0(MagicItem* apItem, bool abI
         if (effect)
         {
             if (!effect->FUN_00705cf0() &&
-                reinterpret_cast<TESTopicInfo*>(effect)->GetSpeaker() == reinterpret_cast<TESActorBase*>(apItem))
-                effect->Dispel(abImmediate);
+                reinterpret_cast<TESTopicInfo*>(effect)->GetSpeaker() == reinterpret_cast<TESActorBase*>(apEnchantmentSource))
+                effect->Dispel(abNow);
         }
     }
 }
@@ -842,6 +893,8 @@ struct EvalShell : MagicTarget
 };
 // @fnv 0x008255a0
 // src: XBOX_PDB 0x008255a0
+// pdb: MagicTarget::EvaluateSpellConditions | MagicTarget.obj | retail, upstream name already matches, high
+// pdb locals: plist, pitem
 void EvalShell::MagicTarget_EvaluateSpellConditions()
 {
     BSSimpleList<ActiveEffect*>* current = GetActiveEffectList();
@@ -869,10 +922,13 @@ struct FUN_00822eb0_shell : MagicTarget
 };
 // @fnv 0x00822eb0
 // src: XBOX_PDB 0x00822eb0
+// pdb: MagicTarget::GetUsageMonitorEffectMagnitude | MagicTarget.obj | retail, upstream name already matches, high
+// pdb params: apSpell
+// pdb locals: fresult, pmonitorEffect, plist, pitem
 float FUN_00822eb0_shell::MagicTarget_GetUsageMonitorEffectMagnitude(MagicItem* apSpell)
 {
     float fresult = 0.0f;
-    EffectItem* pmonitorEffect = apSpell ? ((EffectItemList*)((char*)apSpell + 0xc))->GetScriptEffect() : 0;
+    EffectItem* pmonitorEffect = apSpell ? ((EffectItemList*)((char*)apSpell + 0xc))->GetUsageMonitorEffect() : 0;
     if (pmonitorEffect && HasSpell(apSpell, true))
     {
         EffectListNode* pEffectNode = (EffectListNode*)GetActiveEffectList();
@@ -900,6 +956,8 @@ struct FUN_00822e00_shell : public MagicTarget
 
 // @fnv 0x00822e00
 // src: COMMUNITY 0x00822e00
+// pdb: MagicTarget::HasDamageHealthEffect | MagicTarget.obj | retail, upstream name already matches, high
+// pdb locals: plist, bfound, pitem
 bool FUN_00822e00_shell::MagicTarget_HasDamageHealthEffect()
 {
     BSSimpleList<ActiveEffect*>* list = GetActiveEffectList();
@@ -926,9 +984,12 @@ bool FUN_00822e00_shell::MagicTarget_HasDamageHealthEffect()
 // Returns false if pkForm is deleted, otherwise counts enabled, non-deleted forms of iType in the list excluding pkForm and returns whether that count is zero.
 // @fnv 0x00822c30
 // src: COMMUNITY 0x00822c30
-bool MagicTarget::IsLastEffect(MagicItem* iType, ActiveEffect* pkForm)
+// pdb: MagicTarget::IsLastEffect | MagicTarget.obj | retail, upstream name already matches, high
+// pdb params: apSpell, apLastEffect
+// pdb locals: plist, bfound, ieffectCount, pitem
+bool MagicTarget::IsLastEffect(MagicItem* apSpell, ActiveEffect* apLastEffect)
 {
-    if (pkForm->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->IsScriptBasedEffect())
+    if (apLastEffect->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->IsUsageMonitorEffect())
         return false;
 
     BSSimpleList<ActiveEffect*>* pkNode = GetActiveEffectList();
@@ -937,8 +998,8 @@ bool MagicTarget::IsLastEffect(MagicItem* iType, ActiveEffect* pkForm)
     while (pkNode)
     {
         ActiveEffect* pkItem6 = pkNode->GetItem();
-        if (pkItem6 && pkItem6->FUN_0044ddc0() == iType && pkItem6->ActiveEffect_IsActive() && !pkItem6->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->IsScriptBasedEffect() &&
-            pkItem6 != pkForm)
+        if (pkItem6 && pkItem6->FUN_0044ddc0() == apSpell && pkItem6->ActiveEffect_IsActive() && !pkItem6->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->IsUsageMonitorEffect() &&
+            pkItem6 != apLastEffect)
             iCount6++;
         pkNode = pkNode->GetNext();
     }
@@ -1080,11 +1141,15 @@ class RefS
 };
 struct MagicTargetUpd : public MagicTarget
 {
-    void UpdateEffectsByFlags(unsigned int auiFlags);
+    void MagicTarget_StartSpell(unsigned int apSpell);
 };
 
 // @fnv 0x00824110
-void MagicTargetUpd::UpdateEffectsByFlags(unsigned int auiFlags)
+// src: XBOX_RETAIL_PDB 0x00824110
+// pdb: MagicTarget::StartSpell | MagicTarget.obj | retail, call graph (shared callers), high
+// pdb params: apSpell
+// pdb locals: plist, pactor, pnext, peffect
+void MagicTargetUpd::MagicTarget_StartSpell(unsigned int apSpell)
 {
     BSSimpleList<ActiveEffect*>* pIter = GetActiveEffectList();
     if (IsActor())
@@ -1099,7 +1164,7 @@ void MagicTargetUpd::UpdateEffectsByFlags(unsigned int auiFlags)
     {
         BSSimpleList<ActiveEffect*>* pNextEntry = pIter->GetNext();
         ActiveEffect* pEffect = pIter->GetItem();
-        if (pEffect && (unsigned int)pEffect->FUN_0044ddc0() == auiFlags)
+        if (pEffect && (unsigned int)pEffect->FUN_0044ddc0() == apSpell)
         {
             if (!pEffect->GetByteAtOffset17())
             {
@@ -1126,7 +1191,7 @@ class B824800MagicTarget
     virtual void VFunc04();
     virtual EffectNode_magictarget* GetActiveEffectList();
 
-    void RemoveEffect(ActiveEffect* pkEffect, bool bFlag);
+    void RemoveEffect(ActiveEffect* apEffect, bool abImmediate);
     void RemoveEffectsByArchetype(int m_eEffectTypeItem, int iProcessLevel);
 };
 
@@ -1156,13 +1221,16 @@ void B824800MagicTarget::RemoveEffectsByArchetype(int aiArchetype, int iProcessL
 
 struct MagicTargetDispel : MagicTarget
 {
-    void MagicTarget_DispelAllSpells(bool immediate);
+    void MagicTarget_DispelAllSpells(bool abnow);
 };
 
 // Iterates the active effect list and dispels each effect whose spell type is 0, 2, 3, 7 or 8, or is an enchantment of type 0.
 // @fnv 0x008249d0
 // src: XBOX_PDB 0x008249d0
-void MagicTargetDispel::MagicTarget_DispelAllSpells(bool immediate)
+// pdb: MagicTarget::DispelAllSpells | MagicTarget.obj | retail, upstream name already matches, high
+// pdb params: abnow
+// pdb locals: plist, peffect, pspell, pench
+void MagicTargetDispel::MagicTarget_DispelAllSpells(bool abnow)
 {
     BSSimpleList<ActiveEffect*>* node = GetActiveEffectList();
     while (node && !node->IsEmpty())
@@ -1175,13 +1243,13 @@ void MagicTargetDispel::MagicTarget_DispelAllSpells(bool immediate)
             if (spell->GetSpellType() == 0 || spell->GetSpellType() == 2 || spell->GetSpellType() == 3 || spell->GetSpellType() == 7 ||
                 spell->GetSpellType() == 8)
             {
-                effect->Dispel(immediate);
+                effect->Dispel(abnow);
             }
             else
             {
                 EnchantmentItem* enchantment = dynamic_cast<EnchantmentItem*>(spell);
                 if (enchantment && enchantment->GetEnchantmentType() == 0)
-                    effect->Dispel(immediate);
+                    effect->Dispel(abnow);
             }
         }
     }
@@ -1189,7 +1257,11 @@ void MagicTargetDispel::MagicTarget_DispelAllSpells(bool immediate)
 
 
 // @fnv 0x00824af0
-bool MagicTarget::CanAddEffect(MagicItem* auiFormID, MagicCaster* apCaster, ActiveEffect* apEffect)
+// src: XBOX_RETAIL_PDB 0x00824af0
+// pdb: MagicTarget::ResetEffectElapsedTime | MagicTarget.obj | retail, object-file gap fill, high
+// pdb params: apSpell, apCaster, apActiveEffect
+// pdb locals: plist, bresult, pnext, peffect
+bool MagicTarget::ResetEffectElapsedTime(MagicItem* apSpell, MagicCaster* apCaster, ActiveEffect* apEffect)
 {
     bool bFound4 = false;
     BSSimpleList<ActiveEffect*>* pNode2 = GetActiveEffectList();
@@ -1197,7 +1269,7 @@ bool MagicTarget::CanAddEffect(MagicItem* auiFormID, MagicCaster* apCaster, Acti
     {
         ActiveEffect* pEff = pNode2->GetItem();
         BSSimpleList<ActiveEffect*>* pNext3 = pNode2->GetNext();
-        if (pEff && !pEff->FUN_00705cf0() && pEff->FUN_0044ddc0() == auiFormID &&
+        if (pEff && !pEff->FUN_00705cf0() && pEff->FUN_0044ddc0() == apSpell &&
             (apCaster ? GetEffectCaster(pEff) == apCaster : true) &&
             (apEffect ? !pEff->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->Compare(apEffect->GetHavokWorldObjectCountInSceneGraph_0084e3a0()) : true))
         {
@@ -1229,7 +1301,7 @@ class ListObj
   public:
     int GetKind();
     void SetOwner(void* owner);
-    void SetValue(float f, int v);
+    void SetValue(float afTimeDelta, int abForceUpdate);
 };
 
 class FUN_00824df0_cls
@@ -1239,22 +1311,25 @@ class FUN_00824df0_cls
     virtual void vfn_4();
     virtual ListNodeCls* GetFirst();
 
-    void MagicTarget_SetDisplacementSpell(void* a1, int a2);
+    void MagicTarget_SetDisplacementSpell(void* apDisplacementSpell, int apDisplacedSpell);
 };
 
 // Walks the list nodes and, for each item whose object has kind a2, sets its owner to a1 and its value to 0.0f with flag 1.
 // @fnv 0x00824df0
 // src: COMMUNITY 0x00824df0
-void FUN_00824df0_cls::MagicTarget_SetDisplacementSpell(void* pOwner, int iKind)
+// pdb: MagicTarget::SetDisplacementSpell | MagicTarget.obj | retail, upstream name already matches, high
+// pdb params: apDisplacementSpell, apDisplacedSpell
+// pdb locals: plist, peffect
+void FUN_00824df0_cls::MagicTarget_SetDisplacementSpell(void* apDisplacementSpell, int apDisplacedSpell)
 {
     ListNodeCls* node = GetFirst();
     while (node != 0 && !node->IsDone())
     {
         ListObj* obj = node->GetItem()->m_pEntryObject;
         node = node->Next();
-        if (obj != 0 && obj->GetKind() == iKind)
+        if (obj != 0 && obj->GetKind() == apDisplacedSpell)
         {
-            obj->SetOwner(pOwner);
+            obj->SetOwner(apDisplacementSpell);
             obj->SetValue(0.0f, 1);
         }
     }
@@ -1281,26 +1356,28 @@ class FUN_008251c0_cls
     virtual void vfn_10();
     virtual void vfn_14();
     virtual void vfn_18(ActiveEffect* a);
-    void MagicTarget_RemoveEffect(ActiveEffect* a, bool b);
+    void MagicTarget_RemoveEffect(ActiveEffect* apEffect, bool abImmediate);
 };
 
 // @fnv 0x008251c0
 // src: COMMUNITY 0x008251c0
-void FUN_008251c0_cls::MagicTarget_RemoveEffect(ActiveEffect* pEffect, bool b)
+// pdb: MagicTarget::RemoveEffect | MagicTarget.obj | retail, upstream name already matches, high
+// pdb params: apEffect, abImmediate
+void FUN_008251c0_cls::MagicTarget_RemoveEffect(ActiveEffect* apEffect, bool abImmediate)
 {
-    if (!b)
+    if (!abImmediate)
     {
-        pEffect->SetFlag(true);
+        apEffect->SetFlag(true);
         return;
     }
-    RemoveMatchingItem(vfn_8(&pEffect));
-    vfn_18(pEffect);
+    RemoveMatchingItem(vfn_8(&apEffect));
+    vfn_18(apEffect);
     if (*Setting_Int(&DAT_011c3ea4) > 1 && AILinearTaskThreadManager_QRunningThreads())
     {
-        QueueTaskWithValue(FUN_004537b0(pEffect));
+        QueueTaskWithValue(FUN_004537b0(apEffect));
         return;
     }
-    ActiveEffect* t = pEffect;
+    ActiveEffect* t = apEffect;
     ActiveEffect* p = t;
     (void)(p ? ((FUN_008251c0_obj*)p)->Release(true) : 0);
 }
@@ -1313,7 +1390,10 @@ struct FUN_0095e5f0_node
 };
 // Walk the race spell list and dispatch each entry through the player's spell-removal slot.
 // @fnv 0x0095e5f0
-void __fastcall RefreshPlayerRaceSpells(PlayerCharacter* player)
+// src: XBOX_RETAIL_PDB 0x0095e5f0
+// pdb: PlayerCharacter::RemoveRaceSpells | PlayerCharacter.obj | retail, call graph, high
+// pdb locals: plist
+void __fastcall PlayerCharacter_RemoveRaceSpells(PlayerCharacter* player)
 {
     if (player->GetRace())
     {
@@ -1363,14 +1443,18 @@ struct FUN_00824e70_shell : public MagicTarget
     float MagicTarget_GetUsageMonitorEffectMagnitude(MagicItem*);
     void DispelMatchingActiveEffects(EffectItem*, MagicItem*, void*);
     void MagicTarget_SetDisplacementSpell(MagicItem*, MagicItem*);
-    bool ApplyAddiction(AlchemyItem* apItem);
+    bool MagicTarget_CheckAddiction(AlchemyItem* apSpell);
 };
 
 // @fnv 0x00824e70
-bool FUN_00824e70_shell::ApplyAddiction(AlchemyItem* apItem)
+// src: XBOX_RETAIL_PDB 0x00824e70
+// pdb: MagicTarget::CheckAddiction | MagicTarget.obj | retail, string-set bridge, high
+// pdb params: apSpell
+// pdb locals: bplayerAddiction, faddictionChance, pusageMonitor, pactor, idieRoll, fusageMonitor, paddictionMod, strMessage
+bool FUN_00824e70_shell::MagicTarget_CheckAddiction(AlchemyItem* apSpell)
 {
-    float fAddictionChance2 = apItem ? GetAlchemyAddictionChance(apItem) : 0.0f;
-    if (!apItem || !apItem->CombatController_GetTarget() || fAddictionChance2 == 0.0)
+    float fAddictionChance2 = apSpell ? GetAlchemyAddictionChance(apSpell) : 0.0f;
+    if (!apSpell || !apSpell->CombatController_GetTarget() || fAddictionChance2 == 0.0)
     {
         return false;
     }
@@ -1379,10 +1463,10 @@ bool FUN_00824e70_shell::ApplyAddiction(AlchemyItem* apItem)
     {
         return false;
     }
-    EffectItem* pEffectItem = apItem->GetScriptEffect();
+    EffectItem* pEffectItem = apSpell->GetUsageMonitorEffect();
     if (pEffectItem)
     {
-        float fResistance = MagicTarget_GetUsageMonitorEffectMagnitude(apItem);
+        float fResistance = MagicTarget_GetUsageMonitorEffectMagnitude(apSpell);
         if (fResistance <= *setting_011d1878.Float())
         {
             return false;
@@ -1399,19 +1483,19 @@ bool FUN_00824e70_shell::ApplyAddiction(AlchemyItem* apItem)
         ((MT*)this)->MagicTarget_EvaluateSpellConditions();
         return false;
     }
-    bool bShowMsg = pActor2->IsPlayerRef() && !pActor2->ContainsSpell(apItem, true);
+    bool bShowMsg = pActor2->IsPlayerRef() && !pActor2->ContainsSpell(apSpell, true);
     if (pEffectItem)
     {
-        DispelMatchingActiveEffects(pEffectItem, apItem, NULL);
+        DispelMatchingActiveEffects(pEffectItem, apSpell, NULL);
     }
-    pActor2->CastSpellOnSelf((SpellItem*)apItem->CombatController_GetTarget(), false);
-    MagicTarget_SetDisplacementSpell(apItem, (SpellItem*)apItem->CombatController_GetTarget());
+    pActor2->CastSpellOnSelf((SpellItem*)apSpell->CombatController_GetTarget(), false);
+    MagicTarget_SetDisplacementSpell(apSpell, (SpellItem*)apSpell->CombatController_GetTarget());
     if (bShowMsg)
     {
         FUN_004d5c60(10);
         TESImageSpaceModifier* pMod2 = dynamic_cast<TESImageSpaceModifier*>(TESForm::GetFormByID(0x19482));
         char szBuffer3[260];
-        sprintf_s(szBuffer3, sizeof(szBuffer3), setting_011d4cf0.String(), ((TESSoundFile*)((char*)apItem + sizeof(TESBoundObject)))->GetSoundFile());
+        sprintf_s(szBuffer3, sizeof(szBuffer3), setting_011d4cf0.String(), ((TESSoundFile*)((char*)apSpell + sizeof(TESBoundObject)))->GetSoundFile());
         MagicTargetMessages::ShowMessage(szBuffer3, 1, NULL, "UIHealthChemsAddicted", 2.0f, false);
         StandinISModForm::Trigger(pMod2, 1.0f, NULL);
         return true;
@@ -1432,6 +1516,9 @@ struct AddictionEffectQuery : MagicTarget
 // 0x0044ddc0/0x00833c20, and virtual slot 0x18 is MagicItem::GetSpellType.
 // Returns whether an addiction effect matches the source and active-state filters.
 // @fnv 0x00825610
+// pdb: MagicTarget::IsAddicted | MagicTarget.obj | retail, object-file run extension, low
+// pdb params: apAddictedToSpell, abIncludeInactiveAddictionEffects
+// pdb locals: plist, bfound, pmagic, peffect
 bool AddictionEffectQuery::HasMatchingSource(int iType, bool bAny)
 {
     BSSimpleList<ActiveEffect*>* pkNode = GetActiveEffectList();
@@ -1453,14 +1540,18 @@ class MagicCaster;
 
 // Scans the active effect list for a matching effect and, if found, adds apEffect's magnitude to it and returns whether stacking occurred.
 // @fnv 0x00824c00
-bool MagicTarget::CanAcceptEffect(MagicItem* apItem, MagicCaster* apCaster, ActiveEffect* apEffect)
+// src: XBOX_RETAIL_PDB 0x00824c00
+// pdb: MagicTarget::StackEffectDuration | MagicTarget.obj | retail, object-file gap fill, high
+// pdb params: apSpell, apCaster, apActiveEffect
+// pdb locals: plist, bdoAlcoholCheck, bresult, ppotion, bspellCheck, pnext, peffect, pthisPotion
+bool MagicTarget::StackEffectDuration(MagicItem* apSpell, MagicCaster* apCaster, ActiveEffect* apEffect)
 {
     bool bStackedValue = false;
     BSSimpleList<ActiveEffect*>* pNode = GetActiveEffectList();
     bool bAddictionValue = false;
-    if (apItem->GetSpellType() == 7)
+    if (apSpell->GetSpellType() == 7)
     {
-        AlchemyItem* pAlchemy = dynamic_cast<AlchemyItem*>(apItem);
+        AlchemyItem* pAlchemy = dynamic_cast<AlchemyItem*>(apSpell);
         if (pAlchemy && ((CombatNode_magictarget*)((char*)pAlchemy + 0x9c))->FUN_00726070() == 0xd)
             bAddictionValue = true;
     }
@@ -1468,10 +1559,10 @@ bool MagicTarget::CanAcceptEffect(MagicItem* apItem, MagicCaster* apCaster, Acti
     {
         ActiveEffect* pActive_2 = pNode->GetItem();
         BSSimpleList<ActiveEffect*>* pTmpNext = pNode->GetNext();
-        bool bTmpSame = pActive_2 && (MagicItem*)FUN_0044ddc0(pActive_2) == apItem;
+        bool bTmpSame = pActive_2 && (MagicItem*)FUN_0044ddc0(pActive_2) == apSpell;
         if (bAddictionValue)
         {
-            AlchemyItem* pOther = dynamic_cast<AlchemyItem*>(apItem);
+            AlchemyItem* pOther = dynamic_cast<AlchemyItem*>(apSpell);
             if (pOther)
                 bTmpSame = ((CombatNode_magictarget*)((char*)pOther + 0x9c))->FUN_00726070() == 0xd;
         }
@@ -1510,6 +1601,8 @@ class MagicTargetImpl
 };
 // Deletes each non-null EffectNode_magictarget returned while traversing the list, then calls FUN_00470470 on the list.
 // @fnv 0x00822a80
+// pdb: MagicTarget::~MagicTarget | MagicTarget.obj | retail, call graph, high
+// pdb locals: plist, pdata
 MagicTargetImpl::~MagicTargetImpl()
 {
     EffectList* iter = &m_kActiveEffectList;
@@ -1553,6 +1646,9 @@ struct MagicTargetTypedDispel : MagicTarget
 // For aiType 1, removes type-1 spells; otherwise, dispels matching active effects or flagged alchemy effects when aiType is 5.
 // @fnv 0x00824630
 // src: XBOX_PDB 0x00824630
+// pdb: MagicTarget::Dispel | MagicTarget.obj | debug, object-file run extension, low
+// pdb params: aeSpellType
+// pdb locals: plist, ptargetActor, bagain, pspells, pitem, pnext, peffect, ppotion, bpoisonPotion
 void MagicTargetTypedDispel::MagicTarget_Dispel(int aiType)
 {
     BSSimpleList<ActiveEffect*>* pIter;

@@ -139,23 +139,26 @@ struct PlaneShapeStandIn
     Vec4 m_kAabbCenter;
     Vec4 m_kAabbHalfExtents;
 
-    void hkpPlaneShape_castSphere(const RayInput& input, const CdBody& body, RayCollector& collector) const;
+    void hkpPlaneShape_castSphere(const RayInput& inputLocal, const CdBody& cdBody, RayCollector& collector) const;
 };
 
 // @fnv 0x00d55000
 // src: XBOX_PDB 0x00d55000
-void PlaneShapeStandIn::hkpPlaneShape_castSphere(const RayInput& input, const CdBody& body, RayCollector& collector) const
+// pdb: hkpPlaneShape::castSphere | hkpPlaneShape.obj | retail, upstream name already matches, high
+// pdb params: inputLocal, cdBody, collector
+// pdb locals: hitFraction, output
+void PlaneShapeStandIn::hkpPlaneShape_castSphere(const RayInput& inputLocal, const CdBody& cdBody, RayCollector& collector) const
 {
-    float radius = input.m_fSphereRadius;
-    float fromDist = m_kTriangleNormal.dot4xyz1(input.m_vFrom) - radius;
-    float toDist = m_kTriangleNormal.dot4xyz1(input.m_vTo) - radius;
+    float radius = inputLocal.m_fSphereRadius;
+    float fromDist = m_kTriangleNormal.dot4xyz1(inputLocal.m_vFrom) - radius;
+    float toDist = m_kTriangleNormal.dot4xyz1(inputLocal.m_vTo) - radius;
     if (!(toDist >= 0.0f))
     {
-        if (!(fromDist - toDist < input.m_fRayDistance))
+        if (!(fromDist - toDist < inputLocal.m_fRayDistance))
         {
             float frac = (fromDist <= 0.0f) ? 0.0f : fromDist / (fromDist - toDist);
             __declspec(align(16)) Vec4 hitPoint;
-            hitPoint.setInterpolate4(input.m_vFrom, input.m_vTo, frac);
+            hitPoint.setInterpolate4(inputLocal.m_vFrom, inputLocal.m_vTo, frac);
             hitPoint.sub4(m_kAabbCenter);
             hitPoint.setAbs4(hitPoint);
             if (hitPoint.compareLessThanEqual4(m_kAabbHalfExtents).allAreSetXYZ())
@@ -163,7 +166,7 @@ void PlaneShapeStandIn::hkpPlaneShape_castSphere(const RayInput& input, const Cd
                 RayOutput out;
                 _mm_store_ps(&out.m_vHitNormal.x, m_kTriangleNormal.getQuad());
                 out.m_fHitFraction = frac;
-                collector.CollectRayHit(body, out);
+                collector.CollectRayHit(cdBody, out);
             }
         }
     }
@@ -190,9 +193,9 @@ void __thiscall FUN_00d55160_StandIn::hkpPlaneShape_collideSpheres(FUN_00d55160_
         return;
     do
     {
-        __m128 plane = _mm_load_ps(&this->m_kTriangleNormal.x);
+        __m128 plane = _mm_load_ps(&this->m_plane.x);
         _mm_store_ps(output, plane);
-        __m128 planeForProduct = _mm_load_ps(&this->m_kTriangleNormal.x);
+        __m128 planeForProduct = _mm_load_ps(&this->m_plane.x);
         __m128 point = _mm_load_ps(points);
         __m128 product = _mm_mul_ps(point, planeForProduct);
         __m128 planeW = _mm_shuffle_ps(planeForProduct, planeForProduct, _MM_SHUFFLE(3, 3, 3, 3));

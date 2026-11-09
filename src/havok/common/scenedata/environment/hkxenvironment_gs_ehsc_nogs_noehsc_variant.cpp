@@ -35,7 +35,7 @@ class InlineStorageString
     }
     InlineStorageString& operator=(const InlineStorageString& other);
     InlineStorageString& operator=(const char* s);
-    InlineStorageString& operator+=(const char* s);
+    InlineStorageString& operator+=(const char* other);
     const char* cString() const
     {
         return m_data;
@@ -61,12 +61,15 @@ extern const hkxEnvironmentTransition s_transitionTable[32];
 
 struct hkxEnvironmentParser : public hkxEnvironment
 {
-    void AddVariable(const char* name, const char* value);
+    void hkxEnvironment_setVariable(const char* name, const char* value);
     int hkxEnvironment_interpretString(const char* str);
 };
 
 // @fnv 0x00e3f520
 // src: XBOX_PDB 0x00e3f520
+// pdb: hkxEnvironment::interpretString | hkxEnvironment.obj | retail, upstream name already matches, high
+// pdb params: str
+// pdb locals: currentName, currentValue, character, assertBuf, ostr
 int hkxEnvironmentParser::hkxEnvironment_interpretString(const char* str)
 {
     int state = 0;
@@ -139,12 +142,12 @@ int hkxEnvironmentParser::hkxEnvironment_interpretString(const char* str)
             break;
         }
         case 3:
-            AddVariable(name.cString(), value.cString());
+            hkxEnvironment_setVariable(name.cString(), value.cString());
             name = value = "";
             pos++;
             break;
         case 4:
-            AddVariable(name.cString(), 0);
+            hkxEnvironment_setVariable(name.cString(), 0);
             name = value = "";
             pos++;
             break;

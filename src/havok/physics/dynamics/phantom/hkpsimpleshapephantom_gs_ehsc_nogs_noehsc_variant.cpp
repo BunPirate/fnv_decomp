@@ -105,13 +105,16 @@ struct PositionAndLinearCastPhantom : hkpSimpleShapePhantom
 
 // @fnv 0x00d1f270
 // src: HAVOK_SRC 0x00d1f270
+// pdb: hkpSimpleShapePhantom::setPositionAndLinearCast | hkpSimpleShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: position, input, castCollector, startCollector
+// pdb locals: lcInput, aabb, assertBuf, ostr
 void PositionAndLinearCastPhantom::hkpSimpleShapePhantom_setPositionAndLinearCast(const LcVec4& position, const LcCastIn& input, void* castCollector, void* startCollector)
 {
-    m_kMotionState.m_kMotionTransform.m_vTranslation = position.m_vComponents;
+    m_motionState.m_transform.m_vTranslation = position.m_vComponents;
     LcAabb aabb;
     hkpCollidable* collidable = &m_kCollidable;
-    float halfTolerance = static_cast<LcProcessInput*>(static_cast<hkpWorld*>(m_pOwningWorld)->m_pCollisionInput)->unk08 * 0.5;
-    m_kCollidable.m_pCollisionShape->CalculateAabb(m_kMotionState.m_kMotionTransform, halfTolerance + input.unk14,
+    float halfTolerance = static_cast<LcProcessInput*>(static_cast<hkpWorld*>(m_world)->m_collisionInput)->unk08 * 0.5;
+    m_kCollidable.m_pCollisionShape->CalculateAabb(m_motionState.m_transform, halfTolerance + input.unk14,
                                reinterpret_cast<hkAabb&>(aabb));
 
     LcVec4 path;
@@ -124,7 +127,7 @@ void PositionAndLinearCastPhantom::hkpSimpleShapePhantom_setPositionAndLinearCas
     hkpPhantom_updateBroadPhase(&aabb);
 
     LcCastInput lcInput;
-    const LcProcessInput* in = static_cast<const LcProcessInput*>(static_cast<hkpWorld*>(m_pOwningWorld)->m_pCollisionInput);
+    const LcProcessInput* in = static_cast<const LcProcessInput*>(static_cast<hkpWorld*>(m_world)->m_collisionInput);
     static_cast<LcCollisionInput&>(lcInput) = *in;
     lcInput.unk68 = in->unk70;
     lcInput.unk50 = path;
@@ -136,10 +139,10 @@ void PositionAndLinearCastPhantom::hkpSimpleShapePhantom_setPositionAndLinearCas
     lcInput.unk08 = input.unk14;
     lcInput.unk60 = input.unk10;
 
-    hkpCollisionDispatcher* dispatcher = static_cast<hkpCollisionDispatcher*>(static_cast<hkpWorld*>(m_pOwningWorld)->m_pDispatcher);
-    for (int i = m_kCollisionDetails.GetLogicalSize() - 1; i >= 0; i--)
+    hkpCollisionDispatcher* dispatcher = static_cast<hkpCollisionDispatcher*>(static_cast<hkpWorld*>(m_world)->m_collisionDispatcher);
+    for (int i = m_collisionDetails.GetLogicalSize() - 1; i >= 0; i--)
     {
-        hkpCollidable* const& collidableB = m_kCollisionDetails[i].m_kCollidable;
+        hkpCollidable* const& collidableB = m_collisionDetails[i].m_kCollidable;
         LcCastFunc func = reinterpret_cast<LcCastFunc>(
             dispatcher->m_agent2Funcs[
                 dispatcher->m_agent2TypeMap[reinterpret_cast<const hkpShapeType&>(collidable->m_pCollisionShape->m_type)]

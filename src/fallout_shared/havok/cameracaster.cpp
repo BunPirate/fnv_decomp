@@ -22,7 +22,7 @@ void __thiscall FUN_00621100_shell::SetVtable()
 // @fnv 0x00621270
 unsigned int bhkCharacterListener::GetFlags(unsigned int aiFlags)
 {
-    return *(unsigned int*)unk04 & aiFlags;
+    return *(unsigned int*)iFlags & aiFlags;
 }
 
 extern float DAT_0104da4c;
@@ -35,6 +35,7 @@ struct FUN_00621290_shell
 
 // Calls _ref_006815c0, then stores DAT_0104da4c into the floats at offsets 0x10 and 0x14 and returns this.
 // @fnv 0x00621290
+// pdb: hkpLinearCastInput::hkpLinearCastInput | CameraCaster.obj | debug, call graph, medium
 void* FUN_00621290_shell::InitFloats()
 {
     _ref_006815c0();
@@ -52,6 +53,7 @@ struct FUN_00621060_shell
 };
 // @fnv 0x00621060
 // src: XBOX_PDB 0x00621060
+// pdb: hkpCdPointCollector::hkpCdPointCollector | CameraCaster.obj | debug, upstream name already matches, high
 FUN_00621060_shell* __thiscall FUN_00621060_shell::hkpCdPointCollector_hkpCdPointCollector()
 {
     vtbl = &DAT_0104da3c;
@@ -72,6 +74,8 @@ BSAudio* __cdecl _FUN_00c85750();
 // If a1 is non-null, gets the object from _FUN_00c85750 and calls its Func with a1 and 8.
 // @fnv 0x006210d0
 // src: GUESS 0x006210d0 (confidence: low)
+// pdb: hkpCdPointCollector::operator delete | CameraCaster.obj | debug, object-file run extension, low
+// pdb params: p
 void Cameracaster_UpdateState_006210d0(void* a1)
 {
     if (a1 != 0)
@@ -91,6 +95,8 @@ struct Caller
 };
 // @fnv 0x00621170
 // src: GUESS 0x00621170 (confidence: low)
+// pdb: hkpAllCdPointCollector::operator delete | CameraCaster.obj | debug, call graph, medium
+// pdb params: p
 void Cameracaster_UpdateState_00621170(void* apArg)
 {
     if (apArg != 0)
@@ -141,6 +147,7 @@ struct FUN_00621120_shell : public FUN_00621060_shell
 
 // @fnv 0x00621120
 // src: XBOX_PDB 0x00621120
+// pdb: hkpAllCdPointCollector::reset | CameraCaster.obj | debug, upstream name already matches, high
 void __thiscall FUN_00621120_shell::hkpAllCdPointCollector_reset()
 {
     hkArrayBase_hkpRootCdBodyPair_clear(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x10));
@@ -164,6 +171,7 @@ struct Hld621210
 // Calls FUN_00622570 on p with whether _c._ref_00726070() is greater than zero, then returns p.
 // @fnv 0x00621210
 // src: COMMUNITY 0x00621210
+// pdb: hkpAllCdPointCollector::hasHit | CameraCaster.obj | debug, upstream name already matches, high
 Rcv621210* Hld621210::hkpAllCdPointCollector_hasHit(Rcv621210* apReceiver)
 {
     apReceiver->UpdateState_00622570(_c._ref_00726070() > 0);
@@ -179,6 +187,7 @@ struct DummyFlagsShell
 
 // @fnv 0x00621240
 // src: XBOX_PDB 0x00621240
+// pdb: bhkCharacterController::QChaseBip | CameraCaster.obj | debug, upstream name already matches, high
 bool DummyFlagsShell::bhkCharacterController_QChaseBip()
 {
     return _flags.GetFlags(0x800) != 0;
@@ -190,6 +199,7 @@ struct FUN_006210a0_shell : FUN_00621100_shell
 };
 
 // @fnv 0x006210a0
+// pdb: hkpCdPointCollector::`scalar deleting destructor' | CameraCaster.obj | debug, vtable slot, medium
 void* __thiscall FUN_006210a0_shell::FUN_006210a0(unsigned int flags)
 {
     SetVtable();
@@ -201,6 +211,7 @@ void* __thiscall FUN_006210a0_shell::FUN_006210a0(unsigned int flags)
 void __cdecl Cameracaster_UpdateState_00621170(void*);
 void FUN_006211b0(void*);
 // @fnv 0x00621140
+// pdb: hkpAllCdPointCollector::`scalar deleting destructor' | CameraCaster.obj | retail, vtable slot, high
 void* hkpAllCdPointCollector::FUN_00621140(unsigned int aiFlags)
 {
     FUN_006211b0();
@@ -242,6 +253,7 @@ struct FUN_00620ff0 : Base_620ff0
 };
 
 // @fnv 0x00620ff0
+// pdb: hkpAllCdPointCollector::hkpAllCdPointCollector | CameraCaster.obj | debug, call graph, high
 FUN_00620ff0::FUN_00620ff0() : m_10(0)
 {
     hkpAllCdPointCollector_reset();
@@ -278,5 +290,6 @@ class FUN_006211b0_cls : public CdPointCollectorBase
 
 // Destructor for a CdPointCollectorBase-derived collector that owns a CdPointSubObj member; the body is empty.
 // @fnv 0x006211b0
+// pdb: hkpAllCdPointCollector::~hkpAllCdPointCollector | CameraCaster.obj | debug, call graph, high
 FUN_006211b0_cls::~FUN_006211b0_cls()
 {}

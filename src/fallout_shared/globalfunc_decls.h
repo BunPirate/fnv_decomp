@@ -29,7 +29,7 @@ void __cdecl operator delete(void*);
 class BipedNodeNames
 {
   public:
-    static void InitializeMultiBounds();
+    static void FixedStrings_InitSDM();
 };
 extern NiFixedString* DAT_011c61a4;
 extern NiFixedString* DAT_011c61a8;

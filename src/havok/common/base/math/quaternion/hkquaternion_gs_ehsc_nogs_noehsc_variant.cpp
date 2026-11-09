@@ -14,20 +14,20 @@ typedef ::__m128 LocalM128;
 class FUN_005611c0_t
 {
   public:
-    void normalize_005611c0();
-    void hkQuaternion_setAndNormalize(float* pts);
+    void hkQuaternion_normalize();
+    void hkQuaternion_setAndNormalize(float* r);
 };
 static float g_sink2550;
 extern "C" double cb2550_clobber(double x);
 // src: COMMUNITY 0x00cb2550
-static __declspec(noinline) void quaternionFromRotatation(FUN_005611c0_t* obj, float* pts)
+static __declspec(noinline) void quaternionFromRotatation(FUN_005611c0_t* quatOut, float* r)
 {
-    float s = pts[0] * pts[1];
+    float s = r[0] * r[1];
     s = (float)cb2550_clobber(s);
-    s += pts[5];
+    s += r[5];
     g_sink2550 = s;
     if (s > 1.0e9f)
-        *(int*)obj = 0;
+        *(int*)quatOut = 0;
 }
 #include <xmmintrin.h>
 #include <math.h>
@@ -35,7 +35,7 @@ struct FUN_00cb24c0_cls
 {
     LocalM128 m_00;
     void hkVector4_isOk4(unsigned char* flag);
-    unsigned char* IsNormalized(unsigned char* flag);
+    unsigned char* hkQuaternion_isOk(unsigned char* flag);
 };
 struct Block64
 {
@@ -88,7 +88,7 @@ struct S00cb2550_Quat
 {
     S00cb2550_V4 q;
 };
-static void quaternionFromRotatation(S00cb2550_Quat* self, const S00cb2550_Rot& r);
+static void quaternionFromRotatation(S00cb2550_Quat* quatOut, const S00cb2550_Rot& r);
 void S00cb2550_caller(S00cb2550_Quat* q, const S00cb2550_Rot& r);
 
 #include <xmmintrin.h>

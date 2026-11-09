@@ -41,6 +41,7 @@ class __declspec(align(16)) CollisionFilterBaseLocal_00e467d0 : public hkReferen
 };
 
 // No approved include/ header exists for this class yet.
+// pdb: class hkpDisableEntityCollisionFilter, size 0x40, bases: hkpCollisionFilter, hkpEntityListener, 1 members
 class hkpDisableEntityCollisionFilter : public CollisionFilterBaseLocal_00e467d0, public hkpEntityListener
 {
   public:
@@ -50,7 +51,7 @@ class hkpDisableEntityCollisionFilter : public CollisionFilterBaseLocal_00e467d0
     hkBool removeEntity(hkpEntity* entity);
     void* DeleteInstance(unsigned char flags);
 
-    hkArray<hkpEntity*> m_kDisabledEntities;
+    hkArray<hkpEntity*> m_disabledEntities;
 };
 
 // @fnv 0x00e467b0
@@ -100,13 +101,14 @@ struct FUN_00dff930_Mgr
 };
 
 // @fnv 0x00dff930
+// pdb: hkpDisableEntityCollisionFilter::`scalar deleting destructor' | hkpDisableEntityCollisionFilterClass.obj | retail, vtable slot, high
 void* hkpDisableEntityCollisionFilter::DeleteInstance(unsigned char uiFlags)
 {
     this->hkpDisableEntityCollisionFilter::~hkpDisableEntityCollisionFilter();
     if (uiFlags & 1)
     {
         FUN_00dff930_Mgr* mgr = reinterpret_cast<FUN_00dff930_Mgr*>(hkMemoryRouter_getInstance());
-        mgr->m_10->slot08(this, m_usMemSizeAndFlags);
+        mgr->m_10->slot08(this, m_memSizeAndFlags);
     }
     return this;
 }
@@ -119,11 +121,13 @@ void __stdcall nullsub_87(unsigned int a1)
 
 // 0x00e467d0 uses this at the +0x08 collidable-filter base: its +0x2c array is the complete object's +0x34 disabled entities.
 // @fnv 0x00e467d0
+// pdb: hkpDisableEntityCollisionFilter::isCollisionEnabled | hkpDisableEntityCollisionFilter.obj | debug, vtable slot, medium
+// pdb params: a, b
 hkBool hkpDisableEntityCollisionFilter::IsCollisionEnabled(const hkpCollidable& kA, const hkpCollidable& kB) const
 {
-    for (int i = 0; i < m_kDisabledEntities.GetLogicalSize(); i++)
+    for (int i = 0; i < m_disabledEntities.GetLogicalSize(); i++)
     {
-        const hkpCollidable* pkCollidable = &m_kDisabledEntities[i]->m_kCollidable;
+        const hkpCollidable* pkCollidable = &m_disabledEntities[i]->m_kCollidable;
         if (pkCollidable == &kA || pkCollidable == &kB)
             return false;
     }
@@ -132,21 +136,23 @@ hkBool hkpDisableEntityCollisionFilter::IsCollisionEnabled(const hkpCollidable& 
 
 // Remove the entity by swapping in the last element; return whether it was found.
 // @fnv 0x00e46820
+// pdb: hkpDisableEntityCollisionFilter::removeEntityFromFilter | hkpDisableEntityCollisionFilter.obj | debug, call graph, medium
+// pdb params: new_entity
 hkBool hkpDisableEntityCollisionFilter::removeEntity(hkpEntity* entity)
 {
     if (!entity)
     {
         return false;
     }
-    for (int index = 0; index < m_kDisabledEntities.m_iElementCount; ++index)
+    for (int index = 0; index < m_disabledEntities.m_iElementCount; ++index)
     {
-        if (m_kDisabledEntities.m_data[index] == entity)
+        if (m_disabledEntities.m_data[index] == entity)
         {
-            volatile int& count = m_kDisabledEntities.m_iElementCount;
+            volatile int& count = m_disabledEntities.m_iElementCount;
             --count;
             int last = count;
             if (last != index)
-                m_kDisabledEntities.m_data[index] = m_kDisabledEntities.m_data[last];
+                m_disabledEntities.m_data[index] = m_disabledEntities.m_data[last];
             return true;
         }
     }
@@ -155,6 +161,8 @@ hkBool hkpDisableEntityCollisionFilter::removeEntity(hkpEntity* entity)
 
 // Remove the disabled entity, then unregister this entity listener.
 // @fnv 0x00e46880
+// pdb: hkpDisableEntityCollisionFilter::entityRemovedCallback | hkpDisableEntityCollisionFilter.obj | retail, vtable slot, high
+// pdb params: entity
 void hkpDisableEntityCollisionFilter::EntityRemovedCallback(hkpEntity* entity)
 {
     if (entity)

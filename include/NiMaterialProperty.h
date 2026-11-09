@@ -2,23 +2,24 @@
 
 #include "NiProperty.h"
 
+// pdb: class NiMaterialProperty, size 0x4c, bases: NiProperty, 9 members
 class NiMaterialProperty : public NiProperty
 {
   public:
     NiMaterialProperty();
     virtual void LoadBinary(NiStream& stream);
 
-    int unk18;
-    int unk1c;
+    int m_iIndex;
+    int m_spec;
     int unk20;
     int unk24;
-    int unk28;
+    int m_emit;
     int unk2c;
     int unk30;
-    int unk34;
-    int unk38;
-    int unk3c;
-    int unk40;
-    int unk44;
-    int unk48;
+    int m_external_emit;
+    int m_fShine;
+    int m_fAlpha;
+    int m_fEmitMult;
+    int m_uiRevID;
+    int m_pvRendererData;
 };

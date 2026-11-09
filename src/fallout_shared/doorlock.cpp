@@ -88,6 +88,9 @@ FNV_STATIC_ASSERT(offsetof(DoorAccessData, m_pLockLevelGlobal) == 20);
 
 // Copy-assigns another actor's data into this object's actor-data member at offset 0x5c via CopyFrom and returns it.
 // @fnv 0x006e2b20
+// pdb: ActorLockData::ActorLockData | DoorLock.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to PathingRequest::SetActorLockData
+// pdb params: apActor
 PathingActorData& PathingActorData::operator=(const PathingActorData& other)
 {
     return reinterpret_cast<PathingActorData*>(reinterpret_cast<char*>(this) + 0x5c)
@@ -196,6 +199,7 @@ DoorAccessData::DoorAccessData(TESObjectREFR* pRef)
 
 // Frees the memory block held by the object if it is non-null, then returns.
 // @fnv 0x00501e50
+// pdb: DoorLock::~DoorLock | DoorLock.obj | debug, call graph, medium
 DoorAccessData::~DoorAccessData()
 {
     if (m_pTeleportData != 0)
@@ -208,6 +212,9 @@ DoorAccessData::~DoorAccessData()
 extern TESBoundObject* g_pLockpickItem;
 
 // @fnv 0x00502550
+// pdb: DoorLock::IsAnOwner | DoorLock.obj | debug, object-file gap fill, medium
+// pdb params: apActorLockData, abUseFaction
+// pdb locals: bretval, pfac, irank
 bool DoorAccessData::CanActorUseDoor(const PathingActorData* pActorData, bool bFlag)
 {
     bool bIsOwner = false;
@@ -239,6 +246,9 @@ bool DoorAccessData::CanActorUseDoor(const PathingActorData* pActorData, bool bF
 
 // Checks pActorData against the current door/cell state and returns whether the actor can be ignored, using class and guard checks.
 // @fnv 0x00502310
+// pdb: DoorLock::CanActorIgnoreDoorLock | DoorLock.obj | debug, object-file run extension, low
+// pdb params: apActorLockData, abmovement
+// pdb locals: bretval, pclass, pNpc
 bool DoorAccessData::CanActorOpenDoor(const PathingActorData* pActorData, bool bFlag)
 {
     bool bCanIgnore = false;
@@ -275,28 +285,31 @@ bool DoorAccessData::CanActorOpenDoor(const PathingActorData* pActorData, bool b
 }
 
 // @fnv 0x00502450
-bool DoorAccessData::CanUnlockDoor(const PathingActorData* pActorData, TESObjectREFR* pRef, bool& bNeedsKey)
+// pdb: DoorLock::CanActorUnlockDoorLock | DoorLock.obj | debug, call graph (shared callers), high
+// pdb params: apActorLockData, apDoorRef, abOutMustPick
+// pdb locals: eUseItem, bretval
+bool DoorAccessData::CanUnlockDoor(const PathingActorData* apActorLockData, TESObjectREFR* apDoorRef, bool& abOutMustPick)
 {
     KeySearch kSearch;
     bool bCanUnlock = false;
     kSearch.iCount = 0;
-    bNeedsKey = false;
-    if (pActorData != 0)
+    abOutMustPick = false;
+    if (apActorLockData != 0)
     {
-        if (CanActorOpenDoor(pActorData, false))
+        if (CanActorOpenDoor(apActorLockData, false))
             bCanUnlock = true;
         else if (m_pTeleportData->IsLocked())
         {
-            if (m_pTeleportData->pKey != 0 && pActorData->m_pInventoryChangesValue != 0 &&
-                pActorData->m_pInventoryChangesValue->FindItemInInventory(m_pTeleportData->pKey, 0, 1, kSearch.iCount,
+            if (m_pTeleportData->pKey != 0 && apActorLockData->m_pInventoryChangesValue != 0 &&
+                apActorLockData->m_pInventoryChangesValue->InventoryChanges_ContainerHasObjects(m_pTeleportData->pKey, 0, 1, kSearch.iCount,
                                                                           0, 0))
                 bCanUnlock = true;
-            else if (m_pTeleportData->GetLockLevel(pRef) != 5 && pActorData->m_pInventoryChangesValue != 0 &&
-                     pActorData->m_pInventoryChangesValue->FindItemInInventory(g_pLockpickItem, 0, 1, kSearch.iCount, 0,
+            else if (m_pTeleportData->GetLockLevel(apDoorRef) != 5 && apActorLockData->m_pInventoryChangesValue != 0 &&
+                     apActorLockData->m_pInventoryChangesValue->InventoryChanges_ContainerHasObjects(g_pLockpickItem, 0, 1, kSearch.iCount, 0,
                                                                                0))
             {
                 bCanUnlock = true;
-                bNeedsKey = true;
+                abOutMustPick = true;
             }
         }
         else
@@ -318,6 +331,8 @@ struct XActor
 };
 // Stores the actor's base, the container from its extra list, and its alarm state.
 // @fnv 0x00502670
+// pdb: ActorLockData::ActorLockData | DoorLock.obj | debug, call graph, high
+// pdb params: apActor
 ActorData::ActorData(Actor* apActor)
 {
     m_pActorBaseFormItem = static_cast<TESActorBase*>(reinterpret_cast<XActor*>(apActor)->GetActorBase());
@@ -336,6 +351,9 @@ void* __cdecl memset(void*, int, unsigned int);
 // If the int at offset 0x1fdc is nonzero, zeroes the first 0x1fdc bytes of the object and resets that int to 0.
 // @fnv 0x00996800
 // src: XBOX_PDB 0x00996800
+// pdb: BSScrapArray<AStarNode<CombatPlanNode *,CombatPlanLink *> *,1024>::_Allocate | CombatPlanner.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void FUN_00996800_shell::AStarMap_AStarNode_NavMeshSearchNode_NavMeshSearchLink_Clear()
 {
     if (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x1fdc) != 0)
@@ -368,7 +386,7 @@ struct TeleportableReference
     void SetLinkedDoor(TESObjectREFR*);
     void SetTeleportPosition(void*);
     void SetTeleportRotation(void*);
-    void SetLinkedDoorReference(TESObjectREFR*, bool);
+    void SetConnectedCellsPublic(TESObjectREFR*, bool);
     void Save();
     void Load(TESFile*);
     bool InitItem(TESForm*);
@@ -397,6 +415,9 @@ struct FUN_00501e80_shell : public DoorAccessData
 
 // @fnv 0x00501e80
 // src: XBOX_PDB 0x00501e80
+// pdb: DoorLock::SetFromDoorRef | DoorLock.obj | retail, upstream name already matches, high
+// pdb params: apDoorRef
+// pdb locals: ptel, pDoorLock
 void FUN_00501e80_shell::DoorLock_SetFromDoorRef(TESObjectREFR* apDoorRef)
 {
     ExtraRadioData* ptel;
@@ -428,6 +449,7 @@ void FUN_00501e80_shell::DoorLock_SetFromDoorRef(TESObjectREFR* apDoorRef)
 
 // Copies the actor's base, inventory changes and lock flag, then returns this.
 // @fnv 0x00502630
+// pdb: DoorLock::IsLocked | DoorLock.obj | debug, object-file gap fill, medium
 PathingActorData& PathingActorData::CopyFrom(const ActorData& other)
 {
     m_pActorBaseFormItem = other.m_pActorBaseFormItem;
@@ -750,6 +772,10 @@ struct LockAccess
 };
 // Returns whether actor may access the lock: checks state, cell ownership, parent cell, and the global actor, returning true if any condition passes.
 // @fnv 0x00501fd0
+// pdb: DoorLock::IsAnOwner | DoorLock.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DoorLock::CanActorIgnoreDoorLock
+// pdb params: apActor, abUseFaction
+// pdb locals: bretval, pbase, pactorbase, pfac, irank
 bool LockAccess::CanAccessLock(LockActor* actor, int unused, bool flag)
 {
     bool a = false;
@@ -797,11 +823,12 @@ struct Location
     Nav* TESMain_GetThread();
     NiPoint3 FUN_005c3420() const;
 };
+// pdb: structure ParentSpaceNode, size 0xc, 3 members
 struct ParentSpaceNode
 {
-    bool unk00;
-    void* unk04;
-    void* unk08;
+    bool bWorldSpace;
+    void* pWorldSpace;
+    void* pInteriorCell;
 };
 struct FUN_006d5320
 {
@@ -1902,10 +1929,13 @@ struct FUN_006f33b0 : BuilderBase
     int unk20B0;
     FUN_006f33b0();
     ~FUN_006f33b0();
-    bool InitDoorSearch(Location*, Location*, Result*, int, float, int, int);
+    bool TeleportDoorSearch_BuildNodePath(Location*, Location*, Result*, int, float, int, int);
 };
 // Builds a path between two locations via a door-aware builder, records parent-space nodes and door entries in result, else falls back to InitDoorSearch.
 // @fnv 0x006d4f70
+// pdb: Pathing::BuildLowPath | Pathfind.obj | retail, call graph, medium
+// pdb params: aOrigin, aDestination, apRetPath, apActorLockData, aeDoorLockDisp
+// pdb locals: teleSearch, infos, doors, infoSearch, space, i, link, nextSpace
 bool BuildPathWithDoors(Location* start, Location* end, Result* result, int a4, int a5)
 {
     if (start->FUN_006dd6f0(0) && end->FUN_006dd6f0(0))
@@ -1917,9 +1947,9 @@ bool BuildPathWithDoors(Location* start, Location* end, Result* result, int a4, 
                                        end->TESMain_GetThread(), infos, doors, a5))
         {
             ParentSpaceNode node;
-            node.unk04 = infos.FUN_00877a30(0)->NavMeshInfo_GetWorldSpace();
-            node.unk08 = infos.FUN_00877a30(0)->GetInteriorCell();
-            node.unk00 = infos.FUN_00877a30(0)->NavMeshInfo_GetWorldSpace() != 0;
+            node.pWorldSpace = infos.FUN_00877a30(0)->NavMeshInfo_GetWorldSpace();
+            node.pInteriorCell = infos.FUN_00877a30(0)->GetInteriorCell();
+            node.bWorldSpace = infos.FUN_00877a30(0)->NavMeshInfo_GetWorldSpace() != 0;
             result->BSSimpleArray_ParentSpaceNode_1024_Add(node);
             for (unsigned i = 0; i < doors.FUN_0044ddc0(); ++i)
             {
@@ -1930,9 +1960,9 @@ bool BuildPathWithDoors(Location* start, Location* end, Result* result, int a4, 
                     entry.unk04 = doors.FUN_00877a30(i)->FUN_00568e50()->FUN_00717e50();
                     result->unk10.BSSimpleArray_TeleportLink_1024_Add(entry);
                     ParentSpaceNode next;
-                    next.unk04 = infos.FUN_00877a30(i + 1)->NavMeshInfo_GetWorldSpace();
-                    next.unk08 = infos.FUN_00877a30(i + 1)->GetInteriorCell();
-                    next.unk00 = infos.FUN_00877a30(i + 1)->NavMeshInfo_GetWorldSpace() != 0;
+                    next.pWorldSpace = infos.FUN_00877a30(i + 1)->NavMeshInfo_GetWorldSpace();
+                    next.pInteriorCell = infos.FUN_00877a30(i + 1)->GetInteriorCell();
+                    next.bWorldSpace = infos.FUN_00877a30(i + 1)->NavMeshInfo_GetWorldSpace() != 0;
                     result->BSSimpleArray_ParentSpaceNode_1024_Add(next);
                 }
             }
@@ -1942,5 +1972,5 @@ bool BuildPathWithDoors(Location* start, Location* end, Result* result, int a4, 
         }
     }
     FUN_006f33b0 fallback;
-    return fallback.InitDoorSearch(start, end, result, 0, 0.0f, a4, a5);
+    return fallback.TeleportDoorSearch_BuildNodePath(start, end, result, 0, 0.0f, a4, a5);
 }

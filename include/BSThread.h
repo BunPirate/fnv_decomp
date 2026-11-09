@@ -2,6 +2,7 @@
 
 #include "BSThreadCriticalSectionPC.h"
 
+// pdb: class BSThread, size 0x34 (here 0x30), 6 members
 class BSThread
 {
 public:
@@ -18,22 +19,22 @@ public:
     virtual ~BSThread();
     virtual unsigned int ThreadProc();
 
-    void Initialize(StackSize stackSize, const char* name, bool suspended);
-    void Initialize(int stackSize, const char* name, bool suspended);
-    void SetThreadPriority(int priority);
+    void Initialize(StackSize aeStackSize, const char* apName, bool bSuspend);
+    void Initialize(int aeStackSize, const char* apName, bool bSuspend);
+    void SetThreadPriority(int aiPriority);
     void SetSchedulingPriority(unsigned int priority);
     void SetSchedulingPriority(int priority);
-    void SetName(const char* name);
+    void SetName(const char* apName);
     void SetPriority(int priority);
     void Wakeup();
     void Run();
     unsigned int GetThreadID();
     bool TESAnimGroup_GetDecal();
-    void FUN_00aa6430(int stackSize, const char* name, bool suspended);
-    void FUN_00aa6540(const char* name);
+    void FUN_00aa6430(int aeStackSize, const char* apName, bool bSuspend);
+    void FUN_00aa6540(const char* apName);
     void FUN_00aa6550(unsigned int priority);
     void FUN_00aa6550(int priority);
-    void FUN_00aa6560(int priority);
+    void FUN_00aa6560(int aiPriority);
 
     BSThreadCriticalSectionPC CriticalSection;
     void* m_pThreadHandle;

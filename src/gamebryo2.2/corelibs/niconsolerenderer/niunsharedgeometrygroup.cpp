@@ -69,18 +69,21 @@ struct FakeVB
 // Releases the vertex buffer chip for the given stream index, clears its slot and deletes the chip.
 // @fnv 0x00e94ee0
 // src: XBOX_PDB 0x00e94ee0
-void __stdcall NiUnsharedGeometryGroup_ReleaseChip(NiGeometryBufferData* pkBuffData, unsigned int uiStreamIndex)
+// pdb: NiUnsharedGeometryGroup::ReleaseChip | NiUnsharedGeometryGroup.obj | retail, upstream name already matches, high
+// pdb params: pkBuffData, uiStream
+// pdb locals: pkChip
+void __stdcall NiUnsharedGeometryGroup_ReleaseChip(NiGeometryBufferData* pkBuffData, unsigned int uiStream)
 {
     NiVBChip* pkChip;
-    if (uiStreamIndex < pkBuffData->m_uiRegisterStreamCount)
+    if (uiStream < pkBuffData->m_uiRegisterStreamCount)
     {
-        pkChip = pkBuffData->m_ppkVertexBuffers[uiStreamIndex];
+        pkChip = pkBuffData->m_ppkVertexBuffers[uiStream];
         if (pkChip)
         {
             if (*(FakeVB**)((char*)pkChip + 8))
                 ((FakeVB*)*(void**)((char*)pkChip + 8))->Release();
-            if (uiStreamIndex < pkBuffData->m_uiRegisterStreamCount)
-                pkBuffData->m_ppkVertexBuffers[uiStreamIndex] = 0;
+            if (uiStream < pkBuffData->m_uiRegisterStreamCount)
+                pkBuffData->m_ppkVertexBuffers[uiStream] = 0;
             *(void**)((char*)pkChip + 8) = 0;
             _delete(pkChip, 0x20);
         }
@@ -93,6 +96,9 @@ void* _fnv_zlib_memset(void*, int, unsigned int);
 // Removes pkData's buffer data from the group, clears its buffer array, deletes it, and nulls the pointer.
 // @fnv 0x00e950f0
 // src: XBOX_PDB 0x00e950f0
+// pdb: NiDynamicGeometryGroup::RemoveObject | NiDynamicGeometryGroup.obj | retail, object-file run extension, low
+// pdb params: pkData
+// pdb locals: pkBuffData
 void __fastcall NiDynamicGeometryGroup_RemoveObject(NiDynamicGeometryGroup* pkGroup, void*, NiGeometryData* pkData)
 {
     NiGeometryBufferData* pkBuffData = static_cast<NiGeometryBufferData*>(pkData->m_pkBuffData);
@@ -114,6 +120,9 @@ void* _fnv_zlib_memset(void*, int, unsigned int);
 // Removes the geometry buffer data stored at offset 0x28 of pkData, clears its chip array, deletes it and nulls the pointer.
 // @fnv 0x00e95140
 // src: XBOX_PDB 0x00e95140
+// pdb: NiDynamicGeometryGroup::RemoveObject | NiDynamicGeometryGroup.obj | retail, object-file run extension, low
+// pdb params: pkData
+// pdb locals: pkBuffData
 void __fastcall NiDynamicGeometryGroup_RemoveObject_00e95140(NiDynamicGeometryGroup* pkGroup, void*, NiGeometryData* pkData)
 {
     NiGeometryBufferData* pkBuffData = *(NiGeometryBufferData**)((char*)pkData + 0x28);
@@ -130,6 +139,9 @@ void __fastcall NiDynamicGeometryGroup_RemoveObject_00e95140(NiDynamicGeometryGr
 void* _fnv_zlib_memset(void*, int, unsigned int);
 // @fnv 0x00e95190
 // src: XBOX_PDB 0x00e95190
+// pdb: NiDynamicGeometryGroup::RemoveObject | NiDynamicGeometryGroup.obj | retail, object-file run extension, low
+// pdb params: pkData
+// pdb locals: pkBuffData
 void __fastcall NiDynamicGeometryGroup_RemoveObject_00e95190(NiDynamicGeometryGroup* pkGroup, void*, NiGeometryData* pkData)
 {
     NiGeometryBufferData* pkBuffData = *(NiGeometryBufferData**)((char*)pkData + 0x1c);
@@ -343,6 +355,7 @@ extern bool DAT_0126f0d0;
 class NiVBBlock;
 class NiVBDynamicSet;
 // NiVBChip.h is not available yet; retain the 0x20-byte chip layout used by the vertex-buffer allocation.
+// pdb: class NiVBChip, size 0x20, 9 members
 class NiVBChip : public NiMemObject
 {
   public:
@@ -374,6 +387,9 @@ class NiVBChip : public NiMemObject
 // Creates a D3D vertex buffer sized for the stream and returns a new NiVBChip wrapping it with the given size and owning stream.
 // @fnv 0x00e94e30
 // src: XBOX_PDB 0x00e94e30
+// pdb: NiUnsharedGeometryGroup::CreateChip | NiUnsharedGeometryGroup.obj | retail, upstream name already matches, high
+// pdb params: pkBuffData, uiStream
+// pdb locals: uiUsage, pkVB, uiBufferSize, eResult, pkChip
 NiVBChip* __fastcall NiUnsharedGeometryGroup_CreateChip(NiUnsharedGeometryGroup* pkGroup, void*, NiGeometryBufferData* pkBuffData, unsigned int uiStream)
 {
     unsigned int uiVertexCount = pkBuffData->m_uiVertexDataSize;
@@ -382,7 +398,7 @@ NiVBChip* __fastcall NiUnsharedGeometryGroup_CreateChip(NiUnsharedGeometryGroup*
     if (pkBuffData->m_bIsInitialized)
         uiUsage = 0x8 | 0x10;
     IDirect3DVertexBuffer9_E94* pkVB;
-    static_cast<IDirect3DDevice9_E94*>(pkGroup->m_pD3DDevice)->CreateVertexBuffer(uiVBSize, uiUsage, pkBuffData->m_uiGroupIndex, DAT_0126f0d0 ? 0 : 1, &pkVB,
+    static_cast<IDirect3DDevice9_E94*>(pkGroup->m_pkD3DDevice)->CreateVertexBuffer(uiVBSize, uiUsage, pkBuffData->m_uiGroupIndex, DAT_0126f0d0 ? 0 : 1, &pkVB,
                                           0);
     IDirect3DVertexBuffer9_E94* pkNewVB = pkVB;
     NiVBChip* pkChip = new NiVBChip;

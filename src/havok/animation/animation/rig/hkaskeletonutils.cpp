@@ -23,11 +23,13 @@ typedef union __declspec(intrin_type) __declspec(align(16)) {
 
 // @fnv 0x00cdd3f0
 // src: HAVOK_LIB 0x00cdd3f0
-void hkaSkeletonUtils_unlockTranslations(hkaSkeleton* pEntries)
+// pdb: hkaSkeletonUtils::unlockTranslations | hkaSkeletonUtils.obj | debug, upstream name already matches, high
+// pdb params: skeleton
+void hkaSkeletonUtils_unlockTranslations(hkaSkeleton* skeleton)
 {
-    int n = pEntries->m_kBones.m_iElementCount;
+    int n = skeleton->m_bones.m_iElementCount;
     for (int i = 0; i < n; ++i)
-        pEntries->m_kBones.m_data[i].m_bLockTranslation.m_cBooleanValue = 0;
+        skeleton->m_bones.m_data[i].m_bLockTranslation.m_cBooleanValue = 0;
 }
 
 extern "C" void __cdecl hkaSkeletonUtils_transformLocalPoseToWorldPose(int, int, int*, int, int);
@@ -63,16 +65,18 @@ void __cdecl Hkaskeletonutils_ForwardCall_00ce00f0(float afFirst, float afSecond
 int __cdecl CompareStringsCaseInsensitive(const void* pKey, const void* pItem);
 static inline int GetBoneCount(const hkaSkeleton* skeleton)
 {
-    return skeleton->m_kBones.m_iElementCount;
+    return skeleton->m_bones.m_iElementCount;
 }
 
 static inline void* GetBoneName(const hkaSkeleton* skeleton, int index)
 {
-    return (void*)((unsigned int)skeleton->m_kBones.m_data[index].m_name.m_pcText & ~1u);
+    return (void*)((unsigned int)skeleton->m_bones.m_data[index].m_name.m_stringAndFlag & ~1u);
 }
 
 // Searches the table's entries for one matching pKey via pfnCompare (default CompareStringsCaseInsensitive) and returns its index, or -1 if none match.
 // @fnv 0x00cdd390
+// pdb: hkaSkeletonUtils::findBoneWithName | hkaSkeletonUtils.obj | retail, call graph, medium
+// pdb params: skeleton, name, compare
 short __cdecl FindIndexByKey(hkaSkeleton* pSearchEntries, const void* pKey,
                              int(__cdecl* pfnCompare)(const void*, const void*))
 {
@@ -95,9 +99,9 @@ void __cdecl MarkHierarchyDescendants(hkaSkeleton* hierarchy, int root, unsigned
     if (root > 0)
         fnv_zlib_memset(flags, 0, root);
     flags[root] = 1;
-    for (int i = root + 1; i < hierarchy->m_kBones.m_iElementCount; ++i)
+    for (int i = root + 1; i < hierarchy->m_bones.m_iElementCount; ++i)
     {
-        short& parent = hierarchy->m_kParentIndices.m_data[i];
+        short& parent = hierarchy->m_parentIndices.m_data[i];
         flags[i] = (parent >= 0 && flags[parent] != 0) ? 1 : 0;
     }
     flags[root] = finalValue;
@@ -120,7 +124,7 @@ bool* __cdecl AreSequenceValuesInRange(bool* pbInRange, hkaSkeleton* limits, Seq
     for (; i < sequence->count; ++i)
     {
         short value = sequence->values[i];
-        if (value < 0 || value >= limits->m_kBones.m_iElementCount)
+        if (value < 0 || value >= limits->m_bones.m_iElementCount)
         {
             *pbInRange = false;
             return pbInRange;
@@ -133,7 +137,7 @@ bool* __cdecl AreSequenceValuesInRange(bool* pbInRange, hkaSkeleton* limits, Seq
 struct Msg
 {
     int f0, f4, f8;
-    void Init(void* buf, int size);
+    void Init(void* buf, int bufSize);
     void Done();
     Msg& Add(const char* s);
     Msg& Add(const char* s, int v);
@@ -174,9 +178,13 @@ typedef int(__cdecl* CmpFn)(unsigned int, unsigned int);
 
 // Validates that the binding and track names are initialized, then maps each track to a bone index by comparing names and writes the indices to dst->out.
 // @fnv 0x00cdd880
-int __cdecl MapTracksToBones(hkaSkeleton* names, Src* src, CmpFn cmp, Dst* dst)
+// src: XBOX_RETAIL_PDB 0x00cdd880
+// pdb: hkaSkeletonUtils::bindByName | hkaSkeletonUtils.obj | retail, string-set bridge, high
+// pdb params: skeleton, anim, compare, bindingOut
+// pdb locals: assertBuf, ostr
+int __cdecl hkaSkeletonUtils_bindByName(hkaSkeleton* skeleton, Src* anim, CmpFn compare, Dst* bindingOut)
 {
-    if (dst->cnt == 0 || dst->cnt != src->n)
+    if (bindingOut->cnt == 0 || bindingOut->cnt != anim->n)
     {
         int buf[0x80];
         Msg m;
@@ -186,7 +194,7 @@ int __cdecl MapTracksToBones(hkaSkeleton* names, Src* src, CmpFn cmp, Dst* dst)
         m.Done();
         return 1;
     }
-    if (src->f20 != src->n)
+    if (anim->f20 != anim->n)
     {
         int buf[0x80];
         Msg m;
@@ -196,11 +204,11 @@ int __cdecl MapTracksToBones(hkaSkeleton* names, Src* src, CmpFn cmp, Dst* dst)
         m.Done();
         return 1;
     }
-    int cnt = names->m_kBones.m_iElementCount;
+    int cnt = skeleton->m_bones.m_iElementCount;
     int i;
     for (i = 0; i < cnt; i++)
     {
-        if (((unsigned int)names->m_kBones.m_data[i].m_name.m_pcText & ~1u) == 0)
+        if (((unsigned int)skeleton->m_bones.m_data[i].m_name.m_stringAndFlag & ~1u) == 0)
         {
             int buf[0x80];
             Msg m;
@@ -211,18 +219,18 @@ int __cdecl MapTracksToBones(hkaSkeleton* names, Src* src, CmpFn cmp, Dst* dst)
             return 1;
         }
     }
-    for (int t = 0; t < src->n; t++)
+    for (int t = 0; t < anim->n; t++)
     {
         bool found = false;
-        unsigned int uiTrackKey = src->arr[t * 4] & ~1u;
+        unsigned int uiTrackKey = anim->arr[t * 4] & ~1u;
         short j = 0;
-        for (; j < names->m_kBones.m_iElementCount; j++)
+        for (; j < skeleton->m_bones.m_iElementCount; j++)
         {
-            unsigned int uiBoneName = (unsigned int)names->m_kBones.m_data[j].m_name.m_pcText & ~1u;
-            if (cmp(uiBoneName, uiTrackKey) == 0)
+            unsigned int uiBoneName = (unsigned int)skeleton->m_bones.m_data[j].m_name.m_stringAndFlag & ~1u;
+            if (compare(uiBoneName, uiTrackKey) == 0)
             {
                 found = true;
-                dst->out[t] = j;
+                bindingOut->out[t] = j;
             }
         }
         if (!found)
@@ -270,7 +278,7 @@ unsigned char* WalkChainUntilLimit(unsigned char* pabResult, hkaSkeleton* rec, s
                 break;
             HolderRec* h = hkMemoryRouter_getInstance();
             obj->ForwardCall_00cde940(h->m_10, 0, &iCurrent);
-            idx = ((const unsigned short*)rec->m_kParentIndices.m_data)[(short)idx];
+            idx = ((const unsigned short*)rec->m_parentIndices.m_data)[(short)idx];
             iCurrent = idx;
         } while ((short)idx > 0);
     }
@@ -311,8 +319,8 @@ S_00cde450_Router* __cdecl hkMemoryRouter_getInstance();
 struct S_00cde450_ByteArr;
 struct S_00cde450_UShortArr;
 void __cdecl FUN_00ec61c0(void* dst, int value, int size);
-void __cdecl hkArrayUtil__reserve(S_00cde450_Heap& h, S_00cde450_ByteArr* a, int n, int elemSize);
-void __cdecl ResizeAudioStream(S_00cde450_Heap& h, S_00cde450_UShortArr* a, int elemSize);
+void __cdecl hkArrayUtil__reserve(S_00cde450_Heap& mem, S_00cde450_ByteArr* array, int numElem, int sizeElem);
+void __cdecl ResizeAudioStream(S_00cde450_Heap& mem, S_00cde450_UShortArr* array, int sizeElem);
 
 struct S_00cde450_UShortArr
 {
@@ -357,7 +365,7 @@ static __forceinline void S_00cde450_SetSize(S_00cde450_ByteArr& a, int n)
 void __cdecl CollectReachableNodes(hkaSkeleton* g, short asStartIndex, S_00cde450_UShortArr* pOutList,
                                    bool abIncludeStart)
 {
-    int iNodeCount = g->m_kBones.m_iElementCount;
+    int iNodeCount = g->m_bones.m_iElementCount;
     S_00cde450_ByteArr bits;
     bits.m_data = 0;
     bits.m_iElementCount = 0;
@@ -370,7 +378,7 @@ void __cdecl CollectReachableNodes(hkaSkeleton* g, short asStartIndex, S_00cde45
         bits.m_data = top;
         bits.m_pTrailingData = top;
     }
-    int n = g->m_kBones.m_iElementCount;
+    int n = g->m_bones.m_iElementCount;
     {
         S_00cde450_Heap& h = hkMemoryRouter_getInstance()->heap();
         int c = bits.m_cap & 0x3fffffff;
@@ -383,9 +391,9 @@ void __cdecl CollectReachableNodes(hkaSkeleton* g, short asStartIndex, S_00cde45
         pOutList->AddBack(asStartIndex);
     bits.m_data[asStartIndex] = 1;
     short i = (unsigned short)(asStartIndex + 1);
-    for (; i < g->m_kBones.m_iElementCount; i++)
+    for (; i < g->m_bones.m_iElementCount; i++)
     {
-        short p = g->m_kParentIndices.m_data[i];
+        short p = g->m_parentIndices.m_data[i];
         if (p != -1 && bits.m_data[p])
         {
             bits.m_data[i] = 1;
@@ -499,7 +507,7 @@ typedef short hkInt16;
 // Keep access to its data pointer here until that member is shared.
 static __forceinline hkQsTransform* GetReferencePose(const hkaSkeleton* skeleton)
 {
-    return skeleton->m_kReferencePose.m_data;
+    return skeleton->m_referencePose.m_data;
 }
 
 // For each bone with m_bLockTranslation, sets poseModel translation from the reference pose, rotated and offset by the parent's transform when a parent exists.
@@ -507,11 +515,11 @@ static __forceinline hkQsTransform* GetReferencePose(const hkaSkeleton* skeleton
 // src: GUESS 0x00cde1d0 (confidence: high)
 void __cdecl hkaSkeleton_RestoreLockedBoneTranslations(const hkaSkeleton* skeleton, hkQsTransform* poseModel)
 {
-    const int numBones = skeleton->m_kBones.m_iElementCount;
+    const int numBones = skeleton->m_bones.m_iElementCount;
     for (int i = 0; i < numBones; i++)
     {
-        const short parent = skeleton->m_kParentIndices.m_data[i];
-        if (skeleton->m_kBones.m_data[i].m_bLockTranslation.m_cBooleanValue)
+        const short parent = skeleton->m_parentIndices.m_data[i];
+        if (skeleton->m_bones.m_data[i].m_bLockTranslation.m_cBooleanValue)
         {
             const hkVector4& refTranslation = GetReferencePose(skeleton)[i].m_vTranslation;
             hkQsTransform& out = poseModel[i];
@@ -641,16 +649,19 @@ extern "C" void __cdecl hkpWorldConstraintUtil_addModifier(HkEntity*, HkObj*, Pr
 
 // Stores a Vec4 into a Property's vector field on an HkEntity, XORing it with DAT_010c44d0 when the entity's owner matches the given owner.
 // @fnv 0x00cdfcd0
-void SetModifierConstraint(HkWorld* apWorld, int owner, HkObj* apObj, Vec4* apVec)
+// src: XBOX_RETAIL_PDB 0x00cdfcd0
+// pdb: hkpResponseModifier::setSurfaceVelocity | hkpResponseModifier.obj | retail, object-file gap fill, high
+// pdb params: manager, body, constraintOwner, velWorld
+void hkpResponseModifier_setSurfaceVelocity(HkWorld* manager, int body, HkObj* constraintOwner, Vec4* velWorld)
 {
-    HkEntity* e = apWorld->GetEntity();
+    HkEntity* e = manager->GetEntity();
     if (e)
     {
-        apObj->Begin();
+        constraintOwner->Begin();
         timer(DAT_010cb7dc);
         VectorValue t;
-        *reinterpret_cast<Vec4*>(&t.quad) = *apVec;
-        if (e->owner == owner)
+        *reinterpret_cast<Vec4*>(&t.quad) = *velWorld;
+        if (e->owner == body)
         {
             t.quad = _mm_xor_ps(t.quad, DAT_010c44d0);
         }
@@ -663,7 +674,7 @@ void SetModifierConstraint(HkWorld* apWorld, int owner, HkObj* apObj, Vec4* apVe
         {
             p = new Property;
             p->vector = t.quad;
-            hkpWorldConstraintUtil_addModifier(e, apObj, p);
+            hkpWorldConstraintUtil_addModifier(e, constraintOwner, p);
         }
         timer(DAT_010c41f8);
     }
@@ -681,10 +692,12 @@ struct S_00cdd600_Out
 };
 // Multiplies the scale vectors of a chain of bones starting at idx into r, then stores the result in out.
 // @fnv 0x00cdd600
+// pdb: hkaSkeletonUtils::getModelSpaceScale | hkaSkeletonUtils.obj | debug, call graph, medium
+// pdb params: skeleton, poseLocal, boneId, scaleOut
 void __cdecl MultiplyBoneScales(hkaSkeleton* obj, hkQsTransform* bones, int aiStartIndex, S_00cdd600_Out out)
 {
     LocalM128 r = DAT_010c7170;
-    for (; aiStartIndex != -1; aiStartIndex = obj->m_kParentIndices.m_data[aiStartIndex])
+    for (; aiStartIndex != -1; aiStartIndex = obj->m_parentIndices.m_data[aiStartIndex])
         r = _mm_mul_ps(bones[aiStartIndex].m_vScale.m_vComponents, r);
     *out.val() = r;
 }

@@ -16,6 +16,7 @@ class AIThreadManager
     static TESObjectREFR* IsConditionMet();
 };
 bool IsConditionMet();
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:

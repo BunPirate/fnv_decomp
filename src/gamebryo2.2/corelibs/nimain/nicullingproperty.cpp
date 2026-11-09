@@ -28,6 +28,7 @@ extern int DAT_011f5e40;
 // Allocates a 0x14-byte object, runs its constructor, and stores the resulting pointer in DAT_011f5e40 (or 0 if allocation fails).
 // @fnv 0x00a8fd80
 // src: COMMUNITY 0x00a8fd80
+// pdb: NiSingleShaderMaterialLibrary::_SDMInit | NiSingleShaderMaterialLibrary.obj | retail, upstream name already matches, high
 void __cdecl NiSingleShaderMaterialLibrary__SDMInit()
 {
     void* p = BSFadeNode::operator new(0x14);
@@ -56,28 +57,30 @@ NiCullingProperty* NiCullingProperty::CreateClone_00a8f530(CloningProcess& kClon
     if (p)
     {
         p->NiProperty::NiProperty();
-        p->m_usFlags &= 0xfffe;
+        p->m_uFlags &= 0xfffe;
         *(void**)p = &DAT_0109f68c;
     }
     else
         p = 0;
     NiProperty_CopyMembers(p, kCloning);
-    p->m_usFlags = m_usFlags;
+    p->m_uFlags = m_uFlags;
     return p;
 }
 
 // Calls NiProperty::LoadBinary then reads 2 bytes from the stream into m_usFlags, advancing the stream position.
 // @fnv 0x00a8f650
 // src: XBOX_PDB 0x00a8f650
-void __thiscall NiCullingProperty::LoadBinary_00a8f650(NiStream& stream)
+// pdb: NiCullingProperty::LoadBinary | NiCullingProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
+void __thiscall NiCullingProperty::LoadBinary_00a8f650(NiStream& kStream)
 {
-    NiProperty::LoadBinary(stream);
+    NiProperty::LoadBinary(kStream);
     // NiStream's shared definition keeps this field in opaque storage.
-    NiBinaryStream* __restrict input = *(NiBinaryStream**)((char*)&stream + 0x24c);
+    NiBinaryStream* __restrict input = *(NiBinaryStream**)((char*)&kStream + 0x24c);
     unsigned int size = 2;
     // The shared stream header does not yet expose the position and read callback.
     unsigned int& position = *(unsigned int*)((char*)input + 4);
-    position += (*(NiBinaryStream::ReadFunction*)((char*)input + 8))(input, &m_usFlags, 2, &size, 1);
+    position += (*(NiBinaryStream::ReadFunction*)((char*)input + 8))(input, &m_uFlags, 2, &size, 1);
 }
 
 extern void* __cdecl Object_DispatchCommandFour(unsigned int);
@@ -116,6 +119,7 @@ struct GlobalObjectO2_00a7b610
 
 // Allocates a NiCullingProperty, initialises it via FUN_00a5c200, clears flag bit 0, sets its vtable, and assigns it to g_011f5d20.cullingProperty.
 // @fnv 0x00a8f5b0
+// pdb: NiCullingProperty::_SDMInit | NiCullingProperty.obj | retail, call graph, high
 void __cdecl CreateCullingProperty()
 {
     NiCullingProperty* allocated = static_cast<NiCullingProperty*>(Object_DispatchCommandFour(sizeof(NiCullingProperty)));
@@ -123,7 +127,7 @@ void __cdecl CreateCullingProperty()
     if (allocated)
     {
         FUN_00a5c200(allocated);
-        allocated->m_usFlags &= 0xfffe;
+        allocated->m_uFlags &= 0xfffe;
         *(void**)allocated = &DAT_0109f68c;
         fresh = allocated;
     }
@@ -139,6 +143,7 @@ extern NiCullingProperty* DAT_011f5d28;
 // If the global ref-counted object exists, decrements its reference count, destroys it when the count reaches zero, and clears the global pointer.
 // @fnv 0x00a8f620
 // src: XBOX_PDB 0x00a8f620
+// pdb: NiCullingProperty::_SDMShutdown | NiCullingProperty.obj | retail, upstream name already matches, high
 void __cdecl NiCullingProperty__SDMShutdown()
 {
     if (DAT_011f5d28 != 0)
@@ -239,7 +244,7 @@ typedef NiTArray<char*, NiTMallocInterface<char*> > BA8F690StringArray;
 extern const char* g_pcA8F690Name;
 
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
-char* __cdecl NiGetViewerString(const char* pcName, bool bValue);
+char* __cdecl NiGetViewerString(const char* pcPrefix, bool bValue);
 
 // The shared headers lack the viewer-string overrides; forward the unused EDX
 // argument so these file-local entry points retain the original thiscall code.
@@ -247,11 +252,13 @@ void __fastcall NiProperty_GetViewerStrings(NiProperty* property, void*, BA8F690
 
 // Appends the class name and a "bCulled" string derived from bit 0 of m_usFlags to the viewer string array.
 // @fnv 0x00a8f690
+// pdb: NiCullingProperty::GetViewerStrings | NiCullingProperty.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall NiCullingProperty_GetViewerStrings(NiCullingProperty* property, void* unusedEDX, BA8F690StringArray* pkStrings)
 {
     NiProperty_GetViewerStrings(property, unusedEDX, pkStrings);
     pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(g_pcA8F690Name));
-    bool bCulled = ((unsigned char)property->m_usFlags & 1) != 0;
+    bool bCulled = ((unsigned char)property->m_uFlags & 1) != 0;
     pkStrings->Add(NiGetViewerString("bCulled", bCulled));
 }
 
@@ -268,7 +275,7 @@ NiProperty* __cdecl CreateProperty()
     if (pProperty)
     {
         ::new (pProperty) NiProperty();
-        pProperty->m_usFlags &= 0xFFFE;
+        pProperty->m_uFlags &= 0xFFFE;
         *(void**)pProperty = (void*)&DAT_0109f68c;
         return pProperty;
     }

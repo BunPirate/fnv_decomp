@@ -12,23 +12,24 @@ class NiTexture;
 class TESObjectTREE;
 template <class TKEY, class TVAL> class NiTPointerMap;
 
+// pdb: class BSTreeManager, size 0x20, 11 members
 class BSTreeManager
 {
 public:
-    NiTPointerMap<TESObjectTREE*, NiPointer<BSTreeModel>*>* m_pLoadedModelMap;
-    NiPointer<NiTexture> m_pTreeTexture;
-    NiPointer<NiMaterialProperty> m_spMaterialProperty;
-    NiPointer<NiAlphaProperty> m_pAlphaProperty;
-    NiPointer<BSXFlags> m_pBSXFlags;
-    float m_fCurrentWeatherBlend;
-    bool m_bFirstOfFourFlags;
-    bool m_bSecondOfFourFlags;
-    bool ReferenceTreeManagerState;
-    bool m_bFourthTreeManagerFlag;
-    LockFreeMap_TESObjectREFR___BSTreeNode___* m_pTreeInstanceMap;
+    NiTPointerMap<TESObjectTREE*, NiPointer<BSTreeModel>*>* pModelMap;
+    NiPointer<NiTexture> spCanopyShadow;
+    NiPointer<NiMaterialProperty> spBillboardMatProp;
+    NiPointer<NiAlphaProperty> spDistantAlphaProp;
+    NiPointer<BSXFlags> spHavokFlags;
+    float fWindSpeed;
+    bool bShowTrees;
+    bool bShowLeaves;
+    bool bForceCompute;
+    bool m_bForceFullLOD;
+    LockFreeMap_TESObjectREFR___BSTreeNode___* pBackgroundLoadedTreeMap;
 
     BSTreeManager();
     static void Create(bool);
-    static void UpdateTreeInstances();
+    static void ClearCanopyShadow();
     BSTreeNode* CreateTreeInstance(int, int);
 };

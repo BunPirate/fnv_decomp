@@ -22,7 +22,7 @@ struct TopicH
 };
 void HK2NI_00624b10(NiTransform*, NiPoint3*);
 NiPoint3& SetNiPoint3FromHkVector4(NiPoint3&, const hkVector4&);
-NiTransform* HK2NI_00624ad0(NiTransform* arNiTran, TopicH* arTopicH);
+NiTransform* HK2NI_00624ad0(NiTransform* arNiTran, TopicH* arhkTran);
 
 #include <xmmintrin.h>
 struct Node96;
@@ -410,11 +410,14 @@ struct Manager96
 
 // @fnv 0x00624720
 // src: COMMUNITY 0x00624720
-void Manager96::FOIslandActivationListener_islandDeactivatedCallback(Input96* input)
+// pdb: FOIslandActivationListener::islandDeactivatedCallback | FOIslandActivationListener.obj | retail, upstream name already matches, high
+// pdb params: apIsland
+// pdb locals: iarraySize, pentity, pentityArray, ientityIdx, pniColObject, pavObject, bcomplex, pobjectRef, barticulated, pmodelSwap, pcell, pbhkentity, pbody, pcol, nitransf, hktransf
+void Manager96::FOIslandActivationListener_islandDeactivatedCallback(Input96* apIsland)
 {
-    if (!input)
+    if (!apIsland)
         return;
-    Array96* items = input->GetExtraPartList();
+    Array96* items = apIsland->GetExtraPartList();
     int count = items->FUN_00726070();
     for (int i = 0; i < count; i++)
     {

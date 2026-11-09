@@ -26,6 +26,7 @@ enum Interface__CONTAINER_MENU_MODE;
 enum ContainerMenu__FILTER_MODE;
 enum MENU_SOUNDS;
 
+// pdb: class ContainerMenu, size 0x10c, bases: Menu, 15 members
 class ContainerMenu : public Menu
 {
 public:
@@ -66,13 +67,13 @@ public:
     bool HasTiles();
     void PlayContainerSound(TESObjectREFR*, bool);
     void InitContainerMode();
-    void AttachAndDeliver(void*, void*, void*);
+    void UpdateItemInList(void*, void*, void*);
     void AttachAndDeliver(MenuForm*, void*, MenuList*);
     bool IsPlacingMine(InventoryEntry*, ExpectedReference*, ActorView*);
-    int GetContainerValue(ItemEntry*, int, bool);
+    int GetStolenValue(ItemEntry*, int, bool);
     bool PickpocketCheck(Actor*, int);
-    void SetLabelText(const char*);
-    void UpdatePaneTitle(TileObj*);
+    void SetContainerTitle(const char*);
+    void SetFilterModeTitle(TileObj*);
     void PlaySelectedTopicInfo(PlaybackTopic*);
     void ShowMessageWithSound(BSStringT<char>, PlaybackHandle);
     void ShowMessageWithSound(StrMem, BSSoundHandle);

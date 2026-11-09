@@ -31,11 +31,11 @@ class VertexDescriptionComparison : public hkxVertexDescription
 // @fnv 0x00e3dee0
 bool VertexDescriptionComparison::Equals(const hkxVertexDescription& aOther) const
 {
-    if (m_kElementDeclarations.m_iElementCount == aOther.m_kElementDeclarations.m_iElementCount)
+    if (m_decls.m_iElementCount == aOther.m_decls.m_iElementCount)
     {
-        for (int iIndex = 0; iIndex < m_kElementDeclarations.m_iElementCount; iIndex++)
+        for (int iIndex = 0; iIndex < m_decls.m_iElementCount; iIndex++)
         {
-            if (!(m_kElementDeclarations.m_data[iIndex] == aOther.m_kElementDeclarations.m_data[iIndex]))
+            if (!(m_decls.m_data[iIndex] == aOther.m_decls.m_data[iIndex]))
                 return false;
         }
         return true;

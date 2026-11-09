@@ -10,6 +10,7 @@ class Mesh53;
 class NiControllerSequence;
 class NiInterpControllerTriple;
 
+// pdb: class NiTimeController, size 0x34, bases: NiObject, 11 members
 class NiTimeController : public NiObject
 {
 public:
@@ -40,7 +41,7 @@ public:
 
     NiTimeController();
     virtual ~NiTimeController();
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual void LinkObject(NiStream& stream);
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void ProcessClone(CloningProcess& process);
@@ -78,19 +79,19 @@ public:
     void SetComputeScaledTime(bool computeScaledTime);
     bool GetManagerControlled() const;
     NiTimeController* GetNext() const;
-    void Reset();
-    void AddKey(const NiInterpControllerTriple& key);
+    void bhkBlendController_ClearKeys();
+    void AddKey(const NiInterpControllerTriple& arKey);
     void EvaluateAndApplyOutput(float& parameter);
     void Update(float time);
     void Update(const NiUpdateData& update);
-    static void __cdecl UpdateControllersForTarget(NiObjectNET* target);
+    static void __cdecl UpdateControllersForTarget(NiObjectNET* pkObj);
     template <class Target>
     static void __cdecl UpdateControllersForTarget(Target* target);
 
     int FUN_00441110();
     NiControllerSequence* NiControllerManager_GetSequenceByName(const NiFixedString& name);
     bool __thiscall DontDoUpdate(float value);
-    void BSShaderPPLightingProperty_SetLandscapeTextureSet(int value, void* data);
+    void BSShaderPPLightingProperty_SetLandscapeTextureSet(int aiIndex, void* apTexSet);
     void BSShaderPPLightingProperty_SetLandscapeSpecularExponents(char, char, char, char, char, char, char, int, int, int);
     void BSShaderProperty_FreeRenderPasses();
 
@@ -126,8 +127,8 @@ public:
     };
     float m_fStartTime;
     float m_fLastTime;
-    float m_fWeightAdjustedLastTime;
-    float m_fControllerTime;
+    float m_fWeightedLastTime;
+    float m_fScaledTime;
     NiObjectNET* m_pkTarget;
-    NiPointer<NiTimeController> m_spNextController;
+    NiPointer<NiTimeController> m_spNext;
 };

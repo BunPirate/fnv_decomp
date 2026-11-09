@@ -4,13 +4,14 @@
 
 extern unsigned int DAT_010a2480;
 
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
-    unsigned int data[3];
+    unsigned int pOwnerForm[3];
     ContainerItemExtra();
     void ContainerItemExtra_AdjustHealthPercent(float);
-    void InitItem(TESForm*);
+    void ContainerItemExtra_InitItem(TESForm*);
 };
 class LeveledObject;
 

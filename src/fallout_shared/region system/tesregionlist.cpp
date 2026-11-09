@@ -33,6 +33,7 @@ struct FUN_004f6480_shell
 };
 // Calls FUN_004f64b0, then deletes this object if bit 0 of flags is set, and returns this.
 // @fnv 0x004f6480
+// pdb: TESRegionList::`scalar deleting destructor' | TESRegionList.obj | retail, vtable slot, high
 void* FUN_004f6480_shell::DestroyIfFlagged(unsigned int flags)
 {
     FUN_004f64b0();

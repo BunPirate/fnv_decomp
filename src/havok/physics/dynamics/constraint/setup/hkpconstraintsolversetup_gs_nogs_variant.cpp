@@ -13,17 +13,20 @@
 // The copied declarations for the parent unit's 0x00d88670 are unused in this variant.
 
 void __cdecl hkRigidMotionUtilApplyAccumulators(void* a0, void* a1, hkpVelocityAccumulator* acc, hkpMotion** sub, int a4, int a5);
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(void* world78, hkpEntity** ent, int count);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(void* collisionInput, hkpEntity** entityBatch, int numEntities);
 
 // @fnv 0x00d88580
 // src: COMMUNITY 0x00d88580
-void __cdecl hkpConstraintSolverSetup_oneStepIntegrate(void* a0, void* a1, int offset, hkpEntity** entities, int count)
+// pdb: hkpConstraintSolverSetup::oneStepIntegrate | hkpConstraintSolverSetup.obj | retail, upstream name already matches, high
+// pdb params: si, info, accumulatorsBase, entities, numEntities
+// pdb locals: motion, accu, entity
+void __cdecl hkpConstraintSolverSetup_oneStepIntegrate(void* si, void* info, int accumulatorsBase, hkpEntity** entities, int numEntities)
 {
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < numEntities; ++i)
     {
         hkpEntity* entity = entities[i];
-        hkpMotion* sub = &entity->m_pMotionState;
-        const hkpVelocityAccumulator* source = (hkpVelocityAccumulator*)((char*)entity->m_uiFilterInfo + offset);
+        hkpMotion* sub = &entity->m_motion;
+        const hkpVelocityAccumulator* source = (hkpVelocityAccumulator*)((char*)entity->m_solverData + accumulatorsBase);
         hkpVelocityAccumulator acc;
         acc.m_type = source->m_type;
         acc.m_uiDeactivationClass = source->m_uiDeactivationClass;
@@ -37,10 +40,10 @@ void __cdecl hkpConstraintSolverSetup_oneStepIntegrate(void* a0, void* a1, int o
         acc.m_scratch3 = source->m_scratch3;
         acc.m_vCenterOfMass = acc.m_vLinearVelocity;
         acc.m_scratch1 = acc.m_vAngularVelocity;
-        unsigned char saved = sub->m_ucDeactivationIntegrateCounter;
-        sub->m_ucDeactivationIntegrateCounter = 0xff;
-        hkRigidMotionUtilApplyAccumulators(a0, a1, &acc, &sub, 1, 0);
-        hkpEntityAabbUtil_entityBatchRecalcAabb(((hkpWorld*)entity->m_pOwningWorld)->m_pCollisionInput, &entity, 1);
-        sub->m_ucDeactivationIntegrateCounter = saved;
+        unsigned char saved = sub->m_deactivationIntegrateCounter;
+        sub->m_deactivationIntegrateCounter = 0xff;
+        hkRigidMotionUtilApplyAccumulators(si, info, &acc, &sub, 1, 0);
+        hkpEntityAabbUtil_entityBatchRecalcAabb(((hkpWorld*)entity->m_world)->m_collisionInput, &entity, 1);
+        sub->m_deactivationIntegrateCounter = saved;
     }
 }

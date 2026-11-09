@@ -5,6 +5,7 @@
 
 class StrArr;
 
+// pdb: class NiLookAtController, size 0x3c, bases: NiTimeController, 2 members
 class NiLookAtController : public NiTimeController
 {
 public:
@@ -19,7 +20,7 @@ public:
     virtual bool IsEqual(NiObject* object) const;
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
     virtual void ProcessClone(CloningProcess& process);
-    virtual void Update(NiUpdateData& update);
+    virtual void Update(NiUpdateData& UpdateData);
 
     void* Destroy(unsigned int flags);
     void* FUN_00a4cd40(unsigned int flags);
@@ -39,6 +40,6 @@ public:
     unsigned short GetAxis() const;
     bool IsActive() const;
 
-    char _pad[0x04];
+    char m_uFlags[0x04];
     NiAVObject* m_pkLookAt;
 };

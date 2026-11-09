@@ -9,7 +9,7 @@ extern void hkAgent3Bridge_removePoint();
 extern void hkAgent3Bridge_commitPotential();
 extern void CallIfaceMethod();
 extern void hkAgent3Bridge_updateFilter();
-extern void AddChildAgent2ToCollector();
+extern void hkAgent3Bridge_calcStatistics();
 extern void CallObjectVirtual();
 extern void DispatchVirtualCall();
 extern void CallVirtualWithVectorArgs();
@@ -37,12 +37,15 @@ struct __declspec(align(16)) CallbackTable
 };
 struct Context
 {
-    void AddEntry(CallbackTable*, int, int);
+    void hkpCollisionDispatcher_registerAgent3(CallbackTable*, int, int);
 };
 // Fills a CallbackTable with the callback functions and flags, then passes it to AddEntry with -1, -1.
 // @fnv 0x00d923b0
 // src: HAVOK_LIB 0x00d923b0
-void __cdecl hkAgent3Bridge_registerAgent3(void* context)
+// pdb: hkAgent3Bridge::registerAgent3 | hkpAgent3Bridge.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: f
+void __cdecl hkAgent3Bridge_registerAgent3(void* dispatcher)
 {
     CallbackTable table;
     table.flag31 = 0;
@@ -56,9 +59,9 @@ void __cdecl hkAgent3Bridge_registerAgent3(void* context)
     table.callback2c = CallVirtualWithVectorArgs;
     table.callback04 = InvokeDispatch;
     table.callback18 = hkAgent3Bridge_updateFilter;
-    table.callback1c = AddChildAgent2ToCollector;
+    table.callback1c = hkAgent3Bridge_calcStatistics;
     table.callback20 = CallObjectVirtual;
     table.callback24 = DispatchVirtualCall;
     table.flag30 = 1;
-    ((Context*)context)->AddEntry(&table, -1, -1);
+    ((Context*)dispatcher)->hkpCollisionDispatcher_registerAgent3(&table, -1, -1);
 }

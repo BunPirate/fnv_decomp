@@ -6,6 +6,7 @@
 
 class TESFile;
 
+// pdb: class BGSPlaceableWater, size 0x50, bases: TESBoundObject, TESModel, 1 members
 class BGSPlaceableWater : public TESBoundObject, public TESModel
 {
 public:
@@ -15,7 +16,7 @@ public:
     virtual ~BGSPlaceableWater();
 
     virtual void InitItem(void);
-    virtual bool LoadForm(TESFile* file);
+    virtual bool LoadForm(TESFile* apFile);
     bool Load(TESFile* file);
 
     void ResetFormData();
@@ -25,17 +26,17 @@ public:
     void BGSPlaceableWater_SetReflectsLODLand(bool value);
     void BGSPlaceableWater_SetReflectsSky(bool value);
     void BGSPlaceableWater_SetRefractionEnabled(bool value);
-    void SetFlag800(bool value);
+    void BGSPlaceableWater_SetRefractsLand(bool value);
     void BGSPlaceableWater_SetUnderwaterFog(bool value);
     void BGSPlaceableWater_SetAutomaticWater(bool value);
     void BGSPlaceableWater_SetObjectTexCoordsEnabled(bool value);
     void BGSPlaceableWater_SetDepthEnabled(bool value);
-    void BGSPlaceableWater_SetFlag(int flag, bool value);
+    void BGSPlaceableWater_SetFlag(int aeFlag, bool abValue);
     void SetValue(bool value);
     void SetFlag80(bool value);
     void SetFlag100(bool value);
     void SetFlag8000000(bool value);
-    bool HasFlags(unsigned int flags);
+    bool IsFlagSet(unsigned int aeFlag);
     bool IsRestricted();
     bool GetReflectsLand();
     bool GetReflectsLODLand();

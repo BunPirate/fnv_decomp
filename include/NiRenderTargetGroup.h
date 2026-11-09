@@ -8,6 +8,7 @@ class Ni2DBuffer;
 class NiDepthStencilBuffer;
 class NiPixelFormat;
 
+// pdb: class NiRenderTargetGroup, size 0x30, bases: NiObject, 8 members
 class NiRenderTargetGroup : public NiObject
 {
   public:
@@ -37,35 +38,35 @@ class NiRenderTargetGroup : public NiObject
 
     NiMemObject** GetBuffers()
     {
-        return reinterpret_cast<NiMemObject**>(&SystemStateFlags);
+        return reinterpret_cast<NiMemObject**>(&uiDepthBase);
     }
 
     NiMemObject* const* GetBuffers() const
     {
-        return reinterpret_cast<NiMemObject* const*>(&SystemStateFlags);
+        return reinterpret_cast<NiMemObject* const*>(&uiDepthBase);
     }
 
     NiDepthStencilBuffer*& GetDepthStencilBuffer()
     {
-        return reinterpret_cast<NiDepthStencilBuffer*&>(m_aspRenderTargetBuffers[3].m_pObject);
+        return reinterpret_cast<NiDepthStencilBuffer*&>(m_aspBuffers[3].m_pObject);
     }
 
     NiDepthStencilBuffer* const& GetDepthStencilBuffer() const
     {
-        return reinterpret_cast<NiDepthStencilBuffer* const&>(m_aspRenderTargetBuffers[3].m_pObject);
+        return reinterpret_cast<NiDepthStencilBuffer* const&>(m_aspBuffers[3].m_pObject);
     }
 
-    bool m_bNeedsResolve;
-    bool m_bFlagBeforePadding;
+    bool bForceNoMSAASurface;
+    bool bAddDSRestoreSurface;
     unsigned char layoutPaddingA[2];
-    unsigned int SystemStateFlags;
-    bool m_bFlagBeforeBuffers;
+    unsigned int uiDepthBase;
+    bool bResolveDepth;
     unsigned char layoutPadding11[1];
     unsigned short RenderBufferSet;
-    NiPointer<Ni2DBuffer> m_aspRenderTargetBuffers[4];
-    unsigned int RenderTargetBufferInfo;
-    NiPointer<NiDepthStencilBuffer> m_spRenderTargetDepthStencilBuffer;
-    RendererData* m_pTextureRendererData;
+    NiPointer<Ni2DBuffer> m_aspBuffers[4];
+    unsigned int m_uiNumBuffers;
+    NiPointer<NiDepthStencilBuffer> m_spDepthStencilBuffer;
+    RendererData* m_pkRendererData;
 };
 
 #include "NiRenderTargetGroup_RendererData.h"

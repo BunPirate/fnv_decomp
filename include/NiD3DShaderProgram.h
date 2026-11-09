@@ -25,10 +25,11 @@ class bhkBlendCollisionObject;
 class bhkRigidBody;
 class bhkLimitedHingeConstraint;
 
+// pdb: class NiD3DShaderProgram, size 0x2c, bases: NiGPUProgram, 8 members
 class NiD3DShaderProgram : public NiGPUProgram
 {
 public:
-    NiD3DShaderProgram(NiD3DRenderer* pkRenderer, int iType) throw();
+    NiD3DShaderProgram(NiD3DRenderer* pkRenderer, int eType) throw();
     NiD3DShaderProgram(void* pkRenderer, int eType) throw();
 
     virtual ~NiD3DShaderProgram();
@@ -75,12 +76,12 @@ public:
     void SetVertexShaderConstant(int, int, float*);
     void SetPixelShaderConstant(int, int, float*);
 
-    char* m_pcProgramName;
-    char* m_pcProfile;
-    unsigned int m_uiProgramCodeSize;
-    void* m_pProgramCode;
-    NiD3DShaderProgramCreator* m_pCreator;
-    Direct3DDeviceInterface* m_pD3DDevice;
-    GraphicsRenderer* m_pShaderObject;
-    ShaderPassRenderer* m_pRenderState;
+    char* m_pszName;
+    char* m_pszShaderProgramName;
+    unsigned int m_uiCodeSize;
+    void* m_pvCode;
+    NiD3DShaderProgramCreator* m_pkCreator;
+    Direct3DDeviceInterface* m_pkD3DDevice;
+    GraphicsRenderer* m_pkD3DRenderer;
+    ShaderPassRenderer* m_pkD3DRenderState;
 };

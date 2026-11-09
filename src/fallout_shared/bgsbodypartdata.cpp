@@ -33,6 +33,7 @@ static const char s_defaultBodyPartData[] = "DefaultBodyPartData";
 static const char s_playerBodyPartData[] = "PlayerBodyPartData";
 
 // @fnv 0x005e4af0
+// pdb: BGSBodyPartData::BGSBodyPartData | BGSBodyPartData.obj | retail, upstream name already matches, high
 BGSBodyPartData::BGSBodyPartData()
 {
     SetFormType(ENUM_FORM_ID_BPTD_ID);
@@ -40,13 +41,15 @@ BGSBodyPartData::BGSBodyPartData()
 }
 
 // @fnv 0x005e4c40
+// pdb: BGSBodyPartData::InitializeData | BGSBodyPartData.obj | retail, vtable slot, high
 void BGSBodyPartData::ResetFormData()
 {
-    memset(m_apBodyParts, 0, sizeof(m_apBodyParts));
-    m_pRagdoll = 0;
+    memset(pPartArray, 0, sizeof(pPartArray));
+    pRagdollData = 0;
 }
 
 // @fnv 0x005e4c70
+// pdb: BGSBodyPartData::ClearData | BGSBodyPartData.obj | debug, upstream name already matches, high
 void BGSBodyPartData::ClearData()
 {
     ClearBodyParts();
@@ -54,32 +57,36 @@ void BGSBodyPartData::ClearData()
 
 // Deletes all 15 entries in the body part array and sets each pointer to null.
 // @fnv 0x005e51b0
+// pdb: BGSBodyPartData::ClearParts | BGSBodyPartData.obj | retail, object-file run extension, low
+// pdb locals: i
 void BGSBodyPartData::ClearBodyParts()
 {
     for (int i = 0; i < 15; ++i)
     {
-        delete m_apBodyParts[i];
-        m_apBodyParts[i] = 0;
+        delete pPartArray[i];
+        pPartArray[i] = 0;
     }
 }
 
 // @fnv 0x005e4c90
+// pdb: BGSBodyPartData::InitItem | BGSBodyPartData.obj | retail, string-set bridge, high
+// pdb locals: uitemp, i, ppart
 void BGSBodyPartData::InitItem()
 {
     if (IsFormInitialized())
         return;
     for (int i = 0; i < 15; ++i)
     {
-        BGSBodyPart* part = m_apBodyParts[i];
+        BGSBodyPart* part = pPartArray[i];
         if (part)
             part->InitItem(this);
     }
-    unsigned int ragdollID = reinterpret_cast<unsigned int>(m_pRagdoll);
+    unsigned int ragdollID = reinterpret_cast<unsigned int>(pRagdollData);
     if (ragdollID)
     {
         RemapFormIDForFile(ragdollID, GetFile(-1));
-        m_pRagdoll = dynamic_cast<BGSRagdoll*>(TESForm::GetFormByID(ragdollID));
-        if (!m_pRagdoll)
+        pRagdollData = dynamic_cast<BGSRagdoll*>(TESForm::GetFormByID(ragdollID));
+        if (!pRagdollData)
             Warning(s_ragdollWarning, ragdollID, GetName(), GetFormID());
     }
     SetInitializationState(true);
@@ -87,15 +94,18 @@ void BGSBodyPartData::InitItem()
 
 // Loads a BGSBodyPartData from a TESFile: validates the BPTD form ID, reads the record header and dispatches EDID/OBND/MODL/MODT/PNAM/BPNN/BPTN/NAM0/RAGA chunks.
 // @fnv 0x005e4d80
-bool BGSBodyPartData::LoadForm(TESFile* file)
+// pdb: BGSBodyPartData::Load | BGSBodyPartData.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: chunkid, badvanced, pMessage, iwarncount, ppart, itempint
+bool BGSBodyPartData::LoadForm(TESFile* apFile)
 {
-    if (static_cast<TESFileFormInt*>(file)->GetTESForm() != ENUM_FORM_ID_BPTD_ID)
+    if (static_cast<TESFileFormInt*>(apFile)->GetTESForm() != ENUM_FORM_ID_BPTD_ID)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     int chunk;
     bool bRecovered;
 read_chunk:
-    chunk = file->GetChunkID();
+    chunk = apFile->GetChunkID();
     if (chunk)
     {
         bRecovered = false;
@@ -103,17 +113,17 @@ read_chunk:
         {
         case 0x44494445:  // EDID
         {
-            char* buffer = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(buffer, 0x200);
+            char* buffer = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(buffer, 0x200);
             SetEditorID_AtRuntime(buffer);
             break;
         }
         case 0x444E424F:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4C444F4D:  // MODL
         case 0x54444F4D:  // MODT
-            TESModel::LoadModelData(static_cast<TESModel*>(this), file);
+            TESModel::LoadModelData(static_cast<TESModel*>(this), apFile);
             break;
         case 0x4D414E50:  // PNAM
         case 0x4E4E5042:  // BPNN
@@ -121,14 +131,14 @@ read_chunk:
         {
             BGSBodyPart* part = new BGSBodyPart;
             int warnings = Warning();
-            if (!part->Load(file))
+            if (!part->Load(apFile))
             {
                 Warning(s_loadFailedWarning, GetName(), GetFormID());
                 delete part;
                 return false;
                 goto check_warnings;
             }
-            switch (static_cast<int>(file->GetChunkID()))
+            switch (static_cast<int>(apFile->GetChunkID()))
             {
             case 0x4E4E5042:  // BPNN
             case 0x41474152:  // RAGA
@@ -147,12 +157,12 @@ read_chunk:
         case 0x41474152:  // RAGA
         {
             unsigned int ragdollID = 0;
-            file->GetChunkData(&ragdollID);
-            m_pRagdoll = reinterpret_cast<BGSRagdoll*>(ragdollID);
+            apFile->GetChunkData(&ragdollID);
+            pRagdollData = reinterpret_cast<BGSRagdoll*>(ragdollID);
             break;
         }
         }
-        if (!bRecovered && !file->NextChunk())
+        if (!bRecovered && !apFile->NextChunk())
             goto done;
         goto read_chunk;
     }
@@ -162,19 +172,22 @@ done:
 
 // Stores a body part in the slot given by its limb index, warning and deleting any existing part if the slot is occupied or the index is out of range.
 // @fnv 0x005e5220
-void BGSBodyPartData::AddBodyPart(BGSBodyPart* part)
+// pdb: BGSBodyPartData::AddBodyPart | BGSBodyPartData.obj | retail, string-set bridge, high
+// pdb params: apPart
+// pdb locals: iindex
+void BGSBodyPartData::AddBodyPart(BGSBodyPart* apPart)
 {
-    if (part)
+    if (apPart)
     {
-        int index = part->GetLimb();
+        int index = apPart->GetLimb();
         if (index >= 0 && index < 15)
         {
-            if (m_apBodyParts[index])
+            if (pPartArray[index])
             {
                 Warning(s_alreadyInUseWarning, index, GetName(), GetFormID());
-                delete m_apBodyParts[index];
+                delete pPartArray[index];
             }
-            m_apBodyParts[index] = part;
+            pPartArray[index] = apPart;
         }
         else
             Warning(s_invalidIndexWarning, index, GetName(), GetFormID());
@@ -182,19 +195,24 @@ void BGSBodyPartData::AddBodyPart(BGSBodyPart* part)
 }
 
 // @fnv 0x005e5590
-void BGSBodyPartData::QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* file)
+// pdb: BGSBodyPartData::QueueFiles | BGSBodyPartData.obj | retail, vtable slot, high
+// pdb params: aePriority, apParent
+// pdb locals: i, ppart
+void BGSBodyPartData::QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent)
 {
     for (int i = 0; i < 15; ++i)
     {
-        BGSBodyPart* part = m_apBodyParts[i];
+        BGSBodyPart* part = pPartArray[i];
         if (part)
-            part->QueueResourceLoad(priority, file);
+            part->QueueResourceLoad(aePriority, apParent);
     }
 }
 
 // Looks up BGSBodyPartData forms 0x1D and 0x1C, creating and registering them with editor IDs if missing.
 // @fnv 0x005e53a0
-void BGSBodyPartData::InitializeBodyPartData()
+// src: XBOX_RETAIL_PDB 0x005e53a0
+// pdb: BGSBodyPartData::GenerateDefaultBodyPartData | BGSBodyPartData.obj | retail, string-set bridge, high
+void BGSBodyPartData::GenerateDefaultBodyPartData()
 {
     ms_pBodyPartData = dynamic_cast<BGSBodyPartData*>(TESForm::GetFormByID(0x1D));
     if (!ms_pBodyPartData)
@@ -219,15 +237,18 @@ void BGSBodyPartData::InitializeBodyPartData()
 
 // Searches the entries array for an element whose GetByte63 matches value and returns it, or null if none found.
 // @fnv 0x005e5130
-BGSBodyPart* BGSBodyPartData::GetValueByIndex(int value)
+// pdb: BGSBodyPartData::GetBodyPart | BGSBodyPartData.obj | debug, call graph, high
+// pdb params: aeIndex
+// pdb locals: pretpart, i, ppart
+BGSBodyPart* BGSBodyPartData::GetValueByIndex(int aeIndex)
 {
     BGSBodyPart* pFound = 0;
     for (int index = 0; index < 15; ++index)
     {
-        BGSBodyPart* pEntry = m_apBodyParts[index];
+        BGSBodyPart* pEntry = pPartArray[index];
         if (!pEntry)
             continue;
-        if (pEntry->GetByte63() == value)
+        if (pEntry->GetByte63() == aeIndex)
         {
             pFound = pEntry;
             break;

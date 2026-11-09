@@ -6,6 +6,7 @@ class NiStream;
 class Point3ParameterData;
 class ParticleInfo;
 
+// pdb: class NiPSysData, size 0x7c, bases: NiParticlesData, 4 members
 class NiPSysData : public NiParticlesData
 {
 public:
@@ -37,6 +38,6 @@ public:
 
     Point3ParameterData* m_pkParticleInfo;
     float* m_pfRotationSpeeds;
-    unsigned short m_usNumActive;
-    unsigned short m_usNumParticles;
+    unsigned short m_usNumAddedParticles;
+    unsigned short m_usAddedParticlesBase;
 };

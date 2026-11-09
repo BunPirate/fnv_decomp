@@ -95,14 +95,14 @@ struct RefB09
     virtual hkVector4* GetPosF0(hkVector4* pOut);
     HandleB09* bhkWorldObject_GetCollisionFilter(HandleB09* pOut);
     void* Bipedanim_GetReferenceFlagsOrZero();
-    void bhkRigidBody_ApplyLinearImpulseNi(const NiPoint3& kImpulse);
-    void bhkRigidBody_ApplyAngularImpulseNi(const NiPoint3& kImpulse);
+    void bhkRigidBody_ApplyLinearImpulseNi(const NiPoint3& arImpulse);
+    void bhkRigidBody_ApplyAngularImpulseNi(const NiPoint3& arImpulse);
 };
-FormB09* __cdecl FUN_004b5a20(void* pBase);
+FormB09* __cdecl FUN_004b5a20(void* apBody);
 void* __cdecl TESObjectREFR_FindReferenceFor3D(void* pForm);
-float __cdecl TESHavokUtilities_ScaleGameplayImpulseForce(float fValue, RefB09* pRef, int iFlag);
+float __cdecl TESHavokUtilities_ScaleGameplayImpulseForce(float afBaseForce, RefB09* apPushedBody, int abUseMinMass);
 float __cdecl BSMIN(float fA, float fB);
-float __cdecl FUN_00476b70(float fMin, float fScaledValue);
+float __cdecl FUN_00476b70(float afMin, float afMax);
 struct OwnerB09
 {
     virtual void vo000();
@@ -233,49 +233,52 @@ struct OwnerB09
     virtual NiPoint3* GetPos1F4();
     ProcessB09* FUN_004181e0();
     void* QUserData();
-    void Explosion_PushRigidBody(RefB09* pRef);
+    void Explosion_PushRigidBody(RefB09* apRigidBody);
 };
 
 // Shared vector unions need strict GS checking to retain the original stack cookies.
 #pragma strict_gs_check(push, on)
 // @fnv 0x009b0920
 // src: COMMUNITY 0x009b0920
-void OwnerB09::Explosion_PushRigidBody(RefB09* pRef)
+// pdb: Explosion::PushRigidBody | Explosion.obj | retail, upstream name already matches, high
+// pdb params: apRigidBody
+// pdb locals: fforce, tmp, bexplodedBody, direction, kangularForce, rbLoc, pcol, pav, pref
+void OwnerB09::Explosion_PushRigidBody(RefB09* apRigidBody)
 {
-    if (pRef)
+    if (apRigidBody)
     {
         float fForce = FUN_004181e0()->FUN_009b0bd0();
         if (fForce > 0.0)
         {
             hkVector4 kPos;
             NiPoint3 kRefPos;
-            FUN_00458620(&kRefPos, pRef->GetPosF0(&kPos));
+            FUN_00458620(&kRefPos, apRigidBody->GetPosF0(&kPos));
             NiPoint3 kWorldPosition = kRefPos - *GetPos1F4();
             kWorldPosition.Unitize();
             HandleB09 kHandle;
-            if (pRef->bhkWorldObject_GetCollisionFilter(&kHandle)->CFilter_QBipLayer())
+            if (apRigidBody->bhkWorldObject_GetCollisionFilter(&kHandle)->CFilter_QBipLayer())
                 kWorldPosition[2] += *g_kSettingE70.GetFloat();
             bool bMatched = false;
             if (QUserData())
             {
-                FormB09* pForm = FUN_004b5a20(pRef->Bipedanim_GetReferenceFlagsOrZero());
+                FormB09* pForm = FUN_004b5a20(apRigidBody->Bipedanim_GetReferenceFlagsOrZero());
                 void* pBase = pForm ? pForm->FUN_0044ddc0() : 0;
                 void* pOther = TESObjectREFR_FindReferenceFor3D(pBase);
                 if (pOther && pOther == QUserData())
                 {
                     HandleB09 kHandle2;
-                    if (pRef->bhkWorldObject_GetCollisionFilter(&kHandle2)->CFilter_GetLayer() == 20)
-                        pRef->SetFlagE4(1);
+                    if (apRigidBody->bhkWorldObject_GetCollisionFilter(&kHandle2)->CFilter_GetLayer() == 20)
+                        apRigidBody->SetFlagE4(1);
                     fForce *= *g_kSettingDBC.GetFloat();
                     bMatched = true;
                 }
             }
-            fForce = TESHavokUtilities_ScaleGameplayImpulseForce(fForce, pRef, 1);
+            fForce = TESHavokUtilities_ScaleGameplayImpulseForce(fForce, apRigidBody, 1);
             if (!bMatched)
                 fForce = BSMIN(fForce, *g_kSettingC9C.GetFloat());
-            pRef->bhkRigidBody_ApplyLinearImpulseNi(kWorldPosition * fForce * *g_kSettingF64.GetFloat());
+            apRigidBody->bhkRigidBody_ApplyLinearImpulseNi(kWorldPosition * fForce * *g_kSettingF64.GetFloat());
             NiPoint3 kRandom(FUN_00476b70(-1.0f, 1.0f), FUN_00476b70(-1.0f, 1.0f), FUN_00476b70(-1.0f, 1.0f));
-            pRef->bhkRigidBody_ApplyAngularImpulseNi(kRandom * fForce * *g_kSetting2EC.GetFloat());
+            apRigidBody->bhkRigidBody_ApplyAngularImpulseNi(kRandom * fForce * *g_kSetting2EC.GetFloat());
         }
     }
 }
@@ -284,29 +287,35 @@ int __cdecl NI2HK(hkVector4*, int);
 struct S009b0bf0_Obj
 {
     void bhkRigidBody_ApplyLinearImpulse(int);
-    void bhkRigidBody_ApplyLinearImpulseNi(int a0);
+    void bhkRigidBody_ApplyLinearImpulseNi(int arImpulse);
 };
 // @fnv 0x009b0bf0
 // src: COMMUNITY 0x009b0bf0
-void S009b0bf0_Obj::bhkRigidBody_ApplyLinearImpulseNi(int a0)
+// pdb: bhkRigidBody::ApplyLinearImpulse | Explosion.obj | debug, call graph, high
+// pdb params: arImpulse
+// pdb locals: hkv
+void S009b0bf0_Obj::bhkRigidBody_ApplyLinearImpulseNi(int arImpulse)
 {
     hkVector4 box;
-    bhkRigidBody_ApplyLinearImpulse(NI2HK(&box, a0));
+    bhkRigidBody_ApplyLinearImpulse(NI2HK(&box, arImpulse));
 }
 
-hkVector4& NI2HK(hkVector4& out, const NiPoint3& in);
+hkVector4& NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
 struct S_009b0c90
 {
     int unk00;
-    void bhkRigidBody_ApplyAngularImpulse(const hkVector4& v);
-    void bhkRigidBody_ApplyAngularImpulseNi(const NiPoint3& p);
+    void bhkRigidBody_ApplyAngularImpulse(const hkVector4& arImpulse);
+    void bhkRigidBody_ApplyAngularImpulseNi(const NiPoint3& arImpulse);
 };
 // @fnv 0x009b0c90
 // src: COMMUNITY 0x009b0c90
-void S_009b0c90::bhkRigidBody_ApplyAngularImpulseNi(const NiPoint3& p)
+// pdb: bhkRigidBody::ApplyAngularImpulse | Explosion.obj | debug, call graph, high
+// pdb params: arImpulse
+// pdb locals: hkv
+void S_009b0c90::bhkRigidBody_ApplyAngularImpulseNi(const NiPoint3& arImpulse)
 {
     hkVector4 v;
-    bhkRigidBody_ApplyAngularImpulse(NI2HK(v, p));
+    bhkRigidBody_ApplyAngularImpulse(NI2HK(v, arImpulse));
 }
 
 #pragma strict_gs_check(pop)

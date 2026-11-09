@@ -8,11 +8,11 @@ class TESModelList;
 class FileEntryListCollection
 {
 public:
-    unsigned int m_uiFileEntryCount;
-    FileEntryList** m_ppElementArray;
+    unsigned int iTextureListCount;
+    FileEntryList** pTextureLists;
 
     ~FileEntryListCollection();
     FileEntryListCollection* ClearData(unsigned int flags);
     void ClearAndDeleteArray();
-    void LoadFromTESFile(TESModelList* pOwner, TESFile* pFile);
+    void LoadFromTESFile(TESModelList* apModelList, TESFile* apFile);
 };

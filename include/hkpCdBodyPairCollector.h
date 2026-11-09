@@ -2,6 +2,7 @@
 
 #include "hkpCdBody.h"
 
+// pdb: class hkpCdBodyPairCollector, size 0x8 (here 0x4), 1 members
 class hkpCdBodyPairCollector
 {
 public:

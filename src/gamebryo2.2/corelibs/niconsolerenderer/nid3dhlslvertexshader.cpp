@@ -40,10 +40,10 @@ struct MyConstTable
 // @fnv 0x00e97210
 void __fastcall ReleaseConstTable(NiD3DHLSLVertexShader* pkShader, void*)
 {
-    if (pkShader->m_pShaderConstantTable)
+    if (pkShader->m_pkConstantTable)
     {
-        ((MyConstTable*)pkShader->m_pShaderConstantTable)->Release();
-        pkShader->m_pShaderConstantTable = 0;
+        ((MyConstTable*)pkShader->m_pkConstantTable)->Release();
+        pkShader->m_pkConstantTable = 0;
     }
     pkShader->NiD3DVertexShader::UnloadShader();
 }
@@ -65,29 +65,32 @@ struct MyTable
 };
 // Returns the shader's Constants from its descriptor, or 0 if the table is null or GetDesc fails.
 // @fnv 0x00e97250
+// pdb: NiD3DHLSLVertexShader::GetVariableCount | NiD3DHLSLVertexShader.obj | retail, object-file run extension, low
+// pdb locals: kDesc
 unsigned int __fastcall GetConstants(NiD3DHLSLVertexShader* pkShader, void*)
 {
     MyDesc kDesc;
-    if (!pkShader->m_pShaderConstantTable)
+    if (!pkShader->m_pkConstantTable)
         return 0;
-    long hr = ((MyTable*)pkShader->m_pShaderConstantTable)->GetDesc(&kDesc);
+    long hr = ((MyTable*)pkShader->m_pkConstantTable)->GetDesc(&kDesc);
     return hr < 0 ? 0 : kDesc.Constants;
 }
 
+// pdb: structure _D3DXCONSTANT_DESC, size 0x30, 12 members
 struct _D3DXCONSTANT_DESC
 {
     const char* Name;
-    unsigned int f0;
-    unsigned int f1;
-    unsigned int f2;
-    unsigned int f3;
-    unsigned int f4;
-    unsigned int f5;
-    unsigned int f6;
-    unsigned int f7;
-    unsigned int f8;
-    unsigned int f9;
-    unsigned int f10;
+    unsigned int RegisterSet;
+    unsigned int RegisterIndex;
+    unsigned int RegisterCount;
+    unsigned int Class;
+    unsigned int Type;
+    unsigned int Rows;
+    unsigned int Columns;
+    unsigned int Elements;
+    unsigned int StructMembers;
+    unsigned int Bytes;
+    unsigned int DefaultValue;
 };
 struct ConstTable
 {
@@ -104,16 +107,19 @@ struct ConstTable
 };
 // Looks up the constant handle at uiIndex, queries its descriptor, and returns the descriptor's Name if found, otherwise null.
 // @fnv 0x00e97280
+// pdb: NiD3DHLSLVertexShader::GetVariableName | NiD3DHLSLVertexShader.obj | retail, object-file run extension, low
+// pdb params: uiIndex
+// pdb locals: kDesc, uiCount, hConstant
 const char* NiD3DHLSLVertexShader::GetConstantName(unsigned int uiIndex)
 {
     _D3DXCONSTANT_DESC kDesc;
     unsigned int ItemUpdateArray;
     unsigned int hConstant;
-    hConstant = ((ConstTable*)m_pShaderConstantTable)->GetPlaneConstant(0, uiIndex);
+    hConstant = ((ConstTable*)m_pkConstantTable)->GetPlaneConstant(0, uiIndex);
     if (hConstant)
     {
         ItemUpdateArray = 1;
-        if (((ConstTable*)m_pShaderConstantTable)->GetConstantDescription(hConstant, &kDesc, &ItemUpdateArray) >= 0 && ItemUpdateArray != 0)
+        if (((ConstTable*)m_pkConstantTable)->GetConstantDescription(hConstant, &kDesc, &ItemUpdateArray) >= 0 && ItemUpdateArray != 0)
             return kDesc.Name;
     }
     return 0;
@@ -123,6 +129,7 @@ void __cdecl FUN_00e89ad0();
 
 // @fnv 0x00e97240
 // src: XBOX_PDB 0x00e97240
+// pdb: NiD3DHLSLVertexShader::RecreateRendererData | NiD3DHLSLVertexShader.obj | debug, upstream name already matches, high
 void __cdecl NiD3DHLSLVertexShader_RecreateRendererData()
 {
     FUN_00e89ad0();
@@ -345,26 +352,29 @@ struct VS_00e972e0_Renderer
 };
 __forceinline bool SetF(NiD3DHLSLVertexShader* pkShader, unsigned int uiReg, const void* pv, unsigned int ItemUpdateArray)
 {
-    return ((VS_00e972e0_Renderer*)pkShader->m_pRenderState)->CallVtableMethod(uiReg, pv, ItemUpdateArray, 0);
+    return ((VS_00e972e0_Renderer*)pkShader->m_pkD3DRenderState)->CallVtableMethod(uiReg, pv, ItemUpdateArray, 0);
 }
 __forceinline bool SetI(NiD3DHLSLVertexShader* pkShader, unsigned int uiReg, const void* pv, unsigned int ItemUpdateArray)
 {
-    return ((VS_00e972e0_Renderer*)pkShader->m_pRenderState)->SetDeviceState(uiReg, pv, ItemUpdateArray, 0);
+    return ((VS_00e972e0_Renderer*)pkShader->m_pkD3DRenderState)->SetDeviceState(uiReg, pv, ItemUpdateArray, 0);
 }
 __forceinline bool SetB(NiD3DHLSLVertexShader* pkShader, unsigned int uiReg, const void* pv, unsigned int ItemUpdateArray)
 {
-    return ((VS_00e972e0_Renderer*)pkShader->m_pRenderState)->IsVtblCallSucceeded(uiReg, pv, ItemUpdateArray, 0);
+    return ((VS_00e972e0_Renderer*)pkShader->m_pkD3DRenderState)->IsVtblCallSucceeded(uiReg, pv, ItemUpdateArray, 0);
 }
 __forceinline long SetM(NiD3DHLSLVertexShader* pkShader, unsigned int uiReg, const float* pv, unsigned int ItemUpdateArray)
 {
-    return ((VS_00e972e0_Renderer*)pkShader->m_pRenderState)->SetVSF(uiReg, pv, ItemUpdateArray);
+    return ((VS_00e972e0_Renderer*)pkShader->m_pkD3DRenderState)->SetVSF(uiReg, pv, ItemUpdateArray);
 }
 
 // @fnv 0x00e972e0
 // src: XBOX_PDB 0x00e972e0
+// pdb: NiD3DHLSLVertexShader::SetShaderConstant | NiD3DHLSLVertexShader.obj | retail, string-set bridge, high
+// pdb params: pkEntry, pvDataSource, __formal
+// pdb locals: bReturn, pkVariable, kVariableName, kDesc, hr, uiCount, kMat
 bool __fastcall NiD3DHLSLVertexShader_SetShaderConstant(NiD3DHLSLVertexShader* pkShader, void*, VS_00e972e0_Entry* pkEntry, const void* pvDataSource, unsigned int uiFlags)
 {
-    if (!pkShader->m_pShaderConstantTable || !pkShader->m_pD3DDevice)
+    if (!pkShader->m_pkConstantTable || !pkShader->m_pkD3DDevice)
         return false;
     if (!pvDataSource)
         pvDataSource = pkEntry->m_pConstantData;
@@ -385,12 +395,12 @@ bool __fastcall NiD3DHLSLVertexShader_SetShaderConstant(NiD3DHLSLVertexShader* p
             pkEntry->NiShaderConstantMapEntry_SetVariableName(temporary.kVariable);
         }
         char* pcVariable = temporary.kVariable.m_kHandle;
-        void* hConstant = ((VS_00e972e0_Table*)pkShader->m_pShaderConstantTable)->FindConstantByName(0, pcVariable);
+        void* hConstant = ((VS_00e972e0_Table*)pkShader->m_pkConstantTable)->FindConstantByName(0, pcVariable);
         if (hConstant)
         {
             temporary.ItemUpdateArray = 1;
             VS_00e972e0_Desc kDesc;
-            ((VS_00e972e0_Table*)pkShader->m_pShaderConstantTable)->GetConstantDescription(hConstant, &kDesc, &temporary.ItemUpdateArray);
+            ((VS_00e972e0_Table*)pkShader->m_pkConstantTable)->GetConstantDescription(hConstant, &kDesc, &temporary.ItemUpdateArray);
             pkEntry->m_uiValueAt1C = kDesc.m_uiRegisterIndex;
             pkEntry->m_uiValue4 = kDesc.m_uiRegisterSpan;
             pkEntry->m_bFlag1 = true;
@@ -399,7 +409,7 @@ bool __fastcall NiD3DHLSLVertexShader_SetShaderConstant(NiD3DHLSLVertexShader* p
         }
         else
         {
-            Object_DoNothing(str_010f14a0, pkShader->m_pcProgramName, pcVariable);
+            Object_DoNothing(str_010f14a0, pkShader->m_pszName, pcVariable);
             if (pcVariable != DAT_0109b220)
                 InterlockedDecrement((long volatile*)(pcVariable - 8));
             return false;
@@ -447,10 +457,13 @@ extern const char str_010f14e8[];
 // Resolves the constant by name, then uploads matrix, float, integer, or boolean data to shader registers, optionally using the supplied entry order.
 // @fnv 0x00e974f0
 // src: XBOX_PDB 0x00e974f0
+// pdb: NiD3DHLSLVertexShader::SetShaderConstantArray | NiD3DHLSLVertexShader.obj | retail, string-set bridge, high
+// pdb params: pkEntry, pvDataSource, uiNumEntries, uiRegistersPerEntry, pusReorderArray
+// pdb locals: uiInternal, bReturn, bTranspose, pkVariable, kVariableName, kDesc, hr, uiCount, kMat, uiBaseRegister, i, pkEntryHandle, usNewIndex, pfDataSourceIterator
 bool __fastcall NiD3DHLSLVertexShader_SetShaderConstantArray(NiD3DHLSLVertexShader* pkShader, void*, VS_00e972e0_Entry* pkEntry, const void* pvData, unsigned int uiNumEntries,
                                unsigned int uiRegistersPerEntry, OrderArg orderArg)
 {
-    if (pkShader->m_pShaderConstantTable == 0 || pkShader->m_pD3DDevice == 0)
+    if (pkShader->m_pkConstantTable == 0 || pkShader->m_pkD3DDevice == 0)
         return false;
 
     int eType = DAT_011f5fc4[pkEntry->m_uiValue1 & 0xff];
@@ -489,19 +502,19 @@ bool __fastcall NiD3DHLSLVertexShader_SetShaderConstantArray(NiD3DHLSLVertexShad
         }
 
         char* pcVariable = kVariableName.m_kHandle;
-        void* hConstant = ((VS_00e972e0_Table*)pkShader->m_pShaderConstantTable)->FindConstantByName(0, pcVariable);
+        void* hConstant = ((VS_00e972e0_Table*)pkShader->m_pkConstantTable)->FindConstantByName(0, pcVariable);
         if (hConstant)
         {
             VS_00e972e0_Desc& kDesc = scratch.desc;
             temporary.ItemUpdateArray = 1;
-            ((VS_00e972e0_Table*)pkShader->m_pShaderConstantTable)->GetConstantDescription(hConstant, &kDesc, &temporary.ItemUpdateArray);
+            ((VS_00e972e0_Table*)pkShader->m_pkConstantTable)->GetConstantDescription(hConstant, &kDesc, &temporary.ItemUpdateArray);
             pkEntry->m_uiValueAt1C = kDesc.m_uiRegisterIndex;
             pkEntry->m_uiValue4 = kDesc.m_uiRegisterSpan;
             pkEntry->m_bFlag1 = true;
         }
         else
         {
-            Object_DoNothing(str_010f14e8, pkShader->m_pcProgramName, pcVariable);
+            Object_DoNothing(str_010f14e8, pkShader->m_pszName, pcVariable);
             if (pcVariable != DAT_0109b220)
                 InterlockedDecrement((long volatile*)(pcVariable - 8));
             return false;

@@ -49,6 +49,8 @@ struct Receiver
 // Passes the enclosing FullObject (this minus 0x20) to the receiver's ClearValue.
 // @fnv 0x00d6a250
 // src: GUESS 0x00d6a250 (confidence: low)
+// pdb: hkpMidphaseViewer::operator new | hkpMidphaseViewer.obj | debug, object-file run extension, low
+// pdb params: nbytes
 void FirstBase::ForwardCall_00d6a250(Receiver* apReceiver)
 {
     apReceiver->ClearValue((FullObject*)((char*)this - 0x20));
@@ -112,6 +114,7 @@ __forceinline hkpMidphaseViewer::ElementArray::~ElementArray() throw()
 }
 
 // @fnv 0x00d6a750
+// pdb: hkpMidphaseViewer::~hkpMidphaseViewer | hkpMidphaseViewer.obj | retail, upstream name already matches, high
 hkpMidphaseViewer::~hkpMidphaseViewer() throw()
 {
     if (m_iValueAtOffset0C)
@@ -146,34 +149,37 @@ inline void* hkAlloc(int n)
 }
 
 // @fnv 0x00d6a810
-// src: COMMUNITY 0x00d6a810
-void* __cdecl hkpMidphaseViewer_Create(int a)
+// src: XBOX_RETAIL_PDB 0x00d6a810
+// pdb: hkpMidphaseViewer::create | hkpMidphaseViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+void* __cdecl hkpMidphaseViewer_create(int contexts)
 {
-    hkpMidphaseViewer* o = ::new (hkAlloc(sizeof(hkpMidphaseViewer))) hkpMidphaseViewer(a);
+    hkpMidphaseViewer* o = ::new (hkAlloc(sizeof(hkpMidphaseViewer))) hkpMidphaseViewer(contexts);
     return o ? (char*)o + 8 : 0;
 }
 }  // namespace fnv_00d6a810
 
 struct Registry_00dd9380
 {
-    void* Register(const char* name, void (*fn)());
+    void* Register(const char* viewerName, void (*creationFunction)());
 };
 
 extern Registry_00dd9380* DAT_01269cd0;
 extern char DAT_010d22e0[];
 extern void* DAT_01269024;
-void hkpMidphaseViewer_Create();
+void hkpMidphaseViewer_create();
 
 // @fnv 0x00d6a850
-// src: GUESS 0x00d6a850 (confidence: low)
-void hkpMidphaseViewer_Create_SetDAT01269024()
+// src: XBOX_RETAIL_PDB 0x00d6a850
+// pdb: hkpMidphaseViewer::registerViewer | hkpMidphaseViewer.obj | retail, string-set bridge, high
+void hkpMidphaseViewer_registerViewer()
 {
-    DAT_01269024 = DAT_01269cd0->Register(DAT_010d22e0, hkpMidphaseViewer_Create);
+    DAT_01269024 = DAT_01269cd0->Register(DAT_010d22e0, hkpMidphaseViewer_create);
 }
 
 struct Target
 {
-    int Handle(void* apValue);
+    int Handle(void* worldListener);
 };
 
 struct FUN_00d6a220_cls
@@ -233,12 +239,14 @@ struct S_d6a280_Owner
 
 struct S_d6a280_Elem
 {
-    void hkpWorld_addWorldPostSimulationListener(hkpWorldPostSimulationListener* listener) throw();
+    void hkpWorld_addWorldPostSimulationListener(hkpWorldPostSimulationListener* worldListener) throw();
 };
 
 // Constructs the base with a, then calls FUN_00c93920 on each item of m_24's m_items array, passing this.
 // @fnv 0x00d6a280
-hkpMidphaseViewer::hkpMidphaseViewer(int a) : hkpWorldViewerBase((const void*)a)
+// pdb: hkpMidphaseViewer::hkpMidphaseViewer | hkpMidphaseViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+hkpMidphaseViewer::hkpMidphaseViewer(int contexts) : hkpWorldViewerBase((const void*)contexts)
 {
     if (m_iValueAtOffset0C != 0)
     {
@@ -283,13 +291,14 @@ extern hkpPhysicsWorld* hkMemoryRouter_getInstance();
 
 // Calls FUN_00d6a750, then if flags & 1 removes this viewer from the physics world registry, and returns this.
 // @fnv 0x00d6a8b0
+// pdb: hkpMidphaseViewer::`scalar deleting destructor' | hkpMidphaseViewer.obj | retail, vtable slot, high
 void* hkpMidphaseViewer::FUN_00d6a8b0(int flags)
 {
     FUN_00d6a750();
     if (flags & 1)
     {
         fnv_00d6a8b0::hkpPhysicsWorld* world = fnv_00d6a8b0::hkMemoryRouter_getInstance();
-        world->unk10->removeViewer(this, m_usMemSizeAndFlags);
+        world->unk10->removeViewer(this, m_memSizeAndFlags);
     }
     return this;
 }

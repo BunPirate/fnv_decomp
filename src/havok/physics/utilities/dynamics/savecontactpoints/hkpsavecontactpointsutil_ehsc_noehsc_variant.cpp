@@ -17,9 +17,9 @@ void __cdecl hkCapsuleTriangleAgent3_process(void);
 void __cdecl hkPredGskAgent3_process(void);
 void __cdecl hkPredGskCylinderAgent3_process(void);
 void __cdecl hkConvexListAgent3_process(void);
-void __cdecl BuildEventIndex(void);
+void __cdecl hkListAgent3_process(void);
 void __fastcall hkBvTreeAgent3_process(void*, int, void*, int);
-void __cdecl process_00d35770(void);
+void __cdecl hkpCollectionCollectionAgent3_process(void);
 void __cdecl hkpCollectionAgent3_process(void);
 int __cdecl hkpSaveContactPointsUtil_getSerializedAgentType(void* p);
 struct D10710Object
@@ -82,7 +82,7 @@ struct FUN_00dcb550_class
     unsigned capacity, version;
     Node* current;
     int AddNodeEntry(Entry*);
-    int SetItemContextByKey(unsigned key);
+    int SetItemContextByKey(unsigned nameIn);
 };
 struct DCD6A0Context;
 struct DCD6A0Item;
@@ -1604,7 +1604,7 @@ static int DCD6A0GetAgentId(DCD6A0AgentFunc func)
 }
 // Taking the helper's address keeps its standard stack argument, as the original codegen shows.
 extern int(__cdecl* g_DCD6A0GetAgentId)(DCD6A0AgentFunc);
-int __cdecl DispatchItemToAgent(int expected, DCD6A0Context** contextPtr, int a, int b, DCD6A0Item* item);
+int __cdecl hkpSaveContactPointsUtil_destroyOldEntry(int agentType, DCD6A0Context** input, int mgr, int constraintOwner, DCD6A0Item* nnEntry);
 struct S_00dcdd80_Heap
 {
     virtual void unk00();
@@ -1787,16 +1787,16 @@ struct S_00dcdd80_Item
 };
 struct S_00dcdd80_Listener
 {
-    void AddObject(FUN_00dce930* obj);
+    void addContact(FUN_00dce930* c);
 };
-int __cdecl hkpSaveContactPointsUtil_serializeCollisionEntry(void* a, S_00dcdd80_Item* item, int c, FUN_00dce930* obj);
+int __cdecl hkpSaveContactPointsUtil_serializeCollisionEntry(void* input, S_00dcdd80_Item* entry, int collisionInput, FUN_00dce930* serializedEntryOut);
 static inline S_00dcdd80_WorldObj* S_00dcdd80_getRigidBody(S_00dcdd80_Collidable* c)
 {
     if (c->m_type == 1)
         return (S_00dcdd80_WorldObj*)c->getOwner();
     return 0;
 }
-void hkpSaveContactPointsUtil_saveContactPoints_00dcdd80(void* a, S_00dcdd80_Item** items, int count, S_00dcdd80_Listener* listener);
+void hkpSaveContactPointsUtil_saveContactPoints_00dcdd80(void* input, S_00dcdd80_Item** entries, int numEntries, S_00dcdd80_Listener* sys);
 struct LocalContext
 {
     void* vtable;
@@ -1821,7 +1821,7 @@ struct BSAudio;
 namespace fnvc_adapt {
 BSAudio* __cdecl hkMemoryRouter_getInstance();
 }
-void __cdecl hkArrayUtil__reserve(void* apAllocator, void* apArray, unsigned int auiNewCap, int aiElemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, unsigned int numElem, int sizeElem);
 struct SrcNode
 {
     unsigned int** m_ppBuffers;
@@ -1970,8 +1970,8 @@ struct Buffer512
     unsigned int m_i1f8;
     unsigned int m_i1fc;
 };
-int __cdecl CopyAudioNodeTree(SrcNode* apSrc, int aiCount, DstBlock* apDst);
-int __cdecl CopyAudioNodeTree(SrcNode* apSrc, int aiCount, DstBlock* apDst);
+int __cdecl hkpSaveContactPointsUtil_deserialize1nTrack(SrcNode* serializedTrack, int input, DstBlock* sectorsOut);
+int __cdecl hkpSaveContactPointsUtil_deserialize1nTrack(SrcNode* serializedTrack, int input, DstBlock* sectorsOut);
 struct S_00dcda40_Heap
 {
     virtual void v0();
@@ -2078,7 +2078,7 @@ struct S_00dcda40_World
     int unk74;
     int unk78;
 };
-void __cdecl ProcessCollisionRecords(void* arg1, S_00dcda40_World* world, S_00dcdd80_Listener* sink);
+void __cdecl ProcessCollisionRecords(void* input, S_00dcda40_World* world, S_00dcdd80_Listener* sys);
 
 struct LinkedCollidable;
 
@@ -2120,7 +2120,7 @@ struct EntryArray
 
 struct LinkedCollidable
 {
-    void CopyAndSortGeometryList(EntryArray& entriesOut);
+    void hkpLinkedCollidable_getCollisionEntriesSorted(EntryArray& entries);
 };
 
 struct BodyEntity
@@ -2170,7 +2170,10 @@ __forceinline int AddAgentHelper(void* a, const CollisionKeyEntry& e, int c, FUN
 
 // @fnv 0x00dcdc00
 // src: HAVOK_LIB 0x00dcdc00
-void __cdecl hkpSaveContactPointsUtil_saveContactPoints(void* a, BodyEntity** entities, int numEntities, S_00dcdd80_Listener* listener)
+// pdb: hkpSaveContactPointsUtil::saveContactPoints | hkpSaveContactPointsUtil.obj | retail, object-file gap fill, high
+// pdb params: input, world, sys
+// pdb locals: islands
+void __cdecl hkpSaveContactPointsUtil_saveContactPoints(void* input, BodyEntity** entities, int numEntities, S_00dcdd80_Listener* sys)
 {
     S_00dcdd80_World2* world = entities[0]->m_pOwningWorld;
     PointerMap map;
@@ -2181,7 +2184,7 @@ void __cdecl hkpSaveContactPointsUtil_saveContactPoints(void* a, BodyEntity** en
         map.insert(&entities[i]->m_kCollidable, 0);
 
         EntryArray entries;
-        entities[i]->m_kCollidable.CopyAndSortGeometryList(entries);
+        entities[i]->m_kCollidable.hkpLinkedCollidable_getCollisionEntriesSorted(entries);
 
         for (int j = 0; j < entries.GetLogicalSize(); j++)
         {
@@ -2189,8 +2192,8 @@ void __cdecl hkpSaveContactPointsUtil_saveContactPoints(void* a, BodyEntity** en
             if (!map.isValid(map.FindSlot(entry.m_pCollidable)))
             {
                 FUN_00dce930* agent = new FUN_00dce930();
-                if (!AddAgentHelper(a, entry, world->unk78, agent))
-                    listener->AddObject(agent);
+                if (!AddAgentHelper(input, entry, world->unk78, agent))
+                    sys->addContact(agent);
                 agent->FUN_00c905b0();
             }
         }

@@ -5,16 +5,17 @@
 
 class NiObject;
 
+// pdb: class NiUnionBV, size 0x18, bases: NiBoundingVolume, 2 members
 class NiUnionBV : public NiBoundingVolume
 {
 public:
-    NiTPrimitiveArray<NiBoundingVolume*> m_kBoundingVolumes;
-    void* m_pkEntry;
+    NiTPrimitiveArray<NiBoundingVolume*> m_kBoundingVolume;
+    void* m_uiWhichObjectIntersect;
 
     NiUnionBV() throw();
 
     virtual void LoadBinary(NiStream& kStream);
-    virtual void __thiscall SaveBinary(NiStream& kStream);
+    virtual void __thiscall SaveBinary(NiStream& stream);
     virtual ~NiUnionBV();
     virtual int F3() const;
     virtual void v10();

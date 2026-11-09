@@ -9,6 +9,8 @@ class ImageSpaceBlurShader : public ImageSpaceEffectShader
     virtual void SetupShader();
 };
 // @fnv 0x00b8e330
+// pdb: ImageSpaceShaderBrightPassBlur3::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceBlurShader::SetupShader()
 {
     BSShaderManager::BSShaderMacro vertexShader;
@@ -54,11 +56,15 @@ class ImageSpaceShaderVariant4 : public ImageSpaceEffectShader
     virtual void SetupShader();
 };
 // @fnv 0x00b8e460
+// pdb: ImageSpaceShaderBrightPassBlur3::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderBrightPassBlur5::ImageSpaceShaderBrightPassBlur5
 ImageSpaceShaderVariant4::ImageSpaceShaderVariant4()
 {
     pTextures.SetSize(3);
 }
 // @fnv 0x00b8e4d0
+// pdb: ImageSpaceShaderBrightPassBlur5::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderVariant4::SetupShader()
 {
     BSShaderManager::BSShaderMacro vertexShader;
@@ -104,11 +110,15 @@ class ImageSpaceShaderVariant5 : public ImageSpaceEffectShader
     virtual void SetupShader();
 };
 // @fnv 0x00b8e600
+// pdb: ImageSpaceShaderBrightPassBlur5::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderBrightPassBlur7::ImageSpaceShaderBrightPassBlur7
 ImageSpaceShaderVariant5::ImageSpaceShaderVariant5()
 {
     pTextures.SetSize(3);
 }
 // @fnv 0x00b8e670
+// pdb: ImageSpaceShaderBrightPassBlur7::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderVariant5::SetupShader()
 {
     BSShaderManager::BSShaderMacro vertexShader;
@@ -154,11 +164,15 @@ class ImageSpaceShaderVariant6 : public ImageSpaceEffectShader
     virtual void SetupShader();
 };
 // @fnv 0x00b8e7a0
+// pdb: ImageSpaceShaderBrightPassBlur7::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderBrightPassBlur9::ImageSpaceShaderBrightPassBlur9
 ImageSpaceShaderVariant6::ImageSpaceShaderVariant6()
 {
     pTextures.SetSize(3);
 }
 // @fnv 0x00b8e810
+// pdb: ImageSpaceShaderBrightPassBlur9::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderVariant6::SetupShader()
 {
     BSShaderManager::BSShaderMacro vertexShader;
@@ -204,11 +218,15 @@ class ImageSpaceShaderVariant1 : public ImageSpaceEffectShader
     virtual void SetupShader();
 };
 // @fnv 0x00b8e940
+// pdb: ImageSpaceShaderBrightPassBlur9::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderBrightPassBlur11::ImageSpaceShaderBrightPassBlur11
 ImageSpaceShaderVariant1::ImageSpaceShaderVariant1()
 {
     pTextures.SetSize(3);
 }
 // @fnv 0x00b8e9b0
+// pdb: ImageSpaceShaderBrightPassBlur11::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderVariant1::SetupShader()
 {
     BSShaderManager::BSShaderMacro vertexShader;
@@ -254,11 +272,15 @@ class ImageSpaceShaderVariant2 : public ImageSpaceEffectShader
     virtual void SetupShader();
 };
 // @fnv 0x00b8eae0
+// pdb: ImageSpaceShaderBrightPassBlur11::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderBrightPassBlur13::ImageSpaceShaderBrightPassBlur13
 ImageSpaceShaderVariant2::ImageSpaceShaderVariant2()
 {
     pTextures.SetSize(3);
 }
 // @fnv 0x00b8eb50
+// pdb: ImageSpaceShaderBrightPassBlur13::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderVariant2::SetupShader()
 {
     BSShaderManager::BSShaderMacro vertexShader;
@@ -304,11 +326,15 @@ class ImageSpaceShaderVariant3 : public ImageSpaceEffectShader
     virtual void SetupShader();
 };
 // @fnv 0x00b8ec80
+// pdb: ImageSpaceShaderBrightPassBlur13::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderBrightPassBlur15::ImageSpaceShaderBrightPassBlur15
 ImageSpaceShaderVariant3::ImageSpaceShaderVariant3()
 {
     pTextures.SetSize(3);
 }
 // @fnv 0x00b8ecf0
+// pdb: ImageSpaceShaderBrightPassBlur15::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderVariant3::SetupShader()
 {
     BSShaderManager::BSShaderMacro vertexShader;

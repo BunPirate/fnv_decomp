@@ -14,6 +14,8 @@ class FUN_00ee8ac0_cls
 
 // @fnv 0x00ee8ac0
 // src: COMMUNITY 0x00ee8ac0
+// pdb: NiPointer<NiGPUProgramCache::NiGPUProgramDesc>::NiPointer<NiGPUProgramCache::NiGPUProgramDesc> | NiD3DGPUProgramCache.obj | debug, call graph, low
+// pdb params: pObject
 int* FUN_00ee8ac0_cls::NiTMapIterator_GetFirstPos()
 {
     unsigned int count = m_uiCount;

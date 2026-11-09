@@ -196,6 +196,10 @@ extern const float DAT_0101e570;
 #include "../../../../include/Projectile.h"
 // Gets or adds the InventoryChanges for this reference and returns the count of the given object in it, or 0 if none.
 // @fnv 0x00575610
+// pdb: Actor::GetItemCountinContainer | Actor.obj | retail, call graph, low
+// pdb note: debug build links it to TESObjectREFR::GetInventoryObjectCount
+// pdb params: apObject
+// pdb locals: icount, pchange
 int CombatState::GetInventoryItemCount(TESForm* object)
 {
     struct
@@ -211,6 +215,7 @@ int CombatState::GetInventoryItemCount(TESForm* object)
 }
 // If los is set and its check passes, calls los->FUN_008be220(this); otherwise calls Clear().
 // @fnv 0x008be1b0
+// pdb: Actor::GetRadius | Actor.obj | debug, call graph, high
 void CombatState::ProcessCoverLOSResult()
 {
     if (*(CombatLOS**)((char*)this + 0x68) && (*(CombatLOS**)((char*)this + 0x68))->BaseProcess_HasCachedValues())
@@ -220,6 +225,8 @@ void CombatState::ProcessCoverLOSResult()
 }
 
 // @fnv 0x0064bf90
+// pdb: BSFaceGenAnimationData::ModifyEyeHeadingAndPitchBasedOnExpression | BSFaceGenAnimationData.obj | debug, object-file gap fill, medium
+// pdb params: aexp, afHeading, afPitch, afTime
 void CombatState::UpdateCombatStateData(int state, float* pfX, float* pfY, float delta)
 {
     (*(float*)((char*)this + 0x17c)) -= delta;
@@ -353,15 +360,16 @@ void FUN_00819a50_shell::CombatLocation_SetRadius(float afRadius)
 
 struct FUN_00997c10_shell
 {
-    void __thiscall CoverSearch_Reset();
+    void __thiscall CombatCoverSearchInfo_Clear();
     void __thiscall CombatState_ClearSecondaryCoverSearch();
 };
 
 // @fnv 0x00997c10
 // src: COMMUNITY 0x00997c10
+// pdb: CombatState::ClearSecondaryCoverSearchInfo | CombatState.obj | debug, call graph, medium
 void __thiscall FUN_00997c10_shell::CombatState_ClearSecondaryCoverSearch()
 {
-    ((FUN_00997c10_shell*)((char*)this + 0x128))->CoverSearch_Reset();
+    ((FUN_00997c10_shell*)((char*)this + 0x128))->CombatCoverSearchInfo_Clear();
 }
 
 struct FUN_009989f0_shell
@@ -404,6 +412,7 @@ struct FUN_0099c210_shell
 };
 
 // @fnv 0x0099c210
+// pdb: CombatCoverMap::LockForWrite | CombatState.obj | debug, object-file run extension, low
 void __thiscall FUN_0099c210_shell::LockCombatTargetMap()
 {
     m_lock.AcquireLock();
@@ -416,6 +425,7 @@ struct FUN_009a0680_shell
 
 // Deletes the pointer stored at offset 0x18c and sets that field to null.
 // @fnv 0x009a0680
+// pdb: CombatState::ClearCombatLocation | CombatState.obj | debug, call graph, medium
 void __thiscall FUN_009a0680_shell::ClearAndDeletePointer()
 {
     void* ptr = *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x18c);
@@ -433,7 +443,9 @@ struct FUN_009a0a40_shell
 
 // Deletes the pointer stored at field_c4 and sets it to null.
 // @fnv 0x009a0a40
-void __fastcall FreeAndClearFieldC4(FUN_009a0a40_shell* thisp)
+// src: XBOX_DEBUG_PDB 0x009a0a40
+// pdb: CombatState::ClearLocationTarget | CombatState.obj | debug, call graph, high
+void __fastcall CombatState_ClearLocationTarget(FUN_009a0a40_shell* thisp)
 {
     void* p = thisp->field_c4;
     operator delete(p);
@@ -453,6 +465,8 @@ struct FUN_009a2d80_shell
 // Calls FUN_00527b70 on this and SaveTimeStamp on the object at offset 0x10, passing buffer to both.
 // @fnv 0x009a2d80
 // src: GUESS 0x009a2d80 (confidence: medium)
+// pdb: UnreachableLocation::SaveGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void FUN_009a2d80_shell::SaveFieldsAndTimeStamp(void* buffer)
 {
     reinterpret_cast<CoordinateTriple*>(this)->BGSWorldLocation_SaveGame(buffer);
@@ -469,6 +483,7 @@ extern int DAT_0108e068;
 
 // @fnv 0x009a3410
 // src: GUESS 0x009a3410 (confidence: low)
+// pdb: BSSimpleArray<TESObjectWEAP *,1024>::~BSSimpleArray<TESObjectWEAP *,1024> | CombatState.obj | debug, call graph, medium
 void __fastcall CombatState_UpdateState_009a3410(GlobalObject_00869f00* this_)
 {
     this_->m_ptr = &DAT_0108e068;
@@ -491,6 +506,7 @@ struct FUN_009a35f0_shell : GlobalObject_00869f00
 
 // @fnv 0x009a35f0
 // src: GUESS 0x009a35f0 (confidence: low)
+// pdb: BSSimpleArray<UnreachableLocation,1024>::~BSSimpleArray<UnreachableLocation,1024> | CombatState.obj | debug, call graph, medium
 void FUN_009a35f0_shell::UpdateState_009a35f0()
 {
     m_Data = reinterpret_cast<int>(&DAT_0108e090);
@@ -524,6 +540,7 @@ struct FUN_006d3370_s
 };
 // Calls FUN_006d33a0, then frees this with _Deallocate if flags has bit 1 set, and returns this.
 // @fnv 0x006d3370
+// pdb: CombatCoverLocation::`scalar deleting destructor' | Pathfind.obj | debug, call graph, medium
 FUN_006d3370_s* FUN_006d3370_s::FUN_006d3370(unsigned int flags)
 {
     ForwardCall_006d33a0();
@@ -544,13 +561,15 @@ struct Elem
 void __fastcall ReleaseCombatCoverArrayBuffer(BSSimpleArray<Elem, 1024>*);
 
 // @fnv 0x006dbde0
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::Clear | Pathfind.obj | debug, call graph (shared callers), high
+// pdb params: abFreeMemory
 template <>
-void BSSimpleArray<Elem, 1024>::Clear(bool freeStorage)
+void BSSimpleArray<Elem, 1024>::Clear(bool abFreeMemory)
 {
     if (pBuffer)
     {
         ReleaseElements(pBuffer, iSize);
-        if (freeStorage)
+        if (abFreeMemory)
         {
             ReleaseCombatCoverArrayBuffer(this);
             pBuffer = 0;
@@ -562,6 +581,9 @@ void BSSimpleArray<Elem, 1024>::Clear(bool freeStorage)
 
 // Calls the deleting destructor with flag 0 for each cover location.
 // @fnv 0x006dbee0
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::_DestructItems | Pathfind.obj | debug, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 template <>
 void BSSimpleArray<Elem, 1024>::ReleaseElements(Elem* apElements, unsigned int count)
 {
@@ -570,6 +592,8 @@ void BSSimpleArray<Elem, 1024>::ReleaseElements(Elem* apElements, unsigned int c
 }
 
 // @fnv 0x009052c0
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::operator[] | HighProcess.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 template <>
 Elem& BSSimpleArray<Elem, 1024>::GetAt(int index)
 {
@@ -583,6 +607,9 @@ struct IMH
 
 // @fnv 0x0097beb0
 // src: COMMUNITY 0x0097beb0
+// pdb: CombatActionMove::ChooseLocation | CombatActions.obj | debug, call graph, medium
+// pdb params: apCombatController, apWorldStateArray, aiLocation
+// pdb locals: pcombatState
 void CombatController_FindCombatLocation(IMH* pIMH, int iUnused, int iValue)
 {
     CombatState* t = pIMH->CombatController_GetCombatState();
@@ -614,6 +641,7 @@ struct UnknownClass
 };
 // Returns true if ts.GetElapsedTime() is greater than or equal to the value from originalRuntimeFloatSetting413.Float().
 // @fnv 0x0097eee0
+// pdb: CombatState::GetTargetLost | CombatController.obj | debug, object-file run extension, low
 bool UnknownClass::IsElapsedTimeAtLeastSetting()
 {
     return (ts.GetElapsedTime() >= *originalRuntimeFloatSetting413.Float() ? 1 : 0);
@@ -648,12 +676,14 @@ struct CombatAvoidanceSphere
 {
     CoordinateTriple m_cBuffer;
     TESObjectREFR* pRef;
-    void CombatLocation_SetTarget(TESObjectREFR* apRef);
+    void CombatLocation_SetRef(TESObjectREFR* apRef);
 };
 
 // @fnv 0x00997400
-// src: COMMUNITY 0x00997400
-void CombatAvoidanceSphere::CombatLocation_SetTarget(TESObjectREFR* apRef)
+// src: XBOX_RETAIL_PDB 0x00997400
+// pdb: CombatLocation::SetRef | CombatState.obj | retail, object-file run extension, high
+// pdb params: apRef
+void CombatAvoidanceSphere::CombatLocation_SetRef(TESObjectREFR* apRef)
 {
     pRef = apRef;
     m_cBuffer = reinterpret_cast<TESObjectREFR_STUB*>(pRef)->TESObjectREFR_GetWorldLocation();
@@ -675,11 +705,13 @@ struct Outer_997440
 {
     WL16_997440 loc;
     Ref_997440* pRef;
-    void CopyRefValue();
+    void CombatLocation_UpdateRefLocation();
 };
 // If pRef is set, copies the value returned by pRef->FUN_00575650() into loc.
 // @fnv 0x00997440
-void Outer_997440::CopyRefValue()
+// src: XBOX_RETAIL_PDB 0x00997440
+// pdb: CombatLocation::UpdateRefLocation | CombatState.obj | retail, object-file run extension, high
+void Outer_997440::CombatLocation_UpdateRefLocation()
 {
     if (pRef)
         loc = pRef->TESObjectREFR_GetWorldLocation();
@@ -697,11 +729,12 @@ struct Unk975C0
     float f18;
     int i1c;
     BSSimpleArray<Elem, 1024> s20;
-    void CoverSearch_Reset();
+    void CombatCoverSearchInfo_Clear();
 };
 // @fnv 0x009975c0
-// src: COMMUNITY 0x009975c0
-void Unk975C0::CoverSearch_Reset()
+// src: XBOX_DEBUG_PDB 0x009975c0
+// pdb: CombatCoverSearchInfo::Clear | CombatState.obj | debug, call graph (shared callers), high
+void Unk975C0::CombatCoverSearchInfo_Clear()
 {
     CH data;
     f18 = 0.0f;
@@ -723,19 +756,21 @@ struct FUN_00997ba0_shell
 {
     void CombatState_ClearCoverLocation(int);
     void CombatState_ClearStandardCoverSearch();
-    void ReleaseStageHolder(int);
+    void CombatState_ClearSecondaryCoverLocation(int);
     void CombatState_ChangeProcessLevel(int, int);
 };
 // When a is zero and b is non-zero, calls FUN_009a03d0(0), FUN_00997bf0, ReleaseStageHolder(0), FUN_00997c10 and ClearAndDeletePointer.
 // @fnv 0x00997ba0
 // src: COMMUNITY 0x00997ba0
-void FUN_00997ba0_shell::CombatState_ChangeProcessLevel(int aiFirst, int aiSecond)
+// pdb: CombatState::ChangeProcessLevel | CombatState.obj | retail, upstream name already matches, high
+// pdb params: aeOldLevel, aeNewLevel
+void FUN_00997ba0_shell::CombatState_ChangeProcessLevel(int aeOldLevel, int aeNewLevel)
 {
-    if (aiFirst == 0 && aiSecond != 0)
+    if (aeOldLevel == 0 && aeNewLevel != 0)
     {
         CombatState_ClearCoverLocation(0);
         CombatState_ClearStandardCoverSearch();
-        ReleaseStageHolder(0);
+        CombatState_ClearSecondaryCoverLocation(0);
         ((FUN_00997c10_shell*)this)->CombatState_ClearSecondaryCoverSearch();
         ((FUN_009a0680_shell*)this)->ClearAndDeletePointer();
     }
@@ -745,7 +780,7 @@ void FUN_00997ba0_shell::CombatState_ChangeProcessLevel(int aiFirst, int aiSecon
 namespace fnv_00997bf0 {
 struct FUN_00997c10_shell
 {
-    void CoverSearch_Reset();
+    void CombatCoverSearchInfo_Clear();
 };
 struct FUN_00997bf0_shell
 {
@@ -753,9 +788,10 @@ struct FUN_00997bf0_shell
 };
 // @fnv 0x00997bf0
 // src: COMMUNITY 0x00997bf0
+// pdb: CombatState::ClearCoverSearchInfo | CombatState.obj | debug, call graph, medium
 void FUN_00997bf0_shell::CombatState_ClearStandardCoverSearch()
 {
-    ((FUN_00997c10_shell*)((char*)this + 0xec))->CoverSearch_Reset();
+    ((FUN_00997c10_shell*)((char*)this + 0xec))->CombatCoverSearchInfo_Clear();
 }
 }  // namespace fnv_00997bf0
 
@@ -774,6 +810,7 @@ struct FUN_00997cb0_Class
 
 // @fnv 0x00997cb0
 // src: COMMUNITY 0x00997cb0
+// pdb: CombatState::Update | CombatState.obj | retail, upstream name already matches, high
 void FUN_00997cb0_Class::CombatState_Update()
 {
     if ((*reinterpret_cast<TESAmmoInitCalls**>(reinterpret_cast<char*>(this) + 0x1c4))
@@ -799,6 +836,7 @@ struct CombatTimeStampHelper
 
 // Returns whether the elapsed time from _ts is less than the float value of originalRuntimeFloatSetting411.
 // @fnv 0x00998980
+// pdb: CombatState::GetHasBuffered360LineOfSight | CombatState.obj | debug, call graph (shared callers), high
 }  // namespace fnv_00998980
 
 // src: XBOX_PDB 0x00998980
@@ -816,6 +854,7 @@ struct FUN_009989d0_shell
 };
 // @fnv 0x009989d0
 // src: XBOX_PDB 0x009989d0
+// pdb: TESCombatStyle::GetIgnoreThreats | CombatState.obj | debug, upstream name already matches, high
 bool FUN_009989d0_shell::TESCombatStyle_GetIgnoreThreats()
 {
     return HasCombatFlag(0x10);
@@ -853,11 +892,13 @@ struct FUN_00999100_shell
 };
 // @fnv 0x00999100
 // src: XBOX_PDB 0x00999100
+// pdb: CombatState::ClearTargetUnreachable | CombatState.obj | debug, upstream name already matches, high
 bool FUN_00999100_shell::CombatState_ClearTargetUnreachable()
 {
     return bhkCharacterListener_ClearFlag(3);
 }
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier
 {
     float GetValue();
@@ -871,6 +912,7 @@ struct Holder
 };
 // Returns whether the holder's modifier value equals _gModifierZero.
 // @fnv 0x00999120
+// pdb: CombatController::IsPlanUpdateForced | CombatState.obj | debug, call graph, high
 bool Holder::IsModifierZero()
 {
     return mod.GetValue() == _gModifierZero;
@@ -908,6 +950,8 @@ struct FUN_0099a5e0_shell
 
 // Stores a new combat timestamp at this+0x9c and, if the timestamp at this+0xa4 equals -DAT_0108df70, replaces it with a new one.
 // @fnv 0x0099a5e0
+// pdb: CombatState::FiredProjectile | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apProjectile
 void FUN_0099a5e0_shell::UpdateCombatTimestamps(int)
 {
     CombatTimeStamp4 a;
@@ -932,6 +976,8 @@ struct FUN_0099a650_shell : CombatState
 // If the flag is false, calls FUN_0097f220 on the object at offset 0x214 of this CombatState.
 // @fnv 0x0099a650
 // src: COMMUNITY 0x0099a650
+// pdb: CombatState::ReloadingWeapon | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apWeapon, abForced
 void FUN_0099a650_shell::CombatState_ResetEmbeddedWeaponSwitchTimer(int aiUnused, bool b)
 {
     if (!b)
@@ -942,7 +988,7 @@ namespace fnv_0099a6b0 {
 
 struct S9a0c50
 {
-    void UpdateModifierState(int);
+    void CombatState_UpdateCombatArea(int);
 };
 
 struct S9a1280
@@ -957,11 +1003,13 @@ struct FUN_0099a6b0_Class
 
 // @fnv 0x0099a6b0
 // src: XBOX_PDB 0x0099a6b0
-void FUN_0099a6b0_Class::CombatState_DamagedByAttacker(int p1, int p2)
+// pdb: CombatState::DamagedByAttacker | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apAttacker, afDamage
+void FUN_0099a6b0_Class::CombatState_DamagedByAttacker(int apAttacker, int afDamage)
 {
     if (((CombatTargetTimestamp*)((char*)this + 0xa0))->GetElapsedTime() > 1.0)
     {
-        ((S9a0c50*)this)->UpdateModifierState(1);
+        ((S9a0c50*)this)->CombatState_UpdateCombatArea(1);
     }
     CombatTargetTimestamp ts(Actor::GetActorScale());
     *(CombatTargetTimestamp*)((char*)this + 0xa0) = ts;
@@ -984,6 +1032,8 @@ struct FUN_0099a720_cls
 
 // @fnv 0x0099a720
 // src: XBOX_PDB 0x0099a720
+// pdb: CombatState::PlanUpdated | CombatState.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatState::Disarmed
 void FUN_0099a720_cls::CombatState_Disarmed()
 {
     if (*reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x64) <
@@ -1005,16 +1055,17 @@ struct FUN_0099a9a0_shell
 {
     void UpdateStageHolders();
     void CombatState_ClearCoverLocation(int);
-    void ReleaseStageHolder(int);
+    void CombatState_ClearSecondaryCoverLocation(int);
 };
 // Checks the StageHolder pointers at offsets 0xE4 and 0xE8 and calls FUN_009a03d0(0) or ReleaseStageHolder(0) for each one that is not done.
 // @fnv 0x0099a9a0
+// pdb: CombatState::PlanUpdated | CombatState.obj | debug, object-file gap fill, medium
 void FUN_0099a9a0_shell::UpdateStageHolders()
 {
     if (*(StageHolder**)((char*)this + 0xE4) && !(*(StageHolder**)((char*)this + 0xE4))->GetDone())
         this->CombatState_ClearCoverLocation(0);
     if (*(StageHolder**)((char*)this + 0xE8) && !(*(StageHolder**)((char*)this + 0xE8))->GetDone())
-        this->ReleaseStageHolder(0);
+        this->CombatState_ClearSecondaryCoverLocation(0);
 }
 
 struct CTSHelper
@@ -1029,18 +1080,21 @@ extern double DAT_010718b8;
 
 struct FUN_0099ab50_Class
 {
-    bool CombatState_GetLastSeenTargetLocation(D3* dest);
+    bool CombatState_GetLastSeenTargetLocation(D3* arLastSeenLocation);
 };
 
 // Checks the item pointer at 0x1c4 and elapsed time against DAT_010718b8; if valid, copies the D3 at 0x84 into dest and returns true, else false.
 // @fnv 0x0099ab50
 // src: XBOX_PDB 0x0099ab50
-bool FUN_0099ab50_Class::CombatState_GetLastSeenTargetLocation(D3* dest)
+// pdb: CombatState::GetLastSeenTargetLocation | CombatState.obj | debug, upstream name already matches, high
+// pdb params: arLastSeenLocation
+// pdb locals: ptarget
+bool FUN_0099ab50_Class::CombatState_GetLastSeenTargetLocation(D3* arLastSeenLocation)
 {
     void* p = (*(AlchemyItem**)((char*)this + 0x1c4))->CombatController_GetTarget();
     if (p == 0 || ((CTSHelper*)((char*)this + 0x98))->GetElapsedTime() > DAT_010718b8)
         return false;
-    *dest = *(D3*)((char*)this + 0x84);
+    *arLastSeenLocation = *(D3*)((char*)this + 0x84);
     return true;
 }
 
@@ -1054,6 +1108,9 @@ struct FUN_0099abc0_This
 };
 // Checks the point via FUN_0099ab50, then adds FUN_009a8460's result for the target actor to the point's z and returns true.
 // @fnv 0x0099abc0
+// pdb: CombatState::GetLastSeenTargetFiringLocation | CombatState.obj | retail, call graph (shared callers), high
+// pdb params: arLastSeenFiringLocation
+// pdb locals: ptarget
 bool FUN_0099abc0_This::UpdateLastSeenFiringLocation(NiPoint3& arLastSeenFiringLocation)
 {
     Actor* ptarget;
@@ -1069,13 +1126,15 @@ struct MagicItem;
 
 struct FUN_0099b520_shell : MagicCaster
 {
-    void CombatLocation_SetSpace(MagicItem* spell);
+    void CombatLocation_SetSpace(MagicItem* apSpace);
 };
 // @fnv 0x0099b520
 // src: COMMUNITY 0x0099b520
-void FUN_0099b520_shell::CombatLocation_SetSpace(MagicItem* spell)
+// pdb: CombatLocation::SetSpace | CombatState.obj | debug, upstream name already matches, high
+// pdb params: apSpace
+void FUN_0099b520_shell::CombatLocation_SetSpace(MagicItem* apSpace)
 {
-    SetSelectedMagicItem((int)spell);
+    SetSelectedMagicItem((int)apSpace);
 }
 
 struct FUN_0099b580_shell
@@ -1084,6 +1143,7 @@ struct FUN_0099b580_shell
     void CallReferencedFunction();
 };
 // @fnv 0x0099b580
+// pdb: CombatLocation::GetSpace | CombatState.obj | debug, object-file gap fill, medium
 void FUN_0099b580_shell::CallReferencedFunction()
 {
     _ref_0084e3a0();
@@ -1117,15 +1177,19 @@ bool FUN_0099c1f0_shell::PathingCoverLocation_GetHeight()
     return *(bool*)((char*)this + 0x4c);
 }
 
+// pdb: structure ParentSpaceNode, size 0xc, 3 members
 struct ParentSpaceNode
 {
-    int a;
-    int b;
-    int c;
+    int bWorldSpace;
+    int pWorldSpace;
+    int pInteriorCell;
 };
 bool __cdecl CombatState_CheckCoverLOS(void*, ParentSpaceNode*, int);
 // @fnv 0x0099cb00
 // src: XBOX_PDB 0x0099cb00
+// pdb: CombatState::CheckTargetsCoverLOS | CombatState.obj | debug, object-file run extension, low
+// pdb params: arCoverPathingLocation, apLocationsArray
+// pdb locals: i, targetLocation
 bool __cdecl CombatState_CheckTargetsCoverLOS_0099cb00(void* p1, BSSimpleArray<ParentSpaceNode, 1024>* pNodes)
 {
     unsigned int i;
@@ -1152,6 +1216,8 @@ struct FUN_009a0260_s
 };
 // @fnv 0x009a0260
 // src: XBOX_PDB 0x009a0260
+// pdb: CombatState::CheckMovement | CombatState.obj | debug, object-file run extension, low
+// pdb params: arPoint, apSpace, abCheckLocationReachable, abIgnoreCombatAreaCheck
 void FUN_009a0260_s::CombatState_CheckMovement(int a, int b, bool c, bool d)
 {
     CoordinateTriple loc;
@@ -1191,11 +1257,12 @@ struct FUN_009a08d0_Cls
     Inner097 u8;
     float f18;
     float f1c;
-    FUN_009a08d0_Cls* CombatLocationTarget_CombatLocationTarget();
+    FUN_009a08d0_Cls* CombatLocationTarget_ctor();
 };
 // @fnv 0x009a08d0
-// src: XBOX_PDB 0x009a08d0
-FUN_009a08d0_Cls* FUN_009a08d0_Cls::CombatLocationTarget_CombatLocationTarget()
+// src: XBOX_DEBUG_PDB 0x009a08d0
+// pdb: CombatLocationTarget::CombatLocationTarget | CombatState.obj | debug, upstream name already matches, high
+FUN_009a08d0_Cls* FUN_009a08d0_Cls::CombatLocationTarget_ctor()
 {
     b0 = 0;
     b1 = 0;
@@ -1213,6 +1280,8 @@ struct FUN_009a0b30_self
 
 // Returns 0.9 times the float at offset 0x18 of the pointer stored at offset 0xc4, or 0.0 if that pointer is null.
 // @fnv 0x009a0b30
+// pdb: CombatState::GetLocationTargetCheckMovementDistance | CombatState.obj | retail, object-file run extension, low
+// pdb locals: pcurrentGoal, egoal
 float FUN_009a0b30_self::GetScaledValue()
 {
     return (
@@ -1238,6 +1307,8 @@ struct FUN_009a0be0_Class
 
 // Returns the float at this+0xc4 offset 0x1c, adding the runtime float setting when the idle's section is not 0xf, 6 or 0.
 // @fnv 0x009a0be0
+// pdb: CombatState::GetLocationTargetCheckMovementDistance | CombatState.obj | debug, object-file gap fill, medium
+// pdb locals: pcurrentGoal, egoal
 float FUN_009a0be0_Class::GetIdleAdjustedValue()
 {
     AnimIdle* idle = ((Obj_1c4*)*(void**)((char*)this + 0x1c4))->FUN_004f9bf0();
@@ -1275,16 +1346,20 @@ struct Entry
 
 struct FUN_009a0d00_shell
 {
-    void __thiscall StoreEntry(const void* apCopy);
+    void __thiscall CombatState_AddUnreachableCoverLocation(const void* aiCoverKey);
 };
 
 // @fnv 0x009a0d00
-void __thiscall FUN_009a0d00_shell::StoreEntry(const void* apCopy)
+// src: XBOX_RETAIL_PDB 0x009a0d00
+// pdb: CombatState::AddUnreachableCoverLocation | CombatState.obj | retail, call graph (shared callers), high
+// pdb params: aiCoverKey
+// pdb locals: iindex
+void __thiscall FUN_009a0d00_shell::CombatState_AddUnreachableCoverLocation(const void* aiCoverKey)
 {
-    if (!apCopy)
+    if (!aiCoverKey)
         return;
     unsigned int count = ((S5460*)((char*)this + 0x164))->BSSimpleArray_NiPoint2_1024_AddUninitialized();
-    ((Entry*)((S006950d0*)((char*)this + 0x164))->GetElement(count))->ptr = (void*)apCopy;
+    ((Entry*)((S006950d0*)((char*)this + 0x164))->GetElement(count))->ptr = (void*)aiCoverKey;
     CombatTargetTimestamp ts(Actor::GetActorScale());
     ((Entry*)((S006950d0*)((char*)this + 0x164))->GetElement(count))->ts = ts;
 }
@@ -1325,6 +1400,9 @@ struct FUN_009a0ec0_shell
 };
 
 // @fnv 0x009a0ec0
+// pdb: CombatState::AddUnreachableLocation | CombatState.obj | retail, call graph (shared callers), medium
+// pdb params: arWorldLocation
+// pdb locals: iindex
 void __thiscall FUN_009a0ec0_shell::SetNodeBlockAndTimestamp(const FUN_009a0ec0_Block* apBlock)
 {
     FUN_009a0ec0_Ts timeStamp;
@@ -1353,6 +1431,9 @@ struct FUN_009a1010_Class
 
 // @fnv 0x009a1010
 // src: XBOX_PDB 0x009a1010
+// pdb: CombatState::SetSecondaryCoverLocation | CombatState.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatState::UpdateCombatStrength
+// pdb params: apCombatCoverLocation
 void FUN_009a1010_Class::CombatState_UpdateCombatStrength()
 {
     Actor* ptarget = (Actor*)(*(TESAmmoInitCalls**)((char*)this + 0x1c4))->GetFieldBC();
@@ -1383,6 +1464,8 @@ struct FUN_009a2bf0_shell : CoordinateTriple
 
 // @fnv 0x009a2bf0
 // src: COMMUNITY 0x009a2bf0
+// pdb: CombatLocation::SaveGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void FUN_009a2bf0_shell::CombatLocation_SaveGameBGS(BGSSaveFormBuffer* a_buffer)
 {
     BGSWorldLocation_SaveGame(a_buffer);
@@ -1395,22 +1478,25 @@ void FUN_009a2bf0_shell::CombatLocation_SaveGameBGS(BGSSaveFormBuffer* a_buffer)
 
 struct FUN_00527ba0_Class
 {
-    void __thiscall BGSLoadGameBuffer_LoadBGSWorldLocation(void*);
+    void __thiscall BGSWorldLocation_LoadGame(void*);
 };
 
 struct FUN_009a2c60_Class
 {
-    void __thiscall LoadFormData(void*);
+    void __thiscall CombatLocation_LoadGame(void*);
 };
 
 // @fnv 0x009a2c60
-void FUN_009a2c60_Class::LoadFormData(void* buffer)
+// src: XBOX_DEBUG_PDB 0x009a2c60
+// pdb: CombatLocation::LoadGame | CombatState.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+void FUN_009a2c60_Class::CombatLocation_LoadGame(void* apLoadGameBuffer)
 {
-    ((FUN_00527ba0_Class*)this)->BGSLoadGameBuffer_LoadBGSWorldLocation(buffer);
-    ((BGSLoadFormBuffer*)buffer)->ReadTypedData((void*)((char*)this + 0x14), 4);
-    ((BGSLoadFormBuffer*)buffer)->ReadTypedData((void*)((char*)this + 0x18), 4);
-    ((BGSLoadFormBuffer*)buffer)->ReadTypedData((void*)((char*)this + 0x1c), 4);
-    ((BGSLoadFormBuffer*)buffer)->ReadFormIdentifier((void*)((char*)this + 0x10));
+    ((FUN_00527ba0_Class*)this)->BGSWorldLocation_LoadGame(apLoadGameBuffer);
+    ((BGSLoadFormBuffer*)apLoadGameBuffer)->ReadTypedData((void*)((char*)this + 0x14), 4);
+    ((BGSLoadFormBuffer*)apLoadGameBuffer)->ReadTypedData((void*)((char*)this + 0x18), 4);
+    ((BGSLoadFormBuffer*)apLoadGameBuffer)->ReadTypedData((void*)((char*)this + 0x1c), 4);
+    ((BGSLoadFormBuffer*)apLoadGameBuffer)->ReadFormIdentifier((void*)((char*)this + 0x10));
 }
 
 namespace fnv_009a2d20 {
@@ -1423,6 +1509,8 @@ struct FUN_009a2d20_s
 };
 // @fnv 0x009a2d20
 // src: GUESS 0x009a2d20 (confidence: medium)
+// pdb: UnreachableCoverLocation::SaveGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void FUN_009a2d20_s::SaveFields_009a2d20(BGSSaveFormBuffer* apBuffer)
 {
     apBuffer->SaveData(this, 4, 0);
@@ -1437,15 +1525,17 @@ struct FUN_009a2d50_s
 {
     int a;
     CombatTargetTimestamp ts;
-    void LoadValueAndTimestamp(BGSLoadFormBuffer* buf);
+    void UnreachableCoverLocation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // Reads 4 bytes of this object from buf, then loads the ts member from the same buffer.
 // @fnv 0x009a2d50
-// src: GUESS 0x009a2d50 (confidence: medium)
-void FUN_009a2d50_s::LoadValueAndTimestamp(BGSLoadFormBuffer* buf)
+// src: XBOX_DEBUG_PDB 0x009a2d50
+// pdb: UnreachableCoverLocation::LoadGame | CombatState.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+void FUN_009a2d50_s::UnreachableCoverLocation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    buf->ReadTypedData(this, 4);
-    ts.LoadGame((::BGSLoadGameBuffer*)buf);
+    apLoadGameBuffer->ReadTypedData(this, 4);
+    ts.LoadGame((::BGSLoadGameBuffer*)apLoadGameBuffer);
 }
 }  // namespace fnv_009a2d50
 
@@ -1454,18 +1544,20 @@ namespace fnv_009a2db0 {
 
 struct FUN_00527ba0_t
 {
-    void BGSLoadGameBuffer_LoadBGSWorldLocation(BGSLoadGameBuffer*);
+    void BGSWorldLocation_LoadGame(BGSLoadGameBuffer*);
 };
 struct FUN_009a2db0_shell : FUN_00527ba0_t
 {
-    void LoadWorldLocationAndTimestamp(BGSLoadGameBuffer* buf);
+    void UnreachableLocation_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 // @fnv 0x009a2db0
-// src: GUESS 0x009a2db0 (confidence: high)
-void FUN_009a2db0_shell::LoadWorldLocationAndTimestamp(BGSLoadGameBuffer* buf)
+// src: XBOX_DEBUG_PDB 0x009a2db0
+// pdb: UnreachableLocation::LoadGame | CombatState.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+void FUN_009a2db0_shell::UnreachableLocation_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
-    BGSLoadGameBuffer_LoadBGSWorldLocation(buf);
-    ((CombatTargetTimestamp*)((char*)this + 0x10))->LoadGame((::BGSLoadGameBuffer*)buf);
+    BGSWorldLocation_LoadGame(apLoadGameBuffer);
+    ((CombatTargetTimestamp*)((char*)this + 0x10))->LoadGame((::BGSLoadGameBuffer*)apLoadGameBuffer);
 }
 }  // namespace fnv_009a2db0
 
@@ -1487,6 +1579,8 @@ struct CombatSaveData
 };
 // @fnv 0x009a3130
 // src: GUESS 0x009a3130 (confidence: medium)
+// pdb: CombatLocationTarget::SaveGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void CombatSaveData::SaveState_009a3130(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     apSaveGameBuffer->SaveData((void*)&unk0, 1, 0);
@@ -1502,27 +1596,31 @@ namespace fnv_009a31b0 {
 
 struct Sub08
 {
-    void BGSLoadGameBuffer_LoadBGSWorldLocation(BGSLoadFormBuffer*);
+    void BGSWorldLocation_LoadGame(BGSLoadFormBuffer*);
 };
 struct Holder
 {
-    void CombatState_LocationTarget_LoadGame(BGSLoadFormBuffer*);
+    void CombatLocationTarget_LoadGame(BGSLoadFormBuffer*);
 };
 // Reads bytes at offsets 0, 1, 0x18 and 0x1C, a value at offset 4, and delegates offset 8 to FUN_00527ba0, all via the load buffer.
 // @fnv 0x009a31b0
-// src: COMMUNITY 0x009a31b0
-void Holder::CombatState_LocationTarget_LoadGame(BGSLoadFormBuffer* pBuffer)
+// src: XBOX_DEBUG_PDB 0x009a31b0
+// pdb: CombatLocationTarget::LoadGame | CombatState.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+void Holder::CombatLocationTarget_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    pBuffer->ReadTypedData(this, 1);
-    pBuffer->ReadTypedData((void*)((char*)this + 1), 1);
-    pBuffer->ReadTypedData((void*)((char*)this + 0x18), 4);
-    pBuffer->ReadTypedData((void*)((char*)this + 0x1C), 4);
-    pBuffer->ReadFormIdentifier((void*)((char*)this + 4));
-    ((Sub08*)((char*)this + 8))->BGSLoadGameBuffer_LoadBGSWorldLocation(pBuffer);
+    apLoadGameBuffer->ReadTypedData(this, 1);
+    apLoadGameBuffer->ReadTypedData((void*)((char*)this + 1), 1);
+    apLoadGameBuffer->ReadTypedData((void*)((char*)this + 0x18), 4);
+    apLoadGameBuffer->ReadTypedData((void*)((char*)this + 0x1C), 4);
+    apLoadGameBuffer->ReadFormIdentifier((void*)((char*)this + 4));
+    ((Sub08*)((char*)this + 8))->BGSWorldLocation_LoadGame(apLoadGameBuffer);
 }
 }  // namespace fnv_009a31b0
 
 // @fnv 0x009a3280
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::GetAt | CombatCoverMap.obj | debug, call graph, medium
+// pdb params: aiIndex
 template <>
 Elem& BSSimpleArray<Elem, 1024>::GetElement(unsigned int index)
 {
@@ -1551,6 +1649,9 @@ struct Host
 };
 // Calls FUN_009a32a0 with cnt and 1, then for each of cnt elements calls FUN_009052c0(i, &arr[i]) and FUN_006e4430 on the result.
 // @fnv 0x009a3780
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::CopyTo<1024> | CombatState.obj | debug, call graph, medium
+// pdb params: aDestArray
+// pdb locals: i
 void Host::ProcessElements(Helper* apHelper)
 {
     apHelper->FUN_009a32a0(cnt, 1);
@@ -1594,6 +1695,7 @@ struct FUN_009d6c80_shell
 };
 // @fnv 0x009d6c80
 // src: COMMUNITY 0x009d6c80
+// pdb: CombatState::UnreserveSecondaryCoverLocation | CombatProcedureMove.obj | debug, upstream name already matches, high
 void FUN_009d6c80_shell::CombatState_UnreserveSecondaryCoverLocation()
 {
     CombatState_UnreserveCoverLocation(*(CombatCoverPointData_combatstate**)((char*)this + 0xe8));
@@ -1606,6 +1708,7 @@ struct FUN_009d7c20_shell : CombatState
 };
 // @fnv 0x009d7c20
 // src: XBOX_PDB 0x009d7c20
+// pdb: CombatState::ReserveSecondaryCoverLocation | CombatProcedureMove.obj | debug, upstream name already matches, high
 void FUN_009d7c20_shell::CombatState_ReserveSecondaryCoverLocation()
 {
     CombatState_ReserveCoverLocation(*(CombatCoverPointData_combatstate**)((char*)this + 0xe8));
@@ -1629,6 +1732,8 @@ struct FUN_0099a530_shell
 };
 // @fnv 0x0099a530
 // src: XBOX_PDB 0x0099a530
+// pdb: CombatState::CheckReferences | CombatState.obj | retail, upstream name already matches, high
+// pdb locals: pweapon, pammo, i, pcombatItem
 void FUN_0099a530_shell::CombatState_CheckReferences()
 {
     void* a = *(void**)((char*)this + 0x19c);
@@ -1664,6 +1769,9 @@ struct FUN_009a2f50_shell
 };
 // @fnv 0x009a2f50
 // src: COMMUNITY 0x009a2f50
+// pdb: CombatCoverSearchInfo::SaveGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
+// pdb locals: isaveGameCount, i, coverLocation
 void FUN_009a2f50_shell::CombatCoverSearch_SaveGameBGS(BGSSaveFormBuffer* buffer)
 {
     buffer->SaveData(this, 12, 0);
@@ -1695,27 +1803,30 @@ struct FUN_009a3280_shell
 };
 struct CombatSaveGameData
 {
-    void CombatCoverSearch_LoadGameBGS(BGSLoadFormBuffer* buffer);
+    void CombatCoverSearchInfo_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // Reads this object's fields from the buffer, then loads a count and each of that many PathingCoverLocation entries via LoadGame.
 // @fnv 0x009a3050
-// src: COMMUNITY 0x009a3050
-void CombatSaveGameData::CombatCoverSearch_LoadGameBGS(BGSLoadFormBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x009a3050
+// pdb: CombatCoverSearchInfo::LoadGame | CombatState.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, i, coverLocation
+void CombatSaveGameData::CombatCoverSearchInfo_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    buffer->ReadTypedData(this, 0xc);
-    buffer->ReadTypedData((char*)this + 0xc, 0xc);
-    buffer->ReadTypedData((char*)this + 0x18, 4);
-    buffer->ReadTypedData((char*)this + 0x38, 1);
-    buffer->ReadTypedData((char*)this + 0x30, 4);
-    buffer->ReadTypedData((char*)this + 0x34, 4);
-    ((CombatTargetTimestamp*)((char*)this + 0x1c))->LoadGame(buffer);
-    unsigned int count = buffer->ReadElementCount();
+    apLoadGameBuffer->ReadTypedData(this, 0xc);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0xc, 0xc);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x18, 4);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x38, 1);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x30, 4);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x34, 4);
+    ((CombatTargetTimestamp*)((char*)this + 0x1c))->LoadGame(apLoadGameBuffer);
+    unsigned int count = apLoadGameBuffer->ReadElementCount();
     ((Helper*)((char*)this + 0x20))->FUN_009a32a0(count, 1);
     unsigned int i = 0;
     for (; i < count; ++i)
     {
         PathingCoverLocation* cover = ((FUN_009a3280_shell*)((char*)this + 0x20))->FUN_009a3280(i);
-        cover->LoadGame(buffer);
+        cover->LoadGame(apLoadGameBuffer);
     }
 }
 }  // namespace fnv_009a3050
@@ -1728,13 +1839,14 @@ struct FUN_0097ee20_shell
     float f18;
     int f1c;
     void BGSWorldLocation_BGSWorldLocation();
-    FUN_0097ee20_shell* CombatLocation_CombatLocation();
+    FUN_0097ee20_shell* CombatLocation_ctor();
 };
 
 // Calls FUN_0097ede0, then sets f10 to 0, f14 to -1, f18 to 0.0f and f1c to 0, returning this.
 // @fnv 0x0097ee20
-// src: XBOX_PDB 0x0097ee20
-FUN_0097ee20_shell* FUN_0097ee20_shell::CombatLocation_CombatLocation()
+// src: XBOX_DEBUG_PDB 0x0097ee20
+// pdb: CombatLocation::CombatLocation | CombatController.obj | debug, upstream name already matches, high
+FUN_0097ee20_shell* FUN_0097ee20_shell::CombatLocation_ctor()
 {
     BGSWorldLocation_BGSWorldLocation();
     f10 = 0;
@@ -1751,9 +1863,12 @@ struct Container
 
 // @fnv 0x0099a360
 // src: XBOX_PDB 0x0099a360
-bool Container::CombatState_CheckShouldUpdateDetection(int, TESWorldSpace* param2)
+// pdb: CombatState::CheckShouldUpdateDetection | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apAttacker, apTarget
+// pdb locals: bupdateDetection, pmovementProcedure, pcoverProcedure
+bool Container::CombatState_CheckShouldUpdateDetection(int, TESWorldSpace* apTarget)
 {
-    if (param2 != *(TESWorldSpace**)((char*)this + 0x1c0))
+    if (apTarget != *(TESWorldSpace**)((char*)this + 0x1c0))
         return true;
     bool bResult = true;
     if (*(int*)((char*)this + 0x6c) > 0)
@@ -1781,6 +1896,8 @@ struct FUN_0099a680_s
     void SetStampFromActor(int);
 };
 // @fnv 0x0099a680
+// pdb: CombatState::PerformedMeleeAttack | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apTarget
 void FUN_0099a680_s::SetStampFromActor(int)
 {
     CombatTargetTimestamp t(Actor::GetActorScale());
@@ -1803,12 +1920,15 @@ struct C99
 // Looks up entry 2, calls f1C4->FUN_00981380() if its value equals a, then calls FUN_0099a420(a, 1).
 // @fnv 0x0099a780
 // src: XBOX_PDB 0x0099a780
-void C99::CombatState_PreActivateReference(int a)
+// pdb: CombatState::PreActivateReference | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: ptargetObject
+void C99::CombatState_PreActivateReference(int apRef)
 {
     int* b = GetActionAtIndex(2);
-    if (b && *b == a)
+    if (b && *b == apRef)
         f1C4->FinishedPackageTask();
-    CombatState_ClearReferencePointer(a, 1);
+    CombatState_ClearReferencePointer(apRef, 1);
 }
 
 namespace fnv_0099a7d0 {
@@ -1822,6 +1942,8 @@ struct CTSHelper
 };
 
 // @fnv 0x0099a7d0
+// pdb: CombatState::ActivatedReference | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apRef, apObject, aiCount, abActivatedScriptOnly
 }  // namespace fnv_0099a7d0
 
 // src: XBOX_PDB 0x0099a7d0
@@ -1849,6 +1971,8 @@ struct FUN_0099b540_s
 };
 // Sets or clears the bits of flags selected by mask, according to set.
 // @fnv 0x0099b540
+// pdb: BGSWorldLocation::SetSpace | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apSpace
 void FUN_0099b540_s::SetFlags(unsigned int mask, bool set)
 {
     if (set)
@@ -1885,12 +2009,14 @@ struct Host
 };
 // @fnv 0x009a0a80
 // src: XBOX_PDB 0x009a0a80
+// pdb: CombatState::CheckUseLocationTargetMaxDistance | CombatState.obj | retail, upstream name already matches, high
+// pdb locals: ptarget
 bool Host::CombatState_CheckUseLocationTargetMaxDistance()
 {
     void* tmp = ((AlchemyItem*)field_1C4)->CombatController_GetTarget();
     if (tmp != 0)
     {
-        if (GetHasBufferedDetection_0097ee90() || field_1C4->FUN_00981420())
+        if (GetHasBufferedDetection_0097ee90() || field_1C4->CombatController_IsSearching())
             return true;
     }
     if (tmp == 0 && field_C4 != 0 && *field_C4 == 2)
@@ -1914,6 +2040,7 @@ struct FUN_009a0b00_s
 // Returns t->f[7] when FUN_009a0a80() succeeds, otherwise returns the result of GetScaledValue().
 // @fnv 0x009a0b00
 // src: COMMUNITY 0x009a0b00
+// pdb: CombatState::GetLocationTargetDistance | CombatState.obj | retail, upstream name already matches, high
 float FUN_009a0b00_s::CombatState_GetLocationTargetDistance()
 {
     if (CombatState_CheckUseLocationTargetMaxDistance())
@@ -1939,12 +2066,14 @@ struct FUN_009a0b70_shell
 {
     char pad_c4[0xc4];
     InnerData* ptr;
-    float GetInterpolatedValue();
+    float CombatState_GetLocationTargetNearTargetDistance();
 };
 
 // Returns ptr->val1c plus the runtime float setting when ptr->flag is set, otherwise interpolates between ptr->val18 and ptr->val1c using DAT_0101de30.
 // @fnv 0x009a0b70
-float FUN_009a0b70_shell::GetInterpolatedValue()
+// src: XBOX_DEBUG_PDB 0x009a0b70
+// pdb: CombatState::GetLocationTargetNearTargetDistance | CombatState.obj | debug, call graph, high
+float FUN_009a0b70_shell::CombatState_GetLocationTargetNearTargetDistance()
 {
     if (ptr->flag)
         return ptr->val1c + *originalRuntimeFloatSetting424.Float();
@@ -1964,6 +2093,7 @@ struct FUN_009a33e0_shell : AX
 // Sets the object's vtable pointer to DAT_0108e068, calls FUN_006b3eb0(0, 0), and returns this.
 // @fnv 0x009a33e0
 // src: XBOX_PDB 0x009a33e0
+// pdb: BSSimpleArray<TESObjectWEAP *,1024>::BSSimpleArray<TESObjectWEAP *,1024> | CombatState.obj | debug, object-file gap fill, medium
 FUN_009a33e0_shell* FUN_009a33e0_shell::BSSimpleArray_TESObjectWEAP_1024_BSSimpleArray_TESObjectWEAP_1024()
 {
     *(int**)this = &DAT_0108e068;
@@ -1983,6 +2113,7 @@ struct FUN_009a3430_shell : FUN_009a39f0_t
 // Sets the object's vtable pointer to DAT_0108e07c, calls FUN_009a39f0(0, 0), and returns this.
 // @fnv 0x009a3430
 // src: COMMUNITY 0x009a3430
+// pdb: BSSimpleArray<UnreachableCoverLocation,1024>::BSSimpleArray<UnreachableCoverLocation,1024> | CombatState.obj | debug, object-file run extension, low
 FUN_009a3430_shell* FUN_009a3430_shell::BSSimpleArray_UnreachableCoverLocation_1024_BSSimpleArray_UnreachableCoverLocation_1024()
 {
     *(int**)this = &DAT_0108e07c;
@@ -2002,6 +2133,7 @@ struct FUN_009a3460_shell : GlobalObject_00869f00
 };
 // @fnv 0x009a3460
 // src: GUESS 0x009a3460 (confidence: medium)
+// pdb: BSSimpleArray<UnreachableCoverLocation,1024>::~BSSimpleArray<UnreachableCoverLocation,1024> | CombatState.obj | debug, call graph, medium
 void FUN_009a3460_shell::ResetVirtualTableAndClear_009a3460()
 {
     *(int**)this = &DAT_0108e07c;
@@ -2021,6 +2153,7 @@ struct FUN_009a35c0_shell : FUN_009a3bc0_t
 // Sets the object's vtable pointer to DAT_0108e090, calls Initialize with 0, 0, and returns this.
 // @fnv 0x009a35c0
 // src: COMMUNITY 0x009a35c0
+// pdb: BSSimpleArray<UnreachableLocation,1024>::BSSimpleArray<UnreachableLocation,1024> | CombatState.obj | debug, object-file run extension, low
 FUN_009a35c0_shell* FUN_009a35c0_shell::BSSimpleArray_UnreachableLocation_1024_BSSimpleArray_UnreachableLocation_1024()
 {
     *(int**)this = &DAT_0108e090;
@@ -2050,6 +2183,8 @@ struct FUN_00997480_shell
 
 // @fnv 0x00997480
 // src: COMMUNITY 0x00997480
+// pdb: CombatCoverLocation::Copy | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apCopy
 void FUN_00997480_shell::CombatCoverLocation_Copy(const FUN_00997480_shell* apCopy)
 {
     *(bool*)((char*)this + 0) = *(bool*)((char*)apCopy + 0);
@@ -2080,7 +2215,7 @@ struct Host
 };
 struct Unk975C0
 {
-    void CoverSearch_Reset();
+    void CombatCoverSearchInfo_Clear();
 };
 struct FUN_00997520_shell : Unk975C0
 {
@@ -2089,11 +2224,13 @@ struct FUN_00997520_shell : Unk975C0
 
 // @fnv 0x00997520
 // src: COMMUNITY 0x00997520
+// pdb: CombatCoverSearchInfo::Copy | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apCopy
 void FUN_00997520_shell::CoverSearch_Set(const void* apParam)
 {
     if (!apParam)
     {
-        CoverSearch_Reset();
+        CombatCoverSearchInfo_Clear();
         return;
     }
     *(S12*)((char*)this + 0) = *(S12*)((char*)apParam + 0);
@@ -2121,14 +2258,14 @@ struct FUN_009a0680_shell : FUN_00981340_shell
 struct FUN_0099a9a0_shell : FUN_009a0680_shell
 {
     void CombatState_ClearCoverLocation(int);
-    void ReleaseStageHolder(int);
+    void CombatState_ClearSecondaryCoverLocation(int);
 };
 
 struct FUN_009a0a40_shell : FUN_0099a9a0_shell
 {
 };
 
-void __fastcall FreeAndClearFieldC4(FUN_009a0a40_shell*);
+void __fastcall CombatState_ClearLocationTarget(FUN_009a0a40_shell*);
 
 struct PrimaryBase : FUN_009a0a40_shell
 {
@@ -2201,13 +2338,15 @@ struct FUN_00997aa0 : PrimaryBase, Base_009a3410
 };
 
 // @fnv 0x00997aa0
+// pdb: CombatState::~CombatState | CombatState.obj | retail, object-file run extension, high
+// pdb locals: i
 FUN_00997aa0::~FUN_00997aa0()
 {
     CombatState_DeleteInventoryData();
     CombatState_ClearCoverLocation(0);
-    ReleaseStageHolder(0);
+    CombatState_ClearSecondaryCoverLocation(0);
     ClearAndDeletePointer();
-    FreeAndClearFieldC4(this);
+    CombatState_ClearLocationTarget(this);
     for (unsigned int i = 0; i < 5; ++i)
     {
         FreeSlot(i);
@@ -2242,6 +2381,8 @@ struct FUN_00997c30_shell : FUN_00997cb0_Class
 };
 
 // @fnv 0x00997c30
+// pdb: CombatState::DoInitialUpdate | CombatState.obj | debug, call graph, medium
+// pdb locals: pattacker
 void FUN_00997c30_shell::InitAmmoState()
 {
     void* local4 = (void*)((TESAmmoInitCalls*)*(void**)((char*)this + 0x1c4))->GetFieldBC();
@@ -2263,7 +2404,7 @@ struct TESAmmoInitCalls
 
 struct MyClass
 {
-    void UpdateTargetPerception(int, int, int*, CombatTargetTimestamp*, bool*, bool*);
+    void CombatGroup_GetTargetDetectionLevel(int, int, int*, CombatTargetTimestamp*, bool*, bool*);
 };
 
 extern Setting g_011cf198;
@@ -2284,13 +2425,15 @@ struct FUN_00999160_struct
 // Reads count and target from field_1C4, calls UpdateTargetPerception with this's offsets when target is set, then runs timer-gated updates at 0x204 and 0x20c.
 // @fnv 0x00999160
 // src: XBOX_PDB 0x00999160
+// pdb: CombatState::UpdateLow | CombatState.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, pattacker
 void FUN_00999160_struct::CombatState_UpdateLow()
 {
     unsigned int count = ((TESAmmoInitCalls*)field_1C4)->GetFieldBC();
     int target = (int)((AlchemyItem*)field_1C4)->CombatController_GetTarget();
     if (target)
     {
-        ((MyClass*)field_1C4->GetCastSound())->UpdateTargetPerception(count, target, (int*)((char*)this + 0x6c),
+        ((MyClass*)field_1C4->GetCastSound())->CombatGroup_GetTargetDetectionLevel(count, target, (int*)((char*)this + 0x6c),
                                                           (CombatTargetTimestamp*)((char*)this + 0x94),
                                                           (bool*)((char*)this + 0x70), (bool*)((char*)this + 0x71));
     }
@@ -2323,6 +2466,8 @@ struct FUN_0099a2d0_shell
 
 // Scores weapon types 0-6 via FUN_0097ac90 and returns the weapon from FUN_0097c150 with the highest score, or null for type 6.
 // @fnv 0x0099a2d0
+// pdb: CombatState::GetBestCombatWeapon | CombatState.obj | debug, object-file gap fill, medium
+// pdb locals: pweapon, fweaponDPS, i, fdps, etype
 WEAPStub* FUN_0099a2d0_shell::GetBestWeapon()
 {
     float bestScoreA = 0.0f;
@@ -2348,16 +2493,19 @@ extern Setting originalRuntimeFloatSetting426;
 
 struct FUN_0099a840_shell
 {
-    void CombatState_UsedCombatItem(void* apItem);
+    void CombatState_UsedCombatItem(void* apCombatItem);
 };
 
 // @fnv 0x0099a840
 // src: XBOX_PDB 0x0099a840
-void FUN_0099a840_shell::CombatState_UsedCombatItem(void* apItem)
+// pdb: CombatState::UsedCombatItem | CombatState.obj | debug, upstream name already matches, high
+// pdb params: apCombatItem
+// pdb locals: i, ftime
+void FUN_0099a840_shell::CombatState_UsedCombatItem(void* apCombatItem)
 {
     for (unsigned int i = 0; i < 2; ++i)
     {
-        if (*(void**)((char*)this + 0x1a4 + i * 4) == apItem)
+        if (*(void**)((char*)this + 0x1a4 + i * 4) == apCombatItem)
         {
             float val = 0.0f;
             switch (i + 17)
@@ -2425,6 +2573,8 @@ struct FUN_0099a8d0_struct : FUN_00999100_shell
 
 // @fnv 0x0099a8d0
 // src: XBOX_PDB 0x0099a8d0
+// pdb: CombatState::TargetChanged | CombatState.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, bcoverSafe
 void FUN_0099a8d0_struct::CombatState_TargetChanged()
 {
     void* ptr4 = ((AlchemyItem*)field_1C4)->CombatController_GetTarget();
@@ -2471,12 +2621,14 @@ struct FUN_0099aa80_struct : StandInShell
     char b51;
     char b52;
 
-    FUN_0099aa80_struct* PathingCoverLocation_PathingCoverLocation(FUN_0099aa80_struct* other);
+    FUN_0099aa80_struct* PathingCoverLocation_ctor(FUN_0099aa80_struct* other);
 };
 
 // @fnv 0x0099aa80
-// src: EXE 0x0099aa80
-FUN_0099aa80_struct* FUN_0099aa80_struct::PathingCoverLocation_PathingCoverLocation(FUN_0099aa80_struct* other)
+// src: XBOX_RETAIL_PDB 0x0099aa80
+// pdb: PathingCoverLocation::PathingCoverLocation | CombatState.obj | retail, upstream name already matches, high
+// pdb params: __that
+FUN_0099aa80_struct* FUN_0099aa80_struct::PathingCoverLocation_ctor(FUN_0099aa80_struct* other)
 {
     FUN_006dcc40(other);
     vtable = &DAT_0106cbc0;
@@ -2638,6 +2790,9 @@ struct FUN_0099ca00_struct
 
 // @fnv 0x0099ca00
 // src: XBOX_PDB 0x0099ca00
+// pdb: CombatState::CheckTargetsCoverLOS | CombatState.obj | debug, object-file run extension, low
+// pdb params: arCoverPathingLocation, apIgnoreTarget
+// pdb locals: pgroup, itargetCount, i, ptarget, targetLocation, targetWorldLoc
 bool FUN_0099ca00_struct::CombatState_CheckTargetsCoverLOS(void* arg1, Member* pIgnoreMember)
 {
     ActorCombatGroup* group = (ActorCombatGroup*)field_1C4->GetCastSound();
@@ -2687,6 +2842,9 @@ struct FUN_0099cb70_struct
 };
 
 // @fnv 0x0099cb70
+// pdb: CombatState::BuildTargetLOSLocationsArray | CombatState.obj | debug, object-file run extension, low
+// pdb params: apLocationsArray
+// pdb locals: pgroup, itargetCount, i, ptarget, targetLocation, targetWorldLoc
 void FUN_0099cb70_struct::CollectCastSoundPositions(Arr_006cee30* array)
 {
     ActorCombatGroup* group = (ActorCombatGroup*)field_1C4->GetCastSound();
@@ -2735,7 +2893,7 @@ struct FUN_009a02a0_struct : ABD_005f92d0
     LocationTarget* pAssociatedObject;
 
     float GetIdleAdjustedValue();
-    bool HasItemWithinRadius(const CoordinateTriple& loc, float f);
+    bool CombatState_IsLocationUnreachable(const CoordinateTriple& loc, float f);
 
     bool CombatState_CheckMovement_009a02a0(const CoordinateTriple& arWorldLocation, bool abCheckLocationReachable,
                       bool abIgnoreCombatAreaCheck);
@@ -2743,6 +2901,8 @@ struct FUN_009a02a0_struct : ABD_005f92d0
 
 // @fnv 0x009a02a0
 // src: XBOX_PDB 0x009a02a0
+// pdb: CombatState::CheckMovement | CombatState.obj | retail, call graph, high
+// pdb params: arPoint, apSpace, abCheckLocationReachable, abIgnoreCombatAreaCheck
 bool FUN_009a02a0_struct::CombatState_CheckMovement_009a02a0(const CoordinateTriple& arWorldLocation, bool abCheckLocationReachable,
                                        bool abIgnoreCombatAreaCheck)
 {
@@ -2759,7 +2919,7 @@ bool FUN_009a02a0_struct::CombatState_CheckMovement_009a02a0(const CoordinateTri
             }
         }
     }
-    if (abCheckLocationReachable && HasItemWithinRadius(arWorldLocation, -1.0f))
+    if (abCheckLocationReachable && CombatState_IsLocationUnreachable(arWorldLocation, -1.0f))
     {
         return false;
     }
@@ -2785,18 +2945,21 @@ struct FUN_006d3370_s
 
 struct FUN_009a0470_shell : FUN_009d6c80_shell
 {
-    void StoreEntry(int);
-    void ReleaseStageHolder(bool);
+    void CombatState_AddUnreachableCoverLocation(int);
+    void CombatState_ClearSecondaryCoverLocation(bool);
 };
 
 // @fnv 0x009a0470
-void FUN_009a0470_shell::ReleaseStageHolder(bool bParam)
+// src: XBOX_RETAIL_PDB 0x009a0470
+// pdb: CombatState::ClearSecondaryCoverLocation | CombatState.obj | retail, call graph (shared callers), high
+// pdb params: abInvalidateCover
+void FUN_009a0470_shell::CombatState_ClearSecondaryCoverLocation(bool abInvalidateCover)
 {
     if (*(void**)((char*)this + 0xe8))
     {
-        if (bParam)
+        if (abInvalidateCover)
         {
-            StoreEntry(*(int*)(*(char**)((char*)this + 0xe8) + 0x68));
+            CombatState_AddUnreachableCoverLocation(*(int*)(*(char**)((char*)this + 0xe8) + 0x68));
         }
         if (((StageHolder*)*(void**)((char*)this + 0xe8))->GetDone())
         {
@@ -2830,6 +2993,8 @@ struct FUN_009a06c0_struct : FUN_00981340_shell
 };
 
 // @fnv 0x009a06c0
+// pdb: CombatState::SetCombatItem | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: aiCombatItem, apRef, apBoundObject
 void FUN_009a06c0_struct::SetArrayEntry(int aiIndex, TESObjectREFRHelper* apRefr, int aiValue)
 {
     FreeSlot(aiIndex);
@@ -2879,16 +3044,20 @@ struct FUN_009a0c50_class
     CombatController* field_1C4;
 
     void CombatState_SetLocationTargetLocation(int);
-    void UpdateModifierState(bool arg_8);
+    void CombatState_UpdateCombatArea(bool abForceUpdate);
 };
 
 // If field_C4 is null or its byte0 is 3 and arg_8 is set, computes a modifier value and applies it via FUN_009a0910 when it exceeds _gModifierZero.
 // @fnv 0x009a0c50
-void FUN_009a0c50_class::UpdateModifierState(bool arg_8)
+// src: XBOX_RETAIL_PDB 0x009a0c50
+// pdb: CombatState::UpdateCombatArea | CombatState.obj | retail, call graph (shared callers), high
+// pdb params: abForceUpdate
+// pdb locals: fcombatRadius, pattacker
+void FUN_009a0c50_class::CombatState_UpdateCombatArea(bool abForceUpdate)
 {
     if (field_C4)
     {
-        if (field_C4->byte0 != 3 || !arg_8)
+        if (field_C4->byte0 != 3 || !abForceUpdate)
         {
             return;
         }
@@ -2934,6 +3103,9 @@ struct FUN_009a0d70_shell
 
 // Scans the array at offset 0x164, removing entries whose elapsed time exceeds 10.0, and returns true if any remaining entry's pointer equals apItem.
 // @fnv 0x009a0d70
+// pdb: CombatState::IsCoverLocationUnreachable | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: aiCoverKey
+// pdb locals: i, unreachableCoverLocation
 bool FUN_009a0d70_shell::ContainsItem(void* apItem)
 {
     for (unsigned int i = 0; i < ((CombatstateOffset08View*)((char*)this + 0x164))->GetFlags(); ++i)
@@ -2992,6 +3164,9 @@ struct FUN_009a0e10_shell
 
 // Removes avoidance entries whose timer exceeds 10 seconds and adds the remaining entries' items to the array.
 // @fnv 0x009a0e10
+// pdb: CombatState::BuildUnreachableCoverLocationsArray | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apUnreachableCoverLocationsArray
+// pdb locals: i, unreachableCoverLocation
 void FUN_009a0e10_shell::CollectAvoidanceItems(BSSimpleArray<void*, 1024>* apArray)
 {
     apArray->GrowCapacity(avoidanceData.GetFlags());
@@ -3045,11 +3220,15 @@ struct FUN_009a0f40_struct
     char pad0[0x174];
     MyArr array_174;
 
-    bool HasItemWithinRadius(const CoordinateTriple* arWorldLocation, float afRadius);
+    bool CombatState_IsLocationUnreachable(const CoordinateTriple* arWorldLocation, float afRadius);
 };
 
 // @fnv 0x009a0f40
-bool FUN_009a0f40_struct::HasItemWithinRadius(const CoordinateTriple* arWorldLocation, float afRadius)
+// src: XBOX_RETAIL_PDB 0x009a0f40
+// pdb: CombatState::IsLocationUnreachable | CombatState.obj | retail, call graph (shared callers), high
+// pdb params: arWorldLocation, afRadius
+// pdb locals: fradiusSquared, i, unreachableLocation
+bool FUN_009a0f40_struct::CombatState_IsLocationUnreachable(const CoordinateTriple* arWorldLocation, float afRadius)
 {
     float maxDistSq = 0.0f;
     if (afRadius == -1.0)
@@ -3109,6 +3288,8 @@ struct FUN_009a2de0_struct
 // Serializes byte1, byte0, byte2, dword4, data8, member14, dword68, dword6c and member70 into the save buffer.
 // @fnv 0x009a2de0
 // src: COMMUNITY 0x009a2de0
+// pdb: CombatCoverLocation::SaveGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void FUN_009a2de0_struct::CombatCoverLocation_SaveGameBGS(BGSSaveFormBuffer* buffer)
 {
     buffer->SaveData((void*)&byte1, 1, 0);
@@ -3155,6 +3336,8 @@ struct FUN_009a2ea0_struct
 // Reads byte1, byte0, byte2, dword4, data8, dword68 and dword6c from the buffer and calls member14.LoadGame and member70.FUN_00982ca0.
 // @fnv 0x009a2ea0
 // src: COMMUNITY 0x009a2ea0
+// pdb: CombatCoverLocation::LoadGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void FUN_009a2ea0_struct::CombatCoverLocation_LoadGameBGS(BGSLoadFormBuffer* buffer)
 {
     buffer->ReadTypedData((void*)&byte1, 1);
@@ -3186,6 +3369,8 @@ struct UCL_009a3610
 typedef BSSimpleArray<fnv_009a3610::UCL_009a3610, 1024> FUN_009a3610_arr;
 
 // @fnv 0x009a3610
+// pdb: BSSimpleArray<UnreachableLocation,1024>::SetSize | CombatState.obj | debug, call graph, high
+// pdb params: aiNewSize, abFreeMemory
 }
 template <> void BSSimpleArray<fnv_009a3610::UCL_009a3610, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
@@ -3245,6 +3430,9 @@ struct S981990
 
 // @fnv 0x009a9630
 // src: XBOX_PDB 0x009a9630
+// pdb: CombatUtilities::IsActorUsingMelee | CombatUtilities.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: pcombatController, pweapon
 bool CombatUtilities_IsActorUsingMelee(void* apActor)
 {
     TESObjectWEAP* weapon = 0;
@@ -3284,7 +3472,7 @@ struct FUN_009a0910_Vector
     float w;
 };
 
-void __fastcall FreeAndClearFieldC4(FUN_009a0a40_shell*);
+void __fastcall CombatState_ClearLocationTarget(FUN_009a0a40_shell*);
 float __cdecl _FUN_00404010(float, float);
 
 unsigned int _data_011c16bc;
@@ -3307,24 +3495,26 @@ struct FUN_009a0910_shell
     unsigned char padding[0xc4];
     FUN_009a08d0_Cls* fieldC4;
 
-    void CombatState_SetLocationTargetLocation(FUN_009a0910_Vector* value, unsigned char flag, float value10, float value14);
+    void CombatState_SetLocationTargetLocation(FUN_009a0910_Vector* arLocation, unsigned char aeType, float afMin, float afMax);
 };
 
 // Calls FreeAndClearFieldC4, allocates a FUN_009a08d0_Cls into fieldC4 and stores the flag, vector, and two clamped float values.
 // @fnv 0x009a0910
 // src: XBOX_PDB 0x009a0910
-void FUN_009a0910_shell::CombatState_SetLocationTargetLocation(FUN_009a0910_Vector* apVector, unsigned char flag, float value10, float value14)
+// pdb: CombatState::SetLocationTargetLocation | CombatState.obj | retail, upstream name already matches, high
+// pdb params: arLocation, aeType, afMin, afMax
+void FUN_009a0910_shell::CombatState_SetLocationTargetLocation(FUN_009a0910_Vector* arLocation, unsigned char aeType, float afMin, float afMax)
 {
-    FreeAndClearFieldC4(reinterpret_cast<FUN_009a0a40_shell*>(this));
+    CombatState_ClearLocationTarget(reinterpret_cast<FUN_009a0a40_shell*>(this));
 
     fieldC4 = new FUN_009a08d0_Cls;
 
-    fieldC4->flag = flag;
+    fieldC4->flag = aeType;
     fieldC4->field4 = 0;
-    fieldC4->value = *apVector;
+    fieldC4->value = *arLocation;
 
-    fieldC4->value18 = _FUN_00404010(value10, *originalRuntimeFloatSetting423.Float());
-    fieldC4->value1c = _FUN_00404010(value14, *originalRuntimeFloatSetting423.Float());
+    fieldC4->value18 = _FUN_00404010(afMin, *originalRuntimeFloatSetting423.Float());
+    fieldC4->value1c = _FUN_00404010(afMax, *originalRuntimeFloatSetting423.Float());
 }
 }  // namespace fnv_009a0910
 
@@ -3338,44 +3528,46 @@ struct CombatTargetEntry
 }  // namespace fnv_009a3480
 
 // @fnv 0x009a3480
+// pdb: BSSimpleArray<UnreachableCoverLocation,1024>::SetSize | CombatState.obj | debug, call graph, high
+// pdb params: aiNewSize, abFreeMemory
 template <>
-void BSSimpleArray<fnv_009a3480::CombatTargetEntry, 1024>::SetSize(unsigned int count, bool clear)
+void BSSimpleArray<fnv_009a3480::CombatTargetEntry, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (count == 0)
+    if (aiNewSize == 0)
     {
-        Clear(clear);
+        Clear(abFreeMemory);
     }
-    else if (count > SimpleArrayStorage)
+    else if (aiNewSize > SimpleArrayStorage)
     {
         if (SimpleArrayStorage == 0)
         {
-            pBuffer = _Allocate(count);
-            SimpleArrayStorage = count;
+            pBuffer = _Allocate(aiNewSize);
+            SimpleArrayStorage = aiNewSize;
         }
         else
         {
-            ReallocateStorage(count, iSize);
-            SimpleArrayStorage = count;
+            ReallocateStorage(aiNewSize, iSize);
+            SimpleArrayStorage = aiNewSize;
         }
 
-        InitializeItems(pBuffer + iSize, count - iSize);
-        iSize = count;
+        InitializeItems(pBuffer + iSize, aiNewSize - iSize);
+        iSize = aiNewSize;
     }
-    else if (count < iSize)
+    else if (aiNewSize < iSize)
     {
-        ReleaseElements(pBuffer + count, iSize - count);
-        iSize = count;
+        ReleaseElements(pBuffer + aiNewSize, iSize - aiNewSize);
+        iSize = aiNewSize;
 
-        if (clear && count <= (SimpleArrayStorage >> 2))
+        if (abFreeMemory && aiNewSize <= (SimpleArrayStorage >> 2))
         {
-            ReallocateStorage(count, count);
-            SimpleArrayStorage = count;
+            ReallocateStorage(aiNewSize, aiNewSize);
+            SimpleArrayStorage = aiNewSize;
         }
     }
     else
     {
-        InitializeItems(pBuffer + iSize, count - iSize);
-        iSize = count;
+        InitializeItems(pBuffer + iSize, aiNewSize - iSize);
+        iSize = aiNewSize;
     }
 }
 
@@ -3516,6 +3708,9 @@ struct FUN_00999260_shell
 
 // Refreshes the two combat timers when expired and sets iFlags bits from the runtime float setting and the controller's value source.
 // @fnv 0x00999260
+// pdb: CombatCoverSearchInfo::Copy | CombatState.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatState::UpdateCombatPermissions
+// pdb params: apCopy
 void FUN_00999260_shell::UpdateCombatFlags()
 {
     int iActor = (int)pController->GetFieldBC();
@@ -3550,7 +3745,7 @@ void FUN_00999260_shell::UpdateCombatFlags()
 class AA10List
 {
   public:
-    void HandleEvent(int iArg);
+    void CombatGroup_InvestigatedSearchLocation(int arLocation);
 };
 
 class AA10Source
@@ -3684,24 +3879,28 @@ class AA10Menu
     AA10Source* m_pkSource;
 
     void Refresh();
-    void HandleMenuEvent(int iArg, unsigned int uiEvent);
+    void CombatState_ReachedDestination(int arDestination, unsigned int aiLocation);
 };
 
 // Handles event 15 by forwarding iArg to the source list, and refreshes when the tracked item's ID equals uiEvent.
 // @fnv 0x0099aa10
-void AA10Menu::HandleMenuEvent(int iArg, unsigned int uiEvent)
+// src: XBOX_DEBUG_PDB 0x0099aa10
+// pdb: CombatState::ReachedDestination | CombatState.obj | debug, call graph (shared callers), high
+// pdb params: arDestination, aiLocation
+// pdb locals: ilocation
+void AA10Menu::CombatState_ReachedDestination(int arDestination, unsigned int aiLocation)
 {
-    switch (uiEvent)
+    switch (aiLocation)
     {
     case 15:
-        m_pkSource->GetList()->HandleEvent(iArg);
+        m_pkSource->GetList()->CombatGroup_InvestigatedSearchLocation(arDestination);
         break;
     }
 
     if (m_pkTrackedItem)
     {
         unsigned int uiItemID = m_pkTrackedItem->GetID();
-        if (uiItemID == uiEvent)
+        if (uiItemID == aiLocation)
             Refresh();
     }
 }
@@ -3730,7 +3929,7 @@ struct Timer99
 };
 
 float BSMIN(float, float);
-float GetScaleOrHeightDelta(TESObjectREFR*, int);
+float CombatUtilities_GetAttackerFiringZOffset(TESObjectREFR*, int);
 bool NavMeshMath_LineToLineSegment2DIntersection(NiPoint3*, NiPoint3*, NiPoint3*, NiPoint3*, NiPoint3*);
 
 struct Combat99
@@ -3852,22 +4051,25 @@ struct Combat99
     int unk1bc;
     int unk1c0;
     Timer99* pTimer;
-    bool CombatState_CheckLedgeCoverAngle(Seg99* apSeg, NiPoint3* apFrom, NiPoint3* apTarget, TESObjectREFR* apRef);
+    bool CombatState_CheckLedgeCoverAngle(Seg99* arCoverLocation, NiPoint3* arCoverPoint, NiPoint3* arTargetLocation, TESObjectREFR* apRef);
 };
 
 // @fnv 0x0099cec0
 // src: XBOX_PDB 0x0099cec0
-bool Combat99::CombatState_CheckLedgeCoverAngle(Seg99* apSeg, NiPoint3* apFrom, NiPoint3* apTarget, TESObjectREFR* apRef)
+// pdb: CombatState::CheckLedgeCoverAngle | CombatState.obj | retail, upstream name already matches, high
+// pdb params: arCoverLocation, arCoverPoint, arTargetLocation, apTarget
+// pdb locals: fminCoverHeight, targetFiringLocation, coverToCoverEdgeXYLength, coverEdgePoint, ftargetCoverEdgeXYLength, coverToCoverEdgeVec, fattackerHeight, bresult, targetCoverEdgeVec, fcoverHeight, ftargetCoverEdgeHeight
+bool Combat99::CombatState_CheckLedgeCoverAngle(Seg99* arCoverLocation, NiPoint3* arCoverPoint, NiPoint3* arTargetLocation, TESObjectREFR* apRef)
 {
-    float fTop3 = BSMIN(apSeg->start.z, apSeg->end.z);
-    if (apTarget->z >= fTop3)
+    float fTop3 = BSMIN(arCoverLocation->start.z, arCoverLocation->end.z);
+    if (arTargetLocation->z >= fTop3)
     {
         return false;
     }
     else
     {
-        NiPoint3 kTarget4 = *apTarget;
-        kTarget4.z += GetScaleOrHeightDelta(apRef, 1);
+        NiPoint3 kTarget4 = *arTargetLocation;
+        kTarget4.z += CombatUtilities_GetAttackerFiringZOffset(apRef, 1);
         if (kTarget4.z >= fTop3)
         {
             return false;
@@ -3875,13 +4077,13 @@ bool Combat99::CombatState_CheckLedgeCoverAngle(Seg99* apSeg, NiPoint3* apFrom, 
         else
         {
             NiPoint3 kHit3;
-            bool bHitB = NavMeshMath_LineToLineSegment2DIntersection(&apSeg->start, &apSeg->end, &kTarget4, apFrom, &kHit3);
+            bool bHitB = NavMeshMath_LineToLineSegment2DIntersection(&arCoverLocation->start, &arCoverLocation->end, &kTarget4, arCoverPoint, &kHit3);
             if (!bHitB)
                 return false;
             float m_fGlyphExtent = kHit3.z - kTarget4.z;
             NiPoint3 kDiff9 = kHit3 - kTarget4;
             float fDist6 = kDiff9.Length();
-            NiPoint3 kDiffVal = kHit3 - *apFrom;
+            NiPoint3 kDiffVal = kHit3 - *arCoverPoint;
             float fLen2 = kDiffVal.Length();
             float fScaledTmp = m_fGlyphExtent * fLen2 / fDist6;
             float fLimit3 = pTimer->CombatController_GetAttackerCanSneak() ? pTimer->FUN_00453700() : pTimer->GetFieldCC();
@@ -4090,8 +4292,8 @@ struct Mgr
 extern Mgr* DAT_011f1958;
 extern NiPoint3 DAT_011a9484;
 float CombatTimer_GetTimer();
-bool FUN_006d7490(Picker* a, NiPoint3* b, Picker* c, int d);
-bool CombatUtilities_CalculateLOS(MyActor* a, MyRef* r, NiPoint3* v, NiPoint3* w, int x, int y);
+bool FUN_006d7490(Picker* aStartLocation, NiPoint3* aGoalLocation, Picker* apReturnIntersectionLocation, int apFilter);
+bool CombatUtilities_CalculateLOS(MyActor* apAttacker, MyRef* apTarget, NiPoint3* arAttackerLocation, NiPoint3* arTargetLocation, int abIgnoreCrouch, int aiCollisionLayer);
 int RandomUnsignedInt(int n);
 
 struct FUN_0099e190_cls
@@ -4102,13 +4304,17 @@ struct FUN_0099e190_cls
     char pad189[0x1c4 - 0x189];
     MyProc* proc;
     bool CombatState_CheckMovement(NiPoint3* v, int x);
-    bool SelectAndMoveToPoint(MyMover* mover, unsigned int mask1, unsigned int mask2, float dist, float minDist);
+    bool CombatState_FindBestDodgeLocation(MyMover* apRetLocation, unsigned int aiDodgeDirections, unsigned int aiDodgeDirectionLOSCheck, float afDodgeDistance, float afMinDodgeDistance);
 };
 
 // Tests up to four candidate points around the actor against masks and distance limits, then moves the mover to a chosen valid point.
 // @fnv 0x0099e190
-bool FUN_0099e190_cls::SelectAndMoveToPoint(MyMover* mover, unsigned int mask1, unsigned int mask2, float dist,
-                                            float minDist)
+// src: XBOX_RETAIL_PDB 0x0099e190
+// pdb: CombatState::FindBestDodgeLocation | CombatState.obj | retail, call graph, high
+// pdb params: apRetLocation, aiDodgeDirections, aiDodgeDirectionLOSCheck, afDodgeDistance, afMinDodgeDistance
+// pdb locals: cdodgeLocationIndex, fattackerRadius, ptarget, attackerWorldLoc, deltaToTarget, attackerPos, leftVector, ilocationCount, attackerPathingLocation, cindexedDodgeLocation, targetPos, dodgeLocations, idodgeLocation, pattacker, i, idodgeDirection, dodgeLocation, dodgePathingLocation, intersection, directionVector, fdistance, intersectionVector
+bool FUN_0099e190_cls::CombatState_FindBestDodgeLocation(MyMover* apRetLocation, unsigned int aiDodgeDirections, unsigned int aiDodgeDirectionLOSCheck, float afDodgeDistance,
+                                            float afMinDodgeDistance)
 {
     MyActor* A9 = proc->GetFieldBC();
     MyRef* ref = proc->CombatController_GetTarget();
@@ -4129,7 +4335,7 @@ bool FUN_0099e190_cls::SelectAndMoveToPoint(MyMover* mover, unsigned int mask1, 
     {
         slot[i] = -1;
         unsigned int bit = 1 << i;
-        if (mask1 & bit)
+        if (aiDodgeDirections & bit)
         {
             NiPoint3 off;
             switch (bit)
@@ -4147,18 +4353,18 @@ bool FUN_0099e190_cls::SelectAndMoveToPoint(MyMover* mover, unsigned int mask1, 
                 memcpy(&off, &D_, sizeof(off));
                 break;
             }
-            NiPoint3 target = pp + off * dist;
+            NiPoint3 target = pp + off * afDodgeDistance;
             NiPoint3 end = target + off * radius;
             if (DAT_011f1958->FUN_00825c00(target, A9, 0.0f, 0.0f, MyTimer(0.0f), 0.0f)->EvaluateThreats() > 0.0)
                 continue;
             Picker hit;
             if (!FUN_006d7490(&p4, &end, &hit, 0))
             {
-                if (minDist < dist)
+                if (afMinDodgeDistance < afDodgeDistance)
                 {
                     NiPoint3 diff3 = pp - hit.GetPoint();
                     float len = diff3.Length();
-                    if (minDist > len - radius)
+                    if (afMinDodgeDistance > len - radius)
                         continue;
                     memcpy(&target, &(pp + off * (len - radius)), sizeof(target));
                 }
@@ -4167,7 +4373,7 @@ bool FUN_0099e190_cls::SelectAndMoveToPoint(MyMover* mover, unsigned int mask1, 
                     continue;
                 }
             }
-            if (mask2 & bit)
+            if (aiDodgeDirectionLOSCheck & bit)
             {
                 if (!CombatUtilities_CalculateLOS(A9, ref, &target, &T, 0, -1))
                     continue;
@@ -4184,13 +4390,13 @@ bool FUN_0099e190_cls::SelectAndMoveToPoint(MyMover* mover, unsigned int mask1, 
         return false;
     if (last != -1 && timer.Get() < 10.0 && slot[last] != -1)
     {
-        mover->CombatLocation_SetPoint(&A5[slot[last]], 0);
+        apRetLocation->CombatLocation_SetPoint(&A5[slot[last]], 0);
         return true;
     }
     int aK = RandomUnsignedInt(n);
     last = dirOf[aK];
     timer = CombatTimer_GetTimer();
-    mover->CombatLocation_SetPoint(&A5[slot[last]], 0);
+    apRetLocation->CombatLocation_SetPoint(&A5[slot[last]], 0);
     return true;
 }
 
@@ -4271,22 +4477,24 @@ struct TargetWork
     unsigned unkbc;
     unsigned unkc0;
     TargetParameters* parameters;
-    void FreeAndClearFieldC4();
+    void CombatState_ClearLocationTarget();
     void CombatState_SetLocationTargetRef(TargetRef*, unsigned char, float, float);
 };
 // @fnv 0x009a0790
 // src: XBOX_PDB 0x009a0790
-void TargetWork::CombatState_SetLocationTargetRef(TargetRef* reference, unsigned char flag, float nearRange, float farRange)
+// pdb: CombatState::SetLocationTargetRef | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apRef, aeType, afMin, afMax
+void TargetWork::CombatState_SetLocationTargetRef(TargetRef* apRef, unsigned char aeType, float afMin, float afMax)
 {
-    FreeAndClearFieldC4();
-    if (!reference)
+    CombatState_ClearLocationTarget();
+    if (!apRef)
         return;
     parameters = new TargetParameters;
-    parameters->flag = flag;
-    parameters->reference = reference;
-    parameters->position = reference->TESObjectREFR_GetWorldLocation();
-    parameters->nearRange = BSMAX_00404010(nearRange, *DAT_011cf0d8.Setting_Float_00403e20());
-    parameters->farRange = BSMAX_00404010(farRange, *DAT_011cf0d8.Setting_Float_00403e20());
+    parameters->flag = aeType;
+    parameters->reference = apRef;
+    parameters->position = apRef->TESObjectREFR_GetWorldLocation();
+    parameters->nearRange = BSMAX_00404010(afMin, *DAT_011cf0d8.Setting_Float_00403e20());
+    parameters->farRange = BSMAX_00404010(afMax, *DAT_011cf0d8.Setting_Float_00403e20());
 }
 
 TESForm* __cdecl TESForm_GetFormByNumericID(TESObjectREFR* p);
@@ -4296,19 +4504,23 @@ class FUN_009a3220_cls
   public:
     char unk00[4];
     TESObjectREFR* m_04;
-    void CombatState_LocationTarget_InitLoadGameBGS(int unkArg);
+    void CombatLocationTarget_InitLoadGame(int apLoadGameBuffer);
 };
 
 // Re-resolves m_04 through FUN_004839c0 and dynamic_cast to TESObjectREFR, or clears it to null when m_04 is null.
 // @fnv 0x009a3220
-// src: COMMUNITY 0x009a3220
-void FUN_009a3220_cls::CombatState_LocationTarget_InitLoadGameBGS(int unkArg)
+// src: XBOX_DEBUG_PDB 0x009a3220
+// pdb: CombatLocationTarget::InitLoadGame | CombatState.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+void FUN_009a3220_cls::CombatLocationTarget_InitLoadGame(int apLoadGameBuffer)
 {
     m_04 = m_04 != 0 ? dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(m_04)) : 0;
 }
 
 // Grows, shrinks or clears the array to count elements, reallocating storage when needed and optionally shrinking capacity.
 // @fnv 0x009a32a0
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::SetSize | CombatState.obj | debug, call graph, medium
+// pdb params: aiNewSize, abFreeMemory
 template <>
 void BSSimpleArray<Elem, 1024>::SetSize(unsigned int count, bool shrink)
 {
@@ -4506,6 +4718,9 @@ struct CombatNodeFinder
 
 // Scans nodes for a valid, in-range reference (optionally cell-checked and tile-tested) and returns the closest one to the actor, or null.
 // @fnv 0x0098c3d0
+// pdb: CombatGroup::FindSearchDoor | CombatGroup.obj | debug, object-file gap fill, medium
+// pdb params: apMember, afMaxDistance, abCheckExist
+// pdb locals: pcombatController, memberWorldLoc, fclosestDoorDistanceSquared, pclosestDoor, i, fdistanceSquared, searchDoor, doorWorldLoc, pteleportData, teleportWorldLoc
 RefS* CombatNodeFinder::FindNearestCombatNode(Actor* actor, float maxDist, bool checkCell)
 {
     if (actor->IsCreature() && ((ActorBaseS*)actor->GetActorBase())->data30.IsFlagV())
@@ -4547,7 +4762,7 @@ struct CombatWorld
 {
     int a, b, c, d;
     void* GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    float ComputeWeightedDistance(const CombatWorld&, const NiPoint3&);
+    float BGSWorldLocation_GetModifiedDistanceSquared(const CombatWorld&, const NiPoint3&);
     float BGSWorldLocation_GetDistanceSquared(const CombatWorld&);
 };
 
@@ -4585,8 +4800,8 @@ struct CombatPackage
 };
 struct CombatMap
 {
-    void UpdateTargetPerception(CombatActor*, CombatActor*, int*, CombatStamp*, bool*, bool*);
-    CombatActor* FindNearestActor(CombatActor*, CombatActor*, float);
+    void CombatGroup_GetTargetDetectionLevel(CombatActor*, CombatActor*, int*, CombatStamp*, bool*, bool*);
+    CombatActor* CombatGroup_FindClusterPartner(CombatActor*, CombatActor*, float);
     CombatActor* GetFieldAtOffset16(CombatActor*);
 };
 struct CombatOptions
@@ -4792,15 +5007,17 @@ struct CombatUpdate
     void CombatState_ClearCoverLocation(bool);
     void CombatState_SetLocationTargetRef(CombatActor*, int, float, float);
     void CombatState_SetLocationTargetLocation(CombatActor*, int, float, float);
-    void FreeAndClearFieldC4();
-    void UpdateModifierState(bool);
+    void CombatState_ClearLocationTarget();
+    void CombatState_UpdateCombatArea(bool);
     bool CombatState_CheckUseLocationTargetMaxDistance();
-    float GetInterpolatedValue();
+    float CombatState_GetLocationTargetNearTargetDistance();
     void EvaluateWeaponScores();
 };
 // Updates the combat target, detection state, path and stance timers, mode activation, danger level and chase timer for the controller's owner.
 // @fnv 0x00997cf0
 // src: XBOX_PDB 0x00997cf0
+// pdb: CombatState::UpdateImmediateData | CombatState.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, flastThreatScore, pattackerSpace, pattacker, inewDetectionLevel, pcombatGoal, fminDistance, fgatherDistance, fmaxDistance, ppartner, pcurrentPartner, pcluster, coordMult, fsquaredDistance, bignoreLocationTarget, fnearTargetDistance, bguardSneaking, pguardActor, attackerWorldLoc, targetWorldLoc
 void CombatUpdate::CombatState_UpdateImmediateData()
 {
     CombatStamp timeD3;
@@ -4850,7 +5067,7 @@ void CombatUpdate::CombatState_UpdateImmediateData()
             if (controller->GetFieldC5() || previousTarget != target4)
             {
                 state_7 = -100;
-                ((CombatMap*)controller->FUN_004fb070())->UpdateTargetPerception(owner_21, target4, &state_7, &targetTime, &visible,
+                ((CombatMap*)controller->FUN_004fb070())->CombatGroup_GetTargetDetectionLevel(owner_21, target4, &state_7, &targetTime, &visible,
                                                                    &detected);
                 targetState = state_7;
                 controller->SetByteAtOffsetC5(false);
@@ -4912,11 +5129,11 @@ void CombatUpdate::CombatState_UpdateImmediateData()
                     current = 0;
                     if (mode && mode->actor && ((TESForm*)mode->actor)->IsActor())
                         current = mode->actor;
-                    found = ((CombatMap*)controller->FUN_004fb070())->FindNearestActor(owner_21, current, searchRange5);
+                    found = ((CombatMap*)controller->FUN_004fb070())->CombatGroup_FindClusterPartner(owner_21, current, searchRange5);
                     if (found)
                         CombatState_SetLocationTargetRef(found, 2, nearRange, farRange_5);
                     else
-                        FreeAndClearFieldC4();
+                        CombatState_ClearLocationTarget();
                 }
                 else
                 {
@@ -4924,20 +5141,20 @@ void CombatUpdate::CombatState_UpdateImmediateData()
                     if (aFoundOther)
                         CombatState_SetLocationTargetLocation(aFoundOther, 2, nearRange, farRange_5);
                     else
-                        FreeAndClearFieldC4();
+                        CombatState_ClearLocationTarget();
                 }
             }
         }
         else if (!DAT_011f1ae4 && mode && mode->type == 2)
-            FreeAndClearFieldC4();
+            CombatState_ClearLocationTarget();
         if (mode)
         {
             if (mode->type == 3 && mode->world.GetHavokWorldObjectCountInSceneGraph_0084e3a0() != space_41)
-                UpdateModifierState(true);
+                CombatState_UpdateCombatArea(true);
             if (mode->actor)
                 mode->world = *mode->actor->TESObjectREFR_GetWorldLocation(&worldAB);
             reinterpret_cast<NiPoint3*>(weights_26)->Set(1.0f, 1.0f, 0.25f);
-            distance_1 = mode->world.ComputeWeightedDistance(*owner_21->TESObjectREFR_GetWorldLocation(&worldB), *reinterpret_cast<NiPoint3*>(weights_26));
+            distance_1 = mode->world.BGSWorldLocation_GetModifiedDistanceSquared(*owner_21->TESObjectREFR_GetWorldLocation(&worldB), *reinterpret_cast<NiPoint3*>(weights_26));
             fleeing_3 = false;
             if ((mode->type == 0 || mode->type == 1) && target4 && controller->TESPackage_GetPretendInCombat() &&
                 !controller->TESPackage_GetContinueDuringCombat())
@@ -4948,7 +5165,7 @@ void CombatUpdate::CombatState_UpdateImmediateData()
             {
                 if (mode->farDistance > mode->nearDistance && CombatState_CheckUseLocationTargetMaxDistance())
                 {
-                    range_ = GetInterpolatedValue();
+                    range_ = CombatState_GetLocationTargetNearTargetDistance();
                     if (mode->active)
                     {
                         if (distance_1 > range_ * range_)
@@ -4972,7 +5189,7 @@ void CombatUpdate::CombatState_UpdateImmediateData()
             case 0:
                 if (mode->active && !fleeing_3)
                 {
-                    FreeAndClearFieldC4();
+                    CombatState_ClearLocationTarget();
                     controller->FinishedPackageTask();
                 }
                 break;
@@ -5034,7 +5251,7 @@ void CombatUpdate::CombatState_UpdateImmediateData()
         }
         if (updateNow || (chaseTimer.CombatTimer_IsSet() && chaseTimer.FUN_008d7f80()))
             EvaluateWeaponScores();
-        UpdateModifierState(false);
+        CombatState_UpdateCombatArea(false);
         if (temporary && temporaryTime.FUN_00435e00() > *DAT_011ceed8.Setting_Float_00403e20())
             temporary = 0;
         previousTarget = target4;
@@ -5398,6 +5615,8 @@ struct UpdateState
 };
 // @fnv 0x00998a50
 // src: XBOX_PDB 0x00998a50
+// pdb: CombatState::UpdatePeriodicData | CombatState.obj | retail, upstream name already matches, high
+// pdb locals: inumEmbeddedWeapons, ptarget, pattacker, bswitchingWeapons, bforceSwitch, pnewEmbeddedWeapon, iembeddedWeaponIndex, i, pweapon, msg, bqueued, bresetFleeState
 void UpdateState::CombatState_UpdatePeriodicData()
 {
     UpdateActor* count = controller->Actor();
@@ -5783,7 +6002,7 @@ extern const char DAT_0108dfb0[];
 extern double DAT_01017a40, DAT_01012060, DAT_0106b798, DAT_0102f078;
 extern float DAT_0108dfac, DAT_010162c0;
 void* ourMemset(void*, int, unsigned int);
-float ComputeWeaponDamage(Actor*, Weapon*, float, CombatData*, int, int);
+float CombatFormulas_CalcCombatWeaponDPS(Actor*, Weapon*, float, CombatData*, int, int);
 void CombatUtilities_ComputeOptimalWeaponRanges(Controller*, Weapon*, float&, float&, float&);
 float BSMAX_00404010(float, float);
 struct System
@@ -5908,6 +6127,8 @@ struct Manager
 };
 // Scans the actor's inventory for aids, weapons and ammo, scores each weapon by damage and range, fills bestWeapons/categoryScore, and updates the timer.
 // @fnv 0x009993c0
+// pdb: CombatState::UpdateInventoryData | CombatState.obj | retail, call graph (shared callers), high
+// pdb locals: pcombatStyle, pinventory, weaponsArray, punequippableWeapon, ammoArray, pitemChange, ptarget, tempMemContext, ftargetDistanceSquared, fuseableCombatItemScores, pcurrentWeapon, pattacker, it, attackerWorldLoc, targetWorldLoc, pboundObject, palchemyItem, i, fscore, icombatItemIndex, pweapon, iindex, pbestRangedWeaponOutOfRange, fmaxRangedWeaponOutOfRangeDPS ...
 void Manager::EvaluateWeaponScores()
 {
     Profile profile(43, 1, DAT_0108dfb0, 838);
@@ -6047,7 +6268,7 @@ void Manager::EvaluateWeaponScores()
                     }
                 }
             }
-            scoreSlot25->damage = ComputeWeaponDamage(actor, weaponSlot32Slot15, scoreSlot25->health, dataSlot17, 0, 0);
+            scoreSlot25->damage = CombatFormulas_CalcCombatWeaponDPS(actor, weaponSlot32Slot15, scoreSlot25->health, dataSlot17, 0, 0);
             if (scoreSlot25->damage <= DAT_01012060)
             {
                 scoresSlot20.RemoveEntries(i, 1);
@@ -6110,7 +6331,7 @@ void Manager::EvaluateWeaponScores()
                 categoryScore[category2Slot19] = value;
             }
         }
-        categoryScore[6] = ComputeWeaponDamage(actor, 0, 1.0f, dataSlot17, 0, 0);
+        categoryScore[6] = CombatFormulas_CalcCombatWeaponDPS(actor, 0, 1.0f, dataSlot17, 0, 0);
         maxDamage = BSMAX_00404010(maxDamage, categoryScore[6]);
         maxScore = BSMAX_00404010(maxScore, categoryScore[6]);
         types |= 64;
@@ -6269,24 +6490,27 @@ struct Combat99a420
     Slot99a420* GetSlot(unsigned int idx);
     void ClearSlot(unsigned int idx);
     void ClearCaster();
-    void CombatState_ClearReferencePointer(int aTarget, bool bKeep);
+    void CombatState_ClearReferencePointer(int apRef, bool abSelf);
 };
 
-void __fastcall FreeAndClearFieldC4(Combat99a420* thisp);
+void __fastcall CombatState_ClearLocationTarget(Combat99a420* thisp);
 
 // @fnv 0x0099a420
 // src: XBOX_PDB 0x0099a420
-void Combat99a420::CombatState_ClearReferencePointer(int aTarget, bool bKeep)
+// pdb: CombatState::ClearReferencePointer | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apRef, abSelf
+// pdb locals: pweapon, pammo, i, pcombatItem
+void Combat99a420::CombatState_ClearReferencePointer(int apRef, bool abSelf)
 {
     Slot99a420* pSavedSlot3 = slot3;
     Slot99a420* pSavedSlot4 = slot4;
     for (unsigned int i = 0; i < 5; i++)
     {
         Slot99a420* pSlot = GetSlot(i);
-        if (pSlot && pSlot->target == aTarget)
+        if (pSlot && pSlot->target == apRef)
             ClearSlot(i);
     }
-    if (!bKeep)
+    if (!abSelf)
     {
         if (pSavedSlot3 != GetSlot(3) || pSavedSlot4 != GetSlot(4))
         {
@@ -6294,11 +6518,11 @@ void Combat99a420::CombatState_ClearReferencePointer(int aTarget, bool bKeep)
             ClearSlot(4);
         }
     }
-    if (track && track->target == aTarget)
-        FreeAndClearFieldC4(this);
-    if (caster && caster->GetTarget() == aTarget)
+    if (track && track->target == apRef)
+        CombatState_ClearLocationTarget(this);
+    if (caster && caster->GetTarget() == apRef)
         ClearCaster();
-    if (target == aTarget)
+    if (target == apRef)
         target = 0;
 }
 
@@ -6315,7 +6539,7 @@ struct LocationC
     int a, b, c, d, e, f, g, h, i, j;
     LocationC(const PointC*, void*);
     ~LocationC();
-    bool Validate(float);
+    bool IsValidLocation(float);
 };
 struct SegmentC
 {
@@ -6639,6 +6863,9 @@ struct SearchC
                            float, int*, float*, bool);
 };
 // @fnv 0x0099c230
+// pdb: CombatState::CheckCoverLocation | CombatState.obj | debug, object-file run extension, low
+// pdb params: arCoverLocation, apRetLocation, apReservationInfo, arCoverSearchTargetLocation, aiCoverKey, aiCurrentCoverLocationKey, aiLocation, apAttacker, apTarget, afMinRange, afMaxRange, areCoverState, arfSquaredDistance, abHideCover
+// pdb locals: fattackerRadius, bhasFireLocation, elastState, estate, fClosestEnemyAllowedToCoverPoint, ftimeToReachCover, buseBothEdges, pattacker, ileftSide, iloops, j, bleftSide, coverPathingLocation, bcheckFireLOS, coverLocation, coverWorldLoc, fireLocation, bhasCoverLOS, firePathingLocation, coverVector, bHasFireLOS
 bool SearchC::FindPathCandidate(SegmentC* segment, DestinationC* destination, OptionsC* options, PointC* target,
                                 void* first, void* second, int mode, ActorC* actor, ActorC* reference, float nearRange,
                                 float farRange, int* piReason, float* pfDistance, bool force)
@@ -6704,7 +6931,7 @@ bool SearchC::FindPathCandidate(SegmentC* segment, DestinationC* destination, Op
             continue;
         }
         LocationC location(&fStartB, segment);
-        if (!location.Validate(actor13->Radius()))
+        if (!location.IsValidLocation(actor13->Radius()))
         {
             failure5 = 4;
             continue;
@@ -6712,7 +6939,7 @@ bool SearchC::FindPathCandidate(SegmentC* segment, DestinationC* destination, Op
         if (_aim)
         {
             LocationC other4(&kEnd4, segment);
-            if (!other4.Validate(actor13->Radius()))
+            if (!other4.IsValidLocation(actor13->Radius()))
             {
                 failure5 = 5;
                 continue;
@@ -6797,24 +7024,27 @@ struct FUN_005c3420_cls
 {
     int __thiscall FUN_005c3420(ParentSpaceNode* out);
 };
-bool __cdecl FUN_006d7490(void* a, ParentSpaceNode* b, int c, int d);
+bool __cdecl FUN_006d7490(void* aStartLocation, ParentSpaceNode* aGoalLocation, int apReturnIntersectionLocation, int apFilter);
 extern double DAT_0108d658;
 
 // @fnv 0x0099cc60
 // src: XBOX_PDB 0x0099cc60
-bool __cdecl CombatState_CheckCoverLOS(void* pNodeA, ParentSpaceNode* pNodeB, int c)
+// pdb: CombatState::CheckCoverLOS | CombatState.obj | retail, upstream name already matches, high
+// pdb params: arCoverPathingLocation, arTargetLocation, abSkipDistanceCheck
+// pdb locals: targetVector
+bool __cdecl CombatState_CheckCoverLOS(void* arCoverPathingLocation, ParentSpaceNode* arTargetLocation, int abSkipDistanceCheck)
 {
     ParentSpaceNode s1;
     ParentSpaceNode s2;
-    if ((unsigned char)c == 0)
+    if ((unsigned char)abSkipDistanceCheck == 0)
     {
-        ((NiPoint3*)pNodeB)->SubtractIntoVector((NiPoint3*)&s2, (const NiPoint3*)((FUN_005c3420_cls*)pNodeA)->FUN_005c3420(&s1));
+        ((NiPoint3*)arTargetLocation)->SubtractIntoVector((NiPoint3*)&s2, (const NiPoint3*)((FUN_005c3420_cls*)arCoverPathingLocation)->FUN_005c3420(&s1));
         if ((double)((NiPoint3*)&s2)->FUN_004a7290() > DAT_0108d658)
         {
             return false;
         }
     }
-    if (FUN_006d7490(pNodeA, pNodeB, 0, 0) == false)
+    if (FUN_006d7490(arCoverPathingLocation, arTargetLocation, 0, 0) == false)
     {
         return false;
     }
@@ -6833,46 +7063,49 @@ struct FUN_006e4820_class
 {
     bool IsLedgeCover_006e4820();
 };
-float GetActorReach(Actor* pActor, TESObjectWEAP* pWeap);
+float CombatUtilities_GetWeaponReach(Actor* apAttacker, TESObjectWEAP* apWeapon);
 extern const double DAT_0106cd60;
 extern const double DAT_01016ff0;
 
 struct FUN_0099ccd0_shell : Combat99
 {
-    bool CombatState_CheckCoverSafe(Seg99* pSeg, NiPoint3* pPos, Actor* pActor, bool bCheckAngle);
+    bool CombatState_CheckCoverSafe(Seg99* arCoverLocation, NiPoint3* arCoverPoint, Actor* apTarget, bool abUseViewCone);
 };
 
 // @fnv 0x0099ccd0
 // src: XBOX_PDB 0x0099ccd0
-bool FUN_0099ccd0_shell::CombatState_CheckCoverSafe(Seg99* pSeg, NiPoint3* pPos, Actor* pActor, bool bCheckAngle)
+// pdb: CombatState::CheckCoverSafe | CombatState.obj | retail, upstream name already matches, high
+// pdb params: arCoverLocation, arCoverPoint, apTarget, abUseViewCone
+// pdb locals: targetLoc, fsquaredDistance, targetVector, ftargetangle, fignore, ftargetangledelta, freach, pathingLocationCover
+bool FUN_0099ccd0_shell::CombatState_CheckCoverSafe(Seg99* arCoverLocation, NiPoint3* arCoverPoint, Actor* apTarget, bool abUseViewCone)
 {
-    NiPoint3 kTargetPos = *((const Actor*)pActor)->GetPos();
-    NiPoint3 kDiff = *pPos - kTargetPos;
+    NiPoint3 kTargetPos = *((const Actor*)apTarget)->GetPos();
+    NiPoint3 kDiff = *arCoverPoint - kTargetPos;
     float fDistSqr9 = kDiff.FUN_004a7290();
     if (fDistSqr9 < DAT_0106cd60)
         return false;
-    if (bCheckAngle)
+    if (abUseViewCone)
     {
         float fDesiredHeadingAngle = GetDirectionAngle(kDiff);
         float fUnused;
-        float fAngleDifference = GetAngleDelta(pActor->GetCurrentTargetDistance(0), fDesiredHeadingAngle, &fUnused);
+        float fAngleDifference = GetAngleDelta(apTarget->GetCurrentTargetDistance(0), fDesiredHeadingAngle, &fUnused);
         if (std::abs(fAngleDifference) > 0.78539818525314331)
             return true;
     }
-    if (CombatUtilities_IsActorUsingMelee(pActor))
+    if (CombatUtilities_IsActorUsingMelee(apTarget))
     {
-        float fImpulseRadiusSquared = GetActorReach((Actor*)pActor, (TESObjectWEAP*)pActor->Actor_GetCurrentWeapon()) * DAT_01016ff0;
+        float fImpulseRadiusSquared = CombatUtilities_GetWeaponReach((Actor*)apTarget, (TESObjectWEAP*)apTarget->Actor_GetCurrentWeapon()) * DAT_01016ff0;
         if (fDistSqr9 < fImpulseRadiusSquared * fImpulseRadiusSquared)
             return false;
     }
     else
     {
-        PathingLocation kLoc((const ::NiPoint3&)*pPos, (TESObjectREFR*)pActor);
+        PathingLocation kLoc((const ::NiPoint3&)*arCoverPoint, (TESObjectREFR*)apTarget);
         if (fnv_0099e190::FUN_006d7490((fnv_0099e190::Picker*)&kLoc, (NiPoint3*)&kTargetPos, 0, 0))
             return false;
-        if (((FUN_006e4820_class*)pSeg)->IsLedgeCover_006e4820())
+        if (((FUN_006e4820_class*)arCoverLocation)->IsLedgeCover_006e4820())
         {
-            if (!CombatState_CheckLedgeCoverAngle(pSeg, (NiPoint3*)pPos, (NiPoint3*)((const Actor*)pActor)->GetPos(), (TESObjectREFR*)pActor))
+            if (!CombatState_CheckLedgeCoverAngle(arCoverLocation, (NiPoint3*)arCoverPoint, (NiPoint3*)((const Actor*)apTarget)->GetPos(), (TESObjectREFR*)apTarget))
                 return false;
         }
     }
@@ -6905,31 +7138,34 @@ public:
 
 // @fnv 0x0099d310
 // src: XBOX_PDB 0x0099d310
-void CombatState::BuildCoveredMoveRequest(PathingRequest* param)
+// pdb: CombatState::BuildCoveredMoveRequest | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apCoveredMoveRequest
+// pdb locals: ptarget, pattacker
+void CombatState::BuildCoveredMoveRequest(PathingRequest* apCoveredMoveRequest)
 {
     Actor* actor = (Actor*)((TESAmmoInitCalls*)(*(S81**)((char*)this + 0x1c4)))->GetFieldBC();
     void* item = ((AlchemyItem*)(*(S81**)((char*)this + 0x1c4)))->CombatController_GetTarget();
-    param->PathingRequestClosePoint_SetMinDistance(actor->FUN_008be1b0());
-    param->SetMaxDistance_006e5ee0(Actor_GetCurrentSpeed(actor));
-    param->PathingRequestCoveredMove_SetAttackerHeight(((FUN_0099d310_field_calls*)(*(S81**)((char*)this + 0x1c4)))->GetFieldCC());
+    apCoveredMoveRequest->PathingRequestClosePoint_SetMinDistance(actor->FUN_008be1b0());
+    apCoveredMoveRequest->SetMaxDistance_006e5ee0(Actor_GetCurrentSpeed(actor));
+    apCoveredMoveRequest->PathingRequestCoveredMove_SetAttackerHeight(((FUN_0099d310_field_calls*)(*(S81**)((char*)this + 0x1c4)))->GetFieldCC());
     if (((CombatController*)(*(S81**)((char*)this + 0x1c4)))->CombatController_GetAttackerCanSneak())
     {
-        param->PathingRequestCoveredMove_SetAttackerSneakHeight(((FUN_0099d310_field_calls*)(*(S81**)((char*)this + 0x1c4)))->FUN_00453700());
+        apCoveredMoveRequest->PathingRequestCoveredMove_SetAttackerSneakHeight(((FUN_0099d310_field_calls*)(*(S81**)((char*)this + 0x1c4)))->FUN_00453700());
     }
-    ((PathingRequestCoveredMove*)param)->PathingRequestCoveredMove_SetAttackerHealth((float)((int(__thiscall*)(void*, unsigned int))(*(unsigned int**)((char*)actor + 0xa4))[2])(
+    ((PathingRequestCoveredMove*)apCoveredMoveRequest)->PathingRequestCoveredMove_SetAttackerHealth((float)((int(__thiscall*)(void*, unsigned int))(*(unsigned int**)((char*)actor + 0xa4))[2])(
         (char*)actor + 0xa4, 0x10));
     if (item != 0)
     {
         if (GetHasBufferedDetection_0097ee90() && (unsigned char)((char*)this)[0x74] == 0)
         {
-            ((PathingRequestCoveredMove*)param)->PathingRequestCoveredMove_SetTargetLocation(((int(__thiscall*)(void*))(*(unsigned int**)item)[0x1f4 / 4])(item));
+            ((PathingRequestCoveredMove*)apCoveredMoveRequest)->PathingRequestCoveredMove_SetTargetLocation(((int(__thiscall*)(void*))(*(unsigned int**)item)[0x1f4 / 4])(item));
         }
-        ((fnv_0099cb70::FUN_0099cb70_struct*)this)->CollectCastSoundPositions((fnv_0099cb70::Arr_006cee30*)((PathingRequestCoveredMove*)param)->GetOffsetF4());
+        ((fnv_0099cb70::FUN_0099cb70_struct*)this)->CollectCastSoundPositions((fnv_0099cb70::Arr_006cee30*)((PathingRequestCoveredMove*)apCoveredMoveRequest)->GetOffsetF4());
     }
-    ((fnv_009a0e10::FUN_009a0e10_shell*)this)->CollectAvoidanceItems((BSSimpleArray<void*, 1024>*)((PathingRequestCoveredMove*)param)->PathingRequestCoveredMove_GetUnreachableCoverLocations());
+    ((fnv_009a0e10::FUN_009a0e10_shell*)this)->CollectAvoidanceItems((BSSimpleArray<void*, 1024>*)((PathingRequestCoveredMove*)apCoveredMoveRequest)->PathingRequestCoveredMove_GetUnreachableCoverLocations());
     if (*((void**)((char*)this + 0xe4)) != 0 && *((unsigned char*)*((void**)((char*)this + 0xe4)) + 1) != 0)
     {
-        ((PathingRequestCoveredMove*)param)->PathingRequestCoveredMove_GetUnreachableCoverLocations((char*)*((void**)((char*)this + 0xe4)) + 0x68)->FUN_007cb2e0();
+        ((PathingRequestCoveredMove*)apCoveredMoveRequest)->PathingRequestCoveredMove_GetUnreachableCoverLocations((char*)*((void**)((char*)this + 0xe4)) + 0x68)->FUN_007cb2e0();
     }
 }
 
@@ -6990,7 +7226,7 @@ struct LocalData2C
     int unk14;
     float unk18;
     int unk1c;
-    LocalData2C* CombatLocation_CombatLocation();
+    LocalData2C* CombatLocation_ctor();
 };
 
 struct CombatDecompClass : FUN_0099a9a0_shell
@@ -7077,15 +7313,18 @@ struct CombatDecompClass : FUN_0099a9a0_shell
 
 // Resets the object, allocates a FUN_006d3150, initialises local data and calls FUN_0099d030; on success stores two sub14 values and passes sub14 to a1.
 // @fnv 0x0099e060
+// pdb: CombatState::FindCoveredMoveLocation | CombatState.obj | debug, object-file run extension, low
+// pdb params: apCoverLocation, arDestination, aiLocation, afMinDistance, apPathingAvoidNodeArray
+// pdb locals: coverLocation
 bool CombatDecompClass::InitSubObject(RetObjParam* pRetObj, int a2, int a3, float a4, int a5)
 {
-    this->ReleaseStageHolder(0);
+    this->CombatState_ClearSecondaryCoverLocation(0);
     this->unkE8 = new FUN_006d3150();
     LocalData2C local2c;
-    local2c.CombatLocation_CombatLocation();
+    local2c.CombatLocation_ctor();
     if (!this->FindBestAdvanceLocation(&this->unk128, this->unkE8, &local2c, a3, a2, a4, a5))
     {
-        this->ReleaseStageHolder(0);
+        this->CombatState_ClearSecondaryCoverLocation(0);
         return false;
     }
     this->unkE8->unk68 = this->unkE8->sub14.GetKey_006e4570();
@@ -7213,7 +7452,7 @@ struct PickProc
 struct PickExtra
 {
     float ExtraDataList_GetHealth();
-    void* GetExtraAmmo();
+    void* ExtraDataList_GetAmmoExtra();
 };
 struct PickLock
 {
@@ -7417,7 +7656,7 @@ struct PickIter
 };
 struct PickCollection
 {
-    bool FindNextRef(PickIter*, PickRef**, PickEntry**, int);
+    bool BGSLoadedReferenceCollection_GetNextObject(PickIter*, PickRef**, PickEntry**, int);
 };
 extern PickCollection* DAT_011c95c8;
 struct PickGlobal
@@ -7443,7 +7682,7 @@ extern PickSetting DAT_011ce7fc;
 extern PickSetting DAT_011cf0c8;
 extern float DAT_0108df70;
 unsigned FUN_004873d0(PickWeapon*);
-float ComputeWeaponDamage(PickActor*, PickWeapon*, float, unsigned, int, int);
+float CombatFormulas_CalcCombatWeaponDPS(PickActor*, PickWeapon*, float, unsigned, int, int);
 float BSMIN(float, float);
 float NiSqrt_004579e0(float);
 float BSMAX_00404010(float, float);
@@ -7570,6 +7809,8 @@ struct WeaponSearch
 };
 // Scans nearby refs for a weapon target, scores candidates by distance and damage, and records the best pick via SetArrayEntry.
 // @fnv 0x0099f6d0
+// pdb: CombatState::FindBetterWeapon | CombatState.obj | debug, object-file run extension, low
+// pdb locals: ffoundWeaponDPS, pweaponRef, pcurrentWeaponItem, ffoundWeaponTotalDistanceSquared, ptarget, attackerWorldLoc, fpickupWeaponDistanceMin, pweaponItemChange, pnewWeaponObject, pnewAmmoObject, fpickupWeaponDistanceMax, pnewAmmo, btargetUnreachable, fbaseWeaponDPS, weaponIterator, pnewWeapon, pcurrentWeapon, pattacker, fweaponDPS, fdistanceMult, pcreature, pweaponList, bcloseToTarget, targetWorldLoc ...
 bool WeaponSearch::SelectBestWeaponTarget()
 {
     PickActor* aC1 = controller->GetFieldBC();
@@ -7647,7 +7888,7 @@ bool WeaponSearch::SelectBestWeaponTarget()
     PickIter ap8(40, aC1);
     PickRef* aFC = 0;
     PickEntry* aPb = 0;
-    while (DAT_011c95c8->FindNextRef(&ap8, &aFC, &aPb, 3))
+    while (DAT_011c95c8->BGSLoadedReferenceCollection_GetNextObject(&ap8, &aFC, &aPb, 3))
     {
         float cbX = aPb ? aPb->ItemChange_GetItemHealth(0) : aFC->BSFile_GetDevice()->ExtraDataList_GetHealth();
         if (aFC->FUN_00477ba0() || cbX == 0.0)
@@ -7656,7 +7897,7 @@ bool WeaponSearch::SelectBestWeaponTarget()
         float ap9 = 1.0f;
         if (cbX != -1.0)
             ap9 = cbX / FUN_004873d0(aRy);
-        float ch3 = ComputeWeaponDamage(aC1, aRy, ap9, controller->GetCurrentCombatStyle(), 0, 0);
+        float ch3 = CombatFormulas_CalcCombatWeaponDPS(aC1, aRy, ap9, controller->GetCurrentCombatStyle(), 0, 0);
         if (aRy->TESObjectWEAP_IsMeleeWeapon())
             ch3 *= *DAT_011cf0c8.Setting_Float_00403e20();
         if (ch3 <= aKB)
@@ -7699,7 +7940,7 @@ bool WeaponSearch::SelectBestWeaponTarget()
         if (ap7)
         {
             ap3 = false;
-            if (!aPb && aFC->BSFile_GetDevice()->GetExtraAmmo())
+            if (!aPb && aFC->BSFile_GetDevice()->ExtraDataList_GetAmmoExtra())
                 ap3 = true;
             if (!ap3 && aC1->FUN_00575610(ap7))
                 ap3 = true;
@@ -7715,7 +7956,7 @@ bool WeaponSearch::SelectBestWeaponTarget()
                 PickIter dy9(ap7, aC1);
                 PickRef* cbB = 0;
                 PickEntry* e2x = 0;
-                while (DAT_011c95c8->FindNextRef(&dy9, &cbB, &e2x, 3))
+                while (DAT_011c95c8->BGSLoadedReferenceCollection_GetNextObject(&dy9, &cbB, &e2x, 3))
                 {
                     PickLoc fA8 = cbB->TESObjectREFR_GetWorldLocation();
                     float fEA = fA8.BGSWorldLocation_GetDistanceSquared(&aI4) + fA8.BGSWorldLocation_GetDistanceSquared(&aPH);
@@ -7831,9 +8072,9 @@ struct CS_Actor
 
 struct CS_Item
 {
-    float GetRangeA(CS_Actor*);
+    float CombatGroup_GetMemberCombatStrength(CS_Actor*);
     float GetDivA();
-    float GetRangeB(CS_Actor*);
+    float CombatGroup_GetAverageMemberDamagePerSecond(CS_Actor*);
     float GetDivB();
     int TestLocation(const CS_Loc16&, int);
 };
@@ -7988,6 +8229,8 @@ struct CS_State
 };
 
 // @fnv 0x009a1060
+// pdb: CombatState::UpdateThreatRatio | CombatState.obj | retail, call graph (shared callers), high
+// pdb locals: pattacker, pgroup, ftargetCombatStrength, fmemberCombatStrength, faverageMemberDPS, faverageTargetCombatStrength, fpersonalCombatStrength, ftempThreatRatio
 void CS_State::UpdateRangeValue()
 {
     CS_Actor* pActor2 = pOwner->GetActor();
@@ -7999,14 +8242,14 @@ void CS_State::UpdateRangeValue()
             if (pActor2->avOwner.GetActorValue(0) != 3.0)
             {
                 CS_Item* pItem5 = pOwner->GetItem();
-                float fA4 = pItem5->GetRangeA(pActor2);
+                float fA4 = pItem5->CombatGroup_GetMemberCombatStrength(pActor2);
                 float fDivA4 = pItem5->GetDivA();
                 if (fA4 >= _gModifierZero && fDivA4 > _gModifierZero)
                 {
                     fImpulseRadiusSquared = fA4 / fDivA4;
                     if (fImpulseRadiusSquared > _gModifierZero && pOwner->GetFlags()->IsSet())
                     {
-                        float _fB = pItem5->GetRangeB(pActor2);
+                        float _fB = pItem5->CombatGroup_GetAverageMemberDamagePerSecond(pActor2);
                         float fDivB5 = pItem5->GetDivB();
                         if (_fB >= _gModifierZero && fDivB5 > _gModifierZero)
                         {
@@ -8188,6 +8431,9 @@ struct Owner435
 };
 // Serializes the object's fields, references, lists, timers and optional sub-objects into the save buffer, writing presence flags before each optional block.
 // @fnv 0x009a17a0
+// pdb: CombatState::SaveGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
+// pdb locals: ccombatItems, csavedData, i, isaveGameCount, pembeddedWeapon, unreachableCoverLocation, unreachableLocation
 void Owner435::SaveToStream(Save435* pSaveBuffer)
 {
     pSaveBuffer->FUN_00865e50(&flag, 1, 0);
@@ -8342,6 +8588,8 @@ class Holder9A2
 
 // Replaces m_pkRef with the result of FUN_004839c0 cast to TESObjectREFR, or null if m_pkRef is null.
 // @fnv 0x009a2cc0
+// pdb: CombatLocation::InitLoadGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void Holder9A2::ResolveRef(TESFile9A2* pkFile)
 {
     m_pkRef = m_pkRef ? dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(m_pkRef)) : 0;
@@ -8412,20 +8660,23 @@ struct FUN_0099b5a0_holder
     char pad99[0x1c4 - 0x99];
     Spell99* p1c4;
 
-    bool CombatState_FindGrenadeThrowLocation(A1_99* a1, char* a2, Weap99* a3);
+    bool CombatState_FindGrenadeThrowLocation(A1_99* apRetLocation, char* arbHighArc, Weap99* apGrenade);
 };
 
 // @fnv 0x0099b5a0
 // src: COMMUNITY 0x0099b5a0
-bool FUN_0099b5a0_holder::CombatState_FindGrenadeThrowLocation(A1_99* a1, char* acArg, Weap99* apWeapon)
+// pdb: CombatState::FindGrenadeThrowLocation | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apRetLocation, arbHighArc, apGrenade
+// pdb locals: pprojectile, attackerLocation, ptarget, frange, pattacker, i, pexplosion, targetLocation, targetedPoint, fsquaredDistance, targetVector, targetWorldLoc, ftime
+bool FUN_0099b5a0_holder::CombatState_FindGrenadeThrowLocation(A1_99* apRetLocation, char* arbHighArc, Weap99* apGrenade)
 {
-    if (!apWeapon || !apWeapon->GetOrFallback(p1c4->GetFieldBC()))
+    if (!apGrenade || !apGrenade->GetOrFallback(p1c4->GetFieldBC()))
         return false;
     Mob99* mobj3 = (Mob99*)p1c4->GetFieldBC();
     Spell99* spellB = (Spell99*)p1c4->CombatController_GetTarget();
     if (!spellB)
         return false;
-    Ammo99* ammoA = (Ammo99*)apWeapon->GetOrFallback(mobj3);
+    Ammo99* ammoA = (Ammo99*)apGrenade->GetOrFallback(mobj3);
     float f6 = CombatUtilities_GetProjectileMaximumRange(ammoA, 0.0f);
     // This output buffer is populated without default construction in the game.
     float posVal[sizeof(NiPoint3) / sizeof(float)];
@@ -8465,15 +8716,15 @@ bool FUN_0099b5a0_holder::CombatState_FindGrenadeThrowLocation(A1_99* a1, char* 
                 continue;
         }
         NiPoint3 tB;
-        if (CombatUtilities_CheckProjectileArc_009a7670(mobj3, spellB, ammoA, *(NiPoint3*)posVal, v9, DAT_011f426c, acArg, &tB, -1.0f))
+        if (CombatUtilities_CheckProjectileArc_009a7670(mobj3, spellB, ammoA, *(NiPoint3*)posVal, v9, DAT_011f426c, arbHighArc, &tB, -1.0f))
         {
             if (snd2)
             {
-                float r = ComputeProjectileFlightTime(ammoA, *(NiPoint3*)posVal, v9, *acArg, 0.0f);
+                float r = ComputeProjectileFlightTime(ammoA, *(NiPoint3*)posVal, v9, *arbHighArc, 0.0f);
                 if (!DAT_011f1958->IsThreatWithinLimits(mobj3, snd2, (NiPoint3*)&v9, r))
                     continue;
             }
-            a1->CombatLocation_SetPoint((NiPoint3*)&v9, 0);
+            apRetLocation->CombatLocation_SetPoint((NiPoint3*)&v9, 0);
             return true;
         }
     }
@@ -8638,7 +8889,7 @@ struct QWeapon
 struct QCombatInfo
 {
     float GetMinRange(QPoint* out);
-    float GetMaxRange(QPoint* out);
+    float GetMaxRange(QPoint* arCenter);
 };
 struct QProcess
 {
@@ -8747,8 +8998,8 @@ struct QBuilder
     int data[0x3c];
     QBuilder();
     ~QBuilder();
-    void SetOrigin(void* src);
-    void SetFirst(QPoint* p);
+    void SetOrigin(void* aOrigin);
+    void SetFirst(QPoint* apRef);
     void SetTarget(QPoint* p);
     void SetMinDist(float f);
     void SetMaxDist(float f);
@@ -8765,13 +9016,13 @@ struct QBuilder
 struct QOrigin
 {
     int data[0xa];
-    QOrigin(QPoint* pos, QRef* actor);
+    QOrigin(QPoint* aLocation, QRef* apRef);
     ~QOrigin();
 };
 
-void CombatUtilities_ComputeOptimalWeaponRanges(QCombatCtrl* ctrl, int a, float* minDist, float* maxDist, float* limit);
+void CombatUtilities_ComputeOptimalWeaponRanges(QCombatCtrl* apCombatController, int apEquippedWeapon, float* arfMinRange, float* arfMaxRange, float* arfAbsoluteMaxRange);
 float BSMIN(float a, float b);
-int FindNearbyTriangles(QBuilder* b, BSSimpleArray<QLocElem, 1024>* arr);
+int Pathing_GetCoverPoints(QBuilder* apRequest, BSSimpleArray<QLocElem, 1024>* apReturnArray);
 
 extern QLock DAT_011f1a61;
 extern QSetting DAT_011ce3f0;
@@ -8805,12 +9056,15 @@ struct FUN_0099b8e0_cls
                            QRef* actor, QRef* target, float minDist, float maxDist, int* result, float* score,
                            bool flank);
     float GetTargetDist();
-    bool CombatState_FindBestCoverLocation(int a1, QOut* out, QState* st, int a4, int type);
+    bool CombatState_FindBestCoverLocation(int apWeapon, QOut* apCoverSearchInfo, QState* apCombatCoverLocation, int apRetLocation, int aiLocation);
 };
 
 // @fnv 0x0099b8e0
 // src: COMMUNITY 0x0099b8e0
-bool FUN_0099b8e0_cls::CombatState_FindBestCoverLocation(int a1, QOut* out, QState* st, int a4, int aiSearchType)
+// pdb: CombatState::FindBestCoverLocation | CombatState.obj | retail, upstream name already matches, high
+// pdb params: apWeapon, apCoverSearchInfo, apCombatCoverLocation, apRetLocation, aiLocation
+// pdb locals: ecurrentCoverState, coverRequest, bfindBehindTarget, fAbsoluteMaxRange, centerPathingLocation, ptarget, iMaxCoverLocations, fMaxDistToShootFrom, fcurrentCoverDistanceSquared, bsortFarthestFirst, fignore, bsortFromTarget, bhideCover, fMaxDist, fMinDistToShootFrom, fMaxHeightChange, pattacker, center, fmodifiedMinDistToShootFrom, targetCenter, distanceProjectionVector, fsquaredRadius, memberCenter, fsquaredRadius2 ...
+bool FUN_0099b8e0_cls::CombatState_FindBestCoverLocation(int apWeapon, QOut* apCoverSearchInfo, QState* apCombatCoverLocation, int apRetLocation, int aiLocation)
 {
     DAT_011f1a61.Signal();
     float kMinHeight = DAT_010231a0;
@@ -8826,14 +9080,14 @@ bool FUN_0099b8e0_cls::CombatState_FindBestCoverLocation(int a1, QOut* out, QSta
     float fMin3 = DAT_010231a0;
     float range5 = DAT_01018bfc;
     float cap3 = DAT_01018bfc;
-    CombatUtilities_ComputeOptimalWeaponRanges(ctrl, a1, &f, &range5, &cap3);
+    CombatUtilities_ComputeOptimalWeaponRanges(ctrl, apWeapon, &f, &range5, &cap3);
     range5 *= *DAT_011ce3f0.Get();
     range5 = BSMIN(range5, cap3);
     bool flag = false;
     bool flagB = false;
     bool flagC = false;
     bool flank = false;
-    switch (aiSearchType)
+    switch (aiLocation)
     {
     case 12:
         fMin3 = *DAT_011ced34.Get();
@@ -8864,30 +9118,30 @@ bool FUN_0099b8e0_cls::CombatState_FindBestCoverLocation(int a1, QOut* out, QSta
     }
     int aUres = 0;
     float score5 = 0.0f;
-    if (st->key)
+    if (apCombatCoverLocation->key)
     {
-        out->key = st->key;
-        out->result = 0;
-        if (aiSearchType == st->type)
+        apCoverSearchInfo->key = apCombatCoverLocation->key;
+        apCoverSearchInfo->result = 0;
+        if (aiLocation == apCombatCoverLocation->type)
         {
             float half = fMin3 / DAT_01011590;
-            if (FindPathCandidate(&st->slot, a4, &st->flags, &st->pos, st->key, st->key, aiSearchType, self2, target,
+            if (FindPathCandidate(&apCombatCoverLocation->slot, apRetLocation, &apCombatCoverLocation->flags, &apCombatCoverLocation->pos, apCombatCoverLocation->key, apCombatCoverLocation->key, aiLocation, self2, target,
                                   half, range5, &aUres, &score5, flank))
             {
-                st->SetDirty(0);
+                apCombatCoverLocation->SetDirty(0);
                 DAT_011f1a61.Signal();
                 return true;
             }
-            out->result = aUres;
+            apCoverSearchInfo->result = aUres;
         }
         else
         {
-            out->result = 15;
+            apCoverSearchInfo->result = 15;
         }
     }
     else
     {
-        out->key = 0;
+        apCoverSearchInfo->key = 0;
     }
     QPoint pos2;
     if (this->target && (this->target->type == 1 || this->target->type == 2))
@@ -8902,29 +9156,29 @@ bool FUN_0099b8e0_cls::CombatState_FindBestCoverLocation(int a1, QOut* out, QSta
     QBuilder builder2;
     QOrigin origin(&pos2, self2);
     builder2.SetOrigin(&origin);
-    if (aiSearchType == 5)
+    if (aiLocation == 5)
     {
         QPoint lo3;
         QPoint maxPt;
         float _lo = ctrl->GetCombatInfo()->GetMinRange(&lo3);
         float hiA3 = ctrl->GetCombatInfo()->GetMaxRange(&maxPt);
-        out->pos = lo3;
+        apCoverSearchInfo->pos = lo3;
         QPoint dir = maxPt - lo3;
         builder2.SetTarget(&dir);
     }
     else
     {
-        out->useCover = timer.GetValue() < *DAT_011cf6cc.Get();
-        if (out->useCover)
+        apCoverSearchInfo->useCover = timer.GetValue() < *DAT_011cf6cc.Get();
+        if (apCoverSearchInfo->useCover)
         {
-            out->pos = coverPos;
+            apCoverSearchInfo->pos = coverPos;
         }
         else
         {
-            out->pos = *target->GetPos();
+            apCoverSearchInfo->pos = *target->GetPos();
         }
     }
-    builder2.SetFirst(&out->pos);
+    builder2.SetFirst(&apCoverSearchInfo->pos);
     builder2.SetMinDist(kMinHeight);
     builder2.SetMaxDist(dist7);
     builder2.SetMaxCount(fMax2);
@@ -8935,22 +9189,22 @@ bool FUN_0099b8e0_cls::CombatState_FindBestCoverLocation(int a1, QOut* out, QSta
     builder2.SetOffset(ctrl->GetCoverOffset());
     builder2.SetFlank(ctrl->IsFlanking());
     builder2.SetFlagD(flank);
-    st->type = aiSearchType;
-    st->pos = out->pos;
-    out->stamp = QStamp::Now();
-    out->dest = pos2;
-    out->radius = dist7;
-    out->locs.Clear(false);
-    if (FindNearbyTriangles(&builder2, &out->locs))
+    apCombatCoverLocation->type = aiLocation;
+    apCombatCoverLocation->pos = apCoverSearchInfo->pos;
+    apCoverSearchInfo->stamp = QStamp::Now();
+    apCoverSearchInfo->dest = pos2;
+    apCoverSearchInfo->radius = dist7;
+    apCoverSearchInfo->locs.Clear(false);
+    if (Pathing_GetCoverPoints(&builder2, &apCoverSearchInfo->locs))
     {
         DAT_011f1958->GetLockable()->Lock();
-        for (unsigned int i = 0; i < out->locs.GetSize(); i++)
+        for (unsigned int i = 0; i < apCoverSearchInfo->locs.GetSize(); i++)
         {
-            QLocElem* elem = &out->locs.GetAt(i);
+            QLocElem* elem = &apCoverSearchInfo->locs.GetAt(i);
             int _resC = 0;
             float score8 = 0.0f;
             int id = elem->GetKey();
-            if (id != st->key)
+            if (id != apCombatCoverLocation->key)
             {
                 unsigned int ts = elem->GetTimeStamp();
                 if (ts)
@@ -8962,16 +9216,16 @@ bool FUN_0099b8e0_cls::CombatState_FindBestCoverLocation(int a1, QOut* out, QSta
                     }
                 }
                 QSearchFlags flags;
-                if (FindPathCandidate(elem, a4, &flags, &st->pos, id, 0, aiSearchType, self2, target, fMin3, range5,
+                if (FindPathCandidate(elem, apRetLocation, &flags, &apCombatCoverLocation->pos, id, 0, aiLocation, self2, target, fMin3, range5,
                                       &_resC, &score8, flank))
                 {
                     elem->state = 19;
-                    st->slot.Set(elem);
-                    st->key = id;
-                    st->timeStamp = ts;
-                    st->flags = flags;
-                    st->valid = st->slot.IsValid();
-                    st->SetDirty(0);
+                    apCombatCoverLocation->slot.Set(elem);
+                    apCombatCoverLocation->key = id;
+                    apCombatCoverLocation->timeStamp = ts;
+                    apCombatCoverLocation->flags = flags;
+                    apCombatCoverLocation->valid = apCombatCoverLocation->slot.IsValid();
+                    apCombatCoverLocation->SetDirty(0);
                     coverMgr.Update();
                     DAT_011f1a61.Signal();
                     return true;
@@ -9011,7 +9265,7 @@ struct Process9f48
 
 struct Group9f48
 {
-    bool CombatGroup_IsMember(Actor* pkMember);
+    bool CombatGroup_IsMember(Actor* apActor);
     unsigned int CombatGroup_GetMemberCount();
     Actor* GetIntAt(unsigned int uiIndex);
 };
@@ -9020,7 +9274,7 @@ struct Request9f48
 {
     char m_acPad[0x10];
     Actor* m_pkTarget;
-    void CombatLocation_SetTarget(Actor* pkTarget);
+    void CombatLocation_SetRef(Actor* pkTarget);
     void CombatLocation_SetRadius(float fImpulseRadiusSquared);
 };
 using ::SettingT;
@@ -9035,6 +9289,9 @@ struct Planner9f48
 };
 
 // @fnv 0x0099f480
+// pdb: CombatState::FindLOSLocation | CombatState.obj | debug, object-file run extension, low
+// pdb params: apRetLocation, aiLocation
+// pdb locals: pgroup, attackerWorldLoc, imemberCount, plosMember, pattacker, fmaxDistanceSquared, pactor, pcombatController, i, pmember, memberWorldLoc, bhasLOS, fsqrLength
 bool Planner9f48::TryAssignAllyTarget(Request9f48* pkRequest, int iUnused)
 {
     Group9f48* pkGroupList = (Group9f48*)m_pkController->FUN_004fb070();
@@ -9081,7 +9338,7 @@ bool Planner9f48::TryAssignAllyTarget(Request9f48* pkRequest, int iUnused)
     }
     if (pkAlly)
     {
-        pkRequest->CombatLocation_SetTarget(pkAlly);
+        pkRequest->CombatLocation_SetRef(pkAlly);
         pkRequest->CombatLocation_SetRadius(pkAlly->FUN_008be1b0() + pkOwner->FUN_008be1b0() +
                                 *originalRuntimeFloatSetting430.Setting_Float_00403e20());
         return true;
@@ -9252,14 +9509,14 @@ struct CombatSpot
     void FUN_00600ab0(int aiType);
     void CombatLocation_SetRadius(float afRadius);
     void CombatLocation_Copy(void* apSource);
-    void CopyRefValue();
-    void CombatLocation_SetTarget(CombatRef* apRef);
+    void CombatLocation_UpdateRefLocation();
+    void CombatLocation_SetRef(CombatRef* apRef);
     void AssignV4(CombatPos* apPos);
     void SetFlags(int aiMode, int aiFlag);
     CombatPos* FUN_006815c0();
     CombatCell* CombatLocation_GetPoint();
     int CallReferencedFunction();
-    void CombatLocation_SetSpace(void* apCell);
+    void CombatLocation_SetSpace(void* apSpace);
     int iData[8];
 };
 
@@ -9301,16 +9558,16 @@ struct CombatSlot
 struct CombatPathing
 {
     bool GetDetectedTargetLocation(CombatRef* apTarget, CombatPos* apOut);
-    CombatPos* FindBestItem(CombatRef* apActor, int aiRadius, CombatPos* apFrom);
+    CombatPos* CombatGroup_FindSearchLocation(CombatRef* apMember, int acMinScore, CombatPos* apCurrentSearchLocation);
 };
 
 struct CombatLocations
 {
     int CombatPlannerData_GetLocation(int aiType);
-    void CombatPlannerData_SetLinkLocation(int aiType);
+    void CombatPlannerData_SetLinkLocation(int aiLocation);
     float CombatPlannerData_GetCombatLocationCost(int aiType);
     void SetEntry(int aiType, CombatSpot* apSpot, float afDistance);
-    void CombatPlannerData_SetCombatCoverLocation(int aiType, CombatSearch* apSearch);
+    void CombatPlannerData_SetCombatCoverLocation(int aiLocation, CombatSearch* apCombatCoverLocation);
 };
 
 struct CombatTypeInfo
@@ -9339,39 +9596,42 @@ float __cdecl CombatAction_GetMovementCost(CombatController* apController, Comba
 // Finds a location for aiType using a CombatFind::CombatSpot and CombatFind::CombatSearch, then stores the result through pLocationsRes.
 // @fnv 0x0099ac20
 // src: EXE 0x0099ac20
-bool CombatState::FindCombatLocation_0099ac20(int aiType)
+// pdb: CombatState::FindCombatLocation | CombatState.obj | debug, unique string literal, high
+// pdb params: aiLocation
+// pdb locals: pgroup, bfound, ptarget, pfoundCoverLocation, bignoreCombatRadius, pplannerData, pfoundCombatLocation, pattacker, lastDetectedLocation, advanceLocation, pactor, psearchLocation, pcombatItem, worldLoc, fcost, attackerLoc
+bool CombatState::FindCombatLocation_0099ac20(int aiLocation)
 {
     CombatFind::CombatRef* pActorOld = (CombatFind::CombatRef*)(*(CombatController**)((char*)this + 0x1c4))->GetFieldBC();
     CombatFind::CombatRef* pTarget = (CombatFind::CombatRef*)(*(CombatController**)((char*)this + 0x1c4))->CombatController_GetTarget();
     CombatFind::CombatPathing* pPathingTmp = (CombatFind::CombatPathing*)(*(CombatController**)((char*)this + 0x1c4))->FUN_004fb070();
     CombatFind::CombatLocations* pLocationsRes = (CombatFind::CombatLocations*)(*(CombatController**)((char*)this + 0x1c4))->FUN_005e3fc0();
-    if (pLocationsRes->CombatPlannerData_GetLocation(aiType))
+    if (pLocationsRes->CombatPlannerData_GetLocation(aiLocation))
     {
-        pLocationsRes->CombatPlannerData_SetLinkLocation(aiType);
+        pLocationsRes->CombatPlannerData_SetLinkLocation(aiLocation);
         return true;
     }
-    else if (pLocationsRes->CombatPlannerData_GetCombatLocationCost(aiType) == CombatFind::DAT_0108df70)
+    else if (pLocationsRes->CombatPlannerData_GetCombatLocationCost(aiLocation) == CombatFind::DAT_0108df70)
     {
         return false;
     }
     bool bFound = false;
     CombatFind::CombatSpot* pFinalSpot = new CombatFind::CombatSpot();
     CombatFind::CombatSearch* pSearch = new CombatFind::CombatSearch();
-    pFinalSpot->FUN_00600ab0(aiType);
-    pFinalSpot->CombatLocation_SetRadius(CombatFind::DAT_011a5650[aiType].fRadius);
-    if ((*(CombatFind::CombatTimed**)((char*)this + 0x18c)) && (*(CombatFind::CombatTimed**)((char*)this + 0x18c))->FUN_00825c00() == aiType)
+    pFinalSpot->FUN_00600ab0(aiLocation);
+    pFinalSpot->CombatLocation_SetRadius(CombatFind::DAT_011a5650[aiLocation].fRadius);
+    if ((*(CombatFind::CombatTimed**)((char*)this + 0x18c)) && (*(CombatFind::CombatTimed**)((char*)this + 0x18c))->FUN_00825c00() == aiLocation)
     {
         pFinalSpot->CombatLocation_Copy((*(CombatFind::CombatTimed**)((char*)this + 0x18c)));
-        if ((*(CombatFind::CombatTyped**)((char*)this + 0xe4)) && (*(CombatFind::CombatTyped**)((char*)this + 0xe4))->iType == aiType)
+        if ((*(CombatFind::CombatTyped**)((char*)this + 0xe4)) && (*(CombatFind::CombatTyped**)((char*)this + 0xe4))->iType == aiLocation)
             pSearch->CombatCoverLocation_Copy((*(CombatFind::CombatTyped**)((char*)this + 0xe4)));
-        if (!CombatFind::DAT_011a5650[aiType].bSkipSearch)
+        if (!CombatFind::DAT_011a5650[aiLocation].bSkipSearch)
         {
-            pFinalSpot->CopyRefValue();
+            pFinalSpot->CombatLocation_UpdateRefLocation();
             bFound = true;
         }
     }
     bool bFlag = false;
-    switch (aiType)
+    switch (aiLocation)
     {
     case 10:
     case 12:
@@ -9380,7 +9640,7 @@ bool CombatState::FindCombatLocation_0099ac20(int aiType)
     }
     if (!bFound)
     {
-        switch (aiType)
+        switch (aiLocation)
         {
         case 0:
         case 1:
@@ -9390,7 +9650,7 @@ bool CombatState::FindCombatLocation_0099ac20(int aiType)
                 {
                     if (!FUN_0097fd40())
                     {
-                        pFinalSpot->CombatLocation_SetTarget(pTarget);
+                        pFinalSpot->CombatLocation_SetRef(pTarget);
                         bFound = true;
                     }
                 }
@@ -9408,32 +9668,32 @@ bool CombatState::FindCombatLocation_0099ac20(int aiType)
         case 2:
         case 4:
         case 5:
-            bFound = CombatState_FindBestCoverLocation((*(CombatController**)((char*)this + 0x1c4))->GetCurrentWeapon(), ((char*)this + 0xec), (::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiType);
+            bFound = CombatState_FindBestCoverLocation((*(CombatController**)((char*)this + 0x1c4))->GetCurrentWeapon(), ((char*)this + 0xec), (::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiLocation);
             break;
         case 3:
-            bFound = SelectAndMoveToPoint((::CombatSpot*)pFinalSpot, 3, 0xf, 128.0f, 128.0f);
+            bFound = CombatState_FindBestDodgeLocation((::CombatSpot*)pFinalSpot, 3, 0xf, 128.0f, 128.0f);
             break;
         case 6:
             if ((*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4)) && !(*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->bInvalid)
             {
-                bFound = FindBestAdvanceLocation(((char*)this + 0xec), (::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiType, (::CombatPos*)(*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->kPos.FUN_006815c0(),
+                bFound = FindBestAdvanceLocation(((char*)this + 0xec), (::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiLocation, (::CombatPos*)(*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->kPos.FUN_006815c0(),
                                       0.0f, 0);
             }
             else if ((*(CombatController**)((char*)this + 0x1c4))->CombatController_GetTarget())
             {
                 CombatFind::CombatPoint3 kTargetPos = *((CombatFind::CombatRef*)(*(CombatController**)((char*)this + 0x1c4))->CombatController_GetTarget())->GetPos();
-                bFound = FindBestAdvanceLocation(((char*)this + 0xec), (::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiType, (::CombatPos*)&kTargetPos, 0.0f, 0);
+                bFound = FindBestAdvanceLocation(((char*)this + 0xec), (::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiLocation, (::CombatPos*)&kTargetPos, 0.0f, 0);
             }
             break;
         case 7:
         case 8:
         case 9:
         case 16:
-            if ((*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4)) && (aiType != 8 || !FUN_00461580(1 << aiType)))
+            if ((*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4)) && (aiLocation != 8 || !FUN_00461580(1 << aiLocation)))
             {
                 if ((*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->pRef)
                 {
-                    pFinalSpot->CombatLocation_SetTarget((*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->pRef);
+                    pFinalSpot->CombatLocation_SetRef((*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->pRef);
                     if ((*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->pRef->IsActor())
                     {
                         CombatFind::CombatRef* pActor = (*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->pRef;
@@ -9453,17 +9713,17 @@ bool CombatState::FindCombatLocation_0099ac20(int aiType)
             break;
         case 10:
         case 12:
-            bFound = CombatState_FindBestFleeLocation((::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiType);
+            bFound = CombatState_FindBestFleeLocation((::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiLocation);
             break;
         case 13:
-            bFound = TryAssignAllyTarget((::CombatSpot*)pFinalSpot, aiType);
+            bFound = TryAssignAllyTarget((::CombatSpot*)pFinalSpot, aiLocation);
             break;
         case 14:
             pFinalSpot->SetFlags(1, 1);
             bFound = true;
             break;
         case 15: {
-            CombatFind::CombatPos* pCover = ((CombatFind::CombatPathing*)(*(CombatController**)((char*)this + 0x1c4))->FUN_004fb070())->FindBestItem(pActorOld, 0x32, pFinalSpot->FUN_006815c0());
+            CombatFind::CombatPos* pCover = ((CombatFind::CombatPathing*)(*(CombatController**)((char*)this + 0x1c4))->FUN_004fb070())->CombatGroup_FindSearchLocation(pActorOld, 0x32, pFinalSpot->FUN_006815c0());
             if (pCover)
             {
                 pFinalSpot->AssignV4(pCover);
@@ -9482,10 +9742,10 @@ bool CombatState::FindCombatLocation_0099ac20(int aiType)
         case 19:
         case 20:
         case 21: {
-            CombatFind::CombatSlot* pSlot = (CombatFind::CombatSlot*)GetActionAtIndex(aiType - 0x11);
+            CombatFind::CombatSlot* pSlot = (CombatFind::CombatSlot*)GetActionAtIndex(aiLocation - 0x11);
             if (pSlot && pSlot->pRef)
             {
-                pFinalSpot->CombatLocation_SetTarget(pSlot->pRef);
+                pFinalSpot->CombatLocation_SetRef(pSlot->pRef);
                 pFinalSpot->CombatLocation_SetRadius(pSlot->pRef->FUN_00571600() + pActorOld->Actor_GetForwardLength() +
                                          *CombatFind::DAT_011cf914.Setting_Float_00403e20());
                 pFinalSpot->SetFlags(2, 1);
@@ -9494,7 +9754,7 @@ bool CombatState::FindCombatLocation_0099ac20(int aiType)
             break;
         }
         default:
-            CombatFind::Warning_005b5e40("COMBAT: Invalid combat location type %i passed to CombatState::FindCombatLocation()", aiType);
+            CombatFind::Warning_005b5e40("COMBAT: Invalid combat location type %i passed to CombatState::FindCombatLocation()", aiLocation);
         }
     }
     if (bFound)
@@ -9505,14 +9765,14 @@ bool CombatState::FindCombatLocation_0099ac20(int aiType)
         if (kSpotPosTmp.FUN_006815c0()->HasEqualComponents(&CombatFind::DAT_011f426c) || CombatState_CheckMovement_009a02a0((::CombatPos*)&kSpotPosTmp, 1, bFlag))
         {
             float fDistance = 0.0f;
-            if (CombatFind::DAT_011a5650[aiType].bMeasure)
+            if (CombatFind::DAT_011a5650[aiLocation].bMeasure)
             {
                 CombatFind::CombatPos kActorPos = pActorOld->TESObjectREFR_GetWorldLocation();
                 fDistance = CombatFind::CombatAction_GetMovementCost((*(CombatController**)((char*)this + 0x1c4)), &kActorPos, &kSpotPosTmp);
             }
-            pLocationsRes->SetEntry(aiType, pFinalSpot, fDistance);
+            pLocationsRes->SetEntry(aiLocation, pFinalSpot, fDistance);
             if (pSearch->iCount)
-                pLocationsRes->CombatPlannerData_SetCombatCoverLocation(aiType, pSearch);
+                pLocationsRes->CombatPlannerData_SetCombatCoverLocation(aiLocation, pSearch);
             else
                 delete pSearch;
             return true;
@@ -9520,7 +9780,7 @@ bool CombatState::FindCombatLocation_0099ac20(int aiType)
     }
     delete pFinalSpot;
     delete pSearch;
-    pLocationsRes->SetEntry(aiType, 0, CombatFind::DAT_0108df70);
+    pLocationsRes->SetEntry(aiLocation, 0, CombatFind::DAT_0108df70);
     return false;
 }
 
@@ -9540,6 +9800,7 @@ class CTSHelper
 
 // Returns true when ((fnv_0097ee90::CTSHelper*)((char*)this + 0x94))->GetElapsedTime() is less than the value of originalRuntimeFloatSetting412.
 // @fnv 0x0097ee90
+// pdb: CombatState::GetHasBufferedDetection | CombatController.obj | debug, call graph, high
 }  // namespace fnv_0097ee90
 
 // src: XBOX_PDB 0x0097ee90
@@ -9602,7 +9863,7 @@ class Arg2Class : public FUN_0099b8b0_shell
 };
 
 namespace fnv_0099d030 {
-bool FindCombatPosition(PathingRequest*, float, int);
+bool CombatState_FindBestAdvanceLocation(PathingRequest*, float, int);
 
 }  // namespace fnv_0099d030
 
@@ -9610,6 +9871,9 @@ bool FindCombatPosition(PathingRequest*, float, int);
 // Attempts to use a cover item, then builds a PathingRequest and calls FindCombatPosition to locate a combat position for the actor.
 // @fnv 0x0099d030
 // src: XBOX_PDB 0x0099d030
+// pdb: CombatState::FindBestAdvanceLocation | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apCoverSearchInfo, apCombatCoverLocation, apRetLocation, aiLocation, arDestination, afMinDistance, apPathingAvoidNodeArray
+// pdb locals: destinationPathingLocation, ptarget, iMaxCoverLocations, attackerPathingLocation, bresult, fMaxDist, coveredMoveRequest, fMaxHeightChange, pattacker, fminAdvanceDistance
 bool CombatState::FindBestAdvanceLocation(Arg0Class* a0, Arg1Class* a1, Arg2Class* a2, int a3, const NiPoint3& a4, float a5,
                                     void* a6)
 {
@@ -9647,7 +9911,7 @@ bool CombatState::FindBestAdvanceLocation(Arg0Class* a0, Arg1Class* a1, Arg2Clas
     ((::PathingRequest*)&req2)->PathingRequestCoveredMove_SetCombatCoverLocation((::Arg1Class*)a1);
     ((::PathingRequest*)&req2)->FUN_006d61e0(a6);
     ((::PathingRequest*)&req2)->FUN_00705b10(a3);
-    bool retVal7 = FindCombatPosition((::PathingRequest*)&req2, val4, 0);
+    bool retVal7 = CombatState_FindBestAdvanceLocation((::PathingRequest*)&req2, val4, 0);
     if (retVal7)
     {
         a2->CombatLocation_SetPoint((int)((::PathingRequest*)&req2)->PathingRequestCoveredMove_GetCoverLocation(), 0);
@@ -9692,6 +9956,7 @@ struct FUN_006d3150
 
 // Initializes the listed fields, constructs member14, and calls ClearFlags on member70.
 // @fnv 0x006d3150
+// pdb: CombatCoverLocation::CombatCoverLocation | Pathfind.obj | debug, call graph, high
 FUN_006d3150::FUN_006d3150()
     : byte0(0), byte1(0), byte2(0), dword4(0), point8(_NiPoint3_ZERO), member14(), dword68(0), dword6c(-1)
 {
@@ -9710,7 +9975,7 @@ extern Setting g_set804;
 extern Setting g_set7ec;
 extern Setting g_setdcc;
 
-float ClampMin(float a, float b);
+float ClampMin(float afMin, float afMax);
 
 struct A24
 {
@@ -9755,7 +10020,7 @@ struct D10
 struct E4
 {
     int v;
-    E4(int a);
+    E4(int pObject);
     ~E4();
 };
 
@@ -9807,17 +10072,19 @@ struct FUN_00997600
     E4 e224;
     int unk228;
 
-    FUN_00997600(int a, int b);
+    FUN_00997600(int apCombatController, int afTimerDelay);
 };
 
 // Initializes selected fields, stores a in unk1C4, sets p20C from g_set804, and computes fCC from g_setdcc and g_set7ec.
 // @fnv 0x00997600
-FUN_00997600::FUN_00997600(int aiUnk, int aiUnk2)
+// pdb: CombatState::CombatState | CombatState.obj | retail, object-file run extension, high
+// pdb params: apCombatController, afTimerDelay
+FUN_00997600::FUN_00997600(int apCombatController, int afTimerDelay)
     : b00(0), unk04(0), f08(100.0f), unk34(0), unk38(0), f58(0.0f), f5C(0.0f), f60(0.0f), f64(0.0f), f68(0.0f),
       unk6C(-1), b70(0), b71(0), b72(0), b73(-1), b74(0), b75(0), b76(0), b77(0), unk78(0), unk7C(3), f80(0.0f),
       p84(g_zeroPt3), unk90(0), w94(-kFltMax), w98(-kFltMax), w9C(-kFltMax), wA0(-kFltMax), wA4(-kFltMax), unkC4(0),
       bC8(0), bC9(0), fD0(-1.0f), fD4(-1.0f), bD8(0), unkDC(0), wE0(-kFltMax), unkE4(0), unkE8(0), b188(-1), unk18C(0),
-      unk1BC(0), unk1C0(0), unk1C4(aiUnk), b1C8(true), e224(0), unk228(-1)
+      unk1BC(0), unk1C0(0), unk1C4(apCombatController), b1C8(true), e224(0), unk228(-1)
 {
     memset(&unk0C, 0, 0x18);
     memset(&unk3C, 0, 0x1c);
@@ -9840,6 +10107,7 @@ struct FUN_0099a2a0_s
 // Zeroes the data buffer and clears the global object g.
 // @fnv 0x0099a2a0
 // src: XBOX_PDB 0x0099a2a0
+// pdb: CombatState::DeleteInventoryData | CombatState.obj | debug, upstream name already matches, high
 void FUN_0099a2a0_s::CombatState_DeleteInventoryData()
 {
     memset(data, 0, 0x18);
@@ -9858,7 +10126,7 @@ struct RefSlot
 };
 struct MemberC4
 {
-    void CombatState_LocationTarget_InitLoadGameBGS(BGSLoadFormBuffer*);
+    void CombatLocationTarget_InitLoadGame(BGSLoadFormBuffer*);
 };
 struct Member18C
 {
@@ -10002,10 +10270,13 @@ struct HostA
 // Calls buffer handlers, re-resolves stored references, optionally processes index, and updates maximum from values.
 // @fnv 0x009a2a30
 // src: COMMUNITY 0x009a2a30
+// pdb: CombatState::InitLoadGame | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: i
 void HostA::CombatState_InitLoadGameBGS(BGSLoadFormBuffer* buffer)
 {
     if (memberC4)
-        memberC4->CombatState_LocationTarget_InitLoadGameBGS(buffer);
+        memberC4->CombatLocationTarget_InitLoadGame(buffer);
     for (unsigned int i = 0; i < 5; i++)
     {
         if (slots[i])

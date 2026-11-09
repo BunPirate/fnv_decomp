@@ -4,6 +4,7 @@
 
 class TESForm;
 
+// pdb: class TESUsesForm, size 0x8, bases: BaseFormComponent, 1 members
 class TESUsesForm : public BaseFormComponent
 {
 public:
@@ -18,6 +19,6 @@ public:
     int GetFormUses();
     void SetFormUses(int uses);
 
-    unsigned char m_ucUses;
+    unsigned char iUses;
     char _pad_5[3];
 };

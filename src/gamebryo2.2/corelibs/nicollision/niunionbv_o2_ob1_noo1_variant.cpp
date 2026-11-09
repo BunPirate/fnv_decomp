@@ -87,21 +87,24 @@ struct TexArray
 struct TexCache
 {
     void NiUnionBV_RemoveAllBoundingVolumes();
-    void NiUnionBV_Copy(Source* src);
+    void NiUnionBV_Copy(Source* kABV);
     unsigned int unk00;
     TexArray m_textures;
 };
 // @fnv 0x00e9ecd0
 // src: GAMEBRYO_LIB 0x00e9ecd0
-void TexCache::NiUnionBV_Copy(Source* src)
+// pdb: NiUnionBV::Copy | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb params: kABV
+// pdb locals: kUnionABV, i, pBvSrc, pBvDst
+void TexCache::NiUnionBV_Copy(Source* kABV)
 {
-    if (src->GetType() == 4)
+    if (kABV->GetType() == 4)
     {
         NiUnionBV_RemoveAllBoundingVolumes();
-        m_textures.SetSize(src->m_uiItemCount);
-        for (unsigned int i = 0; i < src->m_uiItemCount; i++)
+        m_textures.SetSize(kABV->m_uiItemCount);
+        for (unsigned int i = 0; i < kABV->m_uiItemCount; i++)
         {
-            Item* item = src->m_items[i];
+            Item* item = kABV->m_items[i];
             VirtualTextureView_00e9ecd0* value = item->GetTexture();
             TextureVTable* table = value->vtable;
             VirtualTextureView_00e9ecd0* tex = value;
@@ -181,6 +184,8 @@ struct Source365
 
 // @fnv 0x00e9eef0
 // src: GAMEBRYO_SRC 0x00e9eef0
+// pdb: NiUnionBV::Create | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb locals: pUnion, i, pBvSrc, pBvDst
 State365* __thiscall Source365::NiUnionBV_Create()
 {
     State365* state = static_cast<State365*>(g_memoryManager.Allocate(sizeof(State365)));

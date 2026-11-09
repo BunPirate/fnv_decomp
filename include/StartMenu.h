@@ -29,6 +29,7 @@ class TileMenu;
 
 template <class T> class ListBoxItem;
 
+// pdb: class StartMenu, size 0x1cc (here 0x1d4), bases: Menu, 17 members
 class StartMenu : public Menu
 {
 public:
@@ -40,9 +41,9 @@ public:
         virtual ~Option();
         bool IsForModes(unsigned int auiModes);
 
-        const char* GetValueText;
-        void (__cdecl* m_pActionCallback)();
-        unsigned int m_uiModes;
+        const char* pDisplayText;
+        void (__cdecl* pfChooseFn)();
+        unsigned int iModes;
     };
 
     class UserOption : public Option
@@ -50,12 +51,12 @@ public:
     public:
         const char* pTemplate;
         int iVal;
-        int iDefaultValue;
+        int iDefaultVal;
         int eType;
-        unsigned int m_uiValueCount;
-        unsigned int m_uiModeFlags;
-        const char** m_ppOptionValues;
-        void (__cdecl* m_pChangeCallback)(UserOption*);
+        unsigned int iNumSettings;
+        unsigned int iArrowSpacing;
+        const char** pValueStrings;
+        void (__cdecl* pfChangeFn)(UserOption*);
     };
 
     class OptionManager
@@ -152,7 +153,7 @@ public:
     StartMenu();
     TileMenu* GetMenuTitle();
     const char* GetMenuTitle() const;
-    void HandleSliderTileInput(int aiID, void* apTile);
+    void HandleSliderTileInput(int aiID, void* apTarget);
     void UpdateMouseover(int aiID, void* apTarget);
     bool IsStartMenuActive();
     bool IsFlagSet(Flag aFlag);
@@ -160,5 +161,5 @@ public:
 
     static bool IsInGame();
     static bool __cdecl Create(bool, bool);
-    static void UpdateMedia();
+    static void FalloutAudioMedia_MediaClear();
 };

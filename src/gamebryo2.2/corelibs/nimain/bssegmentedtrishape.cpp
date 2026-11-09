@@ -4,13 +4,13 @@
 
 #include "../../../../include/MemoryManager.h"
 
-extern "C" void* g_011f5b40;
+extern "C" void* BSSegmentedTriShape_ms_RTTI;
 
 // @fnv 0x00a86fe0
 // src: COMMUNITY 0x00a86fe0
 void* __cdecl BSSegmentedTriShape_GetRTTI()
 {
-    return &g_011f5b40;
+    return &BSSegmentedTriShape_ms_RTTI;
 }
 
 void __cdecl FinalizeEntries();
@@ -18,6 +18,8 @@ void __cdecl FUN_00a745c0();
 
 // @fnv 0x00a87120
 // src: XBOX_PDB 0x00a87120
+// pdb: BSSegmentedTriShape::RenderImmediate | BSSegmentedTriShape.obj | retail, upstream name already matches, high
+// pdb params: pkRenderer
 void __cdecl BSSegmentedTriShape_RenderImmediate()
 {
     FinalizeEntries();
@@ -140,6 +142,8 @@ void __cdecl FUN_00a74600();
 // Calls FinalizeEntries then FUN_00a74600 in sequence.
 // @fnv 0x00a87130
 // src: XBOX_PDB 0x00a87130
+// pdb: BSSegmentedTriShape::OnlyRenderImmediate | BSSegmentedTriShape.obj | retail, upstream name already matches, high
+// pdb params: pkRenderer
 void __cdecl BSSegmentedTriShape_OnlyRenderImmediate()
 {
     FinalizeEntries();
@@ -235,6 +239,8 @@ struct FUN_00a872d0_shell
 
 // Marks the first record selected with the input count, deselects the rest, activates records with a non-null object, and clears dirty.
 // @fnv 0x00a872d0
+// pdb: NiXenonRenderTargetGroupData::~NiXenonRenderTargetGroupData | NiXenonRenderTargetGroupData.obj | retail, object-file run extension, low
+// pdb locals: ui
 void FUN_00a872d0_shell::ResetRecordSelection()
 {
     records[0].selected = true;
@@ -317,6 +323,9 @@ struct FUN_00a87340_cls
 };
 
 // @fnv 0x00a87340
+// pdb: NiXenonRenderTargetGroupData::CreateTarget | NiXenonRenderTargetGroupData.obj | retail, upstream name already matches, high
+// pdb params: iWidth, iHeight, eFormat, eMultisampleType, kEDRAMSurfaceParams
+// pdb locals: pkD3DDevice9, pkRenderer, pkSurface, eD3DRet
 Target* FUN_00a87340_cls::CreateTarget(unsigned int volatile flags)
 {
     Target* self = reinterpret_cast<Target*>(this);
@@ -570,6 +579,9 @@ struct S_a873b0_T : S_a873b0_Base
 
 // Reads the entry count and each entry's fields from the stream, allocates the entries array, and marks the object active.
 // @fnv 0x00a873b0
+// pdb: NiXenonRenderTargetGroupData::CreateDepthTarget | NiXenonRenderTargetGroupData.obj | debug, object-file run extension, low
+// pdb params: iWidth, iHeight, eFormat, eMultisampleType, kEDRAMSurfaceParams
+// pdb locals: pkD3DDevice9, uiAddress, pkRenderer, pkSurface, eD3DRet, uiTiles
 void S_a873b0_T::ReadFromStream(S_a873b0_Stream* pStream)
 {
     NiParticleMeshes_LoadBinary(pStream);
@@ -615,6 +627,9 @@ struct FUN_00a87520_shell : Target
 };
 // Reads a count, then reads one byte and two four-byte values for each 20-byte entry from the stream at owner+0x250.
 // @fnv 0x00a87520
+// pdb: BSSegmentedTriShape::CopyMembers | BSSegmentedTriShape.obj | debug, object-file run extension, low
+// pdb params: pkDest, kCloning
+// pdb locals: i
 void FUN_00a87520_shell::ReadEntries(void* owner)
 {
     NiParticleMeshes_SaveBinary(owner);
@@ -802,7 +817,7 @@ extern "C" const char DAT_0109e928[];
 extern "C" const char DAT_0109e938[];
 extern "C" const char DAT_0109e94c[];
 extern "C" const char DAT_0109e95c[];
-extern "C" void* g_011f5b40;
+extern "C" void* BSSegmentedTriShape_ms_RTTI;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* value);
 void* __cdecl NiGetViewerString_00a7d510(const char* fmt, unsigned int value);
 
@@ -861,15 +876,18 @@ struct S00a87620_Obj
     unsigned int count;
     unsigned char active;
     void FUN_00a74690(ItemList* list);
-    void AddToItemList(ItemList* list);
+    void AddToItemList(ItemList* pkStrings);
 };
 
 // @fnv 0x00a87620
-void S00a87620_Obj::AddToItemList(ItemList* apItemList)
+// pdb: BSSegmentedTriShape::GetViewerStrings | BSSegmentedTriShape.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: inumEmptySegments, i
+void S00a87620_Obj::AddToItemList(ItemList* pkStrings)
 {
-    this->FUN_00a74690(apItemList);
-    apItemList->Add(NiViewerStrings_NiGetViewerString_Title(g_011f5b40));
-    apItemList->Add(NiGetViewerString_00a7d510(DAT_0109e95c, this->count));
+    this->FUN_00a74690(pkStrings);
+    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(BSSegmentedTriShape_ms_RTTI));
+    pkStrings->Add(NiGetViewerString_00a7d510(DAT_0109e95c, this->count));
 
     if (this->entries != 0)
     {
@@ -881,12 +899,12 @@ void S00a87620_Obj::AddToItemList(ItemList* apItemList)
                 if (this->entries[i].enabled)
                 {
                     void* item = NiGetViewerString_00a7d510(DAT_0109e94c, i);
-                    apItemList->Add(item);
+                    pkStrings->Add(item);
                 }
                 else
                 {
                     void* item = NiGetViewerString_00a7d510(DAT_0109e938, i);
-                    apItemList->Add(item);
+                    pkStrings->Add(item);
                 }
             }
             else
@@ -894,6 +912,6 @@ void S00a87620_Obj::AddToItemList(ItemList* apItemList)
                 nullCount++;
             }
         }
-        apItemList->Add(NiGetViewerString_00a7d510(DAT_0109e928, nullCount));
+        pkStrings->Add(NiGetViewerString_00a7d510(DAT_0109e928, nullCount));
     }
 }

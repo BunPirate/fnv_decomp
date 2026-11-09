@@ -17,7 +17,7 @@
 class TESConditionSave_bgsterminal
 {
 public:
-    void ProcessItems();
+    void Save();
 };
 #include "../../include/TESDescription.h"
 #include "../../include/TESFile.h"
@@ -50,7 +50,7 @@ class TerminalMenuItem
     BGSTerminal* m_pTerminal;
     char cFlags;
     TerminalMenuItem();
-    void TERMINAL_MENU_ITEM_RunResultScript(Script* script);
+    void TERMINAL_MENU_ITEM_RunResultScript(Script* apActivator);
 };
 extern ScriptVariableInfo* DAT_011c83d4;
 typedef char terminal_size_check[sizeof(BGSTerminal) == 0xa8 ? 1 : -1];
@@ -63,89 +63,92 @@ unsigned int SetWarningState(bool);
 
 // Loads a terminal record from the file, dispatching each chunk to set the editor ID, model, script, menu items, sounds, and conditions.
 // @fnv 0x00500000
-bool BGSTerminal::Load(TESFile* file)
+// pdb: BGSTerminal::Load | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, plastitem, pMessage, isize, pdata, tempint, tmpdata, n, pNewItem, tempID, itempint, pitem, ptext
+bool BGSTerminal::Load(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     TerminalMenuItem* current = 0;
     int uiChunkID;
-    while ((uiChunkID = file->GetChunkID()) != 0)
+    while ((uiChunkID = apFile->GetChunkID()) != 0)
     {
         switch (uiChunkID)
         {
         case 'DIDE': {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 'DNBO':
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 'LLUF':
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 'LDOM':
         case 'TDOM':
         case 'DDOM':
         case 'DSOM':
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 'SDOM': {
             void* textureData;
-            unsigned int textureSize = file->GetChunkSize();
+            unsigned int textureSize = apFile->GetChunkSize();
             textureData = _alloca(textureSize);
-            file->GetChunkData(textureData, textureSize);
-            ParseTextureSwapData(textureData, textureSize, file->GetFormVersion());
+            apFile->GetChunkData(textureData, textureSize);
+            UnpackTextureSwapChunkData(textureData, textureSize, apFile->GetFormVersion());
             break;
         }
         case 'IRCS': {
             Script* script = 0;
-            file->GetChunkData((unsigned int*)&script);
+            apFile->GetChunkData((unsigned int*)&script);
             SetScript(script);
             TESScriptableForm::InitItem(this);
             break;
         }
         case 'TSED':
         case 'DTSD':
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 'CSED':
-            TESDescription::ReadDescriptionFromFile(this, file);
+            TESDescription::ReadDescriptionFromFile(this, apFile);
             break;
         case 'DSLS':
         case 'RVCS': {
-            if (file->GetChunkID() == 'DSLS')
+            if (apFile->GetChunkID() == 'DSLS')
             {
                 DAT_011c83d4 = new ScriptVariableInfo;
-                DAT_011c83d4->Load(file);
+                DAT_011c83d4->Load(apFile);
                 current->m_kScript.GetVariableList()->AddTail(DAT_011c83d4);
             }
             else if (DAT_011c83d4)
             {
-                char* variableName = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(variableName, 0x200);
+                char* variableName = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(variableName, 0x200);
                 DAT_011c83d4->name.Set(variableName, 0);
             }
             break;
         }
         case 'RHCS':
-            file->GetChunkData(current->m_kScript.GetHeader(), 0);
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(current->m_kScript.GetHeader(), 0);
+            if (apFile->IsEndianConversionRequired())
                 current->m_kScript.GetHeader()->Endian();
             break;
         case 'ADCS': {
-            unsigned int size = file->GetChunkSize();
+            unsigned int size = apFile->GetChunkSize();
             char* data = (char*)_alloca(size);
             memset(data, 0, size);
-            file->GetChunkData(data, 0);
-            current->m_kScript.SetScriptData(size, data);
+            apFile->GetChunkData(data, 0);
+            current->m_kScript.SetCompileData(size, data);
             break;
         }
         case 'ORCS': {
             unsigned int formID;
             ScriptReferencedObject* reference = new ScriptReferencedObject;
-            file->GetChunkData(&formID);
+            apFile->GetChunkData(&formID);
             reference->pForm = (TESForm*)formID;
             current->m_kScript.GetReferencedObjectList()->AddTail(reference);
             break;
@@ -157,29 +160,29 @@ bool BGSTerminal::Load(TESFile* file)
                 unsigned int variableID;
             } loadedVariable;
             loadedVariable.reference = new ScriptReferencedObject;
-            file->GetChunkData(&loadedVariable.variableID);
+            apFile->GetChunkData(&loadedVariable.variableID);
             loadedVariable.reference->m_uiFormID = loadedVariable.variableID;
             current->m_kScript.GetReferencedObjectList()->AddTail(loadedVariable.reference);
             break;
         }
         case 'MANS': {
             TESSound* sound = 0;
-            file->GetChunkData((unsigned int*)&sound);
+            apFile->GetChunkData((unsigned int*)&sound);
             SetLoopingSound(sound);
             break;
         }
         case 'MANP': {
             BGSNote* password = 0;
-            file->GetChunkData((unsigned int*)&password);
+            apFile->GetChunkData((unsigned int*)&password);
             BGSTerminal_SetPassword(password);
             break;
         }
         case 'MAND':
-            file->GetChunkData(&Data, 4);
+            apFile->GetChunkData(&Data, 4);
             break;
         case 'TXTI': {
-            char* text = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(text, 0);
+            char* text = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(text, 0);
             TerminalMenuItem* item = new TerminalMenuItem;
             item->ResponseText.Set(text, 0);
             AddMenuItem(item);
@@ -189,8 +192,8 @@ bool BGSTerminal::Load(TESFile* file)
         case 'MANR': {
             if (current)
             {
-                char* text = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(text, 0);
+                char* text = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(text, 0);
                 current->m_kMenuText.Set(text, 0);
             }
             break;
@@ -199,7 +202,7 @@ bool BGSTerminal::Load(TESFile* file)
             if (current)
             {
                 BGSNote* note = 0;
-                file->GetChunkData((unsigned int*)&note);
+                apFile->GetChunkData((unsigned int*)&note);
                 current->m_pNote = note;
             }
             break;
@@ -208,21 +211,21 @@ bool BGSTerminal::Load(TESFile* file)
             if (current)
             {
                 BGSTerminal* menu = 0;
-                file->GetChunkData((unsigned int*)&menu);
+                apFile->GetChunkData((unsigned int*)&menu);
                 current->m_pTerminal = menu;
             }
             break;
         }
         case 'MANA':
             if (current)
-                file->GetChunkData(&current->cFlags, 1);
+                apFile->GetChunkData(&current->cFlags, 1);
             break;
         case 'ADTC':
             if (current)
-                current->Conditions.Load(file);
+                current->Conditions.Load(apFile);
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -230,6 +233,8 @@ bool BGSTerminal::Load(TESFile* file)
 
 // Resolves the terminal's password and each menu item's note/submenu forms, runs their InitItem scripts and conditions, and warns on lookup or script errors.
 // @fnv 0x004ffcb0
+// pdb: BGSTerminal::InitItem | BGSTerminal.obj | retail, string-set bridge, high
+// pdb locals: plist, itempint, iindex, pitem, iwarnings, iprevwarnings
 void BGSTerminal::InitItem()
 {
     int count;
@@ -302,6 +307,7 @@ void BGSTerminal::InitItem()
 }
 
 // @fnv 0x004ffc50
+// pdb: BGSTerminal::InitializeData | BGSTerminal.obj | retail, vtable slot, high
 void BGSTerminal::ResetFormData()
 {
     TESObjectACTI::ResetFormData();
@@ -311,21 +317,28 @@ void BGSTerminal::ResetFormData()
 
 // Returns true if note is non-null and present in the notes list.
 // @fnv 0x00966c10
-bool PlayerCharacter::HasNote(BGSNote* note)
+// pdb: PlayerCharacter::HasNote | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apNote
+bool PlayerCharacter::HasNote(BGSNote* apNote)
 {
-    return note && notes.IsInList(note);
+    return apNote && notes.IsInList(apNote);
 }
 
 // @fnv 0x00501a10
 // src: COMMUNITY 0x00501a10
-void __cdecl BGSTerminal_ResetState(Script* apScript)
+// pdb: BGSTerminal::ResetState | BGSTerminal.obj | debug, upstream name already matches, high
+// pdb params: apRef
+void __cdecl BGSTerminal_ResetState(Script* apRef)
 {
-    if (apScript)
-        reinterpret_cast<BaseExtraList*>(apScript->GetReferencedObjectList())->RemoveExtra(static_cast<unsigned char>(0x50));
+    if (apRef)
+        reinterpret_cast<BaseExtraList*>(apRef->GetReferencedObjectList())->RemoveExtra(static_cast<unsigned char>(0x50));
 }
 
 // @fnv 0x005012c0
 // src: XBOX_PDB 0x005012c0
+// pdb: BGSTerminal::IsTerminalRefInUse | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: bretval, plinkedref
 bool __cdecl BGSTerminal_IsTerminalRefInUse(TESObjectREFR* apRef)
 {
     bool bretval = false;
@@ -349,9 +362,9 @@ bool __cdecl BGSTerminal_IsTerminalRefInUse(TESObjectREFR* apRef)
 struct TerminalExtraDataAccess
 {
     unsigned char __thiscall ExtraDataList_GetTerminalState();
-    void __thiscall ExtraDataList_SetTerminalLockState(int state);
+    void __thiscall ExtraDataList_SetTerminalLockState(int acLockState);
     char __thiscall ExtraDataList_GetTerminalLockState();
-    void __thiscall SetExtraState(unsigned char state);
+    void __thiscall ExtraDataList_SetTerminalState(unsigned char acState);
 };
 
 // State operations absent from BGSTerminal.h.  This extension has no data
@@ -359,15 +372,15 @@ struct TerminalExtraDataAccess
 struct TerminalStateAccess : BGSTerminal
 {
     bool BGSTerminal_IsUnlocked();
-    void BGSTerminal_SetUnlocked(Script* script);
+    void BGSTerminal_SetUnlocked(Script* apRef);
     void TESObjectACTI_SaveGame(void* buffer);
     void BGSTerminal_SaveGame(void* buffer);
     int BGSTerminal_GetHackDifficultyLockLevel(TESObjectREFR* ref);
     unsigned int BGSTerminal_GetHackMiniGameValue(TESObjectREFR* ref);
-    int BGSTerminal_GetRawDifficulty(Script* script);
-    void BGSTerminal_SetRawDifficulty(Script* script, int value);
+    int BGSTerminal_GetRawDifficulty(Script* apRef);
+    void BGSTerminal_SetRawDifficulty(Script* apRef, int aeVal);
     bool BGSTerminal_IsUnlocked_00501ae0(TESObjectREFR* ref);
-    void TESObjectACTI_LoadGame(BGSLoadFormBuffer* buffer);
+    void TESObjectACTI_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void BGSTerminal_LoadGame(BGSLoadFormBuffer* buffer);
     bool IsFlagSet();
     void BGSTerminal_ClearMenuItemList();
@@ -375,6 +388,9 @@ struct TerminalStateAccess : BGSTerminal
 
 // @fnv 0x005015d0
 // src: XBOX_PDB 0x005015d0
+// pdb: BGSTerminal::IsUnlocked | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: bunlocked, clock
 bool TerminalStateAccess::BGSTerminal_IsUnlocked()
 {
     return Data.cFlags & 2;
@@ -382,14 +398,16 @@ bool TerminalStateAccess::BGSTerminal_IsUnlocked()
 
 // @fnv 0x00501b40
 // src: COMMUNITY 0x00501b40
-void TerminalStateAccess::BGSTerminal_SetUnlocked(Script* pScript)
+// pdb: BGSTerminal::SetUnlocked | BGSTerminal.obj | debug, upstream name already matches, high
+// pdb params: apRef
+void TerminalStateAccess::BGSTerminal_SetUnlocked(Script* apRef)
 {
-    if (pScript)
+    if (apRef)
     {
         if (BGSTerminal_IsUnlocked())
-            ((TerminalExtraDataAccess*)pScript->GetReferencedObjectList())->ExtraDataList_SetTerminalLockState(-1);
+            ((TerminalExtraDataAccess*)apRef->GetReferencedObjectList())->ExtraDataList_SetTerminalLockState(-1);
         else
-            ((TerminalExtraDataAccess*)pScript->GetReferencedObjectList())->ExtraDataList_SetTerminalLockState(-2);
+            ((TerminalExtraDataAccess*)apRef->GetReferencedObjectList())->ExtraDataList_SetTerminalLockState(-2);
     }
 }
 
@@ -399,6 +417,8 @@ void __thiscall TerminalStateAccess::TESObjectACTI_SaveGame(void* apSaveGameBuff
 
 // @fnv 0x00501b90
 // src: XBOX_PDB 0x00501b90
+// pdb: BGSTerminal::SaveGame | BGSTerminal.obj | debug, upstream name already matches, high
+// pdb params: apSaveGameBuffer
 void __thiscall TerminalStateAccess::BGSTerminal_SaveGame(void* apSaveGameBuffer)
 {
     this->TESObjectACTI_SaveGame(apSaveGameBuffer);
@@ -406,6 +426,9 @@ void __thiscall TerminalStateAccess::BGSTerminal_SaveGame(void* apSaveGameBuffer
 
 // @fnv 0x00501270
 // src: XBOX_PDB 0x00501270
+// pdb: BGSTerminal::GetHackMiniGameValue | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: ilockval
 unsigned int TerminalStateAccess::BGSTerminal_GetHackMiniGameValue(TESObjectREFR* apRef)
 {
     int ilockval;
@@ -421,11 +444,14 @@ unsigned int TerminalStateAccess::BGSTerminal_GetHackMiniGameValue(TESObjectREFR
 struct TermHack
 {
     float __thiscall BGSTerminal_GetMinSkillRequiredToHack(TESObjectREFR* apItemActivated);
-    bool __thiscall IsSkillSufficient(TESObjectREFR* apItemActivated, float afSkill);
+    bool __thiscall BGSTerminal_IsHackEligible(TESObjectREFR* apItemActivated, float afSkill);
 };
 // Returns whether the skill value returned by FUN_005017a0 for the activated reference is less than or equal to afSkill.
 // @fnv 0x00501760
-bool __thiscall TermHack::IsSkillSufficient(TESObjectREFR* apItemActivated, float afSkill)
+// src: XBOX_RETAIL_PDB 0x00501760
+// pdb: BGSTerminal::IsHackEligible | BGSTerminal.obj | retail, call graph, high
+// pdb params: apItemActivated, afSkill
+bool __thiscall TermHack::BGSTerminal_IsHackEligible(TESObjectREFR* apItemActivated, float afSkill)
 {
     return BGSTerminal_GetMinSkillRequiredToHack(apItemActivated) <= afSkill;
 }
@@ -433,6 +459,9 @@ bool __thiscall TermHack::IsSkillSufficient(TESObjectREFR* apItemActivated, floa
 // Returns true if apRef is non-null and the state byte from its referenced object list has bit 0x80 set.
 // @fnv 0x00501870
 // src: COMMUNITY 0x00501870
+// pdb: BGSTerminal::IsHacked | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: bretval, cstate
 bool __cdecl BGSTerminal_IsHacked(TESObjectREFR* apRef)
 {
     bool bretval;
@@ -449,12 +478,15 @@ bool __cdecl BGSTerminal_IsHacked(TESObjectREFR* apRef)
 
 // @fnv 0x00501a30
 // src: XBOX_PDB 0x00501a30
-int __thiscall TerminalStateAccess::BGSTerminal_GetRawDifficulty(Script* apScript)
+// pdb: BGSTerminal::GetRawDifficulty | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: clock
+int __thiscall TerminalStateAccess::BGSTerminal_GetRawDifficulty(Script* apRef)
 {
     char c = -1;
-    if (apScript)
+    if (apRef)
     {
-        c = ((TerminalExtraDataAccess*)apScript->GetReferencedObjectList())->ExtraDataList_GetTerminalLockState();
+        c = ((TerminalExtraDataAccess*)apRef->GetReferencedObjectList())->ExtraDataList_GetTerminalLockState();
     }
     if (c < 0)
     {
@@ -465,14 +497,16 @@ int __thiscall TerminalStateAccess::BGSTerminal_GetRawDifficulty(Script* apScrip
 
 // @fnv 0x00501a80
 // src: XBOX_PDB 0x00501a80
-void TerminalStateAccess::BGSTerminal_SetRawDifficulty(Script* apScript, int aiValue)
+// pdb: BGSTerminal::SetRawDifficulty | BGSTerminal.obj | debug, upstream name already matches, high
+// pdb params: apRef, aeVal
+void TerminalStateAccess::BGSTerminal_SetRawDifficulty(Script* apRef, int aeVal)
 {
-    if (apScript)
+    if (apRef)
     {
-        if (aiValue == Data.m_ucByte0 && !BGSTerminal_IsUnlocked())
-            ((TerminalExtraDataAccess*)(apScript->GetReferencedObjectList()))->ExtraDataList_SetTerminalLockState(-1);
+        if (aeVal == Data.m_ucByte0 && !BGSTerminal_IsUnlocked())
+            ((TerminalExtraDataAccess*)(apRef->GetReferencedObjectList()))->ExtraDataList_SetTerminalLockState(-1);
         else
-            ((TerminalExtraDataAccess*)(apScript->GetReferencedObjectList()))->ExtraDataList_SetTerminalLockState((unsigned char)aiValue);
+            ((TerminalExtraDataAccess*)(apRef->GetReferencedObjectList()))->ExtraDataList_SetTerminalLockState((unsigned char)aeVal);
     }
 }
 
@@ -496,6 +530,9 @@ bool TerminalStateAccess::BGSTerminal_IsUnlocked_00501ae0(TESObjectREFR* apRef)
 
 // @fnv 0x00501bb0
 // src: XBOX_PDB 0x00501bb0
+// pdb: BGSTerminal::LoadGame | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: ptempData
 void TerminalStateAccess::BGSTerminal_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     unsigned char ucTempData;
@@ -523,6 +560,8 @@ extern Setting g_011d9640;
 
 // @fnv 0x005017a0
 // src: XBOX_PDB 0x005017a0
+// pdb: BGSTerminal::GetMinSkillRequiredToHack | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apItemActivated
 float TermHack::BGSTerminal_GetMinSkillRequiredToHack(TESObjectREFR* apItemActivated)
 {
     switch (((TerminalStateAccess*)this)->BGSTerminal_GetHackDifficultyLockLevel(apItemActivated))
@@ -549,11 +588,14 @@ extern void* g_thePlayer;
 // Checks the script's referenced object state: returns false for state 0, compares a perk modifier against _gModifierZero for state 1, and true otherwise.
 // @fnv 0x00501990
 // src: XBOX_PDB 0x00501990
-bool __cdecl BGSTerminal_IsLockedOut(Script* apScript)
+// pdb: BGSTerminal::IsLockedOut | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: cstate, fhasperk
+bool __cdecl BGSTerminal_IsLockedOut(Script* apRef)
 {
-    if (apScript)
+    if (apRef)
     {
-        unsigned char cstate = reinterpret_cast<TerminalExtraDataAccess*>(apScript->GetReferencedObjectList())->ExtraDataList_GetTerminalState();
+        unsigned char cstate = reinterpret_cast<TerminalExtraDataAccess*>(apRef->GetReferencedObjectList())->ExtraDataList_GetTerminalState();
         switch (cstate & 0x7f)
         {
         case 0:
@@ -571,7 +613,11 @@ bool __cdecl BGSTerminal_IsLockedOut(Script* apScript)
 }
 
 // @fnv 0x00501930
-void __cdecl SetScriptLockState(Script* apRef, bool abLock)
+// src: XBOX_RETAIL_PDB 0x00501930
+// pdb: BGSTerminal::LockOut | BGSTerminal.obj | retail, call graph, high
+// pdb params: apRef, abLock
+// pdb locals: cstate
+void __cdecl BGSTerminal_LockOut(Script* apRef, bool abLock)
 {
     unsigned char cstate;
     if (apRef)
@@ -581,24 +627,29 @@ void __cdecl SetScriptLockState(Script* apRef, bool abLock)
             cstate++;
         else
             cstate = 0;
-        ((TerminalExtraDataAccess*)apRef->GetReferencedObjectList())->SetExtraState(cstate);
+        ((TerminalExtraDataAccess*)apRef->GetReferencedObjectList())->ExtraDataList_SetTerminalState(cstate);
         apRef->MarkAsModified(0x80000000);
     }
 }
 
 // @fnv 0x00501830
 // src: XBOX_PDB 0x00501830
-void TerminalMenuItem::TERMINAL_MENU_ITEM_RunResultScript(Script* apScript)
+// pdb: TERMINAL_MENU_ITEM::RunResultScript | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apActivator
+void TerminalMenuItem::TERMINAL_MENU_ITEM_RunResultScript(Script* apActivator)
 {
     m_kScript.GetHeader()->m_bQuest = false;
 
-    m_kScript.FUN_005ac1e0(reinterpret_cast<TESObjectREFR*>(apScript),
-                       reinterpret_cast<ExtraDataList*>(apScript->GetReferencedObjectList())->GetScriptLocalData(), 0,
+    m_kScript.FUN_005ac1e0(reinterpret_cast<TESObjectREFR*>(apActivator),
+                       reinterpret_cast<ExtraDataList*>(apActivator->GetReferencedObjectList())->GetScriptLocalData(), 0,
                        true);
 }
 
 // @fnv 0x005018b0
 // src: XBOX_PDB 0x005018b0
+// pdb: BGSTerminal::SetHacked | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apRef, abVal
+// pdb locals: cstate
 void BGSTerminal_SetHacked(Script* apRef, bool abVal)
 {
     unsigned char cstate;
@@ -616,7 +667,7 @@ void BGSTerminal_SetHacked(Script* apRef, bool abVal)
             cstate = cstate & 0xffffff7f;
             ucNewState = cstate;
         }
-        ((TerminalExtraDataAccess*)apRef->GetReferencedObjectList())->SetExtraState(cstate);
+        ((TerminalExtraDataAccess*)apRef->GetReferencedObjectList())->ExtraDataList_SetTerminalState(cstate);
         apRef->MarkAsModified(0x80000000);
     }
 }
@@ -626,6 +677,9 @@ int __cdecl BSstrcmp(const char* pcString1, const char* pcString2);
 
 // Compares this string's C string with pcOther, case-insensitively when bIgnoreCase is set, returning 0 when both are null.
 // @fnv 0x00408a80
+// pdb: BSStringT<char>::StrCmp | EffectSetting.obj | debug, call graph, medium
+// pdb params: apString, abIgnoreCase
+// pdb locals: ires
 template <> int BSStringT<char>::StrCmp(const char* pcOther, bool bIgnoreCase) const
 {
     int iResult;
@@ -644,6 +698,7 @@ struct TerminalCleanup
 };
 
 // @fnv 0x004ffc90
+// pdb: BGSTerminal::ClearData | BGSTerminal.obj | retail, upstream name already matches, high
 void BGSTerminal::ClearData()
 {
     TESForm::ClearData();
@@ -658,13 +713,16 @@ struct TerminalPasswordAccess
 };
 struct ConditionCopy
 {
-    void CopyFrom(PerkEntryConditionSet* apConditions, bool abFlag);
+    void Copy(PerkEntryConditionSet* apCopy, bool apOwner);
 };
 
 // @fnv 0x00500cb0
-void BGSTerminal::CopyFrom(const TESForm* apForm)
+// pdb: BGSTerminal::Copy | BGSTerminal.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pcopy, pcopyitem, pitem
+void BGSTerminal::CopyFrom(const TESForm* apCopy)
 {
-    BGSTerminal* pTerminal = dynamic_cast<BGSTerminal*>(const_cast<TESForm*>(apForm));
+    BGSTerminal* pTerminal = dynamic_cast<BGSTerminal*>(const_cast<TESForm*>(apCopy));
     if (!pTerminal)
         return;
     BSSimpleList<TerminalMenuItem*>* pIter = 0;
@@ -682,8 +740,8 @@ void BGSTerminal::CopyFrom(const TESForm* apForm)
         pItem->m_pNote = pSrc->m_pNote;
         pItem->m_pTerminal = pSrc->m_pTerminal;
         pItem->cFlags = pSrc->cFlags;
-        pItem->m_kScript.CopyScriptContents(&pSrc->m_kScript);
-        ((ConditionCopy*)&pItem->Conditions)->CopyFrom(&pSrc->Conditions, false);
+        pItem->m_kScript.CopyResultScript(&pSrc->m_kScript);
+        ((ConditionCopy*)&pItem->Conditions)->Copy(&pSrc->Conditions, false);
         AddMenuItem(pItem);
     }
     TESObjectACTI::CopyFrom(pTerminal);
@@ -697,7 +755,7 @@ struct TerminalStringCmp
 };
 struct TerminalScriptCmp
 {
-    bool IsDifferent(Script* apOther);
+    bool Script_CompareResultScripts(Script* apCompare);
 };
 struct TerminalMenuList
 {
@@ -705,9 +763,12 @@ struct TerminalMenuList
 };
 
 // @fnv 0x00500e60
-bool BGSTerminal::Compare(TESForm* apForm)
+// pdb: BGSTerminal::Compare | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp, plist, pcomplist, pcompitem, pitem
+bool BGSTerminal::Compare(TESForm* apCompare)
 {
-    BGSTerminal* pTerminal = dynamic_cast<BGSTerminal*>(apForm);
+    BGSTerminal* pTerminal = dynamic_cast<BGSTerminal*>(apCompare);
     if (!pTerminal)
         return true;
     if (reinterpret_cast<TerminalPasswordAccess*>(this)->GetPassword() !=
@@ -729,7 +790,7 @@ bool BGSTerminal::Compare(TESForm* apForm)
             return true;
         if (((TerminalStringCmp*)&pThisItem5->m_kMenuText)->IsDifferent(&pOtherItem->m_kMenuText))
             return true;
-        if (((TerminalScriptCmp*)&pThisItem5->m_kScript)->IsDifferent(&pOtherItem->m_kScript))
+        if (((TerminalScriptCmp*)&pThisItem5->m_kScript)->Script_CompareResultScripts(&pOtherItem->m_kScript))
             return true;
         if (pThisItem5->Conditions.Compare(&pOtherItem->Conditions))
             return true;
@@ -755,6 +816,8 @@ struct TerminalMenuItemDisposal
 
 // @fnv 0x00501050
 // src: COMMUNITY 0x00501050
+// pdb: BGSTerminal::ClearMenuItemList | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb locals: pitem
 void TerminalStateAccess::BGSTerminal_ClearMenuItemList()
 {
     while (m_kMenuItems.IsEmpty() == 0)
@@ -777,7 +840,7 @@ struct DestructibleSaveAccess : BGSDestructibleObjectForm
 };
 struct SaveScript
 {
-    void FUN_005abe00();
+    void Script_SaveResultScript();
 };
 bool __cdecl TESForm_QEndianSwapOnSave();
 unsigned int __cdecl BSStringLength(const char*);
@@ -787,6 +850,8 @@ void __cdecl TESForm_AddChunk_00485910(unsigned int, unsigned int);
 void __cdecl AppendChunk(unsigned int, void*, unsigned int);
 
 // @fnv 0x00500a40
+// pdb: BGSTerminal::Save | BGSTerminal.obj | retail, vtable slot, high
+// pdb locals: plist, itempint, pitem
 void BGSTerminal::SaveForm()
 {
     BeginFormRecord();
@@ -840,8 +905,8 @@ void BGSTerminal::SaveForm()
             unsigned int submenuID = item->m_pTerminal->GetFormID();
             TESForm_AddChunk_00485910(0x4d414e54, submenuID);
         }
-        reinterpret_cast<SaveScript*>(&item->m_kScript)->FUN_005abe00();
-        reinterpret_cast<TESConditionSave_bgsterminal*>(&item->Conditions)->ProcessItems();
+        reinterpret_cast<SaveScript*>(&item->m_kScript)->Script_SaveResultScript();
+        reinterpret_cast<TESConditionSave_bgsterminal*>(&item->Conditions)->Save();
     }
     FinishFormRecord();
 }
@@ -882,7 +947,7 @@ struct Audio
     static Audio* GetSingleton();
 };
 extern Setting g_011c8394, g_011d4810, originalRuntimeFloatSetting282;
-const char* GetActorValueName(int);
+const char* ActorValue_GetActorValueName(int);
 float Clamp(float, float);
 bool QueueUIMessage(const char*, int, const char*, const char*, float, bool);
 struct Values
@@ -971,38 +1036,41 @@ struct TerminalActivationAccess : BGSTerminal
 {
     float BGSTerminal_GetMinSkillRequiredToHack(Ref* target);
     bool BGSTerminal_IsUnlocked();
-    bool ActivateTerminal(Ref* target, Ref* user, int arg3, int arg4, int arg5);
+    bool ActivateTerminal(Ref* apItemActivated, Ref* apActionRef, int abIDFlag, int apObjectToGet, int aiCount);
 };
 // @fnv 0x00501310
-bool TerminalActivationAccess::ActivateTerminal(Ref* target, Ref* user, int arg3, int arg4, int arg5)
+// pdb: BGSTerminal::Activate | BGSTerminal.obj | retail, string-set bridge, high
+// pdb params: apItemActivated, apActionRef, abIDFlag, apObjectToGet, aiCount
+// pdb locals: strmsg, pActionActor, bkarma, powner, pactor, pfaction, pnpc, ealign
+bool TerminalActivationAccess::ActivateTerminal(Ref* apItemActivated, Ref* apActionRef, int abIDFlag, int apObjectToGet, int aiCount)
 {
     if (Interface_IsPipboyOpening())
     {
         return false;
     }
-    else if (Open::GetOpenState(target) == 1)
+    else if (Open::GetOpenState(apItemActivated) == 1)
     {
-        HandleOpenAnimationFinish(reinterpret_cast<TESObjectREFR*>(target), reinterpret_cast<TESObjectREFR*>(user));
+        HandleOpenAnimationFinish(reinterpret_cast<TESObjectREFR*>(apItemActivated), reinterpret_cast<TESObjectREFR*>(apActionRef));
     }
-    else if (user == (Ref*)_g_thePlayer && _g_thePlayer->Check(target) == 4)
+    else if (apActionRef == (Ref*)_g_thePlayer && _g_thePlayer->Check(apItemActivated) == 4)
     {
         BSStringT<char> message;
-        message.PrintfString( g_011c8394.GetString(), GetActorValueName(40), (int)Clamp(BGSTerminal_GetMinSkillRequiredToHack(target), 1.0f));
+        message.PrintfString( g_011c8394.GetString(), ActorValue_GetActorValueName(40), (int)Clamp(BGSTerminal_GetMinSkillRequiredToHack(apItemActivated), 1.0f));
         QueueUIMessage(message, 0, "Interface\\Icons\\Message Icons\\glow_message_vaultboy_angry.dds", 0, 2.0f, false);
         Audio::GetSingleton()->GetSoundHandleByEditorID("UIPopUpMessageGeneral", 0x121).Play(false);
     }
-    else if (user == (Ref*)_g_thePlayer && BGSTerminal_IsTerminalRefInUse(target))
+    else if (apActionRef == (Ref*)_g_thePlayer && BGSTerminal_IsTerminalRefInUse(apItemActivated))
     {
         QueueUIMessage(g_011d4810.String(), 0, 0, 0, 2.0f, false);
         return false;
     }
     else
     {
-        Ref* actor = user;
-        if (target->GetOwner() && !target->CanBeUsed(actor, true) && !BGSTerminal_IsUnlocked())
+        Ref* actor = apActionRef;
+        if (apItemActivated->GetOwner() && !apItemActivated->CanBeUsed(actor, true) && !BGSTerminal_IsUnlocked())
         {
             bool crime = false;
-            Form* owner = target->GetOwner();
+            Form* owner = apItemActivated->GetOwner();
             int unused = 0;
             if (owner->Type() == 8)
             {
@@ -1023,12 +1091,13 @@ bool TerminalActivationAccess::ActivateTerminal(Ref* target, Ref* user, int arg3
             if (crime)
                 _g_thePlayer->Penalize((int)*originalRuntimeFloatSetting282.Float());
         }
-        BGSOpenCloseForm_HandleActivate(target, user, 0);
+        BGSOpenCloseForm_HandleActivate(apItemActivated, apActionRef, 0);
     }
     return true;
 }
 
 // @fnv 0x004ffaa0
+// pdb: BGSTerminal::BGSTerminal | BGSTerminal.obj | retail, upstream name already matches, high
 BGSTerminal::BGSTerminal()
 {
     SetFormType((ENUM_FORM_ID)0x17);
@@ -1043,6 +1112,9 @@ unsigned short __fastcall GetLevel_0087f9f0(void*);
 // Returns the initial result, optionally adding a scaled level value and capping it at 4 when the flag is set.
 // @fnv 0x005011a0
 // src: XBOX_PDB 0x005011a0
+// pdb: BGSTerminal::GetHackDifficultyLockLevel | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: ilevel, icalclevel
 int __thiscall TerminalStateAccess::BGSTerminal_GetHackDifficultyLockLevel(TESObjectREFR* apRef)
 {
     unsigned int result = BGSTerminal_GetRawDifficulty(reinterpret_cast<Script*>(apRef));

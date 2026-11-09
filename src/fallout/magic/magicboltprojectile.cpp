@@ -28,6 +28,7 @@ struct FUN_00811930_shell
 };
 
 // @fnv 0x00811930
+// pdb: MagicProjectile::IsActive | MagicBoltProjectile.obj | debug, object-file run extension, low
 bool FUN_00811930_shell::IsNotDeleted() const
 {
     return !reinterpret_cast<const TESForm*>(this)->IsDeleted();
@@ -62,6 +63,7 @@ struct FUN_00811950_shell
 };
 // Calls FUN_00811e10, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00811950
+// pdb: MagicBoltProjectile::`scalar deleting destructor' | MagicBoltProjectile.obj | retail, vtable slot, high
 void* FUN_00811950_shell::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00811e10();
@@ -72,7 +74,7 @@ void* FUN_00811950_shell::DestroyIfFlagged(unsigned int flags)
 
 struct FUN_0081e830_shell
 {
-    unsigned short GetSaveRecordSize(unsigned int flags);
+    unsigned short GetSaveRecordSize(unsigned int aiFlags);
 };
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 struct SinglyLinkedListNode
@@ -82,13 +84,16 @@ struct SinglyLinkedListNode
 struct FUN_00814590_shell
 {
     SinglyLinkedListNode* m_pListNode;
-    unsigned short GetSaveSize(unsigned int flags);
+    unsigned short GetSaveSize(unsigned int aiFlags);
 };
 // @fnv 0x00814590
-unsigned short FUN_00814590_shell::GetSaveSize(unsigned int flags)
+// pdb: MagicBoltProjectile::GetSaveSize | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize, pbolts
+unsigned short FUN_00814590_shell::GetSaveSize(unsigned int aiFlags)
 {
     unsigned short size = 0;
-    size += ((FUN_0081e830_shell*)this)->GetSaveRecordSize(flags);
+    size += ((FUN_0081e830_shell*)this)->GetSaveRecordSize(aiFlags);
     size += 4;
     size += 4;
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x30)
@@ -120,6 +125,7 @@ struct FUN_00814aa0
 };
 // Constructs the saved position and rotation, then clears the form ID array.
 // @fnv 0x00814aa0
+// pdb: BoltSavedData::BoltSavedData | MagicBoltProjectile.obj | debug, object-file gap fill, medium
 FUN_00814aa0::FUN_00814aa0()
 {
     f20 = 0;
@@ -159,7 +165,7 @@ FUN_008121a0_cls::~FUN_008121a0_cls()
 struct Node3D
 {
     NiPoint3& GetPos();
-    void GetRot(NiQuaternion* out);
+    void GetRot(NiQuaternion* kQuat);
 };
 struct PathReq
 {
@@ -358,19 +364,22 @@ struct SaveBaseObj
     int unkD4;
     void SaveBase(int arg);
     void WriteData(void* p, int size);
-    void WriteRefID(void* p, int size);
+    void WriteRefID(void* apNumericID, int aiSize);
 };
 struct ThisObj : SaveBaseObj
 {
     virtual Node3D* GetNode3D();
-    void SaveAreaBoltData(int arg);
+    void SaveAreaBoltData(int aiFlags);
 };
 
 // Saves the object's base data, position/rotation and smoothing when version >= 0x30, its form refID, and each linked bolt node's refID with a count.
 // @fnv 0x00814670
-void ThisObj::SaveAreaBoltData(int arg)
+// pdb: MagicBoltProjectile::SaveGame | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: icount, pcount, itargetID, pbolts, startingLocation, rotation, fboltTimer, imagicTargetID, pref
+void ThisObj::SaveAreaBoltData(int aiFlags)
 {
-    SaveBase(arg);
+    SaveBase(aiFlags);
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&unkAC, 4);
     WriteData(&unk88, 4);
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x30)
@@ -505,7 +514,7 @@ struct HUDEntry
     ~HUDEntry();
 };
 
-void __cdecl BoltShader_Stop(HUDNode* apRoot, HUDNode* apNode);
+void __cdecl BoltShader_Stop(HUDNode* apNode, HUDNode* apProp);
 void __cdecl _11DC778_Subtract(float afValue);
 
 struct HUDSetting
@@ -727,7 +736,7 @@ struct BoltNode
     void NiAVObject_SetWorldTranslate(const BoltPoint&);
     void NiAVObject_SetTranslate(const BoltPoint&);
     BoltProperty* FUN_00a5bdd0(const char*);
-    void FUN_00a5bc40(const char*, BoltProperty*);
+    void NiObjectNET_AddExtraData(const char*, BoltProperty*);
     void SetRotate_0043fa80(const BoltMatrix&);
 };
 __forceinline void* BoltNode::operator new(unsigned int n)
@@ -972,7 +981,7 @@ void Bolt::InitEffect()
     if (!property)
     {
         property = new BoltProperty;
-        emitter.Modelloader_GetReferencedThis()->FUN_00a5bc40(BSXFlags_Tag(), property);
+        emitter.Modelloader_GetReferencedThis()->NiObjectNET_AddExtraData(BSXFlags_Tag(), property);
     }
     property->BSXFlags_SetFlags(true, true);
     effect.FUN_0066b0d0(0);
@@ -1017,7 +1026,7 @@ struct AimMatrix3
     float m[9];
 
     AimMatrix3();
-    void SetRotationFromEulerXYZ(float afX, float afY, float afZ);
+    void SetRotationFromEulerXYZ(float fZAngle, float fYAngle, float fXAngle);
 };
 
 struct AimUpdateData
@@ -1052,7 +1061,7 @@ struct AimSource
 
 struct AimTarget
 {
-    void GetAimPoint(AimPoint3& arOut);
+    void GetAimPoint(AimPoint3& arPos);
 };
 
 struct AimMagicTarget
@@ -1204,7 +1213,7 @@ struct AimOwner
     virtual AimRef* GetRef();
 };
 
-float __cdecl AimAtan2(float afY, float afX);
+float __cdecl AimAtan2(float fNumerator, float fDenominator);
 
 extern PlayerCharacter* g_pAimPlayer;
 extern double g_dAimZero;
@@ -1266,6 +1275,8 @@ struct AimProjectile
 
 // Aligns the projectile's aim node to the source or target position and rotation, updates it, and returns false when a source, target and node exist.
 // @fnv 0x00812890
+// pdb: MagicBoltProjectile::PostProcess | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb locals: pcaster, pchar, pcasterRef, pmagicNode, pcasterActor, UpdateData, startLocation, endLocation, fz, toTarget, rot, fxy
 bool AimProjectile::UpdateProjectileAimNode()
 {
     AimOwner* pOwnerB = FUN_009185e0();
@@ -1317,10 +1328,13 @@ struct LoadObject : ThisObj
     void LoadObjectData(int, int);
 };
 // @fnv 0x00814870
-void LoadObject::LoadObjectData(int arg1, int arg2)
+// pdb: MagicBoltProjectile::LoadGame | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: icount, ptempData, itargetID
+void LoadObject::LoadObjectData(int aiFlags, int aiCurrentFlags)
 {
     v71();
-    LoadGame_0081e980(arg1, arg2);
+    LoadGame_0081e980(aiFlags, aiCurrentFlags);
     g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&unkAC, 4);
     reinterpret_cast<Helper009f8770*>(this)->TESForm_LoadGameDataOLD(&unk88, 4);
     FUN_00814aa0* formID = new FUN_00814aa0;
@@ -1409,9 +1423,12 @@ struct ProjectileCell
 };
 TESForm* TESForm_GetFormByNumericID(unsigned int id);
 // @fnv 0x00814ad0
-void MagicProjectile::InitializeProjectile(int arg1, int arg2)
+// pdb: MagicBoltProjectile::InitLoadGame | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: itargetID, pav, isoundFileID, loc
+void MagicProjectile::InitializeProjectile(int aiFlags, int aiOldFlags)
 {
-    ResolveMagicReferences(arg1, arg2);
+    ResolveMagicReferences(aiFlags, aiOldFlags);
     unsigned int referenceID = reinterpret_cast<unsigned int>(sourceReference);
     if (referenceID)
     {
@@ -2055,11 +2072,14 @@ struct Root : GameObject
 
 // Applies the pending entry to the active holders, updates the control and rotation, then visits its references and deletes it.
 // @fnv 0x00814d40
-void Root::UpdatePending(int arg1, int arg2)
+// pdb: MagicBoltProjectile::FinishInitLoadGame | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: pcaster, ptempData, pcon, igroup, filter, pref, pactor, pcol, prb, bpostHit, fz, toTarget, rot, fxy, endLocation, fboltLength, icount, i, imagicTargetID, pmagicTarget
+void Root::UpdatePending(int aiFlags, int aiOldFlags)
 
 {
 
-    UpdateFlags(arg1, arg2);
+    UpdateFlags(aiFlags, aiOldFlags);
 
     Control* a = FUN_009306d0();
     LocalStore handle;
@@ -2513,7 +2533,7 @@ class AEProcess
     char pad000[0x410];
     AEFlags m_kFlags;
     void bhkCharacterController_GetCollisionFilter(AEHandle* pkOut);
-    void bhkCharacterController_SetCollisionFilter(void* pvValue);
+    void bhkCharacterController_SetCollisionFilter(void* aiFilter);
 };
 
 struct AEArea
@@ -2557,17 +2577,17 @@ extern const AEPoint3 DAT_011a9478;
 class AEExplosion
 {
   public:
-    void ApplySpellEffects(void* pvCell, AEPoint3 kPos, AERefr* pkSource, AERefr* pkTarget, int iFlags, float fA,
-                           float fB);
+    void MagicCaster_FindTargets(void* apSpell, AEPoint3 apCell, AERefr* aLocation, AERefr* apProjectile, int apCollidee, float abLoadCast,
+                           float afPowerScale);
 };
 
 class AEIdle
 {
   public:
-    void PlaySequence(const char* pcName);
+    void PlaySequence(const char* apcSequenceName);
 };
-AEIdle* BSTempEffectParticle_Spawn(void* pvCell, float fRadius, int iAreaType, AEPoint3 akStart, AEPoint3 kTo, float fScale,
-                     int iType, int iFlags);
+AEIdle* BSTempEffectParticle_Spawn(void* apCell, float afLifetime, int apParticleFilename, AEPoint3 aVector, AEPoint3 aPosition, float afScale,
+                     int aiFlags, int apFollowObject);
 
 
 
@@ -2595,14 +2615,17 @@ class AEProjectile : public AERefr
     AEEffectItem* CombatController_GetCombatState();
     AEEffect* GetAVEffect();
 
-    void Impact(AEPoint3 kPos, int iIndex, AERefr* pkTarget, bool bSilent);
+    void Impact(AEPoint3 aContactPoint, int apTargetBody, AERefr* apCollidee, bool abFizzle);
 };
 
 // Handles projectile impact at kPos: updates source/target, controller distance, spawns explosion and area-effect idle, and plays impact sound unless silent.
 // @fnv 0x008133f0
-void AEProjectile::Impact(AEPoint3 kPos, int iIndex, AERefr* pkTarget, bool bSilent)
+// pdb: MagicBoltProjectile::Collide | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb params: aContactPoint, apTargetBody, apCollidee, abFizzle
+// pdb locals: pact, pav, filter, fBoltLength, startingLocation, pareaEffect, fscale, pfilename, orient, isoundFileID, soundHand, loc
+void AEProjectile::Impact(AEPoint3 aContactPoint, int apTargetBody, AERefr* apCollidee, bool abFizzle)
 {
-    AEActor* pkHitActor = (pkTarget && pkTarget->IsActor()) ? (AEActor*)pkTarget : 0;
+    AEActor* pkHitActor = (apCollidee && apCollidee->IsActor()) ? (AEActor*)apCollidee : 0;
     if (pkHitActor && pkHitActor->GetGhost_008ace90())
         return;
 
@@ -2620,13 +2643,13 @@ void AEProjectile::Impact(AEPoint3 kPos, int iIndex, AERefr* pkTarget, bool bSil
 
     AENode* pkNode = GetNode3D();
     if (pkNode)
-        MagicProjectile_ApplyCollisionForce(kPos, pkNode->NiAVObject_GetWorldRotate(DAT_011a9478, iIndex).FUN_004b4500());
+        MagicProjectile_ApplyCollisionForce(aContactPoint, pkNode->NiAVObject_GetWorldRotate(DAT_011a9478, apTargetBody).FUN_004b4500());
 
-    if (pkTarget)
+    if (apCollidee)
     {
-        if (pkTarget != reinterpret_cast<AERefr*>(g_thePlayer) || g_thePlayer->PlayerCharacter_Is3rdPerson())
+        if (apCollidee != reinterpret_cast<AERefr*>(g_thePlayer) || g_thePlayer->PlayerCharacter_Is3rdPerson())
         {
-            m_pkSource = pkTarget;
+            m_pkSource = apCollidee;
             AENode* pkTargetNode = m_pkSource->GetNode3D();
             if (pkTargetNode)
                 m_spSpine.FUN_0066b0d0(pkTargetNode->FindNode(NiFixedString("Bip01 Spine2")));
@@ -2635,12 +2658,12 @@ void AEProjectile::Impact(AEPoint3 kPos, int iIndex, AERefr* pkTarget, bool bSil
 
     {
         AEPoint3 kWorldPos = GetNode3D()->GetTranslate_0043c490();
-        float fDist = kWorldPos.SubtractIntoVector(kPos).FUN_00457990();
+        float fDist = kWorldPos.SubtractIntoVector(aContactPoint).FUN_00457990();
         m_spController.Modelloader_GetReferencedThis()->DispatchFloatPair(0.01f, fDist, m_f88, false);
     }
 
-    if (!bSilent)
-        FUN_009185e0(FUN_00810fd0())->ApplySpellEffects(FUN_008d6f30(), GetPosition(), this, pkTarget, 0, 1.0f, 1.0f);
+    if (!abFizzle)
+        FUN_009185e0(FUN_00810fd0())->MagicCaster_FindTargets(FUN_008d6f30(), GetPosition(), this, apCollidee, 0, 1.0f, 1.0f);
 
     m_pkSource = 0;
     if (GetAVEffect()->m_kArea.GetValue())
@@ -2652,11 +2675,11 @@ void AEProjectile::Impact(AEPoint3 kPos, int iIndex, AERefr* pkTarget, bool bSil
             fScale = *DAT_011d15a4.Setting_Float_00403e20();
         int iAreaType = GetAVEffect()->m_kArea.GetValue();
         AEPoint3 akStart = GetNode3D() ? GetNode3D()->NiAVObject_GetRotate_006a9540(DAT_011a9478).FUN_004b4500() : DAT_011a9478;
-        AEIdle* pkAreaIdle = BSTempEffectParticle_Spawn(FUN_008d6f30(), 5.0f, iAreaType, akStart, kPos, 1.0f, 7, 0);
+        AEIdle* pkAreaIdle = BSTempEffectParticle_Spawn(FUN_008d6f30(), 5.0f, iAreaType, akStart, aContactPoint, 1.0f, 7, 0);
         pkAreaIdle->PlaySequence("SpecialIdle_AreaEffect");
     }
 
-    if (GetAVEffect()->FUN_008ce390() && !bSilent)
+    if (GetAVEffect()->FUN_008ce390() && !abFizzle)
     {
         unsigned int auiFormId = GetAVEffect()->FUN_008ce390()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
         BSSoundHandle kSound = static_cast<MagicBoltAudio*>(BSAudio::GetSingleton())->GetSoundHandleByFormID(auiFormId, 0x102u);
@@ -2938,9 +2961,12 @@ struct F139This
     void AttachEffectToSpine(F139Owner*, F139Arg*);
 };
 // @fnv 0x008139f0
-void F139This::AttachEffectToSpine(F139Owner* owner, F139Arg* arg)
+// pdb: MagicBoltProjectile::AddAreaTarget | MagicBoltProjectile.obj | retail, vtable slot, high
+// pdb params: apTarget, apActiveEffect
+// pdb locals: pnewBolt, ptarget, pav, pnode, location, pparentNode, pprop, psource
+void F139This::AttachEffectToSpine(F139Owner* apTarget, F139Arg* apActiveEffect)
 {
-    if (arg && (arg->GetHavokWorldObjectCountInSceneGraph_0084e3a0() != CombatController_GetCombatState() || ref == owner->v1()))
+    if (apActiveEffect && (apActiveEffect->GetHavokWorldObjectCountInSceneGraph_0084e3a0() != CombatController_GetCombatState() || ref == apTarget->v1()))
         return;
     F139NewNode* s = new F139NewNode(0);
     F139Node* a = FUN_008d6f30()->FUN_005497a0();
@@ -2974,7 +3000,7 @@ void F139This::AttachEffectToSpine(F139Owner* owner, F139Arg* arg)
     if (f)
         p = f->find(NiFixedString("Bip01 Spine2"));
     F139Node* eb = 0;
-    f = owner->v1()->node();
+    f = apTarget->v1()->node();
     if (f)
     {
         eb = f->find(NiFixedString("Bip01 Spine2"));

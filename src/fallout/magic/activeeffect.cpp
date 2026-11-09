@@ -12,7 +12,7 @@ struct EffectStateAccess : public ActiveEffect
 {
     bool HasMatchingActiveEffect();
     void ClearFlags(unsigned int);
-    void SetLegacyRevertFlags();
+    void ActiveEffect_ForceNoHitEffect();
     bool ClearCasterIfMatch(MagicCaster*);
 };
 
@@ -143,7 +143,7 @@ FNV_STATIC_ASSERT(offsetof(ActiveEffect, pMagicItem) == 68);
 
 #include "../../../include/BSSimpleList.h"
 void ActiveEffect_RevertActiveEffectList(BGSLoadFormBuffer*, BSSimpleList<ActiveEffect*>*);
-void InitLoadGameForEffects(BGSLoadFormBuffer*, BSSimpleList<ActiveEffect*>*);
+void ActiveEffect_InitLoadActiveEffectList(BGSLoadFormBuffer*, BSSimpleList<ActiveEffect*>*);
 
 class GlobalObject_0096d020 : public ProcessLists
 {
@@ -191,15 +191,19 @@ void ActiveEffect::CopyData(ActiveEffect* pOther)
 
 // Iterates the list and calls the load dispatch on each ActiveEffect with the given buffer.
 // @fnv 0x00806b50
-void ActiveEffect::WriteActiveEffectList(BGSLoadFormBuffer* pBuffer, BSSimpleList<ActiveEffect*>* apEffectList)
+// src: XBOX_RETAIL_PDB 0x00806b50
+// pdb: ActiveEffect::FinishLoadActiveEffectList | ActiveEffect.obj | retail, call graph, high
+// pdb params: apLoadGameBuffer, apActiveEffectList
+// pdb locals: plist, pactiveEffect
+void ActiveEffect::FinishLoadActiveEffectList(BGSLoadFormBuffer* apLoadGameBuffer, BSSimpleList<ActiveEffect*>* apActiveEffectList)
 {
-    BSSimpleList<BGSPerkEntry*>* pNode = reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(apEffectList);
+    BSSimpleList<BGSPerkEntry*>* pNode = reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(apActiveEffectList);
     while (pNode)
     {
         ActiveEffect* pEffect = reinterpret_cast<ActiveEffect*>(pNode->GetItem());
         if (pEffect)
         {
-            pEffect->ApplyLoadBuffer(pBuffer);
+            pEffect->ApplyLoadBuffer(apLoadGameBuffer);
         }
         pNode = pNode->GetNext();
     }
@@ -208,19 +212,22 @@ void ActiveEffect::WriteActiveEffectList(BGSLoadFormBuffer* pBuffer, BSSimpleLis
 
 // Resolves the caster, target and item pointers from their stored ids, then forwards InitLoadGame to each MagicHitEffect in the list.
 // @fnv 0x008066d0
-void ActiveEffect::InitLoadGame(BGSLoadFormBuffer* pBuffer)
+// pdb: ActiveEffect::InitLoadGame | ActiveEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isourceID, icasterID, itargetID, plist, phitEffect
+void ActiveEffect::InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     BSSimpleList<BGSPerkEntry*>* pNode;
     m_pEffectInstance = m_pEffectInstance ? MagicCaster::GetCasterByHandle(reinterpret_cast<unsigned int>(m_pEffectInstance)) : 0;
     pTarget = pTarget ? MagicTarget::GetMagicTargetByID(reinterpret_cast<unsigned int>(pTarget)) : 0;
-    pMagicItem = pMagicItem ? MagicItem::GetMagicItemByID(reinterpret_cast<unsigned int>(pMagicItem)) : 0;
+    pMagicItem = pMagicItem ? MagicItem::GetMagicItemByNumericID(reinterpret_cast<unsigned int>(pMagicItem)) : 0;
     pNode = reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(pHitEffectList);
     while (pNode)
     {
         MagicHitEffect* pEffect = reinterpret_cast<MagicHitEffect*>(pNode->GetItem());
         if (pEffect)
         {
-            static_cast<BSTempEffect*>(pEffect)->InitLoadGame(pBuffer);
+            static_cast<BSTempEffect*>(pEffect)->InitLoadGame(apLoadGameBuffer);
         }
         pNode = pNode->GetNext();
     }
@@ -233,6 +240,7 @@ int EffectSetting::GetArchetype()
 }
 
 // @fnv 0x00804160
+// pdb: ActiveEffect::Finalize | ActiveEffect.obj | debug, upstream name already matches, high
 void ActiveEffect::Finalize()
 {
     if (HasConditions() || reinterpret_cast<LowProcess*>(this)->LowProcess::GetActiveCombatTarget())
@@ -241,31 +249,37 @@ void ActiveEffect::Finalize()
 
 // Reads a count from the buffer, then loads that many ActiveEffect objects and inserts each non-null one into the list.
 // @fnv 0x00806a90
-void ActiveEffect::LoadActiveEffectList(BGSLoadFormBuffer* buffer, BSSimpleList<ActiveEffect*>* list)
+// pdb: ActiveEffect::LoadActiveEffectList | ActiveEffect.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer, apActiveEffectList
+// pdb locals: isaveGameCount, iloop, pactiveEffect
+void ActiveEffect::LoadActiveEffectList(BGSLoadFormBuffer* apLoadGameBuffer, BSSimpleList<ActiveEffect*>* apActiveEffectList)
 {
-    ActiveEffect_RevertActiveEffectList(buffer, list);
-    unsigned int count = buffer->ReadElementCount();
+    ActiveEffect_RevertActiveEffectList(apLoadGameBuffer, apActiveEffectList);
+    unsigned int count = apLoadGameBuffer->ReadElementCount();
     for (unsigned int i = 0; i < count; ++i)
     {
-        ActiveEffect* effect = ReadActiveEffect(buffer);
+        ActiveEffect* effect = LoadActiveEffect(apLoadGameBuffer);
         if (effect)
-            list->Insert(effect, MagicTarget::CompareActiveEffects);
+            apActiveEffectList->Insert(effect, MagicTarget::ActiveEffectListCompareFn);
     }
 }
 
 // @fnv 0x008067b0
-void ActiveEffect::ApplyLoadBuffer(BGSLoadFormBuffer* buffer)
+// pdb: ActiveEffect::FinishLoadGame | ActiveEffect.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+// pdb locals: plist, phitEffect
+void ActiveEffect::ApplyLoadBuffer(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     BSSimpleList<BGSPerkEntry*>* node;
     if (GetEffectSetting()->IsFlagSet(0x400))
-        ResetEffectState();
+        StartSound();
     node = reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(pHitEffectList);
     while (node)
     {
         MagicHitEffect* effect = reinterpret_cast<MagicHitEffect*>(node->GetItem());
         if (effect)
         {
-            effect->ApplyLoadBuffer(buffer);
+            effect->ApplyLoadBuffer(apLoadGameBuffer);
             g_011e0e80.RegisterTempEffect(reinterpret_cast<BSTempEffect*>(effect));
         }
         node = node->GetNext();
@@ -273,6 +287,8 @@ void ActiveEffect::ApplyLoadBuffer(BGSLoadFormBuffer* buffer)
 }
 
 // @fnv 0x00804bc0
+// pdb: ActiveEffect::AdjustEffectiveness | ActiveEffect.obj | debug, call graph (shared callers), medium
+// pdb params: afMultiplier
 void ActiveEffect::SetEffectiveness(float effectiveness)
 {
     if (GetHavokWorldObjectCountInSceneGraph_0084e3a0()
@@ -297,62 +313,72 @@ void ActiveEffect::SetEffectiveness(float effectiveness)
 
 
 // @fnv 0x00806910
-ActiveEffect* ActiveEffect::ReadActiveEffect(BGSLoadFormBuffer* buffer)
+// src: XBOX_RETAIL_PDB 0x00806910
+// pdb: ActiveEffect::LoadActiveEffect | ActiveEffect.obj | retail, string-set bridge, high
+// pdb params: apActor
+// pdb locals: ieffectIndex, isize, ispellID, pspell, peffect, pactiveEffect
+ActiveEffect* ActiveEffect::LoadActiveEffect(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     // These local names preserve the original MSVC9 stack allocation.
     unsigned int archetype;  // saved spell form ID
     unsigned char index;
     MagicItem* spell = 0;
     int formID;  // serialized effect archetype
-    buffer->ReadFormIdentifier(&spell);
+    apLoadGameBuffer->ReadFormIdentifier(&spell);
     archetype = reinterpret_cast<unsigned int>(spell);
-    spell = spell ? MagicItem::GetMagicItemByID(reinterpret_cast<unsigned int>(spell)) : 0;
+    spell = spell ? MagicItem::GetMagicItemByNumericID(reinterpret_cast<unsigned int>(spell)) : 0;
     index = 0;
-    buffer->ReadTypedData(static_cast<void*>(&index), 1u);
-    formID = buffer->ReadElementCount();
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&index), 1u);
+    formID = apLoadGameBuffer->ReadElementCount();
     if (spell)
     {
-        EffectItem* effect = spell->GetEffectItemAtIndex(index);
+        EffectItem* effect = spell->GetEffectItemByIndex(index);
         if (effect && effect->GetEffectSetting()->GetArchetype() == formID)
         {
-            buffer->ReadElementCount();
+            apLoadGameBuffer->ReadElementCount();
             ActiveEffect* active = MagicEffectSystem_activeeffect::Activate(0, spell, effect, 0);
-            active->LoadGame(buffer);
+            active->LoadGame(apLoadGameBuffer);
             return active;
         }
     }
-    buffer->AddToOffset(buffer->ReadElementCount());
+    apLoadGameBuffer->AddToOffset(apLoadGameBuffer->ReadElementCount());
     LogWarning(DAT_010794a8, archetype, index, formID);
     return 0;
 }
 
 // @fnv 0x00803d30
-ActiveEffect::ActiveEffect(MagicCaster* caster, MagicItem* spell, EffectItem* effect)
+// pdb: ActiveEffect::ActiveEffect | ActiveEffect.obj | retail, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+// pdb locals: plist
+ActiveEffect::ActiveEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
 {
-    pSpell = spell;
+    pSpell = apSpell;
     m_eSpellType = pSpell->GetSpellType();
-    pEffect = effect;
+    pEffect = apEffect;
     m_fEffectMagnitude = 0.0f;
     bActive = true;
     bEffectFlag = false;
     bWasPlaying = false;
     bPickResultFound = false;
-    m_fElapsedTime = effect->GetMagnitude();
-    fDuration = effect->GetDuration();
+    m_fElapsedTime = apEffect->GetMagnitude();
+    fDuration = apEffect->GetDuration();
     pTarget = 0;
-    m_pEffectInstance = caster;
+    m_pEffectInstance = apCaster;
     pSource = 0;
     pHitEffectList = 0;
     iFlags = 0;
     pMagicItem = 0;
     BSSimpleList<const char*>* conditions = reinterpret_cast<BSSimpleList<const char*>*>(
-        &reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(effect->GetConditions())->GetItem());
-    if (effect && conditions && !conditions->IsEmpty())
+        &reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(apEffect->GetConditions())->GetItem());
+    if (apEffect && conditions && !conditions->IsEmpty())
         AddFlags(0x80);
 }
 
 // @fnv 0x008043f0
-void ActiveEffect::AdvanceEffect(float elapsed, bool force)
+// pdb: ActiveEffect::EvaluateConditions | ActiveEffect.obj | retail, call graph (shared callers), high
+// pdb params: afTimeDelta, abForceUpdate
+// pdb locals: ptarget, bcheck, fcheckConditionsRate, bactive
+void ActiveEffect::AdvanceEffect(float afTimeDelta, bool abForceUpdate)
 {
     if (!HasConditions() && !reinterpret_cast<LowProcess*>(this)->LowProcess::GetActiveCombatTarget())
         return;
@@ -361,7 +387,7 @@ void ActiveEffect::AdvanceEffect(float elapsed, bool force)
     if (caster && caster->GetMagicTargetReference())
     {
         float interval = g_011d17dc.Float()->f;
-        bool evaluate = force || floor(GetAge() / interval) != floor((GetAge() + elapsed) / interval);
+        bool evaluate = abForceUpdate || floor(GetAge() / interval) != floor((GetAge() + afTimeDelta) / interval);
         if (evaluate)
         {
             bool result = GetHavokWorldObjectCountInSceneGraph_0084e3a0()
@@ -399,15 +425,19 @@ bool ActiveEffect::HasFlag(unsigned int flags)
 
 // Iterates the ActiveEffect list and calls InitLoadGame(pActor) on each non-null effect.
 // @fnv 0x00806b00
-void InitLoadGameForEffects(BGSLoadFormBuffer* pActor, BSSimpleList<ActiveEffect*>* pEffectList)
+// src: XBOX_RETAIL_PDB 0x00806b00
+// pdb: ActiveEffect::InitLoadActiveEffectList | ActiveEffect.obj | retail, object-file run extension, high
+// pdb params: apLoadGameBuffer, apActiveEffectList
+// pdb locals: plist, pactiveEffect
+void ActiveEffect_InitLoadActiveEffectList(BGSLoadFormBuffer* apLoadGameBuffer, BSSimpleList<ActiveEffect*>* apActiveEffectList)
 {
-    BSSimpleList<BGSPerkEntry*>* node = reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(pEffectList);
+    BSSimpleList<BGSPerkEntry*>* node = reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(apActiveEffectList);
     while (node)
     {
         ActiveEffect* item = reinterpret_cast<ActiveEffect*>(node->GetItem());
         if (item)
         {
-            item->InitLoadGame(pActor);
+            item->InitLoadGame(apLoadGameBuffer);
         }
         node = node->GetNext();
     }
@@ -443,6 +473,8 @@ int __fastcall _FNV_GetFormType(TESBoundObject*);
 
 // Stores apSource and, if its form type is 0x18 or 0x1A, calls AddFlags with 0x100.
 // @fnv 0x008041c0
+// pdb: ActiveEffect::SetEnchantmentSource | ActiveEffect.obj | debug, object-file run extension, low
+// pdb params: apSource
 void ActiveEffect::InitFromSource(TESBoundObject* apSource)
 {
     pSource = apSource;
@@ -461,6 +493,8 @@ struct ListNodeFns
 };
 // Scans the actor's active-effect list for an effect matching the spell or a potion of the same spell, clearing the result if the actor ignores addiction.
 // @fnv 0x00804250
+// pdb: ActiveEffect::CheckDisplacementSpellOnTarget | ActiveEffect.obj | retail, call graph, high
+// pdb locals: bignoreAddiction, bresult, pspell, pactor, plist, pitem, ppotion
 bool EffectStateAccess::HasMatchingActiveEffect()
 {
     bool bresult = false;
@@ -511,6 +545,7 @@ struct ActiveeffectOffset08View
 {
     unsigned int GetFlags();
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static TaskQueueInterface* __cdecl GetInstance();
@@ -544,6 +579,9 @@ class EffectItemListFoodQuery
 
 
 // @fnv 0x00804560
+// pdb: ActiveEffect::UpdateEffect | ActiveEffect.obj | retail, upstream name already matches, high
+// pdb params: afSecondsElapsed
+// pdb locals: ptargetStatsObject, ptarget, bpermanent, pspell, ppotion, bisFood, pingredient, fupdateTime, bdeferredSound, bdeferredHitEffect, pactor
 void ActiveEffect::UpdateEffect(float afSecondsElapsed)
 {
     if (HasConditions() || ((LowProcess*)this)->LowProcess::GetActiveCombatTarget())
@@ -559,7 +597,7 @@ void ActiveEffect::UpdateEffect(float afSecondsElapsed)
             if (ptargetStatsObject == (TESObjectREFR*)g_thePlayer && ActiveeffectInterfaceView::IsSaveLoadActive())
                 AddFlags(0x20);
             else
-                ResetEffectState();
+                StartSound();
             this->Start();
             if (!bPickResultFound && !bWasPlaying)
             {
@@ -598,7 +636,7 @@ void ActiveEffect::UpdateEffect(float afSecondsElapsed)
                                 if (IsConditionMet())
                                     TaskQueueInterface::GetInstance()->TaskQueueInterface_QueueMHEInstantiateHitEffects(this);
                                 else
-                                    pHitEffectList = MagicHitEffect::GetEffectsForActiveEffect(this);
+                                    pHitEffectList = MagicHitEffect::MagicHitEffect_InstantiateHitEffects(this);
                             }
                         }
                     }
@@ -633,12 +671,12 @@ void ActiveEffect::UpdateEffect(float afSecondsElapsed)
                             delete (List_009e03e0*)pHitEffectList;
                             pHitEffectList = 0;
                         }
-                        pHitEffectList = MagicHitEffect::GetEffectsForActiveEffect(this);
+                        pHitEffectList = MagicHitEffect::MagicHitEffect_InstantiateHitEffects(this);
                         static_cast<EffectStateAccess*>(this)->ClearFlags(0x40);
                     }
                     if (bdeferredSound)
                     {
-                        ResetEffectState();
+                        StartSound();
                         static_cast<EffectStateAccess*>(this)->ClearFlags(0x20);
                     }
                 }
@@ -677,7 +715,9 @@ void __fastcall ActiveEffect_SetMagnitude(void* thisPtr, float value)
 
 
 // @fnv 0x00805650
-void EffectStateAccess::SetLegacyRevertFlags()
+// src: XBOX_DEBUG_PDB 0x00805650
+// pdb: ActiveEffect::ForceNoHitEffect | ActiveEffect.obj | debug, call graph (shared callers), high
+void EffectStateAccess::ActiveEffect_ForceNoHitEffect()
 {
     AddFlags(2);
     AddFlags(4);
@@ -687,6 +727,8 @@ void EffectStateAccess::SetLegacyRevertFlags()
 // ActiveEffect::Copy (v04)
 // Allocates a new ActiveEffect from the spell and effect, copies data into it, and returns it.
 // @fnv 0x00803fe0
+// pdb: ActiveEffect::Copy | ActiveEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* ActiveEffect::Copy()
 {
     ActiveEffect* pNewEffect = new ActiveEffect(m_pEffectInstance, pSpell, pEffect);
@@ -699,6 +741,9 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // ActiveEffect::FinishLoadGameTES (v2C)
 // @fnv 0x00805760
+// pdb: ActiveEffect::FinishInitLoadGame | ActiveEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: plist, phitEffect
 void ActiveEffect::FinishLoadGameTES(Actor* apActor)
 {
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x2a)
@@ -713,7 +758,7 @@ void ActiveEffect::FinishLoadGameTES(Actor* apActor)
         }
     }
     if (GetEffectSetting()->IsFlagSet(0x400))
-        ResetEffectState();
+        StartSound();
 }
 
 class TESObjectCELL;
@@ -738,6 +783,7 @@ struct FUN_0081c530 : MagicHitEffect
 
 // Initializes the two node handles to null, clears both flags, and sets iState to 0.
 // @fnv 0x0081c530
+// pdb: MagicShaderHitEffect::MagicShaderHitEffect | MagicShaderHitEffect.obj | retail, call graph, medium
 FUN_0081c530::FUN_0081c530() : spNode30(0), spNode34(0)
 {
     spNode30 = 0;
@@ -803,6 +849,8 @@ FUN_0081f220::FUN_0081f220() : spNode48(0), spNode68(0)
 
 
 // @fnv 0x00804210
+// pdb: ActiveEffect::Dispel | ActiveEffect.obj | debug, upstream name already matches, high
+// pdb params: abNow
 void ActiveEffect::Dispel(bool abNow)
 {
     bPickResultFound = true;
@@ -829,6 +877,9 @@ struct ListProxy008060e0
 };
 // @fnv 0x008060e0
 // src: XBOX_PDB 0x008060e0
+// pdb: ActiveEffect::InitLoadGameActiveEffectList | ActiveEffect.obj | retail, upstream name already matches, high
+// pdb params: apActiveEffectList, apActor
+// pdb locals: peffect
 void ActiveEffect_InitLoadGameActiveEffectList(BSSimpleList<ActiveEffect*>* apActiveEffectList, Actor* apActor)
 {
     ActiveEffect* pEffect;
@@ -849,6 +900,9 @@ struct Node008061b0
 // Walks the node chain from a, calling s13(b) on each node's item until a node satisfies _ref_008256d0 or the chain ends.
 // @fnv 0x008061b0
 // src: GUESS 0x008061b0 (confidence: high)
+// pdb: ActiveEffect::RevertActiveEffectList | ActiveEffect.obj | retail, object-file run extension, low
+// pdb params: apActiveEffectList, apActor
+// pdb locals: peffect
 void Actor_RevertActiveEffectsInChain(Node008061b0* pNode, Actor* b)
 {
     while (pNode && !pNode->_ref_008256d0())
@@ -876,22 +930,25 @@ void ActiveEffect_SaveActiveEffectBGS(BGSSaveFormBuffer*, BGSPerkEntry*);
 
 // @fnv 0x00806a10
 // src: COMMUNITY 0x00806a10
-void ActiveEffect_SaveActiveEffectListBGS(BGSSaveFormBuffer* pBuffer, BSSimpleList<BGSPerkEntry*>* pPerkList)
+// pdb: ActiveEffect::SaveActiveEffectList | ActiveEffect.obj | debug, call graph, high
+// pdb params: apSaveGameBuffer, apActiveEffectList
+// pdb locals: plist, isaveGameBufferPos, isaveGameCount, pactiveEffect
+void ActiveEffect_SaveActiveEffectListBGS(BGSSaveFormBuffer* apSaveGameBuffer, BSSimpleList<BGSPerkEntry*>* apActiveEffectList)
 {
     int count = 0;
-    unsigned int size = pBuffer->StartVariableSizedValue();
-    BSSimpleList<BGSPerkEntry*>* pCurrent = pPerkList;
+    unsigned int size = apSaveGameBuffer->StartVariableSizedValue();
+    BSSimpleList<BGSPerkEntry*>* pCurrent = apActiveEffectList;
     while (pCurrent)
     {
         BGSPerkEntry* pEntry = pCurrent->GetItem();
         if (pEntry)
         {
-            ActiveEffect_SaveActiveEffectBGS(pBuffer, pEntry);
+            ActiveEffect_SaveActiveEffectBGS(apSaveGameBuffer, pEntry);
             ++count;
         }
         pCurrent = pCurrent->GetNext();
     }
-    pBuffer->SaveVariableSizedValue_00865ff0(count, size);
+    apSaveGameBuffer->SaveVariableSizedValue_00865ff0(count, size);
 }
 
 
@@ -899,6 +956,9 @@ extern TESSaveLoadGame* DAT_011de45c;
 
 // @fnv 0x00805810
 // src: GUESS 0x00805810 (confidence: low)
+// pdb: ActiveEffect::GetActiveEffectSaveSize | ActiveEffect.obj | debug, object-file gap fill, medium
+// pdb params: apEffect, apActor
+// pdb locals: isize
 unsigned short ActiveEffect_UpdateState_00805810(void* pObject, void* pArg)
 {
     unsigned short result = 0;
@@ -1029,7 +1089,10 @@ struct SaveSizeListNode
 // Computes a save size by adding fixed header bytes and per-node sizes from FUN_00805810, optionally logging the delta and current form header.
 // @fnv 0x00805a00
 // src: XBOX_PDB 0x00805a00
-unsigned short ActiveEffect_GetActiveEffectListSaveSize(SaveSizeListNode* pNodeList, void* pArg)
+// pdb: ActiveEffect::GetActiveEffectListSaveSize | ActiveEffect.obj | retail, upstream name already matches, high
+// pdb params: apActiveEffectList, apActor
+// pdb locals: isize, itempStartSize, pheader, pform
+unsigned short ActiveEffect_GetActiveEffectListSaveSize(SaveSizeListNode* apActiveEffectList, void* apActor)
 {
     unsigned short uiSize = 0;
     unsigned short uiStart = uiSize;
@@ -1039,10 +1102,10 @@ unsigned short ActiveEffect_GetActiveEffectListSaveSize(SaveSizeListNode* pNodeL
         uiSize += 2;
     }
     uiSize += 2;
-    while (pNodeList && !pNodeList->_ref_008256d0())
+    while (apActiveEffectList && !apActiveEffectList->_ref_008256d0())
     {
-        uiSize += ActiveEffect_UpdateState_00805810(*pNodeList->_ref_006815c0(), pArg);
-        pNodeList = pNodeList->_ref_00726070();
+        uiSize += ActiveEffect_UpdateState_00805810(*apActiveEffectList->_ref_006815c0(), apActor);
+        apActiveEffectList = apActiveEffectList->_ref_00726070();
     }
     if (*g_011de4e8.Bool())
     {
@@ -1088,19 +1151,22 @@ struct ActiveEffectListBridge
 };
 // @fnv 0x00806130
 // src: XBOX_PDB 0x00806130
-void __cdecl ActiveEffect_FinishInitLoadGameActiveEffectList(ActiveEffectListBridge* pEffectList, Actor* pActor)
+// pdb: ActiveEffect::FinishInitLoadGameActiveEffectList | ActiveEffect.obj | retail, upstream name already matches, high
+// pdb params: apActiveEffectList, apActor
+// pdb locals: peffect
+void __cdecl ActiveEffect_FinishInitLoadGameActiveEffectList(ActiveEffectListBridge* apActiveEffectList, Actor* apActor)
 {
-    while (pEffectList != 0 && !pEffectList->FUN_008256d0())
+    while (apActiveEffectList != 0 && !apActiveEffectList->FUN_008256d0())
     {
-        ActiveEffect* effect = *pEffectList->FUN_006815c0();
-        effect->FinishLoadGameTES(reinterpret_cast<Actor*>(pActor));
-        pEffectList = pEffectList->FUN_00726070();
+        ActiveEffect* effect = *apActiveEffectList->FUN_006815c0();
+        effect->FinishLoadGameTES(reinterpret_cast<Actor*>(apActor));
+        apActiveEffectList = apActiveEffectList->FUN_00726070();
     }
-    if (pActor != 0)
+    if (apActor != 0)
     {
-        if (pActor->FUN_008d8520())
+        if (apActor->FUN_008d8520())
         {
-            ProcessRefreshDispatch* dispatcher = (ProcessRefreshDispatch*)pActor->FUN_008d8520();
+            ProcessRefreshDispatch* dispatcher = (ProcessRefreshDispatch*)apActor->FUN_008d8520();
             dispatcher->Refresh(1, 1, 1);
         }
     }
@@ -1148,7 +1214,7 @@ struct MidObj
 
 struct Obj14
 {
-    BSSoundHandle __thiscall PlaySoundByFormID(int a, int b, int c, int d);
+    BSSoundHandle __thiscall PlaySoundByFormID(int aiSoundFormID, int abLoop, int aiSoundType, int abAllowCopy);
 };
 struct ObjC
 {
@@ -1303,7 +1369,10 @@ AudioSys* __cdecl BSAudio_QInstance();
 void* __cdecl GetFlagMask(int v);
 
 // @fnv 0x00804cd0
-void __thiscall ActiveEffect::ResetEffectState()
+// src: XBOX_RETAIL_PDB 0x00804cd0
+// pdb: ActiveEffect::StartSound | ActiveEffect.obj | retail, call graph (shared callers), high
+// pdb locals: isoundFileID, soundHandle, bpersistent, ptargetActor, uiflags, ptargetObject, loc
+void __thiscall ActiveEffect::StartSound()
 {
     int var10_2;
     Obj14* var4;
@@ -1358,6 +1427,9 @@ void __thiscall ActiveEffect::ResetEffectState()
 
 
 // @fnv 0x00804f80
+// pdb: ActiveEffect::GetSaveSize | ActiveEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: isize, plist, phitEffect, btempNoHitEffect
 unsigned short ActiveEffect::GetSaveSize(Actor* apActor)
 {
     unsigned short usSize = 0;
@@ -1414,7 +1486,10 @@ struct HitEffectSaveNode
     HitEffectSaveNode* FUN_00726070();
 };
 // @fnv 0x008050d0
-void ActiveEffect::SaveGame(Actor* actor)
+// pdb: ActiveEffect::SaveGame | ActiveEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isourceID, icasterID, itargetID, plist, pcount, ccount, chitEffectType, phitEffect, btempNoHitEffect
+void ActiveEffect::SaveGame(Actor* apActor)
 {
     DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&m_fEffectMagnitude, 4);
     DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&bActive, 1);
@@ -1455,7 +1530,7 @@ void ActiveEffect::SaveGame(Actor* actor)
                 d = *b->FUN_006815c0();
                 c = static_cast<unsigned char>(d->GetType());
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&c, 1);
-                d->SaveGame(this, reinterpret_cast<TESObjectREFR*>(actor));
+                d->SaveGame(this, reinterpret_cast<TESObjectREFR*>(apActor));
                 ++a;
                 b = b->FUN_00726070();
             }
@@ -1511,7 +1586,10 @@ extern const char hitEffectLoadWarning[];
 void __cdecl HitEffectWarning(const char*, ...);
 // Reads an active magic effect's fields from the save stream, recreates its hit effects, and reads flags or a version-gated byte.
 // @fnv 0x00805330
-void ActiveEffect::LoadGame(Actor* actor)
+// pdb: ActiveEffect::LoadGame | ActiveEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isourceID, icasterID, itargetID, ccount, i, chitEffectType, phitEffect, btempNoHitEffect
+void ActiveEffect::LoadGame(Actor* apActor)
 {
     // Local identifiers and declaration order preserve MSVC9 stack slots.
     unsigned int b;     // Hit-effect index.
@@ -1555,7 +1633,7 @@ void ActiveEffect::LoadGame(Actor* actor)
                 HitEffectWarning(hitEffectLoadWarning, c);
                 break;
             }
-            d->LoadGame(this, (TESObjectREFR*)actor);
+            d->LoadGame(this, (TESObjectREFR*)apActor);
             if (!pHitEffectList)
                 pHitEffectList = new HitEffectList(d);
             else
@@ -1568,14 +1646,14 @@ void ActiveEffect::LoadGame(Actor* actor)
     {
         DAT_011de45c->TESSaveLoadGame_LoadGameDataOLD(&e, 1);
         if (e)
-            static_cast<EffectStateAccess*>(this)->SetLegacyRevertFlags();
+            static_cast<EffectStateAccess*>(this)->ActiveEffect_ForceNoHitEffect();
     }
 }
 
 class SaveSub
 {
   public:
-    unsigned char CheckValue(unsigned int v);
+    unsigned char CheckValue(unsigned int apEffect);
 };
 
 class SaveOwner
@@ -1606,18 +1684,21 @@ class SaveEffectObj
 
 // Writes the effect's save word (version >= 0x2a), owner key, a checked flag byte, then calls SaveData.
 // @fnv 0x00805880
-void SaveEffectData(SaveEffectObj* pEffect, unsigned int arg)
+// pdb: ActiveEffect::SaveActiveEffect | ActiveEffect.obj | retail, object-file run extension, high
+// pdb params: apEffect, apActor
+// pdb locals: ieffectIndex, ispellID, isize
+void SaveEffectData(SaveEffectObj* apEffect, unsigned int apActor)
 {
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x2a)
     {
-        unsigned short usSaveWord = pEffect->GetSaveWord(arg);
+        unsigned short usSaveWord = apEffect->GetSaveWord(apActor);
         g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&usSaveWord, 2);
     }
-    unsigned int uiOwnerKey = pEffect->m_08->GetKey();
+    unsigned int uiOwnerKey = apEffect->m_08->GetKey();
     g_TESSaveLoadGame->TESSaveLoadGame_SaveNumericID(&uiOwnerKey, 4u);
-    unsigned char ucCheckFlag = pEffect->m_08->sub.CheckValue(pEffect->m_0c);
+    unsigned char ucCheckFlag = apEffect->m_08->sub.CheckValue(apEffect->m_0c);
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&ucCheckFlag, 1);
-    pEffect->SaveData(arg);
+    apEffect->SaveData(apActor);
 }
 
 namespace fnv_00805b40 {
@@ -1728,7 +1809,10 @@ void ProcessActiveEffect(ActiveEffect* apEffect, Actor* apActor);
 // Serializes the active-effect list for an actor, writing a block marker and size, counting entries, and logging the block size when debug output is enabled.
 // @fnv 0x00805b40
 // src: COMMUNITY 0x00805b40
-void ActiveEffect_SaveActiveEffectList(AENode* apList, Actor* apActor)
+// pdb: ActiveEffect::SaveActiveEffectList | ActiveEffect.obj | retail, object-file run extension, high
+// pdb params: apActiveEffectList, apActor
+// pdb locals: icount, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void ActiveEffect_SaveActiveEffectList(AENode* apActiveEffectList, Actor* apActor)
 {
     unsigned short usZero6 = 0;
     char* pSizePos8 = 0;
@@ -1745,11 +1829,11 @@ void ActiveEffect_SaveActiveEffectList(AENode* apList, Actor* apActor)
     unsigned short usCount2 = 0;
     char* pCountPos3 = reinterpret_cast<char*>(g_SaveLoadMgr->FUN_00825c00());
     g_SaveLoadMgr->TESSaveLoadGame_SaveGameDataOLD(&usCount2, 2);
-    while (apList && !apList->IsEmpty())
+    while (apActiveEffectList && !apActiveEffectList->IsEmpty())
     {
-        ProcessActiveEffect(apList->GetItem(), apActor);
+        ProcessActiveEffect(apActiveEffectList->GetItem(), apActor);
         usCount2++;
-        apList = apList->GetNext();
+        apActiveEffectList = apActiveEffectList->GetNext();
     }
     *(unsigned short*)pCountPos3 = usCount2;
     if (*g_011de4e8.Bool())
@@ -1786,7 +1870,7 @@ void ActiveEffect_SaveActiveEffectList(AENode* apList, Actor* apActor)
 struct SaveFormBuf : public BGSSaveFormBuffer
 {
     void SaveData(void* apData, unsigned int auiSize, int aiFlags);
-    void SerializeFormData(unsigned int auiFormID, unsigned int auiFlags);
+    void SerializeFormData(unsigned int aiFormID, unsigned int aiUnusuedMetaDataArg);
     void SaveFormPtr(void* apForm, int aiFlags);
 };
 
@@ -1800,6 +1884,9 @@ struct SaveHitNode
 
 // Serializes the active effect's fields, caster/target/spell IDs, source form and hit effects into the save buffer.
 // @fnv 0x00806230
+// pdb: ActiveEffect::SaveGame | ActiveEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isourceID, icasterID, itargetID, plist, pcount, ccount, chitEffectType, phitEffect, btempNoHitEffect
 void ActiveEffect::SaveGame(BGSSaveFormBuffer* apBuffer)
 {
     static_cast<SaveFormBuf*>(apBuffer)->SaveData(&m_fEffectMagnitude, 4, 0);
@@ -1844,23 +1931,27 @@ class B806840EffectItem
 class B806840EffectList
 {
   public:
-    bool Contains(B806840EffectItem* pkItem);
+    bool Contains(B806840EffectItem* apEffect);
 };
 
 class B806840SaveBuffer
 {
   public:
-    void SerializeFormData(unsigned int auiFormId, unsigned int uiFlags);
+    void SerializeFormData(unsigned int aiFormID, unsigned int aiUnusuedMetaDataArg);
     void SaveData(void* pvData, int iSize, int iFlags);
     void SaveInt(unsigned int uiValue);
     unsigned int BeginChunk();
     int GetOffset();
-    void EndChunk(int iSize, unsigned int uiChunk);
+    void EndChunk(int aiVariableValue, unsigned int aiPosition);
 };
 
 
 // @fnv 0x00806840
 // src: COMMUNITY 0x00806840
+// pdb: ActiveEffect::SaveActiveEffectList | ActiveEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ActiveEffect::SaveActiveEffect
+// pdb params: apActiveEffectList, apActor
+// pdb locals: icount, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void __cdecl ActiveEffect_SaveActiveEffectBGS(B806840SaveBuffer* pkBuffer, ActiveEffect* pkEffect)
 {
     pkBuffer->SerializeFormData(pkEffect->pSpell ? GetMagicItemFormID(pkEffect->pSpell) : 0, 0);
@@ -1877,10 +1968,13 @@ void __cdecl ActiveEffect_SaveActiveEffectBGS(B806840SaveBuffer* pkBuffer, Activ
 
 
 TESForm* TESForm_GetFormByNumericID(unsigned int id);
-MagicCaster* FUN_00818c60(MagicCaster* pkCaster);
-MagicTarget* FUN_00825550(MagicTarget* pkTarget);
+MagicCaster* FUN_00818c60(MagicCaster* aiFormID);
+MagicTarget* FUN_00825550(MagicTarget* aiFormID);
 
 // @fnv 0x00805670
+// pdb: ActiveEffect::InitLoadGame | ActiveEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isourceID, icasterID, itargetID, plist, phitEffect
 void ActiveEffect::InitLoadGame(Actor* apActor)
 {
     MagicTarget* pkTarget;
@@ -1945,27 +2039,30 @@ void __cdecl FNV_Warning(const char* fmt, ...);
 
 // Reads effect fields and tagged hit effects from the buffer, loads each effect, and adds it to pHitEffectList.
 // @fnv 0x00806420
-void ActiveEffect::LoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: ActiveEffect::LoadGame | ActiveEffect.obj | retail, string-set bridge, high
+// pdb params: apActor
+// pdb locals: isourceID, icasterID, itargetID, ccount, i, chitEffectType, phitEffect, btempNoHitEffect
+void ActiveEffect::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    apBuffer->ReadTypedData(static_cast<void*>(&m_fEffectMagnitude), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&bActive), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&bEffectFlag), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&bWasPlaying), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&bPickResultFound), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_bEffectState), 1u);
-    apBuffer->ReadTypedData(static_cast<void*>(&m_fElapsedTime), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&fDuration), 4u);
-    apBuffer->ReadTypedData(static_cast<void*>(&iFlags), 4u);
-    apBuffer->ReadFormIdentifier(&m_pEffectInstance);
-    apBuffer->ReadFormIdentifier(&pTarget);
-    apBuffer->ReadFormIdentifier(&pMagicItem);
-    pSource = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(apBuffer->FUN_008648a0()));
-    int count = apBuffer->FUN_00864a60();
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_fEffectMagnitude), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bActive), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bEffectFlag), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bWasPlaying), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bPickResultFound), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_bEffectState), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_fElapsedTime), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fDuration), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iFlags), 4u);
+    apLoadGameBuffer->ReadFormIdentifier(&m_pEffectInstance);
+    apLoadGameBuffer->ReadFormIdentifier(&pTarget);
+    apLoadGameBuffer->ReadFormIdentifier(&pMagicItem);
+    pSource = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
+    int count = apLoadGameBuffer->FUN_00864a60();
     for (unsigned int i = 0; i < (unsigned int)count; ++i)
     {
         MagicHitEffect* pHitEffect;
         unsigned char uiTag = 0;
-        apBuffer->ReadTypedData(static_cast<void*>(&uiTag), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&uiTag), 1u);
         pHitEffect = 0;
         switch (uiTag)
         {
@@ -1980,7 +2077,7 @@ void ActiveEffect::LoadGame(BGSLoadFormBuffer* apBuffer)
             break;
         }
         pHitEffect->FUN_00984f60(reinterpret_cast<unsigned int>(this));
-        ((BSTempEffect*)pHitEffect)->LoadGame(apBuffer);
+        ((BSTempEffect*)pHitEffect)->LoadGame(apLoadGameBuffer);
         if (pHitEffectList == 0)
         {
             pHitEffectList =
@@ -2109,7 +2206,10 @@ class ActiveEffectList_5d40 : public BSSimpleList<ActiveEffect*>
 
 // @fnv 0x00805d40
 // src: XBOX_PDB 0x00805d40
-void ActiveEffect_LoadActiveEffectList(ActiveEffectList_5d40* apList, Actor* apActor)
+// pdb: ActiveEffect::LoadActiveEffectList | ActiveEffect.obj | retail, string-set bridge, high
+// pdb params: apActiveEffectList, apActor
+// pdb locals: plist, icount, istartBufferPosition, iblockSize, i, fvampirismMagnitude, iblockHeader, pheader, pform, peffect, pvampirismEffect, icurrentBufferPosition
+void ActiveEffect_LoadActiveEffectList(ActiveEffectList_5d40* apActiveEffectList, Actor* apActor)
 {
     float p;
     int h;
@@ -2155,7 +2255,7 @@ void ActiveEffect_LoadActiveEffectList(ActiveEffectList_5d40* apList, Actor* apA
     }
 
     p = 0.0f;
-    f = apList;
+    f = apActiveEffectList;
     while (f && !f->IsEmpty())
     {
         ba = f->GetItem();
@@ -2167,7 +2267,7 @@ void ActiveEffect_LoadActiveEffectList(ActiveEffectList_5d40* apList, Actor* apA
         delete ba;
         f = f->GetNext();
     }
-    apList->RemoveAll();
+    apActiveEffectList->RemoveAll();
 
     g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&s, 2);
     for (h = 0; h < (int)s; ++h)
@@ -2180,7 +2280,7 @@ void ActiveEffect_LoadActiveEffectList(ActiveEffectList_5d40* apList, Actor* apA
         }
         if (l)
         {
-            apList->Insert(l, MagicTarget::CompareActiveEffects);
+            apActiveEffectList->Insert(l, MagicTarget::ActiveEffectListCompareFn);
         }
     }
 
@@ -2239,6 +2339,8 @@ struct HitEffectNode
 
 
 // @fnv 0x00803ed0
+// pdb: ActiveEffect::~ActiveEffect | ActiveEffect.obj | retail, upstream name already matches, high
+// pdb locals: plist, peffect
 ActiveEffect::~ActiveEffect()
 {
     HitEffectNode* pIter = (HitEffectNode*)pHitEffectList;

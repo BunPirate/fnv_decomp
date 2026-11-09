@@ -72,20 +72,23 @@ class ConvexTranslateSpuSizingView : public hkpConvexTranslateShape
 };
 
 // @fnv 0x00dd5e10
+// pdb: hkpConvexTranslateShape::calcSizeForSpu | hkpConvexTranslateShape.obj | retail, vtable slot, high
+// pdb params: input, spuBufferSizeLeft
+// pdb locals: assertBuf, ostr
 int ConvexTranslateSpuSizingView::CalcSizeForSpu(const PhysicsShape& input, int spuBufferSizeLeft) const
 {
     const int iMax = spuBufferSizeLeft - 0x30;
-    int iResult = m_pContainedShape.m_pContainedShape->CalcSizeForSpu(input, iMax);
+    int iResult = m_childShape.m_childShape->CalcSizeForSpu(input, iMax);
     if (iResult < 0)
         return -1;
     if (iResult > iMax)
         return -1;
-    if (m_pContainedShape.m_pContainedShape == reinterpret_cast<const hkpShape*>(this + 1))
+    if (m_childShape.m_childShape == reinterpret_cast<const hkpShape*>(this + 1))
     {
-        const_cast<ConvexTranslateSpuSizingView*>(this)->m_iChildShapeSize = 0;
+        const_cast<ConvexTranslateSpuSizingView*>(this)->m_childShapeSize = 0;
         return iResult + 0x30;
     }
-    const_cast<ConvexTranslateSpuSizingView*>(this)->m_iChildShapeSize = iResult;
+    const_cast<ConvexTranslateSpuSizingView*>(this)->m_childShapeSize = iResult;
     return 0x30;
 }
 
@@ -109,15 +112,17 @@ struct Own_dd5e70
     int unk14;
     void* m_sub;
 
-    void __thiscall hkReferencedObject_calcContentStatistics(Sub_dd5e70* object, const int* attribute);
-    void __thiscall AttachChildAndAttribute(Sub_dd5e70* object, int unused);
+    void __thiscall hkReferencedObject_calcContentStatistics(Sub_dd5e70* collector, const int* cls);
+    void __thiscall AttachChildAndAttribute(Sub_dd5e70* collector, int cls);
 };
 
 // @fnv 0x00dd5e70
-void __thiscall Own_dd5e70::AttachChildAndAttribute(Sub_dd5e70* object, int unused)
+// pdb: hkpConvexTranslateShape::calcContentStatistics | hkpConvexTranslateShape.obj | retail, vtable slot, high
+// pdb params: collector, cls
+void __thiscall Own_dd5e70::AttachChildAndAttribute(Sub_dd5e70* collector, int cls)
 {
-    object->v0C("Child", m_sub, 0);
-    hkReferencedObject_calcContentStatistics(object, &DAT_01268940);
+    collector->v0C("Child", m_sub, 0);
+    hkReferencedObject_calcContentStatistics(collector, &DAT_01268940);
 }
 
 struct FUN_00dd5ea0_class
@@ -176,6 +181,8 @@ struct ClsDD5F50
 // Calls the contained shape's virtual vertex generator, then adds m_vTranslation to each output vertex.
 // @fnv 0x00dd5f50
 // src: HAVOK_SRC 0x00dd5f50
+// pdb: hkpConvexTranslateShape::convertVertexIdsToVerticesImpl | hkpConvexTranslateShape.obj | retail, upstream name already matches, high
+// pdb params: ids, numIds, verticesOut
 void ClsDD5F50::hkpConvexTranslateShape_convertVertexIdsToVerticesImpl(const unsigned short* ids, int numIds, hkVector4* verticesOut)
 {
     m_pContainedShape->FUN_00dd5f50_v(ids, numIds, verticesOut);
@@ -272,6 +279,9 @@ class ConvexTranslateDD60
 // Subtracts m_vTranslation from the ray endpoints, calls m_pContainedShape->RayCast, and sets the shape key to 0 on a hit.
 // @fnv 0x00dd60e0
 // src: HAVOK_SRC 0x00dd60e0
+// pdb: hkpConvexTranslateShape::castRayImpl | hkpConvexTranslateShape.obj | retail, upstream name already matches, high
+// pdb params: input, results
+// pdb locals: subInput
 HkBoolDD ConvexTranslateDD60::hkpConvexTranslateShape_castRayImpl(const RayInputDD60& input, RayOutputDD60& results) const
 {
     TimerMark("TtrcConvTransl");
@@ -307,31 +317,33 @@ struct FNV_dd6060_Shape
 struct FNV_dd6060_Class : hkpConvexTranslateShape
 {
 
-    void __thiscall hkpConvexTranslateShape_getAabbImpl(const hkRotation* rotation, float distance, LocalM128* output);
+    void __thiscall hkpConvexTranslateShape_getAabbImpl(const hkRotation* localToWorld, float tolerance, LocalM128* out);
 };
 
 // Calls the contained shape's v1C, then adds the translation rotated by the rotation columns to output[0] and output[1].
 // @fnv 0x00dd6060
 // src: HAVOK_SRC 0x00dd6060
-void FNV_dd6060_Class::hkpConvexTranslateShape_getAabbImpl(const hkRotation* rotation, float distance, LocalM128* output)
+// pdb: hkpConvexTranslateShape::getAabbImpl | hkpConvexTranslateShape.obj | retail, upstream name already matches, high
+// pdb params: localToWorld, tolerance, out
+void FNV_dd6060_Class::hkpConvexTranslateShape_getAabbImpl(const hkRotation* localToWorld, float tolerance, LocalM128* out)
 
 {
 
-    const FNV_dd6060_Shape* shape = reinterpret_cast<const FNV_dd6060_Shape*>(m_pContainedShape.m_pContainedShape);
+    const FNV_dd6060_Shape* shape = reinterpret_cast<const FNV_dd6060_Shape*>(m_childShape.m_childShape);
 
-    shape->v1C(rotation, distance, output);
+    shape->v1C(localToWorld, tolerance, out);
 
-    LocalM128 translation = _mm_load_ps(&m_vTranslation.x);
+    LocalM128 translation = _mm_load_ps(&m_translation.x);
 
-    LocalM128 moved = _mm_mul_ps(_mm_shuffle_ps(translation, translation, 0x55), _mm_load_ps(&rotation->m_kColumn1.x));
-
-    moved = _mm_add_ps(
-        moved, _mm_mul_ps(_mm_shuffle_ps(translation, translation, 0x00), _mm_load_ps(&rotation->m_kColumn0.x)));
+    LocalM128 moved = _mm_mul_ps(_mm_shuffle_ps(translation, translation, 0x55), _mm_load_ps(&localToWorld->m_kColumn1.x));
 
     moved = _mm_add_ps(
-        moved, _mm_mul_ps(_mm_shuffle_ps(translation, translation, 0xaa), _mm_load_ps(&rotation->m_kColumn2.x)));
+        moved, _mm_mul_ps(_mm_shuffle_ps(translation, translation, 0x00), _mm_load_ps(&localToWorld->m_kColumn0.x)));
 
-    output[0] = _mm_add_ps(output[0], moved);
+    moved = _mm_add_ps(
+        moved, _mm_mul_ps(_mm_shuffle_ps(translation, translation, 0xaa), _mm_load_ps(&localToWorld->m_kColumn2.x)));
 
-    output[1] = _mm_add_ps(output[1], moved);
+    out[0] = _mm_add_ps(out[0], moved);
+
+    out[1] = _mm_add_ps(out[1], moved);
 }

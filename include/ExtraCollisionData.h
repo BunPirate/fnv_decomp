@@ -4,6 +4,7 @@
 
 class CollisionData;
 
+// pdb: class ExtraCollisionData, size 0x10, bases: BSExtraData, 1 members
 class ExtraCollisionData : public BSExtraData
 {
 public:
@@ -16,5 +17,5 @@ public:
     void* FUN_00421130(unsigned int flags);
     void ReleaseStorage();
 
-    CollisionData* m_pCollisionData;
+    CollisionData* pCollisionData;
 };

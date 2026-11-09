@@ -5,6 +5,7 @@
 class BGSDistantTreeBlock;
 class Fake076;
 
+// pdb: class BGSDistantTreeBlockLoadTask, size 0x48, bases: QueuedFileEntry, 7 members
 class BGSDistantTreeBlockLoadTask : public QueuedFileEntry
 {
 public:
@@ -21,15 +22,15 @@ public:
 
     void* Destroy(unsigned int flags);
     void FUN_006f94a0();
-    void QueuedFile_Cancel(int a1, void* a2);
+    void QueuedFile_Cancel(int aePreviousState, void* apTaskOwner);
     void Cancel_006f9540(int a1, void* a2);
     void QueueMe();
     bool __thiscall FormatDescription(char* apDescription, unsigned int aiBufferSize);
 
-    unsigned char unk30[8];
+    unsigned char pBlock[8];
     int iX;
     int iY;
     int iLevel;
-    bool m_bCancelled;
-    bool m_bLoadComplete;
+    bool bCanceled;
+    bool bFileExists;
 };

@@ -5,6 +5,7 @@
 class MagicItem;
 class EffectSetting;
 
+// pdb: class QueuedMagicItem, size 0x30, bases: QueuedFile, 2 members
 class QueuedMagicItem : public QueuedFile
 {
 public:
@@ -23,5 +24,5 @@ public:
     virtual void OnChildCompletion();
 
     MagicItem* pMagicItem;
-    EffectSetting* m_pEffectSetting;
+    EffectSetting* pEffectSetting;
 };

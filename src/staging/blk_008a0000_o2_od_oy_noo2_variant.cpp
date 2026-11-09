@@ -26,8 +26,8 @@ struct FUN_008b3d70_Hit
     virtual void* GetObject();
 };
 struct FUN_008b3d70_World;
-FUN_008b3d70_Hit* ArrowProjectile_PickSceneGraph(FUN_008b3d70_World* world, FUN_008b3d70_Vec3 origin, FUN_008b3d70_Vec3 dir, float* dist,
-                               int flag);
+FUN_008b3d70_Hit* ArrowProjectile_PickSceneGraph(FUN_008b3d70_World* apObject, FUN_008b3d70_Vec3 aPickFrom, FUN_008b3d70_Vec3 aDirection, float* afPickLength,
+                               int abIgnoreHead);
 
 struct FUN_008b3d70_hkVec
 {
@@ -38,37 +38,40 @@ struct FUN_008b3d70_Sphere
 {
     __m128 v;
     void BGSPrimitive_EvaluateValue_006240d0();
-    void hkSphere_setPosition(const FUN_008b3d70_hkVec& c);
-    void hkSphere_setRadius(float r);
+    void hkSphere_setPosition(const FUN_008b3d70_hkVec& newPos);
+    void hkSphere_setRadius(float newRadius);
 };
-FUN_008b3d70_hkVec& NI2HK(FUN_008b3d70_hkVec& out, const FUN_008b3d70_Vec3& in);
+FUN_008b3d70_hkVec& NI2HK(FUN_008b3d70_hkVec& arhkTran, const FUN_008b3d70_Vec3& arNiTran);
 struct FUN_008b3d70_Body
 {
     void* Bipedanim_GetReferenceFlagsOrZero();
 };
-FUN_008b3d70_Body* bhkUtilFunctions_GetClosestBody(FUN_008b3d70_World* world, FUN_008b3d70_Sphere* s, int flag);
+FUN_008b3d70_Body* bhkUtilFunctions_GetClosestBody(FUN_008b3d70_World* apRoot, FUN_008b3d70_Sphere* arSphere, int abIgnoreHead);
 struct FUN_008b3d70_Wrap
 {
     FUN_008b3d70_Hit* FUN_0044ddc0();
 };
-FUN_008b3d70_Wrap* FUN_004b5a20(void* p);
+FUN_008b3d70_Wrap* FUN_004b5a20(void* apBody);
 
 struct FUN_008b3d70_Picker
 {
     FUN_008b3d70_World* TESObjectREFR_Get3D();
-    void* Actor_GetClosestBone(FUN_008b3d70_Vec3 start, FUN_008b3d70_Vec3 end);
+    void* Actor_GetClosestBone(FUN_008b3d70_Vec3 aStartingLocation, FUN_008b3d70_Vec3 aImpactLocation);
 };
 
 // @fnv 0x008b3d70
 // src: XBOX_PDB 0x008b3d70
-void* FUN_008b3d70_Picker::Actor_GetClosestBone(FUN_008b3d70_Vec3 start, FUN_008b3d70_Vec3 end)
+// pdb: Actor::GetClosestBone | Actor.obj | retail, upstream name already matches, high
+// pdb params: aStartingLocation, aImpactLocation
+// pdb locals: dir, origin, fpickLength, pclosestObject, proot, pos, hitSphere, prb, pcol
+void* FUN_008b3d70_Picker::Actor_GetClosestBone(FUN_008b3d70_Vec3 aStartingLocation, FUN_008b3d70_Vec3 aImpactLocation)
 {
     FUN_008b3d70_World* world = TESObjectREFR_Get3D();
     FUN_008b3d70_Hit* object = 0;
     float distance = 512.0f;
-    FUN_008b3d70_Vec3 direction = end.SubtractIntoVector(start);
+    FUN_008b3d70_Vec3 direction = aImpactLocation.SubtractIntoVector(aStartingLocation);
     NiPoint3_UnitizeVector(&direction);
-    FUN_008b3d70_Vec3 origin = end.SubtractIntoVector(direction.ApplyScaled(distance).ApplyScaled(0.5f));
+    FUN_008b3d70_Vec3 origin = aImpactLocation.SubtractIntoVector(direction.ApplyScaled(distance).ApplyScaled(0.5f));
     object = ArrowProjectile_PickSceneGraph(world, origin, direction, &distance, 0);
     if (!object)
     {
@@ -76,7 +79,7 @@ void* FUN_008b3d70_Picker::Actor_GetClosestBone(FUN_008b3d70_Vec3 start, FUN_008
         bound.BGSPrimitive_EvaluateValue_006240d0();
         FUN_008b3d70_hkVec center;
         center.FUN_006815c0();
-        NI2HK(center, end);
+        NI2HK(center, aImpactLocation);
         bound.hkSphere_setPosition(center);
         bound.hkSphere_setRadius(200.0f);
         FUN_008b3d70_Body* body = bhkUtilFunctions_GetClosestBody(world, &bound, 0);

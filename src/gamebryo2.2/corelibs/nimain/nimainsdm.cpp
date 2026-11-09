@@ -12,6 +12,9 @@ struct MM
 extern MM g_memoryManager;
 extern void* DAT_011c5f54;
 // @fnv 0x00a8a200
+// src: XBOX_RETAIL_PDB 0x00a8a200
+// pdb: NiTAbstractPoolAllocator<unsigned int>::_SDMShutdown | NiMainSDM.obj | retail, object-file gap fill, high
+// pdb locals: pkCurr, pkNext
 template <class T> struct PoolAllocatorBase
 {
     struct LinkedListEntry
@@ -21,7 +24,7 @@ template <class T> struct PoolAllocatorBase
     static LinkedListEntry* ms_pFreeList;
 };
 // src: COMMUNITY 0x00a8a200
-void NiTAbstractPoolAllocator__SDMShutdown()
+void NiTAbstractPoolAllocator_unsigned_int__SDMShutdown()
 {
     void* p = DAT_011c5f54;
     if (p)
@@ -47,7 +50,10 @@ extern void* DAT_011f6034;
 extern void* DAT_011f6038;
 // Walks the linked list starting at DAT_011f6034, deallocating each node, then clears DAT_011f6038 and DAT_011f6034.
 // @fnv 0x00a8a240
-void FreeMemoryList()
+// src: XBOX_RETAIL_PDB 0x00a8a240
+// pdb: NiTAbstractPoolAllocatorSingleThread<unsigned int>::_SDMShutdown | NiMainSDM.obj | retail, object-file gap fill, high
+// pdb locals: pkCurr, pkNext
+void NiTAbstractPoolAllocatorSingleThread_unsigned_int__SDMShutdown()
 {
     void* pCurrent = DAT_011f6034;
     if (pCurrent)
@@ -72,24 +78,24 @@ struct FUN_00a8f730
 
 struct FUN_00a928b0_shell
 {
-    static void ClearFixedStrings();
+    static void NiTextureEffect__SDMShutdown();
 };
 
-void __cdecl ClearStaticStringTable();
+void __cdecl NiGlobalStringTable__SDMShutdown();
 void __cdecl NiAlphaProperty__SDMShutdown();
 void __cdecl ReleasePendingTable();
 void __cdecl NiRenderer__SDMShutdown();
 void __cdecl NiStream__SDMShutdown();
-void __cdecl ReleaseGlobalStrings();
+void __cdecl NiTexturingProperty__SDMShutdown();
 void __cdecl NiStencilProperty__SDMShutdown();
-void __cdecl ReleaseGlobalHolder();
+void __cdecl NiMaterialProperty__SDMShutdown();
 void __cdecl NiImageConverter__SDMShutdown();
 void __cdecl FreeGlobalAlias();
 void __cdecl NiShadeProperty__SDMShutdown();
-void __cdecl FreeMemoryList();
+void __cdecl NiTAbstractPoolAllocatorSingleThread_unsigned_int__SDMShutdown();
 void __cdecl NiCullingProperty__SDMShutdown();
 void __cdecl NiSingleShaderMaterialLibrary__SDMShutdown();
-void __cdecl ResetStreamLinkIDSet();
+void __cdecl NiMaterialLibrary__SDMShutdown();
 void __cdecl DestroyGlobalPool();
 void __cdecl NiFogProperty__SDMShutdown();
 void __cdecl NiMetricsLayer__SDMShutdown();
@@ -168,6 +174,7 @@ extern char const* const DAT_0109f0a0;
 
 // @fnv 0x00a8a280
 // src: COMMUNITY 0x00a8a280
+// pdb: NiMainSDM::Shutdown | NiMainSDM.obj | retail, string-set bridge, high
 void __cdecl NiMainSDM_Shutdown()
 {
     if (DAT_011f5b80)
@@ -253,14 +260,14 @@ void __cdecl NiMainSDM_Shutdown()
         NiStream::UnregisterObjectLoader((char const*)&g_011f5e6c_arg0);
 
         DestroyPairArrays();
-        FUN_00a928b0_shell::ClearFixedStrings();
+        FUN_00a928b0_shell::NiTextureEffect__SDMShutdown();
         NiAlphaProperty__SDMShutdown();
         NiFogProperty__SDMShutdown();
-        ReleaseGlobalHolder();
+        NiMaterialProperty__SDMShutdown();
         NiMetricsLayer__SDMShutdown();
         NiShadeProperty__SDMShutdown();
         NiStencilProperty__SDMShutdown();
-        ReleaseGlobalStrings();
+        NiTexturingProperty__SDMShutdown();
         NiCullingProperty__SDMShutdown();
         NiImageConverter__SDMShutdown();
         NiStream__SDMShutdown();
@@ -270,10 +277,10 @@ void __cdecl NiMainSDM_Shutdown()
         FreeGlobalAlias();
         FUN_00a8f730::Release();
         NiSingleShaderMaterialLibrary__SDMShutdown();
-        ResetStreamLinkIDSet();
-        NiTAbstractPoolAllocator__SDMShutdown();
-        FreeMemoryList();
-        ClearStaticStringTable();
+        NiMaterialLibrary__SDMShutdown();
+        NiTAbstractPoolAllocator_unsigned_int__SDMShutdown();
+        NiTAbstractPoolAllocatorSingleThread_unsigned_int__SDMShutdown();
+        NiGlobalStringTable__SDMShutdown();
     }
 }
 
@@ -451,6 +458,7 @@ extern const char DAT_0109ef48;
 void __cdecl FUN_00a64900(const void*, void(__cdecl*)());
 // Runs one-time initialization guarded by DAT_011f5b80: calls setup routines, resets DAT_011f4294/DAT_011f4288, and registers many handlers via FUN_00a64900.
 // @fnv 0x00a89cc0
+// pdb: NiMainSDM::Init | NiMainSDM.obj | retail, string-set bridge, high
 void __cdecl InitializeGameSystems()
 {
     if (DAT_011f5b80 == 0)

@@ -147,17 +147,17 @@ template <typename T, typename Allocator> __forceinline hkArray<T, Allocator>::~
 }
 typedef LocalM128 hkQuadReal;
 typedef const hkSimdReal& hkSimdRealParameter;
-__forceinline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& v1)
+__forceinline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), v1.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 __forceinline void hkVector4::addMul4(hkSimdRealParameter r, const hkVector4& v1)
 {
     m_vComponents = _mm_add_ps(m_vComponents, _mm_mul_ps(r.broadcast(), v1.m_vComponents));
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    hkQuadReal x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    hkQuadReal x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     hkQuadReal xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, (((1) << 6) | ((1) << 4) | ((1) << 2) | ((1)))), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, (((2) << 6) | ((2) << 4) | ((2) << 2) | ((2)))), xySum);
 }
@@ -308,11 +308,11 @@ class HingeConstraintDrawer : public ConstraintDrawer
 };
 inline hkReal hkpHingeLimitsData::getMaxAngularLimit() const
 {
-    return m_kBridgeAtoms.m_kAngularLimit.m_fMaxAngle;
+    return m_atoms.m_kAngularLimit.m_maxAngle;
 }
 inline hkReal hkpHingeLimitsData::getMinAngularLimit() const
 {
-    return m_kBridgeAtoms.m_kAngularLimit.m_fMinAngle;
+    return m_atoms.m_kAngularLimit.m_minAngle;
 }
 __forceinline void HingeConstraintDrawer::drawHinge(hkpConstraintInstance* constraint,
                                                     hkDebugDisplayHandler* displayHandler, int id, int tag)
@@ -326,8 +326,8 @@ __forceinline void HingeConstraintDrawer::drawHinge(hkpConstraintInstance* const
     m_vVectorAtOffset40.setTransformedPos_00c7f640(attLocalToWorld, hkVector4::getZero());
     hkpConstraintDrawer_drawBodyFrames(id, tag);
     hkpConstraintDrawer_drawPivots(id, tag);
-    const hkVector4* baseA = &lhinge->m_kBridgeAtoms.m_kLocalRotations.m_kRotationA.getColumn(0);
-    const hkVector4* baseB = &lhinge->m_kBridgeAtoms.m_kLocalRotations.m_kRotationB.getColumn(0);
+    const hkVector4* baseA = &lhinge->m_atoms.m_kLocalRotations.m_rotationA.getColumn(0);
+    const hkVector4* baseB = &lhinge->m_atoms.m_kLocalRotations.m_rotationB.getColumn(0);
     hkVector4 axisInWorld;
     axisInWorld.hkVector4_setRotatedDir(m_kSecondRotation, baseB[0]);
     hkVector4 axisPerpInWorld;

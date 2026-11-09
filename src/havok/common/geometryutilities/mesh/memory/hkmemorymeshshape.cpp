@@ -8,6 +8,7 @@
 #include "../../../../../../include/hkStatisticsCollector.h"
 
 // include/ has no hkMeshShape header yet.
+// pdb: class hkMeshShape, size 0x8, bases: hkReferencedObject, 0 members
 class hkMeshShape : public hkReferencedObject
 {
 };
@@ -22,46 +23,49 @@ enum PrimitiveType
 };
 
 // include/ has no hkMeshSectionCinfo header; the section stride at 0x00e4a040 is 0x20.
+// pdb: structure hkMeshSectionCinfo, size 0x20, 8 members
 struct hkMeshSectionCinfo
 {
-    hkReferencedObject* m_pMeshVertexBuffer;
-    hkReferencedObject* m_iMaterialIndex;
-    hkEnum<PrimitiveType, unsigned char> m_ePrimitiveType;
-    int m_iNumPrimitives;
-    bool m_hasIndices;
-    void* m_ppIndices;
-    int m_iIndexType;
-    int m_iSectionVertexCount;
+    hkReferencedObject* m_vertexBuffer;
+    hkReferencedObject* m_material;
+    hkEnum<PrimitiveType, unsigned char> m_primitiveType;
+    int m_numPrimitives;
+    bool m_indexType;
+    void* m_indices;
+    int m_vertexStartIndex;
+    int m_transformIndex;
 };
 
 // include/ has no hkMeshSection header; 0x00e4a040 writes this 0x28-byte section result.
+// pdb: structure hkMeshSection, size 0x28, 10 members
 struct hkMeshSection
 {
-    hkEnum<PrimitiveType, unsigned char> m_ePrimitiveType;
-    int m_iNumPrimitives;
-    int m_iIndexCount;
-    int m_iIndexType;
-    int m_iSectionVertexCount;
-    bool m_hasIndices;
-    void* m_ppIndices;
-    hkReferencedObject* m_pMeshVertexBuffer;
-    hkReferencedObject* m_iMaterialIndex;
-    int m_iVertexOffset;
+    hkEnum<PrimitiveType, unsigned char> m_primitiveType;
+    int m_numPrimitives;
+    int m_numIndices;
+    int m_vertexStartIndex;
+    int m_transformIndex;
+    bool m_indexType;
+    void* m_indices;
+    hkReferencedObject* m_vertexBuffer;
+    hkReferencedObject* m_material;
+    int m_sectionIndex;
 };
 
 // The shared collector lacks beginObject(name, object, class), used at slot 3 by 0x00e4a0c0.
 
 // include/ has no hkMemoryMeshShape header; both former stand-ins access this same sections array at +8.
+// pdb: class hkMemoryMeshShape, size 0x30, bases: hkMeshShape, 4 members
 class hkMemoryMeshShape : public hkMeshShape
 {
   public:
     int GetNumSections() const;
     void GetSection(int sectionIndex, unsigned char accessFlags, hkMeshSection& sectionOut);
-    virtual void calcContentStatistics(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw();
+    virtual void calcContentStatistics(hkStatisticsCollector* collector, const hkClass* cls) const throw();
 
     hkArray<hkMeshSectionCinfo> m_sections;
-    hkArray<unsigned short> m_kIndices16;
-    hkArray<unsigned int> m_kIndices32;
+    hkArray<unsigned short> m_indices16;
+    hkArray<unsigned int> m_indices32;
     char* m_name;
 };
 
@@ -76,12 +80,12 @@ int hkMemoryMeshShape::GetNumSections() const
     return m_sections.m_iElementCount;
 }
 
-int hkStatisticsCollector_getAllocatedSize(const void* pvData, int iSize) throw();
+int hkStatisticsCollector_getAllocatedSize(const void* p, int size) throw();
 
 template <typename T> inline void CollectArray(hkStatisticsCollector* pkCollector, const char* pcFieldName,
                                                const hkArray<T>& kArray)
 {
-    if (!(kArray.m_iCapacityState & 0x80000000) || pkCollector->m_reportInplaceAllocations)
+    if (!(kArray.m_iCapacityState & 0x80000000) || pkCollector->m_includeUnmanagedArrayMemory)
     {
         const T* pData = kArray.m_data;
         int iAllocatedSize = hkStatisticsCollector_getAllocatedSize(pData, kArray.getCapacity() * sizeof(T));
@@ -91,42 +95,46 @@ template <typename T> inline void CollectArray(hkStatisticsCollector* pkCollecto
 
 // Reports the indices16, indices32 and sections arrays plus each section's vertexBuffer and material to the statistics collector.
 // @fnv 0x00e4a0c0
-void hkMemoryMeshShape::calcContentStatistics(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw()
+// pdb: hkMemoryMeshShape::calcContentStatistics | hkMemoryMeshShape.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void hkMemoryMeshShape::calcContentStatistics(hkStatisticsCollector* collector, const hkClass* cls) const throw()
 {
-    CollectArray(pkCollector, "indices16", m_kIndices16);
-    CollectArray(pkCollector, "indices32", m_kIndices32);
-    CollectArray(pkCollector, "sections", m_sections);
+    CollectArray(collector, "indices16", m_indices16);
+    CollectArray(collector, "indices32", m_indices32);
+    CollectArray(collector, "sections", m_sections);
     const int iNumSections = m_sections.m_iElementCount;
     for (int iIndex = 0; iIndex < iNumSections; iIndex++)
     {
         const hkMeshSectionCinfo& kSection = m_sections.m_data[iIndex];
-        pkCollector->beginObject("vertexBuffer", kSection.m_pMeshVertexBuffer, 0);
-        pkCollector->beginObject("material", kSection.m_iMaterialIndex, 0);
+        collector->beginObject("vertexBuffer", kSection.m_vertexBuffer, 0);
+        collector->beginObject("material", kSection.m_material, 0);
     }
 }
 
-int __cdecl hkMeshPrimitiveUtil_calculateNumIndices(PrimitiveType type, int numPrimitives);
+int __cdecl hkMeshPrimitiveUtil_calculateNumIndices(PrimitiveType type, int numPrims);
 
 // Copies the cinfo fields of the mesh section at sectionIndex into sectionOut, computing the index count and gating vertex/indices pointers by accessFlags.
 // @fnv 0x00e4a040
+// pdb: hkMemoryMeshShape::lockSection | hkMemoryMeshShape.obj | retail, vtable slot, high
+// pdb params: sectionIndex, accessFlags, sectionOut
 void hkMemoryMeshShape::GetSection(int sectionIndex, unsigned char accessFlags, hkMeshSection& sectionOut)
 {
     const hkMeshSectionCinfo& cinfo = m_sections.m_data[sectionIndex];
-    sectionOut.m_ePrimitiveType = cinfo.m_ePrimitiveType;
-    sectionOut.m_iNumPrimitives = cinfo.m_iNumPrimitives;
-    sectionOut.m_iIndexCount = hkMeshPrimitiveUtil_calculateNumIndices(cinfo.m_ePrimitiveType, cinfo.m_iNumPrimitives);
-    sectionOut.m_iIndexType = cinfo.m_iIndexType;
-    sectionOut.m_hasIndices = cinfo.m_hasIndices;
-    sectionOut.m_iSectionVertexCount = cinfo.m_iSectionVertexCount;
-    sectionOut.m_pMeshVertexBuffer = (accessFlags & 2) ? cinfo.m_pMeshVertexBuffer : 0;
-    sectionOut.m_ppIndices = 0;
-    if ((accessFlags & 1) && cinfo.m_hasIndices)
-        sectionOut.m_ppIndices = cinfo.m_ppIndices;
-    sectionOut.m_iMaterialIndex = cinfo.m_iMaterialIndex;
-    sectionOut.m_iVertexOffset = sectionIndex;
+    sectionOut.m_primitiveType = cinfo.m_primitiveType;
+    sectionOut.m_numPrimitives = cinfo.m_numPrimitives;
+    sectionOut.m_numIndices = hkMeshPrimitiveUtil_calculateNumIndices(cinfo.m_primitiveType, cinfo.m_numPrimitives);
+    sectionOut.m_vertexStartIndex = cinfo.m_vertexStartIndex;
+    sectionOut.m_indexType = cinfo.m_indexType;
+    sectionOut.m_transformIndex = cinfo.m_transformIndex;
+    sectionOut.m_vertexBuffer = (accessFlags & 2) ? cinfo.m_vertexBuffer : 0;
+    sectionOut.m_indices = 0;
+    if ((accessFlags & 1) && cinfo.m_indexType)
+        sectionOut.m_indices = cinfo.m_indices;
+    sectionOut.m_material = cinfo.m_material;
+    sectionOut.m_sectionIndex = sectionIndex;
 }
 
-void __cdecl EnterTlsGuard() throw();
+void __cdecl hkReferencedObject_lockAll() throw();
 void __cdecl hkReferencedObject_unlockAll() throw();
 
 class hkBoolC
@@ -235,6 +243,8 @@ class FUN_00cf3ea0 : public RefObject
 
 // Stores the entities, data, and priority, then increments references for entityA, nonnull entityB, and data.
 // @fnv 0x00cf3ea0
+// pdb: hkpConstraintInstance::hkpConstraintInstance | hkpConstraintInstance.obj | retail, call graph (shared callers), high
+// pdb params: f
 FUN_00cf3ea0::FUN_00cf3ea0(ConstraintEntity* entityA, ConstraintEntity* entityB, ConstraintData* data,
                            ConstraintPriority priority) throw()
     : m_pOwnerObject(0), m_data(data), m_priority(priority), m_bWantRuntime(true),
@@ -244,7 +254,7 @@ FUN_00cf3ea0::FUN_00cf3ea0(ConstraintEntity* entityA, ConstraintEntity* entityB,
     m_kActorEntries[1] = entityB;
     m_pConstraintModifier = 0;
 
-    EnterTlsGuard();
+    hkReferencedObject_lockAll();
     m_kActorEntries[0]->FUN_00c90510();
     if (m_kActorEntries[1])
     {

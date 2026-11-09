@@ -47,9 +47,9 @@ template <typename T> __forceinline void hkDestructE5CD(T* t, int n)
 __forceinline hkxAttribute* CopyConstructAttribute(hkxAttribute* destination, const hkxAttribute& source)
 {
     reinterpret_cast<AttributeNameCopyConstructor>(&CopyConstructAttributeName)(&destination->m_name, source.m_name);
-    if (source.m_uiFilterValue.m_pRetainedObject)
-        source.m_uiFilterValue.m_pRetainedObject->addReference();
-    destination->m_uiFilterValue.m_pRetainedObject = source.m_uiFilterValue.m_pRetainedObject;
+    if (source.m_value.m_pRetainedObject)
+        source.m_value.m_pRetainedObject->addReference();
+    destination->m_value.m_pRetainedObject = source.m_value.m_pRetainedObject;
     return destination;
 }
 
@@ -77,6 +77,8 @@ __forceinline void hkArrayBase<T>::GrowArrayCapacity(hkMemoryAllocator& kAlloc, 
 
 // Replaces iNumDel elements at iIndex with iNumToInsert copies of pkInsert, growing the array if needed and shifting the tail.
 // @fnv 0x00e5cdb0
+// pdb: hkArrayBase<hkxAttribute>::_spliceInto | hkxAttributeGroup.obj | retail, object-file run extension, low
+// pdb params: alloc, index, numdel, p, numtoinsert
 template <>
 void hkArrayBase<hkxAttribute>::_spliceInto(hkMemoryAllocator& kAlloc, int iIndex, int iNumDel, const hkxAttribute* pkInsert,
                               int iNumToInsert)
@@ -112,6 +114,9 @@ struct AttributeFormatter
 };
 // Writes the string at the encoded address when encoded is nonzero; otherwise writes str_010c9308, then returns this.
 // @fnv 0x00cc05a0
+// pdb: hkOstream::operator<< | hkOStream.obj | retail, call graph, high
+// pdb params: p
+// pdb locals: buf
 AttributeFormatter* AttributeFormatter::WriteName(NameReference* name)
 {
     if (name->encoded & ~1u)
@@ -150,7 +155,7 @@ struct MessageBuilder
     int storage;
     int length;
     int capacity;
-    void FUN_00cb1600(char* buffer, unsigned int size);
+    void FUN_00cb1600(char* buf, unsigned int bufSize);
     MessageBuilder* ProcessAndReturnValue_00cc01c0(const char*);
     MessageBuilder* WriteName(AttrLookup*);
     void FUN_00cc00e0();
@@ -169,6 +174,9 @@ extern "C" char DAT_010ecd0c[];
 extern "C" char DAT_010eccc8[];
 // Copies the named attribute's matrix into result when found; if missing, optionally reports an assertion failure and returns 1.
 // @fnv 0x00e5cc00
+// pdb: hkxAttributeGroup::getMatrixValue | hkxAttributeGroup.obj | retail, object-file run extension, low
+// pdb params: name, warnIfNotFound, matrixOut
+// pdb locals: assertBuf, ostr
 int AttrLookup::GetAttributeMatrix(const char* apAttributeName, bool verbose, HMat4* result)
 {
     MatrixHolder* attribute = CallWithGlobalObject(apAttributeName);
@@ -228,7 +236,7 @@ struct S00e5cce0_Class
     S00e5cce0_Class& __thiscall CopyArrayAndReplaceElements(const S00e5cce0_Class& o);
 };
 
-void __cdecl hkArrayUtil__reserve(int alloc, ElemArray* a, int bytes, int elemSize);
+void __cdecl hkArrayUtil__reserve(int mem, ElemArray* array, int numElem, int sizeElem);
 Allocator* __cdecl hkMemoryRouter_getInstance(void);
 
 static __forceinline void destructElems(hkxAttribute* data, int n)
@@ -236,11 +244,11 @@ static __forceinline void destructElems(hkxAttribute* data, int n)
     for (int i = 0; i < n; i++)
     {
         hkxAttribute& e = data[i];
-        if (e.m_uiFilterValue.m_pRetainedObject != 0)
+        if (e.m_value.m_pRetainedObject != 0)
         {
-            e.m_uiFilterValue.m_pRetainedObject->removeReference();
+            e.m_value.m_pRetainedObject->removeReference();
         }
-        e.m_uiFilterValue.m_pRetainedObject = 0;
+        e.m_value.m_pRetainedObject = 0;
         e.m_name.Object_UpdateFields_00cb0c00();
     }
 }
@@ -259,6 +267,8 @@ static __forceinline void constructElems(hkxAttribute* p, int n)
 // Calls FUN_00cb0c30(o), destroys existing elements, then copies o.arr via FUN_00e5cec0 and returns *this.
 // @fnv 0x00e5cce0
 // src: GUESS 0x00e5cce0 (confidence: medium)
+// pdb: hkxAttributeGroup::operator= | hkxAttributeGroup.obj | retail, object-file run extension, low
+// pdb params: other
 S00e5cce0_Class& __thiscall S00e5cce0_Class::CopyArrayAndReplaceElements(const S00e5cce0_Class& aOther)
 {
     UpdateState_00cb0c30(aOther);

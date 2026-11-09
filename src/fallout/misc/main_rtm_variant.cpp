@@ -17,7 +17,7 @@ struct PluginListEntry
 };
 struct PluginListHandler
 {
-    TESFile* FUN_00462f40(const char*);
+    TESFile* GetListFile(const char*);
 };
 struct Receiver86;
 extern Receiver86* g_dataHandler;
@@ -48,7 +48,7 @@ bool PluginListReader::TESMain_LoadPluginsFromFile(const char* pDir, const char*
                 {
                     if (acLine[uiLen - 1] == '\n')
                         acLine[uiLen - 1] = 0;
-                    TESFile* m_pFileEntry = ((PluginListHandler*)g_dataHandler)->FUN_00462f40(acLine);
+                    TESFile* m_pFileEntry = ((PluginListHandler*)g_dataHandler)->GetListFile(acLine);
                     if (m_pFileEntry)
                     {
                         ((PluginListEntry*)m_pFileEntry)->FUN_00471d00(true);

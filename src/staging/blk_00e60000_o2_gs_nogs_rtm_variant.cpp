@@ -51,10 +51,10 @@ struct FUN_00e7d230_cls
 };
 
 extern MemoryManager g_memoryManager;
-void __cdecl DestroyArrayElements(void*);
+void __cdecl NiTNewInterface_NiD3DRenderStateGroup_Deallocate(void*);
 struct FUN_00e7f790_Class
 {
-    void __thiscall DestroyList();
+    void __thiscall NiTPoolContainer_NiD3DRenderStateGroup_NiTNewInterface_NiD3DRenderStateGroup_dtor();
 };
 int __cdecl Runtime_EvaluateValue_00e60c70(int a);
 struct FUN_00e67fd0_cls
@@ -116,7 +116,7 @@ struct FUN_00e7efc0_List
     int _z;
     int count;
     FUN_00e7efc0_Node* head;
-    FUN_00e7efc0_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromSavedList(FUN_00e7efc0_Node* node);
+    FUN_00e7efc0_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromSavedList(FUN_00e7efc0_Node* pkEntry);
 };
 struct DX9SurfaceDesc_00e68530
 {
@@ -291,7 +291,7 @@ struct FUN_00e7ef80_List
     int _x;
     int count;
     FUN_00e7ef80_Node* head;
-    FUN_00e7ef80_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromNoSaveList(FUN_00e7ef80_Node* node);
+    FUN_00e7ef80_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromNoSaveList(FUN_00e7ef80_Node* pkEntry);
 };
 class D3DRenderStateGroup
 {
@@ -299,7 +299,7 @@ class D3DRenderStateGroup
     ~D3DRenderStateGroup();
 };
 void __cdecl _FUN_00aa1490(void* p, int size);
-void __cdecl DestroyArrayElements(void* p);
+void __cdecl NiTNewInterface_NiD3DRenderStateGroup_Deallocate(void* pArray);
 struct FUN_00e611d0_Object
 {
     unsigned char unk00;
@@ -1335,7 +1335,7 @@ class FUN_00e67660_cls
     int unkdd8;
     int unkddc;
     FnvNode67* m_de0[100];
-    int hkWingedEdge_findVisibleTriangles(FnvNode67* a1, int a2, int* a3, FnvEnt67** a4);
+    int hkWingedEdge_findVisibleTriangles(FnvNode67* initialTriangle, int pointOfView, int* chainLength, FnvEnt67** edgeChain);
 };
 extern float DAT_0104da48;
 void* __cdecl _memmove(void*, const void*, unsigned);
@@ -2555,7 +2555,7 @@ struct S_00e7c610_Object
     unsigned char unk5e;
     unsigned char unk5f;
 };
-void __stdcall NiD3DDefaultShader_PackTextureTransform(float* afMatrix, S_00e7c610_Object* pObject);
+void __stdcall NiD3DDefaultShader_PackTextureTransform(float* kTexMatrix, S_00e7c610_Object* pkStage);
 class FUN_00e7cc90_cls
 {
   public:
@@ -2803,7 +2803,7 @@ void* __cdecl NiDX9ImplicitDepthStencilBufferData_GetRTTI(void);
 class BE7F610Heap
 {
   public:
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 extern BE7F610Heap g_kE7F610Heap;
 void __cdecl _NiFree_00aa10f0(void* pvMem);
@@ -2857,7 +2857,7 @@ template <class T> class BE7F610Queue : public BE7F610Object
 };
 extern BE7F610Queue<BE7F610Worker>* g_pkE7F610WorkerQueue;
 extern BE7F610Queue<BE7F610Buffer>* g_pkE7F610BufferQueue;
-void __cdecl DestroyGlobalQueues();
+void __cdecl NiD3DRenderStateGroup_ShutdownPools();
 extern int DAT_0126f728;
 int __cdecl NiD3DPass_GetD3DRenderState();
 struct Q74
@@ -3042,7 +3042,7 @@ struct E74Accumulator
 };
 struct FUN_00e74a40_shell : E74Accumulator
 {
-    void AddGeometryToBatch(E74Geometry* pkGeom);
+    void NiXenonRenderer_AddToBatch(E74Geometry* pkGeometry);
 };
 struct FUN_00e74c00_cls
 {
@@ -4025,7 +4025,7 @@ struct IndexAllocator
     int unk00;
 };
 struct IndexArray;
-void __cdecl hkArrayUtil__reserve(IndexAllocator* alloc, IndexArray* arr, int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(IndexAllocator* mem, IndexArray* array, int numElem, int sizeElem);
 void* __cdecl hkString_memCpy(void* dst, const void* src, unsigned int n);
 struct IndexArray
 {
@@ -4047,7 +4047,7 @@ inline hkMemoryRouter* getRouter() throw()
 {
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
-void __cdecl ResizeAudioStream(HeapAlloc* alloc, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(HeapAlloc* mem, void* array, int sizeElem);
 template <class T> inline void construct(T* p, int n, const T& t)
 {
     for (int i = 0; i < n; i++)
@@ -5231,7 +5231,7 @@ struct Tex
 {
     void SetValues(unsigned, unsigned);
 };
-const char* FUN_00e7a9a0(int);
+const char* NiXenonRenderer_GetD3DFormatString(int);
 void Object_DoNothing(const char*, ...);
 extern int DAT_0126f580;
 extern int DAT_0126f590;
@@ -5907,7 +5907,7 @@ __forceinline bool IsBumpFormatQ(int eFormat)
 int __cdecl FUN_00ec65a6(char* pcDest, unsigned int uiDestSize, const char* pcSrc);
 void __cdecl NiPath_Standardize(char* pcPath);
 int __cdecl FUN_00aa1360(const char* s1, const char* s2);
-NiFile* __cdecl FUN_00aa1a20(const char* pcName, int eMode, unsigned int uiBufferSize);
+NiFile* __cdecl FUN_00aa1a20(const char* pcName, int eMode, unsigned int uiSize);
 void* __cdecl _NiMalloc_00aa1070(unsigned int uiSize);
 void __cdecl _NiFree_00aa10f0(void* pvMem);
 void* __cdecl FUN_00ec44d0(void* pvDest, const void* pvSrc, unsigned int uiSize);
@@ -6966,7 +6966,7 @@ class E63Hull
     E63Oct<E63Quad<E63Face> > m_faces68_99;
     void ProcessEntries_00e63ba0(::LocalM128* a, ::LocalM128* b, ::LocalM128* c);
     E63Face* GetNearestEntry();
-    int hkWingedEdge_findVisibleTriangles(E63Face* a1, E63Vert* a2, int* a3, E63Edge** a4);
+    int hkWingedEdge_findVisibleTriangles(E63Face* initialTriangle, E63Vert* pointOfView, int* chainLength, E63Edge** edgeChain);
     int ProcessAndTransformResult_00e67740(int numNew, E63Edge* edge, E63Vert* vert);
     E63Face* FindHullFaceBySideTests(E63Face* face);
 };

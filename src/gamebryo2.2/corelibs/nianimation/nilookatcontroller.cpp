@@ -8,13 +8,13 @@
 // src/gamebryo2.2/corelibs/nianimation/nilookatcontroller.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nianimation/nilookatcontroller.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* g_011f3f98;
+extern "C" void* NiLookAtController_ms_RTTI;
 
 // @fnv 0x00a4cd30
 // src: COMMUNITY 0x00a4cd30
 void* __cdecl NiLookAtController_GetRTTI()
 {
-    return &g_011f3f98;
+    return &NiLookAtController_ms_RTTI;
 }
 
 void __cdecl FUN_00a6d290();
@@ -41,7 +41,7 @@ char* _FUN_00a7d330(const char*);
 void NiLookAtController::AppendString(StrArr* pkStrings)
 {
     ((BaseStub*)this)->FUN_00a6d830(pkStrings);
-    char* s = _FUN_00a7d330((const char*)g_011f3f98);
+    char* s = _FUN_00a7d330((const char*)NiLookAtController_ms_RTTI);
     unsigned int sz = pkStrings->m_usSize;
     if (sz >= pkStrings->m_usMaxSize)
     {
@@ -267,14 +267,14 @@ void NiLookAtController::LoadBinary_00a4ce20(NiStream& stream)
     StreamLayout& streamLayout = reinterpret_cast<StreamLayout&>(stream);
     if (streamLayout.version < 0x0a000102)
     {
-        *reinterpret_cast<unsigned short*>(_pad) = (streamLayout.controllerFlags >> 5) & 0xff;
+        *reinterpret_cast<unsigned short*>(m_uFlags) = (streamLayout.controllerFlags >> 5) & 0xff;
     }
     else
     {
         BinaryInput* input = streamLayout.input;
         unsigned int(__cdecl * read)(BinaryInput*, void*, unsigned int, unsigned int*, unsigned int) = input->read;
         unsigned int size = 2;
-        input->position += read(input, _pad, 2, &size, 1);
+        input->position += read(input, m_uFlags, 2, &size, 1);
     }
     reinterpret_cast<StreamFinish*>(&stream)->ReadLinkID();
 }
@@ -286,6 +286,9 @@ struct BaseClone
 
 // Resolves the look-at object through the cloning map after the base controller.
 // @fnv 0x00a4ccd0
+// pdb: NiLookAtController::CreateClone | NiLookAtController.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 void NiLookAtController::LookupAndLinkItem(void* apItem)
 {
     NiObject* local;
@@ -512,7 +515,7 @@ void NiLookAtController::SaveBinary_00a4cea0(NiStream* pkStream)
         // the caller's register (EDX) and hoisted to the top of the block,
         // while the store into the out-value stays ordered after the load.
         int local = 2;
-        handler->counter += handler->fn(handler, _pad, 2, &local, 1);
+        handler->counter += handler->fn(handler, m_uFlags, 2, &local, 1);
     }
     stream->v12(m_pkLookAt);
 }
@@ -544,11 +547,11 @@ struct LookAtFlags
 };
 inline LookAtFlags& Flags(NiLookAtController* controller)
 {
-    return *reinterpret_cast<LookAtFlags*>(controller->_pad);
+    return *reinterpret_cast<LookAtFlags*>(controller->m_uFlags);
 }
 inline const LookAtFlags& Flags(const NiLookAtController* controller)
 {
-    return *reinterpret_cast<const LookAtFlags*>(controller->_pad);
+    return *reinterpret_cast<const LookAtFlags*>(controller->m_uFlags);
 }
 
 struct BaseCopy
@@ -569,7 +572,7 @@ inline NiLookAtController* AllocateLookAtController()
         FUN_00a6d220(controller);
         *reinterpret_cast<void**>(controller) = &DAT_01098c14;
         controller->m_pkLookAt = 0;
-        *reinterpret_cast<unsigned short*>(controller->_pad) = 0;
+        *reinterpret_cast<unsigned short*>(controller->m_uFlags) = 0;
         controller->m_uiObjectFlags &= ~0x40;
         result = controller;
     }
@@ -607,6 +610,7 @@ struct BaseEqual
 // Compares the base controller and the optional look-at object.
 // @fnv 0x00a4c890
 // src: XBOX_PDB 0x00a4c890
+// pdb: NiLookAtController::`scalar deleting destructor' | NiLookAtController.obj | retail, object-file run extension, low
 bool NiLookAtController::IsEqual_00a4c890(NiLookAtController* other)
 {
     if (!reinterpret_cast<BaseEqual*>(this)->NiTimeController_IsEqual(other))
@@ -714,7 +718,10 @@ inline bool NiLookAtController::IsActive() const
 
 // Rotates the controlled node to face the target node by building a look-at matrix from their world positions and applying the parent transform.
 // @fnv 0x00a4c8e0
-void NiLookAtController::Update(NiUpdateData& update)
+// pdb: NiLookAtController::Update | NiLookAtController.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: kParentWorldRot, kTargetWorldPos, pkParent, kMyWorldPos, pkTarget, kRot, kAt, kRight, kUp, fDot
+void NiLookAtController::Update(NiUpdateData& UpdateData)
 {
     if (!m_pkLookAt || !IsActive())
         return;

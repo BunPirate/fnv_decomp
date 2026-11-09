@@ -19,8 +19,8 @@ class exception
     virtual ~exception();
 
   private:
-    const char* m_pcWhat;
-    int m_iDoFree;
+    const char* _Mywhat;
+    int _Mydofree;
 };
 class bad_alloc : public exception
 {

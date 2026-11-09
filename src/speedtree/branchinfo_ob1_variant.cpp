@@ -151,7 +151,7 @@ struct ByteVec
     int i8;
     char* pFirst;
     char* pLast;
-    unsigned char& FUN_00b15170(unsigned n);
+    unsigned char& D3DXShader_CFragmentRegisterAllocator_GetElement(unsigned szName);
 };
 struct Parser
 {
@@ -175,88 +175,91 @@ struct BranchQ
     bool bB;
     char acPad[0x56];
     BranchQ();
-    void UpdateFields_00b3fc80(int);
-    void ReleaseStorage_00b3fcf0(int);
-    void UpdateFields_00b3fd60(int);
-    void UpdateState_00b3fdd0(int);
-    void UpdateFields_00b3fe40(int);
-    void ReleaseStorage_00b3feb0(int);
-    void UpdateFields_00b3ff20(int);
-    void UpdateState_00b3ff90(int);
-    void UpdateFields_00b40000(int);
+    void SIdvBranchInfo_SetDisturbance(int);
+    void SIdvBranchInfo_SetGravity(int);
+    void SIdvBranchInfo_SetFlexibility(int);
+    void SIdvBranchInfo_SetFlexibilityScale(int);
+    void SIdvBranchInfo_SetLength(int);
+    void SIdvBranchInfo_SetRadius(int);
+    void SIdvBranchInfo_SetRadiusScale(int);
+    void SIdvBranchInfo_SetStartAngle(int);
+    void SIdvBranchInfo_SetAngleProfile(int);
 };
 // @fnv 0x00b3f8e0
-// src: GUESS 0x00b3f8e0 (confidence: low)
-BranchQ* Object_ProcessEntries_00b3f8e0(Parser* p)
+// src: XBOX_RETAIL_PDB 0x00b3f8e0
+// pdb: SIdvBranchInfo::Parse | BranchInfo.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken, pInfo
+BranchQ* SIdvBranchInfo_Parse(Parser* cFile)
 {
     DeadTop();
     BranchQ* pBranch = new BranchQ;
-    int iToken = p->GetNextElement();
+    int iToken = cFile->GetNextElement();
     if (iToken != 0x3f8)
         throw FUN_00b09480("malformed branch data", false);
-    iToken = p->GetNextElement();
+    iToken = cFile->GetNextElement();
     do
     {
         switch (iToken)
         {
         case 0x1770:
-            pBranch->UpdateFields_00b3fc80(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetDisturbance(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1771:
-            pBranch->ReleaseStorage_00b3fcf0(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetGravity(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1772:
-            pBranch->UpdateFields_00b3fd60(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetFlexibility(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1773:
-            pBranch->UpdateState_00b3fdd0(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetFlexibilityScale(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1781:
-            pBranch->UpdateFields_00b40000(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetAngleProfile(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1774:
-            pBranch->UpdateFields_00b3fe40(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetLength(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1775:
-            pBranch->ReleaseStorage_00b3feb0(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetRadius(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1776:
-            pBranch->UpdateFields_00b3ff20(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetRadiusScale(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1777:
-            pBranch->UpdateState_00b3ff90(p->CTreeFileAccess_ParseBranchParameter());
+            pBranch->SIdvBranchInfo_SetStartAngle(cFile->CTreeFileAccess_ParseBranchParameter());
             break;
         case 0x1778:
-            pBranch->iA = p->GetNextElement();
+            pBranch->iA = cFile->GetNextElement();
             break;
         case 0x1779:
-            pBranch->iB = p->GetNextElement();
+            pBranch->iB = cFile->GetNextElement();
             break;
         case 0x177a:
-            pBranch->afF[0] = p->CTreeFileAccess_ParseFloat();
+            pBranch->afF[0] = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x177b:
-            pBranch->afF[1] = p->CTreeFileAccess_ParseFloat();
+            pBranch->afF[1] = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x177c:
-            pBranch->afF[2] = p->CTreeFileAccess_ParseFloat();
+            pBranch->afF[2] = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x177d:
-            pBranch->afF[3] = p->CTreeFileAccess_ParseFloat();
+            pBranch->afF[3] = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x177e:
-            pBranch->afF[4] = p->CTreeFileAccess_ParseFloat();
+            pBranch->afF[4] = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x177f:
-            pBranch->bA = p->kData.FUN_00b15170(p->uiPos++) != 0;
+            pBranch->bA = cFile->kData.D3DXShader_CFragmentRegisterAllocator_GetElement(cFile->uiPos++) != 0;
             break;
         case 0x1780:
-            pBranch->bB = p->kData.FUN_00b15170(p->uiPos++) != 0;
+            pBranch->bB = cFile->kData.D3DXShader_CFragmentRegisterAllocator_GetElement(cFile->uiPos++) != 0;
             break;
         default:
             throw FUN_00b09480("malformed general branch information", false);
         }
-        iToken = p->GetNextElement();
+        iToken = cFile->GetNextElement();
     } while (iToken != 0x3f9);
     return pBranch;
 }

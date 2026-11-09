@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class BSTaskletManagerCallback, size 0x4, 0 members
 class BSTaskletManagerCallback
 {
 public:

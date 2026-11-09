@@ -6,6 +6,7 @@ class CombatStateValues;
 class UnsignedIdHandle;
 template <class T> class BSSimpleList;
 
+// pdb: class CombatGoal, size 0x1c, 4 members
 class CombatGoal
 {
 public:
@@ -30,7 +31,7 @@ public:
         COMBAT_GOAL_COUNT = 16
     };
 
-    virtual bool vf00(CombatStateValues* values);
+    virtual bool vf00(CombatStateValues* apWorldStateArray);
     virtual void vf01(int, int);
 
     CombatGoal(COMBAT_GOAL eType);
@@ -44,10 +45,10 @@ public:
     int DestroyIfFlagged(int flags);
 
     BSSimpleList<UnsignedIdHandle*>* GetWorldStateList();
-    static CombatGoal* CreateGoal(COMBAT_GOAL eType);
+    static CombatGoal* CreateCombatGoal(COMBAT_GOAL aeCombatGoal);
 
-    CombatWorldStateListNode m_kFirstWorldStateNode;
-    CombatWorldStateListNode m_kCombatWorldStateListNode;
+    CombatWorldStateListNode ActivationConditions;
+    CombatWorldStateListNode GoalStates;
     COMBAT_GOAL eType;
-    unsigned int m_uiGoalFlags;
+    unsigned int iGroupStrategyAssignment;
 };

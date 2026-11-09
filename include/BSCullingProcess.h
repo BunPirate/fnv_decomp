@@ -26,6 +26,7 @@ public:
 };
 #endif
 
+// pdb: class BSCullingProcess, size 0x160 (here 0xc8), bases: NiCullingProcess, 5 members
 class BSCullingProcess : public NiCullingProcess
 {
 public:
@@ -44,8 +45,8 @@ public:
     void* DeleteThis(unsigned int flags);
     void SetCamera(void* camera);
     void SetAccumulator(NiRefObject* accumulator);
-    void SetAccumulator(MenuTarget* accumulator);
-    void SetCullMode(unsigned int mode);
+    void SetAccumulator(MenuTarget* apAccumulator);
+    void SetCullMode(unsigned int aeType);
     void SetCompoundFrustum(TaskArg1* frustum);
     void FUN_004a0f60();
     void* FUN_004a0ff0(unsigned int flags);

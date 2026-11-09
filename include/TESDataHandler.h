@@ -122,6 +122,7 @@ class TESWaterForm;
 class TESWeather;
 class TESWorldSpace;
 
+// pdb: class TESDataHandler, size 0x638 (here 0x63c), 85 members
 class TESDataHandler
 {
 public:
@@ -241,8 +242,8 @@ public:
     unsigned char NotUniqueID(char*);
     void GetObjectCounts();
     void GetReferenceCounts();
-    void GetRegions();
-    void InitializeMagicSystem();
+    void UpdateAutoCalcNPCs();
+    void GenerateDefaultObjects();
     void GetReferencesInArea(TESObjectCELL*, void*, float, void*, float, int*, long);
     void GetReferencesInArea(void*, float, void*, float, int*, long);
     void EnumReferencesCloseToRef(TESObjectREFR*, float, void*, float, int*, long);
@@ -267,13 +268,13 @@ public:
     TESClass* GetClass(unsigned int);
     Script* GetScript(char*);
     Script* GetScript(unsigned int);
-    TESSound* GetSoundByEditorID(char*);
+    TESSound* GetSound(char*);
     TESSound* GetSoundByEditorID(unsigned int);
     TESGlobal* GetGlobal(char*);
     TESGlobal* GetGlobal(unsigned int);
     BGSVoiceType* GetVoiceType(unsigned int);
     TESFaction* GetFactionByFormID(char*);
-    TESFaction* GetFactionByFormID(unsigned int);
+    TESFaction* GetFaction(unsigned int);
     TESReputation* GetReputation(char*);
     TESReputation* GetReputation(unsigned int);
     TESRecipe* GetRecipe(char*);
@@ -369,9 +370,9 @@ public:
     void* GetQuestList();
     void AddQuest(TESQuest*);
     void RemoveQuest(TESQuest*);
-    unsigned int GetAddonNodeCount();
+    unsigned int D3DArrayTexture_GetArraySize();
     BGSAddonNode* GetAddonNodeByIndex(unsigned int);
-    void RegisterAddonNode(BGSAddonNode*);
+    void AddAddonNode(BGSAddonNode*);
     void RemoveAddonNode(BGSAddonNode*);
     TESObjectCELL* GetCellByNameAndGrid(char*);
     TESObjectCELL* GetCellByNameAndGrid(char*, int, int, TESWorldSpace*);
@@ -409,11 +410,11 @@ public:
     void AddCompiledFile(TESFile*);
     void ClearFileList();
     bool UpdateLoadingStatusCallback(char*);
-    void BuildCompiledFileList();
+    void CreateThreadSafeFiles();
     int CountCheckedFiles(int);
     unsigned int CountFiles();
     unsigned int CountCompiled();
-    bool LoadPluginFiles(bool);
+    bool CompileFiles(bool);
     bool ClearData();
     bool SaveActiveData(char*, bool);
     void CloseAllTES();
@@ -423,7 +424,7 @@ public:
     void RunAllPersistentRefScripts();
     bool ConstructObject(TESFile*, bool, TESForm*, bool);
     bool FormGroupLoadsInGame(TESFile*, FormRecordHeader*);
-    static TESForm* CreateFormForType(unsigned char);
+    static TESForm* CreateFormOfType(unsigned char);
     bool ResetOffsetData(TESFile*);
     void FixAllScriptIDs();
     void SetSaveLoadGameState(int);
@@ -482,10 +483,10 @@ public:
     unsigned int LoadFilesInDirectory(char*, void*);
     int GetDLCIndex(const char*);
     void GetReferencesInArea(TESObjectCELL*, const NiPoint3&, float, const NiPoint3&, float, bool(__cdecl*)(TESObjectREFR*, long), long);
-    TESFile* LookupTESFile(const char*);
+    TESFile* GetListFile(const char*);
     bool IsIDUsed(unsigned int);
     void IncrementID();
-    TESSound* GetSoundByEditorID(const char*);
+    TESSound* GetSound(const char*);
     unsigned int GetCompiledFileCount();
     BSSimpleList<TESReputation*>* GetTESReputationList();
     BSSimpleList<TESChallenge*>* GetTESChallengeList();
@@ -548,7 +549,7 @@ public:
     void* GetFirstSceneObject();
     void SetBoolAt61a(bool enable);
     BSSimpleList<TESWorldSpace*>* GetWorldSpaces();
-    static TESForm* __cdecl CreateFormForType(int);
+    static TESForm* __cdecl CreateFormOfType(int);
     BSSimpleList<TESWorldSpace*>* GetSourceFiles();
     bool LoadDescriptionForForm();
     Item* FindNthMatchingItem(void* a, int n);

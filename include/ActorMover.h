@@ -21,6 +21,7 @@ struct DcVec;
 struct Fx_Arg;
 struct PkgTriple;
 
+// pdb: class ActorMover, size 0x88, 27 members
 class ActorMover
 {
 public:
@@ -36,44 +37,44 @@ public:
     virtual void vf07();
     virtual unsigned int vf08();
     virtual bool GetPathingDelta(NiPoint3&);
-    virtual void SaveGame_009df100(BGSSaveFormBuffer* buffer);
-    virtual void LoadGame_009df3d0(BGSLoadFormBuffer* buffer);
+    virtual void SaveGame_009df100(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame_009df3d0(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void InitLoadGame_009df8c0(BGSLoadFormBuffer* buffer);
     virtual void FinishLoadGame_009dfa00(BGSLoadFormBuffer* buffer);
     virtual void ResetPathingState(BGSLoadFormBuffer* apBuffer);
 
-    NiPoint3 m_kLookAtTargetPosition;                 // 0x04
-    NiPoint3 m_kPathingDelta;                        // 0x10
-    NiPointer<PathingRequest> request;              // 0x1c
-    NiPointer<NiNode> m_pActorNode;                  // 0x20
+    NiPoint3 LookAtPoint;                 // 0x04
+    NiPoint3 CachedMoveDelta;                        // 0x10
+    NiPointer<PathingRequest> spCurrentRequest;              // 0x1c
+    NiPointer<NiNode> spCurrentPath;                  // 0x20
     union
     {
         ActorPathHandler* m_pPathHandler;           // 0x24
         unsigned int preferredMoveMode;
     };
     Actor* pActor;                                  // 0x28
-    unsigned int unk2C;
-    NiPointer<ActorPathingMessageQueue> m_queue;     // 0x30
-    unsigned int unk34;
-    unsigned int m_uiMovementFlags;                 // 0x38
-    unsigned int m_uiMovementMode;                  // 0x3c
-    unsigned short currentNode;                    // 0x40
-    unsigned short lastNode;                       // 0x42
-    PathingLocation m_pathingLocation;              // 0x44
+    unsigned int DetectionDoorID;
+    NiPointer<ActorPathingMessageQueue> spMessageQueue;     // 0x30
+    unsigned int uiPreferredMoveMode;
+    unsigned int uiForcedMoveMode;                 // 0x38
+    unsigned int iCachedLastValidMoveMode;                  // 0x3c
+    unsigned short iPreviousNode;                    // 0x40
+    unsigned short iNextNode;                       // 0x42
+    PathingLocation FailedPathDestination;              // 0x44
     int eState;                                    // 0x6c
     bool bPathingFailed;                            // 0x70
-    bool m_bHasMovementData;                        // 0x71
-    bool m_bMovementComplete;                       // 0x72
-    bool m_bHasLookAtTarget;                        // 0x73
-    bool m_bMovementActive;                         // 0x74
-    bool m_bMovementStateFlag;                      // 0x75
-    bool m_bMovementPaused;                         // 0x76
-    bool m_bHasPathingDelta;                        // 0x77
-    bool unk78;
+    bool bForceMoveMode;                        // 0x71
+    bool bStopMovementNextUpdate;                       // 0x72
+    bool bFaceTargetPoint;                        // 0x73
+    bool bWaitingForPath;                         // 0x74
+    bool bActorChangedProcessLevel;                      // 0x75
+    bool bInDialog;                         // 0x76
+    bool bHaveValidDeltaThisFrame;                        // 0x77
+    bool bStopCurrentMoveAnim;
     unsigned char unk79[3];
-    unsigned int lastTime;                          // 0x7c
-    unsigned int startTime;                         // 0x80
-    int retries;                                   // 0x84
+    unsigned int iLastFailureTimeStamp;                          // 0x7c
+    unsigned int iFirstFailureTimeStamp;                         // 0x80
+    int iContinuedFailureCount;                                   // 0x84
 
     void ClearMovementPath();
     void RefreshMovementState();
@@ -88,12 +89,12 @@ public:
     bool HasActiveMovement();
     void ForceStopMoving();
     void Revert(BGSLoadFormBuffer* apBuffer);
-    void LoadGame(BGSLoadFormBuffer* apBuffer);
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void InitLoadGame(BGSLoadFormBuffer* apBuffer);
     bool GetLookAtTargetPosition(NiPoint3& point);
     unsigned int GetCurrentMoveModeType();
-    void SetupPackageTarget(TESPackage*);
-    void ForceMoveMode(int value);
+    void UpdatePackageData(TESPackage*);
+    void ForceMoveMode(int aiMoveMode);
     unsigned int GetActorStateFlags();
     void UpdateTeleportPathState();
     void UpdateFlagFromTarget();
@@ -116,18 +117,18 @@ public:
     void FUN_009dd0a0();
     void FUN_009dd150();
 
-    void ResetMoverState(bool clearWaiting);
-    void ResetMoverState(int);
+    void ClearDataForNewPathingRequest(bool abClearWaitingFlag);
+    void ClearDataForNewPathingRequest(int);
     bool HasPathingSolution();
     void SetMoveTarget(NiPoint3 target);
-    bool GetPathCoordinate(NiPoint3* position);
+    bool GetPathCoordinate(NiPoint3* apRetLocation);
     int UpdatePathHandler();
     void ResetPathing();
-    void SetPathFailed(bool failed);
+    void SetPathFailed(bool abValue);
     void HandlePathResult(int result);
     void UpdatePathMovement();
     void UpdatePathingState(float);
-    void SetEnabled(bool enabled);
+    void SetEnabled(bool abValue);
     void SetEnabled(int);
     void UpdateTargeting();
     void SetFormID(TESForm* form);
@@ -140,8 +141,8 @@ public:
     void FUN_009dc590(float);
     int EndOfCurrentPathCheck();
     bool IsPathingComplete();
-    void* RequestRotateActor(NiPoint3 point, bool flag);
-    bool RequestRotateActor_009dce80(float delta, bool force);
+    void* RequestRotateActor(NiPoint3 aTargetPoint, bool abForceTurn);
+    bool RequestRotateActor_009dce80(float afTargetAngle, bool abForceTurn);
     unsigned int GetPreferredMoveModeType_009dd130();
     void FinishMoving(bool clearHandler);
     void FinishMoving(int);

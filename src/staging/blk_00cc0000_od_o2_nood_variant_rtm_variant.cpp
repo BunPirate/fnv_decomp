@@ -170,10 +170,10 @@ struct TransformOwner
     int unk00;
     TransformObj* m_pSource;
 
-    void ReleaseObject(TransformObj* pkObj, int iArg);
-    void hkHingeLimitsConstraintCinfo_CloneData(TransformObj* pkObj, int iArg);
+    void ReleaseObject(TransformObj* apData, int iArg);
+    void hkHingeLimitsConstraintCinfo_CloneData(TransformObj* apData, int arCloneData);
 };
-bool __stdcall bhkShape_CanShare(void* key);
+bool __stdcall bhkShape_CanShare(void* arCloneData);
 struct Cd2Target
 {
     virtual void v00();
@@ -261,7 +261,7 @@ public:
     Cd2Collection* m_pShapeCollection;
 
     __forceinline Cd2Collection* GetCollection() { return this ? m_pShapeCollection : 0; }
-    bool bhkShapeCollection_CanShare(void* key);
+    bool bhkShapeCollection_CanShare(void* arCloneData);
 };
 extern "C" {
 LocalM128 _mm_add_ps(LocalM128, LocalM128);
@@ -407,7 +407,7 @@ struct PoseState {
             if(state&4) {state|=2;state&=~4;flags[bone]=state;}
         }
     }
-    PoseTransform& hkaPose_accessBoneLocalSpace(int index);
+    PoseTransform& hkaPose_accessBoneLocalSpace(int boneIdx);
 };
 struct SpawnAllocator {
     virtual void v00();
@@ -466,8 +466,8 @@ struct FUN_00cc5f30_cls {
     int unk00;
     FUN_00d4f2a0* m_pSrc;
 
-    void hkRagdollLimitsConstraintCinfo_CloneData(FUN_00d4f2a0* dst, int a2);
-    void ReleaseObject(FUN_00d4f2a0* dst, int a2);
+    void hkRagdollLimitsConstraintCinfo_CloneData(FUN_00d4f2a0* apData, int arCloneData);
+    void ReleaseObject(FUN_00d4f2a0* apData, int a2);
 };
 struct S_00ccbce0_Source
 {
@@ -551,8 +551,8 @@ struct S_00ccbce0_Owner
     int unk10;
     S_00ccbce0_Ref* unk14;
 
-    void __thiscall bhkShape_CopyCinfo(S_00ccbce0_Output* value);
-    void __thiscall bhkExtendedMeshShape_CopyCinfo(S_00ccbce0_Output* value);
+    void __thiscall bhkShape_CopyCinfo(S_00ccbce0_Output* arInfo);
+    void __thiscall bhkExtendedMeshShape_CopyCinfo(S_00ccbce0_Output* arInfo);
 };
 extern "C" LocalM128 _mm_setr_ps(float, float, float, float);
 union hkVec4 { LocalM128 m_vComponents; char m_bytes[16]; };
@@ -579,8 +579,8 @@ struct EntityObj {
         return p;
     }
     static void operator delete(void* p, unsigned int nbytes);
-    EntityObj(int a,int b,int c);
-    void SetPivots(const hkVector4& position,const hkVector4& rotation);
+    EntityObj(int entityA,int entityB,int userData);
+    void hkpSpringAction_setPositionsInBodySpace(const hkVector4& pivotA,const hkVector4& pivotB);
     void removeReference();
 };
 struct EntityOwner {
@@ -598,7 +598,7 @@ struct EntityOwner {
     virtual void v40(); virtual void v41(); virtual void v42(); virtual void v43();
     virtual void v44(); virtual void v45(); virtual void v46();
     virtual int AddCinfo(EntityCinfo* info);
-    int bhkSpringAction_Init(EntityCinfo* info);
+    int bhkSpringAction_Init(EntityCinfo* arInfo);
 };
 class S_00cd3c20_Obj
 {
@@ -931,7 +931,7 @@ public:
     int unk51c;
     int unk520;
 };
-void __stdcall bhkCharacterStateClimbing_Update(S_00cd3c20_Obj* obj);
+void __stdcall bhkCharacterStateClimbing_Update(S_00cd3c20_Obj* arInput);
 struct ShapeVector
 {
     hkVec4 m_v;
@@ -978,7 +978,7 @@ struct ShapeObj
     }
     static void operator delete(void* p, unsigned int nbytes);
 
-    ShapeObj(int iType, const ShapeVector& kVec, float fA, float fB);
+    ShapeObj(int body, const ShapeVector& kVec, float fA, float fB);
     void FUN_00c905b0();
 };
 struct ShapeOwner
@@ -1031,7 +1031,7 @@ struct ShapeOwner
     virtual void vf45();
     virtual void vf46();
     virtual void finish(struct IntegerBlock18* pkInfo);
-    void bhkMotorAction_Init(IntegerBlock18* pkInfo);
+    void bhkMotorAction_Init(IntegerBlock18* arInfo);
 };
 struct S00cc4610_Ref { void __thiscall FUN_00c905b0(); };
 struct S00cc4610_Out {
@@ -1040,7 +1040,7 @@ struct S00cc4610_Out {
     float m_30;
     float m_34;
     int unk38; int unk3C;
-    S00cc4610_Out(int a, int b, int c);
+    S00cc4610_Out(int entityA, int entityB, int userData);
     void* operator new(unsigned int n) {
         hkMemoryAllocator& a = hkMemoryRouter::getInstance().heap();
         void* p = a.blockAlloc(n);
@@ -1107,7 +1107,7 @@ struct S00cc4610_Self {
     virtual void v45();
     virtual void v46();
     virtual void v47(S00cc4610_In* i);
-    void bhkAngularDashpotAction_Init(S00cc4610_In* in);
+    void bhkAngularDashpotAction_Init(S00cc4610_In* arInfo);
 };
 struct Cc7Bool { char value; };
 struct Cc7Local {
@@ -1117,15 +1117,15 @@ struct Cc7Local {
     Cc7Bool linearA[3], linearB[3];
     Cc7Bool angularA, angularB, pivotA, pivotB;
     void InitFromHelper(void* source);
-    void ProcessAndReturnValue_00d52000(void* out);
-    void UpdateState_00d51c30(void* tmp);
-    void* ProcessAndReturnValue_00d520a0(void* out);
-    void* ProcessAndReturnValue_00d51d40(void* tmp);
-    void AddBridgeAtoms();
-    void AppendEntryAndAdvance();
-    void ProcessAndReturnValue_00d52ae0(float value);
+    void hkpConstraintConstructionKit_setPivotA(void* pivot);
+    void hkpConstraintConstructionKit_setAngularBasisA(void* dofBasis);
+    void* hkpConstraintConstructionKit_setPivotB(void* out);
+    void* hkpConstraintConstructionKit_setAngularBasisB(void* dofBasis);
+    void hkpConstraintConstructionKit_constrainAllLinearDof();
+    void hkpConstraintConstructionKit_constrainAllAngularDof();
+    void hkpConstraintConstructionKit_setStrength(float strength);
     void hkpConstraintConstructionKit_restoreStrength();
-    void AppendZeroItem();
+    void hkpConstraintConstructionKit_end();
 };
 struct __declspec(align(16)) Cc7Vector { unsigned char lanes[16]; };
 struct Cc7Tmp {
@@ -1146,7 +1146,7 @@ struct Cc7Owner {
     char* m10;
     void* m14;
     void* m18;
-    void hkFixedConstraintCinfo_Fix(void* arg);
+    void hkFixedConstraintCinfo_Fix(void* arPoint);
 };
 extern "C" void _ReadWriteBarrier();
 struct TypeHeader { unsigned int unk00, unk04, unk08, typeCode; };
@@ -1171,7 +1171,7 @@ struct LunaArgument {
     ObjectType* value;
     int unk0c;
 };
-struct LunaTarget { unsigned int bhkMoppBvTreeShape_Init(LunaArgument* argument); };
+struct LunaTarget { unsigned int bhkMoppBvTreeShape_Init(LunaArgument* apShapeCollection); };
 extern void* __cdecl hkpMoppUtility_buildCode(const void*, ScratchGeometry*, unsigned int);
 union Quaternion525 {
     LocalM128 value;
@@ -1194,7 +1194,7 @@ public:
     float x,y,z;
     char* GetViewerString_00a59af0(const char*);
 };
-extern void* DAT_01268670;
+extern void* bhkPlaneShape_ms_RTTI;
 extern const char DAT_0101c29c[];
 extern const char DAT_010ca6a4[];
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
@@ -1233,8 +1233,8 @@ struct Holder {
     CachedObj* unk0c;
     int unk10;
     int unk14;
-    void bhkExtendedMeshShape_CopyCinfo(void* p);
-    CachedObj* bhkExtendedMeshShape_CreateCinfo(bool* created);
+    void bhkExtendedMeshShape_CopyCinfo(void* arInfo);
+    CachedObj* bhkExtendedMeshShape_CreateCinfo(bool* arCreated);
 };
 inline void* AllocAligned(unsigned int size)
 {
@@ -1627,7 +1627,7 @@ public:
     int unk0c;
     BoundsEntry* m_pEntries;
     void hkaPose_syncModelSpace();
-    void ProcessEntries_00cda610(BoundsBox* out);
+    void hkaPose_getModelSpaceAabb(BoundsBox* aabbOut);
 };
 extern __declspec(thread) int DAT_tls_field;
 struct S00cc2530_ScopedHeap306 {
@@ -1819,9 +1819,9 @@ struct InitializePathingRequestFromPosition {
 struct RefCountedObject {
     void FUN_00c905b0();
 };
-namespace fnvc_adapt { extern SourceGeometry* __cdecl hkpMoppUtility_buildCode(const void* attributes,
-                                              ScratchGeometry* scratch,
-                                              unsigned int options); }
+namespace fnvc_adapt { extern SourceGeometry* __cdecl hkpMoppUtility_buildCode(const void* shapeContainer,
+                                              ScratchGeometry* moppInput,
+                                              unsigned int reindexInfo); }
 extern int DAT_0102e368;
 struct Shape : RefCountedObject {
     const void** volatile methods;
@@ -2053,7 +2053,7 @@ struct TlsFlagGuard {
     TlsFlagGuard() { unsigned int index = DAT_0126fd98; m_blk = reinterpret_cast<ThreadTlsBlock**>(__readfsdword(0x2c))[index]; m_saved = m_blk->m_2b4; m_blk->m_2b4 = 0x10; }
     ~TlsFlagGuard() { m_blk->m_2b4 = m_saved; }
 };
-extern unsigned int DAT_01268694;
+extern unsigned int bhkCylinderShape_ms_RTTI;
 extern float DAT_010c72bc;
 struct NameArr {
     virtual ~NameArr();
@@ -2077,20 +2077,20 @@ struct __declspec(align(16)) Blk {
 };
 struct TagObj {
     float x, y, z;
-    unsigned int GetViewerString_00a59af0(const char* s);
+    unsigned int GetViewerString_00a59af0(const char* pPrefix);
 };
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int v);
 namespace fnvc_adapt { unsigned int __cdecl NiGetViewerString_00a7d550(const char* s, float f); }
-void __cdecl HK2NINS(TagObj* t, const LocalM128* v);
+void __cdecl HK2NINS(TagObj* arNiP, const LocalM128* arhkV);
 extern const char g_011d3e74_arg1[];
 extern const char str_010ca918[];
 extern const char str_010ca914[];
 class NamedShape {
 public:
     unsigned int unk00;
-    void WriteLimitedHingeData(Blk* b);
-    void bhkConvexShape_GetViewerStrings(NameArr* arr);
-    void bhkCylinderShape_GetViewerStrings(NameArr* arr);
+    void bhkCylinderShape_CopyCinfo(Blk* arInfo);
+    void bhkConvexShape_GetViewerStrings(NameArr* apStrings);
+    void bhkCylinderShape_GetViewerStrings(NameArr* apStrings);
 };
 static void AddName(NameArr* arr, const unsigned int& v) {
     unsigned int n = arr->m_usSize;
@@ -2176,8 +2176,8 @@ struct ShapeInfo_SI
 };
 
 
-__forceinline hkpShape::hkpShape(hkpShapeType iType) { m_ulUserData = 0; *(unsigned int*)&m_type = iType; }
-__forceinline hkpConvexShape::hkpConvexShape(int iType, float fRadius) : hkpShape((hkpShapeType)iType) { m_fSphereRadius = fRadius; }
+__forceinline hkpShape::hkpShape(hkpShapeType iType) { m_userData = 0; *(unsigned int*)&m_type = iType; }
+__forceinline hkpConvexShape::hkpConvexShape(int iType, float fRadius) : hkpShape((hkpShapeType)iType) { m_radius = fRadius; }
 struct ShapeObj_SI : hkpConvexShape
 {
     unsigned short unk14;
@@ -2251,7 +2251,7 @@ struct ShapeOwner_SI
     virtual void vf45();
     virtual void vf46();
     virtual void finish(ShapeInfo_SI* pkInfo);
-    void bhkTriangleShape_Init(ShapeInfo_SI* pkInfo);
+    void bhkTriangleShape_Init(ShapeInfo_SI* arInfo);
 };
 struct ParamSrc {
  int unk00, unk04, unk08, unk0c;
@@ -2274,7 +2274,7 @@ public:
  virtual void v40(); virtual void v41(); virtual void v42(); virtual void v43();
  virtual void v44(); virtual void v45(); virtual void v46();
  virtual void v47(ParamSrc*);
- void __thiscall CreateAndDispatchObject(const LocalM128& lo, const LocalM128& hi, float f);
+ void __thiscall bhkCylinderShape_Init(const LocalM128& arTop, const LocalM128& arBottom, float afRad);
  void __thiscall bhkCylinderShape_Init(ParamSrc*);
 };
 void* __cdecl FUN_00ec44d0(void*, const void*, unsigned);
@@ -2608,7 +2608,7 @@ struct FUN_00ccea00Holder
     FUN_00ccea00Inner* m_08;
 
     void bhkConvexShape_CopyCinfo(FUN_00ccea00Out* out);
-    void bhkConvexTransformShape_CopyCinfo(FUN_00ccea00Out* out);
+    void bhkConvexTransformShape_CopyCinfo(FUN_00ccea00Out* arInfo);
 };
 
 struct ThreadBlock {
@@ -2830,27 +2830,30 @@ class MotionOwner {
 public:
     int unk00;
     FUN_00d4edc0* motion;
-    void ReleaseObject(FUN_00d4edc0* output,MotionScale* scale);
-    void hkWheelConstraintCinfo_CloneData(FUN_00d4edc0* output,MotionScale* scale);
+    void ReleaseObject(FUN_00d4edc0* apData,MotionScale* scale);
+    void hkWheelConstraintCinfo_CloneData(FUN_00d4edc0* apData,MotionScale* arCloneData);
 };
 // @fnv 0x00cc51e0
 // src: XBOX_PDB 0x00cc51e0
-void MotionOwner::hkWheelConstraintCinfo_CloneData(FUN_00d4edc0* output,MotionScale* scale) {
+// pdb: hkWheelConstraintCinfo::CloneData | bhkWheelConstraint.obj | retail, upstream name already matches, high
+// pdb params: apData, arCloneData
+// pdb locals: pnd, fscale, tempMemContext, pd
+void MotionOwner::hkWheelConstraintCinfo_CloneData(FUN_00d4edc0* apData,MotionScale* arCloneData) {
     AllocationTypeScope allocation(0x10);
     FUN_00d4edc0* source=motion;
-    if(!output)output=new FUN_00d4edc0;
-    output->state50.quad=source->state50.quad;
-    output->state90.quad=source->state90.quad;
-    output->valueA4=source->valueA4;
-    output->valueA8=source->valueA8;
-    output->valueB0=source->valueB0;
-    output->valueB4=source->valueB4;
-    float factor=scale->factor;
+    if(!apData)apData=new FUN_00d4edc0;
+    apData->state50.quad=source->state50.quad;
+    apData->state90.quad=source->state90.quad;
+    apData->valueA4=source->valueA4;
+    apData->valueA8=source->valueA8;
+    apData->valueB0=source->valueB0;
+    apData->valueB4=source->valueB4;
+    float factor=arCloneData->factor;
     if(factor!=1.0f) {
-        output->state50.Mul(SimdReal(factor));
-        output->state90.Mul(SimdReal(factor));
+        apData->state50.Mul(SimdReal(factor));
+        apData->state90.Mul(SimdReal(factor));
     }
-    ReleaseObject(output,scale);
+    ReleaseObject(apData,arCloneData);
 }
 
 extern "C" LocalM128 _mm_load_ss(const float*);
@@ -2919,31 +2922,34 @@ struct CloneOwner513 {
 };
 // @fnv 0x00cc7600
 // src: XBOX_PDB 0x00cc7600
-void CloneOwner513::hkPrismaticConstraintCinfo_CloneData(FUN_00d4fe80* output, CloneData513* data) {
+// pdb: hkPrismaticConstraintCinfo::CloneData | bhkPrismaticConstraint.obj | retail, upstream name already matches, high
+// pdb params: apData, arCloneData
+// pdb locals: pnd, fscale, tempMemContext, pmotor, pd, pnewMotor
+void CloneOwner513::hkPrismaticConstraintCinfo_CloneData(FUN_00d4fe80* apData, CloneData513* arCloneData) {
     MemContextGuard memoryClass(16);
     FUN_00d4fe80* input=source;
-    if (!output) output=new FUN_00d4fe80;
-    output->transformA=input->transformA;
-    output->transformB=input->transformB;
-    output->maximum=input->maximum;
-    output->minimum=input->minimum;
-    output->b4=input->b4;
-    float scale=data->scale;
+    if (!apData) apData=new FUN_00d4fe80;
+    apData->transformA=input->transformA;
+    apData->transformB=input->transformB;
+    apData->maximum=input->maximum;
+    apData->minimum=input->minimum;
+    apData->b4=input->b4;
+    float scale=arCloneData->scale;
     if(scale!=1.0f) {
-        output->transformA.position.mul4(scale);
-        output->transformB.position.mul4(scale);
-        float& minimum=output->minimum;
+        apData->transformA.position.mul4(scale);
+        apData->transformB.position.mul4(scale);
+        float& minimum=apData->minimum;
         minimum=minimum*scale;
-        output->maximum=scale*output->maximum;
+        apData->maximum=scale*apData->maximum;
     }
     Motor513* motor=input->motor;
     if(motor) {
         Motor513* copy=motor->clone();
-        output->SetReferencedObject(copy);
+        apData->SetReferencedObject(copy);
         copy->FUN_00c905b0();
-        output->motorEnabled=input->motorEnabled;
+        apData->motorEnabled=input->motorEnabled;
     }
-    ReleaseObject(output,data);
+    ReleaseObject(apData,arCloneData);
 }
 
 extern "C" LocalM128 _mm_load_ss(float const*_A);
@@ -2964,11 +2970,14 @@ __forceinline void scale(LocalM128& v, float f)
 
 // @fnv 0x00cc96b0
 // src: COMMUNITY 0x00cc96b0
-void __cdecl hkBallAndSocketConstraintCinfo_ApplyScale(float value, S00cc96b0_ScaleObject* object)
+// pdb: hkBallAndSocketConstraintCinfo::ApplyScale | bhkBallAndSocketConstraint.obj | debug, upstream name already matches, high
+// pdb params: afScale, apInfo
+// pdb locals: pd
+void __cdecl hkBallAndSocketConstraintCinfo_ApplyScale(float afScale, S00cc96b0_ScaleObject* apInfo)
 {
-    if (object && value != 1.0f) {
-        scale(object->vector20, value);
-        scale(object->vector30, value);
+    if (apInfo && afScale != 1.0f) {
+        scale(apInfo->vector20, afScale);
+        scale(apInfo->vector30, afScale);
     }
 }
 
@@ -3029,19 +3038,22 @@ public:
     int unk10;
     NiPointer<RefObjStandIn> unk14;
 
-    void bhkShape_CopyMembers(TargetArg* pkTarget, ScaleArg* pkArg);
-    void bhkExtendedMeshShape_CopyMembers(TargetArg* pkTarget, ScaleArg* pkArg);
+    void bhkShape_CopyMembers(TargetArg* apDest, ScaleArg* arCloneData);
+    void bhkExtendedMeshShape_CopyMembers(TargetArg* apDest, ScaleArg* arCloneData);
 };
 
 // @fnv 0x00ccbf00
 // src: XBOX_PDB 0x00ccbf00
-void ScaledNode::bhkExtendedMeshShape_CopyMembers(TargetArg* pkTarget, ScaleArg* pkArg)
+// pdb: bhkExtendedMeshShape::CopyMembers | bhkExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: pdest, cinfo
+void ScaledNode::bhkExtendedMeshShape_CopyMembers(TargetArg* apDest, ScaleArg* arCloneData)
 {
-    TargetArg* pkDst = *(TargetArg* volatile*)&pkTarget;
-    ScaleArg* volatile pkScale = pkArg;
+    TargetArg* pkDst = *(TargetArg* volatile*)&apDest;
+    ScaleArg* volatile pkScale = arCloneData;
     bool bFlag;
     QuadHolder* pkQuad = vb4(&bFlag);
-    float fScale = pkArg->unk10;
+    float fScale = arCloneData->unk10;
     LocalM128 x = _mm_load_ss(&fScale);
     pkQuad->m_vComponents = _mm_mul_ps(_mm_shuffle_ps(x, x, 0), pkQuad->m_vComponents);
     pkDst->unk14 = unk14;
@@ -3433,72 +3445,75 @@ __forceinline void transferScalar(float& destination, float source) {
 }
 // @fnv 0x00cd3cb0
 // src: COMMUNITY 0x00cd3cb0
-void __stdcall bhkCharacterStateProjectile_Update(Motion* object) {
+// pdb: bhkCharacterStateProjectile::Update | bhkCharacterStateProjectile.obj | retail, upstream name already matches, high
+// pdb params: arInput
+// pdb locals: muInput, fgravityMult, position, gravity
+void __stdcall bhkCharacterStateProjectile_Update(Motion* arInput) {
     float b,z;
     Step scale;
     StoredVector amount;
-    _mm_store_ss(&b,object->vec4f0);
-    scale.surfaceVelocity = object->vec4d0;
+    _mm_store_ss(&b,arInput->vec4f0);
+    scale.surfaceVelocity = arInput->vec4d0;
     StoredVector cv;
-    scale.up = object->vec4c0;
-    scale.normal = object->vec4c0;
+    scale.up = arInput->vec4c0;
+    scale.normal = arInput->vec4c0;
     if (b < -100000000.0f) {
-        (*(0 + object->vec4f0.m128_f32)) = 0.0f;
-        scale.oldVelocity = object->vec4f0;
+        (*(0 + arInput->vec4f0.m128_f32)) = 0.0f;
+        scale.oldVelocity = arInput->vec4f0;
         scale.time = 1.0f;
-        _mm_store_ss(&b,_mm_shuffle_ps(object->vec510,object->vec510,0xaa));
+        _mm_store_ss(&b,_mm_shuffle_ps(arInput->vec510,arInput->vec510,0xaa));
         transferScalar(z,b);
-        _mm_store_ss(&b,object->vec510);
+        _mm_store_ss(&b,arInput->vec510);
         transferScalar(b,b);
-        _mm_store_ss(((0)[&scale.gravity.m128_f32]),_mm_shuffle_ps(object->vec510,object->vec510,0x55));
+        _mm_store_ss(((0)[&scale.gravity.m128_f32]),_mm_shuffle_ps(arInput->vec510,arInput->vec510,0x55));
         scale.gravity = _mm_setr_ps(scale.gravity.m128_f32[0],b,z,0.0f);
         scale.limit = 100000.0f;
-        scale.basis = object->vec4a0;
-        hkpCharacterMovementUtil_calculateMovement(&scale,&object->vec4f0);
+        scale.basis = arInput->vec4a0;
+        hkpCharacterMovementUtil_calculateMovement(&scale,&arInput->vec4f0);
     } else {
-        *static_cast<volatile float*>(&scale.time)=object->value534;
-        scale.oldVelocity = object->vec4f0;
-        _mm_store_ss(&z,_mm_shuffle_ps(object->vec510,object->vec510,0xaa));
+        *static_cast<volatile float*>(&scale.time)=arInput->value534;
+        scale.oldVelocity = arInput->vec4f0;
+        _mm_store_ss(&z,_mm_shuffle_ps(arInput->vec510,arInput->vec510,0xaa));
         transferScalar(b,z);
-        _mm_store_ss(&z,object->vec510);
+        _mm_store_ss(&z,arInput->vec510);
         transferScalar(z,z);
-        _mm_store_ss(((&scale.gravity.m128_f32)[0]),_mm_shuffle_ps(object->vec510,object->vec510,0x55));
+        _mm_store_ss(((&scale.gravity.m128_f32)[0]),_mm_shuffle_ps(arInput->vec510,arInput->vec510,0x55));
         scale.gravity = _mm_setr_ps((((scale.gravity.m128_f32)[(0)])),z,b,0.0f);
         scale.limit = 100000.0f;
-        scale.basis = object->vec4a0;
-        hkpCharacterMovementUtil_calculateMovement(&scale,&object->vec4f0);
-        b = object->value54c;
+        scale.basis = arInput->vec4a0;
+        hkpCharacterMovementUtil_calculateMovement(&scale,&arInput->vec4f0);
+        b = arInput->value54c;
         if (b > 0.0f) {
-            LocalM128 normal=object->vec4c0;
-            LocalM128 n=_mm_mul_ps(_mm_load_ps(reinterpret_cast<const float*>(&normal)),object->vec4f0);
+            LocalM128 normal=arInput->vec4c0;
+            LocalM128 n=_mm_mul_ps(_mm_load_ps(reinterpret_cast<const float*>(&normal)),arInput->vec4f0);
             LocalM128 v=_mm_add_ss(_mm_shuffle_ps(n,n,0x55),n);
             LocalM128 product;
             LocalM128 idx=_mm_add_ss(_mm_shuffle_ps(n,n,0xaa),v);
             _ReadBarrier();
             product = _mm_sub_ss(DAT_010c7160,idx);
-                    object->vec4f0=_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(product,product,0),normal),object->vec4f0);
+                    arInput->vec4f0=_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(product,product,0),normal),arInput->vec4f0);
             _ReadWriteBarrier();
-            normal=object->vec4c0;
+            normal=arInput->vec4c0;
             n=_mm_mul_ps(_mm_load_ps(reinterpret_cast<const float*>(&normal)),scale.oldVelocity);
             v=_mm_add_ss(_mm_shuffle_ps(n,n,0x55),n);
             idx=_mm_add_ss(_mm_shuffle_ps(n,n,0xaa),v);
-            object->vec4f0=_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(idx,idx,0),normal),object->vec4f0);
+            arInput->vec4f0=_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(idx,idx,0),normal),arInput->vec4f0);
         }
         LocalM128 y;
-        object->SubtractVectors(reinterpret_cast<LocalM128*>(&amount));
+        arInput->SubtractVectors(reinterpret_cast<LocalM128*>(&amount));
         y = amount;
         _mm_store_ss(&z,_mm_shuffle_ps(y,y,0xaa));
-        if (z > object->value53c) {
-            object->vtable->getTransform(object);
-            cv = object->vtable->getTransform(object)->b;
-            object->vtable->getTransform(object);
+        if (z > arInput->value53c) {
+            arInput->vtable->getTransform(arInput);
+            cv = arInput->vtable->getTransform(arInput)->b;
+            arInput->vtable->getTransform(arInput);
             LocalM128 pForm=_mm_load_ss(&b);
-            transferScalar(z,object->value4e8);
+            transferScalar(z,arInput->value4e8);
             LocalM128 q=_mm_load_ss(&z);
-            object->vec4f0 = _mm_add_ps(_mm_mul_ps(_mm_mul_ps(_mm_shuffle_ps(pForm,pForm,0),cv),_mm_shuffle_ps(q,q,0)),object->vec4f0);
+            arInput->vec4f0 = _mm_add_ps(_mm_mul_ps(_mm_mul_ps(_mm_shuffle_ps(pForm,pForm,0),cv),_mm_shuffle_ps(q,q,0)),arInput->vec4f0);
         }
     }
-    if (11 != object->state) reinterpret_cast<FUN_00c6cba0_class*>(object)->bhkCharacterController_UpdateState();
+    if (11 != arInput->state) reinterpret_cast<FUN_00c6cba0_class*>(arInput)->bhkCharacterController_UpdateState();
 }
 
 extern "C" void _ReadBarrier(void);
@@ -3983,73 +3998,76 @@ struct S00cd3fb0_MotionContext {
     unsigned int unk00;
     unsigned int unk04;
     float m_vScale;
-    void bhkCharacterStateInAir_Update(S00cd3fb0_MotionObject* object);
+    void bhkCharacterStateInAir_Update(S00cd3fb0_MotionObject* arInput);
 };
 
 struct S00cd3fb0_MotionScalarLane { LocalM128 value; __forceinline S00cd3fb0_MotionScalarLane(float v) { value = _mm_load_ss(&v); } __forceinline S00cd3fb0_MotionScalarLane(S00cd3fb0_RealValue v) { value=_mm_load_ss(&v.value); } __forceinline LocalM128 broadcast() const { return _mm_shuffle_ps(value,value,0); } };
 // @fnv 0x00cd3fb0
 // src: XBOX_PDB 0x00cd3fb0
-void S00cd3fb0_MotionContext::bhkCharacterStateInAir_Update(S00cd3fb0_MotionObject* object)
+// pdb: bhkCharacterStateInAir::Update | bhkCharacterStateInAir.obj | retail, upstream name already matches, high
+// pdb params: arInput
+// pdb locals: gravity, startFakePos, muInput
+void S00cd3fb0_MotionContext::bhkCharacterStateInAir_Update(S00cd3fb0_MotionObject* arInput)
 {
-    if ((unsigned char)(object->m_flags >> 8) & 1) {
-        object->m_uiContentCount = 0;
-        const_cast<volatile unsigned int&>(object->m_flags) |= 0x80;
+    if ((unsigned char)(arInput->m_flags >> 8) & 1) {
+        arInput->m_uiContentCount = 0;
+        const_cast<volatile unsigned int&>(arInput->m_flags) |= 0x80;
     }
-    if (object->m_uiContentCount == 11 && object->m_factor > 1.0f && ((S00cd3fb0_FUN_00c70550_class*)object)->bhkCharacterController_GetFallDistance() < 0.10000000149011612) {
-        object->m_uiContentCount = 0;
-        object->m_bSlotEnabled = 1;
+    if (arInput->m_uiContentCount == 11 && arInput->m_factor > 1.0f && ((S00cd3fb0_FUN_00c70550_class*)arInput)->bhkCharacterController_GetFallDistance() < 0.10000000149011612) {
+        arInput->m_uiContentCount = 0;
+        arInput->m_bSlotEnabled = 1;
         LocalM128 v;
-        ((S00cd3fb0_FUN_00c6e300_class*)object)->SubtractVectors(&v);
-        object->m_v620.m_vComponents = v;
+        ((S00cd3fb0_FUN_00c6e300_class*)arInput)->SubtractVectors(&v);
+        arInput->m_v620.m_vComponents = v;
     }
-    if (object->m_uiContentCount != 11) {
-        if (object->m_uiContentCount != 1) {
-            object->m_factor = 0.0f;
-            ((S00cd3fb0_FUN_00c6cba0_class*)object)->bhkCharacterController_UpdateState();
+    if (arInput->m_uiContentCount != 11) {
+        if (arInput->m_uiContentCount != 1) {
+            arInput->m_factor = 0.0f;
+            ((S00cd3fb0_FUN_00c6cba0_class*)arInput)->bhkCharacterController_UpdateState();
             return;
         }
-        object->m_uiContentCount = 11;
+        arInput->m_uiContentCount = 11;
     }
-    if (object->m_uiCommandId > 0.0f) {
+    if (arInput->m_uiCommandId > 0.0f) {
         S00cd3fb0_MotionParams params;
-        params.m_factor = (object->m_flags & 0x1800) ? 1.0f : object->m_uiCommandId * DAT_011b0140 + DAT_01267bbc;
-        params.m_v10 = object->m_v4d0;
+        params.m_factor = (arInput->m_flags & 0x1800) ? 1.0f : arInput->m_uiCommandId * DAT_011b0140 + DAT_01267bbc;
+        params.m_v10 = arInput->m_v4d0;
         params.m_vScale = m_vScale;
-        params.m_vHitNormal = object->m_vHitNormal;
-        params.m_normal2 = object->m_vHitNormal;
-        params.m_v70 = object->m_v4a0;
-        params.m_fVelocity = object->m_fVelocity;
+        params.m_vHitNormal = arInput->m_vHitNormal;
+        params.m_normal2 = arInput->m_vHitNormal;
+        params.m_v70 = arInput->m_v4a0;
+        params.m_fVelocity = arInput->m_fVelocity;
         {
-            float x = object->getX510();
-            LocalM128 source = object->m_v510.m_vComponents;
+            float x = arInput->getX510();
+            LocalM128 source = arInput->m_v510.m_vComponents;
             _ReadBarrier();
             _mm_store_ss(&params.m_v50.m_vComponents.m128_f32[0], _mm_shuffle_ps(source,source,0x55));
             params.m_v50.set(params.m_v50.m_vComponents.m128_f32[0],x,DAT_01011d78,DAT_01011d78);
         }
-        hkVector4* vel = &object->m_fVelocity;
+        hkVector4* vel = &arInput->m_fVelocity;
         hkpCharacterMovementUtil_calculateMovement(&params, vel);
-        LocalM128 normal = object->m_vHitNormal.m_vComponents;
-        LocalM128 product = _mm_mul_ps(_mm_load_ps(reinterpret_cast<const float*>(&normal)),object->m_fVelocity.m_vComponents);
+        LocalM128 normal = arInput->m_vHitNormal.m_vComponents;
+        LocalM128 product = _mm_mul_ps(_mm_load_ps(reinterpret_cast<const float*>(&normal)),arInput->m_fVelocity.m_vComponents);
         LocalM128 sum = _mm_add_ss(_mm_shuffle_ps(product,product,0x55),product);
         LocalM128 dot = _mm_add_ss(_mm_shuffle_ps(product,product,0xaa),sum);
         LocalM128 neg = _mm_sub_ss(DAT_010c7160,dot);
         vel->m_vComponents = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(neg,neg,0),normal),vel->m_vComponents);
-        normal = object->m_vHitNormal.m_vComponents;
+        normal = arInput->m_vHitNormal.m_vComponents;
         product = _mm_mul_ps(_mm_load_ps(reinterpret_cast<const float*>(&normal)),params.m_fVelocity.m_vComponents);
         sum = _mm_add_ss(_mm_shuffle_ps(product,product,0x55),product);
         dot = _mm_add_ss(_mm_shuffle_ps(product,product,0xaa),sum);
         vel->m_vComponents = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(dot,dot,0),normal),vel->m_vComponents);
     }
-    object->vtable->GetResult(object);
-    LocalM128 dir = object->vtable->GetResult(object)->m_direction.m_vComponents;
-    object->vtable->GetResult(object);
-    S00cd3fb0_MotionScalarLane s1(object->scale54c());
+    arInput->vtable->GetResult(arInput);
+    LocalM128 dir = arInput->vtable->GetResult(arInput)->m_direction.m_vComponents;
+    arInput->vtable->GetResult(arInput);
+    S00cd3fb0_MotionScalarLane s1(arInput->scale54c());
     LocalM128 a = s1.broadcast();
-    S00cd3fb0_MotionScalarLane s2(object->scale4e8());
+    S00cd3fb0_MotionScalarLane s2(arInput->scale4e8());
     LocalM128 result = _mm_mul_ps(a,dir);
     result = _mm_mul_ps(result,s2.broadcast());
-    object->m_fVelocity.m_vComponents = _mm_add_ps(result,object->m_fVelocity.m_vComponents);
-    ((S00cd3fb0_FUN_00c6e2e0_cls*)object)->bhkCharacterController_UpdateFalling();
+    arInput->m_fVelocity.m_vComponents = _mm_add_ps(result,arInput->m_fVelocity.m_vComponents);
+    ((S00cd3fb0_FUN_00c6e2e0_cls*)arInput)->bhkCharacterController_UpdateFalling();
 }
 
 extern "C" {
@@ -4471,7 +4489,7 @@ struct MotionController {
     float directionScale;
     void bhkCharacterController_UpdateState();
     const void* bhkCharacterProxy_MarkRead();
-    void SubtractVectors(LocalM128* result);
+    void SubtractVectors(LocalM128* arPos);
 };
 extern float DAT_01267e30;
 extern float DAT_01011d78;
@@ -4504,22 +4522,25 @@ __forceinline LocalM128 invLength(LocalM128 value)
 
 // @fnv 0x00cd4280
 // src: XBOX_PDB 0x00cd4280
-void __stdcall bhkCharacterStateJumping_Update(MotionController* controller)
+// pdb: bhkCharacterStateJumping::Update | bhkCharacterStateJumping.obj | retail, upstream name already matches, high
+// pdb params: arInput
+// pdb locals: curVelocity, impulse, s, u, a, position, bswitch
+void __stdcall bhkCharacterStateJumping_Update(MotionController* arInput)
 {
-    if (controller->state != 11 && (controller->state == 0 || controller->state == 3)) {
-        controller->bhkCharacterController_UpdateState();
+    if (arInput->state != 11 && (arInput->state == 0 || arInput->state == 3)) {
+        arInput->bhkCharacterController_UpdateState();
         return;
     }
-    controller->flags |= 0x2000; _ReadWriteBarrier();
-    controller->vtable->getMotionData(controller);
+    arInput->flags |= 0x2000; _ReadWriteBarrier();
+    arInput->vtable->getMotionData(arInput);
     GsVec4 reciprocal;
     {
-        LocalM128 direction = controller->vtable->getMotionData(controller)->direction;
-        controller->vtable->getMotionData(controller);
+        LocalM128 direction = arInput->vtable->getMotionData(arInput)->direction;
+        arInput->vtable->getMotionData(arInput);
         struct { float s; float scale; } tmp;
-        tmp.scale = controller->directionScale;
+        tmp.scale = arInput->directionScale;
         LocalM128 scaleVec = _mm_set_ps1(tmp.scale);
-        tmp.scale = (float)fabs(controller->acceleration);
+        tmp.scale = (float)fabs(arInput->acceleration);
         double absAccel = tmp.scale;
         direction = _mm_mul_ps(scaleVec, direction);
         reciprocal.v = invLength(direction);
@@ -4531,31 +4552,31 @@ void __stdcall bhkCharacterStateJumping_Update(MotionController* controller)
         _mm_store_ss(&tmp.s, length); float magnitude = -(float)sqrt((float)((tmp.s + tmp.s) * absAccel));
         LocalM128 norm = _mm_mul_ps(reciprocal.v, direction);
         direction = _mm_mul_ps(splatFloat(&magnitude), norm);
-        ProxyHolder* proxy = controller->proxy;
+        ProxyHolder* proxy = arInput->proxy;
         const float* reference = &DAT_01267e30;
         LocalM128 dir;
         if (proxy) {
-            controller->bhkCharacterProxy_MarkRead();
+            arInput->bhkCharacterProxy_MarkRead();
             reference = reinterpret_cast<const float*>(proxy->hkpCharacterProxy_getLinearVelocity());
-            controller->bhkCharacterProxy_MarkRead();
+            arInput->bhkCharacterProxy_MarkRead();
             dir = direction;
         } else {
             dir = direction;
         }
         direction = _mm_load_ps(reference);
         direction.m128_f32[2] = 0.0f;
-        controller->velocity = _mm_add_ps(_mm_load_ps(direction.m128_f32), dir);
+        arInput->velocity = _mm_add_ps(_mm_load_ps(direction.m128_f32), dir);
     }
     {
         LocalM128 outBuf;
-        controller->SubtractVectors(&reciprocal.v);
+        arInput->SubtractVectors(&reciprocal.v);
         FUN_00458620(&outBuf, &reciprocal.v);
-        controller->heading = outBuf.m128_f32[2];
+        arInput->heading = outBuf.m128_f32[2];
     }
-    controller->state = 2;
-    controller->bhkCharacterController_UpdateState();
-    controller->flags &= 0xfffdfeff; _ReadWriteBarrier();
-    controller->listeners->GetIndexedValue_00cbc510(controller->listenerIndex)->update(controller);
+    arInput->state = 2;
+    arInput->bhkCharacterController_UpdateState();
+    arInput->flags &= 0xfffdfeff; _ReadWriteBarrier();
+    arInput->listeners->GetIndexedValue_00cbc510(arInput->listenerIndex)->update(arInput);
 }
 
 extern "C" LocalM128 _mm_load_ss(const float*);
@@ -4601,32 +4622,35 @@ public:
     int unk30; int unk34; int unk38; int unk3c;
     CCEAE0Vector m_40;
 
-    void bhkShape_CopyMembers(void* a1, CCEAE0Arg* a2);
-    void bhkConvexTransformShape_CopyMembers(void* a1, CCEAE0Arg* a2);
+    void bhkShape_CopyMembers(void* apDest, CCEAE0Arg* arCloneData);
+    void bhkConvexTransformShape_CopyMembers(void* apDest, CCEAE0Arg* arCloneData);
 };
 
 // @fnv 0x00cceae0
 // src: XBOX_PDB 0x00cceae0
-void CCEAE0Node::bhkConvexTransformShape_CopyMembers(void* a1, CCEAE0Arg* a2)
+// pdb: bhkConvexTransformShape::CopyMembers | bhkConvexTransformShape.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: fscale, bclone, cinfo, ps, pnewS
+void CCEAE0Node::bhkConvexTransformShape_CopyMembers(void* apDest, CCEAE0Arg* arCloneData)
 {
     bool flag;
     CCEAE0Node* p = v45(&flag);
     CCEAE0Node* q = p->m_08 ? p->m_08->m_08 : 0;
-    float f = a2->m_10;
+    float f = arCloneData->m_10;
     if (f != 1.0f) {
         hkVec4 s;
         s.m_vComponents = _mm_load_ss(&f);
         s.m_vComponents = _mm_shuffle_ps(s.m_vComponents, s.m_vComponents, 0);
         *reinterpret_cast<LocalM128*>(&p->m_40) = _mm_mul_ps(s.m_vComponents, *reinterpret_cast<LocalM128*>(&p->m_40));
-    } else if (!q || q->v52(a2)) {
+    } else if (!q || q->v52(arCloneData)) {
         goto done;
     }
     {
-        CCEAE0Node* r = q->v18(a2);
+        CCEAE0Node* r = q->v18(arCloneData);
         p->m_08 = r ? r->m_08 : 0;
     }
 done:
-    bhkShape_CopyMembers(a1, a2);
+    bhkShape_CopyMembers(apDest, arCloneData);
 }
 
 template<class T> struct NativeArray {
@@ -4711,7 +4735,7 @@ public:
     __forceinline void SetConjugate(const NQuaternion& q) {m_vec.negThree(q.imag());}
     void ComputeValues_00cd9d10(const NVector&,const NVector&);
     void setMul(const NQuaternion&,const NQuaternion&);
-    void normalize_005611c0();
+    void hkQuaternion_normalize();
 };
 __forceinline void NVector::SetRotatedDirection(const NQuaternion& q,const NVector& a) {
     NVector half;half.quad()=DAT_010c71e0;
@@ -4822,20 +4846,20 @@ struct NativeSolver {
 extern const float  DAT_01017d00;
 extern const ::LocalM128 DAT_01017d10;
 // src: XBOX_PDB 0x00cd8a50
-__declspec(noinline) bool NativeSolver::hkaFootPlacementIkSolver_castFoot(const NativeInput& a,const NVector& foot,const NVector& toe,NVector& projected,NVector& normal) const {
+__declspec(noinline) bool NativeSolver::hkaFootPlacementIkSolver_castFoot(const NativeInput& input,const NVector& footWS,const NVector& footEndWS,NVector& projectedFootWSOut,NVector& groundNormalWSOut) const {
     float above=settings.unk7c, below=settings.unk80;
     float span=above+below;
     float fraction0=::DAT_0104da48,fraction1=::DAT_0104da48;
     NVector start,end,n0,n1;
-    start.setAddMul4(foot,settings.direction,above);
-    end.setAddMul4(foot,settings.direction,-below);
-    bool hit0=RayCast(a,start,end,fraction0,n0),hit1=false;
-    ::LocalM128 delta=_mm_and_ps(_mm_sub_ps(toe.quad(),foot.quad()),DAT_01017d10);
+    start.setAddMul4(footWS,settings.direction,above);
+    end.setAddMul4(footWS,settings.direction,-below);
+    bool hit0=RayCast(input,start,end,fraction0,n0),hit1=false;
+    ::LocalM128 delta=_mm_and_ps(_mm_sub_ps(footEndWS.quad(),footWS.quad()),DAT_01017d10);
     ::LocalM128 epsilonVector=_mm_set_ps1(DAT_01017d00);
     if ((_mm_movemask_ps(_mm_cmple_ps(delta,epsilonVector))&7)!=7) {
-        start.setAddMul4(toe,settings.direction,above);
-        end.setAddMul4(toe,settings.direction,-below);
-        hit1=RayCast(a,start,end,fraction1,n1);
+        start.setAddMul4(footEndWS,settings.direction,above);
+        end.setAddMul4(footEndWS,settings.direction,-below);
+        hit1=RayCast(input,start,end,fraction1,n1);
         if (hit1) {
             float up=n1.dot3(settings.direction);
             if(up<=0.0f)hit1=false;
@@ -4843,16 +4867,16 @@ __declspec(noinline) bool NativeSolver::hkaFootPlacementIkSolver_castFoot(const 
                 NVector position,ray;
                 ray.setSub4(end,start);position.setAddMul4(start,ray,fraction1);
                 float planeHeight=-float(position.dot3(n1));
-                start.setAddMul4(foot,settings.direction,above);
+                start.setAddMul4(footWS,settings.direction,above);
                 float height=start.dot3(n1);
                 fraction1=-(planeHeight+height)/(-span*up);
             }
         }
     }
     if(!hit0&&!hit1)return false;
-    if(hit0&&fraction0<=fraction1) {normal=n0;fraction1=fraction0;}
-    else normal=n1;
-    projected.setAddMul4(foot,settings.direction,-(fraction1*span-above));
+    if(hit0&&fraction0<=fraction1) {groundNormalWSOut=n0;fraction1=fraction0;}
+    else groundNormalWSOut=n1;
+    projectedFootWSOut.setAddMul4(footWS,settings.direction,-(fraction1*span-above));
     return true;
 }
 
@@ -4940,6 +4964,9 @@ static __forceinline void scalarDotStore(float& f,::LocalM128 a,::LocalM128 b){(
 
 // @fnv 0x00cd8d90
 // src: XBOX_PDB 0x00cd8d90
+// pdb: hkaFootPlacementIkSolver::doFootPlacement | hkaFootPlacementIkSolver.obj | retail, object-file run extension, low
+// pdb params: input, output, poseInOut
+// pdb locals: modelFromWorld, originalFootRotationMS, groundNormalWS, footCurrentPosWS, blendedGroundHeightWS, assertBuf, ostr, projectedFootPosWS, footEndCurrentPosWS, ikSetup, desiredUpMS, extraRotation, worldUpDirectionMS
 extern "C" void __fastcall hkaFootPlacementIkSolver_doFootPlacement(NativeSolver* self,void*,const NativeInput& a,NativeOutput& out,NativePose& pose) {
     const NTransform& world=a.world;
     NTransform inverse;
@@ -5079,7 +5106,7 @@ const NVector& offset=self->drift;
             rotation.ComputeValues_00cd9d10(localUp,localNormal);
             combined.setMul(rotation,originalRotation);
             interpolated.m_vec.setInterpolate4(originalRotation.m_vec,combined.m_vec,self->weight);
-            interpolated.normalize_005611c0();
+            interpolated.hkQuaternion_normalize();
             pose.accessBoneModelSpace(self->settings.bone2,1).SetBodyOrientation(interpolated);
         }
     } else out.error=0.0f;
@@ -5406,7 +5433,7 @@ extern "C" {
 ::LocalM128 _mm_unpacklo_ps(::LocalM128,::LocalM128);::LocalM128 _mm_movelh_ps(::LocalM128,::LocalM128);
 }
 // src: COMMUNITY 0x005611c0
-__declspec(noinline) void hkQuaternion::normalize_005611c0(){const ::LocalM128 half=_mm_set_ps1(0.5f),three=_mm_set_ps1(3.0f),zero=_mm_setzero_ps();
+__declspec(noinline) void hkQuaternion::hkQuaternion_normalize(){const ::LocalM128 half=_mm_set_ps1(0.5f),three=_mm_set_ps1(3.0f),zero=_mm_setzero_ps();
 
  const ::LocalM128 input=QuaternionQuad(*this);
  const ::LocalM128 x=_mm_shuffle_ps(input,input,0);
@@ -5505,8 +5532,8 @@ struct SkeletonPoseData
     bool m_bPoseFlag;
     bool m_bPoseInitialized;
 
-    const hkQsTransform& hkaPose_calculateBoneModelSpace(int boneIdx);
-    hkQsTransform& accessBoneModelSpace(int boneIdx, int propagate);
+    const hkQsTransform& hkaPose_calculateBoneModelSpace(int theBoneIdx);
+    hkQsTransform& accessBoneModelSpace(int boneIdx, int propagateOrNot);
 
     __forceinline const hkQsTransform& getBoneModelSpace(int boneIdx)
     {
@@ -5522,7 +5549,7 @@ struct SkeletonPoseData
         if (m_pBoneFlags[boneIdx] & 1)
         {
             const hkQsTransform& modelFromBone=m_pModelPose[boneIdx];
-            const short parentIdx=SkeletonArrayView(m_pSkeleton->m_kParentIndices).m_data[boneIdx];
+            const short parentIdx=SkeletonArrayView(m_pSkeleton->m_parentIndices).m_data[boneIdx];
             if (parentIdx != -1) m_pLocalPose[boneIdx].SetMulInverse(getBoneModelSpace(parentIdx), modelFromBone);
             else { if(externalRootCopy) m_pLocalPose[boneIdx].CopyFromFloatArray(modelFromBone); else m_pLocalPose[boneIdx]=modelFromBone; }
             m_pBoneFlags[boneIdx] &= ~1;
@@ -5532,11 +5559,11 @@ struct SkeletonPoseData
 
     __forceinline void makeAllChildrenLocalSpace(int boneIdx, bool externalRootCopy=false)
     {
-        const int numBones = SkeletonArrayView(m_pSkeleton->m_kBones).m_iElementCount;
+        const int numBones = SkeletonArrayView(m_pSkeleton->m_bones).m_iElementCount;
         m_pBoneFlags[boneIdx] |= 4;
         for (int i = boneIdx + 1; i < numBones; ++i)
         {
-            const short parentIdx = SkeletonArrayView(m_pSkeleton->m_kParentIndices).m_data[i];
+            const short parentIdx = SkeletonArrayView(m_pSkeleton->m_parentIndices).m_data[i];
             if (parentIdx == -1)
             {
                 continue;
@@ -5598,7 +5625,7 @@ struct hkaPoseTyped
         if (m_pBoneFlags[boneIdx] & 1)
         {
             const hkQsTransform& modelFromBone=m_pModelPose[boneIdx];
-            const short parentIdx=SkeletonArrayView(m_pSkeleton->m_kParentIndices).m_data[boneIdx];
+            const short parentIdx=SkeletonArrayView(m_pSkeleton->m_parentIndices).m_data[boneIdx];
             if (parentIdx != -1) m_pLocalPose[boneIdx].SetMulInverse(getBoneModelSpace(parentIdx), modelFromBone);
             else { if(externalRootCopy) m_pLocalPose[boneIdx].CopyFromFloatArray(modelFromBone); else m_pLocalPose[boneIdx]=modelFromBone; }
             m_pBoneFlags[boneIdx] &= ~1;
@@ -5608,11 +5635,11 @@ struct hkaPoseTyped
 
     __forceinline void makeAllChildrenLocalSpace(int boneIdx, bool externalRootCopy=false)
     {
-        const int numBones = SkeletonArrayView(m_pSkeleton->m_kBones).m_iElementCount;
+        const int numBones = SkeletonArrayView(m_pSkeleton->m_bones).m_iElementCount;
         m_pBoneFlags[boneIdx] |= 4;
         for (int i = boneIdx + 1; i < numBones; ++i)
         {
-            const short parentIdx = SkeletonArrayView(m_pSkeleton->m_kParentIndices).m_data[i];
+            const short parentIdx = SkeletonArrayView(m_pSkeleton->m_parentIndices).m_data[i];
             if (parentIdx == -1)
             {
                 continue;
@@ -5682,7 +5709,10 @@ __declspec(noinline) float __cdecl ClampedAcos(float x)
 }
 // @fnv 0x00cdbae0
 // src: XBOX_PDB 0x00cdbae0
-extern "C" hkBool __cdecl hkaTwoJointsIkSolver_solve(const hkaTwoJointsIkSetup& setup, SkeletonPoseData& pose)
+// pdb: hkaTwoJointsIkSolver::solve | hkaTwoJointsIkSolver.obj | retail, upstream name already matches, high
+// pdb params: setup, poseInOut
+// pdb locals: firstTwistOffset, endPosMS, secondTwistOffset, assertBuf, ostr, rotation, hingeMS, currentRot, extra, axis, iToE_n, iToG_n, endMS, modelFromEndRotationDesired, modelFromEnd, xform
+extern "C" hkBool __cdecl hkaTwoJointsIkSolver_solve(const hkaTwoJointsIkSetup& setup, SkeletonPoseData& poseInOut)
 {
 IkVector4 secondTwist;
     {
@@ -5708,15 +5738,15 @@ IkVector4 secondTwist;
 
         if (setup.m_sFourthJointIndex >= 0)
         {
-            const hkQsTransform& oldRot = pose.getBoneModelSpace(setup.m_sFourthJointIndex);
-            const hkQsTransform& twistMS = pose.getBoneModelSpace(setup.m_sFirstJointIndex);
+            const hkQsTransform& oldRot = poseInOut.getBoneModelSpace(setup.m_sFourthJointIndex);
+            const hkQsTransform& twistMS = poseInOut.getBoneModelSpace(setup.m_sFirstJointIndex);
             val.setRelativeContext(twistMS,oldRot);
         }
 
         if (setup.m_sFifthJointIndex >= 0)
         {
-            const hkQsTransform& oldRot = pose.getBoneModelSpace(setup.m_sFifthJointIndex);
-            const hkQsTransform& twistMS = pose.getBoneModelSpace(setup.m_sSecondJointIndex);
+            const hkQsTransform& oldRot = poseInOut.getBoneModelSpace(setup.m_sFifthJointIndex);
+            const hkQsTransform& twistMS = poseInOut.getBoneModelSpace(setup.m_sSecondJointIndex);
             secondPos.setRelativeContext(twistMS,oldRot);
         }
 
@@ -5736,9 +5766,9 @@ IkVector4 secondTwist;
                     }
                 }
 
-                const hkQsTransform& x = pose.getBoneModelSpace(setup.m_sFirstJointIndex);
-                const hkQsTransform& currentCos = pose.getBoneModelSpace(setup.m_sSecondJointIndex);
-                const hkQsTransform& endPos2 = pose.getBoneModelSpace(setup.m_sThirdJointIndex);
+                const hkQsTransform& x = poseInOut.getBoneModelSpace(setup.m_sFirstJointIndex);
+                const hkQsTransform& currentCos = poseInOut.getBoneModelSpace(setup.m_sSecondJointIndex);
+                const hkQsTransform& endPos2 = poseInOut.getBoneModelSpace(setup.m_sThirdJointIndex);
 
                 if (0 == setup.m_bSecondIkOption)
                 {
@@ -5762,8 +5792,8 @@ IkVector4 secondTwist;
                     IkVector4 secondToEnd; secondToEnd.m_vComponents = _mm_sub_ps(secondTwist.m_vComponents, h2);
                     IkVector4 firstToTarget; firstToTarget.m_vComponents = _mm_sub_ps(ptr.m_vComponents, endPosMS);
 
-                    hkQuaternion firstPos;CopyIkRotation(firstPos,pose.getBoneModelSpace(setup.m_sSecondJointIndex).m_rotation);
-                    firstPos.normalize_005611c0();
+                    hkQuaternion firstPos;CopyIkRotation(firstPos,poseInOut.getBoneModelSpace(setup.m_sSecondJointIndex).m_rotation);
+                    firstPos.hkQuaternion_normalize();
                     const ::LocalM128 hingeAxis = HingeRotation(QuaternionQuad(firstPos),setup.m_vHingeAxisLS.m_vComponents);
 
                     
@@ -5793,7 +5823,7 @@ const ::LocalM128 sy=_mm_shuffle_ps(squaredOffset,squaredOffset,0x55);
                     (_mm_store_ss)(&a, Dot3(y, d1));
                 }
                 {
-                    hkQsTransform& secondRot = pose.accessBoneModelSpace(setup.m_sSecondJointIndex, 1);
+                    hkQsTransform& secondRot = poseInOut.accessBoneModelSpace(setup.m_sSecondJointIndex, 1);
                     IkVector4 pForm;
                     const hkQuaternion fromDir = secondRot.m_rotation; 
                     pForm.m_vComponents = Normalized3Approx(RotatedDir(QuaternionQuad(fromDir), setup.m_vHingeAxisLS.m_vComponents));
@@ -5804,7 +5834,7 @@ const ::LocalM128 sy=_mm_shuffle_ps(squaredOffset,squaredOffset,0x55);
                     hkQuaternion s2eN;
                     s2eN.hkQuaternion_setAxisAngle(pForm, firstMS);
                     secondRot.m_rotation.setMul(s2eN, fromDir);
-                    secondRot.m_rotation.normalize_005611c0();
+                    secondRot.m_rotation.hkQuaternion_normalize();
                 }
             }
 
@@ -5822,14 +5852,14 @@ const ::LocalM128 sy=_mm_shuffle_ps(squaredOffset,squaredOffset,0x55);
             {
 
                 IkVector4 endMS;
-                const hkQsTransform& b = pose.getBoneModelSpace(setup.m_sFirstJointIndex);
+                const hkQsTransform& b = poseInOut.getBoneModelSpace(setup.m_sFirstJointIndex);
                 if (setup.m_bSecondIkOption)
                 {
-                    endMS.m_vComponents = pose.getBoneModelSpace(setup.m_sThirdJointIndex).m_vTranslation.m_vComponents;
+                    endMS.m_vComponents = poseInOut.getBoneModelSpace(setup.m_sThirdJointIndex).m_vTranslation.m_vComponents;
                 }
                 else
                 {
-                    endMS.FUN_00c7f7a0(pose.getBoneModelSpace(setup.m_sThirdJointIndex), setup.m_vSecondIkVector);
+                    endMS.FUN_00c7f7a0(poseInOut.getBoneModelSpace(setup.m_sThirdJointIndex), setup.m_vSecondIkVector);
                 }
 
 IkVector4 jointMS; jointMS.m_vComponents = Normalized3(_mm_sub_ps(endMS.m_vComponents, b.m_vTranslation.m_vComponents));
@@ -5837,10 +5867,10 @@ hkQuaternion kIter;
 { IkVector4 desired; desired.m_vComponents = Normalized3(_mm_sub_ps(ptr.m_vComponents, b.m_vTranslation.m_vComponents));
 kIter.UpdateState_00cdb910(setup.m_fThirdIkParameter, jointMS, desired); }
 
-                hkQsTransform& firstTwist = pose.accessBoneModelSpace(setup.m_sFirstJointIndex, 1);
+                hkQsTransform& firstTwist = poseInOut.accessBoneModelSpace(setup.m_sFirstJointIndex, 1);
                 const hkQuaternion d2 = firstTwist.m_rotation;
                 firstTwist.m_rotation.setMul(kIter, d2);
-                firstTwist.m_rotation.normalize_005611c0();
+                firstTwist.m_rotation.hkQuaternion_normalize();
             }
             }
 
@@ -5848,25 +5878,25 @@ kIter.UpdateState_00cdb910(setup.m_fThirdIkParameter, jointMS, desired); }
         {
             hkQuaternion hd;
             hd.setMulInverse(setup.m_qFirstIkRotation, setup.m_qSecondIkRotation);
-            const hkQsTransform& endPos2 = pose.getBoneModelSpace(setup.m_sThirdJointIndex);
+            const hkQsTransform& endPos2 = poseInOut.getBoneModelSpace(setup.m_sThirdJointIndex);
             hkQsTransform j;
             j = endPos2;
             j.m_rotation.D3D_ComputeClearColor(endPos2.m_rotation, hd, setup.m_fFifthIkParameter);
-            pose.setBoneModelSpace(setup.m_sThirdJointIndex, j);
+            poseInOut.setBoneModelSpace(setup.m_sThirdJointIndex, j);
         }
 
         if (setup.m_sFourthJointIndex >= 0)
         {
             hkQsTransform oldRot;
-            oldRot.setMulFirst(pose.getBoneModelSpace(setup.m_sFirstJointIndex),val);
-            ((hkaPoseTyped&)pose).setBoneModelSpace(setup.m_sFourthJointIndex, oldRot);
+            oldRot.setMulFirst(poseInOut.getBoneModelSpace(setup.m_sFirstJointIndex),val);
+            ((hkaPoseTyped&)poseInOut).setBoneModelSpace(setup.m_sFourthJointIndex, oldRot);
         }
 
         if (setup.m_sFifthJointIndex >= 0)
         {
             hkQsTransform oldRot;
-            oldRot.setMulContext(pose.getBoneModelSpace(setup.m_sSecondJointIndex), secondPos);
-            pose.setBoneModelSpace(setup.m_sFifthJointIndex, oldRot,true);
+            oldRot.setMulContext(poseInOut.getBoneModelSpace(setup.m_sSecondJointIndex), secondPos);
+            poseInOut.setBoneModelSpace(setup.m_sFifthJointIndex, oldRot,true);
         }
     }
 

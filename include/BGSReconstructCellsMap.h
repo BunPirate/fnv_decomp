@@ -4,6 +4,7 @@
 
 class BGSReconstructFormsMap;
 
+// pdb: class BGSReconstructCellsMap, size 0x10, bases: NiTMap<unsigned int, 0 members
 class BGSReconstructCellsMap : public NiTMap<unsigned int, BGSReconstructFormsMap*>
 {
 public:

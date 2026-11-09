@@ -153,6 +153,9 @@ static __declspec(noinline) void hkVector4_ProcessEntries_00d23f50(SolverMotionS
 
 // @fnv 0x00d24360
 // src: COMMUNITY 0x00d24360
+// pdb: hkSimplexSolverSolve | hkpSimplexSolver.obj | retail, upstream name already matches, high
+// pdb params: input, output
+// pdb locals: info, minCollisionTime
 extern "C" void __cdecl hkSimplexSolverSolve(const SolverMotionInput& input, SolverMotionOutput& output)
 {
     SolverMotionState info;

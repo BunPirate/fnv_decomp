@@ -65,7 +65,10 @@ extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 
 // @fnv 0x006047c0
 // src: XBOX_PDB 0x006047c0
-void TESNPC::InitDefaultWorn(TESObjectREFR* a2, bool a3, bool a4, bool a5, bool a6)
+// pdb: TESNPC::InitDefaultWorn | TESNPC.obj | retail, upstream name already matches, high
+// pdb params: apRef, abArmor, abWeapon, abOnlyifClothes, abAllowChanges
+// pdb locals: pinv, brestoreAllowChanges, pitemChange, pextra, pactor, pupperModel, n, bwear, pobj, pmodel, pweapon, fval, bdelete, pact
+void TESNPC::InitDefaultWorn(TESObjectREFR* apRef, bool a3, bool a4, bool a5, bool a6)
 {
     InventoryChanges* j;
     InventoryStackRecord* item;
@@ -75,14 +78,14 @@ void TESNPC::InitDefaultWorn(TESObjectREFR* a2, bool a3, bool a4, bool a5, bool 
     {
         bAllowed = g_BGSSaveLoadGame->SetThreadAllowChanges(false);
     }
-    if (a2->IsActor())
+    if (apRef->IsActor())
     {
-        a2->FUN_00571b50();
+        apRef->FUN_00571b50();
     }
-    j = InventoryChanges::GetOrAddInventoryChanges(a2);
-    j->RemoveWornItems(true, a2);
+    j = InventoryChanges::GetOrAddInventoryChanges(apRef);
+    j->RemoveWornItems(true, apRef);
     Actor* pBiped;
-    pBiped = (Actor*)a2;
+    pBiped = (Actor*)apRef;
     if (pBiped->GetProcess())
     {
         pBiped->GetProcess()->SetCurrentAmmunition(NULL);
@@ -100,7 +103,7 @@ void TESNPC::InitDefaultWorn(TESObjectREFR* a2, bool a3, bool a4, bool a5, bool 
             bool val = true;
             TESBoundObject* p;
             p = item->FUN_0044ddc0();
-            if ((!res || !res->HasBipedModel(i, false, NULL)) && !a2->TESObjectREFR_WearingObject(p))
+            if ((!res || !res->HasBipedModel(i, false, NULL)) && !apRef->TESObjectREFR_WearingObject(p))
             {
                 if (item->Modelloader_GetReferencedThis())
                 {
@@ -125,14 +128,14 @@ void TESNPC::InitDefaultWorn(TESObjectREFR* a2, bool a3, bool a4, bool a5, bool 
                 }
                 if (val)
                 {
-                    a2->EquipItem(p, 1, pExtra, false);
+                    apRef->EquipItem(p, 1, pExtra, false);
                 }
             }
             delete item;
             item = NULL;
         }
     }
-    if (a4 && !a2->HasHealth(false))
+    if (a4 && !apRef->HasHealth(false))
     {
         float cnt;
         cnt = 0.0f;
@@ -141,7 +144,7 @@ void TESNPC::InitDefaultWorn(TESObjectREFR* a2, bool a3, bool a4, bool a5, bool 
         if (pWeaponExtra)
         {
             bool pItem = true;
-            if (!a2->TESObjectREFR_WearingObject(pWeaponExtra->FUN_0044ddc0()))
+            if (!apRef->TESObjectREFR_WearingObject(pWeaponExtra->FUN_0044ddc0()))
             {
                 ExtraDataList* fWeight;
                 fWeight = NULL;
@@ -155,7 +158,7 @@ void TESNPC::InitDefaultWorn(TESObjectREFR* a2, bool a3, bool a4, bool a5, bool 
                     fWeight = NULL;
                 }
                 TESObjectREFR* bEquipWeapon;
-                bEquipWeapon = a2;
+                bEquipWeapon = apRef;
                 bEquipWeapon->EquipObject(pWeaponExtra->FUN_0044ddc0(), pWeaponExtra->FUN_00726070(), fWeight, true,
                                           false, true);
                 if (pItem)
@@ -163,11 +166,11 @@ void TESNPC::InitDefaultWorn(TESObjectREFR* a2, bool a3, bool a4, bool a5, bool 
                     delete pWeaponExtra;
                 }
             }
-            else if (((Actor*)a2)->GetProcess())
+            else if (((Actor*)apRef)->GetProcess())
             {
-                if (pWeaponExtra->FUN_0044ddc0() != ((Actor*)a2)->GetActiveWeapon())
+                if (pWeaponExtra->FUN_0044ddc0() != ((Actor*)apRef)->GetActiveWeapon())
                 {
-                    ((Actor*)a2)->GetProcess()->SetCurrentArmor(pWeaponExtra, a2->GetNiNode(), false);
+                    ((Actor*)apRef)->GetProcess()->SetCurrentArmor(pWeaponExtra, apRef->GetNiNode(), false);
                 }
             }
         }
@@ -178,6 +181,6 @@ void TESNPC::InitDefaultWorn(TESObjectREFR* a2, bool a3, bool a4, bool a5, bool 
     }
     if (pBiped->GetProcess())
     {
-        pBiped->UpdateSpells(true);
+        pBiped->Actor_CastPermanentMagic(true);
     }
 }

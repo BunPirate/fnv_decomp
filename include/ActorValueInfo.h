@@ -32,12 +32,12 @@ public:
     virtual void SaveForm();
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
     virtual char* GetTextureResourcePath();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Save();
-    void Copy(TESForm* form);
+    void Copy(TESForm* apCopy);
     void SetFormID(unsigned int, bool);
     bool SetScriptName(const char*);
     void SetScriptName(const char*) const;
@@ -51,12 +51,12 @@ public:
     char* m_pName;
     BSStringT<char> m_cAbbreviation;
     unsigned int uFlags;
-    ActorValue::Section m_iSection;
+    ActorValue::Section eAVType;
     ActorValueDeriveCallback m_pDerivedValueFunction;
-    ActorValueMappingCallback m_pActorValueMapping;
-    ActorValueModifiedCallback m_pActorValueChangedCallback;
-    int m_iEnumeratedValueCount;
-    ActorValue::Index m_aiEnumeratedValues[15];
-    int m_iEnumeratedNameCount;
-    const char* m_apEnumeratedNames[10];
+    ActorValueMappingCallback pMappingFunction;
+    ActorValueModifiedCallback pModifiedCallback;
+    int iNumDependentActorValues;
+    ActorValue::Index DependentActorValues[15];
+    int iEnumCount;
+    const char* sEnumNames[10];
 };

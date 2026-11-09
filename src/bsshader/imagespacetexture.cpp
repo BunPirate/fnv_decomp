@@ -5,7 +5,8 @@
 #include "../../include/TESEnchantableForm.h"
 
 // @fnv 0x0041fd00
+// pdb: ShadowSceneNode::QFrozenCamera | TES.obj | debug, call graph, medium
 void TESEnchantableForm::SetCastingType(int aeCastingType)
 {
-    m_eCastingType = static_cast<MagicSystem__CastingType>(aeCastingType);
+    eCastingType = static_cast<MagicSystem__CastingType>(aeCastingType);
 }

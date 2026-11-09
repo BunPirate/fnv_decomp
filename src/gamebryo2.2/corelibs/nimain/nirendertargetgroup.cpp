@@ -7,16 +7,18 @@
 #include "../../../../include/NiRenderer.h"
 #include "../../../../include/StrArr.h"
 
-extern NiRTTI g_012708ec;
+extern NiRTTI NiRenderTargetGroup_ms_RTTI;
 
 // @fnv 0x00ee8530
 // src: COMMUNITY 0x00ee8530
 NiRTTI* __cdecl NiRenderTargetGroup_GetRTTI()
 {
-    return &g_012708ec;
+    return &NiRenderTargetGroup_ms_RTTI;
 }
 
 // @fnv 0x00ee8600
+// pdb: NiRenderTargetGroup::GetPixelFormat | NiRenderTargetGroup.obj | debug, upstream name already matches, high
+// pdb params: uiIndex
 const NiPixelFormat* __thiscall NiRenderTargetGroup::GetPixelFormat() const
 {
     NiRenderTargetGroup* p = const_cast<NiRenderTargetGroup*>(this);
@@ -35,7 +37,7 @@ const NiPixelFormat* __thiscall NiRenderTargetGroup::GetPixelFormat() const
 // src: XBOX_PDB 0x00ee8460
 void NiRenderTargetGroup::SetRendererData_00ee8460(RendererData* pkRendererData)
 {
-    RendererData*& m_pTextureRendererData = reinterpret_cast<RendererData*&>(RenderTargetBufferInfo);
+    RendererData*& m_pTextureRendererData = reinterpret_cast<RendererData*&>(m_uiNumBuffers);
     if (m_pTextureRendererData)
     {
         delete m_pTextureRendererData;
@@ -49,6 +51,7 @@ void NiRenderTargetGroup::SetRendererData_00ee8460(RendererData* pkRendererData)
 
 // @fnv 0x00ee84d0
 // src: XBOX_PDB 0x00ee84d0
+// pdb: NiRenderTargetGroup::GetDepthStencilWidth | NiRenderTargetGroup.obj | debug, upstream name already matches, high
 int NiRenderTargetGroup::GetDepthStencilWidth() const
 {
     const NiMemObject* p =
@@ -60,6 +63,7 @@ int NiRenderTargetGroup::GetDepthStencilWidth() const
 
 // @fnv 0x00ee84e0
 // src: XBOX_PDB 0x00ee84e0
+// pdb: NiRenderTargetGroup::GetDepthStencilHeight | NiRenderTargetGroup.obj | debug, upstream name already matches, high
 int NiRenderTargetGroup::GetDepthStencilHeight() const
 {
     void* p =
@@ -80,11 +84,13 @@ NiMemObject* __thiscall NiRenderTargetGroup::GetBuffer_00ee84f0(unsigned int uiI
 // src: XBOX_PDB 0x00ee8550
 void __thiscall NiRenderTargetGroup::SetResolveDepthBufferMode(bool abResolve)
 {
-    m_bNeedsResolve = abResolve;
+    bForceNoMSAASurface = abResolve;
 }
 
 // @fnv 0x00ee86e0
 // src: XBOX_PDB 0x00ee86e0
+// pdb: NiRenderTargetGroup::GetBufferRendererData | NiRenderTargetGroup.obj | debug, upstream name already matches, high
+// pdb params: uiIndex
 void* NiRenderTargetGroup::GetBufferRendererData(unsigned int uiIndex) const
 {
     void* p = GetBuffers()[uiIndex];
@@ -98,6 +104,7 @@ void __fastcall DestroyRenderTargetGroup(NiRenderTargetGroup* pkGroup);
 
 // Calls FUN_00ee8560, then if bit 0 of flags is set calls __Dummy_00b6fef0 on this with 0x28, and returns this.
 // @fnv 0x00ee87e0
+// pdb: NiPointer<NiXenon2DBufferData>::~NiPointer<NiXenon2DBufferData> | NiXenonRenderer.obj | debug, object-file run extension, low
 void* __thiscall NiRenderTargetGroup::FUN_00ee87e0(unsigned int flags)
 {
     NiRenderTargetGroup* p = this;
@@ -111,10 +118,12 @@ void __stdcall AppendCameraPathEntries(StrArr*);
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 // @fnv 0x00ee8800
 // src: XBOX_PDB 0x00ee8800
+// pdb: NiRenderTargetGroup::GetViewerStrings | NiRenderTargetGroup.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiRenderTargetGroup_GetViewerStrings(StrArr* pkStrings)
 {
     AppendCameraPathEntries(pkStrings);
-    char* pString = NiViewerStrings_NiGetViewerString_Title(*(const char**)&g_012708ec);
+    char* pString = NiViewerStrings_NiGetViewerString_Title(*(const char**)&NiRenderTargetGroup_ms_RTTI);
     unsigned int size = pkStrings->m_usSize;
     unsigned int max = pkStrings->m_usMaxSize;
     if (size >= max)
@@ -127,7 +136,7 @@ unsigned int NiRenderTargetGroup::Unk_23(unsigned int uiStage)
 {
     Ni2DBuffer* pkBuffer = reinterpret_cast<Ni2DBuffer*>(GetBuffers()[uiStage]);
     if (pkBuffer)
-        return pkBuffer->m_uiImageWidth;
+        return pkBuffer->m_uiWidth;
     return 0;
 }
 
@@ -137,7 +146,7 @@ void* NiRenderTargetGroup::vf36(unsigned int index)
     Ni2DBuffer* pEntry = reinterpret_cast<Ni2DBuffer*>(GetBuffers()[index]);
     if (pEntry)
     {
-        return reinterpret_cast<void*>(pEntry->m_uiImageHeight);
+        return reinterpret_cast<void*>(pEntry->m_uiHeight);
     }
     return 0;
 }
@@ -155,7 +164,7 @@ extern void* g_NiRenderTargetGroupVTable[];
 void __fastcall DestroyRenderTargetGroup(NiRenderTargetGroup* pkGroup)
 {
     *reinterpret_cast<void***>(pkGroup) = g_NiRenderTargetGroupVTable;
-    delete reinterpret_cast<NiRenderTargetGroup::RendererData*>(pkGroup->RenderTargetBufferInfo);
+    delete reinterpret_cast<NiRenderTargetGroup::RendererData*>(pkGroup->m_uiNumBuffers);
     RenderBuffer* p = reinterpret_cast<RenderBuffer*>(pkGroup->GetDepthStencilBuffer());
     if (p && !InterlockedDecrement(&p->m_uiRefCount))
         p->Destroy();
@@ -175,7 +184,7 @@ void* NiRenderTargetGroup::vf39(unsigned int index)
     Ni2DBuffer* pEntry = reinterpret_cast<Ni2DBuffer*>(GetBuffers()[index]);
     if (pEntry != 0)
     {
-        Ni2DBuffer::RendererData* pNode = reinterpret_cast<Ni2DBuffer::RendererData*>(pEntry->m_pRendererData);
+        Ni2DBuffer::RendererData* pNode = reinterpret_cast<Ni2DBuffer::RendererData*>(pEntry->m_spRendererData);
         if (pNode != 0)
         {
             return const_cast<NiPixelFormat*>(pNode->m_pkPixelFormat);
@@ -190,7 +199,7 @@ void* __fastcall GetDepthBufferRendererData(NiRenderTargetGroup* pkGroup)
 {
     if (pkGroup->GetDepthStencilBuffer() != 0)
     {
-        return pkGroup->GetDepthStencilBuffer()->m_pRendererData;
+        return pkGroup->GetDepthStencilBuffer()->m_spRendererData;
     }
     return 0;
 }
@@ -198,6 +207,8 @@ void* __fastcall GetDepthBufferRendererData(NiRenderTargetGroup* pkGroup)
 NiRenderTargetGroup* __fastcall FUN_00ee8500(void* mem) throw();
 
 // @fnv 0x00ee8710
+// pdb: NiPointer<NiRenderTargetGroup>::operator= | NiXenonRenderer.obj | debug, call graph, high
+// pdb params: pObject
 NiRenderTargetGroup* __cdecl CreateShaderLevel(unsigned int uiTreeBlockIndex, NiRenderer* pkRenderer)
 {
     if (!pkRenderer)
@@ -208,7 +219,7 @@ NiRenderTargetGroup* __cdecl CreateShaderLevel(unsigned int uiTreeBlockIndex, Ni
         return 0;
     void* pvMem = NiObject::operator new(0x28);
     NiRenderTargetGroup* pkObject = pvMem ? FUN_00ee8500(pvMem) : 0;
-    reinterpret_cast<unsigned int&>(pkObject->m_aspRenderTargetBuffers[2].m_pObject) = uiTreeBlockIndex;
+    reinterpret_cast<unsigned int&>(pkObject->m_aspBuffers[2].m_pObject) = uiTreeBlockIndex;
     return pkObject;
 }
 
@@ -273,6 +284,8 @@ void* __cdecl Object_DispatchCommandFour(unsigned int size);
 
 // @fnv 0x00ee8760
 // src: COMMUNITY 0x00ee8760
+// pdb: NiPointer<NiXenon2DBufferData>::NiPointer<NiXenon2DBufferData> | NiXenonRenderer.obj | debug, object-file run extension, low
+// pdb params: pObject
 SpawnedObject* __cdecl NiRenderTargetGroup_Create_(void* a1, NiRenderer* apSource, void* a3)
 {
     if (apSource == 0)
@@ -378,7 +391,7 @@ unsigned int AA1AC0Class::NiFile_GetBuffer()
 // @fnv 0x00ee8540
 unsigned char __fastcall GetRenderTargetGroupResolveFlag(const NiRenderTargetGroup* pkGroup)
 {
-    return *reinterpret_cast<const unsigned char*>(&pkGroup->m_bNeedsResolve);
+    return *reinterpret_cast<const unsigned char*>(&pkGroup->bForceNoMSAASurface);
 }
 
 #include <windows.h>
@@ -391,11 +404,12 @@ struct RefCountedObj
 
 // Replaces the item at uiIndex with pNew, decrementing the old item's ref count and incrementing the new one's.
 // @fnv 0x00ee8620
+// pdb: NiRenderTargetGroup::GetDepthStencilPixelFormat | NiRenderTargetGroup.obj | debug, object-file run extension, low
 bool __fastcall SetRenderTargetGroupItem(NiRenderTargetGroup* pkGroup, void*, RefCountedObj* apItem, unsigned int uiIndex)
 {
     pkGroup->SetRendererData_00ee8460(0);
     RefCountedObj** m_apItems = reinterpret_cast<RefCountedObj**>(pkGroup->GetBuffers());
-    if (uiIndex < reinterpret_cast<unsigned int&>(pkGroup->m_aspRenderTargetBuffers[2].m_pObject))
+    if (uiIndex < reinterpret_cast<unsigned int&>(pkGroup->m_aspBuffers[2].m_pObject))
     {
         RefCountedObj* pOldItem = m_apItems[uiIndex];
         if (pOldItem != apItem)

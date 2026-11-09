@@ -10,19 +10,21 @@
 extern "C"
 {
     int __cdecl hkaRagdollUtils_reorderForRagdoll(void*, void*);
-    int __cdecl HkaragdollutilsFpfast_ProcessEntries_00ce9db0(void*, void*);
+    int __cdecl alignChildrenToConstraints(void*, void*);
     int __cdecl alignConstraintSpacesToChildren(void*);
 }
 
 // @fnv 0x00cea7c0
 // src: HAVOK_LIB 0x00cea7c0
-int __cdecl hkaRagdollUtils_reorderAndAlignForRagdoll(void* p1, void* p2, void* p3)
+// pdb: hkaRagdollUtils::reorderAndAlignForRagdoll | hkaRagdollUtils.obj | retail, upstream name already matches, high
+// pdb params: rigidBodiesInOut, constraintsInOut, warnOnAlignment
+int __cdecl hkaRagdollUtils_reorderAndAlignForRagdoll(void* rigidBodiesInOut, void* constraintsInOut, void* warnOnAlignment)
 {
-    if (hkaRagdollUtils_reorderForRagdoll(p1, p2))
+    if (hkaRagdollUtils_reorderForRagdoll(rigidBodiesInOut, constraintsInOut))
         return 1;
-    if (HkaragdollutilsFpfast_ProcessEntries_00ce9db0(p2, p3))
+    if (alignChildrenToConstraints(constraintsInOut, warnOnAlignment))
         return 1;
-    if (alignConstraintSpacesToChildren(p2))
+    if (alignConstraintSpacesToChildren(constraintsInOut))
         return 1;
     return 0;
 }
@@ -47,7 +49,7 @@ struct Counter
     int unk30;
 };
 extern "C" void __cdecl AssignNodeFlags(int, int, int);
-void __cdecl hkaRagdollUtils_setCollisionLayer(Container* c, int value, Counter* counter);
+void __cdecl hkaRagdollUtils_setCollisionLayer(Container* ragdoll, int layer, Counter* collisionFilter);
 struct Inner
 {
     virtual void unk0();
@@ -65,7 +67,7 @@ struct Obj
     char pad0[0xc];
     Inner* inner;
 };
-static bool IsSupportedRagdollConstraint(Obj* obj, bool reportError) throw();
+static bool _isConstraintSupported(Obj* constraint, bool warnIfNot) throw();
 void caller(Obj* obj);
 struct SpawnedAllocator
 {
@@ -85,7 +87,7 @@ struct SpawnedObject
 {
     int unk00;
     unsigned short m_size04;
-    int Init(void* a, void* b, int c, void* d);
+    int Init(void* rigidBodies, void* constraints, int skeleton, void* boneToRigidBodyMap);
 };
 struct SourceRecord
 {
@@ -148,9 +150,12 @@ extern char str_010cbd50[];
 
 // @fnv 0x00ce9c40
 // src: HAVOK_LIB 0x00ce9c40
-static __declspec(noinline) void* _accessConstraintPivotA(ShapeOwner* owner)
+// pdb: _accessConstraintPivotA | hkaRagdollUtils.obj | retail, upstream name already matches, high
+// pdb params: constraint
+// pdb locals: assertBuf, ostr
+static __declspec(noinline) void* _accessConstraintPivotA(ShapeOwner* constraint)
 {
-    InnerShape* shape = owner->inner;
+    InnerShape* shape = constraint->inner;
     switch (shape->getType())
     {
     case 0:

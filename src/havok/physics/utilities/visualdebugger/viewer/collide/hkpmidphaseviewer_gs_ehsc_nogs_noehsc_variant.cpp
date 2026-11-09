@@ -64,7 +64,7 @@ static __forceinline void TimerMark(char* marker)
     }
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* arr, int newSize, int elemSize);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 struct __declspec(align(16)) UInt4 {
     unsigned x, y, z, w;
 };
@@ -193,7 +193,7 @@ struct Self {
     int unk14;
     int unk18;
     int unk1c;
-    void hkpMidphaseViewer_postSimulationCallback(Param* apParam);
+    void hkpMidphaseViewer_postSimulationCallback(Param* world);
 };
 
 struct ViewerPrefix { Dispatch* m_dispatch; int unk04; int unk08; int unk0c; };
@@ -201,12 +201,15 @@ struct Viewer : ViewerPrefix, Self {};
 
 // @fnv 0x00d6a2f0
 // src: XBOX_PDB 0x00d6a2f0
-void Self::hkpMidphaseViewer_postSimulationCallback(Param* apParam)
+// pdb: hkpMidphaseViewer::postSimulationCallback | hkpMidphaseViewer.obj | retail, string-set bridge, high
+// pdb params: world
+// pdb locals: displayGeometries, tmp
+void Self::hkpMidphaseViewer_postSimulationCallback(Param* world)
 {
     TimerMark(DAT_010d233c);
     hkArrayUtil_destruct(m_aiIndexedValues.m_data, m_aiIndexedValues.m_iElementCount);
     m_aiIndexedValues.m_iElementCount = 0;
-    PtrArray* arr = &apParam->m_arrs[0];
+    PtrArray* arr = &world->m_arrs[0];
     int passes = 2;
     do {
         int ai = 0;
@@ -224,7 +227,7 @@ void Self::hkpMidphaseViewer_postSimulationCallback(Param* apParam)
                             int k = 0;
                             if ((unsigned short)k < node->m_uiItemCount) {
                                 do {
-                                    float* mat = apParam->m_matrix + 8;
+                                    float* mat = world->m_matrix + 8;
                                     __declspec(align(16)) hkAabb bounds;
                                     QuantizedBounds quantized;
                                     Decode(list,quantized);
@@ -269,7 +272,7 @@ void Self::hkpMidphaseViewer_postSimulationCallback(Param* apParam)
                 ai++;
             } while (ai < arr->m_iElementCount);
         }
-        arr = &apParam->m_arrs[1];
+        arr = &world->m_arrs[1];
         passes--;
     } while (passes != 0);
 

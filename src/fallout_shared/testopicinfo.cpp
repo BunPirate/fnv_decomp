@@ -46,16 +46,19 @@ extern TESTopic* g_loadingTopic;
 extern const char g_topicInfoLoadWarning[];
 
 // @fnv 0x0061dbd0
-bool TESTopicInfo::LoadForm(TESFile* file)
+// pdb: TESTopicInfo::Load | TESTopicInfo.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: chunkid, questID, formid, iscript, iPrevInfoID, topicID, topicInfoID, szBuf, skillID, iid, itemp
+bool TESTopicInfo::LoadForm(TESFile* apFile)
 {
     unsigned int previousInfoID;
     int responseCount;
     {
-        unsigned char m_ucFormType = file->GetTESForm();
+        unsigned char m_ucFormType = apFile->GetTESForm();
         if (m_ucFormType != kTopicInfoFormType)
             return false;
-        if (!file->GetCached())
-            m_ulTopicFlags = file->GetOffset();
+        if (!apFile->GetCached())
+            iFileOffset = apFile->GetOffset();
         previousInfoID = kNoPreviousTopicInfo;
         struct TopicRecord
         {
@@ -63,90 +66,90 @@ bool TESTopicInfo::LoadForm(TESFile* file)
             unsigned int uiChunkType;
         } record;
         record.uiChunkType = 0;
-        LoadRecordHeader(file);
+        LoadRecordHeader(apFile);
         responseCount = 0;
-        while (record.chunk = file->GetChunkID())
+        while (record.chunk = apFile->GetChunkID())
         {
             switch (record.chunk)
             {
             case kConditionDataChunk:
-                GetInfoConditions()->Load(file);
+                GetInfoConditions()->Load(apFile);
                 break;
             case kPreviousTopicInfoChunk:
-                file->GetChunkData(&previousInfoID);
+                apFile->GetChunkData(&previousInfoID);
                 if (previousInfoID)
-                    RemapFormIDForFile(previousInfoID, file);
+                    RemapFormIDForFile(previousInfoID, apFile);
                 break;
             case kTopicInfoDataChunk:
-                file->GetChunkData(&m_Data, sizeof(m_Data));
+                apFile->GetChunkData(&m_Data, sizeof(m_Data));
                 if (m_Data.type >= DIALOGUE_TYPE_DIALOGUE_TYPE_COUNT)
                     MarkForDeletion(true);
                 if (m_Data.type == DIALOGUE_TYPE_DT_CONVERSATION)
-                    SetTopicInfoData(0);
+                    SetConversationData(0);
                 break;
             case kAdditionalTopicChunk: {
                 unsigned int topicID = 0;
-                file->GetChunkData(&topicID);
+                apFile->GetChunkData(&topicID);
                 GetAddTopicList()->AddTail(reinterpret_cast<TESTopic*>(topicID));
                 break;
             }
             case kTopicInfoQuestChunk:
-                file->GetChunkData(&record.uiChunkType);
-                RemapFormIDForFile(record.uiChunkType, file);
+                apFile->GetChunkData(&record.uiChunkType);
+                RemapFormIDForFile(record.uiChunkType, apFile);
                 break;
             case kConversationLinkToChunk: {
                 if (!GetConversationData())
-                    SetTopicInfoData(0);
+                    SetConversationData(0);
                 unsigned int topicID = 0;
-                file->GetChunkData(&topicID);
+                apFile->GetChunkData(&topicID);
                 GetConversationData()->GetLinkToList()->AddTail(reinterpret_cast<TESTopic*>(topicID));
                 break;
             }
             case kConversationLinkFromChunk: {
                 if (!GetConversationData())
-                    SetTopicInfoData(0);
+                    SetConversationData(0);
                 unsigned int topicID = 0;
-                file->GetChunkData(&topicID);
+                apFile->GetChunkData(&topicID);
                 GetConversationData()->GetLinkFromList()->AddTail(reinterpret_cast<TESTopic*>(topicID));
                 break;
             }
             case kConversationFollowUpChunk: {
                 if (!GetConversationData())
-                    SetTopicInfoData(0);
+                    SetConversationData(0);
                 unsigned int infoID = 0;
-                file->GetChunkData(&infoID);
+                apFile->GetChunkData(&infoID);
                 GetConversationData()->GetFollowUpInfoList()->AddTail(reinterpret_cast<TESTopicInfo*>(infoID));
                 break;
             }
             case kTopicInfoPromptChunk: {
                 char prompt[kTopicInfoPromptReadSize];
-                file->GetChunkData(prompt, sizeof(prompt));
+                apFile->GetChunkData(prompt, sizeof(prompt));
                 SetPrompt(prompt);
                 break;
             }
             case kTopicInfoPerkSkillChunk: {
                 unsigned int formID = 0;
-                file->GetChunkData(&formID);
-                m_pPerkSkillStat = reinterpret_cast<TESForm*>(formID);
+                apFile->GetChunkData(&formID);
+                pPerkSkillStat = reinterpret_cast<TESForm*>(formID);
                 break;
             }
             case kTopicInfoSpeakerChunk: {
                 unsigned int speakerID = 0;
-                file->GetChunkData(&speakerID);
-                m_pDialogueSpeaker = reinterpret_cast<TESActorBase*>(speakerID);
+                apFile->GetChunkData(&speakerID);
+                pSpeaker = reinterpret_cast<TESActorBase*>(speakerID);
                 break;
             }
             case kTopicInfoDifficultyChunk: {
                 unsigned int difficulty;
-                file->GetChunkData(&difficulty);
+                apFile->GetChunkData(&difficulty);
                 if (difficulty < SPEECH_CHALLENGE_LEVEL_SCL_COUNT)
                     SetDifficultyLevel(static_cast<SPEECH_CHALLENGE_LEVEL>(difficulty));
-                if (m_eDifficultyLevel == SPEECH_CHALLENGE_LEVEL_SCL_NONE)
-                    m_eDifficultyLevel = SPEECH_CHALLENGE_LEVEL_SCL_VERYEASY;
+                if (eDifficulty == SPEECH_CHALLENGE_LEVEL_SCL_NONE)
+                    eDifficulty = SPEECH_CHALLENGE_LEVEL_SCL_VERYEASY;
                 break;
             }
             }
-            if (!file->NextChunk())
+            if (!apFile->NextChunk())
                 break;
         }
         if (m_Data.type == DIALOGUE_TYPE_DT_PERSUASION)
@@ -162,48 +165,54 @@ bool TESTopicInfo::LoadForm(TESFile* file)
 }
 
 // @fnv 0x0061ccd0
-TESTopicInfo::TESTopicInfo(DIALOGUE_TYPE type)
+// pdb: TESTopicInfo::TESTopicInfo | TESTopicInfo.obj | retail, upstream name already matches, high
+// pdb params: aeType
+TESTopicInfo::TESTopicInfo(DIALOGUE_TYPE aeType)
 {
     InitializeComponent();
-    m_Data.type = static_cast<char>(type);
-    if (type == DIALOGUE_TYPE_DT_CONVERSATION)
+    m_Data.type = static_cast<char>(aeType);
+    if (aeType == DIALOGUE_TYPE_DT_CONVERSATION)
     {
-        m_pResponseData = new TESTopicInfoData;
+        m_pConversationData = new TESTopicInfoData;
         SetRandom(true);
     }
 }
 
 // @fnv 0x0061e180
-void TESTopicInfo::SetTopicInfoData(TESTopicInfoData* data)
+// src: XBOX_RETAIL_PDB 0x0061e180
+// pdb: TESTopicInfo::SetConversationData | TESTopicInfo.obj | retail, call graph (shared callers), high
+// pdb params: apConversationData
+void TESTopicInfo::SetConversationData(TESTopicInfoData* apConversationData)
 {
-    if (data)
+    if (apConversationData)
     {
-        if (!m_pResponseData)
-            m_pResponseData = new TESTopicInfoData;
-        m_pResponseData->Copy(this, data);
+        if (!m_pConversationData)
+            m_pConversationData = new TESTopicInfoData;
+        m_pConversationData->Copy(this, apConversationData);
     }
     else
     {
-        if (m_pResponseData)
+        if (m_pConversationData)
         {
-            delete m_pResponseData;
-            m_pResponseData = 0;
+            delete m_pConversationData;
+            m_pConversationData = 0;
         }
-        m_pResponseData = new TESTopicInfoData;
+        m_pConversationData = new TESTopicInfoData;
     }
 }
 
 // Clears m_Data and the topic-info fields, sets the form type, prompt, speaker, actor value, perk and difficulty level to defaults.
 // @fnv 0x0061cf40
+// pdb: TESTopicInfo::InitializeData | TESTopicInfo.obj | retail, vtable slot, high
 void TESTopicInfo::InitializeComponent()
 {
     memset(&m_Data, 0, sizeof(m_Data));
-    m_ulTopicFlags = 0;
-    m_bGoodbye = false;
-    m_uiInfoIndex = kInvalidTopicInfoIndex;
+    iFileOffset = 0;
+    bSaidOnce = false;
+    iInfoIndex = kInvalidTopicInfoIndex;
     SetFormType(static_cast<ENUM_FORM_ID>(kTopicInfoFormType));
-    m_pResponseData = 0;
-    m_pOwnerQuest = 0;
+    m_pConversationData = 0;
+    pOwnerQuest = 0;
     SetPrompt(g_emptyTopicInfoPrompt);
     SetSpeaker(static_cast<TESActorBase*>(0));
     SetActorValue(0);
@@ -213,7 +222,10 @@ void TESTopicInfo::InitializeComponent()
 
 // Removes every entry from the add-topic list returned by GetAddTopicList until the list is empty.
 // @fnv 0x0061d250
-void TESTopicInfo::ResetResponseList()
+// src: XBOX_RETAIL_PDB 0x0061d250
+// pdb: TESTopicInfo::ClearAddTopicList | TESTopicInfo.obj | retail, call graph, high
+// pdb locals: pTopicList
+void TESTopicInfo::ClearAddTopicList()
 {
     BSSimpleList<TESTopic*>* topics = GetAddTopicList();
     while (topics && !topics->IsEmpty())
@@ -221,12 +233,16 @@ void TESTopicInfo::ResetResponseList()
 }
 
 // @fnv 0x0061d230
-void TESTopicInfo::ClearResponses()
+// src: XBOX_DEBUG_PDB 0x0061d230
+// pdb: TESTopicInfo::ClearResponseList | TESTopicInfo.obj | debug, call graph (shared callers), high
+void TESTopicInfo::ClearResponseList()
 {
-    g_topicInfoResponses.ClearResponses();
+    g_topicInfoResponses.ResponseListWrapper_ClearResponseList();
 }
 
 // @fnv 0x0061cff0
+// pdb: TESTopicInfo::ClearData | TESTopicInfo.obj | retail, upstream name already matches, high
+// pdb locals: tempScript, ptopic
 void TESTopicInfo::ClearData()
 {
     if (!IsTemporary())
@@ -238,19 +254,22 @@ void TESTopicInfo::ClearData()
                 SetOwnerTopic(owner);
         }
         GetInfoConditions()->InitializeConditionItems();
-        ClearResponses();
-        ResetResponseList();
+        ClearResponseList();
+        ClearAddTopicList();
         Script emptyScript;
-        g_resultScripts[0].CopyScriptContents(&emptyScript);
-        g_resultScripts[1].CopyScriptContents(&emptyScript);
+        g_resultScripts[0].CopyResultScript(&emptyScript);
+        g_resultScripts[1].CopyResultScript(&emptyScript);
     }
     g_cachedResponseInfo = 0;
     g_cachedResultScriptInfo = 0;
-    if (m_pResponseData)
-        delete m_pResponseData;
+    if (m_pConversationData)
+        delete m_pConversationData;
 }
 
 // @fnv 0x0061d140
+// pdb: TESTopicInfo::RemoveInfoFromTopic | TESTopicInfo.obj | debug, object-file gap fill, medium
+// pdb params: apTopic
+// pdb locals: pQuestInfo, pInfoArray, bfound, isize, i
 void TESTopicInfo::SetOwnerTopic(TESTopic* owner)
 {
     if (owner && GetInfoIndex() != kInvalidTopicInfoIndex)
@@ -283,22 +302,27 @@ void TESTopicInfo::SetOwnerTopic(TESTopic* owner)
 }
 
 // @fnv 0x0061db30
-void TESTopicInfo::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESTopicInfo::LoadGame | TESTopicInfo.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void TESTopicInfo::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::LoadGame(buffer);
-    if (buffer->GetChangeFlags().ContainsAnyFlags(0x80000000))
-        m_bGoodbye = true;
+    TESForm::LoadGame(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetChangeFlags().ContainsAnyFlags(0x80000000))
+        bSaidOnce = true;
 }
 
 // @fnv 0x0061db80
-void TESTopicInfo::Revert(BGSLoadFormBuffer* buffer)
+// pdb: TESTopicInfo::Revert | TESTopicInfo.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void TESTopicInfo::Revert(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::Revert(buffer);
-    if (buffer->GetOldChangeFlags().ContainsAnyFlags(0x80000000))
-        m_bGoodbye = false;
+    TESForm::Revert(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetOldChangeFlags().ContainsAnyFlags(0x80000000))
+        bSaidOnce = false;
 }
 
 // @fnv 0x0061f150
+// pdb: TESTopicInfo::AddTopicList | TESTopicInfo.obj | debug, upstream name already matches, high
 void TESTopicInfo::AddTopicList()
 {
     pPlayer->AddTopics(GetAddTopicList());
@@ -306,7 +330,11 @@ void TESTopicInfo::AddTopicList()
 
 // Loads TESResponse records from the file's response chunk into list or g_topicInfoResponses, caching this as g_cachedResponseInfo when list is null.
 // @fnv 0x0061e780
-TESResponseList* TESTopicInfo::DuplicateResponseList(TESResponseList* pResponseList)
+// src: XBOX_DEBUG_PDB 0x0061e780
+// pdb: TESTopicInfo::GetResponseList | TESTopicInfo.obj | debug, unique string literal, high
+// pdb params: apList
+// pdb locals: pNewResponse, chunkid, tempAutoEvent, pFile, formid, isize, pMessage, pidle, itempint, pform
+TESResponseList* TESTopicInfo::GetResponseList(TESResponseList* apList)
 {
     unsigned char form;
     {
@@ -318,28 +346,28 @@ TESResponseList* TESTopicInfo::DuplicateResponseList(TESResponseList* pResponseL
         } responseReader;
         if (this == g_cachedResponseInfo)
         {
-            if (pResponseList)
+            if (apList)
             {
-                pResponseList->SetResponseList(g_topicInfoResponses.QResponseList());
-                return pResponseList;
+                apList->SetResponseList(g_topicInfoResponses.QResponseList());
+                return apList;
             }
             else
                 return &g_topicInfoResponses;
         }
-        if (!pResponseList)
+        if (!apList)
         {
             g_cachedResponseInfo = this;
-            ClearResponses();
+            ClearResponseList();
         }
         responseReader.file = GetFile(-1);
-        if (!responseReader.file || !m_ulTopicFlags)
-            return pResponseList ? pResponseList : &g_topicInfoResponses;
+        if (!responseReader.file || !iFileOffset)
+            return apList ? apList : &g_topicInfoResponses;
         responseReader.file = responseReader.file->GetParentTESFile();
-        if (!responseReader.file->SetOffset(m_ulTopicFlags))
-            return pResponseList ? pResponseList : &g_topicInfoResponses;
+        if (!responseReader.file->SetOffset(iFileOffset))
+            return apList ? apList : &g_topicInfoResponses;
         form = responseReader.file->GetTESForm();
         if (form != kTopicInfoFormType)
-            return pResponseList ? pResponseList : &g_topicInfoResponses;
+            return apList ? apList : &g_topicInfoResponses;
         responseReader.response = 0;
         while (responseReader.chunk = responseReader.file->GetChunkID())
         {
@@ -349,8 +377,8 @@ TESResponseList* TESTopicInfo::DuplicateResponseList(TESResponseList* pResponseL
                 responseReader.response = new TESResponse;
                 responseReader.response->Load(responseReader.file);
                 responseReader.response->InitItem(this);
-                if (pResponseList)
-                    pResponseList->AddTail(responseReader.response);
+                if (apList)
+                    apList->AddTail(responseReader.response);
                 else
                     g_topicInfoResponses.AddTail(responseReader.response);
                 break;
@@ -407,11 +435,13 @@ TESResponseList* TESTopicInfo::DuplicateResponseList(TESResponseList* pResponseL
             if (!responseReader.file->NextChunk())
                 break;
         }
-        return pResponseList ? pResponseList : &g_topicInfoResponses;
+        return apList ? apList : &g_topicInfoResponses;
     }
 }
 
 // @fnv 0x0061d290
+// pdb: TESTopicInfo::InitItem | TESTopicInfo.obj | retail, string-set bridge, high
+// pdb locals: itempInt, pList, presp, pLastList, pownerFile, pTopic, tempint, formstring, infotext, ptopic, pquest, tempID, passocform, pPerk, pSkillStat
 void TESTopicInfo::InitItem()
 {
     if (IsFormInitialized())
@@ -442,7 +472,7 @@ void TESTopicInfo::InitItem()
                         ownerQuest = ownerTopic->GetParentQuest(this);
                     {
                         BSStringT<char> text;
-                        FormatDebugInfo(text, true);
+                        GetInfoDisplayText(text, true);
                         char description[260];
                         if (ownerTopic && ownerQuest)
                             sprintf(description, "TopicInfo %08X \"%s\" in Quest %s (%08x) Topic %s (%08x)",
@@ -469,14 +499,14 @@ void TESTopicInfo::InitItem()
             if (GetInfoConditions())
                 GetInfoConditions()->InitItem(this);
             if (GetConversationData())
-                GetConversationData()->InitItem(this);
+                GetConversationData()->TESConversationData_InitItem(this);
             pResponse = g_topicInfoResponses.QResponseList();
             while (pResponse)
             {
                 pResponse->InitItem(this);
                 pResponse = pResponse->GetNext();
             }
-            if (m_pPerkSkillStat)
+            if (pPerkSkillStat)
             {
                 struct PerkSkillResolution
                 {
@@ -484,16 +514,16 @@ void TESTopicInfo::InitItem()
                     TESForm* form;
                     ActorValueInfo* actorValue;
                 } resolved;
-                resolved.formID = reinterpret_cast<unsigned int>(m_pPerkSkillStat);
+                resolved.formID = reinterpret_cast<unsigned int>(pPerkSkillStat);
                 RemapFormIDForFile(resolved.formID, GetFile(-1));
                 resolved.form = GetFormByID(resolved.formID);
                 resolved.actorValue = dynamic_cast<ActorValueInfo*>(resolved.form);
                 if (resolved.actorValue)
-                    m_pPerkSkillStat = resolved.actorValue;
+                    pPerkSkillStat = resolved.actorValue;
                 else
                 {
                     BGSPerk* perk = dynamic_cast<BGSPerk*>(resolved.form);
-                    m_pPerkSkillStat = perk;
+                    pPerkSkillStat = perk;
                 }
             }
             SetInitializationState(true);
@@ -502,11 +532,15 @@ void TESTopicInfo::InitItem()
 }
 
 // @fnv 0x0061c360
-void TESTopicInfoData::InitItem(TESForm* owner)
+// src: XBOX_RETAIL_PDB 0x0061c360
+// pdb: TESConversationData::InitItem | TESTopicInfo.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: pInfoList, pLastInfoList, pList, pLastList, pownerFile, pTopic, tempint, pfileform, formstring, infotext, pinfo, ptopic, pquest, pTopicInfo
+void TESTopicInfoData::TESConversationData_InitItem(TESForm* apOwner)
 {
     BSSimpleList<TESTopic*>* pPreviousTopic = 0;
     BSSimpleList<TESTopic*>* pTopicList = GetLinkToList();
-    TESFile* pFile = owner ? owner->GetFile(-1) : 0;
+    TESFile* pFile = apOwner ? apOwner->GetFile(-1) : 0;
     {
         struct InfoCursor
         {
@@ -546,15 +580,15 @@ void TESTopicInfoData::InitItem(TESForm* owner)
                     TESQuest* quest;
                 } context;
                 context.info = 0;
-                if (owner && owner->GetFormType() == ENUM_FORM_ID_INFO_ID)
-                    context.info = static_cast<TESTopicInfo*>(owner);
+                if (apOwner && apOwner->GetFormType() == ENUM_FORM_ID_INFO_ID)
+                    context.info = static_cast<TESTopicInfo*>(apOwner);
                 context.topic = TESTopic::GetTopicFromInfo(context.info);
                 context.quest = 0;
                 if (context.topic)
                     context.quest = context.topic->GetParentQuest(context.info);
                 {
                     BSStringT<char> text;
-                    context.info->FormatDebugInfo(text, true);
+                    context.info->GetInfoDisplayText(text, true);
                     char description[1024];
                     if (context.topic && context.quest)
                         sprintf(description, "TopicInfo %08X \"%s\" in Quest %s (%08x) Topic %s (%08x)",
@@ -608,15 +642,15 @@ void TESTopicInfoData::InitItem(TESForm* owner)
                     TESQuest* quest;
                 } context;
                 context.info = 0;
-                if (owner && owner->GetFormType() == ENUM_FORM_ID_INFO_ID)
-                    context.info = static_cast<TESTopicInfo*>(owner);
+                if (apOwner && apOwner->GetFormType() == ENUM_FORM_ID_INFO_ID)
+                    context.info = static_cast<TESTopicInfo*>(apOwner);
                 context.topic = TESTopic::GetTopicFromInfo(context.info);
                 context.quest = 0;
                 if (context.topic)
                     context.quest = context.topic->GetParentQuest(context.info);
                 {
                     BSStringT<char> text;
-                    context.info->FormatDebugInfo(text, true);
+                    context.info->GetInfoDisplayText(text, true);
                     char description[1024];
                     if (context.topic && context.quest)
                         sprintf(description, "TopicInfo %08X \"%s\" in Quest %s (%08x) Topic %s (%08x)",
@@ -670,15 +704,15 @@ void TESTopicInfoData::InitItem(TESForm* owner)
                     TESQuest* quest;
                 } context;
                 context.info = 0;
-                if (owner && owner->GetFormType() == ENUM_FORM_ID_INFO_ID)
-                    context.info = static_cast<TESTopicInfo*>(owner);
+                if (apOwner && apOwner->GetFormType() == ENUM_FORM_ID_INFO_ID)
+                    context.info = static_cast<TESTopicInfo*>(apOwner);
                 context.topic = TESTopic::GetTopicFromInfo(context.info);
                 context.quest = 0;
                 if (context.topic)
                     context.quest = context.topic->GetParentQuest(context.info);
                 {
                     BSStringT<char> text;
-                    context.info->FormatDebugInfo(text, true);
+                    context.info->GetInfoDisplayText(text, true);
                     char description[1024];
                     if (context.topic && context.quest)
                         sprintf(description, "TopicInfo %08X \"%s\" in Quest %s (%08x) Topic %s (%08x)",
@@ -703,7 +737,7 @@ void TESTopicInfoData::InitItem(TESForm* owner)
 // @fnv 0x00409480
 void TESTopicInfo::SetSpeaker(TESActorBase* apActor)
 {
-    m_pDialogueSpeaker = apActor;
+    pSpeaker = apActor;
 }
 
 // @fnv 0x00508d70
@@ -737,13 +771,19 @@ void TESResponseList::AddTail(TESResponse* pNode)
 
 // Constructs the three lists (link-from, link-to, follow-up infos; BSSimpleList ctor 0x0096a2d0 each).
 // @fnv 0x0061ce40
+// pdb: ResponseListWrapper::CopyResponseList | TESTopicInfo.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESConversationData::TESConversationData
+// pdb params: apHead
+// pdb locals: pprev, pnewResponse
 TESTopicInfoData::TESTopicInfoData()
 {}
 
 // @fnv 0x0061cfd0
+// pdb: TESTopicInfo::SetPrompt | TESTopicInfo.obj | debug, upstream name already matches, high
+// pdb params: apPrompt
 void TESTopicInfo::SetPrompt(char* apPrompt)
 {
-    m_kPrompt.Set(apPrompt, 0);
+    cPrompt.Set(apPrompt, 0);
 }
 
 // Reads the flags byte at offset 0x26 and returns 1 if bit 0x10 is set, 3 if bit 0x20 is set, otherwise 2.
@@ -755,15 +795,20 @@ int __fastcall TESTopicInfo_GetDummyNodeState(const char* pThis)
 }
 
 // @fnv 0x0061e760
+// pdb: ResponseListWrapper::ClearResponseList | TESTopicInfo.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to TESTopicInfo::CloneResponseList
+// pdb locals: pres, pnext
 void TESTopicInfo::CloneResponseList(TESResponseList* list)
 {
-    DuplicateResponseList(list);
+    GetResponseList(list);
 }
 
 // @fnv 0x0061eb40
+// pdb: TESResponse::SetResponseText | TESTopicInfo.obj | debug, upstream name already matches, high
+// pdb params: apResponseText
 void TESResponse::SetResponseText(const char* apResponseText)
 {
-    m_kResponseText.Set(apResponseText, 0);
+    cResponseText.Set(apResponseText, 0);
 }
 
 // @fnv 0x0061f260
@@ -775,7 +820,7 @@ bool TESTopicInfo::IsSpeechChallenge()
 // @fnv 0x0061f340
 void TESTopicInfo::SetInfoIndex(unsigned short usIndex)
 {
-    m_uiInfoIndex = usIndex;
+    iInfoIndex = usIndex;
 }
 
 void __cdecl Deallocate(void*);
@@ -786,6 +831,7 @@ struct ResponseDeletion : TESResponse
 };
 // Runs the destructor on this, then frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0061cb30
+// pdb: TESResponse::`scalar deleting destructor' | TESTopicInfo.obj | debug, object-file run extension, low
 void* ResponseDeletion::DestroyAndFree(unsigned int flags)
 {
     TESResponse::~TESResponse();
@@ -811,6 +857,9 @@ void TESResponse::SetNext(TESResponse* next)
 
 // Walks the response chain to its last node and links the given response onto the end of it.
 // @fnv 0x0061cc90
+// pdb: ResponseListWrapper::InsertAfter | TESTopicInfo.obj | debug, object-file run extension, low
+// pdb params: apLocation, apItem
+// pdb locals: pnext
 void TESResponse::AppendResponse(TESResponse* apResponse)
 {
     TESResponse* next = this;
@@ -828,31 +877,38 @@ TopicInfoData* TESTopicInfo::GetData()
 }
 
 // @fnv 0x0061dad0
+// pdb: TESTopicInfo::LoadGame | TESTopicInfo.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
 void TESTopicInfo::LoadGameLegacy(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     TESForm::LoadGameLegacy(aiFlags, aiCurrentFlags);
     if (aiFlags & 0x80000000)
-        m_bGoodbye = true;
+        bSaidOnce = true;
 }
 
 // Calls TESForm::Revert with the given buffer and, if the high bit of aiFlags is set, clears byte at offset 0x22.
 // @fnv 0x0061db00
+// pdb: TESTopicInfo::Revert | TESTopicInfo.obj | retail, vtable slot, high
+// pdb params: aiFlags
 void TESTopicInfo::RevertLegacy(unsigned int aiFlags)
 {
     TESForm::RevertLegacy(aiFlags);
     if (aiFlags & 0x80000000)
-        m_bGoodbye = false;
+        bSaidOnce = false;
 }
 
 // @fnv 0x0061cb60
+// pdb: ResponseListWrapper::CopyResponseList | TESTopicInfo.obj | debug, object-file run extension, low
+// pdb params: apHead
+// pdb locals: pprev, pnewResponse
 void TESResponseList::SetResponseList(TESResponse* head)
 {
-    ClearResponses();
+    ResponseListWrapper_ClearResponseList();
     TESResponse* previous = 0;
     while (head)
     {
         TESResponse* response = new TESResponse;
-        response->CopyResponse(head);
+        response->Copy(head);
         if (previous)
             previous->SetNext(response);
         else
@@ -863,29 +919,35 @@ void TESResponseList::SetResponseList(TESResponse* head)
 }
 
 // @fnv 0x0061d6a0
-void TESTopicInfo::SetAltered(bool set)
+// pdb: TESTopicInfo::SetAltered | TESTopicInfo.obj | retail, upstream name already matches, high
+// pdb params: abVal
+// pdb locals: powner
+void TESTopicInfo::SetAltered(bool abVal)
 {
-    if (!IsTemporary() && set && IsFormInitialized())
+    if (!IsTemporary() && abVal && IsFormInitialized())
     {
         TESTopic* owner = TESTopic::GetTopicFromInfo(this);
         if (owner)
             owner->SetAltered(true);
     }
-    TESForm::SetAltered(set);
+    TESForm::SetAltered(abVal);
 }
 
 extern "C" void* _data_011c16bc;
 
 
 // @fnv 0x0061e0f0
+// pdb: TESTopicInfo::SetInfoConditions | TESTopicInfo.obj | debug, object-file gap fill, medium
+// pdb params: apCond
+// pdb locals: temp
 void TESTopicInfo::SetConditionList(PerkEntryConditionSet* apCond)
 {
     if (apCond)
-        m_kInfoConditions.CopyConditions(apCond, (PerkEntryConditionSet*)this);
+        objConditions.Copy(apCond, (PerkEntryConditionSet*)this);
     else
     {
         PerkEntryConditionSet temp;
-        m_kInfoConditions.CopyConditions(&temp, (PerkEntryConditionSet*)this);
+        objConditions.Copy(&temp, (PerkEntryConditionSet*)this);
     }
 }
 
@@ -893,16 +955,20 @@ void TESTopicInfo::SetConditionList(PerkEntryConditionSet* apCond)
 
 
 // @fnv 0x0061e2b0
-void TESTopicInfo::FormatDebugInfo(BSStringT<char>& text, bool firstOnly)
+// src: XBOX_DEBUG_PDB 0x0061e2b0
+// pdb: TESTopicInfo::GetInfoDisplayText | TESTopicInfo.obj | debug, call graph, high
+// pdb params: aString, abFirstOnly
+// pdb locals: plist
+void TESTopicInfo::GetInfoDisplayText(BSStringT<char>& aString, bool abFirstOnly)
 {
-    ((::BSStringT<char>*)&text)->Set(0, 0);
-    TESResponse* response = DuplicateResponseList(0)->QResponseList();
+    ((::BSStringT<char>*)&aString)->Set(0, 0);
+    TESResponse* response = GetResponseList(0)->QResponseList();
     while (response)
     {
-        ((::BSStringT<char>*)&text)->operator+=(response->GetDialogueText());
+        ((::BSStringT<char>*)&aString)->operator+=(response->GetDialogueText());
         if (response->GetNext())
-            ((::BSStringT<char>*)&text)->operator+=(" | ");
-        if (firstOnly)
+            ((::BSStringT<char>*)&aString)->operator+=(" | ");
+        if (abFirstOnly)
             break;
         response = response->GetNext();
     }
@@ -916,9 +982,10 @@ void TESTopicInfo::SetRandom(bool abSet)
 
 
 // @fnv 0x0061f280
+// pdb: TESTopicInfo::ResetSaidOnceFlags | TESTopicInfo.obj | debug, upstream name already matches, high
 void TESTopicInfo::ResetSaidOnceFlags()
 {
-    m_bGoodbye = false;
+    bSaidOnce = false;
     MarkAsUnmodified(0x80000000);
 }
 
@@ -959,16 +1026,20 @@ bool TESTopicInfo::IsInfoValidForDialogue(bool& rbDeferred, TESQuest* apQuest, T
             bool bQuestOK = true;
             if (apQuest)
                 bQuestOK =
-                    apQuest->GetConditions()->ContainsTrait(apSpeaker, apListener, rbDeferred, false);
+                    apQuest->GetConditions()->IsTrue(apSpeaker, apListener, rbDeferred, false);
             if (bQuestOK)
                 bResult =
-                    GetInfoConditions()->ContainsTrait(apSpeaker, apListener, rbDeferred, false);
+                    GetInfoConditions()->IsTrue(apSpeaker, apListener, rbDeferred, false);
         }
     }
     return bResult;
 }
 
 // @fnv 0x0061ceb0
+// pdb: TESConversationData::Copy | TESTopicInfo.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESTopicInfo::~TESTopicInfo
+// pdb params: apOwner, apDataToCopy
+// pdb locals: pTopicList, pTopicInfoList, pTopicInfo, pTopic
 TESTopicInfo::~TESTopicInfo()
 {
     TESTopicInfo::ClearData();
@@ -1060,6 +1131,9 @@ struct TopicInfoGroupCheck
 };
 
 // @fnv 0x0061d820
+// pdb: TESTopicInfo::BelongsInGroup | TESTopicInfo.obj | retail, vtable slot, high
+// pdb params: apGroupFORM, abAllowParentGroups, abCurrentOnly
+// pdb locals: bretval, pparenttopic
 bool TopicInfoGroupCheck::CheckGroupForm(FormRecordHeader* apGroupFORM, bool abAllowParentGroups, bool abCurrentOnly)
 {
     bool bretval;
@@ -1095,6 +1169,9 @@ bool TopicInfoGroupCheck::CheckGroupForm(FormRecordHeader* apGroupFORM, bool abA
 
 // Copies link-to, link-from and follow-up entries after clearing the destination lists.
 // @fnv 0x0061c210
+// pdb: TESConversationData::Copy | TESTopicInfo.obj | debug, call graph, medium
+// pdb params: apOwner, apDataToCopy
+// pdb locals: pTopicList, pTopicInfoList, pTopicInfo, pTopic
 void TESTopicInfoData::Copy(TESTopicInfo* unused, TESTopicInfoData* source)
 {
     if (!source)
@@ -1158,13 +1235,16 @@ struct TopicInfoCompare : TESTopicInfo
     bool CompareTopicForm(TESForm*);
 };
 // @fnv 0x0061d710
-bool TopicInfoCompare::CompareTopicForm(TESForm* form)
+// pdb: TESTopicInfo::SavesBefore | TESTopicInfo.obj | retail, vtable slot, high
+// pdb params: apForm
+// pdb locals: bretval, pinfo, pothertopic, pourtopic
+bool TopicInfoCompare::CompareTopicForm(TESForm* apForm)
 {
     bool bResult = false;
-    switch (static_cast<DialogueFormType*>(form)->FUN_00401170())
+    switch (static_cast<DialogueFormType*>(apForm)->FUN_00401170())
     {
     case 0x46: {
-        TESTopicInfo* pOtherInfo = dynamic_cast<TESTopicInfo*>(form);
+        TESTopicInfo* pOtherInfo = dynamic_cast<TESTopicInfo*>(apForm);
         if (pOtherInfo)
         {
             TESTopic* pSourceTopic = FindTopicByInfo(this);
@@ -1177,7 +1257,7 @@ bool TopicInfoCompare::CompareTopicForm(TESForm* form)
         break;
     }
     case 0x45: {
-        TESTopic* topic = dynamic_cast<TESTopic*>(form);
+        TESTopic* topic = dynamic_cast<TESTopic*>(apForm);
         if (topic)
         {
             TESTopic* owner = FindTopicByInfo(this);
@@ -1187,7 +1267,7 @@ bool TopicInfoCompare::CompareTopicForm(TESForm* form)
         break;
     }
     default:
-        bResult = IsLessThan(form);
+        bResult = IsLessThan(apForm);
     }
     return bResult;
 }
@@ -1215,32 +1295,35 @@ int __cdecl FindTopicByInfo(void* object);
 
 struct TopicInfoGroupData
 {
-    void GetResponseForTopicInfo(TopicInfoGroupOutput* output, TopicInfoGroupInput* input);
+    void GetResponseForTopicInfo(TopicInfoGroupOutput* apOutGroupFORM, TopicInfoGroupInput* apParentGroup);
 };
 
 // @fnv 0x0061d8c0
-void TopicInfoGroupData::GetResponseForTopicInfo(TopicInfoGroupOutput* output, TopicInfoGroupInput* input)
+// pdb: TESTopicInfo::CreateGroupData | TESTopicInfo.obj | retail, vtable slot, high
+// pdb params: apOutGroupFORM, apParentGroup
+// pdb locals: pparenttopic
+void TopicInfoGroupData::GetResponseForTopicInfo(TopicInfoGroupOutput* apOutGroupFORM, TopicInfoGroupInput* apParentGroup)
 {
     int iVar1;
 
-    if (output != 0)
+    if (apOutGroupFORM != 0)
     {
-        output->pResponse = 0;
-        if (input != 0)
+        apOutGroupFORM->pResponse = 0;
+        if (apParentGroup != 0)
         {
-            switch (input->unk0C)
+            switch (apParentGroup->unk0C)
             {
             case 0:
-                if (input->unk08 == DAT_01187344)
+                if (apParentGroup->unk08 == DAT_01187344)
                 {
                     iVar1 = FindTopicByInfo(this);
                     if (iVar1 != 0)
                     {
-                        output->pResponse = DAT_01187020;
-                        output->unk0C = 7;
-                        output->formID = ((TESForm*)iVar1)->GetFormID();
-                        output->unk04 = 0;
-                        output->unk10 = 0;
+                        apOutGroupFORM->pResponse = DAT_01187020;
+                        apOutGroupFORM->unk0C = 7;
+                        apOutGroupFORM->formID = ((TESForm*)iVar1)->GetFormID();
+                        apOutGroupFORM->unk04 = 0;
+                        apOutGroupFORM->unk10 = 0;
                     }
                 }
                 break;
@@ -1258,12 +1341,15 @@ struct TopicInfoDebug : TESTopicInfo
 {
     const char* GetFormTypeName();
     const char* GetEditorIDText();
-    void PrintDebugInfo(DebugTextOut* out);
+    void PrintDebugInfo(DebugTextOut* aString);
 };
 
 // Builds topic, quest and response text fragments and prints the form type, editor ID, form ID and those fragments via DebugTextPrintf.
 // @fnv 0x0061d950
-void TopicInfoDebug::PrintDebugInfo(DebugTextOut* out)
+// pdb: TESTopicInfo::GetFormDetailedString | TESTopicInfo.obj | retail, unique string literal, high
+// pdb params: aString
+// pdb locals: pqueststring, ptopicstring, ptextstring, ptopic, presponse, pquest
+void TopicInfoDebug::PrintDebugInfo(DebugTextOut* aString)
 {
     char topicText3[260];
     topicText3[0] = 0;
@@ -1284,12 +1370,12 @@ void TopicInfoDebug::PrintDebugInfo(DebugTextOut* out)
     }
     char responseText9[260];
     responseText9[0] = 0;
-    TESResponse* response = DuplicateResponseList(0)->QResponseList();
+    TESResponse* response = GetResponseList(0)->QResponseList();
     if (response)
     {
         sprintf(responseText9, ", Text: \"%s\"", response->GetDialogueText());
     }
-    DebugTextPrintf(out, "%s Form '%s' (%08X): %s%s%s", GetFormTypeName(), GetEditorIDText(), GetFormID(), questText2,
+    DebugTextPrintf(aString, "%s Form '%s' (%08X): %s%s%s", GetFormTypeName(), GetEditorIDText(), GetFormID(), questText2,
                     topicText3, responseText9);
 }
 
@@ -1301,16 +1387,19 @@ struct TopicInfoDifficulty : TESTopicInfo
 };
 // Copies topic info data from another TESTopicInfo: add-topic list, responses, prompt, perk/actor value, difficulty, speaker, result scripts and quest.
 // @fnv 0x0061e330
-void TESTopicInfo::Copy(TESForm* form)
+// pdb: TESTopicInfo::Copy | TESTopicInfo.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pTopicList, pTopic, pInfoToCopy, presponse, pNewResponse
+void TESTopicInfo::Copy(TESForm* apCopy)
 {
-    TESTopicInfo* topic = dynamic_cast<TESTopicInfo*>(form);
+    TESTopicInfo* topic = dynamic_cast<TESTopicInfo*>(apCopy);
     if (!topic)
         return;
     BSSimpleList<TESTopic*>* source = 0;
     TESTopic* node = 0;
-    TESForm::CopyFrom(form);
+    TESForm::CopyFrom(apCopy);
     m_Data = *topic->GetData();
-    ResetResponseList();
+    ClearAddTopicList();
     source = topic->GetAddTopicList();
     while (source && source->GetItem())
     {
@@ -1318,28 +1407,28 @@ void TESTopicInfo::Copy(TESForm* form)
         source = source->GetNext();
         GetAddTopicList()->AddTail(node);
     }
-    ClearResponses();
-    TESResponse* response = topic->DuplicateResponseList(0)->QResponseList();
+    ClearResponseList();
+    TESResponse* response = topic->GetResponseList(0)->QResponseList();
     while (response)
     {
         TESResponse* copy = new TESResponse;
-        copy->CopyResponse(response);
-        DuplicateResponseList(0)->AddTail(copy);
+        copy->Copy(response);
+        GetResponseList(0)->AddTail(copy);
         response = response->GetNext();
     }
     SetPrompt(topic->GetPrompt().String());
-    if (topic->m_pPerkSkillStat)
+    if (topic->pPerkSkillStat)
     {
-        switch (topic->m_pPerkSkillStat->GetFormType())
+        switch (topic->pPerkSkillStat->GetFormType())
         {
         case ENUM_FORM_ID_PERK_ID:
-            SetPerk(reinterpret_cast<BGSPerk*>(topic->m_pPerkSkillStat));
+            SetPerk(reinterpret_cast<BGSPerk*>(topic->pPerkSkillStat));
             break;
         case ENUM_FORM_ID_AVIF_ID:
-            SetActorValue(reinterpret_cast<ActorValueInfo*>(topic->m_pPerkSkillStat));
+            SetActorValue(reinterpret_cast<ActorValueInfo*>(topic->pPerkSkillStat));
             break;
         default:
-            m_pPerkSkillStat = topic->m_pPerkSkillStat;
+            pPerkSkillStat = topic->pPerkSkillStat;
         }
     }
     else
@@ -1348,12 +1437,12 @@ void TESTopicInfo::Copy(TESForm* form)
     }
     SetDifficultyLevel(static_cast<TopicInfoDifficulty*>(topic)->GetSpeechChallengeLevel());
     SetSpeaker(topic->GetSpeaker());
-    GetResultScript(0)->CopyScriptContents(topic->GetResultScript(0));
-    GetResultScript(1)->CopyScriptContents(topic->GetResultScript(1));
+    GetResultScript(0)->CopyResultScript(topic->GetResultScript(0));
+    GetResultScript(1)->CopyResultScript(topic->GetResultScript(1));
     SetInfoIndex(topic->GetInfoIndex());
     SetConditionList(topic->GetInfoConditions());
     if (topic->GetConversationData())
-        SetTopicInfoData(topic->GetConversationData());
+        SetConversationData(topic->GetConversationData());
     SetOwnerQuest(topic->GetParentQuest());
     SetInitializationState(topic->IsFormInitialized());
 }
@@ -1367,17 +1456,20 @@ struct FileOps : TESFile
 
 // Returns one of two cached result Script objects for this topic info, resetting and reloading them from the file's SC* chunks when the cache misses.
 // @fnv 0x0061eb60
-Script* TESTopicInfo::GetResultScript(unsigned int auiIndex)
+// pdb: TESTopicInfo::GetResultScript | TESTopicInfo.obj | retail, upstream name already matches, high
+// pdb params: aeScript
+// pdb locals: chunkid, scriptName, iloadscript, tempScript, pFile, iscript, formid, pMessage, tmpdata, n, pNewItem, tempID
+Script* TESTopicInfo::GetResultScript(unsigned int aeScript)
 {
-    unsigned int h = auiIndex;
+    unsigned int h = aeScript;
     if (this == g_cachedResultScriptInfo)
         return &g_resultScripts[h];
     g_cachedResultScriptInfo = this;
     Script i;
-    g_resultScripts[0].CopyScriptContents(&i);
+    g_resultScripts[0].CopyResultScript(&i);
     g_resultScripts[0].NotifySaveLoadGameOfFormChange();
     g_resultScripts[0].GetHeader()->m_bQuest = false;
-    g_resultScripts[1].CopyScriptContents(&i);
+    g_resultScripts[1].CopyResultScript(&i);
     g_resultScripts[1].NotifySaveLoadGameOfFormChange();
     g_resultScripts[1].GetHeader()->m_bQuest = false;
     if (!HasResultScript())
@@ -1385,10 +1477,10 @@ Script* TESTopicInfo::GetResultScript(unsigned int auiIndex)
     g_resultScripts[0].SetInitializationState(false);
     g_resultScripts[1].SetInitializationState(false);
     TESFile* a = GetFile(-1);
-    if (!a || !m_ulTopicFlags)
+    if (!a || !iFileOffset)
         return &g_resultScripts[h];
     a = a->GetParentTESFile();
-    if (!a->SetOffset(m_ulTopicFlags))
+    if (!a->SetOffset(iFileOffset))
         return &g_resultScripts[h];
     unsigned char p = a->GetTESForm();
     if (p != 0x46)
@@ -1427,7 +1519,7 @@ Script* TESTopicInfo::GetResultScript(unsigned int auiIndex)
             char* data = (char*)_alloca(size);
             ourMemset(data, 0, size);
             a->GetChunkData(data, 0);
-            g_resultScripts[s].SetScriptData(size, data);
+            g_resultScripts[s].SetCompileData(size, data);
             break;
         }
         case 0x4f524353: {
@@ -1462,9 +1554,10 @@ extern GlobalObject2_0040c150 g_011cc024;
 extern GlobalObject2_0040c150 g_011cbf54;
 
 // @fnv 0x0061f2b0
+// pdb: TESTopicInfo::GetDifficulty | TESTopicInfo.obj | debug, call graph (shared callers), high
 int TESTopicInfo::GetDifficultyLevel()
 {
-    switch (m_eDifficultyLevel)
+    switch (eDifficulty)
     {
     case 1:
         return *g_011cc06c.Int();
@@ -1495,6 +1588,10 @@ struct TopicGroupCheck : TESTopic
     bool IsFormInGroup(TopicGroupRecord* arg);
 };
 // @fnv 0x00619510
+// pdb: TESTopicInfo::SavesBefore | TESTopicInfo.obj | retail, vtable slot, medium
+// pdb note: debug build links it to TESTopic::SavesBefore
+// pdb params: apForm
+// pdb locals: bretval, pinfo, pothertopic, pourtopic
 bool TopicGroupCheck::IsFormInGroup(TopicGroupRecord* pGroupObj)
 {
     bool result = false;

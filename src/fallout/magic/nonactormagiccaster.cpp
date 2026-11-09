@@ -12,6 +12,7 @@ struct FUN_00825aa0_shell
 
 // Calls FUN_00825b60, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x00825aa0
+// pdb: NonActorMagicCaster::`scalar deleting destructor' | NonActorMagicCaster.obj | retail, vtable slot, high
 void* FUN_00825aa0_shell::FUN_00825aa0(unsigned int flags)
 {
     FUN_00825b60();

@@ -3,11 +3,12 @@
 #include "PathingRequest.h"
 #include "PathingLocation.h"
 
+// pdb: class PathingRequestHide, size 0xdc, bases: PathingRequest, 2 members
 class PathingRequestHide : public PathingRequest
 {
 public:
     PathingRequestHide();  // 0x006e5510 (PathingRequest::CreateRequestForType, type 4: 0xdc bytes)
-    PathingRequestHide(Actor* pkActor);
+    PathingRequestHide(Actor* aRequest);
     virtual ~PathingRequestHide();
     virtual void CopyTo(PathingRequest* apDest);
     virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
@@ -19,6 +20,6 @@ public:
     void FUN_006e55e0();
     void CopyTo_006e56f0(PathingRequest* apDest);
 
-    PathingLocation m_Location;
-    float m_fHideDistance;
+    PathingLocation ThreatLocation;
+    float fMinHideDistance;
 };

@@ -8,6 +8,7 @@ namespace ActorValue
 class Actor;
 class TESForm;
 
+// pdb: class ActorValueOwner, size 0x4, 0 members
 class ActorValueOwner
 {
 public:
@@ -15,7 +16,7 @@ public:
 
     virtual int GetBaseActorValue(ActorValue::Index actorValue);
     virtual float GetBaseActorValueFloat(ActorValue::Index actorValue);
-    virtual int GetActorValue(ActorValue::Index actorValue);
+    virtual int GetActorValue(ActorValue::Index aiWhich);
     virtual float GetCurrentActorValue(ActorValue::Index actorValue);
     virtual float GetPermanentActorValueFloat(ActorValue::Index actorValue);
     virtual float GetTemporaryActorValue(ActorValue::Index actorValue);
@@ -26,8 +27,8 @@ public:
     virtual unsigned short GetActorValueOwnerType();
 
     Actor* GetActorOwner();
-    float GetActorValueFloatByIndex(ActorValue::Index index);
-    float GetActorValueFloatByIndex(int index);
-    int GetActorValueAsInteger(ActorValue::Index index);
-    int GetActorValueAsInteger(int index);
+    float GetActorValueFloatByIndex(ActorValue::Index aiWhich);
+    float GetActorValueFloatByIndex(int aiWhich);
+    int GetActorValueAsInteger(ActorValue::Index aiWhich);
+    int GetActorValueAsInteger(int aiWhich);
 };

@@ -24,7 +24,7 @@ struct SphereWorldInertiaAccess : public hkpSphereMotion
 // src: HAVOK_SRC 0x00d1e230
 void SphereWorldInertiaAccess::hkpSphereMotion_getInertiaWorld(float* out)
 {
-    float t = m_kInertiaAndMassInv.x;
+    float t = m_inertiaAndMassInv.x;
     float s;
     if (DAT_010c9300 > t)
         s = DAT_0104da4c;

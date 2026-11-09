@@ -122,17 +122,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -238,21 +238,23 @@ FUN_00e7d230_cls* __thiscall FUN_00e7d230_cls::DestroyIfFlagged(int aiFlags)
 
 extern MemoryManager g_memoryManager;
 
-void __cdecl DestroyArrayElements(void*);
+void __cdecl NiTNewInterface_NiD3DRenderStateGroup_Deallocate(void*);
 
 struct FUN_00e7f790_Class
 {
-    void __thiscall DestroyList();
+    void __thiscall NiTPoolContainer_NiD3DRenderStateGroup_NiTNewInterface_NiD3DRenderStateGroup_dtor();
 };
 
 // @fnv 0x00e7f790
-void __thiscall FUN_00e7f790_Class::DestroyList()
+// src: XBOX_RETAIL_PDB 0x00e7f790
+// pdb: NiTPoolContainer<NiD3DRenderStateGroup,NiTNewInterface<NiD3DRenderStateGroup> >::~NiTPoolContainer<NiD3DRenderStateGroup,NiTNewInterface<NiD3DRenderStateGroup> > | NiD3DRenderStateGroup.obj | retail, call graph, high
+void __thiscall FUN_00e7f790_Class::NiTPoolContainer_NiD3DRenderStateGroup_NiTNewInterface_NiD3DRenderStateGroup_dtor()
 {
-    DestroyArrayElements(*(void**)this);
+    NiTNewInterface_NiD3DRenderStateGroup_Deallocate(*(void**)this);
     void* next = *(void**)((char*)this + 8);
     if (next)
     {
-        ((FUN_00e7f790_Class*)next)->DestroyList();
+        ((FUN_00e7f790_Class*)next)->NiTPoolContainer_NiD3DRenderStateGroup_NiTNewInterface_NiD3DRenderStateGroup_dtor();
         g_memoryManager.Deallocate(next);
     }
 }
@@ -400,6 +402,7 @@ extern StagePool* DAT_0126f6cc;
 
 // Allocates a 0x18-byte StagePool via the memory manager, zeroes its first four fields, sets the last two to 8, and stores it in DAT_0126f6cc.
 // @fnv 0x00e7ec90
+// pdb: NiD3DTextureStage::InitializePools | NiD3DTextureStage.obj | retail, call graph, medium
 void __cdecl CreateStagePool()
 {
     StagePool* p = (StagePool*)reinterpret_cast<P03MM*>(&g_memoryManager)->Allocate(0x18);
@@ -431,25 +434,28 @@ struct FUN_00e7efc0_List
     int _z;
     int count;
     FUN_00e7efc0_Node* head;
-    FUN_00e7efc0_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromSavedList(FUN_00e7efc0_Node* node);
+    FUN_00e7efc0_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromSavedList(FUN_00e7efc0_Node* pkEntry);
 };
 // Unlinks node from the doubly linked list, fixes neighbours and head, decrements count, clears node's links and returns it.
 // @fnv 0x00e7efc0
 // src: GAMEBRYO_LIB 0x00e7efc0
-FUN_00e7efc0_Node* __thiscall FUN_00e7efc0_List::NiD3DRenderStateGroup_RemoveRSEntryFromSavedList(FUN_00e7efc0_Node* node)
+// pdb: NiD3DRenderStateGroup::RemoveRSEntryFromSavedList | NiD3DRenderStateGroup.obj | debug, upstream name already matches, high
+// pdb params: pkEntry
+// pdb locals: pkPrev, pkNext
+FUN_00e7efc0_Node* __thiscall FUN_00e7efc0_List::NiD3DRenderStateGroup_RemoveRSEntryFromSavedList(FUN_00e7efc0_Node* pkEntry)
 {
-    FUN_00e7efc0_Node* prev = node->prev;
-    FUN_00e7efc0_Node* next = node->next;
+    FUN_00e7efc0_Node* prev = pkEntry->prev;
+    FUN_00e7efc0_Node* next = pkEntry->next;
     if (next)
         next->prev = prev;
     if (prev)
         prev->next = next;
-    if (node == head)
+    if (pkEntry == head)
         head = next;
     --count;
-    node->next = 0;
-    node->prev = 0;
-    return node;
+    pkEntry->next = 0;
+    pkEntry->prev = 0;
+    return pkEntry;
 }
 
 namespace fnv_00e7f2b0 {
@@ -474,6 +480,7 @@ NiD3DRenderStateEntry* DAT_0126f71c;
 // Allocates two 0x18-byte structures, zeroes their four pointers, sets their a/b fields to 8 and 0x10, and stores them in DAT_0126f718 and DAT_0126f71c.
 // @fnv 0x00e7f2b0
 // src: COMMUNITY 0x00e7f2b0
+// pdb: NiD3DRenderStateGroup::InitializePools | NiD3DRenderStateGroup.obj | retail, upstream name already matches, high
 void __cdecl NiD3DRenderStateGroup_InitializePools()
 {
     D3DRenderStateGroup* p =
@@ -731,6 +738,7 @@ struct FUN_00e613f0
 };
 // Sums the results of calling GetPrimitiveCount on each of the _10 entries in the _0c array and returns the total.
 // @fnv 0x00e613f0
+// pdb: hkxMeshSection::getNumTriangles | hkxMeshSection.obj | retail, object-file run extension, low
 int __thiscall FUN_00e613f0::Sum()
 {
     int total = 0;
@@ -1035,25 +1043,28 @@ struct FUN_00e7ef80_List
     int _x;
     int count;
     FUN_00e7ef80_Node* head;
-    FUN_00e7ef80_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromNoSaveList(FUN_00e7ef80_Node* node);
+    FUN_00e7ef80_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromNoSaveList(FUN_00e7ef80_Node* pkEntry);
 };
 // Unlinks node from the doubly linked list, fixing neighbours and head, decrements count, clears the node's links and returns it.
 // @fnv 0x00e7ef80
 // src: GAMEBRYO_LIB 0x00e7ef80
-FUN_00e7ef80_Node* FUN_00e7ef80_List::NiD3DRenderStateGroup_RemoveRSEntryFromNoSaveList(FUN_00e7ef80_Node* node)
+// pdb: NiD3DRenderStateGroup::RemoveRSEntryFromNoSaveList | NiD3DRenderStateGroup.obj | debug, upstream name already matches, high
+// pdb params: pkEntry
+// pdb locals: pkPrev, pkNext
+FUN_00e7ef80_Node* FUN_00e7ef80_List::NiD3DRenderStateGroup_RemoveRSEntryFromNoSaveList(FUN_00e7ef80_Node* pkEntry)
 {
-    FUN_00e7ef80_Node* prev = node->next;
-    FUN_00e7ef80_Node* next = node->prev;
+    FUN_00e7ef80_Node* prev = pkEntry->next;
+    FUN_00e7ef80_Node* next = pkEntry->prev;
     if (prev)
         prev->prev = next;
     if (next)
         next->next = prev;
-    if (node == head)
+    if (pkEntry == head)
         head = prev;
     --count;
-    node->next = 0;
-    node->prev = 0;
-    return node;
+    pkEntry->next = 0;
+    pkEntry->prev = 0;
+    return pkEntry;
 }
 
 class D3DRenderStateGroup
@@ -1065,11 +1076,14 @@ class D3DRenderStateGroup
 void __cdecl _FUN_00aa1490(void* p, int size);
 
 // @fnv 0x00e7f750
-void __cdecl DestroyArrayElements(void* p)
+// src: XBOX_RETAIL_PDB 0x00e7f750
+// pdb: NiTNewInterface<NiD3DRenderStateGroup>::Deallocate | NiD3DRenderStateGroup.obj | retail, call graph, high
+// pdb params: pArray
+void __cdecl NiTNewInterface_NiD3DRenderStateGroup_Deallocate(void* pArray)
 {
-    if (p)
+    if (pArray)
     {
-        unsigned char* base = static_cast<unsigned char*>(p);
+        unsigned char* base = static_cast<unsigned char*>(pArray);
         int count = *reinterpret_cast<int*>(base - 4);
         unsigned char* current = base + (count + count * 4) * sizeof(int);
 
@@ -2231,18 +2245,20 @@ class FUN_00e67660_cls
     int unkdd8;
     int unkddc;
     FnvNode67* m_de0[100];
-    int hkWingedEdge_findVisibleTriangles(FnvNode67* a1, int a2, int* a3, FnvEnt67** a4);
+    int hkWingedEdge_findVisibleTriangles(FnvNode67* initialTriangle, int pointOfView, int* chainLength, FnvEnt67** edgeChain);
 };
 
 extern float DAT_0104da48;
 
 // @fnv 0x00e67660
 // src: HAVOK_LIB 0x00e67660
-int FUN_00e67660_cls::hkWingedEdge_findVisibleTriangles(FnvNode67* apNode, int aiArg, int* apiCount, FnvEnt67** apOutEntry)
+// pdb: hkWingedEdge::findVisibleTriangles | hkWingedEdge.obj | retail, upstream name already matches, high
+// pdb params: initialTriangle, pointOfView, chainLength, edgeChain
+int FUN_00e67660_cls::hkWingedEdge_findVisibleTriangles(FnvNode67* initialTriangle, int pointOfView, int* chainLength, FnvEnt67** edgeChain)
 {
     int iResult = 0;
     int i = 0;
-    FnvEnt67** p = &apNode->m_18;
+    FnvEnt67** p = &initialTriangle->m_18;
     for (; i < 3; i++, p += 4)
     {
         FnvEnt67* e = *p;
@@ -2250,11 +2266,11 @@ int FUN_00e67660_cls::hkWingedEdge_findVisibleTriangles(FnvNode67* apNode, int a
         int st = n->m_44;
         if (st == 0)
         {
-            st = n->Callee00e63af0(aiArg, this, &m_04);
+            st = n->Callee00e63af0(pointOfView, this, &m_04);
             n->m_44 = st;
             if (st == 1)
             {
-                iResult = hkWingedEdge_findVisibleTriangles(n, aiArg, apiCount, apOutEntry);
+                iResult = hkWingedEdge_findVisibleTriangles(n, pointOfView, chainLength, edgeChain);
                 if (iResult == 2)
                 {
                     break;
@@ -2270,16 +2286,16 @@ int FUN_00e67660_cls::hkWingedEdge_findVisibleTriangles(FnvNode67* apNode, int a
         if (st == 2)
         {
             e->m_00->m_30 = e;
-            (*apiCount)++;
-            *apOutEntry = e;
+            (*chainLength)++;
+            *edgeChain = e;
         }
     }
-    apNode->m_40 = DAT_0104da48;
+    initialTriangle->m_40 = DAT_0104da48;
     if (m_0c >= 100)
     {
         return 2;
     }
-    m_de0[m_0c] = apNode;
+    m_de0[m_0c] = initialTriangle;
     m_0c++;
     return iResult;
 }
@@ -4056,30 +4072,32 @@ struct S_00e7c610_Object
 
 // @fnv 0x00e7c610
 // src: COMMUNITY 0x00e7c610
-void __stdcall NiD3DDefaultShader_PackTextureTransform(float* afMatrix, S_00e7c610_Object* pObject)
+// pdb: NiD3DDefaultShader::PackTextureTransform | NiD3DDefaultShader.obj | debug, upstream name already matches, high
+// pdb params: kTexMatrix, pkStage
+void __stdcall NiD3DDefaultShader_PackTextureTransform(float* kTexMatrix, S_00e7c610_Object* pkStage)
 {
-    pObject->unk5e = 1;
+    pkStage->unk5e = 1;
 
-    pObject->unk10->SetStageValue(0x18, 2, 0);
+    pkStage->unk10->SetStageValue(0x18, 2, 0);
 
-    pObject->unk1c = afMatrix[0];
-    pObject->unk2c = afMatrix[1];
-    pObject->unk3c = afMatrix[2];
-    pObject->unk4c = 0.0f;
+    pkStage->unk1c = kTexMatrix[0];
+    pkStage->unk2c = kTexMatrix[1];
+    pkStage->unk3c = kTexMatrix[2];
+    pkStage->unk4c = 0.0f;
 
-    pObject->unk20 = afMatrix[3];
-    pObject->unk30 = afMatrix[4];
-    pObject->unk40 = afMatrix[5];
+    pkStage->unk20 = kTexMatrix[3];
+    pkStage->unk30 = kTexMatrix[4];
+    pkStage->unk40 = kTexMatrix[5];
 
-    pObject->unk50 = 0.0f;
-    pObject->unk54 = 0.0f;
-    pObject->unk44 = 0.0f;
-    pObject->unk34 = 0.0f;
-    pObject->unk24 = 0.0f;
-    pObject->unk58 = 0.0f;
-    pObject->unk48 = 0.0f;
-    pObject->unk38 = 0.0f;
-    pObject->unk28 = 0.0f;
+    pkStage->unk50 = 0.0f;
+    pkStage->unk54 = 0.0f;
+    pkStage->unk44 = 0.0f;
+    pkStage->unk34 = 0.0f;
+    pkStage->unk24 = 0.0f;
+    pkStage->unk58 = 0.0f;
+    pkStage->unk48 = 0.0f;
+    pkStage->unk38 = 0.0f;
+    pkStage->unk28 = 0.0f;
 }
 
 class FUN_00e7cc90_cls
@@ -4484,7 +4502,7 @@ struct FUN_00e7d4e0_child
 
 struct FUN_00e7d4e0_pool
 {
-    void MemoryManager_Deallocate(void* apItem);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00e7d4e0_pool DAT_011f6238;
 
@@ -4568,7 +4586,7 @@ struct FUN_00e7d620_child
 
 struct FUN_00e7d620_pool
 {
-    void MemoryManager_Deallocate(void* apItem);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00e7d620_pool DAT_011f6238;
 
@@ -4697,7 +4715,7 @@ struct FUN_00e7ec60_Helper
 
 struct FUN_00e7ec60_Allocator
 {
-    void __thiscall Deallocate(void* p);
+    void __thiscall Deallocate(void* apMem);
 };
 
 extern FUN_00e7ec60_Allocator DAT_011f6238;
@@ -4744,7 +4762,7 @@ struct StageInner
 
 struct GlobalHolder
 {
-    void __thiscall MemoryManager_Deallocate(void* p);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 
 extern GlobalHolder DAT_011f6238;
@@ -4791,7 +4809,7 @@ struct FUN_00e7f210_Item
     unsigned char* m_pData;
     unsigned int m_uiCount;
     FUN_00e7f210_Item* m_pNext;
-    FUN_00e7f210_Item* Init(unsigned int n);
+    FUN_00e7f210_Item* Init(unsigned int pkD3DDevice);
 };
 
 struct FUN_00e7f210_cls
@@ -4806,6 +4824,9 @@ struct FUN_00e7f210_cls
 
 // Allocates a node holding n items, appends each item pointer to m_pItems (growing as needed), then pushes the node onto m_pHead.
 // @fnv 0x00e7f210
+// pdb: NiTPool<NiD3DRenderStateGroup::NiD3DRSEntry,NiTNewInterface<NiD3DRenderStateGroup::NiD3DRSEntry> >::GetFreeObject | NiD3DRenderStateGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DPass::~NiD3DPass
+// pdb locals: pkReturn
 void FUN_00e7f210_cls::AppendItems(unsigned int n)
 {
     void* mem = DAT_011f6238.Alloc(0xc);
@@ -4861,11 +4882,14 @@ struct Owner
     Item* first;
     unsigned int unk0c;
     Item* second;
-    void MoveItemsToGlobalSet();
+    void NiD3DRenderStateGroup_dtor();
 };
 // Adds each item from the first and second linked lists to DAT_0126f71c uniquely, then clears both list heads.
 // @fnv 0x00e7f320
-void Owner::MoveItemsToGlobalSet()
+// src: XBOX_RETAIL_PDB 0x00e7f320
+// pdb: NiD3DRenderStateGroup::~NiD3DRenderStateGroup | NiD3DRenderStateGroup.obj | retail, call graph (shared callers), high
+// pdb locals: pkCurr, pkNext
+void Owner::NiD3DRenderStateGroup_dtor()
 {
     Item* pNextItem;
     Item* item = first;
@@ -4890,7 +4914,7 @@ void Owner::MoveItemsToGlobalSet()
 class BE7F610Heap
 {
   public:
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 
 extern BE7F610Heap g_kE7F610Heap;
@@ -4955,7 +4979,9 @@ extern BE7F610Queue<BE7F610Buffer>* g_pkE7F610BufferQueue;
 
 // Deletes the global worker queue and buffer queue objects.
 // @fnv 0x00e7f610
-void __cdecl DestroyGlobalQueues()
+// src: XBOX_RETAIL_PDB 0x00e7f610
+// pdb: NiD3DRenderStateGroup::ShutdownPools | NiD3DRenderStateGroup.obj | retail, object-file gap fill, high
+void __cdecl NiD3DRenderStateGroup_ShutdownPools()
 {
     delete g_pkE7F610WorkerQueue;
     delete g_pkE7F610BufferQueue;
@@ -5158,25 +5184,29 @@ struct E74Accumulator
 };
 struct FUN_00e74a40_shell : E74Accumulator
 {
-    void AddGeometryToBatch(E74Geometry* pkGeom);
+    void NiXenonRenderer_AddToBatch(E74Geometry* pkGeometry);
 };
 // @fnv 0x00e74a40
-void FUN_00e74a40_shell::AddGeometryToBatch(E74Geometry* pkGeom)
+// src: XBOX_RETAIL_PDB 0x00e74a40
+// pdb: NiXenonRenderer::AddToBatch | NiXenonRenderer.obj | retail, string-set bridge, high
+// pdb params: pkGeometry
+// pdb locals: kWorldBound, pkData, kWorld, bHWSkinned, pkSkinInstance, uiNumPartitions, pkPartitionArray, pkSkinPartition, i, pkBatch
+void FUN_00e74a40_shell::NiXenonRenderer_AddToBatch(E74Geometry* pkGeometry)
 {
-    E74GeomData* pkData = pkGeom->m_spGeometryData;
-    E74SkinInstance* pkSkin = pkGeom->m_spSkinningInstance;
+    E74GeomData* pkData = pkGeometry->m_spGeometryData;
+    E74SkinInstance* pkSkin = pkGeometry->m_spSkinningInstance;
     if (!m_pGeometryShader)
     {
-        m_pGeometryShader = pkGeom->m_pGeometryShader;
+        m_pGeometryShader = pkGeometry->m_pGeometryShader;
         if (!m_pGeometryShader)
         {
-            Object_DoNothing("AddToBatch> No shader found for object %s!\n", pkGeom->m_pcName);
+            Object_DoNothing("AddToBatch> No shader found for object %s!\n", pkGeometry->m_pcName);
             return;
         }
     }
     if (!pkData->GetActiveCount())
         return;
-    bool bHasAnimation = NiDX9Renderer_IsHardwareSkinned(pkGeom, m_pGeometryShader);
+    bool bHasAnimation = NiDX9Renderer_IsHardwareSkinned(pkGeometry, m_pGeometryShader);
     m_pkGroupMgr->ProcessCollector(m_pkActorGroup, pkData, pkSkin, bHasAnimation, 0, 0);
     if (bHasAnimation)
     {
@@ -5186,7 +5216,7 @@ void FUN_00e74a40_shell::AddGeometryToBatch(E74Geometry* pkGeom)
         for (unsigned int i = 0; i < uiPartitionCount; i++)
         {
             E74Node* pkNode = E74NewNode();
-            pkNode->m_pkGeom = pkGeom;
+            pkNode->m_pkGeom = pkGeometry;
             pkNode->m_pkGeometryPartition = &pkPartitions[i];
             pkNode->m_uiTriangles = pkPartitions[i].m_uiTriangles;
             pkNode->m_pkNext = 0;
@@ -5196,7 +5226,7 @@ void FUN_00e74a40_shell::AddGeometryToBatch(E74Geometry* pkGeom)
     else
     {
         E74Node* pkNode = E74NewNode();
-        pkNode->m_pkGeom = pkGeom;
+        pkNode->m_pkGeom = pkGeometry;
         pkNode->m_pkGeometryPartition = 0;
         pkNode->m_uiTriangles = pkData->m_uiTriangles;
         pkNode->m_pkNext = 0;
@@ -5929,6 +5959,8 @@ typedef bool(__cdecl* FNVCallbackFn)(void*);
 
 // Calls slot 3 on m_p288, optionally slot 128, and on device-lost codes runs the restore callbacks or FUN_00e736b0.
 // @fnv 0x00e74c00
+// pdb: NiXenonRenderer::EmptyBatch | NiXenonRenderer.obj | debug, object-file run extension, low
+// pdb locals: pkBatch, pkNextBatch
 bool FUN_00e74c00_cls::HandleDeviceLost()
 {
     void* obj = m_p288;
@@ -6207,6 +6239,8 @@ extern const PixelTemplate DAT_011ab2a8;
 extern const PixelTemplate DAT_011ab2f0;
 // Selects a PixelTemplate by format code, copies it into output, sets field0c to format and field10 to 0, and returns output.
 // @fnv 0x00e7c1e0
+// pdb: NiXenonPixelFormat::InitFromD3DFormat | NiXenonPixelFormat.obj | retail, object-file run extension, low
+// pdb params: eD3DFmt, kFormat
 PixelTemplate& __cdecl GetPixelTemplateForFormat(int format, PixelTemplate& output)
 {
     const PixelTemplate* pTemplate;
@@ -6381,6 +6415,9 @@ void __cdecl CE7C500ConvertFormat(int eFormat, NiPixelFormat* pkFormat);
 
 // Allocates a NiPixelFormat, converts the given format into it, and returns the new object.
 // @fnv 0x00e7c500
+// pdb: NiXenonPixelFormat::CreateFromD3DFormat | NiXenonPixelFormat.obj | retail, object-file run extension, low
+// pdb params: eD3DFmt
+// pdb locals: pkFormat
 NiPixelFormat* __cdecl CreatePixelFormat(int eFormat)
 {
     void* memory = g_kE7C500Heap.Allocate(sizeof(NiPixelFormat));
@@ -6460,7 +6497,7 @@ struct IndexAllocator
     int unk00;
 };
 struct IndexArray;
-void __cdecl hkArrayUtil__reserve(IndexAllocator* alloc, IndexArray* arr, int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(IndexAllocator* mem, IndexArray* array, int numElem, int sizeElem);
 void* __cdecl hkString_memCpy(void* dst, const void* src, unsigned int n);
 
 struct IndexArray
@@ -6553,7 +6590,7 @@ inline hkMemoryRouter* getRouter() throw()
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
 
-void __cdecl ResizeAudioStream(HeapAlloc* alloc, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(HeapAlloc* mem, void* array, int sizeElem);
 
 template <class T> inline void construct(T* p, int n, const T& t)
 {
@@ -8202,7 +8239,7 @@ struct Tex
     void SetValues(unsigned, unsigned);
 };
 
-const char* FUN_00e7a9a0(int);
+const char* NiXenonRenderer_GetD3DFormatString(int);
 void Object_DoNothing(const char*, ...);
 extern int DAT_0126f580;
 extern int DAT_0126f590;
@@ -8267,7 +8304,7 @@ bool RT::NiDX9ImplicitBufferData_Recreate(Swap* pkSwap)
     }
     m_pkTex->SetValues(kDesc.Width, kDesc.Height);
     m_iFmt = CreatePixelFormat(kDesc.Format);
-    Object_DoNothing("NiDX9Renderer::Recreate> Using %s backbuffer format\n", FUN_00e7a9a0(kDesc.Format));
+    Object_DoNothing("NiDX9Renderer::Recreate> Using %s backbuffer format\n", NiXenonRenderer_GetD3DFormatString(kDesc.Format));
     return true;
 }
 
@@ -10233,7 +10270,7 @@ using directx9::HRESULT;
 using directx9::D3DPOOL_DEFAULT;
 using directx9::D3DPOOL_MANAGED;
 
-D3DFORMAT GetD3DFormat(const NiPixelFormat* kFormat);
+D3DFORMAT GetD3DFormat(const NiPixelFormat* kDesc);
 const char* GetErrorString(HRESULT hr);
 void DebugOut(const char* fmt, ...);
 
@@ -10569,6 +10606,9 @@ extern bool g_dsBE7D6B0;
 // Creates a NiDX9ImplicitBufferData from the device and its presentation parameters, queries the device's render
 // target and pixel format, and attaches it to the Ni2DBuffer in pkBuffer.
 // @fnv 0x00e7d6b0
+// pdb: NiXenonExplicitBuffersData::Create | NiXenon2DBufferData.obj | debug, call graph, high
+// pdb params: kD3DPresentParams, pkBuffer
+// pdb locals: pkD3DDevice9, pkThis, pkRenderer, ui, eD3DRet
 NiDX9ImplicitBufferData* __cdecl NiDX9ImplicitBufferData::Create(IDirect3DDevice9* pkD3DDevice9,
                                                                  const D3DPRESENT_PARAMETERS& kD3DPresentParams,
                                                                  Ni2DBuffer*& pkBuffer)
@@ -10590,7 +10630,7 @@ NiDX9ImplicitBufferData* __cdecl NiDX9ImplicitBufferData::Create(IDirect3DDevice
         return 0;
     }
     pkThis->m_pkPixelFormat = CreatePixelFormat((unsigned int)kDesc.Format);
-    Object_DoNothing("NiDX9Renderer::Create> Using %s backbuffer format\n", FUN_00e7a9a0(kDesc.Format));
+    Object_DoNothing("NiDX9Renderer::Create> Using %s backbuffer format\n", NiXenonRenderer_GetD3DFormatString(kDesc.Format));
     if (g_dsAE7D6B0 == 0)
     {
         NiRenderer* r = NiRenderer::ms_pRenderer;
@@ -11015,10 +11055,13 @@ extern "C" NiDepthStencilBuffer* __cdecl FUN_00a9ff60(unsigned int width, unsign
 NiPixelFormat* __cdecl CreatePixelFormat(unsigned int eD3DFormat);
 // Creates NiDX9ImplicitDepthStencilBufferData, retrieves the device depth-stencil surface, and attaches it to the provided or newly created 2D buffer.
 // @fnv 0x00e7d850
-NiDX9ImplicitDepthStencilBufferData* __cdecl NiDX9ImplicitDepthStencilBufferData::Create(IDirect3DDevice9* pkD3DDevice9,
-                                                                                         NiDepthStencilBuffer*& pkBuffer)
+// pdb: NiRenderTargetGroup::Create | NiRenderTargetGroup.obj | debug, call graph, high
+// pdb params: uiNumBuffers, apkRenderer
+// pdb locals: pkRenderTargetGroup, pkRenderer
+NiDX9ImplicitDepthStencilBufferData* __cdecl NiDX9ImplicitDepthStencilBufferData::Create(IDirect3DDevice9* uiNumBuffers,
+                                                                                         NiDepthStencilBuffer*& apkRenderer)
 {
-    directx9::IDirect3DDevice9* pkD3DDevice = reinterpret_cast<directx9::IDirect3DDevice9*>(pkD3DDevice9);
+    directx9::IDirect3DDevice9* pkD3DDevice = reinterpret_cast<directx9::IDirect3DDevice9*>(uiNumBuffers);
     NiDX9ImplicitDepthStencilBufferData* pkData = new NiDX9ImplicitDepthStencilBufferData();
     if (pkD3DDevice->GetDepthStencilSurface(reinterpret_cast<directx9::IDirect3DSurface9**>(&pkData->m_pkSurface)) < 0)
     {
@@ -11035,16 +11078,16 @@ NiDX9ImplicitDepthStencilBufferData* __cdecl NiDX9ImplicitDepthStencilBufferData
 
     pkData->m_pkPixelFormat = (NiPixelFormat*)CreatePixelFormat(kDesc.Format);
 
-    if (!pkBuffer)
+    if (!apkRenderer)
     {
-        pkBuffer = FUN_00a9ff60(kDesc.Width, kDesc.Height, pkData);
+        apkRenderer = FUN_00a9ff60(kDesc.Width, kDesc.Height, pkData);
     }
     else
     {
-        reinterpret_cast<Ni2DBuffer*>(pkBuffer)->SetRendererData(pkData);
+        reinterpret_cast<Ni2DBuffer*>(apkRenderer)->SetRendererData(pkData);
     }
 
-    pkData->m_pkBuffer = reinterpret_cast<Ni2DBuffer*>(pkBuffer);
+    pkData->m_pkBuffer = reinterpret_cast<Ni2DBuffer*>(apkRenderer);
     DAT_0126f590 = (int)pkData->m_pkSurface;
 
     return pkData;

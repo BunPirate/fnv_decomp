@@ -103,15 +103,18 @@ struct SpawnOwner
 };
 // @fnv 0x00ca0190
 // src: XBOX_PDB 0x00ca0190
-void SpawnOwner::bhkBoxShape_Init_00ca0190(SpawnSource* pSource)
+// pdb: bhkBoxShape::Init | bhkBoxShape.obj | retail, vtable slot, high
+// pdb params: arExt
+// pdb locals: ci
+void SpawnOwner::bhkBoxShape_Init_00ca0190(SpawnSource* arInfo)
 {
     ThreadStateGuard kGuard;
     // Keep the SIMD temporary: VC9 /GS omits the original cookie for a shared hkVector4 temporary.
     SpawnedRefObject* pObject = new SpawnedRefObject(
         reinterpret_cast<const hkVector4&>(static_cast<const __m128&>(
-            _mm_setr_ps(pSource->m_fVectorY, pSource->m_fVectorZ, pSource->m_fScalarPart, pSource->m_fVectorX))),
+            _mm_setr_ps(arInfo->m_fVectorY, arInfo->m_fVectorZ, arInfo->m_fScalarPart, arInfo->m_fVectorX))),
         DAT_010c72bc);
     v35(pObject);
     pObject->FUN_00c905b0();
-    v47(pSource);
+    v47(arInfo);
 }

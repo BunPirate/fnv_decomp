@@ -20,6 +20,8 @@ extern "C" Setting DAT_011de0a4;
 
 // Calls FUN_009a4250 on the map stored at this object's first pointer with history and returns whether it succeeded.
 // @fnv 0x0084aad0
+// pdb: BGSSaveLoadGame::IsFormIDInUse | BGSSaveLoadGame.obj | debug, object-file gap fill, medium
+// pdb params: aiFormID
 bool SaveLoadChangeHistory::MatchesHistory(SaveLoadChangeHistory* history)
 {
     if (reinterpret_cast<BGSSaveLoadChangesMap*>(*reinterpret_cast<void**>(this))
@@ -47,6 +49,8 @@ void SaveLoadChangeHistory::Init()
 
 // Calls FUN_0084c2a0 twice, with (0, 12) and (1000, 1001), passing flags through to each call.
 // @fnv 0x0084c270
+// pdb: BGSSaveLoadGlobalData::RevertGlobalData | BGSSaveLoadGlobalData.obj | debug, call graph (shared callers), low
+// pdb params: abFullRevert
 void BGSSaveLoadHistory_Destroy(unsigned char flags)
 {
     BGSSaveLoadGlobalData_RevertGlobalDataRange(0, 12, flags);
@@ -54,6 +58,9 @@ void BGSSaveLoadHistory_Destroy(unsigned char flags)
 }
 
 // @fnv 0x0084e020
+// pdb: BGSSaveLoadHistory::AddNoteVarArgs | BGSSaveLoadHistory.obj | debug, object-file gap fill, medium
+// pdb params: apNote, aVarList
+// pdb locals: ptempString, isize, pstring
 void SaveLoadChangeHistory::AddNoteWithArguments(const char* format, char* arguments)
 {
     BGSSaveLoadHistoryNoteLocals locals;
@@ -72,10 +79,14 @@ void SaveLoadChangeHistory::AddNoteWithArguments(const char* format, char* argum
 
 // Reads a count and that many strings from a BGSLoadGameBuffer and appends each to the Notes array.
 // @fnv 0x0084e190
-void SaveLoadChangeHistory::Load(SaveLoadFile* file)
+// src: XBOX_RETAIL_PDB 0x0084e190
+// pdb: BGSSaveLoadHistory::Load | BGSSaveLoadHistory.obj | retail, call graph, high
+// pdb params: apFile
+// pdb locals: icount, apLoadGameBuffer, loadBuffer, i, pstring
+void SaveLoadChangeHistory::BGSSaveLoadHistory_Load(SaveLoadFile* apFile)
 {
     BGSLoadGameBuffer buffer;
-    buffer.ReadAndVerifySize(file);
+    buffer.ReadAndVerifySize(apFile);
     {
         BGSLoadGameBuffer* pBuffer = &buffer;
         {
@@ -102,6 +113,7 @@ struct FUN_0084ded0 : public HArr
     FUN_0084ded0();
 };
 // @fnv 0x0084ded0
+// pdb: BGSSaveLoadHistory::BGSSaveLoadHistory | BGSSaveLoadHistory.obj | retail, call graph, high
 FUN_0084ded0::FUN_0084ded0()
 {
     GrowCapacity(0x40);
@@ -109,7 +121,7 @@ FUN_0084ded0::FUN_0084ded0()
 
 struct FUN_0084e2c0_shell : public SaveLoadChangeHistory
 {
-    void AddAllNotes(SaveLoadChangeHistory*);
+    void BGSSaveLoadHistory_AddHistory(SaveLoadChangeHistory*);
 };
 
 struct HH84
@@ -119,7 +131,11 @@ struct HH84
 };
 // Iterates over the history's entry count, retrieves each string by index and passes it to AddNote.
 // @fnv 0x0084e2c0
-void FUN_0084e2c0_shell::AddAllNotes(SaveLoadChangeHistory* apHistory)
+// src: XBOX_RETAIL_PDB 0x0084e2c0
+// pdb: BGSSaveLoadHistory::AddHistory | BGSSaveLoadHistory.obj | retail, call graph, high
+// pdb params: apHistory
+// pdb locals: icount, i, pstring
+void FUN_0084e2c0_shell::BGSSaveLoadHistory_AddHistory(SaveLoadChangeHistory* apHistory)
 {
     unsigned int icount = reinterpret_cast<HH84*>(apHistory)->GetReferenceFlags();
     for (unsigned int i = 0; i < icount; i++)
@@ -140,6 +156,9 @@ struct FUN_0084df30 : FUN_00822630
     ~FUN_0084df30();
 };
 // @fnv 0x0084df30
+// pdb: BGSSaveLoadHistory::Clear | BGSSaveLoadHistory.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSSaveLoadHistory::~BGSSaveLoadHistory
+// pdb locals: i
 FUN_0084df30::~FUN_0084df30()
 {
     DeleteAllElements();
@@ -161,6 +180,8 @@ struct FUN_0084df90_shell : BgssaveloadhistoryOffset08View
 };
 // Deletes each element returned by GetAt up to GetFlags, then resets the container size to 0.
 // @fnv 0x0084df90
+// pdb: BGSSaveLoadHistory::Clear | BGSSaveLoadHistory.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void FUN_0084df90_shell::DeleteAllElements()
 {
     for (unsigned int i = 0; i < GetFlags(); i++)
@@ -173,13 +194,16 @@ struct FUN_0084e250_shell
     int GetReferenceFlags();
     unsigned int& GetAt(int);
     void UpdateEntryValue(unsigned int, unsigned int);
-    void DeleteItemsFrom(unsigned int count);
+    void BGSSaveLoadHistory_AddNote(unsigned int count);
 };
 
 void __cdecl operator delete(void*);
 
 // @fnv 0x0084e250
-void FUN_0084e250_shell::DeleteItemsFrom(unsigned int uiStartIndex)
+// src: XBOX_RETAIL_PDB 0x0084e250
+// pdb: BGSSaveLoadHistory::AddNote | BGSSaveLoadHistory.obj | retail, object-file gap fill, high
+// pdb params: apNote, varArgs
+void FUN_0084e250_shell::BGSSaveLoadHistory_AddNote(unsigned int uiStartIndex)
 {
     int size = GetReferenceFlags();
     if (uiStartIndex >= (unsigned int)size)
@@ -203,6 +227,10 @@ class HistoryNotesView
 
 // Saves the note count and each string into a BGSSaveGameBuffer, then writes the buffer to pkTarget.
 // @fnv 0x0084e0d0
+// pdb: BGSSaveLoadHistory::AddNoteVarArgs | BGSSaveLoadHistory.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSSaveLoadHistory::Save
+// pdb params: apNote, aVarList
+// pdb locals: ptempString, isize, pstring
 void HistoryNotesView::SaveTo(SaveLoadFile* pkTarget)
 {
     BGSSaveGameBuffer kBuffer;
@@ -213,7 +241,7 @@ void HistoryNotesView::SaveTo(SaveLoadFile* pkTarget)
     for (unsigned int uiIndex = 0; uiIndex < ItemUpdateArray; uiIndex++)
     {
         char* note = GetAt(uiIndex);
-        pkBuffer6->SaveGameString(static_cast<const char*>(note), 0);
+        pkBuffer6->SaveString(static_cast<const char*>(note), 0);
     }
 
     kBuffer.Save(pkTarget);

@@ -39,7 +39,7 @@ struct FUN_009afbb0_shell
 {
     virtual ~FUN_009afbb0_shell();
     void* FUN_009afbb0(unsigned int flags);
-    void ForwardCall_009afc10();
+    void hkpFixedBufferCdPointCollector_dtor();
 };
 extern "C" void __cdecl Object_UpdateFields_009afbe0(void*);
 struct FUN_00621100_shell
@@ -48,7 +48,7 @@ struct FUN_00621100_shell
 };
 struct FUN_009afc10_shell
 {
-    void __thiscall ForwardCall_009afc10();
+    void __thiscall hkpFixedBufferCdPointCollector_dtor();
 };
 struct FUN_009afc50_shell
 {
@@ -256,19 +256,22 @@ struct FUN_00cbc650_cls
     virtual void v2B();
     virtual void v2C();
     virtual FUN_00cbc650_obj* vGet(FUN_00cbc650_obj* volatile* pp);
-    void bhkUnaryAction_LoadBinary(FUN_00cbc650_obj* a);
-    void bhkLiquidAction_LoadBinary(FUN_00cbc650_obj* volatile a1);
+    void bhkUnaryAction_LoadBinary(FUN_00cbc650_obj* arStream);
+    void bhkLiquidAction_LoadBinary(FUN_00cbc650_obj* volatile arStream);
 };
 
 // @fnv 0x00cbc650
 // src: XBOX_PDB 0x00cbc650
-void FUN_00cbc650_cls::bhkLiquidAction_LoadBinary(FUN_00cbc650_obj* volatile a1)
+// pdb: bhkLiquidAction::LoadBinary | bhkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void FUN_00cbc650_cls::bhkLiquidAction_LoadBinary(FUN_00cbc650_obj* volatile arStream)
 {
-    FUN_00cbc650_obj* obj = a1;
+    FUN_00cbc650_obj* obj = arStream;
     bhkUnaryAction_LoadBinary(obj);
     if (obj->m_1e5 != 1)
     {
-        volatile unsigned int* p = (volatile unsigned int*)vGet(&a1);
+        volatile unsigned int* p = (volatile unsigned int*)vGet(&arStream);
         p[2] = _byteswap_ulong(p[2]);
         p[3] = _byteswap_ulong(p[3]);
         p[4] = _byteswap_ulong(p[4]);
@@ -310,7 +313,7 @@ struct FUN_00cbc6a0_Class
     virtual void vf19();
     virtual void vf20();
     virtual void vf21();
-    virtual void bhkLiquidAction_SaveBinary(unsigned char* arg);
+    virtual void bhkLiquidAction_SaveBinary(unsigned char* arStream);
     virtual void vf23();
     virtual void vf24();
     virtual void vf25();
@@ -334,17 +337,20 @@ struct FUN_00cbc6a0_Class
     virtual void vf43();
     virtual void vf44();
     virtual FUN_00cbc6a0_Data* vf45(int* value);
-    void __thiscall bhkUnaryAction_SaveBinary(unsigned char* arg);
+    void __thiscall bhkUnaryAction_SaveBinary(unsigned char* arStream);
 };
 
 // @fnv 0x00cbc6a0
 // src: XBOX_PDB 0x00cbc6a0
-void FUN_00cbc6a0_Class::bhkLiquidAction_SaveBinary(unsigned char* arg)
+// pdb: bhkLiquidAction::SaveBinary | bhkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo
+void FUN_00cbc6a0_Class::bhkLiquidAction_SaveBinary(unsigned char* arStream)
 {
     unsigned char value;
     FUN_00cbc6a0_Data* data = vf45((int*)&value);
 
-    if (arg[0x1E4] != 1)
+    if (arStream[0x1E4] != 1)
     {
         data->unk08 = _byteswap_ulong(data->unk08);
         data->unk0C = _byteswap_ulong(data->unk0C);
@@ -352,9 +358,9 @@ void FUN_00cbc6a0_Class::bhkLiquidAction_SaveBinary(unsigned char* arg)
         data->unk14 = _byteswap_ulong(data->unk14);
     }
 
-    bhkUnaryAction_SaveBinary(arg);
+    bhkUnaryAction_SaveBinary(arStream);
 
-    if (arg[0x1E4] != 1)
+    if (arStream[0x1E4] != 1)
     {
         data->unk08 = _byteswap_ulong(data->unk08);
         data->unk0C = _byteswap_ulong(data->unk0C);
@@ -369,12 +375,12 @@ void __cdecl bhkSerializable_CloneCritUnlock();
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 inline AutoMemContext::AutoMemContext()
 {
-    m_eMemoryContext = (MEM_CONTEXT)g_memoryContext;
+    iOldMemContext = (MEM_CONTEXT)g_memoryContext;
     g_memoryContext = 16;
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    g_memoryContext = (int)m_eMemoryContext;
+    g_memoryContext = (int)iOldMemContext;
 }
 struct FUN_00cbc550_class
 {
@@ -402,17 +408,20 @@ struct FUN_00cbc550_class
 };
 struct FUN_00cbca20_class
 {
-    void __thiscall bhkUnaryAction_CopyMembers(FUN_00cbc550_class* obj, int flags);
-    FUN_00cbc550_class* __thiscall bhkLiquidAction_CreateClone(int flags);
+    void __thiscall bhkUnaryAction_CopyMembers(FUN_00cbc550_class* pDest, int arCloneData);
+    FUN_00cbc550_class* __thiscall bhkLiquidAction_CreateClone(int arCloneData);
 };
 // @fnv 0x00cbca20
 // src: XBOX_PDB 0x00cbca20
-FUN_00cbc550_class* __thiscall FUN_00cbca20_class::bhkLiquidAction_CreateClone(int flags)
+// pdb: bhkLiquidAction::CreateClone | bhkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+FUN_00cbc550_class* __thiscall FUN_00cbca20_class::bhkLiquidAction_CreateClone(int arCloneData)
 {
     AutoMemContext context;
     bhkSerializable_CloneCritLock();
     FUN_00cbc550_class* result = new FUN_00cbc550_class();
-    bhkUnaryAction_CopyMembers(result, flags);
+    bhkUnaryAction_CopyMembers(result, arCloneData);
     bhkSerializable_CloneCritUnlock();
     return result;
 }
@@ -445,7 +454,7 @@ struct HavokObj
     }
     static void operator delete(void* p);
 
-    HavokObj(void* a1, int a2);
+    HavokObj(void* entityA, int userData);
     void removeReference();
 };
 
@@ -553,27 +562,30 @@ struct TargetClass
     float unk1c;
     float unk20;
 
-    void bhkLiquidAction_SetTargetObject(void* p);
-    void bhkLiquidAction_Init(ArgStruct* arg);
+    void bhkLiquidAction_SetTargetObject(void* apObject);
+    void bhkLiquidAction_Init(ArgStruct* arInfo);
 };
 
 // @fnv 0x00cbd520
 // src: XBOX_PDB 0x00cbd520
-void TargetClass::bhkLiquidAction_Init(ArgStruct* arg)
+// pdb: bhkLiquidAction::Init | bhkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: po, pcol, tempMemContext, cinfo
+void TargetClass::bhkLiquidAction_Init(ArgStruct* arInfo)
 {
     AutoMemContext memContext;
 
-    this->unk1c = arg->unk08;
-    this->unk20 = arg->unk0c;
-    this->unk14 = arg->unk10;
-    this->unk18 = arg->unk14;
+    this->unk1c = arInfo->unk08;
+    this->unk20 = arInfo->unk0c;
+    this->unk14 = arInfo->unk10;
+    this->unk18 = arInfo->unk14;
 
-    HavokObj* obj = new HavokObj(arg->unk04, 0);
+    HavokObj* obj = new HavokObj(arInfo->unk04, 0);
     this->vf8c(obj);
     obj->removeReference();
 
     GarbageCollectorObjectPtr gcPtr;
-    void* pObj = arg->unk04;
+    void* pObj = arInfo->unk04;
     GarbageCollectorObjectPtr* res = bhkWorldObject_GetProperty(&gcPtr, pObj, &DAT_01267b70);
     if (res->m_ptr)
     {
@@ -584,7 +596,7 @@ void TargetClass::bhkLiquidAction_Init(ArgStruct* arg)
         }
     }
 
-    this->vfbc(arg);
+    this->vfbc(arInfo);
 }
 
 template <class T, class TAlloc> inline unsigned int NiTArray<T, TAlloc>::SetAtGrow(unsigned int uiIndex, const T& element)
@@ -603,22 +615,25 @@ typedef NiTArray<char*, NiTMallocInterface<char*> > NiViewerStringArray;
 class FUN_00cbd650_base
 {
   public:
-    void bhkUnaryAction_GetViewerStrings(NiViewerStringArray* pkStrings);
+    void bhkUnaryAction_GetViewerStrings(NiViewerStringArray* apStrings);
 };
 class FUN_00cbd650_cls : public FUN_00cbd650_base
 {
   public:
-    void bhkLiquidAction_GetViewerStrings(NiViewerStringArray* pkStrings);
+    void bhkLiquidAction_GetViewerStrings(NiViewerStringArray* apStrings);
 };
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 extern const char* DAT_01268420;
 // @fnv 0x00cbd650
 // src: XBOX_PDB 0x00cbd650
-void FUN_00cbd650_cls::bhkLiquidAction_GetViewerStrings(NiViewerStringArray* pkStrings)
+// pdb: bhkLiquidAction::GetViewerStrings | bhkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void FUN_00cbd650_cls::bhkLiquidAction_GetViewerStrings(NiViewerStringArray* apStrings)
 {
     AutoMemContext kContext;
-    bhkUnaryAction_GetViewerStrings(pkStrings);
-    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(DAT_01268420));
+    bhkUnaryAction_GetViewerStrings(apStrings);
+    apStrings->Add(NiViewerStrings_NiGetViewerString_Title(DAT_01268420));
 }
 
 inline void* operator new(size_t, void* p)
@@ -652,16 +667,19 @@ struct StateOwner
     float unk18;
     float unk1c;
     float unk20;
-    void __thiscall bhkUnaryAction_CopyCinfo(SmallAlignedState* state);
-    SmallAlignedState* bhkLiquidAction_CreateCinfo(bool* created);
+    void __thiscall bhkUnaryAction_CopyCinfo(SmallAlignedState* arInfo);
+    SmallAlignedState* bhkLiquidAction_CreateCinfo(bool* arCreated);
 };
 // @fnv 0x00cbcad0
 // src: XBOX_PDB 0x00cbcad0
-SmallAlignedState* StateOwner::bhkLiquidAction_CreateCinfo(bool* created)
+// pdb: bhkLiquidAction::CreateCinfo | bhkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+SmallAlignedState* StateOwner::bhkLiquidAction_CreateCinfo(bool* arCreated)
 {
     AutoMemContext context;
-    *created = !unk0c;
-    if (*created)
+    *arCreated = !unk0c;
+    if (*arCreated)
     {
         unsigned char* raw = (unsigned char*)DAT_011f6238.Game_DoHeapAlloc(sizeof(SmallAlignedState) + 16);
         unsigned char offset = 16 - ((unsigned int)raw & 15);
@@ -886,17 +904,20 @@ struct CauseList
 };
 // @fnv 0x00cbcbd0
 // src: XBOX_PDB 0x00cbcbd0
-void TargetClass::bhkLiquidAction_SetTargetObject(void* p)
+// pdb: bhkLiquidAction::SetTargetObject | bhkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: tempMemContext, plist
+void TargetClass::bhkLiquidAction_SetTargetObject(void* apObject)
 {
     unsigned int restore = threadBlock.context;
     ContextScope scope(restore);
-    if (p)
+    if (apObject)
     {
-        void* key = p;
-        p = 0;
+        void* key = apObject;
+        apObject = 0;
         unk10 = (int)key;
-        DAT_011b2190.FUN_00a53c30(key, &p);
-        CauseList* list = (CauseList*)p;
+        DAT_011b2190.FUN_00a53c30(key, &apObject);
+        CauseList* list = (CauseList*)apObject;
         switch ((unsigned int)list)
         {
         case 0: {
@@ -924,8 +945,8 @@ void TargetClass::bhkLiquidAction_SetTargetObject(void* p)
         }
         if (list)
         {
-            p = this;
-            list->PushItem(&p);
+            apObject = this;
+            list->PushItem(&apObject);
         }
     }
 restore_exit:

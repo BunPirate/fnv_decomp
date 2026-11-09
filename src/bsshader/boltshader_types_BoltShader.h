@@ -24,6 +24,7 @@ class ShaderPassRenderer;
 class GraphicsRenderer;
 #include "../../include/BSShaderManager.h"
 #pragma pack(push, 4)
+// pdb: class BoltShader, size 0x194, bases: BSShader, 11 members
 class BoltShader : public BSShader
 {
   public:

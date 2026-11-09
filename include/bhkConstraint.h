@@ -2,6 +2,7 @@
 
 #include "bhkSerializable.h"
 
+// pdb: class bhkConstraint, size 0x10, bases: bhkSerializable, 0 members
 class bhkConstraint : public bhkSerializable
 {
 public:

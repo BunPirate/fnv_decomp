@@ -56,16 +56,17 @@ class TESObjectBound
 {
   public:
     TESBoundPoint min, max;
-    void TESBoundObject_BOUND_DATA_BOUND_DATA();
-    void TESBoundObject_BOUND_DATA_SwapEndian();
+    void TESBoundObject_BOUND_DATA_ctor();
+    void TESBoundObject_BOUND_DATA_Endian();
 };
 // The skeleton/biped data the reference keeps through vftable slots 0x7A/0x7C (0x2b4 bytes).
+// pdb: class BipedAnim, size 0x2b4, 6 members
 class BipedAnim
 {
   public:
-    char data[0x2b4];
+    char root[0x2b4];
     BipedAnim(TESObjectREFR*, NiNode*);
-    void InitBoneSlots(NiNode*);
+    void BipedAnim_InitRoot(NiNode*);
 };
 // Calls 0x7A (get) and 0x7C (set, pointer argument) of TESObjectREFR's vftable.
 class TESObjectREFRBipedSlots

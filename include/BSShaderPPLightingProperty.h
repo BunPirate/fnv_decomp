@@ -14,6 +14,7 @@ class NiSourceTexture;
 class NiTexture;
 class NiPoint3;
 
+// pdb: class BSShaderPPLightingProperty, size 0x108 (here 0x104), bases: BSShaderLightingProperty, 23 members
 class BSShaderPPLightingProperty : public BSShaderLightingProperty
 {
   public:

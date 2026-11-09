@@ -42,7 +42,7 @@ struct FUN_009afbb0_shell
 {
     virtual ~FUN_009afbb0_shell();
     void* FUN_009afbb0(unsigned int flags);
-    void ForwardCall_009afc10();
+    void hkpFixedBufferCdPointCollector_dtor();
 };
 extern "C" void __cdecl Object_UpdateFields_009afbe0(void*);
 struct FUN_00621100_shell
@@ -51,7 +51,7 @@ struct FUN_00621100_shell
 };
 struct FUN_009afc10_shell
 {
-    void __thiscall ForwardCall_009afc10();
+    void __thiscall hkpFixedBufferCdPointCollector_dtor();
 };
 struct FUN_009afc50_shell
 {
@@ -245,8 +245,8 @@ struct FUN_00cbc650_cls
     virtual void v2B();
     virtual void v2C();
     virtual FUN_00cbc650_obj* vGet(FUN_00cbc650_obj* volatile* pp);
-    void bhkUnaryAction_LoadBinary(FUN_00cbc650_obj* a);
-    void bhkLiquidAction_LoadBinary(FUN_00cbc650_obj* volatile a1);
+    void bhkUnaryAction_LoadBinary(FUN_00cbc650_obj* arStream);
+    void bhkLiquidAction_LoadBinary(FUN_00cbc650_obj* volatile arStream);
 };
 struct FUN_00cbc6a0_Data
 {
@@ -281,7 +281,7 @@ struct FUN_00cbc6a0_Class
     virtual void vf19();
     virtual void vf20();
     virtual void vf21();
-    virtual void bhkLiquidAction_SaveBinary(unsigned char* arg);
+    virtual void bhkLiquidAction_SaveBinary(unsigned char* arStream);
     virtual void vf23();
     virtual void vf24();
     virtual void vf25();
@@ -305,7 +305,7 @@ struct FUN_00cbc6a0_Class
     virtual void vf43();
     virtual void vf44();
     virtual FUN_00cbc6a0_Data* vf45(int* value);
-    void __thiscall bhkUnaryAction_SaveBinary(unsigned char* arg);
+    void __thiscall bhkUnaryAction_SaveBinary(unsigned char* arStream);
 };
 extern __declspec(thread) int g_memoryContext;
 void __cdecl bhkSerializable_CloneCritLock();
@@ -415,8 +415,8 @@ struct TargetClass
     float unk1c;
     float unk20;
 
-    void bhkLiquidAction_SetTargetObject(void* p);
-    void bhkLiquidAction_Init(ArgStruct* arg);
+    void bhkLiquidAction_SetTargetObject(void* apObject);
+    void bhkLiquidAction_Init(ArgStruct* arInfo);
 };
 template <class T, class TAlloc> inline unsigned int NiTArray<T, TAlloc>::SetAtGrow(unsigned int uiIndex, const T& element)
 {
@@ -434,12 +434,12 @@ typedef NiTArray<char*, NiTMallocInterface<char*> > NiViewerStringArray;
 class FUN_00cbd650_base
 {
   public:
-    void bhkUnaryAction_GetViewerStrings(NiViewerStringArray* pkStrings);
+    void bhkUnaryAction_GetViewerStrings(NiViewerStringArray* apStrings);
 };
 class FUN_00cbd650_cls : public FUN_00cbd650_base
 {
   public:
-    void bhkLiquidAction_GetViewerStrings(NiViewerStringArray* pkStrings);
+    void bhkLiquidAction_GetViewerStrings(NiViewerStringArray* apStrings);
 };
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 extern const char* DAT_01268420;
@@ -474,8 +474,8 @@ struct StateOwner
     float unk18;
     float unk1c;
     float unk20;
-    void __thiscall bhkUnaryAction_CopyCinfo(SmallAlignedState* state);
-    SmallAlignedState* bhkLiquidAction_CreateCinfo(bool* created);
+    void __thiscall bhkUnaryAction_CopyCinfo(SmallAlignedState* arInfo);
+    SmallAlignedState* bhkLiquidAction_CreateCinfo(bool* arCreated);
 };
 
 #include <xmmintrin.h>
@@ -629,7 +629,7 @@ struct Obj
     void __thiscall NiAVObject_SetScale(float a);
     void __thiscall NiAVObject_SetTranslate(NiPoint3* a);
     void __thiscall SetRotate_0043fa80(void* a);
-    void* __thiscall FUN_00a5bdd0(void* a);
+    void* __thiscall FUN_00a5bdd0(void* kKey);
     void* __thiscall NiObjectNET_GetControllers();
     bool __thiscall bhkWorld_QDebugDisplay();
     void __thiscall Update(Upd* a);
@@ -698,7 +698,7 @@ struct Local70
     float m7;
     float m8;
     void __thiscall Ctor6815c0();
-    void __thiscall FUN_00a59780(float a, float b, float c);
+    void __thiscall FUN_00a59780(float fZAngle, float fYAngle, float fXAngle);
 };
 struct Extra
 {
@@ -845,8 +845,9 @@ struct InitObj
     int unk10;
     InitObj(void*);
     void* __thiscall Init(void* a);
-    void __thiscall bhkNiCollisionObject_SetWorldObject(void* a);
+    void __thiscall bhkNiCollisionObject_SetWorldObject(void* apWorldObject);
 };
+// pdb: structure Sphere, size 0x10 (here 0x14), 2 members
 struct Sphere
 {
     static void* operator new(unsigned int);
@@ -917,10 +918,10 @@ struct __declspec(align(16)) Big
     Big();
     void __thiscall PathingRequestClosePoint_SetMinDistance(float a);
     void __thiscall PathingRequestLOS_SetIgnoreLocationRadius(float a);
-    void __thiscall bhkRigidBodyCinfo_SetMotionType(int a);
+    void __thiscall bhkRigidBodyCinfo_SetMotionType(int aeType);
     void __thiscall PathingRequestCoveredMove_SetAttackerHealth(float a);
     void __thiscall bhkRigidBodyCinfo_SetCollisionFilter(void* a);
-    void __thiscall bhkRigidBodyCinfo_SetShape(void* a);
+    void __thiscall bhkRigidBodyCinfo_SetShape(void* apShape);
     ~Big();
 };
 struct FilterValue
@@ -930,7 +931,7 @@ struct FilterValue
 struct Temp622
 {
     int unk00;
-    FilterValue* __thiscall Ctor(int a, void* b, int c);
+    FilterValue* __thiscall CFilter_ctor(int aeLayer, void* aiGroup, int aePart);
 };
 void* __cdecl bhkCollisionFilter_GetNewSystemGroup();
 void* __cdecl Modelloader_GetReferencedThis(void* a);
@@ -949,7 +950,7 @@ struct Body
     void* __thiscall FUN_0056d380(Big* a);
     void __thiscall bhkNiCollisionObject_SetWorldObject(void* a);
     void* __thiscall Bipedanim_GetReferenceFlagsOrZero();
-    void __thiscall bhkRigidBody_AddActCon(void* a);
+    void __thiscall bhkRigidBody_AddActCon(void* apActCon);
 };
 struct Acc
 {
@@ -1031,18 +1032,18 @@ struct NodeU
     void __thiscall Update(Upd* a);
 };
 void* __cdecl TESObjectCELL_GetbhkWorld(void* a);
-void __cdecl bhkWorld_UpdatePosition(Obj* a, int b, int c);
+void __cdecl bhkWorld_UpdatePosition(Obj* apObject, int abRecurse, int abForce);
 bool __cdecl TESObjectREFR_HasAddonFlags(void* a);
-void __cdecl TESObjectREFR_AddMasterParticleAddonNodes(void* a);
+void __cdecl TESObjectREFR_AddMasterParticleAddonNodes(void* apNode);
 bool __cdecl bhkWorld_QDebugDisplay(void* a);
-void __cdecl EnsureLightingProperty(Obj* a);
+void __cdecl PrepareObjectWithNoLightingRecurse(Obj* a);
 struct Ctrl
 {
-    int __thiscall NiNode_GetAtChecked(int a);
-    void* __thiscall FUN_0043b4a0(int a);
+    int __thiscall NiNode_GetAtChecked(int i);
+    void* __thiscall FUN_0043b4a0(int i);
     void* __thiscall GetNext();
     void* __thiscall NiControllerManager_GetSequenceByName(FixedStr* a);
-    void __thiscall FUN_0048fef0(float a);
+    void __thiscall FUN_0048fef0(float fEaseOutTime);
     void __thiscall FUN_0047aab0(void* a, int b, int c, float d, float e, int f);
     void __thiscall FUN_0047aa40(int a);
 };
@@ -1053,10 +1054,12 @@ struct Seq
 };
 extern void* g_011f36ac;
 bool __cdecl NiObject_IsKindOf(void* rtti, void* a);
-void __cdecl NiTimeController_StartAnimations(Obj* a);
+void __cdecl NiTimeController_StartAnimations(Obj* pkObj);
 extern float DAT_01016970;
 // @fnv 0x009ad670
 // src: COMMUNITY 0x009ad670
+// pdb: Explosion::Init3D | Explosion.obj | retail, string-set bridge, high
+// pdb locals: pav, tempAutoEvent, pmanager, po, angle, fscale, rot, pfade, pnode, pradiusNode, loc, pextraData, pbsx, i, paddon, pthing, pbody, process, pshape, pobj, cinfo, pliquid, info, update ...
 void Explosion::Init3D()
 {
     GenerateNiNode(false);
@@ -1064,7 +1067,7 @@ void Explosion::Init3D()
     if (obj)
     {
         float scale = 1.0f;
-        if (IsNotCulled())
+        if (Explosion_IsDistant())
         {
             Chain* node = obj->V0c();
             BSFadeNode* fade = node ? (BSFadeNode*)((Sub*)node)->V10() : 0;
@@ -1102,7 +1105,7 @@ void Explosion::Init3D()
         if (*g_011d0fe4.Int() > 1)
         {
             ((PathReq*)FUN_004181e0())->SetGridPosition(DAT_011a5810);
-            f3DLifetime = DAT_011a580c;
+            fLifetime = DAT_011a580c;
             NiPoint3 position = *static_cast<const Explosion*>(this)->GetPos();
             void* extra = obj->FUN_00a5bdd0((void*)&BSXFlags_Tag());
             if (extra)
@@ -1125,7 +1128,7 @@ void Explosion::Init3D()
                 info.bhkRigidBodyCinfo_SetMotionType(1);
                 info.PathingRequestCoveredMove_SetAttackerHealth(1.0f);
                 Temp622 filter;
-                info.bhkRigidBodyCinfo_SetCollisionFilter(filter.Ctor(4, bhkCollisionFilter_GetNewSystemGroup(), 0)->Modelloader_GetReferencedThis());
+                info.bhkRigidBodyCinfo_SetCollisionFilter(filter.CFilter_ctor(4, bhkCollisionFilter_GetNewSystemGroup(), 0)->Modelloader_GetReferencedThis());
                 info.bhkRigidBodyCinfo_SetShape(shape);
                 Body* body = new Body(&info);
                 collision->bhkNiCollisionObject_SetWorldObject(body);
@@ -1170,7 +1173,7 @@ void Explosion::Init3D()
         {
             Obj* world = (Obj*)FUN_008d6f30()->TESObjectCELL_GetbhkWorld();
             world->Vd8(obj, 1);
-            EnsureLightingProperty(obj);
+            PrepareObjectWithNoLightingRecurse(obj);
         }
         Ctrl* ctrl = (Ctrl*)obj->NiObjectNET_GetControllers();
         if (!ctrl)

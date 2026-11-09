@@ -7,6 +7,8 @@
 #include "nipoint3_stream.h"
 // Reads the r, g and b components of the color from the stream's input.
 // @fnv 0x00a59be0
+// pdb: NiColor::LoadBinary | NiColor.obj | retail, upstream name already matches, high
+// pdb params: stream
 void NiColor::LoadBinary(NiStream& stream)
 {
     stream.m_pkIstr->Read(&r);
@@ -15,6 +17,8 @@ void NiColor::LoadBinary(NiStream& stream)
 }
 // Writes the color's r, g and b components to the stream's output.
 // @fnv 0x00a69780
+// pdb: NiColor::SaveBinary | NiColor.obj | retail, upstream name already matches, high
+// pdb params: stream
 void NiColor::SaveBinary(NiStream& stream)
 {
     stream.m_pkOstr->Write(&r);
@@ -29,6 +33,9 @@ extern "C" unsigned int __cdecl strlen(char const*);
 // Allocates a buffer sized to the prefix plus 0x40 and formats "%s = (%g,%g,%g)" from the prefix and x, y, z into it, returning the buffer.
 // @fnv 0x00a59af0
 // src: XBOX_PDB 0x00a59af0
+// pdb: NiPoint3::GetViewerString | NiPoint3.obj | retail, string-set bridge, high
+// pdb params: pPrefix
+// pdb locals: pString, uiLen
 char* __thiscall NiPoint3::GetViewerString_00a59af0(const char* pPrefix)
 {
     unsigned int uiLen = strlen(pPrefix) + 0x40;
@@ -42,6 +49,8 @@ void* _NiMalloc_00aa1070(unsigned int uiSize);
 
 // Allocates 256 words and stores masked bit patterns from square roots of floats constructed in two ranges.
 // @fnv 0x00a59b50
+// pdb: NiPoint3::InitSqrtTable | NiPoint3.obj | debug, object-file run extension, low
+// pdb locals: pUIRep, pSqrtTable, f, i
 unsigned int* __cdecl BuildSqrtLut()
 {
     unsigned int* pLut = (unsigned int*)_NiMalloc_00aa1070(0x400);

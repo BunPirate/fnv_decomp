@@ -1629,6 +1629,7 @@ class FUN_009fb250 : public C9FB250BaseObject, public C9FB250Unknown
 
 // DECLARE_IUNKNOWN
 // @fnv 0x009fb250
+// pdb: CMemoryHelper::AddRef | leapfxlib.obj | retail, upstream name already matches, high
 unsigned long __stdcall FUN_009fb250::AddRef()
 {
     return m_pUnknown->AddRef();

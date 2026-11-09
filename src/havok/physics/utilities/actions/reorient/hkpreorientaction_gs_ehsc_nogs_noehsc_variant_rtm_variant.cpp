@@ -338,18 +338,21 @@ inline float reorientApplyAngle(float value)
 // The shared action has no applyAction declaration; this data-less adapter uses its checked layout.
 struct ReorientApplyActionView : hkpReorientAction
 {
-    __declspec(noinline) void hkpReorientAction_applyAction(const ReorientApplyStepInfo& info);
+    __declspec(noinline) void hkpReorientAction_applyAction(const ReorientApplyStepInfo& stepInfo);
 };
 // @fnv 0x00e445b0
 // src: HAVOK_SRC 0x00e445b0
-__declspec(noinline) void ReorientApplyActionView::hkpReorientAction_applyAction(const ReorientApplyStepInfo& info)
+// pdb: hkpReorientAction::applyAction | hkpReorientAction.obj | retail, upstream name already matches, high
+// pdb params: stepInfo
+// pdb locals: impulse, bodyRotationAxis, calculatedRotationAxis
+__declspec(noinline) void ReorientApplyActionView::hkpReorientAction_applyAction(const ReorientApplyStepInfo& stepInfo)
 {
-    ReorientApplyBodyView* body = reinterpret_cast<ReorientApplyBodyView*>(m_pEntity);
+    ReorientApplyBodyView* body = reinterpret_cast<ReorientApplyBodyView*>(m_entity);
     ReorientApplyVector up;
-    up.rotate(body->m_rotation, reinterpret_cast<const ReorientApplyVector&>(m_vUpAxis));
+    up.rotate(body->m_rotation, reinterpret_cast<const ReorientApplyVector&>(m_upAxis));
     ReorientApplyVector axis;
-    axis.rotate(body->m_rotation, reinterpret_cast<const ReorientApplyVector&>(m_vRotationAxis));
-    ReorientApplyVector projected(reinterpret_cast<const ReorientApplyVector&>(m_vUpAxis));
+    axis.rotate(body->m_rotation, reinterpret_cast<const ReorientApplyVector&>(m_rotationAxis));
+    ReorientApplyVector projected(reinterpret_cast<const ReorientApplyVector&>(m_upAxis));
     float distance = projected.dot(axis);
     projected.accumulate(-distance, axis);
     projected.normalize();
@@ -361,9 +364,9 @@ __declspec(noinline) void ReorientApplyActionView::hkpReorientAction_applyAction
     if ((a < 0.0f) != (b < 0.0f))
         angle = -angle;
     ReorientApplyVector drag;
-    drag.mul(m_fMotorDamping * info.inverse, body->m_kAngularVelocity);
+    drag.mul(m_damping * stepInfo.inverse, body->m_kAngularVelocity);
     ReorientApplyVector impulse;
-    impulse.mul(m_fSpringStrength * angle * info.inverse, axis);
+    impulse.mul(m_strength * angle * stepInfo.inverse, axis);
     impulse.sub(drag);
     body->activate_00c9c1d0();
     body->m_pMotionState.ApplyAngularImpulseToBodies(impulse);

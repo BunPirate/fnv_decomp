@@ -22,6 +22,7 @@ extern int DAT_010c8198;
 // Keep the original this pointer in ECX and stack arguments in their original slots.
 // @fnv 0x00ca95e0
 // src: GUESS 0x00ca95e0 (confidence: low)
+// pdb: hkpCharacterContext::~hkpCharacterContext | hkpCharacterContext.obj | retail, call graph, low
 __declspec(noinline) void __fastcall hkpCharacterContext_UpdateFields_00ca95e0(hkpCharacterContext* context)
 {
     *reinterpret_cast<int**>(context) = &DAT_010c8198;
@@ -53,9 +54,11 @@ void __fastcall hkpCharacterContext_UpdateState_00ca9690(hkpCharacterContext* co
 }
 
 // @fnv 0x00ca9580
+// pdb: hkpCharacterContext::hkpCharacterContext | hkpCharacterContext.obj | retail, object-file run extension, low
+// pdb params: Manager, initialState
 hkpCharacterContext* hkpCharacterContext::Initialize(void* arg0, int arg1)
 {
-    m_sReferenceCount = 1;
+    m_referenceCount = 1;
     unk0C = arg0;
     *reinterpret_cast<int**>(this) = &DAT_010c8198;
     unk10 = arg1;
@@ -133,13 +136,14 @@ struct FnvCpu_FUN_00ca9810_CpuAllocatorHolder
 FnvCpu_FUN_00ca9810_CpuAllocatorHolder* __cdecl hkMemoryRouter_getInstance();
 // Calls FUN_00ca95e0, then if bit 0 of flags is set, invokes the allocator from FUN_00c85750 on this with size, and returns this.
 // @fnv 0x00ca9810
+// pdb: hkpCharacterContext::`scalar deleting destructor' | hkpCharacterContext.obj | retail, vtable slot, high
 hkpCharacterContext* __fastcall Destroy(hkpCharacterContext* context, void*, unsigned int flags)
 {
     hkpCharacterContext_UpdateFields_00ca95e0(context);
     if (flags & 1)
     {
         FnvCpu_FUN_00ca9810_CpuAllocatorHolder* pAllocatorHolder = hkMemoryRouter_getInstance();
-        pAllocatorHolder->allocator->Invoke(context, context->m_usMemSizeAndFlags);
+        pAllocatorHolder->allocator->Invoke(context, context->m_memSizeAndFlags);
     }
     return context;
 }
@@ -272,6 +276,9 @@ struct StateManager
 
 // @fnv 0x00ca96a0
 // src: GUESS 0x00ca96a0 (confidence: low)
+// pdb: hkpCharacterContext::update | hkpCharacterContext.obj | retail, object-file run extension, low
+// pdb params: input, output
+// pdb locals: invDt, cv
 void __fastcall hkpCharacterContext_UpdateFields_00ca96a0(hkpCharacterContext* context, void*, const PhysicsDataBlock& input, Vector4Data& output)
 {
     output.m_fVelocity = input.m_fVelocity;

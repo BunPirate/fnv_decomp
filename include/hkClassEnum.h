@@ -7,10 +7,11 @@ class hkCustomAttributes;
 
 class hkStreamWriter;
 
+// pdb: class hkClassEnum, size 0x14, 5 members
 class hkClassEnum
 {
 public:
-    void writeSignature(hkStreamWriter* writer) const;
+    void writeSignature(hkStreamWriter* w) const;
     enum FlagValues
     {
         FLAGS_NONE = 0
@@ -18,6 +19,6 @@ public:
 
     char* m_name;
     hkSimpleArray<hkClassEnumItem> m_items;
-    hkCustomAttributes* m_pCustomAttributes;
+    hkCustomAttributes* m_attributes;
     hkUint32 m_flags;
 };

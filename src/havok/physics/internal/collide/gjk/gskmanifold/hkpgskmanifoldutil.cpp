@@ -68,17 +68,20 @@ struct S_00dad640_Target
 };
 
 // @fnv 0x00dad640
-void ReleaseAllEntries(S_00dad640_Set* set, S_00dad640_Target* target, void* arg)
+// src: XBOX_RETAIL_PDB 0x00dad640
+// pdb: hkGskManifold_cleanup | hkpGskManifoldUtil.obj | retail, call graph, high
+// pdb params: manifold, mgr, constraintOwner
+void hkGskManifold_cleanup(S_00dad640_Set* manifold, S_00dad640_Target* mgr, void* constraintOwner)
 {
-    for (unsigned int i = 0; i < set->count; i++)
+    for (unsigned int i = 0; i < manifold->count; i++)
     {
-        unsigned short id = set->entries[i].id;
+        unsigned short id = manifold->entries[i].id;
         if (id != 0xffff)
-            target->Release(id, arg);
+            mgr->Release(id, constraintOwner);
     }
-    set->count = 0;
-    set->unk0 = 0;
-    set->unk1 = 0;
+    manifold->count = 0;
+    manifold->unk0 = 0;
+    manifold->unk1 = 0;
 }
 
 struct S_00dad4d0_Key
@@ -115,6 +118,8 @@ struct S_00dad4d0_Set
 };
 
 // @fnv 0x00dad4d0
+// pdb: hkGskManifold_doesPointExistAndResort | hkpGskManifoldUtil.obj | retail, object-file run extension, low
+// pdb params: manifold, newPoint
 bool FindAndPromoteEntry(S_00dad4d0_Set* set, S_00dad4d0_Key* key)
 {
     unsigned i;
@@ -165,6 +170,8 @@ void __fastcall hkGskManifold_garbageCollect(int unused, S_00dad640_Set* set);
 
 // @fnv 0x00dae340
 // src: HAVOK_LIB 0x00dae340
+// pdb: hkGskManifold_removePoint | hkpGskManifoldUtil.obj | debug, object-file gap fill, medium
+// pdb params: manifold, index
 void __cdecl _hkGskManifold_removePoint(S_00dad640_Set* set, unsigned int index)
 {
     unsigned int n = set->count;
@@ -576,6 +583,8 @@ struct EntryParameter
 // Switches on 4 * f.numA + f.numB to call pointPoint, pointEdge, pointFace, edgePoint, edgeEdge or facePoint; returns 1 for other combinations.
 // @fnv 0x00dad990
 // src: GUESS 0x00dad990 (confidence: medium)
+// pdb: hkGskManifold_convertFeature | hkpGskManifoldUtil.obj | retail, object-file run extension, low
+// pdb params: work, feature, out
 static __declspec(noinline) int Hkpgskmanifoldutil_DispatchFeaturePairQuery(const ContactWork& w, ContactResult& r, EntryParameter entry)
 {
     const S_00dad4d0_Entry& f = *entry.p;

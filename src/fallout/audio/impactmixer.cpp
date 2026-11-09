@@ -59,6 +59,9 @@ void ImpactMixer_SetGunshotsInitialized(bool abSet)
 extern int DAT_011a17f8[0x24];
 
 // @fnv 0x0083a910
+// pdb: BSAudio::GetSoundHandleByNumericID | BSAudio.obj | retail, call graph (shared callers), medium
+// pdb params: aiFormID, aiTypeFlags
+// pdb locals: tempMemContext
 int GetTypeValue(int aiType)
 {
     if (aiType <= 0 || aiType >= 0x24)
@@ -86,6 +89,9 @@ unsigned char FUN_008397d0_shell::GetByteAt7C6()
 
 // @fnv 0x00837520
 // src: XBOX_PDB 0x00837520
+// pdb: ImpactMixer::PlayHitSound | ImpactMixer.obj | debug, upstream name already matches, high
+// pdb params: apAttacker, afDamage, afDefDamage, apTarget, aiWeaponType, aiArmorType, aiShieldType, abFakeHit, abEnchantedWeapon
+// pdb locals: tempMemContext
 void ImpactMixer_PlayHitSound()
 {
     AutoMemHelper tempMemContext(0xB, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Audio\\ImpactMixer.cpp",
@@ -99,12 +105,13 @@ struct DummyFlags
 };
 struct FUN_00838750_shell
 {
-    bool bhkCharacterController_GetOnStairs();
+    bool bhkCharacterController_QOnStairs();
 };
 // Calls FUN_00621270 on the DummyFlags sub-object at offset 0x410 with DAT_01000000 and returns whether the result is non-zero.
 // @fnv 0x00838750
-// src: COMMUNITY 0x00838750
-bool FUN_00838750_shell::bhkCharacterController_GetOnStairs()
+// src: XBOX_DEBUG_PDB 0x00838750
+// pdb: bhkCharacterController::QOnStairs | ImpactMixer.obj | debug, call graph (shared callers), high
+bool FUN_00838750_shell::bhkCharacterController_QOnStairs()
 {
     return ((DummyFlags*)((char*)this + 0x410))->FUN_00621270((int)&DAT_01000000) != 0;
 }
@@ -125,6 +132,8 @@ void __cdecl ImpactMixer_SetGunshotsInitialized(bool b);
 extern float DAT_01016970;
 // If the init check fails, calls FUN_00839dc0(true), then zeroes two ints and sets a float from DAT_01016970 for each of 20 slots.
 // @fnv 0x00839d30
+// pdb: ImpactMixer::InitGunshots | ImpactMixer.obj | debug, object-file run extension, low
+// pdb locals: i
 void __cdecl InitializeSlots()
 {
     if (ImpactMixer_GetGunshotsInitialized())
@@ -148,13 +157,15 @@ struct FUN_0063a3c0_cls
     int unk04;
 
     void BaseRelease();
-    FUN_0063a3c0_cls* FUN_0063a3c0(unsigned int auiFlags);
+    FUN_0063a3c0_cls* SkySound_ScalarDtor(unsigned int auiFlags);
     static void operator delete(void* apMemory) throw();
 };
 
 // Releases the base object and, if bit 0 of auiFlags is set, deletes this instance, then returns this.
 // @fnv 0x0063a3c0
-FUN_0063a3c0_cls* FUN_0063a3c0_cls::FUN_0063a3c0(unsigned int auiFlags)
+// src: XBOX_DEBUG_PDB 0x0063a3c0
+// pdb: SkySound::`scalar deleting destructor' | Sky.obj | debug, call graph (shared callers), high
+FUN_0063a3c0_cls* FUN_0063a3c0_cls::SkySound_ScalarDtor(unsigned int auiFlags)
 {
     BaseRelease();
     if (auiFlags & 1)
@@ -328,8 +339,8 @@ struct NavQueryResult
 
 struct CellNavInfo
 {
-    void TESObjectLAND_GetCoordData(NavQueryResult* pkResult, NiPoint3* pkPos, int iFlag);
-    MaterialRecord* TESObjectLAND_GetMainTexture_0053a630(unsigned char ucA, unsigned short usB);
+    void TESObjectLAND_GetCoordData(NavQueryResult* cdata, NiPoint3* coord, int forcetovertex);
+    MaterialRecord* TESObjectLAND_GetMainTexture(unsigned char acBlock, unsigned short asVertIndex);
 };
 
 struct FootstepCell
@@ -337,7 +348,7 @@ struct FootstepCell
     bool FUN_00425fd0();
     bool FUN_004518e0();
     CellNavInfo* TESObjectCELL_GetLand();
-    bool TESObjectCELL_GetLandHeight(NiPoint3* pkPos, float* pfHeight);
+    bool TESObjectCELL_GetLandHeight(NiPoint3* arPos, float* arHeight);
 };
 
 struct TESStandIn
@@ -350,14 +361,14 @@ extern TESStandIn* g_TES_011dea10;
 struct DataHandlerStandIn
 {
     FootstepCell* FUN_00461bc0(float fX, float fY, TESWorldSpace* pkWorld);
-    BGSImpactData* FUN_004616c0(const char* pEditorID);
+    BGSImpactData* GetSound(const char* soundID);
 };
 extern DataHandlerStandIn* g_dataHandler_011c3f2c;
 
 int __cdecl GetTypeValue(int iMaterial);
-float __cdecl FUN_00476b70(float fMin, float fScaledValue);
+float __cdecl FUN_00476b70(float afMin, float afMax);
 // NiPoint3 preserves the trivial copies used for this unit's by-value positions.
-bool __cdecl FUN_0082eca0(BGSImpactData* pkImpact, NiPoint3 kPos, float fScale);
+bool __cdecl SoundDistanceTest(BGSImpactData* apSound, NiPoint3 aLoc, float aMod);
 extern float g_fFootstepRand_0101e2bc;
 
 static const char s_szBabyLand[] = "FSTBabyLand";
@@ -365,52 +376,56 @@ __declspec(selectany) extern const char g_szFootstepEnd[] = "";
 
 // Resolves the footstep material and impact data for an actor, adjusts the position, and plays the corresponding first- or third-person footstep sound.
 // @fnv 0x008391b0
-void __cdecl PlayFootstepImpact(FootstepActor* pActor, int iMaterial)
+// src: XBOX_RETAIL_PDB 0x008391b0
+// pdb: ImpactMixer::PlayJumpLand | ImpactMixer.obj | retail, string-set bridge, high
+// pdb params: apRef, aiMaterial
+// pdb locals: pcell, pActor, info, b1stPersonPlayerFoot, matType, loc, infoShoe, SoundHand, plandTex, cdata, fheight, iflags
+void __cdecl ImpactMixer_PlayJumpLand(FootstepActor* apRef, int aiMaterial)
 {
     BSSoundHandle kHandle_;
     BGSImpactData* pImpactX = 0;
     BGSImpactData* pImpact_ = 0;
-    NiPoint3 kPosOut = reinterpret_cast<const NiPoint3&>(pActor->GetPos());
+    NiPoint3 kPosOut = reinterpret_cast<const NiPoint3&>(apRef->GetPos());
     FootstepCell* pCell_ = g_TES_011dea10->FUN_005f36f0();
     FootstepActor* pActorRef4 = 0;
-    if (pActor->IsActor())
-        pActorRef4 = pActor;
+    if (apRef->IsActor())
+        pActorRef4 = apRef;
     else
         return;
 
     if (!pCell_)
         pCell_ = g_dataHandler_011c3f2c->FUN_00461bc0(kPosOut.x, kPosOut.y, g_TES_011dea10->FUN_004fd3e0(0));
 
-    if (pActor->IsActor() && pCell_)
+    if (apRef->IsActor() && pCell_)
     {
         if ((pCell_->FUN_00425fd0() && pCell_->FUN_004518e0()) || !pCell_->FUN_00425fd0())
         {
             if (!pActorRef4->IsSwimming_005a2030() && pActorRef4->TESObjectREFR_GetRelevantWaterHeight() > kPosOut.z)
-                iMaterial = 8;
+                aiMaterial = 8;
         }
     }
 
-    if (iMaterial == 0x24 && !pCell_->FUN_00425fd0() && pCell_->TESObjectCELL_GetLand())
+    if (aiMaterial == 0x24 && !pCell_->FUN_00425fd0() && pCell_->TESObjectCELL_GetLand())
     {
         NavQueryResult kResult_2;
         pCell_->TESObjectCELL_GetLand()->TESObjectLAND_GetCoordData(&kResult_2, reinterpret_cast<NiPoint3*>(&kPosOut), 1);
-        MaterialRecord* pMaterialTmp = pCell_->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture_0053a630(kResult_2.unk18, kResult_2.unk3c);
+        MaterialRecord* pMaterialTmp = pCell_->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture(kResult_2.unk18, kResult_2.unk3c);
         if (pMaterialTmp)
         {
             float m_fGlyphExtent = 0.0f;
-            iMaterial = pMaterialTmp->GetField1C();
+            aiMaterial = pMaterialTmp->GetField1C();
             if (pCell_->TESObjectCELL_GetLandHeight(reinterpret_cast<NiPoint3*>(&kPosOut), &m_fGlyphExtent))
                 kPosOut.z = m_fGlyphExtent;
         }
     }
 
-    int iIndexZ = GetTypeValue(iMaterial);
+    int iIndexZ = GetTypeValue(aiMaterial);
     pImpactX = g_akImpactData_011dd670[iIndexZ].pkImpact;
-    if (pActor == g_player_011dea3c && g_player_011dea3c->GetByteAt7C6())
-        pImpactX = g_dataHandler_011c3f2c->FUN_004616c0(s_szBabyLand);
+    if (apRef == g_player_011dea3c && g_player_011dea3c->GetByteAt7C6())
+        pImpactX = g_dataHandler_011c3f2c->GetSound(s_szBabyLand);
 
     bool bPlayerFirstPerson7 = false;
-    if (pActor == g_player_011dea3c && !g_player_011dea3c->PlayerCharacter_IsActually3rdPerson())
+    if (apRef == g_player_011dea3c && !g_player_011dea3c->PlayerCharacter_IsActually3rdPerson())
         bPlayerFirstPerson7 = true;
 
     if (bPlayerFirstPerson7)
@@ -431,14 +446,14 @@ void __cdecl PlayFootstepImpact(FootstepActor* pActor, int iMaterial)
     }
     else
     {
-        if (!FUN_0082eca0(pImpactX, kPosOut, 1.0f) && !FUN_0082eca0(pImpact_, kPosOut, 1.0f))
+        if (!SoundDistanceTest(pImpactX, kPosOut, 1.0f) && !SoundDistanceTest(pImpact_, kPosOut, 1.0f))
             return;
         int iSound2 = 0x410a;
         if (pImpactX)
         {
             kHandle_ = *reinterpret_cast<BSSoundHandle*>(&BSAudio::GetSingleton()->GetSoundHandleByFormID_00ad73b0(pImpactX->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), static_cast<unsigned int>(iSound2)));
             kHandle_.SetPosition(kPosOut.x, kPosOut.y, kPosOut.z);
-            kHandle_.SetObjectToFollow(reinterpret_cast<NiAVObject*>(pActor->Get3D()));
+            kHandle_.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apRef->Get3D()));
             kHandle_.SetVolume(0.95f - FUN_00476b70(0.0f, g_fFootstepRand_0101e2bc));
             kHandle_.Play(0);
         }
@@ -446,7 +461,7 @@ void __cdecl PlayFootstepImpact(FootstepActor* pActor, int iMaterial)
         {
             kHandle_ = *reinterpret_cast<BSSoundHandle*>(&BSAudio::GetSingleton()->GetSoundHandleByFormID_00ad73b0(pImpact_->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), static_cast<unsigned int>(iSound2)));
             kHandle_.SetPosition(kPosOut.x, kPosOut.y, kPosOut.z);
-            kHandle_.SetObjectToFollow(reinterpret_cast<NiAVObject*>(pActor->Get3D()));
+            kHandle_.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apRef->Get3D()));
             kHandle_.SetVolume(0.95f - FUN_00476b70(0.0f, g_fFootstepRand_0101e2bc));
             kHandle_.Play(0);
         }
@@ -457,7 +472,7 @@ namespace fnv_00839ab0 {
 
 struct DataHandlerFootstep
 {
-    BGSImpactData* FUN_004616c0(const char* pEditorID);
+    BGSImpactData* GetSound(const char* soundID);
 };
 extern DataHandlerFootstep* g_dataHandler_011c3f2c;
 
@@ -475,7 +490,10 @@ extern const char g_szFootstepInitEnd[] = "";
 
 // Builds each material/type footstep impact name, looks it up via the data handler with fallbacks, and stores the result in g_aapkFootstepImpacts_011dd650.
 // @fnv 0x00839ab0
-void __cdecl InitFootstepImpacts()
+// src: XBOX_RETAIL_PDB 0x00839ab0
+// pdb: ImpactMixer::InitFootsteps | ImpactMixer.obj | retail, string-set bridge, high
+// pdb locals: stepSoundPtr, soundName, iMat, iStep
+void __cdecl ImpactMixer_InitFootsteps()
 {
     if (g_bFootstepsInit_011dd85c)
         return;
@@ -489,23 +507,23 @@ void __cdecl InitFootstepImpacts()
         for (int j = 0; j < 10; j++)
         {
             BSsprintf(acNameLoc, 0x103, s_szFootstepFormat, ImpactMixer_GetMaterialSoundName(i), g_apszFootstepTypes_011a18bc[j]);
-            g_aapkFootstepImpacts_011dd650[i][j] = g_dataHandler_011c3f2c->FUN_004616c0(acNameLoc);
+            g_aapkFootstepImpacts_011dd650[i][j] = g_dataHandler_011c3f2c->GetSound(acNameLoc);
             if (!g_aapkFootstepImpacts_011dd650[i][j] && g_aiMaterialFallback_011a17c4[i] != 13)
             {
                 BSsprintf(acNameLoc, 0x103, s_szFootstepFormat, ImpactMixer_GetMaterialSoundName(g_aiMaterialFallback_011a17c4[i]),
                              g_apszFootstepTypes_011a18bc[j]);
-                g_aapkFootstepImpacts_011dd650[i][j] = g_dataHandler_011c3f2c->FUN_004616c0(acNameLoc);
+                g_aapkFootstepImpacts_011dd650[i][j] = g_dataHandler_011c3f2c->GetSound(acNameLoc);
                 if (!g_aapkFootstepImpacts_011dd650[i][j] &&
                     g_aiMaterialFallback_011a17c4[g_aiMaterialFallback_011a17c4[i]] != 13)
                 {
                     BSsprintf(acNameLoc, 0x103, s_szFootstepFormat,
                                  ImpactMixer_GetMaterialSoundName(g_aiMaterialFallback_011a17c4[g_aiMaterialFallback_011a17c4[i]]),
                                  g_apszFootstepTypes_011a18bc[j]);
-                    g_aapkFootstepImpacts_011dd650[i][j] = g_dataHandler_011c3f2c->FUN_004616c0(acNameLoc);
+                    g_aapkFootstepImpacts_011dd650[i][j] = g_dataHandler_011c3f2c->GetSound(acNameLoc);
                 }
             }
             if (!g_aapkFootstepImpacts_011dd650[i][j])
-                g_aapkFootstepImpacts_011dd650[i][j] = g_dataHandler_011c3f2c->FUN_004616c0(s_szDefaultFootstep);
+                g_aapkFootstepImpacts_011dd650[i][j] = g_dataHandler_011c3f2c->GetSound(s_szDefaultFootstep);
         }
     }
 }
@@ -517,7 +535,7 @@ struct SetObj
 };
 struct StrObj
 {
-    int FUN_004616c0(const char* s);
+    int GetSound(const char* soundID);
 };
 
 extern SetObj DAT_011dd9c8;
@@ -614,236 +632,239 @@ static const char kStr_PHYTumbleweed[] = "PHYTumbleweed";
 // Maps a material type and two size values to a material name string via DAT_011c3f2c->FUN_004616c0, returning the resulting id.
 // @fnv 0x00839e00
 // src: XBOX_PDB 0x00839e00
-int __cdecl ImpactMixer_GetSoundForType(int aiMaterialType, float afSizeA, float afSizeB)
+// pdb: ImpactMixer::GetSoundForType | ImpactMixer.obj | debug, upstream name already matches, high
+// pdb params: aiType, afMass, afVelocity
+// pdb locals: info
+int __cdecl ImpactMixer_GetSoundForType(int aiType, float afMass, float afVelocity)
 {
     int result = 0;
 
-    switch (aiMaterialType)
+    switch (aiType)
     {
     case 0:
     case 15:
-        if (afSizeA < DAT_01032980)
+        if (afMass < DAT_01032980)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CStoneStatic);
+            result = DAT_011c3f2c->GetSound(kStr_CStoneStatic);
         }
-        else if (afSizeA < *DAT_011dd9c8.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd9c8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CStoneSmall);
+            result = DAT_011c3f2c->GetSound(kStr_CStoneSmall);
         }
-        else if (afSizeA < *DAT_011dd9b0.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd9b0.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CStoneMedium);
+            result = DAT_011c3f2c->GetSound(kStr_CStoneMedium);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CStoneLarge);
+            result = DAT_011c3f2c->GetSound(kStr_CStoneLarge);
         }
         break;
     case 2:
-        if (afSizeA < *DAT_011dd918.Setting_Float_00403e20())
+        if (afMass < *DAT_011dd918.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CEarthSmall);
+            result = DAT_011c3f2c->GetSound(kStr_CEarthSmall);
         }
-        else if (afSizeA < *DAT_011dd9bc.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd9bc.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CEarthMedium);
+            result = DAT_011c3f2c->GetSound(kStr_CEarthMedium);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CEarthLarge);
+            result = DAT_011c3f2c->GetSound(kStr_CEarthLarge);
         }
         break;
     case 4:
-        if (afSizeA < DAT_01034208)
+        if (afMass < DAT_01034208)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CGrassSmall);
+            result = DAT_011c3f2c->GetSound(kStr_CGrassSmall);
         }
-        else if (afSizeA < DAT_01073568)
+        else if (afMass < DAT_01073568)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CGrassMedium);
+            result = DAT_011c3f2c->GetSound(kStr_CGrassMedium);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CGrassLarge);
+            result = DAT_011c3f2c->GetSound(kStr_CGrassLarge);
         }
         break;
     case 5:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            if (afSizeA < DAT_01032980)
+            if (afMass < DAT_01032980)
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalStaticL);
+                result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalStaticL);
             }
-            else if (afSizeA < *DAT_011dd8f4.Setting_Float_00403e20())
+            else if (afMass < *DAT_011dd8f4.Setting_Float_00403e20())
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalSmallL);
+                result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalSmallL);
             }
-            else if (afSizeA < *DAT_011dd8cc.Setting_Float_00403e20())
+            else if (afMass < *DAT_011dd8cc.Setting_Float_00403e20())
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalMediumL);
+                result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalMediumL);
             }
             else
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalLargeL);
+                result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalLargeL);
             }
         }
         else
         {
-            if (afSizeA < DAT_01032980)
+            if (afMass < DAT_01032980)
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalStaticH);
+                result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalStaticH);
             }
-            else if (afSizeA < *DAT_011dd8f4.Setting_Float_00403e20())
+            else if (afMass < *DAT_011dd8f4.Setting_Float_00403e20())
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalSmallH);
+                result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalSmallH);
             }
-            else if (afSizeA < *DAT_011dd8cc.Setting_Float_00403e20())
+            else if (afMass < *DAT_011dd8cc.Setting_Float_00403e20())
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalMediumH);
+                result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalMediumH);
             }
             else
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalLargeH);
+                result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalLargeH);
             }
         }
         break;
     case 9:
-        if (afSizeA < DAT_01032980)
+        if (afMass < DAT_01032980)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CWoodStatic);
+            result = DAT_011c3f2c->GetSound(kStr_CWoodStatic);
         }
-        else if (afSizeA < *DAT_011dd930.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd930.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CWoodSmall);
+            result = DAT_011c3f2c->GetSound(kStr_CWoodSmall);
         }
-        else if (afSizeA < *DAT_011dd9d8.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd9d8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CWoodMedium);
+            result = DAT_011c3f2c->GetSound(kStr_CWoodMedium);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CWoodLarge);
+            result = DAT_011c3f2c->GetSound(kStr_CWoodLarge);
         }
         break;
     case 1:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericClothL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericClothL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericClothH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericClothH);
         }
         break;
     case 6:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_COrganicSmall);
+        result = DAT_011c3f2c->GetSound(kStr_COrganicSmall);
         break;
     case 7:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            if (afSizeA < *DAT_011dd9a0.Setting_Float_00403e20())
+            if (afMass < *DAT_011dd9a0.Setting_Float_00403e20())
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYSkinSmallL);
+                result = DAT_011c3f2c->GetSound(kStr_PHYSkinSmallL);
             }
-            else if (afSizeA < *DAT_011dd924.Setting_Float_00403e20())
+            else if (afMass < *DAT_011dd924.Setting_Float_00403e20())
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYSkinMediumL);
+                result = DAT_011c3f2c->GetSound(kStr_PHYSkinMediumL);
             }
             else
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYSkinLargeL);
+                result = DAT_011c3f2c->GetSound(kStr_PHYSkinLargeL);
             }
         }
         else
         {
-            if (afSizeA < *DAT_011dd9a0.Setting_Float_00403e20())
+            if (afMass < *DAT_011dd9a0.Setting_Float_00403e20())
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYSkinSmallH);
+                result = DAT_011c3f2c->GetSound(kStr_PHYSkinSmallH);
             }
-            else if (afSizeA < *DAT_011dd924.Setting_Float_00403e20())
+            else if (afMass < *DAT_011dd924.Setting_Float_00403e20())
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYSkinMediumH);
+                result = DAT_011c3f2c->GetSound(kStr_PHYSkinMediumH);
             }
             else
             {
-                result = DAT_011c3f2c->FUN_004616c0(kStr_PHYSkinLargeH);
+                result = DAT_011c3f2c->GetSound(kStr_PHYSkinLargeH);
             }
         }
         break;
     case 3:
-        if (afSizeA < DAT_01034208)
+        if (afMass < DAT_01034208)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CGlassSmall);
+            result = DAT_011c3f2c->GetSound(kStr_CGlassSmall);
         }
-        else if (afSizeA < DAT_01015a38)
+        else if (afMass < DAT_01015a38)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CGlassMedium);
+            result = DAT_011c3f2c->GetSound(kStr_CGlassMedium);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CGlassLarge);
+            result = DAT_011c3f2c->GetSound(kStr_CGlassLarge);
         }
         break;
     case 8:
-        if (afSizeA < DAT_01034208)
+        if (afMass < DAT_01034208)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CWoodSmall);
+            result = DAT_011c3f2c->GetSound(kStr_CWoodSmall);
         }
-        else if (afSizeA < DAT_01015a38)
+        else if (afMass < DAT_01015a38)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CWoodMedium);
+            result = DAT_011c3f2c->GetSound(kStr_CWoodMedium);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_CWoodLarge);
+            result = DAT_011c3f2c->GetSound(kStr_CWoodLarge);
         }
         break;
     case 13:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_PHYChain);
+        result = DAT_011c3f2c->GetSound(kStr_PHYChain);
         break;
     case 10:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_CSpecialHeavyStone);
+        result = DAT_011c3f2c->GetSound(kStr_CSpecialHeavyStone);
         break;
     case 11:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_CSpecialHeavyMetal);
+        result = DAT_011c3f2c->GetSound(kStr_CSpecialHeavyMetal);
         break;
     case 12:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_CSpecialHeavyWood);
+        result = DAT_011c3f2c->GetSound(kStr_CSpecialHeavyWood);
         break;
     case 16:
-        if (afSizeA < DAT_01032980)
+        if (afMass < DAT_01032980)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalHollowStatic);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalHollowStatic);
         }
-        else if (afSizeA < *DAT_011dd8f4.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd8f4.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalHollowSmall);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalHollowSmall);
         }
-        else if (afSizeA < *DAT_011dd8cc.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd8cc.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalHollowMedium);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalHollowMedium);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalHollowLarge);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalHollowLarge);
         }
         break;
     case 17:
-        if (afSizeA < DAT_01032980)
+        if (afMass < DAT_01032980)
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalSheetStatic);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalSheetStatic);
         }
-        else if (afSizeA < *DAT_011dd8f4.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd8f4.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalSheetSmall);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalSheetSmall);
         }
-        else if (afSizeA < *DAT_011dd8cc.Setting_Float_00403e20())
+        else if (afMass < *DAT_011dd8cc.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalSheetMedium);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalSheetMedium);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYGenericMetalSheetLarge);
+            result = DAT_011c3f2c->GetSound(kStr_PHYGenericMetalSheetLarge);
         }
         break;
     case 18:
@@ -852,125 +873,125 @@ int __cdecl ImpactMixer_GetSoundForType(int aiMaterialType, float afSizeA, float
         result = 0;
         break;
     case 20:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYVehicleMetalBodyL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYVehicleMetalBodyL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYVehicleMetalBodyH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYVehicleMetalBodyH);
         }
         break;
     case 21:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYVehicleMetalSolidL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYVehicleMetalSolidL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYVehicleMetalSolidH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYVehicleMetalSolidH);
         }
         break;
     case 22:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYVehicleMetalHollowL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYVehicleMetalHollowL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYVehicleMetalHollowH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYVehicleMetalHollowH);
         }
         break;
     case 23:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYBarrelL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYBarrelL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYBarrelH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYBarrelH);
         }
         break;
     case 24:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYBottleL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYBottleL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYBottleH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYBottleH);
         }
         break;
     case 25:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYCanSodaL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYCanSodaL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYCanSodaH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYCanSodaH);
         }
         break;
     case 26:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYWeaponPistolL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYWeaponPistolL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYWeaponPistolH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYWeaponPistolH);
         }
         break;
     case 27:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYWeaponRifleL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYWeaponRifleL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYWeaponRifleH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYWeaponRifleH);
         }
         break;
     case 28:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYShoppingCartL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYShoppingCartL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYShoppingCartH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYShoppingCartH);
         }
         break;
     case 29:
-        if (afSizeB < *DAT_011dd8e8.Setting_Float_00403e20())
+        if (afVelocity < *DAT_011dd8e8.Setting_Float_00403e20())
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYLunchboxL);
+            result = DAT_011c3f2c->GetSound(kStr_PHYLunchboxL);
         }
         else
         {
-            result = DAT_011c3f2c->FUN_004616c0(kStr_PHYLunchboxH);
+            result = DAT_011c3f2c->GetSound(kStr_PHYLunchboxH);
         }
         break;
     case 30:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_PHYBabyRattle);
+        result = DAT_011c3f2c->GetSound(kStr_PHYBabyRattle);
         break;
     case 31:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_PHYRubberBall);
+        result = DAT_011c3f2c->GetSound(kStr_PHYRubberBall);
         break;
     case 14:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_PHYBottlecaps);
+        result = DAT_011c3f2c->GetSound(kStr_PHYBottlecaps);
         break;
     case 32:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_PHYChainlink);
+        result = DAT_011c3f2c->GetSound(kStr_PHYChainlink);
         break;
     case 33:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_PHYTile);
+        result = DAT_011c3f2c->GetSound(kStr_PHYTile);
         break;
     case 34:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_PHYCarpet);
+        result = DAT_011c3f2c->GetSound(kStr_PHYCarpet);
         break;
     case 35:
-        result = DAT_011c3f2c->FUN_004616c0(kStr_PHYTumbleweed);
+        result = DAT_011c3f2c->GetSound(kStr_PHYTumbleweed);
         break;
     }
     return result;
@@ -1079,16 +1100,20 @@ struct S_0083a930_Setting
 extern S_0083a930_Setting DAT_011dd900;
 extern Actor* DAT_011dea3c;
 extern const float DAT_010231a8;
-bool FUN_0082eca0(TESSound* sound, NiPoint3 pos, float volume);
+bool SoundDistanceTest(TESSound* apSound, NiPoint3 aLoc, float aMod);
 
 // @fnv 0x0083a930
-void PlayWeaponImpactSound(TESObjectREFR* ref, int type)
+// src: XBOX_RETAIL_PDB 0x0083a930
+// pdb: ImpactMixer::PlayEquipSound | ImpactMixer.obj | retail, call graph, high
+// pdb params: apRef, aiType
+// pdb locals: loc, b2Handed, tempMemContext, pactor, ftestDistance, pweapdata, pweap, pbobj, SoundHand, bSneaker, pactionSound
+void ImpactMixer_PlayEquipSound(TESObjectREFR* apRef, int aiType)
 {
     AutoMemHelper ctx(0xb, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Audio\\ImpactMixer.cpp", 0x6a3);
-    NiPoint3 pos = reinterpret_cast<const NiPoint3&>(*static_cast<const TESObjectREFR*>(ref)->GetPos());
+    NiPoint3 pos = reinterpret_cast<const NiPoint3&>(*static_cast<const TESObjectREFR*>(apRef)->GetPos());
     float value = *DAT_011dd900.Setting_Float_00403e20();
     bool bUnused = false;
-    Actor* actor = dynamic_cast<Actor*>(ref);
+    Actor* actor = dynamic_cast<Actor*>(apRef);
     if (actor && actor->FUN_008d8520())
     {
         BSSoundHandle sound;
@@ -1098,7 +1123,7 @@ void PlayWeaponImpactSound(TESObjectREFR* ref, int type)
         if (weapon)
         {
             TESSound* snd = 0;
-            switch (type)
+            switch (aiType)
             {
             case 9:
                 snd = weapon->GetField238();
@@ -1107,7 +1132,7 @@ void PlayWeaponImpactSound(TESObjectREFR* ref, int type)
                 snd = weapon->GetField23C();
                 break;
             }
-            if (!snd || !FUN_0082eca0(snd, pos, 1.0f))
+            if (!snd || !SoundDistanceTest(snd, pos, 1.0f))
                 return;
             bool sneaking = actor->FUN_004997b0();
             if (actor == DAT_011dea3c)
@@ -1118,7 +1143,7 @@ void PlayWeaponImpactSound(TESObjectREFR* ref, int type)
             {
                 sound = *reinterpret_cast<BSSoundHandle*>(&BSAudio::BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(snd->TESSound_GetFilename(), 0x4102, reinterpret_cast<unsigned int>(snd)));
                 sound.SetPosition(pos.x, pos.y, pos.z);
-                sound.SetObjectToFollow(reinterpret_cast<NiAVObject*>(ref->GetNiNode()));
+                sound.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apRef->GetNiNode()));
             }
             if (sneaking)
                 sound.SetVolume(DAT_010231a8);
@@ -1451,13 +1476,13 @@ struct SkinOps
     int unk408;
     int unk40c;
     MaterialOps material;
-    bool bhkCharacterController_GetOnStairs();
+    bool bhkCharacterController_QOnStairs();
 };
 // These no-argument actor queries are not declared by the shared header.
 // __fastcall passes the actor in ECX, matching their member-call convention.
 bool __fastcall IsFootstepRunning(Actor* actor);
 bool __fastcall HasPowerArmorFootsteps(Actor* actor);
-bool __fastcall HasArmorFootsteps(Actor* actor);
+bool __fastcall Actor_IsHeavyBodyArmorWorn(Actor* actor);
 
 
 extern S_0083a930_Setting DAT_011dd988;
@@ -1472,7 +1497,11 @@ struct FootstepEntry
 extern FootstepEntry DAT_011dd650[];
 // Selects a footstep sound for the given foot from the cell material and actor state, then plays it at the actor position or in first person.
 // @fnv 0x00837cc0
-void PlayFootstepSound(FootstepActor* apActor, int foot)
+// src: XBOX_RETAIL_PDB 0x00837cc0
+// pdb: ImpactMixer::PlayFootstep | ImpactMixer.obj | retail, unique string literal, high
+// pdb params: apRef, aiFootType
+// pdb locals: b1stPersonPlayerFoot, loc, infoGround, SoundHand2, fdistance, tempMemContext, infoShoe, ftestDistance, SoundHand, listenPt, pActor, pcreature, pcreatureSound, pobj, pcell, matType, bWaterStep, pmob, groundType, bStairs, stepType, plandTex, cdata, fheight ...
+void ImpactMixer_PlayFootstep(FootstepActor* apRef, int aiFootType)
 {
     bool pos;
     SoundOps* memory;
@@ -1480,7 +1509,7 @@ void PlayFootstepSound(FootstepActor* apActor, int foot)
     AutoMemHelper range(11, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Audio\\ImpactMixer.cpp", 735);
     if (Interface_IsInMenuMode())
         return;
-    NiPoint3 firstPerson = reinterpret_cast<const NiPoint3&>(apActor->GetPos());
+    NiPoint3 firstPerson = reinterpret_cast<const NiPoint3&>(apRef->GetPos());
     BSSoundHandle primary;
     BSSoundHandle secondary;
     memory = 0;
@@ -1498,17 +1527,17 @@ void PlayFootstepSound(FootstepActor* apActor, int foot)
         if (delta.FUN_00457990() > distance)
             return;
     }
-    if (apActor->IsActor())
+    if (apRef->IsActor())
     {
         Actor* actorOps =
-            reinterpret_cast<Actor*>(dynamic_cast<Actor*>(reinterpret_cast<TESObjectREFR*>(apActor)));
+            reinterpret_cast<Actor*>(dynamic_cast<Actor*>(reinterpret_cast<TESObjectREFR*>(apRef)));
         if (actorOps->HasHealth(false))
             return;
         if (actorOps->IsCreature())
         {
-            TESBoundObject* base = reinterpret_cast<TESBoundObject*>(reinterpret_cast<Actor*>(apActor)->BGSSaveFormBuffer_GetForm());
+            TESBoundObject* base = reinterpret_cast<TESBoundObject*>(reinterpret_cast<Actor*>(apRef)->BGSSaveFormBuffer_GetForm());
             TESCreature* creature = dynamic_cast<TESCreature*>(base);
-            SoundOps* creatureSound = creature->PickCreatureSound(foot);
+            SoundOps* creatureSound = creature->PickCreatureSound(aiFootType);
             memory = creatureSound;
             if (memory && armor <= memory->GetField45() * 100)
             {
@@ -1533,14 +1562,14 @@ void PlayFootstepSound(FootstepActor* apActor, int foot)
                 ((cell->FUN_00425fd0() && cell->FUN_004518e0()) || !cell->FUN_00425fd0()))
                 soundType = true;
             Actor* material = actorOps;
-            if (reinterpret_cast<SkinOps*>(material->FUN_009306d0())->bhkCharacterController_GetOnStairs())
+            if (reinterpret_cast<SkinOps*>(material->FUN_009306d0())->bhkCharacterController_QOnStairs())
                 movingActor = true;
             if (!g_TES_011dea10->FUN_005f36f0() && cell && cell->TESObjectCELL_GetLand())
             {
                 MaterialRecord* result;
                 FootstepQuery height;
                 reinterpret_cast<NavOps*>(cell->TESObjectCELL_GetLand())->TESObjectLAND_GetCoordData(&height, reinterpret_cast<NiPoint3*>(&firstPerson), 1);
-                result = cell->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture_0053a630(height.materialKind, height.triangle);
+                result = cell->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture(height.materialKind, height.triangle);
                 float record = 0.0f;
                 materialIndex = 0;
                 if (soundType)
@@ -1562,16 +1591,16 @@ void PlayFootstepSound(FootstepActor* apActor, int foot)
                 else if (material && reinterpret_cast<SkinOps*>(material->FUN_009306d0()))
                     materialIndex = reinterpret_cast<SkinOps*>(material->FUN_009306d0())->material.FUN_0059bb30();
             }
-            if (foot > 1)
-                foot -= 2;
-            int special = foot == 0;
+            if (aiFootType > 1)
+                aiFootType -= 2;
+            int special = aiFootType == 0;
             int water = 0;
             if (actorOps->FUN_004997b0())
-                special = foot ? 4 : 5;
+                special = aiFootType ? 4 : 5;
             else if (movingActor)
-                special = foot ? 6 : 7;
+                special = aiFootType ? 6 : 7;
             else if (IsFootstepRunning(actorOps))
-                special = foot ? 2 : 3;
+                special = aiFootType ? 2 : 3;
             water = GetTypeValue(materialIndex);
             memory = DAT_011dd650[water].sounds[special];
             if (HasPowerArmorFootsteps(actorOps))
@@ -1579,22 +1608,22 @@ void PlayFootstepSound(FootstepActor* apActor, int foot)
                 if (!DAT_011dd860 || !DAT_011dd864)
                 {
                     DAT_011dd864 =
-                        reinterpret_cast<SoundOps*>(g_dataHandler_011c3f2c->FUN_004616c0(armorPowerRightName));
+                        reinterpret_cast<SoundOps*>(g_dataHandler_011c3f2c->GetSound(armorPowerRightName));
                     DAT_011dd860 =
-                        reinterpret_cast<SoundOps*>(g_dataHandler_011c3f2c->FUN_004616c0(armorPowerLeftName));
+                        reinterpret_cast<SoundOps*>(g_dataHandler_011c3f2c->GetSound(armorPowerLeftName));
                 }
-                sound = foot ? DAT_011dd860 : DAT_011dd864;
+                sound = aiFootType ? DAT_011dd860 : DAT_011dd864;
             }
-            else if (HasArmorFootsteps(actorOps))
+            else if (Actor_IsHeavyBodyArmorWorn(actorOps))
             {
                 if (!DAT_011dd868 || !DAT_011dd86c)
                 {
-                    DAT_011dd86c = reinterpret_cast<SoundOps*>(g_dataHandler_011c3f2c->FUN_004616c0(armorRightName));
-                    DAT_011dd868 = reinterpret_cast<SoundOps*>(g_dataHandler_011c3f2c->FUN_004616c0(armorLeftName));
+                    DAT_011dd86c = reinterpret_cast<SoundOps*>(g_dataHandler_011c3f2c->GetSound(armorRightName));
+                    DAT_011dd868 = reinterpret_cast<SoundOps*>(g_dataHandler_011c3f2c->GetSound(armorLeftName));
                 }
-                sound = foot ? DAT_011dd868 : DAT_011dd86c;
+                sound = aiFootType ? DAT_011dd868 : DAT_011dd86c;
             }
-            if (apActor == g_player_011dea3c && !g_player_011dea3c->PlayerCharacter_IsActually3rdPerson())
+            if (apRef == g_player_011dea3c && !g_player_011dea3c->PlayerCharacter_IsActually3rdPerson())
                 pos = true;
             if (pos)
             {
@@ -1619,8 +1648,8 @@ void PlayFootstepSound(FootstepActor* apActor, int foot)
                 {
                     primary = *reinterpret_cast<BSSoundHandle*>(&BSAudio::BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(memory->TESSound_GetFilename(), flags, reinterpret_cast<unsigned int>(memory)));
                     primary.SetPosition(firstPerson.x, firstPerson.y, firstPerson.z - 128.0);
-                    if (apActor->Get3D())
-                        primary.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apActor->Get3D()));
+                    if (apRef->Get3D())
+                        primary.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apRef->Get3D()));
                     primary.SetVolume(FUN_00476b70(0.9f, 1.0f));
                     primary.Play(0);
                 }
@@ -1628,8 +1657,8 @@ void PlayFootstepSound(FootstepActor* apActor, int foot)
                 {
                     secondary = *reinterpret_cast<BSSoundHandle*>(&BSAudio::BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(sound->TESSound_GetFilename(), flags, reinterpret_cast<unsigned int>(sound)));
                     secondary.SetPosition(firstPerson.x, firstPerson.y, firstPerson.z - 128.0);
-                    if (apActor->Get3D())
-                        secondary.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apActor->Get3D()));
+                    if (apRef->Get3D())
+                        secondary.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apRef->Get3D()));
                     secondary.SetVolume(1.0 - FUN_00476b70(0.0f, g_fFootstepRand_0101e2bc));
                     secondary.Play(0);
                 }
@@ -1649,7 +1678,11 @@ float BSMIN(float a, float b);
 float BSMAX_00404010(float a, float b);
 
 // @fnv 0x008397f0
-void PlayBlockSound(int aUnused, TESObjectWEAP* pObject, float x0, float y0, float z0, float x1, float y1,
+// src: XBOX_RETAIL_PDB 0x008397f0
+// pdb: ImpactMixer::PlayWeaponBlock | ImpactMixer.obj | retail, string-set bridge, high
+// pdb params: aiAttWeaponType, apDefWeapon, aAttacker, aDefender, bEnchantedWeapon
+// pdb locals: midpoint, SoundHand, idefWeaponType
+void ImpactMixer_PlayWeaponBlock(int aUnused, TESObjectWEAP* pObject, float x0, float y0, float z0, float x1, float y1,
                     float z1)
 {
     BSSoundHandle p;
@@ -1684,6 +1717,9 @@ extern SoundOps* DAT_011dd874;
 // Plays a footstep or jump sound for ref, choosing the material sound and optional armor/jump sound based on the surface and actor state.
 // @fnv 0x00838780
 // src: XBOX_PDB 0x00838780
+// pdb: ImpactMixer::PlayJump | ImpactMixer.obj | retail, upstream name already matches, high
+// pdb params: apRef, aiFootType
+// pdb locals: b1stPersonPlayerFoot, loc, infoGround, SoundHand2, fdistance, tempMemContext, infoShoe, ftestDistance, SoundHand, listenPt, pActor, pcreature, pcreatureSound, pobj, pcell, matType, bWaterStep, pmob, groundType, bStairs, stepType, plandTex, cdata, fheight ...
 void __cdecl ImpactMixer_PlayJump(TESObjectREFR* apRefr)
 {
     AutoMemHelper memCtx5(11, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Audio\\ImpactMixer.cpp", 941);
@@ -1748,13 +1784,13 @@ void __cdecl ImpactMixer_PlayJump(TESObjectREFR* apRefr)
                 }
             }
             Actor* pq = pActor;
-            if (reinterpret_cast<SkinOps*>(pq->FUN_009306d0())->bhkCharacterController_GetOnStairs())
+            if (reinterpret_cast<SkinOps*>(pq->FUN_009306d0())->bhkCharacterController_QOnStairs())
                 local2 = true;
             if (!g_TES_011dea10->FUN_005f36f0() && cell8 && cell8->TESObjectCELL_GetLand())
             {
                 FootstepQuery query4;
                 cell8->TESObjectCELL_GetLand()->TESObjectLAND_GetCoordData((NavQueryResult*)&query4, (NiPoint3*)&pos20, 1);
-                MaterialRecord* localA = cell8->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture_0053a630(query4.materialKind, query4.triangle);
+                MaterialRecord* localA = cell8->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture(query4.materialKind, query4.triangle);
                 float heightStepB = 0.0f;
                 material6 = 0;
                 if (flagWater6)
@@ -1782,13 +1818,13 @@ void __cdecl ImpactMixer_PlayJump(TESObjectREFR* apRefr)
             if (HasPowerArmorFootsteps(pActor))
             {
                 if (!DAT_011dd874)
-                    DAT_011dd874 = (SoundOps*)g_dataHandler_011c3f2c->FUN_004616c0("FSTJumpPower");
+                    DAT_011dd874 = (SoundOps*)g_dataHandler_011c3f2c->GetSound("FSTJumpPower");
                 second9 = DAT_011dd870;
             }
-            else if (HasArmorFootsteps(pActor))
+            else if (Actor_IsHeavyBodyArmorWorn(pActor))
             {
                 if (!DAT_011dd870)
-                    DAT_011dd870 = (SoundOps*)g_dataHandler_011c3f2c->FUN_004616c0("FSTJumpArmor");
+                    DAT_011dd870 = (SoundOps*)g_dataHandler_011c3f2c->GetSound("FSTJumpArmor");
                 second9 = DAT_011dd870;
             }
             if (apRefr == (TESObjectREFR*)g_player_011dea3c)
@@ -1815,7 +1851,7 @@ void __cdecl ImpactMixer_PlayJump(TESObjectREFR* apRefr)
             else
             {
                 int flags2 = 0x410a;
-                if (!FUN_0082eca0((TESSound*)impact1, pos20, 1.0f) && !FUN_0082eca0((TESSound*)second9, pos20, 1.0f))
+                if (!SoundDistanceTest((TESSound*)impact1, pos20, 1.0f) && !SoundDistanceTest((TESSound*)second9, pos20, 1.0f))
                     return;
                 if (impact1)
                 {
@@ -1853,7 +1889,7 @@ typedef NiPoint3 ImpactPoint;
 struct ImpactMemContext
 {
     int iOldContext;
-    ImpactMemContext(int aiContext, bool abPush, const char* apFile, int aiLine);
+    ImpactMemContext(int memContext, bool overridable, const char* apFile, int aiLine);
     ~ImpactMemContext();
 };
 
@@ -1899,7 +1935,7 @@ struct ImpactSoundForm
 
 struct ImpactDataHandler
 {
-    ImpactSoundForm* FUN_004616c0(const char* apEditorID);
+    ImpactSoundForm* GetSound(const char* soundID);
 };
 
 
@@ -1930,9 +1966,9 @@ extern ImpactPoint DAT_011dd958;
 extern ImpactDataHandler* DAT_011c3f2c;
 extern const double DAT_010179e0;
 
-ImpactSoundForm* __cdecl ImpactMixer_GetSoundForType(int aiMaterial, float afMass, float afImpulse);
+ImpactSoundForm* __cdecl ImpactMixer_GetSoundForType(int aiType, float afMass, float afVelocity);
 bool __cdecl FloatEQ(float afValue, float afTarget, float afRange);
-bool __cdecl FUN_0082eca0(ImpactSoundForm* apForm, ImpactPoint akPos, float afScale);
+bool __cdecl SoundDistanceTest(ImpactSoundForm* apSound, ImpactPoint aLoc, float aMod);
 
 static const char kCollisionSourcePath[] = "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Audio\\ImpactMixer.cpp";
 static const char s_szTimerName[] = "ImpactMixer::PlayCollisionSound";
@@ -1943,45 +1979,48 @@ static const char s_szRifle[] = "PHYCasingRifle";
 // Selects impact sounds from collision materials and object masses, adjusts frequency and volume from impulse, and prunes impact history.
 // @fnv 0x00837550
 // src: XBOX_PDB 0x00837550
-void ImpactMixer_PlayCollisionSound(ImpactData* apImpact)
+// pdb: ImpactMixer::PlayCollisionSound | ImpactMixer.obj | retail, upstream name already matches, high
+// pdb params: arDataIn
+// pdb locals: pos, itime, fratio, tempMemContext, iloopcount, ibattleFlag, fmeterspersec, itimeOut, info, SoundHand2, bshellCasing, uiCurrentTime, info2, fmass1, uiSinceLastPlayed, fmass2, velVol, SoundHand, velFreq, fcasingMass, val, key
+void ImpactMixer_PlayCollisionSound(ImpactData* arDataIn)
 {
     ImpactMemContext kMemContext(0xb, true, kCollisionSourcePath, 0x234);
-    if (apImpact->pObjectA == apImpact->pObjectB && apImpact->pObjectA)
+    if (arDataIn->pObjectA == arDataIn->pObjectB && arDataIn->pObjectA)
         return;
     static ImpactTimer s_kTimer;
     s_kTimer.BSCriticalSection_Enter(s_szTimerName);
-    float fScaledImpulseRes = apImpact->fImpulse * 0.014287499710917473;
-    float fWaterLevelItem = apImpact->fImpulse / DAT_010179e0;
+    float fScaledImpulseRes = arDataIn->fImpulse * 0.014287499710917473;
+    float fWaterLevelItem = arDataIn->fImpulse / DAT_010179e0;
     unsigned int uiFlagsTmp = 0;
-    if (apImpact->cMaterialA == 0x24 && apImpact->cMaterialB == 6)
+    if (arDataIn->cMaterialA == 0x24 && arDataIn->cMaterialB == 6)
         fWaterLevelItem *= 4.0;
     {
-        float fMassASample = apImpact->pObjectA ? apImpact->pObjectA->FUN_0062ab20() : 5.0f;
-        float fMassOfB = apImpact->pObjectB ? apImpact->pObjectB->FUN_0062ab20() : 5.0f;
+        float fMassASample = arDataIn->pObjectA ? arDataIn->pObjectA->FUN_0062ab20() : 5.0f;
+        float fMassOfB = arDataIn->pObjectB ? arDataIn->pObjectB->FUN_0062ab20() : 5.0f;
         bool bCasingVal = false;
         ImpactSoundForm* pSoundA = 0;
         ImpactSoundForm* pSoundBNew = 0;
-        if ((apImpact->pObjectA && apImpact->pObjectA->bhkWorldObject_GetCollisionFilter().CFilter_GetLayer() == 0x19) ||
-            (apImpact->pObjectB && apImpact->pObjectB->bhkWorldObject_GetCollisionFilter().CFilter_GetLayer() == 0x19))
+        if ((arDataIn->pObjectA && arDataIn->pObjectA->bhkWorldObject_GetCollisionFilter().CFilter_GetLayer() == 0x19) ||
+            (arDataIn->pObjectB && arDataIn->pObjectB->bhkWorldObject_GetCollisionFilter().CFilter_GetLayer() == 0x19))
             bCasingVal = true;
         if (!bCasingVal)
         {
-            pSoundA = ImpactMixer_GetSoundForType(apImpact->cMaterialA, fMassASample, apImpact->fImpulse);
-            pSoundBNew = ImpactMixer_GetSoundForType(apImpact->cMaterialB, fMassOfB, apImpact->fImpulse);
+            pSoundA = ImpactMixer_GetSoundForType(arDataIn->cMaterialA, fMassASample, arDataIn->fImpulse);
+            pSoundBNew = ImpactMixer_GetSoundForType(arDataIn->cMaterialB, fMassOfB, arDataIn->fImpulse);
         }
         else
         {
             uiFlagsTmp = 0x80;
             float fMass = fMassASample > fMassOfB ? fMassASample : fMassOfB;
             if (fMass < 1.0)
-                pSoundA = DAT_011c3f2c->FUN_004616c0(s_szShotgun);
+                pSoundA = DAT_011c3f2c->GetSound(s_szShotgun);
             else if (FloatEQ(fMass, 2.0f, 0.25f))
-                pSoundA = DAT_011c3f2c->FUN_004616c0(s_szPistol);
+                pSoundA = DAT_011c3f2c->GetSound(s_szPistol);
             else
-                pSoundA = DAT_011c3f2c->FUN_004616c0(s_szRifle);
+                pSoundA = DAT_011c3f2c->GetSound(s_szRifle);
             pSoundBNew = 0;
         }
-        if (!FUN_0082eca0(pSoundA, apImpact->kPos, 1.0f) && !FUN_0082eca0(pSoundBNew, apImpact->kPos, 1.0f))
+        if (!SoundDistanceTest(pSoundA, arDataIn->kPos, 1.0f) && !SoundDistanceTest(pSoundBNew, arDataIn->kPos, 1.0f))
         {
             s_kTimer.FUN_004538c0();
             return;
@@ -1990,7 +2029,7 @@ void ImpactMixer_PlayCollisionSound(ImpactData* apImpact)
         BSSoundHandle kHandleB;
         unsigned int uiNow = DAT_011f6394.FUN_00825c00();
         unsigned int uiLastTime = 0;
-        if (DAT_011dd948.FUN_00853130(apImpact->uiKey, uiLastTime) &&
+        if (DAT_011dd948.FUN_00853130(arDataIn->uiKey, uiLastTime) &&
             uiNow - uiLastTime < (unsigned int)*DAT_011dd968.Setting_Int())
         {
             s_kTimer.FUN_004538c0();
@@ -1998,21 +2037,21 @@ void ImpactMixer_PlayCollisionSound(ImpactData* apImpact)
         }
         else
         {
-            DAT_011dd948.FUN_00844700(apImpact->uiKey, uiNow);
+            DAT_011dd948.FUN_00844700(arDataIn->uiKey, uiNow);
         }
-        if (pSoundA && !(apImpact->cMaterialA == 7 && apImpact->cMaterialB == 7))
+        if (pSoundA && !(arDataIn->cMaterialA == 7 && arDataIn->cMaterialB == 7))
             kHandleAResult =
                 *reinterpret_cast<BSSoundHandle*>(&BSAudio::BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0(pSoundA->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), uiFlagsTmp | 2 | 0x100 | 0x4000));
-        if (pSoundBNew && !(apImpact->cMaterialA == 7 && apImpact->cMaterialB == 7))
+        if (pSoundBNew && !(arDataIn->cMaterialA == 7 && arDataIn->cMaterialB == 7))
             kHandleB =
                 *reinterpret_cast<BSSoundHandle*>(&BSAudio::BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0(pSoundBNew->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), uiFlagsTmp | 2 | 0x100 | 0x4000));
         unsigned int uiFrequencyVal =
-            (unsigned int)((1.0 - (apImpact->fImpulse / 400.0 > 1.0 ? 1.0 : apImpact->fImpulse / 400.0)) * 3000.0);
+            (unsigned int)((1.0 - (arDataIn->fImpulse / 400.0 > 1.0 ? 1.0 : arDataIn->fImpulse / 400.0)) * 3000.0);
         float fVolumeLoc = uiFrequencyVal < 0x5dc ? 1.0 : (uiFrequencyVal - 4500.0) / -3000.0;
         if (pSoundA)
         {
             kHandleAResult.SetPriority(0xff);
-            kHandleAResult.SetPosition(apImpact->kPos.x, apImpact->kPos.y, apImpact->kPos.z);
+            kHandleAResult.SetPosition(arDataIn->kPos.x, arDataIn->kPos.y, arDataIn->kPos.z);
             kHandleAResult.SetStaticAttenuation(uiFrequencyVal);
             kHandleAResult.SetModFrequency(fVolumeLoc);
             kHandleAResult.Play(false);
@@ -2020,12 +2059,12 @@ void ImpactMixer_PlayCollisionSound(ImpactData* apImpact)
         if (pSoundBNew)
         {
             kHandleB.SetPriority(0xff);
-            kHandleB.SetPosition(apImpact->kPos.x, apImpact->kPos.y, apImpact->kPos.z);
+            kHandleB.SetPosition(arDataIn->kPos.x, arDataIn->kPos.y, arDataIn->kPos.z);
             kHandleB.SetStaticAttenuation(uiFrequencyVal);
             kHandleB.SetModFrequency(fVolumeLoc);
             kHandleB.Play(false);
         }
-        DAT_011dd958 = apImpact->kPos;
+        DAT_011dd958 = arDataIn->kPos;
     }
     int iMaxAge = *DAT_011dd968.Setting_Int() * 4;
     void* pIter = DAT_011dd948.FUN_004b9ba0();

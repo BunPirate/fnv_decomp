@@ -22,6 +22,9 @@ struct CloningProcess
 };
 // @fnv 0x00c2e610
 // src: XBOX_PDB 0x00c2e610
+// pdb: NiPSysBombModifier::ProcessClone | NiPSysBombModifier.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, pkDest
 void NiPSysBombModifier::ProcessClone_00c2e610(CloningProcess& kCloning)
 {
     bool bFound;
@@ -31,15 +34,18 @@ void NiPSysBombModifier::ProcessClone_00c2e610(CloningProcess& kCloning)
     pkClone = 0;
     kCloning.m_pCloneMap->GetAt(this, (void*&)pkClone);
     pkDest = (NiPSysBombModifier*)pkClone;
-    bFound = kCloning.m_pCloneMap->GetAt(m_pkBombObject, (void*&)pkClone);
+    bFound = kCloning.m_pCloneMap->GetAt(m_pkBombObj, (void*&)pkClone);
     if (bFound)
-        pkDest->m_pkBombObject = pkClone;
+        pkDest->m_pkBombObj = pkClone;
     else
-        pkDest->m_pkBombObject = m_pkBombObject;
+        pkDest->m_pkBombObj = m_pkBombObj;
 }
 
 // @fnv 0x00c2eaf0
 // src: XBOX_PDB 0x00c2eaf0
+// pdb: NiPSysBombModifier::IsEqual | NiPSysBombModifier.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiPSysBombModifier::IsEqual_00c2eaf0(NiObject* pkObject)
 {
     if (!FUN_00c31830(pkObject))
@@ -47,16 +53,16 @@ bool NiPSysBombModifier::IsEqual_00c2eaf0(NiObject* pkObject)
 
     NiPSysBombModifier* pkDest = (NiPSysBombModifier*)pkObject;
 
-    if ((m_pkBombObject && !pkDest->m_pkBombObject) || (!m_pkBombObject && pkDest->m_pkBombObject) ||
-        (m_pkBombObject && pkDest->m_pkBombObject &&
-         !((const NiObject*)m_pkBombObject)->IsEqual(pkDest->m_pkBombObject)))
+    if ((m_pkBombObj && !pkDest->m_pkBombObj) || (!m_pkBombObj && pkDest->m_pkBombObj) ||
+        (m_pkBombObj && pkDest->m_pkBombObj &&
+         !((const NiObject*)m_pkBombObj)->IsEqual(pkDest->m_pkBombObj)))
     {
         return false;
     }
 
-    if (m_kBombDirection != pkDest->m_kBombDirection || m_fDistanceDecay != pkDest->m_fDistanceDecay ||
-        m_fDeltaVelocity != pkDest->m_fDeltaVelocity || m_eBombDecayType != pkDest->m_eBombDecayType ||
-        m_eSymmetryType != pkDest->m_eSymmetryType)
+    if (m_kBombAxis != pkDest->m_kBombAxis || m_fDecay != pkDest->m_fDecay ||
+        m_fDeltaV != pkDest->m_fDeltaV || m_eDecayType != pkDest->m_eDecayType ||
+        m_eSymmType != pkDest->m_eSymmType)
     {
         return false;
     }
@@ -113,18 +119,21 @@ inline const char* NiPSysBombModifier::GetSymmTypeName(int e)
 
 // Appends the base strings plus the bomb object name, axis, decay, deltaV, decay type and symmetry type to pkStrings.
 // @fnv 0x00c2ed00
+// pdb: NiPSysBombModifier::GetViewerStrings | NiPSysBombModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: pcDecayType, pcSymmType, pcBombObj
 void NiPSysBombModifier::AppendToStrings(StrArr* pkStrings)
 {
     using namespace fnv_00c2ed00;
     FUN_00c319e0(pkStrings);
 
     AddBombString(pkStrings, NiViewerStrings_NiGetViewerString_Title(g_01202790));
-    AddBombString(pkStrings, NiGetViewerString_00a7d5e0("Bomb Object", m_pkBombObject ? ((NiAVObject*)m_pkBombObject)->m_kName.m_kHandle : "None"));
-    AddBombString(pkStrings, m_kBombDirection.GetViewerString_00a59af0("Bomb Axis"));
-    AddBombString(pkStrings, NiGetViewerString_00a7d550("Decay", m_fDistanceDecay));
-    AddBombString(pkStrings, NiGetViewerString_00a7d550("DeltaV", m_fDeltaVelocity));
-    AddBombString(pkStrings, NiGetViewerString_00a7d5e0("Decay Type", GetDecayTypeName(m_eBombDecayType)));
-    AddBombString(pkStrings, NiGetViewerString_00a7d5e0("Symmetry Type", GetSymmTypeName(m_eSymmetryType)));
+    AddBombString(pkStrings, NiGetViewerString_00a7d5e0("Bomb Object", m_pkBombObj ? ((NiAVObject*)m_pkBombObj)->m_kName.m_kHandle : "None"));
+    AddBombString(pkStrings, m_kBombAxis.GetViewerString_00a59af0("Bomb Axis"));
+    AddBombString(pkStrings, NiGetViewerString_00a7d550("Decay", m_fDecay));
+    AddBombString(pkStrings, NiGetViewerString_00a7d550("DeltaV", m_fDeltaV));
+    AddBombString(pkStrings, NiGetViewerString_00a7d5e0("Decay Type", GetDecayTypeName(m_eDecayType)));
+    AddBombString(pkStrings, NiGetViewerString_00a7d5e0("Symmetry Type", GetSymmTypeName(m_eSymmType)));
 }
 
 inline unsigned int NiBinaryStream::BinaryWrite(const void* p, unsigned int n, unsigned int* sizes, unsigned int count)
@@ -150,15 +159,18 @@ template <class Enum> static inline void ReadBombEnum(NiBinaryStream& input, Enu
 
 // Loads the base data, then the bomb parameters from the stream's input.
 // @fnv 0x00c2eb80
+// pdb: NiPSysBombModifier::LoadBinary | NiPSysBombModifier.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysBombModifier::SaveBinary
+// pdb params: kStream
 void __fastcall LoadBombBinary(NiPSysBombModifier* modifier, void*, NiStream& stream)
 {
     modifier->NiPSysModifier::LoadBinary(stream);
     stream.ReadLinkID();
-    modifier->m_kBombDirection.LoadBinary(stream);
-    ReadBombFloat(*stream.m_pkIstr, modifier->m_fDistanceDecay);
-    ReadBombFloat(*stream.m_pkIstr, modifier->m_fDeltaVelocity);
-    ReadBombEnum(*stream.m_pkIstr, modifier->m_eBombDecayType);
-    ReadBombEnum(*stream.m_pkIstr, modifier->m_eSymmetryType);
+    modifier->m_kBombAxis.LoadBinary(stream);
+    ReadBombFloat(*stream.m_pkIstr, modifier->m_fDecay);
+    ReadBombFloat(*stream.m_pkIstr, modifier->m_fDeltaV);
+    ReadBombEnum(*stream.m_pkIstr, modifier->m_eDecayType);
+    ReadBombEnum(*stream.m_pkIstr, modifier->m_eSymmType);
 }
 
 template <class T>
@@ -175,15 +187,18 @@ template <class T> inline void SaveBombValue(NiStream& kStream, const T& value)
 
 // Saves the modifier base, bomb object link, direction, and decay parameters.
 // @fnv 0x00c2ec40
+// pdb: NiPSysBombModifier::SaveBinary | NiPSysBombModifier.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysBombModifier::IsEqual
+// pdb params: kStream
 void __fastcall SaveBombBinary(NiPSysBombModifier* modifier, void*, NiStream& kStream)
 {
     modifier->NiPSysModifier::SaveBinary(kStream);
-    kStream.SaveLinkID(modifier->m_pkBombObject);
-    ((NiColor&)modifier->m_kBombDirection).SaveBinary(kStream);
-    SaveBombValue(kStream, modifier->m_fDistanceDecay);
-    SaveBombValue(kStream, modifier->m_fDeltaVelocity);
-    SaveBombValue(kStream, modifier->m_eBombDecayType);
-    SaveBombValue(kStream, modifier->m_eSymmetryType);
+    kStream.SaveLinkID(modifier->m_pkBombObj);
+    ((NiColor&)modifier->m_kBombAxis).SaveBinary(kStream);
+    SaveBombValue(kStream, modifier->m_fDecay);
+    SaveBombValue(kStream, modifier->m_fDeltaV);
+    SaveBombValue(kStream, modifier->m_eDecayType);
+    SaveBombValue(kStream, modifier->m_eSymmType);
 }
 
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
@@ -198,6 +213,9 @@ struct ParticleModifierConstructor
 };
 // Creates a bomb modifier and copies the base and derived state.
 // @fnv 0x00c2e570
+// pdb: NiPSysBombModifier::CreateClone | NiPSysBombModifier.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiPSysBombModifier::MakeClone(CloningProcess& process)
 {
     void* memory = Object_DispatchCommandFour(sizeof(NiPSysBombModifier));
@@ -207,23 +225,23 @@ NiObject* NiPSysBombModifier::MakeClone(CloningProcess& process)
         clone = (NiPSysBombModifier*)memory;
         ((ParticleModifierConstructor*)clone)->FUN_00c31720();
         *(void**)clone = &DAT_010c01ec;
-        clone->m_pkBombObject = 0;
-        *(int*)&clone->m_kBombDirection.x = DAT_011a946c;
-        *(int*)&clone->m_kBombDirection.y = DAT_011a9470;
-        *(int*)&clone->m_kBombDirection.z = DAT_011a9474;
-        clone->m_fDistanceDecay = 0.0f;
-        clone->m_fDeltaVelocity = 0.0f;
-        clone->m_eBombDecayType = 0;
-        clone->m_eSymmetryType = 0;
+        clone->m_pkBombObj = 0;
+        *(int*)&clone->m_kBombAxis.x = DAT_011a946c;
+        *(int*)&clone->m_kBombAxis.y = DAT_011a9470;
+        *(int*)&clone->m_kBombAxis.z = DAT_011a9474;
+        clone->m_fDecay = 0.0f;
+        clone->m_fDeltaV = 0.0f;
+        clone->m_eDecayType = 0;
+        clone->m_eSymmType = 0;
     }
     else
         clone = 0;
-    NiPSysModifier::CopyMemberData(clone, process);
-    clone->m_kBombDirection = m_kBombDirection;
-    clone->m_fDistanceDecay = m_fDistanceDecay;
-    clone->m_fDeltaVelocity = m_fDeltaVelocity;
-    clone->m_eBombDecayType = m_eBombDecayType;
-    clone->m_eSymmetryType = m_eSymmetryType;
+    NiPSysModifier::CopyMembers(clone, process);
+    clone->m_kBombAxis = m_kBombAxis;
+    clone->m_fDecay = m_fDecay;
+    clone->m_fDeltaV = m_fDeltaV;
+    clone->m_eDecayType = m_eDecayType;
+    clone->m_eSymmType = m_eSymmType;
     return clone;
 }
 
@@ -306,6 +324,9 @@ struct Point3ParameterData
 // Applies velocity impulses to particles based on bomb direction, symmetry type, and distance decay over the elapsed time step.
 // @fnv 0x00c2e670
 // src: XBOX_PDB 0x00c2e670
+// pdb: NiPSysBombModifier::Update | NiPSysBombModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: kPosition, kDirection, kBombToPSys, kBomb, kInvPSys, kPSys, us, pkCurrentParticle, fStart, fEnd, kDir, fActiveTime, kForce, fDist, fDecay
 void NiPSysBombModifier::Update_00c2e670(float fTime, NiPSysData* pkData)
 {
     Point3ParameterData* pkInfo;
@@ -313,18 +334,18 @@ void NiPSysBombModifier::Update_00c2e670(float fTime, NiPSysData* pkData)
     float fDist;
     (void)fDist;
     BombPoint kTargetCenter = NiPoint3_ZERO;
-    BombPoint kBombAxis = m_kBombDirection;
+    BombPoint kBombAxis = m_kBombAxis;
     BombPoint kDiff;
     float fDeltaT;
     BombPoint kRadial;
     BombPoint kDirection;
 
     (void)kBombAxis.x;
-    if (pkData->m_usActive > 0 && m_pkBombObject)
+    if (pkData->m_usActive > 0 && m_pkBombObj)
     {
         float kBombWorldStorage[sizeof(NiTransform) / sizeof(float)];
         NiTransform& kBombWorld = *(NiTransform*)kBombWorldStorage;
-        memcpy(&kBombWorld, &((NiAVObject*)m_pkBombObject)->m_kWorld, sizeof(kBombWorld));
+        memcpy(&kBombWorld, &((NiAVObject*)m_pkBombObj)->m_kWorld, sizeof(kBombWorld));
         float kBombToTargetStorage[sizeof(NiTransform) / sizeof(float)];
         NiTransform& kBombToTarget = *(NiTransform*)kBombToTargetStorage;
         memcpy(&kBombToTarget, &((NiAVObject*)m_pkTarget)->m_kWorld, sizeof(kBombToTarget));
@@ -334,7 +355,7 @@ void NiPSysBombModifier::Update_00c2e670(float fTime, NiPSysData* pkData)
         ((const NiTransform&)kTargetInv).FUN_0062c250(&kBombToTarget, kBombWorld);
 
         kTargetCenter = kBombToTarget.m_Translate;
-        kBombAxis = ((const NiMatrix3&)kBombToTarget.m_Rotate).operator*(m_kBombDirection);
+        kBombAxis = ((const NiMatrix3&)kBombToTarget.m_Rotate).operator*(m_kBombAxis);
         kBombAxis.Unitize_004a0c10();
     }
 
@@ -350,10 +371,10 @@ void NiPSysBombModifier::Update_00c2e670(float fTime, NiPSysData* pkData)
 
             fDist = kDiff.Length();
 
-            if (m_eBombDecayType != 0 && !(fDist <= m_fDistanceDecay))
+            if (m_eDecayType != 0 && !(fDist <= m_fDecay))
                 continue;
 
-            switch (m_eSymmetryType)
+            switch (m_eSymmType)
             {
             case 0: {
                 kDirection = kDiff / fDist;
@@ -387,16 +408,16 @@ void NiPSysBombModifier::Update_00c2e670(float fTime, NiPSysData* pkData)
             }
 
             float fVolumeScale = 1.0f;
-            if (m_eBombDecayType == 1)
+            if (m_eDecayType == 1)
             {
-                fVolumeScale = (m_fDistanceDecay - fDist) / m_fDistanceDecay;
+                fVolumeScale = (m_fDecay - fDist) / m_fDecay;
             }
-            else if (m_eBombDecayType == 2)
+            else if (m_eDecayType == 2)
             {
-                fVolumeScale = expf(-fDist / m_fDistanceDecay);
+                fVolumeScale = expf(-fDist / m_fDecay);
             }
 
-            pkInfo->m_kValue += (m_fDeltaVelocity * fVolumeScale * fDeltaT) * kDirection;
+            pkInfo->m_kValue += (m_fDeltaV * fVolumeScale * fDeltaT) * kDirection;
         }
     }
 }

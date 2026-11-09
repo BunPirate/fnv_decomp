@@ -6,6 +6,8 @@
 
 // Copies the override form type and priority from the given data into this region data, returning false if data is null.
 // @fnv 0x004f1560
+// pdb: TESRegionData::LoadRegionData | TESRegionData.obj | debug, vtable slot, medium
+// pdb params: apData
 bool TESRegionData::ApplyEntry(RegionDataEntry* data)
 {
     if (!data)
@@ -17,6 +19,7 @@ bool TESRegionData::ApplyEntry(RegionDataEntry* data)
 
 // Initializes the override, data-present flag and priority.
 // @fnv 0x004f1400
+// pdb: REGION_DATA_BASE::Endian | TESRegionData.obj | debug, object-file run extension, low
 TESRegionData::TESRegionData()
 {
     bOverride = false;
@@ -78,6 +81,8 @@ struct RegionDataAccess : TESRegionData
 };
 
 // @fnv 0x004f14c0
+// pdb: TESRegionData::Save | TESRegionData.obj | retail, upstream name already matches, high
+// pdb locals: data
 void TESRegionData::Save()
 {
     RegionSaveData data;

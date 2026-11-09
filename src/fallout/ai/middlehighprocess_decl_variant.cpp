@@ -15,7 +15,10 @@ struct SettingFloat
 extern SettingFloat originalRuntimeFloatSetting236;
 // @fnv 0x0091db40
 // src: XBOX_PDB 0x0091db40
-void MiddleHighProcess::ProcessCombat_0091db40(Actor* actor)
+// pdb: MiddleHighProcess::ProcessCombat | MiddleHighProcess.obj | retail, object-file run extension, high
+// pdb params: apActor
+// pdb locals: inumber, bflag, ptarget
+void MiddleHighProcess::ProcessCombat_0091db40(Actor* apActor)
 {
     int remaining = (int)*originalRuntimeFloatSetting236.Float();
     Actor* found = 0;
@@ -23,19 +26,19 @@ void MiddleHighProcess::ProcessCombat_0091db40(Actor* actor)
     bool worked = false;
     if (!found || found->GetDisabled())
     {
-        actor->Unk_10D(found);
+        apActor->Unk_10D(found);
         return;
     }
     if (found &&
-        ((actor->GetParentCell() && actor->GetParentCell() == found->GetParentCell()) ||
-         actor->TESObjectREFR::TESObjectREFR_GetDistanceFromReference(found, 0, 0) < 300.0) &&
+        ((apActor->GetParentCell() && apActor->GetParentCell() == found->GetParentCell()) ||
+         apActor->TESObjectREFR::TESObjectREFR_GetDistanceFromReference(found, 0, 0) < 300.0) &&
         found->GetProcess() && found->GetProcess()->GetProcessLevel() == 1)
     {
         while (remaining)
         {
-            if (actor->HasHealth(false))
+            if (apActor->HasHealth(false))
                 break;
-            actor->Unk_10E();
+            apActor->Unk_10E();
             found = dynamic_cast<Actor*>(pTarget);
             if (found && !found->HasHealth(false) && found->GetProcess()->GetProcessLevel() == 1)
             {
@@ -55,6 +58,6 @@ void MiddleHighProcess::ProcessCombat_0091db40(Actor* actor)
     }
     else
     {
-        static_cast<BaseProcess*>(this)->UpdateActorPackage(actor, true, 0x101, false);
+        static_cast<BaseProcess*>(this)->UpdateActorPackage(apActor, true, 0x101, false);
     }
 }

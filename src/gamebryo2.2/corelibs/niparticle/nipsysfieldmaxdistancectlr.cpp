@@ -13,6 +13,7 @@ const void* __cdecl NiPSysFieldMaxDistanceCtlr_GetRTTI()
     return &g_01202710;
 }
 
+// pdb: class NiPSysFieldMaxDistanceCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysFieldMaxDistanceCtlr : NiPSysModifierFloatCtlr
 {
     void SetTargetFloatValue(float fValue);
@@ -21,9 +22,11 @@ struct NiPSysFieldMaxDistanceCtlr : NiPSysModifierFloatCtlr
 
 // @fnv 0x00c2b050
 // src: XBOX_PDB 0x00c2b050
+// pdb: NiPSysFieldMaxDistanceCtlr::SetTargetFloatValue | NiPSysFieldMaxDistanceCtlr.obj | debug, upstream name already matches, high
+// pdb params: fValue
 void NiPSysFieldMaxDistanceCtlr::SetTargetFloatValue(float fValue)
 {
-    float* p = reinterpret_cast<float*>(m_pkTargetModifier);
+    float* p = reinterpret_cast<float*>(m_pkModifier);
     p[0xA] = fValue;
     p[0xB] = fValue * fValue;
 }
@@ -32,6 +35,8 @@ void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr*);
 char* __cdecl _FUN_00a7d330(const char*);
 // @fnv 0x00c2b0c0
 // src: XBOX_PDB 0x00c2b0c0
+// pdb: NiPSysFieldMaxDistanceCtlr::GetViewerStrings | NiPSysFieldMaxDistanceCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysFieldMaxDistanceCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
@@ -56,6 +61,9 @@ void __cdecl FUN_00c32de0();
 // Allocates a 0x40-byte object, runs its base constructor and sets its vtable, then passes it with a1 to FUN_00c32de0 and returns it.
 // @fnv 0x00c2b070
 // src: XBOX_PDB 0x00c2b070
+// pdb: NiPSysFieldMaxDistanceCtlr::CreateClone | NiPSysFieldMaxDistanceCtlr.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 void* NiPSysFieldMaxDistanceCtlr::CreateClone_00c2b070(unsigned int a1)
 {
     NiPSysFieldMaxDistanceCtlr* p = (NiPSysFieldMaxDistanceCtlr*)Object_DispatchCommandFour(0x40);

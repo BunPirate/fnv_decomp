@@ -5,6 +5,7 @@
 class BSAnimGroupSequence;
 class TESAnimGroup;
 
+// pdb: class AnimSequenceMultiple, size 0x8, bases: AnimSequenceBase, 1 members
 class AnimSequenceMultiple : public AnimSequenceBase
 {
 public:
@@ -20,5 +21,5 @@ public:
     ~AnimSequenceMultiple();
     void* ScalarDeletingDestructor(unsigned int flags);
 
-    void* m_pSingleSequence;
+    void* pSeqList;
 };

@@ -8,6 +8,8 @@
 
 // Sets the geometry data on dest from model, then calls NiAVObject::FUN_00a5ac90 with dest and process.
 // @fnv 0x00a80400
+// pdb: NiLines::CopyMembers | NiLines.obj | debug, call graph, medium
+// pdb params: pkDest, kCloning
 __declspec(noinline) void NiLines::CopyMemberData(NiLines* dest, CloningProcess& process)
 {
     dest->ReplaceModelData(m_spModelData.m_pObject);
@@ -18,6 +20,9 @@ typedef void(__thiscall* RendererFn)(NiRenderer*, NiLines*);
 // Calls self's render method, then if the renderer's mode is 1 or 2 and its flag is set, invokes the renderer's virtual function at offset 0x1c4.
 // @fnv 0x00a747a0
 // src: XBOX_PDB 0x00a747a0
+// pdb: NiLines::RenderImmediate | NiLines.obj | retail, upstream name already matches, high
+// pdb params: apkRenderer
+// pdb locals: pkRenderer
 void __fastcall NiLines_RenderImmediate(NiLines* self, int, NiRenderer* apkRenderer)
 {
     self->NiGeometry::RenderImmediate(apkRenderer);
@@ -42,15 +47,17 @@ struct NiCombatArray
     void SetSize(unsigned int);
     void SetAt(unsigned int, ActorCombatGroup*&);
 };
-extern GlobalObjectO2_00a7b610* g_011f4a48;
+extern GlobalObjectO2_00a7b610* NiLines_ms_RTTI;
 void __stdcall FUN_00a80e70(NiCombatArray*);
 ActorCombatGroup* __cdecl NiViewerStrings_NiGetViewerString_Title(GlobalObjectO2_00a7b610*);
 // @fnv 0x00a74830
 // src: XBOX_PDB 0x00a74830
+// pdb: NiLines::GetViewerStrings | NiLines.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiLines_GetViewerStrings(NiCombatArray* pkStrings)
 {
     FUN_00a80e70(pkStrings);
-    ActorCombatGroup* pkGroup = NiViewerStrings_NiGetViewerString_Title(g_011f4a48);
+    ActorCombatGroup* pkGroup = NiViewerStrings_NiGetViewerString_Title(NiLines_ms_RTTI);
     unsigned int uiIndex = pkStrings->m_usESize;
     if (uiIndex >= pkStrings->m_usMaxSize)
         pkStrings->SetSize(uiIndex + pkStrings->m_usGrowBy);
@@ -67,6 +74,8 @@ NiLines* __fastcall ReturnThis2(NiLines* self, int)
 void __cdecl FUN_00a80470();
 // @fnv 0x00a89770
 // src: XBOX_PDB 0x00a89770
+// pdb: NiLines::IsEqual | NiLines.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 void __cdecl NiLines_IsEqual()
 {
     FUN_00a80470();
@@ -82,6 +91,8 @@ extern "C" bool __fastcall NiLines_RegisterStreamables(NiLines* self, int, NiStr
 void FUN_00a80db0();
 // @fnv 0x00a9b1a0
 // src: XBOX_PDB 0x00a9b1a0
+// pdb: NiLines::SaveBinary | NiLines.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiLines_SaveBinary()
 {
     FUN_00a80db0();
@@ -93,6 +104,9 @@ extern const void* DAT_0109d55c[];
 // Allocates a NiLines, initializes its geometry base and vtable, then copies the source.
 // @fnv 0x00a747e0
 // src: XBOX_PDB 0x00a747e0
+// pdb: NiLines::CreateClone | NiLines.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiLines* __fastcall NiLines_CreateClone(NiLines* self, int, CloningProcess& process)
 {
     NiLines* result = static_cast<NiLines*>(NiAllocBlock(sizeof(NiLines)));

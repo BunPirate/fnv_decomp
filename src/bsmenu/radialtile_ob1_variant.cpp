@@ -32,17 +32,17 @@ inline BSString::~BSString()
     Set(0, 0);
 }
 
-inline bool BSString::Set(const char* text, unsigned int requested)
+inline bool BSString::Set(const char* apString, unsigned int aiMaxLen)
 {
-    unsigned int inputLength = text ? BSStringLength(text) : 0;
+    unsigned int inputLength = apString ? BSStringLength(apString) : 0;
     unsigned int length = inputLength;
-    unsigned int capacity = BSStringCapacityMaximum(length, requested);
+    unsigned int capacity = BSStringCapacityMaximum(length, aiMaxLen);
     if (capacity <= GetMaxLength())
     {
         if (capacity)
         {
-            if (text)
-                __memcpy(m_data, text, length + 1);
+            if (apString)
+                __memcpy(m_data, apString, length + 1);
             else
                 m_data[0] = 0;
         }
@@ -60,8 +60,8 @@ inline bool BSString::Set(const char* text, unsigned int requested)
         char* oldData = m_data;
         char* allocation = new char[capacity + 1];
         m_data = allocation;
-        if (text)
-            __memcpy(m_data, text, length + 1);
+        if (apString)
+            __memcpy(m_data, apString, length + 1);
         else
             m_data[0] = 0;
         if (oldData)
@@ -79,7 +79,10 @@ extern void Warning_005b5e40(const char*);
 
 // @fnv 0x00a216b0
 // src: XBOX_PDB 0x00a216b0
-bool Tile::RadialTile_SpecialBoundsCheck(float x, float y)
+// pdb: RadialTile::SpecialBoundsCheck | RadialTile.obj | retail, string-set bridge, high
+// pdb params: fx, fy
+// pdb locals: fMinDegree, fMouseDegree, fMaxDegree, fMinMagnitude, pMenuRoot, fscalar, fFocusX, fFocusY, fMaxMagnitude, pValue, fMouseMagnitude, text
+bool Tile::RadialTile_SpecialBoundsCheck(float fx, float fy)
 {
     float a = this->FUN_00a011b0(0x1004);
     float h = this->FUN_00a011b0(0x1005);
@@ -112,19 +115,19 @@ bool Tile::RadialTile_SpecialBoundsCheck(float x, float y)
         scale = 1.0f;
     }
 
-    x *= scale;
-    y *= scale;
-    x -= a;
-    y -= h;
+    fx *= scale;
+    fy *= scale;
+    fx -= a;
+    fy -= h;
 
     float angle8;
-    if (y != 0.0f)
+    if (fy != 0.0f)
     {
-        angle8 = atan(-x / y);
+        angle8 = atan(-fx / fy);
     }
     else
     {
-        if (x > 0.0f)
+        if (fx > 0.0f)
         {
             angle8 = 1.57075f;
         }
@@ -134,12 +137,12 @@ bool Tile::RadialTile_SpecialBoundsCheck(float x, float y)
         }
     }
 
-    if (y > 0.0f)
+    if (fy > 0.0f)
     {
         angle8 += 3.14159;
     }
 
-    if (x < 0.0f && y < 0.0f)
+    if (fx < 0.0f && fy < 0.0f)
     {
         angle8 += 6.28318;
     }
@@ -147,10 +150,10 @@ bool Tile::RadialTile_SpecialBoundsCheck(float x, float y)
     if (q <= angle8 && angle8 <= a7)
     {
 
-        float mag5 = sqrt(x * x + y * y);
+        float mag5 = sqrt(fx * fx + fy * fy);
 
         BSString b(0);
-        BSStringT_char_SPrintF(&b, "--- fx %f fy %f  --- Magnitude: %f ", x, y, mag5);
+        BSStringT_char_SPrintF(&b, "--- fx %f fy %f  --- Magnitude: %f ", fx, fy, mag5);
         Warning_005b5e40(b.m_data);
 
         if (f <= mag5 && mag5 <= p)

@@ -30,6 +30,7 @@ class C6D170Timer
 };
 
 // @fnv 0x00c6d170
+// pdb: hkpClosestCdPointCollector::reset | bhkCharacterController.obj | debug, vtable slot, medium
 void C6D170Timer::Reset()
 {
     m_fTime = m_fRemaining = C6D170_MAX_REAL;
@@ -166,6 +167,7 @@ struct FUN_00c6d9c0
     FUN_00c6d9c0();
 
 // @fnv 0x00c6d9c0
+// pdb: hkpClosestCdPointCollector::`scalar deleting destructor' | bhkCharacterController.obj | retail, vtable slot, high
     virtual ~FUN_00c6d9c0()
     {}
 

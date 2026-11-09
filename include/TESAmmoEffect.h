@@ -6,6 +6,7 @@
 enum AMMO_EFFECT_TYPE;
 template <class T> class BSSimpleList;
 
+// pdb: class TESAmmoEffect, size 0x30, bases: TESForm, TESFullName, 1 members
 class TESAmmoEffect : public TESForm, public TESFullName
 {
 public:
@@ -20,10 +21,10 @@ public:
     void* DestroyIfFlagged(unsigned int flags);
     void SaveAmmoEffect();
     void CopyFromAmmoEffect(TESForm* form);
-    bool CompareAmmoEffect(TESForm* form);
+    bool CompareAmmoEffect(TESForm* apCompare);
     static float ApplyAmmoEffects(AMMO_EFFECT_TYPE type,
                                  BSSimpleList<TESAmmoEffect*>* effects,
                                  float value);
 
-    unsigned char effectData[12];
+    unsigned char data[12];
 };

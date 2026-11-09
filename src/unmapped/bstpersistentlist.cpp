@@ -27,6 +27,9 @@ struct FUN_00b63e90_cls
 };
 
 // @fnv 0x00b63e90
+// pdb: BSTPersistentList<NiTPointerAllocator<unsigned int>,BSShaderProperty::RenderPass *>::CleanUnusedNodes | BSBatchRenderer.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSTPersistentList<NiTPointerAllocator<unsigned int>,BSShaderProperty::RenderPass *>::RemoveAll
+// pdb locals: pitem, ptemp
 void FUN_00b63e90_cls::ReleasePoolNodes()
 {
     PoolNode_b1698* cur = m_0c;

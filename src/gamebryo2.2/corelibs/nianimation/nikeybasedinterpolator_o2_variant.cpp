@@ -12,11 +12,12 @@
 // @fnv 0x0064a290
 bool NiQuaternion::operator!=(const NiQuaternion& kOther) const
 {
-    return m_fVectorX != kOther.m_fVectorX || m_fVectorY != kOther.m_fVectorY || m_fVectorZ != kOther.m_fVectorZ ||
-           m_fScalarPart != kOther.m_fScalarPart;
+    return m_fW != kOther.m_fW || m_fX != kOther.m_fX || m_fY != kOther.m_fY ||
+           m_fZ != kOther.m_fZ;
 }
 
 // @fnv 0x00a3ca10
+// pdb: NiKeyBasedInterpolator::NiKeyBasedInterpolator | NiKeyBasedInterpolator.obj | retail, upstream name already matches, high
 NiKeyBasedInterpolator::NiKeyBasedInterpolator() throw()
 {
 }
@@ -36,6 +37,8 @@ NiKeyBasedInterpolator* __fastcall DeleteKeyBasedInterpolator(NiKeyBasedInterpol
 
 // The shared class has no declaration for the indexed-key helper.
 // @fnv 0x00a3ca80
+// pdb: NiKeyBasedInterpolator::GetKeyAt | NiKeyBasedInterpolator.obj | retail, object-file run extension, low
+// pdb params: uiWhichKey, usChannel
 NiAnimationKey* __fastcall GetInterpolatorKey(NiKeyBasedInterpolator* self, void*, unsigned int uiWhichKey,
                                           unsigned short usChannel)
 {
@@ -51,6 +54,8 @@ extern const char* _DAT_011f3740;
 
 // The StrArr viewer-string overload is not declared by the shared class.
 // @fnv 0x00a3cbf0
+// pdb: NiKeyBasedInterpolator::GetViewerStrings | NiKeyBasedInterpolator.obj | retail, call graph, high
+// pdb params: pkStrings
 void __fastcall GetKeyBasedViewerStrings(NiKeyBasedInterpolator* self, void*, StrArr* pkStrings)
 {
     typedef void(__thiscall * GetBaseViewerStrings)(NiInterpolator*, StrArr*);
@@ -74,6 +79,9 @@ extern float DAT_0109704c;
 extern float DAT_01015f5c;
 
 // @fnv 0x00a3cac0
+// pdb: NiKeyBasedInterpolator::GetActiveTimeRange | NiKeyBasedInterpolator.obj | retail, object-file run extension, low
+// pdb params: fBeginKeyTime, fEndKeyTime
+// pdb locals: ui, pkEndKey, pkBeginKey
 void NiKeyBasedInterpolator::GetInterpolatorTimeRange(float& fBeginKeyTime, float& fEndKeyTime) const
 {
     fBeginKeyTime = DAT_0109704c;

@@ -23,7 +23,7 @@ struct UnkHolder
 };
 extern "C" BSAudio* __cdecl hkMemoryRouter_getInstance();
 extern "C" void __cdecl CallSwappedArgs(BSAudio*, int);
-void __cdecl hkString_strFree(int a);
+void __cdecl hkString_strFree(int s);
 double __cdecl FUN_00ecdf2d(unsigned int value, int mode);
 float __cdecl ConvertToFloat(unsigned int value);
 hkBool StartsWith(const char* str, const char* prefix);
@@ -31,8 +31,8 @@ int __cdecl hkString_strLen(const char* text);
 bool* __cdecl EndsWith(bool* result, const char* text, const char* suffix);
 BSAudio* hkMemoryRouter_getInstance();
 void __cdecl hkString_strNdup(int a, int b, int c);
-void __cdecl hkString_strNdup_00cb13e0(int a, int b);
-void __cdecl hkString_strCpy(char* dest, const char* src);
+void __cdecl hkString_strNdup_00cb13e0(int src, int maxlen);
+void __cdecl hkString_strCpy(char* dst, const char* src);
 int __cdecl hkString_memCmp(const unsigned char* a, const unsigned char* b, unsigned int n);
 const char* __cdecl hkString_strRchr(const char* str, int c);
 int __cdecl hkString_lastIndexOf(const char* str, char c);
@@ -50,13 +50,15 @@ struct BoolGuard
 struct Cls
 {
     void __thiscall Other(int value);
-    void UpdateFields_00626420(int value);
+    void UpdateFields_00626420(int e);
 };
 
 // @fnv 0x00626420
 // src: GUESS 0x00626420 (confidence: low)
-void Cls::UpdateFields_00626420(int value)
+// pdb: hkArray<HavokError::hkFileLine,hkContainerHeapAllocator>::pushBack | HavokStream.obj | debug, call graph, high
+// pdb params: e
+void Cls::UpdateFields_00626420(int e)
 {
     BoolGuard g = {};
-    Other(g.Get(this, value));
+    Other(g.Get(this, e));
 }

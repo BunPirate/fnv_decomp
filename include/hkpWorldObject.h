@@ -11,6 +11,7 @@ struct hkFinishLoadedObjectFlagCD2C;
 
 typedef unsigned long hkUlong;
 
+// pdb: class hkpWorldObject, size 0x8c, bases: hkReferencedObject, 8 members
 class hkpWorldObject : public hkReferencedObject
 {
 public:
@@ -37,12 +38,12 @@ public:
 
     hkpWorld* getWorld() const;
 
-    void* m_pOwningWorld;
-    hkUlong m_ulUserData;
+    void* m_world;
+    hkUlong m_userData;
     hkpLinkedCollidable m_kCollidable;
-    hkMultiThreadCheck m_kMultiThreadCheck;
+    hkMultiThreadCheck m_multiThreadCheck;
     hkStringPtr m_name;
-    hkArray<hkpProperty> m_kProperties;
-    void* m_kNextStreamField;
-    void* m_pWorldObjectOwner;
+    hkArray<hkpProperty> m_properties;
+    void* m_aiData;
+    void* m_treeData;
 };

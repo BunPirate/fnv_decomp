@@ -7,6 +7,7 @@
 
 class BSMultiBoundShape;
 
+// pdb: class BSMultiBound, size 0x10, bases: NiObject, 2 members
 class BSMultiBound : public NiObject
 {
 public:
@@ -34,6 +35,6 @@ public:
     bool IsKindOfType(const NiRTTI* type);
 
 
-    unsigned int m_uiBoundFlags;
-    NiPointer<BSMultiBoundShape> pShape;
+    unsigned int uiBoundFrameCount;
+    NiPointer<BSMultiBoundShape> spShape;
 };

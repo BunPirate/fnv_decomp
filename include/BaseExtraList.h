@@ -2,6 +2,7 @@
 
 class BSExtraData;
 
+// pdb: class BaseExtraList, size 0x20, 2 members
 class BaseExtraList
 {
 public:
@@ -16,6 +17,6 @@ public:
     BSExtraData* GetExtraData(unsigned char type) const;
     BSExtraData* AddExtra(BSExtraData* extra);
     bool HasExtraData(unsigned char type);
-    void RemoveExtra(unsigned char type);
-    void RemoveExtra(unsigned int type);
+    void RemoveExtra(unsigned char acType);
+    void RemoveExtra(unsigned int acType);
 };

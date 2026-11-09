@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class NiFrustum, size 0x1c, 7 members
 class NiFrustum
 {
 public:
@@ -16,5 +17,5 @@ public:
     // Call the ctor entries explicitly so other units retain POD default construction.
     void Init(bool orthographic); // exe 0x00a71b70
     void Init(float left, float right, float top, float bottom, float nearPlane, float farPlane, bool orthographic); // exe 0x00a71b80
-    char* GetViewerString_00a71bc0(const char*);
+    char* GetViewerString(const char*);
 };

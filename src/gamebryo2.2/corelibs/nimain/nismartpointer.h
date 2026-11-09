@@ -42,13 +42,15 @@ template <class T> inline NiPointer<T>& NiPointer<T>::operator=(const NiPointer<
 }
 
 // @fnv 0x0044b070
-template <> NiPointer<KFModel>& NiPointer<KFModel>::operator=(KFModel* object)
+// pdb: NiPointer<KFModel>::operator= | ModelLoader.obj | debug, call graph, high
+// pdb params: pObject
+template <> NiPointer<KFModel>& NiPointer<KFModel>::operator=(KFModel* pObject)
 {
-    if (m_pObject != object)
+    if (m_pObject != pObject)
     {
         if (m_pObject)
             m_pObject->KFModel_DecRefCount();
-        m_pObject = object;
+        m_pObject = pObject;
         if (m_pObject)
             m_pObject->KFModel_IncRefCount();
     }
@@ -56,6 +58,8 @@ template <> NiPointer<KFModel>& NiPointer<KFModel>::operator=(KFModel* object)
 }
 
 // @fnv 0x0044b220
+// pdb: NiPointer<LoadedFile>::operator= | ModelLoader.obj | debug, object-file gap fill, medium
+// pdb params: pObject
 template <> NiPointer<LoadedFile>& NiPointer<LoadedFile>::operator=(LoadedFile* object)
 {
     if (m_pObject != object)
@@ -70,6 +74,8 @@ template <> NiPointer<LoadedFile>& NiPointer<LoadedFile>::operator=(LoadedFile* 
 }
 
 // @fnv 0x006e5cc0
+// pdb: NiPointer<ObstacleUndoData>::operator= | NavMesh_LoadSave.obj | debug, call graph, medium
+// pdb params: ptr
 template <> NiPointer<WaitableObject>& NiPointer<WaitableObject>::operator=(const NiPointer<WaitableObject>& other)
 {
     if (m_pObject != other.m_pObject)
@@ -93,21 +99,27 @@ MemoryManager* MemoryManager_Instance()
 }
 
 // @fnv 0x0042f4c0
+// pdb: NavMeshPtr::operator= | ExtraDataList.obj | debug, call graph, medium
+// pdb params: ptr
 NavMeshPtr& NavMeshPtr::operator=(const NavMeshPtr& other)
 {
     return AssignRetainedObject_0042fdc0(other);
 }
 
 // @fnv 0x006d1bc0
-void PathingRequest::SetDestination(PathingLocation* value)
+// pdb: PathingRequest::SetDestination | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: aDestination
+void PathingRequest::SetDestination(PathingLocation* aDestination)
 {
-    Destination = *value;
+    Destination = *aDestination;
 }
 
 // @fnv 0x006d61e0
-void PathingRequest::SetAvoidNodeArray(BSSimpleArray<void*, 1024>* value)
+// pdb: PathingRequest::SetAvoidNodeArray | Pathfind.obj | debug, upstream name already matches, high
+// pdb params: apAvoidNodeArray
+void PathingRequest::SetAvoidNodeArray(BSSimpleArray<void*, 1024>* apAvoidNodeArray)
 {
-    m_pPathingAvoidNodeArray = reinterpret_cast<PathingAvoidNodeArray*>(value);
+    spAvoidNodeArray = reinterpret_cast<PathingAvoidNodeArray*>(apAvoidNodeArray);
 }
 
 #pragma optimize("gty", on)
@@ -121,16 +133,22 @@ template <> NiPointer<NiD3DPixelShader>::~NiPointer()
 #pragma optimize("", off)
 
 // @fnv 0x004483e0
-KFModel* KFModelLookup::Lookup(const char* key)
+// src: XBOX_RETAIL_PDB 0x004483e0
+// pdb: ModelLoader::FindKFModel | ModelLoader.obj | retail, object-file run extension, high
+// pdb params: apAnimGroup
+// pdb locals: iterator, pkfModel, pfileName
+KFModel* KFModelLookup::ModelLoader_FindKFModel(const char* apFilename)
 {
     KFModel* result = 0;
-    if (table->Lookup(key, result))
+    if (table->Lookup(apFilename, result))
         return result;
     return 0;
 }
 
 #pragma optimize("gty", on)
 // @fnv 0x00a5f860
+// pdb: NiXenonDirect3DTexture::NiXenonDirect3DTexture | NiXenonDirect3DTexture.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPointer<NiD3DPixelShader>::operator=
 template <> NiPointer<NiGPUProgram>& NiPointer<NiGPUProgram>::operator=(NiGPUProgram* object)
 {
     NiGPUProgram* previous = m_pObject;
@@ -148,6 +166,8 @@ template <> NiPointer<NiGPUProgram>& NiPointer<NiGPUProgram>::operator=(NiGPUPro
 
 #pragma optimize("gty", on)
 // @fnv 0x00a67260
+// pdb: NiGeometryData::SetAdditionalGeometryData | NiGeometryData.obj | debug, call graph, low
+// pdb params: pkAddData
 void NiGPUProgramOwner::SetProgram(NiGPUProgram* object)
 {
     NiGPUProgram* previous = program;
@@ -163,6 +183,9 @@ void NiGPUProgramOwner::SetProgram(NiGPUProgram* object)
 #pragma optimize("", off)
 
 // @fnv 0x008df900
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::AddUninitialized | HighProcess.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ActorPathingMessageQueue::ActorPathingMessageQueue
+// pdb locals: inewSize
 ActorPathingMessageQueue::ActorPathingMessageQueue() : BSTCommonLLMessageQueue<QueuedMessage>(&g_011d77f0)
 {}
 

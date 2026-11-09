@@ -29,6 +29,9 @@ struct FUN_00bdac00_t : BSShaderPPLightingProperty
 
 // @fnv 0x00bdac00
 // src: XBOX_PDB 0x00bdac00
+// pdb: BSShaderPPLightingProperty::AddTexturePass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, string-set bridge, high
+// pdb params: apGeom, apLight, asCount, abUpdateList, abFirst, abSkinned, abMultitexture, abFacegenBlend, abVertexColors, abTreeBranch, abHair
+// pdb locals: ppass, pname, perror
 void* FUN_00bdac00_t::BSShaderPPLightingProperty_AddTexturePass_1x(NiGeometry* apGeom, ShadowSceneLight* apLight, unsigned short* asCount,
                                    bool abUpdateList, bool* abFirst, bool abSkinned, bool abMultitexture,
                                    bool abFacegenBlend, bool abVertexColors, bool abTreeBranch, bool abHair)

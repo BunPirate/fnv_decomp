@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class BSTaskletGroupData, size 0x8 (here 0x4), 1 members
 class BSTaskletGroupData
 {
 public:

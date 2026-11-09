@@ -13,6 +13,10 @@ NiTriBasedGeomData* __fastcall InitializeTriBasedGeomData(NiTriBasedGeomData* p)
 
 // @fnv 0x00a75e20
 // src: EXE 0x00a75e20
+// pdb: NiTriStripsData::NiTriStripsData | NiTriStripsData.obj | retail, call graph, low
+// pdb note: debug build links it to NiDirectionalLight::~NiDirectionalLight
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, usStrips, pusStripLengths, pusStripLists
+// pdb locals: usTriangleCount, i
 NiTriStripsData* __fastcall NiTriStripsData_NiTriStripsData(NiTriStripsData* self)
 {
     InitializeTriBasedGeomData(self);
@@ -41,8 +45,12 @@ struct SharedData_S
 void _NiFree(void*);
 
 // @fnv 0x00a760c0
+// src: XBOX_RETAIL_PDB 0x00a760c0
+// pdb: NiTriStripsData::Replace | NiTriStripsData.obj | retail, object-file gap fill, high
+// pdb params: usStrips, pusStripLengths, pusStripLists
+// pdb locals: i
 // The shared header has no strip replacement member; preserve its thiscall ABI with an unused EDX argument.
-void __fastcall SetTriangleStripData(NiTriStripsData* self, void*, unsigned short count,
+void __fastcall NiTriStripsData_Replace(NiTriStripsData* self, void*, unsigned short count,
                                      unsigned short* data1, unsigned short* data2)
 {
     SharedData_S* sharedData = (SharedData_S*)self->GetGroup();
@@ -89,6 +97,10 @@ void __fastcall SetTriangleStripData(NiTriStripsData* self, void*, unsigned shor
 }
 
 // @fnv 0x00a75dc0
+// pdb: NiTriStripsData::NiTriStripsData | NiTriStripsData.obj | retail, call graph (shared callers), medium
+// pdb note: debug build links it to NiDirectionalLight::`scalar deleting destructor'
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, usStrips, pusStripLengths, pusStripLists
+// pdb locals: usTriangleCount, i
 NiTriStripsData::NiTriStripsData(unsigned short vertices, NiPoint3* vertexData, NiPoint3* normalData,
                                NiColorA* colors, NiPoint2* textures, unsigned short textureSets,
                                NiGeometryData__DataFlags flags, unsigned short triangles,
@@ -102,6 +114,8 @@ NiTriStripsData::NiTriStripsData(unsigned short vertices, NiPoint3* vertexData, 
 unsigned int __fastcall GetGeometryBlockAllocationSize(NiGeometryData*);
 
 // @fnv 0x00a76020
+// pdb: NiTriStripsData::GetBlockAllocationSize | NiTriStripsData.obj | retail, object-file gap fill, high
+// pdb locals: uiSize
 unsigned int __fastcall GetTriangleStripBlockAllocationSize(NiTriStripsData* self)
 {
     unsigned short listLen = self->m_usTriangles + self->m_usStrips * 2;
@@ -154,6 +168,9 @@ template <class T> inline void A76340SaveBinary(NiStream& kStream, const T* pVal
 }
 
 // @fnv 0x00a76340
+// pdb: NiTriStripsData::SaveBinary | NiTriStripsData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bHasList
 void NiTriStripsData::SaveBinary(NiStream& kStream)
 {
     NiTriBasedGeomData::SaveBinary(kStream);
@@ -193,6 +210,8 @@ unsigned int NiGetViewerString_00a7d5a0(const void*, const void*);
 void __fastcall AppendTriangleDataViewerStrings(NiTriBasedGeomData*, void*, StripViewerArray&);
 
 // @fnv 0x00a76430
+// pdb: NiTriStripsData::GetViewerStrings | NiTriStripsData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall GetTriangleStripViewerStrings(NiTriStripsData* self, void* unused, StripViewerArray& stream)
 {
     AppendTriangleDataViewerStrings(self, unused, stream);
@@ -266,21 +285,24 @@ struct SharedView
 }  // namespace fnv_00a761c0
 
 // @fnv 0x00a761c0
-void NiTriStripsData::LoadBinary(NiStream& stream)
+// pdb: NiTriStripsData::LoadBinary | NiTriStripsData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bHasList, uiStripLengthSum
+void NiTriStripsData::LoadBinary(NiStream& kStream)
 {
     using namespace fnv_00a761c0;
-    NiTriBasedGeomData::LoadBinary(stream);
-    InputStream(stream)->Read(&m_usStrips, 2, 2);
+    NiTriBasedGeomData::LoadBinary(kStream);
+    InputStream(kStream)->Read(&m_usStrips, 2, 2);
     if (m_usStrips > 0)
     {
         if (GetGroup())
             m_pusStripLengths = (unsigned short*)((SharedView*)GetGroup())->Allocate(m_usStrips * sizeof(unsigned short));
         else
             m_pusStripLengths = (unsigned short*)_NiMalloc_00aa1070(m_usStrips * sizeof(unsigned short));
-        InputStream(stream)->Read(m_pusStripLengths, m_usStrips * 2, 2);
+        InputStream(kStream)->Read(m_pusStripLengths, m_usStrips * 2, 2);
         bool present;
-        if (FileVersion(stream) >= 0x0a000111)
-            InputStream(stream)->Read(&present, 1, 1);
+        if (FileVersion(kStream) >= 0x0a000111)
+            InputStream(kStream)->Read(&present, 1, 1);
         else
             present = true;
         if (present)
@@ -290,13 +312,16 @@ void NiTriStripsData::LoadBinary(NiStream& stream)
                 m_pusStripLists = (unsigned short*)((SharedView*)GetGroup())->Allocate(count * sizeof(unsigned short));
             else
                 m_pusStripLists = (unsigned short*)_NiMalloc_00aa1070(count * sizeof(unsigned short));
-            InputStream(stream)->Read(m_pusStripLists, count * 2, 2);
+            InputStream(kStream)->Read(m_pusStripLists, count * 2, 2);
         }
     }
 }
 
 // The shared strip-data header has no triangle-index override.
 // @fnv 0x00a75e40
+// pdb: NiTriStripsData::GetTriangleIndices | NiTriStripsData.obj | retail, object-file gap fill, high
+// pdb params: i, i0, i1, i2
+// pdb locals: usTriangles, usStrip, pusStripLists
 void __fastcall GetTriangleStripIndices(const NiTriStripsData* self, void*, unsigned short i,
                                         unsigned short& i0, unsigned short& i1, unsigned short& i2)
 {
@@ -332,6 +357,9 @@ struct TriangleCountComparison
 };
 
 // @fnv 0x00a75f80
+// pdb: NiTriStripsData::IsEqual | NiTriStripsData.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkData, i, uiStripLengthSum
 bool NiTriStripsData::IsEqual(NiObject* object) const
 {
     NiTriStripsData* pkObject = static_cast<NiTriStripsData*>(object);
@@ -385,6 +413,7 @@ inline void ReleaseShared(NiSharedDataA76* pkShared) throw()
 NiObjectGroup* __fastcall GetGeometryObjectGroup(NiObject*) throw();
 
 // @fnv 0x00a76040
+// pdb: NiTriStripsData::~NiTriStripsData | NiTriStripsData.obj | retail, upstream name already matches, high
 NiTriStripsData::~NiTriStripsData()
 {
     if (GetGeometryObjectGroup(this))
@@ -401,6 +430,8 @@ NiTriStripsData::~NiTriStripsData()
 
 // @fnv 0x00a75ec0
 // src: EXE 0x00a75ec0
+// pdb: NiTriStripsData::CreateObject | NiTriStripsData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiTriBasedGeomData* __fastcall NiTriStripsData_CreateObject(NiTriBasedGeomData*)
 {
     NiTriStripsData* p = (NiTriStripsData*)BSFadeNode::operator new(sizeof(NiTriStripsData));

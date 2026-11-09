@@ -4,6 +4,7 @@
 #include "BGSZoneTargetListener.h"
 #include "NiPoint3.h"
 
+// pdb: class TESWaterListener, size 0x40 (here 0xc), bases: bhkWaterListener, BGSZoneTargetListener, 7 members
 class TESWaterListener : public bhkWaterListener, public BGSZoneTargetListener
 {
 public:

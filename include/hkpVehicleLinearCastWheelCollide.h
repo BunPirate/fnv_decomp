@@ -22,6 +22,7 @@ class hkpCollidable;
 
 typedef unsigned int hkUint32;
 
+// pdb: class hkpVehicleLinearCastWheelCollide, size 0x34, bases: hkpVehicleWheelCollide, 5 members
 class hkpVehicleLinearCastWheelCollide : public hkpVehicleWheelCollide
 {
 public:
@@ -30,10 +31,10 @@ public:
 
     virtual int GetTotalHits() const;
     virtual int getNumHits(unsigned char ucWheel) const;
-    virtual int buildLinearCastCommands(const hkpVehicleInstance* vehicle, const hkpCollisionFilter* filter,
-                            hkpCollidable* collidables, hkpPairLinearCastCommand* commands,
-                            hkpRootCdPoint* results) const throw();
-    virtual hkContactPoint* determineNearestHit(int iWheel, LCHit* pHits);
+    virtual int buildLinearCastCommands(const hkpVehicleInstance* vehicle, const hkpCollisionFilter* collisionFilter,
+                            hkpCollidable* collidableStorage, hkpPairLinearCastCommand* commandStorage,
+                            hkpRootCdPoint* outputStorage) const throw();
+    virtual hkContactPoint* determineNearestHit(int numWheel, LCHit* commandStorageOutput);
     virtual char* castQuery(char* found, hkpVehicleInstance* vehicle, unsigned char iWheel,
                             LCWheelCastOut* out);
     virtual void applyHit(hkpVehicleInstance* vehicle, unsigned char iWheel,
@@ -44,31 +45,31 @@ public:
     static void operator delete(void* p) throw();
 
     void InitializeWheelCollisions(const hkpVehicleInstance* vehicle) throw();
-    void UpdateAllWheels(int unused, hkpVehicleInstance* vehicle, WheelCollideResult* results);
-    void getPhantoms(hkArray<hkpPhantom*>* output);
-    void UpdateWheelAabb(unsigned char wheelIndex);
-    hkpVehicleLinearCastWheelCollide* CloneWithChassis(const hkpRigidBody& chassis,
-                                                      const hkArray<hkpPhantom*>& phantoms) const throw();
+    void UpdateAllWheels(int deltaTime, hkpVehicleInstance* vehicle, WheelCollideResult* cdInfoOut);
+    void getPhantoms(hkArray<hkpPhantom*>* phantomsOut);
+    void UpdateWheelAabb(unsigned char vehicle);
+    hkpVehicleLinearCastWheelCollide* CloneWithChassis(const hkpRigidBody& newChassis,
+                                                      const hkArray<hkpPhantom*>& newPhantoms) const throw();
     void addToWorld_00e36870(hkpWorld* world);
     void removeFromWorld();
     void SetTargetArg(void* arg);
-    void centerWheelContactPoint(int unused, unsigned char wheelIndex, hkVector4* result);
+    void centerWheelContactPoint(int vehicle, unsigned char wheelIndex, hkVector4* cdInfo);
     int getNumHits(int iWheel);
-    unsigned int getNumCommands(unsigned char wheelIndex);
+    unsigned int getNumCommands(unsigned char numWheel);
     void CastWheel(int hitOut, hkUint32 unused, unsigned char wheelIndex, int context);
-    void SetWheelPhantoms(const hkpVehicleInstance* vehicle,
-                          const hkArray<hkReferencedObject*>& phantoms);
-    hkpShape* hkpVehicleLinearCastWheelCollide_createWheelShape(hkReal height, hkReal radius) throw();
-    void hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(const hkpVehicleInstance* vehicle, unsigned char wheelIndex,
-                      hkAabb& aabb) throw();
+    void setWheelShapes(const hkpVehicleInstance* vehicle,
+                          const hkArray<hkReferencedObject*>& shapes);
+    hkpShape* hkpVehicleLinearCastWheelCollide_createWheelShape(hkReal width, hkReal radius) throw();
+    void hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(const hkpVehicleInstance* vehicle, unsigned char wheelNum,
+                      hkAabb& aabbOut) throw();
     void hkpVehicleLinearCastWheelCollide_updateWheelState(const hkpVehicleInstance* vehicle, unsigned char wheelIndex) throw();
-    void hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(unsigned char wheelIndex, unsigned char stateIndex, hkAabb* aabb);
+    void hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(unsigned char wheelIndex, unsigned char wheelNum, hkAabb* aabbOut);
     void hkpVehicleLinearCastWheelCollide_updateWheelState(unsigned char wheelIndex, unsigned char stateIndex);
 
-    hkUint32 m_uiWheelCount;
-    hkArray<hkpVehicleLinearCastWheelCollideWheelState> m_kWheelStates;
-    hkpRejectChassisListener m_kRejectChassisListener;
-    hkReal m_fMaxExtraPenetration;
-    hkReal m_fMaxExtraPenetrationAgainstFixed;
+    hkUint32 m_wheelCollisionFilterInfo;
+    hkArray<hkpVehicleLinearCastWheelCollideWheelState> m_wheelStates;
+    hkpRejectChassisListener m_rejectChassisListener;
+    hkReal m_maxExtraPenetration;
+    hkReal m_startPointTolerance;
 };
 

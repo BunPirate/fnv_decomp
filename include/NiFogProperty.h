@@ -3,6 +3,7 @@
 #include "NiProperty.h"
 #include "NiColor.h"
 
+// pdb: class NiFogProperty, size 0x2c, bases: NiProperty, 3 members
 class NiFogProperty : public NiProperty
 {
   public:
@@ -11,7 +12,7 @@ class NiFogProperty : public NiProperty
 
     void SetColor(const NiColor& color);
 
-    unsigned short m_uiObjectFlags;
-    float m_fFogDepth;
-    NiColor m_kFogTint;
+    unsigned short m_uFlags;
+    float m_fDepth;
+    NiColor m_kColor;
 };

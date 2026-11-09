@@ -16,13 +16,13 @@ void __cdecl Object_ForwardCall_00d48640(int a, int b)
     Object_ForwardCall_00d48620(a, b, 1);
 }
 
-extern "C" void __cdecl Object_ProcessAndReturnValue_00d485a0(int, int, int, int, int);
+extern "C" void __cdecl hkSerializeUtil_saveTagfile(int, int, int, int, int);
 
 // @fnv 0x00d48660
 // src: GUESS 0x00d48660 (confidence: low)
 void __cdecl Object_ForwardCall_00d48660(int a, int b, int c)
 {
-    Object_ProcessAndReturnValue_00d485a0(a, b, c, 1, 0);
+    hkSerializeUtil_saveTagfile(a, b, c, 1, 0);
 }
 
 extern int DAT_0102e388;
@@ -38,6 +38,7 @@ struct FUN_00dcc160_cls
 
 // @fnv 0x00dcc160
 // src: GUESS 0x00dcc160 (confidence: low)
+// pdb: hkIstream::~hkIstream | hkIStream.obj | retail, call graph, medium
 void FUN_00dcc160_cls::SetVirtualTable_00dcc160()
 {
     hkReferencedObject* old = b;
@@ -120,30 +121,33 @@ struct GlobalDispatch
 extern GlobalDispatch* DAT_01269b74;
 // @fnv 0x00d484a0
 // src: XBOX_PDB 0x00d484a0
-int __cdecl hkSerializeUtil_savePackfile(int a1, int a2, int a3, int a4, int useLocal, int a6)
+// pdb: hkSerializeUtil::savePackfile | hkSerializeUtil.obj | retail, upstream name already matches, high
+// pdb params: object, klass, writer, options, binary, userListener
+// pdb locals: pw
+int __cdecl hkSerializeUtil_savePackfile(int object, int klass, int writer, int options, int binary, int userListener)
 {
-    if (a3)
+    if (writer)
     {
-        if (useLocal)
+        if (binary)
         {
             FUN_00dbc670_storage msgStorage;
             FUN_00dbc670_shell* shell = (FUN_00dbc670_shell*)&msgStorage;
             shell->FUN_00dbc670();
-            shell->hkPackfileWriter_setContents(a1, a2, a6);
-            int result = shell->ProcessPoly(a3, a4);
+            shell->hkPackfileWriter_setContents(object, klass, userListener);
+            int result = shell->ProcessPoly(writer, options);
             shell->SetVirtualTableAndProcessState_00dbc6e0();
             return result;
         }
-        return DAT_01269b74->Dispatch(a1, a2, a3, a4, a6);
+        return DAT_01269b74->Dispatch(object, klass, writer, options, userListener);
     }
     return 1;
 }
 
-extern void* hkSerializeUtil_load(void* obj_b, int a2, int a3);
+extern void* hkSerializeUtil_load(void* streamIn, int errorOut, int classReg);
 
 struct CtorBox
 {
-    CtorBox* InitFromValue(void* arg);
+    CtorBox* hkIstream_ctor(void* fname);
     void SetVirtualTable_00dcc160();
 
     void* f0;
@@ -154,11 +158,14 @@ struct CtorBox
 // Constructs a CtorBox from a1, calls FUN_00d48d30 on its b field with a2 and a3, destroys the box, and returns the result.
 // @fnv 0x00d48ec0
 // src: XBOX_PDB 0x00d48ec0
-void* __cdecl hkSerializeUtil_load_00d48ec0(void* a1, int a2, int a3)
+// pdb: hkSerializeUtil::load | hkSerializeUtil.obj | retail, object-file gap fill, high
+// pdb params: streamIn, errorOut, classReg
+// pdb locals: details, world, assertBuf, ostr
+void* __cdecl hkSerializeUtil_load_00d48ec0(void* filename, int resultOut, int classReg)
 {
     CtorBox obj;
-    CtorBox* p = obj.InitFromValue(a1);
-    void* res = hkSerializeUtil_load(p->b, a2, a3);
+    CtorBox* p = obj.hkIstream_ctor(filename);
+    void* res = hkSerializeUtil_load(p->b, resultOut, classReg);
     obj.SetVirtualTable_00dcc160();
     return res;
 }
@@ -168,8 +175,8 @@ void* __cdecl hkString_memSet(void* destination, int value, int size);
 int __cdecl hkString_memCmp(const void* left, const void* right, int size);
 int __cdecl hkString_strCmp(const char* left, const char* right);
 const char* __cdecl hkVersionUtil_getCurrentVersion();
-int __cdecl CreateResourceFromArray(void* input, int arg2, int flags);
-int __cdecl hkSerializeUtil_load(void* input, int arg2, int arg3);
+int __cdecl hkNativePackfileUtils_load(void* packfileData, int dataSize, int userRegistry);
+int __cdecl hkSerializeUtil_load(void* streamIn, int errorOut, int classReg);
 extern int DAT_011b7b88;
 struct Header180
 {
@@ -202,21 +209,24 @@ struct Object180
     void* unk00;
     int unk04;
     void* unk08;
-    Object180* __thiscall hkIstream_hkIstream_00dcc6a0(void* input, int arg2);
+    Object180* __thiscall hkIstream_ctor(void* mem, int memSize);
     void __thiscall SetVirtualTable_00dcc160();
 };
 // @fnv 0x00d48f00
 // src: XBOX_PDB 0x00d48f00
-int __cdecl hkSerializeUtil_load_00d48f00(Header180* pHeader, int arg2, int arg3, int arg4)
+// pdb: hkSerializeUtil::load | hkSerializeUtil.obj | retail, object-file gap fill, high
+// pdb params: streamIn, errorOut, classReg
+// pdb locals: details, world, assertBuf, ostr
+int __cdecl hkSerializeUtil_load_00d48f00(Header180* buf, int buflen, int resultOut, int classReg)
 {
     Header180 defaultHeader;
-    if (pHeader->unk00 == defaultHeader.unk00 && pHeader->unk04 == defaultHeader.unk04 &&
-        hkString_memCmp(&pHeader->unk10, &DAT_011b7b88, 4) == 0 && hkString_strCmp(&pHeader->unk28, hkVersionUtil_getCurrentVersion()) == 0)
-        return CreateResourceFromArray(pHeader, arg2, 0);
+    if (buf->unk00 == defaultHeader.unk00 && buf->unk04 == defaultHeader.unk04 &&
+        hkString_memCmp(&buf->unk10, &DAT_011b7b88, 4) == 0 && hkString_strCmp(&buf->unk28, hkVersionUtil_getCurrentVersion()) == 0)
+        return hkNativePackfileUtils_load(buf, buflen, 0);
     Object180 wrapper;
-    Object180* result = wrapper.hkIstream_hkIstream_00dcc6a0(pHeader, arg2);
+    Object180* result = wrapper.hkIstream_ctor(buf, buflen);
     void* payload = result->unk08;
-    int value = hkSerializeUtil_load(payload, arg3, arg4);
+    int value = hkSerializeUtil_load(payload, resultOut, classReg);
     wrapper.SetVirtualTable_00dcc160();
     return value;
 }
@@ -235,14 +245,17 @@ struct S_00d49310_Result
     S_00d49310_Result(int v) : m_uiFilterValue(v)
     {}
 };
-void hkSerializeUtil_detectFormat(void* stream, int* out) throw();
+void hkSerializeUtil_detectFormat(void* reader, int* details) throw();
 // @fnv 0x00d49310
 // src: XBOX_PDB 0x00d49310
-S_00d49310_Result hkSerializeUtil_detectFormat_00d49310(void* stream)
+// pdb: hkSerializeUtil::detectFormat | hkSerializeUtil.obj | retail, object-file gap fill, high
+// pdb params: reader, details
+// pdb locals: buf, packfileActual, assertBuf, ostr, header, classVersionString
+S_00d49310_Result hkSerializeUtil_detectFormat_00d49310(void* reader)
 {
     S_00d49310_Lock lock;
     int res;
-    hkSerializeUtil_detectFormat(stream, &res);
+    hkSerializeUtil_detectFormat(reader, &res);
     return S_00d49310_Result(res);
 }
 
@@ -261,9 +274,11 @@ static inline int StringCompare(const char* a, const char* b)
 
 // The unused EDX argument keeps the original ECX string / stack text calling convention.
 // @fnv 0x00d49350
+// pdb: hkStringPtr::operator== | hkSerializeUtil.obj | retail, call graph (shared callers), high
+// pdb params: cptr
 int __fastcall StringEquals(const hkStringPtr* text, void*, const char* aString)
 {
-    return StringCompare(reinterpret_cast<const char*>(reinterpret_cast<std::size_t>(text->m_pcText) & ~std::size_t(1)), aString) == 0;
+    return StringCompare(reinterpret_cast<const char*>(reinterpret_cast<std::size_t>(text->m_stringAndFlag) & ~std::size_t(1)), aString) == 0;
 }
 
 struct FUN_00d493a0_cls
@@ -277,6 +292,8 @@ struct FUN_00d493a0_cls
 
 // Compares the four bytes m_00..m_03 against the first four bytes of tag, stores the result in out and returns out.
 // @fnv 0x00d493a0
+// pdb: hkVersionPatchManager::getPatchIndex | hkSerializeUtil.obj | debug, object-file gap fill, medium
+// pdb params: uid
 bool* FUN_00d493a0_cls::MatchesTag(bool* pbResult, const char* tag)
 {
     bool r;
@@ -303,7 +320,7 @@ struct D493E0Ref
 
 struct D493E0Registry
 {
-    D493E0Object* find(const void* key, int flags) const;
+    D493E0Object* find(const void* object, int klass) const;
 };
 
 struct D493E0Loader
@@ -318,6 +335,8 @@ struct D493E0Loader
 
 // Looks up key in m_registry when key is non-null and returns a D493E0Ref wrapping the found object, otherwise a null D493E0Ref.
 // @fnv 0x00d493e0
+// pdb: `anonymous namespace'::ForwardingPackfileListerer::wrapObject | hkSerializeUtil.obj | debug, object-file gap fill, medium
+// pdb params: object, klass
 D493E0Ref D493E0Loader::FindObject(const void* key, int flags) const
 {
     if (key)
@@ -359,7 +378,7 @@ struct Obj2
 
 struct Obj1
 {
-    void AssignRef(Obj2* apArg);
+    void hkDataObject_ctor(Obj2* o);
 };
 
 struct PairVt
@@ -383,6 +402,9 @@ struct FUN_00d49420_cls
 };
 
 // @fnv 0x00d49420
+// pdb: `anonymous namespace'::ForwardingPackfileListerer::addDataObjectCallback | hkSerializeUtil.obj | retail, vtable slot, high
+// pdb params: object
+// pdb locals: dataClass, classPtr, h, objPtr
 Obj1* FUN_00d49420_cls::ProcessPair(Obj1* apArg1, Obj2* apArg2)
 {
     if (m_08 != 0)
@@ -417,21 +439,21 @@ Obj1* FUN_00d49420_cls::ProcessPair(Obj1* apArg1, Obj2* apArg2)
             }
         }
     }
-    apArg1->AssignRef(apArg2);
+    apArg1->hkDataObject_ctor(apArg2);
     return apArg1;
 }
 
 extern volatile int DAT_01269b70;
 
 // src: GUESS 0x00d48950 (confidence: low)
-static __declspec(noinline) int Hkserializeutil_UpdateState_00d48950(int d, int a, int b, int c)
+static __declspec(noinline) int anonymous_namespace_checkTagfileWorld(int world, int errorOut, int versionManager, int classReg)
 {
-    int* pb = &b;
-    if (d)
+    int* pb = &versionManager;
+    if (world)
     {
-        return a;
+        return errorOut;
     }
-    return *pb + c;
+    return *pb + classReg;
 }
 
 struct Holder_cls
@@ -450,34 +472,37 @@ struct Pending_cls
 
 struct Owner_cls
 {
-    int hkVersionPatchManager_applyPatches(int a, int b);
+    int hkVersionPatchManager_applyPatches(int worldToUpdate, int finalClassesReg);
 };
 
 // Initialises a Pending_cls and Holder_cls, then returns 1 if a condition on edi_in fails, otherwise calls Owner_cls::FUN_00dba0d0.
 // @fnv 0x00d48a90
-// src: GUESS 0x00d48a90 (confidence: low)
-static __declspec(noinline) int hkBinaryTagfileReader_load_EvaluateValue_00d48a90(int a1, int esi_in, int edi_in, int ebx_in)
+// src: XBOX_RETAIL_PDB 0x00d48a90
+// pdb: `anonymous namespace'::loadBinaryTagfileIntoWorld | hkSerializeUtil.obj | retail, call graph, high
+// pdb params: streamIn, world, errorOut, classReg
+// pdb locals: reader
+static __declspec(noinline) int anonymous_namespace_loadBinaryTagfileIntoWorld(int streamIn, int world, int errorOut, int classReg)
 {
     Pending_cls p;
     Holder_cls h;
 
     p.FUN_00dc5d30();
-    p.hkBinaryTagfileReader_load(&h, a1, esi_in);
+    p.hkBinaryTagfileReader_load(&h, streamIn, world);
     h.ReleaseStorage_00dba7f0();
 
-    if (edi_in != 0)
+    if (errorOut != 0)
     {
-        if (Hkserializeutil_UpdateState_00d48950(edi_in, esi_in, DAT_01269b70, ebx_in) == 0)
+        if (anonymous_namespace_checkTagfileWorld(errorOut, world, DAT_01269b70, classReg) == 0)
         {
             return 1;
         }
     }
-    return ((Owner_cls*)DAT_01269b70)->hkVersionPatchManager_applyPatches(esi_in, ebx_in);
+    return ((Owner_cls*)DAT_01269b70)->hkVersionPatchManager_applyPatches(world, classReg);
 }
 
 int __cdecl S00d48a90_Entry(int a1)
 {
-    return hkBinaryTagfileReader_load_EvaluateValue_00d48a90(a1, 0, 0, 0);
+    return anonymous_namespace_loadBinaryTagfileIntoWorld(a1, 0, 0, 0);
 }
 
 struct S00d48d30_Bool
@@ -549,98 +574,101 @@ extern const char str_010cfab8[];
 extern const char str_010cfa94[];
 
 int S00d48d30_Finish(int opts);
-void hkSerializeUtil_detectFormat(void* stream, int* out) throw();
-int __cdecl hkDataObjectUtil_toResourceWithRegistry(const S00d48d30_Ref& r, int opts);
+void hkSerializeUtil_detectFormat(void* reader, int* details) throw();
+int __cdecl hkDataObjectUtil_toResourceWithRegistry(const S00d48d30_Ref& r, int classReg);
 
 // src: GUESS 0x00d48a90 (confidence: low)
-static __declspec(noinline) int hkBinaryTagfileReader_load_EvaluateValue_00d48a90(S00d48d30_Stream* s, S00d48d30_Reader* reader, S00d48d30_Result* out)
+static __declspec(noinline) int anonymous_namespace_loadBinaryTagfileIntoWorld(S00d48d30_Stream* streamIn, S00d48d30_Reader* world, S00d48d30_Result* errorOut)
 {
-    reader->prepare();
-    if (reader->open(s) == 0)
+    world->prepare();
+    if (world->open(streamIn) == 0)
     {
-        if (out != 0)
+        if (errorOut != 0)
         {
-            out->m_iResultCode = 3;
-            out->m_message = str_010cfa94;
+            errorOut->m_iResultCode = 3;
+            errorOut->m_message = str_010cfa94;
         }
-        reader->close();
+        world->close();
         return 1;
     }
     return 0;
 }
 
 // src: GUESS 0x00d48760 (confidence: low)
-static __declspec(noinline) int Object_ProcessAndReturnValue_00d48760(S00d48d30_Stream* s, S00d48d30_Format* format, S00d48d30_Result* out,
-                                             int opts)
+static __declspec(noinline) int anonymous_namespace_loadPackfile(S00d48d30_Stream* streamIn, S00d48d30_Format* details, S00d48d30_Result* errorOut,
+                                             int typeReg)
 {
-    if (format->m_type < 2)
+    if (details->m_type < 2)
     {
         return 0;
     }
-    if (out != 0)
+    if (errorOut != 0)
     {
-        out->m_iResultCode = 0;
+        errorOut->m_iResultCode = 0;
     }
-    if (s == 0)
-    {
-        return 0;
-    }
-    if (format->attach(s, out) == 0)
+    if (streamIn == 0)
     {
         return 0;
     }
-    return S00d48d30_Finish(opts);
+    if (details->attach(streamIn, errorOut) == 0)
+    {
+        return 0;
+    }
+    return S00d48d30_Finish(typeReg);
 }
 
 // Validates the stream, resolves load options, and dispatches to a format-specific loader based on the detected stream type.
 // @fnv 0x00d48d30
 // src: XBOX_PDB 0x00d48d30
-int __cdecl hkSerializeUtil_load(S00d48d30_Stream* apStream, S00d48d30_Result* apResult, int aiOptions) throw()
+// pdb: hkSerializeUtil::load | hkSerializeUtil.obj | retail, string-set bridge, high
+// pdb params: streamIn, errorOut, classReg
+// pdb locals: details, world, assertBuf, ostr
+int __cdecl hkSerializeUtil_load(S00d48d30_Stream* streamIn, S00d48d30_Result* errorOut, int classReg) throw()
 {
-    if (apStream == 0)
+    if (streamIn == 0)
     {
-        if (apResult != 0)
+        if (errorOut != 0)
         {
-            apResult->m_iResultCode = 1;
-            apResult->m_message = str_010cfacc;
+            errorOut->m_iResultCode = 1;
+            errorOut->m_message = str_010cfacc;
         }
         return 0;
     }
-    if (!apStream->IsStreamValid().m_cBooleanValue)
+    if (!streamIn->IsStreamValid().m_cBooleanValue)
     {
-        if (apResult != 0)
+        if (errorOut != 0)
         {
-            apResult->m_iResultCode = 1;
-            apResult->m_message = str_010cfab8;
+            errorOut->m_iResultCode = 1;
+            errorOut->m_message = str_010cfab8;
         }
         return 0;
     }
-    if (aiOptions == 0)
+    if (classReg == 0)
     {
-        aiOptions = reinterpret_cast<S00d48d30_Service*>(DAT_01268b08)->getDefaultOptions();
+        classReg = reinterpret_cast<S00d48d30_Service*>(DAT_01268b08)->getDefaultOptions();
     }
     S00d48d30_Lock lock;
     S00d48d30_Format format;
-    hkSerializeUtil_detectFormat(apStream, &format.m_type);
+    hkSerializeUtil_detectFormat(streamIn, &format.m_type);
     switch (format.m_type)
     {
     case 2:
     case 3:
-        return Object_ProcessAndReturnValue_00d48760(apStream, &format, apResult,
+        return anonymous_namespace_loadPackfile(streamIn, &format, errorOut,
                             reinterpret_cast<S00d48d30_Service*>(DAT_01268b08)->getLoadOptions());
     case 4: {
         S00d48d30_Reader reader;
-        if (hkBinaryTagfileReader_load_EvaluateValue_00d48a90(apStream, &reader, apResult) == 0)
+        if (anonymous_namespace_loadBinaryTagfileIntoWorld(streamIn, &reader, errorOut) == 0)
         {
-            return hkDataObjectUtil_toResourceWithRegistry(reader.ForwardToReceiver(), aiOptions);
+            return hkDataObjectUtil_toResourceWithRegistry(reader.ForwardToReceiver(), classReg);
         }
         return 0;
     }
     }
-    if (apResult != 0)
+    if (errorOut != 0)
     {
-        apResult->m_iResultCode = 2;
-        apResult->m_message = str_010cfa94;
+        errorOut->m_iResultCode = 2;
+        errorOut->m_message = str_010cfa94;
     }
     return 0;
 }
@@ -670,7 +698,7 @@ struct S00d48680_Sys
 };
 
 extern "C" S00d48680_Sys* __cdecl hkMemoryRouter_getInstance();
-extern "C" void __cdecl hkArrayUtil__reserve(S00d48680_Alloc* h, S00d48680_Arr* a, int cap, int flag);
+extern "C" void __cdecl hkArrayUtil__reserve(S00d48680_Alloc* mem, S00d48680_Arr* array, int numElem, int sizeElem);
 
 struct S00d48680_Obj
 {
@@ -690,16 +718,18 @@ struct S00d48680_Obj
 
 // Reads data into arr from obj, growing the buffer via FUN_00c908c0 when the requested size exceeds the current capacity.
 // @fnv 0x00d48680
-// src: GUESS 0x00d48680 (confidence: medium)
-static __declspec(noinline) void Object_ReadIntoGrowingBuffer(S00d48680_Obj* apReader, S00d48680_Arr* apBuffer)
+// src: XBOX_RETAIL_PDB 0x00d48680
+// pdb: `anonymous namespace'::loadStreamIntoBuffer | hkSerializeUtil.obj | retail, call graph, high
+// pdb params: stream, buf
+static __declspec(noinline) void anonymous_namespace_loadStreamIntoBuffer(S00d48680_Obj* stream, S00d48680_Arr* buf)
 {
     unsigned char flag;
-    if (apReader->v9(flag))
+    if (stream->v9(flag))
     {
-        apReader->v10(0, 2);
-        int iNeeded = apReader->v11();
+        stream->v10(0, 2);
+        int iNeeded = stream->v11();
         S00d48680_Alloc& heap = hkMemoryRouter_getInstance()->getHeap();
-        unsigned int cap = apBuffer->m_capFlags & 0x3fffffff;
+        unsigned int cap = buf->m_capFlags & 0x3fffffff;
         if ((int)cap < iNeeded)
         {
             int grow = (int)(cap * 2);
@@ -707,20 +737,20 @@ static __declspec(noinline) void Object_ReadIntoGrowingBuffer(S00d48680_Obj* apR
             {
                 grow = iNeeded;
             }
-            hkArrayUtil__reserve(&heap, apBuffer, grow, 1);
+            hkArrayUtil__reserve(&heap, buf, grow, 1);
         }
-        apBuffer->m_iElementCount = iNeeded;
-        apReader->v10(0, 0);
-        apReader->v4((int)apBuffer->m_data, apBuffer->m_iElementCount);
+        buf->m_iElementCount = iNeeded;
+        stream->v10(0, 0);
+        stream->v4((int)buf->m_data, buf->m_iElementCount);
         return;
     }
 
     int r;
     do
     {
-        int iNeeded = apBuffer->m_iElementCount + 0x20000;
+        int iNeeded = buf->m_iElementCount + 0x20000;
         S00d48680_Alloc& heap = hkMemoryRouter_getInstance()->getHeap();
-        unsigned int cap = apBuffer->m_capFlags & 0x3fffffff;
+        unsigned int cap = buf->m_capFlags & 0x3fffffff;
         if ((int)cap < iNeeded)
         {
             int grow = (int)(cap * 2);
@@ -728,18 +758,18 @@ static __declspec(noinline) void Object_ReadIntoGrowingBuffer(S00d48680_Obj* apR
             {
                 iNeeded = grow;
             }
-            hkArrayUtil__reserve(&heap, apBuffer, iNeeded, 1);
+            hkArrayUtil__reserve(&heap, buf, iNeeded, 1);
         }
-        char* d = apBuffer->m_data;
-        int iSize = apBuffer->m_iElementCount;
-        r = apReader->v4((int)(d + iSize), 0x20000);
-        apBuffer->m_iElementCount += r;
+        char* d = buf->m_data;
+        int iSize = buf->m_iElementCount;
+        r = stream->v4((int)(d + iSize), 0x20000);
+        buf->m_iElementCount += r;
     } while (r > 0);
 }
 
 void __cdecl S00d48680_Entry(S00d48680_Obj* obj, S00d48680_Arr* arr)
 {
-    Object_ReadIntoGrowingBuffer(obj, arr);
+    anonymous_namespace_loadStreamIntoBuffer(obj, arr);
 }
 
 struct HashPolicy
@@ -868,13 +898,13 @@ struct NativeWorld
     HashPolicy mapPolicy;
     void* rootPointer;
     const RuntimeClass* rootClass;
-    void Initialize() throw();
+    void hkDataWorldNative_ctor() throw();
     void FUN_00dbb3f0() throw();
-    void SetReferencedObject(const ClassRegistry*) throw();
+    void hkDataWorldNative_setClassRegistry(const ClassRegistry*) throw();
     ObjectImpl* SetNativeDataObjectFromPair(void*, const RuntimeClass&) const throw();
     NativeWorld() throw()
     {
-        Initialize();
+        hkDataWorldNative_ctor();
     }
     void clear() throw()
     {
@@ -918,7 +948,7 @@ struct LoadMemory
 };
 extern "C" int __cdecl hkString_memCmp(const void*, const void*, int) throw();
 extern "C" const char* __cdecl hkVersionUtil_getCurrentVersion() throw();
-extern "C" Resource* __cdecl CreateResourceFromArray(const void*, int, const TypeRegistry*) throw();
+extern "C" Resource* __cdecl hkNativePackfileUtils_load(const void*, int, const TypeRegistry*) throw();
 extern unsigned int DAT_011b7b88;
 extern const char str_010cf9d8[];
 void __cdecl Object_ReadIntoGrowingBuffer(LoadStream&, LoadBuffer&) throw();
@@ -947,7 +977,7 @@ static __declspec(noinline) __declspec(nothrow) Resource* Object_ProcessAndRetur
                 buffer.size = 0;
                 buffer.capacity = 0x80000000;
                 Object_ReadIntoGrowingBuffer(input, buffer);
-                Resource* result = CreateResourceFromArray(buffer.data, buffer.size, &types);
+                Resource* result = hkNativePackfileUtils_load(buffer.data, buffer.size, &types);
                 LoadMemory* memory = (LoadMemory*)hkMemoryRouter_getInstance();
                 buffer.size = 0;
                 if ((int)buffer.capacity >= 0)
@@ -970,22 +1000,25 @@ static __declspec(noinline) __declspec(nothrow) Resource* Object_ProcessAndRetur
 
 // Loads a resource via FUN_00d48760, resolves its class in classes, and constructs an ObjectResource from the parsed data.
 // @fnv 0x00d48840
-// src: GUESS 0x00d48840 (confidence: medium)
-static __declspec(noinline) ObjectResource* Object_LoadClassResource(LoadStream* input, LoadFormat& format, LoadError* error,
-                                                         const ClassRegistry* classes, const TypeRegistry* types)
+// src: XBOX_RETAIL_PDB 0x00d48840
+// pdb: `anonymous namespace'::loadNewPackfileOnHeap | hkSerializeUtil.obj | retail, object-file gap fill, high
+// pdb params: streamIn, details, errorOut, classReg, typeReg
+// pdb locals: world, noFinish, contents
+static __declspec(noinline) ObjectResource* anonymous_namespace_loadNewPackfileOnHeap(LoadStream* streamIn, LoadFormat& details, LoadError* errorOut,
+                                                         const ClassRegistry* classReg, const TypeRegistry* typeReg)
 {
     TypeRegistry unfinished(0);
-    unfinished.hkTypeInfoRegistry_merge(*types);
+    unfinished.hkTypeInfoRegistry_merge(*typeReg);
     ResourceRef resource;
-    resource.take((Resource*)Object_ProcessAndReturnValue_00d48760((S00d48d30_Stream*)input, (S00d48d30_Format*)&format,
-                                          (S00d48d30_Result*)error, (int)&unfinished));
+    resource.take((Resource*)anonymous_namespace_loadPackfile((S00d48d30_Stream*)streamIn, (S00d48d30_Format*)&details,
+                                          (S00d48d30_Result*)errorOut, (int)&unfinished));
     NativeWorld data;
-    data.SetReferencedObject(classes);
-    const RuntimeClass* rootClass = classes->find(resource->name());
+    data.hkDataWorldNative_setClassRegistry(classReg);
+    const RuntimeClass* rootClass = classReg->find(resource->name());
     if (rootClass)
     {
-        RootObject root(data.SetNativeDataObjectFromPair(resource->contents(0, types), *rootClass));
-        ObjectResource* result = hkDataObjectUtil_toObjectWithRegistry(root, classes, types);
+        RootObject root(data.SetNativeDataObjectFromPair(resource->contents(0, typeReg), *rootClass));
+        ObjectResource* result = hkDataObjectUtil_toObjectWithRegistry(root, classReg, typeReg);
         root.clear();
         data.clear();
         resource.clear();
@@ -1005,7 +1038,7 @@ const TypeRegistry* volatile typeSource;
 ObjectResource* volatile outputSink;
 void CallHeapLoader()
 {
-    outputSink = Object_LoadClassResource(inputSource, *formatSource, errorSource, classSource, typeSource);
+    outputSink = anonymous_namespace_loadNewPackfileOnHeap(inputSource, *formatSource, errorSource, classSource, typeSource);
 }
 
 extern const char str_010cf9f4[];
@@ -1078,29 +1111,32 @@ struct S00d48950_Sys
 
 // For each root item, checks lookup and adds it to target's set when versions differ; returns 0 with result code 4 on failure, otherwise 1.
 // @fnv 0x00d48950
-// src: GUESS 0x00d48950 (confidence: low)
-static __declspec(noinline) int Hkserializeutil_UpdateState_00d48950(S00d48950_Result* result, S00d48950_Target* target,
-                                             S00d48950_Lookup* lookup, S00d48950_Root* root)
+// src: XBOX_RETAIL_PDB 0x00d48950
+// pdb: `anonymous namespace'::checkTagfileWorld | hkSerializeUtil.obj | retail, unique string literal, high
+// pdb params: world, errorOut, versionManager, classReg
+// pdb locals: classes, assertBuf, ostr
+static __declspec(noinline) int anonymous_namespace_checkTagfileWorld(S00d48950_Result* world, S00d48950_Target* errorOut,
+                                             S00d48950_Lookup* versionManager, S00d48950_Root* classReg)
 {
-    target->hkVersionPatchManager_recomputePatchDependencies();
+    errorOut->hkVersionPatchManager_recomputePatchDependencies();
     S00d48950_ItemArray items;
     items.m_data = 0;
     items.m_iElementCount = 0;
     items.m_iCapacityState = 0x80000000;
-    root->getItems(items);
+    classReg->getItems(items);
     for (int iIndex = 0; iIndex < items.m_iElementCount; iIndex++)
     {
         void* key = items.m_data[iIndex]->GetIteratorKey();
         int version = items.m_data[iIndex]->GetNumOwnMembers();
-        S00d48950_Entry* entry = lookup->find(key);
+        S00d48950_Entry* entry = versionManager->find(key);
         int iCurrentVersion = entry ? entry->FUN_00d47120() : -1;
         if (entry && iCurrentVersion == version)
             continue;
-        __int64 id = target->hkVersionPatchManager_getUid(key, version);
-        if (target->m_set.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(id, -1, -1) == -1)
+        __int64 id = errorOut->hkVersionPatchManager_getUid(key, version);
+        if (errorOut->m_set.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(id, -1, -1) == -1)
         {
-            result->m_pMoppCode = 4;
-            result->m_message.printf_00cb0c70(str_010cf9f4, key, version);
+            world->m_pMoppCode = 4;
+            world->m_message.printf_00cb0c70(str_010cf9f4, key, version);
             S00d48950_Heap& heap = *((S00d48950_Sys*)hkMemoryRouter_getInstance())->m_pStreamAllocator;
             items.m_iElementCount = 0;
             if ((items.m_iCapacityState & 0x80000000) == 0)
@@ -1122,5 +1158,5 @@ S00d48950_Root* volatile g00d48950_root;
 volatile int g00d48950_out;
 void S00d48950_Caller()
 {
-    g00d48950_out = Hkserializeutil_UpdateState_00d48950(g00d48950_result, g00d48950_target, g00d48950_lookup, g00d48950_root);
+    g00d48950_out = anonymous_namespace_checkTagfileWorld(g00d48950_result, g00d48950_target, g00d48950_lookup, g00d48950_root);
 }

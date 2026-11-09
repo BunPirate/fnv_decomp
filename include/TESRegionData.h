@@ -8,6 +8,7 @@ class RegionSound;
 template <class T> class BSSimpleList;
 enum REGION_DATA_ID;
 
+// pdb: class TESRegionData, size 0x8, 3 members
 class TESRegionData
 {
 public:

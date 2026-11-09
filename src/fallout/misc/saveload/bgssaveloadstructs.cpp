@@ -116,6 +116,8 @@ extern int DAT_011a2428[];
 // Masks the low 6 bits of the first byte and returns the entry at that index from DAT_011a2428.
 // @fnv 0x00853640
 // src: XBOX_PDB 0x00853640
+// pdb: BGSSaveLoadFormInfo::GetFormType | BGSSaveLoadStructs.obj | debug, upstream name already matches, high
+// pdb locals: csaveGameFormType
 int __fastcall BGSSaveLoadFormInfo_GetFormType(unsigned char* pData)
 {
     unsigned char v = pData[0] & 0x3f;
@@ -168,6 +170,7 @@ struct FUN_00849220_shell
 };
 // @fnv 0x00849220
 // src: XBOX_PDB 0x00849220
+// pdb: BGSUnloadedFormBuffer::GetFormType | BGSSaveLoadGame.obj | debug, upstream name already matches, high
 int __thiscall FUN_00849220_shell::BGSUnloadedFormBuffer_GetFormType()
 {
     return BGSSaveLoadFormInfo_GetFormType(p);
@@ -175,7 +178,7 @@ int __thiscall FUN_00849220_shell::BGSUnloadedFormBuffer_GetFormType()
 
 struct FormIDConverter
 {
-    unsigned int RegisterFormID(unsigned int);
+    unsigned int AddFormID(unsigned int);
 };
 // Exe 0x00853570: local storage view; GetFlags binds the folded DWORD-at-+8 accessor 0x0044ddc0.
 struct BgssaveloadstructsOffset08View
@@ -186,13 +189,17 @@ struct BGSSaveLoadGame;
 extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 struct FUN_00853570_shell
 {
-    void WriteFormIDBytes(unsigned int numericID);
+    void BGSNumericIDIndex_SetNumericID(unsigned int aiNumericID);
 };
 // @fnv 0x00853570
-void FUN_00853570_shell::WriteFormIDBytes(unsigned int numericID)
+// src: XBOX_RETAIL_PDB 0x00853570
+// pdb: BGSNumericIDIndex::SetNumericID | BGSSaveLoadStructs.obj | retail, call graph (shared callers), high
+// pdb params: aiNumericID
+// pdb locals: iindex, ifileIndex
+void FUN_00853570_shell::BGSNumericIDIndex_SetNumericID(unsigned int aiNumericID)
 {
     unsigned int iElementIndex = reinterpret_cast<FormIDConverter*>(reinterpret_cast<BgssaveloadstructsOffset08View*>(g_BGSSaveLoadGame)->GetFlags())
-                              ->RegisterFormID(numericID);
+                              ->AddFormID(aiNumericID);
     unsigned int ifileIndex = iElementIndex >> 24;
     if (ifileIndex == 0xFF)
         iElementIndex |= 0x800000;
@@ -208,6 +215,8 @@ extern unsigned char DAT_011de360[];
 // Fills DAT_011de360 with 255, sets DAT_011de3e0 to 55, then stores each index i at DAT_011de360[DAT_011a2428[i]].
 // @fnv 0x008535e0
 // src: XBOX_PDB 0x008535e0
+// pdb: BGSSaveLoadFormInfo::InitSaveGameFormTypes | BGSSaveLoadStructs.obj | retail, upstream name already matches, high
+// pdb locals: i
 void BGSSaveLoadFormInfo_InitSaveGameFormTypes()
 {
     memset(&DAT_011de360, 255, 121);
@@ -227,13 +236,16 @@ char const* __cdecl GetStringForByte(unsigned char);
 void __cdecl _fnv_call_845cc0(char const*, ...);
 // @fnv 0x00853670
 // src: COMMUNITY 0x00853670
-void __thiscall FUN_00853670_shell::BGSSaveLoadFormInfo_SetFormType(int formType)
+// pdb: BGSSaveLoadFormInfo::SetFormType | BGSSaveLoadStructs.obj | retail, string-set bridge, high
+// pdb params: aeFormType
+// pdb locals: csaveGameFormType
+void __thiscall FUN_00853670_shell::BGSSaveLoadFormInfo_SetFormType(int aeFormType)
 {
-    unsigned char type = DAT_011de360[formType];
+    unsigned char type = DAT_011de360[aeFormType];
     if (type >= DAT_011de3e0)
     {
-        _fnv_call_845cc0("Unknown form type %i %s in BGSSaveLoadFormInfo::SetFormType()", formType,
-                         GetStringForByte((unsigned char)formType));
+        _fnv_call_845cc0("Unknown form type %i %s in BGSSaveLoadFormInfo::SetFormType()", aeFormType,
+                         GetStringForByte((unsigned char)aeFormType));
     }
     m0 = (m0 & ~0x3F) | type;
 }
@@ -246,6 +258,7 @@ struct FUN_00853880_shell
 };
 // Calls FUN_008538b0, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x00853880
+// pdb: BGSSaveLoadStatsMap::`scalar deleting destructor' | BGSSaveLoadStructs.obj | retail, vtable slot, high
 void* __thiscall FUN_00853880_shell::Destroy(unsigned int flags)
 {
     FUN_008538b0();
@@ -267,6 +280,7 @@ struct FUN_008539e0_holder
 // Calls Func(1) on m_ptr if it is non-null, then sets m_ptr to 0.
 // @fnv 0x008539e0
 // src: COMMUNITY 0x008539e0
+// pdb: BGSSaveLoadStatsMap::CloseFile | BGSSaveLoadStructs.obj | debug, object-file run extension, low
 void FUN_008539e0_holder::BGSSaveLoadStatsMap_DestroyFile()
 {
     Dummy008539e0* b = m_ptr;
@@ -280,6 +294,7 @@ struct FUN_00854920_shell : FUN_00854900_shell
     float __thiscall GetRatio();
 };
 // @fnv 0x00854920
+// pdb: SizeTracker::GetAverageSize | BGSSaveLoadStructs.obj | debug, object-file run extension, low
 float __thiscall FUN_00854920_shell::GetRatio()
 {
     return (float)((double)(unsigned int)SizeTracker_GetTotalSize() / (double)(unsigned int)m_00);
@@ -288,6 +303,9 @@ float __thiscall FUN_00854920_shell::GetRatio()
 // Compares the values returned by calling GetSum on both objects, returning -1 if the first is greater, 1 if less, else 0.
 // @fnv 0x00854960
 // src: GUESS 0x00854960 (confidence: medium)
+// pdb: SavedFormDataCompare | BGSSaveLoadStructs.obj | debug, object-file run extension, low
+// pdb params: apCompare1, apCompare2
+// pdb locals: isize1, isize2
 int Object_CompareSumsDescending(FUN_008547f0_shell* pFirst, FUN_008547f0_shell* pSecond)
 {
     unsigned int x = pFirst->GetSum();
@@ -303,6 +321,7 @@ int Object_CompareSumsDescending(FUN_008547f0_shell* pFirst, FUN_008547f0_shell*
 }
 
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, char const*);
@@ -324,6 +343,9 @@ struct FormNameEntry
 };
 
 // @fnv 0x008536d0
+// pdb: SavedFormData::GetFormName | BGSSaveLoadStructs.obj | retail, string-set bridge, high
+// pdb params: apName, aiNameSize
+// pdb locals: pref, pinfo
 void __thiscall FormNameEntry::BuildFormName(char* apName, unsigned int aiNameSize)
 {
     MobileObject* pRefr;
@@ -396,26 +418,29 @@ struct FUN_008549b0_shell
 
 // @fnv 0x008549b0
 // src: COMMUNITY 0x008549b0
-void __thiscall FUN_008549b0_shell::BGSSaveLoadStatsMap_AddForm(unsigned int p0, unsigned int p1, unsigned int uiKey, unsigned int p3,
-                                                 unsigned int p4, unsigned int p5, unsigned int p6, unsigned char p7)
+// pdb: BGSSaveLoadStatsMap::AddForm | BGSSaveLoadStructs.obj | retail, upstream name already matches, high
+// pdb params: aiFormID, apForm, aeFormType, aiChangeFlags, aiSize, aiOverhead, aiDebugOverhead, acVersion
+// pdb locals: plist, pformData
+void __thiscall FUN_008549b0_shell::BGSSaveLoadStatsMap_AddForm(unsigned int aiFormID, unsigned int apForm, unsigned int aeFormType, unsigned int aiChangeFlags,
+                                                 unsigned int aiSize, unsigned int aiOverhead, unsigned int aiDebugOverhead, unsigned char acVersion)
 {
     FUN_00854af0* form = new FUN_00854af0();
 
-    reinterpret_cast<unsigned int*>(form)[0] = p0;
-    reinterpret_cast<unsigned int*>(form)[5] = p1;
-    reinterpret_cast<unsigned int*>(form)[1] = p3;
-    reinterpret_cast<unsigned int*>(form)[2] = p4;
-    reinterpret_cast<unsigned int*>(form)[3] = p5;
-    reinterpret_cast<unsigned int*>(form)[4] = p6;
-    form->m_data[0x18] = p7;
+    reinterpret_cast<unsigned int*>(form)[0] = aiFormID;
+    reinterpret_cast<unsigned int*>(form)[5] = apForm;
+    reinterpret_cast<unsigned int*>(form)[1] = aiChangeFlags;
+    reinterpret_cast<unsigned int*>(form)[2] = aiSize;
+    reinterpret_cast<unsigned int*>(form)[3] = aiOverhead;
+    reinterpret_cast<unsigned int*>(form)[4] = aiDebugOverhead;
+    form->m_data[0x18] = acVersion;
 
     {
         unsigned int list = 0;
 
-        if (!reinterpret_cast<DummyPointerMap*>(this)->GetAt(uiKey, list))
+        if (!reinterpret_cast<DummyPointerMap*>(this)->GetAt(aeFormType, list))
         {
             list = reinterpret_cast<unsigned int>(new SL());
-            reinterpret_cast<SetAtHelper*>(this)->SetAt(uiKey, list);
+            reinterpret_cast<SetAtHelper*>(this)->SetAt(aeFormType, list);
         }
 
         reinterpret_cast<AEList*>(list)->Insert(form, reinterpret_cast<int(__cdecl*)(void*, void*)>(Object_CompareSumsDescending));
@@ -448,6 +473,7 @@ struct FUN_00853810 : FUN_00854c80_shell
 
 // Constructs the object with base form type 0x25 and initializes m_18 to 0.
 // @fnv 0x00853810
+// pdb: BGSSaveLoadStatsMap::BGSSaveLoadStatsMap | BGSSaveLoadStructs.obj | debug, object-file gap fill, medium
 FUN_00853810::FUN_00853810() : FUN_00854c80_shell(0x25)
 {
     m_18 = 0;
@@ -483,6 +509,8 @@ struct FUN_008538b0 : MapBase
 };
 // Deletes resource, then frees every stored pointer in the map's buckets and in the owned list, walking each linked list.
 // @fnv 0x008538b0
+// pdb: BGSSaveLoadStatsMap::~BGSSaveLoadStatsMap | BGSSaveLoadStructs.obj | debug, object-file run extension, low
+// pdb locals: plist, it, eformType
 FUN_008538b0::~FUN_008538b0()
 {
     delete resource;
@@ -525,7 +553,7 @@ class B4B10Response
     void SetSpeaker(TESForm* pkSpeaker);
 };
 
-void __cdecl B4B10SetupResponse(B4B10Response* pkResponse, TESForm* pkSpeaker, int iTopic);
+void __cdecl B4B10SetupResponse(B4B10Response* apSaveGameBuffer, TESForm* pkSpeaker, int aiChangeFlags);
 
 class B4B10Dialogue
 {
@@ -535,6 +563,8 @@ class B4B10Dialogue
 
 // Resets and initialises the response from the speaker's voice type, form type and current dialogue ID, then sets the speaker and notifies it.
 // @fnv 0x00854b10
+// pdb: BGSSaveLoadStatsMap::SaveForm | BGSSaveLoadStructs.obj | debug, object-file gap fill, medium
+// pdb params: apForm, aiChangeFlags, apSaveFormBuffer
 void B4B10Dialogue::SetupResponse(TESForm* pkSpeaker, int iTopic, B4B10Response* pkResponse)
 {
     pkResponse->Reset();
@@ -762,6 +792,8 @@ struct SaveLoadStatsDump
 // Writes a formatted dump of save/load form stats, misc stats, and save game history via Write.
 // @fnv 0x00853e10
 // src: XBOX_PDB 0x00853e10
+// pdb: BGSSaveLoadStatsMap::OutputStats | BGSSaveLoadStructs.obj | retail, upstream name already matches, high
+// pdb locals: pstring, plist, icount, totalSizeTracker, phistory, saveFormBuffer, miscSizeTracker, iindentLevel, it, formTypeSizeTracker, eformType, pformData, ptempString, ptempString2, ibaseSize, pname, pref, pchangeString, pmob, etype, i, iflag, pmiscStat, iindentChange ...
 void SaveLoadStatsDump::BGSSaveLoadStatsMap_OutputStats()
 {
     void* qfTOqo;

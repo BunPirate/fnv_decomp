@@ -167,7 +167,7 @@ struct xProj : xBase
     int m_c4;
     xSound m_c8;
     float m_d4;
-    xProj(xActorV* apA, int b, int c, int d, xP3 kP1, xP3 kP2);
+    xProj(xActorV* apCaster, int apSpell, int apDominantEffect, int apAVEffect, xP3 aOrigin, xP3 aRotation);
     xEffect* GetAVEffect();
     void MagicBoltProjectile_SetState(int);
     xP3* FUN_00436aa0();
@@ -181,8 +181,11 @@ struct xProj : xBase
     xActorV* FUN_009185e0();
 };
 // @fnv 0x00811980
-xProj::xProj(xActorV* apA, int b, int c, int d, xP3 kP1, xP3 kP2)
-    : xBase((int)apA, b, c, d, kP1, kP2), m_a8(0), m_b4(0), m_b8(0), m_bc(0), m_c0(0)
+// pdb: MagicBoltProjectile::MagicBoltProjectile | MagicBoltProjectile.obj | debug, call graph, high
+// pdb params: apCaster, apSpell, apDominantEffect, apAVEffect, aOrigin, aRotation
+// pdb locals: initVelocity, pcaster, spObject, location, isoundFileID, loc, plist
+xProj::xProj(xActorV* apCaster, int apSpell, int apDominantEffect, int apAVEffect, xP3 aOrigin, xP3 aRotation)
+    : xBase((int)apCaster, apSpell, apDominantEffect, apAVEffect, aOrigin, aRotation), m_a8(0), m_b4(0), m_b8(0), m_bc(0), m_c0(0)
 {
     xFUN_00811e00(*xg_11d16ec.Setting_Int());
     MagicBoltProjectile_SetState(0);
@@ -190,7 +193,7 @@ xProj::xProj(xActorV* apA, int b, int c, int d, xP3 kP1, xP3 kP2)
     m_b0 = 0;
     m_c4 = 0;
     m_d4 = 0.0f;
-    if (apA->FUN_2c() == xg_player_11dea3c && xg_pc_11dea3c->PlayerCharacter_Get3D_00950bb0(true) &&
+    if (apCaster->FUN_2c() == xg_player_11dea3c && xg_pc_11dea3c->PlayerCharacter_Get3D_00950bb0(true) &&
         !xg_pc_11dea3c->PlayerCharacter_Get3D_00950bb0(true)->GetAppCulled_00456610())
     {
         xP3 POS = *FUN_00436aa0();

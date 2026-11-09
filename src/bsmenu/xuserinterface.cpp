@@ -25,6 +25,7 @@ struct SettingStr
     const char* String();
 };
 
+// pdb: class Controls, size 0x470 (here 0x1), bases: XInputManager, 19 members
 struct Controls
 {
     int Controls_IsMouseInBackground();
@@ -49,6 +50,9 @@ unsigned char __cdecl Interface_CreateMessageMenu(const char* a1, int a2, int a3
 
 // @fnv 0x0086a580
 // src: COMMUNITY 0x0086a580
+// pdb: MessageBox | Main.obj | debug, object-file run extension, low
+// pdb params: apText, apCaption, aiType
+// pdb locals: cmenuType, ibutton, button, type, cbuttonPushed, pbutton1, pbutton2, pbutton3, ifirstButton
 int MessageBoxA_0(const char* text, const char* caption, unsigned int flags)
 {
     int result = 6;
@@ -146,12 +150,14 @@ extern "C" __declspec(dllimport) unsigned long __stdcall GetTickCount();
 // When m_ucFirstTimerByte is zero before incrementing, subtracts both stored values from GetTickCount() and stores the results.
 // @fnv 0x00aa50a0
 // src: COMMUNITY 0x00aa50a0
+// pdb: BSTimer::Disable | BSTimer.obj | retail, upstream name already matches, high
+// pdb locals: itickCount
 void GameTimerRecord::BSTimer_Disable()
 {
-    if (m_ucFirstTimerByte++ == 0)
+    if (cDisableCounter++ == 0)
     {
         unsigned int uiTickCount = GetTickCount();
-        m_uiFirstTimerValue = uiTickCount - m_uiFirstTimerValue;
-        m_uiSecondTimerValue = uiTickCount - m_uiSecondTimerValue;
+        iLastTime = uiTickCount - iLastTime;
+        iFirstTime = uiTickCount - iFirstTime;
     }
 }

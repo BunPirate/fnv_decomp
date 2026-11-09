@@ -51,54 +51,63 @@ void ClearSlotReference(int* thisPtr, int* p)
 }
 
 void hkpWorldConstraintUtil_addConstraint(int first, int second);
-void hkpWorldCallbackUtil_fireConstraintAdded(int first, int second);
+void hkpWorldCallbackUtil_fireConstraintAdded(int first, int constraint);
 // @fnv 0x00cb3c80
 // src: HAVOK_LIB 0x00cb3c80
-void hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(int first, int second)
+// pdb: hkpWorldOperationUtil::addConstraintToCriticalLockedIsland | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, constraint
+// pdb locals: assertBuf, ostr
+void hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(int first, int constraint)
 {
-    hkpWorldConstraintUtil_addConstraint(first, second);
-    hkpWorldCallbackUtil_fireConstraintAdded(first, second);
+    hkpWorldConstraintUtil_addConstraint(first, constraint);
+    hkpWorldCallbackUtil_fireConstraintAdded(first, constraint);
 }
 
 void __cdecl hkpWorldConstraintUtil_addConstraint(hkpWorld* object, int* value);
-void __cdecl hkpWorldCallbackUtil_fireConstraintAdded(hkpWorld* object, int* value);
+void __cdecl hkpWorldCallbackUtil_fireConstraintAdded(hkpWorld* object, int* constraint);
 
 // @fnv 0x00cb3ca0
 // src: HAVOK_LIB 0x00cb3ca0
-int* __cdecl hkpWorldOperationUtil_addConstraintImmediately(hkpWorld* object, int* value, int shouldNotify)
+// pdb: hkpWorldOperationUtil::addConstraintImmediately | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, constraint, fireCallbacks
+// pdb locals: assertBuf, ostr
+int* __cdecl hkpWorldOperationUtil_addConstraintImmediately(hkpWorld* object, int* constraint, int fireCallbacks)
 {
-    ++object->m_iCriticalOperationsLockCount;
-    hkpWorldConstraintUtil_addConstraint(object, value);
-    if (shouldNotify != 0)
+    ++object->m_criticalOperationsLockCount;
+    hkpWorldConstraintUtil_addConstraint(object, constraint);
+    if (fireCallbacks != 0)
     {
-        hkpWorldCallbackUtil_fireConstraintAdded(object, value);
+        hkpWorldCallbackUtil_fireConstraintAdded(object, constraint);
     }
-    --object->m_iCriticalOperationsLockCount;
-    if (object->m_iCriticalOperationsLockCount == 0 && object->m_bBlockExecutingPendingOperations.m_cBooleanValue == 0)
+    --object->m_criticalOperationsLockCount;
+    if (object->m_criticalOperationsLockCount == 0 && object->m_blockExecutingPendingOperations.m_cBooleanValue == 0)
     {
-        if (object->m_iPendingOperationCount != 0)
+        if (object->m_pendingOperationsCount != 0)
         {
             object->FUN_00c91120();
         }
-        if (object->m_iPendingOperationQueueCount == 1 && object->m_iQueuedOperationCount != 0)
+        if (object->m_pendingOperationQueueCount == 1 && object->m_pendingBodyOperationsCount != 0)
         {
             object->UpdateFields_00c91140();
         }
     }
-    return value;
+    return constraint;
 }
 
-void NotifyTargets(hkpWorld* ctx, void* p);
-void DetachRecord(void* p);
+void hkpWorldCallbackUtil_fireConstraintRemoved(hkpWorld* ctx, void* constraint);
+void hkpWorldConstraintUtil_removeConstraint(void* p);
 
 // If ctx->m_kConstraintListeners.m_iElementCount is nonzero, calls NotifyTargets with ctx and p, then always calls DetachRecord on p.
 // @fnv 0x00cb3da0
-// src: GUESS 0x00cb3da0 (confidence: medium)
-void Object_NotifyAndDetachRecord(hkpWorld* ctx, void* p)
+// src: XBOX_RETAIL_PDB 0x00cb3da0
+// pdb: hkpWorldOperationUtil::removeConstraintFromCriticalLockedIsland | hkpWorldOperationUtil.obj | retail, call graph (shared callers), high
+// pdb params: world, constraint
+// pdb locals: assertBuf, ostr
+void hkpWorldOperationUtil_removeConstraintFromCriticalLockedIsland(hkpWorld* ctx, void* constraint)
 {
-    if (ctx->m_kConstraintListeners.m_iElementCount != 0)
-        NotifyTargets(ctx, p);
-    DetachRecord(p);
+    if (ctx->m_constraintListeners.m_iElementCount != 0)
+        hkpWorldCallbackUtil_fireConstraintRemoved(ctx, constraint);
+    hkpWorldConstraintUtil_removeConstraint(constraint);
 }
 
 struct CB3DD0Collidable
@@ -118,40 +127,43 @@ struct CB3DD0Collidable
 
 inline void hkpWorld::lockCriticalOperations()
 {
-    m_iCriticalOperationsLockCount++;
+    m_criticalOperationsLockCount++;
 }
 inline void hkpWorld::unlockCriticalOperations()
 {
-    if (--m_iCriticalOperationsLockCount)
+    if (--m_criticalOperationsLockCount)
         return;
-    if (m_bBlockExecutingPendingOperations.m_cBooleanValue)
+    if (m_blockExecutingPendingOperations.m_cBooleanValue)
         return;
-    if (m_iPendingOperationCount)
+    if (m_pendingOperationsCount)
         ExecutePendingOperations();
-    if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount)
+    if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount)
         ExecutePendingOperationQueues();
 }
 
-void __cdecl NotifyTargets(hkpWorld* world, hkpConstraintInstance* entity);
-void __cdecl DetachRecord(hkpConstraintInstance* entity);
+void __cdecl hkpWorldCallbackUtil_fireConstraintRemoved(hkpWorld* world, hkpConstraintInstance* constraint);
+void __cdecl hkpWorldConstraintUtil_removeConstraint(hkpConstraintInstance* entity);
 
 // @fnv 0x00cb3dd0
 // src: HAVOK_LIB 0x00cb3dd0
-void __cdecl hkpWorldOperationUtil_removeConstraintImmediately(hkpWorld* world, hkpConstraintInstance* entity, int fireCallbacks)
+// pdb: hkpWorldOperationUtil::removeConstraintImmediately | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, constraint, fireCallbacks
+// pdb locals: assertBuf, ostr
+void __cdecl hkpWorldOperationUtil_removeConstraintImmediately(hkpWorld* world, hkpConstraintInstance* constraint, int fireCallbacks)
 {
-    CB3DD0Collidable* collidable = reinterpret_cast<CB3DD0Collidable*>(entity->m_pOwnerObject);
+    CB3DD0Collidable* collidable = reinterpret_cast<CB3DD0Collidable*>(constraint->m_owner);
     collidable->m_flags = (collidable->m_flags & ~2) | 1;
-    if (world->m_iCriticalOperationsLockCount)
+    if (world->m_criticalOperationsLockCount)
     {
-        if (fireCallbacks && world->m_kConstraintListeners.m_iElementCount)
-            NotifyTargets(world, entity);
-        DetachRecord(entity);
+        if (fireCallbacks && world->m_constraintListeners.m_iElementCount)
+            hkpWorldCallbackUtil_fireConstraintRemoved(world, constraint);
+        hkpWorldConstraintUtil_removeConstraint(constraint);
         return;
     }
     world->lockCriticalOperations();
-    if (fireCallbacks && world->m_kConstraintListeners.m_iElementCount)
-        NotifyTargets(world, entity);
-    DetachRecord(entity);
+    if (fireCallbacks && world->m_constraintListeners.m_iElementCount)
+        hkpWorldCallbackUtil_fireConstraintRemoved(world, constraint);
+    hkpWorldConstraintUtil_removeConstraint(constraint);
     world->unlockCriticalOperations();
 }
 
@@ -164,21 +176,23 @@ struct FUN_00d070b0_class
 // Calls FUN_00d070b0 on every object in firstObjects and secondObjects in reverse order, then on finalObject.
 // @fnv 0x00cb3e90
 // src: HAVOK_LIB 0x00cb3e90
+// pdb: hkpWorldOperationUtil::validateWorld | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world
 void __cdecl hkpWorldOperationUtil_validateWorld(hkpWorld* apCleanupList)
 {
-    int i = apCleanupList->m_kActiveSimulationIslands.m_iElementCount - 1;
+    int i = apCleanupList->m_activeSimulationIslands.m_iElementCount - 1;
     while (i >= 0)
     {
-        static_cast<FUN_00d070b0_class*>(apCleanupList->m_kActiveSimulationIslands.m_data[i])->nullsub_30();
+        static_cast<FUN_00d070b0_class*>(apCleanupList->m_activeSimulationIslands.m_data[i])->nullsub_30();
         --i;
     }
-    i = apCleanupList->m_kInactiveSimulationIslands.m_iElementCount - 1;
+    i = apCleanupList->m_inactiveSimulationIslands.m_iElementCount - 1;
     while (i >= 0)
     {
-        static_cast<FUN_00d070b0_class*>(apCleanupList->m_kInactiveSimulationIslands.m_data[i])->nullsub_30();
+        static_cast<FUN_00d070b0_class*>(apCleanupList->m_inactiveSimulationIslands.m_data[i])->nullsub_30();
         --i;
     }
-    static_cast<FUN_00d070b0_class*>(apCleanupList->m_pFixedIsland)->nullsub_30();
+    static_cast<FUN_00d070b0_class*>(apCleanupList->m_fixedIsland)->nullsub_30();
 }
 
 struct Obj;
@@ -208,12 +222,14 @@ __declspec(nothrow) void __cdecl RemoveListItem(hkpWorld* o, Agent* a);
 // Clears o->m_8, calls the agent's RemoveItem, and if the agent's m_20 is not 0xffff, m_4c is 0 and ctx->m_c8 is set, calls RemoveListItem and v0(1).
 // @fnv 0x00cb4740
 // src: HAVOK_LIB 0x00cb4740
-void __cdecl hkpWorldOperationUtil_removeEntitySI(hkpWorld* ctx, Obj* o)
+// pdb: hkpWorldOperationUtil::removeEntitySI | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, entity
+void __cdecl hkpWorldOperationUtil_removeEntitySI(hkpWorld* ctx, Obj* entity)
 {
-    Agent* a = o->m_cc;
-    o->m_8 = 0;
-    a->RemoveItem(o);
-    if (a->m_20 != 0xffff && a->m_4c == 0 && ctx->m_bWantSimulationIslands.m_cBooleanValue)
+    Agent* a = entity->m_cc;
+    entity->m_8 = 0;
+    a->RemoveItem(entity);
+    if (a->m_20 != 0xffff && a->m_4c == 0 && ctx->m_wantSimulationIslands.m_cBooleanValue)
     {
         RemoveListItem(ctx, a);
         a->v0(1);
@@ -318,7 +334,7 @@ struct S_00cb5d00_Source
 };
 struct S_00cb5d00_Sink
 {
-    void DispatchPairs(S_00cb5d00_Elem* data, int n) throw();
+    void DispatchPairs(S_00cb5d00_Elem* deletedPairs, int numDeletedPairs) throw();
 };
 
 struct S_00cb5d00_Query
@@ -336,12 +352,15 @@ struct S_00cb5d00_Query
 };
 // @fnv 0x00cb5d00
 // src: HAVOK_LIB 0x00cb5d00
-void hkpWorldOperationUtil_removePhantomBP(hkpWorld* owner, S_00cb5d00_Query* query)
+// pdb: hkpWorldOperationUtil::removePhantomBP | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, phantom
+// pdb locals: removedPairs
+void hkpWorldOperationUtil_removePhantomBP(hkpWorld* owner, S_00cb5d00_Query* phantom)
 {
-    S_00cb5d00_LocalArray<S_00cb5d00_Elem> results(owner->m_iBroadPhaseQuerySize);
-    static_cast<S_00cb5d00_Source*>(owner->m_pJobSemaphore)->query(&query->unk24, &results);
+    S_00cb5d00_LocalArray<S_00cb5d00_Elem> results(owner->m_broadPhaseQuerySize);
+    static_cast<S_00cb5d00_Source*>(owner->m_broadPhase)->query(&phantom->unk24, &results);
     if (results.m_iElementCount != 0)
-        static_cast<S_00cb5d00_Sink*>(owner->m_pBroadPhaseDispatcher)->DispatchPairs(results.m_data, results.m_iElementCount);
+        static_cast<S_00cb5d00_Sink*>(owner->m_broadPhaseDispatcher)->DispatchPairs(results.m_data, results.m_iElementCount);
 }
 
 
@@ -349,14 +368,16 @@ extern void __cdecl PropagateStateToChildren(hkpWorld*, int*);
 // If object->enabled is set, walks object->items backwards and calls PropagateStateToChildren for each item whose byte at offset 0x25 has bits 0-1 set.
 // @fnv 0x00cb6f30
 // src: HAVOK_LIB 0x00cb6f30
+// pdb: hkpWorldOperationUtil::splitSimulationIslands | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world
 void __cdecl hkpWorldOperationUtil_splitSimulationIslands(hkpWorld* object)
 {
-    if (object->m_bWantSimulationIslands.m_cBooleanValue != 0)
+    if (object->m_wantSimulationIslands.m_cBooleanValue != 0)
     {
-        int index = object->m_kActiveSimulationIslands.m_iElementCount - 1;
+        int index = object->m_activeSimulationIslands.m_iElementCount - 1;
         for (; index >= 0; --index)
         {
-            int* item = static_cast<int*>(object->m_kActiveSimulationIslands.m_data[index]);
+            int* item = static_cast<int*>(object->m_activeSimulationIslands.m_data[index]);
             if ((*(unsigned char*)((char*)item + 0x25) & 3) != 0)
                 PropagateStateToChildren(object, item);
         }
@@ -389,6 +410,8 @@ struct Stats
 
 // If the holder has a box, updates maxv and the three sums from s, adds s[1..3] into the box fields, and raises maxv to the box's a.
 // @fnv 0x00cb74d0
+// pdb: hkpConstraintOwner::addConstraintInfo | hkpWorldOperationUtil.obj | debug, call graph, medium
+// pdb params: constraint, delta
 void Stats::AccumulateStats(Holder* apHolder, const int* aiStats)
 {
     if (apHolder->box)
@@ -420,6 +443,8 @@ typedef hkBool(__cdecl* S_00dd7d00_Less)(S_00dd7d00_Item* a, S_00dd7d00_Item* b)
 // Sorts the range [d, h] of pArr in place with a Hoare-style quicksort using cmpLess, recursing on the left part and looping on the right.
 // @fnv 0x00dd7d00
 // src: XBOX_PDB 0x00dd7d00
+// pdb: hkAlgorithm::quickSortRecursive<hkpSimulationIsland *,hkBool (__cdecl*)(hkpSimulationIsland const *,hkpSimulationIsland const *)> | hkpWorldOperationUtil.obj | retail, call graph (shared callers), medium
+// pdb params: pArr, d, h, cmpLess
 void hkAlgorithm_quickSortRecursive_hkFreeList_Block_hkBool_cdecl_hkFreeList_Block_const_hkFreeList_Block_const(S_00dd7d00_Item** apItems, int aiLow, int aiHigh, S_00dd7d00_Less apfnLess)
 {
     int i, j;
@@ -726,7 +751,7 @@ struct S_00c6aca0_Cont
 
 struct S_00c6aca0_Mm
 {
-    void MemoryManager_Deallocate(int p);
+    void MemoryManager_Deallocate(int apMem);
 };
 extern S_00c6aca0_Mm DAT_011f6238;
 extern int DAT_012677a4;
@@ -820,6 +845,8 @@ struct FUN_00c6aca0 : S_00c6aca0_Base
 };
 
 // @fnv 0x00c6aca0
+// pdb: bhkWorld::~bhkWorld | bhkWorld.obj | retail, object-file run extension, low
+// pdb locals: tempMemContext, I, pl
 FUN_00c6aca0::~FUN_00c6aca0()
 {
     S_00c6aca0_Ctx ctxOuter(0x10);
@@ -868,13 +895,15 @@ FUN_00c6aca0::~FUN_00c6aca0()
 // Returns false if b is null, true if a is null, otherwise compares a's inner unkD4 against b's inner unkD4.
 // @fnv 0x00cb3f90
 // src: HAVOK_LIB 0x00cb3f90
-hkBool worldOperationUtil_less_hkSimulationIslandPtr(hkpSimulationIsland* pObjA, hkpSimulationIsland* pObjB)
+// pdb: worldOperationUtil_less_hkSimulationIslandPtr | hkpWorldOperationUtil.obj | debug, upstream name already matches, high
+// pdb params: a, b
+hkBool worldOperationUtil_less_hkSimulationIslandPtr(hkpSimulationIsland* pObjA, hkpSimulationIsland* b)
 {
-    if (!pObjB)
+    if (!b)
         return false;
     if (!pObjA)
         return true;
-    return pObjA->entities.data[0]->m_uiUniqueId < pObjB->entities.data[0]->m_uiUniqueId;
+    return pObjA->entities.data[0]->m_uid < b->entities.data[0]->m_uid;
 }
 
 namespace fnv_00cb4000 {
@@ -888,19 +917,19 @@ void RemoveListItem(hkpWorld* self, hkpSimulationIsland* volatile item)
     hkpSimulationIsland* pItem = item;
     if ((pItem->flags26 & 3) == 0)
     {
-        hkpSimulationIsland** arr = reinterpret_cast<hkpSimulationIsland**>(self->m_kInactiveSimulationIslands.m_data);
-        int last = self->m_kInactiveSimulationIslands.m_iElementCount - 1;
+        hkpSimulationIsland** arr = reinterpret_cast<hkpSimulationIsland**>(self->m_inactiveSimulationIslands.m_data);
+        int last = self->m_inactiveSimulationIslands.m_iElementCount - 1;
         arr[pItem->storageIndex] = arr[last];
-        reinterpret_cast<hkpSimulationIsland**>(self->m_kInactiveSimulationIslands.m_data)[pItem->storageIndex]->storageIndex = pItem->storageIndex;
-        self->m_kInactiveSimulationIslands.m_iElementCount--;
+        reinterpret_cast<hkpSimulationIsland**>(self->m_inactiveSimulationIslands.m_data)[pItem->storageIndex]->storageIndex = pItem->storageIndex;
+        self->m_inactiveSimulationIslands.m_iElementCount--;
     }
     else
     {
-        hkpSimulationIsland** arr = reinterpret_cast<hkpSimulationIsland**>(self->m_kActiveSimulationIslands.m_data);
-        int last = self->m_kActiveSimulationIslands.m_iElementCount - 1;
+        hkpSimulationIsland** arr = reinterpret_cast<hkpSimulationIsland**>(self->m_activeSimulationIslands.m_data);
+        int last = self->m_activeSimulationIslands.m_iElementCount - 1;
         arr[pItem->storageIndex] = arr[last];
-        reinterpret_cast<hkpSimulationIsland**>(self->m_kActiveSimulationIslands.m_data)[pItem->storageIndex]->storageIndex = pItem->storageIndex;
-        self->m_kActiveSimulationIslands.m_iElementCount--;
+        reinterpret_cast<hkpSimulationIsland**>(self->m_activeSimulationIslands.m_data)[pItem->storageIndex]->storageIndex = pItem->storageIndex;
+        self->m_activeSimulationIslands.m_iElementCount--;
     }
     ClearSlotReference((int*)self, (int*)pItem);
 }
@@ -922,7 +951,7 @@ struct S_00cb5420_Router
 };
 
 S_00cb5420_Router& __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(S_00cb5420_Heap& alloc, void* array, int elemSize);
+void __cdecl ResizeAudioStream(S_00cb5420_Heap& mem, void* array, int sizeElem);
 
 
 
@@ -933,13 +962,16 @@ template<class T> __forceinline void appendDirtyIsland(hkArrayBase<T>& a,const T
  T* p=a.m_data+a.m_iElementCount;for(int i=0;i<1;++i)p[i]=t;a.m_iElementCount++;
 }
 // @fnv 0x00cb5420
-void AddItemToContainer(hkpWorld* pContainer, hkpSimulationIsland* item)
+// src: XBOX_RETAIL_PDB 0x00cb5420
+// pdb: hkpWorldOperationUtil::markIslandInactive | hkpWorldOperationUtil.obj | retail, object-file gap fill, high
+// pdb params: world, island
+void hkpWorldOperationUtil_markIslandInactive(hkpWorld* pContainer, hkpSimulationIsland* island)
 {
-    item->flags26 &= ~0x0C;
-    if (item->dirtyIndex == 0xFFFF)
+    island->flags26 &= ~0x0C;
+    if (island->dirtyIndex == 0xFFFF)
     {
-        item->dirtyIndex = (unsigned short)pContainer->m_kDirtySimulationIslands.m_iElementCount;
-        appendDirtyIsland(reinterpret_cast<hkArrayBase<hkpSimulationIsland*>&>(pContainer->m_kDirtySimulationIslands),item);
+        island->dirtyIndex = (unsigned short)pContainer->m_dirtySimulationIslands.m_iElementCount;
+        appendDirtyIsland(reinterpret_cast<hkArrayBase<hkpSimulationIsland*>&>(pContainer->m_dirtySimulationIslands),island);
     }
 }
 }  // namespace fnv_00cb5420
@@ -1051,20 +1083,23 @@ struct FUN_00cb5570_arg
     ObjB* other;
 };
 
-void __cdecl hkpWorldOperationUtil_internalMergeTwoIslands(ObjA* a1, int a2, int a3);
+void __cdecl hkpWorldOperationUtil_internalMergeTwoIslands(ObjA* a1, int islandA, int islandB);
 
 // @fnv 0x00cb5570
 // src: HAVOK_LIB 0x00cb5570
-void __cdecl hkpWorldOperationUtil_mergeIslands(ObjA* apObjA, ObjB* apOwner, ObjB* apOther)
+// pdb: hkpWorldOperationUtil::mergeIslands | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, entityA, entityB
+// pdb locals: op
+void __cdecl hkpWorldOperationUtil_mergeIslands(ObjA* apObjA, ObjB* entityA, ObjB* entityB)
 {
-    int iOwnerValue = apOwner->m_cc;
-    int iOtherValue = apOther->m_cc;
+    int iOwnerValue = entityA->m_cc;
+    int iOtherValue = entityB->m_cc;
     if (apObjA->m_94 != 0)
     {
         FUN_00cb5570_arg arg;
         arg.tag = 0xc;
-        arg.owner = apOwner;
-        arg.other = apOther;
+        arg.owner = entityA;
+        arg.other = entityB;
         apObjA->hkpWorld_queueOperation(&arg);
         return;
     }
@@ -1146,7 +1181,7 @@ struct S_00cb59f0_Obj58
 
 struct S_00cb59f0_Obj64
 {
-    void hkpTypedBroadPhaseDispatcher_addPairs(S_00cb59f0_Elem* data, int n, char* extra) throw();
+    void hkpTypedBroadPhaseDispatcher_addPairs(S_00cb59f0_Elem* newPairs, int numNewPairs, char* extra) throw();
 };
 
 struct S_00cb59f0_Ctx
@@ -1176,21 +1211,24 @@ struct S_00cb59f0_B
     S_00cb59f0_Xf unk30;
 };
 
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(S_00cb59f0_Ctx* ctx, S_00cb59f0_B** items, int n) throw();
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(S_00cb59f0_Ctx* collisionInput, S_00cb59f0_B** entityBatch, int numEntities) throw();
 
 // @fnv 0x00cb59f0
 // src: HAVOK_LIB 0x00cb59f0
-void __cdecl hkpWorldOperationUtil_addEntityBP(hkpWorld* a, S_00cb59f0_B* b) throw()
+// pdb: hkpWorldOperationUtil::addEntityBP | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, entity
+// pdb locals: pairsOut, aabb32, assertBuf, ostr
+void __cdecl hkpWorldOperationUtil_addEntityBP(hkpWorld* a, S_00cb59f0_B* entity) throw()
 {
-    S_00cb59f0_Sub* sub = &b->sub;
+    S_00cb59f0_Sub* sub = &entity->sub;
     if (sub->unk00 != 0)
     {
-        S_00cb59f0_Local arr(a->m_iBroadPhaseQuerySize);
-        hkpEntityAabbUtil_entityBatchRecalcAabb(static_cast<S_00cb59f0_Ctx*>(a->m_pCollisionInput), &b, 1);
-        __declspec(align(16)) S_00cb59f0_Xf localXf = b->unk30;
-        static_cast<S_00cb59f0_Obj58*>(a->m_pJobSemaphore)->vfn_14(&sub->unk14, &localXf, &arr);
+        S_00cb59f0_Local arr(a->m_broadPhaseQuerySize);
+        hkpEntityAabbUtil_entityBatchRecalcAabb(static_cast<S_00cb59f0_Ctx*>(a->m_collisionInput), &entity, 1);
+        __declspec(align(16)) S_00cb59f0_Xf localXf = entity->unk30;
+        static_cast<S_00cb59f0_Obj58*>(a->m_broadPhase)->vfn_14(&sub->unk14, &localXf, &arr);
         if (arr.m_iElementCount > 0)
-            static_cast<S_00cb59f0_Obj64*>(a->m_pBroadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(arr.m_data, arr.m_iElementCount, static_cast<char*>(a->m_pCollisionFilter) ? static_cast<char*>(a->m_pCollisionFilter) + 8 : 0);
+            static_cast<S_00cb59f0_Obj64*>(a->m_broadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(arr.m_data, arr.m_iElementCount, static_cast<char*>(a->m_collisionFilter) ? static_cast<char*>(a->m_collisionFilter) + 8 : 0);
     }
 }
 }  // namespace fnv_00cb59f0
@@ -1226,7 +1264,7 @@ struct BroadRec
 
 struct DispatchRec
 {
-    void hkpTypedBroadPhaseDispatcher_addPairs(void* pairs, int count, void* filter);
+    void hkpTypedBroadPhaseDispatcher_addPairs(void* newPairs, int numNewPairs, void* filter);
 };
 
 struct FilterRec
@@ -1278,9 +1316,13 @@ struct OutPad
 };
 
 // @fnv 0x00cb5b10
-void QueryEntityIntoBuffer(hkpWorld* world, EntityRec* apEntity)
+// src: XBOX_RETAIL_PDB 0x00cb5b10
+// pdb: hkpWorldOperationUtil::addPhantomBP | hkpWorldOperationUtil.obj | retail, call graph, high
+// pdb params: world, phantom
+// pdb locals: aabb, newPairs
+void hkpWorldOperationUtil_addPhantomBP(hkpWorld* world, EntityRec* phantom)
 {
-    unsigned int cap = world->m_iBroadPhaseQuerySize;
+    unsigned int cap = world->m_broadPhaseQuerySize;
     ArrFrame fr;
     fr.arr.m_pData = 0;
     fr.arr.m_iArrayLength = 0;
@@ -1294,15 +1336,15 @@ void QueryEntityIntoBuffer(hkpWorld* world, EntityRec* apEntity)
 
     OutPad outp;
     OutSlot* outPtr = &outp.out;
-    apEntity->v18(outPtr);
-    static_cast<BroadRec*>(world->m_pJobSemaphore)->Query(&apEntity->m_24, outPtr, &fr.arr);
-    apEntity->hkpPhantom_setBoundingVolumeData(outPtr);
+    phantom->v18(outPtr);
+    static_cast<BroadRec*>(world->m_broadPhase)->Query(&phantom->m_24, outPtr, &fr.arr);
+    phantom->hkpPhantom_setBoundingVolumeData(outPtr);
 
     if (fr.arr.m_iArrayLength != 0)
     {
-        FilterRec* f = static_cast<FilterRec*>(world->m_pCollisionFilter);
+        FilterRec* f = static_cast<FilterRec*>(world->m_collisionFilter);
         void* filter = f != 0 ? (void*)((char*)f + 8) : 0;
-        static_cast<DispatchRec*>(world->m_pBroadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(fr.arr.m_pData, fr.arr.m_iArrayLength, filter);
+        static_cast<DispatchRec*>(world->m_broadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(fr.arr.m_pData, fr.arr.m_iArrayLength, filter);
     }
     unsigned char* saved = fr.saved;
     if (saved == fr.arr.m_pData)
@@ -1337,7 +1379,7 @@ struct VObj
 // The object at [owner + 0x64] - its member at 0xcf70f0 pops its own arguments.
 struct Coll
 {
-    void __thiscall add(void* p, int n);
+    void __thiscall add(void* deletedPairs, int numDeletedPairs);
 };
 
 // The four-word record that is handed to v1c by address.
@@ -1382,11 +1424,14 @@ void* __cdecl tlsSlot_cb5c10();
 
 // @fnv 0x00cb5c10
 // src: HAVOK_LIB 0x00cb5c10
-void __cdecl hkpWorldOperationUtil_removeEntityBP(hkpWorld* pOwner, Evt* pEvent)
+// pdb: hkpWorldOperationUtil::removeEntityBP | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, entity
+// pdb locals: pairsOut
+void __cdecl hkpWorldOperationUtil_removeEntityBP(hkpWorld* pOwner, Evt* entity)
 {
     // q is the flag word at +0x10; the original keeps that pointer in a
     // register, so &pEvt->unk24 is reached as q + 5.
-    int* q = &pEvent->unk10;
+    int* q = &entity->unk10;
     if (*q == 0)
         return;
 
@@ -1395,9 +1440,9 @@ void __cdecl hkpWorldOperationUtil_removeEntityBP(hkpWorld* pOwner, Evt* pEvent)
     // store of zero below and the shared zero register alive.
     Slot* pSlot = &s;
 
-    reinterpret_cast<VObj*>(pOwner->m_pSimulation)->v20(&pEvent, 1, pOwner, 1);
+    reinterpret_cast<VObj*>(pOwner->m_simulation)->v20(&entity, 1, pOwner, 1);
 
-    unsigned int count = pOwner->m_iBroadPhaseQuerySize;
+    unsigned int count = pOwner->m_broadPhaseQuerySize;
 
     s.a = 0;
     s.b = 0;
@@ -1411,11 +1456,11 @@ void __cdecl hkpWorldOperationUtil_removeEntityBP(hkpWorld* pOwner, Evt* pEvent)
 
     s.c = count | 0x80000000u;
 
-    static_cast<VObj*>(pOwner->m_pJobSemaphore)->v1c(q + 5, pSlot);
+    static_cast<VObj*>(pOwner->m_broadPhase)->v1c(q + 5, pSlot);
 
     int n = s.b;
     if (n > 0)
-        static_cast<Coll*>(pOwner->m_pBroadPhaseDispatcher)->add(s.a, n);
+        static_cast<Coll*>(pOwner->m_broadPhaseDispatcher)->add(s.a, n);
 
     void* d = s.d;
     if (d == s.a)
@@ -1505,21 +1550,25 @@ struct S_00cb5f50_Island;
 // The shared island header does not yet declare AddItem(hkpAction*).
 struct S_00cb5f50_Island
 {
-    void AddItem(hkpAction* c) throw();
+    void AddItem(hkpAction* act) throw();
 };
 
-void hkpWorldOperationUtil_mergeIslands(hkpWorld* world, hkpEntity* a, hkpEntity* b) throw();
+void hkpWorldOperationUtil_mergeIslands(hkpWorld* world, hkpEntity* entityA, hkpEntity* entityB) throw();
 
 // @fnv 0x00cb5f50
-void __cdecl ApplyConstraintsToEntity(hkpWorld* world, hkpEntity* entity,
-                                      const S_00cb5f50_Array<hkpAction*>* constraints) throw()
+// src: XBOX_RETAIL_PDB 0x00cb5f50
+// pdb: hkpWorldOperationUtil::addActionsToEntitysIsland | hkpWorldOperationUtil.obj | retail, call graph, high
+// pdb params: world, entity, actionsToBeMoved
+// pdb locals: attachedEntities
+void __cdecl hkpWorldOperationUtil_addActionsToEntitysIsland(hkpWorld* world, hkpEntity* entity,
+                                      const S_00cb5f50_Array<hkpAction*>* actionsToBeMoved) throw()
 {
-    S_00cb5f50_Island* island = reinterpret_cast<S_00cb5f50_Island*>(entity->m_pSimulationIsland);
+    S_00cb5f50_Island* island = reinterpret_cast<S_00cb5f50_Island*>(entity->m_simulationIsland);
     S_00cb5f50_InplaceArray<hkpEntity*, 16> entities;
-    for (int i = 0; i < constraints->m_iElementCount; i++)
+    for (int i = 0; i < actionsToBeMoved->m_iElementCount; i++)
     {
-        hkpAction* c = constraints->m_data[i];
-        if (island != world->m_pFixedIsland)
+        hkpAction* c = actionsToBeMoved->m_data[i];
+        if (island != world->m_fixedIsland)
         {
             island->AddItem(c);
             c->FUN_00c905b0();
@@ -1528,14 +1577,14 @@ void __cdecl ApplyConstraintsToEntity(hkpWorld* world, hkpEntity* entity,
             for (int j = 0; j < entities.m_iElementCount; j++)
             {
                 hkpEntity* other = entities[j];
-                if (other != entity && reinterpret_cast<const unsigned char&>(other->m_pMotionState.m_type) != 5 && reinterpret_cast<const unsigned char&>(entity->m_pMotionState.m_type) != 5 &&
-                    other->m_pSimulationIsland != entity->m_pSimulationIsland)
-                    hkpWorldOperationUtil_mergeIslands(reinterpret_cast<hkpWorld*>(other->m_pOwningWorld), other, entity);
+                if (other != entity && reinterpret_cast<const unsigned char&>(other->m_motion.m_type) != 5 && reinterpret_cast<const unsigned char&>(entity->m_motion.m_type) != 5 &&
+                    other->m_simulationIsland != entity->m_simulationIsland)
+                    hkpWorldOperationUtil_mergeIslands(reinterpret_cast<hkpWorld*>(other->m_world), other, entity);
             }
         }
         else
         {
-            static_cast<S_00cb5f50_Island*>(world->m_pFixedIsland)->AddItem(c);
+            static_cast<S_00cb5f50_Island*>(world->m_fixedIsland)->AddItem(c);
             c->FUN_00c905b0();
         }
     }
@@ -1594,6 +1643,8 @@ struct FUN_00cb7480_cls
 // Subtracts the delta's m_04, m_08 and m_0c from m_0c, m_10 and m_14, and from the node's m_14, m_16 and m_18, when a1->m_30 is non-null.
 // @fnv 0x00cb7480
 // src: HAVOK_LIB 0x00cb7480
+// pdb: hkpEntity::getAction | hkpWorldOperationUtil.obj | debug, object-file run extension, low
+// pdb params: i
 void FUN_00cb7480_cls::hkpConstraintOwner_subConstraintInfo(FUN_00cb7480_holder* apHolder, FUN_00cb7480_delta* apDelta)
 {
     if (apHolder->m_30 != 0)
@@ -1620,7 +1671,7 @@ inline hkMemoryRouter* audio()
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
 
-__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 template <class T> struct hkLocalArr
 {
@@ -1667,27 +1718,30 @@ struct IndexRemap
     int** m_ppIndices;
     int m_iIndexCount;
 
-    void RemapAndAccumulate(const hkArray<int>& map, int n, hkArray<int>& values);
+    void hkUnionFind_reindex(const hkArray<int>& rindex, int numNewGroups, hkArray<int>& elementsPerGroup);
 };
 
 // Remaps each entry of the index array through map, then sums values into n buckets by mapped index and writes the sums back into values.
 // @fnv 0x00d282c0
-void IndexRemap::RemapAndAccumulate(const hkArray<int>& map, int n, hkArray<int>& values)
+// src: XBOX_RETAIL_PDB 0x00d282c0
+// pdb: hkUnionFind::reindex | hkUnionFind.obj | retail, call graph (shared callers), high
+// pdb params: rindex, numNewGroups, elementsPerGroup
+void IndexRemap::hkUnionFind_reindex(const hkArray<int>& rindex, int numNewGroups, hkArray<int>& elementsPerGroup)
 {
     for (int i = 0; i < m_iIndexCount; i++)
-        (*m_ppIndices)[i] = map.m_data[(*m_ppIndices)[i]];
+        (*m_ppIndices)[i] = rindex.m_data[(*m_ppIndices)[i]];
 
     hkMemoryAllocator& stackAlloc = audio()->temp();
     int m_iCapacity;
-    int* sums = localAlloc(stackAlloc, n, m_iCapacity);
-    for (int i = 0; i < n; i++)
+    int* sums = localAlloc(stackAlloc, numNewGroups, m_iCapacity);
+    for (int i = 0; i < numNewGroups; i++)
         sums[i] = 0;
-    for (int i = 0; i < values.m_iElementCount; i++)
-        sums[map.m_data[i]] += values.m_data[i];
+    for (int i = 0; i < elementsPerGroup.m_iElementCount; i++)
+        sums[rindex.m_data[i]] += elementsPerGroup.m_data[i];
 
-    SetSizeAndGrow(values, n);
-    for (int i = 0; i < n; i++)
-        values.m_data[i] = sums[i];
+    SetSizeAndGrow(elementsPerGroup, numNewGroups);
+    for (int i = 0; i < numNewGroups; i++)
+        elementsPerGroup.m_data[i] = sums[i];
 
     hkMemoryAllocator& alloc = audio()->temp();
     if ((m_iCapacity & 0x80000000) == 0)
@@ -1708,27 +1762,29 @@ struct S00cb5310_List
 };
 
 extern int DAT_01267e30;
-void ResizeAudioStream(void* alloc, S00cb5310_List* list, int n);
+void ResizeAudioStream(void* mem, S00cb5310_List* array, int sizeElem);
 bool Object_ProcessEntries_00d28560(float* p, hkpEntity** arr, int n, int size);
-void UpdateRotationInterpolation(float f, void* p);
-void hkpWorldCallbackUtil_fireIslandDeactivated(hkpWorld* a1, hkpSimulationIsland* a2);
+void hkSweptTransformUtil_freezeMotionState(float f, void* motionState);
+void hkpWorldCallbackUtil_fireIslandDeactivated(hkpWorld* a1, hkpSimulationIsland* island);
 // If FUN_00d28560 passes, moves node a2 from the owner's m_28 array to its m_34 list, updates its pieces and calls FUN_00d011b0; else sets a flag bit and returns.
 // @fnv 0x00cb5310
 // src: HAVOK_LIB 0x00cb5310
-void __cdecl hkpWorldOperationUtil_internalDeactivateIsland(hkpWorld* apOwner, hkpSimulationIsland* apNode)
+// pdb: hkpWorldOperationUtil::internalDeactivateIsland | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, island
+void __cdecl hkpWorldOperationUtil_internalDeactivateIsland(hkpWorld* apOwner, hkpSimulationIsland* island)
 {
     hkpEntity** pForm;
-    pForm = apNode->entities.data;
+    pForm = island->entities.data;
     long holder;
-    holder = apNode->entities.count;
+    holder = island->entities.count;
     float* pf = &reinterpret_cast<float&>(apOwner->pad1C8[8]);
     if (Object_ProcessEntries_00d28560(pf, pForm, holder, 0xe0) == 0)
     {
-        apNode->flags26 = (unsigned char)((apNode->flags26 & 0xf7) | 4);
+        island->flags26 = (unsigned char)((island->flags26 & 0xf7) | 4);
         return;
     }
     S00cb5310_List* list;
-    list = reinterpret_cast<S00cb5310_List*>(&apOwner->m_kInactiveSimulationIslands);
+    list = reinterpret_cast<S00cb5310_List*>(&apOwner->m_inactiveSimulationIslands);
     hkMemoryRouter* p = reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
     if (list->m_04 == (int)(list->m_08 & 0x3fffffffu))
     {
@@ -1737,29 +1793,29 @@ void __cdecl hkpWorldOperationUtil_internalDeactivateIsland(hkpWorld* apOwner, h
     hkpSimulationIsland** slot;
     slot = list->m_00 + list->m_04;
     __assume((bool)slot);
-    new (slot) hkpSimulationIsland*(apNode);
+    new (slot) hkpSimulationIsland*(island);
     list->m_04 += 1;
-    reinterpret_cast<hkpSimulationIsland**>(apOwner->m_kActiveSimulationIslands.m_data)[apNode->storageIndex] = reinterpret_cast<hkpSimulationIsland**>(apOwner->m_kActiveSimulationIslands.m_data)[apOwner->m_kActiveSimulationIslands.m_iElementCount - 1];
-    reinterpret_cast<hkpSimulationIsland**>(apOwner->m_kActiveSimulationIslands.m_data)[apNode->storageIndex]->storageIndex = apNode->storageIndex;
-    S00cb5310_List* _lst = reinterpret_cast<S00cb5310_List*>(&apOwner->m_kInactiveSimulationIslands);
-    apOwner->m_kActiveSimulationIslands.m_iElementCount--;
-    apNode->storageIndex = (unsigned short)(_lst->m_04 - 1);
-    apNode->flags26 &= 0xfc;
+    reinterpret_cast<hkpSimulationIsland**>(apOwner->m_activeSimulationIslands.m_data)[island->storageIndex] = reinterpret_cast<hkpSimulationIsland**>(apOwner->m_activeSimulationIslands.m_data)[apOwner->m_activeSimulationIslands.m_iElementCount - 1];
+    reinterpret_cast<hkpSimulationIsland**>(apOwner->m_activeSimulationIslands.m_data)[island->storageIndex]->storageIndex = island->storageIndex;
+    S00cb5310_List* _lst = reinterpret_cast<S00cb5310_List*>(&apOwner->m_inactiveSimulationIslands);
+    apOwner->m_activeSimulationIslands.m_iElementCount--;
+    island->storageIndex = (unsigned short)(_lst->m_04 - 1);
+    island->flags26 &= 0xfc;
     int i;
-    reinterpret_cast<float&>(apNode->unk44) = *pf;
+    reinterpret_cast<float&>(island->unk44) = *pf;
     i = 0;
-    if (apNode->entities.count > i)
+    if (island->entities.count > i)
     {
         do
         {
-            hkpEntity* pPiece = apNode->entities.data[i];
-            UpdateRotationInterpolation(reinterpret_cast<float&>(apNode->unk44), &pPiece->m_pMotionState.m_kMotionState);
-            pPiece->m_pMotionState.SetTranslationalVelocity(reinterpret_cast<const hkVector4&>(DAT_01267e30));
-            pPiece->m_pMotionState.SetRotationalVelocity(reinterpret_cast<const hkVector4&>(DAT_01267e30));
+            hkpEntity* pPiece = island->entities.data[i];
+            hkSweptTransformUtil_freezeMotionState(reinterpret_cast<float&>(island->unk44), &pPiece->m_motion.m_kMotionState);
+            pPiece->m_motion.SetTranslationalVelocity(reinterpret_cast<const hkVector4&>(DAT_01267e30));
+            pPiece->m_motion.SetRotationalVelocity(reinterpret_cast<const hkVector4&>(DAT_01267e30));
             ++i;
-        } while (i < apNode->entities.count);
+        } while (i < island->entities.count);
     }
-    hkpWorldCallbackUtil_fireIslandDeactivated(apOwner, apNode);
+    hkpWorldCallbackUtil_fireIslandDeactivated(apOwner, island);
 }
 
 namespace fnv_00cb5500 {
@@ -1788,21 +1844,24 @@ struct AllocatorContext
     unsigned int allocator;
 };
 extern AllocatorContext* __cdecl hkMemoryRouter_getInstance();
-extern void __cdecl ResizeAudioStream(unsigned int allocator, EntryArray* list, int entrySize);
+extern void __cdecl ResizeAudioStream(unsigned int mem, EntryArray* array, int sizeElem);
 
 // Sets entry flags, and if entry->index is 0xffff, appends entry to the EntryArray at owner+0x40, resizing it via ResizeAudioStream when full.
 // @fnv 0x00cb5500
-void __cdecl AddEntryToList(void* owner, Entry* entry)
+// src: XBOX_RETAIL_PDB 0x00cb5500
+// pdb: hkpWorldOperationUtil::markIslandActive | hkpWorldOperationUtil.obj | retail, object-file gap fill, high
+// pdb params: world, island
+void __cdecl hkpWorldOperationUtil_markIslandActive(void* owner, Entry* island)
 {
-    unsigned char bits = entry->flags;
+    unsigned char bits = island->flags;
     if ((bits & 0x0c) == 0 && (bits & 3) != 0)
     {
-        entry->flags = (bits & ~0x20) | 0x10;
+        island->flags = (bits & ~0x20) | 0x10;
     }
-    entry->flags = (entry->flags & ~0x08) | 0x04;
-    if (entry->index == 0xffff)
+    island->flags = (island->flags & ~0x08) | 0x04;
+    if (island->index == 0xffff)
     {
-        entry->index = (unsigned short)*(unsigned int*)((unsigned char*)owner + 0x44);
+        island->index = (unsigned short)*(unsigned int*)((unsigned char*)owner + 0x44);
         EntryArray* list = (EntryArray*)((unsigned char*)owner + 0x40);
         AllocatorContext* allocator = hkMemoryRouter_getInstance();
         if (list->count == (list->capacity & 0x3fffffff))
@@ -1811,7 +1870,7 @@ void __cdecl AddEntryToList(void* owner, Entry* entry)
         }
         Entry** slot = list->entries + list->count;
         __assume(slot != 0);
-        new (slot) Entry*(entry);
+        new (slot) Entry*(island);
         ++list->count;
     }
 }
@@ -1952,13 +2011,13 @@ struct Cb5750_Source
 
 struct Cb5750_Sink
 {
-    void addSecond(S_00cb5d00_Elem* data, int n) throw();
-    void addFirst(S_00cb5d00_Elem* data, int n, void* extra) throw();
+    void addSecond(S_00cb5d00_Elem* deletedPairs, int numDeletedPairs) throw();
+    void addFirst(S_00cb5d00_Elem* newPairs, int numNewPairs, void* extra) throw();
 };
 
 S_00c6aca0_Router* Cb5750_router() throw();
-void __cdecl Cb5750_merge(hkArray<S_00cb5d00_Elem, Cb5750_ArrayPolicy>* a, hkArray<S_00cb5d00_Elem, Cb5750_ArrayPolicy>* b) throw();
-void __cdecl Cb5750_invalid(void* world, Cb5750_Param** pp, int count) throw();
+void __cdecl Cb5750_merge(hkArray<S_00cb5d00_Elem, Cb5750_ArrayPolicy>* newPairs, hkArray<S_00cb5d00_Elem, Cb5750_ArrayPolicy>* delPairs) throw();
+void __cdecl Cb5750_invalid(void* collisionInput, Cb5750_Param** entityBatch, int numEntities) throw();
 
 // The shared world header lacks AddCollisionShape and the deferred-operation method used here.
 struct Cb5750_Owner
@@ -2177,12 +2236,16 @@ struct Cb5750_Owner
     void defer(Cb5750_Deferred* d) throw();
     void flush8c() throw();
     void flush90() throw();
-    void __cdecl AddCollisionShape(Cb5750_Param* param) throw();
+    void __cdecl hkpWorldOperationUtil_updateEntityBP(Cb5750_Param* param) throw();
 };
 
 // If unk94 is set, defers the call; otherwise expands the shape's bounding volume into an AABB, queries unk58 with it, and passes results to unk64.
 // @fnv 0x00cb5750
-void __cdecl Cb5750_Owner::AddCollisionShape(Cb5750_Param* param) throw()
+// src: XBOX_RETAIL_PDB 0x00cb5750
+// pdb: hkpWorldOperationUtil::updateEntityBP | hkpWorldOperationUtil.obj | retail, object-file gap fill, high
+// pdb params: world, entity
+// pdb locals: op, delPairs, aabb32, newPairs, bph, assertBuf, ostr
+void __cdecl Cb5750_Owner::hkpWorldOperationUtil_updateEntityBP(Cb5750_Param* param) throw()
 {
     if (unk94 != 0)
     {
@@ -2262,7 +2325,7 @@ struct MemoryContext
     Heap* heap;
 };
 extern "C" MemoryContext* __cdecl hkMemoryRouter_getInstance();
-extern "C" void __cdecl ResizeAudioStream(void* heap, void* array, int elementSize);
+extern "C" void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> struct Array
 {
@@ -2444,14 +2507,18 @@ struct Manager
 
 // Enumerates each producer's actors, adds qualifying producers to output, removes them from currentCC, and frees the scratch buffer.
 // @fnv 0x00cb5dd0
-void __cdecl CollectProducers(hkpWorld* context, Manager* manager, Array<hkpAction>* output)
+// src: XBOX_RETAIL_PDB 0x00cb5dd0
+// pdb: hkpWorldOperationUtil::removeAttachedActionsFromDynamicIsland | hkpWorldOperationUtil.obj | retail, call graph, high
+// pdb params: world, entity, actionsToBeMoved
+// pdb locals: actionEntities, action
+void __cdecl hkpWorldOperationUtil_removeAttachedActionsFromDynamicIsland(hkpWorld* context, Manager* entity, Array<hkpAction>* actionsToBeMoved)
 {
     Scratch scratch;
     int index = 0;
-    hkpSimulationIsland* handle = manager->currentCC;
-    for (; index < manager->producerCount20c; ++index)
+    hkpSimulationIsland* handle = entity->currentCC;
+    for (; index < entity->producerCount20c; ++index)
     {
-        hkpAction* object = manager->producers208[index];
+        hkpAction* object = entity->producers208[index];
         object->GetEntities(reinterpret_cast<hkArray<hkpEntity*>&>(scratch));
         int j = 0;
         if (scratch.length > 0)
@@ -2459,19 +2526,19 @@ void __cdecl CollectProducers(hkpWorld* context, Manager* manager, Array<hkpActi
             do
             {
                 hkpEntity* other = scratch.data[j];
-                if (reinterpret_cast<const unsigned char&>(other->m_pMotionState.m_type) != 5 && other != reinterpret_cast<hkpEntity*>(manager))
+                if (reinterpret_cast<const unsigned char&>(other->m_motion.m_type) != 5 && other != reinterpret_cast<hkpEntity*>(entity))
                     goto next_object;
                 ++j;
             } while (j < scratch.length);
         }
-        output->add(object);
+        actionsToBeMoved->add(object);
         object->FUN_00c90510();
         handle->RemoveEntry(object);
         handle->flags25 = (handle->flags25 & 0xdf) | 0x10;
         if (handle->dirtyIndex == 0xffff)
         {
-            handle->dirtyIndex = (unsigned short)context->m_kDirtySimulationIslands.m_iElementCount;
-            reinterpret_cast<Array<hkpSimulationIsland>&>(context->m_kDirtySimulationIslands).add(handle);
+            handle->dirtyIndex = (unsigned short)context->m_dirtySimulationIslands.m_iElementCount;
+            reinterpret_cast<Array<hkpSimulationIsland>&>(context->m_dirtySimulationIslands).add(handle);
         }
     next_object:;
     }
@@ -2491,27 +2558,30 @@ struct List_cb3d10
 };
 // Scans the last 20 islands for a non-target island below the desired size and marks the match.
 // @fnv 0x00cb3d10
-static __declspec(noinline) hkpSimulationIsland* FindItemForThreshold(hkpWorld* owner, List_cb3d10* list, int threshold,
-                                                              hkpSimulationIsland* target)
+// src: XBOX_RETAIL_PDB 0x00cb3d10
+// pdb: findSmallSparseActiveIsland | hkpWorldOperationUtil.obj | retail, call graph, high
+// pdb params: world, islands, islandSizeAddon, islandToIgnore
+static __declspec(noinline) hkpSimulationIsland* findSmallSparseActiveIsland(hkpWorld* owner, List_cb3d10* islands, int islandSizeAddon,
+                                                              hkpSimulationIsland* islandToIgnore)
 {
-    int limit = reinterpret_cast<const int&>(owner->m_uiMinDesiredIslandSize);
-    if (threshold >= limit)
+    int limit = reinterpret_cast<const int&>(owner->m_minDesiredIslandSize);
+    if (islandSizeAddon >= limit)
         return 0;
-    if (!owner->m_bWantSimulationIslands.m_cBooleanValue)
+    if (!owner->m_wantSimulationIslands.m_cBooleanValue)
         return 0;
-    int i = list->m_iElementCount;
+    int i = islands->m_iElementCount;
     int lo = (i - 20 < 0) ? 0 : i - 20;
     for (--i; i >= lo; --i)
     {
-        hkpSimulationIsland* item = list->m_data[i];
-        if (target != item)
+        hkpSimulationIsland* item = islands->m_data[i];
+        if (islandToIgnore != item)
         {
             int v = item->entities.count;
             if (v <= item->unk1C)
                 v = item->unk1C;
             if (item->flags26 & 0xc)
             {
-                if (v + threshold < limit)
+                if (v + islandSizeAddon < limit)
                 {
                     item->flags25 = (item->flags25 & 0xf7) | 4;
                     return item;
@@ -2528,7 +2598,7 @@ hkpSimulationIsland* volatile g_cb3d10_target;
 hkpSimulationIsland* volatile g_cb3d10_out;
 void CallTarget_cb3d10()
 {
-    g_cb3d10_out = FindItemForThreshold(g_cb3d10_owner, g_cb3d10_list, g_cb3d10_thr, g_cb3d10_target);
+    g_cb3d10_out = findSmallSparseActiveIsland(g_cb3d10_owner, g_cb3d10_list, g_cb3d10_thr, g_cb3d10_target);
 }
 
 struct B10293_Item
@@ -2560,6 +2630,8 @@ static inline int Dec(int w, unsigned char s)
 }
 // Zeroes out the output array, then for each list item computes a threshold from two packed fields and sets the indexed slot to 1 when the threshold is 5 or less.
 // @fnv 0x00cb4080
+// pdb: findInactiveGroups | hkpWorldOperationUtil.obj | retail, object-file run extension, low
+// pdb params: checker, entities, world, numGroups, isActive
 static void MarkIndexedValues(int count, B10293_List* list, int** out, B10293_Chain* chain, hkpWorld* ctx)
 {
     int i;
@@ -2643,6 +2715,8 @@ struct ShapeList
 // For each shape in list, set flags[idx] to 1 and add its m_numShapeKeys (minimum 1) to counts[idx].
 // @fnv 0x00cb41e0
 // src: HAVOK_LIB 0x00cb41e0
+// pdb: estimateSolverSize | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: checker, entities, numGroups, isActive, sizes
 static void estimateSolverSize(int*** indexMap, int** counts, ShapeList* list, int** flags)
 {
     int**** pp = &indexMap;
@@ -2693,20 +2767,23 @@ void __cdecl ResizeAudioStream(void*, Array*, int);
 
 // Collects actions from the fixed island and appends the island to the dirty list when needed.
 // @fnv 0x00cb4790
-void __cdecl CollecthkpSimulationIslandEntries(int* parent, int* elements, Array* output)
+// pdb: hkpWorldOperationUtil::removeAttachedActionsFromFixedIsland | hkpWorldOperationUtil.obj | retail, call graph, high
+// pdb params: world, entity, actionsToBeMoved
+// pdb locals: action, assertBuf, ostr
+void __cdecl CollecthkpSimulationIslandEntries(int* parent, int* entity, Array* actionsToBeMoved)
 {
-    for (int i = 0; i < *(unsigned short*)&elements[0x83]; i++)
+    for (int i = 0; i < *(unsigned short*)&entity[0x83]; i++)
     {
-        hkpAction* item = ((hkpAction**)elements[0x82])[i];
-        if (item->m_pCurrentSimulationIsland == (hkpSimulationIsland*)parent[8])
+        hkpAction* item = ((hkpAction**)entity[0x82])[i];
+        if (item->m_island == (hkpSimulationIsland*)parent[8])
         {
             Heap* heap = hkMemoryRouter_getInstance();
-            if (output->size == (int)(output->capacity & 0x3fffffff))
-                ResizeAudioStream(heap->allocator, output, 4);
-            Cell* dst = &output->data[output->size];
+            if (actionsToBeMoved->size == (int)(actionsToBeMoved->capacity & 0x3fffffff))
+                ResizeAudioStream(heap->allocator, actionsToBeMoved, 4);
+            Cell* dst = &actionsToBeMoved->data[actionsToBeMoved->size];
             new (dst) Cell();
             dst->value = item;
-            output->size++;
+            actionsToBeMoved->size++;
             item->FUN_00c90510();
             ((hkpSimulationIsland*)parent[8])->RemoveEntry(item);
             ((hkpSimulationIsland*)parent[8])->flags25 = (((hkpSimulationIsland*)parent[8])->flags25 & 0xdf) | 0x10;
@@ -2782,7 +2859,7 @@ struct ConstraintRuntimeInfo
 };
 
 void __cdecl hkpWorldOperationUtil_internalActivateIsland(hkpWorld*, hkpSimulationIsland*, hkBool = false);
-void __cdecl _hkAgentNnMachine_AppendTrack(void*, void*);
+void __cdecl hkAgentNnMachine_AppendTrack(void*, void*);
 void __cdecl hkArrayUtil__reserve(void*, void*, int, int);
 void __cdecl ResizeAudioStream(void*, void*, int);
 void __cdecl ClearSlotReference(hkpWorld*, hkpSimulationIsland*);
@@ -2796,28 +2873,31 @@ static inline int GrowCap(int cap, int need)
 // Merges island Q into P, reassigns entity and action owners, updates world lists, and deletes Q.
 // @fnv 0x00cb4c60
 // src: HAVOK_LIB 0x00cb4c60
-void __cdecl hkpWorldOperationUtil_internalMergeTwoIslands(hkpWorld* apWorld, hkpSimulationIsland* apTarget, hkpSimulationIsland* apSource)
+// pdb: hkpWorldOperationUtil::internalMergeTwoIslands | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, islandA, islandB
+// pdb locals: assertBuf, ostr
+void __cdecl hkpWorldOperationUtil_internalMergeTwoIslands(hkpWorld* apWorld, hkpSimulationIsland* islandA, hkpSimulationIsland* islandB)
 {
     hkpWorld* o = apWorld;
-    if (apTarget->entities.count > apSource->entities.count)
+    if (islandA->entities.count > islandB->entities.count)
     {
     }
-    else if (apTarget->entities.count < apSource->entities.count || apTarget->storageIndex > apSource->storageIndex)
+    else if (islandA->entities.count < islandB->entities.count || islandA->storageIndex > islandB->storageIndex)
     {
-        hkpSimulationIsland* t = apTarget;
-        apTarget = apSource;
-        apSource = t;
+        hkpSimulationIsland* t = islandA;
+        islandA = islandB;
+        islandB = t;
     }
-    o->m_iCriticalOperationsLockCount++;
-    unsigned char pf = apTarget->flags26;
+    o->m_criticalOperationsLockCount++;
+    unsigned char pf = islandA->flags26;
     unsigned char cl = pf & 3;
     unsigned char dl;
-    if (cl == 0 && (apSource->flags26 & 3) == 0)
+    if (cl == 0 && (islandB->flags26 & 3) == 0)
         dl = 0;
     else
         dl = 1;
     unsigned char f18;
-    if ((pf & 0xc) != 0 || (apSource->flags26 & 0xc) != 0)
+    if ((pf & 0xc) != 0 || (islandB->flags26 & 0xc) != 0)
         f18 = 1;
     else
         f18 = 0;
@@ -2825,43 +2905,43 @@ void __cdecl hkpWorldOperationUtil_internalMergeTwoIslands(hkpWorld* apWorld, hk
     {
         if (cl == 0)
         {
-            apTarget->flags26 = (pf & 0xf7) | 4;
-            hkpWorldOperationUtil_internalActivateIsland(apWorld, apTarget);
+            islandA->flags26 = (pf & 0xf7) | 4;
+            hkpWorldOperationUtil_internalActivateIsland(apWorld, islandA);
         }
-        else if ((apSource->flags26 & 3) == 0)
+        else if ((islandB->flags26 & 3) == 0)
         {
-            apSource->flags26 = (apSource->flags26 & 0xf7) | 4;
-            hkpWorldOperationUtil_internalActivateIsland(apWorld, apSource);
+            islandB->flags26 = (islandB->flags26 & 0xf7) | 4;
+            hkpWorldOperationUtil_internalActivateIsland(apWorld, islandB);
         }
     }
-    apTarget->flags25 |= (apSource->flags25 & 0xc);
-    apTarget->nullsub_10();
-    apSource->nullsub_10();
-    static_cast<hkpSimulationIsland*>(o->m_pFixedIsland)->nullsub_10();
-    _hkAgentNnMachine_AppendTrack(&apTarget->unk58, &apSource->unk58);
-    int iTargetCount = apTarget->entities.count;
+    islandA->flags25 |= (islandB->flags25 & 0xc);
+    islandA->nullsub_10();
+    islandB->nullsub_10();
+    static_cast<hkpSimulationIsland*>(o->m_fixedIsland)->nullsub_10();
+    hkAgentNnMachine_AppendTrack(&islandA->unk58, &islandB->unk58);
+    int iTargetCount = islandA->entities.count;
     unsigned short idx = (unsigned short)iTargetCount;
-    int total = iTargetCount + apSource->entities.count;
-    hkArrayNative<hkpEntity*>* v48 = &apTarget->entities;
+    int total = iTargetCount + islandB->entities.count;
+    hkArrayNative<hkpEntity*>* v48 = &islandA->entities;
     v48->SetSize(total);
-    hkArrayNative<hkpEntity*>* pSourceEntities = &apSource->entities;
+    hkArrayNative<hkpEntity*>* pSourceEntities = &islandB->entities;
     for (int i = 0; i < pSourceEntities->count; ++i, ++idx)
     {
         v48->data[idx] = pSourceEntities->data[i];
-        pSourceEntities->data[i]->m_pSimulationIsland = apTarget;
-        pSourceEntities->data[i]->m_usStorageIndex = (unsigned short)idx;
+        pSourceEntities->data[i]->m_simulationIsland = islandA;
+        pSourceEntities->data[i]->m_storageIndex = (unsigned short)idx;
     }
-    int k = apTarget->actions.count;
-    int iTotalActions = k + apSource->actions.count;
-    hkArrayNative<hkpAction*>* v38 = &apTarget->actions;
+    int k = islandA->actions.count;
+    int iTotalActions = k + islandB->actions.count;
+    hkArrayNative<hkpAction*>* v38 = &islandA->actions;
     v38->SetSize(iTotalActions);
-    hkArrayNative<hkpAction*>* pSourceActions = &apSource->actions;
+    hkArrayNative<hkpAction*>* pSourceActions = &islandB->actions;
     for (int i = 0; i < pSourceActions->count; ++i)
     {
         if (pSourceActions->data[i] != 0)
         {
             v38->data[k] = pSourceActions->data[i];
-            v38->data[k]->m_pCurrentSimulationIsland = apTarget;
+            v38->data[k]->m_island = islandA;
             ++k;
         }
     }
@@ -2869,18 +2949,18 @@ void __cdecl hkpWorldOperationUtil_internalMergeTwoIslands(hkpWorld* apWorld, hk
     for (int i = 0; i < pSourceEntities->count; ++i)
     {
         hkpEntity* e = pSourceEntities->data[i];
-        ConstraintRuntimeInfo* rec = (ConstraintRuntimeInfo*)e->m_eSmallArraySerializeOverrideType.m_data;
-        for (int cnt = e->m_eSmallArraySerializeOverrideType.m_iElementCount - 1; cnt >= 0; --cnt)
+        ConstraintRuntimeInfo* rec = (ConstraintRuntimeInfo*)e->m_constraintsMaster.m_data;
+        for (int cnt = e->m_constraintsMaster.m_iElementCount - 1; cnt >= 0; --cnt)
         {
-            rec->constraint->m_pOwnerObject = reinterpret_cast<hkpConstraintOwner*>(apTarget);
+            rec->constraint->m_owner = reinterpret_cast<hkpConstraintOwner*>(islandA);
             ++rec;
         }
     }
-    apTarget->MergeFrom(apSource);
-    apTarget->unk1C += apSource->unk1C;
-    apSource->unk1C = 0;
-    unsigned short uSourceIndex = apSource->storageIndex;
-    hkArrayNative<hkpSimulationIsland*>* c = ((apSource->flags26 & 3) != 0) ? reinterpret_cast<hkArrayNative<hkpSimulationIsland*>*>(&o->m_kActiveSimulationIslands) : reinterpret_cast<hkArrayNative<hkpSimulationIsland*>*>(&o->m_kInactiveSimulationIslands);
+    islandA->MergeFrom(islandB);
+    islandA->unk1C += islandB->unk1C;
+    islandB->unk1C = 0;
+    unsigned short uSourceIndex = islandB->storageIndex;
+    hkArrayNative<hkpSimulationIsland*>* c = ((islandB->flags26 & 3) != 0) ? reinterpret_cast<hkArrayNative<hkpSimulationIsland*>*>(&o->m_activeSimulationIslands) : reinterpret_cast<hkArrayNative<hkpSimulationIsland*>*>(&o->m_inactiveSimulationIslands);
     int iListCount = c->count;
     if ((int)uSourceIndex < iListCount - 1)
     {
@@ -2888,46 +2968,46 @@ void __cdecl hkpWorldOperationUtil_internalMergeTwoIslands(hkpWorld* apWorld, hk
         c->data[uSourceIndex]->storageIndex = uSourceIndex;
     }
     c->count--;
-    unsigned char al = ((apTarget->flags25 & 3) != 0 || (apSource->flags25 & 3) != 0) ? 1 : 0;
-    unsigned char x25 = apTarget->flags25;
+    unsigned char al = ((islandA->flags25 & 3) != 0 || (islandB->flags25 & 3) != 0) ? 1 : 0;
+    unsigned char x25 = islandA->flags25;
     x25 ^= al;
     x25 &= 3;
-    apTarget->flags25 ^= x25;
-    unsigned char cl2 = apTarget->flags25;
-    unsigned char al2 = ((cl2 & 0x30) != 0 || (apSource->flags25 & 0x30) != 0) ? 1 : 0;
+    islandA->flags25 ^= x25;
+    unsigned char cl2 = islandA->flags25;
+    unsigned char al2 = ((cl2 & 0x30) != 0 || (islandB->flags25 & 0x30) != 0) ? 1 : 0;
     unsigned char uNewFlags = (unsigned char)(al2 << 4);
     uNewFlags ^= cl2;
     uNewFlags &= 0x30;
     uNewFlags ^= cl2;
-    apTarget->flags25 = uNewFlags;
-    apTarget->f26.f26mid = f18 != 0;
-    if (apSource->dirtyIndex != 0xffff && apTarget->dirtyIndex == 0xffff)
+    islandA->flags25 = uNewFlags;
+    islandA->f26.f26mid = f18 != 0;
+    if (islandB->dirtyIndex != 0xffff && islandA->dirtyIndex == 0xffff)
     {
-        apTarget->dirtyIndex = (unsigned short)o->m_kDirtySimulationIslands.m_iElementCount;
-        hkArrayNative<hkpSimulationIsland*>* pDirtyList = reinterpret_cast<hkArrayNative<hkpSimulationIsland*>*>(&o->m_kDirtySimulationIslands);
-        pDirtyList->AddBack(apTarget);
+        islandA->dirtyIndex = (unsigned short)o->m_dirtySimulationIslands.m_iElementCount;
+        hkArrayNative<hkpSimulationIsland*>* pDirtyList = reinterpret_cast<hkArrayNative<hkpSimulationIsland*>*>(&o->m_dirtySimulationIslands);
+        pDirtyList->AddBack(islandA);
     }
-    ClearSlotReference(apWorld, apSource);
-    delete apSource;
+    ClearSlotReference(apWorld, islandB);
+    delete islandB;
     int w;
-    if ((apTarget->flags26 & 3) != 0 && (w = apTarget->storageIndex) != 0)
+    if ((islandA->flags26 & 3) != 0 && (w = islandA->storageIndex) != 0)
     {
-        hkArrayNative<hkpSimulationIsland*>* pActiveList = reinterpret_cast<hkArrayNative<hkpSimulationIsland*>*>(&o->m_kActiveSimulationIslands);
+        hkArrayNative<hkpSimulationIsland*>* pActiveList = reinterpret_cast<hkArrayNative<hkpSimulationIsland*>*>(&o->m_activeSimulationIslands);
         hkpSimulationIsland* pFirstIsland = pActiveList->data[0];
-        if (apTarget->entities.count > pFirstIsland->entities.count)
+        if (islandA->entities.count > pFirstIsland->entities.count)
         {
-            apTarget->storageIndex = 0;
+            islandA->storageIndex = 0;
             pFirstIsland->storageIndex = w;
-            pActiveList->data[0] = apTarget;
+            pActiveList->data[0] = islandA;
             pActiveList->data[w] = pFirstIsland;
         }
     }
-    apWorld->nullsub_5(apTarget);
-    if (--o->m_iCriticalOperationsLockCount == 0 && o->m_bBlockExecutingPendingOperations.m_cBooleanValue == 0)
+    apWorld->nullsub_5(islandA);
+    if (--o->m_criticalOperationsLockCount == 0 && o->m_blockExecutingPendingOperations.m_cBooleanValue == 0)
     {
-        if (o->m_iPendingOperationCount != 0)
+        if (o->m_pendingOperationsCount != 0)
             o->FUN_00c91120();
-        if (o->m_iPendingOperationQueueCount == 1 && o->m_iQueuedOperationCount != 0)
+        if (o->m_pendingOperationQueueCount == 1 && o->m_pendingBodyOperationsCount != 0)
         {
             o->UpdateFields_00c91140();
             return;
@@ -2942,19 +3022,22 @@ struct IslandList
     int capacity;
 };
 
-void __cdecl hkpWorldOperationUtil_splitSimulationIsland(hkpSimulationIsland* data, hkpWorld* object, IslandList* list, int value);
-void __cdecl AddItemToContainer(hkpWorld* object, hkpSimulationIsland* item);
+void __cdecl hkpWorldOperationUtil_splitSimulationIsland(hkpSimulationIsland* currentIsland, hkpWorld* object, IslandList* newIslandsOut, int oldEntitiesOut);
+void __cdecl hkpWorldOperationUtil_markIslandInactive(hkpWorld* object, hkpSimulationIsland* island);
 // Picks a list by the node's low state, runs FUN_00cb6060, then for each new item copies that state, sets its index, and may call AddItemToContainer.
 // @fnv 0x00cb6e70
-void __cdecl PropagateStateToChildren(hkpWorld* object, int* apNode)
+// pdb: hkpWorldOperationUtil::splitSimulationIsland | hkpWorldOperationUtil.obj | retail, object-file gap fill, high
+// pdb params: currentIsland, world, newIslandsOut, oldEntitiesOut
+// pdb locals: checker, numNewIslands, entityInfo, groupsSizes, newIsland, info, action, entities, track
+void __cdecl PropagateStateToChildren(hkpWorld* object, int* currentIsland)
 {
-    hkpSimulationIsland* node = (hkpSimulationIsland*)apNode;
+    hkpSimulationIsland* node = (hkpSimulationIsland*)currentIsland;
     unsigned char uiLowState = node->flags26 & 3;
     IslandList* list;
     if (uiLowState != 0)
-        list = reinterpret_cast<IslandList*>(&object->m_kActiveSimulationIslands);
+        list = reinterpret_cast<IslandList*>(&object->m_activeSimulationIslands);
     else
-        list = reinterpret_cast<IslandList*>(&object->m_kInactiveSimulationIslands);
+        list = reinterpret_cast<IslandList*>(&object->m_inactiveSimulationIslands);
     node->flags25 &= 0xfc;
     int initialIndex = list->count;
     hkpWorldOperationUtil_splitSimulationIsland(node, object, list, 0);
@@ -2966,7 +3049,7 @@ void __cdecl PropagateStateToChildren(hkpWorld* object, int* apNode)
         item->f26.f26mid = uiLowState;
         item->f26.f26lo = uiLowState;
         if (uiLowState != 0 && uiHighState == 0)
-            AddItemToContainer(object, item);
+            hkpWorldOperationUtil_markIslandInactive(object, item);
         item->unk24 = (unsigned char)(node->unk24 - initialIndex + currentIndex);
         ++currentIndex;
     }
@@ -2980,7 +3063,7 @@ namespace fnv_00cb5480 {
 
 
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-extern "C" void __cdecl ResizeAudioStream(void* pAllocator, void* pArray, int iStride);
+extern "C" void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct PtrArray
 {
@@ -2992,24 +3075,27 @@ struct PtrArray
 // Clears bits 0xc of pItem's m_b26, then under the lock, if m_w22 is 0xffff, stores the array size in it and appends pItem to m_40.
 // @fnv 0x00cb5480
 // src: HAVOK_LIB 0x00cb5480
-void hkpWorldOperationUtil_markIslandInactiveMt(hkpWorld* pList, hkpSimulationIsland* pItem)
+// pdb: hkpWorldOperationUtil::markIslandInactiveMt | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, island
+// pdb locals: assertBuf, ostr
+void hkpWorldOperationUtil_markIslandInactiveMt(hkpWorld* pList, hkpSimulationIsland* island)
 {
-    pItem->flags26 &= 0xf3;
-    EnterCriticalSection(static_cast<CRITICAL_SECTION*>(pList->m_pIslandDirtyListCriticalSection));
-    if (pItem->dirtyIndex == 0xffff)
+    island->flags26 &= 0xf3;
+    EnterCriticalSection(static_cast<CRITICAL_SECTION*>(pList->m_islandDirtyListCriticalSection));
+    if (island->dirtyIndex == 0xffff)
     {
-        pItem->dirtyIndex = (unsigned short)pList->m_kDirtySimulationIslands.m_iElementCount;
-        PtrArray* arr = reinterpret_cast<PtrArray*>(&pList->m_kDirtySimulationIslands);
+        island->dirtyIndex = (unsigned short)pList->m_dirtySimulationIslands.m_iElementCount;
+        PtrArray* arr = reinterpret_cast<PtrArray*>(&pList->m_dirtySimulationIslands);
         hkMemoryRouter* holder = hkMemoryRouter_getInstance();
         if (arr->m_iArrayLength == (int)(arr->m_uCapFlags & 0x3fffffff))
         {
             fnv_00cb5480::ResizeAudioStream(holder->m_heap, arr, 4);
         }
         hkpSimulationIsland** slot = (hkpSimulationIsland**)((char*)arr->m_pData + *(volatile int*)&arr->m_iArrayLength * 4);
-        *slot = pItem;
+        *slot = island;
         arr->m_iArrayLength++;
     }
-    LeaveCriticalSection(static_cast<CRITICAL_SECTION*>(pList->m_pIslandDirtyListCriticalSection));
+    LeaveCriticalSection(static_cast<CRITICAL_SECTION*>(pList->m_islandDirtyListCriticalSection));
 }
 }  // namespace fnv_00cb5480
 
@@ -3065,7 +3151,7 @@ struct Cb4890_RemapTable
 {
     Cb4890_IntArray* m_entries;
     int m_iElementCount;
-    void RemapAndAccumulate(Cb4890_LocalBuffer<int>& map, int count, Cb4890_IntArray* src) throw();
+    void hkUnionFind_reindex(Cb4890_LocalBuffer<int>& rindex, int numNewGroups, Cb4890_IntArray* elementsPerGroup) throw();
 };
 template <class T> __forceinline T Cb4890_max2(T a, T b)
 {
@@ -3086,46 +3172,50 @@ __forceinline int RemapOne(Cb4890_LocalBuffer<int>& used, int* mapped, Cb4890_Ch
 }
 // Marks entries used by list elements whose decoded m_ea and m_ec are both at most 5, renumbers the rest via RemapOne, then calls RemapAndAccumulate unless k > n.
 // @fnv 0x00cb4890
-static __declspec(noinline) void RemapElements(const Cb4890_ElemArray& list, Cb4890_RemapTable* remap,
-                                               hkpWorld* owner, Cb4890_IntArray* src, Cb4890_CharArray* out)
+// src: XBOX_RETAIL_PDB 0x00cb4890
+// pdb: identifyDeactivatedSubgroups | hkpWorldOperationUtil.obj | retail, object-file gap fill, high
+// pdb params: checker, entities, world, groupsSizes, groupSparse
+// pdb locals: isActive
+static __declspec(noinline) void identifyDeactivatedSubgroups(const Cb4890_ElemArray& checker, Cb4890_RemapTable* entities,
+                                               hkpWorld* owner, Cb4890_IntArray* groupsSizes, Cb4890_CharArray* groupSparse)
 {
-    int n = src->m_iElementCount;
+    int n = groupsSizes->m_iElementCount;
     Cb4890_LocalBuffer<int> used(n);
     for (int i = 0; i < n; i++)
         used[i] = 0;
-    for (int j = 0; j < list.m_iElementCount; j++)
+    for (int j = 0; j < checker.m_iElementCount; j++)
     {
-        const hkpEntity* e = list.m_data[j];
-        int a = e->m_pMotionState.m_ausDeactivationNumInactiveFrames[1];
+        const hkpEntity* e = checker.m_data[j];
+        int a = e->m_motion.m_deactivationNumInactiveFrames[1];
         if (reinterpret_cast<unsigned char&>(owner->pad1C8[0x13e]) == (a >> 14))
             a = (a >> 7) & 0x7f;
         else
             a &= 0x7f;
-        int b = e->m_pMotionState.m_ausDeactivationNumInactiveFrames[0];
+        int b = e->m_motion.m_deactivationNumInactiveFrames[0];
         if (reinterpret_cast<unsigned char&>(owner->pad1C8[0x13d]) == (b >> 14))
             b = (b >> 7) & 0x7f;
         else
             b &= 0x7f;
         if (Cb4890_max2(b & 0x7f, a & 0x7f) <= 5)
-            used[remap->m_entries->m_data[j]] = 1;
+            used[entities->m_entries->m_data[j]] = 1;
     }
     int* remapOut = used.m_p;
     int k = 1;
-    out->m_data[0] = 1;
+    groupSparse->m_data[0] = 1;
     for (int i = 0; i < n; i++)
     {
-        k = RemapOne(used, remapOut, out, i, k);
+        k = RemapOne(used, remapOut, groupSparse, i, k);
     }
     if (k > n)
-        out->m_data[0] = 0;
+        groupSparse->m_data[0] = 0;
     else
-        remap->RemapAndAccumulate(used, k, src);
+        entities->hkUnionFind_reindex(used, k, groupsSizes);
 }
 
 volatile int g_cb4890[5];
 void Cb4890_caller()
 {
-    RemapElements(*(Cb4890_ElemArray*)g_cb4890[0], (Cb4890_RemapTable*)g_cb4890[1], (hkpWorld*)g_cb4890[2],
+    identifyDeactivatedSubgroups(*(Cb4890_ElemArray*)g_cb4890[0], (Cb4890_RemapTable*)g_cb4890[1], (hkpWorld*)g_cb4890[2],
                   (Cb4890_IntArray*)g_cb4890[3], (Cb4890_CharArray*)g_cb4890[4]);
 }
 
@@ -3142,20 +3232,20 @@ struct S00cb5100_Bits
 
 __forceinline void SetDeactivationFilter(hkpEntity* entity, int a0, int a1, int a2)
 {
-    if ((unsigned int)(a2 & 3) < (unsigned int)(entity->m_pMotionState.m_ucDeactivationIntegrateCounter & 3))
+    if ((unsigned int)(a2 & 3) < (unsigned int)(entity->m_motion.m_deactivationIntegrateCounter & 3))
         a0 = (~a0) << 14;
     else
         a0 <<= 14;
-    if (a2 < entity->m_pMotionState.m_ucDeactivationIntegrateCounter)
+    if (a2 < entity->m_motion.m_deactivationIntegrateCounter)
         a1 = (~a1) << 14;
     else
         a1 <<= 14;
-    entity->m_pMotionState.m_ausDeactivationNumInactiveFrames[0] = (unsigned short)((entity->m_pMotionState.m_ausDeactivationNumInactiveFrames[0] & 0x3fff) | a0);
-    entity->m_pMotionState.m_ausDeactivationNumInactiveFrames[1] = (unsigned short)((entity->m_pMotionState.m_ausDeactivationNumInactiveFrames[1] & 0x3fff) | a1);
+    entity->m_motion.m_deactivationNumInactiveFrames[0] = (unsigned short)((entity->m_motion.m_deactivationNumInactiveFrames[0] & 0x3fff) | a0);
+    entity->m_motion.m_deactivationNumInactiveFrames[1] = (unsigned short)((entity->m_motion.m_deactivationNumInactiveFrames[1] & 0x3fff) | a1);
 }
 
 
-void ResizeAudioStream(void* heap, void* arr, int elemSize);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct S00cb5100_Arr
 {
     hkpSimulationIsland** m_data;
@@ -3174,17 +3264,17 @@ struct S00cb5100_Arr
     }
 };
 void hkSweptTransformUtil_setTimeInformation(float a, float b, void* p);
-void ProcessBlocks(hkpSimulationIsland* b, float f, float g, int h);
+void hkpWorldAgentUtil_warpTime(hkpSimulationIsland* island, float oldTime, float newTime, int collisionInput);
 
 
-void ProcessSceneCallbacks(hkpWorld* w, hkpSimulationIsland* b);
+void hkpWorldCallbackUtil_fireIslandActivated(hkpWorld* w, hkpSimulationIsland* island);
 
-static __declspec(noinline) hkpSimulationIsland* FindItemForThreshold(hkpWorld* w, S00cb5100_Arr* arr, int n,
-                                                                 hkpSimulationIsland* b)
+static __declspec(noinline) hkpSimulationIsland* findSmallSparseActiveIsland(hkpWorld* w, S00cb5100_Arr* islands, int islandSizeAddon,
+                                                                 hkpSimulationIsland* islandToIgnore)
 {
-    if (w->m_kInactiveSimulationIslands.m_iElementCount == 0 || arr->m_iElementCount == 0)
+    if (w->m_inactiveSimulationIslands.m_iElementCount == 0 || islands->m_iElementCount == 0)
         return 0;
-    return arr->pick(&n, &b, w->m_kInactiveSimulationIslands.m_iElementCount);
+    return islands->pick(&islandSizeAddon, &islandToIgnore, w->m_inactiveSimulationIslands.m_iElementCount);
 }
 
 static inline bool S00cb5100_lt(unsigned char a, unsigned char b)
@@ -3195,58 +3285,61 @@ static inline bool S00cb5100_lt(unsigned char a, unsigned char b)
 // Moves b from w's data34 list to arr28, resets its entries, then merges it with another body via FUN_00cb4c60 if merge allows, else may swap it to the front.
 // @fnv 0x00cb5100
 // src: HAVOK_LIB 0x00cb5100
-void hkpWorldOperationUtil_internalActivateIsland(hkpWorld* apWorld, hkpSimulationIsland* apBody, bool merge)
+// pdb: hkpWorldOperationUtil::internalActivateIsland | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, island, allowIslandMerges
+// pdb locals: assertBuf, ostr
+void hkpWorldOperationUtil_internalActivateIsland(hkpWorld* apWorld, hkpSimulationIsland* island, bool allowIslandMerges)
 {
-    reinterpret_cast<hkpSimulationIsland**>(apWorld->m_kInactiveSimulationIslands.m_data)[apBody->storageIndex] = reinterpret_cast<hkpSimulationIsland**>(apWorld->m_kInactiveSimulationIslands.m_data)[apWorld->m_kInactiveSimulationIslands.m_iElementCount - 1];
-    reinterpret_cast<hkpSimulationIsland**>(apWorld->m_kInactiveSimulationIslands.m_data)[apBody->storageIndex]->storageIndex = apBody->storageIndex;
-    apWorld->m_kInactiveSimulationIslands.m_iElementCount--;
+    reinterpret_cast<hkpSimulationIsland**>(apWorld->m_inactiveSimulationIslands.m_data)[island->storageIndex] = reinterpret_cast<hkpSimulationIsland**>(apWorld->m_inactiveSimulationIslands.m_data)[apWorld->m_inactiveSimulationIslands.m_iElementCount - 1];
+    reinterpret_cast<hkpSimulationIsland**>(apWorld->m_inactiveSimulationIslands.m_data)[island->storageIndex]->storageIndex = island->storageIndex;
+    apWorld->m_inactiveSimulationIslands.m_iElementCount--;
 
-    S00cb5100_Arr* arr = reinterpret_cast<S00cb5100_Arr*>(&apWorld->m_kActiveSimulationIslands);
-    arr->AddBack(apBody);
+    S00cb5100_Arr* arr = reinterpret_cast<S00cb5100_Arr*>(&apWorld->m_activeSimulationIslands);
+    arr->AddBack(island);
 
-    apBody->storageIndex = (unsigned short)(apWorld->m_kActiveSimulationIslands.m_iElementCount - 1);
-    reinterpret_cast<float&>(apBody->unk30) = 0.0f;
-    reinterpret_cast<float&>(apBody->unk34) = 0.0f;
-    apBody->flags26 = (apBody->flags26 & ~2) | 1;
+    island->storageIndex = (unsigned short)(apWorld->m_activeSimulationIslands.m_iElementCount - 1);
+    reinterpret_cast<float&>(island->unk30) = 0.0f;
+    reinterpret_cast<float&>(island->unk34) = 0.0f;
+    island->flags26 = (island->flags26 & ~2) | 1;
 
-    for (int i = 0; i < apBody->entities.count; i++)
+    for (int i = 0; i < island->entities.count; i++)
     {
-        hkpEntity* e = apBody->entities.data[i];
-        hkSweptTransformUtil_setTimeInformation(0.0f, 0.0f, &e->m_pMotionState.m_kMotionState);
-        e->m_pMotionState.m_ausDeactivationNumInactiveFrames[0] = 0;
-        e->m_pMotionState.m_ausDeactivationNumInactiveFrames[1] = 0;
+        hkpEntity* e = island->entities.data[i];
+        hkSweptTransformUtil_setTimeInformation(0.0f, 0.0f, &e->m_motion.m_kMotionState);
+        e->m_motion.m_deactivationNumInactiveFrames[0] = 0;
+        e->m_motion.m_deactivationNumInactiveFrames[1] = 0;
         SetDeactivationFilter(e, reinterpret_cast<unsigned char&>(apWorld->pad1C8[0x13d]), reinterpret_cast<unsigned char&>(apWorld->pad1C8[0x13e]), reinterpret_cast<unsigned char&>(apWorld->pad1C8[0x13f]));
     }
 
-    ProcessBlocks(apBody, reinterpret_cast<float&>(apBody->unk44), reinterpret_cast<float&>(apWorld->pad1C8[8]), reinterpret_cast<int>(apWorld->m_pCollisionInput));
-    hkpEntity* e0 = apBody->entities.data[0];
+    hkpWorldAgentUtil_warpTime(island, reinterpret_cast<float&>(island->unk44), reinterpret_cast<float&>(apWorld->pad1C8[8]), reinterpret_cast<int>(apWorld->m_collisionInput));
+    hkpEntity* e0 = island->entities.data[0];
     e0->addReference();
-    ProcessSceneCallbacks(apWorld, apBody);
-    if (e0->m_pSimulationIsland == reinterpret_cast<hkpSimulationIsland*>(apBody))
+    hkpWorldCallbackUtil_fireIslandActivated(apWorld, island);
+    if (e0->m_simulationIsland == reinterpret_cast<hkpSimulationIsland*>(island))
     {
         e0->removeReference();
-        if (merge)
+        if (allowIslandMerges)
         {
-            int m = apBody->unk1C + 3;
-            int n = apBody->entities.count + 1;
+            int m = island->unk1C + 3;
+            int n = island->entities.count + 1;
             if (n > m)
                 m = n;
-            hkpSimulationIsland* o = FindItemForThreshold(apWorld, arr, m, apBody);
+            hkpSimulationIsland* o = findSmallSparseActiveIsland(apWorld, arr, m, island);
             if (o)
             {
-                hkpWorldOperationUtil_internalMergeTwoIslands((ObjA*)apWorld, (int)o, (int)apBody);
+                hkpWorldOperationUtil_internalMergeTwoIslands((ObjA*)apWorld, (int)o, (int)island);
                 return;
             }
         }
-        unsigned int idx = apBody->storageIndex;
+        unsigned int idx = island->storageIndex;
         if (idx != 0)
         {
             hkpSimulationIsland* first = arr->m_data[0];
-            if (apBody->entities.count > first->entities.count)
+            if (island->entities.count > first->entities.count)
             {
-                apBody->storageIndex = 0;
+                island->storageIndex = 0;
                 first->storageIndex = (unsigned short)idx;
-                arr->m_data[0] = apBody;
+                arr->m_data[0] = island;
                 arr->m_data[idx] = first;
             }
         }
@@ -3295,7 +3388,7 @@ template <typename T> __forceinline void c6a870Copy(T* dst, const T* src, int n)
 
 
 void __cdecl hkpWorldOperationUtil_cleanupDirtyIslands(hkpWorld* world);
-void __cdecl AddItemToContainer(hkpWorld* world, hkpSimulationIsland* item);
+void __cdecl hkpWorldOperationUtil_markIslandInactive(hkpWorld* world, hkpSimulationIsland* island);
 
 struct C6A870_Self;
 typedef hkpWorld*(__thiscall* C6A870_Query)(C6A870_Self*);
@@ -3407,6 +3500,8 @@ struct C6A870_Self
 // Calls AddItemToContainer for each world item whose children all have both constraint vectors equal to a constant, with FUN_00cb55d0 called before and after.
 // @fnv 0x00c6a870
 // src: XBOX_PDB 0x00c6a870
+// pdb: bhkWorld::DeactivateAllIslands | bhkWorld.obj | retail, upstream name already matches, high
+// pdb locals: pw, islands, isize, i, inumEntities, brigidBodyVel, pisland, j, body
 void C6A870_Self::bhkWorld_DeactivateAllIslands()
 {
     int i;
@@ -3420,7 +3515,7 @@ void C6A870_Self::bhkWorld_DeactivateAllIslands()
 
     hkArray<hkpSimulationIsland*,C6A870Allocator> items;
     getWorld();
-    copyIslandArray<hkpSimulationIsland*>(items, reinterpret_cast<hkArrayBase<hkpSimulationIsland*>&>(world->m_kActiveSimulationIslands), i);
+    copyIslandArray<hkpSimulationIsland*>(items, reinterpret_cast<hkArrayBase<hkpSimulationIsland*>&>(world->m_activeSimulationIslands), i);
     C6A870_QueryTable* pQueryTable = ((C6A870_View*)this)->table;
     pQueryTable->query(this);
 
@@ -3434,9 +3529,9 @@ void C6A870_Self::bhkWorld_DeactivateAllIslands()
             if (moved)
                 break;
             hkpEntity* c = item->entities.data[j];
-            if (c6a870Equals3(c->m_pMotionState.m_kTranslationalVelocity.m_vComponents, _mm_load_ps((const float*)&DAT_01267e30)))
+            if (c6a870Equals3(c->m_motion.m_kTranslationalVelocity.m_vComponents, _mm_load_ps((const float*)&DAT_01267e30)))
             {
-                if (c6a870Equals3(c->m_pMotionState.m_kAngularVelocity.m_vComponents, _mm_load_ps((const float*)&DAT_01267e30)))
+                if (c6a870Equals3(c->m_motion.m_kAngularVelocity.m_vComponents, _mm_load_ps((const float*)&DAT_01267e30)))
                     continue;
             }
             moved = 1;
@@ -3444,7 +3539,7 @@ void C6A870_Self::bhkWorld_DeactivateAllIslands()
         if (!moved)
         {
             getWorld();
-            AddItemToContainer(world, item);
+            hkpWorldOperationUtil_markIslandInactive(world, item);
             getWorld();
         }
     }
@@ -3464,7 +3559,7 @@ struct Selector
 
 __forceinline int GetInactiveFrames(hkpMotion& motion, int slot, int flag)
 {
-    int packed = motion.m_ausDeactivationNumInactiveFrames[slot];
+    int packed = motion.m_deactivationNumInactiveFrames[slot];
     int mode = packed >> 14;
     int n;
     if (flag != mode)
@@ -3503,6 +3598,8 @@ template <class T> __forceinline T greater4120(T a, T b)
 
 // Iterates entries, marks active groups when motion frames are 5 or fewer, and accumulates per-group size counts.
 // @fnv 0x00cb4120
+// pdb: findInactiveGroupsAndEstimateSolverSize | hkpWorldOperationUtil.obj | retail, object-file run extension, low
+// pdb params: checker, entities, numGroups, isActive, sizes, deactivationNumInactiveFramesSelectFlag
 static __declspec(noinline) void UpdateGroupActivity(const Groups4120& map, const View4120<hkpEntity*>& entries,
                                                      int unusedGroups, View4120<int>& active, View4120<int>& sizes,
                                                      unsigned char* flags)
@@ -3511,12 +3608,12 @@ static __declspec(noinline) void UpdateGroupActivity(const Groups4120& map, cons
     {
         hkpEntity* entity = entries[i];
         int group = map.groups[i];
-        int frames = greater4120(GetInactiveFrames(entity->m_pMotionState, 0, flags[0]), GetInactiveFrames(entity->m_pMotionState, 1, flags[1]));
+        int frames = greater4120(GetInactiveFrames(entity->m_motion, 0, flags[0]), GetInactiveFrames(entity->m_motion, 1, flags[1]));
         if (frames <= 5)
         {
             active[group] = 1;
         }
-        int count = greater4120(1, (int)entity->m_eSmallArraySerializeOverrideType.m_iElementCount);
+        int count = greater4120(1, (int)entity->m_constraintsMaster.m_iElementCount);
         sizes[group] += count;
     }
 }
@@ -3536,8 +3633,8 @@ void caller4120()
 struct CallA
 {
     signed char delta;
-    void UpdateCollisionIndices();
-    void CopyAndSortGeometryList(void* p);
+    void hkpLinkedCollidable_sortEntries();
+    void hkpLinkedCollidable_getCollisionEntriesSorted(void* entries);
 };
 
 struct MotionObj
@@ -3681,20 +3778,20 @@ struct RemRef
 
 struct CallB
 {
-    void UpdateNodeSlotIndices();
+    void hkpEntity_sortConstraintsSlavesDeterministically();
     void FUN_00c90510();
 };
 // The shared world header does not yet declare FUN_00c946e0(void*, void*, int).
 struct CallInner
 {
-    void hkpWorld_updateCollisionFilterOnEntity(void* p, void* q, int a);
+    void hkpWorld_updateCollisionFilterOnEntity(void* p, void* updateMode, int updateShapeCollectionFilter);
 };
-void hkpSimulation_collideEntitiesBroadPhaseDiscrete(void* p, int a, void* b);
-void hkpWorldOperationUtil_removeAttachedConstraints(MotionObj* a0, void* b);
-void CollectActorEntries(hkpWorld* s, MotionObj* a0, void* a);
-void CollectProducers(hkpWorld* s, MotionObj* a0, void* a);
-void hkpWorldOperationUtil_removeEntitySI(hkpWorld* s, MotionObj* a0);
-void hkpWorldOperationUtil_addConstraintImmediately(hkpWorld* s, void* e, int z);
+void hkpSimulation_collideEntitiesBroadPhaseDiscrete(void* entities, int numEntities, void* b);
+void hkpWorldOperationUtil_removeAttachedConstraints(MotionObj* entity, void* removedConstraints);
+void CollectActorEntries(hkpWorld* s, MotionObj* entity, void* actionsToBeMoved);
+void hkpWorldOperationUtil_removeAttachedActionsFromDynamicIsland(hkpWorld* s, MotionObj* entity, void* actionsToBeMoved);
+void hkpWorldOperationUtil_removeEntitySI(hkpWorld* s, MotionObj* entity);
+void hkpWorldOperationUtil_addConstraintImmediately(hkpWorld* s, void* constraint, int fireCallbacks);
 struct ModeBool
 {
     bool value;
@@ -3717,14 +3814,14 @@ struct ModeBool
         return test();
     }
 };
-void hkpWorldOperationUtil_replaceMotionObject(MotionObj* a0, int mode, ModeBool fMode, ModeBool fCur, hkpWorld* s);
-void hkpWorldOperationUtil_addEntitySI(hkpWorld* s, int a5, int a7);
-void ApplyConstraintsToEntity(hkpWorld* s, int a8, void* p);
-void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus(void* m, MotionObj* a3, void* w, int mode);
-void _hkAgentNnMachine_AppendTrack(void* m, void* w);
-void hkpWorldOperationUtil_mergeIslands(hkpWorld* in, MotionObj* a0, MotionObj* e);
-void UpdateRotationInterpolation(float f, void* p);
-void NotifyEntityRemoved(void* p, MotionObj* a3);
+void hkpWorldOperationUtil_replaceMotionObject(MotionObj* body, int newState, ModeBool newStateNeedsInertia, ModeBool oldStateNeedsInertia, hkpWorld* s);
+void hkpWorldOperationUtil_addEntitySI(hkpWorld* s, int entity, int initialActivationState);
+void hkpWorldOperationUtil_addActionsToEntitysIsland(hkpWorld* s, int a8, void* actionsToBeMoved);
+void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus(void* trackToScan, MotionObj* entity, void* agentsRemoved, int newMotionType);
+void hkAgentNnMachine_AppendTrack(void* m, void* w);
+void hkpWorldOperationUtil_mergeIslands(hkpWorld* in, MotionObj* entityA, MotionObj* entityB);
+void hkSweptTransformUtil_freezeMotionState(float f, void* motionState);
+void hkpWorldCallbackUtil_fireInactiveEntityMoved(void* p, MotionObj* a3);
 struct VecB
 {
     void* data;
@@ -3783,6 +3880,9 @@ static __forceinline void FreeVec(void** dataP, int* sizeP, int* capP, int elem)
 // Returns if mode equals a0->m_e8; else calls FUN_00cb4230 and, if a0->m_08 is set and exactly one mode is 5, updates owner state, lists and constraints.
 // @fnv 0x00cb6f70
 // src: HAVOK_LIB 0x00cb6f70
+// pdb: hkpWorldOperationUtil::setRigidBodyMotionType | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: body, newState, initialActivationState, collisionFilterUpdateMode
+// pdb locals: assertBuf, ostr, collisionEntriesTmp, agentsToBeMoved, constraintsToBeMoved, actionsToBeMoved
 void hkpWorldOperationUtil_setRigidBodyMotionType(MotionObj* apMotionObj, int aiNewMode, int a2, MotionObj* a3, int a4, int a5, int a6, int a7, int a8)
 {
     {
@@ -3793,8 +3893,8 @@ void hkpWorldOperationUtil_setRigidBodyMotionType(MotionObj* apMotionObj, int ai
             return;
         if (uiCurMode == 5)
         {
-            apMotionObj->collidable.UpdateCollisionIndices();
-            ((CallB*)apMotionObj)->UpdateNodeSlotIndices();
+            apMotionObj->collidable.hkpLinkedCollidable_sortEntries();
+            ((CallB*)apMotionObj)->hkpEntity_sortConstraintsSlavesDeterministically();
         }
         if (aiNewMode == 5)
             fMode.set(0);
@@ -3826,8 +3926,8 @@ void hkpWorldOperationUtil_setRigidBodyMotionType(MotionObj* apMotionObj, int ai
             adj.cap = (int)0x80000010;
             a.data = a.buf;
             a.cap = (int)0x80000010;
-            pForm->m_bBlockExecutingPendingOperations.m_cBooleanValue = 1;
-            pForm->m_bBlockExecutingPendingOperationQueues.m_cBooleanValue = 0;
+            pForm->m_blockExecutingPendingOperations.m_cBooleanValue = 1;
+            pForm->m_criticalOperationsAllowed.m_cBooleanValue = 0;
             adj.size = 0;
             a.size = 0;
             esi.data = &esi.buf0;
@@ -3838,7 +3938,7 @@ void hkpWorldOperationUtil_setRigidBodyMotionType(MotionObj* apMotionObj, int ai
             if (aiNewMode != 5)
                 CollectActorEntries(pForm, apMotionObj, &a);
             else
-                CollectProducers(pForm, apMotionObj, &a);
+                hkpWorldOperationUtil_removeAttachedActionsFromDynamicIsland(pForm, apMotionObj, &a);
             hkpSimulationIsland* manager = apMotionObj->m_cc;
             hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus(&manager->unk58, apMotionObj, &esi, aiNewMode);
             if (uiCurMode != 5)
@@ -3849,8 +3949,8 @@ void hkpWorldOperationUtil_setRigidBodyMotionType(MotionObj* apMotionObj, int ai
             hkpWorldOperationUtil_removeEntitySI(pForm, apMotionObj);
             hkpWorldOperationUtil_replaceMotionObject(apMotionObj, aiNewMode, fMode, fCur, pForm);
             hkpWorldOperationUtil_addEntitySI(pForm, (int)apMotionObj, a2);
-            ApplyConstraintsToEntity(pForm, (int)apMotionObj, &a);
-            pForm->m_bBlockExecutingPendingOperationQueues.m_cBooleanValue = 1;
+            hkpWorldOperationUtil_addActionsToEntitysIsland(pForm, (int)apMotionObj, &a);
+            pForm->m_criticalOperationsAllowed.m_cBooleanValue = 1;
             VecC vec;
             for (int i = 0; i < adj.size; i++)
             {
@@ -3860,7 +3960,7 @@ void hkpWorldOperationUtil_setRigidBodyMotionType(MotionObj* apMotionObj, int ai
             }
             if (aiNewMode != 5)
             {
-                apMotionObj->collidable.CopyAndSortGeometryList(&vec);
+                apMotionObj->collidable.hkpLinkedCollidable_getCollisionEntriesSorted(&vec);
                 for (int i = 0; i < vec.size; i++)
                 {
                     MotionObj* pOtherMotion = vec.data[i].f4;
@@ -3875,25 +3975,25 @@ void hkpWorldOperationUtil_setRigidBodyMotionType(MotionObj* apMotionObj, int ai
                     hkpWorldOperationUtil_mergeIslands(apMotionObj->m_08, apMotionObj, work);
                 }
             }
-            _hkAgentNnMachine_AppendTrack(&apMotionObj->m_cc->unk58, &esi);
+            hkAgentNnMachine_AppendTrack(&apMotionObj->m_cc->unk58, &esi);
             if (aiNewMode == 5)
             {
-                UpdateRotationInterpolation(reinterpret_cast<float&>(pForm->pad1C8[8]), &apMotionObj->unk0f0);
-                MotionObj* o8 = reinterpret_cast<MotionObj*>(pForm->m_pSimulation);
-                pForm->m_iCriticalOperationsLockCount++;
+                hkSweptTransformUtil_freezeMotionState(reinterpret_cast<float&>(pForm->pad1C8[8]), &apMotionObj->unk0f0);
+                MotionObj* o8 = reinterpret_cast<MotionObj*>(pForm->m_simulation);
+                pForm->m_criticalOperationsLockCount++;
                 Fn20 fn = (Fn20)(*(void***)o8)[8];
                 fn(o8, &apMotionObj, 1, pForm, 7);
                 hkpSimulation_collideEntitiesBroadPhaseDiscrete(&apMotionObj, 1, pForm);
-                NotifyEntityRemoved(apMotionObj->m_08, apMotionObj);
-                pForm->m_iCriticalOperationsLockCount--;
+                hkpWorldCallbackUtil_fireInactiveEntityMoved(apMotionObj->m_08, apMotionObj);
+                pForm->m_criticalOperationsLockCount--;
             }
             ((CallInner*)pForm)->hkpWorld_updateCollisionFilterOnEntity(apMotionObj, a3, 1);
-            pForm->m_bBlockExecutingPendingOperations.m_cBooleanValue = 0;
-            if (pForm->m_iCriticalOperationsLockCount == 0)
+            pForm->m_blockExecutingPendingOperations.m_cBooleanValue = 0;
+            if (pForm->m_criticalOperationsLockCount == 0)
             {
-                if (pForm->m_iPendingOperationCount != 0)
+                if (pForm->m_pendingOperationsCount != 0)
                     pForm->FUN_00c91120();
-                if (pForm->m_iPendingOperationQueueCount == 1 && pForm->m_iQueuedOperationCount != 0)
+                if (pForm->m_pendingOperationQueueCount == 1 && pForm->m_pendingBodyOperationsCount != 0)
                     pForm->UpdateFields_00c91140();
             }
             FreeVec((void**)&vec.data, &vec.size, &vec.cap, 8);
@@ -4176,9 +4276,9 @@ struct MotionBase : RefHeader31
     short m_11c;
     S00cb4230_Half m_fGravityFactor;
     void FUN_00c905b0();
-    void FUN_00d1dff0();
+    void hkpKeyframedRigidMotion_dtor();
     void SetFlagBits(int a, int b, int c);
-    void getMotionStateAndVelocitiesAndDeactivationType(MotionBase* p);
+    void getMotionStateAndVelocitiesAndDeactivationType(MotionBase* motionOut);
     float FUN_00c86430();
     __forceinline static void* operator new(unsigned int nbytes)
     {
@@ -4361,50 +4461,53 @@ template <typename T> __forceinline T* __cdecl S00cb4230_AddByteOffset(T* base, 
 {
     return reinterpret_cast<T*>(reinterpret_cast<char*>(base) + offset);
 }
-void __cdecl hkpRigidBody_createDynamicRigidMotion(int mode, const S00cb4230_Vec4* p40, const S00cb4230_Quat* p80, float fret,
-                          const InertiaTensor* out, const S00cb4230_Vec4* p90, float f0, float f1, MotionBase* motion);
-void __cdecl UpdateRotationInterpolation(float f, S00cb4230_MotionStateData* p);
+void __cdecl hkpRigidBody_createDynamicRigidMotion(int motionType, const S00cb4230_Vec4* p40, const S00cb4230_Quat* p80, float fret,
+                          const InertiaTensor* inertiaLocal, const S00cb4230_Vec4* centreOfMassLocal, float maxLinearVelocity, float maxAngularVelocity, MotionBase* motionBufferOut);
+void __cdecl hkSweptTransformUtil_freezeMotionState(float f, S00cb4230_MotionStateData* motionState);
 
 // Switches the object's motion state to the requested mode, copying or constructing the appropriate MotionBase and updating collidable motion state.
 // @fnv 0x00cb4230
 // src: HAVOK_LIB 0x00cb4230
-void __cdecl hkpWorldOperationUtil_replaceMotionObject(ThisObj* self, hkpMotion::MotionType mode, MotionFlag31 flagA, MotionFlag31 flagB, hkpWorld* node)
+// pdb: hkpWorldOperationUtil::replaceMotionObject | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: body, newState, newStateNeedsInertia, oldStateNeedsInertia, world
+// pdb locals: assertBuf, ostr, inertiaLocal, oldMotion
+void __cdecl hkpWorldOperationUtil_replaceMotionObject(ThisObj* body, hkpMotion::MotionType newState, MotionFlag31 newStateNeedsInertia, MotionFlag31 oldStateNeedsInertia, hkpWorld* node)
 {
-    if (flagA)
+    if (newStateNeedsInertia)
     {
-        if (!flagB)
+        if (!oldStateNeedsInertia)
         {
-            MotionBase* motion = self->getMotion();
+            MotionBase* motion = body->getMotion();
             MotionState* pState = motion->m_118;
             motion->v25(pState);
             pState->m_0a = 0;
             pState->m_0c = 0;
-            self->setQualityType(hkpCollidableQualityType(motion->m_11c));
-            S00cb4230_String::memCpy16NonEmpty(&self->m_pMotionState, pState, sizeof(MotionState) >> 4);
-            hkString_memSet(S00cb4230_AddByteOffset(&self->m_pMotionState, sizeof(MotionState)), 0, 0);
+            body->setQualityType(hkpCollidableQualityType(motion->m_11c));
+            S00cb4230_String::memCpy16NonEmpty(&body->m_pMotionState, pState, sizeof(MotionState) >> 4);
+            hkString_memSet(S00cb4230_AddByteOffset(&body->m_pMotionState, sizeof(MotionState)), 0, 0);
             pState->FUN_00c905b0();
-            self->UpdateBoundingVolume(node, self->getCollidable()->getShape());
+            body->UpdateBoundingVolume(node, body->getCollidable()->getShape());
         }
 
-        if (self->m_pMotionState.getType() == mode || mode == hkpMotion::MOTION_DYNAMIC)
+        if (body->m_pMotionState.getType() == newState || newState == hkpMotion::MOTION_DYNAMIC)
         {
         }
         else
         {
             MotionState localState;
-            S00cb4230_String::memCpy16NonEmpty(&localState, &self->m_pMotionState, sizeof(MotionState) >> 4);
+            S00cb4230_String::memCpy16NonEmpty(&localState, &body->m_pMotionState, sizeof(MotionState) >> 4);
             InertiaTensor inertiaTensor;
-            MotionBase* pMotionBase = &self->m_pMotionState;
+            MotionBase* pMotionBase = &body->m_pMotionState;
             pMotionBase->GetInverseScaleMatrix(inertiaTensor);
             S00cb4230_MotionStateData* pStateData = localState.GetMotionState();
             float fRestitution = pStateData->m_fRestitution;
             float j = pStateData->m_fSurfaceFriction;
-            hkpRigidBody_createDynamicRigidMotion(mode, &localState.getPosition(), &localState.getRotation(), localState.FUN_00c86430(),
-                         &inertiaTensor, &localState.getCenterOfMassLocal(), j, fRestitution, &self->m_pMotionState);
+            hkpRigidBody_createDynamicRigidMotion(newState, &localState.getPosition(), &localState.getRotation(), localState.FUN_00c86430(),
+                         &inertiaTensor, &localState.getCenterOfMassLocal(), j, fRestitution, &body->m_pMotionState);
             localState.getMotionStateAndVelocitiesAndDeactivationType(pMotionBase);
             pMotionBase->setLinearDamping(localState.getLinearDamping());
             pMotionBase->setAngularDamping(localState.getAngularDamping());
-            localState.FUN_00d1dff0();
+            localState.hkpKeyframedRigidMotion_dtor();
             goto e0;
         }
     }
@@ -4412,16 +4515,16 @@ void __cdecl hkpWorldOperationUtil_replaceMotionObject(ThisObj* self, hkpMotion:
     {
         MotionBase* pObj;
         MotionState localState;
-        S00cb4230_String::memCpy16NonEmpty(&localState, &self->m_pMotionState, sizeof(MotionState) >> 4);
-        if (mode == hkpMotion::MOTION_FIXED)
+        S00cb4230_String::memCpy16NonEmpty(&localState, &body->m_pMotionState, sizeof(MotionState) >> 4);
+        if (newState == hkpMotion::MOTION_FIXED)
         {
-            pObj = new (&self->m_pMotionState) BoxMotion(self->getPosition(), self->getRotation());
+            pObj = new (&body->m_pMotionState) BoxMotion(body->getPosition(), body->getRotation());
             pObj->m_kMotionState.hkMotionState_Copy(&localState.m_kMotionState);
             pObj->m_09 = localState.m_09;
             float c = localState.GetMotionState()->getSweptTransform().getInvDeltaTime();
             if (c != 0.0f)
             {
-                UpdateRotationInterpolation(node ? node->hkpWorld_getCurrentTime()
+                hkSweptTransformUtil_freezeMotionState(node ? node->hkpWorld_getCurrentTime()
                                                  : 1.0f / c +
                                                        localState.GetMotionState()->getSweptTransform().getBaseTime(),
                                             &pObj->m_kMotionState);
@@ -4429,11 +4532,11 @@ void __cdecl hkpWorldOperationUtil_replaceMotionObject(ThisObj* self, hkpMotion:
         }
         else
         {
-            pObj = new (&self->m_pMotionState) S00cb4230_Keyframed(self->getPosition(), self->getRotation());
+            pObj = new (&body->m_pMotionState) S00cb4230_Keyframed(body->getPosition(), body->getRotation());
             localState.getMotionStateAndVelocitiesAndDeactivationType(pObj);
         }
 
-        if (flagB)
+        if (oldStateNeedsInertia)
         {
             MotionState* cnt = new MotionState();
             unsigned short GetAllocationSize = cnt->m_04;
@@ -4441,8 +4544,8 @@ void __cdecl hkpWorldOperationUtil_replaceMotionObject(ThisObj* self, hkpMotion:
             cnt->m_04 = GetAllocationSize;
             cnt->m_06 = 1;
             pObj->m_118 = cnt;
-            pObj->m_11c = (short)self->getCollidable()->getQualityType();
-            self->UpdateBoundingVolume(node, self->getCollidable()->getShape());
+            pObj->m_11c = (short)body->getCollidable()->getQualityType();
+            body->UpdateBoundingVolume(node, body->getCollidable()->getShape());
         }
         else
         {
@@ -4450,15 +4553,15 @@ void __cdecl hkpWorldOperationUtil_replaceMotionObject(ThisObj* self, hkpMotion:
             pObj->v27(old->m_118);
             pObj->m_11c = old->m_11c;
         }
-        self->m_a4 = 0;
-        self->setQualityType(hkpCollidableQualityType(mode != hkpMotion::MOTION_FIXED));
-        localState.FUN_00d1dff0();
+        body->m_a4 = 0;
+        body->setQualityType(hkpCollidableQualityType(newState != hkpMotion::MOTION_FIXED));
+        localState.hkpKeyframedRigidMotion_dtor();
     }
 e0:
-    self->m_kCollidable.setMotionState(self->getRigidMotion()->GetMotionState());
+    body->m_kCollidable.setMotionState(body->getRigidMotion()->GetMotionState());
     if ((bool)node)
     {
-        self->getMotion()->SetFlagBits((unsigned char)node->pad1C8[0x13d], (unsigned char)node->pad1C8[0x13e],
+        body->getMotion()->SetFlagBits((unsigned char)node->pad1C8[0x13d], (unsigned char)node->pad1C8[0x13e],
                                        (unsigned char)node->pad1C8[0x13f]);
     }
 }
@@ -4476,14 +4579,14 @@ static __forceinline void tallyActive(Cb4890_RemapTable* remap_, Cb4890_ElemArra
     {
         hkpEntity* e = list->m_data[i];
         int idx = remap_->m_entries->m_data[i];
-        int a = Dec(e->m_pMotionState.m_ausDeactivationNumInactiveFrames[1], reinterpret_cast<unsigned char&>(owner->pad1C8[0x13e]));
-        int b = Dec(e->m_pMotionState.m_ausDeactivationNumInactiveFrames[0], reinterpret_cast<unsigned char&>(owner->pad1C8[0x13d]));
+        int a = Dec(e->m_motion.m_deactivationNumInactiveFrames[1], reinterpret_cast<unsigned char&>(owner->pad1C8[0x13e]));
+        int b = Dec(e->m_motion.m_deactivationNumInactiveFrames[0], reinterpret_cast<unsigned char&>(owner->pad1C8[0x13d]));
         int am = a & 0x7f;
         int bm = b & 0x7f;
         int mx = (bm > am) ? bm : am;
         if (mx <= 5)
             map[idx] = 1;
-        int w = (int)e->m_eSmallArraySerializeOverrideType.m_iElementCount;
+        int w = (int)e->m_constraintsMaster.m_iElementCount;
         if (w < 1)
             w = 1;
         cnt[idx] += w;
@@ -4498,7 +4601,7 @@ static __forceinline void tallyAll(Cb4890_RemapTable* remap_, Cb4890_ElemArray* 
         hkpEntity* e = list->m_data[i];
         int idx = remap_->m_entries->m_data[i];
         map[idx] = 1;
-        int w = (int)e->m_eSmallArraySerializeOverrideType.m_iElementCount;
+        int w = (int)e->m_constraintsMaster.m_iElementCount;
         if (w < 1)
             w = 1;
         cnt[idx] += w;
@@ -4507,10 +4610,13 @@ static __forceinline void tallyAll(Cb4890_RemapTable* remap_, Cb4890_ElemArray* 
 // Tallies element weights per remap index and packs them into slots bounded by the desired island size.
 // @fnv 0x00cb49e0
 // src: HAVOK_LIB 0x00cb49e0
-void mergeSmallSubgroups(hkpWorld* owner, int remap_, MergeListArg listArg, Cb4890_IntArray* src, Cb4890_CharArray* out)
+// pdb: mergeSmallSubgroups | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, checker, entities, groupsSizes, groupSparse
+// pdb locals: isActive
+void mergeSmallSubgroups(hkpWorld* owner, int checker, MergeListArg entities, Cb4890_IntArray* groupsSizes, Cb4890_CharArray* groupSparse)
 {
-    Cb4890_ElemArray* list = listArg.value;
-    int n = src->m_iElementCount;
+    Cb4890_ElemArray* list = entities.value;
+    int n = groupsSizes->m_iElementCount;
     Cb4890_LocalBuffer<int> cnt(n);
     Cb4890_ElemArray* activeList = list;
     Cb4890_LocalBuffer<int> map(n);
@@ -4521,10 +4627,10 @@ void mergeSmallSubgroups(hkpWorld* owner, int remap_, MergeListArg listArg, Cb48
         cnt[i] = 0;
     }
 
-    if (owner->m_bWantDeactivation.m_cBooleanValue)
-        tallyActive((Cb4890_RemapTable*)remap_, activeList, n, map, cnt, owner, listArg.value);
+    if (owner->m_wantDeactivation.m_cBooleanValue)
+        tallyActive((Cb4890_RemapTable*)checker, activeList, n, map, cnt, owner, entities.value);
     else
-        tallyAll((Cb4890_RemapTable*)remap_, list, n, map, cnt);
+        tallyAll((Cb4890_RemapTable*)checker, list, n, map, cnt);
 
     for (int k = 0; k < n; k++)
     {
@@ -4540,27 +4646,27 @@ void mergeSmallSubgroups(hkpWorld* owner, int remap_, MergeListArg listArg, Cb48
         if (v == -2)
             continue;
         int p = pos++;
-        out->m_data[p] = 0;
+        groupSparse->m_data[p] = 0;
         pMap[k] = p;
         if (v < 0)
             continue;
         for (int j = k + 1; j < n; j++)
         {
-            if (v + 10 >= reinterpret_cast<int&>(owner->m_uiMinDesiredIslandSize))
+            if (v + 10 >= reinterpret_cast<int&>(owner->m_minDesiredIslandSize))
                 break;
             int w = cnt[j];
             if (w < 0)
                 continue;
-            if (v + w >= reinterpret_cast<int&>(owner->m_uiMinDesiredIslandSize))
+            if (v + w >= reinterpret_cast<int&>(owner->m_minDesiredIslandSize))
                 continue;
-            out->m_data[p] = 1;
+            groupSparse->m_data[p] = 1;
             pMap[j] = p;
             v += w;
             cnt[j] = -2;
         }
     }
 
-    ((Cb4890_RemapTable*)(*(volatile int*)&remap_))->RemapAndAccumulate(map, pos, src);
+    ((Cb4890_RemapTable*)(*(volatile int*)&checker))->hkUnionFind_reindex(map, pos, groupsSizes);
 }
 
 namespace fnv_00cb5000 {
@@ -4580,8 +4686,8 @@ struct Holder
 };
 
 Holder* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* apAllocator, void* apVector, unsigned int auiElemSize);
-void __cdecl hkpWorldOperationUtil_removeConstraintImmediately(int aCtx, int aObj, int aFlag);
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
+void __cdecl hkpWorldOperationUtil_removeConstraintImmediately(int aCtx, int constraint, int aFlag);
 
 struct PtrVec
 {
@@ -4661,51 +4767,54 @@ struct OwnerObj
 // Walks owner entries and pointers in reverse, calling Refresh and FUN_00cb3dd0 on each object and appending it to the output vector.
 // @fnv 0x00cb5000
 // src: HAVOK_LIB 0x00cb5000
-void __cdecl hkpWorldOperationUtil_removeAttachedConstraints(OwnerObj* apOwner, PtrVec* apOut)
+// pdb: hkpWorldOperationUtil::removeAttachedConstraints | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: entity, removedConstraints
+// pdb locals: constraint
+void __cdecl hkpWorldOperationUtil_removeAttachedConstraints(OwnerObj* entity, PtrVec* removedConstraints)
 {
-    int ctx = apOwner->m_iCtx;
-    int i = (int)apOwner->m_wEntryCount - 1;
+    int ctx = entity->m_iCtx;
+    int i = (int)entity->m_wEntryCount - 1;
     if (i >= 0)
     {
         do
         {
-            FUN_00cb5000_obj* pObj = apOwner->m_pEntries[i].m_pEntryObject;
+            FUN_00cb5000_obj* pObj = entity->m_pEntries[i].m_pEntryObject;
             pObj->Refresh();
             hkpWorldOperationUtil_removeConstraintImmediately(ctx, (int)pObj, 0);
             Holder* pHolder = hkMemoryRouter_getInstance();
-            if (apOut->m_uCount == (apOut->m_uCapFlags & 0x3fffffffu))
+            if (removedConstraints->m_uCount == (removedConstraints->m_uCapFlags & 0x3fffffffu))
             {
-                ResizeAudioStream(pHolder->m_pAllocator, apOut, 4);
+                ResizeAudioStream(pHolder->m_pAllocator, removedConstraints, 4);
             }
-            unsigned int idx = *(unsigned int volatile*)&apOut->m_uCount;
-            int* data = apOut->m_pData;
+            unsigned int idx = *(unsigned int volatile*)&removedConstraints->m_uCount;
+            int* data = removedConstraints->m_pData;
             int* pSlot = &data[idx];
             _ReadWriteBarrier();
             *pSlot = (int)pObj;
-            apOut->m_uCount++;
+            removedConstraints->m_uCount++;
             i--;
         } while (i >= 0);
     }
 
-    i = apOwner->m_iPtrCount - 1;
+    i = entity->m_iPtrCount - 1;
     if (i >= 0)
     {
         do
         {
-            FUN_00cb5000_obj* pObj = (FUN_00cb5000_obj*)apOwner->m_pPtrs[i];
+            FUN_00cb5000_obj* pObj = (FUN_00cb5000_obj*)entity->m_pPtrs[i];
             pObj->Refresh();
             hkpWorldOperationUtil_removeConstraintImmediately(ctx, (int)pObj, 0);
             Holder* pHolder = hkMemoryRouter_getInstance();
-            if (apOut->m_uCount == (apOut->m_uCapFlags & 0x3fffffffu))
+            if (removedConstraints->m_uCount == (removedConstraints->m_uCapFlags & 0x3fffffffu))
             {
-                ResizeAudioStream(pHolder->m_pAllocator, apOut, 4);
+                ResizeAudioStream(pHolder->m_pAllocator, removedConstraints, 4);
             }
-            unsigned int idx = *(unsigned int volatile*)&apOut->m_uCount;
-            int* data = apOut->m_pData;
+            unsigned int idx = *(unsigned int volatile*)&removedConstraints->m_uCount;
+            int* data = removedConstraints->m_pData;
             int* pSlot = &data[idx];
             _ReadWriteBarrier();
             *pSlot = (int)pObj;
-            apOut->m_uCount++;
+            removedConstraints->m_uCount++;
             i--;
         } while (i >= 0);
     }
@@ -4730,18 +4839,20 @@ struct S00cb3ee0_Sub
 };
 
 int PickIslandByValue(int a, int b, int c);
-void CloneRecord(int a, int b);
-void _hkAgentNnMachine_InternalDeallocateEntry(int a, int b);
+void hkAgentNnMachine_CopyAndRelinkAgentEntry(int destTrack, int entry);
+void hkAgentNnMachine_InternalDeallocateEntry(int track, int entry);
 
 // For each entry, calls FUN_00cfeca0 and FUN_00cfe020 if its owner byte at +0xe8 is 5, or if mode is 5 and PickIslandByValue returns motion+0xcc.
 // @fnv 0x00cb3ee0
 // src: HAVOK_LIB 0x00cb3ee0
-void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus(void* m, MotionObj* motion, void* w, int mode)
+// pdb: hkpWorldOperationUtil::removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: trackToScan, entity, agentsRemoved, newMotionType
+void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus(void* trackToScan, MotionObj* entity, void* agentsRemoved, int newMotionType)
 {
-    int a1 = (int)m;
-    char* a2 = (char*)motion;
-    int a3 = (int)w;
-    int a4 = mode;
+    int a1 = (int)trackToScan;
+    char* a2 = (char*)entity;
+    int a3 = (int)agentsRemoved;
+    int a4 = newMotionType;
     S00cb3ee0_Holder* h = ((S00cb3ee0_Sub*)((char*)a2 + 0x10))->hkpLinkedCollidable_getCollisionEntriesDeterministicUnchecked_00d081e0();
     int i = 0;
     if (h->count > 0)
@@ -4754,16 +4865,16 @@ void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartn
             if (*(unsigned char*)(esi + 0xe8) == 5)
             {
                 int item = e->item;
-                CloneRecord(a3, item);
-                _hkAgentNnMachine_InternalDeallocateEntry(a1, item);
+                hkAgentNnMachine_CopyAndRelinkAgentEntry(a3, item);
+                hkAgentNnMachine_InternalDeallocateEntry(a1, item);
             }
             else if (a4 == 5)
             {
                 if (PickIslandByValue(e->item, *(int*)(a2 + 0xcc), *(int*)(esi + 0xcc)) == *(int*)(a2 + 0xcc))
                 {
                     int item = e->item;
-                    CloneRecord(*(int*)(esi + 0xcc) + 0x58, item);
-                    _hkAgentNnMachine_InternalDeallocateEntry(a1, item);
+                    hkAgentNnMachine_CopyAndRelinkAgentEntry(*(int*)(esi + 0xcc) + 0x58, item);
+                    hkAgentNnMachine_InternalDeallocateEntry(a1, item);
                 }
             }
             ++i;
@@ -4811,7 +4922,7 @@ static __forceinline void S55Array__setSize(hkArrayBase<T>& self, hkMemoryAlloca
         self.m_iElementCount = n;
     }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& a, void* array, int reqCapacity, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 
 
@@ -4916,15 +5027,18 @@ struct S55Owner
     void __thiscall nullsub_6();
 };
 
-void __cdecl hkpWorldOperationUtil_internalActivateIsland(S55Owner* owner, hkpSimulationIsland* item, hkBool b);
+void __cdecl hkpWorldOperationUtil_internalActivateIsland(S55Owner* owner, hkpSimulationIsland* island, hkBool allowIslandMerges);
 
-void __cdecl hkpWorldOperationUtil_internalDeactivateIsland(S55Owner* owner, hkpSimulationIsland* item);
+void __cdecl hkpWorldOperationUtil_internalDeactivateIsland(S55Owner* owner, hkpSimulationIsland* island);
 
-extern "C" void __cdecl hkpWorldOperationUtil_mergeIslands(S55Owner* owner, ObjB* first, ObjB* second);
+extern "C" void __cdecl hkpWorldOperationUtil_mergeIslands(S55Owner* owner, ObjB* entityA, ObjB* entityB);
 
 // Sorts owner->m_40, then drains it by popping items, compacting their m_38 arrays, and applying state changes via FUN_00cb5100, FUN_00cb5310, or FUN_00cb5570.
 // @fnv 0x00cb55d0
 // src: HAVOK_LIB 0x00cb55d0
+// pdb: hkpWorldOperationUtil::cleanupDirtyIslands | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world
+// pdb locals: assertBuf, ostr
 void __cdecl hkpWorldOperationUtil_cleanupDirtyIslands(S55Owner* owner)
 
 {
@@ -5033,7 +5147,7 @@ void __cdecl hkpWorldOperationUtil_cleanupDirtyIslands(S55Owner* owner)
                 n = it->unk1C;
 
             hkpSimulationIsland* r =
-                (hkpSimulationIsland*)FindItemForThreshold((hkpWorld*)owner, (List_cb3d10*)&owner->m_28, n, (hkpSimulationIsland*)it);
+                (hkpSimulationIsland*)findSmallSparseActiveIsland((hkpWorld*)owner, (List_cb3d10*)&owner->m_28, n, (hkpSimulationIsland*)it);
 
             if (r)
 
@@ -5084,7 +5198,7 @@ struct TaskNode
     int unk44;
     int unk48;
     int unk4c;
-    void hkpSimulationIsland_internalAddEntity(hkpEntity* arg);
+    void hkpSimulationIsland_internalAddEntity(hkpEntity* entity);
     TaskNode* FUN_00d07830(hkpWorld* arg);
 };
 struct TaskList
@@ -5111,32 +5225,35 @@ struct TaskHeap
 // Sets b's parent to a, then calls FUN_00d07420 with b on a node of a: node20 if b's type is 5, else one found or allocated in list28/list34 or list28's first.
 // @fnv 0x00cb4640
 // src: HAVOK_LIB 0x00cb4640
-void __cdecl hkpWorldOperationUtil_addEntitySI(hkpWorld* apParent, hkpEntity* apChild, int mode)
+// pdb: hkpWorldOperationUtil::addEntitySI | hkpWorldOperationUtil.obj | retail, upstream name already matches, high
+// pdb params: world, entity, initialActivationState
+// pdb locals: newIsland, assertBuf, ostr
+void __cdecl hkpWorldOperationUtil_addEntitySI(hkpWorld* apParent, hkpEntity* entity, int initialActivationState)
 {
-    apChild->m_pOwningWorld = apParent;
-    if (reinterpret_cast<unsigned char&>(apChild->m_pMotionState.m_type) == 5)
+    entity->m_world = apParent;
+    if (reinterpret_cast<unsigned char&>(entity->m_motion.m_type) == 5)
     {
-        static_cast<TaskNode*>(apParent->m_pFixedIsland)->hkpSimulationIsland_internalAddEntity(apChild);
+        static_cast<TaskNode*>(apParent->m_fixedIsland)->hkpSimulationIsland_internalAddEntity(entity);
         return;
     }
     TaskNode* node;
-    if (apParent->m_bWantSimulationIslands.m_cBooleanValue)
+    if (apParent->m_wantSimulationIslands.m_cBooleanValue)
     {
-        bool active = mode == 1;
+        bool active = initialActivationState == 1;
         TaskList* list;
         if (active)
         {
-            list = reinterpret_cast<TaskList*>(&apParent->m_kActiveSimulationIslands);
-            TaskNode* found = (TaskNode*)::FindItemForThreshold((::hkpWorld*)apParent, (::List_cb3d10*)list, 4, 0);
+            list = reinterpret_cast<TaskList*>(&apParent->m_activeSimulationIslands);
+            TaskNode* found = (TaskNode*)::findSmallSparseActiveIsland((::hkpWorld*)apParent, (::List_cb3d10*)list, 4, 0);
             if (found)
             {
-                found->hkpSimulationIsland_internalAddEntity(apChild);
+                found->hkpSimulationIsland_internalAddEntity(entity);
                 return;
             }
         }
         else
         {
-            list = reinterpret_cast<TaskList*>(&apParent->m_kInactiveSimulationIslands);
+            list = reinterpret_cast<TaskList*>(&apParent->m_inactiveSimulationIslands);
         }
         ::S_00c6aca0_Router* router = ::hkMemoryRouter_getInstance();
         TaskHeap* heap = (TaskHeap*)router->m10;
@@ -5157,10 +5274,10 @@ void __cdecl hkpWorldOperationUtil_addEntitySI(hkpWorld* apParent, hkpEntity* ap
     }
     else
     {
-        node = static_cast<TaskNode*>(apParent->m_kActiveSimulationIslands.m_data[0]);
+        node = static_cast<TaskNode*>(apParent->m_activeSimulationIslands.m_data[0]);
     }
-    node->hkpSimulationIsland_internalAddEntity(apChild);
-    node->id24 = static_cast<unsigned char>(apChild->m_uiUniqueId);
+    node->hkpSimulationIsland_internalAddEntity(entity);
+    node->id24 = static_cast<unsigned char>(entity->m_uid);
 }
 
 }

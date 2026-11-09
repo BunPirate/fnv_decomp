@@ -80,7 +80,7 @@ extern "C" void __cdecl _ref_006815c0();
 struct FUN_00509890_class
 {
     void __thiscall _ref_006815c0();
-    void* __thiscall UpdateState_00509890(bool);
+    void* __thiscall FurnitureMark_ctor(bool);
 };
 struct FUN_0050d1d0_class
 {
@@ -105,7 +105,7 @@ struct FUN_00510110_class
 };
 struct FUN_00510360_Class
 {
-    void* TESObjectList_lnk_GetNext(TESObject* p);
+    void* TESObjectList_lnk_GetNext(TESObject* lpNode);
 };
 struct FUN_00510380_Class
 {
@@ -208,7 +208,7 @@ struct FUN_00501cd0_class
     void* m_0c;
     unsigned int m_10;
     void* m_14;
-    void* __thiscall DoorLock_DoorLock();
+    void* __thiscall DoorLock_ctor();
 };
 struct TESForm;
 TESForm* __cdecl GetFormByID(unsigned int id);
@@ -255,7 +255,7 @@ struct FUN_00759450_shell
 };
 struct FUN_005082b0_shell
 {
-    void UpdateEnvelope(float, float, float, unsigned char, float, float, float, float, float);
+    void TESEffectShader_AnimateValue(float, float, float, unsigned char, float, float, float, float, float);
 };
 struct FUN_00508090_shell
 {
@@ -264,8 +264,8 @@ struct FUN_00508090_shell
     float GetEndKeyTime_00508100();
     float NiControllerSequence_GetLastTime();
     float NiPSysSpawnModifier_GetLifeSpan();
-    void UpdateEnvelope(float, float, float, unsigned char, float, float, float, float, float);
-    void TESEffectShader_AnimateFillEffectAlpha(float a, float b, float c, unsigned char d);
+    void TESEffectShader_AnimateValue(float, float, float, unsigned char, float, float, float, float, float);
+    void TESEffectShader_AnimateFillEffectAlpha(float afCurrentAlpha, float afTimeDelta, float afTime, unsigned char abFade);
 };
 struct FUN_0050e640_Holder
 {
@@ -290,7 +290,7 @@ struct LH
 };
 struct FUN_00519500_class
 {
-    bool HasEntry(int a);
+    bool TESObjectDOOR_RandomlyTeleportsTo(int apSpace);
 };
 void* __cdecl NiMalloc(unsigned int size);
 void* __cdecl memset(void* dst, int c, unsigned int n);
@@ -388,7 +388,7 @@ struct TESObjectREFR_Flags
 {
     unsigned int GetFlags();
     void SetFlags(unsigned int flags);
-    void MarkAsModified(int change);
+    void MarkAsModified(int aiChangeFlags);
     void __thiscall SetRefFlag40000000(bool set);
 };
 struct S_004ed780
@@ -428,13 +428,13 @@ extern Actor* g_thePlayer;
 extern TESBoundObject* g_pLockpickItem;
 struct FUN_00516cd0_class
 {
-    bool __thiscall CanUseLockedRef(TESObjectREFR* ref, Actor* actor, bool useLockpick);
+    bool __thiscall TESObjectCONT_CanActivate(TESObjectREFR* apItemActivated, Actor* apActionRef, bool abAllowLockpicking);
 };
 extern int DAT_011c6200;
 int FixedStrings_GetArrowQuiver();
 struct FUN_00505b80_cls
 {
-    unsigned char DispatchByType(int aType);
+    unsigned char TESCombatStyle_GetPowerAttackChance(int aePowerAttack);
     unsigned char FUN_0073cb80();
     unsigned char TESCombatStyle_GetPowerAttackF();
     unsigned char GetByteAtOffset9A();
@@ -568,7 +568,7 @@ class FUN_00507da0_cls
     float BGSProjectile_GetMuzzleFlashDuration(float value);
     float GetField90Float(float value);
     float FUN_0051b8e0(float value);
-    void UpdateEnvelope(float a, float b, float c, unsigned char flag, float value);
+    void TESEffectShader_AnimateValue(float afCurrentValue, float afTimeDelta, float afTime, unsigned char abFade, float afFadeIn);
     void TESEffectShader_BirthParticles(float a, float b, float c, unsigned char flag);
 };
 extern "C" double gModifierZero;
@@ -601,8 +601,8 @@ float BSMIN(float, float);
 unsigned int FUN_00ba52d0();
 struct Envelope
 {
-    float UpdateEnvelope(float current, float rate, float elapsed, unsigned char releasing, float attack, float decay,
-                         float hold, float maximum, float minimum);
+    float TESEffectShader_AnimateValue(float afCurrentValue, float afTimeDelta, float afTime, unsigned char abFade, float afFadeIn, float afFadeOut,
+                         float afFullTime, float afFullValue, float afPersistentValue);
 };
 extern char DAT_01026bd0;
 extern char DAT_01026a4c;
@@ -798,7 +798,7 @@ struct S_0050de20_A
 struct S_0050de20_Class
 {
     bool __thiscall TESObjectLIGH_Update_(NiPointer<S_0050de20_Obj> p, int* q, int b);
-    bool __thiscall TESObjectLIGH_Update(S_0050de20_A* a, int b);
+    bool __thiscall TESObjectLIGH_Update(S_0050de20_A* apLight, int apExtra);
 };
 extern int DAT_011f81dc;
 int FileFinder_GetSingleton();
@@ -1051,7 +1051,7 @@ struct Item;
 struct List
 {
     unsigned int __thiscall FUN_0043b480();
-    Item* __thiscall FUN_0043b4a0(unsigned int index);
+    Item* __thiscall FUN_0043b4a0(unsigned int i);
 };
 struct Item
 {
@@ -1061,13 +1061,14 @@ struct Item
     virtual int v3();
     void* __thiscall FUN_00a59d30(int kind);
 };
+// pdb: structure T, size 0x8 (here 0x1), 1 members
 struct T
 {
     void __thiscall NiMaterialProperty_SetEmittance(void* p);
 };
 extern void* DAT_011f4998;
-void __cdecl ProcessListItems(List* list);
-void __cdecl ProcessListItems(List* list);
+void __cdecl TESObjectLIGH_StopParticlesRecursive(List* pNode);
+void __cdecl TESObjectLIGH_StopParticlesRecursive(List* pNode);
 extern double DAT_01011590;
 extern double DAT_01029100;
 extern double DAT_010290f8;
@@ -1106,7 +1107,7 @@ struct Obj
     void NiAVObject_SetTranslate_004bc1f0(float a, float b, float c);
     void NiAVObject_Update(NiUpdateData& u);
     float TESCombatStyle_GetDodgeDuringAttackMult();
-    void NiLight_SetDimmer(float v);
+    void NiLight_SetDimmer(float fDimmer);
 };
 struct Ptr
 {
@@ -1228,19 +1229,22 @@ void FUN_004d5c60(int);
 int BSStringT_char_SPrintF(StrMem*, const char*, ...);
 namespace ActorValue {
 bool IsSkill(Index);
-const char* GetActorValueName(Index);
+const char* ActorValue_GetActorValueName(Index);
 }
 struct SkillBookEffect552
 {
     ActorValue::Index TESObjectBOOK_GetTeaches();
-    bool TESObjectBOOK_Read(TESObjectREFR* reference);
+    bool TESObjectBOOK_Read(TESObjectREFR* apActionRef);
 };
 // @fnv 0x00515040
 // src: COMMUNITY 0x00515040
-bool SkillBookEffect552::TESObjectBOOK_Read(TESObjectREFR* reference)
+// pdb: TESObjectBOOK::Read | TESObjectBOOK.obj | retail, upstream name already matches, high
+// pdb params: apActionRef
+// pdb locals: eteaches, bresult, pactor, fskillPoints, strtemp
+bool SkillBookEffect552::TESObjectBOOK_Read(TESObjectREFR* apActionRef)
 {
     bool applied = false;
-    Actor* actor2 = dynamic_cast<Actor*>(reference);
+    Actor* actor2 = dynamic_cast<Actor*>(apActionRef);
     if (!actor2->IsPlayerRef())
         return applied;
     if (actor2->Actor_IsInCombat() && !Interface_IsInMenuMode())
@@ -1258,7 +1262,7 @@ bool SkillBookEffect552::TESObjectBOOK_Read(TESObjectREFR* reference)
             ApplyPerkModifiers(11, g_thePlayer, &amount5);
             g_thePlayer->ForceActorValue(skill2, amount5, 0);
             FUN_004d5c60(15);
-            BSStringT_char_SPrintF(&message, g_011d49c0.FUN_00403df0(), ActorValue::GetActorValueName(skill2),
+            BSStringT_char_SPrintF(&message, g_011d49c0.FUN_00403df0(), ActorValue::ActorValue_GetActorValueName(skill2),
                          static_cast<int>(amount5));
             QueueUIMessage(message.Modelloader_GetReferencedThis(), 1, 0, 0, DAT_010162c0, false);
             applied = true;

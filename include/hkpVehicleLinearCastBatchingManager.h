@@ -2,6 +2,7 @@
 
 #include "hkpVehicleCastBatchingManager.h"
 
+// pdb: class hkpVehicleLinearCastBatchingManager, size 0x18, bases: hkpVehicleCastBatchingManager, 0 members
 class hkpVehicleLinearCastBatchingManager : public hkpVehicleCastBatchingManager
 {
 public:

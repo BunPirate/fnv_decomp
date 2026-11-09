@@ -5,6 +5,7 @@
 class E_Move;
 class MenuList;
 
+// pdb: class CaravanMenu, size 0xe84 (here 0xe88), bases: Menu, 74 members
 class CaravanMenu : public Menu
 {
 public:
@@ -774,8 +775,8 @@ public:
     void* Destroy(unsigned int flags);
     bool RebuildCardLists();
     void InitCaravanTable();
-    void InitMenu();
-    void SetupCurrency();
+    void PrepareDeckMenu();
+    void PrepareAnteMenu();
     void PrepareGameMenu();
     void ComputePlayerAndTargetTotals();
     void InitType15State(int type, int pad);
@@ -784,9 +785,9 @@ public:
     bool CaravanMenu_DoGamepad(int key, int unused);
     bool CaravanMenu_DoGamepadUpEvent(int type, int unused);
     void CaravanMenu_DoIdle();
-    void UpdateCaravanMenu();
+    void PrepareResultsMenu();
 
-    void PlaceBillsAndCoins(int skill, int amount);
+    void CaravanMenu_UpdateBettingUI(int maxraise, int raise);
     void PlaceRandomItem(int index);
     void PlayCardPlacement(int index);
     void TransferBarterItems(bool playerReceives);
@@ -796,8 +797,8 @@ public:
     void UpdateDeckTextures(int player);
     void UpdateDeckCardNodes(bool player, int unused);
     void UpdateDeckCardNodes(bool player, bool flag);
-    void UpdateDeckCardNodes(int player, int flag);
-    void UpdateCardSlots(int firstCard, bool flat);
+    void CaravanMenu_UpdateGameHandTextures(int abPlayer, int bStartup);
+    void SwapDeckBuildingTextures(int aiTarget, bool abFastScrolling);
     void UpdateCardTexture();
     void UpdateSelection(bool skip);
     void UpdateSelection(int skip);
@@ -810,12 +811,12 @@ public:
     bool CheckCaravanResult();
     int CompareToTwentyOneToTwentySix(int value);
 
-    void UpdateTileAlpha(int slot);
-    void SetTileTextAlpha(int slot, float amount);
-    void UpdateTrackCardTexture(int track, int row, int card);
-    void SelectWholeTrack(int index);
-    void DeselectWholeTrack(int index);
+    void UpdateTileAlpha(int eTile);
+    void SetTileTextAlpha(int TI, float alpha);
+    void UpdateTrackCardTexture(int aiTrack, int aiRow, int aiColumn);
+    void SelectWholeTrack(int aiTrack);
+    void DeselectWholeTrack(int aiTrack);
     void DeselectTrackCard();
-    int GetRowValue(int track, int row);
+    int GetRowValue(int aiTrack, int aiRow);
     void CaravanMenu_ProcessAI(E_Move* move);
 };

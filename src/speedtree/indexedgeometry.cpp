@@ -21,18 +21,20 @@ struct FloatVec
 struct FUN_00b30190_shell
 {
     char m_ucUnknownByte[0xb8];
-    void AppendThreeFloatComponents(const float* p);
+    void CIndexedGeometry_AddVertexNormal(const float* pNormal);
 };
 
 // Passes the first three floats of p to PushBack on the FloatVec at this+0xb8.
 // @fnv 0x00b30190
-// src: GUESS 0x00b30190 (confidence: high)
-void FUN_00b30190_shell::AppendThreeFloatComponents(const float* afValues)
+// src: XBOX_RETAIL_PDB 0x00b30190
+// pdb: CIndexedGeometry::AddVertexNormal | IndexedGeometry.obj | retail, object-file run extension, high
+// pdb params: pNormal
+void FUN_00b30190_shell::CIndexedGeometry_AddVertexNormal(const float* pNormal)
 {
     char stack[0x130];
-    ((FloatVec*)((char*)this + 0xb8))->PushBack(afValues[0]);
-    ((FloatVec*)((char*)this + 0xb8))->PushBack(afValues[1]);
-    ((FloatVec*)((char*)this + 0xb8))->PushBack(afValues[2]);
+    ((FloatVec*)((char*)this + 0xb8))->PushBack(pNormal[0]);
+    ((FloatVec*)((char*)this + 0xb8))->PushBack(pNormal[1]);
+    ((FloatVec*)((char*)this + 0xb8))->PushBack(pNormal[2]);
 }
 
 unsigned int __cdecl FUN_00ec7c56(void);
@@ -53,11 +55,13 @@ struct Cls
 // Stores val into m1, clears m2, and zeroes the mVec element at index val, calling FUN_00ec7c56 if the index is out of range.
 // @fnv 0x00b306d0
 // src: COMMUNITY 0x00b306d0
-void Cls::CIndexedGeometry_ResetStripCounter(unsigned short ausValue)
+// pdb: CIndexedGeometry::ResetStripCounter | IndexedGeometry.obj | debug, upstream name already matches, high
+// pdb params: nLodLevel
+void Cls::CIndexedGeometry_ResetStripCounter(unsigned short nLodLevel)
 {
-    m1 = ausValue;
+    m1 = nLodLevel;
     m2 = 0;
-    unsigned int idx = ausValue;
+    unsigned int idx = nLodLevel;
     Vec28* vec = &mVec;
     if (idx >= (unsigned int)(vec->_last - vec->_first))
         FUN_00ec7c56();
@@ -99,12 +103,14 @@ struct FUN_00b10dc0
     float unk34;
     SubB unk38;
 
-    FUN_00b10dc0(int param);
+    FUN_00b10dc0(int pParent);
 };
 
 // @fnv 0x00b10dc0
-FUN_00b10dc0::FUN_00b10dc0(int aiValue)
-    : unk00(aiValue), unk04(0.0f), unk08(), unk20(0), unk24(-1), unk28(0), unk2c(-1), unk30(0.0f), unk34(0.0f), unk38()
+// pdb: CIdvBranch::CIdvBranch | Branch.obj | debug, call graph, high
+// pdb params: pParent
+FUN_00b10dc0::FUN_00b10dc0(int pParent)
+    : unk00(pParent), unk04(0.0f), unk08(), unk20(0), unk24(-1), unk28(0), unk2c(-1), unk30(0.0f), unk34(0.0f), unk38()
 {
     unsigned int scratch[0x3c];
 }
@@ -130,6 +136,9 @@ struct FrameBuf
 
 // @fnv 0x00b300c0
 // src: GUESS 0x00b300c0 (confidence: low)
+// pdb: CIndexedGeometry::AddVertexCoord | IndexedGeometry.obj | retail, object-file run extension, low
+// pdb params: pCoord
+// pdb locals: afNewCoord
 void FUN_00b300c0_cls::UpdateFields_00b300c0(const float* p)
 {
     float v[3];
@@ -235,27 +244,29 @@ struct FUN_00b304f0_cls
     int unk144;
     FloatVec m_148;
 
-    void CIndexedGeometry_AddVertexTexCoord1(const float& v);
+    void CIndexedGeometry_AddVertexTexCoord1(const float& pTexCoord);
 };
 
 bool __cdecl CSpeedTreeRT_GetTextureFlip(void);
 
 // @fnv 0x00b304f0
 // src: COMMUNITY 0x00b304f0
-void FUN_00b304f0_cls::CIndexedGeometry_AddVertexTexCoord1(const float& afValue)
+// pdb: CIndexedGeometry::AddVertexTexCoord1 | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: pTexCoord
+void FUN_00b304f0_cls::CIndexedGeometry_AddVertexTexCoord1(const float& pTexCoord)
 {
     float f;
     unsigned int buf[75];
     unsigned char c;
-    m_148.PushBack(afValue);
+    m_148.PushBack(pTexCoord);
     if (CSpeedTreeRT_GetTextureFlip())
     {
-        f = -(&afValue)[1];
+        f = -(&pTexCoord)[1];
         m_148.PushBack(f);
     }
     else
     {
-        m_148.PushBack((&afValue)[1]);
+        m_148.PushBack((&pTexCoord)[1]);
     }
 }
 
@@ -275,6 +286,9 @@ struct FrameBuf
 
 // @fnv 0x00b305f0
 // src: GUESS 0x00b305f0 (confidence: low)
+// pdb: CIndexedGeometry::AddVertexTangent | IndexedGeometry.obj | debug, object-file gap fill, medium
+// pdb params: pTangent
+// pdb locals: afAdjustedTangent
 void FUN_00b305f0_cls::UpdateState_00b305f0(const float* apComponents)
 {
     float v[3];
@@ -459,6 +473,8 @@ struct TargetClass
 };
 
 // @fnv 0x00b30da0
+// pdb: CIndexedGeometry::DeleteIndexData | IndexedGeometry.obj | debug, object-file gap fill, medium
+// pdb locals: i, j
 void TargetClass::ClearOuter()
 {
     unsigned int i;
@@ -712,6 +728,9 @@ class FUN_00b30560_cls
 // Pushes 1.0f - value onto m_160, maps index to unk28 + index % unk2c from m_04, and passes it to m_178.FUN_00b0dae0.
 // @fnv 0x00b30560
 // src: GUESS 0x00b30560 (confidence: medium)
+// pdb: CIndexedGeometry::AddVertexWind | IndexedGeometry.obj | debug, object-file gap fill, medium
+// pdb params: fWindWeight, ucWindMatrixIndex
+// pdb locals: nStartingMatrix, nMatrixSpan
 void FUN_00b30560_cls::AppendInvertedValueAndDispatchIndex(float value, unsigned char index)
 {
     int CNVal;

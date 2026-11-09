@@ -7,6 +7,7 @@ TaskThreadManager* TaskThreadManager::GetSingleton()
     return &DAT_01200088;
 }
 // @fnv 0x008c7190
+// pdb: AILinearTaskThread::RunLinearTasks | AILinearTaskThread.obj | debug, vtable slot, medium
 void AILinearTaskThread::ExecuteTask()
 {
     if (m_pTaskFunction)
@@ -15,7 +16,9 @@ void AILinearTaskThread::ExecuteTask()
 
 #pragma optimize("gty", on)
 // @fnv 0x00ba3720
-void TaskThreadManager::StartRenderingTaskThread()
+// src: XBOX_DEBUG_PDB 0x00ba3720
+// pdb: MTRenderingSystem::CreateThreads | MTRenderingSystem.obj | debug, unique string literal, high
+void TaskThreadManager::MTRenderingSystem_CreateThreads()
 {
     if (DAT_011f94b4)
         LaunchWorkerThread(1, DAT_01200080, MTRenderingSystem_TaskThreadCallback, "Rendering Task Thread 2", 0x20000);
@@ -25,6 +28,9 @@ void TaskThreadManager::StartRenderingTaskThread()
 #pragma optimize("gty", on)
 // Ends all rendered textures, then advances the renderer state from 1 to 3 or from 3 to 0 and increments frameCount when the matching check passes.
 // @fnv 0x00b6b730
+// pdb: BSRenderedTexture::Create | BSRenderedTexture.obj | debug, object-file run extension, low
+// pdb params: aName, apBuffer, abDepthBuffer, apSharedDepthBuffer
+// pdb locals: prt, ptex
 void TaskThreadManager::EndRenderingTaskThread()
 {
     NiRenderer* renderer = NiRenderer::ms_pRenderer;

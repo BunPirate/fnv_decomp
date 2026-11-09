@@ -15,6 +15,9 @@ void __cdecl FUN_00ec65a6(char* dst, unsigned int size, const char* src);
 void __cdecl FUN_00ec408c();
 
 // @fnv 0x00afe830
+// pdb: FileFinder::CombineFileNames | FileFinder.obj | retail, object-file run extension, low
+// pdb params: apBase, apAddition, apOutput
+// pdb locals: bfound, ilength, pdir, pdirectory, pslash, i
 void __cdecl ResolveRelativePath(const char* aBasePath, const char* aRelPath, char* aOutPath)
 {
     char buf2[0x104];

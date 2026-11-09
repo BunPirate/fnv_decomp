@@ -8,6 +8,7 @@ struct FUN_00e4ae20_MemoryManager
 {
     // Virtual destructor for the memory manager; performs no work.
 // @fnv 0x00e4ae20
+// pdb: hkxMesh::`scalar deleting destructor' | hkxMesh.obj | retail, vtable slot, high
     virtual ~FUN_00e4ae20_MemoryManager()
     {}
     virtual void Unused()
@@ -103,6 +104,7 @@ struct FUN_00cce530
 };
 // Destructor that destroys the two Array_CCE530 members, freeing their allocations through the memory manager.
 // @fnv 0x00cce530
+// pdb: hkGeometry::~hkGeometry | bhkConvexVerticesShape.obj | retail, call graph, high
 FUN_00cce530::~FUN_00cce530()
 {}
 
@@ -216,9 +218,9 @@ class MeshSectionE4AB80
   public:
     int unk00, unk04, unk08, unk0C, unk10, unk14;
     void* material;
-    void hkxMeshSection_appendGeometry(GeomPairE4AB80* geometry, int materialIndex);
+    void hkxMeshSection_appendGeometry(GeomPairE4AB80* geometryInOut, int materialIndex);
 };
-void ResizeAudioStream(void* allocator, void* array, int elementSize);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 template <class T> __forceinline void constructWithCopyRange(T* p, int n, T v)
 {
     for (int i = 0; i < n; ++i)

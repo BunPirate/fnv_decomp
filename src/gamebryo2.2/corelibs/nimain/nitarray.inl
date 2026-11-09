@@ -36,6 +36,8 @@ typedef char NiTArrayESizeCheck[(offsetof(NiTArray_CombatGroup_Malloc, m_usESize
 typedef char NiTArrayGrowByCheck[(offsetof(NiTArray_CombatGroup_Malloc, m_usGrowBy) == 14) ? 1 : -1];
 
 // @fnv 0x004afc50
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::Add | BipedAnim.obj | debug, call graph, high
+// pdb params: element
 template<>
 unsigned int NiTArray<NiPointer<NiAVObject>, NiTNewInterface<NiPointer<NiAVObject> > >::Add(
     const NiPointer<NiAVObject>& element)
@@ -88,6 +90,9 @@ void NiTArray<NiPointer<BSTempEffect>, NiTNewInterface<NiPointer<BSTempEffect> >
 }
 
 // @fnv 0x0096ad30
+// pdb: NiTArray<TESObjectREFR *,NiTMallocInterface<TESObjectREFR *> >::SetSize | TESObjectCELL.obj | debug, call graph, medium
+// pdb params: uiMaxSize
+// pdb locals: pSaveBase, i
 template <class T, class Allocator>
 void NiTArray<T, Allocator>::SetSize(unsigned int uiNewSize)
 {
@@ -152,6 +157,8 @@ void NiTArray<T, Allocator>::SetAt(unsigned int uiIndex, const T& element)
 }
 
 // @fnv 0x00470000
+// pdb: NiTArray<CombatGroup *,NiTMallocInterface<CombatGroup *> >::SetAtGrow | CombatManager.obj | debug, call graph, medium
+// pdb params: uiIndex, element
 template <class T, class Allocator>
 unsigned int NiTArray<T, Allocator>::SetAtGrow(unsigned int uiIndex, const T& element)
 {

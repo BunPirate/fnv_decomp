@@ -6,7 +6,7 @@
 typedef char _sizecheck_TeleportPath[sizeof(PathingPath) == 56 ? 1 : -1];
 struct FUN_006f4990_shell : public PathingPath
 {
-    void ClearTeleportPath();
+    void TeleportPath_Clear();
 };
 
 struct GlobalObject_00869f00
@@ -15,7 +15,9 @@ struct GlobalObject_00869f00
 };
 
 // @fnv 0x006f4990
-void FUN_006f4990_shell::ClearTeleportPath()
+// src: XBOX_RETAIL_PDB 0x006f4990
+// pdb: TeleportPath::Clear | TeleportPath.obj | retail, call graph (shared callers), high
+void FUN_006f4990_shell::TeleportPath_Clear()
 {
     ((GlobalObject_00869f00*)this)->Clear(true);
     ((GlobalObject_00869f00*)((char*)this + 0x10))->Clear(true);
@@ -39,6 +41,9 @@ struct Arr16
     unsigned int AppendElement(const Elem16* aPath);
 };
 // @fnv 0x006f2d20
+// pdb: BSSimpleArray<PathSmoother::AvoidNode,1024>::Add | PathSmoother.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 unsigned int Arr16::AppendElement(const Elem16* aPath)
 {
     unsigned int idx = BSSimpleArray_TeleportLink_1024_AddUninitialized();
@@ -64,6 +69,7 @@ struct FUN_006f4930
     ~FUN_006f4930();
 };
 // @fnv 0x006f4930
+// pdb: TeleportPath::~TeleportPath | TeleportPath.obj | debug, call graph, medium
 FUN_006f4930::~FUN_006f4930()
 {}
 
@@ -92,12 +98,15 @@ struct FUN_006f48b0
 };
 // Default constructor: initialises the first, second, third and fourth members in order.
 // @fnv 0x006f48b0
+// pdb: TeleportPath::TeleportPath | TeleportPath.obj | debug, call graph, medium
 FUN_006f48b0::FUN_006f48b0() : first(), second(), third(), fourth()
 {}
 
 #include <windows.h>
 // @fnv 0x0040b460
 // src: COMMUNITY 0x0040b460
+// pdb: NiAtomicIncrement | MagicItem.obj | debug, call graph, medium
+// pdb params: i32Value
 void NiAtomicIncrement_0040b460(unsigned int* aui32Value)
 {
     InterlockedIncrement((volatile LONG*)aui32Value);

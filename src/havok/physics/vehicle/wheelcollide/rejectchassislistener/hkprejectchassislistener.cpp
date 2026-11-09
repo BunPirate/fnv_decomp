@@ -106,13 +106,14 @@ class hkObjdfbd40 : public hkpRejectChassisListener
     }
     int GetAllocationSize() const
     {
-        return m_usMemSizeAndFlags;
+        return m_memSizeAndFlags;
     }
     void FUN_00e360f0() throw();
 };
 
 // Calls FUN_00e360f0, then calls operator delete on this if bit 0 of uiFlags is set, and returns this.
 // @fnv 0x00dfbd40
+// pdb: hkpRejectChassisListener::`scalar deleting destructor' | hkpVehicleLinearCastWheelCollideClass.obj | retail, vtable slot, high
 hkObjdfbd40* hkObjdfbd40::FUN_00dfbd40(unsigned int uiFlags) throw()
 {
     this->FUN_00e360f0();

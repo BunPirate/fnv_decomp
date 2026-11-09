@@ -11,6 +11,7 @@ class NiGeometry;
 class NiGeometryBufferData;
 class NiSkinInstance;
 
+// pdb: class NiD3DPass, size 0x68, 20 members
 class NiD3DPass
 {
 public:
@@ -34,14 +35,14 @@ public:
 
     void DestroyPass();
     void FUN_00e80190();
-    void NiD3DPass_SetVertexShader(NiD3DPixelShader* shader);
-    void NiD3DPass_SetPixelShader(NiD3DVertexShader* shader);
+    void NiD3DPass_SetVertexShader(NiD3DPixelShader* pkVertexShader);
+    void NiD3DPass_SetPixelShader(NiD3DVertexShader* pkPixelShader);
     void DeleteThis();
     void Release();
     void IncRefCount();
     void DecRefCount();
     bool ApplyRenderStateChanges(bool force);
-    NiD3DPass* SetD3DDevice(unsigned int count);
+    NiD3DPass* SetD3DDevice(unsigned int pkD3DDevice);
     void ApplyPassState();
     void SetAlphaBlendMode(unsigned int sourceBlend, unsigned int destinationBlend,
                            bool sourceAlpha);
@@ -53,8 +54,8 @@ public:
     template <class Result>
     Result SetRenderState(unsigned int state, unsigned int value, bool save);
     void SetRenderState(unsigned int state, unsigned int value);
-    void SetVertexShader(NiD3DVertexShader* shader);
-    void SetPixelShader(NiD3DPixelShader* shader);
+    void SetVertexShader(NiD3DVertexShader* pkVertexShader);
+    void SetPixelShader(NiD3DPixelShader* pkPixelShader);
     void SetPixelConstantMap(NiD3DShaderConstantMap* map);
     void SetVertexConstantMap(NiD3DShaderConstantMap* map);
 

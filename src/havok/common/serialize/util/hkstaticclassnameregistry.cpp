@@ -18,12 +18,14 @@ struct FUN_00db7ae0_cls
     SlotEntry** m_slots;
 
     void ResetSlots();
-    SlotEntry* FindSlotByKey(void* p);
+    SlotEntry* FindSlotByKey(void* className);
 };
 
 // Resets the slot table, then scans m_slots for the first entry whose Key matches p via MatchSlotKey and returns it, or 0 if none match.
 // @fnv 0x00db7ae0
-SlotEntry* FUN_00db7ae0_cls::FindSlotByKey(void* apKey)
+// pdb: hkStaticClassNameRegistry::getClassByName | hkStaticClassNameRegistry.obj | retail, vtable slot, high
+// pdb params: className
+SlotEntry* FUN_00db7ae0_cls::FindSlotByKey(void* className)
 {
     ResetSlots();
     int i = 0;
@@ -32,7 +34,7 @@ SlotEntry* FUN_00db7ae0_cls::FindSlotByKey(void* apKey)
         do
         {
             SlotEntry* key = m_slots[i]->Key();
-            if (MatchSlotKey(apKey, key) == 0)
+            if (MatchSlotKey(className, key) == 0)
             {
                 return m_slots[i];
             }
@@ -42,26 +44,27 @@ SlotEntry* FUN_00db7ae0_cls::FindSlotByKey(void* apKey)
     return 0;
 }
 
-struct FUN_00db7b40
+// pdb: class hkStaticClassNameRegistry, size 0x18, bases: hkClassNameRegistry, 4 members
+struct hkStaticClassNameRegistry
 {
     virtual void v0();
     unsigned short unk04;
     unsigned short unk06;
-    int unk08;
-    int unk0c;
-    int unk10;
-    int unk14;
-    FUN_00db7b40(int a, int b, int c);
+    int m_name;
+    int m_classes;
+    int m_classVersion;
+    int m_ready;
+    hkStaticClassNameRegistry(int a, int b, int c);
 };
 // Initializes the object: sets unk06 to 1, stores a, b and c into unk0c, unk10 and unk08, and clears unk14.
 // @fnv 0x00db7b40
-FUN_00db7b40::FUN_00db7b40(int aiValue1, int aiValue2, int aiValue3)
+hkStaticClassNameRegistry::hkStaticClassNameRegistry(int aiValue1, int aiValue2, int aiValue3)
 {
     unk06 = 1;
-    unk0c = aiValue1;
-    unk10 = aiValue2;
-    unk14 = 0;
-    unk08 = aiValue3;
+    m_classes = aiValue1;
+    m_classVersion = aiValue2;
+    m_ready = 0;
+    m_name = aiValue3;
 }
 
 struct FUN_00db7b70_Array
@@ -89,15 +92,17 @@ struct FUN_00db7b70_Class
     int unk10;
     int unk14;
     void EnsureInitialized();
-    void AppendToArray(FUN_00db7b70_Array* p);
+    void AppendToArray(FUN_00db7b70_Array* classes);
 };
 
 void* hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(void* mm, FUN_00db7b70_Array* arr, int count, int size);
+void __cdecl hkArrayUtil__reserve(void* mem, FUN_00db7b70_Array* array, int numElem, int sizeElem);
 
 // Appends the null-terminated pointer list in unk0c to the array p, growing its capacity via the memory manager when needed.
 // @fnv 0x00db7b70
-void FUN_00db7b70_Class::AppendToArray(FUN_00db7b70_Array* apArray)
+// pdb: hkStaticClassNameRegistry::getClasses | hkStaticClassNameRegistry.obj | retail, vtable slot, high
+// pdb params: classes
+void FUN_00db7b70_Class::AppendToArray(FUN_00db7b70_Array* classes)
 {
     this->EnsureInitialized();
 
@@ -107,18 +112,18 @@ void FUN_00db7b70_Class::AppendToArray(FUN_00db7b70_Array* apArray)
 
     FUN_00c85750_Obj* tls = (FUN_00c85750_Obj*)hkMemoryRouter_getInstance();
     void* memmgr = tls->unk10;
-    int oldCount = apArray->count;
-    int iCapacity = apArray->capacity;
+    int oldCount = classes->count;
+    int iCapacity = classes->capacity;
     int iNeeded = count + oldCount;
     iCapacity &= 0x3fffffff;
     if (iCapacity < iNeeded)
     {
         int iNewCapacity = (iNeeded >= iCapacity * 2) ? iNeeded : iCapacity * 2;
-        hkArrayUtil__reserve(memmgr, apArray, iNewCapacity, 4);
+        hkArrayUtil__reserve(memmgr, classes, iNewCapacity, 4);
     }
-    apArray->count += count;
+    classes->count += count;
 
-    void** ppDest = apArray->data + oldCount;
+    void** ppDest = classes->data + oldCount;
     for (int i = 0; this->unk0c[i] != 0; i++)
         ppDest[i] = this->unk0c[i];
 }

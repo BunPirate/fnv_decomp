@@ -34,7 +34,7 @@ public:
 
     int FindEntryIndex(int);
     int FindEntryIndex(void* key) const;
-    void ClearSweptEntry(int index);
+    void hkpSweptTransformDisplayViewer_removeAllGeometries(int worldIndex);
     void RemoveWorldData(int);
     void NotifyItems();
     void RemoveWorldDataIfFound(int a);

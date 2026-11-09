@@ -34,13 +34,15 @@ struct FUN_00e43d00_class
 // Returns zero when the flag is set, otherwise multiplies the value from arg1 by the result of v8.
 // @fnv 0x00e43d00
 // src: HAVOK_LIB 0x00e43d00
-float FUN_00e43d00_class::hkpVehicleDefaultTransmission_calcMainTransmittedTorque(FUN_00e43d00_arg1* pInput, FUN_00e43d00_arg2* arg2)
+// pdb: hkpVehicleDefaultTransmission::calcMainTransmittedTorque | hkpVehicleDefaultTransmission.obj | retail, upstream name already matches, high
+// pdb params: vehicle, transmissionOut
+float FUN_00e43d00_class::hkpVehicleDefaultTransmission_calcMainTransmittedTorque(FUN_00e43d00_arg1* vehicle, FUN_00e43d00_arg2* transmissionOut)
 {
-    if (arg2->flag)
+    if (transmissionOut->flag)
         return 0.0f;
 
-    float result = pInput->value;
-    result *= this->v8(pInput, arg2);
+    float result = vehicle->value;
+    result *= this->v8(vehicle, transmissionOut);
     return result;
 }
 
@@ -66,6 +68,8 @@ struct FUN_00e43c30_class
 };
 
 // @fnv 0x00e43c30
+// pdb: hkpVehicleDefaultTransmission::getCurrentRatio | hkpVehicleDefaultTransmission.obj | debug, vtable slot, medium
+// pdb params: vehicle, transmissionOut
 float FUN_00e43c30_class::GetGearRatio(FUN_00e43c30_arg1* pUnused, FUN_00e43c30_state* pState)
 {
     if (pState->m_reverse)
@@ -107,21 +111,23 @@ struct FUN_00e43c80_s
     float unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24;
     float* unk28;
     int unk2c;
-    void ComputeOutput(float timeValue, E43Arg* pInput, E43Result* pOutput);
+    void ComputeOutput(float deltaTime, E43Arg* vehicle, E43Result* transmissionOut);
 };
 // Computes status, scale and primary values into pOutput, fills m_outputValues scaled by the scale value, then finalizes.
 // @fnv 0x00e43c80
-void FUN_00e43c80_s::ComputeOutput(float timeValue, E43Arg* pInput, E43Result* pOutput)
+// pdb: hkpVehicleDefaultTransmission::calcTransmission | hkpVehicleDefaultTransmission.obj | retail, vtable slot, high
+// pdb params: deltaTime, vehicle, transmissionOut
+void FUN_00e43c80_s::ComputeOutput(float deltaTime, E43Arg* vehicle, E43Result* transmissionOut)
 {
-    pOutput->m_byte13 = m_compute_status(pInput, pOutput).value;
-    pOutput->m_vScale = m_scale_value(pInput, pOutput);
-    pOutput->m_uiFilterValue = m_primary_value(pInput, pOutput);
+    transmissionOut->m_byte13 = m_compute_status(vehicle, transmissionOut).value;
+    transmissionOut->m_vScale = m_scale_value(vehicle, transmissionOut);
+    transmissionOut->m_uiFilterValue = m_primary_value(vehicle, transmissionOut);
     for (int i = 0; i < unk2c; ++i)
     {
-        float temp = unk28[i] * pOutput->m_vScale;
-        pOutput->m_outputValues[i] = temp;
+        float temp = unk28[i] * transmissionOut->m_vScale;
+        transmissionOut->m_outputValues[i] = temp;
     }
-    m_finalize(timeValue, pInput, pOutput);
+    m_finalize(deltaTime, vehicle, transmissionOut);
 }
 
 struct FUN_00e43ea0_State

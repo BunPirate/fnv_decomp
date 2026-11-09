@@ -4,6 +4,7 @@
 
 class CellImpactSwapValue;
 
+// pdb: class ExtraCellImpactSwap, size 0x10, bases: BSExtraData, 1 members
 class ExtraCellImpactSwap : public BSExtraData
 {
 public:
@@ -15,5 +16,5 @@ public:
     void* FUN_0040f1e0(unsigned int flags);
     bool ExtraCellImpactSwap_Compare(BSExtraData* apCompare);
 
-    CellImpactSwapValue* m_pCellImpactSwapValue;
+    CellImpactSwapValue* pImpactSwap;
 };

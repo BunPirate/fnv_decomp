@@ -5,7 +5,10 @@
 // Counts two byte positions, then stably sorts words from data through temp and back to data.
 // @fnv 0x00d9fcf0
 // src: XBOX_PDB 0x00d9fcf0
-void hkRadixSort_sort16(unsigned int* data, int count, unsigned int* temp)
+// pdb: hkRadixSort::sort16 | hkRadixSort.obj | retail, upstream name already matches, high
+// pdb params: data, numObjects, buffer
+// pdb locals: table0, c1, table1, c0, assertBuf, ostr
+void hkRadixSort_sort16(unsigned int* data, int numObjects, unsigned int* buffer)
 {
     __declspec(align(16)) unsigned int* ptrs1[256];
     __declspec(align(16)) unsigned int* ptrs0[256];
@@ -35,8 +38,8 @@ void hkRadixSort_sort16(unsigned int* data, int count, unsigned int* temp)
 
     {
         const unsigned int* src = data;
-        const unsigned int* dst = temp;
-        for (iIndex = 0; iIndex < count; iIndex += 4)
+        const unsigned int* dst = buffer;
+        for (iIndex = 0; iIndex < numObjects; iIndex += 4)
         {
             const unsigned char* b = (const unsigned char*)src;
             unsigned int lo;
@@ -64,7 +67,7 @@ void hkRadixSort_sort16(unsigned int* data, int count, unsigned int* temp)
         }
     }
 
-    ptrs0[0] = temp;
+    ptrs0[0] = buffer;
     ptrs1[0] = data;
     for (iIndex = 0; iIndex < 255; iIndex++)
     {
@@ -72,7 +75,7 @@ void hkRadixSort_sort16(unsigned int* data, int count, unsigned int* temp)
         ptrs1[iIndex + 1] = ptrs1[iIndex] + hist1[iIndex];
     }
 
-    for (iIndex = 0; iIndex < count; iIndex += 4)
+    for (iIndex = 0; iIndex < numObjects; iIndex += 4)
     {
         unsigned char cKey;
         {
@@ -94,27 +97,27 @@ void hkRadixSort_sort16(unsigned int* data, int count, unsigned int* temp)
             *ptrs0[cKey]++ = data[iIndex + 3];
         }
     }
-    for (iIndex = 0; iIndex < count; iIndex += 4)
+    for (iIndex = 0; iIndex < numObjects; iIndex += 4)
     {
-        const unsigned char* b = (const unsigned char*)&temp[iIndex];
+        const unsigned char* b = (const unsigned char*)&buffer[iIndex];
         unsigned char cKey;
         {
             cKey = b[1];
-            *ptrs1[cKey]++ = temp[iIndex + 0];
+            *ptrs1[cKey]++ = buffer[iIndex + 0];
         }
         {
             cKey = b[5];
             unsigned int* __restrict out = ptrs1[cKey];
-            *out = temp[iIndex + 1];
+            *out = buffer[iIndex + 1];
             ptrs1[cKey] = out + 1;
         }
         {
             cKey = b[9];
-            *ptrs1[cKey]++ = temp[iIndex + 2];
+            *ptrs1[cKey]++ = buffer[iIndex + 2];
         }
         {
             cKey = b[13];
-            *ptrs1[cKey]++ = temp[iIndex + 3];
+            *ptrs1[cKey]++ = buffer[iIndex + 3];
         }
     }
 }

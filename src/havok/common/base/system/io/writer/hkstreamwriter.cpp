@@ -5,6 +5,8 @@
 
 // @fnv 0x00cb15d0
 // src: GUESS 0x00cb15d0 (confidence: high)
+// pdb: hkStreamWriter::seek | hkStreamWriter.obj | debug, vtable slot, medium
+// pdb params: offset, whence
 int __stdcall hkStreamWriter_ReturnOne(int arg0, int arg1)
 {
     return 1;
@@ -19,6 +21,7 @@ void __stdcall hkStreamWriter_seekTellSupported(unsigned char* flag)
 
 // @fnv 0x00cb15e0
 // src: HAVOK_SRC 0x00cb15e0
+// pdb: hkStreamWriter::tell | hkStreamWriter.obj | debug, upstream name already matches, high
 int __cdecl hkStreamWriter_tell()
 {
     return -1;

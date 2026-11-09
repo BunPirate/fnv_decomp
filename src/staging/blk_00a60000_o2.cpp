@@ -147,17 +147,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -267,6 +267,7 @@ extern NiUnionBV* DAT_011f4788;
 // Deletes the shader pointer map and the union BV object if each is non-null.
 // @fnv 0x00a632b0
 // src: GAMEBRYO_LIB 0x00a632b0
+// pdb: NiStream::_SDMShutdown | NiStream.obj | retail, upstream name already matches, high
 void NiStream__SDMShutdown()
 {
     if (DAT_011f4784)
@@ -276,13 +277,14 @@ void NiStream__SDMShutdown()
 }
 
 extern "C" void NiFreeAlias(void*);
-extern void* DAT_011f4aa8;
+extern void* NiPoint3_ms_pSqrtTable;
 
 // @fnv 0x00a7e940
+// pdb: NiPoint3::_SDMShutdown | NiPoint3_Xenon.obj | debug, object-file run extension, low
 void FreeGlobalAlias()
 {
-    NiFreeAlias(DAT_011f4aa8);
-    DAT_011f4aa8 = 0;
+    NiFreeAlias(NiPoint3_ms_pSqrtTable);
+    NiPoint3_ms_pSqrtTable = 0;
 }
 
 extern int DAT_0109df2c;
@@ -318,12 +320,15 @@ extern MemoryManager g_memoryManager;
 
 struct FUN_00a615c0_Class
 {
-    void __thiscall ClearAllBuckets();
+    void __thiscall BSEntryMap_RemoveAll();
 };
 
 // Walks each of 0x3e9 bucket lists, freeing every node via g_memoryManager.Deallocate, then clears the buckets and the pointer at offset 0xfa4.
 // @fnv 0x00a615c0
-void __thiscall FUN_00a615c0_Class::ClearAllBuckets()
+// src: XBOX_RETAIL_PDB 0x00a615c0
+// pdb: BSEntryMap::RemoveAll | BSTexturePalette.obj | retail, call graph, high
+// pdb locals: I, pitem, pcur
+void __thiscall FUN_00a615c0_Class::BSEntryMap_RemoveAll()
 {
     void** p = (void**)(this + 0);
     for (unsigned int i = 0; i < 0x3e9; ++i)
@@ -409,6 +414,8 @@ NiTriBasedGeomData* __fastcall InitializeTriBasedGeomData(NiTriBasedGeomData*);
 extern int DAT_0109dac4;
 // @fnv 0x00a7b790
 // src: EXE 0x00a7b790
+// pdb: NiTriShapeData::CreateObject | NiTriShapeData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiTriShapeData_CreateObject()
 {
     char* p = (char*)BSFadeNode::operator new(0x58);
@@ -429,7 +436,9 @@ void* __cdecl NiTriShapeData_CreateObject()
 void __fastcall FUN_00a71f60(void*);
 extern int DAT_0109dd0c;
 // @fnv 0x00a7d670
-NiDirectionalLight* __fastcall InitializeAttenuatedLight(NiDirectionalLight* light)
+// src: XBOX_RETAIL_PDB 0x00a7d670
+// pdb: NiPointLight::NiPointLight | NiPointLight.obj | retail, call graph, high
+NiDirectionalLight* __fastcall NiPointLight_ctor(NiDirectionalLight* light)
 {
     FUN_00a71f60(light);
     *(float*)((char*)light + 0xf0) = 0.0f;
@@ -443,7 +452,10 @@ NiDirectionalLight* __fastcall InitializeAttenuatedLight(NiDirectionalLight* lig
 // Extra copy operation absent from the shared class; the unused register
 // parameter preserves the original thiscall entry convention.
 // @fnv 0x00a7d6a0
-void __fastcall CopyLightAttenuation(NiDirectionalLight* light, void*, NiDirectionalLight* dst, CloningProcess& proc)
+// src: XBOX_RETAIL_PDB 0x00a7d6a0
+// pdb: NiPointLight::CopyMembers | NiPointLight.obj | retail, object-file gap fill, high
+// pdb params: pDest, kCloning
+void __fastcall NiPointLight_CopyMembers(NiDirectionalLight* light, void*, NiDirectionalLight* dst, CloningProcess& proc)
 {
     light->CopyMemberData(dst, proc);
     *reinterpret_cast<float*>(reinterpret_cast<char*>(dst) + 0xf0) =
@@ -459,14 +471,17 @@ extern "C" int __cdecl tolower(int);
 // Hashes the lowercased characters of str (stopping before a trailing 3-character extension after a dot) and returns the hash modulo 713.
 // @fnv 0x00a61530
 // src: COMMUNITY 0x00a61530
-unsigned int BSTexturePalette_GetContainerNumber(const char* str)
+// pdb: BSTexMap::KeyToHashIndex | BSTexturePalette.obj | retail, call graph, high
+// pdb params: apName
+// pdb locals: ihash, c1
+unsigned int BSTexturePalette_GetContainerNumber(const char* apName)
 {
     unsigned int hash = 0;
-    while (*str)
+    while (*apName)
     {
-        int c = tolower(*str);
-        ++str;
-        if (c == '.' && !str[3])
+        int c = tolower(*apName);
+        ++apName;
+        if (c == '.' && !apName[3])
             break;
         hash = hash * 33u + c;
     }
@@ -479,6 +494,8 @@ struct FUN_00a755f0_Class : NiCullingProperty
     void __thiscall CopyCullingData(void* dst, CloningProcess& proc);
 };
 // @fnv 0x00a755f0
+// pdb: NiMaterialProperty::CopyMembers | NiMaterialProperty.obj | retail, object-file run extension, low
+// pdb params: pDest, kCloning
 void __thiscall FUN_00a755f0_Class::CopyCullingData(void* dst, CloningProcess& proc)
 {
     NiProperty_CopyMembers(dst, proc);
@@ -498,22 +515,25 @@ void __thiscall FUN_00a755f0_Class::CopyCullingData(void* dst, CloningProcess& p
 
 struct FUN_00a72590_Class
 {
-    int NiAdditionalGeometryData_LockDataBlock(unsigned int index, int* out);
+    int NiAdditionalGeometryData_LockDataBlock(unsigned int uiIndex, int* uiBlockSize);
 };
 
 // @fnv 0x00a72590
 // src: COMMUNITY 0x00a72590
-int FUN_00a72590_Class::NiAdditionalGeometryData_LockDataBlock(unsigned int index, int* out)
+// pdb: NiAdditionalGeometryData::LockDataBlock | NiAdditionalGeometryData.obj | retail, upstream name already matches, high
+// pdb params: uiIndex, uiBlockSize
+// pdb locals: pkBlock
+int FUN_00a72590_Class::NiAdditionalGeometryData_LockDataBlock(unsigned int uiIndex, int* uiBlockSize)
 {
-    *out = 0;
+    *uiBlockSize = 0;
     unsigned short count = *(unsigned short*)((char*)this + 0x26);
-    if (index >= count)
+    if (uiIndex >= count)
         return 0;
     int* array = *(int**)((char*)this + 0x20);
-    int obj = array[index];
+    int obj = array[uiIndex];
     if (!obj)
         return 0;
-    *out = *(int*)(obj + 4);
+    *uiBlockSize = *(int*)(obj + 4);
     int* vtable = *(int**)obj;
     void(__thiscall * fn)(void*, int, int) = *(void(__thiscall**)(void*, int, int))(vtable + 2);
     fn((void*)obj, 0, 0);
@@ -522,6 +542,8 @@ int FUN_00a72590_Class::NiAdditionalGeometryData_LockDataBlock(unsigned int inde
 
 // @fnv 0x00a7d6e0
 // src: EXE 0x00a7d6e0
+// pdb: NiPointLight::CreateObject | NiPointLight.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* NiPointLight_CreateObject()
 {
     NiDirectionalLight* obj = (NiDirectionalLight*)NiMemObject::operator new(0xfc);
@@ -605,28 +627,31 @@ struct FUN_00a699d0_Class
     NiPoint3 normal;
     float distance;
 
-    FUN_00a699d0_Class* __thiscall SetPlaneFromThreePoints(NiPoint3 const* point0, NiPoint3 const* point1, NiPoint3 const* point2);
+    FUN_00a699d0_Class* __thiscall SetPlaneFromThreePoints(NiPoint3 const* kP0, NiPoint3 const* kP1, NiPoint3 const* kP2);
 };
 
 // Computes the normal as the cross product of the two edge vectors and sets distance to the dot product of the normal with point0.
 // @fnv 0x00a699d0
 // src: GUESS 0x00a699d0 (confidence: medium)
-FUN_00a699d0_Class* __thiscall FUN_00a699d0_Class::SetPlaneFromThreePoints(NiPoint3 const* point0, NiPoint3 const* point1,
-                                                                NiPoint3 const* point2)
+// pdb: NiPlane::NiPlane | NiPlane.obj | debug, call graph, high
+// pdb params: kP0, kP1, kP2
+// pdb locals: kDif2, kDif1
+FUN_00a699d0_Class* __thiscall FUN_00a699d0_Class::SetPlaneFromThreePoints(NiPoint3 const* kP0, NiPoint3 const* kP1,
+                                                                NiPoint3 const* kP2)
 {
     NiPoint3 edge1;
-    edge1.x = point1->x - point0->x;
-    edge1.y = point1->y - point0->y;
-    edge1.z = point1->z - point0->z;
+    edge1.x = kP1->x - kP0->x;
+    edge1.y = kP1->y - kP0->y;
+    edge1.z = kP1->z - kP0->z;
 
     NiPoint3 edge2;
-    edge2.x = point2->x - point1->x;
-    edge2.y = point2->y - point1->y;
-    edge2.z = point2->z - point1->z;
+    edge2.x = kP2->x - kP1->x;
+    edge2.y = kP2->y - kP1->y;
+    edge2.z = kP2->z - kP1->z;
 
     AssignPoint(normal, edge1.CrossProduct(edge2));
 
-    distance = normal.x * point0->x + normal.y * point0->y + normal.z * point0->z;
+    distance = normal.x * kP0->x + normal.y * kP0->y + normal.z * kP0->z;
 
     return this;
 }
@@ -639,6 +664,8 @@ void _NiFree(void* p);
 // The vftable at 0x0109ca08 identifies the const-char-pointer fixed-string map base.
 // Keep this deleting-destructor entry outside the class so its flag argument stays explicit.
 // @fnv 0x00a6ea00
+// pdb: NiTFixedStringMap<char const *>::NiTFixedStringMap<char const *> | NiDefaultAVObjectPalette.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* __fastcall DestroyFixedStringCStringMap(
     NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString, const char*> >, const char*>* map,
     void*, unsigned char flag)
@@ -656,6 +683,9 @@ extern int DAT_0109cd44;
 
 // Allocates 0xc4 bytes, constructs a NiTriStrips in place, sets its vtable to DAT_0109cd44, and returns the pointer or 0 on failure.
 // @fnv 0x00a71ce0
+// pdb: NiTriStrips::RenderImmediate | NiTriStrips.obj | retail, object-file run extension, low
+// pdb params: apkRenderer
+// pdb locals: pkRenderer
 void* CreateNiTriStrips()
 {
     NiTriStrips* p = (NiTriStrips*)NiMemObject::operator new(0xc4);
@@ -706,14 +736,18 @@ struct FUN_00a61670_Map
 {
     HashNode_00a61670* buckets[1001];
     unsigned int count;
-    HashValue_00a61670* RemoveByKey(unsigned int key);
+    HashValue_00a61670* BSEntryMap_Remove(unsigned int apEntry);
 };
 extern struct MemoryManager g_memoryManager;
 // Looks up a key in the hash map, unlinks and deallocates its node, clears the value's key, and returns the removed value or null.
 // @fnv 0x00a61670
-HashValue_00a61670* FUN_00a61670_Map::RemoveByKey(unsigned int key)
+// src: XBOX_RETAIL_PDB 0x00a61670
+// pdb: BSEntryMap::Remove | BSTexturePalette.obj | retail, call graph, high
+// pdb params: apEntry
+// pdb locals: pitem, iindex, pret, pprev
+HashValue_00a61670* FUN_00a61670_Map::BSEntryMap_Remove(unsigned int apEntry)
 {
-    unsigned int index = (key >> 4) % 1001;
+    unsigned int index = (apEntry >> 4) % 1001;
     HashValue_00a61670* result = 0;
     HashNode_00a61670* current = buckets[index];
     HashNode_00a61670* previous = 0;
@@ -721,7 +755,7 @@ HashValue_00a61670* FUN_00a61670_Map::RemoveByKey(unsigned int key)
     {
         do
         {
-            if (current->value->key == key)
+            if (current->value->key == apEntry)
             {
                 if (previous != 0)
                     previous->next = current->next;
@@ -787,19 +821,22 @@ struct A616E0Pool
     A616E0Bucket m_buckets[7];
 };
 
-extern A616E0Pool* DAT_011f4464;
+extern A616E0Pool* BSTexturePalette_pTexMapA;
 
 // Scans the seven buckets of DAT_011f4464 from the last to the first and returns whether GetFirst found an entry, filling it.
 // @fnv 0x00a616e0
 // src: COMMUNITY 0x00a616e0
-bool __cdecl BSTexturePalette_GetFirstPos(A616E0Iter* it)
+// pdb: BSTexturePalette::GetFirstPos | BSTexturePalette.obj | debug, upstream name already matches, high
+// pdb params: arIterator
+// pdb locals: I, bres
+bool __cdecl BSTexturePalette_GetFirstPos(A616E0Iter* arIterator)
 {
     int i = 7;
     bool found;
     do
     {
         --i;
-        found = DAT_011f4464->m_buckets[i].GetFirst(it);
+        found = BSTexturePalette_pTexMapA->m_buckets[i].GetFirst(arIterator);
     } while (!found && i);
     return found;
 }
@@ -850,6 +887,9 @@ class A61750Texture
 
 // Returns a level 0-4 based on the larger of the texture's width and height, using thresholds 0x80, 0x100, 0x200 and 0x400.
 // @fnv 0x00a61750
+// pdb: BSTexturePalette::GetNext | BSTexturePalette.obj | debug, object-file run extension, low
+// pdb params: arIterator, arTexture, abNextPriority
+// pdb locals: bres
 unsigned int GetTextureSizeLevel(A61750Texture* pkTexture)
 {
     unsigned int uiTreeBlockIndex = 0;
@@ -890,13 +930,17 @@ class FUN_00a61920_Class
   public:
     FUN_00a61920_Node* m_pBuckets[1];
 
-    bool __thiscall FindShaderByHash(int, int, NiShader**);
+    bool __thiscall BSTexMap_GetAt(int, int, NiShader**);
 };
 
 // @fnv 0x00a61920
-bool __thiscall FUN_00a61920_Class::FindShaderByHash(int iBucketIndex, int iHashKey, NiShader** ppOutShader)
+// src: XBOX_RETAIL_PDB 0x00a61920
+// pdb: BSTexMap::GetAt | BSTexturePalette.obj | retail, object-file gap fill, high
+// pdb params: aiIndex, apName, arValue
+// pdb locals: pitem, bres
+bool __thiscall FUN_00a61920_Class::BSTexMap_GetAt(int aiIndex, int apName, NiShader** arValue)
 {
-    FUN_00a61920_Node* node = m_pBuckets[iBucketIndex];
+    FUN_00a61920_Node* node = m_pBuckets[aiIndex];
     bool found = false;
 
     if (node != 0)
@@ -906,9 +950,9 @@ bool __thiscall FUN_00a61920_Class::FindShaderByHash(int iBucketIndex, int iHash
             int* hash = ShaderHash(node->m_pObject);
             int value = static_cast<int>(node->unk0e) + *hash;
 
-            if (BSTexturePalette_ArePathsEqual(iHashKey, value))
+            if (BSTexturePalette_ArePathsEqual(apName, value))
             {
-                NiShader* pOldShader = *ppOutShader;
+                NiShader* pOldShader = *arValue;
 
                 if (pOldShader != node->m_pObject)
                 {
@@ -920,11 +964,11 @@ bool __thiscall FUN_00a61920_Class::FindShaderByHash(int iBucketIndex, int iHash
                         }
                     }
 
-                    *ppOutShader = node->m_pObject;
+                    *arValue = node->m_pObject;
 
-                    if (*ppOutShader != 0)
+                    if (*arValue != 0)
                     {
-                        InterlockedIncrement(reinterpret_cast<volatile long*>(&(*ppOutShader)->m_uiRefCount));
+                        InterlockedIncrement(reinterpret_cast<volatile long*>(&(*arValue)->m_uiRefCount));
                     }
                 }
 
@@ -1127,7 +1171,7 @@ struct TLSHeap_b9725
 extern __declspec(thread) TLSCtx_b9725 g_tlsCtx_b9725;
 extern TLSHeap_b9725 DAT_011f6238;
 extern void* DAT_011f4468;
-extern void* DAT_011f4464;
+extern void* BSTexturePalette_pTexMapA;
 extern unsigned char DAT_011f4461;
 void* __cdecl ClearAndReset();
 void* __cdecl _fnv_zlib_memset(void* p, int c, unsigned int n);
@@ -1136,6 +1180,8 @@ void __stdcall Init_b9725(void* p, unsigned int size, int count, void* cb);
 // Allocates two blocks via the TLS heap, zeroes the first and initializes the second with Init_b9725, storing both in globals and restoring the TLS field.
 // @fnv 0x00a61ad0
 // src: COMMUNITY 0x00a61ad0
+// pdb: BSTexturePalette::Init | BSTexturePalette.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void BSTexturePalette_Init()
 {
     int iSavedTlsValue = g_tlsCtx_b9725.m_2b4;
@@ -1156,13 +1202,13 @@ void BSTexturePalette_Init()
     {
         *(int*)p = 7;
         Init_b9725(p + 4, 0xb28, 7, (void*)ClearAndReset);
-        DAT_011f4464 = p + 4;
+        BSTexturePalette_pTexMapA = p + 4;
         g_tlsCtx_b9725.m_2b4 = iSavedTlsValue;
         DAT_011f4461 = 0;
         return;
     }
     g_tlsCtx_b9725.m_2b4 = iSavedTlsValue;
-    DAT_011f4464 = 0;
+    BSTexturePalette_pTexMapA = 0;
     DAT_011f4461 = 0;
 }
 }  // namespace fnv_00a61ad0
@@ -1181,7 +1227,7 @@ struct PoolNode
 class NodePool
 {
   public:
-    void Free(PoolNode* node);
+    void Free(PoolNode* apMem);
 };
 
 extern NodePool DAT_011f6238;
@@ -1192,12 +1238,15 @@ class FUN_00a61ec0_cls
     PoolNode* m_slots[0x2c9];
     unsigned int m_unkB24;
 
-    void ClearAllSlots();
+    void BSTexMap_RemoveAll();
 };
 
 // Walks each of the 0x2c9 slot lists, releases each node's refcounted object and frees the node, then clears the slots and m_unkB24.
 // @fnv 0x00a61ec0
-void FUN_00a61ec0_cls::ClearAllSlots()
+// src: XBOX_RETAIL_PDB 0x00a61ec0
+// pdb: BSTexMap::RemoveAll | BSTexturePalette.obj | retail, call graph, high
+// pdb locals: I, pitem, pcur
+void FUN_00a61ec0_cls::BSTexMap_RemoveAll()
 {
     for (unsigned int i = 0; i < 0x2c9; ++i)
     {
@@ -1226,10 +1275,10 @@ extern MemoryManager g_memoryManager;
 
 struct ShaderState
 {
-    void __thiscall ClearAllBuckets();
+    void __thiscall BSEntryMap_RemoveAll();
     ~ShaderState()
     {
-        ClearAllBuckets();
+        BSEntryMap_RemoveAll();
     }
     static void operator delete(void* p)
     {
@@ -1238,22 +1287,23 @@ struct ShaderState
 };
 struct ShaderEntry
 {
-    void __thiscall ClearAllSlots();
+    void __thiscall BSTexMap_RemoveAll();
 };
 extern ShaderState* DAT_011f4468;
-extern unsigned char* DAT_011f4464;
+extern unsigned char* BSTexturePalette_pTexMapA;
 void __cdecl BSTexturePalette_RemoveAll();
 
 // Calls FUN_00a62030, deletes DAT_011f4468, destroys each ShaderEntry in the DAT_011f4464 array, frees it, and nulls both globals.
 // @fnv 0x00a62090
 // src: COMMUNITY 0x00a62090
+// pdb: BSTexturePalette::Kill | BSTexturePalette.obj | retail, upstream name already matches, high
 void __cdecl BSTexturePalette_Kill()
 {
     BSTexturePalette_RemoveAll();
 
     delete DAT_011f4468;
 
-    unsigned char* entries = DAT_011f4464;
+    unsigned char* entries = BSTexturePalette_pTexMapA;
     DAT_011f4468 = 0;
     if (entries != 0)
     {
@@ -1265,12 +1315,12 @@ void __cdecl BSTexturePalette_Kill()
             do
             {
                 current -= 2856;
-                reinterpret_cast<ShaderEntry*>(current)->ClearAllSlots();
+                reinterpret_cast<ShaderEntry*>(current)->BSTexMap_RemoveAll();
             } while (--count >= 0);
         }
         g_memoryManager.Deallocate(allocation);
     }
-    DAT_011f4464 = 0;
+    BSTexturePalette_pTexMapA = 0;
 }
 }  // namespace fnv_00a62090
 
@@ -1284,6 +1334,7 @@ struct BlkVector4fView
 };
 // For each of count 4-byte elements, swaps the first and last bytes and swaps the two middle bytes in place.
 // @fnv 0x00a62150
+// pdb: NiSequenceStreamHelper::NiSequenceStreamHelper | NiSequenceStreamHelper.obj | debug, object-file run extension, low
 void __cdecl SwapByteQuadWords(BlkVector4fView* pQuads, unsigned int count)
 {
     unsigned char* p = (unsigned char*)pQuads;
@@ -1309,12 +1360,15 @@ void __cdecl SwapByteQuadWords(BlkVector4fView* pQuads, unsigned int count)
 
 
 // @fnv 0x00a62190
-unsigned int NiPixelFormat::GetMask(int eComponent) const
+// pdb: NiPixelFormat::GetMask | NiXenonPixelFormat.obj | debug, upstream name already matches, high
+// pdb params: eComp
+// pdb locals: uiShift, ui, ucBPC, uiMask
+unsigned int NiPixelFormat::GetMask(int eComp) const
 {
     unsigned int uiShift = 0;
     for (unsigned int i = 0; i < 4; i++)
     {
-        if (reinterpret_cast<const int*>(this)[5 + i * 3] == eComponent)
+        if (reinterpret_cast<const int*>(this)[5 + i * 3] == eComp)
         {
             unsigned char ucBPC = reinterpret_cast<const unsigned char*>(this)[0x1c + i * 12];
             unsigned int uiMask = 0;
@@ -1523,7 +1577,7 @@ struct Obj_a674
     unsigned int unk24;
     unsigned int unk28;
     unsigned char m_2c;
-    void __thiscall NiAdditionalGeometryData_GetDataStream(int flag, int* a, int* f, int* c, int* e, int* d, int* b);
+    void __thiscall NiAdditionalGeometryData_GetDataStream(int uiStreamIndex, int* pucData, int* uiType, int* usCount, int* uiTotalSize, int* uiUnitSize, int* uiStride);
 };
 
 struct FUN_00a674b0_cls
@@ -1545,12 +1599,16 @@ struct FUN_00a674b0_cls
     unsigned char unk38;
     unsigned char unk39;
     unsigned char m_3a;
-    void __thiscall GetOutRec(OutRec674* out);
+    void __thiscall NiGeometryData_GetBlendWeightsIterator(OutRec674* arIterator);
 };
 
 // If m_3a is set, optionally queries m_30 via FUN_00a72720 and writes the resulting a, b and 0 into out.
 // @fnv 0x00a674b0
-void FUN_00a674b0_cls::GetOutRec(OutRec674* out)
+// src: XBOX_RETAIL_PDB 0x00a674b0
+// pdb: NiGeometryData::GetBlendWeightsIterator | NiGeometryData.obj | retail, object-file gap fill, high
+// pdb params: arIterator
+// pdb locals: pucData, pkAGD, bcompressed, uiStride, usCount, pkPackedAGD, uiIndex, uiType, uiStream, bResult, uiTotalSize, uiUnitSize
+void FUN_00a674b0_cls::NiGeometryData_GetBlendWeightsIterator(OutRec674* arIterator)
 {
     if (m_3a != 0)
     {
@@ -1565,9 +1623,9 @@ void FUN_00a674b0_cls::GetOutRec(OutRec674* out)
             int d = 0;
             obj->NiAdditionalGeometryData_GetDataStream(1, &a, &f, &c, &e, &d, &b);
         }
-        out->a = a;
-        out->b = b;
-        out->c = 0;
+        arIterator->a = a;
+        arIterator->b = b;
+        arIterator->c = 0;
     }
 }
 
@@ -1608,15 +1666,18 @@ FUN_00a69b00::FUN_00a69b00()
 
 struct FUN_00a69b40_Class
 {
-    void __thiscall NiTexturingProperty_SetMultiTexture(int param_2);
+    void __thiscall NiTexturingProperty_SetMultiTexture(int pkMap);
 };
 
 // Sets or clears bit 0 of the flags at offset 0x18 depending on whether param_2 is nonzero or any entry after the first in the array at 0x20 is nonzero.
 // @fnv 0x00a69b40
 // src: GAMEBRYO_LIB 0x00a69b40
-void FUN_00a69b40_Class::NiTexturingProperty_SetMultiTexture(int param_2)
+// pdb: NiTexturingProperty::SetMultiTexture | NiTexturingProperty.obj | debug, upstream name already matches, high
+// pdb params: pkMap
+// pdb locals: bMultiTexture, uiSize, i
+void FUN_00a69b40_Class::NiTexturingProperty_SetMultiTexture(int pkMap)
 {
-    bool found = param_2 != 0;
+    bool found = pkMap != 0;
     if (!found)
     {
         unsigned int count = *(unsigned short*)((char*)this + 0x26);
@@ -1683,7 +1744,9 @@ extern NiFixedString DAT_011f49d4;
 
 // Releases the global ref-counted object and clears ten global fixed strings.
 // @fnv 0x00a6a6f0
-void ReleaseGlobalStrings()
+// src: XBOX_RETAIL_PDB 0x00a6a6f0
+// pdb: NiTexturingProperty::_SDMShutdown | NiTexturingProperty.obj | retail, call graph, high
+void NiTexturingProperty__SDMShutdown()
 {
     if (DAT_011f49ac)
     {
@@ -1713,6 +1776,8 @@ struct FUN_00a6db50_V
 
 // Stores the four float arguments into m_00, m_04, m_08 and m_0c and returns this.
 // @fnv 0x00a6db50
+// pdb: NiQuaternion::NiQuaternion | NiQuaternion.obj | debug, object-file run extension, low
+// pdb params: fAngle, axis
 FUN_00a6db50_V* __thiscall FUN_00a6db50_V::Set(float a, float b, float c, float d)
 {
     m_00 = a;
@@ -1742,6 +1807,8 @@ class A6DB70ColorA
 // Returns a new color whose components are this color's components plus the corresponding components of the given color.
 // @fnv 0x00a6db70
 // src: COMMUNITY 0x00a6db70
+// pdb: NiQuaternion::operator+ | NiQuaternion.obj | debug, call graph, medium
+// pdb params: q
 A6DB70ColorA A6DB70ColorA::NiQuaternion_Sum(const A6DB70ColorA& kColor) const
 {
     return A6DB70ColorA(r + kColor.r, g + kColor.g, b + kColor.b, a + kColor.a);
@@ -1758,6 +1825,9 @@ struct FUN_00a6dbd0_cls
 };
 // Writes the negation of each of the four float members into the output array.
 // @fnv 0x00a6dbd0
+// pdb: D3DXShader::Compiler::Negate | import.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to NiQuaternion::operator-
+// pdb params: pInstr
 void FUN_00a6dbd0_cls::Negate(float* __restrict out)
 {
     out[0] = -m_f0;
@@ -1808,22 +1878,25 @@ struct FUN_00a71c40_cls
 {
     int* m_vt;
     void FUN_00a89720(void* p);
-    FUN_00a71c40_cls* ConstructWithAlloc(unsigned int a1, unsigned int a2, unsigned int a3, unsigned int a4,
-                                         unsigned int a5, unsigned int a6, unsigned int a7, unsigned int a8,
-                                         unsigned int a9, unsigned int a10, unsigned int a11);
+    FUN_00a71c40_cls* NiTriStrips_ctor(unsigned int usVertices, unsigned int pkVertex, unsigned int pkNormal, unsigned int pkColor,
+                                         unsigned int pkTexture, unsigned int usNumTextureSets, unsigned int eNBTMethod, unsigned int usTriangles,
+                                         unsigned int usStrips, unsigned int pusStripLengths, unsigned int pusStripLists);
 };
 
 // @fnv 0x00a71c40
-FUN_00a71c40_cls* FUN_00a71c40_cls::ConstructWithAlloc(unsigned int a1, unsigned int a2, unsigned int a3,
-                                                       unsigned int a4, unsigned int a5, unsigned int a6,
-                                                       unsigned int a7, unsigned int a8, unsigned int a9,
-                                                       unsigned int a10, unsigned int a11)
+// src: XBOX_RETAIL_PDB 0x00a71c40
+// pdb: NiTriStrips::NiTriStrips | NiTriStrips.obj | retail, call graph, high
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, usStrips, pusStripLengths, pusStripLists
+FUN_00a71c40_cls* FUN_00a71c40_cls::NiTriStrips_ctor(unsigned int usVertices, unsigned int pkVertex, unsigned int pkNormal,
+                                                       unsigned int pkColor, unsigned int pkTexture, unsigned int usNumTextureSets,
+                                                       unsigned int eNBTMethod, unsigned int usTriangles, unsigned int usStrips,
+                                                       unsigned int pusStripLengths, unsigned int pusStripLists)
 {
     void* obj;
     void* mem = Object_DispatchCommandFour(0x50);
     if (mem != 0)
     {
-        obj = ((FUN_00a75dc0_cls*)mem)->FUN_00a75dc0(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
+        obj = ((FUN_00a75dc0_cls*)mem)->FUN_00a75dc0(usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, usStrips, pusStripLengths, pusStripLists);
     }
     else
     {
@@ -1843,14 +1916,16 @@ struct FUN_00a71cc0_cls
 {
     void* m_pVTable;
     void FUN_00a89720(int arg);
-    FUN_00a71cc0_cls* NiTriStrips_NiTriStrips(int arg);
+    FUN_00a71cc0_cls* NiTriStrips_ctor(int pkModelData);
 };
 
 // @fnv 0x00a71cc0
-// src: EXE 0x00a71cc0
-FUN_00a71cc0_cls* FUN_00a71cc0_cls::NiTriStrips_NiTriStrips(int arg)
+// src: XBOX_RETAIL_PDB 0x00a71cc0
+// pdb: NiTriStrips::NiTriStrips | NiTriStrips.obj | retail, call graph, high
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, usStrips, pusStripLengths, pusStripLists
+FUN_00a71cc0_cls* FUN_00a71cc0_cls::NiTriStrips_ctor(int pkModelData)
 {
-    FUN_00a89720(arg);
+    FUN_00a89720(pkModelData);
     m_pVTable = (void*)&DAT_0109cd44;
     return this;
 }
@@ -1880,6 +1955,9 @@ struct FUN_00a72550_Class
 
 // Clears out, bounds-checks index against unk26, and if unk20[index] exists writes its unk04 to out and returns its unk08.
 // @fnv 0x00a72550
+// pdb: NiAdditionalGeometryData::GetDataBlock | NiAdditionalGeometryData.obj | debug, call graph, medium
+// pdb params: uiIndex, uiBlockSize
+// pdb locals: pkBlock
 int FUN_00a72550_Class::GetItemData(unsigned int index, int* out)
 {
     *out = 0;
@@ -1940,6 +2018,9 @@ struct ObjectRegistry
 };
 
 // @fnv 0x00a72600
+// pdb: NiAdditionalGeometryData::RemoveDataBlock | NiAdditionalGeometryData.obj | debug, object-file gap fill, medium
+// pdb params: uiIndex, bRemoveAssociatedStreams
+// pdb locals: pkBlock, ui
 bool __thiscall ObjectRegistry::RemoveObject(unsigned int index, bool clearReferences)
 {
     SceneEntry* object = index < indexedObjects.count ? indexedObjects.entries[index] : 0;
@@ -1997,30 +2078,33 @@ class FUN_00a726a0_cls
     unsigned short unk24;
     unsigned short m_usMaxCount;
 
-    bool NiAdditionalGeometryData_SetDataStream(unsigned int uiIndex, unsigned int ItemUpdateArray, unsigned int uiStart, void* pvData,
-                      unsigned short usFormat, unsigned int uiStride, unsigned int uiElapsedMilliseconds);
+    bool NiAdditionalGeometryData_SetDataStream(unsigned int uiStreamIndex, unsigned int uiBlockIndex, unsigned int uiBlockOffset, void* uiType,
+                      unsigned short usCount, unsigned int uiUnitSize, unsigned int uiElapsedMilliseconds);
 };
 
 // Validates format, index, count and entry pointer, then fills the entry at uiIndex with the data pointer, count, start, stride and size.
 // @fnv 0x00a726a0
 // src: COMMUNITY 0x00a726a0
-bool FUN_00a726a0_cls::NiAdditionalGeometryData_SetDataStream(unsigned int uiIndex, unsigned int ItemUpdateArray, unsigned int uiStart, void* pvData,
-                                    unsigned short usFormat, unsigned int uiStride, unsigned int uiElapsedMilliseconds)
+// pdb: NiAdditionalGeometryData::SetDataStream | NiAdditionalGeometryData.obj | retail, upstream name already matches, high
+// pdb params: uiStreamIndex, uiBlockIndex, uiBlockOffset, uiType, usCount, uiUnitSize, uiStride
+// pdb locals: pkDataStream
+bool FUN_00a726a0_cls::NiAdditionalGeometryData_SetDataStream(unsigned int uiStreamIndex, unsigned int uiBlockIndex, unsigned int uiBlockOffset, void* uiType,
+                                    unsigned short usCount, unsigned int uiUnitSize, unsigned int uiElapsedMilliseconds)
 {
-    if (usFormat != m_usFormat)
+    if (usCount != m_usFormat)
         return false;
-    if (uiIndex >= m_uiStreamIndex || !m_pkEntryArray)
+    if (uiStreamIndex >= m_uiStreamIndex || !m_pkEntryArray)
         return false;
-    if (ItemUpdateArray > m_usMaxCount)
+    if (uiBlockIndex > m_usMaxCount)
         return false;
 
-    BA726A0Entry& kEntry = m_pkEntryArray[uiIndex];
-    kEntry.m_pResource = pvData;
-    kEntry.m_uiCount = ItemUpdateArray;
+    BA726A0Entry& kEntry = m_pkEntryArray[uiStreamIndex];
+    kEntry.m_pResource = uiType;
+    kEntry.m_uiCount = uiBlockIndex;
     kEntry.m_uiValueBeforeCount = uiElapsedMilliseconds;
-    kEntry.m_uiElapsedTime = uiStart;
-    kEntry.m_uiStride = uiStride;
-    kEntry.m_uiSize = usFormat * uiStride;
+    kEntry.m_uiElapsedTime = uiBlockOffset;
+    kEntry.m_uiStride = uiUnitSize;
+    kEntry.m_uiSize = usCount * uiUnitSize;
     return true;
 }
 
@@ -2051,40 +2135,42 @@ struct ColorState
     unsigned int threshold;
     unsigned int blendMode;
 
-    void NiAdditionalGeometryData_NiAGDDataStream_LoadBinary(BinaryStream* stream);
+    void NiAdditionalGeometryData_NiAGDDataStream_LoadBinary(BinaryStream* kStream);
 };
 
 // Writes red, green, blue, alpha, threshold and blendMode as 4-byte values, then format as 1 byte, to the stream's writer.
 // @fnv 0x00a72cb0
 // src: COMMUNITY 0x00a72cb0
-void ColorState::NiAdditionalGeometryData_NiAGDDataStream_LoadBinary(BinaryStream* stream)
+// pdb: NiAdditionalGeometryData::NiAGDDataStream::LoadBinary | NiAdditionalGeometryData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void ColorState::NiAdditionalGeometryData_NiAGDDataStream_LoadBinary(BinaryStream* kStream)
 {
-    ObjectWriter* __restrict writer = stream->Writer();
+    ObjectWriter* __restrict writer = kStream->Writer();
     {
         unsigned int elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &red, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &green, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &blue, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &alpha, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &threshold, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &blendMode, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 1;
         writer->bytesWritten += writer->write(writer, this, 1, &elementWidth, 1);
     }
@@ -2120,6 +2206,8 @@ class BA72DB0Data
 // Writes m_iValue0 through m_iValue5 and m_bFlag to kStream via BA72DB0SaveBinary.
 // @fnv 0x00a72db0
 // src: XBOX_PDB 0x00a72db0
+// pdb: NiAdditionalGeometryData::NiAGDDataStream::SaveBinary | NiAdditionalGeometryData.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void BA72DB0Data::NiAdditionalGeometryData_NiAGDDataStream_SaveBinary(NiStream& kStream)
 {
     BA72DB0SaveBinary(kStream, m_iValue0);
@@ -2141,6 +2229,8 @@ struct SceneFactoryObject
 
 // Allocates a 196-byte SceneFactoryObject, initializes it, sets its vtable to DAT_0109d55c, and returns it (or null on allocation failure).
 // @fnv 0x00a74750
+// pdb: NiLines::NiLines | NiLines.obj | debug, object-file run extension, low
+// pdb params: pkModelData
 SceneFactoryObject* CreateSceneFactoryObject()
 {
     SceneFactoryObject* object = static_cast<SceneFactoryObject*>(BSFadeNode::operator new(196));
@@ -2209,6 +2299,8 @@ struct FUN_00a77110_info
 
 // @fnv 0x00a77110
 // src: GAMEBRYO_LIB 0x00a77110
+// pdb: NiDevImageConverter::ConvertRGB24To16 | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
 void __cdecl NiDevImageConverter_ConvertRGBA32To24(unsigned int width, unsigned int rows, unsigned int unk0c, unsigned char* dst,
                           unsigned int unk14, FUN_00a77110_info* info, const unsigned char* src)
 {
@@ -2286,6 +2378,8 @@ struct BitPackLayout
 
 // For each of countB rows and countA pixels, reads a 16-bit source value and writes three bytes extracted with the layout's masks and shifts.
 // @fnv 0x00a772b0
+// pdb: NiDevImageConverter::ConvertRGBA32To16 | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
 void UnpackPixels(unsigned int countA, unsigned int uiRowCount, unsigned int uiUnused0C, unsigned char* dst,
                   unsigned int uiUnused14, unsigned int uiUnused18, unsigned int srcAddr, const BitPackLayout* layout)
 {
@@ -2320,6 +2414,8 @@ struct FnvPixelFormat
 
 // Converts count pixels per row from src into 4 bytes each in dest using fmt masks and shifts, for rows rows.
 // @fnv 0x00a77330
+// pdb: NiDevImageConverter::ConvertRGBA32To32 | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
 void ConvertPixelsToBytes(unsigned int count, unsigned int rows, unsigned int auiUnused, char* dest,
                           unsigned int auiUnused2, void* apUnused, unsigned short* src, FnvPixelFormat* fmt)
 {
@@ -2415,7 +2511,10 @@ struct A77740Format
 };
 
 // @fnv 0x00a77740
-void ConvertRgbToPacked16(unsigned int uiWidth, unsigned int uiHeight, unsigned int uiUnused, unsigned char* pucDest,
+// src: XBOX_RETAIL_PDB 0x00a77740
+// pdb: NiDevImageConverter::ConvertBUMPLUMA32To16 | NiDevImageConverter.obj | retail, object-file gap fill, high
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+void NiDevImageConverter_ConvertBUMPLUMA32To16(unsigned int uiWidth, unsigned int uiHeight, unsigned int uiUnused, unsigned char* pucDest,
                           unsigned int uiUnused2, const A77740Format* pkFmt, const unsigned char* pucSrc)
 {
     unsigned short* pusDest = (unsigned short*)pucDest;
@@ -2453,6 +2552,8 @@ struct S_00a77800_Layout
 // For each pixel, reads two bytes from src and combines shifted/masked channel bits from layout into one packed value written to dst.
 // @fnv 0x00a77800
 // src: GAMEBRYO_LIB 0x00a77800
+// pdb: NiDevImageConverter::ConvertBUMP16To32 | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
 void __cdecl NiDevImageConverter_ConvertBUMP16To32(unsigned int count, unsigned int rows, unsigned int auiUnused3, unsigned int* dst,
                           unsigned int auiUnused5, const S_00a77800_Layout* layout, const unsigned char* src)
 {
@@ -2515,27 +2616,30 @@ struct FUN_00a7d1a0_Class
     int m_i10;
     Entry m_entries[4];
 
-    void NiPixelFormat_SaveBinary(NiStream& stream);
+    void NiPixelFormat_SaveBinary(NiStream& kStream);
 };
 
 // Writes the object's fields and its four Entry records to the given NiStream in a fixed order.
 // @fnv 0x00a7d1a0
 // src: XBOX_PDB 0x00a7d1a0
-void FUN_00a7d1a0_Class::NiPixelFormat_SaveBinary(NiStream& stream)
+// pdb: NiPixelFormat::SaveBinary | NiPixelFormat.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: ui, kBool
+void FUN_00a7d1a0_Class::NiPixelFormat_SaveBinary(NiStream& kStream)
 {
-    SerializeValue(stream, m_i4);
-    SerializeValue(stream, m_c1);
-    SerializeValue(stream, m_iC);
-    SerializeValue(stream, m_i10);
-    SerializeValue(stream, m_c0);
-    SerializeValue(stream, m_i8);
+    SerializeValue(kStream, m_i4);
+    SerializeValue(kStream, m_c1);
+    SerializeValue(kStream, m_iC);
+    SerializeValue(kStream, m_i10);
+    SerializeValue(kStream, m_c0);
+    SerializeValue(kStream, m_i8);
     for (unsigned int i = 0; i < 4; i++)
     {
-        SerializeValue(stream, m_entries[i].a);
-        SerializeValue(stream, m_entries[i].b);
-        SerializeValue(stream, m_entries[i].c);
+        SerializeValue(kStream, m_entries[i].a);
+        SerializeValue(kStream, m_entries[i].b);
+        SerializeValue(kStream, m_entries[i].c);
         char d = m_entries[i].d;
-        SerializeValue(stream, d);
+        SerializeValue(kStream, d);
     }
 }
 
@@ -2543,9 +2647,10 @@ void* __cdecl BuildSqrtLut();
 
 // @fnv 0x00a7e930
 // src: COMMUNITY 0x00a7e930
+// pdb: NiPoint3::_SDMInit | NiPoint3_Xenon.obj | retail, upstream name already matches, high
 void NiPoint3__SDMInit()
 {
-    DAT_011f4aa8 = BuildSqrtLut();
+    NiPoint3_ms_pSqrtTable = BuildSqrtLut();
 }
 
 
@@ -2579,6 +2684,9 @@ struct S_00a7fea0_Class
 
 // Applies the transform's rotation, scale and translation to p, and multiplies scale by the transform's scale.
 // @fnv 0x00a7fea0
+// pdb: TransformPoint | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: aTran, aOriginalPoint, aTransformedPoint
+// pdb locals: fInvWorldScale, kDiff
 void S_00a7fea0_Class::TransformPoint(const Transform& aXf)
 {
     AssignPoint(p, aXf.scale * (aXf.rotation * p) + aXf.position);
@@ -2616,22 +2724,26 @@ struct NodeA61
     NodeA61* m_pkNext;
 };
 
-unsigned int __cdecl GetPrefixLengthA61(const char* pcName, int iFlags);
-unsigned int __cdecl HashNameA61(const char* pcName);
+unsigned int __cdecl GetPrefixLengthA61(const char* apPath, int abStripTexture);
+unsigned int __cdecl HashNameA61(const char* apName);
 
 class NameTableA61
 {
   public:
-    void RemoveNode(NodeA61* pkNode);
+    void BSTexMap_Remove(NodeA61* apValue);
 
     NodeA61* m_apkBuckets[713];
     unsigned int m_uiCount;
 };
 
 // @fnv 0x00a61890
-void NameTableA61::RemoveNode(NodeA61* pkNode)
+// src: XBOX_RETAIL_PDB 0x00a61890
+// pdb: BSTexMap::Remove | BSTexturePalette.obj | retail, call graph, high
+// pdb params: apValue
+// pdb locals: ioffset, pitem, iindex, pname, pprev
+void NameTableA61::BSTexMap_Remove(NodeA61* apValue)
 {
-    const char* pcName = pkNode->m_pReferencedObject->GetPath().m_kHandle;
+    const char* pcName = apValue->m_pReferencedObject->GetPath().m_kHandle;
     unsigned int uiBucket = HashNameA61(pcName + GetPrefixLengthA61(pcName, 1));
     NodeA61* pkCurrent = m_apkBuckets[uiBucket];
     if (!pkCurrent)
@@ -2640,7 +2752,7 @@ void NameTableA61::RemoveNode(NodeA61* pkNode)
     NodeA61* pkPrev = 0;
     do
     {
-        if (pkCurrent == pkNode)
+        if (pkCurrent == apValue)
         {
             if (pkPrev)
                 pkPrev->m_pkNext = pkCurrent->m_pkNext;
@@ -2699,30 +2811,33 @@ class A619B0Map
   public:
     A619B0Item* m_apkBuckets[713];
 
-    bool GetNext(A619B0Iterator& kIter, A619B0Pointer<NiRefObject>& rspValue);
+    bool BSTexMap_GetNext(A619B0Iterator& arIterator, A619B0Pointer<NiRefObject>& arValue);
 };
 
 // Advances the iterator to the next item, skipping empty buckets, and copies the current item's value into rspValue; returns whether an item remains.
 // @fnv 0x00a619b0
-bool A619B0Map::GetNext(A619B0Iterator& kIter, A619B0Pointer<NiRefObject>& rspValue)
+// src: XBOX_RETAIL_PDB 0x00a619b0
+// pdb: BSTexMap::GetNext | BSTexturePalette.obj | retail, object-file gap fill, high
+// pdb params: arIterator, arValue
+bool A619B0Map::BSTexMap_GetNext(A619B0Iterator& arIterator, A619B0Pointer<NiRefObject>& arValue)
 {
-    if (kIter.m_pkItem)
+    if (arIterator.m_pkItem)
     {
-        rspValue = kIter.m_pkItem->m_spValue;
-        kIter.m_pkItem = kIter.m_pkItem->m_pkNext;
-        if (!kIter.m_pkItem)
+        arValue = arIterator.m_pkItem->m_spValue;
+        arIterator.m_pkItem = arIterator.m_pkItem->m_pkNext;
+        if (!arIterator.m_pkItem)
         {
-            while (++kIter.m_uiBucket < 713)
+            while (++arIterator.m_uiBucket < 713)
             {
-                if (m_apkBuckets[kIter.m_uiBucket])
+                if (m_apkBuckets[arIterator.m_uiBucket])
                 {
-                    kIter.m_pkItem = m_apkBuckets[kIter.m_uiBucket];
+                    arIterator.m_pkItem = m_apkBuckets[arIterator.m_uiBucket];
                     break;
                 }
             }
         }
     }
-    return kIter.m_pkItem != 0;
+    return arIterator.m_pkItem != 0;
 }
 
 struct MyPool
@@ -2736,14 +2851,16 @@ extern int DAT_011f4484;
 
 // @fnv 0x00a62030
 // src: COMMUNITY 0x00a62030
+// pdb: BSTexturePalette::RemoveAll | BSTexturePalette.obj | retail, upstream name already matches, high
+// pdb locals: I
 void __cdecl BSTexturePalette_RemoveAll()
 {
     if (DAT_011f4468 != 0)
     {
         DAT_011f4480.BSSpinLock_Lock(0);
-        DAT_011f4468->ClearAllBuckets();
+        DAT_011f4468->BSEntryMap_RemoveAll();
         for (unsigned int i = 0; i < 7; i++)
-            ((MyPool*)DAT_011f4464)->m_buckets[i].ClearAllSlots();
+            ((MyPool*)BSTexturePalette_pTexMapA)->m_buckets[i].BSTexMap_RemoveAll();
         if (--DAT_011f4484 == 0)
             *(int*)&DAT_011f4480 = 0;
     }
@@ -2764,6 +2881,8 @@ template <class T> inline void BA643B0LoadBinary(NiStream& kStream, T& value)
 // Reads one char from the stream's binary stream into pcValue via BA643B0BinaryStreamLoad.
 // @fnv 0x00a643b0
 // src: XBOX_PDB 0x00a643b0
+// pdb: NiStreamLoadBinary<unsigned char> | BSValueNode.obj | retail, call graph, medium
+// pdb params: binstream, value, uiNumEls
 void __cdecl NiStreamLoadBinary_char_00a643b0(NiStream& kStream, char* pcValue)
 {
     BA643B0BinaryStreamLoad(*StreamInput(kStream), pcValue);
@@ -2782,11 +2901,15 @@ struct Q67530Data
 
 struct Q67530Cls : FUN_00a674b0_cls
 {
-    void FillOutRec674(OutRec674* out);
+    void NiGeometryData_GetBlendIndicesIterator(OutRec674* arIterator);
 };
 
 // @fnv 0x00a67530
-void Q67530Cls::FillOutRec674(OutRec674* out)
+// src: XBOX_RETAIL_PDB 0x00a67530
+// pdb: NiGeometryData::GetBlendIndicesIterator | NiGeometryData.obj | retail, object-file gap fill, high
+// pdb params: arIterator
+// pdb locals: pucData, pkAGD, bcompressed, uiStride, usCount, pkPackedAGD, uiIndex, uiType, uiStream, bResult, uiTotalSize, uiUnitSize
+void Q67530Cls::NiGeometryData_GetBlendIndicesIterator(OutRec674* arIterator)
 {
     if (m_3a)
     {
@@ -2800,9 +2923,9 @@ void Q67530Cls::FillOutRec674(OutRec674* out)
             q.d = 0;
             ((BSFaceGenModel*)p)->NiAdditionalGeometryData_GetDataStream(2, &q.a, &q.f, &q.c, &q.e, &q.d, &q.b);
         }
-        out->a = q.a;
-        out->b = q.b;
-        out->c = 0;
+        arIterator->a = q.a;
+        arIterator->b = q.b;
+        arIterator->c = 0;
     }
 }
 
@@ -2841,6 +2964,8 @@ class NiExtraDataMapA6F : public NiObject
 // Allocates and constructs a new NiExtraDataMapA6F and returns it as a NiObject pointer.
 // @fnv 0x00a6f000
 // src: EXE 0x00a6f000
+// pdb: NiDefaultAVObjectPalette::CreateObject | NiDefaultAVObjectPalette.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiObject* NiExtraDataMapA6F::NiDefaultAVObjectPalette_CreateObject()
 {
     return new NiExtraDataMapA6F;
@@ -2865,21 +2990,23 @@ struct NiPixelChannelsA773
 // Converts a 16-bit source image to 32-bit RGBA output, extracting each channel via the supplied masks and shifts and writing an opaque alpha byte.
 // @fnv 0x00a773d0
 // src: GAMEBRYO_LIB 0x00a773d0
+// pdb: NiDevImageConverter::Convert16NoAlphaToRGBA32 | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
 void __cdecl NiDevImageConverter_Convert16NoAlphaToRGBA32(unsigned int uiWidth, unsigned int uiHeight, unsigned int uiDestStride,
-                          unsigned char* pucDest, unsigned int uiDestSize, unsigned int uiSrcStride,
-                          const unsigned short* pusSrc, const NiPixelChannelsA773* pkChannels)
+                          unsigned char* pucDest, unsigned int pkSrcPal, unsigned int kDestBits,
+                          const unsigned short* pucSrc, const NiPixelChannelsA773* kSrcBits)
 {
-    const unsigned short* pusPixel = pusSrc;
+    const unsigned short* pusPixel = pucSrc;
     for (unsigned int y = 0; y < uiHeight; y++)
     {
         for (unsigned int x = 0; x < uiWidth; x++)
         {
-            *pucDest++ = (unsigned char)((*pusPixel & pkChannels->m_uiRedMask) >> pkChannels->m_ucRedShift)
-                         << pkChannels->m_ucRedBits;
-            *pucDest++ = (unsigned char)((*pusPixel & pkChannels->m_uiGreenMask) >> pkChannels->m_ucGreenShift)
-                         << pkChannels->m_ucGreenBits;
-            *pucDest++ = (unsigned char)((*pusPixel & pkChannels->m_uiBlueMask) >> pkChannels->m_ucBlueShift)
-                         << pkChannels->m_ucBlueBits;
+            *pucDest++ = (unsigned char)((*pusPixel & kSrcBits->m_uiRedMask) >> kSrcBits->m_ucRedShift)
+                         << kSrcBits->m_ucRedBits;
+            *pucDest++ = (unsigned char)((*pusPixel & kSrcBits->m_uiGreenMask) >> kSrcBits->m_ucGreenShift)
+                         << kSrcBits->m_ucGreenBits;
+            *pucDest++ = (unsigned char)((*pusPixel & kSrcBits->m_uiBlueMask) >> kSrcBits->m_ucBlueShift)
+                         << kSrcBits->m_ucBlueBits;
             *pucDest++ = 0xff;
             pusPixel++;
         }
@@ -2941,11 +3068,13 @@ struct NiPixelChannelsA776
 
 // @fnv 0x00a776b0
 // src: GAMEBRYO_LIB 0x00a776b0
-void __cdecl NiDevImageConverter_ConvertBUMPLUMA32To32(unsigned int uiWidth, unsigned int uiHeight, unsigned int uiDestStride, unsigned int* puiDest,
-                          unsigned int uiDestSize, const NiPixelChannelsA776* pkDestChannels,
-                          const unsigned char* pucSrc, const NiPixelChannelsA776* pkSrcChannels)
+// pdb: NiDevImageConverter::ConvertBUMPLUMA32To32 | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+void __cdecl NiDevImageConverter_ConvertBUMPLUMA32To32(unsigned int uiWidth, unsigned int uiHeight, unsigned int uiDestStride, unsigned int* pucDest,
+                          unsigned int pkSrcPal, const NiPixelChannelsA776* kDestBits,
+                          const unsigned char* pucSrc, const NiPixelChannelsA776* kSrcBits)
 {
-    unsigned int* puiPixel = puiDest;
+    unsigned int* puiPixel = pucDest;
     for (unsigned int y = 0; y < uiHeight; y++)
     {
         for (unsigned int x = 0; x < uiWidth; x++)
@@ -2954,12 +3083,12 @@ void __cdecl NiDevImageConverter_ConvertBUMPLUMA32To32(unsigned int uiWidth, uns
             unsigned char ucGreen = *pucSrc++;
             unsigned char ucAlpha = *pucSrc;
             pucSrc += 2;
-            *puiPixel++ = (((ucRed >> pkDestChannels->m_ucRedBits) << pkDestChannels->m_ucRedShift) &
-                           pkDestChannels->m_uiRedMask) |
-                          (((ucAlpha >> pkDestChannels->m_ucAlphaBits) << pkDestChannels->m_ucAlphaShift) &
-                           pkDestChannels->m_uiAlphaMask) |
-                          (((ucGreen >> pkDestChannels->m_ucGreenBits) << pkDestChannels->m_ucGreenShift) &
-                           pkDestChannels->m_uiGreenMask);
+            *puiPixel++ = (((ucRed >> kDestBits->m_ucRedBits) << kDestBits->m_ucRedShift) &
+                           kDestBits->m_uiRedMask) |
+                          (((ucAlpha >> kDestBits->m_ucAlphaBits) << kDestBits->m_ucAlphaShift) &
+                           kDestBits->m_uiAlphaMask) |
+                          (((ucGreen >> kDestBits->m_ucGreenBits) << kDestBits->m_ucGreenShift) &
+                           kDestBits->m_uiGreenMask);
         }
     }
 }
@@ -2968,6 +3097,9 @@ extern "C" int __cdecl tolower(int);
 
 // @fnv 0x00a614d0
 // src: COMMUNITY 0x00a614d0
+// pdb: BSTexMap::KeysEqual | BSTexturePalette.obj | retail, object-file run extension, low
+// pdb params: apName1, apName2
+// pdb locals: c2, c1
 bool __cdecl BSTexturePalette_ArePathsEqual(const char* a, const char* b)
 {
     while (*a != 0)
@@ -3015,6 +3147,7 @@ A5FC10Stub* __cdecl CreateA5FC10Stub()
 
 struct This;
 
+// pdb: structure T, size 0x8 (here 0x5c), 1 members
 struct T
 {
     virtual void v0();
@@ -3116,6 +3249,9 @@ struct ControllerA606
 
 // @fnv 0x00a60600
 // src: XBOX_PDB 0x00a60600
+// pdb: NiSourceTexture::SaveBinary | NiSourceTexture.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bSrcRendererDataIsPersistent, bExternalImage, bStatic, bLoadDirectToRendererHint
 void ControllerA606::NiSourceTexture_SaveBinary(NiStream& kStream)
 {
     NiSequenceStreamHelper_SaveBinary(kStream);
@@ -3170,16 +3306,19 @@ class HashA616
     NodeA616* m_buckets[1001];
     unsigned int m_uiItemCount;
 
-    void BSEntryMap_SetAt(unsigned int key, EntryA616* entry);
+    void BSEntryMap_SetAt(unsigned int apEntry, EntryA616* apValue);
 };
 
 // @fnv 0x00a61610
 // src: COMMUNITY 0x00a61610
-void HashA616::BSEntryMap_SetAt(unsigned int key, EntryA616* entry)
+// pdb: BSEntryMap::SetAt | BSTexturePalette.obj | retail, upstream name already matches, high
+// pdb params: apEntry, apValue
+// pdb locals: iindex
+void HashA616::BSEntryMap_SetAt(unsigned int apEntry, EntryA616* apValue)
 {
-    unsigned int uiBucket = (key >> 4) % 1001;
-    entry->m_key = key;
-    m_buckets[uiBucket] = new NodeA616(entry, m_buckets[uiBucket]);
+    unsigned int uiBucket = (apEntry >> 4) % 1001;
+    apValue->m_key = apEntry;
+    m_buckets[uiBucket] = new NodeA616(apValue, m_buckets[uiBucket]);
     m_uiItemCount++;
 }
 
@@ -3247,9 +3386,9 @@ struct A61E60Node
     A61E60Node* m_pNext;
 };
 
-unsigned int __cdecl FUN_00af4170(const char* s, int n);
+unsigned int __cdecl FUN_00af4170(const char* apPath, int abStripTexture);
 
-unsigned int BSTexturePalette_GetContainerNumber(const char* str);
+unsigned int BSTexturePalette_GetContainerNumber(const char* apName);
 
 struct NodeList
 {
@@ -3267,14 +3406,18 @@ struct NodeList
     }
 };
 // @fnv 0x00a61e60
-void* __cdecl FindNodeByObject(A61E60Obj* obj)
+// src: XBOX_RETAIL_PDB 0x00a61e60
+// pdb: BSTexturePalette::GetItemFor | BSTexturePalette.obj | retail, call graph, high
+// pdb params: apTexture
+// pdb locals: ioffset, pitem, iindex, pname, I
+void* __cdecl BSTexturePalette_GetItemFor(A61E60Obj* apTexture)
 {
-    const char* pcName = *obj->GetNameRef();
+    const char* pcName = *apTexture->GetNameRef();
     unsigned int idx = BSTexturePalette_GetContainerNumber(pcName + FUN_00af4170(pcName, 1));
     A61E60Node* n;
     for (unsigned int i = 0; i < 7; ++i)
     {
-        n = ((NodeList*)&DAT_011f4464->m_buckets[i].m_entries[idx])->Find(obj);
+        n = ((NodeList*)&BSTexturePalette_pTexMapA->m_buckets[i].m_entries[idx])->Find(apTexture);
         if (n)
             break;
     }
@@ -3284,6 +3427,8 @@ void* __cdecl FindNodeByObject(A61E60Obj* obj)
 bool __fastcall NiObjectNET_RegisterStreamables(void*, int, NiStream*);
 // @fnv 0x00a62130
 // src: XBOX_PDB 0x00a62130
+// pdb: NiSequenceStreamHelper::RegisterStreamables | NiSequenceStreamHelper.obj | debug, upstream name already matches, high
+// pdb params: stream
 bool __fastcall NiSequenceStreamHelper_RegisterStreamables(void* a, int b, NiStream* s)
 {
     return NiObjectNET_RegisterStreamables(a, b, s);
@@ -3292,15 +3437,17 @@ bool __fastcall NiSequenceStreamHelper_RegisterStreamables(void* a, int b, NiStr
 class EqBase
 {
   public:
-    bool __thiscall NiObjectNET_IsEqual(void* other);
-    bool __thiscall NiSequenceStreamHelper_IsEqual(void* other);
+    bool __thiscall NiObjectNET_IsEqual(void* pkObject);
+    bool __thiscall NiSequenceStreamHelper_IsEqual(void* pObject);
 };
 
 // @fnv 0x00a62140
 // src: XBOX_PDB 0x00a62140
-bool __thiscall EqBase::NiSequenceStreamHelper_IsEqual(void* other)
+// pdb: NiSequenceStreamHelper::IsEqual | NiSequenceStreamHelper.obj | debug, upstream name already matches, high
+// pdb params: pObject
+bool __thiscall EqBase::NiSequenceStreamHelper_IsEqual(void* pObject)
 {
-    return NiObjectNET_IsEqual(other);
+    return NiObjectNET_IsEqual(pObject);
 }
 
 class ColorAStandIn
@@ -3321,6 +3468,8 @@ class ColorAStandIn
 
 // Returns a ColorAStandIn whose components are this color's r, g, b and a minus the corresponding components of c.
 // @fnv 0x00a6dba0
+// pdb: NiQuaternion::operator- | NiQuaternion.obj | debug, call graph, medium
+// pdb params: q
 ColorAStandIn ColorAStandIn::Subtract(const ColorAStandIn& c) const
 {
     return ColorAStandIn(r - c.r, g - c.g, b - c.b, a - c.a);
@@ -3333,6 +3482,7 @@ struct FUN_00a727b0_Class
 
 // @fnv 0x00a727b0
 // src: XBOX_PDB 0x00a727b0
+// pdb: NiAdditionalGeometryData::GetDataBlockCount | NiAdditionalGeometryData.obj | debug, upstream name already matches, high
 unsigned int FUN_00a727b0_Class::NiAdditionalGeometryData_GetDataBlockCount()
 {
     return *(unsigned short*)((char*)this + 0x26);
@@ -3342,6 +3492,8 @@ extern void __cdecl FUN_00a8a9b0();
 
 // @fnv 0x00a75f00
 // src: XBOX_PDB 0x00a75f00
+// pdb: NiPSysData::RegisterStreamables | NiPSysData.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysData_RegisterStreamables()
 {
     FUN_00a8a9b0();
@@ -3354,7 +3506,7 @@ unsigned short __fastcall NiTriBasedGeomData_GetActiveTriangleCount(char* p, int
     return *reinterpret_cast<unsigned short*>(p + 0x40);
 }
 
-NiFile* __cdecl FUN_00aa1a20(const char* pcName, NiFile::OpenMode eMode, unsigned int uiBufferSize);
+NiFile* __cdecl FUN_00aa1a20(const char* pcName, NiFile::OpenMode eMode, unsigned int uiSize);
 
 class ObjA609;
 
@@ -3539,44 +3691,47 @@ enum SourceAlphaFormat
 
 
 extern bool DAT_011f4780;
-void __cdecl NiImageConverter_ConvertFilenameToPlatformSpecific_(void*, void*);
+void __cdecl NiImageConverter_ConvertFilenameToPlatformSpecific(void*, void*);
 bool __cdecl NiFile_Access(const char*, int);
 
 // Reads texture metadata and file references from a TextureLoadStream, resolving the texture name and registering the texture object.
 // @fnv 0x00a60180
-void NiSourceTexture::LoadBinary(NiStream& stream)
+// pdb: NiSourceTexture::LoadBinary | NiSourceTexture.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bExternalTexture, bStatic, bSaveName, bSavePixelData, spshared, acFile, bLoadDirectToRendererHint, bSrcRendererDataIsPersistent
+void NiSourceTexture::LoadBinary(NiStream& kStream)
 {
-    NiTexture::LoadBinary(stream);
+    NiTexture::LoadBinary(kStream);
     InterlockedIncrement((volatile long*)&m_uiRefCount);
     unsigned char bOldVersion = 0;
     unsigned char ucExternal;
-    if (stream.version() < 0x0a000104)
+    if (kStream.version() < 0x0a000104)
     {
-        ReadTextureValue(stream, ucExternal);
+        ReadTextureValue(kStream, ucExternal);
         if (ucExternal)
         {
-            stream.ReadFixedString(m_kFilename);
+            kStream.ReadFixedString(m_kFilename);
             if (m_spSrcPixelData.m_pObject)
             {
                 ReleaseTextureObject(reinterpret_cast<NiRefObject*>(m_spSrcPixelData.m_pObject));
                 m_spSrcPixelData.m_pObject = 0;
             }
             bOldVersion = true;
-            stream.SetLinkIDCount(0);
+            kStream.SetLinkIDCount(0);
         }
         else
         {
             m_kFilename.Clear();
             unsigned char ucHasPixels;
-            ReadTextureValue(stream, ucHasPixels);
+            ReadTextureValue(kStream, ucHasPixels);
             if (ucHasPixels)
             {
-                stream.SetLinkIDCount(1);
-                stream.ReadLinkIDStub();
+                kStream.SetLinkIDCount(1);
+                kStream.ReadLinkIDStub();
             }
             else
             {
-                stream.SetLinkIDCount(0);
+                kStream.SetLinkIDCount(0);
             }
         }
         if (m_spPersistentSrcRendererData.m_pObject)
@@ -3587,42 +3742,42 @@ void NiSourceTexture::LoadBinary(NiStream& stream)
     }
     else
     {
-        ReadTextureValue(stream, bOldVersion);
-        if (stream.version() < 0x14010001)
-            stream.ReadFixedString(m_kFilename);
+        ReadTextureValue(kStream, bOldVersion);
+        if (kStream.version() < 0x14010001)
+            kStream.ReadFixedString(m_kFilename);
         else
-            stream.ReadStringTableEntry(m_kFilename);
-        stream.SetLinkIDCount(1);
-        stream.ReadLinkIDStub();
+            kStream.ReadStringTableEntry(m_kFilename);
+        kStream.SetLinkIDCount(1);
+        kStream.ReadLinkIDStub();
     }
     if (m_kFilename.m_kHandle)
-        NiImageConverter_ConvertFilenameToPlatformSpecific_(&m_kFilename, &m_kPlatformFilename);
+        NiImageConverter_ConvertFilenameToPlatformSpecific(&m_kFilename, &m_kPlatformFilename);
     if (bOldVersion)
     {
-        stream.SetStreamPath(m_kPlatformFilename.m_kHandle);
+        kStream.SetStreamPath(m_kPlatformFilename.m_kHandle);
         DAT_011f4780 = true;
         NiTexture* pkTexture = 0;
         char acFileName[260];
         do
         {
-            if (!stream.GetLastLoadedFilePath(acFileName, 260))
+            if (!kStream.GetNextSearchPath(acFileName, 260))
                 break;
-            stream.GetTexture(acFileName, reinterpret_cast<NiPointer<NiTexture>&>(pkTexture));
+            kStream.GetTexture(acFileName, reinterpret_cast<NiPointer<NiTexture>&>(pkTexture));
         } while (!pkTexture);
         if (pkTexture)
         {
             m_kPlatformFilename.Assign(acFileName);
-            stream.ChangeObject(pkTexture);
+            kStream.ChangeObject(pkTexture);
         }
         else
         {
             DAT_011f4780 = true;
-            while (stream.GetLastLoadedFilePath(acFileName, 260))
+            while (kStream.GetNextSearchPath(acFileName, 260))
             {
                 if (NiFile_Access(acFileName, 0))
                 {
                     m_kPlatformFilename = static_cast<const char*>(acFileName);
-                    stream.SetTexture(this);
+                    kStream.SetTexture(this);
                     break;
                 }
             }
@@ -3633,49 +3788,49 @@ void NiSourceTexture::LoadBinary(NiStream& stream)
     else if (m_kPlatformFilename.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
     {
         NiTexture* pkTexture = 0;
-        stream.GetTexture(m_kPlatformFilename.m_kHandle, reinterpret_cast<NiPointer<NiTexture>&>(pkTexture));
+        kStream.GetTexture(m_kPlatformFilename.m_kHandle, reinterpret_cast<NiPointer<NiTexture>&>(pkTexture));
         if (!pkTexture)
-            stream.SetTexture(this);
+            kStream.SetTexture(this);
         else
-            stream.ChangeObject(pkTexture);
+            kStream.ChangeObject(pkTexture);
         if (pkTexture)
             ReleaseTextureObject(pkTexture);
     }
     {
         SourcePixelLayout value;
-        ReadTextureValue(stream, value);
+        ReadTextureValue(kStream, value);
         m_kFormatPrefs.m_ePreferredPixelLayout = static_cast<NiTexture::TextureFormatPreferences::PixelLayout>(value);
     }
     {
         SourceMipmapFormat value;
-        ReadTextureValue(stream, value);
+        ReadTextureValue(kStream, value);
         m_kFormatPrefs.m_eMipFlag = static_cast<NiTexture::TextureFormatPreferences::MipFlag>(value);
     }
     {
         SourceAlphaFormat value;
-        ReadTextureValue(stream, value);
+        ReadTextureValue(kStream, value);
         m_kFormatPrefs.m_eAlphaFormat = static_cast<NiTexture::TextureFormatPreferences::AlphaFormat>(value);
     }
-    if (stream.version() < 0x0303000c)
+    if (kStream.version() < 0x0303000c)
     {
         if (m_kFormatPrefs.m_ePreferredPixelLayout == 4)
             m_kFormatPrefs.m_ePreferredPixelLayout = NiTexture::TextureFormatPreferences::PIX_DEFAULT;
     }
-    else if (stream.version() < 0x05000001)
+    else if (kStream.version() < 0x05000001)
     {
         if (m_kFormatPrefs.m_ePreferredPixelLayout == 5)
             m_kFormatPrefs.m_ePreferredPixelLayout = NiTexture::TextureFormatPreferences::PIX_DEFAULT;
     }
     unsigned char ucStatic;
-    ReadTextureValue(stream, ucStatic);
+    ReadTextureValue(kStream, ucStatic);
     m_bStatic = ucStatic != 0;
-    if (stream.version() >= 0x0a010067)
+    if (kStream.version() >= 0x0a010067)
     {
-        ReadTextureValue(stream, m_bLoadDirectToRendererHint);
+        ReadTextureValue(kStream, m_bLoadDirectToRendererHint);
     }
-    if (stream.version() >= 0x14020004)
+    if (kStream.version() >= 0x14020004)
     {
-        ReadTextureValue(stream, m_bSrcRendererDataIsPersistent);
+        ReadTextureValue(kStream, m_bSrcRendererDataIsPersistent);
     }
     ReleaseTextureObject(this);
 }
@@ -3683,7 +3838,7 @@ void NiSourceTexture::LoadBinary(NiStream& stream)
 class GlobalObjectO2_00a7b610;
 extern GlobalObjectO2_00a7b610 g_011f444c;
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(char* pcText);
-char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcText);
+char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 
 inline void StrArr::AppendReference(char*& element)
 {
@@ -3717,6 +3872,8 @@ struct FUN_00a60770_shell : FUN_00a62a40_this
 };
 // Calls FUN_00a62a40(pkStrings), then adds FUN_00a7d330 of the string at g_011f444c and a 'File:' string built from m_pcFileName to pkStrings.
 // @fnv 0x00a60770
+// pdb: NiSourceTexture::GetViewerStrings | NiSourceTexture.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void FUN_00a60770_shell::GetFileStrings(StrArr* pkStrings)
 {
     NiTexture_GetViewerStrings(pkStrings);
@@ -3754,14 +3911,17 @@ bool __cdecl BSTexturePalette_RemoveTexture(const void* pvTexture) throw();
 // If DAT_011f4468 is set, locks DAT_011f4480, looks up pcName via fnv_NiStreamGetTexture, and returns FUN_00a61f30 of the result if found, else false.
 // @fnv 0x00a61fb0
 // src: COMMUNITY 0x00a61fb0
-bool __cdecl BSTexturePalette_RemoveTexture_0(const char* pcName)
+// pdb: BSTexturePalette::RemoveTexture | BSTexturePalette.obj | retail, call graph, high
+// pdb params: apTexture
+// pdb locals: bres, pitem
+bool __cdecl BSTexturePalette_RemoveTexture_0(const char* apName)
 {
     bool bResult = false;
     if (DAT_011f4468)
     {
         A61F::NiPointer_A61F spTexture;
         DAT_011f4480.Lock(0);
-        bool bFound = fnv_NiStreamGetTexture(pcName, &spTexture);
+        bool bFound = fnv_NiStreamGetTexture(apName, &spTexture);
         NiRefObject* pkTexture = spTexture.m_pObject;
         if (bFound)
             bResult = BSTexturePalette_RemoveTexture(pkTexture);
@@ -3814,6 +3974,8 @@ void __cdecl ConvertPixelFormat(unsigned int uiWidth, unsigned int uiHeight, uns
 void __cdecl FUN_00a8a9a0();
 // @fnv 0x00a7b7d0
 // src: XBOX_PDB 0x00a7b7d0
+// pdb: NiPSysData::LinkObject | NiPSysData.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysData_LinkObject()
 {
     FUN_00a8a9a0();
@@ -3850,15 +4012,16 @@ struct FUN_00a7fb80_Class
     int m_2C;
     int m_30;
     void* __thiscall FUN_00a5c200();
-    void* __thiscall NiRenderedTexture_NiRenderedTexture();
+    void* __thiscall NiRenderedTexture_ctor();
 };
 struct Z2Setup
 {
     void* __thiscall NiTexture_AddTextureToList();
 };
 // @fnv 0x00a7fb80
-// src: GAMEBRYO_LIB 0x00a7fb80
-void* FUN_00a7fb80_Class::NiRenderedTexture_NiRenderedTexture()
+// src: XBOX_RETAIL_PDB 0x00a7fb80
+// pdb: NiRenderedTexture::NiRenderedTexture | NiRenderedTexture.obj | retail, upstream name already matches, high
+void* FUN_00a7fb80_Class::NiRenderedTexture_ctor()
 {
     FUN_00a5c200();
     m_ppVirtualMethodTable = &DAT_0109b944;
@@ -3872,6 +4035,7 @@ void* FUN_00a7fb80_Class::NiRenderedTexture_NiRenderedTexture()
     return this;
 }
 
+// pdb: structure Writer, size 0x74 (here 0x10), 8 members
 struct Writer
 {
     void* unk0;
@@ -4037,11 +4201,14 @@ struct Thing
     int unk248;
     int unk24C;
     Writer* m_pStreamWriter;
-    void WriteData();
+    void NiStream_SaveObjectGroups();
 };
 
 // @fnv 0x00a64010
-void Thing::WriteData()
+// src: XBOX_RETAIL_PDB 0x00a64010
+// pdb: NiStream::SaveObjectGroups | NiStream.obj | retail, call graph, high
+// pdb locals: i
+void Thing::NiStream_SaveObjectGroups()
 {
     m_pStreamWriter->WriteInt(m_uiItemCount - 1);
     for (unsigned int i = 1; i < m_uiItemCount; ++i)
@@ -4080,69 +4247,72 @@ struct Planes
 
 // Computes six frustum planes from a Frustum and Transform, using orthographic or perspective projection formulas.
 // @fnv 0x00a74e10
-void Planes::SetFromFrustum(const Frustum* apFrustum, const Transform* transform)
+// pdb: NiFrustumPlanes::Set | NiFrustumPlanes.obj | debug, call graph (shared callers), high
+// pdb params: kFrust, kXform
+// pdb locals: kDVector, kLoc, kUVector, kRVector, kPoint, kNormal, fTmp, fInv, fC0, fC1
+void Planes::SetFromFrustum(const Frustum* kFrust, const Transform* kXform)
 {
 
     NiPoint3 position;
-    AssignPoint(position, reinterpret_cast<const NiPoint3&>(transform->position));
+    AssignPoint(position, reinterpret_cast<const NiPoint3&>(kXform->position));
 
-    NiPoint3 direction(transform->rotation.entries[0][0], transform->rotation.entries[1][0], transform->rotation.entries[2][0]);
+    NiPoint3 direction(kXform->rotation.entries[0][0], kXform->rotation.entries[1][0], kXform->rotation.entries[2][0]);
 
-    NiPoint3 up(transform->rotation.entries[0][1], transform->rotation.entries[1][1], transform->rotation.entries[2][1]);
+    NiPoint3 up(kXform->rotation.entries[0][1], kXform->rotation.entries[1][1], kXform->rotation.entries[2][1]);
 
-    NiPoint3 right(transform->rotation.entries[0][2], transform->rotation.entries[1][2], transform->rotation.entries[2][2]);
+    NiPoint3 right(kXform->rotation.entries[0][2], kXform->rotation.entries[1][2], kXform->rotation.entries[2][2]);
 
-    NiPoint3 point = position + multiplyVector(direction, apFrustum->nearDistance);
+    NiPoint3 point = position + multiplyVector(direction, kFrust->nearDistance);
 
     data[0] = Plane(direction, point);
 
-    AssignPoint(point, position + direction * apFrustum->farDistance);
+    AssignPoint(point, position + direction * kFrust->farDistance);
 
     data[1] = Plane(-direction, point);
 
-    if (apFrustum->orthographic)
+    if (kFrust->orthographic)
     {
 
-        float leftValue = apFrustum->left;
+        float leftValue = kFrust->left;
         AssignPoint(point, position + right * leftValue);
         data[2] = Plane(right, point);
 
-        AssignPoint(point, position + right * apFrustum->right);
+        AssignPoint(point, position + right * kFrust->right);
         data[3] = Plane(-right, point);
 
-        AssignPoint(point, position + up * apFrustum->top);
+        AssignPoint(point, position + up * kFrust->top);
         data[4] = Plane(-up, point);
 
-        float bottomValue = apFrustum->bottom;
+        float bottomValue = kFrust->bottom;
         AssignPoint(point, position + up * bottomValue);
         data[5] = Plane(up, point);
     }
     else
     {
 
-        float inverse = 1.0f / (float)sqrt((float)(1.0 + (float)(apFrustum->left * apFrustum->left)));
+        float inverse = 1.0f / (float)sqrt((float)(1.0 + (float)(kFrust->left * kFrust->left)));
 
-        float coefficient = -apFrustum->left * inverse;
+        float coefficient = -kFrust->left * inverse;
         NiPoint3 normal = direction * coefficient + right * inverse;
         data[2] = Plane(normal, position);
 
-        inverse = 1.0f / (float)sqrt((float)(1.0 + (float)(apFrustum->right * apFrustum->right)));
+        inverse = 1.0f / (float)sqrt((float)(1.0 + (float)(kFrust->right * kFrust->right)));
 
-        coefficient = apFrustum->right * inverse;
+        coefficient = kFrust->right * inverse;
         float opposite = -inverse;
         AssignPoint(normal, direction * coefficient + right * opposite);
         data[3] = Plane(normal, position);
 
-        inverse = 1.0f / (float)sqrt((float)(1.0 + (float)(apFrustum->top * apFrustum->top)));
+        inverse = 1.0f / (float)sqrt((float)(1.0 + (float)(kFrust->top * kFrust->top)));
 
-        coefficient = inverse * apFrustum->top;
+        coefficient = inverse * kFrust->top;
         opposite = -inverse;
         AssignPoint(normal, direction * coefficient + up * opposite);
         data[4] = Plane(normal, position);
 
-        inverse = 1.0f / (float)sqrt((float)(1.0 + (float)(apFrustum->bottom * apFrustum->bottom)));
+        inverse = 1.0f / (float)sqrt((float)(1.0 + (float)(kFrust->bottom * kFrust->bottom)));
 
-        coefficient = -apFrustum->bottom * inverse;
+        coefficient = -kFrust->bottom * inverse;
         AssignPoint(normal, direction * coefficient + up * inverse);
         data[5] = Plane(normal, position);
     }
@@ -4181,6 +4351,8 @@ void __cdecl ConvertRGBAToPacked(unsigned int width, unsigned int height, unsign
 // Packs 4-byte RGBA source pixels into 32-bit values using format's bit loss, shift and mask per channel; sourceFormat is unused.
 // @fnv 0x00a771d0
 // src: GUESS 0x00a771d0 (confidence: high)
+// pdb: NiDevImageConverter::ConvertRGB24To32 | NiDevImageConverter.obj | retail, object-file run extension, low
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
 void __cdecl Runtime_PackRgbaPixelsByFormat(unsigned int width, unsigned int height, unsigned int destStride, unsigned int* dest,
                           unsigned int srcStride, const PackedPixelChannelLayout* format, const unsigned char* src,
                           const PackedPixelChannelLayout& sourceFormat)
@@ -4228,22 +4400,24 @@ struct BitPackDesc
 // Packs rows x count pixels of 2 source bytes into 16-bit values via desc's shifts and masks, adding a constant third component.
 // @fnv 0x00a77880
 // src: GAMEBRYO_LIB 0x00a77880
-void __cdecl NiDevImageConverter_ConvertBUMP16To16(unsigned int count, unsigned int rows, void* unusedA, unsigned short* dst, void* unusedB,
-                          BitPackDesc* desc, const unsigned char* src, void* unusedC)
+// pdb: NiDevImageConverter::ConvertBUMP16To16 | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+void __cdecl NiDevImageConverter_ConvertBUMP16To16(unsigned int uiWidth, unsigned int uiHeight, void* uiDestSize, unsigned short* pucDest, void* pkSrcPal,
+                          BitPackDesc* kDestBits, const unsigned char* pucSrc, void* kSrcBits)
 {
-    unsigned short* d = dst;
-    for (unsigned int y = 0; y < rows; y++)
+    unsigned short* d = pucDest;
+    for (unsigned int y = 0; y < uiHeight; y++)
     {
-        for (unsigned int x = 0; x < count; x++)
+        for (unsigned int x = 0; x < uiWidth; x++)
         {
-            unsigned char b0 = *src++;
-            unsigned char b1 = *src++;
+            unsigned char b0 = *pucSrc++;
+            unsigned char b1 = *pucSrc++;
             unsigned short comp1 =
-                (unsigned short)(((unsigned char)(b0 >> desc->m_shift14) << desc->m_shift10) & desc->m_mask00);
+                (unsigned short)(((unsigned char)(b0 >> kDestBits->m_shift14) << kDestBits->m_shift10) & kDestBits->m_mask00);
             unsigned short comp2 =
-                (unsigned short)(((unsigned char)(b1 >> desc->m_shift15) << desc->m_shift11) & desc->m_mask04);
+                (unsigned short)(((unsigned char)(b1 >> kDestBits->m_shift15) << kDestBits->m_shift11) & kDestBits->m_mask04);
             unsigned short comp3 =
-                (unsigned short)(((0xffffffffu >> desc->m_shift17) << desc->m_shift13) & desc->m_mask0C);
+                (unsigned short)(((0xffffffffu >> kDestBits->m_shift17) << kDestBits->m_shift13) & kDestBits->m_mask0C);
             *d++ = (unsigned short)(comp1 | comp2 | comp3);
         }
     }
@@ -4371,6 +4545,7 @@ struct FUN_00a6d290 : S_00a6d290_Base
 
 // Destructor that releases the referenced object in unk30 by decrementing its refs and calling v04 when it reaches zero.
 // @fnv 0x00a6d290
+// pdb: NiTimeController::~NiTimeController | NiTimeController.obj | retail, call graph (shared callers), medium
 FUN_00a6d290::~FUN_00a6d290() throw()
 {
     _ReadWriteBarrier();
@@ -4552,35 +4727,35 @@ struct PivotGeometry
     float* normals;
     float* colors;
     float* texcoords;
-    __declspec(noinline) int CompareVertices(unsigned short a, unsigned short b, unsigned char ctx);
-    int MedianOfThree(unsigned short* arr, unsigned char ctx, int lo, int hi);
+    __declspec(noinline) int NiGeometryData_VertexCompare(unsigned short v0, unsigned short v1, unsigned char mask);
+    int NiGeometryData_ChoosePivot(unsigned short* pusIndex, unsigned char mask, int l, int r);
 };
-__declspec(noinline) int PivotGeometry::CompareVertices(unsigned short a, unsigned short b, unsigned char ctx)
+__declspec(noinline) int PivotGeometry::NiGeometryData_VertexCompare(unsigned short v0, unsigned short v1, unsigned char mask)
 {
     int result;
-    if (ctx & 1)
+    if (mask & 1)
     {
-        result = CompareValues(positions + 3 * a, positions + 3 * b, 3);
+        result = CompareValues(positions + 3 * v0, positions + 3 * v1, 3);
         if (result)
             return result;
     }
-    if (normals && (ctx & 2))
+    if (normals && (mask & 2))
     {
-        result = CompareValues(normals + 3 * a, normals + 3 * b, 3);
+        result = CompareValues(normals + 3 * v0, normals + 3 * v1, 3);
         if (result)
             return result;
     }
-    if (colors && (ctx & 4))
+    if (colors && (mask & 4))
     {
-        result = CompareValues(colors + 4 * a, colors + 4 * b, 4);
+        result = CompareValues(colors + 4 * v0, colors + 4 * v1, 4);
         if (result)
             return result;
     }
-    if (texcoords && (ctx & 8))
+    if (texcoords && (mask & 8))
     {
         for (unsigned short set = 0; set < (format & 1); ++set)
         {
-            result = CompareValues(texcoords + 2 * (a + set * vertexCount), texcoords + 2 * (b + set * vertexCount), 2);
+            result = CompareValues(texcoords + 2 * (v0 + set * vertexCount), texcoords + 2 * (v1 + set * vertexCount), 2);
             if (result)
                 return result;
         }
@@ -4590,20 +4765,24 @@ __declspec(noinline) int PivotGeometry::CompareVertices(unsigned short a, unsign
 
 // Returns the median vertex index of arr[lo], arr[mid], arr[hi] by comparing them with CompareVertices under the given ctx flags.
 // @fnv 0x00a672b0
-int PivotGeometry::MedianOfThree(unsigned short* apIndices, unsigned char ctx, int lo, int hi)
+// src: XBOX_RETAIL_PDB 0x00a672b0
+// pdb: NiGeometryData::ChoosePivot | NiGeometryData.obj | retail, call graph, high
+// pdb params: pusIndex, mask, l, r
+// pdb locals: m
+int PivotGeometry::NiGeometryData_ChoosePivot(unsigned short* pusIndex, unsigned char mask, int l, int r)
 {
-    int mid = (lo + hi) >> 1;
-    if (CompareVertices(apIndices[lo], apIndices[mid], ctx) < 0)
+    int mid = (l + r) >> 1;
+    if (NiGeometryData_VertexCompare(pusIndex[l], pusIndex[mid], mask) < 0)
     {
-        if (CompareVertices(apIndices[mid], apIndices[hi], ctx) < 0)
-            return apIndices[mid];
-        if (CompareVertices(apIndices[lo], apIndices[hi], ctx) < 0)
-            return apIndices[hi];
-        return apIndices[lo];
+        if (NiGeometryData_VertexCompare(pusIndex[mid], pusIndex[r], mask) < 0)
+            return pusIndex[mid];
+        if (NiGeometryData_VertexCompare(pusIndex[l], pusIndex[r], mask) < 0)
+            return pusIndex[r];
+        return pusIndex[l];
     }
-    if (CompareVertices(apIndices[lo], apIndices[hi], ctx) < 0)
-        return apIndices[lo];
-    if (CompareVertices(apIndices[mid], apIndices[hi], ctx) < 0)
-        return apIndices[hi];
-    return apIndices[mid];
+    if (NiGeometryData_VertexCompare(pusIndex[l], pusIndex[r], mask) < 0)
+        return pusIndex[l];
+    if (NiGeometryData_VertexCompare(pusIndex[mid], pusIndex[r], mask) < 0)
+        return pusIndex[r];
+    return pusIndex[mid];
 }

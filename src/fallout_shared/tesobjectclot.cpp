@@ -15,6 +15,7 @@
 
 // @fnv 0x005156b0
 // src: XBOX_PDB 0x005156b0
+// pdb: TESObjectCLOT::InitializeData | TESObjectCLOT.obj | debug, object-file gap fill, medium
 void TESObjectCLOT::InitializeData_005156b0()
 {
     TESEnchantableForm::SetCastingType(3);
@@ -23,7 +24,7 @@ void TESObjectCLOT::InitializeData_005156b0()
 // Save is absent from TESBipedModelForm.h; this adapter adds only that declaration.
 struct BipedModelSave : TESBipedModelForm
 {
-    void Save();
+    void TESBipedModelForm_Save();
 };
 
 struct FUN_00485e00_shell
@@ -33,13 +34,14 @@ struct FUN_00485e00_shell
 
 // @fnv 0x00515f40
 // src: XBOX_PDB 0x00515f40
+// pdb: TESObjectCLOT::Save | TESObjectCLOT.obj | retail, vtable slot, high
 void TESObjectCLOT::Save_00515f40()
 {
     TESForm::BeginFormRecord();
     TESFullName::Save_00487010();
     TESScriptableForm::Save_0048cca0();
     TESEnchantableForm::Save();
-    reinterpret_cast<BipedModelSave*>(reinterpret_cast<char*>(this) + 0x68)->Save();
+    reinterpret_cast<BipedModelSave*>(reinterpret_cast<char*>(this) + 0x68)->TESBipedModelForm_Save();
     BGSDestructibleObjectForm::Save();
     BGSEquipType::Save();
     reinterpret_cast<FUN_00485e00_shell*>(this)->TESForm_SaveData();
@@ -50,6 +52,7 @@ void __cdecl operator delete(void*);
 
 // Calls the object's destructor and, when bit 0 of flags is set, frees the object, then returns this.
 // @fnv 0x00515580
+// pdb: TESObjectCLOT::`scalar deleting destructor' | TESObjectCLOT.obj | retail, vtable slot, high
 void* TESObjectCLOT::DestroyIfFlagged(unsigned int flags)
 {
     this->TESObjectCLOT::~TESObjectCLOT();
@@ -62,6 +65,7 @@ extern unsigned int _data_011c16bc;
 
 // Initializes the vtable pointers of all base classes, sets the form type to 0x1a, and calls FUN_005156b0 on the object.
 // @fnv 0x00515440
+// pdb: TESObjectCLOT::TESObjectCLOT | TESObjectCLOT.obj | retail, upstream name already matches, high
 TESObjectCLOT::TESObjectCLOT()
 {
     TESForm::SetFormType(static_cast<ENUM_FORM_ID>(0x1a));
@@ -79,6 +83,7 @@ struct ClothingInitialization
 };
 
 // @fnv 0x005156d0
+// pdb: TESObjectCLOT::InitItem | TESObjectCLOT.obj | retail, string-set bridge, high
 void ClothingInitialization::Initialize()
 {
     if (((TESForm*)this)->GetInitialized())
@@ -101,6 +106,7 @@ void ClothingInitialization::Initialize()
 
 // Destructor of the class; the body is empty, so it only runs the implicit destructors of its base classes.
 // @fnv 0x005155b0
+// pdb: TESObjectCLOT::~TESObjectCLOT | TESObjectCLOT.obj | retail, upstream name already matches, high
 TESObjectCLOT::~TESObjectCLOT()
 {}
 
@@ -127,7 +133,7 @@ void __cdecl ReadFullName(TESFullName*, RecordReader*);
 void __cdecl BGSDestructibleObjectForm_LoadChunk(BGSDestructibleObjectForm*, RecordReader*);
 void __cdecl FUN_004892d0(TESModelTextureSwap*, RecordReader*);
 void __cdecl TESModel_LoadModelTextureChunk(TESModelTextureSwap*, RecordReader*);
-void __cdecl FUN_0048a990(TESModelTextureSwap*, RecordReader*);
+void __cdecl LoadModelTextureSwapChunk(TESModelTextureSwap*, RecordReader*);
 struct ClothingLoader : TESObjectCLOT
 {
     void CallWithThis(RecordReader*);
@@ -136,35 +142,38 @@ struct ClothingLoader : TESObjectCLOT
     bool ReadFromStream(RecordReader*);
 };
 // @fnv 0x00515760
-bool ClothingLoader::ReadFromStream(RecordReader* reader)
+// pdb: TESObjectCLOT::Load | TESObjectCLOT.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, tempint, stempval, olddata
+bool ClothingLoader::ReadFromStream(RecordReader* apFile)
 {
-    unsigned char marker = reader->FUN_00472660();
+    unsigned char marker = apFile->FUN_00472660();
     if (marker != 0x1a)
         return false;
-    CallWithThis(reader);
+    CallWithThis(apFile);
     FUN_00484ab0(0);
     int chunk;
-    while ((chunk = reader->TESFile_GetTESChunk()) != 0)
+    while ((chunk = apFile->TESFile_GetTESChunk()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* pEditorId = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(pEditorId, 0x200);
+            char* pEditorId = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(pEditorId, 0x200);
             SetEditorID_AtRuntime(pEditorId);
             break;
         }
         case 0x444e424f: {
-            readOBNDSubRecord(reinterpret_cast<TESFile*>(reader));
+            readOBNDSubRecord(reinterpret_cast<TESFile*>(apFile));
             break;
         }
         case 0x4c4c5546: {
-            ReadFullName(this ? reinterpret_cast<TESFullName*>(reinterpret_cast<char*>(this) + 0x30) : 0, reader);
+            ReadFullName(this ? reinterpret_cast<TESFullName*>(reinterpret_cast<char*>(this) + 0x30) : 0, apFile);
             break;
         }
         case 0x49524353: {
             unsigned int formID = 0;
-            reader->ReadChunkInt(&formID);
+            apFile->ReadChunkInt(&formID);
             TESScriptableForm::FUN_006ecd40(formID);
             TESScriptableForm::InitItem(this);
             break;
@@ -172,149 +181,149 @@ bool ClothingLoader::ReadFromStream(RecordReader* reader)
         case 0x4d544945:
         case 0x4d414e45: {
             unsigned int formID = 0;
-            reader->ReadChunkInt(&formID);
+            apFile->ReadChunkInt(&formID);
             reinterpret_cast<TESEnchantableForm*>(reinterpret_cast<char*>(this) + 0x48)->SetFormEnchanting(reinterpret_cast<EnchantmentItem*>(formID));
             break;
         }
         case 0x4d414e41:
         case 0x544d4145: {
             unsigned short amount = 0;
-            reader->ReadChunkData(&amount);
+            apFile->ReadChunkData(&amount);
             reinterpret_cast<TESEnchantableForm*>(reinterpret_cast<char*>(this) + 0x48)->SetFormEnchantmentAmount(amount);
             break;
         }
         case 0x54444d42: {
-            if (reader->FUN_00403570() < 11)
+            if (apFile->FUN_00403570() < 11)
             {
                 unsigned int bipedData;
-                reader->FUN_00472890(&bipedData, 4);
-                if (reader->FUN_00401680())
+                apFile->FUN_00472890(&bipedData, 4);
+                if (apFile->FUN_00401680())
                     reinterpret_cast<BipedFlags*>(&bipedData)->BSEndian_Thunk();
                 this->bipedFlags = ((unsigned char*)&bipedData)[2];
                 this->partMask = *(unsigned short*)&bipedData;
             }
             else
             {
-                reader->FUN_00472890(&this->partMask, 8);
-                if (reader->FUN_00401680())
+                apFile->FUN_00472890(&this->partMask, 8);
+                if (apFile->FUN_00401680())
                     reinterpret_cast<BipedFlags*>(&this->partMask)->QuestPerkEntryData_Endian();
             }
             this->bipedFlags &= ~0x10;
             break;
         }
         case 0x54434d42: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->modelRDT.SetModelFilePath(buffer);
             break;
         }
         case 0x4c444f4d: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->bipedModel[0].SetModelFilePath(buffer);
             break;
         }
         case 0x54444f4d: {
-            TESModel_LoadModelTextureChunk(&this->bipedModel[0], reader);
+            TESModel_LoadModelTextureChunk(&this->bipedModel[0], apFile);
             break;
         }
         case 0x53444f4d: {
-            FUN_0048a990(&this->bipedModel[0], reader);
+            LoadModelTextureSwapChunk(&this->bipedModel[0], apFile);
             break;
         }
         case 0x44444f4d: {
-            FUN_004892d0(&this->bipedModel[0], reader);
+            FUN_004892d0(&this->bipedModel[0], apFile);
             break;
         }
         case 0x44534f4d: {
-            FUN_004892d0(&this->bipedModel[1], reader);
+            FUN_004892d0(&this->bipedModel[1], apFile);
             break;
         }
         case 0x32444f4d: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->groundModel[0].SetModelFilePath(buffer);
             break;
         }
         case 0x54324f4d: {
-            TESModel_LoadModelTextureChunk(&this->groundModel[0], reader);
+            TESModel_LoadModelTextureChunk(&this->groundModel[0], apFile);
             break;
         }
         case 0x53324f4d: {
-            FUN_0048a990(&this->groundModel[0], reader);
+            LoadModelTextureSwapChunk(&this->groundModel[0], apFile);
             break;
         }
         case 0x4e4f4349: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->icon[0].AssignTextureName(buffer);
             break;
         }
         case 0x4f43494d: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->messageIcon[0].SetMessageIconTextureName(buffer);
             break;
         }
         case 0x3243494d: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->messageIcon[1].SetMessageIconTextureName(buffer);
             break;
         }
         case 0x33444f4d: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->bipedModel[1].SetModelFilePath(buffer);
             break;
         }
         case 0x54334f4d: {
-            TESModel_LoadModelTextureChunk(&this->bipedModel[1], reader);
+            TESModel_LoadModelTextureChunk(&this->bipedModel[1], apFile);
             break;
         }
         case 0x53334f4d: {
-            FUN_0048a990(&this->bipedModel[1], reader);
+            LoadModelTextureSwapChunk(&this->bipedModel[1], apFile);
             break;
         }
         case 0x34444f4d: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->groundModel[1].SetModelFilePath(buffer);
             break;
         }
         case 0x54344f4d: {
-            TESModel_LoadModelTextureChunk(&this->groundModel[1], reader);
+            TESModel_LoadModelTextureChunk(&this->groundModel[1], apFile);
             break;
         }
         case 0x53344f4d: {
-            FUN_0048a990(&this->groundModel[1], reader);
+            LoadModelTextureSwapChunk(&this->groundModel[1], apFile);
             break;
         }
         case 0x324f4349: {
-            char* buffer = (char*)_alloca(reader->GetField25C());
-            reader->FUN_00472890(buffer, 0);
+            char* buffer = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(buffer, 0);
             this->icon[1].AssignTextureName(buffer);
             break;
         }
         case 0x44545344:
         case 0x54534544: {
-            BGSDestructibleObjectForm_LoadChunk(this ? reinterpret_cast<BGSDestructibleObjectForm*>(reinterpret_cast<char*>(this) + 0x144) : 0, reader);
+            BGSDestructibleObjectForm_LoadChunk(this ? reinterpret_cast<BGSDestructibleObjectForm*>(reinterpret_cast<char*>(this) + 0x144) : 0, apFile);
             break;
         }
         case 0x50595445: {
             unsigned int equipID = 0;
-            reader->ReadChunkInt(&equipID);
+            apFile->ReadChunkInt(&equipID);
             reinterpret_cast<BGSEquipType*>(reinterpret_cast<char*>(this) + 0x14c)->SetEquipType(static_cast<int>(equipID));
             break;
         }
         case 0x41544144: {
-            TESForm_LoadData(reader, 0, 0);
+            TESForm_LoadData(apFile, 0, 0);
             break;
         }
         default:
             break;
         }
-        if (!reader->FUN_004726f0())
+        if (!apFile->FUN_004726f0())
             break;
     }
     return true;
@@ -333,6 +342,9 @@ struct ClothingCopyView : TESObjectCLOT
 // Dynamic-casts apCopy to TESObjectCLOT and, if valid, forwards the copy to the base class via FUN_004851b0.
 // @fnv 0x00515fb0
 // src: XBOX_PDB 0x00515fb0
+// pdb: TESObjectCLOT::Copy | TESObjectCLOT.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pClothing
 void ClothingCopyView::TESObjectCLOT_Copy(TESForm* apCopy)
 {
     TESObjectCLOT* pSourceClothing = dynamic_cast<TESObjectCLOT*>(apCopy);
@@ -349,9 +361,12 @@ struct ClothingComparison
 // Returns true if the given form is not a clothing item or if it passes the FUN_00485270 check.
 // @fnv 0x00515ff0
 // src: XBOX_PDB 0x00515ff0
-bool ClothingComparison::TESObjectCLOT_Compare(TESForm* apForm)
+// pdb: TESObjectCLOT::Compare | TESObjectCLOT.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pClothing
+bool ClothingComparison::TESObjectCLOT_Compare(TESForm* apCompare)
 {
-    TESObjectCLOT* clothing = dynamic_cast<TESObjectCLOT*>(apForm);
+    TESObjectCLOT* clothing = dynamic_cast<TESObjectCLOT*>(apCompare);
     if (!clothing)
         return true;
     if (TESForm_CompareAllComponents(reinterpret_cast<TESForm*>(clothing)))

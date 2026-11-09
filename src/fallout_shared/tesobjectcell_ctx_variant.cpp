@@ -68,7 +68,7 @@ class FUN_0056a250_shell
 class FUN_00545740_shell
 {
   public:
-    void GetOrCreateFaceGenNode(TESObjectREFR*);
+    void TESObjectCELL_AddMultiBoundRef(TESObjectREFR*);
 };
 
 class FUN_00545960_shell
@@ -159,6 +159,8 @@ class Cell_Sub : public TESObjectCELL
 
 // @fnv 0x00544ce0
 // src: COMMUNITY 0x00544ce0
+// pdb: TESObjectCELL::CreateLoadedData | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb locals: plist, boundchildren, pworld, pref, pparent, pparentnode, pnode
 void Cell_Sub::TESObjectCELL_CreateLoadedData()
 {
     if (((CellC4Holder*)this)->unkC4 == 0)
@@ -176,7 +178,7 @@ void Cell_Sub::TESObjectCELL_CreateLoadedData()
         {
             if (((FUN_00439f90_shell*)item5)->TESObjectREFR_IsMultiBoundRef())
             {
-                ((FUN_00545740_shell*)this)->GetOrCreateFaceGenNode(item5);
+                ((FUN_00545740_shell*)this)->TESObjectCELL_AddMultiBoundRef(item5);
                 if (((FUN_00569ac0_shell*)item5)->TESObjectREFR_GetMultiBoundRef())
                 {
                     localList9.AddHead(item5);
@@ -217,7 +219,7 @@ void Cell_Sub::TESObjectCELL_CreateLoadedData()
         iter = ((FUN_00587870_shell*)extra9)->TESWorldSpace_GetOverlappedMultiBoundRefs(this);
         while (iter != 0 && !iter->IsEmpty())
         {
-            ((FUN_00545740_shell*)this)->GetOrCreateFaceGenNode(iter->GetItem());
+            ((FUN_00545740_shell*)this)->TESObjectCELL_AddMultiBoundRef(iter->GetItem());
             iter = iter->GetNext();
         }
     }

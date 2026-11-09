@@ -11,7 +11,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 struct FUN_00cad480_Class
 {
-    void __thiscall hkpCharacterProxy_fireContactAdded(void* arg);
+    void __thiscall hkpCharacterProxy_fireContactAdded(void* point);
 };
 struct S_00cad440;
 struct S_00cad440_Listener
@@ -55,7 +55,7 @@ struct S_00cad440
     int unk7C;
     S_00cad440_Listener** unk80;
     int unk84;
-    void hkpCharacterProxy_fireConstraintsProcessed(void* a, void* b);
+    void hkpCharacterProxy_fireConstraintsProcessed(void* manifold, void* input);
 };
 struct CAD4C0Owner;
 struct CAD4C0Listener
@@ -102,7 +102,7 @@ struct CAD4C0Owner
     CAD4C0Listener** m_kListeners;
     int m_numListeners;
 
-    void hkpCharacterProxy_fireContactRemoved(void* data);
+    void hkpCharacterProxy_fireContactRemoved(void* point);
 };
 struct FUN_00cad6f0_class
 {
@@ -187,7 +187,7 @@ struct FNVOwner
     {
         return *reinterpret_cast<FNVBuffers**>(reinterpret_cast<char*>(this) + 0x214);
     }
-    void hkpEntity_addEntityListener(int value);
+    void hkpEntity_addEntityListener(int el);
 };
 extern __declspec(thread) int g_tlsMemContext;
 struct S_00cac150_Scope
@@ -318,8 +318,8 @@ struct FUN_00cacf10_cls
     int m_74;
     int m_78;
 
-    float hkpCharacterProxy_surfaceDistance(void* a, void* b);
-    int hkpCharacterProxy_findSurface(void* arg);
+    float hkpCharacterProxy_surfaceDistance(void* p1, void* p2);
+    int hkpCharacterProxy_findSurface(void* info);
 };
 struct ArgminState
 {
@@ -404,7 +404,7 @@ struct BhkProxy
     BhkTarget** m_ids;
     volatile int m_idcount;
 
-    void RemoveTarget(BhkTarget* arg1);
+    void RemoveTarget(BhkTarget* entity);
 };
 struct FUN_00cad900_arg
 {
@@ -419,7 +419,7 @@ struct FUN_00cad900_arg
     unsigned int unk0c;
     unsigned char flag10;
 };
-extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(int ptr, int size);
+extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(int p, int size);
 extern "C" char str_010c8444[];
 extern "C" char str_010c8450[];
 extern "C" char str_010c8460[];
@@ -467,7 +467,7 @@ struct FUN_00cad900_cls
     int m9c;
     int ma0;
 
-    void hkpCharacterProxy_calcContentStatistics(FUN_00cad900_arg* a1, int a2);
+    void hkpCharacterProxy_calcContentStatistics(FUN_00cad900_arg* collector, int cls);
 };
 extern char str_0102f13c[];
 extern char DAT_0104e3d0[];
@@ -476,7 +476,7 @@ extern char DAT_010c8488[];
 extern char DAT_010c8470[];
 struct FUN_00cad500_Class
 {
-    void __thiscall hkpCharacterProxy_updateFromCinfo(void* arg);
+    void __thiscall hkpCharacterProxy_updateFromCinfo(void* info);
 };
 struct FUN_00cada70_cls
 {
@@ -523,7 +523,7 @@ struct FUN_00cada70_cls
     unsigned int m_9c;
     unsigned int m_a0;
 
-    FUN_00cada70_cls* Construct(void* a1);
+    FUN_00cada70_cls* hkpCharacterProxy_ctor(void* info);
 };
 struct Query289
 {
@@ -543,7 +543,7 @@ struct Allocator197
     virtual void v0c();
     __declspec(nothrow) virtual void Free(void* memory, int bytes);
 };
-__declspec(nothrow) inline hkpCdPointCollector::hkpCdPointCollector() : m_fEarlyOutDistance(DAT_0104da48)
+__declspec(nothrow) inline hkpCdPointCollector::hkpCdPointCollector() : m_earlyOutDistance(DAT_0104da48)
 {}
 
 __declspec(nothrow) __forceinline hkpCdPointCollector::~hkpCdPointCollector()
@@ -683,19 +683,22 @@ struct Controller197
     int unk50;
     int unk54;
     float margin58, margin5c;
-    void AllocateStorage_00cae7f0(Context197* context);
+    void hkpCharacterProxy_refreshManifold(Context197* startPointCollector);
 };
 // @fnv 0x00cae7f0
-// src: GUESS 0x00cae7f0 (confidence: low)
-void Controller197::AllocateStorage_00cae7f0(Context197* context)
+// src: XBOX_RETAIL_PDB 0x00cae7f0
+// pdb: hkpCharacterProxy::refreshManifold | hkpCharacterProxy.obj | retail, object-file gap fill, high
+// pdb params: startPointCollector
+// pdb locals: castCollector, input, assertBuf, ostr
+void Controller197::hkpCharacterProxy_refreshManifold(Context197* startPointCollector)
 {
-    context->Begin();
+    startPointCollector->Begin();
     Query197 query = *provider->owner->query;
     query.z.value = (margin5c + margin58) + query.z.value;
-    provider->Process(context, &query);
+    provider->Process(startPointCollector, &query);
     // Preserve the original explicit lifetime without adding an exception cleanup scope.
     __declspec(align(16)) unsigned char storage[sizeof(hkpAllCdPointCollector)];
     hkpAllCdPointCollector* collector = ::new (storage) hkpAllCdPointCollector;
-    Collect(context, collector, false);
+    Collect(startPointCollector, collector, false);
     collector->hkpAllCdPointCollector::~hkpAllCdPointCollector();
 }

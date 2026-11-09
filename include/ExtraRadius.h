@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraRadius, size 0x10, bases: BSExtraData, 1 members
 class ExtraRadius : public BSExtraData
 {
 public:

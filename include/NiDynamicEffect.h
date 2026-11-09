@@ -6,15 +6,16 @@
 
 #include "NiTPointerList.h"
 
+// pdb: class NiDynamicEffect, size 0xf0 (here 0xc4), bases: NiAVObject, 7 members
 class NiDynamicEffect : public NiAVObject
 {
   public:
     NiDynamicEffect();
     virtual ~NiDynamicEffect();
-    virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
-    virtual void SaveBinary(NiStream& stream);
-    virtual bool IsEqual(NiObject* object) const;
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void LinkObject(NiStream& kStream);
+    virtual void SaveBinary(NiStream& kStream);
+    virtual bool IsEqual(NiObject* pkObject) const;
 
     void AppendEffectProperties(StrArr* strings);
 

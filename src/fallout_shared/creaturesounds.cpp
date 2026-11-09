@@ -11,6 +11,7 @@ void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
 // @fnv 0x005f0360
+// pdb: CreatureSounds::CreatureSounds | CreatureSounds.obj | retail, upstream name already matches, high
 CreatureSounds::CreatureSounds()
 {
     memset(this, 0, 0x58);
@@ -18,20 +19,25 @@ CreatureSounds::CreatureSounds()
 
 // Copies text into the BSStringT<char> at offset 0x1c and returns true.
 // @fnv 0x005f0040
-bool CreatureSounds::SetSoundName(const char* text)
+// pdb: BGSVoiceType::SetFormEditorID | BGSVoiceType.obj | retail, vtable slot, high
+// pdb params: apEditorID
+bool CreatureSounds::SetSoundName(const char* apEditorID)
 {
-    ((BSStringT<char>*)((char*)this + 0x1c))->Set(text, 0);
+    ((BSStringT<char>*)((char*)this + 0x1c))->Set(apEditorID, 0);
     return true;
 }
 
 // @fnv 0x005f0380
+// pdb: CreatureSounds::~CreatureSounds | CreatureSounds.obj | debug, object-file gap fill, medium
 void CreatureSounds::ClearSounds()
 {
     FreeAllCreatureSoundLists();
 }
 
 // @fnv 0x005f7bf0
-void* CreatureSounds::DeleteThis(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x005f7bf0
+// pdb: CreatureSounds::`scalar deleting destructor' | TESCreature.obj | debug, call graph, high
+void* CreatureSounds::CreatureSounds_ScalarDtor(unsigned int flags)
 {
     ClearSounds();
     if (flags & 1)
@@ -40,6 +46,9 @@ void* CreatureSounds::DeleteThis(unsigned int flags)
 }
 
 // @fnv 0x005f0900
+// pdb: CreatureSounds::AddCreatureSound | CreatureSounds.obj | debug, call graph, medium
+// pdb params: apSound, aeType
+// pdb locals: plist, plastlist
 void CreatureSounds::AddSoundForType(SoundListEntry* sound, CREATURE_SOUND_TYPE type)
 {
     if (sound && type >= 0 && type < 22)
@@ -65,44 +74,48 @@ void CreatureSounds::AddSoundForType(SoundListEntry* sound, CREATURE_SOUND_TYPE 
 }
 
 // @fnv 0x005f0480
-bool CreatureSounds::LoadSoundsFromFile(TESFile* file, CREATURE_SOUND_TYPE type, TESCreature* creature)
+// src: XBOX_RETAIL_PDB 0x005f0480
+// pdb: CreatureSounds::LoadCreatureSound | CreatureSounds.obj | retail, string-set bridge, high
+// pdb params: apFile, aeType, apOwner
+// pdb locals: bsuccess, pdata, tempint, tempbuff
+bool CreatureSounds::LoadCreatureSound(TESFile* apFile, CREATURE_SOUND_TYPE aeType, TESCreature* apOwner)
 {
     bool result = false;
-    if (file)
+    if (apFile)
     {
         SoundListEntry* sound = 0;
-        if (file->GetChunkID() == 0x49445343)
+        if (apFile->GetChunkID() == 0x49445343)
         {
             unsigned int id = 0;
-            file->GetChunkData(&id);
+            apFile->GetChunkData(&id);
             sound = new SoundListEntry;
             if (id)
             {
-                TESForm::RemapFormIDForFile(id, file);
+                TESForm::RemapFormIDForFile(id, apFile);
                 sound->SoundAssetTmp = dynamic_cast<TESSound*>(GetFormByID(id));
                 if (!sound->SoundAssetTmp)
-                    Warning(DAT_010475a0, id, creature->GetName(), creature->GetFormID());
+                    Warning(DAT_010475a0, id, apOwner->GetName(), apOwner->GetFormID());
             }
             else
             {
                 sound->SoundAssetTmp = 0;
             }
-            file->NextChunk();
+            apFile->NextChunk();
         }
-        else if (file->GetChunkID() == 0x46445343)
+        else if (apFile->GetChunkID() == 0x46445343)
         {
             char filename[260];
-            file->GetChunkData(filename, 260);
+            apFile->GetChunkData(filename, 260);
             sound = new SoundListEntry;
             sound->SoundAssetTmp = TESSound::FindSoundByFilename(filename);
-            file->NextChunk();
+            apFile->NextChunk();
         }
         if (sound)
         {
-            if (file->GetChunkID() == 0x43445343)
+            if (apFile->GetChunkID() == 0x43445343)
             {
-                file->GetChunkData(&sound->m_ucSortOrder, 1);
-                AddSoundForType(sound, type);
+                apFile->GetChunkData(&sound->m_ucSortOrder, 1);
+                AddSoundForType(sound, aeType);
                 result = true;
             }
             else
@@ -116,17 +129,19 @@ bool CreatureSounds::LoadSoundsFromFile(TESFile* file, CREATURE_SOUND_TYPE type,
 
 struct FUN_005f0860_helper
 {
-    void ClearSoundList(int);
+    void TESRegionDataSound_ClearSoundList(int);
 };
 
 // Calls ClearSoundList for each index from 0 to 21 on this object.
 // @fnv 0x005f0820
 // src: COMMUNITY 0x005f0820
+// pdb: CreatureSounds::FreeAllCreatureSoundLists | CreatureSounds.obj | retail, upstream name already matches, high
+// pdb locals: i
 void CreatureSounds::FreeAllCreatureSoundLists()
 {
     for (char i = 0; i < 22; ++i)
     {
-        ((FUN_005f0860_helper*)this)->ClearSoundList(i);
+        ((FUN_005f0860_helper*)this)->TESRegionDataSound_ClearSoundList(i);
     }
 }
 
@@ -137,11 +152,14 @@ struct SoundListView_helper : SoundListView
 
 struct CreatureSounds_shell : CreatureSounds
 {
-    void ClearSoundList(CREATURE_SOUND_TYPE type);
+    void TESRegionDataSound_ClearSoundList(CREATURE_SOUND_TYPE type);
 };
 
 // @fnv 0x005f0860
-void CreatureSounds_shell::ClearSoundList(CREATURE_SOUND_TYPE type)
+// src: XBOX_RETAIL_PDB 0x005f0860
+// pdb: TESRegionDataSound::ClearSoundList | TESRegionDataSound.obj | retail, upstream name already matches, high
+// pdb locals: psnd, tmpList
+void CreatureSounds_shell::TESRegionDataSound_ClearSoundList(CREATURE_SOUND_TYPE type)
 {
     SoundListView* list = (SoundListView*)GetSoundListForType(type);
     while (list && !list->IsEmpty())
@@ -156,6 +174,7 @@ void CreatureSounds_shell::ClearSoundList(CREATURE_SOUND_TYPE type)
 
 // Returns the list stored in the sound table at index aeType when it is in [0,22), otherwise returns null.
 // @fnv 0x005f0ac0
+// pdb: BSSimpleList<CREATURE_SOUND *>::~BSSimpleList<CREATURE_SOUND *> | CreatureSounds.obj | debug, object-file run extension, low
 BSSimpleList<SoundListEntry*>* CreatureSounds::GetSoundListForType(CREATURE_SOUND_TYPE aeType)
 {
     BSSimpleList<SoundListEntry*>* pretlist = 0;
@@ -181,11 +200,15 @@ void __cdecl CopyPointerAndByte(void*, void*);
 
 struct FUN_005f0640_shell : public CreatureSounds
 {
-    void CopyCreatureSoundLists(CreatureSounds* apCopy);
+    void CreatureSounds_Copy(CreatureSounds* apCopy);
 };
 
 // @fnv 0x005f0640
-void FUN_005f0640_shell::CopyCreatureSoundLists(CreatureSounds* apCopy)
+// src: XBOX_DEBUG_PDB 0x005f0640
+// pdb: CreatureSounds::Copy | CreatureSounds.obj | debug, call graph, high
+// pdb params: apCopy
+// pdb locals: i, plist, pnewdata, pdata
+void FUN_005f0640_shell::CreatureSounds_Copy(CreatureSounds* apCopy)
 {
     FreeAllCreatureSoundLists();
     if (apCopy)
@@ -209,15 +232,19 @@ unsigned int __cdecl DialogueRandom(void);
 
 struct FUN_005f0a30_shell : CreatureSounds
 {
-    unsigned int GetRandomCreatureSound(CREATURE_SOUND_TYPE type);
+    unsigned int CreatureSounds_PickCreatureSound(CREATURE_SOUND_TYPE aeType);
 };
 
 // Walks the sound list for a creature sound type and returns the first entry whose chance roll succeeds, or 0 if none.
 // @fnv 0x005f0a30
-unsigned int FUN_005f0a30_shell::GetRandomCreatureSound(CREATURE_SOUND_TYPE aeSoundType)
+// src: XBOX_DEBUG_PDB 0x005f0a30
+// pdb: CreatureSounds::PickCreatureSound | CreatureSounds.obj | debug, call graph, high
+// pdb params: aeType
+// pdb locals: plist, presult, pdata
+unsigned int FUN_005f0a30_shell::CreatureSounds_PickCreatureSound(CREATURE_SOUND_TYPE aeType)
 {
     unsigned int result2 = 0;
-    BSSimpleList<SoundListEntry*>* pSoundList = GetSoundListForType(aeSoundType);
+    BSSimpleList<SoundListEntry*>* pSoundList = GetSoundListForType(aeType);
     while (pSoundList && !pSoundList->IsEmpty() && !result2)
     {
         SoundListEntry* sound = pSoundList->GetItem();
@@ -238,6 +265,10 @@ struct FUN_005f03a0_shell : public CreatureSounds
 
 // @fnv 0x005f03a0
 // src: GUESS 0x005f03a0 (confidence: low)
+// pdb: CreatureSounds::AddCreatureSound | CreatureSounds.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CreatureSounds::Save
+// pdb params: apSound, aeType
+// pdb locals: plist, plastlist
 void FUN_005f03a0_shell::ProcessEntries_005f03a0()
 {
     for (int i = 0; i < 22; ++i)
@@ -267,12 +298,16 @@ void FUN_005f03a0_shell::ProcessEntries_005f03a0()
 
 struct FUN_005f06f0_shell : CreatureSounds
 {
-    bool IsDifferentFrom(CreatureSounds* apCompare);
+    bool CreatureSounds_Compare(CreatureSounds* apCompare);
 };
 
 // Compares the 22 creature sound lists of this object and apCompare, returning true if any entry differs or list lengths mismatch.
 // @fnv 0x005f06f0
-bool FUN_005f06f0_shell::IsDifferentFrom(CreatureSounds* apCompare)
+// src: XBOX_DEBUG_PDB 0x005f06f0
+// pdb: CreatureSounds::Compare | CreatureSounds.obj | debug, call graph, high
+// pdb params: apCompare
+// pdb locals: i, plist, pcomplist, pdata, pcompdata
+bool FUN_005f06f0_shell::CreatureSounds_Compare(CreatureSounds* apCompare)
 {
     char i;
 

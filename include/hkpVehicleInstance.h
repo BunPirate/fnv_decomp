@@ -24,6 +24,7 @@ class hkpVehicleDriverInputStatus;
 class hkpVehicleInstanceWheelInfo;
 struct WGround;
 
+// pdb: class hkpVehicleInstance, size 0xd4, bases: hkpUnaryAction, 25 members
 class hkpVehicleInstance : public hkpUnaryAction
 {
 public:
@@ -44,10 +45,10 @@ public:
         struct DefaultStruct;
         enum { MAX_NUM_SHAPE_KEYS = 8 };
 
-        hkContactPoint m_vContactPoint;
-        hkReal m_fSuspensionLength;
-        hkpRigidBody* m_pUserData;
-        unsigned int m_contactShapeKey0;
+        hkContactPoint m_contactPoint;
+        hkReal m_contactFriction;
+        hkpRigidBody* m_contactBody;
+        unsigned int m_contactShapeKey;
         unsigned int m_contactShapeKey1;
         unsigned int m_contactShapeKey2;
         unsigned int m_contactShapeKey3;
@@ -55,19 +56,19 @@ public:
         unsigned int m_contactShapeKey5;
         unsigned int m_contactShapeKey6;
         unsigned int m_contactShapeKey7;
-        hkVector4 m_vContactPointVelocity;
-        hkVector4 m_vContactNormal;
-        hkReal m_fContactFriction;
-        hkVector4 m_vHardPointWs;
-        hkVector4 m_vRayEndPointWs;
-        hkVector4 m_vSuspensionDirectionWs;
-        hkQuaternion m_qSteeringOrientation;
-        hkReal m_fValueAtOffsetC0;
-        hkReal m_fSpinAngle;
-        hkReal m_fSkidEnergyDensity;
-        hkReal m_fSideForce;
-        hkReal m_fSuspensionForce;
-        hkReal m_fForwardForce;
+        hkVector4 m_hardPointWs;
+        hkVector4 m_rayEndPointWs;
+        hkReal m_currentSuspensionLength;
+        hkVector4 m_suspensionDirectionWs;
+        hkVector4 m_spinAxisChassisSpace;
+        hkVector4 m_spinAxisWs;
+        hkQuaternion m_steeringOrientationChassisSpace;
+        hkReal m_spinVelocity;
+        hkReal m_spinAngle;
+        hkReal m_skidEnergyDensity;
+        hkReal m_sideForce;
+        hkReal m_forwardSlipVelocity;
+        hkReal m_sideSlipVelocity;
 
         void init();
     };
@@ -88,30 +89,30 @@ public:
     void ProcessEntries_00e38310(float deltaTime, const int* groundBody, const WGround* ground);
 
     hkpVehicleData* m_data;
-    hkpVehicleDriverInput* m_pDriverInput;
-    hkpVehicleSteering* m_pSteering;
-    hkpVehicleEngine* m_pVehicleEngine;
-    hkpVehicleTransmission* m_pTransmission;
-    hkpVehicleBrake* m_pBrake;
-    hkpVehicleSuspension* m_pSuspension;
-    hkpVehicleAerodynamics* m_pAerodynamics;
-    hkpVehicleWheelCollide* m_pWheelCollide;
-    hkpTyremarksInfo* m_pTyremarksInfo;
-    hkpVehicleVelocityDamper* m_pVelocityDamper;
-    hkArray<hkpVehicleInstanceWheelInfo> m_kWheelInfoArray;
-    hkpVehicleFrictionStatus m_kFrictionStatus;
-    hkpVehicleDriverInputStatus* m_pDriverInputStatus;
-    hkArray<hkBool> m_kSecondRealArray;
-    hkReal m_fBrakeState;
-    hkBool m_bIsReversing;
+    hkpVehicleDriverInput* m_driverInput;
+    hkpVehicleSteering* m_steering;
+    hkpVehicleEngine* m_engine;
+    hkpVehicleTransmission* m_transmission;
+    hkpVehicleBrake* m_brake;
+    hkpVehicleSuspension* m_suspension;
+    hkpVehicleAerodynamics* m_aerodynamics;
+    hkpVehicleWheelCollide* m_wheelCollide;
+    hkpTyremarksInfo* m_tyreMarks;
+    hkpVehicleVelocityDamper* m_velocityDamper;
+    hkArray<hkpVehicleInstanceWheelInfo> m_wheelsInfo;
+    hkpVehicleFrictionStatus m_frictionStatus;
+    hkpVehicleDriverInputStatus* m_deviceStatus;
+    hkArray<hkBool> m_isFixed;
+    hkReal m_wheelsTimeSinceMaxPedalInput;
+    hkBool m_tryingToReverse;
     char padB1[3];
-    hkReal m_fFirstValueBeforeSteeringAngle;
-    hkReal m_fSecondValueBeforeSteeringAngle;
-    hkReal m_fMainSteeringAngle;
-    hkArray<hkReal> m_kWheelSteeringAngles;
-    hkBool m_iGearCount;
-    signed char m_iGearCapacity;
-    hkBool m_bGearShiftActive;
+    hkReal m_torque;
+    hkReal m_rpm;
+    hkReal m_mainSteeringAngle;
+    hkArray<hkReal> m_wheelsSteeringAngle;
+    hkBool m_isReversing;
+    signed char m_currentGear;
+    hkBool m_delayed;
     char padCF[1];
-    hkReal m_fGearShiftTime;
+    hkReal m_clutchDelayCountdown;
 };

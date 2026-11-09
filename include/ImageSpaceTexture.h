@@ -14,20 +14,21 @@ extern MemoryManager g_memoryManager;
 // +1 says pTexture holds a BSRenderedTexture (0x00ba3770 returns it only then; 0x00ba37a0 sets it and the flag),
 // +2 says the rendered texture came from BSTextureManager and must be handed back (0x00ba39a0).
 // Destructor 0x00ba3a00, operator= 0x00ba3940, clear 0x00ba38b0.
+// pdb: class ImageSpaceTexture, size 0x10, 6 members
 class ImageSpaceTexture
 {
   public:
-    bool m_bTextureFlag1;                                  // +0x00
-    bool m_bTextureFlag2;                                  // +0x01 pTexture is a BSRenderedTexture
-    bool m_bTextureFlag3;                                  // +0x02 rendered texture owned by BSTextureManager
+    bool bForceAniso;                                  // +0x00
+    bool bIsRenderedTexture;                                  // +0x01 pTexture is a BSRenderedTexture
+    bool bIsTextureBorrowed;                                  // +0x02 rendered texture owned by BSTextureManager
     NiPointer<NiObject> pTexture;                          // +0x04
-    NiTexturingProperty::FilterMode m_eTextureFilterMode;  // +0x08
-    NiTexturingProperty::ClampMode m_eClampMode;           // +0x0C
+    NiTexturingProperty::FilterMode iFilterMode;  // +0x08
+    NiTexturingProperty::ClampMode iClampMode;           // +0x0C
 
     // inline (0x004ebb70 is the /Od copy): flags false, NiPointer(0), FILTER_NEAREST, CLAMP_S_CLAMP_T
     inline ImageSpaceTexture()
-        : m_bTextureFlag1(false), m_bTextureFlag2(false), m_bTextureFlag3(false), pTexture(0),
-          m_eTextureFilterMode(NiTexturingProperty::FILTER_NEAREST), m_eClampMode(NiTexturingProperty::CLAMP_S_CLAMP_T)
+        : bForceAniso(false), bIsRenderedTexture(false), bIsTextureBorrowed(false), pTexture(0),
+          iFilterMode(NiTexturingProperty::FILTER_NEAREST), iClampMode(NiTexturingProperty::CLAMP_S_CLAMP_T)
     {
     }
     ~ImageSpaceTexture();                                  // 0x00ba3a00
@@ -43,8 +44,8 @@ class ImageSpaceTexture
     void ImageSpaceTexture_SetTexture(BSRenderedTexture* texture);         // 0x00ba37a0 set rendered texture
     void NiShader_SetImplementation(unsigned int value);                 // 0x00ba3760 stores +0x0C (m_eClampMode); imagespacetexture_o2_variant.cpp
     void SetTexture(NiTexture* texture);                   // 0x00ba37f0
-    void CreateRenderTargetTexture(BSTextureManager::RenderTargetType type); // 0x00ba3840
-    void ImageSpaceTexture_BorrowRenderedTexture(unsigned int type);                  // 0x00ba3840
+    void CreateRenderTargetTexture(BSTextureManager::RenderTargetType aeType); // 0x00ba3840
+    void ImageSpaceTexture_BorrowRenderedTexture(unsigned int aeType);                  // 0x00ba3840
     void ImageSpaceTexture_ClearTexture();                                   // 0x00ba38b0 release texture, clear fields
     void InitializeFields_00ba3940(ImageSpaceTexture* other);           // 0x00ba3940 copy (operator=)
     void AddRenderedTexture();                             // 0x00ba39a0 hand the rendered texture back

@@ -7,6 +7,7 @@ class D3DRenderStateGroup;
 class NiD3DPass;
 class NiD3DShaderConstantMap;
 
+// pdb: class NiD3DShader, size 0x3c, bases: NiD3DShaderInterface, 7 members
 class NiD3DShader : public NiD3DShaderInterface
 {
 public:
@@ -20,7 +21,7 @@ public:
     void __thiscall FUN_00e806c0();
     void __thiscall UpdateFields_00e7c540();
     static unsigned int IsRendererActive();
-    static void __cdecl InitializePoint3();
+    static void __cdecl _SDMInit();
 
     union
     {

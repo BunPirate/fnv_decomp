@@ -16,6 +16,8 @@ struct SpeedTreeLodData
 };
 // @fnv 0x00b27820
 // src: COMMUNITY 0x00b27820
+// pdb: CLeafGeometry::Invalidate | LeafGeometry.obj | debug, upstream name already matches, high
+// pdb locals: i
 void SpeedTreeLodData::CLeafGeometry_Invalidate()
 {
     if (m_pLeafLod)
@@ -63,6 +65,9 @@ struct FUN_00b27870_Class
 void* __cdecl _memmove(void* dest, const void* src, unsigned int count);
 
 // @fnv 0x00b27870
+// pdb: CLeafGeometry::GetLeafBillboardTable | LeafGeometry.obj | debug, object-file gap fill, medium
+// pdb params: nEntryCount
+// pdb locals: pTable, nLodSize
 const float* FUN_00b27870_Class::CopyLodData(unsigned int& auiOffset)
 {
     float* pSearchEntries = m_pCopiedLodData;
@@ -90,36 +95,40 @@ struct FUN_00b28720_Class
     int unk10;
     float* m_pLeafTable;
 
-    void SetLeafTableEntry(int nLeaf, const float* pSrc);
+    void CLeafGeometry_SetTextureCoords(int nLeafMapIndex, const float* pTexCoords);
 };
 
 // Writes two 8-float rows into m_pLeafTable at index nLeaf, scaling odd components by DAT_01012054 or 1.0f depending on FUN_00b0d7a0.
 // @fnv 0x00b28720
-void FUN_00b28720_Class::SetLeafTableEntry(int aiLeafIndex, const float* apSrcFloats)
+// src: XBOX_RETAIL_PDB 0x00b28720
+// pdb: CLeafGeometry::SetTextureCoords | LeafGeometry.obj | retail, call graph, high
+// pdb params: nLeafMapIndex, pTexCoords
+// pdb locals: pEntry, fSign
+void FUN_00b28720_Class::CLeafGeometry_SetTextureCoords(int nLeafMapIndex, const float* pTexCoords)
 {
-    if (m_pLeafTable && apSrcFloats)
+    if (m_pLeafTable && pTexCoords)
     {
         float fOddScale = CSpeedTreeRT_GetTextureFlip() ? DAT_01012054 : 1.0f;
 
-        float* pfDest = m_pLeafTable + (aiLeafIndex * 2) * 8;
-        *pfDest++ = apSrcFloats[0];
-        *pfDest++ = fOddScale * apSrcFloats[1];
-        *pfDest++ = apSrcFloats[2];
-        *pfDest++ = fOddScale * apSrcFloats[3];
-        *pfDest++ = apSrcFloats[4];
-        *pfDest++ = fOddScale * apSrcFloats[5];
-        *pfDest++ = apSrcFloats[6];
-        *pfDest++ = fOddScale * apSrcFloats[7];
+        float* pfDest = m_pLeafTable + (nLeafMapIndex * 2) * 8;
+        *pfDest++ = pTexCoords[0];
+        *pfDest++ = fOddScale * pTexCoords[1];
+        *pfDest++ = pTexCoords[2];
+        *pfDest++ = fOddScale * pTexCoords[3];
+        *pfDest++ = pTexCoords[4];
+        *pfDest++ = fOddScale * pTexCoords[5];
+        *pfDest++ = pTexCoords[6];
+        *pfDest++ = fOddScale * pTexCoords[7];
 
-        pfDest = m_pLeafTable + (aiLeafIndex * 2 + 1) * 8;
-        *pfDest++ = apSrcFloats[2];
-        *pfDest++ = fOddScale * apSrcFloats[1];
-        *pfDest++ = apSrcFloats[0];
-        *pfDest++ = fOddScale * apSrcFloats[3];
-        *pfDest++ = apSrcFloats[6];
-        *pfDest++ = fOddScale * apSrcFloats[5];
-        *pfDest++ = apSrcFloats[4];
-        *pfDest++ = fOddScale * apSrcFloats[7];
+        pfDest = m_pLeafTable + (nLeafMapIndex * 2 + 1) * 8;
+        *pfDest++ = pTexCoords[2];
+        *pfDest++ = fOddScale * pTexCoords[1];
+        *pfDest++ = pTexCoords[0];
+        *pfDest++ = fOddScale * pTexCoords[3];
+        *pfDest++ = pTexCoords[6];
+        *pfDest++ = fOddScale * pTexCoords[5];
+        *pfDest++ = pTexCoords[4];
+        *pfDest++ = fOddScale * pTexCoords[7];
     }
 }
 
@@ -136,11 +145,14 @@ struct CB28
     unsigned short count;
     char pad2[2];
     LodB28* lods;
-    void FreeLodBuffers();
+    void CLeafGeometry_FreeLODDataArrays();
 };
 // Frees the twelve heap buffers of each of the count LOD entries and nulls the pointers.
 // @fnv 0x00b28ed0
-void CB28::FreeLodBuffers()
+// src: XBOX_RETAIL_PDB 0x00b28ed0
+// pdb: CLeafGeometry::FreeLODDataArrays | LeafGeometry.obj | retail, object-file run extension, high
+// pdb locals: i
+void CB28::CLeafGeometry_FreeLODDataArrays()
 {
     if (lods && count)
     {
@@ -209,14 +221,18 @@ struct FUN_00b28e40_Class
     char m_pad4[2];
     SpeedTreeGeometryRecord* m_pLeafLod;
 
-    void SetLeafLodGeometry(CSpeedTreeRT::TreeLodData::TreeLodEntry& sGeometry, unsigned short usLodLevel,
-                            float fAzimuth, float fCurrentSpeed, float fSizeIncreaseFactor);
+    void CLeafGeometry_SmallUpdate(CSpeedTreeRT::TreeLodData::TreeLodEntry& sGeometry, unsigned short usLodLevel,
+                            float fAzimuth, float fPitch, float fSizeIncreaseFactor);
 };
 
 // If usLodLevel is in range and the required pointers are non-null, copies that leaf LOD geometry record into sGeometry and marks it visible.
 // @fnv 0x00b28e40
-void FUN_00b28e40_Class::SetLeafLodGeometry(CSpeedTreeRT::TreeLodData::TreeLodEntry& sGeometry,
-                                            unsigned short usLodLevel, float fAzimuth, float fCurrentSpeed,
+// src: XBOX_RETAIL_PDB 0x00b28e40
+// pdb: CLeafGeometry::SmallUpdate | LeafGeometry.obj | retail, object-file run extension, high
+// pdb params: sGeometry, usLodLevel, fAzimuth, fPitch, fSizeIncreaseFactor
+// pdb locals: pLod
+void FUN_00b28e40_Class::CLeafGeometry_SmallUpdate(CSpeedTreeRT::TreeLodData::TreeLodEntry& sGeometry,
+                                            unsigned short usLodLevel, float fAzimuth, float fPitch,
                                             float fSizeIncreaseFactor)
 {
     SpeedTreeGeometryRecord* pLod;

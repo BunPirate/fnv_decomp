@@ -10,8 +10,8 @@ struct VertexBuffer
     unsigned int count;
     unsigned int capacityFlags;
 };
-extern "C" void __cdecl hkArrayUtil__reserve(unsigned int allocator, VertexBuffer* output, unsigned int capacity,
-                                     unsigned int alignment);
+extern "C" void __cdecl hkArrayUtil__reserve(unsigned int mem, VertexBuffer* array, unsigned int numElem,
+                                     unsigned int sizeElem);
 struct BoundsWriter
 {
     unsigned int unk00;
@@ -45,45 +45,47 @@ struct BoundsWriter
     float maxX;
     float maxY;
     float maxZ;
-    void WriteBoundsVertices(VertexBuffer* output, unsigned int allocator);
+    void WriteBoundsVertices(VertexBuffer* lines, unsigned int allocator);
 };
 // Expands output capacity to at least 24, then writes 24 SIMD vertex values from the bounds min/max into output->values.
 // @fnv 0x00de1260
-void BoundsWriter::WriteBoundsVertices(VertexBuffer* output, unsigned int allocator)
+// pdb: hkDisplayAABB::getWireframeGeometry | hkDisplayAABB.obj | retail, vtable slot, high
+// pdb params: lines, a
+void BoundsWriter::WriteBoundsVertices(VertexBuffer* lines, unsigned int allocator)
 {
-    int oldCapacity = output->capacityFlags & 0x3FFFFFFF;
+    int oldCapacity = lines->capacityFlags & 0x3FFFFFFF;
     if (oldCapacity < 24)
     {
         int newCapacity = oldCapacity * 2;
         if (newCapacity <= 24)
             newCapacity = 24;
-        hkArrayUtil__reserve(allocator, output, newCapacity, 16);
+        hkArrayUtil__reserve(allocator, lines, newCapacity, 16);
     }
-    output->count = 24;
-    output->values[0] = _mm_setr_ps(this->minX, this->minY, this->minZ, 0.0f);
-    output->values[1] = _mm_setr_ps(this->minX, this->maxY, this->minZ, 0.0f);
-    output->values[2] = _mm_setr_ps(this->minX, this->minY, this->minZ, 0.0f);
-    output->values[3] = _mm_setr_ps(this->minX, this->minY, this->maxZ, 0.0f);
-    output->values[4] = _mm_setr_ps(this->minX, this->minY, this->minZ, 0.0f);
-    output->values[5] = _mm_setr_ps(this->maxX, this->minY, this->minZ, 0.0f);
-    output->values[6] = _mm_setr_ps(this->maxX, this->maxY, this->maxZ, 0.0f);
-    output->values[7] = _mm_setr_ps(this->maxX, this->maxY, this->minZ, 0.0f);
-    output->values[8] = _mm_setr_ps(this->maxX, this->maxY, this->maxZ, 0.0f);
-    output->values[9] = _mm_setr_ps(this->minX, this->maxY, this->maxZ, 0.0f);
-    output->values[10] = _mm_setr_ps(this->maxX, this->maxY, this->maxZ, 0.0f);
-    output->values[11] = _mm_setr_ps(this->maxX, this->minY, this->maxZ, 0.0f);
-    output->values[12] = _mm_setr_ps(this->minX, this->maxY, this->minZ, 0.0f);
-    output->values[13] = _mm_setr_ps(this->maxX, this->maxY, this->minZ, 0.0f);
-    output->values[14] = _mm_setr_ps(this->minX, this->maxY, this->minZ, 0.0f);
-    output->values[15] = _mm_setr_ps(this->minX, this->maxY, this->maxZ, 0.0f);
-    output->values[16] = _mm_setr_ps(this->maxX, this->maxY, this->minZ, 0.0f);
-    output->values[17] = _mm_setr_ps(this->maxX, this->minY, this->minZ, 0.0f);
-    output->values[18] = _mm_setr_ps(this->minX, this->maxY, this->maxZ, 0.0f);
-    output->values[19] = _mm_setr_ps(this->minX, this->minY, this->maxZ, 0.0f);
-    output->values[20] = _mm_setr_ps(this->minX, this->minY, this->maxZ, 0.0f);
-    output->values[21] = _mm_setr_ps(this->maxX, this->minY, this->maxZ, 0.0f);
-    output->values[22] = _mm_setr_ps(this->maxX, this->minY, this->maxZ, 0.0f);
-    output->values[23] = _mm_setr_ps(this->maxX, this->minY, this->minZ, 0.0f);
+    lines->count = 24;
+    lines->values[0] = _mm_setr_ps(this->minX, this->minY, this->minZ, 0.0f);
+    lines->values[1] = _mm_setr_ps(this->minX, this->maxY, this->minZ, 0.0f);
+    lines->values[2] = _mm_setr_ps(this->minX, this->minY, this->minZ, 0.0f);
+    lines->values[3] = _mm_setr_ps(this->minX, this->minY, this->maxZ, 0.0f);
+    lines->values[4] = _mm_setr_ps(this->minX, this->minY, this->minZ, 0.0f);
+    lines->values[5] = _mm_setr_ps(this->maxX, this->minY, this->minZ, 0.0f);
+    lines->values[6] = _mm_setr_ps(this->maxX, this->maxY, this->maxZ, 0.0f);
+    lines->values[7] = _mm_setr_ps(this->maxX, this->maxY, this->minZ, 0.0f);
+    lines->values[8] = _mm_setr_ps(this->maxX, this->maxY, this->maxZ, 0.0f);
+    lines->values[9] = _mm_setr_ps(this->minX, this->maxY, this->maxZ, 0.0f);
+    lines->values[10] = _mm_setr_ps(this->maxX, this->maxY, this->maxZ, 0.0f);
+    lines->values[11] = _mm_setr_ps(this->maxX, this->minY, this->maxZ, 0.0f);
+    lines->values[12] = _mm_setr_ps(this->minX, this->maxY, this->minZ, 0.0f);
+    lines->values[13] = _mm_setr_ps(this->maxX, this->maxY, this->minZ, 0.0f);
+    lines->values[14] = _mm_setr_ps(this->minX, this->maxY, this->minZ, 0.0f);
+    lines->values[15] = _mm_setr_ps(this->minX, this->maxY, this->maxZ, 0.0f);
+    lines->values[16] = _mm_setr_ps(this->maxX, this->maxY, this->minZ, 0.0f);
+    lines->values[17] = _mm_setr_ps(this->maxX, this->minY, this->minZ, 0.0f);
+    lines->values[18] = _mm_setr_ps(this->minX, this->maxY, this->maxZ, 0.0f);
+    lines->values[19] = _mm_setr_ps(this->minX, this->minY, this->maxZ, 0.0f);
+    lines->values[20] = _mm_setr_ps(this->minX, this->minY, this->maxZ, 0.0f);
+    lines->values[21] = _mm_setr_ps(this->maxX, this->minY, this->maxZ, 0.0f);
+    lines->values[22] = _mm_setr_ps(this->maxX, this->minY, this->maxZ, 0.0f);
+    lines->values[23] = _mm_setr_ps(this->maxX, this->minY, this->minZ, 0.0f);
 }
 
 namespace fnv_00de15c0 {
@@ -126,7 +128,7 @@ static void StorePs(Vec4f* dst, __m128 v)
 {
     dst->v = v;
 }
-extern "C" void hkArrayUtil__reserve(void* ctx, void* arr, int newcap, int elemSize);
+extern "C" void hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 
 struct VertArr
 {
@@ -186,6 +188,7 @@ struct ThisCls
 
 // Allocates a DisplayGeometry at m_08, appends the eight corners of the m_60 bounds as vertices, then appends 12 faces of three indices plus -1.
 // @fnv 0x00de15c0
+// pdb: hkDisplayAABB::buildGeometry | hkDisplayAABB.obj | retail, vtable slot, high
 void ThisCls::InitBoxMesh()
 {
     Singleton* s = hkMemoryRouter_getInstance();

@@ -5,6 +5,7 @@
 
 class TESImageSpaceModifier;
 
+// pdb: class ImageSpaceModifierInstanceForm, size 0x30, bases: ImageSpaceModifierInstance, 5 members
 class ImageSpaceModifierInstanceForm : public ImageSpaceModifierInstance
 {
   public:
@@ -15,7 +16,7 @@ class ImageSpaceModifierInstanceForm : public ImageSpaceModifierInstance
 
     static void __cdecl Stop(TESImageSpaceModifier*);
     static ImageSpaceModifierInstanceForm* __cdecl Trigger(TESImageSpaceModifier*, float, NiAVObject*);
-    static ImageSpaceModifierInstanceForm* ApplyImageSpaceModifier(TESImageSpaceModifier*, float, NiAVObject*);
+    static ImageSpaceModifierInstanceForm* ImageSpaceModifierInstanceForm_TriggerIfNotActive(TESImageSpaceModifier*, float, NiAVObject*);
 
     TESImageSpaceModifier* GetImageSpaceMod();
     bool IsExpired();
@@ -24,9 +25,9 @@ class ImageSpaceModifierInstanceForm : public ImageSpaceModifierInstance
     bool Blend(TESImageSpaceModifier*, float, float, NiAVObject*);
     void SetPad5(float);
 
-    TESImageSpaceModifier* m_pPreviousImageSpaceModifier;
-    TESImageSpaceModifier* m_pImageSpaceModifier;
-    float m_fBlendWeight;
-    NiPointer<NiAVObject> m_pTargetNode;
-    float m_fElapsedTime;
+    TESImageSpaceModifier* pImageSpaceMod;
+    TESImageSpaceModifier* pLastImageSpaceMod;
+    float fLastStrength;
+    NiPointer<NiAVObject> spLastTarget;
+    float fTransitionTime;
 };

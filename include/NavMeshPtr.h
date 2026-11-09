@@ -7,6 +7,7 @@ class RefObject;
 class Ret559;
 template <class T> class NiPointer;
 
+// pdb: class NavMeshPtr, size 0x4, bases: NiPointer<NavMesh>, 0 members
 struct NavMeshPtr
 {
 public:
@@ -14,8 +15,8 @@ public:
 
     NavMeshPtr();
     NavMeshPtr(NavObject* object);
-    NavMeshPtr(RefObject* object);
-    NavMeshPtr(const NavMeshPtr& other);
+    NavMeshPtr(RefObject* ptr);
+    NavMeshPtr(const NavMeshPtr& ptr);
     ~NavMeshPtr();
 
     NavMeshPtr& operator=(const NavMeshPtr& other);

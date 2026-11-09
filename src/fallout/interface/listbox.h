@@ -36,7 +36,7 @@ template <class T> class ListBoxItem;
 
 
 int __cdecl GetTileValueID(const char* name, int index);
-Tile* __cdecl FindNamedTile(Tile* tile, const char* name);
+Tile* __cdecl FindNamedTile(Tile* apTarget, const char* apName);
 
 extern "C" const char kListBoxEnabled[] = "_enabled";
 extern "C" const char kListBoxNumFiltered[] = "_number_of_visible_items";
@@ -44,6 +44,7 @@ extern "C" const char kListBoxScrollbar[] = "child(lb_scrollbar)";
 
 template <>
 // @fnv 0x007d87b0
+// pdb: ListBox<BGSSaveLoadFileEntry *>::NumVisible | StartMenu.obj | debug, object-file gap fill, medium
 unsigned int ListBox<BGSSaveLoadFileEntry*>::GetVisibleEntryCount()
 {
     return m_pListTile != 0
@@ -53,9 +54,11 @@ unsigned int ListBox<BGSSaveLoadFileEntry*>::GetVisibleEntryCount()
 
 template <>
 // @fnv 0x007d8d60
-bool ListBox<BGSSaveLoadFileEntry*>::SetSelection(Tile* tile)
+// pdb: ListBox<BGSSaveLoadFileEntry *>::Select | StartMenu.obj | debug, call graph (shared callers), high
+// pdb params: apSelectItem
+bool ListBox<BGSSaveLoadFileEntry*>::SetSelection(Tile* apSelectItem)
 {
-    return SetSelection(tile, 0);
+    return SetSelection(apSelectItem, 0);
 }
 
 template <>
@@ -92,6 +95,7 @@ BSSoundHandle& BSSoundHandle::operator=(const BSSoundHandle& other)
 
 template <>
 // @fnv 0x007d7630
+// pdb: ListBox<BGSSaveLoadFileEntry *>::IsVisible | StartMenu.obj | debug, call graph (shared callers), medium
 bool ListBox<BGSSaveLoadFileEntry*>::IsEnabled()
 {
     return m_pListTile && m_pListTile->IsVisible();
@@ -99,12 +103,14 @@ bool ListBox<BGSSaveLoadFileEntry*>::IsEnabled()
 
 template <>
 // @fnv 0x00730ed0
-bool ListBox<InventoryStackRecord*>::Highlight(Tile* tile)
+// pdb: ListBox<ItemChange *>::Highlight | BarterMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool ListBox<InventoryStackRecord*>::Highlight(Tile* apHighlightItem)
 {
-    if (IsEnabled() && (!tile || (((ListBox_int_*)this)->ContainsKey(tile) &&
-                                  tile->ContainsTrait(GetTileValueID(kListBoxEnabled, -1)))))
+    if (IsEnabled() && (!apHighlightItem || (((ListBox_int_*)this)->ContainsKey(apHighlightItem) &&
+                                  apHighlightItem->ContainsTrait(GetTileValueID(kListBoxEnabled, -1)))))
     {
-        m_pSelectedTile = tile;
+        m_pSelectedTile = apHighlightItem;
         ResetItems();
         return true;
     }
@@ -115,12 +121,14 @@ bool ListBox<InventoryStackRecord*>::Highlight(Tile* tile)
 }
 template <>
 // @fnv 0x00764a00
-bool ListBox<int>::Highlight(Tile* tile)
+// pdb: ListBox<int>::Highlight | DialogMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool ListBox<int>::Highlight(Tile* apHighlightItem)
 {
-    if (IsEnabled() && (!tile || (((ListBox_int_*)this)->ContainsKey(tile) &&
-                                  tile->ContainsTrait(GetTileValueID(kListBoxEnabled, -1)))))
+    if (IsEnabled() && (!apHighlightItem || (((ListBox_int_*)this)->ContainsKey(apHighlightItem) &&
+                                  apHighlightItem->ContainsTrait(GetTileValueID(kListBoxEnabled, -1)))))
     {
-        m_pSelectedTile = tile;
+        m_pSelectedTile = apHighlightItem;
         ResetItems();
         return true;
     }
@@ -131,12 +139,14 @@ bool ListBox<int>::Highlight(Tile* tile)
 }
 template <>
 // @fnv 0x007a3170
-bool ListBox<BGSNote*>::Highlight(Tile* tile)
+// pdb: ListBox<BGSNote *>::Highlight | MapMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool ListBox<BGSNote*>::Highlight(Tile* apHighlightItem)
 {
-    if (IsEnabled() && (!tile || (((ListBox_int_*)this)->ContainsKey(tile) &&
-                                  tile->ContainsTrait(GetTileValueID(kListBoxEnabled, -1)))))
+    if (IsEnabled() && (!apHighlightItem || (((ListBox_int_*)this)->ContainsKey(apHighlightItem) &&
+                                  apHighlightItem->ContainsTrait(GetTileValueID(kListBoxEnabled, -1)))))
     {
-        m_pSelectedTile = tile;
+        m_pSelectedTile = apHighlightItem;
         ResetItems();
         return true;
     }
@@ -147,12 +157,14 @@ bool ListBox<BGSNote*>::Highlight(Tile* tile)
 }
 template <>
 // @fnv 0x007a4ce0
-bool ListBox<BGSQuestObjective*>::Highlight(Tile* tile)
+// pdb: ListBox<BGSQuestObjective *>::Highlight | MapMenu.obj | retail, vtable slot, high
+// pdb params: apHighlightItem
+bool ListBox<BGSQuestObjective*>::Highlight(Tile* apHighlightItem)
 {
-    if (IsEnabled() && (!tile || (((ListBox_int_*)this)->ContainsKey(tile) &&
-                                  tile->ContainsTrait(GetTileValueID(kListBoxEnabled, -1)))))
+    if (IsEnabled() && (!apHighlightItem || (((ListBox_int_*)this)->ContainsKey(apHighlightItem) &&
+                                  apHighlightItem->ContainsTrait(GetTileValueID(kListBoxEnabled, -1)))))
     {
-        m_pSelectedTile = tile;
+        m_pSelectedTile = apHighlightItem;
         ResetItems();
         return true;
     }

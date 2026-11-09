@@ -128,7 +128,7 @@ public:
     ScalarLane dot3(const Vec4& value) const;
 #endif
     SimdReal dot4xyz1(const Vec4& value) const;
-    ScalarValue Dot(const Vec4& value) const;
+    ScalarValue Dot(const Vec4& x) const;
     ScalarLane inverseLength3() const;
     SReal length3() const;
     SReal lengthInverse3() const;
@@ -141,9 +141,9 @@ public:
     void xformPos(const Xform& transform, const Vec4& value);
     void convert(Matrix* matrix);
     void __thiscall setTransformedPos_00c7f640(const Buf40*, const void*);
-    void __thiscall hkVector4_setRotatedDir(const RotationColumns& rotation, const Vec4& value);
-    void hkVector4_setRotatedDir(const Rot& rotation, const Vec4& value);
-    void hkVector4_setRotatedDir(const void* rotation, const Vec4& value);
+    void __thiscall hkVector4_setRotatedDir(const RotationColumns& quat, const Vec4& direction);
+    void hkVector4_setRotatedDir(const Rot& quat, const Vec4& direction);
+    void hkVector4_setRotatedDir(const void* quat, const Vec4& direction);
     void hkVector4_setRotatedInverseDir(const Rot& rotation, const Vec4& value);
     void hkVector4_setMul3(const void* matrix, const Vec4& value);
     void hkVector4_fastNormalize3();

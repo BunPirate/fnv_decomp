@@ -3,7 +3,9 @@
 #include "niactormanager_packet.h"
 // Assigns the interned strings "end" and "start" to DAT_011f3ec0 and DAT_011f3ec4, releasing the previous references when they differ.
 // @fnv 0x00a421c0
-void ActorManagerPacket::InitializePoint3()
+// src: XBOX_RETAIL_PDB 0x00a421c0
+// pdb: NiActorManager::_SDMInit | NiActorManager.obj | retail, call graph, high
+void ActorManagerPacket::NiActorManager__SDMInit()
 {
     char* old = DAT_011f3ec0;
     if (old != "end")

@@ -34,7 +34,7 @@ extern float DAT_01016410;
 
 struct FUN_00e46f90_Obj
 {
-    void FUN_00e46f90(int a);
+    void hkpBallGun_ctor(int a);
 };
 struct HKStr
 {
@@ -85,15 +85,18 @@ struct MBG
 
 struct FUN_00e45150_class
 {
-    MBG* Initialize(int a);
+    MBG* hkpMountedBallGun_ctor(int numBullets);
 };
 
 // Calls FUN_00e46f90 with a, sets the vtable, type 4 and the name "MountedBallGun", and stores a vector from DAT_01011d78 and DAT_01016410 in the final member.
 // @fnv 0x00e45150
-MBG* FUN_00e45150_class::Initialize(int a)
+// src: XBOX_RETAIL_PDB 0x00e45150
+// pdb: hkpMountedBallGun::hkpMountedBallGun | hkpMountedBallGun.obj | retail, string-set bridge, high
+// pdb params: flag
+MBG* FUN_00e45150_class::hkpMountedBallGun_ctor(int numBullets)
 {
     MBG* self = (MBG*)this;
-    ((FUN_00e46f90_Obj*)this)->FUN_00e46f90(a);
+    ((FUN_00e46f90_Obj*)this)->hkpBallGun_ctor(numBullets);
     self->vfptr = (void*)&DAT_010ec004;
     self->m_type = 4;
     self->m_name = "MountedBallGun";

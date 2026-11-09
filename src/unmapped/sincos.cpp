@@ -19,33 +19,36 @@ extern "C" double __cdecl exp(double value);
 
 // @fnv 0x00ba1480
 // src: COMMUNITY 0x00ba1480
-float __stdcall ImageSpaceEffectWaterFFT_Phillips(float x, float y)
+// pdb: ImageSpaceEffectWaterFFT::Phillips | ImageSpaceEffectWaterFFT.obj | retail, upstream name already matches, high
+// pdb params: kx, ky
+// pdb locals: L, fWindDir, kdotwhat, phillips, A, damp, ksqr, w
+float __stdcall ImageSpaceEffectWaterFFT_Phillips(float kx, float ky)
 {
     float a = (float)((double)DAT_01200064 * DAT_0101ff40 / DAT_0104ed58);
     float fScaleB = (float)((double)DAT_01200060 / DAT_0108c160);
     float fScaleC = (float)((double)DAT_01200068 * DAT_01200068 / DAT_010b7f30);
     float fScaleD = (float)((double)fScaleC / DAT_010731a8);
-    float fRadiusSq = x * x + y * y;
+    float fRadiusSq = kx * kx + ky * ky;
 
     float fCosAngle = (float)cos((double)a);
-    double dCosTerm = (double)(fCosAngle * x);
+    double dCosTerm = (double)(fCosAngle * kx);
     float fSinAngle = (float)sin((double)a);
-    x = (float)((double)(fSinAngle * y) + dCosTerm);
-    if (x < DAT_01012060)
+    kx = (float)((double)(fSinAngle * ky) + dCosTerm);
+    if (kx < DAT_01012060)
     {
-        x = 0.0f;
+        kx = 0.0f;
     }
 
     float q = (float)(DAT_0101a6b0 / ((double)fRadiusSq * ((double)fScaleC * fScaleC)));
     q = (float)exp((double)q);
 
-    double dNumerator = (double)q * ((double)x * x) * fScaleB;
+    double dNumerator = (double)q * ((double)kx * kx) * fScaleB;
     q = (float)(dNumerator / (((double)fRadiusSq * fRadiusSq) * fRadiusSq));
 
     float fExpTerm = -fRadiusSq * fScaleD * fScaleD;
     volatile float fExpResult = (float)exp((double)fExpTerm);
     fExpTerm = fExpResult;
-    if (x < 0.0f)
+    if (kx < 0.0f)
     {
         q = (float)(q * DAT_010290b0);
     }
@@ -67,7 +70,7 @@ struct BB7290Entry
 class BB7290Owner
 {
   public:
-    void SetEntry(int iIndex, float fX, float fY, float fZ, float fAngleDifference, float fScale);
+    void BSDistantTreeShaderProperty_SetInstance(int uiInstance, float afX, float afY, float afZ, float afRotZ, float afScale);
 
     int unk00;
     int unk04;
@@ -99,14 +102,17 @@ class BB7290Owner
 
 // Writes position, angle and scale into entry iIndex of the array, storing cos and sin of the angle.
 // @fnv 0x00bb7290
-void BB7290Owner::SetEntry(int iIndex, float fX, float fY, float fZ, float fAngleDifference, float fScale)
+// src: XBOX_RETAIL_PDB 0x00bb7290
+// pdb: BSDistantTreeShaderProperty::SetInstance | BSDistantTreeShaderProperty.obj | retail, object-file run extension, high
+// pdb params: uiInstance, afX, afY, afZ, afRotZ, afScale
+void BB7290Owner::BSDistantTreeShaderProperty_SetInstance(int uiInstance, float afX, float afY, float afZ, float afRotZ, float afScale)
 {
-    m_pkEntryArray[iIndex].m_fVectorY = fX;
-    m_pkEntryArray[iIndex].m_fVectorZ = fY;
-    m_pkEntryArray[iIndex].m_fScalarPart = fZ;
-    m_pkEntryArray[iIndex].m_fScale = fScale;
-    m_pkEntryArray[iIndex].m_fCos = cos(fAngleDifference);
-    m_pkEntryArray[iIndex].m_fSin = sin(fAngleDifference);
+    m_pkEntryArray[uiInstance].m_fVectorY = afX;
+    m_pkEntryArray[uiInstance].m_fVectorZ = afY;
+    m_pkEntryArray[uiInstance].m_fScalarPart = afZ;
+    m_pkEntryArray[uiInstance].m_fScale = afScale;
+    m_pkEntryArray[uiInstance].m_fCos = cos(afRotZ);
+    m_pkEntryArray[uiInstance].m_fSin = sin(afRotZ);
 }
 
 #include <xmmintrin.h>

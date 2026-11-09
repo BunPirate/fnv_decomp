@@ -1,6 +1,9 @@
 
 #include "tesimagespacemodifiablecountform_decls.h"
 // @fnv 0x005820a0
+// pdb: TESImageSpaceModifiableCountForm<6>::InitItem | TESWeather.obj | debug, object-file gap fill, medium
+// pdb params: apOwner
+// pdb locals: i, uitemp
 void TESImageSpaceModifiableCountForm_6_::InitItem(TESForm* owner)
 {
     for (unsigned int i = 0; i < 6; ++i) {

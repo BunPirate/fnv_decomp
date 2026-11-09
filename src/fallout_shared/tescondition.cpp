@@ -10,29 +10,37 @@
 
 // Runs the condition on subject and target references, discarding the result and passing false.
 // @fnv 0x00680c30
-bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* subject, TESObjectREFR* target)
+// pdb: TESCondition::IsTrue | TESCondition.obj | retail, call graph (shared callers), high
+// pdb params: apActionRef, apTargetRef
+// pdb locals: bIgnoreMe
+bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* apActionRef, TESObjectREFR* apTargetRef)
 {
     bool result;
-    return ContainsTrait(subject, target, result, false);
+    return IsTrue(apActionRef, apTargetRef, result, false);
 }
 
 // Calls InitItem(form) on each TESConditionItem in the list obtained from GetItem(), walking the list until it is empty.
 // @fnv 0x00680a20
-void PerkEntryConditionSet::InitItem(TESForm* form)
+// pdb: TESCondition::InitItem | TESCondition.obj | retail, call graph (shared callers), high
+// pdb params: apOwner
+// pdb locals: pList
+void PerkEntryConditionSet::InitItem(TESForm* apOwner)
 {
-    BSSimpleList<TESConditionItem*>* current = (BSSimpleList<TESConditionItem*>*)&m_kConditionItems.GetItem();
+    BSSimpleList<TESConditionItem*>* current = (BSSimpleList<TESConditionItem*>*)&listConditions.GetItem();
     while (current && !current->IsEmpty())
     {
-        current->GetItem()->InitItem(form);
+        current->GetItem()->InitItem(apOwner);
         current = current->GetNext();
     }
 }
 
 // Deletes each TESConditionItem in the list obtained from GetItem and removes the head until the list is empty.
 // @fnv 0x00680fe0
+// pdb: TESCondition::ClearAllConditionItems | TESCondition.obj | retail, call graph, high
+// pdb locals: pList
 void PerkEntryConditionSet::InitializeConditionItems()
 {
-    BSSimpleList<TESConditionItem*>* current = (BSSimpleList<TESConditionItem*>*)&m_kConditionItems.GetItem();
+    BSSimpleList<TESConditionItem*>* current = (BSSimpleList<TESConditionItem*>*)&listConditions.GetItem();
     while (current && !current->IsEmpty())
     {
         delete current->GetItem();
@@ -41,16 +49,19 @@ void PerkEntryConditionSet::InitializeConditionItems()
 }
 
 // @fnv 0x00680960
-void PerkEntryConditionSet::Load(TESFile* file)
+// pdb: TESCondition::Load | TESCondition.obj | retail, call graph (shared callers), high
+// pdb params: apFile
+// pdb locals: pCondItem
+void PerkEntryConditionSet::Load(TESFile* apFile)
 {
-    if (file)
+    if (apFile)
     {
         TESConditionItem* item = 0;
-        switch (file->GetChunkID())
+        switch (apFile->GetChunkID())
         {
         case 0x41445443:
             item = new TESConditionItem;
-            item->Load(file);
+            item->Load(apFile);
             ((PackageList*)this)->AddPackage((TESPackage*)item);
             break;
         }
@@ -58,10 +69,13 @@ void PerkEntryConditionSet::Load(TESFile* file)
 }
 
 // @fnv 0x00680b70
-bool PerkEntryConditionSet::Compare(PerkEntryConditionSet* other)
+// pdb: TESCondition::Compare | TESCondition.obj | retail, call graph (shared callers), high
+// pdb params: apCompare
+// pdb locals: pCompList, pList, pCondItem, pCompCondItem
+bool PerkEntryConditionSet::Compare(PerkEntryConditionSet* apCompare)
 {
-    BSSimpleList<TESConditionItem*>* left = (BSSimpleList<TESConditionItem*>*)&m_kConditionItems.GetItem();
-    BSSimpleList<TESConditionItem*>* right = (BSSimpleList<TESConditionItem*>*)&other->m_kConditionItems.GetItem();
+    BSSimpleList<TESConditionItem*>* left = (BSSimpleList<TESConditionItem*>*)&listConditions.GetItem();
+    BSSimpleList<TESConditionItem*>* right = (BSSimpleList<TESConditionItem*>*)&apCompare->listConditions.GetItem();
     struct ItemPair
     {
         TESConditionItem* leftItem;
@@ -84,7 +98,11 @@ bool PerkEntryConditionSet::Compare(PerkEntryConditionSet* other)
 }
 
 // @fnv 0x00680c60
-bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* subject, TESObjectREFR* target, bool& result, bool filter)
+// src: XBOX_RETAIL_PDB 0x00680c60
+// pdb: TESCondition::IsTrue | TESCondition.obj | retail, call graph (shared callers), high
+// pdb params: apActionRef, apTargetRef
+// pdb locals: bIgnoreMe
+bool PerkEntryConditionSet::IsTrue(TESObjectREFR* apActionRef, TESObjectREFR* apTargetRef, bool& abDispositionFailure, bool abEssentialPropertiesOnly)
 {
     struct EvaluationState
     {
@@ -103,10 +121,10 @@ bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* subject, TESObjectREFR*
         bool definiteFalse;
         bool orUnknown;
     } state;
-    state.current = (BSSimpleList<TESConditionItem*>*)&m_kConditionItems.GetItem();
+    state.current = (BSSimpleList<TESConditionItem*>*)&listConditions.GetItem();
     if (state.current->IsEmpty())
     {
-        result = false;
+        abDispositionFailure = false;
         return true;
     }
     state.all = true;
@@ -114,19 +132,19 @@ bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* subject, TESObjectREFR*
     state.inOr = false;
     state.orUnknown = false;
     state.orFalse = false;
-    result = false;
+    abDispositionFailure = false;
     state.definiteFalse = false;
-    if (target)
+    if (apTargetRef)
     {
-        state.replacement = target->TESObjectREFR_GetXTarget();
+        state.replacement = apTargetRef->TESObjectREFR_GetXTarget();
         if (state.replacement)
-            target = state.replacement;
+            apTargetRef = state.replacement;
     }
     while (state.current && !state.current->IsEmpty())
     {
         state.item = state.current->GetItem();
         state.skip = false;
-        if (filter)
+        if (abEssentialPropertiesOnly)
         {
             switch ((int)*(unsigned short*)((TESTopicInfoData*)state.item)->GetLinkToList())
             {
@@ -146,16 +164,16 @@ bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* subject, TESObjectREFR*
         {
             if (!state.item->IsFlagSet())
             {
-                state.value = state.skip ? true : state.item->ContainsTrait(subject, target, state.unknown);
+                state.value = state.skip ? true : state.item->IsTrue(apActionRef, apTargetRef, state.unknown);
                 state.all = state.all && state.value;
                 if (state.unknown)
-                    result = true;
+                    abDispositionFailure = true;
                 else if (!state.value)
                     state.definiteFalse = true;
             }
             else
             {
-                state.value = state.item->ContainsTrait(subject, target, state.unknown);
+                state.value = state.item->IsTrue(apActionRef, apTargetRef, state.unknown);
                 state.inOr = true;
                 state.orFalse = false;
                 state.orUnknown = state.unknown;
@@ -167,7 +185,7 @@ bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* subject, TESObjectREFR*
         {
             if (!state.value)
             {
-                state.value = state.skip ? state.skip : state.item->ContainsTrait(subject, target, state.unknown);
+                state.value = state.skip ? state.skip : state.item->IsTrue(apActionRef, apTargetRef, state.unknown);
                 state.orUnknown = state.orUnknown || state.unknown;
                 if (!state.unknown && !state.value)
                     state.orFalse = true;
@@ -179,13 +197,13 @@ bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* subject, TESObjectREFR*
                 if (!state.all)
                 {
                     if (state.orUnknown && !state.orFalse)
-                        result = true;
+                        abDispositionFailure = true;
                     else
                         state.definiteFalse = true;
                 }
             }
         }
-        if (!state.all && !state.inOr && !result)
+        if (!state.all && !state.inOr && !abDispositionFailure)
             break;
         state.current = state.current->GetNext();
     }
@@ -195,13 +213,13 @@ bool PerkEntryConditionSet::ContainsTrait(TESObjectREFR* subject, TESObjectREFR*
         if (!state.all)
         {
             if (state.orUnknown && !state.orFalse)
-                result = true;
+                abDispositionFailure = true;
             else
                 state.definiteFalse = true;
         }
     }
     if (state.all || state.definiteFalse)
-        result = false;
+        abDispositionFailure = false;
     return state.all;
 }
 
@@ -227,6 +245,7 @@ void* __fastcall BGSPerkEntry_BGSPerkEntry(FUN_005e9530_Obj* pThis)
 }
 
 // @fnv 0x006808b0
+// pdb: TESCondition::~TESCondition | TESCondition.obj | retail, call graph, high
 PerkEntryConditionSet::~PerkEntryConditionSet()
 {
     InitializeConditionItems();
@@ -234,6 +253,8 @@ PerkEntryConditionSet::~PerkEntryConditionSet()
 
 // Evaluates a comparison condition code (0-5) between two floats and returns true if the comparison holds.
 // @fnv 0x00681050
+// pdb: TESCondition::ForceTrailingAnd | TESCondition.obj | debug, object-file run extension, low
+// pdb locals: plist
 bool __cdecl CompareFloatsByCondition(int aiCondition, float afVal1, float afVal2)
 {
     switch (aiCondition)
@@ -268,7 +289,7 @@ bool __cdecl CompareFloatsByCondition(int aiCondition, float afVal1, float afVal
 
 struct TESItem_680910
 {
-    void SerializeCondition();
+    void TESConditionItem_Save();
 };
 struct ListNode_680910
 {
@@ -278,12 +299,15 @@ struct ListNode_680910
     ListNode_680910* _ref_00726070();
 };
 // @fnv 0x00680910
-void PerkEntryConditionSet::ProcessItems()
+// src: XBOX_RETAIL_PDB 0x00680910
+// pdb: TESCondition::Save | TESCondition.obj | retail, call graph (shared callers), high
+// pdb locals: pList
+void PerkEntryConditionSet::Save()
 {
     ListNode_680910* pNode = ((ListNode_680910*)this)->_ref_006815c0();
     while (pNode != 0 && !pNode->_ref_008256d0())
     {
-        pNode->_ref_006815c0()->item->SerializeCondition();
+        pNode->_ref_006815c0()->item->TESConditionItem_Save();
         pNode = pNode->_ref_00726070();
     }
 }
@@ -295,14 +319,17 @@ struct FUN_00404760_shell
 // Passes source to the object at this+0x1c, or an empty value when source is null.
 // @fnv 0x00404760
 // src: COMMUNITY 0x00404760
+// pdb: EffectItem::EffectItem | EffectItem.obj | retail, object-file gap fill, medium
+// pdb note: debug build links it to EffectItem::SetConditions
+// pdb params: apEffectSetting
 void FUN_00404760_shell::EffectItem_SetConditions(PerkEntryConditionSet* source)
 {
     if (source)
-        ((PerkEntryConditionSet*)((char*)this + 0x1c))->CopyConditions(source, 0);
+        ((PerkEntryConditionSet*)((char*)this + 0x1c))->Copy(source, 0);
     else
     {
         PerkEntryConditionSet empty;
-        ((PerkEntryConditionSet*)((char*)this + 0x1c))->CopyConditions(&empty, 0);
+        ((PerkEntryConditionSet*)((char*)this + 0x1c))->Copy(&empty, 0);
     }
 }
 
@@ -311,6 +338,7 @@ extern "C" void __stdcall FUN_00ec5fce(void* object, int elementSize, int count,
 extern "C" void __cdecl FormHeapFreeAndLog_00401030(void* apMemory);
 
 // @fnv 0x005ea2c0
+// pdb: TESCondition::`vector deleting destructor' | BGSPerk.obj | debug, object-file gap fill, medium
 void* PerkEntryConditionSet::DeleteConditions(unsigned int flags)
 {
     if (flags & 2)
@@ -348,15 +376,19 @@ struct ListOps_680a70
 
 // Clears this list, then walks the nodes of a1, appending a new TESConditionItem built from each node's form to the destination list.
 // @fnv 0x00680a70
-void PerkEntryConditionSet::CopyConditions(PerkEntryConditionSet* apSourceList, PerkEntryConditionSet* a2)
+// src: XBOX_RETAIL_PDB 0x00680a70
+// pdb: TESCondition::Copy | TESCondition.obj | retail, call graph, high
+// pdb params: apCopy, apOwner
+// pdb locals: pList, pCopyList, pCondItem
+void PerkEntryConditionSet::Copy(PerkEntryConditionSet* apCopy, PerkEntryConditionSet* apOwner)
 {
     ((ListOps_680a70*)this)->FUN_00680fe0();
     ListOps_680a70* dst = ((ListOps_680a70*)this)->FUN_006815c0();
-    ListOps_680a70* src3 = ((ListOps_680a70*)apSourceList)->FUN_006815c0();
+    ListOps_680a70* src3 = ((ListOps_680a70*)apCopy)->FUN_006815c0();
     while (src3 != 0 && !src3->FUN_008256d0())
     {
         TESConditionItem* item = new TESConditionItem();
-        ((ListOps_680a70*)item)->CopyFromRefObj(*src3->FUN_006815c0(a2));
+        ((ListOps_680a70*)item)->CopyFromRefObj(*src3->FUN_006815c0(apOwner));
         dst->FUN_00905820(&item);
         if (dst->FUN_00726070() != 0)
         {
@@ -368,6 +400,9 @@ void PerkEntryConditionSet::CopyConditions(PerkEntryConditionSet* apSourceList, 
 
 // Walks the node list from _ref_006815c0, skipping nodes where _ref_008256d0 is true, and returns the TESConditionItem at the given index or 0.
 // @fnv 0x00680f70
+// pdb: TESCondition::GetConditionItem | TESCondition.obj | debug, call graph, medium
+// pdb params: aiIndex
+// pdb locals: iCount, pList
 TESConditionItem* PerkEntryConditionSet::GetItemByIndex(int index)
 {
     int iCurrent = 0;

@@ -4,16 +4,17 @@
 class Sol;
 class SolPtr;
 
+// pdb: class BSFaceGenModelMap, size 0x24, 3 members
 class BSFaceGenModelMap
 {
 public:
     virtual void vf00();
 
-    char pad[0x20];
+    char Map[0x20];
 
     BSFaceGenModelMap();
     bool GetModel(void* key, SolPtr* result);
-    void SetArrayValue(int index, char* value);
+    void BSFaceGenModelMap_SetMaxDataSize(int aDataType, char* auiSize);
     void SetModel(void* key, Sol* model);
     bool HasModels();
     void PurgeUnusedModels(bool);

@@ -14,6 +14,7 @@ class RecipeData;
 class RecipeItem;
 class RecipeItemProcessor;
 
+// pdb: class TESRecipe, size 0x5c, bases: TESForm, TESFullName, 7 members
 class TESRecipe : public TESForm, public TESFullName
 {
 public:
@@ -28,13 +29,13 @@ public:
         unsigned int uiSubCategoryID;
     };
 
-    Data kData;
-    PerkEntryConditionSet kConditions;
-    BSSimpleList<QuantityData*> kIngredients;
-    BSSimpleList<QuantityData*> kOutputs;
-    BSSimpleList<QuantityData*> kGarbageCollection;
-    TESRecipeCategory* pCategory;
-    TESRecipeCategory* pSubCategory;
+    Data data;
+    PerkEntryConditionSet RecipeConditions;
+    BSSimpleList<QuantityData*> ingredientlist;
+    BSSimpleList<QuantityData*> outputlist;
+    BSSimpleList<QuantityData*> garbageCollection;
+    TESRecipeCategory* pRecipeCat;
+    TESRecipeCategory* pRecipeSubCat;
 
     TESRecipe();
     virtual ~TESRecipe();
@@ -44,7 +45,7 @@ public:
     virtual void InitItem();
 
     void FUN_004f15a0(unsigned int type);
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     RecipeCraftingInfo* GetData();
     NiPoint3* TESObjectREFR_GetDeltaForAngle(NiPoint3* point, float value);
     RecipeItemProcessor* NiAVObject_GetRotate_006a9540();
@@ -64,5 +65,5 @@ public:
     void SetCategory(TESRecipeCategory* category);
     void SetCategory(unsigned int category);
     void SetSubCategory(TESRecipeCategory* subCategory);
-    void ReadTypedData(TESFile* file, void* data, unsigned short size);
+    void ReadTypedData(TESFile* apFile, void* apData, unsigned short asSize);
 };

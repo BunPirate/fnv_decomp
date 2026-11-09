@@ -4,6 +4,7 @@
 #include "NiAVObject.h"
 #include "NiFloatData.h"
 
+// pdb: class NiFloatInterpolator, size 0x18, bases: NiKeyBasedInterpolator, 3 members
 class NiFloatInterpolator : public NiKeyBasedInterpolator
 {
   public:
@@ -31,11 +32,11 @@ class NiFloatInterpolator : public NiKeyBasedInterpolator
     NiFloatInterpolator* FUN_00a3c390(float value);
     void SetFloatValue(float value);
     void FUN_007fc2b0(NiFloatData* data);
-    void SetKeyData(void* keys, unsigned int count, unsigned int type);
-    void SetAnimationKeys(TimedAnimationKey* keys, unsigned int count, NiAnimationKey::KeyType type);
+    void SetKeyData(void* pkKeys, unsigned int uiNumKeys, unsigned int eType);
+    void SetAnimationKeys(TimedAnimationKey* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eType);
     void SetAnimationKeys(void* keys, unsigned int count, unsigned int type);
 
-    float value;
-    NiPointer<NiFloatData> data;
-    unsigned int lastIndex;
+    float m_fFloatValue;
+    NiPointer<NiFloatData> m_spFloatData;
+    unsigned int m_uiLastIdx;
 };

@@ -26,14 +26,17 @@ inline bool NiPoint3::operator==(const NiPoint3& other) const
 #include "../../../../../include/NiMatrix3.h"
 
 // @fnv 0x00a59980
-void NiMatrix3::EigenSolveSymmetric(float* parameter, NiPoint3* akEigenvector)
+// pdb: NiMatrix3::EigenSolveSymmetric | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: afEigenvalue, akEigenvector
+// pdb locals: kMat, bConverged, bReflection, afSubd
+void NiMatrix3::EigenSolveSymmetric(float* afEigenvalue, NiPoint3* akEigenvector)
 {
     float* pafMatrix = &akEigenvector[0].x;
     NiMatrix3 recordCopy;
     recordCopy = *this;
     float intermediate[2];
-    bool negate = recordCopy.Tridiagonal(parameter, intermediate);
-    recordCopy.QLAlgorithm(parameter, intermediate);
+    bool negate = recordCopy.Tridiagonal(afEigenvalue, intermediate);
+    recordCopy.QLAlgorithm(afEigenvalue, intermediate);
     pafMatrix[0] = recordCopy.m_pEntry[0][0];
     pafMatrix[1] = recordCopy.m_pEntry[1][0];
     pafMatrix[2] = recordCopy.m_pEntry[2][0];
@@ -230,6 +233,9 @@ struct S_00a59a30_Stream {
 
 // Reads the 3x3 matrix elements from the stream's binary reader, loading each element individually.
 // @fnv 0x00a59a30
+// pdb: NiMatrix3::LoadBinary | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: p, i
 void NiMatrix3::LoadBinary(NiStream& stream)
 {
     S_00a59a30_Stream& kStream = reinterpret_cast<S_00a59a30_Stream&>(stream);
@@ -246,6 +252,7 @@ extern const float g_fA58510Pi;
 
 // Returns acos(fValue) when fValue is between -1 and 1, 0.0 when it is 1 or above, and g_fA58510Pi when it is -1 or below.
 // @fnv 0x00a58510
+// pdb: NiMatrix3::NiMatrix3 | ExtraDataList.obj | debug, call graph, medium
 float __cdecl AcosClamped(float fValue)
 {
     if (-1.0 < fValue) {
@@ -300,9 +307,12 @@ static __forceinline void S_BinRead(S_00a59a90_Bin* bin, void* v, unsigned int b
 }
 // Calls ZeroSmallValues, then transfers nine matrix entries through the stream at pOther+0x250.
 // @fnv 0x00a59a90
-void NiMatrix3::SaveBinary(NiStream& kStream)
+// pdb: NiMatrix3::SaveBinary | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: row, col
+void NiMatrix3::SaveBinary(NiStream& stream)
 {
-    char* pObj = (char*)&kStream;
+    char* pObj = (char*)&stream;
     ZeroSmallValues(this);
     float* p = &m_pEntry[0][0];
     for (int i = 0; i < 3; i++) {
@@ -316,11 +326,14 @@ void NiMatrix3::SaveBinary(NiStream& kStream)
 // Transforms each of count source points by a 3x3 matrix plus translation, writing the results to destination.
 // @fnv 0x00a582f0
 // src: GAMEBRYO_LIB 0x00a582f0
-extern "C" void NiMatrix3_TransformVertices(const float* matrix,const float* translation,unsigned int count,const NiPoint3* source,NiPoint3* destination) {
- for(unsigned int i=0;i<count;++i) {
-  destination[i].x=matrix[0]*source[i].x+translation[0]+matrix[1]*source[i].y+source[i].z*matrix[2];
-  destination[i].y=matrix[3]*source[i].x+translation[1]+matrix[4]*source[i].y+matrix[5]*source[i].z;
-  destination[i].z=matrix[6]*source[i].x+translation[2]+source[i].y*matrix[7]+matrix[8]*source[i].z;
+// pdb: NiMatrix3::TransformVertices | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: rot, trn, uiVertexCount, pInVertex, pOutVertex
+// pdb locals: vinvert3, vres1, vres3, vres4, vinvert2, vres2, vtrn, vinvert1, vrot, vinvert4, ivc4, i
+extern "C" void NiMatrix3_TransformVertices(const float* rot,const float* trn,unsigned int uiVertexCount,const NiPoint3* pInVertex,NiPoint3* pOutVertex) {
+ for(unsigned int i=0;i<uiVertexCount;++i) {
+  pOutVertex[i].x=rot[0]*pInVertex[i].x+trn[0]+rot[1]*pInVertex[i].y+pInVertex[i].z*rot[2];
+  pOutVertex[i].y=rot[3]*pInVertex[i].x+trn[1]+rot[4]*pInVertex[i].y+rot[5]*pInVertex[i].z;
+  pOutVertex[i].z=rot[6]*pInVertex[i].x+trn[2]+pInVertex[i].y*rot[7]+rot[8]*pInVertex[i].z;
  }
 }
 
@@ -330,6 +343,9 @@ extern "C" void NiMatrix3_TransformVertices(const float* matrix,const float* tra
 #define NIM3_COLCOL(r, c) \
     m_pEntry[0][r] * kMat.m_pEntry[0][c] + m_pEntry[1][r] * kMat.m_pEntry[1][c] + m_pEntry[2][r] * kMat.m_pEntry[2][c]
 // @fnv 0x00a588a0
+// pdb: NiMatrix3::TransposeTimes | NiMatrix3.obj | debug, upstream name already matches, high
+// pdb params: mat
+// pdb locals: prd
 NiMatrix3 NiMatrix3::TransposeTimes(const NiMatrix3& kMat) const
 {
     NiMatrix3 kPrd;
@@ -349,14 +365,17 @@ NiMatrix3 NiMatrix3::TransposeTimes(const NiMatrix3& kMat) const
 // FUN_00a59660: thiscall, three float angles on the stack.
 
 // @fnv 0x00a59660
-void NiMatrix3::FromEulerAnglesZXY(float fAngle1, float fAngle2, float fAngle3)
+// pdb: NiMatrix3::FromEulerAnglesZXY | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: fZAngle, fXAngle, fYAngle
+// pdb locals: kYRot, kXRot, kZRot
+void NiMatrix3::FromEulerAnglesZXY(float fZAngle, float fXAngle, float fYAngle)
 {
     // These temporaries are filled in place without calling Mat3 constructors.
     float matrixStorage[4][9];
     Mat3* kMat = reinterpret_cast<Mat3*>(matrixStorage);
     float fSin, fCos;
 
-    fnv_SinCos(fAngle2, fSin, fCos);
+    fnv_SinCos(fXAngle, fSin, fCos);
     kMat[0].m00 = 1.0f;
     kMat[0].m01 = 0.0f;
     kMat[0].m02 = 0.0f;
@@ -367,7 +386,7 @@ void NiMatrix3::FromEulerAnglesZXY(float fAngle1, float fAngle2, float fAngle3)
     kMat[0].m21 = -fSin;
     kMat[0].m22 = fCos;
 
-    fnv_SinCos(fAngle3, fSin, fCos);
+    fnv_SinCos(fYAngle, fSin, fCos);
     kMat[1].m00 = fCos;
     kMat[1].m01 = 0.0f;
     kMat[1].m02 = -fSin;
@@ -378,7 +397,7 @@ void NiMatrix3::FromEulerAnglesZXY(float fAngle1, float fAngle2, float fAngle3)
     kMat[1].m21 = 0.0f;
     kMat[1].m22 = fCos;
 
-    fnv_SinCos(fAngle1, fSin, fCos);
+    fnv_SinCos(fZAngle, fSin, fCos);
     kMat[2].m00 = fCos;
     kMat[2].m01 = fSin;
     kMat[2].m02 = 0.0f;
@@ -420,6 +439,9 @@ struct FUN_00a58550_cls {
 
 // Extracts the rotation axis and angle from a 3x3 matrix, normalizing the axis and handling degenerate cases.
 // @fnv 0x00a58550
+// pdb: NiMatrix3::ExtractAngleAndAxis | NiMatrix3.obj | debug, call graph, medium
+// pdb params: fAngle, fX, fY, fZ
+// pdb locals: fEpsilon, fTrace, fLength, fInvLength, tx, tz, ty
 void FUN_00a58550_cls::GetAxisAngle(float* angle, float* apAxisX, float* apAxisY, float* apAxisZ) const
 {
     float trace = unk00 + unk10 + unk20;
@@ -476,23 +498,26 @@ void FUN_00a58550_cls::GetAxisAngle(float* angle, float* apAxisX, float* apAxisY
 
 // Writes diagonal and subdiagonal values from the matrix fields and updates those fields in place.
 // @fnv 0x00a58990
-bool NiMatrix3::Tridiagonal(float* diag, float* subd)
+// pdb: NiMatrix3::Tridiagonal | NiMatrix3.obj | debug, upstream name already matches, high
+// pdb params: afDiag, afSubd
+// pdb locals: fM02, fM12, fM01, fM11, fM00, fEpsilon, fM22, fInvLength, fTmp
+bool NiMatrix3::Tridiagonal(float* afDiag, float* afSubd)
 {
     float cached_m01 = this->m_pEntry[0][1];
     float cached_m02 = this->m_pEntry[0][2];
     float cached_m11 = this->m_pEntry[1][1];
     float cached_m12 = this->m_pEntry[1][2];
     float cached_m22 = this->m_pEntry[2][2];
-    diag[0] = m_pEntry[0][0];
+    afDiag[0] = m_pEntry[0][0];
     if (fabs(cached_m02) >= 1e-08f) {
-        subd[0] = (float)sqrt(cached_m02 * cached_m02 + cached_m01 * cached_m01);
-        float inv = 1.0f / subd[0];
+        afSubd[0] = (float)sqrt(cached_m02 * cached_m02 + cached_m01 * cached_m01);
+        float inv = 1.0f / afSubd[0];
         cached_m01 *= inv;
         cached_m02 *= inv;
         float tmp = 2.0f * cached_m01 * cached_m12 + cached_m02 * (cached_m22 - cached_m11);
-        diag[1] = cached_m11 + cached_m02 * tmp;
-        diag[2] = cached_m22 - cached_m02 * tmp;
-        subd[1] = cached_m12 - cached_m01 * tmp;
+        afDiag[1] = cached_m11 + cached_m02 * tmp;
+        afDiag[2] = cached_m22 - cached_m02 * tmp;
+        afSubd[1] = cached_m12 - cached_m01 * tmp;
         m_pEntry[0][0] = 1.0f;
         this->m_pEntry[0][1] = 0.0f;
         this->m_pEntry[0][2] = 0.0f;
@@ -504,10 +529,10 @@ bool NiMatrix3::Tridiagonal(float* diag, float* subd)
         this->m_pEntry[2][2] = -cached_m01;
         return true;
     }
-    diag[1] = cached_m11;
-    diag[2] = cached_m22;
-    subd[0] = cached_m01;
-    subd[1] = cached_m12;
+    afDiag[1] = cached_m11;
+    afDiag[2] = cached_m22;
+    afSubd[0] = cached_m01;
+    afSubd[1] = cached_m12;
     m_pEntry[0][0] = 1.0f;
     this->m_pEntry[0][1] = 0.0f;
     this->m_pEntry[0][2] = 0.0f;
@@ -541,6 +566,9 @@ static inline float S_00a592c0_ASin(float fValue)
 
 // Extracts X, Y, and Z rotation angles from the 3x3 matrix entries, returning false when the pitch is at a gimbal lock limit.
 // @fnv 0x00a592c0
+// pdb: NiMatrix3::ToEulerAnglesXYZ | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: rfXAngle, rfYAngle, rfZAngle
+// pdb locals: fRmY, fRpY
 bool NiMatrix3::ToEulerAnglesXYZ(float& rfXAngle, float& rfYAngle, float& rfZAngle) const
 {
     rfYAngle = -S_00a592c0_ASin(m_pEntry[0][2]);
@@ -570,12 +598,15 @@ bool NiMatrix3::ToEulerAnglesXYZ(float& rfXAngle, float& rfYAngle, float& rfZAng
 }
 
 // @fnv 0x00a59540
-void NiMatrix3::FromEulerAnglesXYZ(float xAngle, float yAngle, float zAngle)
+// pdb: NiMatrix3::FromEulerAnglesXYZ | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: fXAngle, fYAngle, fZAngle
+// pdb locals: kYRot, kXRot, kZRot
+void NiMatrix3::FromEulerAnglesXYZ(float fXAngle, float fYAngle, float fZAngle)
 {
     float matrixStorage[4][9];
     NiMatrix3* rotations = reinterpret_cast<NiMatrix3*>(matrixStorage);
     float sine, cosine;
-    fnv_SinCos(xAngle, sine, cosine);
+    fnv_SinCos(fXAngle, sine, cosine);
 
     NiMatrix3& x = rotations[2];
     x.m_pEntry[0][0] = 1.0f;
@@ -588,7 +619,7 @@ void NiMatrix3::FromEulerAnglesXYZ(float xAngle, float yAngle, float zAngle)
     x.m_pEntry[2][1] = -sine;
     x.m_pEntry[2][2] = cosine;
 
-    fnv_SinCos(yAngle, sine, cosine);
+    fnv_SinCos(fYAngle, sine, cosine);
 
     NiMatrix3& y = rotations[0];
     y.m_pEntry[0][0] = cosine;
@@ -601,7 +632,7 @@ void NiMatrix3::FromEulerAnglesXYZ(float xAngle, float yAngle, float zAngle)
     y.m_pEntry[2][1] = 0.0f;
     y.m_pEntry[2][2] = cosine;
 
-    fnv_SinCos(zAngle, sine, cosine);
+    fnv_SinCos(fZAngle, sine, cosine);
 
     NiMatrix3& z = rotations[1];
     z.m_pEntry[0][0] = cosine;
@@ -620,13 +651,16 @@ void NiMatrix3::FromEulerAnglesXYZ(float xAngle, float yAngle, float zAngle)
 }
 
 // @fnv 0x00a59780
-void NiMatrix3::FromEulerAnglesZYX(float fZ, float fY, float fX)
+// pdb: NiMatrix3::FromEulerAnglesZYX | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: fZAngle, fYAngle, fXAngle
+// pdb locals: kYRot, kXRot, kZRot
+void NiMatrix3::FromEulerAnglesZYX(float fZAngle, float fYAngle, float fXAngle)
 {
     // Expose the multiply helper's result buffers to avoid an extra copy temporary.
     float matrixStorage[4][9];
     NiMatrix3* matrices = reinterpret_cast<NiMatrix3*>(matrixStorage);
     float c,s;
-    fnv_SinCos(fX,s,c);
+    fnv_SinCos(fXAngle,s,c);
     matrices[1].m_pEntry[0][0] = 1.0f;
     matrices[1].m_pEntry[0][1] = 0.0f;
     matrices[1].m_pEntry[0][2] = 0.0f;
@@ -636,7 +670,7 @@ void NiMatrix3::FromEulerAnglesZYX(float fZ, float fY, float fX)
     matrices[1].m_pEntry[2][0] = 0.0f;
     matrices[1].m_pEntry[2][1] = -s;
     matrices[1].m_pEntry[2][2] = c;
-    fnv_SinCos(fY,s,c);
+    fnv_SinCos(fYAngle,s,c);
     matrices[0].m_pEntry[0][0] = c;
     matrices[0].m_pEntry[0][1] = 0.0f;
     matrices[0].m_pEntry[0][2] = -s;
@@ -646,7 +680,7 @@ void NiMatrix3::FromEulerAnglesZYX(float fZ, float fY, float fX)
     matrices[0].m_pEntry[2][0] = s;
     matrices[0].m_pEntry[2][1] = 0.0f;
     matrices[0].m_pEntry[2][2] = c;
-    fnv_SinCos(fZ,s,c);
+    fnv_SinCos(fZAngle,s,c);
     matrices[2].m_pEntry[0][0] = c;
     matrices[2].m_pEntry[0][1] = s;
     matrices[2].m_pEntry[0][2] = 0.0f;
@@ -680,10 +714,13 @@ void* NiMalloc(unsigned int);
 int _NiSprintf(char*, unsigned int, const char*, ...);
 // Formats the 3x3 matrix into a heap-allocated string prefixed by name, using _NiSprintf into a NiMalloc buffer.
 // @fnv 0x00a598f0
-char* NiMatrix3::GetViewerString(const char* name) const {
-    unsigned int size = strlen(name) + 128;
+// pdb: NiMatrix3::GetViewerString | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: pPrefix
+// pdb locals: pString
+char* NiMatrix3::GetViewerString(const char* pPrefix) const {
+    unsigned int size = strlen(pPrefix) + 128;
     char* result = static_cast<char*>(NiMalloc(size));
-    _NiSprintf(result, size, "%s = ((%g,%g,%g),(%g,%g,%g),(%g,%g,%g))", name,
+    _NiSprintf(result, size, "%s = ((%g,%g,%g),(%g,%g,%g),(%g,%g,%g))", pPrefix,
         m_pEntry[0][0],m_pEntry[0][1],m_pEntry[0][2],m_pEntry[1][0],m_pEntry[1][1],m_pEntry[1][2],m_pEntry[2][0],m_pEntry[2][1],m_pEntry[2][2]);
     return result;
 }
@@ -700,36 +737,39 @@ static __forceinline void EigenRotate(float& left, float& right, float cosine, f
 
 // Iteratively updates the matrix and diagonal and subdiagonal arrays, returning true when both subdiagonal entries are zero.
 // @fnv 0x00a58b00
-bool NiMatrix3::QLAlgorithm(float* diagonal, float* subdiagonal)
+// pdb: NiMatrix3::QLAlgorithm | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: afDiag, afSubd
+// pdb locals: iMax, i, fEValue0, fRoot, fDiff, fTmp1, fDiscr, fRatio, fTmp, fTmp0, fSum, fEValue1, fB, fCos, fA, fTmp2, fSin
+bool NiMatrix3::QLAlgorithm(float* afDiag, float* afSubd)
 {
     NiMatrix3* matrix = this;
     float scratch, sine, cosine, sum, difference, discriminant, low, high;
     for (int iteration = 0; iteration < 32; ++iteration)
     {
-        sum = (float)fabs(diagonal[0]) + (float)fabs(diagonal[1]);
-        if ((float)fabs(subdiagonal[0]) + sum == sum)
+        sum = (float)fabs(afDiag[0]) + (float)fabs(afDiag[1]);
+        if ((float)fabs(afSubd[0]) + sum == sum)
         {
-            subdiagonal[0] = 0.0f;
-            sum = (float)fabs(diagonal[1]) + (float)fabs(diagonal[2]);
-            if ((float)fabs(subdiagonal[1]) + sum == sum)
+            afSubd[0] = 0.0f;
+            sum = (float)fabs(afDiag[1]) + (float)fabs(afDiag[2]);
+            if ((float)fabs(afSubd[1]) + sum == sum)
             {
-                subdiagonal[1] = 0.0f;
+                afSubd[1] = 0.0f;
                 return true;
             }
-            sum = diagonal[2] + diagonal[1];
-            difference = diagonal[1] - diagonal[2];
-            discriminant = (float)sqrt((float)(difference*difference + 4.0*subdiagonal[1]*subdiagonal[1]));
+            sum = afDiag[2] + afDiag[1];
+            difference = afDiag[1] - afDiag[2];
+            discriminant = (float)sqrt((float)(difference*difference + 4.0*afSubd[1]*afSubd[1]));
             low = (float)(0.5*(sum-discriminant));
             high = (float)(0.5*(sum+discriminant));
             if (difference >= 0.0f)
             {
-                cosine = subdiagonal[1];
-                sine = diagonal[1] - low;
+                cosine = afSubd[1];
+                sine = afDiag[1] - low;
             }
             else
             {
-                cosine = diagonal[2] - low;
-                sine = subdiagonal[1];
+                cosine = afDiag[2] - low;
+                sine = afSubd[1];
             }
             scratch = 1.0f / (float)sqrt((float)(cosine*cosine + sine*sine));
             cosine *= scratch;
@@ -747,35 +787,35 @@ bool NiMatrix3::QLAlgorithm(float* diagonal, float* subdiagonal)
                 matrix->m_pEntry[2][2] = sine*matrix->m_pEntry[2][1] + cosine*scratch;
                 matrix->m_pEntry[2][1] = cosine*matrix->m_pEntry[2][1] - sine*scratch;
             
-            diagonal[1] = low;
-            diagonal[2] = high;
-            subdiagonal[1] = 0.0f;
+            afDiag[1] = low;
+            afDiag[2] = high;
+            afSubd[1] = 0.0f;
             return true;
         }
-        sum = (float)fabs(diagonal[1]) + (float)fabs(diagonal[2]);
-        if ((float)fabs(subdiagonal[1]) + sum == sum)
+        sum = (float)fabs(afDiag[1]) + (float)fabs(afDiag[2]);
+        if ((float)fabs(afSubd[1]) + sum == sum)
         {
-            subdiagonal[1] = 0.0f;
-            sum = (float)fabs(diagonal[0]) + (float)fabs(diagonal[1]);
-            if ((float)fabs(subdiagonal[0]) + sum == sum)
+            afSubd[1] = 0.0f;
+            sum = (float)fabs(afDiag[0]) + (float)fabs(afDiag[1]);
+            if ((float)fabs(afSubd[0]) + sum == sum)
             {
-                subdiagonal[0] = 0.0f;
+                afSubd[0] = 0.0f;
                 return true;
             }
-            sum = diagonal[0] + diagonal[1];
-            difference = diagonal[0] - diagonal[1];
-            discriminant = (float)sqrt((float)(difference*difference + 4.0*subdiagonal[0]*subdiagonal[0]));
+            sum = afDiag[0] + afDiag[1];
+            difference = afDiag[0] - afDiag[1];
+            discriminant = (float)sqrt((float)(difference*difference + 4.0*afSubd[0]*afSubd[0]));
             low = (float)(0.5*(sum-discriminant));
             high = (float)(0.5*(sum+discriminant));
             if (difference >= 0.0f)
             {
-                cosine = subdiagonal[0];
-                sine = diagonal[0] - low;
+                cosine = afSubd[0];
+                sine = afDiag[0] - low;
             }
             else
             {
-                cosine = diagonal[1] - low;
-                sine = subdiagonal[0];
+                cosine = afDiag[1] - low;
+                sine = afSubd[0];
             }
             scratch = 1.0f / (float)sqrt((float)(cosine*cosine + sine*sine));
             cosine *= scratch;
@@ -786,19 +826,19 @@ bool NiMatrix3::QLAlgorithm(float* diagonal, float* subdiagonal)
                 (&matrix->m_pEntry[0][0])[rowIndex * 3 + 1] = sine*(&matrix->m_pEntry[0][0])[rowIndex * 3 + 0] + cosine*scratch;
                 (&matrix->m_pEntry[0][0])[rowIndex * 3 + 0] = cosine*(&matrix->m_pEntry[0][0])[rowIndex * 3 + 0] - sine*scratch;
             }
-            diagonal[0] = low;
-            diagonal[1] = high;
-            subdiagonal[0] = 0.0f;
+            afDiag[0] = low;
+            afDiag[1] = high;
+            afSubd[0] = 0.0f;
             return true;
         }
-        float ratio = (diagonal[1] - diagonal[0]) / (2.0f * subdiagonal[0]);
+        float ratio = (afDiag[1] - afDiag[0]) / (2.0f * afSubd[0]);
         float root = (float)sqrt((float)(ratio*ratio + 1.0f));
-        float off = subdiagonal[1];
-        float shifted = diagonal[2] - diagonal[0];
+        float off = afSubd[1];
+        float shifted = afDiag[2] - afDiag[0];
         if (ratio >= 0.0f)
-            shifted += subdiagonal[0] / (ratio + root);
+            shifted += afSubd[0] / (ratio + root);
         else
-            shifted += subdiagonal[0] / (ratio - root);
+            shifted += afSubd[0] / (ratio - root);
         if ((float)fabs(off) >= (float)fabs(shifted))
         {
             ratio = shifted/off;
@@ -817,16 +857,16 @@ bool NiMatrix3::QLAlgorithm(float* diagonal, float* subdiagonal)
             (&matrix->m_pEntry[0][0])[rowIndex * 3 + 2] = sine*(&matrix->m_pEntry[0][0])[rowIndex * 3 + 1] + cosine*scratch;
             (&matrix->m_pEntry[0][0])[rowIndex * 3 + 1] = cosine*(&matrix->m_pEntry[0][0])[rowIndex * 3 + 1] - sine*scratch;
         }
-        float update = (diagonal[1]-diagonal[2])*sine + (2.0f*subdiagonal[1])*cosine;
-        float coupled = cosine*subdiagonal[0];
-        off = sine*subdiagonal[0];
-        shifted = cosine*update-subdiagonal[1];
+        float update = (afDiag[1]-afDiag[2])*sine + (2.0f*afSubd[1])*cosine;
+        float coupled = cosine*afSubd[0];
+        off = sine*afSubd[0];
+        shifted = cosine*update-afSubd[1];
         update *= sine;
         if ((float)fabs(off) >= (float)fabs(shifted))
         {
             ratio = shifted/off;
             root = (float)sqrt((float)(ratio*ratio+1.0f));
-            subdiagonal[1] = off*root;
+            afSubd[1] = off*root;
             sine = 1.0f/root;
             cosine = ratio*sine;
         }
@@ -834,7 +874,7 @@ bool NiMatrix3::QLAlgorithm(float* diagonal, float* subdiagonal)
         {
             ratio = off/shifted;
             root = (float)sqrt((float)(ratio*ratio+1.0f));
-            subdiagonal[1] = shifted*root;
+            afSubd[1] = shifted*root;
             cosine = 1.0f/root;
             sine = ratio*cosine;
         }
@@ -851,13 +891,13 @@ bool NiMatrix3::QLAlgorithm(float* diagonal, float* subdiagonal)
             matrix->m_pEntry[2][1] = sine*matrix->m_pEntry[2][0] + cosine*scratch;
             matrix->m_pEntry[2][0] = cosine*matrix->m_pEntry[2][0] - sine*scratch;
         
-        float middle = diagonal[1] - update;
-        diagonal[2] += update;
-        update = (diagonal[0]-middle)*sine + (2.0f*coupled)*cosine;
-        subdiagonal[0] = cosine*update-coupled;
+        float middle = afDiag[1] - update;
+        afDiag[2] += update;
+        update = (afDiag[0]-middle)*sine + (2.0f*coupled)*cosine;
+        afSubd[0] = cosine*update-coupled;
         update *= sine;
-        diagonal[1] = middle+update;
-        diagonal[0] -= update;
+        afDiag[1] = middle+update;
+        afDiag[0] -= update;
     }
     return false;
 }

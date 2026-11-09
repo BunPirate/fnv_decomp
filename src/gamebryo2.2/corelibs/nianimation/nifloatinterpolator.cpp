@@ -16,32 +16,37 @@
 // from the function index, so no /Gy compilation can ever fill those 13
 // bytes. Full evidence is in this unit's matcher checks.
 NiFloatInterpolator::NiFloatInterpolator(NiFloatData* pkFloatData)
-    : value(-FLT_MAX), data(pkFloatData), lastIndex(0)
+    : m_fFloatValue(-FLT_MAX), m_spFloatData(pkFloatData), m_uiLastIdx(0)
 {}
 
 // Loads the float value and a NiFloatData reference from the stream, releasing the old data and incrementing the new one's ref count.
 // @fnv 0x00a3c800
+// pdb: NiFloatInterpolator::LoadBinary | NiFloatInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiFloatInterpolator::LoadBinary(NiStream& kStream)
 {
     NiKeyBasedInterpolator::LoadBinary(kStream);
 
-    ReadBinaryValue(kStream, value);
+    ReadBinaryValue(kStream, m_fFloatValue);
 
     // FNV 2.2 NiPointer assignment order: release the old object before
     // retaining the new one (matches the original refcount sequence).
     NiFloatData* pkData = (NiFloatData*)kStream.DeserializeObject();
-    if (data.m_pObject != pkData)
+    if (m_spFloatData.m_pObject != pkData)
     {
-        if (data.m_pObject)
-            data.m_pObject->DecRefCount();
-        data.m_pObject = pkData;
-        if (data.m_pObject)
-            data.m_pObject->IncRefCount();
+        if (m_spFloatData.m_pObject)
+            m_spFloatData.m_pObject->DecRefCount();
+        m_spFloatData.m_pObject = pkData;
+        if (m_spFloatData.m_pObject)
+            m_spFloatData.m_pObject->IncRefCount();
     }
 }
 
 // @fnv 0x00a3c3c0
 // src: COMMUNITY 0x00a3c3c0
+// pdb: NiFloatInterpolator::GetKeyType | NiFloatInterpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
+// pdb locals: uiNumKeys, ucSize, eType
 int __fastcall NiFloatInterpolator_GetKeyType(void* thisPtr, int, unsigned short)
 {
     void* pData = *(void**)((char*)thisPtr + 0x10);
@@ -52,6 +57,9 @@ int __fastcall NiFloatInterpolator_GetKeyType(void* thisPtr, int, unsigned short
 
 // @fnv 0x00a3c3d0
 // src: COMMUNITY 0x00a3c3d0
+// pdb: NiFloatInterpolator::GetKeyStride | NiFloatInterpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
+// pdb locals: uiNumKeys, ucSize, eType
 unsigned char __fastcall NiFloatInterpolator_GetKeyStride(const void* self, int, unsigned short)
 {
     const char* p = *(const char**)((const char*)self + 0x10);
@@ -86,6 +94,8 @@ struct FloatInterpView
 // If m_spFloatData is set, forwards the two float arguments to its FUN_00a3cc40 method.
 // @fnv 0x00a3c540
 // src: XBOX_PDB 0x00a3c540
+// pdb: NiFloatInterpolator::GuaranteeTimeRange | NiFloatInterpolator.obj | debug, upstream name already matches, high
+// pdb params: fStartTime, fEndTime
 void __fastcall NiFloatInterpolator_GuaranteeTimeRange(FloatInterpView* self, int edx, float m_fStartTime, float m_fMaximumDistance)
 {
     if (self->m_spFloatData)
@@ -99,6 +109,8 @@ struct FUN_00a3c500_shell : NiFloatInterpolator
 
 // Releases the NiFloatData pointer at offset 0x10 if set, then stores value at offset 0xc.
 // @fnv 0x00a3c500
+// pdb: NiFloatInterpolator::SetPoseValue | NiFloatInterpolator.obj | debug, object-file gap fill, medium
+// pdb params: fPoseValue
 void FUN_00a3c500_shell::SetFloatValue(float value)
 {
     if (reinterpret_cast<NiPointer<NiFloatData>*>(reinterpret_cast<char*>(this) + 0x10)->m_pObject)
@@ -128,6 +140,8 @@ struct S_00a3c340_Class
 };
 
 // @fnv 0x00a3c340
+// pdb: NiFloatInterpolator::NiFloatInterpolator | NiFloatInterpolator.obj | retail, call graph, medium
+// pdb params: pkFloatData
 S_00a3c340_Class* S_00a3c340_Class::Initialize(int arg)
 {
     FUN_00a3ca10();
@@ -159,6 +173,8 @@ class FUN_00a3c390 : public NiKeyBasedInterpolator
 
 // Constructs a float interpolator, initialising the pose value from the argument and clearing the float data pointer and the extra field.
 // @fnv 0x00a3c390
+// pdb: NiFloatInterpolator::NiFloatInterpolator | NiFloatInterpolator.obj | retail, call graph, medium
+// pdb params: pkFloatData
 FUN_00a3c390::FUN_00a3c390(float fPoseValue) : m_fFloatValue(fPoseValue), m_spFloatData(0), m_uiLastKeyIndex(0)
 {}
 
@@ -167,17 +183,19 @@ extern const volatile float DAT_0109a918;
 
 struct NiFloatInterpolatorShell_00a3c3f0 : NiFloatInterpolator
 {
-    unsigned char NiFloatInterpolator_GetChannelPosed(unsigned int unused) const;
+    unsigned char NiFloatInterpolator_GetChannelPosed(unsigned int usChannel) const;
 };
 
 // Returns 0 if m_spFloatData.m_pObject is set or m_fFloatValue equals DAT_0109a918, otherwise returns 1.
 // @fnv 0x00a3c3f0
 // src: GAMEBRYO_LIB 0x00a3c3f0
-unsigned char NiFloatInterpolatorShell_00a3c3f0::NiFloatInterpolator_GetChannelPosed(unsigned int unused) const
+// pdb: NiFloatInterpolator::GetChannelPosed | NiFloatInterpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
+unsigned char NiFloatInterpolatorShell_00a3c3f0::NiFloatInterpolator_GetChannelPosed(unsigned int usChannel) const
 {
-    if (data.m_pObject)
+    if (m_spFloatData.m_pObject)
         return 0;
-    if (value == DAT_0109a918)
+    if (m_fFloatValue == DAT_0109a918)
         return 0;
     return 1;
 }
@@ -190,24 +208,27 @@ struct KeyBasedInterpolatorEqualityOps : NiKeyBasedInterpolator
 };
 struct NiFloatInterpolatorEquality : NiFloatInterpolator
 {
-    bool NiFloatInterpolator_IsEqual(const NiObject* otherObject);
+    bool NiFloatInterpolator_IsEqual(const NiObject* pkObject);
 };
 // @fnv 0x00a3c5e0
 // src: XBOX_PDB 0x00a3c5e0
-bool NiFloatInterpolatorEquality::NiFloatInterpolator_IsEqual(const NiObject* otherObject)
+// pdb: NiFloatInterpolator::IsEqual | NiFloatInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool NiFloatInterpolatorEquality::NiFloatInterpolator_IsEqual(const NiObject* pkObject)
 {
-    if (!reinterpret_cast<KeyBasedInterpolatorEqualityOps*>(this)->bhkCharacterProxy_IsEqual(otherObject))
+    if (!reinterpret_cast<KeyBasedInterpolatorEqualityOps*>(this)->bhkCharacterProxy_IsEqual(pkObject))
         return false;
-    const NiFloatInterpolator* other = static_cast<const NiFloatInterpolator*>(otherObject);
-    if (value != other->value)
+    const NiFloatInterpolator* other = static_cast<const NiFloatInterpolator*>(pkObject);
+    if (m_fFloatValue != other->m_fFloatValue)
         return false;
-    if ((data.m_pObject && !other->data.m_pObject) ||
-        (!data.m_pObject && other->data.m_pObject))
+    if ((m_spFloatData.m_pObject && !other->m_spFloatData.m_pObject) ||
+        (!m_spFloatData.m_pObject && other->m_spFloatData.m_pObject))
         return false;
-    if (data.m_pObject)
+    if (m_spFloatData.m_pObject)
     {
-        NiFloatData& data = *this->data.m_pObject;
-        NiFloatData* otherData = other->data.m_pObject;
+        NiFloatData& data = *this->m_spFloatData.m_pObject;
+        NiFloatData* otherData = other->m_spFloatData.m_pObject;
         if (!data.IsEqual(otherData))
             return false;
     }
@@ -218,7 +239,7 @@ bool NiFloatInterpolatorEquality::NiFloatInterpolator_IsEqual(const NiObject* ot
 class FloatDataRangeOps : public NiFloatData
 {
   public:
-    void FUN_00a3ce20(float m_fStartTime, float m_fMaximumDistance, NiPointer<NiFloatData>& spNewData) const throw();
+    void NiFloatData_GetSequenceData(float m_fStartTime, float m_fMaximumDistance, NiPointer<NiFloatData>& spNewData) const throw();
 };
 
 class A3C640Interpolator
@@ -231,21 +252,24 @@ class A3C640Interpolator
     FloatDataRangeOps* m_spFloatData;
     unsigned int m_uiLastKeyIndex;
 
-    A3C640Interpolator* NiInterpolator_GetSequenceInterpolator(float m_fStartTime, float m_fMaximumDistance) const throw();
+    A3C640Interpolator* NiInterpolator_GetSequenceInterpolator(float fStartTime, float fEndTime) const throw();
     void SetFloatData(NiFloatData* pkFloatData) throw();
 
-    A3C640Interpolator* NiFloatInterpolator_GetSequenceInterpolator(float m_fStartTime, float m_fMaximumDistance) const;
+    A3C640Interpolator* NiFloatInterpolator_GetSequenceInterpolator(float fStartTime, float fEndTime) const;
 };
 
 // @fnv 0x00a3c640
 // src: XBOX_PDB 0x00a3c640
-A3C640Interpolator* A3C640Interpolator::NiFloatInterpolator_GetSequenceInterpolator(float m_fStartTime, float m_fMaximumDistance) const
+// pdb: NiFloatInterpolator::GetSequenceInterpolator | NiFloatInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: pkSeqInterp, spNewFloatData
+A3C640Interpolator* A3C640Interpolator::NiFloatInterpolator_GetSequenceInterpolator(float fStartTime, float fEndTime) const
 {
-    A3C640Interpolator* pkSeqInterp = NiInterpolator_GetSequenceInterpolator(m_fStartTime, m_fMaximumDistance);
+    A3C640Interpolator* pkSeqInterp = NiInterpolator_GetSequenceInterpolator(fStartTime, fEndTime);
     if (m_spFloatData && pkSeqInterp)
     {
         NiPointer<NiFloatData> spNewFloatData;
-        m_spFloatData->FUN_00a3ce20(m_fStartTime, m_fMaximumDistance, spNewFloatData);
+        m_spFloatData->NiFloatData_GetSequenceData(fStartTime, fEndTime, spNewFloatData);
         pkSeqInterp->SetFloatData(spNewFloatData);
         pkSeqInterp->m_uiLastKeyIndex = 0;
     }
@@ -262,9 +286,9 @@ FNV_FORCEINLINE BA3C6D0FloatKey* GetFloatKeys(const NiFloatData& data, unsigned 
     unsigned int& eType, unsigned char& ucSize)
 {
     uiNumKeys = data.m_uiNumKeys;
-    eType = data.m_eRequestType;
-    ucSize = data.m_ucKeyDataSize;
-    return reinterpret_cast<BA3C6D0FloatKey*>(data.m_pKeyArray);
+    eType = data.m_eType;
+    ucSize = data.m_ucKeySize;
+    return reinterpret_cast<BA3C6D0FloatKey*>(data.m_pkKeys);
 }
 
 static const float NI_INFINITY = 3.402823466e+38f;
@@ -288,6 +312,9 @@ class BA3C6D0Interpolator
 };
 
 // @fnv 0x00a3c6d0
+// pdb: NiFloatInterpolator::Update | NiFloatInterpolator.obj | debug, object-file run extension, low
+// pdb params: fTime, pkInterpTarget, fValue
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType
 bool BA3C6D0Interpolator::EvaluateFloatAtTime(float fTime, void* pkInterpTarget, float& fValue)
 {
     if (!TimeHasChanged(fTime))
@@ -320,30 +347,32 @@ bool BA3C6D0Interpolator::EvaluateFloatAtTime(float fTime, void* pkInterpTarget,
 struct FUN_00a3c780_cls : NiFloatInterpolator
 {
     void CopyBase(NiFloatInterpolator* dst, unsigned int uiArg);
-    void NiFloatInterpolator_CopyMembers(NiFloatInterpolator* dst, unsigned int uiArg);
+    void NiFloatInterpolator_CopyMembers(NiFloatInterpolator* pkDest, unsigned int kCloning);
 };
 
 // @fnv 0x00a3c780
 // src: GAMEBRYO_LIB 0x00a3c780
-void FUN_00a3c780_cls::NiFloatInterpolator_CopyMembers(NiFloatInterpolator* dst, unsigned int uiArg)
+// pdb: NiFloatInterpolator::CopyMembers | NiFloatInterpolator.obj | debug, upstream name already matches, high
+// pdb params: pkDest, kCloning
+void FUN_00a3c780_cls::NiFloatInterpolator_CopyMembers(NiFloatInterpolator* pkDest, unsigned int kCloning)
 {
-    CopyBase(dst, uiArg);
-    *(volatile float*)&dst->value = value;
-    NiFloatData* pOld = *(NiFloatData* volatile*)&dst->data.m_pObject;
-    if (pOld != data.m_pObject)
+    CopyBase(pkDest, kCloning);
+    *(volatile float*)&pkDest->m_fFloatValue = m_fFloatValue;
+    NiFloatData* pOld = *(NiFloatData* volatile*)&pkDest->m_spFloatData.m_pObject;
+    if (pOld != m_spFloatData.m_pObject)
     {
         if (pOld)
         {
             pOld->DecRefCount();
         }
-        NiFloatData* pNew = data.m_pObject;
-        dst->data.m_pObject = pNew;
+        NiFloatData* pNew = m_spFloatData.m_pObject;
+        pkDest->m_spFloatData.m_pObject = pNew;
         if (pNew)
         {
             pNew->IncRefCount();
         }
     }
-    dst->lastIndex = lastIndex;
+    pkDest->m_uiLastIdx = m_uiLastIdx;
 }
 
 // GetViewerStrings: base strings, then the class name, m_fFloatValue and m_spFloatData.
@@ -408,6 +437,8 @@ class C940FloatInterpolator
 // Appends the base viewer strings plus the class name, m_fFloatValue and m_spFloatData entries to pkStrings.
 // @fnv 0x00a3c940
 // src: XBOX_PDB 0x00a3c940
+// pdb: NiFloatInterpolator::GetViewerStrings | NiFloatInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void C940FloatInterpolator::NiFloatInterpolator_GetViewerStrings(C940StringArray* pkStrings)
 {
     BaseGetViewerStrings(pkStrings);
@@ -434,11 +465,13 @@ class NiFloatInterpolatorW : public NiFloatInterpolator
 };
 
 // @fnv 0x00a3c880
+// pdb: NiFloatInterpolator::SaveBinary | NiFloatInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void NiFloatInterpolatorW::SaveToStream(NiStream& kStream)
 {
     NiObject::SaveBinary(kStream);
-    SerializeValue(kStream, value);
-    kStream.SaveLinkID(data.m_pObject);
+    SerializeValue(kStream, m_fFloatValue);
+    kStream.SaveLinkID(m_spFloatData.m_pObject);
 }
 
 class TimedAnimationKey
@@ -461,9 +494,9 @@ FNV_FORCEINLINE TimedAnimationKey* GetFloatKeys(const NiFloatData& data, unsigne
     NiAnimationKey::KeyType& eType, unsigned char& ucSize)
 {
     uiNumKeys = data.m_uiNumKeys;
-    eType = data.m_eRequestType;
-    ucSize = data.m_ucKeyDataSize;
-    return data.m_pKeyArray;
+    eType = data.m_eType;
+    ucSize = data.m_ucKeySize;
+    return data.m_pkKeys;
 }
 
 template <class T> FNV_FORCEINLINE void NiPointerAssign(NiPointer<T>& sp, T* pObject)
@@ -488,19 +521,21 @@ class FUN_00a3c420_cls : public NiFloatInterpolator
 
 // When the key data is empty or collapsible, clears m_spFloatData and stores a float value in m_fFloatValue.
 // @fnv 0x00a3c420
+// pdb: NiFloatInterpolator::Collapse | NiFloatInterpolator.obj | debug, object-file gap fill, medium
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType, bCollapse, fValue, ui
 void FUN_00a3c420_cls::CollapseConstantKeys()
 {
-    if (data.m_pObject)
+    if (m_spFloatData.m_pObject)
     {
         unsigned int uiNumKeys;
         NiAnimationKey::KeyType eType;
         unsigned char ucSize;
         TimedAnimationKey* pkKeys =
-            GetFloatKeys(*data.m_pObject, uiNumKeys, eType, ucSize);
+            GetFloatKeys(*m_spFloatData.m_pObject, uiNumKeys, eType, ucSize);
         if (uiNumKeys == 0)
         {
-            NiPointerAssign<NiFloatData>(data, 0);
-            value = DAT_0109a918;
+            NiPointerAssign<NiFloatData>(m_spFloatData, 0);
+            m_fFloatValue = DAT_0109a918;
             return;
         }
 
@@ -518,8 +553,8 @@ void FUN_00a3c420_cls::CollapseConstantKeys()
             if (!bPosed)
                 return;
         }
-        NiPointerAssign<NiFloatData>(data, 0);
-        value = fValue;
+        NiPointerAssign<NiFloatData>(m_spFloatData, 0);
+        m_fFloatValue = fValue;
     }
 }
 
@@ -549,14 +584,17 @@ class A3C8D0_Object : public NiKeyBasedInterpolator
 };
 struct A3C8D0_Owner
 {
-    void NiFloatInterpolator_CopyMembers(A3C8D0_Object* object, int arg);
-    A3C8D0_Object* CreateObject(int arg);
+    void NiFloatInterpolator_CopyMembers(A3C8D0_Object* pkDest, int kCloning);
+    A3C8D0_Object* CreateObject(int kCloning);
 };
 // Allocates an A3C8D0_Object, calls FUN_00a3c780 with the object and arg, and returns the object.
 // @fnv 0x00a3c8d0
-A3C8D0_Object* A3C8D0_Owner::CreateObject(int arg)
+// pdb: NiFloatInterpolator::CreateClone | NiFloatInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+A3C8D0_Object* A3C8D0_Owner::CreateObject(int kCloning)
 {
     A3C8D0_Object* object = new A3C8D0_Object;
-    NiFloatInterpolator_CopyMembers(object, arg);
+    NiFloatInterpolator_CopyMembers(object, kCloning);
     return object;
 }

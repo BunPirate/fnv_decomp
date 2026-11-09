@@ -47,7 +47,7 @@ public:
     void ProcessAllProjectiles(BGSLoadGameBuffer* buffer);
     void ProcessAllProjectiles(int aiDeltaTime);
     float EvaluateThreats(NiPoint3 pos, int arg, float delay, float a, CombatTargetTimestamp since, float b);
-    void SaveThreats(BGSSaveFormBuffer* buffer);
+    void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
 };
 
 typedef char CombatThreatMap_size_check[(sizeof(CombatThreatMap) == 60) ? 1 : -1];

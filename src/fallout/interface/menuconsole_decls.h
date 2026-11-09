@@ -19,13 +19,14 @@ int __cdecl _mbsicmp(const unsigned char*, const unsigned char*);
 int __cdecl _mbscmp(const unsigned char*, const unsigned char*);
 int __cdecl _mbsnicmp(const unsigned char*, const unsigned char*, unsigned int);
 template <class T> unsigned int BSStringLength(const T*);
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
     static void CopyStringToBuffer(char*, unsigned int, const char*);
 };
 void DebugLog(const char*, ...);
-int _mbsnbcmp_(const char*, const char*, unsigned int);
+int _tcsncmp(const char*, const char*, unsigned int);
 int _mbsnbicmp_(const char*, const char*, unsigned int);
 void _mbsnbcpy_(char*, const char*, unsigned int);
 void _MenuConsole_PrintLine(ConsoleManager*, const char*, ...);
@@ -33,7 +34,7 @@ void Interface_UpdateScreenShape(int, int);
 void Interface_ToggleSafeZone(int);
 void Interface_SetFirstChanceTextureRelease();
 void Interface_IsolateMenuElements(bool, bool);
-void UpdateMenuTileVisibility();
+void Interface_RestoreMenuElements();
 int StartMenu_GetClassStatic();
 int MinInt(int, int);
 int BSMAX_00647b70(int, int);
@@ -55,7 +56,7 @@ class MenuSystem
   public:
     static MenuSystem* Instance(bool);
     Tile* TileReloadContext(int);
-    bool DeleteMenu(int);
+    bool MenuManager_DeleteMenu(int);
     Menu* GetFrontmostMenu();
     bool IsMenuClassVisible(int);
 };

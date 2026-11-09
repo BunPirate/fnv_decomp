@@ -346,6 +346,9 @@ struct FileReader
 bool fffWriteTriFile(FileReader*, void*);
 // @fnv 0x00ab7e30
 // src: GUESS 0x00ab7e30 (confidence: high)
+// pdb: fffWriteTriFile | TriFileIO.obj | debug, object-file gap fill, medium
+// pdb params: fname, triData
+// pdb locals: file
 bool TESObject_WriteTriFile(const FileString& fileName, void* output)
 {
     FileReader reader(FileString("FRTRI003"));
@@ -1363,7 +1366,7 @@ struct BxLengthError : public BxLogicError
     {}
 };
 
-void ReportAssertionViolation(const char* file, int line);
+void ReportAssertionViolation(const char* fname, int line);
 }
 using namespace binac3;
 
@@ -1372,14 +1375,16 @@ struct FUN_00ac3df0
     BxString kPath;
     BxString kName;
     int unk3c;
-    FUN_00ac3df0(BxString name);
+    FUN_00ac3df0(BxString a_fileId);
     virtual void v00();
 };
 
 // @fnv 0x00ac3df0
-FUN_00ac3df0::FUN_00ac3df0(BxString name)
+// pdb: FutBinaryFileC::FutBinaryFileC | binaryFile.obj | debug, call graph, high
+// pdb params: a_fileId
+FUN_00ac3df0::FUN_00ac3df0(BxString a_fileId)
 {
-    kName = name;
+    kName = a_fileId;
     if (kName.size() == 8)
     {
     }
@@ -1840,7 +1845,7 @@ struct BxLengthError : public BxLogicError
 struct GvHeap
 {
     void* Game_DoHeapAlloc(unsigned int _Size);
-    void MemoryManager_Deallocate(void* _Ptr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 template <class T> inline T* GvHeapAllocate(unsigned int _Count, T*)
 {
@@ -2483,7 +2488,7 @@ template <class T> struct GvVector : GvVectorVal<T>
 };
 struct GvFileHandle;
 extern "C" unsigned int __cdecl fwrite(const void* _Str, unsigned int _Size, unsigned int _Count, GvFileHandle* _File);
-void futSetLastError(int code, BxString message);
+void futSetLastError(int err, BxString txt);
 }
 using namespace wrac52;
 
@@ -2494,18 +2499,20 @@ struct GvBinaryFile
     GvFileHandle* pFile;
     virtual void v00();
     void FutBinaryFileC_close();
-    bool FutBinaryFileC_writeHeader(const void* data, unsigned int size, unsigned int count);
+    bool FutBinaryFileC_writeHeader(const void* data, unsigned int size, unsigned int num);
 };
 
 // @fnv 0x00ac5220
 // src: XBOX_PDB 0x00ac5220
-bool GvBinaryFile::FutBinaryFileC_writeHeader(const void* data, unsigned int size, unsigned int count)
+// pdb: FutBinaryFileC::writeHeader | binaryFile.obj | retail, upstream name already matches, high
+// pdb params: data, size, num
+bool GvBinaryFile::FutBinaryFileC_writeHeader(const void* data, unsigned int size, unsigned int num)
 {
     if (pFile == 0)
     {
         return false;
     }
-    if (fwrite(data, size, count, pFile) != count)
+    if (fwrite(data, size, num, pFile) != num)
     {
         futSetLastError(6, kPath);
         FutBinaryFileC_close();
@@ -2851,7 +2858,7 @@ struct BxLengthError : public BxLogicError
     {}
 };
 
-void ReportAssertionViolation(const char* file, int line);
+void ReportAssertionViolation(const char* fname, int line);
 void* FUN_00ec44d0(void* dst, const void* src, unsigned int count);
 }
 using namespace errac6;
@@ -2860,12 +2867,15 @@ extern char DAT_011f6c8c[256];
 
 // @fnv 0x00ac6430
 // src: XBOX_PDB 0x00ac6430
-void futSetLastError(int code, BxString message)
+// pdb: futSetLastError | lastError.obj | retail, string-set bridge, high
+// pdb params: err, txt
+// pdb locals: len
+void futSetLastError(int err, BxString txt)
 {
     if (DAT_011f6c88 == 0)
     {
-        unsigned int uiLength = message.size();
-        DAT_011f6c88 = code;
+        unsigned int uiLength = txt.size();
+        DAT_011f6c88 = err;
         if (uiLength < 0x100)
         {
         }
@@ -2874,7 +2884,7 @@ void futSetLastError(int code, BxString message)
             ReportAssertionViolation("D:\\_Fallout3\\Platforms\\Common\\Code\\SDK\\FaceGen\\lastError.cpp", 0x41);
         }
         uiLength = uiLength < 0x100 ? uiLength : 0xff;
-        FUN_00ec44d0(DAT_011f6c8c, &message[0], uiLength);
+        FUN_00ec44d0(DAT_011f6c8c, &txt[0], uiLength);
         DAT_011f6c8c[uiLength] = 0;
     }
 }
@@ -3049,25 +3059,28 @@ extern "C" char DAT_01021184;
 extern "C" char DAT_01063cd8;
 // @fnv 0x00ac9790
 // src: XBOX_PDB 0x00ac9790
-bool __cdecl futSaveCsvFile(const std::string& path, const std::vector<std::vector<std::string> >& sections)
+// pdb: futSaveCsvFile | algs.obj | debug, upstream name already matches, high
+// pdb params: filename, csvData
+// pdb locals: file, ln, numFields, fd
+bool __cdecl futSaveCsvFile(const std::string& filename, const std::vector<std::vector<std::string> >& csvData)
 {
-    if (sections.size() == 0)
+    if (csvData.size() == 0)
     {
         futSetLastError(11, std::string(&DAT_010a3028));
         return false;
     }
-    std::ofstream output(path.c_str(), 2, 64);
+    std::ofstream output(filename.c_str(), 2, 64);
     if (output.fail())
     {
-        futSetLastError(5, path);
+        futSetLastError(5, filename);
         return false;
     }
-    for (unsigned int i = 0; i < sections.size(); ++i)
+    for (unsigned int i = 0; i < csvData.size(); ++i)
     {
-        unsigned int childCount = sections[i].size();
+        unsigned int childCount = csvData[i].size();
         for (unsigned int j = 0; j < childCount; ++j)
         {
-            Runtime_ProcessEntries_00ad47f0(Object_ProcessEntries_00ad4ba0(Runtime_ProcessEntries_00ad47f0(output, &DAT_01021184), sections[i][j]), &DAT_01021184);
+            Runtime_ProcessEntries_00ad47f0(Object_ProcessEntries_00ad4ba0(Runtime_ProcessEntries_00ad47f0(output, &DAT_01021184), csvData[i][j]), &DAT_01021184);
             if (j == childCount - 1)
             {
                 output.put(10);
@@ -3081,7 +3094,7 @@ bool __cdecl futSaveCsvFile(const std::string& path, const std::vector<std::vect
         }
         if (output.fail())
         {
-            futSetLastError(6, path);
+            futSetLastError(6, filename);
             output.close();
             return false;
         }
@@ -3175,6 +3188,7 @@ FUN_00acb310::FUN_00acb310(const StrFld& a1, const StrFld& a2) : m_00(a1), m_1c(
     unsigned int u38;
 }
 
+// pdb: structure _iobuf, size 0x20, 8 members
 struct _iobuf
 {
     char* _ptr;
@@ -4006,6 +4020,8 @@ struct NameHolder_ad3e
 
 // @fnv 0x00ad3e60
 // src: GUESS 0x00ad3e60 (confidence: medium)
+// pdb: std::ctype_base::ctype_base | algs.obj | debug, object-file run extension, low
+// pdb params: _Refs
 String NameHolder_ad3e::GetKName() const
 {
     return m_pkNamed->m_kName;
@@ -4143,6 +4159,9 @@ struct FUN_00b2e740
     FUN_00b2e740(const FUN_00b2e740& kOther);
 };
 // @fnv 0x00b2e740
+// pdb: std::vector<std::vector<unsigned short,std::allocator<unsigned short> >,std::allocator<std::vector<unsigned short,std::allocator<unsigned short> > > >::operator= | IndexedGeometry.obj | retail, object-file run extension, low
+// pdb params: _Right
+// pdb locals: _Ptr
 FUN_00b2e740::FUN_00b2e740(const FUN_00b2e740& kOther)
     : m_bEnableState(kOther.m_bEnableState), m_kPathOffset(kOther.m_kPathOffset), m_fBoundRadius(kOther.m_fBoundRadius),
       m_kName(kOther.m_kName), m_kPoint1(kOther.m_kPoint1), m_kPoint2(kOther.m_kPoint2), m_kPoint3(kOther.m_kPoint3)
@@ -4212,7 +4231,7 @@ struct PadStr : StrFld
         int dqb[4];
     }
 };
-void __cdecl futSetLastError(int iLevel, PadStr kMsg);
+void __cdecl futSetLastError(int err, PadStr txt);
 inline FileString::~FileString()
 {
     fopen_0044a730(true, 0);
@@ -4232,24 +4251,26 @@ static __forceinline void Pad()
 }
 // @fnv 0x00ac4910
 // src: XBOX_PDB 0x00ac4910
-bool FileReader::FutBinaryFileC_openForOverwrite(FileString kPath)
+// pdb: FutBinaryFileC::openForOverwrite | binaryFile.obj | retail, upstream name already matches, high
+// pdb params: a_fname
+bool FileReader::FutBinaryFileC_openForOverwrite(FileString a_fname)
 {
     ((GvBinaryFile*)this)->FutBinaryFileC_close();
     ((GvBinaryFile*)this)->pFile =
-        (GvFileHandle*)FUN_00ec9a47(kPath.capacity >= 16 ? kPath.storage.pointer : kPath.storage.buffer, "wb");
+        (GvFileHandle*)FUN_00ec9a47(a_fname.capacity >= 16 ? a_fname.storage.pointer : a_fname.storage.buffer, "wb");
     if (!((GvBinaryFile*)this)->pFile)
     {
-        futSetLastError(5, *(PadStr*)&kPath);
+        futSetLastError(5, *(PadStr*)&a_fname);
         return false;
     }
     if (!((GvBinaryFile*)this)->FutBinaryFileC_writeHeader(FsC(signature), FsLen(signature), true))
     {
-        futSetLastError(5, *(PadStr*)&kPath);
+        futSetLastError(5, *(PadStr*)&a_fname);
         ((GvBinaryFile*)this)->FutBinaryFileC_close();
         return false;
         Pad();
     }
-    fileName.AssignSubstring(kPath, 0, DAT_010173f0);
+    fileName.AssignSubstring(a_fname, 0, DAT_010173f0);
     return true;
 }
 
@@ -4805,6 +4826,9 @@ struct ParserPairs : GvVector<pairparser::FUN_00acb310>
 };
 // @fnv 0x00ac7f50
 // src: GUESS 0x00ac7f50 (confidence: low)
+// pdb: FutPairParser | algs.obj | debug, object-file gap fill, medium
+// pdb params: istr, pairs, commentID, numLines
+// pdb locals: lineCount, s1, s2, ch
 bool __cdecl TESObject_ProcessEntries_00ac7f50(ParserStream* stream, ParserPairs* result, const FUN_0044a4c0* excluded, int limit)
 {
     FUN_0044a4c0 key;
@@ -5039,6 +5063,9 @@ bool TESObject_ProcessEntries_00ac7f50(Big*, TokVector*, const Str&, int);
 
 // @fnv 0x00ac8c50
 // src: GUESS 0x00ac8c50 (confidence: low)
+// pdb: FutFilePairParser | algs.obj | debug, object-file gap fill, medium
+// pdb params: fname, fileID, m
+// pdb locals: tagData, ifs
 bool TESObject_EvaluateValue_00ac8c50(const Str& name, const Str& arg2, TokVector* pVec)
 {
     Str msg5;
@@ -5168,6 +5195,9 @@ inline basic_istream<char, char_traits<char> >& getline(basic_istream<char, char
 }
 // @fnv 0x00ac9120
 // src: GUESS 0x00ac9120 (confidence: low)
+// pdb: futReadCsvFile | algs.obj | debug, object-file gap fill, medium
+// pdb params: filename, csvData
+// pdb locals: csvLine, file, line, ch, allWhiteSpace, ptr, fieldStr, openQuoteExists
 bool __cdecl Object_ProcessEntries_00ac9120(const BxString& path, CsvArray<CsvRow>& table)
 {
 
@@ -5343,6 +5373,8 @@ class ios_base
 
 // @fnv 0x00ac9ff0
 // src: GUESS 0x00ac9ff0 (confidence: low)
+// pdb: std::ios_base::clear | algs.obj | retail, unique string literal, high
+// pdb params: _State, _Reraise
 void ios_base::UpdateState_00ac9ff0(int _State, bool _Reraise)
 {
     _Mystate = _State & 0x17;
@@ -6776,7 +6808,7 @@ struct BxString : public BxStringVal
     }
 };
 
-void futSetLastError(int code, BxString message);
+void futSetLastError(int err, BxString txt);
 }
 
 struct FaceBinaryReadReceiver
@@ -6791,18 +6823,20 @@ struct FaceBinaryReadReceiver
     virtual void v0c();
     virtual bool v10(void* data, unsigned int size, unsigned int count);
     void ClearHolders();
-    __declspec(noinline) bool BSFaceGenBinaryFile_readHeader(void* data, unsigned int size, unsigned int count);
+    __declspec(noinline) bool BSFaceGenBinaryFile_readHeader(void* data, unsigned int size, unsigned int num);
 };
 
 // @fnv 0x00ac5e00
 // src: COMMUNITY 0x00ac5e00
-bool FaceBinaryReadReceiver::BSFaceGenBinaryFile_readHeader(void* data, unsigned int size, unsigned int count)
+// pdb: BSFaceGenBinaryFile::readHeader | binaryFile.obj | retail, upstream name already matches, high
+// pdb params: data, size, num
+bool FaceBinaryReadReceiver::BSFaceGenBinaryFile_readHeader(void* data, unsigned int size, unsigned int num)
 {
     if (pData == 0)
     {
         return false;
     }
-    if (!v10(data, 1, size * count))
+    if (!v10(data, 1, size * num))
     {
         rdac5e::futSetLastError(1, kPath);
         ClearHolders();
@@ -8989,7 +9023,7 @@ template <class T> struct GvVector : GvVectorVal<T>
 struct GvFileHandle;
 extern "C" unsigned int __cdecl fread(void* _DstBuf, unsigned int _ElementSize, unsigned int _Count,
                                       GvFileHandle* _File);
-void futSetLastError(int code, BxString message);
+void futSetLastError(int err, BxString txt);
 }
 
 struct GvBinaryFile_SV
@@ -8999,18 +9033,20 @@ struct GvBinaryFile_SV
     rdac52::GvFileHandle* pFile;
     virtual void v00();
     void FutBinaryFileC_close();
-    bool FutBinaryFileC_readHeader(void* data, unsigned int size, unsigned int count);
+    bool FutBinaryFileC_readHeader(void* data, unsigned int size, unsigned int num);
 };
 
 // @fnv 0x00ac52b0
 // src: XBOX_PDB 0x00ac52b0
-bool GvBinaryFile_SV::FutBinaryFileC_readHeader(void* data, unsigned int size, unsigned int count)
+// pdb: FutBinaryFileC::readHeader | binaryFile.obj | retail, upstream name already matches, high
+// pdb params: data, size, num
+bool GvBinaryFile_SV::FutBinaryFileC_readHeader(void* data, unsigned int size, unsigned int num)
 {
     if (pFile == 0)
     {
         return false;
     }
-    if (rdac52::fread(data, size, count, pFile) != count)
+    if (rdac52::fread(data, size, num, pFile) != num)
     {
         rdac52::futSetLastError(1, kPath);
         FutBinaryFileC_close();
@@ -10366,6 +10402,8 @@ class FUN_00acc6c0 : public input_ctor::VersionedDataBlock
     input_ctor::InputFilebuf<char> filebuf;
 };
 // @fnv 0x00acc6c0
+// pdb: std::basic_ifstream<char,std::char_traits<char> >::basic_ifstream<char,std::char_traits<char> > | algs.obj | debug, call graph, medium
+// pdb params: _Filename, _Mode, _Prot
 FUN_00acc6c0::FUN_00acc6c0(const char* filename, int mode, int protection) : input_ctor::VersionedDataBlock(&filebuf)
 {
     if (filebuf.UpdateState_00acfab0(filename, mode | 1, protection) == 0)

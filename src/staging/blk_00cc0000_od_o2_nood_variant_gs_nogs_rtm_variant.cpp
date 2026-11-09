@@ -79,10 +79,10 @@ struct TransformOwner
     int unk00;
     TransformObj* m_pSource;
 
-    void ReleaseObject(TransformObj* pkObj, int iArg);
-    void hkHingeLimitsConstraintCinfo_CloneData(TransformObj* pkObj, int iArg);
+    void ReleaseObject(TransformObj* apData, int iArg);
+    void hkHingeLimitsConstraintCinfo_CloneData(TransformObj* apData, int arCloneData);
 };
-bool __stdcall bhkShape_CanShare(void* key);
+bool __stdcall bhkShape_CanShare(void* arCloneData);
 struct Cd2Target
 {
     virtual void v00();
@@ -173,7 +173,7 @@ class Cd2Owner
     {
         return this ? m_pShapeCollection : 0;
     }
-    bool bhkShapeCollection_CanShare(void* key);
+    bool bhkShapeCollection_CanShare(void* arCloneData);
 };
 extern "C"
 {
@@ -395,7 +395,7 @@ struct PoseState
             }
         }
     }
-    PoseTransform& hkaPose_accessBoneLocalSpace(int index);
+    PoseTransform& hkaPose_accessBoneLocalSpace(int boneIdx);
 };
 struct FUN_00d4f2a0
 {
@@ -447,8 +447,8 @@ struct FUN_00cc5f30_cls
     int unk00;
     FUN_00d4f2a0* m_pSrc;
 
-    void hkRagdollLimitsConstraintCinfo_CloneData(FUN_00d4f2a0* dst, int a2);
-    void ReleaseObject(FUN_00d4f2a0* dst, int a2);
+    void hkRagdollLimitsConstraintCinfo_CloneData(FUN_00d4f2a0* apData, int arCloneData);
+    void ReleaseObject(FUN_00d4f2a0* apData, int a2);
 };
 struct S_00ccbce0_Source
 {
@@ -532,8 +532,8 @@ struct S_00ccbce0_Owner
     int unk10;
     S_00ccbce0_Ref* unk14;
 
-    void __thiscall bhkShape_CopyCinfo(S_00ccbce0_Output* value);
-    void __thiscall bhkExtendedMeshShape_CopyCinfo(S_00ccbce0_Output* value);
+    void __thiscall bhkShape_CopyCinfo(S_00ccbce0_Output* arInfo);
+    void __thiscall bhkExtendedMeshShape_CopyCinfo(S_00ccbce0_Output* arInfo);
 };
 extern "C" __m128 _mm_setr_ps(float, float, float, float);
 struct BytePair
@@ -566,8 +566,8 @@ struct EntityObj
         return p;
     }
     static void operator delete(void* p, unsigned int nbytes);
-    EntityObj(int a, int b, int c);
-    void SetPivots(const hkVector4& position, const hkVector4& rotation);
+    EntityObj(int entityA, int entityB, int userData);
+    void hkpSpringAction_setPositionsInBodySpace(const hkVector4& pivotA, const hkVector4& pivotB);
     void removeReference();
 };
 struct EntityOwner
@@ -620,7 +620,7 @@ struct EntityOwner
     virtual void v45();
     virtual void v46();
     virtual int AddCinfo(EntityCinfo* info);
-    int bhkSpringAction_Init(EntityCinfo* info);
+    int bhkSpringAction_Init(EntityCinfo* arInfo);
 };
 class S_00cd3c20_Obj
 {
@@ -953,7 +953,7 @@ class S_00cd3c20_Obj
     int unk51c;
     int unk520;
 };
-void __stdcall bhkCharacterStateClimbing_Update(S_00cd3c20_Obj* obj);
+void __stdcall bhkCharacterStateClimbing_Update(S_00cd3c20_Obj* arInput);
 struct IntegerBlock18
 {
     int unk00;
@@ -1048,7 +1048,7 @@ struct ShapeOwner
     virtual void vf45();
     virtual void vf46();
     virtual void finish(struct IntegerBlock18* pkInfo);
-    void bhkMotorAction_Init(IntegerBlock18* pkInfo);
+    void bhkMotorAction_Init(IntegerBlock18* arInfo);
 };
 struct S00cc4610_Ref
 {
@@ -1070,7 +1070,7 @@ struct S00cc4610_Out
     float m_34;
     int unk38;
     int unk3C;
-    S00cc4610_Out(int a, int b, int c);
+    S00cc4610_Out(int entityA, int entityB, int userData);
     void* operator new(unsigned int n)
     {
         hkMemoryAllocator& a = hkMemoryRouter::getInstance().heap();
@@ -1159,7 +1159,7 @@ struct S00cc4610_Self
     virtual void v45();
     virtual void v46();
     virtual void v47(S00cc4610_In* i);
-    void bhkAngularDashpotAction_Init(S00cc4610_In* in);
+    void bhkAngularDashpotAction_Init(S00cc4610_In* arInfo);
 };
 struct Cc7Bool
 {
@@ -1173,15 +1173,15 @@ struct Cc7Local
     Cc7Bool linearA[3], linearB[3];
     Cc7Bool angularA, angularB, pivotA, pivotB;
     void InitFromHelper(void* source);
-    void ProcessAndReturnValue_00d52000(void* out);
-    void UpdateState_00d51c30(void* tmp);
-    void* ProcessAndReturnValue_00d520a0(void* out);
-    void* ProcessAndReturnValue_00d51d40(void* tmp);
-    void AddBridgeAtoms();
-    void AppendEntryAndAdvance();
-    void ProcessAndReturnValue_00d52ae0(float value);
+    void hkpConstraintConstructionKit_setPivotA(void* pivot);
+    void hkpConstraintConstructionKit_setAngularBasisA(void* dofBasis);
+    void* hkpConstraintConstructionKit_setPivotB(void* out);
+    void* hkpConstraintConstructionKit_setAngularBasisB(void* dofBasis);
+    void hkpConstraintConstructionKit_constrainAllLinearDof();
+    void hkpConstraintConstructionKit_constrainAllAngularDof();
+    void hkpConstraintConstructionKit_setStrength(float strength);
     void hkpConstraintConstructionKit_restoreStrength();
-    void AppendZeroItem();
+    void hkpConstraintConstructionKit_end();
 };
 struct __declspec(align(16)) Cc7Vector
 {
@@ -1207,7 +1207,7 @@ struct Cc7Owner
     char* m10;
     void* m14;
     void* m18;
-    void hkFixedConstraintCinfo_Fix(void* arg);
+    void hkFixedConstraintCinfo_Fix(void* arPoint);
 };
 extern "C" void _ReadWriteBarrier();
 struct TypeHeader
@@ -1250,7 +1250,7 @@ struct LunaArgument
 };
 struct LunaTarget
 {
-    unsigned int bhkMoppBvTreeShape_Init(LunaArgument* argument);
+    unsigned int bhkMoppBvTreeShape_Init(LunaArgument* apShapeCollection);
 };
 extern void* __cdecl hkpMoppUtility_buildCode(const void*, ScratchGeometry*, unsigned int);
 union Quaternion525
@@ -1288,7 +1288,7 @@ class PositionText525
     float x, y, z;
     char* GetViewerString_00a59af0(const char*);
 };
-extern void* DAT_01268670;
+extern void* bhkPlaneShape_ms_RTTI;
 extern const char DAT_0101c29c[];
 extern const char DAT_010ca6a4[];
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
@@ -1502,8 +1502,8 @@ struct Holder
     CachedObj* unk0c;
     int unk10;
     int unk14;
-    void bhkExtendedMeshShape_CopyCinfo(void* p);
-    CachedObj* bhkExtendedMeshShape_CreateCinfo(bool* created);
+    void bhkExtendedMeshShape_CopyCinfo(void* arInfo);
+    CachedObj* bhkExtendedMeshShape_CreateCinfo(bool* arCreated);
 };
 inline void* AllocAligned(unsigned int size)
 {
@@ -1933,7 +1933,7 @@ class BoundsOwner
     int unk0c;
     BoundsEntry* m_pEntries;
     void hkaPose_syncModelSpace();
-    void ProcessEntries_00cda610(BoundsBox* out);
+    void hkaPose_getModelSpaceAabb(BoundsBox* aabbOut);
 };
 extern __declspec(thread) int DAT_tls_field;
 struct S00cc2530_ScopedHeap306
@@ -2146,7 +2146,7 @@ struct RefCountedObject
     void FUN_00c905b0();
 };
 namespace fnvc_adapt {
-extern SourceGeometry* __cdecl hkpMoppUtility_buildCode(const void* attributes, ScratchGeometry* scratch, unsigned int options);
+extern SourceGeometry* __cdecl hkpMoppUtility_buildCode(const void* shapeContainer, ScratchGeometry* moppInput, unsigned int reindexInfo);
 }
 extern int DAT_0102e368;
 struct Shape : RefCountedObject
@@ -2396,7 +2396,7 @@ struct TlsFlagGuard
         m_blk->m_2b4 = m_saved;
     }
 };
-extern unsigned int DAT_01268694;
+extern unsigned int bhkCylinderShape_ms_RTTI;
 extern float DAT_010c72bc;
 struct NameArr
 {
@@ -2423,13 +2423,13 @@ struct __declspec(align(16)) Blk
 struct TagObj
 {
     float x, y, z;
-    unsigned int GetViewerString_00a59af0(const char* s);
+    unsigned int GetViewerString_00a59af0(const char* pPrefix);
 };
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int v);
 namespace fnvc_adapt {
 unsigned int __cdecl NiGetViewerString_00a7d550(const char* s, float f);
 }
-void __cdecl HK2NINS(TagObj* t, const __m128* v);
+void __cdecl HK2NINS(TagObj* arNiP, const __m128* arhkV);
 extern const char g_011d3e74_arg1[];
 extern const char str_010ca918[];
 extern const char str_010ca914[];
@@ -2437,9 +2437,9 @@ class NamedShape
 {
   public:
     unsigned int unk00;
-    void WriteLimitedHingeData(Blk* b);
-    void bhkConvexShape_GetViewerStrings(NameArr* arr);
-    void bhkCylinderShape_GetViewerStrings(NameArr* arr);
+    void bhkCylinderShape_CopyCinfo(Blk* arInfo);
+    void bhkConvexShape_GetViewerStrings(NameArr* apStrings);
+    void bhkCylinderShape_GetViewerStrings(NameArr* apStrings);
 };
 static void AddName(NameArr* arr, const unsigned int& v)
 {
@@ -2600,7 +2600,7 @@ struct ShapeOwner_SI
     virtual void vf45();
     virtual void vf46();
     virtual void finish(ShapeInfo_SI* pkInfo);
-    void bhkTriangleShape_Init(ShapeInfo_SI* pkInfo);
+    void bhkTriangleShape_Init(ShapeInfo_SI* arInfo);
 };
 struct ParamSrc
 {
@@ -2660,7 +2660,7 @@ class CylinderInitOwner
     virtual void v45();
     virtual void v46();
     virtual void v47(ParamSrc*);
-    void __thiscall CreateAndDispatchObject(const __m128& lo, const __m128& hi, float f);
+    void __thiscall bhkCylinderShape_Init(const __m128& arTop, const __m128& arBottom, float afRad);
     void __thiscall bhkCylinderShape_Init(ParamSrc*);
 };
 void* __cdecl FUN_00ec44d0(void*, const void*, unsigned);
@@ -3056,7 +3056,7 @@ struct FUN_00ccea00Holder
     FUN_00ccea00Inner* m_08;
 
     void bhkConvexShape_CopyCinfo(FUN_00ccea00Out* out);
-    void bhkConvexTransformShape_CopyCinfo(FUN_00ccea00Out* out);
+    void bhkConvexTransformShape_CopyCinfo(FUN_00ccea00Out* arInfo);
 };
 
 #include <math.h>
@@ -3143,6 +3143,9 @@ struct Quat_cdb910
 
 // @fnv 0x00cdb910
 // src: GUESS 0x00cdb910 (confidence: low)
+// pdb: hkQuaternion::setShortestRotationDamped | hkaTwoJointsIkSolver.obj | retail, object-file run extension, low
+// pdb params: gain, from, to
+// pdb locals: cross, rescaleSin, assertBuf, ostr
 void Quat_cdb910::UpdateState_00cdb910(float t, const hkVector4& from, const hkVector4& to)
 {
     float d = from.dot3scalar(to);

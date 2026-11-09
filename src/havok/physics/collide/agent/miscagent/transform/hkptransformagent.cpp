@@ -54,37 +54,41 @@ struct CollisionAgentFunctionTable {
     char f11;
 };
 struct Agent {
-    void AppendRecordAndRegisterAgents(CollisionAgentFunctionTable* af, int a, int b);
+    void AppendRecordAndRegisterAgents(CollisionAgentFunctionTable* f, int typeA, int typeB);
 };
-void __cdecl CreateTransformAgent();
-void __cdecl RunCollector();
-void __cdecl RunSymmetricAgentFlipCollector();
-void __cdecl hkVector4_UpdateState_00d43370();
+void __cdecl hkpTransformAgent_createTransformBAgent();
+void __cdecl hkpSymmetricAgentLinearCast_hkpTransformAgent_staticGetPenetrations();
+void __cdecl hkpSymmetricAgentLinearCast_hkpTransformAgent_staticGetClosestPoints();
+void __cdecl hkpSymmetricAgentLinearCast_hkpTransformAgent_staticLinearCast();
 void __cdecl BuildHeaderAndDispatchHandler();
-void __cdecl ProcessTransformShapeCollision();
+void __cdecl hkpTransformAgent_staticGetPenetrations();
 void __cdecl hkpTransformAgent_staticGetClosestPoints();
-void __cdecl DispatchClosestPoints();
+void __cdecl hkpTransformAgent_staticLinearCast();
 
 // Fills a callback struct with two sets of function pointers and flags and registers each set on self via FUN_00cfbbe0 with ranges (-1,15) and (15,-1).
 // @fnv 0x00d43120
-void RegisterCallbacks(Agent* pAgent)
+// src: XBOX_RETAIL_PDB 0x00d43120
+// pdb: hkpTransformAgent::registerAgent | hkpTransformAgent.obj | retail, object-file gap fill, high
+// pdb params: dispatcher
+// pdb locals: af
+void hkpTransformAgent_registerAgent(Agent* dispatcher)
 {
     CollisionAgentFunctionTable af;
-    af.f0 = (void*)&CreateTransformAgent;
-    af.f4 = (void*)&RunCollector;
-    af.f8 = (void*)&RunSymmetricAgentFlipCollector;
-    af.fc = (void*)&hkVector4_UpdateState_00d43370;
+    af.f0 = (void*)&hkpTransformAgent_createTransformBAgent;
+    af.f4 = (void*)&hkpSymmetricAgentLinearCast_hkpTransformAgent_staticGetPenetrations;
+    af.f8 = (void*)&hkpSymmetricAgentLinearCast_hkpTransformAgent_staticGetClosestPoints;
+    af.fc = (void*)&hkpSymmetricAgentLinearCast_hkpTransformAgent_staticLinearCast;
     af.f10 = 1;
     af.f11 = 1;
-    pAgent->AppendRecordAndRegisterAgents(&af, -1, 15);
+    dispatcher->AppendRecordAndRegisterAgents(&af, -1, 15);
 
     af.f0 = (void*)&BuildHeaderAndDispatchHandler;
-    af.f4 = (void*)&ProcessTransformShapeCollision;
+    af.f4 = (void*)&hkpTransformAgent_staticGetPenetrations;
     af.f8 = (void*)&hkpTransformAgent_staticGetClosestPoints;
-    af.fc = (void*)&DispatchClosestPoints;
+    af.fc = (void*)&hkpTransformAgent_staticLinearCast;
     af.f10 = 0;
     af.f11 = 1;
-    pAgent->AppendRecordAndRegisterAgents(&af, 15, -1);
+    dispatcher->AppendRecordAndRegisterAgents(&af, 15, -1);
 }
 
 struct Target {
@@ -178,20 +182,23 @@ struct Caster {
     int unk04;
     int unk08;
     Collector* coll;
-    int ProcessSource(Source* s, int a, int b, int c, int d);
+    int ProcessSource(Source* bodyAin, int bodyB, int input, int collector, int startCollector);
 };
 // @fnv 0x00d42cf0
-int Caster::ProcessSource(Source* pSource, int aiArg1, int aiArg2, int aiArg3, int aiArg4)
+// pdb: hkpTransformAgent::linearCast | hkpTransformAgent.obj | retail, vtable slot, high
+// pdb params: bodyAin, bodyB, input, collector, startCollector
+// pdb locals: t, copyBodyA
+int Caster::ProcessSource(Source* bodyAin, int bodyB, int input, int collector, int startCollector)
 {
-    Body* body = pSource->body;
+    Body* body = bodyAin->body;
     hkTransform xf;
-    xf.hkTransform_setMul(*pSource->rot, body->unk30);
+    xf.hkTransform_setMul(*bodyAin->rot, body->unk30);
     Input in;
     in.xf = &xf;
-    in.src = pSource;
+    in.src = bodyAin;
     in.unk00 = body->unk14;
     in.unk04 = 0;
-    return coll->Process(&in, aiArg1, aiArg2, aiArg3, aiArg4);
+    return coll->Process(&in, bodyB, input, collector, startCollector);
 }
 
 
@@ -251,22 +258,26 @@ struct S_00d42d60_Input
 
 
 // @fnv 0x00d42d60
-void __cdecl DispatchClosestPoints(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
-                          const S_00d42d60_Input& input, S_00d42d60_Collector* pCollectorA, S_00d42d60_Collector* pCollectorB)
+// src: XBOX_RETAIL_PDB 0x00d42d60
+// pdb: hkpTransformAgent::staticLinearCast | hkpTransformAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyAin, bodyB, input, collector, startCollector
+// pdb locals: t, childBodyA
+void __cdecl hkpTransformAgent_staticLinearCast(const hkpCdBody& bodyAin, const hkpCdBody& bodyB,
+                          const S_00d42d60_Input& input, S_00d42d60_Collector* collector, S_00d42d60_Collector* startCollector)
 {
-    const S_00d42d60_TransformShape* pTransformShape = (const S_00d42d60_TransformShape*)bodyA.m_pCollisionShape;
+    const S_00d42d60_TransformShape* pTransformShape = (const S_00d42d60_TransformShape*)bodyAin.m_shape;
     __declspec(align(16)) hkTransform t;
-    t.hkTransform_setMul(*(const hkTransform*)bodyA.m_pMotionState, pTransformShape->m_kMotionTransform);
+    t.hkTransform_setMul(*(const hkTransform*)bodyAin.m_motion, pTransformShape->m_kMotionTransform);
 
     hkpCdBody childBody;
-    childBody.m_parent = &bodyA;
-    childBody.m_pMotionState = &t;
-    childBody.m_pCollisionShape = reinterpret_cast<const hkpShape*>(pTransformShape->m_pContainedShape);
-    childBody.m_uiCollisionShapeKey = 0;
+    childBody.m_parent = &bodyAin;
+    childBody.m_motion = &t;
+    childBody.m_shape = reinterpret_cast<const hkpShape*>(pTransformShape->m_pContainedShape);
+    childBody.m_shapeKey = 0;
 
     S_00d42d60_Dispatcher* d = input.m_pCollisionDispatcher;
-    unsigned char agent = d->m_agent2TypeMap[reinterpret_cast<const S_00d42d60_Shape*>(childBody.m_pCollisionShape)->m_type][reinterpret_cast<const S_00d42d60_Shape*>(bodyB.m_pCollisionShape)->m_type];
-    d->m_agent2Funcs[agent].m_getClosestPoints(childBody, bodyB, input, pCollectorA, pCollectorB);
+    unsigned char agent = d->m_agent2TypeMap[reinterpret_cast<const S_00d42d60_Shape*>(childBody.m_shape)->m_type][reinterpret_cast<const S_00d42d60_Shape*>(bodyB.m_shape)->m_type];
+    d->m_agent2Funcs[agent].m_getClosestPoints(childBody, bodyB, input, collector, startCollector);
 }
 
 namespace fnv_00d42ed0 {
@@ -277,17 +288,20 @@ struct Handler { virtual int V0(); virtual int V1(); virtual int V2(); virtual i
 struct Owner { int a,b,c; Handler* handler; void hkpTransformAgent_getPenetrations(Input*,int,int,int); };
 // @fnv 0x00d42ed0
 // src: HAVOK_LIB 0x00d42ed0
-void Owner::hkpTransformAgent_getPenetrations(Input* input,int aiArg1,int aiArg2,int aiArg3)
+// pdb: hkpTransformAgent::getPenetrations | hkpTransformAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyAin, bodyB, input, collector
+// pdb locals: t, copyBodyA
+void Owner::hkpTransformAgent_getPenetrations(Input* bodyAin,int bodyB,int aiArg2,int collector)
 {
-    Object* object=input->object;
+    Object* object=bodyAin->object;
     hkTransform temp;
-    temp.hkTransform_setMul(*input->transform, object->transform);
+    temp.hkTransform_setMul(*bodyAin->transform, object->transform);
     DispatchData data;
     data.unk08=&temp;
-    data.unk0c=input;
+    data.unk0c=bodyAin;
     data.unk00=object->unk14;
     data.unk04=0;
-    handler->Dispatch(&data,aiArg1,aiArg2,aiArg3);
+    handler->Dispatch(&data,bodyB,aiArg2,collector);
 }
 }  // namespace fnv_00d42ed0
 
@@ -303,17 +317,20 @@ struct Handler {
 struct Owner { int unk00; int unk04; int unk08; Handler* handler; int hkpTransformAgent_updateShapeCollectionFilter(Input*, int, int, int); };
 // @fnv 0x00d42fc0
 // src: HAVOK_LIB 0x00d42fc0
-int Owner::hkpTransformAgent_updateShapeCollectionFilter(Input* input, int aiArg1, int aiArg2, int aiArg3)
+// pdb: hkpTransformAgent::updateShapeCollectionFilter | hkpTransformAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyAin, bodyB, input, constraintOwner
+// pdb locals: t, copyBodyA
+int Owner::hkpTransformAgent_updateShapeCollectionFilter(Input* bodyAin, int bodyB, int aiArg2, int constraintOwner)
 {
-    Object* object = input->object;
+    Object* object = bodyAin->object;
     hkTransform temp;
-    temp.hkTransform_setMul(*input->transform, object->transform);
+    temp.hkTransform_setMul(*bodyAin->transform, object->transform);
     DispatchData data;
     data.unk08 = &temp;
-    data.unk0c = input;
+    data.unk0c = bodyAin;
     data.unk00 = object->unk14;
     data.unk04 = 0;
-    return handler->Dispatch(&data, aiArg1, aiArg2, aiArg3);
+    return handler->Dispatch(&data, bodyB, aiArg2, constraintOwner);
 }
 }  // namespace fnv_00d42fc0
 
@@ -336,14 +353,18 @@ struct D432F0Collector : D432F0CollectorBase {
     virtual void unk04();
 };
 
-void __cdecl ProcessTransformShapeCollision(int a, int b, int c, D432F0CollectorBase* collector);
+void __cdecl hkpTransformAgent_staticGetPenetrations(int bodyAin, int bodyB, int c, D432F0CollectorBase* collector);
 
 // Constructs a D432F0Collector from d and calls ProcessTransformShapeCollision with b, a, c and the collector.
 // @fnv 0x00d432f0
-void __cdecl RunCollector(int aiArgA, int aiArgB, int aiArgC, int aiData)
+// src: XBOX_RETAIL_PDB 0x00d432f0
+// pdb: hkpSymmetricAgentLinearCast<hkpTransformAgent>::staticGetPenetrations | hkpTransformAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpTransformAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int aiData)
 {
     D432F0Collector collector(aiData);
-    ProcessTransformShapeCollision(aiArgB, aiArgA, aiArgC, &collector);
+    hkpTransformAgent_staticGetPenetrations(bodyB, bodyA, input, &collector);
 }
 
 extern float DAT_0104da48;
@@ -351,13 +372,17 @@ extern void __cdecl hkpTransformAgent_staticGetClosestPoints(void*, void*, int, 
 
 // Builds a local hkpSymmetricAgentFlipCollector from DAT_0104da48 and arg4, then calls FUN_00d42e50 with arg2, arg1, arg3 and the collector.
 // @fnv 0x00d43330
-void __cdecl RunSymmetricAgentFlipCollector(void* arg1, void* arg2, int arg3, int arg4)
+// src: XBOX_RETAIL_PDB 0x00d43330
+// pdb: hkpSymmetricAgentLinearCast<hkpTransformAgent>::staticGetClosestPoints | hkpTransformAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpTransformAgent_staticGetClosestPoints(void* bodyA, void* bodyB, int input, int collector)
 {
     void* storage[3];
     hkpSymmetricAgentFlipCollector& local = *::new (storage) hkpSymmetricAgentFlipCollector;
-    local.m_fEarlyOutDistance = DAT_0104da48;
-    local.unk08 = reinterpret_cast<void*>(arg4);
-    hkpTransformAgent_staticGetClosestPoints(arg2, arg1, arg3, &local);
+    local.m_earlyOutDistance = DAT_0104da48;
+    local.m_collector = reinterpret_cast<void*>(collector);
+    hkpTransformAgent_staticGetClosestPoints(bodyB, bodyA, input, &local);
 }
 
 struct CallData { void* descriptor; float bound; unsigned int value; };
@@ -370,12 +395,15 @@ struct Wrapper {
 // Builds a CallData from fourth and DAT_0104da48 with descriptor DAT_010ce7fc, then calls FUN_00d42de0 with second, first and third.
 // @fnv 0x00d434a0
 // src: GUESS 0x00d434a0 (confidence: low)
-void Wrapper::UpdateFields_00d434a0(void* first, void* second, unsigned int third, unsigned int fourth) {
+// pdb: hkpSymmetricAgentLinearCast<hkpTransformAgent>::getClosestPoints | hkpTransformAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void Wrapper::UpdateFields_00d434a0(void* bodyA, void* bodyB, unsigned int input, unsigned int collector) {
     CallData data;
-    data.value = fourth;
+    data.value = collector;
     data.bound = DAT_0104da48;
     data.descriptor = &DAT_010ce7fc;
-    hkpTransformAgent_getClosestPoints(second, first, third, &data);
+    hkpTransformAgent_getClosestPoints(bodyB, bodyA, input, &data);
 }
 
 extern "C" __m128 _mm_xor_ps(__m128 a, __m128 b);
@@ -407,22 +435,25 @@ struct Collector_d43620 {
 };
 
 struct Caster_d43620 {
-    int ProcessSource(int a, int b, const Input_d43620* in, Collector_d43620* c, Collector_d43620* c2);
-    int ProcessAndReturnValue_00d43620(int a, int b, const Input_d43620* in, int c, int d);
+    int ProcessSource(int bodyAin, int bodyB, const Input_d43620* input, Collector_d43620* collector, Collector_d43620* startCollector);
+    int ProcessAndReturnValue_00d43620(int bodyA, int bodyB, const Input_d43620* input, int collector, int startCollector);
 };
 
 // @fnv 0x00d43620
 // src: GUESS 0x00d43620 (confidence: low)
-int Caster_d43620::ProcessAndReturnValue_00d43620(int aiArg1, int aiArg2, const Input_d43620* apInput, int aiValue1, int aiValue2)
+// pdb: hkpSymmetricAgent<hkpTransformAgent>::linearCast | hkpTransformAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: flip, flippedInput, startFlip
+int Caster_d43620::ProcessAndReturnValue_00d43620(int bodyA, int bodyB, const Input_d43620* input, int collector, int startCollector)
 {
-    Input_d43620 rev = *apInput;
-    rev.m_dir = _mm_xor_ps(apInput->m_dir, DAT_010c44d0);
+    Input_d43620 rev = *input;
+    rev.m_dir = _mm_xor_ps(input->m_dir, DAT_010c44d0);
 
     Collector_d43620 c1;
-    c1.Init(apInput->m_dir, aiValue1);
+    c1.Init(input->m_dir, collector);
     Collector_d43620 c2;
-    if (aiValue2) { c2.Init(apInput->m_dir, aiValue2); return ProcessSource(aiArg2, aiArg1, &rev, &c1, &c2); }
-    return ProcessSource(aiArg2, aiArg1, &rev, &c1, 0);
+    if (startCollector) { c2.Init(input->m_dir, startCollector); return ProcessSource(bodyB, bodyA, &rev, &c1, &c2); }
+    return ProcessSource(bodyB, bodyA, &rev, &c1, 0);
 }
 
 // FUN_00d429c0: thiscall, one stack argument (callee pops 4).
@@ -444,7 +475,7 @@ public:
 class ForwardOwner {
 public:
     virtual void vDtor(unsigned int flags);
-    void hkpTransformAgent_cleanup(unsigned int arg);
+    void hkpTransformAgent_cleanup(unsigned int constraintOwner);
     unsigned int unk04;
     unsigned int unk08;
     ForwardTarget* m_0c;
@@ -453,9 +484,11 @@ public:
 // Forwards arg to the target's v1c and then calls the virtual destructor with flags 1.
 // @fnv 0x00d429c0
 // src: HAVOK_LIB 0x00d429c0
-void ForwardOwner::hkpTransformAgent_cleanup(unsigned int arg)
+// pdb: hkpTransformAgent::cleanup | hkpTransformAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
+void ForwardOwner::hkpTransformAgent_cleanup(unsigned int constraintOwner)
 {
-    m_0c->v1c(arg);
+    m_0c->v1c(constraintOwner);
     vDtor(1);
 }
 
@@ -569,7 +602,7 @@ struct InputC {unsigned char* state; int unk04;int unk08;int unk0c;int unk10;int
 __declspec(align(16)) struct WorkArea {
     hkTransform m_kMotionTransform;
     void* entries[28];
-    void CopyFrom(struct DataHandle data);
+    void hkMotionState_ctor(struct DataHandle data);
     __forceinline void SetTransformProduct(struct DataHandle data, const hkTransform& transform)
     {
         m_kMotionTransform.hkTransform_setMul(
@@ -590,6 +623,8 @@ struct HandlerEntry {
 };
 // Allocates a 16-byte Header, fills tag/format/userValue, runs workspace setup, selects a handler by kind from a table and stores its return in header->result.
 // @fnv 0x00d42a70
+// pdb: hkpTransformAgent::createTransformAAgent | hkpTransformAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, mgr
 Header* __cdecl BuildHeaderAndDispatchHandler(InputA* pSource,InputB* pPathInput,InputC* pStateInput,int value) {
     Resource* resource = hkMemoryRouter_getInstance();
     Header* header = resource->allocator->allocate(16);
@@ -600,7 +635,7 @@ Header* __cdecl BuildHeaderAndDispatchHandler(InputA* pSource,InputB* pPathInput
     Root* root=pSource->root;
     Meta* meta=root->meta;
     WorkArea workspace;
-    workspace.CopyFrom(DataHandle(pSource->data));
+    workspace.hkMotionState_ctor(DataHandle(pSource->data));
     workspace.SetTransformProduct(DataHandle(pSource->data), root->portion30);
     CallbackArgs callbackArgs = {meta,0,&workspace,pSource};
     Path* path=pPathInput->path;
@@ -679,36 +714,42 @@ struct CollisionInput_00d42f40
 
 // Builds a child collision body from the transform shape's child and transform, then dispatches it against the second body via the dispatcher.
 // @fnv 0x00d42f40
-void __cdecl ProcessTransformShapeCollision(
-    const CollisionBody_00d42f40* first,
-    const CollisionBody_00d42f40* second,
+// src: XBOX_RETAIL_PDB 0x00d42f40
+// pdb: hkpTransformAgent::staticGetPenetrations | hkpTransformAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyAin, bodyB, input, collector
+// pdb locals: t, copyBodyA
+void __cdecl hkpTransformAgent_staticGetPenetrations(
+    const CollisionBody_00d42f40* bodyAin,
+    const CollisionBody_00d42f40* bodyB,
     const CollisionInput_00d42f40* input,
-    void* output)
+    void* collector)
 {
     const TransformShape_00d42f40* shape =
-        static_cast<const TransformShape_00d42f40*>(first->shape);
+        static_cast<const TransformShape_00d42f40*>(bodyAin->shape);
     hkTransform transform;
-    transform.hkTransform_setMul(*first->transform, shape->transform);
+    transform.hkTransform_setMul(*bodyAin->transform, shape->transform);
 
     CollisionBody_00d42f40 childBody;
-    childBody.parent = first;
+    childBody.parent = bodyAin;
     childBody.transform = &transform;
     childBody.shape = shape->child;
     childBody.shapeKey = 0;
 
-    input->dispatcher->getFunction(childBody.shape->type, second->shape->type)(
-        &childBody, second, input, output);
+    input->dispatcher->getFunction(childBody.shape->type, bodyB->shape->type)(
+        &childBody, bodyB, input, collector);
 }
 
 struct CallTarget_00d42fc0 { int hkpTransformAgent_updateShapeCollectionFilter(int, int, int, int); };
 struct SearchObject {
-    int ProcessAndReturnValue_00d43600(unsigned int arg0, unsigned int arg1, unsigned int arg2, unsigned int arg3);
+    int ProcessAndReturnValue_00d43600(unsigned int bodyA, unsigned int bodyB, unsigned int input, unsigned int constraintOwner);
 };
 // @fnv 0x00d43600
 // src: GUESS 0x00d43600 (confidence: low)
-int SearchObject::ProcessAndReturnValue_00d43600(unsigned int arg0, unsigned int arg1, unsigned int arg2, unsigned int arg3)
+// pdb: hkpSymmetricAgentLinearCast<hkpTransformAgent>::updateShapeCollectionFilter | hkpTransformAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, constraintOwner
+int SearchObject::ProcessAndReturnValue_00d43600(unsigned int bodyA, unsigned int bodyB, unsigned int input, unsigned int constraintOwner)
 {
-    unsigned int uiResult = (unsigned int)((CallTarget_00d42fc0*)this)->hkpTransformAgent_updateShapeCollectionFilter((int)arg1, (int)arg0, (int)arg2, (int)arg3);
+    unsigned int uiResult = (unsigned int)((CallTarget_00d42fc0*)this)->hkpTransformAgent_updateShapeCollectionFilter((int)bodyB, (int)bodyA, (int)input, (int)constraintOwner);
     return (int)uiResult;
 }
 
@@ -774,12 +815,15 @@ struct S_00d431b0 {
     char ba;
     char bb;
     char bc;
-    S_00d431b0& CopyFrom(const S_00d431b0& o);
+    S_00d431b0& hkMotionState_ctor(const S_00d431b0& o);
 };
 
 // Copies the rows, blk, u90-u9c, fa0-fa8 and ba-bc members from o into this object and returns *this.
 // @fnv 0x00d431b0
-S_00d431b0& S_00d431b0::CopyFrom(const S_00d431b0& aOther) {
+// src: XBOX_RETAIL_PDB 0x00d431b0
+// pdb: hkMotionState::hkMotionState | hkpTransformAgent.obj | retail, object-file gap fill, high
+// pdb params: __that
+S_00d431b0& S_00d431b0::hkMotionState_ctor(const S_00d431b0& aOther) {
     S_00d431b0_Raw t;
     t.u00 = ((const S_00d431b0_Raw*)&aOther.rows)->u00;
     t.u04 = ((const S_00d431b0_Raw*)&aOther.rows)->u04;
@@ -1212,47 +1256,49 @@ struct Output {
 };
 
 struct hkpGskAgent {
-    void hkpTransformAgent_processCollision(const hkpCdBody& bodyB, const hkpCdBody& bodyA, const GskAgentInput& input, Output& output);
+    void hkpTransformAgent_processCollision(const hkpCdBody& bodyAin, const hkpCdBody& bodyA, const GskAgentInput& input, Output& result);
 };
 
 // @fnv 0x00d434e0
+// pdb: hkpSymmetricAgentLinearCast<hkpTransformAgent>::processCollision | hkpTransformAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
 template <>
 // src: GUESS 0x00d434e0 (confidence: low)
-void hkpSymmetricAgent<hkpGskAgent>::ProcessEntries_00d434e0(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const GskAgentInput& input, Output& output)
+void hkpSymmetricAgent<hkpGskAgent>::ProcessEntries_00d434e0(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const GskAgentInput& input, Output& result)
 {
-    float oldTime = output.m_fTimeOfImpact.m_uiCommandId;
-    AlignedPairData* cp = output.m_pAlignedPairData;
+    float oldTime = result.m_fTimeOfImpact.m_uiCommandId;
+    AlignedPairData* cp = result.m_pAlignedPairData;
 
-    reinterpret_cast<hkpGskAgent*>(this)->hkpTransformAgent_processCollision(bodyB, bodyA, input, output);
+    reinterpret_cast<hkpGskAgent*>(this)->hkpTransformAgent_processCollision(bodyB, bodyA, input, result);
 
-    while (cp < output.m_pAlignedPairData) {
+    while (cp < result.m_pAlignedPairData) {
         addMul4(cp->m_vContactPosition, getDistanceSimdReal(cp->m_vSeparatingNormal), cp->m_vSeparatingNormal);
         setNeg3(cp->m_vSeparatingNormal, cp->m_vSeparatingNormal);
         cp++;
     }
 
-    if (oldTime != output.m_fTimeOfImpact.m_uiCommandId) {
-        setNeg3(output.m_fTimeOfImpact.m_vSeparatingNormal);
+    if (oldTime != result.m_fTimeOfImpact.m_uiCommandId) {
+        setNeg3(result.m_fTimeOfImpact.m_vSeparatingNormal);
 
-        unsigned char t = output.m_fTimeOfImpact.m_kGskCache.m_features.a;
-        output.m_fTimeOfImpact.m_kGskCache.m_features.a = output.m_fTimeOfImpact.m_kGskCache.m_features.b;
+        unsigned char t = result.m_fTimeOfImpact.m_kGskCache.m_features.a;
+        result.m_fTimeOfImpact.m_kGskCache.m_features.a = result.m_fTimeOfImpact.m_kGskCache.m_features.b;
         unsigned char dimA;
-        output.m_fTimeOfImpact.m_kGskCache.m_features.b = t;
-        dimA = output.m_fTimeOfImpact.m_kGskCache.m_ucDimensionA;
+        result.m_fTimeOfImpact.m_kGskCache.m_features.b = t;
+        dimA = result.m_fTimeOfImpact.m_kGskCache.m_ucDimensionA;
 
-        unsigned char dimB = output.m_fTimeOfImpact.m_kGskCache.m_ucDimensionB;
-        output.m_fTimeOfImpact.m_kGskCache.m_ucDimensionB = dimA;
+        unsigned char dimB = result.m_fTimeOfImpact.m_kGskCache.m_ucDimensionB;
+        result.m_fTimeOfImpact.m_kGskCache.m_ucDimensionB = dimA;
         int idx = (int)dimB + (int)dimA - 1;
-        output.m_fTimeOfImpact.m_kGskCache.m_ucDimensionA = dimB;
-        unsigned short v0 = output.m_fTimeOfImpact.m_kGskCache.m_kVertices[0];
-        unsigned short* v = output.m_fTimeOfImpact.m_kGskCache.m_kVertices;
+        result.m_fTimeOfImpact.m_kGskCache.m_ucDimensionA = dimB;
+        unsigned short v0 = result.m_fTimeOfImpact.m_kGskCache.m_kVertices[0];
+        unsigned short* v = result.m_fTimeOfImpact.m_kGskCache.m_kVertices;
         v[0] = v[idx];
         v[idx] = v0;
 
-        if ((output.m_fTimeOfImpact.m_kGskCache.m_ucDimensionA & output.m_fTimeOfImpact.m_kGskCache.m_ucDimensionB) == 2) {
-            unsigned short v1 = output.m_fTimeOfImpact.m_kGskCache.m_kVertices[1];
-            output.m_fTimeOfImpact.m_kGskCache.m_kVertices[1] = output.m_fTimeOfImpact.m_kGskCache.m_kVertices[2];
-            output.m_fTimeOfImpact.m_kGskCache.m_kVertices[2] = v1;
+        if ((result.m_fTimeOfImpact.m_kGskCache.m_ucDimensionA & result.m_fTimeOfImpact.m_kGskCache.m_ucDimensionB) == 2) {
+            unsigned short v1 = result.m_fTimeOfImpact.m_kGskCache.m_kVertices[1];
+            result.m_fTimeOfImpact.m_kGskCache.m_kVertices[1] = result.m_fTimeOfImpact.m_kGskCache.m_kVertices[2];
+            result.m_fTimeOfImpact.m_kGskCache.m_kVertices[2] = v1;
         }
     }
 }
@@ -1344,24 +1390,25 @@ struct S_00d43030_Agent : S_00d43030_RefObj {
     __forceinline S_00d43030_Agent(S_00d43030_ContactMgr* mgr) throw() : m_pContactManager(mgr) {}
     virtual void vfn04();
 };
-struct S_00d43030_TransformAgent : S_00d43030_Agent {
-    S_00d43030_Agent* m_pAgent;
-    __forceinline S_00d43030_TransformAgent(const S_00d43030_CdBody& bodyA, const S_00d43030_CdBody& bodyB, const S_00d43030_CollisionInput& input, S_00d43030_ContactMgr* mgr) throw();
+// pdb: class hkpTransformAgent, size 0x10, bases: hkpCollisionAgent, 1 members
+struct hkpTransformAgent : S_00d43030_Agent {
+    S_00d43030_Agent* m_childAgent;
+    __forceinline hkpTransformAgent(const S_00d43030_CdBody& bodyA, const S_00d43030_CdBody& bodyB, const S_00d43030_CollisionInput& input, S_00d43030_ContactMgr* mgr) throw();
     virtual void vfn04();
 };
-__forceinline S_00d43030_TransformAgent::S_00d43030_TransformAgent(const S_00d43030_CdBody& bodyA, const S_00d43030_CdBody& bodyB, const S_00d43030_CollisionInput& input, S_00d43030_ContactMgr* mgr) throw()
+__forceinline hkpTransformAgent::hkpTransformAgent(const S_00d43030_CdBody& bodyA, const S_00d43030_CdBody& bodyB, const S_00d43030_CollisionInput& input, S_00d43030_ContactMgr* mgr) throw()
     : S_00d43030_Agent(mgr)
 {
     const S_00d43030_TransformShape* tShapeA = static_cast<const S_00d43030_TransformShape*>(bodyA.getShape());
     const S_00d43030_Shape* childShape = tShapeA->m_pContainedShape;
 
     WorkArea ms;
-    ms.CopyFrom(DataHandle(reinterpret_cast<int>(bodyA.GetMotionState())));
+    ms.hkMotionState_ctor(DataHandle(reinterpret_cast<int>(bodyA.GetMotionState())));
     ms.SetTransformProduct(DataHandle(reinterpret_cast<int>(bodyA.GetMotionState())),
         tShapeA->m_kMotionTransform);
 
     S_00d43030_CdBody newOperandA(&bodyA, &ms, childShape, 0);
-    m_pAgent = input.m_pCollisionDispatcher->getNewCollisionAgent(newOperandA, bodyB, input, mgr);
+    m_childAgent = input.m_pCollisionDispatcher->getNewCollisionAgent(newOperandA, bodyB, input, mgr);
 }
 // Retained until the shared hkpSymmetricAgent inherits AGENT and supports this
 // constructor: its base layout and inherited allocator are required here.
@@ -1373,9 +1420,12 @@ template <class AGENT> struct S_00d43030_Symmetric : AGENT {
 
 // Allocates a symmetric TransformAgent for the two bodies and returns it as an Agent pointer.
 // @fnv 0x00d43030
-S_00d43030_Agent* CreateTransformAgent(const S_00d43030_CdBody& bodyA, const S_00d43030_CdBody& bodyB, const S_00d43030_CollisionInput& input, S_00d43030_ContactMgr* mgr)
+// src: XBOX_RETAIL_PDB 0x00d43030
+// pdb: hkpTransformAgent::createTransformBAgent | hkpTransformAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, mgr
+S_00d43030_Agent* hkpTransformAgent_createTransformBAgent(const S_00d43030_CdBody& bodyA, const S_00d43030_CdBody& bodyB, const S_00d43030_CollisionInput& input, S_00d43030_ContactMgr* mgr)
 {
-    S_00d43030_TransformAgent* agent = new S_00d43030_Symmetric<S_00d43030_TransformAgent>(bodyA, bodyB, input, mgr);
+    hkpTransformAgent* agent = new S_00d43030_Symmetric<hkpTransformAgent>(bodyA, bodyB, input, mgr);
     return agent;
 }
 
@@ -1396,12 +1446,15 @@ struct Record_d2e9 {
     int m_uiFilterValue;
 };
 
-void __cdecl DispatchClosestPoints(int a1, int a2, Input_d2e9* input, Record_d2e9* rec, Record_d2e9* optRec);
+void __cdecl hkpTransformAgent_staticLinearCast(int bodyAin, int a2, Input_d2e9* input, Record_d2e9* collector, Record_d2e9* startCollector);
 
 // XORs the input vector with DAT_010c44d0, builds a Record_d2e9 with m_fScalar and a4, and calls DispatchClosestPoints with an optional second record using a5.
 // @fnv 0x00d43370
-// src: GUESS 0x00d43370 (confidence: low)
-void __cdecl hkVector4_UpdateState_00d43370(int a2, int a1, const Input_d2e9* input, int a4, int a5)
+// src: XBOX_RETAIL_PDB 0x00d43370
+// pdb: hkpSymmetricAgentLinearCast<hkpTransformAgent>::staticLinearCast | hkpTransformAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: flip, flippedInput, startFlip
+void __cdecl hkpSymmetricAgentLinearCast_hkpTransformAgent_staticLinearCast(int bodyA, int bodyB, const Input_d2e9* input, int collector, int startCollector)
 {
     Input_d2e9 local = *input;
     local.m_vComponents = _mm_xor_ps(input->m_vComponents, DAT_010c44d0);
@@ -1410,17 +1463,17 @@ void __cdecl hkVector4_UpdateState_00d43370(int a2, int a1, const Input_d2e9* in
     rec.m_vtbl = (const unsigned int*)DAT_010ce80c;
     rec.m_fScalar = DAT_0104da48;
     rec.m_key = *(const hkVector4*)&input->m_vComponents;
-    rec.m_uiFilterValue = a4;
+    rec.m_uiFilterValue = collector;
 
-    if (a5 != 0) {
+    if (startCollector != 0) {
         Record_d2e9 rec2;
         rec2.m_vtbl = (const unsigned int*)DAT_010ce80c;
         rec2.m_fScalar = DAT_0104da48;
         rec2.m_key = *(const hkVector4*)&input->m_vComponents;
-        rec2.m_uiFilterValue = a5;
-        DispatchClosestPoints(a1, a2, &local, &rec, &rec2);
+        rec2.m_uiFilterValue = startCollector;
+        hkpTransformAgent_staticLinearCast(bodyB, bodyA, &local, &rec, &rec2);
     } else {
-        DispatchClosestPoints(a1, a2, &local, &rec, 0);
+        hkpTransformAgent_staticLinearCast(bodyB, bodyA, &local, &rec, 0);
     }
 }
 
@@ -1522,12 +1575,15 @@ struct S_00d42b50_Cls {
     int unk04;
     int unk08;
     S_00d42b50_Agent* m_pAgent;
-    void hkpTransformAgent_processCollision(const S_00d42b50_CdBody& bodyA, const S_00d42b50_CdBody& bodyB, const S_00d42b50_Input& input, S_00d42b50_Output& output);
+    void hkpTransformAgent_processCollision(const S_00d42b50_CdBody& bodyAin, const S_00d42b50_CdBody& bodyB, const S_00d42b50_Input& input, S_00d42b50_Output& result);
 };
 
 // @fnv 0x00d42b50
 // src: HAVOK_SRC 0x00d42b50
-void S_00d42b50_Cls::hkpTransformAgent_processCollision(const S_00d42b50_CdBody& bodyA, const S_00d42b50_CdBody& bodyB, const S_00d42b50_Input& input, S_00d42b50_Output& output)
+// pdb: hkpTransformAgent::processCollision | hkpTransformAgent.obj | retail, string-set bridge, high
+// pdb params: bodyAin, bodyB, input, result
+// pdb locals: ms, copyBodyA, assertBuf, ostr
+void S_00d42b50_Cls::hkpTransformAgent_processCollision(const S_00d42b50_CdBody& bodyAin, const S_00d42b50_CdBody& bodyB, const S_00d42b50_Input& input, S_00d42b50_Output& result)
 {
     union Scratch {
         unsigned int tick;
@@ -1549,11 +1605,11 @@ void S_00d42b50_Cls::hkpTransformAgent_processCollision(const S_00d42b50_CdBody&
         }
     }
 
-    scratch.shape = (const S_00d42b50_TShape*)bodyA.m_pCollisionShape;
+    scratch.shape = (const S_00d42b50_TShape*)bodyAin.m_pCollisionShape;
     const hkTransform& xf = scratch.shape->m_kMotionTransform;
     S_00d42b50_Motion ms;
-    ms.m_kMotionTransform.hkTransform_setMul(bodyA.m_pMotionState->m_kMotionTransform, xf);
-    const S_00d42b50_Motion* src = bodyA.m_pMotionState;
+    ms.m_kMotionTransform.hkTransform_setMul(bodyAin.m_pMotionState->m_kMotionTransform, xf);
+    const S_00d42b50_Motion* src = bodyAin.m_pMotionState;
     _mm_store_ps(&ms.unk40.x, _mm_load_ps(&src->unk40.x));
     _mm_store_ps(&ms.unk50.x, _mm_load_ps(&src->unk50.x));
     ms.unk60.setMul((const hkVector4*)&src->unk60, &scratch.shape->m_rotation);
@@ -1582,10 +1638,10 @@ void S_00d42b50_Cls::hkpTransformAgent_processCollision(const S_00d42b50_CdBody&
 
     S_00d42b50_CdBody newBody;
     newBody.m_pMotionState = &ms;
-    newBody.m_parent = &bodyA;
+    newBody.m_parent = &bodyAin;
     newBody.m_pCollisionShape = scratch.shape->m_pContainedShape;
     newBody.m_uiCollisionShapeKey = 0;
-    m_pAgent->ProcessAgent(newBody, bodyB, input, output);
+    m_pAgent->ProcessAgent(newBody, bodyB, input, result);
 
     {
         S_00d42b50_MonitorStream& mStream = S_00d42b50_MonitorStream::GetMonitorStream();
@@ -1617,18 +1673,21 @@ struct TtTransform {
 };
 
 struct TtShapeCollection : TtTransform {
-    void UpdateFields_00d43460(int a, int b, int c, int d);
+    void UpdateFields_00d43460(int bodyA, int bodyB, int input, int collector);
 };
 
 // Builds a SectorDesc from d and the static sectorPtrs, then calls TtTransform::FUN_00d42ed0 with b, a, c and that descriptor.
 // @fnv 0x00d43460
 // src: GUESS 0x00d43460 (confidence: low)
-void TtShapeCollection::UpdateFields_00d43460(int a, int b, int c, int d) {
+// pdb: hkpSymmetricAgentLinearCast<hkpTransformAgent>::getPenetrations | hkpTransformAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void TtShapeCollection::UpdateFields_00d43460(int bodyA, int bodyB, int input, int collector) {
     SectorDesc s;
     s.unk04 = false;
     s.sectorPtrs = (void*)DAT_010ce81c;
-    s.unk08 = d;
-    TtTransform::hkpTransformAgent_getPenetrations(b, a, c, &s);
+    s.unk08 = collector;
+    TtTransform::hkpTransformAgent_getPenetrations(bodyB, bodyA, input, &s);
 }
 
 struct CollisionAgentContext;
@@ -1680,31 +1739,34 @@ struct TransformClosestAgent {
     int unk04;
     int unk08;
     TransformClosestChildAgent* m_pAgent;
-    void hkpTransformAgent_getClosestPoints(const hkpCdBody& bodyA,
+    void hkpTransformAgent_getClosestPoints(const hkpCdBody& bodyAin,
         const hkpCdBody& bodyB, const S_00d42d60_Input& input,
-        TransformClosestPointCollector& collector);
+        TransformClosestPointCollector& pointDetails);
 };
 
 // Builds a temporary child body from bodyA's contained shape and motion transform, then delegates to m_pAgent to collect closest points with bodyB.
 // @fnv 0x00d42de0
 // src: HAVOK_LIB 0x00d42de0
-void TransformClosestAgent::hkpTransformAgent_getClosestPoints(const hkpCdBody& bodyA,
+// pdb: hkpTransformAgent::getClosestPoints | hkpTransformAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyAin, bodyB, input, pointDetails
+// pdb locals: t, copyBodyA
+void TransformClosestAgent::hkpTransformAgent_getClosestPoints(const hkpCdBody& bodyAin,
     const hkpCdBody& bodyB, const S_00d42d60_Input& input,
-    TransformClosestPointCollector& collector)
+    TransformClosestPointCollector& pointDetails)
 {
     __declspec(align(16)) hkTransform transform;
     const S_00d42d60_TransformShape* shape =
-        reinterpret_cast<const S_00d42d60_TransformShape*>(bodyA.m_pCollisionShape);
+        reinterpret_cast<const S_00d42d60_TransformShape*>(bodyAin.m_shape);
     transform.hkTransform_setMul(
-        *static_cast<const hkTransform*>(bodyA.m_pMotionState),
+        *static_cast<const hkTransform*>(bodyAin.m_motion),
         shape->m_kMotionTransform);
 
     hkpCdBody childBody;
-    childBody.m_pMotionState = &transform;
-    childBody.m_parent = &bodyA;
-    childBody.m_pCollisionShape = reinterpret_cast<const hkpShape*>(shape->m_pContainedShape);
-    childBody.m_uiCollisionShapeKey = 0;
-    m_pAgent->getClosestPoints(childBody, bodyB, input, collector);
+    childBody.m_motion = &transform;
+    childBody.m_parent = &bodyAin;
+    childBody.m_shape = reinterpret_cast<const hkpShape*>(shape->m_pContainedShape);
+    childBody.m_shapeKey = 0;
+    m_pAgent->getClosestPoints(childBody, bodyB, input, pointDetails);
 }
 
 struct TransformClosestDispatcher
@@ -1751,15 +1813,18 @@ struct __declspec(align(16)) TransformClosestFrame
 
 // @fnv 0x00d42e50
 // src: HAVOK_LIB 0x00d42e50
-void __cdecl hkpTransformAgent_staticGetClosestPoints(const CollisionBody_00d42f40* bodyA,
+// pdb: hkpTransformAgent::staticGetClosestPoints | hkpTransformAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyAin, bodyB, input, pointDetails
+// pdb locals: t, childBodyA
+void __cdecl hkpTransformAgent_staticGetClosestPoints(const CollisionBody_00d42f40* bodyAin,
                          const CollisionBody_00d42f40* bodyB,
-                         const CollisionInput_00d42f40* input, void* collector)
+                         const CollisionInput_00d42f40* input, void* pointDetails)
 {
     const TransformShape_00d42f40* shape =
-        static_cast<const TransformShape_00d42f40*>(bodyA->shape);
+        static_cast<const TransformShape_00d42f40*>(bodyAin->shape);
     TransformClosestFrame frame;
-    frame.transform.hkTransform_setMul(*bodyA->transform, shape->transform);
-    frame.parent = bodyA;
+    frame.transform.hkTransform_setMul(*bodyAin->transform, shape->transform);
+    frame.parent = bodyAin;
     frame.motion = &frame.transform;
     const Shape_00d42f40* child = shape->child;
     frame.shape = child;
@@ -1773,5 +1838,5 @@ void __cdecl hkpTransformAgent_staticGetClosestPoints(const CollisionBody_00d42f
     void* function = dispatcher->functions[agent].f8;
     reinterpret_cast<void (__cdecl*)(const void*, const CollisionBody_00d42f40*,
                                     const CollisionInput_00d42f40*, void*)>(function)
-        (&frame.shape, bodyB, input, collector);
+        (&frame.shape, bodyB, input, pointDetails);
 }

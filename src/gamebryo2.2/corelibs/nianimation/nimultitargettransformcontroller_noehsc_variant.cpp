@@ -52,18 +52,21 @@ class BlendInterp
 
 // @fnv 0x00a2feb0
 // src: XBOX_PDB 0x00a2feb0
-void NiMultiTargetTransformController::AllocateStorage(unsigned short n)
+// pdb: NiMultiTargetTransformController::AllocateStorage | NiMultiTargetTransformController.obj | retail, upstream name already matches, high
+// pdb params: usCount
+// pdb locals: us
+void NiMultiTargetTransformController::AllocateStorage(unsigned short usCount)
 {
-    m_usNumInterps = n;
-    if (n == 0)
+    m_usNumInterps = usCount;
+    if (usCount == 0)
         return;
 
-    m_pkBlendInterpolators = (NiBlendTransformInterpolator*)new BlendInterp[n];
-    for (unsigned short i = 0; i < n; i++)
+    m_pkBlendInterpolators = (NiBlendTransformInterpolator*)new BlendInterp[usCount];
+    for (unsigned short i = 0; i < usCount; i++)
         ((BlendInterp*)m_pkBlendInterpolators)[i].IncRefCount();
 
-    m_ppTargetObjects = (NiAVObject**)NiMalloc((unsigned int)n * 4);
-    fnv_zlib_memset(m_ppTargetObjects, 0, (unsigned int)n * 4);
+    m_ppTargetObjects = (NiAVObject**)NiMalloc((unsigned int)usCount * 4);
+    fnv_zlib_memset(m_ppTargetObjects, 0, (unsigned int)usCount * 4);
 }
 
 inline void operator delete(void* p) throw()
@@ -97,6 +100,8 @@ extern void(__stdcall* DAT_00fdf1c0)(void*);
 
 // @fnv 0x00a30160
 // src: XBOX_PDB 0x00a30160
+// pdb: NiMultiTargetTransformController::ClearInterpolators | NiMultiTargetTransformController.obj | retail, upstream name already matches, high
+// pdb locals: us
 void NiMultiTargetTransformController::ClearInterpolators()
 {
     if (m_usNumInterps == 0)

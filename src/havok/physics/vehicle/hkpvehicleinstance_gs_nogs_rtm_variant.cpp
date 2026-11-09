@@ -35,7 +35,7 @@ using ::DAT_01011d78;
 struct __declspec(align(16)) WheelUpdateVector
 {
     float x, y, z, w;
-    void hkVector4_setRotatedDir(hkRotation* rot, WheelUpdateVector* dir) throw();
+    void hkVector4_setRotatedDir(hkRotation* quat, WheelUpdateVector* direction) throw();
 };
 
 class WheelUpdateEntity
@@ -115,7 +115,7 @@ void hkpVehicleInstance::UpdateVehicle(hkReal dt, const hkpVehicleWheelCollide::
 {
     using namespace WheelUpdateBuild;
     hkpVehicleInstance* self = (hkpVehicleInstance*)this;
-    hkRotation* chassisRot = &((WheelUpdateEntity*)self->m_pEntity)->m_rotation;
+    hkRotation* chassisRot = &((WheelUpdateEntity*)self->m_entity)->m_rotation;
     int i = 0;
     if (i < ((VUC_Data*)self->m_data)->m_iWheelCount)
     {
@@ -128,20 +128,20 @@ void hkpVehicleInstance::UpdateVehicle(hkReal dt, const hkpVehicleWheelCollide::
         {
             int fi = i;
             const WheelUpdateCdWheel* cd = &cdInfo[i];
-            hkpVehicleInstanceWheelInfo* wheel = &self->m_kWheelInfoArray.m_data[i];
-            *(float*)&self->m_kWheelInfoArray.m_data[i].unk70 = cd->m_fContactFriction;
-            *(WheelUpdateContactPair*)&self->m_kWheelInfoArray.m_data[i].unk00 = cd->m_kPoint;
-            *(float*)&self->m_kWheelInfoArray.m_data[fi].unk20 = cd->m_fSuspensionLength;
-            self->m_kWheelInfoArray.m_data[fi].m_pUserData = (hkpRigidBody*)cd->m_pUserData;
+            hkpVehicleInstanceWheelInfo* wheel = &self->m_wheelsInfo.m_data[i];
+            *(float*)&self->m_wheelsInfo.m_data[i].unk70 = cd->m_fContactFriction;
+            *(WheelUpdateContactPair*)&self->m_wheelsInfo.m_data[i].unk00 = cd->m_kPoint;
+            *(float*)&self->m_wheelsInfo.m_data[fi].unk20 = cd->m_fSuspensionLength;
+            self->m_wheelsInfo.m_data[fi].m_pUserData = (hkpRigidBody*)cd->m_pUserData;
             for (int j = -1; j < 7; ++j)
-                ((unsigned int*)&self->m_kWheelInfoArray.m_data[i].unk28)[j + 1] =
+                ((unsigned int*)&self->m_wheelsInfo.m_data[i].unk28)[j + 1] =
                     cdInfo[ci].m_uiContactShapeKeys[j + 1];
 
-            float half = self->m_kWheelSteeringAngles.m_data[i] * 0.5;
+            float half = self->m_wheelsSteeringAngle.m_data[i] * 0.5;
             WheelUpdateSimd h = _mm_load_ss(&half);
             WheelUpdateSimd hb = ::_mm_shuffle_ps(h, h, 0);
             WheelUpdateSimd axis =
-                *(WheelUpdateSimd*)&((WheelUpdateSuspension*)self->m_pSuspension)->m_data[i].m_vDirectionChassisSpace;
+                *(WheelUpdateSimd*)&((WheelUpdateSuspension*)self->m_suspension)->m_data[i].m_vDirectionChassisSpace;
             VUC_Vector4 qv;
             *(WheelUpdateSimd*)&qv = ::_mm_mul_ps(hb, axis);
             qv.w = 1.0f;
@@ -422,8 +422,8 @@ class AxleDataView
     int m_iWheelCount;
 };
 
-extern "C" void __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(void* arg1, GroundMotion** motions, int numMotions, int offset,
-                                     Accumulator* accumOut);
+extern "C" void __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(void* info, GroundMotion** motions, int numMotions, int motionOffset,
+                                     Accumulator* accumulatorsOut);
 
 class Vehicle : public hkpVehicleInstance
 {
@@ -476,6 +476,9 @@ __forceinline void rotateDirection(hkVector4& out, const hkRotation& a, const Ax
 
 // @fnv 0x00e37d60
 // src: GUESS 0x00e37d60 (confidence: low)
+// pdb: hkpVehicleInstance::getAxleParams | hkpVehicleInstance.obj | retail, object-file run extension, low
+// pdb params: stepInfo, groundBody, groundAccum, groundAccumAtIntegration, axleParams
+// pdb locals: ax_it, motion, f
 void Vehicle::ProcessEntries_00e37d60(void* arg1, GroundBody** arg2, Accumulator* arg3, Accumulator* arg4, AxleParams* arg5)
 {
     int i = 0;
@@ -521,7 +524,7 @@ void Vehicle::ProcessEntries_00e37d60(void* arg1, GroundBody** arg2, Accumulator
             GroundMotion* motion = &body->m_pMotionState;
             hkRigidMotionUtilApplyForcesAndBuildAccumulators(arg1, &motion, 1, 0, out1);
 
-            float invMass1 = inverseMass(reinterpret_cast<GroundBody*>(m_pEntity)->m_pMotionState.unkC0);
+            float invMass1 = inverseMass(reinterpret_cast<GroundBody*>(m_entity)->m_pMotionState.unkC0);
             float invMass2 = inverseMass(motion->unkC0);
             float maxRatio = reinterpret_cast<AxleDataView*>(m_data)->m_fChassisUnitInertiaYaw;
 

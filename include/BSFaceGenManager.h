@@ -55,6 +55,7 @@ struct FaceGenModels
     char data[0x106c];
 };
 
+// pdb: class BSFaceGenManager, size 0xdbc (here 0x11a4), 8 members
 class BSFaceGenManager
 {
 public:
@@ -94,7 +95,7 @@ public:
     static void NormalizeFaceGenValues(float* quantities, unsigned int count);
     static void InitializeFaceGenCoordinates(FaceGenCoordinates*);
     static void InitializeFaceGenCoordinates(FaceGenMatrix<float> (*)[2]);
-    static char* BuildFaceGenPartPath(char*, int);
+    static char* GetHairName(char*, int);
     static const char* BuildFaceGenModelPath(BSStringT<char>&, const char*);
     static void CopyFaceGenCoordinates(FaceGenMatrix<float> (*)[2], FaceGenMatrix<float> (*)[2], bool, bool);
     static void BlendFaceGenCoordinates(FaceGenMatrix<float> (*)[2], FaceGenMatrix<float> (*)[2],

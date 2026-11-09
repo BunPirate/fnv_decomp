@@ -5,6 +5,7 @@
 
 class ActorCause;
 
+// pdb: class ExtraActorCause, size 0x10, bases: BSExtraData, 1 members
 class ExtraActorCause : public BSExtraData
 {
 public:
@@ -12,8 +13,8 @@ public:
 
     ExtraActorCause();
     void FUN_0042cb30();
-    void SetActorCause(int value);
+    void SetActorCause(int apCause);
     void* FUN_0042cb00(unsigned int flags);
 
-    NiPointer<ActorCause> actorCause;
+    NiPointer<ActorCause> spActorCause;
 };

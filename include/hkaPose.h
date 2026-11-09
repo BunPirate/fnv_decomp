@@ -6,6 +6,7 @@
 
 class hkaSkeleton;
 
+// pdb: class hkaPose, size 0x38 (here 0x2c), 7 members
 class hkaPose
 {
 public:
@@ -23,10 +24,10 @@ public:
     hkBool m_bPoseFlag;
     hkBool m_bPoseInitialized;
 
-    const hkQsTransform& hkaPose_calculateBoneModelSpace(int boneIdx);
-    const hkQsTransform& GetBoneModelSpace(int boneIdx);
+    const hkQsTransform& hkaPose_calculateBoneModelSpace(int theBoneIdx);
+    const hkQsTransform& GetBoneModelSpace(int theBoneIdx);
     void syncLocalSpace();
-    hkQsTransform& accessBoneModelSpace(int boneIdx, int propagate);
+    hkQsTransform& accessBoneModelSpace(int boneIdx, int propagateOrNot);
 
     void makeFirstChildrenModelSpace(int boneIdx);
     const hkQsTransform& calculateBoneLocalSpace(int boneIdx);

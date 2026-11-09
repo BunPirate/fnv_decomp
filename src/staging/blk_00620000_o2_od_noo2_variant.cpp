@@ -38,6 +38,9 @@ struct FUN_00628d10_cls
 
 // @fnv 0x00628d10
 // src: COMMUNITY 0x00628d10
+// pdb: hkAabb::contains | LoadedAreaBound.obj | debug, upstream name already matches, high
+// pdb params: other
+// pdb locals: maxcomp, both, mincomp
 FUN_00628d10_cls* FUN_00628d10_cls::hkAabb_contains(FUN_00628d10_cls* a, FUN_00628d10_cls* b)
 {
     __declspec(align(16)) Vec16 r0;

@@ -14,7 +14,7 @@
 #include "../../../include/NiNode.h"
 #include "../../../include/NiPoint3.h"
 
-void __cdecl NI2HK(Vec4* out, const NiPoint3& in);
+void __cdecl NI2HK(Vec4* arhkTran, const NiPoint3& arNiTran);
 
 struct Filter
 {
@@ -116,8 +116,8 @@ struct EObj
     };
     RawVector storage[4];
     EObj();
-    void __thiscall hkTransform_setMul(void* g, void* f);
-    void __thiscall hkTransform_set(void* x, void* y);
+    void __thiscall hkTransform_setMul(void* aTb, void* bTc);
+    void __thiscall hkTransform_set(void* q, void* t);
 };
 
 struct GObj
@@ -143,14 +143,14 @@ struct __declspec(align(16)) CObj
     CSub m0;
     CSub m1;
     unsigned int flags20, filter24;
-    void __thiscall hkpShapeRayCastInput_hkpShapeRayCastInput();
+    void __thiscall hkpShapeRayCastInput_ctor();
 };
 
 struct Sub2;
 struct DObj;
 struct ResObj
 {
-    void* __thiscall ForwardToV8(Sub2*, CObj*, DObj*);
+    void* __thiscall hkpShape_castRay(Sub2*, CObj*, DObj*);
 };
 
 struct Sub2
@@ -166,7 +166,7 @@ struct __declspec(align(16)) DObj
     int m_uiExtraInfo, unk18, unk1c;
     unsigned int shapeKeys[8];
     void* rootCollidable;
-    void __thiscall hkpShapeRayCastOutput_hkpShapeRayCastOutput();
+    void __thiscall hkpShapeRayCastOutput_ctor();
     Sub2* __thiscall hkpShapeRayCastCollectorOutput_hasHit(Sub2* b);
 };
 
@@ -186,12 +186,15 @@ struct P1Obj
 
 // @fnv 0x008cfbc0
 // src: COMMUNITY 0x008cfbc0
-void* __cdecl ArrowProjectile_PickSceneGraph(void* p1, NiPoint3 a, NiPoint3 b, float* p4, bool p5)
+// pdb: ArrowProjectile::PickSceneGraph | ArrowProjectile.obj | retail, upstream name already matches, high
+// pdb params: apObject, aPickFrom, aDirection, afPickLength, abIgnoreHead
+// pdb locals: bhit, pcol, pnode, prb, pshape, rci, from, rco, to, hkt, pblend, hkpWorld, hklocal, prbt, i, ptarget, pchild
+void* __cdecl ArrowProjectile_PickSceneGraph(void* apObject, NiPoint3 aPickFrom, NiPoint3 aDirection, float* afPickLength, bool abIgnoreHead)
 {
     bool flag = false;
-    if (p1)
+    if (apObject)
     {
-        CollObj* coll = FUN_0043b610(p1);
+        CollObj* coll = FUN_0043b610(apObject);
         if (coll)
         {
             WorldObj* world = coll->bhkNiCollisionObject_GetWorldObject();
@@ -204,23 +207,23 @@ void* __cdecl ArrowProjectile_PickSceneGraph(void* p1, NiPoint3 a, NiPoint3 b, f
                     {
                         if (world->bhkWorldObject_GetCollisionFilter().CFilter_GetBipedPart() != 0x13)
                         {
-                            if (!p5 || world->bhkWorldObject_GetCollisionFilter().CFilter_GetBipedPart() != 1)
+                            if (!abIgnoreHead || world->bhkWorldObject_GetCollisionFilter().CFilter_GetBipedPart() != 1)
                             {
                                 Vec4 va;
-                                NI2HK(&va, a);
+                                NI2HK(&va, aPickFrom);
                                 Vec4 vb;
-                                NI2HK(&vb, a.FUN_00439e90(b.ApplyScaled(*p4)));
+                                NI2HK(&vb, aPickFrom.FUN_00439e90(aDirection.ApplyScaled(*afPickLength)));
                                 CObj oc;
-                                oc.hkpShapeRayCastInput_hkpShapeRayCastInput();
+                                oc.hkpShapeRayCastInput_ctor();
                                 DObj od;
-                                od.hkpShapeRayCastOutput_hkpShapeRayCastOutput();
+                                od.hkpShapeRayCastOutput_ctor();
                                 EObj oe;
                                 if (NiObject_IsKindOf(&RTTI_01267e64, coll))
                                 {
                                     CollObj* scaledColl = coll;
                                     if (!world->bhkWorldObject_IsAddedToWorld() || scaledColl->FUN_004a7bd0() == 1.0)
                                     {
-                                        FUN_0056df80(&oe, ((P1Obj*)p1)->NiAVObject_GetWorldRotate());
+                                        FUN_0056df80(&oe, ((P1Obj*)apObject)->NiAVObject_GetWorldRotate());
                                         if (NiObject_IsKindOf(&RTTI_012683c8, world))
                                         {
                                             WorldObj* transformedWorld = world;
@@ -243,11 +246,11 @@ void* __cdecl ArrowProjectile_PickSceneGraph(void* p1, NiPoint3 a, NiPoint3 b, f
                                 oc.m0.hkVector4_setTransformedInversePos(&oe, &va);
                                 oc.m1.hkVector4_setTransformedInversePos(&oe, &vb);
                                 Sub2 bt;
-                                shape->Bipedanim_GetReferenceFlagsOrZero()->ForwardToV8(&bt, &oc, &od);
+                                shape->Bipedanim_GetReferenceFlagsOrZero()->hkpShape_castRay(&bt, &oc, &od);
                                 Sub2 bt2;
                                 if (od.hkpShapeRayCastCollectorOutput_hasHit(&bt2)->FUN_005609f0())
                                 {
-                                    *p4 *= od.fraction;
+                                    *afPickLength *= od.fraction;
                                     flag = true;
                                 }
                             }
@@ -256,20 +259,20 @@ void* __cdecl ArrowProjectile_PickSceneGraph(void* p1, NiPoint3 a, NiPoint3 b, f
                 }
             }
         }
-        NiNode* node = ((P1Obj*)p1)->getNode();
+        NiNode* node = ((P1Obj*)apObject)->getNode();
         if (node)
         {
             unsigned int i;
             for (i = 0; i < node->FUN_0043b480(); i++)
             {
                 void* childItem = node->FUN_0043b4a0(i);
-                void* r = ArrowProjectile_PickSceneGraph(childItem, a, b, p4, p5);
+                void* r = ArrowProjectile_PickSceneGraph(childItem, aPickFrom, aDirection, afPickLength, abIgnoreHead);
                 if (r)
                     return r;
             }
         }
     }
     if (flag)
-        return p1;
+        return apObject;
     return 0;
 }

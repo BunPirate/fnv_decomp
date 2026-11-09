@@ -42,11 +42,12 @@ extern "C"
 typedef float hkReal;
 
 // No include/hkpPrismaticConstraintData.h exists yet; retain its reflected 0xD0 layout and methods here.
+// pdb: class hkpPrismaticConstraintData, size 0xd0, bases: hkpConstraintData, 1 members
 class hkpPrismaticConstraintData : public hkpConstraintData
 {
 public:
     char padC[4];
-    char m_kBridgeAtoms[0xC0];
+    char m_atoms[0xC0];
 
     __declspec(noinline) virtual ~hkpPrismaticConstraintData() throw();
     static void operator delete(void* pItem) throw();
@@ -61,7 +62,7 @@ public:
 };
 
 
-extern "C" void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* self, int a, void* b);
+extern "C" void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* self, int a, void* infoOut);
 
 // @fnv 0x00d4f880
 // src: HAVOK_LIB 0x00d4f880
@@ -84,9 +85,10 @@ inline hkpConstraintData::~hkpConstraintData() throw() {}
 
 // Releases the motor stored at +0xAC before destroying the constraint base.
 // @fnv 0x00d4f8d0
+// pdb: hkpPrismaticConstraintData::~hkpPrismaticConstraintData | hkpPrismaticConstraintData.obj | retail, upstream name already matches, high
 hkpPrismaticConstraintData::~hkpPrismaticConstraintData() throw()
 {
-    hkReferencedObject* motor = *reinterpret_cast<hkReferencedObject**>(m_kBridgeAtoms + 0x9C);
+    hkReferencedObject* motor = *reinterpret_cast<hkReferencedObject**>(m_atoms + 0x9C);
     *reinterpret_cast<int**>(this) = &DAT_010d0b3c;
     if (motor)
         motor->removeReference();
@@ -105,23 +107,25 @@ extern float DAT_01017d00;
 
 // The old transform view called hkRotation::IsOrthonormal at 0x00CB2E70 (also bound by the hinge unit).
 // @fnv 0x00d4fdd0
+// pdb: hkpPrismaticConstraintData::isValid | hkpPrismaticConstraintData.obj | retail, vtable slot, high
 hkBool hkpPrismaticConstraintData::IsValid() const
 {
     const hkpSetLocalTransformsConstraintAtom& transforms =
-        *reinterpret_cast<const hkpSetLocalTransformsConstraintAtom*>(m_kBridgeAtoms);
-    return transforms.m_kBodyALocalFrame.m_rotation.IsOrthonormal(DAT_01017d00) &&
+        *reinterpret_cast<const hkpSetLocalTransformsConstraintAtom*>(m_atoms);
+    return transforms.m_transformA.m_rotation.IsOrthonormal(DAT_01017d00) &&
            transforms.m_kBodyBLocalFrame.m_rotation.IsOrthonormal(DAT_01017d00) &&
-           *reinterpret_cast<const float*>(m_kBridgeAtoms + 0xB8) <= *reinterpret_cast<const float*>(m_kBridgeAtoms + 0xBC);
+           *reinterpret_cast<const float*>(m_atoms + 0xB8) <= *reinterpret_cast<const float*>(m_atoms + 0xBC);
 }
 
 inline void hkpPrismaticConstraintData::operator delete(void* p) throw()
 {
     hkMemoryRouter::getInstance().heap().blockFree(
-        p, static_cast<hkpPrismaticConstraintData*>(p)->m_usMemSizeAndFlags);
+        p, static_cast<hkpPrismaticConstraintData*>(p)->m_memSizeAndFlags);
 }
 
 // Runs the destructor and frees the allocation when bit 0 is set; returns this.
 // @fnv 0x00d4ffd0
+// pdb: hkpPrismaticConstraintData::`scalar deleting destructor' | hkpPrismaticConstraintData.obj | retail, vtable slot, high
 hkpPrismaticConstraintData* hkpPrismaticConstraintData::DestroyObject(unsigned int flags) throw()
 {
     this->hkpPrismaticConstraintData::~hkpPrismaticConstraintData();
@@ -147,7 +151,7 @@ struct Embedded
     int unk28;
     int unk2c;
     int unk30;
-    void Run();
+    void hkpGenericConstraintDataScheme_dtor();
 };
 
 struct FUN_00d50c50
@@ -165,6 +169,7 @@ struct FUN_00d50c50
 };
 
 // @fnv 0x00d50c50
+// pdb: hkpGenericConstraintData::~hkpGenericConstraintData | hkpGenericConstraintData.obj | debug, object-file gap fill, medium
 FUN_00d50c50::~FUN_00d50c50()
 {
     vtbl = &DAT_010d0b9c;
@@ -172,7 +177,7 @@ FUN_00d50c50::~FUN_00d50c50()
     {
         mArr[i]->removeReference();
     }
-    mSub.Run();
+    mSub.hkpGenericConstraintDataScheme_dtor();
     vtbl = &DAT_0102e388;
 }
 
@@ -229,11 +234,14 @@ struct PrismaticFrameStorage
 
 // Stores pivotA/pivotB as translations and builds rotation matrices from axis/axisPerp pairs into m_kBridgeAtoms.
 // @fnv 0x00d4fba0
+// pdb: hkpPrismaticConstraintData::setInBodySpace | hkpPrismaticConstraintData.obj | retail, upstream name already matches, high
+// pdb params: pivotA, pivotB, axisA, axisB, axisAPerp, axisBPerp
+// pdb locals: assertBuf, ostr
 void hkpPrismaticConstraintData::setInBodySpace(const hkVector4& pivotA, const hkVector4& pivotB,
                                                 const hkVector4& axisA, const hkVector4& axisB,
                                                 const hkVector4& axisAPerp, const hkVector4& axisBPerp)
 {
-    PrismaticFrameStorage& t = *reinterpret_cast<PrismaticFrameStorage*>(m_kBridgeAtoms);
+    PrismaticFrameStorage& t = *reinterpret_cast<PrismaticFrameStorage*>(m_atoms);
 
     reinterpret_cast<SimdLaneVector&>(t.translationA).m_vComponents =
         reinterpret_cast<const SimdLaneVector&>(pivotA).m_vComponents;
@@ -313,6 +321,9 @@ static __forceinline void hkSetTransposeMul(SimdColumnMatrix& out, const SimdCol
 
 // Builds a basis from axis, then sets each body's local frame rotation via transpose-multiply and its translation from the transformed pivot.
 // @fnv 0x00d4f8f0
+// pdb: hkpPrismaticConstraintData::setInWorldSpace | hkpPrismaticConstraintData.obj | retail, upstream name already matches, high
+// pdb params: bodyATransform, bodyBTransform, pivot, axis
+// pdb locals: constraintBaseInW, assertBuf, ostr
 void hkpPrismaticConstraintData::setInWorldSpace(const hkTransform& bodyATransform, const hkTransform& bodyBTransform,
                                            const hkVector4& pivot, const hkVector4& axis)
 {
@@ -325,13 +336,13 @@ void hkpPrismaticConstraintData::setInWorldSpace(const hkTransform& bodyATransfo
 
     hkSetCross(rot.m_col[2], rot.m_col[0], rot.m_col[1]);
 
-    hkpSetLocalTransformsConstraintAtom& t = *reinterpret_cast<hkpSetLocalTransformsConstraintAtom*>(m_kBridgeAtoms);
+    hkpSetLocalTransformsConstraintAtom& t = *reinterpret_cast<hkpSetLocalTransformsConstraintAtom*>(m_atoms);
 
-    hkSetTransposeMul(reinterpret_cast<SimdColumnMatrix&>(t.m_kBodyALocalFrame.m_rotation),
+    hkSetTransposeMul(reinterpret_cast<SimdColumnMatrix&>(t.m_transformA.m_rotation),
                       reinterpret_cast<const SimdColumnMatrix&>(bodyATransform.m_rotation), rot);
     hkSetTransposeMul(reinterpret_cast<SimdColumnMatrix&>(t.m_kBodyBLocalFrame.m_rotation),
                       reinterpret_cast<const SimdColumnMatrix&>(bodyBTransform.m_rotation), rot);
 
-    t.m_kBodyALocalFrame.position.SetTransformedPosition(bodyATransform, pivot);
+    t.m_transformA.position.SetTransformedPosition(bodyATransform, pivot);
     t.m_kBodyBLocalFrame.position.SetTransformedPosition(bodyBTransform, pivot);
 }

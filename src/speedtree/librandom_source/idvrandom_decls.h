@@ -1,11 +1,12 @@
 // speedtree/librandom_source/idvrandom_decls.h: declares RandomNumberGenerator
 
-class RandomNumberGenerator
+// pdb: class CIdvRandom, size 0x1, 0 members
+class CIdvRandom
 {
   public:
-    RandomNumberGenerator();
-    void SeedRandomGenerator(long seed);
-    float GenerateRandomFloat(float low, float high);
+    CIdvRandom();
+    void Reseed(long lSeed);
+    float GenerateRandomFloat(float low, float fMax);
 };
-extern bool DAT_011f8eb8;
+extern bool SIdvRandomImpl_m_bInit;
 extern "C" __int64 __cdecl _time64(__int64*);

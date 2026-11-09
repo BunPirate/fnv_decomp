@@ -52,6 +52,7 @@ struct FUN_00877a10_Class
 extern void __cdecl Deallocate(void*);
 // Calls FUN_0044f650, then deallocates this object if bit 0 of flags is set, and returns this.
 // @fnv 0x0044f6d0
+// pdb: SettingCollectionList<Setting>::`scalar deleting destructor' | ModelLoader.obj | debug, vtable slot, medium
 void* __thiscall FUN_00877a10_Class::FUN_0044f6d0(unsigned int flags)
 {
     FUN_0044f650();
@@ -77,6 +78,7 @@ struct FUN_0040c150 : FUN_00404920
     FUN_0040c150(int a, int b);
 };
 // @fnv 0x0040c150
+// pdb: SettingT<GameSettingCollection>::InitCollection | EffectItem.obj | retail, call graph, high
 FUN_0040c150::FUN_0040c150(int aiArg1, int aiArg2) : FUN_00404920(aiArg1, aiArg2)
 {
     *(int*)this = (int)&FUN_0040e0b0::vftable;
@@ -125,10 +127,13 @@ struct TESGlobalMap
     void __thiscall SetAt(char const*, TESGlobal*);
 };
 
-void __cdecl Object_ProcessAndReturnValue_00c335a0(char const*, ...);
+void __cdecl SettingWarning(char const*, ...);
 
 
 // @fnv 0x00404de0
+// pdb: SettingCollectionMap<Setting>::Add | EffectItem.obj | retail, unique string literal, high
+// pdb params: apSetting
+// pdb locals: tempMemContext, pSetting
 template <>
 void __thiscall SettingCollectionMap<Setting>::AddSetting(Setting* apSetting)
 {
@@ -140,7 +145,7 @@ void __thiscall SettingCollectionMap<Setting>::AddSetting(Setting* apSetting)
         if (reinterpret_cast<DummyPointerMap*>(reinterpret_cast<char*>(this) + 0x10c)
                 ->GetAt(reinterpret_cast<SettingOffset08View*>(apSetting)->GetFlags(), key))
         {
-            Object_ProcessAndReturnValue_00c335a0(str_010121d0, reinterpret_cast<SettingOffset08View*>(apSetting)->GetFlags());
+            SettingWarning(str_010121d0, reinterpret_cast<SettingOffset08View*>(apSetting)->GetFlags());
         }
         else
         {
@@ -157,8 +162,11 @@ namespace fnv_00c335a0 {
 int C335A0Report(int iLevel, const char* pcFormat, va_list args);
 
 // @fnv 0x00c335a0
-// src: GUESS 0x00c335a0 (confidence: low)
-int Object_ProcessAndReturnValue_00c335a0(const char* pcFormat, ...)
+// src: XBOX_RETAIL_PDB 0x00c335a0
+// pdb: SettingWarning | Setting.obj | retail, call graph (shared callers), high
+// pdb params: apMessage, ires
+// pdb locals: varArgs
+int SettingWarning(const char* pcFormat, ...)
 {
     va_list args;
     va_start(args, pcFormat);
@@ -189,7 +197,10 @@ struct Registry
     void AddSettingKey(SettingName*);
 };
 // @fnv 0x0044f770
-void Registry::AddSettingKey(SettingName* key)
+// pdb: SettingCollectionList<Setting>::Add | ModelLoader.obj | retail, unique string literal, high
+// pdb params: apSetting
+// pdb locals: tempMemContext, pIter, pSetting
+void Registry::AddSettingKey(SettingName* apSetting)
 {
     AutoMemHelper scope(9, true, str_0101608c, 765);
     if (!((SettingStore*)((char*)this + 0x10c))->FUN_008256d0())
@@ -198,16 +209,16 @@ void Registry::AddSettingKey(SettingName* key)
         while (position)
         {
             SettingName* entry = *position->FUN_006815c0();
-            if (BSstricmp((const char*)entry->FUN_0044ddc0(), (const char*)key->FUN_0044ddc0()) == 0)
+            if (BSstricmp((const char*)entry->FUN_0044ddc0(), (const char*)apSetting->FUN_0044ddc0()) == 0)
             {
-                Object_ProcessAndReturnValue_00c335a0("DEFAULT: Setting key '%s' already used in list.\nSetting keys must be unique.\n",
-                             (const char*)key->FUN_0044ddc0());
+                SettingWarning("DEFAULT: Setting key '%s' already used in list.\nSetting keys must be unique.\n",
+                             (const char*)apSetting->FUN_0044ddc0());
                 return;
             }
             position = position->FUN_00726070();
         }
     }
-    ((SettingStore*)((char*)this + 0x10c))->FUN_005ae3d0(&key);
+    ((SettingStore*)((char*)this + 0x10c))->FUN_005ae3d0(&apSetting);
 }
 
 extern const char str_0101608c[];
@@ -226,11 +237,13 @@ struct EntryEnumerator
     virtual bool v14(int data);
     bool FUN_00404d30();
     DataListEntry* SettingCollectionList_Setting_Head();
-    DataListEntry* SettingCollectionList_Setting_Next(DataListEntry* current);
+    DataListEntry* SettingCollectionList_Setting_Next(DataListEntry* apList);
     bool SettingCollectionList_Setting_ReadSettings();
 };
 // @fnv 0x0044f9c0
 // src: XBOX_PDB 0x0044f9c0
+// pdb: SettingCollectionList<Setting>::ReadSettings | ModelLoader.obj | retail, vtable slot, high
+// pdb locals: bres, tempMemContext, pcur
 bool EntryEnumerator::SettingCollectionList_Setting_ReadSettings()
 {
     AutoMemHelper guard(9, true, str_0101608c, 0x357);
@@ -265,6 +278,7 @@ class FUN_0044f650 : public SettingCollection<Setting>
 };
 // Removes all entries from the settings list during destruction of the SettingCollection subclass.
 // @fnv 0x0044f650
+// pdb: SettingCollectionList<Setting>::~SettingCollectionList<Setting> | ModelLoader.obj | debug, object-file run extension, low
 FUN_0044f650::~FUN_0044f650()
 {
     settings.RemoveAll();

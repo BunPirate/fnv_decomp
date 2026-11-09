@@ -22,6 +22,7 @@ unsigned int __fastcall CreateDefaultShaderPass(
 
 // Initializes the default shader without an exception-unwind path, as in the game.
 // @fnv 0x00e7c6b0
+// pdb: NiD3DDefaultShader::NiD3DDefaultShader | NiD3DDefaultShader.obj | retail, string-set bridge, high
 __declspec(nothrow) NiD3DDefaultShader::NiD3DDefaultShader()
 {
     m_bUsesNiRenderState = false;
@@ -739,6 +740,10 @@ struct S_00e7c720_State
 };
 // Applies render modes, begins the shader pass, and saves its lighting render state.
 // @fnv 0x00e7c720
+// pdb: NiD3DDefaultShader::OpenNewPass | NiD3DDefaultShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DDefaultShader::~NiD3DDefaultShader
+// pdb params: eSrcBlend, eDestBlend, bReturnBaseTextureAlpha, bReturnVertexColorAlpha
+// pdb locals: spTempD3DPass
 unsigned int __fastcall BeginDefaultShaderPass(
     NiD3DDefaultShader* shader, void*, void* apArg1, void* apArg2, void* apArg3, S_00e7c720_State* apState,
     void* apArg5, void* apArg6, void* apArg7)
@@ -772,6 +777,10 @@ extern void GetOwner(ShaderOwner** out);
 extern void* MakeSub30();
 
 // @fnv 0x00e7c790
+// pdb: NiD3DDefaultShader::AddTextureStage | NiD3DDefaultShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DDefaultShader::Initialize
+// pdb params: pkMap, uiIndex
+// pdb locals: spStage, pkStage, pkTexTransform, pkTex
 void __fastcall ConfigureDefaultShader(
     NiD3DDefaultShader* shader, void*, int aiUnused1, int aiUnused2, unsigned char a3, unsigned char a4)
 {

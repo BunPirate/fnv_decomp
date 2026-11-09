@@ -50,9 +50,11 @@ void __cdecl LinkNiObjectNET();
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 // @fnv 0x00a5a030
-void __thiscall NiAVObject::UpdateControllers(NiUpdateData& data)
+// pdb: NiAVObject::UpdateControllers | NiAVObject.obj | debug, upstream name already matches, high
+// pdb params: UpdateData
+void __thiscall NiAVObject::UpdateControllers(NiUpdateData& UpdateData)
 {
-    NiAVObject::UpdateTimeControllers(data, true);
+    NiAVObject::UpdateTimeControllers(UpdateData, true);
 }
 
 extern char const* const g_011f4428_arg1;
@@ -95,15 +97,20 @@ void __fastcall SetAVObjectBound(NiAVObject* object, void*, NiBound* apBound)
 
 // Calls the object's vtable slot 42 with the update data, then, if the object at offset 0x18 exists, calls its vtable slot 63.
 // @fnv 0x00a59c90
-void __thiscall NiAVObject::Update(NiUpdateData& aUpdateData)
+// pdb: NiAVObject::Update | NiAVObject.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+void __thiscall NiAVObject::Update(NiUpdateData& UpdateData)
 {
-    UpdateSelectedDownwardPass(aUpdateData, 0);
+    UpdateSelectedDownwardPass(UpdateData, 0);
     if (m_pkParent)
         ((void(__thiscall*)(NiNode*))(*(void***)m_pkParent)[63])(m_pkParent);
 }
 
 typedef void(__thiscall* FUN_00a59d00_Fn)(NiNode*, void*);
 // @fnv 0x00a59d00
+// pdb: NiAVObject::AttachParent | NiAVObject.obj | retail, call graph, medium
+// pdb params: pkParent
+// pdb locals: pkOldParent
 void __thiscall NiAVObject::AssignParent(NiNode* pkParent)
 {
     NiNode* pkOldParent = m_pkParent;
@@ -120,6 +127,9 @@ void __thiscall NiAVObject::AssignParent(NiNode* pkParent)
 
 // Retrieves property 2 and, if present, passes it to the renderer's v61 method.
 // @fnv 0x00a59e50
+// pdb: NiAVObject::PurgeRendererData | NiAVObject.obj | retail, upstream name already matches, high
+// pdb params: apkRenderer
+// pdb locals: pkRenderer, pkProperty
 void __thiscall NiAVObject::PurgeRendererData(NiRenderer* apkRenderer)
 {
     NiProperty* pkProperty = GetProperty(2);
@@ -198,16 +208,20 @@ void __thiscall Owner::SetSlot(Param* pParam)
 }
 
 // @fnv 0x00a59f90
-void __thiscall NiAVObject::UpdateDownwardPass(NiUpdateData& kData, unsigned int uiFlags)
+// pdb: NiAVObject::UpdateDownwardPass | NiAVObject.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+void __thiscall NiAVObject::UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    if ((*reinterpret_cast<bool*>(&kData.pad1)))
-        UpdateTimeControllers(kData, true);
-    UpdateWorldData(kData);
+    if ((*reinterpret_cast<bool*>(&UpdateData.pad1)))
+        UpdateTimeControllers(UpdateData, true);
+    UpdateWorldData(UpdateData);
     UpdateWorldBound();
 }
 
 // Returns whether any attached property has a controller.
 // @fnv 0x00a5a110
+// pdb: NiAVObject::HasPropertyController | NiAVObject.obj | debug, call graph (shared callers), medium
+// pdb locals: kPos, pkProperty
 bool __thiscall NiAVObject::GetHasPropertyController() const
 {
     NiTListItem<NiObjectNET*>* pNode = reinterpret_cast<NiTListItem<NiObjectNET*>*>(m_kPropertyList.m_pkHead);
@@ -237,6 +251,8 @@ void* __fastcall DeleteAVObject(NiAVObject* object, void*, unsigned int auiFlags
 
 // Updates with a temporary parent before attachment.
 // @fnv 0x00a59cc0
+// pdb: NiAVObject::PreAttachUpdate | NiAVObject.obj | retail, upstream name already matches, high
+// pdb params: pEventualParent, UpdateData
 void __thiscall NiAVObject::PreAttachUpdate(NiNode* pEventualParent, NiUpdateData& UpdateData)
 {
     m_pkParent = pEventualParent;
@@ -245,6 +261,8 @@ void __thiscall NiAVObject::PreAttachUpdate(NiNode* pEventualParent, NiUpdateDat
 }
 
 // @fnv 0x00a59db0
+// pdb: NiAVObject::PreAttachUpdateEffects | NiAVObject.obj | debug, vtable slot, medium
+// pdb params: pEventualParent
 void __thiscall NiAVObject::FinalizeAttachUpdate(NiNode* arg)
 {
     m_pkParent = 0;
@@ -255,6 +273,8 @@ using fnv_00a59e20::EmptyFS;
 
 // @fnv 0x00a59e20
 // src: GAMEBRYO_LIB 0x00a59e20
+// pdb: NiAVObject::GetObjectByName | NiAVObject.obj | debug, vtable slot, medium
+// pdb params: kName
 int NiAVObject::GetObjectByName_00a59e20(int param)
 {
     int handle = *reinterpret_cast<int*>(param);
@@ -265,6 +285,8 @@ int NiAVObject::GetObjectByName_00a59e20(int param)
 }
 
 // @fnv 0x00a5a430
+// pdb: NiAVObject::PreAttachUpdateProperties | NiAVObject.obj | retail, vtable slot, high
+// pdb params: pEventualParent
 void NiAVObject::SetEventualParent(NiNode* pEventualParent)
 {
     this->m_pkParent = pEventualParent;
@@ -342,6 +364,7 @@ class A59CF0Node
 };
 
 // @fnv 0x00a59cf0
+// pdb: NiAVObject::PostAttachUpdate | NiAVObject.obj | debug, vtable slot, medium
 void NiAVObject::CompleteAttachUpdate()
 {
     reinterpret_cast<A59CF0Node*>(m_pkParent)->UpdateSceneObject();
@@ -349,17 +372,21 @@ void NiAVObject::CompleteAttachUpdate()
 
 // Updates world data and bounds when selective updates are enabled.
 // @fnv 0x00a59d80
-void __thiscall NiAVObject::UpdateTransformAndBounds(NiUpdateData& pArg)
+// pdb: NiAVObject::UpdateTransformAndBounds | NiAVObject.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+void __thiscall NiAVObject::UpdateTransformAndBounds(NiUpdateData& UpdateData)
 {
     unsigned char flags = (unsigned char)(m_uFlags >> 2);
     if (flags & 1)
     {
-        UpdateWorldData(pArg);
+        UpdateWorldData(UpdateData);
         UpdateWorldBound();
     }
 }
 
 // @fnv 0x00a59e00
+// pdb: NiAVObject::Cull | NiAVObject.obj | debug, call graph (shared callers), medium
+// pdb params: kCuller
 void NiAVObject::OnVisible(NiCullingProcess& culler)
 {
     if (!(m_uFlags & 1))
@@ -423,15 +450,18 @@ inline ItemBase* const& GetNext(NiTListItem<ItemBase*>*& pos)
 
 // @fnv 0x00a59e70
 // src: XBOX_PDB 0x00a59e70
-void __stdcall NiAVObject_ProcessPropertyClones(ListOwner* owner, Holder* holder)
+// pdb: NiAVObject::ProcessPropertyClones | NiAVObject.obj | retail, upstream name already matches, high
+// pdb params: pkList, kCloning
+// pdb locals: kPos, bTemp, pkProperty, bProcessed
+void __stdcall NiAVObject_ProcessPropertyClones(ListOwner* pkList, Holder* kCloning)
 {
-    NiTListItem<ItemBase*>* node = owner->m_04;
+    NiTListItem<ItemBase*>* node = pkList->m_04;
     while (node != 0)
     {
         ItemBase* item = GetNext(node);
-        if (holder->m_04->FUN_00b63170(item, owner) == false)
+        if (kCloning->m_04->FUN_00b63170(item, pkList) == false)
         {
-            item->v26(holder);
+            item->v26(kCloning);
         }
     }
 }
@@ -486,6 +516,9 @@ struct FUN_00a59f00_obj
 
 // Registers the base object, attached properties and collision object.
 // @fnv 0x00a59f00
+// pdb: NiAVObject::RegisterStreamables | NiAVObject.obj | retail, call graph (shared callers), medium
+// pdb params: kStream
+// pdb locals: kPos, pkProperty
 bool __fastcall RegisterAVObjectLinks(NiAVObject* object, void*, NiStream& stream)
 {
     if (!reinterpret_cast<bool(__thiscall*)(NiObjectNET*, NiStream&)>(RegisterNiObjectLinks)(object, stream))
@@ -518,6 +551,8 @@ inline NiObjectNET* const& GetNextData(NiTListItem<NiObjectNET*>*& pos)
 }
 
 // @fnv 0x00a5a140
+// pdb: NiAVObject::UpdatePropertiesDownward | NiAVObject.obj | debug, call graph (shared callers), high
+// pdb params: pkParentState
 void __fastcall UpdateAVPropertyControllerFlag(NiAVObject* object, void*, int unused)
 {
     NiTListItem<NiObjectNET*>* pos = reinterpret_cast<NiTListItem<NiObjectNET*>*>(object->m_kPropertyList.m_pkHead);
@@ -558,6 +593,9 @@ struct Sub34
 
 // Saves base data, flags, local transform, property links and the collision link.
 // @fnv 0x00a5a900
+// pdb: NiAVObject::SaveBinary | NiAVObject.obj | retail, call graph (shared callers), high
+// pdb params: kStream
+// pdb locals: iListSize, kPos, ppkProperty, i
 void __fastcall SaveAVObject(NiAVObject* object, void*, NiStream& kStream)
 {
     reinterpret_cast<void(__thiscall*)(NiObjectNET*, NiStream&)>(SaveNiObjectLinks)(object, kStream);
@@ -602,6 +640,7 @@ struct Sub34
 };
 
 // @fnv 0x00a5aa20
+// pdb: NiAVObject::NiAVObject | NiAVObject.obj | retail, call graph, medium
 NiAVObject* __fastcall ConstructAVObject(NiAVObject* object)
 {
     ConstructNiObjectNET(object);
@@ -725,6 +764,7 @@ class FUN_00b4e150 : public B4E150SortAdjustNode
 };
 
 // @fnv 0x00b4e150
+// pdb: BSFadeNode::BSFadeNode | BSFadeNode.obj | retail, call graph, medium
 FUN_00b4e150::FUN_00b4e150() : B4E150SortAdjustNode(0)
 {
     m_fNearPlane = 3.402823466e+38f;
@@ -757,6 +797,8 @@ extern unsigned int DAT_011f6238;
 
 // @fnv 0x00a5a040
 // src: XBOX_PDB 0x00a5a040
+// pdb: NiAVObject::UpdateProperties | NiAVObject.obj | retail, upstream name already matches, high
+// pdb locals: spParentState
 void NiAVObject::UpdateProperties()
 {
     NiPropertyState* ps = 0;
@@ -781,7 +823,7 @@ void NiAVObject::UpdateProperties()
     NiPropertyState* p = ps;
     if (p != 0)
     {
-        p->ReleaseAllRefs();
+        p->NiPropertyState_dtor();
         ((MemoryManager*)&DAT_011f6238)->Deallocate(p);
     }
     DAT_011f42a4--;
@@ -856,6 +898,9 @@ struct LoadedArray
 
 // Reads a child count from the stream and loads each child into children, then loads the controller for newer versions.
 // @fnv 0x00a5a7f0
+// pdb: NiAVObject::LinkObject | NiAVObject.obj | retail, call graph, medium
+// pdb params: kStream
+// pdb locals: uiListSize
 void __fastcall LinkAVObject(NiAVObject* object, void*, NiStream* stream)
 {
     reinterpret_cast<void(__thiscall*)(NiObjectNET*, NiStream*)>(LinkNiObjectNET)(object, stream);
@@ -923,14 +968,14 @@ struct SerializedField
     unsigned int state1C;
     unsigned int state20;
     unsigned int GetViewerString_00a59af0(const char* name);
-    unsigned int ToString(const char* name);
+    unsigned int ToString(const char* pPrefix);
 };
 struct SmallField
 {
     unsigned int state0;
     unsigned int state4;
     unsigned int state8;
-    unsigned int GetViewerString_00a59af0(const char* name);
+    unsigned int GetViewerString_00a59af0(const char* pPrefix);
     unsigned int ToString(const char* name);
 };
 struct IndexedElement
@@ -945,11 +990,11 @@ inline IndexedElement* const& GetNextIndexed(NiTListItem<IndexedElement*>*& pos)
     pos = pos->m_pkNext;
     return element;
 }
-void __stdcall NiObjectNET_GetViewerStrings(Stream* stream);
+void __stdcall NiObjectNET_GetViewerStrings(Stream* pkStrings);
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int source);
-unsigned int __cdecl NiGetViewerString(const char* name, unsigned int value);
+unsigned int __cdecl NiGetViewerString(const char* pcPrefix, unsigned int bValue);
 unsigned int __cdecl NiGetViewerString_00a7d550(const char* name, float value);
-unsigned int __cdecl NiGetViewerString_00a7d5a0(unsigned int value, IndexedElement* element);
+unsigned int __cdecl NiGetViewerString_00a7d5a0(unsigned int pcPrefix, IndexedElement* pvValue);
 struct TextSource
 {
     unsigned int GetViewerString_00a7fb20(const char* name);
@@ -961,6 +1006,9 @@ extern char DAT_0109b1a0, DAT_0109b190, DAT_0109b184, DAT_0109b178, DAT_0109b164
 extern char DAT_0109b138, DAT_0109b124, DAT_0109b118, DAT_0109b10c;
 
 // @fnv 0x00a5ad00
+// pdb: NiAVObject::GetViewerStrings | NiAVObject.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: kPos, pkProperty
 void __fastcall GetAVViewerStrings(NiAVObject* object, void*, Stream* stream)
 {
     NiObjectNET_GetViewerStrings(stream);
@@ -1083,16 +1131,19 @@ inline bool GetAVSelectiveTransforms(const NiAVObject* object)
 }
 
 // @fnv 0x00a59fd0
-void NiAVObject::UpdateRigidDownwardPass(NiUpdateData& kData, unsigned int uiUnused)
+// pdb: NiAVObject::UpdateRigidDownwardPass | NiAVObject.obj | debug, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+// pdb locals: boldUpdateValue
+void NiAVObject::UpdateRigidDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    bool m_bUpdateEnabled = (*reinterpret_cast<bool*>(&kData.pad1));
-    (*reinterpret_cast<bool*>(&kData.pad1)) = GetAVSelectiveTransforms(this);
-    UpdateTimeControllers(kData, true);
-    (*reinterpret_cast<bool*>(&kData.pad1)) = m_bUpdateEnabled;
+    bool m_bUpdateEnabled = (*reinterpret_cast<bool*>(&UpdateData.pad1));
+    (*reinterpret_cast<bool*>(&UpdateData.pad1)) = GetAVSelectiveTransforms(this);
+    UpdateTimeControllers(UpdateData, true);
+    (*reinterpret_cast<bool*>(&UpdateData.pad1)) = m_bUpdateEnabled;
 
-    if (GetAVSelectiveUpdate(this) && !(*reinterpret_cast<bool*>(&kData.pad2)))
+    if (GetAVSelectiveUpdate(this) && !(*reinterpret_cast<bool*>(&UpdateData.pad2)))
     {
-        UpdateWorldData(kData);
+        UpdateWorldData(UpdateData);
         UpdateWorldBound();
     }
 }
@@ -1105,6 +1156,9 @@ void __stdcall nullsub_34(int, int, int)
 
 // Returns the first attached property of the requested type.
 // @fnv 0x00a59d30
+// pdb: NiAVObject::GetProperty | NiAVObject.obj | retail, upstream name already matches, high
+// pdb params: iType
+// pdb locals: kPos, pkProperty
 NiProperty* NiAVObject::GetProperty(unsigned int type)
 {
     int iType = static_cast<int>(type);
@@ -1199,6 +1253,9 @@ inline void SetAVBit(NiAVObject* object, bool value, unsigned int mask)
 }
 
 // @fnv 0x00a5a450
+// pdb: NiAVObject::SetSelectiveUpdateFlags | NiAVObject.obj | retail, upstream name already matches, high
+// pdb params: bSelectiveUpdate, bSelectiveUpdateTransforms, bRigid
+// pdb locals: bSelectiveUpdatePropertyControllers
 void NiAVObject::SetSelectiveUpdateFlags(bool& bSelectiveUpdate, bool bSelectiveUpdateTransforms, bool& bRigid)
 {
     bRigid = !HasTransformController(this) && !GetAVBit(this, 0x80, 7);
@@ -1257,6 +1314,9 @@ inline A5a260CompareBase*& GetNext_a5a(NiTListItem<A5a260CompareBase*>*& pos)
 
 // Returns false when the flag bit, field comparison, property list, or collision comparison does not match.
 // @fnv 0x00a5a260
+// pdb: NiAVObject::IsEqual | NiAVObject.obj | retail, call graph (shared callers), high
+// pdb params: pkObject
+// pdb locals: pkCO2, pkAVObject, uiCount0, uiCount1, pkCO1, kPos1, kPos0, pkProperty1, pkProperty0
 bool __fastcall CompareAVObjects(NiAVObject* object, void*, NiObject* pkObject)
 {
     NiAVObject* other = static_cast<NiAVObject*>(pkObject);
@@ -1374,6 +1434,9 @@ LegacyData* __cdecl InvokeNamedFunction(const char*);
 
 // Reads flags, translation, rotation, and scale, then handles legacy collision data and version-dependent flag updates.
 // @fnv 0x00a5a510
+// pdb: NiAVObject::LoadBinary | NiAVObject.obj | retail, string-set bridge, high
+// pdb params: kStream
+// pdb locals: usf, usFlags, kVel, pkBV, usPropagationBits, bABV, pkObj, kInitData
 void __fastcall LoadAVObject(NiAVObject* object, void*, NiStream& stream)
 {
     reinterpret_cast<void(__thiscall*)(NiObjectNET*, NiStream&)>(LoadNiObjectNET)(object, stream);
@@ -1510,6 +1573,7 @@ struct WorkerProperties
 // Assigns six global WorkerProperty pointers to the corresponding WorkerPointer members.
 // @fnv 0x00a89960
 // src: XBOX_PDB 0x00a89960
+// pdb: NiPropertyState::Reset | NiPropertyState.obj | retail, upstream name already matches, high
 void WorkerProperties::NiPropertyState_Reset()
 {
     alpha = DAT_011f4410;
@@ -1629,23 +1693,27 @@ struct A170Set
 
 // Copies attached properties into a new or existing property state.
 // @fnv 0x00a5a170
-void NiAVObject::BuildPropertyState(NiPropertyState* apSource, bool abAllocate, NiPropertyState*& apResult)
+// src: XBOX_RETAIL_PDB 0x00a5a170
+// pdb: NiAVObject::PushLocalProperties | NiAVObject.obj | retail, call graph, high
+// pdb params: pkParentState, bCopyOnChange, aspPropertyState
+// pdb locals: spState, kPos
+void NiAVObject::PushLocalProperties(NiPropertyState* pkParentState, bool bCopyOnChange, NiPropertyState*& aspPropertyState)
 {
     if (!this->m_kPropertyList.m_kItemCount.m_uiCount)
     {
-        apResult = apSource;
+        aspPropertyState = pkParentState;
         return;
     }
     fnv_00a5a170::DAT_011f42a0.BSSpinLock_Lock(0);
     NiPropertyState* result;
-    if (abAllocate)
+    if (bCopyOnChange)
     {
         void* p = fnv_00a5a170::DAT_011f6238.Game_DoHeapAlloc(0x1c);
-        result = p ? reinterpret_cast<NiPropertyState*>(((fnv_00a5a170::A170Set*)p)->FUN_00a89810(reinterpret_cast<fnv_00a5a170::A170Set*>(apSource))) : 0;
+        result = p ? reinterpret_cast<NiPropertyState*>(((fnv_00a5a170::A170Set*)p)->FUN_00a89810(reinterpret_cast<fnv_00a5a170::A170Set*>(pkParentState))) : 0;
     }
     else
     {
-        result = apSource;
+        result = pkParentState;
     }
     fnv_00a5a170::A170Ptr* slots = (fnv_00a5a170::A170Ptr*)result;
     NiTListItem<fnv_00a5a170::A170Obj*>* node = reinterpret_cast<NiTListItem<fnv_00a5a170::A170Obj*>*>(this->m_kPropertyList.m_pkHead);
@@ -1656,5 +1724,5 @@ void NiAVObject::BuildPropertyState(NiPropertyState* apSource, bool abAllocate, 
             slots[pElement->GetIndex()] = pElement;
     }
     fnv_00a5a170::DAT_011f42a0.Unlock();
-    apResult = result;
+    aspPropertyState = result;
 }

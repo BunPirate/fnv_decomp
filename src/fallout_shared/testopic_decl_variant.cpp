@@ -18,11 +18,14 @@ extern unsigned int DialogueRandom();
 
 // @fnv 0x0061af30
 // src: XBOX_PDB 0x0061af30
-TESTopicInfo* TESTopic_GetMatchingFollowUpInfo(TESTopicInfo* input, bool& deferredResult, TESObjectREFR* speaker, TESObjectREFR* listener,
-                           bool filter, BSSimpleList<DialogueItem*>* history)
+// pdb: TESTopic::GetMatchingFollowUpInfo | TESTopic.obj | retail, upstream name already matches, high
+// pdb params: apTopicInfo, abDispositionFailure, apSpeaker, apTarget, abIsConversation, apConversationList
+// pdb locals: pInfoRefusal, pchecktopicinfo, pUsedInfo, matchinginfolist, iinfocount, pList, bFinished, pinfo, pquest, bNotSaidOnce, bDispositionInfoFailure, pmob, bOK, pItem, info, pRandomList, plastInfo, dieRoll, count
+TESTopicInfo* TESTopic_GetMatchingFollowUpInfo(TESTopicInfo* apTopicInfo, bool& abDispositionFailure, TESObjectREFR* apSpeaker, TESObjectREFR* apTarget,
+                           bool abIsConversation, BSSimpleList<DialogueItem*>* apConversationList)
 {
-    TESTopicInfo* b = input;
-    deferredResult = false;
+    TESTopicInfo* b = apTopicInfo;
+    abDispositionFailure = false;
     if (!b || b->IsDeleted())
         return 0;
     TESTopicInfo* excluded = 0;
@@ -38,25 +41,25 @@ TESTopicInfo* TESTopic_GetMatchingFollowUpInfo(TESTopicInfo* input, bool& deferr
         TESTopicInfo* info = a->GetItem();
         TESQuest* quest = info->GetParentQuest();
         a = a->GetNext();
-        if (quest && quest->GetEnabled() && quest->GetConditions()->ContainsTrait(speaker, listener))
+        if (quest && quest->GetEnabled() && quest->GetConditions()->ContainsTrait(apSpeaker, apTarget))
         {
             bool deferred = false;
             bool allowed = true;
-            if (info && info->IsSayOnceADay() && speaker->IsMobileObject())
+            if (info && info->IsSayOnceADay() && apSpeaker->IsMobileObject())
             {
-                MobileObject* mobile = (MobileObject*)speaker;
+                MobileObject* mobile = (MobileObject*)apSpeaker;
                 if (mobile->HasSaidTopicInfo(info))
                     allowed = false;
             }
-            if (info && allowed && info->IsInfoValidForDialogue(deferred, 0, speaker, listener))
+            if (info && allowed && info->IsInfoValidForDialogue(deferred, 0, apSpeaker, apTarget))
             {
-                deferredResult = false;
+                abDispositionFailure = false;
                 bool keep = true;
                 if (keep)
                 {
                     if (info->IsRandomEnd())
                         h = true;
-                    BSSimpleList<DialogueItem*>* seen = history;
+                    BSSimpleList<DialogueItem*>* seen = apConversationList;
                     while (seen && !seen->IsEmpty())
                     {
                         DialogueItem* dialogue = seen->GetItem();
@@ -88,10 +91,10 @@ TESTopicInfo* TESTopic_GetMatchingFollowUpInfo(TESTopicInfo* input, bool& deferr
                         f++;
                     }
                 }
-                if (!filter && deferred)
+                if (!abIsConversation && deferred)
                 {
                     fallback = info;
-                    deferredResult = true;
+                    abDispositionFailure = true;
                 }
                 if (h)
                     break;
@@ -100,7 +103,7 @@ TESTopicInfo* TESTopic_GetMatchingFollowUpInfo(TESTopicInfo* input, bool& deferr
     }
     if (choices.IsEmpty())
     {
-        if (filter)
+        if (abIsConversation)
             return 0;
         else
             return fallback;

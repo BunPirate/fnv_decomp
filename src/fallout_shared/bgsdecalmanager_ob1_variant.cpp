@@ -37,9 +37,9 @@ struct CtrlV
     {
         return m_i28 == 0;
     }
-    int BuildEntryValueArray();
-    bool BSCompoundFrustum_Process(ObjV* pkObj);
-    void SetActorList(int iState);
+    int BSCompoundFrustum_GetActivePlaneState();
+    bool BSCompoundFrustum_Process(ObjV* apObject);
+    void BSCompoundFrustum_SetActivePlaneState(int apPlaneState);
 };
 struct HostV
 {
@@ -52,43 +52,46 @@ struct HostV
     {
         return (bool)m_pv8c;
     }
-    void NiCullingProcess_DoCulling(ObjV* pkObj);
-    void BSCullingProcess_Process(ObjV* pkObj);
+    void NiCullingProcess_DoCulling(ObjV* apObject);
+    void BSCullingProcess_Process(ObjV* apObject);
 };
 // @fnv 0x00c4ee90
 // src: XBOX_PDB 0x00c4ee90
-void HostV::BSCullingProcess_Process(ObjV* pkObj)
+// pdb: BSCullingProcess::Process | BSCullingProcess.obj | retail, vtable slot, high
+// pdb params: apObject
+// pdb locals: pn, puiSaveActive
+void HostV::BSCullingProcess_Process(ObjV* apObject)
 {
     if (m_iFadeIndex != 2 && m_iFadeIndex != 1)
     {
-        ObjV* pkTmp = pkObj;
+        ObjV* pkTmp = apObject;
         if (pkTmp->TestFlag(0x1000))
         {
             if (!pkTmp->TestFlag(0x100000))
-                pkObj->Attach(this);
+                apObject->Attach(this);
         }
         else if (!m_pkCtrl || m_pkCtrl->IsEmpty() || m_iFadeIndex == 3)
         {
-            if (pkObj->TestFlag(0x800) || !HasX())
-                pkObj->Attach(this);
+            if (apObject->TestFlag(0x800) || !HasX())
+                apObject->Attach(this);
             else
-                NiCullingProcess_DoCulling(pkObj);
+                NiCullingProcess_DoCulling(apObject);
         }
-        else if (pkObj->TestFlag(0x800) || ((!m_pkCtrl || m_pkCtrl->IsEmpty()) && !HasX()))
+        else if (apObject->TestFlag(0x800) || ((!m_pkCtrl || m_pkCtrl->IsEmpty()) && !HasX()))
         {
-            pkObj->Attach(this);
+            apObject->Attach(this);
         }
         else
         {
-            int iState = m_pkCtrl->BuildEntryValueArray();
-            if (m_pkCtrl->BSCompoundFrustum_Process(pkObj))
-                pkObj->Attach(this);
-            m_pkCtrl->SetActorList(iState);
+            int iState = m_pkCtrl->BSCompoundFrustum_GetActivePlaneState();
+            if (m_pkCtrl->BSCompoundFrustum_Process(apObject))
+                apObject->Attach(this);
+            m_pkCtrl->BSCompoundFrustum_SetActivePlaneState(iState);
         }
     }
     else if (m_iFadeIndex == 1)
     {
-        pkObj->Attach(this);
+        apObject->Attach(this);
     }
 }
 
@@ -141,17 +144,20 @@ template <> __forceinline NiPointer<NiAccumulator>::operator NiAccumulator*() co
 // The shared declaration retains an opaque NiNodeX*: this parameter is a camera, while renderer +8 is an accumulator.
 // @fnv 0x00c4f070
 // src: XBOX_PDB 0x00c4f070
-void NiCullingProcess::BSCullingProcess_Process_00c4f070(NiNodeX* a, NiAVObject* b, int c)
+// pdb: BSCullingProcess::Process | BSCullingProcess.obj | retail, vtable slot, high
+// pdb params: apObject
+// pdb locals: pn, puiSaveActive
+void NiCullingProcess::BSCullingProcess_Process_00c4f070(NiNodeX* apCamera, NiAVObject* apScene, int apVisibleSet)
 {
-    if (!a || !b)
+    if (!apCamera || !apScene)
         return;
-    m_pkCamera = (const NiCamera*)a;
+    m_pkCamera = (const NiCamera*)apCamera;
     NiCullingProcess_SetFrustum((char*)m_pkCamera + 0xdc);
     void* saved = 0;
-    if (c)
+    if (apVisibleSet)
     {
         saved = m_pkVisibleSet;
-        m_pkVisibleSet = (void*)c;
+        m_pkVisibleSet = (void*)apVisibleSet;
     }
     NiPointer<NiAccumulator> sp;
     if (!m_pkVisibleSet)
@@ -160,10 +166,10 @@ void NiCullingProcess::BSCullingProcess_Process_00c4f070(NiNodeX* a, NiAVObject*
         if (!sp)
             sp = GetRoot();
         if (sp)
-            sp->StartAccumulating(reinterpret_cast<const NiCamera*>(a));
+            sp->StartAccumulating(reinterpret_cast<const NiCamera*>(apCamera));
     }
-    b->Cull(*this);
-    if (c)
+    apScene->Cull(*this);
+    if (apVisibleSet)
         m_pkVisibleSet = saved;
 }
 
@@ -181,6 +187,9 @@ inline const char* NiGeometry::GetName() const
 
 // @fnv 0x00c4f1d0
 // src: XBOX_PDB 0x00c4f1d0
+// pdb: BSCullingProcess::AppendVirtual | BSCullingProcess.obj | retail, string-set bridge, high
+// pdb params: kVisible
+// pdb locals: bregistered
 void BSCullingProcess::AppendVirtual(NiGeometry& kVisible)
 {
     bool bRegistered = false;

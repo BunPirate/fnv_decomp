@@ -35,9 +35,10 @@ extern void* const NavMeshSearchMaxCost_vftable[];
 
 // Destroys the search, frees this when flags has bit 1 set, and returns this.
 // @fnv 0x006ab450
+// pdb: NavMeshSearchMaxCost::`scalar deleting destructor' | NavMeshSearchMaxCost.obj | retail, vtable slot, high
 void* NavMeshSearchMaxCost::Destroy(unsigned int flags)
 {
-    UpdateFields_006ab480();
+    NavMeshSearchMaxCost_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -51,6 +52,8 @@ int __thiscall NavMeshSearchMaxCost::GetField2048()
 
 // @fnv 0x006abb60
 // src: XBOX_PDB 0x006abb60
+// pdb: NavMeshSearchMaxCost::IsGoalNode | NavMeshSearchMaxCost.obj | debug, vtable slot, medium
+// pdb params: apNode
 bool __thiscall NavMeshSearchMaxCost::IsGoalNode_006abb60(const SearchNode* apNode)
 {
     if (!hasGoal)
@@ -59,6 +62,7 @@ bool __thiscall NavMeshSearchMaxCost::IsGoalNode_006abb60(const SearchNode* apNo
         return NavMeshSearch::HasReachedGoal(apNode);
 }
 
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x1), 2 members
 struct ScrapHeapBuffer
 {
     void* Allocate(unsigned int, unsigned int);
@@ -73,6 +77,9 @@ struct FUN_006abcb0_shell
 // Allocates n blocks of 0x14 bytes from the heap and returns the pointer.
 // @fnv 0x006abcb0
 // src: COMMUNITY 0x006abcb0
+// pdb: BSScrapArray<NavMeshSearchNode,1024>::_Allocate | NavMeshSearchMaxCost.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* __thiscall FUN_006abcb0_shell::BSScrapArray_NavMeshSearchNode_1024_Allocate(unsigned int auiCount)
 {
     void* tmp;
@@ -102,11 +109,14 @@ struct FUN_006abce0_shell
 // Allocates count*0x14 bytes, copies GetFlags()*0x14 bytes from src into it, frees src, and returns the new buffer.
 // @fnv 0x006abce0
 // src: COMMUNITY 0x006abce0
-void* __thiscall FUN_006abce0_shell::BSScrapArray_NavMeshSearchNode_1024_Reallocate(void* pSource, unsigned int count)
+// pdb: BSScrapArray<NavMeshSearchNode,1024>::_Reallocate | NavMeshSearchMaxCost.obj | retail, vtable slot, high
+// pdb params: apBuffer, aiNewSizeInItem
+// pdb locals: pnewBuffer
+void* __thiscall FUN_006abce0_shell::BSScrapArray_NavMeshSearchNode_1024_Reallocate(void* apBuffer, unsigned int aiNewSizeInItem)
 {
-    void* dst = heap->Allocate(count * 0x14, DAT_010a2720);
-    __memcpy(dst, pSource, ((NavmeshsearchmaxcostOffset08View*)this)->GetFlags() * 0x14);
-    heap->Deallocate(pSource);
+    void* dst = heap->Allocate(aiNewSizeInItem * 0x14, DAT_010a2720);
+    __memcpy(dst, apBuffer, ((NavmeshsearchmaxcostOffset08View*)this)->GetFlags() * 0x14);
+    heap->Deallocate(apBuffer);
     return dst;
 }
 }  // namespace fnv_006abce0
@@ -126,6 +136,7 @@ struct FUN_006abdc0_shell
 
 // @fnv 0x006abdc0
 // src: GUESS 0x006abdc0 (confidence: medium)
+// pdb: BSSimpleArray<NavMeshSearchLink,1024>::~BSSimpleArray<NavMeshSearchLink,1024> | NavMeshSearchMaxCost.obj | debug, call graph (shared callers), medium
 void __thiscall FUN_006abdc0_shell::ResetVirtualTableAndClear_006abdc0()
 {
     p = &DAT_0106b8c8;
@@ -147,6 +158,7 @@ struct FUN_006abde0 : FUN_006abdc0
 };
 // Destructor that calls Clear(true) on the object at this address.
 // @fnv 0x006abde0
+// pdb: BSScrapArray<NavMeshSearchLink,1024>::~BSScrapArray<NavMeshSearchLink,1024> | NavMeshSearchMaxCost.obj | retail, call graph, medium
 FUN_006abde0::~FUN_006abde0()
 {
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -183,6 +195,7 @@ struct FUN_006abc50 : FUN_006abc30_Class
     ~FUN_006abc50();
 };
 // @fnv 0x006abc50
+// pdb: BSScrapArray<NavMeshSearchNode,1024>::~BSScrapArray<NavMeshSearchNode,1024> | NavMeshSearchMaxCost.obj | retail, call graph, medium
 FUN_006abc50::~FUN_006abc50()
 {
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -210,6 +223,7 @@ struct FUN_006abbb0 : FUN_006abf60
 };
 // Initializes unk10 from FUN_00401020()->FUN_00aa42e0() and calls FUN_009a3d00(0, 0).
 // @fnv 0x006abbb0
+// pdb: BSScrapArray<NavMeshSearchNode,1024>::BSScrapArray<NavMeshSearchNode,1024> | NavMeshSearchMaxCost.obj | debug, call graph, medium
 FUN_006abbb0::FUN_006abbb0()
 {
     unk10 = MemoryManager_Instance()->FUN_00aa42e0();
@@ -243,6 +257,7 @@ struct FUN_006abd40 : NavMeshSearchGraphBase
 };
 
 // @fnv 0x006abd40
+// pdb: BSScrapArray<NavMeshSearchLink,1024>::BSScrapArray<NavMeshSearchLink,1024> | NavMeshSearchMaxCost.obj | debug, call graph, high
 FUN_006abd40::FUN_006abd40()
 {
     m_10 = ((NavMeshSearchHeapObj*)MemoryManager_Instance())->FUN_00aa42e0();
@@ -259,27 +274,30 @@ struct NavMeshSearchLocation
     NiPoint3 FastNavMeshTriLocation_GetLocation();
 };
 // @fnv 0x006ab4a0
+// pdb: NavMeshSearchMaxCost::BuildNodePath | NavMeshSearchMaxCost.obj | debug, object-file gap fill, medium
+// pdb params: apRequest, aStartNode, aOptimalLocation, apReturnNodeArray, apReturnLinkArray
+// pdb locals: bresult, spgoalMesh, usgoalTri, center
 bool NavMeshSearchMaxCost::StartSearch(int aiSearchType, NavMeshSearchLocation* apStart, PathingLocation* apGoal,
                                      PathBuilderDetailedPathInfos* apInfos, PathBuilderDetailedPathInfos* apAltInfos)
 {
-    (*(NavMeshSearchLocation*)&unk205c) = *apStart;
+    (*(NavMeshSearchLocation*)&StartNode) = *apStart;
     unk2058 = aiSearchType;
     apInfos->Clear(false);
     apAltInfos->Clear(false);
-    FUN_006a7c40();
+    AStarSearch_NavMeshSearchNode_NavMeshSearchLink_ClearSearchData();
     if (!apGoal->PathingLocation_QUnused() && apGoal->FUN_006dd6f0(false))
     {
         NavMeshPtr spGoalNavMesh;
         unsigned short m_usTriangleID;
         if (apGoal->FUN_006dd640(&spGoalNavMesh, &m_usTriangleID))
         {
-            (*(NavMeshSearchLocation*)&unk2070).m_pLocationNavMesh = spGoalNavMesh;
-            (*(NavMeshSearchLocation*)&unk2070).m_usTriangleID = m_usTriangleID;
+            (*(NavMeshSearchLocation*)&GoalNode).m_pLocationNavMesh = spGoalNavMesh;
+            (*(NavMeshSearchLocation*)&GoalNode).m_usTriangleID = m_usTriangleID;
             float kGoalPos[3];
-            (*(NavMeshSearchLocation*)&unk2070).m_pLocationNavMesh->FUN_00558220((NiPoint3*)kGoalPos, (*(NavMeshSearchLocation*)&unk2070).m_usTriangleID);
-            (*(NavMeshSearchLocation*)&unk2070).kPosition.x = kGoalPos[0];
-            (*(NavMeshSearchLocation*)&unk2070).kPosition.y = kGoalPos[1];
-            (*(NavMeshSearchLocation*)&unk2070).kPosition.z = kGoalPos[2];
+            (*(NavMeshSearchLocation*)&GoalNode).m_pLocationNavMesh->FUN_00558220((NiPoint3*)kGoalPos, (*(NavMeshSearchLocation*)&GoalNode).m_usTriangleID);
+            (*(NavMeshSearchLocation*)&GoalNode).kPosition.x = kGoalPos[0];
+            (*(NavMeshSearchLocation*)&GoalNode).kPosition.y = kGoalPos[1];
+            (*(NavMeshSearchLocation*)&GoalNode).kPosition.z = kGoalPos[2];
             bHasGoal = true;
         }
     }
@@ -287,7 +305,7 @@ bool NavMeshSearchMaxCost::StartSearch(int aiSearchType, NavMeshSearchLocation* 
         float kStartPos[3];
         float kTmpGoalPos[3];
         FUN_006a7c90(GetKeyForNode_006a94f0(apStart->m_pLocationNavMesh, apStart->m_usTriangleID), apStart,
-                     (*(*(NavMeshSearchLocation*)&unk205c).FastNavMeshTriLocation_GetLocation((NiPoint3*)kStartPos) - *(*(NavMeshSearchLocation*)&unk2070).FastNavMeshTriLocation_GetLocation((NiPoint3*)kTmpGoalPos)).Length());
+                     (*(*(NavMeshSearchLocation*)&StartNode).FastNavMeshTriLocation_GetLocation((NiPoint3*)kStartPos) - *(*(NavMeshSearchLocation*)&GoalNode).FastNavMeshTriLocation_GetLocation((NiPoint3*)kTmpGoalPos)).Length());
     }
     bool bFoundPath = FUN_006a7d60(apInfos, apAltInfos, false);
     return bFoundPath;
@@ -324,30 +342,33 @@ struct Node
 };
 // Sets start and goal locations from mesh centers, runs the search, and returns the fallback point or result center.
 // @fnv 0x006ab670
+// pdb: NavMeshSearchMaxCost::FindClosestPoint | NavMeshSearchMaxCost.obj | debug, object-file gap fill, medium
+// pdb params: aStartLocation, aStartNode, aGoalLocation, aGoalNode, afMaxDist
+// pdb locals: nodes, links, center
 NiPoint3 NavMeshSearchMaxCost::FindPath(int unused, Location* initial, NiPoint3* fallback, Location* target, float cost)
 {
-    (*(Location*)&unk205c).mesh = initial->mesh;
-    (*(Location*)&unk205c).triangle = initial->triangle;
-    NiPoint3 center = (*(Location*)&unk205c).mesh->Center((*(Location*)&unk205c).triangle);
-    (*(Location*)&unk205c).x = center.x;
-    (*(Location*)&unk205c).y = center.y;
-    (*(Location*)&unk205c).z = center.z;
-    Add(Index((*(Location*)&unk205c).mesh, (*(Location*)&unk205c).triangle), &(*(Location*)&unk205c), ((*(Location*)&unk205c).Center() - (*(Location*)&unk2070).Center()).Length());
+    (*(Location*)&StartNode).mesh = initial->mesh;
+    (*(Location*)&StartNode).triangle = initial->triangle;
+    NiPoint3 center = (*(Location*)&StartNode).mesh->Center((*(Location*)&StartNode).triangle);
+    (*(Location*)&StartNode).x = center.x;
+    (*(Location*)&StartNode).y = center.y;
+    (*(Location*)&StartNode).z = center.z;
+    Add(Index((*(Location*)&StartNode).mesh, (*(Location*)&StartNode).triangle), &(*(Location*)&StartNode), ((*(Location*)&StartNode).Center() - (*(Location*)&GoalNode).Center()).Length());
     if (target->mesh || target->triangle != 0xffff)
     {
         hasGoal = true;
-        (*(Location*)&unk2070).mesh = target->mesh;
-        (*(Location*)&unk2070).triangle = target->triangle;
-        center = (*(Location*)&unk2070).mesh->Center((*(Location*)&unk2070).triangle);
-        (*(Location*)&unk2070).x = center.x;
-        (*(Location*)&unk2070).y = center.y;
-        (*(Location*)&unk2070).z = center.z;
+        (*(Location*)&GoalNode).mesh = target->mesh;
+        (*(Location*)&GoalNode).triangle = target->triangle;
+        center = (*(Location*)&GoalNode).mesh->Center((*(Location*)&GoalNode).triangle);
+        (*(Location*)&GoalNode).x = center.x;
+        (*(Location*)&GoalNode).y = center.y;
+        (*(Location*)&GoalNode).z = center.z;
     }
     else
     {
         hasGoal = false;
     }
-    maxCost = cost;
+    fMaxDist = cost;
     OpenSet open;
     ClosedSet closed_2;
     if (Run(&open, &closed_2, 0))
@@ -397,7 +418,10 @@ struct NodeOutput
 };
 
 // @fnv 0x006ab8e0
-bool NavMeshSearchMaxCost::ExpandNeighborNodes(NavMeshTriangleReference* source, NodeOutput* output)
+// pdb: NavMeshSearchMaxCost::GetNodeConnections | NavMeshSearchMaxCost.obj | retail, vtable slot, high
+// pdb params: apNode, apRetNodes
+// pdb locals: i, potherMesh, iotherEdge, usotherTri, pextra, fcost, pnode, nodeCenter, doorID, pdoor, doorLock, bmustPick, lockData
+bool NavMeshSearchMaxCost::ExpandNeighborNodes(NavMeshTriangleReference* apNode, NodeOutput* apRetNodes)
 {
     using namespace fnv_006ab8e0;
     for (int i = 0; i < 3; ++i)
@@ -405,14 +429,14 @@ bool NavMeshSearchMaxCost::ExpandNeighborNodes(NavMeshTriangleReference* source,
         NavMesh* mesh;
         unsigned short triangle;
         int linked;
-        if (reinterpret_cast<NavMeshAStarNode*>(source)->location.m_pLocationNavMesh->FindAdjacentEdge(reinterpret_cast<NavMeshAStarNode*>(source)->location.m_usTriangleID, i, &mesh, &triangle, &linked))
+        if (reinterpret_cast<NavMeshAStarNode*>(apNode)->location.m_pLocationNavMesh->FindAdjacentEdge(reinterpret_cast<NavMeshAStarNode*>(apNode)->location.m_usTriangleID, i, &mesh, &triangle, &linked))
         {
-            fnv_006ab8e0::EdgeExtraInfo* edge = (fnv_006ab8e0::EdgeExtraInfo*)reinterpret_cast<NavMeshAStarNode*>(source)->location.m_pLocationNavMesh->GetEdgeExtraInfo(reinterpret_cast<NavMeshAStarNode*>(source)->location.m_usTriangleID, i);
+            fnv_006ab8e0::EdgeExtraInfo* edge = (fnv_006ab8e0::EdgeExtraInfo*)reinterpret_cast<NavMeshAStarNode*>(apNode)->location.m_pLocationNavMesh->GetEdgeExtraInfo(reinterpret_cast<NavMeshAStarNode*>(apNode)->location.m_usTriangleID, i);
             if (edge && edge->type == 1)
                 continue;
             NiPoint3 center = mesh->FUN_00558220(triangle);
-            float cost = (center - reinterpret_cast<NavMeshAStarNode*>(source)->location.FastNavMeshTriLocation_GetLocation()).NiPoint3_XYLength() + reinterpret_cast<NavMeshAStarNode*>(source)->cost;
-            if (cost > maxCost)
+            float cost = (center - reinterpret_cast<NavMeshAStarNode*>(apNode)->location.FastNavMeshTriLocation_GetLocation()).NiPoint3_XYLength() + reinterpret_cast<NavMeshAStarNode*>(apNode)->cost;
+            if (cost > fMaxDist)
                 continue;
             if (((fnv_006ab8e0::NavMeshTriangleView*)mesh->FUN_005582f0(triangle))->FUN_00691140(0x1000))
             {
@@ -443,12 +467,12 @@ bool NavMeshSearchMaxCost::ExpandNeighborNodes(NavMeshTriangleReference* source,
             switch (FUN_006a7e00(GetKeyForNode_006a94f0(mesh, triangle), cost, &nodeA))
             {
             case 0:
-                FUN_006a6ef0(nodeA, mesh, triangle);
+                SetNodeData(nodeA, mesh, triangle);
             case 1:
-                reinterpret_cast<NavMeshAStarNode*>(nodeA)->parentMesh = reinterpret_cast<NavMeshAStarNode*>(source)->location.m_pLocationNavMesh;
-                reinterpret_cast<NavMeshAStarNode*>(nodeA)->parentTriangle = reinterpret_cast<NavMeshAStarNode*>(source)->location.m_usTriangleID;
+                reinterpret_cast<NavMeshAStarNode*>(nodeA)->parentMesh = reinterpret_cast<NavMeshAStarNode*>(apNode)->location.m_pLocationNavMesh;
+                reinterpret_cast<NavMeshAStarNode*>(nodeA)->parentTriangle = reinterpret_cast<NavMeshAStarNode*>(apNode)->location.m_usTriangleID;
                 reinterpret_cast<NavMeshAStarNode*>(nodeA)->parentEdge = i;
-                output->FUN_007cb2e0(nodeA);
+                apRetNodes->FUN_007cb2e0(nodeA);
                 break;
             }
         }
@@ -458,8 +482,9 @@ bool NavMeshSearchMaxCost::ExpandNeighborNodes(NavMeshTriangleReference* source,
 // This cleanup entry calls FUN_006a6b00 rather than the shared base destructor.
 
 // @fnv 0x006ab480
-// src: GUESS 0x006ab480 (confidence: low)
-void NavMeshSearchMaxCost::UpdateFields_006ab480()
+// src: XBOX_DEBUG_PDB 0x006ab480
+// pdb: NavMeshSearchMaxCost::~NavMeshSearchMaxCost | NavMeshSearchMaxCost.obj | debug, call graph (shared callers), high
+void NavMeshSearchMaxCost::NavMeshSearchMaxCost_dtor()
 {
     *(void* const**)this = NavMeshSearchMaxCost_vftable;
     FUN_006a6b00();

@@ -8,6 +8,7 @@
 #include "../../include/NiStream.h"
 
 // @fnv 0x0043cfd0
+// pdb: BSStream::BSStream | ModelLoader.obj | retail, upstream name already matches, high
 BSStream::BSStream() : m_spNodeReferences(0)
 {
     m_pObjectNameMap = 0;

@@ -30,6 +30,7 @@ FNV_STATIC_ASSERT(sizeof(EffectItemList) == 0x10);
 
 FNV_STATIC_ASSERT(sizeof(MagicItem) == 0x1C);
 
+// pdb: class Model, size 0x10 (here 0x1), 4 members
 class Model
 {
   public:
@@ -38,6 +39,7 @@ class Model
     const char* Modelloader_GetReferencedThis();
 };
 class KFModel;
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
@@ -49,6 +51,7 @@ class ModelLoader
 };
 void MagicItem_IncrementGlobalCounter();
 extern ModelLoader* g_modelLoader;
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -63,12 +66,16 @@ extern "C" void FormHeapFreeAndLog(const void*);
 
 // Looks up the TESForm for auiID and returns it cast to MagicItemForm or MagicItemObject, otherwise null.
 // @fnv 0x0040a250
-MagicItem* MagicItem::GetMagicItemByID(unsigned int auiID)
+// src: XBOX_RETAIL_PDB 0x0040a250
+// pdb: MagicItem::GetMagicItemByNumericID | MagicItem.obj | retail, call graph, high
+// pdb params: aiFormID
+// pdb locals: pform, pmagicItemForm, pmagicItemObject
+MagicItem* MagicItem::GetMagicItemByNumericID(unsigned int aiFormID)
 {
     MagicItemObject* pObject;
     TESForm* pForm;
     MagicItemForm* pFormItem;
-    pForm = TESForm::GetFormByID(auiID);
+    pForm = TESForm::GetFormByID(aiFormID);
     if (pForm)
     {
         pFormItem = dynamic_cast<MagicItemForm*>(pForm);
@@ -83,7 +90,11 @@ MagicItem* MagicItem::GetMagicItemByID(unsigned int auiID)
 
 // Initializes every EffectItem in the list with apForm and counts how many are hostile, storing the count.
 // @fnv 0x0040c030
-void MagicItem::LoadEffectsFromForm(TESForm* apForm)
+// src: XBOX_RETAIL_PDB 0x0040c030
+// pdb: MagicItem::MagicItemInitItem | MagicItem.obj | retail, call graph (shared callers), high
+// pdb params: apForm
+// pdb locals: plist, pitem
+void MagicItem::MagicItemInitItem(TESForm* apForm)
 {
     EffectItemList* pIter = this;
     m_iEffectCount = 0;
@@ -100,6 +111,8 @@ void MagicItem::LoadEffectsFromForm(TESForm* apForm)
 }
 
 // @fnv 0x0040b470
+// pdb: MagicItem::IsLoaded | MagicItem.obj | retail, upstream name already matches, high
+// pdb locals: plist, pavEffectSetting, pitem, pes
 bool MagicItem::IsLoaded()
 {
     EffectSetting* pSelfEffectSetting = GetEffectSettingForRange(MagicSystem::SELF);
@@ -123,6 +136,9 @@ bool MagicItem::IsLoaded()
 
 // Scans the effect list for the best non-detrimental effect by range then cost and returns its EffectSetting, or null if none.
 // @fnv 0x0040a300
+// pdb: MagicItem::GetAVEffect | MagicItem.obj | retail, call graph, high
+// pdb params: aeRange
+// pdb locals: plist, erange, pavEffect, imaxCost, pitem, ithisCost, ethisRange
 EffectSetting* MagicItem::GetEffectSettingForRange(MagicSystem::Range aeRange)
 {
     struct BestEffect
@@ -149,7 +165,7 @@ EffectSetting* MagicItem::GetEffectSettingForRange(MagicSystem::Range aeRange)
         current.item = pIter->GetItem();
         current.cost = static_cast<int>(current.item->GetCost(0));
         current.range = static_cast<MagicSystem::Range>(current.item->GetRange());
-        if (!current.item->IsDetrimental() &&
+        if (!current.item->IsDisabled() &&
             (current.range > best.range || (current.range == best.range && current.cost > best.cost)))
         {
             best.item = current.item;
@@ -162,6 +178,8 @@ EffectSetting* MagicItem::GetEffectSettingForRange(MagicSystem::Range aeRange)
 }
 
 // @fnv 0x0040b6b0
+// pdb: MagicItem::IsLoading | MagicItem.obj | retail, upstream name already matches, high
+// pdb locals: plist, bfinished, pavEffectSetting, pitem, pes
 bool MagicItem::IsLoading()
 {
     EffectSetting* pSelfEffectSetting = GetEffectSettingForRange(MagicSystem::SELF);
@@ -196,12 +214,15 @@ bool MagicItem::IsLoading()
 }
 
 // @fnv 0x0040a420
-void MagicItem::Preload(bool immediate)
+// pdb: MagicItem::Preload | MagicItem.obj | retail, upstream name already matches, high
+// pdb params: abNow
+// pdb locals: brunNow, pavEffectSetting, bloadNow, plist, pitem, pes, pform, pweapon, parmor, pcreature, pnpc, modelList, pfilename, path, pfilelist, plastBackSlash, pcreatureFileList, plastSlash, pkfList, pFilenameList, pspecialList
+void MagicItem::Preload(bool abNow)
 {
     EffectSetting* pSelfEffectSetting = GetEffectSettingForRange(MagicSystem::SELF);
     bool bProceed = false;
     bool bLoad = false;
-    if (immediate || IsLoaded())
+    if (abNow || IsLoaded())
     {
         bProceed = true;
         bLoad = true;
@@ -326,7 +347,7 @@ void MagicItem::Preload(bool immediate)
                                 files->RemoveAll();
                                 delete files;
                             }
-                            if (creature->TESAnimation::HasSpecialAnimations())
+                            if (creature->TESAnimation::HasKFFiles())
                             {
                                 modelPaths.slash[1] = 0;
                                 AppendModelPath(path, 260, "SpecialAnims");
@@ -360,6 +381,8 @@ void MagicItem::Preload(bool immediate)
 
 // @fnv 0x0040ab30
 // src: XBOX_PDB 0x0040ab30
+// pdb: strrchr | MagicItem.obj | debug, call graph, medium
+// pdb params: _Str, _Ch
 char* strrchr_0040ab30(char* pcString, int cChar)
 {
     return (char*)strrchr((const char*)pcString, cChar);
@@ -382,8 +405,9 @@ struct FUN_0040c110_ptr
 void __fastcall Model_DecRefCount(FUN_0040c110_ptr::Target*);
 
 // @fnv 0x0040c110
-// src: GUESS 0x0040c110 (confidence: high)
-void __fastcall MagicItem_ReleaseModelReference(FUN_0040c110_ptr* _this)
+// src: XBOX_DEBUG_PDB 0x0040c110
+// pdb: NiPointer<Model>::~NiPointer<Model> | MagicItem.obj | debug, call graph, high
+void __fastcall NiPointer_Model_dtor(FUN_0040c110_ptr* _this)
 {
     if (_this->m_pObject)
         Model_DecRefCount(_this->m_pObject);
@@ -406,6 +430,8 @@ struct FUN_004047f0_arg
 const char* __fastcall Modelloader_GetReferencedThis(const BSStringT<char>*);
 void __fastcall FUN_00403970(BSStringT<char>*);
 // @fnv 0x004047f0
+// pdb: BSStringT<char>::BSStringT<char> | EffectItem.obj | debug, call graph, medium
+// pdb params: aString
 BSStringT<char>* __fastcall AssignFromString(BSStringT<char>* this_ptr, FUN_004047f0_arg aStringArg)
 {
     FUN_00403970(this_ptr);
@@ -420,6 +446,8 @@ struct FUN_0040c0e0_arg
 void __fastcall FUN_00403970(BSStringT<char>*);
 // @fnv 0x0040c0e0
 // src: GUESS 0x0040c0e0 (confidence: medium)
+// pdb: BSStringT<char>::BSStringT<char> | MagicItem.obj | debug, call graph, medium
+// pdb params: apString
 BSStringT<char>* __fastcall BSStringT_InitializeCString(BSStringT<char>* this_ptr, FUN_0040c0e0_arg aCString)
 {
     FUN_00403970(this_ptr);
@@ -586,7 +614,7 @@ void __fastcall PreloadModels(MagicItem* magicItem)
                                 pkfList->RemoveAll();
                                 delete pkfList;
                             }
-                            if (pcreature->TESAnimation::HasSpecialAnimations())
+                            if (pcreature->TESAnimation::HasKFFiles())
                             {
                                 plastSlash[1] = 0;
                                 AppendModelPath(path, 260, "SpecialAnims");
@@ -625,7 +653,10 @@ void DecrementGlobalCounter()
 }
 
 // @fnv 0x0040b580
-bool __fastcall IsMagicItemReady(MagicItem* magicItem)
+// src: XBOX_RETAIL_PDB 0x0040b580
+// pdb: MagicItem::IsLoadingOrLoaded | MagicItem.obj | retail, object-file gap fill, high
+// pdb locals: plist, pavEffectSetting, pitem, pes
+bool __fastcall MagicItem_IsLoadingOrLoaded(MagicItem* magicItem)
 {
     EffectSetting* current = magicItem->GetEffectSettingForRange(MagicSystem::SELF);
     if (current && current->TESModel::GetModelLength() > 0 && !current->IsModelLoaded() && !current->HasNoAssociatedActorValue())
@@ -648,6 +679,8 @@ bool __fastcall IsMagicItemReady(MagicItem* magicItem)
 
 // Casts this MagicItem to MagicItemForm or MagicItemObject and calls TESSound::Deallocate on it, returning 0 if neither cast succeeds.
 // @fnv 0x0040a1e0
+// pdb: MagicItem::GetMagicItemFormID | MagicItem.obj | retail, call graph, high
+// pdb locals: pmagicItemForm, pmagicItemObject
 int __fastcall MagicItemDeallocate(MagicItem* magicItem)
 {
     MagicItemForm* form = dynamic_cast<MagicItemForm*>(magicItem);
@@ -674,7 +707,7 @@ int FUN_00406d30(char*, unsigned int, const char*);
 // @fnv 0x0040b800
 void MagicItem::Unload(bool immediate)
 {
-    if (!IsMagicItemReady(this))
+    if (!MagicItem_IsLoadingOrLoaded(this))
         return;
     EffectSetting* primary = GetEffectSettingForRange(MagicSystem::SELF);
     bool queued = false;
@@ -772,7 +805,7 @@ void MagicItem::Unload(bool immediate)
                                 files->RemoveAll();
                                 delete files;
                             }
-                            if (creature11->TESAnimation::HasSpecialAnimations())
+                            if (creature11->TESAnimation::HasKFFiles())
                             {
                                 separator10[1] = 0;
                                 AppendModelPath(buffer4, 260, "SpecialAnims");
@@ -824,13 +857,16 @@ struct FUN_0040c0e0
 typedef struct FUN_0040c0e0 ReturnString;
 struct MagicLabel
 {
-    ReturnString GetNameForType(unsigned int);
+    ReturnString MagicItem_GetCannotCastString(unsigned int);
 };
 // Returns a string setting's value chosen by type, falling back to DAT_011c3474 for any other value.
 // @fnv 0x0040bef0
-ReturnString MagicLabel::GetNameForType(unsigned int type)
+// src: XBOX_RETAIL_PDB 0x0040bef0
+// pdb: MagicItem::GetCannotCastString | MagicItem.obj | retail, call graph (shared callers), high
+// pdb params: aeReason
+ReturnString MagicLabel::MagicItem_GetCannotCastString(unsigned int aeReason)
 {
-    switch (type)
+    switch (aeReason)
     {
     case 1:
         return ReturnString(DAT_011c34c0.FUN_00403df0());

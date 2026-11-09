@@ -4,6 +4,7 @@
 
 class TeleportableReference;
 
+// pdb: class ExtraTeleport, size 0x10, bases: BSExtraData, 1 members
 class ExtraTeleport : public BSExtraData
 {
 public:

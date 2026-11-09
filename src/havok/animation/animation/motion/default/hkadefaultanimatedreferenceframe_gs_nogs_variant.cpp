@@ -20,9 +20,9 @@ inline float hkSimdReal::getReal() const
     _mm_store_ss(&f, v);
     return f;
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 m = _mm_mul_ps(v, a.v);
+    __m128 m = _mm_mul_ps(v, x.v);
     __m128 y = _mm_shuffle_ps(m, m, 0x55);
     __m128 xy = _mm_add_ss(y, m);
     __m128 z = _mm_shuffle_ps(m, m, 0xaa);
@@ -91,10 +91,10 @@ struct FUN_00e41090
 
 
 // src: COMMUNITY 0x00c74ac0
-__declspec(noinline) void hkQuaternion::setMulInverse(const void* pa, const void* pb) throw()
+__declspec(noinline) void hkQuaternion::setMulInverse(const void* q0, const void* q1) throw()
 {
-    const __m128 a = *(const __m128*)pa;
-    const __m128 b = *(const __m128*)pb;
+    const __m128 a = *(const __m128*)q0;
+    const __m128 b = *(const __m128*)q1;
     __m128 xyz = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(b, b, 0xc9), _mm_shuffle_ps(a, a, 0xd2)),
                             _mm_mul_ps(_mm_shuffle_ps(b, b, 0xd2), _mm_shuffle_ps(a, a, 0xc9)));
     __m128 aw = _mm_shuffle_ps(a, a, 0xff);
@@ -112,7 +112,7 @@ __declspec(noinline) void hkQuaternion::setMulInverse(const void* pa, const void
 }
 
 
-extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* arr, int newCap, int elemSize) throw();
+extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem) throw();
 #include "../../../../../../include/hkArray.h"
 struct Config
 {
@@ -135,12 +135,12 @@ extern hkError* DAT_01268360;
 extern int DAT_01268700;
 extern int DAT_010e57a4;
 extern const char DAT_010ebe28[], DAT_010ebdec[], DAT_010ebdcc[], DAT_01012630[], DAT_010ebde0[], DAT_010ebd70[];
-extern "C" void __cdecl hkaDefaultAnimatedReferenceFrame_project(const Config* cfg, const void* v1, void* outV, const void* v2) throw();
+extern "C" void __cdecl hkaDefaultAnimatedReferenceFrame_project(const Config* options, const void* transform, void* previousProjection, const void* projectionOut) throw();
 extern "C" void __cdecl hkQsTransform_UpdateState_00e41bf0(void* outTransform, float time, const hkQsTransform* transforms, int numTransforms,
                                      float duration) throw();
 
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
-extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* arr, int newCap, int elemSize) throw();
+extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem) throw();
 
 class FUN_00e41830
 {
@@ -154,7 +154,7 @@ class FUN_00e41830
     hkVector4 m_vEnd;
     float m_fAnimationDuration;
     hkArray<hkVector4> m_kAnimationVectorSamples;
-    FUN_00e41830(const Config& config) throw();
+    FUN_00e41830(const Config& options) throw();
 };
 static __forceinline float dot3(__m128 a, __m128 b)
 {
@@ -193,27 +193,27 @@ static __forceinline __m128 projectAxis(__m128 value, __m128 axis)
     return _mm_mul_ps(_mm_shuffle_ps(sum, sum, 0), axis);
 }
 // src: XBOX_PDB 0x00e41220
-extern "C" __declspec(noinline) void __cdecl hkaDefaultAnimatedReferenceFrame_project(const Config* cfg, const void* transform, void* prev,
-                                                          const void* output) throw()
+extern "C" __declspec(noinline) void __cdecl hkaDefaultAnimatedReferenceFrame_project(const Config* options, const void* transform, void* previousProjection,
+                                                          const void* projectionOut) throw()
 {
     const hkQsTransform* pose = (const hkQsTransform*)transform;
-    hkVector4* result = (hkVector4*)output;
-    __m128 up = projectAxis(pose->m_vTranslation.v, cfg->m_vStart.v);
-    __m128 side = projectAxis(pose->m_vTranslation.v, cross(cfg->m_vStart.v, cfg->m_vEnd.v));
-    __m128 front = projectAxis(pose->m_vTranslation.v, cfg->m_vEnd.v);
+    hkVector4* result = (hkVector4*)projectionOut;
+    __m128 up = projectAxis(pose->m_vTranslation.v, options->m_vStart.v);
+    __m128 side = projectAxis(pose->m_vTranslation.v, cross(options->m_vStart.v, options->m_vEnd.v));
+    __m128 front = projectAxis(pose->m_vTranslation.v, options->m_vEnd.v);
     result->v = _mm_setzero_ps();
-    if (cfg->m_unk11)
+    if (options->m_unk11)
         result->v = _mm_add_ps(result->v, front);
-    if (cfg->m_unk10)
+    if (options->m_unk10)
         result->v = _mm_add_ps(result->v, up);
-    if (cfg->m_unk12)
+    if (options->m_unk12)
         result->v = _mm_add_ps(result->v, side);
-    if (cfg->m_bFlag13)
+    if (options->m_bFlag13)
     {
         hkVector4 rest;
         float angle;
-        ((AngleRotation*)&pose->m_rotation)->hkQuaternion_decomposeRestAxis(&cfg->m_vStart, &rest, &angle);
-        float previous = ((const hkVector4*)prev)->v.m128_f32[3];
+        ((AngleRotation*)&pose->m_rotation)->hkQuaternion_decomposeRestAxis(&options->m_vStart, &rest, &angle);
+        float previous = ((const hkVector4*)previousProjection)->v.m128_f32[3];
         while (angle - previous > double(3.14159265358979323846f))
             angle -= double(6.28318530717958647692f);
         while (angle - previous < -double(3.14159265358979323846f))
@@ -225,32 +225,35 @@ extern "C" __declspec(noinline) void __cdecl hkaDefaultAnimatedReferenceFrame_pr
 }
 
 // @fnv 0x00e41830
-FUN_00e41830::FUN_00e41830(const Config& config) throw() : m_ppVirtualMethodTable(&DAT_010e57a4), m_sReferenceCount(1)
+// pdb: hkaDefaultAnimatedReferenceFrame::hkaDefaultAnimatedReferenceFrame | hkaDefaultAnimatedReferenceFrame.obj | retail, object-file run extension, high
+// pdb params: options
+// pdb locals: initialProjection, previousProjection, assertBuf, ostr, diff, rootPose, newProjection
+FUN_00e41830::FUN_00e41830(const Config& options) throw() : m_ppVirtualMethodTable(&DAT_010e57a4), m_sReferenceCount(1)
 {
     int numSamples =
-        config.m_iValueAfterAnimationDuration == -1 ? config.m_numQsTransforms : config.m_iValueAfterAnimationDuration;
+        options.m_iValueAfterAnimationDuration == -1 ? options.m_numQsTransforms : options.m_iValueAfterAnimationDuration;
     hkArray<hkVector4>& samples = m_kAnimationVectorSamples;
-    m_vStart.v = config.m_vStart.v;
-    m_vEnd.v = config.m_vEnd.v;
-    float duration = config.m_fAnimationDuration;
+    m_vStart.v = options.m_vStart.v;
+    m_vEnd.v = options.m_vEnd.v;
+    float duration = options.m_fAnimationDuration;
     m_fAnimationDuration = duration;
     float dt = duration / (float)(numSamples - 1);
     hkVector4 tempV0;
     hkQsTransform startTransform;
-    startTransform.m_vTranslation.v = config.m_kTransforms[0].m_vTranslation.v;
-    *(__m128*)&startTransform.m_rotation = *(const __m128*)&config.m_kTransforms[0].m_rotation;
-    startTransform.m_vScale.v = config.m_kTransforms[0].m_vScale.v;
+    startTransform.m_vTranslation.v = options.m_kTransforms[0].m_vTranslation.v;
+    *(__m128*)&startTransform.m_rotation = *(const __m128*)&options.m_kTransforms[0].m_rotation;
+    startTransform.m_vScale.v = options.m_kTransforms[0].m_vScale.v;
     {
         hkVector4 outV0;
         tempV0.v = _mm_setzero_ps();
-        hkaDefaultAnimatedReferenceFrame_project(&config, &DAT_01268700, &tempV0, &outV0);
+        hkaDefaultAnimatedReferenceFrame_project(&options, &DAT_01268700, &tempV0, &outV0);
         tempV0.v = outV0.v;
     }
-    if (config.m_bFlag13)
+    if (options.m_bFlag13)
     {
-        float dotForward = my_fabs(config.m_vEnd.dot3(tempV0).getReal());
+        float dotForward = my_fabs(options.m_vEnd.dot3(tempV0).getReal());
         hkVector4 cr;
-        cr.v = cross(config.m_vStart.v, config.m_vEnd.v);
+        cr.v = cross(options.m_vStart.v, options.m_vEnd.v);
         float dotSide = my_fabs(cr.dot3(tempV0).getReal());
         if (dotForward > 0.01f || dotSide > 0.01f)
         {
@@ -295,13 +298,13 @@ FUN_00e41830::FUN_00e41830(const Config& config) throw() : m_ppVirtualMethodTabl
         __m128 unitScale = _mm_set1_ps(1.0f);
         float time = (float)i * dt;
         hkQsTransform curTransform;
-        hkQsTransform_UpdateState_00e41bf0(&curTransform, time, config.m_kTransforms, config.m_numQsTransforms, config.m_fAnimationDuration);
+        hkQsTransform_UpdateState_00e41bf0(&curTransform, time, options.m_kTransforms, options.m_numQsTransforms, options.m_fAnimationDuration);
         hkQsTransform qh;
         qh.m_rotation.setMulInverse(&curTransform.m_rotation, &startTransform.m_rotation);
         qh.m_vTranslation.v = _mm_sub_ps(curTransform.m_vTranslation.v, startTransform.m_vTranslation.v);
         qh.m_vScale.v = unitScale;
         hkVector4 sampleOut;
-        hkaDefaultAnimatedReferenceFrame_project(&config, &qh, &tempV0, &sampleOut);
+        hkaDefaultAnimatedReferenceFrame_project(&options, &qh, &tempV0, &sampleOut);
         __m128 sample = sampleOut.v;
         samples.m_data[i].v = sample;
         tempV0.v = sample;

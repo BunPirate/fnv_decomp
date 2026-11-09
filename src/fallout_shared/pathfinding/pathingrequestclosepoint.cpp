@@ -9,6 +9,7 @@
 extern float g_011c7b14_arg1;
 
 // @fnv 0x006e3f30
+// pdb: PathingRequestClosePoint::PathingRequestClosePoint | PathingRequestClosePoint.obj | retail, call graph, high
 PathingRequestClosePoint::PathingRequestClosePoint() : PathingRequest()
 {
     fPointHeight = 128.0f;
@@ -17,6 +18,7 @@ PathingRequestClosePoint::PathingRequestClosePoint() : PathingRequest()
 
 // Runs the destructor and, when bit 0 of flags is set, frees the object with operator delete; returns this.
 // @fnv 0x006e3f70
+// pdb: PathingRequestClosePoint::`scalar deleting destructor' | PathingRequestClosePoint.obj | retail, vtable slot, high
 void* __thiscall PathingRequestClosePoint::FUN_006e3f70(unsigned int flags)
 {
     this->PathingRequestClosePoint::~PathingRequestClosePoint();
@@ -28,6 +30,8 @@ void* __thiscall PathingRequestClosePoint::FUN_006e3f70(unsigned int flags)
 // Calls the base save routine, then writes the two close-point fields to the save buffer.
 // @fnv 0x006e5f00
 // src: XBOX_PDB 0x006e5f00
+// pdb: PathingRequestOptimalLocation::SaveGame | PathingRequestOptimalLocation.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
 void __thiscall PathingRequestClosePoint::PathingRequestOptimalLocation_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     PathingRequest::PathingRequest_SaveGame(apSaveGameBuffer);
@@ -38,6 +42,8 @@ void __thiscall PathingRequestClosePoint::PathingRequestOptimalLocation_SaveGame
 // Calls the base load routine, then reads the two close-point fields from the buffer.
 // @fnv 0x006e5f50
 // src: XBOX_PDB 0x006e5f50
+// pdb: PathingRequestOptimalLocation::LoadGame | PathingRequestOptimalLocation.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
 void PathingRequestClosePoint::PathingRequestOptimalLocation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     PathingRequest::LoadGame(apLoadGameBuffer);
@@ -46,6 +52,9 @@ void PathingRequestClosePoint::PathingRequestOptimalLocation_LoadGame(BGSLoadFor
 }
 
 // @fnv 0x006e4030
+// pdb: PathingRequestClosePoint::CopyTo | PathingRequestClosePoint.obj | retail, vtable slot, high
+// pdb params: apDest
+// pdb locals: pdest
 void __thiscall PathingRequestClosePoint::CopyToWithClosePoint(PathingRequest* apDest)
 {
     PathingRequestClosePoint* pdest = (PathingRequestClosePoint*)apDest;
@@ -55,6 +64,7 @@ void __thiscall PathingRequestClosePoint::CopyToWithClosePoint(PathingRequest* a
 }
 
 // @fnv 0x006e3fb0
+// pdb: PathingRequestClosePoint::PathingRequestClosePoint | PathingRequestClosePoint.obj | retail, object-file run extension, low
 PathingRequestClosePoint::PathingRequestClosePoint(PathingRequestClosePoint* src) : PathingRequest(src)
 {
     fPointHeight = src->GetMinDist();

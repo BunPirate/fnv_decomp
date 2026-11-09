@@ -13,7 +13,7 @@
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 
-int NiStricmp(const char* a, const char* b);
+int NiStricmp(const char* s1, const char* s2);
 extern const NiColorA DAT_011a9430;
 extern bool DAT_011f3724;
 

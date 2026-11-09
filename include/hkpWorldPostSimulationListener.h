@@ -3,6 +3,7 @@
 class hkpWorld;
 class hkpEntity;
 
+// pdb: class hkpWorldPostSimulationListener, size 0x4, 0 members
 class hkpWorldPostSimulationListener
 {
 public:

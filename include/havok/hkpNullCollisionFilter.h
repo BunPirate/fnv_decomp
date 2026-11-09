@@ -5,6 +5,7 @@
 #include "hkBase.h"
 #include "hkpCollisionFilter.h"
 #pragma pack(push, 1)
+// pdb: class hkpNullCollisionFilter, size 0x30, bases: hkpCollisionFilter, 0 members
 class hkpNullCollisionFilter : public hkpCollisionFilter
 {
   public:

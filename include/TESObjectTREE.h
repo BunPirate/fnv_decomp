@@ -16,9 +16,9 @@ class TESObjectTREE : public TESBoundTreeObject,
                       public BGSDestructibleObjectForm
 {
 public:
-    NiTPrimitiveArray_unsigned_int_ m_kSeedArray;
+    NiTPrimitiveArray_unsigned_int_ SeedArray;
     TreeRecordData Data;
-    NiPoint2 m_kBillboardDimensions;
+    NiPoint2 BillboardSize;
 
     TESObjectTREE();
     TreeRecordData* GetData();
@@ -29,7 +29,7 @@ public:
     virtual void InitItem();
     bool Load(TESFile* file);
     // TESForm vtable slot 8 (TESObjectTREE vftable 0x0102bc94 slot 8 = 0x0051bbc0)
-    bool LoadForm(TESFile* file);
+    bool LoadForm(TESFile* apFile);
 
     virtual void Reserved97();
     virtual void Reserved98();

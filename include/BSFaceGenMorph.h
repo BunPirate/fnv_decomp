@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class BSFaceGenMorph, size 0x4 (here 0xc), 0 members
 class BSFaceGenMorph
 {
 public:

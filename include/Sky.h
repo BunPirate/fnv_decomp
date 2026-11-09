@@ -24,6 +24,7 @@ class TESWeather;
 template <class T> class BSSimpleList;
 
 
+// pdb: class Sky, size 0x138, 41 members
 class Sky
 {
 public:
@@ -38,34 +39,34 @@ public:
 
     virtual ~Sky();
 
-    NiPointer<NiAVObject> m_pRootNode;
-    NiPointer<NiAVObject> m_pSkyNode;
-    TESClimate* m_pCurrentClimate;
-    TESWeather* m_pRegionWeather;
-    TESWeather* m_pPreviousWeather;
-    TESWeather* m_pQueuedWeather;
-    TESWeather* m_pOverrideWeather;
-    SkyObject* m_pAtmosphere;
-    SkyObject* m_pStars;
-    SkyObject* m_pSun;
-    Clouds* m_pClouds;
-    SkyObject* m_pPrimaryMoon;
-    SkyObject* m_pSecondaryMoon;
-    Precipitation* m_pPrecipitation;
-    NiColor m_kSkyColors[10];
-    NiPoint3 m_kSunlightColor;
-    NiPoint3 m_kSkyColor;
-    float m_fCurrentWeatherBlend;
-    float m_fTargetWeatherBlend;
-    float m_fCloudLayerAlpha[4];
-    float m_fFogNearDistance;
-    float m_fFogPower;
-    float m_fFogFarDistance;
-    float fWeatherChance;
-    float m_fWeatherBlend;
+    NiPointer<NiAVObject> spRoot;
+    NiPointer<NiAVObject> spMoonsRoot;
+    TESClimate* pCurrentClimate;
+    TESWeather* pCurrentWeather;
+    TESWeather* pLastWeather;
+    TESWeather* pDefaultWeather;
+    TESWeather* pOverrideWeather;
+    SkyObject* pAtmosphere;
+    SkyObject* pStars;
+    SkyObject* pSun;
+    Clouds* pClouds;
+    SkyObject* pMasser;
+    SkyObject* pSecunda;
+    Precipitation* pPrecip;
+    NiColor SkyColor[10];
+    NiPoint3 WaterFogColor;
+    NiPoint3 SunSpecularColor;
+    float fWindSpeed;
+    float fWindAngle;
+    float fFogDistances[4];
+    float fFogHeight;
+    float fFogPower;
+    float fCurrentGameHour;
+    float fLastWeatherUpdate;
+    float fCurrentWeatherPct;
     unsigned int eMode;
-    BSSimpleList<SkySound*>* m_pSkySounds;
-    float m_fWeatherFade;
+    BSSimpleList<SkySound*>* pSkySoundList;
+    float fFlash;
     union { unsigned int SkySoundData; unsigned int field104; };
     union { unsigned int m_uiSkyFourthValue; unsigned int field108; };
     union { float SkyTextureState; float field10c; };
@@ -283,7 +284,7 @@ public:
     void UpdateWind();
     void ResetWeather_0063d060();
     void UpdateFields_0063d0e0(TESWeather*, bool);
-    void UpdateWeather_0063d1d0();
+    void UpdateWeather();
     void UpdateSound();
     void UnloadAllTextures_0063e210();
     void SetAcceleration(int);

@@ -116,7 +116,7 @@ class RayWorld
 class RayCaster
 {
   public:
-    void UpdateFields_00cfaa40(RayWorld* world, RayInput* input, char* source, int a4);
+    void hkpSimpleWorldRayCaster_castRay(RayWorld* broadphase, RayInput* input, char* filter, int output);
 
     int unk00;
     RayInput* m_pInput;
@@ -127,8 +127,11 @@ class RayCaster
 };
 
 // @fnv 0x00cfaa40
-// src: GUESS 0x00cfaa40 (confidence: low)
-void RayCaster::UpdateFields_00cfaa40(RayWorld* world, RayInput* input, char* source, int a4)
+// src: XBOX_RETAIL_PDB 0x00cfaa40
+// pdb: hkpSimpleWorldRayCaster::castRay | hkpSimpleWorldRayCaster.obj | retail, string-set bridge, high
+// pdb params: broadphase, input, filter, output
+// pdb locals: rayInput, assertBuf, ostr
+void RayCaster::hkpSimpleWorldRayCaster_castRay(RayWorld* broadphase, RayInput* input, char* filter, int output)
 {
     volatile DWORD tick;
     hkMonitorStream* pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -143,10 +146,10 @@ void RayCaster::UpdateFields_00cfaa40(RayWorld* world, RayInput* input, char* so
     }
 
     m_pInput = input;
-    m_i0C = a4;
-    m_pSource14 = source ? source + 0x14 : 0;
+    m_i0C = output;
+    m_pSource14 = filter ? filter + 0x14 : 0;
     if (input->m_bFlag)
-        m_pSource10 = source ? source + 0x10 : 0;
+        m_pSource10 = filter ? filter + 0x10 : 0;
     else
         m_pSource10 = 0;
 
@@ -157,7 +160,7 @@ void RayCaster::UpdateFields_00cfaa40(RayWorld* world, RayInput* input, char* so
     q.m_uiLogicalSize = 0x10;
     q.m_iZero = 0;
     _mm_store_ps((float*)&q.m_vFrom, from);
-    world->CastRay(&q, this, 0);
+    broadphase->CastRay(&q, this, 0);
 
     pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     if (pBuf->m_end.m_storage < pBuf->m_capacityMinus16.m_storage)

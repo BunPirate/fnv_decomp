@@ -5,6 +5,7 @@
 class BGSMessage;
 class HelpListNode;
 
+// pdb: class TutorialMenu, size 0x58 (here 0x54), bases: Menu, 5 members
 class TutorialMenu : public Menu
 {
 public:
@@ -31,12 +32,12 @@ public:
     void DecrementAndDispatch();
     void ShowPageByIndex(int aiPage);
     void ShowPageByIndex(unsigned int auiPage);
-    void ShowPage(BGSMessage* apPage);
+    void ShowPage(BGSMessage* apMessage);
     void Refresh();
-    void ApplyRecordToTiles(BGSMessage* record);
+    void ApplyRecordToTiles(BGSMessage* apMessage);
     void ApplyRecordToTiles(void* apTile);
     void UpdatePrevNext();
 
-    static void Create(unsigned int, unsigned int);
+    static void TutorialMenu_Create(unsigned int, unsigned int);
 };
 

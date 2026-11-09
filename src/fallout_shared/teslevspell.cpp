@@ -24,6 +24,9 @@ struct FormHelpers
 // Casts apCopy to TESLevSpell and, if the cast succeeds, calls FUN_004851b0 on apCopy.
 // @fnv 0x0050bcd0
 // src: XBOX_PDB 0x0050bcd0
+// pdb: TESLevSpell::Copy | TESLevSpell.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pllcopy
 void TESLevSpell::Copy_0050bcd0(TESForm* apCopy)
 {
     TESLevSpell* pllcopy = dynamic_cast<TESLevSpell*>(apCopy);
@@ -34,13 +37,14 @@ void TESLevSpell::Copy_0050bcd0(TESForm* apCopy)
 
 extern "C" void* __cdecl _alloca(unsigned int);
 void* memset(void*, int, unsigned int);
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
     static void* operator new(unsigned int);
     ContainerItemExtra();
     bool Load(TESFile*);
-    void* data[3];
+    void* pOwnerForm[3];
 };
 class LeveledObject
 {
@@ -56,10 +60,13 @@ struct LeveledFormEntry
 };
 struct TmpEndian
 {
-    void SwapEndian();
+    void LEVELED_OBJECT_FILE_Endian();
 };
 extern LeveledObject* DAT_011c8f98;
 // @fnv 0x0050ba30
+// pdb: TESLevSpell::Load | TESLevSpell.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: formid, pMessage, fileLevObj, pextra, cdata, itempint
 bool TESLevSpell::LoadForm(TESFile* apFile)
 {
     unsigned char formid = apFile->GetTESForm();
@@ -88,8 +95,8 @@ bool TESLevSpell::LoadForm(TESFile* apFile)
                 memset(&levObj, 0, 0xc);
                 apFile->GetChunkData(&levObj, 0xc);
                 if (apFile->GetChunkData())
-                    ((TmpEndian*)&levObj)->SwapEndian();
-                DAT_011c8f98 = TESLeveledList::CreateLeveledObject(levObj.sLevel, levObj.m_sCount, levObj.pForm, 0);
+                    ((TmpEndian*)&levObj)->LEVELED_OBJECT_FILE_Endian();
+                DAT_011c8f98 = TESLeveledList::TESLeveledList_AddLeveledObject(levObj.sLevel, levObj.m_sCount, levObj.pForm, 0);
                 break;
             }
             case 'DEOC':
@@ -110,12 +117,12 @@ bool TESLevSpell::LoadForm(TESFile* apFile)
             break;
         }
         case 'FLVL':
-            apFile->GetChunkData(&m_ucChanceNone, 0);
+            apFile->GetChunkData(&cLLFlags, 0);
             break;
         case 'GLVL': {
             unsigned int itempint = 0;
             apFile->GetChunkData(&itempint);
-            m_pLevelGlobal = (TESGlobal*)itempint;
+            pChanceGlobal = (TESGlobal*)itempint;
             break;
         }
         }
@@ -126,6 +133,7 @@ bool TESLevSpell::LoadForm(TESFile* apFile)
 }
 
 // @fnv 0x0050b9b0
+// pdb: TESLevSpell::~TESLevSpell | TESLevSpell.obj | debug, upstream name already matches, high
 TESLevSpell::~TESLevSpell()
 {
     ((FormHelpers*)this)->Cleanup();
@@ -137,12 +145,15 @@ unsigned int __cdecl FUN_00ec43fb(unsigned int, int, void*, void*, int);
 
 // @fnv 0x0050bf90
 // src: COMMUNITY 0x0050bf90
-SpellItem* TESLevSpell::GetLeveledSpell(void* a1, unsigned short a2)
+// pdb: TESLevSpell::GetLeveledSpell | TESLevSpell.obj | retail, upstream name already matches, high
+// pdb params: aeSchool, asLevel
+// pdb locals: presultForm, scount, pspell
+SpellItem* TESLevSpell::GetLeveledSpell(void* aeSchool, unsigned short asLevel)
 {
     unsigned int aa = 0;
     unsigned int zz = 0;
     unsigned short word = 0;
-    this->SelectLeveledSpell(a1, a2, &zz, &word, 1);
+    this->SelectLeveledSpell(aeSchool, asLevel, &zz, &word, 1);
     if (zz != 0)
     {
         aa = FUN_00ec43fb(zz, 0, &DAT_01183028, &DAT_01183060, 0);
@@ -179,6 +190,9 @@ struct SpellListBuilder
 // Builds a spell list from the selector's choices, resolving nested level spells via FUN_0050bf90, or falls back to a single spell; returns the new list or null.
 // @fnv 0x0050c000
 // src: COMMUNITY 0x0050c000
+// pdb: TESLevSpell::GetLeveledSpells | TESLevSpell.obj | retail, object-file run extension, low
+// pdb params: aeSchool, asLevel
+// pdb locals: plist, pobjects, pobject, pspell, plevSpell
 FUN_0096a2d0* SpellListBuilder::TESLevSpell_GetLeveledSpells(void* actor, unsigned short level)
 {
     FUN_0096a2d0* result = 0;
@@ -261,6 +275,9 @@ struct SpellCollectionBuilder
 };
 // Iterates six source entries, gathers non-null BGSHeadPart items into a deduplicated FUN_0096a2d0 list, frees each temporary list, and returns the result.
 // @fnv 0x0050c1d0
+// pdb: TESLevSpell::GetLeveledSpells | TESLevSpell.obj | retail, object-file run extension, low
+// pdb params: aeSchool, asLevel
+// pdb locals: plist, pobjects, pobject, pspell, plevSpell
 FUN_0096a2d0* SpellCollectionBuilder::CollectHeadParts(SpellOwner* pkOwner)
 {
     FUN_0096a2d0* pkResult = 0;
@@ -319,6 +336,9 @@ struct FormHandle
     unsigned int EffectItemList_GetAssociatedSkill();
 };
 // @fnv 0x0050bd60
+// pdb: TESLevSpell::CalculateCurrentForm | TESLevSpell.obj | retail, object-file run extension, low
+// pdb params: aeSchool, asLevel, apOutForm, asOutCount, abRecurse
+// pdb locals: plist, chancenone, ilastvalid, pfirstvalid, ivalidcount, rnone, pmagicItem, ithislevel, pdata, plevlist, ishift, soutcount, poutform, psubform, ssubcount
 void TESLevSpell::SelectLeveledSpell(void* desiredForm, unsigned short level, unsigned int* outForm,
                                     unsigned short* outCount, unsigned char recurse)
 {
@@ -394,6 +414,9 @@ void TESLevSpell::SelectLeveledSpell(void* desiredForm, unsigned short level, un
 // Returns true if apCompare is not a TESLevSpell or if FUN_00485270(pcomp) is true, otherwise false.
 // @fnv 0x0050bd10
 // src: XBOX_PDB 0x0050bd10
+// pdb: TESLevSpell::Compare | TESLevSpell.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool TESLevSpell::Compare_0050bd10(TESForm* apCompare)
 {
     TESLevSpell* pLevSpell = dynamic_cast<TESLevSpell*>(apCompare);

@@ -402,17 +402,20 @@ struct FUN_00d1e9b0_cls
     virtual void v19();
     virtual void v20();
     virtual void v21(float* pOut);
-    void hkpBoxMotion_applyTorque(float f, float* v);
+    void hkpBoxMotion_applyTorque(float deltaTime, float* torque);
 };
 
 // @fnv 0x00d1e9b0
 // src: HAVOK_SRC 0x00d1e9b0
-void FUN_00d1e9b0_cls::hkpBoxMotion_applyTorque(float f, float* v)
+// pdb: hkpBoxMotion::applyTorque | hkpBoxMotion.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, torque
+// pdb locals: impulse
+void FUN_00d1e9b0_cls::hkpBoxMotion_applyTorque(float deltaTime, float* torque)
 {
     __declspec(align(16)) float out[4];
     float* pOut = out;
-    __m128 splat = _mm_shuffle_ps(_mm_load_ss(&f), _mm_load_ss(&f), 0);
-    __m128 vec = _mm_load_ps(v);
+    __m128 splat = _mm_shuffle_ps(_mm_load_ss(&deltaTime), _mm_load_ss(&deltaTime), 0);
+    __m128 vec = _mm_load_ps(torque);
     *(__m128*)pOut = _mm_mul_ps(splat, vec);
     v21(pOut);
 }
@@ -426,6 +429,9 @@ class BoxMotionCandidate : public hkpBoxMotion
 };
 // @fnv 0x00d1e920
 // src: HAVOK_SRC 0x00d1e920
+// pdb: hkpBoxMotion::applyForce | hkpBoxMotion.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, force, p
+// pdb locals: impulse
 void BoxMotionCandidate::hkpBoxMotion_applyForce(float amount, const hkVector4* direction)
 {
     N::LocalM128 a = N::_mm_load_ss(&amount);
@@ -434,7 +440,7 @@ void BoxMotionCandidate::hkpBoxMotion_applyForce(float amount, const hkVector4* 
     N::LocalM128 d = N::_mm_load_ps(&direction->x);
     N::LocalM128 p = N::_mm_mul_ps(a, d);
     _ReadWriteBarrier();
-    N::LocalM128 m = *(const N::LocalM128*)&m_kInertiaAndMassInv;
+    N::LocalM128 m = *(const N::LocalM128*)&m_inertiaAndMassInv;
     N::LocalM128 w = N::_mm_shuffle_ps(m, m, 255);
     N::LocalM128 b = N::_mm_shuffle_ps(w, w, 0);
     N::LocalM128 r = N::_mm_mul_ps(b, p);

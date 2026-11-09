@@ -71,6 +71,8 @@ struct __declspec(align(16)) S_00e00cd0_Obj
 
 // @fnv 0x00e00cd0
 // src: HAVOK_LIB 0x00e00cd0
+// pdb: getVtablehkpFastMeshShape | hkpFastMeshShapeClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const char* __cdecl getVtablehkpFastMeshShape()
 {
     FinishingFlag flag;
@@ -111,6 +113,8 @@ struct __declspec(align(16)) hkObjectE01710
 
 // @fnv 0x00e01710
 // src: GUESS 0x00e01710 (confidence: low)
+// pdb: getVtablehkxTextureInplace | hkxTextureInplaceClass.obj | retail, object-file run extension, low
+// pdb locals: u
 void* hkObjectE01710_AllocateStorage_00e01710()
 {
     union
@@ -149,6 +153,9 @@ struct __declspec(align(16)) FinishObject
 
 // @fnv 0x00e01eb0
 // src: GUESS 0x00e01eb0 (confidence: low)
+// pdb: getVtablehkxMeshUserChannelInfo | hkxMeshClass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkxMesh::UserChannelInfo::~UserChannelInfo
+// pdb locals: u
 void* __cdecl Runtime_UpdateState_00e01eb0()
 {
     FinishingFlag f;
@@ -198,7 +205,7 @@ unsigned Object_ProcessAndReturnValue_00e00a60()
 class __declspec(align(16)) S00e000e0_Object
 {
   public:
-    S00e000e0_Object(FinishingFlag flag);  // FUN_00d50c00
+    S00e000e0_Object(FinishingFlag f);  // FUN_00d50c00
     void* m_ppVirtualMethodTable;
     int unk04;
     int unk08;
@@ -273,6 +280,8 @@ struct __declspec(align(16)) FUN_00e00290_obj
 };
 // @fnv 0x00e00290
 // src: HAVOK_LIB 0x00e00290
+// pdb: getVtablehkpConstraintChainInstance | hkpConstraintChainInstanceClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 int* __cdecl getVtablehkpConstraintChainInstance()
 {
     FinishingFlag kHandle(0);
@@ -566,6 +575,8 @@ class __declspec(align(16)) S00e00b80_Object
 
 // @fnv 0x00e00b80
 // src: HAVOK_LIB 0x00e00b80
+// pdb: getVtablehkpGroupFilter | hkpGroupFilterClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkpGroupFilter()
 {
     FinishingFlag flag;
@@ -595,6 +606,8 @@ class __declspec(align(16)) S00e00f90_Object
 // Havok getVtable helper: build the object with the finish-loading flag and read its vtable pointer.
 // @fnv 0x00e00f90
 // src: GUESS 0x00e00f90 (confidence: medium)
+// pdb: getVtablehkpConvexPieceMeshShape | hkpConvexPieceMeshShapeClass.obj | debug, object-file run extension, low
+// pdb locals: u
 const void* __cdecl Runtime_GetVtableFromTemporary_00e00f90()
 {
     FinishingFlag flag;
@@ -652,6 +665,9 @@ struct __declspec(align(16)) LoadedObject
 };
 // @fnv 0x00e01830
 // src: GUESS 0x00e01830 (confidence: low)
+// pdb: hkxTextureFile::hkxTextureFile | hkxTextureFileClass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkxTextureFile::~hkxTextureFile
+// pdb params: f
 const void* Runtime_UpdateState_00e01830()
 {
     FinishingFlag flag;
@@ -733,6 +749,8 @@ struct __declspec(align(16)) FUN_00e02180_obj
 };
 // @fnv 0x00e02180
 // src: GUESS 0x00e02180 (confidence: low)
+// pdb: hkxMaterialShader::hkxMaterialShader | hkxMaterialShaderClass.obj | retail, object-file run extension, low
+// pdb params: f
 int* __cdecl Object_ProcessAndReturnValue_00e02180()
 {
     FinishingFlag kHandle(0);
@@ -1202,11 +1220,14 @@ struct EdgeProcessor
     EdgePool vertices;
     EdgePool edges;
     void UpdateTriangleNormal(EdgeNode*);
-    void ProcessEntries_00e195c0(float threshold, float distance, const EdgeMesh* mesh);
+    void hkgpMesh_appendConcaveEdges(float minConcavity, float extrusion, const EdgeMesh* mesh);
 };
 // @fnv 0x00e195c0
-// src: GUESS 0x00e195c0 (confidence: low)
-void EdgeProcessor::ProcessEntries_00e195c0(float threshold, float distance, const EdgeMesh* mesh)
+// src: XBOX_RETAIL_PDB 0x00e195c0
+// pdb: hkgpMesh::appendConcaveEdges | hkgpMesh.obj | retail, object-file gap fill, high
+// pdb params: minConcavity, extrusion, mesh
+// pdb locals: values, edges, e
+void EdgeProcessor::hkgpMesh_appendConcaveEdges(float minConcavity, float extrusion, const EdgeMesh* mesh)
 {
     EdgeArray<EdgeRef> refs;
     EdgeArray<float> scores;
@@ -1265,16 +1286,16 @@ void EdgeProcessor::ProcessEntries_00e195c0(float threshold, float distance, con
         ((float*)scores.data)[index] /= maximum;
     for (int index = 0; index < refs.size; ++index)
     {
-        if (((float*)scores.data)[index] > threshold)
+        if (((float*)scores.data)[index] > minConcavity)
         {
             EdgeRef ref = ((EdgeRef*)refs.data)[index];
             Vertex* first = ref.node->vertices[ref.index];
             __declspec(align(16)) BlkVector4fView a = first->position;
 
-            N::LocalM128 p = scaleNormal(first->normal, N::_mm_set_ss(distance));
+            N::LocalM128 p = scaleNormal(first->normal, N::_mm_set_ss(extrusion));
             Vertex* second = ref.node->vertices[(9 >> (2 * ref.index)) & 3];
             __declspec(align(16)) BlkVector4fView b = second->position;
-            N::LocalM128 q = scaleNormal(second->normal, N::_mm_set_ss(distance));
+            N::LocalM128 q = scaleNormal(second->normal, N::_mm_set_ss(extrusion));
             N::_mm_store_ps(a.v, N::_mm_add_ps(p, N::_mm_load_ps(a.v)));
             N::_mm_store_ps(b.v, N::_mm_add_ps(q, N::_mm_load_ps(b.v)));
             Vertex* va = vertices.allocate(Vertex());
@@ -1331,6 +1352,8 @@ class __declspec(align(16)) ChainAction_E001F0 : public ChainActionBase_E001F0
 
 // @fnv 0x00e001f0
 // src: HAVOK_LIB 0x00e001f0
+// pdb: getVtablehkpConstraintChainInstanceAction | hkpConstraintChainInstanceActionClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkpConstraintChainInstanceAction()
 {
     FinishingFlag flag;
@@ -1399,6 +1422,9 @@ struct __declspec(align(16)) SceneFinishObject
 
 // @fnv 0x00e01c60
 // src: GUESS 0x00e01c60 (confidence: medium)
+// pdb: getVtablehkxScene | hkxSceneClass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkxScene::operator delete
+// pdb locals: u
 void* __cdecl Object_GetConstructedVirtualTable_00e01c60()
 {
     FinishingFlag f;
@@ -1413,10 +1439,10 @@ struct S00e01d10_Member
     int m_iWordAt00;
 };
 
-class __declspec(align(16)) S00e01d10_Object
+class __declspec(align(16)) hkxNodeSelectionSet
 {
   public:
-    S00e01d10_Object(FinishingFlag flag) : m_kMember(flag)
+    hkxNodeSelectionSet(FinishingFlag flag) : m_kMember(flag)
     {}
     virtual void vf00();
     int unk04;
@@ -1434,11 +1460,13 @@ class __declspec(align(16)) S00e01d10_Object
 
 // @fnv 0x00e01d10
 // src: GUESS 0x00e01d10 (confidence: low)
+// pdb: getVtablehkxNodeSelectionSet | hkxNodeSelectionSetClass.obj | retail, object-file run extension, low
+// pdb locals: u
 const void* __cdecl Runtime_UpdateState_00e01d10()
 {
     FinishingFlag flag;
     flag.m_bFinishing = 0;
-    S00e01d10_Object kObject(flag);
+    hkxNodeSelectionSet kObject(flag);
     return *reinterpret_cast<const void**>(&kObject);
 }
 
@@ -1448,10 +1476,10 @@ struct S00e022a0_Member
     int m_iWordAt00;
 };
 
-class __declspec(align(16)) S00e022a0_Object
+class __declspec(align(16)) hkxMaterialEffect
 {
   public:
-    S00e022a0_Object(FinishingFlag flag) : m_kMember(flag)
+    hkxMaterialEffect(FinishingFlag flag) : m_kMember(flag)
     {}
     virtual void vf00();
     int unk04;
@@ -1469,6 +1497,6 @@ const void* __cdecl Object_ProcessAndReturnValue_00e022a0()
 {
     FinishingFlag flag;
     flag.m_bFinishing = 0;
-    S00e022a0_Object kObject(flag);
+    hkxMaterialEffect kObject(flag);
     return *reinterpret_cast<const void**>(&kObject);
 }

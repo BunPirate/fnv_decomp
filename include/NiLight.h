@@ -4,6 +4,7 @@
 #include "NiColor.h"
 #include "StrArr.h"
 
+// pdb: class NiLight, size 0x120 (here 0xf0), bases: NiDynamicEffect, 5 members
 class NiLight : public NiDynamicEffect
 {
   public:
@@ -18,7 +19,7 @@ class NiLight : public NiDynamicEffect
 
     void DestroyMembers();
     void* Destroy(unsigned int flags);
-    void AppendEffectProperties(StrArr* strings);
+    void AppendEffectProperties(StrArr* pStrings);
 
     void IncRefCount();
     void DecRefCount();

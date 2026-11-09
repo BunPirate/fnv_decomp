@@ -14,6 +14,7 @@ class RagdollPoseArrays;
 class T48;
 class T208;
 
+// pdb: class bhkRagdollController, size 0x2d0 (here 0x2bc), bases: hkaRaycastInterface, 86 members
 class bhkRagdollController : public hkaRaycastInterface
 {
 public:

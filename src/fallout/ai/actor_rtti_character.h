@@ -342,6 +342,7 @@ int Actor::GetBaseLevel()
 }
 
 // @fnv 0x008a3b30
+// pdb: Actor::IsMoving | Animation.obj | retail, upstream name already matches, high
 bool Actor::IsMoving()
 {
     return GetActorStateFlags() & 0x30;
@@ -352,17 +353,22 @@ BSSimpleList<ActiveEffect*>* MiddleHighProcess::GetActiveEffectList()
     return pActiveEffects;
 }
 // @fnv 0x004997b0
+// pdb: Actor::IsSneaking | Animation.obj | retail, upstream name already matches, high
 bool Actor::IsSneaking()
 {
     return (GetActorStateFlags() & 0x400) && !(GetActorStateFlags() & 0x800) ? true : false;
 }
 // @fnv 0x008a8290
+// pdb: Actor::GetStartingAngle | Actor.obj | debug, object-file run extension, low
+// pdb locals: point
 NiPoint3 Actor::GetMovementPosition()
 {
     NiPoint3 result(0.0f, 0.0f, FormPositionData);
     return result;
 }
 // @fnv 0x00952ff0
+// pdb: PlayerCharacter::GetLookingAtLocation | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb locals: retval
 NiPoint3* Actor::GetMagicCaster(NiPoint3* output)
 {
     if (!*(unsigned char*)((char*)this + 0x64a) && DAT_011e07d0)
@@ -375,6 +381,9 @@ NiPoint3* Actor::GetMagicCaster(NiPoint3* output)
     return output;
 }
 // @fnv 0x00888070
+// pdb: Actor::UpdateAnimation | Actor.obj | debug, object-file run extension, low
+// pdb params: afDelta
+// pdb locals: frotateScale, panim, iframe, p3dObj, bshouldHaveRagDoll, pcreature, pseq
 void Actor::UpdateActorMovement(float delta)
 {
     Animation* pCurrentAnimation;

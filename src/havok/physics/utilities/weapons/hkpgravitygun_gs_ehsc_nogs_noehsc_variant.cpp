@@ -35,6 +35,8 @@ struct World_e45e
 };
 // @fnv 0x00e45e60
 // src: XBOX_PDB 0x00e45e60
+// pdb: hkpGravityGun::dropObject | hkpGravityGun.obj | retail, upstream name already matches, high
+// pdb params: index
 Body_e45e* World_e45e::hkpGravityGun_dropObject(int index)
 {
     Body_e45e** volatile* pdata = (Body_e45e * * volatile*)&m_data;

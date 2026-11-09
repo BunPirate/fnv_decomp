@@ -42,5 +42,6 @@ struct FUN_00e00e40
 
 // Constructor with an empty body; the class has a vtable, m_usMemSizeAndFlags and m_sReferenceCount.
 // @fnv 0x00e00e40
+// pdb: hkpConvexVerticesConnectivity::`scalar deleting destructor' | hkpConvexVerticesConnectivityClass.obj | retail, vtable slot, high
 FUN_00e00e40::FUN_00e00e40()
 {}

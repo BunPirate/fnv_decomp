@@ -106,33 +106,36 @@ struct Motion363
 
 // @fnv 0x00e41220
 // src: XBOX_PDB 0x00e41220
-void hkaDefaultAnimatedReferenceFrame_project(Projection363_Owner* a, Motion363* __restrict b, Projection363_Input* c, hkVector4* out)
+// pdb: hkaDefaultAnimatedReferenceFrame::project | hkaDefaultAnimatedReferenceFrame.obj | retail, upstream name already matches, high
+// pdb params: options, transform, previousProjection, projectionOut
+// pdb locals: rest, angle
+void hkaDefaultAnimatedReferenceFrame_project(Projection363_Owner* options, Motion363* __restrict transform, Projection363_Input* previousProjection, hkVector4* projectionOut)
 {
-    __m128 A = a->vec20;
-    const __m128& v = b->vector;
+    __m128 A = options->vec20;
+    const __m128& v = transform->vector;
     __m128 T2 = Project363(v, A);
-    __m128 T4 = Project363(v, (Cross363(a->vec20, a->vec30)));
-    __m128 T1 = Project363(v, a->vec30);
-    out->setZero4();
-    if (a->flag11 != 0)
+    __m128 T4 = Project363(v, (Cross363(options->vec20, options->vec30)));
+    __m128 T1 = Project363(v, options->vec30);
+    projectionOut->setZero4();
+    if (options->flag11 != 0)
     {
-        out->add4(T1);
+        projectionOut->add4(T1);
     }
-    if (a->flag10 != 0)
+    if (options->flag10 != 0)
     {
-        out->add4(T2);
+        projectionOut->add4(T2);
     }
-    if (a->flag12 != 0)
+    if (options->flag12 != 0)
     {
-        out->add4(T4);
+        projectionOut->add4(T4);
     }
-    if (a->flag13 != 0)
+    if (options->flag13 != 0)
     {
         float f1;
         hkVector4 f2;
-        hkQuaternion* h = &b->angular;
-        h->hkQuaternion_decomposeRestAxis(&a->vec20, &f2, &f1);
-        float target = c->unk0C;
+        hkQuaternion* h = &transform->angular;
+        h->hkQuaternion_decomposeRestAxis(&options->vec20, &f2, &f1);
+        float target = previousProjection->unk0C;
         const double PI = 3.14159265358979323846f;
         const double TWO_PI = 6.28318530717958647692f;
         while (f1 - target > PI)
@@ -143,11 +146,11 @@ void hkaDefaultAnimatedReferenceFrame_project(Projection363_Owner* a, Motion363*
         {
             f1 += TWO_PI;
         }
-        out->m_vComponents.m128_f32[3] = f1;
+        projectionOut->m_vComponents.m128_f32[3] = f1;
     }
     else
     {
-        out->m_vComponents.m128_f32[3] = 0.0f;
+        projectionOut->m_vComponents.m128_f32[3] = 0.0f;
     }
 }
 
@@ -184,9 +187,9 @@ inline void hkVector4::setMul4(const hkVector4& a, const hkVector4& b)
 {
     m_vComponents = _mm_mul_ps(a.m_vComponents, b.m_vComponents);
 }
-inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b, const hkVector4& c)
+inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b, const hkVector4& r)
 {
-    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(b.m_vComponents, c.m_vComponents));
+    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(b.m_vComponents, r.m_vComponents));
 }
 inline void hkVector4::addMul4(const hkVector4& a, const hkVector4& b)
 {
@@ -200,7 +203,7 @@ inline void hkVector4::sub4(const hkVector4& a)
 {
     m_vComponents = _mm_sub_ps(m_vComponents, a.m_vComponents);
 }
-inline void hkVector4::SetAllComponents(float a)
+inline void hkVector4::setAll(float a)
 {
     m_vComponents = _mm_set1_ps(a);
 }
@@ -230,9 +233,9 @@ inline void hkVector4::setBroadcast(const hkVector4& a, int i)
     else if (i == 3)
         m_vComponents = _mm_shuffle_ps(a.m_vComponents, a.m_vComponents, 0xff);
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 prod = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    __m128 prod = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 xy = _mm_add_ss(_mm_shuffle_ps(prod, prod, 0x55), prod);
     return _mm_add_ss(_mm_shuffle_ps(prod, prod, 0xaa), xy);
 }
@@ -389,6 +392,9 @@ struct AnimatedFrame
 };
 // @fnv 0x00e413d0
 // src: HAVOK_SRC 0x00e413d0
+// pdb: hkaDefaultAnimatedReferenceFrame::getDeltaReferenceFrame | hkaDefaultAnimatedReferenceFrame.obj | retail, upstream name already matches, high
+// pdb params: time, nextTime, loops, output
+// pdb locals: curMotion, futMotion, fullCycle
 void AnimatedFrame::hkaDefaultAnimatedReferenceFrame_getDeltaReferenceFrame(float time, float nextTime, int loops, hkQsTransform& output) const
 {
     hkQsTransform start;
@@ -417,5 +423,5 @@ void AnimatedFrame::hkaDefaultAnimatedReferenceFrame_getDeltaReferenceFrame(floa
         }
     }
     output.SetMulInverse(start, next);
-    output.m_vScale.SetAllComponents(1.0f);
+    output.m_vScale.setAll(1.0f);
 }

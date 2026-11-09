@@ -4,6 +4,7 @@ struct NiStream;
 
 template <class T> class NiTPrimitiveArray;
 
+// pdb: class NiBoundingVolume, size 0x4, 0 members
 class NiBoundingVolume
 {
 public:

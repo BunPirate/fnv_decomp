@@ -10,9 +10,11 @@
 extern BGSMoviePlayer* DAT_0126fac4;
 // @fnv 0x00ec16b0
 // src: COMMUNITY 0x00ec16b0
-int __stdcall MoviePlayer_PlaySequenceThread(int a)
+// pdb: MoviePlayer::PlaySequenceThread | MoviePlayer_Xenon.obj | retail, upstream name already matches, high
+// pdb params: apString
+int __stdcall MoviePlayer_PlaySequenceThread(int apString)
 {
-    DAT_0126fac4->SetPlaybackOption(a);
+    DAT_0126fac4->SetPlaybackOption(apString);
     return 0;
 }
 
@@ -27,6 +29,7 @@ struct FUN_00ec1a40_Class
 };
 // @fnv 0x00ec1a40
 // src: XBOX_PDB 0x00ec1a40
+// pdb: NiTMap<char const *,char *>::NewItem | MoviePlayer_Xenon.obj | debug, vtable slot, medium
 void* FUN_00ec1a40_Class::NiTMap_char_const_char_NewItem()
 {
     void* result = g_memoryManager.Allocate(0xc);
@@ -56,6 +59,8 @@ struct FUN_00ec1dc0_Class
 
 // Returns nonzero when the two strings are equal ignoring case, using __stricmp.
 // @fnv 0x00ec1dc0
+// pdb: BSTCaseInsensitiveStringMap<char *>::IsKeysEqual | MoviePlayer_Xenon.obj | debug, vtable slot, medium
+// pdb params: apcKey1, apcKey2
 int __thiscall FUN_00ec1dc0_Class::IsStringEqualIgnoreCase(const char* pcStringA, const char* pcStringB)
 {
     return !__stricmp(pcStringA, pcStringB);
@@ -64,12 +69,13 @@ int __thiscall FUN_00ec1dc0_Class::IsStringEqualIgnoreCase(const char* pcStringA
 struct FUN_00ec1f20Class
 {
     void Movie_ClearData();
-    void* Movie_Movie();
+    void* Movie_ctor();
 };
 
 // @fnv 0x00ec1f20
-// src: COMMUNITY 0x00ec1f20
-void* FUN_00ec1f20Class::Movie_Movie()
+// src: XBOX_DEBUG_PDB 0x00ec1f20
+// pdb: Movie::Movie | MoviePlayer.obj | debug, upstream name already matches, high
+void* FUN_00ec1f20Class::Movie_ctor()
 {
     Movie_ClearData();
     return this;
@@ -83,6 +89,7 @@ struct FUN_00ec1f40Class
 
 // @fnv 0x00ec1f40
 // src: GUESS 0x00ec1f40 (confidence: medium)
+// pdb: Movie::~Movie | MoviePlayer.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00ec1f40Class::Movie_Stop_Thunk()
 {
     Movie_Stop();
@@ -92,6 +99,8 @@ namespace fnv_00ec20a0 {
 extern MemoryManager g_memoryManager;
 // @fnv 0x00ec20a0
 // src: GUESS 0x00ec20a0 (confidence: medium)
+// pdb: BinkFree | MoviePlayer.obj | debug, object-file gap fill, medium
+// pdb params: ptr
 void __stdcall Object_ReleaseStorage_00ec20a0(void* apMemory)
 {
     g_memoryManager.Deallocate(apMemory);
@@ -124,6 +133,7 @@ struct FUN_00ec2c10
 // If m_002c is below 5, calls SetThreadPriorityLevel with m_002c + 1.
 // @fnv 0x00ec2c10
 // src: GUESS 0x00ec2c10 (confidence: high)
+// pdb: MoviePlayer::IncreaseSequenceThreadPriority | MoviePlayer.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00ec2c10::IncreaseThreadPriorityUpToFive()
 {
     if (m_002c < 5)
@@ -169,6 +179,7 @@ struct FUN_00ec19d0_class
     void* __thiscall FUN_00ec19d0(unsigned int flags);
 };
 // @fnv 0x00ec19d0
+// pdb: MoviePlayer::`scalar deleting destructor' | MoviePlayer_Xenon.obj | retail, vtable slot, high
 void* __thiscall FUN_00ec19d0_class::FUN_00ec19d0(unsigned int flags)
 {
     ((FUN_00ec15e0_shell*)this)->FUN_00ec15e0();
@@ -188,6 +199,8 @@ struct FUN_00ec1f60_Class
     unsigned char InitAndCheck(int a, unsigned char b);
 };
 // @fnv 0x00ec1f60
+// pdb: Movie::PlayBackground | MoviePlayer.obj | debug, object-file gap fill, medium
+// pdb params: apFileName, abPreloadBink
 unsigned char FUN_00ec1f60_Class::InitAndCheck(int aiValue, unsigned char b)
 {
     *(int*)((char*)this + 0x20) = 2;
@@ -213,11 +226,13 @@ struct FUN_00ec2a10_class
     int m_0008;
     int m_000c;
     int m_0010;
-    void __thiscall PauseMovie();
+    void __thiscall MoviePlayer_Pause();
 };
 // If a movie is set, warns when another is already paused, calls DisableThreadPriorityBoost on it, stores it as the paused movie and clears the active movie pointer.
 // @fnv 0x00ec2a10
-void __thiscall FUN_00ec2a10_class::PauseMovie()
+// src: XBOX_DEBUG_PDB 0x00ec2a10
+// pdb: MoviePlayer::Pause | MoviePlayer.obj | debug, unique string literal, high
+void __thiscall FUN_00ec2a10_class::MoviePlayer_Pause()
 {
     if (!m_000c)
         return;
@@ -244,6 +259,8 @@ struct FUN_00ec2d40_class
 };
 // Stores a into m_0014, clears m_0004, calls the callback at m_001c, then clears m_001c.
 // @fnv 0x00ec2d40
+// pdb: MoviePlayer::SetThreadLoadedMovie | MoviePlayer.obj | debug, call graph, medium
+// pdb params: apMovie
 void __thiscall FUN_00ec2d40_class::SetValueAndReset(int aiValue)
 {
     m_0014 = aiValue;
@@ -266,26 +283,31 @@ struct FUN_00ec2aa0_Class
     virtual void v9();
     virtual unsigned int v10();
     virtual unsigned int v11();
-    float __thiscall ComputeRatio(unsigned int a, unsigned int b, bool c);
+    float __thiscall ComputeRatio(unsigned int afWidth, unsigned int afHeight, bool abLetterBoxed);
 };
 // Returns v10() divided by a when c is true, otherwise v11() divided by b, as a float.
 // @fnv 0x00ec2aa0
-float __thiscall FUN_00ec2aa0_Class::ComputeRatio(unsigned int auiDivisorA, unsigned int auiDivisorB, bool abUseFirst)
+// pdb: MoviePlayer::CalculateScale | MoviePlayer.obj | retail, object-file run extension, high
+// pdb params: afWidth, afHeight, abLetterBoxed
+float __thiscall FUN_00ec2aa0_Class::ComputeRatio(unsigned int afWidth, unsigned int afHeight, bool abLetterBoxed)
 {
-    if (abUseFirst)
-        return (float)v10() / auiDivisorA;
+    if (abLetterBoxed)
+        return (float)v10() / afWidth;
     else
-        return (float)v11() / auiDivisorB;
+        return (float)v11() / afHeight;
 }
 
 extern "C" __declspec(dllimport) int __stdcall SetThreadPriority(void* hThread, int priority);
 
 // Maps a level 0-5 to a thread priority, stores the level in m_002c and applies the priority to the thread handle at offset 8.
 // @fnv 0x00ec18a0
-void __thiscall FUN_00ec2c10::SetThreadPriorityLevel(int aiLevel)
+// pdb: MoviePlayer::SetSequenceThreadPriority | MoviePlayer_Xenon.obj | debug, call graph (shared callers), high
+// pdb params: aiPriority
+// pdb locals: ithreadPriority
+void __thiscall FUN_00ec2c10::SetThreadPriorityLevel(int aiPriority)
 {
     int b;
-    switch (aiLevel)
+    switch (aiPriority)
     {
     case 0:
         b = -2;
@@ -309,7 +331,7 @@ void __thiscall FUN_00ec2c10::SetThreadPriorityLevel(int aiLevel)
         b = 0;
         break;
     }
-    m_002c = aiLevel;
+    m_002c = aiPriority;
     SetThreadPriority(*(void**)((char*)this + 8), b);
 }
 
@@ -329,6 +351,8 @@ struct FUN_00ec2a60_class
 // If m_000c is clear and m_0010 is set, moves m_0010 into m_000c, clears m_0010 and calls UnpauseBink on it.
 // @fnv 0x00ec2a60
 // src: COMMUNITY 0x00ec2a60
+// pdb: MoviePlayer::Pause | MoviePlayer.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MoviePlayer::Resume
 void __thiscall FUN_00ec2a60_class::MoviePlayer_Resume()
 {
     if (m_000c)
@@ -361,11 +385,13 @@ struct FUN_00ec2bb0_Class
 // If c is set, returns half of the difference between v11() and b times a; otherwise returns 0.0f.
 // @fnv 0x00ec2bb0
 // src: COMMUNITY 0x00ec2bb0
-float FUN_00ec2bb0_Class::MoviePlayer_CalculateYOffset(float afValue, unsigned int b, bool abEnabled)
+// pdb: MoviePlayer::CalculateYOffset | MoviePlayer.obj | retail, upstream name already matches, high
+// pdb params: afScale, afHeight, abLetterBoxed
+float FUN_00ec2bb0_Class::MoviePlayer_CalculateYOffset(float afScale, unsigned int afHeight, bool abLetterBoxed)
 {
-    if (!abEnabled)
+    if (!abLetterBoxed)
         return 0.0f;
-    return (v11() - b * afValue) / 2.0;
+    return (v11() - afHeight * afScale) / 2.0;
 }
 
 extern "C" __declspec(dllimport) int __stdcall GetExitCodeThread(void* hThread, unsigned long* pExitCode);
@@ -381,6 +407,8 @@ struct FUN_00ec17c0_Class
 // Returns true when m_0008 is set and GetExitCodeThread reports exit code 0x103 for it.
 // @fnv 0x00ec17c0
 // src: XBOX_PDB 0x00ec17c0
+// pdb: MoviePlayer::GetPlayingSequence | MoviePlayer_Xenon.obj | retail, upstream name already matches, high
+// pdb locals: iexitCode
 bool FUN_00ec17c0_Class::MoviePlayer_GetPlayingSequence()
 {
     if (!m_0008)
@@ -402,6 +430,7 @@ extern "C" __declspec(dllimport) void __stdcall FUN_00fdf1c8(void* a, int b);
 // If m_0004 is non-null, calls FUN_00fdf1c8 with m_0004 and -1.
 // @fnv 0x00ec19a0
 // src: GUESS 0x00ec19a0 (confidence: medium)
+// pdb: D3DDevice::BeginScene | MoviePlayer_Xenon.obj | debug, object-file run extension, low
 void FUN_00ec19a0_Class::WaitForStoredHandle()
 {
     if (m_0004)
@@ -420,6 +449,8 @@ struct FUN_00ec1a60_class
 };
 // Clears the third field of the struct, then deallocates it through g_memoryManager.
 // @fnv 0x00ec1a60
+// pdb: NiTMap<char const *,char *>::DeleteItem | MoviePlayer_Xenon.obj | debug, vtable slot, medium
+// pdb params: pkItem
 void __thiscall FUN_00ec1a60_class::FreeStruct(FUN_00ec1a60_t* pStruct)
 {
     pStruct->c = 0;
@@ -461,6 +492,9 @@ struct FUN_00ec1cc0_Class
 
 // Stores a string into a+4 (copying it when this+0x10 is set) and stores c into a+8.
 // @fnv 0x00ec1cc0
+// pdb: NiTStringTemplateMap<NiTMap<char const *,char *>,char *>::SetValue | MoviePlayer_Xenon.obj | debug, vtable slot, medium
+// pdb params: pkItem, pcKey, val
+// pdb locals: uiLen
 void __thiscall FUN_00ec1cc0_Class::AssignString(void* apTarget, const char* apString, int aiValue)
 {
     if (*(unsigned char*)((char*)this + 0x10))
@@ -489,6 +523,8 @@ struct FUN_00ec1d30_Class : FUN_00ec1a90_Class
 };
 // @fnv 0x00ec1d30
 // src: GUESS 0x00ec1d30 (confidence: low)
+// pdb: NiTStringTemplateMap<NiTMap<char const *,char *>,char *>::ClearValue | MoviePlayer_Xenon.obj | debug, object-file gap fill, medium
+// pdb params: pkItem
 void __thiscall FUN_00ec1d30_Class::UpdateState_00ec1d30()
 {
     int a;
@@ -674,9 +710,9 @@ class NiPlaybackManager
     virtual void v05();
     virtual void v06();
     virtual int GetRenderer();
-    float GetFrameRate(unsigned int uiWidth, unsigned int uiHeight, bool bLooping);
-    float GetWidthScale(float fRate, unsigned int uiWidth, bool bLooping);
-    float GetHeightScale(float fRate, unsigned int uiHeight, bool bLooping);
+    float GetFrameRate(unsigned int afWidth, unsigned int afHeight, bool abLetterBoxed);
+    float GetWidthScale(float fRate, unsigned int afWidth, bool abLetterBoxed);
+    float GetHeightScale(float afScale, unsigned int afHeight, bool abLetterBoxed);
 };
 
 void* __cdecl CreatePlaybackTextures(int iRenderer, unsigned int uiWidth, unsigned int uiHeight, int iCount, int iFlags,
@@ -702,6 +738,8 @@ class NiPlaybackFile
 
 // Loads the playback size if needed, queries the manager for renderer, frame rate and scales, allocates textures and warns on failure.
 // @fnv 0x00ec0cd0
+// pdb: Movie::LoadBink | MoviePlayer_Xenon.obj | debug, object-file gap fill, medium
+// pdb params: apFileName, abSkipWarning, abPreloadBink, abLetterBoxed
 bool NiPlaybackFile::InitPlayback(const char* pcName, bool bQuiet, bool bLoop, bool bLooping)
 {
     if (m_pkSize == 0 && !FindString(pcName, bQuiet, bLoop, false))
@@ -735,6 +773,7 @@ struct FUN_00ec1020_cls
 
 // @fnv 0x00ec1020
 // src: COMMUNITY 0x00ec1020
+// pdb: Movie::Stop | MoviePlayer_Xenon.obj | retail, upstream name already matches, high
 void FUN_00ec1020_cls::Movie_Stop()
 {
     if (m_00 != 0)
@@ -765,6 +804,9 @@ extern "C" __declspec(dllimport) int __stdcall BinkCopyToBufferRect(void* hBink,
                                                                     unsigned int srcHeight, unsigned int flags);
 
 // @fnv 0x00ec14d0
+// pdb: MoviePlayer::Initialize | MoviePlayer_Xenon.obj | retail, object-file run extension, low
+// pdb params: abAudioEnabled
+// pdb locals: videoMode, dxDevice
 unsigned char __cdecl DecodeBinkFrame(FUN_00ec14d0_bink* a1, unsigned int a2, int a3)
 {
     int result2 = 1;
@@ -815,7 +857,7 @@ extern "C" __declspec(dllimport) unsigned long __stdcall ResumeThread(void* hThr
 extern "C" __declspec(dllimport) unsigned long __stdcall WaitForSingleObject(void* hHandle,
                                                                              unsigned long ulMilliseconds);
 
-void __cdecl FUN_00aa2740(unsigned long ulThreadId, const char* pcName);
+void __cdecl FUN_00aa2740(unsigned long hThread, const char* nPriority);
 
 struct BEC16D0Setting
 {
@@ -851,24 +893,27 @@ class BEC16D0MoviePlayerThread
     int unk2C;
     BEC16D0Semaphore m_kStartSemaphore;
 
-    void SetPriority(int iPriority);
-    void MoviePlayer_StartSequence(void* pvParam, bool bFlag22, int iPriority, bool bFlag23, bool bFlag24, float fValue28);
+    void SetPriority(int aiPriority);
+    void MoviePlayer_StartSequence(void* apString, bool abLetterBoxed, int aiSequencePriority, bool abMuteGameAudio, bool abPauseGameAudio, float afTimeBeforeMovieSkippable);
 };
 
 // Creates the movie player thread, stores the flags and value, sets its priority, resumes it and waits on the start semaphore.
 // @fnv 0x00ec16d0
 // src: COMMUNITY 0x00ec16d0
-void BEC16D0MoviePlayerThread::MoviePlayer_StartSequence(void* pvParam, bool bFlag22, int iPriority, bool bFlag23, bool bFlag24,
-                                            float fValue28)
+// pdb: MoviePlayer::StartSequence | MoviePlayer_Xenon.obj | retail, string-set bridge, high
+// pdb params: apString, abLetterBoxed, aiSequencePriority, abMuteGameAudio, abPauseGameAudio, afTimeBeforeMovieSkippable
+// pdb locals: isequenceThreadID
+void BEC16D0MoviePlayerThread::MoviePlayer_StartSequence(void* apString, bool abLetterBoxed, int aiSequencePriority, bool abMuteGameAudio, bool abPauseGameAudio,
+                                            float afTimeBeforeMovieSkippable)
 {
     unsigned long ulThreadId3;
-    m_hThread = CreateThread(0, 0, (unsigned long(__stdcall*)(void*))MoviePlayer_PlaySequenceThread, pvParam, 4, &ulThreadId3);
+    m_hThread = CreateThread(0, 0, (unsigned long(__stdcall*)(void*))MoviePlayer_PlaySequenceThread, apString, 4, &ulThreadId3);
     FUN_00aa2740(ulThreadId3, "MoviePlayer");
-    m_bFlag22 = bFlag22;
-    m_bFlag23 = bFlag23;
-    m_bFlag24 = bFlag24;
-    m_fValue28 = fValue28;
-    if (iPriority == -1)
+    m_bFlag22 = abLetterBoxed;
+    m_bFlag23 = abMuteGameAudio;
+    m_bFlag24 = abPauseGameAudio;
+    m_fValue28 = afTimeBeforeMovieSkippable;
+    if (aiSequencePriority == -1)
     {
         int* piPriority = &g_kEC16D0PrioritySetting ? &g_kEC16D0PrioritySetting.m_iValue
                                                     : (g_iEC16D0DefaultSetting = 0, &g_iEC16D0DefaultSetting);
@@ -876,7 +921,7 @@ void BEC16D0MoviePlayerThread::MoviePlayer_StartSequence(void* pvParam, bool bFl
     }
     else
     {
-        SetPriority(iPriority);
+        SetPriority(aiSequencePriority);
     }
     ResumeThread(m_hThread);
     ulThreadId3 = 0;
@@ -892,7 +937,7 @@ void __cdecl _NiFree_00aa10f0(int aValue);
 
 struct FUN_00ec1df0_pool
 {
-    void MemoryManager_Deallocate(void* apMemory);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00ec1df0_pool DAT_011f6238;
 
@@ -908,6 +953,7 @@ struct FUN_00ec1df0_cls
 };
 
 // @fnv 0x00ec1df0
+// pdb: NiTMapBase<DFALL<NiTMapItem<char const *,char *> >,char const *,char *>::`scalar deleting destructor' | MoviePlayer_Xenon.obj | retail, vtable slot, high
 FUN_00ec1df0_cls* FUN_00ec1df0_cls::FUN_00ec1df0(unsigned int acFlags)
 {
     int unk00;
@@ -928,7 +974,7 @@ extern int DAT_010f1c20;
 class FUN_00ec1ee0_pool
 {
   public:
-    void MemoryManager_Deallocate(void* apMemory);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00ec1ee0_pool DAT_011f6238;
 
@@ -954,6 +1000,7 @@ struct FUN_00ec1ee0_cls
 };
 
 // @fnv 0x00ec1ee0
+// pdb: BSTCaseInsensitiveStringMap<char *>::`scalar deleting destructor' | MoviePlayer_Xenon.obj | retail, vtable slot, high
 FUN_00ec1ee0_cls* FUN_00ec1ee0_cls::FUN_00ec1ee0(unsigned int auiFlags)
 {
     FUN_00ec1ee0_frame frame;
@@ -970,6 +1017,7 @@ FUN_00ec1ee0_cls* FUN_00ec1ee0_cls::FUN_00ec1ee0(unsigned int auiFlags)
 extern "C" __declspec(dllimport) int __stdcall SetThreadPriorityBoost(void* hThread, int fDisable);
 
 // @fnv 0x00ec1fb0
+// pdb: Movie::Pause | MoviePlayer.obj | debug, object-file gap fill, medium
 void FUN_00ec1fb0_class::DisableThreadPriorityBoost()
 {
     SetThreadPriorityBoost(reinterpret_cast<void*>(reinterpret_cast<int*>(this)[0]), 1);
@@ -978,6 +1026,7 @@ void FUN_00ec1fb0_class::DisableThreadPriorityBoost()
 extern "C" __declspec(dllimport) void __stdcall _BinkPause_8(void*, int);
 
 // @fnv 0x00ec1fd0
+// pdb: Movie::Resume | MoviePlayer.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00ec1fd0_shell::UnpauseBink()
 {
     _BinkPause_8(*(void**)this, 0);
@@ -986,7 +1035,7 @@ void __thiscall FUN_00ec1fd0_shell::UnpauseBink()
 namespace fnv_00ec25e0 {
 struct FUN_00aa4060_Obj
 {
-    void __thiscall MemoryManager_Deallocate(FUN_00ec1f40Class* p);
+    void __thiscall MemoryManager_Deallocate(FUN_00ec1f40Class* apMem);
 };
 extern FUN_00aa4060_Obj DAT_011f6238;
 
@@ -1003,6 +1052,7 @@ struct FUN_00ec25e0_cls
 // If m_000c is set, calls FUN_00ec1f40 and DAT_011f6238.FUN_00aa4060 on it, clears m_000c, then calls FUN_00ec2a60.
 // @fnv 0x00ec25e0
 // src: COMMUNITY 0x00ec25e0
+// pdb: MoviePlayer::Stop | MoviePlayer.obj | retail, upstream name already matches, high
 void __thiscall FUN_00ec25e0_cls::MoviePlayer_Stop()
 {
     if (m_000c != 0)
@@ -1032,15 +1082,17 @@ struct S_00ec2b20
     virtual unsigned int v11();
     virtual unsigned int v12();
     virtual unsigned int v13();
-    float __thiscall ComputeAdjustedValue(float a, unsigned int b, bool c);
+    float __thiscall ComputeAdjustedValue(float a, unsigned int afWidth, bool abLetterBoxed);
 };
 // Returns v13() as a float when c is set, otherwise v13() plus half of (v10() minus b times a).
 // @fnv 0x00ec2b20
-float __thiscall S_00ec2b20::ComputeAdjustedValue(float afScale, unsigned int auiValue, bool abDirect)
+// pdb: MoviePlayer::CalculateXOffset | MoviePlayer.obj | retail, object-file run extension, high
+// pdb params: afScale, afWidth, abLetterBoxed
+float __thiscall S_00ec2b20::ComputeAdjustedValue(float afScale, unsigned int afWidth, bool abLetterBoxed)
 {
-    if (abDirect)
+    if (abLetterBoxed)
         return (float)v13();
-    return (float)((double)v13() + ((double)v10() - (double)auiValue * afScale) / 2.0);
+    return (float)((double)v13() + ((double)v10() - (double)afWidth * afScale) / 2.0);
 }
 
 extern int DAT_0126fae0;
@@ -1068,6 +1120,7 @@ struct FUN_00ec2c40_cls
 // If m_002c exceeds the current limit (DAT_0126fae4 or DAT_01202800), calls SetThreadPriorityLevel with m_002c - 1.
 // @fnv 0x00ec2c40
 // src: COMMUNITY 0x00ec2c40
+// pdb: MoviePlayer::DecreaseSequenceThreadPriority | MoviePlayer.obj | debug, upstream name already matches, high
 void FUN_00ec2c40_cls::MoviePlayer_DecreaseSequenceThreadPriority()
 {
     int* q = (&DAT_0126fae0 != 0) ? &DAT_0126fae4 : (DAT_01202800 = 0, &DAT_01202800);
@@ -1118,6 +1171,9 @@ void __cdecl FUN_00ec65a6(char* a, char* b, int c);
 
 // @fnv 0x00ec2d80
 // src: GUESS 0x00ec2d80 (confidence: low)
+// pdb: MoviePlayer::AddBinkPath | MoviePlayer.obj | debug, object-file run extension, low
+// pdb params: apFileName, apPath
+// pdb locals: ipathLength, ppathCopy
 void __thiscall S_00ec2d80_Class::UpdateFields_00ec2d80(int a, int b)
 {
     char* p;
@@ -1173,6 +1229,9 @@ class EC2DF0Registry
 
 // Looks up uiKey in m_kNames and, if found, copies the name into pcPath with strcpy_s and returns true; otherwise returns false.
 // @fnv 0x00ec2df0
+// pdb: MoviePlayer::GetBinkPath | MoviePlayer.obj | debug, object-file run extension, low
+// pdb params: apFileName, apPath
+// pdb locals: ppath
 bool EC2DF0Registry::GetNameByKey(unsigned int uiKey, char* pcPath)
 {
     const char* pcFile = 0;
@@ -2198,16 +2257,20 @@ struct EC1060File
     unsigned int texture, frame, decoded;
     float scale, x, y;
     int state;
-    bool Update(bool, bool, bool);
+    bool Movie_Update(bool, bool, bool);
 };
 // @fnv 0x00ec1060
-bool EC1060File::Update(bool arg1, bool abLoop, bool abNoClip)
+// src: XBOX_RETAIL_PDB 0x00ec1060
+// pdb: Movie::Update | MoviePlayer_Xenon.obj | retail, object-file run extension, high
+// pdb params: abAllowInterruption, abLoop, abLetterBoxed
+// pdb locals: bskippedFrame, bdone
+bool EC1060File::Movie_Update(bool abAllowInterruption, bool abLoop, bool abLetterBoxed)
 {
     EC1060Viewport h, i;
     EC1060Rect a, s;
     EC1060Size *eb, *cf, *q, *b;
     unsigned char p = false;
-    if (!((EC1060Player*)DAT_0126fac4)->v16(arg1))
+    if (!((EC1060Player*)DAT_0126fac4)->v16(abAllowInterruption))
         return false;
     bool f = ((EC1060Player*)DAT_0126fac4)->paused;
     if (!f)
@@ -2230,7 +2293,7 @@ bool EC1060File::Update(bool arg1, bool abLoop, bool abNoClip)
         }
     }
     device->v43(0, 0, 1, 0xff000000, 1.0f, 0);
-    if (!abNoClip && *(unsigned char*)&DAT_011f9426)
+    if (!abLetterBoxed && *(unsigned char*)&DAT_011f9426)
     {
         eb = &(*(EC1060Renderer* volatile*)&DAT_011f4748)->v53();
         h.x = eb->width;
@@ -2251,7 +2314,7 @@ bool EC1060File::Update(bool arg1, bool abLoop, bool abNoClip)
         device->v42();
     if (!(unsigned char)(state == 2))
         device->v17(0, 0, 0, 0);
-    if (!abNoClip && *(unsigned char*)&DAT_011f9426)
+    if (!abLetterBoxed && *(unsigned char*)&DAT_011f9426)
     {
         q = &(*(EC1060Renderer* volatile*)&DAT_011f4748)->v53();
         i.x = q->width;
@@ -2279,6 +2342,9 @@ class StrMapW
 };
 // Computes a rolling hash over the characters of pKey and returns it modulo m_uiHashSize.
 // @fnv 0x00ec1c30
+// pdb: NiTStringTemplateMap<NiTMap<char const *,char *>,char *>::KeyToHashIndex | MoviePlayer_Xenon.obj | debug, vtable slot, medium
+// pdb params: pKey
+// pdb locals: uiHash
 unsigned int StrMapW::HashKey(const char* pKey)
 {
     unsigned int uiHash = 0;
@@ -2310,6 +2376,7 @@ struct MovieJob
 
 // Sleeps 1 ms in a loop while m_0008 is set and the job is missing or its m_0024 flag is nonzero.
 // @fnv 0x00ec29d0
+// pdb: MoviePlayer::WaitForSequenceToBegin | MoviePlayer.obj | debug, object-file run extension, low
 void MoviePlayer::WaitForJobCompletion()
 {
     unsigned char busy;
@@ -2381,6 +2448,9 @@ struct FUN_00ec1d50_class
 
 // Computes a case-insensitive string hash using a shift-and-add algorithm and returns the result modulo unk04.
 // @fnv 0x00ec1d50
+// pdb: BSTCaseInsensitiveStringMap<char *>::KeyToHashIndex | MoviePlayer_Xenon.obj | debug, vtable slot, medium
+// pdb params: apKey
+// pdb locals: iretVal
 unsigned int FUN_00ec1d50_class::HashString(const char* apString)
 {
     unsigned int h = 0;
@@ -2399,8 +2469,8 @@ unsigned int FUN_00ec1d50_class::HashString(const char* apString)
 namespace fnv_00ec1940 {
 #include <windows.h>
 
-DWORD WINAPI MoviePlayer_MovieLoadingThread(LPVOID param);
-void FUN_00aa2740(DWORD threadId, const char* name);
+DWORD WINAPI MoviePlayer_MovieLoadingThread(LPVOID apFileName);
+void FUN_00aa2740(DWORD hThread, const char* nPriority);
 
 class FUN_00ec1940_cls
 {
@@ -2413,16 +2483,19 @@ class FUN_00ec1940_cls
     int unk14;
     int unk18;
     int m_1c;
-    void MoviePlayer_ThreadLoadMovie(void* param, int value);
+    void MoviePlayer_ThreadLoadMovie(void* param, int afpCallback);
 };
 
 // Stores value in m_1c, creates a suspended thread running FUN_00ec2ca0 with param, names it MovieLoader, then resumes it.
 // @fnv 0x00ec1940
 // src: COMMUNITY 0x00ec1940
-void FUN_00ec1940_cls::MoviePlayer_ThreadLoadMovie(void* apThreadArg, int value)
+// pdb: MoviePlayer::ThreadLoadMovie | MoviePlayer_Xenon.obj | debug, upstream name already matches, high
+// pdb params: apFileName, afpCallback
+// pdb locals: imovieLoadingThreadID
+void FUN_00ec1940_cls::MoviePlayer_ThreadLoadMovie(void* apThreadArg, int afpCallback)
 {
     DWORD threadId;
-    m_1c = value;
+    m_1c = afpCallback;
     m_04 = CreateThread(NULL, 0, MoviePlayer_MovieLoadingThread, apThreadArg, CREATE_SUSPENDED, &threadId);
     FUN_00aa2740(threadId, "MovieLoader");
     ResumeThread(m_04);
@@ -2443,6 +2516,7 @@ struct MovieSignalState : BEC16D0MoviePlayerThread
 // Releases m_kStartSemaphore, increments its m_lCount, and sets the signaled flag to 1.
 // @fnv 0x00ec1a00
 // src: COMMUNITY 0x00ec1a00
+// pdb: MoviePlayer::SignalBinkOpen | MoviePlayer_Xenon.obj | retail, upstream name already matches, high
 void MovieSignalState::MoviePlayer_SignalBinkOpen()
 {
     BEC16D0Semaphore* semaphore = &m_kStartSemaphore;
@@ -2469,6 +2543,8 @@ extern "C" __declspec(dllimport) long __stdcall DispatchMessageA(const PlaybackM
 
 // Pumps pending Windows messages and returns false if the playback was interrupted, otherwise true.
 // @fnv 0x00ec1840
+// pdb: MoviePlayer::CheckContinuePlaying | MoviePlayer_Xenon.obj | debug, vtable slot, medium
+// pdb params: abAllowInterruption
 bool __thiscall BGSMoviePlayer::CheckPlaybackContinue(bool allowInterruption)
 {
     PlaybackMessage msg;

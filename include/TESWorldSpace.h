@@ -23,6 +23,7 @@ template <class T, unsigned int N> class BSSimpleArray;
 // Both names call the inherited virtual at primary vtable slot 76.
 #define GetStingerBlockFileNameHighPriority GetName
 
+// pdb: class TESWorldSpace, size 0xec, bases: TESForm, TESFullName, TESTexture, 29 members
 class TESWorldSpace : public TESForm, public TESFullName, public TESTexture
 {
 public:
@@ -42,22 +43,22 @@ public:
     virtual void vf78();
     virtual void vf79();
 
-    void GetReferencesInArea(const NiPoint3&, float, const NiPoint3&, float,
+    void TESWorldSpace_EnumReferencesCloseToPoint(const NiPoint3&, float, const NiPoint3&, float,
                              bool (__cdecl*)(TESObjectREFR*, long), long);
     bool HasCell(TESObjectCELL*);
     TESObjectCELL* GetCellAtGridPosition(int, int);
     TESObjectCELL* GetCellByWorldPosition(const NiPoint3&);
     int GetCellAtGridCoord(int aiX, int aiY);
     TESObjectCELL* GetInteriorCell();
-    TESWorldSpace* GetParentWorld(PARENT_USE_FLAG flag);
+    TESWorldSpace* GetParentWorld(PARENT_USE_FLAG aeFlags);
     TESWorldSpace* GetParentWorld(int);
     PointerPairData* GetWorldSpaceData();
     WorldSpaceTarget* FUN_00825c00();
     static int __cdecl BuildCellKey(short, short);
     static int GetKeyForWorldCoord(const NiPoint3& point);
-    TESObjectCELL* GetCellByKey(unsigned int);
+    TESObjectCELL* GetCellFromKey(unsigned int);
     TESObjectCELL* LookupCellByEditorID(const char* editorID);
-    void GetCellAtPosition(NiPoint3&, bool);
+    void TESWorldSpace_AdjustMapMarkerCoord(NiPoint3&, bool);
     BGSEncounterZone* FindEncounterZone() const;
     BGSTerrainManager* GetWorldTerrainManager();
     bool GetSmallWorld();
@@ -77,8 +78,8 @@ public:
     TESObjectCELL* CreatePersistentCell();
     void SetHasRegions(bool);
     void SetFlagBit0(bool);
-    void* GetOrCreateCellOffsetData(TESFile*);
-    static bool IsFormIDOwnedByFile(unsigned int, TESFile*);
+    void* CreateOffsetData(TESFile*);
+    static bool TESFile_GetTempIDCanLoadFromFile(unsigned int, TESFile*);
     void ClearWorldSpaceReferences();
     void SetWaterLODHeight(float);
     void SetDefaultLandHeight(float);
@@ -136,9 +137,9 @@ public:
     void InitializeData_00583070();
     void ClearData_00583180();
     void ClearCellMap();
-    void FreeOffsetMap();
-    void ClearAllLists();
-    void DestroyMapEntries();
+    void FreeOffsetData();
+    void TESWorldSpace_ClearPersistentRefData();
+    void ClearMultiBoundRefs();
     void RemovePersistentRef(TESObjectREFR*);
     bool AddCell(TESObjectCELL*);
     void RemoveFromPersistentRefData(TESObjectREFR*);
@@ -158,35 +159,35 @@ public:
         NiTPointerMap<unsigned int, TESObjectREFR*>* cellMap;
         NiTPointerMap<unsigned int, TESObjectREFR*>* pCellNavMeshInfoMap;
     };
-    TESObjectCELL* m_pCell;
-    CellList m_kFirstTreeComponent;
+    TESObjectCELL* pPersistentCell;
+    CellList TerrainLODManager;
     union
     {
         BGSTerrainManager* terrain;
         void* m_pThirdTreePointer;
     };
-    TESClimate* climate;
-    void* imageSpace;
-    TESImageSpace* data;
-    unsigned char flags4C;
+    TESClimate* pClimate;
+    void* pImageSpace;
+    TESImageSpace* pImpactSwap;
+    unsigned char cFlags;
     unsigned char unk4D;
-    unsigned short field4E;
-    ReferenceMap m_kSecondTreeComponent;
-    SL m_kThirdTreeComponent;
-    void* m_pFourthTreePointer;
-    ObjectPointer m_kFourthTreeComponent;
-    TESWorldSpace* parent;
-    TESWaterForm* water;
-    TESWaterForm* lodWater;
-    float field7c;
-    unsigned char unk80[0x20];
-    BoundsPoint m_kFirstPoint;
-    BoundsPoint m_kEndPoint;
+    unsigned short sParentUseFlags;
+    ReferenceMap FixedPersistentRefMap;
+    SL MobilePersistentRefList;
+    void* pOverlappedMultiboundMap;
+    ObjectPointer spPortalGraph;
+    TESWorldSpace* pParentWorld;
+    TESWaterForm* pWorldWater;
+    TESWaterForm* pLODWater;
+    float fLODWaterHeight;
+    unsigned char WorldMapData[0x20];
+    BoundsPoint MinimumCoords;
+    BoundsPoint MaximumCoords;
     CellOffsetMap OffsetDataMap;
-    StrMem mapName;
-    float fC8;
-    float fCC;
-    unsigned int fieldD0;
+    StrMem cEditorID;
+    float fDefaultLandHeight;
+    float fDefaultWaterHeight;
+    unsigned int pEncounterZone;
     TESTexture CanopyShadowTexture;
-    TESTexture m_kLeafShadowTexture;
+    TESTexture WaterNoiseTexture;
 };

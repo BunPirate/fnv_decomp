@@ -31,6 +31,7 @@ template <class T> class ShadowSceneList : public NiTPointerList<NiPointer<T> >
     void RemoveAll();
 };
 
+// pdb: class BSCompoundFrustum, size 0xa4, 9 members
 class BSCompoundFrustum
 {
   public:
@@ -38,9 +39,10 @@ class BSCompoundFrustum
     ~BSCompoundFrustum();
     void FUN_00c47770();
 
-    unsigned char unk00[164];
+    unsigned char bPrethreaded[164];
 };
 
+// pdb: class ShadowSceneNode, size 0x230 (here 0x200), bases: NiNode, 28 members
 class ShadowSceneNode : public NiNode
 {
   public:
@@ -88,7 +90,7 @@ class ShadowSceneNode : public NiNode
     void RemoveSceneObject(NiNode* object, bool flag);
     void UpdateShadowLights();
     float CalculateLightingAtPoint(NiPoint3 point, int& count, float& ambient, float& diffuse, NiLight* ignore);
-    float FUN_00b5b610(NiPoint3 kPos, int* piOut, float* pfA, float* pfB, NiPoint3 kPos2, NiAVObject* pkLight);
+    float ShadowSceneNode_GetViewLuminanceAtPoint(NiPoint3 kPos, int* piOut, float* pfA, float* pfB, NiPoint3 kPos2, NiAVObject* pkLight);
     void SetFogPropertyForIndex(BSFogProperty* property);
     ShadowSceneLight* GetShadowSceneLight(NiLight* light, bool flag);
     void SetCreatureType(unsigned char type);

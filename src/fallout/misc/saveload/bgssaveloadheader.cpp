@@ -20,6 +20,9 @@ __declspec(dllimport) int __stdcall DeleteFileA(const char*);
 
 // @fnv 0x00850030
 // src: XBOX_PDB 0x00850030
+// pdb: BGSSaveLoadManager::OpenSaveFile | BGSSaveLoadManager.obj | retail, call graph, medium
+// pdb params: apFileName, abWrite, aeBufferType, aiDeviceID
+// pdb locals: iflags, bautosave, pfullFileName, pfile, ibufferSize, dwresult, contentData, pdisplayName
 SaveLoadFile* BGSSaveLoadManager::OpenSaveFile_00850030(const char* apFileName, int abWrite, int aeBufferType, int aiDeviceID)
 {
     unsigned int ibufferSize;
@@ -52,6 +55,9 @@ SaveLoadFile* BGSSaveLoadManager::OpenSaveFile_00850030(const char* apFileName, 
 void* _fnv_zlib_memset(void* dst, int val, unsigned int size);
 
 // @fnv 0x0084d8c0
+// pdb: BGSSaveLoadHeader::LoadHeader | BGSSaveLoadHeader.obj | retail, object-file run extension, low
+// pdb params: apFile
+// pdb locals: apLoadGameBuffer, iversion, iscreenshotWidth, loadBuffer, pheaderString, iscreenshotHeight, lname
 int __cdecl ReadSaveHeader(SaveLoadFile* apFile)
 {
     BGSLoadGameBuffer* apLoadGameBuffer;
@@ -92,13 +98,13 @@ int __cdecl ReadSaveHeader(SaveLoadFile* apFile)
     unsigned int iscreenshotHeight = 0;
     apLoadGameBuffer->ReadDataBlock(&iscreenshotWidth2, 4);
     apLoadGameBuffer->ReadDataBlock(&iscreenshotHeight, 4);
-    apFile->AdvancePosition(iscreenshotWidth2 * iscreenshotHeight * 3);
+    apFile->BGSSaveLoadFile_SeekCurrent(iscreenshotWidth2 * iscreenshotHeight * 3);
     return iversion;
 }
 
 struct HeaderFile
 {
-    void WriteToFile(const void*, unsigned int);
+    void BGSSaveLoadFile_Write(const void*, unsigned int);
     const char* FUN_006815c0();
 };
 struct HeaderBuffer
@@ -108,7 +114,7 @@ struct HeaderBuffer
     HeaderBuffer();
     ~HeaderBuffer();
     void FUN_00865e50(const void*, unsigned int, bool);
-    void FUN_00865e70(const char*, bool);
+    void SaveString(const char*, bool);
     void FUN_00865c40(HeaderFile*);
 };
 struct HeaderPlayer
@@ -137,9 +143,12 @@ NiPixelData* ScreenShot_TakeSaveGameScreenShot(int*, int*, const char*);
 const char* TESActorBaseData_GetKarmicTitle(HeaderPlayer*);
 // @fnv 0x0084d4b0
 // src: COMMUNITY 0x0084d4b0
-void BGSSaveLoadHeader_SaveHeader(HeaderFile* file)
+// pdb: BGSSaveLoadHeader::SaveHeader | BGSSaveLoadHeader.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: pscreenshot, isaveGameNumber, iplayerLevel, plocation, bwideScreen, iversion, pfileName, iscreenshotWidth, lname, pplayTime, saveBuffer, apSaveGameBuffer, iscreenshotHeight, finverseAspectRatio
+void BGSSaveLoadHeader_SaveHeader(HeaderFile* apFile)
 {
-    file->WriteToFile(DAT_011a2224, strlen(DAT_011a2224));
+    apFile->BGSSaveLoadFile_Write(DAT_011a2224, strlen(DAT_011a2224));
     HeaderBuffer buffer_;
     HeaderBuffer* stream = &buffer_;
     unsigned int version = GetSaveHeaderVersion(DAT_011de134);
@@ -157,7 +166,7 @@ void BGSSaveLoadHeader_SaveHeader(HeaderFile* file)
     if (*DAT_011de2fc.FUN_00408d60())
     {
         FUN_00406d30(screenshotPath_2, 260, DAT_011c3f74.FUN_00403df0());
-        FUN_00406d50(screenshotPath_2, 260, file->FUN_006815c0());
+        FUN_00406d50(screenshotPath_2, 260, apFile->FUN_006815c0());
         FUN_00406d50(screenshotPath_2, 260, ".bmp");
     }
     NiPixelData* pixels = 0;
@@ -172,21 +181,21 @@ void BGSSaveLoadHeader_SaveHeader(HeaderFile* file)
     stream->FUN_00865e50(&width2, 4, false);
     unsigned int numberVal = GetSaveHeaderNumber(DAT_011de134);
     stream->FUN_00865e50(&numberVal, 4, false);
-    stream->FUN_00865e70(DAT_011dea3c->TESObjectREFR_GetFullName(), false);
-    stream->FUN_00865e70(TESActorBaseData_GetKarmicTitle(DAT_011dea3c), false);
+    stream->SaveString(DAT_011dea3c->TESObjectREFR_GetFullName(), false);
+    stream->SaveString(TESActorBaseData_GetKarmicTitle(DAT_011dea3c), false);
     unsigned int level2 = DAT_011dea3c->GetLevel_0087f9f0();
     stream->FUN_00865e50(&level2, 4, false);
     char location9[260];
-    DAT_011de134->CopyPlayerName(location9);
-    stream->FUN_00865e70(location9, false);
+    DAT_011de134->GetPlayerLocationName(location9);
+    stream->SaveString(location9, false);
     char time[260];
-    DAT_011de134->FormatPlayTime(time, true);
-    stream->FUN_00865e70(time, false);
-    buffer_.FUN_00865c40(file);
+    DAT_011de134->GetPlayTimeString(time, true);
+    stream->SaveString(time, false);
+    buffer_.FUN_00865c40(apFile);
     if (!DAT_011de134->InterfaceManager_GetMenuMode())
-        file->WriteToFile(pixels->NiPixelData_GetPixels(0, 0), height5 * width2 * 3);
+        apFile->BGSSaveLoadFile_Write(pixels->NiPixelData_GetPixels(0, 0), height5 * width2 * 3);
     else
-        file->WriteToFile(0, height5 * width2 * 3);
+        apFile->BGSSaveLoadFile_Write(0, height5 * width2 * 3);
     delete pixels;
 }
 
@@ -213,13 +222,17 @@ NiTexture* __cdecl CreateScreenshotTexture(NiPixelData* pixelData, const char* n
 
 // Seeks to offset in file, reads width*height*3 bytes into a new NiPixelData, and creates a texture named BGSSaveLoadHeader_Screenshot.
 // @fnv 0x0084dda0
-NiTexture* __cdecl LoadScreenshotTexture(SaveLoadFile* file, unsigned int offset, unsigned int width,
-                                         unsigned int height)
+// src: XBOX_RETAIL_PDB 0x0084dda0
+// pdb: BGSSaveLoadHeader::LoadHeaderScreenshot | BGSSaveLoadHeader.obj | retail, string-set bridge, high
+// pdb params: apFile, aiOffset, aiWidth, aiHeight
+// pdb locals: pixelFormat, ppixelData, prefs
+NiTexture* __cdecl BGSSaveLoadHeader_LoadHeaderScreenshot(SaveLoadFile* apFile, unsigned int aiOffset, unsigned int aiWidth,
+                                         unsigned int aiHeight)
 {
-    file->SetFilePosition(offset);
+    apFile->SeekSet(aiOffset);
     NiPixelFormat format = kScreenshotPixelFormat;
-    NiPixelData* pixelData2 = new NiPixelData(width, height, format, 1, 1);
-    file->Read(pixelData2->NiPixelData_GetPixels(0, 0), width * height * 3);
+    NiPixelData* pixelData2 = new NiPixelData(aiWidth, aiHeight, format, 1, 1);
+    apFile->Read(pixelData2->NiPixelData_GetPixels(0, 0), aiWidth * aiHeight * 3);
     ScreenshotTexFormat aTexFormat;
     aTexFormat.iPixelLayout = 2;
     aTexFormat.iMipMapped = 0;

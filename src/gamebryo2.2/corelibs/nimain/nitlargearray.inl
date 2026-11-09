@@ -43,6 +43,8 @@ void NiTLargeArray<unsigned int, NiTMallocInterface<unsigned int> >::RemoveAll()
 
 #pragma optimize("", off)
 // @fnv 0x00864240
+// pdb: NiTLargeArray<TESTopicInfo *,NiTMallocInterface<TESTopicInfo *> >::SetAtGrow | TESTopic.obj | debug, call graph, medium
+// pdb params: uiIndex, element
 template <>
 unsigned int NiTLargeArray<unsigned int, NiTMallocInterface<unsigned int> >::SetAtGrow(unsigned int index, const unsigned int& value)
 {
@@ -53,6 +55,8 @@ unsigned int NiTLargeArray<unsigned int, NiTMallocInterface<unsigned int> >::Set
 }
 
 // @fnv 0x0061bd20
+// pdb: NiTLargeArray<TESTopicInfo *,NiTMallocInterface<TESTopicInfo *> >::SetAt | TESTopic.obj | debug, call graph, medium
+// pdb params: uiIndex, element
 void NiFormArray::SetSize(unsigned int index, unsigned int* value)
 {
     if (index >= m_uiSize)
@@ -74,6 +78,8 @@ void NiFormArray::SetSize(unsigned int index, unsigned int* value)
 }
 
 // @fnv 0x0061bdc0
+// pdb: NiTLargeArray<TESTopicInfo *,NiTMallocInterface<TESTopicInfo *> >::Compact | TESTopic.obj | retail, call graph, high
+// pdb locals: pSaveBase, j, i
 template <>
 void NiTLargeArray<TESTopicInfo*, NiTMallocInterface<TESTopicInfo*> >::Compact()
 {
@@ -109,6 +115,10 @@ void NiTLargeArray<TESTopicInfo*, NiTMallocInterface<TESTopicInfo*> >::Compact()
     NiTMallocInterface<TESTopicInfo*>::Deallocate(oldBase);
 }
 // @fnv 0x00864280
+// pdb: NiTLargeArray<unsigned int,NiTMallocInterface<unsigned int> >::SetSize | TESSaveLoadGame.obj | retail, call graph, low
+// pdb note: debug build links it to NiTLargeArray<TESTopicInfo *,NiTMallocInterface<TESTopicInfo *> >::SetSize
+// pdb params: uiMaxSize
+// pdb locals: pSaveBase, i
 // NiFormArray.h instantiates the shared template: an explicit specialization of the member
 template <>
 void NiTLargeArray<TESForm*, NiTMallocInterface<TESForm*> >::SetSize(unsigned int size)

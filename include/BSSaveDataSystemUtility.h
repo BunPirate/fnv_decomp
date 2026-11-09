@@ -4,6 +4,7 @@
 
 class BSSaveDataOperationEntry;
 
+// pdb: class BSSaveDataSystemUtility, size 0x48, 10 members
 class BSSaveDataSystemUtility
 {
 public:
@@ -46,15 +47,15 @@ public:
     bool bIsActive;
     unsigned char layoutPadding5;
     unsigned short layoutPadding6;
-    BSSaveDataOperationEntry* m_pOperationContext;
-    BSSaveDataSystemUtility__SaveDataEntry m_kSaveDataEntry;
-    OPERATION m_eOperation;
-    RESULT m_eResult;
-    RESULT m_eSecondResult;
-    RESULT m_eThirdResult;
-    RESULT_FAILED_REASON m_eFailedReason;
-    unsigned int m_uiResultCount;
-    void (__cdecl* m_pResultCallback)(RESULT);
+    BSSaveDataOperationEntry* pSaveDataFile;
+    BSSaveDataSystemUtility__SaveDataEntry MostRecentEntry;
+    OPERATION eCurrentOperation;
+    RESULT eSaveResult;
+    RESULT eLoadResult;
+    RESULT eDeleteResult;
+    RESULT_FAILED_REASON eResultFailedReason;
+    unsigned int uiInsufficientSpaceFileSize;
+    void (__cdecl* pDeleteCompleteCallback)(RESULT);
 
     void SetResultCallback(void (__cdecl* apCallback)(RESULT));  // 0x008d8040 (folded +0x44 setter)
 };

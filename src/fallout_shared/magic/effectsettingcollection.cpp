@@ -14,10 +14,11 @@ class PlayerQuestData
 };
 
 TESForm* GetFormByID(unsigned int formID);
-void RegisterEffectSetting(EffectSetting* effect);
+void EffectSettingCollection_AddEffect(EffectSetting* apSetting);
 
 typedef int ActorValueIndex;
 
+// pdb: class EffectSettingCollection, size 0x8 (here 0x3ec), bases: BSSimpleList<EffectSetting *>, 0 members
 class EffectSettingCollection
 {
   public:
@@ -25,15 +26,17 @@ class EffectSettingCollection
     unsigned int uiFlags;
 
     void InitializeCollection(bool initialize);
-    static void InitializeEffectSettings();
-    static EffectSetting* CreateEffectSetting(unsigned int formID, char* editorID, char* fullName, ActorValueIndex item,
-                                              float cost, ActorValueIndex skill, unsigned int count,
-                                              ActorValueIndex resist, int flags);
+    static void CreateDefaultEffects();
+    static EffectSetting* CreateDefaultEffect(unsigned int aiFormID, char* acEditorID, char* apEffectName, ActorValueIndex aiAssociatedSkill,
+                                              float afBaseCost, ActorValueIndex aeAssociatedActorVaue, unsigned int aiFlags,
+                                              ActorValueIndex aiResistVariable, int aiEffectArchetype);
 };
 
 extern "C" EffectSetting* DAT_011c33f4;
 
 // @fnv 0x00471D00
+// pdb: NiFile::InvokeReadErrorFunc | NiFile_Xenon.obj | debug, call graph, medium
+// pdb params: apFile
 void EffectSettingCollection::InitializeCollection(bool initialize)
 {
     if (initialize)
@@ -46,36 +49,42 @@ void EffectSettingCollection::InitializeCollection(bool initialize)
 }
 
 // @fnv 0x00408E40
-EffectSetting* EffectSettingCollection::CreateEffectSetting(unsigned int formID, char* editorID, char* fullName,
-                                                            ActorValueIndex item, float cost, ActorValueIndex skill,
-                                                            unsigned int count, ActorValueIndex resist, int flags)
+// src: XBOX_RETAIL_PDB 0x00408e40
+// pdb: EffectSettingCollection::CreateDefaultEffect | EffectSettingCollection.obj | retail, call graph, high
+// pdb params: aiFormID, acEditorID, apEffectName, aiAssociatedSkill, afBaseCost, aeAssociatedActorVaue, aiFlags, aiResistVariable, aiEffectArchetype
+// pdb locals: psettings
+EffectSetting* EffectSettingCollection::CreateDefaultEffect(unsigned int aiFormID, char* acEditorID, char* apEffectName,
+                                                            ActorValueIndex aiAssociatedSkill, float afBaseCost, ActorValueIndex aeAssociatedActorVaue,
+                                                            unsigned int aiFlags, ActorValueIndex aiResistVariable, int aiEffectArchetype)
 {
-    if (GetFormByID(formID))
+    if (GetFormByID(aiFormID))
         return 0;
 
     EffectSetting* effect = new EffectSetting();
-    effect->SetRefID(formID, true);
-    effect->SetEditorID_AtRuntime(editorID);
-    ((LowProcess*)effect)->LowProcess::SetPackageObjectType(count);
-    effect->UpdateEffectName(fullName);
-    effect->BSShaderProperty_SetDepthBias(cost);
-    effect->SetAssociatedActorValue(skill);
-    ((MiddleHighProcess*)effect)->MiddleHighProcess::AddDeferredHideLimb((ObjectToAcquire*)item);
-    ((PlayerQuestData*)effect)->SetLogDate((Date*)resist);
-    effect->SetEffectID(flags);
-    RegisterEffectSetting(effect);
+    effect->SetRefID(aiFormID, true);
+    effect->SetEditorID_AtRuntime(acEditorID);
+    ((LowProcess*)effect)->LowProcess::SetPackageObjectType(aiFlags);
+    effect->UpdateEffectName(apEffectName);
+    effect->BSShaderProperty_SetDepthBias(afBaseCost);
+    effect->SetAssociatedActorValue(aeAssociatedActorVaue);
+    ((MiddleHighProcess*)effect)->MiddleHighProcess::AddDeferredHideLimb((ObjectToAcquire*)aiAssociatedSkill);
+    ((PlayerQuestData*)effect)->SetLogDate((Date*)aiResistVariable);
+    effect->SetEffectID(aiEffectArchetype);
+    EffectSettingCollection_AddEffect(effect);
     return effect;
 }
 
 // @fnv 0x00408F60
-void EffectSettingCollection::InitializeEffectSettings()
+// src: XBOX_RETAIL_PDB 0x00408f60
+// pdb: EffectSettingCollection::CreateDefaultEffects | EffectSettingCollection.obj | retail, string-set bridge, high
+void EffectSettingCollection::CreateDefaultEffects()
 {
-    CreateEffectSetting(0x14A, "ScriptEffect", "Script Effect", -1, 0.0f, -1, 0x170, -1, 1);
-    CreateEffectSetting(0x14B, "FireDamage", "Fire Damage", -1, 0.0f, 0x10, 0x20000475, 0x34, 0);
-    CreateEffectSetting(0x14C, "FrostDamage", "Frost Damage", -1, 0.0f, 0x10, 0x20000475, -1, 0);
-    CreateEffectSetting(0x14D, "ShockDamage", "Shock Damage", -1, 0.0f, 0x10, 0x20000475, -1, 0);
-    CreateEffectSetting(0x14E, "RestoreHealth", "Restore Health", -1, 0.0f, 0x10, 0x70, -1, 0);
-    DAT_011c33f4 = CreateEffectSetting(0x14F, "UMON", "Usage Monitor Effect", -1, 0.0f, -1, 0x12, -1, 1);
+    CreateDefaultEffect(0x14A, "ScriptEffect", "Script Effect", -1, 0.0f, -1, 0x170, -1, 1);
+    CreateDefaultEffect(0x14B, "FireDamage", "Fire Damage", -1, 0.0f, 0x10, 0x20000475, 0x34, 0);
+    CreateDefaultEffect(0x14C, "FrostDamage", "Frost Damage", -1, 0.0f, 0x10, 0x20000475, -1, 0);
+    CreateDefaultEffect(0x14D, "ShockDamage", "Shock Damage", -1, 0.0f, 0x10, 0x20000475, -1, 0);
+    CreateDefaultEffect(0x14E, "RestoreHealth", "Restore Health", -1, 0.0f, 0x10, 0x70, -1, 0);
+    DAT_011c33f4 = CreateDefaultEffect(0x14F, "UMON", "Usage Monitor Effect", -1, 0.0f, -1, 0x12, -1, 1);
 }
 
 struct G2
@@ -87,10 +96,13 @@ struct GlobalObject_00680890 : public G2
 };
 extern GlobalObject_00680890 g_011c3400;
 // @fnv 0x00409060
-void RegisterEffectSetting(int* pEffect)
+// src: XBOX_DEBUG_PDB 0x00409060
+// pdb: EffectSettingCollection::AddEffect | EffectSettingCollection.obj | debug, call graph, high
+// pdb params: apSetting
+void EffectSettingCollection_AddEffect(int* apSetting)
 {
-    if (pEffect)
-        g_011c3400.AddHead(&pEffect);
+    if (apSetting)
+        g_011c3400.AddHead(&apSetting);
 }
 
 struct FUN_00408b60
@@ -100,6 +112,7 @@ struct FUN_00408b60
 
 // @fnv 0x00408de0
 // src: COMMUNITY 0x00408de0
+// pdb: EffectSettingCollection::Reset | EffectSettingCollection.obj | debug, call graph (shared callers), medium
 void __cdecl EffectSettingCollection_Destroy()
 {
     ((FUN_00408b60*)&g_011c3400)->DestroyAllItems();
@@ -126,6 +139,8 @@ void ProgramFlow(const char* format, ...);
 // Computes the save size of the effect setting collection, adding 4/2 bytes for save-load state and 4 bytes per flagged EffectSetting, then logs the result.
 // @fnv 0x00408c30
 // src: COMMUNITY 0x00408c30
+// pdb: EffectSettingCollection::GetKnownEffectsSaveSize | EffectSettingCollection.obj | retail, upstream name already matches, high
+// pdb locals: isize, itempStartSize, psetting, pnode, pheader, pform
 unsigned int EffectSettingCollection_GetKnownEffectsSaveSize()
 {
     unsigned int size = 0;

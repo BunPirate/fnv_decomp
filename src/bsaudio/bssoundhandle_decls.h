@@ -4,13 +4,14 @@
 
 class NiColor;
 
+// pdb: class SystemColorManager, size 0x10 (here 0x1), 2 members
 class SystemColorManager
 {
   public:
     class SystemColor
     {
       public:
-        void SystemColorManager_SystemColor_GetColor(NiColor&);
+        void GetColor(NiColor&);
     };
 
     SystemColor* Find(int);

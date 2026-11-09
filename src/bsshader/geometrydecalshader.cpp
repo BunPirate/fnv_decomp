@@ -149,11 +149,13 @@ class GeometryDecalShader : public BSShader
     PassReference m_pkPass2;
 
     GeometryDecalShader();
-    void UpdateShaderConstants();
+    void CreateConstantMaps();
     virtual void SetupPasses();
 };
 
 // @fnv 0x00bcbf00
+// pdb: GeometryDecalShader::GeometryDecalShader | GeometryDecalShader.obj | retail, upstream name already matches, high
+// pdb locals: ui
 GeometryDecalShader::GeometryDecalShader()
 {
     iShaderType = 12;
@@ -176,7 +178,10 @@ inline NiRefObject* LookupConstantMapEntry(NiD3DShaderConstantMap* map, const ch
 
 // Lazily creates two NiD3DShaderConstantMap objects, adds shader constants to them, and stores the resulting entries in m_pkPass0/1/2.
 // @fnv 0x00bcc2b0
-void GeometryDecalShader::UpdateShaderConstants()
+// src: XBOX_RETAIL_PDB 0x00bcc2b0
+// pdb: GeometryDecalShader::CreateConstantMaps | GeometryDecalShader.obj | retail, string-set bridge, high
+// pdb locals: uiConstantPoint4Flags, uiDefinedMatrixFlags
+void GeometryDecalShader::CreateConstantMaps()
 {
     if (!m_spPixelConstantMap.m_pObject)
     {
@@ -207,14 +212,16 @@ extern NiGPUProgram* DAT_012021e4;
 
 struct FUN_00bcbc90_shell
 {
-    NiGPUProgram* GeometryDecalShader_GetShaderDecl(void* obj, void* extra);
+    NiGPUProgram* GeometryDecalShader_GetShaderDecl(void* apGeometry, void* apProperty);
 };
 
 // @fnv 0x00bcbc90
 // src: XBOX_PDB 0x00bcbc90
-NiGPUProgram* __thiscall FUN_00bcbc90_shell::GeometryDecalShader_GetShaderDecl(void* obj, void* extra)
+// pdb: GeometryDecalShader::GetShaderDecl | GeometryDecalShader.obj | debug, upstream name already matches, high
+// pdb params: apGeometry, apProperty
+NiGPUProgram* __thiscall FUN_00bcbc90_shell::GeometryDecalShader_GetShaderDecl(void* apGeometry, void* apProperty)
 {
-    return *(NiGPUProgram**)((char*)obj + 0xbc) ? DAT_012021e4 : DAT_012021e0;
+    return *(NiGPUProgram**)((char*)apGeometry + 0xbc) ? DAT_012021e4 : DAT_012021e0;
 }
 
 extern NiGPUProgram* DAT_012021e0;
@@ -222,15 +229,16 @@ extern NiGPUProgram* DAT_012021e4;
 
 struct FUN_00bcbc70_shell : public GeometryDecalShader
 {
-    void __thiscall CreateDecalShaders();
+    void __thiscall GeometryDecalShader_LoadShaders();
     void __thiscall GeometryDecalShader_ReloadShaders();
 };
 
 // @fnv 0x00bcbc70
 // src: XBOX_PDB 0x00bcbc70
+// pdb: GeometryDecalShader::ReloadShaders | GeometryDecalShader.obj | retail, upstream name already matches, high
 void __thiscall FUN_00bcbc70_shell::GeometryDecalShader_ReloadShaders()
 {
-    CreateDecalShaders();
+    GeometryDecalShader_LoadShaders();
     void(__thiscall * fn)(FUN_00bcbc70_shell*) = *(void(__thiscall**)(FUN_00bcbc70_shell*))(*(char**)this + 0x13c);
     fn(this);
 }
@@ -242,11 +250,13 @@ struct FUN_00bcb210_shell
 };
 struct FUN_00bcc070_shell
 {
-    void* DestroyIfFlagged(unsigned int);
+    void* GeometryDecalShader_ScalarDtor(unsigned int);
 };
 // Calls FUN_00bcb210 on this, frees this with _delete when bit 0 of a is set, and returns this.
 // @fnv 0x00bcc070
-void* FUN_00bcc070_shell::DestroyIfFlagged(unsigned int a)
+// src: XBOX_RETAIL_PDB 0x00bcc070
+// pdb: GeometryDecalShader::`scalar deleting destructor' | GeometryDecalShader.obj | retail, object-file gap fill, high
+void* FUN_00bcc070_shell::GeometryDecalShader_ScalarDtor(unsigned int a)
 {
     ((FUN_00bcb210_shell*)this)->FUN_00bcb210();
     if (a & 1)
@@ -256,7 +266,7 @@ void* FUN_00bcc070_shell::DestroyIfFlagged(unsigned int a)
 
 struct FUN_00bcb4d0_shell : public GeometryDecalShader
 {
-    void CreateDecalShaders();
+    void GeometryDecalShader_LoadShaders();
 };
 
 struct ShaderSourceInfo
@@ -281,7 +291,10 @@ inline void AssignRef(PassReference& dst, const PassReference& src)
 }
 
 // @fnv 0x00bcb4d0
-void FUN_00bcb4d0_shell::CreateDecalShaders()
+// src: XBOX_RETAIL_PDB 0x00bcb4d0
+// pdb: GeometryDecalShader::LoadShaders | GeometryDecalShader.obj | retail, string-set bridge, high
+// pdb locals: PSbaseParam, ptempFName, ptarget, pcacheFName, VSbaseParam, VSbaseSParam
+void FUN_00bcb4d0_shell::GeometryDecalShader_LoadShaders()
 {
     char pTempFileName[260];
     const char* pPixelShaderProfile;
@@ -395,7 +408,7 @@ class IndexedD3DPass : public NiD3DPass
     void SetStage(unsigned int index, StageReturn* stage);
 };
 
-void __cdecl ConfigureBeamStage(StageReturn* pStage, int a, int b, int c, int d);
+void __cdecl ConfigureBeamStage(StageReturn* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 
 struct PtrPass
 {
@@ -447,6 +460,8 @@ struct DecalCls : public BSShader
 // Configures both passes: builds missing stages, assigns shaders, and sets map constants via SetNodeValue.
 // @fnv 0x00bcb7f0
 // src: COMMUNITY 0x00bcb7f0
+// pdb: GeometryDecalShader::PresetPasses | GeometryDecalShader.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void DecalCls::GeometryDecalShader_PresetPasses()
 {
     PtrPass spRenderPass;
@@ -642,7 +657,10 @@ inline void SetProgram(NiGPUProgram*& destination, NiGPUProgram* object)
 }
 // Builds two GPU programs with entry points, creates a GeometryDecalShader, initializes its passes, and binds the first program.
 // @fnv 0x00bcc0a0
-GeometryDecalShader* __cdecl CreateGeometryDecalShader()
+// src: XBOX_RETAIL_PDB 0x00bcc0a0
+// pdb: GeometryDecalShader::CreateShader | GeometryDecalShader.obj | retail, call graph, high
+// pdb locals: pshader
+GeometryDecalShader* __cdecl GeometryDecalShader_CreateShader()
 {
     SetProgram(DAT_012021e0, NiDX9ShaderDeclaration_Create(DAT_011f9508, 2, 1));
     SetProgram(DAT_012021e4, NiDX9ShaderDeclaration_Create(DAT_011f9508, 4, 1));
@@ -656,7 +674,7 @@ GeometryDecalShader* __cdecl CreateGeometryDecalShader()
     static_cast<ProgramView*>(DAT_012021e4)->Finish();
     GeometryDecalShader* shader = new GeometryDecalShader;
     shader->Initialize();
-    static_cast<FUN_00bcb4d0_shell*>(shader)->CreateDecalShaders();
+    static_cast<FUN_00bcb4d0_shell*>(shader)->GeometryDecalShader_LoadShaders();
     for (unsigned int i = 0; i < 2; ++i)
         NiD3DPass::CreateD3DPass(shader->m_spPasses[i]);
     shader->SetupPasses();
@@ -909,6 +927,9 @@ inline void fx_dispatch5c(Fx_Hook* h, Fx_Mgr* m, int l, int e, Fx_Param* a0, int
 }
 // Runs the sub-object, sets a global color from s->unkc0, stores 1-pow10(unkbc) and unk28, then dispatches hooks unk30 and unk34.
 // @fnv 0x00bcbce0
+// pdb: GeometryDecalShader::SetupGeometryConstants | GeometryDecalShader.obj | retail, object-file run extension, low
+// pdb params: apState
+// pdb locals: pgeometry, worldTransform, apRenderPass, pkGDProp, worldBound, pbufferData, pskin
 void Fx_Self::UpdateColorAndPower(Fx_Param* apParam)
 {
     Fx_Mgr* m = *DAT_011f91e0;

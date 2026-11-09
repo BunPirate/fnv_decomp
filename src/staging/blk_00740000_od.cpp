@@ -50,13 +50,14 @@ extern "C" void* DAT_01071aec;
 struct AX
 {
     void __thiscall BSSimpleArray_float_1024_InitialSetup(unsigned int, unsigned int);
-    AX* __thiscall BSSimpleArray_NiAVObject_1024_BSSimpleArray();
+    AX* __thiscall BSSimpleArray_NiAVObject_1024_ctor();
 };
 
 // Sets the object's vtable pointer to DAT_01071aec, calls FUN_006b3eb0(0, 0), and returns this.
 // @fnv 0x00753070
-// src: EXE 0x00753070
-AX* __thiscall AX::BSSimpleArray_NiAVObject_1024_BSSimpleArray()
+// src: XBOX_DEBUG_PDB 0x00753070
+// pdb: BSSimpleArray<NiAVObject *,1024>::BSSimpleArray<NiAVObject *,1024> | CaravanMenu.obj | debug, call graph (shared callers), high
+AX* __thiscall AX::BSSimpleArray_NiAVObject_1024_ctor()
 {
     *(void**)this = &DAT_01071aec;
     BSSimpleArray_float_1024_InitialSetup(0, 0);
@@ -74,6 +75,7 @@ struct GlobalObject_00869f00
 
 // @fnv 0x007530a0
 // src: GUESS 0x007530a0 (confidence: medium)
+// pdb: BSSimpleArray<NiAVObject *,1024>::~BSSimpleArray<NiAVObject *,1024> | CaravanMenu.obj | debug, call graph, medium
 void GlobalObject_00869f00::ResetVirtualTableAndClear_007530a0()
 {
     *reinterpret_cast<int**>(this) = &DAT_01071aec;
@@ -87,12 +89,13 @@ struct GlobalObject_00869f00
 {
     int* p;
     void Clear(bool);
-    void UpdateState_007530f0();
+    void BSSimpleArray_TESCaravanCard_1024_dtor();
 };
 
 // @fnv 0x007530f0
-// src: GUESS 0x007530f0 (confidence: low)
-void GlobalObject_00869f00::UpdateState_007530f0()
+// src: XBOX_DEBUG_PDB 0x007530f0
+// pdb: BSSimpleArray<TESCaravanCard *,1024>::~BSSimpleArray<TESCaravanCard *,1024> | CaravanMenu.obj | debug, call graph (shared callers), high
+void GlobalObject_00869f00::BSSimpleArray_TESCaravanCard_1024_dtor()
 {
     p = &DAT_01071b00;
     Clear(true);
@@ -110,6 +113,8 @@ extern void* DAT_01071b14;
 // Sets the object's vtable pointer to DAT_01071b14, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x00753110
 // src: GUESS 0x00753110 (confidence: low)
+// pdb: BSSimpleArray<CaravanAIPackage *,1024>::_Deallocate | CaravanMenu.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 AX* AX::SetVtableAndProcessState_00753110()
 {
     *reinterpret_cast<void**>(this) = &DAT_01071b14;
@@ -132,6 +137,7 @@ struct FUN_00753210Class
 };
 // @fnv 0x00753210
 // src: GUESS 0x00753210 (confidence: low)
+// pdb: BSSimpleArray<CaravanAIPackage *,1024>::~BSSimpleArray<CaravanAIPackage *,1024> | CaravanMenu.obj | debug, object-file run extension, low
 void __thiscall FUN_00753210Class::UpdateState_00753210()
 {
     p = &DAT_01071b14;
@@ -147,6 +153,8 @@ struct FUN_00754a00_cls
 
 // @fnv 0x00754930
 // src: XBOX_PDB 0x00754930
+// pdb: ListBox<enum ActorValue::Index>::ToggleSelection | CharGenMenu.obj | debug, object-file run extension, low
+// pdb params: apSelectItem
 void __thiscall FUN_00754a00_cls::ListBox_enum_ActorValue_Index_ToggleSelection(int a1)
 {
     SetTraitSelected(a1, 2);
@@ -184,6 +192,7 @@ struct S007530c0
 // Sets the vtable pointer to DAT_01071b00, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x007530c0
 // src: EXE 0x007530c0
+// pdb: BSSimpleArray<TESCaravanCard *,1024>::BSSimpleArray<TESCaravanCard *,1024> | CaravanMenu.obj | debug, object-file run extension, low
 S007530c0* __thiscall S007530c0::BSSimpleArray_TESCaravanCard_1024_BSSimpleArray()
 {
     *(int*)this = (int)&DAT_01071b00;
@@ -201,6 +210,8 @@ struct FUN_0072ba80_shell
 };
 // @fnv 0x00753140
 // src: GUESS 0x00753140 (confidence: medium)
+// pdb: BSSimpleArray<CaravanAIPackage *,1024>::_Reallocate | CaravanMenu.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 void __thiscall FUN_0072ba80_shell::RemoveLastArrayElement()
 {
     if (m_uiItemCount == 0)
@@ -218,6 +229,7 @@ struct FUN_00753180_Class
 };
 
 // @fnv 0x00753180
+// pdb: BSSimpleArray<NiAVObject *,1024>::`scalar deleting destructor' | CaravanMenu.obj | retail, vtable slot, high
 void* __thiscall FUN_00753180_Class::FUN_00753180(unsigned int flags)
 {
     ResetVirtualTableAndClear_007530a0();
@@ -232,9 +244,10 @@ struct FUN_007531b0_Class
     void* __thiscall FUN_007531b0(unsigned int);
 };
 // @fnv 0x007531b0
+// pdb: BSSimpleArray<TESCaravanCard *,1024>::`scalar deleting destructor' | CaravanMenu.obj | retail, vtable slot, high
 void* __thiscall FUN_007531b0_Class::FUN_007531b0(unsigned int flags)
 {
-    ((GlobalObject_00869f00*)this)->UpdateState_007530f0();
+    ((GlobalObject_00869f00*)this)->BSSimpleArray_TESCaravanCard_1024_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -250,6 +263,7 @@ struct FUN_007531e0_Class
     void* __thiscall FUN_007531e0(unsigned int flags);
 };
 // @fnv 0x007531e0
+// pdb: BSSimpleArray<CaravanAIPackage *,1024>::`scalar deleting destructor' | CaravanMenu.obj | retail, vtable slot, high
 void* __thiscall FUN_007531e0_Class::FUN_007531e0(unsigned int flags)
 {
     ((FUN_00753210_Class*)this)->UpdateState_00753210();
@@ -258,16 +272,19 @@ void* __thiscall FUN_007531e0_Class::FUN_007531e0(unsigned int flags)
     return this;
 }
 
+// pdb: class AnimatingText, size 0x2c (here 0x8), 11 members
 struct AnimatingText : public StrMem
 {
-    AnimatingText(const char* s);
+    AnimatingText(const char* apString);
     AnimatingText* AssignString(const char*);
 };
 // @fnv 0x00759eb0
-AnimatingText::AnimatingText(const char* s)
+// pdb: AnimatingText::AnimatingText | ComputersMenu.obj | retail, upstream name already matches, high
+// pdb params: apString
+AnimatingText::AnimatingText(const char* apString)
 {
     AnimatingText_Initialize();
-    AssignString(s);
+    AssignString(apString);
 }
 struct TileProcessor
 {
@@ -290,7 +307,7 @@ void FUN_00759470_Class::UpdateNoteDisplay(BGSNote* pNote)
         ((Tile*)*((int*)this + 0x11))->Set(0xfa3, 0);
         ((Tile*)*((int*)this + 0x19))->Set(0xfa3, 0);
     }
-    ((Tile*)*((int*)this + 0xc))->Set(0xfcc, reinterpret_cast<TESFullName*>(pNote->GetNoteTexture())->GetFullName(), true);
+    ((Tile*)*((int*)this + 0xc))->Set(0xfcc, reinterpret_cast<TESFullName*>(pNote->GetNoteImage())->GetFullName(), true);
 }
 
 
@@ -311,13 +328,15 @@ struct FUN_00759330 : public BSStringT<char>
 };
 
 // @fnv 0x00759330
-FUN_00759330::FUN_00759330(int aiWidth, int aiHeight, int s, int aiExtra, char c)
+// pdb: Font::TextData::TextData | ComputersMenu.obj | debug, call graph (shared callers), high
+// pdb params: w, h, s, e, c
+FUN_00759330::FUN_00759330(int w, int h, int s, int e, char c)
 {
     this->BSStringT<char>::operator=($SG3295);
-    m_w = aiWidth;
-    m_h = aiHeight;
+    m_w = w;
+    m_h = h;
     m_s = s;
-    m_usTrailingValue = aiExtra;
+    m_usTrailingValue = e;
     m_zero = 0;
     m_iThirdValue = c;
 }
@@ -340,6 +359,9 @@ struct FUN_00752cb0_cls
 // Counts up to 7 slots whose FUN_0044ddc0 value is positive and whose FUN_008d80e0 result equals a2, returning the count multiplied by a2.
 // @fnv 0x00752cb0
 // src: GUESS 0x00752cb0 (confidence: low)
+// pdb: CaravanMenu::GetValueOfCardValueInTrack | CaravanMenu.obj | debug, object-file run extension, low
+// pdb params: aiTrack, aiCardValue
+// pdb locals: iRow, iReturnValue
 int __thiscall FUN_00752cb0_cls::ProcessEntries_00752cb0(int aiGroupIndex, int aiMatchValue)
 {
     int i = 0;
@@ -401,6 +423,7 @@ class FUN_0075b0d0 : public Menu
 };
 
 // @fnv 0x0075b0d0
+// pdb: ContainerMenu::ContainerMenu | ContainerMenu.obj | debug, call graph, medium
 FUN_0075b0d0::FUN_0075b0d0()
 {
     DAT_011d93fc = 0;
@@ -463,6 +486,7 @@ class FUN_0075f070 : public Menu
 
 // Initializes the menu's fields to zero/default values, assigns g_defaultImageSpaceParam to unk50, and resets g_menuGlobalState to 0.
 // @fnv 0x0075f070
+// pdb: CreditsMenu::CreditsMenu | CreditsMenu.obj | debug, call graph, medium
 FUN_0075f070::FUN_0075f070() : unk30(0), unk50(0.0f, 0.0f, 0.0f, 0.0f)
 {
     unk28 = 0;
@@ -564,6 +588,9 @@ struct FUN_00752d40_cls
 // Counts, over the filled slots of a group, the sum returned by FUN_008d80e0 for slots whose first entry's FUN_004036b0 equals type.
 // @fnv 0x00752d40
 // src: COMMUNITY 0x00752d40
+// pdb: CaravanMenu::GetValueOfCardSuitInTrack | CaravanMenu.obj | debug, object-file run extension, low
+// pdb params: aiTrack, aiCardSuit
+// pdb locals: iRow, iReturnValue
 int __thiscall FUN_00752d40_cls::CaravanMenu_GetSumCardsB44WithSuit(int group, int type)
 {
     int i = 0;
@@ -612,6 +639,8 @@ struct FUN_00759f90 : public Base759f90, public BSSimpleList<int*>
 void __cdecl RegisterMenu759f90(FUN_00759f90* menu);
 
 // @fnv 0x00759f90
+// pdb: ListBox<TERMINAL_MENU_ITEM *>::NumUnfiltered | ComputersMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ListBox<TERMINAL_MENU_ITEM *>::ListBox<TERMINAL_MENU_ITEM *>
 FUN_00759f90::FUN_00759f90()
 {
     unk14 = 0;
@@ -1369,7 +1398,7 @@ struct CaravanOwner : Menu
     int GetRowValue(int, int);
     int ProcessEntries_00752cb0(int, int);
     int CaravanMenu_GetSumCardsB44WithSuit(int, int);
-    bool CanPlaceCard(int, int, unsigned int, bool);
+    bool CaravanMenu_IsValidCardPlacement(int, int, unsigned int, bool);
     CaravanDecision CaravanMenu_ProcessAI();
 };
 typedef char CaravanDecisionSize[(sizeof(CaravanDecision) == 28) ? 1 : -1];
@@ -1377,6 +1406,8 @@ typedef char CaravanArraySize[(sizeof(PointerArray) == 16) ? 1 : -1];
 typedef char CaravanChoicesSize[(sizeof(FUN_00753110) == 16) ? 1 : -1];
 // @fnv 0x0074fdc0
 // src: COMMUNITY 0x0074fdc0
+// pdb: CaravanMenu::ProcessAI | CaravanMenu.obj | retail, upstream name already matches, high
+// pdb locals: pcg, aiPackage, highestpriority, highestindex, index, returnPackage, aiPackageList, i, cPackage, facecardindex, numcards, numcardindex, hicards, lowcards, ivalue, idistance, iTrack, total, iDeckCard, iRow, ival, faceValue, diff, iSize ...
 CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
 {
     unsigned int local_188Value2;
@@ -1743,7 +1774,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                                                   laneTotals[local_a8Value19].total;
 
                                 if (((this->CompareToTwentyOneToTwentySix(local_b8Value45)) < 1) &&
-                                    ((this->CanPlaceCard(local_a8Value19, local_b4Value16, local_b0Value32, true))))
+                                    ((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_b4Value16, local_b0Value32, true))))
                                 {
                                     currentValue29->total = local_b8Value45;
 
@@ -1779,7 +1810,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                             laneTotals[local_a8Value19].total;
 
                         if (((this->CompareToTwentyOneToTwentySix(local_bcValue3)) < 1) &&
-                            ((this->CanPlaceCard(local_a8Value19, local_c0Value21, local_b0Value32, true))))
+                            ((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_c0Value21, local_b0Value32, true))))
                         {
                             currentValue29->total = local_bcValue3;
 
@@ -1841,7 +1872,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                                                 currentValue29->FUN_00984f60(local_dcValue4 + 0x4b);
                                             }
 
-                                            if ((this->CanPlaceCard(local_a8Value19, local_d0Value6, local_c4Value23,
+                                            if ((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_d0Value6, local_c4Value23,
                                                                     true)))
                                             {
                                                 currentValue29->total = local_acValue61;
@@ -1870,7 +1901,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                                         if (local_e8Value5 == 0)
                                             break;
 
-                                        if (!((this->CanPlaceCard(local_a8Value19, local_e0Value0, local_c4Value23,
+                                        if (!((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_e0Value0, local_c4Value23,
                                                                   true))))
                                             continue;
 
@@ -1914,7 +1945,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                                                                        laneTotals[(5 - local_a8Value19)].total) -
                                                                       laneLossValue16[5 - local_a8Value19];
                                             if ((0 < removedAdvantageValue23) &&
-                                                ((this->CanPlaceCard(local_a8Value19, local_e0Value0, local_c4Value23,
+                                                ((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_e0Value0, local_c4Value23,
                                                                      true))))
                                             {
                                                 currentValue29->FUN_00984f60(removedAdvantageValue23 + 0x32);
@@ -2033,7 +2064,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                                                                             candidateScoreValue10;
                                                 }
                                                 if ((0 < candidateScoreValue10) &&
-                                                    ((this->CanPlaceCard(local_a8Value19, local_e0Value0,
+                                                    ((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_e0Value0,
                                                                          local_c4Value23, true))))
                                                 {
                                                     currentValue29->FUN_00984f60(candidateScoreValue10);
@@ -2080,7 +2111,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                                     currentValue29->FUN_00403550(0);
                                 }
 
-                                if ((this->CanPlaceCard(local_a8Value19, local_130Value0, local_c4Value23, true)))
+                                if ((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_130Value0, local_c4Value23, true)))
                                 {
                                     currentValue29->total = local_12cValue4;
 
@@ -2121,7 +2152,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
 
                                         if (((this->CompareToTwentyOneToTwentySix(local_acValue61 +
                                                                                   local_144Value42 * 2)) < 1) &&
-                                            ((this->CanPlaceCard(local_a8Value19, local_140Value41, local_138Value1,
+                                            ((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_140Value41, local_138Value1,
                                                                  true))))
                                         {
                                             currentValue29->total = local_acValue61 + local_144Value42 * 2;
@@ -2150,7 +2181,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                                 }
                                 currentValue29->FUN_00437730(local_148Value2);
 
-                                if (!((this->CanPlaceCard(local_a8Value19, local_148Value2, local_138Value1, true))))
+                                if (!((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_148Value2, local_138Value1, true))))
                                     continue;
                                 if (((this->CompareToTwentyOneToTwentySix(local_13cValue13 +
                                                                           laneTotals[local_a8Value19].total)) < 1))
@@ -2193,7 +2224,7 @@ CaravanDecision CaravanOwner::CaravanMenu_ProcessAI()
                                     currentValue29->FUN_00437730(local_154Value1);
                                     local_158Value12 = this->GetRowValue(local_a8Value19, local_154Value1);
                                     if ((local_acValue61 - local_158Value12 < 0x1b) &&
-                                        ((this->CanPlaceCard(local_a8Value19, local_154Value1, local_14cValue41,
+                                        ((this->CaravanMenu_IsValidCardPlacement(local_a8Value19, local_154Value1, local_14cValue41,
                                                              true))))
                                     {
                                         currentValue29->total = local_acValue61 - local_158Value12;

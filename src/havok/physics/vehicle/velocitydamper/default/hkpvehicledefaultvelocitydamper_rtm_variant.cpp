@@ -13,20 +13,23 @@ extern double DAT_01012060;
 class FnvVehicleState
 {
   public:
-    void hkpRigidBody_setAngularVelocity(const hkVector4* value);
+    void hkpRigidBody_setAngularVelocity(const hkVector4* newVel);
 };
 
 class FnvVehicleDefaultVelocityDamper : public hkpVehicleDefaultVelocityDamper
 {
   public:
-    void hkpVehicleDefaultVelocityDamper_applyVelocityDamping(float timeStep, const void* data);
+    void hkpVehicleDefaultVelocityDamper_applyVelocityDamping(float deltaTime, const void* vehicle);
 };
 
 // @fnv 0x00e43ae0
 // src: HAVOK_SRC 0x00e43ae0
-void __thiscall FnvVehicleDefaultVelocityDamper::hkpVehicleDefaultVelocityDamper_applyVelocityDamping(float timeStep, const void* data)
+// pdb: hkpVehicleDefaultVelocityDamper::applyVelocityDamping | hkpVehicleDefaultVelocityDamper.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, vehicle
+// pdb locals: exp_time, newAngVel
+void __thiscall FnvVehicleDefaultVelocityDamper::hkpVehicleDefaultVelocityDamper_applyVelocityDamping(float deltaTime, const void* vehicle)
 {
-    const char* dataBase = reinterpret_cast<const char*>(data);
+    const char* dataBase = reinterpret_cast<const char*>(vehicle);
     const float* state = *reinterpret_cast<const float* const*>(dataBase + 0x18);
 
     __declspec(align(16)) hkVector4 values;
@@ -44,12 +47,12 @@ void __thiscall FnvVehicleDefaultVelocityDamper::hkpVehicleDefaultVelocityDamper
     __m128 sum2 = _mm_shuffle_ps(squares, squares, 0xAA);
     sum2 = _mm_add_ss(sum2, sum01);
 
-    float threshold2 = this->m_fCollisionThreshold * this->m_fCollisionThreshold;
+    float threshold2 = this->m_collisionThreshold * this->m_collisionThreshold;
     float factor;
     if (_mm_cvtss_f32(sum2) > threshold2)
-        factor = 1.0f - this->m_fCollisionSpinDamping * timeStep;
+        factor = 1.0f - this->m_collisionSpinDamping * deltaTime;
     else
-        factor = 1.0f - this->m_fSpinDamping * timeStep;
+        factor = 1.0f - this->m_normalSpinDamping * deltaTime;
     factor = (float)((factor < DAT_01012060) ? 0.0 : (double)factor);
 
     const float& fr = factor;

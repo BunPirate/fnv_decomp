@@ -39,7 +39,7 @@ class SoundResult
 class SoundSystem
 {
   public:
-    SoundResult BSAudioManager_InitSoundPath(int a, int b, int c);
+    SoundResult BSAudioManager_GetSoundHandleByFilename(int apFilename, int aiTypeFlags, int apSettingsContext);
 };
 
 SoundSystem* BSAudioManager_QInstance_00ad9060();
@@ -47,13 +47,16 @@ SoundSystem* BSAudioManager_QInstance_00ad9060();
 class SoundWrapper
 {
   public:
-    SoundResult BSAudio_GetSoundHandleByFilename(int a, int b, int c);
+    SoundResult BSAudio_GetSoundHandleByFilename(int apFilename, int aiTypeFlags, int apSettingsContext);
 };
 
 // @fnv 0x00ad7480
 // src: COMMUNITY 0x00ad7480
-SoundResult SoundWrapper::BSAudio_GetSoundHandleByFilename(int a, int b, int c)
+// pdb: BSAudio::GetSoundHandleByFilename | BSAudio.obj | retail, upstream name already matches, high
+// pdb params: apFilename, aiTypeFlags, apSettingsContext
+// pdb locals: tempMemContext
+SoundResult SoundWrapper::BSAudio_GetSoundHandleByFilename(int apFilename, int aiTypeFlags, int apSettingsContext)
 {
     MemContextGuard kGuard(11);
-    return BSAudioManager_QInstance_00ad9060()->BSAudioManager_InitSoundPath(a, b, c);
+    return BSAudioManager_QInstance_00ad9060()->BSAudioManager_GetSoundHandleByFilename(apFilename, aiTypeFlags, apSettingsContext);
 }

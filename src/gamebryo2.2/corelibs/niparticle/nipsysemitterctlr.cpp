@@ -22,7 +22,7 @@ class LocalNiFloatInterpolator : public NiInterpolator
 {
 public:
     LocalNiFloatInterpolator(NiFloatData* data) throw();
-    void SetAnimationKeys(void* keys, unsigned int count, unsigned int keyType);
+    void SetAnimationKeys(void* pkKeys, unsigned int uiNumKeys, unsigned int eType);
 };
 #include "nipsysemitterctlr_external.h"
 #include "../../../../include/NiBoolData.h"
@@ -61,38 +61,44 @@ inline void NiInterpolator::DecRefCount()
 }
 
 // @fnv 0x00c1bdf0
-void NiPSysEmitterCtlr::LoadBinary(NiStream& stream)
+// pdb: NiPSysEmitterCtlr::LoadBinary | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysEmitterCtlr::LoadBinary(NiStream& kStream)
 {
-    NiPSysModifierCtlr::LoadBinary(stream);
-    stream.ResetStreamState();
+    NiPSysModifierCtlr::LoadBinary(kStream);
+    kStream.ResetStreamState();
 }
 
 // Calls the base ProcessClone, then clones the interpolator stored in the member if it is non-null.
 // @fnv 0x00c1bdc0
-void NiPSysEmitterCtlr::ProcessClone(CloningProcess& process)
+// pdb: NiPSysEmitterCtlr::ProcessClone | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+void NiPSysEmitterCtlr::ProcessClone(CloningProcess& kCloning)
 {
-    NiPSysModifierCtlr::ProcessClone(process);
-    NiInterpolator* interpolator = m_spVisibilityInterpolator.m_pObject;
+    NiPSysModifierCtlr::ProcessClone(kCloning);
+    NiInterpolator* interpolator = m_spEmitterActiveInterpolator.m_pObject;
     if (interpolator)
-        interpolator->ProcessClone(process);
+        interpolator->ProcessClone(kCloning);
 }
 
 // @fnv 0x00c1bd30
+// pdb: NiPSysEmitterCtlr::CopyMembers | NiPSysEmitterCtlr.obj | debug, call graph, medium
+// pdb params: pkDest, kCloning
 void NiPSysEmitterCtlr::CopyMemberData(NiPSysEmitterCtlr* destination, CloningProcess& arProcess)
 {
     NiPSysModifierCtlr::CopyMemberData(destination, arProcess);
 
-    NiInterpolator* source = m_spVisibilityInterpolator.m_pObject;
+    NiInterpolator* source = m_spEmitterActiveInterpolator.m_pObject;
     if (source)
     {
         NiInterpolator* cloned = static_cast<NiInterpolator*>(source->MakeClone(arProcess));
 
-        NiInterpolator* oldInterpolator = destination->m_spVisibilityInterpolator.m_pObject;
+        NiInterpolator* oldInterpolator = destination->m_spEmitterActiveInterpolator.m_pObject;
         if (oldInterpolator != cloned)
         {
             if (oldInterpolator)
                 oldInterpolator->DecRefCount();
-            destination->m_spVisibilityInterpolator.m_pObject = cloned;
+            destination->m_spEmitterActiveInterpolator.m_pObject = cloned;
             if (cloned)
                 cloned->IncRefCount();
         }
@@ -103,13 +109,16 @@ void NiPSysEmitterCtlr::CopyMemberData(NiPSysEmitterCtlr* destination, CloningPr
 }
 
 // @fnv 0x00c1c0e0
-void NiPSysEmitterCtlr::LinkObject(NiStream& stream)
+// pdb: NiPSysEmitterCtlr::LinkObject | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: spData, uiNumKeys, pkFloatInterp, eEmitterActiveKeyType, pkBirthRateKeys, pkBoolInterp, eBirthRateKeyType, ucSize, pkEmitterActiveKeys
+void NiPSysEmitterCtlr::LinkObject(NiStream& kStream)
 {
-    NiPSysModifierCtlr::LinkObject(stream);
+    NiPSysModifierCtlr::LinkObject(kStream);
 
-    if (stream.m_uiNifFileVersion < 0x0a010068)
+    if (kStream.m_uiNifFileVersion < 0x0a010068)
     {
-        NiObject* data = stream.GetLoadedObject();
+        NiObject* data = kStream.GetLoadedObject();
         if (!data)
             return;
 
@@ -149,46 +158,48 @@ void NiPSysEmitterCtlr::LinkObject(NiStream& stream)
     if ((m_uiObjectFlags & 0x6) == 0 && m_fPhase == 0.0f)
         m_fPhase = GetRandomNumber() / DAT_01029790 * DAT_01017a40;
 
-    NiInterpolator* active = static_cast<NiInterpolator*>(stream.GetLoadedObject());
-    NiInterpolator* old = m_spVisibilityInterpolator.m_pObject;
+    NiInterpolator* active = static_cast<NiInterpolator*>(kStream.GetLoadedObject());
+    NiInterpolator* old = m_spEmitterActiveInterpolator.m_pObject;
     if (old != active)
     {
         if (old)
             old->DecRefCount();
-        m_spVisibilityInterpolator.m_pObject = active;
+        m_spEmitterActiveInterpolator.m_pObject = active;
         if (active)
             active->IncRefCount();
     }
 }
 
 // Constructor entry points not yet declared by the shared controller headers.
-void __fastcall ConstructInterpController(NiInterpController* controller) throw();
+void __fastcall NiInterpController_ctor(NiInterpController* controller) throw();
 extern void* kVtbl_NiSingleInterpController;
 
 // @fnv 0x00a38e00
+// pdb: NiSingleInterpController::NiSingleInterpController | NiSingleInterpController.obj | retail, call graph, medium
 NiSingleInterpController* __fastcall ConstructSingleInterpController(NiSingleInterpController* controller)
 {
-    ConstructInterpController(controller);
+    NiInterpController_ctor(controller);
     *(void**)controller = &kVtbl_NiSingleInterpController;
-    controller->m_spControllerInterpolator.m_pObject = 0;
+    controller->m_spInterpolator.m_pObject = 0;
     return controller;
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f4054;
+extern GlobalObjectO2_00a7b610 NiBoolData_ms_RTTI;
 // Returns the address of the global object g_011f4054.
 // @fnv 0x00a537e0
 // src: COMMUNITY 0x00a537e0
 void* __cdecl NiBoolData_GetRTTI()
 {
-    return &g_011f4054;
+    return &NiBoolData_ms_RTTI;
 }
 
 // @fnv 0x00c1ba30
 // src: XBOX_PDB 0x00c1ba30
+// pdb: NiPSysEmitterCtlr::Stop | NiPSysEmitterCtlr.obj | debug, upstream name already matches, high
 void __fastcall NiPSysEmitterCtlr_Stop(NiPSysEmitterCtlr* self, int unused)
 {
-    self->m_fScaledLastTime = DAT_01015f5c;
+    self->m_fLastScaledTime = DAT_01015f5c;
     self->NiTimeController::Stop();
 }
 
@@ -205,6 +216,8 @@ extern int DAT_011ae758;
 
 // @fnv 0x00c1ba50
 // src: XBOX_PDB 0x00c1ba50
+// pdb: NiPSysEmitterCtlr::GetInterpolatorID | NiPSysEmitterCtlr.obj | debug, upstream name already matches, high
+// pdb params: usIndex
 const char* const* __stdcall NiPSysEmitterCtlr_GetInterpolatorID(unsigned short usIndex)
 {
     if (usIndex == 0)
@@ -216,6 +229,8 @@ const char* const* __stdcall NiPSysEmitterCtlr_GetInterpolatorID(unsigned short 
 
 // Stores pkInterpolator into the interpolator slot at offset 0x34 (ref-counted) when usIndex is 0, or at offset 0x40 when usIndex is 1.
 // @fnv 0x00c1bcc0
+// pdb: NiPSysEmitterCtlr::SetInterpolator | NiPSysEmitterCtlr.obj | debug, upstream name already matches, high
+// pdb params: pkInterpolator, usIndex
 void NiPSysEmitterCtlr::SetInterpolator(NiInterpolator* pkInterpolator, unsigned short usIndex)
 {
     if (usIndex == 0)
@@ -245,7 +260,7 @@ void __cdecl _delete(void*, unsigned int);
 // @fnv 0x00a53a10
 void* NiBoolData::Destroy(unsigned int auiFlags)
 {
-    void* keys = m_pKeyArray;
+    void* keys = m_pkKeys;
     *(void**)this = (void*)&DAT_0109a1d4;
     if (keys)
         g_memoryManager.Deallocate((char*)keys - 4);
@@ -259,11 +274,13 @@ extern "C" int __cdecl NiStricmp(const char*, const char*);
 extern const unsigned short DAT_NiInterpController_INVALID_INDEX;
 // Compares pcID against two strings and returns 0, 1, or DAT_NiInterpController_INVALID_INDEX when neither matches.
 // @fnv 0x00c1ba80
-unsigned short __stdcall GetInterpControllerIndex(const char* pcControllerID)
+// pdb: NiPSysEmitterCtlr::GetInterpolatorIndex | NiPSysEmitterCtlr.obj | retail, vtable slot, high
+// pdb params: pcID
+unsigned short __stdcall GetInterpControllerIndex(const char* pcID)
 {
-    if (NiStricmp(pcControllerID, (const char*)DAT_011ae754) == 0)
+    if (NiStricmp(pcID, (const char*)DAT_011ae754) == 0)
         return 0;
-    if (NiStricmp(pcControllerID, (const char*)DAT_011ae758) == 0)
+    if (NiStricmp(pcID, (const char*)DAT_011ae758) == 0)
         return 1;
     return DAT_NiInterpController_INVALID_INDEX;
 }
@@ -273,16 +290,18 @@ struct S1
     void* FUN_00a3c390(float);
 };
 // @fnv 0x00c1bad0
-NiInterpolator* __stdcall CreateInterpolatorByIndex(unsigned short usInterpolatorIndex)
+// pdb: NiPSysEmitterCtlr::CreatePoseInterpolator | NiPSysEmitterCtlr.obj | retail, vtable slot, high
+// pdb params: usIndex
+NiInterpolator* __stdcall CreateInterpolatorByIndex(unsigned short usIndex)
 {
-    if (usInterpolatorIndex == 0)
+    if (usIndex == 0)
     {
         void* p = BSFadeNode::operator new(0x18);
         if (!p)
             return 0;
         return (NiInterpolator*)((S1*)p)->FUN_00a3c390(0.0f);
     }
-    if (usInterpolatorIndex == 1)
+    if (usIndex == 1)
     {
         void* p = BSFadeNode::operator new(0x18);
         if (!p)
@@ -303,6 +322,7 @@ struct S_00c1bb90
 };
 // Returns the cached float at offset 0x20 when the flag at 0xE is 1 and a matches the byte at 0xF, otherwise the float from the array at 0x14 indexed by a.
 // @fnv 0x00c1bb90
+// pdb: NiBoolData::NiBoolData | NiPSysEmitterCtlr.obj | retail, object-file run extension, low
 float S_00c1bb90::GetValueForIndex(unsigned char a)
 {
     if (*(unsigned char*)((char*)this + 0xE) == 1 && a == *(unsigned char*)((char*)this + 0xF))
@@ -312,23 +332,27 @@ float S_00c1bb90::GetValueForIndex(unsigned char a)
 
 // Returns the NiInterpolator pointer stored at offset 0x34 for index 0, at 0x40 for index 1, otherwise null.
 // @fnv 0x00c1bc90
+// pdb: NiPSysEmitterCtlr::GetInterpolator | NiPSysEmitterCtlr.obj | debug, vtable slot, medium
+// pdb params: usIndex
 NiInterpolator* __fastcall GetEmitterInterpolator(NiPSysEmitterCtlr* self, int unused, unsigned short usIndex)
 {
     if (usIndex == 0)
-        return self->m_spControllerInterpolator.m_pObject;
+        return self->m_spInterpolator.m_pObject;
     if (usIndex == 1)
-        return self->m_spVisibilityInterpolator.m_pObject;
+        return self->m_spEmitterActiveInterpolator.m_pObject;
     return 0;
 }
 
 bool __stdcall FUN_00a57780(NiStream& kStream);
 // Calls FUN_00a57780, then if the interpolator at offset 0x40 is non-null, registers its streamables with kStream; returns true.
 // @fnv 0x00c1be10
+// pdb: NiPSysEmitterCtlr::RegisterStreamables | NiPSysEmitterCtlr.obj | retail, object-file gap fill, high
+// pdb params: kStream
 bool __fastcall RegisterEmitterInterpolatorStreamables(NiPSysEmitterCtlr* self, int unused, NiStream& kStream)
 {
     if (!FUN_00a57780(kStream))
         return false;
-    NiInterpolator* pkEmitter = self->m_spVisibilityInterpolator.m_pObject;
+    NiInterpolator* pkEmitter = self->m_spEmitterActiveInterpolator.m_pObject;
     if (pkEmitter)
         pkEmitter->RegisterStreamables(kStream);
     return true;
@@ -338,10 +362,12 @@ bool __fastcall RegisterEmitterInterpolatorStreamables(NiPSysEmitterCtlr* self, 
 void SaveModifierCtlrBinary();
 
 // @fnv 0x00c1be40
+// pdb: NiPSysEmitterCtlr::SaveBinary | NiPSysEmitterCtlr.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void __fastcall SaveEmitterBinary(NiPSysEmitterCtlr* self, int unused, NiStream& kStream)
 {
     reinterpret_cast<void(__thiscall*)(NiPSysModifierCtlr*, NiStream&)>(&SaveModifierCtlrBinary)(self, kStream);
-    kStream.SaveLinkID(self->m_spVisibilityInterpolator.m_pObject);
+    kStream.SaveLinkID(self->m_spEmitterActiveInterpolator.m_pObject);
 }
 
 void* __cdecl _NiMalloc(unsigned int);
@@ -355,6 +381,8 @@ struct FloatSetOperations : NiTPrimitiveSet_float_
 
 // Resizes the float storage while preserving the used elements.
 // @fnv 0x00c1beb0
+// pdb: NiBoolInterpolator::ReplaceKeys | NiPSysEmitterCtlr.obj | retail, object-file run extension, low
+// pdb params: pkKeys, eType, uiNumKeys
 void FloatSetOperations::Reallocate(unsigned int uiNewCapacity)
 {
     if (uiNewCapacity == m_uiElementCount)
@@ -394,11 +422,13 @@ struct EmitterTargetCheck : NiPSysEmitterCtlr
 // Checks FUN_00a38df0, resolves a modifier via reinterpret_cast<B00c1bff0*>(m_pkTarget)->FUN_00c1b0f0(&m_kTargetModifierName), then scans its RTTI chain for g_01202500_arg1 and returns whether it is found.
 // @fnv 0x00c1bff0
 // src: XBOX_PDB 0x00c1bff0
+// pdb: NiPSysEmitterCtlr::TargetIsRequiredType | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkModifier
 bool EmitterTargetCheck::NiPSysEmitterCtlr_TargetIsRequiredType()
 {
     if (!CheckSingleInterpTarget(this))
         return false;
-    M00c1bff0* pkModifier = (M00c1bff0*)reinterpret_cast<B00c1bff0*>(m_pkTarget)->FUN_00c1b0f0(&m_kTargetModifierName);
+    M00c1bff0* pkModifier = (M00c1bff0*)reinterpret_cast<B00c1bff0*>(m_pkTarget)->FUN_00c1b0f0(&m_kModifierName);
     if (!pkModifier)
         return false;
     void* pRttiEntry = pkModifier->v2();
@@ -432,8 +462,8 @@ struct EmitterRelease : NiPSysEmitterCtlr
 // @fnv 0x00c1c300
 void EmitterRelease::Release()
 {
-    _NiFreeAlias(m_kBirthRateKeys.m_pBase);
-    NiInterpolator* p = m_spVisibilityInterpolator.m_pObject;
+    _NiFreeAlias(m_kParticleAges.m_pBase);
+    NiInterpolator* p = m_spEmitterActiveInterpolator.m_pObject;
     if (p)
         p->DecRefCount();
     DestroyModifierCtlr(this);
@@ -449,8 +479,8 @@ struct EmitterDestroy : NiPSysEmitterCtlr
 // @fnv 0x00c1c340
 void* EmitterDestroy::ReleaseAndMaybeDelete(unsigned int flag)
 {
-    _NiFreeAlias(m_kBirthRateKeys.m_pBase);
-    NiObject* pk = m_spVisibilityInterpolator.m_pObject;
+    _NiFreeAlias(m_kParticleAges.m_pBase);
+    NiObject* pk = m_spEmitterActiveInterpolator.m_pObject;
     if (pk)
         pk->DecRefCount();
     DestroyModifierCtlr(this);
@@ -487,6 +517,9 @@ struct Holder00c2b7d0
 // Checks the target via IsTargetParticleSystem, resolves a modifier from this+0x38, then walks its RTTI base chain looking for g_01202500_arg1.
 // @fnv 0x00c2b7d0
 // src: XBOX_PDB 0x00c2b7d0
+// pdb: NiPSysEmitterCtlr::InterpTargetIsCorrectType | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkTarget
+// pdb locals: pkModifier
 bool Holder00c2b7d0::NiPSysEmitterCtlr_InterpTargetIsCorrectType(void* pkTarget)
 {
     void* pkModifier;
@@ -508,10 +541,12 @@ bool Holder00c2b7d0::NiPSysEmitterCtlr_InterpTargetIsCorrectType(void* pkTarget)
 }  // namespace fnv_00c2b7d0
 
 // @fnv 0x00c1bbc0
+// pdb: NiPSysEmitterCtlr::GuaranteeTimeRange | NiPSysEmitterCtlr.obj | retail, vtable slot, high
+// pdb params: fStartTime, fEndTime
 void __fastcall SetEmitterActiveTimeRange(NiPSysEmitterCtlr* self, int unused, float afValue1, float afValue2)
 {
     self->NiSingleInterpController::SetActiveTimeRange(afValue1, afValue2);
-    NiInterpolator* pk = self->m_spVisibilityInterpolator.m_pObject;
+    NiInterpolator* pk = self->m_spEmitterActiveInterpolator.m_pObject;
     if (pk)
         pk->SetActiveTimeRange(afValue1, afValue2);
 }
@@ -532,17 +567,19 @@ struct FUN_00a56560_shell
 // Allocates a 0x34-byte NiBlendInterpolator and constructs variant 0 or 1 based on usIndex, returning null otherwise.
 // @fnv 0x00c1bb20
 // src: XBOX_PDB 0x00c1bb20
-NiBlendInterpolator* __stdcall NiPSysEmitterCtlr_CreateBlendInterpolator(unsigned short usVariant, bool bAccumulateAnimations,
+// pdb: NiPSysEmitterCtlr::CreateBlendInterpolator | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: usIndex, bManagerControlled, bAccumulateAnimations, fWeightThreshold, ucArraySize
+NiBlendInterpolator* __stdcall NiPSysEmitterCtlr_CreateBlendInterpolator(unsigned short usIndex, bool bAccumulateAnimations,
                                             bool bManagerControlled, float fWeightThreshold, unsigned char ucArraySize)
 {
-    if (usVariant == 0)
+    if (usIndex == 0)
     {
         void* p = BSFadeNode::operator new(0x34);
         if (p)
             return reinterpret_cast<FUN_00a40520_shell*>(p)->FUN_00a40520(bAccumulateAnimations, fWeightThreshold,
                                                                           ucArraySize);
     }
-    else if (usVariant == 1)
+    else if (usIndex == 1)
     {
         void* p = BSFadeNode::operator new(0x34);
         if (p)
@@ -556,6 +593,8 @@ char* __cdecl _FUN_00a7d330(char*);
 void __stdcall AppendModifierInfo(StrArr*);
 
 // @fnv 0x00c1ce70
+// pdb: NiPSysEmitterCtlr::GetViewerStrings | NiPSysEmitterCtlr.obj | retail, call graph, high
+// pdb params: pkStrings
 void __fastcall AppendEmitterViewerStrings(NiPSysEmitterCtlr* self, int unused, StrArr* pkStrings)
 {
     AppendModifierInfo(pkStrings);
@@ -568,7 +607,7 @@ void __fastcall AppendEmitterViewerStrings(NiPSysEmitterCtlr* self, int unused, 
         pkStrings->SetSize(uiGrow + uiIndex);
     }
     pkStrings->SetAt(uiIndex, pcString);
-    NiInterpolator* pkInterp = self->m_spVisibilityInterpolator.m_pObject;
+    NiInterpolator* pkInterp = self->m_spEmitterActiveInterpolator.m_pObject;
     if (pkInterp)
     {
         void** vtbl = *(void***)pkInterp;
@@ -592,6 +631,7 @@ struct S_00a56be0
 };
 
 // @fnv 0x00a56be0
+// pdb: NiAlphaController::~NiAlphaController | NiAlphaController.obj | debug, object-file run extension, low
 S_00a56be0* S_00a56be0::Initialize()
 {
     this->FUN_00a5d3a0();
@@ -632,6 +672,8 @@ struct CChildA : CBaseA
 
 // Creates key data when needed, installs the keys, and resets the cached key index.
 // @fnv 0x00c1bf10
+// pdb: NiPSysEmitterCtlr::GetEmitterActiveInterpolator | NiPSysEmitterCtlr.obj | retail, object-file run extension, low
+// pdb locals: pkBoolInterp, pkBlendInterp, ucIndex
 void NiBoolInterpolator::SetAnimationKeys(void* keys, unsigned int keyType, unsigned int count)
 {
     if (count > 0)
@@ -639,7 +681,7 @@ void NiBoolInterpolator::SetAnimationKeys(void* keys, unsigned int keyType, unsi
         if (!m_spBoolData.m_pObject)
             m_spBoolData = reinterpret_cast<NiBoolData*>(new CChildA);
         reinterpret_cast<CChildA*>(m_spBoolData.m_pObject)->M(reinterpret_cast<unsigned int>(keys), count, keyType);
-        m_uiLastKeyIndex = 0;
+        m_uiLastIdx = 0;
     }
     else
     {
@@ -691,12 +733,12 @@ extern GlobalObjectO2_00a7b610 DAT_011f407c;
 // @fnv 0x00c1bf90
 int __thiscall EmitterBoolInterpolatorLookup::GetObjectValueByKey()
 {
-    int iVf54Result = reinterpret_cast<int>(m_spVisibilityInterpolator->IsNiBoolInterpolator());
+    int iVf54Result = reinterpret_cast<int>(m_spEmitterActiveInterpolator->IsNiBoolInterpolator());
     if (iVf54Result == 0)
     {
-        if (m_spVisibilityInterpolator.m_pObject != 0)
+        if (m_spEmitterActiveInterpolator.m_pObject != 0)
         {
-            C1BF90Result* pResult = reinterpret_cast<C1BF90Result*(__thiscall*)(NiInterpolator*, const void*)>(&FindEmitterBlendInterpolator)(m_spVisibilityInterpolator, &DAT_011f407c);
+            C1BF90Result* pResult = reinterpret_cast<C1BF90Result*(__thiscall*)(NiInterpolator*, const void*)>(&FindEmitterBlendInterpolator)(m_spEmitterActiveInterpolator, &DAT_011f407c);
             if (pResult != 0)
             {
                 unsigned char key = pResult->FindHighestWeightIndex();
@@ -794,14 +836,16 @@ struct EmitterKeyTimeRange : NiPSysEmitterCtlr
 };
 
 // @fnv 0x00c1bc10
+// pdb: NiPSysEmitterCtlr::ResetTimeExtrema | NiPSysEmitterCtlr.obj | retail, vtable slot, high
+// pdb locals: fLoKeyTime, fHiKeyTime
 void EmitterKeyTimeRange::UpdateKeyTimeRange()
 {
     if ((bool)(static_cast<unsigned short>((m_uiObjectFlags & MANAGERCONTROLLED_MASK) >> 5) & 1))
         return;
-    m_spControllerInterpolator->GetInterpolatorTimeRange(m_fLoKeyTime, m_fHiKeyTime);
+    m_spInterpolator->GetInterpolatorTimeRange(m_fLoKeyTime, m_fHiKeyTime);
     float fBegin;
     float fSecondEnd;
-    m_spVisibilityInterpolator->GetInterpolatorTimeRange(fBegin, fSecondEnd);
+    m_spEmitterActiveInterpolator->GetInterpolatorTimeRange(fBegin, fSecondEnd);
     if (fBegin < m_fLoKeyTime)
         m_fLoKeyTime = fBegin;
     if (fSecondEnd > m_fHiKeyTime)
@@ -818,15 +862,18 @@ public:
 
 // @fnv 0x00c1be60
 // src: XBOX_PDB 0x00c1be60
+// pdb: NiPSysEmitterCtlr::IsEqual | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiBaseC1B::NiPSysEmitterCtlr_IsEqual(NiObject* pkObject)
 {
     if (!BaseIsEqual(pkObject))
         return false;
 
     NiBaseC1B* pkOther = (NiBaseC1B*)pkObject;
-    if ((!pkOther->m_spVisibilityInterpolator && m_spVisibilityInterpolator) || (pkOther->m_spVisibilityInterpolator && !m_spVisibilityInterpolator))
+    if ((!pkOther->m_spEmitterActiveInterpolator && m_spEmitterActiveInterpolator) || (pkOther->m_spEmitterActiveInterpolator && !m_spEmitterActiveInterpolator))
         return false;
-    if (pkOther->m_spVisibilityInterpolator && !pkOther->m_spVisibilityInterpolator->IsEqual(m_spVisibilityInterpolator))
+    if (pkOther->m_spEmitterActiveInterpolator && !pkOther->m_spEmitterActiveInterpolator->IsEqual(m_spEmitterActiveInterpolator))
         return false;
     return true;
 }
@@ -889,31 +936,35 @@ struct AgeSet : NiTPrimitiveSet_float_
 };
 struct EmitCtlr : NiPSysEmitterCtlr
 {
-    void EmitParticlesInInterval(float fTime, float fCurTime, float fLastTime, float fEmitStart, float fEmitStop,
-                                 float fEmissionRate);
+    void NiPSysEmitterCtlr_EmitParticles(float fTime, float fCurTime, float fLastTime, float fEmitStart, float fEmitStop,
+                                 float fBirthRate);
 };
 // @fnv 0x00c1c3c0
-void EmitCtlr::EmitParticlesInInterval(float fTime, float fCurTime, float fLastTime, float fEmitStart, float fEmitStop,
-                                       float fEmissionRate)
+// src: XBOX_RETAIL_PDB 0x00c1c3c0
+// pdb: NiPSysEmitterCtlr::EmitParticles | NiPSysEmitterCtlr.obj | retail, call graph, high
+// pdb params: fTime, fCurTime, fLastTime, fEmitStart, fEmitStop, fBirthRate
+// pdb locals: usLastNumParticles, fParticleAge, usNewParticles, fCurDelta, fLastDelta, usCurNumParticles, us
+void EmitCtlr::NiPSysEmitterCtlr_EmitParticles(float fTime, float fCurTime, float fLastTime, float fEmitStart, float fEmitStop,
+                                       float fBirthRate)
 {
-    if (fEmissionRate > 0.0f && fEmitStart < fEmitStop && fEmitStart < fCurTime && fLastTime < fEmitStop)
+    if (fBirthRate > 0.0f && fEmitStart < fEmitStop && fEmitStart < fCurTime && fLastTime < fEmitStop)
     {
         float fDuration = ((fCurTime <= fEmitStop) ? fCurTime - fEmitStart : fEmitStop - fEmitStart);
         float fStart = 0.0f;
         if (fEmitStart <= fLastTime)
             fStart = fLastTime - fEmitStart;
-        unsigned short usFirst = (unsigned short)(fStart * fEmissionRate);
-        unsigned int uiElementCount = (unsigned short)((unsigned short)(fDuration * fEmissionRate) - usFirst);
+        unsigned short usFirst = (unsigned short)(fStart * fBirthRate);
+        unsigned int uiElementCount = (unsigned short)((unsigned short)(fDuration * fBirthRate) - usFirst);
         if ((unsigned short)uiElementCount > (unsigned short)DAT_011ae75c)
             uiElementCount = DAT_011ae75c;
-        float fInvBirthRate = 1.0f / fEmissionRate;
-        m_kBirthRateKeys.m_uiAllocatedCapacity = 0;
+        float fInvBirthRate = 1.0f / fBirthRate;
+        m_kParticleAges.m_uiAllocatedCapacity = 0;
         for (unsigned short us = 0; us < (unsigned short)uiElementCount; us++)
         {
             float m_fFirstFloatValue = fDuration - (++usFirst) * fInvBirthRate;
-            ((AgeSet&)m_kBirthRateKeys).Add(m_fFirstFloatValue);
+            ((AgeSet&)m_kParticleAges).Add(m_fFirstFloatValue);
         }
-        ((EmitterStandIn*)m_pkTargetModifier)->UpdateEmitter(fTime, uiElementCount, m_kBirthRateKeys.m_pBase);
+        ((EmitterStandIn*)m_pkModifier)->UpdateEmitter(fTime, uiElementCount, m_kParticleAges.m_pBase);
     }
 }
 
@@ -994,18 +1045,20 @@ __forceinline bool C040Has(C040Owner* o, void* p)
 // Checks whether obj contains one of the global nodes for the given type (0 or 1), or for type 1 whether FUN_0043b300 matches DAT_011f407c.
 // @fnv 0x00c1c040
 // src: XBOX_PDB 0x00c1c040
-bool __stdcall NiPSysEmitterCtlr_InterpolatorIsCorrectType(C040Owner* pOwner, unsigned short type)
+// pdb: NiPSysEmitterCtlr::InterpolatorIsCorrectType | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkInterp, usIndex
+bool __stdcall NiPSysEmitterCtlr_InterpolatorIsCorrectType(C040Owner* pkInterp, unsigned short usIndex)
 {
-    if (type == 0)
+    if (usIndex == 0)
     {
-        if (pOwner && (C040Has(pOwner, &DAT_011f3738) || C040Has(pOwner, &DAT_011f3e58)))
+        if (pkInterp && (C040Has(pkInterp, &DAT_011f3738) || C040Has(pkInterp, &DAT_011f3e58)))
             return true;
     }
-    else if (type == 1)
+    else if (usIndex == 1)
     {
-        if (pOwner && C040Has(pOwner, &DAT_011f404c))
+        if (pkInterp && C040Has(pkInterp, &DAT_011f404c))
             return true;
-        if (NiObject_IsKindOf(&DAT_011f407c, pOwner))
+        if (NiObject_IsKindOf(&DAT_011f407c, pkInterp))
             return true;
     }
     return false;
@@ -1030,24 +1083,30 @@ inline NiPSysEmitterCtlr* __fastcall ConstructEmitterCtlr(NiPSysEmitterCtlr* con
 {
     ConstructModifierCtlr(controller);
     *(void**)controller = &kVtbl_NiPSysEmitterCtlr;
-    controller->m_spVisibilityInterpolator.NiPointer<NiInterpolator>::NiPointer();
-    controller->m_fScaledLastTime = kNegInfinity;
-    controller->m_bIsInitialized = false;
-    reinterpret_cast<ParticleAgeSet*>(&controller->m_kBirthRateKeys)->ParticleAgeSet::ParticleAgeSet();
+    controller->m_spEmitterActiveInterpolator.NiPointer<NiInterpolator>::NiPointer();
+    controller->m_fLastScaledTime = kNegInfinity;
+    controller->m_bLastActive = false;
+    reinterpret_cast<ParticleAgeSet*>(&controller->m_kParticleAges)->ParticleAgeSet::ParticleAgeSet();
     return controller;
 }
 
 // @fnv 0x00c1c570
-NiObject* NiPSysEmitterCtlr::MakeClone(CloningProcess& process)
+// pdb: NiPSysEmitterCtlr::CreateClone | NiPSysEmitterCtlr.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+NiObject* NiPSysEmitterCtlr::MakeClone(CloningProcess& kCloning)
 {
     NiPSysEmitterCtlr* clone = static_cast<NiPSysEmitterCtlr*>(NiPSysEmitterCtlr::operator new(sizeof(NiPSysEmitterCtlr)));
     clone = clone ? ConstructEmitterCtlr(clone) : 0;
-    CopyMemberData(clone, process);
+    CopyMemberData(clone, kCloning);
     return clone;
 }
 
 // @fnv 0x00c1c5e0
-NiPSysEmitterCtlr* __cdecl CreateNiPSysEmitterCtlr()
+// src: XBOX_RETAIL_PDB 0x00c1c5e0
+// pdb: NiPSysEmitterCtlr::CreateObject | NiPSysEmitterCtlr.obj | retail, object-file gap fill, high
+// pdb locals: pkObject
+NiPSysEmitterCtlr* __cdecl NiPSysEmitterCtlr_CreateObject()
 {
     NiPSysEmitterCtlr* controller = static_cast<NiPSysEmitterCtlr*>(NiPSysEmitterCtlr::operator new(sizeof(NiPSysEmitterCtlr)));
     if (controller)
@@ -1102,12 +1161,12 @@ struct C630Target
     float offset;
 };
 extern float DAT_01015f5c;
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME;
 extern double DAT_010241b0;
 extern double DAT_01011588;
 extern GlobalObjectO2_00a7b610 DAT_011f407c;
 extern char DAT_011f3e58;
-extern "C" bool __cdecl InterpolateBooleanKey(float, ActiveKey*, unsigned int, unsigned int, unsigned int&,
+extern "C" bool __cdecl NiBoolKey_GenInterp(float, ActiveKey*, unsigned int, unsigned int, unsigned int&,
                                               unsigned char);
 // Retained emitter layout: inheriting the shared emitter changes 0x00c1c630 (2105 bytes to 2082).
 struct C630Ctlr
@@ -1129,7 +1188,7 @@ struct C630Ctlr
     NiInterpolator* m_pEmitterActiveInterpolator;
     float m_fScaledLastTime;
     bool m_bIsInitialized;
-    void EmitParticlesInInterval(float a, float b, float c, float d, float e, float f);
+    void NiPSysEmitterCtlr_EmitParticles(float a, float b, float c, float d, float e, float fBirthRate);
 
     bool DontDoUpdate(float);
     EmitterKeyInterpolator* GetObjectValueByKey();
@@ -1138,23 +1197,26 @@ struct C630Ctlr
     {
         return (bool)(((m_uiObjectFlags & 0x20) >> 5) & 1);
     }
-    void NiPSysEmitterCtlr_Update(float* time);
+    void NiPSysEmitterCtlr_Update(float* UpdateData);
 };
 // Updates the particle controller time and emits particles over the active intervals between the old and new times using the rate interpolator.
 // @fnv 0x00c1c630
 // src: XBOX_PDB 0x00c1c630
-void C630Ctlr::NiPSysEmitterCtlr_Update(float* time)
+// pdb: NiPSysEmitterCtlr::Update | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: bDone, pemitter, pkFloatInterp, eEmitterActiveKeyType, bFloatScaledTime, uiLastEmitterActiveIdx, fBoolScaledTime, pkBoolInterp, uiNumEmitterActiveKeys, bLastActive, ucEmitterActiveSize, bCurActive, iLoopCounter, fFloatScaledTime, fScaledTime, bBoolScaledTime, pkEmitterActiveKeys, fLastScaledTime, pkBlendBool, ucIndex, pkBlendFloat, fLoopDeltaTime, fBeginKeyTime, pkBirthRateKeys ...
+void C630Ctlr::NiPSysEmitterCtlr_Update(float* UpdateData)
 {
-    if (m_fLastTime > *time)
+    if (m_fLastTime > *UpdateData)
         m_fScaledLastTime = DAT_01015f5c;
     if (!m_pkTarget || !m_pkTargetModifier)
         return;
     if (Manager())
-        m_fControllerTime = DAT_01096324;
+        m_fControllerTime = NiInterpController_INVALID_TIME;
     if (m_fLastTime != DAT_010241b0 && !(m_uiObjectFlags & 6) &&
-        *time - m_fLastTime > ((C630Modifier*)m_pkTargetModifier)->span)
-        m_fLastTime = *time;
-    if (DontDoUpdate(*time))
+        *UpdateData - m_fLastTime > ((C630Modifier*)m_pkTargetModifier)->span)
+        m_fLastTime = *UpdateData;
+    if (DontDoUpdate(*UpdateData))
         return;
     if (!m_spVisibilityInterpolator.m_pObject || !m_spControllerInterpolator.m_pObject)
         return;
@@ -1219,7 +1281,7 @@ void C630Ctlr::NiPSysEmitterCtlr_Update(float* time)
             }
             if (!rateInterp->UpdateFloat(0.0f, m_pkTarget, rateValue))
                 return;
-            EmitParticlesInInterval(deltaTime + offset, newTime, oldTime, 0.0f, newTime, rateValue);
+            NiPSysEmitterCtlr_EmitParticles(deltaTime + offset, newTime, oldTime, 0.0f, newTime, rateValue);
             return;
         }
         unsigned int rateCount, rateType;
@@ -1233,17 +1295,17 @@ void C630Ctlr::NiPSysEmitterCtlr_Update(float* time)
             double dDelta = rateEnd - oldTime;
             rateInterp->UpdateFloat((float)(dDelta * DAT_01011588 + oldTime), m_pkTarget, rateValue);
             deltaTime = (float)dDelta;
-            EmitParticlesInInterval(offset + deltaTime, rateEnd, oldTime, rateBegin, rateEnd, rateValue);
+            NiPSysEmitterCtlr_EmitParticles(offset + deltaTime, rateEnd, oldTime, rateBegin, rateEnd, rateValue);
             oldTime = birthKeys->time;
         }
         double dDelta = newTime - oldTime;
         rateInterp->UpdateFloat((float)(dDelta * DAT_01011588 + oldTime), m_pkTarget, rateValue);
-        EmitParticlesInInterval((float)(offset + dDelta + deltaTime), newTime, oldTime, rateBegin, newTime, rateValue);
+        NiPSysEmitterCtlr_EmitParticles((float)(offset + dDelta + deltaTime), newTime, oldTime, rateBegin, newTime, rateValue);
         return;
     }
     unsigned int uiLastIndex = 0;
     bool bActive;
-    bActive = InterpolateBooleanKey(newTime, emitterKeys, activeType, activeCount, uiLastIndex, boolKeySize);
+    bActive = NiBoolKey_GenInterp(newTime, emitterKeys, activeType, activeCount, uiLastIndex, boolKeySize);
     if (m_fScaledLastTime == DAT_010241b0)
     {
         m_bIsInitialized = bActive;
@@ -1351,13 +1413,13 @@ void C630Ctlr::NiPSysEmitterCtlr_Update(float* time)
         float offset = ((C630Target*)m_pkTarget)->offset;
         if (isWrapped)
             offset = (m_fHiKeyTime - m_fLoKeyTime) + offset;
-        EmitParticlesInInterval(offset + newTime - oldTime, fCurrentEnd, intervalStart, birthBegin, birthEnd,
+        NiPSysEmitterCtlr_EmitParticles(offset + newTime - oldTime, fCurrentEnd, intervalStart, birthBegin, birthEnd,
                                 rateValue);
         if (pkEnd->time < newTime)
         {
             oldTime = fCurrentEnd;
             bLastActive =
-                InterpolateBooleanKey(oldTime, emitterKeys, activeType, activeCount, uiLastIndex, boolKeySize);
+                NiBoolKey_GenInterp(oldTime, emitterKeys, activeType, activeCount, uiLastIndex, boolKeySize);
         }
         else
         {

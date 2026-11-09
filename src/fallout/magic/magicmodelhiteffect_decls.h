@@ -14,6 +14,7 @@ class TimeGlobal
     unsigned int GetTimeStamp();
 };
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:

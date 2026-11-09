@@ -74,8 +74,8 @@ struct Registry_00dd9380
     void* Register(char const*, void(__cdecl*)(void));
 };
 extern int DAT_01269cd0;
-extern void* DAT_01269008;
-void RegisterContactPointsInactive();
+extern void* hkpInactiveContactPointViewer_s_tag;
+void hkpInactiveContactPointViewer_registerViewer();
 // Constructor of the class whose vftables live at 0x010d1fb0 / 0x010d1f90 /
 // 0x010d1f80 / 0x010d1f70: it calls the immediate base constructor and then
 // installs the derived vftable pointers for the four base sub-objects.
@@ -97,7 +97,7 @@ struct FUN_00d68770_cls
     int m_unk24;
     int* m_pVtbl28;
 
-    void BaseConstruct(int aParam, int aFlags);
+    void BaseConstruct(int contexts, int color);
     FUN_00d68770_cls* Construct(int aParam);
 };
 void* __stdcall hkpInactiveContactPointViewer_getIslands(char* a1);
@@ -122,12 +122,12 @@ struct FnvCpu_FUN_00d687c0_CpuBlock
     unsigned short size;
     FnvCpu_FUN_00d687c0_CpuBlock* Construct(unsigned int value);
 };
-void* __cdecl hkpInactiveContactPointViewer_create(unsigned int value);
+void* __cdecl hkpInactiveContactPointViewer_create(unsigned int contexts);
 extern "C" int DAT_010d203c;
 extern "C" int DAT_010d201c;
 extern "C" int DAT_010d200c;
 extern "C" int DAT_010d1ffc;
-void __stdcall FUN_00de29b0(int a, int b);
+void __stdcall FUN_00de29b0(int contexts, int color);
 struct FUN_00d68840_cls
 {
     void* m_p00;
@@ -147,9 +147,9 @@ struct FUN_00d68840_cls
 void* __stdcall hkpActiveContactPointViewer_getIslands(void* pObject);
 // FUN_00d688f0 : tiny global getter.
 // Reads the 4-byte global at DAT_0126900c and returns it in eax.
-extern int DAT_0126900c;
+extern int hkpActiveContactPointViewer_s_tag;
 int __cdecl Runtime_GetDAT0126900c();
-extern char DAT_0126905c;
+extern char hkpConstraintInstanceSmallArraySerializeOverrideTypeClass;
 void* __cdecl Object_GetGlobalObjectAddress_00d6ade0();
 struct S_00d6adf0_Obj
 {
@@ -170,7 +170,7 @@ struct VtblForwarder
     virtual int v0(int);
 };
 int __cdecl Runtime_ForwardCall_00d6aeb0(VtblForwarder* p);
-extern int DAT_01269104;
+extern int hkpWorldCinfoClass;
 void* __cdecl Object_GetGlobalObjectAddress_00d6aee0();
 struct ResultFlag
 {
@@ -344,7 +344,7 @@ struct FUN_00d616a0_cls
     void FUN_00d616a0(int iValue);
 };
 int __stdcall FUN_00d61680(unsigned int value);
-int __stdcall Object_ForwardCall_00d616e0(unsigned int value);
+int __stdcall Object_ForwardCall_00d616e0(unsigned int other);
 int __cdecl hkString_strLen(int s);
 struct FUN_00d61700_cls
 {
@@ -411,7 +411,7 @@ template <typename T, typename Allocator> __forceinline hkArray<T, Allocator>::~
 {
     clearAndDeallocate();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) throw();
 template <class T, int N> class hkInplaceArrayD61B
 {
@@ -473,15 +473,15 @@ struct FUN_00d61df0_cls
 };
 int __cdecl hkString_strLen(const char* pcString) throw();
 void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) throw();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 namespace hkRouterD620 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 void __cdecl hkMemUtil_memCpy_00d2caa0(void* pvDst, void* pvSrc, unsigned int uiNumBytes);
 int __cdecl hkString_strLen(int value);
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(int value1, int value2, int value3, int value4);
+void __cdecl hkArrayUtil__reserve(int mem, int array, int numElem, int sizeElem);
 void __cdecl hkMemUtil_memCpy_00d2caa0(void* value1, unsigned int value2, unsigned int value3);
 struct D62080_Audio
 {
@@ -557,7 +557,7 @@ class hkObjectD626
 };
 struct FUN_00ddccb0_Obj
 {
-    void FUN_00ddccb0(int a1);
+    void FUN_00ddccb0(int contexts);
 };
 struct FUN_00d62ef0_cls
 {
@@ -598,7 +598,7 @@ struct HeapBlockMetadata
     unsigned short reserved;
     HeapBlockMetadata* UpdateState_00d62ef0(void* data, unsigned int enabled);
 };
-void* __cdecl AllocateRecordWithData(void* data);
+void* __cdecl hkpWorldSnapshotViewer_createPC(void* contexts);
 struct Allocator_d632c0
 {
     virtual void slot00();
@@ -624,9 +624,9 @@ struct Base2_d632c0
 };
 struct Obj_d632c0 : Base1_d632c0, Base2_d632c0
 {
-    Obj_d632c0* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int a, int b);
+    Obj_d632c0* hkpWorldMemoryViewer_ctor(int vtlbReg, int contexts);
 };
-Base2_d632c0* hkpWorldMemoryViewer_create(int aiValue);
+Base2_d632c0* hkpWorldMemoryViewer_create(int contexts);
 struct hkContainerD633
 {
     int unk00;
@@ -743,9 +743,9 @@ class FUN_00d63370_class
     hkpPhysicsContext* m_iValueAtOffset0C;
     FUN_00ddf050_cls m_pStreamWriter;
 
-    void UpdatePhysicsDebugDisplay(float fFrameTime) throw();
+    void UpdatePhysicsDebugDisplay(float frameTimeInMs) throw();
 };
-extern int DAT_01268fc8;
+extern int hkpWorldMemoryViewer_m_tag;
 int __cdecl Object_GetDAT_01268fc8_00d63420();
 void* __cdecl hkMemoryRouter_getInstance();
 class FUN_00d63340
@@ -792,7 +792,7 @@ class hkBaseD642 : public hkPart0D642, public hkPart8D642, public hkPart20D642
 class FUN_00ddccb0 : public hkBaseD642
 {
   public:
-    FUN_00ddccb0(void* p) throw();
+    FUN_00ddccb0(void* contexts) throw();
 };
 class hkIfaceAD642
 {
@@ -809,7 +809,7 @@ class FUN_00d64260 : public FUN_00ddccb0, public hkIfaceAD642, public hkIfaceBD6
   public:
     hkArray<void*> m_ppData;
 
-    FUN_00d64260(void* p) throw();
+    FUN_00d64260(void* contexts) throw();
     virtual ~FUN_00d64260() throw();
     virtual void p8();
     virtual void p20();
@@ -835,9 +835,9 @@ struct FnvCpu_FUN_00d645f0_CpuBlock
 {
     unsigned int unk00;
     unsigned short size;
-    FnvCpu_FUN_00d645f0_CpuBlock* FUN_00d64260(unsigned int value);
+    FnvCpu_FUN_00d645f0_CpuBlock* FUN_00d64260(unsigned int contexts);
 };
-void* __cdecl hkpSweptTransformDisplayViewer_create(unsigned int value);
+void* __cdecl hkpSweptTransformDisplayViewer_create(unsigned int contexts);
 struct FUN_00d65250_cls
 {
     int unk00;
@@ -1023,11 +1023,11 @@ struct hkpTransformCollapseUtilResultsD734
     int m_iThirdResult;
     int m_iFourthResult;
 
-    void PrintResults() throw();
+    void hkpTransformCollapseUtil_Results_report() throw();
 };
 struct FnvCpu_FUN_00d76d80_CpuTarget
 {
-    void ProcessEntries_00d81340();
+    void hkgpConvexHullImpl_getOrientedBoundingBox();
 };
 struct FnvCpu_FUN_00d76d80_CpuOwner
 {
@@ -1080,7 +1080,7 @@ struct S
 namespace hkRouterD619 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl ResizeAudioStream(hkMemoryAllocator& kAlloc, void* pArray, int iElemSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator& mem, void* array, int sizeElem);
 template <class T> __forceinline void constructWithCopyD619(T* p, int n, const T& t)
 {
     for (int i = 0; i < n; i++)
@@ -1187,7 +1187,7 @@ void __cdecl ArrayReserveImpl(void*, void*, int, int);
 namespace hkRouterD61F {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 namespace hkRouterD62 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
@@ -1247,7 +1247,7 @@ struct Node
 void __cdecl AssignNodeFlags(Node** nodes, int count, unsigned seed);
 struct FUN_00d7e740_cls
 {
-    int hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(int iArg0, int iArg1, bool iFlag, int iArg2);
+    int hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(int vpf, int vi, bool useSourceIndex, int maximizeArea);
 };
 struct FUN_00d76c20_cls
 {
@@ -1314,7 +1314,7 @@ inline hkMemoryRouter* getRouterD624()
 {
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 int __cdecl hkString_vsnprintf(char* pcBuf, int iBufSize, const char* pcFormat, va_list kArgs) throw();
 // 0x00d62420 formats text then calls string-buffer append 0x00d62080 (also bound to InlineStorageString).
 class FormattedStringBuffer
@@ -1595,7 +1595,7 @@ __forceinline hkQuadReal& hkVector4::getQuad()
 }
 
 
-__forceinline void hkVector4::SetAllComponents(hkReal a)
+__forceinline void hkVector4::setAll(hkReal a)
 {
     m_vComponents = _mm_set_ps1(a);
 }
@@ -1635,9 +1635,9 @@ __forceinline void hkVector4::subMul4(hkSimdRealParameter r, const hkVector4& v)
     m_vComponents = _mm_sub_ps(m_vComponents, _mm_mul_ps(r.broadcast(), v.m_vComponents));
 }
 
-__forceinline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& v)
+__forceinline void hkVector4::setMul4(hkSimdRealParameter r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), v.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 
 __forceinline void hkVector4::addMul4(hkSimdRealParameter r, const hkVector4& v)
@@ -1650,9 +1650,9 @@ __forceinline void hkVector4::addMul4(const hkVector4& x, const hkVector4& y)
     m_vComponents = _mm_add_ps(m_vComponents, _mm_mul_ps(x.m_vComponents, y.m_vComponents));
 }
 
-__forceinline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& x, const hkVector4& y)
+__forceinline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& x, const hkVector4& r)
 {
-    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(x.m_vComponents, y.m_vComponents));
+    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(x.m_vComponents, r.m_vComponents));
 }
 
 __forceinline void hkVector4::setCross(const hkVector4& v0, const hkVector4& v1)
@@ -1676,9 +1676,9 @@ __forceinline void hkVector4::setAbs4(const hkVector4& v)
     m_vComponents = _mm_and_ps(v.m_vComponents, DAT_01017d10);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    hkQuadReal x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    hkQuadReal x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     hkQuadReal xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), xySum);
 }
@@ -1705,13 +1705,13 @@ __forceinline CompareBits hkVector4::compareLessThanEqual4(const hkVector4& v) c
     return c;
 }
 
-__forceinline int hkVector4::equals4(const hkVector4& kOther, hkReal fTol) const
+__forceinline int hkVector4::equals3(const hkVector4& v, hkReal epsilon) const
 {
     hkVector4 kDiff;
-    kDiff.setSub4(*this, kOther);
+    kDiff.setSub4(*this, v);
     kDiff.setAbs4(kDiff);
     hkVector4 kTol;
-    kTol.SetAllComponents(fTol);
+    kTol.setAll(epsilon);
     return kDiff.compareLessThanEqual4(kTol).allAreSet(CompareBits::ALL);
 }
 
@@ -1795,11 +1795,11 @@ __forceinline void hkQsTransform::SetProduct(const hkQsTransform& kLeft, const h
 // Preserve this unit's inline rigid-body accessors using the shared motion layout.
 __forceinline hkpMotion* hkpRigidBody::getRigidMotion()
 {
-    return &m_pMotionState;
+    return &m_motion;
 }
 __forceinline hkpMotion* hkpRigidBody::getRigidMotion() const
 {
-    return const_cast<hkpMaxSizeMotion*>(&m_pMotionState);
+    return const_cast<hkpMaxSizeMotion*>(&m_motion);
 }
 __forceinline const hkVector4& hkpRigidBody::getCenterOfMassInWorld() const
 {
@@ -1807,19 +1807,19 @@ __forceinline const hkVector4& hkpRigidBody::getCenterOfMassInWorld() const
 }
 __forceinline const hkVector4& hkpRigidBody::getCenterOfMassLocal()
 {
-    return getRigidMotion()->m_kMotionState.m_kSweptTransform.m_vCenterOfMassLocal;
+    return getRigidMotion()->m_kMotionState.m_kSweptTransform.m_centerOfMassLocal;
 }
 __forceinline const hkVector4& hkpRigidBody::getCenterOfMassLocal() const
 {
-    return getRigidMotion()->m_kMotionState.m_kSweptTransform.m_vCenterOfMassLocal;
+    return getRigidMotion()->m_kMotionState.m_kSweptTransform.m_centerOfMassLocal;
 }
 __forceinline const hkVector4& hkpRigidBody::getPosition() const
 {
-    return reinterpret_cast<const hkVector4&>(getRigidMotion()->m_kMotionState.m_kMotionTransform.m_vTranslation);
+    return reinterpret_cast<const hkVector4&>(getRigidMotion()->m_kMotionState.m_transform.m_vTranslation);
 }
 __forceinline const hkQuaternion& hkpRigidBody::getRotation() const
 {
-    return getRigidMotion()->m_kMotionState.m_kSweptTransform.m_qRotation1;
+    return getRigidMotion()->m_kMotionState.m_kSweptTransform.m_rotation1;
 }
 __forceinline const hkVector4& hkpRigidBody::getLinearVelocity() const
 {
@@ -1911,42 +1911,42 @@ struct Output
 };
 
 // src: GUESS 0x00d6b510 (confidence: low)
-static __declspec(noinline) void hkQuaternion_ProcessEntries_00d6b510(const hkQsTransform* poseLocalSpace, const IntegerTriple& body,
-                                              const ControlData* controlPalette, const hkQsTransform& worldFromRoot,
-                                              BoneAndCenterOfMassPose* cache)
+static __declspec(noinline) void calcComPoseUsingHierarchy(const hkQsTransform* desiredPoseLocalSpace, const IntegerTriple& bodydata,
+                                              const ControlData* controlPalette, const hkQsTransform& worldFromPose,
+                                              BoneAndCenterOfMassPose* mc)
 {
-    for (int i = 0; i < body.m_iRigidBodyCount; i++)
+    for (int i = 0; i < bodydata.m_iRigidBodyCount; i++)
     {
-        hkQsTransform& worldFromBone = cache[i].m_bonePose;
-        const int parentIndex = body.m_kParentIndices[i];
-        const hkQsTransform& worldFromParent = parentIndex >= 0 ? cache[parentIndex].m_bonePose : worldFromRoot;
-        worldFromBone.SetProduct(worldFromParent, poseLocalSpace[i]);
+        hkQsTransform& worldFromBone = mc[i].m_bonePose;
+        const int parentIndex = bodydata.m_kParentIndices[i];
+        const hkQsTransform& worldFromParent = parentIndex >= 0 ? mc[parentIndex].m_bonePose : worldFromPose;
+        worldFromBone.SetProduct(worldFromParent, desiredPoseLocalSpace[i]);
         hkQuaternion rotation = worldFromBone.getRotation();
         hkVector4 position = worldFromBone.getTranslation();
-        const int controlIndex = body.m_piBodyPartIndices ? body.m_piBodyPartIndices[i] : 0;
+        const int controlIndex = bodydata.m_piBodyPartIndices ? bodydata.m_piBodyPartIndices[i] : 0;
         if (controlIndex == -1)
             continue;
         hkReal hierarchyGain = controlPalette[controlIndex].m_fHierarchyGain;
-        if (body.m_pfRigidBodyWeights)
-            hierarchyGain *= body.m_pfRigidBodyWeights[i];
+        if (bodydata.m_pfRigidBodyWeights)
+            hierarchyGain *= bodydata.m_pfRigidBodyWeights[i];
         if (hierarchyGain > 0.0f && parentIndex >= 0)
         {
-            hkpRigidBody* parentBody = body.m_ppRigidBodies[parentIndex];
+            hkpRigidBody* parentBody = bodydata.m_ppRigidBodies[parentIndex];
             hkQsTransform worldFromParentBody;
             worldFromParentBody.m_vTranslation = parentBody->getPosition();
             worldFromParentBody.m_rotation = parentBody->getRotation();
             hkQsTransform blended;
-            blended.SetProduct(worldFromParentBody, poseLocalSpace[i]);
+            blended.SetProduct(worldFromParentBody, desiredPoseLocalSpace[i]);
             rotation.D3D_ComputeClearColor(rotation, blended.getRotation(), hierarchyGain);
             position.setInterpolate4(position, blended.getTranslation(), hierarchyGain);
         }
-        hkpRigidBody* rigidBody = body.m_ppRigidBodies[i];
+        hkpRigidBody* rigidBody = bodydata.m_ppRigidBodies[i];
         hkVector4 comOffset;
         comOffset.SetRotatedDirection(rotation, rigidBody->getCenterOfMassLocal());
         position.add4(comOffset);
         hkVector4 identity;
         identity.getQuad() = DAT_01267e30;
-        cache[i].m_comPose.set(position, rotation, identity);
+        mc[i].m_comPose.set(position, rotation, identity);
     }
 }
 
@@ -1987,31 +1987,34 @@ static __declspec(noinline) hkReal Object_ProcessAndReturnValue_00d6b3c0(hkReal 
 
 // @fnv 0x00d6b8e0
 // src: COMMUNITY 0x00d6b8e0
-__declspec(noinline) void __cdecl hkaKeyFrameHierarchyUtility_applyKeyFrame(hkReal m_fTimeStep, const TransformReferenceData& pose, const IntegerTriple& body,
+// pdb: hkaKeyFrameHierarchyUtility::applyKeyFrame | hkaKeyFrameHierarchyUtility.obj | retail, upstream name already matches, high
+// pdb params: m_deltaTime, pose, bodydata, controlPalette, output
+// pdb locals: invDeltaTime, assertBuf, ostr, velocityGain, currentLinearVelocity, currentAngularVelocity, accelerationGain, positionGain, snapGain
+__declspec(noinline) void __cdecl hkaKeyFrameHierarchyUtility_applyKeyFrame(hkReal m_deltaTime, const TransformReferenceData& pose, const IntegerTriple& bodydata,
                                                const ControlData* controlPalette, Output* output)
 {
     HkDynamicArray<BoneAndCenterOfMassPose> matrixCache;
-    matrixCache.init(body.m_iRigidBodyCount);
-    hkQuaternion_ProcessEntries_00d6b510(pose.m_pReferencedTransform, body, controlPalette, pose.m_kTransform, &matrixCache[0]);
+    matrixCache.init(bodydata.m_iRigidBodyCount);
+    calcComPoseUsingHierarchy(pose.m_pReferencedTransform, bodydata, controlPalette, pose.m_kTransform, &matrixCache[0]);
 
-    const hkReal invDeltaTime = 1.0f / m_fTimeStep;
+    const hkReal invDeltaTime = 1.0f / m_deltaTime;
     const hkSimdReal invDeltaTimeS = invDeltaTime;
 
-    for (int i = 0; i < body.m_iRigidBodyCount; i++)
+    for (int i = 0; i < bodydata.m_iRigidBodyCount; i++)
     {
-        const int controlIndex = body.m_piBodyPartIndices ? body.m_piBodyPartIndices[i] : 0;
+        const int controlIndex = bodydata.m_piBodyPartIndices ? bodydata.m_piBodyPartIndices[i] : 0;
         if (controlIndex == -1)
             continue;
         const ControlData& controlData = controlPalette[controlIndex];
-        hkpRigidBody* rigidBody = body.m_ppRigidBodies[i];
+        hkpRigidBody* rigidBody = bodydata.m_ppRigidBodies[i];
 
         hkReal accelerationGain = controlData.m_fAccelerationGain;
         hkReal velocityGain = controlData.m_fVelocityGain;
         hkReal positionGain = controlData.m_positionGain;
         hkReal snapGain = controlData.m_snapGain;
-        if (body.m_pfRigidBodyWeights)
+        if (bodydata.m_pfRigidBodyWeights)
         {
-            const hkReal boneWeight = body.m_pfRigidBodyWeights[i];
+            const hkReal boneWeight = bodydata.m_pfRigidBodyWeights[i];
             accelerationGain *= boneWeight;
             velocityGain *= boneWeight;
             positionGain *= boneWeight;
@@ -2067,7 +2070,7 @@ __declspec(noinline) void __cdecl hkaKeyFrameHierarchyUtility_applyKeyFrame(hkRe
                 output[i].m_fOutputValue = stress;
             linearNew.add4(snapVelocity);
         }
-        if (!rigidBody->getLinearVelocity().equals4(linearNew, 0.001f))
+        if (!rigidBody->getLinearVelocity().equals3(linearNew, 0.001f))
             rigidBody->OnTrigger(linearNew);
 
         // Angular velocity
@@ -2112,7 +2115,7 @@ __declspec(noinline) void __cdecl hkaKeyFrameHierarchyUtility_applyKeyFrame(hkRe
                 output[i].m_fOutputValue += stress;
             angularNew.add4(snapVelocity);
         }
-        if (!rigidBody->getAngularVelocity().equals4(angularNew, 0.001f))
+        if (!rigidBody->getAngularVelocity().equals3(angularNew, 0.001f))
             rigidBody->hkpRigidBody_setAngularVelocity(angularNew);
     }
     matrixCache.destroy();
@@ -2499,7 +2502,7 @@ struct QuaternionD72
 {
     LocalM128 value;
     __declspec(noalias) void FUN_00cb26e0(const Matrix3D72& rotation);
-    __declspec(noalias) void normalize_005611c0();
+    __declspec(noalias) void hkQuaternion_normalize();
 };
 __forceinline hkTransform::hkTransform() {}
 // 0x00cb20b0 imports column-major floats into hkTransform; the shared header lacks this method.
@@ -2507,7 +2510,7 @@ __forceinline hkTransform::hkTransform() {}
 class ColumnMajorTransformImporter : public hkTransform
 {
 public:
-    void ImportColumnMajor(const float* source);
+    void ImportColumnMajor(const float* p);
 };
 struct Matrix4D72
 {
@@ -2621,14 +2624,17 @@ struct OutputD72
 };
 // @fnv 0x00d72e90
 // src: XBOX_PDB 0x00d72e90
-void __cdecl hkMathUtil_decompose4x4ColTransform(const float* source, OutputD72 output)
+// pdb: hkMathUtil::decompose4x4ColTransform | hkMathUtil.obj | retail, upstream name already matches, high
+// pdb params: matrixIn, decompOut
+// pdb locals: t, m4, qCur, qNext, qInvT, temp, rot, TRInv4, TRInv, TR, one, scaleInv
+void __cdecl hkMathUtil_decompose4x4ColTransform(const float* matrixIn, OutputD72 decompOut)
 {
     ColumnMajorTransformImporter transform;
-    transform.ImportColumnMajor(source);
+    transform.ImportColumnMajor(matrixIn);
     Matrix4D72 original;
-    original.CopyFromFloats(source);
+    original.CopyFromFloats(matrixIn);
     original.hkMatrix4_resetFourthRow();
-    DecompositionD72* __restrict result = output.p;
+    DecompositionD72* __restrict result = decompOut.p;
     result->translation = transform.m_vTranslation;
     {
         Matrix3D72 current;
@@ -2672,7 +2678,7 @@ void __cdecl hkMathUtil_decompose4x4ColTransform(const float* source, OutputD72 
         quaternion.FUN_00cb26e0(rotation);
         result->rotation.value = quaternion.value;
     }
-    result->rotation.normalize_005611c0();
+    result->rotation.hkQuaternion_normalize();
     Matrix4D72 inverseMatrix;
     {
         hkTransform rotationTransform;

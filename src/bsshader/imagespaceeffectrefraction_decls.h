@@ -41,6 +41,7 @@ class RefractionEffectParamLocalForm
     NiTPrimitiveArray<int> m_kFilterModes;
 };
 
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public RefractionEffectParamLocalForm
 {
   public:
@@ -59,7 +60,7 @@ class ImageSpaceShaderParam : public RefractionEffectParamLocalForm
     void* m_kRenderStateMap[4];
 
     ImageSpaceShaderParam();
-    void AllocateShaderConstants(int vertexCount, int pixelCount);
+    void AllocateShaderConstants(int aiVSize, int aiPSize);
     void SetShaderConstantVector4(int index, float x, float y, float z, float w);
     static void* operator new(unsigned int size)
     {
@@ -71,6 +72,7 @@ class ImageSpaceShaderParam : public RefractionEffectParamLocalForm
     }
 };
 
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 class ImageSpaceEffect
 {
   public:
@@ -84,7 +86,7 @@ class ImageSpaceEffect
     NiTPrimitiveArray<int> pEffectOutput;
 
     ImageSpaceEffect();
-    void SetTextureArrayCount(int count);
+    void SetTextureArrayCount(int aiCount);
     void SetTextureArrayAt(int index, int first, int second, int firstFilter, int secondFilter);
     void SetEffectAt(int index, ImageSpaceEffect* effect, RefractionEffectParamLocalForm* param, int output);
 };

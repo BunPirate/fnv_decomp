@@ -3,6 +3,7 @@
 #include "TESBoundObject.h"
 #include "BGSIdleCollection.h"
 
+// pdb: class BGSIdleMarker, size 0x40, bases: TESBoundObject, BGSIdleCollection, 0 members
 class BGSIdleMarker : public TESBoundObject, public BGSIdleCollection
 {
 public:
@@ -10,5 +11,5 @@ public:
     virtual ~BGSIdleMarker();
 
     virtual void InitItem(void);
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 };

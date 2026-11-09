@@ -12,6 +12,7 @@ class FUN_00d87920_cls
 
 // @fnv 0x00d87920
 // src: HAVOK_LIB 0x00d87920
+// pdb: hkThread::stopThread | hkWin32Thread.obj | retail, upstream name already matches, high
 void FUN_00d87920_cls::hkThread_stopThread()
 {
     if (m_hHandle != 0)

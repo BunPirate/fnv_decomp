@@ -18,6 +18,7 @@ public:
     BSSimpleArray<NavMeshEdgeReference, 1024> parents;
 };
 
+// pdb: class ObstacleTaskData, size 0x58, bases: BSXenonTaskletData, 6 members
 class ObstacleTaskData : public BSWin32TaskletData
 {
 public:
@@ -29,7 +30,7 @@ public:
     NavMeshPtr m_spWorkingNavMesh;
     BSSimpleArray<ObstacleTask, 1024> Operations;
     ParentChildLinks m_kParentChildLinks;
-    bool bForce;
+    bool bPortalModified;
 
     bool AddOperation(const NiPointer<ObstacleData>&, OBSTACLE_TASK_TYPE);
     void vfn_04();

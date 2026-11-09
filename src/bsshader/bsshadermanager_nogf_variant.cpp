@@ -29,6 +29,7 @@ __forceinline void ReleaseReference(NiRefObject* object)
     if (!InterlockedDecrement(reinterpret_cast<volatile long*>(&object->m_uiRefCount)))
         object->DeleteThis();
 }
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 class FileFinder
 {
   public:
@@ -60,7 +61,7 @@ extern void (*DAT_011f9f40[16])(), (*DAT_011f9f80[16])();
 #pragma optimize("", on)
 extern "C" NiTexture* DAT_011f95ec;
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
-void __cdecl BSShaderManager_SetAccumulator(NiTexture* pkTexture);
+void __cdecl BSShaderManager_SetAccumulator(NiTexture* apAccum);
 struct PropHelper
 {
     virtual void vfn_0();
@@ -76,9 +77,10 @@ struct PropHelper
     unsigned short _pad2;
     unsigned short m_uiItemCount;
 };
-void __cdecl ProcessPropertyTree(PropHelper*, int);
-void __cdecl ProcessPropertyTree(PropHelper* obj, int param2);
+void __cdecl BSShaderManager_SetObjectTypeRecurse(PropHelper*, int);
+void __cdecl BSShaderManager_SetObjectTypeRecurse(PropHelper* apObject, int aeObjectType);
 BSFogProperty* __cdecl BSShaderManager_GetFogProperty(int aiShadowSceneNode);
+// pdb: structure tagRECT, size 0x10, 4 members
 struct tagRECT
 {
     long left;
@@ -98,16 +100,16 @@ NiObject* __cdecl CreateShaderLightingProperty();
 NiObject* __cdecl CreateBlobObj();
 NiObject* __cdecl BSShaderTextureSet_CreateObject();
 NiObject* __cdecl BSShaderProperty_CreateObject();
-NiObject* __cdecl CreateSpawnedObject90();
+NiObject* __cdecl SkyShaderProperty_CreateObject();
 NiObject* __cdecl CreateObjectDerived();
 NiObject* __cdecl CreateInstance();
 NiObject* __cdecl TileShaderProperty_CreateObject();
 NiObject* __cdecl BSOrderedNode_CreateObject();
 NiObject* __cdecl BSMaterialEmittanceMultController_CreateObject();
-NiObject* __cdecl CreateDerived();
+NiObject* __cdecl BSRefractionFirePeriodController_CreateObject();
 NiObject* __cdecl CreateInterpDerivedBc36();
 NiObject* __cdecl VolumetricFogShaderProperty_CreateObject();
-NiObject* __cdecl CreateSpawnedObj9441();
+NiObject* __cdecl HairShaderProperty_CreateObject();
 NiObject* __cdecl CreateShaderAccumulator();
 extern const char g_011f9140_arg0[];
 extern const char g_011f9f00_arg0[];
@@ -128,7 +130,7 @@ extern const char g_01201fa8_arg0[];
 extern const char g_01201fb0_arg0[];
 extern const char g_01201fb8_arg0[];
 extern const char g_01204378_arg0[];
-void RegisterNiStreamFactories();
+void BSShaderManager_RegisterStreamables();
 class B4F9A0Shader
 {
   public:
@@ -215,7 +217,7 @@ class B4F9A0ShaderManager
     static void ClearAllCachedStates();
 };
 int sprintf_s(char* apBuffer, unsigned int auiSize, const char* apFormat, ...);
-const char* BSShaderManager_GetPassName(int aiShader);
+const char* BSShaderManager_GetPassName(int passNo);
 struct ShaderListNode
 {
     void* m_data;
@@ -313,15 +315,15 @@ struct FUN_00b55b00_prop
     char unk20[0x6c - 0x20];
     float m_fValue;
 };
-void __cdecl BSShaderManager_RecursiveSetForcedDarkness(PropHelper* obj, float fValue);
+void __cdecl BSShaderManager_RecursiveSetForcedDarkness(PropHelper* apObj, float afForcedDarkness);
 extern "C" int __cdecl sprintf_s(char*, size_t, const char*, ...);
 struct RTTIStub
 {
     int unk00;
 };
-extern RTTIStub g_012021b8;
-extern RTTIStub g_01200508;
-extern RTTIStub g_01202040;
+extern RTTIStub TileShader_ms_RTTI;
+extern RTTIStub TallGrassShader_ms_RTTI;
+extern RTTIStub BSShaderNoLighting_ms_RTTI;
 struct ShProp;
 struct PropPtr
 {
@@ -534,6 +536,7 @@ struct Shader
     virtual void v114();
     virtual int vfn_118(AVObj*, ShProp*);
 };
+// pdb: class Renderer, size 0x1 (here 0x4), 0 members
 struct Renderer
 {
     virtual void v00();
@@ -604,7 +607,7 @@ inline bool IsExactB(Shader* s, RTTIStub* r)
     return b;
 }
 Shader* __cdecl BSShaderManager_GetShader(void*);
-void __cdecl UpdateShaderProperty(AVObj* obj, bool a1, bool a2, bool a3);
+void __cdecl BSShaderManager_PrepareGeometry(AVObj* apGeometry, bool aeObjectType, bool abFaceGenModel, bool abSkipPreCache);
 void* __cdecl NiMalloc(unsigned int);
 extern "C" unsigned int __cdecl strlen(const char*);
 void* __cdecl _fnv_zlib_memset(void*, int, unsigned int);
@@ -710,7 +713,7 @@ extern NiPointer<NiTexture> DAT_011f9540, DAT_011f9534, DAT_011f9538;
 
 NiTexture* NiSourceTexture_Create(NiPixelData*, const char*, NiTexture::TextureFormatPreferences&);
 
-NiTexture* CreateCubeMap(const char*, const char*, const char*, const char*, const char*, const char*, NiRenderer*,
+NiTexture* NiXenonSourceCubeMapData_CreateCubeMap(const char*, const char*, const char*, const char*, const char*, const char*, NiRenderer*,
                         const NiFixedString&, NiTexture::TextureFormatPreferences&);
 
 int FUN_004dc060(int);
@@ -793,6 +796,8 @@ __forceinline unsigned char ToByte(double f)
 
 // @fnv 0x00b55bb0
 // src: COMMUNITY 0x00b55bb0
+// pdb: BSShaderManager::GenerateNormalizationCubeMap | BSShaderManager.obj | retail, upstream name already matches, high
+// pdb locals: pPath, ppixelDataTexEffect, ppixelDataAttXY, pheight, pemptynoisedata, ppixelDataEmptyNoise, z, ppixelDataDebug, phidesecret, pfilename, pattenuationxy, ppixelData, ppixelDataError, ppixelDataHideSecret, halfMapSize, iface, mapSize, pcubemap, prefs, ptexeffect, pnormal, x, y, pdebugtex ...
 void BSShaderManager_GenerateNormalizationCubeMap()
 {
 
@@ -1110,7 +1115,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
             *pixel++ = 255;
         }
 
-    error.object->m_bOwnsPixelData = true;
+    error.object->bNoConvert = true;
     error.object->m_uiRevID += 1;
 
     {
@@ -1133,7 +1138,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
             *pixel++ = 255;
         }
 
-    normal.object->m_bOwnsPixelData = true;
+    normal.object->bNoConvert = true;
     ++normal.object->m_uiRevID;
 
     {
@@ -1158,7 +1163,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
             *pixel++ = 64;
         }
 
-    gloss.object->m_bOwnsPixelData = true;
+    gloss.object->bNoConvert = true;
     ++gloss.object->m_uiRevID;
 
     {
@@ -1179,7 +1184,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
             *pixel++ = 0;
         }
 
-    normal.object->m_bOwnsPixelData = true;
+    normal.object->bNoConvert = true;
     normal.object->m_uiRevID += 1;
 
     {
@@ -1209,7 +1214,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
         }
 
     ++secret.object->m_uiRevID;
-    secret.object->m_bOwnsPixelData = true;
+    secret.object->bNoConvert = true;
 
     {
         NiFixedString name("BSShader_HideSecretMap");
@@ -1233,7 +1238,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
             *pixel++ = 255;
         }
 
-    effect.object->m_bOwnsPixelData = true;
+    effect.object->bNoConvert = true;
     effect.object->m_uiRevID++;
 
     {
@@ -1247,7 +1252,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
 
     {
         NiFixedString name("EyeReflectionCubeMap");
-        DAT_011f9544 = CreateCubeMap(texturePath, texturePath, texturePath, texturePath, texturePath, texturePath,
+        DAT_011f9544 = NiXenonSourceCubeMapData_CreateCubeMap(texturePath, texturePath, texturePath, texturePath, texturePath, texturePath,
                                     DAT_011f9508, name, DAT_011a9598);
     }
 
@@ -1256,7 +1261,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
     {
         NiFixedString name("ArmorReflectionCubeMap");
         reinterpret_cast<NiPointer<NiTexture>&>(DAT_011f95d4) =
-            CreateCubeMap(texturePath, texturePath, texturePath, texturePath, texturePath, texturePath, DAT_011f9508,
+            NiXenonSourceCubeMapData_CreateCubeMap(texturePath, texturePath, texturePath, texturePath, texturePath, texturePath, DAT_011f9508,
                          name, DAT_011a9598);
     }
 
@@ -1288,7 +1293,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
             *pixel++ = 255;
         }
 
-    noise.object->m_bOwnsPixelData = true;
+    noise.object->bNoConvert = true;
     ++noise.object->m_uiRevID;
 
     {
@@ -1327,7 +1332,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
     prefs.m_eMipFlag = NiTexture::TextureFormatPreferences::NO;
     prefs.m_eAlphaFormat = NiTexture::TextureFormatPreferences::NONE;
 
-    attenuation.object->m_bOwnsPixelData = true;
+    attenuation.object->bNoConvert = true;
     attenuation.object->m_uiRevID++;
 
     {

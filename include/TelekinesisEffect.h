@@ -20,7 +20,7 @@ public:
     virtual void Start();
     virtual void Finish();
 
-    GO m_4c;
+    GO spSpring;
     union
     {
         float m_50;
@@ -51,7 +51,7 @@ public:
         bool skipCost;
     };
 
-    TelekinesisEffect(int a, int b, int c);
+    TelekinesisEffect(int apCaster, int apSpell, int apEffect);
     TelekinesisEffect(MagicCaster* caster, MagicItem* item, EffectItem* effect);
 
     void FUN_0082a540();
@@ -60,7 +60,7 @@ public:
     void SaveLoad(Actor* apActor);
     ActiveEffect* CreateCopy();
     void UpdateGrabEffect(float delta);
-    void __thiscall StartTelekinesisEffect();
+    void __thiscall CreateSpring();
     void __thiscall Start_0082a670();
     void __thiscall Finish_0082af60();
     void FinishInitLoadGame_0082b300(Actor* apActor);

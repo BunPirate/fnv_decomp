@@ -27,6 +27,7 @@ class FaceGenUndo;
 enum SEX;
 enum BIPED_OBJECT;
 
+// pdb: class TESRace, size 0x4e4 (here 0x524), bases: TESForm, TESFullName, TESDescription, TESSpellList, TESReactionForm, 22 members
 class TESRace : public TESForm, public TESFullName, public TESDescription, public TESSpellList, public TESReactionForm
 {
 public:
@@ -41,21 +42,21 @@ public:
     void ResetFormData();
     void ClearFaceGenUndo();
     TESModel* GetHeadPartModel(SEX sex, int part);
-    bool GetBipedObjectModelPath(TESNPC* npc, BIPED_OBJECT part, char* path);
-    TESModel* GetBipedObjectModel(SEX sex, BIPED_OBJECT part);
+    bool GetBodyTextureFileName(TESNPC* apNPC, BIPED_OBJECT aePart, char* apFileName);
+    TESModel* GetPartModel(SEX aeSex, BIPED_OBJECT aePart);
     TESModel* GetBodyPartModel(SEX sex, int part);
     TESModel* GetHeadPartModel_00613970(int sex, int part);
     TESModel* GetBodyPartModel_00613a20(int sex, int part);
     TESTexture* GetBodyPartTexture(int sex, int part);
     TESTexture* GetBodyPartTexture(unsigned int sex, unsigned int part);
     TESTexture* GetBodyPartTexture(int sex, unsigned int part);
-    void BuildBodyTexturePath(TESNPC* npc, char* path);
+    void GetBodyModTextureName(TESNPC* apNPC, char* apName);
     void SetDefaultHairColor(SEX sex, unsigned char color);
     void SetDefaultVoiceType(SEX sex, BGSVoiceType* voice);
     BGSTextureModel* GetBodyTextureModel(int sex);
     FaceGenMatrix<float> (*GetMeanFaceCoord(SEX sex))[2];
-    bool BuildBodyModTexturePath(TESNPC* npc, char* path, char* texturePath);
-    bool GetSkinTextures(NiPointer<NiTexture>& texture, NiPointer<NiTexture>& normalMap, TESNPC* npc, BIPED_OBJECT part, bool firstPerson);
+    bool GetBodyModTextureFileName(TESNPC* npc, char* path, char* texturePath);
+    bool TESRace_GetBodyTexture(NiPointer<NiTexture>& aspOutBaseTexture, NiPointer<NiTexture>& aspOutModTexture, TESNPC* apNPC, BIPED_OBJECT aePart, bool abForceCreate);
     float GetHeight(SEX sex);
     float GetWeight(SEX sex);
     bool BuildFaceGenHead(BSFaceGenNiNode*& head, BSFaceGenNiNode*& hair, TESNPC* npc, bool arg3, bool arg4, SEX sex);

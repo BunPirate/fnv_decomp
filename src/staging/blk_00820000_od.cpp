@@ -115,17 +115,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -202,12 +202,14 @@ struct FUN_00827200_class
 {
     void __thiscall _ref_006815c0();
     void __thiscall FUN_00cb26e0(int);
-    FUN_00827200_class* __thiscall hkQuaternion_hkQuaternion(int a);
+    FUN_00827200_class* __thiscall hkQuaternion_ctor(int a);
 };
 // Calls _ref_006815c0, then FUN_00cb26e0 with a, and returns this.
 // @fnv 0x00827200
-// src: XBOX_PDB 0x00827200
-FUN_00827200_class* __thiscall FUN_00827200_class::hkQuaternion_hkQuaternion(int a)
+// src: XBOX_RETAIL_PDB 0x00827200
+// pdb: hkQuaternion::hkQuaternion | hkaTwoJointsIkSolver.obj | retail, upstream name already matches, high
+// pdb params: r
+FUN_00827200_class* __thiscall FUN_00827200_class::hkQuaternion_ctor(int a)
 {
     _ref_006815c0();
     FUN_00cb26e0(a);
@@ -256,6 +258,8 @@ struct FUN_0082ee80_class
 };
 // Calls InitArray with the argument, stores the address of DAT_0107ca44 in m_p, and returns this.
 // @fnv 0x0082ee80
+// pdb: NiTPointerMap<unsigned int,BSSoundHandle *>::NiTPointerMap<unsigned int,BSSoundHandle *> | FalloutAudio.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_0082ee80_class* FUN_0082ee80_class::InitializeWithGlobal(int a)
 {
     InitArray(a);
@@ -377,6 +381,7 @@ struct FUN_008321c0_Class
 };
 // @fnv 0x008321c0
 // src: GUESS 0x008321c0 (confidence: low)
+// pdb: FalloutRadio::FORadioStation::~FORadioStation | FalloutRadio.obj | debug, object-file gap fill, medium
 void FUN_008321c0_Class::ForwardCall_008321c0()
 {
     ((FUN_008321c0_Class*)((char*)this + 4))->FUN_00836030();
@@ -388,13 +393,16 @@ struct FUN_00836240
 };
 struct FUN_00836630
 {
-    void LoadGame(BGSLoadFormBuffer* buffer);
+    void FalloutRadio_FORadioStation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // @fnv 0x00836630
-void FUN_00836630::LoadGame(BGSLoadFormBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x00836630
+// pdb: FalloutRadio::FORadioStation::LoadGame | FalloutRadio.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+void FUN_00836630::FalloutRadio_FORadioStation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    buffer->ReadFormIdentifier(this);
-    reinterpret_cast<FUN_00836240*>(reinterpret_cast<char*>(this) + 4)->LoadGame(buffer);
+    apLoadGameBuffer->ReadFormIdentifier(this);
+    reinterpret_cast<FUN_00836240*>(reinterpret_cast<char*>(this) + 4)->LoadGame(apLoadGameBuffer);
 }
 
 extern int DAT_011a1888[];
@@ -420,7 +428,7 @@ void __cdecl SetGlobalPointerAtOffset(int aiOffset, const char* apValue)
 }
 }  // namespace fnv_008374e0
 
-extern "C" void __cdecl FalloutAudio_FUN_00839ab0();
+extern "C" void __cdecl ImpactMixer_InitFootsteps();
 extern unsigned char DAT_011dd85c;
 
 // @fnv 0x00837500
@@ -428,7 +436,7 @@ extern unsigned char DAT_011dd85c;
 void ResetFootstepSounds()
 {
     DAT_011dd85c = 0;
-    FalloutAudio_FUN_00839ab0();
+    ImpactMixer_InitFootsteps();
 }
 
 extern "C" void* DAT_0107d9c4;
@@ -443,6 +451,8 @@ struct FUN_0083b5e0_class
 // Calls InitBuffer with the argument, sets m_ptr to DAT_0107d9c4, and returns this.
 // @fnv 0x0083b5e0
 // src: EXE 0x0083b5e0
+// pdb: NiTPointerMap<int,unsigned int>::NiTPointerMap<int,unsigned int> | ImpactMixer.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* FUN_0083b5e0_class::NiTPointerMap_int_unsigned_int_NiTPointerMap(int a)
 {
     InitBuffer(a);
@@ -460,6 +470,7 @@ struct FUN_0083dea0_class
 };
 // @fnv 0x0083dea0
 // src: XBOX_PDB 0x0083dea0
+// pdb: TESTopic::HasDummyPrompt | MenuTopic.obj | debug, upstream name already matches, high
 unsigned int FUN_0083dea0_class::TESTopic_HasDummyPrompt()
 {
     return 0 < ((S7010*)((char*)this + 0x34))->Length();
@@ -472,10 +483,14 @@ struct S7010
 };
 struct FUN_0083e0a0_Class
 {
-    unsigned int GetLength();
+    unsigned int AngleSinCosArc_GetLength();
 };
 // @fnv 0x0083e0a0
-unsigned int FUN_0083e0a0_Class::GetLength()
+// src: XBOX_RETAIL_PDB 0x0083e0a0
+// pdb: AngleSinCosArc::GetLength | NavMeshPOVSearch.obj | retail, upstream name already matches, high
+// pdb params: afRadius
+// pdb locals: fdeltaAngle, deltaAngle
+unsigned int FUN_0083e0a0_Class::AngleSinCosArc_GetLength()
 {
     return ((S7010*)((char*)this + 0x18))->Length();
 }
@@ -554,6 +569,9 @@ struct FUN_0082eee0_class
     void* __thiscall InitArray(int size);
 };
 // @fnv 0x0082eee0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSoundHandle *>::NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSoundHandle *> | FalloutAudio.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 void* __thiscall FUN_0082eee0_class::InitArray(int aiCount)
 {
     *(void***)this = &DAT_0107ca64;
@@ -612,6 +630,8 @@ struct FUN_00836600_class
 };
 // @fnv 0x00836600
 // src: COMMUNITY 0x00836600
+// pdb: FalloutRadio::FORadioStation::SaveGame | FalloutRadio.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void __thiscall FUN_00836600_class::RadioEntry_Save(BGSLoadFormBuffer* buffer)
 {
     reinterpret_cast<BGSSaveFormBuffer*>(buffer)->SerializeFormData(
@@ -644,6 +664,9 @@ struct FUN_0083b640_class
 };
 // Sets the vtable, stores a count, allocates count*4 bytes, zeroes them, and returns this.
 // @fnv 0x0083b640
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,unsigned int>::NiTMapBase<NiTPointerAllocator<unsigned int>,int,unsigned int> | ImpactMixer.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_0083b640_class* __thiscall FUN_0083b640_class::InitBuffer(int aiCount)
 {
     m_vt = &DAT_0107d9e4;
@@ -664,6 +687,7 @@ struct FUN_0083b740_Class
 };
 // Calls FUN_0083b710, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0083b740
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,unsigned int>::`scalar deleting destructor' | ImpactMixer.obj | retail, vtable slot, high
 void* __thiscall FUN_0083b740_Class::FUN_0083b740(unsigned int flags)
 {
     SetVtableAndProcessState_0083b710();
@@ -679,9 +703,11 @@ struct FUN_0083b770
     FUN_0083b770();
 };
 // @fnv 0x0083b770
+// pdb: ImpactMixer::IMPACT_HANDLE::IMPACT_HANDLE | ImpactMixer.obj | debug, object-file run extension, low
 FUN_0083b770::FUN_0083b770()
 {}
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -696,6 +722,7 @@ struct FUN_0083b7d0
 };
 // Destructor for a structure holding two Date members and two ints; it performs no work.
 // @fnv 0x0083b7d0
+// pdb: ImpactMixer::IMPACT_HANDLE::~IMPACT_HANDLE | ImpactMixer.obj | debug, object-file run extension, low
 FUN_0083b7d0::~FUN_0083b7d0()
 {}
 
@@ -707,6 +734,7 @@ struct FUN_0083c750_class
 };
 // Calls FUN_0083c750, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0083c720
+// pdb: DialogueResponse::`scalar deleting destructor' | DialogueItem.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_0083c750_class::FUN_0083c720(unsigned int flags)
 {
     FUN_0083c750();
@@ -722,6 +750,8 @@ struct FUN_0083d0d0_Class
 };
 // Re-casts the TESForm pointer at offset 0x18 to TESObjectREFR via ref_004839c0, storing the result or null if the pointer was null.
 // @fnv 0x0083d0d0
+// pdb: DialogueItem::InitLoadGame | DialogueItem.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void FUN_0083d0d0_Class::RefreshObjectRef(int a)
 {
     *(TESObjectREFR**)((char*)this + 0x18) =
@@ -730,11 +760,12 @@ void FUN_0083d0d0_Class::RefreshObjectRef(int a)
             : 0;
 }
 
+// pdb: structure WeatherEntry, size 0xc, 3 members
 struct WeatherEntry
 {
-    int a;
-    int b;
-    int c;
+    int pWeather;
+    int uiChance;
+    int pChanceVar;
     WeatherEntry();
 };
 struct G2
@@ -747,18 +778,25 @@ struct FUN_00824290_class
 };
 // Allocates a WeatherEntry storing the three arguments and adds it to the head of the list at this+8.
 // @fnv 0x00824290
+// pdb: MagicTarget::Dispel | MagicTarget.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MagicTarget::QueueSpellDispel
+// pdb params: apSpell, apCaster, apActiveEffect
+// pdb locals: plist, pnext, peffect
 void __thiscall FUN_00824290_class::AddWeatherEntry(int aiFirst, int aiSecond, int aiThird)
 {
     WeatherEntry* pEntry = new WeatherEntry;
-    pEntry->a = aiFirst;
-    pEntry->b = aiSecond;
-    pEntry->c = aiThird;
+    pEntry->pWeather = aiFirst;
+    pEntry->uiChance = aiSecond;
+    pEntry->pChanceVar = aiThird;
     ((G2*)((char*)this + 8))->AddHead(&pEntry);
 }
 
 // If self is non-null and its sound data has a non-zero a or b, writes a and b to outA and outB and returns true; otherwise returns false.
 // @fnv 0x0082d740
 // src: COMMUNITY 0x0082d740
+// pdb: FalloutAudio::GetLoopPoints | FalloutAudio.obj | debug, object-file run extension, low
+// pdb params: apSettingsContext, aiLoopStart, aiLoopEnd
+// pdb locals: psoundData
 bool GetSoundLoopPoints(TESSound* self, int* outA, int* outB)
 {
     if (!self)
@@ -804,6 +842,9 @@ struct S_00836470
 };
 
 // @fnv 0x00836470
+// pdb: FalloutRadio::StationState::FinishLoadGame | FalloutRadio.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: users
 void S_00836470::UpdateSoundItems(int)
 {
     if (BSAudio::GetSingleton()->GetSynchTime() < m_uiCommandId || m_uiItemCount <= 0)
@@ -851,7 +892,7 @@ struct FUN_0083d1e0
     unsigned int unk24;
     unsigned int unk28;
     FUN_0083d1e0();
-    void DialogueResponse_LoadGameBGS(BGSLoadFormBuffer* buffer);
+    void DialogueResponse_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 struct DialogueResponseList
 {
@@ -869,30 +910,34 @@ struct DialogueItem_shell
     unsigned int speaker;
     FUN_0083d1e0* GetResponseByIndex(short id);
     void FUN_0083c8a0(FUN_0083d1e0* response);
-    void LoadDialogueItem(BGSLoadFormBuffer* buffer);
+    void DialogueItem_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // Reads a response count and its responses, an optional current response id, topic info, topic, quest and speaker from the load buffer.
 // @fnv 0x0083cf40
-void DialogueItem_shell::LoadDialogueItem(BGSLoadFormBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x0083cf40
+// pdb: DialogueItem::LoadGame | DialogueItem.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: scurrentResponse, isaveGameCount, iloop, presponse
+void DialogueItem_shell::DialogueItem_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     short currentID;
     {
-        unsigned int count = ((BGSLoadGameBuffer*)buffer)->ReadElementCount();
+        unsigned int count = ((BGSLoadGameBuffer*)apLoadGameBuffer)->ReadElementCount();
         for (unsigned int i = 0; i < count; ++i)
         {
             FUN_0083d1e0* response = new FUN_0083d1e0;
-            response->DialogueResponse_LoadGameBGS(buffer);
+            response->DialogueResponse_LoadGame(apLoadGameBuffer);
             responses.AddTail(response);
         }
     }
     currentID = -1;
-    ((BGSLoadGameBuffer*)buffer)->ReadTypedData(&currentID, 2);
+    ((BGSLoadGameBuffer*)apLoadGameBuffer)->ReadTypedData(&currentID, 2);
     if (currentID != -1)
         FUN_0083c8a0(GetResponseByIndex(currentID));
-    topicInfo = dynamic_cast<TESTopicInfo*>(GetFormByID(((BGSLoadGameBuffer*)buffer)->ReadFormIdentifier()));
-    topic = dynamic_cast<TESTopic*>(GetFormByID(((BGSLoadGameBuffer*)buffer)->ReadFormIdentifier()));
-    quest = dynamic_cast<TESQuest*>(GetFormByID(((BGSLoadGameBuffer*)buffer)->ReadFormIdentifier()));
-    buffer->ReadFormIdentifier(&speaker);
+    topicInfo = dynamic_cast<TESTopicInfo*>(GetFormByID(((BGSLoadGameBuffer*)apLoadGameBuffer)->ReadFormIdentifier()));
+    topic = dynamic_cast<TESTopic*>(GetFormByID(((BGSLoadGameBuffer*)apLoadGameBuffer)->ReadFormIdentifier()));
+    quest = dynamic_cast<TESQuest*>(GetFormByID(((BGSLoadGameBuffer*)apLoadGameBuffer)->ReadFormIdentifier()));
+    apLoadGameBuffer->ReadFormIdentifier(&speaker);
 }
 
 struct ListX
@@ -908,6 +953,7 @@ struct FUN_00836030_class
     ~FUN_00836030_class();
 };
 // @fnv 0x00836030
+// pdb: FalloutRadio::StationState::~StationState | FalloutRadio.obj | debug, object-file gap fill, medium
 FUN_00836030_class::~FUN_00836030_class()
 {
     if (b != a)
@@ -938,6 +984,7 @@ extern int DAT_0107bc28;
 
 // Initializes the object's vtable pointer to DAT_0107bc28 and clears flag4 and flag5.
 // @fnv 0x00822a40
+// pdb: MagicTarget::MagicTarget | MagicTarget.obj | debug, call graph (shared callers), medium
 FUN_00822a40_Class::FUN_00822a40_Class() : vtbl(&DAT_0107bc28)
 {
     flag4 = 0;
@@ -953,6 +1000,7 @@ struct FUN_00825740 : FUN_0080d930
     ~FUN_00825740();
 };
 // @fnv 0x00825740
+// pdb: NightEyeEffect::~NightEyeEffect | NightEyeEffect.obj | debug, object-file run extension, low
 FUN_00825740::~FUN_00825740()
 {}
 
@@ -992,6 +1040,8 @@ struct FUN_00825a10 : BE
 
 // Initializes the object: sets both vtables, zeroes m_18, m_1c and m_20, and constructs the base with value 0x32.
 // @fnv 0x00825a10
+// pdb: NonActorMagicCaster::~NonActorMagicCaster | NonActorMagicCaster.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NonActorMagicCaster::NonActorMagicCaster
 FUN_00825a10::FUN_00825a10() : BE((unsigned char)0x32), m_caster()
 {
     this->vtable = reinterpret_cast<void*>(&DAT_0107be80);
@@ -1007,6 +1057,7 @@ struct FUN_008260b0 : ActiveEffect
 };
 // Constructs the ActiveEffect base from caster, item and effect, then sets the vtable pointer to DAT_0107bf1c.
 // @fnv 0x008260b0
+// pdb: OpenEffect::~OpenEffect | OpenEffect.obj | debug, object-file run extension, low
 FUN_008260b0::FUN_008260b0(MagicCaster* caster, MagicItem* item, EffectItem* effect)
     : ActiveEffect(caster, item, effect)
 {
@@ -1017,6 +1068,8 @@ namespace fnv_00826260 {
 
 // Allocates and constructs a FUN_008260b0 object from the three given arguments, returning the new instance.
 // @fnv 0x00826260
+// pdb: OpenEffect::Instantiate | OpenEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 FUN_008260b0* __cdecl CreateFUN008260b0(void* a, void* b, void* c)
 {
     return new FUN_008260b0(static_cast<MagicCaster*>(a), static_cast<MagicItem*>(b), static_cast<EffectItem*>(c));
@@ -1032,6 +1085,9 @@ struct FUN_0082b370 : ActiveEffect
 
 // Allocates a FUN_0082b370 object by calling its constructor with the three arguments and returns the new pointer.
 // @fnv 0x0082b6d0
+// pdb: TurnUndeadEffect::Instantiate | TurnUndeadEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TurnUndeadEffect::GetSaveSize
+// pdb params: apCaster, apSpell, apEffect
 FUN_0082b370* CreateFUN0082b370(int a, int b, int c)
 {
     return new FUN_0082b370(reinterpret_cast<MagicCaster*>(a), reinterpret_cast<MagicItem*>(b), reinterpret_cast<EffectItem*>(c));
@@ -1049,9 +1105,12 @@ class FUN_0082cf80 : public ActiveEffect
 
 // Allocates a FUN_0082cf80 object by calling its constructor with the three arguments and returns the pointer.
 // @fnv 0x0082d090
-void* __cdecl CreateFUN0082cf80(int a, int b, int c)
+// src: XBOX_RETAIL_PDB 0x0082d090
+// pdb: VampirismEffect::Instantiate | VampirismEffect.obj | retail, object-file gap fill, high
+// pdb params: apCaster, apSpell, apEffect
+void* __cdecl VampirismEffect_Instantiate(int apCaster, int apSpell, int apEffect)
 {
-    return new fnv_0082cf80::FUN_0082cf80(reinterpret_cast<MagicCaster*>(a), reinterpret_cast<MagicItem*>(b), reinterpret_cast<EffectItem*>(c));
+    return new fnv_0082cf80::FUN_0082cf80(reinterpret_cast<MagicCaster*>(apCaster), reinterpret_cast<MagicItem*>(apSpell), reinterpret_cast<EffectItem*>(apEffect));
 }
 
 // @fnv 0x0082d6e0
@@ -1067,6 +1126,7 @@ struct GlobalObject_0082ee80
 };
 // Runs the destructor, frees the object with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0082eeb0
+// pdb: NiTPointerMap<unsigned int,BSSoundHandle *>::`scalar deleting destructor' | FalloutAudio.obj | retail, vtable slot, high
 GlobalObject_0082ee80* __thiscall GlobalObject_0082ee80::FUN_0082eeb0(unsigned int flags)
 {
     this->GlobalObject_0082ee80::~GlobalObject_0082ee80();
@@ -1081,6 +1141,7 @@ struct FUN_0082efb0_Ext : FUN_0082efb0
 };
 // Initializes the object, deallocates it when bit 0 of flags is set, and returns this.
 // @fnv 0x0082efe0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSoundHandle *>::`scalar deleting destructor' | FalloutAudio.obj | retail, vtable slot, high
 FUN_0082efb0* FUN_0082efb0_Ext::FUN_0082efe0(unsigned int flags)
 {
     SetVtableAndProcessState_0082efb0();
@@ -1126,6 +1187,7 @@ struct FUN_00831de0_Class
 };
 
 // @fnv 0x00831de0
+// pdb: BSAudio::IsSynchTimerPaused | FalloutAudioMedia.obj | debug, object-file run extension, low
 int FUN_00831de0_Class::ForwardToMember()
 {
     return m_14.IsFlagSet();
@@ -1183,6 +1245,7 @@ struct GlobalObject_0083b5e0
 
 // Runs the destructor, then frees the object with Deallocate when flags has bit 0 set, and returns the object pointer.
 // @fnv 0x0083b610
+// pdb: NiTPointerMap<int,unsigned int>::`scalar deleting destructor' | ImpactMixer.obj | retail, vtable slot, high
 void* GlobalObject_0083b5e0::FUN_0083b610(unsigned int flags)
 {
     this->GlobalObject_0083b5e0::~GlobalObject_0083b5e0();
@@ -1202,33 +1265,36 @@ TESForm* __cdecl _ref_004839c0(unsigned int formID);
 
 struct FUN_0083d740_Class
 {
-    void __thiscall DialogueResponse_LoadGameBGS(BGSLoadGameBuffer* buffer);
+    void __thiscall DialogueResponse_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 
 // @fnv 0x0083d740
-// src: COMMUNITY 0x0083d740
-void __thiscall FUN_0083d740_Class::DialogueResponse_LoadGameBGS(BGSLoadGameBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x0083d740
+// pdb: DialogueResponse::LoadGame | DialogueResponse.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pstring
+void __thiscall FUN_0083d740_Class::DialogueResponse_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     char text[1000];
 
-    reinterpret_cast<BGSLoadGameBufferHelper*>(buffer)->LoadString(text);
+    reinterpret_cast<BGSLoadGameBufferHelper*>(apLoadGameBuffer)->LoadString(text);
     reinterpret_cast<::BSStringT<char>*>(this)->Set(text, 0);
 
-    reinterpret_cast<BGSLoadGameBufferHelper*>(buffer)->LoadString(text);
+    reinterpret_cast<BGSLoadGameBufferHelper*>(apLoadGameBuffer)->LoadString(text);
     reinterpret_cast<::BSStringT<char>*>(reinterpret_cast<char*>(this) + 0x10)->Set(text, 0);
 
-    buffer->ReadTypedData(reinterpret_cast<char*>(this) + 8, 4);
-    buffer->ReadTypedData(reinterpret_cast<char*>(this) + 0xc, 4);
-    buffer->ReadTypedData(reinterpret_cast<char*>(this) + 0x24, 1);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<char*>(this) + 8, 4);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<char*>(this) + 0xc, 4);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<char*>(this) + 0x24, 1);
 
     *reinterpret_cast<TESIdleForm**>(reinterpret_cast<char*>(this) + 0x18) =
-        dynamic_cast<TESIdleForm*>(_ref_004839c0(buffer->ReadFormIdentifier()));
+        dynamic_cast<TESIdleForm*>(_ref_004839c0(apLoadGameBuffer->ReadFormIdentifier()));
 
     *reinterpret_cast<TESIdleForm**>(reinterpret_cast<char*>(this) + 0x1c) =
-        dynamic_cast<TESIdleForm*>(_ref_004839c0(buffer->ReadFormIdentifier()));
+        dynamic_cast<TESIdleForm*>(_ref_004839c0(apLoadGameBuffer->ReadFormIdentifier()));
 
     *reinterpret_cast<TESSound**>(reinterpret_cast<char*>(this) + 0x20) =
-        dynamic_cast<TESSound*>(_ref_004839c0(buffer->ReadFormIdentifier()));
+        dynamic_cast<TESSound*>(_ref_004839c0(apLoadGameBuffer->ReadFormIdentifier()));
 }
 
 namespace fnv_0083da50 {
@@ -1251,6 +1317,7 @@ struct FUN_0083da50 : StrMem
 extern char $SG3295[];
 
 // @fnv 0x0083da50
+// pdb: MenuTopic::MenuTopic | MenuTopic.obj | retail, object-file run extension, high
 FUN_0083da50::FUN_0083da50() : StrMem(), m_sl()
 {
     m_20 = 0;
@@ -1284,35 +1351,38 @@ extern void* _DAT_01183028;
 
 struct FUN_0083fbe0_Class
 {
-    void __thiscall ExtraInfoGeneralTopic_Data_LoadGame(BGSLoadGameBuffer* buffer);
+    void __thiscall MenuTopic_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 
 // @fnv 0x0083fbe0
-// src: COMMUNITY 0x0083fbe0
-void __thiscall FUN_0083fbe0_Class::ExtraInfoGeneralTopic_Data_LoadGame(BGSLoadGameBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x0083fbe0
+// pdb: MenuTopic::LoadGame | MenuTopic.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pstring
+void __thiscall FUN_0083fbe0_Class::MenuTopic_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     char string[500];
 
-    reinterpret_cast<BGSLoadGameBufferLoadStringHelper*>(buffer)->LoadString(string);
+    reinterpret_cast<BGSLoadGameBufferLoadStringHelper*>(apLoadGameBuffer)->LoadString(string);
     reinterpret_cast<Str6a70*>(this)->operator=(string);
 
-    reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x08, 1);
-    reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x24, 1);
-    reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x25, 1);
-    reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x09, 1);
-    reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x0A, 1);
+    reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x08, 1);
+    reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x24, 1);
+    reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x25, 1);
+    reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x09, 1);
+    reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadTypedData(reinterpret_cast<char*>(this) + 0x0A, 1);
 
     *reinterpret_cast<TESQuest**>(reinterpret_cast<char*>(this) + 0x14) = dynamic_cast<TESQuest*>(
-        _ref_004839c0(reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadFormIdentifier()));
+        _ref_004839c0(reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadFormIdentifier()));
 
     *reinterpret_cast<TESTopic**>(reinterpret_cast<char*>(this) + 0x28) = dynamic_cast<TESTopic*>(
-        _ref_004839c0(reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadFormIdentifier()));
+        _ref_004839c0(reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadFormIdentifier()));
 
     *reinterpret_cast<TESTopic**>(reinterpret_cast<char*>(this) + 0x1C) = dynamic_cast<TESTopic*>(
-        _ref_004839c0(reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadFormIdentifier()));
+        _ref_004839c0(reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadFormIdentifier()));
 
     *reinterpret_cast<TESTopicInfo**>(reinterpret_cast<char*>(this) + 0x18) = dynamic_cast<TESTopicInfo*>(
-        _ref_004839c0(reinterpret_cast<BGSLoadFormBufferHelper*>(buffer)->ReadFormIdentifier()));
+        _ref_004839c0(reinterpret_cast<BGSLoadFormBufferHelper*>(apLoadGameBuffer)->ReadFormIdentifier()));
 }
 
 // FUN_00822440 - 0x00822440, 99 bytes.
@@ -1424,6 +1494,7 @@ class FUN_00825b60 : public PrimaryBase_b5774, public SecondaryBase_b5774
 
 // If the global manager check fails, releases m_20 when non-null and calls Cleanup.
 // @fnv 0x00825b60
+// pdb: NonActorMagicCaster::~NonActorMagicCaster | NonActorMagicCaster.obj | debug, object-file run extension, low
 FUN_00825b60::~FUN_00825b60()
 {
     if (!DAT_011c3f2c->TESDataHandler_GetClearingData())
@@ -1467,6 +1538,7 @@ struct FUN_00825ea0 : S_00825ea0_A, S_00825ea0_B
 };
 // Initializes the base subobject with 0x33 and sets unk1c to 0.
 // @fnv 0x00825ea0
+// pdb: NonActorMagicTarget::NonActorMagicTarget | NonActorMagicTarget.obj | retail, object-file run extension, high
 FUN_00825ea0::FUN_00825ea0() : S_00825ea0_A(0x33)
 {
     unk1c = 0;
@@ -1474,13 +1546,16 @@ FUN_00825ea0::FUN_00825ea0() : S_00825ea0_A(0x33)
 
 struct DataHandler
 {
-    TESSound* LookupSound(unsigned int formID);
+    TESSound* LookupSound(unsigned int aiSearchID);
 };
 extern DataHandler* g_dataHandler;
 
 int CopySoundPath(char* dest, unsigned int size, const char* src);
 
 // @fnv 0x0082d150
+// pdb: FalloutAudio::ResolveSoundID | FalloutAudio.obj | retail, object-file run extension, low
+// pdb params: aiFormID, apFilename, aiSoundTypeFlags, apSettingsContext
+// pdb locals: psound
 bool GetSoundPathAndFlags(unsigned int formID, char* path, unsigned int* flags, TESSound** outSound)
 {
     TESSound* sound = g_dataHandler->LookupSound(formID);
@@ -1527,6 +1602,7 @@ struct FUN_0082ef50 : public Base_82efb0
 };
 
 // @fnv 0x0082ef50
+// pdb: NiTPointerMap<unsigned int,BSSoundHandle *>::~NiTPointerMap<unsigned int,BSSoundHandle *> | FalloutAudio.obj | debug, object-file run extension, low
 FUN_0082ef50::~FUN_0082ef50()
 {
     RemoveAll();
@@ -1569,6 +1645,8 @@ struct FUN_0082f010 : FUN_0082f240
 };
 
 // @fnv 0x0082f010
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSoundHandle *>::RemoveAll | FalloutAudio.obj | debug, object-file run extension, low
+// pdb locals: i, pkSave
 FUN_0082f010::FUN_0082f010(const char* pathName)
 {
     counter = 0;
@@ -1812,7 +1890,7 @@ int ArchiveStream::CBSAStream_Read(void* buffer, unsigned int count, int unused,
 
 extern "C" __declspec(dllimport) int __stdcall CloseHandle(void* hObject);
 
-void __cdecl BSSleep(int milliseconds);
+void __cdecl BSSleep(int auiMSec);
 
 struct FUN_00aa63c0
 {
@@ -1843,6 +1921,7 @@ struct FUN_0082f6c0 : FUN_00aa63c0
 
 // Clears the low bit of unk3C, calls CopyAndSleep on unk34, waits while bit 1 of unk3C is set, then closes unk30.
 // @fnv 0x0082f6c0
+// pdb: `anonymous namespace'::FAMThread::~FAMThread | FalloutAudioMedia.obj | debug, object-file run extension, low
 FUN_0082f6c0::~FUN_0082f6c0()
 {
     unk3C &= 0xFFFFFFFE;
@@ -1863,6 +1942,7 @@ struct FUN_0082f9c0_obj
 
 // @fnv 0x0082f9c0
 // src: COMMUNITY 0x0082f9c0
+// pdb: FalloutAudioMedia::Shutdown | FalloutAudioMedia.obj | retail, upstream name already matches, high
 void __cdecl FalloutAudioMedia_Shutdown()
 {
     unsigned int a = DAT_011dd1f4;
@@ -2145,7 +2225,7 @@ struct SettingObj
 bool __cdecl ImpactMixer_GetGunshotsInitialized();
 bool __fastcall PlayerCharacter_IsActually3rdPerson(void* p);
 unsigned int __cdecl Cmd_GetSessionTime_Execute();
-bool __cdecl FUN_0082eca0(void* snd, LocalVec3 pos, float v);
+bool __cdecl SoundDistanceTest(void* apSound, LocalVec3 aLoc, float aMod);
 extern Player* DAT_011dea3c;
 extern LocalVec3 DAT_011f426c;
 extern const float DAT_01016970;
@@ -2155,7 +2235,11 @@ extern SettingObj DAT_011dd0ac;
 extern SettingObj DAT_011dcff4;
 extern Entry DAT_011dd9e8[20];
 // @fnv 0x0083ac30
-void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListObj, bool a3)
+// src: XBOX_RETAIL_PDB 0x0083ac30
+// pdb: ImpactMixer::PlayGunshot | ImpactMixer.obj | retail, object-file gap fill, high
+// pdb params: apWeapon, apSource, aOriginNode, abPlayer
+// pdb locals: bUseModSound, iflags, ucMinF, origin, fModFV, pfurthest, fdistanceSqr, ucMaxN, psameSource, bin1stPerson, boldestIsValid, fModNA, fModFA, handl2, poldest, fModNV, ucMinN, distanceVector, handl, b2DAttackSound, pcurrImpactHandle, ucMaxF, pweap, psound ...
+void __cdecl ImpactMixer_PlayGunshot(Weap* apWeapon, VObj1d0* apSource, ListObj* aOriginNode, bool abPlayer)
 {
     if (!ImpactMixer_GetGunshotsInitialized())
         return;
@@ -2194,7 +2278,7 @@ void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListO
             }
         }
     }
-    if (a3)
+    if (abPlayer)
     {
         iflags = iflags | 0x200000;
         if (DAT_011dea3c->FUN_008d8520() != 0)
@@ -2214,7 +2298,7 @@ void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListO
     }
     if (apWeapon != 0)
     {
-        if (a3)
+        if (abPlayer)
         {
             if (apWeapon->GetPointerByFlag(false) != 0)
                 ib15 = true;
@@ -2223,7 +2307,7 @@ void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListO
         {
             iflags = 0x20181;
         }
-        else if (a3 && kb52)
+        else if (abPlayer && kb52)
         {
             iflags = 0x60182;
         }
@@ -2231,10 +2315,10 @@ void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListO
         {
             iflags = 0x20182;
         }
-        if (!a3 && apListObj != 0)
+        if (!abPlayer && aOriginNode != 0)
         {
             // Use the shared point layout for the original trivial 12-byte copy.
-            reinterpret_cast<::NiPoint3&>(jvec) = reinterpret_cast<const ::NiPoint3&>(*apListObj->NiAVObject_GetWorldTranslate());
+            reinterpret_cast<::NiPoint3&>(jvec) = reinterpret_cast<const ::NiPoint3&>(*aOriginNode->NiAVObject_GetWorldTranslate());
         }
         else if (apSource->VCall1d0() != 0)
         {
@@ -2254,8 +2338,8 @@ void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListO
                 sndA = apWeapon->TESObjectWEAP_GetAttackSound(b83d);
                 sndB = apWeapon->GetValueByFlag(b83d);
             }
-            bool a86 = FUN_0082eca0(sndA, jvec, yf50);
-            bool b85 = FUN_0082eca0(sndB, jvec, cf4c);
+            bool a86 = SoundDistanceTest(sndA, jvec, yf50);
+            bool b85 = SoundDistanceTest(sndB, jvec, cf4c);
             if (!a86 && !b85)
                 return;
             if (!a86)
@@ -2272,7 +2356,7 @@ void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListO
                 if (DAT_011dd9e8[ai].f18 == apSource)
                 {
                     sentry58 = &DAT_011dd9e8[ai];
-                    if (!a3)
+                    if (!abPlayer)
                         break;
                 }
                 if (mentry3c == 0)
@@ -2283,7 +2367,7 @@ void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListO
                 {
                     mentry3c = &DAT_011dd9e8[ai];
                 }
-                if (!a3 || DAT_011dd9e8[ai].f18 == DAT_011dea3c)
+                if (!abPlayer || DAT_011dd9e8[ai].f18 == DAT_011dea3c)
                     continue;
                 if (tentry64 == 0)
                 {
@@ -2341,14 +2425,14 @@ void __cdecl PlayWeaponSound(Weap* apWeapon, VObj1d0* apSource, ListObj* apListO
                     qb75 = (unsigned char)sndB->GetByteAtOffset44();
                     sb0d = sndB->GetField45();
                 }
-                if (!a3 && apListObj != 0)
+                if (!abPlayer && aOriginNode != 0)
                 {
-                    aentry140->ch0.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apListObj));
-                    aentry140->ch1.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apListObj));
+                    aentry140->ch0.SetObjectToFollow(reinterpret_cast<NiAVObject*>(aOriginNode));
+                    aentry140->ch1.SetObjectToFollow(reinterpret_cast<NiAVObject*>(aOriginNode));
                 }
                 else if (apSource->VCall1d0() != 0)
                 {
-                    if (!(a3 && kb52))
+                    if (!(abPlayer && kb52))
                     {
                         aentry140->ch0.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apSource->VCall1d0()));
                         aentry140->ch1.SetObjectToFollow(reinterpret_cast<NiAVObject*>(apSource->VCall1d0()));
@@ -2401,6 +2485,7 @@ class FUN_0083b6b0 : public B3B6B0MapBase
 };
 
 // @fnv 0x0083b6b0
+// pdb: NiTPointerMap<int,unsigned int>::~NiTPointerMap<int,unsigned int> | ImpactMixer.obj | debug, object-file run extension, low
 FUN_0083b6b0::~FUN_0083b6b0()
 {
     RemoveAll();
@@ -2430,6 +2515,8 @@ struct S_0083d130_Class : S_0083d130_Node
 };
 
 // @fnv 0x0083d130
+// pdb: DialogueItem::PrecacheSounds | DialogueItem.obj | debug, object-file run extension, low
+// pdb locals: plist
 void S_0083d130_Class::ProcessNodeChain()
 {
     S_0083d130_Node* node = this;
@@ -2493,11 +2580,14 @@ struct FUN_008216c0_shell
     float time;
     EffectCollection effects;
     EffectHandle active;
-    void UpdateEffectTimes();
+    void MagicShaderHitEffect_ResetAlphaTimer();
 };
 // Computes a time from the active effect's times (or zero if reset), scales it by the spell's times, and applies it to every effect in the collection.
 // @fnv 0x008216c0
-void FUN_008216c0_shell::UpdateEffectTimes()
+// src: XBOX_RETAIL_PDB 0x008216c0
+// pdb: MagicShaderHitEffect::ResetAlphaTimer | MagicShaderHitEffect.obj | retail, call graph (shared callers), high
+// pdb locals: fAlpha, i
+void FUN_008216c0_shell::MagicShaderHitEffect_ResetAlphaTimer()
 {
     float value = 0.0f;
     if (active.Modelloader_GetReferencedThis())
@@ -2532,6 +2622,8 @@ struct CasterUpdate : BE, BCaster_S
 
 // Iterates the process list's groups 0 and 1, calling FUN_008c4f10 on actors and UpdateCaster on magic projectiles, then updates the player.
 // @fnv 0x00825c20
+// pdb: NonActorMagicCaster::CleanUpOtherMobileObjects | NonActorMagicCaster.obj | debug, call graph, low
+// pdb locals: parray, i, pprojectile, pmob, pactor
 void CasterUpdate::UpdateCasters()
 {
     MobileObjectProcessArray* pProcessList = DAT_011e0e80.FUN_00717e50();
@@ -2565,6 +2657,7 @@ void CasterUpdate::UpdateCasters()
 namespace fnv_0082cf80 {
 // Constructs the object by forwarding the caster, item and effect pointers to the ActiveEffect base constructor.
 // @fnv 0x0082cf80
+// pdb: VampirismEffect::~VampirismEffect | VampirismEffect.obj | debug, object-file run extension, low
 FUN_0082cf80::FUN_0082cf80(MagicCaster* pkCaster, MagicItem* pkItem, EffectItem* pkEffect)
     : ActiveEffect(pkCaster, pkItem, pkEffect)
 {}
@@ -2575,6 +2668,9 @@ FUN_0082cf80::FUN_0082cf80(MagicCaster* pkCaster, MagicItem* pkItem, EffectItem*
 unsigned short __fastcall GetSoundStaticAttenuation(TESSound* sound);
 
 // @fnv 0x0082d400
+// pdb: FalloutAudio::ApplySettingsFromMasterFile | FalloutAudio.obj | debug, object-file run extension, low
+// pdb params: aSoundHandle, apSettingsContext, aiModifierFlags
+// pdb locals: iflags, psoundData, imin, imax
 unsigned int __cdecl ApplySoundFormToGameSound(BSSoundHandle* apSound, void* apForm, unsigned int* apFlags)
 {
     unsigned int uiMax2;
@@ -3032,7 +3128,11 @@ extern int DAT_011dd368;
 extern char DAT_011dd1f8[];
 
 // @fnv 0x00830b30
-int __cdecl RunAudioChannel(int* param)
+// src: XBOX_RETAIL_PDB 0x00830b30
+// pdb: FalloutAudioMedia::ThreadProc | FalloutAudioMedia.obj | retail, call graph, high
+// pdb params: input
+// pdb locals: blockSize, uiTrackSubDuration, bStream, volume, uiTrackFadeEnd, eTrackType, iDeltaTest, bFirstRunSync, fTrackAttenuation, pMediaSoundBuffer, uiBufferSize, uiToSample, eTrackSide, uiTrackID, pTrackFileName, pMediaSoundFile, hSoundFile, XMA2Format, blockCount, currentPosition, fTrackFadeStartVolume, uiTrackSynchStartTime, uiSubDuration, uiSamplesPlayedTemp ...
+int __cdecl FalloutAudioMedia_ThreadProc(int* input)
 {
     unsigned int fadeTimeNow;
     unsigned int duration3;
@@ -3061,8 +3161,8 @@ int __cdecl RunAudioChannel(int* param)
     IAudGraph* graphS;
     unsigned int totalLength2;
 
-    channel = param[1];
-    id2 = param[0];
+    channel = input[1];
+    id2 = input[0];
     ok4 = true;
     now = 0;
     volumeA = 0.0f;
@@ -3530,6 +3630,9 @@ struct SoundTimer
 // Writes elapsed time, timer fields, and queued sound forms to the buffer, patches the count, then saves the queue if present.
 // @fnv 0x00836110
 // src: COMMUNITY 0x00836110
+// pdb: FalloutRadio::StationState::SaveGame | FalloutRadio.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
+// pdb locals: bhasConvo, imodifiedStartTime, plist, isaveGameBufferPos, isaveGameCount, preceiver
 void SoundTimer::RadioEntry_Data_Save(BGSSaveFormBuffer* buffer)
 {
     int elapsed_2 = BSAudio::GetSingleton()->GetSynchTime() - m_uiStartTime;
@@ -3613,18 +3716,21 @@ class FUN_0081dd00 : public PrimaryBase8229, public SecondaryBase8229
     FUN_0081dd00(int iParam1, int iParam2, int iParam3, int iParam4, NiPoint3 kPoint1, NiPoint3 kPoint2);
 };
 
-class FUN_00822920 : public FUN_0081dd00
+// pdb: class MagicSprayProjectile, size 0xa8 (here 0x1c), bases: MagicProjectile, 0 members
+class MagicSprayProjectile : public FUN_0081dd00
 {
   public:
-    FUN_00822920(int iParam1, int iParam2, int iParam3, int iParam4, NiPoint3 kPoint1, NiPoint3 kPoint2);
-    virtual ~FUN_00822920();
+    MagicSprayProjectile(int apCaster, int apSpell, int apDominantEffect, int apAVEffect, NiPoint3 aOrigin, NiPoint3 aRotation);
+    virtual ~MagicSprayProjectile();
     void MobileObject_InitHavok();
 };
 
 // @fnv 0x00822920
-FUN_00822920::FUN_00822920(int iParam1, int iParam2, int iParam3, int iParam4, NiPoint3 kPoint1,
-                           NiPoint3 kPoint2)
-    : FUN_0081dd00(iParam1, iParam2, iParam3, iParam4, kPoint1, kPoint2)
+// pdb: MagicSprayProjectile::MagicSprayProjectile | MagicSprayProjectile.obj | debug, call graph, high
+// pdb params: apCaster, apSpell, apDominantEffect, apAVEffect, aOrigin, aRotation
+MagicSprayProjectile::MagicSprayProjectile(int apCaster, int apSpell, int apDominantEffect, int apAVEffect, NiPoint3 aOrigin,
+                           NiPoint3 aRotation)
+    : FUN_0081dd00(apCaster, apSpell, apDominantEffect, apAVEffect, aOrigin, aRotation)
 {
     MobileObject_InitHavok();
 }
@@ -3648,6 +3754,7 @@ class FUN_008321e0
 
 // Destructor for the FUN_008321e0 class, which contains two List8321E0 members and an int field.
 // @fnv 0x008321e0
+// pdb: FalloutRadio::FORadioReceiver::~FORadioReceiver | FalloutRadio.obj | debug, object-file gap fill, medium
 FUN_008321e0::~FUN_008321e0()
 {}
 
@@ -3789,6 +3896,7 @@ struct FUN_0083c750 : ::BSStringT<char>
 };
 // Destructor with an empty body; the m_uiX member and the ::BSStringT<char> base are destroyed implicitly.
 // @fnv 0x0083c750
+// pdb: DialogueResponse::~DialogueResponse | DialogueItem.obj | debug, object-file gap fill, medium
 FUN_0083c750::~FUN_0083c750()
 {}
 
@@ -3799,6 +3907,7 @@ namespace fnv_0082f1b0 {
 // the object passed in the fastcall register (ecx).
 // @fnv 0x0082f1b0
 // src: COMMUNITY 0x0082f1b0
+// pdb: NiCriticalSection::Lock | BGSDecalManager.obj | debug, upstream name already matches, high
 void __fastcall NiCriticalSection_Lock(void* apCriticalSection)
 {
     EnterCriticalSection((LPCRITICAL_SECTION)apCriticalSection);

@@ -4,6 +4,7 @@
 
 class NiParticleSystem;
 
+// pdb: class NiPSysUpdateTask, size 0x14, bases: NiTask, 2 members
 class NiPSysUpdateTask : public NiTask
 {
 public:

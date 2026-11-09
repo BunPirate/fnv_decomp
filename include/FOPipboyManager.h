@@ -9,6 +9,7 @@ class NiGeometry;
 class NiScreenElements;
 class NiColorA;
 
+// pdb: class FOPipboyManager, size 0x170, bases: FORenderedMenu, 22 members
 class FOPipboyManager : public FORenderedMenu
 {
 public:
@@ -17,11 +18,11 @@ public:
     virtual void OnMenuOpen();
 
     void Init(bool);
-    void ActivateButton(const unsigned int button);
+    void ActivateButton(const unsigned int aiButton);
     bool IsUnk28Set();
     bool GetByteAtOffsetB9();
-    void SetScreen(NiAVObject*);
-    void InitializeMenuLight();
+    void FORenderedMenu_SetScreenGeometry(NiAVObject*);
+    void InitLight();
     void SetScreenLightFlickerIntensity(float);
     void SetIntensity(float);
     void SetQuad(const NiColorA&);
@@ -31,11 +32,11 @@ public:
     void SetKnobTargetAndRate(int aiKnob, float afTarget, float afRate);
     void UpdateFade(float now);
     void UpdatePipboyLightFade(float afTime);
-    void UpdateScrollKnob();
-    void UpdatePipBoyButton();
+    void InitKnobs();
+    void InitButtons();
     void SetDataGlowEnabled(bool);
     void UpdatePipboyLight(int);
-    void SetValue(int page, bool abPlaySounds);
+    void SetTabKnobPosition(int aiNewPos, bool abPlaySounds);
     bool CheckOrangeButtonsClicked(bool press, bool release, float& x, float& y, int& button);
     NiAVObject* SkyObject_GetNiNode();
     void SetTarget_00705fc0(NiNode*);
@@ -47,30 +48,30 @@ public:
     FORenderedMenu* FUN_00704370();
     void ReInitialize();
 
-    NiPointer<NiNode> m_pPipBoyObject0;
-    NiPointer<NiNode> m_pPipBoyObject1;
-    NiPointer<NiAVObject> m_pPipBoyObject2;
-    NiPointer<NiScreenElements> m_pScreenGeometry;
+    NiPointer<NiNode> spPipboyRoot;
+    NiPointer<NiNode> sp3rdPersonPipboyRoot;
+    NiPointer<NiAVObject> sp3rdPersonScreen;
+    NiPointer<NiScreenElements> spPartialScreenGeometry;
     NiPointer<NiAVObject> m_cPipBoyButtonAvailability[3];
-    NiPointer<NiAVObject> m_pButtonGlowObjects[3];
+    NiPointer<NiAVObject> spButtonGlow[3];
     NiPointer<NiGeometry> m_pGaugeObjects[3];
-    float m_fChartFirstPoint[3];
-    float m_fChartSecondPoint[3];
-    float m_fGaugeValues2[3];
-    float m_fTabKnobPositions[5];
-    bool m_bUseMenuImageSpaceEffects;
+    float fKnobPositions[3];
+    float fKnobTargets[3];
+    float fKnobRates[3];
+    float fTabKnobPositions[5];
+    bool bScaledTexCoords;
     unsigned char layoutPadding145[3];
-    float m_fPipBoyAlpha;
-    float m_fPipBoyTargetAlpha;
-    bool m_bPipBoyFadeActive;
+    float fScrollWheelCurrentRotation;
+    float fScrollWheelTarget;
+    bool bPipboyUp;
     unsigned char layoutPadding151[3];
-    BSSoundHandle m_kPipBoyLightData;
+    BSSoundHandle pBackgroundHum;
     bool b1stPersonLightOn;
     bool b3rdPersonLightOn;
-    bool m_bPipBoyLightOn;
+    bool bLightEffectFading;
     unsigned char layoutPadding163[1];
-    float m_fFirstPersonLightIntensity;
-    float m_fThirdPersonLightIntensity;
-    bool m_bPipBoyLightEnabled;
+    float fLightEffectFadeStartTime;
+    float fLightEffectFadeTarget;
+    bool bResetPipboyManager;
     unsigned char layoutPadding16D[3];
 };

@@ -27,6 +27,8 @@ extern char const* const DAT_0109f0a0;
 NiObject* __cdecl NiPersistentSrcTextureRendererData_CreateObject();
 
 // @fnv 0x00a98460
+// pdb: NiPersistentSrcTextureRendererData::LinkObject | NiPersistentSrcTextureRendererData.obj | debug, object-file gap fill, medium
+// pdb params: kStream
 void __cdecl RegisterNiStreamFactory()
 {
     NiStream::UnregisterObjectLoader((char const*)&DAT_0109f0a0);
@@ -91,6 +93,8 @@ void __cdecl _delete(void*, unsigned int);
 
 // Calls FUN_00a98240, then deletes this with size 0x94 when f has bit 0 set, and returns this.
 // @fnv 0x00a98480
+// pdb: NiPersistentSrcTextureRendererData::RegisterStreamables | NiPersistentSrcTextureRendererData.obj | debug, object-file gap fill, medium
+// pdb params: kStream
 void* __fastcall DestroyIfFlagged(NiPersistentSrcTextureRendererData* self, void*, unsigned int auiFlags)
 {
     UpdateFields_00a98240();
@@ -143,12 +147,15 @@ template <class T> inline void NiStreamSaveBinary_s(NiStream& kStream, const T* 
 
 // Writes the renderer data to the stream: pixel format, palette link ID, mipmap levels, per-level dimensions and offsets, faces, and pixel data.
 // @fnv 0x00a984b0
+// pdb: NiPersistentSrcTextureRendererData::SaveBinary | NiPersistentSrcTextureRendererData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bToolModeStreamingValid, i
 void NiPersistentSrcTextureRendererData::SaveBinary(NiStream& kStream)
 {
     // The original calls the empty base hook at 0x00a89af0.
     NiObject::LinkObject(kStream);
 
-    bool bToolModeStreamingValid = DAT_011f5f00 && m_uiPaletteSize && m_uiPaletteEntryCount && m_pucPaletteData;
+    bool bToolModeStreamingValid = DAT_011f5f00 && m_uiPristineMaxOffsetInBytes && m_uiPristinePadOffsetInBytes && m_pucPristinePixels;
 
     m_kPixelFormat.SaveBinary(&kStream);
     kStream.SaveLinkID(reinterpret_cast<const NiObject*>(m_spPalette));
@@ -164,20 +171,20 @@ void NiPersistentSrcTextureRendererData::SaveBinary(NiStream& kStream)
 
     if (bToolModeStreamingValid)
     {
-        NiStreamSaveBinary_s(kStream, m_uiPaletteSize);
-        NiStreamSaveBinary_s(kStream, m_uiPaletteEntryCount);
+        NiStreamSaveBinary_s(kStream, m_uiPristineMaxOffsetInBytes);
+        NiStreamSaveBinary_s(kStream, m_uiPristinePadOffsetInBytes);
     }
     else
     {
         NiStreamSaveBinary_s(kStream, m_puiOffsetInBytes[m_uiMipmapLevels]);
-        NiStreamSaveBinary_s(kStream, m_uiPixelDataSize);
+        NiStreamSaveBinary_s(kStream, m_uiPadOffsetInBytes);
     }
 
     NiStreamSaveBinary_s(kStream, m_uiFaces);
-    NiStreamSaveBinary_s(kStream, m_iPaletteFormat);
+    NiStreamSaveBinary_s(kStream, m_eTargetPlatform);
 
     if (bToolModeStreamingValid)
-        NiStreamSaveBinary_s(kStream, m_pucPaletteData, m_uiPaletteSize * m_uiFaces);
+        NiStreamSaveBinary_s(kStream, m_pucPristinePixels, m_uiPristineMaxOffsetInBytes * m_uiFaces);
     else
         NiStreamSaveBinary_s(kStream, m_pucPixels, m_puiOffsetInBytes[m_uiMipmapLevels] * m_uiFaces);
 }
@@ -192,7 +199,7 @@ inline bool IsKindOf_s(const NiRTTI* pkRTTI, NiObject* pkObject)
     {
         if (p == pkRTTI)
             return true;
-        p = p->m_pBaseRTTI;
+        p = p->m_pkBaseRTTI;
     }
     return false;
 }
@@ -206,6 +213,9 @@ inline NiObject* PaletteObject(NiPalette* const& palette)
 
 // @fnv 0x00a982f0
 // src: XBOX_PDB 0x00a982f0
+// pdb: NiPersistentSrcTextureRendererData::IsEqual | NiPersistentSrcTextureRendererData.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkPersistentSrcTextureRendererData, i
 bool NiPersistentSrcTextureRendererData::IsEqual_00a982f0(NiObject* pkObject)
 {
     if (!IsKindOf_s(&ms_kRTTI, pkObject))
@@ -238,11 +248,11 @@ bool NiPersistentSrcTextureRendererData::IsEqual_00a982f0(NiObject* pkObject)
 
     if (m_puiOffsetInBytes[m_uiMipmapLevels] != pkData->m_puiOffsetInBytes[m_uiMipmapLevels])
         return false;
-    if (m_uiPixelDataSize != pkData->m_uiPixelDataSize)
+    if (m_uiPadOffsetInBytes != pkData->m_uiPadOffsetInBytes)
         return false;
     if (m_uiFaces != pkData->m_uiFaces)
         return false;
-    if (m_iPaletteFormat != pkData->m_iPaletteFormat)
+    if (m_eTargetPlatform != pkData->m_eTargetPlatform)
         return false;
 
     if (memcmp(m_pucPixels, pkData->m_pucPixels, m_puiOffsetInBytes[m_uiMipmapLevels]) != 0)
@@ -308,48 +318,50 @@ inline unsigned int NiPersistentSrcTextureRendererData::GetFaceSizeInBytes() con
 
 // Appends the texture's width, height, mipmap levels, faces, sizes and a target-platform string to the given string array.
 // @fnv 0x00a98740
-void NiPersistentSrcTextureRendererData::AppendToStrings(ViewerArray* strings)
+// pdb: NiPersistentSrcTextureRendererData::GetViewerStrings | NiPersistentSrcTextureRendererData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiPersistentSrcTextureRendererData::AppendToStrings(ViewerArray* pkStrings)
 {
-    NiObject::AddViewerStrings((NiViewerStringsArray*)strings);
+    NiObject::AddViewerStrings((NiViewerStringsArray*)pkStrings);
     char* value = NiViewerStrings_NiGetViewerString_Title(DAT_011f5f04);
-    strings->Add(value);
+    pkStrings->Add(value);
     value = NiGetViewerString_00a7d510("Width", GetWidth());
-    strings->Add(value);
+    pkStrings->Add(value);
     value = NiGetViewerString_00a7d510("Height", GetHeight());
-    strings->Add(value);
+    pkStrings->Add(value);
     value = NiGetViewerString_00a7d510("MipmapLevels", GetMipmapLevels());
-    strings->Add(value);
+    pkStrings->Add(value);
     value = NiGetViewerString_00a7d510("Faces", GetFaces());
-    strings->Add(value);
+    pkStrings->Add(value);
     value = NiGetViewerString_00a7d510("TotalSizeInBytes", GetTotalSizeInBytes());
-    strings->Add(value);
+    pkStrings->Add(value);
     value = NiGetViewerString_00a7d510("FaceSizeInBytes", GetFaceSizeInBytes());
-    strings->Add(value);
-    switch (m_iPaletteFormat)
+    pkStrings->Add(value);
+    switch (m_eTargetPlatform)
     {
     case 0: {
         value = NiGetViewerString_00a7d5e0("TargetPlatform", "NI_ANY - Generic (default)");
-        strings->FUN_0096a610(&value);
+        pkStrings->FUN_0096a610(&value);
         break;
     }
     case 3: {
         value = NiGetViewerString_00a7d5e0("TargetPlatform", "NI_DX9");
-        strings->FUN_0096a610(&value);
+        pkStrings->FUN_0096a610(&value);
         break;
     }
     case 1: {
         value = NiGetViewerString_00a7d5e0("TargetPlatform", "NI_XENON");
-        strings->FUN_0096a610(&value);
+        pkStrings->FUN_0096a610(&value);
         break;
     }
     case 2: {
         value = NiGetViewerString_00a7d5e0("TargetPlatform", "NI_PS3");
-        strings->FUN_0096a610(&value);
+        pkStrings->FUN_0096a610(&value);
         break;
     }
     default:
         value = NiGetViewerString_00a7d5e0("TargetPlatform", "UNKNOWN!");
-        strings->Add(value);
+        pkStrings->Add(value);
         break;
     }
 }
@@ -540,11 +552,14 @@ extern bool DAT_011f5f00;
 void* __cdecl NiMalloc(unsigned int);
 void* __cdecl memcpy(void*, const void*, unsigned int);
 // @fnv 0x00e917e0
+// pdb: NiPersistentSrcTextureRendererData::LoadBinary | NiPersistentSrcTextureRendererData.obj | debug, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: auiOffsetInBytes, auiHeight, auiWidth, uiDestSize, i, uiTotalPixelMemory
 void NiPersistentSrcTextureRendererData::LoadBinary(NiStream& kStream)
 {
     LoadStream& stream = (LoadStream&)kStream;
     NiObject::LoadBinary(kStream);
-    m_kPixelFormat.LoadBinary(&kStream);
+    m_kPixelFormat.NiPixelFormat_LoadBinary(&kStream);
     stream.Resolve();
     Load(stream, m_uiMipmapLevels);
     Load(stream, m_uiPixelStride);
@@ -558,16 +573,16 @@ void NiPersistentSrcTextureRendererData::LoadBinary(NiStream& kStream)
     Load(stream, mipOffsets[m_uiMipmapLevels]);
     if (stream.unk0d8 >= 0x14020006)
     {
-        m_uiPixelDataSize = 0;
-        Load(stream, m_uiPixelDataSize);
+        m_uiPadOffsetInBytes = 0;
+        Load(stream, m_uiPadOffsetInBytes);
     }
     else
-        m_uiPixelDataSize = mipOffsets[m_uiMipmapLevels];
+        m_uiPadOffsetInBytes = mipOffsets[m_uiMipmapLevels];
     Load(stream, m_uiFaces);
     {
         int platform;
         Load(stream, platform);
-        m_iPaletteFormat = platform;
+        m_eTargetPlatform = platform;
     }
     AllocateMipMap(m_uiMipmapLevels, m_uiFaces, mipOffsets[m_uiMipmapLevels]);
     unsigned int bytesPerLevel = m_uiMipmapLevels * 4;
@@ -577,11 +592,11 @@ void NiPersistentSrcTextureRendererData::LoadBinary(NiStream& kStream)
     stream.input->ReadBytes(m_pucPixels, m_puiOffsetInBytes[m_uiMipmapLevels] * m_uiFaces);
     if (DAT_011f5f00)
     {
-        m_uiPaletteSize = m_puiOffsetInBytes[m_uiMipmapLevels];
-        m_uiPaletteEntryCount = m_uiPixelDataSize;
-        unsigned int bytes = m_uiPaletteSize * m_uiFaces;
-        m_pucPaletteData = (unsigned char*)NiMalloc(bytes);
-        memcpy(m_pucPaletteData, m_pucPixels, bytes);
+        m_uiPristineMaxOffsetInBytes = m_puiOffsetInBytes[m_uiMipmapLevels];
+        m_uiPristinePadOffsetInBytes = m_uiPadOffsetInBytes;
+        unsigned int bytes = m_uiPristineMaxOffsetInBytes * m_uiFaces;
+        m_pucPristinePixels = (unsigned char*)NiMalloc(bytes);
+        memcpy(m_pucPristinePixels, m_pucPixels, bytes);
     }
 }
 
@@ -1849,6 +1864,7 @@ void* __cdecl _NiMalloc_00aa1070(unsigned int size);
 
 // Allocates a pixel buffer and sets m_puiWidth, m_puiHeight, and m_puiOffsetInBytes for a mip map with uiLevels and uiFaces.
 // @fnv 0x00a98090
+// pdb: NiRangeLODData::`scalar deleting destructor' | NiRangeLODData.obj | debug, object-file run extension, low
 void NiPersistentSrcTextureRendererData::AllocateMipMap(unsigned int uiLevels, unsigned int uiFaces, unsigned int uiBytes)
 {
     unsigned int uiStride = (uiBytes + 3) & ~3;

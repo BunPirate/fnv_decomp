@@ -7,18 +7,19 @@
 
 #include "NiTPrimitiveArray.h"
 
+// pdb: class BGSMenuPacker, size 0x24, 7 members
 class BGSMenuPacker
 {
 public:
     struct PackedMenu;
 
-    NiTPrimitiveArray<PackedMenu*> kPackedMenus;  // 0x00
-    unsigned int unk10;                           // 0x10
-    unsigned int unk14;                           // 0x14
-    unsigned int unk18;                           // 0x18
-    unsigned int unk1C;                           // 0x1c
-    bool bFlag20;                                 // 0x20
-    bool bFlag21;                                 // 0x21 ctor: 0
+    NiTPrimitiveArray<PackedMenu*> PackedMenus;  // 0x00
+    unsigned int w;                           // 0x10
+    unsigned int h;                           // 0x14
+    unsigned int max_w;                           // 0x18
+    unsigned int max_h;                           // 0x1c
+    bool dump_info_flag;                                 // 0x20
+    bool bPackFailed;                                 // 0x21 ctor: 0
 
     BGSMenuPacker();                              // 0x007002d0
     ~BGSMenuPacker();                             // 0x007f7770

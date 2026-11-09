@@ -8,13 +8,15 @@
 
 // Clears the explosion's field to 0 and calls InitExplosionData on the object returned by FUN_004fadc0.
 // @fnv 0x004fade0
+// pdb: BGSExplosion::InitializeData | BGSExplosion.obj | debug, object-file run extension, low
 void BGSExplosion::ResetFormData()
 {
-    m_pExplosionBoundObject = 0;
+    pImpactPlacedObject = 0;
     GetData_004fadc0()->InitExplosionData();
 }
 
 // @fnv 0x004fabf0
+// pdb: BGSExplosion::BGSExplosion | BGSExplosion.obj | retail, upstream name already matches, high
 BGSExplosion::BGSExplosion()
     : TESBoundObject(), TESFullName(), TESModel(), TESEnchantableForm(), BGSPreloadable(), TESImageSpaceModifiableForm()
 {
@@ -24,6 +26,8 @@ BGSExplosion::BGSExplosion()
     TESEnchantableForm::SetCastingType((MagicSystem__CastingType)2);
 }
 // @fnv 0x004fae10
+// pdb: BGSExplosion::InitItem | BGSExplosion.obj | retail, string-set bridge, high
+// pdb locals: itempInt
 void BGSExplosion::InitItem()
 {
     if (static_cast<TESFormInitFlag*>(static_cast<TESForm*>(this))->IsFormInitialized())
@@ -62,12 +66,12 @@ void BGSExplosion::InitItem()
                     static_cast<TESForm*>(this)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
 
-    formID = reinterpret_cast<unsigned int>(m_pExplosionBoundObject);
+    formID = reinterpret_cast<unsigned int>(pImpactPlacedObject);
     if (formID)
     {
         TESForm::RemapFormIDForFile(formID, GetFile(-1));
-        m_pExplosionBoundObject = dynamic_cast<TESBoundObject*>(TESFormInitFlag::GetFormByID(formID));
-        if (!m_pExplosionBoundObject)
+        pImpactPlacedObject = dynamic_cast<TESBoundObject*>(TESFormInitFlag::GetFormByID(formID));
+        if (!pImpactPlacedObject)
             Warning("MASTERFILE: Could not find impact placed object (%08X) for explosion '%s' (%08X).", formID,
                     GetName(),
                     static_cast<TESForm*>(this)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
@@ -79,41 +83,44 @@ void BGSExplosion::InitItem()
 }
 
 // @fnv 0x004fb0d0
-bool BGSExplosion::LoadForm(TESFile* file)
+// pdb: BGSExplosion::Load | BGSExplosion.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: echunkid, formid, pMessage, tempint, stempval, uitemp, itempint
+bool BGSExplosion::LoadForm(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x51)
         return false;
 
     ClearData();
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
 
     int chunkID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case 0x44494445: {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullNameLoader::LoadFullNameChunk(this, file);
+            TESFullNameLoader::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x4d414e45:
         case 0x4d544945: {
             unsigned int value = 0;
-            file->GetChunkData(&value);
+            apFile->GetChunkData(&value);
             reinterpret_cast<CombatProcedure*>(reinterpret_cast<char*>(this) + 0x54)
                 ->Initialize(reinterpret_cast<CombatController*>(value));
             break;
@@ -121,32 +128,32 @@ bool BGSExplosion::LoadForm(TESFile* file)
         case 0x4d414e41:
         case 0x544d4145: {
             unsigned short amount = 0;
-            reinterpret_cast<TESFileChunkData16*>(file)->GetChunkData(&amount);
+            reinterpret_cast<TESFileChunkData16*>(apFile)->GetChunkData(&amount);
             TESEnchantableForm::FUN_00483170(amount);
             break;
         }
         case 0x41544144:
-            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(file, &Data, 0x34);
+            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(apFile, &Data, 0x34);
             break;
         case 0x4d414e4d: {
             unsigned int value = 0;
-            file->GetChunkData(&value);
+            apFile->GetChunkData(&value);
             reinterpret_cast<CombatProcedure*>(reinterpret_cast<char*>(this) + 0x68)
                 ->Initialize(reinterpret_cast<CombatController*>(value));
             break;
         }
         case 0x4d414e49: {
             unsigned int value = 0;
-            file->GetChunkData(&value);
-            m_pExplosionBoundObject = reinterpret_cast<TESBoundObject*>(value);
+            apFile->GetChunkData(&value);
+            pImpactPlacedObject = reinterpret_cast<TESBoundObject*>(value);
             break;
         }
         }
 
-        if (chunkID == 0x41544144 && file->IsEndianConversionRequired())
+        if (chunkID == 0x41544144 && apFile->IsEndianConversionRequired())
             reinterpret_cast<EndianConvertibleData*>(&Data)->Endian();
 
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
 
@@ -167,6 +174,8 @@ void BGSExplosion::SetImpactDataSet_004fb0b0(BGSImpactDataSet* apImpactDataSet)
 }
 
 // @fnv 0x004fb070
+// pdb: bhkWorld::UnMarkForRead | CameraCaster.obj | debug, call graph, medium
+// pdb locals: pw
 TESSound* EffectSetting::GetCastSound()
 {
     return data.m_pCastSound;
@@ -231,6 +240,7 @@ struct ScalarHelper
 };
 // Calls FUN_004fad20, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x004facf0
+// pdb: BGSExplosion::`scalar deleting destructor' | BGSExplosion.obj | retail, vtable slot, high
 void* ScalarHelper::FUN_004facf0(unsigned int flags)
 {
     FUN_004fad20();
@@ -247,9 +257,11 @@ struct Proxy804
 };
 // @fnv 0x004fb7a0
 // src: XBOX_PDB 0x004fb7a0
-BGSImpactData* Proxy804::BGSImpactDataSet_GetImpactData(int a)
+// pdb: BGSImpactDataSet::GetImpactData | BGSImpactDataSet.obj | retail, upstream name already matches, high
+// pdb params: aeType
+BGSImpactData* Proxy804::BGSImpactDataSet_GetImpactData(int aeType)
 {
-    return GetImpactDataForMaterial(BGSImpactDataSet_GetImpactMaterialType(a));
+    return GetImpactDataForMaterial(BGSImpactDataSet_GetImpactMaterialType(aeType));
 }
 
 struct FUN_004fb7a0_obj
@@ -263,28 +275,33 @@ struct FUN_004fb7d0_shell
 // If the explosion object returned by FUN_00516bf0 exists, forwards a to its FUN_004fb7a0 and returns the result; otherwise returns 0.
 // @fnv 0x004fb7d0
 // src: XBOX_PDB 0x004fb7d0
-int FUN_004fb7d0_shell::BGSExplosion_GetImpactData(int a)
+// pdb: BGSExplosion::GetImpactData | BGSExplosion.obj | retail, upstream name already matches, high
+// pdb params: aehkMatType
+// pdb locals: pimpactData
+int FUN_004fb7d0_shell::BGSExplosion_GetImpactData(int aehkMatType)
 {
     int result = 0;
     if (((BGSExplosion*)this)->BGSExplosion_GetImpactDataSet())
-        result = ((FUN_004fb7a0_obj*)((BGSExplosion*)this)->BGSExplosion_GetImpactDataSet())->BGSImpactDataSet_GetImpactData(a);
+        result = ((FUN_004fb7a0_obj*)((BGSExplosion*)this)->BGSExplosion_GetImpactDataSet())->BGSImpactDataSet_GetImpactData(aehkMatType);
     return result;
 }
 
 struct FUN_00477950_shell : public BGSExplosion
 {
-    bool HasAnyFlags(unsigned int mask);
+    bool HasAnyFlags(unsigned int aeFlag);
 };
 
 // @fnv 0x00477950
-bool FUN_00477950_shell::HasAnyFlags(unsigned int mask)
+// pdb: BGSExplosion::IsFlagSet | BGSDestructibleObjectForm.obj | debug, call graph, high
+// pdb params: aeFlag
+bool FUN_00477950_shell::HasAnyFlags(unsigned int aeFlag)
 {
-    return (GetData_004fadc0()->iFlags & mask) ? true : false;
+    return (GetData_004fadc0()->iFlags & aeFlag) ? true : false;
 }
 
 struct FUN_005e79a0_t
 {
-    bool TESForm_CompareAllComponents(TESForm* form);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 
 extern "C" int memcmp(const void*, const void*, unsigned int);
@@ -296,13 +313,16 @@ struct EffectSettingShell : EffectSetting
 
 struct BGSExplosionCompare : BGSExplosion
 {
-    bool CompareTo(TESForm* form);
+    bool CompareTo(TESForm* apCompare);
 };
 
 // @fnv 0x004fb610
-bool BGSExplosionCompare::CompareTo(TESForm* form)
+// pdb: BGSExplosion::Compare | BGSExplosion.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool BGSExplosionCompare::CompareTo(TESForm* apCompare)
 {
-    BGSExplosion* pOther = dynamic_cast<BGSExplosion*>(form);
+    BGSExplosion* pOther = dynamic_cast<BGSExplosion*>(apCompare);
     if (!pOther)
         return true;
     if (((FUN_005e79a0_t*)this)->TESForm_CompareAllComponents(pOther))
@@ -333,6 +353,8 @@ struct FUN_004fb810_shell
 };
 // @fnv 0x004fb810
 // src: XBOX_PDB 0x004fb810
+// pdb: BGSExplosion::~BGSExplosion | BGSExplosion.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSExplosion::GetSoundLevelValue
 int* FUN_004fb810_shell::BGSExplosion_GetSoundLevelValue()
 {
     int result = 0;
@@ -363,7 +385,7 @@ struct DoorPart30
 
 struct FUN_004891d0_obj
 {
-    void WriteToBuffer(unsigned int, unsigned int);
+    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int, unsigned int);
 };
 
 struct FUN_0047bd70_shell
@@ -401,6 +423,8 @@ struct FUN_004fb3b0_shell
 
 // @fnv 0x004fb3b0
 // src: COMMUNITY 0x004fb3b0
+// pdb: BGSExplosion::Save | BGSExplosion.obj | retail, vtable slot, high
+// pdb locals: psaveSound1, psaveSound2, psaveImpact, psaveLight, itempint
 void FUN_004fb3b0_shell::BGSExplosion_SaveAlt()
 {
     TESSound* psaveLight;
@@ -412,7 +436,7 @@ void FUN_004fb3b0_shell::BGSExplosion_SaveAlt()
     reinterpret_cast<FUN_004855a0*>(this)->M();
     reinterpret_cast<DoorPart30*>(reinterpret_cast<unsigned char*>(this) + 0x30)->Save_00487010();
     reinterpret_cast<FUN_004891d0_obj*>(reinterpret_cast<unsigned char*>(this) + 0x3C)
-        ->WriteToBuffer(0x4C444F4D, 0x54444F4D);
+        ->BSSendSceneGraphCommand_WriteToBuffer(0x4C444F4D, 0x54444F4D);
     reinterpret_cast<FUN_0047bd70_shell*>(reinterpret_cast<unsigned char*>(this) + 0x54)->FUN_0047bd70();
     reinterpret_cast<FUN_00487450_shell*>(reinterpret_cast<unsigned char*>(this) + 0x68)->FUN_00487450();
 
@@ -476,16 +500,18 @@ class FUN_004fad20_cls : public TESBoundObject,
 
 // Empty destructor for a class deriving from TESBoundObject, TESFullName, TESModel, TESEnchantableForm, BGSPreloadable and TESImageSpaceModifiableForm.
 // @fnv 0x004fad20
+// pdb: BGSExplosion::~BGSExplosion | BGSExplosion.obj | debug, object-file run extension, low
 FUN_004fad20_cls::~FUN_004fad20_cls()
 {}
 
 // 0x00443d30 is ModelLoader::ProcessModelRequest in bgsdestructibleobjectform.cpp;
 // ModelLoader has no shared header yet.
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
-    void ProcessModelRequest(TESModel* model, IO_TASK_PRIORITY priority, QueuedFile* file, int resourceType,
-                             bool flag, int unused, int unused2);
+    void ProcessModelRequest(TESModel* model, IO_TASK_PRIORITY aePriority, QueuedFile* apParent, int aeLODFadeMult,
+                             bool abPrepareAfterLoad, int abAddRefCount, int abFaceGenModel);
 };
 
 extern ModelLoader* g_modelLoader;
@@ -498,7 +524,7 @@ int __cdecl TES_GetLODMult(TESBoundObject* object);
 class ExplosionResourceQueue : public BGSExplosion
 {
   public:
-    virtual void QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* file);
+    virtual void QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent);
 };
 
 // The original dispatches through the inherited preloadable slot at +0x18.
@@ -508,16 +534,18 @@ struct PreloadableFormView : TESForm, BGSPreloadable
 
 // Queues the explosion model, impact dataset, and default explosion model.
 // @fnv 0x004fb6a0
-void ExplosionResourceQueue::QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* file)
+// pdb: BGSExplosion::QueueFiles | BGSExplosion.obj | retail, vtable slot, high
+// pdb params: aePriority, apParent
+void ExplosionResourceQueue::QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent)
 {
     if (TESModel::GetModelLength())
-        g_modelLoader->ProcessModelRequest(this, priority, file, TES_GetLODMult(this), true, 0, 0);
+        g_modelLoader->ProcessModelRequest(this, aePriority, apParent, TES_GetLODMult(this), true, 0, 0);
 
     if (Data.m_pImpactDataSet)
-        reinterpret_cast<PreloadableFormView*>(Data.m_pImpactDataSet)->QueueResourceLoad(priority, file);
+        reinterpret_cast<PreloadableFormView*>(Data.m_pImpactDataSet)->QueueResourceLoad(aePriority, apParent);
 
     if (g_defaultExplosion && g_defaultExplosion->TESModel::GetModelLength())
-        g_modelLoader->ProcessModelRequest(g_defaultExplosion, priority, file, TES_GetLODMult(this), true, 0, 0);
+        g_modelLoader->ProcessModelRequest(g_defaultExplosion, aePriority, apParent, TES_GetLODMult(this), true, 0, 0);
 }
 
 class FNVArg
@@ -588,21 +616,24 @@ extern FNVFactory* g_pFactory;
 
 struct FUN_004fb880_cls
 {
-    int Helper(FNVArg* a1, unsigned char a2);
-    int ApplyOrCreateResult(FNVArg* a1, unsigned char a2);
+    int Helper(FNVArg* pRequester, unsigned char deepCopy);
+    int ApplyOrCreateResult(FNVArg* pRequester, unsigned char deepCopy);
 };
 
 // If the argument is not flagged, delegates to Helper; otherwise creates a result via g_pFactory and applies it with a guard, returning the result.
 // @fnv 0x004fb880
-int FUN_004fb880_cls::ApplyOrCreateResult(FNVArg* a1, unsigned char a2)
+// pdb: BGSExplosion::Clone3D | BGSExplosion.obj | retail, vtable slot, high
+// pdb params: pRequester, deepCopy
+// pdb locals: pexplosion, pav, bunderWater, cloneData, pfilename, ploadedArt
+int FUN_004fb880_cls::ApplyOrCreateResult(FNVArg* pRequester, unsigned char deepCopy)
 {
     int iResult = 0;
     unsigned char flagTmp = 0;
     {
-        FNVArg* arg = a1;
+        FNVArg* arg = pRequester;
         if (!arg->IsFlagged())
         {
-            iResult = Helper(a1, a2);
+            iResult = Helper(pRequester, deepCopy);
         }
         else
         {
@@ -650,6 +681,7 @@ struct FUN_004fc270 : BaseDtor_b4673, MemberDtor_b4673
 
 // Destructor of FUN_004fc270; the body is empty and the base and member destructors run implicitly.
 // @fnv 0x004fc270
+// pdb: BGSPlaceableWater::~BGSPlaceableWater | BGSPlaceableWater.obj | debug, object-file gap fill, medium
 FUN_004fc270::~FUN_004fc270()
 {}
 
@@ -670,6 +702,9 @@ struct BGSExplosion_shell : BGSExplosion
 // Copies explosion data from apCopy into this, including base fields, a 0x34-byte block, and the associated light.
 // @fnv 0x004fb5a0
 // src: XBOX_PDB 0x004fb5a0
+// pdb: BGSExplosion::Copy | BGSExplosion.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void __thiscall BGSExplosion_shell::BGSExplosion_Copy(TESForm* apCopy)
 {
     BGSExplosion* pcopy = dynamic_cast<BGSExplosion*>(apCopy);

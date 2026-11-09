@@ -65,6 +65,8 @@ struct FUN_00802b20_class
 // Calls InitBuffer with a, sets p to point at DAT_01079170, and returns this.
 // @fnv 0x00802b20
 // src: EXE 0x00802b20
+// pdb: NiTMap<unsigned int,IDebugTextPage *>::NiTMap<unsigned int,IDebugTextPage *> | DebugTextManager.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 int __thiscall FUN_00802b20_class::NiTMap_unsigned_int_IDebugTextPage_NiTMap(int a)
 {
     InitBuffer(a);
@@ -88,6 +90,9 @@ extern float DAT_011dc778;
 
 // @fnv 0x0080fae0
 // src: XBOX_PDB 0x0080fae0
+// pdb: bhkCharacterProxy::SetLinearVelocity | MagicBallProjectile.obj | debug, object-file gap fill, medium
+// pdb params: arVel
+// pdb locals: pp
 void MagicProjectile_AddTrackedProjectile(float value)
 {
     DAT_011dc778 += value;
@@ -102,9 +107,11 @@ struct FUN_00810510_Class
 
 // @fnv 0x00810510
 // src: XBOX_PDB 0x00810510
-void __thiscall FUN_00810510_Class::bhkCharacterControllerCinfo_SetPosition(NiPoint3 const& aPoint)
+// pdb: bhkCharacterControllerCinfo::SetPosition | MagicBallProjectile.obj | debug, upstream name already matches, high
+// pdb params: arPos
+void __thiscall FUN_00810510_Class::bhkCharacterControllerCinfo_SetPosition(NiPoint3 const& arPos)
 {
-    NI2HK(*(hkVector4*)this, aPoint);
+    NI2HK(*(hkVector4*)this, arPos);
 }
 
 struct FUN_00810550_class
@@ -124,6 +131,9 @@ struct FUN_008105c0_Class
     void SetPointer(void* p);
 };
 // @fnv 0x008105c0
+// pdb: ExtraDataList::SetPointer | ExtraDataList.obj | debug, upstream name already matches, high
+// pdb params: apData, aeType
+// pdb locals: pextra
 void FUN_008105c0_Class::SetPointer(void* apValue)
 {
     ((GO*)((char*)this + 0xa0))->operator=(apValue);
@@ -137,44 +147,50 @@ struct FUN_008105e0_Class
 {
     char pad[0x410];
     Dummy629670 d;
-    void bhkCharacterController_SetProjectile(bool b);
+    void bhkCharacterController_SetProjectile(bool abTF);
 };
 // @fnv 0x008105e0
 // src: XBOX_PDB 0x008105e0
-void FUN_008105e0_Class::bhkCharacterController_SetProjectile(bool b)
+// pdb: bhkCharacterController::SetProjectile | MagicBallProjectile.obj | debug, upstream name already matches, high
+// pdb params: abTF
+void FUN_008105e0_Class::bhkCharacterController_SetProjectile(bool abTF)
 {
-    d.bhkCharacterListener_SetFlag(0x80000, b);
+    d.bhkCharacterListener_SetFlag(0x80000, abTF);
 }
 
 namespace fnv_00810610 {
 struct Dummy629670
 {
-    void bhkCharacterListener_SetFlag(int a, bool b);
+    void bhkCharacterListener_SetFlag(int aiFlags, bool abTF);
 };
 
 struct FUN_00810610_Class
 {
-    void bhkCharacterController_SetQuickSimulate(bool b);
+    void bhkCharacterController_SetQuickSimulate(bool abTF);
 };
 
 // @fnv 0x00810610
 // src: XBOX_PDB 0x00810610
-void FUN_00810610_Class::bhkCharacterController_SetQuickSimulate(bool b)
+// pdb: bhkCharacterController::SetQuickSimulate | MagicBallProjectile.obj | debug, upstream name already matches, high
+// pdb params: abTF
+void FUN_00810610_Class::bhkCharacterController_SetQuickSimulate(bool abTF)
 {
-    ((Dummy629670*)((char*)this + 0x410))->bhkCharacterListener_SetFlag(0x100000, b);
+    ((Dummy629670*)((char*)this + 0x410))->bhkCharacterListener_SetFlag(0x100000, abTF);
 }
 }  // namespace fnv_00810610
 
 struct FUN_00810640_class
 {
     void __thiscall bhkCharacterController_SetBSReference(int, int);
-    void __thiscall bhkCharacterController_SetMOBObject(int a);
+    void __thiscall bhkCharacterController_SetMOBObject(int apObject);
 };
 // @fnv 0x00810640
 // src: XBOX_PDB 0x00810640
-void __thiscall FUN_00810640_class::bhkCharacterController_SetMOBObject(int aiValue)
+// pdb: bhkCharacterController::SetMOBObject | MagicBallProjectile.obj | debug, upstream name already matches, high
+// pdb params: apObject
+void __thiscall FUN_00810640_class::bhkCharacterController_SetMOBObject(int apObject)
 {
-    bhkCharacterController_SetBSReference(1000, aiValue);
+    bhkCharacterController_SetBSReference(1000, apObject);
 }
 
 struct FUN_008106b0_Class
@@ -225,6 +241,8 @@ struct FUN_00802c50
 
 // Sets the vtable pointer, clears the map via RemoveAll, and frees the b pointer with NiFreeAlias.
 // @fnv 0x00802c50
+// pdb: NiTMap<unsigned int,IDebugTextPage *>::DeleteItem | DebugTextManager.obj | debug, object-file run extension, low
+// pdb params: pkItem
 void FUN_00802c50::Init()
 {
     vft = &DAT_01079190;
@@ -279,13 +297,17 @@ float __cdecl ApplyNoise(float);
 
 struct FUN_008007b0_Class
 {
-    void __thiscall SetScaledValues(float value);
+    void __thiscall FOVATSEffectManager_UpdatePulse(float afTime);
 };
 
 // @fnv 0x008007b0
-void __thiscall FUN_008007b0_Class::SetScaledValues(float value)
+// src: XBOX_RETAIL_PDB 0x008007b0
+// pdb: FOVATSEffectManager::UpdatePulse | FOVATSEffectManager.obj | retail, object-file run extension, high
+// pdb params: afTime
+// pdb locals: fintensityValue
+void __thiscall FUN_008007b0_Class::FOVATSEffectManager_UpdatePulse(float afTime)
 {
-    float result = ApplyNoise(value * *g_011db7d8.Float()) * 2.0f;
+    float result = ApplyNoise(afTime * *g_011db7d8.Float()) * 2.0f;
     *(float*)((char*)this + 0x2ac) = result * *g_011db7c4.Float();
     *(float*)((char*)this + 0x2b0) = result * *g_011db6c8.Float();
 }
@@ -296,6 +318,8 @@ struct FUN_00800d10_class
 };
 // Stores value into the int array at offset 0x244 using the count at offset 0x240 as index, then increments that count.
 // @fnv 0x00800d10
+// pdb: FOVATSEffectManager::TargetAdditionalLimb | FOVATSEffectManager.obj | debug, object-file gap fill, medium
+// pdb params: aeLimb
 void FUN_00800d10_class::AppendValue(int value)
 {
     ((int*)((char*)this + 0x244))[*(int*)((char*)this + 0x240)] = value;
@@ -316,6 +340,7 @@ struct FUN_00802b50_Class
 
 // Calls FUN_00802bf0 on this, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x00802b50
+// pdb: NiTMap<unsigned int,IDebugTextPage *>::`scalar deleting destructor' | DebugTextManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00802b50_Class::Destroy(unsigned int flags)
 {
     ((FUN_00802bf0_Class*)this)->FUN_00802bf0();
@@ -332,6 +357,8 @@ struct FUN_00802b80_t
 };
 // Sets the vtable, stores a count, allocates count*4 bytes, zeroes them, and returns this.
 // @fnv 0x00802b80
+// pdb: DebugTextManager::DebugTextManager | DebugTextManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<DFALL<NiTMapItem<unsigned int,IDebugTextPage *> >,unsigned int,IDebugTextPage *>::NiTMapBase<DFALL<NiTMapItem<unsigned int,IDebugTextPage *> >,unsigned int,IDebugTextPage *>
 void* __thiscall FUN_00802b80_t::InitBuffer(int aiCount)
 {
     *(int*)this = (int)&DAT_01079190;
@@ -346,15 +373,18 @@ void* __thiscall FUN_00802b80_t::InitBuffer(int aiCount)
 // These physics wrappers call bhkWorldObject's Havok-object accessor at 0x004ae750.
 struct FUN_008078b0_Class
 {
-    void __thiscall bhkEntity_AddContactListener(void* listener);
+    void __thiscall bhkEntity_AddContactListener(void* apList);
 };
 // @fnv 0x008078b0
 // src: XBOX_PDB 0x008078b0
-void __thiscall FUN_008078b0_Class::bhkEntity_AddContactListener(void* listener)
+// pdb: bhkEntity::AddContactListener | bhkTelekinesisListener.obj | debug, upstream name already matches, high
+// pdb params: apList
+// pdb locals: pe
+void __thiscall FUN_008078b0_Class::bhkEntity_AddContactListener(void* apList)
 {
     void* entity = ((bhkWorldObject*)this)->Bipedanim_GetReferenceFlagsOrZero();
     if (entity)
-        ((hkpEntity*)entity)->AddContactListener(listener);
+        ((hkpEntity*)entity)->addContactListener(apList);
 }
 
 void __cdecl Deallocate(void*);
@@ -387,6 +417,10 @@ struct FUN_0080fb00_Class
 };
 // @fnv 0x0080fb00
 // src: XBOX_PDB 0x0080fb00
+// pdb: bhkCharacterProxy::SetLinearVelocity | MiddleHighProcess.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to bhkCharacterProxy::operator*
+// pdb params: arVel
+// pdb locals: hkv, pp
 void __thiscall FUN_0080fb00_Class::bhkCharacterProxy_SetLinearVelocity(int a)
 {
     void* r = ((bhkWorldObject*)this)->Bipedanim_GetReferenceFlagsOrZero();
@@ -402,11 +436,13 @@ struct FUN_0081c240_class
 };
 struct FUN_0080fcc0_class
 {
-    void* __thiscall FUN_0080fcc0(unsigned int flags);
+    void* __thiscall MagicLight_ScalarDtor(unsigned int flags);
 };
 // Calls FUN_0081c240 on this, then frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0080fcc0
-void* __thiscall FUN_0080fcc0_class::FUN_0080fcc0(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x0080fcc0
+// pdb: MagicLight::`scalar deleting destructor' | MagicBallProjectile.obj | debug, call graph, high
+void* __thiscall FUN_0080fcc0_class::MagicLight_ScalarDtor(unsigned int flags)
 {
     ((FUN_0081c240_class*)this)->FUN_0081c240();
     if (flags & 1)
@@ -430,6 +466,7 @@ struct FUN_00810660_Class
 };
 // @fnv 0x00810660
 // src: XBOX_PDB 0x00810660
+// pdb: bhkCharacterController::GetNiObject | MagicBallProjectile.obj | debug, upstream name already matches, high
 unsigned int FUN_00810660_Class::bhkCharacterController_GetNiObject()
 {
     return f ? reinterpret_cast<FUN_00c85c80_Class*>(f.operator unsigned int())->bhkWorldObject_GetAVObject(0) : 0;
@@ -463,6 +500,7 @@ struct FUN_0081de70_shell
 
 // Calls FUN_0081de70, then frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0081dcd0
+// pdb: MagicProjectile::`scalar deleting destructor' | MagicProjectile.obj | debug, object-file run extension, low
 void* __thiscall FUN_0081de70_shell::FUN_0081dcd0(unsigned int flags)
 {
     FUN_0081de70();
@@ -479,17 +517,20 @@ struct FUN_00800e50_Class
     int f08;
     int f0c;
     int f10;
-    void __thiscall FOVATSEffectManager_SetMultiTarget(int a);
-    void __thiscall FOVATSEffectManager_SetSelectedMultiTarget(int a);
+    void __thiscall FOVATSEffectManager_SetMultiTarget(int apTarget);
+    void __thiscall FOVATSEffectManager_SetSelectedMultiTarget(int apTarget);
 };
 // @fnv 0x00800e50
 // src: COMMUNITY 0x00800e50
-void __thiscall FUN_00800e50_Class::FOVATSEffectManager_SetSelectedMultiTarget(int aiValue)
+// pdb: FOVATSEffectManager::SetSelectedMultiTarget | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: apTarget
+// pdb locals: itarget, i
+void __thiscall FUN_00800e50_Class::FOVATSEffectManager_SetSelectedMultiTarget(int apTarget)
 {
     int result = -1;
     for (int i = 0; i < f0c; i++)
     {
-        if (*(int*)((char*)this + 0x14 + i * 8) == aiValue)
+        if (*(int*)((char*)this + 0x14 + i * 8) == apTarget)
             result = i;
     }
     if (result != -1)
@@ -497,7 +538,7 @@ void __thiscall FUN_00800e50_Class::FOVATSEffectManager_SetSelectedMultiTarget(i
     else if (f0c < 0x20)
     {
         f10 = f0c;
-        FOVATSEffectManager_SetMultiTarget(aiValue);
+        FOVATSEffectManager_SetMultiTarget(apTarget);
     }
 }
 
@@ -522,6 +563,8 @@ struct FUN_0080d6b0_t
 // Allocates a new FUN_0080d6b0_t object, forwarding the three arguments to its constructor, and returns the pointer.
 // @fnv 0x0080d880
 // src: GUESS 0x0080d880 (confidence: low)
+// pdb: DisintegrateWeaponEffect::Instantiate | DisintegrateWeaponEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080d6b0_t* __cdecl Object_ForwardCall_0080d880(int a, int b, int c)
 {
     return new FUN_0080d6b0_t(a, b, c);
@@ -571,6 +614,7 @@ struct FUN_008117d0 : FUN_0081dbb0
 };
 
 // @fnv 0x008117d0
+// pdb: MagicBoltProjectile::MagicBoltProjectile | MagicBoltProjectile.obj | debug, object-file run extension, low
 FUN_008117d0::FUN_008117d0() : spA8(0), spB4(0), spB8(0), spBC(0), spC0(0)
 {
     ((FUN_008133d0_shell*)this)->MagicBoltProjectile_SetState(0);
@@ -594,16 +638,18 @@ struct FUN_00800650_Class
     float fA;
     float fB;
     float fC;
-    void __thiscall FOVATSEffectManager_TriggerBurst(float a, float b, float c);
+    void __thiscall FOVATSEffectManager_TriggerBurst(float afBurstDuration, float afBurstIntensity, float abPlaySound);
 };
 // @fnv 0x00800650
 // src: XBOX_PDB 0x00800650
-void __thiscall FUN_00800650_Class::FOVATSEffectManager_TriggerBurst(float a, float b, float c)
+// pdb: FOVATSEffectManager::TriggerBurst | FOVATSEffectManager.obj | debug, upstream name already matches, high
+// pdb params: afBurstDuration, afBurstIntensity, abPlaySound
+void __thiscall FUN_00800650_Class::FOVATSEffectManager_TriggerBurst(float afBurstDuration, float afBurstIntensity, float abPlaySound)
 {
     bFlag = true;
-    fA = a;
-    fC = b;
-    fB = b;
+    fA = afBurstDuration;
+    fC = afBurstIntensity;
+    fB = afBurstIntensity;
     fTime = g_timeGlobal.GetTime();
 }
 
@@ -620,6 +666,7 @@ struct FUN_008006b0_Class
 // Sets f284 to 1, stores the current time from g_timeGlobal into f288, and resets f28c to 0.0f.
 // @fnv 0x008006b0
 // src: COMMUNITY 0x008006b0
+// pdb: FOVATSEffectManager::TriggerDistort | FOVATSEffectManager.obj | debug, upstream name already matches, high
 void FUN_008006b0_Class::FOVATSEffectManager_TriggerDistort()
 {
     f284 = 1;
@@ -633,14 +680,17 @@ extern double DAT_01011588;
 float __cdecl FUN_004e44d0(float);
 struct FUN_00800820_Class
 {
-    void __thiscall FOVATSEffectManager_UpdateTargetPulse(float a);
+    void __thiscall FOVATSEffectManager_UpdateTargetPulse(float afTime);
 };
 // Computes (FUN_004e44d0(a * g_011db78c.Float()[0]) + 1.0) * DAT_01011588 and stores the result at this+0x2c0.
 // @fnv 0x00800820
 // src: COMMUNITY 0x00800820
-void __thiscall FUN_00800820_Class::FOVATSEffectManager_UpdateTargetPulse(float afValue)
+// pdb: FOVATSEffectManager::UpdateTargetPulse | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: fintensityValue
+void __thiscall FUN_00800820_Class::FOVATSEffectManager_UpdateTargetPulse(float afTime)
 {
-    float f = (FUN_004e44d0(afValue * g_011db78c.Float()[0]) + 1.0) * DAT_01011588;
+    float f = (FUN_004e44d0(afTime * g_011db78c.Float()[0]) + 1.0) * DAT_01011588;
     *(float*)((char*)this + 0x2c0) = f;
 }
 
@@ -652,6 +702,9 @@ struct FUN_0080a900
 // Allocates and constructs a new FUN_0080a900 object from the three arguments and returns it.
 // @fnv 0x0080ac70
 // src: COMMUNITY 0x0080ac70
+// pdb: CalmEffect::CheckDeletedCaster | CalmEffect.obj | debug, object-file run extension, low
+// pdb params: apCaster
+// pdb locals: bresult
 FUN_0080a900* CalmEffect_Create(void* apArg1, void* apArg2, void* apArg3)
 {
     return new FUN_0080a900(apArg1, apArg2, apArg3);
@@ -665,6 +718,8 @@ struct FUN_0080c070 : ActiveEffect
     FUN_0080c070(MagicCaster* a, MagicItem* b, EffectItem* c, int d);
 };
 // @fnv 0x0080c070
+// pdb: CureEffect::CureEffect | CureEffect.obj | debug, call graph, medium
+// pdb params: apCaster, apSpell, apEffect, aeSpellType
 FUN_0080c070::FUN_0080c070(MagicCaster* a, MagicItem* pItem, EffectItem* pEffect, int d)
     : ActiveEffect(a, pItem, pEffect)
 {
@@ -681,6 +736,8 @@ struct FUN_0080cd30_t
 // Allocates and constructs a FUN_0080cd30_t from three int arguments, returning the new object.
 // @fnv 0x0080d120
 // src: COMMUNITY 0x0080d120
+// pdb: DetectLifeEffect::Instantiate | DetectLifeEffect.obj | debug, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080cd30_t* __cdecl DetectLifeEffect_Create(int aiArg1, int aiArg2, int aiArg3)
 {
     return new FUN_0080cd30_t(aiArg1, aiArg2, aiArg3);
@@ -695,6 +752,8 @@ struct FUN_0080d1a0 : ActiveEffect
 
 // Allocates and constructs a FUN_0080d1a0 object from the three arguments and returns the new pointer.
 // @fnv 0x0080d430
+// pdb: DisintegrateArmorEffect::Instantiate | DisintegrateArmorEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080d1a0* CreateFUN_0080d1a0(MagicCaster* aiArg1, MagicItem* aiArg2, EffectItem* aiArg3)
 {
     return new FUN_0080d1a0(aiArg1, aiArg2, aiArg3);
@@ -708,6 +767,8 @@ struct FUN_0080d900
 };
 // Allocates and constructs a FUN_0080d900 object from the three arguments and returns it.
 // @fnv 0x0080db30
+// pdb: DispelEffect::Instantiate | DispelEffect.obj | debug, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080d900* CreateFUN_0080d900(int aiArg1, int aiArg2, int aiArg3)
 {
     return new FUN_0080d900(aiArg1, aiArg2, aiArg3);
@@ -720,6 +781,8 @@ struct FUN_0080f390
 };
 // Allocates and constructs a FUN_0080f390 object from the three arguments, returning the new instance.
 // @fnv 0x0080f660
+// pdb: OpenEffect::Instantiate | OpenEffect.obj | debug, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080f390* CreateFUN0080f390(int aiFirst, int aiSecond, int aiThird)
 {
     return new FUN_0080f390(aiFirst, aiSecond, aiThird);
@@ -733,6 +796,8 @@ struct FUN_0080c0b0 : ActiveEffect
 };
 
 // @fnv 0x0080c0b0
+// pdb: CureEffect::CureEffect | CureEffect.obj | debug, call graph, medium
+// pdb params: apCaster, apSpell, apEffect, aeArchetype
 FUN_0080c0b0::FUN_0080c0b0(MagicCaster* apCaster, MagicItem* apItem, EffectItem* apEffect, int d)
     : ActiveEffect(apCaster, apItem, apEffect)
 {
@@ -746,6 +811,7 @@ struct FUN_00802c80 : FUN_00802c50
 };
 // Calls Init, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00802c80
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,IDebugTextPage *> >,unsigned int,IDebugTextPage *>::`scalar deleting destructor' | DebugTextManager.obj | retail, vtable slot, high
 void* FUN_00802c80::DeleteThis(unsigned int flags)
 {
     Init();
@@ -763,6 +829,8 @@ struct S_0080b3a0_Obj
 // Allocates a new S_0080b3a0_Obj, forwarding the three integer arguments to its constructor, and returns the pointer.
 // @fnv 0x0080b4e0
 // src: COMMUNITY 0x0080b4e0
+// pdb: CommandCreatureEffect::Instantiate | CommandCreatureEffect.obj | debug, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 S_0080b3a0_Obj* CommandCreatureEffect_Create(int aiArg1, int aiArg2, int aiArg3)
 {
     return new S_0080b3a0_Obj(aiArg1, aiArg2, aiArg3);
@@ -779,6 +847,7 @@ struct FUN_0080ba90 : EffectStorage
 };
 // Constructs the EffectStorage base from the caster, item and effect item, then sets the object's vtable pointer to DAT_01079b3c.
 // @fnv 0x0080ba90
+// pdb: CommandHumanoidEffect::~CommandHumanoidEffect | CommandHumanoidEffect.obj | debug, object-file run extension, low
 FUN_0080ba90::FUN_0080ba90(MagicCaster* a, MagicItem* pItem, EffectItem* pEffectItem)
     : EffectStorage(a, pItem, pEffectItem)
 {
@@ -796,6 +865,8 @@ extern unsigned int _data_011c16bc;
 // Allocates and constructs an S_0080bac0_Obj with the three given int arguments, returning the new object.
 // @fnv 0x0080bbf0
 // src: COMMUNITY 0x0080bbf0
+// pdb: CommandHumanoidEffect::Instantiate | CommandHumanoidEffect.obj | debug, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 S_0080bac0_Obj* __cdecl CommandHumanoidEffect_Create(int aiArg1, int aiArg2, int aiArg3)
 {
     return new S_0080bac0_Obj(aiArg1, aiArg2, aiArg3);
@@ -803,6 +874,9 @@ S_0080bac0_Obj* __cdecl CommandHumanoidEffect_Create(int aiArg1, int aiArg2, int
 
 // @fnv 0x0080c260
 // src: COMMUNITY 0x0080c260
+// pdb: CureEffect::InstantiateCureParalysis | CureEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CureEffect::CheckTarget
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080c070* __cdecl CureEffect_Create(MagicCaster* apCaster, MagicItem* apMagicItem, EffectItem* apEffectItem)
 {
     return new FUN_0080c070(apCaster, apMagicItem, apEffectItem, 1);
@@ -810,6 +884,9 @@ FUN_0080c070* __cdecl CureEffect_Create(MagicCaster* apCaster, MagicItem* apMagi
 
 // @fnv 0x0080c2e0
 // src: COMMUNITY 0x0080c2e0
+// pdb: CureEffect::InstantiateCureAddiction | CureEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CureEffect::InstantiateCureDisease
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080c0b0* CureParalysis_Create(MagicCaster* apCaster, MagicItem* apMagicItem, EffectItem* apEffectItem)
 {
     return new FUN_0080c0b0(apCaster, apMagicItem, apEffectItem, 0x18);
@@ -817,6 +894,9 @@ FUN_0080c0b0* CureParalysis_Create(MagicCaster* apCaster, MagicItem* apMagicItem
 
 // @fnv 0x0080c360
 // src: COMMUNITY 0x0080c360
+// pdb: CureEffect::InstantiateCurePoison | CureEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CureEffect::InstantiateCureParalysis
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080c070* __cdecl CureAddition_Create(MagicCaster* apCaster, MagicItem* apMagicItem, EffectItem* apEffectItem)
 {
     return new FUN_0080c070(apCaster, apMagicItem, apEffectItem, 10);
@@ -825,6 +905,8 @@ FUN_0080c070* __cdecl CureAddition_Create(MagicCaster* apCaster, MagicItem* apMa
 // Allocates and returns a new FUN_0080c070 constructed from the caster, magic item and effect item with a value of 5.
 // @fnv 0x0080c3e0
 // src: COMMUNITY 0x0080c3e0
+// pdb: CureEffect::InstantiateCureAddiction | CureEffect.obj | debug, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080c070* __cdecl CurePoision_CurePoision(MagicCaster* apCaster, MagicItem* apMagicItem, EffectItem* apEffectItem)
 {
     return new FUN_0080c070(apCaster, apMagicItem, apEffectItem, 5);
@@ -839,6 +921,7 @@ struct FUN_0080d930 : FUN_00803ed0
     ~FUN_0080d930();
 };
 // @fnv 0x0080d930
+// pdb: AssociatedItemEffect::~AssociatedItemEffect | AssociatedItemEffect.obj | debug, call graph, high
 FUN_0080d930::~FUN_0080d930()
 {}
 
@@ -850,14 +933,16 @@ struct FUN_00810590_Class
 {
     char pad[0x84];
     FUN_00622290_cls sub;
-    void bhkCharacterControllerCinfo_SetColFilter(int a, int b);
+    void bhkCharacterControllerCinfo_SetColFilter(int aeLayer, int aiGroup);
 };
 // Calls the sub-object's method with the two arguments and a zero third argument.
 // @fnv 0x00810590
 // src: XBOX_PDB 0x00810590
-void FUN_00810590_Class::bhkCharacterControllerCinfo_SetColFilter(int aiArg1, int aiArg2)
+// pdb: bhkCharacterControllerCinfo::SetColFilter | MagicBallProjectile.obj | debug, upstream name already matches, high
+// pdb params: aeLayer, aiGroup
+void FUN_00810590_Class::bhkCharacterControllerCinfo_SetColFilter(int aeLayer, int aiGroup)
 {
-    sub.SetPackedValue(aiArg1, aiArg2, 0);
+    sub.SetPackedValue(aeLayer, aiGroup, 0);
 }
 
 struct FUN_008192a0 : FUN_0081dbb0
@@ -872,6 +957,7 @@ struct FUN_008192a0 : FUN_0081dbb0
 
 // Initializes fCC and fC8 to zero.
 // @fnv 0x008192a0
+// pdb: MagicFogProjectile::MagicFogProjectile | MagicFogProjectile.obj | debug, object-file run extension, low
 FUN_008192a0::FUN_008192a0()
 {
     fCC = 0;
@@ -881,6 +967,7 @@ FUN_008192a0::FUN_008192a0()
 #include "../../include/ENUM_LOD_MULT.h"
 
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     NiNode* __thiscall LoadFile(char const*, ENUM_LOD_MULT, bool, bool, bool, bool);
@@ -900,6 +987,7 @@ struct CloningProcess
     ~CloningProcess();
 };
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     int GetDaysPassed();
@@ -914,14 +1002,17 @@ extern char DAT_011a9448;
 extern NiPoint3 _NiPoint3_ZERO;
 
 // @fnv 0x0081e460
-NiAVObject* LoadAndCloneModel(char const* path)
+// pdb: MagicProjectile::Clone3D | MagicProjectile.obj | debug, call graph, high
+// pdb params: apFilename
+// pdb locals: pData3D, pClone, cloneData, fscale
+NiAVObject* LoadAndCloneModel(char const* apFilename)
 {
     NiAVObject* scale = 0;
     NiNode* loaded = 0;
     float result;
 
-    if (path && path[0])
-        loaded = g_modelLoader.m_pModelLoader->LoadFile(path, (ENUM_LOD_MULT)0, true, false, false, false);
+    if (apFilename && apFilename[0])
+        loaded = g_modelLoader.m_pModelLoader->LoadFile(apFilename, (ENUM_LOD_MULT)0, true, false, false, false);
 
     if (loaded)
     {
@@ -1045,6 +1136,7 @@ class FUN_008001b0
 
 // Clears the slot, zeroes both 16-entry value arrays, deletes and nulls the owned pointers, releases sp2C4, then calls Cleanup.
 // @fnv 0x008001b0
+// pdb: FOVATSEffectManager::~FOVATSEffectManager | FOVATSEffectManager.obj | retail, object-file run extension, low
 FUN_008001b0::~FUN_008001b0()
 {
     kSlot.unk00 = 0;
@@ -1259,18 +1351,21 @@ struct FUN_00800900_cls
     unsigned short m_w2B6;
     float m_f2B8;
     float m_f2BC;
-    void Notify(float a, float b, int c);
-    void FOVATSEffectManager_UpdateScan(float value);
+    void Notify(float afBurstDuration, float afBurstIntensity, int abPlaySound);
+    void FOVATSEffectManager_UpdateScan(float afTime);
 };
 
 // @fnv 0x00800900
 // src: COMMUNITY 0x00800900
-void FUN_00800900_cls::FOVATSEffectManager_UpdateScan(float value)
+// pdb: FOVATSEffectManager::UpdateScan | FOVATSEffectManager.obj | debug, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: fdelta
+void FUN_00800900_cls::FOVATSEffectManager_UpdateScan(float afTime)
 {
     if (this->m_f2B8 == b4225_kCompareConst)
-        this->m_f2B8 = value;
+        this->m_f2B8 = afTime;
 
-    float delta = value - this->m_f2B8;
+    float delta = afTime - this->m_f2B8;
     this->m_f2BC = delta / *b4225_g_011db730.Float();
 
     if (this->m_b2B5)
@@ -1311,19 +1406,22 @@ bool FUN_00800a00_cls::GetRatioByIndex(unsigned int uiIndex, float* pfOut)
 }
 
 void __cdecl Warning_005b5e40(const char* value);
-void __cdecl BSShaderProperty_SetFlagRecurse(void* value, int a, const void* b);
+void __cdecl BSShaderProperty_SetFlagRecurse(void* apObject, int aeFlag, const void* abEnable);
 typedef NiNode*(__thiscall* FUN_00800d50_getter)(NiNode*);
 extern char DAT_01078e78;
 
 // Clears a flag, returns if a is already in the list, else appends a and its getter result, sets f04 if empty, and calls FUN_00ba91a0.
 // @fnv 0x00800d50
 // src: XBOX_PDB 0x00800d50
-void FUN_00800e50_Class::FOVATSEffectManager_SetMultiTarget(int pNode)
+// pdb: FOVATSEffectManager::SetMultiTarget | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: apTarget
+// pdb locals: i
+void FUN_00800e50_Class::FOVATSEffectManager_SetMultiTarget(int apTarget)
 {
     ((char*)this)[0x2b4] = 0;
     for (int i = 0; i < this->f0c; ++i)
     {
-        if (*(int*)((char*)this + i * 8 + 0x14) == pNode)
+        if (*(int*)((char*)this + i * 8 + 0x14) == apTarget)
         {
             return;
         }
@@ -1333,15 +1431,15 @@ void FUN_00800e50_Class::FOVATSEffectManager_SetMultiTarget(int pNode)
         Warning_005b5e40(&DAT_01078e78);
         return;
     }
-    *(int*)((char*)this + this->f0c * 8 + 0x14) = pNode;
+    *(int*)((char*)this + this->f0c * 8 + 0x14) = apTarget;
     ((NiPointer<NiNode>*)((char*)this + this->f0c * 8 + 0x18))
-        ->operator=(((FUN_00800d50_getter)(*(unsigned int*)(*(unsigned int*)pNode + 0x1d0)))((NiNode*)pNode));
+        ->operator=(((FUN_00800d50_getter)(*(unsigned int*)(*(unsigned int*)apTarget + 0x1d0)))((NiNode*)apTarget));
     this->f0c++;
     if (this->f04 == 0)
     {
-        this->f04 = pNode;
+        this->f04 = apTarget;
         ((NiPointer<NiNode>*)((char*)this + 8))
-            ->operator=(((FUN_00800d50_getter)(*(unsigned int*)(*(unsigned int*)pNode + 0x1d0)))((NiNode*)pNode));
+            ->operator=(((FUN_00800d50_getter)(*(unsigned int*)(*(unsigned int*)apTarget + 0x1d0)))((NiNode*)apTarget));
     }
     BSShaderProperty_SetFlagRecurse((NiNode*)*((NiPointer<NiNode>*)((char*)this + this->f0c * 8 + 0x18)), 0x31, 0);
 }
@@ -1357,6 +1455,7 @@ struct FUN_00802bf0 : FnvBase
 };
 // Destructor that calls FUN_00438af0 before the object is destroyed.
 // @fnv 0x00802bf0
+// pdb: DebugTextManager::Initialize | DebugTextManager.obj | retail, object-file run extension, low
 FUN_00802bf0::~FUN_00802bf0()
 {
     FUN_00438af0();
@@ -1395,15 +1494,18 @@ class B9277Node
 // Walks the node chain from a2, calls v30(a1) on each node's holder node, then calls FUN_00470470 on a2.
 // @fnv 0x00806ba0
 // src: XBOX_PDB 0x00806ba0
-void ActiveEffect_RevertActiveEffectList(void* a1, B9277Node* pNode)
+// pdb: ActiveEffect::RevertActiveEffectList | ActiveEffect.obj | debug, call graph (shared callers), high
+// pdb params: apLoadGameBuffer, apActiveEffectList
+// pdb locals: plist, pactiveEffect
+void ActiveEffect_RevertActiveEffectList(void* apLoadGameBuffer, B9277Node* apActiveEffectList)
 {
-    B9277Node* cur = pNode;
+    B9277Node* cur = apActiveEffectList;
     while (cur != 0)
     {
         B9277Node* obj5 = cur->FUN_006815c0()->m_node;
         if (obj5 != 0)
         {
-            obj5->v30(a1);
+            obj5->v30(apLoadGameBuffer);
             B9277Node* x4 = obj5;
             B9277Node* t5 = x4;
             int res5;
@@ -1418,7 +1520,7 @@ void ActiveEffect_RevertActiveEffectList(void* a1, B9277Node* pNode)
         }
         cur = cur->FUN_00726070();
     }
-    pNode->FUN_00470470();
+    apActiveEffectList->FUN_00470470();
 }
 
 struct FUN_0080f6e0_sub
@@ -1437,6 +1539,7 @@ struct FUN_0080f6e0 : FUN_0081dbb0
 
 // Initializes the object: constructs the m_b4 sub-object and sets m_c0 to 0.
 // @fnv 0x0080f6e0
+// pdb: MagicBallProjectile::MagicBallProjectile | MagicBallProjectile.obj | debug, call graph, low
 FUN_0080f6e0::FUN_0080f6e0() : m_b4()
 {
     m_c0 = 0;
@@ -1527,6 +1630,10 @@ extern Actor* g_thePlayer;
 extern GlobalObject_0044f440 g_011d1c28;
 void _11DC778_Subtract(float);
 // @fnv 0x0080fb30
+// pdb: QueuedItem::SaveGame | MiddleHighProcess.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MagicBallProjectile::~MagicBallProjectile
+// pdb params: apSaveGameBuffer
+// pdb locals: iextraIndex, pactor, pinventory
 FUN_0080fb30::~FUN_0080fb30()
 {
     Actor* actor = FUN_009185e0() ? FUN_009185e0()->f11() : 0;
@@ -1542,7 +1649,7 @@ FUN_0080fb30::~FUN_0080fb30()
     {
         FUN_0080fcc0_class* previous = controller;
         FUN_0080fcc0_class* old = previous;
-        old ? old->FUN_0080fcc0(1) : 0;
+        old ? old->MagicLight_ScalarDtor(1) : 0;
     }
     controller = 0;
 }
@@ -1588,22 +1695,25 @@ struct EffectBase
     int unkC8, unkCC, unkD0;
     float fD4;
     float GetTime();
-    void MagicBoltProjectile_UpdateBranch(float a, EffectParams* p);
+    void MagicBoltProjectile_UpdateBranch(float afDelta, EffectParams* apBranch);
 };
 
 // @fnv 0x00812700
 // src: COMMUNITY 0x00812700
-void EffectBase::MagicBoltProjectile_UpdateBranch(float a, EffectParams* pParams)
+// pdb: MagicBoltProjectile::UpdateBranch | MagicBoltProjectile.obj | retail, upstream name already matches, high
+// pdb params: afDelta, apBranch
+// pdb locals: fz, toTarget, rot, pnode, fxy, bfinish
+void EffectBase::MagicBoltProjectile_UpdateBranch(float afDelta, EffectParams* apBranch)
 {
-    SceneObj* node5 = pParams->m_pController;
-    if (pParams->aspObstacleData)
+    SceneObj* node5 = apBranch->m_pController;
+    if (apBranch->aspObstacleData)
     {
-        pParams->pos = *pParams->aspObstacleData->GetPos();
+        apBranch->pos = *apBranch->aspObstacleData->GetPos();
     }
-    node5->GetTransformScale(pParams->pos);
-    NiPoint3 dir = *pParams->m_spTargetObject->GetPos() - pParams->pos;
+    node5->GetTransformScale(apBranch->pos);
+    NiPoint3 dir = *apBranch->m_spTargetObject->GetPos() - apBranch->pos;
     bool bFar = GetTime() - fD4 > *g_011d1b14.Float();
-    pParams->spEmitter->Fire(a, dir.Length(), f88, bFar);
+    apBranch->spEmitter->Fire(afDelta, dir.Length(), f88, bFar);
     Mat3 rot2;
     float z4 = dir.z;
     dir.z = 0.0f;
@@ -1649,6 +1759,7 @@ struct FUN_00813ea0_cls
 
 // Initializes the members m_00, m_04, m_08, m_14 and m_18 with zero or default values.
 // @fnv 0x00813ea0
+// pdb: MagicBoltProjectile::AreaBolt::AreaBolt | MagicBoltProjectile.obj | debug, call graph, high
 FUN_00813ea0_cls::FUN_00813ea0_cls() : m_00(0), m_04(0), m_08(), m_14(0), m_18(0)
 {}
 
@@ -1668,6 +1779,7 @@ class FUN_00815360_cls
 };
 
 // @fnv 0x00815360
+// pdb: MagicCaster::EndAim | MagicCaster.obj | debug, object-file gap fill, medium
 void FUN_00815360_cls::CallSlot08()
 {
     this->vSlot08();
@@ -1798,15 +1910,17 @@ struct VTableTarget116
 struct FUN_0081c4a0_cls
 {
     void MagicLight_Transfer_0081c4e0(int a);
-    void MagicLight_Transfer(VTableTarget116* p);
+    void MagicLight_Transfer(VTableTarget116* apRef);
 };
 
 // @fnv 0x0081c4a0
 // src: XBOX_PDB 0x0081c4a0
-void FUN_0081c4a0_cls::MagicLight_Transfer(VTableTarget116* pTarget)
+// pdb: MagicLight::Transfer | MagicLight.obj | retail, upstream name already matches, high
+// pdb params: apRef
+void FUN_0081c4a0_cls::MagicLight_Transfer(VTableTarget116* apRef)
 {
-    if (pTarget->v116() != 0)
-        this->MagicLight_Transfer_0081c4e0(pTarget->v116());
+    if (apRef->v116() != 0)
+        this->MagicLight_Transfer_0081c4e0(apRef->v116());
 }
 
 struct FUN_0081c4e0_Helper
@@ -1888,6 +2002,8 @@ struct FUN_0081c4e0_cls
 // If m_04 is nonzero, calls FUN_0066b0d0 with a1 and then invokes v55 on the helper with the sub-helper and 1.
 // @fnv 0x0081c4e0
 // src: XBOX_PDB 0x0081c4e0
+// pdb: MagicLight::Transfer | MagicLight.obj | debug, object-file run extension, low
+// pdb params: apObj
 void __thiscall FUN_0081c4e0_cls::MagicLight_Transfer_0081c4e0(int a1)
 {
     if (m_04 != 0)
@@ -1897,7 +2013,7 @@ void __thiscall FUN_0081c4e0_cls::MagicLight_Transfer_0081c4e0(int a1)
     }
 }
 
-NiAVObject* __cdecl LoadAndCloneModel(const char* value);
+NiAVObject* __cdecl LoadAndCloneModel(const char* apFilename);
 
 struct FUN_0081e440_Embedded
 {
@@ -1930,9 +2046,11 @@ struct FUN_0081e440_Object
 
 // @fnv 0x0081e440
 // src: XBOX_PDB 0x0081e440
-void __cdecl MagicProjectile_Clone3D(FUN_0081e440_Object* object)
+// pdb: MagicProjectile::Clone3D | MagicProjectile.obj | debug, call graph, high
+// pdb params: apAVEffect
+void __cdecl MagicProjectile_Clone3D(FUN_0081e440_Object* apAVEffect)
 {
-    LoadAndCloneModel(reinterpret_cast<const char*>(object->embedded.vf14()));
+    LoadAndCloneModel(reinterpret_cast<const char*>(apAVEffect->embedded.vf14()));
 }
 
 struct FUN_0081f1e0_Virtual
@@ -2370,11 +2488,14 @@ struct EquipVisibility
     int extraSlots[15];
     void VATSEffect_SetBodyPartEnabled(void*, int, bool);
     void FOVATSEffectManager_ShowBipedObjectOnActor(EquipObject*, int, int);
-    void UpdateEquipmentVisibility();
+    void FOVATSEffectManager_IsolateBodyPart();
 };
 // Toggles shader visibility for the owner's equipment slots based on the current slot, hiding non-selected slots and showing extras.
 // @fnv 0x00801da0
-void EquipVisibility::UpdateEquipmentVisibility()
+// src: XBOX_RETAIL_PDB 0x00801da0
+// pdb: FOVATSEffectManager::IsolateBodyPart | FOVATSEffectManager.obj | retail, object-file run extension, high
+// pdb locals: ilimb, pactorRoot, pactor, n, pobj, ptri, pnode, pdSkinInstance, pskin, eindex, i, pbodyPartData, ppart, plimbNode
+void EquipVisibility::FOVATSEffectManager_IsolateBodyPart()
 {
     if (!owner->IsActor())
         return;
@@ -2632,19 +2753,23 @@ struct FUN_00800870_Class
     unsigned int unk280;
     unsigned char active, unk285, unk286, unk287;
     float previous, progress, duration, next;
-    void __thiscall UpdateProgress(float value);
+    void __thiscall FOVATSEffectManager_UpdateDistort(float afTime);
 };
 
 // Sets progress to (value - previous) / duration; if a global threshold is below progress, clears active and sets next to value plus a random remainder.
 // @fnv 0x00800870
-void __thiscall FUN_00800870_Class::UpdateProgress(float value)
+// src: XBOX_RETAIL_PDB 0x00800870
+// pdb: FOVATSEffectManager::UpdateDistort | FOVATSEffectManager.obj | retail, object-file run extension, high
+// pdb params: afTime
+// pdb locals: fdelta
+void __thiscall FUN_00800870_Class::FOVATSEffectManager_UpdateDistort(float afTime)
 {
-    float delta = value - previous;
+    float delta = afTime - previous;
     progress = delta / duration;
     if (*Setting_Float_00403e20(&DAT_011db6e4) + DAT_01012070 < progress)
     {
         active = 0;
-        next = (float)(FUN_00ecadb8() % *Setting_Int(&DAT_011db75c)) + value;
+        next = (float)(FUN_00ecadb8() % *Setting_Int(&DAT_011db75c)) + afTime;
     }
 }
 
@@ -2663,6 +2788,8 @@ FUN_0080cd30_Class::FUN_0080cd30_Class(MagicCaster* apCaster, MagicItem* apMagic
 }
 
 // @fnv 0x0080d1a0
+// pdb: DisintegrateArmorEffect::DisintegrateArmorEffect | DisintegrateArmorEffect.obj | debug, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 FUN_0080d1a0::FUN_0080d1a0(MagicCaster* a, MagicItem* b, EffectItem* c)
     : ActiveEffect(a, b, c)
 {
@@ -2680,6 +2807,7 @@ struct FUN_0080d6b0_cls : ActiveEffect
 
 // Constructs the ActiveEffect base and installs the derived vtable.
 // @fnv 0x0080d6b0
+// pdb: DisintegrateWeaponEffect::`scalar deleting destructor' | DisintegrateWeaponEffect.obj | debug, object-file run extension, low
 FUN_0080d6b0_cls::FUN_0080d6b0_cls(MagicCaster* a, MagicItem* b, EffectItem* c)
     : ActiveEffect(a, b, c)
 {
@@ -2692,18 +2820,21 @@ struct FUN_0080d900_cls : ActiveEffect
 
 // Constructs the ActiveEffect base and installs the derived vtable.
 // @fnv 0x0080d900
+// pdb: AssociatedItemEffect::`scalar deleting destructor' | AssociatedItemEffect.obj | debug, object-file run extension, low
 FUN_0080d900_cls::FUN_0080d900_cls(MagicCaster* a1, MagicItem* a2, EffectItem* a3)
     : ActiveEffect(a1, a2, a3)
 {
 }
 
-struct FUN_0080f390_shell : ActiveEffect
+// pdb: class LockEffect, size 0x48, bases: ActiveEffect, 0 members
+struct LockEffect : ActiveEffect
 {
-    FUN_0080f390_shell(MagicCaster* a, MagicItem* b, EffectItem* c);
+    LockEffect(MagicCaster* a, MagicItem* b, EffectItem* c);
 };
 // Constructs a FUN_0080f390_shell ActiveEffect, passing a, b, c to the base and setting the vtable to DAT_0107a4ac.
 // @fnv 0x0080f390
-FUN_0080f390_shell::FUN_0080f390_shell(MagicCaster* apCaster, MagicItem* apItem, EffectItem* apEffect)
+// pdb: LockEffect::~LockEffect | LockEffect.obj | debug, object-file run extension, low
+LockEffect::LockEffect(MagicCaster* apCaster, MagicItem* apItem, EffectItem* apEffect)
     : ActiveEffect(apCaster, apItem, apEffect)
 {
 }
@@ -2718,7 +2849,7 @@ struct Obj68
 
 struct GlobalGate
 {
-    void Enter(FUN_0081de70_cls* self, int r);
+    void Enter(FUN_0081de70_cls* apActor, int aWhichList);
 };
 
 struct GlobalMgr
@@ -2796,12 +2927,13 @@ class FUN_0081de70_cls : public PrimaryBase, public SecondaryBase
     int unk9c;
     char* m_a0;
 
-    void Flush(int x);
+    void Flush(int abMagicCaster);
     virtual ~FUN_0081de70_cls();
 };
 
 // If m_68 is set calls g_gate.Enter(this, m_68->Get()); logs v5(0, 1) of m_a0+0x18 if its Check() > 0; calls Flush(0) when g_mgr->Query() is false.
 // @fnv 0x0081de70
+// pdb: MagicProjectile::~MagicProjectile | MagicProjectile.obj | debug, object-file gap fill, medium
 FUN_0081de70_cls::~FUN_0081de70_cls()
 {
     if (m_68 != 0)

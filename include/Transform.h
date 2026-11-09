@@ -151,8 +151,8 @@ public:
     void FUN_008b42e0(Transform& out) const;
     void FUN_00c6cd60(const Transform& other);
     void FUN_00c6cd60(const Transform* other);
-    void hkTransform_setMul(const Transform& a, const Transform& b);
-    void hkTransform_setMul(const Transform* a, const Transform* b);
+    void hkTransform_setMul(const Transform& aTb, const Transform& bTc);
+    void hkTransform_setMul(const Transform* aTb, const Transform* bTc);
     void hkTransform_setMulInverseMul(Transform* a, Transform* b);
     void hkTransform_setMulInverseMul(const Transform& a, const Transform& b);
     void hkTransform_setMulInverseMul(const Transform* a, const Transform* b);

@@ -6,12 +6,13 @@ class TESFile;
 class TESForm;
 class TESWorldSpace;
 
+// pdb: class BGSPerkEntry, size 0x8, 2 members
 class BGSPerkEntry
 {
 public:
     BGSPerkEntry();  // 0x005e9530: vftable 0x01046b48, m_ucRank = m_ucRegionPriority = 0
-    unsigned char m_ucRank;
-    unsigned char m_ucRegionPriority;
+    unsigned char cRank;
+    unsigned char cPriority;
     unsigned short unk06;
 
     virtual bool CheckConditionFilters(unsigned int count, TESForm** subjects);

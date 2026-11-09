@@ -39,6 +39,8 @@
 #include "../../include/NiTArray.h"
 #include "extradataobjects_private_packet_rtti_variant_decl_extradataobjects_rtti_variant2.h"
 // @fnv 0x00877a30
+// pdb: NiTArray<NiTexturingProperty::Map *,NiTMallocInterface<NiTexturingProperty::Map *> >::GetAt | TESDataHandler.obj | debug, call graph, medium
+// pdb params: uiIndex
 template <> TESObjectREFR*& NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >::GetAt(unsigned int index)
 {
     return m_pBase[index];
@@ -72,6 +74,9 @@ int LockExtraData::EnumToNumericValue(LOCK_LEVEL level)
 }
 // Copies source into pString, reallocating when needed, and returns whether the resulting string is non-empty.
 // @fnv 0x00438470
+// pdb: BSStringT<char>::Set | ExtraDataObjects.obj | retail, call graph, medium
+// pdb params: arString
+// pdb locals: inewLen, pold
 template <> bool BSStringT<char>::Set(const BSStringT<char>& source)
 {
     unsigned int length = source.Length();
@@ -109,7 +114,10 @@ void __cdecl operator delete(void*);
 // Walks m_kDecalReferences, resolving each decal's m_pHitReference form ID against the given TESForm and removing entries that cannot be resolved.
 // @fnv 0x00433db0
 // src: XBOX_PDB 0x00433db0
-void ExtraDecalRefs::InitItem_00433db0(TESForm* form)
+// pdb: ExtraDecalRefs::InitItem | ExtraDataObjects.obj | debug, unique string literal, high
+// pdb params: apOwner
+// pdb locals: preflist, plastlist, badvanced, pdata, pdecal, tempint
+void ExtraDecalRefs::InitItem_00433db0(TESForm* apOwner)
 {
     BSSimpleList<ReferenceIntersectionData*>* position = &m_kDecalReferences;
     BSSimpleList<ReferenceIntersectionData*>* previous = 0;
@@ -118,7 +126,7 @@ void ExtraDecalRefs::InitItem_00433db0(TESForm* form)
         bool removed = false;
         ReferenceIntersectionData* decal = position->GetItem();
         unsigned int formID = reinterpret_cast<unsigned int>(decal->m_pHitReference);
-        ResolveFormID(&formID, form->FUN_00484e60(-1));
+        ResolveFormID(&formID, apOwner->FUN_00484e60(-1));
         TESObjectREFR* resolvedB = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(formID));
         if (!resolvedB)
         {

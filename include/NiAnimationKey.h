@@ -2,6 +2,7 @@
 
 class NiStream;
 
+// pdb: class NiAnimationKey, size 0x4, 1 members
 class NiAnimationKey
 {
 public:

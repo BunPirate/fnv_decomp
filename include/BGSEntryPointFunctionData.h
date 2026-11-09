@@ -3,6 +3,7 @@
 class TESFile;
 class TESForm;
 
+// pdb: class BGSEntryPointFunctionData, size 0x4, 0 members
 class BGSEntryPointFunctionData
 {
 public:

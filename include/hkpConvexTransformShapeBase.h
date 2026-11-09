@@ -3,6 +3,7 @@
 #include "hkpConvexShape.h"
 #include "hkpSingleShapeContainer.h"
 
+// pdb: class hkpConvexTransformShapeBase, size 0x20, bases: hkpConvexShape, 2 members
 class hkpConvexTransformShapeBase : public hkpConvexShape
 {
 public:
@@ -12,6 +13,6 @@ public:
 
     const hkpConvexShape* GetShapeForKey() const;
 
-    hkpSingleShapeContainer m_pContainedShape;
-    int m_iChildShapeSize;
+    hkpSingleShapeContainer m_childShape;
+    int m_childShapeSize;
 };

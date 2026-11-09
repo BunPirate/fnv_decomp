@@ -3,6 +3,7 @@
 #include "NiObject.h"
 #include "NiFixedString.h"
 
+// pdb: class NiExtraData, size 0xc, bases: NiObject, 1 members
 class NiExtraData : public NiObject
 {
   public:
@@ -12,8 +13,8 @@ class NiExtraData : public NiObject
     NiExtraData(BSFadeNode* node);
     virtual ~NiExtraData();
 
-    virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void LinkObject(NiStream& kStream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsGeometryController();
     virtual bool IsCloneable();
@@ -22,12 +23,12 @@ class NiExtraData : public NiObject
     void* CloneFloatExtraData(void* cloning);
     void BSXFlags_SetFlags(bool, bool);
     bool FUN_00448a40();
-    bool BSXFlags_IsEditorMarker();
+    bool BSXFlags_QEditorMarker();
     void FUN_00a7b2e0();
     void DestroyFields_00a7b300();
     void CopyMembers_00a7b330(void* destination, void* cloning);
     void CopyMembers_00a7b330(void* destination, CloningProcess* cloning);
-    void BSAttachPoints_LinkObject(NiStream& stream);
+    void BSAttachPoints_LinkObject(NiStream& arStream);
 
 
     NiFixedString m_kName;

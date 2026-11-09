@@ -2,6 +2,7 @@
 
 #include "bhkGenericConstraint.h"
 
+// pdb: class bhkFixedConstraint, size 0x10, bases: bhkGenericConstraint, 0 members
 class bhkFixedConstraint : public bhkGenericConstraint
 {
 public:

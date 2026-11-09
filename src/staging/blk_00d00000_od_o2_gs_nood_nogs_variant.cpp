@@ -42,7 +42,10 @@ union hkAabbQ
 
 // @fnv 0x00d05df0
 // src: COMMUNITY 0x00d05df0
-void __cdecl tranformPhantom(hkpPhantom* phantom, const hkTransform& transform)
+// pdb: tranformPhantom | hkpPhysicsSystem.obj | retail, upstream name already matches, high
+// pdb params: phantom, transformation
+// pdb locals: aabb, rot, assertBuf, ostr, tran
+void __cdecl tranformPhantom(hkpPhantom* phantom, const hkTransform& transformation)
 {
     switch (phantom->getType())
     {
@@ -53,26 +56,26 @@ void __cdecl tranformPhantom(hkpPhantom* phantom, const hkTransform& transform)
         hkQuadVector c1;
         hkQuadVector c2;
         hkQuadVector t;
-        c0.v = reinterpret_cast<const hkVector4f&>(sp->m_kMotionState.m_kMotionTransform.m_kColumn0);
-        c1.v = reinterpret_cast<const hkVector4f&>(sp->m_kMotionState.m_kMotionTransform.m_kColumn1);
-        c2.v = reinterpret_cast<const hkVector4f&>(sp->m_kMotionState.m_kMotionTransform.m_kColumn2);
-        t.v = reinterpret_cast<const hkVector4f&>(sp->m_kMotionState.m_kMotionTransform.m_vTranslation);
+        c0.v = reinterpret_cast<const hkVector4f&>(sp->m_motionState.m_transform.m_kColumn0);
+        c1.v = reinterpret_cast<const hkVector4f&>(sp->m_motionState.m_transform.m_kColumn1);
+        c2.v = reinterpret_cast<const hkVector4f&>(sp->m_motionState.m_transform.m_kColumn2);
+        t.v = reinterpret_cast<const hkVector4f&>(sp->m_motionState.m_transform.m_vTranslation);
         __m128 currentStorage[4];
         hkTransform& current = reinterpret_cast<hkTransform&>(currentStorage);
         current.m_kColumn0 = c0.q;
         current.m_kColumn1 = c1.q;
         current.m_kColumn2 = c2.q;
         current.m_vTranslation = t.q;
-        current.ProcessTransformedMatrixCopy_00cb23e0(transform);
+        current.ProcessTransformedMatrixCopy_00cb23e0(transformation);
         sp->hkpShapePhantom_setTransform(current);
         break;
     }
     case 0: {
         hkpAabbPhantom* ap = static_cast<hkpAabbPhantom*>(phantom);
         hkAabbQ aabb;
-        aabb.f = reinterpret_cast<const hkAabbf&>(ap->m_kBounds);
-        aabb.q.m_kMinimumCorner = _mm_add_ps(transform.m_vTranslation, aabb.q.m_kMinimumCorner);
-        aabb.q.m_kMaximumCorner = _mm_add_ps(transform.m_vTranslation, aabb.q.m_kMaximumCorner);
+        aabb.f = reinterpret_cast<const hkAabbf&>(ap->m_aabb);
+        aabb.q.m_kMinimumCorner = _mm_add_ps(transformation.m_vTranslation, aabb.q.m_kMinimumCorner);
+        aabb.q.m_kMaximumCorner = _mm_add_ps(transformation.m_vTranslation, aabb.q.m_kMaximumCorner);
         ap->hkpAabbPhantom_setAabb(aabb);
         break;
     }

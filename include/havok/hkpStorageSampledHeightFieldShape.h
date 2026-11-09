@@ -6,11 +6,12 @@
 #include "hkBase.h"
 #include "hkpSampledHeightFieldShape.h"
 #pragma pack(push, 1)
+// pdb: class hkpStorageSampledHeightFieldShape, size 0x80, bases: hkpSampledHeightFieldShape, 5 members
 class hkpStorageSampledHeightFieldShape : public hkpSampledHeightFieldShape
 {
   public:
-    hkArray<hkReal> m_kStorage;  // +0x60
-    char pad6C[0x14];
+    hkArray<hkReal> m_storage;  // +0x60
+    char fOffset[0x14];
 };
 #pragma pack(pop)
 typedef char

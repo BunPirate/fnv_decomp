@@ -6,12 +6,13 @@
 #include "hkBase.h"
 #include "hkpVehicleVelocityDamper.h"
 #pragma pack(push, 1)
+// pdb: class hkpVehicleDefaultVelocityDamper, size 0x14, bases: hkpVehicleVelocityDamper, 3 members
 class hkpVehicleDefaultVelocityDamper : public hkpVehicleVelocityDamper
 {
   public:
-    hkReal m_fSpinDamping;           // +0x8
-    hkReal m_fCollisionSpinDamping;  // +0xC
-    hkReal m_fCollisionThreshold;    // +0x10
+    hkReal m_normalSpinDamping;           // +0x8
+    hkReal m_collisionSpinDamping;  // +0xC
+    hkReal m_collisionThreshold;    // +0x10
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpVehicleDefaultVelocityDamper[(sizeof(hkpVehicleDefaultVelocityDamper) == 0x14) ? 1 : -1];

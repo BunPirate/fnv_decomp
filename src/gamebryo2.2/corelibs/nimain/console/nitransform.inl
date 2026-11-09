@@ -2,6 +2,7 @@
 #include "nitransform_decls.h"
 #pragma optimize("gty", on)
 // @fnv 0x00a68bf0
+// pdb: NiAVObject::UpdateWorldLoc | NiAVObject_Xenon.obj | retail, upstream name already matches, high
 void NiAVObject::UpdateWorldLoc()
 {
  if (m_pkParent) {
@@ -11,6 +12,10 @@ void NiAVObject::UpdateWorldLoc()
 }
 #pragma optimize("", off)
 // @fnv 0x004b4880
+// pdb: NiTransform::InvertNonUniform | Actor.obj | retail, call graph, low
+// pdb note: debug build links it to NiTransform::Invert
+// pdb params: kDest
+// pdb locals: tst
 void NiTransform::CalculateInverse(NiTransform& out)
 {
  out.m_Rotate = m_Rotate.Transpose();

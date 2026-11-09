@@ -12,19 +12,21 @@ int __cdecl Object_GetCurrentState() {
     return currentState;
 }
 
-struct Built { int field00; short field04; int field08; int __thiscall hkpToiContactPointViewer_hkpToiContactPointViewer(int); };
+struct Built { int field00; short field04; int field08; int __thiscall hkpToiContactPointViewer_ctor(int); };
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 // Allocates a 0x2c-byte Built via the global allocator, sets its field04 to 0x2c, calls FUN_00d682d0(arg), and returns result+8 or 0.
 // @fnv 0x00d686b0
 // src: XBOX_PDB 0x00d686b0
-int __cdecl hkpToiContactPointViewer_create(int arg)
+// pdb: hkpToiContactPointViewer::create | hkpToiContactPointViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+int __cdecl hkpToiContactPointViewer_create(int contexts)
 {
     hkMemoryRouter* global = hkMemoryRouter_getInstance();
     hkMemoryAllocator* allocator = reinterpret_cast<hkMemoryAllocator*>(global->m_heap);
     typedef void* (__thiscall* AllocateFunction)(hkMemoryAllocator*, int);
     Built* pBuilt = (Built*)(*reinterpret_cast<AllocateFunction**>(allocator))[1](allocator, 0x2c);
     pBuilt->field04 = 0x2c;
-    int result = pBuilt->hkpToiContactPointViewer_hkpToiContactPointViewer(arg);
+    int result = pBuilt->hkpToiContactPointViewer_ctor(contexts);
     if (result) return result + 8;
     return 0;
 }
@@ -33,7 +35,7 @@ struct SpawnedChild {
     int unk00;
     int unk04;
     int m_i08;
-    void Dispatch(int arg);
+    void Dispatch(int mousePositionInWorld);
 };
 
 struct FUN_00d66bf0_cls {
@@ -63,7 +65,7 @@ void FUN_00d66bf0_cls::DispatchToChild(int arg)
 }
 
 struct Target {
-    void hkpWorld_removeContactListener(void* apArg);
+    void hkpWorld_removeContactListener(void* collisionListener);
 };
 
 struct FUN_00d682a0_cls {
@@ -81,6 +83,8 @@ struct FUN_00d682a0_cls {
 
 // Calls apTarget->FUN_00c91a20 with a pointer to this+8, or null if this-0x20 is null.
 // @fnv 0x00d682a0
+// pdb: hkpToiContactPointViewer::operator new | hkpToiContactPointViewer.obj | debug, object-file run extension, low
+// pdb params: nbytes
 void FUN_00d682a0_cls::InvokeTargetWithSelfOffset(Target* apTarget)
 {
     apTarget->hkpWorld_removeContactListener(((char*)this - 0x20) != 0 ? (char*)this + 8 : 0);
@@ -92,7 +96,7 @@ extern char DAT_010d1eec[];
 extern char DAT_010d1edc[];
 extern char DAT_010d1ebc[];
 
-void __stdcall FUN_00ddccb0(int a1);
+void __stdcall FUN_00ddccb0(int contexts);
 
 struct FUN_00d682d0_cls {
     int unk00;
@@ -107,15 +111,17 @@ struct FUN_00d682d0_cls {
     int unk24;
     void* m_vtbl28;
 
-    void* hkpToiContactPointViewer_hkpToiContactPointViewer(int a1);
+    void* hkpToiContactPointViewer_ctor(int contexts);
 };
 
 // Calls FUN_00ddccb0 with a1, then stores five DAT_ pointers into this at offsets 0x28, 0x00, 0x08, 0x20 and 0x28, and returns this.
 // @fnv 0x00d682d0
-// src: HAVOK_LIB 0x00d682d0
-void* FUN_00d682d0_cls::hkpToiContactPointViewer_hkpToiContactPointViewer(int aiArg)
+// src: XBOX_RETAIL_PDB 0x00d682d0
+// pdb: hkpToiContactPointViewer::hkpToiContactPointViewer | hkpToiContactPointViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+void* FUN_00d682d0_cls::hkpToiContactPointViewer_ctor(int contexts)
 {
-    FUN_00ddccb0(aiArg);
+    FUN_00ddccb0(contexts);
     *(void* volatile*)((char*)this + 0x28) = (void*)&DAT_0104dd7c;
     *(void* volatile*)((char*)this + 0x00) = (void*)&DAT_010d1f0c;
     *(void* volatile*)((char*)this + 0x08) = (void*)&DAT_010d1eec;
@@ -153,6 +159,7 @@ public:
 // Iterates the item list and calls m_sub.v1 on each item until the list ends or the count is reached.
 // @fnv 0x00d68310
 // src: GUESS 0x00d68310 (confidence: low)
+// pdb: hkpToiContactPointViewer::init | hkpToiContactPointViewer.obj | retail, vtable slot, high
 void FUN_00d68310_cls::ProcessEntries_00d68310() {
     int i = 0;
     while (m_kNode != 0) {
@@ -239,12 +246,13 @@ public:
     ListBlob_t* m_pEntries;
     Part2_t m_pTail;
 
-    void ProcessEntries_00d68350();
+    void hkpToiContactPointViewer_dtor();
 };
 
 // @fnv 0x00d68350
-// src: GUESS 0x00d68350 (confidence: low)
-void FUN_00d68350_cls::ProcessEntries_00d68350()
+// src: XBOX_RETAIL_PDB 0x00d68350
+// pdb: hkpToiContactPointViewer::~hkpToiContactPointViewer | hkpToiContactPointViewer.obj | retail, object-file gap fill, high
+void FUN_00d68350_cls::hkpToiContactPointViewer_dtor()
 {
     int i = 0;
     this->Part0_t::~Part0_t();
@@ -266,7 +274,7 @@ void FUN_00d68350_cls::ProcessEntries_00d68350()
 }
 
 struct StateTarget {
-    int __thiscall Dispatch(const char* name, int (__cdecl* handler)(int));
+    int __thiscall Dispatch(const char* viewerName, int (__cdecl* creationFunction)(int));
 };
 
 extern StateTarget* g_stateTarget;
@@ -274,7 +282,9 @@ extern int g_stateResult;
 extern const char str_010d1ea0[];
 
 // @fnv 0x00d686f0
-void DispatchStateHandler()
+// src: XBOX_RETAIL_PDB 0x00d686f0
+// pdb: hkpToiContactPointViewer::registerViewer | hkpToiContactPointViewer.obj | retail, string-set bridge, high
+void hkpToiContactPointViewer_registerViewer()
 {
     g_stateResult = g_stateTarget->Dispatch(str_010d1ea0, hkpToiContactPointViewer_create);
 }
@@ -300,7 +310,7 @@ struct FUN_00d68270_Base2 {
 struct FUN_00d68270_Derived : public FUN_00d68270_Base0, public FUN_00d68270_Base1, public FUN_00d68270_Base2 {
 };
 struct FUN_00d68270_Arg {
-    void hkpWorld_addContactListener(FUN_00d68270_Base2* obj);
+    void hkpWorld_addContactListener(FUN_00d68270_Base2* collisionListener);
 };
 // Calls arg->FUN_00c93a20 with the address 8 bytes past this, treated as the Base2 part of the enclosing Derived object.
 // @fnv 0x00d68270
@@ -416,6 +426,7 @@ struct FUN_00d68740 {
 
 // Constructor that zero-initializes m_u04 and m_u06.
 // @fnv 0x00d68740
+// pdb: hkpToiContactPointViewer::`scalar deleting destructor' | hkpToiContactPointViewer.obj | retail, vtable slot, high
 FUN_00d68740::FUN_00d68740()
 {
     m_u04 = 0;
@@ -517,7 +528,10 @@ __forceinline LocalM128 splat(float s) {
 
 // @fnv 0x00d683b0
 // src: XBOX_PDB 0x00d683b0
-static __declspec(noinline) void hkToiContactPointViewer_displayArrow(Handler* self, hkVector4* from, hkVector4* dir, int color, int id, int tag) {
+// pdb: hkToiContactPointViewer_displayArrow | hkpToiContactPointViewer.obj | retail, upstream name already matches, high
+// pdb params: handler, from, dir, color, id, tag
+// pdb locals: p1, p0, to, ort
+static __declspec(noinline) void hkToiContactPointViewer_displayArrow(Handler* handler, hkVector4* from, hkVector4* dir, int color, int id, int tag) {
     float lenSq;
 
     _mm_store_ss(&lenSq, lengthSquared3(dir->v));
@@ -565,9 +579,9 @@ static __declspec(noinline) void hkToiContactPointViewer_displayArrow(Handler* s
         endpoints.head1.v = _mm_add_ps(base, _mm_mul_ps(splat(scalePos), perpS));
         float scaleNeg = DAT_010c69c0;
         head2.v = _mm_add_ps(base, _mm_mul_ps(splat(scaleNeg), perpS));
-        self->DisplayLine(*from, to, color, id, tag);
-        self->DisplayLine(to, endpoints.head1, color, id, tag);
-        self->DisplayLine(to, head2, color, id, tag);
+        handler->DisplayLine(*from, to, color, id, tag);
+        handler->DisplayLine(to, endpoints.head1, color, id, tag);
+        handler->DisplayLine(to, head2, color, id, tag);
         { MonStream* s = (MonStream*)TlsGetValue(DAT_0126835c);
         if (s->m_kRayEnd < s->m_cap) {
             TimerCmd* h = s->m_kRayEnd;

@@ -122,7 +122,7 @@ struct S_00cfab30_this
     int unk30;
     void* unk34;
 
-    void __thiscall RecordAndDispatch(S_00cfab30_object*, S_00cfab30_arg*, void*, void*, void*);
+    void __thiscall hkpSimpleWorldRayCaster_castRay(S_00cfab30_object*, S_00cfab30_arg*, void*, void*, void*);
 };
 
 extern int DAT_0126835c;
@@ -133,8 +133,12 @@ extern const char str_010c41f8[];
 
 // Records a start timestamp, stores arguments into fields, invokes target_call on arg08 with a local struct, then records an end timestamp.
 // @fnv 0x00cfab30
-void __thiscall S_00cfab30_this::RecordAndDispatch(S_00cfab30_object* apTarget, S_00cfab30_arg* arg0c, void* apContext,
-                                                   void* arg14, void* arg18)
+// src: XBOX_RETAIL_PDB 0x00cfab30
+// pdb: hkpSimpleWorldRayCaster::castRay | hkpSimpleWorldRayCaster.obj | retail, string-set bridge, high
+// pdb params: broadphase, input, filter, output
+// pdb locals: rayInput, assertBuf, ostr
+void __thiscall S_00cfab30_this::hkpSimpleWorldRayCaster_castRay(S_00cfab30_object* broadphase, S_00cfab30_arg* input, void* filter,
+                                                   void* cache, void* output)
 {
     S_00cfab30_allocator* allocator;
     S_00cfab30_record* record;
@@ -153,14 +157,14 @@ void __thiscall S_00cfab30_this::RecordAndDispatch(S_00cfab30_object* apTarget, 
         allocator->next = record + 1;
     }
 
-    void* context = apContext;
-    unk04 = arg0c;
-    unk0c = arg18;
+    void* context = filter;
+    unk04 = input;
+    unk0c = output;
 
     unk08 = context ? (char*)context + 0x14 : 0;
     _ReadWriteBarrier();
 
-    if (arg0c->unk20)
+    if (input->unk20)
     {
         void* pContextOffset10 = context ? (char*)context + 0x10 : 0;
         (void* volatile&)unk34 = pContextOffset10;
@@ -169,11 +173,11 @@ void __thiscall S_00cfab30_this::RecordAndDispatch(S_00cfab30_object* apTarget, 
         unk34 = 0;
     local.unk10 = 1;
     local.unk18 = 0x10;
-    local.vec.v = arg0c->vec.v;
-    local.unk14 = &arg0c->unk10;
-    local.unk1c = arg14;
+    local.vec.v = input->vec.v;
+    local.unk14 = &input->unk10;
+    local.unk1c = cache;
 
-    apTarget->target_call(&local, this, 0);
+    broadphase->target_call(&local, this, 0);
 
     allocator = (S_00cfab30_allocator*)TlsGetValue(DAT_0126835c);
     record = allocator->next;

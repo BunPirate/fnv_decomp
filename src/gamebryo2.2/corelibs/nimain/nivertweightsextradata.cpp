@@ -11,6 +11,8 @@ extern "C" char __stdcall FUN_00a7b3d0(NiObject*);
 
 // @fnv 0x00a89b00
 // src: XBOX_PDB 0x00a89b00
+// pdb: NiVertWeightsExtraData::IsEqual | NiVertWeightsExtraData.obj | retail, upstream name already matches, high
+// pdb params: pObject
 char __stdcall NiVertWeightsExtraData_IsEqual(NiObject* pObject)
 {
     char b = FUN_00a7b3d0(pObject);
@@ -31,6 +33,8 @@ void* __cdecl NiVertWeightsExtraData_GetRTTI()
 extern void* DAT_0109ee9c;
 
 // @fnv 0x00a89b80
+// pdb: NiVertWeightsExtraData::CreateObject | NiVertWeightsExtraData.obj | retail, object-file gap fill, high
+// pdb locals: pkObject
 void* __cdecl CreateNiExtraData()
 {
     NiExtraData* p = (NiExtraData*)BSFadeNode::operator new(0xc);
@@ -46,6 +50,7 @@ void* __cdecl CreateNiExtraData()
     return p;
 }
 
+// pdb: class NiVertWeightsExtraData, size 0xc, bases: NiExtraData, 0 members
 struct NiVertWeightsExtraData : NiExtraData
 {
     void* FUN_00a89bb0(unsigned int);
@@ -56,6 +61,7 @@ struct FUN_00a7b300_shell
 };
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x00a89bb0
+// pdb: NiVertWeightsExtraData::`scalar deleting destructor' | NiVertWeightsExtraData.obj | retail, object-file gap fill, high
 void* NiVertWeightsExtraData::FUN_00a89bb0(unsigned int flags)
 {
     *(void**)this = (void*)&DAT_0109ee9c;
@@ -100,17 +106,19 @@ struct A89C70Object : A89C70Base
 {
     static A89C70RTTI ms_kRTTI;
 
-    void NiVertWeightsExtraData_GetViewerStrings(A89C70StringArray* pkStrings);
+    void NiVertWeightsExtraData_GetViewerStrings(A89C70StringArray* pStrings);
 };
 
 // Calls the base GetViewerStrings, then adds the RTTI name string to the string array.
 // @fnv 0x00a89c70
 // src: XBOX_PDB 0x00a89c70
-void A89C70Object::NiVertWeightsExtraData_GetViewerStrings(A89C70StringArray* pkStrings)
+// pdb: NiVertWeightsExtraData::GetViewerStrings | NiVertWeightsExtraData.obj | retail, upstream name already matches, high
+// pdb params: pStrings
+void A89C70Object::NiVertWeightsExtraData_GetViewerStrings(A89C70StringArray* pStrings)
 {
-    A89C70Base::GetViewerStrings(pkStrings);
+    A89C70Base::GetViewerStrings(pStrings);
     char* pcString = NiViewerStrings_NiGetViewerString_Title(ms_kRTTI.GetName());
-    pkStrings->Add(pcString);
+    pStrings->Add(pcString);
 }
 
 extern "C" void* __cdecl Object_DispatchCommandFour(unsigned int);
@@ -121,12 +129,15 @@ struct FUN_00a89b30_cls
     unsigned int unk04;
     unsigned int unk08;
     void CopyMembers_00a7b330(void* obj, unsigned int a1);
-    void* NiVertWeightsExtraData_CreateClone(unsigned int a1);
+    void* NiVertWeightsExtraData_CreateClone(unsigned int kCloning);
 };
 
 // @fnv 0x00a89b30
 // src: XBOX_PDB 0x00a89b30
-void* FUN_00a89b30_cls::NiVertWeightsExtraData_CreateClone(unsigned int a1)
+// pdb: NiVertWeightsExtraData::CreateClone | NiVertWeightsExtraData.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
+void* FUN_00a89b30_cls::NiVertWeightsExtraData_CreateClone(unsigned int kCloning)
 {
     FUN_00a89b30_cls* p = (FUN_00a89b30_cls*)Object_DispatchCommandFour(0xc);
     if (p != 0)
@@ -138,7 +149,7 @@ void* FUN_00a89b30_cls::NiVertWeightsExtraData_CreateClone(unsigned int a1)
     {
         p = 0;
     }
-    this->CopyMembers_00a7b330(p, a1);
+    this->CopyMembers_00a7b330(p, kCloning);
     return p;
 }
 
@@ -175,17 +186,20 @@ static __forceinline void LoadU32(S_00a89be0_Stream* s, unsigned int* v, unsigne
 
 // @fnv 0x00a89be0
 // src: XBOX_PDB 0x00a89be0
-void __stdcall NiVertWeightsExtraData_LoadBinary(S_00a89be0_Stream* s)
+// pdb: NiVertWeightsExtraData::LoadBinary | NiVertWeightsExtraData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiTmpWeightCount, i, fTmpWeight
+void __stdcall NiVertWeightsExtraData_LoadBinary(S_00a89be0_Stream* kStream)
 {
-    if (s->m_uiFormatVersion < 0x5000010)
+    if (kStream->m_uiFormatVersion < 0x5000010)
     {
-        FUN_00a7b4a0(s);
+        FUN_00a7b4a0(kStream);
         unsigned int count;
-        LoadU32(s, &count, 1);
+        LoadU32(kStream, &count, 1);
         for (unsigned int i = 0; i < count; i++)
         {
             unsigned int dummy;
-            LoadU32(s, &dummy, 1);
+            LoadU32(kStream, &dummy, 1);
         }
     }
 }

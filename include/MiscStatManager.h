@@ -1,6 +1,7 @@
 #pragma once
 
 // src: XBOX_PDB (MiscStatManager, empty utility class); AddMiscStat is exe 0x004d5e10.
+// pdb: class MiscStatManager, size 0x1, 0 members
 class MiscStatManager
 {
 public:

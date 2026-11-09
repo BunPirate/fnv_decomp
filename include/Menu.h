@@ -13,6 +13,7 @@ class Screen;
 
 #include "Interface.h"
 
+// pdb: class Menu, size 0x28, 9 members
 class Menu
 {
 public:
@@ -36,15 +37,15 @@ public:
     virtual void HandleControllerConnectOrDisconnect(bool);
 
     TileMenu* pMenu;
-    BSSimpleList<Tile__TileTemplate*> m_kTileTemplateList;
-    Tile* m_pMenuTile;
-    int m_iModalMenuId;
-    int m_iSecondaryValue;
-    bool m_bIsSpecial;
-    bool m_bVisible;
+    BSSimpleList<Tile__TileTemplate*> xTemplates;
+    Tile* pLastTile;
+    int iIsModal;
+    int iMenuThickness;
+    bool bRenderedMenu;
+    bool bDeleteTemplates;
     unsigned char layoutPadding1E[2];
-    int m_iMenuId;
-    Interface::FADE_STATE m_eFadeState;
+    int iClass;
+    Interface::FADE_STATE xFadeState;
 
     Menu();
     void SetTileMenu(TileMenu*, bool);
@@ -52,26 +53,26 @@ public:
     void LoadMenuData();
     void UnloadMenuData();
     void ParseMenuXML(const char*);
-    void SetModal(int id) { m_iModalMenuId = id; }
+    void SetModal(int id) { iIsModal = id; }
     Tile* CreateTileFromTemplate(Tile*, const char*, Tile*);
     Tile* GetTile();
     unsigned int GetVisibilityState();
     void SetCurrentPageFromChar(unsigned char);
-    void UpdateCardSlots(int, int);
-    void UpdateControls();
+    void SwapDeckBuildingTextures(int, int);
+    void CaravanMenu_UpdateCaravanFlags();
     void InitMenu();
-    void ClearActionPointSource();
+    void InventoryMenu_ClearCurrentItem();
     void UpdateItemDisplay(int, Tile*);
     bool IsUnk28Set();
     bool UpdateScreenEffect();
     NiPoint3 GetMarkerPosition(NiPoint3, void*);
     void UpdateMapMarkers();
-    void UpdateQuestMarker();
-    bool UpdateProgress(float, int);
-    void HandleOptionSelection();
+    void MapMenu_CreatePlayerMarker();
+    bool RaceSexMenu_ZoomPlayer(float, int);
+    void RaceSexMenu_SliderRelease();
     void HandlePendingTileAction();
     void UpdateZoomAndScroll();
-    void UpdateClockText();
+    void SleepWaitMenu_SetTimeText();
     void AccumulateTileHeight(Target*);
 
     Tile* FUN_00726070();
@@ -89,17 +90,17 @@ public:
     void RaceSexMenu_SetFlag(int, bool);
     bool RaceSexMenu_IsFlagged(int);
     bool RaceSexMenu_RotatePlayer(float, int);
-    void UpdateScrollTraits_007a7700();
+    void ListBox_TESObjectREFR_SetTotalListHeight();
     void UpdateHighlightTraits_007a73e0();
     void ProcessEntries_007a7260();
     void FUN_00a1dc70(TileMenu*, bool);
     void FUN_00a1dc20(bool);
     void InstantFadeOut();
 
-    static const char* GetMenuPath(const char*);
+    static const char* StripFileName(const char*);
     static float GetMenuScale();
     static void SetMenuRootTile(int, Tile*);
     static void SetVisible(int, bool);
     static bool IsMenuVisible(Interface::enumMenus);
-    static bool ReadMenuDefinition(const char*, Menu*);
+    static bool Menu_RemoveFromXMLArchive(const char*, Menu*);
 };

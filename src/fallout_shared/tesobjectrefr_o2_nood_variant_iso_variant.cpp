@@ -24,7 +24,7 @@ void FalloutRadio_NewCellEntered();
 void TESWaterSystem_SetPlayerForceUnderwater(unsigned char value);
 float BSAudio_GetMinDialogDist();
 float BSAudio_GetMaxDialogDist();
-void CheckWithinMultiBoundTask_CancelAttachment(unsigned int index);
+void CheckWithinMultiBoundTask_CancelAttachment(unsigned int apMoribundRef);
 extern "C" __declspec(thread) int tls_state;
 struct MemContextGuard
 {
@@ -83,13 +83,13 @@ struct Arg_00c9f830
 };
 struct Obj_00c9f830
 {
-    void FillOutputFromState(Arg_00c9f830* value);
-    void bhkAabbPhantom_GetAabb(__m128* value);
-    void bhkAabbPhantom_CopyCinfo(Arg_00c9f830* value);
+    void bhkWorldObject_CopyCinfo(Arg_00c9f830* arInfo);
+    void bhkAabbPhantom_GetAabb(__m128* arB);
+    void bhkAabbPhantom_CopyCinfo(Arg_00c9f830* arInfo);
 };
 extern __m128 DAT_01267e30;
 extern __m128 DAT_010c71b0;
-void __stdcall FUN_00cb31a0_sub_a(__m128* p);
+void __stdcall FUN_00cb31a0_sub_a(__m128* arPos);
 struct FUN_00cb31a0_cls
 {
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
@@ -97,9 +97,9 @@ struct FUN_00cb31a0_cls
     __m128 m_30;
     __m128 m_40;
 
-    void Sub_b(__m128* p);
+    void Sub_b(__m128* arRot);
     void Sub_c(FUN_00cb31a0_cls* p);
-    void bhkRigidBodyT_PostInit(FUN_00cb31a0_cls* src);
+    void bhkRigidBodyT_PostInit(FUN_00cb31a0_cls* arInfo);
 };
 struct Sub
 {
@@ -110,12 +110,12 @@ struct Cls
 {
     char pad[0x20];
     Sub m_20;
-    void FUN_00c8d130(__m128* out);
-    Arg* bhkRigidBodyT_GetRotation(Arg* arg);
+    void FUN_00c8d130(__m128* arRot);
+    Arg* bhkRigidBodyT_GetRotation(Arg* arRot);
 };
 struct Arg
 {
-    void setMulInverse(__m128* out, Sub* sub);
+    void setMulInverse(__m128* q0, Sub* q1);
 };
 struct S00cb3250_Query
 {
@@ -125,8 +125,8 @@ struct S00cb3250_Query
 class S00cb3250_Object
 {
   public:
-    void FUN_00c8d1a0(S00cb3250_Query* pQuery);
-    void bhkRigidBodyT_SetRotation(int iArg);
+    void FUN_00c8d1a0(S00cb3250_Query* arRot);
+    void bhkRigidBodyT_SetRotation(int arRot);
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
@@ -601,7 +601,7 @@ struct F9_Owner
     virtual void v45();
     virtual void v46();
     virtual void post(F9_Arg* a);
-    void bhkSimpleShapePhantom_Init(F9_Arg* arg);
+    void bhkSimpleShapePhantom_Init(F9_Arg* arInfo);
 };
 struct PositionSource
 {
@@ -622,7 +622,7 @@ struct PositionOwner
     int unk00;
     int unk04;
     PositionSource* m_pkSource;
-    void bhkBoxShape_BuildDisplayGeometry(NiNode* pkParent, int iUnused);
+    void bhkBoxShape_BuildDisplayGeometry(NiNode* apNode, int iUnused);
 };
 extern "C" __m128 _mm_add_ps(__m128, __m128);
 extern "C" __m128 _mm_setzero_ps();
@@ -1016,7 +1016,7 @@ class MotionObject
     Obj570 m_570;
     Obj594* m_594;
     void bhkCharacterController_UnMarkWrite();
-    void bhkCharacterController_SetPosition(__m128* v);
+    void bhkCharacterController_SetPosition(__m128* arPos);
 };
 extern "C" __m128 _mm_setzero_ps(void);
 struct C9FA20_TlsBlock
@@ -1259,8 +1259,8 @@ struct C9FA20_Owner
     int unk04;
     int m_08;
     C9FA20_Data* m_pData;
-    void bhkAabbPhantom_CopyCinfo(C9FA20_Data* data);
-    C9FA20_Data* bhkAabbPhantom_CreateCinfo(bool* created);
+    void bhkAabbPhantom_CopyCinfo(C9FA20_Data* arInfo);
+    C9FA20_Data* bhkAabbPhantom_CreateCinfo(bool* arCreated);
 };
 
 // The former quaternion wrapper binds setInverseMul/normalize to 0x00c66320/0x005611c0,
@@ -1289,9 +1289,9 @@ __forceinline void hkVector4::setBroadcast3(const hkVector4& v)
     m_vComponents = _mm_shuffle_ps(v.m_vComponents, v.m_vComponents, 0xff);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const __m128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    const __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const __m128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     hkSimdReal result;
     result.m_vValue = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), sum);
@@ -1394,8 +1394,8 @@ class RigidMotionBaseDAD
 class RigidMotionDAD : public RigidMotionBaseDAD
 {
   public:
-    void FUN_00c8d170(const hkVector4& position);
-    void bhkRigidBodyT_SetPosition(const hkVector4& position);
+    void FUN_00c8d170(const hkVector4& arPos);
+    void bhkRigidBodyT_SetPosition(const hkVector4& arPos);
 
     hkVector4 m_localTranslation;
 };
@@ -1404,7 +1404,10 @@ class RigidMotionDAD : public RigidMotionBaseDAD
 #pragma strict_gs_check(push, on)
 // @fnv 0x00cb3480
 // src: XBOX_PDB 0x00cb3480
-void RigidMotionDAD::bhkRigidBodyT_SetPosition(const hkVector4& position)
+// pdb: bhkRigidBodyT::SetPosition | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arPos
+// pdb locals: pb, hkp, hkq
+void RigidMotionDAD::bhkRigidBodyT_SetPosition(const hkVector4& arPos)
 {
     if (this && m_pkWorldObject)
     {
@@ -1413,7 +1416,7 @@ void RigidMotionDAD::bhkRigidBodyT_SetPosition(const hkVector4& position)
         hkVector4 newPosition;
         newPosition.SetRotatedDirection(rotation, m_localTranslation);
         hkVector4 worldPosition;
-        worldPosition.setAdd4(newPosition, position);
+        worldPosition.setAdd4(newPosition, arPos);
         FUN_00c8d170(worldPosition);
     }
 }

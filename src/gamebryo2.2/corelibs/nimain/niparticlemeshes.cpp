@@ -6,16 +6,18 @@
 #include "../../../../include/NiUpdateData.h"
 
 // @fnv 0x00a9b120
+// pdb: NiParticles::NiParticles | NiParticles.obj | retail, call graph, medium
+// pdb params: usVertices, pVertex, pNormal, pColor, pkRots, pfRotationAngles, pkRotationAxes
 NiParticleMeshes::NiParticleMeshes()
 {}
 
 
-extern NiRTTI* g_011f5f14;
+extern NiRTTI* NiParticleMeshes_ms_RTTI;
 
 // @fnv 0x00a98ec0
 const NiRTTI* NiParticleMeshes::GetRTTI() const
 {
-    return reinterpret_cast<const NiRTTI*>(&g_011f5f14);
+    return reinterpret_cast<const NiRTTI*>(&NiParticleMeshes_ms_RTTI);
 }
 
 extern void __cdecl UpdateFields_00a80580();
@@ -34,6 +36,9 @@ void* NiParticleMeshes::Delete(unsigned int flags)
 
 class NiParticleMeshesData;
 // @fnv 0x00a99090
+// pdb: NiParticleMeshes::PurgeRendererData | NiParticleMeshes.obj | retail, upstream name already matches, high
+// pdb params: pkRenderer
+// pdb locals: pkPMData
 void NiParticleMeshes::PurgeRendererData(NiRenderer* pkRenderer)
 {
     NiGeometry::PurgeRendererData(pkRenderer);
@@ -63,6 +68,9 @@ char* __cdecl _FUN_00a7d330(const char*);
 extern const char* const g_011f5f14_arg1;
 // Appends the string returned by _FUN_00a7d330(g_011f5f14_arg1) to pkStrings, growing the array if it is full.
 // @fnv 0x00a990c0
+// pdb: NiParticleMeshes::GetViewerStrings | NiParticleMeshes.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiParticleMeshes::CreateClone
+// pdb params: pkStrings
 void NiParticleMeshes::AppendString(StrArr2* pkStrings)
 {
     NiParticles_GetViewerStrings(pkStrings);
@@ -75,6 +83,9 @@ void NiParticleMeshes::AppendString(StrArr2* pkStrings)
 }
 
 // @fnv 0x00a99000
+// pdb: NiParticleMeshes::SetSelectiveUpdateFlags | NiParticleMeshes.obj | retail, upstream name already matches, high
+// pdb params: bSelectiveUpdate, bSelectiveUpdateTransforms, bRigid
+// pdb locals: pkParticlesContainer
 void NiParticleMeshes::SetSelectiveUpdateFlags(bool& bSelectiveUpdate, bool bSelectiveUpdateTransforms, bool& bRigid)
 {
     NiGeometry::SetSelectiveUpdateFlags(bSelectiveUpdate, true, bRigid);
@@ -85,6 +96,9 @@ void NiParticleMeshes::SetSelectiveUpdateFlags(bool& bSelectiveUpdate, bool bSel
 }
 
 // @fnv 0x00a99040
+// pdb: NiParticleMeshes::UpdatePropertiesDownward | NiParticleMeshes.obj | retail, object-file run extension, low
+// pdb params: pkParentState
+// pdb locals: pkParticlesContainer
 void NiParticleMeshes::UpdatePropertyState(NiPropertyState* pkParentState)
 {
     NiGeometry::UpdatePropertiesDownwardPass(pkParentState);
@@ -93,19 +107,23 @@ void NiParticleMeshes::UpdatePropertyState(NiPropertyState* pkParentState)
 }
 
 // @fnv 0x00a98e30
-void NiParticleMeshes::UpdateDownwardPass(NiUpdateData& apVal, unsigned int x)
+// pdb: NiParticleMeshes::UpdateDownwardPass | NiParticleMeshes.obj | debug, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+void NiParticleMeshes::UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    m_fLastTime = apVal.fTime;
-    m_bUpdate = *reinterpret_cast<bool*>(&apVal.pad1);
-    FUN_00a59f90(&apVal, x);
+    m_fLastTime = UpdateData.fTime;
+    m_bUpdate = *reinterpret_cast<bool*>(&UpdateData.pad1);
+    FUN_00a59f90(&UpdateData, uFlags);
 }
 
 // Stores kData.fTime into m_fLastTime, then forwards kData to the base UpdateDownwardPassIfSelective.
 // @fnv 0x00a98e50
-void NiParticleMeshes::UpdateSelectedDownwardPass(NiUpdateData& kData, unsigned int flags)
+// pdb: NiParticleMeshes::UpdateSelectedDownwardPass | NiParticleMeshes.obj | debug, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+void NiParticleMeshes::UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    m_fLastTime = kData.fTime;
-    NiAVObject::UpdateSelectedDownwardPass(kData, flags);
+    m_fLastTime = UpdateData.fTime;
+    NiAVObject::UpdateSelectedDownwardPass(UpdateData, uFlags);
 }
 
 struct MeshesData
@@ -126,6 +144,10 @@ extern const char DAT_010a0a6c;
 
 // Allocates and initializes a particle mesh clone, then copies member data.
 // @fnv 0x00a98f00
+// pdb: NiParticleMeshes::CreateClone | NiParticleMeshes.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiParticleMeshes::NiParticleMeshes
+// pdb params: kCloning
+// pdb locals: pkObject
 NiParticleMeshes* NiParticleMeshes::CreateAndInitObj(void* pArg)
 {
     NiParticleMeshes* pObj = (NiParticleMeshes*)Object_DispatchCommandFour(0xcc);
@@ -188,16 +210,19 @@ struct A98F60Renderer
 
 // Copies the object's world transform to the meshes node's local transform, updates particle meshes, and calls two functions when the renderer flag is set.
 // @fnv 0x00a98f60
-void NiParticleMeshes::UpdateWorldData(NiUpdateData& kData)
+// pdb: NiParticleMeshes::UpdateWorldData | NiParticleMeshes.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: pkData, pkParticlesContainer
+void NiParticleMeshes::UpdateWorldData(NiUpdateData& UpdateData)
 {
-    NiAVObject::UpdateWorldData(kData);
+    NiAVObject::UpdateWorldData(UpdateData);
     A98F60Renderer* pkRenderer = (A98F60Renderer*)m_spModelData.m_pObject;
     NiNode* pkMeshes = pkRenderer->m_pkMeshes;
     pkRenderer->UpdateParticleMeshes();
     pkMeshes->m_kLocal.m_Rotate = m_kWorld.m_Rotate;
     pkMeshes->m_kLocal.m_Translate = m_kWorld.m_Translate;
     pkMeshes->m_kLocal.m_fScale = A98F60Abs(m_kWorld.m_fScale);
-    pkMeshes->UpdateDownwardPass(kData, 0);
+    pkMeshes->UpdateDownwardPass(UpdateData, 0);
     if (pkRenderer->m_bValueAt0C)
     {
         UpdateProperties();

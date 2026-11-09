@@ -4,6 +4,7 @@
 
 #include "../../include/BSFile.h"
 
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 class FileFinder
 {
   public:
@@ -26,10 +27,11 @@ extern "C" FileFinder* g_fileFinder;
 extern "C" int __cdecl strcpy_s(char*, unsigned int, const char*);
 
 extern MemoryManager g_memoryManager;
+// pdb: class ArchiveManager, size 0x1, 0 members
 class ArchiveManager
 {
   public:
-    static NiFile* GetFile(const char*, unsigned int, unsigned int);
+    static NiFile* ArchiveManager_GetFile(const char*, unsigned int, unsigned int);
 };
 
 #endif

@@ -20,6 +20,9 @@ struct NiD3DVertexDeclaration
 
 // @fnv 0x00e76700
 // src: COMMUNITY 0x00e76700
+// pdb: NiXenonShaderDeclaration::Create | NiXenonShaderDeclaration.obj | retail, call graph, medium
+// pdb params: pkRenderer, uiMaxStreamEntryCount, uiStreamCount
+// pdb locals: pkShaderDeclaration
 NiD3DVertexDeclaration* NiDX9ShaderDeclaration_Create(NiRenderer* renderer, unsigned int maxStreamEntries, unsigned int streamCount)
 {
     // The backend stream limit is not exposed by the shared NiRenderer base.

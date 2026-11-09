@@ -12,6 +12,7 @@ struct ClassMemberDescriptor;
 
 typedef unsigned long hkUlong;
 
+// pdb: class hkpAction, size 0x18, bases: hkReferencedObject, 4 members
 struct hkpAction : public hkReferencedObject
 {
 public:
@@ -32,8 +33,8 @@ public:
     hkpSimulationIsland* GetSimulationIsland();
     void setSimulationIsland(hkpSimulationIsland* island);
 
-    hkpWorld* m_pOwningWorld;
-    hkpSimulationIsland* m_pCurrentSimulationIsland;
-    hkUlong m_ulUserData;
+    hkpWorld* m_world;
+    hkpSimulationIsland* m_island;
+    hkUlong m_userData;
     hkStringPtr m_name;
 };

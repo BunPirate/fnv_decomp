@@ -5,6 +5,7 @@
 
 class TESFile;
 
+// pdb: class TESRegionDataMap, size 0x10, bases: TESRegionData, 1 members
 class TESRegionDataMap : public TESRegionData
 {
 public:

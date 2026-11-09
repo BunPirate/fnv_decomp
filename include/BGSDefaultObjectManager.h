@@ -4,6 +4,7 @@
 
 enum DEFAULT_OBJECT;
 
+// pdb: class BGSDefaultObjectManager, size 0xa0, bases: TESForm, 1 members
 class BGSDefaultObjectManager : public TESForm
 {
 public:
@@ -17,10 +18,10 @@ public:
     void ResetFormData();
     void Save();
     bool IsFormInitialized() const;
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 
     static BGSDefaultObjectManager* Instance();
-    static TESForm* GetDefaultObjectByIndex(DEFAULT_OBJECT index);
-    static TESForm* GetDefaultObjectByIndex(int index);
+    static TESForm* GetDefaultObjectByIndex(DEFAULT_OBJECT aeObject);
+    static TESForm* GetDefaultObjectByIndex(int aeObject);
     static BGSDefaultObjectManager* ms_pSystemUtility;
 };

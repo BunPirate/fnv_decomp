@@ -18,6 +18,8 @@ struct PointerCountProcessor
 };
 // @fnv 0x00aa3830
 // src: COMMUNITY 0x00aa3830
+// pdb: NiSmallObjectAllocator::Deallocate | NiSmallObjectAllocator.obj | retail, upstream name already matches, high
+// pdb params: p, stNumBytes
 void PointerCountProcessor::NiSmallObjectAllocator_Deallocate(void* p, unsigned int stNumBytes)
 {
     SubAlloc* pAlloc = (SubAlloc*)((char*)this + (stNumBytes << 8) - 0x100);
@@ -111,6 +113,10 @@ struct FUN_00aa3760_cls
 };
 
 // @fnv 0x00aa3760
+// pdb: NiFixedAllocator::DoDeallocate | NiSmallObjectAllocator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiSmallObjectAllocator::NiSmallObjectAllocator
+// pdb params: p
+// pdb locals: pkLastChunk
 FUN_00aa3760_cls* FUN_00aa3760_cls::InitEntries(unsigned int auiValue)
 {
     FUN_00aa3760_cls* self = this;
@@ -162,13 +168,15 @@ struct AllocBlock
 class FUN_00aa3810_cls
 {
   public:
-    int NiSmallObjectAllocator_Allocate(unsigned int index);
+    int NiSmallObjectAllocator_Allocate(unsigned int stNumBytes);
 };
 
 // @fnv 0x00aa3810
 // src: COMMUNITY 0x00aa3810
-int FUN_00aa3810_cls::NiSmallObjectAllocator_Allocate(unsigned int index)
+// pdb: NiSmallObjectAllocator::Allocate | NiSmallObjectAllocator.obj | debug, upstream name already matches, high
+// pdb params: stNumBytes
+int FUN_00aa3810_cls::NiSmallObjectAllocator_Allocate(unsigned int stNumBytes)
 {
-    AllocBlock* block = (AllocBlock*)((char*)this + (index << 8) - 0x100);
+    AllocBlock* block = (AllocBlock*)((char*)this + (stNumBytes << 8) - 0x100);
     return block->FUN_00aa35a0();
 }

@@ -51,14 +51,14 @@ extern const NiRTTI DAT_011f36bc;
 class AnimationInterpolatorNode : public NiMultiTargetTransformController
 {
   public:
-    void UpdateInterpolatorsAtTime(float, bool);
+    void BSTransCon_UpdateAllButTarget(float, bool);
 };
 
 
 extern PlayerCharacter* g_thePlayer;
 extern TESDataHandler* g_dataHandler;
 // No shared declaration is available for the sound-distance predicate.
-bool CanPlaySequenceSoundAt(TESSound*, NiPoint3, float);
+bool SoundDistanceTest(TESSound*, NiPoint3, float);
 // NiTextKeyExtraData.h only forward-declares the text-key record.
 class TimedTextEntry
 {
@@ -78,7 +78,10 @@ int Warning(const char*, ...);
 
 // Scans the sequence's tag array for a matching object name and returns its priority byte, writing the matching index to indexOut when given.
 // @fnv 0x004ef9a0
-unsigned char BSAnimGroupSequence::GetPriority(const char* objectName, unsigned int* indexOut)
+// pdb: BSAnimGroupSequence::GetPriority | BSAnimGroupSequence.obj | retail, string-set bridge, high
+// pdb params: apBoneName, apReturnIndex
+// pdb locals: i, pname
+unsigned char BSAnimGroupSequence::GetPriority(const char* apBoneName, unsigned int* apReturnIndex)
 {
     for (unsigned int i = 0; i < m_uiNumControlledBlocks; ++i)
     {
@@ -86,10 +89,10 @@ unsigned char BSAnimGroupSequence::GetPriority(const char* objectName, unsigned 
         if (!name)
             Warning("NULL object name found in tag array for sequence '%s'.",
                     GetName().operator const char*());
-        if (name && !BSstricmp(name, objectName))
+        if (name && !BSstricmp(name, apBoneName))
         {
-            if (indexOut)
-                *indexOut = i;
+            if (apReturnIndex)
+                *apReturnIndex = i;
             return m_pInterpArray[i].m_ucArrayItemID;
         }
     }
@@ -97,7 +100,10 @@ unsigned char BSAnimGroupSequence::GetPriority(const char* objectName, unsigned 
 }
 
 // @fnv 0x004efdc0
-bool BSAnimGroupSequence::Deactivate(float easeOutTime, bool transition)
+// pdb: BSAnimGroupSequence::Deactivate | BSAnimGroupSequence.obj | retail, upstream name already matches, high
+// pdb params: afEaseOutTime, abTransition
+// pdb locals: pcont, pboneLOD
+bool BSAnimGroupSequence::Deactivate(float afEaseOutTime, bool abTransition)
 {
     if (m_pkAccumulationRoot)
     {
@@ -116,24 +122,27 @@ bool BSAnimGroupSequence::Deactivate(float easeOutTime, bool transition)
                     controller = m_pkAccumulationRoot->GetParent()->GetController(&DAT_011f36bc);
                     if (controller)
                         static_cast<AnimationInterpolatorNode*>(controller)
-                            ->UpdateInterpolatorsAtTime(m_fLastTime, true);
+                            ->BSTransCon_UpdateAllButTarget(m_fLastTime, true);
                 }
             }
         }
         break;
         }
     }
-    return NiControllerSequence::Deactivate(easeOutTime, transition);
+    return NiControllerSequence::Deactivate(afEaseOutTime, abTransition);
 }
 
 
 // @fnv 0x004eeb00
+// pdb: BSAnimGroupSequence::~BSAnimGroupSequence | BSAnimGroupSequence.obj | retail, upstream name already matches, high
 BSAnimGroupSequence::~BSAnimGroupSequence()
 {}
 
 // Returns 0.0f unless the sequence's state at offset 0x44 is 1-3, otherwise evaluates the helper at afTime plus the offset at 0x48 with clamping.
 // @fnv 0x004eec60
 // src: XBOX_PDB 0x004eec60
+// pdb: BSAnimGroupSequence::GetScaledTime | BSAnimGroupSequence.obj | debug, upstream name already matches, high
+// pdb params: afTime
 float BSAnimGroupSequence::GetScaledTime(float afTime)
 {
     switch (m_eAnimationState)
@@ -145,26 +154,29 @@ float BSAnimGroupSequence::GetScaledTime(float afTime)
     default:
         return 0.0f;
     }
-    return ComputeScaledTime_00a30970(afTime + m_fSequenceOffset, true);
+    return ComputeScaledTime(afTime + m_fSequenceOffset, true);
 }
 
 // Reads a time, a byte, and three ints from the buffer, stores fTime minus fBase into f48, sets f4c and f50 to -DAT_01023850, then calls FUN_004eec60 with fBase.
 // @fnv 0x004efd10
 // src: COMMUNITY 0x004efd10
-void BSAnimGroupSequence::LoadGameBGS_004efd10(BGSLoadFormBuffer* pBuffer, float fBaseTime)
+// pdb: BSAnimGroupSequence::LoadGame | BSAnimGroupSequence.obj | retail, object-file run extension, high
+// pdb params: afTime
+// pdb locals: foffset
+void BSAnimGroupSequence::LoadGameBGS_004efd10(BGSLoadFormBuffer* apLoadGameBuffer, float afTime)
 {
     float fTime = 0.0f;
-    pBuffer->ReadTypedData(&fTime, 4u);
-    m_fSequenceOffset = fTime - fBaseTime;
+    apLoadGameBuffer->ReadTypedData(&fTime, 4u);
+    m_fSequenceOffset = fTime - afTime;
     unsigned char ucByte = 0;
-    pBuffer->ReadTypedData(&ucByte, 1u);
+    apLoadGameBuffer->ReadTypedData(&ucByte, 1u);
     m_eAnimationState = static_cast<AnimState>(ucByte);
-    pBuffer->ReadTypedData(&m_fLastTime, 4u);
-    pBuffer->ReadTypedData(&m_fWeightAdjustedLastTime, 4u);
-    pBuffer->ReadTypedData(&m_fDestinationFrame, 4u);
+    apLoadGameBuffer->ReadTypedData(&m_fLastTime, 4u);
+    apLoadGameBuffer->ReadTypedData(&m_fWeightAdjustedLastTime, 4u);
+    apLoadGameBuffer->ReadTypedData(&m_fDestinationFrame, 4u);
     m_fStartTime = -DAT_01023850;
     m_fEndTime = -DAT_01023850;
-    GetScaledTime(fBaseTime);
+    GetScaledTime(afTime);
 }
 
 extern NiFixedString* DAT_011c61c8;
@@ -178,6 +190,8 @@ const NiFixedString& __cdecl FixedStrings_QAttachSound()
 
 // @fnv 0x004eec20
 // src: XBOX_PDB 0x004eec20
+// pdb: BSAnimGroupSequence::CreateClone | BSAnimGroupSequence.obj | debug, upstream name already matches, high
+// pdb params: arCloneData
 NiObject* __thiscall BSAnimGroupSequence::CreateClone(CloningProcess* arCloneData)
 {
     return NiControllerSequence::MakeClone(*arCloneData);
@@ -185,6 +199,8 @@ NiObject* __thiscall BSAnimGroupSequence::CreateClone(CloningProcess* arCloneDat
 
 // @fnv 0x004eec40
 // src: XBOX_PDB 0x004eec40
+// pdb: BSAnimGroupSequence::GetViewerStrings | BSAnimGroupSequence.obj | debug, vtable slot, medium
+// pdb params: pkStrings
 void BSAnimGroupSequence::GetViewerStrings_004eec40(NiTPrimitiveArray<const char*>* pkStrings)
 {
     NiControllerSequence::AddViewerStrings(pkStrings);
@@ -192,15 +208,19 @@ void BSAnimGroupSequence::GetViewerStrings_004eec40(NiTPrimitiveArray<const char
 
 // @fnv 0x004ef970
 // src: XBOX_PDB 0x004ef970
-void NiAVObject::SetHasMovingSound(bool enabled)
+// pdb: NiAVObject::SetHasMovingSound | BSAnimGroupSequence.obj | debug, upstream name already matches, high
+// pdb params: abSound
+void NiAVObject::SetHasMovingSound(bool abSound)
 {
-    SetBit(enabled, 0x20000);
+    SetBit(abSound, 0x20000);
 }
 
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // @fnv 0x004efaa0
 // src: COMMUNITY 0x004efaa0
+// pdb: BSAnimGroupSequence::GetSequenceSaveSize | BSAnimGroupSequence.obj | debug, upstream name already matches, high
+// pdb locals: isize
 unsigned short BSAnimGroupSequence_GetSequenceSaveSize()
 {
     unsigned short v = 0;
@@ -216,6 +236,10 @@ unsigned short BSAnimGroupSequence_GetSequenceSaveSize()
 
 // @fnv 0x004efb20
 // src: COMMUNITY 0x004efb20
+// pdb: BSAnimGroupSequence::SaveGame | BSAnimGroupSequence.obj | retail, call graph (shared callers), medium
+// pdb note: debug build links it to TESSaveLoadGame::EndianConvert
+// pdb params: afTime
+// pdb locals: foffset
 void BSAnimGroupSequence::SaveGameTES_004efb20(float afTime)
 {
     float foffset = m_fSequenceOffset + afTime;
@@ -232,6 +256,8 @@ void BSAnimGroupSequence::SaveGameTES_004efb20(float afTime)
 
 
 // @fnv 0x004eedd0
+// pdb: BSAnimGroupSequence::ResolveTransformInterpolators | BSAnimGroupSequence.obj | debug, object-file gap fill, medium
+// pdb params: apNode, aiTransformControllerCount
 bool BSAnimGroupSequence::AttachToOwner(NiAVObject* target, int argument)
 {
     return ResolveTransformInterpolators(target, reinterpret_cast<NiAVObject*>(m_pkOwnerManager->GetStringAtOffset()), argument);
@@ -240,8 +266,9 @@ bool BSAnimGroupSequence::AttachToOwner(NiAVObject* target, int argument)
 unsigned short __cdecl BSAnimGroupSequence_GetSequenceSaveSize();
 
 // @fnv 0x004efb10
-// src: XBOX_PDB 0x004efb10
-unsigned short __thiscall BSAnimGroupSequence::GetSaveSize_004efb10()
+// src: XBOX_DEBUG_PDB 0x004efb10
+// pdb: BSAnimGroupSequence::GetSaveSize | BSAnimGroupSequence.obj | debug, call graph, high
+unsigned short __thiscall BSAnimGroupSequence::GetSaveSize()
 {
     return BSAnimGroupSequence_GetSequenceSaveSize();
 }
@@ -250,7 +277,10 @@ unsigned short __thiscall BSAnimGroupSequence::GetSaveSize_004efb10()
 // clearing member at 0x004efa50. Both take the sequence in ECX.
 unsigned int __fastcall GetSequenceControlledBlockCount(NiControllerSequence* sequence);
 // @fnv 0x004efa50
-void __fastcall ClearSequenceBlendInterpolators(NiControllerSequence* sequence)
+// src: XBOX_DEBUG_PDB 0x004efa50
+// pdb: BSAnimGroupSequence::ClearBlendInterp | BSAnimGroupSequence.obj | debug, call graph, high
+// pdb locals: n
+void __fastcall BSAnimGroupSequence_ClearBlendInterp(NiControllerSequence* sequence)
 {
     int i;
     for (i = 0; i < GetSequenceControlledBlockCount(sequence); ++i)
@@ -259,16 +289,19 @@ void __fastcall ClearSequenceBlendInterpolators(NiControllerSequence* sequence)
 
 // Adds value to m_0x48 and saves the sum, m_0x44, m_0x34, m_0x38 and m_0x54 into the save buffer.
 // @fnv 0x004efc90
-// src: COMMUNITY 0x004efc90
-void __thiscall BSAnimGroupSequence::SaveGameBGS_004efc90(BGSSaveFormBuffer* buffer, float value)
+// src: XBOX_RETAIL_PDB 0x004efc90
+// pdb: BSAnimGroupSequence::SaveGame | BSAnimGroupSequence.obj | retail, call graph, high
+// pdb params: afTime
+// pdb locals: foffset
+void __thiscall BSAnimGroupSequence::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, float afTime)
 {
-    float temp = m_fSequenceOffset + value;
-    buffer->SaveData(&temp, 4, 0);
+    float temp = m_fSequenceOffset + afTime;
+    apSaveGameBuffer->SaveData(&temp, 4, 0);
     unsigned char byte2 = m_eAnimationState;
-    buffer->SaveData(&byte2, 1, 0);
-    buffer->SaveData(&m_fLastTime, 4, 0);
-    buffer->SaveData(&m_fWeightAdjustedLastTime, 4, 0);
-    buffer->SaveData(&m_fDestinationFrame, 4, 0);
+    apSaveGameBuffer->SaveData(&byte2, 1, 0);
+    apSaveGameBuffer->SaveData(&m_fLastTime, 4, 0);
+    apSaveGameBuffer->SaveData(&m_fWeightAdjustedLastTime, 4, 0);
+    apSaveGameBuffer->SaveData(&m_fDestinationFrame, 4, 0);
 }
 
 
@@ -277,6 +310,9 @@ void __cdecl NiControllerSequence_CreateSequenceFromFile(int, int, GO*);
 
 // Constructs a sequence from the cloned object returned in value, then assigns it to target.
 // @fnv 0x004eeb60
+// pdb: BSAnimGroupSequence::CreateSequenceFromFile | BSAnimGroupSequence.obj | debug, object-file gap fill, medium
+// pdb params: kStream, uiIndex, aspControllerSequence
+// pdb locals: spSequence
 void __cdecl AssignNewObjectFromValue(int arg1, int arg2, GO* target)
 {
     {
@@ -290,7 +326,10 @@ void __cdecl AssignNewObjectFromValue(int arg1, int arg2, GO* target)
 
 // @fnv 0x004efbc0
 // src: XBOX_PDB 0x004efbc0
-void BSAnimGroupSequence::LoadGame_004efbc0(float value)
+// pdb: BSAnimGroupSequence::LoadGame | BSAnimGroupSequence.obj | retail, object-file gap fill, high
+// pdb params: afTime
+// pdb locals: foffset
+void BSAnimGroupSequence::LoadGame_004efbc0(float afTime)
 {
     float loadedValue;
 
@@ -300,7 +339,7 @@ void BSAnimGroupSequence::LoadGame_004efbc0(float value)
     if (g_TESSaveLoadGame->FUN_008df040() < 0x71)
         g_TESSaveLoadGame->ReadTypedData(&loadedValue, 4);
 
-    m_fSequenceOffset = loadedValue - value;
+    m_fSequenceOffset = loadedValue - afTime;
 
     g_TESSaveLoadGame->ReadTypedData(&m_fLastTime, 4);
     g_TESSaveLoadGame->ReadTypedData(&m_fWeightAdjustedLastTime, 4);
@@ -309,12 +348,14 @@ void BSAnimGroupSequence::LoadGame_004efbc0(float value)
     m_fStartTime = -DAT_01023850;
     m_fEndTime = -DAT_01023850;
 
-    this->GetScaledTime(value);
+    this->GetScaledTime(afTime);
 }
 
 extern unsigned char DAT_01096968;
 // @fnv 0x004eecb0
 // src: COMMUNITY 0x004eecb0
+// pdb: BSAnimGroupSequence::ValidateTargets | BSAnimGroupSequence.obj | retail, upstream name already matches, high
+// pdb locals: pdefaultObjectPalette, pkObjectPalette, ui, kIDTag
 void BSAnimGroupSequence::ValidateTargets()
 {
     if (!m_pkOwnerManager)
@@ -339,7 +380,10 @@ void BSAnimGroupSequence::ValidateTargets()
 // The shared sequence lacks the 0x004eee00 member declaration. The original
 // no-argument thiscall entry also accepts its sequence in ECX as this free helper.
 // @fnv 0x004eee00
-void __fastcall UpdateSequenceEntryStates(NiControllerSequence* sequence)
+// src: XBOX_RETAIL_PDB 0x004eee00
+// pdb: BSAnimGroupSequence::ValidateTargetsFromPalette | BSAnimGroupSequence.obj | retail, object-file run extension, high
+// pdb locals: pdefaultObjectPalette, pkObjectPalette, ui, kIDTag, pname
+void __fastcall BSAnimGroupSequence_ValidateTargetsFromPalette(NiControllerSequence* sequence)
 {
     NiAVObjectPalette* manager = sequence->m_pkOwnerManager->GetStringAtOffset();
     NiAVObjectPalette* cachedManager = manager;
@@ -365,13 +409,17 @@ NiTimeController__CycleType __fastcall GetSequenceCycleType(NiControllerSequence
 void CopySoundText(char*, const char*);
 char* FindSoundChar(char*, int);
 // @fnv 0x004eef00
-bool __cdecl PlaySequenceSounds(NiControllerSequence* sequence, TESObjectREFR* reference)
+// src: XBOX_RETAIL_PDB 0x004eef00
+// pdb: BSAnimGroupSequence::PlaySounds | BSAnimGroupSequence.obj | retail, string-set bridge, high
+// pdb params: apSeq, apRef
+// pdb locals: bdone, fstopTime, fstartTime, blooped, inumKeys, ptextKeys, n, psound, ftestTime, psp, pnote, bplay, pmovingSound, soundAttachNode, pcr, soundHand, loc, bloopingSound, iFlags, b2dSound
+bool __cdecl BSAnimGroupSequence_PlaySounds(NiControllerSequence* apSeq, TESObjectREFR* apRef)
 {
     bool result2 = false;
-    if (sequence && sequence->GetState() == 1)
+    if (apSeq && apSeq->GetState() == 1)
     {
-        float previous = sequence->GetField4C();
-        float current4 = GetSequenceScaledLastTime(sequence);
+        float previous = apSeq->GetField4C();
+        float current4 = GetSequenceScaledLastTime(apSeq);
         if (previous != -DAT_01023850 && current4 != -DAT_01023850 && previous != current4)
         {
             bool wrapped5 = false;
@@ -379,8 +427,8 @@ bool __cdecl PlaySequenceSounds(NiControllerSequence* sequence, TESObjectREFR* r
                 wrapped5 = true;
             unsigned int count8 = 0;
             TimedTextEntry* keys2 = 0;
-            if (sequence->GetName_00700300())
-                keys2 = sequence->GetName_00700300()->GetKeys(&count8);
+            if (apSeq->GetName_00700300())
+                keys2 = apSeq->GetName_00700300()->GetKeys(&count8);
             for (unsigned int index = 0; index < count8; index++)
             {
                 char* text_2 = (char*)(const char*)keys2[index].Text();
@@ -409,20 +457,20 @@ bool __cdecl PlaySequenceSounds(NiControllerSequence* sequence, TESObjectREFR* r
                             CopySoundText(nodeName5, suffix6 + 1);
                         if (stopNewline4)
                             *stopNewline4 = 13;
-                        if (reference->GetNiNode())
+                        if (apRef->GetNiNode())
                         {
                             if (nodeName5[0])
-                                node9 = static_cast<const NiNode*>(reference->GetNiNode())->GetObjectByName(NiFixedString(static_cast<const char*>(nodeName5)));
+                                node9 = static_cast<const NiNode*>(apRef->GetNiNode())->GetObjectByName(NiFixedString(static_cast<const char*>(nodeName5)));
                             else
-                                node9 = static_cast<const NiNode*>(reference->GetNiNode())->GetObjectByName(FixedStrings_QAttachSound());
+                                node9 = static_cast<const NiNode*>(apRef->GetNiNode())->GetObjectByName(FixedStrings_QAttachSound());
                             if (!node9)
-                                node9 = reference->GetNiNode();
+                                node9 = apRef->GetNiNode();
                         }
                         if (node9)
                             BSAudio::GetSingleton()->BSAudio_StopMovingSounds(node9, 1.0f, 0x40000000u);
                     }
                     else if (!_strnicmp("Enum: HitShader", text_2, 15))
-                        g_thePlayer->ApplyHitShaderToReference(reference);
+                        g_thePlayer->ApplyHitShaderToReference(apRef);
                 }
                 TESSound* sound2 = 0;
                 char* space8 = 0;
@@ -439,7 +487,7 @@ bool __cdecl PlaySequenceSounds(NiControllerSequence* sequence, TESObjectREFR* r
                         CopySoundText(objectName3, space8 + 1);
                         *space8 = 0;
                     }
-                    sound2 = g_dataHandler->GetSoundByEditorID(text_2 + 7);
+                    sound2 = g_dataHandler->GetSound(text_2 + 7);
                     if (newline)
                         *newline = 13;
                 }
@@ -450,25 +498,25 @@ bool __cdecl PlaySequenceSounds(NiControllerSequence* sequence, TESObjectREFR* r
                     unsigned int flags2 = TESSound::GetPlaybackFlags(sound2->CopyBig().iFlags);
                     bool special2 = (sound2->CopyBig().iFlags & 0x40) && !(sound2->CopyBig().iFlags & 0x800);
                     bool looping5 = (flags2 & 0x10) != 0;
-                    flags2 |= reference == g_thePlayer ? 0x200000 : 0;
-                    if (reference && reference->GetNiNode())
+                    flags2 |= apRef == g_thePlayer ? 0x200000 : 0;
+                    if (apRef && apRef->GetNiNode())
                     {
                         if (objectName3[0])
-                            node9 = static_cast<const NiNode*>(reference->GetNiNode())->GetObjectByName(NiFixedString(static_cast<const char*>(objectName3)));
+                            node9 = static_cast<const NiNode*>(apRef->GetNiNode())->GetObjectByName(NiFixedString(static_cast<const char*>(objectName3)));
                         else
-                            node9 = static_cast<const NiNode*>(reference->GetNiNode())->GetObjectByName(FixedStrings_QAttachSound());
+                            node9 = static_cast<const NiNode*>(apRef->GetNiNode())->GetObjectByName(FixedStrings_QAttachSound());
                         if (looping5 && !node9)
-                            node9 = reference->GetNiNode();
+                            node9 = apRef->GetNiNode();
                         if (node9)
                             node9->SetHasMovingSound(true);
-                        reference->GetNiNode()->SetHasMovingSound(true);
+                        apRef->GetNiNode()->SetHasMovingSound(true);
                         if (node9)
                             position4 = node9->NiAVObject_GetWorldTranslate();
                         else
-                            position4 = reference->GetNiNode()->NiAVObject_GetWorldTranslate();
+                            position4 = apRef->GetNiNode()->NiAVObject_GetWorldTranslate();
                     }
-                    if (reference &&
-                        (looping5 || special2 || CanPlaySequenceSoundAt(sound2, position4, 1.0f)))
+                    if (apRef &&
+                        (looping5 || special2 || SoundDistanceTest(sound2, position4, 1.0f)))
                     {
                         if (looping5)
                             handle = BSAudio::GetSingleton()->GetSoundHandleByFormID(sound2->GetFormID(),
@@ -483,7 +531,7 @@ bool __cdecl PlaySequenceSounds(NiControllerSequence* sequence, TESObjectREFR* r
                                                                                          flags2 | 0x40002102);
                         }
                     }
-                    else if (!reference)
+                    else if (!apRef)
                     {
                         if (looping5)
                             handle = BSAudio::GetSingleton()->GetSoundHandleByFormID(sound2->GetFormID(),
@@ -507,12 +555,12 @@ bool __cdecl PlaySequenceSounds(NiControllerSequence* sequence, TESObjectREFR* r
                     *space8 = 32;
             }
         }
-        if (GetSequenceCycleType(sequence))
+        if (GetSequenceCycleType(apSeq))
         {
             result2 = true;
-            if (sequence->TESCombatStyle_GetTargetingFOV() == -DAT_01023850)
+            if (apSeq->TESCombatStyle_GetTargetingFOV() == -DAT_01023850)
                 result2 = false;
-            else if (GetSequenceScaledLastTime(sequence) < sequence->GetEndKeyTime_00508100())
+            else if (GetSequenceScaledLastTime(apSeq) < apSeq->GetEndKeyTime_00508100())
                 result2 = false;
         }
     }

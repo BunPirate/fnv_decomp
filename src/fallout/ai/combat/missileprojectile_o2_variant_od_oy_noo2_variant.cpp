@@ -256,8 +256,8 @@ struct FUN_00cbdd60_cls
 {
     int unk00;
     int unk04;
-    void bhkConstraint_CopyMembers(SpawnedObject_t* obj, unsigned int arg);
-    SpawnedObject_t* bhkHingeConstraint_CreateClone(unsigned int arg);
+    void bhkConstraint_CopyMembers(SpawnedObject_t* pDest, unsigned int arCloneData);
+    SpawnedObject_t* bhkHingeConstraint_CreateClone(unsigned int arCloneData);
 };
 struct S_cbde40_Tls
 {
@@ -478,8 +478,8 @@ struct S_cbde40
     int unk04;
     int unk08;
     S_cbde40_Base* unk0c;
-    void CopyFromSource(S_cbde40_Obj* c);
-    S_cbde40_Base* bhkHingeConstraint_CreateCinfo(bool* created);
+    void CopyFromSource(S_cbde40_Obj* arInfo);
+    S_cbde40_Base* bhkHingeConstraint_CreateCinfo(bool* arCreated);
 };
 
 namespace fnv_009b90b0 {
@@ -531,10 +531,10 @@ struct V9
     float m21;
     float m22;
     V9* FUN_006815c0();
-    void FUN_004a0c90(float f);
-    void FUN_00524ac0(float f);
+    void FUN_004a0c90(float fAngle);
+    void FUN_00524ac0(float fAngle);
     V9* FUN_0043f8d0(V9* out, V9* b);
-    void NiMatrix3_GetCol(int a, V* out);
+    void NiMatrix3_GetCol(int uiCol, V* col);
 };
 
 struct Xform
@@ -673,7 +673,7 @@ struct Big
     int unkB4;
     void FUN_004a3c20();
     void bhkPickData_SetFrom(const V* v);
-    void bhkPickData_SetLength(V* v);
+    void bhkPickData_SetLength(V* arLength);
     void bhkPickData_SetAllCollector(struct Res* r);
     ListH* DialoguePackage_GetCurrentDialogItem();
     void bhkPickData_SetFilter(int a);
@@ -696,8 +696,8 @@ struct Path
     int unk0C;
     int unk10;
     void EnsureChild();
-    void hkConstraintCinfo_SetEntities(Obj* a, Obj* b);
-    void hkHingeConstraintCinfo_SetInWorldSpace(struct Name* a, struct Name* b, V5* c, V5* d);
+    void hkConstraintCinfo_SetEntities(Obj* apEntityA, Obj* apEntityB);
+    void hkHingeConstraintCinfo_SetInWorldSpace(struct Name* arBodyATrans, struct Name* arBodyBTrans, V5* arPivot, V5* arAxis);
     Path();
     ~Path();
 };
@@ -708,7 +708,7 @@ struct PathRef
     int unk04;
     int unk08;
     int unk0C;
-    PathRef(Path* p);
+    PathRef(Path* arInfo);
     static void* operator new(unsigned int n)
     {
         return Object_DispatchCommandFour(n);
@@ -946,21 +946,21 @@ struct Obj
     Obj* TESObjectCELL_GetbhkWorld();
     void NiAVObject_SetTranslate(void* a);
     void SetRotate_0043fa80(void* a);
-    int NiNode_GetAtChecked(int a);
+    int NiNode_GetAtChecked(int i);
     Xform* NiAVObject_GetWorldRotate();
     void AssignFixedString(int a);
     Obj* bhkNiCollisionObject_GetWorldObject();
     Obj* Bipedanim_GetReferenceFlagsOrZero();
     int hkpRigidBody_getTransform();
     void hkRotation_renormalize();
-    void bhkRigidBody_AddActCon(PathRef* p);
-    void UpdateMatchingNodes(Obj* a);
+    void bhkRigidBody_AddActCon(PathRef* apActCon);
+    void UpdateMatchingNodes(Obj* apWorld);
     HandleSrc* bhkCharacterController_GetCollisionFilter(int* out);
     HandleSrc* FUN_00931ed0(int* out);
     int CFilter_GetLayer();
     Obj* bhkWorldObject_GetCollisionFilter(int* out);
     int bhkRigidBody_GetMotionType();
-    void bhkCharacterController_SetPosition(V5* v);
+    void bhkCharacterController_SetPosition(V5* arPos);
 };
 
 struct Owner
@@ -996,7 +996,7 @@ struct Glob
     void FUN_00458e20(int a, float f);
     V* GetNegatedVector(V* out);
     Obj* BGSSaveFormBuffer_GetForm();
-    void SetValue(int a);
+    void SetValue(int apProjectile);
 };
 
 extern Glob DAT_011ce1e8;
@@ -1010,21 +1010,21 @@ extern Glob* DAT_011dea10;
 extern Glob DAT_011f2250;
 
 bool Animation_FindSkinnedNode(Obj* a);
-void BipedAnim_AttachToSkeleton(Obj* a, Obj* b, Obj* c, int d);
+void BipedAnim_AttachToSkeleton(Obj* apSkeleton, Obj* apSkin, Obj* apParentNode, int abShowWarnings);
 int FixedStrings_QPinnedLimb();
-void bhkWorld_UpdatePosition(Obj* a, int b, int c);
-void bhkWorld_SetMotion(Obj* a, int b, int c, int d, int e);
-void bhkWorld_SetGroup(Obj* a, int b, int c, int d);
-void bhkWorld_EnableCollision(Obj* a, int b, int c, int d);
-bool Projectile_PickSceneGraph(Big* a, Obj* b, int c, int d);
-int GetAVObjectForCollidable(int a);
-Obj* FindFirstCollisionObject(Obj* a);
-void FUN_00553fc0(V5* a, V* b);
-void NI2HK(void* a, V* b);
+void bhkWorld_UpdatePosition(Obj* apObject, int abRecurse, int abForce);
+void bhkWorld_SetMotion(Obj* apObject, int aeType, int abRecurse, int abForce, int abAllowActivate);
+void bhkWorld_SetGroup(Obj* apObject, int aiGroup, int abRecurse, int d);
+void bhkWorld_EnableCollision(Obj* apObject, int abEnable, int abRecurse, int abForce);
+bool Projectile_PickSceneGraph(Big* apPickData, Obj* apObject, int abIgnoreHead, int abSort);
+int GetAVObjectForCollidable(int aphkCol);
+Obj* FindFirstCollisionObject(Obj* ap3D);
+void FUN_00553fc0(V5* arhkV, V* arNiP);
+void NI2HK(void* arhkTran, V* arNiTran);
 int bhkCollisionFilter_GetNewSystemGroup();
-int MakeLine(V* a, Color* b, V* c, Color* d, int e);
+int MakeLine(V* aStart, Color* aStartColor, V* aEnd, Color* aEndColor, int abWithNoLightingProp);
 int hkpGetRigidBody(int a);
-Obj* bhkEntity_Getbhk(int a);
+Obj* bhkEntity_Getbhk(int apEnt);
 Obj* TESObjectREFR_FindReferenceFor3D(int a);
 void TESHavokUtilities_AddVelocity(Obj* a, V* b, int c);
 
@@ -1038,6 +1038,8 @@ struct VRes
 
 // @fnv 0x009b90b0
 // src: XBOX_PDB 0x009b90b0
+// pdb: MissileProjectile::ProcessImpale | MissileProjectile.obj | retail, upstream name already matches, high
+// pdb locals: bloading, pimpact, p3d, pactor, blimbExploded, pextraLimbs, ptarget3D, ui, pcloneLimbObj, phw, UpdateData, updateData, pdismemberedNode, plimbNodeName, pdismemberedLimb, f3dScale, cloneProcess, bCanPinLimbToWall, n, pobj, projectileWorld, rotMult, rot, pconstrainedObject ...
 void MissileProjectile::ProcessImpale()
 {
     using namespace fnv_009b90b0;
@@ -1061,7 +1063,7 @@ void MissileProjectile::ProcessImpale()
             if (owner->unk28)
                 return;
             Obj* p34 = owner->unk00;
-            if (reinterpret_cast<Actor*>(p34)->FUN_00573090(owner->unk24))
+            if (reinterpret_cast<Actor*>(p34)->GetDismembered(owner->unk24))
             {
                 Holder* p38 = (Holder*)reinterpret_cast<Obj*>(reinterpret_cast<Actor*>(p34)->BSFile_GetDevice())->FUN_0042e8c0();
                 bool found = false;

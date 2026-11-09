@@ -5,6 +5,7 @@
 
 class TESObjectREFR;
 
+// pdb: class CheckWithinMultiBoundTask, size 0x28, bases: IOTask, 4 members
 class CheckWithinMultiBoundTask : public IOTask
 {
 public:
@@ -21,8 +22,8 @@ public:
     void __thiscall FUN_0054ab60();
     void* __thiscall FUN_0054ab30(unsigned int flags);
 
-    TESObjectREFR* unk18;
-    NiPointer<NiAVObject> unk1c;
-    NiPointer<NiAVObject> unk20;
-    char unk24;
+    TESObjectREFR* pBoundRef;
+    NiPointer<NiAVObject> sp3D;
+    NiPointer<NiAVObject> spBound;
+    char bWithin;
 };

@@ -3,6 +3,7 @@
 #include "NiTriShape.h"
 #include "NiBound.h"
 
+// pdb: class BSResizableTriShape, size 0x110, bases: NiTriShape, 2 members
 class BSResizableTriShape : public NiTriShape
 {
   public:
@@ -15,7 +16,7 @@ class BSResizableTriShape : public NiTriShape
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* object) const;
-    virtual void GetViewerStrings(NiViewerStringsArray* strings);
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
     virtual void UpdateWorldBound();
     virtual void RenderImmediate(NiRenderer* renderer);
     virtual void RenderWithRenderer(NiRenderer* renderer);
@@ -30,7 +31,7 @@ class BSResizableTriShape : public NiTriShape
     static NiObject* CreateObject();
 
     char unkC4[44];
-    unsigned int m_uiValueBeforeLocalBound;
+    unsigned int uiNumPrimitives;
     char LocalBound[16];
     char _pad_104[12];
 };

@@ -2,6 +2,7 @@
 class TESFile;
 
 // src: XBOX_PDB (DecalData, 36 bytes); ctor 0x00593240.
+// pdb: class DecalData, size 0x24, 1 members
 class DecalData
 {
 public:
@@ -26,7 +27,7 @@ public:
     DecalData();
     ~DecalData();
     DataRecordView* GetData();
-    void Load(TESFile* file);
-    void Copy(DecalData* source);
-    void SwapEndianFields();
+    void Load(TESFile* apFile);
+    void Copy(DecalData* apCopy);
+    void DECAL_DATA_DATA_Endian();
 };

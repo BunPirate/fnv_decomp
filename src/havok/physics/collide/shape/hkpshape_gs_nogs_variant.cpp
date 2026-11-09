@@ -68,7 +68,7 @@ class hkpShapeBase : public hkpShape
     virtual void vf18();
     virtual void vf1c();
     virtual hkBoolRet RayCast(const ShapeRayCastQuery& input, ShapeRayCastOutput& output) const;
-    Vector4Comparison hkpBoxShape_castRayBundleImpl(const ShapeRayBundleCastInput& input, ShapeRayCastOutputArray& results,
+    Vector4Comparison hkpBoxShape_castRayBundleImpl(const ShapeRayBundleCastInput& input, ShapeRayCastOutputArray& output,
                                    const Vector4Comparison& mask) const;
 };
 
@@ -87,7 +87,10 @@ static inline void extractPoints(const hkFourTransposedPoints& p, __m128* out)
 
 // @fnv 0x00c9e400
 // src: HAVOK_SRC 0x00c9e400
-Vector4Comparison hkpShapeBase::hkpBoxShape_castRayBundleImpl(const ShapeRayBundleCastInput& input, ShapeRayCastOutputArray& results,
+// pdb: hkpShape::castRayBundleImpl | hkpShape.obj | retail, vtable slot, high
+// pdb params: input, output, mask
+// pdb locals: start, end, shapeInput, hit
+Vector4Comparison hkpShapeBase::hkpBoxShape_castRayBundleImpl(const ShapeRayBundleCastInput& input, ShapeRayCastOutputArray& output,
                                              const Vector4Comparison& mask) const
 {
     __m128 from[4];
@@ -106,7 +109,7 @@ Vector4Comparison hkpShapeBase::hkpBoxShape_castRayBundleImpl(const ShapeRayBund
         {
             singleInput.m_vFrom.m_vComponents = from[i];
             singleInput.m_vTo.m_vComponents = to[i];
-            hkBool hit = IntersectRayWithShape(singleInput, results.m_akRayOutputs[i]);
+            hkBool hit = IntersectRayWithShape(singleInput, output.m_akRayOutputs[i]);
             if (hit.m_cBooleanValue)
             {
                 resultMask |= Vector4Comparison::s_masks[i];

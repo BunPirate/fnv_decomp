@@ -56,56 +56,63 @@ struct Helper62d0
     Helper62d0& operator=(const Helper62d0&);
 };
 // Retained locally: include/ has no SpectatorThreatInfo.h; 0x009f7630 copies this 0x34-byte record.
+// pdb: class SpectatorThreatInfo, size 0x34, 10 members
 struct SpectatorThreatInfo
 {
     Actor* pSource;
     Actor* pTarget;
-    int m_iFirstInteger;
-    unsigned int m_uiSecondValue;
+    int eThreatLevel;
+    unsigned int iLastPerceivedTime;
     float fRadius;
-    NiPoint3 aPos;
-    NiPoint3 bPos;
-    bool m_bFirstFlag;
-    bool m_bFollowingFlag;
+    NiPoint3 LastKnownPosSource;
+    NiPoint3 LastKnownPosTarget;
+    bool bHasSource;
+    bool bHasTarget;
     char _pad[2];
-    Helper62d0 spEffect;
-    void __thiscall SaveGameBGS_009f70b0(BGSSaveFormBuffer* buffer);
-    void LoadGame_009f7170(BGSLoadFormBuffer* buffer);
+    Helper62d0 spDebugGeometry;
+    void __thiscall SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     unsigned int __thiscall _ref_00726070();
     SpectatorThreatInfo& UpdateState_009f7630(const SpectatorThreatInfo& that);
 };
 // @fnv 0x009f70b0
-// src: COMMUNITY 0x009f70b0
-void __thiscall SpectatorThreatInfo::SaveGameBGS_009f70b0(BGSSaveFormBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x009f70b0
+// pdb: SpectatorThreatInfo::SaveGame | SpectatorPackage.obj | debug, call graph, high
+// pdb params: apSaveGameBuffer
+// pdb locals: imodifiedPerceivedTime
+void __thiscall SpectatorThreatInfo::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned int imodifiedPerceivedTime;
-    buffer->SaveData(reinterpret_cast<char*>(this) + 8, 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<char*>(this) + 8, 4, 0);
     imodifiedPerceivedTime = gm_GetTickCount() - ((unsigned int*)this)[3];
-    buffer->SaveData(&imodifiedPerceivedTime, 4, 0);
-    buffer->SaveData(reinterpret_cast<char*>(this) + 16, 4, 0);
-    buffer->SaveData(reinterpret_cast<char*>(this) + 20, 12, 0);
-    buffer->SaveData(reinterpret_cast<char*>(this) + 32, 12, 0);
-    buffer->SaveData(reinterpret_cast<char*>(this) + 44, 1, 0);
-    buffer->SaveData(reinterpret_cast<char*>(this) + 45, 1, 0);
-    buffer->SerializeFormData(*(void**)this, 0);
-    buffer->SerializeFormData(*(void**)(reinterpret_cast<char*>(this) + 4), 0);
+    apSaveGameBuffer->SaveData(&imodifiedPerceivedTime, 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<char*>(this) + 16, 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<char*>(this) + 20, 12, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<char*>(this) + 32, 12, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<char*>(this) + 44, 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<char*>(this) + 45, 1, 0);
+    apSaveGameBuffer->SerializeFormData(*(void**)this, 0);
+    apSaveGameBuffer->SerializeFormData(*(void**)(reinterpret_cast<char*>(this) + 4), 0);
 }
 
 // @fnv 0x009f7170
-// src: COMMUNITY 0x009f7170
-void SpectatorThreatInfo::LoadGame_009f7170(BGSLoadFormBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x009f7170
+// pdb: SpectatorThreatInfo::LoadGame | SpectatorPackage.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: imodifiedPerceivedTime
+void SpectatorThreatInfo::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    buffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 8), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 8), 4u);
     unsigned int imodifiedPerceivedTime = 0;
-    buffer->ReadTypedData(static_cast<void*>(&imodifiedPerceivedTime), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&imodifiedPerceivedTime), 4u);
     *(unsigned int*)(reinterpret_cast<char*>(this) + 0xc) = gm_GetTickCount() - imodifiedPerceivedTime;
-    buffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x10), 4u);
-    buffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x14), 0xcu);
-    buffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x20), 0xcu);
-    buffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x2c), 1u);
-    buffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x2d), 1u);
-    buffer->ReadFormIdentifier(this);
-    buffer->ReadFormIdentifier(reinterpret_cast<char*>(this) + 4);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x10), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x14), 0xcu);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x20), 0xcu);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x2c), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 0x2d), 1u);
+    apLoadGameBuffer->ReadFormIdentifier(this);
+    apLoadGameBuffer->ReadFormIdentifier(reinterpret_cast<char*>(this) + 4);
 }
 
 struct FUN_009f73e0
@@ -115,6 +122,7 @@ struct FUN_009f73e0
 };
 
 // @fnv 0x009f73e0
+// pdb: SpectatorPackage::`scalar deleting destructor' | SpectatorPackage.obj | retail, vtable slot, high
 void* FUN_009f73e0::DeleteThis(unsigned int flags)
 {
     FUN_009f7410();
@@ -146,6 +154,8 @@ struct Saver
 };
 // @fnv 0x009f86f0
 // src: XBOX_PDB 0x009f86f0
+// pdb: SpectatorPackage::GetSaveSize | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb locals: isize
 unsigned short Saver::SpectatorPackage_GetSaveSize()
 {
     unsigned short size = 0;
@@ -168,6 +178,7 @@ struct Holder009f8770
 };
 // @fnv 0x009f8770
 // src: XBOX_PDB 0x009f8770
+// pdb: SpectatorPackage::LoadGame | SpectatorPackage.obj | retail, vtable slot, high
 void Holder009f8770::SpectatorPackage_LoadGame()
 {
     ((Base009f8770*)this)->TESPackage_LoadGame();
@@ -178,11 +189,12 @@ void Holder009f8770::SpectatorPackage_LoadGame()
 struct FUN_009f8aa0_class
 {
     int __thiscall BSSimpleArray_SpectatorThreatInfo_1024_CalcOffset(int);
-    int __thiscall BSSimpleArray_SpectatorThreatInfo_1024_CalcZeroOffset();
+    int __thiscall BSSimpleArray_SpectatorThreatInfo_1024_GetFirst();
 };
 // @fnv 0x009f8aa0
-// src: COMMUNITY 0x009f8aa0
-int __thiscall FUN_009f8aa0_class::BSSimpleArray_SpectatorThreatInfo_1024_CalcZeroOffset()
+// src: XBOX_DEBUG_PDB 0x009f8aa0
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::GetFirst | SpectatorPackage.obj | debug, call graph (shared callers), high
+int __thiscall FUN_009f8aa0_class::BSSimpleArray_SpectatorThreatInfo_1024_GetFirst()
 {
     return BSSimpleArray_SpectatorThreatInfo_1024_CalcOffset(0);
 }
@@ -193,6 +205,8 @@ struct FUN_009f8ac0_class
 };
 // @fnv 0x009f8ac0
 // src: COMMUNITY 0x009f8ac0
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::operator[] | SpectatorPackage.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 int __thiscall FUN_009f8ac0_class::BSSimpleArray_SpectatorThreatInfo_1024_CalcOffset(int a)
 {
     return a * 0x34 + *(int*)((char*)this + 4);
@@ -203,14 +217,16 @@ struct FUN_009f8ae0Class
 {
     void* vtbl;
     void BSSimpleArray_SpectatorThreatInfo_1024_Initialize(int a, int b);
-    void* BSSimpleArray_SpectatorThreatInfo_1024_BSSimpleArray(int a, int b);
+    void* BSSimpleArray_SpectatorThreatInfo_1024_ctor(int aiReserveSize, int aiInitialSize);
 };
 // @fnv 0x009f8ae0
-// src: EXE 0x009f8ae0
-void* FUN_009f8ae0Class::BSSimpleArray_SpectatorThreatInfo_1024_BSSimpleArray(int a, int b)
+// src: XBOX_DEBUG_PDB 0x009f8ae0
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::BSSimpleArray<SpectatorThreatInfo,1024> | SpectatorPackage.obj | debug, call graph, high
+// pdb params: aiReserveSize, aiInitialSize
+void* FUN_009f8ae0Class::BSSimpleArray_SpectatorThreatInfo_1024_ctor(int aiReserveSize, int aiInitialSize)
 {
     vtbl = &DAT_01093980;
-    BSSimpleArray_SpectatorThreatInfo_1024_Initialize(a, b);
+    BSSimpleArray_SpectatorThreatInfo_1024_Initialize(aiReserveSize, aiInitialSize);
     return this;
 }
 
@@ -220,11 +236,12 @@ extern int DAT_01093980;
 struct ThreatRecordArray
 {
     void* ReallocateStorage(int);
-    void SetVtableAndProcessState_009f8b10();
+    void BSSimpleArray_SpectatorThreatInfo_1024_dtor();
 };
 // @fnv 0x009f8b10
-// src: GUESS 0x009f8b10 (confidence: low)
-void ThreatRecordArray::SetVtableAndProcessState_009f8b10()
+// src: XBOX_RETAIL_PDB 0x009f8b10
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::~BSSimpleArray<SpectatorThreatInfo,1024> | SpectatorPackage.obj | retail, call graph (shared callers), high
+void ThreatRecordArray::BSSimpleArray_SpectatorThreatInfo_1024_dtor()
 {
     *reinterpret_cast<void**>(this) = &DAT_01093980;
     ReallocateStorage(1);
@@ -243,13 +260,15 @@ struct S009f9180
 void __fastcall ReleaseSpectatorThreatArrayBuffer(BSSimpleArray<S009f9180, 1024>*);
 
 // @fnv 0x009f8d00
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::Clear | SpectatorPackage.obj | retail, call graph, high
+// pdb params: abFreeMemory
 template <>
-void BSSimpleArray<S009f9180, 1024>::Clear(bool freeStorage)
+void BSSimpleArray<S009f9180, 1024>::Clear(bool abFreeMemory)
 {
     if (pBuffer)
     {
         ReleaseElements(pBuffer, iSize);
-        if (freeStorage)
+        if (abFreeMemory)
         {
             ReleaseSpectatorThreatArrayBuffer(this);
             pBuffer = 0;
@@ -266,6 +285,9 @@ struct FUN_009f8d60_Class
 
 // @fnv 0x009f8d60
 // src: GUESS 0x009f8d60 (confidence: medium)
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::_Allocate | SpectatorPackage.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* __thiscall FUN_009f8d60_Class::AllocateStorage_009f8d60(int size)
 {
     void* memory = operator new(size * 0x34);
@@ -280,6 +302,8 @@ struct FUN_009f8d90
 };
 
 // @fnv 0x009f8d90
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::_Reallocate | SpectatorPackage.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiNewSizeInItem
 void* __thiscall FUN_009f8d90::Reallocate(void* p, int n)
 {
     return ::Reallocate(p, n * 0x34);
@@ -287,20 +311,24 @@ void* __thiscall FUN_009f8d90::Reallocate(void* p, int n)
 
 struct FUN_009f8b10_class
 {
-    void SetVtableAndProcessState_009f8b10();
+    void BSSimpleArray_SpectatorThreatInfo_1024_dtor();
     void* FUN_009f8db0(unsigned int flags);
 };
 
 // @fnv 0x009f8db0
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::`scalar deleting destructor' | SpectatorPackage.obj | retail, vtable slot, high
 void* FUN_009f8b10_class::FUN_009f8db0(unsigned int flags)
 {
-    SetVtableAndProcessState_009f8b10();
+    BSSimpleArray_SpectatorThreatInfo_1024_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
 }
 
 // @fnv 0x009f8f60
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::_DestructItems | SpectatorPackage.obj | retail, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 template <>
 void BSSimpleArray<S009f9180, 1024>::ReleaseElements(S009f9180* a1, unsigned int a2)
 {
@@ -345,6 +373,7 @@ struct Wrap
 };
 // @fnv 0x009f8730
 // src: XBOX_PDB 0x009f8730
+// pdb: SpectatorPackage::SaveGame | SpectatorPackage.obj | retail, vtable slot, high
 void Wrap::SpectatorPackage_SaveGame()
 {
     ((S00679120*)this)->SavePackage();
@@ -360,12 +389,14 @@ struct FUN_009f7230_class
 {
     Actor* p;
     Actor* q;
-    void SpectatorThreatInfo_InitLoadGame(TESObjectREFRHelper* a);
+    void SpectatorThreatInfo_InitLoadGame(TESObjectREFRHelper* apLoadGameBuffer);
 };
 TESForm* __cdecl GetFormByID(unsigned int);
 // @fnv 0x009f7230
 // src: COMMUNITY 0x009f7230
-void FUN_009f7230_class::SpectatorThreatInfo_InitLoadGame(TESObjectREFRHelper* a)
+// pdb: SpectatorThreatInfo::InitLoadGame | SpectatorPackage.obj | debug, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void FUN_009f7230_class::SpectatorThreatInfo_InitLoadGame(TESObjectREFRHelper* apLoadGameBuffer)
 {
     p = p ? dynamic_cast<Actor*>(GetFormByID((unsigned int)p)) : 0;
     q = q ? dynamic_cast<Actor*>(GetFormByID((unsigned int)q)) : 0;
@@ -397,14 +428,17 @@ struct FUN_009f84d0_class
 
 // @fnv 0x009f84d0
 // src: XBOX_PDB 0x009f84d0
-void FUN_009f84d0_class::SpectatorPackage_RemoveActorAsThreatSourceOrTarget(unsigned int id)
+// pdb: SpectatorPackage::RemoveActorAsThreatSourceOrTarget | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb params: aActor
+// pdb locals: isize, i, scanInfo
+void FUN_009f84d0_class::SpectatorPackage_RemoveActorAsThreatSourceOrTarget(unsigned int aActor)
 {
     int count = arr.GetFlags();
     for (int i = 0; i < count; ++i)
     {
         Flt* item = reinterpret_cast<FUN_009f8a80_class*>(&arr)->BSSimpleArray_SpectatorThreatInfo_1024_GetAt(i);
-        if (item->operator unsigned int() == id ||
-            reinterpret_cast<FUN_009f8a80_class*>(item)->_ref_00726070() == (void*)id)
+        if (item->operator unsigned int() == aActor ||
+            reinterpret_cast<FUN_009f8a80_class*>(item)->_ref_00726070() == (void*)aActor)
         {
             reinterpret_cast<FUN_009f8c70_class*>(&arr)->BSSimpleArray_SpectatorThreatInfo_1024_RemoveFast(i, 1);
             --count;
@@ -419,6 +453,10 @@ struct FUN_009f8660_class
 };
 // @fnv 0x009f8660
 // src: COMMUNITY 0x009f8660
+// pdb: SpectatorThreatInfo::LoadGame | SpectatorPackage.obj | retail, object-file run extension, low
+// pdb note: debug build links it to SpectatorPackage::CreateThreatArray
+// pdb params: apLoadGameBuffer
+// pdb locals: imodifiedPerceivedTime
 void FUN_009f8660_class::SpectatorPackage_CopyThreatInfoList(BSSimpleArray<Actor*, 1024>& aArray)
 {
     aArray.Clear(true);
@@ -446,6 +484,7 @@ struct FUN_009f8a10 : FUN_00679a90_shell
     void InitLoadGame(void* apLoadGameBuffer);
 };
 // @fnv 0x009f8a10
+// pdb: SpectatorPackage::InitLoadGame | SpectatorPackage.obj | retail, vtable slot, high
 void FUN_009f8a10::InitLoadGame(void* apLoadGameBuffer)
 {
     unsigned int i;
@@ -462,18 +501,20 @@ void FUN_009f8a10::InitLoadGame(void* apLoadGameBuffer)
 
 // @fnv 0x009f7630
 // src: GUESS 0x009f7630 (confidence: low)
+// pdb: SpectatorThreatInfo::operator= | SpectatorPackage.obj | debug, call graph, medium
+// pdb params: __that
 SpectatorThreatInfo& SpectatorThreatInfo::UpdateState_009f7630(const SpectatorThreatInfo& that)
 {
     pSource = that.pSource;
     pTarget = that.pTarget;
-    m_iFirstInteger = that.m_iFirstInteger;
-    m_uiSecondValue = that.m_uiSecondValue;
+    eThreatLevel = that.eThreatLevel;
+    iLastPerceivedTime = that.iLastPerceivedTime;
     fRadius = that.fRadius;
-    aPos = that.aPos;
-    bPos = that.bPos;
-    m_bFirstFlag = that.m_bFirstFlag;
-    m_bFollowingFlag = that.m_bFollowingFlag;
-    spEffect = that.spEffect;
+    LastKnownPosSource = that.LastKnownPosSource;
+    LastKnownPosTarget = that.LastKnownPosTarget;
+    bHasSource = that.bHasSource;
+    bHasTarget = that.bHasTarget;
+    spDebugGeometry = that.spDebugGeometry;
     return *this;
 }
 
@@ -493,6 +534,7 @@ struct SpectatorPackageSave : SpectatorPackage
 
 // @fnv 0x009f87d0
 // src: XBOX_PDB 0x009f87d0
+// pdb: SpectatorPackage::SaveGame | SpectatorPackage.obj | retail, vtable slot, high
 void SpectatorPackageSave::SpectatorPackage_SaveGame_009f87d0(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     int i;
@@ -521,7 +563,7 @@ void SpectatorPackageSave::SpectatorPackage_SaveGame_009f87d0(BGSSaveFormBuffer*
     {
         isaveGameCount = reinterpret_cast<SpectatorThreatInfo*>(
             reinterpret_cast<FUN_009f8a80_class*>(reinterpret_cast<char*>(this) + 0xa0)->BSSimpleArray_SpectatorThreatInfo_1024_GetAt(ipathTimeDelta));
-        isaveGameCount->SaveGameBGS_009f70b0(apSaveGameBuffer);
+        isaveGameCount->SaveGame(apSaveGameBuffer);
     }
 }
 
@@ -531,6 +573,8 @@ struct FUN_009f8a80_wrapper : FUN_009f8aa0_class
 };
 // @fnv 0x009f8a80
 // src: COMMUNITY 0x009f8a80
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::GetAt | SpectatorPackage.obj | debug, call graph, medium
+// pdb params: aiIndex
 int FUN_009f8a80_wrapper::BSSimpleArray_SpectatorThreatInfo_1024_GetAt(unsigned int a)
 {
     return BSSimpleArray_SpectatorThreatInfo_1024_CalcOffset((int)a);
@@ -538,6 +582,9 @@ int FUN_009f8a80_wrapper::BSSimpleArray_SpectatorThreatInfo_1024_GetAt(unsigned 
 
 // @fnv 0x009f8420
 // src: GUESS 0x009f8420 (confidence: low)
+// pdb: SpectatorPackage::HandleDeletedActor | SpectatorPackage.obj | retail, object-file run extension, low
+// pdb params: aActor
+// pdb locals: isize, i, scanInfo
 void SpectatorPackage::ProcessEntries_009f8420(Actor& aActor)
 {
     SpectatorThreatInfo* scanInfo;
@@ -568,7 +615,7 @@ void SpectatorPackage::ProcessEntries_009f8420(Actor& aActor)
 
 struct FUN_009f8b30_class
 {
-    void __thiscall BSSimpleArray_SpectatorThreatInfo_1024_SetSize(unsigned int size, int flag);
+    void __thiscall BSSimpleArray_SpectatorThreatInfo_1024_SetSize(unsigned int aiNewSize, int abFreeMemory);
 };
 
 struct FUN_009f8900_class
@@ -588,6 +635,7 @@ struct FUN_009f8900_class
 
 // @fnv 0x009f8900
 // src: XBOX_PDB 0x009f8900
+// pdb: SpectatorPackage::LoadGame | SpectatorPackage.obj | retail, vtable slot, high
 void FUN_009f8900_class::SpectatorPackage_LoadGame_009f8900(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     reinterpret_cast<TESPackage*>(this)->TESPackage::LoadGame(apLoadGameBuffer);
@@ -616,7 +664,7 @@ void FUN_009f8900_class::SpectatorPackage_LoadGame_009f8900(BGSLoadFormBuffer* a
                     reinterpret_cast<FUN_009f8a80_wrapper*>(reinterpret_cast<unsigned char*>(this) + 0xA0)
                         ->BSSimpleArray_SpectatorThreatInfo_1024_GetAt(i));
 
-                threatInfo->LoadGame_009f7170(apLoadGameBuffer);
+                threatInfo->LoadGame(apLoadGameBuffer);
             }
         }
     }
@@ -637,6 +685,8 @@ struct ThreatInfo
 };
 // @fnv 0x009f6d50
 // src: COMMUNITY 0x009f6d50
+// pdb: SpectatorThreatInfo::Update | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb locals: pcombatController, enewThreatLevel, pweapon
 void ThreatInfo::SpectatorThreatInfo_Update()
 {
     m_uiSecondValue = pSource ? gm_GetTickCount() : m_uiSecondValue;
@@ -695,7 +745,7 @@ extern Vec3U DAT_011f426c;
 class SubA0
 {
   public:
-    SubA0(int a, int b);
+    SubA0(int aiReserveSize, int aiInitialSize);
     ~SubA0();
     unsigned int m_unk00;
     unsigned int m_unk04;
@@ -761,6 +811,7 @@ class FUN_009f72f0 : public Base_9f72f0
 };
 
 // @fnv 0x009f72f0
+// pdb: SpectatorPackage::SpectatorPackage | SpectatorPackage.obj | retail, call graph (shared callers), high
 FUN_009f72f0::FUN_009f72f0() : m_v94(DAT_011f426c), m_a0(0x20, 0), m_b0(0)
 {
     SetPackageType(0x18);
@@ -901,6 +952,7 @@ struct FUN_009f7410 : FUN_006708b0
     virtual ~FUN_009f7410();
 };
 // @fnv 0x009f7410
+// pdb: SpectatorPackage::~SpectatorPackage | SpectatorPackage.obj | retail, object-file run extension, high
 FUN_009f7410::~FUN_009f7410()
 {
     if (memberB0.Modelloader_GetReferencedThis())
@@ -1188,7 +1240,7 @@ struct Entry
 {
     Parameter* Modelloader_GetReferencedThis();
     int FUN_00726070();
-    void SetSourceReference(Parameter*);
+    void SpectatorThreatInfo_SetupThreatFromActorToCombatTarget(Parameter*);
 };
 struct ThreatList
 {
@@ -1199,19 +1251,22 @@ struct ThreatList
 struct Package
 {
     void SpectatorPackage_AddThreatFromActorToCombatTarget(Parameter*);
-    void ProcessEntries_009f76e0();
+    void SpectatorPackage_ComputeCenterPoint();
 };
 // @fnv 0x009f8330
 // src: XBOX_PDB 0x009f8330
-void Package::SpectatorPackage_AddThreatFromActorToCombatTarget(Parameter* actor)
+// pdb: SpectatorPackage::AddThreatFromActorToCombatTarget | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb params: aSourceActor
+// pdb locals: pstoredInfo, isize, ptargetActor, i, scanInfo, index
+void Package::SpectatorPackage_AddThreatFromActorToCombatTarget(Parameter* aSourceActor)
 {
-    int id = actor->GetMark();
+    int id = aSourceActor->GetMark();
     int count = ((ThreatList*)((char*)this + 0xA0))->FUN_0044ddc0();
     Entry* match = 0;
     for (int i = 0; i < count; ++i)
     {
         Entry* e = ((ThreatList*)((char*)this + 0xA0))->BSSimpleArray_SpectatorThreatInfo_1024_GetAt(i);
-        if (e->Modelloader_GetReferencedThis() == actor && e->FUN_00726070() == id)
+        if (e->Modelloader_GetReferencedThis() == aSourceActor && e->FUN_00726070() == id)
         {
             match = e;
             break;
@@ -1223,8 +1278,8 @@ void Package::SpectatorPackage_AddThreatFromActorToCombatTarget(Parameter* actor
         ((ThreatList*)((char*)this + 0xA0))->BSSimpleArray_SpectatorThreatInfo_1024_SetSize(n + 1, 1);
         match = ((ThreatList*)((char*)this + 0xA0))->BSSimpleArray_SpectatorThreatInfo_1024_GetAt(n);
     }
-    match->SetSourceReference(actor);
-    ProcessEntries_009f76e0();
+    match->SpectatorThreatInfo_SetupThreatFromActorToCombatTarget(aSourceActor);
+    SpectatorPackage_ComputeCenterPoint();
 }
 
 struct ThreatArray
@@ -1234,48 +1289,50 @@ struct ThreatArray
     S009f9180* data;
     unsigned int size;
     unsigned int capacity;
-    void EnsureBuffer(unsigned int, unsigned int);
-    void ProcessEntries_009f8de0(S009f9180*, unsigned int);
+    void BSSimpleArray_SpectatorThreatInfo_1024__ReallocateBuffer(unsigned int, unsigned int);
+    void BSSimpleArray_SpectatorThreatInfo_1024__ConstructItems(S009f9180*, unsigned int);
     void FUN_009f8f60(S009f9180*, unsigned int);
-    void BSSimpleArray_SpectatorThreatInfo_1024_SetSize(unsigned int count, bool shrink);
+    void BSSimpleArray_SpectatorThreatInfo_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 // @fnv 0x009f8b30
 // src: COMMUNITY 0x009f8b30
-void ThreatArray::BSSimpleArray_SpectatorThreatInfo_1024_SetSize(unsigned int count, bool shrink)
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::SetSize | SpectatorPackage.obj | retail, call graph (shared callers), high
+// pdb params: aiNewSize, abFreeMemory
+void ThreatArray::BSSimpleArray_SpectatorThreatInfo_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (count == 0)
+    if (aiNewSize == 0)
     {
-        reinterpret_cast<BSSimpleArray<S009f9180, 1024>*>(this)->Clear(shrink);
+        reinterpret_cast<BSSimpleArray<S009f9180, 1024>*>(this)->Clear(abFreeMemory);
     }
-    else if (count > capacity)
+    else if (aiNewSize > capacity)
     {
         if (capacity == 0)
         {
-            data = Allocate(count);
-            capacity = count;
+            data = Allocate(aiNewSize);
+            capacity = aiNewSize;
         }
         else
         {
-            EnsureBuffer(count, size);
-            capacity = count;
+            BSSimpleArray_SpectatorThreatInfo_1024__ReallocateBuffer(aiNewSize, size);
+            capacity = aiNewSize;
         }
-        ProcessEntries_009f8de0(data + size, count - size);
-        size = count;
+        BSSimpleArray_SpectatorThreatInfo_1024__ConstructItems(data + size, aiNewSize - size);
+        size = aiNewSize;
     }
-    else if (count < size)
+    else if (aiNewSize < size)
     {
-        FUN_009f8f60(data + count, size - count);
-        size = count;
-        if (shrink && count <= capacity / 4)
+        FUN_009f8f60(data + aiNewSize, size - aiNewSize);
+        size = aiNewSize;
+        if (abFreeMemory && aiNewSize <= capacity / 4)
         {
-            EnsureBuffer(count, count);
-            capacity = count;
+            BSSimpleArray_SpectatorThreatInfo_1024__ReallocateBuffer(aiNewSize, aiNewSize);
+            capacity = aiNewSize;
         }
     }
     else
     {
-        ProcessEntries_009f8de0(data + size, count - size);
-        size = count;
+        BSSimpleArray_SpectatorThreatInfo_1024__ConstructItems(data + size, aiNewSize - size);
+        size = aiNewSize;
     }
 }
 
@@ -1288,12 +1345,15 @@ struct FUN_009f8c70_cls
     int m_uiItemCount;
 
     void FUN_009f8f60(void* apElem, unsigned int auiArg);
-    void CopyElements(void* apDst, void* apSrc, int aiIdx);
+    void CopyElements(void* apDestAddr, void* apSrcAddr, int aiCount);
     void BSSimpleArray_SpectatorThreatInfo_1024_RemoveFast(unsigned int a1, unsigned int a2);
 };
 
 // @fnv 0x009f8c70
 // src: XBOX_PDB 0x009f8c70
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::RemoveFast | SpectatorPackage.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex, aiHowMany
+// pdb locals: iitemsToMove
 void FUN_009f8c70_cls::BSSimpleArray_SpectatorThreatInfo_1024_RemoveFast(unsigned int a1, unsigned int a2)
 {
     int idx = SpanIndex(m_uiItemCount - a1 - a2, a2);
@@ -1338,6 +1398,7 @@ class FUN_009f8e80_cls
 };
 
 // @fnv 0x009f8e80
+// pdb: SpectatorThreatInfo::SpectatorThreatInfo | SpectatorPackage.obj | debug, object-file gap fill, medium
 FUN_009f8e80_cls::FUN_009f8e80_cls()
     : m_00(0), m_04(0), m_08(0), m_0c(0), m_10(0.0f), m_14(DAT_011f426c), m_20(DAT_011f426c), m_2c(0), m_2d(0), m_30(0)
 {
@@ -1370,27 +1431,29 @@ struct SpectatorInfo
 
     NiPoint3 GetStart();
     NiPoint3 GetEnd();
-    void UpdateState_009f6f30(SpectatorVolume& arVolume);
+    void SpectatorThreatInfo_GetAvoidNode(SpectatorVolume& nodeOut);
 };
 
 // @fnv 0x009f6f30
-// src: GUESS 0x009f6f30 (confidence: low)
-void SpectatorInfo::UpdateState_009f6f30(SpectatorVolume& arVolume)
+// src: XBOX_RETAIL_PDB 0x009f6f30
+// pdb: SpectatorThreatInfo::GetAvoidNode | SpectatorPackage.obj | retail, object-file run extension, high
+// pdb params: nodeOut
+void SpectatorInfo::SpectatorThreatInfo_GetAvoidNode(SpectatorVolume& nodeOut)
 {
     if (bHasStart)
     {
         if (bHasEnd)
         {
-            arVolume = SpectatorVolume(GetStart(), GetEnd(), fRadius, 100.0f);
+            nodeOut = SpectatorVolume(GetStart(), GetEnd(), fRadius, 100.0f);
         }
         else
         {
-            arVolume = SpectatorVolume(GetStart(), fRadius, 100.0f);
+            nodeOut = SpectatorVolume(GetStart(), fRadius, 100.0f);
         }
     }
     else if (bHasEnd)
     {
-        arVolume = SpectatorVolume(GetEnd(), fRadius, 100.0f);
+        nodeOut = SpectatorVolume(GetEnd(), fRadius, 100.0f);
     }
 }
 
@@ -1451,10 +1514,13 @@ extern int DAT_011a5fd8;
 extern void* __cdecl FUN_00ec43fb(void*, int, int*, int*, int);
 // @fnv 0x009f7500
 // src: XBOX_PDB 0x009f7500
-void FUN_009f7500_class::SpectatorPackage_Copy(void* param_2)
+// pdb: SpectatorPackage::Copy | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pcopy, isize, i
+void FUN_009f7500_class::SpectatorPackage_Copy(void* apCopy)
 {
-    CopyFromPackage(param_2);
-    FUN_009f7500_class* other = (FUN_009f7500_class*)FUN_00ec43fb(param_2, 0, &DAT_01183028, &DAT_011a5fd8, 0);
+    CopyFromPackage(apCopy);
+    FUN_009f7500_class* other = (FUN_009f7500_class*)FUN_00ec43fb(apCopy, 0, &DAT_01183028, &DAT_011a5fd8, 0);
     if (other != 0)
     {
         field80 = other->field80;
@@ -1544,11 +1610,13 @@ struct Package
     bool empty;
     NiPoint3 center;
     ThreatList threats;
-    void ProcessEntries_009f76e0();
+    void SpectatorPackage_ComputeCenterPoint();
 };
 // @fnv 0x009f76e0
-// src: GUESS 0x009f76e0 (confidence: low)
-void Package::ProcessEntries_009f76e0()
+// src: XBOX_RETAIL_PDB 0x009f76e0
+// pdb: SpectatorPackage::ComputeCenterPoint | SpectatorPackage.obj | retail, call graph (shared callers), high
+// pdb locals: icount, maxPoint, minPoint, fdistanceSquared, isize, bInitialized, centerPoint, ffarthestDistanceSquared, i, info
+void Package::SpectatorPackage_ComputeCenterPoint()
 {
     if (!threats.FUN_0044ddc0())
         return;
@@ -1730,29 +1798,32 @@ struct FUN_009f7f20_class
     UnknownObject64 u0, u1;
     UnknownObject32 u2;
     SpectatorpackageOffset08View entries;
-    void __thiscall SpectatorPackage_LookAtCombatants(MobileObject* actor, unsigned char flag);
+    void __thiscall SpectatorPackage_LookAtCombatants(MobileObject* apActor, unsigned char bflag);
 };
 
 // @fnv 0x009f7f20
 // src: XBOX_PDB 0x009f7f20
-void __thiscall FUN_009f7f20_class::SpectatorPackage_LookAtCombatants(MobileObject* actor, unsigned char flag)
+// pdb: SpectatorPackage::LookAtCombatants | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb params: apActor, bflag
+// pdb locals: ptarget, pactor
+void __thiscall FUN_009f7f20_class::SpectatorPackage_LookAtCombatants(MobileObject* apActor, unsigned char bflag)
 {
     TargetView* AX;
-    if (flag != 0)
+    if (bflag != 0)
     {
         if ((unsigned int)(((ThreatList*)((char*)this + 0xa0))->FUN_0044ddc0()) > 0)
         {
             TargetView* A5 =
-                (TargetView*)((Entry*)((FUN_009f8aa0_class*)((char*)this + 0xa0))->BSSimpleArray_SpectatorThreatInfo_1024_CalcZeroOffset())->FUN_00726070();
+                (TargetView*)((Entry*)((FUN_009f8aa0_class*)((char*)this + 0xa0))->BSSimpleArray_SpectatorThreatInfo_1024_GetFirst())->FUN_00726070();
             AX = (A5 != 0 && A5->IsActor() != 0) ? A5 : (TargetView*)0;
             if (AX != 0)
             {
-                ((BaseProcess*)actor->FUN_008d8520())->SetActorProcessState(reinterpret_cast<TESObjectREFR*>(AX));
+                ((BaseProcess*)apActor->FUN_008d8520())->SetActorProcessState(reinterpret_cast<TESObjectREFR*>(AX));
                 return;
             }
         }
     }
-    ((BaseProcess*)actor->FUN_008d8520())->ClearCachedTargetReferences(true);
+    ((BaseProcess*)apActor->FUN_008d8520())->ClearCachedTargetReferences(true);
 }
 
 extern "C" void* __cdecl Object_DispatchCommandFour(unsigned int bytes);
@@ -1770,12 +1841,12 @@ struct FUN_006e3850
     }
     FUN_006e3850();
     int __thiscall FUN_0044ddc0();
-    void __thiscall SetSize(int newCount, int preserve);
+    void __thiscall BSSimpleArray_PathingAvoidNode_1024_SetSize(int newCount, int preserve);
     void* __thiscall BSSimpleArray_PathingAvoidNode_1024_GetAt(int index);
 };
 struct ThreatItem_009f8570
 {
-    void __thiscall UpdateState_009f6f30(void* element);
+    void __thiscall SpectatorThreatInfo_GetAvoidNode(void* nodeOut);
 };
 struct FUN_009f8570_class
 {
@@ -1783,6 +1854,8 @@ struct FUN_009f8570_class
 };
 // @fnv 0x009f8570
 // src: COMMUNITY 0x009f8570
+// pdb: SpectatorPackage::CreateAvoidNodeArray | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb locals: isize, pavoidNodeArray, i, nodeArrayIndex, scanInfo
 FUN_006e3850* __thiscall FUN_009f8570_class::SpectatorPackage_CreateAvoidNodeArray()
 {
     FUN_006e3850* output = new FUN_006e3850;
@@ -1794,8 +1867,8 @@ FUN_006e3850* __thiscall FUN_009f8570_class::SpectatorPackage_CreateAvoidNodeArr
         item = reinterpret_cast<ThreatItem_009f8570*>(
             reinterpret_cast<ThreatList*>(reinterpret_cast<char*>(this) + 0xa0)->BSSimpleArray_SpectatorThreatInfo_1024_GetAt(index));
         used = output->FUN_0044ddc0();
-        output->SetSize(used + 1, 1);
-        item->UpdateState_009f6f30(output->BSSimpleArray_PathingAvoidNode_1024_GetAt(used));
+        output->BSSimpleArray_PathingAvoidNode_1024_SetSize(used + 1, 1);
+        item->SpectatorThreatInfo_GetAvoidNode(output->BSSimpleArray_PathingAvoidNode_1024_GetAt(used));
     }
     return output;
 }
@@ -1822,7 +1895,7 @@ struct Candidate9f7d
 struct List9f7d
 {
     unsigned int FUN_0044ddc0();
-    Candidate9f7d* BSSimpleArray_SpectatorThreatInfo_1024_CalcZeroOffset();
+    Candidate9f7d* BSSimpleArray_SpectatorThreatInfo_1024_GetFirst();
 };
 
 
@@ -1833,34 +1906,37 @@ struct FUN_009f7d70_cls
     unsigned char unk8C[0xa0 - 0x8c];
     List9f7d m_kTargets;
 
-    void SpectatorPackage_MakeCombatComment(Actor* pkActor, bool bActive);
+    void SpectatorPackage_MakeCombatComment(Actor* apActor, bool bflag);
 };
 
 // @fnv 0x009f7d70
 // src: XBOX_PDB 0x009f7d70
-void FUN_009f7d70_cls::SpectatorPackage_MakeCombatComment(Actor* pkActor, bool bActive)
+// pdb: SpectatorPackage::MakeCombatComment | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb params: apActor, bflag
+// pdb locals: ptarget, rnone, pactor, pTopic
+void FUN_009f7d70_cls::SpectatorPackage_MakeCombatComment(Actor* apActor, bool bflag)
 {
-    if (!bActive)
+    if (!bflag)
     {
-        pkActor->MobileObject::FUN_008d8520()->SetCombatAlerted(false);
-        pkActor->StopMoving_008b3ab0();
+        apActor->MobileObject::FUN_008d8520()->SetCombatAlerted(false);
+        apActor->StopMoving_008b3ab0();
         return;
     }
     if (m_kTargets.FUN_0044ddc0() > 0)
     {
         int iRoll = FUN_00487f50() % 100;
-        Actor* pkCandidate = m_kTargets.BSSimpleArray_SpectatorThreatInfo_1024_CalcZeroOffset()->FUN_00726070();
+        Actor* pkCandidate = m_kTargets.BSSimpleArray_SpectatorThreatInfo_1024_GetFirst()->FUN_00726070();
         Actor* pkTarget = (pkCandidate && pkCandidate->IsActor()) ? pkCandidate : 0;
         if (pkTarget)
         {
-            if (pkActor->MobileObject::FUN_008d8520() && !pkActor->MobileObject::FUN_008d8520()->IsDetecting() && iRoll < *DAT_011cdc04.Setting_Float_00403e20() &&
+            if (apActor->MobileObject::FUN_008d8520() && !apActor->MobileObject::FUN_008d8520()->IsDetecting() && iRoll < *DAT_011cdc04.Setting_Float_00403e20() &&
                 m_fTimer <= DAT_01012060)
             {
                 void* pkPackage = GetTopicSubTypeName(6, 0);
                 if (pkPackage)
                 {
-                    pkActor->EffectSetting_SetLight(pkTarget);
-                    pkActor->MobileObject::FUN_008d8520()->ProcessDialogueTopic(reinterpret_cast<Actor*>(pkActor), reinterpret_cast<TESTopic*>(pkPackage), false, false, true, false);
+                    apActor->EffectSetting_SetLight(pkTarget);
+                    apActor->MobileObject::FUN_008d8520()->ProcessDialogueTopic(reinterpret_cast<Actor*>(apActor), reinterpret_cast<TESTopic*>(pkPackage), false, false, true, false);
                     m_fTimer = *DAT_011ccff0.Setting_Float_00403e20();
                 }
             }
@@ -1936,13 +2012,16 @@ struct Package8020
     unsigned int unk9c;
     ThreatList8020 threats;
     void SpectatorPackage_AddThreatFromActorToCombatTarget(Actor*);
-    void ProcessEntries_009f76e0();
+    void SpectatorPackage_ComputeCenterPoint();
     void FUN_004534f0(Actor*);
-    void SpectatorPackage_Update(Actor* actor);
+    void SpectatorPackage_Update(Actor* pOwner);
 };
 // @fnv 0x009f8020
 // src: XBOX_PDB 0x009f8020
-void Package8020::SpectatorPackage_Update(Actor* owner)
+// pdb: SpectatorPackage::Update | SpectatorPackage.obj | retail, upstream name already matches, high
+// pdb params: pOwner
+// pdb locals: isize, bupdatedSomething, i, info, pcurrentTarget, ptarget, psource, state
+void Package8020::SpectatorPackage_Update(Actor* pOwner)
 {
     bool updated = false;
     int count = threats.FUN_0044ddc0();
@@ -1954,7 +2033,7 @@ void Package8020::SpectatorPackage_Update(Actor* owner)
             Actor* currentTarget = entry->Modelloader_GetReferencedThis()->GetCombatTarget();
             if (currentTarget && currentTarget != entry->FUN_00726070())
             {
-                SpectatorPackage_AddThreatFromActorToCombatTarget(owner);
+                SpectatorPackage_AddThreatFromActorToCombatTarget(pOwner);
                 updated = true;
             }
         }
@@ -1981,10 +2060,10 @@ void Package8020::SpectatorPackage_Update(Actor* owner)
             updated = true;
             continue;
         }
-        if (actor && actor->IsCharacter() && owner->MobileObject::FUN_008d8520())
+        if (actor && actor->IsCharacter() && pOwner->MobileObject::FUN_008d8520())
         {
-            DetectionStatePrefix* relation = owner->MobileObject::FUN_008d8520()
-                ? reinterpret_cast<DetectionStatePrefix*>(owner->MobileObject::FUN_008d8520()->GetDetectionState(
+            DetectionStatePrefix* relation = pOwner->MobileObject::FUN_008d8520()
+                ? reinterpret_cast<DetectionStatePrefix*>(pOwner->MobileObject::FUN_008d8520()->GetDetectionState(
                       actor, BaseProcess::_DetectionListType::BY_ME))
                 : 0;
             if (!relation || relation->count <= 0)
@@ -1996,8 +2075,8 @@ void Package8020::SpectatorPackage_Update(Actor* owner)
         entry->SpectatorThreatInfo_Update();
     }
     if (updated)
-        ProcessEntries_009f76e0();
-    FUN_004534f0(owner);
+        SpectatorPackage_ComputeCenterPoint();
+    FUN_004534f0(pOwner);
 }
 
 void* __cdecl operator new(unsigned int, void*);
@@ -2023,15 +2102,18 @@ struct Elem
 
 struct ElemArray
 {
-    void ProcessEntries_009f8de0(Elem* apArray, unsigned int ItemUpdateArray);
+    void BSSimpleArray_SpectatorThreatInfo_1024__ConstructItems(Elem* apFirstAddr, unsigned int aiCount);
 };
 
 // @fnv 0x009f8de0
-// src: GUESS 0x009f8de0 (confidence: low)
-void ElemArray::ProcessEntries_009f8de0(Elem* apArray, unsigned int ItemUpdateArray)
+// src: XBOX_RETAIL_PDB 0x009f8de0
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::_ConstructItems | SpectatorPackage.obj | retail, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void ElemArray::BSSimpleArray_SpectatorThreatInfo_1024__ConstructItems(Elem* apFirstAddr, unsigned int aiCount)
 {
-    for (unsigned int i = 0; i < ItemUpdateArray; ++i)
+    for (unsigned int i = 0; i < aiCount; ++i)
     {
-        new (&apArray[i]) Elem;
+        new (&apFirstAddr[i]) Elem;
     }
 }

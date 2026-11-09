@@ -6,11 +6,12 @@
 #include "hkBase.h"
 #include "hkpSampledHeightFieldShape.h"
 #pragma pack(push, 1)
+// pdb: class hkpCompressedSampledHeightFieldShape, size 0x80, bases: hkpSampledHeightFieldShape, 4 members
 class hkpCompressedSampledHeightFieldShape : public hkpSampledHeightFieldShape
 {
   public:
-    hkArray<hkUint16> m_kStorage;  // +0x60
-    hkBool m_bFlipTriangleOrder;   // +0x6C
+    hkArray<hkUint16> m_storage;  // +0x60
+    hkBool m_triangleFlip;   // +0x6C
     char pad6D[0x3];
     hkReal m_offset;  // +0x70
     hkReal m_vScale;  // +0x74

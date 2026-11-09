@@ -32,8 +32,8 @@ struct NodeB54
 class SceneB54;
 struct ManagerB54
 {
-    bool TES_IsBuffered(SceneB54* pScene);
-    void* TES_GetCellPriority(SceneB54* pScene, int i);
+    bool TES_IsBuffered(SceneB54* apCell);
+    void* TES_GetCellPriority(SceneB54* apCell, int apPos);
 };
 extern ManagerB54* DAT_011dea10;
 struct SettingsB54
@@ -48,12 +48,12 @@ struct ModeB54
 extern ModeB54* DAT_011de45c;
 struct ProcessListB54
 {
-    void FUN_0096f400(Actor* pActor);
+    void RemoveActorFromTempChangeList(Actor* apActor);
 };
 extern ProcessListB54 DAT_011e0e80;
 struct LoaderB54
 {
-    void ModelLoader_QueueReference(TESObjectREFR* pRef, void* p, int i);
+    void ModelLoader_QueueReference(TESObjectREFR* apRef, void* aePriority, int abAllowQueueReferenceQueuing);
 };
 extern LoaderB54* DAT_011c3b3c;
 void __cdecl Script_InitActionList(TESObjectREFR* pRef, void* p);
@@ -63,27 +63,30 @@ class SceneB54
 {
   public:
     ControllerB54* GetOrCreateWidget();
-    void RunScripts_0054c740(int a, int b);
+    void RunScripts(int a, int b);
     bool TESObjectCELL_HandleExpiredReferences();
-    void RecalcLeveledActorBases(bool b);
+    void CalcLeveledCreatures(bool b);
     void ProcessCellReferences();
     void FUN_00541ac0();
     void TESObjectCELL_CellRefLockLeave();
     NodeB54* GetRefList_009604f0();
-    void TESObjectCELL_AttachReference3D(TESObjectREFR* pRef, int i);
+    void TESObjectCELL_AttachReference3D(TESObjectREFR* apRef, int abOnTop);
     void SetupMopp();
     void SetState(int i);
-    void TESObjectCELL_AttachModels(bool bArg);
+    void TESObjectCELL_AttachModels(bool abSetupMopp);
 };
 
 // @fnv 0x0054bcf0
 // src: XBOX_PDB 0x0054bcf0
-void SceneB54::TESObjectCELL_AttachModels(bool bArg)
+// pdb: TESObjectCELL::AttachModels | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: abSetupMopp
+// pdb locals: pRoot, bresetcell, UpdateData, icount, pList, epriority, istep, pRef, bisMultibound, bdisabled, pactor, pprojectile, battach, pwat
+void SceneB54::TESObjectCELL_AttachModels(bool abSetupMopp)
 {
     ControllerB54* pController2 = GetOrCreateWidget();
-    RunScripts_0054c740(0, 0);
+    RunScripts(0, 0);
     bool bState5 = TESObjectCELL_HandleExpiredReferences();
-    RecalcLeveledActorBases(bState5);
+    CalcLeveledCreatures(bState5);
     if (((ManagerB54*)DAT_011dea10)->TES_IsBuffered(this))
     {
         if (pController2)
@@ -136,7 +139,7 @@ void SceneB54::TESObjectCELL_AttachModels(bool bArg)
                         if (pActor7)
                         {
                             pActor7->StartHighProcess();
-                            ((ProcessListB54*)&DAT_011e0e80)->FUN_0096f400(pActor7);
+                            ((ProcessListB54*)&DAT_011e0e80)->RemoveActorFromTempChangeList(pActor7);
                         }
                     }
                     else if (pRef->IsProjectile())
@@ -162,7 +165,7 @@ void SceneB54::TESObjectCELL_AttachModels(bool bArg)
         }
         TESObjectCELL_CellRefLockLeave();
     }
-    if (bArg)
+    if (abSetupMopp)
         SetupMopp();
     SetState(6);
 }

@@ -6,6 +6,7 @@ class WorldRayCastInput;
 class hkpCollidable;
 struct ClassMemberDescriptor;
 
+// pdb: class hkpRayCollidableFilter, size 0x4, 0 members
 class hkpRayCollidableFilter
 {
 public:

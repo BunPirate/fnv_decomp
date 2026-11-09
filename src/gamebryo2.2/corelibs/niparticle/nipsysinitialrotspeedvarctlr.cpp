@@ -2,13 +2,13 @@
 // src/gamebryo2.2/corelibs/niparticle/nipsysinitialrotspeedvarctlr.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/niparticle/nipsysinitialrotspeedvarctlr.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* g_012026d8;
+extern "C" void* NiPSysInitialRotSpeedVarCtlr_ms_RTTI;
 
 // @fnv 0x00c29e90
 // src: COMMUNITY 0x00c29e90
 void* __cdecl NiPSysInitialRotSpeedVarCtlr_GetRTTI()
 {
-    return &g_012026d8;
+    return &NiPSysInitialRotSpeedVarCtlr_ms_RTTI;
 }
 
 void __cdecl NiPSysModifierCtlr_NiPSysModifierCtlr(void);
@@ -20,13 +20,15 @@ struct FUN_00c32d80
 };
 
 // @fnv 0x00c32d80
+// pdb: NiPSysModifierFloatCtlr::NiPSysModifierFloatCtlr | NiPSysModifierFloatCtlr.obj | retail, call graph, medium
+// pdb params: pcModifierName
 FUN_00c32d80::FUN_00c32d80()
 {
     NiPSysModifierCtlr_NiPSysModifierCtlr();
     *(int*)this = (int)&DAT_010c0e44;
 }
 
-extern "C" void* g_012026d8;
+extern "C" void* NiPSysInitialRotSpeedVarCtlr_ms_RTTI;
 void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(void* p);
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* p);
 
@@ -45,14 +47,16 @@ struct FUN_00c29f00_Array
 // Grows the array if its count has reached capacity, then stores the item obtained from g_012026d8 at the current count.
 // @fnv 0x00c29f00
 // src: XBOX_PDB 0x00c29f00
-void __stdcall NiPSysInitialRotSpeedVarCtlr_GetViewerStrings(FUN_00c29f00_Array* arr)
+// pdb: NiPSysInitialRotSpeedVarCtlr::GetViewerStrings | NiPSysInitialRotSpeedVarCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall NiPSysInitialRotSpeedVarCtlr_GetViewerStrings(FUN_00c29f00_Array* pkStrings)
 {
-    NiPSysModifierFloatCtlr_GetViewerStrings(arr);
-    void* item = NiViewerStrings_NiGetViewerString_Title(g_012026d8);
-    unsigned int count = arr->unk0A;
-    if (count >= arr->unk08)
-        arr->FUN_0096ad30(count + arr->unk0E);
-    arr->FUN_0096ae90(count, &item);
+    NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
+    void* item = NiViewerStrings_NiGetViewerString_Title(NiPSysInitialRotSpeedVarCtlr_ms_RTTI);
+    unsigned int count = pkStrings->unk0A;
+    if (count >= pkStrings->unk08)
+        pkStrings->FUN_0096ad30(count + pkStrings->unk0E);
+    pkStrings->FUN_0096ae90(count, &item);
 }
 
 extern "C" char DAT_010becbc;
@@ -72,6 +76,10 @@ struct SpawnedHost
 
 // Allocates a 0x40-byte SpawnedCtlr, initialises it and its vtable, passes it to FUN_00c32de0 with a1, and returns it.
 // @fnv 0x00c29eb0
+// pdb: NiPSysInitialRotSpeedVarCtlr::CreateClone | NiPSysInitialRotSpeedVarCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysInitialRotSpeedVarCtlr::IsEqual
+// pdb params: kCloning
+// pdb locals: pkObject
 SpawnedCtlr* SpawnedHost::CreateSpawnedCtlr(void* a1)
 {
     SpawnedCtlr* obj = (SpawnedCtlr*)Object_DispatchCommandFour(0x40);
@@ -170,6 +178,9 @@ struct FUN_00c32da0_cls
 
 // Fetches a float via FetchValue and allocates a SpawnedFloat initialized with that value, returning it.
 // @fnv 0x00c32da0
+// pdb: NiPSysModifierFloatCtlr::CreatePoseInterpolator | NiPSysModifierFloatCtlr.obj | retail, object-file run extension, low
+// pdb params: usIndex
+// pdb locals: fValue
 void* FUN_00c32da0_cls::CreateSpawnedFloat(float unused)
 {
     float value;

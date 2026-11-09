@@ -154,19 +154,22 @@ __declspec(align(16)) struct VecTemp4
     unsigned int m_30, m_34, m_38, m_3c;
 };
 
-extern "C" void __cdecl hkArrayUtil__reserve(unsigned int a1, VecBuf* v, int cap, int elem);
+extern "C" void __cdecl hkArrayUtil__reserve(unsigned int mem, VecBuf* array, int numElem, int sizeElem);
 
 struct FUN_00de5050_cls
 {
     void Fill(VecTemp4* out);
-    void hkDisplayPlane_getWireframeGeometry(VecBuf* s, unsigned int a2);
+    void hkDisplayPlane_getWireframeGeometry(VecBuf* lines, unsigned int a);
 };
 
 // @fnv 0x00de5050
 // src: HAVOK_SRC 0x00de5050
-void FUN_00de5050_cls::hkDisplayPlane_getWireframeGeometry(VecBuf* s, unsigned int a2)
+// pdb: hkDisplayPlane::getWireframeGeometry | hkDisplayPlane.obj | retail, upstream name already matches, high
+// pdb params: lines, a
+// pdb locals: points
+void FUN_00de5050_cls::hkDisplayPlane_getWireframeGeometry(VecBuf* lines, unsigned int a)
 {
-    int n = (int)(s->m_iElementCount & 0x3fffffff);
+    int n = (int)(lines->m_iElementCount & 0x3fffffff);
     if (n < 12)
     {
         int cap = n + n;
@@ -174,28 +177,28 @@ void FUN_00de5050_cls::hkDisplayPlane_getWireframeGeometry(VecBuf* s, unsigned i
         {
             cap = 12;
         }
-        hkArrayUtil__reserve(a2, s, cap, 0x10);
+        hkArrayUtil__reserve(a, lines, cap, 0x10);
     }
     VecTemp4 tmp;
-    s->m_uiItemCount = 12;
+    lines->m_uiItemCount = 12;
     this->Fill(&tmp);
 
     LocalM128 v0 = _mm_load_ps((float*)&tmp.m_00);
     LocalM128 v1 = _mm_load_ps((float*)&tmp.m_10);
     LocalM128 v2 = _mm_load_ps((float*)&tmp.m_20);
-    *(LocalM128*)(s->m_data + 0x00) = v0;
+    *(LocalM128*)(lines->m_data + 0x00) = v0;
     LocalM128 v3 = _mm_load_ps((float*)&tmp.m_30);
-    *(LocalM128*)(s->m_data + 0x10) = v1;
-    *(LocalM128*)(s->m_data + 0x20) = v1;
-    *(LocalM128*)(s->m_data + 0x30) = v2;
-    *(LocalM128*)(s->m_data + 0x40) = v2;
-    *(LocalM128*)(s->m_data + 0x50) = v3;
-    *(LocalM128*)(s->m_data + 0x60) = v3;
-    *(LocalM128*)(s->m_data + 0x70) = v0;
-    *(LocalM128*)(s->m_data + 0x80) = v0;
-    *(LocalM128*)(s->m_data + 0x90) = v2;
-    *(LocalM128*)(s->m_data + 0xa0) = v1;
-    *(LocalM128*)(s->m_data + 0xb0) = v3;
+    *(LocalM128*)(lines->m_data + 0x10) = v1;
+    *(LocalM128*)(lines->m_data + 0x20) = v1;
+    *(LocalM128*)(lines->m_data + 0x30) = v2;
+    *(LocalM128*)(lines->m_data + 0x40) = v2;
+    *(LocalM128*)(lines->m_data + 0x50) = v3;
+    *(LocalM128*)(lines->m_data + 0x60) = v3;
+    *(LocalM128*)(lines->m_data + 0x70) = v0;
+    *(LocalM128*)(lines->m_data + 0x80) = v0;
+    *(LocalM128*)(lines->m_data + 0x90) = v2;
+    *(LocalM128*)(lines->m_data + 0xa0) = v1;
+    *(LocalM128*)(lines->m_data + 0xb0) = v3;
 }
 
 struct S_00de5110_Heap
@@ -218,7 +221,7 @@ struct S_00de5110_Router
 };
 
 S_00de5110_Router& hkMemoryRouter_getInstance() throw();
-void hkArrayUtil__reserve(S_00de5110_Heap& alloc, void* array, int numElements, int sizeElem) throw();
+void hkArrayUtil__reserve(S_00de5110_Heap& mem, void* array, int numElem, int sizeElem) throw();
 
 template <typename T> struct S_00de5110_ArrayLocalForm
 { // local form of hkArray: 0x00de5110 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -342,6 +345,7 @@ struct S_00de5110_Pyramid
 
 // Allocates a Geometry, sets 5 vertices with the apex at index 4, and adds 4 triangles connecting the base to the apex.
 // @fnv 0x00de5110
+// pdb: hkDisplayPlane::buildGeometry | hkDisplayPlane.obj | retail, vtable slot, high
 void S_00de5110_Pyramid::BuildPyramidGeometry()
 {
     m_pSourceGeometry = new S_00de5110_Geometry();
@@ -503,6 +507,8 @@ struct FUN_00de4ff0 : S_00de4ff0_Base
 
 // Constructor that zero-initialises the four vector fields m_vec60, m_vec70, m_vec80, and m_vec90 after the base class setup.
 // @fnv 0x00de4ff0
+// pdb: hkDisplayPlane::hkDisplayPlane | hkDisplayPlane.obj | retail, object-file run extension, low
+// pdb params: normal, perpToNormal, center, extent
 FUN_00de4ff0::FUN_00de4ff0() throw()
 {
     m_vec90.setZero4();

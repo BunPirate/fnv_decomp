@@ -18,28 +18,30 @@
 void BGSCameraPath::ResetFormData()
 {
     data.cFlags = 0;
-    m_pFirstCameraPath = 0;
-    m_pSecondCameraPath = 0;
+    pParentPath = 0;
+    pPrevPath = 0;
 }
 
 // @fnv 0x005f4bb0
 void BGSCameraPath::AssignParentPath(BGSCameraPath* parent)
 {
-    m_pFirstCameraPath = parent;
+    pParentPath = parent;
 }
 
 // @fnv 0x0058a650
+// pdb: BGSCameraPath::ClearData | BGSCameraPath.obj | retail, upstream name already matches, high
 void BGSCameraPath::ClearData()
 {
     GetConditions()->InitializeConditionItems();
-    m_kCameraShotList.RemoveAll();
+    ShotList.RemoveAll();
 }
 
 // @fnv 0x0058a380
+// pdb: BGSCameraPath::BGSCameraPath | BGSCameraPath.obj | retail, upstream name already matches, high
 BGSCameraPath::BGSCameraPath()
 {
     SetFormType(ENUM_FORM_ID_CPTH_ID);
-    m_pPathArray = 0;
+    pChildPaths = 0;
     ResetFormData();
 }
 
@@ -49,6 +51,8 @@ extern "C" const char fnv_MessageWithFormID[];
 
 // Initializes conditions and walks the shot list, resolving each form ID to a BGSCameraShot and removing entries that fail to resolve, warning for each.
 // @fnv 0x0058ad90
+// pdb: BGSCameraPath::InitItem | BGSCameraPath.obj | retail, string-set bridge, high
+// pdb locals: plist, plastlist, pshot, tempint
 void BGSCameraPath::InitItem()
 {
     if (IsFormInitialized())
@@ -97,9 +101,13 @@ void BGSCameraPath::InitItem()
 extern "C" const char fnv_MessageMultipleNext[];
 
 // @fnv 0x0058b190
-void BGSCameraPath::SetPathArray(NiFormArray* paths)
+// src: XBOX_RETAIL_PDB 0x0058b190
+// pdb: BGSCameraPath::FixNextPaths | BGSCameraPath.obj | retail, string-set bridge, high
+// pdb params: apArray
+// pdb locals: izerocount, inextindex, iindex, pnextpath, isize, i, ppath, tempstring
+void BGSCameraPath::FixNextPaths(NiFormArray* apArray)
 {
-    if (!paths)
+    if (!apArray)
         return;
 
     struct FixNextLocals
@@ -114,14 +122,14 @@ void BGSCameraPath::SetPathArray(NiFormArray* paths)
 
     locals.invalidCount = 0;
     locals.currentIndex = 0xffffffff;
-    locals.pathCount = paths->GetSize();
+    locals.pathCount = apArray->GetSize();
     locals.nextIndex = 0xffffffff;
     locals.nextPath = 0;
     locals.index = 0;
 
     for (; locals.index < locals.pathCount; ++locals.index)
     {
-        BGSCameraPath* path = dynamic_cast<BGSCameraPath*>(paths->FUN_00877a30(locals.index));
+        BGSCameraPath* path = dynamic_cast<BGSCameraPath*>(apArray->FUN_00877a30(locals.index));
         if (path)
         {
             if (path == this)
@@ -149,14 +157,14 @@ void BGSCameraPath::SetPathArray(NiFormArray* paths)
         locals.nextIndex != locals.currentIndex + 1)
     {
         unsigned int oldSize = 0;
-        paths->SetSize(locals.nextIndex, &oldSize);
-        paths->Compact();
+        apArray->SetSize(locals.nextIndex, &oldSize);
+        apArray->Compact();
         if (locals.nextIndex < locals.currentIndex)
             ++locals.invalidCount;
         locals.currentIndex -= locals.invalidCount;
-        paths->SetFormAtIndex(locals.currentIndex + 1, locals.nextPath);
-        paths->Compact();
-        locals.nextPath->SetPathArray(paths);
+        apArray->SetFormAtIndex(locals.currentIndex + 1, locals.nextPath);
+        apArray->Compact();
+        locals.nextPath->FixNextPaths(apArray);
     }
 }
 
@@ -164,10 +172,13 @@ extern "C" void* __cdecl _alloca(unsigned int);
 #pragma intrinsic(_alloca)
 extern "C" void* __cdecl memset(void*, int, unsigned int);
 // @fnv 0x0058a9e0
-bool BGSCameraPath::Load(TESFile* file)
+// pdb: BGSCameraPath::Load | BGSCameraPath.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, iindex, parray, pMessage, itempint, ids
+bool BGSCameraPath::Load(TESFile* apFile)
 {
     int chunk;
-    if (((CameraFileFormType*)file)->GetTESForm() != 0x5c)
+    if (((CameraFileFormType*)apFile)->GetTESForm() != 0x5c)
         return false;
     if (this == GetTextureResourcePath())
     {
@@ -185,45 +196,45 @@ bool BGSCameraPath::Load(TESFile* file)
             removalInfo.paths->Compact();
         }
     }
-    LoadRecordHeader(file);
-    while ((chunk = file->GetChunkID()) != 0)
+    LoadRecordHeader(apFile);
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x41544144:
-            ((BGSImpactData*)this)->ReadTypedData(file, &data, 1);
+            ((BGSImpactData*)this)->ReadTypedData(apFile, &data, 1);
             break;
         case 0x41445443:
-            ((CameraCondition*)GetConditions())->Load(file);
+            ((CameraCondition*)GetConditions())->Load(apFile);
             break;
         case 0x4d414e53: {
             unsigned int formID = 0;
-            file->GetChunkData(&formID);
-            ((BSSimpleList<ScriptVariableInfo*>*)&m_kCameraShotList)->AddTail((ScriptVariableInfo*)formID);
+            apFile->GetChunkData(&formID);
+            ((BSSimpleList<ScriptVariableInfo*>*)&ShotList)->AddTail((ScriptVariableInfo*)formID);
             break;
         }
         case 0x4d414e41: {
             FUN_005a71d0 parentInfo;
             memset(&parentInfo, 0, 8);
-            file->GetChunkData(&parentInfo, 8);
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&parentInfo, 8);
+            if (apFile->IsEndianConversionRequired())
                 parentInfo.TwoValues_Endian();
-            m_pFirstCameraPath = (BGSCameraPath*)parentInfo.parent;
-            m_pSecondCameraPath = (BGSCameraPath*)parentInfo.previous;
+            pParentPath = (BGSCameraPath*)parentInfo.parent;
+            pPrevPath = (BGSCameraPath*)parentInfo.previous;
             DAT_011ca700->AddCameraPath(this);
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -234,7 +245,10 @@ extern "C" const char fnv_MessageMissingPrevious[];
 extern "C" const char fnv_MessageMissingArray[];
 // Resolves the parent and previous camera paths by form ID, warns if missing, and inserts this path into the parent's or global path array at the computed index.
 // @fnv 0x0058aef0
-bool BGSCameraPath::HasMissingPathArray()
+// src: XBOX_RETAIL_PDB 0x0058aef0
+// pdb: BGSCameraPath::InitParents | BGSCameraPath.obj | retail, string-set bridge, high
+// pdb locals: pparent, itempint, iindex, pprev, parray, bretval, tempstring, iprevindex
+bool BGSCameraPath::InitParents()
 {
     struct ParentLocals
     {
@@ -248,7 +262,7 @@ bool BGSCameraPath::HasMissingPathArray()
     } locals;
     locals.success = true;
     locals.parent = 0;
-    locals.formID = (unsigned int)m_pFirstCameraPath;
+    locals.formID = (unsigned int)pParentPath;
     if (locals.formID)
     {
         TESForm::RemapFormIDForFile(locals.formID, GetFile(-1));
@@ -263,7 +277,7 @@ bool BGSCameraPath::HasMissingPathArray()
         AssignParentPath(locals.parent);
     }
     locals.previous = 0;
-    locals.formID = (unsigned int)m_pSecondCameraPath;
+    locals.formID = (unsigned int)pPrevPath;
     if (locals.formID)
     {
         TESForm::RemapFormIDForFile(locals.formID, GetFile(-1));
@@ -280,7 +294,7 @@ bool BGSCameraPath::HasMissingPathArray()
     locals.index = 0;
     locals.paths = 0;
     if (locals.parent)
-        locals.paths = locals.parent->GetEntryObject();
+        locals.paths = locals.parent->CreateChildArray();
     else
         locals.paths = DAT_011ca700->GetPathArray();
     if (locals.paths)
@@ -295,7 +309,7 @@ bool BGSCameraPath::HasMissingPathArray()
         if (locals.index == 0xffffffff || IsDeleted())
             locals.index = locals.paths->GetSize() + 1;
         locals.paths->SetFormAtIndex(locals.index, this);
-        SetPathArray(locals.paths);
+        FixNextPaths(locals.paths);
     }
     else
     {
@@ -308,20 +322,24 @@ bool BGSCameraPath::HasMissingPathArray()
 }
 
 // @fnv 0x0058b3f0
+// pdb: NiFormArray::NiFormArray | BGSCameraPath.obj | debug, upstream name already matches, high
 NiFormArray::NiFormArray() : NiTLargePrimitiveArray<TESForm*>(0, 1)
 {}
 
 // Returns the number of child paths, or 0 if there is no child array.
 // @fnv 0x0058b600
+// pdb: BGSCameraPath::GetChildCount | BGSCameraPath.obj | debug, upstream name already matches, high
+// pdb locals: iretval
 unsigned int BGSCameraPath::GetChildCount()
 {
     unsigned int result = 0;
-    if (m_pPathArray)
-        result = m_pPathArray->GetSize();
+    if (pChildPaths)
+        result = pChildPaths->GetSize();
     return result;
 }
 
 // @fnv 0x0058b450
+// pdb: NiFormArray::~NiFormArray | BGSCameraPath.obj | debug, call graph, medium
 void __fastcall DestroyNiFormArray(NiFormArray* self)
 {
     self->NiTLargePrimitiveArray<TESForm*>::~NiTLargePrimitiveArray();
@@ -374,7 +392,7 @@ struct IdentifierHistoryEntry
 class TESConditionSave_bgscamerapath
 {
 public:
-    void ProcessItems();
+    void Save();
 };
 struct BSSimpleList_shell
 {
@@ -394,6 +412,8 @@ void _FUN_00485910(unsigned int, unsigned int);
 
 // @fnv 0x0058ac10
 // src: XBOX_PDB 0x0058ac10
+// pdb: BGSCameraPath::Save | BGSCameraPath.obj | retail, vtable slot, high
+// pdb locals: plist, ids, pprev, pshot, itempint
 void BGSCameraPath::Save_0058ac10()
 {
     BSSimpleList_shell* pShotList;
@@ -405,7 +425,7 @@ void BGSCameraPath::Save_0058ac10()
         unsigned int shotFormID;
 
         TESForm::BeginFormRecord();
-        reinterpret_cast<TESConditionSave_bgscamerapath*>(GetConditions())->ProcessItems();
+        reinterpret_cast<TESConditionSave_bgscamerapath*>(GetConditions())->Save();
 
         memset(&ids, 0, 8);
 
@@ -456,27 +476,30 @@ void* __cdecl __memcpy(void*, const void*, unsigned int);
 
 struct Cond_58a680
 {
-    void Copy(PerkEntryConditionSet* src, void* arg);
+    void Copy(PerkEntryConditionSet* apCopy, void* apOwner);
 };
 
 // Casts apForm to BGSCameraPath, copies common data, conditions, data and the shot list into this camera path.
 // @fnv 0x0058a680
-void BGSCameraPath::CopyFromForm(TESForm* apForm)
+// pdb: BGSCameraPath::Copy | BGSCameraPath.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pcopy, pshot
+void BGSCameraPath::CopyFromForm(TESForm* apCopy)
 {
-    BGSCameraPath* p = dynamic_cast<BGSCameraPath*>(apForm);
+    BGSCameraPath* p = dynamic_cast<BGSCameraPath*>(apCopy);
     if (!p)
         return;
     CopyCommonData(p);
     ((Cond_58a680*)GetConditions())->Copy(p->GetConditions(), 0);
     __memcpy(&data, &p->data, sizeof(CameraShotData));
     BSSimpleList<BGSCameraShot*>* h = 0;
-    m_kCameraShotList.RemoveAll();
+    ShotList.RemoveAll();
     h = p->GetShotList();
     while (h && !h->IsEmpty())
     {
         BGSCameraShot* e = h->GetItem();
         h = h->GetNext();
-        m_kCameraShotList.AddTail(e);
+        ShotList.AddTail(e);
     }
 }
 
@@ -484,19 +507,22 @@ extern "C" int __cdecl memcmp(const void*, const void*, unsigned int);
 
 struct FormCompareStub
 {
-    bool IsDifferentForm(BGSCameraPath* pathForm);
+    bool IsDifferentForm(BGSCameraPath* apCompare);
 };
 struct ConditionCompareStub
 {
-    bool IsDifferent(PerkEntryConditionSet* pathForm);
+    bool IsDifferent(PerkEntryConditionSet* apCompare);
 };
 
 // Compares this camera path against another form's camera path: base form, conditions, a data byte, and shot lists; returns true if any differ.
 // @fnv 0x0058a750
 // src: XBOX_PDB 0x0058a750
-bool BGSCameraPath::Compare_0058a750(TESForm* form)
+// pdb: BGSCameraPath::Compare | BGSCameraPath.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp, plist, pcomplist
+bool BGSCameraPath::Compare_0058a750(TESForm* apCompare)
 {
-    BGSCameraPath* pathForm = dynamic_cast<BGSCameraPath*>(form);
+    BGSCameraPath* pathForm = dynamic_cast<BGSCameraPath*>(apCompare);
     if (!pathForm)
         return true;
     if (((FormCompareStub*)this)->IsDifferentForm(pathForm))
@@ -528,6 +554,8 @@ extern DataHandlerStub* g_dataHandler;
 
 // Clears data, unlinks the path from its parent or the global path array while not loading, then deletes all children and the child array.
 // @fnv 0x0058a450
+// pdb: BGSCameraPath::~BGSCameraPath | BGSCameraPath.obj | retail, upstream name already matches, high
+// pdb locals: parray, iindex, pnextpath, icount, i, pchildpath
 BGSCameraPath::~BGSCameraPath()
 {
     ClearData();
@@ -556,7 +584,7 @@ BGSCameraPath::~BGSCameraPath()
             }
         }
     }
-    if (m_pPathArray)
+    if (pChildPaths)
     {
         unsigned int ItemUpdateArray = GetChildCount();
         if (ItemUpdateArray)
@@ -568,7 +596,7 @@ BGSCameraPath::~BGSCameraPath()
                 delete pChildPath;
             }
         }
-        delete m_pPathArray;
+        delete pChildPaths;
     }
 }
 
@@ -585,31 +613,34 @@ struct CameraPathArrayResize
 // Clones the base camera path, remaps its parent and previous paths through apMap, and copies the child form array when present.
 // @fnv 0x0058a870
 // src: XBOX_PDB 0x0058a870
-TESForm* BGSCameraPath::CreateDuplicateForm(bool abPersist, CameraPathMap* apMap)
+// pdb: BGSCameraPath::CreateDuplicateForm | BGSCameraPath.obj | retail, upstream name already matches, high
+// pdb params: abCreateEditorID, apCopyMap
+// pdb locals: pparentpath, pduppath, pprevpath, pform, icount, pduparray, plastchild, i, pchildpath, pdupchild
+TESForm* BGSCameraPath::CreateDuplicateForm(bool abCreateEditorID, CameraPathMap* apCopyMap)
 {
     BGSCameraPath* pClone_ =
-        dynamic_cast<BGSCameraPath*>(CreateBaseClone(abPersist, apMap));
+        dynamic_cast<BGSCameraPath*>(CreateBaseClone(abCreateEditorID, apCopyMap));
     BGSCameraPath* pFound4 = 0;
-    if (!apMap->GetAt(m_pFirstCameraPath, pFound4) || !pFound4)
-        pFound4 = m_pFirstCameraPath;
+    if (!apCopyMap->GetAt(pParentPath, pFound4) || !pFound4)
+        pFound4 = pParentPath;
     BGSCameraPath* pParent3 = pFound4;
     pClone_->SetParentPath(pParent3);
     pFound4 = 0;
-    if (!apMap->GetAt(m_pSecondCameraPath, pFound4) || !pFound4)
-        pFound4 = m_pSecondCameraPath;
+    if (!apCopyMap->GetAt(pPrevPath, pFound4) || !pFound4)
+        pFound4 = pPrevPath;
     BGSCameraPath* pPrev = pFound4;
     pClone_->SetPrevPathForm(pPrev);
-    if (m_pPathArray)
+    if (pChildPaths)
     {
-        m_pPathArray->Compact();
-        unsigned int uiCount5 = m_pPathArray->GetSize();
-        NiFormArray* pArray = pClone_->GetEntryObject();
+        pChildPaths->Compact();
+        unsigned int uiCount5 = pChildPaths->GetSize();
+        NiFormArray* pArray = pClone_->CreateChildArray();
         ((CameraPathArrayResize*)pArray)->Resize(uiCount5);
         TESForm* pLastVal = 0;
         for (unsigned int i5 = 0; i5 < uiCount5; i5++)
         {
-            TESForm* pChildA = m_pPathArray->FUN_00877a30(i5);
-            TESForm* pNewChildB1 = pChildA->CreateForm((void*)(int)abPersist, apMap);
+            TESForm* pChildA = pChildPaths->FUN_00877a30(i5);
+            TESForm* pNewChildB1 = pChildA->CreateForm((void*)(int)abCreateEditorID, apCopyMap);
             unsigned int uiValueC2 = (unsigned int)pNewChildB1;
             pArray->SetSize(i5, &uiValueC2);
             pLastVal = pNewChildB1;
@@ -629,12 +660,15 @@ struct CameraFlag
 
 // @fnv 0x0058b510
 // src: COMMUNITY 0x0058b510
-BGSCameraPath* BGSCameraPath::GetCameraPathToPlay(unsigned int context, unsigned int flags)
+// pdb: BGSCameraPath::GetCameraPathToPlay | BGSCameraPath.obj | retail, upstream name already matches, high
+// pdb params: apActionRef, apTargetRef
+// pdb locals: pretpath, icount, pgoodchild, i, pchildpath
+BGSCameraPath* BGSCameraPath::GetCameraPathToPlay(unsigned int apActionRef, unsigned int apTargetRef)
 {
     BGSCameraPath* result = 0;
     if (!FUN_00440d80())
     {
-        if (FUN_00500940(context, flags)->FUN_00680c30())
+        if (FUN_00500940(apActionRef, apTargetRef)->FUN_00680c30())
         {
             if (IsFlag80Set() || !FUN_00891170()->FUN_008256d0())
             {
@@ -648,7 +682,7 @@ BGSCameraPath* BGSCameraPath::GetCameraPathToPlay(unsigned int context, unsigned
                 {
                     BGSCameraPath* child = GetCameraPathAt(i);
                     if (child != 0)
-                        descendant = child->GetCameraPathToPlay(context, flags);
+                        descendant = child->GetCameraPathToPlay(apActionRef, apTargetRef);
                     if (descendant != 0)
                         break;
                 }
@@ -662,7 +696,9 @@ BGSCameraPath* BGSCameraPath::GetCameraPathToPlay(unsigned int context, unsigned
 
 // Returns the child path array, allocating it if it is null.
 // @fnv 0x0058b350
-NiFormArray* BGSCameraPath::GetEntryObject()
+// src: XBOX_RETAIL_PDB 0x0058b350
+// pdb: BGSCameraPath::CreateChildArray | BGSCameraPath.obj | retail, object-file run extension, high
+NiFormArray* BGSCameraPath::CreateChildArray()
 {
-    return m_pPathArray ? m_pPathArray : (m_pPathArray = new NiFormArray);
+    return pChildPaths ? pChildPaths : (pChildPaths = new NiFormArray);
 }

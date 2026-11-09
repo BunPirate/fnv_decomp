@@ -18,9 +18,11 @@ BGSTerrainManager* LoadBGSTerrainManager(const char* path);
 #include "../../../include/BGSLoadFormBuffer.h"
 
 // @fnv 0x004d52d0
-BGSTerrainManager* LoadBGSTerrainManager(const NiPointer<NiNode>& apNode)
+// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | debug, call graph (shared callers), high
+// pdb params: aFilename
+BGSTerrainManager* LoadBGSTerrainManager(const NiPointer<NiNode>& aFilename)
 {
-    return LoadBGSTerrainManager(reinterpret_cast<const char*>(apNode.operator->()));
+    return LoadBGSTerrainManager(reinterpret_cast<const char*>(aFilename.operator->()));
 }
 
 // @fnv 0x009ee040
@@ -42,6 +44,7 @@ struct PackageDeleteSupport : DialoguePackage
 };
 // Runs the destructor on this object, frees it when flags has bit 0 set, and returns this.
 // @fnv 0x009edd50
+// pdb: DialoguePackage::`scalar deleting destructor' | DialoguePackage.obj | retail, vtable slot, high
 void* PackageDeleteSupport::Destroy(unsigned int flags)
 {
     ((PackageDestructorSupport*)this)->FUN_0083dec0();
@@ -52,6 +55,7 @@ void* PackageDeleteSupport::Destroy(unsigned int flags)
 }
 
 struct BSBound;
+// pdb: class Date, size 0x4 (here 0x24), 2 members
 struct Date
 {
     char b[0x24];
@@ -78,6 +82,7 @@ struct FUN_009edf40 : public TESPackage
     ~FUN_009edf40();
 };
 // @fnv 0x009edf40
+// pdb: DialoguePackage::~DialoguePackage | DialoguePackage.obj | debug, object-file run extension, low
 FUN_009edf40::~FUN_009edf40()
 {
     if (this == g_thePlayer->f208)
@@ -108,7 +113,7 @@ struct PackageByteSupport : DialoguePackage
 // @fnv 0x009ef510
 unsigned char PackageByteSupport::GetByteAtBC()
 {
-    return unkBC;
+    return bActorHeadTrack;
 }
 
 struct PackageFlagSupport : DialoguePackage
@@ -120,7 +125,7 @@ struct PackageFlagSupport : DialoguePackage
 // src: XBOX_PDB 0x008e95c0
 bool __thiscall PackageFlagSupport::DialoguePackage_GetTargetContinueMoving()
 {
-    return reinterpret_cast<bool&>(unkBF);
+    return reinterpret_cast<bool&>(bTargetContinueMoving);
 }
 
 struct FUN_0083b830 : SL
@@ -130,6 +135,7 @@ struct FUN_0083b830 : SL
 };
 // Initializes the _c member to 0.
 // @fnv 0x0083b830
+// pdb: Conversation::Conversation | Conversation.obj | debug, call graph, medium
 FUN_0083b830::FUN_0083b830()
 {
     _c = 0;
@@ -138,6 +144,9 @@ FUN_0083b830::FUN_0083b830()
 // Calls CopyFromPackage on apCopy, then dynamic_casts apCopy to DialoguePackage and stores the result in pcopy.
 // @fnv 0x009ee060
 // src: XBOX_PDB 0x009ee060
+// pdb: DialoguePackage::Copy | DialoguePackage.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void DialoguePackage::Copy_009ee060(TESForm* apCopy)
 {
     CopyFromPackage(apCopy);
@@ -146,6 +155,7 @@ void DialoguePackage::Copy_009ee060(TESForm* apCopy)
 
 // If the mobile object is set, stops its dialogue.
 // @fnv 0x009ef530
+// pdb: DialoguePackage::DeleteSoundHandle | DialoguePackage.obj | debug, call graph, high
 void DialoguePackage::Stop()
 {
     if (m_pkMobileObject)
@@ -156,19 +166,21 @@ namespace fnv_009f01d0 {
 // The checked TESPackage header does not yet declare this save helper.
 struct PackageSaveSupport : TESPackage
 {
-    void SaveToBuffer(BGSSaveFormBuffer* buf);
+    void SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer);
 };
 
 // Retained: Conversation.h is absent; 0x0083c270 and 0x0083ba50 are conversation.cpp save/index methods.
 struct Conversation
 {
     void SaveGameBGS_0083c270(BGSSaveFormBuffer* buf);
-    short GetDialogueItemIndex(DialogueItem* item);
+    short GetDialogueItemIndex(DialogueItem* apDialogueItem);
 };
 
 }  // namespace fnv_009f01d0
 
 // @fnv 0x009f01d0
+// pdb: DialoguePackage::SaveGame | DialoguePackage.obj | retail, vtable slot, high
+// pdb locals: itargetActorID, itempStartPosition, iblockSize, iactorID, isize, itopicID, pblockSize, italkingActorID, iblockHeader, icurrentItemIndex, icurrentResponseIndex, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void DialoguePackage::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     using namespace fnv_009f01d0;
@@ -178,22 +190,22 @@ void DialoguePackage::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
     apSaveGameBuffer->SerializeFormData(m_pkMobileObject, 0);
     apSaveGameBuffer->SerializeFormData(pActor, 0);
     apSaveGameBuffer->SerializeFormData(pTargetActor, 0);
-    apSaveGameBuffer->SerializeFormData(m_pLinkedReference, 0);
+    apSaveGameBuffer->SerializeFormData(pTalkingActivator, 0);
     apSaveGameBuffer->SerializeFormData(m_pkReference, 0);
     apSaveGameBuffer->SerializeFormData(reinterpret_cast<TESTopic*>(topic), 0);
     apSaveGameBuffer->SaveData(&state, 4, 0);
     apSaveGameBuffer->SaveData(&flags, 1, 0);
-    apSaveGameBuffer->SaveData(&unkBC, 1, 0);
-    apSaveGameBuffer->SaveData(&unkBD, 1, 0);
-    apSaveGameBuffer->SaveData(&unkBE, 1, 0);
-    apSaveGameBuffer->SaveData(&unkBF, 1, 0);
-    apSaveGameBuffer->SaveData(&unkC0, 1, 0);
-    apSaveGameBuffer->SaveData(&unkC1, 1, 0);
-    apSaveGameBuffer->SaveData(&unkC4, 4, 0);
-    apSaveGameBuffer->SaveData(&unkC8, 4, 0);
+    apSaveGameBuffer->SaveData(&bActorHeadTrack, 1, 0);
+    apSaveGameBuffer->SaveData(&bCreatedPack, 1, 0);
+    apSaveGameBuffer->SaveData(&bContinueMoving, 1, 0);
+    apSaveGameBuffer->SaveData(&bTargetContinueMoving, 1, 0);
+    apSaveGameBuffer->SaveData(&bTargetMoveTowardStarter, 1, 0);
+    apSaveGameBuffer->SaveData(&bDoNotControlTargetMovement, 1, 0);
+    apSaveGameBuffer->SaveData(&iEmotion, 4, 0);
+    apSaveGameBuffer->SaveData(&iEmotionValue, 4, 0);
     apSaveGameBuffer->SaveData(&unkA0, 1, 0);
-    apSaveGameBuffer->SaveData(&unkCC, 1, 0);
-    apSaveGameBuffer->SaveData(&unkC2, 1, 0);
+    apSaveGameBuffer->SaveData(&bSoundFile, 1, 0);
+    apSaveGameBuffer->SaveData(&bReachedAmbushLocation, 1, 0);
     bhasConversation = reinterpret_cast<fnv_009f01d0::Conversation*>(conversation);
     apSaveGameBuffer->SaveData(&bhasConversation, 1, 0);
     if (bhasConversation)
@@ -202,13 +214,13 @@ void DialoguePackage::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
         short scurrentItemIndex;
         reinterpret_cast<fnv_009f01d0::Conversation*>(conversation)->SaveGameBGS_0083c270(apSaveGameBuffer);
         scurrentItemIndex =
-            item
-                ? reinterpret_cast<fnv_009f01d0::Conversation*>(conversation)->GetDialogueItemIndex(item)
+            pCurrentItem
+                ? reinterpret_cast<fnv_009f01d0::Conversation*>(conversation)->GetDialogueItemIndex(pCurrentItem)
                 : -1;
         apSaveGameBuffer->SaveData(&scurrentItemIndex, 2, 0);
-        scurrentResponseIndex = (item && response)
-                                    ? item
-                                          ->GetResponseIndex(response)
+        scurrentResponseIndex = (pCurrentItem && pCurrentResponse)
+                                    ? pCurrentItem
+                                          ->GetResponseIndex(pCurrentResponse)
                                     : -1;
         apSaveGameBuffer->SaveData(&scurrentResponseIndex, 2, 0);
     }
@@ -246,6 +258,8 @@ TESForm* _GetFormByNumericID(unsigned int formID);
 // Accumulates the save size of the dialogue package from its saver, conversation and version-dependent fields, optionally logging the size and form details.
 // @fnv 0x009ef560
 // src: XBOX_PDB 0x009ef560
+// pdb: DialoguePackage::GetSaveSize | DialoguePackage.obj | retail, vtable slot, high
+// pdb locals: isize, itempStartSize, pheader, pform
 unsigned short DialoguePackage::GetSaveSize_009ef560()
 {
     using namespace fnv_009ef560;
@@ -328,6 +342,8 @@ TESForm* _GetFormByNumericID(unsigned int);
 // Calls the base loader, resolves the stored form IDs to MobileObject/TESObjectREFR pointers, then loads the Conversation if present.
 // @fnv 0x009f0740
 // src: XBOX_PDB 0x009f0740
+// pdb: DialoguePackage::InitLoadGame | DialoguePackage.obj | retail, vtable slot, high
+// pdb locals: itargetActorID, iactorID, italkingActorID, icurrentItemIndex, icreationTime, icurrentResponseIndex
 void DialoguePackage::InitLoadGame_009f0740(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     using namespace fnv_009f0740;
@@ -344,9 +360,9 @@ void DialoguePackage::InitLoadGame_009f0740(BGSLoadFormBuffer* apLoadGameBuffer)
                        ? dynamic_cast<MobileObject*>(_GetFormByNumericID(reinterpret_cast<unsigned int>(pTargetActor)))
                        : 0;
 
-    m_pLinkedReference =
-        m_pLinkedReference
-            ? dynamic_cast<MobileObject*>(_GetFormByNumericID(reinterpret_cast<unsigned int>(m_pLinkedReference)))
+    pTalkingActivator =
+        pTalkingActivator
+            ? dynamic_cast<MobileObject*>(_GetFormByNumericID(reinterpret_cast<unsigned int>(pTalkingActivator)))
             : 0;
 
     m_pkReference =
@@ -1004,12 +1020,15 @@ struct PackageDialogueSupport : DialoguePackage
 {
     bool GetByteAtBC();
     void FUN_00705b10(Obj114*);
-    void DialoguePackage_Speak(bool process);
+    void DialoguePackage_Speak(bool abUseSound);
 };
 
 // @fnv 0x009ee0a0
 // src: XBOX_PDB 0x009ee0a0
-void PackageDialogueSupport::DialoguePackage_Speak(bool process)
+// pdb: DialoguePackage::Speak | DialoguePackage.obj | retail, string-set bridge, high
+// pdb params: abUseSound
+// pdb locals: bcheckforIdle, bfirstTime, pspeaker, pact, bnosound, audioFilePath, handle, isoundFileID, mgr, ftime, ptalkact, ptarg, ptarganim, panim, tempstring, wavFileName, isoundFlags, loc
+void PackageDialogueSupport::DialoguePackage_Speak(bool abUseSound)
 {
     bool started15 = false;
     bool reset26 = true;
@@ -1017,7 +1036,7 @@ void PackageDialogueSupport::DialoguePackage_Speak(bool process)
         return;
     if (!reinterpret_cast<bool&>(flags))
     {
-        if (!reinterpret_cast<Obj114*&>(item))
+        if (!reinterpret_cast<Obj114*&>(pCurrentItem))
         {
             started15 = true;
             if (!reinterpret_cast<Obj114*&>(conversation))
@@ -1026,17 +1045,17 @@ void PackageDialogueSupport::DialoguePackage_Speak(bool process)
                 reinterpret_cast<Obj114*&>(pTargetActor)->v200(1);
                 return;
             }
-            if (GetByteAtBC() && !reinterpret_cast<bool&>(unkC1))
+            if (GetByteAtBC() && !reinterpret_cast<bool&>(bDoNotControlTargetMovement))
             {
                 reinterpret_cast<Obj114*&>(pTargetActor)->FUN_008d8520()->v644(1);
                 reinterpret_cast<Obj114*&>(pTargetActor)->FUN_008d8520()->v634(reinterpret_cast<Obj114*&>(pActor));
             }
             reinterpret_cast<Obj114*&>(conversation)->Conversation_FirstItem();
-            reinterpret_cast<Obj114*&>(item) = reinterpret_cast<Obj114*&>(conversation)->FUN_0083c820();
-            if (reinterpret_cast<Obj114*&>(item))
+            reinterpret_cast<Obj114*&>(pCurrentItem) = reinterpret_cast<Obj114*&>(conversation)->FUN_0083c820();
+            if (reinterpret_cast<Obj114*&>(pCurrentItem))
             {
-                reinterpret_cast<Obj114*&>(item)->FUN_0083c7b0();
-                reinterpret_cast<Obj114*&>(response) = reinterpret_cast<Obj114*&>(item)->FUN_0083c820();
+                reinterpret_cast<Obj114*&>(pCurrentItem)->FUN_0083c7b0();
+                reinterpret_cast<Obj114*&>(pCurrentResponse) = reinterpret_cast<Obj114*&>(pCurrentItem)->FUN_0083c820();
             }
             else
             {
@@ -1045,42 +1064,42 @@ void PackageDialogueSupport::DialoguePackage_Speak(bool process)
                     reinterpret_cast<Obj114*&>(pTargetActor)->v200(1);
             }
         }
-        else if (reinterpret_cast<Obj114*&>(response))
+        else if (reinterpret_cast<Obj114*&>(pCurrentResponse))
         {
-            reinterpret_cast<Obj114*&>(item)->NextResponse_0083c7e0();
-            reinterpret_cast<Obj114*&>(response) = reinterpret_cast<Obj114*&>(item)->FUN_0083c820();
+            reinterpret_cast<Obj114*&>(pCurrentItem)->NextResponse_0083c7e0();
+            reinterpret_cast<Obj114*&>(pCurrentResponse) = reinterpret_cast<Obj114*&>(pCurrentItem)->FUN_0083c820();
         }
         if (reinterpret_cast<Obj114*&>(pActor))
         {
             if (!reinterpret_cast<Obj114*&>(pActor)->v2e8() && !reinterpret_cast<Obj114*&>(pActor)->v22c(0))
             {
-                if (!reinterpret_cast<Obj114*&>(response))
+                if (!reinterpret_cast<Obj114*&>(pCurrentResponse))
                 {
                     reinterpret_cast<Obj114*&>(conversation)->Conversation_NextItem();
-                    reinterpret_cast<Obj114*&>(item) = reinterpret_cast<Obj114*&>(conversation)->FUN_0083c820();
+                    reinterpret_cast<Obj114*&>(pCurrentItem) = reinterpret_cast<Obj114*&>(conversation)->FUN_0083c820();
                 }
             }
-            else if (!reinterpret_cast<Obj114*&>(response))
-                reinterpret_cast<Obj114*&>(item) = 0;
+            else if (!reinterpret_cast<Obj114*&>(pCurrentResponse))
+                reinterpret_cast<Obj114*&>(pCurrentItem) = 0;
         }
     }
-    if (reinterpret_cast<Obj114*&>(item))
+    if (reinterpret_cast<Obj114*&>(pCurrentItem))
     {
-        if (!reinterpret_cast<Obj114*&>(response))
+        if (!reinterpret_cast<Obj114*&>(pCurrentResponse))
         {
-            reinterpret_cast<Obj114*&>(item)->FUN_0083c7b0();
-            reinterpret_cast<Obj114*&>(response) = reinterpret_cast<Obj114*&>(item)->FUN_0083c820();
-            if (!reinterpret_cast<Obj114*&>(response))
+            reinterpret_cast<Obj114*&>(pCurrentItem)->FUN_0083c7b0();
+            reinterpret_cast<Obj114*&>(pCurrentResponse) = reinterpret_cast<Obj114*&>(pCurrentItem)->FUN_0083c820();
+            if (!reinterpret_cast<Obj114*&>(pCurrentResponse))
                 Warning_005b5e40("AI: No responses found for conversation Topic Info (%08X).",
-                             reinterpret_cast<Obj114*&>(item)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                             reinterpret_cast<Obj114*&>(pCurrentItem)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
         }
-        if (reinterpret_cast<Obj114*&>(response))
+        if (reinterpret_cast<Obj114*&>(pCurrentResponse))
         {
-            Obj114* actor18 = reinterpret_cast<Obj114*&>(item)->NiAVObject_GetParent();
+            Obj114* actor18 = reinterpret_cast<Obj114*&>(pCurrentItem)->NiAVObject_GetParent();
             if (actor18->v100())
             {
-                Obj114* speaker23 = reinterpret_cast<Obj114*&>(item)->NiAVObject_GetParent();
-                if (speaker23 && process)
+                Obj114* speaker23 = reinterpret_cast<Obj114*&>(pCurrentItem)->NiAVObject_GetParent();
+                if (speaker23 && abUseSound)
                 {
                     String114 text6;
                     if (reinterpret_cast<Obj114*&>(m_pkMobileObject))
@@ -1089,46 +1108,46 @@ void PackageDialogueSupport::DialoguePackage_Speak(bool process)
                         reinterpret_cast<Obj114*&>(m_pkMobileObject) = 0;
                     }
                     bool speak13 = true;
-                    if (reinterpret_cast<Obj114*&>(response)->BGSSaveFormBuffer_GetForm() && reinterpret_cast<bool&>(unkCC))
+                    if (reinterpret_cast<Obj114*&>(pCurrentResponse)->BGSSaveFormBuffer_GetForm() && reinterpret_cast<bool&>(bSoundFile))
                     {
-                        Obj114* topic21 = reinterpret_cast<Obj114*&>(response)->BGSSaveFormBuffer_GetForm()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+                        Obj114* topic21 = reinterpret_cast<Obj114*&>(pCurrentResponse)->BGSSaveFormBuffer_GetForm()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
                         Handle114 handle23 = speaker23->PlaySoundByFormID(topic21, 0, 0x40000102, 1);
                         Manager114* manager3 = BSAudioManager_QInstance_00ad9060();
                         manager3->BSAudioManager_SetCompletionCallback(handle23.Modelloader_GetReferencedThis(), MobileObject_SoundFileCallBack, reinterpret_cast<Obj114*&>(pActor)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
-                        reinterpret_cast<bool&>(unkCC) = false;
+                        reinterpret_cast<bool&>(bSoundFile) = false;
                         speak13 = false;
                     }
-                    if (speak13 && reinterpret_cast<bool&>(unkCC))
+                    if (speak13 && reinterpret_cast<bool&>(bSoundFile))
                     {
-                        text6.FUN_00438470(reinterpret_cast<Obj114*&>(response)->TESDataHandler_GetWorldSpaceList());
+                        text6.FUN_00438470(reinterpret_cast<Obj114*&>(pCurrentResponse)->TESDataHandler_GetWorldSpaceList());
                         if (!speaker23->FUN_008d8520()->v37c() && !speaker23->FUN_008d8520()->v36c() &&
                             *DAT_011e05ec.FUN_00408d60() && !speaker23->FUN_008d8520()->v378())
                         {
-                            reinterpret_cast<Obj114*&>(unkC4) = reinterpret_cast<Obj114*&>(response)->FUN_0044ddc0();
-                            reinterpret_cast<Obj114*&>(unkC8) = reinterpret_cast<Obj114*&>(response)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-                            FUN_00705b10(reinterpret_cast<Obj114*&>(unkC4));
-                            if (reinterpret_cast<Obj114*&>(item))
-                                reinterpret_cast<Obj114*&>(item)->FUN_0083c850(0);
+                            reinterpret_cast<Obj114*&>(iEmotion) = reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_0044ddc0();
+                            reinterpret_cast<Obj114*&>(iEmotionValue) = reinterpret_cast<Obj114*&>(pCurrentResponse)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+                            FUN_00705b10(reinterpret_cast<Obj114*&>(iEmotion));
+                            if (reinterpret_cast<Obj114*&>(pCurrentItem))
+                                reinterpret_cast<Obj114*&>(pCurrentItem)->FUN_0083c850(0);
                             reinterpret_cast<Obj114*&>(m_pkMobileObject) = speaker23;
-                            speaker23->SetFlag86(reinterpret_cast<Obj114*&>(response)->GetField24());
+                            speaker23->SetFlag86(reinterpret_cast<Obj114*&>(pCurrentResponse)->GetField24());
                             float duration13 = speaker23->v284(
-                                text6.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(response)->FUN_0044ddc0(), reinterpret_cast<Obj114*&>(response)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
-                                reinterpret_cast<Obj114*&>(response)->FUN_006815c0()->BSStringT_char_Length(), reinterpret_cast<Obj114*&>(response)->NiAVObject_GetParent(),
-                                reinterpret_cast<Obj114*&>(response)->FUN_00441110(), reinterpret_cast<Obj114*&>(pTargetActor), 1, 0, 1, 1, reinterpret_cast<bool&>(unkA0));
-                            if (reinterpret_cast<Obj114*&>(m_pLinkedReference))
+                                text6.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_0044ddc0(), reinterpret_cast<Obj114*&>(pCurrentResponse)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
+                                reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_006815c0()->BSStringT_char_Length(), reinterpret_cast<Obj114*&>(pCurrentResponse)->NiAVObject_GetParent(),
+                                reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_00441110(), reinterpret_cast<Obj114*&>(pTargetActor), 1, 0, 1, 1, reinterpret_cast<bool&>(unkA0));
+                            if (reinterpret_cast<Obj114*&>(pTalkingActivator))
                             {
-                                Obj114* data15 = reinterpret_cast<Obj114*&>(m_pLinkedReference)->BGSSaveFormBuffer_GetForm();
+                                Obj114* data15 = reinterpret_cast<Obj114*&>(pTalkingActivator)->BGSSaveFormBuffer_GetForm();
                                 if (data15->BGSExplosion_GetImpactDataSet() == speaker23)
                                 {
                                     Obj114* target20 = reinterpret_cast<Obj114*&>(pTargetActor);
-                                    if (reinterpret_cast<Obj114*&>(pTargetActor) == reinterpret_cast<Obj114*&>(m_pLinkedReference))
+                                    if (reinterpret_cast<Obj114*&>(pTargetActor) == reinterpret_cast<Obj114*&>(pTalkingActivator))
                                         target20 = reinterpret_cast<Obj114*&>(pActor);
-                                    reinterpret_cast<Obj114*&>(m_pkMobileObject) = reinterpret_cast<Obj114*&>(m_pLinkedReference);
-                                    reinterpret_cast<Obj114*&>(m_pLinkedReference)->SetFlag86(reinterpret_cast<Obj114*&>(response)->GetField24());
-                                    duration13 = reinterpret_cast<Obj114*&>(m_pLinkedReference)->v284(
-                                        text6.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(response)->FUN_0044ddc0(),
-                                        reinterpret_cast<Obj114*&>(response)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), reinterpret_cast<Obj114*&>(response)->FUN_006815c0()->BSStringT_char_Length(),
-                                        reinterpret_cast<Obj114*&>(response)->NiAVObject_GetParent(), reinterpret_cast<Obj114*&>(response)->FUN_00441110(), target20, 0, 0, 0, 1, 1);
+                                    reinterpret_cast<Obj114*&>(m_pkMobileObject) = reinterpret_cast<Obj114*&>(pTalkingActivator);
+                                    reinterpret_cast<Obj114*&>(pTalkingActivator)->SetFlag86(reinterpret_cast<Obj114*&>(pCurrentResponse)->GetField24());
+                                    duration13 = reinterpret_cast<Obj114*&>(pTalkingActivator)->v284(
+                                        text6.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_0044ddc0(),
+                                        reinterpret_cast<Obj114*&>(pCurrentResponse)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_006815c0()->BSStringT_char_Length(),
+                                        reinterpret_cast<Obj114*&>(pCurrentResponse)->NiAVObject_GetParent(), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_00441110(), target20, 0, 0, 0, 1, 1);
                                 }
                             }
                             if (speaker23->FUN_008d8520()->v36c())
@@ -1149,30 +1168,30 @@ void PackageDialogueSupport::DialoguePackage_Speak(bool process)
                                 return;
                             else
                             {
-                                if (!*DAT_011e05ec.FUN_00408d60() && reinterpret_cast<Obj114*&>(item))
-                                    reinterpret_cast<Obj114*&>(item)->FUN_0083c850(0);
+                                if (!*DAT_011e05ec.FUN_00408d60() && reinterpret_cast<Obj114*&>(pCurrentItem))
+                                    reinterpret_cast<Obj114*&>(pCurrentItem)->FUN_0083c850(0);
                                 reinterpret_cast<Obj114*&>(m_pkMobileObject) = speaker23;
-                                speaker23->SetFlag86(reinterpret_cast<Obj114*&>(response)->GetField24());
-                                speaker23->v284(text6.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(response)->FUN_0044ddc0(),
-                                                reinterpret_cast<Obj114*&>(response)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), reinterpret_cast<Obj114*&>(response)->FUN_006815c0()->BSStringT_char_Length(),
-                                                reinterpret_cast<Obj114*&>(response)->NiAVObject_GetParent(), reinterpret_cast<Obj114*&>(response)->FUN_00441110(), reinterpret_cast<Obj114*&>(pTargetActor), 1, 0, 0, 1,
+                                speaker23->SetFlag86(reinterpret_cast<Obj114*&>(pCurrentResponse)->GetField24());
+                                speaker23->v284(text6.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_0044ddc0(),
+                                                reinterpret_cast<Obj114*&>(pCurrentResponse)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_006815c0()->BSStringT_char_Length(),
+                                                reinterpret_cast<Obj114*&>(pCurrentResponse)->NiAVObject_GetParent(), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_00441110(), reinterpret_cast<Obj114*&>(pTargetActor), 1, 0, 0, 1,
                                                 reinterpret_cast<bool&>(unkA0));
-                                if (reinterpret_cast<Obj114*&>(m_pLinkedReference))
+                                if (reinterpret_cast<Obj114*&>(pTalkingActivator))
                                 {
-                                    if (reinterpret_cast<Obj114*&>(m_pLinkedReference))
+                                    if (reinterpret_cast<Obj114*&>(pTalkingActivator))
                                     {
-                                        Obj114* data218 = reinterpret_cast<Obj114*&>(m_pLinkedReference)->BGSSaveFormBuffer_GetForm();
+                                        Obj114* data218 = reinterpret_cast<Obj114*&>(pTalkingActivator)->BGSSaveFormBuffer_GetForm();
                                         if (data218->BGSExplosion_GetImpactDataSet() == speaker23)
                                         {
                                             Obj114* target24 = reinterpret_cast<Obj114*&>(pTargetActor);
-                                            if (reinterpret_cast<Obj114*&>(pTargetActor) == reinterpret_cast<Obj114*&>(m_pLinkedReference))
+                                            if (reinterpret_cast<Obj114*&>(pTargetActor) == reinterpret_cast<Obj114*&>(pTalkingActivator))
                                                 target24 = reinterpret_cast<Obj114*&>(pActor);
-                                            reinterpret_cast<Obj114*&>(m_pkMobileObject) = reinterpret_cast<Obj114*&>(m_pLinkedReference);
-                                            reinterpret_cast<Obj114*&>(m_pLinkedReference)->SetFlag86(reinterpret_cast<Obj114*&>(response)->GetField24());
-                                            reinterpret_cast<Obj114*&>(m_pLinkedReference)->v284(text6.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(response)->FUN_0044ddc0(),
-                                                        reinterpret_cast<Obj114*&>(response)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
-                                                        reinterpret_cast<Obj114*&>(response)->FUN_006815c0()->BSStringT_char_Length(),
-                                                        reinterpret_cast<Obj114*&>(response)->NiAVObject_GetParent(), reinterpret_cast<Obj114*&>(response)->FUN_00441110(), target24, 0,
+                                            reinterpret_cast<Obj114*&>(m_pkMobileObject) = reinterpret_cast<Obj114*&>(pTalkingActivator);
+                                            reinterpret_cast<Obj114*&>(pTalkingActivator)->SetFlag86(reinterpret_cast<Obj114*&>(pCurrentResponse)->GetField24());
+                                            reinterpret_cast<Obj114*&>(pTalkingActivator)->v284(text6.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_0044ddc0(),
+                                                        reinterpret_cast<Obj114*&>(pCurrentResponse)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
+                                                        reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_006815c0()->BSStringT_char_Length(),
+                                                        reinterpret_cast<Obj114*&>(pCurrentResponse)->NiAVObject_GetParent(), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_00441110(), target24, 0,
                                                         0, 0, 1, 1);
                                         }
                                     }
@@ -1201,31 +1220,31 @@ void PackageDialogueSupport::DialoguePackage_Speak(bool process)
                         reinterpret_cast<Obj114*&>(pTargetActor)->FUN_008d8520()->v44(reinterpret_cast<Obj114*&>(pTargetActor), 0, 2, 0, 1, 1);
                 }
             }
-            else if (actor18 && process)
+            else if (actor18 && abUseSound)
             {
                 char path27[512];
                 String114 text22;
-                String114 copy14(reinterpret_cast<Obj114*&>(response)->TESDataHandler_GetWorldSpaceList());
-                if (reinterpret_cast<Obj114*&>(response)->TESDataHandler_GetWorldSpaceList()->Modelloader_GetReferencedThis())
+                String114 copy14(reinterpret_cast<Obj114*&>(pCurrentResponse)->TESDataHandler_GetWorldSpaceList());
+                if (reinterpret_cast<Obj114*&>(pCurrentResponse)->TESDataHandler_GetWorldSpaceList()->Modelloader_GetReferencedThis())
                 {
-                    FUN_00406d30(path27, 512, reinterpret_cast<Obj114*&>(response)->TESDataHandler_GetWorldSpaceList()->Modelloader_GetReferencedThis());
+                    FUN_00406d30(path27, 512, reinterpret_cast<Obj114*&>(pCurrentResponse)->TESDataHandler_GetWorldSpaceList()->Modelloader_GetReferencedThis());
                     if (reinterpret_cast<Obj114*&>(m_pkMobileObject))
                     {
                         reinterpret_cast<Obj114*&>(m_pkMobileObject)->MobileObject_StopCurrentDialogue();
                         reinterpret_cast<Obj114*&>(m_pkMobileObject) = 0;
                     }
-                    text22.FUN_00438470(reinterpret_cast<Obj114*&>(response)->TESDataHandler_GetWorldSpaceList());
-                    if (reinterpret_cast<Obj114*&>(m_pLinkedReference))
+                    text22.FUN_00438470(reinterpret_cast<Obj114*&>(pCurrentResponse)->TESDataHandler_GetWorldSpaceList());
+                    if (reinterpret_cast<Obj114*&>(pTalkingActivator))
                     {
-                        Obj114* data310 = reinterpret_cast<Obj114*&>(m_pLinkedReference)->BGSSaveFormBuffer_GetForm();
-                        reinterpret_cast<Obj114*&>(m_pLinkedReference)->SetFlag86(reinterpret_cast<Obj114*&>(response)->GetField24());
-                        reinterpret_cast<Obj114*&>(m_pkMobileObject) = reinterpret_cast<Obj114*&>(m_pLinkedReference);
-                        reinterpret_cast<Obj114*&>(m_pLinkedReference)->v284(text22.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(response)->FUN_0044ddc0(), reinterpret_cast<Obj114*&>(response)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
-                                    reinterpret_cast<Obj114*&>(response)->FUN_006815c0()->BSStringT_char_Length(), reinterpret_cast<Obj114*&>(response)->NiAVObject_GetParent(),
-                                    reinterpret_cast<Obj114*&>(response)->FUN_00441110(), reinterpret_cast<Obj114*&>(pTargetActor), 0, 0, 0, 1, 1);
+                        Obj114* data310 = reinterpret_cast<Obj114*&>(pTalkingActivator)->BGSSaveFormBuffer_GetForm();
+                        reinterpret_cast<Obj114*&>(pTalkingActivator)->SetFlag86(reinterpret_cast<Obj114*&>(pCurrentResponse)->GetField24());
+                        reinterpret_cast<Obj114*&>(m_pkMobileObject) = reinterpret_cast<Obj114*&>(pTalkingActivator);
+                        reinterpret_cast<Obj114*&>(pTalkingActivator)->v284(text22.Modelloader_GetReferencedThis(), &reinterpret_cast<Handle114&>(unk80), reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_0044ddc0(), reinterpret_cast<Obj114*&>(pCurrentResponse)->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
+                                    reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_006815c0()->BSStringT_char_Length(), reinterpret_cast<Obj114*&>(pCurrentResponse)->NiAVObject_GetParent(),
+                                    reinterpret_cast<Obj114*&>(pCurrentResponse)->FUN_00441110(), reinterpret_cast<Obj114*&>(pTargetActor), 0, 0, 0, 1, 1);
                         Manager114* manager45 = BSAudioManager_QInstance_00ad9060();
-                        manager45->BSAudioManager_SetCompletionCallback(reinterpret_cast<Handle114&>(unk80).Modelloader_GetReferencedThis(), MobileObject_DialogueConversationCallBack, reinterpret_cast<Obj114*&>(m_pLinkedReference)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
-                        reinterpret_cast<Obj114*&>(m_pLinkedReference)->flag80 = 0;
+                        manager45->BSAudioManager_SetCompletionCallback(reinterpret_cast<Handle114&>(unk80).Modelloader_GetReferencedThis(), MobileObject_DialogueConversationCallBack, reinterpret_cast<Obj114*&>(pTalkingActivator)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                        reinterpret_cast<Obj114*&>(pTalkingActivator)->flag80 = 0;
                         reset26 = false;
                     }
                     else
@@ -1343,7 +1362,7 @@ struct Sound
 };
 struct FUN_008579e0_shell
 {
-    void __thiscall TESSaveLoadGame_LoadGameDataOLD(void* buf, unsigned int n);
+    void __thiscall TESSaveLoadGame_LoadGameDataOLD(void* apData, unsigned int aiSize);
 };
 struct TimeGlobal : FUN_008579e0_shell
 {
@@ -1379,6 +1398,8 @@ struct PackageLoadSupport : DialoguePackage
     void __thiscall TESForm_LoadNumericID(unsigned int*, int);
 };
 // @fnv 0x009efa50
+// pdb: DialoguePackage::LoadGame | DialoguePackage.obj | retail, string-set bridge, high
+// pdb locals: itargetActorID, istartBufferPosition, iblockSize, iactorID, itopicID, italkingActorID, iblockHeader, pheader, pform, isize, icurrentItemIndex, icurrentResponseIndex, icreationTime, icurrentBufferPosition
 void DialoguePackage::LoadSaveData()
 {
     ((PackageLoadSupport*)this)->TESPackage_LoadGame();
@@ -1435,22 +1456,22 @@ void DialoguePackage::LoadSaveData()
                 ((PackageLoadSupport*)this)->TESForm_LoadGameDataOLD(&w38, 2);
                 if (w38 != -1)
                 {
-                    item = (DialogueItem*)((SLObj*)conversation)->GetDialogueItemByIndex((unsigned short)w38);
+                    pCurrentItem = (DialogueItem*)((SLObj*)conversation)->GetDialogueItemByIndex((unsigned short)w38);
                 }
                 else
                 {
-                    item = 0;
+                    pCurrentItem = 0;
                 }
                 short w3c;
                 ((PackageLoadSupport*)this)->TESForm_LoadGameDataOLD(&w3c, 2);
-                response = (DialogueResponse*)w3c;
-                if (item != 0 && w3c != -1)
+                pCurrentResponse = (DialogueResponse*)w3c;
+                if (pCurrentItem != 0 && w3c != -1)
                 {
-                    response = ((DialogueItem*)item)->GetResponseByIndex((unsigned short)w3c);
+                    pCurrentResponse = ((DialogueItem*)pCurrentItem)->GetResponseByIndex((unsigned short)w3c);
                 }
                 else
                 {
-                    response = 0;
+                    pCurrentResponse = 0;
                 }
             }
         }
@@ -1463,15 +1484,15 @@ void DialoguePackage::LoadSaveData()
             {
                 short w44;
                 ((PackageLoadSupport*)this)->TESForm_LoadGameDataOLD(&w44, 2);
-                item = (DialogueItem*)w44;
+                pCurrentItem = (DialogueItem*)w44;
                 short w48;
                 ((PackageLoadSupport*)this)->TESForm_LoadGameDataOLD(&w48, 2);
-                response = (DialogueResponse*)w48;
+                pCurrentResponse = (DialogueResponse*)w48;
             }
             else
             {
-                item = 0;
-                response = 0;
+                pCurrentItem = 0;
+                pCurrentResponse = 0;
             }
         }
         if (DAT_011de45c->TESSaveLoadGame_UseSaveGameBlocks())
@@ -1531,7 +1552,7 @@ class Conversation
     DialogueItem* currentItem;
     Character* speaker;
     PlayerCharacter* listener;
-    Conversation(Character* speaker, PlayerCharacter* listener, TESTopic* topic);
+    Conversation(Character* apSpeaker, PlayerCharacter* apTarget, TESTopic* apStartingTopic);
     void InitLoadGameTES_0083c220();
     DialogueItem* GetDialogueItemByIndex(short index);
     void FUN_0083c8a0(DialogueItem* item);
@@ -1547,6 +1568,8 @@ struct PackageResolveSupport : DialoguePackage
 
 // Resolves target, speaker and listener from stored IDs, then rebuilds the conversation, item and response from saved indices.
 // @fnv 0x009eff60
+// pdb: DialoguePackage::InitLoadGame | DialoguePackage.obj | retail, vtable slot, high
+// pdb locals: itargetActorID, iactorID, italkingActorID, icurrentItemIndex, icreationTime, icurrentResponseIndex
 void DialoguePackage::ResolveReferences()
 {
     using namespace fnv_009eff60;
@@ -1566,21 +1589,21 @@ void DialoguePackage::ResolveReferences()
     {
         // Retain the saved conversation marker and its two serialized indices.
         fnv_009eff60::Conversation* itemIndex = (fnv_009eff60::Conversation*)conversation;
-        short oldConversation = (short)(unsigned int)item;
-        short responseIndex = (short)(unsigned int)response;
+        short oldConversation = (short)(unsigned int)pCurrentItem;
+        short responseIndex = (short)(unsigned int)pCurrentResponse;
         if (itemIndex)
         {
             conversation = (::Conversation*)new fnv_009eff60::Conversation((Character*)pActor, (PlayerCharacter*)listener, (TESTopic*)topic);
             if (oldConversation != -1)
-                item = ((fnv_009eff60::Conversation*)conversation)->GetDialogueItemByIndex(oldConversation);
+                pCurrentItem = ((fnv_009eff60::Conversation*)conversation)->GetDialogueItemByIndex(oldConversation);
             else
-                item = 0;
-            if (item && responseIndex != -1)
-                response = item->GetResponseByIndex(responseIndex);
+                pCurrentItem = 0;
+            if (pCurrentItem && responseIndex != -1)
+                pCurrentResponse = pCurrentItem->GetResponseByIndex(responseIndex);
             else
-                response = 0;
-            ((fnv_009eff60::Conversation*)conversation)->FUN_0083c8a0(item);
-            ((DialogueItemSelection*)item)->SelectResponse(response);
+                pCurrentResponse = 0;
+            ((fnv_009eff60::Conversation*)conversation)->FUN_0083c8a0(pCurrentItem);
+            ((DialogueItemSelection*)pCurrentItem)->SelectResponse(pCurrentResponse);
         }
     }
 }
@@ -1621,6 +1644,8 @@ void FNV_Warning(const char*, ...);
 // Writes the DialoguePackage state, topic, quest, info, speaker, conversation item and response indices to the save-game writer, then patches the block size.
 // @fnv 0x009ef6e0
 // src: XBOX_PDB 0x009ef6e0
+// pdb: DialoguePackage::SaveGame | DialoguePackage.obj | retail, vtable slot, high
+// pdb locals: itargetActorID, itempStartPosition, iblockSize, iactorID, isize, itopicID, pblockSize, italkingActorID, iblockHeader, icurrentItemIndex, icurrentResponseIndex, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void DialoguePackage::SaveGame_009ef6e0()
 {
     using namespace fnv_009ef6e0;
@@ -1665,12 +1690,12 @@ void DialoguePackage::SaveGame_009ef6e0()
     {
         ((fnv_009ef6e0::Conversation*)conversation)->SaveConversation();
         short itemIndex = -1;
-        if (item)
-            itemIndex = ((fnv_009ef6e0::Conversation*)conversation)->GetDialogueItemIndex(item);
+        if (pCurrentItem)
+            itemIndex = ((fnv_009ef6e0::Conversation*)conversation)->GetDialogueItemIndex(pCurrentItem);
         TESForm_SaveGameDataOLD(&itemIndex, 2);
         short responseIndex = -1;
-        if (item && response)
-            responseIndex = item->GetResponseIndex(response);
+        if (pCurrentItem && pCurrentResponse)
+            responseIndex = pCurrentItem->GetResponseIndex(pCurrentResponse);
         TESForm_SaveGameDataOLD(&responseIndex, 2);
     }
     if (*g_011de4e8.Bool())
@@ -1717,44 +1742,46 @@ struct List0083b830SV
 // Loads the base package, reads fields from the buffer, and conditionally loads a list with two indexed selections.
 // @fnv 0x009f0460
 // src: XBOX_PDB 0x009f0460
-void DialoguePackage::LoadGame_009f0460(BGSLoadFormBuffer* apSaveBuffer)
+// pdb: DialoguePackage::LoadGame | DialoguePackage.obj | retail, vtable slot, high
+// pdb locals: itargetActorID, istartBufferPosition, iblockSize, iactorID, itopicID, italkingActorID, iblockHeader, pheader, pform, isize, icurrentItemIndex, icurrentResponseIndex, icreationTime, icurrentBufferPosition
+void DialoguePackage::LoadGame_009f0460(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     using namespace fnv_009f0460;
-    TESPackage::LoadGame(reinterpret_cast< ::BGSLoadFormBuffer*>(apSaveBuffer));
-    apSaveBuffer->FUN_008648e0(&m_pkMobileObject);
-    apSaveBuffer->FUN_008648e0(&pActor);
-    apSaveBuffer->FUN_008648e0(&pTargetActor);
-    apSaveBuffer->FUN_008648e0(&m_pLinkedReference);
-    apSaveBuffer->FUN_008648e0(&m_pkReference);
-    topic = (unsigned int)dynamic_cast<TESTopic*>(TESForm_GetFormByNumericID(apSaveBuffer->FUN_008648a0()));
-    apSaveBuffer->LoadData(&state, 4);
-    apSaveBuffer->LoadData(&flags, 1);
-    apSaveBuffer->LoadData(&unkBC, 1);
-    apSaveBuffer->LoadData(&unkBD, 1);
-    apSaveBuffer->LoadData(&unkBE, 1);
-    apSaveBuffer->LoadData(&unkBF, 1);
-    apSaveBuffer->LoadData(&unkC0, 1);
-    apSaveBuffer->LoadData(&unkC1, 1);
-    apSaveBuffer->LoadData(&unkC4, 4);
-    apSaveBuffer->LoadData(&unkC8, 4);
-    apSaveBuffer->LoadData(&unkA0, 1);
-    apSaveBuffer->LoadData(&unkCC, 1);
-    if (apSaveBuffer->GetVersion() >= 3)
-        apSaveBuffer->LoadData(&unkC2, 1);
+    TESPackage::LoadGame(reinterpret_cast< ::BGSLoadFormBuffer*>(apLoadGameBuffer));
+    apLoadGameBuffer->FUN_008648e0(&m_pkMobileObject);
+    apLoadGameBuffer->FUN_008648e0(&pActor);
+    apLoadGameBuffer->FUN_008648e0(&pTargetActor);
+    apLoadGameBuffer->FUN_008648e0(&pTalkingActivator);
+    apLoadGameBuffer->FUN_008648e0(&m_pkReference);
+    topic = (unsigned int)dynamic_cast<TESTopic*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
+    apLoadGameBuffer->LoadData(&state, 4);
+    apLoadGameBuffer->LoadData(&flags, 1);
+    apLoadGameBuffer->LoadData(&bActorHeadTrack, 1);
+    apLoadGameBuffer->LoadData(&bCreatedPack, 1);
+    apLoadGameBuffer->LoadData(&bContinueMoving, 1);
+    apLoadGameBuffer->LoadData(&bTargetContinueMoving, 1);
+    apLoadGameBuffer->LoadData(&bTargetMoveTowardStarter, 1);
+    apLoadGameBuffer->LoadData(&bDoNotControlTargetMovement, 1);
+    apLoadGameBuffer->LoadData(&iEmotion, 4);
+    apLoadGameBuffer->LoadData(&iEmotionValue, 4);
+    apLoadGameBuffer->LoadData(&unkA0, 1);
+    apLoadGameBuffer->LoadData(&bSoundFile, 1);
+    if (apLoadGameBuffer->GetVersion() >= 3)
+        apLoadGameBuffer->LoadData(&bReachedAmbushLocation, 1);
     bool b = false;
-    apSaveBuffer->LoadData(&b, 1);
+    apLoadGameBuffer->LoadData(&b, 1);
     if (b)
     {
         conversation = (Conversation*)new List0083b830SV();
-        ((List0083b830SV*)conversation)->LoadGameBGS_0083c330(apSaveBuffer);
+        ((List0083b830SV*)conversation)->LoadGameBGS_0083c330(apLoadGameBuffer);
         short i1 = -1;
-        apSaveBuffer->LoadData(&i1, 2);
+        apLoadGameBuffer->LoadData(&i1, 2);
         if (i1 != -1)
-            item = (DialogueItem*)((List0083b830SV*)conversation)->GetDialogueItemByIndex(i1);
+            pCurrentItem = (DialogueItem*)((List0083b830SV*)conversation)->GetDialogueItemByIndex(i1);
         short i2 = -1;
-        apSaveBuffer->LoadData(&i2, 2);
-        if (item && i2 != -1)
-            response = item->GetResponseByIndex(i2);
+        apLoadGameBuffer->LoadData(&i2, 2);
+        if (pCurrentItem && i2 != -1)
+            pCurrentResponse = pCurrentItem->GetResponseByIndex(i2);
     }
 }
 

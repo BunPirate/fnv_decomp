@@ -16,16 +16,17 @@ class TESTopicInfo;
 class TopicInfoArray;
 enum DIALOGUE_TYPE;
 
+// pdb: class TESTopic, size 0x48, bases: TESForm, TESFullName, 6 members
 class TESTopic : public TESForm, public TESFullName
 {
 public:
     // Allocation size 0x48 (object_sizes.csv); members to 0x40 as in the original include/TESTopic.h layout.
     DialogueTopicData m_Data;                           // +0x24
-    float m_fTopicParamB;                               // +0x28
-    BSSimpleList<QuestDialogueInfo*> m_kQuestInfoList;  // +0x2C
-    BSStringT<char> m_kDummyPrompt;                     // +0x34
-    int m_iTopicFlags;                                  // +0x3C
-    unsigned int unk40;                                 // +0x40
+    float m_fPriority;                               // +0x28
+    BSSimpleList<QuestDialogueInfo*> m_listQuestInfo;  // +0x2C
+    BSStringT<char> cDummyPrompt;                     // +0x34
+    int m_iJournalIndex;                                  // +0x3C
+    unsigned int cFormEditorID;                                 // +0x40
     unsigned int unk44;                                 // +0x44
 
     TESTopic(int);
@@ -99,7 +100,7 @@ public:
     static TESTopicInfo* FindMatchingTopicInfo(void*, bool*, TESObjectREFR*, TESObjectREFR*, bool, TESTopic*, void*);
     static TESTopicInfo* FindMatchingTopicInfo(const TESTopic*, bool&, TESObjectREFR*, TESObjectREFR*, bool, TESTopic*, BSSimpleList<DialogueItem*>*);
     TESTopicInfo* FindMatchingTopicInfo(bool*, TESObjectREFR*, TESObjectREFR*, bool, TESTopic*, void*);
-    TESTopicInfo* FindMatchingTopicInfo(bool&, TESObjectREFR*, TESObjectREFR*, bool, TESTopic*, BSSimpleList<DialogueItem*>*);
+    TESTopicInfo* GetMatchingInfo(bool&, TESObjectREFR*, TESObjectREFR*, bool, TESTopic*, BSSimpleList<DialogueItem*>*);
     TESTopicInfo* FindMatchingTopicInfo(bool*, TESObjectREFR*, TESObjectREFR*);
     TESTopicInfo* FindMatchingTopicInfo(TESObjectREFR*, TESObjectREFR*);
     TESTopicInfo* FindMatchingTopicInfo(MobileObject*, PlayerCharacter*);

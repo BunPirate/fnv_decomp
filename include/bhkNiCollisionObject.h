@@ -2,6 +2,7 @@
 
 #include "NiCollisionObject.h"
 
+// pdb: class bhkNiCollisionObject, size 0x14 (here 0xc), bases: NiCollisionObject, 2 members
 class bhkNiCollisionObject : public NiCollisionObject
 {
   public:

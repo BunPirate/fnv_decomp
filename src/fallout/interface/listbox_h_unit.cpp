@@ -9,6 +9,7 @@ struct Helper
 };
 void __cdecl _Deallocate(void*);
 // @fnv 0x00731580
+// pdb: ListBox<ItemChange *>::`scalar deleting destructor' | BarterMenu.obj | retail, vtable slot, high
 void* Helper::FUN_00731580(unsigned int flags)
 {
     FUN_007308e0();
@@ -23,21 +24,23 @@ struct ShellTmp
 {
     int _pad;
     BSSimpleList<WeatherEntry*> _list;
-    void AssignTileIndices();
-    void SortEntriesAndAssignTileIndices(CmpFunc a1);
+    void ListBox_BGSNote_Synchronize();
+    void SortEntriesAndAssignTileIndices(CmpFunc apCompareFn);
 };
 // @fnv 0x007a2e00
 // src: GUESS 0x007a2e00 (confidence: medium)
-void ShellTmp::SortEntriesAndAssignTileIndices(CmpFunc pCompare)
+// pdb: ListBox<BGSNote *>::Sort | MapMenu.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void ShellTmp::SortEntriesAndAssignTileIndices(CmpFunc apCompareFn)
 {
-    _list.Sort(pCompare);
-    AssignTileIndices();
+    _list.Sort(apCompareFn);
+    ListBox_BGSNote_Synchronize();
 }
 
 struct WeatherEntry;
 struct Unk007a78e0
 {
-    void ProcessEntries();
+    void ListBox_BGSQuestObjective_Synchronize();
 };
 struct Holder007a49b0
 {
@@ -47,10 +50,12 @@ struct Holder007a49b0
 };
 // Sorts the weather entry list using the given comparison function, then calls ProcessEntries on this object.
 // @fnv 0x007a49b0
-void Holder007a49b0::SortWeatherList(int (*a1)(WeatherEntry*, WeatherEntry*))
+// pdb: ListBox<BGSQuestObjective *>::Sort | MapMenu.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void Holder007a49b0::SortWeatherList(int (*apCompareFn)(WeatherEntry*, WeatherEntry*))
 {
-    _list.Sort(a1);
-    ((Unk007a78e0*)this)->ProcessEntries();
+    _list.Sort(apCompareFn);
+    ((Unk007a78e0*)this)->ListBox_BGSQuestObjective_Synchronize();
 }
 
 struct DummyClass
@@ -61,6 +66,7 @@ struct DummyClass
 void _Deallocate(void*);
 // Calls FUN_007a28c0, then deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x007a6160
+// pdb: ListBox<BGSNote *>::`scalar deleting destructor' | MapMenu.obj | retail, vtable slot, high
 void* DummyClass::FUN_007a6160(unsigned int flags)
 {
     FUN_007a28c0();
@@ -77,6 +83,7 @@ struct S_007a61c0
 void _Deallocate(void*);
 // Calls FUN_007a4470, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x007a61c0
+// pdb: ListBox<BGSQuestObjective *>::`scalar deleting destructor' | MapMenu.obj | retail, vtable slot, high
 void* S_007a61c0::FUN_007a61c0(unsigned int flags)
 {
     FUN_007a4470();
@@ -112,6 +119,8 @@ class FUN_007308e0 : public ListBox<ListItemData*>
 };
 // @fnv 0x00730950
 // src: XBOX_PDB 0x00730950
+// pdb: ListBox<ItemChange *>::RemoveAll | BarterMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void FUN_007308e0::ListBox_ItemChange_RemoveAll()
 {
     while (this->m_pkNext && this->m_pkNext->GetItem())
@@ -149,7 +158,7 @@ template <> class ListBoxItem<unsigned int>
   public:
     Tile* pTile;
     unsigned int data;
-    bool m_bFiltered;
+    bool bFiltered;
 };
 float FUN_004bd510(float value, float step);
 int Tile_TextToTrait(const char* name);
@@ -168,17 +177,20 @@ struct LB_00730f40 : BSSimpleList<ListBoxItem<unsigned int>*>
     const char* pTemplateName;
     unsigned short m_usSelectedIndex;
     bool IsEnabled();
-    Tile* ListBox_ItemChange_GetHighlightTarget(int event);
+    Tile* ListBox_ItemChange_GetHighlightTarget(int aeButton);
 };
 
 // Computes a candidate tile from the event and returns it when it differs from the selected tile.
 // @fnv 0x00730f40
 // src: XBOX_PDB 0x00730f40
-Tile* LB_00730f40::ListBox_ItemChange_GetHighlightTarget(int event)
+// pdb: ListBox<ItemChange *>::GetHighlightTarget | BarterMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* LB_00730f40::ListBox_ItemChange_GetHighlightTarget(int aeButton)
 {
     Tile* selected = 0;
     int delta = 0;
-    switch (event)
+    switch (aeButton)
     {
     case 2:
         delta = 1;
@@ -299,6 +311,8 @@ class xEntryMenu
 
 // Frees all xEntryItem entries and the selected item, resets m_us1c, m_f20, m_i10, and refreshes the menu.
 // @fnv 0x007a2bd0
+// pdb: ListBox<BGSNote *>::RemoveAll | MapMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void xEntryMenu::ClearEntries()
 {
     while (m_pEntries && *m_pEntries->Head())
@@ -372,6 +386,8 @@ struct Target007a4780
 // Clears the entries, resets fields, and calls FUN_00a012d0 on unk0c with a value from FUN_00a01860.
 // @fnv 0x007a4780
 // src: GUESS 0x007a4780 (confidence: low)
+// pdb: ListBox<BGSQuestObjective *>::RemoveAll | MapMenu.obj | retail, vtable slot, high
+// pdb locals: pkSave
 void Target007a4780::ProcessEntries_007a4780()
 {
     while (unk08 && unk08->FUN_006815c0())
@@ -418,17 +434,20 @@ struct LB_007a4d50 : BSSimpleList<ListBoxItem<unsigned int>*>
     const char* pTemplateName;
     unsigned short m_usSelectedIndex;
     bool IsEnabled();
-    Tile* FindNextEnabledTileForEvent(int event);
+    Tile* FindNextEnabledTileForEvent(int aeButton);
 };
 
 // Finds a candidate tile using the event-derived delta, skips disabled tiles, and returns it if it differs from m_pSelectedTile.
 // @fnv 0x007a4d50
 // src: GUESS 0x007a4d50 (confidence: medium)
-Tile* LB_007a4d50::FindNextEnabledTileForEvent(int event)
+// pdb: ListBox<BGSQuestObjective *>::GetHighlightTarget | MapMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* LB_007a4d50::FindNextEnabledTileForEvent(int aeButton)
 {
     Tile* pNewTile = 0;
     int iDelta = 0;
-    switch (event)
+    switch (aeButton)
     {
     case 2:
         iDelta = 1;
@@ -531,18 +550,21 @@ class ListBoxBaseWithVTable
 class SomeClass : public ListBox<BGSNote*>
 {
   public:
-    Tile* FindEnabledTileForEvent(int param);
+    Tile* FindEnabledTileForEvent(int aeButton);
 };
 
 // Finds an enabled tile at the event-derived target index and returns it when it differs from the current selection.
 // @fnv 0x007a31e0
 // src: GUESS 0x007a31e0 (confidence: medium)
-Tile* SomeClass::FindEnabledTileForEvent(int param)
+// pdb: ListBox<BGSNote *>::GetHighlightTarget | MapMenu.obj | retail, vtable slot, high
+// pdb params: aeButton
+// pdb locals: ptarget, idelta, imaxIndex, inewIndex, ioldIndex, pnode
+Tile* SomeClass::FindEnabledTileForEvent(int aeButton)
 {
     Tile* pResultTile = NULL;
     int delta = 0;
 
-    switch (param)
+    switch (aeButton)
     {
     case 2:
         delta = 1;

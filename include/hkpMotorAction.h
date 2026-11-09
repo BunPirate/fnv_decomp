@@ -6,13 +6,14 @@
 
 typedef float hkReal;
 
+// pdb: class hkpMotorAction, size 0x40, bases: hkpUnaryAction, 4 members
 class hkpMotorAction : public hkpUnaryAction
 {
 public:
     char pad1C[0x4];
-    hkVector4 m_kAxisEndPoints;
-    hkReal m_fSpinRate;
-    hkReal m_fGain;
-    hkBool m_bSlotEnabled;
+    hkVector4 m_axis;
+    hkReal m_spinRate;
+    hkReal m_gain;
+    hkBool m_active;
     char pad39[0x7];
 };

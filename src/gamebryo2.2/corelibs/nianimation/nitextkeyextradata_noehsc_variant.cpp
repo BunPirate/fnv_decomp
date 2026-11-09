@@ -30,7 +30,7 @@ class TimedTextEntry
     {
         return m_kText;
     }
-    void SetText(const NiFixedString& kText);
+    void NiTextKey_SetText(const NiFixedString& kText);
     void __thiscall FUN_00a578d0(NiStream& stream);
 };
 
@@ -43,7 +43,11 @@ inline bool IsExactTextKeyKind(const NiRTTI* pkRTTI, const NiExtraData* pkObject
 
 // These operations are not yet declared by the shared NiTextKeyExtraData header.
 // @fnv 0x00a46c20
-void __fastcall CopyTextKeys(NiTextKeyExtraData* self, void*, NiTextKeyExtraData* pkDest, CloningProcess* kCloning)
+// src: XBOX_RETAIL_PDB 0x00a46c20
+// pdb: NiTextKeyExtraData::CopyMembers | NiTextKeyExtraData.obj | retail, object-file gap fill, high
+// pdb params: pDest, kCloning
+// pdb locals: uiI
+void __fastcall NiTextKeyExtraData_CopyMembers(NiTextKeyExtraData* self, void*, NiTextKeyExtraData* pkDest, CloningProcess* kCloning)
 {
     self->NiExtraData::CopyMembers_00a7b330(pkDest, kCloning);
     pkDest->m_uiNumKeys = self->m_uiNumKeys;
@@ -53,7 +57,7 @@ void __fastcall CopyTextKeys(NiTextKeyExtraData* self, void*, NiTextKeyExtraData
         for (unsigned int i = 0; i < self->m_uiNumKeys; i++)
         {
             pkDest->m_pKeys[i].m_fTime = self->m_pKeys[i].m_fTime;
-            pkDest->m_pKeys[i].SetText(self->m_pKeys[i].GetText());
+            pkDest->m_pKeys[i].NiTextKey_SetText(self->m_pKeys[i].GetText());
         }
     }
     else
@@ -71,6 +75,9 @@ struct BsStream
 };
 
 // @fnv 0x00a46e00
+// pdb: NiTextKeyExtraData::LoadBinary | NiTextKeyExtraData.obj | retail, object-file gap fill, high
+// pdb params: stream
+// pdb locals: uiCount, pTextKeys, uiI
 void __fastcall LoadTextKeys(NiTextKeyExtraData* self, void*, NiStream& stream)
 {
     self->NiExtraData::LoadBinary(stream);

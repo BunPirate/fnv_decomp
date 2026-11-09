@@ -17,7 +17,7 @@ template <class T> inline NiPointer<T>::operator T*() const { return m_pObject; 
 #include "../../../include/Transform.h"
 
 extern const NiRTTI g_011f3fd4;
-extern const NiRTTI g_011f49a4;
+extern const NiRTTI NiTexturingProperty_ms_RTTI;
 extern const NiRTTI g_011f4428;
 struct FUN_00a4f300_shell
 {
@@ -42,9 +42,9 @@ __forceinline bool IsKindOfA(const NiRTTI* r)
 {
     while (r)
     {
-        if (r == &g_011f49a4)
+        if (r == &NiTexturingProperty_ms_RTTI)
             return true;
-        r = r->m_pBaseRTTI;
+        r = r->m_pkBaseRTTI;
     }
     return false;
 }
@@ -54,7 +54,7 @@ __forceinline bool IsKindOfN(const NiRTTI* r)
     {
         if (r == &g_011f4428)
             return true;
-        r = r->m_pBaseRTTI;
+        r = r->m_pkBaseRTTI;
     }
     return false;
 }
@@ -74,7 +74,10 @@ __forceinline NiNodeY* CastN(NiAVObject* p)
 
 // @fnv 0x00c4bd80
 // src: COMMUNITY 0x00c4bd80
-void __cdecl BSUtilities_FindAnimatedTextures(NiAVObject* obj, StrArr* arr)
+// pdb: BSUtilities::FindAnimatedTextures | BSUtilities.obj | debug, upstream name already matches, high
+// pdb params: apObject, arTextureArray
+// pdb locals: pflip, pnode, pgeometry, ptexProp, iflips, I, ptexture
+void __cdecl BSUtilities_FindAnimatedTextures(NiAVObject* apObject, StrArr* arTextureArray)
 {
     NiNodeY* node7;
     FUN_00a4f300_shell* c7;
@@ -84,12 +87,12 @@ void __cdecl BSUtilities_FindAnimatedTextures(NiAVObject* obj, StrArr* arr)
     unsigned int i3;
     char* s2;
     unsigned int j;
-    if (obj)
+    if (apObject)
     {
-        c7 = (FUN_00a4f300_shell*)obj->GetController(&g_011f3fd4);
-        if (!c7 && (obj->IsTriBasedGeometry() || obj->IsParticlesGeom()))
+        c7 = (FUN_00a4f300_shell*)apObject->GetController(&g_011f3fd4);
+        if (!c7 && (apObject->IsTriBasedGeometry() || apObject->IsParticlesGeom()))
         {
-            geom2 = obj;
+            geom2 = apObject;
             propA = CastA((NiAVObject*)geom2->GetProperty(5));
             if (propA)
                 c7 = (FUN_00a4f300_shell*)((NiAVObject*)propA)->GetController(&g_011f3fd4);
@@ -101,15 +104,15 @@ void __cdecl BSUtilities_FindAnimatedTextures(NiAVObject* obj, StrArr* arr)
             {
                 s2 = (char*)c7->GetEntryAt(i3);
                 if (s2)
-                    (arr->*static_cast<unsigned int (StrArr::*)(char*&)>(&StrArr::Add))(s2);
+                    (arTextureArray->*static_cast<unsigned int (StrArr::*)(char*&)>(&StrArr::Add))(s2);
             }
         }
-        node7 = CastN(obj);
+        node7 = CastN(apObject);
         if (node7)
         {
             for (j = 0; j < node7->m_usSize; j++)
             {
-                BSUtilities_FindAnimatedTextures(node7->GetAt(j), arr);
+                BSUtilities_FindAnimatedTextures(node7->GetAt(j), arTextureArray);
             }
         }
     }
@@ -154,30 +157,33 @@ inline void Dead21()
 }
 // @fnv 0x00c4c2d0
 // src: COMMUNITY 0x00c4c2d0
-void __cdecl BSUtilities_GetInverseWorldMatrix(NiAVObject* pObj, int bInverse, Mat4* pOut)
+// pdb: BSUtilities::GetInverseWorldMatrix | BSUtilities.obj | retail, upstream name already matches, high
+// pdb params: aWorld, apSkin, aOut
+// pdb locals: mat, model, rposAdj
+void __cdecl BSUtilities_GetInverseWorldMatrix(NiAVObject* aWorld, int apSkin, Mat4* aOut)
 {
-    if (!bInverse)
+    if (!apSkin)
     {
         // The output method fills this transform without default construction.
         float transformStorage[sizeof(NiTransform) / sizeof(float)];
-        pObj->FUN_004b4880(reinterpret_cast<NiTransform*>(transformStorage));
+        aWorld->FUN_004b4880(reinterpret_cast<NiTransform*>(transformStorage));
         Dead21();
-        pOut->m[0][0] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(0, 0) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[0][1] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(1, 0) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[0][2] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(2, 0) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[0][3] = 0.0f;
-        pOut->m[1][0] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(0, 1) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[1][1] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(1, 1) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[1][2] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(2, 1) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[1][3] = 0.0f;
-        pOut->m[2][0] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(0, 2) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[2][1] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(1, 2) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[2][2] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(2, 2) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
-        pOut->m[2][3] = 0.0f;
-        pOut->m[3][0] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Translate.x;
-        pOut->m[3][1] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Translate.y;
-        pOut->m[3][2] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Translate.z;
-        pOut->m[3][3] = 1.0f;
+        aOut->m[0][0] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(0, 0) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[0][1] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(1, 0) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[0][2] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(2, 0) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[0][3] = 0.0f;
+        aOut->m[1][0] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(0, 1) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[1][1] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(1, 1) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[1][2] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(2, 1) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[1][3] = 0.0f;
+        aOut->m[2][0] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(0, 2) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[2][1] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(1, 2) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[2][2] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Rotate.GetEntry(2, 2) * reinterpret_cast<const NiTransform*>(transformStorage)->m_fScale;
+        aOut->m[2][3] = 0.0f;
+        aOut->m[3][0] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Translate.x;
+        aOut->m[3][1] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Translate.y;
+        aOut->m[3][2] = reinterpret_cast<const NiTransform*>(transformStorage)->m_Translate.z;
+        aOut->m[3][3] = 1.0f;
     }
     else
     {
@@ -202,7 +208,7 @@ void __cdecl BSUtilities_GetInverseWorldMatrix(NiAVObject* pObj, int bInverse, M
         kM.m[3][0] = rPos.x;
         kM.m[3][1] = rPos.y;
         kM.m[3][2] = rPos.z;
-        D3DXMatrixInverse_00ee6dda(pOut, 0, &kM);
+        D3DXMatrixInverse_00ee6dda(aOut, 0, &kM);
     }
 }
 }  // namespace fnv_00c4c2d0
@@ -214,57 +220,60 @@ inline float GetTransformEntry(const Transform::Mat* rotation, unsigned int row,
 
 // @fnv 0x00c4c530
 // src: COMMUNITY 0x00c4c530
-void __cdecl BSUtilities_ApplyTransformToVerticesAndNormals(const Transform& transform, unsigned int count, const NiPoint3* positions,
-                          NiPoint3* transformedPositions, const NiPoint3* normals, NiPoint3* transformedNormals)
+// pdb: BSUtilities::ApplyTransformToVerticesAndNormals | BSUtilities.obj | debug, upstream name already matches, high
+// pdb params: aTrans, aiVertCount, apInVerts, apOutVerts, apInNorms, apOutNorms
+// pdb locals: i
+void __cdecl BSUtilities_ApplyTransformToVerticesAndNormals(const Transform& aTrans, unsigned int aiVertCount, const NiPoint3* apInVerts,
+                          NiPoint3* apOutVerts, const NiPoint3* apInNorms, NiPoint3* apOutNorms)
 {
-    for (unsigned int i = 0; i < count; ++i)
+    for (unsigned int i = 0; i < aiVertCount; ++i)
     {
-        if (transformedPositions)
+        if (apOutVerts)
         {
             {
-                float a = GetTransformEntry(&transform.rotation, 0, 0);
-                float b = GetTransformEntry(&transform.rotation, 0, 1);
-                float c = GetTransformEntry(&transform.rotation, 0, 2);
-                transformedPositions[i].x =
-                    float((a * positions[i].x + b * positions[i].y + c * positions[i].z) * transform.scale +
-                          transform.position.x);
+                float a = GetTransformEntry(&aTrans.rotation, 0, 0);
+                float b = GetTransformEntry(&aTrans.rotation, 0, 1);
+                float c = GetTransformEntry(&aTrans.rotation, 0, 2);
+                apOutVerts[i].x =
+                    float((a * apInVerts[i].x + b * apInVerts[i].y + c * apInVerts[i].z) * aTrans.scale +
+                          aTrans.position.x);
             }
             {
-                float a = GetTransformEntry(&transform.rotation, 1, 0);
-                float b = GetTransformEntry(&transform.rotation, 1, 1);
-                float c = GetTransformEntry(&transform.rotation, 1, 2);
-                transformedPositions[i].y =
-                    float((a * positions[i].x + b * positions[i].y + c * positions[i].z) * transform.scale +
-                          transform.position.y);
+                float a = GetTransformEntry(&aTrans.rotation, 1, 0);
+                float b = GetTransformEntry(&aTrans.rotation, 1, 1);
+                float c = GetTransformEntry(&aTrans.rotation, 1, 2);
+                apOutVerts[i].y =
+                    float((a * apInVerts[i].x + b * apInVerts[i].y + c * apInVerts[i].z) * aTrans.scale +
+                          aTrans.position.y);
             }
             {
-                float a = GetTransformEntry(&transform.rotation, 2, 0);
-                float b = GetTransformEntry(&transform.rotation, 2, 1);
-                float c = GetTransformEntry(&transform.rotation, 2, 2);
-                transformedPositions[i].z =
-                    float((a * positions[i].x + b * positions[i].y + c * positions[i].z) * transform.scale +
-                          transform.position.z);
+                float a = GetTransformEntry(&aTrans.rotation, 2, 0);
+                float b = GetTransformEntry(&aTrans.rotation, 2, 1);
+                float c = GetTransformEntry(&aTrans.rotation, 2, 2);
+                apOutVerts[i].z =
+                    float((a * apInVerts[i].x + b * apInVerts[i].y + c * apInVerts[i].z) * aTrans.scale +
+                          aTrans.position.z);
             }
         }
-        if (transformedNormals)
+        if (apOutNorms)
         {
             {
-                float a = GetTransformEntry(&transform.rotation, 0, 0);
-                float b = GetTransformEntry(&transform.rotation, 0, 1);
-                float c = GetTransformEntry(&transform.rotation, 0, 2);
-                transformedNormals[i].x = a * normals[i].x + b * normals[i].y + c * normals[i].z;
+                float a = GetTransformEntry(&aTrans.rotation, 0, 0);
+                float b = GetTransformEntry(&aTrans.rotation, 0, 1);
+                float c = GetTransformEntry(&aTrans.rotation, 0, 2);
+                apOutNorms[i].x = a * apInNorms[i].x + b * apInNorms[i].y + c * apInNorms[i].z;
             }
             {
-                float a = GetTransformEntry(&transform.rotation, 1, 0);
-                float b = GetTransformEntry(&transform.rotation, 1, 1);
-                float c = GetTransformEntry(&transform.rotation, 1, 2);
-                transformedNormals[i].y = a * normals[i].x + b * normals[i].y + c * normals[i].z;
+                float a = GetTransformEntry(&aTrans.rotation, 1, 0);
+                float b = GetTransformEntry(&aTrans.rotation, 1, 1);
+                float c = GetTransformEntry(&aTrans.rotation, 1, 2);
+                apOutNorms[i].y = a * apInNorms[i].x + b * apInNorms[i].y + c * apInNorms[i].z;
             }
             {
-                float a = GetTransformEntry(&transform.rotation, 2, 0);
-                float b = GetTransformEntry(&transform.rotation, 2, 1);
-                float c = GetTransformEntry(&transform.rotation, 2, 2);
-                transformedNormals[i].z = a * normals[i].x + b * normals[i].y + c * normals[i].z;
+                float a = GetTransformEntry(&aTrans.rotation, 2, 0);
+                float b = GetTransformEntry(&aTrans.rotation, 2, 1);
+                float c = GetTransformEntry(&aTrans.rotation, 2, 2);
+                apOutNorms[i].z = a * apInNorms[i].x + b * apInNorms[i].y + c * apInNorms[i].z;
             }
         }
     }
@@ -277,7 +286,7 @@ inline bool IsKindOfC4BB(const NiRTTI* pkRTTI, const NiObject* pkObject)
     {
         if (pkTmp == pkRTTI)
             return true;
-        pkTmp = pkTmp->m_pBaseRTTI;
+        pkTmp = pkTmp->m_pkBaseRTTI;
     }
     return false;
 }
@@ -301,14 +310,17 @@ inline NiSourceTexture* DynamicCastC4BB(NiObject* pkObject)
 
 // @fnv 0x00c4bb40
 // src: XBOX_PDB 0x00c4bb40
-void* __cdecl BSUtilities_GetTextureName(NiObject* pkObject)
+// pdb: BSUtilities::GetTextureName | BSUtilities.obj | retail, upstream name already matches, high
+// pdb params: apTexture
+// pdb locals: pfilename, psrctexture
+void* __cdecl BSUtilities_GetTextureName(NiObject* apTexture)
 {
     void* pvData = 0;
     NiSourceTexture* pkTarget;
-    if (!pkObject)
+    if (!apTexture)
         pkTarget = 0;
     else
-        pkTarget = (NiSourceTexture*)(IsKindOfC4BB(&g_sourceTextureRTTI, pkObject) ? pkObject : 0);
+        pkTarget = (NiSourceTexture*)(IsKindOfC4BB(&g_sourceTextureRTTI, apTexture) ? apTexture : 0);
     if (pkTarget)
         pvData = GetPlatformPath(pkTarget);
     return pvData;
@@ -378,10 +390,13 @@ struct PathQ
 };
 // @fnv 0x00c4bbc0
 // src: COMMUNITY 0x00c4bbc0
-void __cdecl BSUtilities_SetSequenceFileName(NamedQ* pObj, const char* pcPath)
+// pdb: BSUtilities::SetSequenceFileName | BSUtilities.obj | debug, upstream name already matches, high
+// pdb params: apSequence, apName
+// pdb locals: tempName, pname, fname
+void __cdecl BSUtilities_SetSequenceFileName(NamedQ* apSequence, const char* apName)
 {
-    const char* pcOld_ = pObj->GetName();
-    PathQ kKPath(pcPath);
+    const char* pcOld_ = apSequence->GetName();
+    PathQ kKPath(apName);
     char acBuf[0x100];
     if (pcOld_)
         FUN_00ec65a6(acBuf, 0x100, pcOld_);
@@ -389,7 +404,7 @@ void __cdecl BSUtilities_SetSequenceFileName(NamedQ* pObj, const char* pcPath)
         acBuf[0] = 0;
     FUN_00ec6bd2(acBuf, 0x100, "_:");
     FUN_00ec6bd2(acBuf, 0x100, kKPath.m_szName);
-    pObj->SetName(FixStrQ(acBuf));
+    apSequence->SetName(FixStrQ(acBuf));
 }
 
 class NiPoint3R
@@ -476,28 +491,31 @@ inline double Abs(float value)
 }
 // @fnv 0x00c4bf40
 // src: COMMUNITY 0x00c4bf40
-void __cdecl BSUtilities_ReflectCameraAboutArbitraryPlane(NiCamera* source, Plane* plane, NiCamera* dest)
+// pdb: BSUtilities::ReflectCameraAboutArbitraryPlane | BSUtilities.obj | retail, upstream name already matches, high
+// pdb params: apCamera, apPlane, apReflectedCamera
+// pdb locals: reflect_camrot, right, reflforward, forward, up, reflright, reflup, projVec, reflect_campos, campos, UpdateData1
+void __cdecl BSUtilities_ReflectCameraAboutArbitraryPlane(NiCamera* apCamera, Plane* apPlane, NiCamera* apReflectedCamera)
 {
-    NiPoint3R position = reinterpret_cast<const NiPoint3R&>(source->m_kWorld.m_Translate);
-    NiPoint3R first7 = reinterpret_cast<const NiMatrix3R&>(source->m_kWorld.m_Rotate).Column(0);
-    NiPoint3R second3 = reinterpret_cast<const NiMatrix3R&>(source->m_kWorld.m_Rotate).Column(2);
-    NiPoint3R thirdB = reinterpret_cast<const NiMatrix3R&>(source->m_kWorld.m_Rotate).Column(1);
-    NiPoint3R reflected6 = position + (-plane->normal) * (float)(2.0 * plane->Distance(position));
+    NiPoint3R position = reinterpret_cast<const NiPoint3R&>(apCamera->m_kWorld.m_Translate);
+    NiPoint3R first7 = reinterpret_cast<const NiMatrix3R&>(apCamera->m_kWorld.m_Rotate).Column(0);
+    NiPoint3R second3 = reinterpret_cast<const NiMatrix3R&>(apCamera->m_kWorld.m_Rotate).Column(2);
+    NiPoint3R thirdB = reinterpret_cast<const NiMatrix3R&>(apCamera->m_kWorld.m_Rotate).Column(1);
+    NiPoint3R reflected6 = position + (-apPlane->normal) * (float)(2.0 * apPlane->Distance(position));
     NiPoint3R direction6 = -first7;
     direction6.Unitize_004a0c10();
-    NiPoint3R axisA = (float)(2.0 * plane->normal.Dot(direction6)) * plane->normal - direction6;
+    NiPoint3R axisA = (float)(2.0 * apPlane->normal.Dot(direction6)) * apPlane->normal - direction6;
     direction6 = -second3;
     direction6.Unitize_004a0c10();
-    NiPoint3R axis2 = FUN_004a3760((float)(2.0 * plane->normal.Dot(direction6)), plane->normal) - direction6;
+    NiPoint3R axis2 = FUN_004a3760((float)(2.0 * apPlane->normal.Dot(direction6)), apPlane->normal) - direction6;
     direction6 = thirdB;
     direction6.Unitize_004a0c10();
-    NiPoint3R axis7 = FUN_004a3760((float)(2.0 * plane->normal.Dot(direction6)), plane->normal) - direction6;
+    NiPoint3R axis7 = FUN_004a3760((float)(2.0 * apPlane->normal.Dot(direction6)), apPlane->normal) - direction6;
     NiMatrix3R matrix;
     matrix.NiMatrix3_NiMatrix3(axisA, axis7, axis2);
-    dest->m_kLocal.m_Translate = reinterpret_cast<const NiPoint3&>(reflected6);
-    dest->m_kLocal.m_Rotate = reinterpret_cast<const NiMatrix3&>(matrix);
-    dest->m_kLocal.m_fScale = Abs(source->m_kWorld.m_fScale);
-    dest->UpdateViewFrustum(source->m_kViewFrustum);
+    apReflectedCamera->m_kLocal.m_Translate = reinterpret_cast<const NiPoint3&>(reflected6);
+    apReflectedCamera->m_kLocal.m_Rotate = reinterpret_cast<const NiMatrix3&>(matrix);
+    apReflectedCamera->m_kLocal.m_fScale = Abs(apCamera->m_kWorld.m_fScale);
+    apReflectedCamera->UpdateViewFrustum(apCamera->m_kViewFrustum);
     NiUpdateData update2(0.0f, false, false);
-    dest->Update(update2);
+    apReflectedCamera->Update(update2);
 }

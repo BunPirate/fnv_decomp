@@ -14,6 +14,9 @@
 
 // @fnv 0x00827440
 // src: XBOX_PDB 0x00827440
+// pdb: ReanimateEffect::GetSaveSize | ReanimateEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isize
 unsigned short __thiscall ReanimateEffect::GetSaveSize_00827440(Actor* apActor)
 {
     unsigned short isize = 0;
@@ -30,6 +33,8 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // Loads the base ActiveEffect state, then reads four blocks (4, 4, 12 and 16 bytes) into this object at offsets 0x4c, 0x50, 0x54 and 0x60 via g_TESSaveLoadGame.
 // @fnv 0x00827510
+// pdb: ReanimateEffect::LoadGame | ReanimateEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void ReanimateEffect::LoadGame(Actor* apActor)
 {
     ActiveEffect::LoadGame(apActor);
@@ -103,6 +108,8 @@ struct BodyVirt
 // Reverts this form, then restores body motion if the actor has 3D and iState is below 0x32.
 // @fnv 0x008276e0
 // src: XBOX_PDB 0x008276e0
+// pdb: ReanimateEffect::Revert | ReanimateEffect.obj | retail, vtable slot, high
+// pdb params: apActor
 void __thiscall ReanimateEffect::Revert_008276e0(Actor* apActor)
 {
     ((TESForm*)this)->TESForm::Revert((unsigned int)apActor);
@@ -115,6 +122,8 @@ void __thiscall ReanimateEffect::Revert_008276e0(Actor* apActor)
 // Allocates and constructs a reanimation effect from the three arguments, returning the new object.
 // @fnv 0x008273c0
 // src: GUESS 0x008273c0 (confidence: medium)
+// pdb: ReanimateEffect::Instantiate | ReanimateEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 ReanimateEffect* Object_ConstructObject(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
 {
     return new ReanimateEffect(apCaster, apSpell, apEffect);
@@ -122,13 +131,15 @@ ReanimateEffect* Object_ConstructObject(MagicCaster* apCaster, MagicItem* apSpel
 
 // @fnv 0x008274a0
 // src: XBOX_PDB 0x008274a0
+// pdb: ReanimateEffect::SaveGame | ReanimateEffect.obj | retail, vtable slot, high
+// pdb params: apActor
 void ReanimateEffect::SaveGame_008274a0(Actor* apActor)
 {
     ActiveEffect::SaveGame(apActor);
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&m_4c, 4);
-    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&m_50, 4);
-    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(m_54, 12);
-    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(m_60, 16);
+    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&fSaveTime, 4);
+    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(StartPos, 12);
+    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(StartRot, 16);
 }
 
 void* __cdecl operator new(unsigned int);
@@ -148,6 +159,8 @@ struct FUN_008266a0_copy60
 // Allocates a new effect from three fields of this, passes it to a17, copies fields at 0x48-0x6f into it and returns it.
 // @fnv 0x008266a0
 // src: XBOX_PDB 0x008266a0
+// pdb: ReanimateEffect::Copy | ReanimateEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 ActiveEffect* ReanimateEffect::Copy_008266a0()
 {
     ActiveEffect* presult = reinterpret_cast<ActiveEffect*>(
@@ -374,6 +387,8 @@ void __cdecl CommandEffect_CleanupCommandedActor(Actor*, Actor*, int);
 
 // @fnv 0x00827230
 // src: XBOX_PDB 0x00827230
+// pdb: ReanimateEffect::Finish | ReanimateEffect.obj | retail, vtable slot, high
+// pdb locals: ptarget, pcaster
 void __thiscall ReanimateEffect::Finish_00827230()
 {
     if (g_dataHandler->TESDataHandler_GetClearingData())
@@ -527,13 +542,16 @@ BoneCollision* FUN_0043b610(ReanimateNode*);
 void bhkWorld_SetMotion(ReanimateNode*, bool, bool, bool, bool);
 void Warning_005b5e40(const char*);
 // @fnv 0x00827580
-void ReanimateEffect::UpdateReanimation(Actor* actor)
+// pdb: ReanimateEffect::FinishInitLoadGame | ReanimateEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: pav, pmove, panimData, pcol
+void ReanimateEffect::UpdateReanimation(Actor* apActor)
 {
-    FUN_00805760(actor);
-    ReanimateNode* root = reinterpret_cast<ReanimateNode*>(actor->GetNiNode());
+    FUN_00805760(apActor);
+    ReanimateNode* root = reinterpret_cast<ReanimateNode*>(apActor->GetNiNode());
     if (root)
     {
-        ReanimateBody* controller2 = static_cast<ActorBodyAccess*>(actor)->Actor_GetFaceAnimationData();
+        ReanimateBody* controller2 = static_cast<ActorBodyAccess*>(apActor)->Actor_GetFaceAnimationData();
         if (controller2)
         {
             if (state < 40)
@@ -1512,6 +1530,8 @@ RSource* __fastcall GetReanimationSource(ReanimateEffect* apEffect);
 
 // If the target actor is dead, resets and reconfigures it, assigns a package, and stores the spine bone's body position and rotation; otherwise dispels.
 // @fnv 0x008267b0
+// pdb: ReanimateEffect::Start | ReanimateEffect.obj | retail, vtable slot, high
+// pdb locals: ptarget, pav, pprocess, ppack, pmove, pcol
 void ReanimateEffect::StartReanimation()
 {
     if (!GetReanimationSource(this))
@@ -1561,8 +1581,8 @@ void ReanimateEffect::StartReanimation()
                 {
                     body = collision->GetBody();
                     body->SetMotion(4);
-                    body->GetPosition(*reinterpret_cast<RVector*>(m_54));
-                    body->GetRotation(*reinterpret_cast<RVector*>(m_60));
+                    body->GetPosition(*reinterpret_cast<RVector*>(StartPos));
+                    body->GetRotation(*reinterpret_cast<RVector*>(StartRot));
                 }
             }
             else
@@ -1584,9 +1604,12 @@ typedef TESObjectREFR* (__thiscall* ReanimationReferenceResolver)(TESObjectREFR*
 // That return signature is not exposed by the shared TESObjectREFR declaration.
 // @fnv 0x00827340
 // src: XBOX_PDB 0x00827340
-bool ReanimateEffect::CheckTarget_00827340(TESObjectREFR* apRef)
+// pdb: ReanimateEffect::CheckTarget | ReanimateEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: ptarget
+bool ReanimateEffect::CheckTarget_00827340(TESObjectREFR* apTarget)
 {
-    Character* pChar = dynamic_cast<Character*>((*reinterpret_cast<ReanimationReferenceResolver**>(apRef))[1](apRef));
+    Character* pChar = dynamic_cast<Character*>((*reinterpret_cast<ReanimationReferenceResolver**>(apTarget))[1](apTarget));
     if (pChar != 0 && pChar->HasHealth(false) && !pChar->Actor_IsReanimated() && GetReanimationCharacterState(pChar) != 6)
     {
         return true;
@@ -1618,14 +1641,16 @@ void __fastcall InitializeReanimationVector(void* apVector);
 
 // Initializes m_48, m_4c, and m_50 to zero, assigns m_54 from Make(0, 0, 0), and copies g_v to m_60.
 // @fnv 0x008265b0
-ReanimateEffect::ReanimateEffect(MagicCaster* a, MagicItem* b, EffectItem* c) : ActiveEffect(a, b, c)
+// pdb: ReanimateEffect::ReanimateEffect | ReanimateEffect.obj | retail, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+ReanimateEffect::ReanimateEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect) : ActiveEffect(apCaster, apSpell, apEffect)
 {
-    InitializeReanimationVector(m_54);
-    InitializeReanimationVector(m_60);
+    InitializeReanimationVector(StartPos);
+    InitializeReanimationVector(StartRot);
     m_48 = 0;
-    m_50 = 0.0f;
+    fSaveTime = 0.0f;
     m_4c = 0;
     V12t t;
-    *reinterpret_cast<V12b*>(m_54) = *(V12b*)&t.Make(0.0f, 0.0f, 0.0f);
-    *reinterpret_cast<V16b*>(m_60) = *(V16b*)&g_v;
+    *reinterpret_cast<V12b*>(StartPos) = *(V12b*)&t.Make(0.0f, 0.0f, 0.0f);
+    *reinterpret_cast<V16b*>(StartRot) = *(V16b*)&g_v;
 }

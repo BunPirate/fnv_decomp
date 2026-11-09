@@ -18,17 +18,20 @@
 #include "../../../include/SkyObject.h"
 
 // @fnv 0x006366d0
+// pdb: Moon::UpdatePhase | Moon.obj | debug, object-file run extension, low
+// pdb params: apSky
+// pdb locals: eNewPhase
 float Moon::GetMoonVisibility()
 {
-    float fadeStart = 180.0 - m_fFadeStartAngle;
-    float fadeEnd = 180.0 - m_fFadeEndAngle;
+    float fadeStart = 180.0 - fAngleFadeStart;
+    float fadeEnd = 180.0 - fAngleFadeEnd;
     if (fPos > 180.0)
         return 0.0f;
-    else if (fPos <= m_fFadeStartAngle && fPos >= m_fFadeEndAngle)
-        return (fPos - m_fFadeEndAngle) / (m_fFadeStartAngle - m_fFadeEndAngle);
+    else if (fPos <= fAngleFadeStart && fPos >= fAngleFadeEnd)
+        return (fPos - fAngleFadeEnd) / (fAngleFadeStart - fAngleFadeEnd);
     else if (fPos >= fadeStart && fPos <= fadeEnd)
         return (fadeEnd - fPos) / (fadeEnd - fadeStart);
-    else if (fPos > m_fFadeStartAngle && fPos < fadeStart)
+    else if (fPos > fAngleFadeStart && fPos < fadeStart)
         return 1.0f;
     else
         return 0.0f;
@@ -45,8 +48,8 @@ float Moon::GetMoonShadowVisibility()
         float end;
         float lateEnd;
     } fadeAngles;
-    fadeAngles.start = m_fFadeEndAngle;
-    fadeAngles.end = m_fFadeEndAngle - m_fFadeAngleRange;
+    fadeAngles.start = fAngleFadeEnd;
+    fadeAngles.end = fAngleFadeEnd - fAngleShadowEarlyFade;
     fadeAngles.lateStart = 180.0 - fadeAngles.start;
     fadeAngles.lateEnd = 180.0 - fadeAngles.end;
     if (fPos > 180.0)
@@ -61,6 +64,7 @@ float Moon::GetMoonShadowVisibility()
         return 0.0f;
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -70,6 +74,8 @@ class TaskQueueInterface
 
 // @fnv 0x00635fe0
 // src: XBOX_PDB 0x00635fe0
+// pdb: NiAVObject::SetDisplayObject | Moon.obj | debug, upstream name already matches, high
+// pdb params: bDisplay
 void TaskQueueInterface::NiAVObject_SetDisplayObject(bool bDisplay)
 {
     SetTaskFlagDWord(bDisplay, 0x20);
@@ -79,19 +85,22 @@ class Flag512Receiver
 {
   public:
     void NiAlphaProperty_SetBit(bool, unsigned int);
-    void NiAlphaProperty_SetNoSorter(bool enabled);
+    void NiAlphaProperty_SetNoSorter(bool bNoSort);
 };
 
 // @fnv 0x00636000
 // src: COMMUNITY 0x00636000
-void Flag512Receiver::NiAlphaProperty_SetNoSorter(bool enabled)
+// pdb: NiAlphaProperty::SetNoSorter | TESObjectCELL.obj | debug, upstream name already matches, high
+// pdb params: bNoSort
+void Flag512Receiver::NiAlphaProperty_SetNoSorter(bool bNoSort)
 {
-    NiAlphaProperty_SetBit(enabled, 0x2000);
+    NiAlphaProperty_SetBit(bNoSort, 0x2000);
 }
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
-    unsigned int GetGameDaysPassed(void);
+    unsigned int GetDaysPassed(void);
 };
 extern Calendar g_calendar;
 extern unsigned int DAT_011cca80;
@@ -103,7 +112,7 @@ bool __cdecl Moon::IsMoonVisible(const Sky* apSky)
 {
     if (_ref_0084e3a0(apSky) && TESClimate_GetMoonPhaseDays(_ref_0084e3a0(apSky)))
     {
-        unsigned int eNewPhase = (g_calendar.GetGameDaysPassed() % (TESClimate_GetMoonPhaseDays(_ref_0084e3a0(apSky)) * 8)) /
+        unsigned int eNewPhase = (g_calendar.GetDaysPassed() % (TESClimate_GetMoonPhaseDays(_ref_0084e3a0(apSky)) * 8)) /
                                  TESClimate_GetMoonPhaseDays(_ref_0084e3a0(apSky));
         if (eNewPhase != DAT_011cca80)
         {
@@ -135,6 +144,7 @@ struct NiAVObjectFlagQuery
 
 // @fnv 0x006366b0
 // src: XBOX_PDB 0x006366b0
+// pdb: NiAVObject::GetDisplayObject | Moon.obj | debug, upstream name already matches, high
 bool NiAVObject::GetDisplayObject()
 {
     return ((NiAVObjectFlagQuery*)this)->HasFlags(0x20);
@@ -142,17 +152,18 @@ bool NiAVObject::GetDisplayObject()
 
 // Clears the four NiPointer members, detaches the node from its parent if it has one, then clears the node pointer.
 // @fnv 0x00634ce0
+// pdb: Moon::~Moon | Moon.obj | retail, upstream name already matches, high
 Moon::~Moon()
 {
-    m_pMoonShadowShape = 0;
-    m_pMoonShape = 0;
-    m_pMoonShadowNode = 0;
-    m_pMoonNode = 0;
-    if (m_pRootNode->GetParent())
+    spShadowMesh = 0;
+    spMoonMesh = 0;
+    spShadowNode = 0;
+    spMoonNode = 0;
+    if (spRoot->GetParent())
     {
-        m_pRootNode->GetParent()->RemoveObject(m_pRootNode);
+        spRoot->GetParent()->RemoveObject(spRoot);
     }
-    m_pRootNode = 0;
+    spRoot = 0;
 }
 
 // 0x00634a70  /MT /Od /Oy- /GS /EHsc /Gy /GF  thiscall ctor, 7 args (ret 0x1c)
@@ -160,34 +171,37 @@ Moon::~Moon()
 
 // Builds the moon texture paths from name and phase suffixes, stores fade/speed/z-offset/size parameters, and initialises position and node pointers.
 // @fnv 0x00634a70
-Moon::Moon(const char* name, float fadeStart, float fadeEnd, float shadowEarlyFade, float speed,
-                           float zOffset, unsigned int size)
-    : m_pMoonNode(0), m_pMoonShadowNode(0), m_pMoonShape(0), m_pMoonShadowShape(0)
+// pdb: Moon::Moon | Moon.obj | retail, upstream name already matches, high
+// pdb params: apMoonName, afAngleFadeStart, afAngleFadeEnd, afAngleShadowEarlyFade, afSpeed, afZOffset, aiSize
+// pdb locals: pFormat, tempMemContext
+Moon::Moon(const char* apMoonName, float afAngleFadeStart, float afAngleFadeEnd, float afAngleShadowEarlyFade, float afSpeed,
+                           float afZOffset, unsigned int aiSize)
+    : spMoonNode(0), spShadowNode(0), spMoonMesh(0), spShadowMesh(0)
 {
     AutoMemContext memContext(MEM_CONTEXT_MEM_CONTEXT_SKY, true,
                               "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Sky\\Moon.cpp", 50);
     const char* fmt = "\\Textures\\Sky\\%s_%s.dds";
-    m_kMoonTexturePaths[3].PrintfString( fmt, name, "one_wan");
-    m_kMoonTexturePaths[5].PrintfString( fmt, name, "one_wax");
-    m_kMoonTexturePaths[2].PrintfString( fmt, name, "half_wan");
-    m_kMoonTexturePaths[6].PrintfString( fmt, name, "half_wax");
-    m_kMoonTexturePaths[1].PrintfString( fmt, name, "three_wan");
-    m_kMoonTexturePaths[7].PrintfString( fmt, name, "three_wax");
-    m_kMoonTexturePaths[0].PrintfString( fmt, name, "full");
+    strTextures[3].PrintfString( fmt, apMoonName, "one_wan");
+    strTextures[5].PrintfString( fmt, apMoonName, "one_wax");
+    strTextures[2].PrintfString( fmt, apMoonName, "half_wan");
+    strTextures[6].PrintfString( fmt, apMoonName, "half_wax");
+    strTextures[1].PrintfString( fmt, apMoonName, "three_wan");
+    strTextures[7].PrintfString( fmt, apMoonName, "three_wax");
+    strTextures[0].PrintfString( fmt, apMoonName, "full");
 
-    m_fFadeStartAngle = fadeStart;
-    m_fFadeEndAngle = fadeEnd;
-    m_fFadeAngleRange = shadowEarlyFade;
-    fSpeed = speed;
-    m_fGlyphVerticalOffset = zOffset;
-    iSize = size;
+    fAngleFadeStart = afAngleFadeStart;
+    fAngleFadeEnd = afAngleFadeEnd;
+    fAngleShadowEarlyFade = afAngleShadowEarlyFade;
+    fSpeed = afSpeed;
+    fZOffset = afZOffset;
+    iSize = aiSize;
     fPos = 0.0f;
-    m_fValue = 3.402823466e+38F;
-    m_pMoonNode = 0;
-    m_pMoonShadowNode = 0;
-    m_pMoonShape = 0;
-    m_pMoonShadowShape = 0;
-    m_eUpdateStatus = US_NOT_REQUIRED;
+    fLastPosUpdate = 3.402823466e+38F;
+    spMoonNode = 0;
+    spShadowNode = 0;
+    spMoonMesh = 0;
+    spShadowMesh = 0;
+    eUpdateMoonTexture = US_NOT_REQUIRED;
 }
 
 struct TESSaveLoadGame;
@@ -255,6 +269,9 @@ struct FUN_004a0c90_shell
 
 // Updates moon position and visibility, sets texture and culling state on moon nodes, and applies rotation matrices when the sky view is active.
 // @fnv 0x00636020
+// pdb: Moon::Update | Moon.obj | retail, upstream name already matches, high
+// pdb params: apSky, afSecondsPassed
+// pdb locals: fTimePassed, tempMemContext, fvisShadow, fvisMoon, fvisStars, spTex, ptex, pprop, matrixMoonZ, matrixMoonX, pshadeProperty
 void Moon::Update(::Sky* apSky, float afSecondsPassed)
 {
     using MoonUpdateDetail::Flt;
@@ -273,17 +290,17 @@ void Moon::Update(::Sky* apSky, float afSecondsPassed)
 
     ::SkyObject::Update(apSky, afSecondsPassed);
 
-    if (m_fValue == _DAT_010231b0)
+    if (fLastPosUpdate == _DAT_010231b0)
     {
-        m_fValue = 0;
+        fLastPosUpdate = 0;
         fPos = DAT_010249d8;
     }
     if (((TESSaveLoadGame*)::g_TESSaveLoadGame)->GetLoading())
     {
-        m_fValue = -((double)(g_calendar.GetGameDaysPassed() - 1) * 24.0);
+        fLastPosUpdate = -((double)(g_calendar.GetDaysPassed() - 1) * 24.0);
         fPos = DAT_010249d8;
     }
-    fTimePassed = GetFieldEC((const char*)apSky) - m_fValue;
+    fTimePassed = GetFieldEC((const char*)apSky) - fLastPosUpdate;
     if (fTimePassed < _gModifierZero)
         fTimePassed = fTimePassed + 24.0;
     fPos = fSpeed * DAT_01012638 * fTimePassed + fPos;
@@ -291,34 +308,34 @@ void Moon::Update(::Sky* apSky, float afSecondsPassed)
         fPos = fPos + DAT_0103c348;
     while (fPos >= DAT_0103c348)
         fPos = fPos - DAT_0103c348;
-    m_fValue = GetFieldEC((const char*)apSky);
+    fLastPosUpdate = GetFieldEC((const char*)apSky);
 
     fvisMoon = GetMoonVisibility();
     fvisShadow = GetMoonShadowVisibility();
     fvisStars = ((Twin_0084d030*)((BSThread*)apSky)->GetThreadID())->GetStoredFloatValue();
     fvisShadow = BSMIN(fvisShadow, fvisStars);
 
-    if (m_eUpdateStatus == US_INITIALIZE ||
-        (m_eUpdateStatus == US_WHEN_CULLED && fvisMoon <= _gModifierZero && fvisShadow <= _gModifierZero))
+    if (eUpdateMoonTexture == US_INITIALIZE ||
+        (eUpdateMoonTexture == US_WHEN_CULLED && fvisMoon <= _gModifierZero && fvisShadow <= _gModifierZero))
     {
         SkyShaderProperty* pprop =
-            (SkyShaderProperty*)((PropHelper*)((const Flt*)&m_pMoonShape)->operator unsigned int())->GetProperty(3);
+            (SkyShaderProperty*)((PropHelper*)((const Flt*)&spMoonMesh)->operator unsigned int())->GetProperty(3);
         ::NiPointer< ::NiTexture> spTex(0);
         BSShaderManager::GetTexture(
-            (const char*)((const Flt*)&m_kMoonTexturePaths[DAT_011cca80])->operator unsigned int(), true, spTex, true,
+            (const char*)((const Flt*)&strTextures[DAT_011cca80])->operator unsigned int(), true, spTex, true,
             false);
         ::NiTexture* ptex = (::NiTexture*)((const Flt*)&spTex)->operator unsigned int();
         if (ptex)
-            pprop->SetTexture(ptex);
-        ((::TaskQueueInterface*)((const Flt*)&m_pMoonShape)->operator unsigned int())->NiAVObject_SetDisplayObject(ptex != 0);
-        m_eUpdateStatus = US_NOT_REQUIRED;
+            pprop->SetBaseMap(ptex);
+        ((::TaskQueueInterface*)((const Flt*)&spMoonMesh)->operator unsigned int())->NiAVObject_SetDisplayObject(ptex != 0);
+        eUpdateMoonTexture = US_NOT_REQUIRED;
     }
 
     if (((SkyView*)apSky)->Sky_GetMode() == 3 || ((SkyView*)apSky)->Sky_GetMode() == 2)
     {
-        if (!((::NiAVObject*)((const Flt*)&m_pRootNode)->operator unsigned int())->GetDisplayObject())
+        if (!((::NiAVObject*)((const Flt*)&spRoot)->operator unsigned int())->GetDisplayObject())
         {
-            ((NiAVObject*)((const Flt*)&m_pRootNode)->operator unsigned int())->SetAppCulled(true);
+            ((NiAVObject*)((const Flt*)&spRoot)->operator unsigned int())->SetAppCulled(true);
             return;
         }
         Mtx matrixMoonZ;
@@ -326,52 +343,52 @@ void Moon::Update(::Sky* apSky, float afSecondsPassed)
         matrixMoonX._ref_006815c0();
         matrixMoonZ._ref_006815c0();
         ((FUN_00524ac0_shell*)&matrixMoonX)->FUN_00524ac0(-fPos * DAT_01023128);
-        ((FUN_004a0c90_shell*)&matrixMoonZ)->FUN_004a0c90(m_fGlyphVerticalOffset * DAT_01023128);
-        ((NiAVObject*)((const Flt*)&m_pRootNode)->operator unsigned int())->SetLocalRotation(matrixMoonX * matrixMoonZ);
+        ((FUN_004a0c90_shell*)&matrixMoonZ)->FUN_004a0c90(fZOffset * DAT_01023128);
+        ((NiAVObject*)((const Flt*)&spRoot)->operator unsigned int())->SetLocalRotation(matrixMoonX * matrixMoonZ);
         if (fvisMoon <= _gModifierZero && fvisShadow <= _gModifierZero)
         {
-            ((NiAVObject*)((const Flt*)&m_pRootNode)->operator unsigned int())->SetAppCulled(true);
+            ((NiAVObject*)((const Flt*)&spRoot)->operator unsigned int())->SetAppCulled(true);
         }
         else
         {
-            ((NiAVObject*)((const Flt*)&m_pRootNode)->operator unsigned int())->SetAppCulled(false);
+            ((NiAVObject*)((const Flt*)&spRoot)->operator unsigned int())->SetAppCulled(false);
             if (fvisMoon <= _gModifierZero ||
-                !((::NiAVObject*)((const Flt*)&m_pMoonShape)->operator unsigned int())->GetDisplayObject())
+                !((::NiAVObject*)((const Flt*)&spMoonMesh)->operator unsigned int())->GetDisplayObject())
             {
-                ((NiAVObject*)((const Flt*)&m_pMoonNode)->operator unsigned int())->SetAppCulled(true);
+                ((NiAVObject*)((const Flt*)&spMoonNode)->operator unsigned int())->SetAppCulled(true);
             }
             else
             {
-                ((NiAVObject*)((const Flt*)&m_pMoonNode)->operator unsigned int())->SetAppCulled(false);
+                ((NiAVObject*)((const Flt*)&spMoonNode)->operator unsigned int())->SetAppCulled(false);
                 SkyShaderProperty* pshadeProperty =
-                    (((PropHelper*)((const Flt*)&m_pMoonShape)->operator unsigned int())->GetProperty(3) == 0
+                    (((PropHelper*)((const Flt*)&spMoonMesh)->operator unsigned int())->GetProperty(3) == 0
                          ? 0
-                         : ((BGSTerrainManager*)((PropHelper*)((const Flt*)&m_pMoonShape)->operator unsigned int())
+                         : ((BGSTerrainManager*)((PropHelper*)((const Flt*)&spMoonMesh)->operator unsigned int())
                                 ->GetProperty(3))
                                    ->GetMinLevel() == 0xd)
-                        ? (SkyShaderProperty*)((PropHelper*)((const Flt*)&m_pMoonShape)->operator unsigned int())
+                        ? (SkyShaderProperty*)((PropHelper*)((const Flt*)&spMoonMesh)->operator unsigned int())
                               ->GetProperty(3)
                         : 0;
                 if (pshadeProperty)
                     ((NiColorA*)&pshadeProperty->propertyData[0x60])->a = fvisMoon;
             }
             if (fvisShadow <= _gModifierZero ||
-                !((::NiAVObject*)((const Flt*)&m_pMoonShadowShape)->operator unsigned int())->GetDisplayObject())
+                !((::NiAVObject*)((const Flt*)&spShadowMesh)->operator unsigned int())->GetDisplayObject())
             {
-                ((NiAVObject*)((const Flt*)&m_pMoonShadowNode)->operator unsigned int())->SetAppCulled(true);
+                ((NiAVObject*)((const Flt*)&spShadowNode)->operator unsigned int())->SetAppCulled(true);
             }
             else
             {
-                ((NiAVObject*)((const Flt*)&m_pMoonShadowNode)->operator unsigned int())->SetAppCulled(false);
+                ((NiAVObject*)((const Flt*)&spShadowNode)->operator unsigned int())->SetAppCulled(false);
                 SkyShaderProperty* pshadeProperty =
-                    (((PropHelper*)((const Flt*)&m_pMoonShadowShape)->operator unsigned int())->GetProperty(3) == 0
+                    (((PropHelper*)((const Flt*)&spShadowMesh)->operator unsigned int())->GetProperty(3) == 0
                          ? 0
-                         : ((BGSTerrainManager*)((PropHelper*)((const Flt*)&m_pMoonShadowShape)
+                         : ((BGSTerrainManager*)((PropHelper*)((const Flt*)&spShadowMesh)
                                                      ->
                                                      operator unsigned int())
                                 ->GetProperty(3))
                                    ->GetMinLevel() == 0xd)
-                        ? (SkyShaderProperty*)((PropHelper*)((const Flt*)&m_pMoonShadowShape)->operator unsigned int())
+                        ? (SkyShaderProperty*)((PropHelper*)((const Flt*)&spShadowMesh)->operator unsigned int())
                               ->GetProperty(3)
                         : 0;
                 if (pshadeProperty)

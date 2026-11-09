@@ -7,11 +7,12 @@
 #include "hkpConstraintData.h"
 #include "hkpStiffSpringConstraintDataAtoms.h"
 #pragma pack(push, 1)
+// pdb: class hkpStiffSpringConstraintData, size 0x50, bases: hkpConstraintData, 1 members
 class hkpStiffSpringConstraintData : public hkpConstraintData
 {
   public:
     char padC[0x4];
-    hkpStiffSpringConstraintDataAtoms m_kBridgeAtoms;  // +0x10
+    hkpStiffSpringConstraintDataAtoms m_atoms;  // +0x10
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpStiffSpringConstraintData[(sizeof(hkpStiffSpringConstraintData) == 0x50) ? 1 : -1];

@@ -17,6 +17,9 @@ struct ScriptList : ScriptPool
 // Stores the value pointed to by element into the node obtained from FUN_0049fa80 at offset 8, then passes the node to FUN_0049fa20.
 // @fnv 0x0076b660
 // src: XBOX_PDB 0x0076b660
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiAVObject *>::AddHead | BGSDecalManager.obj | debug, call graph, medium
+// pdb params: element
+// pdb locals: pkNode
 void ScriptList::NiTPointerListBase_NiTPointerAllocator_unsigned_int_unsigned_int_AddHead(unsigned int* puiElement)
 {
     Node* node = static_cast<Node*>(this->NiTPointerListBase_NiTPointerAllocator_unsigned_int_unsigned_int_NewItem());

@@ -149,6 +149,8 @@ public:
 hkMemoryRouter* GetMemoryRouter_c85750();
 
 // @fnv 0x00d58d60
+// pdb: hkpConvexVerticesShape::getFirstVertex | hkpConvexVerticesShape.obj | debug, vtable slot, medium
+// pdb params: v
 void hkpConvexVerticesShape::GetFirstVertex(hkVector4& vertex) const
 {
     float* out = reinterpret_cast<float*>(&vertex);
@@ -163,13 +165,14 @@ void __cdecl hkAabbUtil_calcAabb_00d26230(void*, void*, void*, float, int);
 
 // Calls FUN_00d26230 with this+0x20, this+0x30, the float at this+0x10 plus b, and c.
 // @fnv 0x00d591d0
+// pdb: bhkConvexVerticesShape::`scalar deleting destructor' | bhkConvexVerticesShape.obj | debug, object-file run extension, low
 void hkpConvexVerticesShape::CalculateAabb(const hkTransform& a, float afDelta, hkAabb& c) const
 {
     hkAabbUtil_calcAabb_00d26230(
         const_cast<hkTransform*>(&a),
         reinterpret_cast<void*>(reinterpret_cast<char*>(const_cast<hkpConvexVerticesShape*>(this)) + 0x20),
         reinterpret_cast<void*>(reinterpret_cast<char*>(const_cast<hkpConvexVerticesShape*>(this)) + 0x30),
-        m_fSphereRadius + afDelta,
+        m_radius + afDelta,
         reinterpret_cast<int>(&c)
     );
 }
@@ -183,6 +186,8 @@ struct FUN_00d5a320 {
 };
 // Releases the current reference at this+0x60, stores p there, and if b and p are set calls FUN_00d59f40.
 // @fnv 0x00d5a320
+// pdb: hkpConvexVerticesShape::setConnectivity | hkpConvexVerticesShape.obj | retail, object-file run extension, low
+// pdb params: connect, sort
 void FUN_00d5a320::AssignReference(RefObj* apRef, bool b)
 {
     if (apRef) apRef->RetainReference();
@@ -206,6 +211,8 @@ struct FUN_00d5a4e0_StandIn : public FUN_00d5a4e0_Base {
 };
 
 // @fnv 0x00d5a4e0
+// pdb: hkCharControllerShape::`scalar deleting destructor' | bhkCharControllerShape.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00d5a4e0_StandIn* FUN_00d5a4e0_StandIn::FUN_00d5a4e0(unsigned char deleting) {
     this->FUN_00d59870();
 
@@ -267,6 +274,8 @@ struct FourVectorsQ { hkVector4q m_uiX; hkVector4q m_uiY; hkVector4q m_uiZ; };
 
 // Writes m_kRotatedVertices positions and m_fSphereRadius into sphereBuffer as hkSphere entries, returning sphereBuffer.
 // @fnv 0x00d58d80
+// pdb: hkpConvexVerticesShape::getCollisionSpheresImpl | hkpConvexVerticesShape.obj | retail, vtable slot, high
+// pdb params: sphereBuffer
 const hkSphere* hkpConvexVerticesShape::GetCollisionSpheres(hkSphere* sphereBuffer) const
 {
     hkSphere* out = sphereBuffer;
@@ -274,15 +283,15 @@ const hkSphere* hkpConvexVerticesShape::GetCollisionSpheres(hkSphere* sphereBuff
     int i = m_iStridedVertexCount - 1;
     for (; i >= 3; i -= 4)
     {
-        (out++)->m_pos.set(fv->m_uiX(0), fv->m_uiY(0), fv->m_uiZ(0), m_fSphereRadius);
-        (out++)->m_pos.set(fv->m_uiX(1), fv->m_uiY(1), fv->m_uiZ(1), m_fSphereRadius);
-        (out++)->m_pos.set(fv->m_uiX(2), fv->m_uiY(2), fv->m_uiZ(2), m_fSphereRadius);
-        (out++)->m_pos.set(fv->m_uiX(3), fv->m_uiY(3), fv->m_uiZ(3), m_fSphereRadius);
+        (out++)->m_pos.set(fv->m_uiX(0), fv->m_uiY(0), fv->m_uiZ(0), m_radius);
+        (out++)->m_pos.set(fv->m_uiX(1), fv->m_uiY(1), fv->m_uiZ(1), m_radius);
+        (out++)->m_pos.set(fv->m_uiX(2), fv->m_uiY(2), fv->m_uiZ(2), m_radius);
+        (out++)->m_pos.set(fv->m_uiX(3), fv->m_uiY(3), fv->m_uiZ(3), m_radius);
         fv++;
     }
-    if (i >= 0) (out++)->m_pos.set(fv->m_uiX(0), fv->m_uiY(0), fv->m_uiZ(0), m_fSphereRadius);
-    if (i >= 1) (out++)->m_pos.set(fv->m_uiX(1), fv->m_uiY(1), fv->m_uiZ(1), m_fSphereRadius);
-    if (i >= 2) (out++)->m_pos.set(fv->m_uiX(2), fv->m_uiY(2), fv->m_uiZ(2), m_fSphereRadius);
+    if (i >= 0) (out++)->m_pos.set(fv->m_uiX(0), fv->m_uiY(0), fv->m_uiZ(0), m_radius);
+    if (i >= 1) (out++)->m_pos.set(fv->m_uiX(1), fv->m_uiY(1), fv->m_uiZ(1), m_radius);
+    if (i >= 2) (out++)->m_pos.set(fv->m_uiX(2), fv->m_uiY(2), fv->m_uiZ(2), m_radius);
     return sphereBuffer;
 }
 
@@ -496,6 +505,9 @@ public:
 
 // Gets the vertices, transforms them by t, calls FUN_00d59900 with them, then transforms the m_planeData plane equations in place by t.
 // @fnv 0x00d59cc0
+// pdb: hkpConvexVerticesShape::transformVerticesAndPlaneEquations | hkpConvexVerticesShape.obj | retail, object-file run extension, low
+// pdb params: t
+// pdb locals: vertices
 void hkpConvexVerticesShapeq::Transform(const hkTransform& t)
 {
     hkLocalArrayq<hkVector4q> vertices(GetNumCollisionSpheres());
@@ -575,6 +587,8 @@ struct ConvexD5A360 {
 
 // Copies kVertices into m_kVertices and calls FUN_00d59f40 if m_iConnectivity is nonzero.
 // @fnv 0x00d5a360
+// pdb: hkpConvexVerticesShape::setPlaneEquations | hkpConvexVerticesShape.obj | retail, object-file run extension, low
+// pdb params: planes
 void ConvexD5A360::SetVertices(const hkArray<Vector4D5A360, ArrayD5A360Policy>& kVertices)
 {
     m_kVertices = kVertices;
@@ -611,6 +625,8 @@ typedef hkUint16 hkpVertexId;
 
 // Copies numIds rotated vertex positions from m_kRotatedVertices into verticesOut, packing each vertexId into the w field.
 // @fnv 0x00d59060
+// pdb: hkpConvexVerticesShape::convertVertexIdsToVerticesImpl | hkpConvexVerticesShape.obj | retail, vtable slot, high
+// pdb params: ids, numIds, verticesOut
 void hkpConvexVerticesShape::GetVerticesFromIds(const hkpVertexId* ids, int numIds, Vector4WithInt24W* verticesOut) const
 {
     int i = numIds - 1;
@@ -632,7 +648,7 @@ void hkpConvexVerticesShape::GetVerticesFromIds(const hkpVertexId* ids, int numI
 
 class SpliceAllocator;
 struct AlignedSpliceVector {LocalM128 value;};
-void __cdecl hkArrayUtil__reserve(SpliceAllocator& allocator,void* array,int capacity,int elementBytes);
+void __cdecl hkArrayUtil__reserve(SpliceAllocator& mem,void* array,int numElem,int sizeElem);
 void __cdecl hkMemUtil_memMove(void* destination,const void* source,unsigned bytes);
 struct VectorSpliceArray {
     AlignedSpliceVector* data;
@@ -643,6 +659,8 @@ struct VectorSpliceArray {
 // Removes removeCount elements at first, inserts insertCount elements from source, and grows the buffer via FUN_00c908c0 if capacity is insufficient.
 // @fnv 0x00d5a410
 // src: XBOX_PDB 0x00d5a410
+// pdb: hkArrayBase<hkVector4>::_spliceInto | hkpConvexVerticesShape.obj | retail, object-file run extension, low
+// pdb params: alloc, index, numdel, p, numtoinsert
 void VectorSpliceArray::hkArrayBase_hkVector4_spliceInto(SpliceAllocator& allocator,int first,int removeCount,const AlignedSpliceVector* source,int insertCount) {
     int newSize=size-removeCount+insertCount;
     int tailCount=size-first-removeCount;
@@ -686,6 +704,7 @@ template <typename T, typename A> __forceinline hkArray<T, A>::~hkArray()
 
 
 // @fnv 0x00d59870
+// pdb: hkpConvexVerticesShape::~hkpConvexVerticesShape | hkpConvexVerticesShape.obj | retail, upstream name already matches, high
 hkpConvexVerticesShape::~hkpConvexVerticesShape() throw()
 {
     if (m_pConnectivity)
@@ -755,6 +774,9 @@ struct MatchShape : public hkpShape
 // Finds the vertex with the maximum dot product against direction and writes its position and index to supportingVertexOut.
 // @fnv 0x00d58ee0
 // src: HAVOK_SRC 0x00d58ee0
+// pdb: hkpConvexVerticesShape::getSupportingVertexImpl | hkpConvexVerticesShape.obj | debug, upstream name already matches, high
+// pdb params: direction, supportingVertexOut
+// pdb locals: vertexId, bestIndices, bestDotIn
 void MatchShape::hkpConvexVerticesShape_getSupportingVertexImpl(const MatchVector& direction, MatchVector& supportingVertexOut) const
 {
     const hkFourTransposedPointsQ* fv = m_kRotatedVertices;
@@ -891,6 +913,8 @@ struct FUN_00d59bd0 : ConvexPart {
 
 // Constructs the base with type 6 and radius r, copies source into planes, then calls FUN_00d59900 with input->x, input->z and input->y.
 // @fnv 0x00d59bd0
+// pdb: hkpConvexVerticesShape::hkpConvexVerticesShape | hkpConvexVerticesShape.obj | retail, object-file run extension, low
+// pdb params: radius
 FUN_00d59bd0::FUN_00d59bd0(InputValues* input, const hkArray<Vector4D5A360, ArrayD5A360Policy>& source, float r)
     : ConvexPart(6, r), convexPiece(0), connectivity(0)
 {
@@ -1030,6 +1054,9 @@ struct ConvexVertsShape {
 
 // @fnv 0x00d592a0
 // src: HAVOK_SRC 0x00d592a0
+// pdb: hkpConvexVerticesShape::castRayImpl | hkpConvexVerticesShape.obj | retail, upstream name already matches, high
+// pdb params: input, results
+// pdb locals: assertBuf, ostr, v0, v2, v1
 hkBoolRet ConvexVertsShape::hkpConvexVerticesShape_castRayImpl(const RayInput& input, RayOutput& results)
 {
     TimerMark("TtrcConvexVert", 0);
@@ -1154,6 +1181,9 @@ static __forceinline void VertArray96Q_SetSizeAndGrow(hkArrayBase<hkVector4q>& s
     }
 
 // @fnv 0x00d59200
+// pdb: hkpConvexVerticesShape::getOriginalVertices | hkpConvexVerticesShape.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkConvexVerticesShape::operator*
+// pdb params: vertices
 void hkpConvexVerticesShape::GetOriginalVertices(hkArray<hkVector4>& output) const
 {
     hkArrayBase<hkVector4q>& vertices = reinterpret_cast<hkArrayBase<hkVector4q>&>(output);
@@ -1169,7 +1199,7 @@ void hkpConvexVerticesShape::GetOriginalVertices(hkArray<hkVector4>& output) con
 extern LocalM128 DAT_010c71d0;
 
 
-void __cdecl ArrayUtilReserve_c908c0(hkMemoryAllocator& alloc, void* array, int numElements, int sizeElem);
+void __cdecl ArrayUtilReserve_c908c0(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 __forceinline float& PacketCallLocal_00d59cc0::operator()(int i) { return m_vComponents.m128_f32[i]; }
 
@@ -1252,6 +1282,9 @@ struct ConvexVerticesShape
 // Stores numVertices, copies vertexIn into m_kRotatedVertices padded to a multiple of four, and computes the AABB center and half-extents.
 // @fnv 0x00d59900
 // src: XBOX_PDB 0x00d59900
+// pdb: hkpConvexVerticesShape::copyVertexData | hkpConvexVerticesShape.obj | retail, upstream name already matches, high
+// pdb params: vertexIn, byteStriding, numVertices
+// pdb locals: aabb, assertBuf, ostr
 void ConvexVerticesShape::hkpConvexVerticesShape_copyVertexData(const float* vertexIn, int byteStriding, int numVertices)
 {
     m_iStridedVertexCount = numVertices;

@@ -7,7 +7,7 @@
 
 struct DATST
 {
-    void __thiscall ProcessLists_StopCombatandAlarmonActor(Actor* a, int b);
+    void __thiscall ProcessLists_StopCombatandAlarmonActor(Actor* apActor, int bNotAlarm);
 };
 extern DATST DAT_011e0e80;
 // @fnv 0x005c1b00

@@ -68,7 +68,7 @@ extern char DAT_011f5d30;
 int __cdecl GetGlobalDataPtr();
 extern int DAT_011f5e44;
 extern int DAT_011f5e4c;
-void ResetStreamLinkIDSet();
+void NiMaterialLibrary__SDMShutdown();
 extern int DAT_0109f814;
 struct FUN_00a8ff50
 {
@@ -85,32 +85,32 @@ struct FUN_00a96440_class
 {
     char m_auiShapeKeys[0x4c];
     void* m_pField;
-    void SetField(void* pNew);
+    void NiParticlesData_ReplaceRadii(void* pfRadii);
 };
 void NiFree(void*);
 struct FUN_00a96460_class
 {
     char pad[0x54];
     void* m_0x54;
-    void NiParticlesData_ReplaceSizes(void* p);
+    void NiParticlesData_ReplaceSizes(void* pfSizes);
 };
 void NiFreeAlias(void*);
 struct FUN_00a96480_Class
 {
     void* m_5c;
-    void NiParticlesData_ReplaceRotationAngles(void* p);
+    void NiParticlesData_ReplaceRotationAngles(void* pfRotationAngles);
 };
 extern "C" void __cdecl NiFreeAlias(void*);
 struct FUN_00a964a0_Class
 {
     void* m_p;
-    void NiParticlesData_ReplaceTextureIndices(void* p);
+    void NiParticlesData_ReplaceTextureIndices(void* pucTextureIndices);
 };
 struct NiBinaryExtraData;
 struct NiFloatsExtraData;
 struct FUN_00a99c40_shell : public NiExtraData
 {
-    void NiIntegerExtraData_CopyMembers(NiBinaryExtraData* dst, CloningProcess* cp);
+    void NiIntegerExtraData_CopyMembers(NiBinaryExtraData* pDest, CloningProcess* kCloning);
 };
 extern const void* DAT_0109e47c;
 BSFadeNode* NiSkinPartition_CreateObject();
@@ -255,7 +255,7 @@ struct FUN_00a94c00_shell
     float m_108;
     float m_10c;
     float m_110;
-    void NiSpotLight_CopyMembers(NiDirectionalLight* dst, CloningProcess& cp);
+    void NiSpotLight_CopyMembers(NiDirectionalLight* pDest, CloningProcess& kCloning);
 };
 extern MemoryManager g_memoryManager;
 extern char* DAT_010a05e4;
@@ -273,7 +273,7 @@ struct FUN_00a96800_shell
     void* m_64;
     void* m_68;
     void ReleaseStorage_00a96800();
-    void DestroyGeometryData();
+    void NiGeometryData_dtor();
 };
 extern int DAT_0109e470;
 void NiFree(void*);
@@ -348,7 +348,7 @@ struct FUN_00a80580_sub
     int unk14;
     int unk18;
 
-    void Cleanup();
+    void NiPropertyState_dtor();
 };
 struct FUN_00a80580_cls
 {
@@ -373,7 +373,7 @@ struct FUN_00a80fc0_class
 extern float DAT_011ab3f8;
 static const float kPi = 3.1415927f;
 extern "C" double __cdecl fabs(double);
-float __cdecl NiFastATan2(float y, float x);
+float __cdecl NiFastATan2(float fY, float fX);
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 extern int DAT_0109e32c;
 struct FUN_00a81760_obj
@@ -383,7 +383,7 @@ struct FUN_00a81760_obj
     unsigned short m_58;
     unsigned short m_5a;
 
-    void FUN_00a7b690();
+    void NiTriShapeData_ctor();
 };
 FUN_00a81760_obj* __cdecl NiTriShapeDynamicData_CreateObject();
 struct S_a819e0_O
@@ -604,7 +604,7 @@ struct FUN_00a87790_cls
     virtual void vd4();
     virtual void vd8();
     virtual void Tail(int a);
-    void NiScreenElements_Draw(int a);
+    void NiScreenElements_Draw(int pkRenderer);
 };
 struct FUN_00a88c60_Point2
 {
@@ -634,8 +634,8 @@ struct FUN_00a88c60_Class
 
     int __thiscall ProcessAndReturnValue_00a88c60(FUN_00a88c60_Class* other);
 };
-void NiCompUtility_DecompressFloatArray(const short* psCompressed, unsigned int uiUnused, float fProjectionAlongAim, float fHalfRange,
-                  float* pfValues, unsigned int ItemUpdateArray);
+void NiCompUtility_DecompressFloatArray(const short* psSrcArray, unsigned int uiSrcCount, float fOffset, float fHalfRange,
+                  float* pfDestArray, unsigned int uiDestCount);
 struct FUN_00a89760_base
 {
     virtual ~FUN_00a89760_base();
@@ -669,7 +669,7 @@ struct FUN_00a8a680_cls
     int m_38;
     int m_3c;
     void* m_40;
-    void* InitWithBuffer(int a0, int a1, int a2, int a3, int a4, int a5, int a6);
+    void* NiLinesData_ctor(int usVertices, int pkVertex, int pkColor, int pkTexture, int usNumTextureSets, int eNBTMethod, int pkFlags);
 };
 struct DecodePair
 {
@@ -734,7 +734,7 @@ class FUN_00a8f140_cls
     int unk0c;
     NiRefObject* m_10;
 
-    void SetRefObject(NiRefObject* obj);
+    void SetRefObject(NiRefObject* pkRendererData);
 };
 struct S_00a8f2c0_Arg
 {
@@ -769,7 +769,7 @@ struct S_00a8f2c0_Obj
         sub.unk00 = 0;
     }
     void FUN_00a5d3a0();
-    void SetRefObject(S_00a8f2c0_Arg* c);
+    void SetRefObject(S_00a8f2c0_Arg* pkRendererData);
 };
 S_00a8f2c0_Obj* __cdecl CreateFadeNodeFromArg(int a, int b, S_00a8f2c0_Arg* c);
 extern const void* DAT_0109f9bc;
@@ -782,7 +782,7 @@ struct FUN_00a910f0_class
 };
 struct FUN_00aa4060_class
 {
-    void MemoryManager_Deallocate(void* object);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00aa4060_class DAT_011f6238;
 struct NiParticleBase
@@ -967,7 +967,7 @@ int __cdecl ProcessArgWithObj(FUN_00a9ff00_Arg* a, FUN_00a9ff00_Obj* b);
 struct MemMgr : MemoryManager
 {
     void* Allocate(unsigned int size);
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 void __cdecl NiFree(void* p);
 
@@ -1064,13 +1064,16 @@ struct SkinData
 
 // @fnv 0x00a84810
 // src: COMMUNITY 0x00a84810
-WeightArray* __stdcall NiSkinPartition_CreateVertexInteractions(unsigned int vertexCount, SkinData* skin)
+// pdb: NiSkinPartition::CreateVertexInteractions | NiSkinPartition.obj | retail, upstream name already matches, high
+// pdb params: uiVertices, pkSkinData
+// pdb locals: pkVertexInteraction, i, uiBones, kInteraction, pkBoneData, j, uiVert
+WeightArray* __stdcall NiSkinPartition_CreateVertexInteractions(unsigned int uiVertices, SkinData* pkSkinData)
 {
-    WeightArray* arrays = new WeightArray[vertexCount];
-    unsigned int boneCount = skin->boneCount;
+    WeightArray* arrays = new WeightArray[uiVertices];
+    unsigned int boneCount = pkSkinData->boneCount;
     for (unsigned int i = 0; i < boneCount; i++)
     {
-        SkinBone* bone = &skin->bones[i];
+        SkinBone* bone = &pkSkinData->bones[i];
         for (unsigned int j = 0; j < bone->weightCount; j++)
         {
             WeightEntry entry;
@@ -1079,7 +1082,7 @@ WeightArray* __stdcall NiSkinPartition_CreateVertexInteractions(unsigned int ver
             arrays[bone->weights[j].vertex].Add(entry);
         }
     }
-    for (unsigned int k = 0; k < vertexCount; k++)
+    for (unsigned int k = 0; k < uiVertices; k++)
     {
         if (arrays[k].m_iElementCount == 0)
         {
@@ -1159,6 +1162,8 @@ class FUN_00a911d0 : public S911d0_Base
 };
 
 // @fnv 0x00a911d0
+// pdb: NiScreenGeometryData::~NiScreenGeometryData | NiOldScreenSpace.obj | retail, object-file run extension, low
+// pdb locals: i, pkElement
 FUN_00a911d0::~FUN_00a911d0()
 {
     for (unsigned int i = 0; i < m_kEntries.GetSize(); i++)
@@ -1594,8 +1599,8 @@ struct GeometryBuilder
     unsigned int unk00, unk04, count;
     OutputRecord* output;
     TempRecord* NiSkinPartition_CreateVertexInteractions(unsigned int, SkinBuildData*);
-    bool ReduceGroupWeights(SourceGeometry*, unsigned char, unsigned char, TempRecord*);
-    bool BuildTriangleSetMapping(SourceGeometry*, SkinBuildData*, unsigned char, TempRecord*, HolderArray*, void**,
+    bool NiSkinPartition_RemoveExcessInteractions(SourceGeometry*, unsigned char, unsigned char, TempRecord*);
+    bool NiSkinPartition_MakeBoneSets(SourceGeometry*, SkinBuildData*, unsigned char, TempRecord*, HolderArray*, void**,
                       OutputRecord**);
     bool NiSkinPartition_MakePartitions(SourceGeometry*, SkinBuildData*, unsigned char, unsigned char, bool, OutputRecord**,
                       unsigned short*, unsigned char*);
@@ -1707,56 +1712,59 @@ __declspec(noinline) void FUN_00a81ba0::PopulateSkinData(C082d30* triangles, Hol
 
 // @fnv 0x00a84980
 // src: COMMUNITY 0x00a84980
-bool GeometryBuilder::NiSkinPartition_MakePartitions(SourceGeometry* source, SkinBuildData* other, unsigned char first,
-                                   unsigned char second, bool mode, OutputRecord** outputs, unsigned short* indices,
-                                   unsigned char* changes)
+// pdb: NiSkinPartition::MakePartitions | NiSkinPartition.obj | retail, upstream name already matches, high
+// pdb params: pkTriData, pkSkinData, ucBonesPerPartition, ucBonesPerVertex, bForcePalette, apWArray, apusPartNumA, apbStateChangeA
+// pdb locals: bPartition, pkVertexInteraction, puiTriangleToPartition, kBoneSets, uiVertices, pkPartitions, bNeedPalette, kTriangles, i, pkBoneSet, pkPrevBoneSet, p, p1
+bool GeometryBuilder::NiSkinPartition_MakePartitions(SourceGeometry* pkTriData, SkinBuildData* pkSkinData, unsigned char ucBonesPerPartition,
+                                   unsigned char ucBonesPerVertex, bool bForcePalette, OutputRecord** apWArray, unsigned short* apusPartNumA,
+                                   unsigned char* apbStateChangeA)
 {
     HolderArray holders = {0, 0, 0};
     void* data;
-    TempRecord* records = NiSkinPartition_CreateVertexInteractions(source->GetCount(), other);
+    TempRecord* records = NiSkinPartition_CreateVertexInteractions(pkTriData->GetCount(), pkSkinData);
     if (!records)
     {
         NiFree(records);
         return false;
     }
 
-    bool success = ReduceGroupWeights(source, first, second, records);
+    bool success = NiSkinPartition_RemoveExcessInteractions(pkTriData, ucBonesPerPartition, ucBonesPerVertex, records);
     if (success)
     {
-        success = BuildTriangleSetMapping(source, other, first, records, &holders, &data, outputs);
-        if (outputs && indices && changes)
+        success = NiSkinPartition_MakeBoneSets(pkTriData, pkSkinData, ucBonesPerPartition, records, &holders, &data, apWArray);
+        if (apWArray && apusPartNumA && apbStateChangeA)
         {
             for (unsigned int i = 0; i < holders.count; ++i)
             {
                 Holder** entries = holders.data;
                 Holder* current = entries[i];
-                indices[i] = current->index;
+                apusPartNumA[i] = current->index;
                 if (i)
                 {
                     Holder* previous = entries[i - 1];
                     if (current->ContainsSortedSubset(previous) && current->count == previous->count)
-                        changes[i] = 0;
+                        apbStateChangeA[i] = 0;
                     else
-                        changes[i] = 1;
+                        apbStateChangeA[i] = 1;
                 }
                 else
                 {
-                    changes[0] = 1;
+                    apbStateChangeA[0] = 1;
                 }
             }
         }
         OutputRecord* result = new (0) OutputRecord[count];
-        bool padBones = (first != second);
+        bool padBones = (ucBonesPerPartition != ucBonesPerVertex);
         C082d30 scratch;
         scratch.data = 0;
         scratch.size = 0;
         scratch.count = 0;
         for (unsigned int i = 0; i < count; ++i)
         {
-            scratch.AppendMatchingIndices(i, data, source->GetTriangleCount());
+            scratch.AppendMatchingIndices(i, data, pkTriData->GetTriangleCount());
             Holder* current = const_cast<Holder**&>(holders.data)[i];
-            result[i].PopulateSkinData(&scratch, current, source, records, padBones, mode, second,
-                                       (*(SkinBuildData* volatile*)&other)->boneCount);
+            result[i].PopulateSkinData(&scratch, current, pkTriData, records, padBones, bForcePalette, ucBonesPerVertex,
+                                       (*(SkinBuildData* volatile*)&pkSkinData)->boneCount);
             scratch.count = 0;
             delete current;
         }
@@ -1771,9 +1779,9 @@ bool GeometryBuilder::NiSkinPartition_MakePartitions(SourceGeometry* source, Ski
                     for (unsigned int j = i; j < count - 1; ++j)
                     {
                         _memmove(&result[j], &result[j + 1], sizeof(OutputRecord));
-                        outputs[j] = outputs[j + 1];
-                        indices[j] = indices[j + 1];
-                        changes[j] = changes[j + 1];
+                        apWArray[j] = apWArray[j + 1];
+                        apusPartNumA[j] = apusPartNumA[j + 1];
+                        apbStateChangeA[j] = apbStateChangeA[j + 1];
                     }
                     --count;
                     break;

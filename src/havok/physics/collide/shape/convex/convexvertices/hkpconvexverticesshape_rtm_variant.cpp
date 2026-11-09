@@ -379,6 +379,8 @@ __forceinline void GetShapeVertices(const hkpConvexVerticesShape* shape, hkArray
 
 // @fnv 0x00d59f40
 // src: GUESS 0x00d59f40 (confidence: low)
+// pdb: hkpConvexVerticesShape::sortPlanes | hkpConvexVerticesShape.obj | retail, object-file run extension, low
+// pdb locals: vertices, planes, assertBuf, ostr
 void hkpConvexVerticesShape::ProcessEntries_00d59f40()
 
 {
@@ -403,7 +405,7 @@ void hkpConvexVerticesShape::ProcessEntries_00d59f40()
 
     int vertOffset = 0;
 
-    for (int faceIdx = 0; faceIdx < shape->m_pConnectivity->m_kNumVerticesPerFace.m_iElementCount; ++faceIdx) {
+    for (int faceIdx = 0; faceIdx < shape->m_pConnectivity->m_numVerticesPerFace.m_iElementCount; ++faceIdx) {
 
         if (planes.GetLogicalSize() == 0) {
 
@@ -411,7 +413,7 @@ void hkpConvexVerticesShape::ProcessEntries_00d59f40()
 
         }
 
-        int numVerts = shape->m_pConnectivity->m_kNumVerticesPerFace.m_data[faceIdx];
+        int numVerts = shape->m_pConnectivity->m_numVerticesPerFace.m_data[faceIdx];
 
         if (numVerts < 3) {
 
@@ -419,11 +421,11 @@ void hkpConvexVerticesShape::ProcessEntries_00d59f40()
 
         }
 
-        int idx0 = shape->m_pConnectivity->m_kVertexIndices.m_data[vertOffset];
+        int idx0 = shape->m_pConnectivity->m_vertexIndices.m_data[vertOffset];
 
-        int idx1 = shape->m_pConnectivity->m_kVertexIndices.m_data[vertOffset + 1];
+        int idx1 = shape->m_pConnectivity->m_vertexIndices.m_data[vertOffset + 1];
 
-        int idx2 = shape->m_pConnectivity->m_kVertexIndices.m_data[vertOffset + 2];
+        int idx2 = shape->m_pConnectivity->m_vertexIndices.m_data[vertOffset + 2];
 
         vertOffset += numVerts;
 

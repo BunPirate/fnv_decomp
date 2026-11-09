@@ -73,12 +73,15 @@ typedef char NavMeshInfoMapCheckCell[offsetof(NavMeshInfoMap, m_kNavMeshInfoArra
 
 typedef BSSimpleArray<TESObjectREFR*, 1024> NavMeshDoorArray;
 
-unsigned int NavMeshInfo_GetCellOrCoords(NavMeshInfo*);
+unsigned int GetKeyForNavMeshInfo(NavMeshInfo*);
 bool Actor_AreReferencedValuesEqual(NavMeshInfo*&, NavMeshInfo*&);
 
 // Scans every outer/inner map entry and returns false if any NavMeshInfoArray with more than one element has fewer than size-1 entries with bounds.
 // @fnv 0x006b7cb0
-bool NavMeshInfoMap::ValidateNavMeshInfoArrays()
+// src: XBOX_DEBUG_PDB 0x006b7cb0
+// pdb: NavMeshInfoMap::CheckAllNavmeshBoundingBoxes | NavMeshInfoMap.obj | debug, call graph, high
+// pdb locals: bret, it, themap, worldspaceId, it2, icellKey, parray, icount, i, buffer
+bool NavMeshInfoMap::CheckAllNavmeshBoundingBoxes()
 {
     bool bResult = true;
     void* pOuterPos = m_kNavMeshInfoArraysByWorldspace.GetFirstPos();
@@ -123,27 +126,29 @@ struct NavMeshValidation
 
 // Validates each NavMeshInfo entry, warns and deletes entries with missing parent space or bad approx location, otherwise links parent and initializes it.
 // @fnv 0x006b63c0
+// pdb: NavMeshInfoMap::InitItem | NavMeshInfoMap.obj | retail, string-set bridge, high
+// pdb locals: infosToRemove, it, navmeshID, pinfo, pparentSpace, bnavmeshBad, i
 void NavMeshInfoMap::InitItem()
 {
     void* pPos;
     {
         NavMeshInfoArray DeleteArray;
-        pPos = m_kNavMeshInfosByFormID.GetFirstPos();
+        pPos = InfoMap.GetFirstPos();
         while (pPos)
         {
             bool bDelete;
             {
                 NavMeshValidation entry;
-                m_kNavMeshInfosByFormID.GetNext(pPos, entry.id, reinterpret_cast<NavMeshInfo*&>(entry.info));
+                InfoMap.GetNext(pPos, entry.id, reinterpret_cast<NavMeshInfo*&>(entry.info));
                 bDelete = false;
-                entry.parent = TESForm::GetFormByID(((NavMeshInfo*)entry.info)->m_uiParentSpaceID);
+                entry.parent = TESForm::GetFormByID(((NavMeshInfo*)entry.info)->ParentSpaceID);
                 if (!entry.parent)
                 {
                     Warning("MASTERFILE: Could not find Parent Space with ID %08x for NavmeshInfo %08x",
-                            ((NavMeshInfo*)entry.info)->m_uiParentSpaceID, entry.id);
+                            ((NavMeshInfo*)entry.info)->ParentSpaceID, entry.id);
                     bDelete = true;
                 }
-                if (std::abs(((NavMeshInfo*)entry.info)->m_kNavMeshPosition.z) > 1.0e14f)
+                if (std::abs(((NavMeshInfo*)entry.info)->ApproxLocation.z) > 1.0e14f)
                 {
                     Warning("MASTERFILE: NavmeshInfo %08x has bad approx location, ignoring", entry.id);
                     bDelete = true;
@@ -154,26 +159,30 @@ void NavMeshInfoMap::InitItem()
                 }
                 else
                 {
-                    ((NavMeshInfo*)entry.info)->m_pParentSpace = entry.parent;
-                    InsertNavMeshInfo((NavMeshInfo*)entry.info);
+                    ((NavMeshInfo*)entry.info)->pParentSpace = entry.parent;
+                    AddInfoToCellKeyMap((NavMeshInfo*)entry.info);
                 }
-                if (!m_bKeepNavMeshLoaded)
-                    ((NavMeshInfo*)entry.info)->ReleaseNavMesh();
+                if (!bInit)
+                    ((NavMeshInfo*)entry.info)->InitDoorPointers();
             }
         }
         for (unsigned int uiIndex = 0; uiIndex < DeleteArray.GetSize(); uiIndex++)
         {
-            m_kNavMeshInfosByFormID.RemoveAt(DeleteArray[uiIndex]->GetNavMeshID());
+            InfoMap.RemoveAt(DeleteArray[uiIndex]->GetNavMeshID());
             delete DeleteArray[uiIndex];
         }
-        m_bKeepNavMeshLoaded = true;
-        ValidateNavMeshInfoArrays();
+        bInit = true;
+        CheckAllNavmeshBoundingBoxes();
     }
 }
 
 // Registers info in the per-parent NavMeshInfoArray for its cell key, creating the inner map and array as needed, and skips if already present.
 // @fnv 0x006b7980
-void NavMeshInfoMap::InsertNavMeshInfo(NavMeshInfo* info)
+// src: XBOX_RETAIL_PDB 0x006b7980
+// pdb: NavMeshInfoMap::AddInfoToCellKeyMap | NavMeshInfoMap.obj | retail, call graph, high
+// pdb params: apNavMeshInfo
+// pdb locals: themap, worldspaceId, icellKey, thearray, imapSize, pworld
+void NavMeshInfoMap::AddInfoToCellKeyMap(NavMeshInfo* apNavMeshInfo)
 {
     struct CellKeyLookup
     {
@@ -181,11 +190,11 @@ void NavMeshInfoMap::InsertNavMeshInfo(NavMeshInfo* info)
         unsigned int parentID;
         unsigned int cellKey;
     } lookup;
-    lookup.cellKey = NavMeshInfo_GetCellOrCoords(info);
-    if (info->GetInteriorCell())
+    lookup.cellKey = GetKeyForNavMeshInfo(apNavMeshInfo);
+    if (apNavMeshInfo->GetInteriorCell())
         lookup.parentID = 0;
     else
-        lookup.parentID = info->m_uiParentSpaceID;
+        lookup.parentID = apNavMeshInfo->ParentSpaceID;
     if (!m_kNavMeshInfoArraysByWorldspace.GetAt(lookup.parentID, reinterpret_cast<NiTPointerMap<unsigned int, NavMeshInfoArray*>*&>(lookup.innerMap)))
     {
         unsigned int hashSize = 103;
@@ -208,29 +217,31 @@ void NavMeshInfoMap::InsertNavMeshInfo(NavMeshInfo* info)
         array = new NavMeshInfoArray;
         ((NiTPointerMap<unsigned int, NavMeshInfoArray*>*)lookup.innerMap)->SetAt(lookup.cellKey, array);
     }
-    if (array->Find(info, 0, Actor_AreReferencedValuesEqual) != (unsigned int)-1)
+    if (array->Find(apNavMeshInfo, 0, Actor_AreReferencedValuesEqual) != (unsigned int)-1)
         return;
-    array->Add(info);
+    array->Add(apNavMeshInfo);
 }
 
 // @fnv 0x006b46a0
+// pdb: NavMeshInfo::NavMeshInfo | NavMeshInfo.obj | debug, upstream name already matches, high
 NavMeshInfo::NavMeshInfo()
 {
     uiFlags = 0;
-    m_uiNavMeshID = 0;
-    m_uiParentSpaceID = 0;
-    m_pParentSpace = 0;
-    m_uiPathingFlags = 0xdeaddead;
-    m_kNavMeshPosition = NiPoint3::ZERO;
+    NavMeshID = 0;
+    ParentSpaceID = 0;
+    pParentSpace = 0;
+    iCellKey = 0xdeaddead;
+    ApproxLocation = NiPoint3::ZERO;
     pBounds = 0;
-    m_pLocationNavMesh = 0;
-    m_fStoredValue = 0.0f;
+    pNavMesh = 0;
+    fPreferredPercent = 0.0f;
 }
 
 // @fnv 0x006b5c30
+// pdb: NavMeshInfoMap::NavMeshInfoMap | NavMeshInfoMap.obj | retail, upstream name already matches, high
 NavMeshInfoMap::NavMeshInfoMap()
-    : m_bNavMeshInfoArraysValid(false), m_kNavMeshInfosByFormID(10009), m_kNavMeshInfoArraysByWorldspace(103),
-      m_bKeepNavMeshLoaded(false)
+    : bUpdateAll(false), InfoMap(10009), m_kNavMeshInfoArraysByWorldspace(103),
+      bInit(false)
 {
     SetFormType(ENUM_FORM_ID_NAVI_ID);
 }
@@ -308,24 +319,27 @@ struct Arr
 };
 
 // @fnv 0x006b5d80
+// pdb: NavMeshInfoMap::Load | NavMeshInfoMap.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: ifileVersionNumber, tempMemContext, ibuffersize, pchunkdata, thisID, formid, it, navmeshID, pinfo, i, pMessage, ichunksize, poldInfo, pnewInfo, sppreviousNavMesh, bhasNavMesh, oldconnectedDoors, oldadjacentNavMeshes, oldpreferredAdjacentNavMeshes, infoID, pchunkPointer
 bool NavMeshInfoMap::LoadNavMeshInfoMap(TESFile* apFile)
 {
     int ifileVersionNumber;
     AutoMemContext tempMemContext(
         (MEM_CONTEXT)0x2e, true,
         "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Pathfinding\\NavMeshInfoMap.cpp", 0x5c);
-    if (m_bKeepNavMeshLoaded)
+    if (bInit)
     {
-        void* it = m_kNavMeshInfosByFormID.GetFirstPos();
+        void* it = InfoMap.GetFirstPos();
         while (it)
         {
             unsigned int navmeshID;
             NavMeshInfo* pinfo;
-            m_kNavMeshInfosByFormID.GetNext(it, navmeshID, reinterpret_cast<NavMeshInfo*&>(pinfo));
-            for (unsigned int i = 0; i < ((NavmeshinfomapOffset08View*)&pinfo->m_kDoorReferences)->GetFlags(); i++)
-                *((Arr*)&pinfo->m_kDoorReferences)->GetAt(i) = (*(TESForm**)((Arr*)&pinfo->m_kDoorReferences)->GetAt(i))->GetFormID();
+            InfoMap.GetNext(it, navmeshID, reinterpret_cast<NavMeshInfo*&>(pinfo));
+            for (unsigned int i = 0; i < ((NavmeshinfomapOffset08View*)&pinfo->ConnectedDoors)->GetFlags(); i++)
+                *((Arr*)&pinfo->ConnectedDoors)->GetAt(i) = (*(TESForm**)((Arr*)&pinfo->ConnectedDoors)->GetAt(i))->GetFormID();
         }
-        m_bKeepNavMeshLoaded = false;
+        bInit = false;
     }
     int ibuffersize = 0x9b0;
     void* pchunkdata = FNV_AllocateBuffer(ibuffersize);
@@ -353,7 +367,7 @@ bool NavMeshInfoMap::LoadNavMeshInfoMap(TESFile* apFile)
             if (apFile->IsEndianConversionRequired())
                 BSEndian(&ifileVersionNumber, EndianSizeTag<4>());
             if (ifileVersionNumber < 5)
-                m_bNavMeshInfoArraysValid = true;
+                bUpdateAll = true;
             break;
         case 0x494d564e: {
             int ichunksize = apFile->GetChunkSize();
@@ -374,20 +388,20 @@ bool NavMeshInfoMap::LoadNavMeshInfoMap(TESFile* apFile)
                 BSSimpleArray<NavMeshInfo*, 1024> oldadjacentNavMeshes;
                 BSSimpleArray<NavMeshInfo*, 1024> oldpreferredAdjacentNavMeshes;
                 BSSimpleArray<TESObjectREFR*, 1024> oldconnectedDoors;
-                poldInfo->m_kConnectedNavMeshInfos.CopyTo(&oldadjacentNavMeshes);
-                poldInfo->m_kPreferredConnections.CopyTo(&oldpreferredAdjacentNavMeshes);
-                poldInfo->m_kDoorReferences.CopyTo(&oldconnectedDoors);
+                poldInfo->AdjacentNavMeshes.CopyTo(&oldadjacentNavMeshes);
+                poldInfo->PreferredAdjacentNavMeshes.CopyTo(&oldpreferredAdjacentNavMeshes);
+                poldInfo->ConnectedDoors.CopyTo(&oldconnectedDoors);
                 pnewInfo->CopyTo(poldInfo);
                 if (bhasNavMesh)
                     ((TESRecipe*)poldInfo)->SetCategory(((NavMeshInfo*)&sppreviousNavMesh)->GetNavMeshID());
-                oldadjacentNavMeshes.CopyTo(&poldInfo->m_kConnectedNavMeshInfos);
-                oldpreferredAdjacentNavMeshes.CopyTo(&poldInfo->m_kPreferredConnections);
-                oldconnectedDoors.CopyTo(&poldInfo->m_kDoorReferences);
+                oldadjacentNavMeshes.CopyTo(&poldInfo->AdjacentNavMeshes);
+                oldpreferredAdjacentNavMeshes.CopyTo(&poldInfo->PreferredAdjacentNavMeshes);
+                oldconnectedDoors.CopyTo(&poldInfo->ConnectedDoors);
                 delete pnewInfo;
             }
             else
             {
-                ((DummyPointerMap*)&m_kNavMeshInfosByFormID)->SetAt(pnewInfo->GetNavMeshID(), (unsigned int)pnewInfo);
+                ((DummyPointerMap*)&InfoMap)->SetAt(pnewInfo->GetNavMeshID(), (unsigned int)pnewInfo);
             }
             break;
         }
@@ -407,10 +421,10 @@ bool NavMeshInfoMap::LoadNavMeshInfoMap(TESFile* apFile)
             TESForm::RemapFormIDForFile(infoID, apFile);
             pchunkPointer += 4;
             NavMeshInfo* pinfo;
-            if (!((const DummyPointerMap*)&m_kNavMeshInfosByFormID)->GetAt(infoID, (unsigned int&)pinfo))
+            if (!((const DummyPointerMap*)&InfoMap)->GetAt(infoID, (unsigned int&)pinfo))
                 return false;
             if (ifileVersionNumber >= 5)
-                pinfo->LoadSerializedData(pchunkPointer, apFile, ifileVersionNumber);
+                pinfo->SetFromPortalChunk(pchunkPointer, apFile, ifileVersionNumber);
             break;
         }
         }
@@ -420,6 +434,7 @@ bool NavMeshInfoMap::LoadNavMeshInfoMap(TESFile* apFile)
 }
 
 // @fnv 0x006b5cd0
+// pdb: NavMeshInfoMap::`scalar deleting destructor' | NavMeshInfoMap.obj | retail, vtable slot, high
 void* __fastcall DeleteNavMeshInfoMap(NavMeshInfoMap* self, void*, unsigned int flags)
 {
     self->NavMeshInfoMap::~NavMeshInfoMap();
@@ -435,6 +450,9 @@ struct TESFormCall
 };
 // Calls SetAltered with abVal; when abVal is false, iterates the map at offset 0x1c and reverts each NavMeshInfo.
 // @fnv 0x006b68b0
+// pdb: NavMeshInfoMap::SetAltered | NavMeshInfoMap.obj | retail, vtable slot, high
+// pdb params: abVal
+// pdb locals: it, navmeshID, pinfo
 void NavMeshInfoMap::SetAlteredAndRevertNavMeshes(bool abVal)
 {
     ((TESFormCall*)this)->SetAltered(abVal);
@@ -443,10 +461,10 @@ void NavMeshInfoMap::SetAlteredAndRevertNavMeshes(bool abVal)
         void* it;
         unsigned int navmeshID;
         NavMeshInfo* pinfo;
-        it = m_kNavMeshInfosByFormID.GetFirstPos();
+        it = InfoMap.GetFirstPos();
         while (it)
         {
-            m_kNavMeshInfosByFormID.GetNext(it, navmeshID, reinterpret_cast<NavMeshInfo*&>(pinfo));
+            InfoMap.GetNext(it, navmeshID, reinterpret_cast<NavMeshInfo*&>(pinfo));
             ((TESFormCall*)pinfo)->TESFormCall::Revert(0);
         }
     }
@@ -460,6 +478,8 @@ struct FUN_00484020_shell
 // Returns true if apForm's form type is 0x43, otherwise delegates to IsLessThan.
 // @fnv 0x006b6910
 // src: XBOX_PDB 0x006b6910
+// pdb: NavMeshInfoMap::SavesBefore | NavMeshInfoMap.obj | debug, object-file run extension, low
+// pdb params: apForm
 bool NavMeshInfoMap::SavesBefore_006b6910(TESForm* apForm)
 {
     if (::_FNV_GetFormType(apForm) == 0x43)
@@ -475,6 +495,9 @@ unsigned int PrepareScriptMessage(int);
 // Looks up the worldspace's map by form ID, then the cell's entry by prepared key, returning the stored info pointer or null.
 // @fnv 0x006b7850
 // src: XBOX_PDB 0x006b7850
+// pdb: NavMeshInfoMap::FindNavMeshInfoForCellKey | NavMeshInfoMap.obj | retail, upstream name already matches, high
+// pdb params: apWorldSpace, aiCellKey
+// pdb locals: worldspaceMap, infoarray
 void* NavMeshInfoMap::FindNavMeshInfoForCellKey(TESWorldSpace* apWorldSpace, int aiCellKey)
 {
     const DummyPointerMap* worldspaceMap;
@@ -501,17 +524,20 @@ struct HArr
 
 // @fnv 0x006b7910
 // src: COMMUNITY 0x006b7910
-void NavMeshInfoMap::GetAllNavMeshInfo(BSSimpleArray<void*, 1024>* pArray)
+// pdb: NavMeshInfoMap::GetAllNavMeshInfo | NavMeshInfoMap.obj | retail, upstream name already matches, high
+// pdb params: apReturnArray
+// pdb locals: it, navmeshID, pinfo
+void NavMeshInfoMap::GetAllNavMeshInfo(BSSimpleArray<void*, 1024>* apReturnArray)
 {
-    ((fnv_006b7910::_Mem_20a4*)pArray)->SetSize(0, false);
-    ((fnv_006b7910::HArr*)pArray)->GrowCapacity(0x800);
-    void* it = m_kNavMeshInfosByFormID.GetFirstPos();
+    ((fnv_006b7910::_Mem_20a4*)apReturnArray)->SetSize(0, false);
+    ((fnv_006b7910::HArr*)apReturnArray)->GrowCapacity(0x800);
+    void* it = InfoMap.GetFirstPos();
     while (it)
     {
         void* pinfo;
         unsigned int navmeshID;
-        m_kNavMeshInfosByFormID.GetNext(it, navmeshID, reinterpret_cast<NavMeshInfo*&>(pinfo));
-        pArray->Add(pinfo);
+        InfoMap.GetNext(it, navmeshID, reinterpret_cast<NavMeshInfo*&>(pinfo));
+        apReturnArray->Add(pinfo);
     }
 }
 
@@ -521,6 +547,9 @@ const char* __cdecl PrepareScriptMessage(const char*);
 
 // Looks up two map entries: one at key 0, then one keyed by PrepareScriptMessage(s), returning the second value or 0 if either lookup fails.
 // @fnv 0x006b78b0
+// pdb: NavMeshInfoMap::FindNavMeshInfoForInteriorCell | NavMeshInfoMap.obj | debug, object-file gap fill, medium
+// pdb params: apCell
+// pdb locals: worldspaceMap, infoarray
 unsigned int NavMeshInfoMap::LookupScriptMessageValue(const char* pcScriptMessage)
 {
     unsigned int uiValue;
@@ -536,6 +565,7 @@ unsigned int NavMeshInfoMap::LookupScriptMessageValue(const char* pcScriptMessag
 
 // Destructor that calls ClearNavMeshInfoMaps before the object is torn down.
 // @fnv 0x006b5d00
+// pdb: NavMeshInfoMap::~NavMeshInfoMap | NavMeshInfoMap.obj | retail, upstream name already matches, high
 NavMeshInfoMap::~NavMeshInfoMap()
 {
     ClearNavMeshInfoMaps();
@@ -556,26 +586,30 @@ int __cdecl BuildCellKey(short, short);
 
 // @fnv 0x006b77e0
 // src: XBOX_PDB 0x006b77e0
-int NavMeshInfoMap::FindNavMeshInfoForCell(TESObjectCELL* cell)
+// pdb: NavMeshInfoMap::FindNavMeshInfoForCell | NavMeshInfoMap.obj | retail, upstream name already matches, high
+// pdb params: apCell
+int NavMeshInfoMap::FindNavMeshInfoForCell(TESObjectCELL* apCell)
 {
-    if (!cell)
+    if (!apCell)
         return 0;
-    if (cell->IsInterior())
-        return LookupScriptMessageValue(cell);
+    if (apCell->IsInterior())
+        return LookupScriptMessageValue(apCell);
     else
-        return FindNavMeshInfoForCellKey(((fnv_006b77e0::DoorH*)cell)->GetParentWorldSpace(),
-                            fnv_006b77e0::BuildCellKey((short)((fnv_006b77e0::CellH*)cell)->GetCellGridX(), (short)((fnv_006b77e0::CellH*)cell)->GetCellGridY()));
+        return FindNavMeshInfoForCellKey(((fnv_006b77e0::DoorH*)apCell)->GetParentWorldSpace(),
+                            fnv_006b77e0::BuildCellKey((short)((fnv_006b77e0::CellH*)apCell)->GetCellGridX(), (short)((fnv_006b77e0::CellH*)apCell)->GetCellGridY()));
 }
 
 // @fnv 0x006b7770
 // src: XBOX_PDB 0x006b7770
+// pdb: NavMeshInfo::GetCell | NavMeshInfoMap.obj | retail, upstream name already matches, high
+// pdb locals: pworldSpace
 TESObjectCELL* NavMeshInfo::GetCell()
 {
     TESWorldSpace* worldSpace = GetParentWorldSpace();
     if (worldSpace)
     {
         return worldSpace
-            ->GetCellByKey(static_cast<unsigned int>(m_uiPathingFlags));
+            ->GetCellFromKey(static_cast<unsigned int>(iCellKey));
     }
     else
     {
@@ -603,6 +637,8 @@ struct PtrView
 };
 // @fnv 0x006b6580
 // src: XBOX_PDB 0x006b6580
+// pdb: NavMeshInfoMap::ProcessBeforeSave | NavMeshInfoMap.obj | retail, upstream name already matches, high
+// pdb locals: inavmeshes, inumAltForms, pform, it, i, bhasAlteredInfo, navmeshID, pinfo, spnavmesh
 bool NavMeshInfoMap::ProcessBeforeSave()
 {
     if (!FUN_00460340())
@@ -620,12 +656,12 @@ bool NavMeshInfoMap::ProcessBeforeSave()
     if (count4 == 0)
     {
         bool found6 = false;
-        void* pos4 = m_kNavMeshInfosByFormID.GetFirstPos();
+        void* pos4 = InfoMap.GetFirstPos();
         while (pos4)
         {
             unsigned int keyTmp;
             void* value5;
-            m_kNavMeshInfosByFormID.GetNext(pos4, keyTmp, reinterpret_cast<NavMeshInfo*&>(value5));
+            InfoMap.GetNext(pos4, keyTmp, reinterpret_cast<NavMeshInfo*&>(value5));
             if (((InfoView*)value5)->FUN_0047c850())
             {
                 found6 = true;
@@ -638,18 +674,18 @@ bool NavMeshInfoMap::ProcessBeforeSave()
             return true;
         }
     }
-    void* position = m_kNavMeshInfosByFormID.GetFirstPos();
+    void* position = InfoMap.GetFirstPos();
     while (position)
     {
         unsigned int key3;
         void* valueVal;
-        m_kNavMeshInfosByFormID.GetNext(position, key3, reinterpret_cast<NavMeshInfo*&>(valueVal));
+        InfoMap.GetNext(position, key3, reinterpret_cast<NavMeshInfo*&>(valueVal));
         NavMeshPtr mesh8;
         if (((NavMeshInfo*)valueVal)->AcquireNavMesh(mesh8) && mesh8.Modelloader_GetReferencedThis()->FUN_00460340() &&
             !mesh8.Modelloader_GetReferencedThis()->FUN_00440d80())
-            mesh8.Modelloader_GetReferencedThis()->FUN_006986d0();
+            mesh8.Modelloader_GetReferencedThis()->NavMesh_UpdateNavMeshInfo();
     }
-    ValidateNavMeshes();
+    CheckMap();
     return true;
 }
 
@@ -688,10 +724,14 @@ struct VerifiedPath
     bool FUN_00471c20();
 };
 // @fnv 0x006b6a00
-void NavMeshInfoMap::ActivateNavigationEntry(int identifier)
+// src: XBOX_RETAIL_PDB 0x006b6a00
+// pdb: NavMeshInfoMap::DeleteNavMeshInfo | NavMeshInfoMap.obj | retail, call graph, high
+// pdb params: auiNavMeshID
+// pdb locals: pinfo, spmesh, bsetAlter, pfile
+void NavMeshInfoMap::DeleteNavMeshInfo(int auiNavMeshID)
 {
     NavigationRequest* entry;
-    if (reinterpret_cast<BoundNavigationMap*>(&m_kNavMeshInfosByFormID)->FUN_00853130(identifier, &entry))
+    if (reinterpret_cast<BoundNavigationMap*>(&InfoMap)->FUN_00853130(auiNavMeshID, &entry))
     {
         RemoveInfoFromCellKeyMap(entry);
         bool isAccepted = false;
@@ -708,13 +748,13 @@ void NavMeshInfoMap::ActivateNavigationEntry(int identifier)
             NavigationRequest* target = selected;
             target ? target->FUN_006b6390(true) : 0;
         }
-        reinterpret_cast<BoundNavigationMap*>(&m_kNavMeshInfosByFormID)->RemoveKey(identifier);
+        reinterpret_cast<BoundNavigationMap*>(&InfoMap)->RemoveKey(auiNavMeshID);
         if (isAccepted)
             SetAltered(true);
     }
 }
 
-unsigned int NavMeshInfo_GetCellOrCoords(NavMeshInfo*);
+unsigned int GetKeyForNavMeshInfo(NavMeshInfo*);
 bool Actor_AreReferencedValuesEqual(NavMeshInfo*&, NavMeshInfo*&);
 struct InfoArray
 {
@@ -737,21 +777,24 @@ struct OuterMap
 };
 // @fnv 0x006b7b70
 // src: COMMUNITY 0x006b7b70
-void NavMeshInfoMap::RemoveInfoFromCellKeyMap(NavMeshInfo* info)
+// pdb: NavMeshInfoMap::RemoveInfoFromCellKeyMap | NavMeshInfoMap.obj | retail, upstream name already matches, high
+// pdb params: apNavMeshInfo
+// pdb locals: themap, worldspaceId, icellKey, index, thearray
+void NavMeshInfoMap::RemoveInfoFromCellKeyMap(NavMeshInfo* apNavMeshInfo)
 {
-    unsigned int parent = NavMeshInfo_GetCellOrCoords(info);
+    unsigned int parent = GetKeyForNavMeshInfo(apNavMeshInfo);
     unsigned int map;
-    if (info->GetInteriorCell())
+    if (apNavMeshInfo->GetInteriorCell())
         map = 0;
     else
-        map = info->m_uiParentSpaceID;
+        map = apNavMeshInfo->ParentSpaceID;
     InnerMap* array;
     if (!reinterpret_cast<OuterMap&>(m_kNavMeshInfoArraysByWorldspace).FUN_00853130(map, array))
         return;
     InfoArray* index;
     if (!array->FUN_00853130(parent, index))
         return;
-    unsigned int key = index->FUN_00719b20(info, 0, Actor_AreReferencedValuesEqual);
+    unsigned int key = index->FUN_00719b20(apNavMeshInfo, 0, Actor_AreReferencedValuesEqual);
     if (key == -1)
         return;
     index->BSSimpleArray_HUDMainMenu_SubtitleData_1024_Remove(key, true);
@@ -773,17 +816,19 @@ bool IsSaveEndianSwapped();
 
 // Starts a save, writes the REVN version, then writes an IMVN info chunk and an ICVN index chunk for each navmesh entry, and ends the save.
 // @fnv 0x006b6740
+// pdb: NavMeshInfoMap::Save | NavMeshInfoMap.obj | retail, vtable slot, high
+// pdb locals: it, navmeshID, ichunksize, pinfo, pchunkdata, pchunkPointer, inavmeshId
 void NavMeshInfoMap::SaveNavMeshInfoMap()
 {
     StartSave();
     SaveFormVersion('REVN', 11);
 
-    void* pos2 = m_kNavMeshInfosByFormID.GetFirstPos();
+    void* pos2 = InfoMap.GetFirstPos();
     while (pos2)
     {
         unsigned int key;
         void* info3;
-        m_kNavMeshInfosByFormID.GetNext(pos2, key, reinterpret_cast<NavMeshInfo*&>(info3));
+        InfoMap.GetNext(pos2, key, reinterpret_cast<NavMeshInfo*&>(info3));
         unsigned int sizeB = ((NavMeshInfo*)info3)->GetInfoChunkSize();
         char* buffer_ = (char*)operator new(sizeB);
         ((NavMeshInfo*)info3)->WriteInfoChunk(buffer_);
@@ -791,12 +836,12 @@ void NavMeshInfoMap::SaveNavMeshInfoMap()
         operator delete(buffer_);
     }
 
-    pos2 = m_kNavMeshInfosByFormID.GetFirstPos();
+    pos2 = InfoMap.GetFirstPos();
     while (pos2)
     {
         unsigned int key3;
         void* info6;
-        m_kNavMeshInfosByFormID.GetNext(pos2, key3, reinterpret_cast<NavMeshInfo*&>(info6));
+        InfoMap.GetNext(pos2, key3, reinterpret_cast<NavMeshInfo*&>(info6));
         unsigned int size2 = ((NavMeshInfo*)info6)->GetIndexChunkSize() + 4;
         char* bufferVal = (char*)operator new(size2);
         char* cur3 = bufferVal;
@@ -820,13 +865,16 @@ struct CellKeyStand
 };
 bool __fastcall IsFieldCZero(DummyPointerMap* p);
 // @fnv 0x006b6990
-// src: GUESS 0x006b6990 (confidence: low)
-void NavMeshInfoMap::ProcessState_006b6990(unsigned int id)
+// src: XBOX_RETAIL_PDB 0x006b6990
+// pdb: NavMeshInfoMap::RemoveNavMeshInfo | NavMeshInfoMap.obj | retail, object-file run extension, high
+// pdb params: auiNavMeshID
+// pdb locals: pinfo
+void NavMeshInfoMap::RemoveNavMeshInfo(unsigned int auiNavMeshID)
 {
     unsigned int info;
-    if (reinterpret_cast<NiTPointerMap<unsigned int, unsigned int>*>(&m_kNavMeshInfosByFormID)->GetAt(id, info))
+    if (reinterpret_cast<NiTPointerMap<unsigned int, unsigned int>*>(&InfoMap)->GetAt(auiNavMeshID, info))
     {
-        reinterpret_cast<CellKeyMap*>(&m_kNavMeshInfosByFormID)->RemoveAt(id);
+        reinterpret_cast<CellKeyMap*>(&InfoMap)->RemoveAt(auiNavMeshID);
         if (!IsFieldCZero(reinterpret_cast<DummyPointerMap*>(&m_kNavMeshInfoArraysByWorldspace)))
         {
             RemoveInfoFromCellKeyMap(info);
@@ -852,17 +900,19 @@ struct CellNavMeshInfoArray
 typedef FUN_006b6b20_Map<CellNavMeshInfoArray*> CellNavMeshInfoMap;
 // Deletes every NavMeshInfo in the first map and every CellNavMeshInfoMap with its arrays in the second, clears both maps, then calls Unk_32(true).
 // @fnv 0x006b6b20
+// pdb: NavMeshInfoMap::Clear | NavMeshInfoMap.obj | debug, call graph, medium
+// pdb locals: it, navmeshID, pinfo, worldspaceId, it2, pmap, icellkey, parray
 void NavMeshInfoMap::ClearNavMeshInfoMaps()
 {
-    void* pPos = ((FUN_006b6b20_Map<NavMeshInfo*>*)&m_kNavMeshInfosByFormID)->FUN_004b9ba0();
+    void* pPos = ((FUN_006b6b20_Map<NavMeshInfo*>*)&InfoMap)->FUN_004b9ba0();
     while (pPos)
     {
         unsigned int uiKey;
         NavMeshInfo* pInfo;
-        ((FUN_006b6b20_Map<NavMeshInfo*>*)&m_kNavMeshInfosByFormID)->FUN_006b7f20(pPos, uiKey, pInfo);
+        ((FUN_006b6b20_Map<NavMeshInfo*>*)&InfoMap)->FUN_006b7f20(pPos, uiKey, pInfo);
         delete pInfo;
     }
-    ((FUN_006b6b20_Map<NavMeshInfo*>*)&m_kNavMeshInfosByFormID)->FUN_00438af0();
+    ((FUN_006b6b20_Map<NavMeshInfo*>*)&InfoMap)->FUN_00438af0();
     pPos = ((FUN_006b6b20_Map<CellNavMeshInfoMap*>*)&m_kNavMeshInfoArraysByWorldspace)->FUN_004b9ba0();
     while (pPos)
     {
@@ -1061,7 +1111,10 @@ struct InfoResolver
 };
 // Iterates the nav mesh map, warns about and collects invalid meshes, checks adjacency, m_kPreferredConnections links and m_kDoorReferences, and cleans up the collected meshes.
 // @fnv 0x006b6c60
-void NavMeshInfoMap::ValidateNavMeshes()
+// src: XBOX_RETAIL_PDB 0x006b6c60
+// pdb: NavMeshInfoMap::CheckMap | NavMeshInfoMap.obj | retail, unique string literal, high
+// pdb locals: infosToRemove, it, navmeshID, pinfo, potentialAdjacentInfos, spMesh, spNavMesh, i, bremove, thisX, thisY, x, y, pinfos, isize, bShouldRegenerateInfo, potherMesh, trianglesWithPortals, bmissingPortal, iotherSize, k, pdoorPortal, bhasPortal, pdoor ...
+void NavMeshInfoMap::CheckMap()
 {
     void* iterator;
     {
@@ -1070,10 +1123,10 @@ void NavMeshInfoMap::ValidateNavMeshes()
             NavMeshInfo* meshInfo;
             {
                 unsigned int identifier;
-                iterator = m_kNavMeshInfosByFormID.GetFirstPos();
+                iterator = InfoMap.GetFirstPos();
                 while (iterator)
                 {
-                    m_kNavMeshInfosByFormID.GetNext(iterator, identifier, reinterpret_cast<NavMeshInfo*&>(meshInfo));
+                    InfoMap.GetNext(iterator, identifier, reinterpret_cast<NavMeshInfo*&>(meshInfo));
                     if (!NavMeshInfo_GetParentSpace(meshInfo))
                     {
                         Warning(DAT_0106c0d8, ((PtrView*)meshInfo)->Modelloader_GetReferencedThis(),
@@ -1107,12 +1160,12 @@ void NavMeshInfoMap::ValidateNavMeshes()
                             }
                             if (activeMesh.GetPtr()->FUN_00440d80())
                                 invalidatedList.FUN_007cb2e0(&meshInfo);
-                            for (unsigned int k = 0; k < meshInfo->m_kConnectedNavMeshInfos.GetSize(); ++k)
+                            for (unsigned int k = 0; k < meshInfo->AdjacentNavMeshes.GetSize(); ++k)
                             {
                                 bool invalid = false;
-                                if (*((MeshInfoArray*)&meshInfo->m_kConnectedNavMeshInfos)->FUN_00877a30(k))
+                                if (*((MeshInfoArray*)&meshInfo->AdjacentNavMeshes)->FUN_00877a30(k))
                                 {
-                                    if (!FUN_00693d70((unsigned int)((PtrView*)*((MeshInfoArray*)&meshInfo->m_kConnectedNavMeshInfos)
+                                    if (!FUN_00693d70((unsigned int)((PtrView*)*((MeshInfoArray*)&meshInfo->AdjacentNavMeshes)
                                                                          ->FUN_00877a30(k))
                                                           ->Modelloader_GetReferencedThis()))
                                         invalid = true;
@@ -1126,16 +1179,16 @@ void NavMeshInfoMap::ValidateNavMeshes()
                                                  ? ((CellView*)((NavMeshInfo*)meshInfo)->GetCell())
                                                        ->GetEditorID()
                                                  : DAT_01011584));
-                                    ((InfoArray*)&meshInfo->m_kConnectedNavMeshInfos)->BSSimpleArray_HUDMainMenu_SubtitleData_1024_Remove(k, true);
+                                    ((InfoArray*)&meshInfo->AdjacentNavMeshes)->BSSimpleArray_HUDMainMenu_SubtitleData_1024_Remove(k, true);
                                     --k;
                                 }
                             }
-                            for (unsigned int k = 0; k < meshInfo->m_kPreferredConnections.GetSize(); ++k)
+                            for (unsigned int k = 0; k < meshInfo->PreferredAdjacentNavMeshes.GetSize(); ++k)
                             {
                                 bool invalid = false;
-                                if (*((MeshInfoArray*)&meshInfo->m_kPreferredConnections)->FUN_00877a30(k))
+                                if (*((MeshInfoArray*)&meshInfo->PreferredAdjacentNavMeshes)->FUN_00877a30(k))
                                 {
-                                    if (!FUN_00693d70((unsigned int)((PtrView*)*((MeshInfoArray*)&meshInfo->m_kPreferredConnections)
+                                    if (!FUN_00693d70((unsigned int)((PtrView*)*((MeshInfoArray*)&meshInfo->PreferredAdjacentNavMeshes)
                                                                          ->FUN_00877a30(k))
                                                           ->Modelloader_GetReferencedThis()))
                                         invalid = true;
@@ -1149,7 +1202,7 @@ void NavMeshInfoMap::ValidateNavMeshes()
                                                  ? ((CellView*)((NavMeshInfo*)meshInfo)->GetCell())
                                                        ->GetEditorID()
                                                  : DAT_01011584));
-                                    ((InfoArray*)&meshInfo->m_kPreferredConnections)->BSSimpleArray_HUDMainMenu_SubtitleData_1024_Remove(k, true);
+                                    ((InfoArray*)&meshInfo->PreferredAdjacentNavMeshes)->BSSimpleArray_HUDMainMenu_SubtitleData_1024_Remove(k, true);
                                     --k;
                                 }
                             }
@@ -1157,7 +1210,7 @@ void NavMeshInfoMap::ValidateNavMeshes()
                             if (meshInfo->GetParentWorldSpace())
                             {
                                 short gridX, gridY;
-                                SplitUInt32(meshInfo->m_uiPathingFlags, &gridX, &gridY);
+                                SplitUInt32(meshInfo->iCellKey, &gridX, &gridY);
                                 for (int x = gridX - 1; x <= gridX + 1; ++x)
                                 {
                                     for (int y = gridY - 1; y <= gridY + 1; ++y)
@@ -1179,9 +1232,9 @@ void NavMeshInfoMap::ValidateNavMeshes()
                             {
                                 bool corrupt = false;
                                 {
-                                    for (unsigned int k = 0; k < meshInfo->m_kConnectedNavMeshInfos.GetSize(); ++k)
+                                    for (unsigned int k = 0; k < meshInfo->AdjacentNavMeshes.GetSize(); ++k)
                                     {
-                                        NavMeshInfo* record = *((MeshInfoArray*)&meshInfo->m_kConnectedNavMeshInfos)->FUN_00877a30(k);
+                                        NavMeshInfo* record = *((MeshInfoArray*)&meshInfo->AdjacentNavMeshes)->FUN_00877a30(k);
                                         LinkChecker linkChecker;
                                         ((GridMap*)meshPtr.GetPtr())->CollectTrianglesForDoor(record, &linkChecker);
                                         if (linkChecker.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
@@ -1192,9 +1245,9 @@ void NavMeshInfoMap::ValidateNavMeshes()
                                             break;
                                         }
                                     }
-                                    for (unsigned int k = 0; k < meshInfo->m_kPreferredConnections.GetSize(); ++k)
+                                    for (unsigned int k = 0; k < meshInfo->PreferredAdjacentNavMeshes.GetSize(); ++k)
                                     {
-                                        NavMeshInfo* record = *((MeshInfoArray*)&meshInfo->m_kPreferredConnections)->FUN_00877a30(k);
+                                        NavMeshInfo* record = *((MeshInfoArray*)&meshInfo->PreferredAdjacentNavMeshes)->FUN_00877a30(k);
                                         LinkChecker linkChecker;
                                         ((GridMap*)meshPtr.GetPtr())->CollectTrianglesForDoor(record, &linkChecker);
                                         if (linkChecker.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
@@ -1218,16 +1271,16 @@ void NavMeshInfoMap::ValidateNavMeshes()
                                                 ((GridRecord*)((GridMap*)meshPtr.GetPtr())->GetEdge((unsigned short)k))
                                                     ->info;
                                             bool missing = true;
-                                            size = meshInfo->m_kConnectedNavMeshInfos.GetSize();
+                                            size = meshInfo->AdjacentNavMeshes.GetSize();
                                             for (unsigned int i = 0; i < size; ++i)
-                                                if (*((MeshInfoArray*)&meshInfo->m_kConnectedNavMeshInfos)->FUN_00877a30(i) == other)
+                                                if (*((MeshInfoArray*)&meshInfo->AdjacentNavMeshes)->FUN_00877a30(i) == other)
                                                 {
                                                     missing = false;
                                                     break;
                                                 }
-                                            size = meshInfo->m_kPreferredConnections.GetSize();
+                                            size = meshInfo->PreferredAdjacentNavMeshes.GetSize();
                                             for (unsigned int i = 0; i < size; ++i)
-                                                if (*((MeshInfoArray*)&meshInfo->m_kPreferredConnections)->FUN_00877a30(i) == other)
+                                                if (*((MeshInfoArray*)&meshInfo->PreferredAdjacentNavMeshes)->FUN_00877a30(i) == other)
                                                 {
                                                     missing = false;
                                                     break;
@@ -1249,7 +1302,7 @@ void NavMeshInfoMap::ValidateNavMeshes()
                                     {
                                         NavMeshInfo** other = (NavMeshInfo**)((GridMap*)meshPtr.GetPtr())
                                                                   ->FUN_0068f6b0((unsigned short)k);
-                                        if (((InfoArray*)&meshInfo->m_kDoorReferences)->FUN_00719b20(*other, 0, Actor_AreReferencedValuesEqual) ==
+                                        if (((InfoArray*)&meshInfo->ConnectedDoors)->FUN_00719b20(*other, 0, Actor_AreReferencedValuesEqual) ==
                                             (unsigned int)-1)
                                         {
                                             Warning(DAT_0106be20, ((PtrView*)meshInfo)->Modelloader_GetReferencedThis(),
@@ -1258,9 +1311,9 @@ void NavMeshInfoMap::ValidateNavMeshes()
                                             break;
                                         }
                                     }
-                                    for (unsigned int k = 0; k < meshInfo->m_kDoorReferences.GetSize(); ++k)
+                                    for (unsigned int k = 0; k < meshInfo->ConnectedDoors.GetSize(); ++k)
                                     {
-                                        NavMeshInfo* other = *((MeshInfoArray*)&meshInfo->m_kDoorReferences)->FUN_00877a30(k);
+                                        NavMeshInfo* other = *((MeshInfoArray*)&meshInfo->ConnectedDoors)->FUN_00877a30(k);
                                         {
                                             bool linkChecker = false;
                                             for (unsigned int i = 0; i < ((GridMap*)meshPtr.GetPtr())->NavMesh_GetNumDoorPortals();
@@ -1284,14 +1337,14 @@ void NavMeshInfoMap::ValidateNavMeshes()
                                     }
                                 }
                                 if (corrupt)
-                                    meshInfo->InitializeFromMeshSource(meshPtr.GetPtr());
+                                    meshInfo->NavMeshInfo_CreateFromNavMesh(meshPtr.GetPtr());
                             }
                         }
                     }
                 }
                 for (unsigned int i = 0; i < invalidatedList.FUN_0044ddc0(); ++i)
                 {
-                    ProcessState_006b6990(((PtrView*)*invalidatedList.FUN_00877a30(i))->Modelloader_GetReferencedThis());
+                    RemoveNavMeshInfo(((PtrView*)*invalidatedList.FUN_00877a30(i))->Modelloader_GetReferencedThis());
                     NavMeshInfo* info = *invalidatedList.FUN_00877a30(i);
                     NavMeshInfo* current = info;
                     current ? ((NavigationRequest*)current)->FUN_006b6390(true) : 0;
@@ -1307,6 +1360,7 @@ using ::TESObjectCELL;
 
 // Casts the TESForm* returned by FUN_00690830(this) to TESObjectCELL*.
 // @fnv 0x006b77b0
+// pdb: NavMeshInfo::GetInteriorCell | NavMeshInfoMap.obj | retail, upstream name already matches, high
 TESObjectCELL* NavMeshInfo::GetInteriorCell()
 {
     return dynamic_cast< ::TESObjectCELL*>(NavMeshInfo_GetParentSpace(this));

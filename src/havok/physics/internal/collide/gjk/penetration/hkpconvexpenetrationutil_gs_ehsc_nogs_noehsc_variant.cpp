@@ -203,6 +203,9 @@ static float S00df9ef0_Dot3(__m128 v)
 
 // @fnv 0x00df9ef0
 // src: GUESS 0x00df9ef0 (confidence: low)
+// pdb: hkpConvexPenetrationUtil::findBestProjection | hkpConvexPenetrationUtil.obj | retail, object-file run extension, low
+// pdb params: direction, from, result, bestDistanceOut
+// pdb locals: directionNeg, pA
 void S00df9ef0_Obj::ComputeValues_00df9ef0(hkVector4* p, S00df9ef0_Pad<hkVector4> r, S00df9ef0_Hit* q,
                                  S00df9ef0_Pad<float> outF)
 {
@@ -299,6 +302,9 @@ struct Tester
 
 // @fnv 0x00df9c90
 // src: GUESS 0x00df9c90 (confidence: low)
+// pdb: hkpConvexPenetrationUtil::tryToExpandPolytope | hkpConvexPenetrationUtil.obj | retail, object-file run extension, low
+// pdb params: we, nearestTriangle, newVertex, failureReason
+// pdb locals: edgeChain, chainLength
 int Tester::ComputeValues_00df9c90(Shape* shape, const Tri* tri, const hkVector4* pos, int* result)
 {
     Edges edges;

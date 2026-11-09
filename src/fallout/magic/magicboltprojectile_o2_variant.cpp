@@ -135,6 +135,8 @@ struct Emitter
 };
 // @fnv 0x00bc2360
 // src: XBOX_PDB 0x00bc2360
+// pdb: BoltShaderProperty::InitSegmentData | BoltShaderProperty.obj | retail, upstream name already matches, high
+// pdb locals: imaxSegments, ibolt
 void Emitter::BoltShaderProperty_InitSegmentData()
 {
     int available = BoltShader_GetMaxSegments();

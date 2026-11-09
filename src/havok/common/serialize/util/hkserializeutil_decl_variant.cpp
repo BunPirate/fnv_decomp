@@ -10,7 +10,7 @@
 
 void __cdecl Object_ForwardCall_00d48620(int a, int b, int c);
 void __cdecl Object_ForwardCall_00d48640(int a, int b);
-extern "C" int __cdecl Object_ProcessAndReturnValue_00d485a0(int, int, int, int, int);
+extern "C" int __cdecl hkSerializeUtil_saveTagfile(int, int, int, int, int);
 void __cdecl Object_ForwardCall_00d48660(int a, int b, int c);
 extern int DAT_0102e388;
 extern int DAT_010d7540;
@@ -92,18 +92,18 @@ struct GlobalDispatch
     virtual int Dispatch(int, int, int, int, int);
 };
 extern GlobalDispatch* DAT_01269b74;
-int __cdecl hkSerializeUtil_savePackfile(int a1, int a2, int a3, int a4, int useLocal, int a6);
-extern void* hkSerializeUtil_load(void* obj_b, int a2, int a3);
+int __cdecl hkSerializeUtil_savePackfile(int object, int klass, int writer, int options, int binary, int userListener);
+extern void* hkSerializeUtil_load(void* streamIn, int errorOut, int classReg);
 struct CtorBox
 {
-    CtorBox* InitFromValue(void* arg);
+    CtorBox* hkIstream_ctor(void* fname);
     void SetVirtualTable_00dcc160();
 
     void* f0;
     int f4;
     void* b;
 };
-void* __cdecl hkSerializeUtil_load_00d48ec0(void* a1, int a2, int a3);
+void* __cdecl hkSerializeUtil_load_00d48ec0(void* filename, int resultOut, int classReg);
 struct S_00d49310_Lock
 {
     int unk0;
@@ -117,8 +117,8 @@ struct S_00d49310_Result
     S_00d49310_Result(int v) : m_uiFilterValue(v)
     {}
 };
-void hkSerializeUtil_detectFormat(void* stream, int* out) throw();
-S_00d49310_Result hkSerializeUtil_detectFormat_00d49310(void* stream);
+void hkSerializeUtil_detectFormat(void* reader, int* details) throw();
+S_00d49310_Result hkSerializeUtil_detectFormat_00d49310(void* reader);
 int hkString_strCmp(const char* a, const char* b);
 static inline int S_00d49350_Compare(const char* a, const char* b)
 {
@@ -157,7 +157,7 @@ struct D493E0Ref
 };
 struct D493E0Registry
 {
-    D493E0Object* find(const void* key, int flags) const;
+    D493E0Object* find(const void* object, int klass) const;
 };
 struct D493E0Loader
 {
@@ -198,7 +198,7 @@ struct Obj2
 };
 struct Obj1
 {
-    void AssignRef(Obj2* apArg);
+    void hkDataObject_ctor(Obj2* o);
 };
 struct PairVt
 {
@@ -240,8 +240,8 @@ struct World
     int f1c;
     int f20;
     int f24;
-    void ctor();
-    void method(int, int);
+    void hkDataWorldNative_ctor();
+    void hkDataWorldNative_setContents(int, int);
     int* method2(int*);
     void dtor();
 };
@@ -256,7 +256,7 @@ struct Proxy
 };
 extern int DAT_010cf9c8;
 int __cdecl dispatch(Proxy*, int*, int, void*);
-static __declspec(noinline) int helper(int a, void* b, int* c)
+static __declspec(noinline) int _saveTagfile(int a, void* b, int* c)
 {
     if (!a)
         return 1;
@@ -266,20 +266,23 @@ static __declspec(noinline) int helper(int a, void* b, int* c)
     return dispatch(&p, c, a, b);
 }
 // @fnv 0x00d485a0
-// src: GUESS 0x00d485a0 (confidence: low)
-extern "C" int __cdecl Object_ProcessAndReturnValue_00d485a0(int a1, int a2, int a3, int a4, int a5)
+// src: XBOX_RETAIL_PDB 0x00d485a0
+// pdb: hkSerializeUtil::saveTagfile | hkSerializeUtil.obj | retail, call graph, high
+// pdb params: object, klass, writer, binary, userListener
+// pdb locals: forwardingListener, world
+extern "C" int __cdecl hkSerializeUtil_saveTagfile(int object, int klass, int writer, int binary, int userListener)
 {
     Lister lister;
     World world;
-    world.ctor();
-    world.method(a1, a2);
+    world.hkDataWorldNative_ctor();
+    world.hkDataWorldNative_setContents(object, klass);
     lister.f06 = 1;
     lister.vtbl = &DAT_010cf9b4;
-    lister.f08 = a5;
+    lister.f08 = userListener;
     lister.f0c = &world;
-    int* obj = world.method2(&a5);
-    int r = helper(a3, &lister, obj);
-    ((RefHolder*)&a5)->release();
+    int* obj = world.method2(&userListener);
+    int r = _saveTagfile(writer, &lister, obj);
+    ((RefHolder*)&userListener)->release();
     lister.vtbl = &DAT_0102e388;
     world.dtor();
     return r;

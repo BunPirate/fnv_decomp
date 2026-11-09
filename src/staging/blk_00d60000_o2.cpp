@@ -78,28 +78,32 @@ struct Registry_00dd9380
 };
 
 extern int DAT_01269cd0;
-extern void* DAT_01269008;
+extern void* hkpInactiveContactPointViewer_s_tag;
 
 // @fnv 0x00d68800
-void RegisterContactPointsInactive()
+// src: XBOX_RETAIL_PDB 0x00d68800
+// pdb: hkpInactiveContactPointViewer::registerViewer | hkpInactiveContactPointViewer.obj | retail, string-set bridge, high
+void hkpInactiveContactPointViewer_registerViewer()
 {
     Registry_00dd9380* reg = (Registry_00dd9380*)DAT_01269cd0;
-    DAT_01269008 = reg->Register("Contact Points (Inactive)", hkpInactiveContactPointViewer_create);
+    hkpInactiveContactPointViewer_s_tag = reg->Register("Contact Points (Inactive)", hkpInactiveContactPointViewer_create);
 }
 
 namespace fnv_00d688d0 {
 void hkpActiveContactPointViewer_create();
-extern int DAT_0126900c;
+extern int hkpActiveContactPointViewer_s_tag;
 struct Registry_00dd9380_StandIn
 {
     void* hkProcessFactory_registerProcess(const char*, void(__cdecl*)());
 };
 extern Registry_00dd9380_StandIn* DAT_01269cd0;
 // @fnv 0x00d688d0
-void* RegisterContactPointsActive()
+// src: XBOX_RETAIL_PDB 0x00d688d0
+// pdb: hkpActiveContactPointViewer::registerViewer | hkpActiveContactPointViewer.obj | retail, string-set bridge, high
+void* hkpActiveContactPointViewer_registerViewer()
 {
-    DAT_0126900c = (int)DAT_01269cd0->hkProcessFactory_registerProcess("Contact Points (Active)", hkpActiveContactPointViewer_create);
-    return (void*)DAT_0126900c;
+    hkpActiveContactPointViewer_s_tag = (int)DAT_01269cd0->hkProcessFactory_registerProcess("Contact Points (Active)", hkpActiveContactPointViewer_create);
+    return (void*)hkpActiveContactPointViewer_s_tag;
 }
 }  // namespace fnv_00d688d0
 
@@ -125,7 +129,7 @@ struct FUN_00d68770_cls
     int m_unk24;
     int* m_pVtbl28;
 
-    void BaseConstruct(int aParam, int aFlags);
+    void BaseConstruct(int contexts, int color);
     FUN_00d68770_cls* Construct(int aParam);
 };
 
@@ -157,12 +161,14 @@ struct FnvCpu_FUN_00d687c0_CpuBlock
 };
 // @fnv 0x00d687c0
 // src: XBOX_PDB 0x00d687c0
-void* __cdecl hkpInactiveContactPointViewer_create(unsigned int value)
+// pdb: hkpInactiveContactPointViewer::create | hkpInactiveContactPointViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+void* __cdecl hkpInactiveContactPointViewer_create(unsigned int contexts)
 {
     hkMemoryRouter* holder = static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
     FnvCpu_FUN_00d687c0_CpuBlock* block = static_cast<FnvCpu_FUN_00d687c0_CpuBlock*>(reinterpret_cast<hkMemoryAllocator*>(holder->m_heap)->blockAlloc(52));
     block->size = 52;
-    block = block->Construct(value);
+    block = block->Construct(contexts);
     if (block)
         return reinterpret_cast<char*>(block) + 8;
     return 0;
@@ -173,7 +179,7 @@ extern "C" int DAT_010d201c;
 extern "C" int DAT_010d200c;
 extern "C" int DAT_010d1ffc;
 
-void __stdcall FUN_00de29b0(int a, int b);
+void __stdcall FUN_00de29b0(int contexts, int color);
 
 struct FUN_00d68840_cls
 {
@@ -238,13 +244,15 @@ hkMemoryRouter* hkMemoryRouter_getInstance();
 
 // @fnv 0x00d68890
 // src: XBOX_PDB 0x00d68890
-void* __cdecl hkpActiveContactPointViewer_create(int aiArg)
+// pdb: hkpActiveContactPointViewer::create | hkpActiveContactPointViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+void* __cdecl hkpActiveContactPointViewer_create(int contexts)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     hkMemoryAllocator* allocator = (hkMemoryAllocator*)holder->m_heap;
     FNV_Buffer* pBuffer = (FNV_Buffer*)allocator->blockAlloc(0x34);
     pBuffer->m_w04 = 0x34;
-    void* r = pBuffer->Init(aiArg);
+    void* r = pBuffer->Init(contexts);
     return r != 0 ? (char*)r + 8 : 0;
 }
 }  // namespace fnv_00d68890
@@ -252,13 +260,13 @@ void* __cdecl hkpActiveContactPointViewer_create(int aiArg)
 // FUN_00d688f0 : tiny global getter.
 // Reads the 4-byte global at DAT_0126900c and returns it in eax.
 
-extern int DAT_0126900c;
+extern int hkpActiveContactPointViewer_s_tag;
 
 // @fnv 0x00d688f0
 // src: GUESS 0x00d688f0 (confidence: low)
 int __cdecl Runtime_GetDAT0126900c()
 {
-    return DAT_0126900c;
+    return hkpActiveContactPointViewer_s_tag;
 }
 
 namespace fnv_00d68910 {
@@ -277,6 +285,8 @@ class D68910Object
 };
 
 // @fnv 0x00d68910
+// pdb: hkpInactiveContactPointViewer::`scalar deleting destructor' | hkpInactiveContactPointViewer.obj | retail, vtable slot, high
+// pdb params: this
 D68910Object* D68910Object::DestroyAndFree(unsigned int uiFlags)
 {
     this->~D68910Object();
@@ -286,13 +296,13 @@ D68910Object* D68910Object::DestroyAndFree(unsigned int uiFlags)
 }
 }  // namespace fnv_00d68910
 
-extern char DAT_0126905c;
+extern char hkpConstraintInstanceSmallArraySerializeOverrideTypeClass;
 
 // @fnv 0x00d6ade0
 // src: GUESS 0x00d6ade0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00d6ade0()
 {
-    return &DAT_0126905c;
+    return &hkpConstraintInstanceSmallArraySerializeOverrideTypeClass;
 }
 
 struct S_00d6adf0_Obj
@@ -344,13 +354,13 @@ int __cdecl Runtime_ForwardCall_00d6aeb0(VtblForwarder* p)
     return p->v0(0);
 }
 
-extern int DAT_01269104;
+extern int hkpWorldCinfoClass;
 
 // @fnv 0x00d6aee0
 // src: GUESS 0x00d6aee0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00d6aee0()
 {
-    return &DAT_01269104;
+    return &hkpWorldCinfoClass;
 }
 
 struct MotionSettings
@@ -437,13 +447,13 @@ void FUN_00d76f90_cls::ForwardCall_00d76f90()
 }
 
 namespace fnv_00d68820 {
-extern int DAT_01269008;
+extern int hkpInactiveContactPointViewer_s_tag;
 
 // @fnv 0x00d68820
 // src: GUESS 0x00d68820 (confidence: low)
 int Object_GetDAT_01269008_00d68820()
 {
-    return DAT_01269008;
+    return hkpInactiveContactPointViewer_s_tag;
 }
 }  // namespace fnv_00d68820
 
@@ -501,16 +511,17 @@ void __cdecl ConstructHkDerived(void* pvObject, int iFinishFlag)
 }
 
 // RTTI identifies vtable 0x010cad0c as hkMemoryBlockServer; hkReferencedObject uses 0x0102e388.
-class MemoryBlockServerState
+// pdb: class hkMemoryBlockServer, size 0x8 (here 0x4), 1 members
+class hkMemoryBlockServer
 {
   public:
-    MemoryBlockServerState(FinishingFlag flag);
-    virtual ~MemoryBlockServerState();
+    hkMemoryBlockServer(FinishingFlag flag);
+    virtual ~hkMemoryBlockServer();
 
 };
 
 // @fnv 0x00d60540
-MemoryBlockServerState::MemoryBlockServerState(FinishingFlag flag)
+hkMemoryBlockServer::hkMemoryBlockServer(FinishingFlag flag)
 {}
 
 extern int DAT_010d14f8;
@@ -527,6 +538,7 @@ struct D60590Object
 
 // @fnv 0x00d60590
 // src: GUESS 0x00d60590 (confidence: medium)
+// pdb: hkOArchive::~hkOArchive | hkOArchive.obj | retail, call graph, medium
 void D60590Object::ReleaseReference_00d60590()
 {
     vtable = &DAT_010d14f8;
@@ -556,6 +568,8 @@ struct FUN_00d60860
 };
 // Sets the vtable, size to 1 and type, and stores the result of DAT_01268364->v4(pData) in m_pData.
 // @fnv 0x00d60860
+// pdb: hkOArchive::hkOArchive | hkOArchive.obj | retail, object-file run extension, low
+// pdb params: sw, bs
 FUN_00d60860::FUN_00d60860(void* pData, unsigned char ucType)
 {
     m_usSize = 1;
@@ -566,6 +580,8 @@ FUN_00d60860::FUN_00d60860(void* pData, unsigned char ucType)
 }  // namespace fnv_00d60860
 
 // @fnv 0x00d60900
+// pdb: hkOArchive::write16 | hkOArchive.obj | retail, upstream name already matches, high
+// pdb params: i
 void hkOArchive::write16(short i)
 {
     WriteSwapped(&i, 2, 1);
@@ -609,10 +625,12 @@ inline hkStringBuf::~hkStringBuf() throw() {}
 
 // Searches m_data from iStartIndex for pcNeedle and returns its offset, or -1 if not found.
 // @fnv 0x00d61480
-int hkStringBuf::indexOf(const char* pcNeedle, int iStartIndex, int iEndIndex) const throw()
+// pdb: hkStringBuf::indexOf | hkStringBuf.obj | retail, upstream name already matches, high
+// pdb params: s, startIndex, endIndex
+int hkStringBuf::indexOf(const char* s, int startIndex, int endIndex) const throw()
 {
     char* pData = m_string.m_data;
-    char* p = hkString_strStr(pData + iStartIndex, pcNeedle);
+    char* p = hkString_strStr(pData + startIndex, s);
     if (p)
         return static_cast<int>(p - m_string.m_data);
     return -1;
@@ -688,13 +706,15 @@ inline char toLowerD615(char c)
 
 
 // @fnv 0x00d615a0
-int hkStringBuf::startsWithCase(const char* other) const
+// pdb: hkStringBuf::startsWithCase | hkStringBuf.obj | debug, upstream name already matches, high
+// pdb params: s
+int hkStringBuf::startsWithCase(const char* s) const
 {
     for (int i = 0; m_string[i] != 0; ++i)
     {
-        if (other[i] == 0)
+        if (s[i] == 0)
             return 1;
-        if (toLowerD615(m_string[i]) != toLowerD615(other[i]))
+        if (toLowerD615(m_string[i]) != toLowerD615(s[i]))
             return 0;
     }
     return 1;
@@ -721,14 +741,16 @@ __declspec(noinline) int hkStringBuf::indexOf(char character, int start, int lim
 
 // Searches m_data backwards from endIndex-1 down to startIndex for character c and returns its index, or -1 if not found.
 // @fnv 0x00d61640
-__declspec(noinline) int hkStringBuf::lastIndexOf(char c, int startIndex, int endIndex) const
+// pdb: hkStringBuf::lastIndexOf | hkStringBuf.obj | retail, upstream name already matches, high
+// pdb params: needle, startIndex, endIndex
+__declspec(noinline) int hkStringBuf::lastIndexOf(char needle, int startIndex, int endIndex) const
 {
     if (endIndex > m_string.m_iElementCount - 1)
         endIndex = m_string.m_iElementCount - 1;
 
     for (int i = endIndex - 1; i >= startIndex; --i)
     {
-        if (m_string.m_data[i] == c)
+        if (m_string.m_data[i] == needle)
             return i;
     }
     return -1;
@@ -758,14 +780,18 @@ int __stdcall FUN_00d61680(unsigned int value);
 
 // @fnv 0x00d616e0
 // src: GUESS 0x00d616e0 (confidence: low)
-int __stdcall Object_ForwardCall_00d616e0(unsigned int value)
+// pdb: hkStringBuf::operator== | hkStringBuf.obj | retail, call graph, high
+// pdb params: other
+int __stdcall Object_ForwardCall_00d616e0(unsigned int other)
 {
-    return FUN_00d61680(value) == 0;
+    return FUN_00d61680(other) == 0;
 }
 
 int __cdecl hkString_strLen(int s);
 
 // @fnv 0x00d61700
+// pdb: hkStringBuf::endsWith | hkStringBuf.obj | retail, object-file run extension, low
+// pdb params: s
 int __fastcall StringBufEndsWith(hkStringBuf* self, void*, char* aString)
 {
     int len = hkString_strLen((int)aString);
@@ -797,7 +823,10 @@ static inline int tolower_custom(char c)
 
 // Case-insensitively compares the tail of m_data with suffix, returning 1 if it matches and fits within the buffer length.
 // @fnv 0x00d61750
-int __fastcall StringBufEndsWithCaseInsensitive(hkStringBuf* self, void*, const char* suffix)
+// src: XBOX_RETAIL_PDB 0x00d61750
+// pdb: hkStringBuf::endsWithCase | hkStringBuf.obj | retail, object-file run extension, high
+// pdb params: s
+int __fastcall hkStringBuf_endsWithCase(hkStringBuf* self, void*, const char* suffix)
 {
     int len = hkString_strLen(suffix);
     if (len > self->m_string.m_iElementCount - 1)
@@ -817,14 +846,16 @@ int __fastcall StringBufEndsWithCaseInsensitive(hkStringBuf* self, void*, const 
 
 // Removes count bytes from the front of the buffer by shifting the remaining bytes down and reducing the element count.
 // @fnv 0x00d617d0
-__declspec(noinline) void hkStringBuf::chompStart(int count)
+// pdb: hkStringBuf::chompStart | hkStringBuf.obj | debug, upstream name already matches, high
+// pdb params: n
+__declspec(noinline) void hkStringBuf::chompStart(int n)
 {
-    if (count > 0)
+    if (n > 0)
     {
-        m_string.m_iElementCount -= count;
+        m_string.m_iElementCount -= n;
         int remaining = m_string.m_iElementCount;
         char* destination = m_string.m_data;
-        char* source = destination + count;
+        char* source = destination + n;
         if (remaining > 0)
         {
             for (int i = 0; i < remaining; ++i)
@@ -847,6 +878,7 @@ struct hkMathD618
 
 // Finds the last '\\' or '/' in the buffer and, if found, truncates the string to start just after it.
 // @fnv 0x00d61800
+// pdb: hkStringBuf::pathBasename | hkStringBuf.obj | debug, upstream name already matches, high
 void hkStringBuf::pathBasename()
 {
     int iLastSeparator =
@@ -858,7 +890,9 @@ void hkStringBuf::pathBasename()
 
 
 // @fnv 0x00d61840
-int hkStringBuf::replace(char from, char to, ReplaceType replaceType)
+// pdb: hkStringBuf::replace | hkStringBuf.obj | retail, upstream name already matches, high
+// pdb params: from, to, rt
+int hkStringBuf::replace(char from, char to, ReplaceType rtype)
 {
     int replaced = 0;
     for (int i = 0; i < getLength(); i++)
@@ -867,7 +901,7 @@ int hkStringBuf::replace(char from, char to, ReplaceType replaceType)
         {
             m_string.m_data[i] = to;
             replaced = 1;
-            if (replaceType == 0)
+            if (rtype == 0)
                 break;
         }
     }
@@ -881,6 +915,7 @@ int hkStringBuf::replace(char from, char to, ReplaceType replaceType)
 
 // Converts every character of the string buffer except the last to lowercase in place.
 // @fnv 0x00d61890
+// pdb: hkStringBuf::lowerCase | hkStringBuf.obj | debug, upstream name already matches, high
 void hkStringBuf::lowerCase()
 {
     for (int i = 0; i < m_string.GetLogicalSize() - 1; i++)
@@ -888,7 +923,7 @@ void hkStringBuf::lowerCase()
 }
 
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) throw();
 
 
@@ -897,6 +932,7 @@ void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) thro
 
 // Resizes the inline char array to iLength+1, null-terminates it, and copies iLength bytes from pcString into it.
 // @fnv 0x00d61b10
+// pdb: hkStringBuf::hkStringBuf | hkStringBuf.obj | retail, object-file gap fill, high
 hkStringBuf* __fastcall StringBufInitLength(hkStringBuf* self, void*, const char* pcString, int iLength) throw()
 {
     self->m_string.m_data = reinterpret_cast<char*>(self->m_storage);
@@ -916,12 +952,14 @@ int __fastcall StringBufInsert(hkStringBuf*, void*, int, int, int, int);
 
 // Appends arg through the range-insertion operation and returns this buffer.
 // @fnv 0x00d61df0
-hkStringBuf& hkStringBuf::operator+=(const char* arg) throw()
+// pdb: hkStringBuf::operator+= | hkStringBuf.obj | retail, call graph, high
+// pdb params: other
+hkStringBuf& hkStringBuf::operator+=(const char* other) throw()
 {
-    int ebx = hkString_strLen((int)arg);
+    int ebx = hkString_strLen((int)other);
     int ebp = m_string.m_iElementCount;
     int* rec = reinterpret_cast<int*>(hkMemoryRouter_getInstance());
-    reinterpret_cast<int (__thiscall *)(hkStringBuf*, int, int, int, int)>(StringBufInsert)(this, rec[3], ebp - 1, (int)arg, ebx);
+    reinterpret_cast<int (__thiscall *)(hkStringBuf*, int, int, int, int)>(StringBufInsert)(this, rec[3], ebp - 1, (int)other, ebx);
     return *this;
 }
 
@@ -932,11 +970,14 @@ void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) thro
 
 // Appends up to six C strings to the buffer, resizing it to fit the combined length plus a terminator.
 // @fnv 0x00d61e30
-__declspec(noinline) void hkStringBuf::appendJoin(const char* pcString0, const char* pcString1, const char* pcString2,
-                                    const char* pcString3, const char* pcString4, const char* pcString5) throw()
+// pdb: hkStringBuf::appendJoin | hkStringBuf.obj | retail, upstream name already matches, high
+// pdb params: s0, s1, s2, s3, s4, s5
+// pdb locals: len, ptr
+__declspec(noinline) void hkStringBuf::appendJoin(const char* s0, const char* s1, const char* s2,
+                                    const char* s3, const char* s4, const char* s5) throw()
 {
     int aiLengths[6] = {};
-    const char* apcStrings[] = {pcString0, pcString1, pcString2, pcString3, pcString4, pcString5, 0};
+    const char* apcStrings[] = {s0, s1, s2, s3, s4, s5, 0};
     int iOrigLen = getLength();
     int iTotalLen = iOrigLen;
     int i;
@@ -961,16 +1002,18 @@ void __cdecl hkMemUtil_memCpy_00d2caa0(void* pvDst, void* pvSrc, unsigned int ui
 
 // Reserves len+1 bytes, null-terminates the buffer at index len, then copies len bytes from src into m_data.
 // @fnv 0x00d62020
-void hkStringBuf::set(const char* src, int len)
+// pdb: hkStringBuf::set | hkStringBuf.obj | retail, upstream name already matches, high
+// pdb params: s, len
+void hkStringBuf::set(const char* s, int len)
 {
     SetSizeAndGrow(len + 1);
     m_string.m_data[len] = 0;
-    hkMemUtil_memCpy_00d2caa0(m_string.m_data, const_cast<char*>(src), len);
+    hkMemUtil_memCpy_00d2caa0(m_string.m_data, const_cast<char*>(s), len);
 }
 
 int __cdecl hkString_strLen(int value);
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(int value1, int value2, int value3, int value4);
+void __cdecl hkArrayUtil__reserve(int mem, int array, int numElem, int sizeElem);
 void __cdecl hkMemUtil_memCpy_00d2caa0(void* value1, unsigned int value2, unsigned int value3);
 
 struct D62080_Audio
@@ -984,7 +1027,10 @@ struct D62080_Audio
 
 
 // @fnv 0x00d62080
-__declspec(noinline) void __fastcall StringBufAppend(hkStringBuf* self, void*, int aData, int param3)
+// src: XBOX_RETAIL_PDB 0x00d62080
+// pdb: hkStringBuf::append | hkStringBuf.obj | retail, object-file run extension, high
+// pdb params: s, len
+__declspec(noinline) void __fastcall hkStringBuf_append(hkStringBuf* self, void*, int aData, int param3)
 {
     if (param3 < 0)
         param3 = hkString_strLen(aData);
@@ -1018,7 +1064,10 @@ extern int __cdecl hkString_strLen(int value);
 
 
 // @fnv 0x00d62100
-__declspec(noinline) int __fastcall StringBufInsertAt(hkStringBuf* self, void*, int first, int second, int third)
+// src: XBOX_RETAIL_PDB 0x00d62100
+// pdb: hkStringBuf::insert | hkStringBuf.obj | retail, object-file run extension, high
+// pdb params: pos, s, len
+__declspec(noinline) int __fastcall hkStringBuf_insert(hkStringBuf* self, void*, int first, int second, int third)
 {
     if (third < 0)
         third = hkString_strLen(second);
@@ -1027,10 +1076,11 @@ __declspec(noinline) int __fastcall StringBufInsertAt(hkStringBuf* self, void*, 
 }
 
 
-void __fastcall StringBufClear(hkStringBuf*, void*);
+void __fastcall hkStringBuf_clear(hkStringBuf*, void*);
 
 
 // @fnv 0x00d62140
+// pdb: hkStringBuf::pathDirname | hkStringBuf.obj | debug, object-file gap fill, medium
 int __fastcall StringBufPathDirname(hkStringBuf* self, void*)
 {
     int first = self->lastIndexOf(0x2f, 0, 0x7fffffff);
@@ -1042,12 +1092,12 @@ int __fastcall StringBufPathDirname(hkStringBuf* self, void*)
         typedef int (hkStringBuf::*SliceResult)(int, int);
         return (self->*reinterpret_cast<SliceResult>(&hkStringBuf::slice))(0, second);
     }
-    return reinterpret_cast<int (__thiscall *)(hkStringBuf*)>(StringBufClear)(self);
+    return reinterpret_cast<int (__thiscall *)(hkStringBuf*)>(hkStringBuf_clear)(self);
 }
 
 inline const char* hkStringPtr::cString() const
 {
-    return (const char*)((unsigned int)m_pcText & ~1);
+    return (const char*)((unsigned int)m_stringAndFlag & ~1);
 }
 
 
@@ -1082,7 +1132,7 @@ hkStringBuf* __fastcall StringBufInitJoin(hkStringBuf* self, void*, int a, int b
 // @fnv 0x00d62580
 int __fastcall StringBufPrepend(hkStringBuf* self, void*, int a, int b)
 {
-    return reinterpret_cast<int (__thiscall *)(hkStringBuf*, int, int, int)>(StringBufInsertAt)(self, 0, a, b);
+    return reinterpret_cast<int (__thiscall *)(hkStringBuf*, int, int, int)>(hkStringBuf_insert)(self, 0, a, b);
 }
 
 
@@ -1097,7 +1147,7 @@ __declspec(noinline) int __fastcall StringBufInsert(hkStringBuf* self, void*, in
 
 struct FUN_00ddccb0_Obj
 {
-    void FUN_00ddccb0(int a1);
+    void FUN_00ddccb0(int contexts);
 };
 
 struct FUN_00d62ef0_cls
@@ -1124,6 +1174,8 @@ extern int DAT_010d16f0;
 // Calls FUN_00ddccb0 with aParam, then stores three global addresses and aValue into the object's fields and returns this.
 // @fnv 0x00d62ef0
 // src: GUESS 0x00d62ef0 (confidence: low)
+// pdb: hkpWorldSnapshotViewer::hkpWorldSnapshotViewer | hkpWorldSnapshotViewer.obj | retail, object-file run extension, low
+// pdb params: contexts, convertToPC
 FUN_00d62ef0_cls* __thiscall FUN_00d62ef0_cls::UpdateState_00d62ef0(int aParam, unsigned char aValue)
 {
     ((FUN_00ddccb0_Obj*)this)->FUN_00ddccb0(aParam);
@@ -1142,12 +1194,15 @@ struct HeapBlockMetadata
     HeapBlockMetadata* UpdateState_00d62ef0(void* data, unsigned int enabled);
 };
 // @fnv 0x00d62f60
-void* __cdecl AllocateRecordWithData(void* data)
+// src: XBOX_RETAIL_PDB 0x00d62f60
+// pdb: hkpWorldSnapshotViewer::createPC | hkpWorldSnapshotViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+void* __cdecl hkpWorldSnapshotViewer_createPC(void* contexts)
 {
     hkMemoryRouter* memory = static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
     HeapBlockMetadata* record = static_cast<HeapBlockMetadata*>(reinterpret_cast<hkMemoryAllocator*>(memory->m_heap)->blockAlloc(44));
     record->size = 44;
-    HeapBlockMetadata* result = record->UpdateState_00d62ef0(data, 1);
+    HeapBlockMetadata* result = record->UpdateState_00d62ef0(contexts, 1);
     return result ? reinterpret_cast<char*>(result) + 8 : 0;
 }
 
@@ -1165,17 +1220,19 @@ struct Base2_d632c0
 
 struct Obj_d632c0 : Base1_d632c0, Base2_d632c0
 {
-    Obj_d632c0* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int a, int b);
+    Obj_d632c0* hkpWorldMemoryViewer_ctor(int vtlbReg, int contexts);
 };
 
 // @fnv 0x00d632c0
 // src: HAVOK_LIB 0x00d632c0
-Base2_d632c0* hkpWorldMemoryViewer_create(int aiValue)
+// pdb: hkpWorldMemoryViewer::create | hkpWorldMemoryViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+Base2_d632c0* hkpWorldMemoryViewer_create(int contexts)
 {
     hkMemoryRouter* holder = (hkMemoryRouter*)hkMemoryRouter_getInstance();
     Obj_d632c0* obj = (Obj_d632c0*)reinterpret_cast<hkMemoryAllocator*>(holder->m_heap)->blockAlloc(0x54);
     obj->size = 0x54;
-    obj = obj->hkpWorldMemoryViewer_hkpWorldMemoryViewer(0, aiValue);
+    obj = obj->hkpWorldMemoryViewer_ctor(0, contexts);
     return obj;
 }
 
@@ -1235,6 +1292,7 @@ struct hkObjD633
 // Iterates the container's items and passes each to the listener's v04 callback when m_container is set.
 // @fnv 0x00d63300
 // src: GUESS 0x00d63300 (confidence: medium)
+// pdb: hkpWorldMemoryViewer::init | hkpWorldMemoryViewer.obj | retail, vtable slot, high
 void hkObjD633::NotifyContainerItems()
 {
     if (m_container)
@@ -1312,12 +1370,14 @@ class FUN_00d63370_class
     hkpPhysicsContext* m_iValueAtOffset0C;
     FUN_00ddf050_cls m_pStreamWriter;
 
-    void UpdatePhysicsDebugDisplay(float fFrameTime) throw();
+    void UpdatePhysicsDebugDisplay(float frameTimeInMs) throw();
 };
 
 // Rebuilds the debug display buffer with each physics world, then passes the buffer and its length to the display handler.
 // @fnv 0x00d63370
-void FUN_00d63370_class::UpdatePhysicsDebugDisplay(float fFrameTime) throw()
+// pdb: hkpWorldMemoryViewer::step | hkpWorldMemoryViewer.obj | retail, string-set bridge, high
+// pdb params: frameTimeInMs
+void FUN_00d63370_class::UpdatePhysicsDebugDisplay(float frameTimeInMs) throw()
 {
     m_pStreamWriter.ClearContainer();
     m_pStreamWriter.Clear_Thunk(0);
@@ -1332,27 +1392,29 @@ namespace fnv_00d63400 {
 class FUN_00dd9380_class
 {
   public:
-    void* hkProcessFactory_registerProcess(const char* pcName, void* pvCreateFunc);
+    void* hkProcessFactory_registerProcess(const char* viewerName, void* creationFunction);
 };
 
 void __cdecl hkpWorldMemoryViewer_create();
 
-extern void* DAT_01268fc8;
+extern void* hkpWorldMemoryViewer_m_tag;
 
 // @fnv 0x00d63400
-void __cdecl InitWorldMemory()
+// src: XBOX_RETAIL_PDB 0x00d63400
+// pdb: hkpWorldMemoryViewer::registerViewer | hkpWorldMemoryViewer.obj | retail, string-set bridge, high
+void __cdecl hkpWorldMemoryViewer_registerViewer()
 {
-    DAT_01268fc8 =
+    hkpWorldMemoryViewer_m_tag =
         reinterpret_cast<FUN_00dd9380_class*>(DAT_01269cd0)->hkProcessFactory_registerProcess("World Memory", (void*)hkpWorldMemoryViewer_create);
 }
 }  // namespace fnv_00d63400
 
-extern int DAT_01268fc8;
+extern int hkpWorldMemoryViewer_m_tag;
 // @fnv 0x00d63420
 // src: GUESS 0x00d63420 (confidence: low)
 int __cdecl Object_GetDAT_01268fc8_00d63420()
 {
-    return DAT_01268fc8;
+    return hkpWorldMemoryViewer_m_tag;
 }
 
 void* __cdecl hkMemoryRouter_getInstance();
@@ -1375,6 +1437,7 @@ class FUN_00d63340
 
 // Calls the destructor, and if bit 0 of uiFlags is set, frees the object through operator delete; returns this.
 // @fnv 0x00d63450
+// pdb: hkpWorldMemoryViewer::`scalar deleting destructor' | hkpWorldMemoryViewer.obj | retail, vtable slot, high
 FUN_00d63340* FUN_00d63340::Destroy(unsigned int uiFlags) throw()
 {
     this->FUN_00d63340::~FUN_00d63340();
@@ -1415,7 +1478,7 @@ class hkBaseD642 : public hkPart0D642, public hkPart8D642, public hkPart20D642
 class FUN_00ddccb0 : public hkBaseD642
 {
   public:
-    FUN_00ddccb0(void* p) throw();
+    FUN_00ddccb0(void* contexts) throw();
 };
 
 class hkIfaceAD642
@@ -1435,7 +1498,7 @@ class FUN_00d64260 : public FUN_00ddccb0, public hkIfaceAD642, public hkIfaceBD6
   public:
     hkArray<void*> m_ppData;
 
-    FUN_00d64260(void* p) throw();
+    FUN_00d64260(void* contexts) throw();
     virtual ~FUN_00d64260() throw();
     virtual void p8();
     virtual void p20();
@@ -1445,7 +1508,9 @@ class FUN_00d64260 : public FUN_00ddccb0, public hkIfaceAD642, public hkIfaceBD6
 
 // Constructs the object by forwarding p to the base constructor and default-initializing the void* array member.
 // @fnv 0x00d64260
-FUN_00d64260::FUN_00d64260(void* p) throw() : FUN_00ddccb0(p)
+// pdb: hkpSweptTransformDisplayViewer::hkpSweptTransformDisplayViewer | hkpSweptTransformDisplayViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+FUN_00d64260::FUN_00d64260(void* contexts) throw() : FUN_00ddccb0(contexts)
 {}
 
 struct FnvCpu_FUN_00d645f0_CpuBlock;
@@ -1454,16 +1519,18 @@ struct FnvCpu_FUN_00d645f0_CpuBlock
 {
     unsigned int unk00;
     unsigned short size;
-    FnvCpu_FUN_00d645f0_CpuBlock* FUN_00d64260(unsigned int value);
+    FnvCpu_FUN_00d645f0_CpuBlock* FUN_00d64260(unsigned int contexts);
 };
 // @fnv 0x00d645f0
 // src: XBOX_PDB 0x00d645f0
-void* __cdecl hkpSweptTransformDisplayViewer_create(unsigned int value)
+// pdb: hkpSweptTransformDisplayViewer::create | hkpSweptTransformDisplayViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+void* __cdecl hkpSweptTransformDisplayViewer_create(unsigned int contexts)
 {
     hkMemoryRouter* holder = static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
     FnvCpu_FUN_00d645f0_CpuBlock* block = static_cast<FnvCpu_FUN_00d645f0_CpuBlock*>(reinterpret_cast<hkMemoryAllocator*>(holder->m_heap)->blockAlloc(60));
     block->size = 60;
-    block = block->FUN_00d64260(value);
+    block = block->FUN_00d64260(contexts);
     if (block)
         return reinterpret_cast<char*>(block) + 8;
     return 0;
@@ -1473,14 +1540,16 @@ namespace fnv_00d64630 {
 class FUN_00dd9380_class
 {
   public:
-    void* hkProcessFactory_registerProcess(const char* pcName, void* pvCreateFunc);
+    void* hkProcessFactory_registerProcess(const char* viewerName, void* creationFunction);
 };
 
 extern void* DAT_01268fd0;
 void __cdecl hkpSweptTransformDisplayViewer_create();
 
 // @fnv 0x00d64630
-void __cdecl RegisterSweptTransformsTask()
+// src: XBOX_RETAIL_PDB 0x00d64630
+// pdb: hkpSweptTransformDisplayViewer::registerViewer | hkpSweptTransformDisplayViewer.obj | retail, string-set bridge, high
+void __cdecl hkpSweptTransformDisplayViewer_registerViewer()
 {
     DAT_01268fd0 =
         reinterpret_cast<FUN_00dd9380_class*>(DAT_01269cd0)->hkProcessFactory_registerProcess("Swept Transforms", (void*)hkpSweptTransformDisplayViewer_create);
@@ -1740,12 +1809,15 @@ struct hkpTransformCollapseUtilResultsD734
     int m_iThirdResult;
     int m_iFourthResult;
 
-    void PrintResults() throw();
+    void hkpTransformCollapseUtil_Results_report() throw();
 };
 
 // Logs four counters (collapsed shapes, removed identity transforms, specialized shapes, propagated transforms) via hkError::message.
 // @fnv 0x00d73430
-void hkpTransformCollapseUtilResultsD734::PrintResults() throw()
+// src: XBOX_RETAIL_PDB 0x00d73430
+// pdb: hkpTransformCollapseUtil::Results::report | hkpTransformCollapseUtil.obj | retail, unique string literal, high
+// pdb locals: reportBuf, ostr
+void hkpTransformCollapseUtilResultsD734::hkpTransformCollapseUtil_Results_report() throw()
 {
     {
         unsigned int auiBuf[128];
@@ -1779,7 +1851,7 @@ void hkpTransformCollapseUtilResultsD734::PrintResults() throw()
 
 struct FnvCpu_FUN_00d76d80_CpuTarget
 {
-    void ProcessEntries_00d81340();
+    void hkgpConvexHullImpl_getOrientedBoundingBox();
 };
 struct FnvCpu_FUN_00d76d80_CpuOwner
 {
@@ -1792,7 +1864,7 @@ struct FnvCpu_FUN_00d76d80_CpuOwner
 // src: GUESS 0x00d76d80 (confidence: low)
 void FnvCpu_FUN_00d76d80_CpuOwner::ForwardCall_00d76d80()
 {
-    target->ProcessEntries_00d81340();
+    target->hkgpConvexHullImpl_getOrientedBoundingBox();
 }
 
 extern int DAT_010d14f8;
@@ -1824,6 +1896,8 @@ struct FUN_00d608a0
 };
 // Initializes count, vptr, and mode, then allocates and constructs a FUN_00d274c0 child node via the router allocator.
 // @fnv 0x00d608a0
+// pdb: hkOArchive::hkOArchive | hkOArchive.obj | retail, object-file run extension, low
+// pdb params: sw, bs
 FUN_00d608a0::FUN_00d608a0(int first, int second, unsigned char mode)
 {
     count = 1;
@@ -1845,6 +1919,8 @@ struct R
 
 // The original wrapper return uses a hidden output pointer before the explicit stack argument.
 // @fnv 0x00d616c0
+// pdb: hkStringBuf::operator< | hkStringBuf.obj | retail, object-file run extension, low
+// pdb params: other
 R* __fastcall StringBufIsLessThan(const hkStringBuf* self, void*, R* result, int other)
 {
     int compared = hkString_strCmp((int)self->m_string.m_data, other);
@@ -1857,19 +1933,21 @@ R* __fastcall StringBufIsLessThan(const hkStringBuf* self, void*, R* result, int
 
 // Splits m_string in place at each c found from index 1 by writing nulls, appends each piece pointer to kBits, and returns kBits's size.
 // @fnv 0x00d61910
-int hkStringBuf::split(int c, hkArray<const char*, hkContainerTempAllocator>& kBits)
+// pdb: hkStringBuf::split | hkStringBuf.obj | retail, upstream name already matches, high
+// pdb params: sep, bits
+int hkStringBuf::split(int sep, hkArray<const char*, hkContainerTempAllocator>& bits)
 {
     const char* firstPiece = m_string.m_data;
-    kBits.pushBack(firstPiece);
-    int iNumBits = kBits.GetLogicalSize();
-    int iCur = indexOf(c, 1, 0x7fffffff);
+    bits.pushBack(firstPiece);
+    int iNumBits = bits.GetLogicalSize();
+    int iCur = indexOf(sep, 1, 0x7fffffff);
     while (iCur >= 0)
     {
         m_string[iCur] = 0;
         int iStart = iCur + 1;
-        kBits.pushBack(m_string.m_data + iStart);
-        iNumBits = kBits.GetLogicalSize();
-        iCur = indexOf(c, iStart, 0x7fffffff);
+        bits.pushBack(m_string.m_data + iStart);
+        iNumBits = bits.GetLogicalSize();
+        iCur = indexOf(sep, iStart, 0x7fffffff);
     }
     return iNumBits;
 }
@@ -1884,6 +1962,8 @@ template <class T> inline void hkArrayCopyD61(T* dst, const T* src, int n)
 
 // Copies the source array, growing the buffer via the memory router if the source size exceeds the current capacity.
 // @fnv 0x00d619d0
+// pdb: hkStringBuf::operator= | hkStringBuf.obj | retail, object-file gap fill, high
+// pdb params: s
 hkStringBuf& __fastcall StringBufAssign(hkStringBuf* self, void*, const hkStringBuf& aSource)
 {
     hkMemoryAllocator& alloc = *static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance())->m_temp;
@@ -1905,11 +1985,12 @@ hkStringBuf& __fastcall StringBufAssign(hkStringBuf* self, void*, const hkString
 namespace fnvc_adapt {
 char* __cdecl hkString_strLen(int value);
 }
-void __cdecl hkArrayUtil__reserve(int allocator, hkStringBuf* array, int capacity, int value);
+void __cdecl hkArrayUtil__reserve(int mem, hkStringBuf* array, int numElem, int sizeElem);
 void __cdecl hkString_memCpy(int* data, int value, char* source);
 
 // Initializes the string buffer, grows capacity if needed, copies value into m_data, and returns this.
 // @fnv 0x00d61a50
+// pdb: hkStringBuf::hkStringBuf | hkStringBuf.obj | retail, call graph (shared callers), high
 int* __fastcall StringBufInitString(hkStringBuf* self, void*, int value)
 {
     self->m_string.m_data = reinterpret_cast<char*>(self->m_storage);
@@ -1970,6 +2051,7 @@ template <class T> __forceinline void hkArrayCopyD61B8(T* pDst, const T* pSrc, i
 
 // Copy-constructs the inline buffer, allocating external storage only when needed.
 // @fnv 0x00d61b80
+// pdb: hkStringBuf::hkStringBuf | hkStringBuf.obj | retail, object-file gap fill, high
 hkStringBuf* __fastcall StringBufInitCopy(hkStringBuf* self, void*, const hkStringBuf& other) throw()
 {
     self->m_string.m_data = reinterpret_cast<char*>(self->m_storage);
@@ -2005,7 +2087,9 @@ struct C6DF60Router
 void __cdecl ArrayReserveImpl(void*, void*, int, int);
 // Reserves space for an empty string if needed, then sets the element count to 1 and writes a terminator.
 // @fnv 0x00d61cc0
-__declspec(noinline) void __fastcall StringBufClear(hkStringBuf* self, void*)
+// src: XBOX_RETAIL_PDB 0x00d61cc0
+// pdb: hkStringBuf::clear | hkStringBuf.obj | retail, object-file gap fill, high
+__declspec(noinline) void __fastcall hkStringBuf_clear(hkStringBuf* self, void*)
 {
     C6DF60Router* router = _FNV_e03300_arena();
     hkMemoryAllocator* allocator = (hkMemoryAllocator*)(void*)router->unk0c;
@@ -2042,11 +2126,13 @@ void hkMemUtil_memMove(void* pvDst, void* pvSrc, unsigned int uiNumBytes);
 
 
 // @fnv 0x00d61fc0
-void hkStringBuf::slice(int iOffset, int iLength)
+// pdb: hkStringBuf::slice | hkStringBuf.obj | retail, upstream name already matches, high
+// pdb params: startOffset, length
+void hkStringBuf::slice(int startOffset, int length)
 {
-    if (iOffset)
-        hkMemUtil_memMove(m_string.m_data, m_string.m_data + iOffset, iLength);
-    int n = iLength + 1;
+    if (startOffset)
+        hkMemUtil_memMove(m_string.m_data, m_string.m_data + startOffset, length);
+    int n = length + 1;
     hkMemoryAllocator& kAlloc = static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance())->temp();
     const int iCap = getCapacity();
     if (iCap < n)
@@ -2056,7 +2142,7 @@ void hkStringBuf::slice(int iOffset, int iLength)
         ::hkArrayUtil__reserve(kAlloc, this, iNewCap, sizeof(char));
     }
     m_string.m_iElementCount = n;
-    m_string.m_data[iLength] = 0;
+    m_string.m_data[length] = 0;
 }
 
 
@@ -2068,7 +2154,7 @@ __forceinline void* __cdecl hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(
         GetHolderAllocator<hkMemoryAllocator>(&hkRouterD62::hkMemoryRouter_getInstance()).blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = (unsigned short)nbytes;
+    b->m_memSizeAndFlags = (unsigned short)nbytes;
     return b;
 }
 
@@ -2084,9 +2170,11 @@ class FUN_00d62ef0 : public hkpWorldViewerBase
 // Allocates a viewer and returns its hkProcess base at +8.
 // @fnv 0x00d62f20
 // src: HAVOK_LIB 0x00d62f20
-hkProcess* __cdecl hkpWorldSnapshotViewer_createNative(void* contactMgr)
+// pdb: hkpWorldSnapshotViewer::createNative | hkpWorldSnapshotViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+hkProcess* __cdecl hkpWorldSnapshotViewer_createNative(void* contexts)
 {
-    return new FUN_00d62ef0(contactMgr, 0);
+    return new FUN_00d62ef0(contexts, 0);
 }
 
 // @fnv 0x00d6c1a0
@@ -2193,7 +2281,7 @@ void __cdecl AssignNodeFlags(Node** nodes, int count, unsigned auSeed)
 
 struct FUN_00d7e740_cls
 {
-    int hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(int iArg0, int iArg1, bool iFlag, int iArg2);
+    int hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(int vpf, int vi, bool useSourceIndex, int maximizeArea);
 };
 
 struct FUN_00d76c20_cls
@@ -2218,15 +2306,17 @@ struct CollisionObjectOutput
     void* m_pCollisionObject;
 };
 
-void __cdecl hkgpConvexHull_booleanSplit(void* a, void* b, CollisionObjectOutput* out, int flags, float f);
+void __cdecl hkgpConvexHull_booleanSplit(void* operandA, void* operandB, CollisionObjectOutput* inside, int outside, float thickness);
 
 // Calls FUN_00d79250 with flags 0 and returns whether the collision-object output is set.
 // @fnv 0x00d794e0
 // src: HAVOK_LIB 0x00d794e0
-bool __cdecl hkgpConvexHull_booleanIntersection(void* a, void* b, CollisionObjectOutput* apResult, float f)
+// pdb: hkgpConvexHull::booleanIntersection | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: operandA, operandB, output, thickness
+bool __cdecl hkgpConvexHull_booleanIntersection(void* operandA, void* operandB, CollisionObjectOutput* output, float thickness)
 {
-    hkgpConvexHull_booleanSplit(a, b, apResult, 0, f);
-    return apResult->m_pCollisionObject != 0;
+    hkgpConvexHull_booleanSplit(operandA, operandB, output, 0, thickness);
+    return output->m_pCollisionObject != 0;
 }
 
 // @fnv 0x00d61430
@@ -2407,7 +2497,7 @@ void __cdecl StringBufWriteFormatted(hkStringBuf* self, const char* pcFormat, ..
             kBuf.setLength(iNumChars);
         }
     }
-    reinterpret_cast<void (__thiscall *)(hkStringBuf*, int, int)>(StringBufAppend)(self, (int)kBuf.cString(), -1);
+    reinterpret_cast<void (__thiscall *)(hkStringBuf*, int, int)>(hkStringBuf_append)(self, (int)kBuf.cString(), -1);
 }
 
 // sub ecx,8; jmp target  ==  MSVC adjustor thunk: Derived overrides a virtual that both of its bases
@@ -2509,14 +2599,16 @@ void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) thro
 
 // Copies a null-terminated string into the internal buffer, growing it as needed, or clears it to an empty string when the input is null.
 // @fnv 0x00d61c10
-hkStringBuf& hkStringBuf::operator=(const char* apcString)
+// pdb: hkStringBuf::operator= | hkStringBuf.obj | retail, call graph, high
+// pdb params: s
+hkStringBuf& hkStringBuf::operator=(const char* s)
 {
-    if (apcString)
+    if (s)
     {
-        int len = fnv_00d61c10::hkString_strLen(apcString);
+        int len = fnv_00d61c10::hkString_strLen(s);
         m_string.setSize(len + 1);
         m_string[len] = 0;
-        hkString_memCpy(m_string.begin(), apcString, len);
+        hkString_memCpy(m_string.begin(), s, len);
     }
     else
     {
@@ -2550,6 +2642,7 @@ class hkpWorldMemoryViewer : public hkpWorldViewerBase
 };
 
 // @fnv 0x00d63340
+// pdb: hkpWorldMemoryViewer::~hkpWorldMemoryViewer | hkpWorldMemoryViewer.obj | retail, upstream name already matches, high
 hkpWorldMemoryViewer::~hkpWorldMemoryViewer()
 {
 }
@@ -2726,6 +2819,7 @@ inline char hkToUpperD618(char c)
 
 // Converts every character in the buffer to its uppercase equivalent using hkToUpperD618.
 // @fnv 0x00d618d0
+// pdb: hkStringBuf::upperCase | hkStringBuf.obj | debug, upstream name already matches, high
 void hkStringBuf::upperCase()
 {
     for (int i = 0; i < getLength(); i++)

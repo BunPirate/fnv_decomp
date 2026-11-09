@@ -21,6 +21,8 @@
 
 // Iterates the obstacle list, looks up each rigid body's ObstacleData, skips ones already in the active list, and adds the rest to its head.
 // @fnv 0x006c49e0
+// pdb: NavMeshObstacleManager::ProcessActivatedObstacles | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: iobstacleToAddCount, i, prb, spObstacle
 void NavMeshObstacleManager::ProcessActivatedObstacles()
 {
     unsigned int count = m_kActivatedRigidBodies.GetCount();
@@ -40,12 +42,14 @@ void NavMeshObstacleManager::ProcessActivatedObstacles()
 
 // Stores the obstacle pointer, task type and navmesh pointer into the object's fields.
 // @fnv 0x006c7d70
-ObstacleTask::ObstacleTask(const NiPointer<ObstacleData>& obstacle, OBSTACLE_TASK_TYPE type, const NavMeshPtr& navMesh)
+// pdb: ObstacleTaskNavMeshOperation::ObstacleTaskNavMeshOperation | NavMeshObstacleTask.obj | debug, call graph, high
+// pdb params: apObstacle, aeType, aspNavMesh
+ObstacleTask::ObstacleTask(const NiPointer<ObstacleData>& apObstacle, OBSTACLE_TASK_TYPE aeType, const NavMeshPtr& aspNavMesh)
     : m_spRegisteredObstacle(0)
 {
-    m_spRegisteredObstacle = obstacle;
-    eType = type;
-    apSearchNavMesh = navMesh;
+    m_spRegisteredObstacle = apObstacle;
+    eType = aeType;
+    apSearchNavMesh = aspNavMesh;
 }
 
 extern int DAT_010159d4;
@@ -56,12 +60,13 @@ struct Dummy0042f800
 };
 
 // @fnv 0x0049f1c0
-// src: GUESS 0x0049f1c0 (confidence: low)
-void* __fastcall Object_InitializeFields_0049f1c0(int** pThis)
+// src: XBOX_DEBUG_PDB 0x0049f1c0
+// pdb: BSSimpleArray<NiPoint3,1024>::BSSimpleArray<NiPoint3,1024> | BGSAutoWater.obj | debug, call graph, high
+void* __fastcall BSSimpleArray_NiPoint3_1024_ctor(int** aiInitialSize)
 {
-    *pThis = &DAT_010159d4;
-    reinterpret_cast<Dummy0042f800*>(pThis)->FUN_0042fcb0(0, 0);
-    return pThis;
+    *aiInitialSize = &DAT_010159d4;
+    reinterpret_cast<Dummy0042f800*>(aiInitialSize)->FUN_0042fcb0(0, 0);
+    return aiInitialSize;
 }
 
 typedef char _sizecheck_NavMeshTriangle[sizeof(NavMeshTriangle) == 16 ? 1 : -1];
@@ -72,6 +77,7 @@ struct FUN_006a5ec0_shell : public NavMeshTriangle
 
 // @fnv 0x006a5ec0
 // src: XBOX_PDB 0x006a5ec0
+// pdb: NavMeshTriangle::IsWater | NavMeshRender.obj | debug, upstream name already matches, high
 bool FUN_006a5ec0_shell::NavMeshTriangle_IsWater()
 {
     return GetFlag(0x200);
@@ -139,6 +145,9 @@ struct PaddedBooleanState
 
 // @fnv 0x006a36e0
 // src: COMMUNITY 0x006a36e0
+// pdb: NavMeshRender::SetDraw | NavMeshRender.obj | retail, upstream name already matches, high
+// pdb params: abDraw
+// pdb locals: UpdateData
 void PaddedBooleanState::NavMeshRender_SetDraw(bool abDraw)
 {
     if (abDraw)
@@ -194,6 +203,8 @@ int g_TES;
 
 // @fnv 0x006a5ca0
 // src: COMMUNITY 0x006a5ca0
+// pdb: NavMeshRender::UpdateRenderOnlyNavMeshes | NavMeshRender.obj | retail, upstream name already matches, high
+// pdb locals: pcell, d, x, y, pgridCell
 void PaddedBooleanState::NavMeshRender_UpdateRenderOnlyNavMeshes()
 {
     TESObjectCELL* pcellVal;
@@ -281,7 +292,7 @@ struct LinesX : public NiAVObject
     unsigned int unk0b8;
     unsigned int unk0bc;
     unsigned int unk0c0;
-    LinesX(unsigned short ausVerts, Pt3X* apVerts, ColorX* apColors, int a, int b, int c, bool* apFlags);
+    LinesX(unsigned short usVertices, Pt3X* apVerts, ColorX* apColors, int a, int b, int c, bool* pkFlags);
 };
 struct TriShapeX : public NiAVObject
 {
@@ -296,8 +307,8 @@ struct TriShapeX : public NiAVObject
     unsigned int unk0b8;
     unsigned int unk0bc;
     unsigned int unk0c0;
-    TriShapeX(unsigned short ausVerts, Pt3X* apVerts, Pt3X* apNormals, ColorX* apColors, void* apUV,
-              unsigned short ausUV, int aiFlags, unsigned short ausTris, unsigned short* apusList);
+    TriShapeX(unsigned short usVertices, Pt3X* pkVertex, Pt3X* pkNormal, ColorX* pkColor, void* pkTexture,
+              unsigned short usNumTextureSets, int eNBTMethod, unsigned short usTriangles, unsigned short* pusTriList);
 };
 struct AlphaX : public NiObjectNET
 {
@@ -309,7 +320,7 @@ struct Pt3ArrX
 {
     Pt3X* pData;
     int iSize, iAlloc, iGrow;
-    Pt3ArrX(int aiSize);
+    Pt3ArrX(int aiInitialSize);
     ~Pt3ArrX();
     Pt3X& GetAt(unsigned int auiIndex);
     void SetSize(int aiSize, int aiArg);
@@ -363,7 +374,7 @@ unsigned int __fastcall NavMeshGetArrayFlags(NavMesh*);
 bool __fastcall NavMeshIsDisabled(NavMesh*);
 struct NavArrX
 {
-    NavMeshPtr GetAt(unsigned int auiIndex);
+    NavMeshPtr GetAt(unsigned int aiNavMeshIndex);
 };
 struct CellX
 {
@@ -468,11 +479,11 @@ struct NavRenderX
 unsigned int __fastcall xGetNavMeshCount(NavArrX* apArray);
 void* __cdecl xNiMalloc(unsigned int auiSize);
 float __cdecl xGetCoverHeight(unsigned int auiCover);
-NiAVObject* __cdecl xMakeLine(Pt3X& arA, Pt3X& arB, float afA, float afB, float afHeight, float afOffset, ColorX& arColor,
-                          int aiArg);
+NiAVObject* __cdecl xMakeLine(Pt3X& arLeftCorner, Pt3X& arRightCorner, float afForwardDepth, float afBackwardDepth, float afUpwardHeight, float afDownwardHeight, ColorX& apLeftColor,
+                          int apRightColor);
 NiAVObject* __cdecl xMakeSphere(float afRadius, int aiSlices, int aiStacks, ColorX* apColor);
-void __cdecl xUpdateNode(NodeX* apNode);
-void __cdecl xPrepareNode(NodeX* apNode, int a, int b);
+void __cdecl AddNoLightingPropertyRecurse(NodeX* apObject);
+void __cdecl xPrepareNode(NodeX* apObject, int abFaceGenModel, int abSkipPreCache);
 extern "C" void* __cdecl memcpy(void* apDst, const void* apSrc, unsigned int auiSize);
 extern NiPointer<NodeX> xspNavRoot;
 extern bool xbShowPortals;
@@ -481,6 +492,9 @@ extern float xfCoverWidth, xfCoverScale, xfCoverOffset, xfCoverWidth2;
 // Builds and attaches a navmesh debug render node for the cell: lines, cover lines, triangles and spheres, then updates the nav root if requested.
 // @fnv 0x006a37a0
 // src: XBOX_PDB 0x006a37a0
+// pdb: NavMeshRender::AddDrawOnlyNavMeshes | NavMeshRender.obj | retail, upstream name already matches, high
+// pdb params: apCell, abUpdate
+// pdb locals: inavmeshes, cellNode, spnavmesh, pnavMeshes, i, ivertSize, edgeConnectionList, bdisabledMesh, icopy, pedgeVerts, spconnections, ptriVerts, ptriColors, sptriangles, ptriList, connectConnectionList, spLinesShaderProp, splines, spShaderProp, itriSize, triVertList, edgeVertList, edgeColorList, connectColorList ...
 void NavRenderX::NavMeshRender_AddDrawOnlyNavMeshes(CellX* apCell, bool abUpdate)
 {
     NavArrX* qfTOqo;
@@ -825,7 +839,7 @@ void NavRenderX::NavMeshRender_AddDrawOnlyNavMeshes(CellX* apCell, bool abUpdate
         reinterpret_cast<NiNode*>(static_cast<NodeX*>(qAhbO))->AttachChildInAvailableSlot(qpTd, true);
         if (qArxcFu > 0)
             reinterpret_cast<NiNode*>(static_cast<NodeX*>(qAhbO))->AttachChildInAvailableSlot(qvyWyw, true);
-        xUpdateNode(qAhbO);
+        AddNoLightingPropertyRecurse(qAhbO);
         xPrepareNode(qAhbO, 0, 0);
     }
     if (abUpdate)
@@ -851,6 +865,9 @@ struct RenderTask
     void UpdateChildByKey(int key);
 };
 // @fnv 0x006a5bb0
+// pdb: NavMeshRender::RemoveDrawOnlyNavMeshes | NavMeshRender.obj | debug, object-file run extension, low
+// pdb params: apCell
+// pdb locals: cellNode, UpdateData
 void RenderTask::UpdateChildByKey(int key)
 {
     WorldPointer child(0);
@@ -882,6 +899,9 @@ struct NavRenderStub
 
 // Returns a color code chosen from the triangle's object count and its flags/checks, defaulting to 0.
 // @fnv 0x006a5da0
+// pdb: NavMeshRender::GetTriangleColor | NavMeshRender.obj | debug, object-file run extension, low
+// pdb params: apTri
+// pdb locals: eret
 int NavRenderStub::GetNavTriColor(NavTriStub* pNavTri)
 {
     int iColorCode = 0;

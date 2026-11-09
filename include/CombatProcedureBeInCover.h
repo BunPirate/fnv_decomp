@@ -5,6 +5,7 @@
 
 class Projectile;
 
+// pdb: class CombatProcedureBeInCover, size 0x6c, bases: CombatProcedure, 11 members
 class CombatProcedureBeInCover : public CombatProcedure
 {
 public:
@@ -30,12 +31,12 @@ public:
         float GetElapsedTime();
     };
 
-    CombatProcedureBeInCover(void* pLoc);
+    CombatProcedureBeInCover(void* apCombatCoverLocation);
 
     virtual ~CombatProcedureBeInCover();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     void DebugText(IDebugText*, DEBUGTEXT_LOCATION, DEBUGTEXT_JUSTIFY);
     void UpdateCoverState();
@@ -43,14 +44,14 @@ public:
     void UpdateCombatProcedure(Projectile* apProjectile);
 
     COVER_STATE eState;
-    void* m_pCurrentCoverPoint;
-    float m_afFirstVector[3];
-    float m_afSecondVector[3];
-    unsigned char _pad1[0x0C];
-    Timer m_waitTimer;
-    Timer m_waitingOutTimer;
-    Timer m_firingTimer;
-    Timer m_reevaluateTimer;
-    Timer m_holdingGroundTimer;
-    Timer m_targetBlockedTimer;
+    void* pCoverLocation;
+    float CurrentCoverPosition[3];
+    float CurrentFirePosition[3];
+    unsigned char LookAtPosition[0x0C];
+    Timer WaitBehindCoverTimer;
+    Timer WaitingOutOfCoverTimer;
+    Timer FiringOutOfCoverTimer;
+    Timer ReevaluateCoverTimer;
+    Timer HoldingGroundTimer;
+    Timer TargetBlockedTimer;
 };

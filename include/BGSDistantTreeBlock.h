@@ -6,6 +6,7 @@
 class BGSTerrainNode;
 
 #pragma pack(push, 1)
+// pdb: class BGSDistantTreeBlock, size 0x4c (here 0x44), 8 members
 class BGSDistantTreeBlock
 {
 public:
@@ -31,7 +32,7 @@ public:
 
     bool IsLoaded();
     void Prepare();
-    void Attach();
+    void BGSDistantTreeBlock_UpdateShaderProperties();
     void MarkTreeInstance(unsigned int);
     void MarkTreeInstance(unsigned int aID, bool update);
     void ClearInstanceFlag(unsigned int aID);

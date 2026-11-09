@@ -11,8 +11,8 @@ class TESForm;
 class LocationDescriptor
 {
   public:
-    char m_ucLocationType;
-    unsigned int m_pLocationData;
+    char eLocType;
+    unsigned int iRad;
     union
     {
         TESForm* pObject;
@@ -28,8 +28,8 @@ class LocationDescriptor
     void SetValue(TESForm* object);
     // Keep this distinct, community-confirmed callee address explicit.
     void PackageLocation_SetLocReference(TESObjectREFR* reference);
-    void InitItem(TESForm* owner);
-    TESObjectREFR* ResolveLocationReference(MobileObject* object);
+    void InitItem(TESForm* apOwner);
+    TESObjectREFR* ResolveLocationReference(MobileObject* apActor);
 };
 
 typedef char PackageLocation_size_check[sizeof(LocationDescriptor) == 12 ? 1 : -1];

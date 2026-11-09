@@ -9,6 +9,7 @@
 class hkContactPoint;
 class hkpEntity;
 #pragma pack(push, 1)
+// pdb: structure hkpSerializedAgentNnEntry, size 0x140, bases: hkReferencedObject, 14 members
 class hkpSerializedAgentNnEntry : public hkReferencedObject
 {
   public:
@@ -25,19 +26,19 @@ class hkpSerializedAgentNnEntry : public hkReferencedObject
         COLLECTION_COLLECTION_AGENT3 = 8,
         COLLECTION_AGENT3 = 9
     };
-    hkpEntity* m_pBodyA;     // +0x8
-    hkpEntity* m_pBodyB;     // +0xC
-    hkUlong m_ulData0;       // +0x10
-    hkUlong m_ulData1;       // +0x14
-    hkBool m_bStateFlag;     // +0x18
-    hkInt8 m_ucNnTrackType;  // +0x19 (SerializedAgentType)
+    hkpEntity* m_bodyA;     // +0x8
+    hkpEntity* m_bodyB;     // +0xC
+    hkUlong m_bodyAId;       // +0x10
+    hkUlong m_bodyBId;       // +0x14
+    hkBool m_useEntityIds;     // +0x18
+    hkInt8 m_agentType;  // +0x19 (SerializedAgentType)
     char pad1A[0x36];
-    hkArray<hkUint8> m_akAgentData;               // +0x50
-    hkArray<hkContactPoint> m_akContactPoints;    // +0x5C
-    hkArray<hkUint8> m_akContactPointProperties;  // +0x68
-    hkUint8 m_akAgentDataBuffer[160];             // +0x74
-    hkpSerializedTrack1nInfo m_kTrackInfo;        // +0x114
-    hkUint8 m_akTrailingBytes[4];                 // +0x12C
+    hkArray<hkUint8> m_propertiesStream;               // +0x50
+    hkArray<hkContactPoint> m_contactPoints;    // +0x5C
+    hkArray<hkUint8> m_cpIdMgr;  // +0x68
+    hkUint8 m_nnEntryData[160];             // +0x74
+    hkpSerializedTrack1nInfo m_trackInfo;        // +0x114
+    hkUint8 m_endianCheckBuffer[4];                 // +0x12C
     hkUint32 m_version;                           // +0x130
     char pad134[0xC];
 };

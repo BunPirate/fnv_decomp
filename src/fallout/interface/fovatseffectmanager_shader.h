@@ -44,6 +44,7 @@ FNV_STATIC_ASSERT(offsetof(NiColorA, g) == 4);
 FNV_STATIC_ASSERT(offsetof(NiColorA, b) == 8);
 FNV_STATIC_ASSERT(offsetof(NiColorA, a) == 12);
 #pragma pack(push, 4)
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public VatsManagerEffectParamLocalForm
 {
   public:

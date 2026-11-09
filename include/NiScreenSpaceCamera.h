@@ -2,6 +2,7 @@
 
 #include "NiCamera.h"
 
+// pdb: class NiScreenSpaceCamera, size 0x160 (here 0x134), bases: NiCamera, 2 members
 class NiScreenSpaceCamera : public NiCamera
 {
   public:
@@ -42,7 +43,7 @@ class NiScreenSpaceCamera : public NiCamera
 
     void __thiscall FUN_00a915d0();
     void* __thiscall FUN_00a91e60(unsigned int flags);
-    NiScreenSpaceCamera* __thiscall NiScreenSpaceCamera_00a91d80();
+    NiScreenSpaceCamera* __thiscall NiScreenSpaceCamera_ctor();
 
     PrimitiveArray<void*> m_kObjectPointers;
     PrimitiveArray<float> m_kFloatValues;

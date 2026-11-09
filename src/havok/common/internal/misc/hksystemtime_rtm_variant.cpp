@@ -474,6 +474,9 @@ __declspec(noinline) bool Object_ProcessAndReturnValue_00e29920(const S29cd0_hkV
 
 // @fnv 0x00e29cd0
 // src: XBOX_PDB 0x00e29cd0
+// pdb: hkTreeBundleRayCastUtil::autoBundleFromList | hkTreeBundleRaycastUtil.obj | retail, upstream name already matches, high
+// pdb params: indices, numIndices, rayFrom, rayTo, numRays, angleVariance, distanceVariance2, resultBuffer, singleCommandsOut, numSingleCommandsOut, bundledCommandsOut, numBundledCommandsOut
+// pdb locals: clusters, lastCluster
 extern "C" void __cdecl hkTreeBundleRayCastUtil_autoBundleFromList(int* indices, int numIndices, const S29cd0_hkVector4* rayFrom,
                                      const S29cd0_hkVector4* rayTo, int numRays, S29cd0_hkReal angleVariance,
                                      S29cd0_hkReal distanceVariance2, S29cd0_hkpWorldRayCastOutput* resultBuffer,

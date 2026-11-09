@@ -23,6 +23,9 @@ public:
 };
 
 // @fnv 0x0080d4b0
+// pdb: SummonCreatureEffect::CheckTarget | SummonCreatureEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: pActor
 bool CureEffect::IsEffectValid(MagicTarget* apTarget)
 {
     Actor* pActor = apTarget ? apTarget->GetOwnerActor() : 0;
@@ -30,28 +33,33 @@ bool CureEffect::IsEffectValid(MagicTarget* apTarget)
 }
 
 // @fnv 0x0080c210
+// pdb: CureEffect::InstantiateCureDisease | CureEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CureEffect::Start
+// pdb params: apCaster, apSpell, apEffect
 void CureEffect::Start()
 {
-    if (m_iCureType == -1)
-        static_cast<CureEffectTarget*>(GetTarget())->MagicTarget_Dispel(m_eSpellType);
+    if (eArchetypeID == -1)
+        static_cast<CureEffectTarget*>(GetTarget())->MagicTarget_Dispel(eSpellType);
     else
-        static_cast<CureEffectTarget*>(GetTarget())->RemoveEffectsByArchetype(m_iCureType, 0);
+        static_cast<CureEffectTarget*>(GetTarget())->RemoveEffectsByArchetype(eArchetypeID, 0);
 }
 
 void* __cdecl operator new(unsigned int);
 
 // @fnv 0x0080c0f0
+// pdb: CureEffect::Copy | CureEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* CureEffect::Copy()
 {
     ActiveEffect* pEffect = 0;
 
-    if (m_iCureType == -1)
+    if (eArchetypeID == -1)
     {
-        pEffect = new CureEffectConstruction(m_pEffectInstance, pSpell, this->pEffect, (MagicSystem__SpellType)m_eSpellType);
+        pEffect = new CureEffectConstruction(m_pEffectInstance, pSpell, this->pEffect, (MagicSystem__SpellType)eSpellType);
     }
     else
     {
-        pEffect = new CureEffectConstruction(m_pEffectInstance, pSpell, this->pEffect, m_iCureType);
+        pEffect = new CureEffectConstruction(m_pEffectInstance, pSpell, this->pEffect, eArchetypeID);
     }
 
     this->CopyData(pEffect);

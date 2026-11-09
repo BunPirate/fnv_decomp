@@ -10,6 +10,7 @@
 typedef unsigned char hkUint8;
 typedef signed char hkInt8;
 
+// pdb: class hkpMoppCode, size 0x30, bases: hkReferencedObject, 3 members
 class hkpMoppCode : public hkReferencedObject
 {
 public:
@@ -30,6 +31,6 @@ public:
     unsigned char unk08[8];
     CodeInfo m_info;
     hkArray<hkUint8> m_data;
-    hkEnum<BuildType, hkInt8> m_eBuildType;
+    hkEnum<BuildType, hkInt8> m_buildType;
     unsigned char unk2D[3];
 };

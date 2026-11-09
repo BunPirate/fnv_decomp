@@ -9,15 +9,16 @@ class NiPSysColliderManager;
 class NiPSysData;
 struct StrArr;
 
+// pdb: class NiPSysCollider, size 0x2c, bases: NiObject, 8 members
 class NiPSysCollider : public NiObject
 {
 public:
     NiPSysCollider(float bounce, bool spawn, bool die, NiPSysSpawnModifier* spawnMod);
 
-    virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
-    virtual void GetViewerStrings(NiViewerStringsArray* strings);
-    virtual void ProcessClone(CloningProcess& cloning);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void LinkObject(NiStream& kStream);
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
+    virtual void ProcessClone(CloningProcess& kCloning);
 
     virtual NiPSysCollider* vf35(float time, float& collisionTime,
                                NiPSysData* data, unsigned short index);
@@ -27,13 +28,13 @@ public:
     void CreateVertexBufferSet(NiPSysCollider* collider, CloningProcess& cloning);
     NiPSysCollider* Clone(CloningProcess& cloning);
 
-    float m_fBounceFactor;
-    bool m_bSpawnOnCollision;
-    bool m_bDieOnCollision;
+    float m_fBounce;
+    bool m_bSpawnOnCollide;
+    bool m_bDieOnCollide;
     unsigned char layoutPaddingE[2];
-    NiPSysSpawnModifier* m_pSpawnModifier;
-    NiPoint3 m_kCollisionPosition;
-    float m_fSpawnRate;
-    NiPSysColliderManager* m_pColliderManager;
-    NiPointer<NiPSysCollider> m_spNextController;
+    NiPSysSpawnModifier* m_pkSpawnModifier;
+    NiPoint3 m_kCollisionPoint;
+    float m_fCollisionTime;
+    NiPSysColliderManager* m_pkManager;
+    NiPointer<NiPSysCollider> m_spNext;
 };

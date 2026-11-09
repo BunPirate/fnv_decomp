@@ -23,6 +23,7 @@ struct DecalPointRecord;
 class Geometry;
 class Param;
 
+// pdb: class BSTempEffectSimpleDecal, size 0x144, bases: BSTempEffect, 48 members
 class BSTempEffectSimpleDecal : public BSTempEffect
 {
   public:
@@ -34,8 +35,8 @@ class BSTempEffectSimpleDecal : public BSTempEffect
     virtual NiAVObject* Get3D();
 
     bool ReleaseTextureObject();
-    bool CreateDecalTexture();
-    void SetDecalTint(NiColorA& color, bool enabled);
+    bool FinalizeGeometry();
+    void CreateDebugBox(NiColorA& arColor, bool abWireframe);
     bool GetByteAt2D();
     TESTopicInfoData* BSTempEffectSimpleDecal_GetDecalParent();
     void CleanUpMemory();
@@ -46,11 +47,11 @@ class BSTempEffectSimpleDecal : public BSTempEffect
     bool AddDecalGeometry(int count, unsigned int* indices, NiPoint3* positions,
                           NiPoint3* attributes);
     void ProcessDecalTriangles(NiAVObject* object);
-    void ProcessDecalTriangles(Geometry* geometry);
-    void ProcessDecalTriangles(Param* object);
+    void ClipMesh(Geometry* apAVObj);
+    void ClipMesh(Param* apAVObj);
     bool ProcessGeometry(NiAVObject* object);
     bool ProcessGeometry(unsigned int object);
-    bool ProcessGeometry(Param* object);
+    bool ProcessGeometry(Param* apAVObj);
     int CreateTriData_0068ca90();
     void ResizeMeshBuffers();
     int ClipPolygonByPlanes(int count, const int* indices, const NiPoint3* positions,
@@ -62,69 +63,69 @@ class BSTempEffectSimpleDecal : public BSTempEffect
                             NiPoint3* attributes, unsigned int* outIndices,
                             NiPoint3* outPositions, NiPoint3* outAttributes);
 
-    static void QueueDecalDataFile();
+    static void PreloadDecalData();
     static void UnloadDecalData();
     static int ClipPolygonToPlane(NiPlane* plane, int count, const int* indices,
                                   const NiPoint3* positions, const NiPoint3* attributes,
                                   int* outIndices, NiPoint3* outPositions,
                                   NiPoint3* outAttributes);
-    static int ClipPolygonToPlane(void* plane, int count, NiPoint3* inPositions,
-                                  float* inAttributes, NiPoint3* inVectors,
-                                  float* outAttributes, NiPoint3* outPositions,
-                                  NiPoint3* outVectors);
+    static int BSTempEffectSimpleDecal_ClipPolygonAgainstPlane(void* apPlane, int aiVertexCount, NiPoint3* apInIndex,
+                                  float* apInVertex, NiPoint3* apInNormal,
+                                  float* apOutIndex, NiPoint3* apOutVertex,
+                                  NiPoint3* apOutNormal);
     static NiPointer<QueuedFile> ms_pPreloadDecalDataFile;
 
-    bool bWasPlaying;
-    bool m_bTextureDirty;
-    bool m_bNeedsManagerUpdate;
-    bool m_bDecalRenderingEnabled;
-    RenderQuery* m_pRenderQuery;
-    NiPointer<BSRenderedTexture> m_pDecalRenderTexture;
-    unsigned int m_uiTextureReferenceCount;
-    NiPointer<NiAVObject> m_pSceneObject;
+    bool bFinished;
+    bool bFinalize;
+    bool bOcclusionQuery;
+    bool bClearQueryTexture;
+    RenderQuery* pOcclusionQuery;
+    NiPointer<BSRenderedTexture> spQueryTexture;
+    unsigned int iCurrentOcclusionResult;
+    NiPointer<NiAVObject> sp3D;
     bool bPermanent;
-    bool m_bSecondObjectFlag;
-    bool TexturedObjectPlacementInfo;
+    bool bValidDecal;
+    bool bForceFade;
     unsigned char layoutPadding2F[1];
-    BGSTextureSet* m_pTextureSet;
+    BGSTextureSet* pTextureSet;
     NiPoint3 pOrigin;
-    NiPoint3 m_kSecondVertex;
-    NiPoint3 m_kThirdPoint;
-    NiPoint3 m_kFourthPoint;
-    NiPlane m_akFacePlanes[6];
-    int m_iFirstValueAfterPlanes;
-    int m_iSecondValueAfterPlanes;
-    NiPoint3* m_pFirstPoint3Array;
-    NiPoint3* m_pVertexNormals;
-    NiPoint3* m_pThirdPoint3Array;
-    NiPoint3* m_pVertexBitangents;
-    NiPoint2* m_pPrimaryTextureCoordinates;
-    NiPoint2* m_pSecondaryTextureCoordinates;
-    NiColorA* m_pFirstElementArray;
-    NiColorA* NavMeshGeometryBuffers;
-    unsigned short* m_pFirstUnsignedShortArray;
-    unsigned short* m_pSecondUnsignedShortArray;
-    short* m_pSignedShortArray;
+    NiPoint3 pVector;
+    NiPoint3 pDecalCenter;
+    NiPoint3 pDecalNormal;
+    NiPlane pClippingPlanes[6];
+    int iDecalVertexCount;
+    int iDecalTriangleCount;
+    NiPoint3* pTempVertexArray;
+    NiPoint3* pFinalVertexArray;
+    NiPoint3* pTempNormalArray;
+    NiPoint3* pFinalNormalArray;
+    NiPoint2* pTempTexcoordArray;
+    NiPoint2* pFinalTexcoordArray;
+    NiColorA* pTempColorArray;
+    NiColorA* pFinalColorArray;
+    unsigned short* pTempIndexArray;
+    unsigned short* pFinalIndexArray;
+    short* pOldToNewIndexArray;
     // A single collection retains array decay for buffer access.
-    BSSimpleArray<DecalPointRecord*> m_aucByteBuffer[1];
-    BGSDecalNode* m_pDecalNode;
-    NiPointer<NiAVObject> m_pTargetNode;
+    BSSimpleArray<DecalPointRecord*> pNewIndexMap[1];
+    BGSDecalNode* pParentNode;
+    NiPointer<NiAVObject> spTargetNode;
     float fScale;
-    float fPathHeading;
-    float m_fGlyphWidthInPixels;
-    float m_fGlyphExtent;
-    float m_fProjectionDepth;
-    unsigned char m_ucByteAfterFloats;
-    bool m_bFlagBeforeFloat;
+    float fRotation;
+    float fWidth;
+    float fHeight;
+    float fDepth;
+    unsigned char cSubTexture;
+    bool bUseParallaxOcclusion;
     unsigned char layoutPadding126[2];
-    float m_fFloatBeforeScalarFlagState;
-    unsigned char ScalarFlagState;
-    bool m_bFirstBooleanFlag;
-    bool m_bSecondBooleanFlag;
+    float fParallaxOcclusionScale;
+    unsigned char ucParallaxOcclusionMaxPasses;
+    bool bUseAlphaTesting;
+    bool bUseAlphaBlending;
     unsigned char layoutPadding12F[1];
-    float m_fSpecularStrength;
-    NiColor m_kSurfaceColor;
-    bool m_bTextureFlag;
-    bool m_bDecalTextureCreated;
+    float fSpecular;
+    NiColor fVertexColor;
+    bool bModelSpace;
+    bool bTwoSided;
     unsigned char layoutPadding142[2];
 };

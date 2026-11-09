@@ -4,7 +4,11 @@
 #include "../../include/NiUpdateData.h"
 
 // @fnv 0x004f0380
-void AnimationInterpolatorNode::UpdateInterpolatorsAtTime(float time, bool selective)
+// src: XBOX_RETAIL_PDB 0x004f0380
+// pdb: BSTransCon::UpdateAllButTarget | BSBipNode.obj | retail, call graph, high
+// pdb params: afTime, abSkipSelectiveUpdateTest
+// pdb locals: isize, kTransform, pt, i
+void AnimationInterpolatorNode::BSTransCon_UpdateAllButTarget(float afTime, bool abSkipSelectiveUpdateTest)
 {
     if (!NiTimeController_GetActive() || !m_usNumInterps)
         return;
@@ -20,12 +24,12 @@ void AnimationInterpolatorNode::UpdateInterpolatorsAtTime(float time, bool selec
             target = m_ppTargetObjects[iIndex];
             if (!target)
                 continue;
-            if (!selective && !target->GetSelectiveUpdate())
+            if (!abSkipSelectiveUpdateTest && !target->GetSelectiveUpdate())
                 continue;
-            else if (selective && target->GetSelectiveUpdate())
+            else if (abSkipSelectiveUpdateTest && target->GetSelectiveUpdate())
                 continue;
 
-            if (m_pkBlendInterpolators[iIndex].UpdateTransform(time, target, transform))
+            if (m_pkBlendInterpolators[iIndex].UpdateTransform(afTime, target, transform))
             {
                 if (transform.IsTranslateXNotNegatedConstant())
                     target->NiAVObject_SetTranslate(transform.GetTranslate());
@@ -37,9 +41,9 @@ void AnimationInterpolatorNode::UpdateInterpolatorsAtTime(float time, bool selec
         }
 
         target = m_ppTargetObjects[iIndex];
-        if (!target || (!selective && !target->GetSelectiveUpdate()))
+        if (!target || (!abSkipSelectiveUpdateTest && !target->GetSelectiveUpdate()))
             return;
-        if (m_pkBlendInterpolators[iIndex].UpdateTransform(time, target, transform))
+        if (m_pkBlendInterpolators[iIndex].UpdateTransform(afTime, target, transform))
         {
             if (transform.IsTranslateXNotNegatedConstant())
                 target->NiAVObject_SetTranslate(transform.GetTranslate());
@@ -63,6 +67,7 @@ struct FUN_00456630_helper
 
 // @fnv 0x004f0000
 // src: COMMUNITY 0x004f0000
+// pdb: NiAVObject::QHasPropController | BSBipNode.obj | debug, object-file run extension, low
 bool FUN_004f0000_shell::NiAVObject_GetHasPropertyController()
 {
     return ((FUN_00456630_helper*)this)->NiAVObject_GetBit(0x40000);
@@ -75,6 +80,8 @@ struct FUN_004f00e0_shell : public NiAVObject
 
 // @fnv 0x004f00e0
 // src: XBOX_PDB 0x004f00e0
+// pdb: NiAVObject::SetWorldTranslate | BSBipNode.obj | debug, upstream name already matches, high
+// pdb params: kTrn
 void FUN_004f00e0_shell::NiAVObject_SetWorldTranslate(void* kTrn)
 {
     *reinterpret_cast<NiPoint3*>(reinterpret_cast<char*>(this) + 0x8C) = *reinterpret_cast<const NiPoint3*>(kTrn);
@@ -88,6 +95,9 @@ struct FUN_004f0040_shell
 };
 
 // @fnv 0x004f0040
+// pdb: BSBipNode::AdjustPos | BSBipNode.obj | debug, object-file run extension, low
+// pdb params: apObject, arDelta
+// pdb locals: pnode, I
 void FUN_004f0040_shell::UpdateControls(float afTime)
 {
     NiTimeController* pkControl;
@@ -95,7 +105,7 @@ void FUN_004f0040_shell::UpdateControls(float afTime)
     {
         if (pkControl->GetRTTI() == reinterpret_cast<const NiRTTI*>(&DAT_011f36bc))
         {
-            ((AnimationInterpolatorNode*)pkControl)->UpdateInterpolatorsAtTime(afTime, false);
+            ((AnimationInterpolatorNode*)pkControl)->BSTransCon_UpdateAllButTarget(afTime, false);
         }
         else if (pkControl->GetRTTI() == reinterpret_cast<const NiRTTI*>(&g_011f36e4))
         {

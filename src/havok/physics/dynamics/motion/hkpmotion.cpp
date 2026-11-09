@@ -66,17 +66,19 @@ void hkpMotion::SetGeometryTransform(const hkTransform& transform)
 // @fnv 0x00c86420
 void __fastcall SetMotionDeactivationClass(hkpMotion* motion, void*, char value)
 {
-    motion->m_kMotionState.m_uiDeactivationClass = value;
+    motion->m_kMotionState.m_deactivationClass = value;
 }
 
 // @fnv 0x00c86480
 void hkpMotion::SetMassInv(float value)
 {
-    m_kInertiaAndMassInv.w = value;
+    m_inertiaAndMassInv.w = value;
 }
 
 // Computes the inverse of mass (0 if mass is 0) and passes it to SetMassInv.
 // @fnv 0x00c86330
+// pdb: bhkWorldObject::AddbhkShapeRef | bhkWorldObject.obj | debug, object-file run extension, low
+// pdb locals: pshape
 void hkpMotion::SetBodyMass(float mass)
 {
     float invMass;
@@ -130,10 +132,13 @@ void hkpMotion::SetCenterOfMassInLocal(const hkVector4& centerOfMass)
 
 // Adds impulse scaled by inverse mass to the translational velocity.
 // @fnv 0x00c864f0
+// pdb: hkpMotion::setDeactivationClass | hkpMotion.obj | debug, object-file gap fill, medium
+// pdb params: deactivationClass
+// pdb locals: assertBuf, ostr
 void hkpMotion::SetCollisionShape(const hkVector4& impulse)
 {
     hkVector4 delta;
-    LocalM128 inverseMass = _mm_shuffle_ps(m_kInertiaAndMassInv.m_vComponents, m_kInertiaAndMassInv.m_vComponents, 0xff);
+    LocalM128 inverseMass = _mm_shuffle_ps(m_inertiaAndMassInv.m_vComponents, m_inertiaAndMassInv.m_vComponents, 0xff);
     delta.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(inverseMass, inverseMass, 0), impulse.m_vComponents);
     m_kTranslationalVelocity.add4(delta);
 }
@@ -141,6 +146,8 @@ void hkpMotion::SetCollisionShape(const hkVector4& impulse)
 // Constructor: zeroes velocities, damping and deactivation data, initializes the motion state,
 // and sets the packed gravity factor to 1.0.
 // @fnv 0x00c86530
+// pdb: hkpMotion::hkpMotion | hkpMotion.obj | retail, upstream name already matches, high
+// pdb params: position, rotation, wantDeactivation
 hkpMotion::hkpMotion(const hkVector4& position, const hkQuaternion& rotation, bool wantDeactivation) throw()
 {
     hkVector4 zero;
@@ -148,44 +155,52 @@ hkpMotion::hkpMotion(const hkVector4& position, const hkQuaternion& rotation, bo
     m_kTranslationalVelocity = zero;
     m_kAngularVelocity = zero;
     reinterpret_cast<InitializeMotionStateFn>(&InitializeMotionState)(&m_kMotionState, position, rotation);
-    m_kMotionState.m_fAngularDamping = m_kMotionState.m_fLinearDamping = 0.0f;
+    m_kMotionState.m_angularDamping = m_kMotionState.m_linearDamping = 0.0f;
     *reinterpret_cast<unsigned char*>(&m_type) = MOTION_INVALID;
     if (wantDeactivation)
     {
-        m_ucDeactivationIntegrateCounter = static_cast<unsigned char>(0xf & static_cast<int>(position(0)));
+        m_deactivationIntegrateCounter = static_cast<unsigned char>(0xf & static_cast<int>(position(0)));
     }
     else
     {
-        m_ucDeactivationIntegrateCounter = 0xff;
+        m_deactivationIntegrateCounter = 0xff;
     }
-    m_ausDeactivationNumInactiveFrames[0] = 0;
-    m_ausDeactivationNumInactiveFrames[1] = 0;
-    m_akDeactivationReferencePositions[0] = zero;
-    m_akDeactivationReferencePositions[1] = zero;
-    m_auiDeactivationReferenceOrientations[0] = 0;
-    m_auiDeactivationReferenceOrientations[1] = 0;
+    m_deactivationNumInactiveFrames[0] = 0;
+    m_deactivationNumInactiveFrames[1] = 0;
+    m_deactivationRefPosition[0] = zero;
+    m_deactivationRefPosition[1] = zero;
+    m_deactivationRefOrientation[0] = 0;
+    m_deactivationRefOrientation[1] = 0;
     // hkpMotion.h declares hkHalf as the packed short storage type.
-    StoreHalf(m_fGravityFactor.m_value, 1.0f);
+    StoreHalf(m_gravityFactor.m_value, 1.0f);
 }
 
 // Copies the motion state, velocities and deactivation integrate counter to the destination.
 // @fnv 0x00c86610
 // src: HAVOK_SRC 0x00c86610
-void hkpMotion::getMotionStateAndVelocitiesAndDeactivationType(hkpMotion* destination)
+// pdb: hkpMotion::getMotionStateAndVelocitiesAndDeactivationType | hkpMotion.obj | retail, upstream name already matches, high
+// pdb params: motionOut
+void hkpMotion::getMotionStateAndVelocitiesAndDeactivationType(hkpMotion* motionOut)
 {
-    reinterpret_cast<CopyMotionStateFn>(&CopyMotionState)(&destination->m_kMotionState, &m_kMotionState);
-    destination->m_kTranslationalVelocity = m_kTranslationalVelocity;
-    destination->m_kAngularVelocity = m_kAngularVelocity;
-    destination->m_ucDeactivationIntegrateCounter = m_ucDeactivationIntegrateCounter;
+    reinterpret_cast<CopyMotionStateFn>(&CopyMotionState)(&motionOut->m_kMotionState, &m_kMotionState);
+    motionOut->m_kTranslationalVelocity = m_kTranslationalVelocity;
+    motionOut->m_kAngularVelocity = m_kAngularVelocity;
+    motionOut->m_deactivationIntegrateCounter = m_deactivationIntegrateCounter;
 }
 
 // @fnv 0x00c864b0
+// pdb: hkpMotion::setLinearVelocity | hkpMotion.obj | debug, vtable slot, medium
+// pdb params: newVel
+// pdb locals: assertBuf, ostr
 void hkpMotion::SetTranslationalVelocity(const hkVector4& velocity)
 {
     m_kTranslationalVelocity = velocity;
 }
 
 // @fnv 0x00c864d0
+// pdb: hkpMotion::setAngularVelocity | hkpMotion.obj | debug, vtable slot, medium
+// pdb params: newVel
+// pdb locals: assertBuf, ostr
 void hkpMotion::SetRotationalVelocity(const hkVector4& velocity)
 {
     m_kAngularVelocity = velocity;
@@ -195,7 +210,7 @@ void hkpMotion::SetRotationalVelocity(const hkVector4& velocity)
 // @fnv 0x00c86430
 float hkpMotion::GetMassValue()
 {
-    LocalM128 v = m_kInertiaAndMassInv.m_vComponents;
+    LocalM128 v = m_inertiaAndMassInv.m_vComponents;
     float invMass;
     _mm_store_ss(&invMass, _mm_shuffle_ps(v, v, 0xFF));
     if (invMass == 0.0f)

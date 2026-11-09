@@ -20,6 +20,8 @@ inline int ALIGN16_E42A(int x) { return (x + 15) & ~15; }
 
 // Computes the sum of 16-byte-aligned sizes derived from m_14, n, and m_0c.
 // @fnv 0x00e42ac0
+// pdb: hkAlignedAllocate<hkSemaphore> | hkpVehicleCastBatchingManager.obj | debug, object-file run extension, low
+// pdb params: alignment, numberOfObjects, cl
 int hkObjE42A::GetAlignedSize(int n) const
 {
     int k = m_14;
@@ -31,6 +33,8 @@ struct Obj{int a,b,c,byte_size,d;unsigned short count;void ComputeBufferLayout(c
 inline int align16(int n){return (n+15)&~15;}
 // Computes aligned offsets for four buffers from count and byte_size and stores the resulting pointers in out.
 // @fnv 0x00e42b00
+// pdb: __savegprlr | crtgpr.obj | retail, call graph, low
+// pdb note: debug build links it to hkAlignedDeallocate<hkSemaphore>
 void Obj::ComputeBufferLayout(char* base,int unused,Buffers* out) const {
  int n=count;int iByteSize=byte_size;
  char* p=base+align16(n*80);out->second=p;p+=align16(n*96);char* pThird=p;p+=align16(iByteSize);out->first=base;out->fourth=p;out->third=pThird;
@@ -103,12 +107,15 @@ struct BatchOutputs { WheelCommand* commands; void* temporary; unsigned char* fl
 struct RayBatchManager {
  unsigned field00, field04; Vehicle** vehicles; int vehicleCount; unsigned field10; hkUint16 wheels, field16;
  void ComputeBufferLayout(WheelCommand*, void*, BatchOutputs*);
- void hkpVehicleRayCastBatchingManager_stepVehiclesUsingCastResults(void* input, void* world, WheelCommand* commands);
+ void hkpVehicleRayCastBatchingManager_stepVehiclesUsingCastResults(void* stepInfo, void* numJobs, WheelCommand* buffer);
 };
 // Records timer entries TtDoVehicles and Et around a loop that casts or skips each wheel per vehicle via its caster and passes the results to FUN_00e39030.
 // @fnv 0x00e42da0
 // src: HAVOK_LIB 0x00e42da0
-void RayBatchManager::hkpVehicleRayCastBatchingManager_stepVehiclesUsingCastResults(void* input, void* world, WheelCommand* commands)
+// pdb: hkpVehicleRayCastBatchingManager::stepVehiclesUsingCastResults | hkpVehicleRayCastBatchingManager.obj | retail, upstream name already matches, high
+// pdb params: stepInfo, numJobs, buffer
+// pdb locals: cdInfo, raycastBatch, assertBuf, ostr
+void RayBatchManager::hkpVehicleRayCastBatchingManager_stepVehiclesUsingCastResults(void* stepInfo, void* numJobs, WheelCommand* buffer)
 {
  TimerStream* timer = (TimerStream*)TlsGetValue(DAT_0126835c);
  hkMonitorStream::TimerCommand* record = timer->current;
@@ -122,7 +129,7 @@ void RayBatchManager::hkpVehicleRayCastBatchingManager_stepVehiclesUsingCastResu
  int count = vehicleCount;
  LocalWheelResults results;
  BatchOutputs active;
- ComputeBufferLayout(commands, world, &active);
+ ComputeBufferLayout(buffer, numJobs, &active);
  WheelCommand* cursor = active.commands;
  results.initialize();
  for (int i = 0; i < count; ++i) {
@@ -140,7 +147,7 @@ void RayBatchManager::hkpVehicleRayCastBatchingManager_stepVehiclesUsingCastResu
    caster->finish(vehicle, wheel, &results.m_data[wheel]);
    if (enabled) ++cursor;
   }
-  vehicles[i]->hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(input, results.m_data);
+  vehicles[i]->hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(stepInfo, results.m_data);
  }
  timer = (TimerStream*)TlsGetValue(DAT_0126835c);
  record = timer->current;
@@ -405,6 +412,9 @@ struct VehicleRayCastBatchingManager
 
 // @fnv 0x00e42b50
 // src: HAVOK_LIB 0x00e42b50
+// pdb: hkpVehicleRayCastBatchingManager::buildAndAddCastJobs | hkpVehicleRayCastBatchingManager.obj | retail, string-set bridge, high
+// pdb params: world, filterSize, numJobs, jobQueue, semaphore, buffer
+// pdb locals: raycastBatch, commandsPerJob, assertBuf, ostr, unevenOffset, commandPtr, headerPtr, i, shapeRayCastJob
 int VehicleRayCastBatchingManager::hkpVehicleRayCastBatchingManager_buildAndAddCastJobs(const VRWorld* world, int filterSize, int numJobs, VRJobQueue* jobQueue, void* semaphore, void* buffer)
 {
     VROutput* outputStorage;

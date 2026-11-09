@@ -5,6 +5,7 @@
 template <class T> class BSSimpleList;
 class TopicInfoVisitRecord;
 
+// pdb: class ExtraSayTopicInfoOnceADay, size 0x10, bases: BSExtraData, 1 members
 class ExtraSayTopicInfoOnceADay : public BSExtraData
 {
 public:

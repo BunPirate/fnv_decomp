@@ -50,7 +50,7 @@ public:
     PodPoint3* FUN_00439e90(PodPoint3* output, const PodPoint3* other) const;
     PodPoint3 SubtractIntoVector(const PodPoint3& other) const;
     void SubtractIntoVector();
-    PodPoint3 FUN_004b3800(const PodPoint3& axis) const;
+    PodPoint3 FUN_004b3800(const PodPoint3& pt) const;
     void Unitize_004a0c10();
     float FUN_00457910();
     float FUN_00457990() const;
@@ -71,6 +71,8 @@ template <class T, unsigned int Growth>
 void __fastcall FreeSimpleArrayStorage(BSSimpleArray<T, Growth>* array);
 
 // @fnv 0x006ac010
+// pdb: BSSimpleArray<PathingLocation,1024>::Clear | NavMeshSearchMultipleGoals.obj | debug, call graph, medium
+// pdb params: abFreeMemory
 template <>
 void BSSimpleArray<PathingLocation, 1024>::Clear(bool freeStorage)
 {
@@ -105,6 +107,7 @@ struct FUN_006aabf0_shell
 };
 
 // @fnv 0x006aabf0
+// pdb: PathingLOSGridMap::GetCenterPoint | NavMeshSearchLOS.obj | debug, object-file gap fill, medium
 unsigned char FUN_006aabf0_shell::GetByteAt39()
 {
     return *(unsigned char*)((char*)this + 0x39);
@@ -158,6 +161,7 @@ struct SD_006aa6e0
 void _Deallocate(void*);
 // Calls FUN_006aa710, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006aa6e0
+// pdb: NavMeshSearchLOS::`scalar deleting destructor' | NavMeshSearchLOS.obj | retail, vtable slot, high
 void* SD_006aa6e0::FUN_006aa6e0(unsigned int flags)
 {
     FUN_006aa710();
@@ -175,6 +179,8 @@ struct FUN_006aabd0_shell
     int GetLocationAndReturn(int a);
 };
 // @fnv 0x006aabd0
+// pdb: NavMeshSearchLOS::GetKeyForNode | NavMeshSearchLOS.obj | debug, object-file gap fill, medium
+// pdb params: apNavMesh, aiTri
 int FUN_006aabd0_shell::GetLocationAndReturn(int aiValue)
 {
     ((LocS*)((char*)this + 0x1c))->GetLocation(aiValue);
@@ -207,6 +213,7 @@ struct FUN_006aa710 : public FUN_006a7bc0_Class
 };
 // Destructor for the class; destroys the embedded GO member and the base class.
 // @fnv 0x006aa710
+// pdb: NavMeshSearchLOS::~NavMeshSearchLOS | NavMeshSearchLOS.obj | retail, call graph (shared callers), high
 FUN_006aa710::~FUN_006aa710()
 {}
 
@@ -214,26 +221,30 @@ struct FUN_006aac10_shell
 {
     unsigned char m_bLOS;
     NavMeshTriangleReference m_node;
-    void InitNavMeshPoint(void* p, NavMesh* n, unsigned short t);
+    void InitNavMeshPoint(void* apNode, NavMesh* apNavMesh, unsigned short aiTriangle);
 };
 // @fnv 0x006aac10
-void FUN_006aac10_shell::InitNavMeshPoint(void* p, NavMesh* n, unsigned short t)
+// pdb: NavMeshSearchLOS::SetNodeData | NavMeshSearchLOS.obj | debug, call graph, high
+// pdb params: apNode, apNavMesh, aiTriangle
+// pdb locals: center
+void FUN_006aac10_shell::InitNavMeshPoint(void* apNode, NavMesh* apNavMesh, unsigned short aiTriangle)
 {
-    ((unsigned int*)((char*)p + 8))[0] = (unsigned int)n;
-    ((unsigned short*)((char*)p + 12))[0] = t;
-    NiPoint3 vecPos = n->GetNavMeshData(t);
-    ((float*)((char*)p + 16))[0] = vecPos.x;
-    ((float*)((char*)p + 16))[1] = vecPos.y;
-    ((float*)((char*)p + 16))[2] = vecPos.z;
+    ((unsigned int*)((char*)apNode + 8))[0] = (unsigned int)apNavMesh;
+    ((unsigned short*)((char*)apNode + 12))[0] = aiTriangle;
+    NiPoint3 vecPos = apNavMesh->GetNavMeshData(aiTriangle);
+    ((float*)((char*)apNode + 16))[0] = vecPos.x;
+    ((float*)((char*)apNode + 16))[1] = vecPos.y;
+    ((float*)((char*)apNode + 16))[2] = vecPos.z;
     if (((unsigned char*)((char*)this + 0x2074))[0])
-        ((float*)p)[1] =
+        ((float*)apNode)[1] =
             ((NiPoint3*)&(reinterpret_cast<const NiPoint3&>(vecPos) -
                           ((NavMeshTriangleReference*)((char*)this + 0x2078))->FastNavMeshTriLocation_GetLocation()))
                 ->NiPoint3_XYLength();
     else
-        ((float*)p)[1] = 0.0f;
+        ((float*)apNode)[1] = 0.0f;
 }
 
+// pdb: structure EdgeExtraInfo, size 0xc (here 0x4), 2 members
 class EdgeExtraInfo
 {
 public:
@@ -258,7 +269,7 @@ struct MaterialObject
 };
 struct VectVec
 {
-    double SumNodeValues(const PodPoint3* p);
+    double SumNodeValues(const PodPoint3* arPoint);
 };
 struct QueryObject
 {
@@ -326,9 +337,9 @@ struct PathSearch
     bool useDirection;
     NodeInternals destination;
     int GetKeyForNode_006a94f0(NavMesh* mesh, unsigned short triangle, float cost, SearchNode** out);
-    int FUN_006a7e00(int handle);
-    void InitNavMeshPoint(SearchNode* target, NavMesh* mesh, unsigned short triangle);
-    unsigned char ExpandNeighbors(NodeCost* origin, FlagCollection* output);
+    int FUN_006a7e00(int aiKey);
+    void InitNavMeshPoint(SearchNode* apNode, NavMesh* apNavMesh, unsigned short aiTriangle);
+    unsigned char ExpandNeighbors(NodeCost* apNode, FlagCollection* apRetNodes);
 };
 struct ConfigValue
 {
@@ -339,9 +350,12 @@ extern float g_navModifier;
 extern float __cdecl BSMAX_00404010(float v, float fTargetUpperBound);
 extern MaterialObject* __cdecl TESForm_GetFormByNumericID(unsigned int materialID);
 // @fnv 0x006aacb0
-unsigned char PathSearch::ExpandNeighbors(NodeCost* origin, FlagCollection* output)
+// pdb: NavMeshSearchLOS::GetNodeConnections | NavMeshSearchLOS.obj | retail, vtable slot, high
+// pdb params: apNode, apRetNodes
+// pdb locals: aNodeCenter, i, potherMesh, iotherEdge, usotherTri, fdoorMultiplier, pextra, fcost, pnode, nodeCenter, fnodescore, doorID, pdoor, doorLock, bmustPick, lockData, vec, deltaToNode, deltaToGoal
+unsigned char PathSearch::ExpandNeighbors(NodeCost* apNode, FlagCollection* apRetNodes)
 {
-    NiPoint3 originPos = ((NavMeshTriangleReference*)&origin->node)->FastNavMeshTriLocation_GetLocation();
+    NiPoint3 originPos = ((NavMeshTriangleReference*)&apNode->node)->FastNavMeshTriLocation_GetLocation();
     for (int edgeIndex = 0; edgeIndex < 3; ++edgeIndex)
     {
         unsigned short connectedTri;
@@ -357,16 +371,16 @@ unsigned char PathSearch::ExpandNeighbors(NodeCost* origin, FlagCollection* outp
                             SearchNode* nextNode;
                             {
                                 float cost;
-                                if (origin->node.mesh->FindAdjacentEdge(origin->node.triangle, edgeIndex,
+                                if (apNode->node.mesh->FindAdjacentEdge(apNode->node.triangle, edgeIndex,
                                                                         &connectedMesh, &connectedTri, &boundary))
                                 {
                                     EdgeExtraInfo* edgeDetails =
-                                        origin->node.mesh->GetEdgeExtraInfo(origin->node.triangle, edgeIndex);
+                                        apNode->node.mesh->GetEdgeExtraInfo(apNode->node.triangle, edgeIndex);
                                     {
                                         float edgeModifier;
                                         if (edgeDetails != 0 && edgeDetails->state == 1)
                                             continue;
-                                        if (connectedMesh != origin->node.mesh)
+                                        if (connectedMesh != apNode->node.mesh)
                                         {
                                             if (!rooms.Modelloader_GetReferencedThis(connectedMesh->GetHavokWorldObjectCountInSceneGraph_0084e3a0())->HasNavMeshEntry())
                                                 continue;
@@ -441,7 +455,7 @@ unsigned char PathSearch::ExpandNeighbors(NodeCost* origin, FlagCollection* outp
                                                 cost = BSMAX_00404010(cost, 0.0f);
                                             }
                                         }
-                                        cost = (origin->cost + cost) * (1.0f + extraCost);
+                                        cost = (apNode->cost + cost) * (1.0f + extraCost);
                                         cost *= edgeModifier;
                                         switch (
                                             FUN_006a7e00(GetKeyForNode_006a94f0(connectedMesh, connectedTri, cost, &nextNode)))
@@ -449,10 +463,10 @@ unsigned char PathSearch::ExpandNeighbors(NodeCost* origin, FlagCollection* outp
                                         case 0:
                                             InitNavMeshPoint(nextNode, connectedMesh, connectedTri);
                                         case 1:
-                                            nextNode->mesh = origin->node.mesh;
-                                            nextNode->triangle = origin->node.triangle;
+                                            nextNode->mesh = apNode->node.mesh;
+                                            nextNode->triangle = apNode->node.triangle;
                                             nextNode->edge = edgeIndex;
-                                            output->FUN_007cb2e0(&nextNode);
+                                            apRetNodes->FUN_007cb2e0(&nextNode);
                                         }
                                     }
                                 }
@@ -503,25 +517,28 @@ struct FUN_006ab180_shell
     SeqObj* m_pkFound;
     SeqObj* m_pkClosest;
     float m_fClosest;
-    bool NavMeshSearchLOS_IsGoalNode(SeqObj* pkObj);
+    bool NavMeshSearchLOS_IsGoalNode(SeqObj* apNode);
 };
 // @fnv 0x006ab180
 // src: XBOX_PDB 0x006ab180
-bool FUN_006ab180_shell::NavMeshSearchLOS_IsGoalNode(SeqObj* pkObj)
+// pdb: NavMeshSearchLOS::IsGoalNode | NavMeshSearchLOS.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: cscore, ignoreLocations, i, triangleCenter, vec, fnodeDistanceSquared, nodeVector
+bool FUN_006ab180_shell::NavMeshSearchLOS_IsGoalNode(SeqObj* apNode)
 {
     char cLineOfSightValue = ((LOSTarget*)(BSFadeNode*)m_spReferencedObject)
-                                 ->GetLOSValue(pkObj->m_kNode.m_pkMesh->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), pkObj->m_kNode.m_usTriangle);
+                                 ->GetLOSValue(apNode->m_kNode.m_pkMesh->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), apNode->m_kNode.m_usTriangle);
     if (cLineOfSightValue < 0)
     {
         LOSPortalArray* pkArray = static_cast<LOSPortalArray*>(m_pkRoom->TESCombatStyle_GetAdvancedData());
         for (unsigned int i = 0; i < pkArray->FUN_0044ddc0(); i++)
         {
-            NiPoint3 kTargetCenter = pkObj->m_kNode.FastNavMeshTriLocation_GetLocation();
+            NiPoint3 kTargetCenter = apNode->m_kNode.FastNavMeshTriLocation_GetLocation();
             NiPoint3 kDiff = kTargetCenter - pkArray->Object_GetIndexedValue_006a1440(i);
             if (kDiff.GetSquaredXYLength() < GetLOSRoomRadius(m_pkRoom) * GetLOSRoomRadius(m_pkRoom))
             {
                 if (!m_pkInside)
-                    m_pkInside = pkObj;
+                    m_pkInside = apNode;
                 return false;
             }
         }
@@ -531,19 +548,19 @@ bool FUN_006ab180_shell::NavMeshSearchLOS_IsGoalNode(SeqObj* pkObj)
     {
         if (cLineOfSightValue != 0x7f)
         {
-            m_pkFound = pkObj;
+            m_pkFound = apNode;
         }
         else if (!m_pkFound)
         {
-            if (pkObj->GetName().m_usTriangle != m_kRoomNode.m_usTriangle ||
-                pkObj->GetName().m_pkMesh != m_kRoomNode.m_pkMesh)
+            if (apNode->GetName().m_usTriangle != m_kRoomNode.m_usTriangle ||
+                apNode->GetName().m_pkMesh != m_kRoomNode.m_pkMesh)
             {
                 NiPoint3 kDelta = ((LOSTarget*)(BSFadeNode*)m_spReferencedObject)->GetDest() -
-                                    *(NiPoint3*)&pkObj->GetName().FastNavMeshTriLocation_GetLocation();
+                                    *(NiPoint3*)&apNode->GetName().FastNavMeshTriLocation_GetLocation();
                 float fDist = kDelta.FUN_004a7290();
                 if (fDist < m_fClosest)
                 {
-                    m_pkClosest = pkObj;
+                    m_pkClosest = apNode;
                     m_fClosest = fDist;
                 }
             }
@@ -2685,21 +2702,24 @@ struct FUN_006aa780_Class
 };
 // @fnv 0x006aa780
 // src: COMMUNITY 0x006aa780
-bool FUN_006aa780_Class::NavMeshSearchLOS_BuildNodePath(World* apWorld, const Location* apLocation, int arg, int argCur)
+// pdb: NavMeshSearchLOS::BuildNodePath | NavMeshSearchLOS.obj | retail, upstream name already matches, high
+// pdb params: apRequest, aStartNode, apReturnNodeArray, apReturnLinkArray
+// pdb locals: startPoint, goalLoc, spgoalNodeMesh, fheuristic, center, usgoalNodeTri, goalNodeCenter
+bool FUN_006aa780_Class::NavMeshSearchLOS_BuildNodePath(World* apRequest, const Location* aStartNode, int apReturnNodeArray, int apReturnLinkArray)
 {
     unsigned short x8;
-    world = apWorld;
-    location = *apLocation;
-    if (!apWorld->hkpAabbPhantom_getAabb()->Modelloader_GetReferencedThis())
+    world = apRequest;
+    location = *aStartNode;
+    if (!apRequest->hkpAabbPhantom_getAabb()->Modelloader_GetReferencedThis())
         return false;
-    entry.FUN_0066b0d0(new FUN_006e1370(apWorld->hkpAabbPhantom_getAabb()->Modelloader_GetReferencedThis()->GetLocationAndReturn(),
-                                        apWorld->hkpAabbPhantom_getAabb()->Modelloader_GetReferencedThis()->GetFieldAtOffset44()));
-    apWorld->hkpAabbPhantom_getAabb()->Modelloader_GetReferencedThis()->UpdateNavMeshes(&entry);
+    entry.FUN_0066b0d0(new FUN_006e1370(apRequest->hkpAabbPhantom_getAabb()->Modelloader_GetReferencedThis()->GetLocationAndReturn(),
+                                        apRequest->hkpAabbPhantom_getAabb()->Modelloader_GetReferencedThis()->GetFieldAtOffset44()));
+    apRequest->hkpAabbPhantom_getAabb()->Modelloader_GetReferencedThis()->UpdateNavMeshes(&entry);
     state = 0;
     Position v5;
-    apWorld->GetOffsetC(&v5)->FUN_005c3420();
-    location.mesh = apLocation->mesh;
-    location.triangle = apLocation->triangle;
+    apRequest->GetOffsetC(&v5)->FUN_005c3420();
+    location.mesh = aStartNode->mesh;
+    location.triangle = aStartNode->triangle;
     NiPoint3 y = location.mesh->FUN_00558220(location.triangle);
     location.point.x = y.x;
     location.point.y = y.y;
@@ -2727,7 +2747,7 @@ bool FUN_006aa780_Class::NavMeshSearchLOS_BuildNodePath(World* apWorld, const Lo
         }
     }
     mode = MinInt(reinterpret_cast<Mode*>(entry.Modelloader_GetReferencedThis())->GetByteAt39() + 1, -1);
-    if (!FUN_006a7d60(arg, argCur, 0))
+    if (!FUN_006a7d60(apReturnNodeArray, apReturnLinkArray, 0))
         return false;
     else
         return true;

@@ -14,7 +14,7 @@ class TESObjectREFR;
 class PackageTargetRecord
 {
   public:
-    unsigned char m_uiTargetType;    // +0x00 PACK_TARG_TYPE: 0 reference, 1 object, 2 object type, ...
+    unsigned char eTargType;    // +0x00 PACK_TARG_TYPE: 0 reference, 1 object, 2 object type, ...
     unsigned char layoutPadding1[3];
     union
     {
@@ -24,7 +24,7 @@ class PackageTargetRecord
         PACKAGE_OBJECT_TYPE eObjType;                         // +0x04 type 2 (PACKAGE_OBJECT_TYPE)
     };
     int iValue;                      // +0x08 count / distance
-    float m_fTargetValue;            // +0x0C acquire radius
+    float fAcquireRadius;            // +0x0C acquire radius
 
     PackageTargetRecord();                                  // 0x0067ff70
     ~PackageTargetRecord();
@@ -39,19 +39,19 @@ class PackageTargetRecord
     int GetTargetObjectType();                              // 0x00680080
     void SetTargetKind(PACK_TARG_TYPE type);
     void SetTargetKind(int type);                           // 0x006800b0
-    void SetTargetObjectReference(TESObjectREFR* reference); // 0x00680110
+    void SetTargetObjectReference(TESObjectREFR* apRef); // 0x00680110
     void SetTargObject(TESForm* form);                      // 0x00680140
     void SetTargObjectType(int type);                       // 0x00680170
     void UpdateState_00680170(void* reference);
     void PackageTarget_Copy(PackageTargetRecord* other);           // 0x006801a0
-    void PackageTarget_Save(int chunk);                           // 0x006802f0
-    void InitItem(TESForm* owner);                          // 0x006803b0
+    void Save(int aeChunk);                           // 0x006802f0
+    void InitItem(TESForm* apOwner);                          // 0x006803b0
     float GetTargAcquireRadius();                           // 0x0084d030
     float FUN_0084d030();
     bool GetIsValidTarget(TESForm* form);
     bool Compare(PackageTargetRecord* other);
     unsigned short GetSaveSize();
-    void SaveGame(BGSSaveFormBuffer* buffer);
-    void LoadGame(BGSLoadFormBuffer* buffer);
-    void InitLoadGame(BGSLoadFormBuffer* buffer);
+    void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };

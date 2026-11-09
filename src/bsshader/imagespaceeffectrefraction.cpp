@@ -17,6 +17,9 @@ void RefractionImageSpaceEffect::Setup(ImageSpaceManager* manager, RefractionEff
 }
 
 // @fnv 0x00bd9380
+// pdb: ImageSpaceEffectRefraction::GetNormalsTexture | ImageSpaceEffectRefraction.obj | retail, call graph, low
+// pdb note: debug build links it to ImageSpaceManager::GetRefractionNormalsTexture
+// pdb params: abCreate
 BSRenderedTexture* RefractionImageSpaceEffect::GetRefractionTexture(bool create)
 {
     if (!m_kRefractionTexture.GetTexture() && create)

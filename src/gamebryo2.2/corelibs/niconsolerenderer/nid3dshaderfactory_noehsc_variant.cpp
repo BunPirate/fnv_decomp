@@ -73,6 +73,10 @@ class ShaderStringPointerMap
 
 // @fnv 0x00e927f0
 // src: XBOX_PDB 0x00e927f0
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,NiPointer<NiShaderLibrary> >,NiPointer<NiShaderLibrary> >::SetAt | NiD3DShaderFactory.obj | retail, call graph, low
+// pdb note: debug build links it to NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,NiPointer<DistantLODShaderProperty::CachedGeometry> >::GetNext
+// pdb params: pcKey, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void ShaderStringPointerMap::NiTStringTemplateMap_NiTPointerMap_char_const_NiPointer_NiSequence_NiPointer_NiSequence_SetAt(const char* key, NiPointer<ShaderRefObject> val)
 {
     unsigned int uiIndex = KeyToHashIndex(key);

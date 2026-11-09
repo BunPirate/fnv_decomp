@@ -8,10 +8,11 @@ class TESForm;
 class BGSReconstructFormsInFileMap;
 struct ChangedFormRecord;
 
+// pdb: class BGSReconstructFormsInAllFilesMap, size 0x34, bases: NiTMap<TESFile *, 2 members
 class BGSReconstructFormsInAllFilesMap : public NiTMap<TESFile*, BGSReconstructFormsInFileMap*>
 {
 public:
-    FormChangeMap m_kFormChangeMap;
+    FormChangeMap ReconstructedForms;
     unsigned int iCount;
 
     BGSReconstructFormsInAllFilesMap();

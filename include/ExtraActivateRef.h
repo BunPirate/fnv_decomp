@@ -8,6 +8,7 @@ struct ActivateEntry334;
 class BSExtraDataEx;
 class TESObjectREFR;
 
+// pdb: class ExtraActivateRef, size 0x20, bases: BSExtraData, 3 members
 class ExtraActivateRef : public BSExtraData
 {
 public:

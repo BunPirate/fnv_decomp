@@ -9,6 +9,7 @@
 #include "../../../include/BaseProcess.h"  // not src/fallout/ai/BaseProcess.h (a body file that reaches layout_support.h)
 #include "../../../include/TimeoutTimer.h"
 
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:

@@ -2,6 +2,8 @@
 #include "bssemaphore_console_decls.h"
 
 // @fnv 0x0086c6a0
+// pdb: BSSemaphore::BSSemaphore | Main.obj | debug, call graph, medium
+// pdb params: aiCount, aiMaxCount
 CountingSemaphore::CountingSemaphore(int count, int maxCount)
 {
     iCount = count;

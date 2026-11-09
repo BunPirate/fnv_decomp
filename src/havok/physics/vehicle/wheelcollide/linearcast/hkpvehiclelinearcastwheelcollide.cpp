@@ -87,12 +87,12 @@ __forceinline void hkVector4::setXYZ(const hkVector4& v)
 
 __forceinline hkpRigidBody* hkpVehicleInstance::getChassis() const
 {
-    return static_cast<hkpRigidBody*>(m_pEntity);
+    return static_cast<hkpRigidBody*>(m_entity);
 }
 
 extern "C" HavokAllocatorContext_hkpvehiclelinearcastwheelcollide* __cdecl hkMemoryRouter_getInstance() throw();
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* array, int numElem, int sizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 
 inline hkMemoryAllocator& GetWheelHeap(HavokAllocatorContext_hkpvehiclelinearcastwheelcollide* context)
 {
@@ -159,17 +159,19 @@ struct LCHit
 
 // @fnv 0x00e36250
 // src: HAVOK_LIB 0x00e36250
-hkContactPoint* hkpVehicleLinearCastWheelCollide::determineNearestHit(int iWheel, LCHit* pHits)
+// pdb: hkpVehicleLinearCastWheelCollide::determineNearestHit | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: numWheel, commandStorageOutput
+hkContactPoint* hkpVehicleLinearCastWheelCollide::determineNearestHit(int numWheel, LCHit* commandStorageOutput)
 {
-    int numHits = static_cast<const hkpVehicleLinearCastWheelCollide*>(this)->getNumHits(static_cast<unsigned char>(iWheel));
+    int numHits = static_cast<const hkpVehicleLinearCastWheelCollide*>(this)->getNumHits(static_cast<unsigned char>(numWheel));
     hkContactPoint* nearest = 0;
     for (int i = 0; i < numHits; i++)
     {
-        const LCHit& rHit = pHits[i];
+        const LCHit& rHit = commandStorageOutput[i];
         if (rHit.m_valid)
         {
             hkContactPoint* pHitObj = rHit.m_obj;
-            if (!nearest || pHitObj->m_vSeparatingNormal.w < nearest->m_vSeparatingNormal.w)
+            if (!nearest || pHitObj->m_separatingNormal.w < nearest->m_separatingNormal.w)
                 nearest = pHitObj;
         }
     }
@@ -179,26 +181,30 @@ hkContactPoint* hkpVehicleLinearCastWheelCollide::determineNearestHit(int iWheel
 // Orders the wheel phantom overlaps through vtable slot 0x28 and returns their count at 0xd4.
 // @fnv 0x00e363a0
 // src: HAVOK_LIB 0x00e363a0
-unsigned int hkpVehicleLinearCastWheelCollide::getNumCommands(unsigned char wheelIndex)
+// pdb: hkpVehicleLinearCastWheelCollide::getNumCommands | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: numWheel
+unsigned int hkpVehicleLinearCastWheelCollide::getNumCommands(unsigned char numWheel)
 {
-    hkpAabbPhantom* wheel = m_kWheelStates[wheelIndex].m_pPhantom;
+    hkpAabbPhantom* wheel = m_wheelStates[numWheel].m_pPhantom;
     wheel->vf10();
-    return wheel->m_ppOverlappingCollidables.m_iElementCount;
+    return wheel->m_overlappingCollidables.m_iElementCount;
 }
 
 // Iterates count records at this+0x10 and passes each record's first dword to p->FUN_00c936a0.
 // @fnv 0x00e36870
 // src: HAVOK_LIB 0x00e36870
-void hkpVehicleLinearCastWheelCollide::addToWorld_00e36870(hkpWorld* apHost)
+// pdb: hkpVehicleLinearCastWheelCollide::addToWorld | hkpVehicleLinearCastWheelCollide.obj | retail, vtable slot, high
+// pdb params: world
+void hkpVehicleLinearCastWheelCollide::addToWorld_00e36870(hkpWorld* world)
 {
-    int count = m_kWheelStates.m_iElementCount;
+    int count = m_wheelStates.m_iElementCount;
 
     if (count > 0)
     {
         for (int i = 0; i < count; ++i)
         {
-            hkpPhantom* value = m_kWheelStates.m_data[i].m_pPhantom;
-            apHost->hkpWorld_addPhantom(value);
+            hkpPhantom* value = m_wheelStates.m_data[i].m_pPhantom;
+            world->hkpWorld_addPhantom(value);
         }
     }
 }
@@ -211,15 +217,17 @@ struct FUN_00c92c70_Class
 // Iterates the entries in the array at this+0x10, calling FUN_00c92c70 on each entry's object at offset 8.
 // @fnv 0x00e368a0
 // src: HAVOK_LIB 0x00e368a0
+// pdb: hkpVehicleLinearCastWheelCollide::removeFromWorld | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 void hkpVehicleLinearCastWheelCollide::removeFromWorld()
 {
-    int count = m_kWheelStates.m_iElementCount;
+    int count = m_wheelStates.m_iElementCount;
     if (count > 0)
     {
         int offset = 0;
         do
         {
-            void* p = *(void**)((char*)m_kWheelStates.m_data + offset);
+            void* p = *(void**)((char*)m_wheelStates.m_data + offset);
             FUN_00c92c70_Class* q = (FUN_00c92c70_Class*)*(void**)((char*)p + 8);
             q->hkpWorld_removePhantom(p);
             offset += 0x60;
@@ -230,16 +238,18 @@ void hkpVehicleLinearCastWheelCollide::removeFromWorld()
 
 // Sets collision filter data on this collider and every non-null wheel phantom.
 // @fnv 0x00e368d0
+// pdb: hkpVehicleLinearCastWheelCollide::setCollisionFilterInfo | hkpVehicleLinearCastWheelCollide.obj | debug, vtable slot, medium
+// pdb params: filterInfo
 void hkpVehicleLinearCastWheelCollide::SetTargetArg(void* arg)
 {
-    int count = m_kWheelStates.m_iElementCount;
-    m_uiWheelCount = reinterpret_cast<hkUint32>(arg);
+    int count = m_wheelStates.m_iElementCount;
+    m_wheelCollisionFilterInfo = reinterpret_cast<hkUint32>(arg);
     for (int i = 0; i < count; i++)
     {
-        hkpAabbPhantom* t = m_kWheelStates.m_data[i].m_pPhantom;
+        hkpAabbPhantom* t = m_wheelStates.m_data[i].m_pPhantom;
         if (t != 0)
         {
-            t->m_kCollidable.m_kBroadPhaseHandle.m_uiCollisionFilterData = reinterpret_cast<hkUint32>(arg);
+            t->m_kCollidable.m_broadPhaseHandle.m_collisionFilterInfo = reinterpret_cast<hkUint32>(arg);
         }
     }
 }
@@ -269,17 +279,18 @@ template <> __forceinline hkArray<hkpVehicleLinearCastWheelCollideWheelState>::~
 }
 
 // @fnv 0x00e36b80
+// pdb: hkpVehicleLinearCastWheelCollide::~hkpVehicleLinearCastWheelCollide | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
 hkpVehicleLinearCastWheelCollide::~hkpVehicleLinearCastWheelCollide() throw()
 {
-    int numWheels = this->m_kWheelStates.m_iElementCount;
+    int numWheels = this->m_wheelStates.m_iElementCount;
     for (int i = 0; i < numWheels; ++i)
     {
-        hkpVehicleLinearCastWheelCollideWheelState* ws = &this->m_kWheelStates.m_data[i];
+        hkpVehicleLinearCastWheelCollideWheelState* ws = &this->m_wheelStates.m_data[i];
         ws->m_pCollisionShape->removeReference();
         hkpPhantom* phantom = ws->m_pPhantom;
-        if (this->m_usMemSizeAndFlags != 0 && phantom->m_usMemSizeAndFlags != 0)
+        if (this->m_memSizeAndFlags != 0 && phantom->m_memSizeAndFlags != 0)
         {
-            phantom->removePhantomOverlapListener_00d07c80(&this->m_kRejectChassisListener);
+            phantom->removePhantomOverlapListener_00d07c80(&this->m_rejectChassisListener);
         }
         phantom->removeReference();
     }
@@ -293,33 +304,36 @@ inline hkMemoryAllocator& GetHeapE36E(HavokAllocatorContext_hkpvehiclelinearcast
 __forceinline void* hkpVehicleLinearCastWheelCollide::operator new(unsigned int uiSize) throw()
 {
     hkReferencedObject* p = (hkReferencedObject*)GetHeapE36E(hkMemoryRouter_getInstance()).blockAlloc(uiSize);
-    p->m_usMemSizeAndFlags = (unsigned short)uiSize;
+    p->m_memSizeAndFlags = (unsigned short)uiSize;
     return p;
 }
 
 // @fnv 0x00e36e20
+// pdb: hkpVehicleLinearCastWheelCollide::clone | hkpVehicleLinearCastWheelCollide.obj | retail, vtable slot, high
+// pdb params: newChassis, newPhantoms
+// pdb locals: assertBuf, ostr
 hkpVehicleLinearCastWheelCollide* hkpVehicleLinearCastWheelCollide::CloneWithChassis(
-    const hkpRigidBody& kNewChassis, const hkArray<hkpPhantom*>& kNewPhantoms) const throw()
+    const hkpRigidBody& newChassis, const hkArray<hkpPhantom*>& newPhantoms) const throw()
 {
     hkpVehicleLinearCastWheelCollide* pkNew = new hkpVehicleLinearCastWheelCollide();
-    const int iNumWheels = m_kWheelStates.GetLogicalSize();
-    ResizeWheelArray(pkNew->m_kWheelStates, iNumWheels);
+    const int iNumWheels = m_wheelStates.GetLogicalSize();
+    ResizeWheelArray(pkNew->m_wheelStates, iNumWheels);
     for (hkUint8 i = 0; i < iNumWheels; i++)
     {
-        hkpVehicleLinearCastWheelCollideWheelState& kWheelState = pkNew->m_kWheelStates[i];
+        hkpVehicleLinearCastWheelCollideWheelState& kWheelState = pkNew->m_wheelStates[i];
         // Keep the source array storage read independent of the newly allocated wheel state.
-        kWheelState.m_pCollisionShape = static_cast<const volatile hkArrayBase<hkpVehicleLinearCastWheelCollideWheelState>&>(m_kWheelStates).m_data[i].m_pCollisionShape;
+        kWheelState.m_pCollisionShape = static_cast<const volatile hkArrayBase<hkpVehicleLinearCastWheelCollideWheelState>&>(m_wheelStates).m_data[i].m_pCollisionShape;
         kWheelState.m_pCollisionShape->addReference();
-        hkpAabbPhantom* pkPhantom = static_cast<hkpAabbPhantom*>(kNewPhantoms[i]);
+        hkpAabbPhantom* pkPhantom = static_cast<hkpAabbPhantom*>(newPhantoms[i]);
         kWheelState.m_pPhantom = pkPhantom;
         pkPhantom->addReference();
-        pkPhantom->removePhantomOverlapListener_00d07c80((hkpRejectChassisListener*)&m_kRejectChassisListener);
-        pkPhantom->addPhantomOverlapListener_00d07de0(&pkNew->m_kRejectChassisListener);
-        pkNew->m_kRejectChassisListener.m_pChassisCollidable = const_cast<hkpLinkedCollidable*>(&kNewChassis.m_kCollidable);
+        pkPhantom->removePhantomOverlapListener_00d07c80((hkpRejectChassisListener*)&m_rejectChassisListener);
+        pkPhantom->addPhantomOverlapListener_00d07de0(&pkNew->m_rejectChassisListener);
+        pkNew->m_rejectChassisListener.m_chassis = const_cast<hkpLinkedCollidable*>(&newChassis.m_kCollidable);
     }
-    pkNew->m_uiWheelCount = m_uiWheelCount;
-    pkNew->m_fMaxExtraPenetration = m_fMaxExtraPenetration;
-    pkNew->m_fMaxExtraPenetrationAgainstFixed = m_fMaxExtraPenetrationAgainstFixed;
+    pkNew->m_wheelCollisionFilterInfo = m_wheelCollisionFilterInfo;
+    pkNew->m_maxExtraPenetration = m_maxExtraPenetration;
+    pkNew->m_startPointTolerance = m_startPointTolerance;
     return pkNew;
 }
 
@@ -333,31 +347,35 @@ __declspec(align(16)) struct LCWheelCastOut
 
 // Iterates over each wheel of the vehicle, queries the cast, applies hit or no-hit results, and updates the wheel state.
 // @fnv 0x00e361b0
-void hkpVehicleLinearCastWheelCollide::UpdateAllWheels(int aiUnused, hkpVehicleInstance* vehicle, hkpVehicleWheelCollide::WheelCollideResult* results)
+// pdb: hkpVehicleLinearCastWheelCollide::collideWheels | hkpVehicleLinearCastWheelCollide.obj | retail, vtable slot, high
+// pdb params: deltaTime, vehicle, cdInfoOut
+// pdb locals: linearCastOutput
+void hkpVehicleLinearCastWheelCollide::UpdateAllWheels(int deltaTime, hkpVehicleInstance* vehicle, hkpVehicleWheelCollide::WheelCollideResult* cdInfoOut)
 {
     LCWheelCastOut output;
     unsigned char i;
     char found;
-    const unsigned char numWheels = vehicle->m_data->m_iWheelCount;
+    const unsigned char numWheels = vehicle->m_data->m_numWheels;
 
     for (i = 0; i < numWheels; i++)
     {
         char* status = castQuery(&found, vehicle, i, &output);
         if (*status != 0)
-            applyHit(vehicle, i, &output, results);
+            applyHit(vehicle, i, &output, cdInfoOut);
         else
-            noHit(vehicle, i, results);
-        InitializeWheelCollisionOutput(vehicle, i, *results);
-        results++;
+            noHit(vehicle, i, cdInfoOut);
+        InitializeWheelCollisionOutput(vehicle, i, *cdInfoOut);
+        cdInfoOut++;
     }
 }
 
 // Sums the hit counts of all wheels in m_kWheelStates by calling getNumHits for each wheel index and returns the total.
 // @fnv 0x00e36360
+// pdb: hkpVehicleLinearCastWheelCollide::getTotalNumCommands | hkpVehicleLinearCastWheelCollide.obj | retail, vtable slot, high
 int hkpVehicleLinearCastWheelCollide::GetTotalHits() const
 {
     int iTotal = 0;
-    const int iNumWheels = m_kWheelStates.GetLogicalSize();
+    const int iNumWheels = m_wheelStates.GetLogicalSize();
     for (unsigned char i = 0; i < iNumWheels; ++i)
     {
         iTotal += getNumHits(i);
@@ -381,60 +399,68 @@ public:
 
 // 0x00e36670 initializes wheel output without reading this; its signature matches the shared base virtual, not a ray-cast class.
 // @fnv 0x00e36670
+// pdb: hkpVehicleLinearCastWheelCollide::getCollisionOutputWithoutHit | hkpVehicleLinearCastWheelCollide.obj | debug, vtable slot, medium
+// pdb params: vehicle, wheelNum, cdInfo
 void hkpVehicleWheelCollide::InitializeWheelCollisionOutput(const hkpVehicleInstance* pkVehicle,
                                                                       unsigned char ucWheelNum,
                                                                       hkpVehicleWheelCollide::WheelCollideResult& kCdInfo)
 {
-    const float fRestLength = pkVehicle->m_pSuspension->m_kWheelParams[ucWheelNum].m_fRestLength;
-    const hkpVehicleInstanceWheelInfo& kWheel = pkVehicle->m_kWheelInfoArray.m_data[ucWheelNum];
+    const float fRestLength = pkVehicle->m_suspension->m_wheelParams[ucWheelNum].m_fRestLength;
+    const hkpVehicleInstanceWheelInfo& kWheel = pkVehicle->m_wheelsInfo.m_data[ucWheelNum];
     kCdInfo.m_pUserData = 0;
     kCdInfo.m_fContactFriction = fRestLength;
     kCdInfo.m_fValueAtOffset4C = 0.0f;
-    kCdInfo.m_vContactPoint.m_vContactPosition = reinterpret_cast<const hkVector4&>(kWheel.unk60);
+    kCdInfo.m_vContactPoint.m_position = reinterpret_cast<const hkVector4&>(kWheel.unk60);
     hkVector4 kNormal;
     kNormal.setNeg4(reinterpret_cast<const hkVector4&>(kWheel.unk80));
-    kCdInfo.m_vContactPoint.m_vSeparatingNormal.setXYZ(kNormal);
+    kCdInfo.m_vContactPoint.m_separatingNormal.setXYZ(kNormal);
     kCdInfo.m_fSuspensionLength = 0.0f;
     kCdInfo.m_fValueAtOffset50 = 1.0f;
-    kCdInfo.m_vContactPoint.m_vSeparatingNormal(3) = fRestLength;
+    kCdInfo.m_vContactPoint.m_separatingNormal(3) = fRestLength;
 }
 
 // Passes result and the wheel state at wheelIndex through two helpers with z zeroed in between, and stores the final vector in result.
 // @fnv 0x00e36900
 // src: XBOX_PDB 0x00e36900
-void hkpVehicleLinearCastWheelCollide::centerWheelContactPoint(int unused, unsigned char wheelIndex, hkVector4* result)
+// pdb: hkpVehicleLinearCastWheelCollide::centerWheelContactPoint | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: vehicle, wheelIndex, cdInfo
+// pdb locals: positionWheelSpace, newPosition
+void hkpVehicleLinearCastWheelCollide::centerWheelContactPoint(int vehicle, unsigned char wheelIndex, hkVector4* cdInfo)
 {
     hkVector4 second;
     hkVector4 first;
 
-    const hkTransform* ws = &m_kWheelStates[wheelIndex].m_kMotionTransform;
+    const hkTransform* ws = &m_wheelStates[wheelIndex].m_kMotionTransform;
 
-    first.hkVector4_setTransformedInversePos(static_cast<const hkTransform*>(ws), result);
+    first.hkVector4_setTransformedInversePos(static_cast<const hkTransform*>(ws), cdInfo);
 
     first.z = 0.0f;
 
     second.setTransformedPos_00c7f640(*static_cast<const hkTransform*>(ws), first);
 
-    result->m_vComponents = second.m_vComponents;
+    cdInfo->m_vComponents = second.m_vComponents;
 }
 
 // For each wheel state, fetch its AABB and push it into the associated object via FUN_00cf24a0.
 // @fnv 0x00e36950
-void hkpVehicleLinearCastWheelCollide::UpdateWheelAabb(unsigned char wheelIndex)
+// pdb: hkpVehicleLinearCastWheelCollide::updateBeforeCollisionDetection | hkpVehicleLinearCastWheelCollide.obj | retail, vtable slot, high
+// pdb params: vehicle
+// pdb locals: aabb
+void hkpVehicleLinearCastWheelCollide::UpdateWheelAabb(unsigned char vehicle)
 {
-    int count = m_kWheelStates.m_iElementCount;
+    int count = m_wheelStates.m_iElementCount;
     unsigned char stateIndex = 0;
 
     if (count > 0)
     {
         do
         {
-            hkpVehicleLinearCastWheelCollide_updateWheelState(wheelIndex, stateIndex);
+            hkpVehicleLinearCastWheelCollide_updateWheelState(vehicle, stateIndex);
 
             hkAabb aabb;
-            hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(wheelIndex, stateIndex, &aabb);
+            hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(vehicle, stateIndex, &aabb);
 
-            m_kWheelStates.m_data[stateIndex].m_pPhantom->hkpAabbPhantom_setAabb(aabb);
+            m_wheelStates.m_data[stateIndex].m_pPhantom->hkpAabbPhantom_setAabb(aabb);
 
             ++stateIndex;
         } while (stateIndex < count);
@@ -493,23 +519,26 @@ struct FUN_006212c0_Context
 
 // Casts the wheel's shape, writes a hit flag byte through hitOut, and on a hit passes the cast data to context via FUN_006212c0.
 // @fnv 0x00e369d0
+// pdb: hkpVehicleLinearCastWheelCollide::castSingleWheel | hkpVehicleLinearCastWheelCollide.obj | retail, vtable slot, high
+// pdb params: vehicle, wheelNum, linearCastOutput
+// pdb locals: collector, input, wheel
 void hkpVehicleLinearCastWheelCollide::CastWheel(int hitOut, hkUint32 b, hkUint8 wheelIndex, int context)
 {
-    hkpVehicleLinearCastWheelCollideWheelState* pWheelState = &m_kWheelStates.m_data[wheelIndex];
+    hkpVehicleLinearCastWheelCollideWheelState* pWheelState = &m_wheelStates.m_data[wheelIndex];
 
     // Raw word storage preserves the original stack buffer classification.
     unsigned int resultStorage[sizeof(hkpCollidable) / sizeof(unsigned int)];
     hkpCollidable& result = *reinterpret_cast<hkpCollidable*>(resultStorage);
     new (&result) hkpCollidable(
         static_cast<const void*>(pWheelState->m_pCollisionShape), &pWheelState->m_kMotionTransform, 0);
-    result.m_kBroadPhaseHandle.m_uiCollisionFilterData = m_uiWheelCount;
+    result.m_broadPhaseHandle.m_collisionFilterInfo = m_wheelCollisionFilterInfo;
 
     LCCastInput input;
     input.m_10 = DAT_0104da4c;
     input.m_14 = DAT_0104da4c;
     LocalM128 tmp = *reinterpret_cast<const LocalM128*>(&pWheelState->m_vTo);
-    input.m_10 = m_fMaxExtraPenetration;
-    input.m_14 = m_fMaxExtraPenetrationAgainstFixed;
+    input.m_10 = m_maxExtraPenetration;
+    input.m_14 = m_startPointTolerance;
     input.m_4c = DAT_0104da48;
     *reinterpret_cast<LocalM128*>(&input.m_vTo) = tmp;
     input.m_24 = DAT_0104da48;
@@ -535,15 +564,19 @@ void hkpVehicleLinearCastWheelCollide::CastWheel(int hitOut, hkUint32 b, hkUint8
 
 // 0x00e36c30 stores shapes at wheel-state offset 0x04 with stride 0x60, identifying the former ray-cast stand-in as the linear-cast class.
 // @fnv 0x00e36c30
-void hkpVehicleLinearCastWheelCollide::SetWheelPhantoms(const hkpVehicleInstance* vehicle,
-                                                        const hkArray<hkReferencedObject*>& phantoms)
+// src: XBOX_RETAIL_PDB 0x00e36c30
+// pdb: hkpVehicleLinearCastWheelCollide::setWheelShapes | hkpVehicleLinearCastWheelCollide.obj | retail, object-file gap fill, high
+// pdb params: vehicle, shapes
+// pdb locals: assertBuf, ostr
+void hkpVehicleLinearCastWheelCollide::setWheelShapes(const hkpVehicleInstance* vehicle,
+                                                        const hkArray<hkReferencedObject*>& shapes)
 {
-    int numWheels = (unsigned char)vehicle->m_data->m_iWheelCount;
-    ResizeWheelArray(m_kWheelStates, numWheels);
+    int numWheels = (unsigned char)vehicle->m_data->m_numWheels;
+    ResizeWheelArray(m_wheelStates, numWheels);
     for (unsigned char i = 0; i < numWheels; i++)
     {
-        m_kWheelStates[i].m_pCollisionShape = static_cast<hkpShape*>(phantoms[i]);
-        phantoms[i]->addReference();
+        m_wheelStates[i].m_pCollisionShape = static_cast<hkpShape*>(shapes[i]);
+        shapes[i]->addReference();
     }
 }
 
@@ -554,35 +587,38 @@ inline hkMemoryAllocator& GetHeapE36C(HavokAllocatorContext_hkpvehiclelinearcast
 
 // Creates wheel shapes if none exist, sets the chassis collidable on the reject listener, and builds a phantom per wheel from its AABB.
 // @fnv 0x00e36cc0
-void hkpVehicleLinearCastWheelCollide::InitializeWheelCollisions(const hkpVehicleInstance* pkVehicle) throw()
+// pdb: hkpVehicleLinearCastWheelCollide::init | hkpVehicleLinearCastWheelCollide.obj | retail, vtable slot, high
+// pdb params: vehicle
+// pdb locals: assertBuf, ostr, aabb
+void hkpVehicleLinearCastWheelCollide::InitializeWheelCollisions(const hkpVehicleInstance* vehicle) throw()
 {
-    const int iNumWheels = (hkUint8)pkVehicle->m_data->m_iWheelCount;
+    const int iNumWheels = (hkUint8)vehicle->m_data->m_numWheels;
 
-    if (m_kWheelStates.GetLogicalSize() == 0)
+    if (m_wheelStates.GetLogicalSize() == 0)
     {
-        ResizeWheelArray(m_kWheelStates, iNumWheels);
+        ResizeWheelArray(m_wheelStates, iNumWheels);
         for (hkUint8 i = 0; i < iNumWheels; i++)
         {
-            m_kWheelStates[i].m_pCollisionShape = hkpVehicleLinearCastWheelCollide_createWheelShape(pkVehicle->m_data->m_kWheelParams[i].m_fMaxFriction,
-                                                               pkVehicle->m_data->m_kWheelParams[i].m_fSphereRadius);
+            m_wheelStates[i].m_pCollisionShape = hkpVehicleLinearCastWheelCollide_createWheelShape(vehicle->m_data->m_wheelParams[i].m_width,
+                                                               vehicle->m_data->m_wheelParams[i].m_radius);
         }
     }
 
-    m_kRejectChassisListener.m_pChassisCollidable = &pkVehicle->getChassis()->m_kCollidable;
+    m_rejectChassisListener.m_chassis = &vehicle->getChassis()->m_kCollidable;
 
     for (hkUint8 i = 0; i < iNumWheels; i++)
     {
-        hkpVehicleLinearCastWheelCollide_updateWheelState(pkVehicle, i);
+        hkpVehicleLinearCastWheelCollide_updateWheelState(vehicle, i);
         hkAabb kAabb;
-        hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(pkVehicle, i, kAabb);
+        hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(vehicle, i, kAabb);
         hkpAabbPhantom* pvMem = static_cast<hkpAabbPhantom*>(
             GetHeapE36C(hkMemoryRouter_getInstance()).blockAlloc(sizeof(hkpAabbPhantom)));
-        pvMem->m_usMemSizeAndFlags = sizeof(hkpAabbPhantom);
+        pvMem->m_memSizeAndFlags = sizeof(hkpAabbPhantom);
         const unsigned int uiElapsedMilliseconds = i * sizeof(hkpVehicleLinearCastWheelCollideWheelState);
-        hkpAabbPhantom* pkPhantom = ::new (pvMem) hkpAabbPhantom(kAabb, m_uiWheelCount);
-        *(hkpPhantom**)((char*)m_kWheelStates.m_data + uiElapsedMilliseconds) = pkPhantom;
-        (*(hkpPhantom**)((char*)m_kWheelStates.m_data + uiElapsedMilliseconds))
-            ->addPhantomOverlapListener_00d07de0(&m_kRejectChassisListener);
+        hkpAabbPhantom* pkPhantom = ::new (pvMem) hkpAabbPhantom(kAabb, m_wheelCollisionFilterInfo);
+        *(hkpPhantom**)((char*)m_wheelStates.m_data + uiElapsedMilliseconds) = pkPhantom;
+        (*(hkpPhantom**)((char*)m_wheelStates.m_data + uiElapsedMilliseconds))
+            ->addPhantomOverlapListener_00d07de0(&m_rejectChassisListener);
     }
 }
 
@@ -590,9 +626,9 @@ void hkpVehicleLinearCastWheelCollide::InitializeWheelCollisions(const hkpVehicl
 // @fnv 0x00e36b20
 hkpVehicleLinearCastWheelCollide::hkpVehicleLinearCastWheelCollide() throw()
 {
-    m_fMaxExtraPenetration = 1.192092896e-07f;
-    m_fMaxExtraPenetrationAgainstFixed = 1.192092896e-07f;
-    m_bWheelCollisionEnabled = 0;
+    m_maxExtraPenetration = 1.192092896e-07f;
+    m_startPointTolerance = 1.192092896e-07f;
+    m_alreadyUsed = 0;
     m_type = 2;
 }
 
@@ -647,13 +683,16 @@ struct CapsuleE36120 : public ShapeE36120
 
 // @fnv 0x00e36120
 // src: XBOX_PDB 0x00e36120
-ShapeE36120* __stdcall hkpVehicleLinearCastWheelCollide_createWheelShape(float afHeight, float fRadius)
+// pdb: hkpVehicleLinearCastWheelCollide::createWheelShape | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: width, radius
+// pdb locals: vertB, vertA
+ShapeE36120* __stdcall hkpVehicleLinearCastWheelCollide_createWheelShape(float width, float radius)
 {
     hkVector4 kTop;
-    kTop.set(g_fZeroE36120, g_fZeroE36120, afHeight * 0.5, g_fZeroE36120);
+    kTop.set(g_fZeroE36120, g_fZeroE36120, width * 0.5, g_fZeroE36120);
     hkVector4 kBottom;
     kBottom.m_vComponents = _mm_xor_ps(g_kSignMaskE36120, kTop.m_vComponents);
-    return new CapsuleE36120(kTop, kBottom, fRadius, 0.0f);
+    return new CapsuleE36120(kTop, kBottom, radius, 0.0f);
 }
 
 inline void* operator new(unsigned int, void* pvMem) throw()
@@ -663,93 +702,99 @@ inline void* operator new(unsigned int, void* pvMem) throw()
 
 __forceinline void hkpTypedBroadPhaseHandle::SetOwnerPointer(void* owner)
 {
-    m_iOwnerOffset = (signed char)((unsigned long)owner - (unsigned long)this);
+    m_ownerOffset = (signed char)((unsigned long)owner - (unsigned long)this);
 }
 
 // 0x00e363d0 builds each wheel's collidable with this constructor inlined (Havok defines it inline in hkpCollidable.h).
 __forceinline hkpCollidable::hkpCollidable(const hkpShape* shape, const hkTransform* transform, int type)
     : m_pCollisionShape(shape), m_uiCollisionShapeKey(0xffffffff), m_pMotionState(transform), m_parent(0),
-      m_iOwnerOffset(0), m_kBroadPhaseHandle(type)
+      m_ownerOffset(0), m_broadPhaseHandle(type)
 {
-    m_fAllowedPenetrationDepth = -1.0f;
-    m_kBroadPhaseHandle.SetOwnerPointer(this);
-    m_uiForceCollideOntoPpu = 0;
-    m_uiShapeSizeOnSpu = 0;
+    m_allowedPenetrationDepth = -1.0f;
+    m_broadPhaseHandle.SetOwnerPointer(this);
+    m_forceCollideOntoPpu = 0;
+    m_shapeSizeOnSpu = 0;
 }
 
 // Xbox PDB: hkpPairLinearCastCommand is 0x40 bytes; no shared header exists yet.
+// pdb: structure hkpPairLinearCastCommand, size 0x40, 10 members
 struct hkpPairLinearCastCommand
 {
-    hkVector4 m_vFrom;
-    hkVector4 m_vTo;
-    const hkpCollidable* m_pCollidableA;
-    const hkpCollidable* m_pCollidableB;
-    hkpRootCdPoint* m_pResultBuffer;
-    int m_iResultCount;
-    int m_iResultCapacity;
-    hkpRootCdPoint* m_pStartPointResultBuffer;
-    int m_iStartPointResultCount;
-    int m_iStartPointResultCapacity;
+    hkVector4 m_from;
+    hkVector4 m_to;
+    const hkpCollidable* m_collidableA;
+    const hkpCollidable* m_collidableB;
+    hkpRootCdPoint* m_results;
+    int m_resultsCapacity;
+    int m_numResultsOut;
+    hkpRootCdPoint* m_startPointResults;
+    int m_startPointResultsCapacity;
+    int m_startPointNumResultsOut;
 };
 
 // Fills one linear cast command for each collidable overlapping each wheel's phantom, creating a collidable per wheel, and returns the command count.
 // @fnv 0x00e363d0
 // src: HAVOK_SRC 0x00e363d0
+// pdb: hkpVehicleLinearCastWheelCollide::buildLinearCastCommands | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: vehicle, collisionFilter, collidableStorage, commandStorage, outputStorage
+// pdb locals: numWheels
 int hkpVehicleLinearCastWheelCollide::buildLinearCastCommands(const hkpVehicleInstance* pkVehicle,
-                                           const hkpCollisionFilter* pkFilter,
-                                           hkpCollidable* pkCollidableStorage,
-                                           hkpPairLinearCastCommand* pkCommandStorage,
-                                           hkpRootCdPoint* pkOutputStorage) const throw()
+                                           const hkpCollisionFilter* collisionFilter,
+                                           hkpCollidable* collidableStorage,
+                                           hkpPairLinearCastCommand* commandStorage,
+                                           hkpRootCdPoint* outputStorage) const throw()
 {
     int iNumCommands = 0;
-    const int iNumWheels = m_kWheelStates.GetLogicalSize();
+    const int iNumWheels = m_wheelStates.GetLogicalSize();
     for (char i = 0; i < iNumWheels; ++i)
     {
-        const hkpVehicleLinearCastWheelCollideWheelState& kWheelState = m_kWheelStates[i];
-        if (pkCollidableStorage)
-            new (pkCollidableStorage) hkpCollidable(kWheelState.m_pCollisionShape, &kWheelState.m_kMotionTransform, 0);
+        const hkpVehicleLinearCastWheelCollideWheelState& kWheelState = m_wheelStates[i];
+        if (collidableStorage)
+            new (collidableStorage) hkpCollidable(kWheelState.m_pCollisionShape, &kWheelState.m_kMotionTransform, 0);
 
         kWheelState.m_pPhantom->vf10();
-        const hkArray<void*>& kOverlapping = kWheelState.m_pPhantom->m_ppOverlappingCollidables;
+        const hkArray<void*>& kOverlapping = kWheelState.m_pPhantom->m_overlappingCollidables;
         const int iNumOverlapping = kOverlapping.GetLogicalSize();
         for (char j = 0; j < iNumOverlapping; ++j)
         {
             ++iNumCommands;
-            hkpPairLinearCastCommand& kCommand = *pkCommandStorage;
-            kCommand.m_pCollidableA = pkCollidableStorage;
-            kCommand.m_pCollidableB = static_cast<hkpCollidable*>(kOverlapping.m_data[j]);
-            kCommand.m_vFrom = kWheelState.m_kMotionTransform.getTranslation();
-            kCommand.m_vTo = kWheelState.m_vTo;
-            kCommand.m_pResultBuffer = pkOutputStorage;
-            kCommand.m_iResultCount = 1;
-            kCommand.m_iResultCapacity = 0;
-            kCommand.m_iStartPointResultCount = 0;
+            hkpPairLinearCastCommand& kCommand = *commandStorage;
+            kCommand.m_collidableA = collidableStorage;
+            kCommand.m_collidableB = static_cast<hkpCollidable*>(kOverlapping.m_data[j]);
+            kCommand.m_from = kWheelState.m_kMotionTransform.getTranslation();
+            kCommand.m_to = kWheelState.m_vTo;
+            kCommand.m_results = outputStorage;
+            kCommand.m_resultsCapacity = 1;
+            kCommand.m_numResultsOut = 0;
+            kCommand.m_startPointResultsCapacity = 0;
             // Exe 0x00e364b7 advances output slots by 0x70 bytes, independently of the contact-point size.
-            pkOutputStorage = reinterpret_cast<hkpRootCdPoint*>(reinterpret_cast<char*>(pkOutputStorage) + 0x70);
-            ++pkCommandStorage;
+            outputStorage = reinterpret_cast<hkpRootCdPoint*>(reinterpret_cast<char*>(outputStorage) + 0x70);
+            ++commandStorage;
         }
-        ++pkCollidableStorage;
+        ++collidableStorage;
     }
     return iNumCommands;
 }
 
-void __cdecl ResizeAudioStream(void* heap, void* arr, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 // Iterates wheel states and appends each wheel's phantom pointer to the output array, growing it when needed.
 // @fnv 0x00e36ab0
 // src: HAVOK_LIB 0x00e36ab0
-void hkpVehicleLinearCastWheelCollide::getPhantoms(hkArray<hkpPhantom*>* output)
+// pdb: hkpVehicleLinearCastWheelCollide::getPhantoms | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: phantomsOut
+void hkpVehicleLinearCastWheelCollide::getPhantoms(hkArray<hkpPhantom*>* phantomsOut)
 {
-    const int wheelCount = m_kWheelStates.GetLogicalSize();
+    const int wheelCount = m_wheelStates.GetLogicalSize();
     for (int wheel = 0; wheel < wheelCount; ++wheel)
     {
-        hkpPhantom* phantom = m_kWheelStates[wheel].m_pPhantom;
+        hkpPhantom* phantom = m_wheelStates[wheel].m_pPhantom;
         HavokAllocatorContext_hkpvehiclelinearcastwheelcollide* memory = hkMemoryRouter_getInstance();
-        if (output->m_iElementCount == (output->m_iCapacityState & 0x3fffffff))
-            ResizeAudioStream(memory->m_router, output, sizeof(phantom));
-        hkpPhantom** slot = output->m_data + output->m_iElementCount;
+        if (phantomsOut->m_iElementCount == (phantomsOut->m_iCapacityState & 0x3fffffff))
+            ResizeAudioStream(memory->m_router, phantomsOut, sizeof(phantom));
+        hkpPhantom** slot = phantomsOut->m_data + phantomsOut->m_iElementCount;
         __assume(slot != 0);
         new (slot) hkpPhantom*(phantom);
-        ++output->m_iElementCount;
+        ++phantomsOut->m_iElementCount;
     }
 }

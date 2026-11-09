@@ -167,6 +167,9 @@ struct LocalObj {
 
 // @fnv 0x00e5cf00
 // src: HAVOK_LIB 0x00e5cf00
+// pdb: hkMoppEarlyExitObbVirtualMachine_queryObb | hkpMoppMachine.obj | retail, object-file run extension, low
+// pdb params: code, BvToWorld, extent, radius
+// pdb locals: machine
 int __cdecl _hkMoppEarlyExitObbVirtualMachine_queryObb(void* a1, int a2, int a3, int a4)
 {
     __declspec(align(16)) LocalObj obj;
@@ -174,9 +177,13 @@ int __cdecl _hkMoppEarlyExitObbVirtualMachine_queryObb(void* a1, int a2, int a3,
     return obj.SetupAndProcessShape(&buf, a1, a2, a3, a4)[0] != 0;
 }
 
-struct TmpE5CF40 { V4 a, b; void hkpMoppSphereVirtualMachine_querySphere(int a, int b, int c); };
+struct TmpE5CF40 { V4 a, b; void hkpMoppSphereVirtualMachine_querySphere(int a, int b, int primitiveResults); };
 // @fnv 0x00e5cf40
 // src: HAVOK_LIB 0x00e5cf40
+// pdb: hkMoppSphereVirtualMachine_querySphere | hkpMoppMachine.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkMoppEarlyExitObbVirtualMachine_queryObb
+// pdb params: code, sphere, primitives_out
+// pdb locals: machine
 void __cdecl _hkMoppSphereVirtualMachine_querySphere(int a, int b, int c)
 {
     TmpE5CF40 tmp;
@@ -186,14 +193,17 @@ void __cdecl _hkMoppSphereVirtualMachine_querySphere(int a, int b, int c)
 struct __declspec(align(16)) FUN_00e5d010_Block {
     unsigned int unk00,unk04,unk08,unk0c,unk10,unk14,unk18,unk1c;
     unsigned int unk20,unk24,unk28,unk2c,unk30,unk34,unk38,unk3c;
-    void __thiscall hkpMoppObbVirtualMachine_queryAabb(int first,int second,int third);
+    void __thiscall hkpMoppObbVirtualMachine_queryAabb(int code,int aabb,int primitives_out);
 };
 // @fnv 0x00e5d010
 // src: HAVOK_LIB 0x00e5d010
-extern "C" void __cdecl _hkMoppObbVirtualMachine_queryAabb(int first,int second,int third)
+// pdb: hkMoppObbVirtualMachine_queryAabb | hkpMoppMachine.obj | retail, upstream name already matches, high
+// pdb params: code, aabb, primitives_out
+// pdb locals: machine
+extern "C" void __cdecl _hkMoppObbVirtualMachine_queryAabb(int code,int aabb,int primitives_out)
 {
     FUN_00e5d010_Block instance;
-    instance.hkpMoppObbVirtualMachine_queryAabb(first,second,third);
+    instance.hkpMoppObbVirtualMachine_queryAabb(code,aabb,primitives_out);
 }
 
 #include <math.h>
@@ -259,7 +269,7 @@ struct F8 { V4 lower, upper; };
 struct BoundsRef { F8* p; F8* operator->() const { return p; } operator F8*() const { return p; } }; 
 struct Resource { int unk00, unk04, unk08, unk0c; void* allocator; };
 extern void* hkMemoryRouter_getInstance();
-extern void ResizeAudioStream(void* a, void* b, int c);
+extern void ResizeAudioStream(void* mem, void* array, int sizeElem);
 static const __declspec(align(16)) unsigned int AbsMask[4] = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff };
 
 
@@ -532,6 +542,9 @@ __forceinline void Cls::interpret(P1* a1, unsigned char* p, F8* const& a3) {
 
 // @fnv 0x00e5f070
 // src: GUESS 0x00e5f070 (confidence: medium)
+// pdb: hkpMoppUsingFloatAabbVirtualMachine<hkSphere,hkMoppSphereQueryObject>::queryMoppTree | hkpMoppMachine.obj | retail, object-file run extension, low
+// pdb params: query, PC, fQueryL
+// pdb locals: scaledQuery, fQueryR, assertBuf, ostr
 void Cls::Interpret_Thunk(P1* a1, unsigned char* p, F8* a3) { interpret(a1, p, a3); }
 
 extern "C" void _ReadWriteBarrier();
@@ -665,6 +678,9 @@ struct TreeDecoder {
 };
 // @fnv 0x00e5e430
 // src: GUESS 0x00e5e430 (confidence: low)
+// pdb: hkpMoppUsingFloatAabbVirtualMachine<hkpMoppPlanesQueryInput,hkMoppPlanesQueryObjectOptimized>::queryMoppTree | hkpMoppMachine.obj | retail, object-file run extension, low
+// pdb params: query, PC, fQueryL
+// pdb locals: scaledQuery, fQueryR, assertBuf, ostr
 void TreeDecoder::ProcessEntries_00e5e430(DecodeState* state, const unsigned char* code, BoundsPair* bounds)
 {
     DecodeState localState;

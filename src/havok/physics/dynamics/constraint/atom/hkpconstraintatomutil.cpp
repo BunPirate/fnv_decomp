@@ -37,18 +37,21 @@ struct D92740Block
     unsigned short m_extra;
 };
 
-D92740Block* __cdecl AllocateBlock(int capacity, int typeA, int typeB, int extra);
-void __cdecl hkpSimpleContactConstraintAtom_ProcessEntries_00d925b0(D92740Block* dst, D92740Block* src);
+D92740Block* __cdecl hkpSimpleContactConstraintAtomUtil_allocateAtom(int numReservedContactPoints, int numExtraUserDatasA, int numExtraUserDatasB, int maxNumContactPoints);
+void __cdecl hkpSimpleContactConstraintAtomUtil_copyContents(D92740Block* dst, D92740Block* src);
 int __cdecl RoundUpToBucketSize(int sizeClass);
 
 // @fnv 0x00d92740
+// pdb: hkpSimpleContactConstraintAtomUtil::optimizeCapacity | hkpConstraintAtomUtil.obj | retail, object-file run extension, low
+// pdb params: oldAtom_mightGetDeallocated, numFreeElemsLeft, atomReallocated
+// pdb locals: assertBuf, ostr
 D92740Block* __cdecl ShrinkBlockIfSparse(D92740Block* block, int numToAdd, bool* pbResized)
 {
     if ((block->m_iAllocatedCount + numToAdd) * 2 <= block->m_pRayCursor)
     {
         int newCapacity = block->m_pRayCursor >> 1;
-        D92740Block* newBlock = AllocateBlock(newCapacity, block->m_iAgentTypeA, block->m_iAgentTypeB, block->m_extra);
-        hkpSimpleContactConstraintAtom_ProcessEntries_00d925b0(newBlock, block);
+        D92740Block* newBlock = hkpSimpleContactConstraintAtomUtil_allocateAtom(newCapacity, block->m_iAgentTypeA, block->m_iAgentTypeB, block->m_extra);
+        hkpSimpleContactConstraintAtomUtil_copyContents(newBlock, block);
         int size = RoundUpToBucketSize(block->m_sizeClass);
         hkMemoryRouter_getInstance().heap().ReleaseBlock(block, size);
         *pbResized = true;
@@ -138,22 +141,25 @@ struct Obj
 };
 
 // @fnv 0x00d92510
-D92740Block* __cdecl AllocateBlock(int capacity, int typeA, int typeB, int extra)
+// src: XBOX_RETAIL_PDB 0x00d92510
+// pdb: hkpSimpleContactConstraintAtomUtil::allocateAtom | hkpConstraintAtomUtil.obj | retail, object-file run extension, high
+// pdb params: numReservedContactPoints, numExtraUserDatasA, numExtraUserDatasB, maxNumContactPoints
+D92740Block* __cdecl hkpSimpleContactConstraintAtomUtil_allocateAtom(int numReservedContactPoints, int numExtraUserDatasA, int numExtraUserDatasB, int maxNumContactPoints)
 {
-    unsigned int uiTypeSum = (unsigned int)typeA + (unsigned int)typeB;
+    unsigned int uiTypeSum = (unsigned int)numExtraUserDatasA + (unsigned int)numExtraUserDatasB;
     unsigned int stride = uiTypeSum * 4 + 0x14;
-    unsigned int size = (unsigned int)capacity * (stride + 0x20);
+    unsigned int size = (unsigned int)numReservedContactPoints * (stride + 0x20);
     size = (size + 0x3f) & 0xfffffff0u;
     D92740MemoryRouter& memoryRouter = hkMemoryRouter_getInstance();
     MyAlloc* alloc = (MyAlloc*)memoryRouter.m_pStreamAllocator;
     unsigned int raw = RoundUpToBucketSize(size);
     Obj* pBlock = (Obj*)alloc->Construct(raw);
 
-    pBlock->types.a = typeA;
-    pBlock->types.b = typeB;
-    pBlock->f0C = extra;
+    pBlock->types.a = numExtraUserDatasA;
+    pBlock->types.b = numExtraUserDatasB;
+    pBlock->f0C = maxNumContactPoints;
     pBlock->f02 = size;
-    *(volatile unsigned short*)&pBlock->f06 = capacity;
+    *(volatile unsigned short*)&pBlock->f06 = numReservedContactPoints;
     pBlock->f0A = stride;
     pBlock->f10 = 0;
     pBlock->f12 = 3;

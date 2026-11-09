@@ -7,6 +7,7 @@
 class BSMultiBound;
 class CloningProcess;
 
+// pdb: class BSMultiBoundSphere, size 0x1c, bases: BSMultiBoundShape, 2 members
 class BSMultiBoundSphere : public BSMultiBoundShape
 {
 public:
@@ -14,8 +15,8 @@ public:
     BSMultiBoundSphere(const NiPoint3& center, float radius);
     virtual ~BSMultiBoundSphere();
 
-    NiPoint3 center;
-    float radius;
+    NiPoint3 Center;
+    float Radius;
 
     virtual NiObject* MakeClone(CloningProcess& arCloning);
     virtual float GetRadius() const;

@@ -17,12 +17,15 @@ ActorPackageContext* BaseProcess::GetCurrentProcessData(void) const
 }
 
 // @fnv 0x008b3bb0
+// pdb: Actor::IsPathingComplete | Actor.obj | debug, call graph, medium
 TESForm* TeleportableReference::GetTeleportDestinationForm(void)
 {
     return ((DoorTeleportSpaceOwner*)this)->receiver->IsPathingComplete();
 }
 
 // @fnv 0x0043a320
+// pdb: DoorTeleportData::GetTeleportWorldSpace | TeleportData.obj | retail, call graph (shared callers), high
+// pdb locals: pretworld, pcell
 TESWorldSpace* TeleportableReference::GetTeleportWorldspace(void)
 {
     TESWorldSpace* result = 0;
@@ -42,21 +45,28 @@ TESWorldSpace* TeleportableReference::GetTeleportWorldspace(void)
 }
 
 // @fnv 0x0043a210
-void TeleportableReference::SetLinkedDoorReference(TESObjectREFR* reference, bool set)
+// src: XBOX_RETAIL_PDB 0x0043a210
+// pdb: DoorTeleportData::SetConnectedCellsPublic | TeleportData.obj | retail, call graph (shared callers), high
+// pdb params: apDoorRef, abIsPublic
+// pdb locals: pcell
+void TeleportableReference::SetConnectedCellsPublic(TESObjectREFR* apDoorRef, bool abIsPublic)
 {
     DoorCell* cell;
-    if (reference)
+    if (apDoorRef)
     {
         cell = DoorTeleportData_GetTeleportCell();
         if (cell && cell->GetOwner())
-            cell->SetTempPublic(set);
-        cell = (DoorCell*)reference->GetParentCell();
+            cell->SetTempPublic(abIsPublic);
+        cell = (DoorCell*)apDoorRef->GetParentCell();
         if (cell && cell->GetOwner())
-            cell->SetTempPublic(set);
+            cell->SetTempPublic(abIsPublic);
     }
 }
 
 // @fnv 0x0043a4e0
+// pdb: DoorTeleportData::Load | TeleportData.obj | retail, object-file run extension, low
+// pdb params: apFile
+// pdb locals: data
 void TeleportableReference::Load(TESFile* file)
 {
     if (file && file->GetChunkID() == 0x4c455458)
@@ -75,6 +85,7 @@ void TeleportableReference::Load(TESFile* file)
 
 // @fnv 0x0043a2b0
 // src: XBOX_PDB 0x0043a2b0
+// pdb: DoorTeleportData::GetTeleportCell | TeleportData.obj | debug, upstream name already matches, high
 DoorCell* TeleportableReference::DoorTeleportData_GetTeleportCell(void)
 {
     if (m_pLinkedDoorReference)
@@ -119,28 +130,32 @@ struct ExtraListRemover
 
 struct FUN_004197d0_shell : public BaseExtraList
 {
-    void SetExtraDataValue(int value);
+    void ExtraDataList_SetGlobal(int apGlobal);
 };
 
 // Sets the value of extra data type 0x22, removing it when zero or creating and adding it when absent.
 // @fnv 0x004197d0
-void FUN_004197d0_shell::SetExtraDataValue(int value)
+// src: XBOX_RETAIL_PDB 0x004197d0
+// pdb: ExtraDataList::SetGlobal | ExtraDataList.obj | retail, call graph, high
+// pdb params: apGlobal
+// pdb locals: pGlobal
+void FUN_004197d0_shell::ExtraDataList_SetGlobal(int apGlobal)
 {
     BSExtraData* extra = GetExtraData(0x22);
     if (extra)
     {
-        if (!value)
+        if (!apGlobal)
         {
             ((ExtraListRemover*)this)->BaseExtraList_RemoveExtra(extra, true);
         }
         else
         {
-            static_cast<OwnershipExtraData*>(extra)->owner = value;
+            static_cast<OwnershipExtraData*>(extra)->owner = apGlobal;
         }
     }
-    else if (value)
+    else if (apGlobal)
     {
-        extra = new OwnershipExtraData(value);
+        extra = new OwnershipExtraData(apGlobal);
         AddExtra(extra);
     }
 }
@@ -154,8 +169,9 @@ NiPoint3* __fastcall SetComponents(NiPoint3*, float, float, float);
 
 // Sets the first four bytes and the byte at offset 0x1c to zero, then assigns two NiPoint3 values built from DAT_01016450.
 // @fnv 0x0043a160
-// src: GUESS 0x0043a160 (confidence: low)
-TeleportableReference* __fastcall Object_InitializeFields_0043a160(TeleportableReference* self)
+// src: XBOX_DEBUG_PDB 0x0043a160
+// pdb: DoorTeleportData::DoorTeleportData | TeleportData.obj | debug, call graph, high
+TeleportableReference* __fastcall DoorTeleportData_ctor(TeleportableReference* self)
 {
     PointStorage a;
     PointStorage b;
@@ -195,6 +211,8 @@ struct FUN_0043a2e0_host
 };
 // If m is non-null, calls m->FUN_00578870(a); otherwise calls a->Set($SG4382, 0).
 // @fnv 0x0043a2e0
+// pdb: DoorTeleportData::GetTeleportCellMapName | TeleportData.obj | debug, object-file gap fill, medium
+// pdb params: aOutMapName
 void FUN_0043a2e0_host::SetString(::BSStringT<char>* apStr)
 {
     if (m)
@@ -215,6 +233,7 @@ struct UnkThis : BaseProcess
 // Calls a->FUN_0043a3c0 with BaseProcess::GetCurrentProcessData() and FUN_0043a3f0(), then returns a.
 // @fnv 0x0043a390
 // src: COMMUNITY 0x0043a390
+// pdb: DoorTeleportData::GetTeleportWorldLocation | TeleportData.obj | retail, upstream name already matches, high
 UnkArg* UnkThis::DoorTeleportData_GetTeleportWorldLocation(UnkArg* apArg)
 {
     apArg->FUN_0043a3c0(BaseProcess::GetCurrentProcessData(), DoorTeleportData_GetTeleportSpace());
@@ -247,6 +266,7 @@ struct Caller_43a3f0
 // Returns the result of calling FUN_00575ca0 on p when p is non-null, otherwise returns 0.
 // @fnv 0x0043a3f0
 // src: XBOX_PDB 0x0043a3f0
+// pdb: DoorTeleportData::GetTeleportSpace | TeleportData.obj | debug, upstream name already matches, high
 int Caller_43a3f0::DoorTeleportData_GetTeleportSpace()
 {
     return p ? p->TESObjectREFR_GetSpace() : 0;
@@ -264,6 +284,7 @@ struct FUN_0043a420_shell : public DoorTeleportLoadData
 // Copies the door FormID, position, rotation, and flags into data, conditionally calls SwapEndian, and passes data to _FUN_00485990.
 // @fnv 0x0043a420
 // src: GUESS 0x0043a420 (confidence: medium)
+// pdb: FILE_TELEPORT_DATA::Endian | TeleportData.obj | debug, object-file run extension, low
 void FUN_0043a420_shell::SaveDoorTeleportData()
 {
     if (!door)
@@ -296,6 +317,9 @@ struct QuantityData
     void CopyFrom(void*);
 };
 // @fnv 0x0043a810
+// pdb: DoorTeleportData::SaveGame | TeleportData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DoorTeleportData::Copy
+// pdb locals: ilinkedDoorID
 void QuantityData::CopyFrom(void* apOther)
 {
     SetQuantity(reinterpret_cast<GO*>(apOther)->operator unsigned int());
@@ -317,6 +341,9 @@ struct FUN_0043a860_shell
 // Returns true if the GO value, process data, source files, or the byte at offset 0x1c differ between this and apCompare.
 // @fnv 0x0043a860
 // src: XBOX_PDB 0x0043a860
+// pdb: DoorTeleportData::LoadGame | TeleportData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DoorTeleportData::Compare
+// pdb locals: ilinkedDoorID
 bool FUN_0043a860_shell::DoorTeleportData_Compare(TeleportableReference* apCompare)
 {
     if (reinterpret_cast<const GO*>(this)->operator unsigned int() !=
@@ -345,6 +372,8 @@ struct FUN_0043a8f0_shell
 // Returns 0x1c, computed by adding 0xc, 0xc, and 4 to an unsigned short initialized to zero.
 // @fnv 0x0043a8f0
 // src: COMMUNITY 0x0043a8f0
+// pdb: DoorTeleportData::InitLoadGame | TeleportData.obj | retail, object-file run extension, low
+// pdb locals: ilinkedDoorID
 unsigned short __thiscall FUN_0043a8f0_shell::ExtraTeleport_GetSaveSize()
 {
     unsigned short v = 0;
@@ -373,6 +402,8 @@ struct Thing
 
 // Saves the 12-byte data blocks and the form ID of m_object to the save stream via TESSaveLoadGame.
 // @fnv 0x0043a930
+// pdb: DoorTeleportData::SaveGame | TeleportData.obj | retail, object-file run extension, low
+// pdb locals: ilinkedDoorID
 void Thing::Save()
 {
     DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(m_data04, 0xc);
@@ -396,6 +427,9 @@ struct RefHandle
 
 // Replaces m_pkRef with the result of FUN_004839c0 cast to TESObjectREFR, or null if m_pkRef is null.
 // @fnv 0x00835fe0
+// pdb: DoorTeleportData::InitLoadGame | TeleportData.obj | retail, call graph, low
+// pdb note: debug build links it to FalloutRadio::FORadioReceiver::InitLoadGame
+// pdb locals: ilinkedDoorID
 void RefHandle::ResolveRef(void* pvUnused)
 {
     m_pkRef = m_pkRef ? dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID((unsigned int)m_pkRef)) : 0;
@@ -427,11 +461,13 @@ bool __thiscall TESObjectREFR_ext::GetReferencePersistence()
 // Returns true when either called predicate is true; otherwise returns false.
 // @fnv 0x009a96f0
 // src: XBOX_PDB 0x009a96f0
-bool CombatUtilities_CanActorExistInSpace(TESObjectREFR* refr, CoordinateTriple* location)
+// pdb: CombatUtilities::CanActorExistInSpace | CombatUtilities.obj | retail, upstream name already matches, high
+// pdb params: apActor, arWorldLocation
+bool CombatUtilities_CanActorExistInSpace(TESObjectREFR* apActor, CoordinateTriple* arWorldLocation)
 {
-    if (((TESObjectREFR_ext*)refr)->GetReferencePersistence())
+    if (((TESObjectREFR_ext*)apActor)->GetReferencePersistence())
         return true;
-    if (location->BGSWorldLocation_IsLocationLoaded())
+    if (arWorldLocation->BGSWorldLocation_IsLocationLoaded())
         return true;
     return false;
 }
@@ -459,10 +495,13 @@ extern TeleportFormTypeName DAT_01187004[];
 // Resolves the linked door, checks its form type, and resets position or rotation to zero when their checks fail.
 // @fnv 0x0043a590
 // src: XBOX_PDB 0x0043a590
-bool FUN_0043a590_shell::DoorTeleportData_InitItem(TESForm* form)
+// pdb: DoorTeleportData::InitItem | TeleportData.obj | retail, upstream name already matches, high
+// pdb params: apOwner
+// pdb locals: tempID
+bool FUN_0043a590_shell::DoorTeleportData_InitItem(TESForm* apOwner)
 {
     unsigned int formID = (unsigned int)m_pLinkedDoorReference;
-    FUN_00485d50(&formID, form->GetFile(-1));
+    FUN_00485d50(&formID, apOwner->GetFile(-1));
     m_pLinkedDoorReference = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(formID));
     if (!m_pLinkedDoorReference)
     {

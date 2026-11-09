@@ -73,25 +73,29 @@ void __cdecl hkString_memMove(int a, int b, char* c);
 
 // Removes the record p->m_pConstraintInternal from its node lists, shifts the following records down, adjusts buffer sizes and counts, and calls FUN_00c905b0.
 // @fnv 0x00d27820
-void DetachRecord(hkpConstraintInstance* p)
+// src: XBOX_RETAIL_PDB 0x00d27820
+// pdb: hkpWorldConstraintUtil::removeConstraint | hkpWorldConstraintUtil.obj | retail, call graph, high
+// pdb params: constraint
+// pdb locals: assertBuf, ostr, info
+void hkpWorldConstraintUtil_removeConstraint(hkpConstraintInstance* p)
 {
-    S_00d27820_Rec* pRec = reinterpret_cast<S_00d27820_Rec*>(p->m_pConstraintInternal);
-    S_00d27820_A* a = reinterpret_cast<S_00d27820_A*>(p->m_pOwnerObject);
+    S_00d27820_Rec* pRec = reinterpret_cast<S_00d27820_Rec*>(p->m_internal);
+    S_00d27820_A* a = reinterpret_cast<S_00d27820_A*>(p->m_owner);
     a->flags = (a->flags & ~2) | 1;
     unsigned x = pRec->px;
     unsigned y = pRec->py;
     unsigned z = pRec->pz;
-    if (p->m_pConstraintInternal)
+    if (p->m_internal)
     {
-        S_00d27820_A* a2 = reinterpret_cast<S_00d27820_A*>(p->m_pOwnerObject);
+        S_00d27820_A* a2 = reinterpret_cast<S_00d27820_A*>(p->m_owner);
         a2->vec.Sub(x, y, z);
-        S_00d27820_Rec* pRec2 = reinterpret_cast<S_00d27820_Rec*>(p->m_pConstraintInternal);
+        S_00d27820_Rec* pRec2 = reinterpret_cast<S_00d27820_Rec*>(p->m_internal);
         pRec2->py -= y;
         pRec2->pz -= z;
         pRec2->px -= x;
     }
     a->cnt--;
-    p->m_pOwnerObject = 0;
+    p->m_owner = 0;
     S_00d27820_Node* c = pRec->bodies[1 - pRec->idx];
     unsigned short slot = pRec->slot;
     S_00d27820_Arr* arr = &c->arr;
@@ -111,13 +115,13 @@ void DetachRecord(hkpConstraintInstance* p)
         pBuf->size -= pRec->sz;
         pRec->cnt = 0;
     }
-    p->m_pConstraintInternal = 0;
+    p->m_internal = 0;
     S_00d27820_Rec* pIter = pRec;
     S_00d27820_Rec* end = d->unkac + d->unkb0 - 1;
     while (pIter < end)
     {
         *pIter = pIter[1];
-        pIter->constraint->m_pConstraintInternal = reinterpret_cast<ConstraintRuntimeInfo*>(pIter);
+        pIter->constraint->m_internal = reinterpret_cast<ConstraintRuntimeInfo*>(pIter);
         pIter->cnt = pIter->cnt ? pIter->cnt + delta : 0;
         pIter++;
     }
@@ -176,13 +180,16 @@ hkpModifierConstraintAtom* __cdecl hkpWorldConstraintUtil_findLastModifier(hkpCo
 // Splices newModifier into the modifier atom chain of instance, updating child pointers and accumulating solver stats on the owner.
 // @fnv 0x00d27960
 // src: HAVOK_LIB 0x00d27960
+// pdb: hkpWorldConstraintUtil::addModifier | hkpWorldConstraintUtil.obj | retail, upstream name already matches, high
+// pdb params: instance, constraintOwner, newModifier
+// pdb locals: assertBuf, ostr, cinfo, flag
 void __cdecl hkpWorldConstraintUtil_addModifier(hkpConstraintInstance* instance, hkpConstraintOwner& constraintOwner,
                           hkpModifierConstraintAtom* newModifier)
 {
     constraintOwner.checkAccessRw();
 
     hkpModifierConstraintAtom* lastModifier = hkpWorldConstraintUtil_findLastModifier(instance);
-    ConstraintRuntimeInfo* pConstraintInternal = instance->m_pConstraintInternal;
+    ConstraintRuntimeInfo* pConstraintInternal = instance->m_internal;
 
     if (newModifier->m_type == 0x1a && lastModifier)
     {
@@ -191,16 +198,16 @@ void __cdecl hkpWorldConstraintUtil_addModifier(hkpConstraintInstance* instance,
         lastModifier->m_pChildAtom = newModifier;
         lastModifier->m_iChildSize = newModifier->m_usModifierAtomSize;
     }
-    else if (instance->m_pConstraintModifier && instance->m_pConstraintModifier->m_type == 0x1b)
+    else if (instance->m_constraintModifiers && instance->m_constraintModifiers->m_type == 0x1b)
     {
-        newModifier->m_pChildAtom = instance->m_pConstraintModifier->m_pChildAtom;
-        newModifier->m_iChildSize = instance->m_pConstraintModifier->m_iChildSize;
-        instance->m_pConstraintModifier->m_pChildAtom = newModifier;
-        instance->m_pConstraintModifier->m_iChildSize = newModifier->m_usModifierAtomSize;
+        newModifier->m_pChildAtom = instance->m_constraintModifiers->m_pChildAtom;
+        newModifier->m_iChildSize = instance->m_constraintModifiers->m_iChildSize;
+        instance->m_constraintModifiers->m_pChildAtom = newModifier;
+        instance->m_constraintModifiers->m_iChildSize = newModifier->m_usModifierAtomSize;
     }
     else
     {
-        instance->m_pConstraintModifier = newModifier;
+        instance->m_constraintModifiers = newModifier;
         if (pConstraintInternal)
         {
             newModifier->m_pChildAtom = reinterpret_cast<hkpModifierConstraintAtom*>(pConstraintInternal->m_kBridgeAtoms);
@@ -226,13 +233,13 @@ void __cdecl hkpWorldConstraintUtil_addModifier(hkpConstraintInstance* instance,
         constraintOwner.AccumulateStats(instance, info);
 
         usedFlags &=
-            (instance->m_kActorEntries[0]->m_ucResponseModifierFlags | instance->m_kActorEntries[1]->m_ucResponseModifierFlags);
+            (instance->m_entities[0]->m_responseModifierFlags | instance->m_entities[1]->m_responseModifierFlags);
         hkUint16 extra = DAT_010cb7a8[usedFlags & 7];
         reinterpret_cast<GenericConstraintAtomScheme*>(&constraintOwner.m_iMaxSchemaSize)->m_iSchemaByteSize -= extra;
-        instance->m_pConstraintInternal->m_iSchemaByteSize = instance->m_pConstraintInternal->m_iSchemaByteSize - extra;
-        if (instance->m_pConstraintInternal)
+        instance->m_internal->m_iSchemaByteSize = instance->m_internal->m_iSchemaByteSize - extra;
+        if (instance->m_internal)
         {
-            instance->m_pConstraintInternal->m_ucCallbackRequest |= (hkUint8)callbackRequest;
+            instance->m_internal->m_ucCallbackRequest |= (hkUint8)callbackRequest;
         }
     }
 }
@@ -365,6 +372,9 @@ void hkString_memMove(void*, const void*, int);
 // Initializes a ConstraintInternal entry, inserts it into the master entity's constraint array, allocates runtime memory, and registers the constraint as a slave.
 // @fnv 0x00d27ac0
 // src: HAVOK_LIB 0x00d27ac0
+// pdb: hkpWorldConstraintUtil::addConstraint | hkpWorldConstraintUtil.obj | retail, upstream name already matches, high
+// pdb params: world, constraint
+// pdb locals: info, internalBuffer, assertBuf, ostr, usedModifierFlags, rInfo
 ConstraintPointer* hkpWorldConstraintUtil_addConstraint(void* unused, hkpConstraintInstance* constraint)
 {
     constraint->addReference();
@@ -372,12 +382,12 @@ ConstraintPointer* hkpWorldConstraintUtil_addConstraint(void* unused, hkpConstra
     constraint->m_data->PopulateInfo(reinterpret_cast<hkpConstraintDataInfo&>(info));
     ConstraintInternal entry;
     entry.constraint = constraint;
-    entry.bodies[0] = reinterpret_cast<Entity*>(constraint->m_kActorEntries[0]);
-    entry.bodies[1] = reinterpret_cast<Entity*>(constraint->m_kActorEntries[1]);
-    if (constraint->m_pConstraintModifier)
+    entry.bodies[0] = reinterpret_cast<Entity*>(constraint->m_entities[0]);
+    entry.bodies[1] = reinterpret_cast<Entity*>(constraint->m_entities[1]);
+    if (constraint->m_constraintModifiers)
     {
-        entry.atoms = reinterpret_cast<hkpConstraintAtom*>(constraint->m_pConstraintModifier);
-        entry.atomSize = constraint->m_pConstraintModifier->m_usModifierAtomSize;
+        entry.atoms = reinterpret_cast<hkpConstraintAtom*>(constraint->m_constraintModifiers);
+        entry.atomSize = constraint->m_constraintModifiers->m_usModifierAtomSize;
     }
     else
     {
@@ -390,8 +400,8 @@ ConstraintPointer* hkpWorldConstraintUtil_addConstraint(void* unused, hkpConstra
         hkpWorldOperationUtil_mergeIslands(entry.bodies[0]->world, entry.bodies[0], entry.bodies[1]);
     entry.masterIndex = entry.bodies[0]->motionType == 5;
     Entity* master = entry.bodies[entry.masterIndex];
-    constraint->m_pOwnerObject = reinterpret_cast<hkpConstraintOwner*>(master->island);
-    ++reinterpret_cast<Island*>(constraint->m_pOwnerObject)->count;
+    constraint->m_owner = reinterpret_cast<hkpConstraintOwner*>(master->island);
+    ++reinterpret_cast<Island*>(constraint->m_owner)->count;
     unsigned int atomType = entry.atoms->m_type;
     entry.callbacks = 1;
     entry.flags = 0;
@@ -406,19 +416,19 @@ ConstraintPointer* hkpWorldConstraintUtil_addConstraint(void* unused, hkpConstra
     else if (atomType == 20)
         entry.flags = 2;
     unsigned char flags = 0;
-    if (constraint->m_pConstraintModifier)
-        entry.flags |= hkpModifierConstraintAtom_addAllModifierDataToConstraintInfo(reinterpret_cast<hkpConstraintAtom*>(constraint->m_pConstraintModifier), &info, &flags);
+    if (constraint->m_constraintModifiers)
+        entry.flags |= hkpModifierConstraintAtom_addAllModifierDataToConstraintInfo(reinterpret_cast<hkpConstraintAtom*>(constraint->m_constraintModifiers), &info, &flags);
     if (atomType == 22)
     {
-        unsigned char combined = constraint->m_kActorEntries[1]->m_ucResponseModifierFlags | constraint->m_kActorEntries[0]->m_ucResponseModifierFlags;
+        unsigned char combined = constraint->m_entities[1]->m_responseModifierFlags | constraint->m_entities[0]->m_responseModifierFlags;
         combined -= combined & flags;
         info.runtimeBytes += DAT_010cb7a8[combined & 7];
     }
     entry.unk16 = 0;
     entry.unk18 = 0;
     entry.unk14 = 0;
-    constraint->m_pConstraintInternal = reinterpret_cast<ConstraintRuntimeInfo*>(&entry);
-    reinterpret_cast<Island*>(constraint->m_pOwnerObject)->AccumulateStats(constraint, &info);
+    constraint->m_internal = reinterpret_cast<ConstraintRuntimeInfo*>(&entry);
+    reinterpret_cast<Island*>(constraint->m_owner)->AccumulateStats(constraint, &info);
     InternalArray& array = master->constraints;
     unsigned short count = array.size;
     int index = 0;
@@ -429,8 +439,8 @@ ConstraintPointer* hkpWorldConstraintUtil_addConstraint(void* unused, hkpConstra
             break;
         if (entry.priority > current.priority)
             continue;
-        unsigned int incomingUid = entry.constraint->m_uiUniqueId;
-        unsigned int currentUid = current.constraint->m_uiUniqueId;
+        unsigned int incomingUid = entry.constraint->m_uid;
+        unsigned int currentUid = current.constraint->m_uid;
         if (incomingUid < currentUid)
             break;
         if (incomingUid > currentUid)
@@ -448,11 +458,11 @@ ConstraintPointer* hkpWorldConstraintUtil_addConstraint(void* unused, hkpConstra
     {
         ConstraintInternal* changed = &array.data[i];
         hkpConstraintInstance* owner = changed->constraint;
-        owner->m_pConstraintInternal = reinterpret_cast<ConstraintRuntimeInfo*>(changed);
+        owner->m_internal = reinterpret_cast<ConstraintRuntimeInfo*>(changed);
     }
-    ConstraintInternal* internal = reinterpret_cast<ConstraintInternal*>(constraint->m_pConstraintInternal);
+    ConstraintInternal* internal = reinterpret_cast<ConstraintInternal*>(constraint->m_internal);
     RuntimeInfo runtimeInfo;
-    internal->constraint->m_data->GetRuntimeInfo((unsigned char)constraint->m_bWantRuntime.m_cBooleanValue, &runtimeInfo);
+    internal->constraint->m_data->GetRuntimeInfo((unsigned char)constraint->m_wantRuntime.m_cBooleanValue, &runtimeInfo);
     unsigned int runtimeSize = (runtimeInfo.size + 15) & ~15u;
     runtimeInfo.size = runtimeSize;
     internal->runtimeSize = (unsigned short)runtimeSize;

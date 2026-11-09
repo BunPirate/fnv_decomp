@@ -16,6 +16,7 @@ struct LayoutString;
 struct LayoutBlock;
 struct LayoutResult;
 
+// pdb: class FontManager, size 0x24, 2 members
 class FontManager
 {
 public:
@@ -52,7 +53,7 @@ public:
     void UseNewFonts(bool);
     NiPoint3 GetFontManager(char*, int, float, int);
     float GetFontPadding(int);
-    bool CreateTextRun(TextString, TextParams*, TextNode*);
+    bool FontManager_CreateText(TextString, TextParams*, TextNode*);
     NiPoint3 GetStringDimensions(const char*, int, float, int);
     void SetByteAtOffset20();
     void VATSEffect_SetBodyPartEnabled(PageTable*, int, unsigned char);

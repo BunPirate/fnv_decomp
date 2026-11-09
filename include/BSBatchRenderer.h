@@ -46,6 +46,7 @@ public:
     } m_kItemCount;
 };
 
+// pdb: class BSBatchRenderer, size 0x98, bases: NiObject, 13 members
 class BSBatchRenderer : public NiObject
 {
 public:

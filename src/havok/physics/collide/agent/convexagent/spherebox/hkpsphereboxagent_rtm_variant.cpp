@@ -40,7 +40,7 @@ typedef union __declspec(intrin_type) __declspec(align(16)) { float m128_f32[4];
 #include "../../../../../../../include/hkpCollisionAgent.h"
 #include "../../../../../../../include/hkpSymmetricAgentFlipCollector.h"
 
-extern void __cdecl hkpSphereBoxAgent_staticGetPenetrations(int a, int b, int c, int d);
+extern void __cdecl hkpSphereBoxAgent_staticGetPenetrations(int a, int b, int input, int d);
 void __stdcall ForwardToD3C440(int a, int b, int c, int d);
 struct Conversion {
     void (*convert)();
@@ -52,17 +52,17 @@ struct Conversion {
 };
 struct Registry { void AppendRecordAndRegisterAgents(Conversion*, int, int); };
 void hkpSphereBoxAgent_createBoxSphereAgent();
-void Object_UpdateFields_00d3cfc0();
-void FlipAndDispatchCollector();
+void hkpSymmetricAgentLinearCast_hkpSphereBoxAgent_staticGetPenetrations();
+void hkpSymmetricAgentLinearCast_hkpSphereBoxAgent_staticGetClosestPoints();
 void Object_UpdateFields_00d3ac80();
 void CreateD3C380Obj();
 void hkpSphereBoxAgent_staticGetPenetrations();
 void hkpSphereBoxAgent_staticGetClosestPoints();
 void Object_ProcessEntries_00daf8e0();
-void __cdecl hkpSphereBoxAgent_registerAgent(Registry* registry);
+void __cdecl hkpSphereBoxAgent_registerAgent(Registry* dispatcher);
 extern float DAT_0104da48;
 extern void __cdecl hkpSphereBoxAgent_staticGetClosestPoints(void*, void*, int, void*);
-void __cdecl FlipAndDispatchCollector(void* arg1, void* arg2, int arg3, int arg4);
+void __cdecl hkpSymmetricAgentLinearCast_hkpSphereBoxAgent_staticGetClosestPoints(void* bodyA, void* bodyB, int input, int collector);
 struct S_00d3c3c0_Holder {
     virtual void v00(); virtual void v04(); virtual void v08(); virtual void v0c(); virtual void v10();
     virtual void v14(unsigned int idx, int arg);
@@ -72,7 +72,7 @@ struct S_00d3c3c0_Obj {
     int unk04;
     S_00d3c3c0_Holder* unk08;
     unsigned short unk0c;
-    void hkpSphereBoxAgent_cleanup(int arg);
+    void hkpSphereBoxAgent_cleanup(int constraintOwner);
 };
 
 struct ObjAllocator {
@@ -88,7 +88,7 @@ struct SmallRecord {
 };
 extern char DAT_010cf018[];
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void __cdecl hkpSphereBoxAgent_createBoxSphereAgent(int aiUnused1, int aiUnused2, int aiUnused3, int d);
+void __cdecl hkpSphereBoxAgent_createBoxSphereAgent(int bodyA, int bodyB, int input, int mgr);
 class D3CF80CollectorBase {
 public:
     D3CF80CollectorBase() : m_bHit(false) {}
@@ -106,16 +106,16 @@ public:
 class D3CF80Agent {
 public:
     void ForwardToD3C440(void* pkA, void* pkB, void* pkInput, D3CF80Collector* pkCollector);
-    void CollectFilteredEvents(void* pkA, void* pkB, void* pkInput, int iFilter);
+    void CollectFilteredEvents(void* bodyA, void* bodyB, void* input, int collector);
 };
-extern void __cdecl hkpSphereBoxAgent_staticGetPenetrations(int a, int b, int c, int d);
+extern void __cdecl hkpSphereBoxAgent_staticGetPenetrations(int a, int b, int input, int d);
 extern char DAT_010ce81c[];
 struct FlipCollectorLocal {
     void* unk00;
     unsigned char unk04;
     int unk08;
 };
-void __cdecl Object_UpdateFields_00d3cfc0(int aiArg1, int aiArg2, int aiArg3, int a4);
+void __cdecl hkpSymmetricAgentLinearCast_hkpSphereBoxAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int collector);
 struct CpuCallData { void* descriptor; float bound; unsigned int value; };
 extern float DAT_0104da48;
 extern unsigned char DAT_010ce7fc;
@@ -167,11 +167,11 @@ struct Simplex
 };
 struct AgentBase
 {
-    void hkpSphereBoxAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpSphereBoxAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result);
 };
 struct Agent : AgentBase
 {
-    void hkpSymmetricAgentLinearCast_hkpSphereBoxAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpSymmetricAgentLinearCast_hkpSphereBoxAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result);
 };
 
 extern "C" {
@@ -336,9 +336,9 @@ __forceinline void hkVector4::_setRotatedDir(const hkRotation&r,const hkVector4&
 {
 _setMul3(reinterpret_cast<const hkMatrix3&>(r),v);
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4&a)const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4&x)const
 {
-hkQuadReal x2=_mm_mul_ps(m_vComponents,a.m_vComponents);
+hkQuadReal x2=_mm_mul_ps(m_vComponents,x.m_vComponents);
 hkQuadReal xySum=_mm_add_ss(_mm_shuffle_ps(x2,x2,(((1)<<6)|((1)<<4)|((1)<<2)|((1)))),x2);
 return _mm_add_ss(_mm_shuffle_ps(x2,x2,(((2)<<6)|((2)<<4)|((2)<<2)|((2)))),xySum);}
 __forceinline hkSimdReal lengthInverse3(const hkVector4& vector)
@@ -403,23 +403,23 @@ m_time0 = *(volatile hkUint32*)&ticks;
 typedef hkUint16 hkContactPointId;
 inline const hkVector4&hkContactPoint::getNormal()const
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 inline hkVector4&hkContactPoint::getPosition()
 {
-return m_vContactPosition;
+return m_position;
 }
 inline hkVector4&hkContactPoint::getSeparatingNormal()
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 inline void hkContactPoint::setDistance(hkReal d)
 {
-m_vSeparatingNormal(3)=d;
+m_separatingNormal(3)=d;
 }
 inline void hkContactPoint::setNormal(const hkVector4&normal)
 {
-m_vSeparatingNormal.setXYZ(normal);
+m_separatingNormal.setXYZ(normal);
 }
 class Vector4WithInt24W:public hkVector4
 {
@@ -432,11 +432,11 @@ typedef hkUint32 hkpShapeKey;
 const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 const hkpShape*hkpCdBody::getShape()const
 {
-return m_pCollisionShape;
+return m_shape;
 }
 struct GskAgentInput;
 class hkpContactMgr;
@@ -458,6 +458,7 @@ const hkpCdBody&m_pBodyB;};
 struct WorldOperationEntry;
 class hkpCdBodyPairCollector;
 
+// pdb: class hkpSphereBoxAgent, size 0x10, bases: hkpIterativeLinearCastAgent, 1 members
 class hkpSphereBoxAgent:public hkpIterativeLinearCastAgent
 {
 public:
@@ -476,7 +477,7 @@ hkpSphereBoxAgent(hkpContactMgr*mgr);
 public:
 static __forceinline hkBool ComputeClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkContactPoint&contactOut,hkReal& scalarScratch);
 protected:
-hkContactPointId m_usContactPointId;
+hkContactPointId m_contactPointId;
 };
 
 namespace hkVector4Util_S
@@ -683,9 +684,12 @@ __forceinline void S3c5_SphereBoxAgent::processContact(const hkpCdBody& bodyA, c
 
 // @fnv 0x00d3c5b0
 // src: HAVOK_SRC 0x00d3c5b0
-void AgentBase::hkpSphereBoxAgent_processCollision(int a, int b, int c, Simplex* s)
+// pdb: hkpSphereBoxAgent::processCollision | hkpSphereBoxAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: assertBuf, ostr
+void AgentBase::hkpSphereBoxAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result)
 {
-    ((S3c5_SphereBoxAgent*)this)->processContact(*(const hkpCdBody*)a, *(const hkpCdBody*)b, *(const S3c5_CollisionInput*)c, *(S3c5_ProcessCollisionOutput*)s);
+    ((S3c5_SphereBoxAgent*)this)->processContact(*(const hkpCdBody*)bodyA, *(const hkpCdBody*)bodyB, *(const S3c5_CollisionInput*)input, *(S3c5_ProcessCollisionOutput*)result);
 }
 
 extern "C" {
@@ -859,6 +863,9 @@ __forceinline bool S00d3c910_SphereBoxAgent::ComputeClosestPoints(const hkpCdBod
 
 // @fnv 0x00d3c910
 // src: HAVOK_SRC 0x00d3c910
+// pdb: hkpSphereBoxAgent::getClosestPoints | hkpSphereBoxAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
 void S00d3c910_SphereBoxAgent::hkpSphereBoxAgent_getClosestPoints(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
     const S00d3c910_CollisionInput& input, S00d3c910_CdPointCollector& collector)
 {
@@ -943,6 +950,9 @@ contactOut.getPosition()(3)=1.0f;
 return true;}
 // @fnv 0x00d3cc00
 // src: XBOX_PDB 0x00d3cc00
+// pdb: hkpSphereBoxAgent::staticGetClosestPoints | hkpSphereBoxAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
 void __cdecl hkpSphereBoxAgent_staticGetClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,class hkpCdPointCollector&collector)
 {
 hkUint32 ticks;

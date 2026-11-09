@@ -41,13 +41,13 @@ inline void SetMemContextC8C(unsigned int m_uiGeometryShaderFlags)
 
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(GetMemContextC8C());
+    iOldMemContext = static_cast<MEM_CONTEXT>(GetMemContextC8C());
     SetMemContextC8C(context);
 }
 
 inline AutoMemContext::~AutoMemContext()
 {
-    SetMemContextC8C(m_eMemoryContext);
+    SetMemContextC8C(iOldMemContext);
 }
 
 // These value constructors leave their storage uninitialized in this unit.
@@ -95,12 +95,15 @@ class SceneObjectC8C
     int unk00, unk04;
     BodyC8C* m_pkBody;
 
-    void bhkTransformShape_BuildDisplayGeometry(NiNode* pkParent, ArgC8C* iValue);
+    void bhkTransformShape_BuildDisplayGeometry(NiNode* apNode, ArgC8C* arDefColor);
 };
 
 // @fnv 0x00c8c860
 // src: XBOX_PDB 0x00c8c860
-void SceneObjectC8C::bhkTransformShape_BuildDisplayGeometry(NiNode* pkParent, ArgC8C* iValue)
+// pdb: bhkTransformShape::BuildDisplayGeometry | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: apNode, arDefColor
+// pdb locals: trn, tempMemContext, nit, pnode, ps
+void SceneObjectC8C::bhkTransformShape_BuildDisplayGeometry(NiNode* apNode, ArgC8C* arDefColor)
 {
     AutoMemContext kContext(0x10);
 
@@ -113,7 +116,7 @@ void SceneObjectC8C::bhkTransformShape_BuildDisplayGeometry(NiNode* pkParent, Ar
 
     NiNode* __restrict pkNode = new NiNode(0);
     pkNode->SetName(NiFixedString("bhkTransformShape"));
-    pkParent->AttachChildInAvailableSlot(static_cast<NiAVObject*>(pkNode), true);
+    apNode->AttachChildInAvailableSlot(static_cast<NiAVObject*>(pkNode), true);
     pkNode->m_kLocal.m_Translate = kLocal.m_Translate;
     pkNode->m_kLocal.m_Rotate = kLocal.m_Rotate;
 
@@ -131,7 +134,7 @@ void SceneObjectC8C::bhkTransformShape_BuildDisplayGeometry(NiNode* pkParent, Ar
                     // This callback uses two arguments at slot 0xD4; the shared
                     // NiNode declaration does not expose that signature.
                     typedef void (__thiscall* AttachCallback)(NiNode*, NiNode*, ArgC8C*);
-                    reinterpret_cast<AttachCallback>((*reinterpret_cast<void***>(pkOwner))[0xD4 / sizeof(void*)])(pkOwner, pkNode, iValue);
+                    reinterpret_cast<AttachCallback>((*reinterpret_cast<void***>(pkOwner))[0xD4 / sizeof(void*)])(pkOwner, pkNode, arDefColor);
                 }
             }
         }

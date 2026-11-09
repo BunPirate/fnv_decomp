@@ -14,7 +14,7 @@ inline void DestroyPropertyState(NiPropertyState* p)
 {
     if (p)
     {
-        p->ReleaseAllRefs();
+        p->NiPropertyState_dtor();
         g_memoryManager.Deallocate(p);
     }
 }

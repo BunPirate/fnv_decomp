@@ -29,22 +29,25 @@
 #include "../../include/hkpShape.h"
 #include "../../include/hkpCdBody.h"
 
-inline const NiRTTI* NiRTTI::GetBaseRTTI() const { return m_pBaseRTTI; }
+inline const NiRTTI* NiRTTI::GetBaseRTTI() const { return m_pkBaseRTTI; }
 
-inline const hkpShape* hkpCdBody::getShape() const { return m_pCollisionShape; }
+inline const hkpShape* hkpCdBody::getShape() const { return m_shape; }
 
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 // Calls FUN_00c859e0, reads a count from the stream, then reads that many NiObjects and passes each non-null one to FUN_00c8ef80.
 // @fnv 0x00c8f3c0
 // src: XBOX_PDB 0x00c8f3c0
-void bhkRigidBody::LinkObject_00c8f3c0(NiStream* stream)
+// pdb: bhkRigidBody::LinkObject | bhkRigidBody.obj | retail, vtable slot, high
+// pdb params: arStream
+// pdb locals: ilinks, I, pac
+void bhkRigidBody::LinkObject_00c8f3c0(NiStream* arStream)
 {
-    bhkWorldObject_LinkObject(stream);
-    unsigned int count = stream->GetLinkID();
+    bhkWorldObject_LinkObject(arStream);
+    unsigned int count = arStream->GetLinkID();
     for (unsigned int i = 0; i < count; ++i)
     {
-        NiObject* obj = stream->GetLoadedObject();
+        NiObject* obj = arStream->GetLoadedObject();
         if (obj)
             bhkRigidBody_AddActCon(obj);
     }
@@ -54,42 +57,45 @@ char* __cdecl NiGetViewerString_00a7d5e0(const char*, const char*);
 
 // Appends the MOTION type name string matching type (DYNAMIC, SPHERE, BOX, KEYFRAMED, FIXED, THIN BOX, else INVALID) to arr.
 // @fnv 0x00c8ee20
-void __cdecl AddMotionTypeName(StrArr* arr, int type)
+// src: XBOX_RETAIL_PDB 0x00c8ee20
+// pdb: bhkRigidBody::AddMotionType | bhkRigidBody.obj | retail, unique string literal, high
+// pdb params: apStrings, aeType
+void __cdecl bhkRigidBody_AddMotionType(StrArr* apStrings, int aeType)
 {
     char* s;
-    switch (type)
+    switch (aeType)
     {
     case 1:
         s = NiGetViewerString_00a7d5e0("MOTION", "DYNAMIC");
-        ((NiTPrimitiveArray<unsigned int>*)arr)->AddFirstEmpty((unsigned int&)s);
+        ((NiTPrimitiveArray<unsigned int>*)apStrings)->AddFirstEmpty((unsigned int&)s);
         break;
     case 2:
         s = NiGetViewerString_00a7d5e0("MOTION", "SPHERE");
-        ((NiTPrimitiveArray<unsigned int>*)arr)->AddFirstEmpty((unsigned int&)s);
+        ((NiTPrimitiveArray<unsigned int>*)apStrings)->AddFirstEmpty((unsigned int&)s);
         break;
     case 3:
         s = NiGetViewerString_00a7d5e0("MOTION", "BOX");
-        ((NiTPrimitiveArray<unsigned int>*)arr)->AddFirstEmpty((unsigned int&)s);
+        ((NiTPrimitiveArray<unsigned int>*)apStrings)->AddFirstEmpty((unsigned int&)s);
         break;
     case 4:
         s = NiGetViewerString_00a7d5e0("MOTION", "KEYFRAMED");
-        ((NiTPrimitiveArray<unsigned int>*)arr)->AddFirstEmpty((unsigned int&)s);
+        ((NiTPrimitiveArray<unsigned int>*)apStrings)->AddFirstEmpty((unsigned int&)s);
         break;
     case 5:
         s = NiGetViewerString_00a7d5e0("MOTION", "FIXED");
-        ((NiTPrimitiveArray<unsigned int>*)arr)->AddFirstEmpty((unsigned int&)s);
+        ((NiTPrimitiveArray<unsigned int>*)apStrings)->AddFirstEmpty((unsigned int&)s);
         break;
     case 6:
         s = NiGetViewerString_00a7d5e0("MOTION", "THIN BOX");
-        ((NiTPrimitiveArray<unsigned int>*)arr)->AddFirstEmpty((unsigned int&)s);
+        ((NiTPrimitiveArray<unsigned int>*)apStrings)->AddFirstEmpty((unsigned int&)s);
         break;
     default:
         s = NiGetViewerString_00a7d5e0("MOTION", "INVALID");
         {
-            unsigned int i = arr->m_usSize;
-            if (i >= arr->m_usMaxSize)
-                arr->SetSize(i + arr->m_usGrowBy);
-            arr->SetAt(i, s);
+            unsigned int i = apStrings->m_usSize;
+            if (i >= apStrings->m_usMaxSize)
+                apStrings->SetSize(i + apStrings->m_usGrowBy);
+            apStrings->SetAt(i, s);
         }
         break;
     }
@@ -97,10 +103,12 @@ void __cdecl AddMotionTypeName(StrArr* arr, int type)
 
 // @fnv 0x00c8eb00
 // src: XBOX_PDB 0x00c8eb00
+// pdb: bhkRigidBody::Remove | bhkRigidBody.obj | retail, vtable slot, high
+// pdb locals: bres
 void __thiscall bhkRigidBody::Remove_00c8eb00()
 {
     iFlags &= 0xffffff77;
-    ProcessListNodes();
+    RemoveActionConstraintsFromWorld();
     bhkEntity_Remove();
 }
 
@@ -174,6 +182,8 @@ struct RigidLinkSource
 
 // Returns unk08 of the record from GetLinkedRecord when unk08 and its unk08 are set, otherwise 0.
 // @fnv 0x00c89a00
+// pdb: bhkConstraint::GethkWorld | bhkConstraint.obj | retail, vtable slot, high
+// pdb locals: pw, pc, pe
 unsigned int RigidLinkSource::GetLinkedRecordValue()
 {
     unsigned int result = 0;
@@ -212,13 +222,16 @@ extern S_00c8d440_Target* DAT_01268360;
 
 // @fnv 0x00c8d440
 // src: XBOX_PDB 0x00c8d440
-void __stdcall bhkRigidBody_SetHavokAssertState(bool flag)
+// pdb: bhkRigidBody::SetHavokAssertState | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: abEnabled
+// pdb locals: phavokError
+void __stdcall bhkRigidBody_SetHavokAssertState(bool abEnabled)
 {
     S_00c8d440_Target* t = DAT_01268360;
-    t->v4(0xf043d534, S_00c8d440_Arg(flag));
-    t->v4(0xf02e32e1, S_00c8d440_Arg(flag));
-    t->v4(0xf02e32e2, S_00c8d440_Arg(flag));
-    t->v4(0xf02132df, S_00c8d440_Arg(flag));
+    t->v4(0xf043d534, S_00c8d440_Arg(abEnabled));
+    t->v4(0xf02e32e1, S_00c8d440_Arg(abEnabled));
+    t->v4(0xf02e32e2, S_00c8d440_Arg(abEnabled));
+    t->v4(0xf02132df, S_00c8d440_Arg(abEnabled));
 }
 
 struct NativeData
@@ -391,7 +404,10 @@ struct BodyUpdate
     bool UpdateBody(void*);
 };
 // @fnv 0x00c8db50
-bool BodyUpdate::UpdateBody(void* update)
+// pdb: bhkRigidBody::Add | bhkRigidBody.obj | retail, vtable slot, high
+// pdb params: apWorld
+// pdb locals: pblendCol, pcol, bblendKeyframed, bres
+bool BodyUpdate::UpdateBody(void* apWorld)
 {
     NativeLink link;
     NativeThing* object = bhkWorldObject_GetProperty(&link, this ? native : 0, &DAT_01267b70)->object;
@@ -399,14 +415,14 @@ bool BodyUpdate::UpdateBody(void* update)
     bool bUnitScale = data && data->factor18 == 1.0f && data->factor1c == 1.0f;
     if ((!bUnitScale || data->count > 0 || DAT_011afe59) && !IsDisabled())
     {
-        bool result = bhkWorldObject_Add(update);
+        bool result = bhkWorldObject_Add(apWorld);
         if (result || (InWorld() && IsMoving()))
         {
             if ((!bUnitScale || data->count > 0) && !IsDisabled())
-                UpdateMatchingNodes(update);
+                UpdateMatchingNodes(apWorld);
         }
         if (data)
-            data->lastUpdate = update;
+            data->lastUpdate = apWorld;
         return result;
     }
     else
@@ -414,7 +430,7 @@ bool BodyUpdate::UpdateBody(void* update)
         if (bhkWorldObject_GethkWorld())
             Reset();
         if (data)
-            data->lastUpdate = update;
+            data->lastUpdate = apWorld;
         return true;
     }
 }
@@ -453,18 +469,21 @@ struct S_c8dcb0_Base
     int unk00;
     int unk04;
     int unk08;
-    bool bhkWorldObject_Add(int a);
-    void UpdateMatchingNodes(int a);
-    bool bhkRigidBody_ForceAdd(int a);
+    bool bhkWorldObject_Add(int apWorld);
+    void UpdateMatchingNodes(int apWorld);
+    bool bhkRigidBody_ForceAdd(int apWorld);
 };
 // Calls FUN_00c85810(a); if true calls UpdateMatchingNodes(a), then looks up an object by unk08 and sets its unk24 to a via v15().
 // @fnv 0x00c8dcb0
 // src: XBOX_PDB 0x00c8dcb0
-bool S_c8dcb0_Base::bhkRigidBody_ForceAdd(int aiValue)
+// pdb: bhkRigidBody::ForceAdd | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: apWorld
+// pdb locals: bres, pblendCol, pcol
+bool S_c8dcb0_Base::bhkRigidBody_ForceAdd(int apWorld)
 {
-    bool r = bhkWorldObject_Add(aiValue);
+    bool r = bhkWorldObject_Add(apWorld);
     if (r)
-        UpdateMatchingNodes(aiValue);
+        UpdateMatchingNodes(apWorld);
     int key = this ? unk08 : 0;
     S_c8dcb0_Res res;
     S_c8dcb0_Obj* o = bhkWorldObject_GetProperty(&res, key, &DAT_01267b70)->p;
@@ -472,17 +491,17 @@ bool S_c8dcb0_Base::bhkRigidBody_ForceAdd(int aiValue)
     {
         S_c8dcb0_Obj* t = o->v15();
         if (t)
-            t->unk24 = aiValue;
+            t->unk24 = apWorld;
     }
     return r;
 }
 }  // namespace fnv_00c8dcb0
 
 // src: XBOX_PDB 0x00c8cce0
-bool __cdecl bhkRigidBody_IsMotionTypeDynamic(int* type)
+bool __cdecl bhkRigidBody_IsMotionTypeDynamic(int* areMotion)
 {
     bool result = false;
-    if (*type > 0 && (*type <= 3 || *type == 6))
+    if (*areMotion > 0 && (*areMotion <= 3 || *areMotion == 6))
         result = true;
     return result;
 }
@@ -574,7 +593,7 @@ struct C8Owner
     void Toggle();
     void Apply(C8Flags);
     float GetValue();
-    bool SetState(int state);
+    bool SetState(int aeMotion);
 };
 
 static inline bool IsSpecial(unsigned int t)
@@ -583,7 +602,10 @@ static inline bool IsSpecial(unsigned int t)
 }
 
 // @fnv 0x00c8dd10
-bool C8Owner::SetState(int state)
+// pdb: bhkRigidBody::SetMotionType | bhkRigidBody.obj | retail, vtable slot, high
+// pdb params: aeMotion
+// pdb locals: bret, pb, eoldType, ifilter, bswitchMotion
+bool C8Owner::SetState(int aeMotion)
 {
     bool result = false;
     C8Obj* o = obj;
@@ -596,13 +618,13 @@ bool C8Owner::SetState(int state)
         if (IsSpecial(flags.type))
         {
             C8Flags newFlags = flags;
-            bool hit = bhkRigidBody_IsMotionTypeDynamic(&state);
+            bool hit = bhkRigidBody_IsMotionTypeDynamic(&aeMotion);
             newFlags.type = hit ? 0x1d : 8;
-            if (state != iCurrent)
+            if (aeMotion != iCurrent)
             {
                 Toggle();
                 o->base.flags = newFlags;
-                o->Setup(state, true, 0);
+                o->Setup(aeMotion, true, 0);
                 Toggle();
             }
             else
@@ -611,21 +633,21 @@ bool C8Owner::SetState(int state)
             }
             result = true;
         }
-        else if (iCurrent != state)
+        else if (iCurrent != aeMotion)
         {
             bool skip = false;
             switch (iCurrent)
             {
             case 4:
             case 5:
-                if (bhkRigidBody_IsMotionTypeDynamic(&state) && GetValue() == 0.0f)
+                if (bhkRigidBody_IsMotionTypeDynamic(&aeMotion) && GetValue() == 0.0f)
                     skip = true;
                 break;
             }
             if (!skip)
             {
                 Toggle();
-                o->Setup(state, true, 0);
+                o->Setup(aeMotion, true, 0);
                 Toggle();
                 result = true;
             }
@@ -695,9 +717,12 @@ extern char DAT_01268158;
 
 // Walks the m_14 list; for each node with an ObjBase, checks its v08 list for DAT_0126818c/DAT_01268158 and calls Helper1/Helper2, invoking vA0 if nonzero.
 // @fnv 0x00c8e770
-void bhkRigidBody::ProcessListNodes()
+// src: XBOX_RETAIL_PDB 0x00c8e770
+// pdb: bhkRigidBody::RemoveActionConstraintsFromWorld | bhkRigidBody.obj | retail, call graph, high
+// pdb locals: plist, pitem, pcon, pact
+void bhkRigidBody::RemoveActionConstraintsFromWorld()
 {
-    BhkrigidbodyListNodeView* n = reinterpret_cast<BhkrigidbodyListNodeView*>(&m_kSerializableList);
+    BhkrigidbodyListNodeView* n = reinterpret_cast<BhkrigidbodyListNodeView*>(&ActionConstraint);
     while (n)
     {
         if (n->m_04 == 0 && n->m_00 == 0)
@@ -787,7 +812,7 @@ class C8EC60Object
 
     bool IsKindOfType(const NiRTTI& kRTTI) const
     {
-        for (const NiRTTI* pkRTTI = GetRTTI(); pkRTTI; pkRTTI = pkRTTI->m_pBaseRTTI)
+        for (const NiRTTI* pkRTTI = GetRTTI(); pkRTTI; pkRTTI = pkRTTI->m_pkBaseRTTI)
         {
             if (pkRTTI == &kRTTI)
                 return true;
@@ -840,6 +865,8 @@ class C8EC60World
 // Iterates the world's objects and calls ResetWorldObject on constraints and ref objects that hold a non-null constraint or referenced data.
 // @fnv 0x00c8ec60
 // src: COMMUNITY 0x00c8ec60
+// pdb: bhkRigidBody::RemoveActionConstraints | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb locals: pitem, pcon, pact
 void C8EC60World::bhkRigidBody_RemoveActionConstraints()
 {
     C8EC60Iterator* pkIter = GetIterator();
@@ -926,6 +953,7 @@ struct SpawnedObject : public ChainB_cls
 // Allocates and constructs a new SpawnedObject, incrementing the three global counters in its constructors, and returns it.
 // @fnv 0x00c8ed70
 // src: EXE 0x00c8ed70
+// pdb: bhkRigidBody::CreateObject | bhkRigidBody.obj | retail, upstream name already matches, high
 SpawnedObject* __cdecl bhkRigidBody_CreateObject()
 {
     return new SpawnedObject();
@@ -934,7 +962,7 @@ SpawnedObject* __cdecl bhkRigidBody_CreateObject()
 struct HavokShape
 {
     void bhkRigidBody_Fix();
-    void bhkRigidBody_UnFix(void* context);
+    void bhkRigidBody_UnFix(void* abAddRemainingConstraints);
 };
 struct HavokLookup
 {
@@ -968,28 +996,31 @@ struct HavokObject
 
 extern char DAT_012043f8;
 // @fnv 0x00c8f210
-void __cdecl ApplyHavokOperation(HavokObject* object, int operation, void* context)
+// pdb: bhkRigidBody::SetFixed | bhkRigidBody.obj | retail, object-file gap fill, high
+// pdb params: apObject, abFix, abAddRemainingConstraints
+// pdb locals: pco, pnode, prb, I
+void __cdecl ApplyHavokOperation(HavokObject* apObject, int abFix, void* abAddRemainingConstraints)
 {
-    if (object != 0)
+    if (apObject != 0)
     {
-        object->FUN_00a68bf0();
-        HavokProperty* property = object->property;
+        apObject->FUN_00a68bf0();
+        HavokProperty* property = apObject->property;
         if (property != 0)
         {
             HavokLookup* lookup = property->FUN_00653290(&DAT_012043f8);
             if (lookup != 0 && lookup->shape != 0)
             {
-                if ((char)operation)
+                if ((char)abFix)
                     lookup->shape->bhkRigidBody_Fix();
                 else
-                    lookup->shape->bhkRigidBody_UnFix(context);
+                    lookup->shape->bhkRigidBody_UnFix(abAddRemainingConstraints);
             }
         }
-        NiNode* node = object->GetCellChildAt();
+        NiNode* node = apObject->GetCellChildAt();
         if (node)
         {
             for (unsigned int index = 0; index < node->m_kChildren.m_usSize; ++index)
-                ApplyHavokOperation(((HavokObject**)node->m_kChildren.m_pBase)[index], operation, context);
+                ApplyHavokOperation(((HavokObject**)node->m_kChildren.m_pBase)[index], abFix, abAddRemainingConstraints);
         }
     }
 }
@@ -1206,16 +1237,16 @@ struct ScaledBody
     int unkCC;
     int unkD0;
     char unkD4;
-    void Scale(float s);
+    void Scale(float afScale);
 };
 
-__declspec(noinline) void ScaledBody::Scale(float s)
+__declspec(noinline) void ScaledBody::Scale(float afScale)
 {
-    float s2 = s * s;
-    this->vA0[0] *= s;
-    this->vA0[1] *= s;
-    this->vA0[2] *= s;
-    this->vA0[3] *= s;
+    float s2 = afScale * afScale;
+    this->vA0[0] *= afScale;
+    this->vA0[1] *= afScale;
+    this->vA0[2] *= afScale;
+    this->vA0[3] *= afScale;
     float* p = m70;
     for (int i = 0; i < 3; i++)
     {
@@ -1224,7 +1255,7 @@ __declspec(noinline) void ScaledBody::Scale(float s)
         p[8] *= s2;
         p++;
     }
-    this->fB0 *= s;
+    this->fB0 *= afScale;
 }
 
 struct RigidBodyS
@@ -1285,7 +1316,7 @@ struct RigidBodyS
     unsigned int unk10;
     CloneNode list;
 
-    void BaseCopyMembers(RigidBodyS* dest, CloningProcess* c);
+    void BaseCopyMembers(RigidBodyS* apDest, CloningProcess* arCloneData);
     void LockStub();
     unsigned int GetFlagsW()
     {
@@ -1312,31 +1343,35 @@ struct RigidBodyS
         return (unk10 >> 9) & 1;
     }
     void AddClonedStub(NiObject*);
-    void CopyBodyToClone(RigidBodyS* dest, CloningProcess* c);
+    void bhkRigidBody_CopyMembers(RigidBodyS* apDest, CloningProcess* arCloneData);
 };
 
 // Copies body members into dest, scales the body stub when c->scale != 1, sets unk28 from unk08->unk210, and clones list nodes into dest.
 // @fnv 0x00c8f2a0
-void RigidBodyS::CopyBodyToClone(RigidBodyS* dest, CloningProcess* c)
+// src: XBOX_RETAIL_PDB 0x00c8f2a0
+// pdb: bhkRigidBody::CopyMembers | bhkRigidBody.obj | retail, object-file gap fill, high
+// pdb params: apDest, arCloneData
+// pdb locals: plist, fscale, prb, cinfo, filter, pac
+void RigidBodyS::bhkRigidBody_CopyMembers(RigidBodyS* apDest, CloningProcess* arCloneData)
 {
     bool b;
     ScaledBody* body = GetBodyStub(&b);
     if (Flag9())
         body->unkD4 = 1;
-    float s = c->scale;
+    float s = arCloneData->scale;
     if (s != 1.0f)
         body->Scale(s);
     body->unk28 = unk08->unk210;
-    BaseCopyMembers(dest, c);
-    dest->unk10 = (dest->unk10 | unk10) & 0xfffffc07;
+    BaseCopyMembers(apDest, arCloneData);
+    apDest->unk10 = (apDest->unk10 | unk10) & 0xfffffc07;
     CloneNode* n = &list;
-    if (WFlag13(unk08) || c->scale != 1.0f)
+    if (WFlag13(unk08) || arCloneData->scale != 1.0f)
     {
-        dest->SetFlagsW(dest->GetFlagsWith(0x2000));
-        dest->UpdateStub();
+        apDest->SetFlagsW(apDest->GetFlagsWith(0x2000));
+        apDest->UpdateStub();
     }
     for (; n && n->data; n = n->next)
-        reinterpret_cast<bhkRigidBody*>(dest)->bhkRigidBody_AddActCon(n->data->MakeClone(*c));
+        reinterpret_cast<bhkRigidBody*>(apDest)->bhkRigidBody_AddActCon(n->data->MakeClone(*arCloneData));
 }
 
 extern __declspec(thread) unsigned int hkThreadMemoryFlags;
@@ -1452,13 +1487,16 @@ struct bhkRigidBodyInline : bhkSerializableLvl
 // The shared class has no clone entry point; explicit ECX and an unused EDX preserve its thiscall ABI.
 // Creates a rigid-body clone using the inline constructor chain, while locking and unlocking the world.
 // @fnv 0x00c8f400
+// pdb: bhkRigidBody::CreateClone | bhkRigidBody.obj | retail, vtable slot, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
 bhkRigidBody* __fastcall CloneRigidBody(bhkRigidBody* source, void*, CloningProcess* process)
 {
     ThreadFlagsGuard guard;
     LockWorldStub();
     source->vf63(false);
     bhkRigidBodyInline* action = new bhkRigidBodyInline;
-    ((RigidBodyS*)source)->CopyBodyToClone((RigidBodyS*)action, process);
+    ((RigidBodyS*)source)->bhkRigidBody_CopyMembers((RigidBodyS*)action, process);
     source->vf63(true);
     UnlockWorldStub();
     return (bhkRigidBody*)action;
@@ -1505,6 +1543,8 @@ struct Shell_c8da40 : public FUN_00c9d4c0_holder
 // Switches to memory context 0x10, calls FUN_004ee920 on uTmpnk, then calls FUN_00c9d4c0.
 // @fnv 0x00c8da40
 // src: XBOX_PDB 0x00c8da40
+// pdb: bhkRigidBody::Kill | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void Shell_c8da40::bhkRigidBody_Kill()
 {
     ScopedMemoryContext kContext(0x10);
@@ -1562,7 +1602,7 @@ inline bool C8DAC0IsKindOf(const NiRTTI& kRTTI, const C8DAC0Object* pkObject)
 {
     if (!pkObject)
         return false;
-    for (const NiRTTI* pkRTTI = pkObject->GetRTTI(); pkRTTI; pkRTTI = pkRTTI->m_pBaseRTTI)
+    for (const NiRTTI* pkRTTI = pkObject->GetRTTI(); pkRTTI; pkRTTI = pkRTTI->m_pkBaseRTTI)
     {
         if (pkRTTI == &kRTTI)
             return true;
@@ -1590,10 +1630,13 @@ class C8DAC0Owner
         return (m_uiValue1 & uiMask) >> uiPos;
     }
 
-    void UpdateMatchingNodes(void* pvContext);
+    void UpdateMatchingNodes(void* apWorld);
 };
 // @fnv 0x00c8dac0
-void C8DAC0Owner::UpdateMatchingNodes(void* pvContext)
+// pdb: bhkRigidBody::AddActConToWorld | bhkRigidBody.obj | retail, call graph, high
+// pdb params: apWorld
+// pdb locals: plist, bfixed, bconstraint, bfixedConstraint
+void C8DAC0Owner::UpdateMatchingNodes(void* apWorld)
 {
     bool bFilterByKind = (bool)(GetField(4, 2) & 1);
     for (C8DAC0Node* pkNode = &m_kHead; pkNode; pkNode = pkNode->m_pkNext)
@@ -1604,7 +1647,7 @@ void C8DAC0Owner::UpdateMatchingNodes(void* pvContext)
                       C8DAC0IsKindOf(reinterpret_cast<const NiRTTI&>(DAT_0126818c), pkNode->m_pPointer) &&
                       C8DAC0IsKindOf(reinterpret_cast<const NiRTTI&>(DAT_01268628), pkNode->m_pPointer);
         if (!bFilterByKind || bMatch)
-            pkNode->m_pPointer->Update(pvContext);
+            pkNode->m_pPointer->Update(apWorld);
     }
 }
 
@@ -1626,6 +1669,7 @@ struct FUN_00c8e9c0 : LiquidBase
 };
 // Destructor that calls FUN_00c8da40 and decrements g_iLiquidActionCount.
 // @fnv 0x00c8e9c0
+// pdb: bhkRigidBody::~bhkRigidBody | bhkRigidBody.obj | retail, object-file gap fill, high
 FUN_00c8e9c0::~FUN_00c8e9c0()
 {
     bhkRigidBody_Kill();
@@ -1712,16 +1756,19 @@ class SerializableObjectListOwner
     int unk10;
     NiTPointerList<NiPointer<NiObject> > m_kThirdFollowingStreamField;
 
-    void bhkRigidBody_AddActCon(NiObject* pkObject);
+    void bhkRigidBody_AddActCon(NiObject* apActCon);
 };
 // Adds pkObject to the object list if it is a geometry or node, using an allocation tag scope of 0x10.
 // @fnv 0x00c8ef80
 // src: XBOX_PDB 0x00c8ef80
-void SerializableObjectListOwner::bhkRigidBody_AddActCon(NiObject* pkObject)
+// pdb: bhkRigidBody::AddActCon | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: apActCon
+// pdb locals: tempMemContext
+void SerializableObjectListOwner::bhkRigidBody_AddActCon(NiObject* apActCon)
 {
     AllocTagScopeC8E kScope(0x10);
-    if (pkObject && (pkObject->IsKindOfType(&g_kGeometryRTTIC8E) || pkObject->IsKindOfType(&g_kNodeRTTIC8E)))
-        m_kThirdFollowingStreamField.AddTail(pkObject);
+    if (apActCon && (apActCon->IsKindOfType(&g_kGeometryRTTIC8E) || apActCon->IsKindOfType(&g_kNodeRTTIC8E)))
+        m_kThirdFollowingStreamField.AddTail(apActCon);
 }
 
 struct LinkNode
@@ -1746,6 +1793,8 @@ class FUN_00c88990_cls
 };
 
 // @fnv 0x00c88990
+// pdb: BSSimpleList<NiPointer<NiAVObject> >::RemoveHead | BSClonePool.obj | retail, call graph, high
+// pdb locals: pkNext
 void FUN_00c88990_cls::PopAndRelease()
 {
     LinkNode* node = m_pNext;
@@ -1784,19 +1833,22 @@ void FUN_00c88990_cls::PopAndRelease()
 // Recursively visits child nodes, calling FUN_00c8ec60 on the linked shape found via FUN_00653290 on each object's property when present.
 // @fnv 0x00c8ecf0
 // src: COMMUNITY 0x00c8ecf0
-void __cdecl bhkRigidBody_RemoveAllActionConstraints(HavokObject* object)
+// pdb: bhkRigidBody::RemoveAllActionConstraints | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pco, pnode, prb, I
+void __cdecl bhkRigidBody_RemoveAllActionConstraints(HavokObject* apObject)
 {
-    if (!object)
+    if (!apObject)
         return;
 
-    if (object->property)
+    if (apObject->property)
     {
-        HavokLookup* link = object->property->FUN_00653290(&DAT_012043f8);
+        HavokLookup* link = apObject->property->FUN_00653290(&DAT_012043f8);
         if (link && link->shape)
             reinterpret_cast<C8EC60World*>(link->shape)->bhkRigidBody_RemoveActionConstraints();
     }
 
-    NiNode* node = object->GetCellChildAt();
+    NiNode* node = apObject->GetCellChildAt();
     if (node)
     {
         for (unsigned int i = 0; i < node->m_kChildren.m_usSize; ++i)
@@ -1823,6 +1875,9 @@ struct Ent
 // Returns the physics body's m_kPos, or the global DAT_01267e30 vector when this or the body pointer is null.
 // @fnv 0x00c8d200
 // src: XBOX_PDB 0x00c8d200
+// pdb: bhkRigidBody::GetCenterOfMassLocal | bhkRigidBody.obj | debug, vtable slot, medium
+// pdb params: arCOM
+// pdb locals: pb
 hkVector4 Ent::GetCenterOfMassLocal_00c8d200()
 {
     const hkVector4* p;
@@ -1854,6 +1909,9 @@ struct Outer
 
 // Returns m_pChildAtom->m_vec when m_pChildAtom is non-null, otherwise returns g_zero.
 // @fnv 0x00c8d240
+// pdb: bhkRigidBody::GetCenterOfMassInWorld | bhkRigidBody.obj | debug, vtable slot, medium
+// pdb params: arCOM
+// pdb locals: pb
 hkVector4 Outer::GetVec() const
 {
     const hkVector4* p = (this && m_pChildAtom) ? &m_pChildAtom->m_vec : &g_zero;
@@ -1879,12 +1937,16 @@ class WorldObject_c8d3
     Entity_c8d3* m_pkEntity;
 
     void Object_DoNothing();
-    void GetAabb(hkAabb& kOut);
+    void bhkRigidBody_GetAabbLocal(hkAabb& arOut);
 };
 
 // Fills kOut from the entity shape's getAabb (global transform DAT_01268370, tolerance 0.001), or a +-0.001 box around zero when there is no shape.
 // @fnv 0x00c8d390
-void WorldObject_c8d3::GetAabb(hkAabb& kOut)
+// src: XBOX_RETAIL_PDB 0x00c8d390
+// pdb: bhkRigidBody::GetAabbLocal | bhkRigidBody.obj | retail, object-file gap fill, high
+// pdb params: arOut
+// pdb locals: ps
+void WorldObject_c8d3::bhkRigidBody_GetAabbLocal(hkAabb& arOut)
 {
     hkpCdBody* pkBody = 0;
     if (this)
@@ -1900,12 +1962,12 @@ void WorldObject_c8d3::GetAabb(hkAabb& kOut)
     const hkpShape* pkShape = pkBody ? pkBody->getShape() : 0;
     if (pkShape)
     {
-        pkShape->CalculateAabb(DAT_01268370, 0.001f, kOut);
+        pkShape->CalculateAabb(DAT_01268370, 0.001f, arOut);
     }
     else
     {
-        kOut.m_kMinimumCorner.m_vComponents = _mm_setr_ps(-0.001f, -0.001f, -0.001f, 0.0f);
-        kOut.m_kMaximumCorner.m_vComponents = _mm_setr_ps(0.001f, 0.001f, 0.001f, 0.0f);
+        arOut.m_kMinimumCorner.m_vComponents = _mm_setr_ps(-0.001f, -0.001f, -0.001f, 0.0f);
+        arOut.m_kMaximumCorner.m_vComponents = _mm_setr_ps(0.001f, 0.001f, 0.001f, 0.0f);
     }
 }
 
@@ -1992,6 +2054,9 @@ struct BhkRigidBody
 
 // Copies collision and motion fields from src, remapping motion, deactivation, and quality values into BhkRigidBody fields.
 // @fnv 0x00c8d510
+// pdb: bhkRigidBodyCinfo::operator= | bhkRigidBody.obj | retail, object-file run extension, low
+// pdb params: arInfo
+// pdb locals: quality_type
 BhkRigidBody& BhkRigidBody::FromOldCinfo(const OldCinfo& src)
 {
     m_fGravityFactor = 1.0f;
@@ -2245,7 +2310,7 @@ struct FUN_00ca8c90
     unsigned int unk218;
     unsigned int unk21C;
     FUN_00ca8c90(void* settings);
-    void hkpRigidBody_setMotionType(int motion, int activate, int extra);
+    void hkpRigidBody_setMotionType(int newState, int preferredActivationState, int collisionFilterUpdateMode);
     void FUN_00c905b0();
     static void* operator new(unsigned int size)
     {
@@ -2322,7 +2387,7 @@ struct BodyBuild
     unsigned int unk04;
     BodyNative* native;
     void Object_DoNothing();
-    void GetAabb(hkAabb* bounds);
+    void bhkRigidBody_GetAabbLocal(hkAabb* arOut);
     float bhkRigidBody_GethkMaxLinearVelocity();
     BodyMotion* GetMotion()
     {
@@ -2334,61 +2399,64 @@ struct BodyBuild
         Object_DoNothing();
         return result;
     }
-    void ConfigureBody(BuildSettings* settings);
+    void ConfigureBody(BuildSettings* arInfo);
 };
 // Clamps BuildSettings fields, allocates a body via operator new, sets motion and solver, adjusts quality from bounds, then calls FinishBuild.
 // @fnv 0x00c8d650
-void BodyBuild::ConfigureBody(BuildSettings* settings)
+// pdb: bhkRigidBody::Init | bhkRigidBody.obj | retail, vtable slot, high
+// pdb params: arInfo
+// pdb locals: po, tempMemContext, etype, cinfo, tempCinfo, pcoll, localAabb, iminor, dimensions
+void BodyBuild::ConfigureBody(BuildSettings* arInfo)
 {
     ThreadFlagsGuard guard;
     int savedMotion = 8;
-    if (settings->fD0 <= 1.1920928955078125e-7f || settings->fD0 > 0.20000000298023224)
-        settings->fD0 = 0.15f;
-    if (settings->fC8 < 1000.0)
-        settings->fC8 = 1000.0f;
-    if (settings->fC4 >= 1.9900000095367432)
-        settings->fC4 = 1.98f;
-    if (settings->fB0 != 0.0f)
+    if (arInfo->fD0 <= 1.1920928955078125e-7f || arInfo->fD0 > 0.20000000298023224)
+        arInfo->fD0 = 0.15f;
+    if (arInfo->fC8 < 1000.0)
+        arInfo->fC8 = 1000.0f;
+    if (arInfo->fC4 >= 1.9900000095367432)
+        arInfo->fC4 = 1.98f;
+    if (arInfo->fB0 != 0.0f)
     {
-        int motion = settings->motionType;
+        int motion = arInfo->motionType;
         bool special = motion == 4 || motion == 5;
         if (special)
         {
             savedMotion = motion;
-            settings->motionType = 1;
-            settings->solver = 4;
+            arInfo->motionType = 1;
+            arInfo->solver = 4;
         }
-        else if (settings->solver == -1)
+        else if (arInfo->solver == -1)
         {
-            settings->solver = 4;
+            arInfo->solver = 4;
         }
     }
-    else if (settings->motionType == 5)
+    else if (arInfo->motionType == 5)
     {
-        settings->solver = 0;
+        arInfo->solver = 0;
     }
-    if (settings->quality >= 5 || settings->quality <= 0)
-        settings->quality = 2;
-    settings->callback = 3;
-    settings->unk20 = settings->unk00;
-    settings->unk24 = settings->unk04;
-    FUN_00ca8c90* body = new FUN_00ca8c90(&settings->unk20);
+    if (arInfo->quality >= 5 || arInfo->quality <= 0)
+        arInfo->quality = 2;
+    arInfo->callback = 3;
+    arInfo->unk20 = arInfo->unk00;
+    arInfo->unk24 = arInfo->unk04;
+    FUN_00ca8c90* body = new FUN_00ca8c90(&arInfo->unk20);
     if (savedMotion != 8)
     {
-        settings->motionType = (signed char)savedMotion;
+        arInfo->motionType = (signed char)savedMotion;
         body->hkpRigidBody_setMotionType(savedMotion, 1, 0);
     }
     SetBody(body);
     body->FUN_00c905b0();
-    int motion = settings->motionType;
-    if (motion > 0 && (motion <= 3 || motion == 6) && settings->motionType > 0)
+    int motion = arInfo->motionType;
+    if (motion > 0 && (motion <= 3 || motion == 6) && arInfo->motionType > 0)
     {
         BodyMotion* nativeMotion = GetMotion();
         if (nativeMotion)
         {
             // Preserve the original aligned SIMD temporary storage.
             __m128 boundsStorage[2];
-            GetAabb(reinterpret_cast<hkAabb*>(boundsStorage));
+            bhkRigidBody_GetAabbLocal(reinterpret_cast<hkAabb*>(boundsStorage));
             __m128 extent = _mm_sub_ps(boundsStorage[1], boundsStorage[0]);
             int axis;
             if (extent.m128_f32[0] > extent.m128_f32[1])
@@ -2401,26 +2469,26 @@ void BodyBuild::ConfigureBody(BuildSettings* settings)
                 scale *= DAT_011b0c48;
                 if (!(scale < DAT_012677c0))
                 {
-                    if (settings->solver == 2)
+                    if (arInfo->solver == 2)
                     {
                         nativeMotion->quality = 4;
-                        settings->solver = 4;
+                        arInfo->solver = 4;
                     }
                 }
                 else
                 {
                     nativeMotion->quality = 2;
-                    settings->solver = 2;
+                    arInfo->solver = 2;
                 }
             }
             else
             {
                 nativeMotion->quality = 2;
-                settings->solver = 2;
+                arInfo->solver = 2;
             }
         }
     }
-    FinishBuild(settings);
+    FinishBuild(arInfo);
 }
 
 struct Matrix
@@ -2467,7 +2535,10 @@ extern float DAT_01011d78;
 extern float DAT_01017d00;
 // Gets a matrix via virtual slot 61, then passes it to the body slot's virtual 7 if present, otherwise to target and target+16 with fixed vectors.
 // @fnv 0x00c8e670
-void CollisionOwner::DispatchCollision(Receiver* target)
+// pdb: bhkRigidBody::GetAabb | bhkRigidBody.obj | retail, vtable slot, high
+// pdb params: arOut
+// pdb locals: trn, ps, maxPoint, minPoint
+void CollisionOwner::DispatchCollision(Receiver* arOut)
 {
     __m128 second, first;
     __declspec(align(16)) Matrix source;
@@ -2478,14 +2549,14 @@ void CollisionOwner::DispatchCollision(Receiver* target)
     if (body)
     {
         typedef void(__thiscall * Dispatch)(void*, Matrix*, float, Receiver*);
-        ((Dispatch)((void**)*(void* volatile*)body)[7])(body, &source, DAT_01017d00, target);
+        ((Dispatch)((void**)*(void* volatile*)body)[7])(body, &source, DAT_01017d00, arOut);
     }
     else
     {
         first = _mm_setr_ps(DAT_0104ffb8, DAT_0104ffb8, DAT_0104ffb8, DAT_01011d78);
         second = _mm_setr_ps(DAT_01017d00, DAT_01017d00, DAT_01017d00, DAT_01011d78);
-        target->setTransformedPos_00c7f640(&source, &first);
-        ((Receiver*)((char*)target + 16))->setTransformedPos_00c7f640(&source, &second);
+        arOut->setTransformedPos_00c7f640(&source, &first);
+        ((Receiver*)((char*)arOut + 16))->setTransformedPos_00c7f640(&source, &second);
     }
 }
 
@@ -2638,25 +2709,29 @@ inline bool IsKindOfType(Collision* object)
     {
         if (type == &DAT_012043f8)
             return true;
-        type = type->m_pBaseRTTI;
+        type = type->m_pkBaseRTTI;
     }
     return false;
 }
 // Recursively walks a node's children, then adds the collision body's mass to total and blends center toward the body's nav-mesh data by the mass ratio.
 // @fnv 0x00c8e800
+// src: XBOX_RETAIL_PDB 0x00c8e800
+// pdb: bhkRigidBody::CalculateCOMAndMassRecursive | bhkRigidBody.obj | retail, object-file gap fill, high
+// pdb params: apObject, aCenter, afMass
+// pdb locals: pcol, pnode, i, pchild, pbody, fratio, fmass, center
 // hkVector4 has constructors in the shared header; retain the original stack cookie.
 #pragma strict_gs_check(push, on)
-void __cdecl AccumulateCenterOfMass(Object* object, hkVector4* center, float* total)
+void __cdecl bhkRigidBody_CalculateCOMAndMassRecursive(Object* apObject, hkVector4* aCenter, float* afMass)
 {
-    if (!object)
+    if (!apObject)
         return;
-    Node* node = object->GetAsNode();
+    Node* node = apObject->GetAsNode();
     if (node)
     {
         for (unsigned int i = 0; i < node->count; ++i)
-            AccumulateCenterOfMass(node->children[i], center, total);
+            bhkRigidBody_CalculateCOMAndMassRecursive(node->children[i], aCenter, afMass);
     }
-    Collision* collision = object->collision;
+    Collision* collision = apObject->collision;
     if (!collision)
         return;
     CollisionData* data = IsKindOfType(collision) ? reinterpret_cast<CollisionData*>(collision) : 0;
@@ -2668,26 +2743,30 @@ void __cdecl AccumulateCenterOfMass(Object* object, hkVector4* center, float* to
     float mass = body->FUN_0062ab20();
     hkVector4 next;
     body->GetNavMeshData(&next);
-    *total += mass;
-    float factor = mass / *total;
-    center->Interpolate(*center, next, factor);
+    *afMass += mass;
+    float factor = mass / *afMass;
+    aCenter->Interpolate(*aCenter, next, factor);
 }
 #pragma strict_gs_check(pop)
 }  // namespace fnv_00c8e800
 
 extern const float g_fConst01011d78;
 
-void AccumulateCenterOfMass(void* a, __m128* v, float* f);
+void bhkRigidBody_CalculateCOMAndMassRecursive(void* apObject, __m128* aCenter, float* afMass);
 
 // Calls AccumulateCenterOfMass with a broadcast of g_fConst01011d78, then stores the resulting __m128 into out and the float result into pf.
 // @fnv 0x00c8e940
-void __cdecl GetScalarAndVector(void* a, __m128* out, float* pf)
+// src: XBOX_RETAIL_PDB 0x00c8e940
+// pdb: bhkRigidBody::CalculateTotalCenterOfMass | bhkRigidBody.obj | retail, object-file gap fill, high
+// pdb params: apObject, aCenter, afMass
+// pdb locals: fmass, center
+void __cdecl bhkRigidBody_CalculateTotalCenterOfMass(void* apObject, __m128* aCenter, float* afMass)
 {
     float f = 0.0f;
     __m128 v = _mm_setr_ps(g_fConst01011d78, g_fConst01011d78, g_fConst01011d78, g_fConst01011d78);
-    AccumulateCenterOfMass(a, &v, &f);
-    *out = v;
-    *pf = f;
+    bhkRigidBody_CalculateCOMAndMassRecursive(apObject, &v, &f);
+    *aCenter = v;
+    *afMass = f;
 }
 
 inline unsigned int NiBinaryStream::Read(void* pvBuffer, unsigned int uiBytes)
@@ -2702,14 +2781,14 @@ class RigidBody_c8ea
 {
   public:
     unsigned int m_uiValue1;
-    void SwapEndian();
+    void bhkRigidBodyCinfo_Endian();
 };
 
 class WorldObject_c8ea
 {
   public:
     virtual void v00();
-    void bhkEntity_LoadBinary(char* pkStream);
+    void bhkEntity_LoadBinary(char* arStream);
     float FUN_0062ab20();
 };
 
@@ -2770,22 +2849,25 @@ class Entity_c8ea : public WorldObject_c8ea
     int unk04, unk08, unk0c;
     int m_iSlotCount;
 
-    void bhkRigidBody_LoadBinary(char* pkStream);
+    void bhkRigidBody_LoadBinary(char* arStream);
 };
 
 // Calls FUN_00c9d4f0, swaps the rigid body's endianness unless a stream byte is 1, clamps a float to 1000, may set a type byte, and reads m_iSlotCount.
 // @fnv 0x00c8ea30
 // src: XBOX_PDB 0x00c8ea30
-void Entity_c8ea::bhkRigidBody_LoadBinary(char* pkStream)
+// pdb: bhkRigidBody::LoadBinary | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo, elayer
+void Entity_c8ea::bhkRigidBody_LoadBinary(char* arStream)
 {
-    bhkEntity_LoadBinary(pkStream);
+    bhkEntity_LoadBinary(arStream);
     char* pkBody;
     {
         int iIndex;
         pkBody = GetRigidBody(&iIndex);
     }
-    if (*(unsigned char*)(pkStream + 0x1e5) != 1)
-        ((RigidBody_c8ea*)pkBody)->SwapEndian();
+    if (*(unsigned char*)(arStream + 0x1e5) != 1)
+        ((RigidBody_c8ea*)pkBody)->bhkRigidBodyCinfo_Endian();
     if (*(float*)(pkBody + 0xc8) > 1000.0)
         *(float*)(pkBody + 0xc8) = 1000.0f;
     if (*(float*)(pkBody + 0xb0) == 0.0f && FUN_0062ab20() == 0.0f)
@@ -2796,8 +2878,8 @@ void Entity_c8ea::bhkRigidBody_LoadBinary(char* pkStream)
         if (uiType == 0xe)
             *(unsigned char*)(pkBody + 0xd4) = 4;
     }
-    ((LoadStream_c8ea*)pkStream)->NiStream_ReadMultipleLinkIDs();
-    (*(NiBinaryStream**)(pkStream + 0x24c))->Read(&m_iSlotCount, 4);
+    ((LoadStream_c8ea*)arStream)->NiStream_ReadMultipleLinkIDs();
+    (*(NiBinaryStream**)(arStream + 0x24c))->Read(&m_iSlotCount, 4);
 }
 
 extern "C" void _ReadWriteBarrier(void);
@@ -2849,7 +2931,7 @@ class Constraint_eb20
 
     bool IsKindOfType(const NiRTTI& kRTTI) const
     {
-        for (const NiRTTI* pkRTTI = GetRTTI(); pkRTTI; pkRTTI = pkRTTI->m_pBaseRTTI)
+        for (const NiRTTI* pkRTTI = GetRTTI(); pkRTTI; pkRTTI = pkRTTI->m_pkBaseRTTI)
         {
             if (pkRTTI == &kRTTI)
                 return true;
@@ -3103,7 +3185,7 @@ struct RefObject_eb20
     {
         return (m_uiValue1 >> 2) & 1;
     }
-    void bhkRigidBody_UnFix(bool bSetWorld);
+    void bhkRigidBody_UnFix(bool abAddRemainingConstraints);
 };
 
 extern "C" __declspec(thread) int tls_iMemContext_eb20;
@@ -3126,7 +3208,10 @@ extern char DAT_0126818c;
 // If in a world, registers linked constraints and pops them, sets the world on the others when bSetWorld is true, then clears the in-world bit.
 // @fnv 0x00c8eb20
 // src: XBOX_PDB 0x00c8eb20
-void RefObject_eb20::bhkRigidBody_UnFix(bool bSetWorld)
+// pdb: bhkRigidBody::UnFix | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: abAddRemainingConstraints
+// pdb locals: tempMemContext, pw, plist, pcon
+void RefObject_eb20::bhkRigidBody_UnFix(bool abAddRemainingConstraints)
 {
     MemContextGuard_eb20 kGuard(0x10);
     if (IsInWorld())
@@ -3155,7 +3240,7 @@ void RefObject_eb20::bhkRigidBody_UnFix(bool bSetWorld)
                         else
                         {
                             pkNode = pkNode->m_pkNext;
-                            if (bSetWorld)
+                            if (abAddRemainingConstraints)
                                 pkConstraint->SetWorld(iWorld);
                         }
                     }
@@ -3415,7 +3500,7 @@ struct Obj
         {
             if (r == p)
                 return true;
-            r = r->m_pBaseRTTI;
+            r = r->m_pkBaseRTTI;
         }
         return false;
     }
@@ -3683,6 +3768,8 @@ struct Target
 // Replaces each matching object in the list with the result of FUN_00cc81c0, attached to the owner, then sets flag value 4.
 // @fnv 0x00c8f080
 // src: XBOX_PDB 0x00c8f080
+// pdb: bhkRigidBody::Fix | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, pw, plist, pcon, pfixed, fstrength, iflt, epart
 void Target::bhkRigidBody_Fix()
 {
     MemScope scope;

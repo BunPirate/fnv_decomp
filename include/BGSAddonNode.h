@@ -7,6 +7,7 @@
 class TESFile;
 class TESSound;
 
+// pdb: class BGSAddonNode, size 0x60, bases: TESBoundObject, TESModelTextureSwap, 4 members
 class BGSAddonNode : public TESBoundObject, public TESModelTextureSwap
 {
 public:
@@ -18,7 +19,7 @@ public:
 
     virtual void InitItem(void);
     virtual bool LoadForm(TESFile* file);
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 
     void ResetFormData();
     bool FUN_00448bf0();
@@ -29,8 +30,8 @@ public:
     unsigned short GetShortAtOffset58();
     bool IsMasterParticleSystem() const;
 
-    unsigned int uiIndex;
-    TESSound* SoundAssetTmp;
-    AddonData kData;
-    unsigned int uiParticleSystemIndex;
+    unsigned int iIndex;
+    TESSound* pSound;
+    AddonData Data;
+    unsigned int iMasterParticleSystemIndex;
 };

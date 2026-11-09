@@ -6,16 +6,17 @@
 // These lifetime methods were inline in this unit's original Havok implementation.
 
 // Local until include/hkCpuJobThreadPoolCinfo.h supplies this 0x20-byte configuration.
+// pdb: structure hkCpuJobThreadPoolCinfo, size 0x20, 6 members
 struct hkCpuJobThreadPoolCinfo
 {
     int m_numThreads;
-    int m_stackSize;
+    int m_havokStackSize;
     int m_timerBufferPerThreadAllocation;
     int m_threadPriority;
     const int* m_hardwareThreadIds;
     int m_numHardwareThreadIds;
     int m_hardwareThreadIdsCapacity;
-    const char* m_name;
+    const char* m_threadName;
     hkCpuJobThreadPoolCinfo();
 };
 
@@ -23,25 +24,26 @@ struct hkCpuJobThreadPoolCinfo
 hkCpuJobThreadPoolCinfo::hkCpuJobThreadPoolCinfo()
 {
     m_numThreads = 1;
-    m_stackSize = 0x3d0900;
+    m_havokStackSize = 0x3d0900;
     m_threadPriority = 0;
     m_hardwareThreadIds = 0;
     m_numHardwareThreadIds = 0;
     m_hardwareThreadIdsCapacity = 0x80000000;
-    m_name = "HavokWorkerThread";
+    m_threadName = "HavokWorkerThread";
     m_timerBufferPerThreadAllocation = 0;
 }
 
+// pdb: class hkThread, size 0x10, 2 members
 class hkThread
 {
   public:
-    int m_iThreadHandle;
+    int m_thread;
     int m_uiThreadId;
-    int m_08;
+    int m_threadId;
     int m_0c;
 
     // Thread startup does not unwind the pool constructor.
-    int hkThread_startThread(void*(__cdecl* pfnFunc)(void*), void* pvArg, const char* pcName, int iStackSize) throw();
+    int hkThread_startThread(void*(__cdecl* func)(void*), void* arg, const char* name, int stackSize) throw();
 };
 
 // src/havok/common/base/thread/job/threadpool/cpu/hkcpujobthreadpool.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/common/base/thread/job/threadpool/cpu/hkcpujobthreadpool.cpp).
@@ -70,20 +72,22 @@ void FUN_00d2ced0::PerformVoidOperation()
 
 struct FUN_00d2d330_shell
 {
-    void InitializeWorkerThread();
+    void hkCpuJobThreadPool_addThread();
     void hkCpuJobThreadPool_removeThread();
-    void hkCpuJobThreadPool_setNumThreads(int desired);
+    void hkCpuJobThreadPool_setNumThreads(int numThreads);
 };
 
 // @fnv 0x00d2d330
 // src: HAVOK_LIB 0x00d2d330
-void FUN_00d2d330_shell::hkCpuJobThreadPool_setNumThreads(int desired)
+// pdb: hkCpuJobThreadPool::setNumThreads | hkCpuJobThreadPool.obj | retail, upstream name already matches, high
+// pdb params: numThreads
+void FUN_00d2d330_shell::hkCpuJobThreadPool_setNumThreads(int numThreads)
 {
-    if (desired > 6)
-        desired = 6;
-    while (((int*)this)[0x130 / 4] < desired)
-        InitializeWorkerThread();
-    while (((int*)this)[0x130 / 4] > desired)
+    if (numThreads > 6)
+        numThreads = 6;
+    while (((int*)this)[0x130 / 4] < numThreads)
+        hkCpuJobThreadPool_addThread();
+    while (((int*)this)[0x130 / 4] > numThreads)
         hkCpuJobThreadPool_removeThread();
 }
 
@@ -115,6 +119,7 @@ int __fastcall hkSemaphore_acquire(void*);
 
 // @fnv 0x00d2ce90
 // src: HAVOK_LIB 0x00d2ce90
+// pdb: hkCpuJobThreadPool::waitForCompletion | hkCpuJobThreadPool.obj | retail, upstream name already matches, high
 void FUN_00d2ce90_class::hkCpuJobThreadPool_waitForCompletion()
 {
     if (m_running)
@@ -187,6 +192,7 @@ class hkObjd2d3b0 : public FUN_00d2cf00
 
 // Runs the base destructor and, when bit 0 of uiFlags is set, frees the object via operator delete; returns this.
 // @fnv 0x00d2d3b0
+// pdb: hkCpuJobThreadPool::`scalar deleting destructor' | hkCpuJobThreadPool.obj | retail, vtable slot, high
 hkObjd2d3b0* hkObjd2d3b0::DestroyIfFlagged(unsigned int uiFlags) throw()
 {
     this->FUN_00d2cf00::~FUN_00d2cf00();
@@ -214,15 +220,18 @@ class OwnerD2CD
     int unk134[2];
     hkBool m_13C;
 
-    void hkCpuJobThreadPool_processAllJobs(int value, int unused);
+    void hkCpuJobThreadPool_processAllJobs(int queue, int firstJobType_unused);
 };
 
 // Stores value in m_128, sets m_13C to true, and calls FUN_00d04390(1) on each element up to m_iCapacityFlags.
 // @fnv 0x00d2cde0
 // src: HAVOK_LIB 0x00d2cde0
-void OwnerD2CD::hkCpuJobThreadPool_processAllJobs(int value, int unused)
+// pdb: hkCpuJobThreadPool::processAllJobs | hkCpuJobThreadPool.obj | retail, upstream name already matches, high
+// pdb params: queue, firstJobType_unused
+// pdb locals: assertBuf, ostr
+void OwnerD2CD::hkCpuJobThreadPool_processAllJobs(int queue, int firstJobType_unused)
 {
-    m_128 = value;
+    m_128 = queue;
     m_13C = true;
     for (int i = m_iCapacityFlags - 1; i >= 0; i--)
         m_pElements[i].FUN_00d04390(1);
@@ -278,6 +287,7 @@ struct ClsD2C : VBaseD2C, ArrBaseD2C
 
 // @fnv 0x00d2cf00
 // src: GUESS 0x00d2cf00 (confidence: low)
+// pdb: hkCpuJobThreadPool::~hkCpuJobThreadPool | hkCpuJobThreadPool.obj | retail, object-file run extension, low
 void ClsD2C::ProcessEntries_00d2cf00()
 {
     *(void**)this = (void*)&DAT_010ce774;
@@ -308,7 +318,7 @@ void ClsD2C::ProcessEntries_00d2cf00()
 
 namespace fnv_00d2d110 {
 extern "C" void __cdecl hkReferencedObject_setLockMode(int iLockMode);
-void* __cdecl CpuJobThreadMain(void* pvArg);
+void* __cdecl hkWorkerThreadFunc(void* v);
 
 class FUN_00d2cd80
 {
@@ -349,19 +359,22 @@ class FUN_00d2d110 : public hkReferencedObject
     const char* m_pName;
     int m_iTimerBufferPerThreadAllocation;
 
-    FUN_00d2d110(const hkCpuJobThreadPoolCinfo& kCi);
+    FUN_00d2d110(const hkCpuJobThreadPoolCinfo& ci);
 };
 
 // Initializes the thread pool by copying config, capping thread count, and spawning worker threads with hardware-affinity assignment.
 // @fnv 0x00d2d110
-FUN_00d2d110::FUN_00d2d110(const hkCpuJobThreadPoolCinfo& kCi)
+// pdb: hkCpuJobThreadPool::hkCpuJobThreadPool | hkCpuJobThreadPool.obj | retail, object-file gap fill, high
+// pdb params: ci
+// pdb locals: assertBuf, ostr
+FUN_00d2d110::FUN_00d2d110(const hkCpuJobThreadPoolCinfo& ci)
 {
     m_bFlag = false;
-    m_pName = kCi.m_name;
-    m_iTimerBufferPerThreadAllocation = kCi.m_timerBufferPerThreadAllocation;
-    m_iStackSize = kCi.m_stackSize;
-    m_iThirdValue = kCi.m_threadPriority;
-    int iNumThreads = kCi.m_numThreads;
+    m_pName = ci.m_threadName;
+    m_iTimerBufferPerThreadAllocation = ci.m_timerBufferPerThreadAllocation;
+    m_iStackSize = ci.m_havokStackSize;
+    m_iThirdValue = ci.m_threadPriority;
+    int iNumThreads = ci.m_numThreads;
     if (iNumThreads > 6)
         iNumThreads = 5;
     m_iHardwareInfoValue = iNumThreads;
@@ -380,11 +393,11 @@ FUN_00d2d110::FUN_00d2d110(const hkCpuJobThreadPoolCinfo& kCi)
         kData.m_pOffset2C = 0;
         kData.m_ucState = false;
         kData.m_bOffset21 = false;
-        if (kCi.m_numHardwareThreadIds > 0)
-            kData.m_iOffset1C = kCi.m_hardwareThreadIds[i];
+        if (ci.m_numHardwareThreadIds > 0)
+            kData.m_iOffset1C = ci.m_hardwareThreadIds[i];
         else
             kData.m_iOffset1C = iThreadId % iNumCores;
-        kData.m_iThreadHandle.hkThread_startThread(CpuJobThreadMain, &kData, m_pName, m_iTimerBufferPerThreadAllocation);
+        kData.m_iThreadHandle.hkThread_startThread(hkWorkerThreadFunc, &kData, m_pName, m_iTimerBufferPerThreadAllocation);
     }
     hkReferencedObject_setLockMode(1);
 }
@@ -429,7 +442,7 @@ struct hkMonitorTlsD2
     unsigned long m_slot;
 };
 extern hkMonitorTlsD2 DAT_0126835c;
-void __cdecl ResizeBuffer(hkMonitorStreamD2* pStream, int iSize);
+void __cdecl hkMonitorStream_resize(hkMonitorStreamD2* pStream, int iSize);
 void __cdecl hkMonitorStream_reset(hkMonitorStreamD2* pStream);
 
 struct hkMemoryRouterD2
@@ -465,7 +478,7 @@ class hkMemorySystemD2
     virtual void ThreadQuit(hkMemoryRouterD2& router, hkMemorySystemFlagsD2 flags);
 };
 hkMemorySystemD2* __cdecl hkMemorySystem_getInstance();
-void __cdecl hkBaseSystem_initThread(hkMemoryRouterD2* router);
+void __cdecl hkBaseSystem_initThread(hkMemoryRouterD2* memoryRouter);
 void __cdecl hkBaseSystem_quitThread();
 
 struct hkSemaphoreD2
@@ -509,9 +522,13 @@ struct hkCpuThreadDataD2
 
 // Initializes thread-local state and memory router, then loops processing job queues until the thread state flag is set.
 // @fnv 0x00d2cfb0
-void* __cdecl CpuJobThreadMain(void* apThreadData)
+// src: XBOX_RETAIL_PDB 0x00d2cfb0
+// pdb: hkWorkerThreadFunc | hkCpuJobThreadPool.obj | retail, unique string literal, high
+// pdb params: v
+// pdb locals: memoryRouter
+void* __cdecl hkWorkerThreadFunc(void* v)
 {
-    hkCpuThreadDataD2& threadData = *static_cast<hkCpuThreadDataD2*>(apThreadData);
+    hkCpuThreadDataD2& threadData = *static_cast<hkCpuThreadDataD2*>(v);
     SharedJobQueueData* threadPool = threadData.m_threadPool;
 
     DAT_012687c8.setData(threadData.m_threadNumber);
@@ -525,7 +542,7 @@ void* __cdecl CpuJobThreadMain(void* apThreadData)
     if (threadPool->m_iThreadPriority > 0)
     {
         hkMonitorStreamD2* pStream = DAT_0126835c.getData();
-        ResizeBuffer(pStream, threadPool->m_iThreadPriority);
+        hkMonitorStream_resize(pStream, threadPool->m_iThreadPriority);
     }
     threadData.m_pOffset28 = DAT_0126835c.getData()->GetStreamStart();
     threadData.m_pOffset2C = DAT_0126835c.getData()->GetStreamEnd();
@@ -551,7 +568,7 @@ void* __cdecl CpuJobThreadMain(void* apThreadData)
     return 0;
 }
 
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 // 0x00d2d2c0 copies each worker's monitor begin/end at offsets 0x28/0x2c into this range.
 struct MonitorStreamRange
@@ -599,12 +616,14 @@ struct Owner_d2d2c0
     int unk12C;
     int m_uiItemCount;
 
-    void hkCpuJobThreadPool_appendTimerData(MonitorStreamRanges* arr, void* alloc);
+    void hkCpuJobThreadPool_appendTimerData(MonitorStreamRanges* timerDataOut, void* alloc);
 };
 
 // @fnv 0x00d2d2c0
 // src: HAVOK_LIB 0x00d2d2c0
-void Owner_d2d2c0::hkCpuJobThreadPool_appendTimerData(MonitorStreamRanges* apPairArray, void* alloc)
+// pdb: hkCpuJobThreadPool::appendTimerData | hkCpuJobThreadPool.obj | retail, upstream name already matches, high
+// pdb params: timerDataOut, alloc
+void Owner_d2d2c0::hkCpuJobThreadPool_appendTimerData(MonitorStreamRanges* timerDataOut, void* alloc)
 {
     int index = 0;
     if (m_uiItemCount > 0)
@@ -612,13 +631,13 @@ void Owner_d2d2c0::hkCpuJobThreadPool_appendTimerData(MonitorStreamRanges* apPai
         int* source = &m_records[0].m_kPointB;
         do
         {
-            if (apPairArray->m_iElementCount == (apPairArray->m_iCapacityState & 0x3FFFFFFF))
-                ResizeAudioStream(alloc, apPairArray, 8);
+            if (timerDataOut->m_iElementCount == (timerDataOut->m_iCapacityState & 0x3FFFFFFF))
+                ResizeAudioStream(alloc, timerDataOut, 8);
             int remaining = 1;
             do
             {
-                MonitorStreamRange& pair = apPairArray->m_data[apPairArray->m_iElementCount];
-                ++apPairArray->m_iElementCount;
+                MonitorStreamRange& pair = timerDataOut->m_data[timerDataOut->m_iElementCount];
+                ++timerDataOut->m_iElementCount;
                 pair.m_kPointA = source[-1];
                 pair.m_kPointB = source[0];
             } while (--remaining);
@@ -629,7 +648,7 @@ void Owner_d2d2c0::hkCpuJobThreadPool_appendTimerData(MonitorStreamRanges* apPai
 }
 
 namespace fnv_00d2d240 {
-void* __cdecl CpuJobThreadMain(void* pArg);
+void* __cdecl hkWorkerThreadFunc(void* v);
 
 struct hkWorkerThreadPoolBaseD2D
 {
@@ -664,12 +683,15 @@ class hkCpuJobThreadPool
     int unk13C;
     const char* m_pName;
     int m_iTimerBufferPerThreadAllocation;
-    void InitializeWorkerThread();
+    void hkCpuJobThreadPool_addThread();
 };
 
 // Configures a WorkerThreadDataD2D entry with thread pool, ID, and processor affinity, then starts the worker thread via m_iThreadHandle.
 // @fnv 0x00d2d240
-void hkCpuJobThreadPool::InitializeWorkerThread()
+// src: XBOX_RETAIL_PDB 0x00d2d240
+// pdb: hkCpuJobThreadPool::addThread | hkCpuJobThreadPool.obj | retail, object-file gap fill, high
+// pdb locals: assertBuf, ostr
+void hkCpuJobThreadPool::hkCpuJobThreadPool_addThread()
 {
     WorkerThreadDataD2D& data = m_kThreadData[m_iHardwareInfoValue];
 
@@ -687,7 +709,7 @@ void hkCpuJobThreadPool::InitializeWorkerThread()
     int processorCount = *(volatile int*)&sysInfo.dwNumberOfProcessors;
     data.m_iOffset1C = threadId % processorCount;
 
-    data.m_iThreadHandle.hkThread_startThread(CpuJobThreadMain, &data, m_pName, m_iTimerBufferPerThreadAllocation);
+    data.m_iThreadHandle.hkThread_startThread(hkWorkerThreadFunc, &data, m_pName, m_iTimerBufferPerThreadAllocation);
 
     m_iHardwareInfoValue++;
 }
@@ -728,6 +750,8 @@ struct WorkerThreadPoolViewD2
 // Decrements the shared counter, sets the selected worker state to true, calls its semaphore method, calls FUN_00d04380, and closes its thread handle.
 // @fnv 0x00d2ce50
 // src: HAVOK_LIB 0x00d2ce50
+// pdb: hkCpuJobThreadPool::removeThread | hkCpuJobThreadPool.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 void WorkerThreadPoolViewD2::hkCpuJobThreadPool_removeThread()
 {
     WorkerThreadPoolViewD2* pool = this;

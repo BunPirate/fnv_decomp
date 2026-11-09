@@ -39,6 +39,7 @@ public:
 #include "../../../../include/TESQueuedCellManager.h"
 #include "../../../../include/TESWorldSpace.h"
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -98,10 +99,11 @@ class GlobalObject_0045cf30
 extern GlobalObject_0040c150 g_011d2100, g_011d34f8, g_011d3684;
 extern GlobalObject_0045cf30 g_011de248;
 class OSGlobals;
+// pdb: class Main, size 0xac (here 0x1), 25 members
 class Main
 {
   public:
-    void RefreshAfterSave();
+    void Main_KillMenuBGTexture();
     void RunScripts();
     void OnGameLoaded();
 };
@@ -116,6 +118,7 @@ void __cdecl DumpTextAndOpen(const char*);
 InterfaceManager* __cdecl InterfaceManager_GetSingleton();
 
 #include "../../../../include/FADER_ENUM.h"
+// pdb: class FaderManager, size 0x8 (here 0x1), 2 members
 class FaderManager
 {
   public:
@@ -128,14 +131,16 @@ extern BGSSaveLoadManager* DAT_011de134;
 class ChallengeManager
 {
   public:
-    static void CheckCompletedChallenges();
+    static void TESChallengeManager_LoadChallenges();
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
     void ModelLoader_ClearUnusedModels(bool);
-    void CancelAllFiles_00448420();
+    void ModelLoader_CancelAllFiles();
 };
+// pdb: class VATS, size 0x48 (here 0x1), 17 members
 class VATS
 {
   public:
@@ -161,16 +166,17 @@ class GlobalObject_0096d020
     void ProcessLists_RebuildActorsCloseToPlayer();
 };
 extern GlobalObject_0096d020 g_011e0e80;
+// pdb: class PathManager, size 0x8 (here 0x1), 2 members
 class PathManager
 {
   public:
     static PathManager* GetRandomGenerator();
     void PathManager_Resume();
-    bool CallMemberFunction();
-    void CallInner();
+    bool PathManager_QIdle();
+    void PathManager_CancelCurrentPathsAndPause();
 };
 
-extern TESQueuedCellManager* DAT_011c9618;
+extern ExteriorCellLoader* DAT_011c9618;
 void __cdecl Script_ClearButtonPressed();
 void __cdecl Script_ClearOptimizations();
 void __cdecl ScriptLocals_ClearOptimizations();
@@ -236,9 +242,11 @@ extern "C" FNVSystemTimeFunction g_fnvSystemTimeFunction;
 
 // Returns true when name is non-null and case-insensitively matches g_quicksaveName over its length.
 // @fnv 0x00851a60
-bool BGSSaveLoadManager::IsQuickSaveFileName(const char* name)
+// pdb: BGSSaveLoadManager::IsSaveFileNameQuicksave | BGSSaveLoadManager.obj | retail, string-set bridge, high
+// pdb params: apSaveFileName
+bool BGSSaveLoadManager::IsQuickSaveFileName(const char* apSaveFileName)
 {
-    if (name != 0 && _mbsnicmp(name, g_quicksaveName, BSStringLength<char>(g_quicksaveName)) == 0)
+    if (apSaveFileName != 0 && _mbsnicmp(apSaveFileName, g_quicksaveName, BSStringLength<char>(g_quicksaveName)) == 0)
         return true;
     return false;
 }
@@ -253,28 +261,36 @@ bool BGSSaveLoadManager::IsAutoSaveFileName(const char* name)
 
 // Replaces characters in name that are below '0', above 'z', or in g_scrubChars with a space, turning '"' into '\''.
 // @fnv 0x008518d0
-void BGSSaveLoadManager::SanitizeSaveFileName(char* name)
+// src: XBOX_RETAIL_PDB 0x008518d0
+// pdb: BGSSaveLoadManager::ScrubFileName | BGSSaveLoadManager.obj | retail, object-file run extension, high
+// pdb params: apFileName
+// pdb locals: ilength, i
+void BGSSaveLoadManager::ScrubFileName(char* apFileName)
 {
-    unsigned int length = BSStringLength<char>(name);
+    unsigned int length = BSStringLength<char>(apFileName);
     for (unsigned int index = 0; index < length; ++index)
     {
-        if (name[index] < '0')
-            name[index] = ' ';
-        if (name[index] > 'z')
-            name[index] = ' ';
-        else if (strchr(g_scrubChars, name[index]) != 0)
+        if (apFileName[index] < '0')
+            apFileName[index] = ' ';
+        if (apFileName[index] > 'z')
+            apFileName[index] = ' ';
+        else if (strchr(g_scrubChars, apFileName[index]) != 0)
         {
-            if (name[index] == '"')
-                name[index] = '\'';
+            if (apFileName[index] == '"')
+                apFileName[index] = '\'';
             else
-                name[index] = ' ';
+                apFileName[index] = ' ';
         }
     }
 }
 
 // Builds a version prefix and formatted date/time, then writes the version info string into output using capacity.
 // @fnv 0x00851120
-void BGSSaveLoadManager::GetFNVVersionInfo(char* output, unsigned int capacity)
+// src: XBOX_RETAIL_PDB 0x00851120
+// pdb: BGSSaveLoadManager::GetVersionInfo | BGSSaveLoadManager.obj | retail, unique string literal, high
+// pdb params: apVersionInfo, aiSize
+// pdb locals: localTime, puserName, pdateString
+void BGSSaveLoadManager::GetVersionInfo(char* apVersionInfo, unsigned int aiSize)
 {
     FNVGetVersionInfoLocals locals;
 
@@ -287,11 +303,13 @@ void BGSSaveLoadManager::GetFNVVersionInfo(char* output, unsigned int capacity)
     g_fnvSystemTimeFunction(&locals.time);
     sprintf_s(locals.dateTime, 0x104, g_dateTimeFormat, locals.time.month, locals.time.day, locals.time.year,
               locals.time.hour, locals.time.minute, locals.time.second);
-    sprintf_s(output, capacity, g_versionInfoFormat, locals.versionPrefix, locals.dateTime, g_currentExeVersion, 48,
+    sprintf_s(apVersionInfo, aiSize, g_versionInfoFormat, locals.versionPrefix, locals.dateTime, g_currentExeVersion, 48,
               27);
 }
 
 // @fnv 0x00876ad0
+// pdb: Main_InitFileCache | Main.obj | debug, object-file run extension, low
+// pdb locals: state, buserForceClear, bforceClear, bcacheDriveMounted, ierror, pmessage
 void BGSSaveLoadManager::GetSaveDirectory(char* pcPath)
 {
     bool useMyGames = true;
@@ -335,38 +353,41 @@ void BGSSaveLoadManager::GetSaveDirectory(char* pcPath)
 }
 
 // @fnv 0x00850760
-bool BGSSaveLoadManager::LoadGame(const char* name, int deviceID, bool recent, bool allowMissing)
+// pdb: BGSSaveLoadManager::LoadGame | BGSSaveLoadManager.obj | retail, upstream name already matches, high
+// pdb params: apFileName, aiDeviceID, abOutputStats, abIgnoreMissingContent
+// pdb locals: pfileNameCopy, pfile, bresult, bisConsoleVisible, pfileName
+bool BGSSaveLoadManager::LoadGame(const char* apFileName, int aiDeviceID, bool abOutputStats, bool abIgnoreMissingContent)
 {
     bool result;
     {
         char savedName[260];
-        if (name)
-            TaskQueueInterface::CopyStringToBuffer(savedName, 260, name);
+        if (apFileName)
+            TaskQueueInterface::CopyStringToBuffer(savedName, 260, apFileName);
         SaveLoadFile* file = 0;
         if (pSaveLoadFile)
             file = pSaveLoadFile;
         else
-            file = OpenSaveFile_00850030(name, 0, 1, deviceID);
+            file = OpenSaveFile_00850030(apFileName, 0, 1, aiDeviceID);
         result = false;
         if (file)
         {
             bool consoleWasVisible = SaveLoadInterface::IsConsoleActive();
             if (!*reinterpret_cast<const bool*>(reinterpret_cast<SettingT<INISettingCollection>*>(&g_011de248)->Bool()))
-                allowMissing = true;
+                abIgnoreMissingContent = true;
             if (reinterpret_cast<BGSLoadGameBuffer*>(file)->BGSSaveLoadFile_Open())
             {
                 if (CanLoadSaveGame(file))
                 {
                     bStartMenuLoading = true;
-                    result = g_BGSSaveLoadGame->LoadGame(file, allowMissing);
+                    result = g_BGSSaveLoadGame->LoadGame(file, abIgnoreMissingContent);
                     bStartMenuLoading = false;
                     if (result)
-                        FinishLoadingGame();
+                        EndLoadGame();
                     else
                     {
-                        TaskQueueInterface::CopyStringToBuffer(DAT_011de138, 260, name);
-                        DAT_011a224c = deviceID;
-                        DAT_011de23c = recent;
+                        TaskQueueInterface::CopyStringToBuffer(DAT_011de138, 260, apFileName);
+                        DAT_011a224c = aiDeviceID;
+                        DAT_011de23c = abOutputStats;
                         SaveLoadInterface::ShowButtonDialog(
                             reinterpret_cast<SettingT_GameSettingCollection_*>(&g_011d2100)->String(), 0, 0,
                             LoadGameMissingContentCallBack, 1, 23, 0.0f, 0.0f,
@@ -379,10 +400,10 @@ bool BGSSaveLoadManager::LoadGame(const char* name, int deviceID, bool recent, b
             }
             if (file != pSaveLoadFile)
                 CloseSaveFile(file, false);
-            if (result && recent)
+            if (result && abOutputStats)
             {
                 char fullPath[260];
-                GetFullPath(const_cast<char*>(name), fullPath, false);
+                GetFullPath(const_cast<char*>(apFileName), fullPath, false);
                 DumpTextAndOpen(fullPath);
             }
             if (consoleWasVisible)
@@ -391,9 +412,9 @@ bool BGSSaveLoadManager::LoadGame(const char* name, int deviceID, bool recent, b
                 InterfaceManager_GetSingleton()->FUN_00714d70(DAT_011dea24);
             }
             if (result)
-                SetSaveFileName(savedName, deviceID);
+                SetSaveFileName(savedName, aiDeviceID);
         }
-        reinterpret_cast<Main*>(g_osGlobals)->RefreshAfterSave();
+        reinterpret_cast<Main*>(g_osGlobals)->Main_KillMenuBGTexture();
     }
     return result;
 }
@@ -435,9 +456,12 @@ void BGSSaveLoadManager::ProcessQueuedSaveLoad()
 }
 
 // @fnv 0x00850d60
-void BGSSaveLoadManager::FinishLoadingGame()
+// src: XBOX_RETAIL_PDB 0x00850d60
+// pdb: BGSSaveLoadManager::EndLoadGame | BGSSaveLoadManager.obj | retail, object-file run extension, high
+// pdb locals: pworldSpace
+void BGSSaveLoadManager::EndLoadGame()
 {
-    ChallengeManager::CheckCompletedChallenges();
+    ChallengeManager::TESChallengeManager_LoadChallenges();
     reinterpret_cast<Main*>(g_osGlobals)->OnGameLoaded();
     reinterpret_cast<Main*>(g_osGlobals)->RunScripts();
     g_modelLoader->ModelLoader_ClearUnusedModels(false);
@@ -467,10 +491,13 @@ void BGSSaveLoadManager::FinishLoadingGame()
 }
 
 // @fnv 0x00850c20
-void BGSSaveLoadManager::ProcessQueuedLoads()
+// src: XBOX_RETAIL_PDB 0x00850c20
+// pdb: BGSSaveLoadManager::StartLoadGame | BGSSaveLoadManager.obj | retail, call graph, high
+// pdb locals: bmultiThreadedAudio, i
+void BGSSaveLoadManager::StartLoadGame()
 {
-    DAT_011c9618->SubmitQueuedItems();
-    g_modelLoader->CancelAllFiles_00448420();
+    DAT_011c9618->ExteriorCellLoader_ClearData();
+    g_modelLoader->ModelLoader_CancelAllFiles();
     Script_ClearButtonPressed();
     Script_ClearOptimizations();
     ScriptLocals_ClearOptimizations();
@@ -489,21 +516,24 @@ void BGSSaveLoadManager::ProcessQueuedLoads()
     if (g_thePlayer)
         reinterpret_cast<VATS*>(g_thePlayer)->Update(2, true);
     g_TES->RefreshWorldState(1, 0, 0);
-    while (!PathManager::GetRandomGenerator()->CallMemberFunction())
+    while (!PathManager::GetRandomGenerator()->PathManager_QIdle())
     {
         // Preserve the original receiver in ECX when calling the shared static declaration.
         reinterpret_cast<void (__fastcall*)(PathManager*)>(&ScriptLocals::ProcessPendingTasks)(
             PathManager::GetRandomGenerator());
         NavMeshObstacleManager::GetSingleton()->Update();
     }
-    PathManager::GetRandomGenerator()->CallInner();
+    PathManager::GetRandomGenerator()->PathManager_CancelCurrentPathsAndPause();
 }
 
 // Reads the save file version and returns false after showing an error message if it is not 47 or 48.
 // @fnv 0x00850ed0
-bool BGSSaveLoadManager::CanLoadSaveGame(SaveLoadFile* file)
+// pdb: BGSSaveLoadManager::LoadGameHeader | BGSSaveLoadManager.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: imajorVersion, pmessage
+bool BGSSaveLoadManager::CanLoadSaveGame(SaveLoadFile* apFile)
 {
-    int version = SaveLoadHeader::ReadHeaderFromFile(file);
+    int version = SaveLoadHeader::ReadHeaderFromFile(apFile);
     if (version > 48 || version < 47)
     {
         if (version <= 0)
@@ -528,7 +558,10 @@ bool BGSSaveLoadManager::CanLoadSaveGame(SaveLoadFile* file)
 }
 
 // @fnv 0x00850fe0
-bool BGSSaveLoadManager::CanSave(bool skipMenus)
+// pdb: BGSSaveLoadManager::CanSave | BGSSaveLoadManager.obj | retail, upstream name already matches, high
+// pdb params: aiDeviceID
+// pdb locals: deviceData
+bool BGSSaveLoadManager::CanSave(bool aiDeviceID)
 {
     if (g_thePlayer)
     {
@@ -540,7 +573,7 @@ bool BGSSaveLoadManager::CanSave(bool skipMenus)
     }
     if (((HUDMainMenu*)&g_011f2250)->RefreshTargetDisplay())
         return false;
-    if (!skipMenus)
+    if (!aiDeviceID)
     {
         unsigned int count = NiVertexColorProperty_GetType();
         for (unsigned int index = 0; index < count; ++index)
@@ -565,41 +598,54 @@ bool BGSSaveLoadManager::CanSave(bool skipMenus)
 }
 // Builds the default save-file prefix from a game setting plus a suffix and compares it case-insensitively against name.
 // @fnv 0x00851980
-bool BGSSaveLoadManager::IsSaveFileNameDefault(const char* name)
+// src: XBOX_RETAIL_PDB 0x00851980
+// pdb: BGSSaveLoadManager::IsSaveFileNameGenerated | BGSSaveLoadManager.obj | retail, object-file run extension, high
+// pdb params: apSaveFileName
+// pdb locals: psaveName
+bool BGSSaveLoadManager::IsSaveFileNameGenerated(const char* apSaveFileName)
 {
     char prefix[260];
     TaskQueueInterface::CopyStringToBuffer(prefix, 260, ((SettingT_GameSettingCollection_*)&g_011d4060)->String());
     SaveLoadString::strcat_s(prefix, 260, g_011d31e0_arg1);
-    if (name && _mbsnicmp(name, prefix, BSStringLength<char>(prefix)) == 0)
+    if (apSaveFileName && _mbsnicmp(apSaveFileName, prefix, BSStringLength<char>(prefix)) == 0)
         return true;
     return false;
 }
 // @fnv 0x00851aa0
-bool BGSSaveLoadManager::IsSaveFileNameCustom(const char* name)
+// pdb: BGSSaveLoadManager::IsSaveFileNameCustom | BGSSaveLoadManager.obj | retail, upstream name already matches, high
+// pdb params: apSaveFileName
+bool BGSSaveLoadManager::IsSaveFileNameCustom(const char* apSaveFileName)
 {
-    if (IsSaveFileNameDefault(name) || IsSaveFileNameLegacyAutosave(name) || IsQuickSaveFileName(name) ||
-        IsAutoSaveFileName(name))
+    if (IsSaveFileNameGenerated(apSaveFileName) || IsSaveFileNameAutosave(apSaveFileName) || IsQuickSaveFileName(apSaveFileName) ||
+        IsAutoSaveFileName(apSaveFileName))
         return false;
     return true;
 }
 // Formats the autosave name from g_autosaveName and the player's full name, truncates it to 27 characters, and passes it to DAT_011de134.
 // @fnv 0x00850b40
+// pdb: BGSSaveLoadManager::GetSaveFileSize | BGSSaveLoadManager.obj | retail, object-file run extension, low
+// pdb params: apFileName
+// pdb locals: tempFile, ihistoryCount, ifileSize
 void BGSSaveLoadManager::BuildAutosaveName(char* name)
 {
     sprintf_s(name, 260, DAT_01012058, g_autosaveName, g_thePlayer->GetFullName());
     if (BSStringLength<char>(name) > 27)
         name[27] = 0;
-    DAT_011de134->SanitizeSaveFileName(name);
+    DAT_011de134->ScrubFileName(name);
 }
 // Returns true if name is non-null and starts with the prefix DAT_0107fae0 (case-insensitive compare).
 // @fnv 0x00851a20
-bool BGSSaveLoadManager::IsSaveFileNameLegacyAutosave(const char* name)
+// src: XBOX_RETAIL_PDB 0x00851a20
+// pdb: BGSSaveLoadManager::IsSaveFileNameAutosave | BGSSaveLoadManager.obj | retail, object-file run extension, high
+// pdb params: apSaveFileName
+bool BGSSaveLoadManager::IsSaveFileNameAutosave(const char* apSaveFileName)
 {
-    if (name && _mbsnicmp(name, DAT_0107fae0, BSStringLength<char>(DAT_0107fae0)) == 0)
+    if (apSaveFileName && _mbsnicmp(apSaveFileName, DAT_0107fae0, BSStringLength<char>(DAT_0107fae0)) == 0)
         return true;
     return false;
 }
 // @fnv 0x00851d10
+// pdb: PlayerCharacter::ResetLastPlayingTimeUpdate | BGSSaveLoadManager.obj | debug, call graph, medium
 void BGSSaveLoadManager::UpdateSaveTimestamp()
 {
     *(unsigned int*)((char*)this + 0x78c) = gm_GetTickCount();
@@ -607,7 +653,11 @@ void BGSSaveLoadManager::UpdateSaveTimestamp()
 
 // Appends ".fos" to apFullFileName when its length is under 4 or it does not already end in ".fos".
 // @fnv 0x0084fec0
-void BGSSaveLoadManager::EnsureFosExtension(char* apFileName, char* apFullFileName)
+// src: XBOX_RETAIL_PDB 0x0084fec0
+// pdb: BGSSaveLoadManager::GetFullFileName | BGSSaveLoadManager.obj | retail, call graph, high
+// pdb params: apFileName, apFullFileName
+// pdb locals: ilength
+void BGSSaveLoadManager::GetFullFileName(char* apFileName, char* apFullFileName)
 {
     TaskQueueInterface::CopyStringToBuffer(apFullFileName, 0x104, apFileName);
     unsigned int ilength = BSStringLength<char>(apFullFileName);
@@ -618,6 +668,9 @@ void BGSSaveLoadManager::EnsureFosExtension(char* apFileName, char* apFullFileNa
 int __cdecl BSstrcmp(const char*, const char*);
 
 // @fnv 0x00851250
+// pdb: BGSSaveLoadManager::SetMostRecentSaveGame | BGSSaveLoadManager.obj | debug, object-file run extension, low
+// pdb params: apSaveFileName, aiDeviceID
+// pdb locals: ilength
 void BGSSaveLoadManager::SetSaveFileName(char* apSaveFileName, int aiDeviceID)
 {
     if (!apSaveFileName)
@@ -640,6 +693,7 @@ extern void __fastcall IOManager_Resume(IOManager*);
 // Calls FUN_00c3e340 on DAT_01202d98, then calls FUN_006ebcd0 on the PathManager singleton.
 // @fnv 0x00850bf0
 // src: COMMUNITY 0x00850bf0
+// pdb: BGSSaveLoadManager::EndSaveGame | BGSSaveLoadManager.obj | debug, upstream name already matches, high
 void BGSSaveLoadManager::EndSaveGame()
 {
     IOManager_Resume(DAT_01202d98);
@@ -704,6 +758,8 @@ extern GlobalObject_0040c150 g_011d3600;
 // Queues a UI message from the game setting string and then calls FUN_008503b0 with g_quicksaveName and -1, 0.
 // @fnv 0x008509a0
 // src: COMMUNITY 0x008509a0
+// pdb: BGSSaveLoadManager::ConfirmCorruptAutosaveCallback | BGSSaveLoadManager.obj | debug, object-file run extension, low
+// pdb locals: result
 void BGSSaveLoadManager::Quicksave_008509a0()
 {
     QueueUIMessage(((SettingT_GameSettingCollection_*)&g_011d3600)->String(), 0, g_011cba4c_arg1, 0, DAT_010162c0, 0);
@@ -746,6 +802,7 @@ struct FUN_006ebc90_shell
 };
 // @fnv 0x00850ba0
 // src: COMMUNITY 0x00850ba0
+// pdb: BGSSaveLoadManager::StartSaveGame | BGSSaveLoadManager.obj | retail, upstream name already matches, high
 void BGSSaveLoadManager::StartSaveGame()
 {
     ((FUN_006ebc70_shell*)PathManager::GetRandomGenerator())->PathManager_Pause();
@@ -764,6 +821,8 @@ struct FUN_00847d00_shell
 void __cdecl BGSSaveLoadHeader_SaveHeader(void*);
 // @fnv 0x00850ea0
 // src: XBOX_PDB 0x00850ea0
+// pdb: BGSSaveLoadManager::SaveGameHeader | BGSSaveLoadManager.obj | debug, object-file gap fill, medium
+// pdb params: apFile
 void BGSSaveLoadManager::SaveGameHeader_00850ea0(void* apArg)
 {
     reinterpret_cast<FUN_00847d00_shell*>(g_BGSSaveLoadGame)->SetFlag4(true);
@@ -780,6 +839,7 @@ struct S00851cd0
 // Adds the elapsed time since the last tick to f790 and calls UpdateSaveTimestamp on the BGSSaveLoadManager.
 // @fnv 0x00851cd0
 // src: XBOX_PDB 0x00851cd0
+// pdb: PlayerCharacter::UpdateTotalPlayingTime | BGSSaveLoadManager.obj | debug, upstream name already matches, high
 void S00851cd0::PlayerCharacter_UpdateTotalPlayingTime()
 {
     f790 += gm_GetTickCount() - f78C;
@@ -795,7 +855,11 @@ struct FUN_00851cb0_shell
 
 // Converts the player's total playing time into hours, minutes and seconds and writes them to output as a formatted string.
 // @fnv 0x00851bf0
-void BGSSaveLoadManager::FormatPlayTime(char* output, bool useThreeDigitHours)
+// src: XBOX_RETAIL_PDB 0x00851bf0
+// pdb: BGSSaveLoadManager::GetPlayTimeString | BGSSaveLoadManager.obj | retail, string-set bridge, high
+// pdb params: apPlayTimeString, abDisplayOnly
+// pdb locals: itotalPlayingTime, inumSeconds, inumMinutes, inumHours
+void BGSSaveLoadManager::GetPlayTimeString(char* apPlayTimeString, bool abDisplayOnly)
 {
     unsigned int totalPlayingTime2 = ((FUN_00851cb0_shell*)g_thePlayer)->GetField790();
     unsigned int hours2 = totalPlayingTime2 / 0x36ee80;
@@ -803,10 +867,10 @@ void BGSSaveLoadManager::FormatPlayTime(char* output, bool useThreeDigitHours)
     unsigned int minutes = totalPlayingTime2 / 0xea60;
     totalPlayingTime2 -= minutes * 0xea60;
     unsigned int seconds = totalPlayingTime2 / 0x3e8;
-    if (useThreeDigitHours)
-        sprintf_s(output, 0x104, "%03i.%02i.%02i", hours2, minutes, seconds);
+    if (abDisplayOnly)
+        sprintf_s(apPlayTimeString, 0x104, "%03i.%02i.%02i", hours2, minutes, seconds);
     else
-        sprintf_s(output, 0x104, "%02i.%02i.%02i", hours2, minutes, seconds);
+        sprintf_s(apPlayTimeString, 0x104, "%02i.%02i.%02i", hours2, minutes, seconds);
 }
 
 namespace fnv_00851cb0 {
@@ -818,6 +882,7 @@ struct S00851cd0
 };
 
 // @fnv 0x00851cb0
+// pdb: PlayerCharacter::GetTotalPlayingTime | BGSSaveLoadManager.obj | debug, call graph, medium
 int __thiscall S00851cd0::GetField790()
 {
     PlayerCharacter_UpdateTotalPlayingTime();
@@ -839,7 +904,11 @@ extern GlobalObject_0040c150 g_011d3ed4;
 
 // Builds a save file name from the player name, location and play time, truncating it to fit and passing it to the save manager unless autosaving.
 // @fnv 0x008517c0
-void BGSSaveLoadManager::BuildSaveFileName(char* saveFileName, bool autosave, bool displayOnly)
+// src: XBOX_RETAIL_PDB 0x008517c0
+// pdb: BGSSaveLoadManager::GenerateSaveFileName | BGSSaveLoadManager.obj | retail, string-set bridge, high
+// pdb params: apSaveFileName, abDisplayOnly, abAutosave
+// pdb locals: pplayerName, pplayTimeString, pplayerLocationName, imaxFileNameLength
+void BGSSaveLoadManager::GenerateSaveFileName(char* apSaveFileName, bool abDisplayOnly, bool abAutosave)
 {
     const char* pplayerName;
     char pplayTimeString[260];
@@ -847,52 +916,55 @@ void BGSSaveLoadManager::BuildSaveFileName(char* saveFileName, bool autosave, bo
 
     pplayerName = fnv_008517c0::_g_thePlayer->GetFullName();
 
-    this->CopyPlayerName(pplayerLocationName);
-    FormatPlayTime(pplayTimeString, autosave);
+    this->GetPlayerLocationName(pplayerLocationName);
+    GetPlayTimeString(pplayTimeString, abDisplayOnly);
 
-    fnv_008517c0::_sprintf_s(saveFileName, 0x104, "%s %i - %s, %s, %s",
-               displayOnly ? reinterpret_cast<SettingT_GameSettingCollection_*>(&fnv_008517c0::g_011d3ed4)->String()
+    fnv_008517c0::_sprintf_s(apSaveFileName, 0x104, "%s %i - %s, %s, %s",
+               abAutosave ? reinterpret_cast<SettingT_GameSettingCollection_*>(&fnv_008517c0::g_011d3ed4)->String()
                            : reinterpret_cast<SettingT_GameSettingCollection_*>(&g_011d4060)->String(),
                iCurrentSaveGameNumber, pplayerName, pplayerLocationName, pplayTimeString);
 
-    if (!autosave)
+    if (!abDisplayOnly)
     {
         unsigned int imaxFileNameLength = 0x104;
-        if (fnv_008517c0::_BSStringLength(saveFileName) > imaxFileNameLength - 5)
-            saveFileName[imaxFileNameLength - 5] = 0;
+        if (fnv_008517c0::_BSStringLength(apSaveFileName) > imaxFileNameLength - 5)
+            apSaveFileName[imaxFileNameLength - 5] = 0;
 
-        SanitizeSaveFileName(saveFileName);
+        ScrubFileName(apSaveFileName);
     }
 }
 
 struct FUN_00404eb0
 {
     int contextId;
-    FUN_00404eb0(int category, int level, const char* sourceName, int messageId);
+    FUN_00404eb0(int memContext, int overridable, const char* sourceName, int aiLine);
     ~FUN_00404eb0();
 };
 bool __fastcall TESTextureList_GetTextureCount(InterfaceManager* manager);
 struct MessageSink
 {
-    void __thiscall AddMessage(int a, int b, int c, int d, float value, unsigned char option);
+    void __thiscall HUDMainMenu_ShowMessage(int apString, int aeEmotion, int apIconFilename, int apSoundName, float afShowSeconds, unsigned char abMoveToHead);
 };
 extern "C" MessageSink* DAT_011d96c0;
 extern "C" const char str_0106eb78[];
 
 // Creates a scope object, and if an interface manager and message sink exist, forwards the six arguments to the sink; returns false.
 // @fnv 0x007052f0
+// pdb: Interface::ShowMessage | Interface.obj | retail, call graph, high
+// pdb params: apString, aeEmotion, apIconFilename, apSoundName, afShowSeconds, abMoveToHead
+// pdb locals: tempMemContext
 bool __cdecl DispatchMessageToSink(int aiArg1, int aiArg2, int aiArg3, int aiArg4, float value, unsigned char option)
 {
     FUN_00404eb0 scope(13, 1, str_0106eb78, 0x901);
     if (InterfaceManager_GetSingleton() && TESTextureList_GetTextureCount(InterfaceManager_GetSingleton()) && DAT_011d96c0)
-        DAT_011d96c0->AddMessage(aiArg1, aiArg2, aiArg3, aiArg4, value, option);
+        DAT_011d96c0->HUDMainMenu_ShowMessage(aiArg1, aiArg2, aiArg3, aiArg4, value, option);
     return false;
 }
 
 struct SaveGameDetails
 {
     unsigned int GetReferenceFlags();
-    void DeleteItemsFrom(unsigned int);
+    void BGSSaveLoadHistory_AddNote(unsigned int);
 };
 struct SaveGameOps
 {
@@ -911,9 +983,12 @@ extern SettingString g_011d4930, g_011d4f0c;
 extern const char str_010208a0[], str_010208e0[];
 // @fnv 0x008503b0
 // src: COMMUNITY 0x008503b0
+// pdb: BGSSaveLoadManager::SaveGame | BGSSaveLoadManager.obj | debug, call graph, medium
+// pdb params: apFileName, aiDeviceID, abOutputStats
+// pdb locals: bquicksave, bautosave, pgeneratedFileName, bforcedSave, pfileNameCopy, deviceData, pfile, dwresult, isaveFileSize, icontentFileSize, ihistoryCount, bsuccess, pfileName
 bool BGSSaveLoadManager::SaveGame_008503b0(const char* acFileName, int mode, bool remove)
 {
-    bool q = IsSaveFileNameLegacyAutosave(acFileName);
+    bool q = IsSaveFileNameAutosave(acFileName);
     bool b = FUN_00851a60(acFileName);
     bool a = FUN_00851b00(acFileName);
     bool eb = false;
@@ -935,7 +1010,7 @@ bool BGSSaveLoadManager::SaveGame_008503b0(const char* acFileName, int mode, boo
     }
     if (!acFileName)
     {
-        BuildSaveFileName(cf, 0, 0);
+        GenerateSaveFileName(cf, 0, 0);
         acFileName = cf;
     }
     SaveLoadString::strcpy_s(f, 260, acFileName);
@@ -974,7 +1049,7 @@ bool BGSSaveLoadManager::SaveGame_008503b0(const char* acFileName, int mode, boo
         BuildWeaponPath(acFileName, ba, false);
         DumpTextAndOpen(ba);
     }
-    ((SaveGameOps*)g_BGSSaveLoadGame)->FUN_00441110()->DeleteItemsFrom(h);
+    ((SaveGameOps*)g_BGSSaveLoadGame)->FUN_00441110()->BGSSaveLoadHistory_AddNote(h);
     if (i != pSaveLoadFile && pSaveGameList)
         AddFileToList(f, mode, iCurrentSaveGameNumber);
     if (!b && !q)
@@ -1001,16 +1076,21 @@ extern PlayerStandIn851* DAT_011dea3c;
 void __cdecl StrCpyS851(char* dest, unsigned int size, const char* src);
 // Copies the player's name into dest (up to 0x104 bytes), or an empty string if the name is null.
 // @fnv 0x00851b40
-void BGSSaveLoadManager::CopyPlayerName(char* dest)
+// src: XBOX_RETAIL_PDB 0x00851b40
+// pdb: BGSSaveLoadManager::GetPlayerLocationName | BGSSaveLoadManager.obj | retail, call graph (shared callers), high
+// pdb params: apLocationName
+// pdb locals: smapName
+void BGSSaveLoadManager::GetPlayerLocationName(char* apLocationName)
 {
     StrStandIn851 name;
     DAT_011dea3c->GetName851(&name);
     if ((const char*)name)
-        StrCpyS851(dest, 0x104, name);
+        StrCpyS851(apLocationName, 0x104, name);
     else
-        StrCpyS851(dest, 0x104, "");
+        StrCpyS851(apLocationName, 0x104, "");
 }
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 class Modifier
 {
   public:
@@ -1027,7 +1107,10 @@ Tile_* __cdecl Tile_GetMenuByClass(int id);
 
 // If a modifier key is held, look up tile 0x3f1, cast its menu to DialogMenu, and call SetActive on it.
 // @fnv 0x00705110
-void __cdecl SetDialogMenuActive(bool abActive)
+// pdb: Interface::SetDialogPause | Interface.obj | retail, call graph (shared callers), high
+// pdb params: abPause
+// pdb locals: pmenu, ptile
+void __cdecl SetDialogMenuActive(bool abPause)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
     {
@@ -1035,7 +1118,7 @@ void __cdecl SetDialogMenuActive(bool abActive)
         Tile_* pkTile = Tile_GetMenuByClass(0x3f1);
         pkMenu = pkTile ? dynamic_cast<DialogMenu*>(pkTile->GetMenu()) : 0;
         if (pkMenu)
-            pkMenu->SetActive(abActive);
+            pkMenu->SetActive(abPause);
     }
 }
 

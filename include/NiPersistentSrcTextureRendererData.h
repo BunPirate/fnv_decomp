@@ -19,9 +19,10 @@ public:
     unsigned int unk0C;
     unsigned int unk10;
     NiPixelFormat m_kPixelFormat;
-    unsigned char unk58[8];
+    unsigned char DegradePriorityRange[8];
 };
 
+// pdb: class NiPersistentSrcTextureRendererData, size 0x94, bases: NiTexture::RendererData, 13 members
 class NiPersistentSrcTextureRendererData : public NiTexture::RendererData
 {
 public:
@@ -37,7 +38,7 @@ public:
     virtual void FreePixelData();
 
     void LinkPalette(NiStream& stream);
-    void AppendToStrings(ViewerArray* strings);
+    void AppendToStrings(ViewerArray* pkStrings);
     bool RegisterStreamables_00a98170(NiStream& stream);
     bool IsEqual_00a982f0(NiObject* object);
     void FUN_00a984b0(NiStream& stream);
@@ -54,13 +55,13 @@ public:
     unsigned int* m_puiWidth;
     unsigned int* m_puiHeight;
     unsigned int* m_puiOffsetInBytes;
-    unsigned int m_uiPixelDataSize;
+    unsigned int m_uiPadOffsetInBytes;
     unsigned int m_uiMipmapLevels;
     unsigned int m_uiPixelStride;
     unsigned int m_uiFaces;
-    int m_iPaletteFormat;
-    unsigned char* m_pucPaletteData;
-    unsigned int m_uiPaletteSize;
-    unsigned int m_uiPaletteEntryCount;
+    int m_eTargetPlatform;
+    unsigned char* m_pucPristinePixels;
+    unsigned int m_uiPristineMaxOffsetInBytes;
+    unsigned int m_uiPristinePadOffsetInBytes;
     NiPalette* m_spPalette;
 };

@@ -7,16 +7,17 @@ class hkTransform;
 class hkGeometry;
 class hkDisplayGeometry;
 
+// pdb: class hkDisplaySerializeIStream, size 0x10 (here 0xc), bases: hkIArchive, 0 members
 class hkDisplaySerializeIStream : public hkIArchive
 {
 public:
     virtual ~hkDisplaySerializeIStream();
 
-    void hkIArchive_readArrayGeneric(void* buf, int elemSize, int numElems);
-    void ReadTranslationAndRotation(hkTransform* target);
-    void ReadTranslationAndRotation(hkTransform& t);
+    void hkIArchive_readArrayGeneric(void* array, int elemsize, int arraySize);
+    void readTransform(hkTransform* t);
+    void readTransform(hkTransform& t);
     void readQuadVector4(hkVector4& v);
-    void readGeometry(hkGeometry* geom);
+    void readGeometry(hkGeometry* g);
     void UpdateFields_00ddada0(hkDisplayGeometry*& geometry);
 
     signed char readInt8();

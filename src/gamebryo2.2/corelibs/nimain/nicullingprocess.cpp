@@ -37,11 +37,13 @@ struct S694a0
 // If _0c is set, copies seven ints from src into _10, calls SetFromFrustum on _10 and _0c+0x68, then sets _8c to 63.
 // @fnv 0x00a694a0
 // src: XBOX_PDB 0x00a694a0
-void __thiscall S694a0::NiCullingProcess_SetFrustum(void* pSource)
+// pdb: NiCullingProcess::SetFrustum | NiCullingProcess.obj | retail, upstream name already matches, high
+// pdb params: kFrustum
+void __thiscall S694a0::NiCullingProcess_SetFrustum(void* kFrustum)
 {
     if (_0c)
     {
-        *(SevenInts*)_10 = *(SevenInts*)pSource;
+        *(SevenInts*)_10 = *(SevenInts*)kFrustum;
         _2c.SetFromFrustum(_10, _0c + 0x68);
         _8c = 63;
     }
@@ -52,13 +54,16 @@ struct WorkerS694a0
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24, unk28;
     NiPlane planes[6];
     unsigned int flags;
-    void __thiscall NiCullingProcess_DoCulling(NiAVObject* object);
+    void __thiscall NiCullingProcess_DoCulling(NiAVObject* apObject);
 };
 // @fnv 0x00a694e0
 // src: COMMUNITY 0x00a694e0
-void WorkerS694a0::NiCullingProcess_DoCulling(NiAVObject* object)
+// pdb: NiCullingProcess::DoCulling | NiCullingProcess.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: uiSaveActive, pnty, yy, res1, signMask, pntz, rad, rbnd, zz, tmp, pntx, negRad, xx, dot, res2, dot2
+void WorkerS694a0::NiCullingProcess_DoCulling(NiAVObject* apObject)
 {
-    NiBound* bound = reinterpret_cast<NiBound*>(object->m_kWorldBound);
+    NiBound* bound = reinterpret_cast<NiBound*>(apObject->m_kWorldBound);
     if (!bound)
         return;
     float radius = bound->m_fRadius;
@@ -72,7 +77,7 @@ void WorkerS694a0::NiCullingProcess_DoCulling(NiAVObject* object)
     {
         if (flags & mask)
         {
-            int side = const_cast<NiBound&>(object->NiAVObject_GetWorldBound()).WhichSide(plane);
+            int side = const_cast<NiBound&>(apObject->NiAVObject_GetWorldBound()).WhichSide(plane);
             if (side == 2)
                 break;
             if (side == 1)
@@ -80,7 +85,7 @@ void WorkerS694a0::NiCullingProcess_DoCulling(NiAVObject* object)
         }
     }
     if (uiPlaneIndex == 6)
-        object->OnVisible(*reinterpret_cast<NiCullingProcess*>(this));
+        apObject->OnVisible(*reinterpret_cast<NiCullingProcess*>(this));
     flags = uiSavedFlags;
 }
 
@@ -125,6 +130,8 @@ class FUN_00a69400
 };
 
 // @fnv 0x00a69400
+// pdb: NiCullingProcess::NiCullingProcess | NiCullingProcess.obj | retail, call graph (shared callers), medium
+// pdb params: pkVisibleSet
 FUN_00a69400::FUN_00a69400(void* pkCamera)
     : m_bUpdated(false), m_kCameraFrustum(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false)
 {

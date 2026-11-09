@@ -37,6 +37,7 @@ class TESObjectWEAP;
 class TimeoutTimer;
 class WEAPStub;
 
+// pdb: class CombatState, size 0x22c (here 0x8), 74 members
 class CombatState
 {
 public:
@@ -223,7 +224,7 @@ public:
     bool FUN_00461580(unsigned int);
     CombatSlot* GetActionAtIndex(int);
     bool CombatState_FindBestCoverLocation(void*, void*, CombatSearch*, CombatSpot*, int);
-    bool SelectAndMoveToPoint(CombatSpot*, int, int, float, float);
+    bool CombatState_FindBestDodgeLocation(CombatSpot*, int, int, float, float);
     bool FindBestAdvanceLocation(void*, CombatSearch*, CombatSpot*, int, CombatPos*, float, int);
     bool CombatState_FindGrenadeThrowLocation(CombatSpot*, char*, int);
     bool CombatState_FindBestFleeLocation(CombatSearch*, CombatSpot*, int);

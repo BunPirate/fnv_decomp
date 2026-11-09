@@ -16,6 +16,7 @@ extern MemoryManager g_memoryManager;
 
 void __cdecl _Deallocate(void* p);
 
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 struct ImageSpaceShaderParam : public ImageSpaceEffectParam
 {
     char pad[0x88];
@@ -30,7 +31,7 @@ struct ImageSpaceShaderParam : public ImageSpaceEffectParam
     }
 
     ImageSpaceShaderParam();
-    void FUN_00b8ab10(int a2, int a3);
+    void FUN_00b8ab10(int aiVSize, int aiPSize);
     void FUN_00b8a790(int a2, float f1, float f2, float f3, float f4);
 };
 
@@ -52,7 +53,7 @@ struct FUN_00c05780_class
     NiTPrimitiveArray<ImageSpaceEffectParam*> m_shaderParams;
     NiTPrimitiveArray<ImageSpaceTexture*> m_textures;
 
-    void SetTextureArraySize(int a2);
+    void SetTextureArraySize(int aiCount);
     void SetArrayEntry(int a2, int a3, int a4, int a5, int a6);
     void FUN_00ba3c70(int a2, int a3, ImageSpaceShaderParam* param, int a5);
 

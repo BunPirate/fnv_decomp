@@ -3,6 +3,7 @@
 // src: XBOX_PDB (Interface, class, sizeof 1); static call targets checked against the PC exe.
 class TESModel;
 class BGSLoadGameBuffer;
+// pdb: class Interface, size 0x1, 0 members
 class Interface
 {
 public:
@@ -35,7 +36,7 @@ public:
     bool FaderManager_IsFaderActive(bool); // exe 0x007014a0
     static void PrintDebugMessage(BGSLoadGameBuffer*); // exe 0x0040fbe0
 
-    static void SetHUDVisible(bool); // exe 0x00709c40
+    static void Interface_SetGunScopeVisible(bool); // exe 0x00709c40
     static void ClearGunScope(); // exe 0x00709ca0
     static void InitGunScope(TESModel*);
     static bool ShowMessage(const char*, int, const char*, const char*, float, bool); // exe 0x007052f0

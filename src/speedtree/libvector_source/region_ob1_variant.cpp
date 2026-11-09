@@ -33,6 +33,10 @@ struct BoxBounds
 
 // @fnv 0x00b3caa0
 // src: GUESS 0x00b3caa0 (confidence: low)
+// pdb: CRegion::operator^ | Region.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to CRegion::operator+
+// pdb params: cVec
+// pdb locals: cTemp
 BoxBounds BoxBounds::ComputeValue_00b3caa0(const Vec3Pt* p) const
 {
 

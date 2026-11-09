@@ -1,21 +1,24 @@
 
 #include "navmeshinfo_decls.h"
 // @fnv 0x0069ad00
-bool NavMeshInfo::ResolveNavMesh(NavMeshPtr& out)
+// pdb: NavMeshInfo::GetNavMesh | NavMesh_Util.obj | debug, call graph, high
+// pdb params: aReturnNavMeshPtr
+bool NavMeshInfo::ResolveNavMesh(NavMeshPtr& aReturnNavMeshPtr)
 {
     if (NavMeshInfo_GetDisabled())
         return false;
-    ProcessWithScopedRef(out, m_pLocationNavMesh);
-    return out.Modelloader_GetReferencedThis() ? true : false;
+    ProcessWithScopedRef(aReturnNavMeshPtr, pNavMesh);
+    return aReturnNavMeshPtr.Modelloader_GetReferencedThis() ? true : false;
 }
 // @fnv 0x006dd6a0
+// pdb: PathingLocation::HasNavMeshData | PathingLocation.obj | debug, call graph, high
 bool PathingLocation::HasValidTriangle()
 {
-    if (m_pLocationNavMesh == 0)
+    if (pNavMesh == 0)
         return false;
-    if (!m_pLocationNavMesh->HasNonZeroAtOffset54())
+    if (!pNavMesh->HasNonZeroAtOffset54())
         return false;
-    if (m_usTriangleID == 0xffff)
+    if (usTriangle == 0xffff)
         return false;
     return true;
 }

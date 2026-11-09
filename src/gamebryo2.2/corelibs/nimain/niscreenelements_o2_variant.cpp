@@ -7,18 +7,19 @@ extern char DAT_0109e984;
 #include "../../../../include/NiScreenElements.h"
 #include "../../../../include/StrArr.h"
 
-extern "C" void* g_011f5b48;
+extern "C" void* NiScreenElements_ms_RTTI;
 
 // @fnv 0x00a87800
 // src: COMMUNITY 0x00a87800
 void* __cdecl NiScreenElements_GetRTTI()
 {
-    return &g_011f5b48;
+    return &NiScreenElements_ms_RTTI;
 }
 
 extern "C" void _delete(void*, unsigned int);
 
 // @fnv 0x00a87830
+// pdb: NiScreenElements::`scalar deleting destructor' | NiScreenElements.obj | retail, object-file gap fill, high
 NiScreenElements* __thiscall NiScreenElements::FUN_00a87830(unsigned int flags)
 {
     *reinterpret_cast<void**>(this) = (void*)&DAT_0109e984;
@@ -31,11 +32,13 @@ NiScreenElements* __thiscall NiScreenElements::FUN_00a87830(unsigned int flags)
 char* _FUN_00a7d330(char*);
 
 // @fnv 0x00a878b0
+// pdb: NiScreenElements::GetViewerStrings | NiScreenElements.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void NiScreenElements::GetViewerStrings(NiViewerStringsArray* strings)
 {
     StrArr* pkStrings = reinterpret_cast<StrArr*>(strings);
     NiTriShape::GetViewerStrings(strings);
-    char* tmp = _FUN_00a7d330(reinterpret_cast<char*>(g_011f5b48));
+    char* tmp = _FUN_00a7d330(reinterpret_cast<char*>(NiScreenElements_ms_RTTI));
     unsigned int sz = pkStrings->m_usSize;
     if (sz >= pkStrings->m_usMaxSize)
         pkStrings->SetSize(pkStrings->m_usGrowBy + sz);
@@ -43,13 +46,16 @@ void NiScreenElements::GetViewerStrings(NiViewerStringsArray* strings)
 }
 
 extern char DAT_0109e984;
-extern "C" void __cdecl ScreenElementsBaseConstructor();
+extern "C" void __cdecl NiTriShape_ctor();
 
 // The shared base has no single-data-pointer constructor declaration.
 // @fnv 0x00a87810
-NiScreenElements* __fastcall ConstructScreenElements(NiScreenElements* self, void*, NiScreenElementsData* data)
+// src: XBOX_RETAIL_PDB 0x00a87810
+// pdb: NiScreenElements::NiScreenElements | NiScreenElements.obj | retail, call graph, high
+// pdb params: pkModelData
+NiScreenElements* __fastcall NiScreenElements_ctor(NiScreenElements* self, void*, NiScreenElementsData* data)
 {
-    ((void (__thiscall*)(NiTriShape*, NiScreenElementsData*))&ScreenElementsBaseConstructor)(self, data);
+    ((void (__thiscall*)(NiTriShape*, NiScreenElementsData*))&NiTriShape_ctor)(self, data);
     *reinterpret_cast<void**>(self) = &DAT_0109e984;
     return self;
 }
@@ -59,6 +65,9 @@ extern "C" void __cdecl ScreenElementsBaseCopyMembers();
 
 // The shared class has no default constructor or clone override declaration.
 // @fnv 0x00a87860
+// pdb: NiScreenElements::CreateClone | NiScreenElements.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* __fastcall CloneScreenElements(NiScreenElements* self, void*, CloningProcess& process)
 {
     NiScreenElements* pChild = static_cast<NiScreenElements*>(NiScreenElements::operator new(sizeof(NiScreenElements)));

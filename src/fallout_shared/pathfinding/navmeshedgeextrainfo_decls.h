@@ -13,11 +13,12 @@ class TESFile;
 
 extern unsigned int DAT_0106b0dc;
 
+// pdb: structure EdgeExtraInfo, size 0xc (here 0x4), 2 members
 class EdgeExtraInfo
 {
   public:
     void* vtable;
-    EdgeExtraInfo* DeserializeFromFile();
+    EdgeExtraInfo* BSSimpleArray_int_1024_ctor();
 };
 
 #endif

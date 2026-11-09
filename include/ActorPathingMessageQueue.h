@@ -7,6 +7,7 @@ class ActorPathingMessage;
 typedef ActorPathingMessage QueuedMessage;
 template <class T> class BSTFreeListElem;
 
+// pdb: class ActorPathingMessageQueue, size 0x1c, bases: BSTCommonLLMessageQueue<ActorPathingMessage>, NiRefObject, 0 members
 class ActorPathingMessageQueue : public BSTCommonLLMessageQueue<ActorPathingMessage>, public NiRefObject
 {
   public:

@@ -15,6 +15,9 @@ struct FUN_00aa4200_Helper
 
 // @fnv 0x00aa4200
 // src: COMMUNITY 0x00aa4200
+// pdb: MemoryManager::Reallocate | MemoryManager.obj | debug, object-file gap fill, medium
+// pdb params: apMem, aSize, apFileName, aiLine, apFunction
+// pdb locals: ioldaSize, pmem
 void* FUN_00aa4200_Helper::_MemoryManager_Reallocate(void* old, unsigned int size, unsigned int a, unsigned int b, unsigned int c)
 {
     void* result2 = 0;

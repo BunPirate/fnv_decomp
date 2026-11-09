@@ -31,7 +31,7 @@ void* __cdecl FindEntryValue(hkpLinkedCollidable* apFirst, hkpLinkedCollidable* 
     hkpLinkedCollidable* pSmaller;
     hkpLinkedCollidable* pOther;
 
-    if (apFirst->m_kCollisionEntries.m_iElementCount <= apSecond->m_kCollisionEntries.m_iElementCount)
+    if (apFirst->m_collisionEntries.m_iElementCount <= apSecond->m_collisionEntries.m_iElementCount)
     {
         pSmaller = apFirst;
         pOther = apSecond;
@@ -42,11 +42,11 @@ void* __cdecl FindEntryValue(hkpLinkedCollidable* apFirst, hkpLinkedCollidable* 
         pOther = apFirst;
     }
 
-    int iEntryCount = pSmaller->m_kCollisionEntries.m_iElementCount;
+    int iEntryCount = pSmaller->m_collisionEntries.m_iElementCount;
     for (int i = 0; i < iEntryCount; i++)
     {
-        if (reinterpret_cast<const hkpLinkedCollidable::CollisionKeyEntry*>(pSmaller->m_kCollisionEntries.m_data)[i].m_pCollidable == pOther)
-            return reinterpret_cast<const hkpLinkedCollidable::CollisionKeyEntry*>(pSmaller->m_kCollisionEntries.m_data)[i].m_pAgentEntry;
+        if (reinterpret_cast<const hkpLinkedCollidable::CollisionKeyEntry*>(pSmaller->m_collisionEntries.m_data)[i].m_pCollidable == pOther)
+            return reinterpret_cast<const hkpLinkedCollidable::CollisionKeyEntry*>(pSmaller->m_collisionEntries.m_data)[i].m_pAgentEntry;
     }
     return 0;
 }
@@ -56,10 +56,10 @@ void* __cdecl FindEntryValue(hkpLinkedCollidable* apFirst, hkpLinkedCollidable* 
 void _hkAgentNnMachine_AssertTrackValidity(hkpAgentNnTrack* pArg)
 {
     int i = 0;
-    if (pArg->m_kSectors.m_iElementCount > i)
+    if (pArg->m_sectors.m_iElementCount > i)
     {
-        hkpAgentNnSector** aRecords = pArg->m_kSectors.m_data;
-        volatile int* pCount = &pArg->m_kSectors.m_iElementCount;  // re-read the record count
+        hkpAgentNnSector** aRecords = pArg->m_sectors.m_data;
+        volatile int* pCount = &pArg->m_sectors.m_iElementCount;  // re-read the record count
         int iCount = *pCount;
         do
         {
@@ -67,7 +67,7 @@ void _hkAgentNnMachine_AssertTrackValidity(hkpAgentNnTrack* pArg)
             i++;
             unsigned char* pLimit;
             if (i == iCount)
-                pLimit = (unsigned char*)(pArg->m_iBytesUsedInLastSector + (int)pPos);
+                pLimit = (unsigned char*)(pArg->m_bytesUsedInLastSector + (int)pPos);
             else
                 pLimit = pPos + 0x200;
             while (pPos < pLimit)
@@ -106,6 +106,8 @@ struct FnvCtx
 };
 
 // @fnv 0x00cfdf60
+// pdb: hkAgentNnMachine_IsEntryOnTrack | hkpAgentNnMachine.obj | debug, object-file run extension, low
+// pdb params: track, entry
 void GetNodePairValue(FnvNode** ppA, FnvNode** ppB, FnvCtx* pCtx, int* pOutVal, int* pOutFlag)
 {
     FnvNode* pNodeA = *ppA;
@@ -138,7 +140,7 @@ void GetNodePairValue(FnvNode** ppA, FnvNode** ppB, FnvCtx* pCtx, int* pOutVal, 
 }
 
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 static __forceinline void ConstructSectorPointers(hkpAgentNnSector** p, int n, hkpAgentNnSector* const& e)
 {
@@ -156,25 +158,29 @@ template <> __forceinline void hkArrayBase<hkpAgentNnSector*>::_pushBack(hkMemor
 
 // Returns a pointer into the pool's current block at the pool offset, advancing it by 0x80, or allocates a new 0x200-byte block when the offset reaches 0x200.
 // @fnv 0x00cfe820
-static __declspec(noinline) char* AllocatePoolChunk(hkpAgentNnTrack* pool)
+// src: XBOX_RETAIL_PDB 0x00cfe820
+// pdb: hkAgentNnMachine_AllocateEntry | hkpAgentNnMachine.obj | retail, call graph (shared callers), high
+// pdb params: track, forcePpuEntry
+// pdb locals: sector
+static __declspec(noinline) char* hkAgentNnMachine_AllocateEntry(hkpAgentNnTrack* pool)
 {
-    if (pool->m_iBytesUsedInLastSector < 0x200)
+    if (pool->m_bytesUsedInLastSector < 0x200)
     {
-        char* p = (char*)pool->m_kSectors.m_data[pool->m_kSectors.m_iElementCount - 1] + pool->m_iBytesUsedInLastSector;
-        pool->m_iBytesUsedInLastSector += 0x80;
+        char* p = (char*)pool->m_sectors.m_data[pool->m_sectors.m_iElementCount - 1] + pool->m_bytesUsedInLastSector;
+        pool->m_bytesUsedInLastSector += 0x80;
         return p;
     }
     char* block = static_cast<char*>(hkMemoryRouter_getInstance().heap().blockAlloc(0x200));
-    pool->m_kSectors.pushBack((hkpAgentNnSector*)block);
-    pool->m_iBytesUsedInLastSector = 0x80;
+    pool->m_sectors.pushBack((hkpAgentNnSector*)block);
+    pool->m_bytesUsedInLastSector = 0x80;
     return block;
 }
 
 // Caller so the file-static helper is emitted with its register calling convention.
 char* CFE820Allocate(hkpAgentNnTrack* pool)
 {
-    char* a = AllocatePoolChunk(pool);
-    char* b = AllocatePoolChunk(pool);
+    char* a = hkAgentNnMachine_AllocateEntry(pool);
+    char* b = hkAgentNnMachine_AllocateEntry(pool);
     return a < b ? a : b;
 }
 
@@ -261,19 +267,22 @@ struct __declspec(align(16)) FUN_00cfeba0_Node
     int unkac;
 };
 
-void* __cdecl hkAgentMachine_processTransformedShapes(void* h, void* a, void* b, unsigned int n, void* c);
+void* __cdecl hkAgentMachine_processTransformedShapes(void* cdBody, void* newCdBodies, void* newMotionStates, unsigned int numSlots, void* cdBodyHasTransformFlag);
 
 // @fnv 0x00cfeba0
-// src: HAVOK_LIB 0x00cfeba0
-void __cdecl _hkAgentNnMachine_UpdateShapeCollectionFilter(FUN_00cfeba0_Obj* self, void** apCallbackTable, void* a3)
+// src: XBOX_RETAIL_PDB 0x00cfeba0
+// pdb: hkAgentNnMachine_UpdateShapeCollectionFilter | hkpAgentNnMachine.obj | retail, call graph, high
+// pdb params: entry, input, constraintOwner
+// pdb locals: modBodyB, modMotionB, modBodyA, modMotionA, dummyCdBodyHasTransformFlag, assertBuf, ostr
+void __cdecl hkAgentNnMachine_UpdateShapeCollectionFilter(FUN_00cfeba0_Obj* entry, void** input, void* constraintOwner)
 {
     unsigned char flag;
     void* p = 0;
     FUN_00cfeba0_Result results[8];
     FUN_00cfeba0_Node elems[8];
-    int type = self->m_type;
-    void* h1 = self->m_p10;
-    void* h2 = self->m_p14;
+    int type = entry->m_type;
+    void* h1 = entry->m_p10;
+    void* h2 = entry->m_p14;
 
     for (;;)
     {
@@ -281,10 +290,10 @@ void __cdecl _hkAgentNnMachine_UpdateShapeCollectionFilter(FUN_00cfeba0_Obj* sel
         {
         case 0:
         case 4:
-            p = (char*)self + 0x20;
+            p = (char*)entry + 0x20;
             break;
         case 2:
-            p = (char*)self + 0x30;
+            p = (char*)entry + 0x30;
             break;
         case 8:
         case 10:
@@ -298,10 +307,10 @@ void __cdecl _hkAgentNnMachine_UpdateShapeCollectionFilter(FUN_00cfeba0_Obj* sel
         }
 
         {
-            FUN_00cfeba0_Fn fn = *(FUN_00cfeba0_Fn*)((char*)(*apCallbackTable) + 0x16c8 + self->m_uiEdgeIndex * 80);
+            FUN_00cfeba0_Fn fn = *(FUN_00cfeba0_Fn*)((char*)(*input) + 0x16c8 + entry->m_uiEdgeIndex * 80);
             if (fn)
             {
-                fn(self, p, h1, h2, apCallbackTable, (void*)self->unk08, a3);
+                fn(entry, p, h1, h2, input, (void*)entry->unk08, constraintOwner);
             }
         }
         return;
@@ -371,7 +380,7 @@ struct State
     unsigned used;
     SlabArray slabs;
 };
-__declspec(noinline) static Record* AllocatePoolChunk(State* state)
+__declspec(noinline) static Record* hkAgentNnMachine_AllocateEntry(State* state)
 {
     if (state->used < 512u)
     {
@@ -388,41 +397,44 @@ __declspec(noinline) static Record* AllocatePoolChunk(State* state)
 }
 // Allocates a Record from state, copies all 32 words from source, then registers the new record in two tables indexed by the halves of word04.
 // @fnv 0x00cfeca0
-Record* CloneRecord(State* state, const Record* source)
+// src: XBOX_RETAIL_PDB 0x00cfeca0
+// pdb: hkAgentNnMachine_CopyAndRelinkAgentEntry | hkpAgentNnMachine.obj | retail, call graph, high
+// pdb params: destTrack, entry
+Record* hkAgentNnMachine_CopyAndRelinkAgentEntry(State* destTrack, const Record* entry)
 {
-    Record* record = AllocatePoolChunk(state);
-    record->word00 = source->word00;
-    record->word04 = source->word04;
-    record->word08 = source->word08;
-    record->word0c = source->word0c;
-    record->word10 = source->word10;
-    record->word14 = source->word14;
-    record->word18 = source->word18;
-    record->word1c = source->word1c;
-    record->word20 = source->word20;
-    record->word24 = source->word24;
-    record->word28 = source->word28;
-    record->word2c = source->word2c;
-    record->word30 = source->word30;
-    record->word34 = source->word34;
-    record->word38 = source->word38;
-    record->word3c = source->word3c;
-    record->word40 = source->word40;
-    record->word44 = source->word44;
-    record->word48 = source->word48;
-    record->word4c = source->word4c;
-    record->word50 = source->word50;
-    record->word54 = source->word54;
-    record->word58 = source->word58;
-    record->word5c = source->word5c;
-    record->word60 = source->word60;
-    record->word64 = source->word64;
-    record->word68 = source->word68;
-    record->word6c = source->word6c;
-    record->word70 = source->word70;
-    record->word74 = source->word74;
-    record->word78 = source->word78;
-    record->word7c = source->word7c;
+    Record* record = hkAgentNnMachine_AllocateEntry(destTrack);
+    record->word00 = entry->word00;
+    record->word04 = entry->word04;
+    record->word08 = entry->word08;
+    record->word0c = entry->word0c;
+    record->word10 = entry->word10;
+    record->word14 = entry->word14;
+    record->word18 = entry->word18;
+    record->word1c = entry->word1c;
+    record->word20 = entry->word20;
+    record->word24 = entry->word24;
+    record->word28 = entry->word28;
+    record->word2c = entry->word2c;
+    record->word30 = entry->word30;
+    record->word34 = entry->word34;
+    record->word38 = entry->word38;
+    record->word3c = entry->word3c;
+    record->word40 = entry->word40;
+    record->word44 = entry->word44;
+    record->word48 = entry->word48;
+    record->word4c = entry->word4c;
+    record->word50 = entry->word50;
+    record->word54 = entry->word54;
+    record->word58 = entry->word58;
+    record->word5c = entry->word5c;
+    record->word60 = entry->word60;
+    record->word64 = entry->word64;
+    record->word68 = entry->word68;
+    record->word6c = entry->word6c;
+    record->word70 = entry->word70;
+    record->word74 = entry->word74;
+    record->word78 = entry->word78;
+    record->word7c = entry->word7c;
     _ReadWriteBarrier();
     unsigned short indexA = static_cast<unsigned short>(record->word04);
     unsigned short indexB = static_cast<unsigned short>(record->word04 >> 16);
@@ -441,20 +453,22 @@ struct ItemStack
     int m_uiItemCount;
 };
 
-void __cdecl hkAgentNnMachine_DestroyAgent(ItemStack* s, int value, int a, int b);
+void __cdecl hkAgentNnMachine_DestroyAgent(ItemStack* s, int value, int dispatcher, int b);
 
 // @fnv 0x00cfed90
 // src: HAVOK_LIB 0x00cfed90
-void __cdecl hkAgentNnMachine_DestroyTrack(ItemStack* s, int a, int b)
+// pdb: hkAgentNnMachine_DestroyTrack | hkpAgentNnMachine.obj | retail, upstream name already matches, high
+// pdb params: track, dispatcher, constraintOwner
+void __cdecl hkAgentNnMachine_DestroyTrack(ItemStack* track, int dispatcher, int constraintOwner)
 {
-    if (s->m_uiItemCount != 0)
+    if (track->m_uiItemCount != 0)
     {
         do
         {
-            int iIndex = *(volatile int*)&s->m_uiItemCount;
-            int iItemValue = s->m_pItems[iIndex - 1];
-            hkAgentNnMachine_DestroyAgent(s, iItemValue + s->m_base - 0x80, a, b);
-        } while (s->m_uiItemCount != 0);
+            int iIndex = *(volatile int*)&track->m_uiItemCount;
+            int iItemValue = track->m_pItems[iIndex - 1];
+            hkAgentNnMachine_DestroyAgent(track, iItemValue + track->m_base - 0x80, dispatcher, constraintOwner);
+        } while (track->m_uiItemCount != 0);
     }
 }
 
@@ -483,6 +497,9 @@ typedef void(__cdecl* FUN_00cfdc90_Fn)(FUN_00cfdc90_Obj* self, void* p, float a,
 
 // Looks up a per-slot callback from ctx and invokes it with obj, a payload pointer, x and y; for types 4 and 12 it also updates obj->unk18 from x/y.
 // @fnv 0x00cfdc90
+// pdb: hkAgentNnMachine_WarpTimeInAgent | hkpAgentNnMachine.obj | debug, object-file run extension, low
+// pdb params: entry, oldTime, newTime, input
+// pdb locals: assertBuf, ostr
 void __cdecl DispatchSlotCallback(FUN_00cfdc90_Obj* obj, float x, float y, void* ctx)
 {
     switch (obj->type - 2)
@@ -547,7 +564,7 @@ static __forceinline int hkNextPowerOf2CFEA(unsigned int in)
     return in + 1;
 }
 
-void __cdecl hkArrayUtil__reduce(void* alloc, void* array, int sizeElem, void* pad, int newCapacity);
+void __cdecl hkArrayUtil__reduce(void* mem, void* array, int sizeElem, void* inplaceMem, int newCapacity);
 
 template <> __forceinline void hkArrayBase<hkpLinkedCollidable::CollisionKeyEntry>::removeAt(int index)
 {
@@ -563,11 +580,14 @@ template <> __forceinline void hkArrayBase<hkpLinkedCollidable::CollisionKeyEntr
         hkArrayUtil__reduce(&alloc, this, sizeof(hkpLinkedCollidable::CollisionKeyEntry), 0, totalSize);
 }
 
-void __cdecl _hkAgentNnMachine_InternalDeallocateEntry(void* track, hkpAgentNnEntry* entry);
+void __cdecl hkAgentNnMachine_InternalDeallocateEntry(void* track, hkpAgentNnEntry* entry);
 
 // @fnv 0x00cfea30
 // src: XBOX_PDB 0x00cfea30
-void __cdecl hkAgentNnMachine_DestroyAgent(void* track, hkpAgentNnEntry* entry, hkpCollisionDispatcher* dispatch,
+// pdb: hkAgentNnMachine_DestroyAgent | hkpAgentNnMachine.obj | retail, upstream name already matches, high
+// pdb params: track, entry, dispatcher, constraintOwner
+// pdb locals: assertBuf, ostr
+void __cdecl hkAgentNnMachine_DestroyAgent(void* track, hkpAgentNnEntry* entry, hkpCollisionDispatcher* dispatcher,
                           void* constraintOwner)
 {
     switch (entry->m_ucAgentType)
@@ -576,16 +596,16 @@ void __cdecl hkAgentNnMachine_DestroyAgent(void* track, hkpAgentNnEntry* entry, 
     case 6:
     case 10:
     case 14: {
-        hkAgent3::DestroyFunc pDestroyFunc = dispatch->getAgent3DestroyFunc(entry->m_ucNnTrackType);
+        hkAgent3::DestroyFunc pDestroyFunc = dispatcher->getAgent3DestroyFunc(entry->m_ucNnTrackType);
         pDestroyFunc((FourByteState*)entry, (hkpAgentData*)((char*)entry + 0x20),
-                     (hkpContactMgr*)entry->m_pContactManager, *(hkpConstraintOwner*)constraintOwner, dispatch);
+                     (hkpContactMgr*)entry->m_contactMgr, *(hkpConstraintOwner*)constraintOwner, dispatcher);
         break;
     }
     case 4:
     case 12: {
-        hkAgent3::DestroyFunc pDestroyFunc = dispatch->getAgent3DestroyFunc(entry->m_ucNnTrackType);
+        hkAgent3::DestroyFunc pDestroyFunc = dispatcher->getAgent3DestroyFunc(entry->m_ucNnTrackType);
         pDestroyFunc((FourByteState*)entry, (hkpAgentData*)((char*)entry + 0x30),
-                     (hkpContactMgr*)entry->m_pContactManager, *(hkpConstraintOwner*)constraintOwner, dispatch);
+                     (hkpContactMgr*)entry->m_contactMgr, *(hkpConstraintOwner*)constraintOwner, dispatcher);
         break;
     }
     default:
@@ -594,20 +614,20 @@ void __cdecl hkAgentNnMachine_DestroyAgent(void* track, hkpAgentNnEntry* entry, 
 
     for (int i = 0; i < 2; i++)
     {
-        hkpLinkedCollidable* collidable = entry->m_kCollidable[i];
-        int index = entry->m_ausAgentData[i];
+        hkpLinkedCollidable* collidable = entry->m_collidable[i];
+        int index = entry->m_agentIndexOnCollidable[i];
         hkArray<hkpLinkedCollidable::CollisionKeyEntry>& entries =
-            reinterpret_cast<hkArray<hkpLinkedCollidable::CollisionKeyEntry>&>(collidable->m_kCollisionEntries);
+            reinterpret_cast<hkArray<hkpLinkedCollidable::CollisionKeyEntry>&>(collidable->m_collisionEntries);
         entries.removeAt(index);
-        if (index < collidable->m_kCollisionEntries.m_iElementCount)
+        if (index < collidable->m_collisionEntries.m_iElementCount)
         {
             hkpAgentNnEntry* pMovedEntry = (hkpAgentNnEntry*)entries.m_data[index].m_pAgentEntry;
-            pMovedEntry->m_ausAgentData[pMovedEntry->m_kCollidable[0] != collidable] = (unsigned short)index;
+            pMovedEntry->m_agentIndexOnCollidable[pMovedEntry->m_collidable[0] != collidable] = (unsigned short)index;
         }
         entries._optimizeCapacity(hkMemoryRouter_getInstance().heap(), 4);
     }
 
-    _hkAgentNnMachine_InternalDeallocateEntry(track, entry);
+    hkAgentNnMachine_InternalDeallocateEntry(track, entry);
 }
 
 static __forceinline int hkNextPowerOf2CFF2(unsigned int in)
@@ -621,7 +641,7 @@ static __forceinline int hkNextPowerOf2CFF2(unsigned int in)
     return in + 1;
 }
 
-void __cdecl hkArrayUtil__reduce(void* alloc, void* array, int sizeElem, void* storage, int newCapacity);
+void __cdecl hkArrayUtil__reduce(void* mem, void* array, int sizeElem, void* inplaceMem, int newCapacity);
 
 template <> __forceinline void hkArrayBase<hkpAgentNnSector*>::popBack(int iNumElemsToRemove)
 {
@@ -644,41 +664,43 @@ template <> __forceinline void hkInplaceArray<hkpAgentNnSector*, 1>::optimizeCap
     }
 }
 
-void __cdecl CloneRecord(hkpAgentNnTrack* track, hkpAgentNnEntry* entry);
+void __cdecl hkAgentNnMachine_CopyAndRelinkAgentEntry(hkpAgentNnTrack* destTrack, hkpAgentNnEntry* entry);
 
 // Clones records from the end of appendee into track while track's last sector is not full, then inserts appendee's remaining sectors into track's sector array.
 // @fnv 0x00cff290
-// src: HAVOK_LIB 0x00cff290
-void __cdecl _hkAgentNnMachine_AppendTrack(hkpAgentNnTrack* track, hkpAgentNnTrack* appendee)
+// src: XBOX_RETAIL_PDB 0x00cff290
+// pdb: hkAgentNnMachine_AppendTrack | hkpAgentNnMachine.obj | retail, call graph, high
+// pdb params: track, appendee
+void __cdecl hkAgentNnMachine_AppendTrack(hkpAgentNnTrack* track, hkpAgentNnTrack* appendee)
 {
-    while (track->m_iBytesUsedInLastSector != 0x200)
+    while (track->m_bytesUsedInLastSector != 0x200)
     {
-        if (appendee->m_kSectors.GetLogicalSize() == 0)
+        if (appendee->m_sectors.GetLogicalSize() == 0)
         {
             break;
         }
         hkpAgentNnEntry* entry =
-            (hkpAgentNnEntry*)((char*)appendee->m_kSectors.back() + appendee->m_iBytesUsedInLastSector - 0x80);
-        CloneRecord(track, entry);
-        appendee->m_iBytesUsedInLastSector = appendee->m_iBytesUsedInLastSector - 0x80;
-        if (appendee->m_iBytesUsedInLastSector == 0)
+            (hkpAgentNnEntry*)((char*)appendee->m_sectors.back() + appendee->m_bytesUsedInLastSector - 0x80);
+        hkAgentNnMachine_CopyAndRelinkAgentEntry(track, entry);
+        appendee->m_bytesUsedInLastSector = appendee->m_bytesUsedInLastSector - 0x80;
+        if (appendee->m_bytesUsedInLastSector == 0)
         {
-            hkpAgentNnSector* sector = appendee->m_kSectors.back();
-            appendee->m_kSectors.popBack();
+            hkpAgentNnSector* sector = appendee->m_sectors.back();
+            appendee->m_sectors.popBack();
             hkMemoryRouter_getInstance().heap().blockFree(sector, 0x200);
-            appendee->m_iBytesUsedInLastSector = 0x200;
+            appendee->m_bytesUsedInLastSector = 0x200;
         }
-        appendee->m_kSectors.optimizeCapacity(4);
+        appendee->m_sectors.optimizeCapacity(4);
     }
 
-    if (appendee->m_kSectors.GetLogicalSize())
+    if (appendee->m_sectors.GetLogicalSize())
     {
-        hkpAgentNnSector** sectors = appendee->m_kSectors.m_data;
-        track->m_kSectors._insertAt(hkMemoryRouter_getInstance().heap(), track->m_kSectors.GetLogicalSize(), sectors,
-                                 appendee->m_kSectors.GetLogicalSize());
-        track->m_iBytesUsedInLastSector = appendee->m_iBytesUsedInLastSector;
-        appendee->m_kSectors.m_iElementCount = 0;
-        appendee->m_iBytesUsedInLastSector = 0x200;
+        hkpAgentNnSector** sectors = appendee->m_sectors.m_data;
+        track->m_sectors._insertAt(hkMemoryRouter_getInstance().heap(), track->m_sectors.GetLogicalSize(), sectors,
+                                 appendee->m_sectors.GetLogicalSize());
+        track->m_bytesUsedInLastSector = appendee->m_bytesUsedInLastSector;
+        appendee->m_sectors.m_iElementCount = 0;
+        appendee->m_bytesUsedInLastSector = 0x200;
     }
 }
 
@@ -763,32 +785,35 @@ struct S_cfe020_Entry
     }
 };
 
-void __cdecl hkArrayUtil__reduce(hkMemoryAllocator* heap, void* arr, int elemSize, void* mem, int n);
+void __cdecl hkArrayUtil__reduce(hkMemoryAllocator* mem, void* arr, int sizeElem, void* inplaceMem, int n);
 
 // Pops an S_cfe020_Entry from the pool's stack, copies it to dest, updates the owner slot pointers, and releases the block when the pool empties.
 // @fnv 0x00cfe020
-// src: HAVOK_LIB 0x00cfe020
-void _hkAgentNnMachine_InternalDeallocateEntry(hkpAgentNnTrack* pool, S_cfe020_Entry* dest)
+// src: XBOX_RETAIL_PDB 0x00cfe020
+// pdb: hkAgentNnMachine_InternalDeallocateEntry | hkpAgentNnMachine.obj | retail, call graph, high
+// pdb params: track, entry
+// pdb locals: assertBuf, ostr
+void hkAgentNnMachine_InternalDeallocateEntry(hkpAgentNnTrack* track, S_cfe020_Entry* entry)
 {
-    S_cfe020_Entry* src = (S_cfe020_Entry*)((char*)pool->m_kSectors.back() + pool->m_iBytesUsedInLastSector - 0x80);
-    if (dest != src)
+    S_cfe020_Entry* src = (S_cfe020_Entry*)((char*)track->m_sectors.back() + track->m_bytesUsedInLastSector - 0x80);
+    if (entry != src)
     {
-        *dest = *src;
+        *entry = *src;
         _ReadWriteBarrier();
-        unsigned short a = dest->idxA;
-        unsigned short b = dest->idxB;
-        reinterpret_cast<hkpLinkedCollidable::CollisionKeyEntry*>(dest->ownerA->m_kCollisionEntries.m_data)[a].m_pAgentEntry = (NarrowPhaseAgentEntry*)dest;
-        reinterpret_cast<hkpLinkedCollidable::CollisionKeyEntry*>(dest->ownerB->m_kCollisionEntries.m_data)[b].m_pAgentEntry = (NarrowPhaseAgentEntry*)dest;
+        unsigned short a = entry->idxA;
+        unsigned short b = entry->idxB;
+        reinterpret_cast<hkpLinkedCollidable::CollisionKeyEntry*>(entry->ownerA->m_collisionEntries.m_data)[a].m_pAgentEntry = (NarrowPhaseAgentEntry*)entry;
+        reinterpret_cast<hkpLinkedCollidable::CollisionKeyEntry*>(entry->ownerB->m_collisionEntries.m_data)[b].m_pAgentEntry = (NarrowPhaseAgentEntry*)entry;
     }
-    pool->m_iBytesUsedInLastSector -= 0x80;
-    if (pool->m_iBytesUsedInLastSector == 0)
+    track->m_bytesUsedInLastSector -= 0x80;
+    if (track->m_bytesUsedInLastSector == 0)
     {
-        hkpAgentNnSector* block = pool->m_kSectors.back();
-        pool->m_kSectors.popBack();
+        hkpAgentNnSector* block = track->m_sectors.back();
+        track->m_sectors.popBack();
         ((hkMemoryAllocator*)&hkMemoryRouter_getInstance().heap())->blockFree(block, 0x200);
-        pool->m_iBytesUsedInLastSector = 0x200;
+        track->m_bytesUsedInLastSector = 0x200;
     }
-    pool->m_kSectors.optimizeCapacity(4);
+    track->m_sectors.optimizeCapacity(4);
 }
 
 __forceinline hkMemoryAllocator& hkContainerHeapAllocator::get(const void*)
@@ -898,37 +923,40 @@ struct CollisionAgentEntry
 // Allocates a CollisionAgentEntry from pool, links nodeA/nodeB, builds NnAgentInputLocalForm, and calls the quality-level create function to initialize the agent.
 // @fnv 0x00cfe8a0
 // src: XBOX_PDB 0x00cfe8a0
-CollisionAgentEntry* __cdecl hkAgentNnMachine_CreateAgent(hkpAgentNnTrack* pool, hkpLinkedCollidable* nodeA, CollidableBody* bodyA,
-                                          hkpLinkedCollidable* nodeB, CollidableBody* bodyB, unsigned char flags,
-                                          int qualityType, Dispatcher* dispatcher, void* island)
+// pdb: hkAgentNnMachine_CreateAgent | hkpAgentNnMachine.obj | retail, upstream name already matches, high
+// pdb params: track, collA, firstNonTransformBodyA, collB, firstNonTransformBodyB, cdBodyHasTransformFlag, agentType, input, mgr
+// pdb locals: in3, assertBuf, ostr
+CollisionAgentEntry* __cdecl hkAgentNnMachine_CreateAgent(hkpAgentNnTrack* track, hkpLinkedCollidable* collA, CollidableBody* firstNonTransformBodyA,
+                                          hkpLinkedCollidable* collB, CollidableBody* firstNonTransformBodyB, unsigned char cdBodyHasTransformFlag,
+                                          int qualityType, Dispatcher* dispatcher, void* mgr)
 {
 
     char* initialTable = dispatcher->m_tableBase;
-    char* pAlloc = AllocatePoolChunk(pool);
+    char* pAlloc = hkAgentNnMachine_AllocateEntry(track);
     CollisionAgentEntry* entry = (CollisionAgentEntry*)pAlloc;
-    entry->m_nodeA = nodeA;
-    entry->m_pCurrentSimulationIsland = island;
-    entry->m_nodeB = nodeB;
-    entry->m_agentIndexA = (unsigned short)nodeA->m_kCollisionEntries.m_iElementCount;
-    entry->m_agentIndexB = (unsigned short)nodeB->m_kCollisionEntries.m_iElementCount;
+    entry->m_nodeA = collA;
+    entry->m_pCurrentSimulationIsland = mgr;
+    entry->m_nodeB = collB;
+    entry->m_agentIndexA = (unsigned short)collA->m_collisionEntries.m_iElementCount;
+    entry->m_agentIndexB = (unsigned short)collB->m_collisionEntries.m_iElementCount;
     hkpLinkedCollidable::CollisionKeyEntry* linkA =
-        &reinterpret_cast<hkArray<hkpLinkedCollidable::CollisionKeyEntry>&>(nodeA->m_kCollisionEntries).expandOne();
+        &reinterpret_cast<hkArray<hkpLinkedCollidable::CollisionKeyEntry>&>(collA->m_collisionEntries).expandOne();
     hkpLinkedCollidable::CollisionKeyEntry* linkB =
-        &reinterpret_cast<hkArray<hkpLinkedCollidable::CollisionKeyEntry>&>(nodeB->m_kCollisionEntries).expandOne();
+        &reinterpret_cast<hkArray<hkpLinkedCollidable::CollisionKeyEntry>&>(collB->m_collisionEntries).expandOne();
     {
         NnAgentInputLocalForm input;
         linkA->m_pAgentEntry = (NarrowPhaseAgentEntry*)entry;
         linkB->m_pAgentEntry = (NarrowPhaseAgentEntry*)entry;
-        linkA->m_pCollidable = nodeB;
-        linkB->m_pCollidable = nodeA;
-        input.m_pBodyA = bodyA;
-        input.m_pBodyB = bodyB;
+        linkA->m_pCollidable = collB;
+        linkB->m_pCollidable = collA;
+        input.m_pBodyA = firstNonTransformBodyA;
+        input.m_pBodyB = firstNonTransformBodyB;
         input.m_pContactManager = entry->m_pCurrentSimulationIsland;
         input.m_pRayCastInput = dispatcher;
-        input.m_kTransform.hkTransform_setMulInverseMul(*bodyA->m_kMotionTransform, *bodyB->m_kMotionTransform);
+        input.m_kTransform.hkTransform_setMulInverseMul(*firstNonTransformBodyA->m_kMotionTransform, *firstNonTransformBodyB->m_kMotionTransform);
         char* tableBase = dispatcher->m_tableBase;
-        char agentType = tableBase[0x1bb0 + nodeA->m_kBroadPhaseHandle.m_ucObjectQualityType * 10 +
-                                   nodeB->m_kBroadPhaseHandle.m_ucObjectQualityType];
+        char agentType = tableBase[0x1bb0 + collA->m_broadPhaseHandle.m_objectQualityType * 10 +
+                                   collB->m_broadPhaseHandle.m_objectQualityType];
         entry->m_ucNnTrackType = agentType;
         dispatcher->m_currentAgentEntry = dispatcher->m_tableBase + 0x1c20 + ((int)(signed char)agentType << 6);
         QualityEntry* quality = (QualityEntry*)(initialTable + 0x16b0 + qualityType * 80);
@@ -936,14 +964,14 @@ CollisionAgentEntry* __cdecl hkAgentNnMachine_CreateAgent(hkpAgentNnTrack* pool,
         void* subEntry;
         if (quality->m_flag28 != 0)
         {
-            entry->m_flags = flags | 4;
+            entry->m_flags = cdBodyHasTransformFlag | 4;
             entry->m_fTimeOfImpact = -1.0f;
             entry->m_vSeparatingNormal = _mm_setzero_ps();
             subEntry = (char*)entry + 0x30;
         }
         else
         {
-            entry->m_flags = flags | 2;
+            entry->m_flags = cdBodyHasTransformFlag | 2;
             subEntry = (char*)entry + 0x20;
         }
         ((QualityEntry*)(initialTable + 0x16b0 + (unsigned char)qualityType * 80))
@@ -1046,6 +1074,8 @@ void __cdecl hkSweptTransformUtil_lerp2(const SweptPose&, float, Transform&);
 // Computes swept transforms for both bodies, copies shapes and keys into temp bodies, and sets out fields from in and temp.
 // @fnv 0x00cfde10
 // src: HAVOK_LIB 0x00cfde10
+// pdb: hkAgentNnMachine_initInputAtTime | hkpAgentNnMachine.obj | retail, upstream name already matches, high
+// pdb params: in, temp, out
 static __declspec(noinline) void hkAgentNnMachine_initInputAtTime(PairInput& out, PairInput& in, PairTemporary& temp)
 {
     hkSweptTransformUtil_lerp2(in.bodyA->GetMotionState()->getSweptTransform(), in.context->step.start, temp.ta);

@@ -11,6 +11,7 @@ class Heap;
 class hkMemoryManager;
 struct tchunk;
 
+// pdb: class hkLargeBlockAllocator, size 0xc4, bases: hkFreeListAllocatorServer, 11 members
 class hkLargeBlockAllocator : public hkFreeListAllocatorServer
 {
 public:
@@ -79,14 +80,14 @@ public:
     virtual void vf07(void* apBlock, unsigned int auiSize);
 
     ~hkLargeBlockAllocator();
-    void ProcessEntries_00dd7ec0();
+    void hkLargeBlockAllocator_dtor();
     void _init_00dd7f10();
     void ProcessAllItems();
     void _unlinkChunk(Chunk* chunk);
-    void _insertChunk(Chunk* chunk, unsigned int size);
-    void InsertChunk(Chunk* chunk, unsigned int size);
+    void _insertChunk(Chunk* x, unsigned int s);
+    void InsertChunk(Chunk* x, unsigned int s);
     void InsertChunk(void* chunk, unsigned int size);
-    void InsertChunk(tchunk* chunk, int size);
+    void InsertChunk(tchunk* x, int s);
     void RemoveNode(Chunk* chunk);
     void RemoveNode(TreeChunk* chunk);
     unsigned int GetMaxChunkSize(void* tree, unsigned int size);
@@ -98,13 +99,13 @@ public:
     int Allocate(int size);
     void* Allocate(unsigned int size);
     void* AllocateMemoryBlock(int size);
-    hkBool ResizeSegment(unsigned int size);
-    void ResizeSegment(unsigned char* result, unsigned int size);
+    hkBool _resizeSingleBlockServerPage(unsigned int newSize);
+    void _resizeSingleBlockServerPage(unsigned char* newSize, unsigned int size);
     void PurgeAndSelectBlock();
     void ForEachAllocatedBlock(BlockCallback callback, void* param);
     PageRange getIterator();
-    void* _allocLarge(unsigned int size);
-    void* alloc_00dd84c0(unsigned int size);
+    void* _allocLarge(unsigned int nb);
+    void* alloc_00dd84c0(unsigned int bytes);
     void* criticalAlloc(unsigned int size);
     void criticalFree(void* block, unsigned int size);
     hkLargeBlockAllocator* EvaluateValue_00dd8df0(int arg);

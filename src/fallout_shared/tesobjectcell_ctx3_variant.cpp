@@ -20,7 +20,7 @@ struct S004867a0
 };
 struct CellX
 {
-    void SetLandscape(TESObjectLAND*);
+    void SetLand(TESObjectLAND*);
     void AddReference(TESObjectREFR*, bool);
     void SetNavMeshArray(NavMeshCollection*);
 };
@@ -59,6 +59,9 @@ struct FUN_005436e0_shell : TESObjectCELL
 
 // @fnv 0x005436e0
 // src: XBOX_PDB 0x005436e0
+// pdb: TESObjectCELL::CreateDuplicateForm | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: abCreateEditorID, apCopyMap
+// pdb locals: pdupcell, plist, templist, pland, pdupland, spmesh, i, pmesh, pdupMesh, pref, pdupref
 TESForm* FUN_005436e0_shell::TESObjectCELL_CreateDuplicateForm(bool abCreateEditorID, void* apCopyMap)
 {
     TESObjectCELL* pdupcell = 0;
@@ -76,7 +79,7 @@ TESForm* FUN_005436e0_shell::TESObjectCELL_CreateDuplicateForm(bool abCreateEdit
             TESObjectLAND* pdupland = dynamic_cast<TESObjectLAND*>(((TESForm*)pland)->CreateForm(0, apCopyMap));
             if (pdupland)
             {
-                ((CellX*)pdupcell)->SetLandscape(pdupland);
+                ((CellX*)pdupcell)->SetLand(pdupland);
                 pdupland->InitializeForCell(pdupcell);
                 ((TESForm*)pdupland)->SetAltered(true);
             }
@@ -93,7 +96,7 @@ TESForm* FUN_005436e0_shell::TESObjectCELL_CreateDuplicateForm(bool abCreateEdit
                     NavMesh* pdupMesh = dynamic_cast<NavMesh*>(((TESForm*)pmesh)->CreateForm(0, apCopyMap));
                     if (pdupMesh)
                     {
-                        pdupMesh->m_pOwningCell = pdupcell;
+                        pdupMesh->pParentCell = pdupcell;
                         spmesh = MakeNavMeshPointer(pdupMesh);
                         (*(NavMeshCollection**)((char*)pdupcell + 0x64))->AppendNavMesh(reinterpret_cast<const NiPointer<NavMesh>&>(spmesh));
                     }

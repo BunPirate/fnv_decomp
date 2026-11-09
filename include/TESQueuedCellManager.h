@@ -2,14 +2,15 @@
 
 class TESObjectCELL;
 
-class TESQueuedCellManager
+// pdb: class ExteriorCellLoader, size 0x1c (here 0x1), 1 members
+class ExteriorCellLoader
 {
 public:
     void ExteriorCellLoader_CancelAllCellLoads();
-    void SubmitQueuedItems();
+    void ExteriorCellLoader_ClearData();
     void ExteriorCellLoader_QueueCellLoad(TESObjectCELL*);
-    int CallVirtual17();
-    void ProcessQueries();
-    int ExteriorCellLoader_TryCancelTasks();
-    void ExteriorCellLoader_WaitForTasks();
+    int QueuedCellCount();
+    void PostProcessCompletedTasks();
+    int TryCancelTasks();
+    void WaitForTasks();
 };

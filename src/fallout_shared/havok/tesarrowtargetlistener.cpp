@@ -160,27 +160,30 @@ struct Obj
     Obj* ProcessArray_GetItem(unsigned int i);
     bool Projectile_IsFlagSet(int a);
     int FUN_00401170();
-    Obj* GetNodeItem();
+    Obj* Projectile_GetImpactData();
     int MissileProjectile_GetImpactResult();
     void Projectile_Kill();
     Obj* FUN_00717e50();
 };
 
-Obj* bhkEntity_Getbhk(int a);
+Obj* bhkEntity_Getbhk(int apEnt);
 Obj* NiObject_DynamicCast(int* dat, Obj* o_tmp);
-Obj* FUN_004b5a20(Obj* o_tmp);
+Obj* FUN_004b5a20(Obj* apBody);
 int TESObjectREFR_FindReferenceFor3D(Obj* o_tmp);
 
 struct FUN_0062a510_cls
 {
-    void TESArrowTargetListener_entityRemovedCallback(int a1);
+    void TESArrowTargetListener_entityRemovedCallback(int apEntity);
 };
 
 // @fnv 0x0062a510
 // src: XBOX_PDB 0x0062a510
-void FUN_0062a510_cls::TESArrowTargetListener_entityRemovedCallback(int a1)
+// pdb: TESArrowTargetListener::entityRemovedCallback | TESArrowTargetListener.obj | retail, upstream name already matches, high
+// pdb params: apEntity
+// pdb locals: pe, pb, pcol, pMobArray, pav, pstuckRef, i, pmob, pprojectile, pimpact
+void FUN_0062a510_cls::TESArrowTargetListener_entityRemovedCallback(int apEntity)
 {
-    Obj* o_tmp = bhkEntity_Getbhk(a1);
+    Obj* o_tmp = bhkEntity_Getbhk(apEntity);
     Obj* p = NiObject_DynamicCast(&DAT_012681c0, o_tmp);
     if (p != 0 && p->MaskWithField(0x100) != 0)
     {
@@ -204,8 +207,8 @@ void FUN_0062a510_cls::TESArrowTargetListener_entityRemovedCallback(int a1)
                             {
                                 if (((int)u->FUN_0044ddc0() & 0x20) == 0)
                                 {
-                                    Obj* v = u->GetNodeItem();
-                                    if (v->unk1c == a1)
+                                    Obj* v = u->Projectile_GetImpactData();
+                                    if (v->unk1c == apEntity)
                                     {
                                         if (u->MissileProjectile_GetImpactResult() == 4)
                                         {
@@ -243,10 +246,12 @@ struct Owner_0062a670
     UnknownBlock prefix70;
     unsigned int unk80, unk84;
     ListNodeHelper node;
-    void* GetNodeItem();
+    void* Projectile_GetImpactData();
 };
 // @fnv 0x0062a670
-void* Owner_0062a670::GetNodeItem()
+// src: XBOX_DEBUG_PDB 0x0062a670
+// pdb: Projectile::GetImpactData | TESArrowTargetListener.obj | debug, call graph (shared callers), high
+void* Owner_0062a670::Projectile_GetImpactData()
 {
     return *node.FUN_006815c0();
 }
@@ -407,7 +412,7 @@ struct S_0062a690_Actor
 
     bool __thiscall Projectile_IsFlagSet(unsigned int flag);
     unsigned int __thiscall FUN_00401170();
-    S_0062a690_Extra* __thiscall GetNodeItem();
+    S_0062a690_Extra* __thiscall Projectile_GetImpactData();
     int __thiscall MissileProjectile_GetImpactResult();
     void __thiscall Projectile_Kill();
 };
@@ -437,21 +442,24 @@ struct S_0062a690_B
     void* __thiscall FUN_0044ddc0();
 };
 
-void* __cdecl bhkEntity_Getbhk(int id);
+void* __cdecl bhkEntity_Getbhk(int apEnt);
 S_0062a690_A* __cdecl NiObject_DynamicCast(void* rtti, void* obj);
-S_0062a690_B* __cdecl FUN_004b5a20(void* p);
+S_0062a690_B* __cdecl FUN_004b5a20(void* apBody);
 void* __cdecl TESObjectREFR_FindReferenceFor3D(void* p);
 
 struct S_0062a690_Class
 {
-    void TESArrowTargetListener_entityDeletedCallback(int arg0);
+    void TESArrowTargetListener_entityDeletedCallback(int apEntity);
 };
 
 // @fnv 0x0062a690
 // src: XBOX_PDB 0x0062a690
-void S_0062a690_Class::TESArrowTargetListener_entityDeletedCallback(int arg0)
+// pdb: TESArrowTargetListener::entityDeletedCallback | TESArrowTargetListener.obj | retail, upstream name already matches, high
+// pdb params: apEntity
+// pdb locals: pe, pb, pcol, pMobArray, pav, pstuckRef, i, pmob, pprojectile, pimpact
+void S_0062a690_Class::TESArrowTargetListener_entityDeletedCallback(int apEntity)
 {
-    void* v_08 = bhkEntity_Getbhk(arg0);
+    void* v_08 = bhkEntity_Getbhk(apEntity);
     S_0062a690_A* v_04 = NiObject_DynamicCast(&DAT_012681c0, v_08);
     if (v_04 && v_04->MaskWithField(0x100))
     {
@@ -468,8 +476,8 @@ void S_0062a690_Class::TESArrowTargetListener_entityDeletedCallback(int arg0)
                 S_0062a690_Actor* v_24 = v_20;
                 if (v_24 && v_24->Projectile_IsFlagSet(0x80) && v_24->FUN_00401170() == 0x3d)
                 {
-                    S_0062a690_Extra* v_28 = v_24->GetNodeItem();
-                    if (v_28->unk1c == arg0 && v_24->MissileProjectile_GetImpactResult() == 4)
+                    S_0062a690_Extra* v_28 = v_24->Projectile_GetImpactData();
+                    if (v_28->unk1c == apEntity && v_24->MissileProjectile_GetImpactResult() == 4)
                     {
                         v_24->Projectile_Kill();
                     }

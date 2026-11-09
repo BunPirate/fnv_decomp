@@ -11,25 +11,30 @@
 #include "../../../../include/NiStream.h"
 
 // @fnv 0x00c31340
-void NiPSysModifierCtlr::ProcessClone(CloningProcess& aCloneProcess)
+// pdb: NiPSysModifierCtlr::ProcessClone | NiPSysModifierCtlr.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkClone, pkDest, bSuccess
+void NiPSysModifierCtlr::ProcessClone(CloningProcess& kCloning)
 {
-    NiSingleInterpController::ProcessClone(aCloneProcess);
+    NiSingleInterpController::ProcessClone(kCloning);
     NiPSysModifierCtlr* clone = 0;
-    aCloneProcess.m_pCloneMap->GetAt((const char*)this, (ShaderBufferRecord*&)clone);
+    kCloning.m_pCloneMap->GetAt((const char*)this, (ShaderBufferRecord*&)clone);
     NiPSysModifierCtlr* destination = clone;
     if (m_pkTarget && destination->m_pkTarget)
     {
-        aCloneProcess.m_pCloneMap->GetAt((const char*)m_pkTargetModifier, (ShaderBufferRecord*&)clone);
-        destination->m_pkTargetModifier = reinterpret_cast<NiPSysModifier*>(clone);
+        kCloning.m_pCloneMap->GetAt((const char*)m_pkModifier, (ShaderBufferRecord*&)clone);
+        destination->m_pkModifier = reinterpret_cast<NiPSysModifier*>(clone);
     }
 }
 
 // These routines are absent from the shared class declarations. The unused EDX
 // parameter preserves their thiscall stack arguments without another class copy.
 // @fnv 0x00c31500
+// pdb: NiPSysModifierCtlr::SetTarget | NiPSysModifierCtlr.obj | retail, vtable slot, high
+// pdb params: pkTarget
 void __fastcall SetModifierTarget(NiPSysModifierCtlr* controller, void*, NiObjectNET* pkTarget)
 {
-    controller->m_pkTargetModifier = 0;
+    controller->m_pkModifier = 0;
     controller->NiTimeController::SetTarget(pkTarget);
     if (controller->m_pkTarget)
         reinterpret_cast<NiParticleSystem*>(controller)->FindModifier();
@@ -39,28 +44,31 @@ void __fastcall SetModifierTarget(NiPSysModifierCtlr* controller, void*, NiObjec
 void __fastcall SaveModifierController(NiPSysModifierCtlr* controller, void*, NiStream& kStream)
 {
     controller->NiSingleInterpController::SaveBinary(kStream);
-    kStream.SerializeString(reinterpret_cast<const char*>(&controller->m_kTargetModifierName));
+    kStream.SerializeString(reinterpret_cast<const char*>(&controller->m_kModifierName));
 }
 
 // @fnv 0x00c313a0
+// pdb: NiPSysModifierCtlr::IsEqual | NiPSysModifierCtlr.obj | debug, call graph (shared callers), medium
+// pdb params: pkObject
+// pdb locals: pkDest
 unsigned char __fastcall IsModifierControllerEquivalent(NiPSysModifierCtlr* controller, void*, NiPSysModifierCtlr* other)
 {
     if (!static_cast<const NiSingleInterpController*>(controller)->NiSingleInterpController::IsEqual(other))
         return 0;
 
-    if (controller->m_pkTargetModifier && !other->m_pkTargetModifier)
+    if (controller->m_pkModifier && !other->m_pkModifier)
         return 0;
 
-    if (!controller->m_pkTargetModifier && other->m_pkTargetModifier)
+    if (!controller->m_pkModifier && other->m_pkModifier)
         return 0;
 
-    if (controller->m_pkTargetModifier && other->m_pkTargetModifier)
+    if (controller->m_pkModifier && other->m_pkModifier)
     {
-        if (!controller->m_pkTargetModifier->IsEqual(other->m_pkTargetModifier))
+        if (!controller->m_pkModifier->IsEqual(other->m_pkModifier))
             return 0;
     }
 
-    return controller->m_kTargetModifierName.m_kHandle == other->m_kTargetModifierName.m_kHandle;
+    return controller->m_kModifierName.m_kHandle == other->m_kModifierName.m_kHandle;
 }
 
 extern int DAT_010c08ac;
@@ -72,16 +80,18 @@ void __fastcall DestroyTimeController(NiTimeController* controller);
 
 // Frees the name buffer and modifier reference, calls FUN_00a6d290, and optionally deallocates the object when acFlags bit 0 is set.
 // @fnv 0x00c314a0
+// pdb: NiPSysModifierCtlr::`scalar deleting destructor' | NiPSysModifierCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysModifierCtlr::~NiPSysModifierCtlr
 NiPSysModifierCtlr* __fastcall DestroyModifierController(NiPSysModifierCtlr* controller, void*, unsigned char acFlags)
 {
     int(__stdcall * pfnFree)(void*) = DAT_00fdf1c4;
     *(volatile int*)controller = (int)&DAT_010c08ac;
-    char* pName = *(char* volatile*)&controller->m_kTargetModifierName.m_kHandle;
+    char* pName = *(char* volatile*)&controller->m_kModifierName.m_kHandle;
     if (pName != (char*)DAT_0109b220)
     {
         pfnFree(pName - 8);
     }
-    NiInterpolator* pModifier = controller->m_spControllerInterpolator.m_pObject;
+    NiInterpolator* pModifier = controller->m_spInterpolator.m_pObject;
     if (pModifier != 0)
     {
         if (pfnFree(&pModifier->m_uiRefCount) == 0)
@@ -110,6 +120,8 @@ struct NiParticleSystemRuntime
 };
 
 // @fnv 0x00c31530
+// pdb: NiPSysModifierCtlr::InterpTargetIsCorrectType | NiPSysModifierCtlr.obj | retail, call graph (shared callers), high
+// pdb params: pkTarget
 bool __fastcall IsTargetParticleSystem(NiPSysModifierCtlr* controller, void*, NiParticleSystemRuntime* pkTarget)
 {
     if (pkTarget != 0)
@@ -119,16 +131,16 @@ bool __fastcall IsTargetParticleSystem(NiPSysModifierCtlr* controller, void*, Ni
         {
             if (pkRTTI == &DAT_012024e0)
             {
-                if (controller->m_kTargetModifierName.m_kHandle != DAT_0109b220 && controller->m_pkTarget != 0)
+                if (controller->m_kModifierName.m_kHandle != DAT_0109b220 && controller->m_pkTarget != 0)
                 {
-                    if (pkTarget->FUN_00c1b0f0(&controller->m_kTargetModifierName))
+                    if (pkTarget->FUN_00c1b0f0(&controller->m_kModifierName))
                     {
                         return true;
                     }
                 }
                 return false;
             }
-            pkRTTI = pkRTTI->m_pBaseRTTI;
+            pkRTTI = pkRTTI->m_pkBaseRTTI;
         }
     }
     return false;
@@ -136,9 +148,11 @@ bool __fastcall IsTargetParticleSystem(NiPSysModifierCtlr* controller, void*, Ni
 }  // namespace fnv_00c31530
 
 // @fnv 0x00c31590
-void NiPSysModifierCtlr::LinkObject(NiStream& stream)
+// pdb: NiPSysModifierCtlr::PostLinkObject | NiPSysModifierCtlr.obj | retail, vtable slot, high
+// pdb params: kStream
+void NiPSysModifierCtlr::LinkObject(NiStream& kStream)
 {
-    NiObject::LinkObject(stream);
+    NiObject::LinkObject(kStream);
     if (m_pkTarget)
         reinterpret_cast<NiParticleSystem*>(this)->FindModifier();
 }
@@ -157,10 +171,12 @@ struct FUN_00c315b0_arr
 
 extern void __stdcall FUN_00a390a0(FUN_00c315b0_arr* arr);
 extern void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* p);
-extern void* __cdecl NiGetViewerString_00a7d5e0(const char* fmt, void* p);
+extern void* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, void* pcValue);
 extern void* DAT_012027c8;
 
 // @fnv 0x00c315b0
+// pdb: NiPSysModifierCtlr::GetViewerStrings | NiPSysModifierCtlr.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall AppendModifierInfo(NiPSysModifierCtlr* controller, void*, void* arg)
 {
     FUN_00c315b0_arr* arr = (FUN_00c315b0_arr*)arg;
@@ -177,7 +193,7 @@ void __fastcall AppendModifierInfo(NiPSysModifierCtlr* controller, void*, void* 
         arg = v1;
     }
     arr->FUN_0096ae90(count, arg);
-    void* pModifierName = controller->m_kTargetModifierName.m_kHandle;
+    void* pModifierName = controller->m_kModifierName.m_kHandle;
     void* pNameString = NiGetViewerString_00a7d5e0("Modifier Name", pModifierName);
     count = arr->m_iArrayLength;
     if (count >= arr->m_iCap)

@@ -62,23 +62,25 @@ inline Tile::Extra::Extra(Tile* tile, NiNode* node) : pTile(tile), pNode(node)
     SetName(NiFixedString(DAT_010954cc));
 }
 
-NiNode* FUN_00706d30();
-void Interface_SetNeedToUpdate(int iValue);
+NiNode* Interface_GetInterfaceRoot();
+void Interface_SetNeedToUpdate(int abSet);
 
 // @fnv 0x00a1f3b0
+// pdb: TileRect::MakeNode | TileRect.obj | retail, vtable slot, high
+// pdb locals: apParent
 NiNode* TileRect::CalculateNode()
 {
     NiNode* pkParent = GetUnderlyingNode();
-    m_pRenderedNodeEntry = new NiNode(0);
+    spModel = new NiNode(0);
     if (pkParent == 0)
-        pkParent = FUN_00706d30();
-    pkParent->AttachChildInAvailableSlot(static_cast<NiAVObject*>(m_pRenderedNodeEntry), true);
-    m_pRenderedNodeEntry->SetName(NiFixedString(static_cast<const char*>(StringProvider.pString)));
-    m_pRenderedNodeEntry->SetHidden(!IsTraitNonZero(0xfa3), 1);
-    m_pRenderedNodeEntry->UpdateProperties();
+        pkParent = Interface_GetInterfaceRoot();
+    pkParent->AttachChildInAvailableSlot(static_cast<NiAVObject*>(spModel), true);
+    spModel->SetName(NiFixedString(static_cast<const char*>(xName.pString)));
+    spModel->SetHidden(!IsTraitNonZero(0xfa3), 1);
+    spModel->UpdateProperties();
     Interface_SetNeedToUpdate(1);
-    m_pRenderedNodeEntry->AddExtraData(new Tile::Extra(this, m_pRenderedNodeEntry));
+    spModel->AddExtraData(new Tile::Extra(this, spModel));
     Tile::SetTraitValue(0xfa1, GetFloat(0xfa1), 0);
     Tile::SetTraitValue(0xfa2, GetFloat(0xfa2), 0);
-    return m_pRenderedNodeEntry;
+    return spModel;
 }

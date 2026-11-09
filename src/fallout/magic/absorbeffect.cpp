@@ -28,6 +28,8 @@ struct EffectCasterAccess
 };
 
 // @fnv 0x00802db0
+// pdb: ValueModifierEffect::SaveGame | AbsorbEffect.obj | debug, vtable slot, medium
+// pdb params: apActor
 void EffectSerialization::SaveGame(Actor* apActor)
 {
     ActiveEffect::SaveGame(apActor);
@@ -81,10 +83,12 @@ void FUN_00803b50_shell::BoltShaderProperty_SetSubSegmentVariance(float value)
 
 // @fnv 0x00803d00
 // src: XBOX_PDB 0x00803d00
+// pdb: AbsorbEffect::FinishInitLoadGame | AbsorbEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void __thiscall AbsorbEffect::FinishInitLoadGame(Actor* apActor)
 {
     ValueModifierEffect::FinishLoadGameTES(apActor);
-    InitBoltEffect();
+    Start3D();
 }
 
 // @fnv 0x0082a650
@@ -95,6 +99,8 @@ void AbsorbEffect::CopyData_0082a650(ActiveEffect* apDestination)
 }
 
 // @fnv 0x00802dd0
+// pdb: ValueModifierEffect::LoadGame | AbsorbEffect.obj | debug, vtable slot, medium
+// pdb params: apActor
 void EffectSerialization::LoadGame(Actor* apActor)
 {
     ActiveEffect::LoadGame(apActor);
@@ -104,6 +110,7 @@ void __cdecl _Deallocate(void* p);
 
 // Calls FUN_00802e20 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x00802df0
+// pdb: AbsorbEffect::`scalar deleting destructor' | AbsorbEffect.obj | retail, vtable slot, high
 void* __thiscall AbsorbEffect::Destroy(unsigned int flags)
 {
     this->FUN_00802e20();
@@ -137,6 +144,8 @@ void FUN_00803b30_shell::BoltShaderProperty_SetSegmentLength(float value)
 }
 
 // @fnv 0x00802d90
+// pdb: ValueModifierEffect::GetSaveSize | AbsorbEffect.obj | debug, vtable slot, medium
+// pdb params: apActor
 unsigned short __thiscall EffectSerialization::GetSaveSize(Actor* apActor)
 {
     return ActiveEffect::GetSaveSize(apActor);
@@ -164,34 +173,40 @@ void FUN_00803ae0_shell::SetData(NiColorA aVal)
     *reinterpret_cast<NiColorA*>((char*)this + 0x164) = aVal;
 }
 
-void __cdecl BoltShader_Stop(NiAVObject* apSource, NiAVObject* apTarget);
+void __cdecl BoltShader_Stop(NiAVObject* apNode, NiAVObject* apProp);
 // @fnv 0x00802e20
+// pdb: AbsorbEffect::~AbsorbEffect | AbsorbEffect.obj | retail, upstream name already matches, high
+// pdb locals: pparent
 AbsorbEffect::~AbsorbEffect()
 {
-    BoltShader_Stop(spBolt, m_spTargetObject);
-    m_spTargetObject = 0;
-    if (spBolt)
+    BoltShader_Stop(spBoltNode, spBoltProperty);
+    spBoltProperty = 0;
+    if (spBoltNode)
     {
-        NiNode* pParent = ((const NiAVObject*)(NiAVObject*)spBolt)->GetParent();
+        NiNode* pParent = ((const NiAVObject*)(NiAVObject*)spBoltNode)->GetParent();
         if (pParent)
-            pParent->RemoveObject(spBolt);
-        spBolt = 0;
+            pParent->RemoveObject(spBoltNode);
+        spBoltNode = 0;
     }
 }
 
 // @fnv 0x00802cb0
-AbsorbEffect::AbsorbEffect(MagicCaster* apCaster, MagicItem* apItem, EffectItem* apEffect)
-    : ValueModifierEffect(apCaster, apItem, apEffect), spBolt(0), spNode50(0), spNode54(0), m_spTargetObject(0)
+// pdb: AbsorbEffect::AbsorbEffect | AbsorbEffect.obj | retail, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+AbsorbEffect::AbsorbEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
+    : ValueModifierEffect(apCaster, apSpell, apEffect), spBoltNode(0), spSource(0), spTarget(0), spBoltProperty(0)
 {
-    m_spTargetObject = 0;
-    spBolt = 0;
-    spNode54 = 0;
-    spNode50 = 0;
+    spBoltProperty = 0;
+    spBoltNode = 0;
+    spTarget = 0;
+    spSource = 0;
 }
 
 void* __cdecl operator new(unsigned int size);
 
 // @fnv 0x00802f40
+// pdb: AbsorbEffect::Copy | AbsorbEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* AbsorbEffect::Copy()
 {
     ActiveEffect* pkClone = new AbsorbEffect(m_pEffectInstance, pSpell, pEffect);
@@ -200,6 +215,8 @@ ActiveEffect* AbsorbEffect::Copy()
 }
 
 // @fnv 0x00802ff0
+// pdb: AbsorbEffect::Instantiate | AbsorbEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 AbsorbEffect* __cdecl CreateAbsorbRecord(MagicCaster* apCaster, MagicItem* apItem, EffectItem* apEffect)
 {
     return new AbsorbEffect(apCaster, apItem, apEffect);
@@ -208,6 +225,8 @@ AbsorbEffect* __cdecl CreateAbsorbRecord(MagicCaster* apCaster, MagicItem* apIte
 extern double DAT_01012060;
 
 // @fnv 0x00803070
+// pdb: AbsorbEffect::Start | AbsorbEffect.obj | retail, upstream name already matches, high
+// pdb locals: pActor
 void AbsorbEffect::Start()
 {
     ValueModifierEffect::Start();
@@ -218,8 +237,8 @@ void AbsorbEffect::Start()
                            : 0;
         ApplyActorValueModifier(result, -GetFloatAtOffset1C(), ActorValue::ActorValue__Index_VALUE_NONE);
     }
-    RefreshPlayerActorValue();
-    InitBoltEffect();
+    ShowAttributeReductionMessage();
+    Start3D();
 }
 
 struct BoltAVOwner
@@ -383,7 +402,7 @@ struct BoltActorStandIn
     char pad04[0xa4 - 4];
     BoltAVOwner kAVOwner;
 
-    float TESObjectREFR_GetDistanceFromReference(BoltActorStandIn* pkOther, bool b1, bool b2);
+    float TESObjectREFR_GetDistanceFromReference(BoltActorStandIn* pkOther, bool abDisabled, bool bSameSpace);
     BoltProcessStandIn* FUN_008d8520();
 };
 
@@ -714,12 +733,15 @@ struct BoltProcessStandIn
 };
 
 extern Setting g_s_011d1aa8;
-float __cdecl CombatFormulas_CalcWeaponReach(float f);
+float __cdecl CombatFormulas_CalcWeaponReach(float afReachMultiplier);
 
 // @fnv 0x00803120
-void AbsorbEffect::Update(float fTimeOffset)
+// pdb: AbsorbEffect::Update | AbsorbEffect.obj | retail, upstream name already matches, high
+// pdb params: afSecondsElapsed
+// pdb locals: pcaster, ptarget, evalue, fdistance, pstate
+void AbsorbEffect::Update(float afSecondsElapsed)
 {
-    ValueModifierEffect::Update(fTimeOffset);
+    ValueModifierEffect::Update(afSecondsElapsed);
     BoltActorStandIn* pkCaster = ((EffectCasterAccess*)this)->GetCaster()
                                    ? (BoltActorStandIn*)((EffectCasterAccess*)this)->GetCaster()->GetCasterActor()
                                    : 0;
@@ -732,7 +754,7 @@ void AbsorbEffect::Update(float fTimeOffset)
         if (pkTarget && pkTarget->kAVOwner.GetActorValueInt(GetActorValue()) <= 0.0)
             Dispel(false);
         if (!FUN_00705cf0())
-            ApplyActorValueModifier((Actor*)pkCaster, -GetFloatAtOffset1C() * fTimeOffset, ActorValue::ActorValue__Index_VALUE_NONE);
+            ApplyActorValueModifier((Actor*)pkCaster, -GetFloatAtOffset1C() * afSecondsElapsed, ActorValue::ActorValue__Index_VALUE_NONE);
     }
     if (!FUN_00705cf0() && pkTarget && pkTarget->Get3D() && !pkTarget->IsDead(false) && pkCaster && pkCaster->Get3D() &&
         !pkCaster->IsDead(false))
@@ -752,10 +774,12 @@ void AbsorbEffect::Update(float fTimeOffset)
         Dispel(false);
     }
     if (!FUN_00705cf0())
-        Update3D_00803b70(fTimeOffset);
+        Update3D_00803b70(afSecondsElapsed);
 }
 
 // @fnv 0x008033b0
+// pdb: AbsorbEffect::Finish | AbsorbEffect.obj | retail, upstream name already matches, high
+// pdb locals: pActor, fmagnitude, pparent
 void AbsorbEffect::Finish()
 {
     ApplyEffect();
@@ -765,13 +789,13 @@ void AbsorbEffect::Finish()
         float f = GetModifiedMagnitude(GetFloatAtOffset1C());
         ApplyActorValueModifier(t, f, ActorValue::ActorValue__Index_VALUE_NONE);
     }
-    BoltShader_Stop(spBolt, m_spTargetObject);
-    if (spBolt)
+    BoltShader_Stop(spBoltNode, spBoltProperty);
+    if (spBoltNode)
     {
-        NiNode* n = ((const NiAVObject*)(NiAVObject*)spBolt)->GetParent();
+        NiNode* n = ((const NiAVObject*)(NiAVObject*)spBoltNode)->GetParent();
         if (n)
-            n->RemoveObject(spBolt);
-        spBolt = 0;
+            n->RemoveObject(spBoltNode);
+        spBoltNode = 0;
     }
 }
 
@@ -1028,14 +1052,17 @@ using namespace fnv_008034c0;
 
 // Creates the effect's node, attaches it to the caster, builds the bolt geometry and sets its parameters from the global settings.
 // @fnv 0x008034c0
-void AbsorbEffect::InitBoltEffect()
+// src: XBOX_RETAIL_PDB 0x008034c0
+// pdb: AbsorbEffect::Start3D | AbsorbEffect.obj | retail, string-set bridge, high
+// pdb locals: pcaster, pextra, ptarget, panim, pparentNode
+void AbsorbEffect::Start3D()
 {
-    spBolt = new NiNode(0);
-    BoltExtraData* pkDataZ = reinterpret_cast<BoltExtraData*>(((NiAVObject*)spBolt)->FUN_00a5bdd0(*reinterpret_cast<const NiFixedString*>(BSXFlags_Tag())));
+    spBoltNode = new NiNode(0);
+    BoltExtraData* pkDataZ = reinterpret_cast<BoltExtraData*>(((NiAVObject*)spBoltNode)->FUN_00a5bdd0(*reinterpret_cast<const NiFixedString*>(BSXFlags_Tag())));
     if (!pkDataZ)
     {
         pkDataZ = new BoltExtraData;
-        ((NiAVObject*)spBolt)->AddExtraData(*reinterpret_cast<const NiFixedString*>(BSXFlags_Tag()), reinterpret_cast<NiExtraData*>(pkDataZ));
+        ((NiAVObject*)spBoltNode)->NiObjectNET_AddExtraData(*reinterpret_cast<const NiFixedString*>(BSXFlags_Tag()), reinterpret_cast<NiExtraData*>(pkDataZ));
     }
     pkDataZ->BSXFlags_SetFlags(1, 1);
 
@@ -1050,44 +1077,44 @@ void AbsorbEffect::InitBoltEffect()
     if (pkAY && pkBOut)
     {
         pkAttachTmp = pkAY->FUN_008d6f30()->FUN_005497a0();
-        pkAttachTmp->AttachChildInAvailableSlot(static_cast<NiAVObject*>(spBolt), true);
-        m_spTargetObject = 0;
-        m_spTargetObject = (NiAVObject*)BoltShader_Start((NiNode*)(NiAVObject*)spBolt, 1);
+        pkAttachTmp->AttachChildInAvailableSlot(static_cast<NiAVObject*>(spBoltNode), true);
+        spBoltProperty = 0;
+        spBoltProperty = (NiAVObject*)BoltShader_Start((NiNode*)(NiAVObject*)spBoltNode, 1);
 
         pkRootRes = pkBOut->GetRoot();
         if (pkRootRes)
         {
-            spNode50 =
+            spSource =
                 pkRootRes->GetControllerManager_00496940()->GetStringAtOffset()->GetObjectByName(NiFixedString(s_szSpine1));
-            if (reinterpret_cast<const BoltPtr<NiAVObject>&>(spNode50).FUN_00822510(0))
-                spNode50 = pkAY->Get3D();
+            if (reinterpret_cast<const BoltPtr<NiAVObject>&>(spSource).FUN_00822510(0))
+                spSource = pkAY->Get3D();
         }
         pkRootRes = pkAY->GetRoot();
         if (pkRootRes)
         {
-            spNode54 =
+            spTarget =
                 pkRootRes->GetControllerManager_00496940()->GetStringAtOffset()->GetObjectByName(NiFixedString(s_szSpine1));
-            if (reinterpret_cast<const BoltPtr<NiAVObject>&>(spNode54).FUN_00822510(0))
-                spNode54 = pkBOut->Get3D();
+            if (reinterpret_cast<const BoltPtr<NiAVObject>&>(spTarget).FUN_00822510(0))
+                spTarget = pkBOut->Get3D();
         }
 
-        if ((BoltGeometry*)(NiAVObject*)m_spTargetObject)
+        if ((BoltGeometry*)(NiAVObject*)spBoltProperty)
         {
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->BoltShaderProperty_SetBoltsRadius(*g_s_011d1710.Setting_Float_00403e20());
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->FUN_00507780(*g_s_011d1c88.Setting_Float_00403e20());
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->BoltShaderProperty_SetSegmentLength(*g_s_011d1af0.Setting_Float_00403e20());
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->BoltShaderProperty_SetSegmentVariance(*g_s_011d1d3c.Setting_Float_00403e20());
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->BoltShaderProperty_SetSubSegmentVariance(*g_s_011d1ac0.Setting_Float_00403e20());
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->SetBoltSmallWidth(*g_s_011d1ab4.Setting_Float_00403e20());
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->SetBoltGrowWidth(*g_s_011d1680.Setting_Float_00403e20());
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->BoltShaderProperty_SetNumBolts(*g_s_011d1c64.Setting_Int());
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->SetArg(NiColorA(*g_s_011d1c94.Setting_Float_00403e20(), *g_s_011d1570.Setting_Float_00403e20(),
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->BoltShaderProperty_SetBoltsRadius(*g_s_011d1710.Setting_Float_00403e20());
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->FUN_00507780(*g_s_011d1c88.Setting_Float_00403e20());
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->BoltShaderProperty_SetSegmentLength(*g_s_011d1af0.Setting_Float_00403e20());
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->BoltShaderProperty_SetSegmentVariance(*g_s_011d1d3c.Setting_Float_00403e20());
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->BoltShaderProperty_SetSubSegmentVariance(*g_s_011d1ac0.Setting_Float_00403e20());
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->SetBoltSmallWidth(*g_s_011d1ab4.Setting_Float_00403e20());
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->SetBoltGrowWidth(*g_s_011d1680.Setting_Float_00403e20());
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->BoltShaderProperty_SetNumBolts(*g_s_011d1c64.Setting_Int());
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->SetArg(NiColorA(*g_s_011d1c94.Setting_Float_00403e20(), *g_s_011d1570.Setting_Float_00403e20(),
                                                             *g_s_011d18b4.Setting_Float_00403e20(), 1.0f));
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->SetData(NiColorA(*g_s_011d16a4.Setting_Float_00403e20(), *g_s_011d1830.Setting_Float_00403e20(),
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->SetData(NiColorA(*g_s_011d16a4.Setting_Float_00403e20(), *g_s_011d1830.Setting_Float_00403e20(),
                                                              *g_s_011d1818.Setting_Float_00403e20(), 1.0f));
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->SetByteAtOffset175(0);
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->BoltShaderProperty_SetStartFromPoint(1);
-            ((BoltGeometry*)(NiAVObject*)m_spTargetObject)->BoltShaderProperty_InitSegmentData();
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->SetByteAtOffset175(0);
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->BoltShaderProperty_SetStartFromPoint(1);
+            ((BoltGeometry*)(NiAVObject*)spBoltProperty)->BoltShaderProperty_InitSegmentData();
         }
     }
 }
@@ -1104,7 +1131,7 @@ struct FUN_006815c0
     float m7;
     float m8;
     FUN_006815c0();
-    void FUN_00a59780(float a, float b, float c);
+    void FUN_00a59780(float fZAngle, float fYAngle, float fXAngle);
 };
 
 struct S_00803b70_O58
@@ -1115,25 +1142,28 @@ struct S_00803b70_O58
 extern Setting DAT_011d1c10;
 extern NiPoint3 DAT_011f426c;
 extern unsigned char DAT_011db9f4;
-float __cdecl NiATan2(float a, float b);
+float __cdecl NiATan2(float fNumerator, float fDenominator);
 
 // @fnv 0x00803b70
 // src: XBOX_PDB 0x00803b70
+// pdb: AbsorbEffect::Update3D | AbsorbEffect.obj | retail, object-file run extension, low
+// pdb params: afDelta
+// pdb locals: fz, sourceLoc, toTarget, rot, fxy
 void AbsorbEffect::Update3D_00803b70(float value)
 {
-    if (((NiAVObject*)spNode50) && ((NiAVObject*)spNode54) && ((NiAVObject*)spBolt) && ((NiAVObject*)m_spTargetObject) && !DAT_011db9f4)
+    if (((NiAVObject*)spSource) && ((NiAVObject*)spTarget) && ((NiAVObject*)spBoltNode) && ((NiAVObject*)spBoltProperty) && !DAT_011db9f4)
     {
         NiPoint3 v7 = DAT_011f426c;
-        v7 = ((NiAVObject*)spNode50)->NiAVObject_GetWorldTranslate();
-        ((NiAVObject*)spBolt)->NiAVObject_SetTranslate(&v7);
-        NiPoint3 r = ((NiAVObject*)spNode54)->NiAVObject_GetWorldTranslate().SubtractIntoVector(v7);
+        v7 = ((NiAVObject*)spSource)->NiAVObject_GetWorldTranslate();
+        ((NiAVObject*)spBoltNode)->NiAVObject_SetTranslate(&v7);
+        NiPoint3 r = ((NiAVObject*)spTarget)->NiAVObject_GetWorldTranslate().SubtractIntoVector(v7);
         FUN_006815c0 mat;
         float t = r.z;
         r.z = 0.0f;
         float fPlanarLen = r.FUN_00457990();
         mat.FUN_00a59780(NiATan2(r.x, r.y), 0.0f, -NiATan2(t, fPlanarLen));
-        ((NiAVObject*)spBolt)->SetRotate_0043fa80(reinterpret_cast<const void*>(&mat));
+        ((NiAVObject*)spBoltNode)->SetRotate_0043fa80(reinterpret_cast<const void*>(&mat));
         // The original call to Setting's 0x00403e20 accessor passes an unused zero argument.
-        ((S_00803b70_O58*)(NiAVObject*)m_spTargetObject)->AddValue(value, r.FUN_00457990(), *(DAT_011d1c10.*reinterpret_cast<float* (Setting::*)(int)>(&Setting::Setting_Float_00403e20))(0));
+        ((S_00803b70_O58*)(NiAVObject*)spBoltProperty)->AddValue(value, r.FUN_00457990(), *(DAT_011d1c10.*reinterpret_cast<float* (Setting::*)(int)>(&Setting::Setting_Float_00403e20))(0));
     }
 }

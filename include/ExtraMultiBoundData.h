@@ -4,6 +4,7 @@
 
 class Point3Offset;
 
+// pdb: class ExtraMultiBoundData, size 0x10, bases: BSExtraData, 1 members
 class ExtraMultiBoundData : public BSExtraData
 {
 public:

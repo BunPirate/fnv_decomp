@@ -20,7 +20,7 @@ struct Holder
 extern int DAT_0109e47c;
 struct P03MM
 {
-    void __thiscall _DeallocateAlias(void* p);
+    void __thiscall _DeallocateAlias(void* apMem);
 };
 extern P03MM g_memoryManager;
 struct S : NiRefObject
@@ -108,7 +108,7 @@ struct FUN_00a81ff0_elem
     int m_20;
     int m_24;
     int m_28;
-    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* other);
+    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* kPartition);
 };
 struct FUN_00a81ff0_cls
 {
@@ -116,7 +116,7 @@ struct FUN_00a81ff0_cls
     int m_04;
     unsigned int m_uiItemCount;
     FUN_00a81ff0_elem* m_pElements;
-    bool IsSameAs(const FUN_00a81ff0_cls* other);
+    bool IsSameAs(const FUN_00a81ff0_cls* pObject);
     bool Equals(const FUN_00a81ff0_cls* other);
 };
 struct S_00a82050_Node
@@ -320,7 +320,7 @@ __forceinline bool EqualBuffers(const void* right, const void* left, unsigned in
 }
 struct PartitionCompare : NiSkinPartition::Partition
 {
-    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* other);
+    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* kPartition);
 };
 struct CA82250IndexArray
 {
@@ -557,9 +557,9 @@ struct SkinBuilder
     int unk00;
     int unk04;
     unsigned int count;
-    __declspec(nothrow) void BuildBoneLODControllerSets(SkinGeom*, void*, SkinItems*, int*) throw();
+    __declspec(nothrow) void NiSkinPartition_CreateInitialBoneSets(SkinGeom*, void*, SkinItems*, int*) throw();
     __declspec(nothrow) void NiSkinPartition_MergeBoneSets(SkinItems*) throw();
-    bool BuildTriangleSetMapping(SkinGeom*, void*, unsigned int, void*, SkinItems*, int**, int*) throw();
+    bool NiSkinPartition_MakeBoneSets(SkinGeom*, void*, unsigned int, void*, SkinItems*, int**, int*) throw();
 };
 template <class T> class SkinTArray
 {
@@ -695,7 +695,10 @@ inline Pair::Pair() throw()
 
 // @fnv 0x00a839d0
 // src: COMMUNITY 0x00a839d0
-void __stdcall NiSkinPartition_MergeBoneSets(unsigned char threshold, MergeItems* items)
+// pdb: NiSkinPartition::MergeBoneSets | NiSkinPartition.obj | retail, upstream name already matches, high
+// pdb params: ucBonesPerPartition, kBoneSets
+// pdb locals: inext, prefArraySize, prefArrayA, iMaxShare, auiMergeSets, p0, kBoneSet0, p1, kBoneSet1, uiMergeSize, iShare, pkNewSet, p, pkSet, q, itemp, ptemp
+void __stdcall NiSkinPartition_MergeBoneSets(unsigned char ucBonesPerPartition, MergeItems* kBoneSets)
 {
     // One equivalence id per bounded skin set; 50 entries inferred from the frame.
     int cls[50];
@@ -706,14 +709,14 @@ restart:
     sel.a = 0;
     sel.b = 0;
     best = -1;
-    for (i = 0; i < items->count; ++i)
+    for (i = 0; i < kBoneSets->count; ++i)
     {
-        MergeSet* a = items->items[i];
-        for (j = i + 1; j < items->count; ++j)
+        MergeSet* a = kBoneSets->items[i];
+        for (j = i + 1; j < kBoneSets->count; ++j)
         {
-            MergeSet* b = items->items[j];
+            MergeSet* b = kBoneSets->items[j];
             unsigned int size = a->GetMergeCount(b);
-            if (size > threshold)
+            if (size > ucBonesPerPartition)
                 continue;
             int otherCount = (int)b->m_uiCount, thisCount = (int)a->m_uiCount;
             int score = thisCount - (int)size + otherCount;
@@ -729,25 +732,25 @@ restart:
     }
     if (best < 0)
         goto group;
-    items->items[sel.a]->Merge(items->items[sel.b]);
-    if (items->items[sel.a]->key != items->items[sel.b]->key)
+    kBoneSets->items[sel.a]->Merge(kBoneSets->items[sel.b]);
+    if (kBoneSets->items[sel.a]->key != kBoneSets->items[sel.b]->key)
     {
-        items->items[sel.b]->Merge(items->items[sel.a]);
+        kBoneSets->items[sel.b]->Merge(kBoneSets->items[sel.a]);
         goto restart;
     }
-    delete items->items[sel.b];
-    --items->count;
-    items->items[sel.b] = items->items[items->count];
+    delete kBoneSets->items[sel.b];
+    --kBoneSets->count;
+    kBoneSets->items[sel.b] = kBoneSets->items[kBoneSets->count];
     {
-        MergeSet* a = items->items[sel.a];
-        for (k = 0; k < items->count;)
+        MergeSet* a = kBoneSets->items[sel.a];
+        for (k = 0; k < kBoneSets->count;)
         {
-            MergeSet* e = items->items[k];
+            MergeSet* e = kBoneSets->items[k];
             if (e != a && a->ContainsSortedSubset(e))
             {
                 delete e;
-                --items->count;
-                items->items[k] = items->items[items->count];
+                --kBoneSets->count;
+                kBoneSets->items[k] = kBoneSets->items[kBoneSets->count];
             }
             else
                 ++k;
@@ -755,9 +758,9 @@ restart:
     }
     goto restart;
 group:
-    unsigned int count = items->count;
+    unsigned int count = kBoneSets->count;
     ids = 0;
-    for (k = 0; k < items->count; ++k)
+    for (k = 0; k < kBoneSets->count; ++k)
     {
         if (k == 0)
         {
@@ -766,8 +769,8 @@ group:
         }
         for (j = 0; j < k; ++j)
         {
-            MergeSet* x = items->items[k];
-            MergeSet* y = items->items[j];
+            MergeSet* x = kBoneSets->items[k];
+            MergeSet* y = kBoneSets->items[j];
             if (x->ContainsSortedSubset(y) && y->ContainsSortedSubset(x))
             {
                 cls[k] = cls[j];
@@ -784,8 +787,8 @@ group:
                 int t = cls[i];
                 cls[i] = cls[j];
                 cls[j] = t;
-                MergeSet* p = items->items[i];
-                items->SetAt(i, items->items[j]);
-                items->SetAt(j, p);
+                MergeSet* p = kBoneSets->items[i];
+                kBoneSets->SetAt(i, kBoneSets->items[j]);
+                kBoneSets->SetAt(j, p);
             }
 }

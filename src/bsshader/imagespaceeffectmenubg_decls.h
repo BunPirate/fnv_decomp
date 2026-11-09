@@ -48,6 +48,7 @@ class MenuBgEffectParamLocalForm
     NiTArray<int, NiTMallocInterface<int> > m_kTextureTypes;
     NiTArray<NiTexturingProperty::FilterMode, NiTMallocInterface<NiTexturingProperty::FilterMode> > m_kFilterModes;
 };
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public MenuBgEffectParamLocalForm
 {
   public:
@@ -66,7 +67,7 @@ class ImageSpaceShaderParam : public MenuBgEffectParamLocalForm
         m_kTextureFilterModes;
     NiTMap<unsigned int, unsigned int> m_kRenderStateMap;
     ImageSpaceShaderParam();
-    void AllocateShaderConstants(int vertexCount, int pixelCount);
+    void AllocateShaderConstants(int aiVSize, int aiPSize);
     void SetShaderConstantVector4(int index, float x, float y, float z, float w);
     static void* operator new(unsigned int size)
     {
@@ -77,6 +78,7 @@ class ImageSpaceShaderParam : public MenuBgEffectParamLocalForm
         g_memoryManager.Deallocate(pointer);
     }
 };
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 class ImageSpaceEffect
 {
   public:
@@ -87,7 +89,7 @@ class ImageSpaceEffect
     NiTArray<ImageSpaceTexture*, NiTMallocInterface<ImageSpaceTexture*> > pTextures;
     NiTArray<void*, NiTMallocInterface<void*> > pEffectInputs;
     NiTArray<int, NiTMallocInterface<int> > pEffectOutput;
-    void SetTextureArrayCount(int count);
+    void SetTextureArrayCount(int aiCount);
     void SetTextureArrayAt(int index, int first, int second, NiTexturingProperty::FilterMode firstFilter,
                            NiTexturingProperty::FilterMode secondFilter);
     void SetEffectAt(int index, ImageSpaceEffect* effect, MenuBgEffectParamLocalForm* parameters, int output);
@@ -100,7 +102,7 @@ class ImageSpaceEffectMenuBackground : public ImageSpaceEffect
     ImageSpaceTexture* m_pBackgroundTexture;
     float m_fBackgroundBlendAmount;
     bool m_bMenuBackgroundEnabled;
-    void Setup(ImageSpaceManager* manager, MenuBgEffectParamLocalForm* parameters);
+    void ImageSpaceEffectMenuBG_Setup(ImageSpaceManager* apManager, MenuBgEffectParamLocalForm* apParam);
 };
 typedef char ImageSpaceTexture_size_check[(sizeof(ImageSpaceTexture) == 16) ? 1 : -1];
 typedef char ImageSpaceShaderParam_size_check[(sizeof(ImageSpaceShaderParam) == 136) ? 1 : -1];

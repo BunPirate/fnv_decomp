@@ -15,12 +15,13 @@ class BSplineBasis
 
 class NiBSplineBasis_float_3_;
 
+// pdb: class NiBSplineBasisData, size 0x28, bases: NiObject, 1 members
 class NiBSplineBasisData : public NiObject
 {
   public:
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
 
     NiBSplineBasis_float_3_& GetBSplineBasis();
 
-    BSplineBasis<float, 3> m_kBSplineBasis;
+    BSplineBasis<float, 3> m_kBasisDegree3;
 };

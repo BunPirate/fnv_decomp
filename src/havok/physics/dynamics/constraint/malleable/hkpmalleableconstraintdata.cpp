@@ -18,6 +18,8 @@ struct hkMalleableConstraintData
 };
 
 // @fnv 0x00cdea30
+// pdb: hkpRagdollConstraintData::setMotor | hkpRagdollConstraintData.obj | retail, object-file run extension, low
+// pdb params: index, newMotor
 void hkMalleableConstraintData::SetContactNormal(int index, hkMalleableContactNormal* normal)
 {
     hkMalleableContactNormal* oldNormal;
@@ -48,6 +50,7 @@ struct MalleableConstraintDataStandIn
 };
 // @fnv 0x00cdf690
 // src: HAVOK_LIB 0x00cdf690
+// pdb: hkpMalleableConstraintData::isValid | hkpMalleableConstraintData.obj | retail, upstream name already matches, high
 int MalleableConstraintDataStandIn::hkpMalleableConstraintData_isValid(int aiValue)
 {
     m_pConstraintData->v1c(aiValue);
@@ -100,15 +103,17 @@ struct FUN_00cdf620_cls
     FUN_00cdf620_Target* m_target;
     char m_10;
 
-    void DispatchArg(FUN_00cdf620_Arg* pkArg);
+    void DispatchArg(FUN_00cdf620_Arg* info);
 };
 
 // @fnv 0x00cdf620
-void FUN_00cdf620_cls::DispatchArg(FUN_00cdf620_Arg* pkArg)
+// pdb: hkpMalleableConstraintData::getConstraintInfo | hkpMalleableConstraintData.obj | retail, vtable slot, high
+// pdb params: info
+void FUN_00cdf620_cls::DispatchArg(FUN_00cdf620_Arg* info)
 {
-    m_target->V15(pkArg);
-    pkArg->m_data = &m_10;
-    pkArg->m_iElementCount = 0xc;
+    m_target->V15(info);
+    info->m_data = &m_10;
+    info->m_iElementCount = 0xc;
 }
 
 struct hkPairCDF6
@@ -160,7 +165,7 @@ class MalleableGetterStandIn : public hkpMalleableConstraintData
 // src: XBOX_PDB 0x00cdf6c0
 hkpConstraintData* MalleableGetterStandIn::hkpMalleableConstraintData_getWrappedConstraintData()
 {
-    return m_pConstraintData;
+    return m_constraintData;
 }
 
 struct FUN_00cdf6d0_t
@@ -248,8 +253,8 @@ struct Cdf7c0Flag
     bool v;
 };
 
-void hkSimpleContactConstraintDataBuildJacobian(hkpConstraintAtom* atom, Cdf7c0Buf* buf, Cdf7c0Flag flag, int param2);
-void hkSolverBuildJacobianFromAtomsNotContact(hkpConstraintAtom* atom, int unk14, Cdf7c0Buf* buf, int param2);
+void hkSimpleContactConstraintDataBuildJacobian(hkpConstraintAtom* atom, Cdf7c0Buf* buf, Cdf7c0Flag writeHeaderSchemas, int param2);
+void hkSolverBuildJacobianFromAtomsNotContact(hkpConstraintAtom* atom, int unk14, Cdf7c0Buf* tmpIn, int param2);
 
 struct Cdf7c0Self
 {
@@ -261,15 +266,18 @@ struct Cdf7c0Self
     int unk14;
     int unk18;
     float m_fSpringStrength;
-    void hkpMalleableConstraintData_buildJacobian(const Cdf7c0Buf& src, int param2);
+    void hkpMalleableConstraintData_buildJacobian(const Cdf7c0Buf& in, int out);
 };
 
 // Copies src, scales the copy's unk24 by m_fSpringStrength, then calls FUN_00d72190 for a contact atom or FUN_00d6f460 otherwise.
 // @fnv 0x00cdf7c0
 // src: XBOX_PDB 0x00cdf7c0
-void Cdf7c0Self::hkpMalleableConstraintData_buildJacobian(const Cdf7c0Buf& src, int param2)
+// pdb: hkpMalleableConstraintData::buildJacobian | hkpMalleableConstraintData.obj | retail, upstream name already matches, high
+// pdb params: in, out
+// pdb locals: info, min
+void Cdf7c0Self::hkpMalleableConstraintData_buildJacobian(const Cdf7c0Buf& in, int out)
 {
-    Cdf7c0Buf buf = src;
+    Cdf7c0Buf buf = in;
     buf.unk24 *= m_fSpringStrength;
     Cdf7c0Info info;
     m_pConstraintData->v38(&info);
@@ -278,11 +286,11 @@ void Cdf7c0Self::hkpMalleableConstraintData_buildJacobian(const Cdf7c0Buf& src, 
     if (atom->m_type == hkpConstraintAtom::TYPE_CONTACT)
     {
         flag.v = true;
-        hkSimpleContactConstraintDataBuildJacobian(atom, &buf, flag, param2);
+        hkSimpleContactConstraintDataBuildJacobian(atom, &buf, flag, out);
     }
     else
     {
-        hkSolverBuildJacobianFromAtomsNotContact(atom, info.unk14, &buf, param2);
+        hkSolverBuildJacobianFromAtomsNotContact(atom, info.unk14, &buf, out);
     }
 }
 

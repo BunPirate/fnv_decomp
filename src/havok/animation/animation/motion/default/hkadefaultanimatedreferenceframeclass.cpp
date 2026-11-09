@@ -32,6 +32,7 @@ struct FUN_00dfe520_cls
 };
 
 // @fnv 0x00dfe520
+// pdb: hkaDefaultAnimatedReferenceFrame::`scalar deleting destructor' | hkaDefaultAnimatedReferenceFrameClass.obj | retail, vtable slot, high
 FUN_00dfe520_cls* FUN_00dfe520_cls::Destroy(unsigned char acFlags)
 {
     hkMemoryRouter* pAudioHolder = hkMemoryRouter_getInstance();

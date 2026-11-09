@@ -36,6 +36,7 @@ FUN_00e483d0_Router* __cdecl _D1A0E0GetMemoryRouter();
 // Allocates a 0x28-byte object via the memory router's allocator, sets its type to 0x28, and passes this to its FUN_00e48400 method.
 // @fnv 0x00e483d0
 // src: HAVOK_LIB 0x00e483d0
+// pdb: hkpCallbackConstraintMotor::clone | hkpCallbackConstraintMotor.obj | retail, upstream name already matches, high
 void FUN_00e483d0_Class::hkpCallbackConstraintMotor_clone()
 {
     FUN_00e483d0_Router* router = _D1A0E0GetMemoryRouter();

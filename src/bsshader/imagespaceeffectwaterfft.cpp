@@ -23,6 +23,7 @@ struct ImageSpaceTextureSet
 
 // @fnv 0x00ba1250
 // src: COMMUNITY 0x00ba1250
+// pdb: ImageSpaceEffectWaterFFT::FreeUpTextureMemory | ImageSpaceEffectWaterFFT.obj | retail, upstream name already matches, high
 void ImageSpaceTextureSet::ImageSpaceEffectWaterFFT_FreeUpTextureMemory()
 {
     if (m_kTextureSlot2.GetTexture())
@@ -40,10 +41,11 @@ void ImageSpaceTextureSet::ImageSpaceEffectWaterFFT_FreeUpTextureMemory()
 
 extern MemoryManager g_memoryManager;
 
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 struct ImageSpaceShaderParam : ImageSpaceEffectParam
 {
     ImageSpaceShaderParam();
-    void SetSizeEx(int a, int b);
+    void SetSizeEx(int aiVSize, int aiPSize);
     void SetFloats(int idx, const float* data, unsigned int count);
     void SetReferenceVector(int idx, float x, float y, float z, float w);
 
@@ -58,19 +60,19 @@ struct ImageSpaceShaderParam : ImageSpaceEffectParam
 
     // Preserve the unmodeled prefix through offset 0x53 after the shared base.
     int unkBaseTail[0x15 - sizeof(ImageSpaceEffectParam) / sizeof(int)];
-    char unk54;
+    char bUseTexOffset;
     bool bFlag55;
     bool bFlag56;
     char unk57;
-    int unk58;
+    int pInputTextures;
     int unk5C;
     int unk60;
     int unk64;
-    int unk68;
+    int pInputFilterModes;
     int unk6C;
     int unk70;
     int unk74;
-    int unk78;
+    int pRenderStates;
     int unk7C;
     int unk80;
     int unk84;
@@ -106,6 +108,7 @@ struct EffectSource
 
 // These calls bind to ImageSpaceEffect methods: SetTextureArraySize 0x00ba3f90, SetTexture 0x00ba3c70.
 // Retained locally because include/ImageSpaceEffect.h is not available.
+// pdb: class ImageSpaceEffect, size 0x58 (here 0x1c), 7 members
 struct ImageSpaceEffect
 {
     int unk00;
@@ -116,7 +119,7 @@ struct ImageSpaceEffect
     int unk14;
     ShaderParamArray params;
 
-    void SetTextureArraySize(int count);
+    void SetTextureArraySize(int aiCount);
     void SetTexture(int idx, void* tex, ImageSpaceEffectParam* param, int mode);
     void SetPass3(int a, int b, int c);
     void SetPass5(int a, int b, int c, int d, int e);

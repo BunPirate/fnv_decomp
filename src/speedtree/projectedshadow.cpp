@@ -26,6 +26,7 @@ struct FUN_00b3e6c0_cls
 };
 // Zeroes the three V3 members a, b and c, calls FUN_0044a730(0, 0) on s, and returns this.
 // @fnv 0x00b3e6c0
+// pdb: CProjectedShadow::CProjectedShadow | ProjectedShadow.obj | debug, call graph, medium
 FUN_00b3e6c0_cls* FUN_00b3e6c0_cls::ClearVectors()
 {
     unsigned char flag;

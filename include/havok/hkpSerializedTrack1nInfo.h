@@ -7,11 +7,12 @@
 class hkpAgent1nSector;
 class hkpSerializedSubTrack1nInfo;
 #pragma pack(push, 1)
+// pdb: structure hkpSerializedTrack1nInfo, size 0x18, 2 members
 class hkpSerializedTrack1nInfo
 {
   public:
-    hkArray<hkpAgent1nSector*> m_kSectors;               // +0x0
-    hkArray<hkpSerializedSubTrack1nInfo*> m_kSubTracks;  // +0xC
+    hkArray<hkpAgent1nSector*> m_sectors;               // +0x0
+    hkArray<hkpSerializedSubTrack1nInfo*> m_subTracks;  // +0xC
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpSerializedTrack1nInfo[(sizeof(hkpSerializedTrack1nInfo) == 0x18) ? 1 : -1];

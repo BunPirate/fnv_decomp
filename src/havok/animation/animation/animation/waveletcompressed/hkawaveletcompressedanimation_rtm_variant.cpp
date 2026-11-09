@@ -12,7 +12,7 @@
 
 typedef unsigned short hkUint16;
 struct hkQsTransform;
-int __cdecl hkCalcQuantizedSize(int aiValue, const char* apBytes);
+int __cdecl hkCalcQuantizedSize(int nValues, const char* desc);
 unsigned int __fastcall hkaWaveletCompressedAnimation_getFullCacheKey(hkaWaveletCompressedAnimation* self, int, unsigned int a);
 struct FUN_00e2f8c0_Class
 {
@@ -21,7 +21,7 @@ struct FUN_00e2f8c0_Class
 
     int hkaWaveletCompressedAnimation_getNumDataChunks(unsigned int value, int unused);
 };
-void __stdcall hkaWaveletCompressedAnimation_sampleIndividualFloatTracks(int aiUnused1, int aiUnused2, unsigned int count, void* dest);
+void __stdcall hkaWaveletCompressedAnimation_sampleIndividualFloatTracks(int time, int tracks, unsigned int numTracks, void* floatTracksOut);
 struct FUN_00e2f7c0_Class : hkaWaveletCompressedAnimation
 {
     virtual void v1();
@@ -32,7 +32,7 @@ struct FUN_00e2f7c0_Class : hkaWaveletCompressedAnimation
     virtual void v6();
     virtual void v7();
     virtual unsigned int v8();
-    void hkaAnimation_getFrameAndDelta(float t, unsigned int* outIndex, float* outFrac);
+    void hkaAnimation_getFrameAndDelta(float t, unsigned int* frameOut, float* deltaOut);
 };
 struct FUN_00e2f8b0_Obj
 {
@@ -254,7 +254,7 @@ struct DestWrap
     DestWrap(float* q) : p(q)
     {}
 };
-void __stdcall hkaWaveletCompressedAnimation_sampleIndividualTransformTracks(int, int, unsigned int count, DestWrap dest);
+void __stdcall hkaWaveletCompressedAnimation_sampleIndividualTransformTracks(int, int, unsigned int numTracks, DestWrap transformTracksOut);
 extern "C" void __cdecl _ReadWriteBarrier(void);
 struct SwapCountsE2
 {
@@ -329,12 +329,12 @@ struct S00e306d0_Args
 };
 static volatile unsigned int s00e306d0_sink;
 // src: HAVOK_LIB 0x00e300b0
-static __declspec(noinline) void _decompress(unsigned int x, S00e306d0_Args args)
+static __declspec(noinline) void _decompress(unsigned int params, S00e306d0_Args outputData)
 {
-    unsigned int* p = (unsigned int*)x;
-    p[0] = args.f00;
-    p[1] = args.f18;
-    p[2] = args.f04;
+    unsigned int* p = (unsigned int*)params;
+    p[0] = outputData.f00;
+    p[1] = outputData.f18;
+    p[2] = outputData.f04;
 }
 struct S00e306d0_Obj
 {
@@ -368,7 +368,7 @@ struct S00e306d0_Obj
     int unk60;
     unsigned int m_ui64;
 };
-static void decompressBlockToCache(S00e306d0_Obj* self, unsigned int a, unsigned int b, unsigned int c);
+static void decompressBlockToCache(S00e306d0_Obj* self, unsigned int pose, unsigned int data, unsigned int c);
 void S00e306d0_Wrap(S00e306d0_Obj* self, unsigned int a, unsigned int b, unsigned int c);
 #include <windows.h>
 struct hkDmaRefE2FA
@@ -428,7 +428,7 @@ class hkQueueE2FA
     void* m_data;
 
     void hkaWaveletCompressedAnimation_getBlockDataAndSize(unsigned int slot, hkDmaRefE2FA* out) const;
-    void hkaWaveletCompressedAnimation_getDataChunks(unsigned int offset, int unused, hkDmaRefE2FA* desc, int mode) const;
+    void hkaWaveletCompressedAnimation_getDataChunks(unsigned int frame, int delta, hkDmaRefE2FA* dataChunks, int numDataChunks) const;
 };
 struct InfoE2FB
 {
@@ -448,15 +448,15 @@ class HostE2FB : public hkaWaveletCompressedAnimation
 __declspec(noinline) void HostE2FB::hkaWaveletCompressedAnimation_getBlockDataAndSize(unsigned int uiIndex, InfoE2FB* pkInfo)
 {
     const unsigned int* blockOffsets =
-        reinterpret_cast<const unsigned int*>(m_kCompressedData.m_data + m_uiIndexDataOffset);
+        reinterpret_cast<const unsigned int*>(m_dataBuffer.m_data + m_blockIndexIdx);
     unsigned int address =
-        reinterpret_cast<unsigned int>(m_kCompressedData.m_data + m_uiNumDynamicDofs) + blockOffsets[uiIndex];
+        reinterpret_cast<unsigned int>(m_dataBuffer.m_data + m_quantizedDataIdx) + blockOffsets[uiIndex];
     pkInfo->m_iFirstValue = address & ~15;
     pkInfo->m_bFlag = address & 15;
-    if (uiIndex != m_uiNumIndices - 1)
+    if (uiIndex != m_blockIndexSize - 1)
         pkInfo->m_uiLogicalSize = blockOffsets[uiIndex + 1] - blockOffsets[uiIndex];
     else
-        pkInfo->m_uiLogicalSize = m_uiNumDynamicTracks - blockOffsets[uiIndex];
+        pkInfo->m_uiLogicalSize = m_quantizedDataSize - blockOffsets[uiIndex];
     pkInfo->m_uiLogicalSize = (pkInfo->m_uiLogicalSize + static_cast<unsigned char>(address & 15) + 15) & ~15;
 }
 struct ChunkRetry
@@ -627,33 +627,33 @@ struct RecomposeParameters
 void __cdecl FUN_00e4e610(const hkUint16*, const hkUint16*, unsigned int, unsigned int, TrackStatistics*);
 void __cdecl hkaTrackAnalysis_recompose(const RecomposeParameters*, hkQsTransform*, float*);
 // src: HAVOK_LIB 0x00e300b0
-static void _decompress(WaveletParameters parameters, float* output)
+static void _decompress(WaveletParameters params, float* outputData)
 {
 
     Quantization quantization;
-    quantization.preserved = parameters.preserved;
-    quantization.bitWidth = parameters.maxBitWidth;
+    quantization.preserved = params.preserved;
+    quantization.bitWidth = params.maxBitWidth;
 
-    unsigned int bytes = hkCalcQuantizedSize(parameters.blockSize, &quantization);
+    unsigned int bytes = hkCalcQuantizedSize(params.blockSize, &quantization);
 
     hkMemoryRouter* router = hkMemoryRouter_getInstance();
     float* temporary = reinterpret_cast<float*>(router->m_stack.m_next.m_storage);
     router->m_stack.m_next.m_storage = (char*)router->m_stack.m_next.m_storage + ((bytes + 127) & ~127u);
 
-    const hkUint8* data = parameters.data;
+    const hkUint8* data = params.data;
 
-    for (unsigned int i = 0; i < parameters.count; ++i)
+    for (unsigned int i = 0; i < params.count; ++i)
     {
 
-        quantization.offset = parameters.offsets[i];
-        quantization.scale = parameters.scales[i];
-        quantization.bitWidth = parameters.bitWidths ? parameters.bitWidths[i] : parameters.maxBitWidth;
+        quantization.offset = params.offsets[i];
+        quantization.scale = params.scales[i];
+        quantization.bitWidth = params.bitWidths ? params.bitWidths[i] : params.maxBitWidth;
 
-        bytes = hkCalcQuantizedSize(parameters.blockSize, &quantization);
+        bytes = hkCalcQuantizedSize(params.blockSize, &quantization);
 
         PackedFormat format;
         format.bits = quantization.bitWidth;
-        format.rawCount = parameters.preserved;
+        format.rawCount = params.preserved;
 
         int range = 1 << quantization.bitWidth;
         format.value = (unsigned int)(-quantization.offset * range / quantization.scale);
@@ -662,15 +662,15 @@ static void _decompress(WaveletParameters parameters, float* output)
 
         data += DecodeBlock(reinterpret_cast<const float*>(data), &format, temporary, bytes);
 
-        DecodeQuantizedBlock(temporary, &quantization, output, parameters.blockSize);
-        hkInverseWaveletTransform(output, parameters.blockSize);
-        output += parameters.blockSize;
+        DecodeQuantizedBlock(temporary, &quantization, outputData, params.blockSize);
+        hkInverseWaveletTransform(outputData, params.blockSize);
+        outputData += params.blockSize;
     }
 
     hkMemoryRouter_getInstance()->m_stack.m_next.m_storage = (void*)(reinterpret_cast<int>(temporary));
 }
-void __cdecl hkaWaveletCompressedAnimation_samplePartialWithDataChunks(unsigned int frame, float weight, unsigned int numTransforms, hkQsTransform* transforms,
-                          unsigned int numFloats, float* floats, const Chunk* chunks, int chunkCount);
+void __cdecl hkaWaveletCompressedAnimation_samplePartialWithDataChunks(unsigned int frameIndex, float delta, unsigned int maxNumTransformTracks, hkQsTransform* transformTracksOut,
+                          unsigned int maxNumFloatTracks, float* floatTracksOut, const Chunk* dataChunks, int numDataChunks);
 
 namespace wav {
 
@@ -695,6 +695,9 @@ void __cdecl FUN_00e592a0(float* dst, int numFloats);
 
 // @fnv 0x00e349c0
 // src: HAVOK_LIB 0x00e349c0
+// pdb: _decompress | hkaDeltaCompressedAnimation.obj | retail, call graph, medium
+// pdb params: params, outputData
+// pdb locals: qDesc, bDesc
 static __declspec(noinline) void _decompress_00e349c0(float* dst, wav::DecompressParams params)
 {
     const char* data = params.m_data;

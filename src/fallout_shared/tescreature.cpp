@@ -69,12 +69,14 @@ extern TESDataHandler* g_dataHandler;
 
 
 // @fnv 0x005F7900
+// pdb: TESCreature::~TESCreature | TESCreature.obj | retail, upstream name already matches, high
 TESCreature::~TESCreature()
 {
     ClearData();
 }
 
 // @fnv 0x005F7B80
+// pdb: TESCreature::ClearData | TESCreature.obj | retail, upstream name already matches, high
 void TESCreature::ClearData()
 {
     if (((TESActorBaseData*)((char*)this + 0x30))->GetFlag(0x100))
@@ -82,36 +84,39 @@ void TESCreature::ClearData()
         delete m_pCreatureSounds;
         m_pCreatureSounds = 0;
     }
-    m_cCreatureDataFlag = 0xff;
+    cCanUseHandToHand = 0xff;
 }
 
 // @fnv 0x005F7A40
+// pdb: TESCreature::InitializeData | TESCreature.obj | retail, vtable slot, high
 void TESCreature::ResetFormData()
 {
     dataPadding = 0;
     m_ucField00 = 50;
     m_ucField01 = 50;
     m_ucField02 = 50;
-    m_ucCreatureType = 32;
-    m_pImpactDataSet = 0;
-    m_pCreatureListForm = 0;
-    m_fFirstCreatureStat = 0.0f;
-    m_fSecondCreatureStat = gCreatureFootWeight;
-    m_fThirdCreatureStatCur = 1.0f;
+    cHandReach = 32;
+    pImpactDataSet = 0;
+    pWeaponList = 0;
+    fTurnSpeed = 0.0f;
+    fFootWeight = gCreatureFootWeight;
+    fBaseScale = 1.0f;
     m_pCreatureSounds = 0;
-    m_pCombatStyle = 0;
-    m_pBodyPartDataCur = 0;
-    m_bHasImpactDataSet = false;
-    m_eSoundLevel = (SOUND_LEVEL)1;
-    m_eImpactMaterial = (BGSImpactDataSet__IMPACT_MATERIAL_TYPE)6;
-    m_cCreatureDataFlag = 0xff;
+    pCombatStyle = 0;
+    pBodyPartData = 0;
+    bEmbeddedWeaponChecked = false;
+    eSoundLevel = (SOUND_LEVEL)1;
+    eBloodImpactMaterial = (BGSImpactDataSet__IMPACT_MATERIAL_TYPE)6;
+    cCanUseHandToHand = 0xff;
     ((TESActorBaseData*)((char*)this + 0x30))->UpdateFlagBit(0x40, true, false);
     ((TESActorBaseData*)((char*)this + 0x30))->UpdateFlagBit(false, false);
     ((CombatProcedure*)((char*)this + 0xb0))->Initialize((CombatController*)0x32);
 }
 
 // @fnv 0x005F9210
-CreatureSounds* TESCreature::GetMutableCreatureSounds()
+// src: XBOX_DEBUG_PDB 0x005f9210
+// pdb: TESCreature::CreateCreatureSounds | TESCreature.obj | debug, call graph, high
+CreatureSounds* TESCreature::CreateCreatureSounds()
 {
     if (!((TESActorBaseData*)((char*)this + 0x30))->GetFlag(0x100) || !m_pCreatureSounds)
     {
@@ -122,56 +127,65 @@ CreatureSounds* TESCreature::GetMutableCreatureSounds()
 }
 
 // @fnv 0x005FB3B0
-void TESCreature::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESCreature::LoadGame | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: icombatstyleID, pcombatstyle
+void TESCreature::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    ((TESActorBase*)this)->TESActorBase::LoadGame(buffer);
-    if (buffer->GetChangeFlags(0x200u).operator bool())
+    ((TESActorBase*)this)->TESActorBase::LoadGame(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetChangeFlags(0x200u).operator bool())
     {
-        buffer->ReadTypedData(&m_ucField00, 1u);
-        buffer->ReadTypedData(&m_ucField01, 1u);
-        buffer->ReadTypedData(&m_ucField02, 1u);
+        apLoadGameBuffer->ReadTypedData(&m_ucField00, 1u);
+        apLoadGameBuffer->ReadTypedData(&m_ucField01, 1u);
+        apLoadGameBuffer->ReadTypedData(&m_ucField02, 1u);
     }
 }
 
 // @fnv 0x005F9140
-void TESCreature::SetCreatureSoundsFrom(TESCreature* soundCreature)
+// src: XBOX_DEBUG_PDB 0x005f9140
+// pdb: TESCreature::SetSoundCreature | TESCreature.obj | debug, call graph (shared callers), high
+// pdb params: apCreature
+void TESCreature::SetSoundCreature(TESCreature* apCreature)
 {
     if (((TESActorBaseData*)((char*)this + 0x30))->GetFlag(0x100))
     {
-        if (soundCreature)
+        if (apCreature)
         {
             delete m_pCreatureSounds;
             ((TESActorBaseData*)((char*)this + 0x30))->UpdateFlagBit(0x100, false, true);
-            m_pCreature = soundCreature;
+            m_pCreature = apCreature;
         }
     }
     else
     {
-        m_pCreature = soundCreature;
+        m_pCreature = apCreature;
     }
 }
 
 // @fnv 0x005FA2E0
 BGSBodyPartData* TESCreature::GetBodyPartData() const
 {
-    if (m_pBodyPartDataCur)
-        return m_pBodyPartDataCur;
+    if (pBodyPartData)
+        return pBodyPartData;
     return BGSBodyPartData::ms_pBodyPartData;
 }
 
 // @fnv 0x005FA310
 void TESCreature::SetBodyPartData(BGSBodyPartData* bodyPartData)
 {
-    m_pBodyPartDataCur = bodyPartData;
+    pBodyPartData = bodyPartData;
 }
 
 // @fnv 0x005FB430
-void TESCreature::Revert(BGSLoadFormBuffer* buffer)
+// pdb: TESCreature::Revert | TESCreature.obj | debug, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void TESCreature::Revert(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    ((TESNPC*)this)->TESNPC::Revert(buffer);
+    ((TESNPC*)this)->TESNPC::Revert(apLoadGameBuffer);
 }
 
 // @fnv 0x005F7230
+// pdb: TESCreature::TESCreature | TESCreature.obj | retail, upstream name already matches, high
 TESCreature::TESCreature()
 {
     ((TESForm*)this)->SetFormType(ENUM_FORM_ID_CREA_ID);
@@ -192,11 +206,12 @@ typedef char _sizecheck_BGSPreloadable[sizeof(BGSPreloadable) == 4 ? 1 : -1];
 // @fnv 0x005f8bb0
 void TESCreature::SetImpactDataSet(BGSImpactDataSet* apSet)
 {
-    m_pImpactDataSet = apSet;
+    pImpactDataSet = apSet;
 }
 
 // Returns the TESCreature at offset 0x128 unless the actor base data has flag 0x100 set, in which case it returns 0.
 // @fnv 0x005f9100
+// pdb: TESCreature::GetSoundCreature | TESCreature.obj | debug, upstream name already matches, high
 TESCreature* TESCreature::GetSoundCreature()
 {
     if (((TESActorBaseData*)((char*)this + 0x30))->GetFlag(0x100))
@@ -210,6 +225,7 @@ TESCreature* TESCreature::GetSoundCreature()
 }
 
 // @fnv 0x005f91d0
+// pdb: TESCreature::GetCreatureSounds | TESCreature.obj | debug, upstream name already matches, high
 CreatureSounds* TESCreature::GetCreatureSounds()
 {
     if (((TESActorBaseData*)((char*)this + 0x30))->GetFlag(0x100))
@@ -222,13 +238,13 @@ CreatureSounds* TESCreature::GetCreatureSounds()
 // src: COMMUNITY 0x005f9ad0
 unsigned char TESCreature::ShadowSceneNode_GetDisableLightUpdate()
 {
-    return m_ucCreatureType;
+    return cHandReach;
 }
 
 // @fnv 0x005f9af0
 void TESCreature::SetCreatureType(unsigned char acVal)
 {
-    m_ucCreatureType = acVal;
+    cHandReach = acVal;
 }
 
 struct BGSImpactDataSet;
@@ -236,7 +252,7 @@ struct BGSImpactDataSet;
 // @fnv 0x005f9b30
 BGSImpactDataSet* TESCreature::GetImpactDataSet()
 {
-    return m_pImpactDataSet;
+    return pImpactDataSet;
 }
 
 // @fnv 0x005fa2c0
@@ -256,7 +272,7 @@ void TESCreature::SetTypeAtOffset12C(unsigned char aeType)
 // src: COMMUNITY 0x00821660
 float TESCreature::GetFootWeight()
 {
-    return m_fSecondCreatureStat;
+    return fFootWeight;
 }
 
 struct NiFormArray;
@@ -317,6 +333,7 @@ struct DelStandIn
 };
 // Runs the destructor on this object, then frees it with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x005f75b0
+// pdb: TESCreature::`scalar deleting destructor' | TESCreature.obj | retail, vtable slot, high
 void* DelStandIn::FUN_005f75b0(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -333,9 +350,11 @@ struct FUN_0050f760_shell
 };
 // @fnv 0x0050f760
 // src: XBOX_PDB 0x0050f760
-int FUN_0050f760_shell::TESBoundAnimObject_ReplaceModel(int a)
+// pdb: TESBoundAnimObject::ReplaceModel | TESObject.obj | debug, upstream name already matches, high
+// pdb params: pfilename
+int FUN_0050f760_shell::TESBoundAnimObject_ReplaceModel(int pfilename)
 {
-    return TESBoundObject_ReplaceModel_0050f600(a);
+    return TESBoundObject_ReplaceModel_0050f600(pfilename);
 }
 
 struct FUN_0051f4b0_shell
@@ -357,6 +376,7 @@ struct FUN_005f7460_shell
 
 // @fnv 0x005f7460
 // src: COMMUNITY 0x005f7460
+// pdb: TESActorBase::GetActorLevel | TESCreature.obj | debug, object-file gap fill, medium
 void FUN_005f7460_shell::TESActorBase_GetLevel()
 {
     ((TESActorBaseData*)((char*)this - 0xd0))->TESActorBaseData_GetLevel();
@@ -379,6 +399,7 @@ struct FUN_005f9040_shell : public TESActorBaseData
 };
 // @fnv 0x005f9040
 // src: COMMUNITY 0x005f9040
+// pdb: TESCreature::GetNoLeftArm | TESCreature.obj | debug, upstream name already matches, high
 bool FUN_005f9040_shell::TESCreature_GetNoLeftArm()
 {
     return GetFlag(0x20000);
@@ -390,6 +411,7 @@ struct FUN_005f9060_shell : public TESActorBaseData
 };
 // @fnv 0x005f9060
 // src: COMMUNITY 0x005f9060
+// pdb: TESCreature::GetNoRightArm | TESCreature.obj | debug, object-file gap fill, medium
 bool FUN_005f9060_shell::TESCreature_GetNoRightArn()
 {
     return GetFlag(0x10000);
@@ -401,6 +423,7 @@ struct FUN_005f9080_shell : public TESActorBaseData
 };
 // @fnv 0x005f9080
 // src: COMMUNITY 0x005f9080
+// pdb: TESCreature::GetNoHead | TESCreature.obj | debug, object-file gap fill, medium
 bool FUN_005f9080_shell::TESNPC_GetNoHead()
 {
     return GetFlag(0x8000);
@@ -412,6 +435,7 @@ struct FUN_005f90a0_shell : public TESActorBaseData
 };
 // @fnv 0x005f90a0
 // src: COMMUNITY 0x005f90a0
+// pdb: TESCreature::GetNoShadow | TESCreature.obj | debug, upstream name already matches, high
 bool FUN_005f90a0_shell::TESCreature_GetNoShadow()
 {
     return GetFlag(0x80000);
@@ -426,12 +450,14 @@ struct CreatureFlagQueries
 };
 
 // @fnv 0x005f90c0
+// pdb: TESCreature::GetTiltFrontBack | TESCreature.obj | debug, object-file gap fill, medium
 bool CreatureFlagQueries::HasFlag01000000()
 {
     return ((TESActorBaseData*)((char*)this + 0x30))->GetFlag((unsigned int)&DAT_01000000);
 }
 
 // @fnv 0x005f90e0
+// pdb: TESCreature::GetTiltLeftRight | TESCreature.obj | debug, object-file gap fill, medium
 bool CreatureFlagQueries::HasFlag02000000()
 {
     return ((TESActorBaseData*)((char*)this + 0x30))->GetFlag(0x2000000);
@@ -481,6 +507,8 @@ struct FUN_006078e0_s
 // Stores a skill actor value as a byte at offset 0x114 and sets flag 0x200, otherwise forwards to ApplyCommand.
 // @fnv 0x006078e0
 // src: COMMUNITY 0x006078e0
+// pdb: TESNPC::SetActorValue | TESNPC.obj | retail, vtable slot, high
+// pdb params: aiWhich, aiValue
 void FUN_006078e0_s::TESNPC_SetActorValueI(ActorValue::Index aiWhich, int aiValue)
 {
     if (ActorValue::IsSkill(aiWhich))
@@ -516,6 +544,8 @@ struct FUN_005f8f10_shell : TESActorBaseData
 
 // Returns fatigue, multiplied by FUN_0047ded0 (clamped to at least 1) when GetMatchesPCLevel is true.
 // @fnv 0x005f8f10
+// pdb: TESCreature::GetFatigue | TESCreature.obj | retail, vtable slot, high
+// pdb locals: sretval, slevel
 unsigned short FUN_005f8f10_shell::GetScaledFatigue()
 {
     unsigned short fatigue = GetFatigue();
@@ -542,6 +572,8 @@ struct FUN_005f7420_shell
 };
 // Returns the sum of the two virtual calls _v1 and _v6 for the given index, cast to float.
 // @fnv 0x005f7420
+// pdb: ActorValueOwner::GetPermanentActorFloatValue | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiWhich
 float FUN_005f7420_shell::GetSumOfVirtualValues(int aiWhich)
 {
     return (float)(_v1(aiWhich) + _v6(aiWhich));
@@ -553,6 +585,7 @@ struct FUN_005f78b0_shell
 };
 // Destructs the TESActorBase and, if flags has bit 0 set, frees the object with operator delete; returns this.
 // @fnv 0x005f78b0
+// pdb: TESActorBase::`scalar deleting destructor' | TESCreature.obj | retail, vtable slot, high
 void* FUN_005f78b0_shell::DestroyActorBase(unsigned int flags)
 {
     ((TESActorBase*)this)->TESActorBase::~TESActorBase();
@@ -571,6 +604,8 @@ struct FUN_005f8e90_shell : public TESActorBaseData
 
 // @fnv 0x005f8e90
 // src: COMMUNITY 0x005f8e90
+// pdb: TESCreature::GetFormHealth | TESCreature.obj | retail, vtable slot, high
+// pdb locals: iretval, slevel
 int FUN_005f8e90_shell::TESCreature_TESHealthForm_getNext_get004()
 {
     unsigned short result = 0;
@@ -597,6 +632,9 @@ struct CreatureSaveSize : FUN_005f16f0_shell
     unsigned short GetSaveSize(unsigned int);
 };
 // @fnv 0x005fb180
+// pdb: TESCreature::GetSaveSize | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short CreatureSaveSize::GetSaveSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -614,14 +652,17 @@ struct FUN_005f1f30_shell
 };
 // Calls FUN_005f1f30, then if change flag 0x200 is set saves three bytes at offsets 0x12d, 0x12e and 0x12f into the buffer.
 // @fnv 0x005fb330
-void TESCreature::SaveGame(BGSSaveFormBuffer* buffer)
+// pdb: TESCreature::SaveGame | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: icombatstyleID
+void TESCreature::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    ((FUN_005f1f30_shell*)this)->SaveGame_005f1f30(buffer);
-    if (buffer->GetChangeFlags(0x200u).operator bool())
+    ((FUN_005f1f30_shell*)this)->SaveGame_005f1f30(apSaveGameBuffer);
+    if (apSaveGameBuffer->GetChangeFlags(0x200u).operator bool())
     {
-        buffer->SaveData((char*)this + 0x12d, 1, 0);
-        buffer->SaveData((char*)this + 0x12e, 1, 0);
-        buffer->SaveData((char*)this + 0x12f, 1, 0);
+        apSaveGameBuffer->SaveData((char*)this + 0x12d, 1, 0);
+        apSaveGameBuffer->SaveData((char*)this + 0x12e, 1, 0);
+        apSaveGameBuffer->SaveData((char*)this + 0x12f, 1, 0);
     }
 }
 
@@ -641,6 +682,8 @@ struct FUN_005f73f0_Holder
 };
 // Calls the virtual v8 with a and converts the returned float to int via FUN_00406ce0.
 // @fnv 0x005f73f0
+// pdb: ActorValueOwner::GetPermanentActorValue | TESCreature.obj | debug, vtable slot, medium
+// pdb params: aiWhich
 int FUN_005f73f0_Holder::ConvertVirtualResultToInt(int a)
 {
     return (int)floorf(v8(a));
@@ -765,9 +808,11 @@ struct StandIn : FakePrimary, FakeAVOwner
 // Adds aiValue to the actor value aiWhich by reading GetAV and writing the sum back with SetAV.
 // @fnv 0x005f7520
 // src: COMMUNITY 0x005f7520
-void StandIn::TESActorBase_ModActorValue(int aiWhich, float aiValue)
+// pdb: TESActorBase::ModActorValue | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiWhich, aiValue
+void StandIn::TESActorBase_ModActorValue(int aiWhich, float afValue)
 {
-    SetAV(aiWhich, GetAV(aiWhich) + aiValue);
+    SetAV(aiWhich, GetAV(aiWhich) + afValue);
 }
 
 
@@ -800,6 +845,7 @@ struct FUN_005f75e0 : public TESBoundAnimObject,
 
 // Empty constructor that initializes the object's base subobjects.
 // @fnv 0x005f75e0
+// pdb: TESActorBase::TESActorBase | TESCreature.obj | retail, call graph (shared callers), high
 FUN_005f75e0::FUN_005f75e0()
 {}
 
@@ -815,54 +861,56 @@ struct FUN_005f12d0_shell : public FUN_005f0b30_shell
 
 // Dispatches a command code to the matching setter on the AI form, mood form, actor base or base shell, passing value as the argument.
 // @fnv 0x005f12d0
-void FUN_005f12d0_shell::ApplyCommand(int command, int value)
+// pdb: TESActorBase::SetActorValue | TESActorBase.obj | retail, vtable slot, high
+// pdb params: aiWhich, afValue
+void FUN_005f12d0_shell::ApplyCommand(int aiWhich, int aiValue)
 {
-    switch (command)
+    switch (aiWhich)
     {
     case 5:
-        ((TESAttributes*)((char*)this + 0xb8))->SetStrength((unsigned char)value);
+        ((TESAttributes*)((char*)this + 0xb8))->SetStrength((unsigned char)aiValue);
         break;
     case 6:
-        ((TESAttributes*)((char*)this + 0xb8))->SetPerception((unsigned char)value);
+        ((TESAttributes*)((char*)this + 0xb8))->SetPerception((unsigned char)aiValue);
         break;
     case 7:
-        ((TESAttributes*)((char*)this + 0xb8))->SetEndurance((unsigned char)value);
+        ((TESAttributes*)((char*)this + 0xb8))->SetEndurance((unsigned char)aiValue);
         break;
     case 8:
-        ((TESAttributes*)((char*)this + 0xb8))->SetCharisma((unsigned char)value);
+        ((TESAttributes*)((char*)this + 0xb8))->SetCharisma((unsigned char)aiValue);
         break;
     case 9:
-        ((TESAttributes*)((char*)this + 0xb8))->SetIntelligence((unsigned char)value);
+        ((TESAttributes*)((char*)this + 0xb8))->SetIntelligence((unsigned char)aiValue);
         break;
     case 10:
-        ((TESAttributes*)((char*)this + 0xb8))->SetAgility((unsigned char)value);
+        ((TESAttributes*)((char*)this + 0xb8))->SetAgility((unsigned char)aiValue);
         break;
     case 11:
-        ((TESAttributes*)((char*)this + 0xb8))->SetLuck((unsigned char)value);
+        ((TESAttributes*)((char*)this + 0xb8))->SetLuck((unsigned char)aiValue);
         break;
     case 16:
-        this->SetHealth_005f0b30(value);
+        this->SetHealth_005f0b30(aiValue);
         break;
     case 0:
-        ((TESAIForm*)((char*)this + 0x90))->SetAggression((unsigned char)value, true);
+        ((TESAIForm*)((char*)this + 0x90))->SetAggression((unsigned char)aiValue, true);
         break;
     case 1:
-        ((TESAIForm*)((char*)this + 0x90))->SetConfidence((unsigned char)value, true);
+        ((TESAIForm*)((char*)this + 0x90))->SetConfidence((unsigned char)aiValue, true);
         break;
     case 2:
-        ((TESAIForm*)((char*)this + 0x90))->SetEnergy((unsigned char)value, true);
+        ((TESAIForm*)((char*)this + 0x90))->SetEnergy((unsigned char)aiValue, true);
         break;
     case 3:
-        ((TESAIForm*)((char*)this + 0x90))->SetResponsibility((unsigned char)value, true);
+        ((TESAIForm*)((char*)this + 0x90))->SetResponsibility((unsigned char)aiValue, true);
         break;
     case 4:
-        ((TESAIForm*)((char*)this + 0x90))->SetAIMood((unsigned char)value);
+        ((TESAIForm*)((char*)this + 0x90))->SetAIMood((unsigned char)aiValue);
         break;
     case 21:
-        ((TESActorBaseData*)((char*)this + 0x30))->SetSpeedMult((unsigned short)value);
+        ((TESActorBaseData*)((char*)this + 0x30))->SetSpeedMult((unsigned short)aiValue);
         break;
     case 23:
-        ((TESActorBaseData*)((char*)this + 0x30))->SetKarmaValue((float)value);
+        ((TESActorBaseData*)((char*)this + 0x30))->SetKarmaValue((float)aiValue);
         break;
     default:
         break;
@@ -878,10 +926,12 @@ struct P09AV
 
 struct FUN_006078e0_s
 {
-    void ApplyCommand(ActorValue::Index index, int value);
+    void ApplyCommand(ActorValue::Index aiWhich, int aiValue);
 };
 
 // @fnv 0x005fa200
+// pdb: TESCreature::SetActorValue | TESCreature.obj | debug, object-file run extension, low
+// pdb params: aiWhich, aiValue
 }  // namespace fnv_005fa200
 
 void TESCreature::SetActorValueI(ActorValue::Index index, int value)
@@ -936,11 +986,14 @@ struct FUN_00484d20_Class
 unsigned int __fastcall _ref_0084e3a0(unsigned int);
 
 // @fnv 0x005fb1e0
-void TESCreature::SaveGameLegacy(unsigned int flags)
+// pdb: TESCreature::SaveGame | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: icombatstyleID
+void TESCreature::SaveGameLegacy(unsigned int aiFlags)
 {
-    reinterpret_cast<FUN_00608e00_shell*>(this)->SaveGame_005f18c0(flags);
+    reinterpret_cast<FUN_00608e00_shell*>(this)->SaveGame_005f18c0(aiFlags);
 
-    if (flags & 0x200)
+    if (aiFlags & 0x200)
     {
         reinterpret_cast<PC7d*>(this)->TESForm_SaveGameDataOLD(
             reinterpret_cast<unsigned int>(reinterpret_cast<unsigned char*>(this) + 0x12d), 1);
@@ -950,7 +1003,7 @@ void TESCreature::SaveGameLegacy(unsigned int flags)
             reinterpret_cast<unsigned int>(reinterpret_cast<unsigned char*>(this) + 0x12f), 1);
     }
 
-    if (flags & 0)
+    if (aiFlags & 0)
     {
         unsigned int result =
             _ref_0084e3a0(*reinterpret_cast<unsigned int*>(reinterpret_cast<unsigned char*>(this) + 0x140));
@@ -979,6 +1032,7 @@ class FUN_005f77b0
 };
 
 // @fnv 0x005f77b0
+// pdb: TESActorBase::~TESActorBase | TESCreature.obj | retail, call graph (shared callers), high
 FUN_005f77b0::~FUN_005f77b0()
 {}
 
@@ -1017,12 +1071,14 @@ void __cdecl TESForm_AddChunk_00485910(unsigned int, float);
 void __cdecl TESForm_AddChunk_00485910(unsigned int, int);
 
 // @fnv 0x005f7c20
+// pdb: TESCreature::Save | TESCreature.obj | retail, vtable slot, high
+// pdb locals: psounds, pcrea, tempint, itempint
 void TESCreature::SaveForm()
 {
     BeginFormRecord();
     TESFullName::Save_00487010();
-    TESModel::WriteToBuffer(0x4c444f4d, 0x54444f4d);
-    TESSpellList::TESSpellList_SaveSubRecord();
+    TESModel::BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    TESSpellList::TESSpellList_Save();
     ((Sub70_5f7c20*)((char*)this + 0x70))->FUN_0047bd70();
     TESModelList::CopyModelListToBuffer(0x5a46494e, 0x5446494e);
     TESActorBaseData::Save();
@@ -1036,7 +1092,7 @@ void TESCreature::SaveForm()
     {
         ((Sub12c_5f7c20*)&Data)->FUN_00483710();
     }
-    TESForm_AddChunk_3(0x4d414e52, m_ucCreatureType);
+    TESForm_AddChunk_3(0x4d414e52, cHandReach);
     if (((const TESActorBase*)this)->GetCombatStyle())
     {
         TESForm_AddChunk_00485910(0x4d414e5a, ((TESForm*)((const TESActorBase*)this)->GetCombatStyle())->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
@@ -1045,11 +1101,11 @@ void TESCreature::SaveForm()
     {
         TESForm_AddChunk_00485910(0x4d414e50, ((const TESActorBase*)this)->GetBodyPartData()->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
-    TESForm_AddChunk_00485910(0x4d414e54, m_fFirstCreatureStat);
-    TESForm_AddChunk_00485910(0x4d414e42, m_fThirdCreatureStatCur);
-    TESForm_AddChunk_00485910(0x4d414e57, m_fSecondCreatureStat);
-    TESForm_AddChunk_00485910(0x344d414e, (int)m_eImpactMaterial);
-    TESForm_AddChunk_00485910(0x354d414e, (int)m_eSoundLevel);
+    TESForm_AddChunk_00485910(0x4d414e54, fTurnSpeed);
+    TESForm_AddChunk_00485910(0x4d414e42, fBaseScale);
+    TESForm_AddChunk_00485910(0x4d414e57, fFootWeight);
+    TESForm_AddChunk_00485910(0x344d414e, (int)eBloodImpactMaterial);
+    TESForm_AddChunk_00485910(0x354d414e, (int)eSoundLevel);
     if (TESActorBaseData::GetFlag(0x100))
     {
         CreatureSounds* sounds = GetCreatureSounds();
@@ -1071,14 +1127,14 @@ void TESCreature::SaveForm()
             TESForm_AddChunk_00485910(0x52435343, soundId);
         }
     }
-    if (m_pImpactDataSet)
+    if (pImpactDataSet)
     {
-        unsigned int impactId = ((TESForm*)m_pImpactDataSet)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+        unsigned int impactId = ((TESForm*)pImpactDataSet)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
         TESForm_AddChunk_00485910(0x4d414e43, impactId);
     }
-    if (m_pCreatureListForm)
+    if (pWeaponList)
     {
-        unsigned int weaponId = ((TESForm*)m_pCreatureListForm)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+        unsigned int weaponId = ((TESForm*)pWeaponList)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
         TESForm_AddChunk_00485910(0x4d414e4c, weaponId);
     }
     FinishFormRecord();
@@ -1145,55 +1201,58 @@ extern const char DAT_0104947c[];
 void Warning_005b5e40(const char*, ...);
 // Reads a creature record from the file, dispatching each chunk to the matching component loader, and returns true when the record type is 43.
 // @fnv 0x005f7ec0
-bool TESCreature::LoadForm(TESFile* file)
+// pdb: TESCreature::Load | TESCreature.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: esoundtype, skipnext, chunkid, goodchunk, formid, pMessage, tempint, cfile, stempval, kAIData, temp, itempint, pfilename, idata, itemp, ival, psounds, iid
+bool TESCreature::LoadForm(TESFile* apFile)
 {
-    unsigned char formType = ((CreatureRecordFile*)file)->FUN_00472660();
+    unsigned char formType = ((CreatureRecordFile*)apFile)->FUN_00472660();
     if (formType != 43)
         return false;
-    TESForm::FUN_00485110(file);
+    TESForm::FUN_00485110(apFile);
     SetInitializationState(false);
     int soundType = -1;
     int chunk;
     bool consumed5;
     bool valid4;
-    while ((chunk = ((CreatureRecordFile*)file)->TESFile_GetTESChunk()) != 0)
+    while ((chunk = ((CreatureRecordFile*)apFile)->TESFile_GetTESChunk()) != 0)
     {
         consumed5 = false;
         valid4 = true;
         switch (chunk)
         {
         case 0x44494445: {  // EDID
-            char* editorID = (char*)_alloca(((CreatureRecordFile*)file)->GetField25C());
-            ((CreatureRecordFile*)file)->FUN_00472890(editorID, 512);
+            char* editorID = (char*)_alloca(((CreatureRecordFile*)apFile)->GetField25C());
+            ((CreatureRecordFile*)apFile)->FUN_00472890(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
-            TESModel::LoadModelData(this, (TESFile*)file);
+            TESModel::LoadModelData(this, (TESFile*)apFile);
             break;
         case 0x49524353: {
             unsigned int scriptID = 0;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&scriptID);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&scriptID);
             TESScriptableForm::Initialize(scriptID);
             TESScriptableForm::InitItem((TESForm*)this);
             break;
         }
         case 0x4f544e43:
         case 0x44454f43:
-            switch (((CreatureRecordFile*)file)->TESFile_GetTESChunk())
+            switch (((CreatureRecordFile*)apFile)->TESFile_GetTESChunk())
             {
             case 0x4f544e43: {
                 CreatureContainerEntry item;
                 ourMemset(&item, 0, 8);
-                ((CreatureRecordFile*)file)->FUN_00472890(&item, 8);
-                if (((CreatureRecordFile*)file)->FUN_00401680())
+                ((CreatureRecordFile*)apFile)->FUN_00472890(&item, 8);
+                if (((CreatureRecordFile*)apFile)->FUN_00401680())
                     item.TwoValues_Endian();
                 DAT_011cb5f8 = (LastContainerItem*)TESContainer::AddContainerObject((void*)&item);
                 break;
@@ -1202,7 +1261,7 @@ bool TESCreature::LoadForm(TESFile* file)
                 if (DAT_011cb5f8)
                 {
                     DAT_011cb5f8->extra = new FUN_0040e690;
-                    DAT_011cb5f8->extra->FUN_0040e780((CreatureRecordFile*)file);
+                    DAT_011cb5f8->extra->FUN_0040e780((CreatureRecordFile*)apFile);
                     DAT_011cb5f8 = 0;
                 }
                 break;
@@ -1210,31 +1269,31 @@ bool TESCreature::LoadForm(TESFile* file)
             break;
         case 0x4f4c5053: {
             unsigned int spellID = 0;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&spellID);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&spellID);
             TESSpellList::TESSpellList_AddSpell_0048d290(spellID);
             break;
         }
         case 0x4d544945: {
             unsigned int touchID = 0;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&touchID);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&touchID);
             BGSTouchSpellForm::Initialize(touchID);
             break;
         }
         case 0x544d4145: {
             unsigned short touchAmount = 0;
-            ((CreatureRecordFile*)file)->ReadChunkData(&touchAmount);
+            ((CreatureRecordFile*)apFile)->ReadChunkData(&touchAmount);
             BGSTouchSpellForm::FUN_00483170(touchAmount);
             break;
         }
         case 0x54444941: {
             CreatureAIData ai;
             ourMemset(&ai, 0, 20);
-            ((CreatureRecordFile*)file)->FUN_00472890(&ai, 20);
-            if (((CreatureRecordFile*)file)->FUN_00401680())
+            ((CreatureRecordFile*)apFile)->FUN_00472890(&ai, 20);
+            if (((CreatureRecordFile*)apFile)->FUN_00401680())
                 ai.SwapEndianFields();
-            if (((CreatureRecordFile*)file)->FUN_00403570() < 4 && ai.aggression > 1)
+            if (((CreatureRecordFile*)apFile)->FUN_00403570() < 4 && ai.aggression > 1)
                 ++ai.aggression;
-            if (((CreatureRecordFile*)file)->FUN_00403570() < 6)
+            if (((CreatureRecordFile*)apFile)->FUN_00403570() < 6)
             {
                 switch (ai.aggression)
                 {
@@ -1263,164 +1322,164 @@ bool TESCreature::LoadForm(TESFile* file)
                     break;
                 }
             }
-            if (((CreatureRecordFile*)file)->FUN_00403570() < 7)
+            if (((CreatureRecordFile*)apFile)->FUN_00403570() < 7)
                 ai.confidence = 4 - ai.confidence;
             TESAIForm::SetAIData((PackedRecordData*)&ai);
             break;
         }
         case 0x44494b50: {
             unsigned int packageID = 0;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&packageID);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&packageID);
             TESAIForm::AddPackage((TESPackage*)packageID);
             break;
         }
         case 0x4d414e53: {
             CreatureFactionEntry faction;
             ourMemset(&faction, 0, 8);
-            ((CreatureRecordFile*)file)->FUN_00472890(&faction, 8);
-            if (((CreatureRecordFile*)file)->FUN_00401680())
+            ((CreatureRecordFile*)apFile)->FUN_00472890(&faction, 8);
+            if (((CreatureRecordFile*)apFile)->FUN_00401680())
                 faction.QuestPerkEntryData_Endian();
             TESActorBaseData::SetFactionRank((TESFaction*)faction.faction, (char)faction.rank);
             break;
         }
         case 0x4d414e49: {
             unsigned int deathID = 0;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&deathID);
-            m_pBaseTemplateForm = (TESLevItem*)deathID;
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&deathID);
+            pDeathItem = (TESLevItem*)deathID;
             break;
         }
         case 0x4b435456: {
             unsigned int voiceID;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&voiceID);
-            m_kFactionList = (BGSVoiceType*)voiceID;
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&voiceID);
+            pVoiceType = (BGSVoiceType*)voiceID;
             break;
         }
         case 0x544c5054: {
             unsigned int templateID;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&templateID);
-            m_ppTemplateForms = (TESForm*)templateID;
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&templateID);
+            pTemplateForm = (TESForm*)templateID;
             break;
         }
         case 0x53424341:
-            ((CreatureRecordFile*)file)->FUN_00472890(&actorData, 24);
-            if (((CreatureRecordFile*)file)->FUN_00401680())
-                actorData.SwapEndianness();
-            if (((CreatureRecordFile*)file)->FUN_00403570() < 8)
+            ((CreatureRecordFile*)apFile)->FUN_00472890(&actorData, 24);
+            if (((CreatureRecordFile*)apFile)->FUN_00401680())
+                actorData.ACTOR_BASE_DATA_Endian();
+            if (((CreatureRecordFile*)apFile)->FUN_00403570() < 8)
                 actorData.m_usField16 = 0;
             actorData.m_usField06 = 0;
             break;
         case 0x5a46464b:
-            TESAnimation::LoadAnimationChunk(this, (TESFile*)file);
+            TESAnimation::LoadAnimationChunk(this, (TESFile*)apFile);
             break;
         case 0x5a46494e:
         case 0x5446494e:
-            TESModelList::LoadStringChunk(this, file);
+            TESModelList::LoadStringChunk(this, apFile);
             break;
         case 0x54534544:
         case 0x44545344:
-            BGSDestructibleObjectForm::LoadDestructibleData(this, (TESFile*)file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, (TESFile*)apFile);
             break;
         case 0x41544144:
-            ((CreatureTypedDataReader*)this)->Read(file, &Data, 4);
+            ((CreatureTypedDataReader*)this)->Read(apFile, &Data, 4);
             break;
         case 0x304d414e: {
-            if (((CreatureRecordFile*)file)->GetField25C())
+            if (((CreatureRecordFile*)apFile)->GetField25C())
             {
-                char* model = (char*)_alloca(((CreatureRecordFile*)file)->GetField25C());
-                ((CreatureRecordFile*)file)->FUN_00472890(model, 0);
+                char* model = (char*)_alloca(((CreatureRecordFile*)apFile)->GetField25C());
+                ((CreatureRecordFile*)apFile)->FUN_00472890(model, 0);
             }
             break;
         }
         case 0x314d414e: {
-            if (((CreatureRecordFile*)file)->GetField25C())
+            if (((CreatureRecordFile*)apFile)->GetField25C())
             {
-                char* model2 = (char*)_alloca(((CreatureRecordFile*)file)->GetField25C());
-                ((CreatureRecordFile*)file)->FUN_00472890(model2, 0);
+                char* model2 = (char*)_alloca(((CreatureRecordFile*)apFile)->GetField25C());
+                ((CreatureRecordFile*)apFile)->FUN_00472890(model2, 0);
             }
             break;
         }
         case 0x4d414e42:
-            ((CreatureRecordFile*)file)->ReadChunkInt(&m_fThirdCreatureStatCur);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&fBaseScale);
             break;
         case 0x4d414e57:
-            ((CreatureRecordFile*)file)->ReadChunkInt(&m_fSecondCreatureStat);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&fFootWeight);
             break;
         case 0x4d414e54:
-            ((CreatureRecordFile*)file)->ReadChunkInt(&m_fFirstCreatureStat);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&fTurnSpeed);
             break;
         case 0x344d414e: {
             unsigned int material;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&material);
-            m_eImpactMaterial = (BGSImpactDataSet__IMPACT_MATERIAL_TYPE)material;
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&material);
+            eBloodImpactMaterial = (BGSImpactDataSet__IMPACT_MATERIAL_TYPE)material;
             break;
         }
         case 0x354d414e: {
             unsigned int level;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&level);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&level);
             if (level > 3)
-                m_eSoundLevel = (SOUND_LEVEL)1;
+                eSoundLevel = (SOUND_LEVEL)1;
             else
-                m_eSoundLevel = (SOUND_LEVEL)level;
+                eSoundLevel = (SOUND_LEVEL)level;
             break;
         }
         case 0x4d414e52: {
-            if (((CreatureRecordFile*)file)->GetField25C() == 4)
+            if (((CreatureRecordFile*)apFile)->GetField25C() == 4)
             {
                 unsigned int oldReach = 0;
-                ((CreatureRecordFile*)file)->ReadChunkInt(&oldReach);
-                m_ucCreatureType = (unsigned char)oldReach;
+                ((CreatureRecordFile*)apFile)->ReadChunkInt(&oldReach);
+                cHandReach = (unsigned char)oldReach;
             }
             else
-                ((CreatureRecordFile*)file)->FUN_00472890(&m_ucCreatureType, 1);
+                ((CreatureRecordFile*)apFile)->FUN_00472890(&cHandReach, 1);
             break;
         }
         case 0x52435343: {
             unsigned int soundCreature = 0;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&soundCreature);
-            SetCreatureSoundsFrom((TESCreature*)soundCreature);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&soundCreature);
+            SetSoundCreature((TESCreature*)soundCreature);
             break;
         }
         case 0x54445343: {
             int newSoundType;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&newSoundType);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&newSoundType);
             soundType = newSoundType;
             break;
         }
         case 0x49445343:
         case 0x46445343: {
-            CreatureSounds* loadedSounds = GetMutableCreatureSounds();
-            if (!loadedSounds->LoadSoundsFromFile(file, (CREATURE_SOUND_TYPE)soundType, this))
+            CreatureSounds* loadedSounds = CreateCreatureSounds();
+            if (!loadedSounds->LoadCreatureSound(apFile, (CREATURE_SOUND_TYPE)soundType, this))
                 consumed5 = true;
             break;
         }
         case 0x4d414e5a: {
             unsigned int combat;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&combat);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&combat);
             SetCombatStyle((TESCombatStyle*)combat);
             break;
         }
         case 0x4d414e50: {
             unsigned int parts;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&parts);
-            m_pBodyPartDataCur = (BGSBodyPartData*)parts;
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&parts);
+            pBodyPartData = (BGSBodyPartData*)parts;
             break;
         }
         case 0x4d414e43: {
             unsigned int impact = 0;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&impact);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&impact);
             SetImpactDataSet((BGSImpactDataSet*)impact);
             break;
         }
         case 0x4d414e4c: {
             unsigned int weapons = 0;
-            ((CreatureRecordFile*)file)->ReadChunkInt(&weapons);
+            ((CreatureRecordFile*)apFile)->ReadChunkInt(&weapons);
             FUN_005f8bd0((BGSListForm*)weapons);
             break;
         }
         }
         if (!valid4)
             break;
-        if (!consumed5 && !((CreatureRecordFile*)file)->FUN_004726f0())
+        if (!consumed5 && !((CreatureRecordFile*)apFile)->FUN_004726f0())
             break;
     }
     if (!TESActorBaseData::GetShortAtOffset12())
@@ -1462,6 +1521,8 @@ struct FUN_005f8d70_shell
 };
 // @fnv 0x005f8d70
 // src: COMMUNITY 0x005f8d70
+// pdb: TESCreature::GetAttackDamage | TESCreature.obj | retail, upstream name already matches, high
+// pdb locals: iretval, plist, slevel
 unsigned short FUN_005f8d70_shell::TESCreature_GetAttackDamage()
 {
     unsigned short result = 0;
@@ -1513,6 +1574,9 @@ struct CreatureWeaponEligibility
 };
 
 // @fnv 0x005f9e00
+// pdb: TESCreature::InitDefaultWorn | TESCreature.obj | retail, call graph, high
+// pdb params: apRef, abArmor, abWeapon, abAllowChanges
+// pdb locals: brestoreAllowChanges, inv, pweapon, pammo, pactor, fval, pextra
 void TESCreature::UpdateModel3D(TESObjectREFR* reference, bool unused, bool equip, bool allowChanges)
 {
     bool savedVal = true;
@@ -1551,7 +1615,7 @@ void TESCreature::UpdateModel3D(TESObjectREFR* reference, bool unused, bool equi
     if (!allowChanges)
         g_BGSSaveLoadGame->SetThreadAllowChanges(savedVal);
     if (actor && actor->GetCurrentAIProcess())
-        actor->UpdateSpells(true);
+        actor->Actor_CastPermanentMagic(true);
 }
 
 struct Effect
@@ -1706,6 +1770,9 @@ void RollChanceOutcome(ActorValueOwner*, Weapon*, int, int, int, bool, bool*, bo
 
 // Checks the actor's creature/special state, then applies the effect to matching body parts, calling FUN_00572fc0 and FUN_008b52a0 or queueing via FUN_0087b440.
 // @fnv 0x008b4d10
+// pdb: Actor::Dismember | Actor.obj | debug, call graph (shared callers), low
+// pdb params: apData, aeDismemberLocation, aeLimb, apDeathObject, aeDeath, aiDismemberBonus, aiExplodeBonus, abTorsoExplodes
+// pdb locals: bexplodeAbsolute, pcreature, balwaysExplode, bignoreWeaponPreference, pbodyPartData, bexplode, iexplodeChance, bdismember, pbodyPart, pweapon, elimbIndex, plimbRoot
 void Actor::ApplyEffectToBodyParts(Effect* effect, int type, int part, void* source, void* target, int intA, int intB,
                                    bool flag)
 {
@@ -1727,7 +1794,7 @@ void Actor::ApplyEffectToBodyParts(Effect* effect, int type, int part, void* sou
         TESObjectREFR_SetDismembered(-1, source, target, effect ? effect->part : part, false);
         return;
     }
-    if (FUN_00573090(part))
+    if (GetDismembered(part))
         return;
     if (GetEssential() || GetIsChildSize(false))
         return;
@@ -1782,7 +1849,7 @@ void Actor::ApplyEffectToBodyParts(Effect* effect, int type, int part, void* sou
         c = l ? reinterpret_cast<Part*>(l->GetValueByIndex(ba)) : 0;
         if (!c || c->GetByte63() != type)
             continue;
-        k = reinterpret_cast<Node*>(m_pBaseProcess->GetNodeByType(static_cast<LIMB_TYPE>(ba)));
+        k = reinterpret_cast<Node*>(pCurrentProcess->GetNodeByType(static_cast<LIMB_TYPE>(ba)));
         if (!k || k->GetAppCulled_00456610())
             continue;
         if (a && !c->BGSBodyPart_IsExplodablePart())
@@ -1841,32 +1908,35 @@ struct Spells
     int* FUN_00717e50();
 };
 // @fnv 0x005f9820
-void TESCreature::CopyFrom(const TESForm* apSource)
+// pdb: TESCreature::Copy | TESCreature.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: creature, psounds
+void TESCreature::CopyFrom(const TESForm* apCopy)
 {
     CreatureSounds* ptr;
-    TESCreature* src2 = (TESCreature*)FUN_00ec43fb((void*)apSource, 0, &DAT_01183028, &DAT_01183a00, 0);
+    TESCreature* src2 = (TESCreature*)FUN_00ec43fb((void*)apCopy, 0, &DAT_01183028, &DAT_01183a00, 0);
     if (!src2)
         return;
     if (GetCreatureSounds())
     {
         CreatureSounds* snd = m_pCreatureSounds;
         CreatureSounds* del2 = snd;
-        del2 ? del2->DeleteThis(1) : 0;
+        del2 ? del2->CreatureSounds_ScalarDtor(1) : 0;
     }
     m_pCreatureSounds = 0;
-    ((TESAIForm*)((char*)this + 0x90))->BaseFormRecord((BaseFormComponent*)apSource);
-    ((TESSpellList*)((char*)this + 0x7c))->BaseFormRecord((BaseFormComponent*)apSource);
-    ((S47bdd0*)((char*)this + 0x70))->FUN_0047bdd0((void*)apSource);
-    ((TESActorBaseData*)((char*)this + 0x30))->BaseFormRecord((BaseFormComponent*)apSource);
-    ((TESHealthForm*)((char*)this + 0xb0))->BaseFormRecord((BaseFormComponent*)apSource);
-    ((TESAttributes*)((char*)this + 0xb8))->BaseFormRecord((BaseFormComponent*)apSource);
-    ((S4870f0*)((char*)this + 0xd0))->CopyFullNameFrom((void*)apSource);
-    ((TESModel*)((char*)this + 0xdc))->BaseFormRecord((BaseFormComponent*)apSource);
-    TESModelList::BaseFormRecord((BaseFormComponent*)apSource);
-    ((TESScriptableForm*)((char*)this + 0xf4))->BaseFormRecord((BaseFormComponent*)apSource);
-    ((TESContainer*)((char*)this + 0x64))->BaseFormRecord((BaseFormComponent*)apSource);
-    ((TESAnimation*)((char*)this + 0xc4))->BaseFormRecord((BaseFormComponent*)apSource);
-    ((BGSDestructibleObjectForm*)((char*)this + 0x104))->FUN_004786e0((BaseFormComponent*)apSource);
+    ((TESAIForm*)((char*)this + 0x90))->BaseFormRecord((BaseFormComponent*)apCopy);
+    ((TESSpellList*)((char*)this + 0x7c))->BaseFormRecord((BaseFormComponent*)apCopy);
+    ((S47bdd0*)((char*)this + 0x70))->FUN_0047bdd0((void*)apCopy);
+    ((TESActorBaseData*)((char*)this + 0x30))->BaseFormRecord((BaseFormComponent*)apCopy);
+    ((TESHealthForm*)((char*)this + 0xb0))->BaseFormRecord((BaseFormComponent*)apCopy);
+    ((TESAttributes*)((char*)this + 0xb8))->BaseFormRecord((BaseFormComponent*)apCopy);
+    ((S4870f0*)((char*)this + 0xd0))->CopyFullNameFrom((void*)apCopy);
+    ((TESModel*)((char*)this + 0xdc))->BaseFormRecord((BaseFormComponent*)apCopy);
+    TESModelList::BaseFormRecord((BaseFormComponent*)apCopy);
+    ((TESScriptableForm*)((char*)this + 0xf4))->BaseFormRecord((BaseFormComponent*)apCopy);
+    ((TESContainer*)((char*)this + 0x64))->BaseFormRecord((BaseFormComponent*)apCopy);
+    ((TESAnimation*)((char*)this + 0xc4))->BaseFormRecord((BaseFormComponent*)apCopy);
+    ((BGSDestructibleObjectForm*)((char*)this + 0x104))->FUN_004786e0((BaseFormComponent*)apCopy);
     memcpy((char*)this + 0x12c, src2->GetOffset12C(), 4);
     *(int*)((char*)this + 0x34) = *((Spells*)((char*)src2 + 0x30))->FUN_00717e50();
     SetCreatureType(src2->ShadowSceneNode_GetDisableLightUpdate());
@@ -1876,14 +1946,14 @@ void TESCreature::CopyFrom(const TESForm* apSource)
     ((Spells*)((char*)this + 0x30))->v23(((Spells*)((char*)src2 + 0x30))->v22());
     if (src2->GetCreatureSounds())
     {
-        ptr = GetMutableCreatureSounds();
-        ptr->Copy(src2->GetCreatureSounds());
+        ptr = CreateCreatureSounds();
+        ptr->CreatureSounds_Copy(src2->GetCreatureSounds());
     }
     else
     {
-        SetCreatureSoundsFrom(src2->GetSoundCreature());
+        SetSoundCreature(src2->GetSoundCreature());
     }
-    *(unsigned int*)((char*)this + 0x154) = src2->FUN_009c0070();
+    *(unsigned int*)((char*)this + 0x154) = src2->BGSSaveLoadFile_GetFilePosition();
     SetImpactDataSet(src2->GetImpactDataSet());
     FUN_005f8bd0(src2->GetField158());
     SetCombatStyle(((const TESCreature*)src2)->GetCombatStyle());
@@ -1892,13 +1962,17 @@ void TESCreature::CopyFrom(const TESForm* apSource)
 
 struct CreatureProcessUpdater
 {
-    void UpdateProcess(TESObjectREFR* ref);
+    void TESCreature_InitWorn(TESObjectREFR* apRef);
 };
 // Casts ref to MobileObject, gets its BaseProcess, casts to MiddleHighProcess, and calls Apply on it.
 // @fnv 0x005fa0a0
-void CreatureProcessUpdater::UpdateProcess(TESObjectREFR* ref)
+// src: XBOX_RETAIL_PDB 0x005fa0a0
+// pdb: TESCreature::InitWorn | TESCreature.obj | retail, call graph (shared callers), high
+// pdb params: apRef
+// pdb locals: pmob, pmiddleHighProcess
+void CreatureProcessUpdater::TESCreature_InitWorn(TESObjectREFR* apRef)
 {
-    MobileObject* mobile = dynamic_cast<MobileObject*>(ref);
+    MobileObject* mobile = dynamic_cast<MobileObject*>(apRef);
     if (mobile && mobile->FUN_008d8520())
     {
         MiddleHighProcess* process = dynamic_cast<MiddleHighProcess*>(mobile->FUN_008d8520());

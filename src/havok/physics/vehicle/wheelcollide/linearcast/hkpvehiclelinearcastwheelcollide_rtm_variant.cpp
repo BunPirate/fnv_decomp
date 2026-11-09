@@ -49,26 +49,29 @@ void __cdecl hkAabbUtil_calcAabb_00d26230(int transform, int extents, int center
 class WheelBoundsCalculator : public hkpVehicleLinearCastWheelCollide
 {
 public:
-    void __thiscall hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(const hkpVehicleInstance* vehicle, unsigned char wheelIndex, hkAabb& output);
+    void __thiscall hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(const hkpVehicleInstance* vehicle, unsigned char wheelNum, hkAabb& aabbOut);
 };
 
 // @fnv 0x00e36700
 // src: XBOX_PDB 0x00e36700
-void __thiscall WheelBoundsCalculator::hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(const hkpVehicleInstance* vehicle, unsigned char wheelIndex, hkAabb& output)
+// pdb: hkpVehicleLinearCastWheelCollide::calcAabbOfWheel | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: vehicle, wheelNum, aabbOut
+// pdb locals: halfExtents, center
+void __thiscall WheelBoundsCalculator::hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(const hkpVehicleInstance* vehicle, unsigned char wheelNum, hkAabb& aabbOut)
 {
-    int index = wheelIndex;
-    const hkpVehicleData::WheelComponentParams* wheel = vehicle->m_data->m_kWheelParams.m_data + index;
-    const hkpVehicleSuspensionSuspensionWheelParameters* suspension = vehicle->m_pSuspension->m_kWheelParams.m_data + index;
+    int index = wheelNum;
+    const hkpVehicleData::WheelComponentParams* wheel = vehicle->m_data->m_wheelParams.m_data + index;
+    const hkpVehicleSuspensionSuspensionWheelParameters* suspension = vehicle->m_suspension->m_wheelParams.m_data + index;
 
     double zero = 0.0;
-    float halfHeight = static_cast<float>((suspension->m_fRestLength + wheel->m_fSphereRadius) * 0.5);
-    float halfWidth = static_cast<float>(0.5 * wheel->m_fMaxFriction);
+    float halfHeight = static_cast<float>((suspension->m_fRestLength + wheel->m_radius) * 0.5);
+    float halfWidth = static_cast<float>(0.5 * wheel->m_width);
     hkVector4 extents;
-    extents.set(wheel->m_fSphereRadius, halfHeight, halfWidth, 0.0f);
+    extents.set(wheel->m_radius, halfHeight, halfWidth, 0.0f);
     hkVector4 center;
     center.set(0.0f, -halfHeight, 0.0f, 0.0f);
 
-    int transform = reinterpret_cast<int>(&m_kWheelStates.m_data[index].m_kMotionTransform);
+    int transform = reinterpret_cast<int>(&m_wheelStates.m_data[index].m_kMotionTransform);
     hkAabbUtil_calcAabb_00d26230(transform, reinterpret_cast<int>(&extents), reinterpret_cast<int>(&center), zero,
-                 reinterpret_cast<int>(&output));
+                 reinterpret_cast<int>(&aabbOut));
 }

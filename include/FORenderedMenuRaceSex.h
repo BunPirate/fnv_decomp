@@ -5,6 +5,7 @@
 class MenuTile;
 class PickCamera;
 
+// pdb: class FORenderedMenuRaceSex, size 0x180 (here 0xf8), bases: FORenderedMenu, 20 members
 class FORenderedMenuRaceSex : public FORenderedMenu
 {
 public:

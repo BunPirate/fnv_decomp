@@ -6,6 +6,7 @@
 class BSMultiBound;
 class BSOcclusionPlane;
 
+// pdb: class BSMultiBoundNode, size 0xe0 (here 0xb4), bases: BSNiNode, 2 members
 class BSMultiBoundNode : public BSNiNode
 {
 public:
@@ -34,7 +35,7 @@ public:
     bool CheckProcStateAndPlane(NiPoint3 viewPoint, NiCullingProcess& culler, BSOcclusionPlane* plane);
     void CopyMemberData(BSMultiBoundNode* destination, CloningProcess& cloning);
     void CopyMembers_00c1b6f0(BSMultiBoundNode* pDest, CloningProcess& kCloning);
-    void UpdateDownwardPass_00c3a5b0(NiUpdateData& data, unsigned int flags);
+    void UpdateDownwardPass_00c3a5b0(NiUpdateData& UpdateData, unsigned int uFlags);
 
 public:
     BSMultiBound* spMultiBound;

@@ -450,7 +450,7 @@ struct ThunkSecondaryBase
 struct ThunkDerived : public ThunkPrimaryBase, public ThunkSecondaryBase
 {
     ThunkDerived();
-    virtual void FUN_005160d0(int flag, int value);  // declared, never defined
+    virtual void FUN_005160d0(int aiFlags, int aiCurrentFlags);  // declared, never defined
 };
 
 ThunkPrimaryBase::ThunkPrimaryBase()
@@ -797,7 +797,7 @@ class C5C30Derived : public C5C30Primary, public C5C30Secondary
   public:
     C5C30Derived();
 // @fnv 0x00525c30
-    virtual void FUN_00525c30(unsigned int uiA, unsigned int uiB);
+    virtual void FUN_00525c30(unsigned int aiFlags, unsigned int aiCurrentFlags);
 };
 
 C5C30Derived::C5C30Derived()

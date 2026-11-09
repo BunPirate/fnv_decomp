@@ -4,6 +4,7 @@
 
 class ID3DXConstantTable;
 
+// pdb: class NiD3DHLSLPixelShader, size 0x3c, bases: NiD3DPixelShader, 3 members
 class NiD3DHLSLPixelShader : public NiD3DPixelShader
 {
 public:
@@ -38,7 +39,7 @@ public:
     ID3DXConstantTable* GetShaderConstantTable();
 
 
-    const char* m_pcShaderEntryPoint;
-    const char* m_pcShaderProfile;
-    ID3DXConstantTable* m_pShaderConstantTable;
+    const char* m_pcEntryPoint;
+    const char* m_pcShaderTarget;
+    ID3DXConstantTable* m_pkConstantTable;
 };

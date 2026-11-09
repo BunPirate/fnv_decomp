@@ -57,13 +57,15 @@ struct QuantitySet
     Quantity m_kPointA;
     Quantity m_kPointB;
     Quantity m_iThirdValue;
-    void hkStackMemory_initMemory(unsigned int q, int v);
+    void hkStackMemory_initMemory(unsigned int p, int size);
 };
 // @fnv 0x008c70c0
 // src: XBOX_PDB 0x008c70c0
-void QuantitySet::hkStackMemory_initMemory(unsigned int q, int v)
+// pdb: hkStackMemory::initMemory | AILinearTaskThread.obj | debug, upstream name already matches, high
+// pdb params: p, size
+void QuantitySet::hkStackMemory_initMemory(unsigned int p, int size)
 {
-    m_kPointB.SetQuantity(q);
-    m_kPointA.SetQuantity(q);
-    m_iThirdValue.SetQuantity(hkAddByteOffset_005e0b50((void*)q, v));
+    m_kPointB.SetQuantity(p);
+    m_kPointA.SetQuantity(p);
+    m_iThirdValue.SetQuantity(hkAddByteOffset_005e0b50((void*)p, size));
 }

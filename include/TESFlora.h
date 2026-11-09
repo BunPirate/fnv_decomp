@@ -3,6 +3,7 @@
 #include "TESProduceForm.h"
 #include "TESObjectACTI.h"
 
+// pdb: class TESFlora, size 0x9c, bases: TESProduceForm, TESObjectACTI, 0 members
 class TESFlora : public TESProduceForm, public TESObjectACTI
 {
 public:

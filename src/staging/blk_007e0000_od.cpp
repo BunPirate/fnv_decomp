@@ -31,6 +31,7 @@ struct FUN_007e6760_cls
 
 // @fnv 0x007e6760
 // src: XBOX_PDB 0x007e6760
+// pdb: TextEntryMenu::IsDone | TextEntryMenu.obj | retail, upstream name already matches, high
 bool __thiscall FUN_007e6760_cls::TextEntryMenu_IsDone()
 {
     return XVirtualKeyboard_IsActive() != 0;
@@ -45,6 +46,7 @@ struct BSAudio_
 
 // @fnv 0x007eb8a0
 // src: COMMUNITY 0x007eb8a0
+// pdb: BSAudio::PauseWorldSounds | VATSMenu.obj | debug, upstream name already matches, high
 void BSAudio_::BSAudio_PauseWorldSounds()
 {
     BSAudio_PauseAllOfType(0x3002, 0);
@@ -80,9 +82,10 @@ void __cdecl ImageSpaceShaderMenuUnpack_SetOffset(float afValue1, float afValue2
 
 // @fnv 0x007fa200
 // src: XBOX_PDB 0x007fa200
+// pdb: FOPipboyManager::ReInitialize | FOPipboyManager.obj | debug, upstream name already matches, high
 void FOPipboyManager::ReInitialize()
 {
-    InitializeMenuLight();
+    InitLight();
 }
 
 struct Flt
@@ -93,21 +96,25 @@ struct Flt
 // The shared manager has no declaration for this object accessor.
 // @fnv 0x007fa970
 // src: XBOX_PDB 0x007fa970
+// pdb: FOPipboyManager::Get3rdPersonScreen | FOPipboyManager.obj | debug, upstream name already matches, high
 NiAVObject* __fastcall FOPipboyManager_Get3rdPersonScreen(FOPipboyManager* manager)
 {
-    return manager->m_pPipBoyObject2;
+    return manager->sp3rdPersonScreen;
 }
 
 struct FUN_007fd620_Class
 {
     char _0[0x24];
     GO m_go;
-    void SetGo(void* p);
+    void FORenderedMenu_SetCamera(void* apCamera);
 };
 // @fnv 0x007fd620
-void FUN_007fd620_Class::SetGo(void* apValue)
+// src: XBOX_DEBUG_PDB 0x007fd620
+// pdb: FORenderedMenu::SetCamera | FORenderedMenuRaceSex.obj | debug, call graph, high
+// pdb params: apCamera
+void FUN_007fd620_Class::FORenderedMenu_SetCamera(void* apCamera)
 {
-    m_go = apValue;
+    m_go = apCamera;
 }
 
 namespace fnv_007fd640 {
@@ -123,6 +130,7 @@ struct FUN_007fd640Class
 
 // @fnv 0x007fd640
 // src: XBOX_PDB 0x007fd640
+// pdb: RaceSexMenu::GetProjectorFile | FORenderedMenuRaceSex.obj | debug, upstream name already matches, high
 unsigned int FUN_007fd640Class::RaceSexMenu_GetProjectorFile()
 {
     return ((Flt*)((char*)this + 0x90))->operator unsigned int();
@@ -148,6 +156,7 @@ struct FUN_007e66a0_cls
 // If b is zero and a is in [0,3), reads b from this[a+10]; for a==1, sets g_011daed8 from the navmesh pointer at this+0x34 and calls FUN_007e65b0.
 // @fnv 0x007e66a0
 // src: COMMUNITY 0x007e66a0
+// pdb: TextEntryMenu::~TextEntryMenu | TextEntryMenu.obj | debug, object-file run extension, low
 void __thiscall FUN_007e66a0_cls::TextEditMenu_HandleClick(int aiIndex, int aiValue)
 {
     if (aiValue == 0 && aiIndex >= 0 && aiIndex < 3)
@@ -168,6 +177,7 @@ struct FUN_007f69d0_Class
     void* __thiscall FUN_007f69d0(unsigned int flags);
 };
 // @fnv 0x007f69d0
+// pdb: VATSMenu::VatsTarget::`scalar deleting destructor' | VATSMenu.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_007f69d0_Class::FUN_007f69d0(unsigned int flags)
 {
     DestroyList();
@@ -206,6 +216,7 @@ void __thiscall FUN_007f7880_Class::FOHUDEffectManager_TriggerShudder(float a, f
     f6 = 0.0f;
 }
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void QueueModelLoad(char*, bool, unsigned int);
@@ -220,8 +231,9 @@ extern int DAT_011a0bb0;
 extern Flt g_011db63c;
 // If g_011db63c is nonzero, calls the model loader with DAT_011a0bb0, true, true, then sets g_011db63c to 0.
 // @fnv 0x007ffe00
-// src: COMMUNITY 0x007ffe00
-void PurgeTerminalModel()
+// src: XBOX_RETAIL_PDB 0x007ffe00
+// pdb: FORenderedTerminal::ReleaseStaticGeometry | FORenderedTerminal.obj | retail, call graph (shared callers), high
+void FORenderedTerminal_ReleaseStaticGeometry()
 {
     if ((unsigned int)g_011db63c)
         ((ModelLoader*)g_modelLoader)->QueueModelLoad((char*)DAT_011a0bb0, true, true);
@@ -238,6 +250,8 @@ struct FUN_007e0e30_Class
 // Calls fn on m_p with v and, if that returns true and m_sub is set, recurses into m_sub with the same arguments.
 // @fnv 0x007e0e30
 // src: XBOX_PDB 0x007e0e30
+// pdb: BSSimpleList<Tile *>::Traverse | StatsMenu.obj | debug, object-file run extension, low
+// pdb params: apTraverseFn, aiIn
 void FUN_007e0e30_Class::BSSimpleList_Tile_Traverse(bool(__cdecl* fn)(void*, unsigned int), unsigned int uiValue)
 {
     if (fn(m_p, uiValue) && m_sub)
@@ -273,6 +287,7 @@ struct FUN_007fecc0_Class
 // Sets bActive to 1, stores the current global time in fTime and resets fValue to 0.0f.
 // @fnv 0x007fecc0
 // src: GUESS 0x007fecc0 (confidence: medium)
+// pdb: FORenderedMenuRaceSex::TriggerFakeDistort | FORenderedMenuRaceSex.obj | debug, object-file run extension, low
 void __thiscall FUN_007fecc0_Class::ActivateAndResetTimer()
 {
     bActive = 1;
@@ -327,6 +342,7 @@ struct FUN_007f6a00_Class
     void __thiscall DestroyList();
 };
 // @fnv 0x007f6a00
+// pdb: VATSMenu::VatsTarget::~VatsTarget | VATSMenu.obj | debug, object-file gap fill, medium
 void __thiscall FUN_007f6a00_Class::DestroyList()
 {
     l.ListX::~ListX();
@@ -367,7 +383,7 @@ struct FUN_007e0d80_shell : Flt
     char* m_buffer;
     unsigned int BSStringT_char_Length();
     unsigned int FUN_004039a0();
-    void FUN_004037f0(char* oldBuffer, unsigned int requiredLength);
+    void FUN_004037f0(char* apString, unsigned int aiMaxLen);
     void FUN_004039c0(unsigned int newLength);
     unsigned int GetLengthPlusOne();
     void FUN_00438470(FUN_007e0d80_shell* other);
@@ -376,6 +392,9 @@ struct FUN_007e0d80_shell : Flt
 extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 
 // @fnv 0x007e0d80
+// pdb: BSStringT<char>::operator+= | StatsMenu.obj | retail, call graph (shared callers), medium
+// pdb params: arString
+// pdb locals: itotalLen
 FUN_007e0d80_shell* FUN_007e0d80_shell::AppendString(FUN_007e0d80_shell* other)
 {
     if ((unsigned int)*other)
@@ -414,7 +433,7 @@ int __cdecl TextEdit_GetMenuID()
 
 struct SysMgr
 {
-    void Init(int a, int b);
+    void RemoveFader(int aeFader, int abForce);
 };
 struct TaskA
 {
@@ -524,9 +543,10 @@ class FUN_007e9130_cls : public Base
 };
 
 // @fnv 0x007e9130
+// pdb: VATSMenu::~VATSMenu | VATSMenu.obj | debug, object-file run extension, low
 FUN_007e9130_cls::~FUN_007e9130_cls()
 {
-    g_sysMgr->Init(0, 0);
+    g_sysMgr->RemoveFader(0, 0);
     Fn7f6920();
     TaskA* pTask = g_mgrB->GetTask();
     TaskA* p = pTask;
@@ -534,7 +554,7 @@ FUN_007e9130_cls::~FUN_007e9130_cls()
     g_mgrB = 0;
 }
 
-extern unsigned int* DAT_011f4aa8;
+extern unsigned int* NiPoint3_ms_pSqrtTable;
 // Computes the squared length of a 3-component vector and returns its approximate square root via a bit-manipulation lookup table.
 // @fnv 0x007eb7f0
 float __cdecl FastSqrt(const float* v)
@@ -554,7 +574,7 @@ float __cdecl FastSqrt(const float* v)
         if (e & 1)
             *p |= 0x800000;
         e >>= 1;
-        *p = DAT_011f4aa8[*p >> 16] | ((e + 0x7f) << 23);
+        *p = NiPoint3_ms_pSqrtTable[*p >> 16] | ((e + 0x7f) << 23);
         return f;
     }
 }
@@ -627,9 +647,10 @@ FUN_007f7790_cls::~FUN_007f7790_cls()
 
 struct Dummy_00718c90;
 
+// pdb: class SystemColorManager, size 0x10 (here 0x1), 2 members
 struct SystemColorManager
 {
-    bool GetColor(int id, NiColor& out);
+    bool GetColor(int aiID, NiColor& aOutColor);
 };
 
 Dummy_00718c90* __cdecl SystemColorManager_GetInstance();
@@ -637,6 +658,8 @@ Dummy_00718c90* __cdecl SystemColorManager_GetInstance();
 // The shared manager has no declaration for this initialization helper.
 // @fnv 0x007f7f40
 // src: XBOX_PDB 0x007f7f40
+// pdb: FOPipboyManager::ResetColors | FOPipboyManager.obj | retail, upstream name already matches, high
+// pdb locals: newcolor
 void __fastcall FOPipboyManager_ResetColors(FOPipboyManager* manager)
 {
     NiColorA color(0.0f, 0.0f, 0.0f, 0.0f);
@@ -644,7 +667,7 @@ void __fastcall FOPipboyManager_ResetColors(FOPipboyManager* manager)
     {
         manager->SetQuad(color);
         manager->FORenderedMenu_SetTintColor(color);
-        manager->InitializeMenuLight();
+        manager->InitLight();
     }
 }
 
@@ -652,7 +675,7 @@ void __fastcall FOPipboyManager_ResetColors(FOPipboyManager* manager)
 // src: XBOX_PDB 0x007f7fb0
 void FOPipboyManager::FORenderedMenu_SetTintColor(const NiColorA& color)
 {
-    m_kMenuLightColor = color;
+    TintColor = color;
 }
 
 // @fnv 0x007f7fe0
@@ -671,13 +694,17 @@ extern GlobalObject_0044f440 g_011db288;
 extern bool g_burstSoundEnabled;
 
 // @fnv 0x007fa0f0
-void FOPipboyManager::SetValue(int index, bool play)
+// src: XBOX_RETAIL_PDB 0x007fa0f0
+// pdb: FOPipboyManager::SetTabKnobPosition | FOPipboyManager.obj | retail, string-set bridge, high
+// pdb params: aiNewPos, abPlaySounds
+// pdb locals: psoundHand
+void FOPipboyManager::SetTabKnobPosition(int aiNewPos, bool abPlaySounds)
 {
-    if (m_fChartSecondPoint[2] != m_fTabKnobPositions[index])
+    if (fKnobTargets[2] != fTabKnobPositions[aiNewPos])
     {
-        m_fChartSecondPoint[2] = m_fTabKnobPositions[index];
-        m_fGaugeValues2[2] = *g_011db288.Float();
-        if (g_burstSoundEnabled && play)
+        fKnobTargets[2] = fTabKnobPositions[aiNewPos];
+        fKnobRates[2] = *g_011db288.Float();
+        if (g_burstSoundEnabled && abPlaySounds)
         {
             BSSoundHandle handle;
             handle = BSAudio::GetSingleton()->BSAudio_GetSoundHandleByEditorName("UIPipBoyTab", 0x121);
@@ -714,7 +741,7 @@ ShadowSceneNode* __cdecl FUN_00450b80(unsigned int uiIndex);
 class Light7FD
 {
   public:
-    void FORenderedMenuRaceSex_SetupLights(float fScale);
+    void FORenderedMenuRaceSex_SetupLights(float afScale);
 
     int unk000, unk004, unk008, unk00C, unk010, unk014, unk018, unk01C;
     int unk020, unk024, unk028, unk02C, unk030, unk034, unk038, unk03C;
@@ -730,9 +757,12 @@ class Light7FD
 
 // @fnv 0x007fd660
 // src: COMMUNITY 0x007fd660
-void Light7FD::FORenderedMenuRaceSex_SetupLights(float fScale)
+// pdb: FORenderedMenuRaceSex::SetupLights | FORenderedMenuRaceSex.obj | debug, upstream name already matches, high
+// pdb params: afScale
+// pdb locals: fradiusPlayer
+void Light7FD::FORenderedMenuRaceSex_SetupLights(float afScale)
 {
-    float fRadius = ((const NiAVObject*)m_spNode)->GetBoundingVolume().GetRadius() * 3.0 * fScale;
+    float fRadius = ((const NiAVObject*)m_spNode)->GetBoundingVolume().GetRadius() * 3.0 * afScale;
     FUN_00450b80(3)->FUN_00b5ca70((NiNode*)(NiAVObject*)m_spLight, fRadius);
 }
 
@@ -819,6 +849,8 @@ class FUN_007fed10 : public FUN_007fad10
 
 // Destructor that clears the four m_spA and m_spB NiNode smart pointers and the six m_sp0-m_sp5 pointers by assigning null.
 // @fnv 0x007fed10
+// pdb: FORenderedMenuRaceSex::~FORenderedMenuRaceSex | FORenderedMenuRaceSex.obj | debug, object-file run extension, low
+// pdb locals: i
 FUN_007fed10::~FUN_007fed10()
 {
     for (int i = 0; i < 4; i++)
@@ -1029,6 +1061,7 @@ struct FUN_007faa20
 };
 
 // @fnv 0x007faa20
+// pdb: FORenderedMenu::FORenderedMenu | FORenderedMenu.obj | debug, object-file run extension, low
 FUN_007faa20::FUN_007faa20()
     : spObject04(0), spObject08(0), spObject0C(0), spObject10(0), spObject14(0), spObject1C(0), spObject24(0),
       kPoint2C(0.0f, 0.0f, 0.0f), kParamA8(0.0f, 0.0f, 0.0f, 0.0f), spObjectBC(0), kParamC0(0.0f, 0.0f, 0.0f, 0.0f),

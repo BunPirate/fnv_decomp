@@ -6,21 +6,22 @@ class Actor;
 class TESForm;
 class TESPackage;
 
+// pdb: class PackageList, size 0x8, 1 members
 class PackageList
 {
 public:
-    BSSimpleList<TESPackage*> m_kPackages;
+    BSSimpleList<TESPackage*> listPackages;
 
     ~PackageList();
     void FUN_0067e3a0();
     int FUN_00726070();
     BSSimpleList<TESPackage*>* GetListOfPackages();
     BSSimpleList<TESPackage*>* GetListOfPackages() const;
-    void Copy(const PackageList* src);
-    void ClearPackageList();
-    TESPackage* GetPackageForActor(Actor* actor);
+    void Copy(const PackageList* apPackList);
+    void FreePackageList();
+    TESPackage* FindCurrentPackage(Actor* apActor);
     void CollectEligiblePackages(Actor* actor, BSSimpleList<TESPackage*>* packages, float first, float second);
-    void InitItem(TESForm* form);
-    void AddPackage(TESPackage* package);
+    void InitItem(TESForm* apOwner);
+    void AddPackage(TESPackage* apPack);
     bool DiffersFrom(PackageList* other);
 };

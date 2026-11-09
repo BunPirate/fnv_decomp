@@ -5,9 +5,11 @@
 
 // @fnv 0x00dba5f0
 // src: HAVOK_SRC 0x00dba5f0
-int __stdcall hkSerializeDeprecated_loadOldPackfileOnHeap(int aiUnused1, int aiUnused2, int c)
+// pdb: hkSerializeDeprecated::loadOldPackfileOnHeap | hkSerializeDeprecated.obj | retail, upstream name already matches, high
+// pdb params: sr, details, errorOut
+int __stdcall hkSerializeDeprecated_loadOldPackfileOnHeap(int sr, int details, int errorOut)
 {
-    hkStringPtr* p = (hkStringPtr*)c;
+    hkStringPtr* p = (hkStringPtr*)errorOut;
     if (p)
     {
         *(int*)p = 7;
@@ -19,12 +21,14 @@ int __stdcall hkSerializeDeprecated_loadOldPackfileOnHeap(int aiUnused1, int aiU
 
 // If c is non-null, writes error code 7 and a deprecation message string into it, then returns 0.
 // @fnv 0x00dba5d0
-int __stdcall ReportDeprecatedSerializeLoad(int aiUnused1, int aiUnused2, int pErrorOut)
+// pdb: hkSerializeDeprecated::loadOldPackfile | hkSerializeDeprecated.obj | retail, vtable slot, high
+// pdb params: sr, details, errorOut
+int __stdcall ReportDeprecatedSerializeLoad(int sr, int details, int errorOut)
 {
-    if (pErrorOut)
+    if (errorOut)
     {
-        *(int*)pErrorOut = 7;
-        *(hkStringPtr*)(pErrorOut + 4) =
+        *(int*)errorOut = 7;
+        *(hkStringPtr*)(errorOut + 4) =
             "Call hkSerializeDeprecated::initDeprecated() to include loading support for this file";
     }
     return 0;

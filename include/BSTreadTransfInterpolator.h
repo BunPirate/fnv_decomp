@@ -5,6 +5,7 @@
 
 class TreadTransformEntry;
 
+// pdb: class BSTreadTransfInterpolator, size 0x24, bases: NiKeyBasedInterpolator, 6 members
 class BSTreadTransfInterpolator : public NiKeyBasedInterpolator
 {
   public:
@@ -27,18 +28,18 @@ class BSTreadTransfInterpolator : public NiKeyBasedInterpolator
     virtual unsigned char GetColorKeySize(unsigned short usChannel) const;
     virtual void vf61(unsigned short usChannel);
 
-    void CopyMembers(BSTreadTransfInterpolator* destination, void* context);
+    void CopyMembers(BSTreadTransfInterpolator* pkDest, void* kCloning);
     BSTreadTransfInterpolator* CreateClone_00a439e0(void* kCloning);
     void FUN_00a43690(BSTreadTransfInterpolator* pkDest, void* kCloning);
     bool UpdateSampleValue(float time, int, int);
-    void* GetKeyType(unsigned short flag);
-    bool GetChannelPosed(int arg);
+    void* GetKeyType(unsigned short usChannel);
+    bool GetChannelPosed(int usChannel);
     void* FUN_00a43a50(unsigned int flags);
 
-    TreadTransformEntry* entries;
-    unsigned int count;
-    float firstValue;
-    float secondValue;
-    unsigned int unk1c;
-    NiPointer<NiObject> reference;
+    TreadTransformEntry* Links;
+    unsigned int uiNumLinks;
+    float fCurrLerp;
+    float fDiffLerp;
+    unsigned int uiLastLerpIdx;
+    NiPointer<NiObject> spLerpData;
 };

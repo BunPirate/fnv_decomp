@@ -8,14 +8,17 @@
 
 // Resolves the stored topic ID to a TESTopic via the form's file and warns if the topic is missing.
 // @fnv 0x0067b590
-void TESDialoguePackageData::InitItem(TESForm* form)
+// pdb: TESDialoguePackageData::InitItem | PackageDataDialogue.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: itempint
+void TESDialoguePackageData::InitItem(TESForm* apOwner)
 {
-    unsigned int topicID = (unsigned int)pMenuTopicEntry;
-    TESForm::RemapFormIDForFile(topicID, form->GetFile(-1));
-    pMenuTopicEntry = dynamic_cast<TESTopic*>(GetFormByID(topicID));
-    if (!pMenuTopicEntry && topicID)
+    unsigned int topicID = (unsigned int)ptopic;
+    TESForm::RemapFormIDForFile(topicID, apOwner->GetFile(-1));
+    ptopic = dynamic_cast<TESTopic*>(GetFormByID(topicID));
+    if (!ptopic && topicID)
         Warning("FORMS: Failed to find topic (%08X) in init for dialogue package data on package '%s' (%08X).", topicID,
-                form->GetName(), form->GetFormID());
+                apOwner->GetName(), apOwner->GetFormID());
 }
 
 struct FUN_00670b30
@@ -25,16 +28,17 @@ struct FUN_00670b30
 
 // Destructor that deletes the owned data object via its vector deleting destructor.
 // @fnv 0x0067b280
+// pdb: TESDialoguePackageData::~TESDialoguePackageData | PackageDataDialogue.obj | debug, upstream name already matches, high
 TESDialoguePackageData::~TESDialoguePackageData()
 {
-    FUN_00670b30* b = (FUN_00670b30*)m_pTargetLocation;
+    FUN_00670b30* b = (FUN_00670b30*)pTargetLocation;
     FUN_00670b30* a = b;
     a ? a->__vecDelDtor(1) : 0;
 }
 
 struct FUN_0067fc50_impl
 {
-    void ResolveObject(BGSLoadFormBuffer*);
+    void PackageLocation_InitLoadGame(BGSLoadFormBuffer*);
 };
 struct FUN_0067b920_host
 {
@@ -47,10 +51,12 @@ struct FUN_0067b920_host
 // If padC is non-null, forwards apLoadGameBuffer to padC's ResolveObject.
 // @fnv 0x0067b920
 // src: XBOX_PDB 0x0067b920
+// pdb: TESDialoguePackageData::InitLoadGame | PackageDataDialogue.obj | debug, upstream name already matches, high
+// pdb params: apLoadGameBuffer
 void FUN_0067b920_host::TESDialoguePackageData_InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     if (padC != 0)
-        padC->ResolveObject(apLoadGameBuffer);
+        padC->PackageLocation_InitLoadGame(apLoadGameBuffer);
 }
 
 struct LocationDescriptor
@@ -93,6 +99,8 @@ struct FUN_0067b630_cls
 };
 
 // @fnv 0x0067b630
+// pdb: TESDialoguePackageData::Save | PackageDataDialogue.obj | retail, vtable slot, high
+// pdb locals: diastruct
 void FUN_0067b630_cls::SaveTopicData()
 {
     FunctionObject saveData;
@@ -142,6 +150,9 @@ struct FUN_0067b6f0_cls : TESPackageData
 
 // Serializes the package fields to the save buffer, then saves the topic and, if a location object exists, saves it too.
 // @fnv 0x0067b6f0
+// pdb: TESDialoguePackageData::SaveGame | PackageDataDialogue.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+// pdb locals: bhasLocation
 void FUN_0067b6f0_cls::SavePackageData(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     apSaveGameBuffer->SaveData(&field4, 4, 0);
@@ -180,13 +191,16 @@ struct ConstructorHost
     unsigned int value1C;
 
     void FUN_0067ad20();
-    ConstructorHost* Construct(float initial, unsigned int object, PairOfBytes flags, float scale,
+    ConstructorHost* TESDialoguePackageData_ctor(float initial, unsigned int object, PairOfBytes flags, float scale,
                                unsigned char enabled, unsigned int reference);
 };
 
 // Calls FUN_0067ad20, sets the vtable, then stores the six arguments into the object's fields and returns this.
 // @fnv 0x0067b210
-ConstructorHost* ConstructorHost::Construct(float initial, unsigned int object, PairOfBytes flags, float scale,
+// src: XBOX_DEBUG_PDB 0x0067b210
+// pdb: TESDialoguePackageData::TESDialoguePackageData | PackageDataDialogue.obj | debug, call graph, high
+// pdb params: eDialData
+ConstructorHost* ConstructorHost::TESDialoguePackageData_ctor(float initial, unsigned int object, PairOfBytes flags, float scale,
                                             unsigned char enabled, unsigned int reference)
 {
     FUN_0067ad20();
@@ -211,7 +225,7 @@ struct TESEatPackageData_
     int field0;
     int field4;
 
-    void PackageLocation_LoadGame_0067fbe0(BGSLoadFormBuffer* buffer);
+    void PackageLocation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 
 struct B0067f030 : TESEatPackageData_
@@ -240,6 +254,9 @@ struct FUN_0067b7d0_shell
 // Reads fields from apLoadGameBuffer, resolves pMenuTopicEntry by form ID, and optionally allocates and reads m_pTargetLocation.
 // @fnv 0x0067b7d0
 // src: XBOX_PDB 0x0067b7d0
+// pdb: TESDialoguePackageData::LoadGame | PackageDataDialogue.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: bhasLocation
 void FUN_0067b7d0_shell::TESDialoguePackageData_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     apLoadGameBuffer->ReadTypedData((void*)&field4, 4u);
@@ -257,6 +274,6 @@ void FUN_0067b7d0_shell::TESDialoguePackageData_LoadGame(BGSLoadFormBuffer* apLo
     if (bhasLocation)
     {
         m_pTargetLocation = (LocationDescriptor*)new B0067f030;
-        ((TESEatPackageData_*)m_pTargetLocation)->PackageLocation_LoadGame_0067fbe0(apLoadGameBuffer);
+        ((TESEatPackageData_*)m_pTargetLocation)->PackageLocation_LoadGame(apLoadGameBuffer);
     }
 }

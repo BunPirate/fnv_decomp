@@ -102,7 +102,7 @@ struct ItemPool {
     int m_unk0c;
     int m_uiItemCount;
 
-    void Insert(const Item& item);
+    void Insert(const Item& element);
     void Insert2(const Item& item);
 };
 struct PoolSet {
@@ -110,12 +110,12 @@ struct PoolSet {
     ItemPool m_pools[1];
 };
 struct Mgr {
-    int GetIndex(const Item& item);
+    int GetIndex(const Item& element);
     void Notify(int idx, PoolSet* set);
-    void InsertItemAndNotify(PoolSet* set, const Item& item, int flag);
+    void hkJobQueue_addJobQueueLocked(PoolSet* data, const Item& job, int priority);
 };
 struct Obj {
-    int Forward3(int a, int b, int c);
+    int Forward3(int oldJob, int jobOut, int waitStatus);
     int ForwardWithZero(int a, int b);
 };
 struct S_00d056a0_Router {
@@ -190,8 +190,8 @@ void __cdecl hkSemaphoreBusyWait_release(int value, int flag);
 struct FUN_00d04450_cls {
     int unk00;
 
-    void* hkJobQueue_lockQueue(void* out);
-    void hkJobQueue_unlockQueue(void* p);
+    void* hkJobQueue_lockQueue(void* dynamicDataStorage);
+    void hkJobQueue_unlockQueue(void* dynamicDataStorage);
     void SetValue(int a1);
 };
 // ---------------------------------------------------------------------------
@@ -289,7 +289,7 @@ public:
     unsigned int unk44;
     int m_48;
 
-    int LookupSpawnedEntry(const unsigned char* p);
+    int LookupSpawnedEntry(const unsigned char* element);
 };
 void __cdecl hkSemaphoreBusyWait_release(int value, int flag);
 struct FUN_00d048e0_cls {
@@ -445,9 +445,9 @@ struct D049D0World {
     int unk14;
     D049D0Simulation* m_pSimulation;
 
-    void* lock(D049D0LockInfo* info);
+    void* lock(D049D0LockInfo* dynamicDataStorage);
     void disable(void* lockHandle);
-    void unlock(void* lockHandle);
+    void unlock(void* dynamicDataStorage);
 
     void SetSimulationEnabled(int enabled);
 };
@@ -488,7 +488,7 @@ struct __declspec(align(16)) D04B90Object {
     int unk7C;
 };
 struct D04B90World {
-    void addCopy(D04B90Object* copy, void* userData);
+    void addCopy(D04B90Object* job, void* priority);
     void AddObjectCopy(const D04B90Object* object, void* userData);
 };
 void __cdecl GetProcessorCount(unsigned int* out);
@@ -546,8 +546,8 @@ extern void __cdecl hookB_00d969e0(void*, void*);
 extern void __cdecl hookC_00d967a0(void*, void*);
 extern void __cdecl hookD_00d968e0(void*, void*);
 // Two more registration helpers, both cdecl with one pointer argument.
-void __cdecl hkpCollisionQueryJobQueueUtils_registerWithJobQueue(TargetObj* p);
-void __cdecl hkpRayCastQueryJobQueueUtils_registerWithJobQueue(TargetObj* p);
+void __cdecl hkpCollisionQueryJobQueueUtils_registerWithJobQueue(TargetObj* queue);
+void __cdecl hkpRayCastQueryJobQueueUtils_registerWithJobQueue(TargetObj* queue);
 void __cdecl InitHookTable(TargetObj* apTarget);
 struct D04A20MemoryRouter {
     int unk00;
@@ -559,7 +559,7 @@ struct D04A20MemoryRouter {
     hkMemoryAllocator& heap() { return *m_pStreamAllocator; }
 };
 namespace fnvc_adapt { extern "C" D04A20MemoryRouter& __cdecl hkMemoryRouter_getInstance(); }
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct D04A20Operation {
     void* m_object;
     bool m_flag;
@@ -849,9 +849,9 @@ extern "C" const char str_010c41f8[];
 static __forceinline short& Ref212(Registry* r,unsigned char sub){return reinterpret_cast<short*>(r)[sub];}
 struct LunaOwner : Owner
 {
-    int LookupSpawnedEntry(Item* item);
-    int hkJobQueue_findJobInternal(int index, Registry* registry, int param_4, int param_3);
-    int ProcessCallback(int param_2, int param_3, int param_4);
+    int LookupSpawnedEntry(Item* element);
+    int hkJobQueue_findJobInternal(int queueIndexOfNewJob, Registry* data, int waitStatus, int jobOut);
+    int ProcessCallback(int oldJob, int jobOut, int waitStatus);
 };
 struct LunaTrace
 {
@@ -881,9 +881,9 @@ struct ArrayOfJobs {
     int m_iCapacityState;
 };
 struct FUN_00d04bd0_cls : Owner {
-    int LookupSpawnedEntry(void* p);
+    int LookupSpawnedEntry(void* element);
     void RemoveItemReference(int index, Registry* set);
-    void AddJobBatch(ArrayOfJobs* jobs, int priority);
+    void hkJobQueue_addJobBatch(ArrayOfJobs* jobs, int priority);
 };
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long index);
 extern unsigned long hkMonitorStreamTls;
@@ -972,9 +972,9 @@ struct S_00d05020_DynamicData {
 };
 struct S_00d05020_JobQueue {
     S_00d05020_DynamicData* hkJobQueue_lockQueue(char* dynamicDataStorage);
-    int LookupSpawnedEntry(const S_00d05020_Job& job);
+    int LookupSpawnedEntry(const S_00d05020_Job& element);
     int hkJobQueue_findJobInternal(int queueIndexOfNewJob, S_00d05020_DynamicData* data, int waitStatus, S_00d05020_Job& jobOut);
-    int hkJobQueue_finishAddAndGetNextJob(int originalJobType, int priority, S_00d05020_Job& jobInOut, int waitStatus);
+    int hkJobQueue_finishAddAndGetNextJob(int oldJobType, int priority, S_00d05020_Job& jobInOut, int waitStatus);
 };
 extern unsigned long DAT_0126835c;
 static const char kTraceFinishJob[] = "TtfinishJob";
@@ -1012,12 +1012,12 @@ public:
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
     int (__cdecl* m_pfn20)(Worker*, PoolSet*, TraceArg*, int*);
 
-    PoolSet* GetNode(RequestContext* ctx);
-    int FindIndex(Item* item);
+    PoolSet* GetNode(RequestContext* dynamicDataStorage);
+    int FindIndex(Item* element);
     void Sync(int index, PoolSet* set);
-    void Release(PoolSet* set);
+    void Release(PoolSet* dynamicDataStorage);
 
-    void hkJobQueue_finishJob(TraceArg* p, int flag);
+    void hkJobQueue_finishJob(TraceArg* oldJob, int flag);
 };
 struct __declspec(align(16)) DispatchJob {
     unsigned char m_eSubtype;
@@ -1083,11 +1083,11 @@ struct Dispatcher : FUN_00d05490 {
 extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void* section);
 struct QueueLockView : Owner
 {
-    Registry* hkJobQueue_lockQueue(RequestContext* storage);
+    Registry* hkJobQueue_lockQueue(RequestContext* dynamicDataStorage);
 };
 extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void* section);
 struct CriticalSectionOwner {
-    void hkJobQueue_unlockQueue(Registry* data);
+    void hkJobQueue_unlockQueue(Registry* dynamicDataStorage);
 };
 
 extern int DAT_012687c8;
@@ -1119,7 +1119,7 @@ struct Bucket20
     int m_pFirstNode;
     int unk0C;
     int m_uiItemCount;
-    void hkQueue_struct_hkJobQueue_JobQueueEntry_enqueueInFront(ItemBuf* item);
+    void hkQueue_struct_hkJobQueue_JobQueueEntry_enqueueInFront(ItemBuf* element);
 };
 struct Refs
 {
@@ -1157,7 +1157,7 @@ struct Host
     signed char bEA;
     unsigned char bEB;
     void RemoveItemReference(int index, Refs* refs);
-    void hkJobQueue_unlockQueue(Refs* refs);
+    void hkJobQueue_unlockQueue(Refs* dynamicDataStorage);
     void ReleasePendingCounts(Refs* refs);
     __forceinline int tryPop(Refs* refs,int a4) {
     int v;
@@ -1190,53 +1190,55 @@ struct Host
     }
     return -1;
     }
-    int hkJobQueue_findJobInternal(int a1, Refs* refs, int a3, int a4);
+    int hkJobQueue_findJobInternal(int queueIndexOfNewJob, Refs* data, int waitStatus, int jobOut);
 };
 // @fnv 0x00d05840
 // src: HAVOK_LIB 0x00d05840
-int Host::hkJobQueue_findJobInternal(int a1, Refs* refs, int a3, int a4)
+// pdb: hkJobQueue::findJobInternal | hkJobQueue.obj | retail, string-set bridge, high
+// pdb params: queueIndexOfNewJob, data, waitStatus, jobOut
+int Host::hkJobQueue_findJobInternal(int queueIndexOfNewJob, Refs* data, int waitStatus, int jobOut)
 {
-    int ediVal = tryPop(refs,a4);
-    if (a1 != -1 && a1 != ediVal) RemoveItemReference(a1,refs);
-    if (ediVal >= 0) { hkJobQueue_unlockQueue(refs); return 0; }
+    int ediVal = tryPop(data,jobOut);
+    if (queueIndexOfNewJob != -1 && queueIndexOfNewJob != ediVal) RemoveItemReference(queueIndexOfNewJob,data);
+    if (ediVal >= 0) { hkJobQueue_unlockQueue(data); return 0; }
     {
         int total = 0;
-        for(int i=m_lo4C;i<m_hi50;++i) total += refs->buckets[i].m_uiItemCount;
+        for(int i=m_lo4C;i<m_hi50;++i) total += data->buckets[i].m_uiItemCount;
         if (total != 0)
             goto tail_check;
         int mask = 0;
         for (int k = 0; k < m_count24; k++) {
-            mask |= ((((short*)refs)[k] > 0 || refs->buckets[m_bucketBase30 + k].m_uiItemCount != 0) ? 1 : 0) << k;
+            mask |= ((((short*)data)[k] > 0 || data->buckets[m_bucketBase30 + k].m_uiItemCount != 0) ? 1 : 0) << k;
         }
-        bool none = refs->IsClear(mask) != 0;
+        bool none = data->IsClear(mask) != 0;
         bool maskZero = mask == 0;
         if (none) {
             if (TlsGetValue(DAT_012687c8) == 0) {
                 if (maskZero)
-                    ReleasePendingCounts(refs);
-                hkJobQueue_unlockQueue(refs);
+                    ReleasePendingCounts(data);
+                hkJobQueue_unlockQueue(data);
                 return 2;
             }
-            if (refs->pending[bEA] > 0) {
-                refs->pending[bEA]--;
+            if (data->pending[bEA] > 0) {
+                data->pending[bEA]--;
                 hkSemaphoreBusyWait_release((int)m_iSlotIds[bEA], 1);
             }
         }
-        if (maskZero && refs->f1C != 1) {
-            ReleasePendingCounts(refs);
-            hkJobQueue_unlockQueue(refs);
+        if (maskZero && data->f1C != 1) {
+            ReleasePendingCounts(data);
+            hkJobQueue_unlockQueue(data);
             return 2;
         }
     }
 tail_check:
-    if (a3 == 1) {
-        hkJobQueue_unlockQueue(refs);
+    if (waitStatus == 1) {
+        hkJobQueue_unlockQueue(data);
         return 1;
     }
     {
         int idx = ((signed char*)TlsGetValue(DAT_012687c8))[(int)this + 0xea];
-        refs->pending[idx]++;
-        hkJobQueue_unlockQueue(refs);
+        data->pending[idx]++;
+        hkJobQueue_unlockQueue(data);
         CaptureMarker((void*)str_010ccd70);
         hkSemaphore_acquire_ForwardCall_00d043b0((int)m_iSlotIds[idx]);
         CaptureMarker((void*)str_010c41f8);

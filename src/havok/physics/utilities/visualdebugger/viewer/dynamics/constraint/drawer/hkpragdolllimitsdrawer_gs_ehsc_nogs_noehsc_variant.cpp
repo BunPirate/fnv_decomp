@@ -91,8 +91,9 @@ struct CharacterBufferState
     void* owner;
 };
 extern CharacterBufferState* hkMemoryRouter_getInstance();
-extern void hkArrayUtil__reserve(void* owner, hkArrayBase<void*>* arr, int newCap, int stride);
+extern void hkArrayUtil__reserve(void* mem, hkArrayBase<void*>* array, int numElem, int sizeElem);
 extern int PackBytesBigEndian(int a, int b, int c, int d);
+// pdb: class Renderer, size 0x1 (here 0x4), 0 members
 struct Renderer
 {
     virtual void slot0();
@@ -275,7 +276,7 @@ struct Cls
     int unk27c;
     int unk280;
     void UpdateState_00de6730(Input* a0, Renderer* a1, int a2, int a3);
-    void hkpConstraintDrawer_updateCommonParameters(void* a0, void* b, void* c);
+    void hkpConstraintDrawer_updateCommonParameters(void* a0, void* refLocalToWorld, void* attLocalToWorld);
     void hkpConstraintDrawer_drawPivots(int a2, int a3);
     void InitializeFields_00de5370(float angle, float scale, int flags, void* point, void* source);
     void SetFromVectors(void* a, void* b, void* c, void* d);

@@ -4,6 +4,7 @@
 #include "hkpLimitedHingeConstraintDataAtoms.h"
 #include "hkBool.h"
 
+// pdb: class hkpLimitedHingeConstraintData, size 0xe0, bases: hkpConstraintData, 1 members
 class hkpLimitedHingeConstraintData : public hkpConstraintData
 {
 public:
@@ -28,5 +29,5 @@ public:
     static void operator delete(void* p);
 
     char padC[0x4];
-    hkpLimitedHingeConstraintDataAtoms m_kBridgeAtoms;
+    hkpLimitedHingeConstraintDataAtoms m_atoms;
 };

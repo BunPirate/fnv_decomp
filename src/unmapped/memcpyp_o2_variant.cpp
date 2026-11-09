@@ -22,6 +22,10 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile lo
 
 // @fnv 0x00a76a60
 // src: COMMUNITY 0x00a76a60
+// pdb: NiImageConverter::ConvertFilenameToPlatformSpecific | NiImageConverter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPixelData::SetPalette
+// pdb params: pcPath
+// pdb locals: pcPlatformPath, kPlatform
 void Owner::NiPixelData_SetPalette(Item* replacement)
 {
     Item* previous = item;

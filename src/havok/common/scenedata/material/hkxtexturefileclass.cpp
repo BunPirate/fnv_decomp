@@ -35,6 +35,7 @@ void* DAT_0102e388;
 UnkRet* hkMemoryRouter_getInstance();
 // Calls FUN_00cb0c00 on part10, part0c and part08, sets vptr to DAT_0102e388, and if flags bit 0 is set releases this with refCount via object->part10.
 // @fnv 0x00e01870
+// pdb: hkxTextureFile::`scalar deleting destructor' | hkxTextureFileClass.obj | retail, vtable slot, high
 FUN_00e01870_Class* FUN_00e01870_Class::FUN_00e01870(unsigned int flags)
 {
     part10.Object_UpdateFields_00cb0c00();

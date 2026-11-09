@@ -29,14 +29,16 @@
 struct FUN_00700270_class
 {
     unsigned char Equals(int);
-    bool operator==(int other);
+    bool operator==(int apString);
 };
 
 // Returns true when Equals returns zero for the given value.
 // @fnv 0x00700270
-bool FUN_00700270_class::operator==(int other)
+// pdb: BSStringT<char>::operator!= | AnimatingText.obj | debug, call graph (shared callers), high
+// pdb params: apString
+bool FUN_00700270_class::operator==(int apString)
 {
-    return !Equals(other);
+    return !Equals(apString);
 }
 
 
@@ -45,6 +47,8 @@ bool FUN_00700270_class::operator==(int other)
 
 // Returns true when this string compares equal to s using a case-sensitive comparison.
 // @fnv 0x007002a0
+// pdb: BSStringT<char>::operator== | AnimatingText.obj | debug, object-file run extension, low
+// pdb params: apString
 template <> int BSStringT<char>::Equals(const char* s)
 {
     return !StrCmp(s, true);
@@ -53,13 +57,14 @@ template <> int BSStringT<char>::Equals(const char* s)
 struct FUN_007002d0_Class
 {
     void __thiscall FUN_00700480(int, int);
-    FUN_007002d0_Class* __thiscall BGSMenuPacker_BGSMenuPacker();
+    FUN_007002d0_Class* __thiscall BGSMenuPacker_ctor();
 };
 
 // Calls FUN_00700480 with 0 and 1, clears the byte at offset 0x21, and returns this.
 // @fnv 0x007002d0
-// src: COMMUNITY 0x007002d0
-FUN_007002d0_Class* __thiscall FUN_007002d0_Class::BGSMenuPacker_BGSMenuPacker()
+// src: XBOX_RETAIL_PDB 0x007002d0
+// pdb: BGSMenuPacker::BGSMenuPacker | BGSMenuPacker.obj | retail, upstream name already matches, high
+FUN_007002d0_Class* __thiscall FUN_007002d0_Class::BGSMenuPacker_ctor()
 {
     FUN_00700480(0, 1);
     *(char*)((char*)this + 0x21) = 0;
@@ -68,9 +73,10 @@ FUN_007002d0_Class* __thiscall FUN_007002d0_Class::BGSMenuPacker_BGSMenuPacker()
 
 // @fnv 0x00700300
 // src: XBOX_PDB 0x00700300
+// pdb: Tile::GetName | BGSMenuPacker.obj | debug, call graph, high
 const char* Tile::GetName_00700300()
 {
-    return StringProvider.String();
+    return xName.String();
 }
 
 extern "C" void* __cdecl DAT_0106e8d4;
@@ -86,6 +92,8 @@ struct FUN_00700480 : FUN_00700560
 };
 
 // @fnv 0x00700480
+// pdb: NiTPrimitiveArray<BGSMenuPacker::PackedMenu *>::NiTPrimitiveArray<BGSMenuPacker::PackedMenu *> | BGSMenuPacker.obj | debug, object-file run extension, low
+// pdb params: uiMaxSize, uiGrowBy
 FUN_00700480::FUN_00700480(void* apArg, void* apArg2) : FUN_00700560(apArg, apArg2)
 {
     *reinterpret_cast<void**>(this) = &DAT_0106e8d4;
@@ -99,6 +107,7 @@ struct FUN_007004e0_class
 
 // @fnv 0x007004e0
 // src: GUESS 0x007004e0 (confidence: low)
+// pdb: NiTPrimitiveArray<BGSMenuPacker::PackedMenu *>::~NiTPrimitiveArray<BGSMenuPacker::PackedMenu *> | BGSMenuPacker.obj | debug, object-file gap fill, medium
 void __thiscall FUN_007004e0_class::ForwardCall_007004e0()
 {
     UpdateFields_00700500();
@@ -112,6 +121,7 @@ struct FUN_00702220
 };
 // Destructor that reads the stored pointer m and passes it to Deallocate.
 // @fnv 0x00702220
+// pdb: HackingMenu::GridRow::~GridRow | Interface.obj | debug, object-file run extension, low
 FUN_00702220::~FUN_00702220()
 {
     void* p = m;
@@ -142,9 +152,11 @@ void __thiscall FUN_00703960_Class::SetByteAtOffsetEC(char value)
 
 // @fnv 0x00705fc0
 // src: XBOX_PDB 0x00705fc0
+// pdb: NiPick::SetTarget | TES.obj | debug, call graph, medium
+// pdb params: pObject
 void NiPick::SetTarget_00705fc0(void* p)
 {
-    reinterpret_cast<GO&>(root) = p;
+    reinterpret_cast<GO&>(m_spRoot) = p;
 }
 
 // @fnv 0x00709a20
@@ -166,27 +178,33 @@ void __cdecl HUDMainMenu_ShowDDTIcon(bool);
 
 // @fnv 0x00709c60
 // src: XBOX_PDB 0x00709c60
-void Interface_ShowDDTIcon(bool a)
+// pdb: Interface::ShowDDTIcon | Interface.obj | debug, upstream name already matches, high
+// pdb params: abArmorPiercing
+void Interface_ShowDDTIcon(bool abArmorPiercing)
 {
-    HUDMainMenu_ShowDDTIcon(a);
+    HUDMainMenu_ShowDDTIcon(abArmorPiercing);
 }
 
 extern "C" void __cdecl UpdateTileOnFlag(bool);
 
 // @fnv 0x00709c80
 // src: XBOX_PDB 0x00709c80
-void Interface_ShowEnemyDDTIcon(bool abValue)
+// pdb: Interface::ShowEnemyDDTIcon | Interface.obj | debug, upstream name already matches, high
+// pdb params: abArmorPiercing
+void Interface_ShowEnemyDDTIcon(bool abArmorPiercing)
 {
-    UpdateTileOnFlag(abValue);
+    UpdateTileOnFlag(abArmorPiercing);
 }
 
 void __cdecl MapMenu_SetRootMapSpace(int);
 
 // @fnv 0x00709d20
 // src: XBOX_PDB 0x00709d20
-void __cdecl Interface_SetRootMapSpace(int aiValue)
+// pdb: Interface::SetRootMapSpace | Interface.obj | debug, upstream name already matches, high
+// pdb params: apNewSpace
+void __cdecl Interface_SetRootMapSpace(int apNewSpace)
 {
-    MapMenu_SetRootMapSpace(aiValue);
+    MapMenu_SetRootMapSpace(apNewSpace);
 }
 
 extern void* DAT_0106edec;
@@ -197,6 +215,8 @@ struct AX
 };
 // @fnv 0x00709e80
 // src: EXE 0x00709e80
+// pdb: BSSimpleArray<Tile::Value *,8>::BSSimpleArray<Tile::Value *,8> | TESScriptFunctions.obj | debug, call graph, medium
+// pdb params: aiReserveSize, aiInitialSize
 AX* __thiscall AX::BSSimpleArray_Tile_Value_8_BSSimpleArray(unsigned int auiFirst, unsigned int auiSecond)
 {
     *reinterpret_cast<void**>(this) = &DAT_0106edec;
@@ -216,6 +236,7 @@ struct FUN_00709eb0_Class
     void InitAndClear();
 };
 // @fnv 0x00709eb0
+// pdb: BSSimpleArray<Tile::Value *,8>::~BSSimpleArray<Tile::Value *,8> | TESScriptFunctions.obj | debug, call graph (shared callers), medium
 void FUN_00709eb0_Class::InitAndClear()
 {
     m = &DAT_0106edec;
@@ -241,6 +262,7 @@ struct FUN_00717e30_Class
 // Calls GetPosition on the TgtOps at offset 0x178 and invokes FUN_00700350 on the returned object.
 // @fnv 0x00717e30
 // src: COMMUNITY 0x00717e30
+// pdb: InterfaceManager::DumpMenuPackingInfo | InterfaceManager.obj | debug, upstream name already matches, high
 void FUN_00717e30_Class::InterfaceManager_DumpMenuPackingInfo()
 {
     ((FUN_00700350_Class*)((TgtOps*)((char*)this + 0x178))->GetPosition())->BGSMenuPacker_DumpInfo();
@@ -256,6 +278,7 @@ struct FUN_00719390_class
 
 // @fnv 0x00719390
 // src: GUESS 0x00719390 (confidence: low)
+// pdb: SystemColorManager::SoftSystemColor::~SoftSystemColor | InterfaceManager.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00719390_class::SetVtableAndProcessState_00719390()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106f448;
@@ -268,6 +291,7 @@ struct FUN_00719b00_class
 };
 // @fnv 0x00719b00
 // src: COMMUNITY 0x00719b00
+// pdb: NiPointer<NiSourceTexture>::~NiPointer<NiSourceTexture> | ExtraDataObjects.obj | debug, object-file run extension, low
 bool FUN_00719b00_class::PlayerCharacter_GetIsDebounceWASD()
 {
     return (reinterpret_cast<signed char*>(reinterpret_cast<char*>(this) + 0x66d)[0] & 4) != 0;
@@ -281,10 +305,12 @@ struct GlobalObject_00869f00
 struct FUN_00719be0
 {
     unsigned int* p;
-    void Initialize();
+    void BSSimpleArray_Tile_1024_dtor();
 };
 // @fnv 0x00719be0
-void FUN_00719be0::Initialize()
+// src: XBOX_DEBUG_PDB 0x00719be0
+// pdb: BSSimpleArray<Tile *,1024>::~BSSimpleArray<Tile *,1024> | InterfaceManager.obj | debug, call graph (shared callers), high
+void FUN_00719be0::BSSimpleArray_Tile_1024_dtor()
 {
     p = &DAT_0106f798;
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -295,22 +321,27 @@ void FUN_00719be0::Initialize()
 // src: XBOX_PDB 0x0071aa60
 void Tile::SetSpeechChallengeFailure_0071aa60(bool value)
 {
-    m_bSpeechChallengeFailure = value;
+    bSpeechChallengeFailure = value;
 }
 
 extern "C" void __cdecl FUN_00ecb849(int, int, int);
 
 // @fnv 0x0071cfd0
-// src: COMMUNITY 0x0071cfd0
-void __cdecl _mbsnbcmp_(int aiArg1, int aiArg2, int aiArg3)
+// src: XBOX_DEBUG_PDB 0x0071cfd0
+// pdb: _tcsncmp | MenuConsole.obj | debug, call graph, high
+// pdb params: _s1, _s2, _n
+void __cdecl _tcsncmp(int _s1, int _s2, int _n)
 {
-    FUN_00ecb849(aiArg1, aiArg2, aiArg3);
+    FUN_00ecb849(_s1, _s2, _n);
 }
 
 void __cdecl FUN_00ecba8e(int a, int b, int c);
 
 // @fnv 0x0071cff0
 // src: COMMUNITY 0x0071cff0
+// pdb: sscanf | sscanf.obj | retail, call graph, low
+// pdb note: debug build links it to _tcsnicmp
+// pdb params: string, format, arglist
 void __cdecl _mbsnbicmp_(int aiArg1, int aiArg2, int aiArg3)
 {
     FUN_00ecba8e(aiArg1, aiArg2, aiArg3);
@@ -335,6 +366,7 @@ struct FUN_0071e0d0_Class
 
 // @fnv 0x0071e0d0
 // src: COMMUNITY 0x0071e0d0
+// pdb: NiTPointerListBase<DFALL<NiTListItem<BSStringT<char> > >,BSStringT<char> >::NewItem | MenuConsole.obj | debug, object-file gap fill, medium
 void FUN_0071e0d0_Class::TextNode_Create_()
 {
     ((FUN_0071e0d0_Class*)((char*)this + 8))->CreateInstance();
@@ -351,14 +383,16 @@ struct FUN_0071e1a0_cls
 };
 struct FUN_0071e0f0_cls
 {
-    void UpdateState_0071e0f0(const char* arg);
+    void UpdateState_0071e0f0(const char* pkItem);
 };
 // @fnv 0x0071e0f0
 // src: GUESS 0x0071e0f0 (confidence: low)
-void FUN_0071e0f0_cls::UpdateState_0071e0f0(const char* arg)
+// pdb: NiTPointerListBase<DFALL<NiTListItem<BSStringT<char> > >,BSStringT<char> >::DeleteItem | MenuConsole.obj | debug, call graph, high
+// pdb params: pkItem
+void FUN_0071e0f0_cls::UpdateState_0071e0f0(const char* pkItem)
 {
-    ((Str6a70*)((char*)arg + 8))->operator=(0);
-    ((FUN_0071e1a0_cls*)((char*)this + 8))->UpdateFields_0071e1a0(arg);
+    ((Str6a70*)((char*)pkItem + 8))->operator=(0);
+    ((FUN_0071e1a0_cls*)((char*)this + 8))->UpdateFields_0071e1a0(pkItem);
 }
 
 
@@ -370,6 +404,7 @@ struct FUN_0071e230
 };
 
 // @fnv 0x0071e230
+// pdb: NiTListItem<BSStringT<char> >::NiTListItem<BSStringT<char> > | MenuConsole.obj | debug, object-file run extension, low
 void* FUN_0071e230::Init()
 {
     m.StrMem::StrMem();
@@ -384,6 +419,7 @@ struct FUN_0071e250_class
 
 // @fnv 0x0071e250
 // src: GUESS 0x0071e250 (confidence: medium)
+// pdb: DFALL<NiTListItem<BSStringT<char> > >::AllocNode::~AllocNode | MenuConsole.obj | debug, object-file run extension, low
 void FUN_0071e250_class::DestroyBSS_Thunk()
 {
     DestroyBSS();
@@ -404,6 +440,7 @@ struct FUN_0071f5d0
 };
 // Constructor that stores the address of DAT_01070028 into m and default-constructs s.
 // @fnv 0x0071f5d0
+// pdb: StatsMenu::StatusEffectList::StatusEffectList | MenuManager.obj | debug, call graph, medium
 FUN_0071f5d0::FUN_0071f5d0() : s()
 {
     m = (int)&DAT_01070028;
@@ -441,6 +478,7 @@ struct FUN_007004b0_Class : FUN_007004e0_class
 };
 // Calls FUN_007004e0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x007004b0
+// pdb: NiTPrimitiveArray<BGSMenuPacker::PackedMenu *>::`scalar deleting destructor' | BGSMenuPacker.obj | debug, vtable slot, medium
 void* __thiscall FUN_007004b0_Class::FUN_007004b0(unsigned int flags)
 {
     ForwardCall_007004e0();
@@ -456,6 +494,7 @@ struct StandIn_700530
 };
 // Calls FUN_00700500 on this, then deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x00700530
+// pdb: NiTArray<BGSMenuPacker::PackedMenu *,NiTMallocInterface<BGSMenuPacker::PackedMenu *> >::`scalar deleting destructor' | BGSMenuPacker.obj | debug, vtable slot, medium
 void* __thiscall StandIn_700530::FUN_00700530(unsigned int flags)
 {
     ((FUN_007004e0_class*)this)->UpdateFields_00700500();
@@ -464,6 +503,7 @@ void* __thiscall StandIn_700530::FUN_00700530(unsigned int flags)
     return this;
 }
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier
 {
     unsigned char GetKey();
@@ -476,11 +516,13 @@ extern "C" void* __cdecl InterfaceManager_GetSingleton();
 
 // If FUN_004b7210 returns an object whose GetKey is nonzero, calls FUN_009bdf60 on it with arg.
 // @fnv 0x00703310
-// src: COMMUNITY 0x00703310
-void Interface_SetCrosshairRef(int arg)
+// src: XBOX_DEBUG_PDB 0x00703310
+// pdb: Interface::SetPickREFR | Interface.obj | debug, call graph, high
+// pdb params: apRef
+void Interface_SetPickREFR(int apRef)
 {
     if (InterfaceManager_GetSingleton() && ((Modifier*)InterfaceManager_GetSingleton())->GetKey())
-        ((FUN_009bdf60_class*)InterfaceManager_GetSingleton())->InterfaceManager_SetCrosshairRef(arg);
+        ((FUN_009bdf60_class*)InterfaceManager_GetSingleton())->InterfaceManager_SetCrosshairRef(apRef);
 }
 
 namespace fnv_00703430 {
@@ -491,6 +533,7 @@ struct Modifier
 };
 // @fnv 0x00703430
 // src: COMMUNITY 0x00703430
+// pdb: Interface::IsActivatePickFuzzy | Interface.obj | debug, upstream name already matches, high
 unsigned char __cdecl Interface_IsActivatePickFuzzy()
 {
     if (InterfaceManager_GetSingleton() && ((Modifier*)InterfaceManager_GetSingleton())->GetKey())
@@ -512,10 +555,12 @@ struct FUN_00715ec0_Class
 // If FUN_004b7210 returns a non-null object whose GetKey is nonzero, calls SetSafeZone on it with param.
 // @fnv 0x007038e0
 // src: COMMUNITY 0x007038e0
-void Interface_ToggleSafeZone(int param)
+// pdb: Interface::ToggleSafeZone | Interface.obj | debug, upstream name already matches, high
+// pdb params: abForceSetTo
+void Interface_ToggleSafeZone(int abForceSetTo)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        reinterpret_cast<FUN_00715ec0_Class*>(InterfaceManager_GetSingleton())->SetSafeZone(param);
+        reinterpret_cast<FUN_00715ec0_Class*>(InterfaceManager_GetSingleton())->SetSafeZone(abForceSetTo);
 }
 }  // namespace fnv_007038e0
 
@@ -528,6 +573,8 @@ void* __cdecl InterfaceManager_GetSingleton();
 // If FUN_004b7210 returns a non-null object whose GetKey is nonzero, calls SetByteAtOffsetEC(1) on it and Tile::UpdateAll(false).
 // @fnv 0x00703920
 // src: COMMUNITY 0x00703920
+// pdb: Interface::WarningPrepCursor | Interface.obj | debug, object-file run extension, low
+// pdb locals: pcursor
 void __cdecl Interface_SetFirstChanceTextureRelease()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -544,6 +591,7 @@ struct FUN_00703be0_Class
 };
 // Returns the byte at offset 0x1b94 plus b*28 plus a within this object.
 // @fnv 0x00703be0
+// pdb: BSStringT<char>::BSStringT<char> | AlchemyItem.obj | debug, call graph (shared callers), medium
 unsigned char __thiscall FUN_00703be0_Class::GetByteAt(int a, int b)
 {
     return *((unsigned char*)this + (b * 28 + a) + 0x1b94);
@@ -557,11 +605,13 @@ struct Modifier
 Modifier* __cdecl InterfaceManager_GetSingleton();
 // @fnv 0x007062e0
 // src: COMMUNITY 0x007062e0
-bool __cdecl Interface_SetInfoForRef(TESObjectREFR* apRefr, bool abFlag1, bool abFlag2)
+// pdb: Interface::SetInfoForRef | Interface.obj | debug, upstream name already matches, high
+// pdb params: apObject, abTelekinesis, abSameOkay
+bool __cdecl Interface_SetInfoForRef(TESObjectREFR* apObject, bool abTelekinesis, bool abSameOkay)
 {
     if (InterfaceManager_GetSingleton() && InterfaceManager_GetSingleton()->GetKey())
     {
-        return HUDMainMenu::UpdateTargetReference(apRefr, abFlag1, abFlag2);
+        return HUDMainMenu::UpdateTargetReference(apObject, abTelekinesis, abSameOkay);
         goto done;
     }
     return 0;
@@ -574,8 +624,9 @@ namespace fnv_00707b30 {
 InterfaceManager* InterfaceManager_GetSingleton();
 void InterfaceManager_IsCurrentRenderedMenuTopmost();
 // @fnv 0x00707b30
-// src: COMMUNITY 0x00707b30
-void Interface_IsActiveMenuTheRenderedMenu()
+// src: XBOX_DEBUG_PDB 0x00707b30
+// pdb: Interface::IsCurrentRenderedMenuTopmost | Interface.obj | debug, call graph, high
+void Interface_IsCurrentRenderedMenuTopmost()
 {
     InterfaceManager_GetSingleton();
     InterfaceManager_IsCurrentRenderedMenuTopmost();
@@ -585,6 +636,8 @@ void Interface_IsActiveMenuTheRenderedMenu()
 extern char vftable_TileMenu;
 // Initializes a TileMenu: runs the base constructor, installs the TileMenu vtable, and zeroes the field at offset 0x3c.
 // @fnv 0x00709810
+// pdb: TileMenu::TileMenu | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: p, x
 TileMenu* __thiscall TileMenu::TileMenuConstructor(int aiUnused1, int aiUnused2)
 {
     this->TileRect::TileRect();
@@ -658,6 +711,7 @@ struct FUN_00709ed0_Class
 };
 
 // @fnv 0x00709ed0
+// pdb: BSSimpleArray<Tile::Value *,8>::`scalar deleting destructor' | Interface.obj | retail, vtable slot, high
 void* __thiscall FUN_00709ed0_Class::FUN_00709ed0(unsigned int flags)
 {
     InitAndClear();
@@ -720,6 +774,7 @@ struct FUN_00719010_Class
 };
 // @fnv 0x00719010
 // src: GUESS 0x00719010 (confidence: low)
+// pdb: SystemColorManager::RemoveAll | InterfaceManager.obj | debug, object-file run extension, low
 void FUN_00719010_Class::ProcessEntries_00719010()
 {
     while (!((ArrHelper*)this)->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
@@ -737,6 +792,7 @@ struct FUN_00719200_Cls
 };
 // Calls ConstructAndInit on this, then frees this via _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00719200
+// pdb: SystemColorManager::SystemColor::`scalar deleting destructor' | InterfaceManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_00719200_Cls::FUN_00719200(unsigned int flags)
 {
     ((FUN_00719390_class*)this)->ConstructAndInit();
@@ -757,6 +813,8 @@ struct FUN_00719250_class
 };
 // Calls FUN_00719160 with p2 and p4, sets vtbl to DAT_0106f430 and c to p3, then returns this.
 // @fnv 0x00719250
+// pdb: SystemColorManager::HardSystemColor::HardSystemColor | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: apName, aiColor, aiID
 FUN_00719250_class* __thiscall FUN_00719250_class::Construct(int aiArg1, int aiValue, int aiArg2)
 {
     FUN_00719160(aiArg1, aiArg2);
@@ -773,6 +831,7 @@ struct FUN_00719290_class
 };
 // Calls FUN_007192c0, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x00719290
+// pdb: SystemColorManager::HardSystemColor::`scalar deleting destructor' | InterfaceManager.obj | debug, vtable slot, medium
 FUN_00719290_class* __thiscall FUN_00719290_class::FUN_00719290(unsigned int flags)
 {
     SetVirtualTableAndProcessState_007192c0();
@@ -795,6 +854,8 @@ struct FUN_007192e0_Class
 };
 // Calls FUN_00719160 with a and c, sets vtbl to &DAT_0106f448 and stores b in m_0c.
 // @fnv 0x007192e0
+// pdb: SystemColorManager::SoftSystemColor::SoftSystemColor | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: apName, apSetting, aiID
 FUN_007192e0_Class::FUN_007192e0_Class(void* a, void* b, void* c)
 {
     FUN_00719160((int)a, (int)c);
@@ -804,14 +865,15 @@ FUN_007192e0_Class::FUN_007192e0_Class(void* a, void* b, void* c)
 
 struct GlobalObject_00719b80
 {
-    void __thiscall Initialize();
+    void __thiscall BSSimpleArray_Tile_1024_dtor();
     ~GlobalObject_00719b80();
     void* __thiscall InitializeAndMaybeDeallocate(unsigned int flags);
 };
 // @fnv 0x00719bb0
+// pdb: BSSimpleArray<Tile *,1024>::`scalar deleting destructor' | InterfaceManager.obj | retail, vtable slot, high
 void* __thiscall GlobalObject_00719b80::InitializeAndMaybeDeallocate(unsigned int flags)
 {
-    Initialize();
+    BSSimpleArray_Tile_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -826,10 +888,12 @@ int __fastcall _FNV_GetFormType(unsigned int);
 // Returns 1 if p is non-null and its form type from GetFlags equals 0x28, otherwise 0.
 // @fnv 0x00719da0
 // src: COMMUNITY 0x00719da0
-unsigned char __cdecl InventoryList_IsWeapon(BlkOffset08View* p)
+// pdb: InventoryList::IsWeapon | InventoryList.obj | debug, upstream name already matches, high
+// pdb params: apItem
+unsigned char __cdecl InventoryList_IsWeapon(BlkOffset08View* apItem)
 {
     int result;
-    if (p != 0 && _FNV_GetFormType(p->GetFlags()) == 0x28)
+    if (apItem != 0 && _FNV_GetFormType(apItem->GetFlags()) == 0x28)
         result = 1;
     else
         result = 0;
@@ -846,11 +910,13 @@ struct BlkOffset08View
 // Returns 1 if arg is non-null and its form type is 0x1a or 0x18, otherwise 0.
 // @fnv 0x00719de0
 // src: COMMUNITY 0x00719de0
-char InventoryList_IsApparel(void* arg)
+// pdb: InventoryList::IsApparel | InventoryList.obj | debug, upstream name already matches, high
+// pdb params: apItem
+char InventoryList_IsApparel(void* apItem)
 {
     int result;
-    if (arg &&
-        (FNV_GetFormType(((BlkOffset08View*)arg)->GetFlags()) == 0x1a || FNV_GetFormType(((BlkOffset08View*)arg)->GetFlags()) == 0x18))
+    if (apItem &&
+        (FNV_GetFormType(((BlkOffset08View*)apItem)->GetFlags()) == 0x1a || FNV_GetFormType(((BlkOffset08View*)apItem)->GetFlags()) == 0x18))
         result = 1;
     else
         result = 0;
@@ -858,6 +924,7 @@ char InventoryList_IsApparel(void* arg)
 }
 }  // namespace fnv_00719de0
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, char const*);
@@ -868,6 +935,8 @@ struct Holder
 };
 // @fnv 0x0071dd50
 // src: COMMUNITY 0x0071dd50
+// pdb: MenuConsole::SetOutputFilename | MenuConsole.obj | debug, call graph, medium
+// pdb params: apOutputFileName
 void __thiscall Holder::MenuConsole_SetFileOutputName(char const* a)
 {
     if (a != 0)
@@ -890,6 +959,9 @@ struct S71df20
 };
 // Gets a pointer via FUN_0071e0d0, assigns a to the object at offset 8, then passes the pointer to FUN_0049fa20.
 // @fnv 0x0071df20
+// pdb: NiTPointerListBase<DFALL<NiTListItem<BSStringT<char> > >,BSStringT<char> >::AddTail | MenuConsole.obj | debug, object-file run extension, low
+// pdb params: element
+// pdb locals: pkNode
 void __thiscall S71df20::AssignString(const BSStringT<char>& aString)
 {
     void* tmp = ((A71e0d0*)this)->TextNode_Create_();
@@ -904,6 +976,8 @@ struct FUN_0071e200_Helper
 // If arg is non-null, calls FUN_0071e200 on it with 1; otherwise does nothing.
 // @fnv 0x0071e1a0
 // src: GUESS 0x0071e1a0 (confidence: low)
+// pdb: DFALL<NiTListItem<BSStringT<char> > >::Deallocate | MenuConsole.obj | debug, call graph, medium
+// pdb params: p
 void FUN_0071e1a0_cls::UpdateFields_0071e1a0(const void* apObject)
 {
     FUN_0071e200_Helper* b;
@@ -921,6 +995,7 @@ struct S_0071e200
     void* __thiscall FUN_0071e200(unsigned int);
 };
 // @fnv 0x0071e200
+// pdb: DFALL<NiTListItem<BSStringT<char> > >::AllocNode::`scalar deleting destructor' | MenuConsole.obj | debug, object-file run extension, low
 void* __thiscall S_0071e200::FUN_0071e200(unsigned int flags)
 {
     ((FUN_0071e250_class*)this)->DestroyBSS_Thunk();
@@ -937,6 +1012,7 @@ struct S
 };
 // Resets the vtable pointer to DAT_0106ff84, clears DAT_011db088, then calls the Menu destructor on this.
 // @fnv 0x0071f310
+// pdb: TutorialMenu::~TutorialMenu | MenuManager.obj | debug, object-file gap fill, medium
 void __thiscall S::DestroyMenu()
 {
     *(int*)this = (int)&DAT_0106ff84;
@@ -987,6 +1063,7 @@ struct FUN_0071f900_Class
 };
 // Calls FUN_0071f930, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0071f900
+// pdb: StatsMenu::BodyPartController::`scalar deleting destructor' | MenuManager.obj | debug, object-file run extension, low
 void* __thiscall FUN_0071f900_Class::FUN_0071f900(unsigned int flags)
 {
     FUN_0071f930();
@@ -1071,6 +1148,8 @@ struct PerfMgr
 // Clears the byte, int, float and GO fields of each of the three PerfEntry records in DAT_011d8840.
 // @fnv 0x00700650
 // src: GUESS 0x00700650 (confidence: medium)
+// pdb: FaderManager::~FaderManager | FaderManager.obj | retail, object-file run extension, low
+// pdb locals: n
 void PerfMgr::ClearThreePerformanceEntries()
 {
     for (int i = 0; i < 3; i++)
@@ -1108,6 +1187,7 @@ void __cdecl BlackJackMenu_DrawScene();
 
 // @fnv 0x00709b10
 // src: COMMUNITY 0x00709b10
+// pdb: Interface::DrawBlackJackMenu3D | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_DrawBlackJackMenu3D()
 {
     BlackJackMenu_DrawScene();
@@ -1132,6 +1212,7 @@ struct FUN_007192c0_class
 };
 // @fnv 0x007192c0
 // src: GUESS 0x007192c0 (confidence: low)
+// pdb: SystemColorManager::HardSystemColor::~HardSystemColor | InterfaceManager.obj | debug, object-file gap fill, medium
 void FUN_007192c0_class::SetVirtualTableAndProcessState_007192c0()
 {
     vtbl = &DAT_0106f430;
@@ -1141,14 +1222,16 @@ void FUN_007192c0_class::SetVirtualTableAndProcessState_007192c0()
 // Returns 1 if p is non-null and its form type is one of 0x1f, 0x29, 0x67, 0x32, 0x6c, 0x74 or 0x73; otherwise 0.
 // @fnv 0x00719e30
 // src: COMMUNITY 0x00719e30
-unsigned char __cdecl InventoryList_IsMisc(BlkOffset08View* apForm)
+// pdb: InventoryList::IsMisc | InventoryList.obj | debug, upstream name already matches, high
+// pdb params: apItem
+unsigned char __cdecl InventoryList_IsMisc(BlkOffset08View* apItem)
 {
     int result;
 
-    if (apForm && (_FNV_GetFormType(apForm->GetFlags()) == 0x1f || _FNV_GetFormType(apForm->GetFlags()) == 0x29 ||
-                   _FNV_GetFormType(apForm->GetFlags()) == 0x67 || _FNV_GetFormType(apForm->GetFlags()) == 0x32 ||
-                   _FNV_GetFormType(apForm->GetFlags()) == 0x6c || _FNV_GetFormType(apForm->GetFlags()) == 0x74 ||
-                   _FNV_GetFormType(apForm->GetFlags()) == 0x73))
+    if (apItem && (_FNV_GetFormType(apItem->GetFlags()) == 0x1f || _FNV_GetFormType(apItem->GetFlags()) == 0x29 ||
+                   _FNV_GetFormType(apItem->GetFlags()) == 0x67 || _FNV_GetFormType(apItem->GetFlags()) == 0x32 ||
+                   _FNV_GetFormType(apItem->GetFlags()) == 0x6c || _FNV_GetFormType(apItem->GetFlags()) == 0x74 ||
+                   _FNV_GetFormType(apItem->GetFlags()) == 0x73))
         result = 1;
     else
         result = 0;
@@ -1164,6 +1247,7 @@ struct FUN_0071e250
     void DestroyBSS();
 };
 // @fnv 0x0071e270
+// pdb: NiTListItem<BSStringT<char> >::~NiTListItem<BSStringT<char> > | MenuConsole.obj | debug, object-file run extension, low
 void FUN_0071e250::DestroyBSS()
 {
     s.BSStringT<char>::~BSStringT();
@@ -1217,6 +1301,7 @@ struct ThreeInts
 // If the singleton exists and its check passes, forwards arg to its method; otherwise copies the three ints from DAT_011f426c into arg. Returns arg.
 // @fnv 0x007033d0
 // src: COMMUNITY 0x007033d0
+// pdb: Interface::GetActivatePickLocation | Interface.obj | debug, upstream name already matches, high
 int* __cdecl Interface_GetActivatePickLocation(int* pOut)
 {
     if (InterfaceManager_GetSingleton() && ((FUN_009373f0_StandIn*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
@@ -1242,6 +1327,7 @@ void GetHUDMainMenuValue();
 
 // @fnv 0x007038d0
 // src: COMMUNITY 0x007038d0
+// pdb: Interface::GetEnemyActor | Interface.obj | debug, upstream name already matches, high
 void Interface_GetEnemyActor()
 {
     GetHUDMainMenuValue();
@@ -1250,6 +1336,7 @@ void Interface_GetEnemyActor()
 extern void __cdecl MessageMenu_ProcessYesToAll();
 // @fnv 0x00703fd0
 // src: COMMUNITY 0x00703fd0
+// pdb: Interface::MessageMenuYesToAll | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_MessageMenuYesToAll()
 {
     MessageMenu_ProcessYesToAll();
@@ -1258,33 +1345,37 @@ void __cdecl Interface_MessageMenuYesToAll()
 extern void __cdecl UpdateSurgeryScene();
 // @fnv 0x00709ae0
 // src: COMMUNITY 0x00709ae0
+// pdb: Interface::DrawSurgeryMenu3D | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_DrawSurgeryMenu3D()
 {
     UpdateSurgeryScene();
 }
 
-void __cdecl LockPickMenu_DrawScene();
+void __cdecl LockPickMenu_Draw3DElements();
 
 // @fnv 0x00709af0
 // src: COMMUNITY 0x00709af0
+// pdb: Interface::DrawLockpickMenu3D | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_DrawLockpickMenu3D()
 {
-    LockPickMenu_DrawScene();
+    LockPickMenu_Draw3DElements();
 }
 
-void __cdecl SlotMachineMenu_DrawScene();
+void __cdecl SlotMachineMenu_Draw3DElements();
 
 // @fnv 0x00709b00
 // src: COMMUNITY 0x00709b00
+// pdb: Interface::DrawSlotMachineMenu3D | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_DrawSlotMachineMenu3D()
 {
-    SlotMachineMenu_DrawScene();
+    SlotMachineMenu_Draw3DElements();
 }
 
 void RouletteMenu_DrawScene();
 
 // @fnv 0x00709b20
 // src: COMMUNITY 0x00709b20
+// pdb: Interface::DrawRouletteMenu3D | Interface.obj | debug, upstream name already matches, high
 void Interface_DrawRouletteMenu3D()
 {
     RouletteMenu_DrawScene();
@@ -1294,6 +1385,7 @@ void __cdecl FUN_00740f30_callee(void);
 
 // @fnv 0x00709b30
 // src: COMMUNITY 0x00709b30
+// pdb: Interface::DrawCaravanMenu3D | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_DrawCaravanMenu3D(void)
 {
     FUN_00740f30_callee();
@@ -1303,6 +1395,7 @@ void RenderFaceGenScene();
 
 // @fnv 0x00709b40
 // src: COMMUNITY 0x00709b40
+// pdb: Interface::DrawHUDMenu3D | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_DrawHUDMenu3D()
 {
     RenderFaceGenScene();
@@ -1312,6 +1405,7 @@ void HUDMainMenu_ClearGunScope();
 
 // @fnv 0x00709ca0
 // src: XBOX_PDB 0x00709ca0
+// pdb: Interface::ClearGunScope | Interface.obj | debug, upstream name already matches, high
 void Interface_ClearGunScope()
 {
     HUDMainMenu_ClearGunScope();
@@ -1321,6 +1415,7 @@ unsigned char __cdecl HUDMainMenu_IsGunScopeVisible();
 
 // @fnv 0x00709cb0
 // src: COMMUNITY 0x00709cb0
+// pdb: Interface::IsGunScopeVisible | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_IsGunScopeVisible()
 {
     HUDMainMenu_IsGunScopeVisible();
@@ -1330,6 +1425,7 @@ void __cdecl VATSMenu_GetIsARescan();
 
 // @fnv 0x00709d00
 // src: COMMUNITY 0x00709d00
+// pdb: Interface::GetIsVATSRescanning | Interface.obj | debug, upstream name already matches, high
 void __cdecl Interface_GetIsVATSRescanning()
 {
     VATSMenu_GetIsARescan();
@@ -1399,7 +1495,7 @@ struct StrHolderSub
 };
 
 void FormatInto(StrHolderSub* p, const char* fmt, const char* s);
-void ReleaseWith(int r, int a);
+void ReleaseWith(int apText, int aiIndex);
 
 class FUN_00719160_cls
 {
@@ -1407,16 +1503,18 @@ class FUN_00719160_cls
     virtual void Unk00();
     StrHolderSub m_04;
 
-    FUN_00719160_cls(const char* a1, int a2);
+    FUN_00719160_cls(const char* apName, int aiID);
 };
 
 // Formats "&%s;" into m_04, resets it, then calls ReleaseWith with m_04.Get() and a2.
 // @fnv 0x00719160
-FUN_00719160_cls::FUN_00719160_cls(const char* a1, int a2)
+// pdb: SystemColorManager::SystemColor::SystemColor | InterfaceManager.obj | debug, call graph (shared callers), high
+// pdb params: apName, aiID
+FUN_00719160_cls::FUN_00719160_cls(const char* apName, int aiID)
 {
-    FormatInto(&m_04, "&%s;", a1);
+    FormatInto(&m_04, "&%s;", apName);
     m_04.Reset();
-    ReleaseWith(m_04.Get(), a2);
+    ReleaseWith(m_04.Get(), aiID);
 }
 
 extern char vftable_FUN_00719390;
@@ -1427,6 +1525,7 @@ struct FUN_004037d0_Class
 };
 
 // @fnv 0x00719230
+// pdb: SystemColorManager::SystemColor::~SystemColor | InterfaceManager.obj | debug, object-file gap fill, medium
 void FUN_00719390_class::ConstructAndInit()
 {
     reinterpret_cast<void**>(this)[0] = reinterpret_cast<void*>(&vftable_FUN_00719390);
@@ -1442,15 +1541,17 @@ class FUN_00719ca0_cls
 // Compares two objects by their GetKey() values, returning -1, 1, or 0.
 // @fnv 0x00719ca0
 // src: COMMUNITY 0x00719ca0
-int __cdecl InventoryList_SortByQty(FUN_00719ca0_cls* apLeft, FUN_00719ca0_cls* apRight)
+// pdb: InventoryList::SortByQty | InventoryList.obj | retail, upstream name already matches, high
+// pdb params: apItem1, apItem2
+int __cdecl InventoryList_SortByQty(FUN_00719ca0_cls* apItem1, FUN_00719ca0_cls* apItem2)
 {
-    if (apLeft->GetKey() < apRight->GetKey())
+    if (apItem1->GetKey() < apItem2->GetKey())
     {
         return -1;
     }
     else
     {
-        if (apLeft->GetKey() > apRight->GetKey())
+        if (apItem1->GetKey() > apItem2->GetKey())
         {
             return 1;
         }
@@ -1468,12 +1569,15 @@ struct SrcObj
 
 // @fnv 0x00719cf0
 // src: COMMUNITY 0x00719cf0
-int __cdecl InventoryList_SortByHealth(SrcObj* apSrcObjA, SrcObj* apSrcObjB)
+// pdb: InventoryList::SortByHealth | InventoryList.obj | retail, upstream name already matches, high
+// pdb params: apItem1, apItem2
+// pdb locals: phealth_2, phealth_1
+int __cdecl InventoryList_SortByHealth(SrcObj* apItem1, SrcObj* apItem2)
 {
     TESHealthForm* y;
     TESHealthForm* x;
-    x = dynamic_cast<TESHealthForm*>(apSrcObjA->FUN_0044ddc0());
-    y = dynamic_cast<TESHealthForm*>(apSrcObjB->FUN_0044ddc0());
+    x = dynamic_cast<TESHealthForm*>(apItem1->FUN_0044ddc0());
+    y = dynamic_cast<TESHealthForm*>(apItem2->FUN_0044ddc0());
     if (x->GetHealth() < y->GetHealth())
     {
         return -1;
@@ -1503,6 +1607,9 @@ struct FUN_0071dec0 : FUN_0071dec0_Base
 };
 
 // @fnv 0x0071dec0
+// pdb: NiTPointerListBase<DFALL<NiTListItem<BSStringT<char> > >,BSStringT<char> >::AddHead | MenuConsole.obj | debug, object-file run extension, low
+// pdb params: element
+// pdb locals: pkNode
 FUN_0071dec0::~FUN_0071dec0()
 {
     RemoveAll();
@@ -1510,7 +1617,7 @@ FUN_0071dec0::~FUN_0071dec0()
 
 struct FUN_00501c10_Class
 {
-    void __thiscall CallAndReturnSelf(int value);
+    void __thiscall CallAndReturnSelf(int arString);
 };
 
 struct FUN_0071df60_Class
@@ -1523,6 +1630,8 @@ struct FUN_0071df60_Class
 // Retrieves an object via FUN_0071e0d0, passes value to the object at offset 8, then forwards the object to FUN_00559a70.
 // @fnv 0x0071df60
 // src: COMMUNITY 0x0071df60
+// pdb: NiTPointerListBase<DFALL<NiTListItem<BSStringT<char> > >,BSStringT<char> >::Get | MenuConsole.obj | debug, object-file run extension, low
+// pdb params: kPos
 void __thiscall FUN_0071df60_Class::NiTPointerListBase_DFALL_NiTListItem_BSStringT_char_BSStringT_char_AddTail(int value)
 {
     void* result = this->TextNode_Create_();
@@ -1557,12 +1666,14 @@ class C71DFA0StringQueue
     C71DFA0Node* m_pkTail;
     unsigned int m_uiCount;
 
-    void FreeNode(C71DFA0Node* pkNode);
+    void FreeNode(C71DFA0Node* pkItem);
     C71DFA0String PopFront();
 };
 
 // Removes the head node from the queue, copies its string value, frees the node, decrements the count and returns the value.
 // @fnv 0x0071dfa0
+// pdb: NiTPointerListBase<DFALL<NiTListItem<BSStringT<char> > >,BSStringT<char> >::RemoveHead | MenuConsole.obj | debug, call graph (shared callers), high
+// pdb locals: pkNode, element
 C71DFA0String C71DFA0StringQueue::PopFront()
 {
     C71DFA0Node* pkNode = m_pkHead;
@@ -1591,6 +1702,7 @@ struct Factory_0071e120
 };
 // Allocates and constructs a new FUN_0071e1e0 object, returning its pointer.
 // @fnv 0x0071e120
+// pdb: DFALL<NiTListItem<BSStringT<char> > >::Allocate | MenuConsole.obj | debug, object-file gap fill, medium
 FUN_0071e1e0* Factory_0071e120::CreateInstance()
 {
     return new FUN_0071e1e0;
@@ -1650,7 +1762,7 @@ void __cdecl ourMemset(void* p, int value, unsigned int size);
 class GlobalTaskQueue
 {
   public:
-    void Submit(int a, int b);
+    void Submit(int apString, int aiMaxLen);
 };
 
 extern GlobalTaskQueue g_taskQueue;
@@ -1719,6 +1831,7 @@ void __cdecl NiTMallocInterface_unsigned_int_Deallocate(void*);
 
 // @fnv 0x00700500
 // src: GUESS 0x00700500 (confidence: low)
+// pdb: NiTArray<BGSMenuPacker::PackedMenu *,NiTMallocInterface<BGSMenuPacker::PackedMenu *> >::~NiTArray<BGSMenuPacker::PackedMenu *,NiTMallocInterface<BGSMenuPacker::PackedMenu *> > | BGSMenuPacker.obj | debug, object-file gap fill, medium
 void FUN_007004e0_class::UpdateFields_00700500()
 {
     ((StandIn_700500*)this)->m_ppVirtualMethodTable = &DAT_0106e8dc;
@@ -1754,27 +1867,30 @@ struct DbgFontMgr
 struct DbgColor;
 struct DbgText
 {
-    static DbgText* __cdecl Instance(bool create);
-    int Print(const char* text, float x, float y, int a, int b, float dur, int c, const DbgColor* color);
+    static DbgText* __cdecl Instance(bool abCreate);
+    int Print(const char* apText, float afX, float afY, int aiJustify, int aiLine_num, float afDie, int aiFont, const DbgColor* apColor);
 };
 
 static const char kRefFmt[] = "\"%s\" (%08x)";
 
 // @fnv 0x007031e0
 // src: XBOX_PDB 0x007031e0
-void Interface_SetTargetREFR(DbgRef* ref)
+// pdb: Interface::SetTargetREFR | Interface.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: xMessage, ifontHeight, inameLoc
+void Interface_SetTargetREFR(DbgRef* apRef)
 {
     if (GetDbgIface() && GetDbgIface()->IsDebugTextOn())
     {
         BSStringT<char> text;
-        if (ref)
+        if (apRef)
         {
-            text.PrintfString(kRefFmt, ref->GetFullName(), ref->GetRefID());
+            text.PrintfString(kRefFmt, apRef->GetFullName(), apRef->GetRefID());
             int height = (int)DbgFontMgr::Instance()->GetFont(*g_fontSetting.Int() - 1)->GetLineHeight() + 3;
             int x = *g_debugTextX.Int();
             DbgText::Instance(true)->Print(text.String(), 640.0f, (float)x, 2, -1, -1.0f, 0, 0);
         }
-        GetDbgIface()->SetDebugRef(ref);
+        GetDbgIface()->SetDebugRef(apRef);
     }
 }
 
@@ -1786,7 +1902,10 @@ extern "C" void* __cdecl Tile_GetMenuByClass(int);
 
 // If a modifier key is held, looks up tile 0x3f1's menu as a DialogMenu and returns its cast sound, otherwise null.
 // @fnv 0x00705190
-TESSound* GetDialogCastSound()
+// src: XBOX_RETAIL_PDB 0x00705190
+// pdb: Interface::InDialogWith | Interface.obj | retail, object-file run extension, high
+// pdb locals: pmenu, ptile
+TESSound* Interface_InDialogWith()
 {
     if (InterfaceManager_GetSingleton() && ((Modifier*)InterfaceManager_GetSingleton())->GetKey())
     {
@@ -1836,12 +1955,15 @@ struct ConsoleText
     int currentLine;
     void WriteLine(const char*);
     void DrawConsoleLines();
-    void Console_Print(const char*, char*);
+    void MenuConsole_PrintLine(const char*, char*);
 };
 // Formats the text, appends it to the console line queue, wraps it into lines using the console font, and trims overflow lines.
 // @fnv 0x0071d0a0
-// src: COMMUNITY 0x0071d0a0
-void ConsoleText::Console_Print(const char* format, char* arguments)
+// src: XBOX_DEBUG_PDB 0x0071d0a0
+// pdb: MenuConsole::PrintLine | MenuConsole.obj | debug, call graph (shared callers), high
+// pdb params: apString, axList
+// pdb locals: pstring, iwidth, pstring_start, xstring, inum_lines, iheight, b, a, bat_end, psave_me
+void ConsoleText::MenuConsole_PrintLine(const char* format, char* arguments)
 {
     if (FUN_00705ea0() && !StartMenu_MainMenuIsActive())
         return;
@@ -2083,6 +2205,7 @@ class FUN_0071f340 : public Menu
 };
 // Zeroes the unk90 block, initializes unk74, unk78, unk80, unk7C, unk2A1 and unk2A0 to zero.
 // @fnv 0x0071f340
+// pdb: StatsMenu::StatsMenu | MenuManager.obj | debug, call graph, high
 FUN_0071f340::FUN_0071f340()
 {
     ourMemset(&unk90, 0, sizeof(unk90));
@@ -2104,10 +2227,10 @@ class List71F
     List71F* m_pkNext;
 };
 
-class FUN_0071f570_ModelList
+class NamedEffectsList
 {
   public:
-    virtual ~FUN_0071f570_ModelList();
+    virtual ~NamedEffectsList();
 
     void Clear();
 
@@ -2115,7 +2238,8 @@ class FUN_0071f570_ModelList
 };
 
 // @fnv 0x0071f570
-FUN_0071f570_ModelList::~FUN_0071f570_ModelList()
+// pdb: StatsMenu::NamedEffectsList::~NamedEffectsList | MenuManager.obj | debug, call graph (shared callers), low
+NamedEffectsList::~NamedEffectsList()
 {
     Clear();
 }
@@ -2133,6 +2257,7 @@ struct FUN_0071f600 : Base
 };
 
 // @fnv 0x0071f600
+// pdb: StatsMenu::StatusEffectList::~StatusEffectList | MenuManager.obj | debug, call graph (shared callers), low
 FUN_0071f600::~FUN_0071f600()
 {
     StatsMenu_StatusEffectList_Flush();
@@ -2212,6 +2337,8 @@ class FUN_0071fbf0 : public Menu
     FUN_0071fbf0();
 };
 // @fnv 0x0071fbf0
+// pdb: SurgeryMenu::SurgeryMenu | MenuManager.obj | debug, call graph, medium
+// pdb locals: i
 FUN_0071fbf0::FUN_0071fbf0() : nodef0(0), nodef4(0)
 {
     ourMemset(&tile2c, 0, 0x48);
@@ -2253,7 +2380,7 @@ FUN_0071fbf0::FUN_0071fbf0() : nodef0(0), nodef4(0)
 struct ScopedMenuAccess
 {
     int handle;
-    ScopedMenuAccess(int kind, int enabled, const char* fileName, int line);
+    ScopedMenuAccess(int memContext, int overridable, const char* fileName, int aiLine);
     ~ScopedMenuAccess();
 };
 struct MenuFrame;
@@ -2323,6 +2450,8 @@ MenuComponent* __stdcall BSShaderManager_GetImageSpaceManager(int);
 bool __cdecl InterfaceManager_Has360Controller();
 
 // @fnv 0x00711ea0
+// pdb: InterfaceManager::PostIdleStuff | InterfaceManager.obj | debug, object-file run extension, low
+// pdb locals: xelem, tempMemContext, pcontrols, pmenutile, pmenu, xstate, isecond, itop, ffadecounter, ifirst, bexpired, bUpdateShader
 void MenuState::UpdateMenuSelection()
 {
     ScopedMenuAccess scope(13, 1, &DAT_0106ef50, 0xca1);
@@ -2532,6 +2661,8 @@ class Owner7164
 };
 // @fnv 0x00716450
 // src: COMMUNITY 0x00716450
+// pdb: InterfaceManager::FreeTimerList | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: ptimer, ptemp
 void Owner7164::InterfaceManager_FreeTimerList()
 {
     ListNode7164* node = m_kNode->m_next;
@@ -2556,6 +2687,8 @@ class FUN_0071f930
 
 // Removes all elements from each of the six BSSimpleList<int> members in m_akLists.
 // @fnv 0x0071f930
+// pdb: StatsMenu::BodyPartController::~BodyPartController | MenuManager.obj | debug, object-file run extension, low
+// pdb locals: i
 FUN_0071f930::~FUN_0071f930()
 {
     for (int i = 0; i < 6; i++)
@@ -2583,51 +2716,55 @@ bool InterfaceManager_Has360Controller();
 int BSstristr(const char*, const char*);
 // Looks up a setting for control and copies its string into output; if prefix is set, rewrites output as '%s %s' with a prefix string and that text.
 // @fnv 0x007039b0
-void __cdecl GetControlLabel(int control, char* output, bool prefix)
+// src: XBOX_RETAIL_PDB 0x007039b0
+// pdb: Interface::GetControlPushTextFor | Interface.obj | retail, string-set bridge, high
+// pdb params: aiIndex, axReturn, abAddPushText
+// pdb locals: pbuttonSetting, xtemp
+void __cdecl Interface_GetControlPushTextFor(int aiIndex, char* axReturn, bool abAddPushText)
 {
-    if (control < 0 || control > 28)
+    if (aiIndex < 0 || aiIndex > 28)
         return;
     InventoryMenuSetting* setting = 0;
-    *output = 0;
+    *axReturn = 0;
     if (InterfaceManager_Has360Controller())
     {
-        setting = DAT_011d5268[reinterpret_cast<FUN_00703be0_Class*>(g_osGlobals->Main_GetControls())->GetByteAt(control, 3)];
+        setting = DAT_011d5268[reinterpret_cast<FUN_00703be0_Class*>(g_osGlobals->Main_GetControls())->GetByteAt(aiIndex, 3)];
     }
     else
     {
-        unsigned char key = reinterpret_cast<FUN_00703be0_Class*>(g_osGlobals->Main_GetControls())->GetByteAt(control, 1);
+        unsigned char key = reinterpret_cast<FUN_00703be0_Class*>(g_osGlobals->Main_GetControls())->GetByteAt(aiIndex, 1);
         if (key >= 0 && key < 9)
         {
             setting = DAT_011d5240[key];
         }
         else
         {
-            key = reinterpret_cast<FUN_00703be0_Class*>(g_osGlobals->Main_GetControls())->GetByteAt(control, 0);
+            key = reinterpret_cast<FUN_00703be0_Class*>(g_osGlobals->Main_GetControls())->GetByteAt(aiIndex, 0);
             if (key >= 0 && key < 238)
             {
                 setting = DAT_011d52f0[key];
             }
             else
             {
-                key = reinterpret_cast<FUN_00703be0_Class*>(g_osGlobals->Main_GetControls())->GetByteAt(control, 2);
+                key = reinterpret_cast<FUN_00703be0_Class*>(g_osGlobals->Main_GetControls())->GetByteAt(aiIndex, 2);
                 if (key >= 0 && key < 8)
                     setting = DAT_011d51b0[key];
             }
         }
     }
     if (setting && setting->FUN_00403df0())
-        ourStrcpy(output, setting->FUN_00403df0());
-    if (prefix)
+        ourStrcpy(axReturn, setting->FUN_00403df0());
+    if (abAddPushText)
     {
         BSStringT<char> text;
-        if (*output)
-            text = output;
+        if (*axReturn)
+            text = axReturn;
         else
             text = g_011d37b0.FUN_00403df0();
         if (setting && setting->name && BSstristr(setting->name, "trigger"))
-            sprintf(output, "%s %s", g_011d4a08.FUN_00403df0(), text.String());
+            sprintf(axReturn, "%s %s", g_011d4a08.FUN_00403df0(), text.String());
         else
-            sprintf(output, "%s %s", g_011d3fc4.FUN_00403df0(), text.String());
+            sprintf(axReturn, "%s %s", g_011d3fc4.FUN_00403df0(), text.String());
     }
 }
 
@@ -2641,6 +2778,9 @@ struct FUN_0071dd90_shell
 
 // If the path at offset 0x810 is non-empty and apText is not, opens it as a BSFile, seeks, and writes apText followed by CRLF.
 // @fnv 0x0071dd90
+// pdb: MenuConsole::WriteToOutputFile | MenuConsole.obj | debug, object-file run extension, low
+// pdb params: apOutText
+// pdb locals: outfile, ilen
 void FUN_0071dd90_shell::WriteLine(const char* apText)
 {
     if (!*((char*)this + 0x810))
@@ -2666,6 +2806,7 @@ struct FUN_0071e1e0_cls
 
 // @fnv 0x0071e1e0
 // src: GUESS 0x0071e1e0 (confidence: low)
+// pdb: DFALL<NiTListItem<BSStringT<char> > >::AllocNode::AllocNode | MenuConsole.obj | debug, object-file run extension, low
 FUN_0071e1e0_cls* FUN_0071e1e0_cls::ProcessAndReturnValue_0071e1e0()
 {
     Step();
@@ -2676,11 +2817,11 @@ extern int DAT_011dea3c;
 extern void* DAT_011c3b3c;
 
 void* __cdecl FUN_004bf220(int arg);
-void* __cdecl GetBipedModelTextureSwap(unsigned int a, int b);
+void* __cdecl TESBipedModelForm_GetBipedTESModel(unsigned int apObj, int apRef);
 
 struct GameObjStub
 {
-    void* FindEntryWithExtraListType(int index);
+    void* InventoryChanges_GetHotKeyItem(int aiKey);
     unsigned int FUN_0044ddc0();
 };
 
@@ -2705,17 +2846,19 @@ class FUN_00701520_cls
 // For each of 8 slots, resolves an object via FUN_00481090 or a TESModelTextureSwap cast and passes its model path to DAT_011c3b3c->FUN_0045a5e0.
 // @fnv 0x00701520
 // src: GUESS 0x00701520 (confidence: medium)
+// pdb: HotKeysWheel::~HotKeysWheel | HotKeysWheel.obj | debug, call graph, medium
+// pdb locals: pinventory, n, poldHotkeyItem, pmodel
 void FUN_00701520_cls::ProcessModelPaths()
 {
     void* a = FUN_004bf220(DAT_011dea3c);
 
     for (int i = 0; i < 8; i++)
     {
-        void* b = ((GameObjStub*)a)->FindEntryWithExtraListType(i);
+        void* b = ((GameObjStub*)a)->InventoryChanges_GetHotKeyItem(i);
 
         if (b != 0 && ((GameObjStub*)b)->FUN_0044ddc0() != 0)
         {
-            void* c = GetBipedModelTextureSwap(((TESObjectREFR_GetFlags_Helper*)b)->CallGetFlags(), DAT_011dea3c);
+            void* c = TESBipedModelForm_GetBipedTESModel(((TESObjectREFR_GetFlags_Helper*)b)->CallGetFlags(), DAT_011dea3c);
 
             if (c == 0)
             {

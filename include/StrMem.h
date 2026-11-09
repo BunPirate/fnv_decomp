@@ -12,7 +12,7 @@ public:
     StrMem(const char* s);
     ~StrMem();
 
-    bool Set(const char* source, unsigned int requested);
+    bool Set(const char* apString, unsigned int aiMaxLen);
     void SetLength(unsigned int n);
     void SetCapacity(unsigned int n);
     void SetMaxLength(unsigned int n);

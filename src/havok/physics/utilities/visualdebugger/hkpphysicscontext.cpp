@@ -15,49 +15,50 @@ extern "C" void* const DAT_010cb1e4[];
 // src/havok/physics/utilities/visualdebugger/hkpphysicscontext.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/utilities/visualdebugger/hkpphysicscontext.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-void __cdecl Object_UpdateFields_00d6ad40();
-void __cdecl hkpMidphaseViewer_Create_SetDAT01269024();
-void __cdecl RegisterCenterOfMass();
-void __cdecl RegisterConstraintsProcessFactory();
-void __cdecl RegisterConvexRadius();
-void __cdecl RegisterContactPointsActive();
-void __cdecl RegisterContactPointsInactive();
-void __cdecl DispatchStateHandler();
-void __cdecl RegisterToiCounter();
-void __cdecl RegisterInertiaTensors();
-void __cdecl RegisterMousePicking();
-void __cdecl RegisterPhantomsProcess();
-void __cdecl RegisterShapesProcess();
+void __cdecl hkpBroadphaseViewer_registerViewer();
+void __cdecl hkpMidphaseViewer_registerViewer();
+void __cdecl hkpRigidBodyCentreOfMassViewer_registerViewer();
+void __cdecl hkpConstraintViewer_registerViewer();
+void __cdecl hkpConvexRadiusViewer_registerViewer();
+void __cdecl hkpActiveContactPointViewer_registerViewer();
+void __cdecl hkpInactiveContactPointViewer_registerViewer();
+void __cdecl hkpToiContactPointViewer_registerViewer();
+void __cdecl hkpToiCountViewer_registerViewer();
+void __cdecl hkpRigidBodyInertiaViewer_registerViewer();
+void __cdecl hkpMousePickingViewer_registerViewer();
+void __cdecl hkpPhantomDisplayViewer_registerViewer();
+void __cdecl hkpShapeDisplayViewer_registerViewer();
 void __cdecl hkpSimulationIslandViewer_registerViewer();
-void __cdecl RegisterSweptTransformsTask();
-void __cdecl Object_UpdateFields_00d63da0();
-void __cdecl InitWorldMemory();
-void __cdecl RegisterSnapshotCommands();
-void __cdecl RegisterWeldingViewer();
+void __cdecl hkpSweptTransformDisplayViewer_registerViewer();
+void __cdecl hkpVehicleViewer_registerViewer();
+void __cdecl hkpWorldMemoryViewer_registerViewer();
+void __cdecl hkpWorldSnapshotViewer_registerViewer();
+void __cdecl hkpWeldingViewer_registerViewer();
 
 // @fnv 0x00cd1ed0
 // src: XBOX_PDB 0x00cd1ed0
+// pdb: hkpPhysicsContext::registerAllPhysicsProcesses | hkpPhysicsContext.obj | retail, upstream name already matches, high
 void __cdecl hkpPhysicsContext_registerAllPhysicsProcesses()
 {
-    Object_UpdateFields_00d6ad40();
-    hkpMidphaseViewer_Create_SetDAT01269024();
-    RegisterCenterOfMass();
-    RegisterConstraintsProcessFactory();
-    RegisterConvexRadius();
-    RegisterContactPointsActive();
-    RegisterContactPointsInactive();
-    DispatchStateHandler();
-    RegisterToiCounter();
-    RegisterInertiaTensors();
-    RegisterMousePicking();
-    RegisterPhantomsProcess();
-    RegisterShapesProcess();
+    hkpBroadphaseViewer_registerViewer();
+    hkpMidphaseViewer_registerViewer();
+    hkpRigidBodyCentreOfMassViewer_registerViewer();
+    hkpConstraintViewer_registerViewer();
+    hkpConvexRadiusViewer_registerViewer();
+    hkpActiveContactPointViewer_registerViewer();
+    hkpInactiveContactPointViewer_registerViewer();
+    hkpToiContactPointViewer_registerViewer();
+    hkpToiCountViewer_registerViewer();
+    hkpRigidBodyInertiaViewer_registerViewer();
+    hkpMousePickingViewer_registerViewer();
+    hkpPhantomDisplayViewer_registerViewer();
+    hkpShapeDisplayViewer_registerViewer();
     hkpSimulationIslandViewer_registerViewer();
-    RegisterSweptTransformsTask();
-    Object_UpdateFields_00d63da0();
-    InitWorldMemory();
-    RegisterSnapshotCommands();
-    RegisterWeldingViewer();
+    hkpSweptTransformDisplayViewer_registerViewer();
+    hkpVehicleViewer_registerViewer();
+    hkpWorldMemoryViewer_registerViewer();
+    hkpWorldSnapshotViewer_registerViewer();
+    hkpWeldingViewer_registerViewer();
 }
 
 struct Owner
@@ -151,19 +152,21 @@ struct Owner
 };
 struct Sub
 {
-    void DispatchEventToOwner(Event* e);
+    void DispatchEventToOwner(Event* constraint);
 };
 
 // If the event's object exists and its GetType() is not 11, forwards the event to the owner stored before this sub-object.
 // @fnv 0x00cd1ff0
-void Sub::DispatchEventToOwner(Event* pEvent)
+// pdb: hkpPhysicsContext::constraintRemovedCallback | hkpPhysicsContext.obj | retail, vtable slot, high
+// pdb params: constraint
+void Sub::DispatchEventToOwner(Event* constraint)
 {
     Owner* owner = *(Owner**)((char*)this - 0x58);
     if (owner)
     {
-        Obj* o = pEvent->obj;
+        Obj* o = constraint->obj;
         if (o && o->GetType() != 11)
-            (*(Owner**)((char*)this - 0x58))->UntrackObject(pEvent);
+            (*(Owner**)((char*)this - 0x58))->UntrackObject(constraint);
     }
 }
 }  // namespace fnv_00cd1ff0
@@ -265,7 +268,7 @@ struct Prefix
     unsigned int f4c;
     unsigned int f50;
     unsigned int f54;
-    int __thiscall hkpPhysicsContext_removeWorld(int value);
+    int __thiscall hkpPhysicsContext_removeWorld(int oldWorld);
 };
 struct FUN_00cd2460_class;
 struct Secondary
@@ -291,7 +294,7 @@ struct AllocatorState
     void* allocator;
 };
 extern AllocatorState* __cdecl hkMemoryRouter_getInstance();
-extern void __cdecl ResizeAudioStream(void* allocator, void* array, int elementSize);
+extern void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct PointerArray
 {
     void** data;
@@ -338,6 +341,8 @@ struct Candidate
 };
 // Searches items for value and returns its index; if absent, appends value to items and returns the new slot pointer.
 // @fnv 0x00cd2470
+// pdb: hkpPhysicsContext::addWorldAddedListener | hkpPhysicsContext.obj | retail, object-file run extension, low
+// pdb params: cb
 void* Candidate::FindOrAddPointer(void* value)
 {
     PointerArray* array = &items;
@@ -389,35 +394,36 @@ extern void* __cdecl hkMemoryRouter_getInstance();
 }  // namespace fnv_00cd27f0
 
 // @fnv 0x00cd27f0
+// pdb: hkProcessContext::~hkProcessContext | hkpPhysicsContext.obj | retail, upstream name already matches, high
 hkProcessContext::~hkProcessContext() throw()
 {
     using namespace fnv_00cd27f0;
     Holder* holder = (Holder*)fnv_00cd27f0::hkMemoryRouter_getInstance();
     Device* device = holder->device;
-    int count = m_2c.capacityAndFlags;
-    *(volatile int*)&m_2c.size = 0;
+    int count = m_monitorStreamEnds.capacityAndFlags;
+    *(volatile int*)&m_monitorStreamEnds.size = 0;
     if ((unsigned int)count & 0x80000000)
         goto skipFirstRelease;
     {
         unsigned int bytes = (count & 0x3fffffff) * 4;
-        device->Release((void*)m_2c.data, bytes);
+        device->Release((void*)m_monitorStreamEnds.data, bytes);
     }
 skipFirstRelease:
-    m_2c.data = 0;
-    m_2c.capacityAndFlags = 0x80000000;
+    m_monitorStreamEnds.data = 0;
+    m_monitorStreamEnds.capacityAndFlags = 0x80000000;
     holder = (Holder*)fnv_00cd27f0::hkMemoryRouter_getInstance();
     device = holder->device;
-    int secondCount = m_08.capacityAndFlags;
-    m_08.size = 0;
+    int secondCount = m_monitorStreamBegins.capacityAndFlags;
+    m_monitorStreamBegins.size = 0;
     if ((unsigned int)secondCount & 0x80000000)
         goto skipSecondRelease;
     {
         unsigned int bytes = (secondCount & 0x3fffffff) * 4;
-        device->Release((void*)m_08.data, bytes);
+        device->Release((void*)m_monitorStreamBegins.data, bytes);
     }
 skipSecondRelease:
-    m_08.data = 0;
-    m_08.capacityAndFlags = 0x80000000;
+    m_monitorStreamBegins.data = 0;
+    m_monitorStreamBegins.capacityAndFlags = 0x80000000;
 }
 
 namespace fnv_00cd2900 {
@@ -445,6 +451,7 @@ struct FUN_00cd2900_owner
 };
 // Calls FUN_00cd2690, and if bit 0 of flags is set, deletes this via the manager's deleteObject interface, then returns this.
 // @fnv 0x00cd2900
+// pdb: hkpPhysicsContext::`scalar deleting destructor' | hkpPhysicsContext.obj | retail, vtable slot, high
 void* FUN_00cd2900_owner::DestroyIfFlagged(unsigned flags)
 {
     FUN_00cd2690();
@@ -622,17 +629,19 @@ class CD1FB0Secondary
 class CD1FB0World : public CD1FB0Primary, public CD1FB0Secondary
 {
   public:
-    virtual void CollectConstraints(CD1FB0Stats* stats);
+    virtual void CollectConstraints(CD1FB0Stats* constraint);
 };
 
 // @fnv 0x00cd1fb0
-void CD1FB0World::CollectConstraints(CD1FB0Stats* stats)
+// pdb: hkpPhysicsContext::constraintAddedCallback | hkpPhysicsContext.obj | retail, vtable slot, high
+// pdb params: constraint
+void CD1FB0World::CollectConstraints(CD1FB0Stats* constraint)
 {
     if (m_ppConstraints)
     {
-        CD1FB0Collector* collector = stats->m_kCollector;
+        CD1FB0Collector* collector = constraint->m_kCollector;
         if (collector && collector->getType() != 11)
-            m_ppConstraints->AddStat(stats, g_CD1FB0Parent, "Constraints", 0);
+            m_ppConstraints->AddStat(constraint, g_CD1FB0Parent, "Constraints", 0);
     }
 }
 
@@ -722,10 +731,10 @@ struct S_00cd2080_Lists
 
 struct S_00cd2080_Param
 {
-    void hkpWorld_removeEntityListener(void* listener) throw();
-    void hkpWorld_removePhantomListener(void* listener) throw();
-    void hkpWorld_removeActionListener(void* listener) throw();
-    void hkpWorld_removeConstraintListener(void* listener) throw();
+    void hkpWorld_removeEntityListener(void* worldListener) throw();
+    void hkpWorld_removePhantomListener(void* worldListener) throw();
+    void hkpWorld_removeActionListener(void* worldListener) throw();
+    void hkpWorld_removeConstraintListener(void* worldListener) throw();
     S_00cd2080_Lists* hkpWorld_getWorldAsOneSystem() throw();
 };
 
@@ -765,33 +774,35 @@ struct S_00cd2080_Class
     int m_elementCount;
     int m_elementCapacity;
 
-    void hkpPhysicsContext_removeFromInspection(S_00cd2080_Param* param) throw();
+    void hkpPhysicsContext_removeFromInspection(S_00cd2080_Param* w) throw();
 };
 
 // @fnv 0x00cd2080
 // src: HAVOK_LIB 0x00cd2080
-void S_00cd2080_Class::hkpPhysicsContext_removeFromInspection(S_00cd2080_Param* param) throw()
+// pdb: hkpPhysicsContext::removeFromInspection | hkpPhysicsContext.obj | retail, upstream name already matches, high
+// pdb params: w
+void S_00cd2080_Class::hkpPhysicsContext_removeFromInspection(S_00cd2080_Param* w) throw()
 {
     if (!this->m_target)
         return;
-    if (!param)
+    if (!w)
         return;
 
     S_00cd2080_Listener* pListener0;
     S_00cd2080_Listener* pListener1;
     S_00cd2080_Listener* pListener3;
     S_00cd2080_Listener* pListener2;
-    param->hkpWorld_removeEntityListener(pListener0 = &this->m_listener0);
-    param->hkpWorld_removePhantomListener(pListener1 = &this->m_listener1);
-    param->hkpWorld_removeActionListener(pListener3 = &this->m_listener3);
-    param->hkpWorld_removeConstraintListener(pListener2 = &this->m_listener2);
+    w->hkpWorld_removeEntityListener(pListener0 = &this->m_listener0);
+    w->hkpWorld_removePhantomListener(pListener1 = &this->m_listener1);
+    w->hkpWorld_removeActionListener(pListener3 = &this->m_listener3);
+    w->hkpWorld_removeConstraintListener(pListener2 = &this->m_listener2);
 
     int idx;
     int count = this->m_paramCount;
     int i = 0;
     while (i < count)
     {
-        if (this->m_params[i] == param)
+        if (this->m_params[i] == w)
         {
             idx = i;
             goto done_search;
@@ -815,7 +826,7 @@ done_search:
         }
     }
 
-    S_00cd2080_Lists* lists = param->hkpWorld_getWorldAsOneSystem();
+    S_00cd2080_Lists* lists = w->hkpWorld_getWorldAsOneSystem();
     for (int iItem = 0; iItem < lists->m_0c; iItem++)
     {
         pListener0->onEvent((void*)lists->m_08[iItem]);
@@ -881,6 +892,8 @@ struct CD2210World
 
 // Finds the listener in the array and removes it if present.
 // @fnv 0x00cd2210
+// pdb: hkpPhysicsContext::removeWorldAddedListener | hkpPhysicsContext.obj | debug, call graph, medium
+// pdb params: cb
 void CD2210World::RemoveListener(CD2210Listener* listener)
 {
     int i = m_kListeners.indexOf(listener);
@@ -897,7 +910,7 @@ struct CD2260Interface
 
 struct CD2260Object
 {
-    void removeOwner(CD2260Interface* owner);
+    void removeOwner(CD2260Interface* worldListener);
 };
 
 struct CD2260Listener
@@ -950,22 +963,24 @@ class CD2260World : public CD2260Primary, public CD2260Interface
     int unk80;
     hkArrayBase<CD2260Listener*> m_kListeners;
 
-    void removeInternal(CD2260Object* object);
-    void hkpPhysicsContext_removeWorld(CD2260Object* object);
+    void removeInternal(CD2260Object* w);
+    void hkpPhysicsContext_removeWorld(CD2260Object* oldWorld);
 };
 
 // If object is in the array, removes this as its owner, notifies listeners via objectRemovedCallback, calls removeInternal and removes it from the array.
 // @fnv 0x00cd2260
 // src: HAVOK_LIB 0x00cd2260
-void CD2260World::hkpPhysicsContext_removeWorld(CD2260Object* object)
+// pdb: hkpPhysicsContext::removeWorld | hkpPhysicsContext.obj | retail, upstream name already matches, high
+// pdb params: oldWorld
+void CD2260World::hkpPhysicsContext_removeWorld(CD2260Object* oldWorld)
 {
-    int index = m_kTrackedObjects.indexOf(object);
+    int index = m_kTrackedObjects.indexOf(oldWorld);
     if (index >= 0)
     {
-        object->removeOwner(this);
+        oldWorld->removeOwner(this);
         for (int i = 0; i < m_kListeners.m_iElementCount; i++)
-            m_kListeners.m_data[i]->objectRemovedCallback(object);
-        removeInternal(object);
+            m_kListeners.m_data[i]->objectRemovedCallback(oldWorld);
+        removeInternal(oldWorld);
         m_kTrackedObjects.removeAt(index);
     }
 }
@@ -1009,12 +1024,12 @@ struct CD22Table
 struct CD22Registry
 {
     void IncrementCounter();
-    void hkpWorld_addEntityListener(void* p);
-    void hkpWorld_addPhantomListener(void* p);
-    void hkpWorld_addActionListener(void* p);
-    void hkpWorld_addConstraintListener(void* p);
+    void hkpWorld_addEntityListener(void* worldListener);
+    void hkpWorld_addPhantomListener(void* worldListener);
+    void hkpWorld_addActionListener(void* worldListener);
+    void hkpWorld_addConstraintListener(void* worldListener);
     CD22Table* hkpWorld_getWorldAsOneSystem();
-    void hkpWorld_getCinfo(CD22Elem* e);
+    void hkpWorld_getCinfo(CD22Elem* info);
     void hkpWorld_unlock();
 };
 
@@ -1023,7 +1038,7 @@ struct CD22Owner
     void AddElementAndNotify(CD22Elem* e, const char* d, const char* s, int z);
 };
 
-extern char DAT_01269104[];
+extern char hkpWorldCinfoClass[];
 extern char str_010cb20c[];
 
 struct CD22Object
@@ -1059,25 +1074,28 @@ struct CD22Object
     int unk70;
     int unk74;
     CD22Array m_78;
-    void RegisterWithRegistry(CD22Registry* reg);
+    void hkpPhysicsContext_addForInspection(CD22Registry* w);
 };
 
 extern AllocatorState* __cdecl hkMemoryRouter_getInstance();
-extern void __cdecl ResizeAudioStream(void* allocator, void* array, int elementSize);
+extern void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 // @fnv 0x00cd22f0
-void CD22Object::RegisterWithRegistry(CD22Registry* reg)
+// src: XBOX_RETAIL_PDB 0x00cd22f0
+// pdb: hkpPhysicsContext::addForInspection | hkpPhysicsContext.obj | retail, string-set bridge, high
+// pdb params: w
+void CD22Object::hkpPhysicsContext_addForInspection(CD22Registry* w)
 {
     if (m_0c == 0)
         return;
-    if (reg == 0)
+    if (w == 0)
         return;
 
-    reg->IncrementCounter();
-    reg->hkpWorld_addEntityListener(&m_5c);
-    reg->hkpWorld_addPhantomListener(&m_60);
-    reg->hkpWorld_addActionListener(&m_68);
-    reg->hkpWorld_addConstraintListener(&m_64);
+    w->IncrementCounter();
+    w->hkpWorld_addEntityListener(&m_5c);
+    w->hkpWorld_addPhantomListener(&m_60);
+    w->hkpWorld_addActionListener(&m_68);
+    w->hkpWorld_addConstraintListener(&m_64);
 
     CD22Array* pArray = &m_78;
     AllocatorState* holder = hkMemoryRouter_getInstance();
@@ -1094,14 +1112,14 @@ void CD22Object::RegisterWithRegistry(CD22Registry* reg)
 
     CD22Elem* e = (CD22Elem*)((char*)pArray->data + pArray->count * 0xf0);
     pArray->count++;
-    reg->hkpWorld_getCinfo(e);
+    w->hkpWorld_getCinfo(e);
 
     if (m_0c != 0)
     {
-        m_0c->AddElementAndNotify(e, DAT_01269104, str_010cb20c, 0);
+        m_0c->AddElementAndNotify(e, hkpWorldCinfoClass, str_010cb20c, 0);
     }
 
-    CD22Table* tbl = reg->hkpWorld_getWorldAsOneSystem();
+    CD22Table* tbl = w->hkpWorld_getWorldAsOneSystem();
     for (int i = 0; i < tbl->count0C; ++i)
     {
         ((CD22Listener*)&m_5c)->Notify(tbl->items08[i]);
@@ -1119,13 +1137,13 @@ void CD22Object::RegisterWithRegistry(CD22Registry* reg)
         ((CD22Listener*)&m_64)->Notify(tbl->items14[i]);
     }
     tbl->FUN_00c905b0();
-    reg->hkpWorld_unlock();
+    w->hkpWorld_unlock();
 }
 
 struct SpawnedCallee
 {
-    void hkpPhysicsContext_removeFromInspection(void* item);
-    void RegisterWithRegistry(void* item);
+    void hkpPhysicsContext_removeFromInspection(void* w);
+    void hkpPhysicsContext_addForInspection(void* w);
 };
 
 struct FUN_00cd24d0_cls
@@ -1158,13 +1176,15 @@ struct FUN_00cd24d0_cls
     void** m_64;
     int m_68;
 
-    void hkpPhysicsContext_setOwner(int value);
+    void hkpPhysicsContext_setOwner(int vdb);
 };
 
 // If m_04 was set, calls FUN_00cd2080 on each of m_68 entries in m_64, stores value in m_04, then calls RegisterWithRegistry on each entry when value is nonzero.
 // @fnv 0x00cd24d0
 // src: HAVOK_LIB 0x00cd24d0
-void FUN_00cd24d0_cls::hkpPhysicsContext_setOwner(int value)
+// pdb: hkpPhysicsContext::setOwner | hkpPhysicsContext.obj | retail, upstream name already matches, high
+// pdb params: vdb
+void FUN_00cd24d0_cls::hkpPhysicsContext_setOwner(int vdb)
 {
     if (m_04 != 0)
     {
@@ -1174,20 +1194,20 @@ void FUN_00cd24d0_cls::hkpPhysicsContext_setOwner(int value)
         }
     }
 
-    m_04 = value;
+    m_04 = vdb;
 
-    if (value != 0)
+    if (vdb != 0)
     {
         for (int i = 0; i < m_68; ++i)
         {
-            ((SpawnedCallee*)((char*)this - 8))->RegisterWithRegistry(m_64[i]);
+            ((SpawnedCallee*)((char*)this - 8))->hkpPhysicsContext_addForInspection(m_64[i]);
         }
     }
 }
 
 struct FUN_00c93a60_cls
 {
-    void hkpWorld_addWorldDeletionListener(void* param);
+    void hkpWorld_addWorldDeletionListener(void* worldListener);
 };
 
 struct Sink
@@ -1232,13 +1252,16 @@ struct FUN_00cd2530_cls
     Sink** m_sinks;
     int m_sinkCount;
 
-    void RegisterWithRegistry(int value);
-    void AddItem(int value);
+    void hkpPhysicsContext_addForInspection(int w);
+    void hkpPhysicsContext_addWorld(int newWorld);
 };
 
 // If value is not already in m_items, appends it, notifies each sink via vfunc04 and calls RegisterWithRegistry.
 // @fnv 0x00cd2530
-void FUN_00cd2530_cls::AddItem(int pItem)
+// src: XBOX_RETAIL_PDB 0x00cd2530
+// pdb: hkpPhysicsContext::addWorld | hkpPhysicsContext.obj | retail, object-file gap fill, high
+// pdb params: newWorld
+void FUN_00cd2530_cls::hkpPhysicsContext_addWorld(int newWorld)
 {
     PointerArray* items = &m_items;
     int count = items->count;
@@ -1248,7 +1271,7 @@ void FUN_00cd2530_cls::AddItem(int pItem)
         void** p = items->data;
         do
         {
-            if (*p == (void*)pItem)
+            if (*p == (void*)newWorld)
             {
                 goto found;
             }
@@ -1265,7 +1288,7 @@ found:
     }
 
 notFound:
-    FUN_00c93a60_cls* obj = (FUN_00c93a60_cls*)pItem;
+    FUN_00c93a60_cls* obj = (FUN_00c93a60_cls*)newWorld;
     FUN_00cd2530_cls* self = this;
     void* param = self != 0 ? (char*)self + 0x58 : 0;
     obj->hkpWorld_addWorldDeletionListener(param);
@@ -1278,15 +1301,15 @@ notFound:
     int n = *(int volatile*)&items->count;
     void** volatile* ppData = &items->data;
     void** slot = (*ppData) + n;
-    *slot = (void*)pItem;
+    *slot = (void*)newWorld;
     items->count++;
 
     for (int i = 0; i < m_sinkCount; ++i)
     {
-        m_sinks[i]->vfunc04(pItem);
+        m_sinks[i]->vfunc04(newWorld);
     }
 
-    RegisterWithRegistry(pItem);
+    hkpPhysicsContext_addForInspection(newWorld);
 }
 
 struct CD2890Class
@@ -1345,6 +1368,7 @@ struct FUN_00cd25d0 : hkReferencedObject,
 
 // Constructs the object; the base classes and member arrays are initialized by their own constructors.
 // @fnv 0x00cd25d0
+// pdb: hkpPhysicsContext::hkpPhysicsContext | hkpPhysicsContext.obj | retail, object-file gap fill, high
 FUN_00cd25d0::FUN_00cd25d0()
 {}
 
@@ -1430,7 +1454,7 @@ class FUN_00cd2690 : public hkReferencedObject,
   public:
     virtual ~FUN_00cd2690() throw();
 
-    void hkpPhysicsContext_removeWorld(void* pkObject);
+    void hkpPhysicsContext_removeWorld(void* oldWorld);
 
     hkArray<void*> m_kTrackedObjects;
     hkArray<ElementD269> m_elements;
@@ -1439,6 +1463,7 @@ class FUN_00cd2690 : public hkReferencedObject,
 
 // Destructor that iterates m_kTrackedObjects in reverse and calls FUN_00cd2260 on each element.
 // @fnv 0x00cd2690
+// pdb: hkpPhysicsContext::~hkpPhysicsContext | hkpPhysicsContext.obj | retail, object-file gap fill, high
 FUN_00cd2690::~FUN_00cd2690() throw()
 {
     for (int i = m_kTrackedObjects.GetLogicalSize() - 1; i >= 0; i--)
@@ -1489,16 +1514,19 @@ class OwnerCD2A
     int unk00[0x78 / 4];
     hkArray<EntryCD2A> m_entries;
 
-    ValueCD2A hkpWorldObject_removeProperty(int iKey);
+    ValueCD2A hkpWorldObject_removeProperty(int key);
 };
 
 // @fnv 0x00cd2a50
 // src: HAVOK_LIB 0x00cd2a50
-ValueCD2A OwnerCD2A::hkpWorldObject_removeProperty(int iKey)
+// pdb: hkpWorldObject::removeProperty | hkpWorldObject.obj | retail, upstream name already matches, high
+// pdb params: key
+// pdb locals: found, assertBuf, ostr
+ValueCD2A OwnerCD2A::hkpWorldObject_removeProperty(int key)
 {
     for (int i = 0; i < m_entries.GetLogicalSize(); i++)
     {
-        if (m_entries[i].m_key == iKey)
+        if (m_entries[i].m_key == key)
         {
             EntryCD2A kEntry = m_entries[i];
             m_entries.removeAtAndCopy(i);
@@ -1514,6 +1542,7 @@ struct FUN_00cd1e70
 };
 
 // @fnv 0x00cd1e70
+// pdb: hkpWorldDeletionListener::`scalar deleting destructor' | hkpPhysicsContext.obj | retail, vtable slot, high
 FUN_00cd1e70::~FUN_00cd1e70()
 {}
 
@@ -1524,6 +1553,7 @@ struct FUN_00cd1e90_cls
 };
 
 // @fnv 0x00cd1e90
+// pdb: hkpActionListener::`scalar deleting destructor' | hkpPhysicsContext.obj | retail, vtable slot, high
 FUN_00cd1e90_cls::~FUN_00cd1e90_cls()
 {}
 
@@ -1795,6 +1825,7 @@ struct FUN_00cd1eb0_StandIn
 extern void __cdecl FormHeapFreeAndLog_00401030(void* ptr);
 
 // @fnv 0x00cd1eb0
+// pdb: hkpConstraintListener::`scalar deleting destructor' | hkpPhysicsContext.obj | retail, vtable slot, high
 int __thiscall FUN_00cd1eb0_StandIn::FUN_00cd1eb0(int aiFlags)
 {
     unk00 = (int)DAT_010cb1e4;

@@ -72,6 +72,7 @@ struct __declspec(novtable) FUN_00e01900 : S_00e01900_Base
 };
 
 // @fnv 0x00e01900
+// pdb: hkxSparselyAnimatedString::~hkxSparselyAnimatedString | hkxSparselyAnimatedStringClass.obj | retail, object-file run extension, low
 FUN_00e01900::~FUN_00e01900() throw()
 {}
 
@@ -99,6 +100,7 @@ struct CpuObject
 };
 // Calls FUN_00e01900, then if bit 0 of flags is set, invokes the allocator's virtual method on this with size, and returns this.
 // @fnv 0x00e019a0
+// pdb: hkxSparselyAnimatedString::`scalar deleting destructor' | hkxSparselyAnimatedStringClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00e019a0(unsigned int flags)
 {
     FUN_00e01900();

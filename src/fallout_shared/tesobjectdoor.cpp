@@ -55,6 +55,7 @@ class TeleportableReference
     NiPoint3* GetPosition();
     NiPoint3* GetRotation();
 };
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:
@@ -87,34 +88,37 @@ extern "C" int sprintf_s(char*, unsigned int, const char*, ...);
 
 // Loads a TESObjectDOOR record from a TESFile, dispatching each chunk to the matching sub-record loader and returning false if the form type is not 28.
 // @fnv 0x005177f0
-bool TESObjectDOOR::Load(TESFile* file)
+// pdb: TESObjectDOOR::Load | TESObjectDOOR.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, tempint, itempint
+bool TESObjectDOOR::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 28)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
-    while (CHUNK_ID chunk = static_cast<CHUNK_ID>(file->GetChunkID()))
+    while (CHUNK_ID chunk = static_cast<CHUNK_ID>(apFile->GetChunkID()))
     {
         switch (chunk)
         {
         case 'DIDE': {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 512);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 'DNBO':
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 'LLUF':
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 'LDOM':
         case 'TDOM':
         case 'DDOM':
         case 'DSOM':
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 'SDOM': {
             struct
@@ -122,55 +126,55 @@ bool TESObjectDOOR::Load(TESFile* file)
                 unsigned int size;
                 void* data;
             } chunkData;
-            chunkData.size = file->GetChunkSize();
+            chunkData.size = apFile->GetChunkSize();
             chunkData.data = _alloca(chunkData.size);
-            file->GetChunkData(chunkData.data, chunkData.size);
-            ParseTextureSwapData(chunkData.data, chunkData.size, file->GetFormVersion());
+            apFile->GetChunkData(chunkData.data, chunkData.size);
+            UnpackTextureSwapChunkData(chunkData.data, chunkData.size, apFile->GetFormVersion());
             break;
         }
         case 'IRCS': {
             unsigned int scriptID = 0;
-            file->GetChunkData(&scriptID);
+            apFile->GetChunkData(&scriptID);
             SetScript(reinterpret_cast<Script*>(scriptID));
             TESScriptableForm::InitItem(this);
             break;
         }
         case 'TSED':
         case 'DTSD':
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 'MANS': {
             unsigned int soundID = 0;
-            file->GetChunkData(&soundID);
-            RemapFormIDForFile(soundID, file);
+            apFile->GetChunkData(&soundID);
+            RemapFormIDForFile(soundID, apFile);
             m_pOpenSound = dynamic_cast<TESSound*>(GetFormByID(soundID));
             break;
         }
         case 'MANA': {
             unsigned int soundID = 0;
-            file->GetChunkData(&soundID);
-            RemapFormIDForFile(soundID, file);
+            apFile->GetChunkData(&soundID);
+            RemapFormIDForFile(soundID, apFile);
             m_pSecondarySound = dynamic_cast<TESSound*>(GetFormByID(soundID));
             break;
         }
         case 'MANB': {
             unsigned int soundID = 0;
-            file->GetChunkData(&soundID);
-            RemapFormIDForFile(soundID, file);
+            apFile->GetChunkData(&soundID);
+            RemapFormIDForFile(soundID, apFile);
             m_pLoopingSound = dynamic_cast<TESSound*>(GetFormByID(soundID));
             break;
         }
         case 'MANF':
-            file->GetChunkData(&cFlags, 1);
+            apFile->GetChunkData(&cFlags, 1);
             break;
         case 'MANT': {
             unsigned int teleportID = 0;
-            file->GetChunkData(&teleportID);
+            apFile->GetChunkData(&teleportID);
             m_kRandomTeleportTargets.AddHead(reinterpret_cast<TESForm*>(teleportID));
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -178,6 +182,8 @@ bool TESObjectDOOR::Load(TESFile* file)
 
 // Initializes the door's scriptable, destructible and model forms, resolves random teleport form IDs and removes unresolved entries with a warning.
 // @fnv 0x005176b0
+// pdb: TESObjectDOOR::InitItem | TESObjectDOOR.obj | retail, string-set bridge, high
+// pdb locals: plist, plastlist, tempint, pform
 void TESObjectDOOR::InitItem()
 {
     if (static_cast<const TESForm*>(this)->GetInitialized())
@@ -223,6 +229,7 @@ void TESObjectDOOR::InitItem()
 }
 
 // @fnv 0x005173e0
+// pdb: TESObjectDOOR::TESObjectDOOR | TESObjectDOOR.obj | retail, upstream name already matches, high
 TESObjectDOOR::TESObjectDOOR()
 {
     SetFormType(ENUM_FORM_ID_DOOR_ID);
@@ -230,6 +237,10 @@ TESObjectDOOR::TESObjectDOOR()
 }
 
 // @fnv 0x00518f00
+// pdb: TESObjectDOOR::CanActorIgnoreLock | TESObjectDOOR.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ItemChange::ItemChange
+// pdb params: apDoorLock, apActor, apDoorRef, abactivate, abmovement
+// pdb locals: bretval
 bool TESObjectDOOR::ProcessDoorActivation(TESObjectREFR* door, Actor* actor, bool activate, bool movement)
 {
     DoorAccessData lock(door);
@@ -256,6 +267,7 @@ bool TESObjectDOOR::IsTeleportDoor()
 }
 
 // @fnv 0x00517610
+// pdb: TESObjectDOOR::ClearData | TESObjectDOOR.obj | debug, upstream name already matches, high
 void TESObjectDOOR::ClearData()
 {
     ClearRandomTeleportList();
@@ -313,6 +325,8 @@ struct bhkRigidBody_shell
 
 // @fnv 0x00517630
 // src: XBOX_PDB 0x00517630
+// pdb: bhkRigidBody::GetMotionType | TESObjectDOOR.obj | debug, upstream name already matches, high
+// pdb locals: pb
 int bhkRigidBody_shell::bhkRigidBody_GetMotionType()
 {
     hkpRigidBody* pb = Bipedanim_GetReferenceFlagsOrZero(this);
@@ -326,6 +340,7 @@ int __fastcall hkpMotion_getType(void* pThis);
 
 // @fnv 0x00517670
 // src: XBOX_PDB 0x00517670
+// pdb: hkpRigidBody::getMotionType | TESObjectDOOR.obj | debug, upstream name already matches, high
 int __fastcall hkpRigidBody_getMotionType(TESDataHandler* apDataHandler)
 {
     return hkpMotion_getType(apDataHandler->GetBGSRagdollList());
@@ -335,6 +350,7 @@ int __fastcall hkpRigidBody_getMotionType(TESDataHandler* apDataHandler)
 
 // @fnv 0x00517690
 // src: XBOX_PDB 0x00517690
+// pdb: hkpMotion::getType | TESObjectDOOR.obj | debug, upstream name already matches, high
 int __fastcall hkpMotion_getType(char* pThis)
 {
     return ((PackageTargetRecord*)(pThis + 8))->GetTargetKind();
@@ -458,6 +474,9 @@ struct ProcessVtbl0x128
 
 
 // @fnv 0x00518e60
+// pdb: TESObjectDOOR::CanActorIgnoreLock | TESObjectDOOR.obj | retail, object-file run extension, low
+// pdb params: apDoorLock, apActor, apDoorRef, abactivate, abmovement
+// pdb locals: bretval
 bool __cdecl CanActivateDoor(LockExtraData* apDoorLock, Actor* apActor, TESObjectREFR* apDoorRef, bool abactivate,
                              bool abmovement)
 {
@@ -488,6 +507,8 @@ struct BSXFlags_shell
 
 // @fnv 0x00519230
 // src: XBOX_PDB 0x00519230
+// pdb: BSXFlags::SetFlags | TESObjectDOOR.obj | debug, upstream name already matches, high
+// pdb params: aiFlags, abTF
 void BSXFlags_shell::BSXFlags_SetFlags(unsigned int aiFlags, bool abTF)
 {
     if (abTF)
@@ -548,6 +569,8 @@ struct Holder_004d9100
 };
 // @fnv 0x004d9100
 // src: GUESS 0x004d9100 (confidence: low)
+// pdb: NiTPrimitiveArray<char *>::NiTPrimitiveArray<char *> | TESScriptFunctions.obj | debug, call graph, medium
+// pdb params: uiMaxSize, uiGrowBy
 Holder_004d9100* Holder_004d9100::InitializeFields_004d9100(int aiArg1, int aiArg2)
 {
     ((Base_004d9210*)this)->FUN_004d9210(aiArg1, aiArg2);
@@ -558,6 +581,7 @@ Holder_004d9100* Holder_004d9100::InitializeFields_004d9100(int aiArg1, int aiAr
 void __cdecl _Deallocate(void*);
 // Calls FUN_00517500 on this, frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x005174d0
+// pdb: TESObjectDOOR::`scalar deleting destructor' | TESObjectDOOR.obj | retail, vtable slot, high
 void* __thiscall TESObjectDOOR::FUN_005174d0(unsigned int flags)
 {
     this->FUN_00517500();
@@ -608,6 +632,8 @@ struct DoorSave_shell
 };
 // Writes the door save record: calls each part's writer, emits form IDs for form78/form7c/form80 and flags, then walks the node list emitting each form ID.
 // @fnv 0x00517c30
+// pdb: TESObjectDOOR::Save | TESObjectDOOR.obj | retail, vtable slot, high
+// pdb locals: plist, itempint
 void DoorSave_shell::WriteSaveData()
 {
     DoorFormNode* pCurrentElementNext;
@@ -655,19 +681,22 @@ struct DoorTeleportNode
 
 struct DoorCompare_shell : public TESObjectDOOR
 {
-    bool TESForm_CompareAllComponents(TESForm* form);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
     TESSound* GetOpenSoundForm();
     TESSound* GetCloseSoundForm();
     TESSound* GetLoopSoundForm();
     DoorTeleportNode* GetTeleportList();
-    bool CompareDoor(TESForm* form);
+    bool CompareDoor(TESForm* apCompare);
 };
 
 // Compares this door against another TESObjectDOOR's sounds, flags and teleport list, returning true when they differ.
 // @fnv 0x00517e70
-bool DoorCompare_shell::CompareDoor(TESForm* form)
+// pdb: TESObjectDOOR::Compare | TESObjectDOOR.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp, pcomplist
+bool DoorCompare_shell::CompareDoor(TESForm* apCompare)
 {
-    DoorCompare_shell* door = (DoorCompare_shell*)dynamic_cast<TESObjectDOOR*>(form);
+    DoorCompare_shell* door = (DoorCompare_shell*)dynamic_cast<TESObjectDOOR*>(apCompare);
     if (!door)
         return true;
     if (TESForm_CompareAllComponents(door))
@@ -706,9 +735,12 @@ extern PlayerCharacter* DAT_011dea3c;
 S_00518f80_Ref* __cdecl TESObjectREFR_FindReferenceFor3D(unsigned int id);
 // @fnv 0x00518f80
 // src: XBOX_PDB 0x00518f80
-void __cdecl TESObjectDOOR_AutoDoorCallback(unsigned int uiRefId)
+// pdb: TESObjectDOOR::AutoDoorCallback | TESObjectDOOR.obj | retail, upstream name already matches, high
+// pdb params: apDoor3D
+// pdb locals: pdoorref, pprocess
+void __cdecl TESObjectDOOR_AutoDoorCallback(unsigned int apDoor3D)
 {
-    S_00518f80_Ref* ref = TESObjectREFR_FindReferenceFor3D(uiRefId);
+    S_00518f80_Ref* ref = TESObjectREFR_FindReferenceFor3D(apDoor3D);
     if (ref)
     {
         if (ref->BGSSaveFormBuffer_GetForm()->FUN_00401170() == 0x1c)
@@ -777,9 +809,12 @@ struct DoorCopy
 };
 // Copies the door node list, flags and open/close/loop sounds from the TESObjectDOOR cast of form into this door, then calls FUN_004851b0(form).
 // @fnv 0x00517d70
-void DoorCopy::CopyFromDoor(TESForm* form)
+// pdb: TESObjectDOOR::Copy | TESObjectDOOR.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pcopylist, pdoor
+void DoorCopy::CopyFromDoor(TESForm* apCopy)
 {
-    DoorCopy* source3 = reinterpret_cast<DoorCopy*>(dynamic_cast<TESObjectDOOR*>(form));
+    DoorCopy* source3 = reinterpret_cast<DoorCopy*>(dynamic_cast<TESObjectDOOR*>(apCopy));
     if (!source3)
         return;
     DoorCopyNode* destination = 0;
@@ -797,7 +832,7 @@ void DoorCopy::CopyFromDoor(TESForm* form)
     openSound = source3->GetEffectShader_00407820();
     closeSound = source3->FUN_00407840();
     loopSound = source3->FUN_004fb070();
-    TESForm_CopyAllComponents(form);
+    TESForm_CopyAllComponents(apCopy);
 }
 
 #include <float.h>
@@ -1298,27 +1333,30 @@ struct DoorActivation
 };
 // Handles activation of a door reference by an activator: checks teleport/lock state, opens or unlocks the door, plays sounds, and performs teleportation.
 // @fnv 0x005180b0
-bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activator, int arg3, int arg4, int arg5)
+// pdb: TESObjectDOOR::Activate | TESObjectDOOR.obj | retail, string-set bridge, high
+// pdb params: apItemActivated, apActionRef, abIdFlag, apObjecttoGet, aicount
+// pdb locals: pLock, eUseItem, pActionActor, pTel, pprocess, pteldoor, bignorelock, blockpick, fdoPunishment, pextralock, panim, pkeymessage, ptelcell, ptelworld, SoundHandle, loc, i, pac
+bool DoorActivation::ActivateDoor(TESObjectREFR* apItemActivated, TESObjectREFR* apActionRef, int abIdFlag, int apObjecttoGet, int aicount)
 {
-    if (!reference || reference->FUN_00477ba0())
+    if (!apItemActivated || apItemActivated->FUN_00477ba0())
         return false;
-    ActivateTeleport* teleport = ((ActivateTeleport*(__thiscall*)(TESObjectREFR*)) &GetDoorTeleportData)(reference);
-    ActivateLock* lockA = ((ActivateLock*(__thiscall*)(TESObjectREFR*)) &GetDoorLockData)(reference);
+    ActivateTeleport* teleport = ((ActivateTeleport*(__thiscall*)(TESObjectREFR*)) &GetDoorTeleportData)(apItemActivated);
+    ActivateLock* lockA = ((ActivateLock*(__thiscall*)(TESObjectREFR*)) &GetDoorLockData)(apItemActivated);
     if (!teleport && IsRandomDoor())
     {
-        TESObjectREFR* destination = FindRandomSelection(reference, activator);
+        TESObjectREFR* destination = FindRandomSelection(apItemActivated, apActionRef);
         if (!destination)
         {
             DispatchMessageToSink(DAT_011c9384.FUN_00403df0(), 0,
                                   "Interface\\Icons\\Message Icons\\glow_message_vaultboy_sad.dds", 0, 2.0f, 0);
             return false;
         }
-        TESObjectDOOR_LinkRandomTeleportDoors(reference, destination);
-        teleport = ((ActivateTeleport*(__thiscall*)(TESObjectREFR*)) &GetDoorTeleportData)(reference);
+        TESObjectDOOR_LinkRandomTeleportDoors(apItemActivated, destination);
+        teleport = ((ActivateTeleport*(__thiscall*)(TESObjectREFR*)) &GetDoorTeleportData)(apItemActivated);
         if (!teleport)
             return false;
     }
-    Actor* actor = dynamic_cast<Actor*>(activator);
+    Actor* actor = dynamic_cast<Actor*>(apActionRef);
     ActivateProcess* process1 = actor ? reinterpret_cast<ActivateProcess*>(actor->FUN_008d8520()) : 0;
     unsigned usedKey2;
     if (actor)
@@ -1327,7 +1365,7 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
             return false;
         if (actor == (TESObjectREFR*)DAT_011dea3c)
             DAT_011dea3c->activationState = 0;
-        bool alreadyOpen = FUN_00518f00(reference, actor, 1, 1);
+        bool alreadyOpen = FUN_00518f00(apItemActivated, actor, 1, 1);
         if (lockA && lockA->FUN_005021a0() && !alreadyOpen)
         {
             bool hasSkeleton = false;
@@ -1339,11 +1377,11 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
                 {
                     if (actor == (TESObjectREFR*)DAT_011dea3c)
                     {
-                        ExtraLock* statePart1 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(reference);
+                        ExtraLock* statePart1 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(apItemActivated);
                         float skillPart1 = 0.0f;
                         FUN_005e58f0(32, (TESObjectREFR*)DAT_011dea3c, &skillPart1);
                         if (statePart1 &&
-                            (statePart1->pLock->GetLockLevel(reinterpret_cast<TESObjectREFR*>(reference)) == 5 || statePart1->pLock->MeetsMinimumLockLevel()))
+                            (statePart1->pLock->GetLockLevel(reinterpret_cast<TESObjectREFR*>(apItemActivated)) == 5 || statePart1->pLock->MeetsMinimumLockLevel()))
                         {
                             DispatchMessageToSink(DAT_011d276c.FUN_00403df0(), 0,
                                                   "Interface\\Icons\\Message Icons\\glow_message_padlock.dds", 0, 2.0f,
@@ -1351,7 +1389,7 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
                             Interface_PlayMenuSound(18);
                         }
                         else
-                            Interface_CreateLockPickMenu(reference, 0, 0);
+                            Interface_CreateLockPickMenu(apItemActivated, 0, 0);
                         return false;
                     }
                     else if (!hasSkeleton)
@@ -1368,22 +1406,22 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
                         TESIdleManager_SetUsedItem((ActivateKey*)0);
                         TESIdleManager_SetUsedItemActivate(0);
                         TESIdleManager_SetUsedItemLevel(-1);
-                        ExtraLock* statePart2 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(reference);
+                        ExtraLock* statePart2 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(apItemActivated);
                         if (statePart2)
                         {
                             statePart2->FUN_00517360();
-                            reference->TESObjectREFR_AddLockChange();
+                            apItemActivated->TESObjectREFR_AddLockChange();
                         }
                     }
                 }
                 else if (actor == (TESObjectREFR*)DAT_011dea3c && !DAT_011c9350)
                 {
-                    DAT_011c9350 = (TESObjectREFR*)reference;
-                    ExtraLock* statePart3 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(reference);
+                    DAT_011c9350 = (TESObjectREFR*)apItemActivated;
+                    ExtraLock* statePart3 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(apItemActivated);
                     if (statePart3)
                     {
                         statePart3->FUN_00517360();
-                        reference->TESObjectREFR_AddLockChange();
+                        apItemActivated->TESObjectREFR_AddLockChange();
                     }
                     BSAudio::GetSingleton()->GetSoundHandleByEditorID("UILockpickingUnlock", 0x121).Play(false);
                     char message[256];
@@ -1400,18 +1438,18 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
             {
                 if (actor == (TESObjectREFR*)DAT_011dea3c)
                 {
-                    ExtraLock* statePart4 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(reference);
+                    ExtraLock* statePart4 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(apItemActivated);
                     float skillPart2_2 = 0.0f;
                     FUN_005e58f0(32, (TESObjectREFR*)DAT_011dea3c, &skillPart2_2);
                     if (statePart4 &&
-                        (statePart4->pLock->GetLockLevel(reinterpret_cast<TESObjectREFR*>(reference)) == 5 || statePart4->pLock->MeetsMinimumLockLevel()))
+                        (statePart4->pLock->GetLockLevel(reinterpret_cast<TESObjectREFR*>(apItemActivated)) == 5 || statePart4->pLock->MeetsMinimumLockLevel()))
                     {
                         DispatchMessageToSink(DAT_011d276c.FUN_00403df0(), 0,
                                               "Interface\\Icons\\Message Icons\\glow_message_padlock.dds", 0, 2.0f, 0);
                         Interface_PlayMenuSound(18);
                     }
                     else
-                        Interface_CreateLockPickMenu(reference, 0, 0);
+                        Interface_CreateLockPickMenu(apItemActivated, 0, 0);
                     return false;
                 }
                 else if (!hasSkeleton)
@@ -1428,11 +1466,11 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
                     TESIdleManager_SetUsedItem((ActivateKey*)0);
                     TESIdleManager_SetUsedItemActivate(0);
                     TESIdleManager_SetUsedItemLevel(-1);
-                    ExtraLock* statePart5 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(reference);
+                    ExtraLock* statePart5 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(apItemActivated);
                     if (statePart5)
                     {
                         statePart5->FUN_00517360();
-                        reference->TESObjectREFR_AddLockChange();
+                        apItemActivated->TESObjectREFR_AddLockChange();
                     }
                 }
             }
@@ -1442,7 +1480,7 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
     {
         if (!DAT_011dea3c->FUN_0094df60() && !process1->FUN_0045cd60() && process1->State() != 4)
         {
-            if (GetEffectShader_00407820() && reference && reference->GetNiNode())
+            if (GetEffectShader_00407820() && apItemActivated && apItemActivated->GetNiNode())
             {
                 BSSoundHandle sound;
                 if (actor == (TESObjectREFR*)DAT_011dea3c)
@@ -1451,7 +1489,7 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
                     sound = BSAudio::GetSingleton()->GetSoundHandleByFormID_00ad73b0(GetEffectShader_00407820()->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), 0x102u);
                 if (actor != (TESObjectREFR*)DAT_011dea3c)
                 {
-                    NiPoint3 position = *static_cast<const TESObjectREFR*>(reference)->GetPos();
+                    NiPoint3 position = *static_cast<const TESObjectREFR*>(apItemActivated)->GetPos();
                     sound.SetPosition(position.x, position.y, position.z);
                 }
                 sound.Play(0);
@@ -1459,7 +1497,7 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
                     for (int i = 0; i < 4; ++i)
                         BSAudio::GetSingleton()->Update(false);
             }
-            process1->HighProcess_FadeOut(actor, reference, true);
+            process1->HighProcess_FadeOut(actor, apItemActivated, true);
             if (actor == (TESObjectREFR*)DAT_011dea3c)
                 return true;
             else
@@ -1467,41 +1505,41 @@ bool DoorActivation::ActivateDoor(TESObjectREFR* reference, TESObjectREFR* activ
         }
         void* cell = teleport->DoorTeleportData_GetTeleportCell();
         void* world = teleport->FUN_0043a320();
-        reinterpret_cast<ActivateProcess*>(actor->FUN_008d8520())->SetTarget(reference);
+        reinterpret_cast<ActivateProcess*>(actor->FUN_008d8520())->SetTarget(apItemActivated);
         if (actor == (TESObjectREFR*)DAT_011dea3c)
         {
             if (!((bool(__thiscall*)(PlayerCharacter*)) &GetDoorPlayerState)(DAT_011dea3c))
-                DAT_011dea3c->lastExteriorDoor = reference;
+                DAT_011dea3c->lastExteriorDoor = apItemActivated;
             DAT_011dea3c->movingThroughDoor = 1;
             DAT_011dea3c->ProcessAllActions();
-            QueueDoorTeleport(reference);
+            QueueDoorTeleport(apItemActivated);
             DAT_011dea3c->movingThroughDoor = 0;
         }
         else
         {
-            ((void(__thiscall*)(TESObjectREFR*, int)) &SetDoorReferencePosition)(activator, teleport->FUN_00717e50());
+            ((void(__thiscall*)(TESObjectREFR*, int)) &SetDoorReferencePosition)(apActionRef, teleport->FUN_00717e50());
             if (cell && ((ActivateDetection*)DAT_011dea10)->FUN_004511e0(cell, 0))
             {
-                ((void(__thiscall*)(TESObjectREFR*, float)) &SetDoorReferenceRotation)(activator, teleport->TESDataHandler_GetWorldSpaceList()->z);
-                activator->TESObjectREFR_SetAngleOnReferenceX(0.0f);
+                ((void(__thiscall*)(TESObjectREFR*, float)) &SetDoorReferenceRotation)(apActionRef, teleport->TESDataHandler_GetWorldSpaceList()->z);
+                apActionRef->TESObjectREFR_SetAngleOnReferenceX(0.0f);
             }
             else
-                activator->TESObjectREFR_SetAngleOnReferenceX(FLT_MAX);
-            Actor* actorAgain = dynamic_cast<Actor*>(activator);
+                apActionRef->TESObjectREFR_SetAngleOnReferenceX(FLT_MAX);
+            Actor* actorAgain = dynamic_cast<Actor*>(apActionRef);
             if (actorAgain)
                 actorAgain->Actor_SetForceUpdateQuest(0);
-            TESObjectREFR_MoveRefToNewSpace(activator, cell, world);
+            TESObjectREFR_MoveRefToNewSpace(apActionRef, cell, world);
         }
     }
     else
     {
-        ExtraLock* statePart6 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(reference);
+        ExtraLock* statePart6 = ((ExtraLock*(__thiscall*)(TESObjectREFR*)) &GetDoorExtraLock)(apItemActivated);
         if (statePart6)
         {
             statePart6->FUN_00517360();
-            reference->TESObjectREFR_AddLockChange();
+            apItemActivated->TESObjectREFR_AddLockChange();
         }
-        BGSOpenCloseForm_HandleActivate(reference, activator, this ? &unk070 : 0);
+        BGSOpenCloseForm_HandleActivate(apItemActivated, apActionRef, this ? &unk070 : 0);
     }
     return true;
 }
@@ -1538,6 +1576,9 @@ extern "C" void QueueDoorTeleportRequest();
 extern bool DAT_011c9354;
 
 // @fnv 0x00518b70
+// pdb: TESObjectDOOR::HandlePlayerTeleport | TESObjectDOOR.obj | debug, object-file run extension, low
+// pdb params: apActivatedDoor
+// pdb locals: pTel, ptelcell, ptelworld, ploc, poriginalParentCell
 void TESObjectDOOR::QueueDoorTeleport(TESObjectREFR* apRef)
 {
     if (apRef && ((RefShell*)apRef)->GetBaseObject() == (TESForm*)this)
@@ -1742,6 +1783,9 @@ void __cdecl TESObjectDOOR_PlayerPullFollower();
 
 // Plays sound 0x121 for the given ref when its object and mid object pass checks, then updates the player proc state and notifies DAT_011de134.
 // @fnv 0x00518cf0
+// pdb: TESObjectDOOR::DoorTeleportPlayerArrivalCallback | TESObjectDOOR.obj | debug, object-file run extension, low
+// pdb params: aiArrivalData
+// pdb locals: pdoorref, pnewParentCell, pdoor, SoundHandle
 void __cdecl PlaySoundForRef(unsigned int id)
 {
     Ref* ref = (Ref*)id;
@@ -1793,6 +1837,7 @@ struct FollowerListOps
     void FUN_00905820(Actor*& actor);
     void FUN_00470470();
 };
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     float FUN_00867da0();
@@ -1801,6 +1846,8 @@ extern Calendar g_calendar;
 
 // @fnv 0x00519290
 // src: XBOX_PDB 0x00519290
+// pdb: TESObjectDOOR::PlayerPullFollower | TESObjectDOOR.obj | retail, upstream name already matches, high
+// pdb locals: pfollow, plist, pTempList, ptemp, ptarget
 void __cdecl TESObjectDOOR_PlayerPullFollower()
 {
     ExtraFollower* followers = reinterpret_cast<FollowerExtraData*>(g_thePlayer->TESObjectREFR::BSFile_GetDevice())->ExtraDataList_GetFollowerExtra();

@@ -23,17 +23,21 @@ inline void NiBinaryStream::Write(float* value)
 }
 
 // @fnv 0x00c1fc40
-void NiPSysCylinderEmitter::LoadBinary(NiStream& stream)
+// pdb: NiPSysCylinderEmitter::LoadBinary | NiPSysCylinderEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysCylinderEmitter::LoadBinary(NiStream& kStream)
 {
-    NiPSysVolumeEmitter::LoadBinary(stream);
-    stream.m_pkIstr->ReadFloat(m_fCylinderRadius);
-    stream.m_pkIstr->ReadFloat(m_fCylinderHeight);
+    NiPSysVolumeEmitter::LoadBinary(kStream);
+    kStream.m_pkIstr->ReadFloat(m_fEmitterRadius);
+    kStream.m_pkIstr->ReadFloat(m_fEmitterHeight);
 }
 
 extern void* DAT_010bd8b4;
 
 // @fnv 0x00c1fbf0
 // src: EXE 0x00c1fbf0
+// pdb: NiPSysCylinderEmitter::CreateObject | NiPSysCylinderEmitter.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysCylinderEmitter_CreateObject()
 {
     BSFadeNode* pFadeNode = (BSFadeNode*)BSFadeNode::operator new(0x60);
@@ -61,6 +65,9 @@ void* NiPSysCylinderEmitter::DestroyIfFlagged(unsigned int auiFlags)
 }
 
 // @fnv 0x00c1fba0
+// pdb: NiPSysCylinderEmitter::CreateClone | NiPSysCylinderEmitter.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
 BSFadeNode* NiPSysCylinderEmitter::CloneFadeNode(CloningProcess& kCloning)
 {
     BSFadeNode* pkObject = (BSFadeNode*)BSFadeNode::operator new(0x60);
@@ -88,6 +95,8 @@ char* __cdecl _FUN_00a7d330(void*);
 char* __cdecl NiGetViewerString_00a7d550(char const*, float);
 
 // @fnv 0x00c1fd00
+// pdb: NiPSysCylinderEmitter::GetViewerStrings | NiPSysCylinderEmitter.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void NiPSysCylinderEmitter::AppendShapeParams(StrArr* pkStrings)
 {
     FUN_00c31db0(pkStrings);
@@ -98,13 +107,13 @@ void NiPSysCylinderEmitter::AppendShapeParams(StrArr* pkStrings)
         pkStrings->SetSize(index + pkStrings->m_usGrowBy);
     pkStrings->SetAt(index, string);
 
-    string = NiGetViewerString_00a7d550("Radius", m_fCylinderRadius);
+    string = NiGetViewerString_00a7d550("Radius", m_fEmitterRadius);
     index = pkStrings->m_usSize;
     if (!(index < pkStrings->m_usMaxSize))
         pkStrings->SetSize(index + pkStrings->m_usGrowBy);
     pkStrings->SetAt(index, string);
 
-    string = NiGetViewerString_00a7d550("Height", m_fCylinderHeight);
+    string = NiGetViewerString_00a7d550("Height", m_fEmitterHeight);
     index = pkStrings->m_usSize;
     if (!(index < pkStrings->m_usMaxSize))
         pkStrings->SetSize(index + pkStrings->m_usGrowBy);
@@ -113,11 +122,13 @@ void NiPSysCylinderEmitter::AppendShapeParams(StrArr* pkStrings)
 
 // Saves the volume emitter base stream, then writes the cylinder dimensions.
 // @fnv 0x00c1fca0
-void NiPSysCylinderEmitter::SaveBinary(NiStream& stream)
+// pdb: NiPSysCylinderEmitter::SaveBinary | NiPSysCylinderEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysCylinderEmitter::SaveBinary(NiStream& kStream)
 {
-    NiPSysVolumeEmitter::SaveBinary(stream);
-    stream.m_pkOstr->Write(&m_fCylinderRadius);
-    stream.m_pkOstr->Write(&m_fCylinderHeight);
+    NiPSysVolumeEmitter::SaveBinary(kStream);
+    kStream.m_pkOstr->Write(&m_fEmitterRadius);
+    kStream.m_pkOstr->Write(&m_fEmitterHeight);
 }
 
 namespace fnv_00c1fa50 {
@@ -144,24 +155,27 @@ inline void NiSinCos(float fAngleDifference, float& fSin, float& fCos)
 // Fills kPosition with a random point inside the cylinder and rotates both kPosition and kMotionVelocity by kRotate.
 // @fnv 0x00c1fa50
 // src: XBOX_PDB 0x00c1fa50
-void NiPSysCylinderEmitter::ComputeVolumeInitialPositionAndVelocity(NiTransform& kEmitterToPSys, NiPoint3& kPosition, NiPoint3& kMotionVelocity)
+// pdb: NiPSysCylinderEmitter::ComputeVolumeInitialPositionAndVelocity | NiPSysCylinderEmitter.obj | retail, upstream name already matches, high
+// pdb params: kEmitterToPSys, kPosition, kVelocity
+// pdb locals: fCosPhi, fPhi, fSinPhi, fRadius
+void NiPSysCylinderEmitter::ComputeVolumeInitialPositionAndVelocity(NiTransform& kEmitterToPSys, NiPoint3& kPosition, NiPoint3& kVelocity)
 {
     using namespace fnv_00c1fa50;
-    float fRadius = m_fCylinderRadius * RandomFloat0To1();
+    float fRadius = m_fEmitterRadius * RandomFloat0To1();
     float fAngleDifference = NI_TWO_PI_F * RandomFloat0To1();
     float fSin, fCos;
     NiSinCos(fAngleDifference, fSin, fCos);
     kPosition.x = fRadius * fCos;
     kPosition.y = fRadius * fSin;
-    kPosition.z = (RandomFloat0To1() - 0.5) * m_fCylinderHeight;
+    kPosition.z = (RandomFloat0To1() - 0.5) * m_fEmitterHeight;
     kPosition = static_cast<const NiTransform&>(kEmitterToPSys).ComputeValue_00524c40(kPosition);
     const NiMatrix3& kRotate = kEmitterToPSys.m_Rotate;
     NiPoint3 kResult;
-    kResult.x = kRotate.m_pEntry[0][0] * kMotionVelocity.x + kRotate.m_pEntry[0][1] * kMotionVelocity.y +
-                kRotate.m_pEntry[0][2] * kMotionVelocity.z;
-    kResult.y = kRotate.m_pEntry[1][0] * kMotionVelocity.x + kRotate.m_pEntry[1][1] * kMotionVelocity.y +
-                kRotate.m_pEntry[1][2] * kMotionVelocity.z;
-    kResult.z = kRotate.m_pEntry[2][0] * kMotionVelocity.x + kRotate.m_pEntry[2][1] * kMotionVelocity.y +
-                kRotate.m_pEntry[2][2] * kMotionVelocity.z;
-    kMotionVelocity = kResult;
+    kResult.x = kRotate.m_pEntry[0][0] * kVelocity.x + kRotate.m_pEntry[0][1] * kVelocity.y +
+                kRotate.m_pEntry[0][2] * kVelocity.z;
+    kResult.y = kRotate.m_pEntry[1][0] * kVelocity.x + kRotate.m_pEntry[1][1] * kVelocity.y +
+                kRotate.m_pEntry[1][2] * kVelocity.z;
+    kResult.z = kRotate.m_pEntry[2][0] * kVelocity.x + kRotate.m_pEntry[2][1] * kVelocity.y +
+                kRotate.m_pEntry[2][2] * kVelocity.z;
+    kVelocity = kResult;
 }

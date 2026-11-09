@@ -33,22 +33,25 @@ struct FUN_008659c0_Buffer;
 class ReferenceSubBufferAccess : public TESObjectREFR
 {
 public:
-    void LoadHavokData(BGSLoadFormBuffer* buffer);
+    void LoadHavokData(BGSLoadFormBuffer* apLoadGameBuffer);
     void SaveAnimation(void* buffer);
-    void SaveHavokData(FUN_008659c0_Buffer* buffer);
+    void SaveHavokData(FUN_008659c0_Buffer* apSaveGameBuffer);
 };
 
 typedef LockFreeMap<TESObjectREFR*, BSTreeNode*>::ThreadSafeHashTableNode QueuedHashListNode;
 typedef LockFreeMap<TESObjectREFR*, BSTreeNode*>::ThreadSafePointer<QueuedHashListNode> QueuedMarkedPointer;
 
 // @fnv 0x008655a0
-void BGSLoadGameSubBuffer::LoadGame(BGSLoadGameBuffer* buffer)
+// pdb: BGSLoadGameSubBuffer::LoadGame | BGSLoadGameSubBuffer.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pbuffer, isize, isubBufferSize, ivariableValueSize, pheader
+void BGSLoadGameSubBuffer::LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     char* byteDestination;
     {
         unsigned int size;
         {
-            unsigned int value = reinterpret_cast<BGSLoadFormBuffer*>(buffer)->ReadElementCount();
+            unsigned int value = reinterpret_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadElementCount();
             if (value == 0)
                 return;
             {
@@ -60,12 +63,12 @@ void BGSLoadGameSubBuffer::LoadGame(BGSLoadGameBuffer* buffer)
                     cursor = new char[total];
                     reinterpret_cast<QuantityData*>(this)->SetQuantity((unsigned int)cursor);
                     byteDestination = cursor;
-                    *byteDestination = buffer->GetVersion();
+                    *byteDestination = apLoadGameBuffer->GetVersion();
                     cursor++;
                     WriteEncodedInteger(cursor, value);
                     cursor += size;
-                    memcpy(cursor, buffer->GetCombinedValue(), value);
-                    reinterpret_cast<ActorPackageContext*>(buffer)->AddToProcedureIndex(value);
+                    memcpy(cursor, apLoadGameBuffer->GetCombinedValue(), value);
+                    reinterpret_cast<ActorPackageContext*>(apLoadGameBuffer)->AddToProcedureIndex(value);
                 }
             }
         }
@@ -74,6 +77,9 @@ void BGSLoadGameSubBuffer::LoadGame(BGSLoadGameBuffer* buffer)
 
 // Loads a queued sub-buffer, resolves the form key, and stores the loaded reference in the map for the given type.
 // @fnv 0x008652f0
+// pdb: BGSSaveLoadQueuedSubBufferMap::QueueSubBuffer | BGSLoadGameSubBuffer.obj | debug, object-file gap fill, medium
+// pdb params: aeType, apLoadFormBuffer, apParentForm
+// pdb locals: subBuffer, pform
 void LoadGameSubBufferQueue::ProcessSubBuffer(QUEUED_SUB_BUFFER_TYPE type, BGSLoadFormBuffer* buffer, TESForm* form)
 {
     TESForm* key;
@@ -89,14 +95,18 @@ void LoadGameSubBufferQueue::ProcessSubBuffer(QUEUED_SUB_BUFFER_TYPE type, BGSLo
 }
 
 // @fnv 0x00864e20
-BGSLoadFormBuffer* BGSLoadGameSubBuffer::CreateFormBuffer(TESForm* form)
+// src: XBOX_RETAIL_PDB 0x00864e20
+// pdb: BGSLoadGameSubBuffer::CreateLoadFormBuffer | BGSLoadGameSubBuffer.obj | retail, call graph, high
+// pdb params: apForm
+// pdb locals: padvancedBuffer, isize, pheader, iposition, ploadFormBuffer
+BGSLoadFormBuffer* BGSLoadGameSubBuffer::CreateLoadFormBuffer(TESForm* apForm)
 {
     BGSLoadFormBuffer* result = new BGSLoadFormBuffer;
     {
         unsigned int offset;
         {
             char* data = pBuffer;
-            reinterpret_cast<TESRecipe*>(result)->SetSkill((int)form);
+            reinterpret_cast<TESRecipe*>(result)->SetSkill((int)apForm);
             result->ExtraDismemberedLimbs_SetEaten((unsigned char)*data);
             offset = 1;
             {
@@ -104,7 +114,7 @@ BGSLoadFormBuffer* BGSLoadGameSubBuffer::CreateFormBuffer(TESForm* form)
                 {
                     char* encoded = pBuffer + 1;
                     value = 0;
-                    offset += ReadEncodedInteger(encoded, value);
+                    offset += LoadVariableSizedValueFromBuffer(encoded, value);
                     result->SetBuffer(pBuffer, value + offset, offset);
                     pBuffer = 0;
                     return result;
@@ -116,20 +126,23 @@ BGSLoadFormBuffer* BGSLoadGameSubBuffer::CreateFormBuffer(TESForm* form)
 
 // Resolves the form's load buffer and loads its queued animation for actors, or logs an error for non-references and actors without animation.
 // @fnv 0x00864b00
-void BGSLoadGameSubBuffer::RestoreAnimation(TESForm* form)
+// pdb: BGSLoadGameSubBuffer::LoadAnimation | BGSLoadGameSubBuffer.obj | retail, string-set bridge, high
+// pdb params: apForm
+// pdb locals: b1stPerson, ploadFormBuffer, pref, panimation
+void BGSLoadGameSubBuffer::RestoreAnimation(TESForm* apForm)
 {
     BGSLoadFormBuffer* loadBuffer;
     {
         bool firstPerson = false;
-        if (form == reinterpret_cast<TESForm*>(g_thePlayer->GetObjectReference()))
+        if (apForm == reinterpret_cast<TESForm*>(g_thePlayer->GetObjectReference()))
         {
             firstPerson = true;
-            form = g_thePlayer;
+            apForm = g_thePlayer;
         }
-        loadBuffer = CreateFormBuffer(form);
-        if (form->GetIsReference())
+        loadBuffer = CreateLoadFormBuffer(apForm);
+        if (apForm->GetIsReference())
         {
-            TESForm* reference = form;
+            TESForm* reference = apForm;
             if (reference->IsActor())
             {
                 Animation* animation = 0;
@@ -143,20 +156,23 @@ void BGSLoadGameSubBuffer::RestoreAnimation(TESForm* form)
                     animation->Load(loadBuffer);
                 else
                     LogWarning("ANIMATION: Actor '%s' %08X with queued animation does not have one to load",
-                               form->GetName(), form->GetFormID());
+                               apForm->GetName(), apForm->GetFormID());
             }
             else
                 reinterpret_cast<TESObjectREFR*>(reference)->RestoreAnimation(loadBuffer);
         }
         else
-            LogWarning("SAVELOAD: Form '%s' %08X with queued havok data is not a reference", form->GetName(),
-                       form->GetFormID());
+            LogWarning("SAVELOAD: Form '%s' %08X with queued havok data is not a reference", apForm->GetName(),
+                       apForm->GetFormID());
         delete reinterpret_cast<BGSLoadGameBuffer*>(loadBuffer);
     }
 }
 
 // Iterates the queued sub-buffer for the given type, loading or deferring each form, then clears the map.
 // @fnv 0x00865390
+// pdb: BGSSaveLoadQueuedSubBufferMap::LoadQueuedSubBuffers | BGSLoadGameSubBuffer.obj | debug, object-file gap fill, medium
+// pdb params: aeType
+// pdb locals: it, pref, pactor, bhas3D, pform, subBuffer
 void LoadGameSubBufferQueue::ProcessQueuedSubBuffers(QUEUED_SUB_BUFFER_TYPE eSubBufferType)
 {
     void* pIterPos =
@@ -189,7 +205,7 @@ void LoadGameSubBufferQueue::ProcessQueuedSubBuffers(QUEUED_SUB_BUFFER_TYPE eSub
                                 reinterpret_cast<BGSLoadGameSubBuffer*>(&subBuffer)->RestoreAnimation(form);
                                 break;
                             case 1:
-                                reinterpret_cast<BGSLoadGameSubBuffer*>(&subBuffer)->ReadAnimationState(form);
+                                reinterpret_cast<BGSLoadGameSubBuffer*>(&subBuffer)->LoadCharController(form);
                                 break;
                             case 2:
                                 reinterpret_cast<BGSLoadGameSubBuffer*>(&subBuffer)->LoadHavokData(form);
@@ -226,15 +242,19 @@ void LoadGameSubBufferQueue::ProcessQueuedSubBuffers(QUEUED_SUB_BUFFER_TYPE eSub
 }
 
 // @fnv 0x00864c50
-void BGSLoadGameSubBuffer::ReadAnimationState(TESForm* form)
+// src: XBOX_RETAIL_PDB 0x00864c50
+// pdb: BGSLoadGameSubBuffer::LoadCharController | BGSLoadGameSubBuffer.obj | retail, string-set bridge, high
+// pdb params: apForm
+// pdb locals: ploadFormBuffer, pref, pmob, pprocess, pmiddleHighProcess
+void BGSLoadGameSubBuffer::LoadCharController(TESForm* apForm)
 {
-    BGSLoadFormBuffer* loadBuffer = CreateFormBuffer(form);
-    if (form->GetIsReference())
+    BGSLoadFormBuffer* loadBuffer = CreateLoadFormBuffer(apForm);
+    if (apForm->GetIsReference())
     {
-        TESForm* reference = form;
+        TESForm* reference = apForm;
         if (reference->IsMobileObject())
         {
-            MobileObject* mobile = reinterpret_cast<MobileObject*>(form);
+            MobileObject* mobile = reinterpret_cast<MobileObject*>(apForm);
             if (mobile->GetPhysicsCharacterController())
             {
                 MiddleHighProcess* process = reinterpret_cast<MiddleHighProcess*>(
@@ -244,19 +264,20 @@ void BGSLoadGameSubBuffer::ReadAnimationState(TESForm* form)
             }
             else
                 LogWarning("SAVELOAD: Mobile Object '%s' %08X with queued char controller does not have one to load",
-                           form->GetName(), form->GetFormID());
+                           apForm->GetName(), apForm->GetFormID());
         }
         else
             LogWarning("SAVELOAD: Reference '%s' %08X with queued char controller is not a mobile object",
-                       form->GetName(), form->GetFormID());
+                       apForm->GetName(), apForm->GetFormID());
     }
     else
-        LogWarning("SAVELOAD: Form '%s' %08X with queued char controller is not a reference", form->GetName(),
-                   form->GetFormID());
+        LogWarning("SAVELOAD: Form '%s' %08X with queued char controller is not a reference", apForm->GetName(),
+                   apForm->GetFormID());
     delete reinterpret_cast<BGSLoadGameBuffer*>(loadBuffer);
 }
 
 // @fnv 0x00865360
+// pdb: BGSSaveLoadQueuedSubBufferMap::LoadAllQueuedSubBuffers | BGSLoadGameSubBuffer.obj | debug, object-file gap fill, medium
 void LoadGameSubBufferQueue::QueueAnimationAndCharController()
 {
     ProcessQueuedSubBuffers(QUEUED_SUB_BUFFER_TYPE_QUEUED_SUB_BUFFER_ANIMATION);
@@ -266,10 +287,12 @@ void LoadGameSubBufferQueue::QueueAnimationAndCharController()
 
 // Empty constructor for the class; performs no initialization.
 // @fnv 0x008651d0
+// pdb: BGSSaveLoadQueuedSubBufferMap::BGSSaveLoadQueuedSubBufferMap | BGSLoadGameSubBuffer.obj | retail, call graph, high
 LoadGameSubBufferQueue::LoadGameSubBufferQueue()
 {}
 
 // @fnv 0x00865200
+// pdb: NiTMap<TESForm *,BGSLoadGameSubBuffer>::`default constructor closure' | BGSLoadGameSubBuffer.obj | debug, object-file gap fill, medium
 void NiTMap_TESForm___BGSLoadGameSubBuffer_Constructor(void)
 {
     // this is in ecx (thiscall calling convention for MSVC)
@@ -336,24 +359,30 @@ struct Holder
 // Looks up the parent form's ID in the map at offset 0x58; if present, uses 0 instead, then passes the ID and type to FUN_0085efc0.
 // @fnv 0x0085f010
 // src: COMMUNITY 0x0085f010
-void Holder::TESSaveLoadGame_QueueAnimationLoad(TESForm* apParentForm, unsigned short aeType)
+// pdb: TESSaveLoadGame::QueueAnimationLoad | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apRef, aiSize
+// pdb locals: pbuffer, iformID
+void Holder::TESSaveLoadGame_QueueAnimationLoad(TESForm* apRef, unsigned short aiSize)
 {
     unsigned int uiExistingValue;
-    unsigned int formID = apParentForm->GetFormID();
+    unsigned int formID = apRef->GetFormID();
     if ((*(const DummyPointerMap**)((char*)this + 0x58))->GetAt(formID, uiExistingValue))
         formID = 0;
-    FUN_0085efc0(*(DummyPointerMap**)((char*)this + 0x58), formID, aeType);
+    FUN_0085efc0(*(DummyPointerMap**)((char*)this + 0x58), formID, aiSize);
 }
 
 // Reads a size from the buffer, writes it to the save game buffer, then writes the following data of that size.
 // @fnv 0x00865510
+// pdb: BGSLoadGameSubBuffer::SaveGame | BGSLoadGameSubBuffer.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: padvancedBuffer, isize
 void BGSLoadGameSubBuffer::SaveGame(BGSSaveGameBuffer* apSaveGameBuffer)
 {
     char* padvancedBuffer;
     unsigned int isize;
     padvancedBuffer = pBuffer + 1;
     isize = 0;
-    padvancedBuffer += ReadEncodedInteger(padvancedBuffer, isize);
+    padvancedBuffer += LoadVariableSizedValueFromBuffer(padvancedBuffer, isize);
     apSaveGameBuffer->SaveVariableSizedValue(isize);
     apSaveGameBuffer->WriteAtOffset(padvancedBuffer, isize, 1);
 }
@@ -367,6 +396,8 @@ struct FUN_00865660_This
 extern int DAT_01082288;
 // Calls FUN_008656c0 with size, sets the vtable to DAT_01082288, and returns this.
 // @fnv 0x00865660
+// pdb: NiTMap<TESForm *,BGSLoadGameSubBuffer>::NiTMap<TESForm *,BGSLoadGameSubBuffer> | BGSLoadGameSubBuffer.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 FUN_00865660_This* FUN_00865660_This::Construct(unsigned int size)
 {
     NiTMapBase_DFALL_NiTMapItem_TESForm_BGSLoadGameSubBuffer_TESForm_BGSLoadGameSubBuffer_NiTMapBase_DFALL_NiTMapItem_TESForm_BGSLoadGameSubBuffer_TESForm_BGSLoadGameSubBuffer(size);
@@ -380,6 +411,7 @@ struct Dummy00865690
 };
 // Destructs the NiTMap_TESForm___BGSLoadGameSubBuffer_ object and, if bit 0 of flags is set, frees it with operator delete; returns this.
 // @fnv 0x00865690
+// pdb: NiTMap<TESForm *,BGSLoadGameSubBuffer>::`scalar deleting destructor' | BGSLoadGameSubBuffer.obj | retail, vtable slot, high
 void* Dummy00865690::DestroyAndFreeIfFlagged(unsigned int flags)
 {
     ((NiTMap_TESForm___BGSLoadGameSubBuffer_*)this)
@@ -391,17 +423,20 @@ void* Dummy00865690::DestroyAndFreeIfFlagged(unsigned int flags)
 
 // Loads queued havok data into the form if it is a reference, otherwise logs an error, then deletes the load buffer.
 // @fnv 0x00864d80
-void BGSLoadGameSubBuffer::LoadHavokData(TESForm* form)
+// pdb: BGSLoadGameSubBuffer::LoadHavokData | BGSLoadGameSubBuffer.obj | retail, string-set bridge, high
+// pdb params: apForm
+// pdb locals: ploadFormBuffer, pref
+void BGSLoadGameSubBuffer::LoadHavokData(TESForm* apForm)
 {
-    BGSLoadFormBuffer* buffer = CreateFormBuffer(form);
-    if (form->GetIsReference())
+    BGSLoadFormBuffer* buffer = CreateLoadFormBuffer(apForm);
+    if (apForm->GetIsReference())
     {
-        TESForm* reference = form;
+        TESForm* reference = apForm;
         reinterpret_cast<ReferenceSubBufferAccess*>(reference)->LoadHavokData(buffer);
     }
     else
-        LogWarning("SAVELOAD: Form '%s' %08X with queued havok data is not a reference", form->GetName(),
-                   form->GetFormID());
+        LogWarning("SAVELOAD: Form '%s' %08X with queued havok data is not a reference", apForm->GetName(),
+                   apForm->GetFormID());
     delete reinterpret_cast<BGSLoadGameBuffer*>(buffer);
 }
 
@@ -419,6 +454,8 @@ struct FUN_008656c0_This
 // Sets the vtable, stores count, allocates count*4 bytes for m_pItems, zeroes them, and returns this.
 // @fnv 0x008656c0
 // src: COMMUNITY 0x008656c0
+// pdb: BGSSaveLoadQueuedSubBufferMap::LoadAllQueuedSubBuffers | BGSLoadGameSubBuffer.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<DFALL<NiTMapItem<TESForm *,BGSLoadGameSubBuffer> >,TESForm *,BGSLoadGameSubBuffer>::NiTMapBase<DFALL<NiTMapItem<TESForm *,BGSLoadGameSubBuffer> >,TESForm *,BGSLoadGameSubBuffer>
 FUN_008656c0_This* FUN_008656c0_This::NiTMapBase_DFALL_NiTMapItem_TESForm_BGSLoadGameSubBuffer_TESForm_BGSLoadGameSubBuffer_NiTMapBase_DFALL_NiTMapItem_TESForm_BGSLoadGameSubBuffer_TESForm_BGSLoadGameSubBuffer(unsigned int count)
 {
     unsigned int uiBytes;
@@ -445,6 +482,10 @@ unsigned char BGSSaveFormBuffer::GetVersion()
 }
 
 // @fnv 0x00865120
+// pdb: BGSSaveLoadQueuedSubBufferMap::QueueSubBuffer | BGSLoadGameSubBuffer.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSLoadGameSubBuffer::CopyBuffer
+// pdb params: aeType, apLoadFormBuffer, apParentForm
+// pdb locals: subBuffer, pform
 void BGSLoadGameSubBuffer::RenderCopyData(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     char* pbuffer;
@@ -510,6 +551,8 @@ class FUN_00865220
 
 // Frees every queued sub-buffer value in each of the three maps, then removes all entries from each map.
 // @fnv 0x00865220
+// pdb: BGSSaveLoadQueuedSubBufferMap::~BGSSaveLoadQueuedSubBufferMap | BGSLoadGameSubBuffer.obj | debug, object-file gap fill, medium
+// pdb locals: i, it, pform, subBuffer
 FUN_00865220::~FUN_00865220()
 {
     for (unsigned int i = 0; i < 3; i++)
@@ -567,21 +610,24 @@ extern F4F20Counter* g_pF4F20Counter;
 void __cdecl F4F20Log(const char* pcFormat, ...);
 
 // @fnv 0x00864f20
-void BGSLoadGameSubBuffer::SaveAnimation(TESForm* pkRef)
+// pdb: BGSLoadGameSubBuffer::SaveAnimation | BGSLoadGameSubBuffer.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: saveFormBuffer, pref
+void BGSLoadGameSubBuffer::SaveAnimation(TESForm* apForm)
 {
-    if (pkRef->GetIsReference())
+    if (apForm->GetIsReference())
     {
-        ReferenceSubBufferAccess* pkActor = static_cast<ReferenceSubBufferAccess*>(pkRef);
+        ReferenceSubBufferAccess* pkActor = static_cast<ReferenceSubBufferAccess*>(apForm);
         F4F20Response kResponse;
-        kResponse.Init(pkRef->GetFormID(), F4F20Param(4), pkRef->GetFormType(), g_pF4F20Counter->GetCount());
-        kResponse.SetSpeaker(pkRef);
+        kResponse.Init(apForm->GetFormID(), F4F20Param(4), apForm->GetFormType(), g_pF4F20Counter->GetCount());
+        kResponse.SetSpeaker(apForm);
         pkActor->SaveAnimation(&kResponse);
         RenderCopyData(reinterpret_cast<BGSSaveFormBuffer*>(&kResponse));
     }
     else
     {
         F4F20Log("SAVELOAD: Form '%s' %08X passed to BGSLoadGameSubBuffer::SaveAnimation() is not a reference",
-                 pkRef->GetName(), pkRef->GetFormID());
+                 apForm->GetName(), apForm->GetFormID());
     }
 }
 
@@ -615,20 +661,24 @@ struct FUN_008659c0_Buffer
 };
 // Saves a reference form to a sub-buffer, or logs a warning if the form is not a reference.
 // @fnv 0x00865020
-void BGSLoadGameSubBuffer::SaveFormState(TESForm* form)
+// src: XBOX_RETAIL_PDB 0x00865020
+// pdb: BGSLoadGameSubBuffer::SaveHavokData | BGSLoadGameSubBuffer.obj | retail, object-file run extension, high
+// pdb params: apForm
+// pdb locals: saveFormBuffer, pref
+void BGSLoadGameSubBuffer::SaveHavokData(TESForm* apForm)
 {
-    if (form->GetIsReference())
+    if (apForm->GetIsReference())
     {
-        ReferenceSubBufferAccess* ref = static_cast<ReferenceSubBufferAccess*>(form);
+        ReferenceSubBufferAccess* ref = static_cast<ReferenceSubBufferAccess*>(apForm);
         FUN_008659c0_Buffer buffer;
-        buffer.InitFormEntry(form->GetFormID(), FUN_008c71b0(4), reinterpret_cast<TESBoundObject*>(form->FUN_00401170()),
+        buffer.InitFormEntry(apForm->GetFormID(), FUN_008c71b0(4), reinterpret_cast<TESBoundObject*>(apForm->FUN_00401170()),
                             DAT_011de134->GetConstant27());
-        buffer.FUN_0050f9c0(form);
+        buffer.FUN_0050f9c0(apForm);
         ref->SaveHavokData(&buffer);
         RenderCopyData(reinterpret_cast<BGSSaveFormBuffer*>(&buffer));
     }
     else
     {
-        LogWarning(DAT_01082228, form->GetName(), form->GetFormID());
+        LogWarning(DAT_01082228, apForm->GetName(), apForm->GetFormID());
     }
 }

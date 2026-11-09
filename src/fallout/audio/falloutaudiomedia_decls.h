@@ -25,6 +25,7 @@ extern float DAT_011dd33c;
 extern float DAT_011dd340;
 extern unsigned long DAT_011dd35c;
 extern unsigned long DAT_011dd360;
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:
@@ -36,7 +37,7 @@ class FalloutAudioMedia
     static char IsRadioPlaying();
     static bool IsMediaPlaying(MEDIATYPE, bool);
     static void Startup();
-    static void Update();
+    static void FalloutAudioMedia_Update();
 };
 
 namespace fnv_anon_falloutaudiomedia {}
@@ -57,7 +58,7 @@ class FAMThread
 }
 
 void EnsureArenaAllocated(void*);
-void RunAudioChannel(void*);
+void FalloutAudioMedia_ThreadProc(void*);
 void DoThreadShutdown(void*);
 
 #endif

@@ -11,19 +11,22 @@ extern int __cdecl _FUN_00ecbf20(const char*, const char*);
 
 struct FUN_00a88c00_shell : StringPointerRecord
 {
-    bool NiString_ToFloat(float* out);
+    bool NiString_ToFloat(float* f);
 };
 
 // @fnv 0x00a88c00
 // src: COMMUNITY 0x00a88c00
-bool FUN_00a88c00_shell::NiString_ToFloat(float* out)
+// pdb: NiString::ToFloat | NiString.obj | retail, upstream name already matches, high
+// pdb params: f
+// pdb locals: pcString
+bool FUN_00a88c00_shell::NiString_ToFloat(float* f)
 {
     if (!m_kHandle)
         return false;
 
-    *out = _atof(m_kHandle);
+    *f = _atof(m_kHandle);
 
-    if (*out == 0.0f)
+    if (*f == 0.0f)
     {
         if (m_kHandle)
         {
@@ -45,6 +48,9 @@ struct MyStr
 };
 // Stores the string returned by AllocStringHandle into m_kHandle and, if non-null, writes its strlen into the int preceding the buffer.
 // @fnv 0x00a88b80
+// pdb: NiString::NiString | NiString.obj | retail, object-file run extension, low
+// pdb params: ch
+// pdb locals: pcString
 MyStr& MyStr::AssignString(const char* acString)
 {
     char* v = AllocStringHandle(acString);
@@ -63,6 +69,10 @@ struct S00a88bc0
 };
 // Decrements the reference count stored before m_kHandle and frees the aliased block when it reaches zero, then clears m_kHandle.
 // @fnv 0x00a88bc0
+// pdb: NiString::FindOneOf | NiString.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiString::~NiString
+// pdb params: pcStr, uiIndex
+// pdb locals: iReturn, pcSubStr
 void S00a88bc0::ReleaseHandle()
 {
     if (m_kHandle)
@@ -88,6 +98,10 @@ void* __cdecl _memmove(void*, const void*, unsigned int);
 
 // Allocates a handle for a copy of pcStr, stores the length before the string and returns a pointer to the copied string, or 0 on failure.
 // @fnv 0x00a88b10
+// pdb: NiString::DecRefCount | NiString.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiString::NiString
+// pdb params: kHandle, bValidate
+// pdb locals: pkMem
 char* __cdecl AllocStringHandle(const char* pcSource)
 {
     if (!pcSource)

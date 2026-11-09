@@ -9,6 +9,7 @@ TESForm* GetFormByID(unsigned int formID);
 int Warning(const char* format, ...);
 
 // @fnv 0x004830a0
+// pdb: TESEnchantableForm::TESEnchantableForm | TESEnchantableForm.obj | debug, upstream name already matches, high
 TESEnchantableForm::TESEnchantableForm()
 {
     InitializeComponent();
@@ -16,36 +17,39 @@ TESEnchantableForm::TESEnchantableForm()
 
 // Resolves the form's enchantment by form ID, warns when it is missing or has an invalid effect trigger, and clears it on failure.
 // @fnv 0x00483210
-void TESEnchantableForm::InitItem(TESForm* owner)
+// pdb: TESEnchantableForm::InitItem | TESEnchantableForm.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: tempint
+void TESEnchantableForm::InitItem(TESForm* apOwner)
 {
-    if (m_pEnchantment)
+    if (pFormEnchanting)
     {
-        unsigned int formID = reinterpret_cast<unsigned int>(m_pEnchantment);
-        if (owner)
-            TESForm::RemapFormIDForFile(formID, owner->GetFile(-1));
+        unsigned int formID = reinterpret_cast<unsigned int>(pFormEnchanting);
+        if (apOwner)
+            TESForm::RemapFormIDForFile(formID, apOwner->GetFile(-1));
 
-        m_pEnchantment = dynamic_cast<EnchantmentItem*>(GetFormByID(formID));
-        if (!m_pEnchantment)
+        pFormEnchanting = dynamic_cast<EnchantmentItem*>(GetFormByID(formID));
+        if (!pFormEnchanting)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (reinterpret_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+                if (reinterpret_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                     Warning("MASTERFILE: Unable to find enchanting (%08X) on owner object \"%s\".", formID,
-                            owner->GetName());
+                            apOwner->GetName());
                 else
                     Warning("MASTERFILE: Unable to find enchanting (%08X) on owner object (%08X).", formID,
-                            owner->GetFormID());
+                            apOwner->GetFormID());
             }
             else
                 Warning("MASTERFILE: Unable to find enchanting (%08X) on unknown owner.", formID);
         }
 
-        if (m_pEnchantment && owner && !m_pEnchantment->FUN_004094f0(owner))
+        if (pFormEnchanting && apOwner && !pFormEnchanting->FUN_004094f0(apOwner))
         {
             Warning(
                 "MASTERFILE: Enchanting (%08X) '%s' has invalid effect trigger type or effect for object (%08X) '%s'.",
-                m_pEnchantment->GetFormID(), m_pEnchantment->GetName(), owner->GetFormID(), owner->GetName());
-            m_pEnchantment = 0;
+                pFormEnchanting->GetFormID(), pFormEnchanting->GetName(), apOwner->GetFormID(), apOwner->GetName());
+            pFormEnchanting = 0;
         }
     }
 }
@@ -53,24 +57,26 @@ void TESEnchantableForm::InitItem(TESForm* owner)
 // @fnv 0x00483170
 void TESEnchantableForm::SetFormEnchantmentAmount(unsigned short amount)
 {
-    m_usEnchantmentAmount = amount;
+    iAmountofEnchantment = amount;
 }
 
 void __cdecl TESForm_AddChunk_00485910(unsigned int a, unsigned int b);
-void __cdecl TESForm_AddChunk_00485950(unsigned int a, unsigned int b);
+void __cdecl TESForm_AddChunk_00485950(unsigned int aeChunkID, unsigned int aiData);
 
 // @fnv 0x0047bd70
+// pdb: TESEnchantableForm::Save | TESEnchantableForm.obj | retail, upstream name already matches, high
+// pdb locals: tempint
 void TESEnchantableForm::Save()
 {
     unsigned int tempint;
-    if (m_pEnchantment != 0)
+    if (pFormEnchanting != 0)
     {
-        tempint = m_pEnchantment->GetFormID();
+        tempint = pFormEnchanting->GetFormID();
         TESForm_AddChunk_00485910(0x4d544945, tempint);
     }
-    if (m_usEnchantmentAmount != 0)
+    if (iAmountofEnchantment != 0)
     {
-        TESForm_AddChunk_00485950(0x544d4145, m_usEnchantmentAmount);
+        TESForm_AddChunk_00485950(0x544d4145, iAmountofEnchantment);
     }
 }
 
@@ -78,17 +84,20 @@ void TESEnchantableForm::Save()
 // @fnv 0x004830d0
 void TESEnchantableForm::InitializeComponent()
 {
-    m_pEnchantment = 0;
-    m_usEnchantmentAmount = 0;
-    m_eCastingType = MagicSystem__CastingType_CASTING_COUNT;
+    pFormEnchanting = 0;
+    iAmountofEnchantment = 0;
+    eCastingType = MagicSystem__CastingType_CASTING_COUNT;
 }
 
 
 // Returns true when the cast fails or the enchantment or enchantment amount differs.
 // @fnv 0x00483190
-bool TESEnchantableForm::IsEqualToBase(BaseFormComponent* component)
+// pdb: TESEnchantableForm::CompareComponent | TESEnchantableForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool TESEnchantableForm::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
-    TESEnchantableForm* other = dynamic_cast<TESEnchantableForm*>(component);
+    TESEnchantableForm* other = dynamic_cast<TESEnchantableForm*>(apCompareFC);
     if (!other)
         return true;
     if (GetEnchantment() != other->GetEnchantment())
@@ -100,9 +109,12 @@ bool TESEnchantableForm::IsEqualToBase(BaseFormComponent* component)
 
 // Casts apComponent to TESEnchantableForm and copies its enchantment, enchantment amount and casting type onto this form.
 // @fnv 0x00483100
-void TESEnchantableForm::BaseFormRecord(BaseFormComponent* apComponent)
+// pdb: TESEnchantableForm::CopyComponent | TESEnchantableForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
+void TESEnchantableForm::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESEnchantableForm* pForm = dynamic_cast<TESEnchantableForm*>(apComponent);
+    TESEnchantableForm* pForm = dynamic_cast<TESEnchantableForm*>(apCopyFC);
     if (!pForm)
         return;
     SetFormEnchanting(pForm->GetEnchantment());

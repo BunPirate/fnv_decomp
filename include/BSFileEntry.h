@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class BSFileEntry, size 0x10, bases: BSHash, 2 members
 class BSFileEntry
 {
 public:

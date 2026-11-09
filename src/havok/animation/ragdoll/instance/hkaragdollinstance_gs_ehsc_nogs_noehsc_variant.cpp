@@ -84,6 +84,9 @@ static __forceinline __m128 Cross(__m128 a, __m128 b)
 
 // @fnv 0x00ce0d30
 // src: COMMUNITY 0x00ce0d30
+// pdb: hkaPoseMatchingUtility::computeOrientation | hkaPoseMatchingUtility.obj | retail, upstream name already matches, high
+// pdb params: poseModelSpace, frameOut
+// pdb locals: r
 void __fastcall hkaPoseMatchingUtility_computeOrientation(ThisX* th, void* edx_unused, const Elem* points, VecF* out)
 {
     VecF p0 = points[th->m_i0].v;
@@ -108,7 +111,7 @@ void __fastcall hkaPoseMatchingUtility_computeOrientation(ThisX* th, void* edx_u
 }
 
 ArrayRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* a, void* b, int c);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct __declspec(align(16)) Pose32
 {
@@ -137,7 +140,7 @@ struct Owner
     int unk0C;
     SubObj sub;
     void hkaPoseMatchingUtility_computeOrientation(void* pose, Pose32* poseData);
-    int hkaPoseMatchingUtility_addCandidatePose(void* pose, int arg2, float time);
+    int hkaPoseMatchingUtility_addCandidatePose(void* poseModelSpace, int binding, float time);
 };
 
 static __m128 cross3(__m128 a, __m128 b)
@@ -151,9 +154,9 @@ static __m128 dot3(__m128 a, __m128 b)
     return _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v));
 }
 // src: GUESS 0x00ce0ff0 (confidence: low)
-static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(SubObj* object, Pose32* pose)
+static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(SubObj* direction, Pose32* rotationInOut)
 {
-    __m128 axis = _mm_load_ps(reinterpret_cast<float*>(object));
+    __m128 axis = _mm_load_ps(reinterpret_cast<float*>(direction));
     __declspec(align(16)) float absAxis[4];
     _mm_store_ps(absAxis, _mm_andnot_ps(_mm_set1_ps(-0.0f), axis));
     int major;
@@ -164,7 +167,7 @@ static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(SubObj* obj
     __declspec(align(16)) float basis[4] = {0, 0, 0, 0};
     basis[(major + 1) % 3] = 1.0f;
     __m128 vector = _mm_load_ps(basis);
-    __m128 q = _mm_load_ps(reinterpret_cast<float*>(pose));
+    __m128 q = _mm_load_ps(reinterpret_cast<float*>(rotationInOut));
     __m128 w = _mm_shuffle_ps(q, q, 0xff);
     __m128 d = dot3(q, vector);
     __m128 rotated = _mm_add_ps(_mm_mul_ps(cross3(q, vector), w),
@@ -184,18 +187,21 @@ static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(SubObj* obj
     __declspec(align(16)) hkQuaternion conjugate;
     reinterpret_cast<__m128&>(conjugate) = _mm_xor_ps(reinterpret_cast<__m128&>(orient), _mm_set_ps(0.0f, -0.0f, -0.0f, -0.0f));
     __declspec(align(16)) hkQuaternion result;
-    result.setMul(conjugate, *reinterpret_cast<hkQuaternion*>(pose));
-    _mm_store_ps(reinterpret_cast<float*>(pose), reinterpret_cast<__m128&>(result));
+    result.setMul(conjugate, *reinterpret_cast<hkQuaternion*>(rotationInOut));
+    _mm_store_ps(reinterpret_cast<float*>(rotationInOut), reinterpret_cast<__m128&>(result));
 }
 
 // @fnv 0x00ce1420
 // src: COMMUNITY 0x00ce1420
-int Owner::hkaPoseMatchingUtility_addCandidatePose(void* pose, int arg2, float time)
+// pdb: hkaPoseMatchingUtility::addCandidatePose | hkaPoseMatchingUtility.obj | retail, upstream name already matches, high
+// pdb params: poseModelSpace, binding, time
+// pdb locals: candidate
+int Owner::hkaPoseMatchingUtility_addCandidatePose(void* poseModelSpace, int binding, float time)
 {
     Pose32 poseData;
     poseData.unk14 = time;
-    poseData.unk10 = arg2;
-    hkaPoseMatchingUtility_computeOrientation(pose, &poseData);
+    poseData.unk10 = binding;
+    hkaPoseMatchingUtility_computeOrientation(poseModelSpace, &poseData);
     hkQuaternion_ComputeValues_00ce0ff0(&sub, &poseData);
     ArrayRouter* router = hkMemoryRouter_getInstance();
     if (count == (capacity & 0x3FFFFFFF))
@@ -261,9 +267,9 @@ __forceinline const hkVector4& hkTransform::getTranslation() const
                                    _mm_shuffle_ps(v2.m_vComponents, v2.m_vComponents, _MM_SHUFFLE(3, 0, 2, 1)));
         m_vComponents = _mm_sub_ps(cross0, cross1);
     }
-    __forceinline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+    __forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
     {
-        __m128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+        __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
         __m128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(1, 1, 1, 1)), x2);
         return hkSimdReal(_mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(2, 2, 2, 2)), sum));
     }
@@ -292,17 +298,17 @@ inline __declspec(noinline) void hkQuaternion::SetProduct(const hkQuaternion& q0
     __m128 real = _mm_sub_ps(prod, _mm_shuffle_ps(dot, dot, 0));
     QuaternionVector(*this).m_vComponents = _mm_shuffle_ps(imag, _mm_unpackhi_ps(imag, real), _MM_SHUFFLE(3, 0, 1, 0));
 }
-__declspec(noinline) void hkQsTransform::SetFromTransform(const hkTransform& kTransform)
+__declspec(noinline) void hkQsTransform::SetFromTransform(const hkTransform& transform)
 {
-    m_rotation.set(reinterpret_cast<const hkRotation&>(kTransform));
-    m_vTranslation = kTransform.getTranslation();
+    m_rotation.set(reinterpret_cast<const hkRotation&>(transform));
+    m_vTranslation = transform.getTranslation();
     m_vScale.m_vComponents = DAT_010c7170;
 }
 // src: COMMUNITY 0x00ce5070
-__declspec(noinline) void hkQsTransform::setFromTransformNoScale(const hkTransform& kTransform)
+__declspec(noinline) void hkQsTransform::setFromTransformNoScale(const hkTransform& transform)
 {
-    m_rotation.set(reinterpret_cast<const hkRotation&>(kTransform));
-    m_vTranslation = kTransform.getTranslation();
+    m_rotation.set(reinterpret_cast<const hkRotation&>(transform));
+    m_vTranslation = transform.getTranslation();
     m_vScale.m_vComponents = DAT_010c7170;
 }
 
@@ -341,7 +347,7 @@ __declspec(noinline) void __cdecl MultiplyBoneScales(const hkaSkeleton* pkSkelet
     while (iBone != -1)
     {
         kScale.m_vComponents = _mm_mul_ps(pkPose[iBone].m_vScale.m_vComponents, kScale.m_vComponents);
-        iBone = pkSkeleton->m_kParentIndices.m_data[iBone];
+        iBone = pkSkeleton->m_parentIndices.m_data[iBone];
     }
     kScaleOut = kScale;
 }
@@ -367,6 +373,9 @@ class FUN_00ce2000Owner
 
 // @fnv 0x00ce2000
 // src: GUESS 0x00ce2000 (confidence: low)
+// pdb: hkaRagdollInstance::getWorldFromBoneTransform | hkaRagdollInstance.obj | retail, object-file run extension, low
+// pdb params: i, worldFromBoneOut
+// pdb locals: worldFromParent
 void FUN_00ce2000Owner::ProcessAndReturnValue_00ce2000(int iBone, hkQsTransform& kOut)
 {
     int iBody = m_piBoneToBody[iBone];
@@ -375,19 +384,19 @@ void FUN_00ce2000Owner::ProcessAndReturnValue_00ce2000(int iBone, hkQsTransform&
         hkpRigidBody* pkBody = m_ppBodies[iBody];
         if (pkBody)
         {
-            kOut.SetFromTransform(pkBody->m_pMotionState.m_kMotionState.m_kMotionTransform);
-            MultiplyBoneScales(m_pkSkeleton, m_pkSkeleton->m_kReferencePose.m_data, iBone, kOut.m_vScale);
+            kOut.SetFromTransform(pkBody->m_motion.m_kMotionState.m_transform);
+            MultiplyBoneScales(m_pkSkeleton, m_pkSkeleton->m_referencePose.m_data, iBone, kOut.m_vScale);
             return;
         }
     }
 
     hkQsTransform kParent;
-    int iParent = m_pkSkeleton->m_kParentIndices.m_data[iBone];
+    int iParent = m_pkSkeleton->m_parentIndices.m_data[iBone];
     if (iParent >= 0)
         ProcessAndReturnValue_00ce2000(iParent, kParent);
     else
         kParent.setIdentity();
-    ComposeReferenceTransform(kOut, kParent, m_pkSkeleton->m_kReferencePose.m_data[iBone]);
+    ComposeReferenceTransform(kOut, kParent, m_pkSkeleton->m_referencePose.m_data[iBone]);
 }
 
 extern __m128 DAT_010c71e0;
@@ -419,35 +428,38 @@ class FUN_00ce2150Owner
     int unk28;
     hkaSkeleton* m_pkSkeleton;
 
-    void hkaRagdollInstance_getApproxWorldFromBoneTransformAt(int iBone, float fTime, hkQsTransform& kOut);
+    void hkaRagdollInstance_getApproxWorldFromBoneTransformAt(int i, float time, hkQsTransform& worldFromBoneOut);
 };
 
 // @fnv 0x00ce2150
 // src: XBOX_PDB 0x00ce2150
-void FUN_00ce2150Owner::hkaRagdollInstance_getApproxWorldFromBoneTransformAt(int iBone, float fTime, hkQsTransform& kOut)
+// pdb: hkaRagdollInstance::getApproxWorldFromBoneTransformAt | hkaRagdollInstance.obj | retail, upstream name already matches, high
+// pdb params: i, time, worldFromBoneOut
+// pdb locals: tOut, worldFromParent
+void FUN_00ce2150Owner::hkaRagdollInstance_getApproxWorldFromBoneTransformAt(int i, float time, hkQsTransform& worldFromBoneOut)
 {
-    int iBody = m_piBoneToBody[iBone];
+    int iBody = m_piBoneToBody[i];
     if (iBody >= 0)
     {
         hkpRigidBody* pkBody = m_ppBodies[iBody];
         if (pkBody)
         {
             hkTransform kTransform;
-            reinterpret_cast<const MotionStateC21*>(&pkBody->m_pMotionState)->EvaluateTransformAtTime(fTime, kTransform);
-            kOut.SetFromTransform(kTransform);
-            MultiplyBoneScales(m_pkSkeleton, m_pkSkeleton->m_kReferencePose.m_data, iBone, kOut.m_vScale);
+            reinterpret_cast<const MotionStateC21*>(&pkBody->m_motion)->EvaluateTransformAtTime(time, kTransform);
+            worldFromBoneOut.SetFromTransform(kTransform);
+            MultiplyBoneScales(m_pkSkeleton, m_pkSkeleton->m_referencePose.m_data, i, worldFromBoneOut.m_vScale);
             return;
         }
     }
 
     {
         hkQsTransform kParent;
-        int iParent = m_pkSkeleton->m_kParentIndices.m_data[iBone];
+        int iParent = m_pkSkeleton->m_parentIndices.m_data[i];
         if (iParent >= 0)
-            hkaRagdollInstance_getApproxWorldFromBoneTransformAt(iParent, fTime, kParent);
+            hkaRagdollInstance_getApproxWorldFromBoneTransformAt(iParent, time, kParent);
         else
             kParent.setIdentity();
-        ComposeReferenceTransform(kOut, kParent, m_pkSkeleton->m_kReferencePose.m_data[iBone]);
+        ComposeReferenceTransform(worldFromBoneOut, kParent, m_pkSkeleton->m_referencePose.m_data[i]);
     }
 }
 
@@ -469,7 +481,7 @@ struct Ce12a0Self
 class Ce12a0Host
 {
   public:
-    void UpdateFields_00ce12a0(void* a1, void* a2, hkQsTransform* a3, hkQsTransform* a4);
+    void hkaPoseMatchingUtility_computeReferenceFrame(void* animPoseModelSpace, void* ragdollPoseWorldSpace, hkQsTransform* animWorldFromModel, hkQsTransform* ragdollWorldFromModel);
 };
 
 __forceinline void hkVector4::SetRotatedDirection(const hkVector4& q, const hkVector4& b)
@@ -489,34 +501,37 @@ __forceinline void hkVector4::SetRotatedDirection(const hkVector4& q, const hkVe
 }
 
 // @fnv 0x00ce12a0
-// src: GUESS 0x00ce12a0 (confidence: low)
-void Ce12a0Host::UpdateFields_00ce12a0(void* a1, void* a2, hkQsTransform* a3, hkQsTransform* a4)
+// src: XBOX_RETAIL_PDB 0x00ce12a0
+// pdb: hkaPoseMatchingUtility::computeReferenceFrame | hkaPoseMatchingUtility.obj | retail, object-file gap fill, high
+// pdb params: animPoseModelSpace, ragdollPoseWorldSpace, animWorldFromModel, ragdollWorldFromModel
+// pdb locals: ragdollFrame, refFrame, angOut, qOut
+void Ce12a0Host::hkaPoseMatchingUtility_computeReferenceFrame(void* animPoseModelSpace, void* ragdollPoseWorldSpace, hkQsTransform* animWorldFromModel, hkQsTransform* ragdollWorldFromModel)
 {
     Ce12a0Self* self = (Ce12a0Self*)this;
     hkQuaternion q0, q1;
 
-    ((Ce0d30Obj*)self)->hkaPoseMatchingUtility_computeOrientation(a1, &q0);
-    ((Ce0d30Obj*)self)->hkaPoseMatchingUtility_computeOrientation(a2, &q1);
+    ((Ce0d30Obj*)self)->hkaPoseMatchingUtility_computeOrientation(animPoseModelSpace, &q0);
+    ((Ce0d30Obj*)self)->hkaPoseMatchingUtility_computeOrientation(ragdollPoseWorldSpace, &q1);
 
-    a4->setIdentity();
+    ragdollWorldFromModel->setIdentity();
     int index = self->idx0;
-    reinterpret_cast<__m128&>(a4->m_vTranslation) = ((hkQsTransform*)a2)[index].m_vTranslation.m_vComponents;
-    a4->m_rotation.setMulInverse(&q1, &q0);
+    reinterpret_cast<__m128&>(ragdollWorldFromModel->m_vTranslation) = ((hkQsTransform*)ragdollPoseWorldSpace)[index].m_vTranslation.m_vComponents;
+    ragdollWorldFromModel->m_rotation.setMulInverse(&q1, &q0);
 
     hkVector4 rotated;
-    rotated.SetRotatedDirection(*(hkVector4*)&reinterpret_cast<__m128&>(a4->m_rotation), *(hkVector4*)&((hkQsTransform*)a1)[index].m_vTranslation.m_vComponents);
-    reinterpret_cast<__m128&>(a4->m_vTranslation) = _mm_sub_ps(reinterpret_cast<__m128&>(a4->m_vTranslation), rotated.value);
+    rotated.SetRotatedDirection(*(hkVector4*)&reinterpret_cast<__m128&>(ragdollWorldFromModel->m_rotation), *(hkVector4*)&((hkQsTransform*)animPoseModelSpace)[index].m_vTranslation.m_vComponents);
+    reinterpret_cast<__m128&>(ragdollWorldFromModel->m_vTranslation) = _mm_sub_ps(reinterpret_cast<__m128&>(ragdollWorldFromModel->m_vTranslation), rotated.value);
 
-    a3->setIdentity();
-    reinterpret_cast<__m128&>(a3->m_vTranslation) = reinterpret_cast<__m128&>(a4->m_vTranslation);
-    reinterpret_cast<__m128&>(a3->m_rotation) = reinterpret_cast<__m128&>(a4->m_rotation);
-    reinterpret_cast<__m128&>(a3->m_vScale) = reinterpret_cast<__m128&>(a4->m_vScale);
+    animWorldFromModel->setIdentity();
+    reinterpret_cast<__m128&>(animWorldFromModel->m_vTranslation) = reinterpret_cast<__m128&>(ragdollWorldFromModel->m_vTranslation);
+    reinterpret_cast<__m128&>(animWorldFromModel->m_rotation) = reinterpret_cast<__m128&>(ragdollWorldFromModel->m_rotation);
+    reinterpret_cast<__m128&>(animWorldFromModel->m_vScale) = reinterpret_cast<__m128&>(ragdollWorldFromModel->m_vScale);
 
     {
         __declspec(align(16)) float angle;
         hkQuaternion axis;
-        a3->m_rotation.hkQuaternion_decomposeRestAxis(&self->unk10, &axis, &angle);
-        a3->m_rotation.hkQuaternion_setAxisAngle(&self->unk10, angle);
+        animWorldFromModel->m_rotation.hkQuaternion_decomposeRestAxis(&self->unk10, &axis, &angle);
+        animWorldFromModel->m_rotation.hkQuaternion_setAxisAngle(&self->unk10, angle);
     }
 }
 
@@ -615,18 +630,21 @@ class RagdollMapperC18
     int unk28;
     hkaSkeleton* m_pkSkeleton;
     void getWorldPose(hkQsTransform* pkPoseOut);
-    void hkaRagdollInstance_getPoseModelSpace(hkQsTransform* pkPoseOut, const hkQsTransform& kWorldFromModel);
+    void hkaRagdollInstance_getPoseModelSpace(hkQsTransform* poseOut, const hkQsTransform& worldFromModel);
 };
 // @fnv 0x00ce18f0
 // src: COMMUNITY 0x00ce18f0
-void RagdollMapperC18::hkaRagdollInstance_getPoseModelSpace(hkQsTransform* pkPoseOut, const hkQsTransform& kWorldFromModel)
+// pdb: hkaRagdollInstance::getPoseModelSpace | hkaRagdollInstance.obj | retail, upstream name already matches, high
+// pdb params: poseOut, worldFromModel
+// pdb locals: modelFromWorld
+void RagdollMapperC18::hkaRagdollInstance_getPoseModelSpace(hkQsTransform* poseOut, const hkQsTransform& worldFromModel)
 {
-    getWorldPose(pkPoseOut);
-    int iNumBones = m_pkSkeleton->m_kBones.m_iElementCount;
+    getWorldPose(poseOut);
+    int iNumBones = m_pkSkeleton->m_bones.m_iElementCount;
     hkQsTransform kModelFromWorld;
-    kModelFromWorld.SetConjugate(kWorldFromModel);
+    kModelFromWorld.SetConjugate(worldFromModel);
     for (int i = 0; i < iNumBones; i++)
-        pkPoseOut[i].setMulContext(kModelFromWorld, pkPoseOut[i]);
+        poseOut[i].setMulContext(kModelFromWorld, poseOut[i]);
 }
 
 extern "C" void _ReadWriteBarrier();
@@ -638,12 +656,15 @@ extern __m128 DAT_010c4c00;
 
 // @fnv 0x00ce0ff0
 // src: GUESS 0x00ce0ff0 (confidence: low)
-static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(const hkVector4& dir, hkQuaternion& q)
+// pdb: hkRemoveTwist | hkaPoseMatchingUtility.obj | retail, call graph, high
+// pdb params: direction, rotationInOut
+// pdb locals: r, proj, oAxis
+static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(const hkVector4& direction, hkQuaternion& rotationInOut)
 {
     hkVector4 perp;
     perp.m_vComponents = _mm_setzero_ps();
     hkVector4 a;
-    a.m_vComponents = _mm_and_ps(dir.m_vComponents, DAT_01017d10);
+    a.m_vComponents = _mm_and_ps(direction.m_vComponents, DAT_01017d10);
     const float* f = (const float*)&a;
     int major;
     if (f[0] < f[1])
@@ -652,7 +673,7 @@ static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(const hkVec
         major = (f[0] < f[2]) ? 2 : 0;
     ((float*)&perp)[(major + 1) % 3] = 1.0f;
 
-    __m128 qv = QuaternionVector(q).m_vComponents;
+    __m128 qv = QuaternionVector(rotationInOut).m_vComponents;
     __m128 w = _mm_shuffle_ps(qv, qv, 0xff);
     __m128 d = dot3(qv, perp.m_vComponents);
     __m128 r0 = _mm_mul_ps(cross3(qv, perp.m_vComponents), w);
@@ -661,7 +682,7 @@ static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(const hkVec
     __m128 r = _mm_add_ps(r0, t);
     r = _mm_add_ps(r, r);
 
-    __m128 dirQuad = dir.m_vComponents;
+    __m128 dirQuad = direction.m_vComponents;
     __m128 c = cross3(r, dirQuad);
 
     const __m128 half = _mm_set_ss(0.5f);
@@ -690,8 +711,8 @@ static __declspec(noinline) void hkQuaternion_ComputeValues_00ce0ff0(const hkVec
     _ReadWriteBarrier();
     QuaternionVector(inv).m_vComponents = _mm_xor_ps(value, mask);
     __declspec(align(16)) hkQuaternion res;
-    res.setMul(inv, q);
-    QuaternionVector(q).m_vComponents = QuaternionVector(res).m_vComponents;
+    res.setMul(inv, rotationInOut);
+    QuaternionVector(rotationInOut).m_vComponents = QuaternionVector(res).m_vComponents;
 }
 // This ordinary array caller lets VC9 derive the internal register convention.
 void AlignDirections(const hkVector4& dir, hkQuaternion* quaternions, int count)
@@ -709,9 +730,9 @@ __forceinline hkSimdReal::operator float() const
     _mm_store_ss(&scalar, m_vValue);
     return scalar;
 }
-__forceinline hkSimdReal hkVector4::dot4(const hkVector4& other) const
+__forceinline hkSimdReal hkVector4::dot4(const hkVector4& x) const
 {
-    __m128 product = _mm_mul_ps(m_vComponents, other.m_vComponents);
+    __m128 product = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 pair = _mm_add_ps(_mm_shuffle_ps(product, product, 0x4e), product);
     __m128 swapped = _mm_shuffle_ps(pair, pair, 0xb1);
     return _mm_add_ps(pair, swapped);
@@ -733,17 +754,17 @@ __forceinline void hkVector4::normalize3()
     m_vComponents = _mm_mul_ps(m_vComponents, _mm_shuffle_ps(scale, scale, 0));
 }
 
-static __declspec(noinline) void AlignPoseToAxis(const hkVector4& axis, hkQuaternion& value)
+static __declspec(noinline) void AlignPoseToAxis(const hkVector4& direction, hkQuaternion& rotationInOut)
 {
     hkVector4 side;
     side.m_vComponents = _mm_setzero_ps();
     hkVector4 magnitudes;
-    magnitudes.m_vComponents = _mm_andnot_ps(_mm_set1_ps(-0.0f), axis.m_vComponents);
+    magnitudes.m_vComponents = _mm_andnot_ps(_mm_set1_ps(-0.0f), direction.m_vComponents);
     int major = magnitudes.m_f[0] < magnitudes.m_f[1]
                     ? (magnitudes.m_f[1] < magnitudes.m_f[2] ? 2 : 1)
                     : (magnitudes.m_f[0] < magnitudes.m_f[2] ? 2 : 0);
     side.m_f[(major + 1) % 3] = 1.0f;
-    __m128 rotation = QuaternionVector(value).m_vComponents;
+    __m128 rotation = QuaternionVector(rotationInOut).m_vComponents;
     __m128 real = _mm_shuffle_ps(rotation, rotation, 0xff);
     __m128 factor = _mm_add_ps(_mm_set1_ps(-0.5f), _mm_mul_ps(real, real));
     __m128 product = _mm_mul_ps(rotation, side.m_vComponents);
@@ -751,24 +772,24 @@ static __declspec(noinline) void AlignPoseToAxis(const hkVector4& axis, hkQuater
     __m128 sum = _mm_add_ss(_mm_shuffle_ps(product, product, 0xaa), xy);
     __m128 result = _mm_add_ps(_mm_mul_ps(side.m_vComponents, factor), _mm_mul_ps(_mm_shuffle_ps(sum, sum, 0), rotation));
     hkVector4 perpendicular;
-    perpendicular.cofactor(QuaternionVector(value), side);
+    perpendicular.cofactor(QuaternionVector(rotationInOut), side);
     result = _mm_add_ps(result, _mm_mul_ps(real, perpendicular.m_vComponents));
     side.m_vComponents = _mm_add_ps(result, result);
     hkVector4 up;
-    up.cofactor(side, axis);
+    up.cofactor(side, direction);
     up.normalize3();
-    side.cofactor(axis, up);
+    side.cofactor(direction, up);
     hkRotation basis;
     basis.m_kColumn0 = side;
-    basis.m_kColumn1 = axis;
+    basis.m_kColumn1 = direction;
     basis.m_kColumn2 = up;
     __declspec(align(16)) hkQuaternion frame;
     frame.FUN_00cb26e0(basis);
     __declspec(align(16)) hkQuaternion inverse;
     QuaternionVector(inverse).m_vComponents = _mm_xor_ps(QuaternionVector(frame).m_vComponents, _mm_set_ps(0.0f, -0.0f, -0.0f, -0.0f));
     __declspec(align(16)) hkQuaternion composed;
-    composed.setMul(inverse, value);
-    value = composed;
+    composed.setMul(inverse, rotationInOut);
+    rotationInOut = composed;
 }
 
 struct CandidatePose
@@ -783,7 +804,7 @@ struct PoseMatcher
     hkVector4 axis;
     short rootBone, otherBone, thirdBone;
     void hkaPoseMatchingUtility_computeOrientation(const hkQsTransform* pose, hkQuaternion& out) const;
-    int hkaPoseMatchingUtility_findBestCandidatePoseIndex(const hkQsTransform* pose, float& error) const;
+    int hkaPoseMatchingUtility_findBestCandidatePoseIndex(const hkQsTransform* poseModelSpace, float& error) const;
 };
 
 inline float magnitude(float value)
@@ -793,10 +814,13 @@ inline float magnitude(float value)
 
 // @fnv 0x00ce11f0
 // src: COMMUNITY 0x00ce11f0
-int PoseMatcher::hkaPoseMatchingUtility_findBestCandidatePoseIndex(const hkQsTransform* pose, float& error) const
+// pdb: hkaPoseMatchingUtility::findBestCandidatePoseIndex | hkaPoseMatchingUtility.obj | retail, upstream name already matches, high
+// pdb params: poseModelSpace, error
+// pdb locals: ragdollFrame
+int PoseMatcher::hkaPoseMatchingUtility_findBestCandidatePoseIndex(const hkQsTransform* poseModelSpace, float& error) const
 {
     __declspec(align(16)) hkQuaternion orientation;
-    hkaPoseMatchingUtility_computeOrientation(pose, orientation);
+    hkaPoseMatchingUtility_computeOrientation(poseModelSpace, orientation);
     AlignPoseToAxis(axis, orientation);
     int selected = -1;
     error = DAT_0104da48;
@@ -835,18 +859,20 @@ class Ragdoll4
     int unk28;
     hkaSkeleton* m_pkSkeleton;
 
-    void hkaRagdollInstance_getPoseWorldSpace(hkQsTransform* pkPoseOut, const hkQsTransform& kRoot, const hkQsTransform* pkLocalPose);
+    void hkaRagdollInstance_getPoseWorldSpace(hkQsTransform* poseOut, const hkQsTransform& worldFromModel, const hkQsTransform* localSpacePoseForUnmappedBonesOptional);
 };
 
 // @fnv 0x00ce1760
 // src: COMMUNITY 0x00ce1760
-void Ragdoll4::hkaRagdollInstance_getPoseWorldSpace(hkQsTransform* pkPoseOut, const hkQsTransform& kRoot,
-                            const hkQsTransform* pkLocalPose)
+// pdb: hkaRagdollInstance::getPoseWorldSpace | hkaRagdollInstance.obj | retail, upstream name already matches, high
+// pdb params: poseOut, worldFromModel, localSpacePoseForUnmappedBonesOptional
+void Ragdoll4::hkaRagdollInstance_getPoseWorldSpace(hkQsTransform* poseOut, const hkQsTransform& worldFromModel,
+                            const hkQsTransform* localSpacePoseForUnmappedBonesOptional)
 {
-    if (!pkLocalPose)
-        pkLocalPose = m_pkSkeleton->m_kReferencePose.m_data;
+    if (!localSpacePoseForUnmappedBonesOptional)
+        localSpacePoseForUnmappedBonesOptional = m_pkSkeleton->m_referencePose.m_data;
 
-    for (int i = 0; i < m_pkSkeleton->m_kBones.m_iElementCount; i++)
+    for (int i = 0; i < m_pkSkeleton->m_bones.m_iElementCount; i++)
     {
         int iBody = m_piBoneToBody[i];
         if (iBody >= 0)
@@ -854,16 +880,16 @@ void Ragdoll4::hkaRagdollInstance_getPoseWorldSpace(hkQsTransform* pkPoseOut, co
             hkpRigidBody* pkBody = m_ppBodies[iBody];
             if (pkBody)
             {
-                pkPoseOut[i].setFromTransformNoScale(pkBody->m_pMotionState.m_kMotionState.m_kMotionTransform);
-                MultiplyBoneScales(m_pkSkeleton, m_pkSkeleton->m_kReferencePose.m_data, i, pkPoseOut[i].m_vScale);
+                poseOut[i].setFromTransformNoScale(pkBody->m_motion.m_kMotionState.m_transform);
+                MultiplyBoneScales(m_pkSkeleton, m_pkSkeleton->m_referencePose.m_data, i, poseOut[i].m_vScale);
                 continue;
             }
         }
 
-        int iParent = m_pkSkeleton->m_kParentIndices.m_data[i];
+        int iParent = m_pkSkeleton->m_parentIndices.m_data[i];
         hkQsTransform kParent;
-        (iParent >= 0) ? (kParent = pkPoseOut[iParent]) : (kParent = kRoot);
-        ComposeReferenceTransform(pkPoseOut[i], kParent, pkLocalPose[i]);
+        (iParent >= 0) ? (kParent = poseOut[iParent]) : (kParent = worldFromModel);
+        ComposeReferenceTransform(poseOut[i], kParent, localSpacePoseForUnmappedBonesOptional[i]);
     }
 }
 
@@ -962,7 +988,7 @@ struct UnkCall
     hkpMotion m_pMotionState;
 
     void activate_00c9c1d0();
-    void hkpRigidBody_setPositionAndRotation(const hkVector4* pos, const hkQuaternion* rot);
+    void hkpRigidBody_setPositionAndRotation(const hkVector4* position, const hkQuaternion* rotation);
 
     void SetTranslationalVelocity(const float* v)
     {
@@ -1012,9 +1038,12 @@ static __forceinline bool equals4(const __m128& a, const float* v)
 
 // @fnv 0x00ce1ad0
 // src: COMMUNITY 0x00ce1ad0
+// pdb: hkaRagdollInstance::setPoseWorldSpace | hkaRagdollInstance.obj | retail, upstream name already matches, high
+// pdb params: poseIn
+// pdb locals: assertBuf, ostr
 void RagInstance::hkaRagdollInstance_setPoseWorldSpace(const hkQsTransform* pose, const hkQsTransform& worldFromModel)
 {
-    int numBones = m_pSkeleton->m_kBones.m_iElementCount;
+    int numBones = m_pSkeleton->m_bones.m_iElementCount;
     for (int b = 0; b < numBones; b++, pose++)
     {
         UnkCall* rb = getRigidBodyOfBone(b);
@@ -1022,7 +1051,7 @@ void RagInstance::hkaRagdollInstance_setPoseWorldSpace(const hkQsTransform* pose
         {
             hkQsTransform rbWorld;
             rbWorld.SetProduct(worldFromModel, *pose);
-            rbWorld.m_rotation.normalize_005611c0();
+            rbWorld.m_rotation.hkQuaternion_normalize();
             rb->hkpRigidBody_setPositionAndRotation(&rbWorld.m_vTranslation, &rbWorld.m_rotation);
 
             const float* zero = &DAT_01267e30;

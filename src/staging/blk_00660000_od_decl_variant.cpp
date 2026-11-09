@@ -188,8 +188,9 @@ struct FUN_0066c9c0_Class
 {
     T_ a;
     T_ b;
-    void hkContactPoint_set(T_& x, T_& y, float f);
+    void hkContactPoint_set(T_& position, T_& normal, float dist);
 };
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -338,7 +339,7 @@ int FindPairValue(int a, Pair8* b, int c);
 struct FUN_00672c40_Class
 {
     int GetPackType();
-    void SetExtraValue(float value);
+    void SetDialogueFOV(float afFov);
 };
 // @fnv 0x00660400
 template <class T> struct BSSimpleList;
@@ -383,7 +384,7 @@ struct DetectionViewData
     int padding[3];
 
     DetectionViewData();
-    void LoadGame(BGSLoadGameBuffer* buffer);
+    void DetectionState_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
     void ActorCause_LoadGameBGS(BGSLoadGameBuffer* buffer);
 };
 void* __cdecl operator new(unsigned int);
@@ -585,7 +586,7 @@ struct FUN_0066ca50_cls
     int unk60;
     float m_f4;
 
-    bool BSTreeNode_CheckForCollision(float dt);
+    bool BSTreeNode_CheckForCollision(float afTime);
 };
 struct SpawnedObject
 {
@@ -598,7 +599,7 @@ extern int DAT_011dea3c;
 int __cdecl ActionPoints_GetAttackAction(int a);
 float __cdecl ActionPoints_GetCost(int a);
 void __cdecl FUN_005e58f0(int a, int b, int c, float* d);
-float __cdecl GetObjectValue(SpawnedObject* obj);
+float __cdecl ActionPoints_GetWeaponAttackActionPoints(SpawnedObject* obj);
 extern "C" int __cdecl FUN_004019a0(void*);
 struct S_0066e2b0_Class : public FUN_0066df40_Class
 {
@@ -606,7 +607,7 @@ struct S_0066e2b0_Class : public FUN_0066df40_Class
 };
 struct G2;
 extern G2 g_011d6124;
-DetectionViewData* __cdecl FindStateByValue(int value);
+DetectionViewData* __cdecl ActorCause_GetActorCauseByID(int aiActorCauseID);
 struct SaveItemCls
 {
     void __thiscall SaveDetectionState(BGSSaveFormBuffer* buffer);
@@ -685,7 +686,7 @@ class E6D0Node
 };
 extern int g_iE6D0Header;
 extern E6D0Node g_kE6D0Items;
-void SaveE6D0Items(BGSSaveFormBuffer* pkBuffer);
+void ActorCause_SaveActorCausesList(BGSSaveFormBuffer* apSaveGameBuffer);
 struct ComparisonEntry
 {
     int PackageLocation_GetLocType();
@@ -705,7 +706,7 @@ struct E640Item
 };
 struct E640Cls : DetClassCls
 {
-    void __thiscall ActorCause_InitItem(BGSSaveFormBuffer* buffer);
+    void __thiscall ActorCause_InitLoadGame(BGSSaveFormBuffer* apLoadGameBuffer);
 };
 struct S_00660510_Context
 {
@@ -788,7 +789,10 @@ struct DetectionGroup
 };
 // @fnv 0x0066e100
 // src: COMMUNITY 0x0066e100
-void __cdecl ActorCause_ClearActor(unsigned int key)
+// pdb: ActorCause::ClearActor | ActorCause.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: plist, pcause, bfound, pdetection, pstate
+void __cdecl ActorCause_ClearActor(unsigned int apActor)
 {
     G2* node = &g_011d6124;
     while (node && !node->IsEmpty())
@@ -797,7 +801,7 @@ void __cdecl ActorCause_ClearActor(unsigned int key)
         node = node->FUN_00726070();
         if (group && group->ActorCause_IsValid())
         {
-            if (group->Modelloader_GetReferencedThis() == key)
+            if (group->Modelloader_GetReferencedThis() == apActor)
                 group->ClearAndReset();
             DetectionEntryList* child = group->FUN_00726070();
             bool removed = false;
@@ -805,7 +809,7 @@ void __cdecl ActorCause_ClearActor(unsigned int key)
             {
                 DetectionEntry* entry = child->FUN_006815c0();
                 child = child->FUN_00726070();
-                if (entry->key == key)
+                if (entry->key == apActor)
                 {
                     group->FUN_00726070()->RemoveMatchingItem(entry);
                     delete entry;

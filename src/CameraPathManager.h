@@ -12,13 +12,13 @@
 class CameraPathManager
 {
   public:
-    NiFormArray m_kCameraPathArray;
+    NiFormArray PathArray;
     NiTPrimitiveArray<BGSCameraPath*> m_kCameraPathList;
-    void InitializeCameraPaths();
+    void CreateDefaultPath();
     static BGSCameraPath* GetTextureResourcePath();
     void UpdateCameraPaths();
     void DestroyCameraPaths();
-    TESFile* BGSCameraPathManager_GetCameraPathToPlay(unsigned int arg1, unsigned int arg2);
+    TESFile* GetCameraPathToPlay(unsigned int apActionRef, unsigned int apTargetRef);
 
   protected:
     static BGSCameraPath* ms_pDefaultCameraPath;

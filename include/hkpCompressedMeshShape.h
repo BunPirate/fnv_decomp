@@ -23,7 +23,7 @@ public:
         MATERIAL_FOUR_BYTES_PER_TRIANGLE = 4
     };
 
-    hkpCompressedMeshShape(float value);
+    hkpCompressedMeshShape(float radius);
     hkpCompressedMeshShape(FinishingFlag flag) throw();
 
     unsigned int GetShapeIndexMask();
@@ -37,28 +37,28 @@ public:
     virtual void vf11(int);
     virtual void vf12(int, int);
 
-    int m_iBitsPerIndex;
-    int m_iBitsPerWIndex;
-    int m_iNumBitsForIndex;
-    int m_iNumBitsForWIndex;
-    float m_fSphereRadius;
-    unsigned char m_eWeldingType;
-    unsigned char m_ucMaterialType;
+    int m_bitsPerIndex;
+    int m_bitsPerWIndex;
+    int m_wIndexMask;
+    int m_indexMask;
+    float m_radius;
+    unsigned char m_weldingType;
+    unsigned char m_materialType;
     char pad2E[0x2];
-    hkArray<unsigned int> m_kMaterials;
-    hkArray<unsigned short> m_kMaterialIndices16;
-    hkArray<unsigned char> m_kMaterialIndices8;
-    hkArray<hkTransform> m_kTransforms;
-    hkArray<hkVector4> m_kBigVertices;
-    hkArray<hkpCompressedMeshShapeBigTriangle> m_kBigTriangles;
-    hkArray<hkpCompressedMeshShapeChunk> m_kChunks;
-    hkArray<hkpCompressedMeshShapeConvexPiece> m_kConvexPieces;
-    float m_eScriptError;
+    hkArray<unsigned int> m_materials;
+    hkArray<unsigned short> m_materials16;
+    hkArray<unsigned char> m_materials8;
+    hkArray<hkTransform> m_transforms;
+    hkArray<hkVector4> m_bigVertices;
+    hkArray<hkpCompressedMeshShapeBigTriangle> m_bigTriangles;
+    hkArray<hkpCompressedMeshShapeChunk> m_chunks;
+    hkArray<hkpCompressedMeshShapeConvexPiece> m_convexPieces;
+    float m_error;
     char pad94[0xC];
-    hkAabb m_kBounds;
-    void* m_pUserData;
-    unsigned short m_iIndexStriding;
-    unsigned short m_iNumTriangles;
-    hkArray<hkpNamedMeshMaterial> m_kNamedMaterials;
+    hkAabb m_bounds;
+    void* m_meshMaterials;
+    unsigned short m_materialStriding;
+    unsigned short m_numMaterials;
+    hkArray<hkpNamedMeshMaterial> m_namedMaterials;
     char padD4[0x1C];
 };

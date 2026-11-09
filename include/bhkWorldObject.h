@@ -6,6 +6,7 @@ class bhkFilter;
 class bhkShape;
 class hkSerializableCinfo;
 
+// pdb: class bhkWorldObject, size 0x14, bases: bhkSerializable, 1 members
 class bhkWorldObject : public bhkSerializable
 {
 public:

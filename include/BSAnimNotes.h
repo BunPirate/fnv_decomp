@@ -2,15 +2,16 @@
 
 #include "NiObject.h"
 
+// pdb: class BSAnimNotes, size 0x10, bases: NiObject, 2 members
 class BSAnimNotes : public NiObject
 {
 public:
     virtual ~BSAnimNotes();
     virtual bool RegisterStreamables(NiStream& arStream);
 
-    void Destroy();
+    void BSAnimNotes_dtor();
     void* DestroyIfFlagged(unsigned int auiFlags);
 
-    NiObject** m_ppNotes;
-    unsigned short m_usNumAnimNotes;
+    NiObject** NoteA;
+    unsigned short usNumNotes;
 };

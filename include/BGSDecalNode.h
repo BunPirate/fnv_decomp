@@ -6,6 +6,7 @@ class BSTempEffect;
 class GO;
 template <class T> class BSSimpleList;
 
+// pdb: class BGSDecalNode, size 0xe0 (here 0xb4), bases: NiNode, 2 members
 class BGSDecalNode : public NiNode
 {
   public:
@@ -32,10 +33,10 @@ class BGSDecalNode : public NiNode
     static void RemoveAllDecals();
     void FUN_004ee1e0();
     void FUN_004ee390();
-    void AttachChild(BSTempEffect* effect, bool firstAvailable);
+    void AttachChild(BSTempEffect* apDecal, bool bFirstAvail);
     void AttachChild_004ee4d0(NiAVObject* object, bool firstAvailable);
     void ProcessState_004ee560(int value);
-    void OnVisible_004ee610(int value);
+    void OnVisible_004ee610(int arCuller);
     void* DestroyDecalNode(unsigned int flags);
 
     BSSimpleList<GO>* pList;

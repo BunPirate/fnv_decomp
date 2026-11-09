@@ -2,26 +2,29 @@
 
 #include "tesregiondatasound_decls.h"
 // @fnv 0x004f4860
-bool TESRegionDataSound::LoadRegionSoundData(TESFile* file)
+// pdb: TESRegionDataSound::LoadRegionDataSound | TESRegionDataSound.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: ptmpSound, itrash, tempint, pmusic, tmpSound, tmpArray, entrySize, uicount, uisize, i
+bool TESRegionDataSound::LoadRegionSoundData(TESFile* apFile)
 {
     unsigned int sound = 0;
-    switch ((int)file->GetChunkID())
+    switch ((int)apFile->GetChunkID())
     {
     case 0x444d4452: {
         unsigned int music = 0;
-        file->GetChunkData(&music, 0);
+        apFile->GetChunkData(&music, 0);
         break;
     }
     case 0x4f4d4452: {
         unsigned int unused = 0;
         {
             unsigned int id = 0;
-            file->GetChunkData(&id);
+            apFile->GetChunkData(&id);
             if (id)
             {
-                if (file->IsEndianConversionRequired())
+                if (apFile->IsEndianConversionRequired())
                     reinterpret_cast<RegionDataEntry&>(sounds.pType).Endian();
-                TESForm::RemapFormIDForFile(id, file);
+                TESForm::RemapFormIDForFile(id, apFile);
                 BGSMusicType* music = dynamic_cast<BGSMusicType*>(TESForm::GetFormByID(id));
                 if (!music)
                     Warning("MASTERFILE: Unable to find music type (%08X).", id);
@@ -32,20 +35,20 @@ bool TESRegionDataSound::LoadRegionSoundData(TESFile* file)
     }
     case 0x49534452: {
         unsigned int id = 0;
-        file->GetChunkData(&id);
+        apFile->GetChunkData(&id);
         if (id)
             sounds.uiIncidentalMediaSet = id;
         break;
     }
     case 0x42534452: {
         unsigned int id = 0;
-        file->GetChunkData(&id);
+        apFile->GetChunkData(&id);
         reinterpret_cast<BSSimpleList<ScriptVariableInfo*>*>(&sounds.battleMediaSetList)->AddTail(
             reinterpret_cast<ScriptVariableInfo* const&>(id));
         break;
     }
     case 0x44534452: {
-        unsigned int uiChunkSize = file->GetChunkSize();
+        unsigned int uiChunkSize = apFile->GetChunkSize();
         {
             unsigned int count;
             {
@@ -54,16 +57,16 @@ bool TESRegionDataSound::LoadRegionSoundData(TESFile* file)
                 if (uiChunkSize == 4)
                     return false;
                 RegionSoundEntry* buffer = new RegionSoundEntry[count];
-                file->GetChunkData(buffer, count * sizeof(RegionSoundEntry));
+                apFile->GetChunkData(buffer, count * sizeof(RegionSoundEntry));
                 {
                     RegionSoundEntry* entry;
                     for (unsigned int i = 0; i < count; i++)
                     {
                         entry = new RegionSoundEntry;
                         *entry = buffer[i];
-                        if (file->IsEndianConversionRequired())
+                        if (apFile->IsEndianConversionRequired())
                             reinterpret_cast<ContainerItemExtraFileData*>(entry)->Endian();
-                        TESForm::RemapFormIDForFile(entry->sound, file);
+                        TESForm::RemapFormIDForFile(entry->sound, apFile);
                         if (entry && entry->sound && g_dataHandler->FUN_004615d0(entry->sound))
                         {
                             sound = g_dataHandler->FUN_004615d0(entry->sound);
@@ -89,7 +92,7 @@ bool TESRegionDataSound::LoadRegionSoundData(TESFile* file)
 struct MersenneTwister
 {
     void Init(unsigned int);
-    void Seed(unsigned int);
+    void BSRandom_Seed(unsigned int);
     void Kill();
     unsigned int GetRandomUInt(unsigned int, unsigned int);
     unsigned int GetRandomUInt();
@@ -115,6 +118,8 @@ struct FUN_00944480_shell : public MersenneTwister
 };
 
 // @fnv 0x00944480
+// pdb: BSRandom::Int | TESRegionDataSound.obj | debug, call graph, medium
+// pdb params: aiMin, aiMax
 int FUN_00944480_shell::IntInRange(int aiMin, int aiMax)
 {
     return GetRandomUInt(aiMax - aiMin) + aiMin;
@@ -130,6 +135,9 @@ struct Arg_004727f0
 };
 // Reads a 4-byte chunk value into a.out and byte-swaps it when endian conversion is required; returns whether the read succeeded.
 // @fnv 0x004727f0
+// pdb: TESFile::GetChunkData | TESFile.obj | debug, call graph, medium
+// pdb params: apData
+// pdb locals: bres
 bool __fastcall ReadChunkInt(TESFile* self, Arg_004727f0 aChunkArg)
 {
     bool ok = self->GetChunkData(aChunkArg.out, 4);
@@ -146,6 +154,7 @@ struct FUN_004f4330_shell : TESRegionDataSound
 };
 
 // @fnv 0x004f4330
+// pdb: TESRegionDataSound::GetMediaSetIncidentals | TESRegionDataSound.obj | debug, vtable slot, medium
 TESForm* FUN_004f4330_shell::GetSoundForm()
 {
     return GetFormByID(*reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(this) + 0x14));
@@ -161,6 +170,8 @@ struct FUN_004f4830_shell
 
 // Initialises the object's fields to a=0, b=0xf and c=0, then returns this.
 // @fnv 0x004f4830
+// pdb: RandomInt | TESRegionDataSound.obj | retail, object-file run extension, low
+// pdb params: aiMin, aiMax
 FUN_004f4830_shell* FUN_004f4830_shell::Reset()
 {
     a = 0;
@@ -194,6 +205,8 @@ struct S004f4350
     void __thiscall SetMediaSet(MediaSet* ms);
 };
 // @fnv 0x004f4350
+// pdb: TESRegionDataSound::SetMediaSetIncidentals | TESRegionDataSound.obj | debug, vtable slot, medium
+// pdb params: ms
 void __thiscall S004f4350::SetMediaSet(MediaSet* pMediaSet)
 {
     *(unsigned int*)((char*)this + 0x14) = pMediaSet ? ((C0084e3a0*)pMediaSet)->_ref_0084e3a0() : 0;
@@ -207,6 +220,7 @@ struct F4390_standin
 void _Deallocate(void*);
 // Calls FUN_004f4520, then frees this via _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x004f4390
+// pdb: TESRegionDataSound::`scalar deleting destructor' | TESRegionDataSound.obj | retail, vtable slot, high
 void* F4390_standin::FUN_004f4390(unsigned int flags)
 {
     FUN_004f4520();
@@ -232,6 +246,7 @@ struct FUN_004f43c0
     FUN_004f43c0();
 };
 // @fnv 0x004f43c0
+// pdb: TESRegionSounds::TESRegionSounds | TESRegionDataSound.obj | debug, object-file run extension, low
 FUN_004f43c0::FUN_004f43c0()
 {}
 
@@ -249,6 +264,8 @@ struct FUN_004f4420
 };
 // Destructor for the object; destroys its two ListX members and returns.
 // @fnv 0x004f4420
+// pdb: TESRegionDataSound::TESRegionDataSound | TESRegionDataSound.obj | debug, object-file run extension, low
+// pdb params: aData
 FUN_004f4420::~FUN_004f4420()
 {}
 
@@ -326,6 +343,9 @@ class FUN_004f4480 : public F4480Base
 
 // Copy-constructs from kOther: copies the base, sets the owner, copies m_iID and clears m_kPending.
 // @fnv 0x004f4480
+// pdb: TESRegionDataSound::TESRegionDataSound | TESRegionDataSound.obj | debug, object-file run extension, low
+// pdb params: aData
+// pdb locals: ptest, tList
 FUN_004f4480::FUN_004f4480(const FUN_004f4480& kOther) : F4480Base(kOther)
 {
     SetOwner(kOther.GetOwner());
@@ -397,6 +417,7 @@ struct FUN_004f4520_cls : SndBase
 };
 
 // @fnv 0x004f4520
+// pdb: TESRegionDataSound::~TESRegionDataSound | TESRegionDataSound.obj | debug, object-file run extension, low
 FUN_004f4520_cls::~FUN_004f4520_cls()
 {
     Cleanup();
@@ -418,6 +439,8 @@ struct RegionSoundWriter : TESRegionDataSound
 };
 // Serializes the region's music type, sounds.uiIncidentalMediaSet sound, battle music IDs and sound records through FUN_00485910/AppendChunk.
 // @fnv 0x004f4590
+// pdb: TESRegionDataSound::Save | TESRegionDataSound.obj | retail, vtable slot, high
+// pdb locals: tmpSound, tmpBattle, uicount, tempint, tmpList, i, tmpArray
 void RegionSoundWriter::WriteRegionSoundData()
 {
     WriteSaveData(this);
@@ -494,10 +517,13 @@ class RegionBlend
 };
 // Blends this region's override, priority and music from a type-7 source region, weighting priorities when neither overrides.
 // @fnv 0x004f4cf0
-void RegionBlend::BlendFrom(RegionBlend* source, void* context)
+// pdb: TESRegionDataSound::BlendInto | TESRegionDataSound.obj | retail, vtable slot, high
+// pdb params: apRegionData, aiTotalBlending
+// pdb locals: pdataIn, fnewPriority
+void RegionBlend::BlendFrom(RegionBlend* apRegionData, void* aiTotalBlending)
 {
-    RegionBlend* other = source;
-    if (!source || source->Type() != 7 || !context)
+    RegionBlend* other = apRegionData;
+    if (!apRegionData || apRegionData->Type() != 7 || !aiTotalBlending)
         return;
     if (emptyFlag)
     {
@@ -559,6 +585,8 @@ struct S004
 };
 // Allocates a new Obj4480 instance with this S004 as owner and returns the pointer.
 // @fnv 0x004f4c70
+// pdb: TESRegionDataSound::Copy | TESRegionDataSound.obj | retail, vtable slot, high
+// pdb locals: pdata
 Obj4480* S004::CreateObj4480()
 {
     Obj4480* result = new Obj4480(this);

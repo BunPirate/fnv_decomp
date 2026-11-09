@@ -13,13 +13,13 @@ struct GlobalObjectO2_00a7b610
 {
 };
 
-extern GlobalObjectO2_00a7b610 g_011f5f40;
+extern GlobalObjectO2_00a7b610 NiFloatExtraData_ms_RTTI;
 
 // @fnv 0x00a9a420
 // src: COMMUNITY 0x00a9a420
 GlobalObjectO2_00a7b610* __cdecl NiFloatExtraData_GetRTTI()
 {
-    return &g_011f5f40;
+    return &NiFloatExtraData_ms_RTTI;
 }
 
 extern void* DAT_010a0ec4;
@@ -27,6 +27,7 @@ extern void __cdecl DestroyFields_00a7b300();
 extern void __cdecl operator delete(void*, unsigned int);
 
 // @fnv 0x00a9a4b0
+// pdb: NiFloatExtraData::`scalar deleting destructor' | NiFloatExtraData.obj | retail, object-file gap fill, high
 void* NiFloatExtraData::Destroy(unsigned int flags)
 {
     *reinterpret_cast<void**>(this) = &DAT_010a0ec4;
@@ -49,6 +50,10 @@ bool __fastcall MatchesFloatValue(NiFloatExtraData* self, void*, NiObject* pObje
 }
 
 // @fnv 0x00a9a430
+// pdb: NiFloatExtraData::CreateClone | NiFloatExtraData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatExtraData::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 void* NiExtraData::CloneFloatExtraData(void* kCloning)
 {
     NiFloatExtraData* pkObject;
@@ -72,6 +77,8 @@ namespace fnv_00a9a480 {
 
 // @fnv 0x00a9a480
 // src: EXE 0x00a9a480
+// pdb: NiFloatExtraData::CreateObject | NiFloatExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiFloatExtraData_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x10);
@@ -89,6 +96,8 @@ void* __cdecl NiFloatExtraData_CreateObject()
 namespace fnv_00a9a4e0 {
 // Calls NiExtraData::SaveBinary then writes the 4-byte m_fValue to the stream and advances its position.
 // @fnv 0x00a9a4e0
+// pdb: NiFloatExtraData::SaveBinary | NiFloatExtraData.obj | retail, vtable slot, high
+// pdb params: kStream
 void __fastcall SaveFloatExtraData(NiFloatExtraData* self, void*, NiStream& stream)
 {
     self->NiExtraData::SaveBinary(stream);
@@ -108,12 +117,14 @@ char* __cdecl _FUN_00a7d330(GlobalObjectO2_00a7b610* object);
 char* __cdecl NiGetViewerString_00a7d550(char const* name, float value);
 
 // @fnv 0x00a9a520
+// pdb: NiFloatExtraData::GetViewerStrings | NiFloatExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
 void __fastcall AppendViewerStrings(NiFloatExtraData* self, void* unused, StrArr* strings)
 {
     GetExtraDataViewerStrings(self, unused, strings);
 
     char* value =
-        _FUN_00a7d330(reinterpret_cast<GlobalObjectO2_00a7b610*>(*reinterpret_cast<unsigned int*>(&g_011f5f40)));
+        _FUN_00a7d330(reinterpret_cast<GlobalObjectO2_00a7b610*>(*reinterpret_cast<unsigned int*>(&NiFloatExtraData_ms_RTTI)));
 
     unsigned int index = strings->m_usSize;
 

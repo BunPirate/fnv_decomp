@@ -5,15 +5,16 @@
 class NiRenderTargetGroup;
 class NiRenderedTexture;
 
+// pdb: class BSRenderedTexture, size 0x40, bases: NiObject, 6 members
 class BSRenderedTexture
 {
   public:
     unsigned char base[8];
-    NiRenderTargetGroup* m_apRenderTargetGroups[6];
-    char unk20[4];
-    char m_acDataAtOffset36[4];
-    char m_acDataAtOffset40[4];
-    int m_iDataAtOffset44;
+    NiRenderTargetGroup* spGroup[6];
+    char spPreRestoreGroup[4];
+    char spRestoreGroup[4];
+    char spPostRestoreGroup[4];
+    int iAliasedType;
     NiRenderedTexture* spTexture[4];
 
     NiRenderTargetGroup* GetGroup();

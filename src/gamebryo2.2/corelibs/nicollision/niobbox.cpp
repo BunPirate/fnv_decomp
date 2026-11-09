@@ -48,9 +48,9 @@ inline NiPoint3 NiPoint3::operator-(const NiPoint3& kV) const
     return NiPoint3(x - kV.x, y - kV.y, z - kV.z);
 }
 
-inline NiPoint3 NiPoint3::Cross(const NiPoint3& r) const
+inline NiPoint3 NiPoint3::Cross(const NiPoint3& pt) const
 {
-    return NiPoint3(y * r.z - z * r.y, z * r.x - x * r.z, x * r.y - y * r.x);
+    return NiPoint3(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
 }
 
 inline NiPoint3 operator*(float s, const NiPoint3& p)
@@ -75,20 +75,23 @@ struct S_00eba480
     NiPoint3 m_akWorldAxis[3];
     float m_afWorldExtent[3];
 
-    void UpdateWorldBounds(const NiTransform& kXform);
+    void NiOBBox_Transform(const NiTransform& xform);
 };
 
 // Transforms the center, axes and extents by kXform into the world-space center, axes and extents.
 // @fnv 0x00eba480
-void S_00eba480::UpdateWorldBounds(const NiTransform& kXform)
+// src: XBOX_RETAIL_PDB 0x00eba480
+// pdb: NiOBBox::Transform | NiOBBox.obj | retail, call graph, high
+// pdb params: xform
+void S_00eba480::NiOBBox_Transform(const NiTransform& xform)
 {
-    m_kWorldCenter = kXform.m_fScale * (kXform.m_Rotate * m_kCenter) + kXform.m_Translate;
-    m_akWorldAxis[0] = kXform.m_Rotate * m_akAxes[0];
-    m_akWorldAxis[1] = kXform.m_Rotate * m_akAxes[1];
-    m_akWorldAxis[2] = kXform.m_Rotate * m_akAxes[2];
-    m_afWorldExtent[0] = m_afExtents[0] * kXform.m_fScale;
-    m_afWorldExtent[1] = m_afExtents[1] * kXform.m_fScale;
-    m_afWorldExtent[2] = m_afExtents[2] * kXform.m_fScale;
+    m_kWorldCenter = xform.m_fScale * (xform.m_Rotate * m_kCenter) + xform.m_Translate;
+    m_akWorldAxis[0] = xform.m_Rotate * m_akAxes[0];
+    m_akWorldAxis[1] = xform.m_Rotate * m_akAxes[1];
+    m_akWorldAxis[2] = xform.m_Rotate * m_akAxes[2];
+    m_afWorldExtent[0] = m_afExtents[0] * xform.m_fScale;
+    m_afWorldExtent[1] = m_afExtents[1] * xform.m_fScale;
+    m_afWorldExtent[2] = m_afExtents[2] * xform.m_fScale;
 }
 
 extern double DAT_01032980;
@@ -118,11 +121,15 @@ struct S_00ebf4a0_Class
     float unk70;
     float unk74;
 
-    void ProjectOntoAxes(const NiPoint3* in, NiPoint3* out);
+    void NiOBBox_ComputeNormal(const NiPoint3* p, NiPoint3* normal);
 };
 
 // @fnv 0x00ebf4a0
-void S_00ebf4a0_Class::ProjectOntoAxes(const NiPoint3* in, NiPoint3* out)
+// src: XBOX_RETAIL_PDB 0x00ebf4a0
+// pdb: NiOBBox::ComputeNormal | NiOBBox.obj | retail, call graph, high
+// pdb params: p, normal
+// pdb locals: diff, fEpsilon, unitExtent
+void S_00ebf4a0_Class::NiOBBox_ComputeNormal(const NiPoint3* p, NiPoint3* normal)
 {
     NiPoint3 norm;
     norm.x = unk6C;
@@ -132,34 +139,34 @@ void S_00ebf4a0_Class::ProjectOntoAxes(const NiPoint3* in, NiPoint3* out)
 
     if (norm.x <= DAT_01032980)
     {
-        *out = unk48;
+        *normal = unk48;
         return;
     }
     if (norm.y <= DAT_01032980)
     {
-        *out = unk54;
+        *normal = unk54;
         return;
     }
     if (norm.z <= DAT_01032980)
     {
-        *out = unk60;
+        *normal = unk60;
         return;
     }
 
-    norm.x = in->x - unk3C.x;
-    norm.y = in->y - unk3C.y;
-    norm.z = in->z - unk3C.z;
+    norm.x = p->x - unk3C.x;
+    norm.y = p->y - unk3C.y;
+    norm.z = p->z - unk3C.z;
 
     float fDotX = norm.x * unk48.x + norm.y * unk48.y + norm.z * unk48.z;
-    out->x = fDotX / (unk6C * unk6C);
+    normal->x = fDotX / (unk6C * unk6C);
 
     float fDotY = norm.x * unk54.x + norm.y * unk54.y + norm.z * unk54.z;
-    out->y = fDotY / (unk70 * unk70);
+    normal->y = fDotY / (unk70 * unk70);
 
     float fDotZ = norm.x * unk60.x + norm.y * unk60.y + norm.z * unk60.z;
-    out->z = fDotZ / (unk74 * unk74);
+    normal->z = fDotZ / (unk74 * unk74);
 
-    out->Unitize_004a0c10();
+    normal->Unitize_004a0c10();
 }
 
 #include <math.h>
@@ -179,25 +186,28 @@ struct NiOBB
     float m_afWorldExtent[3];
     NiOBBRoot* m_pkTreeNode;
 
-    int NiOBBox_FindIntersection(const NiOBB& kBox, float& rfTime, NiPoint3& rkPoint);
+    int NiOBBox_FindIntersection(const NiOBB& box, float& t, NiPoint3& p);
 };
 
 // Tests swept OBB collision against kBox, writing the earliest collision time to rfTime and the contact point to rkPoint, returning 1 on hit or 0 on miss.
 // @fnv 0x00ebc2a0
 // src: GAMEBRYO_LIB 0x00ebc2a0
-int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint3& rkHitPoint)
+// pdb: NiOBBox::FindIntersection | NiOBBox.obj | retail, upstream name already matches, high
+// pdb params: box, t, p
+// pdb locals: u1, d1, side, j, dt, tintr, D, V1, A, r0, epsilon, bd, rsum, C, d0, extA, B, V, tmax, div, DTW, tmp, extB, u0 ...
+int NiOBB::NiOBBox_FindIntersection(const NiOBB& box, float& t, NiPoint3& p)
 {
     const NiPoint3* pkA = m_akWorldBasis;
-    const NiPoint3* pkB = kBox.m_akWorldBasis;
+    const NiPoint3* pkB = box.m_akWorldBasis;
     const float* pfExtentsA = m_afWorldExtent;
-    const float* pfExtentsB = kBox.m_afWorldExtent;
+    const float* pfExtentsB = box.m_afWorldExtent;
 
     float fRadiusA, fRadiusB, fRadiusSum, fProjNow, fProjEnd;
     float aafDotProducts[3][3];
     float afD0[3], afD1[3];
 
-    NiPoint3 kDiff = kBox.m_kWorldCenter - m_kWorldCenter;
-    NiPoint3 kVel = kBox.m_pkTreeNode->GetSourceVelocity() - m_pkTreeNode->GetSourceVelocity();
+    NiPoint3 kDiff = box.m_kWorldCenter - m_kWorldCenter;
+    NiPoint3 kVel = box.m_pkTreeNode->GetSourceVelocity() - m_pkTreeNode->GetSourceVelocity();
     float fTimeStep = m_pkTreeNode->GetDeltaTime();
 
     int iType = 0, iSide = 0;
@@ -668,7 +678,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         }
     }
 
-    rfHitTime = fEarliestTime;
+    t = fEarliestTime;
 
     const float fEpsilon = 1e-06f;
     int i, j;
@@ -676,7 +686,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
 
     NiPoint3 kDTW;
     const NiPoint3& kV0 = m_pkTreeNode->GetSourceVelocity();
-    const NiPoint3& kV1 = kBox.m_pkTreeNode->GetSourceVelocity();
+    const NiPoint3& kV1 = box.m_pkTreeNode->GetSourceVelocity();
 
     switch (iType)
     {
@@ -693,7 +703,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
             else
                 afY[j] = 0.0f;
         }
-        rkHitPoint = kBox.m_kWorldCenter + rfHitTime * kV1 + afY[0] * pkB[0] + afY[1] * pkB[1] + afY[2] * pkB[2];
+        p = box.m_kWorldCenter + t * kV1 + afY[0] * pkB[0] + afY[1] * pkB[1] + afY[2] * pkB[2];
         break;
     }
     case 4:
@@ -709,7 +719,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
             else
                 afX[i] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 7: {
@@ -740,7 +750,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[0][0] * aafDotProducts[0][0];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[0] * kDTW;
             fProjB = pkB[0] * kDTW;
             fTmp = aafDotProducts[1][0] * afX[1] + aafDotProducts[2][0] * afX[2] - fProjB;
@@ -752,7 +762,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[0] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 8: {
@@ -783,7 +793,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[0][1] * aafDotProducts[0][1];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[0] * kDTW;
             fProjB = pkB[1] * kDTW;
             fTmp = aafDotProducts[1][1] * afX[1] + aafDotProducts[2][1] * afX[2] - fProjB;
@@ -795,7 +805,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[0] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 9: {
@@ -826,7 +836,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[0][2] * aafDotProducts[0][2];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[0] * kDTW;
             fProjB = pkB[2] * kDTW;
             fTmp = aafDotProducts[1][2] * afX[1] + aafDotProducts[2][2] * afX[2] - fProjB;
@@ -838,7 +848,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[0] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 10: {
@@ -869,7 +879,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[1][0] * aafDotProducts[1][0];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[1] * kDTW;
             fProjB = pkB[0] * kDTW;
             fTmp = aafDotProducts[0][0] * afX[0] + aafDotProducts[2][0] * afX[2] - fProjB;
@@ -881,7 +891,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[1] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 11: {
@@ -912,7 +922,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[1][1] * aafDotProducts[1][1];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[1] * kDTW;
             fProjB = pkB[1] * kDTW;
             fTmp = aafDotProducts[0][1] * afX[0] + aafDotProducts[2][1] * afX[2] - fProjB;
@@ -924,7 +934,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[1] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 12: {
@@ -955,7 +965,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[1][2] * aafDotProducts[1][2];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[1] * kDTW;
             fProjB = pkB[2] * kDTW;
             fTmp = aafDotProducts[0][2] * afX[0] + aafDotProducts[2][2] * afX[2] - fProjB;
@@ -967,7 +977,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[1] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 13: {
@@ -998,7 +1008,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[2][0] * aafDotProducts[2][0];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[2] * kDTW;
             fProjB = pkB[0] * kDTW;
             fTmp = aafDotProducts[0][0] * afX[0] + aafDotProducts[1][0] * afX[1] - fProjB;
@@ -1010,7 +1020,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[2] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 14: {
@@ -1041,7 +1051,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[2][1] * aafDotProducts[2][1];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[2] * kDTW;
             fProjB = pkB[1] * kDTW;
             fTmp = aafDotProducts[0][1] * afX[0] + aafDotProducts[1][1] * afX[1] - fProjB;
@@ -1053,7 +1063,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[2] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     case 15: {
@@ -1084,7 +1094,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         fDenom = 1.0f - aafDotProducts[2][2] * aafDotProducts[2][2];
         if (NiAbs(fDenom) > fEpsilon)
         {
-            kDTW = kDiff + rfHitTime * kVel;
+            kDTW = kDiff + t * kVel;
             fProjA = pkA[2] * kDTW;
             fProjB = pkB[2] * kDTW;
             fTmp = aafDotProducts[0][2] * afX[0] + aafDotProducts[1][2] * afX[1] - fProjB;
@@ -1096,7 +1106,7 @@ int NiOBB::NiOBBox_FindIntersection(const NiOBB& kBox, float& rfHitTime, NiPoint
         {
             afX[2] = 0.0f;
         }
-        rkHitPoint = m_kWorldCenter + rfHitTime * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
+        p = m_kWorldCenter + t * kV0 + afX[0] * pkA[0] + afX[1] * pkA[1] + afX[2] * pkA[2];
         break;
     }
     }
@@ -1132,12 +1142,16 @@ struct S_00ebf610_Box
     NiPoint3 m_kCenterPosition;
     NiPoint3 m_kAxisEndPoints[3];
     float m_fExtents[3];
-    int IntersectRay(const NiPoint3& origin, const NiPoint3& dir);
+    int NiOBBox_TestIntersection(const NiPoint3& origin, const NiPoint3& dir);
 };
 
 // Tests whether a ray from origin along dir intersects this oriented box, returning 1 on hit and 0 on miss.
 // @fnv 0x00ebf610
-int S_00ebf610_Box::IntersectRay(const NiPoint3& origin, const NiPoint3& dir)
+// src: XBOX_RETAIL_PDB 0x00ebf610
+// pdb: NiOBBox::TestIntersection | NiOBBox.obj | retail, call graph, high
+// pdb params: box
+// pdb locals: u1, d1, afVA, dt, D, A, r0, kVxD, R, rsum, C, d0, extA, R01, B, V, R0, extB, u0, r1, afVB, R1
+int S_00ebf610_Box::NiOBBox_TestIntersection(const NiPoint3& origin, const NiPoint3& dir)
 {
     float fNearT = DAT_01015f5c;
     float fFarT = DAT_01016970;
@@ -1230,21 +1244,24 @@ struct BoxE
     {
         return extents[i];
     }
-    int NiOBBox_TestIntersection(const BoxE& other);
+    int NiOBBox_TestIntersection(const BoxE& box);
 };
 // Performs a swept OBB vs OBB collision test using relative motion over root->GetDeltaTime(), returning 1 if the boxes intersect during the sweep.
 // @fnv 0x00eba680
 // src: GAMEBRYO_LIB 0x00eba680
-int BoxE::NiOBBox_TestIntersection(const BoxE& other)
+// pdb: NiOBBox::TestIntersection | NiOBBox.obj | retail, call graph, high
+// pdb params: box
+// pdb locals: u1, d1, afVA, dt, D, A, r0, kVxD, R, rsum, C, d0, extA, R01, B, V, R0, extB, u0, r1, afVB, R1
+int BoxE::NiOBBox_TestIntersection(const BoxE& box)
 {
     const NiPoint3* a = axes;
-    const NiPoint3* b = other.axes;
+    const NiPoint3* b = box.axes;
     const float* pExtents = extents;
-    const float* pOtherExtents = other.extents;
+    const float* pOtherExtents = box.extents;
     float fOwnRadius, fOtherRadius, fTotalRadius, start, end;
     float c[3][3], fStartProj[3], fEndProj[3];
-    NiPoint3 vDelta = other.center - center;
-    NiPoint3 vMotion = reinterpret_cast<const NiPoint3&>(other.root->GetSourceVelocity()) -
+    NiPoint3 vDelta = box.center - center;
+    NiPoint3 vMotion = reinterpret_cast<const NiPoint3&>(box.root->GetSourceVelocity()) -
                       reinterpret_cast<const NiPoint3&>(root->GetSourceVelocity());
     float step = root->GetDeltaTime();
 
@@ -1340,7 +1357,7 @@ int BoxE::NiOBBox_TestIntersection(const BoxE& other)
             return 0;
     }
     fOwnRadius = magnitude(pExtents[1] * c[2][2]) + magnitude(pExtents[2] * c[1][2]);
-    fOtherRadius = magnitude(other.extents[0] * c[0][1]) + magnitude(pOtherExtents[1] * c[0][0]);
+    fOtherRadius = magnitude(box.extents[0] * c[0][1]) + magnitude(pOtherExtents[1] * c[0][0]);
     fTotalRadius = fOwnRadius + fOtherRadius;
     start = fStartProj[2] * c[1][2] - fStartProj[1] * c[2][2];
     if (start > fTotalRadius)
@@ -1468,15 +1485,15 @@ int BoxE::NiOBBox_TestIntersection(const BoxE& other)
     projection2 = vMotion.Dot(a[0]);
     distance = magnitude(a[1].Dot(vSweep));
     fOwnProj = Extent(2) * magnitude(projection2) + pExtents[0] * magnitude(projection1);
-    fOtherProj = other.Extent(0) * magnitude(c[2][0] * projection2 - c[0][0] * projection1) +
-                 other.extents[1] * magnitude(c[2][1] * projection2 - c[0][1] * projection1) +
-                 other.extents[2] * magnitude(c[2][2] * projection2 - c[0][2] * projection1);
+    fOtherProj = box.Extent(0) * magnitude(c[2][0] * projection2 - c[0][0] * projection1) +
+                 box.extents[1] * magnitude(c[2][1] * projection2 - c[0][1] * projection1) +
+                 box.extents[2] * magnitude(c[2][2] * projection2 - c[0][2] * projection1);
     fTotalProj = fOwnProj + fOtherProj;
     if (distance > fTotalProj)
         return 0;
     distance = magnitude(a[2].Dot(vSweep));
     fOwnProj = pExtents[0] * magnitude(va[1]) + pExtents[1] * magnitude(projection2);
-    fOtherProj = other.extents[0] * magnitude(c[0][0] * va[1] - c[1][0] * projection2) +
+    fOtherProj = box.extents[0] * magnitude(c[0][0] * va[1] - c[1][0] * projection2) +
                  pOtherExtents[1] * magnitude(c[0][1] * va[1] - c[1][1] * projection2) +
                  pOtherExtents[2] * magnitude(c[0][2] * va[1] - c[1][2] * projection2);
     fTotalProj = fOwnProj + fOtherProj;
@@ -1488,7 +1505,7 @@ int BoxE::NiOBBox_TestIntersection(const BoxE& other)
     fOwnProj = pExtents[0] * magnitude(c[0][1] * vb[2] - c[0][2] * vb[1]) +
                pExtents[1] * magnitude(c[1][1] * vb[2] - c[1][2] * vb[1]) +
                Extent(2) * magnitude(c[2][1] * vb[2] - c[2][2] * vb[1]);
-    fOtherProj = other.extents[2] * magnitude(vb[1]) + other.extents[1] * magnitude(vb[2]);
+    fOtherProj = box.extents[2] * magnitude(vb[1]) + box.extents[1] * magnitude(vb[2]);
     fTotalProj = fOwnProj + fOtherProj;
     if (distance > fTotalProj)
         return 0;
@@ -1497,7 +1514,7 @@ int BoxE::NiOBBox_TestIntersection(const BoxE& other)
     fOwnProj = extents[0] * magnitude(c[0][2] * vb[0] - c[0][0] * vb[2]) +
                Extent(1) * magnitude(c[1][2] * vb[0] - c[1][0] * vb[2]) +
                Extent(2) * magnitude(c[2][2] * vb[0] - c[2][0] * vb[2]);
-    fOtherProj = other.extents[2] * magnitude(vb[0]) + other.Extents()[0] * magnitude(vb[2]);
+    fOtherProj = box.extents[2] * magnitude(vb[0]) + box.Extents()[0] * magnitude(vb[2]);
     fTotalProj = fOwnProj + fOtherProj;
     if (distance > fTotalProj)
         return 0;
@@ -1505,7 +1522,7 @@ int BoxE::NiOBBox_TestIntersection(const BoxE& other)
     fOwnProj = pExtents[0] * magnitude(c[0][0] * vb[1] - c[0][1] * vb[0]) +
                pExtents[1] * magnitude(c[1][0] * vb[1] - c[1][1] * vb[0]) +
                pExtents[2] * magnitude(c[2][0] * vb[1] - c[2][1] * vb[0]);
-    fOtherProj = other.extents[0] * magnitude(vb[1]) + other.extents[1] * magnitude(vb[0]);
+    fOtherProj = box.extents[0] * magnitude(vb[1]) + box.extents[1] * magnitude(vb[0]);
     fTotalProj = fOwnProj + fOtherProj;
     if (distance > fTotalProj)
         return 0;

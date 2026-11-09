@@ -206,7 +206,7 @@ void __cdecl BSUtilities_GetInverseWorldMatrix(unsigned char*, int, Matrix4_b7dd
 struct BloodDraw_b7dde0
 {
     void ShadowLightShader_SetupGeometryOpt_WorldViewProj(GeometryView_b7dde0*, unsigned char*);
-    void BSShader_SetLightDirection(Matrix4_b7dde0*);
+    void ShadowLightShader_SetupGeometryOpt_LightDir(Matrix4_b7dde0*);
     void* GetTextureByIndex(char*, int);
 
     void ShadowLightShader_Setup_ADT_Opt(DrawArgument_b7dde0*);
@@ -214,6 +214,9 @@ struct BloodDraw_b7dde0
 
 // @fnv 0x00b7dde0
 // src: COMMUNITY 0x00b7dde0
+// pdb: ShadowLightShader::SetupGeometry_ADT_Opt | ShadowLightShader.obj | debug, object-file gap fill, medium
+// pdb params: apState
+// pdb locals: pgeometry, d3dInvWorld, apRenderPass, pkStage, aWorld, pprop
 void BloodDraw_b7dde0::ShadowLightShader_Setup_ADT_Opt(DrawArgument_b7dde0* argument)
 {
     TextureSource_b7dde0* source = argument->source;
@@ -248,5 +251,5 @@ void BloodDraw_b7dde0::ShadowLightShader_Setup_ADT_Opt(DrawArgument_b7dde0* argu
 
     BSUtilities_GetInverseWorldMatrix(field, 0, &local);
     ShadowLightShader_SetupGeometryOpt_WorldViewProj(geom, field);
-    BSShader_SetLightDirection(&local);
+    ShadowLightShader_SetupGeometryOpt_LightDir(&local);
 }

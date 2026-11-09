@@ -10,7 +10,7 @@
 // @fnv 0x006814e0
 bool TESConditionItem::GetValueIsGlobal() const
 {
-    if (m_flags & 4)
+    if (Data & 4)
         return true;
     return false;
 }
@@ -27,6 +27,9 @@ unsigned int ScriptFunctionData::GetParamCount(const FunctionData* apData)
 
 // Returns whether the given function parameter is a TESForm, checking the special function case and otherwise the command's parameter type table.
 // @fnv 0x006822a0
+// pdb: TESParameters::GetParamIsTESForm | TESParameters.obj | debug, call graph, medium
+// pdb params: apFuncData, aiParam
+// pdb locals: bretval
 bool ScriptFunctionData::IsParamTESForm(const FunctionData* apData, unsigned int auiParam)
 {
     bool isTESForm = false;
@@ -39,14 +42,18 @@ bool ScriptFunctionData::IsParamTESForm(const FunctionData* apData, unsigned int
 
 // Resolves each parameter of a script function data block to a form or script variable, warning when a form or variable cannot be found.
 // @fnv 0x00681fb0
-void ScriptFunctionData::InitItem(TESForm* apForm, FunctionData* apData)
+// src: XBOX_RETAIL_PDB 0x00681fb0
+// pdb: TESParameters::InitItem | TESParameters.obj | retail, string-set bridge, high
+// pdb params: apOwner, apFuncData
+// pdb locals: iparamcount, pownerFile, i, formID, ownerstring, pScript
+void ScriptFunctionData::TESParameters_InitItem(TESForm* apOwner, FunctionData* apData)
 {
-    if (apForm)
+    if (apOwner)
     {
         if (apData)
         {
             unsigned int paramCount = GetParamCount(apData);
-            TESFile* file = apForm ? apForm->GetFile(-1) : 0;
+            TESFile* file = apOwner ? apOwner->GetFile(-1) : 0;
             for (unsigned int uiIndex = 0; uiIndex < paramCount; ++uiIndex)
             {
                 if (IsParamTESForm(apData, uiIndex))
@@ -59,7 +66,7 @@ void ScriptFunctionData::InitItem(TESForm* apForm, FunctionData* apData)
                         if (!apData->uParam[uiIndex].pPointer)
                         {
                             BSStringT<char> strFormName;
-                            apForm->GetDebugName(&strFormName);
+                            apOwner->GetDebugName(&strFormName);
                             Warning(DAT_01069608, formID, strFormName.String());
                         }
                         else if (DAT_0118cdd0[reinterpret_cast<ParamInfo*>(g_scriptCommands[apData->usFunction].pParameters)[uiIndex].typeID].type == 11)
@@ -69,7 +76,7 @@ void ScriptFunctionData::InitItem(TESForm* apForm, FunctionData* apData)
                             if (!apData->uParam[uiIndex].pPointer)
                             {
                                 BSStringT<char> strFormName;
-                                apForm->GetDebugName(&strFormName);
+                                apOwner->GetDebugName(&strFormName);
                                 Warning(DAT_010695a8, formID, strFormName.String());
                             }
                         }
@@ -83,7 +90,7 @@ void ScriptFunctionData::InitItem(TESForm* apForm, FunctionData* apData)
                         if (script && !script->GetVariableName(apData->uParam[uiIndex].m_uiFormID))
                         {
                             BSStringT<char> strFormName;
-                            apForm->GetDebugName(&strFormName);
+                            apOwner->GetDebugName(&strFormName);
                             Warning(DAT_01069540, apData->uParam[uiIndex].m_uiFormID,
                                     script->GetName(), strFormName.String());
                         }
@@ -97,6 +104,9 @@ void ScriptFunctionData::InitItem(TESForm* apForm, FunctionData* apData)
 // Returns true when the parameter at aiParam of apFuncData has type 4 or 6, after bounds-checking against the function's parameter count.
 // @fnv 0x00682320
 // src: COMMUNITY 0x00682320
+// pdb: TESParameters::GetParamIsReference | TESParameters.obj | debug, upstream name already matches, high
+// pdb params: apFuncData, aiParam
+// pdb locals: bretval
 bool __cdecl TESParameters_GetParamIsReference(const FunctionData* apFuncData, unsigned int aiParam)
 {
     bool bretval = false;

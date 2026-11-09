@@ -87,12 +87,14 @@ struct TrackCompressionParams
     hkUint8 m_eScaleQuantizationType;
     hkUint8 m_eFloatQuantizationType;
 
-    hkBool hkaSplineCompressedAnimation_TrackCompressionParams_isOk() const;
+    hkBool isOk() const;
 };
 
 // @fnv 0x00e330b0
-// src: HAVOK_LIB 0x00e330b0
-hkBool TrackCompressionParams::hkaSplineCompressedAnimation_TrackCompressionParams_isOk() const
+// src: XBOX_RETAIL_PDB 0x00e330b0
+// pdb: hkaSplineCompressedAnimation::TrackCompressionParams::isOk | hkaSplineCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr
+hkBool TrackCompressionParams::isOk() const
 {
     hkBool ok = StoreBoolFlag((QuantizationType)m_eTranslationQuantizationType) &&
                     IsValidMode((RotationQuantizationType)m_eRotationQuantizationType) &&

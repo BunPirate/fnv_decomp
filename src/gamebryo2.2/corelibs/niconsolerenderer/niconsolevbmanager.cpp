@@ -15,7 +15,7 @@
 // @fnv 0x00E8BF90
 const char* NiD3DHLSLVertexShader::GetEntryPoint()
 {
-    return m_pcShaderEntryPoint;
+    return m_pcEntryPoint;
 }
 
 struct Outer;
@@ -224,6 +224,7 @@ struct C_00e8f010 {
 };
 struct Class87d40 { void ForwardActorBaseData(void*, int, int, int, int, int); };
 struct CriticalSection { unsigned int debug, lock, recursion, owner, semaphore, spin; };
+// pdb: class Renderer, size 0x1 (here 0x98), 0 members
 struct Renderer {
     unsigned int unk00;
     unsigned int unk04;
@@ -271,6 +272,9 @@ __declspec(noinline) void Renderer::NiDX9VertexBufferManager_GenerateVertexParam
 }
 // @fnv 0x00e8c1e0
 // src: COMMUNITY 0x00e8c1e0
+// pdb: NiXenonVertexBufferManager::PackUntransformedVB | NiXenonVBManager.obj | debug, object-file run extension, low
+// pdb params: pkData, pkSkin, usDirtyFlags, pakVertexElements, pkOldVBChip, pvLockedBuff
+// pdb locals: uiVertexTypeDesc, uiT, uiVertexStride, bUnlock, uiColorOffset, pkVBChip, pkP, uiWeightOffset, pkN, uiTexOffset, usVerts, uiPosOffset, uiIndexOffset, uiNormOffset, pkC, pkBuffData, kVBDesc, pkPos, pkNorm, pucTmp, ui, j
 VertexRecord* Renderer::NiDX9VertexBufferManager_PackUntransformedVB(NiGeometryData* data, Class87d40* transform, unsigned int dirty, VertexRecord* existing, char* destination)
 {
     VertexRecord* record;

@@ -21,6 +21,8 @@ inline NiPoint3 NiPoint3::operator/(float s) const { float inv = 1.0f / s; retur
 
 // @fnv 0x00a9a710
 // src: XBOX_PDB 0x00a9a710
+// pdb: NiBSPNode::LoadBinary | NiBSPNode.obj | debug, object-file run extension, low
+// pdb params: stream
 void NiBSPNode::LoadBinary_00a9a710(NiStream& stream)
 {
     NiNode::LoadBinary(stream);
@@ -29,6 +31,8 @@ void NiBSPNode::LoadBinary_00a9a710(NiStream& stream)
 
 // @fnv 0x00a9a840
 // src: XBOX_PDB 0x00a9a840
+// pdb: NiBSPNode::UpdateWorldData | NiBSPNode.obj | debug, object-file gap fill, medium
+// pdb params: UpdateData
 void __thiscall NiBSPNode::UpdateWorldData_00a9a840(NiUpdateData& aUpdateData)
 {
     NiAVObject::UpdateWorldData(aUpdateData);
@@ -38,13 +42,13 @@ void __thiscall NiBSPNode::UpdateWorldData_00a9a840(NiUpdateData& aUpdateData)
 struct GlobalObjectO2_00a7b610
 {
 };
-extern GlobalObjectO2_00a7b610 g_011f5f54;
+extern GlobalObjectO2_00a7b610 NiBSPNode_ms_RTTI;
 
 // @fnv 0x00a9adc0
 // src: COMMUNITY 0x00a9adc0
 GlobalObjectO2_00a7b610* __cdecl NiBSPNode_GetRTTI()
 {
-    return &g_011f5f54;
+    return &NiBSPNode_ms_RTTI;
 }
 
 // Bind members missing from the shared declarations as function symbols, using
@@ -72,24 +76,26 @@ void NiBSPNode::SaveBinary_00a9a740(NiStream& stream)
 }
 
 void __cdecl GetNodeViewerStrings();
-void __cdecl FormatPlaneString();
+void __cdecl NiPlane_GetViewerString();
 char* __cdecl _FUN_00a7d330(GlobalObjectO2_00a7b610*);
 
 // @fnv 0x00a9acf0
+// pdb: NiBSPNode::GetViewerStrings | NiBSPNode.obj | retail, string-set bridge, high
+// pdb params: pStrings
 void __fastcall AppendPlaneNames(NiBSPNode* apNode, void*, StrArr* apViewerStrings)
 {
     ((void* (__thiscall*)(NiNode*, void*))GetNodeViewerStrings)((NiNode*)apNode, apViewerStrings);
-    char* pName = _FUN_00a7d330(*(GlobalObjectO2_00a7b610**)&g_011f5f54);
+    char* pName = _FUN_00a7d330(*(GlobalObjectO2_00a7b610**)&NiBSPNode_ms_RTTI);
     unsigned int uiIndex = *(unsigned short*)((char*)apViewerStrings + 0xa);
     if (uiIndex >= *(unsigned short*)((char*)apViewerStrings + 0x8))
         apViewerStrings->SetSize(uiIndex + *(unsigned short*)((char*)apViewerStrings + 0xe));
     apViewerStrings->SetAt(uiIndex, pName);
-    pName = ((char* (__thiscall*)(NiPlane*, const char*))FormatPlaneString)((NiPlane*)((char*)apNode + 0xac), "m_kModelPlane");
+    pName = ((char* (__thiscall*)(NiPlane*, const char*))NiPlane_GetViewerString)((NiPlane*)((char*)apNode + 0xac), "m_kModelPlane");
     uiIndex = *(unsigned short*)((char*)apViewerStrings + 0xa);
     if (uiIndex >= *(unsigned short*)((char*)apViewerStrings + 0x8))
         apViewerStrings->SetSize(uiIndex + *(unsigned short*)((char*)apViewerStrings + 0xe));
     apViewerStrings->SetAt(uiIndex, pName);
-    pName = ((char* (__thiscall*)(NiPlane*, const char*))FormatPlaneString)((NiPlane*)((char*)apNode + 0xbc), "m_kWorldPlane");
+    pName = ((char* (__thiscall*)(NiPlane*, const char*))NiPlane_GetViewerString)((NiPlane*)((char*)apNode + 0xbc), "m_kWorldPlane");
     uiIndex = *(unsigned short*)((char*)apViewerStrings + 0xa);
     if (uiIndex >= *(unsigned short*)((char*)apViewerStrings + 0x8))
         apViewerStrings->SetSize(uiIndex + *(unsigned short*)((char*)apViewerStrings + 0xe));
@@ -150,6 +156,9 @@ struct PtrPair
 };
 
 // @fnv 0x00a9ac10
+// pdb: NiBSPNode::OnVisible | NiBSPNode.obj | retail, object-file run extension, low
+// pdb params: kCuller
+// pdb locals: pkCamera, pkLeft, iSide, pkRight
 void __fastcall LoadFromStream(NiBSPNode* apNode, void*, NiStream& stream)
 {
     BinaryDataRecord* data = *(BinaryDataRecord**)((char*)&stream + 0xc);
@@ -219,6 +228,9 @@ struct ChildNode
 
 // @fnv 0x00a9ae00
 // src: XBOX_PDB 0x00a9ae00
+// pdb: NiBSPNode::CreateClone | NiBSPNode.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 void* __fastcall NiBSPNode_CreateClone(NiBSPNode* apNode, void*, void* arg)
 {
     char* memory = (char*)Object_DispatchCommandFour(0xcc);
@@ -246,6 +258,8 @@ __declspec(noreturn) void __cdecl ReadChildListFromStream();
 
 // @fnv 0x00a9a730
 // src: XBOX_PDB 0x00a9a730
+// pdb: NiBSPNode::LinkObject | NiBSPNode.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiBSPNode_LinkObject()
 {
     ReadChildListFromStream();
@@ -254,6 +268,8 @@ void __cdecl NiBSPNode_LinkObject()
 void __cdecl RegisterChildStreamables();
 // @fnv 0x00a93c40
 // src: XBOX_PDB 0x00a93c40
+// pdb: NiBSPNode::RegisterStreamables | NiBSPNode.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiBSPNode_RegisterStreamables()
 {
     RegisterChildStreamables();
@@ -272,13 +288,15 @@ struct BSPWorldMatrix
 // Transforms modelNormal and modelConstant into world space using rotation, translation, and scale.
 // @fnv 0x00a9a760
 // src: XBOX_PDB 0x00a9a760
+// pdb: NiBSPNode::UpdateWorldPlane | NiBSPNode.obj | debug, upstream name already matches, high
+// pdb locals: normal, fConstant
 void NiBSPNode::UpdateWorldPlane()
 {
-    NiPoint3 normal = (*(BSPWorldMatrix*)&m_kWorld.m_Rotate) * *(NiPoint3*)&m_pSphere.x;
+    NiPoint3 normal = (*(BSPWorldMatrix*)&m_kWorld.m_Rotate) * *(NiPoint3*)&m_pSphere.m_kCenter;
     volatile float fWorldConstant = m_kWorld.m_Translate.Dot(normal);
     *(NiPoint3*)((char*)this + 0xbc) = normal;
     double oldConstant = fWorldConstant;
-    fWorldConstant = oldConstant + m_kWorld.m_fScale * *(volatile float*)&m_pSphere.r;
+    fWorldConstant = oldConstant + m_kWorld.m_fScale * *(volatile float*)&m_pSphere.m_fRadius;
     *(float*)((char*)this + 0xc8) = fWorldConstant;
 }
 
@@ -363,35 +381,38 @@ struct NiBSPTransformNode
     __forceinline void AddPlaneConst(const NiPoint3& kTrn)
     {
 
-        m_kModelPlane.c += ((*(NiPoint3*)&m_kModelPlane.x)) * kTrn;
+        m_kModelPlane.m_fConstant += ((*(NiPoint3*)&m_kModelPlane.m_kNormal)) * kTrn;
     }
     __forceinline void ApplyPlane(const BSPMatrix& kMat, const NiPoint3& kTrn)
     {
         BSPMatrix kInv;
         kMat.Inverse(kInv);
-        (*(NiPoint3*)&m_kModelPlane.x) = (*(NiPoint3*)&m_kModelPlane.x) * kInv;
+        (*(NiPoint3*)&m_kModelPlane.m_kNormal) = (*(NiPoint3*)&m_kModelPlane.m_kNormal) * kInv;
         AddPlaneConst(kTrn);
     }
     __forceinline void ApplyPlane2(const BSPMatrix& kMat, const NiPoint3& kTrn)
     {
         BSPMatrix kInv;
         kMat.Inverse(kInv);
-        NiPoint3 normal = kInv.TransformNormal((*(NiPoint3*)&m_kModelPlane.x));
-        (*(NiPoint3*)&m_kModelPlane.x) = normal;
-        m_kModelPlane.c += (*(NiPoint3*)&m_kModelPlane.x) * kTrn;
+        NiPoint3 normal = kInv.TransformNormal((*(NiPoint3*)&m_kModelPlane.m_kNormal));
+        (*(NiPoint3*)&m_kModelPlane.m_kNormal) = normal;
+        m_kModelPlane.m_fConstant += (*(NiPoint3*)&m_kModelPlane.m_kNormal) * kTrn;
     }
-    void NiBSPNode_ApplyTransform(const BSPMatrix& kMat, const NiPoint3& kTrn, bool bOnLeft);
+    void NiBSPNode_ApplyTransform(const BSPMatrix& mat, const NiPoint3& trn, bool bOnLeft);
 };
 
 // Applies the supplied matrix and translation to the node's model plane and passes them to each non-null child.
 // @fnv 0x00a9a860
 // src: XBOX_PDB 0x00a9a860
-void NiBSPTransformNode::NiBSPNode_ApplyTransform(const BSPMatrix& kMat, const NiPoint3& kTrn, bool bOnLeft)
+// pdb: NiBSPNode::ApplyTransform | NiBSPNode.obj | retail, upstream name already matches, high
+// pdb params: mat, trn, bOnLeft
+// pdb locals: pChild, i, T1, M1, invM1, invMat
+void NiBSPTransformNode::NiBSPNode_ApplyTransform(const BSPMatrix& mat, const NiPoint3& trn, bool bOnLeft)
 {
     if (bOnLeft)
     {
-        BSPMatrix kRot = m_kRotate.ComposeMatrices(kMat * m_kRotate);
-        NiPoint3 kT = ((kTrn + kMat * m_kTranslate) - m_kTranslate) * m_kRotate / m_fScale;
+        BSPMatrix kRot = m_kRotate.ComposeMatrices(mat * m_kRotate);
+        NiPoint3 kT = ((trn + mat * m_kTranslate) - m_kTranslate) * m_kRotate / m_fScale;
         ApplyPlane(kRot, kT);
         for (unsigned int i = 0; i < m_usSize; i++)
         {
@@ -402,12 +423,12 @@ void NiBSPTransformNode::NiBSPNode_ApplyTransform(const BSPMatrix& kMat, const N
     }
     else
     {
-        ApplyPlane2(kMat, kTrn);
+        ApplyPlane2(mat, trn);
         for (unsigned int i = 0; i < m_usSize; i++)
         {
             NiAVObject* pChild = m_pBase[i];
             if (pChild)
-                pChild->ApplyTransform(*(const NiMatrix3*)&kMat, kTrn, true);
+                pChild->ApplyTransform(*(const NiMatrix3*)&mat, trn, true);
         }
     }
 }

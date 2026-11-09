@@ -9,6 +9,9 @@ BSSimpleList<ActiveEffect*>* NonActorMagicTarget::GetActiveEffectList()
 }
 
 // @fnv 0x00826060
+// pdb: NonActorMagicTarget::AddTarget | NonActorMagicTarget.obj | retail, vtable slot, high
+// pdb params: apCaster, apSpell, apActiveEffect, abAreaTarget
+// pdb locals: bresult
 bool NonActorMagicTarget::AddEffectToTarget(MagicCaster* apCaster, MagicItem* apSpell, ActiveEffect* apActiveEffect, bool abAreaTarget)
 {
     bool bresult;
@@ -28,6 +31,7 @@ NonActorMagicTarget::NonActorMagicTarget(Owner* o) : BSExtraData(0x33)
 class __declspec(novtable) NonActorMagicTarget;
 
 // @fnv 0x00825f60
+// pdb: NonActorMagicTarget::~NonActorMagicTarget | NonActorMagicTarget.obj | debug, upstream name already matches, high
 NonActorMagicTarget::~NonActorMagicTarget()
 {}
 

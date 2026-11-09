@@ -56,15 +56,16 @@ struct ResultList;
 enum OBJECT_ACTION;
 enum RADIO_RANGE_TYPE;
 
+// pdb: class TESObjectREFR, size 0x68, bases: TESForm, TESChildCell, 6 members
 class TESObjectREFR : public TESForm, public TESChildCell
 {
 public:
-    TESSound* m_pSoundForm;          // +0x1C
+    TESSound* pRandomSound;          // +0x1C
     PlacedObjectInfo data;           // +0x20
-    float m_fObjectScale;            // +0x3C
-    TESObjectCELL* m_pOwningCell;    // +0x40
-    ExtraDataList m_kExtraDataCollection;  // +0x44
-    CellDataNode* m_pRenderData;     // +0x64
+    float fRefScale;            // +0x3C
+    TESObjectCELL* pParentCell;    // +0x40
+    ExtraDataList m_Extra;  // +0x44
+    CellDataNode* pLoadedData;     // +0x64
 
     virtual bool GetStartingPosition(NiPoint3* location, NiPoint3* angle, TESForm** space, TESForm* defaultSpace);  // 0x4E
     virtual ScriptAnimation::ResultList PlayIdle(ScriptAnimation::Idle* idle, Actor* target, int, int, int, int, bool);  // 0x4F
@@ -103,7 +104,7 @@ public:
     virtual bool Unload3D();  // 0x70
     virtual void AnimateNiNode(void);  // 0x71
     virtual void GenerateNiNode(bool arg0);  // 0x72
-    virtual void Set3D(NiNode* niNode, bool unloadArt);  // 0x73
+    virtual void Set3D(NiNode* apObject, bool abTestProcessLevel);  // 0x73
     virtual NiNode* GetNiNode(void);  // 0x74
     virtual void Unk_75(void);  // 0x75
     virtual NiPoint3 GetMinimum();  // 0x76
@@ -145,13 +146,13 @@ public:
     TESObjectCELL* GetParentCell();
     TESBoundObject* GetObjectReference();
     ExtraDataList* GetExtraData();
-    void Revert(BGSLoadFormBuffer* buffer);
+    void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     const NiPoint3& GetAngleOnReference() const;
     TESWorldSpace* GetParentWorldSpace() const;
-    void RelocateTo(TESWorldSpace* worldSpace, TESObjectCELL* cell, const NiPoint3& location, float angle);
-    bool IsLimbMissing(int limb);
+    void RelocateTo(TESWorldSpace* apWorld, TESObjectCELL* apIntCell, const NiPoint3& aPt, float afzrotation);
+    bool GetDismembered(int aeLimb);
     TESObjectREFR* GetLinkedRef();
-    float TESObjectREFR_GetDistanceFromReference(TESObjectREFR* ref, int a, int b);
+    float TESObjectREFR_GetDistanceFromReference(TESObjectREFR* ref, int abDisabled, int bSameSpace);
     TESWorldSpace* GetParentWorldSpace();
     BGSEncounterZone* FindEncounterZone();
     ExtraRadioData* GetExtraRadioData();
@@ -159,7 +160,7 @@ public:
     void TESObjectREFR_SetTargeted(int flag);
     int GetFormEditorIDLength();
     const char* GetFullName();
-    PathingRequest* GetOrFallback(Actor* actor);
+    PathingRequest* GetOrFallback(Actor* apWeaponHolder);
     TESObjectCELL* GetTarget(void* query);
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     void SetLocationOnReference(const NiPoint3&);
@@ -190,7 +191,7 @@ public:
     TeleportableReference* Set3DObject();
     TESBoundObject* GetObjectReference() const;
     const ExtraDataList* GetExtra() const;
-    BSExtraData* GetExtraData(unsigned char type) const;
+    BSExtraData* GetExtraData(unsigned char aType) const;
     ExtraDataList* BSFile_GetDevice();
     unsigned int GetFlags();
     MapMarkerData* GetMapMarkerData();
@@ -227,7 +228,7 @@ public:
     static bool ApplyReferenceExtraData(NiNode*);
     int GetReferenceLockLevel();
     TESGlobal* GetLockLevelGlobal();
-    unsigned int GetReferenceLevel(bool allowShift);
+    unsigned int GetReferenceLevel(bool abAllowShift);
     bool TESObjectREFR_GetRefPersists_005653d0();
     BGSAcousticSpace* GetAcousticSpace();
     static TESObjectREFR* GetReferenceFromNiAVObject(void* p);
@@ -251,7 +252,7 @@ public:
     void TESObjectREFR_AddBoundObjectItem(TESForm*, ExtraDataList*, int);
     void FUN_00571b50();
     bool TESObjectREFR_WearingObject(TESBoundObject*);
-    void UpdateSpells(bool);
+    void Actor_CastPermanentMagic(bool);
     static TESObjectREFR* CreateReference(unsigned char, bool);
     bool IsPersistentFlagSet();
     void SetPersistentFlag(bool);
@@ -283,7 +284,7 @@ public:
     void TESObjectREFR_SetObjectReference(TESBoundObject*);
     void Enable();
     void TESObjectREFR_Disable();
-    InventoryStackRecord* FindEntryForObject(TESBoundObject* object, unsigned int formID);
+    InventoryStackRecord* FindEntryForObject(TESBoundObject* apObject, unsigned int aId);
     Script* TESObjectREFR_GetScriptPointer();
     void TESObjectREFR_InitScript();
     const NiPoint3& TESObjectREFR_GetMultiBoundHalfExtent();

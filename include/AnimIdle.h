@@ -9,6 +9,7 @@ class KFModel;
 class NiPoint3;
 class TESIdleForm;
 
+// pdb: class AnimIdle, size 0x38 (here 0x8), bases: NiRefObject, 10 members
 class AnimIdle : public NiRefObject
 {
   public:
@@ -29,7 +30,7 @@ class AnimIdle : public NiRefObject
     int GetSection();
     unsigned int GetFlags();
     BSAnimGroupSequence* GetControllerSequence();
-    void Loaded(KFModel*);
+    void AnimIdle_Loaded(KFModel*);
     void SetTranslate(const NiPoint3& kTranslate);
     void SetRotate(const void* pvRotate);
 };

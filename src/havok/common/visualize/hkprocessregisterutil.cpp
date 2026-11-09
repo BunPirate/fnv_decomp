@@ -3,13 +3,14 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 void __cdecl hkDebugDisplayProcess_registerProcess();
-void __cdecl CreateStatisticsProcess();
-void __cdecl RegisterObjectInspectionProcess();
+void __cdecl hkStatisticsProcess_registerProcess();
+void __cdecl hkInspectProcess_registerProcess();
 // @fnv 0x00d61420
 // src: COMMUNITY 0x00d61420
+// pdb: hkProcessRegisterUtil::registerAllCommonProcesses | hkProcessRegisterUtil.obj | retail, upstream name already matches, high
 void __cdecl hkProcessRegisterUtil_registerAllCommonProcesses()
 {
     hkDebugDisplayProcess_registerProcess();
-    CreateStatisticsProcess();
-    RegisterObjectInspectionProcess();
+    hkStatisticsProcess_registerProcess();
+    hkInspectProcess_registerProcess();
 }

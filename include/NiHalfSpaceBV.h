@@ -8,6 +8,7 @@
 class AffineMatrix;
 class NiPlane4;
 
+// pdb: class NiHalfSpaceBV, size 0x20, bases: NiBoundingVolume, 2 members
 class NiHalfSpaceBV : public NiBoundingVolume
 {
 public:
@@ -48,7 +49,7 @@ public:
 
     void LoadBinary_00e9cb50(NiStream& stream);
     void SaveBinary_00e9cb80(NiStream& stream);
-    NiBoundingVolume* NiHalfSpaceBV_00e9e680(const NiPoint3& akPoint, const NiPoint3& kNormal);
+    NiBoundingVolume* NiHalfSpaceBV_ctor(const NiPoint3& kPoint, const NiPoint3& kNormal);
     NiBoundingVolume* Clone_00e9e730();
     void SetWaterColorParameter();
 };

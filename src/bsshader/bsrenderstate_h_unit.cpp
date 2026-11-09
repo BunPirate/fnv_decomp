@@ -4,7 +4,8 @@
 #include "../../include/BSRENDERSTATE_LOCK.h"
 #include "../../include/NiRenderer.h"
 
-class BSRenderStateManager_bsrenderstate_h_unit
+// pdb: class BSRenderState, size 0x1, 0 members
+class BSRenderState
 {
 public:
     static void __cdecl SetDepthBufferEnabled(bool, BSRENDERSTATE_LOCK);

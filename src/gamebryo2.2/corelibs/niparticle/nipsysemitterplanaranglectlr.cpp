@@ -13,6 +13,7 @@ void* __cdecl NiPSysEmitterPlanarAngleCtlr_GetRTTI()
     return &g_01202738;
 }
 
+// pdb: class NiPSysEmitterPlanarAngleCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysEmitterPlanarAngleCtlr : NiPSysModifierFloatCtlr
 {
     void UpdateFields_00c2b560(float& fValue);
@@ -24,7 +25,7 @@ struct NiPSysEmitterPlanarAngleCtlr : NiPSysModifierFloatCtlr
 // src: GUESS 0x00c2b560 (confidence: low)
 void NiPSysEmitterPlanarAngleCtlr::UpdateFields_00c2b560(float& fValue)
 {
-    fValue = *(float*)((char*)m_pkTargetModifier + 0x28);
+    fValue = *(float*)((char*)m_pkModifier + 0x28);
 }
 
 void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr*);
@@ -32,6 +33,8 @@ char* __cdecl _FUN_00a7d330(const char*);
 // Grows pkStrings if full, then appends the string returned by _FUN_00a7d330(g_01202738) at index m_usSize.
 // @fnv 0x00c2b5d0
 // src: XBOX_PDB 0x00c2b5d0
+// pdb: NiPSysEmitterPlanarAngleCtlr::GetViewerStrings | NiPSysEmitterPlanarAngleCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysEmitterPlanarAngleCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
@@ -46,7 +49,7 @@ void __stdcall NiPSysEmitterPlanarAngleCtlr_GetViewerStrings(StrArr* pkStrings)
 // src: XBOX_PDB 0x00c2b570
 void __thiscall NiPSysEmitterPlanarAngleCtlr::SetTargetFloatValue_00c2b570(float fValue)
 {
-    *(float*)((char*)m_pkTargetModifier + 0x28) = fValue;
+    *(float*)((char*)m_pkModifier + 0x28) = fValue;
 }
 
 void* __cdecl Object_DispatchCommandFour(unsigned int);
@@ -62,6 +65,10 @@ void __cdecl FUN_00c32de0();
 
 // Allocates a planar-angle controller, initializes it, and copies its members.
 // @fnv 0x00c2b580
+// pdb: NiPSysEmitterPlanarAngleCtlr::CreateClone | NiPSysEmitterPlanarAngleCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysEmitterPlanarAngleCtlr::IsEqual
+// pdb params: kCloning
+// pdb locals: pkObject
 void* NiPSysEmitterPlanarAngleCtlr::CreateTargetObj(void* arg)
 {
     NiPSysEmitterPlanarAngleCtlr* obj =

@@ -58,7 +58,7 @@ struct NamedMaterial : public hkpMeshMaterial
     MaterialName name;
     NamedMaterial() throw() : name("Default")
     {
-        m_uiFilterInfo = 0;
+        m_filterInfo = 0;
     }
 };
 struct MeshMaterial : public hkpMeshMaterial
@@ -89,7 +89,7 @@ static __declspec(noinline) int numIndices_00d49c20(int stride, int triangles)
     }
 }
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_01269bb4, g_01268c8c;
+extern GlobalObjectO2_00d472a0 hkpNamedMeshMaterialClass, hkpStorageExtendedMeshShapeMaterialClass;
 
 template <class T> inline void initializeItems(T*, int)
 {}
@@ -139,7 +139,7 @@ struct hkpStorageExtendedMeshShapeMeshSubpartStorage : public hkReferencedObject
     {
         hkMemoryAllocator& allocator = hkMemoryRouter::getInstance().heap();
         hkpStorageExtendedMeshShapeMeshSubpartStorage* memory = static_cast<hkpStorageExtendedMeshShapeMeshSubpartStorage*>(allocator.blockAlloc(bytes));
-        memory->m_usMemSizeAndFlags = static_cast<unsigned short>(bytes);
+        memory->m_memSizeAndFlags = static_cast<unsigned short>(bytes);
         return memory;
     }
 };
@@ -190,13 +190,16 @@ struct SourceArg
 };
 // @fnv 0x00d4a2b0
 // src: XBOX_PDB 0x00d4a2b0
-void hkpStorageExtendedMeshShape::addTrianglesSubpart(SourceArg sourceArg)
+// pdb: hkpStorageExtendedMeshShape::addTrianglesSubpart | hkpStorageExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: partIn
+// pdb locals: assertBuf, ostr
+void hkpStorageExtendedMeshShape::addTrianglesSubpart(SourceArg partIn)
 {
     Subpart* destination = hkpExtendedMeshShape_expandOneTriangleSubparts();
-    const Subpart& source = *sourceArg.p;
+    const Subpart& source = *partIn.p;
     destination->UpdateState_00d4abf0(source);
     hkpStorageExtendedMeshShapeMeshSubpartStorage* created = new hkpStorageExtendedMeshShapeMeshSubpartStorage;
-    hkArray<hkReferencedObject*>& mesh = reinterpret_cast<hkArray<hkReferencedObject*>&>(m_kMeshSubparts);
+    hkArray<hkReferencedObject*>& mesh = reinterpret_cast<hkArray<hkReferencedObject*>&>(m_meshstorage);
     append(mesh, static_cast<hkReferencedObject*>(created));
     _ReadWriteBarrier();
     hkpStorageExtendedMeshShapeMeshSubpartStorage* storage = static_cast<hkpStorageExtendedMeshShapeMeshSubpartStorage*>(mesh.m_data[mesh.m_iElementCount - 1]);
@@ -343,7 +346,7 @@ void hkpStorageExtendedMeshShape::addTrianglesSubpart(SourceArg sourceArg)
     }
     if (destination->materialIndexBase)
     {
-        if (source.materialClass == &g_01269bb4)
+        if (source.materialClass == &hkpNamedMeshMaterialClass)
         {
             NamedMaterial* data = Buffer_grow(storage->namedMaterials, source.numMaterials);
             const char* input = source.materialBase;
@@ -351,7 +354,7 @@ void hkpStorageExtendedMeshShape::addTrianglesSubpart(SourceArg sourceArg)
             {
                 NamedMaterial* material = new (data + i, hkPlacementNew) NamedMaterial;
                 const NamedMaterial* original = reinterpret_cast<const NamedMaterial*>(input);
-                material->m_uiFilterInfo = original->m_uiFilterInfo;
+                material->m_filterInfo = original->m_filterInfo;
                 material->name = original->name;
                 input += source.materialStride;
             }
@@ -374,15 +377,15 @@ void hkpStorageExtendedMeshShape::addTrianglesSubpart(SourceArg sourceArg)
             for (int i = 0; i < source.numMaterials; ++i)
             {
                 const MeshMaterial* original = reinterpret_cast<const MeshMaterial*>(input);
-                if (source.materialClass == &g_01268c8c)
+                if (source.materialClass == &hkpStorageExtendedMeshShapeMaterialClass)
                 {
-                    data->m_uiFilterInfo = original->m_uiFilterInfo;
+                    data->m_filterInfo = original->m_filterInfo;
                     data->properties = original->properties;
                     data->userData = original->userData;
                 }
                 else
                 {
-                    data->m_uiFilterInfo = original->m_uiFilterInfo;
+                    data->m_filterInfo = original->m_filterInfo;
                     data->friction = halfValue(1.0f);
                     data->restitution = halfValue(0.0f);
                 }
@@ -404,5 +407,5 @@ void hkpStorageExtendedMeshShape::addTrianglesSubpart(SourceArg sourceArg)
     }
     hkpExtendedMeshShape_recalcAabbExtents();
     int last = m_kTrianglesSubparts.m_iElementCount - 1;
-    m_iNumTriangles += Vec4(destination, last);
+    m_iNumTriangles += hkpExtendedMeshShape__getNumChildShapesInTrianglesSubpart(destination, last);
 }

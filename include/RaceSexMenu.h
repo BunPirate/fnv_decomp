@@ -2,6 +2,7 @@
 
 #include "Menu.h"
 
+// pdb: class RaceSexMenu, size 0x180 (here 0x1a4), bases: Menu, 18 members
 class RaceSexMenu : public Menu
 {
 public:

@@ -4,6 +4,7 @@
 
 class TESObjectCELL;
 
+// pdb: class LoadedAreaBound, size 0x44 (here 0x8), bases: NiRefObject, 7 members
 class LoadedAreaBound : public NiRefObject
 {
   public:

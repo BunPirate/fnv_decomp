@@ -33,18 +33,21 @@ class FUN_00472840_impl
 class FUN_005e6c60_shell
 {
   public:
-    void SetLabel(void* data);
+    void SetLabel(void* apLabel);
 };
 
 class ActivateChoice : public BGSEntryPointFunctionDataActivateChoice
 {
   public:
-    bool BGSEntryPointFunctionDataActivateChoice_Load(TESFile* file);
+    bool BGSEntryPointFunctionDataActivateChoice_Load(TESFile* apFile);
 };
 
 // @fnv 0x005e6ee0
 // src: XBOX_PDB 0x005e6ee0
-bool ActivateChoice::BGSEntryPointFunctionDataActivateChoice_Load(TESFile* file)
+// pdb: BGSEntryPointFunctionDataActivateChoice::Load | BGSEntryPointFunction.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: pMessage, tmpdata, n, pNewItem, tempID, pbuffer
+bool ActivateChoice::BGSEntryPointFunctionDataActivateChoice_Load(TESFile* apFile)
 {
     void* scvrBuf3;
     unsigned int scdaSize4;
@@ -55,43 +58,43 @@ bool ActivateChoice::BGSEntryPointFunctionDataActivateChoice_Load(TESFile* file)
     FUN_00500910* _scrvObj;
     void* epf2BufTmp;
 
-    switch (static_cast<int>(file->GetChunkID()))
+    switch (static_cast<int>(apFile->GetChunkID()))
     {
     case 0x44534c53:  // 'SLSD'
     case 0x52564353:  // 'SCVR'
-        if (file->GetChunkID() == 0x44534c53)
+        if (apFile->GetChunkID() == 0x44534c53)
         {
             DAT_011cb0fc = new ScriptVariableInfo();
-            DAT_011cb0fc->Load(file);
+            DAT_011cb0fc->Load(apFile);
             (&resultScript)->GetVariableList()->AddTail(DAT_011cb0fc);
         }
         else if (DAT_011cb0fc)
         {
-            scvrBuf3 = _alloca(file->GetChunkSize());
-            file->GetChunkData(scvrBuf3, 0x200);
+            scvrBuf3 = _alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(scvrBuf3, 0x200);
             DAT_011cb0fc->name.Set(reinterpret_cast<const char*>(scvrBuf3), 0);
         }
         break;
 
     case 0x52484353:  // 'SCHR'
-        file->GetChunkData((&resultScript)->GetHeader(), 0);
-        if (file->IsEndianConversionRequired())
+        apFile->GetChunkData((&resultScript)->GetHeader(), 0);
+        if (apFile->IsEndianConversionRequired())
         {
             (&resultScript)->GetHeader()->Endian();
         }
         break;
 
     case 0x41444353:  // 'SCDA'
-        scdaSize4 = file->GetChunkSize();
+        scdaSize4 = apFile->GetChunkSize();
         scdaData = _alloca(scdaSize4);
         memset(scdaData, 0, scdaSize4);
-        file->GetChunkData(scdaData, 0);
-        (&resultScript)->SetScriptData(scdaSize4, reinterpret_cast<char*>(scdaData));
+        apFile->GetChunkData(scdaData, 0);
+        (&resultScript)->SetCompileData(scdaSize4, reinterpret_cast<char*>(scdaData));
         break;
 
     case 0x4f524353:  // 'SCRO'
         scroObjVal = new FUN_00500910();
-        file->GetChunkData(&scroRefID2);
+        apFile->GetChunkData(&scroRefID2);
         scroObjVal->formID = scroRefID2;
         (&resultScript)->GetReferencedObjectList()
             ->AddTail(reinterpret_cast<ScriptReferencedObject*&>(scroObjVal));
@@ -99,20 +102,20 @@ bool ActivateChoice::BGSEntryPointFunctionDataActivateChoice_Load(TESFile* file)
 
     case 0x56524353:  // 'SCRV'
         _scrvObj = new FUN_00500910();
-        file->GetChunkData(&scrvRefID3);
+        apFile->GetChunkData(&scrvRefID3);
         _scrvObj->variableOrIndex = scrvRefID3;
         (&resultScript)->GetReferencedObjectList()
             ->AddTail(reinterpret_cast<ScriptReferencedObject*&>(_scrvObj));
         break;
 
     case 0x32465045:  // 'EPF2'
-        epf2BufTmp = _alloca(file->GetChunkSize());
-        file->GetChunkData(epf2BufTmp, 0);
+        epf2BufTmp = _alloca(apFile->GetChunkSize());
+        apFile->GetChunkData(epf2BufTmp, 0);
         reinterpret_cast<FUN_005e6c60_shell*>(this)->SetLabel(epf2BufTmp);
         break;
 
     case 0x33465045:  // 'EPF3'
-        reinterpret_cast<FUN_00472840_impl*>(file)->ReadChunkData(&flags);
+        reinterpret_cast<FUN_00472840_impl*>(apFile)->ReadChunkData(&cFlags);
         break;
 
     default:

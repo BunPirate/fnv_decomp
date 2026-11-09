@@ -30,6 +30,7 @@ class TESFormInitFlag
 int Warning(const char* format, ...);
 
 // @fnv 0x00402ea0
+// pdb: AlchemyItem::InitializeData | AlchemyItem.obj | debug, object-file run extension, low
 void AlchemyItem::ResetFormData()
 {
     unk0B8 = -1;
@@ -41,6 +42,8 @@ void AlchemyItem::ResetFormData()
 }
 
 // @fnv 0x004030f0
+// pdb: AlchemyItem::InitItem | AlchemyItem.obj | retail, string-set bridge, high
+// pdb locals: itempInt
 void AlchemyItem::InitItem()
 {
     if (((TESFormInitFlag*)this)->IsFormInitialized())
@@ -78,6 +81,7 @@ void AlchemyItem::InitItem()
 }
 
 // @fnv 0x00402ef0
+// pdb: AlchemyItem::ClearData | AlchemyItem.obj | debug, upstream name already matches, high
 void AlchemyItem::ClearData()
 {
     ((EffectItemList*)((char*)this + 0x3C))->RemoveAllEffectItems();
@@ -127,6 +131,7 @@ unsigned short TESFile::GetFormVersion()
 
 extern unsigned int _data_011c16bc;
 // @fnv 0x00402b40
+// pdb: MagicItemObject::MagicItemObject | AlchemyItem.obj | retail, upstream name already matches, high
 MagicItemObject::MagicItemObject()
 {}
 
@@ -139,6 +144,7 @@ struct FUN_004029d0_shell
 
 // @fnv 0x004029b0
 // src: COMMUNITY 0x004029b0
+// pdb: AlchemyItem::IsAutoCalc | AlchemyItem.obj | debug, upstream name already matches, high
 bool FUN_004029d0_shell::AlchemyItem_IsAutoCalc()
 {
     return !AlchemyItem_IsFlagSet(1);
@@ -154,6 +160,7 @@ struct FUN_00402b10_shell : BaseFormComponent
 
 // Calls BaseFormComponent::Free, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00402b10
+// pdb: AlchemyItem::`scalar deleting destructor' | AlchemyItem.obj | retail, object-file run extension, low
 void* FUN_00402b10_shell::FreeAndMaybeDeallocate(unsigned int flags)
 {
     BaseFormComponent::Free();
@@ -174,6 +181,7 @@ struct FUN_00403720_shell
 };
 
 // @fnv 0x00403720
+// pdb: AlchemyItemData::Endian | AlchemyItem.obj | debug, object-file run extension, low
 void __thiscall FUN_00403720_shell::SwapEndian()
 {
     BSEndian((int*)this, EndianSizeTag<2>());
@@ -195,6 +203,7 @@ struct FUN_00402a90_shell
 // Returns true when the object at this-0x3c passes FUN_004029d0(2) and this object's FUN_00405da0 returns false.
 // @fnv 0x00402a90
 // src: COMMUNITY 0x00402a90
+// pdb: AlchemyItem::IsFood | AlchemyItem.obj | retail, upstream name already matches, high
 bool FUN_00402a90_shell::AlchemyItem_IsFood()
 {
     return ((FUN_004029d0_shell*)((char*)this - 0x3c))->AlchemyItem_IsFlagSet(2) && !((EffectItemList*)this)->HasDetrimentalEffect();
@@ -214,6 +223,7 @@ struct FUN_00402ae0_shell
 
 // @fnv 0x00402ae0
 // src: COMMUNITY 0x00402ae0
+// pdb: AlchemyItem::IsMedicine | AlchemyItem.obj | debug, upstream name already matches, high
 bool FUN_00402ae0_shell::AlchemyItem_IsMedicine()
 {
     return ((FUN_004029d0_shell*)((char*)this - 0x3c))->AlchemyItem_IsFlagSet(4);
@@ -235,6 +245,7 @@ MagicItemObjectMembers::~MagicItemObjectMembers()
 
 // Destroy the subobjects, optionally deallocate this, and return this.
 // @fnv 0x00402c60
+// pdb: MagicItemObject::~MagicItemObject | AlchemyItem.obj | debug, object-file run extension, low
 void* MagicItemObjectMembers::FreeAndMaybeDeallocate(unsigned int flags)
 {
     this->~MagicItemObjectMembers();
@@ -261,7 +272,7 @@ struct S_00477f20
 };
 struct FUN_0047b560_holder
 {
-    void LogFormIDs(void);
+    void BGSPickupPutdownSounds_Save(void);
 };
 struct FUN_00479350_shell
 {
@@ -279,6 +290,7 @@ struct FUN_00402f10_shell
 
 // @fnv 0x00402f10
 // src: XBOX_PDB 0x00402f10
+// pdb: AlchemyItem::SaveMagicItemComponents | AlchemyItem.obj | retail, upstream name already matches, high
 void FUN_00402f10_shell::AlchemyItem_SaveMagicItemComponents()
 {
     ((S_0048a520*)((char*)this + 0x1c))->ProcessAndFreeData(0x4c444f4d, 0x54444f4d, 0x53444f4d);
@@ -286,7 +298,7 @@ void FUN_00402f10_shell::AlchemyItem_SaveMagicItemComponents()
     ((FUN_0047a240_shell*)((char*)this + 0x48))->FUN_0047a240(0x4f43494d);
     ((TESScriptableForm*)((char*)this + 0x58))->Save_0048cca0();
     ((S_00477f20*)((char*)this + 0x74))->FUN_00477f20();
-    ((FUN_0047b560_holder*)((char*)this + 0x7c))->LogFormIDs();
+    ((FUN_0047b560_holder*)((char*)this + 0x7c))->BGSPickupPutdownSounds_Save();
     ((FUN_00479350_shell*)((char*)this + 0x6c))->BGSEquipType_Save();
     ((FUN_00485e00_shell*)((char*)this - 0x30))->TESForm_SaveData();
 }
@@ -319,6 +331,7 @@ struct H0050fb90
 // Returns true if this object's form type is 0x20 and it matches one of the three TESObjectSTAT globals; otherwise false.
 // @fnv 0x0050fb90
 // src: XBOX_PDB 0x0050fb90
+// pdb: TESObject::IsOcclusionMarker | TESObject.obj | debug, upstream name already matches, high
 bool H0050fb90::TESObject_IsOcclusionMarker()
 {
     if (!this)
@@ -341,7 +354,7 @@ struct AlchTexSwap
 {
     virtual void v0();
     char pad[0x1c];
-    bool LoadTextureSwapList(void*, unsigned int, unsigned int);
+    bool UnpackTextureSwapChunkData(void*, unsigned int, unsigned int);
 };
 struct AlchTexture
 {
@@ -391,15 +404,18 @@ struct FUN_00403280_t : TESBoundObject,
                         AlchDestr,
                         AlchPickup
 {
-    void AlchemyItem_LoadMagicItemChunk(TESFile* apFile, int aiChunk);
+    void AlchemyItem_LoadMagicItemChunk(TESFile* apFile, int apChunkID);
 };
 
 // Dispatches on the chunk type and loads the matching subrecord (model, icon, script, equipment, pickup, destruction or data) from the file.
 // @fnv 0x00403280
 // src: COMMUNITY 0x00403280
-void FUN_00403280_t::AlchemyItem_LoadMagicItemChunk(TESFile* apFile, int aiChunk)
+// pdb: AlchemyItem::LoadMagicItemChunk | AlchemyItem.obj | retail, upstream name already matches, high
+// pdb params: apFile, apChunkID
+// pdb locals: isize, pdata, tempint, itempint
+void FUN_00403280_t::AlchemyItem_LoadMagicItemChunk(TESFile* apFile, int apChunkID)
 {
-    switch (aiChunk)
+    switch (apChunkID)
     {
     case 0x4c444f4d:
     case 0x54444f4d:
@@ -411,7 +427,7 @@ void FUN_00403280_t::AlchemyItem_LoadMagicItemChunk(TESFile* apFile, int aiChunk
         unsigned int uiChunkSize = apFile->GetField25C();
         char* pChunkData = (char*)_alloca(uiChunkSize);
         apFile->FUN_00472890(pChunkData, uiChunkSize);
-        AlchTexSwap::LoadTextureSwapList(pChunkData, uiChunkSize, apFile->GetFormVersion());
+        AlchTexSwap::UnpackTextureSwapChunkData(pChunkData, uiChunkSize, apFile->GetFormVersion());
         break;
     }
     case 0x4e4f4349:
@@ -461,12 +477,15 @@ struct LH
 };
 struct FUN_004036d0_shell
 {
-    bool IsInWaterList();
+    bool AlchemyItem_IsWater();
     static TESForm* LookupFormByEditorID(const char*);
 };
 // Looks up the form list "WaterLIST" and returns whether this object is contained in its header's list.
 // @fnv 0x004036d0
-bool FUN_004036d0_shell::IsInWaterList()
+// src: XBOX_RETAIL_PDB 0x004036d0
+// pdb: AlchemyItem::IsWater | AlchemyItem.obj | retail, string-set bridge, high
+// pdb locals: pFormList
+bool FUN_004036d0_shell::AlchemyItem_IsWater()
 {
     BGSListForm* pWaterList = (BGSListForm*)LookupFormByEditorID("WaterLIST");
     if (pWaterList)
@@ -562,6 +581,7 @@ struct FUN_00402820 : MagicItemObject,
 
 // Initializes the object by setting its form type to 0x2f and calling InitData.
 // @fnv 0x00402820
+// pdb: AlchemyItem::AlchemyItem | AlchemyItem.obj | retail, call graph, medium
 FUN_00402820::FUN_00402820()
 {
     SetFormType(0x2f);
@@ -715,6 +735,7 @@ struct AlchemySave : TESBoundObject, AlchSaveBase
 
 // @fnv 0x00402f90
 // src: COMMUNITY 0x00402f90
+// pdb: AlchemyItem::Endian | AlchemyItem.obj | debug, upstream name already matches, high
 void AlchemySave::AlchemyItem_Endian()
 {
     FormStub* oldItem = CombatController_GetTarget();
@@ -753,14 +774,17 @@ struct FUN_00403590_sub
 class FUN_00403590_cls
 {
   public:
-    bool AlchemyItem_CompareMagicItemData(int aParam);
+    bool AlchemyItem_CompareMagicItemData(int apCompare);
 };
 
 // @fnv 0x00403590
 // src: XBOX_PDB 0x00403590
-bool FUN_00403590_cls::AlchemyItem_CompareMagicItemData(int aParam)
+// pdb: AlchemyItem::CompareMagicItemData | AlchemyItem.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: palchemy
+bool FUN_00403590_cls::AlchemyItem_CompareMagicItemData(int apCompare)
 {
-    char* pObject = (char*)FUN_00ec43fb(aParam, 0, &DAT_01183140, &DAT_011830cc, 0);
+    char* pObject = (char*)FUN_00ec43fb(apCompare, 0, &DAT_01183140, &DAT_011830cc, 0);
     if (pObject == 0)
     {
         return true;
@@ -777,14 +801,17 @@ void* memcpy(void* dst, const void* src, unsigned int size);
 class AlchemyItemMagic : public TESBoundObject, public MagicItem
 {
   public:
-    virtual void CopyMagicItemData(MagicItem* source);
+    virtual void CopyMagicItemData(MagicItem* apCopy);
 };
 
 // Copies 0x14 bytes of data from the source MagicItem into this AlchemyItemMagic after casting source to AlchemyItem.
 // @fnv 0x00403600
-void AlchemyItemMagic::CopyMagicItemData(MagicItem* source)
+// pdb: AlchemyItem::CopyMagicItemData | AlchemyItem.obj | retail, object-file gap fill, high
+// pdb params: apCopy
+// pdb locals: palchemy
+void AlchemyItemMagic::CopyMagicItemData(MagicItem* apCopy)
 {
-    AlchemyItem* item = dynamic_cast<AlchemyItem*>(source);
+    AlchemyItem* item = dynamic_cast<AlchemyItem*>(apCopy);
     if (item == 0)
     {
         return;

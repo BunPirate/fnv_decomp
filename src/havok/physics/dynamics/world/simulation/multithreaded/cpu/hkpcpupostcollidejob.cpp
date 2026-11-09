@@ -49,7 +49,7 @@ struct Caller;
 
 struct TargetClass
 {
-    int __thiscall ProcessCallback(Caller* a, Caller* b, int c);
+    int __thiscall ProcessCallback(Caller* oldJob, Caller* jobOut, int waitStatus);
 };
 
 struct Accum
@@ -81,7 +81,7 @@ struct Worker
     void __thiscall hkpWorld_unlockIslandForConstraintUpdate(Accum* a);
 };
 
-extern "C" int __cdecl hkPhysicsCommandMachineProcess(Worker* a, char* b, int c);
+extern "C" int __cdecl hkPhysicsCommandMachineProcess(Worker* world, char* begin, int size);
 
 struct TlsObject
 {
@@ -93,7 +93,10 @@ struct TlsObject
 
 // Accumulates shape data into a shared Accum under a lock, logs timing events, and optionally calls a target class method.
 // @fnv 0x00d931a0
-int __cdecl AccumulateShapes(Worker** a1, TargetClass* apTarget, Caller* apCaller)
+// src: XBOX_RETAIL_PDB 0x00d931a0
+// pdb: hkCpuPostCollideJob | hkpCpuPostCollideJob.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, nextJobOut
+int __cdecl hkCpuPostCollideJob(Worker** tl, TargetClass* jobQueue, Caller* nextJobOut)
 {
     TlsObject* tls = (TlsObject*)tlsGetValue();
     char* rec = tls->records;
@@ -107,18 +110,18 @@ int __cdecl AccumulateShapes(Worker** a1, TargetClass* apTarget, Caller* apCalle
         tls->records = rec + 16;
     }
 
-    Accum* acc = apCaller->m_14;
-    (*a1)->EnterLock(acc);
+    Accum* acc = nextJobOut->m_14;
+    (*tl)->EnterLock(acc);
 
-    int count = apCaller->m_20->count;
+    int count = nextJobOut->m_20->count;
     for (int i = 0; i < count; i++)
     {
         if (i < count - 4)
         {
-            _mm_prefetch((const char*)apCaller->m_20->shapes[(short)(i + 4)], _MM_HINT_NTA);
+            _mm_prefetch((const char*)nextJobOut->m_20->shapes[(short)(i + 4)], _MM_HINT_NTA);
         }
 
-        Shape* shape = apCaller->m_20->shapes[(short)i];
+        Shape* shape = nextJobOut->m_20->shapes[(short)i];
         int v = shape->m_iWordAt00;
         if (acc->m_8 > v)
         {
@@ -140,12 +143,12 @@ int __cdecl AccumulateShapes(Worker** a1, TargetClass* apTarget, Caller* apCalle
                 *(float*)(rec8 + 4) = (float)val;
                 tls2->records = rec8 + 8;
             }
-            hkPhysicsCommandMachineProcess(*a1, shape->m_10.get(), shape->m_10.m_iElementCount);
+            hkPhysicsCommandMachineProcess(*tl, shape->m_10.get(), shape->m_10.m_iElementCount);
         }
     }
 
-    apCaller->m_20->hkpAgentSectorHeader_deallocate();
-    (*a1)->hkpWorld_unlockIslandForConstraintUpdate(acc);
+    nextJobOut->m_20->hkpAgentSectorHeader_deallocate();
+    (*tl)->hkpWorld_unlockIslandForConstraintUpdate(acc);
 
     {
         TlsObject* tls3 = (TlsObject*)tlsGetValue();
@@ -160,9 +163,9 @@ int __cdecl AccumulateShapes(Worker** a1, TargetClass* apTarget, Caller* apCalle
         }
     }
 
-    if (apTarget)
+    if (jobQueue)
     {
-        return apTarget->ProcessCallback(apCaller, apCaller, 0);
+        return jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
     }
     else
     {

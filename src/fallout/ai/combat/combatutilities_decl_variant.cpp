@@ -43,7 +43,7 @@ struct __declspec(align(16)) BhkPickData
 class LookTarget
 {
 public:
-    void* TESObjectCELL_Pick(BhkPickData* ray);
+    void* TESObjectCELL_Pick(BhkPickData* arResult);
 };
 class GlobalObject_0045d260
 {
@@ -51,45 +51,48 @@ class GlobalObject_0045d260
     bool IsInCombat();
 };
 extern GlobalObject_0045d260 g_011f1c7c;
-float __cdecl GetScaleOrHeightDelta(TESObjectREFR* source, int mode);
-float __cdecl CombatUtilities_GetTargetFiringZOffset(TESObjectREFR* target, int mode, bool flag);
+float __cdecl CombatUtilities_GetAttackerFiringZOffset(TESObjectREFR* apAttacker, int abIgnoreCrouch);
+float __cdecl CombatUtilities_GetTargetFiringZOffset(TESObjectREFR* apTarget, int aeTargetSegmentInView, bool abIgnoreCrouch);
 TESObjectREFR* __cdecl TESObjectREFR_FindReferenceFor3D(void* hit);
 // @fnv 0x009a7940
 // src: XBOX_PDB 0x009a7940
-bool __cdecl CombatUtilities_CalculateLOS(Actor* source, TESObjectREFR* target, const NiPoint3& from, const NiPoint3& to,
-                          int unused, int requestedLayer)
+// pdb: CombatUtilities::CalculateLOS | CombatUtilities.obj | retail, upstream name already matches, high
+// pdb params: apAttacker, apTarget, arAttackerLocation, arTargetLocation, abIgnoreCrouch, aiCollisionLayer
+// pdb locals: collector, ecollilsionLayer, attackerLocation, icolFilter, phitRef, targetLocation, pobjHit, pickData, pmob
+bool __cdecl CombatUtilities_CalculateLOS(Actor* apAttacker, TESObjectREFR* apTarget, const NiPoint3& arAttackerLocation, const NiPoint3& arTargetLocation,
+                          int abIgnoreCrouch, int aiCollisionLayer)
 {
     g_011f1c7c.IsInCombat();
     int layer = 37;
-    if (requestedLayer != -1)
-        layer = requestedLayer;
-    NiPoint3 start = from;
-    start.z += GetScaleOrHeightDelta(source, 1);
-    NiPoint3 end = to;
-    if (target)
-        end.z += CombatUtilities_GetTargetFiringZOffset(target, 2, true);
+    if (aiCollisionLayer != -1)
+        layer = aiCollisionLayer;
+    NiPoint3 start = arAttackerLocation;
+    start.z += CombatUtilities_GetAttackerFiringZOffset(apAttacker, 1);
+    NiPoint3 end = arTargetLocation;
+    if (apTarget)
+        end.z += CombatUtilities_GetTargetFiringZOffset(apTarget, 2, true);
     BhkPickData ray;
-    HandleRef filter = source->FUN_00931ed0();
-    if (target && target->IsMobileObject())
+    HandleRef filter = apAttacker->FUN_00931ed0();
+    if (apTarget && apTarget->IsMobileObject())
     {
-        Actor* mobile = static_cast<Actor*>(target);
+        Actor* mobile = static_cast<Actor*>(apTarget);
         filter = mobile->FUN_00931ed0();
     }
     hkpClosestRayHitCollector collector(layer, reinterpret_cast<const SightFilter*>(&filter));
     ray.bhkPickData_SetClosestCollector(&collector);
-    filter = source->FUN_00931ed0();
+    filter = apAttacker->FUN_00931ed0();
     filter.CFilter_SetLayer(layer);
     ray.bhkPickData_SetFilter(filter);
     ray.bhkPickData_SetFrom(start);
     ray.bhkPickData_SetTo(end);
-    void* hit = source->FUN_008d6f30()->TESObjectCELL_Pick(&ray);
+    void* hit = apAttacker->FUN_008d6f30()->TESObjectCELL_Pick(&ray);
     if (!hit)
     {
         g_011f1c7c.IsInCombat();
         return true;
     }
     TESObjectREFR* hitRef = TESObjectREFR_FindReferenceFor3D(hit);
-    if (target && hitRef == target)
+    if (apTarget && hitRef == apTarget)
     {
         g_011f1c7c.IsInCombat();
         return true;

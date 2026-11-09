@@ -8,15 +8,18 @@ class O
     char m_auiShapeKeys[12];
     bool m_bFlag;
     HANDLE m_hFile;
-    int BSSystemFile_DoSeek(__int64 dist, DWORD method, LARGE_INTEGER* newPosPtr);
+    int BSSystemFile_DoSeek(__int64 auiOffset, DWORD aeWhence, LARGE_INTEGER* auiPos);
 };
 
 // Calls SetFilePointerEx on m_hFile and stores the new position; returns 0 on success, a mapped error code on failure, or 4 without seeking if m_bFlag is set.
 // @fnv 0x00afeef0
 // src: XBOX_PDB 0x00afeef0
-int O::BSSystemFile_DoSeek(__int64 llOffset, DWORD method, LARGE_INTEGER* pNewPos)
+// pdb: BSSystemFile::DoSeek | BSSystemFile_Xenon.obj | retail, upstream name already matches, high
+// pdb params: auiOffset, aeWhence, auiPos
+// pdb locals: lPos, dwResult, dwError, dwMoveMethod, lOffset, eResult
+int O::BSSystemFile_DoSeek(__int64 auiOffset, DWORD aeWhence, LARGE_INTEGER* auiPos)
 {
-    DWORD dwMethod = method;
+    DWORD dwMethod = aeWhence;
     LARGE_INTEGER newPos;
     newPos.QuadPart = 0;
     int res = 0;
@@ -30,7 +33,7 @@ int O::BSSystemFile_DoSeek(__int64 llOffset, DWORD method, LARGE_INTEGER* pNewPo
     }
     else
     {
-        off.QuadPart = llOffset;
+        off.QuadPart = auiOffset;
         okVal = (unsigned int)SetFilePointerEx(m_hFile, off, &newPos, dwMethod);
         if (okVal <= 0)
         {
@@ -58,7 +61,7 @@ int O::BSSystemFile_DoSeek(__int64 llOffset, DWORD method, LARGE_INTEGER* pNewPo
         else
         {
             res = 0;
-            *pNewPos = newPos;
+            *auiPos = newPos;
         }
     }
     return res;

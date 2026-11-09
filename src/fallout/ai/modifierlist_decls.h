@@ -7,6 +7,7 @@
 #include "../../../include/ActorValueModifierList.h"
 
 #pragma pack(push, 4)
+// pdb: class Modifier, size 0x8, 2 members
 class Modifier
 {
   public:
@@ -15,7 +16,7 @@ class Modifier
     float fValue;
 
     Modifier(Modifier* other);
-    Modifier(char key, float value);
+    Modifier(char acKey, float afValue);
     void SetValue(float value);
     char GetKey();
     float GetValue();

@@ -92,6 +92,7 @@ class GlobalObject_00633c90
     char data[4];
 };
 extern GlobalObject_00633c90 g_011ded3c;
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -101,28 +102,33 @@ class TaskQueueInterface
 
 
 // @fnv 0x00a20580
-Tile* TileImage::SetTraitValue(int trait, float value, const char* text)
+// pdb: TileImage::PostParse | TileImage.obj | retail, vtable slot, high
+// pdb params: aiTrait, afValue, axString
+Tile* TileImage::SetTraitValue(int aiTrait, float afValue, const char* axString)
 {
-    if ((trait == 0xfa1 || trait == 0xfa2) && !(uiFlags & 1))
+    if ((aiTrait == 0xfa1 || aiTrait == 0xfa2) && !(uiFlags & 1))
         SetImageFlags(1);
-    else if ((trait == 0xfb1 || trait == 0xfb0) && !(uiFlags & 16))
+    else if ((aiTrait == 0xfb1 || aiTrait == 0xfb0) && !(uiFlags & 16))
         SetImageFlags(16);
-    else if (trait == 0xfcc && GetValue(0xff9))
+    else if (aiTrait == 0xfcc && GetValue(0xff9))
         SetImageFlags(16);
     return 0;
 }
 
 // @fnv 0x0078cdf0
+// pdb: Main::GetMenuBGTexture | LoadingMenu.obj | debug, object-file gap fill, medium
 void TileImage::UpdateTileImage()
 {
     ((ExtraDataList*)&g_011ded3c)->GetStartingAngle(0)->BSRenderedTexture_GetTexture();
 }
 
 // @fnv 0x00a1f6e0
-void TileImage::Init(Tile* parent, const char* name, Tile* root)
+// pdb: TileImage::Init | TileImage.obj | retail, upstream name already matches, high
+// pdb params: apParent, apName, apReplacedTile
+void TileImage::Init(Tile* apParent, const char* apName, Tile* apReplacedTile)
 {
     int unused[2];
-    Tile::Init(parent, name, root);
+    Tile::Init(apParent, apName, apReplacedTile);
     Set(0xff5, 255.0f, true);
     Set(0xfb2, 255.0f, true);
     Set(0xfb3, 255.0f, true);
@@ -133,11 +139,14 @@ void TileImage::Init(Tile* parent, const char* name, Tile* root)
     SetTileType(3);
     fScale = 1.0f;
     spTexture = (NiTexture*)0;
-    m_bTextureLoaded = false;
+    bIsScissor = false;
 }
 
 // Allocates a BSShaderTextureSet and copies each non-empty texture path from textures into it, prefixed with Data\Textures\.
 // @fnv 0x00592d20
+// pdb: BGSTextureSet::GetTextureFilename | BGSTextureSet.obj | debug, object-file run extension, low
+// pdb params: aiType
+// pdb locals: pretval
 BSShaderTextureSet* BGSTextureSet::BuildShaderTextureSet()
 {
     BSShaderTextureSet* result = new BSShaderTextureSet;
@@ -162,6 +171,7 @@ struct TileimageInterfaceView
 };
 struct FileFinder;
 extern FileFinder* g_fileFinder;
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 struct FileFinder
 {
     int GetFileLocation(char*, char*, unsigned int, unsigned int);
@@ -230,7 +240,11 @@ bool fnv_NiStreamGetTexture(char*, L::NiTexturePtr*);
 
 // Builds a Data\Textures\ path from apFilename, looks up the texture, and falls back to a default setting string if not found.
 // @fnv 0x00a1f7d0
-void ResolveTexturePath(const char* apFilename, float* afScale, float afZoom, char* axOut)
+// src: XBOX_RETAIL_PDB 0x00a1f7d0
+// pdb: TileImage::ConvertToActualFilename | TileImage.obj | retail, call graph, high
+// pdb params: apFilename, afScale, afZoom, axOut
+// pdb locals: path, aspect, sptex
+void TileImage_ConvertToActualFilename(const char* apFilename, float* afScale, float afZoom, char* axOut)
 {
     if (!apFilename || !*apFilename || *apFilename == ' ')
         return;
@@ -294,7 +308,7 @@ class FileFinder
 };
 extern NiTexture::TextureFormatPreferences DAT_011a9598;
 void* __cdecl _fnv_zlib_memset(void*, int, unsigned int);
-void __cdecl ResolveTexturePath(const char*, float&, float, char*);
+void __cdecl TileImage_ConvertToActualFilename(const char*, float&, float, char*);
 char* __cdecl FUN_00ec7750(const char*, const char*);
 void __cdecl fnv_NiStreamGetTexture(const char*, NiPointer<NiTexture>&);
 static inline int GetCurrentMemoryContext()
@@ -308,16 +322,20 @@ static inline void SetCurrentMemoryContext(int context)
 }  // namespace fnv_00a1fa20
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = (MEM_CONTEXT)fnv_00a1fa20::GetCurrentMemoryContext();
+    iOldMemContext = (MEM_CONTEXT)fnv_00a1fa20::GetCurrentMemoryContext();
     fnv_00a1fa20::SetCurrentMemoryContext(context);
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    fnv_00a1fa20::SetCurrentMemoryContext(m_eMemoryContext);
+    fnv_00a1fa20::SetCurrentMemoryContext(iOldMemContext);
 }
 namespace fnv_00a1fa20 {
 // @fnv 0x00a1fa20
-void __cdecl LoadTextureForFile(const char* apFilename, float& afScale, NiPointer<NiTexture>& aspTexture, float afZoom,
+// src: XBOX_RETAIL_PDB 0x00a1fa20
+// pdb: TileImage::AddToTesTextures | TileImage.obj | retail, unique string literal, high
+// pdb params: apFilename, afScale, aspTexture, afZoom, apDataImage
+// pdb locals: pfname, path, tempAutoPause, tempMemContext
+void __cdecl TileImage_AddToTesTextures(const char* apFilename, float& afScale, NiPointer<NiTexture>& aspTexture, float afZoom,
                                 NiPointer<NiTexture> apDataImage)
 {
     if (!apDataImage)
@@ -325,7 +343,7 @@ void __cdecl LoadTextureForFile(const char* apFilename, float& afScale, NiPointe
         char acTexturePath[1024];
         acTexturePath[0] = 0;
         _fnv_zlib_memset(acTexturePath + 1, 0, 0x3ff);
-        ResolveTexturePath(apFilename, afScale, afZoom, acTexturePath);
+        TileImage_ConvertToActualFilename(apFilename, afScale, afZoom, acTexturePath);
         if (acTexturePath[0])
         {
             NiFixedString path((const char*)acTexturePath);
@@ -387,12 +405,12 @@ struct PropertyList
 };
 }  // namespace ImageNodeBuild
 // src: XBOX_PDB 0x00439410
-inline void NiNode::NiAVObject_AttachProperty(NiNode* property)
+inline void NiNode::NiAVObject_AttachProperty(NiNode* pkProperty)
 {
-    NiProperty* typedProperty = (NiProperty*)property;
+    NiProperty* typedProperty = (NiProperty*)pkProperty;
     if (typedProperty->GetType() < 7)
     {
-        NiPointer<NiNode> heldProperty(property);
+        NiPointer<NiNode> heldProperty(pkProperty);
         ((ImageNodeBuild::PropertyList*)&m_kPropertyList)->NiAVObject_AttachProperty_00439fd0(heldProperty);
     }
 }
@@ -420,9 +438,9 @@ namespace ImageNodeBuild {
 extern void* __cdecl _NiMalloc_00aa1070(unsigned int);
 extern void* __cdecl Object_DispatchCommandFour(unsigned int);
 extern void* __cdecl BSShaderManager_GetShader(unsigned int);
-extern void* __cdecl FUN_00706d30();
+extern void* __cdecl Interface_GetInterfaceRoot();
 extern void* __cdecl FUN_00706df0();
-extern void* __cdecl AttachFaceGenAnimationData(void*);
+extern void* __cdecl Interface_AttachDefaultAlphaProperty(void*);
 extern void __stdcall FUN_00706e00(unsigned int);
 extern void __cdecl Interface_SetNeedToUpdate(int);
 extern unsigned int __cdecl FUN_00ec62c0();
@@ -470,6 +488,8 @@ static __forceinline NiNode* AsN(NiNode* p)
 
 // Builds a quad geometry object, attaches it beneath a node returned by FUN_00a089c0() or a fallback, and returns the containing node.
 // @fnv 0x00a1fd50
+// pdb: TileImage::MakeNode | TileImage.obj | retail, string-set bridge, high
+// pdb locals: apParent, pvert_order, pvertices, pbar, pcolors, pshader, ptileShader, ptextures, pnormals
 NiNode* TileImage::CalculateNode()
 {
     using namespace ImageNodeBuild;
@@ -509,21 +529,21 @@ NiNode* TileImage::CalculateNode()
         ((GO*)&ptr_k)->operator=(
             (NiNode*)new FUN_00c5cf30(4, vertices_nriq, previous_zphzqj, 0, extraBuffer_tjnslw, 1, 0, 2, indices_tyg, 0,
                                       0, (FUN_00706df0(), FUN_00706e00(FUN_00ec62c0()), FUN_00ec62c0())));
-        m_bTextureLoaded = true;
+        bIsScissor = true;
     }
     else
     {
         ((GO*)&ptr_k)->operator=(
             (NiNode*)new NiTriShape(4, vertices_nriq, previous_zphzqj, 0, extraBuffer_tjnslw, 1, 0, 2, indices_tyg));
-        m_bTextureLoaded = false;
+        bIsScissor = false;
     }
 
     ptr_k->SetName(NiFixedString((const char*)kGeometryName));
     GD(ptr_k);
 
-    ((GO*)&m_spShaderProperty)->operator=(
+    ((GO*)&spTSP)->operator=(
         new TileShaderProperty(false));
-    ptr_k->NiAVObject_AttachProperty((NiNode*)(TileShaderProperty*)m_spShaderProperty);
+    ptr_k->NiAVObject_AttachProperty((NiNode*)(TileShaderProperty*)spTSP);
 
     void* v_r;
     void* kIter_bw;
@@ -531,22 +551,22 @@ NiNode* TileImage::CalculateNode()
     v_r = kIter_bw;
     ptr_k->SetExtraBuffer(v_r);
 
-    ((GO*)&m_pRenderedNodeEntry)->operator=(new NiNode(0));
-    m_pRenderedNodeEntry->AttachChildInAvailableSlot((NiAVObject*)(NiNode*)ptr_k, true);
+    ((GO*)&spModel)->operator=(new NiNode(0));
+    spModel->AttachChildInAvailableSlot((NiAVObject*)(NiNode*)ptr_k, true);
     if (0 == cnt_lgft)
-        cnt_lgft = (NiNode*)FUN_00706d30();
-    cnt_lgft->AttachChildInAvailableSlot((NiAVObject*)(NiNode*)m_pRenderedNodeEntry, true);
+        cnt_lgft = (NiNode*)Interface_GetInterfaceRoot();
+    cnt_lgft->AttachChildInAvailableSlot((NiAVObject*)(NiNode*)spModel, true);
 
-    m_pRenderedNodeEntry->SetName(NiFixedString((const char*)StringProvider.pString));
-    AttachFaceGenAnimationData(ptr_k);
-    m_pRenderedNodeEntry->UpdateProperties();
+    spModel->SetName(NiFixedString((const char*)xName.pString));
+    Interface_AttachDefaultAlphaProperty(ptr_k);
+    spModel->UpdateProperties();
     Interface_SetNeedToUpdate(1);
 
-    m_pRenderedNodeEntry->SetExtraDataName(new FUN_00a1f610(this, (NiNode*)m_pRenderedNodeEntry));
+    spModel->SetExtraDataName(new FUN_00a1f610(this, (NiNode*)spModel));
 
     Tile_FinalPostParse(0xfad, FUN_00a011b0(0xfad, 0));
     if (IsTraitNonZero(0xfae))
         Tile_SetChangeFlag(0x100);
     Tile_SetChangeFlag(0x3d);
-    return (NiNode*)m_pRenderedNodeEntry;
+    return (NiNode*)spModel;
 }

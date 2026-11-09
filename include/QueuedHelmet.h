@@ -5,6 +5,7 @@
 
 class BipedAnim;
 
+// pdb: class QueuedHelmet, size 0x128, bases: QueuedFile, 6 members
 class QueuedHelmet : public QueuedFile
 {
 public:
@@ -30,11 +31,11 @@ public:
     void PostProcess();
     void Finish_0043f2b0();
 
-    BipedAnim* pExistingBipedAnim;
-    unsigned char unused2[0x50];
-    GO m_kQueuedModels[20];
-    GO m_kQueuedModelsSecondary[20];
+    BipedAnim* pBipedAnim;
+    unsigned char spQueuedHelmetModel[0x50];
+    GO spHelmetFaceGenModel[20];
+    GO spClonedHelmetNode[20];
     int pRef;
-    int unk120;
+    int cFlags;
     int unk124;
 };

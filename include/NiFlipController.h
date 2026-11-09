@@ -7,6 +7,7 @@ class NiAlphaController;
 class NiTexture;
 class NiUpdateDataF;
 
+// pdb: class NiFlipController, size 0x54, bases: NiFloatInterpController, 4 members
 class NiFlipController : public NiFloatInterpController
 {
 public:
@@ -31,7 +32,7 @@ public:
     void* GetEntryAt(int index);
     const char* __thiscall GetFormattedValue();
     void* GetSrc(unsigned int index);
-    void __thiscall AttachTexture(void* texture, unsigned int index);
+    void __thiscall AttachTexture(void* pkTexture, unsigned int uiIndex);
     void __thiscall CopyMembers_00a4f920(NiAlphaController* clone, CloningProcess& process);
     bool __thiscall RegisterStreamables_00a4f350(NiStream& stream);
     void* CreateFlipController(CloningProcess& process);
@@ -46,8 +47,8 @@ public:
     bool GetManagerControlled() const;
     bool AdvanceController(float time);
 
-    NiTPrimitiveArray<NiPointer<NiTexture> > m_kTextureSwapList;
-    unsigned int m_uiPosition;
-    unsigned int m_eAffectedMap;
-    void* m_pkBuf;
+    NiTPrimitiveArray<NiPointer<NiTexture> > m_kTextures;
+    unsigned int m_uiIndex;
+    unsigned int m_uiAffectedMap;
+    void* m_pcCtlrID;
 };

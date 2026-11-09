@@ -21,6 +21,7 @@ class ShaderPassRenderer;
 class GraphicsRenderer;
 class NiD3DVertexDeclaration;
 #pragma pack(push, 4)
+// pdb: class BSDistantTreeShader, size 0xfc, bases: BSShader, 12 members
 class BSDistantTreeShader : public BSShader
 {
   public:
@@ -36,9 +37,9 @@ class BSDistantTreeShader : public BSShader
     NiColorA m_kColor3;                                      // +0xCC, 16 bytes
     NiColorA m_kColor4;                                      // +0xDC, 16 bytes
     NiColorA m_kColor5;                                      // +0xEC, 16 bytes
-    virtual BSShader* CreateShader();
+    virtual BSShader* BSDistantTreeShader_CreateShader();
     void InitializeShaderData();
-    void UpdateShaderConstants();
+    void BSDistantTreeShader_CreateConstantMaps();
     BSDistantTreeShader* FUN_00bb6c30(NiD3DVertexDeclaration*);
     void BSDistantTreeShader_LoadStagesAndPasses();
     // const NiRTTI* __cdecl BSDistantTreeShader::*()

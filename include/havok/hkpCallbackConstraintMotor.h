@@ -6,6 +6,7 @@
 #include "hkBase.h"
 #include "hkpLimitedForceConstraintMotor.h"
 #pragma pack(push, 1)
+// pdb: class hkpCallbackConstraintMotor, size 0x28, bases: hkpLimitedForceConstraintMotor, 5 members
 class hkpCallbackConstraintMotor : public hkpLimitedForceConstraintMotor
 {
   public:
@@ -17,11 +18,11 @@ class hkpCallbackConstraintMotor : public hkpLimitedForceConstraintMotor
         CALLBACK_MOTOR_TYPE_USER_2 = 3,
         CALLBACK_MOTOR_TYPE_USER_3 = 4
     };
-    void* m_pCallbackFunction;       // +0x14
-    hkUint32 m_uiCallbackType;       // +0x18 (CallbackType)
-    hkUlong m_pCallbackData;         // +0x1C
-    hkUlong m_pUserData;             // +0x20
-    hkUlong m_pRefObjectLocalStore;  // +0x24
+    void* m_callbackFunc;       // +0x14
+    hkUint32 m_callbackType;       // +0x18 (CallbackType)
+    hkUlong m_userData0;         // +0x1C
+    hkUlong m_userData1;             // +0x20
+    hkUlong m_userData2;  // +0x24
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpCallbackConstraintMotor[(sizeof(hkpCallbackConstraintMotor) == 0x28) ? 1 : -1];

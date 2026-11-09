@@ -4,13 +4,14 @@
 
 class BGSReconstructCellSubBlocksMap;
 
+// pdb: class BGSReconstructCellBlocksMap, size 0x18, bases: NiTMap<unsigned int, 2 members
 class BGSReconstructCellBlocksMap : public NiTMap<unsigned int, BGSReconstructCellSubBlocksMap*>
 {
 public:
-    int unk10;
-    bool unk14;
+    int pPersistentCell;
+    bool bExteriors;
 
-    BGSReconstructCellBlocksMap(bool exterior);
+    BGSReconstructCellBlocksMap(bool abExteriors);
     ~BGSReconstructCellBlocksMap();
     void* ScalarDeletingDestructor(unsigned int flags);
 

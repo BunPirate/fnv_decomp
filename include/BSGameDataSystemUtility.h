@@ -2,6 +2,7 @@
 
 #include "GAMEDATA_STATUS.h"
 
+// pdb: class BSGameDataSystemUtility, size 0x850, 6 members
 class BSGameDataSystemUtility
 {
 public:
@@ -13,11 +14,11 @@ public:
     virtual void vf14();
 
     bool bIsActive;
-    bool m_bGameDataFlag;
+    bool bNewGameData;
     unsigned short layoutPadding6;
-    GAMEDATA_STATUS m_eGameDataStatus;
-    char m_acFirstLargeBuffer[1055];
-    char m_acSecondaryPath[1055];
+    GAMEDATA_STATUS eGameDataStatus_;
+    char cGameDataDir[1055];
+    char cContentInfoDir[1055];
     unsigned short layoutPadding84A;
-    int m_iBufferValue;
+    int iFreeSpaceKB_;
 };

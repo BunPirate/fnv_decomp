@@ -139,8 +139,8 @@ struct D3DD50Collector : D3DD50CollectorBase {
     virtual void unk00();
     virtual void unk04();
 };
-void __cdecl D3DD50Query(int a, int b, int c, D3DD50CollectorBase* collector);
-void __cdecl QueryD3DCollector(int aiArg1, int aiArg2, int aiArg3, int aiData);
+void __cdecl D3DD50Query(int bodyA, int bodyB, int input, D3DD50CollectorBase* collector);
+void __cdecl hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int aiData);
 extern char DAT_010ce7fc[];
 struct Functor_d3e110 {
     void* m_vtbl;
@@ -148,7 +148,7 @@ struct Functor_d3e110 {
     int m_uiFilterValue;
 };
 void __cdecl hkpCdBody_ProcessAndReturnValue_00d3d8c0(int a, int b, int c, Functor_d3e110* f);
-void __cdecl Hkpspheretriangleagent_UpdateState_00d3e110(int a, int b, int aiArg3, int d);
+void __cdecl hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_staticGetClosestPoints(int bodyA, int bodyB, int input, int collector);
 struct SpawnedInner
 {
     virtual void unk00();
@@ -166,7 +166,7 @@ public:
     SpawnedInner* m_pInner;      // +0x08
     unsigned short m_wFlags;     // +0x0C
 
-    void hkpSphereTriangleAgent_cleanup(void* param);
+    void hkpSphereTriangleAgent_cleanup(void* constraintOwner);
 };
 struct hkMemory {
     virtual void unk0();
@@ -197,7 +197,7 @@ struct TargetAgent {
         vtable = &DAT_010cf09c;
     }
 };
-void* __cdecl CreateTargetAgent(void* bodyA, void* bodyB, void* input, void* mgr);
+void* __cdecl hkpSphereTriangleAgent_createTriangleSphereAgent(void* bodyA, void* bodyB, void* input, void* mgr);
 extern char DAT_010ce81c[];
 struct D3DD10Data
 {
@@ -207,11 +207,11 @@ struct D3DD10Data
 };
 struct D3DD10Object
 {
-    void __thiscall hkpSphereTriangleAgent_getPenetrations(unsigned int a1, unsigned int a2,
-                                 unsigned int a3, D3DD10Data* data);
+    void __thiscall hkpSphereTriangleAgent_getPenetrations(unsigned int bodyA, unsigned int bodyB,
+                                 unsigned int input, D3DD10Data* collector);
 
-    void __thiscall hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_getPenetrations(unsigned int p0, unsigned int p1,
-                                 unsigned int p2, unsigned int p3);
+    void __thiscall hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_getPenetrations(unsigned int bodyA, unsigned int bodyB,
+                                 unsigned int input, unsigned int collector);
 };
 extern "C" {
 LocalM128 _mm_add_ps(LocalM128, LocalM128);
@@ -270,7 +270,7 @@ class ParticleSystemOps
 {
 public:
     void hkpSphereTriangleAgent_processCollision(int a, int b, int c, ParticleSystemState* state);
-    void hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_processCollision(int a1, int a2, int a3, ParticleSystemState* s);
+    void hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_processCollision(int bodyA, int bodyB, int input, ParticleSystemState* result);
 };
 typedef unsigned long DWORD;
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(DWORD);
@@ -331,7 +331,7 @@ class SphereTriAgent {
 public:
     int unk00, unk04, unk08, unk0C;
     float unk10;
-    void hkpSphereTriangleAgent_getPenetrations(BodyHolderB* a, BodyHolderB* b, int c_, Sink* sink);
+    void hkpSphereTriangleAgent_getPenetrations(BodyHolderB* bodyA, BodyHolderB* bodyB, int input, Sink* collector);
 };
 // rotate the translation difference by the inverse of B's rotation (HK_TRANSPOSE3), compute the
 // closest point, and report a contact when the distance is below the summed radii.
@@ -378,7 +378,7 @@ void __cdecl hkpCollideTriangleUtil_closestPointTriangle(PacketCallLocal_00d3dd9
 struct S_00d3d3e0_P1P { S_00d3d3e0_P1* p; S_00d3d3e0_P1* val() const { return p; } };
 struct S_00d3d3e0_P2P { S_00d3d3e0_P2* p; S_00d3d3e0_P2* val() const { return p; } };
 struct S_00d3d3e0_P3P { S_00d3d3e0_P3* p; S_00d3d3e0_P3* val() const { return p; } };
-void hkpSphereTriangleAgent_staticGetPenetrations(S_00d3d3e0_P1P a1, S_00d3d3e0_P2P a2, int unused, S_00d3d3e0_P3P a3);
+void hkpSphereTriangleAgent_staticGetPenetrations(S_00d3d3e0_P1P bodyA, S_00d3d3e0_P2P bodyB, int input, S_00d3d3e0_P3P collector);
 
 extern "C" LocalM128 _mm_load_ss(float const*_A);
 typedef unsigned long DWORD;
@@ -400,12 +400,12 @@ struct S00d3d6b0_BodyHolderB { S00d3d6b0_BodyB* obj; int unk04; Transform* xf; }
 struct __declspec(align(16)) S00d3d6b0_HitInfo { PacketCallLocal_00d3dd90 pt,nrm; S00d3d6b0_BodyHolderB* a; S00d3d6b0_BodyHolderB* b; };
 struct S00d3d6b0_Sink { virtual void unk00(); virtual void unk04(S00d3d6b0_HitInfo*); };
 struct S00d3d6b0_Input { int unk00,unk04; float tolerance; };
-extern void __cdecl hkpCollideTriangleUtil_closestPointTriangle(PacketCallLocal_00d3dd90* v, void* tri, float* f, S00d3d6b0_Res* out, void* flag);
+extern void __cdecl hkpCollideTriangleUtil_closestPointTriangle(PacketCallLocal_00d3dd90* v, void* tri, float* f, S00d3d6b0_Res* out, void* featureOutput);
 class S00d3d6b0_SphereTriAgent {
 public:
     int unk00,unk04,unk08,unk0C;
     float unk10;
-    void hkpSphereTriangleAgent_getClosestPoints(S00d3d6b0_BodyHolderB* a, S00d3d6b0_BodyHolderB* b, S00d3d6b0_Input* input, S00d3d6b0_Sink* sink);
+    void hkpSphereTriangleAgent_getClosestPoints(S00d3d6b0_BodyHolderB* bodyA, S00d3d6b0_BodyHolderB* bodyB, S00d3d6b0_Input* input, S00d3d6b0_Sink* collector);
 };
 extern "C" void* __cdecl memcpy(void* dst, const void* src, unsigned int size);
 #pragma intrinsic(memcpy)
@@ -416,7 +416,10 @@ static __forceinline void copyVector(PacketCallLocal_00d3dd90& out, const Packet
 
 // @fnv 0x00d3d6b0
 // src: HAVOK_SRC 0x00d3d6b0
-void S00d3d6b0_SphereTriAgent::hkpSphereTriangleAgent_getClosestPoints(S00d3d6b0_BodyHolderB* a, S00d3d6b0_BodyHolderB* b, S00d3d6b0_Input* input, S00d3d6b0_Sink* sink) {
+// pdb: hkpSphereTriangleAgent::getClosestPoints | hkpSphereTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
+void S00d3d6b0_SphereTriAgent::hkpSphereTriangleAgent_getClosestPoints(S00d3d6b0_BodyHolderB* bodyA, S00d3d6b0_BodyHolderB* bodyB, S00d3d6b0_Input* input, S00d3d6b0_Sink* collector) {
     volatile unsigned int lo;
     {
         hkMonitorStream* buf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -430,20 +433,20 @@ void S00d3d6b0_SphereTriAgent::hkpSphereTriangleAgent_getClosestPoints(S00d3d6b0
         }
     }
     S00d3d6b0_HitInfo hit;
-    hit.a=a;
-    hit.b=b;
-    S00d3d6b0_BodyB* shapeA = a->obj;
-    S00d3d6b0_BodyB* shapeB = b->obj;
-    Transform* axf = a->xf;
+    hit.a=bodyA;
+    hit.b=bodyB;
+    S00d3d6b0_BodyB* shapeA = bodyA->obj;
+    S00d3d6b0_BodyB* shapeB = bodyB->obj;
+    Transform* axf = bodyA->xf;
     PacketCallLocal_00d3dd90* center = (PacketCallLocal_00d3dd90*)&axf->r[3];
     __declspec(align(16)) PacketCallLocal_00d3dd90 tri[3];
     __declspec(align(16)) PacketCallLocal_00d3dd90 r0,r1,r2;
     S00d3d6b0_Res out;
     {
-        copyVector(r0, *(PacketCallLocal_00d3dd90*)&b->xf->r[0]);
-        copyVector(r1, *(PacketCallLocal_00d3dd90*)&b->xf->r[1]);
-        copyVector(r2, *(PacketCallLocal_00d3dd90*)&b->xf->r[2]);
-        copyVector(out.pt, *(PacketCallLocal_00d3dd90*)&b->xf->r[3]);
+        copyVector(r0, *(PacketCallLocal_00d3dd90*)&bodyB->xf->r[0]);
+        copyVector(r1, *(PacketCallLocal_00d3dd90*)&bodyB->xf->r[1]);
+        copyVector(r2, *(PacketCallLocal_00d3dd90*)&bodyB->xf->r[2]);
+        copyVector(out.pt, *(PacketCallLocal_00d3dd90*)&bodyB->xf->r[3]);
         for (int i=2; i>=0; --i) {
             LocalM128 v = *(LocalM128*)&shapeB->vertices[i];
             LocalM128 y = _mm_shuffle_ps(v,v,0x55);
@@ -469,7 +472,7 @@ void S00d3d6b0_SphereTriAgent::hkpSphereTriangleAgent_getClosestPoints(S00d3d6b0
         *(LocalM128*)&hit.pt = pos;
         *(LocalM128*)&hit.nrm = normal;
         hit.nrm.w = distance-sum;
-        sink->unk04(&hit);
+        collector->unk04(&hit);
     }
     {
         hkMonitorStream* buf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -598,7 +601,7 @@ extern "C" int __cdecl hkpCollideTriangleUtil_closestPointTriangle(
     const void* vertices,
     void* cache,
     void* output,
-    void* weldFlag
+    void* featureOutput
 );
 
 union FeatureInfo {
@@ -645,6 +648,9 @@ struct TargetAgent_Cand : TargetAgent {
 
 // @fnv 0x00d3dd90
 // src: HAVOK_SRC 0x00d3dd90
+// pdb: hkpSphereTriangleAgent::processCollision | hkpSphereTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: featureOutput, assertBuf, ostr, numFeatures, weldedNormal, pointPos
 void TargetAgent_Cand::hkpSphereTriangleAgent_processCollision(const CdBody* bodyA, const CdBody* bodyB, const ProcessCollisionInput* input, ProcessCollisionOutput* result) {
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     MonitorRecord* cur = (MonitorRecord*)stream->m_end.m_storage;
@@ -777,24 +783,26 @@ struct __declspec(align(16)) S_00d3d520_Res {
 
 struct __declspec(align(16)) S_00d3d520_Out { PacketCallLocal_00d3dd90 point; PacketCallLocal_00d3dd90 normal; };
 
-int __cdecl hkpCollideTriangleUtil_closestPointTriangle(const PacketCallLocal_00d3dd90* pos, const PacketCallLocal_00d3dd90* tri, int a4, S_00d3d520_Res* out, char* flag);
+int __cdecl hkpCollideTriangleUtil_closestPointTriangle(const PacketCallLocal_00d3dd90* pos, const PacketCallLocal_00d3dd90* tri, int a4, S_00d3d520_Res* out, char* featureOutput);
 
 // @fnv 0x00d3d520
 // src: XBOX_PDB 0x00d3d520
-int __cdecl hkpSphereTriangleAgent_getClosestPoint(S_00d3d520_A* a, S_00d3d520_Body* b, S_00d3d520_Info* info, int a4, S_00d3d520_Out* outp)
+// pdb: hkpSphereTriangleAgent::getClosestPoint | hkpSphereTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, cache, cpoint
+int __cdecl hkpSphereTriangleAgent_getClosestPoint(S_00d3d520_A* bodyA, S_00d3d520_Body* bodyB, S_00d3d520_Info* input, int cache, S_00d3d520_Out* cpoint)
 {
-    __declspec(align(16)) PacketCallLocal_00d3dd90 v[3]; S_00d3d520_Shape* sphere = a->shape;
-    { S_00d3d520_Shape* tri = b->shape;
-    const PacketCallLocal_00d3dd90* count = a->pos + 3;
+    __declspec(align(16)) PacketCallLocal_00d3dd90 v[3]; S_00d3d520_Shape* sphere = bodyA->shape;
+    { S_00d3d520_Shape* tri = bodyB->shape;
+    const PacketCallLocal_00d3dd90* count = bodyA->pos + 3;
     
-    S_00d3d520_TransformPoints(*b->motion, tri->verts, v);
+    S_00d3d520_TransformPoints(*bodyB->motion, tri->verts, v);
     S_00d3d520_Res pen;
-    int r = hkpCollideTriangleUtil_closestPointTriangle(count, v, a4, &pen, 0);
+    int r = hkpCollideTriangleUtil_closestPointTriangle(count, v, cache, &pen, 0);
     float k = sphere->radius + tri->radius;
     
-    float thr = info->distance + k;
+    float thr = input->distance + k;
     if (pen.dist < thr) {
-S_00d3d520_Out* o=outp;
+S_00d3d520_Out* o=cpoint;
 float res=tri->radius-pen.dist;
 double separation=pen.dist-k;
 volatile float* distance=&o->normal.w;

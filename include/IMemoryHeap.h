@@ -3,6 +3,7 @@
 class MemoryHeapStats;
 class IMemoryManagerFile;
 
+// pdb: class IMemoryHeap, size 0x4, 0 members
 class IMemoryHeap
 {
 public:

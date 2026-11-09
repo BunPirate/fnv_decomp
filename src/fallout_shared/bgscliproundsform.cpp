@@ -9,14 +9,17 @@
 // @fnv 0x00475100
 void BGSClipRoundsForm::Init()
 {
-    m_ucClipRounds = 0xc;
+    cClipRounds = 0xc;
 }
 
 // Copies clip rounds when component is a BGSClipRoundsForm.
 // @fnv 0x00475120
-void BGSClipRoundsForm::CopyFromBase(BaseFormComponent* component)
+// pdb: BGSClipRoundsForm::CopyComponent | BGSClipRoundsForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
+void BGSClipRoundsForm::CopyFromBase(BaseFormComponent* apCopyFC)
 {
-    BGSClipRoundsForm* clipRounds = dynamic_cast<BGSClipRoundsForm*>(component);
+    BGSClipRoundsForm* clipRounds = dynamic_cast<BGSClipRoundsForm*>(apCopyFC);
     if (!clipRounds)
         return;
     SetFormClipRounds(clipRounds->GetClipRounds());
@@ -24,9 +27,12 @@ void BGSClipRoundsForm::CopyFromBase(BaseFormComponent* component)
 
 // Returns true if the cast fails or the clip rounds differ.
 // @fnv 0x00475170
-bool BGSClipRoundsForm::CompareWithBase(BaseFormComponent* other)
+// pdb: BGSClipRoundsForm::CompareComponent | BGSClipRoundsForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool BGSClipRoundsForm::CompareWithBase(BaseFormComponent* apCompareFC)
 {
-    BGSClipRoundsForm* pClipRoundsForm = dynamic_cast<BGSClipRoundsForm*>(other);
+    BGSClipRoundsForm* pClipRoundsForm = dynamic_cast<BGSClipRoundsForm*>(apCompareFC);
     if (!pClipRoundsForm)
         return true;
     if (GetClipRounds() != pClipRoundsForm->GetClipRounds())

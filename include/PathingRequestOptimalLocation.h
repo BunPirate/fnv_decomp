@@ -5,6 +5,7 @@
 #include "PathingRequest.h"
 #pragma warning(pop)
 
+// pdb: class PathingRequestOptimalLocation, size 0xc0, bases: PathingRequest, 4 members
 class PathingRequestOptimalLocation : public PathingRequest
 {
 public:

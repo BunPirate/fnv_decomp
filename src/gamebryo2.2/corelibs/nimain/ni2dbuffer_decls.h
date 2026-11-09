@@ -5,5 +5,5 @@
 #include "../../../../include/Ni2DBuffer.h"
 #include "../../../../include/NiRTTI.h"
 
-extern NiRTTI DAT_011f603c;
+extern NiRTTI NiDepthStencilBuffer_ms_RTTI;
 #endif

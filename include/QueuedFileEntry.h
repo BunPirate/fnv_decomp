@@ -5,6 +5,7 @@
 class BSFile;
 class BSFileEntry;
 
+// pdb: class QueuedFileEntry, size 0x30, bases: QueuedFile, 2 members
 class QueuedFileEntry : public QueuedFile
 {
 public:
@@ -19,13 +20,13 @@ public:
     void SetFileName(const char* name);
     BSFileEntry* GetFileEntry();
     void SetFileEntry(BSFileEntry* entry);
-    void LookupFileEntry(int archive);
-    void LookupFileEntryByArchive(int archive);
+    void LookupFileEntry(int aeArchiveTypeIndex);
+    void LookupFileEntryByArchive(int aeArchiveTypeIndex);
     BSFile* GetFile(int archive, int flags);
-    void GetLookupFileName(int archive, char* name);
-    bool GetDescription(char* description, unsigned int bufferSize, char* prefix);
-    void SetFileName_00c3cee0(const char* name);
+    void GetLookupFileName(int aeArchiveTypeIndex, char* apLookupFileName);
+    bool GetDescription(char* apDescription, unsigned int aiBufferSize, char* apFileEntryTypeDescription);
+    void SetFileName_00c3cee0(const char* apFileName);
 
     char* pFileName;
-    BSFileEntry* m_pFileEntry;
+    BSFileEntry* pFileEntry;
 };

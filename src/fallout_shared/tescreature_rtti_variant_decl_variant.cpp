@@ -27,9 +27,12 @@
 #include <string.h>
 // @fnv 0x005f9b90
 // src: XBOX_PDB 0x005f9b90
-bool TESCreature::Compare_005f9b90(TESForm* otherForm)
+// pdb: TESCreature::Compare | TESCreature.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pComp, pcompsounds, psounds
+bool TESCreature::Compare_005f9b90(TESForm* apCompare)
 {
-    TESCreature* other = dynamic_cast<TESCreature*>(otherForm);
+    TESCreature* other = dynamic_cast<TESCreature*>(apCompare);
     if (!other)
         return true;
     if (TESForm_CompareAllComponents(other))
@@ -53,7 +56,7 @@ bool TESCreature::Compare_005f9b90(TESForm* otherForm)
     if (static_cast<const TESCreature*>(this)->GetBodyPartData() !=
         static_cast<const TESCreature*>(other)->GetBodyPartData())
         return true;
-    if (FUN_009c0070() != other->FUN_009c0070())
+    if (BGSSaveLoadFile_GetFilePosition() != other->BGSSaveLoadFile_GetFilePosition())
         return true;
     if (FUN_00461580(0x100))
     {
@@ -63,7 +66,7 @@ bool TESCreature::Compare_005f9b90(TESForm* otherForm)
         {
             if (!otherSounds5)
                 return true;
-            if (sounds->IsDifferentFrom(otherSounds5))
+            if (sounds->CreatureSounds_Compare(otherSounds5))
                 return true;
         }
         else if (otherSounds5)

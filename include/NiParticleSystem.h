@@ -9,6 +9,7 @@ class NiStream;
 class NiUpdateData;
 class StrArr;
 
+// pdb: class NiParticleSystem, size 0x150 (here 0x110), bases: NiParticles, 6 members
 class NiParticleSystem : public NiParticles
 {
   public:
@@ -16,11 +17,11 @@ class NiParticleSystem : public NiParticles
     virtual ~NiParticleSystem();
     virtual const NiRTTI* GetRTTI() const;
     virtual NiObject* MakeClone(CloningProcess& process);
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual void LinkObject(NiStream& stream);
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
-    virtual bool IsEqual(NiObject* object) const;
+    virtual bool IsEqual(NiObject* pkObject) const;
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
     virtual void ProcessClone(CloningProcess& process);
     virtual void PostLinkObject(NiStream& stream);
@@ -28,26 +29,26 @@ class NiParticleSystem : public NiParticles
     virtual void UpdateDownwardPass(NiUpdateData& data, unsigned int flags);
     virtual void UpdateSelectedDownwardPass(NiUpdateData& data, unsigned int flags);
     virtual void UpdateRigidDownwardPass(NiUpdateData& data, unsigned int flags);
-    virtual void UpdateWorldData(NiUpdateData& data);
+    virtual void UpdateWorldData(NiUpdateData& UpdateData);
     virtual void UpdateWorldBound();
-    virtual void UpdateSystem(float time);
+    virtual void UpdateSystem(float fTime);
     virtual void Update(float time);
 
-    void NiLines_LinkObject(NiStream* stream);
-    void InitializeNewParticle(unsigned short particle);
-    void InitializeNewParticle(unsigned int particle);
+    void NiLines_LinkObject(NiStream* kStream);
+    void InitializeNewParticle(unsigned short usNewParticle);
+    void InitializeNewParticle(unsigned int usNewParticle);
     void PerformSystemReset();
     void Do_UpdateSystem(float time);
     void ProcessClone_00c1b060(CloningProcess& process);
-    void CopyMembers_00c1b6f0(NiParticleSystem* destination, CloningProcess& process);
+    void CopyMembers(NiParticleSystem* pkDest, CloningProcess& process);
     NiParticleSystem* NiParticleSystem_00c1b5c0();
     void CopyMemberData(NiParticleSystem* destination, CloningProcess& process);
     void InsertSorted(NiPSysModifier* modifier);
     void LoadModifiers(NiStream* stream);
     void FindModifier();
     NiPSysModifier* GetModifier(const NiFixedString& name);
-    void UpdateParticleSystem(NiUpdateData& data, unsigned int flags);
-    void WriteParticleSystemInfo(StrArr* strings);
+    void UpdateParticleSystem(NiUpdateData& UpdateData, unsigned int uFlags);
+    void WriteParticleSystemInfo(StrArr* pkStrings);
 
     union
     {

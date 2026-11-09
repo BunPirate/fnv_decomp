@@ -5,7 +5,7 @@
 #include "../../../../../../../include/hkBool.h"
 #include "../../../../../../../include/hkRotation.h"
 
-extern "C" void __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int c);
+extern "C" void __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int infoOut);
 struct hkPhingeLimitsData
 {
     void __thiscall hkpHingeLimitsData_getConstraintInfo(int arg);
@@ -57,6 +57,7 @@ class HingeLimitsRotationValidationView
 
 // @fnv 0x00d52f50
 // src: XBOX_PDB 0x00d52f50
+// pdb: hkpHingeLimitsData::isValid | hkpHingeLimitsData.obj | retail, upstream name already matches, high
 hkBool HingeLimitsRotationValidationView::hkpHingeLimitsData_isValid() const
 {
     return m_kRotationA.IsOrthonormal(0.001f) && m_kRotationB.IsOrthonormal(0.001f);

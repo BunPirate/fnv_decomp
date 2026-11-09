@@ -11,12 +11,15 @@
 #include "../../../include/BGSSaveFormBuffer.h"
 
 // @fnv 0x006e38d0
-void PathingRequest::InitLoadGame(BGSLoadFormBuffer* buffer)
+// pdb: PathingRequest::InitLoadGame | PathingRequest.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pactor, ppack
+void PathingRequest::InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    if (reinterpret_cast<BGSLoadFormBufferView*>(buffer)->GetVersion() < 14)
+    if (reinterpret_cast<BGSLoadFormBufferView*>(apLoadGameBuffer)->GetVersion() < 14)
     {
-        m_bCanWalk = false;
-        Actor* actor = reinterpret_cast<BGSLoadFormBufferView*>(buffer)->GetActor();
+        bWaitIfPlayerWaits = false;
+        Actor* actor = reinterpret_cast<BGSLoadFormBufferView*>(apLoadGameBuffer)->GetActor();
         if (actor)
         {
             TESPackage* package = reinterpret_cast<MobileObject*>(actor)->GetCurrentPackage();
@@ -24,75 +27,81 @@ void PathingRequest::InitLoadGame(BGSLoadFormBuffer* buffer)
                 reinterpret_cast<Calendar*>(package)->GetDaysPassed() ==
                     PACKAGE_PROCEDURE_TYPE_PACKAGE_PROCEDURE_ESCORT_ACTOR &&
                 package->GetTargetForActor(actor, false) == reinterpret_cast<TESObjectREFR*>(g_thePlayer))
-                m_bCanWalk = true;
+                bWaitIfPlayerWaits = true;
         }
     }
 }
 
 // Loads a PathingRequest from a BGSLoadFormBuffer, reading origin/destination, flags, and version-gated fields, then a count-driven array of avoid nodes.
 // @fnv 0x006e34f0
-void PathingRequest::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: PathingRequest::LoadGame | PathingRequest.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, i, avoidNode
+void PathingRequest::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    Origin.LoadGame(buffer);
-    Destination.LoadGame(buffer);
-    buffer->ReadTypedData(static_cast<void*>(&m_fFirstValueAfterActorData), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&m_fSecondValueAfterActorData), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&PathingActorSpatialData), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&fWeaponSpread), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&m_fCenterRadius), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&m_fFloatAfterCenter), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&m_fPathingRadius), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&bFaceTargetAtGoal), 1u);
-    buffer->ReadTypedData(static_cast<void*>(&bCantOpenDoors), 1u);
-    buffer->ReadTypedData(static_cast<void*>(&PathingOptions), 1u);
-    buffer->ReadTypedData(static_cast<void*>(&bAllowIncompletePath), 1u);
-    buffer->ReadTypedData(static_cast<void*>(&m_bAllowDoorTraversal), 1u);
-    buffer->ReadTypedData(static_cast<void*>(&bCanSwim), 1u);
-    if (buffer->GetVersion() >= 13)
+    Origin.LoadGame(apLoadGameBuffer);
+    Destination.LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fActorRadius), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fActorHeight), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fGoalZDelta), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fTargetRadius), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fCenterRadius), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fSmoothingRandomness), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fGoalAngle), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bFaceTargetAtGoal), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bCantOpenDoors), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bDrawDebugGeometry), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bAllowIncompletePath), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bSoftGoalRadius), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bCanSwim), 1u);
+    if (apLoadGameBuffer->GetVersion() >= 13)
     {
-        buffer->ReadTypedData(static_cast<void*>(&m_bCanWalk), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bWaitIfPlayerWaits), 1u);
     }
-    if (buffer->GetVersion() >= 15)
+    if (apLoadGameBuffer->GetVersion() >= 15)
     {
-        buffer->ReadTypedData(static_cast<void*>(&m_fAvoidanceRadius), 4u);
-        buffer->ReadTypedData(static_cast<void*>(&m_bCanJump), 1u);
-        buffer->ReadTypedData(static_cast<void*>(&m_bCanClimb), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fInitialPathHeading), 4u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bFirstTangentUsesHeading), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bGoDirectIfPathingFails), 1u);
     }
-    if (buffer->GetVersion() >= 18)
+    if (apLoadGameBuffer->GetVersion() >= 18)
     {
-        buffer->ReadTypedData(static_cast<void*>(&Center), 12u);
-        buffer->ReadTypedData(static_cast<void*>(&m_bCanUseDoors), 1u);
-        buffer->ReadTypedData(static_cast<void*>(&m_bCanRun), 1u);
-        buffer->ReadTypedData(static_cast<void*>(&bIgnoreLocks), 1u);
-        buffer->ReadTypedData(static_cast<void*>(&m_iRequestType), 4u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&Center), 12u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bTryToUseCurvedPath), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bIgnoreSmoothingIfFails), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bIgnoreLocks), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iRetryCount), 4u);
     }
-    if (buffer->GetVersion() >= 20)
+    if (apLoadGameBuffer->GetVersion() >= 20)
     {
-        buffer->ReadTypedData(static_cast<void*>(&bCanFly), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bCanFly), 1u);
     }
-    if (buffer->GetVersion() >= 21)
+    if (apLoadGameBuffer->GetVersion() >= 21)
     {
-        buffer->ReadTypedData(static_cast<void*>(&m_bCanOpenDoors), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bFailIfGoalOccupied), 1u);
     }
-    unsigned int count = buffer->ReadElementCount();
+    unsigned int count = apLoadGameBuffer->ReadElementCount();
     if (count)
     {
-        reinterpret_cast<PathingAvoidPointerView*>(&m_pPathingAvoidNodeArray)->Assign(reinterpret_cast<PathingAvoidNodeArray*>(new PathingAvoidNodeArrayStorage));
-        reinterpret_cast<PathingAvoidPointerView*>(&m_pPathingAvoidNodeArray)->Get()->SetSize(count, true);
+        reinterpret_cast<PathingAvoidPointerView*>(&spAvoidNodeArray)->Assign(reinterpret_cast<PathingAvoidNodeArray*>(new PathingAvoidNodeArrayStorage));
+        reinterpret_cast<PathingAvoidPointerView*>(&spAvoidNodeArray)->Get()->BSSimpleArray_PathingAvoidNode_1024_SetSize(count, true);
         for (unsigned int i = 0; i < count; ++i)
         {
             PathingAvoidNode* node =
-                reinterpret_cast<PathingAvoidPointerView*>(&m_pPathingAvoidNodeArray)->Get()->BSSimpleArray_PathingAvoidNode_1024_GetAt(i);
-            node->LoadPathingAvoidNode(buffer);
+                reinterpret_cast<PathingAvoidPointerView*>(&spAvoidNodeArray)->Get()->BSSimpleArray_PathingAvoidNode_1024_GetAt(i);
+            node->LoadPathingAvoidNode(apLoadGameBuffer);
         }
     }
 }
 
 // Creates and returns a new pathing request object matching the given type, warning and returning null for unknown types.
 // @fnv 0x006e2f80
-PathingRequest* PathingRequest::CreateRequestForType(PATHING_REQUEST_TYPE type)
+// src: XBOX_DEBUG_PDB 0x006e2f80
+// pdb: PathingRequest::CreatePathingRequest | PathingRequest.obj | debug, unique string literal, high
+// pdb params: aeType
+PathingRequest* PathingRequest::CreatePathingRequest(PATHING_REQUEST_TYPE aeType)
 {
-    switch (type)
+    switch (aeType)
     {
     case 0:
         return new PathingRequest;
@@ -111,76 +120,81 @@ PathingRequest* PathingRequest::CreateRequestForType(PATHING_REQUEST_TYPE type)
     case 8:
         return new FUN_006e4a50;
     default:
-        Warning("PATHFINDING: Unknown pathing request type %i", type);
+        Warning("PATHFINDING: Unknown pathing request type %i", aeType);
         return 0;
     }
 }
 
 // Copies origin, destination, radii, smoothing and flag fields from this PathingRequest into the given request.
 // @fnv 0x006e2750
-void PathingRequest::CopyTo(PathingRequest* request)
+// pdb: PathingRequest::CopyTo | PathingRequest.obj | retail, upstream name already matches, high
+// pdb params: apDest
+// pdb locals: center
+void PathingRequest::CopyTo(PathingRequest* apDest)
 {
-    request->SetOrigin(GetOrigin());
-    request->SetDestination(NiAVObject_GetRotate_006a9540());
-    request->SetActorRadius(GetActorRadius());
-    request->FUN_006d3ae0(GetFloatAtOffset68());
-    request->SetActorLockData(GetActorLockData());
-    request->SetCenterRadius(GetCenterRadius());
+    apDest->SetOrigin(GetOrigin());
+    apDest->SetDestination(NiAVObject_GetRotate_006a9540());
+    apDest->SetActorRadius(GetActorRadius());
+    apDest->FUN_006d3ae0(GetFloatAtOffset68());
+    apDest->SetActorLockData(GetActorLockData());
+    apDest->SetCenterRadius(GetCenterRadius());
     NiPoint3 center = GetTargetPoint();
-    request->PathingRequest_SetCenterRadius(center, GetTargetRadius());
-    request->SetSmoothingRandomness(GetSmoothingRandomness());
-    request->SetAvoidNodeArray(GetString());
-    request->SetSmoothingRandomness(GetSmoothingRandomness());
-    request->SetGoalZDelta(GetGoalZDelta());
-    request->bCantOpenDoors = bCantOpenDoors;
-    request->m_fPathingRadius = m_fPathingRadius;
-    request->m_fAvoidanceRadius = m_fAvoidanceRadius;
-    request->bFaceTargetAtGoal = bFaceTargetAtGoal;
-    request->bAllowIncompletePath = bAllowIncompletePath;
-    request->m_bAllowDoorTraversal = m_bAllowDoorTraversal;
-    request->bCanSwim = bCanSwim;
-    request->bCanFly = bCanFly;
-    request->m_bCanWalk = m_bCanWalk;
-    request->m_bCanJump = m_bCanJump;
-    request->m_bCanClimb = m_bCanClimb;
-    request->m_bCanUseDoors = m_bCanUseDoors;
-    request->m_bCanRun = m_bCanRun;
-    request->bIgnoreLocks = bIgnoreLocks;
-    request->m_iRequestType = m_iRequestType;
-    request->m_bCanOpenDoors = m_bCanOpenDoors;
+    apDest->PathingRequest_SetCenterRadius(center, GetTargetRadius());
+    apDest->SetSmoothingRandomness(GetSmoothingRandomness());
+    apDest->SetAvoidNodeArray(GetString());
+    apDest->SetSmoothingRandomness(GetSmoothingRandomness());
+    apDest->SetGoalZDelta(GetGoalZDelta());
+    apDest->bCantOpenDoors = bCantOpenDoors;
+    apDest->fGoalAngle = fGoalAngle;
+    apDest->fInitialPathHeading = fInitialPathHeading;
+    apDest->bFaceTargetAtGoal = bFaceTargetAtGoal;
+    apDest->bAllowIncompletePath = bAllowIncompletePath;
+    apDest->bSoftGoalRadius = bSoftGoalRadius;
+    apDest->bCanSwim = bCanSwim;
+    apDest->bCanFly = bCanFly;
+    apDest->bWaitIfPlayerWaits = bWaitIfPlayerWaits;
+    apDest->bFirstTangentUsesHeading = bFirstTangentUsesHeading;
+    apDest->bGoDirectIfPathingFails = bGoDirectIfPathingFails;
+    apDest->bTryToUseCurvedPath = bTryToUseCurvedPath;
+    apDest->bIgnoreSmoothingIfFails = bIgnoreSmoothingIfFails;
+    apDest->bIgnoreLocks = bIgnoreLocks;
+    apDest->iRetryCount = iRetryCount;
+    apDest->bFailIfGoalOccupied = bFailIfGoalOccupied;
 }
 
 // @fnv 0x006e2420
-PathingRequest::PathingRequest() : m_pPathingAvoidNodeArray(0)
+// pdb: PathingRequest::PathingRequest | PathingRequest.obj | retail, call graph, high
+PathingRequest::PathingRequest() : spAvoidNodeArray(0)
 {
-    m_fFirstValueAfterActorData = runtimeFloatSettingDefault65;
-    m_fSecondValueAfterActorData = 1.0f;
-    PathingActorSpatialData = 180.0f;
-    fWeaponSpread = TESPackage::GetPackageDefaultFloat();
-    m_fCenterRadius = 0.0f;
+    fActorRadius = runtimeFloatSettingDefault65;
+    fActorHeight = 1.0f;
+    fGoalZDelta = 180.0f;
+    fTargetRadius = TESPackage::GetPackageDefaultFloat();
+    fCenterRadius = 0.0f;
     static_cast<NiPoint3&>(Center) = pathingrequestZero;
-    m_fPathingRadius = 0.0f;
-    m_fAvoidanceRadius = 0.0f;
+    fGoalAngle = 0.0f;
+    fInitialPathHeading = 0.0f;
     bCantOpenDoors = false;
     bFaceTargetAtGoal = false;
-    PathingOptions = false;
+    bDrawDebugGeometry = false;
     bAllowIncompletePath = true;
-    m_bAllowDoorTraversal = true;
+    bSoftGoalRadius = true;
     bCanSwim = true;
     bCanFly = false;
-    m_bCanWalk = false;
-    m_bCanJump = false;
-    m_bCanClimb = false;
-    m_bCanUseDoors = false;
-    m_bCanRun = false;
+    bWaitIfPlayerWaits = false;
+    bFirstTangentUsesHeading = false;
+    bGoDirectIfPathingFails = false;
+    bTryToUseCurvedPath = false;
+    bIgnoreSmoothingIfFails = false;
     bIgnoreLocks = false;
-    m_iRequestType = 3;
-    m_bCanOpenDoors = false;
-    m_fFloatAfterCenter = 0.0f;
+    iRetryCount = 3;
+    bFailIfGoalOccupied = false;
+    fSmoothingRandomness = 0.0f;
 }
 
 // Calls Destruct on this, frees the object with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x006e3880
+// pdb: PathingAvoidNodeArray::`scalar deleting destructor' | PathingRequest.obj | debug, vtable slot, medium
 PathingAvoidNodeArrayStorage* PathingAvoidNodeArrayStorage::Destroy(unsigned int flags)
 {
     reinterpret_cast<PathingAvoidNodeArrayDestructionView*>(this)->Destruct();
@@ -189,6 +203,7 @@ PathingAvoidNodeArrayStorage* PathingAvoidNodeArrayStorage::Destroy(unsigned int
     return this;
 }
 // @fnv 0x006e3850
+// pdb: PathingAvoidNodeArray::PathingAvoidNodeArray | PathingRequest.obj | debug, call graph, medium
 PathingAvoidNodeArrayStorage::PathingAvoidNodeArrayStorage()
 {
     FUN_006e3960();
@@ -196,6 +211,7 @@ PathingAvoidNodeArrayStorage::PathingAvoidNodeArrayStorage()
     *reinterpret_cast<void**>(data + 16) = &DAT_0106d1d8;
 }
 // @fnv 0x006e38b0
+// pdb: PathingAvoidNodeArray::~PathingAvoidNodeArray | PathingRequest.obj | debug, call graph, medium
 PathingAvoidNodeArrayStorage::~PathingAvoidNodeArrayStorage()
 {
     FUN_006e39d0();
@@ -205,13 +221,16 @@ void __cdecl Deallocate(void*);
 
 struct FUN_006db090_shell
 {
-    void FreeBuffer(void* apBuffer);
+    void FreeBuffer(void* pvBuffer);
 };
 
 // @fnv 0x006db090
-void FUN_006db090_shell::FreeBuffer(void* apBuffer)
+// pdb: BSPackedAdditionalGeometryData::NiBSPackedAGDDataBlock::FreeBuffer | BSPackedAdditionalGeometryData.obj | retail, upstream name already matches, high
+// pdb params: pvBuffer
+// pdb locals: patt, att
+void FUN_006db090_shell::FreeBuffer(void* pvBuffer)
 {
-    Deallocate(apBuffer);
+    Deallocate(pvBuffer);
 }
 
 void __fastcall FUN_006e2620(void*);
@@ -224,6 +243,7 @@ struct FUN_006e25e0_impl
 
 // Calls FUN_006e2620 on this, then if bit 0 of flags is set calls FUN_00aa1460 with size 0xb0, and returns this.
 // @fnv 0x006e25e0
+// pdb: PathingRequest::`scalar deleting destructor' | PathingRequest.obj | debug, vtable slot, medium
 void* FUN_006e25e0_impl::FUN_006e25e0(unsigned int flags)
 {
     FUN_006e2620(this);
@@ -294,6 +314,10 @@ struct FUN_006e3960 : public FUN_006e3a80, public NiRefObject
     ~FUN_006e3960();
 };
 // @fnv 0x006e3960
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::_MoveItems | PathingRequest.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArrayRefCounted<PathingAvoidNode,1024>::BSSimpleArrayRefCounted<PathingAvoidNode,1024>
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 FUN_006e3960::FUN_006e3960()
 {}
 
@@ -318,6 +342,7 @@ struct FUN_006e39d0 : public FUN_006e3ab0, public FUN_00496910
 };
 // Destructor that calls Clear(true) on the object at this address.
 // @fnv 0x006e39d0
+// pdb: BSSimpleArrayRefCounted<PathingAvoidNode,1024>::~BSSimpleArrayRefCounted<PathingAvoidNode,1024> | PathingRequest.obj | debug, call graph, medium
 FUN_006e39d0::~FUN_006e39d0()
 {
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -344,6 +369,7 @@ class FUN_006e2620 : public EBase
     ~FUN_006e2620();
 };
 // @fnv 0x006e2620
+// pdb: PathingRequest::~PathingRequest | PathingRequest.obj | retail, call graph, high
 FUN_006e2620::~FUN_006e2620()
 {}
 
@@ -354,6 +380,9 @@ struct BSSimpleArray_PathingAvoidNode_1024
 
 // Allocates a buffer of aiSizeInItem elements of 0x24 bytes each and returns the pointer.
 // @fnv 0x006e3c10
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::_Allocate | PathingRequest.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 PathingAvoidNode* BSSimpleArray_PathingAvoidNode_1024::AllocateBuffer(unsigned int aiSizeInItem)
 {
     PathingAvoidNode* pBuffer = static_cast<PathingAvoidNode*>(operator new(aiSizeInItem * 0x24));
@@ -369,6 +398,8 @@ struct FUN_006e3c40_shell
 
 // @fnv 0x006e3c40
 // src: GUESS 0x006e3c40 (confidence: medium)
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::_Reallocate | PathingRequest.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiNewSizeInItem
 void* __thiscall FUN_006e3c40_shell::Reallocate_Thunk_006e3c40(void* apBuffer, unsigned int aiNewSizeInItem)
 {
     return Reallocate(apBuffer, aiNewSizeInItem * 0x24);
@@ -380,6 +411,7 @@ struct FUN_006dad70_shell : public PathingRequest
 };
 
 // @fnv 0x006dad70
+// pdb: PathingRequestCover::~PathingRequestCover | Pathfind.obj | debug, call graph, medium
 void __thiscall FUN_006dad70_shell::DestroyPathingRequest()
 {
     PathingRequest::~PathingRequest();
@@ -417,39 +449,42 @@ struct FUN_006e3230_shell
 // Serializes this object's fields and two embedded pathing locations into the save buffer, then saves each avoid node referenced at offset 0x94.
 // @fnv 0x006e3230
 // src: XBOX_PDB 0x006e3230
-void FUN_006e3230_shell::PathingRequest_SaveGame(BGSSaveFormBuffer* buffer)
+// pdb: PathingRequest::SaveGame | PathingRequest.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: isaveGameCount, i, avoidNode
+void FUN_006e3230_shell::PathingRequest_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned int i;
     unsigned int isaveGameCount;
     PathingAvoidNode* avoidNode;
 
-    reinterpret_cast<PathingLocation*>(reinterpret_cast<char*>(this) + 0x0c)->SaveGame(buffer);
-    reinterpret_cast<PathingLocation*>(reinterpret_cast<char*>(this) + 0x34)->SaveGame(buffer);
+    reinterpret_cast<PathingLocation*>(reinterpret_cast<char*>(this) + 0x0c)->SaveGame(apSaveGameBuffer);
+    reinterpret_cast<PathingLocation*>(reinterpret_cast<char*>(this) + 0x34)->SaveGame(apSaveGameBuffer);
 
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x68), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x6c), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x70), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x74), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x78), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x88), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x8c), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x99), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x98), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9a), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9b), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9c), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9d), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9f), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x90), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa0), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa1), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x7c), 12, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa2), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa3), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa4), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa8), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9e), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xac), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x68), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x6c), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x70), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x74), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x78), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x88), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x8c), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x99), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x98), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9a), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9b), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9c), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9d), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9f), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x90), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa0), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa1), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x7c), 12, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa2), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa3), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa4), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xa8), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x9e), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0xac), 1, 0);
 
     i = reinterpret_cast<PathingAvoidPointerView*>(reinterpret_cast<char*>(this) + 0x94)->Get()
             ? reinterpret_cast<PathingrequestOffset08View*>(
@@ -457,14 +492,14 @@ void FUN_006e3230_shell::PathingRequest_SaveGame(BGSSaveFormBuffer* buffer)
                   ->GetFlags()
             : 0;
 
-    buffer->SaveVariableSizedValue(i);
+    apSaveGameBuffer->SaveVariableSizedValue(i);
 
     for (isaveGameCount = 0; isaveGameCount < i; ++isaveGameCount)
     {
         avoidNode = reinterpret_cast<PathingAvoidPointerView*>(reinterpret_cast<char*>(this) + 0x94)
                         ->Get()
                         ->BSSimpleArray_PathingAvoidNode_1024_GetAt(isaveGameCount);
-        reinterpret_cast<FUN_006dc890_Class*>(avoidNode)->PathingAvoidNode_SaveGame(buffer);
+        reinterpret_cast<FUN_006dc890_Class*>(avoidNode)->PathingAvoidNode_SaveGame(apSaveGameBuffer);
     }
 }
 
@@ -515,7 +550,7 @@ struct Member4_006e26a0
 
 struct Owner_006e26a0
 {
-    void Attach(struct FUN_006e26a0* pChild);
+    void Attach(struct FUN_006e26a0* apDest);
 };
 
 struct FUN_006e26a0 : Base_006e26a0
@@ -526,15 +561,16 @@ struct FUN_006e26a0 : Base_006e26a0
     Member18_006e26a0 m_7C;
     Member4_006e26a0 m_94;
 
-    FUN_006e26a0(Owner_006e26a0* owner);
+    FUN_006e26a0(Owner_006e26a0* aRequest);
     virtual void v00();
 };
 
 // Constructs the object with m_94 set to 0 and attaches it to the given owner.
 // @fnv 0x006e26a0
-FUN_006e26a0::FUN_006e26a0(Owner_006e26a0* owner) : m_94(0)
+// pdb: PathingRequest::PathingRequest | PathingRequest.obj | retail, call graph (shared callers), high
+FUN_006e26a0::FUN_006e26a0(Owner_006e26a0* aRequest) : m_94(0)
 {
-    owner->Attach(this);
+    aRequest->Attach(this);
 }
 
 struct PathingDebugOutput
@@ -548,30 +584,33 @@ struct PathingDebugOutput
 };
 struct PathingRequestDebugView : PathingRequest
 {
-    void PrintDebugInfo(PathingDebugOutput* output);
+    void PrintDebugInfo(PathingDebugOutput* apDebugText);
 };
 // Formats the request's origin, destination and pathing parameters into text and prints each line through the debug output.
 // @fnv 0x006e2be0
-void PathingRequestDebugView::PrintDebugInfo(PathingDebugOutput* output)
+// pdb: PathingRequest::PrintDebugText | PathingRequest.obj | retail, string-set bridge, high
+// pdb params: apDebugText
+// pdb locals: buffer
+void PathingRequestDebugView::PrintDebugInfo(PathingDebugOutput* apDebugText)
 {
     char text[256];
-    Origin.WriteDebugString(text, 256);
-    output->Print(0, 1, "Origin: %s", text);
-    Destination.WriteDebugString(text, 256);
-    output->Print(0, 1, "Destination: %s", text);
-    output->Print(0, 1, "Actor Radius: %f", m_fFirstValueAfterActorData);
-    output->Print(0, 1, "Goal Z Delta: %f", PathingActorSpatialData);
-    output->Print(0, 1, "Target Radius: %f", fWeaponSpread);
-    output->Print(0, 1, "Allow Incomplete Path: %s", bAllowIncompletePath ? "true" : "false");
-    if (m_fCenterRadius != 0.0)
-        output->Print(0, 1, "Center Radius: (%.2f,%.2f,%.2f) %f", Center.x, Center.y, Center.z, m_fCenterRadius);
-    output->Print(0, 1, "Face Target at Goal: %s", bFaceTargetAtGoal ? "true" : "false");
+    Origin.PrintDebugText(text, 256);
+    apDebugText->Print(0, 1, "Origin: %s", text);
+    Destination.PrintDebugText(text, 256);
+    apDebugText->Print(0, 1, "Destination: %s", text);
+    apDebugText->Print(0, 1, "Actor Radius: %f", fActorRadius);
+    apDebugText->Print(0, 1, "Goal Z Delta: %f", fGoalZDelta);
+    apDebugText->Print(0, 1, "Target Radius: %f", fTargetRadius);
+    apDebugText->Print(0, 1, "Allow Incomplete Path: %s", bAllowIncompletePath ? "true" : "false");
+    if (fCenterRadius != 0.0)
+        apDebugText->Print(0, 1, "Center Radius: (%.2f,%.2f,%.2f) %f", Center.x, Center.y, Center.z, fCenterRadius);
+    apDebugText->Print(0, 1, "Face Target at Goal: %s", bFaceTargetAtGoal ? "true" : "false");
     if (bFaceTargetAtGoal)
-        output->Print(0, 1, "Goal Angle: %f", m_fPathingRadius);
-    if (m_bCanJump)
-        output->Print(0, 1, "Initial Path Heading: %f", m_fAvoidanceRadius);
-    output->Print(0, 1, "Allow Direct Path If Pathing Fails: %s", m_bCanClimb ? "true" : "false");
-    output->Print(0, 1, "Using Curved path: %s", m_bCanUseDoors ? "true" : "false");
-    output->Print(0, 1, "Ignoring Locks: %s", bIgnoreLocks ? "true" : "false");
-    output->Print(0, 1, "Pathsmoothing retry count: %i", m_iRequestType);
+        apDebugText->Print(0, 1, "Goal Angle: %f", fGoalAngle);
+    if (bFirstTangentUsesHeading)
+        apDebugText->Print(0, 1, "Initial Path Heading: %f", fInitialPathHeading);
+    apDebugText->Print(0, 1, "Allow Direct Path If Pathing Fails: %s", bGoDirectIfPathingFails ? "true" : "false");
+    apDebugText->Print(0, 1, "Using Curved path: %s", bTryToUseCurvedPath ? "true" : "false");
+    apDebugText->Print(0, 1, "Ignoring Locks: %s", bIgnoreLocks ? "true" : "false");
+    apDebugText->Print(0, 1, "Pathsmoothing retry count: %i", iRetryCount);
 }

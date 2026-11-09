@@ -9,6 +9,7 @@
 
 #include "../../../include/MEDIATYPE.h"
 
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:
@@ -26,11 +27,12 @@ extern BSSimpleList<FalloutRadio::RadioStationState*> DAT_011dd554;
 
 void FalloutAudioMedia_MediaSetRadio(bool);
 
+// pdb: class Conversation, size 0xc, 2 members
 class Conversation
 {
   public:
-    BSSimpleList<DialogueItem*> items;
-    BSSimpleList<DialogueItem*>* current;
+    BSSimpleList<DialogueItem*> lDialogueItems;
+    BSSimpleList<DialogueItem*>* pCurrentItem;
     bool Conversation_NextItem();
     void Conversation_PrecacheSounds();
     bool Conversation_FirstItem();
@@ -53,7 +55,10 @@ class ATM
 extern ATM g_011dd5e8;
 // @fnv 0x00835be0
 // src: EXE 0x00835be0
-void FalloutRadio_StartRadioConversation(BGSTalkingActivator* form, TESTopic* topic)
+// pdb: FalloutRadio::StartRadioConversation | FalloutRadio.obj | retail, upstream name already matches, high
+// pdb params: apTargetStation, apTopic
+// pdb locals: pstation, pactStations, pusers, bwasContBroadcast, ptopicToUse, puser
+void FalloutRadio_StartRadioConversation(BGSTalkingActivator* apTargetStation, TESTopic* apTopic)
 {
     TESTopic* a = 0;
     FalloutRadio::RadioStationState* station = 0;
@@ -62,7 +67,7 @@ void FalloutRadio_StartRadioConversation(BGSTalkingActivator* form, TESTopic* to
     BSSimpleList<FalloutRadio::RadioStationState*>* entries = &DAT_011dd554;
     while (entries && entries->GetItem())
     {
-        if (entries->GetItem()->form == form)
+        if (entries->GetItem()->form == apTargetStation)
         {
             station = entries->GetItem();
             break;
@@ -70,8 +75,8 @@ void FalloutRadio_StartRadioConversation(BGSTalkingActivator* form, TESTopic* to
         entries = entries->GetNext();
     }
     if (!station)
-        station = CreateRadioStationState(form, false);
-    a = topic ? topic : GetTopicSubTypeName(7, 0);
+        station = CreateRadioStationState(apTargetStation, false);
+    a = apTopic ? apTopic : GetTopicSubTypeName(7, 0);
     if (!station || station->form->FUN_00440da0())
         return;
     bool f = station->station.IsFlag20Set();

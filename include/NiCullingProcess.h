@@ -6,6 +6,7 @@ class NiGeometry;
 class NiNodeX;
 class NiVisibleArray;
 
+// pdb: class NiCullingProcess, size 0x120 (here 0x90), 13 members
 class NiCullingProcess
 {
   public:
@@ -33,8 +34,8 @@ class NiCullingProcess
     virtual void Append(NiGeometry* geometry);
 
     const NiCamera* GetCamera() const;
-    void NiCullingProcess_SetFrustum(void* p);
-    void BSCullingProcess_Process_00c4f070(NiNodeX* a, NiAVObject* b, int c);
+    void NiCullingProcess_SetFrustum(void* kFrustum);
+    void BSCullingProcess_Process_00c4f070(NiNodeX* apCamera, NiAVObject* apScene, int apVisibleSet);
 
     // Gamebryo's members (allocations of the derived cullers: 0x90 bytes up to BSCullingProcess's own at +0x90).
     const bool m_bUseVirtualAppend;  // +0x04

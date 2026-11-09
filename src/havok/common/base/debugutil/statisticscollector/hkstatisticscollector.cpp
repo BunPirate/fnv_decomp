@@ -22,7 +22,7 @@ void FUN_00d06f70_s::InitializeFields_00d06f70()
     p = &DAT_0102e388;
 }
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(void* apBuffer, int aiCount);
+int __cdecl hkStatisticsCollector_getAllocatedSize(void* p, int size);
 
 struct FUN_00d06fb0_cls
 {
@@ -33,22 +33,25 @@ struct FUN_00d06fb0_cls
     virtual void v10();
     virtual void Dispatch(int aiFlag, void* apFirst, void* apSecond, int aiCount, int aiMode);
 
-    void DispatchWithMode(void* apFirst, void* apSecond, int aiCount, int aiMode);
+    void hkStatisticsCollector_addNormalChunk(void* name, void* p, int size, int allocated);
 };
 
 // Computes a mode from apSecond and aiCount when aiCount is positive and aiMode is zero, then dispatches with flag 1.
 // @fnv 0x00d06fb0
-void FUN_00d06fb0_cls::DispatchWithMode(void* apFirst, void* apSecond, int aiCount, int aiMode)
+// src: XBOX_RETAIL_PDB 0x00d06fb0
+// pdb: hkStatisticsCollector::addNormalChunk | hkStatisticsCollector.obj | retail, call graph, high
+// pdb params: name, p, size, allocated
+void FUN_00d06fb0_cls::hkStatisticsCollector_addNormalChunk(void* name, void* p, int size, int allocated)
 {
-    int iMode = aiMode;
-    if (aiCount > 0 && iMode == 0)
-        iMode = hkStatisticsCollector_getAllocatedSize(apSecond, aiCount);
+    int iMode = allocated;
+    if (size > 0 && iMode == 0)
+        iMode = hkStatisticsCollector_getAllocatedSize(p, size);
 
-    Dispatch(1, apFirst, apSecond, aiCount, iMode);
+    Dispatch(1, name, p, size, iMode);
 }
 
 extern "C" int __cdecl hkString_strLen(const char* s);
-extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const char* s, int len);
+extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const char* p, int size);
 
 class Handler
 {
@@ -59,18 +62,21 @@ class Handler
     virtual void v0c();
     virtual void v10();
     virtual void Emit(int kind, int a, const char* s, int len, int hash);
-    void EmitString(int a, unsigned int* str);
+    void hkStatisticsCollector_addStringPtr(int name, unsigned int* str);
 };
 
 // If the string pointer in str is non-null, computes its length and hash and emits it via Emit with kind 3.
 // @fnv 0x00d07030
-void Handler::EmitString(int a, unsigned int* str)
+// src: XBOX_RETAIL_PDB 0x00d07030
+// pdb: hkStatisticsCollector::addStringPtr | hkStatisticsCollector.obj | retail, call graph, high
+// pdb params: name, str
+void Handler::hkStatisticsCollector_addStringPtr(int name, unsigned int* str)
 {
     const char* s = (const char*)(*str & ~1u);
     if (s)
     {
         int len = hkString_strLen(s);
-        Emit(3, a, s, len, hkStatisticsCollector_getAllocatedSize(s, len));
+        Emit(3, name, s, len, hkStatisticsCollector_getAllocatedSize(s, len));
     }
 }
 
@@ -103,12 +109,15 @@ struct GrowBuf
 
 // @fnv 0x00d06cb0
 // src: HAVOK_LIB 0x00d06cb0
-void __cdecl hkSmallArrayUtil__reserveMore(GrowBuf* buf, unsigned int elemSize)
+// pdb: hkSmallArrayUtil::_reserveMore | hkSmallArray.obj | retail, upstream name already matches, high
+// pdb params: array, sizeElem
+// pdb locals: assertBuf, ostr
+void __cdecl hkSmallArrayUtil__reserveMore(GrowBuf* array, unsigned int sizeElem)
 {
     unsigned int newCount;
-    if (buf->m_uCap != 0)
+    if (array->m_uCap != 0)
     {
-        newCount = (unsigned int)buf->m_uCap * 2;
+        newCount = (unsigned int)array->m_uCap * 2;
     }
     else
     {
@@ -116,19 +125,19 @@ void __cdecl hkSmallArrayUtil__reserveMore(GrowBuf* buf, unsigned int elemSize)
     }
 
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
-    void* newData = holder->m_heap->blockAlloc(newCount * elemSize);
-    FUN_00ec44d0(newData, buf->m_pData, (unsigned int)buf->m_uCap * elemSize);
+    void* newData = holder->m_heap->blockAlloc(newCount * sizeElem);
+    FUN_00ec44d0(newData, array->m_pData, (unsigned int)array->m_uCap * sizeElem);
 
-    if ((buf->m_uiObjectFlags & 0x8000u) == 0)
+    if ((array->m_uiObjectFlags & 0x8000u) == 0)
     {
-        void* oldData = buf->m_pData;
-        unsigned int oldBytes = (buf->m_uiObjectFlags & 0x3fffu) * elemSize;
+        void* oldData = array->m_pData;
+        unsigned int oldBytes = (array->m_uiObjectFlags & 0x3fffu) * sizeElem;
         hkMemoryRouter* pAllocHolder2 = hkMemoryRouter_getInstance();
         pAllocHolder2->m_heap->blockFree(oldData, oldBytes);
     }
 
-    buf->m_pData = newData;
-    buf->m_uiObjectFlags = (unsigned short)((buf->m_uiObjectFlags & 0x4000u) | newCount);
+    array->m_pData = newData;
+    array->m_uiObjectFlags = (unsigned short)((array->m_uiObjectFlags & 0x4000u) | newCount);
 }
 
 struct D06D50Class;
@@ -241,6 +250,8 @@ struct S_00d06dd0_Obj
 
 // When bit 0 of flags is clear, computes a value from a, calls the allocator with both, and passes the results to slot14.
 // @fnv 0x00d06dd0
+// pdb: hkStatisticsCollector::addReferencedObjectMemory | hkStatisticsCollector.obj | retail, object-file run extension, low
+// pdb params: obj, flags
 void S_00d06dd0_Obj::DispatchIfNotFlagged(int a, unsigned int flags)
 {
     if ((flags & 1) == 0)
@@ -268,20 +279,22 @@ class FUN_00d06e10_cls
     virtual void v10();
     virtual void Emit(int kind, int a, const char* s, int len, int hash);
 
-    void hkStatisticsCollector_addObjectMemory(int a1, int a2, unsigned char flag);
+    void hkStatisticsCollector_addObjectMemory(int cls, int obj, unsigned char flags);
 };
 
 // When flag bit 0 is clear, reads a length from a1, computes a hash through the allocator, and calls Emit with that length and hash.
 // @fnv 0x00d06e10
 // src: HAVOK_LIB 0x00d06e10
-void FUN_00d06e10_cls::hkStatisticsCollector_addObjectMemory(int pSource, int pData, unsigned char flag)
+// pdb: hkStatisticsCollector::addObjectMemory | hkStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: cls, obj, flags
+void FUN_00d06e10_cls::hkStatisticsCollector_addObjectMemory(int cls, int obj, unsigned char flags)
 {
-    if ((flag & 1) == 0)
+    if ((flags & 1) == 0)
     {
-        int len = ((FUN_00d06e10_src*)pSource)->Read();
+        int len = ((FUN_00d06e10_src*)cls)->Read();
         hkMemoryRouter* holder = hkMemoryRouter_getInstance();
-        int hash = holder->m_heap->getAllocatedSize((const void*)pData, len);
-        Emit(0, 0, (const char*)pData, len, hash);
+        int hash = holder->m_heap->getAllocatedSize((const void*)obj, len);
+        Emit(0, 0, (const char*)obj, len, hash);
     }
 }
 }  // namespace fnv_00d06e10
@@ -316,19 +329,21 @@ namespace fnv_00d06f80 {
 // If s is non-null, hashes it through the allocator; otherwise returns len.
 // @fnv 0x00d06f80
 // src: HAVOK_LIB 0x00d06f80
-extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const char* pcString, int iLength)
+// pdb: hkStatisticsCollector::getAllocatedSize | hkStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: p, size
+extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const char* p, int size)
 {
-    if (pcString)
+    if (p)
     {
         hkMemoryRouter* holder = hkMemoryRouter_getInstance();
-        return holder->m_heap->getAllocatedSize(pcString, iLength);
+        return holder->m_heap->getAllocatedSize(p, size);
     }
 
-    return iLength;
+    return size;
 }
 }  // namespace fnv_00d06f80
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(int aiB, int aiC);
+int __cdecl hkStatisticsCollector_getAllocatedSize(int p, int size);
 
 struct FUN_00d06ff0_cls
 {
@@ -339,18 +354,20 @@ struct FUN_00d06ff0_cls
     virtual void v10();
     virtual void V14(int aiZero, int aiA, int aiB, int aiC, int aiR);
 
-    void hkStatisticsCollector_addObjectChunk(int aiA, int aiB, int aiC, int aiD);
+    void hkStatisticsCollector_addObjectChunk(int name, int p, int size, int allocated);
 };
 
 // If aiC is positive and aiD is zero, computes a result via FUN_00d06f80(aiB, aiC), then calls V14 with zero, aiA, aiB, aiC and the result.
 // @fnv 0x00d06ff0
 // src: HAVOK_LIB 0x00d06ff0
-void FUN_00d06ff0_cls::hkStatisticsCollector_addObjectChunk(int aiA, int aiB, int aiC, int aiD)
+// pdb: hkStatisticsCollector::addObjectChunk | hkStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: name, p, size, allocated
+void FUN_00d06ff0_cls::hkStatisticsCollector_addObjectChunk(int name, int p, int size, int allocated)
 {
-    int iResult = aiD;
-    if (aiC > 0 && aiD == 0)
-        iResult = hkStatisticsCollector_getAllocatedSize(aiB, aiC);
-    V14(0, aiA, aiB, aiC, iResult);
+    int iResult = allocated;
+    if (size > 0 && allocated == 0)
+        iResult = hkStatisticsCollector_getAllocatedSize(p, size);
+    V14(0, name, p, size, iResult);
 }
 
 extern const char str_010cce5c[];
@@ -363,6 +380,8 @@ extern const char str_0106f148[];
 // Returns one of five fixed string pointers for values 0 through 4, or a fallback pointer otherwise.
 // @fnv 0x00d06e60
 // src: HAVOK_LIB 0x00d06e60
+// pdb: hkStatisticsCollector::getReferencedObjectSize | hkStatisticsCollector.obj | retail, object-file run extension, low
+// pdb params: obj
 const char* __cdecl hkStatisticsCollector_memoryTypeToCstring(int value)
 {
     switch (value)

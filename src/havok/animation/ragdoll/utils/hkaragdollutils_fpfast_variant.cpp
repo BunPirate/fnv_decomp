@@ -11,10 +11,10 @@
 extern "C"
 {
     int __cdecl hkaRagdollUtils_reorderForRagdoll(void*, void*);
-    int __cdecl HkaragdollutilsFpfast_ProcessEntries_00ce9db0(void*, void*);
+    int __cdecl alignChildrenToConstraints(void*, void*);
     int __cdecl alignConstraintSpacesToChildren(void*);
 }
-int __cdecl hkaRagdollUtils_reorderAndAlignForRagdoll(void* p1, void* p2, void* p3);
+int __cdecl hkaRagdollUtils_reorderAndAlignForRagdoll(void* rigidBodiesInOut, void* constraintsInOut, void* warnOnAlignment);
 struct Item
 {
     int unk00[11];
@@ -35,7 +35,7 @@ struct Counter
     int unk30;
 };
 extern "C" void __cdecl AssignNodeFlags(int, int, int);
-void __cdecl hkaRagdollUtils_setCollisionLayer(Container* c, int value, Counter* counter);
+void __cdecl hkaRagdollUtils_setCollisionLayer(Container* ragdoll, int layer, Counter* collisionFilter);
 struct Inner
 {
     virtual void unk0();
@@ -54,7 +54,7 @@ struct Obj
     Inner* inner;
 };
 extern hkError* DAT_01268360;
-static bool IsSupportedRagdollConstraint(Obj* obj, bool reportError) throw();
+static bool _isConstraintSupported(Obj* constraint, bool warnIfNot) throw();
 void caller(Obj* obj);
 struct SpawnedAllocator
 {
@@ -74,7 +74,7 @@ struct SpawnedObject
 {
     int unk00;
     unsigned short m_size04;
-    int Init(void* a, void* b, int c, void* d);
+    int Init(void* rigidBodies, void* constraints, int skeleton, void* boneToRigidBodyMap);
 };
 struct SourceRecord
 {
@@ -139,7 +139,7 @@ static __forceinline hkOstream& writeInt(hkOstream& stream, int value) throw()
     typedef hkOstream& (__thiscall *WriteInt)(hkOstream*, int);
     return reinterpret_cast<WriteInt>(&FUN_00cc0280)(&stream, value);
 }
-extern "C" void __cdecl hkArrayUtil__reserve(HeapAllocator* allocator, ScratchArray* array, int capacity, int itemSize);
+extern "C" void __cdecl hkArrayUtil__reserve(HeapAllocator* mem, ScratchArray* array, int numElem, int sizeElem);
 extern "C" const char DAT_010cbde0[];
 extern "C" const char DAT_010cbdec[];
 extern "C" const char DAT_010cbe00[];
@@ -281,10 +281,13 @@ static int findNode(const IntArray* nodes, void* value)
 }
 // @fnv 0x00cea030
 // src: HAVOK_LIB 0x00cea030
-extern "C" int __cdecl hkaRagdollUtils_reorderForRagdoll(void* first, void* second)
+// pdb: hkaRagdollUtils::reorderForRagdoll | hkaRagdollUtils.obj | retail, string-set bridge, high
+// pdb params: rigidBodies, constraints
+// pdb locals: numRigidBodies, numConstraints, hierarchy, associatedConstraints, assertBuf, ostr, depths
+extern "C" int __cdecl hkaRagdollUtils_reorderForRagdoll(void* rigidBodies, void* constraints)
 {
-    IntArray* nodes = static_cast<IntArray*>(first);
-    NodeArray* links = static_cast<NodeArray*>(second);
+    IntArray* nodes = static_cast<IntArray*>(rigidBodies);
+    NodeArray* links = static_cast<NodeArray*>(constraints);
     int nodeCount = nodes->count;
     int linkCount = links->count;
     if (linkCount != nodeCount - 1)
@@ -401,26 +404,26 @@ struct List
     int count;
 };
 
-static __declspec(noinline) bool IsSupportedRagdollConstraint(Obj* obj, bool reportError) throw()
+static __declspec(noinline) bool _isConstraintSupported(Obj* constraint, bool warnIfNot) throw()
 {
-    return obj->inner != 0 && reportError;
+    return constraint->inner != 0 && warnIfNot;
 }
 
 // src: HAVOK_LIB 0x00ce9c40
-static __declspec(noinline) Vec4* _accessConstraintPivotA(Obj* obj) throw()
+static __declspec(noinline) Vec4* _accessConstraintPivotA(Obj* constraint) throw()
 {
-    Inner* inner = obj->inner;
+    Inner* inner = constraint->inner;
     int t = inner->getSomething();
     return (Vec4*)((char*)inner + (t <= 8 ? 0x20 : 0x50));
 }
 
 extern Qs* g_pivotXf;
 // src: XBOX_PDB 0x00ce9880
-static __declspec(noinline) int moveRigidBodyPivot(Qs* xf, Shape* shape) throw()
+static __declspec(noinline) int moveRigidBodyPivot(Qs* rigidBody, Shape* localFromBone) throw()
 {
-    g_pivotXf = xf;
-    int s = shape->v0();
-    s += shape->v1();
+    g_pivotXf = rigidBody;
+    int s = localFromBone->v0();
+    s += localFromBone->v1();
     return s;
 }
 
@@ -468,15 +471,18 @@ struct __declspec(align(16)) PivotXform
 };
 
 // @fnv 0x00ce9db0
-// src: GUESS 0x00ce9db0 (confidence: low)
-int __cdecl HkaragdollutilsFpfast_ProcessEntries_00ce9db0(A1W constraints, void* warnOnAlignment)
+// src: XBOX_RETAIL_PDB 0x00ce9db0
+// pdb: alignChildrenToConstraints | hkaRagdollUtils.obj | retail, call graph, high
+// pdb params: constraints, warnOnAlignment
+// pdb locals: childFromConstraint, assertBuf, ostr
+int __cdecl alignChildrenToConstraints(A1W constraints, void* warnOnAlignment)
 {
     const int numConstraints = constraints.p->count;
     int result = 0;
     for (int c = 0; c < numConstraints; c++)
     {
         Body* constraint = constraints.p->items[c];
-        if (!IsSupportedRagdollConstraint(constraint, true))
+        if (!_isConstraintSupported(constraint, true))
         {
             result = 1;
             continue;

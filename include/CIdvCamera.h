@@ -3,10 +3,11 @@
 #include "NiPoint3.h"
 #include "CVec3.h"
 
+// pdb: class CIdvCamera, size 0x10, 1 members
 class CIdvCamera
 {
 public:
-    CVec3 m_kTranslation;
+    CVec3 m_cPosition;
 
     CIdvCamera();
     virtual ~CIdvCamera();

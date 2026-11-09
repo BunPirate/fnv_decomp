@@ -18,6 +18,7 @@ int __thiscall FUN_00d60480::GetValueAsInteger()
     return end - *(int*)((char*)this + 8);
 }
 
+// pdb: class hkSystemMemoryBlockServer, size 0x14 (here 0x1), bases: hkMemoryBlockServer, 3 members
 struct hkSystemMemoryBlockServer
 {
     unsigned int GetBlockSize(unsigned int size);

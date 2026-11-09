@@ -5,6 +5,7 @@ class TESObjectREFR;
 class NiNode;
 class NiControllerSequence;
 
+// pdb: class BGSOpenCloseForm, size 0x4, 0 members
 class BGSOpenCloseForm
 {
 public:
@@ -35,8 +36,8 @@ public:
     static void HandleOpenCloseActivation(TESObjectREFR* ref, TESObjectREFR* actor, BGSOpenCloseForm* form);
     static void HandleAnimStartHavok(TESObjectREFR* ref, NiControllerSequence* sequence);
     static bool HandleAnimEndHavok(TESObjectREFR* ref, NiControllerSequence* sequence);
-    static bool SetOpenState(TESObjectREFR* ref, bool open, bool immediate);
-    static bool SetOpenState(void* ref, bool open, bool immediate);
-    static int GetOpenState(TESObjectREFR* ref);
+    static bool SetOpenState(TESObjectREFR* apRef, bool abOpen, bool abSnap);
+    static bool SetOpenState(void* apRef, bool abOpen, bool abSnap);
+    static int GetOpenState(TESObjectREFR* apRef);
     static void SnapHavokTo3D(TESObjectREFR* ref);
 };

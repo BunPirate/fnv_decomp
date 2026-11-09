@@ -2,6 +2,7 @@
 
 #include "PathingRequest.h"
 
+// pdb: class PathingRequestCoveredMove, size 0x10c, bases: PathingRequest, 14 members
 class PathingRequestCoveredMove : public PathingRequest
 {
 public:

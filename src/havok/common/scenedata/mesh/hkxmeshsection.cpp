@@ -29,6 +29,8 @@ struct FUN_00e61720
     void UpdateState_00e61770(void* arg);
 };
 // @fnv 0x00e61720
+// pdb: hkxMeshSection::hkxMeshSection | hkxMeshSection.obj | retail, object-file run extension, low
+// pdb params: other
 FUN_00e61720::FUN_00e61720(void* arg)
     : m_vptr(&DAT_010e9b7c), m_sReferenceCount(1), m_pMeshVertexBuffer(0), m_kIndexBuffers(), m_iMaterialIndex(0),
       m_kUserChannels()
@@ -153,6 +155,9 @@ class hkxMeshSectionE6 : public hkReferencedObjectE6
 
 // @fnv 0x00e61770
 // src: GUESS 0x00e61770 (confidence: low)
+// pdb: hkxMeshSection::operator= | hkxMeshSection.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkArrayBase<hkRefPtr<hkxIndexBuffer> >::copyFromArray
+// pdb params: __that
 hkxMeshSectionE6& hkxMeshSectionE6::UpdateState_00e61770(const hkxMeshSectionE6& o)
 {
     m_usMemSizeAndFlags = o.m_usMemSizeAndFlags;
@@ -171,13 +176,15 @@ struct MeshSection : public hkxMeshSection
 // Finds the index buffer containing the primitive at position and retrieves its vertex indices into a, b, and c.
 // @fnv 0x00e61420
 // src: GUESS 0x00e61420 (confidence: medium)
+// pdb: hkxMeshSection::getTriangleIndices | hkxMeshSection.obj | retail, object-file run extension, low
+// pdb params: triIndex, indexAOut, indexBOut, indexCOut
 void MeshSection::GetPrimitiveVertexIndices(unsigned int aiPrimitiveIndex, unsigned int& aiVertexA, unsigned int& aiVertexB,
                                unsigned int& aiVertexC) const
 {
     int start = 0;
-    for (int i = 0; i < m_kIndexBuffers.m_iElementCount; i++)
+    for (int i = 0; i < m_indexBuffers.m_iElementCount; i++)
     {
-        hkxIndexBuffer* pIndexBuffer = m_kIndexBuffers.m_data[i];
+        hkxIndexBuffer* pIndexBuffer = m_indexBuffers.m_data[i];
         int iPrimitiveCount = pIndexBuffer->GetPrimitiveCount();
         if (aiPrimitiveIndex < (unsigned)(start + iPrimitiveCount))
         {
@@ -239,20 +246,22 @@ struct VertexBuffer_e614
     int m_iStridedVertexCount;
     int unk48, unk4C, unk50, unk54, unk58;
     VertexFormat_e614 m_eVertexFormat;
-    const char* hkxVertexBuffer_getVertexDataPtr(VertexDesc_e614* desc);
+    const char* hkxVertexBuffer_getVertexDataPtr(VertexDesc_e614* elem);
 };
 
 struct Mesh_e614
 {
     int unk00, unk04;
     VertexBuffer_e614* m_pMeshVertexBuffer;
-    void hkxMeshSection_collectVertexPositions(hkArray<__m128>& positions);
+    void hkxMeshSection_collectVertexPositions(hkArray<__m128>& verticesInOut);
 };
 
 // Copies vertex position vectors from the mesh vertex buffer into the positions array, growing it as needed.
 // @fnv 0x00e61480
 // src: XBOX_PDB 0x00e61480
-void Mesh_e614::hkxMeshSection_collectVertexPositions(hkArray<__m128>& positions)
+// pdb: hkxMeshSection::collectVertexPositions | hkxMeshSection.obj | retail, upstream name already matches, high
+// pdb params: verticesInOut
+void Mesh_e614::hkxMeshSection_collectVertexPositions(hkArray<__m128>& verticesInOut)
 {
     VertexBuffer_e614* pVertexBuffer = m_pMeshVertexBuffer;
     if (!pVertexBuffer)
@@ -263,11 +272,11 @@ void Mesh_e614::hkxMeshSection_collectVertexPositions(hkArray<__m128>& positions
         return;
     const char* src = pVertexBuffer->hkxVertexBuffer_getVertexDataPtr(desc);
     int stride = desc->m_iElementIndex;
-    int base = positions.m_iElementCount;
-    positions.setSize(base + numVertices);
+    int base = verticesInOut.m_iElementCount;
+    verticesInOut.setSize(base + numVertices);
     for (int i = 0; i < numVertices; i++)
     {
-        positions.m_data[base + i] = *(const __m128*)src;
+        verticesInOut.m_data[base + i] = *(const __m128*)src;
         src += stride;
     }
 }

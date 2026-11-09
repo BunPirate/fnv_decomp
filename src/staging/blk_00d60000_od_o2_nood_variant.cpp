@@ -206,7 +206,10 @@ static __forceinline void buildBasis(const MotionInput* input, __m128 normal, Ba
 
 // @fnv 0x00d6aef0
 // src: COMMUNITY 0x00d6aef0
-void __cdecl hkpCharacterMovementUtil_calculateMovement(const MotionInput* input, float outputBits)
+// pdb: hkpCharacterMovementUtil::calculateMovement | hkpCharacterMovementUtil.obj | retail, upstream name already matches, high
+// pdb params: input, velocityOut
+// pdb locals: relative, surfaceFrame
+void __cdecl hkpCharacterMovementUtil_calculateMovement(const MotionInput* input, float velocityOut)
 {
     __m128 a = input->directionA, b = input->directionB;
     __m128 t = _mm_mul_ps(_mm_shuffle_ps(b, b, 0xc9), _mm_shuffle_ps(a, a, 0xd2));
@@ -243,7 +246,7 @@ void __cdecl hkpCharacterMovementUtil_calculateMovement(const MotionInput* input
             movement = _mm_mul_ps(_mm_set1_ps(input->scale), workspace.delta);
         }
         (*reinterpret_cast<__m128*>(&workspace.position)) = _mm_add_ps(movement, (*reinterpret_cast<__m128*>(&workspace.position)));
-        Vec4* output = *reinterpret_cast<Vec4* const*>(&outputBits);
+        Vec4* output = *reinterpret_cast<Vec4* const*>(&velocityOut);
         output->hkVector4_setRotatedDir(static_cast<const void*>(&workspace.basis), workspace.position);
         __m128 translation = _mm_load_ps(reinterpret_cast<const float*>(&input->translation));
         __m128 transformed = _mm_load_ps(reinterpret_cast<const float*>(&output->x));
@@ -283,15 +286,17 @@ struct BodyOut
 
 // @fnv 0x00d6b4b0
 // src: COMMUNITY 0x00d6b4b0
-void hkaKeyFrameHierarchyUtility_initialize(BodyList* list, BodyOut* out)
+// pdb: hkaKeyFrameHierarchyUtility::initialize | hkaKeyFrameHierarchyUtility.obj | retail, upstream name already matches, high
+// pdb params: bodies, internalReferencePose
+void hkaKeyFrameHierarchyUtility_initialize(BodyList* bodies, BodyOut* internalReferencePose)
 {
-    for (int i = 0; i < list->m_iElementCount; i++)
+    for (int i = 0; i < bodies->m_iElementCount; i++)
     {
-        BodySource* src = list->m_data[i];
-        (*reinterpret_cast<__m128*>(&out[i].m_20)) = (*reinterpret_cast<__m128*>(&src->m_1b0));
-        (*reinterpret_cast<__m128*>(&out[i].m_30)) = (*reinterpret_cast<__m128*>(&src->m_1c0));
-        (*reinterpret_cast<__m128*>(&out[i].m_00)) = (*reinterpret_cast<__m128*>(&src->m_140));
-        (*reinterpret_cast<__m128*>(&out[i].m_10)) = (*reinterpret_cast<__m128*>(&src->m_160));
+        BodySource* src = bodies->m_data[i];
+        (*reinterpret_cast<__m128*>(&internalReferencePose[i].m_20)) = (*reinterpret_cast<__m128*>(&src->m_1b0));
+        (*reinterpret_cast<__m128*>(&internalReferencePose[i].m_30)) = (*reinterpret_cast<__m128*>(&src->m_1c0));
+        (*reinterpret_cast<__m128*>(&internalReferencePose[i].m_00)) = (*reinterpret_cast<__m128*>(&src->m_140));
+        (*reinterpret_cast<__m128*>(&internalReferencePose[i].m_10)) = (*reinterpret_cast<__m128*>(&src->m_160));
     }
 }
 
@@ -326,7 +331,7 @@ struct D6Idx
     unsigned char idx02;
 };
 
-extern "C" void __cdecl hk1dLinearBilateralConstraintBuildJacobian(D6Vec3* s, void* d, void* e);
+extern "C" void __cdecl hk1dLinearBilateralConstraintBuildJacobian(D6Vec3* info, void* d, void* e);
 extern "C" Vec4* __cdecl D6GetArray(void);
 
 // @fnv 0x00d6c030

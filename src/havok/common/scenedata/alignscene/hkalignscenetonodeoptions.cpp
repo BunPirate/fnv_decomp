@@ -48,28 +48,30 @@ class FUN_00cb0c00_class
 
 inline void hkReferencedObject::operator delete(void* p)
 {
-    hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+    hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 // The reflected layout is 0x18 bytes; no include/ header exists for these options yet.
+// pdb: class hkAlignSceneToNodeOptions, size 0x18, bases: hkReferencedObject, 9 members
 class hkAlignSceneToNodeOptions : public hkReferencedObject
 {
   public:
-    char m_bOption1;
-    char m_bOption2;
-    char m_bOption3;
-    char m_bOption4;
-    char m_bOption5;
-    char m_bOption6;
-    char m_bOption7;
-    int m_iOptionValue;
-    FUN_00cb0c00_class m_kNodeName;
+    char m_invert;
+    char m_transformPositionX;
+    char m_transformPositionY;
+    char m_transformPositionZ;
+    char m_transformRotation;
+    char m_transformScale;
+    char m_transformSkew;
+    int m_keyframe;
+    FUN_00cb0c00_class m_nodeName;
 
     hkAlignSceneToNodeOptions* FUN_00e4afa0(unsigned int uiFlags) throw();
 };
 
 // Destroys the object and, when uiFlags has bit 0 set, frees its memory via operator delete; returns this.
 // @fnv 0x00e4afa0
+// pdb: hkAlignSceneToNodeOptions::`scalar deleting destructor' | hkAlignSceneToNodeOptions.obj | retail, vtable slot, high
 hkAlignSceneToNodeOptions* hkAlignSceneToNodeOptions::FUN_00e4afa0(unsigned int uiFlags) throw()
 {
     this->hkAlignSceneToNodeOptions::~hkAlignSceneToNodeOptions();

@@ -80,19 +80,22 @@ class FUN_00511a10_cls : public B511A10Form, public B511A10TextureSwap
 
 struct AnimationObjectComparison : TESObjectANIO
 {
-    bool TESObjectANIO_Compare(TESForm* otherForm);
+    bool TESObjectANIO_Compare(TESForm* apCompare);
 };
 
 // @fnv 0x00511dc0
 // src: XBOX_PDB 0x00511dc0
-bool AnimationObjectComparison::TESObjectANIO_Compare(TESForm* otherForm)
+// pdb: TESObjectANIO::Compare | TESObjectANIO.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool AnimationObjectComparison::TESObjectANIO_Compare(TESForm* apCompare)
 {
-    TESObjectANIO* otherAnimation = dynamic_cast<TESObjectANIO*>(otherForm);
+    TESObjectANIO* otherAnimation = dynamic_cast<TESObjectANIO*>(apCompare);
     if (!otherAnimation)
         return true;
     if (TESForm::Compare(otherAnimation))
         return true;
-    if (pObject != otherAnimation->pObject)
+    if (pIdleAnim != otherAnimation->pIdleAnim)
         return true;
     return false;
 }
@@ -107,11 +110,14 @@ struct AnimationCopyEntry : TESObjectANIO
 };
 // @fnv 0x00511d70
 // src: XBOX_PDB 0x00511d70
+// pdb: TESObjectANIO::Copy | TESObjectANIO.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: panimObj
 void AnimationCopyEntry::TESObjectANIO_Copy(TESForm* apCopy)
 {
     TESObjectANIO* panimObj = dynamic_cast<TESObjectANIO*>(apCopy);
     if (panimObj == 0)
         return;
     ((FUN_005e78f0_t*)this)->TESForm_CopyAllComponents(apCopy);
-    pObject = panimObj->pObject;
+    pIdleAnim = panimObj->pIdleAnim;
 }

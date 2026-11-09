@@ -8,6 +8,7 @@ class Resource;
 class Renderer;
 class Format;
 
+// pdb: class NiDepthStencilBuffer, size 0x14, bases: Ni2DBuffer, 0 members
 class NiDepthStencilBuffer : public Ni2DBuffer
 {
 public:

@@ -22,6 +22,7 @@ class hkBool;
 class hkSimdReal;
 typedef const hkSimdReal& hkSimdRealParameter;
 
+// pdb: class hkQsTransform, size 0x30, 3 members
 struct hkQsTransform
 {
 public:

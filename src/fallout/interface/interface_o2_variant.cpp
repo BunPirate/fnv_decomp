@@ -22,7 +22,7 @@ class InterfaceInterfaceView
     static float GetInterfaceFloat();
     static Tile* GetPrimaryInterfaceTile();
     static Tile* GetSecondaryInterfaceTile();
-    static NiNode* GetInterfaceNode();
+    static NiNode* Interface_GetInterfaceRoot();
     static bool IsAnyMenuOpen();
 
     static bool IsWorldSpaceEnabled(TESWorldSpace* apSpace);
@@ -80,16 +80,16 @@ class InterfaceInterfaceView
     };
     static void Init(bool);
     static void RefreshInterfaceState();
-    static void SetQuestTarget(TESForm*, bool);
+    static void Interface_CreateLoadingMenu(TESForm*, bool);
     static bool IsPipBoyOpen();
-    static bool GetStatsMenuVisible();
+    static bool Interface_GetStatsMenuVisible();
     static bool IsGamePaused();
-    static bool ContainerIsRecipe();
-    static bool ContainerIsBarter();
-    static void SetLookAtReference(TESObjectREFR*);
+    static bool Interface_ContainerIsRecipe();
+    static bool Interface_ContainerIsBarter();
+    static void Interface_SetCrosshairTargetType(TESObjectREFR*);
     static bool PlayNifSounds(NiControllerSequence*);
     static Menu* GetMenuById(int);
-    static void SetHUDVisible(bool);
+    static void Interface_SetGunScopeVisible(bool);
     static void SetTileFormattedText(Tile*, int, const char*, ...);
 };
 const char kMeshesFolder[] = "Meshes";
@@ -103,6 +103,8 @@ extern unsigned char DAT_011f91d8;
 void __fastcall ShadowSceneNode_ProcessQueuedLights(char*);
 // @fnv 0x00b60040
 // src: COMMUNITY 0x00b60040
+// pdb: ShadowSceneNode::ProcessAllQueuedLights | ShadowSceneNode.obj | retail, upstream name already matches, high
+// pdb locals: i
 void ShadowSceneNode_ProcessAllQueuedLights()
 {
     char** p = &DAT_011f91c8;
@@ -114,7 +116,7 @@ void ShadowSceneNode_ProcessAllQueuedLights()
     } while ((int)p < (int)&DAT_011f91d8);
 }
 
-void __cdecl BuildAssetPath(int, char*, int);
+void __cdecl StandardizeModelPath(int, char*, int);
 struct Inner060
 {
     virtual void f00();
@@ -153,10 +155,12 @@ struct Outer060
 };
 // @fnv 0x00b60060
 // src: COMMUNITY 0x00b60060
+// pdb: GrassLoadTask::Run | TallGrassShaderProperty.obj | retail, upstream name already matches, high
+// pdb locals: pfileName
 void Outer060::GrassLoadTask_Run()
 {
     char buf[0x104];
-    BuildAssetPath(_m28, buf, 0x104);
+    StandardizeModelPath(_m28, buf, 0x104);
     _m30.f24(buf, 0);
 }
 
@@ -164,7 +168,9 @@ extern "C" char DAT_010ade08[];
 
 // @fnv 0x00b600c0
 // src: COMMUNITY 0x00b600c0
-bool QueuedTreeModel::GrassLoadTask_GetDescription(char* pBuf, unsigned int uiSize)
+// pdb: GrassLoadTask::GetDescription | TallGrassShaderProperty.obj | debug, upstream name already matches, high
+// pdb params: apDescription, aiBufferSize
+bool QueuedTreeModel::GrassLoadTask_GetDescription(char* apDescription, unsigned int aiBufferSize)
 {
-    return QueuedFileEntry_GetDescription(pBuf, uiSize, DAT_010ade08);
+    return QueuedFileEntry_GetDescription(apDescription, aiBufferSize, DAT_010ade08);
 }

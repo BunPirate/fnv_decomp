@@ -4,6 +4,7 @@
 
 class BSFaceGenAnimationData;
 
+// pdb: class BSFaceGenNiNode, size 0x130 (here 0xf0), bases: NiNode, 15 members
 class BSFaceGenNiNode : public NiNode
 {
   public:
@@ -29,7 +30,7 @@ class BSFaceGenNiNode : public NiNode
     void UpdateFaceGenAnimation(NiUpdateData& arUpdateData);
     void BSFaceGenNiNode_UpdateAllChildrenMorphData(bool abUpdate);
 
-    void BSMultiBoundRoom_SetCullResult(unsigned int uiFlags);
+    void BSMultiBoundRoom_SetCullResult(unsigned int kcullres);
     void SceneGraph_SetCameraFOV(float f, int a, void* b, int c);
     void StopMoving(bool stop);
     void SetApplyRotToParent(int apply);

@@ -18,7 +18,7 @@ extern "C" int __cdecl memcmp(const void*, const void*, unsigned int);
 // Method-only extensions for declarations not yet exposed by the shared headers.
 struct WorldImageSpaceComparison : TESImageSpace
 {
-    bool Different(TESImageSpace*);
+    bool ImpactSwap_Compare(TESImageSpace*);
 };
 
 struct WorldSpaceComparison : TESWorldSpace
@@ -31,31 +31,34 @@ struct WorldSpaceComparison : TESWorldSpace
 };
 // @fnv 0x00585250
 // src: XBOX_PDB 0x00585250
-bool WorldSpaceComparison::TESWorldSpace_Compare(TESForm* form)
+// pdb: TESWorldSpace::Compare | TESWorldSpace.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp
+bool WorldSpaceComparison::TESWorldSpace_Compare(TESForm* apCompare)
 {
-    WorldSpaceComparison* other = (WorldSpaceComparison*)dynamic_cast< ::TESWorldSpace*>(form);
+    WorldSpaceComparison* other = (WorldSpaceComparison*)dynamic_cast< ::TESWorldSpace*>(apCompare);
     if (!other)
         return true;
     if (TESForm::Compare(other))
         return true;
-    if (flags4C != other->flags4C)
+    if (cFlags != other->cFlags)
         return true;
-    if (field4E != other->field4E)
+    if (sParentUseFlags != other->sParentUseFlags)
         return true;
-    if (parent != other->parent)
+    if (pParentWorld != other->pParentWorld)
         return true;
-    if (fieldD0 != other->fieldD0)
+    if (pEncounterZone != other->pEncounterZone)
         return true;
     if (GetClimate() != other->GetClimate())
         return true;
     if (ImageSpace() != other->ImageSpace())
         return true;
-    if (data && other->data)
+    if (pImpactSwap && other->pImpactSwap)
     {
-        if (((WorldImageSpaceComparison*)data)->Different(other->data))
+        if (((WorldImageSpaceComparison*)pImpactSwap)->ImpactSwap_Compare(other->pImpactSwap))
             return true;
     }
-    else if (data || other->data)
+    else if (pImpactSwap || other->pImpactSwap)
         return true;
     if (Water() != other->Water())
         return true;
@@ -63,17 +66,17 @@ bool WorldSpaceComparison::TESWorldSpace_Compare(TESForm* form)
         return true;
     if (Height() != other->Height())
         return true;
-    if (fC8 != other->fC8 || fCC != other->fCC)
+    if (fDefaultLandHeight != other->fDefaultLandHeight || fDefaultWaterHeight != other->fDefaultWaterHeight)
         return true;
-    if (memcmp(&unk80, &other->unk80, 16))
+    if (memcmp(&WorldMapData, &other->WorldMapData, 16))
         return true;
-    if (memcmp(unk80 + 0x10, other->unk80 + 0x10, 12))
+    if (memcmp(WorldMapData + 0x10, other->WorldMapData + 0x10, 12))
         return true;
     if (Map() != other->Map())
         return true;
     if (CanopyShadowTexture.CompareWithBase((BaseFormComponent*)&other->CanopyShadowTexture))
         return true;
-    if (m_kLeafShadowTexture.CompareWithBase((BaseFormComponent*)&other->m_kLeafShadowTexture))
+    if (WaterNoiseTexture.CompareWithBase((BaseFormComponent*)&other->WaterNoiseTexture))
         return true;
     return false;
 }

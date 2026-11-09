@@ -14,16 +14,18 @@ extern "C" char DAT_01140ef8[];
 
 struct FUN_00ac5340_class
 {
-    void FutBinaryFileC_writeHeader(int a, int b, int c);
-    void FutBinaryFileC_write(int a, int b, int c);
+    void FutBinaryFileC_writeHeader(int a, int b, int num);
+    void FutBinaryFileC_write(int data, int size, int num);
 };
 
 // Calls FUN_00ac5220 with the three arguments a, b and c.
 // @fnv 0x00ac5340
 // src: XBOX_PDB 0x00ac5340
-void FUN_00ac5340_class::FutBinaryFileC_write(int a, int b, int c)
+// pdb: FutBinaryFileC::write | binaryFile.obj | debug, upstream name already matches, high
+// pdb params: data, size, num
+void FUN_00ac5340_class::FutBinaryFileC_write(int data, int size, int num)
 {
-    FutBinaryFileC_writeHeader(a, b, c);
+    FutBinaryFileC_writeHeader(data, size, num);
 }
 
 void __cdecl _fclose(void*);
@@ -36,6 +38,7 @@ struct FUN_00ac5ed0_This
 
 // Closes m_pFile with _fclose if the file handle is non-null.
 // @fnv 0x00ac5ed0
+// pdb: file_ptr::~file_ptr | binaryFile.obj | debug, object-file run extension, low
 void FUN_00ac5ed0_This::CloseFile()
 {
     if (m_pFile)
@@ -81,6 +84,7 @@ extern int DAT_011f6c88;
 
 // @fnv 0x00ac68e0
 // src: GUESS 0x00ac68e0 (confidence: low)
+// pdb: futAssertLastError | lastError.obj | debug, object-file run extension, low
 void __cdecl Object_ProcessState_00ac68e0()
 {
     if (DAT_011f6c88)
@@ -122,6 +126,7 @@ struct FUN_00acdfa0_class
     void* __thiscall FUN_00acdfa0(int a);
 };
 // @fnv 0x00acdfa0
+// pdb: std::basic_ios<char,std::char_traits<char> >::`scalar deleting destructor' | algs.obj | debug, vtable slot, medium
 void* __thiscall FUN_00acdfa0_class::FUN_00acdfa0(int aiFlags)
 {
     *(void**)this = &DAT_010a2fa4;
@@ -173,9 +178,11 @@ void FUN_00ad41a0_cls::UpdateFields_00ad41a0()
 
 // @fnv 0x00ad84e0
 // src: XBOX_PDB 0x00ad84e0
-void BSAudioManager::BSAudio_KillAllOfType(void* a, void* b)
+// pdb: BSAudio::KillAllOfType | BSAudio.obj | retail, upstream name already matches, high
+// pdb params: aiType, aiFadeTimeMS
+void BSAudioManager::BSAudio_KillAllOfType(void* aiType, void* aiFadeTimeMS)
 {
-    GetRandomGenerator().BSAudioManager_KillAllOfType(a, b);
+    GetRandomGenerator().BSAudioManager_KillAllOfType(aiType, aiFadeTimeMS);
 }
 
 // Retained until the shared NiPoint3 declares AddOffset(NiPoint3*, NiPoint3*).
@@ -189,6 +196,9 @@ struct FUN_00ac10c0_Class
 
 // Adds the object's f0/f4/f8 offsets to pSource's x/y/z and stores the result in pDest, which it returns.
 // @fnv 0x00ac10c0
+// pdb: BGSOffsetDataArray::AddOffset | BGSReconstructFormsInAllFilesMap.obj | retail, upstream name already matches, high
+// pdb params: aiOffset, apFormsMap
+// pdb locals: data
 NiPoint3* __thiscall FUN_00ac10c0_Class::AddOffset(NiPoint3* pDest, NiPoint3* pSource)
 {
     float c = pSource->x + f0;
@@ -222,6 +232,9 @@ extern double DAT_010a2f90;
 
 // @fnv 0x00ac7990
 // src: GUESS 0x00ac7990 (confidence: low)
+// pdb: fr2AddSaturated<short> | algs.obj | debug, object-file run extension, low
+// pdb params: val1, val2
+// pdb locals: tmp
 int __cdecl Runtime_UpdateState_00ac7990(int aiLeft, int aiRight)
 {
     double v = (double)aiLeft + (double)aiRight;
@@ -243,6 +256,7 @@ struct FUN_00ac9c30_class
 };
 
 // @fnv 0x00ac9c30
+// pdb: std::ios_base::`scalar deleting destructor' | algs.obj | debug, vtable slot, medium
 void* __thiscall FUN_00ac9c30_class::FUN_00ac9c30(int flags)
 {
     m_p = &DAT_010a2f9c;
@@ -274,6 +288,7 @@ struct FUN_00ace030_class
 
 // Calls FUN_00acb6b0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00ace030
+// pdb: std::basic_streambuf<char,std::char_traits<char> >::`scalar deleting destructor' | algs.obj | debug, object-file run extension, low
 void* FUN_00ace030_class::FUN_00ace030(unsigned int flags)
 {
     int pad0, pad1, pad2, pad3, pad4, pad5;
@@ -336,6 +351,7 @@ struct FUN_00ad3eb0_Class
 };
 // Sets m_p to DAT_010a31fc and, when bit 0 of flags is set, deallocates this object before returning it.
 // @fnv 0x00ad3eb0
+// pdb: std::locale::facet::`scalar deleting destructor' | algs.obj | debug, vtable slot, medium
 FUN_00ad3eb0_Class* __thiscall FUN_00ad3eb0_Class::FUN_00ad3eb0(unsigned int flags)
 {
     m_p = &DAT_010a31fc;
@@ -354,6 +370,8 @@ struct FUN_00ad3f50_class
 // Applies FUN_00ec379c to each character from p up to end, writing the result back in place, and returns the end pointer.
 // @fnv 0x00ad3f50
 // src: COMMUNITY 0x00ad3f50
+// pdb: std::ctype<char>::_Init | algs.obj | debug, object-file run extension, low
+// pdb params: _Lobj
 char* __thiscall FUN_00ad3f50_class::std_ctype_char_do_tolower_00ad3f50(char* pBegin, char* end)
 {
     for (; pBegin != end; ++pBegin)
@@ -388,6 +406,7 @@ struct FUN_00ad5670_class
     int* __thiscall FUN_00ad5670(int a);
 };
 // @fnv 0x00ad5670
+// pdb: std::codecvt_base::`scalar deleting destructor' | algs.obj | debug, vtable slot, medium
 int* __thiscall FUN_00ad5670_class::FUN_00ad5670(int aiFlags)
 {
     *(int**)this = &DAT_010a3228;
@@ -408,6 +427,7 @@ struct FUN_00ad5730_Class
 };
 
 // @fnv 0x00ad5730
+// pdb: std::codecvt<char,char,int>::`scalar deleting destructor' | algs.obj | debug, vtable slot, medium
 void* __thiscall FUN_00ad5730_Class::FUN_00ad5730(int flags)
 {
     *reinterpret_cast<void**>(this) = &DAT_010a3204;
@@ -428,6 +448,7 @@ struct FUN_00ad87d0_Class
 // Sets six consecutive floats at offsets 0x158-0x16c to 1.0 and then calls FUN_00adc160 on this.
 // @fnv 0x00ad87d0
 // src: COMMUNITY 0x00ad87d0
+// pdb: BSAudioManager::ClearSecondaryVolumes | BSAudio.obj | debug, upstream name already matches, high
 void FUN_00ad87d0_Class::BSAudioManager_ClearSecondaryVolumes()
 {
     *(float*)((char*)this + 0x158) = 1.0f;
@@ -514,14 +535,16 @@ NiPoint3* NiPoint3::ScaleTo(NiPoint3* pDest, float scale)
 
 struct FUN_00ac52b0_class
 {
-    void FutBinaryFileC_readHeader(int a, int b, int c);
-    void FutBinaryFileC_read(int a, int b, int c);
+    void FutBinaryFileC_readHeader(int a, int b, int num);
+    void FutBinaryFileC_read(int data, int size, int num);
 };
 // @fnv 0x00ac5370
 // src: XBOX_PDB 0x00ac5370
-void FUN_00ac52b0_class::FutBinaryFileC_read(int a, int b, int c)
+// pdb: FutBinaryFileC::read | binaryFile.obj | debug, upstream name already matches, high
+// pdb params: data, size, num
+void FUN_00ac52b0_class::FutBinaryFileC_read(int data, int size, int num)
 {
-    FutBinaryFileC_readHeader(a, b, c);
+    FutBinaryFileC_readHeader(data, size, num);
 }
 
 unsigned __int64 __cdecl __time64(unsigned __int64*);
@@ -532,6 +555,8 @@ extern unsigned char DAT_011f6c78;
 
 // @fnv 0x00ac6220
 // src: GUESS 0x00ac6220 (confidence: low)
+// pdb: std::_Uninitialized_copy<std::_Vector_const_iterator<std::_Vector_val<char,std::allocator<char> > >,char *,std::allocator<char> > | binaryFile.obj | debug, object-file run extension, low
+// pdb params: _First, _Last, _Dest, _Al
 double Object_ProcessEntries_00ac6220()
 {
     if (!DAT_011f6c78)
@@ -564,6 +589,9 @@ char AddSaturateBytes(unsigned char a, unsigned char b)
 
 // Adds the two char arguments, clamps the sum to the range [-128, 127], and returns the clamped value as a char.
 // @fnv 0x00ac78b0
+// pdb: fr2AddSaturated<unsigned char> | algs.obj | debug, object-file run extension, low
+// pdb params: val1, val2
+// pdb locals: tmp
 char __cdecl ClampSumToChar(char acValue1, char acValue2)
 {
     int sum_2 = acValue1 + acValue2;
@@ -599,6 +627,7 @@ struct FUN_00acdf60_class
 
 // Runs the destructor on the object at this-4 and, if flags has bit 0 set, deallocates it, returning that object pointer.
 // @fnv 0x00acdf60
+// pdb: std::basic_ostream<char,std::char_traits<char> >::`scalar deleting destructor' | algs.obj | debug, object-file run extension, low
 void* __thiscall FUN_00acdf60_class::DestroyAndDeallocate(int flags)
 {
     {
@@ -664,6 +693,7 @@ struct FUN_00ad3ee0
 };
 // Sets the object's vtable pointer to DAT_010a31fc and deallocates the object when bit 0 of a is set.
 // @fnv 0x00ad3ee0
+// pdb: std::ctype_base::`scalar deleting destructor' | algs.obj | debug, vtable slot, medium
 FUN_00ad3ee0::FUN_00ad3ee0(int aiFlags)
 {
     m_vft = (void*)&DAT_010a31f4;
@@ -682,6 +712,7 @@ struct FUN_00ad3f20_Class
 // Calls FUN_00ec379c with c and a pointer to this object's offset 8, returning its result.
 // @fnv 0x00ad3f20
 // src: COMMUNITY 0x00ad3f20
+// pdb: std::ctype_base::~ctype_base | algs.obj | debug, object-file run extension, low
 char FUN_00ad3f20_Class::std_ctype_char_do_tolower(char acChar)
 {
     return FUN_00ec379c(acChar, (char*)this + 8);
@@ -1201,6 +1232,8 @@ extern int DAT_010173f0;
 
 // @fnv 0x00ac3f40
 // src: GUESS 0x00ac3f40 (confidence: low)
+// pdb: FutBinaryFileC::changeFileId | binaryFile.obj | debug, object-file gap fill, medium
+// pdb params: newFileId
 void __thiscall S_00ac3f40_Class::ProcessEntries_00ac3f40(S_00ac3f40_Arg* arg)
 {
     S_00ac3f40_Class localCopy;
@@ -1282,6 +1315,7 @@ struct Pad_X
 };
 // If m_44 is set, clears m_40, resets m_44 and nulls it; otherwise deletes m_40 via vDel(1) and nulls it.
 // @fnv 0x00ac5c00
+// pdb: BSFaceGenBinaryFile::close | binaryFile.obj | retail, call graph, medium
 void FUN_00ac5c00_cls::ClearHolders()
 {
     Holder40_FUN_00ac5c00* tmp;
@@ -1400,19 +1434,22 @@ struct FgBinaryFile
     int unk38;
     int unk3C;
     FgBinaryStream* m_pBinaryStream;
-    bool BSFaceGenBinaryFile_read(void* pvBuffer, unsigned int uiSize, unsigned int ItemUpdateArray);
+    bool BSFaceGenBinaryFile_read(void* data, unsigned int size, unsigned int num);
 };
 
 // @fnv 0x00ac5cf0
 // src: XBOX_PDB 0x00ac5cf0
-bool FgBinaryFile::BSFaceGenBinaryFile_read(void* pvBuffer, unsigned int uiSize, unsigned int uiElementCount)
+// pdb: BSFaceGenBinaryFile::read | binaryFile.obj | retail, upstream name already matches, high
+// pdb params: data, size, num
+// pdb locals: ibytesRead, itoRead
+bool FgBinaryFile::BSFaceGenBinaryFile_read(void* data, unsigned int size, unsigned int num)
 {
     if (m_pBinaryStream == 0)
         return false;
 
-    unsigned int uiTotalTmp = uiSize * uiElementCount;
+    unsigned int uiTotalTmp = size * num;
     unsigned int uiRead6 = 0;
-    switch (uiSize)
+    switch (size)
     {
     case 1:
     case 2:
@@ -1420,16 +1457,16 @@ bool FgBinaryFile::BSFaceGenBinaryFile_read(void* pvBuffer, unsigned int uiSize,
         unsigned int uiBytes;
         {
             FgBinaryStream* pStream3 = m_pBinaryStream;
-            uiBytes = pStream3->m_pfnRead(pStream3, pvBuffer, uiTotalTmp, &uiSize, 1);
+            uiBytes = pStream3->m_pfnRead(pStream3, data, uiTotalTmp, &size, 1);
             pStream3->m_uiStreamFlags += uiBytes;
         }
         uiRead6 = uiBytes;
     }
     break;
     default:
-        if (uiSize % 4 == 0)
+        if (size % 4 == 0)
         {
-            uiSize = 4;
+            size = 4;
         }
         else
         {
@@ -1440,13 +1477,13 @@ bool FgBinaryFile::BSFaceGenBinaryFile_read(void* pvBuffer, unsigned int uiSize,
             {
                 ReportAssertionViolation("D:\\_Fallout3\\Platforms\\Common\\Code\\SDK\\FaceGen\\binaryFile.cpp", 0x1fc);
             }
-            uiSize = 1;
+            size = 1;
         }
         {
             unsigned int uiBytes2;
             {
                 FgBinaryStream* pStream4 = m_pBinaryStream;
-                uiBytes2 = pStream4->m_pfnRead(pStream4, pvBuffer, uiTotalTmp, &uiSize, 1);
+                uiBytes2 = pStream4->m_pfnRead(pStream4, data, uiTotalTmp, &size, 1);
                 pStream4->m_uiStreamFlags += uiBytes2;
             }
             uiRead6 = uiBytes2;
@@ -1495,6 +1532,8 @@ class FUN_00ac5e90_cls
 
 // Returns false if m_40 is null; otherwise calls m_40->v5(a, DAT_010a2480) and returns true.
 // @fnv 0x00ac5e90
+// pdb: BSFaceGenBinaryFile::seek | binaryFile.obj | debug, object-file run extension, low
+// pdb params: offsetFromBeginning
 bool FUN_00ac5e90_cls::CallTargetVFunc(int a)
 {
     if (m_40 == 0)
@@ -1523,6 +1562,8 @@ void __cdecl FUN_00ec30e8();
 
 // @fnv 0x00ac6100
 // src: GUESS 0x00ac6100 (confidence: low)
+// pdb: std::operator!=<char,std::char_traits<char>,std::allocator<char> > | binaryFile.obj | debug, call graph (shared callers), medium
+// pdb params: _Left, _Right
 int FUN_00ac6100_cls::ProcessAndReturnValue_00ac6100(unsigned int a1, unsigned int uiAvailable, int a3, unsigned int a4)
 {
     if (m_14 < a1)
@@ -1563,6 +1604,9 @@ class FUN_00ac62b0_cls
 };
 
 // @fnv 0x00ac62b0
+// pdb: std::_Uninit_copy<std::_Vector_const_iterator<std::_Vector_val<char,std::allocator<char> > >,char *,std::allocator<char> > | binaryFile.obj | debug, object-file run extension, low
+// pdb params: _First, _Last, _Dest, _Al, __formal
+// pdb locals: _Next
 double FUN_00ac62b0_cls::SampleNormal()
 {
     double u3;
@@ -1589,6 +1633,7 @@ double __cdecl FUN_00ec6054(double value);
 
 // Generates a Gaussian-distributed random value via the Box-Muller transform, rejecting samples outside the unit circle or with zero sum.
 // @fnv 0x00ac6360
+// pdb: std::_Vector_const_iterator<std::_Vector_val<char,std::allocator<char> > >::operator* | binaryFile.obj | debug, object-file run extension, low
 double __cdecl GenerateGaussianRandom()
 {
     double first;
@@ -1626,6 +1671,8 @@ extern int DAT_011f6c88;
 
 // Calls FUN_00ec6130 on DAT_011f6c8c, passes the result to the target's FUN_0044a7f0, and returns DAT_011f6c88.
 // @fnv 0x00ac6510
+// pdb: futGetLastError | lastError.obj | debug, object-file run extension, low
+// pdb params: txt
 int __cdecl ApplyGlobalToTarget(int pTarget)
 {
     Ac6510Frame frame;
@@ -1670,6 +1717,9 @@ void __cdecl FindPairByIndex(unsigned int count, unsigned int target, unsigned i
 
 // Adds a and b, clamps the sum to the signed 16-bit range, and returns the low byte of the clamped value.
 // @fnv 0x00ac7920
+// pdb: fr2AddSaturated<signed char> | algs.obj | debug, object-file run extension, low
+// pdb params: val1, val2
+// pdb locals: tmp
 short __cdecl ClampToShort(short asValueA, short asValueB)
 {
     int sum = asValueA + asValueB;
@@ -1699,6 +1749,8 @@ struct SpawnedObject
 
 // Calls Init on m_sub, overwrites its vtable pointer twice, then passes it to FUN_00ec3205.
 // @fnv 0x00ac9c70
+// pdb: std::basic_ios<char,std::char_traits<char> >::setstate | algs.obj | debug, object-file run extension, low
+// pdb params: _State, _Reraise
 void SpawnedObject::InitSub()
 {
     unsigned int padLocal[5];
@@ -2077,6 +2129,8 @@ class CB770Facet
 // Takes a lock, decrements m_uiRefs when it is between 1 and UINT_MAX-1, and returns this if the count reached zero, otherwise null.
 // @fnv 0x00acb770
 // src: COMMUNITY 0x00acb770
+// pdb: std::locale::facet::_Decref | algs.obj | retail, upstream name already matches, high
+// pdb locals: _Lock
 CB770Facet* CB770Facet::std_locale_facet__Decref()
 {
     CB770Lockit kLock(0);
@@ -2389,6 +2443,7 @@ struct FUN_00acdff0_cls
 };
 
 // @fnv 0x00acdff0
+// pdb: std::basic_istream<char,std::char_traits<char> >::`scalar deleting destructor' | algs.obj | debug, object-file run extension, low
 FUN_00acdff0_prim* FUN_00acdff0_cls::FUN_00acdff0(unsigned int auiFlags)
 {
     int iUnused1;
@@ -3682,6 +3737,9 @@ class FUN_00ad6f40
 };
 
 // @fnv 0x00ad6f40
+// pdb: BSAudio::Init | BSAudio.obj | retail, object-file run extension, low
+// pdb params: pHandle
+// pdb locals: tempMemContext
 FUN_00ad6f40::FUN_00ad6f40()
 {
     m_bModifierActive = false;
@@ -3726,6 +3784,7 @@ struct S_ad8700
 // Calls the callback stored in unk30 if set, then sets bit 0 of sub14.unk08.
 // @fnv 0x00ad8700
 // src: COMMUNITY 0x00ad8700
+// pdb: BSAudio::PauseSynchTimer | BSAudio.obj | debug, object-file gap fill, medium
 void S_ad8700::BSWin32Audio_Pause()
 {
     if (unk30)
@@ -3780,6 +3839,8 @@ struct StringBufferSeek
     SeekPosition* Seek(SeekPosition* result, int offset, int way, int which);
 };
 // @fnv 0x00acc1b0
+// pdb: std::basic_stringbuf<char,std::char_traits<char>,std::allocator<char> >::seekoff | algs.obj | debug, object-file run extension, low
+// pdb params: _Off, _Way, _Which
 SeekPosition* StringBufferSeek::Seek(SeekPosition* result, int offset, int way, int which)
 {
     int offset9;     // write move
@@ -3906,6 +3967,9 @@ class StringBuf
 // Seeks the string buffer to the given offset for the requested mode, updating the get and put pointers and counts, and returns the resulting position.
 // @fnv 0x00acc490
 // src: GUESS 0x00acc490 (confidence: medium)
+// pdb: std::basic_stringbuf<char,std::char_traits<char>,std::allocator<char> >::seekpos | algs.obj | debug, object-file run extension, low
+// pdb params: _Ptr, _Mode
+// pdb locals: _Off
 StreamPos* StringBuf::SeekStringBuffer(StreamPos* _Result, StreamPos _Ptr, int _Mode)
 {
     int iPBumpB;
@@ -4049,7 +4113,7 @@ class SpawnCallee_cls
 {
   public:
     void Probe(int a, int b);
-    void Release(void* item);
+    void Release(void* apMem);
 };
 
 extern SpawnCallee_cls g_ac2370Owner;
@@ -4938,15 +5002,15 @@ struct FUN_00aca270
     FUN_00aca270(void* p);
 };
 
-struct FUN_00aca390 : FUN_00aca270
+struct failure : FUN_00aca270
 {
-    FUN_00aca390(void* p);
-    virtual ~FUN_00aca390();
+    failure(void* p);
+    virtual ~failure();
 };
 
 // Constructs the FUN_00aca270 base with p; the body only declares an unused 84-byte local.
 // @fnv 0x00aca390
-FUN_00aca390::FUN_00aca390(void* p) : FUN_00aca270(p)
+failure::failure(void* p) : FUN_00aca270(p)
 {
     char pad[84];
 }

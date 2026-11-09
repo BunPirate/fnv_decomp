@@ -4,6 +4,7 @@
 
 class TreadEntry;
 
+// pdb: class BSMultiTargetTreadTransfController, size 0x44 (here 0x38), bases: NiInterpController, 4 members
 class BSMultiTargetTreadTransfController : public NiInterpController
 {
 public:

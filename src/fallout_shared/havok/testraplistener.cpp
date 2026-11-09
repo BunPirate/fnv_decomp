@@ -47,6 +47,7 @@ void bhkTrapListener::FUN_0062d760()
 
 // Calls FUN_0062d760, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0062d6c0
+// pdb: bhkTrapListener::`scalar deleting destructor' | TESTrapListener.obj | retail, vtable slot, high
 void* bhkTrapListener::DestroyIfFlagged(unsigned int flags)
 {
     FUN_0062d760();
@@ -79,6 +80,9 @@ struct FUN_0062dee0_shell
 // Walks the linked list at this+0x20 and returns true if any node's _ref_0084e3a0() equals arg.
 // @fnv 0x0062dee0
 // src: GUESS 0x0062dee0 (confidence: low)
+// pdb: BSList<TriggerEntry::TriggerEvent *>::`scalar deleting destructor' | TESTrapListener.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESTrapListener::IsCurrentTrigger
+// pdb params: this
 bool __thiscall FUN_0062dee0_shell::ProcessEntries_0062dee0(int arg)
 {
     CombatWorldStateListNode* p = *(CombatWorldStateListNode**)((char*)this + 0x20);
@@ -117,6 +121,7 @@ struct FUN_0062dfe0_shell
 
 // @fnv 0x0062c700
 // src: GUESS 0x0062c700 (confidence: low)
+// pdb: BSList<TriggerEntry::TriggerEvent *>::~BSList<TriggerEntry::TriggerEvent *> | TESTrapListener.obj | debug, call graph, medium
 void FUN_0062c700_shell::ForwardCall_0062c700()
 {
     ((FUN_0062dfe0_shell*)this)->FUN_0062dfe0();
@@ -129,6 +134,7 @@ struct FUN_0062d710_shell : FUN_0062d740_shell
 
 // Calls FUN_0062d740, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0062d710
+// pdb: hkpPhantomListener::`scalar deleting destructor' | TESTrapListener.obj | retail, vtable slot, high
 void* FUN_0062d710_shell::FUN_0062d710(unsigned int flags)
 {
     this->UpdateFields_0062d740();
@@ -139,6 +145,7 @@ void* FUN_0062d710_shell::FUN_0062d710(unsigned int flags)
 
 // Calls FUN_0062d8a0, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0062d870
+// pdb: TESTrapListener::`scalar deleting destructor' | TESTrapListener.obj | retail, vtable slot, high
 void* TESTrapListener::FUN_0062d870(unsigned int flags)
 {
     FUN_0062d8a0();
@@ -153,6 +160,7 @@ struct FUN_0062e200_shell
 };
 
 // @fnv 0x0062e200
+// pdb: BSListBase<TriggerEntry::TriggerEvent *>::`scalar deleting destructor' | TESTrapListener.obj | retail, vtable slot, high
 void* FUN_0062e200_shell::FUN_0062e200(unsigned int flags)
 {
     ((FUN_0062e040_shell*)this)->SetVirtualTable_0062e040();
@@ -182,6 +190,9 @@ struct TrapEventList
 };
 // @fnv 0x006207a0
 // src: COMMUNITY 0x006207a0
+// pdb: bhkTTNode<TESObjectREFR>::RemoveFromList | BGSZoneTargetListener.obj | debug, call graph, medium
+// pdb params: apHead
+// pdb locals: pprev, pnext
 TrapEventList* TrapEventList::bhkTTNode_RemoveFromList(TrapEventList* pHead)
 {
     if (this == pHead)
@@ -208,6 +219,7 @@ struct FUN_0062c720_shell : FUN_0062c700_shell
     void* FUN_0062c720(unsigned int flags);
 };
 // @fnv 0x0062c720
+// pdb: BSList<TriggerEntry::TriggerEvent *>::`scalar deleting destructor' | TESTrapListener.obj | debug, vtable slot, medium
 void* FUN_0062c720_shell::FUN_0062c720(unsigned int flags)
 {
     ForwardCall_0062c700();
@@ -227,6 +239,7 @@ struct FUN_0062c750_shell : FUN_0062dfa0_shell
     FUN_0062c750_shell();
 };
 // @fnv 0x0062c750
+// pdb: BSPointerListBase<TriggerEntry::TriggerEvent *>::BSPointerListBase<TriggerEntry::TriggerEvent *> | TESTrapListener.obj | debug, object-file run extension, low
 FUN_0062c750_shell::FUN_0062c750_shell()
 {
     BSListBase_TriggerEntry_TriggerEvent_BSListBase_TriggerEntry_TriggerEvent();
@@ -239,6 +252,7 @@ struct FUN_0062c770_shell : FUN_0062dfe0_shell
 };
 // Calls FUN_0062dfe0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0062c770
+// pdb: BSPointerListBase<TriggerEntry::TriggerEvent *>::`scalar deleting destructor' | TESTrapListener.obj | debug, vtable slot, medium
 void* FUN_0062c770_shell::FUN_0062c770(unsigned int flags)
 {
     FUN_0062dfe0();
@@ -269,6 +283,8 @@ struct Target062c980
 };
 // Resets field4 to 0, then repeatedly takes an item from map and deallocates it until the map is empty.
 // @fnv 0x0062c980
+// pdb: TriggerEntry::RefList::Reset | TESTrapListener.obj | debug, object-file gap fill, medium
+// pdb locals: ptemp
 void Target062c980::ClearMap()
 {
     void* pDelete;
@@ -294,6 +310,7 @@ struct FUN_0062cb60_shell
 // Returns null if m_map is empty, otherwise returns the result of m_map.RemoveFirstNode().
 // @fnv 0x0062cb60
 // src: COMMUNITY 0x0062cb60
+// pdb: TriggerEntry::RefList::GetNewEvent | TESTrapListener.obj | debug, upstream name already matches, high
 void* FUN_0062cb60_shell::TriggerEntry_RefList_GetNewEvent()
 {
     if (m_map.IsEmpty())
@@ -311,12 +328,13 @@ struct MyCollector
     void* __vftable;
     InnerMember m_04;
     void hkpCdBodyPairCollector_reset();
-    void* hkpCdBodyPairCollector_hkpCdBodyPairCollector();
+    void* hkpCdBodyPairCollector_ctor();
 };
 // Sets the vtable pointer, calls m_04._ref_006815c0(), then FUN_0062d330(), and returns this.
 // @fnv 0x0062d3c0
-// src: XBOX_PDB 0x0062d3c0
-void* MyCollector::hkpCdBodyPairCollector_hkpCdBodyPairCollector()
+// src: XBOX_DEBUG_PDB 0x0062d3c0
+// pdb: hkpCdBodyPairCollector::hkpCdBodyPairCollector | TESTrapListener.obj | debug, upstream name already matches, high
+void* MyCollector::hkpCdBodyPairCollector_ctor()
 {
     __vftable = (void*)&DAT_0104e328;
     m_04._ref_006815c0();
@@ -331,6 +349,7 @@ struct FUN_0062d3f0_Standin : hkpCdBodyPairCollector
 };
 // Calls FUN_0062d420, then if bit 0 of flags is set calls FUN_006210d0 on this, and returns this.
 // @fnv 0x0062d3f0
+// pdb: hkpCdBodyPairCollector::`scalar deleting destructor' | TESTrapListener.obj | debug, vtable slot, medium
 void* FUN_0062d3f0_Standin::FUN_0062d3f0(unsigned int flags)
 {
     SetVirtualTable_0062d420();
@@ -342,6 +361,7 @@ void* FUN_0062d3f0_Standin::FUN_0062d3f0(unsigned int flags)
 void __cdecl BSAudio_UpdateState_0062d470(void*);
 // Calls FUN_0062d4b0 on this, then FUN_0062d470(this) if bit 0 of flags is set, and returns this.
 // @fnv 0x0062d440
+// pdb: hkpAllCdBodyPairCollector::`scalar deleting destructor' | TESTrapListener.obj | retail, vtable slot, high
 void* hkpAllCdBodyPairCollector::FUN_0062d440(unsigned int flags)
 {
     this->hkpAllCdBodyPairCollector::~hkpAllCdBodyPairCollector();
@@ -364,6 +384,9 @@ struct TrapHolder
 // Returns true if the trigger id from p matches any entry's a field in arr, otherwise false.
 // @fnv 0x0062d570
 // src: GUESS 0x0062d570 (confidence: high)
+// pdb: TriggerEntry::RefList::IsInList | TESTrapListener.obj | debug, object-file gap fill, medium
+// pdb params: apRef
+// pdb locals: nID, irefIdx
 bool TrapHolder::ContainsTriggerID(CombatWorldStateListNode* p)
 {
     int ptriggers = _ref_0084e3a0(p);
@@ -403,17 +426,20 @@ struct FUN_0062df20_shell
 {
     char _pad[32];
     FUN_0062df60_shell* m_32;
-    bool TESTrapListener_IsRefInTrigger(int a1, int a2);
+    bool TESTrapListener_IsRefInTrigger(int apRef, int apTrigger);
 };
 // Looks up the entry for a2 via m_32 and returns whether it satisfies the check for a1, or false if not found.
 // @fnv 0x0062df20
 // src: COMMUNITY 0x0062df20
-bool FUN_0062df20_shell::TESTrapListener_IsRefInTrigger(int a1, int a2)
+// pdb: TESTrapListener::IsRefInTrigger | TESTrapListener.obj | debug, upstream name already matches, high
+// pdb params: apRef, apTrigger
+// pdb locals: pentry
+bool FUN_0062df20_shell::TESTrapListener_IsRefInTrigger(int apRef, int apTrigger)
 {
-    FUN_0062d550_shell* t = m_32->BhkTTNode_TESObjectREFR_GetEntry_Thunk(a2);
+    FUN_0062d550_shell* t = m_32->BhkTTNode_TESObjectREFR_GetEntry_Thunk(apTrigger);
     if (!t)
         return false;
-    return t->ForwardToMember(a1);
+    return t->ForwardToMember(apRef);
 }
 
 namespace fnv_0062df60 {
@@ -427,6 +453,8 @@ struct FUN_0062df60_shell
 };
 // @fnv 0x0062df60
 // src: GUESS 0x0062df60 (confidence: medium)
+// pdb: TriggerEntry::GetZoneEntry | TESTrapListener.obj | debug, call graph, medium
+// pdb params: apRef
 void __thiscall FUN_0062df60_shell::BhkTTNode_TESObjectREFR_GetEntry_Thunk(unsigned int a)
 {
     ((FUN_0057c400_shell*)this)->bhkTTNode_TESObjectREFR_GetEntry(a);
@@ -465,6 +493,9 @@ struct C62
 };
 // Gets a Data62 via f1(), stores the int pointed to by p into its c field, then passes it to FUN_0062e2f0.
 // @fnv 0x0062e060
+// pdb: BSPointerListBase<TriggerEntry::TriggerEvent *>::AddTail | TESTrapListener.obj | debug, object-file run extension, low
+// pdb params: element
+// pdb locals: pkNode
 void C62::SetC(int* piValue)
 {
     Data62* iVar1 = f1();
@@ -485,12 +516,14 @@ struct FUN_0062e120_shell
 // Calls FUN_00622570 on the passed object with true when _flag is zero, then returns the object.
 // @fnv 0x0062e120
 // src: COMMUNITY 0x0062e120
+// pdb: BSPointerListBase<TriggerEntry::TriggerEvent *>::NewItem | TESTrapListener.obj | debug, object-file run extension, low
 void* FUN_0062e120_shell::hkArrayBase_hkpEntity_isEmpty(void* pObject)
 {
     ((CalleeObj*)pObject)->UpdateState_00622570(_flag == 0);
     return pObject;
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -514,6 +547,8 @@ struct FUN_0062e1d0_shell : FUN_0062e230_shell
 // Calls FUN_0062e230 on the object at offset 0xc with the given value and size 0x10, then returns this.
 // @fnv 0x0062e1d0
 // src: XBOX_PDB 0x0062e1d0
+// pdb: hkInplaceArray<hkpRootCdBodyPair,16,hkContainerHeapAllocator>::hkInplaceArray<hkpRootCdBodyPair,16,hkContainerHeapAllocator> | TESTrapListener.obj | debug, call graph, medium
+// pdb params: size
 void* FUN_0062e1d0_shell::hkInplaceArray_hkpRootCdBodyPair_16_hkContainerHeapAllocator_hkInplaceArray_hkpRootCdBodyPair_16_hkContainerHeapAllocator(unsigned int auiValue)
 {
     hkArray_hkpWorldRayCastOutput_hkContainerHeapAllocator_hkArray_hkpWorldRayCastOutput_hkContainerHeapAllocator((unsigned int)(this + 0xc), auiValue, 0x10);
@@ -535,6 +570,8 @@ struct FUN_0062e290_shell
     void ClearList();
 };
 // @fnv 0x0062e290
+// pdb: BSListBase<TriggerEntry::TriggerEvent *>::RemoveAll | TESTrapListener.obj | debug, object-file run extension, low
+// pdb locals: pkCurr, pkDel
 void FUN_0062e290_shell::ClearList()
 {
     FUN_0062e290_Node* pNode = m_iWordAt04;
@@ -590,6 +627,8 @@ struct S_0062e350
 };
 // @fnv 0x0062e350
 // src: XBOX_PDB 0x0062e350
+// pdb: hkArrayBase<hkpRootCdBodyPair>::_clearAndDeallocate | TESTrapListener.obj | debug, call graph, low
+// pdb params: alloc
 void S_0062e350::hkArrayBase_hkpRootCdBodyPair_clearAndDeallocate(void* a)
 {
     hkArrayBase_hkpRootCdBodyPair_clear(this);
@@ -709,6 +748,8 @@ struct TrapTargetDispatch
 // Calls target on the object returned by _ref_0084e3a0(reinterpret_cast<char*>(this) + 0x10), passing apTrap and this.
 // @fnv 0x0062c600
 // src: XBOX_PDB 0x0062c600
+// pdb: TrapTargetEntry::Run | TESTrapListener.obj | debug, vtable slot, medium
+// pdb params: apTrap
 void TrapTargetEntry::Run_0062c600(ZoneEntry* apTrap)
 {
     ((TrapTargetDispatch*)_ref_0084e3a0(reinterpret_cast<char*>(this) + 0x10))->target(apTrap, this);
@@ -727,6 +768,7 @@ struct Base
 extern void* DAT_0104e2f8;
 
 // @fnv 0x0062c6e0
+// pdb: BSList<TriggerEntry::TriggerEvent *>::BSList<TriggerEntry::TriggerEvent *> | TESTrapListener.obj | debug, object-file run extension, low
 FUN_0062c6e0_shell::FUN_0062c6e0_shell()
 {
     ((Base*)this)->FUN_0062c750();
@@ -735,6 +777,7 @@ FUN_0062c6e0_shell::FUN_0062c6e0_shell()
 
 // @fnv 0x0062d330
 // src: XBOX_PDB 0x0062d330
+// pdb: hkpCdBodyPairCollector::reset | TESTrapListener.obj | debug, upstream name already matches, high
 void MyCollector::hkpCdBodyPairCollector_reset()
 {
     ((CalleeObj*)((char*)this + 4))->UpdateState_00622570(false);
@@ -754,6 +797,8 @@ struct FUN_0062d550_shell
 };
 
 // @fnv 0x0062d550
+// pdb: TriggerEntry::IsInTrigger | TESTrapListener.obj | debug, object-file gap fill, medium
+// pdb params: apRef
 void FUN_0062d550_shell::ForwardToMember(int aiValue)
 {
     m_0x10.ProcessIntegerValue(aiValue);
@@ -773,6 +818,7 @@ struct FUN_0062d9e0_shell
 };
 
 // @fnv 0x0062d9e0
+// pdb: TriggerEntry::~TriggerEntry | TESTrapListener.obj | debug, object-file gap fill, medium
 void FUN_0062d9e0_shell::CallMemberAtOffset()
 {
     ((FUN_0062c7a0_shell*)((char*)this + 0x10))->FUN_0062c7a0();
@@ -780,17 +826,19 @@ void FUN_0062d9e0_shell::CallMemberAtOffset()
 
 struct FUN_00620810_shell
 {
-    void FindByFlags(int a);
+    void bhkTTNode_TESObjectREFR_GetEntry(int apCol);
 };
 struct FUN_0062db40_shell
 {
-    void TriggerEntry_GetTriggerEntry(int a);
+    void TriggerEntry_GetTriggerEntry(int apCol);
 };
 // @fnv 0x0062db40
 // src: COMMUNITY 0x0062db40
-void FUN_0062db40_shell::TriggerEntry_GetTriggerEntry(int aiValue)
+// pdb: TriggerEntry::GetTriggerEntry | TESTrapListener.obj | debug, upstream name already matches, high
+// pdb params: apCol
+void FUN_0062db40_shell::TriggerEntry_GetTriggerEntry(int apCol)
 {
-    ((FUN_00620810_shell*)this)->FindByFlags(aiValue);
+    ((FUN_00620810_shell*)this)->bhkTTNode_TESObjectREFR_GetEntry(apCol);
 }
 
 namespace fnv_0062dfa0 {
@@ -816,6 +864,8 @@ struct bhkWorld;
 struct TESObjectCELL;
 // Returns the TESObject obtained from the plane's cull result extra data world, or null if any step is missing.
 // @fnv 0x0062ddb0
+// pdb: TESTrapListener::~TESTrapListener | TESTrapListener.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESTrapListener::GetListener
 TESObject* __cdecl GetOcclusionPlaneObject(BSOcclusionPlane* pOcclusionPlane)
 {
     TESObject* pResult = 0;
@@ -843,17 +893,20 @@ struct FUN_0062de90_shell
 {
     char _pad[0x20];
     CombatWorldStateListNode* m_20;
-    void TESTrapListener_ClearCurrentRefs(CombatWorldStateListNode* target);
+    void TESTrapListener_ClearCurrentRefs(CombatWorldStateListNode* apRef);
 };
 // Walks the linked list from m_20 and, when a node's _ref_0084e3a0() equals target, calls FUN_0062d510 on it and stops.
 // @fnv 0x0062de90
 // src: COMMUNITY 0x0062de90
-void FUN_0062de90_shell::TESTrapListener_ClearCurrentRefs(CombatWorldStateListNode* target)
+// pdb: TESTrapListener::ClearCurrentRefs | TESTrapListener.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: ptriggers
+void FUN_0062de90_shell::TESTrapListener_ClearCurrentRefs(CombatWorldStateListNode* apRef)
 {
     CombatWorldStateListNode* node = m_20;
     while (node)
     {
-        if (_ref_0084e3a0(node) == (int)target)
+        if (_ref_0084e3a0(node) == (int)apRef)
         {
             ((FUN_0062d510_shell*)node)->TriggerEntry_ClearCurrentRefs();
             break;
@@ -872,14 +925,16 @@ struct FUN_0062d840_shell
 };
 struct FUN_0062d7c0_shell
 {
-    FUN_0062d840_shell* TESTrapListener_CreateZoneEntry(unsigned int a, unsigned int b);
+    FUN_0062d840_shell* TESTrapListener_CreateZoneEntry(unsigned int apRef, unsigned int apCol);
 };
 // Allocates and constructs a FUN_0062d840_shell with the two given unsigned int arguments and returns the new object.
 // @fnv 0x0062d7c0
 // src: XBOX_PDB 0x0062d7c0
-FUN_0062d840_shell* FUN_0062d7c0_shell::TESTrapListener_CreateZoneEntry(unsigned int a, unsigned int b)
+// pdb: TESTrapListener::CreateZoneEntry | TESTrapListener.obj | retail, upstream name already matches, high
+// pdb params: apRef, apCol
+FUN_0062d840_shell* FUN_0062d7c0_shell::TESTrapListener_CreateZoneEntry(unsigned int apRef, unsigned int apCol)
 {
-    return new FUN_0062d840_shell(a, b);
+    return new FUN_0062d840_shell(apRef, apCol);
 }
 
 TESObjectREFR* __cdecl TESHavokUtilities_FindCollidableRef(void*);
@@ -893,6 +948,9 @@ struct FUN_0062dc80_shell
 };
 // @fnv 0x0062dc80
 // src: COMMUNITY 0x0062dc80
+// pdb: TESTrapListener::contactPointAddedCallback | TESTrapListener.obj | retail, upstream name already matches, high
+// pdb params: arPoint
+// pdb locals: bres, ptrapRef, pTargetRef, ptrap
 bool FUN_0062dc80_shell::TESTrapListener_contactPointAddedCallback(RootContactPoint* arPoint)
 {
     bool bres = false;
@@ -911,6 +969,8 @@ bool FUN_0062dc80_shell::TESTrapListener_contactPointAddedCallback(RootContactPo
 
 // This specialization uses the original list storage and node-deletion slot.
 // @fnv 0x0062e0a0
+// pdb: BSPointerListBase<TriggerEntry::TriggerEvent *>::RemoveHead | TESTrapListener.obj | debug, call graph (shared callers), high
+// pdb locals: pkNode, element
 void* FUN_0062e0a0_List::RemoveFirstNode()
 {
     void* node = *(void**)((char*)this + 4);
@@ -945,12 +1005,15 @@ struct FUN_0062cb90_shell
     int count;
     int m_08;
     C62 m_c62;
-    void CompactEntries();
+    void TriggerEntry_RefList_UpdateExitList();
 };
 
 // Scans entries, allocating an 8-byte record for each unflagged entry and passing it to m_c62, then removes that entry from the array and decrements count.
 // @fnv 0x0062cb90
-void FUN_0062cb90_shell::CompactEntries()
+// src: XBOX_DEBUG_PDB 0x0062cb90
+// pdb: TriggerEntry::RefList::UpdateExitList | TESTrapListener.obj | debug, call graph, high
+// pdb locals: irefIdx, pnewEvent, ishrinkIdx
+void FUN_0062cb90_shell::TriggerEntry_RefList_UpdateExitList()
 {
     int allocated = 0;
     FUN_0062cb90_Allocated* index;
@@ -986,9 +1049,10 @@ void FUN_0062cb90_shell::CompactEntries()
 
 // @fnv 0x0062d310
 // src: HAVOK_SRC 0x0062d310
+// pdb: hkpAllCdBodyPairCollector::reset | TESTrapListener.obj | debug, vtable slot, medium
 void hkpAllCdBodyPairCollector::reset_0062d310()
 {
-    hkArrayBase_hkpRootCdBodyPair_clear(&m8);
+    hkArrayBase_hkpRootCdBodyPair_clear(&m_hits);
     hkpCdBodyPairCollector::hkpCdBodyPairCollector_reset();
 }
 
@@ -1001,6 +1065,8 @@ struct Vt62d470
 };
 // @fnv 0x0062d470
 // src: GUESS 0x0062d470 (confidence: low)
+// pdb: hkpAllCdBodyPairCollector::operator delete | TESTrapListener.obj | debug, call graph, medium
+// pdb params: p
 void __cdecl BSAudio_UpdateState_0062d470(void* ap)
 {
     if (ap)
@@ -1020,6 +1086,7 @@ struct FUN_0062c860_shell
 // If the save/load game check fails, calls ApplyEntriesToRef with _ref_0084e3a0(this) on the object at offset 0x10, then calls ClearMap on it.
 // @fnv 0x0062d510
 // src: COMMUNITY 0x0062d510
+// pdb: TriggerEntry::ClearCurrentRefs | TESTrapListener.obj | debug, upstream name already matches, high
 void FUN_0062d510_shell::TriggerEntry_ClearCurrentRefs()
 {
     if (!g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
@@ -1045,14 +1112,16 @@ struct FUN_0062dc50_shell
     void* m_iWordAt04;
     void* m_8;
     void* m_iThirdValue;
-    void* TriggerEntry_TriggerEntry(unsigned int a, unsigned int b);
+    void* TriggerEntry_ctor(unsigned int apRef, unsigned int apCol);
 };
 // Calls FUN_00620720 with a and b, then FUN_0062c640 on the object at offset 0x10, and returns this.
 // @fnv 0x0062dc50
-// src: COMMUNITY 0x0062dc50
-void* FUN_0062dc50_shell::TriggerEntry_TriggerEntry(unsigned int auiArg1, unsigned int auiArg2)
+// src: XBOX_RETAIL_PDB 0x0062dc50
+// pdb: TriggerEntry::TriggerEntry | TESTrapListener.obj | retail, upstream name already matches, high
+// pdb params: apRef, apCol
+void* FUN_0062dc50_shell::TriggerEntry_ctor(unsigned int apRef, unsigned int apCol)
 {
-    ((FUN_00620720_shell*)this)->bhkTTNode_TESObjectREFR_bhkTTNode_TESObjectREFR(auiArg1, auiArg2);
+    ((FUN_00620720_shell*)this)->bhkTTNode_TESObjectREFR_bhkTTNode_TESObjectREFR(apRef, apCol);
     ((FUN_0062c640_shell*)((char*)this + 0x10))->FUN_0062c640();
     return this;
 }
@@ -1070,6 +1139,9 @@ struct FUN_0062dd20_shell
 // Looks up two TESObjectREFRs from arPoint, and if both exist and the second passes a vtable check, resolves a ZoneEntry via FUN_00620680 and returns true.
 // @fnv 0x0062dd20
 // src: COMMUNITY 0x0062dd20
+// pdb: TESTrapListener::contactPointRemovedCallback | TESTrapListener.obj | retail, upstream name already matches, high
+// pdb params: arPoint
+// pdb locals: bres, ptrapRef, pTargetRef, ptrap
 bool FUN_0062dd20_shell::TESTrapListener_contactPointRemovedCallback(RootContactPoint& arPoint)
 {
     bool bres = false;
@@ -1108,6 +1180,7 @@ struct FUN_0062c640
 };
 
 // @fnv 0x0062c640
+// pdb: TriggerEntry::RefList::RefList | TESTrapListener.obj | debug, object-file run extension, low
 FUN_0062c640::FUN_0062c640()
 {
     m_uiItemCount = 20;
@@ -1137,6 +1210,9 @@ struct Shell62C
     void ApplyEntriesToRef(TESObjectREFR*);
 };
 // @fnv 0x0062c860
+// pdb: TriggerEntry::RefList::ForceLeaveTrigger | TESTrapListener.obj | debug, object-file gap fill, medium
+// pdb params: apTriggerRef
+// pdb locals: pids, isize, pextralist, i, pform, pref
 void Shell62C::ApplyEntriesToRef(TESObjectREFR* ref)
 {
     if (!count)
@@ -1183,6 +1259,9 @@ struct CollisionRegistry
     bool RegisterCollision(void* object);
 };
 // @fnv 0x0062c9d0
+// pdb: TriggerEntry::RefList::Add | TESTrapListener.obj | debug, object-file gap fill, medium
+// pdb params: apRef
+// pdb locals: pnewEvent, newID, irefIdx, pnewArray, inewArraySize, icopyIdx
 bool CollisionRegistry::RegisterCollision(void* object)
 {
     int key = _ref_0084e3a0(object);
@@ -1223,7 +1302,8 @@ bool CollisionRegistry::RegisterCollision(void* object)
 
 // Constructs the object: initializes member m8 with 0 and calls FUN_0062d310 on the base.
 // @fnv 0x0062d350
-hkpAllCdBodyPairCollector::hkpAllCdBodyPairCollector() : m8(0)
+// pdb: hkpAllCdBodyPairCollector::hkpAllCdBodyPairCollector | TESTrapListener.obj | debug, upstream name already matches, high
+hkpAllCdBodyPairCollector::hkpAllCdBodyPairCollector() : m_hits(0)
 {
     reset_0062d310();
 }
@@ -1243,6 +1323,7 @@ class FUN_0062dfe0 : public FUN_0062e040_base
 
 // Destructor that forwards to ClearList on this object.
 // @fnv 0x0062dfe0
+// pdb: BSPointerListBase<TriggerEntry::TriggerEvent *>::~BSPointerListBase<TriggerEntry::TriggerEvent *> | TESTrapListener.obj | debug, call graph (shared callers), medium
 FUN_0062dfe0::~FUN_0062dfe0()
 {
     ((FUN_0062e290_shell*)this)->ClearList();
@@ -1270,6 +1351,7 @@ struct SmallHelper
 
 // Creates a SmallHelper, initializes it with this as owner, and passes the result to FUN_0062e350 on this.
 // @fnv 0x0062e260
+// pdb: hkArray<hkpRootCdBodyPair,hkContainerHeapAllocator>::clearAndDeallocate | TESTrapListener.obj | debug, object-file run extension, low
 void FUN_0062e170::InitHelper()
 {
     reinterpret_cast<S_0062e350*>(this)->hkArrayBase_hkpRootCdBodyPair_clearAndDeallocate(SmallHelper().Init(this));
@@ -1307,6 +1389,8 @@ class FUN_0062c7a0_Cache
 
 // Resets the buffer size, deletes the stored entry, and removes and deletes every entry in the list until it is empty.
 // @fnv 0x0062c7a0
+// pdb: TriggerEntry::RefList::~RefList | TESTrapListener.obj | debug, object-file gap fill, medium
+// pdb locals: ptemp
 FUN_0062c7a0_Cache::~FUN_0062c7a0_Cache()
 {
     m_iBufferSize = 0;
@@ -1378,7 +1462,7 @@ struct CollisionObject62
 Array62* __fastcall GetCollectedBodyPairs(hkpAllCdBodyPairCollector* collector);
 struct Registry62 : CollisionRegistry
 {
-    void CompactEntries();
+    void TriggerEntry_RefList_UpdateExitList();
     CollisionState* TriggerEntry_RefList_GetNewEvent();
 };
 struct Subject62
@@ -1395,6 +1479,9 @@ struct Subject62
 void* hkpGetRigidBody(void*);
 void __cdecl FormHeapFreeAndLog_00401030(void*);
 // @fnv 0x0062cc90
+// pdb: TriggerEntry::Update | TESTrapListener.obj | debug, call graph, medium
+// pdb params: afDelta
+// pdb locals: pw, pcurrentEvent, ptriggerRef, pcol, btriggered, itype, pp, psp, collector, rcols, isize, I, ptriggeredRef, bactorLimb, bactorRagdollin, btriggerEvent, pextraList, pa, uflag, peventRef, refID
 bool Subject62::ProcessCollisionPairs(int arg)
 {
     bool world = false;
@@ -1481,7 +1568,7 @@ bool Subject62::ProcessCollisionPairs(int arg)
             }
         }
     }
-    registry.CompactEntries();
+    registry.TriggerEntry_RefList_UpdateExitList();
     CollisionState* object = registry.TriggerEntry_RefList_GetNewEvent();
     if (object)
     {
@@ -1503,7 +1590,7 @@ bool Subject62::ProcessCollisionPairs(int arg)
     return world;
 }
 
-TESObjectREFR* __cdecl TESHavokUtilities_FindCollidableRef(void* object);
+TESObjectREFR* __cdecl TESHavokUtilities_FindCollidableRef(void* apCol);
 struct EventContext
 {
     void* hkpCollidable_getCollisionFilterInfo();
@@ -1520,18 +1607,21 @@ struct EventCode
 };
 struct TrapEventHandler
 {
-    void BGSZoneTargetListener_RemoveZone(TESObjectREFR* reference);
-    void BGSZoneTargetListener_RemoveTarget(TESObjectREFR* reference);
+    void BGSZoneTargetListener_RemoveZone(TESObjectREFR* apZone);
+    void BGSZoneTargetListener_RemoveTarget(TESObjectREFR* apTarget);
 };
 struct FUN_0062da00_Class
 {
-    void HandleTrapEvent(InputBody* source);
+    void HandleTrapEvent(InputBody* apEntity);
 };
 // Resolves the event code from the input body and, for codes 14, 16 or 30, dispatches the referenced object to the trap handler.
 // @fnv 0x0062da00
-void FUN_0062da00_Class::HandleTrapEvent(InputBody* pInputBody)
+// pdb: TESTrapListener::entityRemovedCallback | TESTrapListener.obj | retail, vtable slot, high
+// pdb params: apEntity
+// pdb locals: ifilt, elayer, pcol, pref
+void FUN_0062da00_Class::HandleTrapEvent(InputBody* apEntity)
 {
-    EventContext* resolvedBody = pInputBody->TESDataHandler_GetWorldSpaceList();
+    EventContext* resolvedBody = apEntity->TESDataHandler_GetWorldSpaceList();
     EventCode notification;
     notification.FUN_008c71b0(resolvedBody->hkpCollidable_getCollisionFilterInfo());
     int category = notification.CFilter_GetLayer();
@@ -1588,14 +1678,17 @@ struct TargetClass
     int unk00;
     ListHead* unk04;
 
-    void RemoveMatchingListEntry(ArgClass* arg);
+    void RemoveMatchingListEntry(ArgClass* apPhantom);
 };
 
 // Gets a value from arg, and if unk04 is set and that value is 12, 22 or 24, finds and removes the matching entry from the unk04 list.
 // @fnv 0x0062da90
-void TargetClass::RemoveMatchingListEntry(ArgClass* arg)
+// pdb: TESTrapListener::phantomRemovedCallback | TESTrapListener.obj | retail, vtable slot, high
+// pdb params: apPhantom
+// pdb locals: pcol, iflt, elayer, ptrigger
+void TargetClass::RemoveMatchingListEntry(ArgClass* apPhantom)
 {
-    LocalClass* v8 = arg->TESDataHandler_GetWorldSpaceList();
+    LocalClass* v8 = apPhantom->TESDataHandler_GetWorldSpaceList();
     GlobalObject_008c71b0 v4(v8->hkpCollidable_getCollisionFilterInfo());
 
     if (unk04)
@@ -1614,6 +1707,7 @@ void TargetClass::RemoveMatchingListEntry(ArgClass* arg)
 }
 
 // @fnv 0x0062d4b0
+// pdb: hkpAllCdBodyPairCollector::~hkpAllCdBodyPairCollector | TESTrapListener.obj | retail, upstream name already matches, high
 hkpAllCdBodyPairCollector::~hkpAllCdBodyPairCollector()
 {}
 
@@ -1656,9 +1750,12 @@ struct TrapListener
 };
 // Adds a new ListenerNode to the head of the list when the collision body's filter layer is 12, 22, or 24 and a reference is found.
 // @fnv 0x0062db60
-void TrapListener::AddListener(CollisionArgument* apCollisionArgument)
+// pdb: TESTrapListener::phantomAddedCallback | TESTrapListener.obj | retail, vtable slot, high
+// pdb params: apPhantom
+// pdb locals: elayer, pcol, iflt, pref, pentry
+void TrapListener::AddListener(CollisionArgument* apPhantom)
 {
-    CollisionBody* body = apCollisionArgument->TESDataHandler_GetWorldSpaceList();
+    CollisionBody* body = apPhantom->TESDataHandler_GetWorldSpaceList();
     FilterWord filter(body->hkpCollidable_getCollisionFilterInfo());
     int layer = filter.CFilter_GetLayer();
     if (layer == 12 || layer == 22 || layer == 24)
@@ -1698,19 +1795,22 @@ struct Updater62DE
     int unk00[6];
     Child62DE* m_children;
 
-    void TESTrapListener_Update(float f);
+    void TESTrapListener_Update(float afDelta);
 };
 
 // Iterates m_children calling ProcessCollisionPairs, then iterates the owner's m_items list calling vfn_04 on each.
 // @fnv 0x0062de20
 // src: COMMUNITY 0x0062de20
-void Updater62DE::TESTrapListener_Update(float f)
+// pdb: TESTrapListener::Update | TESTrapListener.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: ptriggers, ptrap
+void Updater62DE::TESTrapListener_Update(float afDelta)
 {
     {
         Child62DE* child = m_children;
         while (child)
         {
-            child->ProcessCollisionPairs(f);
+            child->ProcessCollisionPairs(afDelta);
             child = child->FUN_0062d990();
         }
     }
@@ -1745,6 +1845,8 @@ struct FUN_0062d760_cls : EmptyBase_b4781
 
 // The destructor body is empty.
 // @fnv 0x0062d760
+// pdb: TESTrapListener::TESTrapListener | TESTrapListener.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkTrapListener::~bhkTrapListener
 FUN_0062d760_cls::~FUN_0062d760_cls()
 {}
 
@@ -1774,6 +1876,8 @@ struct EventCollection_62c5a0
 // Iterates through the linked list of event nodes and invokes each one with the collection as context.
 // @fnv 0x0062c5a0
 // src: XBOX_PDB 0x0062c5a0
+// pdb: TrapEntry::Run | TESTrapListener.obj | retail, upstream name already matches, high
+// pdb locals: pentry
 void EventCollection_62c5a0::TrapEntry_Run()
 {
     EventNode_62c5a0* node = FUN_00825c00();

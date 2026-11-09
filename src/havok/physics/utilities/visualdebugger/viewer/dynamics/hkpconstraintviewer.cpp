@@ -17,6 +17,8 @@ struct FUN_00d69a80
 
 // Destructs the four hkDisplayGeometry members embedded at offsets 0x280, 0x1f0, 0x160 and 0xd0 of this object.
 // @fnv 0x00d69a80
+// pdb: hkpConstraintDrawer::hkpConstraintDrawer | hkpConstraintDrawer.obj | retail, call graph, low
+// pdb note: debug build links it to hkpPrismaticDrawer::hkpPrismaticDrawer
 FUN_00d69a80::~FUN_00d69a80()
 {
     ((hkDisplayGeometry*)((char*)this + 0x280))->hkDisplayGeometry::~hkDisplayGeometry();
@@ -44,7 +46,7 @@ struct D698B0ListenerArray
 class D698B0Island
 {
   public:
-    void addListener(D698B0Listener* listener);
+    void addListener(D698B0Listener* worldListener);
 };
 
 struct D698B0World
@@ -83,22 +85,25 @@ class D698B0BaseC
 class D698B0Base : public D698B0BaseA, public D698B0BaseB, public D698B0BaseC
 {
   public:
-    D698B0Base(void* info);
+    D698B0Base(void* contexts);
 
     D698B0World* m_pOwningWorld;
 };
 
-class FUN_00d698b0 : public D698B0Base, public D698B0Listener
+// pdb: class hkpConstraintViewer, size 0x38, bases: hkpWorldViewerBase, hkpWorldPostSimulationListener, 1 members
+class hkpConstraintViewer : public D698B0Base, public D698B0Listener
 {
   public:
-    FUN_00d698b0(void* info);
+    hkpConstraintViewer(void* contexts);
 
-    D698B0ListenerArray m_entries;
+    D698B0ListenerArray m_constraints;
 };
 
 // Base constructor then, if a world is set, registers this listener with every island in that world.
 // @fnv 0x00d698b0
-FUN_00d698b0::FUN_00d698b0(void* info) : D698B0Base(info)
+// pdb: hkpConstraintViewer::hkpConstraintViewer | hkpConstraintViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+hkpConstraintViewer::hkpConstraintViewer(void* contexts) : D698B0Base(contexts)
 {
     if (m_pOwningWorld)
     {
@@ -110,11 +115,13 @@ FUN_00d698b0::FUN_00d698b0(void* info) : D698B0Base(info)
 
 extern hkProcessFactory* hkProcessFactory_registerProcess;
 extern void* DAT_0126901c;
-void hkpConstraintViewer_Create();
+void hkpConstraintViewer_create();
 // @fnv 0x00d69a00
-void RegisterConstraintsProcessFactory()
+// src: XBOX_RETAIL_PDB 0x00d69a00
+// pdb: hkpConstraintViewer::registerViewer | hkpConstraintViewer.obj | retail, call graph, high
+void hkpConstraintViewer_registerViewer()
 {
-    DAT_0126901c = hkProcessFactory_registerProcess->RegisterProcess("Constraints", (void*)&hkpConstraintViewer_Create);
+    DAT_0126901c = hkProcessFactory_registerProcess->RegisterProcess("Constraints", (void*)&hkpConstraintViewer_create);
 }
 
 struct S_00d69a20_Base
@@ -184,12 +191,13 @@ struct FUN_00d69a20 : S_00d69a20_Base
     FUN_00d69a20();
 };
 // @fnv 0x00d69a20
+// pdb: hkpBallSocketDrawer::hkpBallSocketDrawer | hkpConstraintViewer.obj | debug, object-file run extension, low
 FUN_00d69a20::FUN_00d69a20()
 {}
 
 struct SpawnedTarget
 {
-    void hkpWorld_addWorldPostSimulationListener(void* p);
+    void hkpWorld_addWorldPostSimulationListener(void* worldListener);
 };
 
 struct FUN_00d69200_cls
@@ -235,6 +243,8 @@ struct FUN_00d69230_cls
 
 // Calls apTarget->ClearValue with a pointer to this+8, or null if this-0x20 is null.
 // @fnv 0x00d69230
+// pdb: hkpConstraintViewer::operator new | hkpConstraintViewer.obj | debug, object-file run extension, low
+// pdb params: nbytes
 void FUN_00d69230_cls::InvokeTargetWithSelfOffset(Target* apTarget)
 {
     apTarget->ClearValue(((char*)this - 0x20) != 0 ? (char*)this + 8 : 0);
@@ -320,6 +330,7 @@ struct FUN_00d69920_cls : PrimaryBase, MidBase, TailBase, SubObject
 };
 
 // @fnv 0x00d69920
+// pdb: hkpConstraintViewer::~hkpConstraintViewer | hkpConstraintViewer.obj | retail, object-file gap fill, high
 FUN_00d69920_cls::~FUN_00d69920_cls() throw()
 {
     if (m_pSharedOwner != 0)
@@ -352,13 +363,15 @@ struct SpawnedObject
     unsigned short m_uSize;
     unsigned short unk06;
 
-    void* InitFrom(void* apSource);
+    void* InitFrom(void* contexts);
 };
 
 // Allocates a 0x38-byte object from the audio allocator, sets its size, initializes it from apSource, and returns a pointer offset by 8 on success.
 // @fnv 0x00d699c0
-// src: COMMUNITY 0x00d699c0
-void* __cdecl hkpConstraintViewer_Create(void* apSource)
+// src: XBOX_RETAIL_PDB 0x00d699c0
+// pdb: hkpConstraintViewer::create | hkpConstraintViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+void* __cdecl hkpConstraintViewer_create(void* contexts)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
     hkMemoryAllocator* pAllocator = reinterpret_cast<hkMemoryAllocator*>(pHolder->m_heap);
@@ -366,7 +379,7 @@ void* __cdecl hkpConstraintViewer_Create(void* apSource)
     SpawnedObject* pObject = (SpawnedObject*)reinterpret_cast<AllocFunction>(
         (*reinterpret_cast<void***>(pAllocator))[1])(pAllocator, 0x38);
     pObject->m_uSize = 0x38;
-    void* pResult = pObject->InitFrom(apSource);
+    void* pResult = pObject->InitFrom(contexts);
     if (pResult != 0)
     {
         return (char*)pResult + 8;
@@ -414,6 +427,8 @@ struct FUN_00d69a40
 
 // Constructs the bundle by default-constructing its base, three cone members and one plane member.
 // @fnv 0x00d69a40
+// pdb: hkpRagdollDrawer::hkpRagdollDrawer | hkpConstraintViewer.obj | retail, call graph, low
+// pdb note: debug build links it to hkpHingeDrawer::hkpHingeDrawer
 FUN_00d69a40::FUN_00d69a40() : m00(), m0d0(), m160(), m1f0(), m280()
 {}
 
@@ -540,6 +555,7 @@ struct FUN_00d69af0
 
 // Constructor with an empty body; the class has a vtable, m_usMemSizeAndFlags and m_sReferenceCount.
 // @fnv 0x00d69af0
+// pdb: hkpConstraintViewer::`scalar deleting destructor' | hkpConstraintViewer.obj | retail, vtable slot, high
 FUN_00d69af0::FUN_00d69af0()
 {}
 }  // namespace fnv_00d69af0
@@ -762,13 +778,15 @@ struct ViewerBase
 
 struct ConstraintViewer : public ViewerBase, public ConstraintListener
 {
-    void hkpConstraintViewer_draw(int constraint, Entity* e, int tag);
+    void hkpConstraintViewer_draw(int constraint, Entity* masterEntity, int displayHandler);
     virtual void hkpConstraintViewer_postSimulationCallback(World* world);
 };
 
 // Iterates active and inactive simulation islands, calling FUN_00d69260 for each entity's constraint masters, with timing entries.
 // @fnv 0x00d69730
 // src: HAVOK_LIB 0x00d69730
+// pdb: hkpConstraintViewer::postSimulationCallback | hkpConstraintViewer.obj | retail, string-set bridge, high
+// pdb params: world
 void ConstraintViewer::hkpConstraintViewer_postSimulationCallback(World* world)
 {
     int second_i;
@@ -829,7 +847,7 @@ void ConstraintViewer::hkpConstraintViewer_postSimulationCallback(World* world)
 }
 
 extern float DAT_011b6168;
-void EnterTlsGuard();
+void hkReferencedObject_lockAll();
 void hkReferencedObject_unlockAll();
 namespace ConstraintDrawDetail {
 
@@ -873,7 +891,7 @@ struct LocalCollidable : Collidable
     int unk30;
     int unk34;
     void FUN_00cf3ea0(void*, void*, Shape*, bool);
-    void hkpConstraintInstance_ProcessEntries_00cf40b0();
+    void hkpConstraintInstance_dtor();
 };
 
 struct __declspec(align(16)) Renderer
@@ -1153,18 +1171,21 @@ struct __declspec(align(16)) Complex : Renderer
 };
 struct Viewer : ConstraintViewer
 {
-    void hkpConstraintViewer_draw(int constraint, Entity* entity, int tag);
+    void hkpConstraintViewer_draw(int constraint, Entity* masterEntity, int displayHandler);
 };
 }
 // Records a Ttdraw trace, dispatches on the Collidable shape type to render via renderer or Complex, recurses for compound shapes, then records an Et trace.
 // @fnv 0x00d69260
 // src: HAVOK_LIB 0x00d69260
-void ConstraintDrawDetail::Viewer::hkpConstraintViewer_draw(int aiCollidable, Entity* entity, int tag)
+// pdb: hkpConstraintViewer::draw | hkpConstraintViewer.obj | retail, string-set bridge, high
+// pdb params: constraint, masterEntity, displayHandler
+// pdb locals: assertBuf, ostr, drawer, fakeConstraint
+void ConstraintDrawDetail::Viewer::hkpConstraintViewer_draw(int constraint, Entity* masterEntity, int displayHandler)
 {
     using namespace ConstraintDrawDetail;
-    Collidable* object = reinterpret_cast<Collidable*>(aiCollidable);
-    Transform* transform = reinterpret_cast<Transform*>(entity);
-    void* context = reinterpret_cast<void*>(tag);
+    Collidable* object = reinterpret_cast<Collidable*>(constraint);
+    Transform* transform = reinterpret_cast<Transform*>(masterEntity);
+    void* context = reinterpret_cast<void*>(displayHandler);
     Viewer* owner = this;
     volatile unsigned uiShapeType;
     Extended renderer;
@@ -1181,7 +1202,7 @@ void ConstraintDrawDetail::Viewer::hkpConstraintViewer_draw(int aiCollidable, En
         trace->m_end.m_storage = (char*)(entry + 1);
     }
     uiShapeType = object->shape->getType();
-    EnterTlsGuard();
+    hkReferencedObject_lockAll();
     void* position = &transform->m_f10;
     switch (uiShapeType)
     {
@@ -1243,8 +1264,8 @@ void ConstraintDrawDetail::Viewer::hkpConstraintViewer_draw(int aiCollidable, En
     }
     case 12: {
         child.FUN_00cf3ea0(object->first, object->second, object->shape->child, true);
-        owner->hkpConstraintViewer_draw(reinterpret_cast<int>(&child), entity, tag);
-        child.hkpConstraintInstance_ProcessEntries_00cf40b0();
+        owner->hkpConstraintViewer_draw(reinterpret_cast<int>(&child), masterEntity, displayHandler);
+        child.hkpConstraintInstance_dtor();
         break;
     }
     case 13: {
@@ -1252,8 +1273,8 @@ void ConstraintDrawDetail::Viewer::hkpConstraintViewer_draw(int aiCollidable, En
         void* second = object->second;
         void* first = object->first;
         child.FUN_00cf3ea0(first, second, pParentShape->hkpMalleableConstraintData_getWrappedConstraintData(), true);
-        owner->hkpConstraintViewer_draw(reinterpret_cast<int>(&child), entity, tag);
-        child.hkpConstraintInstance_ProcessEntries_00cf40b0();
+        owner->hkpConstraintViewer_draw(reinterpret_cast<int>(&child), masterEntity, displayHandler);
+        child.hkpConstraintInstance_dtor();
         break;
     }
     case 15: {

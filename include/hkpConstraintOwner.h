@@ -6,6 +6,7 @@ class hkpConstraintInstance;
 struct GenericConstraintAtomScheme;
 struct hkpConstraintInfo;
 
+// pdb: class hkpConstraintOwner, size 0x18 (here 0xc), bases: hkReferencedObject, 1 members
 class hkpConstraintOwner : public hkReferencedObject
 {
 public:

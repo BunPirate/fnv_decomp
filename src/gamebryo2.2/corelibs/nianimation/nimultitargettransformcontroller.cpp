@@ -49,20 +49,25 @@ inline bool TargetSelectiveUpdate(const NiAVObject* target)
 }
 
 // @fnv 0x00a2ffe0
-NiInterpolator* NiMultiTargetTransformController::GetInterpolatorAtIndex(unsigned short index)
+// pdb: NiMultiTargetTransformController::CreatePoseInterpolator | NiMultiTargetTransformController.obj | retail, object-file gap fill, high
+// pdb params: usIndex
+// pdb locals: kTransform, pkTarget, kRotate
+NiInterpolator* NiMultiTargetTransformController::GetInterpolatorAtIndex(unsigned short usIndex)
 {
-    NiAVObject* source = m_ppTargetObjects[index];
+    NiAVObject* source = m_ppTargetObjects[usIndex];
     NiQuaternion rotate;
     NiQuatTransform transform;
     rotate.FromRotationMatrix(source->m_kLocal.m_Rotate);
-    memcpy(&transform.x, &source->m_kLocal.m_Translate, sizeof(NiPoint3));
-    *reinterpret_cast<NiQuaternion*>(&transform.qx) = rotate;
-    transform.scale = source->m_kLocal.m_fScale;
+    memcpy(&transform.m_kTranslate, &source->m_kLocal.m_Translate, sizeof(NiPoint3));
+    *reinterpret_cast<NiQuaternion*>(&transform.m_kRotate) = rotate;
+    transform.m_fScale = source->m_kLocal.m_fScale;
     return (NiInterpolator*)::new (NiMemObject::operator new(sizeof(NiTransformInterpolator))) NiTransformInterpolator(transform);
 }
 
 // @fnv 0x00a2fd40
 // src: XBOX_PDB 0x00a2fd40
+// pdb: NiMultiTargetTransformController::GetInterpolatorID | NiMultiTargetTransformController.obj | debug, upstream name already matches, high
+// pdb params: usIndex
 char* __fastcall NiMultiTargetTransformController_GetInterpolatorID(NiMultiTargetTransformController* self, int, unsigned short usIndex)
 {
     return self->m_ppTargetObjects[usIndex]->m_kName.m_kHandle;
@@ -73,6 +78,7 @@ void __cdecl FUN_00aa1460(void* ptr, unsigned int size);
 void __cdecl NiMemObject_ReleaseStorage_00aa1490(void* ptr, unsigned int size);
 
 // @fnv 0x00a2ff70
+// pdb: NiBlendTransformInterpolator::`vector deleting destructor' | NiMultiTargetTransformController.obj | retail, object-file gap fill, high
 void* __fastcall FUN_00a2ff70(char* pThis, int, unsigned int flags)
 {
     if (flags & 2)
@@ -116,7 +122,11 @@ void __fastcall ResizeTargets(NiMultiTargetTransformController*, int, unsigned s
 void __fastcall CopyBlendMemberData(NiBlendTransformInterpolator*, int, NiBlendTransformInterpolator*, CloningProcess*);
 
 // @fnv 0x00a30070
-void __fastcall CloneTo(NiMultiTargetTransformController* self, int, NiMultiTargetTransformController* pkDest, CloningProcess* kCloning)
+// src: XBOX_RETAIL_PDB 0x00a30070
+// pdb: NiMultiTargetTransformController::CopyMembers | NiMultiTargetTransformController.obj | retail, object-file gap fill, high
+// pdb params: pkDest, kCloning
+// pdb locals: us
+void __fastcall NiMultiTargetTransformController_CopyMembers(NiMultiTargetTransformController* self, int, NiMultiTargetTransformController* pkDest, CloningProcess* kCloning)
 {
     self->NiInterpController::CopyMemberData(pkDest, *kCloning);
     reinterpret_cast<void (__thiscall*)(NiMultiTargetTransformController*, unsigned short)>(&ResizeTargets)(pkDest, self->m_usNumInterps);
@@ -133,6 +143,9 @@ class ShaderBufferRecord;
 // Calls the base ProcessClone, then clones each target transform interpolator and remaps its target object through the cloning process's pointer map.
 // @fnv 0x00a300d0
 // src: XBOX_PDB 0x00a300d0
+// pdb: NiMultiTargetTransformController::ProcessClone | NiMultiTargetTransformController.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, pkDest, us
 void __fastcall NiMultiTargetTransformController_ProcessClone(NiMultiTargetTransformController* self, int, CloningProcess* kCloning)
 {
     self->NiTimeController::ProcessClone(*kCloning);
@@ -185,6 +198,9 @@ char* __fastcall NiMultiTargetTransformController_CreateBlendInterpolator(NiMult
 
 // @fnv 0x00a2fa70
 // src: XBOX_PDB 0x00a2fa70
+// pdb: NiMultiTargetTransformController::GuaranteeTimeRange | NiMultiTargetTransformController.obj | retail, upstream name already matches, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: us
 void __fastcall NiMultiTargetTransformController_GuaranteeTimeRange(NiMultiTargetTransformController* self, int, float afValueA, float afValueB)
 {
     for (unsigned short us = 0; us < self->m_usNumInterps; us++)
@@ -200,6 +216,7 @@ int* __cdecl NiMultiTargetTransformController_GetRTTI()
 }
 
 // @fnv 0x00a30240
+// pdb: NiMultiTargetTransformController::`scalar deleting destructor' | NiMultiTargetTransformController.obj | retail, object-file run extension, low
 unsigned short __fastcall FindTargetIndex(NiMultiTargetTransformController* self, int, const NiFixedString* arName)
 {
     unsigned short us;
@@ -223,7 +240,7 @@ bool __fastcall IsTargetOfType(NiTimeController* self)
         {
             if (type == &g_targetRTTI)
                 return true;
-            type = type->m_pBaseRTTI;
+            type = type->m_pkBaseRTTI;
         }
     }
     return false;
@@ -232,11 +249,11 @@ bool __fastcall IsTargetOfType(NiTimeController* self)
 // The shared controller has no default-construction entry point. Keep its
 // original construction sequence here without duplicating its class layout.
 extern void* const g_multiTargetTransformControllerVtable[];
-void* __fastcall ConstructInterpController(void*) throw();
+void* __fastcall NiInterpController_ctor(void*) throw();
 inline NiMultiTargetTransformController* ConstructMultiTargetController(void* memory) throw()
 {
     NiMultiTargetTransformController* self = static_cast<NiMultiTargetTransformController*>(memory);
-    ConstructInterpController(self);
+    NiInterpController_ctor(self);
     *reinterpret_cast<void* const**>(self) = g_multiTargetTransformControllerVtable;
     self->m_pkBlendInterpolators = 0;
     self->m_ppTargetObjects = 0;
@@ -249,7 +266,7 @@ NiObject* __fastcall CloneMultiTargetController(NiMultiTargetTransformController
 {
     void* memory = BSFadeNode::operator new(sizeof(NiMultiTargetTransformController));
     NiMultiTargetTransformController* clone = memory ? ConstructMultiTargetController(memory) : 0;
-    reinterpret_cast<void (__thiscall*)(NiMultiTargetTransformController*, NiMultiTargetTransformController*, CloningProcess*)>(&CloneTo)(self, clone, process);
+    reinterpret_cast<void (__thiscall*)(NiMultiTargetTransformController*, NiMultiTargetTransformController*, CloningProcess*)>(&NiMultiTargetTransformController_CopyMembers)(self, clone, process);
     return clone;
 }
 
@@ -262,6 +279,8 @@ NiMultiTargetTransformController* __cdecl CreateCtl()
 
 // @fnv 0x00a30370
 // src: XBOX_PDB 0x00a30370
+// pdb: NiStreamLoadBinary<unsigned short> | BSFurnitureMarker.obj | debug, call graph, medium
+// pdb params: kStream, value
 void __cdecl NiStreamLoadBinary_unsigned_short(NiStream* stream, const void* data)
 {
     NiBinaryStream* binary = *reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(stream) + 0x24c);
@@ -272,6 +291,8 @@ void __cdecl NiStreamLoadBinary_unsigned_short(NiStream* stream, const void* dat
 
 // @fnv 0x00a303a0
 // src: XBOX_PDB 0x00a303a0
+// pdb: NiStreamSaveBinary<unsigned short> | BSFurnitureMarker.obj | debug, call graph, medium
+// pdb params: kStream, value
 void __cdecl NiStreamSaveBinary_unsigned_short(NiStream* stream, const void* data)
 {
     NiBinaryStream* binary = *reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(stream) + 0x250);
@@ -290,14 +311,16 @@ extern float DAT_01096b8c;
 
 // If active, iterates targets with selective update, blends each via Update, and applies non-sentinel translate, rotate and scale values.
 // @fnv 0x00a2fbe0
+// pdb: CombatGroup::UpdateTargets | CombatGroup.obj | retail, upstream name already matches, high
+// pdb locals: itargetCount, plastRemoved, flastRemovedLastDetectedTimeStamp, i, pcombatTarget, pclosestMember
 void __fastcall UpdateTargets(NiMultiTargetTransformController* self, int, NiUpdateData* UpdateData)
 {
     if (ControllerActive(self))
     {
         NiQuatTransform kTransform;
-        memcpy(&kTransform.x, &DAT_011a8400, sizeof(NiPoint3));
-        memcpy(&kTransform.qx, &DAT_011f3704, sizeof(NiQuaternion));
-        kTransform.scale = DAT_01096b8c;
+        memcpy(&kTransform.m_kTranslate, &DAT_011a8400, sizeof(NiPoint3));
+        memcpy(&kTransform.m_kRotate, &DAT_011f3704, sizeof(NiQuaternion));
+        kTransform.m_fScale = DAT_01096b8c;
         for (int us = 0; us < self->m_usNumInterps; us++)
         {
             if (self->m_ppTargetObjects[us] &&
@@ -306,12 +329,12 @@ void __fastcall UpdateTargets(NiMultiTargetTransformController* self, int, NiUpd
                 if (self->m_pkBlendInterpolators[us].UpdateTransform(
                         UpdateData->fTime, (NiAVObject*)self->m_ppTargetObjects[us], kTransform))
                 {
-                    if (kTransform.x != -3.4028234663852886e+38)
-                        memcpy(&self->m_ppTargetObjects[us]->m_kLocal.m_Translate, &kTransform.x, sizeof(NiPoint3));
+                    if (kTransform.m_kTranslate != -3.4028234663852886e+38)
+                        memcpy(&self->m_ppTargetObjects[us]->m_kLocal.m_Translate, &kTransform.m_kTranslate, sizeof(NiPoint3));
                     if (kTransform.qy != -3.4028234663852886e+38)
-                        reinterpret_cast<NiQuaternion*>(&kTransform.qx)->ToRotationMatrix(self->m_ppTargetObjects[us]->m_kLocal.m_Rotate);
-                    if (kTransform.scale != -3.4028234663852886e+38)
-                        self->m_ppTargetObjects[us]->m_kLocal.m_fScale = (float)fabs(kTransform.scale);
+                        reinterpret_cast<NiQuaternion*>(&kTransform.m_kRotate)->ToRotationMatrix(self->m_ppTargetObjects[us]->m_kLocal.m_Rotate);
+                    if (kTransform.m_fScale != -3.4028234663852886e+38)
+                        self->m_ppTargetObjects[us]->m_kLocal.m_fScale = (float)fabs(kTransform.m_fScale);
                 }
             }
         }
@@ -344,6 +367,8 @@ extern double DAT_010231b0;
 extern double DAT_010241b0;
 
 // @fnv 0x00a2fde0
+// pdb: NiMultiTargetTransformController::ResetTimeExtrema | NiMultiTargetTransformController.obj | retail, object-file run extension, high
+// pdb locals: us, fHi, fLo
 void __fastcall ResetIfFlagClear(NiTimeController*);
 
 void __fastcall UpdateTimeRange(NiMultiTargetTransformController* self)
@@ -405,6 +430,10 @@ template <class T> inline void WriteBinaryValue(NiStream& kStream, const T& valu
 // SaveBinary
 // Saves the base controller, the target count, then each target's link ID to the stream.
 // @fnv 0x00a30440
+// pdb: NiMultiTargetTransformController::SaveBinary | NiMultiTargetTransformController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTNewInterface<FurnitureMark>::Allocate
+// pdb params: kStream
+// pdb locals: us
 void __fastcall SaveMultiTargetBinary(NiMultiTargetTransformController* self, int, NiStream& kStream)
 {
     self->NiObject::SaveBinary(kStream);
@@ -432,6 +461,8 @@ extern int DAT_011f36bc;
 void __fastcall WriteManagerControlledFlag(NiMultiTargetTransformController*, int, FUN_00a304b0_arr*);
 
 // @fnv 0x00a304b0
+// pdb: NiMultiTargetTransformController::GetViewerStrings | NiMultiTargetTransformController.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall GetMultiTargetViewerStrings(NiMultiTargetTransformController* self, int, FUN_00a304b0_arr* pArr)
 {
     reinterpret_cast<void (__thiscall*)(NiMultiTargetTransformController*, FUN_00a304b0_arr*)>(&WriteManagerControlledFlag)(self, pArr);
@@ -455,6 +486,9 @@ void __fastcall GetMultiTargetViewerStrings(NiMultiTargetTransformController* se
 extern "C" int __cdecl strcmp(const char* pcA, const char* pcB);
 
 // @fnv 0x00a2fd60
+// pdb: NiMultiTargetTransformController::GetInterpolatorIndex | NiMultiTargetTransformController.obj | debug, object-file gap fill, medium
+// pdb params: pcID
+// pdb locals: us
 unsigned short __fastcall FindItemIndexByName(const NiMultiTargetTransformController* self, int, const char* name)
 {
     if (!name)
@@ -485,6 +519,10 @@ inline void ReadBinaryValue(NiStream& kStream, unsigned short& usValue)
 
 // Calls FUN_00a2f910, reads m_usNumInterps, passes it to FUN_00a2feb0, then assigns returned pointers to m_ppTargetObjects.
 // @fnv 0x00a303d0
+// pdb: NiMultiTargetTransformController::LoadBinary | NiMultiTargetTransformController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTObjectArray<FurnitureMark>::`scalar deleting destructor'
+// pdb params: kStream
+// pdb locals: us
 void __fastcall LoadMultiTargetBinary(NiMultiTargetTransformController* self, int, NiStream& kStream)
 {
     self->NiInterpController::LoadBinary(kStream);

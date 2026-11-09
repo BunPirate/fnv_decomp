@@ -3,6 +3,8 @@
 
 template <>
 // @fnv 0x00a642a0
+// pdb: NiControllerManager::AddSequence | NiControllerManager.obj | retail, call graph, medium
+// pdb params: pkSequence, kName, bStoreTargets
 void NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiShader*>::SetAt(
     const char* key, NiShader* value)
 {

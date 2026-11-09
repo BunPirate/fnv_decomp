@@ -6,6 +6,7 @@
 #include "../../include/TESModel.h"
 #include "../../include/TESSkill.h"
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
 public:
@@ -19,6 +20,7 @@ char* __cdecl strrchr_0040ab30(char* string, int character);
 #include <string.h>
 
 // @fnv 0x0048e340
+// pdb: TESTexture::InitializeDataComponent | TESTexture.obj | debug, object-file gap fill, medium
 void TESTexture::InitializeComponent()
 {
     if (FullNameComponent.String())
@@ -26,18 +28,23 @@ void TESTexture::InitializeComponent()
 }
 
 // @fnv 0x0048e6c0
-void TESTexture::ConvertTexturePath(const char* path, char* output)
+// src: XBOX_RETAIL_PDB 0x0048e6c0
+// pdb: TESTexture::GetAsSkinFile | TESTexture.obj | retail, string-set bridge, high
+// pdb params: apTextureName, apSkinTextureName
+// pdb locals: pextension, ilength
+void TESTexture::GetAsSkinFile(const char* apTextureName, char* apSkinTextureName)
 {
-    TaskQueueInterface::CopyStringToBuffer(output, 0x104, path);
-    char* extension = strrchr_0040ab30(output, '.');
+    TaskQueueInterface::CopyStringToBuffer(apSkinTextureName, 0x104, apTextureName);
+    char* extension = strrchr_0040ab30(apSkinTextureName, '.');
     if (extension)
     {
-        unsigned int prefixLength = extension - output;
+        unsigned int prefixLength = extension - apSkinTextureName;
         TaskQueueInterface::CopyStringToBuffer(extension, 0x104 - prefixLength, "_sk.dds");
     }
 }
 
 // @fnv 0x0048e270
+// pdb: TESTexture::TESTexture | TESTexture.obj | retail, upstream name already matches, high
 TESTexture::TESTexture() : BaseFormComponent(), FullNameComponent()
 {
     InitializeComponent();
@@ -45,46 +52,52 @@ TESTexture::TESTexture() : BaseFormComponent(), FullNameComponent()
 
 // Reads the chunk data into a stack buffer, strips a leading backslash, and sets the texture's full name (or clears it when the chunk is empty).
 // @fnv 0x0048e3d0
-void TESTexture::ReadTextureData(TESTexture* texture, TESFile* file)
+// pdb: TESTexture::LoadTextureChunk | TESTexture.obj | retail, call graph, high
+// pdb params: apTexture, apFile
+// pdb locals: pmessage, i
+void TESTexture::ReadTextureData(TESTexture* apTexture, TESFile* apFile)
 {
-    if (!file || !texture)
+    if (!apFile || !apTexture)
         return;
-    if (file->GetChunkSize())
+    if (apFile->GetChunkSize())
     {
-        char* buffer = static_cast<char*>(_alloca(file->GetChunkSize()));
-        file->GetChunkData(buffer, 0);
+        char* buffer = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+        apFile->GetChunkData(buffer, 0);
         if (strlen(buffer) && buffer[0] == '\\')
         {
             unsigned int index = 0;
             for (; index < strlen(buffer); ++index)
                 buffer[index] = buffer[index + 1];
         }
-        reinterpret_cast<TESFullName*>(texture)->SetFullName(static_cast<const char*>(buffer));
+        reinterpret_cast<TESFullName*>(apTexture)->SetFullName(static_cast<const char*>(buffer));
     }
     else
     {
-        reinterpret_cast<TESFullName*>(texture)->SetFullName(static_cast<const char*>(0));
+        reinterpret_cast<TESFullName*>(apTexture)->SetFullName(static_cast<const char*>(0));
     }
 }
 
 // Builds the normal-map path by replacing the extension of path with "_n.dds", stores it in result and returns the string.
 // @fnv 0x0048e5b0
-const char* TESTexture::NormalizeTextureFilePath(BSStringT<char>& result, const char* path)
+// src: XBOX_RETAIL_PDB 0x0048e5b0
+// pdb: TESTexture::GetAsNormalFile | TESTexture.obj | retail, string-set bridge, high
+// pdb params: aOutFilename
+const char* TESTexture::GetAsNormalFile(BSStringT<char>& aOutFilename, const char* apTextureName)
 {
     char* extension = 0;
     {
         char normalPath[260];
         char sourcePath[260];
-        if (!path)
+        if (!apTextureName)
             return 0;
-        TaskQueueInterface::CopyStringToBuffer(sourcePath, 260, path);
+        TaskQueueInterface::CopyStringToBuffer(sourcePath, 260, apTextureName);
         extension = strrchr_0040ab30(sourcePath, '.');
         if (!extension)
             return 0;
         *extension = 0;
         sprintf_s(normalPath, 260, "%s_n.dds", sourcePath);
-        result.Set(normalPath, 0);
-        return result.String();
+        aOutFilename.Set(normalPath, 0);
+        return aOutFilename.String();
     }
 }
 
@@ -100,6 +113,7 @@ struct FUN_0048e2e0
     ~FUN_0048e2e0();
 };
 // @fnv 0x0048e2e0
+// pdb: TESTexture::~TESTexture | TESTexture.obj | debug, call graph, medium
 FUN_0048e2e0::~FUN_0048e2e0()
 {
     ((TFH*)this)->InitializeComponent();
@@ -114,13 +128,16 @@ bool __cdecl IsChunkTypeIcon(int aChunk)
 }
 
 // @fnv 0x0048e660
-void __cdecl AppendNormalMapSuffix(const char* source, char* dest)
+// src: XBOX_RETAIL_PDB 0x0048e660
+// pdb: TESTexture::GetAsNormalFile | TESTexture.obj | retail, string-set bridge, high
+// pdb params: aOutFilename
+void __cdecl TESTexture_GetAsNormalFile(const char* apTextureName, char* apNormalTextureName)
 {
-    TaskQueueInterface::CopyStringToBuffer(dest, 0x104, source);
-    char* dot = strrchr_0040ab30(dest, '.');
+    TaskQueueInterface::CopyStringToBuffer(apNormalTextureName, 0x104, apTextureName);
+    char* dot = strrchr_0040ab30(apNormalTextureName, '.');
     if (dot != 0)
     {
-        int offset = dot - dest;
+        int offset = dot - apNormalTextureName;
         TaskQueueInterface::CopyStringToBuffer(dot, 0x104 - offset, "_n.dds");
     }
 }
@@ -149,9 +166,11 @@ struct FUN_0048e580_shell : FNStub
 
 // @fnv 0x0048e580
 // src: COMMUNITY 0x0048e580
+// pdb: TESTexture::GetAsNormalFile | TESTexture.obj | debug, object-file gap fill, medium
+// pdb params: aOutFilename
 const char* __thiscall FUN_0048e580_shell::TESTexture_GetNormalMap(BSStringT<char>& result)
 {
-    return TESTexture::NormalizeTextureFilePath(result, this->GetFullName());
+    return TESTexture::GetAsNormalFile(result, this->GetFullName());
 }
 
 struct TESTexture_shell
@@ -186,6 +205,7 @@ void FUN_005fdc30_shell::TESHair_InitializeData()
 
 // @fnv 0x00617e80
 // src: XBOX_PDB 0x00617e80
+// pdb: TESSkill::InitializeData | TESSkill.obj | debug, object-file gap fill, medium
 void TESSkill::InitializeData_00617e80()
 {
     ResetData();
@@ -214,6 +234,7 @@ struct FUN_00402c40_shell : public TESTexture
 };
 
 // @fnv 0x00402c40
+// pdb: TESIcon::~TESIcon | AlchemyItem.obj | debug, call graph, medium
 void FUN_00402c40_shell::DestroyTexture()
 {
     TESTexture::~TESTexture();
@@ -243,6 +264,8 @@ struct FUN_0048e370_shell
 // If the model length is non-zero, calls FUN_004856f0 with the texture ID, the full name, and the model length plus one.
 // @fnv 0x0048e370
 // src: XBOX_PDB 0x0048e370
+// pdb: TESTexture::Save | TESTexture.obj | debug, upstream name already matches, high
+// pdb params: aeTextureID
 void FUN_0048e370_shell::TESTexture_Save(unsigned int aeTextureID)
 {
     if (((TESModel*)this)->GetModelLength())
@@ -262,6 +285,9 @@ struct FUN_0048e4a0_shell
 };
 // Casts apCopyFC to TESTexture; if valid, stores its full name into the ::BSStringT<char> at offset 4 of this.
 // @fnv 0x0048e4a0
+// pdb: TESTexture::CopyComponent | TESTexture.obj | retail, object-file run extension, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
 void FUN_0048e4a0_shell::CopyTextureName(BaseFormComponent* apCopyFC)
 {
     TESTexture* pcopy = dynamic_cast<TESTexture*>(apCopyFC);
@@ -283,6 +309,9 @@ struct FUN_0048e4f0_shell : TESModel
 };
 // @fnv 0x0048e4f0
 // src: COMMUNITY 0x0048e4f0
+// pdb: TESTexture::CompareComponent | TESTexture.obj | retail, upstream name already matches, high
+// pdb params: apCompareFC
+// pdb locals: pcompare
 bool FUN_0048e4f0_shell::TESTexture_CompareComponent(BaseFormComponent* apCompareFC)
 {
     TESTexture* pcompare = dynamic_cast<TESTexture*>(apCompareFC);
@@ -321,18 +350,21 @@ struct FUN_00480ef0_obj
 
 // @fnv 0x00480ef0
 // src: XBOX_PDB 0x00480ef0
-int __cdecl TESBipedModelForm_GetIcon(FUN_00480ef0_obj* pOwner, int param)
+// pdb: TESBipedModelForm::GetIcon | TESBipedModelForm.obj | retail, upstream name already matches, high
+// pdb params: apObj, apRef
+// pdb locals: powner, pbipedModel, esex
+int __cdecl TESBipedModelForm_GetIcon(FUN_00480ef0_obj* apObj, int apRef)
 {
-    FUN_00480ef0_obj* found = (FUN_00480ef0_obj*)FUN_00ec43fb(pOwner, 0, DAT_01183028, DAT_01183978, 0);
+    FUN_00480ef0_obj* found = (FUN_00480ef0_obj*)FUN_00ec43fb(apObj, 0, DAT_01183028, DAT_01183978, 0);
     if (found == 0)
     {
         return 0;
     }
-    if (param == 0)
+    if (apRef == 0)
     {
         return ((FUN_00480ef0_sub*)((char*)found + 0x8c))->TESModel_GetModel();
     }
-    FUN_00480ef0_obj* ref = ((FUN_00480ef0_obj*)param)->TESObjectREFR_GetOwner();
+    FUN_00480ef0_obj* ref = ((FUN_00480ef0_obj*)apRef)->TESObjectREFR_GetOwner();
     int valueX = 0;
     if (ref != 0 && ref->FUN_00401170() == 0x2a)
     {

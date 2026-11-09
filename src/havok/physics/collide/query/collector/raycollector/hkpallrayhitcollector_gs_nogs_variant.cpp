@@ -15,7 +15,7 @@ class FUN_00c855f0_cls
     void* m_10;
     int m_14;
 
-    void hknpAllHitsCollector_sortHits();
+    void hkpAllRayHitCollector_sortHits();
 };
 
 #include <xmmintrin.h>
@@ -72,6 +72,9 @@ template <typename T> static __forceinline void swap(T& a, T& b)
 
 // @fnv 0x00c852c0
 // src: COMMUNITY 0x00c852c0
+// pdb: hkAlgorithm::quickSortRecursive<hkpWorldRayCastOutput,hkAlgorithm::less<hkpWorldRayCastOutput> > | hkpAllRayHitCollector.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str, zal
 void __cdecl hkAlgorithm_quickSortRecursive_hknpCollisionResult_hkAlgorithm_less_hknpCollisionResult(Item* arr, int low, int high, int a4)
 {
     int i = low;

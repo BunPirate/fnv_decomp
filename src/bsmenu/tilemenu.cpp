@@ -43,9 +43,11 @@ int TileMenu::GetType()
 }
 
 // @fnv 0x00a1ef30
-void TileMenu::Init(Tile* parent, const char* name, Tile* replacedChild)
+// pdb: TileMenu::Init | TileMenu.obj | retail, upstream name already matches, high
+// pdb params: apParent, apName, apReplacedTile
+void TileMenu::Init(Tile* apParent, const char* apName, Tile* apReplacedTile)
 {
-    Tile::Init(parent, name, replacedChild);
+    Tile::Init(apParent, apName, apReplacedTile);
     Set(0xFA1, 0.0f, true);
     Set(0xFA2, 0.0f, true);
     Set(0xFA8, 1.0f, true);
@@ -57,6 +59,8 @@ void TileMenu::Init(Tile* parent, const char* name, Tile* replacedChild)
 }
 
 // @fnv 0x00a1f140
+// pdb: TileMenu::MakeNode | TileMenu.obj | debug, vtable slot, medium
+// pdb locals: pnode
 NiNode* TileMenu::CalculateNode()
 {
     NiNode* node = TileRect::CalculateNode();
@@ -69,6 +73,7 @@ __forceinline TileRect::~TileRect()
         Release();
 }
 // @fnv 0x00a1eff0
+// pdb: TileMenu::~TileMenu | TileMenu.obj | retail, upstream name already matches, high
 TileMenu::~TileMenu()
 {
     if (pMenu)
@@ -83,13 +88,15 @@ TileMenu::~TileMenu()
 }
 
 // @fnv 0x00a1f160
-Tile* TileMenu::SetTraitValue(int valueID, float floatValue, const char* strValue)
+// pdb: TileMenu::PostParse | TileMenu.obj | retail, string-set bridge, high
+// pdb params: aiTrait, afValue, axString
+Tile* TileMenu::SetTraitValue(int aiTrait, float afValue, const char* axString)
 {
-    if (valueID == 0xFA4)
+    if (aiTrait == 0xFA4)
     {
         if (!pMenu)
         {
-            Menu* menu = GetMenuById((int)floatValue);
+            Menu* menu = GetMenuById((int)afValue);
             pMenu = menu;
         }
         if (!pMenu)
@@ -99,23 +106,23 @@ Tile* TileMenu::SetTraitValue(int valueID, float floatValue, const char* strValu
         else
         {
             pMenu->SetTileMenu(this, false);
-            pMenu->m_iMenuId = pMenu->GetClass();
+            pMenu->iClass = pMenu->GetClass();
             if (GetTraitFloat(0xFA7) == 102.0 || GetTraitFloat(0xFA7) == 103.0)
             {
                 pMenu->SetModal(pMenu->GetClass());
                 Set(0xFAD, Menu::GetMenuScale(), true);
             }
-            Menu::SetMenuRootTile((int)floatValue, this);
+            Menu::SetMenuRootTile((int)afValue, this);
             return this;
         }
     }
-    else if (pMenu && valueID >= 10000)
+    else if (pMenu && aiTrait >= 10000)
     {
-        pMenu->OnUpdateUserTrait(valueID);
+        pMenu->OnUpdateUserTrait(aiTrait);
     }
-    if (pMenu && valueID == 0xFA3)
+    if (pMenu && aiTrait == 0xFA3)
     {
-        Menu::SetVisible(pMenu->GetClass(), floatValue != 0.0);
+        Menu::SetVisible(pMenu->GetClass(), afValue != 0.0);
     }
     return 0;
 }
@@ -123,6 +130,7 @@ Tile* TileMenu::SetTraitValue(int valueID, float floatValue, const char* strValu
 // Returns early if the menu's ID is 0x3ec or 0x3ef, otherwise calls FUN_00a0b020.
 // @fnv 0x00a1f310
 // src: XBOX_PDB 0x00a1f310
+// pdb: TileMenu::ForceTextureRelease | TileMenu.obj | retail, upstream name already matches, high
 void __fastcall TileMenu_ForceTextureRelease(TileMenu* tile)
 {
     if (tile->pMenu && (tile->pMenu->GetClass() == 0x3ec || tile->pMenu->GetClass() == 0x3ef))

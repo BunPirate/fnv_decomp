@@ -100,7 +100,7 @@ struct ShaderPass_4e30
     int unk64;
     ParamColor_4e30 kColor;
 
-    bool ImageSpaceEffectCinematic_UpdateParams(int arg);
+    bool ImageSpaceEffectCinematic_UpdateParams(int pParam);
 };
 
 
@@ -161,6 +161,9 @@ struct ImageSpaceEffectFourTexturePass
 
 // @fnv 0x00ba4270
 // src: COMMUNITY 0x00ba4270
+// pdb: ImageSpaceEffectBlur::UpdateParams | ImageSpaceEffectBlur.obj | retail, upstream name already matches, high
+// pdb params: pParam
+// pdb locals: ioffset, pparam, iindex, interp, fwidth, iindex2, fheight, i
 bool ImageSpaceEffectFourTexturePass::ImageSpaceEffectBlur_UpdateParams(int a1)
 {
     float m_fGlyphWidthInPixels = (float)unk28.GetAt(2)->GetTexture()->GetWidth();

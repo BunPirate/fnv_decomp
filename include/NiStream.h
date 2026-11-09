@@ -20,6 +20,7 @@ template <class T> class NiPointer;
 
 // Gamebryo 2.2 NiStream: RTTI .?AVNiStream@@ has no base classes, vftable 0x0109bdcc (24 slots); 0x5C4 bytes
 // (BSStream, the only derived class, adds two dwords and ends at 0x5CC). Built by 0x00a66150, destroyed by 0x00a66350.
+// pdb: class NiStream, size 0x5c4, 35 members
 struct NiStream
 {
 public:
@@ -72,7 +73,7 @@ public:
     };
     class BackgroundLoadProcedure;
 
-    BSStreamHeader m_kHeader;                                            // +0x004
+    BSStreamHeader m_BSStreamHeader;                                            // +0x004
     NiTPrimitiveArrayStorage<NiObjectGroup*> m_kGroups;                  // +0x0C8
     unsigned int m_uiNifFileVersion;                                     // +0x0D8
     unsigned int m_uiNifFileUserDefinedVersion;                          // +0x0DC
@@ -97,33 +98,33 @@ public:
     ThreadStatus m_eBackgroundLoadStatus;                                // +0x28C
     bool m_bBackgroundLoadExitStatus;                                    // +0x290
     unsigned int m_uiLoad;                                               // +0x294  object being loaded (ChangeObject)
-    unsigned int m_uiBackgroundLoadState;                                // +0x298
-    unsigned int m_uiBackgroundLoadThreadInfo;                           // +0x29C
+    unsigned int m_uiLink;                                // +0x298
+    unsigned int m_uiPostLink;                           // +0x29C
     NiThread* m_pkThread;                                                // +0x2A0
     BackgroundLoadProcedure* m_pkBGLoadProc;                             // +0x2A4
     int m_ePriority;                                                     // +0x2A8  NiThread::Priority
     ProcessorAffinity m_kAffinity;                                       // +0x2AC
-    char m_acLoadPath[260];                                              // +0x2B4
-    unsigned int m_uiNativeThreadId;                                     // +0x3B8
+    char m_acLastLoadedRTTI[260];                                              // +0x2B4
+    unsigned int m_uiLastError;                                     // +0x3B8
     char m_acLastErrorMessage[260];                                      // +0x3BC
-    char m_acStreamPath[260];                                            // +0x4C0  SetStreamPath / GetLastLoadedFilePath
+    char m_acFilePath[260];                                            // +0x4C0  SetStreamPath / GetLastLoadedFilePath
 
     NiStream();
     virtual ~NiStream();
 
     // VC9 emits each virtual overload group in reverse declaration order.
-    virtual bool Load(const char* name);                                     // 3  0x00a63be0
-    virtual bool Load(char* buffer, int size);                               // 2  0x00a632f0
-    virtual bool Load(NiBinaryStream* stream);                               // 1  0x00a63330
+    virtual bool Load(const char* pcFileName);                                     // 3  0x00a63be0
+    virtual bool Load(char* pcBuffer, int iBufferSize);                               // 2  0x00a632f0
+    virtual bool Load(NiBinaryStream* pkIstr);                               // 1  0x00a63330
     virtual bool Save(const char* name);                                     // 6  0x00a640b0
-    virtual bool Save(char*& buffer, int& size);                             // 5  0x00a635e0
-    virtual bool Save(NiBinaryStream* pStream);                               // 4  0x00a63380
+    virtual bool Save(char*& pcBuffer, int& iBufferSize);                             // 5  0x00a635e0
+    virtual bool Save(NiBinaryStream* pkOstr);                               // 4  0x00a63380
     virtual void vf07();                                                     // 7  0x00a29680 (empty)
     virtual bool RegisterFixedString(const NiFixedString& kString);           // 8  0x00a66480
-    virtual bool RegisterSaveObject(NiObject* pObject);                       // 9  0x00a663e0
-    virtual void ChangeObject(NiObject* pObject);                             // 10 0x00a64550
+    virtual bool RegisterSaveObject(NiObject* pkObject);                       // 9  0x00a663e0
+    virtual void ChangeObject(NiObject* pkNewObject);                             // 10 0x00a64550
     virtual unsigned int GetLinkIDFromObject(const NiObject* pObject) const;  // 11 0x00a63480
-    virtual void SaveLinkID(const NiObject* pObject);                         // 12 0x0043d050
+    virtual void SaveLinkID(const NiObject* pkObject);                         // 12 0x0043d050
   public:  // stream phases (slots 13-23): header
     virtual bool LoadHeader();                                               // 13 0x00a65400
     virtual void SaveHeader();                                               // 14 0x00a64940
@@ -137,11 +138,11 @@ public:
   public:  // per-object load and the size table
     virtual bool LoadObject();                                               // 20 0x00a664e0
     virtual unsigned int PreSaveObjectSizeTable();                           // 21 0x00a63df0
-    virtual bool SaveObjectSizeTable(unsigned int uStartOffset);              // 22 0x00a63e60
+    virtual bool SaveObjectSizeTable(unsigned int uiStartOffset);              // 22 0x00a63e60
     virtual bool LoadObjectSizeTable();                                      // 23 0x00a64740
 
     bool LoadRTTIAndObjects();
-    void LoadRTTIString(unsigned int param);
+    void LoadRTTIString(unsigned int pcString);
     bool FUN_00a640b0(const char* name);
     void RegisterStreamable(void* object);
     void Register(void* object);
@@ -150,38 +151,38 @@ public:
     void FUN_0096ae90(unsigned int index, const unsigned int* value);
     NiObject* FUN_00a63430();
     void NiTexture_SetTexture(NiSourceTexture* texture);
-    void SaveCString(const char* name);
+    void SaveCString(const char* pcString);
     void Read(void* data, unsigned int size, unsigned int count);
     void ReadStreamString(char*& string);
-    void WriteStreamString(const char* string);
+    void WriteStreamString(const char* pcString);
     void AppendValue(const unsigned int& value);
-    int GetRefAt21C();
-    NiAVObject* GetStringAt(unsigned int index);
+    int NiStream_GetObjectCount();
+    NiAVObject* NiStream_GetObjectAt(unsigned int i);
     void ResetStreamState();
     int FindIndex(int* pVal);
-    void LoadGroups();
+    void LoadObjectGroups();
     NiObject* GetLoadedObject();
     NiObject* GetLoadedObject(unsigned int linkID);
     bool Load(const char* name, BSFile* file);
-    bool BSStream_Load(const char* name, BSFile* file);
-    bool BSStream_Load(const char* name, bool flag);
-    bool Save(NiFile* file);
+    bool BSStream_Load(const char* apFileName, BSFile* apFile);
+    bool BSStream_Load(const char* apFileName, bool apFile);
+    bool Save(NiFile* pkOstr);
     NiObject* DeserializeObject();
     unsigned int GetLinkID();
     void SerializeString(const char* string);
-    void ReadFixedString(NiFixedString& string);
-    void ReadStringTableEntry(NiFixedString& string);
+    void ReadFixedString(NiFixedString& kString);
+    void ReadStringTableEntry(NiFixedString& kString);
     unsigned int ReadUnsignedInteger();
-    void ReadUnsignedInteger(unsigned int value);
+    void ReadUnsignedInteger(unsigned int uiLinks);
     void ReadCString(char*& string);
-    void SetLinkIDCount(unsigned int count);
+    void SetLinkIDCount(unsigned int uiLinks);
     bool SetTexture(NiTexture* texture);
     void SetStreamPath(const char* path);
-    void GetTexture(const char* name, NiPointer<NiTexture>& texture);
+    void GetTexture(const char* pcURL, NiPointer<NiTexture>& arTexture);
     NiObjectGroup* GetObjectGroup(unsigned int groupID);
     void ClearTopLevelObjects();
-    void InsertObject(NiObject* object);
-    bool GetLastLoadedFilePath(char* buffer, unsigned int size);
+    void InsertObject(NiObject* pkObject);
+    bool GetNextSearchPath(char* pcPath, unsigned int uiStringLen);
     void ReadLinkIDStub();
     void ReadLinkID();
     unsigned int GetFileVersion() const;
@@ -195,7 +196,7 @@ public:
     template <class T> void ReadValue(T& value);
     template <class T> void BinaryRead(T& value) throw();
 
-    static int __cdecl RegisterObjectLoader(const char* name, NiObject*(__cdecl* loader)());
-    static void __cdecl UnregisterObjectLoader(const char* name);
+    static int __cdecl RegisterObjectLoader(const char* pcName, NiObject*(__cdecl* pfnFunc)());
+    static void __cdecl UnregisterObjectLoader(const char* pcClassName);
     static void RegisterPostProcess(void(__cdecl* function)(NiStream&, NiObject*));
 };

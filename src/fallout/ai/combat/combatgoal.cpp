@@ -23,44 +23,47 @@ int Warning(const char* format, ...);
 
 // Creates and returns a new CombatGoal subclass instance matching eType, or warns and returns 0 for an unknown type.
 // @fnv 0x00984490
-CombatGoal* CombatGoal::CreateGoal(CombatGoal::COMBAT_GOAL eType)
+// src: XBOX_DEBUG_PDB 0x00984490
+// pdb: CombatGoal::CreateCombatGoal | CombatGoal.obj | debug, unique string literal, high
+// pdb params: aeCombatGoal
+CombatGoal* CombatGoal::CreateCombatGoal(CombatGoal::COMBAT_GOAL aeCombatGoal)
 {
-    switch (eType)
+    switch (aeCombatGoal)
     {
     case COMBAT_GOAL_KILL_TARGET:
-        return new CombatGoalKillTarget(eType);
+        return new CombatGoalKillTarget(aeCombatGoal);
     case COMBAT_GOAL_FIND_TARGET:
-        return new CombatGoalFindTarget(eType);
+        return new CombatGoalFindTarget(aeCombatGoal);
     case COMBAT_GOAL_AVOID_THREATS:
-        return new CombatGoalAvoidThreats(eType);
+        return new CombatGoalAvoidThreats(aeCombatGoal);
     case COMBAT_GOAL_FLEE:
-        return new CombatGoalFlee(eType);
+        return new CombatGoalFlee(aeCombatGoal);
     case COMBAT_GOAL_ACTIVATE_COMBAT_ITEM:
-        return new CombatGoalActivateCombatItem(eType);
+        return new CombatGoalActivateCombatItem(aeCombatGoal);
     case COMBAT_GOAL_USE_COMBAT_ITEM:
-        return new CombatGoalUseCombatItem(eType);
+        return new CombatGoalUseCombatItem(aeCombatGoal);
     case COMBAT_GOAL_FLANK:
-        return new CombatGoalFlank(eType);
+        return new CombatGoalFlank(aeCombatGoal);
     case COMBAT_GOAL_FALLBACK:
-        return new CombatGoalFallBack(eType);
+        return new CombatGoalFallBack(aeCombatGoal);
     case COMBAT_GOAL_AMBUSH:
-        return new CombatGoalAmbush(eType);
+        return new CombatGoalAmbush(aeCombatGoal);
     case COMBAT_GOAL_REACH_DESTINATION:
-        return new CombatGoalReachDestination(eType);
+        return new CombatGoalReachDestination(aeCombatGoal);
     case COMBAT_GOAL_ADVANCE:
-        return new CombatGoalAdvance(eType);
+        return new CombatGoalAdvance(aeCombatGoal);
     case COMBAT_GOAL_GUARD:
-        return new CombatGoalGuard(eType);
+        return new CombatGoalGuard(aeCombatGoal);
     case COMBAT_GOAL_CLUSTER:
-        return new CombatGoalCluster(eType);
+        return new CombatGoalCluster(aeCombatGoal);
     case COMBAT_GOAL_HIDE_FROM_TARGET:
-        return new CombatGoalHideFromTarget(eType);
+        return new CombatGoalHideFromTarget(aeCombatGoal);
     case COMBAT_GOAL_FLUSH_TARGET:
-        return new CombatGoalFlushTarget(eType);
+        return new CombatGoalFlushTarget(aeCombatGoal);
     case COMBAT_GOAL_STAY_IN_COMBAT_AREA:
-        return new CombatGoalStayInCombatArea(eType);
+        return new CombatGoalStayInCombatArea(aeCombatGoal);
     default:
-        Warning("COMBAT: Could not create combat goal of type %i", eType);
+        Warning("COMBAT: Could not create combat goal of type %i", aeCombatGoal);
         return 0;
     }
 }
@@ -80,6 +83,8 @@ struct FUN_00984b20 : public FUN_00984ba0
 };
 // Constructs the base with a, then calls FUN_0097ade0(3, 0) and FUN_00984390(0, 1).
 // @fnv 0x00984b20
+// pdb: CombatGoalKillTarget::CombatGoalKillTarget | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00984b20::FUN_00984b20(int aiValue) : FUN_00984ba0(aiValue)
 {
     FUN_0097ade0(3, 0);
@@ -99,6 +104,8 @@ struct FUN_00984e60 : CGBase
     FUN_00984e60(int t);
 };
 // @fnv 0x00984e60
+// pdb: CombatGoalUseCombatItem::CombatGoalUseCombatItem | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00984e60::FUN_00984e60(int aiValue) : CGBase(aiValue)
 {
     FUN_0097ade0(0x16, 0xffff0017);
@@ -120,6 +127,8 @@ struct FUN_00984ee0 : CGBase
     FUN_00984ee0(int t);
 };
 // @fnv 0x00984ee0
+// pdb: CombatGoalFlank::CombatGoalFlank | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00984ee0::FUN_00984ee0(int t) : CGBase(t)
 {
     FUN_0097ade0(0x13, 1);
@@ -143,6 +152,8 @@ struct FUN_00984f80 : CGBase
     FUN_00984f80(int t);
 };
 // @fnv 0x00984f80
+// pdb: CombatGoalFallBack::CombatGoalFallBack | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00984f80::FUN_00984f80(int t) : CGBase(t)
 {
     FUN_0097ade0(0x13, 2);
@@ -167,6 +178,8 @@ struct FUN_00985080 : public FUN_00984ba0
 };
 // Constructs the base with a, then calls FUN_0097ade0(2, 7) and FUN_00984390(1, 7).
 // @fnv 0x00985080
+// pdb: CombatGoalReachDestination::CombatGoalReachDestination | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00985080::FUN_00985080(int aiValue) : FUN_00984ba0(aiValue)
 {
     FUN_0097ade0(2, 7);
@@ -190,6 +203,8 @@ struct FUN_00985180 : public FUN_00984ba0
 };
 // Constructs the object via FUN_00984ba0(a), then calls FUN_0097ade0(2, 8) and FUN_00984390(1, 8).
 // @fnv 0x00985180
+// pdb: CombatGoalGuard::CombatGoalGuard | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00985180::FUN_00985180(int a) : FUN_00984ba0(a)
 {
     FUN_0097ade0(2, 8);
@@ -212,6 +227,8 @@ struct FUN_00985200 : CGBase
 };
 // Constructs the base with t, then calls FUN_0097ade0(2, 9) and FUN_00984390(1, 9).
 // @fnv 0x00985200
+// pdb: CombatGoalCluster::CombatGoalCluster | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00985200::FUN_00985200(int aiValue) : CGBase(aiValue)
 {
     FUN_0097ade0(2, 9);
@@ -234,6 +251,8 @@ struct FUN_00985280 : CGBase
 };
 // Constructs the object via CGBase(t), then calls FUN_0097ade0(3, 0) and FUN_00984390(0x11, 0x3c).
 // @fnv 0x00985280
+// pdb: CombatGoalHideFromTarget::CombatGoalHideFromTarget | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00985280::FUN_00985280(int aiValue) : CGBase(aiValue)
 {
     FUN_0097ade0(3, 0);
@@ -256,6 +275,8 @@ struct FUN_00985390 : CGBase
 };
 // Constructs the object via CGBase(t), then calls FUN_0097ade0(2, 0x10) and FUN_00984390(1, 0x10).
 // @fnv 0x00985390
+// pdb: CombatGoalStayInCombatArea::CombatGoalStayInCombatArea | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00985390::FUN_00985390(int t) : CGBase(t)
 {
     FUN_0097ade0(2, 0x10);
@@ -278,6 +299,8 @@ struct FUN_00985000 : CGBase
     FUN_00985000(int t);
 };
 // @fnv 0x00985000
+// pdb: CombatGoalAmbush::CombatGoalAmbush | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00985000::FUN_00985000(int t) : CGBase(t)
 {
     FUN_0097ade0(0x13, 3);
@@ -303,6 +326,8 @@ class FUN_00985300 : public CGBase
 };
 // Constructs the object with CGBase(aeType), then calls FUN_0097ade0(3,0), FUN_0097ade0(9,0) and FUN_00984390(9,1).
 // @fnv 0x00985300
+// pdb: CombatGoalFlushTarget::CombatGoalFlushTarget | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00985300::FUN_00985300(int aeType) : CGBase(aeType)
 {
     FUN_0097ade0(3, 0);
@@ -328,6 +353,8 @@ class FUN_00984c20 : public CGBase
     FUN_00984c20(int aeType);
 };
 // @fnv 0x00984c20
+// pdb: CombatGoalFindTarget::CombatGoalFindTarget | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00984c20::FUN_00984c20(int aeType) : CGBase(aeType)
 {
     m_ppVirtualMethodTable = (void**)&DAT_0108d488;
@@ -355,6 +382,8 @@ class FUN_00984cb0 : public CGBase
     FUN_00984cb0(int aeType);
 };
 // @fnv 0x00984cb0
+// pdb: CombatGoalAvoidThreats::CombatGoalAvoidThreats | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00984cb0::FUN_00984cb0(int aeType) : CGBase(aeType)
 {
     m_ppVirtualMethodTable = (void**)&DAT_0108d494;
@@ -382,6 +411,8 @@ class FUN_00984d40 : public CGBase
     FUN_00984d40(int aeType);
 };
 // @fnv 0x00984d40
+// pdb: CombatGoalFlee::CombatGoalFlee | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00984d40::FUN_00984d40(int aeType) : CGBase(aeType)
 {
     m_ppVirtualMethodTable = (void**)&DAT_0108d4a0;
@@ -416,6 +447,8 @@ class FUN_00985100 : public CGBase
     FUN_00985100(int aeType);
 };
 // @fnv 0x00985100
+// pdb: CombatGoalAdvance::CombatGoalAdvance | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00985100::FUN_00985100(int aeType) : CGBase(aeType)
 {
     m_ppVirtualMethodTable = (void**)&DAT_0108d4f4;
@@ -428,11 +461,13 @@ FUN_00985100::FUN_00985100(int aeType) : CGBase(aeType)
 extern CombatGoal* DAT_011f17a0[16];
 
 // @fnv 0x00984a50
+// pdb: CombatGoal::InitGoals | CombatGoal.obj | debug, call graph, medium
+// pdb locals: i, pgoal
 void InitCombatGoalTable()
 {
     for (unsigned int i = 0; i < 0x10; ++i)
     {
-        CombatGoal* pCombatGoal = CombatGoal::CreateGoal((CombatGoal::COMBAT_GOAL)i);
+        CombatGoal* pCombatGoal = CombatGoal::CreateCombatGoal((CombatGoal::COMBAT_GOAL)i);
         DAT_011f17a0[i] = pCombatGoal;
     }
 }
@@ -443,6 +478,7 @@ struct FUN_00984470_Class
 };
 
 // @fnv 0x00984470
+// pdb: CombatWorldStateList::GetNext | CombatAction.obj | debug, call graph (shared callers), medium
 CombatGoal* FUN_00984470_Class::GetCombatGoal(int index)
 {
     return *reinterpret_cast<CombatGoal**>(reinterpret_cast<char*>(this) + 0x3fff8 + index * 4);
@@ -456,6 +492,8 @@ struct S
 // Iterates the 16 entries of DAT_011f17a0 and, for each non-null CombatGoal, calls DestroyIfFlagged with 1.
 // @fnv 0x00984a90
 // src: GUESS 0x00984a90 (confidence: medium)
+// pdb: CombatGoal::DeleteGoals | CombatGoal.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void CombatGoal_DestroyGlobalCombatGoals()
 {
     unsigned int i;
@@ -487,6 +525,7 @@ struct S_984af0
 void _Deallocate(void*);
 // Calls FUN_00984290, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x00984af0
+// pdb: CombatGoal::`scalar deleting destructor' | CombatGoal.obj | debug, object-file gap fill, medium
 void* S_984af0::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00984290();
@@ -520,6 +559,8 @@ struct FUN_00984ba0
 };
 
 // @fnv 0x00984ba0
+// pdb: CombatGoal::CombatGoal | CombatGoal.obj | debug, object-file gap fill, medium
+// pdb params: aeType
 FUN_00984ba0::FUN_00984ba0(int value) : m_vftable(&DAT_0108d440), m_condition0(), m_condition1(), m_uiFilterValue(value)
 {
     m_zero = 0;
@@ -542,6 +583,8 @@ struct FUN_00984dd0 : CombatGoalStub_b4510
 };
 
 // @fnv 0x00984dd0
+// pdb: CombatGoalActivateCombatItem::CombatGoalActivateCombatItem | CombatGoal.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00984dd0::FUN_00984dd0(int eType) : CombatGoalStub_b4510(eType)
 {
     FUN_0097ade0(0x16, 0xffff0016);

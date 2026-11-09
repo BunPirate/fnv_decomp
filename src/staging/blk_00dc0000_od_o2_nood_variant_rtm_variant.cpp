@@ -49,7 +49,7 @@ struct MemRouter
     }
 };
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(MemAllocator* alloc, VecArray* arr, int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(MemAllocator* mem, VecArray* array, int numElem, int sizeElem);
 static __forceinline float distanceSquared(LocalM128 a, LocalM128 b)
 {
     LocalM128 v = _mm_sub_ps(a, b);
@@ -105,7 +105,7 @@ struct Holder_00dd6c10
     }
 };
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* allocator, void* container, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 template <class T> struct Arr_00dd6c10
 {
     T* data;
@@ -275,6 +275,8 @@ struct TriangleProjectionData
 
 // @fnv 0x00ddd2c0
 // src: GUESS 0x00ddd2c0 (confidence: low)
+// pdb: hkpMeshWeldingUtility::testWindingConsistency | hkpMeshWeldingUtility.obj | debug, object-file run extension, low
+// pdb params: localVertex0, localEdgeOrtho, localNormal, adjacentTriangle, adjacentNormal
 int __cdecl Object_ProcessEntries_00ddd2c0(const LocalM128* origin, const LocalM128* firstAxis, const LocalM128* secondAxis,
                          const TriangleProjectionData* triangle, const LocalM128* direction)
 {

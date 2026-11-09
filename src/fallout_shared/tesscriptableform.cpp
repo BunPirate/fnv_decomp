@@ -15,25 +15,28 @@ int Warning(const char*, ...);
 
 // Resolves the stored script ID to a Script and warns if it cannot be found, then marks the item as initialized.
 // @fnv 0x0048cd90
-void TESScriptableForm::InitItem(TESForm* owner)
+// pdb: TESScriptableForm::InitItem | TESScriptableForm.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: tempint
+void TESScriptableForm::InitItem(TESForm* apOwner)
 {
     if (m_bHasScript)
         return;
     if (m_pFormScript)
     {
         unsigned int scriptID = (unsigned int)m_pFormScript;
-        TESForm::RemapFormIDForFile(scriptID, owner->GetFile(-1));
+        TESForm::RemapFormIDForFile(scriptID, apOwner->GetFile(-1));
         m_pFormScript = dynamic_cast<Script*>(GetFormByID(scriptID));
         if (!m_pFormScript)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (((BGSCameraPath*)owner)->HasNameForWarning())
+                if (((BGSCameraPath*)apOwner)->HasNameForWarning())
                     Warning("MASTERFILE: Unable to find script (%08X) on owner object \"%s\".", scriptID,
-                            owner->GetName());
+                            apOwner->GetName());
                 else
                     Warning("MASTERFILE: Unable to find script (%08X) on owner object (%08X).", scriptID,
-                            owner->GetFormID());
+                            apOwner->GetFormID());
             }
             else
                 Warning("MASTERFILE: Unable to find script (%08X) on unknown owner.", scriptID);
@@ -48,6 +51,7 @@ void __fastcall TESScriptableForm_InitializeDataComponent(void* pThis);
 // Initialises a BaseFormComponent: runs its base constructor, installs the vtable at DAT_0101d518, calls FUN_0048cc80, and returns pThis.
 // @fnv 0x0048cc50
 // src: GUESS 0x0048cc50 (confidence: high)
+// pdb: TESScriptableForm::TESScriptableForm | TESScriptableForm.obj | debug, call graph, medium
 void* __fastcall TESScriptableForm_InitializeDataComponent_InitializeScriptableFormComponent(BaseFormComponent* apComponent)
 {
     apComponent->BaseFormComponent::BaseFormComponent();
@@ -67,6 +71,8 @@ void __fastcall TESScriptableForm_InitializeDataComponent(void* pThis)
 void __cdecl TESForm_AddChunk_00485910(unsigned int, unsigned int);
 // @fnv 0x0048cca0
 // src: COMMUNITY 0x0048cca0
+// pdb: TESScriptableForm::Save | TESScriptableForm.obj | debug, call graph, medium
+// pdb locals: tempint
 void TESScriptableForm::Save_0048cca0()
 {
     if (m_pFormScript)
@@ -78,6 +84,9 @@ void TESScriptableForm::Save_0048cca0()
 
 // Copies the referenced script from another scriptable form.
 // @fnv 0x0048cce0
+// pdb: TESScriptableForm::CopyComponent | TESScriptableForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
 void TESScriptableForm::CopyFromBase(BaseFormComponent* apCopyFC)
 {
     TESScriptableForm* pCopy = dynamic_cast<TESScriptableForm*>(apCopyFC);
@@ -88,9 +97,12 @@ void TESScriptableForm::CopyFromBase(BaseFormComponent* apCopyFC)
 
 // Returns true if the component is not scriptable or references a different script.
 // @fnv 0x0048cd30
-bool TESScriptableForm::CompareWithBase(BaseFormComponent* apComponent)
+// pdb: TESScriptableForm::CompareComponent | TESScriptableForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool TESScriptableForm::CompareWithBase(BaseFormComponent* apCompareFC)
 {
-    TESScriptableForm* b = dynamic_cast<TESScriptableForm*>(apComponent);
+    TESScriptableForm* b = dynamic_cast<TESScriptableForm*>(apCompareFC);
     if (!b)
         return true;
     if (FUN_00726070() != b->FUN_00726070())

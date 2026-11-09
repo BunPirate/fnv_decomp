@@ -2,12 +2,13 @@
 
 #include "NiBinaryStream.h"
 
+// pdb: class NiMemStream, size 0x24, bases: NiBinaryStream, 6 members
 class NiMemStream : public NiBinaryStream
 {
 public:
     // +0x04..+0x0F are the NiBinaryStream members (SetEndianSwap 0x00aa2f80 installs the reader/writer).
-    char* m_kRayStart;
-    unsigned int m_pos;
+    char* m_pBuffer;
+    unsigned int m_uiPos;
     union
     {
         unsigned int m_kRayEnd;
@@ -39,8 +40,8 @@ public:
     void NiMemStreamDestructor();
     void SetSwapMode(bool bDoSwap);
     void __thiscall Seek_00aa2d70(int iNumBytes);
-    unsigned int __thiscall MemWrite(const void* data, unsigned int numBytes);
-    void FUN_00aa2fb0(char* buffer, int size);
+    unsigned int __thiscall MemWrite(const void* pBuffer, unsigned int uiBytes);
+    void FUN_00aa2fb0(char* pBuffer, int uiSize);
     void NiMemStream_NiMemStream();
     char* NiMemStream_Str();
 };

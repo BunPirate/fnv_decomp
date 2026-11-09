@@ -37,6 +37,8 @@ struct FUN_00e49100_t
 struct FUN_00e49290_Target
 {
 // @fnv 0x00e49290
+// pdb: hkpConvexPieceMeshShape::getCollisionFilterInfo | hkpConvexPieceMeshShape.obj | debug, upstream name already matches, high
+// pdb params: key
     virtual int FUN_00e49290_f0(int)
     {
         return 0;
@@ -79,21 +81,21 @@ struct FUN_00e49290_Class
     FUN_00e49290_Data* data;
     FUN_00e49290_Owner* owner;
 
-    int hkpConvexPieceMeshShape_getCollisionFilterInfo(unsigned int index);
+    int hkpConvexPieceMeshShape_getCollisionFilterInfo(unsigned int key);
 };
 // src: HAVOK_LIB 0x00e49290
-int FUN_00e49290_Class::hkpConvexPieceMeshShape_getCollisionFilterInfo(unsigned int index)
+int FUN_00e49290_Class::hkpConvexPieceMeshShape_getCollisionFilterInfo(unsigned int key)
 {
     int result;
 
-    if (index < this->data->count)
+    if (key < this->data->count)
     {
-        int i = this->data->p14[index];
+        int i = this->data->p14[key];
         result = this->data->p8[i + 1];
     }
     else
     {
-        result = this->data->p20[index - this->data->count];
+        result = this->data->p20[key - this->data->count];
     }
 
     return this->owner->target.FUN_00e49290_f4(result);
@@ -226,7 +228,7 @@ class PieceAgentE49
     MeshShapeE49* m_pkMesh;
     float m_fBoundRadius;
 
-    FUN_00e607c0* ProcessEntries_00e49120(unsigned int uiIndex, void* pvMemory);
+    FUN_00e607c0* ProcessEntries_00e49120(unsigned int key, void* buffer);
 };
 
 class PieceSourceE49 : public PieceBaseE49, public PieceAgentE49
@@ -243,20 +245,23 @@ class PieceSourceE49 : public PieceBaseE49, public PieceAgentE49
 
 // @fnv 0x00e49120
 // src: GUESS 0x00e49120 (confidence: low)
-FUN_00e607c0* PieceAgentE49::ProcessEntries_00e49120(unsigned int uiIndex, void* pvMemory)
+// pdb: hkpConvexPieceMeshShape::getChildShape | hkpConvexPieceMeshShape.obj | retail, vtable slot, high
+// pdb params: key, buffer
+// pdb locals: assertBuf, ostr, buffer2, i
+FUN_00e607c0* PieceAgentE49::ProcessEntries_00e49120(unsigned int key, void* buffer)
 {
-    FUN_00e607c0* pkPieces = new (pvMemory) FUN_00e607c0(m_fBoundRadius);
+    FUN_00e607c0* pkPieces = new (buffer) FUN_00e607c0(m_fBoundRadius);
     pkPieces->m_pkMesh = m_pkMesh;
 
     ShapeBufferE49 kBuffer;
-    if (uiIndex < m_pkFaces->m_uiNumFaces)
+    if (key < m_pkFaces->m_uiNumFaces)
     {
-        int iStart = m_pkFaces->m_piFaceStart[uiIndex];
+        int iStart = m_pkFaces->m_piFaceStart[key];
         const int* piData = m_pkFaces->m_piFaceData;
         const int* j = &piData[iStart];
         pkPieces->m_iNumKeys = *j;
         pkPieces->m_piKeys = (int*)(j + 1);
-        hkVector4* pkOut = (hkVector4*)(((unsigned int)pvMemory + 0x3b) & ~15);
+        hkVector4* pkOut = (hkVector4*)(((unsigned int)buffer + 0x3b) & ~15);
         pkPieces->m_pkVertices = pkOut;
         pkPieces->m_iNumVertices = 0;
         for (int i = 0; i < pkPieces->m_iNumKeys; i++)
@@ -279,9 +284,9 @@ FUN_00e607c0* PieceAgentE49::ProcessEntries_00e49120(unsigned int uiIndex, void*
     else
     {
         pkPieces->m_iNumKeys = 1;
-        int* piKeys = &m_pkFaces->m_piTriangleKeys[uiIndex - m_pkFaces->m_uiNumFaces];
+        int* piKeys = &m_pkFaces->m_piTriangleKeys[key - m_pkFaces->m_uiNumFaces];
         pkPieces->m_piKeys = piKeys;
-        hkVector4* pkOut = (hkVector4*)(((unsigned int)pvMemory + 0x3b) & ~15);
+        hkVector4* pkOut = (hkVector4*)(((unsigned int)buffer + 0x3b) & ~15);
         pkPieces->m_pkVertices = pkOut;
         pkPieces->m_iNumVertices = 3;
         int iKey = pkPieces->m_piKeys[0];
@@ -340,12 +345,15 @@ struct xShapeBase
 };
 struct xCollection : xShapeBase, xContainer
 {
-    void hkpConvexPieceMeshShape_getAabb(const xTransform& t, float tolerance, xAabb& out) const;
+    void hkpConvexPieceMeshShape_getAabb(const xTransform& localToWorld, float tolerance, xAabb& out) const;
 };
 
 // @fnv 0x00e492d0
 // src: XBOX_PDB 0x00e492d0
-void xCollection::hkpConvexPieceMeshShape_getAabb(const xTransform& t, float tolerance, xAabb& out) const
+// pdb: hkpConvexPieceMeshShape::getAabbImpl | hkpConvexPieceMeshShape.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: buffer, childAabb, assertBuf, ostr
+void xCollection::hkpConvexPieceMeshShape_getAabb(const xTransform& localToWorld, float tolerance, xAabb& out) const
 {
     out.m_kMinimumCorner.set(3.40282e+38f, 3.40282e+38f, 3.40282e+38f, 0.0f);
     out.m_kMaximumCorner.set(-3.40282e+38f, -3.40282e+38f, -3.40282e+38f, 0.0f);
@@ -354,7 +362,7 @@ void xCollection::hkpConvexPieceMeshShape_getAabb(const xTransform& t, float tol
     {
         const xChild* child = GetShapeForKey(key, shapeBuffer);
         xAabb childAabb;
-        child->getAabb(t, tolerance, childAabb);
+        child->getAabb(localToWorld, tolerance, childAabb);
         out.m_kMinimumCorner.setMin4(out.m_kMinimumCorner, childAabb.m_kMinimumCorner);
         out.m_kMaximumCorner.setMax4(out.m_kMaximumCorner, childAabb.m_kMaximumCorner);
     }

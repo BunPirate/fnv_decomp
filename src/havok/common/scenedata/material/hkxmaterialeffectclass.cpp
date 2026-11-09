@@ -48,6 +48,7 @@ struct FUN_00e022d0_cls : SpawnedBase
 
 // Frees the data array via the audio allocator, resets the members, destroys the base and optionally frees the object itself.
 // @fnv 0x00e022d0
+// pdb: hkxMaterialEffect::`scalar deleting destructor' | hkxMaterialEffectClass.obj | retail, vtable slot, high
 FUN_00e022d0_cls* FUN_00e022d0_cls::FUN_00e022d0(unsigned char acFlags)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();

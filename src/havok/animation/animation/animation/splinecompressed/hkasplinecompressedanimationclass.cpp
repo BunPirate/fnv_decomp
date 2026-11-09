@@ -24,6 +24,7 @@ struct CpuObject
     CpuObject* FUN_00dfb8e0(unsigned int flags);
 };
 // @fnv 0x00dfb8e0
+// pdb: hkaSplineCompressedAnimation::`scalar deleting destructor' | hkaSplineCompressedAnimationClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dfb8e0(unsigned int flags)
 {
     FUN_00e345a0();

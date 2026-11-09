@@ -27,11 +27,12 @@ public:
 
 // RTTI (vftables 0x010a45ac, 0x010a459c at +0x158): BSFile at 0, NiRefObject at 0x158, BSArchive at 0x160
 // (MSVC places the bases with vftables first). Allocation size 0x1d0.
+// pdb: class Archive, size 0x218 (here 0x1d0), bases: BSArchive, BSFile, NiRefObject, 11 members
 class Archive : public BSArchive, public BSFile, public NiRefObject
 {
 public:
     // 0x00af7eb0: opens the archive and reads its header, folder and file records and (if cached) names.
-    Archive(const char* apPath, int aiMode, bool abHeaderOnly, bool abPrepare);
+    Archive(const char* apArchiveName, int aiBufferSize, bool abSecondaryArchive, bool abInvalidateOtherArchives);
     virtual ~Archive();
 
     // NiRefObject's NiMemObject allocators, not BSFile's: the deleting destructor 0x00afc680 frees through 0x00aa1460
@@ -39,43 +40,43 @@ public:
     using NiRefObject::operator new;
     using NiRefObject::operator delete;
 
-    unsigned int GetFlags() { return m_usFlags; }
+    unsigned int GetFlags() { return iArchiveType; }
     ArchiveEntry* GetEntry(int index);
     bool HasNameTable() { return m_ucStatus & 0x20; }  // implicit bool conversion, as 0x00af7400 tests it
     void Lock();
     void Unlock();
     unsigned short HasType(unsigned int i)
     {
-        return static_cast<unsigned short>(m_usFlags & (1 << i));
+        return static_cast<unsigned short>(iArchiveType & (1 << i));
     }
     unsigned long BufferSize();
     bool SetBufferSize(unsigned int);
-    void* OpenFile(unsigned int auiFolderIndex, unsigned int auiFileIndex,
+    void* NiLogger_NiLogFile_OpenFile(unsigned int auiFolderIndex, unsigned int auiFileIndex,
                    unsigned int auiBufferSize, const char* apFileName);
     unsigned short HasArchiveTypeFlags(unsigned int auiFlags)
     {
-        return static_cast<unsigned short>(m_usFlags & auiFlags);
+        return static_cast<unsigned short>(iArchiveType & auiFlags);
     }
     unsigned short HasArchiveType(int aeArchiveTypeIndex)
     {
-        return static_cast<unsigned short>(m_usFlags & (1 << aeArchiveTypeIndex));
+        return static_cast<unsigned short>(iArchiveType & (1 << aeArchiveTypeIndex));
     }
     bool IsFlag();
     // 0x00af9bf0: finds the folder and file indices of a directory/file hash pair.
     bool FindFile_00af9bf0(int arDirHash, int arFileHash, int* apFolderIndex, int apFileIndex, int apFileName);
     // 0x00afa6e0: returns the file record of a directory/file hash pair, or 0.
     int GetFileEntryForFile(int arDirectoryHash, int arFileNameHash, int apFileName);
-    ArchiveFile* CreateArchiveFile(BSFileEntry*, unsigned int, unsigned int);
-    const char* Archive_GetFileNameForFileEntry(ArchiveFileEntry* pkEntry);
+    ArchiveFile* Archive_GetFileByFileEntry(BSFileEntry*, unsigned int, unsigned int);
+    const char* Archive_GetFileNameForFileEntry(ArchiveFileEntry* apFileEntry);
     int Archive_GetFileString(int, unsigned int);
     void FUN_00865e50(void* apData, unsigned int aSize, int aFlags);
     // 0x00af8f10: (re)reads the name table; called on every archive of the global archive list (0x00af59f0).
-    void LoadNames();
+    void ReloadFilenamesAndIndices();
     // 0x00afd020: whether the names are to be cached (global switches, archive flags 0x80/8/0x10/0x20,
     // the per-type cache modes).
     bool GetLoadStrings();
     // 0x00afb170: whether a per-type cache request (archive flag) is met under cache mode aiMode.
-    bool Archive_CheckRetain(bool abRequested, int aiMode);
+    bool Archive_CheckRetain(bool abArchive, int aiINI);
     // 0x00afad00
     void ClearMatchedEntries();
 

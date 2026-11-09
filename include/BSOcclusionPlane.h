@@ -6,6 +6,7 @@ class CellPoint3;
 class NiPoint3;
 class NiPoint2;
 
+// pdb: class BSOcclusionPlane, size 0x110 (here 0x8), bases: NiObject, 12 members
 class BSOcclusionPlane : public NiObject
 {
 public:
@@ -18,7 +19,7 @@ public:
 
     int GetCullResult() const;
     int GetCullResult();
-    int IsNotCulled();
+    int Explosion_IsDistant();
     void TESObjectCELL_ClearLocationMarkers();
     void* FUN_004a6110(unsigned int);
     CellPoint3* FUN_00413f40();

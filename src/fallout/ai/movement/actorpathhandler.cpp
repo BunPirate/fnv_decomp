@@ -7,6 +7,7 @@ extern void _Deallocate(void*);
 
 // Destructs the object and, when flags has bit 0 set, deallocates this; returns this.
 // @fnv 0x009dfe10
+// pdb: ActorPathHandler::`scalar deleting destructor' | ActorPathHandler.obj | retail, vtable slot, high
 void* ActorPathHandler::FUN_009dfe10(unsigned int flags)
 {
     ActorPathHandler::~ActorPathHandler();

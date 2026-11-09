@@ -5,6 +5,7 @@
 
 class QueuedFile;
 
+// pdb: class QueuedParents, size 0x10, bases: BSSimpleArray<NiPointer<QueuedFile>, 0 members
 class QueuedParents : public BSSimpleArray<NiPointer<QueuedFile>, 1024>
 {
 public:

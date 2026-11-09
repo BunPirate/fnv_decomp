@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class NiUpdateData, size 0xc, 6 members
 class NiUpdateData
 {
 public:

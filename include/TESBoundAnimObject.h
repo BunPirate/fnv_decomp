@@ -2,6 +2,7 @@
 
 #include "TESBoundObject.h"
 
+// pdb: class TESBoundAnimObject, size 0x30, bases: TESBoundObject, 0 members
 class TESBoundAnimObject : public TESBoundObject
 {
 public:
@@ -11,7 +12,7 @@ public:
     virtual void Set3D(NiAVObject* object, bool debugPrint);
 
     NiNode* Create3DModel(TESObjectREFR* reference);
-    void ReadTypedData(TESFile* file, void* buffer, unsigned short size);
+    void ReadTypedData(TESFile* apFile, void* apData, unsigned short asSize);
 
     // Alternate names for slots already inherited from TESBoundObject.
     void __vslot_10();

@@ -53,6 +53,9 @@ struct FUN_00d21960_Node
 
 // Recursively computes the depth of a node's child subtree, returning 0 for nodes without children and max child depth plus one otherwise.
 // @fnv 0x00d21960
+// pdb: hkpShapeDepthUtil::getShapeDepth | hkpShapeDepthUtil.obj | retail, call graph, medium
+// pdb params: shape
+// pdb locals: buffer, assertBuf, ostr
 unsigned char __cdecl GetSubtreeDepth(FUN_00d21960_Node* node)
 {
     FUN_00d21960_Children* children = node->GetChildren();

@@ -5,6 +5,7 @@
 class TESAmmo;
 class TESForm;
 
+// pdb: class BGSAmmoForm, size 0x8, bases: BaseFormComponent, 1 members
 class BGSAmmoForm : public BaseFormComponent
 {
 public:
@@ -17,7 +18,7 @@ public:
     virtual void CopyFromBase(BaseFormComponent* component);
     virtual bool CompareWithBase(BaseFormComponent* component);
 
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     void SetAmmo(TESAmmo* ammo);
     TESAmmo* GetAmmoHelper();
 

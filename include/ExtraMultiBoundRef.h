@@ -4,6 +4,7 @@
 
 class TESObjectREFR;
 
+// pdb: class ExtraMultiBoundRef, size 0x10, bases: BSExtraData, 1 members
 class ExtraMultiBoundRef : public BSExtraData
 {
 public:

@@ -113,6 +113,9 @@ void __fastcall CopyFromFloats(hkMatrix4* matrix, void*, const float* apSource)
 
 // @fnv 0x00de8e50
 // src: GUESS 0x00de8e50 (confidence: high)
+// pdb: hkMatrix4::mul | hkMatrix4.obj | retail, object-file run extension, low
+// pdb params: a
+// pdb locals: temp
 void hkMatrix4::MultiplyInPlace(const hkMatrix4& b)
 {
     hkMatrix4 t;
@@ -139,7 +142,7 @@ void __fastcall hkMatrix4_CopyMatrixWithAffineFourthComponents(hkMatrix4* matrix
 
 struct CB20B0_Class
 {
-    void hkTransform_set4x4ColumnMajor(void* src);
+    void hkTransform_set4x4ColumnMajor(void* p);
 };
 // @fnv 0x00de9130
 // src: GUESS 0x00de9130 (confidence: medium)
@@ -153,10 +156,10 @@ void __fastcall hkTransform_Set4x4ColumnMajor_Thunk(hkMatrix4* matrix, void*, CB
 // src: GUESS 0x00de8c50 (confidence: medium)
 void __fastcall hkMatrix4_CopyColumnsAndApplyValue(hkMatrix4* matrix, void*, const __m128* apRows, float value)
 {
-    matrix->m_kColumn0.m_vComponents = apRows[0];
-    matrix->m_kColumn1.m_vComponents = apRows[1];
-    matrix->m_kColumn2.m_vComponents = apRows[2];
-    matrix->m_kColumn3.m_vComponents = apRows[3];
+    matrix->m_col0.m_vComponents = apRows[0];
+    matrix->m_col1.m_vComponents = apRows[1];
+    matrix->m_col2.m_vComponents = apRows[2];
+    matrix->m_col3.m_vComponents = apRows[3];
     matrix->UpdateState_00de8910(value);
 }
 
@@ -185,7 +188,7 @@ struct SourceBlockCDF
 };
 struct TargetBlockCDF
 {
-    void hkMatrix3_setMul(SourceBlockCDF* pkSource, int iArg);
+    void hkMatrix3_setMul(SourceBlockCDF* aTb, int bTc);
 };
 struct FUN_00cdf230_cls
 {
@@ -234,10 +237,10 @@ __forceinline void AddColumn(hkVector4& destination, const hkVector4& source)
 // @fnv 0x00de8c90
 const hkMatrix4* __fastcall Add(hkMatrix4* matrix, void*, const hkMatrix4* other)
 {
-    AddColumn(matrix->m_kColumn0, other->m_kColumn0);
-    AddColumn(matrix->m_kColumn1, other->m_kColumn1);
-    AddColumn(matrix->m_kColumn2, other->m_kColumn2);
-    AddColumn(matrix->m_kColumn3, other->m_kColumn3);
+    AddColumn(matrix->m_col0, other->m_col0);
+    AddColumn(matrix->m_col1, other->m_col1);
+    AddColumn(matrix->m_col2, other->m_col2);
+    AddColumn(matrix->m_col3, other->m_col3);
     return other;
 }
 
@@ -246,9 +249,9 @@ extern float DAT_0104da4c;
 // src: GUESS 0x00de8910 (confidence: low)
 __declspec(noinline) void __fastcall UpdateState_00de8910(hkMatrix4* matrix, float s)
 {
-    matrix->m_kColumn0.x = s;
+    matrix->m_col0.x = s;
     unsigned u = (unsigned)(int)s;
-    matrix->m_kColumn0.y = (float)(int)(u / 10u);
+    matrix->m_col0.y = (float)(int)(u / 10u);
 }
 
 // Copies the matrix into a local, calls FUN_00de8910, then multiplies dst by the local matrix.
@@ -257,10 +260,10 @@ __declspec(noinline) void __fastcall UpdateState_00de8910(hkMatrix4* matrix, flo
 void __fastcall hkMatrix4_MultiplyByAdjustedMatrix(hkMatrix4* matrix, void*, hkMatrix4* dst, const hkMatrix4* src)
 {
     hkMatrix4 matTmp;
-    *(__m128*)&matTmp.m_kColumn0 = *(const __m128*)&src->m_kColumn0;
-    *(__m128*)&matTmp.m_kColumn1 = *(const __m128*)&src->m_kColumn1;
-    *(__m128*)&matTmp.m_kColumn2 = *(const __m128*)&src->m_kColumn2;
-    *(__m128*)&matTmp.m_kColumn3 = *(const __m128*)&src->m_kColumn3;
+    *(__m128*)&matTmp.m_col0 = *(const __m128*)&src->m_col0;
+    *(__m128*)&matTmp.m_col1 = *(const __m128*)&src->m_col1;
+    *(__m128*)&matTmp.m_col2 = *(const __m128*)&src->m_col2;
+    *(__m128*)&matTmp.m_col3 = *(const __m128*)&src->m_col3;
 
     UpdateState_00de8910(&matTmp, DAT_0104da4c);
 
@@ -272,10 +275,10 @@ void __fastcall hkMatrix4_MultiplyByAdjustedMatrix(hkMatrix4* matrix, void*, hkM
 // src: GUESS 0x00de8ce0 (confidence: medium)
 const hkMatrix4* __fastcall hkMatrix4_SubtractMatrixColumns(hkMatrix4* matrix, void*, const hkMatrix4* rhs)
 {
-    *(__m128*)&matrix->m_kColumn0 = _mm_sub_ps(*(const __m128*)&matrix->m_kColumn0, *(const __m128*)&rhs->m_kColumn0);
-    *(__m128*)&matrix->m_kColumn1 = _mm_sub_ps(*(const __m128*)&matrix->m_kColumn1, *(const __m128*)&rhs->m_kColumn1);
-    *(__m128*)&matrix->m_kColumn2 = _mm_sub_ps(*(const __m128*)&matrix->m_kColumn2, *(const __m128*)&rhs->m_kColumn2);
-    *(__m128*)&matrix->m_kColumn3 = _mm_sub_ps(*(const __m128*)&matrix->m_kColumn3, *(const __m128*)&rhs->m_kColumn3);
+    *(__m128*)&matrix->m_col0 = _mm_sub_ps(*(const __m128*)&matrix->m_col0, *(const __m128*)&rhs->m_col0);
+    *(__m128*)&matrix->m_col1 = _mm_sub_ps(*(const __m128*)&matrix->m_col1, *(const __m128*)&rhs->m_col1);
+    *(__m128*)&matrix->m_col2 = _mm_sub_ps(*(const __m128*)&matrix->m_col2, *(const __m128*)&rhs->m_col2);
+    *(__m128*)&matrix->m_col3 = _mm_sub_ps(*(const __m128*)&matrix->m_col3, *(const __m128*)&rhs->m_col3);
     return rhs;
 }
 
@@ -284,13 +287,13 @@ const hkMatrix4* __fastcall hkMatrix4_SubtractMatrixColumns(hkMatrix4* matrix, v
 const __m128* __fastcall hkMatrix4_ScaleColumnsByFirstComponent(hkMatrix4* matrix, void*, const __m128* apVector)
 {
     __m128 v = *apVector;
-    matrix->m_kColumn0.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(v, v, 0), matrix->m_kColumn0.m_vComponents);
+    matrix->m_col0.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(v, v, 0), matrix->m_col0.m_vComponents);
     v = *apVector;
-    matrix->m_kColumn1.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(v, v, 0), matrix->m_kColumn1.m_vComponents);
+    matrix->m_col1.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(v, v, 0), matrix->m_col1.m_vComponents);
     v = *apVector;
-    matrix->m_kColumn2.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(v, v, 0), matrix->m_kColumn2.m_vComponents);
+    matrix->m_col2.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(v, v, 0), matrix->m_col2.m_vComponents);
     v = *apVector;
-    matrix->m_kColumn3.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(v, v, 0), matrix->m_kColumn3.m_vComponents);
+    matrix->m_col3.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(v, v, 0), matrix->m_col3.m_vComponents);
     return apVector;
 }
 
@@ -329,6 +332,8 @@ struct MatrixPointerQ
 // Stores the matrix product formed by dotting each row of right with each column of left.
 // @fnv 0x00de8da0
 // src: XBOX_PDB 0x00de8da0
+// pdb: hkMatrix4::setMul | hkMatrix4.obj | retail, upstream name already matches, high
+// pdb params: scale, a
 void __fastcall hkMatrix4_setMul(hkMatrix4* matrix, void*, const hkMatrix4* left, MatrixPointerQ right)
 {
     hkMatrix4 columns;

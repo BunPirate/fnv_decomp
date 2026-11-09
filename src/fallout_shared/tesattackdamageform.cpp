@@ -5,21 +5,26 @@
 #include "tesattackdamageform_creature_decls.h"
 
 // @fnv 0x0047fdc0
+// pdb: TESAttackDamageForm::TESAttackDamageForm | TESAttackDamageForm.obj | debug, upstream name already matches, high
 TESAttackDamageForm::TESAttackDamageForm()
 {
     InitializeComponent();
 }
 
 // @fnv 0x0047fdf0
+// pdb: TESAttackDamageForm::~TESAttackDamageForm | TESAttackDamageForm.obj | debug, upstream name already matches, high
 TESAttackDamageForm::~TESAttackDamageForm()
 {
     Free();
 }
 
 // @fnv 0x0047ff30
+// pdb: TESAttackDamageForm::GetAttackDamage | TESAttackDamageForm.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: pAttack
 unsigned short TESAttackDamageForm::GetAttackDamage()
 {
-    return m_usAttackDamage;
+    return sAttackDamage;
 }
 
 // The covered address is a secondary-base override on TESCreature. The old
@@ -27,11 +32,14 @@ unsigned short TESAttackDamageForm::GetAttackDamage()
 // actorData so the calls retain the original non-null subobject adjustment.
 // Copies template data from selectedForm or the current template into this creature according to the template use flags, then marks the template as copied.
 // @fnv 0x005fb450
-void TESCreature::CopyFromTemplateForm(TESActorBase* selectedForm)
+// pdb: TESCreature::CopyFromTemplateForm | TESCreature.obj | retail, upstream name already matches, high
+// pdb params: apForceTemplate
+// pdb locals: defaultcreature, scompositeflags, pleveledtemplate, pactor, ptemplate, iflags, imyflags, bitmask, psounds
+void TESCreature::CopyFromTemplateForm(TESActorBase* apForceTemplate)
 {
     if (!reinterpret_cast<ActorMover*>(reinterpret_cast<char*>(&actorData) - offsetof(TESActorBaseData, actorData))
              ->GetCurrentMoveModeType() &&
-        !selectedForm)
+        !apForceTemplate)
         return;
 
     struct TemplateSelection
@@ -49,8 +57,8 @@ void TESCreature::CopyFromTemplateForm(TESActorBase* selectedForm)
                 (TESCreature*)reinterpret_cast<ActorMover*>(reinterpret_cast<char*>(&actorData) -
                                                             offsetof(TESActorBaseData, actorData))
                     ->GetCurrentMoveModeType();
-        if (selectedForm && selectedForm->GetFormType() == ENUM_FORM_ID_CREA_ID)
-            templateSelection.creature = (TESCreature*)selectedForm;
+        if (apForceTemplate && apForceTemplate->GetFormType() == ENUM_FORM_ID_CREA_ID)
+            templateSelection.creature = (TESCreature*)apForceTemplate;
         if (!templateSelection.creature)
             templateSelection.creature = &defaultCreature;
         else if (reinterpret_cast<ActorMover*>(reinterpret_cast<char*>(&templateSelection.creature->actorData) -
@@ -119,25 +127,25 @@ void TESCreature::CopyFromTemplateForm(TESActorBase* selectedForm)
             SetFlags(flags.inherited | flags.current);
             if (templateSelection.creature->GetCreatureSounds())
             {
-                CreatureSounds* sounds = GetMutableCreatureSounds();
-                sounds->Copy(templateSelection.creature->GetCreatureSounds());
+                CreatureSounds* sounds = CreateCreatureSounds();
+                sounds->CreatureSounds_Copy(templateSelection.creature->GetCreatureSounds());
             }
             else
             {
-                SetCreatureSoundsFrom(templateSelection.creature->GetSoundCreature());
+                SetSoundCreature(templateSelection.creature->GetSoundCreature());
             }
-            m_eSoundLevel = templateSelection.creature->FUN_009c0070();
+            eSoundLevel = templateSelection.creature->BGSSaveLoadFile_GetFilePosition();
         }
         if (!m_pCreatureSounds)
         {
             if (templateSelection.creature->GetCreatureSounds())
             {
-                CreatureSounds* sounds = GetMutableCreatureSounds();
-                sounds->Copy(templateSelection.creature->GetCreatureSounds());
+                CreatureSounds* sounds = CreateCreatureSounds();
+                sounds->CreatureSounds_Copy(templateSelection.creature->GetCreatureSounds());
             }
             else
             {
-                SetCreatureSoundsFrom(templateSelection.creature->GetSoundCreature());
+                SetSoundCreature(templateSelection.creature->GetSoundCreature());
             }
         }
         if (GetTemplateUseFlag(TU_TRAITS))
@@ -179,7 +187,7 @@ void TESCreature::CopyFromTemplateForm(TESActorBase* selectedForm)
             BGSTouchSpellForm::BaseFormRecord((BGSTouchSpellForm*)templateSelection.creature);
         }
         if (GetTemplateUseFlag(TU_AIDATA))
-            CopyAISettings((TESAIForm*)templateSelection.creature);
+            CopyAIData((TESAIForm*)templateSelection.creature);
         if (GetTemplateUseFlag(TU_AIPACKAGES))
             CopyAIPackageList((TESAIForm*)templateSelection.creature);
 
@@ -198,7 +206,7 @@ void TESCreature::CopyFromTemplateForm(TESActorBase* selectedForm)
 // @fnv 0x0047fe10
 void TESAttackDamageForm::ClearComponent()
 {
-    m_usAttackDamage = 0;
+    sAttackDamage = 0;
 }
 
 void __cdecl _Deallocate(void*);
@@ -209,6 +217,7 @@ struct Unk_57
 };
 // Calls FUN_0057ee10, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0057ede0
+// pdb: TESWaterForm::`scalar deleting destructor' | TESWaterForm.obj | retail, vtable slot, high
 void* Unk_57::FUN_0057ede0(unsigned int flags)
 {
     FUN_0057ee10();

@@ -4,6 +4,7 @@
 #include "../../include/FurnitureMark.h"
 
 // @fnv 0x00508f70
+// pdb: TESFurniture::InitializeData | TESFurniture.obj | debug, object-file gap fill, medium
 void TESFurniture::ResetFormData()
 {
     m_iMarkerCount = 0;
@@ -12,6 +13,7 @@ void TESFurniture::ResetFormData()
 
 // Skips initialization if the form is already initialized; otherwise initializes the destructible object form, then calls two further setup steps.
 // @fnv 0x00508f90
+// pdb: TESFurniture::InitItem | TESFurniture.obj | retail, upstream name already matches, high
 void TESFurniture::InitItem()
 {
     if (static_cast<TESFormInitFlag*>(static_cast<TESForm*>(this))->IsFormInitialized())
@@ -41,6 +43,9 @@ bool TESFurniture::GetCanSleepOn()
 
 // Returns true if the marker bit for aiMarker (below 0x20) is set in the marker mask.
 // @fnv 0x00509450
+// pdb: TESFurniture::GetMarkerCount | TESFurniture.obj | debug, object-file run extension, low
+// pdb params: ap3D
+// pdb locals: icount, pmarkdata
 bool TESFurniture::IsMarkerEnabled(unsigned int aiMarker)
 {
     bool bEnabled = false;
@@ -73,58 +78,61 @@ bool TESFurniture::IsFurnitureSitMarker(unsigned int auMarker)
 }
 
 // @fnv 0x00508fd0
-bool TESFurniture::Load(TESFile* file)
+// pdb: TESFurniture::Load | TESFurniture.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata, tempint
+bool TESFurniture::Load(TESFile* apFile)
 {
     CHUNK_ID chunk;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
-    while ((chunk = static_cast<CHUNK_ID>(file->GetChunkID())) != 0)
+    while ((chunk = static_cast<CHUNK_ID>(apFile->GetChunkID())) != 0)
     {
         switch (chunk)
         {
         case CHUNK_ID_EDID_ID: {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case CHUNK_ID_OBND_ID:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case CHUNK_ID_FULL_ID:
-            TESFullNameLoader::LoadFullNameChunk(this, file);
+            TESFullNameLoader::LoadFullNameChunk(this, apFile);
             break;
         case CHUNK_ID_MODL_ID:
         case CHUNK_ID_MODD_ID:
         case CHUNK_ID_MODT_ID:
         case CHUNK_ID_MOSD_ID:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case CHUNK_ID_MODS_ID: {
             void* textureSwapData;
-            unsigned int textureSwapSize = file->GetChunkSize();
+            unsigned int textureSwapSize = apFile->GetChunkSize();
             textureSwapData = _alloca(textureSwapSize);
-            file->GetChunkData(textureSwapData, textureSwapSize);
-            ParseTextureSwapData(textureSwapData, textureSwapSize,
-                                 static_cast<TESFileFormVersion*>(file)->GetFormVersion());
+            apFile->GetChunkData(textureSwapData, textureSwapSize);
+            UnpackTextureSwapChunkData(textureSwapData, textureSwapSize,
+                                 static_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
             break;
         }
         case CHUNK_ID_SCRI_ID: {
             unsigned int scriptID = 0;
-            file->GetChunkData(&scriptID);
+            apFile->GetChunkData(&scriptID);
             SetScript(reinterpret_cast<Script*>(scriptID));
             TESScriptableForm::InitItem(this);
             break;
         }
         case CHUNK_ID_DEST_ID:
         case CHUNK_ID_DSTD_ID:
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case CHUNK_ID_MNAM_ID:
-            file->GetChunkData(reinterpret_cast<unsigned int*>(&m_iMarkerCount));
+            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&m_iMarkerCount));
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -132,19 +140,23 @@ bool TESFurniture::Load(TESFile* file)
 
 // Returns the offset for a marker index (1-40) from the marker table, scaling the z component by afScale - 1.
 // @fnv 0x00509920
-NiPoint3 TESFurniture::GetMarkerOffset(unsigned int auMarkerIndex, float afScale)
+// pdb: TESFurniture::GetMarkerTargetOffset | TESFurniture.obj | debug, call graph (shared callers), high
+// pdb params: aiIndex, afScale
+// pdb locals: delta
+NiPoint3 TESFurniture::GetMarkerOffset(unsigned int aiIndex, float afScale)
 {
     NiPoint3 offset = NiPoint3::ZERO;
-    if (auMarkerIndex > 0 && auMarkerIndex <= 40)
+    if (aiIndex > 0 && aiIndex <= 40)
     {
-        offset.x = *g_ppFurnitureMarkerOffsetSettings[auMarkerIndex - 1][0]->Float();
-        offset.y = *g_ppFurnitureMarkerOffsetSettings[auMarkerIndex - 1][1]->Float();
-        offset.z = *g_ppFurnitureMarkerOffsetSettings[auMarkerIndex - 1][2]->Float() * (afScale - 1.0f);
+        offset.x = *g_ppFurnitureMarkerOffsetSettings[aiIndex - 1][0]->Float();
+        offset.y = *g_ppFurnitureMarkerOffsetSettings[aiIndex - 1][1]->Float();
+        offset.z = *g_ppFurnitureMarkerOffsetSettings[aiIndex - 1][2]->Float() * (afScale - 1.0f);
     }
     return offset;
 }
 
 // @fnv 0x005104f0
+// pdb: TESObjectACTI::TESObjectACTI | TESObjectACTI.obj | retail, upstream name already matches, high
 TESObjectACTI::TESObjectACTI()
 {
     SetFormType(ENUM_FORM_ID_ACTI_ID);
@@ -153,6 +165,7 @@ TESObjectACTI::TESObjectACTI()
 }
 
 // @fnv 0x00509350
+// pdb: TESFurniture::VerifyMarkers | TESFurniture.obj | retail, string-set bridge, high
 void TESFurniture::InitializeMarkerFlags()
 {
     if (IsTemporary())
@@ -171,6 +184,7 @@ int __fastcall NiTArray_char_NiTMallocInterface_char_GetEffectiveSize(void* pThi
 
 // @fnv 0x00509490
 // src: XBOX_PDB 0x00509490
+// pdb: BSFurnitureMarker::QNumMarks | TESFurniture.obj | debug, upstream name already matches, high
 int __fastcall BSFurnitureMarker_QNumMarks(char* pThis)
 {
     return NiTArray_char_NiTMallocInterface_char_GetEffectiveSize(pThis + 0xc);
@@ -181,7 +195,7 @@ typedef char _sizecheck_FurnitureMark[sizeof(FurnitureMark) == 16 ? 1 : -1];
 // @fnv 0x005094b0
 unsigned int FurnitureMark::QNumber()
 {
-    return cMarkerType;
+    return cNumber;
 }
 
 struct DummyArr
@@ -202,6 +216,8 @@ struct StackArg
 
 // @fnv 0x005094d0
 // src: XBOX_PDB 0x005094d0
+// pdb: BSFurnitureMarker::QMark | TESFurniture.obj | debug, upstream name already matches, high
+// pdb params: aiMark
 void __fastcall BSFurnitureMarker_QMark(DummyThis* this_ptr, StackArg param_1)
 {
     this_ptr->arr.GetElementAddress16(param_1.val);
@@ -223,6 +239,9 @@ extern FurnitureMarkerData DAT_01189fa4[];
 
 // Returns the heading float from the furniture marker setting at aiIndex-1 when aiIndex is in 1..0x28, otherwise 0.0f.
 // @fnv 0x005099c0
+// pdb: TESFurniture::GetMarkerHeadingOffset | TESFurniture.obj | debug, call graph (shared callers), high
+// pdb params: aiIndex
+// pdb locals: fheading
 float FUN_005099c0_shell::GetFurnitureHeading(unsigned int aiIndex)
 {
     float fheading = 0.0f;
@@ -240,6 +259,7 @@ struct FUN_00508e00 : public TESObjectACTI
 };
 
 // @fnv 0x00508e00
+// pdb: TESFurniture::TESFurniture | TESFurniture.obj | retail, call graph, high
 FUN_00508e00::FUN_00508e00()
 {
     SetFormType((ENUM_FORM_ID)0x27);
@@ -257,6 +277,7 @@ struct FUN_00508eb0_obj
 
 // Calls FUN_00508ee0, then deletes this object if flags has bit 0 set, and returns this.
 // @fnv 0x00508eb0
+// pdb: TESFurniture::`scalar deleting destructor' | TESFurniture.obj | retail, vtable slot, high
 void* FUN_00508eb0_obj::Destroy(unsigned int flags)
 {
     FUN_00508ee0();
@@ -272,6 +293,7 @@ struct FUN_00508ee0 : public TESObjectACTI
 
 // Destructor for this TESObjectACTI subclass that calls ClearData().
 // @fnv 0x00508ee0
+// pdb: TESFurniture::~TESFurniture | TESFurniture.obj | debug, object-file gap fill, medium
 FUN_00508ee0::~FUN_00508ee0()
 {
     ClearData();
@@ -304,6 +326,7 @@ struct FUN_00509280_obj : public TESFurniture
 
 // @fnv 0x00509280
 // src: XBOX_PDB 0x00509280
+// pdb: TESFurniture::Save | TESFurniture.obj | retail, upstream name already matches, high
 void FUN_00509280_obj::TESFurniture_Save()
 {
     BeginFormRecord();
@@ -322,6 +345,9 @@ struct FUN_005092f0_obj : public TESFurniture
 };
 
 // @fnv 0x005092f0
+// pdb: TESFurniture::Copy | TESFurniture.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void FUN_005092f0_obj::CopyFromFurniture(TESForm* apCopy)
 {
     TESFurniture* pcopy = dynamic_cast<TESFurniture*>(apCopy);
@@ -340,6 +366,9 @@ struct FUN_00509540_obj : public TESFurniture
 
 // @fnv 0x00509540
 // src: XBOX_PDB 0x00509540
+// pdb: TESFurniture::Compare | TESFurniture.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool FUN_00509540_obj::TESFurniture_Compare(TESForm* apCompare)
 {
     TESFurniture* pcomp = dynamic_cast<TESFurniture*>(apCompare);

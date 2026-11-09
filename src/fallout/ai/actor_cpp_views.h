@@ -9,6 +9,7 @@
 class NiCamera;
 class ParentSpaceNode;
 // Animation has no shared header yet; the members actor.cpp calls (old actor_packet.h)
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:
@@ -23,6 +24,7 @@ class Animation
     void UpdateMovement(Actor*);
 };
 
+// pdb: class VATS, size 0x48 (here 0x1), 17 members
 class VATS
 {
   public:

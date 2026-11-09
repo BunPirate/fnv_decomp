@@ -2,6 +2,7 @@
 
 #include "QueuedFile.h"
 
+// pdb: class QueuedReference, size 0x40 (here 0x28), bases: QueuedFile, 5 members
 class QueuedReference : public QueuedFile
 {
 public:

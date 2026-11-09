@@ -64,19 +64,22 @@ struct LocalObj {
 };
 int __cdecl _hkMoppEarlyExitObbVirtualMachine_queryObb(void* a1, int a2, int a3, int a4);
 struct __declspec(align(16)) Vec4E5 { float x, y, z, w; };
-struct TmpE5CF40 { Vec4E5 a, b; void hkpMoppSphereVirtualMachine_querySphere(int a, int b, int c); };
+struct TmpE5CF40 { Vec4E5 a, b; void hkpMoppSphereVirtualMachine_querySphere(int a, int b, int primitiveResults); };
 void __cdecl _hkMoppSphereVirtualMachine_querySphere(int a, int b, int c);
 struct __declspec(align(16)) FUN_00e5d010_Block {
     unsigned int unk00,unk04,unk08,unk0c,unk10,unk14,unk18,unk1c;
     unsigned int unk20,unk24,unk28,unk2c,unk30,unk34,unk38,unk3c;
-    void __thiscall hkpMoppObbVirtualMachine_queryAabb(int first,int second,int third);
+    void __thiscall hkpMoppObbVirtualMachine_queryAabb(int code,int aabb,int primitives_out);
 };
 // @fnv 0x00e5d010
 // src: HAVOK_LIB 0x00e5d010
-extern "C" void __cdecl _hkMoppObbVirtualMachine_queryAabb(int first,int second,int third)
+// pdb: hkMoppObbVirtualMachine_queryAabb | hkpMoppMachine.obj | retail, upstream name already matches, high
+// pdb params: code, aabb, primitives_out
+// pdb locals: machine
+extern "C" void __cdecl _hkMoppObbVirtualMachine_queryAabb(int code,int aabb,int primitives_out)
 {
     FUN_00e5d010_Block instance;
-    instance.hkpMoppObbVirtualMachine_queryAabb(first,second,third);
+    instance.hkpMoppObbVirtualMachine_queryAabb(code,aabb,primitives_out);
 }
 #include <math.h>
 extern "C" LocalM128 _mm_xor_ps(LocalM128,LocalM128);
@@ -133,7 +136,7 @@ struct F8 { V4 lower, upper; };
 struct BoundsRef { F8* p; F8* operator->() const { return p; } operator F8*() const { return p; } };
 struct Resource { int unk00, unk04, unk08, unk0c; void* allocator; };
 extern void* hkMemoryRouter_getInstance();
-extern void ResizeAudioStream(void* a, void* b, int c);
+extern void ResizeAudioStream(void* mem, void* array, int sizeElem);
 static const __declspec(align(16)) unsigned int AbsMask[4] = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff };
 struct Diagnostic {
   int unk00, unk04, unk08;
@@ -493,6 +496,9 @@ static __forceinline int edgeFallback(const FaceVector& query, const FaceVector*
 
 // @fnv 0x00e4b810
 // src: GUESS 0x00e4b810 (confidence: low)
+// pdb: findClosestTriangle | hkGsk.obj | retail, object-file run extension, low
+// pdb params: a0, tetra, sign
+// pdb locals: normals, distanceSquared, dotsSquared, newdots
 int __cdecl Runtime_ProcessEntries_00e4b810(const FaceVector& query, const FaceVector* vertices, float orientation)
 {
     FaceVector firstEdge; firstEdge.difference(vertices[2], vertices[1]);

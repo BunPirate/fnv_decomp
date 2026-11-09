@@ -4,13 +4,14 @@ class BGSPerkEntry;
 class TESObjectREFR;
 class TESSound;
 
+// pdb: class BGSLoadedReferenceCollection, size 0xc0 (here 0xa9), 8 members
 class BGSLoadedReferenceCollection
 {
 public:
     class ReferenceBucket
     {
     public:
-        bool RemoveSound(TESSound* reference);
+        bool RemoveSound(TESSound* apRef);
     };
 
     unsigned char pad0[0x18];
@@ -24,7 +25,7 @@ public:
     unsigned char pad4[0x17];
     ReferenceBucket memberA8;
 
-    void RemoveReference_005270b0(TESObjectREFR* apRef);
+    void RemoveReference(TESObjectREFR* apRef);
     char* GetFieldByType(unsigned int type);
-    void AddReference_00526f20(BGSPerkEntry* reference);
+    void AddReference(BGSPerkEntry* apRef);
 };

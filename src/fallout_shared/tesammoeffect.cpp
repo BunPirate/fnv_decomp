@@ -24,9 +24,10 @@ extern "C" void* __cdecl memset(void*, int, unsigned int);
 
 // Constructs a TESAmmoEffect: zeroes effectData and sets the form type to ENUM_FORM_ID_AMEF_ID.
 // @fnv 0x00599c40
+// pdb: TESAmmoEffect::TESAmmoEffect | TESAmmoEffect.obj | retail, upstream name already matches, high
 TESAmmoEffect::TESAmmoEffect() : TESForm(), TESFullName()
 {
-    memset(effectData, 0, 12);
+    memset(data, 0, 12);
     SetFormType(ENUM_FORM_ID_AMEF_ID);
 }
 
@@ -38,6 +39,9 @@ extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
 extern "C" void* __cdecl _alloca(unsigned int);
 
 // @fnv 0x00599d70
+// pdb: TESAmmoEffect::Load | TESAmmoEffect.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage
 bool TESAmmoEffect::Load(TESFile* apFile)
 {
     unsigned char formid = apFile->GetTESForm();
@@ -65,9 +69,9 @@ bool TESAmmoEffect::Load(TESFile* apFile)
             TESFullName::LoadFullNameChunk(static_cast<TESFullName*>(this), apFile);
             break;
         case 0x41544144:
-            ReadTypedData(apFile, effectData, 0xc);
+            ReadTypedData(apFile, data, 0xc);
             if (apFile->IsEndianConversionRequired())
-                ((ContainerItemExtraFileData*)effectData)->Endian();
+                ((ContainerItemExtraFileData*)data)->Endian();
             break;
         }
         if (!apFile->NextChunk())
@@ -78,6 +82,7 @@ bool TESAmmoEffect::Load(TESFile* apFile)
 
 // Calls FUN_00599d00, then deletes this object if bit 0 of flags is set, and returns this.
 // @fnv 0x00599cd0
+// pdb: TESAmmoEffect::`scalar deleting destructor' | TESAmmoEffect.obj | retail, vtable slot, high
 void* TESAmmoEffect::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00599d00();
@@ -88,6 +93,7 @@ void* TESAmmoEffect::DestroyIfFlagged(unsigned int flags)
 
 bool __cdecl TESForm_QEndianSwapOnSave();
 // @fnv 0x00599ef0
+// pdb: TESAmmoEffect::Save | TESAmmoEffect.obj | retail, vtable slot, high
 void TESAmmoEffect::SaveAmmoEffect()
 {
     TESForm::BeginFormRecord();
@@ -102,12 +108,15 @@ void TESAmmoEffect::SaveAmmoEffect()
 
 void* __memcpy(void*, const void*, unsigned int);
 // @fnv 0x00599f60
+// pdb: TESAmmoEffect::Copy | TESAmmoEffect.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pmisc
 void TESAmmoEffect::CopyFromAmmoEffect(TESForm* apCopy)
 {
     TESAmmoEffect* pmisc = dynamic_cast<TESAmmoEffect*>(apCopy);
     if (pmisc == 0)
         return;
-    __memcpy(effectData, pmisc->effectData, 12);
+    __memcpy(data, pmisc->data, 12);
     TESForm::CopyFrom(apCopy);
 }
 
@@ -129,6 +138,9 @@ struct AmmoEffectList
     void FUN_00905820(AmmoEffectValue*&);
 };
 // @fnv 0x0059a030
+// pdb: TESAmmoEffect::ApplyAmmoEffect | TESAmmoEffect.obj | debug, object-file gap fill, medium
+// pdb params: aiEffectType, pEffectList, afOriginalValue
+// pdb locals: fReturnValue, pEffectsLocal, iOperation, pEffect, iEffect, fEffectModifier
 float ComputeAmmoEffectValue(int iEffectType, AmmoEffectList* pEffectList, float fBaseValue)
 {
     float fResult = fBaseValue;
@@ -172,12 +184,15 @@ float ComputeAmmoEffectValue(int iEffectType, AmmoEffectList* pEffectList, float
 extern "C" int __cdecl memcmp(const void* pvA, const void* pvB, unsigned int ItemUpdateArray);
 
 // @fnv 0x00599fc0
-bool TESAmmoEffect::CompareAmmoEffect(TESForm* pkForm)
+// pdb: TESAmmoEffect::Compare | TESAmmoEffect.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool TESAmmoEffect::CompareAmmoEffect(TESForm* apCompare)
 {
-    TESAmmoEffect* pkOther = dynamic_cast<TESAmmoEffect*>(pkForm);
+    TESAmmoEffect* pkOther = dynamic_cast<TESAmmoEffect*>(apCompare);
     if (!pkOther)
         return true;
-    if (memcmp(effectData, pkOther->effectData, sizeof(effectData)))
+    if (memcmp(data, pkOther->data, sizeof(data)))
         return true;
     if (TESForm::Compare(pkOther))
         return true;
@@ -210,12 +225,16 @@ class AmmoEffectDesc
     unsigned int GetOperation();
     unsigned int GetEffectType();
     float GetValue();
-    void FormatDescription(char* buffer, int bufferSize);
+    void TESAmmoEffect_BuildMenuString(char* astrResult, int auiResultLen);
 };
 
 // Formats the ammo effect description into buffer using the effect name, operation symbol, and value.
 // @fnv 0x0059a1e0
-void AmmoEffectDesc::FormatDescription(char* buffer, int bufferSize)
+// src: XBOX_RETAIL_PDB 0x0059a1e0
+// pdb: TESAmmoEffect::BuildMenuString | TESAmmoEffect.obj | retail, string-set bridge, high
+// pdb params: astrResult, auiResultLen
+// pdb locals: sEffecttype, strop
+void AmmoEffectDesc::TESAmmoEffect_BuildMenuString(char* astrResult, int auiResultLen)
 {
     char nameText_2[64];
     char opText[2];
@@ -254,5 +273,5 @@ void AmmoEffectDesc::FormatDescription(char* buffer, int bufferSize)
         AmmoEffectCRT::strcpy_s(nameText_2, 64, g_011caab8.String());
         break;
     }
-    _sprintf_s(buffer, bufferSize, "%s %s %.2f", nameText_2, opText, (double)GetValue());
+    _sprintf_s(astrResult, auiResultLen, "%s %s %.2f", nameText_2, opText, (double)GetValue());
 }

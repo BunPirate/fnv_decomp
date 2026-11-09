@@ -30,7 +30,7 @@ unsigned char m_ucDimensionA;
 unsigned char m_ucDimensionB;
 unsigned char m_ucFeatureTypeA:4;
 unsigned char m_ucFeatureTypeB:4;
-void init(const hkpConvexShape*shapeA,const hkpConvexShape*shapeB,const hkTransform&btoa);
+void init(const hkpConvexShape*shapeA,const hkpConvexShape*shapeB,const hkTransform&aTb);
 void InitForTriangle(const hkpConvexShape*shapeA,const hkpTriangleShape*shapeB,const hkTransform&btoa);
 };
 #include "../../../../../../../include/hkpGskBaseAgent.h"
@@ -55,11 +55,11 @@ inline const hkRotation& hkTransform::getRotation() const
 }
 inline const hkTransform& hkpCdBody::getTransform() const
 {
-    return *static_cast<const hkTransform*>(m_pMotionState);
+    return *static_cast<const hkTransform*>(m_motion);
 }
 inline const hkpShape* hkpCdBody::getShape() const
 {
-    return m_pCollisionShape;
+    return m_shape;
 }
 inline hkpShapeType hkpShape::getType() const
 {
@@ -165,12 +165,12 @@ return(&m_kColumn0)[x];
 
 inline hkVector4& hkContactPoint::getPosition()
 {
-return m_vContactPosition;
+return m_position;
 }
 inline void hkContactPoint::setSeparatingNormal(const hkVector4&normal,hkReal dist)
 {
-m_vSeparatingNormal=normal;
-m_vSeparatingNormal.m_f[3]=dist;
+m_separatingNormal=normal;
+m_separatingNormal.m_f[3]=dist;
 }
 class Vector4WithInt24W:public hkVector4_S {};
 
@@ -301,6 +301,9 @@ return true;
 }
 return false;}
 // @fnv 0x00dac450
+// pdb: hkpGskBaseAgent::staticGetClosestPoints | hkpGskBaseAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: cache, aTb, output, event
 void __cdecl hkpGskBaseAgent::m_pVirtualFunction2(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,class hkpCdPointCollector&collector)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "Gsk";h->setTime();mStream.setEnd((char*)(h+1));}};

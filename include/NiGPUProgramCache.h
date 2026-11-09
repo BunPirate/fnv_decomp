@@ -8,6 +8,7 @@ class NiFile;
 class NiBinaryStream;
 class NiGPUProgram;
 
+// pdb: class NiGPUProgramCache, size 0x3c, bases: NiRefObject, 10 members
 class NiGPUProgramCache : public NiRefObject
 {
 public:
@@ -49,7 +50,7 @@ public:
     virtual void vf15();
     virtual void vf16();
     virtual void vf17();
-    virtual void* LookupAndVisit(const char* name, void* visitor);
+    virtual void* LookupAndVisit(const char* pcName, void* kUniforms);
     virtual void vf19();
     virtual int* GetValidCompileTargetsForPlatform();
     virtual const NiFixedString& GetPlatformName();
@@ -65,7 +66,7 @@ public:
     virtual bool RemoveMissingKeys(void* keys, void* entries);
     virtual void UpdatePathString() throw();
     virtual bool NiGPUProgramCache_AppendEntry(void* pvArg, void* pvArgCur);
-    virtual bool WriteToStream(NiFile* s, NiRefObject* o, int* v);
+    virtual bool WriteToStream(NiFile* kStream, NiRefObject* pkDesc, int* kName);
     virtual bool FiveIntegerLoadRecord(NiFile* pkFile, bool* pbUpdated);
     virtual bool vf90(NiFile* s, int v);
     virtual void vf37();
@@ -88,9 +89,9 @@ public:
     void onStringChanged();
     void vfn20() throw();
     void v22(NiFile* s, NiRefObject* val, NiFixedString* key);
-    bool NiGPUProgramCache_LoadStringA(NiFile* pkFile, char* pcBuffer, unsigned int uiBufferSize);
-    void NiGPUProgramCache_SaveString(NiFile* s, unsigned int v);
-    void NiGPUProgramCache_SaveString(NiFile* s, int v);
+    bool NiGPUProgramCache_LoadString(NiFile* kStream, char* pcBuffer, unsigned int stBufferSize);
+    void NiGPUProgramCache_SaveString(NiFile* kStream, unsigned int v);
+    void NiGPUProgramCache_SaveString(NiFile* kStream, int v);
 
     union
     {
@@ -108,16 +109,16 @@ public:
             unsigned int m_uiEntryMax;
         };
     };
-    NiFixedString m_18;
-    NiFixedString m_pcWorkingDir;
-    NiFixedString m_pcCacheFileName;
-    NiFixedString m_s3;
-    char** unk28;
+    NiFixedString m_kFilename;
+    NiFixedString m_kWorkingDir;
+    NiFixedString m_kPathAndFilename;
+    NiFixedString m_kShaderProfile;
+    char** m_kValidTargets;
     unsigned int m_uiValue1;
     unsigned int m_uiBufferSize;
-    unsigned int m_uiReserved;
-    bool m_bAutoWrite;
-    bool m_bLoadComplete;
-    unsigned char m_3a;
+    unsigned int m_uiVersion;
+    bool m_bAutoWriteCacheToDisk;
+    bool m_bLoaded;
+    unsigned char m_bLocked;
     unsigned char unk3B;
 };

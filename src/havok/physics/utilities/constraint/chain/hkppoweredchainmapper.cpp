@@ -14,7 +14,7 @@
 
 // The router accessor is 0x00c85750, also bound to hkMemoryRouter::GetMonitorStream.
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 
 template <class T> __forceinline void constructWithCopy(T* p, int n, const T& t)
@@ -66,12 +66,15 @@ struct hkpPoweredChainMapperTarget
 
 // Iterates the targets of a link and appends each non-zero motor pointer.
 // @fnv 0x00e3a520
+// pdb: hkpPoweredChainMapper::getMotors | hkpPoweredChainMapper.obj | retail, object-file run extension, low
+// pdb params: linkIndex, coordinateIndex, motorsOut
+// pdb locals: motor, assertBuf, ostr
 void hkpPoweredChainMapper::CollectSlotValues(int range, int slot, hkArray<int>& out)
 {
-    const hkpPoweredChainMapperLinkInfo& r = m_ppLinks.m_data[range];
+    const hkpPoweredChainMapperLinkInfo& r = m_links.m_data[range];
     for (int i = 0; i < r.m_iLinkIndex; i++)
     {
-        const hkpPoweredChainMapperTarget& ref = m_kTargets.m_data[r.m_iChainIndex + i];
+        const hkpPoweredChainMapperTarget& ref = m_targets.m_data[r.m_iChainIndex + i];
         int v = ((hkOwnerE3A5*)ref.m_pChainInstance)->m_table->m_rows[ref.m_targetIndex].m_slots[slot];
         if (v)
             out.pushBack(v);
@@ -221,16 +224,16 @@ __forceinline hkpPoweredChainMapper* allocatePoweredChainMapper()
 {
     hkMemoryAllocator& allocator = hkMemoryRouter_getInstance()->heap();
     hkpPoweredChainMapper* p = (hkpPoweredChainMapper*)allocator.blockAlloc(sizeof(hkpPoweredChainMapper));
-    p->m_usMemSizeAndFlags = (unsigned short)sizeof(hkpPoweredChainMapper);
+    p->m_memSizeAndFlags = (unsigned short)sizeof(hkpPoweredChainMapper);
     return p;
 }
 __forceinline void initializePoweredChainMapper(hkpPoweredChainMapper* p)
 {
     *(void**)p = &DAT_010e0654;
-    p->m_sReferenceCount = 1;
-    ((FnArray<hkpPoweredChainMapperLinkInfo>&)p->m_ppLinks).initialize();
-    ((FnArray<hkpPoweredChainMapperTarget>&)p->m_kTargets).initialize();
-    ((FnArray<FnObject*>&)p->m_kChainInstances).initialize();
+    p->m_referenceCount = 1;
+    ((FnArray<hkpPoweredChainMapperLinkInfo>&)p->m_links).initialize();
+    ((FnArray<hkpPoweredChainMapperTarget>&)p->m_targets).initialize();
+    ((FnArray<FnObject*>&)p->m_chains).initialize();
 }
 extern "C" int __cdecl hkpConstraintChainUtil_findConstraintLinkBetweenEntities(hkArray<int>*, int, int, FnArray<int>*, FnArray<int>*);
 extern "C" FnObject* __cdecl hkpConstraintChainUtil_buildPoweredChain(FnArray<int>*, unsigned char);
@@ -264,11 +267,11 @@ inline void reportError(const char* message, unsigned int id, int line)
 __forceinline int buildOffsets(hkpPoweredChainMapper* mapper, FnArray<int>& linkCounts)
 {
     int total = 0;
-    for (unsigned int i = 0; (int)i < mapper->m_ppLinks.m_iElementCount; ++i)
+    for (unsigned int i = 0; (int)i < mapper->m_links.m_iElementCount; ++i)
     {
-        mapper->m_ppLinks.m_data[i].m_iChainIndex = total;
+        mapper->m_links.m_data[i].m_iChainIndex = total;
         total += linkCounts.data[i];
-        mapper->m_ppLinks.m_data[i].m_iLinkIndex = 0;
+        mapper->m_links.m_data[i].m_iLinkIndex = 0;
     }
     return total;
 }
@@ -279,47 +282,51 @@ struct FnFlags
 };
 // Builds a powered chain mapper by resolving constraint chains for node pairs, populating link offsets, targets, and optionally collecting unlinked ids.
 // @fnv 0x00e3a5b0
-hkpPoweredChainMapper* __cdecl BuildPoweredChainMapper(FnFlags flags, hkArray<int>* linkIds, hkArray<FnNodePair>* pairs,
-                                                    hkArray<int>* unlinked) throw()
+// src: XBOX_RETAIL_PDB 0x00e3a5b0
+// pdb: hkpPoweredChainMapper::buildChainMapper | hkpPoweredChainMapper.obj | retail, string-set bridge, high
+// pdb params: config, allConstraints, pairs, unusedConstraints
+// pdb locals: constraintToLink, targetInfos, linkIdxToNumTargets, linkedEntities, chainInstance, linkedConstraints, assertBuf, ostr
+hkpPoweredChainMapper* __cdecl hkpPoweredChainMapper_buildChainMapper(FnFlags config, hkArray<int>* allConstraints, hkArray<FnNodePair>* pairs,
+                                                    hkArray<int>* unusedConstraints) throw()
 {
     hkpPoweredChainMapper* mapper = allocatePoweredChainMapper();
     initializePoweredChainMapper(mapper);
 
     FnArray<FnVisit> visits;
     FnArray<int> linkCounts;
-    int count = linkIds->m_iElementCount;
+    int count = allConstraints->m_iElementCount;
     linkCounts.reserve(hkMemoryRouter_getInstance()->heap(), count);
     linkCounts.size = count;
     hkString_memSet(linkCounts.data, 0, 4 * count);
     FnMap table;
-    for (int k = 0; k < linkIds->m_iElementCount; ++k)
+    for (int k = 0; k < allConstraints->m_iElementCount; ++k)
     {
-        int key = linkIds->m_data[k];
+        int key = allConstraints->m_data[k];
         hkMemoryAllocator& heap = hkMemoryRouter_getInstance()->heap();
         table.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(&heap, key, k);
     }
-    count = linkIds->m_iElementCount;
-    ((FnArray<hkpPoweredChainMapperLinkInfo>&)mapper->m_ppLinks).SetSizeAndGrow(hkMemoryRouter_getInstance()->heap(), count);
-    hkString_memSet(mapper->m_ppLinks.m_data, 0, 12 * mapper->m_ppLinks.m_iElementCount);
+    count = allConstraints->m_iElementCount;
+    ((FnArray<hkpPoweredChainMapperLinkInfo>&)mapper->m_links).SetSizeAndGrow(hkMemoryRouter_getInstance()->heap(), count);
+    hkString_memSet(mapper->m_links.m_data, 0, 12 * mapper->m_links.m_iElementCount);
     for (int pairIndex = 0; pairIndex < pairs->m_iElementCount; ++pairIndex)
     {
         FnArray<int> scratch;
         FnArray<int> chainLinks;
         FnNodePair& pair = pairs->m_data[pairIndex];
-        if (hkpConstraintChainUtil_findConstraintLinkBetweenEntities(linkIds, pair.first, pair.second, &scratch, &chainLinks) == 1)
+        if (hkpConstraintChainUtil_findConstraintLinkBetweenEntities(allConstraints, pair.first, pair.second, &scratch, &chainLinks) == 1)
         {
             reportError("Cannot find a chain of constraints linking one of the entity pairs.", 0xabbaaa88, 68);
             mapper->removeReference();
             return 0;
         }
-        FnObject* obj = hkpConstraintChainUtil_buildPoweredChain(&chainLinks, flags.includeChains);
+        FnObject* obj = hkpConstraintChainUtil_buildPoweredChain(&chainLinks, config.includeChains);
         if (!obj)
         {
             reportError("Failed to build a chain.", 0xabbaddaa, 78);
             mapper->removeReference();
             return 0;
         }
-        ((FnArray<FnObject*>&)mapper->m_kChainInstances).push(obj);
+        ((FnArray<FnObject*>&)mapper->m_chains).push(obj);
         for (int j = 0; j < chainLinks.size; ++j)
         {
             int entity = chainLinks.data[j];
@@ -332,7 +339,7 @@ hkpPoweredChainMapper* __cdecl BuildPoweredChainMapper(FnFlags flags, hkArray<in
                 return 0;
             }
             int linkIndex = table.data[index].value;
-            hkpPoweredChainMapperLinkInfo* link = &mapper->m_ppLinks.m_data[linkIndex];
+            hkpPoweredChainMapperLinkInfo* link = &mapper->m_links.m_data[linkIndex];
             FnVisit& v = visits.expand();
             v.linkIndex = linkIndex;
             ++linkCounts.data[linkIndex];
@@ -345,28 +352,28 @@ hkpPoweredChainMapper* __cdecl BuildPoweredChainMapper(FnFlags flags, hkArray<in
             }
             v.constraint = obj->constraint;
             v.localIndex = j;
-            if (flags.copyFallbacks && !link->m_pConstraintInstance)
+            if (config.copyFallbacks && !link->m_pConstraintInstance)
                 link->m_pConstraintInstance = (hkReferencedObject*)CloneInstanceFromSource(chainLinks.data[j]);
         }
     }
     int total = buildOffsets(mapper, linkCounts);
-    ((FnArray<hkpPoweredChainMapperTarget>&)mapper->m_kTargets).SetSizeAndGrow(hkMemoryRouter_getInstance()->heap(), total);
+    ((FnArray<hkpPoweredChainMapperTarget>&)mapper->m_targets).SetSizeAndGrow(hkMemoryRouter_getInstance()->heap(), total);
     for (int i = 0; i < visits.size; ++i)
     {
         FnVisit& visit = visits.data[i];
-        hkpPoweredChainMapperLinkInfo& link = mapper->m_ppLinks.m_data[visit.linkIndex];
-        hkpPoweredChainMapperTarget& target = mapper->m_kTargets.m_data[link.m_iChainIndex + link.m_iLinkIndex];
+        hkpPoweredChainMapperLinkInfo& link = mapper->m_links.m_data[visit.linkIndex];
+        hkpPoweredChainMapperTarget& target = mapper->m_targets.m_data[link.m_iChainIndex + link.m_iLinkIndex];
         target = *(hkpPoweredChainMapperTarget*)&visit;
         ++link.m_iLinkIndex;
     }
-    if (unlinked)
+    if (unusedConstraints)
     {
-        for (int i = 0; i < mapper->m_ppLinks.m_iElementCount; ++i)
+        for (int i = 0; i < mapper->m_links.m_iElementCount; ++i)
         {
-            if (!mapper->m_ppLinks.m_data[i].m_iLinkIndex)
+            if (!mapper->m_links.m_data[i].m_iLinkIndex)
             {
-                int& key = linkIds->m_data[i];
-                ((FnArray<int>*)unlinked)->push(key);
+                int& key = allConstraints->m_data[i];
+                ((FnArray<int>*)unusedConstraints)->push(key);
             }
         }
     }
@@ -410,10 +417,10 @@ struct ChainInstance
 // @fnv 0x00e3a4d0
 void hkpPoweredChainMapper::SetLinkVector(int chainIndex, const __m128& vec)
 {
-    hkpPoweredChainMapperLinkInfo& linkInfo = m_ppLinks.m_data[chainIndex];
+    hkpPoweredChainMapperLinkInfo& linkInfo = m_links.m_data[chainIndex];
     for (int i = 0; i < linkInfo.m_iLinkIndex; ++i)
     {
-        hkpPoweredChainMapperTarget& target = m_kTargets.m_data[linkInfo.m_iChainIndex + i];
+        hkpPoweredChainMapperTarget& target = m_targets.m_data[linkInfo.m_iChainIndex + i];
         target.m_pChainInstance->m_pRuntime[target.m_targetIndex].m_vVectorData = vec;
     }
 }
@@ -483,14 +490,15 @@ template <typename T, typename A> __forceinline hkArray<T, A>::~hkArray()
 }
 
 // @fnv 0x00e3ad80
+// pdb: hkpPoweredChainMapper::~hkpPoweredChainMapper | hkpPoweredChainMapper.obj | retail, upstream name already matches, high
 hkpPoweredChainMapper::~hkpPoweredChainMapper() throw()
 {
-    for (int i = 0; i < m_ppLinks.m_iElementCount; i++)
+    for (int i = 0; i < m_links.m_iElementCount; i++)
     {
-        if (m_ppLinks[i].m_pConstraintInstance)
-            m_ppLinks[i].m_pConstraintInstance->removeReference();
+        if (m_links[i].m_pConstraintInstance)
+            m_links[i].m_pConstraintInstance->removeReference();
     }
-    for (int i = 0; i < m_kChainInstances.m_iElementCount; i++)
-        ((hkReferencedObject*)m_kChainInstances.m_data[i])->removeReference();
+    for (int i = 0; i < m_chains.m_iElementCount; i++)
+        ((hkReferencedObject*)m_chains.m_data[i])->removeReference();
 }
 

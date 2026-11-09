@@ -50,6 +50,8 @@ struct RenderingState
 };
 
 // @fnv 0x00ba3690
+// pdb: MTRenderingSystem::MTRenderingSystem | MTRenderingSystem.obj | debug, object-file run extension, low
+// pdb locals: I
 RenderingState::RenderingState()
 {
     int i = 0;
@@ -90,6 +92,8 @@ struct ThreadStages : ::TaskThreadManager
 
 // @fnv 0x00ba3130
 // src: COMMUNITY 0x00ba3130
+// pdb: MTRenderingSystem::WaitOnThreadStage | MTRenderingSystem.obj | retail, call graph, medium
+// pdb params: aiThreadIndex, aiStage
 extern "C" void __fastcall MTRenderingSystem_WaitOnThreadStage(ThreadStages* system, void*, int threadIndex, int stage)
 {
     if (!::DAT_011f94b4)
@@ -128,9 +132,9 @@ inline void BSCullingProcess::SetAccumulator(NiRefObject* accumulator)
     }
 }
 
-inline void BSCullingProcess::SetCullMode(unsigned int mode)
+inline void BSCullingProcess::SetCullMode(unsigned int aeType)
 {
-    unk90 = mode;
+    unk90 = aeType;
 }
 
 inline void BSCullingProcess::SetCompoundFrustum(TaskArg1* frustum)
@@ -262,8 +266,8 @@ class TaskArg1
     void FUN_00c477f0(Class0xa4* obj);
 };
 
-void __cdecl BSShaderUtil_AccumulateScene(void* arg0, void* arg2, BSCullingProcess* pCulling);
-void __cdecl BSShaderUtil_AccumulateSceneList(void* arg0, void* arg, BSCullingProcess* pCulling);
+void __cdecl BSShaderUtil_AccumulateScene(void* apCamera, void* apScene, BSCullingProcess* aCuller);
+void __cdecl BSShaderUtil_AccumulateSceneList(void* apCamera, void* aSceneList, BSCullingProcess* aCuller);
 
 struct TaskItem
 {
@@ -305,6 +309,9 @@ class AccumTaskReceiver : public ::TaskThreadManager
 
 // @fnv 0x00ba3390
 // src: COMMUNITY 0x00ba3390
+// pdb: MTRenderingSystem::AddAccumTask | MTRenderingSystem.obj | retail, upstream name already matches, high
+// pdb params: apCamera, apFrustum, apScene, apSceneList1, apSceneList2, apAccum, akCullType, aiStage, aiBatchRendererIndex
+// pdb locals: kculler
 void __fastcall MTRenderingSystem_AddAccumTask(AccumTaskReceiver* self, void*, NiRefObject* a1, TaskArg1* a2, NiRefObject* a3, void* a4,
                              void* a5, NiRefObject* a6, unsigned int a7, unsigned int a8, void* a9)
 {
@@ -372,6 +379,8 @@ struct RenderTaskManager : ::TaskThreadManager
 };
 // @fnv 0x00ba2d80
 // src: COMMUNITY 0x00ba2d80
+// pdb: MTRenderingSystem::DestroyThreads | MTRenderingSystem.obj | retail, upstream name already matches, high
+// pdb locals: ithreadIdx
 void __fastcall MTRenderingSystem_DestroyThreads(RenderTaskManager* manager)
 {
     if (!::DAT_011f94b4)
@@ -415,25 +424,28 @@ struct RenderTaskThread : BSLinearTaskThread
 struct ThreadOwner
 {
     RenderTaskThread* m_threads[2];
-    void MTRenderingSystem_AddThread(int index, unsigned int affinity, void(__cdecl* task)(), const char* name,
-                      unsigned int stackSize);
+    void MTRenderingSystem_AddThread(int aiThreadIndex, unsigned int aiHWThread, void(__cdecl* apfnTaskFunc)(), const char* apThreadName,
+                      unsigned int aeStackSize);
 };
 // @fnv 0x00ba2e00
 // src: COMMUNITY 0x00ba2e00
-void ThreadOwner::MTRenderingSystem_AddThread(int index, unsigned int affinity, void(__cdecl* task)(), const char* name,
-                               unsigned int stackSize)
+// pdb: MTRenderingSystem::AddThread | MTRenderingSystem.obj | retail, string-set bridge, high
+// pdb params: aiThreadIndex, aiHWThread, apfnTaskFunc, apThreadName, aeStackSize
+// pdb locals: pthreadname
+void ThreadOwner::MTRenderingSystem_AddThread(int aiThreadIndex, unsigned int aiHWThread, void(__cdecl* apfnTaskFunc)(), const char* apThreadName,
+                               unsigned int aeStackSize)
 {
-    if (index < 3 && index < 2 && !m_threads[index])
+    if (aiThreadIndex < 3 && aiThreadIndex < 2 && !m_threads[aiThreadIndex])
     {
-        m_threads[index] = new RenderTaskThread(task);
-        m_threads[index]->Initialize(stackSize, name, false);
-        m_threads[index]->FUN_00aa6550(affinity);
-        m_threads[index]->SetThreadPriority(0);
-        if (!name)
+        m_threads[aiThreadIndex] = new RenderTaskThread(apfnTaskFunc);
+        m_threads[aiThreadIndex]->Initialize(aeStackSize, apThreadName, false);
+        m_threads[aiThreadIndex]->FUN_00aa6550(aiHWThread);
+        m_threads[aiThreadIndex]->SetThreadPriority(0);
+        if (!apThreadName)
         {
             char buf[0x104];
-            sprintf_s(buf, 0x104, "Rendering Task Thread DEF %i", index);
-            m_threads[index]->SetName(buf);
+            sprintf_s(buf, 0x104, "Rendering Task Thread DEF %i", aiThreadIndex);
+            m_threads[aiThreadIndex]->SetName(buf);
         }
     }
 }
@@ -451,6 +463,8 @@ class ThreadCoordinator_ba2f30
 };
 // @fnv 0x00ba2f30
 // src: COMMUNITY 0x00ba2f30
+// pdb: MTRenderingSystem::StartThreads | MTRenderingSystem.obj | retail, upstream name already matches, high
+// pdb locals: ithreadIdx, i
 void ThreadCoordinator_ba2f30::MTRenderingSystem_StartThreads()
 {
     if (!DAT_011f94b4)
@@ -488,6 +502,8 @@ class FUN_00ba2fa0_C
 
 // @fnv 0x00ba2fa0
 // src: COMMUNITY 0x00ba2fa0
+// pdb: MTRenderingSystem::WaitForThreads | MTRenderingSystem.obj | retail, upstream name already matches, high
+// pdb locals: ithreadIdx, i
 void FUN_00ba2fa0_C::MTRenderingSystem_WaitForThreads()
 {
     if (DAT_011f94b4)
@@ -580,16 +596,18 @@ class RenderingStageController : public TaskThreadManager
     volatile int stages[3];
     Semaphore semaphores[3];
 
-    void MTRenderingSystem_SetThreadStage(int threadIndex, int stage);
+    void MTRenderingSystem_SetThreadStage(int aiThreadIndex, int aiStage);
 };
 
 // @fnv 0x00ba30f0
 // src: COMMUNITY 0x00ba30f0
-void RenderingStageController::MTRenderingSystem_SetThreadStage(int threadIndex, int stage)
+// pdb: MTRenderingSystem::SetThreadStage | MTRenderingSystem.obj | debug, upstream name already matches, high
+// pdb params: aiThreadIndex, aiStage
+void RenderingStageController::MTRenderingSystem_SetThreadStage(int aiThreadIndex, int aiStage)
 {
-    if (DAT_011f94b4 && threadIndex < 2)
+    if (DAT_011f94b4 && aiThreadIndex < 2)
     {
-        Semaphore& signal = semaphores[threadIndex];
+        Semaphore& signal = semaphores[aiThreadIndex];
         ReleaseSemaphore(signal.handle, 1, 0);
         DAT_00fdf1c0(const_cast<int*>(&signal.count));
     }
@@ -615,8 +633,8 @@ struct MTRenderingSystem_Helper
     void MTRenderingSystem_WaitOnThreadStage(int a, int b);
 };
 
-void BSShaderUtil_AccumulateScene(NiRefObject* a, NiRefObject* b, BSCullingProcess* c);
-void BSShaderUtil_AccumulateSceneList(NiRefObject* a, void* b, BSCullingProcess* c);
+void BSShaderUtil_AccumulateScene(NiRefObject* apCamera, NiRefObject* apScene, BSCullingProcess* aCuller);
+void BSShaderUtil_AccumulateSceneList(NiRefObject* apCamera, void* aSceneList, BSCullingProcess* aCuller);
 static inline void AddB(NiRefObject* a, NiRefObject* b, BSCullingProcess* c)
 {
     BSShaderUtil_AccumulateScene(a, b, c);

@@ -113,30 +113,33 @@ struct CbfOwner
     int unk3C;
     int unk40;
     int m_44;
-    void hkpWorldRayCaster_castRay(CbfTarget* obj, CbfSrc* src, int* p3, int p4, int p5);
+    void hkpWorldRayCaster_castRay(CbfTarget* broadphase, CbfSrc* input, int* filter, int cache, int collector);
 };
 
 // @fnv 0x00cbf860
 // src: COMMUNITY 0x00cbf860
-void CbfOwner::hkpWorldRayCaster_castRay(CbfTarget* obj, CbfSrc* src, int* p3, int p4, int p5)
+// pdb: hkpWorldRayCaster::castRay | hkpWorldRayCaster.obj | retail, string-set bridge, high
+// pdb params: broadphase, input, filter, cache, collector
+// pdb locals: rayInput, assertBuf, ostr
+void CbfOwner::hkpWorldRayCaster_castRay(CbfTarget* broadphase, CbfSrc* input, int* filter, int cache, int collector)
 {
     cbfTimer(DAT_010c9268);
-    m_04 = src;
-    m_0C = p5;
+    m_04 = input;
+    m_0C = collector;
     m_10 = 0;
-    m_08 = p3 != 0 ? (int)p3 + 0x14 : 0;
-    if (src->unk20 != 0)
-        m_44 = p3 != 0 ? (int)p3 + 0x10 : 0;
+    m_08 = filter != 0 ? (int)filter + 0x14 : 0;
+    if (input->unk20 != 0)
+        m_44 = filter != 0 ? (int)filter + 0x10 : 0;
     else
         m_44 = 0;
     CbfRayIn local;
-    __m128 from = src->m_vFrom;
+    __m128 from = input->m_vFrom;
     _ReadWriteBarrier();
     local.m_iCachedVertexCount = 1;
-    local.m_vTo = (char*)src + 0x10;
+    local.m_vTo = (char*)input + 0x10;
     local.m_ten = 0x10;
-    local.m_iFilter = p4;
+    local.m_iFilter = cache;
     _mm_store_ps(&local.x, from);
-    obj->Cast(&local, this, 0);
+    broadphase->Cast(&local, this, 0);
     cbfTimer(DAT_010c41f8);
 }

@@ -10,10 +10,11 @@ class bhkRigidBody;
 class bhkWorld;
 namespace Local { class NiPoint3; }
 
+// pdb: class CellMopp, size 0x18, bases: NiRefObject, 1 members
 class CellMopp : public NiRefObject
 {
 public:
-    NiTObjectArray<NiPointer<bhkRigidBody> > m_kThirdFollowingStreamField;
+    NiTObjectArray<NiPointer<bhkRigidBody> > spRigidBodyA;
 
     virtual ~CellMopp();
 
@@ -21,7 +22,7 @@ public:
     void Remove();
     void Kill();
     int LookupFirstFormID();
-    bool IsCreated();
+    bool QCreated();
     bool PlaceGridObjects(bhkWorld* p1, const NiPoint3* pPos, int p3);
     void PlaceGridObjects(bhkWorld*, const Local::NiPoint3&, const NiQuaternion&);
 };

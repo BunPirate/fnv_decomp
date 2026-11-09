@@ -22,7 +22,7 @@ void FalloutRadio_NewCellEntered();
 void TESWaterSystem_SetPlayerForceUnderwater(unsigned char value);
 float BSAudio_GetMinDialogDist();
 float BSAudio_GetMaxDialogDist();
-void CheckWithinMultiBoundTask_CancelAttachment(unsigned int index);
+void CheckWithinMultiBoundTask_CancelAttachment(unsigned int apMoribundRef);
 extern "C" __declspec(thread) int tls_state;
 struct MemContextGuard
 {
@@ -66,13 +66,13 @@ struct Arg_00c9f830
 };
 struct Obj_00c9f830
 {
-    void FillOutputFromState(Arg_00c9f830* value);
-    void bhkAabbPhantom_GetAabb(__m128* value);
-    void bhkAabbPhantom_CopyCinfo(Arg_00c9f830* value);
+    void bhkWorldObject_CopyCinfo(Arg_00c9f830* arInfo);
+    void bhkAabbPhantom_GetAabb(__m128* arB);
+    void bhkAabbPhantom_CopyCinfo(Arg_00c9f830* arInfo);
 };
 extern __m128 DAT_01267e30;
 extern __m128 DAT_010c71b0;
-void __stdcall FUN_00cb31a0_sub_a(__m128* p);
+void __stdcall FUN_00cb31a0_sub_a(__m128* arPos);
 struct FUN_00cb31a0_cls
 {
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
@@ -80,9 +80,9 @@ struct FUN_00cb31a0_cls
     __m128 m_30;
     __m128 m_40;
 
-    void Sub_b(__m128* p);
+    void Sub_b(__m128* arRot);
     void Sub_c(FUN_00cb31a0_cls* p);
-    void bhkRigidBodyT_PostInit(FUN_00cb31a0_cls* src);
+    void bhkRigidBodyT_PostInit(FUN_00cb31a0_cls* arInfo);
 };
 struct Sub
 {
@@ -93,18 +93,18 @@ struct Cls
 {
     char pad[0x20];
     Sub m_20;
-    void FUN_00c8d130(__m128* out);
-    Arg* bhkRigidBodyT_GetRotation(Arg* arg);
+    void FUN_00c8d130(__m128* arRot);
+    Arg* bhkRigidBodyT_GetRotation(Arg* arRot);
 };
 struct Arg
 {
-    void setMulInverse(__m128* out, Sub* sub);
+    void setMulInverse(__m128* q0, Sub* q1);
 };
 class S00cb3250_Object
 {
   public:
     void FUN_00c8d1a0(hkQuaternion* pQuery);
-    void bhkRigidBodyT_SetRotation(int iArg);
+    void bhkRigidBodyT_SetRotation(int arRot);
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
@@ -579,7 +579,7 @@ struct F9_Owner
     virtual void v45();
     virtual void v46();
     virtual void post(F9_Arg* a);
-    void bhkSimpleShapePhantom_Init(F9_Arg* arg);
+    void bhkSimpleShapePhantom_Init(F9_Arg* arInfo);
 };
 struct PositionSource
 {
@@ -600,7 +600,7 @@ struct PositionOwner
     int unk00;
     int unk04;
     PositionSource* m_pkSource;
-    void bhkBoxShape_BuildDisplayGeometry(NiNode* pkParent, int iUnused);
+    void bhkBoxShape_BuildDisplayGeometry(NiNode* apNode, int iUnused);
 };
 extern "C" __m128 _mm_add_ps(__m128, __m128);
 extern "C" __m128 _mm_setzero_ps();
@@ -994,7 +994,7 @@ class MotionObject
     Obj570 m_570;
     Obj594* m_594;
     void bhkCharacterController_UnMarkWrite();
-    void bhkCharacterController_SetPosition(__m128* v);
+    void bhkCharacterController_SetPosition(__m128* arPos);
 };
 extern "C" __m128 _mm_setzero_ps(void);
 struct C9FA20_TlsBlock
@@ -1237,8 +1237,8 @@ struct C9FA20_Owner
     int unk04;
     int m_08;
     C9FA20_Data* m_pData;
-    void bhkAabbPhantom_CopyCinfo(C9FA20_Data* data);
-    C9FA20_Data* bhkAabbPhantom_CreateCinfo(bool* created);
+    void bhkAabbPhantom_CopyCinfo(C9FA20_Data* arInfo);
+    C9FA20_Data* bhkAabbPhantom_CreateCinfo(bool* arCreated);
 };
 
 extern "C"
@@ -1314,13 +1314,16 @@ struct FUN_00cb30d0_cls
     __m128 m_20;
     __m128 m_30;
 
-    void bhkRigidBodyT_CopyMembers(void* a1, ScaleParams* a2);
-    void CopyBodyToClone(void* a1, ScaleParams* a2);
+    void bhkRigidBodyT_CopyMembers(void* pDest, ScaleParams* arCloneData);
+    void bhkRigidBody_CopyMembers(void* apDest, ScaleParams* arCloneData);
 };
 
 // @fnv 0x00cb30d0
 // src: XBOX_PDB 0x00cb30d0
-void FUN_00cb30d0_cls::bhkRigidBodyT_CopyMembers(void* a1, ScaleParams* a2)
+// pdb: bhkRigidBodyT::CopyMembers | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: pDest, arCloneData
+// pdb locals: fscale, cinfo
+void FUN_00cb30d0_cls::bhkRigidBodyT_CopyMembers(void* pDest, ScaleParams* arCloneData)
 {
     unsigned char flag;
     char* obj = static_cast<char*>(VSlot45(&flag));
@@ -1330,7 +1333,7 @@ void FUN_00cb30d0_cls::bhkRigidBodyT_CopyMembers(void* a1, ScaleParams* a2)
     slot30 = m_30;
     _ReadWriteBarrier();
 
-    float scale = a2->unk10;
+    float scale = arCloneData->unk10;
     if (scale != 1.0f)
     {
         __m128 scalar = _mm_load_ss(&scale);
@@ -1338,7 +1341,7 @@ void FUN_00cb30d0_cls::bhkRigidBodyT_CopyMembers(void* a1, ScaleParams* a2)
         slot30 = _mm_mul_ps(broadcast, slot30);
     }
 
-    CopyBodyToClone(a1, a2);
+    bhkRigidBody_CopyMembers(pDest, arCloneData);
 }
 
 extern "C" __m128 _mm_add_ps(__m128, __m128);
@@ -1394,8 +1397,8 @@ __forceinline void hkVector4::SetRotatedDirection(const hkQuaternion& quat, cons
 class RigidMotionDAD
 {
   public:
-    void SetPosRot(const hkVector4& position, const hkQuaternion& rotation);
-    void bhkRigidBodyT_SetPosRot(const hkVector4& position, const hkQuaternion& rotation);
+    void SetPosRot(const hkVector4& arPos, const hkQuaternion& arRot);
+    void bhkRigidBodyT_SetPosRot(const hkVector4& arPos, const hkQuaternion& arRot);
 
     int unk00;
     int unk04;
@@ -1413,15 +1416,18 @@ class RigidMotionDAD
 #pragma strict_gs_check(push, on)
 // @fnv 0x00cb3570
 // src: XBOX_PDB 0x00cb3570
-void RigidMotionDAD::bhkRigidBodyT_SetPosRot(const hkVector4& position, const hkQuaternion& rotation)
+// pdb: bhkRigidBodyT::SetPosRot | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arPos, arRot
+// pdb locals: hkq, hkp
+void RigidMotionDAD::bhkRigidBodyT_SetPosRot(const hkVector4& arPos, const hkQuaternion& arRot)
 {
     hkVector4 newPosition;
-    newPosition.SetRotatedDirection(rotation, m_localTranslation);
+    newPosition.SetRotatedDirection(arRot, m_localTranslation);
     hkVector4 worldPosition;
-    worldPosition.setAdd4(newPosition, position);
+    worldPosition.setAdd4(newPosition, arPos);
     __declspec(align(16)) hkQuaternion newRotation;
-    newRotation.setMul(rotation, m_localRotation);
-    newRotation.normalize_005611c0();
+    newRotation.setMul(arRot, m_localRotation);
+    newRotation.hkQuaternion_normalize();
     SetPosRot(worldPosition, newRotation);
 }
 #pragma strict_gs_check(pop)

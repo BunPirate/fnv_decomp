@@ -82,7 +82,7 @@ NiD3DShaderDeclaration* BSShaderNoLighting::SelectVertexDeclaration(NiGeometry* 
     {
         if ((pkShaderProperty->ulFlags[1] & 0x20) > 0)
         {
-            if (*(int*)&static_cast<BSShaderNoLightingProperty*>(pkShaderProperty)->spBaseTexture.m_pObject != 0)
+            if (*(int*)&static_cast<BSShaderNoLightingProperty*>(pkShaderProperty)->spBaseMap.m_pObject != 0)
             {
                 if (bFlag2)
                     return m_pkVertexDeclarationVariant12.m_pObject;
@@ -106,7 +106,7 @@ NiD3DShaderDeclaration* BSShaderNoLighting::SelectVertexDeclaration(NiGeometry* 
     {
         if ((pkShaderProperty->ulFlags[1] & 0x20) > 0)
         {
-            if (*(int*)&static_cast<BSShaderNoLightingProperty*>(pkShaderProperty)->spBaseTexture.m_pObject != 0)
+            if (*(int*)&static_cast<BSShaderNoLightingProperty*>(pkShaderProperty)->spBaseMap.m_pObject != 0)
             {
                 if (bFlag2)
                     return m_pkVertexDeclarationVariant9.m_pObject;
@@ -130,7 +130,10 @@ NiD3DShaderDeclaration* BSShaderNoLighting::SelectVertexDeclaration(NiGeometry* 
 
 // Builds the vertex and pixel shader configs for the no-lighting shader set and assigns each compiled shader to its slot.
 // @fnv 0x00bc5c40
-void BSShaderNoLighting::InitializeShaderData()
+// src: XBOX_RETAIL_PDB 0x00bc5c40
+// pdb: BSShaderNoLighting::LoadShaders | BSShaderNoLighting.obj | retail, unique string literal, high
+// pdb locals: ptempFName, pixelShaderParamsTexVC, pixelShaderParamsVCOnly, pixelShaderParamsMat, pcacheFName, pixelShaderParamsWaterFog, pixelShaderParamsWaterFogAt, pixelShaderParamsTexVCPremultAlpha, pvsShader, i, pixelShaderParamsTex
+void BSShaderNoLighting::LoadShaders()
 {
     BSNoLightingShaderConfig vertexConfigs[28];
     char path[260];
@@ -393,6 +396,8 @@ void BSShaderNoLighting::InitializeShaderData()
 
 // Builds twelve vertex declarations from DAT_011f9508, constructs a BSShaderNoLighting from them, initializes it and returns it.
 // @fnv 0x00bc93c0
+// pdb: BSShaderNoLighting::CreateShader | BSShaderNoLighting.obj | retail, upstream name already matches, high
+// pdb locals: pskindeclTexVCN, pdecl, pskindeclVC, pskindeclTexVC, pskindeclVCN, pdeclN, pdeclTexVCN, pdeclVCN, pshader, pdeclVC, pdeclTexVC, pskindecl, pskindeclN
 BSShader* BSShaderNoLighting::CreateShader()
 {
     NiD3DVertexDeclaration* pDecl0 = NiD3DVertexDeclaration::Create(DAT_011f9508, 2, 1);
@@ -468,7 +473,7 @@ BSShader* BSShaderNoLighting::CreateShader()
     BSShaderNoLighting* shader = new BSShaderNoLighting(pDecl0, pDecl1, pDecl2, pDecl3, pDecl4, pDecl5, pDecl6, pDecl7,
                                                         pDecl8, pDecl9, pDecl10, pDecl11);
     shader->Initialize();
-    shader->InitializeShaderData();
+    shader->LoadShaders();
     shader->BSShaderNoLighting_LoadStagesAndPasses();
     shader->InitShaderConstants();
     shader->UseShaderDeclaration(pDecl0);
@@ -477,31 +482,36 @@ BSShader* BSShaderNoLighting::CreateShader()
 
 // Initializes the shader: sets a field to 22, assigns twelve shader arguments via AssignShader, copies DAT_011a9be0 into DAT_01202010 and clears a field.
 // @fnv 0x00bc8f80
-BSShaderNoLighting::BSShaderNoLighting(NiD3DVertexDeclaration* apShader0, NiD3DVertexDeclaration* apShader1,
-                                       NiD3DVertexDeclaration* apShader2, NiD3DVertexDeclaration* apShader3,
-                                       NiD3DVertexDeclaration* apShader4, NiD3DVertexDeclaration* apShader5,
-                                       NiD3DVertexDeclaration* apShader6, NiD3DVertexDeclaration* apShader7,
-                                       NiD3DVertexDeclaration* apShader8, NiD3DVertexDeclaration* apShader9,
-                                       NiD3DVertexDeclaration* apShader10, NiD3DVertexDeclaration* apShader11)
+// pdb: BSShaderNoLighting::BSShaderNoLighting | BSShaderNoLighting.obj | retail, upstream name already matches, high
+// pdb params: apDecl, apDeclVC, apDeclTexVC, apDeclN, apDeclVCN, apDeclTexVCN, apSkinDecl, apSkinDeclVC, apSkinDeclTexVC, apSkinDeclN, apSkinDeclVCN, apSkinDeclTexVCN
+BSShaderNoLighting::BSShaderNoLighting(NiD3DVertexDeclaration* apDecl, NiD3DVertexDeclaration* apDeclVC,
+                                       NiD3DVertexDeclaration* apDeclTexVC, NiD3DVertexDeclaration* apDeclN,
+                                       NiD3DVertexDeclaration* apDeclVCN, NiD3DVertexDeclaration* apDeclTexVCN,
+                                       NiD3DVertexDeclaration* apSkinDecl, NiD3DVertexDeclaration* apSkinDeclVC,
+                                       NiD3DVertexDeclaration* apSkinDeclTexVC, NiD3DVertexDeclaration* apSkinDeclN,
+                                       NiD3DVertexDeclaration* apSkinDeclVCN, NiD3DVertexDeclaration* apSkinDeclTexVCN)
 {
     iShaderType = 22;
-    AssignShader(m_pkVertexDeclarationVariant1, apShader0);
-    AssignShader(m_spVertexDeclaration, apShader1);
-    AssignShader(m_pkVertexDeclarationVariant3, apShader2);
-    AssignShader(m_pkVertexDeclarationVariant4, apShader3);
-    AssignShader(m_pkVertexDeclarationVariant5, apShader4);
-    AssignShader(m_pkVertexDeclarationVariant6, apShader5);
-    AssignShader(m_pkVertexDeclarationVariant7, apShader6);
-    AssignShader(m_pkVertexDeclarationVariant8, apShader7);
-    AssignShader(m_pkVertexDeclarationVariant9, apShader8);
-    AssignShader(m_pkVertexDeclarationVariant10, apShader9);
-    AssignShader(m_pkVertexDeclarationVariant11, apShader10);
-    AssignShader(m_pkVertexDeclarationVariant12, apShader11);
+    AssignShader(m_pkVertexDeclarationVariant1, apDecl);
+    AssignShader(m_spVertexDeclaration, apDeclVC);
+    AssignShader(m_pkVertexDeclarationVariant3, apDeclTexVC);
+    AssignShader(m_pkVertexDeclarationVariant4, apDeclN);
+    AssignShader(m_pkVertexDeclarationVariant5, apDeclVCN);
+    AssignShader(m_pkVertexDeclarationVariant6, apDeclTexVCN);
+    AssignShader(m_pkVertexDeclarationVariant7, apSkinDecl);
+    AssignShader(m_pkVertexDeclarationVariant8, apSkinDeclVC);
+    AssignShader(m_pkVertexDeclarationVariant9, apSkinDeclTexVC);
+    AssignShader(m_pkVertexDeclarationVariant10, apSkinDeclN);
+    AssignShader(m_pkVertexDeclarationVariant11, apSkinDeclVCN);
+    AssignShader(m_pkVertexDeclarationVariant12, apSkinDeclTexVCN);
     DAT_01202010 = DAT_011a9be0;
     m_pFirstShaderConstantMapEntry = 0;
 }
 
 // @fnv 0x00bc9a50
+// pdb: BSShaderNoLighting::GetShaderDecl | BSShaderNoLighting.obj | debug, object-file run extension, low
+// pdb params: apGeometry, apProperty
+// pdb locals: bskinned
 void BSShaderNoLighting::PrepareShaderPass(const NiPropertyState* properties)
 {
     int pass = DAT_011f91e4;
@@ -533,13 +543,13 @@ void BSShaderNoLighting::PrepareShaderPass(const NiPropertyState* properties)
     if ((unsigned int)(pass - 86) <= 1)
     {
         if ((property->ulFlags[0] & 0x40) > 0)
-            DAT_01202030 = *reinterpret_cast<const NiColorA*>(&property->fFalloffStartAngle);
+            DAT_01202030 = *reinterpret_cast<const NiColorA*>(&property->FalloffData);
         else
             DAT_01202030 = NiColorA(0, 0, 0, 0);
     }
     else
     {
-        DAT_01202030 = *reinterpret_cast<const NiColorA*>(&property->fFalloffStartAngle);
+        DAT_01202030 = *reinterpret_cast<const NiColorA*>(&property->FalloffData);
     }
     NiD3DShaderConstantMap* vertexMap = m_spVertexConstantMap.m_pObject;
     if (vertexMap)
@@ -554,7 +564,7 @@ void BSShaderNoLighting::PrepareShaderPass(const NiPropertyState* properties)
     NiAlphaProperty* alpha = (NiAlphaProperty*)properties->m_aspProps[0];
     if (alpha)
     {
-        unsigned int blend = (alpha->m_usAlphaArg >> 5) & 15;
+        unsigned int blend = (alpha->m_uFlags >> 5) & 15;
         if (blend == 0)
             DAT_01202020.r = 1;
         else if (blend == 2)
@@ -573,7 +583,7 @@ void BSShaderNoLighting::PrepareShaderPass(const NiPropertyState* properties)
     if (!((property->ulFlags[0] & 0x80000000) > 0))
         BSRenderState_SetZEnable(0, 0);
     NiWireframeProperty* wire = (NiWireframeProperty*)properties->m_aspProps[4];
-    if (wire && (wire->m_uiObjectFlags & 1))
+    if (wire && (wire->m_uFlags & 1))
         m_pkD3DRenderState->SetWireframeProperty(wire);
 }
 
@@ -582,6 +592,9 @@ extern NiColor DAT_011f4998;
 extern bool DAT_011F941E;
 
 // @fnv 0x00bc6fe0
+// pdb: BSShaderNoLighting::SetupGeometryConstants_MaterialColor | BSShaderNoLighting.obj | debug, object-file run extension, low
+// pdb params: pprop, pmaterialProperty
+// pdb locals: emitcolor
 void __fastcall UpdateMaterialColor(void* pThis, int, char* pMaterialProp, char* pShaderProp)
 {
     DAT_01202010.a = (*(float*)(pMaterialProp + 0x28) < 1.0f) ? *(float*)(pMaterialProp + 0x28) : 1.0f;
@@ -676,6 +689,9 @@ void __fastcall NiDX9Renderer_CalculateBoneMatrices(void* this_ptr, int edx_unus
 // If arg3 is non-null, calls FUN_00e6fe30 then invokes renderer vtable slot 0x78 with fields from this_ptr, arg2 and arg3, returning 0.
 // @fnv 0x00bc8f20
 // src: XBOX_PDB 0x00bc8f20
+// pdb: BSShaderNoLighting::SetupBoneMatrices | BSShaderNoLighting.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, apSkin, apPartition, apBuffData, apState, apEffects, aWorld, aWorldBound
+// pdb locals: uiBMRegs, pfBoneMatrices
 int __fastcall BSShaderNoLighting_SetupBoneMatrices(char* this_ptr, int edx_unused, int aiUnused, char* arg2, char* arg3, int arg4, int arg5,
                             int arg6, int arg7, int arg8)
 {
@@ -710,6 +726,8 @@ struct FUN_00bc6940_obj
 
 // Calls the function pointer at offset 0x128 on self once for each of the 30 ints in self->vals.
 // @fnv 0x00bc6940
+// pdb: BSShaderNoLighting::ClearPassStages | BSShaderNoLighting.obj | retail, object-file run extension, low
+// pdb locals: ui
 void __fastcall CallHandlerForEachValue(FUN_00bc6940_obj* self)
 {
     for (int i = 0; i < 30; i++)
@@ -743,13 +761,13 @@ struct GlobalObjectO2_00a7b610
 {
     int x;
 };
-extern GlobalObjectO2_00a7b610 g_01202040;
+extern GlobalObjectO2_00a7b610 BSShaderNoLighting_ms_RTTI;
 
 // @fnv 0x00bc7710
 // src: XBOX_PDB 0x00bc7710
 GlobalObjectO2_00a7b610* __cdecl BSShaderNoLighting_GetRTTI()
 {
-    return &g_01202040;
+    return &BSShaderNoLighting_ms_RTTI;
 }
 
 struct FUN_00bc9390_obj
@@ -759,7 +777,9 @@ struct FUN_00bc9390_obj
 void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 
 // @fnv 0x00bc9390
-FUN_00bc9390_obj* __fastcall FUN_00bc9390(FUN_00bc9390_obj* self, int unused, unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x00bc9390
+// pdb: BSShaderNoLighting::`scalar deleting destructor' | BSShaderNoLighting.obj | retail, object-file gap fill, high
+FUN_00bc9390_obj* __fastcall BSShaderNoLighting_ScalarDtor(FUN_00bc9390_obj* self, int unused, unsigned int flags)
 {
     self->DestroyShaderNoLighting();
     if (flags & 1)
@@ -830,6 +850,8 @@ struct FUN_00bc7100_t
 // If DAT_011f91e4 is in [0x2d8,0x2ef], enables pPass and writes DAT_011f9618 and the plane normal/distance into DAT_01202148 and DAT_01202158.
 // @fnv 0x00bc7100
 // src: COMMUNITY 0x00bc7100
+// pdb: BSShaderNoLighting::SetupGeometryConstants_WaterFog | BSShaderNoLighting.obj | retail, upstream name already matches, high
+// pdb locals: waterplane, eyepos, waterplanenormal, feyetoplanedist
 void FUN_00bc7100_t::BSShaderNoLighting_SetupGeometryConstants_WaterFog()
 {
     if (DAT_011f91e4 >= 0x2d8 && DAT_011f91e4 <= 0x2ef)
@@ -850,6 +872,8 @@ void __cdecl UpdateRendererStateCount(unsigned int, unsigned int);
 
 // Updates render states from the shader and wireframe properties.
 // @fnv 0x00bc8d90
+// pdb: BSShaderNoLighting::ClearPassStages | BSShaderNoLighting.obj | debug, object-file run extension, low
+// pdb locals: ui
 void __stdcall UpdateFlagStates(const NiPropertyState* owner)
 {
     BSShaderProperty* target = static_cast<BSShaderProperty*>(owner->m_aspProps[3]);
@@ -866,7 +890,7 @@ void __stdcall UpdateFlagStates(const NiPropertyState* owner)
         BSRenderState_SetZEnable(1, 0);
     }
     NiWireframeProperty* other = static_cast<NiWireframeProperty*>(owner->m_aspProps[4]);
-    if (other != 0 && (other->m_uiObjectFlags & 1) != 0)
+    if (other != 0 && (other->m_uFlags & 1) != 0)
     {
         UpdateRendererStateCount(0, 0);
     }
@@ -874,7 +898,7 @@ void __stdcall UpdateFlagStates(const NiPropertyState* owner)
 
 extern unsigned int DAT_011f91e4;
 void __cdecl FUN_00b97fa0(int, int);
-void __cdecl AddToTwoCounters(int, int, int);
+void __cdecl BSRenderState_SetAlphaBlendFunc(int, int, int);
 struct ShaderDispatcher
 {
     void DispatchShaderProperty(NiAlphaProperty** property);
@@ -886,10 +910,10 @@ void ShaderDispatcher::DispatchShaderProperty(NiAlphaProperty** property)
 {
     unsigned int mode = DAT_011f91e4;
     NiAlphaProperty* shader = *property;
-    if ((!shader || !(shader->m_usAlphaArg & 1)) && (mode - 74U <= 7U))
+    if ((!shader || !(shader->m_uFlags & 1)) && (mode - 74U <= 7U))
     {
         FUN_00b97fa0(1, 0);
-        AddToTwoCounters(6, 7, 0);
+        BSRenderState_SetAlphaBlendFunc(6, 7, 0);
     }
     else
     {
@@ -1062,6 +1086,8 @@ struct LightingShader
 // Creates each shader pass in the lighting shader, optionally adding a new stage and assigning vertex and pixel shaders.
 // @fnv 0x00bc77e0
 // src: COMMUNITY 0x00bc77e0
+// pdb: BSShaderNoLighting::LoadStagesAndPasses | BSShaderNoLighting.obj | retail, upstream name already matches, high
+// pdb locals: spStage
 bool LightingShader::BSShaderNoLighting_LoadStagesAndPasses()
 {
     FUN_00e804d0(&pass6c);
@@ -1337,6 +1363,8 @@ __forceinline BSShaderNoLighting::~BSShaderNoLighting()
 
 // Calls the BSShaderNoLighting destructor on shader, releasing its pass, vertex and pixel shader pointers.
 // @fnv 0x00bc7220
+// pdb: BSShaderNoLighting::~BSShaderNoLighting | BSShaderNoLighting.obj | debug, call graph, medium
+// pdb locals: ui
 void __fastcall DestroyShaderNoLighting(BSShaderNoLighting* shader)
 {
     shader->BSShaderNoLighting::~BSShaderNoLighting();
@@ -1375,6 +1403,8 @@ class TechniqueShader
 
 // Selects the technique pass for uiTechnique, storing the pass index in DAT_0126f74c and the pass pointer in m_pkTechniquePass.
 // @fnv 0x00bc6970
+// pdb: BSShaderNoLighting::~BSShaderNoLighting | BSShaderNoLighting.obj | retail, object-file run extension, low
+// pdb locals: ui
 void TechniqueShader::SetPass(unsigned int uiTechnique)
 {
     switch (uiTechnique)
@@ -1508,9 +1538,10 @@ struct BSShaderNoLightingShell : BSShaderNoLighting
 };
 // @fnv 0x00bc8d30
 // src: XBOX_PDB 0x00bc8d30
+// pdb: BSShaderNoLighting::ReloadShaders | BSShaderNoLighting.obj | retail, upstream name already matches, high
 void BSShaderNoLightingShell::BSShaderNoLighting_ReloadShaders()
 {
-    InitializeShaderData();
+    LoadShaders();
     BSShaderNoLighting_LoadStagesAndPasses();
 }
 
@@ -1559,6 +1590,8 @@ class NoLightingShaderBuild
 // Lazily creates and populates the pixel and vertex constant maps with shader constant values and stores their indices in m170-m180.
 // @fnv 0x00bc9cc0
 // src: XBOX_PDB 0x00bc9cc0
+// pdb: BSShaderNoLighting::CreateConstantMaps | BSShaderNoLighting.obj | retail, upstream name already matches, high
+// pdb locals: uiConstantPoint4Flags, uiConstantMatrix4Flags, uiDefinedMatrixFlags, uiConstantMatrix3Flags
 void NoLightingShaderBuild::BSShaderNoLighting_CreateConstantMaps()
 {
     if (!m30)

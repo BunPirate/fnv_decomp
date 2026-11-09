@@ -29,14 +29,15 @@ struct WalkTemp;
 template <class T> class BSSimpleList;
 enum BIPED_OBJECT;
 
+// pdb: class InventoryChanges, size 0x14, 5 members
 struct InventoryChanges
 {
 public:
-    BSSimpleList<InventoryStackRecord*>* m_pEntryList; // 0x00
+    BSSimpleList<InventoryStackRecord*>* pListofChanges; // 0x00
     TESObjectREFR* pRef;                            // 0x04
-    float m_fTotalWeight;                          // 0x08
-    float m_fArmorWeight;                          // 0x0C
-    bool m_bChanged;                               // 0x10
+    float fcontainerweight;                          // 0x08
+    float fpreviousContainerWeight;                          // 0x0C
+    bool bcountdirty;                               // 0x10
     unsigned char layoutPadding11;                // 0x11
     unsigned short layoutPadding12;               // 0x12
 
@@ -84,7 +85,7 @@ public:
     bool WearingVoiceModulateItem();
     bool HasItemOfType(unsigned int);
     bool FindItemInInventory(TESBoundObject*, int, int, int*, unsigned int, TESObjectREFR*);
-    bool FindItemInInventory(TESBoundObject*, int, int, int&, unsigned int, TESObjectREFR*);
+    bool InventoryChanges_ContainerHasObjects(TESBoundObject*, int, int, int&, unsigned int, TESObjectREFR*);
     InventoryStackRecord* FindInventoryItem(TESObjectREFR*, bool*);
     bool HasQuestObject();
     bool HasScript();
@@ -101,7 +102,7 @@ public:
     InventoryStackRecord* GetBestLight(TESActorBase*, bool);
     ItemEntry* SelectBestWeapon(TESCreature*, int*, int, int);
     InventoryEntryData* SelectBestWeapon(TESCreature*, float*, int, bool);
-    ItemEntry* FindBestAmmoChange(TESCreature*, int);
+    ItemEntry* InventoryChanges_GetBestAmmo(TESCreature*, int);
     InventoryStackRecord* GetInventoryEntryData(int, bool);
     InventoryStackRecord* GetInventoryEntryData(BIPED_OBJECT, bool);
     InventoryStackRecord* GetEquippedItemForSlot(int);
@@ -126,14 +127,14 @@ public:
     InventoryStackRecord* GetFirstInventoryEntry();
     int GetInventoryEntryCount();
     InventoryEntry* GetNextInventoryEntry(InventoryList*);
-    void TransferItemToReference(TESObjectREFR*, int, TESObjectREFR*);
+    void InventoryChanges_RemoveGold(TESObjectREFR*, int, TESObjectREFR*);
     float RemoveAllTypedItems(TESObjectREFR*, TESObjectREFR*, bool, bool, bool, bool, int, BGSListForm*);
     float RemoveAllItems(TESObjectREFR*, TESObjectREFR*, bool, bool, bool, bool, int, BGSListForm*);
     void DuplicateAllItems(TESObjectREFR*, TESObjectREFR*);
-    void MoveItemsOfType(TESObjectREFR*, TESObjectREFR*, TESForm*);
+    void RemoveStolenItems(TESObjectREFR*, TESObjectREFR*, TESForm*);
     void RemoveNonStolenItems(TESObjectREFR*, TESObjectREFR*);
     float GetInventoryWeight(bool);
-    float GetInventoryWeight(Actor*);
+    float GetEquippedWeight(Actor*);
     unsigned int GetTotalItemCount(bool, bool);
     void AddAmountToItemChange(TESBoundObject*, int);
     float GetArmorValueForActor(Actor*);
@@ -145,10 +146,10 @@ public:
     InventoryStackRecord* FindEntryWithExtraListType(int);
     void SetItemsBacktoDefaultState();
     void CopyInventoryChanges(InventoryChanges*, TESObjectREFR*, bool);
-    void ResetEntryList();
+    void InventoryChanges_ClearAllChangeItems();
     void ClearInventoryChanges();
     void ResetCachedWeights();
-    void ResetAndProcess(int, bool, int);
+    void InventoryChanges_RemoveItemType(int, bool, int);
     unsigned short GetSaveSize();
     void SaveGame(BGSSaveFormBuffer*);
     void SaveGame();
@@ -160,7 +161,7 @@ public:
     ExtraDataList* GetExtraDataListFromIndexForItem(TESBoundObject*, int);
     unsigned int FindItemEntryData(int*, void*, unsigned int);
     bool GetNextItem(InventoryIterator*, InventoryStackRecord**, unsigned int);
-    int ForEachInventoryItem(bool (__cdecl* callback)(WalkTemp*, void*), void* context, int flags);
+    int IterateInventory(bool (__cdecl* apCallback)(WalkTemp*, void*), void* apData, int aiIterateFlags);
     TESObjectREFR* GetRef();
     static TESObjectREFR* GetTempRef();
     void RemoveExtraFromObject(TESObject*, ExtraDataList*);

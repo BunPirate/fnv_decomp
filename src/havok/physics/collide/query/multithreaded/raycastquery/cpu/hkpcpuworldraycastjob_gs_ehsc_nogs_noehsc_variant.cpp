@@ -48,7 +48,7 @@ struct S_00df8d60
     int unk10;
     float unk14;
     S_00df8d60_Bool CastBody_Thunk(const void* data);
-    float hkCpuWorldRayCastCollector_addBroadPhaseHandle(const S_00df8d60_Data* data, int unused);
+    float hkCpuWorldRayCastCollector_addBroadPhaseHandle(const S_00df8d60_Data* broadPhaseHandle, int castIndex);
 };
 struct ParamBlock
 {
@@ -73,7 +73,7 @@ struct FUN_00df8db0_cls
     int unk08;
     float m_fResult;
 
-    float GetResult(ParamBlock* apParam);
+    float GetResult(ParamBlock* leaf);
 };
 extern int DAT_0101e594;
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
@@ -108,7 +108,7 @@ struct FUN_00df8dd0_cls
     int unk04;
     float m_f08;
 
-    float hkCpuWorldRayCastCollector_addLeaf(FUN_00df8dd0_Param* p);
+    float hkCpuWorldRayCastCollector_addLeaf(FUN_00df8dd0_Param* leaf);
 };
 struct DF8930Primary
 {
@@ -289,7 +289,7 @@ struct HkpcpuworldraycastjobInterfaceView
     virtual void v58();
     virtual void v5c(void* a, Output* b, unsigned int c);
 };
-void __cdecl castRayBroadPhase(HkpcpuworldraycastjobInterfaceView* iface, Source* src, Output* out, Spawned* spawned);
+void __cdecl castRayBroadPhase(HkpcpuworldraycastjobInterfaceView* broadphase, Source* command, Output* collector, Spawned* fixedBufferHitCollector);
 
 #include <xmmintrin.h>
 namespace fnv_00df8df0 {
@@ -539,7 +539,10 @@ struct TraceContext
 };
 // @fnv 0x00df8df0
 // src: XBOX_PDB 0x00df8df0
-void __cdecl hkCpuWorldRayCastJob(void* result, MeshRequest* request)
+// pdb: hkCpuWorldRayCastJob | hkpCpuWorldRaycastJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: rays, collectors, fixedBufferRayHitCollector, earlyOutFraction, collector, singleCommand
+void __cdecl hkCpuWorldRayCastJob(void* jobQueue, MeshRequest* nextJobOut)
 {
     {
         TraceContext* t = (TraceContext*)TlsGetValue(DAT_0126835c);
@@ -579,11 +582,11 @@ void __cdecl hkCpuWorldRayCastJob(void* result, MeshRequest* request)
     State finalState;
     Field field;
     Field fields[4];
-    if (request->shapeBuilder == 0)
+    if (nextJobOut->shapeBuilder == 0)
     {
-        queryType = request->header->type;
-        querySource = request->vertices;
-        int count = request->vertexCount;
+        queryType = nextJobOut->header->type;
+        querySource = nextJobOut->vertices;
+        int count = nextJobOut->vertexCount;
         VertexBuffer& vertices = scratch.vertices;
         vertices.Init(count);
         vertices.count = count;
@@ -630,8 +633,8 @@ void __cdecl hkCpuWorldRayCastJob(void* result, MeshRequest* request)
             at->option = queryType;
             ++at;
         } while (queryRemaining-- != 1);
-        hkAabbTreeRayCastUtil_hkAabbTreeData_hkAabbTreeAabb_unsigned_short_castRayFiltering(request->passA, vertices.data, querySource, queryType, fields, iteration.destination, count);
-        hkAabbTreeRayCastUtil_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_castRayFiltering(request->passB, vertices.data, querySource, queryType, fields, iteration.destination, count);
+        hkAabbTreeRayCastUtil_hkAabbTreeData_hkAabbTreeAabb_unsigned_short_castRayFiltering(nextJobOut->passA, vertices.data, querySource, queryType, fields, iteration.destination, count);
+        hkAabbTreeRayCastUtil_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_castRayFiltering(nextJobOut->passB, vertices.data, querySource, queryType, fields, iteration.destination, count);
         pool()->m_stack.m_next.m_storage = (void*)((int)iteration.destination);
         Field* end = fields + 4;
         int remaining = 3;
@@ -641,10 +644,10 @@ void __cdecl hkCpuWorldRayCastJob(void* result, MeshRequest* request)
             end->Reset();
         } while (--remaining >= 0);
         vertices.Clear();
-        queryFinal = request->finalPass;
-        Vertex* source = request->vertices;
+        queryFinal = nextJobOut->finalPass;
+        Vertex* source = nextJobOut->vertices;
         finalState.Init();
-        int remainingVertices = request->vertexCount;
+        int remainingVertices = nextJobOut->vertexCount;
         if (remainingVertices > 0)
         {
             iteration.count = remainingVertices;
@@ -654,16 +657,16 @@ void __cdecl hkCpuWorldRayCastJob(void* result, MeshRequest* request)
                 ++source;
             } while (--iteration.count != 0);
         }
-        int remainingFaces = request->faceCount;
-        Face* face = request->faces;
+        int remainingFaces = nextJobOut->faceCount;
+        Face* face = nextJobOut->faces;
         if (remainingFaces > 0)
         {
             iteration.count = remainingFaces;
             do
             {
                 *(__m128*)&scratch.range = *(__m128*)&shared.unit;
-                hkVector4_ProcessEntries_00e2b070(request->passA, face, queryType, &scratch.range, 0, 0, 0, 0, 0);
-                Runtime_ProcessEntries_00e2b510(request->passB, face, queryType, &scratch.range, 0, 0, 0, 0, 0);
+                hkVector4_ProcessEntries_00e2b070(nextJobOut->passA, face, queryType, &scratch.range, 0, 0, 0, 0, 0);
+                Runtime_ProcessEntries_00e2b510(nextJobOut->passB, face, queryType, &scratch.range, 0, 0, 0, 0, 0);
                 hkKdTreeUtils_castRayBundleIterative_ProcessEntries_00e2acf0(queryFinal, face, queryType, &scratch.range, 0, 0, 0, 0, 0);
                 ++face;
             } while (--iteration.count != 0);
@@ -672,21 +675,21 @@ void __cdecl hkCpuWorldRayCastJob(void* result, MeshRequest* request)
     else
     {
         field.Init();
-        field.option = request->header->type;
-        Vertex* vertex = request->vertices;
+        field.option = nextJobOut->header->type;
+        Vertex* vertex = nextJobOut->vertices;
         shared.state.Init();
         iteration.count = 0;
-        if (request->vertexCount > 0)
+        if (nextJobOut->vertexCount > 0)
             do
             {
                 field.weight = 1.0f;
                 field.dirty = 0;
-                castRayBroadPhase(request->shapeBuilder, vertex, &field, &shared.state);
+                castRayBroadPhase(nextJobOut->shapeBuilder, vertex, &field, &shared.state);
                 ++vertex;
                 ++iteration.count;
-            } while (iteration.count < request->vertexCount);
-        int bundleCount = request->faceCount;
-        Face* bundles = request->faces;
+            } while (iteration.count < nextJobOut->vertexCount);
+        int bundleCount = nextJobOut->faceCount;
+        Face* bundles = nextJobOut->faces;
         __assume(bundles != 0);
         if (bundleCount > 0)
         {
@@ -717,7 +720,7 @@ void __cdecl hkCpuWorldRayCastJob(void* result, MeshRequest* request)
                         c.output = 0;
                         field.weight = 1.0f;
                         field.dirty = 0;
-                        castRayBroadPhase(request->shapeBuilder, &c, &field, &shared.state);
+                        castRayBroadPhase(nextJobOut->shapeBuilder, &c, &field, &shared.state);
                         queryFaces->outputs[iteration.count] = c.output;
                         ++iteration.count;
                     } while (iteration.count < queryFaces->count);
@@ -738,6 +741,6 @@ void __cdecl hkCpuWorldRayCastJob(void* result, MeshRequest* request)
             t->head = p + 1;
         }
     }
-    ((Finalizer*)result)->ProcessCallback(request, request, 0);
+    ((Finalizer*)jobQueue)->ProcessCallback(nextJobOut, nextJobOut, 0);
 }
 }  // namespace fnv_00df8df0

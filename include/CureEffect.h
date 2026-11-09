@@ -2,6 +2,7 @@
 
 #include "ActiveEffect.h"
 
+// pdb: class CureEffect, size 0x50, bases: ActiveEffect, 2 members
 class CureEffect : public ActiveEffect
 {
 public:
@@ -10,6 +11,6 @@ public:
     virtual bool IsEffectValid(MagicTarget* apTarget);
     virtual void Start();
 
-    int m_eSpellType;
-    int m_iCureType;
+    int eSpellType;
+    int eArchetypeID;
 };

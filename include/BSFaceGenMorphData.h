@@ -5,6 +5,7 @@
 
 class NiRTTI;
 
+// pdb: class BSFaceGenMorphData, size 0x8, bases: NiRefObject, 0 members
 class BSFaceGenMorphData : public NiRefObject
 {
 public:

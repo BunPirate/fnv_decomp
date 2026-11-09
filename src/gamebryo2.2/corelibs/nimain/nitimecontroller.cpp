@@ -10,6 +10,8 @@
 
 // Clones the base NiObject, then recursively clones the next controller in the chain if one exists.
 // @fnv 0x00a6d0c0
+// pdb: NiTimeController::ProcessClone | NiTimeController.obj | retail, upstream name already matches, high
+// pdb params: kCloning
 void NiTimeController::ProcessClone(CloningProcess& kCloning)
 {
     NiObject::ProcessClone(kCloning);
@@ -19,6 +21,9 @@ void NiTimeController::ProcessClone(CloningProcess& kCloning)
 }
 //---------------------------------------------------------------------------
 // @fnv 0x00a6d450
+// pdb: NiTimeController::SetTarget | NiTimeController.obj | retail, upstream name already matches, high
+// pdb params: pkTarget
+// pdb locals: pkControl, pkGeometry
 void NiTimeController::SetTarget(NiObjectNET* pkTarget)
 {
     if (m_pkTarget == pkTarget)
@@ -46,7 +51,7 @@ void NiTimeController::SetTarget(NiObjectNET* pkTarget)
             }
             pkControl = pkControl->GetNext();
         }
-        m_pkTarget->AddController(this);
+        m_pkTarget->PrependController(this);
         if (IsGeometryController())
         {
             NiGeometry* pkGeometry = (NiGeometry*)m_pkTarget;
@@ -58,18 +63,21 @@ void NiTimeController::SetTarget(NiObjectNET* pkTarget)
 }
 //---------------------------------------------------------------------------
 // @fnv 0x00a6d500
+// pdb: NiTimeController::LinkObject | NiTimeController.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pkGeometry
 void NiTimeController::LinkObject(NiStream& kStream)
 {
     // FNV 2.2 NiPointer assignment order: release the old object before
     // retaining the new one (matches the original refcount sequence).
     NiTimeController* pkNext = (NiTimeController*)kStream.GetLoadedObject();
-    if (m_spNextController.m_pObject != pkNext)
+    if (m_spNext.m_pObject != pkNext)
     {
-        if (m_spNextController.m_pObject)
-            m_spNextController.m_pObject->DecRefCount();
-        m_spNextController.m_pObject = pkNext;
-        if (m_spNextController.m_pObject)
-            m_spNextController.m_pObject->IncRefCount();
+        if (m_spNext.m_pObject)
+            m_spNext.m_pObject->DecRefCount();
+        m_spNext.m_pObject = pkNext;
+        if (m_spNext.m_pObject)
+            m_spNext.m_pObject->IncRefCount();
     }
     m_pkTarget = (NiObjectNET*)kStream.GetLoadedObject();
 
@@ -92,6 +100,9 @@ extern int DAT_011a9bdc;
 
 // Copies the four globals DAT_011a9bd0 through DAT_011a9bdc into p[0..3] and returns p.
 // @fnv 0x00a29690
+// pdb: NiColorKey::SaveBinary | NiColorKey.obj | retail, object-file run extension, low
+// pdb params: stream, pkKey
+// pdb locals: pkColorKey
 int* __cdecl CopyGlobalsToBuffer(int, int, int, int* pDest)
 {
     pDest[0] = DAT_011a9bd0;
@@ -104,6 +115,9 @@ int* __cdecl CopyGlobalsToBuffer(int, int, int, int* pDest)
 
 // @fnv 0x00a6cc80
 // src: GAMEBRYO_LIB 0x00a6cc80
+// pdb: NiTimeController::IsEqual | NiTimeController.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkControl
 bool __fastcall NiTimeController_IsEqual(NiTimeController* pThis, int edx, NiObject* pkObject)
 {
     NiTimeController* pkControl = (NiTimeController*)pkObject;
@@ -121,13 +135,15 @@ bool __fastcall NiTimeController_IsEqual(NiTimeController* pThis, int edx, NiObj
 
 // @fnv 0x00a6cd00
 // src: XBOX_PDB 0x00a6cd00
+// pdb: NiTimeController::ItemsInList | NiTimeController.obj | debug, upstream name already matches, high
+// pdb locals: uiCount, pkControl
 unsigned int __fastcall NiTimeController_ItemsInList(NiTimeController* p, int edx)
 {
     unsigned int n = 0;
     while (p)
     {
         ++n;
-        p = p->m_spNextController.m_pObject;
+        p = p->m_spNext.m_pObject;
     }
     return n;
 }
@@ -135,6 +151,8 @@ unsigned int __fastcall NiTimeController_ItemsInList(NiTimeController* p, int ed
 extern const float DAT_01015f5c;
 
 // @fnv 0x00a6cd10
+// pdb: NiTimeController::Start | NiTimeController.obj | debug, vtable slot, medium
+// pdb params: fTime
 void __fastcall InitStartTime(NiTimeController* p, int edx, float fTime)
 {
     p->m_uiObjectFlags |= 8;
@@ -147,11 +165,13 @@ void __fastcall InitStartTime(NiTimeController* p, int edx, float fTime)
 // Registers the object's streamables with kStream, then registers the streamables of the stored NiObject if present; returns false if the base registration fails.
 // @fnv 0x00a6d0f0
 // src: XBOX_PDB 0x00a6d0f0
+// pdb: NiTimeController::RegisterStreamables | NiTimeController.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool __fastcall NiTimeController_RegisterStreamables(NiTimeController* p, int edx, NiStream& kStream)
 {
     if (!p->NiObject::RegisterStreamables(kStream))
         return false;
-    NiObject* n = p->m_spNextController.m_pObject;
+    NiObject* n = p->m_spNext.m_pObject;
     if (n)
         n->RegisterStreamables(kStream);
     return true;
@@ -165,6 +185,7 @@ static const float kNegInfinity = -3.402823466e+38f;
 
 
 // @fnv 0x00a6cd30
+// pdb: NiTimeController::Stop | NiTimeController.obj | debug, upstream name already matches, high
 void NiTimeController::Stop()
 {
     m_uiObjectFlags &= 0xfff7;
@@ -247,15 +268,18 @@ struct TCAV : TCBase
 };
 
 // @fnv 0x00a6d390
-void __cdecl StartControllersRecursive(TCAV* p, float fTime)
+// pdb: NiTimeController::StartAnimations | NiTimeController.obj | retail, object-file gap fill, high
+// pdb params: pkObj
+// pdb locals: pkControl, kPos, pkAVObj, pkProperty, pkNode, i, pkChild
+void __cdecl StartControllersRecursive(TCAV* pkObj, float fTime)
 {
-    NiTimeController* c = p->m_pControllers.m_pObject;
+    NiTimeController* c = pkObj->m_pControllers.m_pObject;
     while (c != 0)
     {
         c->Start(fTime);
-        c = c->m_spNextController.m_pObject;
+        c = c->m_spNext.m_pObject;
     }
-    const TCRtti* r = p->GetRTTI();
+    const TCRtti* r = pkObj->GetRTTI();
     if (r != 0)
     {
         do
@@ -267,7 +291,7 @@ void __cdecl StartControllersRecursive(TCAV* p, float fTime)
     }
     goto L_0076;
 L_0048: {
-    TCListNode* node = p->m_pList24;
+    TCListNode* node = pkObj->m_pList24;
     if (node != 0)
     {
         do
@@ -281,19 +305,19 @@ L_0048: {
     }
 }
 L_0076:
-    if (p->v03() != 0)
+    if (pkObj->v03() != 0)
     {
         unsigned int i = 0;
-        if (i < p->m_usChildCount)
+        if (i < pkObj->m_usChildCount)
         {
             do
             {
-                TCAV** arr = p->m_ppChildren;
+                TCAV** arr = pkObj->m_ppChildren;
                 TCAV* child = arr[i];
                 if (child != 0)
                     StartControllersRecursive(child, fTime);
                 i++;
-            } while (i < p->m_usChildCount);
+            } while (i < pkObj->m_usChildCount);
         }
     }
 }
@@ -409,16 +433,19 @@ extern int DAT_011f4280;
 
 // @fnv 0x00a6d2d0
 // src: XBOX_PDB 0x00a6d2d0
-void __cdecl NiTimeController_StartAnimations(TCTimeNode* obj)
+// pdb: NiTimeController::StartAnimations | NiTimeController.obj | retail, call graph, high
+// pdb params: pkObj
+// pdb locals: pkControl, kPos, pkAVObj, pkProperty, pkNode, i, pkChild
+void __cdecl NiTimeController_StartAnimations(TCTimeNode* pkObj)
 {
-    TCTimeNode* p = obj->m_pChildObject;
+    TCTimeNode* p = pkObj->m_pChildObject;
     while (p != 0)
     {
         p->Slot35(DAT_01015f5c);
         p = p->m_pNext;
     }
 
-    TCChainLink* n = obj->Slot02();
+    TCChainLink* n = pkObj->Slot02();
     TCListLink* pListLink = 0;
     TCListLink* next = 0;
     TCTimeNode* item = 0;
@@ -432,7 +459,7 @@ scan:
         goto scan;
     goto after_list;
 found:
-    pListLink = obj->m_pEntries;
+    pListLink = pkObj->m_pEntries;
     if (pListLink == 0)
         goto after_list;
     do
@@ -443,11 +470,11 @@ found:
     } while (pListLink != 0);
 
 after_list:
-    if (obj->Slot03() != 0)
+    if (pkObj->Slot03() != 0)
     {
-        for (unsigned int i = 0; i < obj->m_usItemCount; ++i)
+        for (unsigned int i = 0; i < pkObj->m_usItemCount; ++i)
         {
-            item = obj->m_ppItems[i];
+            item = pkObj->m_ppItems[i];
             if (item != 0)
                 NiTimeController_StartAnimations(item);
         }
@@ -458,29 +485,32 @@ after_list:
 
 // Loads a time controller from a stream: base object, flags, frequency, phase, key times, and version-dependent flag fixups.
 // @fnv 0x00a6d5e0
-void NiTimeController::LoadBinary(NiStream& kIn)
+// pdb: NiTimeController::LoadBinary | NiTimeController.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: usFlags
+void NiTimeController::LoadBinary(NiStream& kStream)
 {
-    NiObject::LoadBinary(kIn);
-    kIn.ResetStreamState();
-    ReadBinaryValue(kIn, m_uiObjectFlags);
-    ReadBinaryValue(kIn, m_fFrequency);
-    ReadBinaryValue(kIn, m_fPhase);
-    ReadBinaryValue(kIn, m_fLoKeyTime);
-    ReadBinaryValue(kIn, m_fHiKeyTime);
-    kIn.ResetStreamState();
-    if (kIn.GetFileVersion() < 0x0A000101)
+    NiObject::LoadBinary(kStream);
+    kStream.ResetStreamState();
+    ReadBinaryValue(kStream, m_uiObjectFlags);
+    ReadBinaryValue(kStream, m_fFrequency);
+    ReadBinaryValue(kStream, m_fPhase);
+    ReadBinaryValue(kStream, m_fLoKeyTime);
+    ReadBinaryValue(kStream, m_fHiKeyTime);
+    kStream.ResetStreamState();
+    if (kStream.GetFileVersion() < 0x0A000101)
     {
         unsigned short preserved = m_uiObjectFlags;
         m_uiObjectFlags &= 0xFFF0;
         m_uiObjectFlags *= 2;
         m_uiObjectFlags |= preserved & 0xF;
     }
-    if (kIn.GetFileVersion() < 0x0A000103)
+    if (kStream.GetFileVersion() < 0x0A000103)
     {
-        kIn.m_usNiTimeControllerFlags = m_uiObjectFlags;
+        kStream.m_usNiTimeControllerFlags = m_uiObjectFlags;
         m_uiObjectFlags &= 0x001F;
     }
-    if (kIn.GetFileVersion() < 0x0A01006D)
+    if (kStream.GetFileVersion() < 0x0A01006D)
         m_uiObjectFlags &= 0xFFDF;
     m_uiObjectFlags = (m_uiObjectFlags & 0xFF7F) | 0x40;
 }
@@ -499,6 +529,9 @@ template <class T> inline void Save_a6d730(NiStream& stream, T& value)
 }
 
 // @fnv 0x00a6d730
+// pdb: NiTimeController::SaveBinary | NiTimeController.obj | retail, vtable slot, high
+// pdb params: kStream
+// pdb locals: pkController
 inline bool CanSaveController(NiTimeController* controller)
 {
     typedef bool (__thiscall* Query)(NiTimeController*);
@@ -507,9 +540,9 @@ inline bool CanSaveController(NiTimeController* controller)
 void __fastcall SaveTimeController(NiTimeController* controller, int, NiStream& stream)
 {
     controller->NiObject::SaveBinary(stream);
-    NiTimeController* next = controller->m_spNextController.m_pObject;
+    NiTimeController* next = controller->m_spNext.m_pObject;
     while (next && !CanSaveController(next))
-        next = next->m_spNextController.m_pObject;
+        next = next->m_spNext.m_pObject;
     stream.SaveLinkID(next);
     Save_a6d730(stream, controller->m_uiObjectFlags);
     Save_a6d730(stream, controller->m_fFrequency);
@@ -544,6 +577,8 @@ template <class T, class TAlloc> inline unsigned int NiTArray<T, TAlloc>::Add(co
 
 
 // @fnv 0x00a6d830
+// pdb: NiTimeController::GetViewerStrings | NiTimeController.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall GetTimeControllerViewerStrings(NiTimeController* controller, int, NiViewerStringsArray* pkViewerStrings)
 {
     pkViewerStrings->Add(NiViewerStrings_NiGetViewerString_Title(DAT_011f49e4));
@@ -566,6 +601,7 @@ void __fastcall GetTimeControllerViewerStrings(NiTimeController* controller, int
 
 // @fnv 0x00a29680
 // src: GUESS 0x00a29680 (confidence: high)
+// pdb: hkDataArrayNative::clear | hkDataObjectNative.obj | debug, vtable slot, medium
 void __cdecl Object_DoNothing()
 {}
 
@@ -574,6 +610,9 @@ void __cdecl Object_DoNothing()
 // When active and time changed or force-update is set, it may return true if scaled time matches; otherwise it deactivates and returns false.
 // @fnv 0x00a36250
 // src: XBOX_PDB 0x00a36250
+// pdb: NiTimeController::DontDoUpdate | NiPSysEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: fTime
+// pdb locals: fScaledTime
 bool NiTimeController::DontDoUpdate(float fTime)
 {
     if (GetControllerActive(this))
@@ -583,9 +622,9 @@ bool NiTimeController::DontDoUpdate(float fTime)
             if (GetControllerComputeScaledTime(this))
             {
                 float fScaledTime = ComputeScaledTime(fTime);
-                if (m_fControllerTime == fScaledTime && !GetControllerForceUpdate(this))
+                if (m_fScaledTime == fScaledTime && !GetControllerForceUpdate(this))
                     return true;
-                m_fControllerTime = fScaledTime;
+                m_fScaledTime = fScaledTime;
             }
             SetControllerActive(false);
             return false;
@@ -651,6 +690,7 @@ class FUN_00a362f0_cls
 // Initializes all fields of FUN_00a362f0_cls with global constants and returns this.
 // @fnv 0x00a362f0
 // src: GUESS 0x00a362f0 (confidence: low)
+// pdb: NiBlendAccumTransformInterpolator::AccumArrayItem::AccumArrayItem | NiTransformController.obj | retail, object-file run extension, low
 void* FUN_00a362f0_cls::InitializeFields_00a362f0()
 {
     volatile float* __restrict p = (volatile float*)this;
@@ -689,6 +729,9 @@ void* __cdecl _NiMalloc(unsigned int);
 int __cdecl NiSprintf(char*, unsigned int, const char*, ...);
 // Allocates strlen(pcPrefix)+12 bytes; for eType 0 or 1, formats the prefix with APP_TIME or APP_INIT and returns the buffer.
 // @fnv 0x00a6d120
+// pdb: NiTimeController::GetViewerString | NiTimeController.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eType
+// pdb locals: pcString, uiLen
 char* __cdecl BuildAppTimeOrInitString(const char* pcPrefix, int eType)
 {
     unsigned int uiLen = (unsigned int)strlen(pcPrefix) + 12;
@@ -710,6 +753,9 @@ int __cdecl NiSprintf(char*, unsigned int, const char*, ...);
 // Allocates a buffer, formats pcPrefix with LOOP, REVERSE, CLAMP, or UNKNOWN!!! based on eType, and returns it.
 // @fnv 0x00a6d190
 // src: XBOX_PDB 0x00a6d190
+// pdb: NiTimeController::GetViewerString | NiTimeController.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eType
+// pdb locals: pcString, uiLen
 char* __cdecl NiTimeController_GetViewerString(const char* pcPrefix, int eType)
 {
     unsigned int uiLen = (unsigned int)strlen(pcPrefix) + 11;
@@ -761,6 +807,8 @@ class CloningProcess
 
 
 // @fnv 0x00a6cfe0
+// pdb: NiTimeController::NiTimeController | NiTimeController.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to bhkForceController::CopyMembers
 void __fastcall CopyTimeControllerMembers(NiTimeController* controller, int, NiTimeController* pkDest, CloningProcess& kCloning)
 {
     controller->NiObject::CreateVertexBufferSet(pkDest, kCloning);
@@ -771,7 +819,7 @@ void __fastcall CopyTimeControllerMembers(NiTimeController* controller, int, NiT
     pkDest->m_fHiKeyTime = controller->m_fHiKeyTime;
     pkDest->m_fStartTime = controller->m_fStartTime;
     pkDest->m_fLastTime = controller->m_fLastTime;
-    pkDest->m_fWeightAdjustedLastTime = controller->m_fWeightAdjustedLastTime;
+    pkDest->m_fWeightedLastTime = controller->m_fWeightedLastTime;
 
     if (controller->m_pkTarget)
     {
@@ -787,9 +835,9 @@ void __fastcall CopyTimeControllerMembers(NiTimeController* controller, int, NiT
         }
     }
 
-    NiObject* pkNext = (NiObject*)controller->m_spNextController.m_pObject;
+    NiObject* pkNext = (NiObject*)controller->m_spNext.m_pObject;
     if (pkNext)
-        pkDest->m_spNextController = (NiTimeController*)pkNext->MakeClone(kCloning);
+        pkDest->m_spNext = (NiTimeController*)pkNext->MakeClone(kCloning);
 }
 
 namespace ScaledTimeMath {
@@ -815,6 +863,9 @@ __declspec(thread) float ts_fLastHiKeyTime = 0.0f;
 
 // Computes a scaled time from fTime using frequency, phase, and cycle type, caching the result in thread-local storage when inputs are unchanged.
 // @fnv 0x00a6cd60
+// pdb: NiTimeController::ComputeScaledTime | NiTimeController.obj | retail, upstream name already matches, high
+// pdb params: fTime
+// pdb locals: eCycle, fDeltaTime, fScaledTime, fReturn, fSpan, fTimeFract, fDoubleSpan
 float NiTimeController::ComputeScaledTime(float fTime)
 {
     if (m_fStartTime == -3.402823466e+38F)
@@ -823,7 +874,7 @@ float NiTimeController::ComputeScaledTime(float fTime)
     float fMoveElapsedTime;
     if (m_fLastTime == -3.402823466e+38F)
     {
-        m_fWeightAdjustedLastTime = 0.0f;
+        m_fWeightedLastTime = 0.0f;
         if (m_uiObjectFlags & 1)
             fMoveElapsedTime = 0.0f;
         else
@@ -834,8 +885,8 @@ float NiTimeController::ComputeScaledTime(float fTime)
         fMoveElapsedTime = fTime - m_fLastTime;
     }
 
-    m_fWeightAdjustedLastTime += m_fFrequency * fMoveElapsedTime;
-    float fScaledTime = m_fWeightAdjustedLastTime + m_fPhase;
+    m_fWeightedLastTime += m_fFrequency * fMoveElapsedTime;
+    float fScaledTime = m_fWeightedLastTime + m_fPhase;
     m_fLastTime = fTime;
 
     unsigned short uFlags = m_uiObjectFlags;

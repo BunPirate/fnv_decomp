@@ -57,5 +57,6 @@ class FUN_00dff6a0
 
 // Destructor for a DFF6 node that releases its child list and owner reference.
 // @fnv 0x00dff6a0
+// pdb: hkpDisplayBindingData::PhysicsSystem::~PhysicsSystem | hkpDisplayBindingDataClass.obj | retail, object-file gap fill, high
 FUN_00dff6a0::~FUN_00dff6a0() throw()
 {}

@@ -26,14 +26,17 @@ class hkMemoryAllocator;
 
 // hkContainerAllocators.h: get() is hkMemoryRouter::getInstance().heap() / temp() / debug(); a unit defines it
 // (the units' hkMemoryRouter stand-in is hkMemoryRouter).
+// pdb: structure hkContainerTempAllocator, size 0x1, 0 members
 struct hkContainerTempAllocator
 {
     hkMemoryAllocator& get(void*);
 };
+// pdb: structure hkContainerHeapAllocator, size 0x1, 0 members
 struct hkContainerHeapAllocator
 {
     hkMemoryAllocator& get(const void*);
 };
+// pdb: structure hkContainerDebugAllocator, size 0x1, 0 members
 struct hkContainerDebugAllocator
 {
     hkMemoryAllocator& get(void*);
@@ -112,6 +115,7 @@ class hkInplaceArray : public hkArray<T, Allocator>
 
 // hkArrayUtil.h: the out-of-line helpers (0x00c908c0 is _reserve). construct / destruct / constructWithCopy /
 // constructWithArray are templates on hkTypeIsPod / hkTypeIsClass that a unit defines when it uses them.
+// pdb: class hkArrayUtil, size 0x1, 0 members
 class hkArrayUtil
 {
   public:
@@ -123,7 +127,7 @@ class hkArrayUtil
     template <typename T> static __forceinline void destruct(T* pItem, int iCount, hkTypeIsClass);
     template <typename T> static __forceinline void constructWithArray(T* pItem, int iCount, const T* pTcopy, hkTypeIsPod);
     template <typename T> static __forceinline void constructWithArray(T* pItem, int iCount, const T* pTcopy, hkTypeIsClass);
-    static void __cdecl _reserve(hkMemoryAllocator& kFirst, void*, int iReqElem, int iSizeElem);
-    static void __cdecl _reserveMore(hkMemoryAllocator& kFirst, void* pArray, int iSizeElem);
+    static void __cdecl _reserve(hkMemoryAllocator& mem, void*, int numElem, int sizeElem);
+    static void __cdecl _reserveMore(hkMemoryAllocator& mem, void* array, int sizeElem);
     static void __cdecl _reduce(hkMemoryAllocator& kFirst, void* pArray, int iSizeElem, char* sInplaceMem, int iRequestedCapacity);
 };

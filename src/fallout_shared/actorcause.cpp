@@ -23,6 +23,8 @@ struct Holder0042f780
 };
 // @fnv 0x0042f780
 // src: GUESS 0x0042f780 (confidence: medium)
+// pdb: NiPointer<ActorCause>::operator= | ExtraDataList.obj | debug, call graph, high
+// pdb params: pObject
 Holder0042f780* Holder0042f780::AssignRetainedObject(ActorCause* pObject)
 {
     if (m_pObject != pObject)
@@ -125,19 +127,22 @@ extern BSSimpleList<ActorCause*> DAT_011d6124;
 
 // @fnv 0x0066e010
 // src: GUESS 0x0066e010 (confidence: low)
+// pdb: ActorCause::~ActorCause | ActorCause.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ActorCause::ActorCause
+// pdb locals: bremove
 ActorCause* ActorCause::UpdateState_0066e010(Actor* apCauseRef)
 {
-    ((Pair12*)&m_08)->Reset();
-    m_00 = apCauseRef;
-    Pair12* src2 = (m_00 != 0) ? ((CauseRef*)m_00)->GetBase() : &DAT_011f426c;
-    m_08 = *(NiPoint3*)src2;
-    m_04 = 0;
-    VirtObjPlaceholder* v = (m_00 != 0) ? ((CauseRef*)apCauseRef)->GetVirt() : 0;
+    ((Pair12*)&kOrigin)->Reset();
+    pActor = apCauseRef;
+    Pair12* src2 = (pActor != 0) ? ((CauseRef*)pActor)->GetBase() : &DAT_011f426c;
+    kOrigin = *(NiPoint3*)src2;
+    pWitnesses = 0;
+    VirtObjPlaceholder* v = (pActor != 0) ? ((CauseRef*)apCauseRef)->GetVirt() : 0;
     if (v != 0)
     {
-        m_04 = (BSSimpleList<DetectionViewData*>*)v->v61((CauseRef*)m_00);
+        pWitnesses = (BSSimpleList<DetectionViewData*>*)v->v61((CauseRef*)pActor);
     }
-    m_18 = 0;
+    iRefCount = 0;
     m_14 = DAT_011d60cc;
     DAT_011d60cc = DAT_011d60cc + 1;
     ActorCause* self = this;
@@ -159,6 +164,9 @@ extern B66E810Node g_kB66E810List;
 
 // Walks g_kB66E810List, updating items with a positive count and deleting/removing items whose count is zero or that are null.
 // @fnv 0x0066e810
+// pdb: ActorCause::InitLoadActorCausesList | ActorCause.obj | retail, call graph, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: plist, plastList, pactorCause, bremove
 void __cdecl UpdateOrRemoveItems(int iArg)
 {
     B66E810Node* pkNode = &g_kB66E810List;
@@ -171,7 +179,7 @@ void __cdecl UpdateOrRemoveItems(int iArg)
         {
             if (pkItem->GetCount() > 0)
             {
-                pkItem->Update(iArg);
+                pkItem->ActorCause_InitLoadGame(iArg);
             }
             else
             {

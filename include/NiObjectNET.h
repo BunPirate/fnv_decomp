@@ -11,6 +11,7 @@ namespace fx
     struct NiFixedString;
 }
 
+// pdb: class NiObjectNET, size 0x18, bases: NiObject, 5 members
 class NiObjectNET : public NiObject
 {
   public:
@@ -24,20 +25,20 @@ class NiObjectNET : public NiObject
     virtual ~NiObjectNET();
     virtual void LoadBinary(NiStream& stream);
     virtual void LinkObject(NiStream& stream);
-    virtual void ProcessClone(CloningProcess& process);
+    virtual void ProcessClone(CloningProcess& kCloning);
 
     bool AddExtraData(NiExtraData* extra);
-    void DeleteExtraData(unsigned short index);
-    bool ResizeExtraData(unsigned short size);
+    void DeleteExtraData(unsigned short usExtraDataIndex);
+    bool SetExtraDataSize(unsigned short usSize);
     void RefreshExtraData();
     void IncRefCount();
     void DecRefCount();
-    void AddController(NiTimeController* controller);
+    void PrependController(NiTimeController* pkControl);
     NiTimeController* GetControllers() const;
-    void ReplaceControllers(NiTimeController* controller);
+    void ReplaceControllers(NiTimeController* pkControl);
     void SetName(const NiFixedString& name);
     void SetName(const fx::NiFixedString& name);
-    void SetFlags(unsigned short flags);
+    void NiAlphaProperty_SetTestMode(unsigned short eTestFunc);
     unsigned int GetNumChildren();
     void CopyMemberData(NiObjectNET* object, CloningProcess& process);
 

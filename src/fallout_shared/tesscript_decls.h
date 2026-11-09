@@ -76,7 +76,7 @@ ScriptFunctionInfo* GetFunctionByOpcode(SCRIPT_OUTPUT output);
 extern SettingT_GameSettingCollection_ DAT_011cac68;
 extern float DAT_011cad20[8];
 extern int DAT_011cad40;
-char* AllocateZeroed(unsigned int count, unsigned int size);
+char* ourCalloc(unsigned int count, unsigned int size);
 class FormRecordMetadata
 {
   public:

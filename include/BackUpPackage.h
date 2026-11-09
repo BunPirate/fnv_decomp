@@ -5,6 +5,7 @@
 class Actor;
 class BGSSaveFormBuffer;
 
+// pdb: class BackUpPackage, size 0x8c, bases: TESPackage, 1 members
 class BackUpPackage : public TESPackage
 {
 public:
@@ -18,7 +19,7 @@ public:
     virtual unsigned short SaveGameTESAlt();
     virtual unsigned short LoadGameTESAlt();
 
-    int unk80;
+    int pBackUpPoint;
     int unk84;
     int unk88;
 

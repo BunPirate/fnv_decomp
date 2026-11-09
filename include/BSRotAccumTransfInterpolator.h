@@ -5,6 +5,7 @@
 
 class TimedRotationKey;
 
+// pdb: class BSRotAccumTransfInterpolator, size 0x58, bases: NiTransformInterpolator, 1 members
 class BSRotAccumTransfInterpolator : public NiTransformInterpolator
 {
 public:
@@ -23,7 +24,7 @@ public:
     void CopyMemberData(BSRotAccumTransfInterpolator*, CloningProcess*);
     void __local_vftable_ctor_closure();
     static NiObject* CreateObject();
-    void FUN_00a40360(BSRotAccumTransfInterpolator*, int);
+    void CopyMembers(BSRotAccumTransfInterpolator*, int);
     BSRotAccumTransfInterpolator* CreateInterpolator(int);
     void j_j_j_nullsub_3(int);
     void UpdateRotValue(int);
@@ -31,5 +32,5 @@ public:
     BSRotAccumTransfInterpolator* FUN_00a43df0(unsigned char);
     TimedRotationKey* GetRotData(unsigned int&, int&, unsigned char&) const;
 
-    NiQuaternion m_kAccumulatedRotation;
+    NiQuaternion PrevKeyRot;
 };

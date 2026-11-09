@@ -11,13 +11,15 @@
 extern void* g_PathingRequestLOS_vtable;
 
 // @fnv 0x004b1480
-float WrapAngle(float angle)
+// pdb: ClampAngle | GlobalFunc.obj | retail, call graph (shared callers), high
+// pdb params: afAngle
+float WrapAngle(float afAngle)
 {
-    if (angle < 0.0)
-        angle = fmod((float)(angle + 6.2831854820251465), 6.2831854820251465f);
-    else if (angle >= 6.2831854820251465)
-        angle = fmod(angle, 6.2831854820251465f);
-    return angle;
+    if (afAngle < 0.0)
+        afAngle = fmod((float)(afAngle + 6.2831854820251465), 6.2831854820251465f);
+    else if (afAngle >= 6.2831854820251465)
+        afAngle = fmod(afAngle, 6.2831854820251465f);
+    return afAngle;
 }
 
 struct C006e39d0
@@ -31,6 +33,7 @@ struct S006e3a50
 };
 // Calls FUN_006e39d0 on this, deletes this with size 24 when flags has bit 0 set, and returns this.
 // @fnv 0x006e3a50
+// pdb: BSSimpleArrayRefCounted<PathingAvoidNode,1024>::`scalar deleting destructor' | PathingRequest.obj | debug, vtable slot, medium
 void* S006e3a50::FUN_006e3a50(unsigned int flags)
 {
     reinterpret_cast<C006e39d0*>(this)->FUN_006e39d0();
@@ -40,6 +43,7 @@ void* S006e3a50::FUN_006e3a50(unsigned int flags)
 }
 
 // @fnv 0x006e5890
+// pdb: PathingRequestLOS::`scalar deleting destructor' | PathingRequestLOS.obj | retail, vtable slot, high
 void* PathingRequestLOS::DestroyAndFree(unsigned int flags)
 {
     this->PathingRequestLOS::~PathingRequestLOS();
@@ -49,24 +53,29 @@ void* PathingRequestLOS::DestroyAndFree(unsigned int flags)
 }
 
 // @fnv 0x006e5c00
-void PathingRequestLOS::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: PathingRequestLOS::LoadGame | PathingRequestLOS.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, i, ignoreLoc
+void PathingRequestLOS::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    PathingRequest::LoadGame(buffer);
-    unsigned int count = buffer->ReadElementCount();
+    PathingRequest::LoadGame(apLoadGameBuffer);
+    unsigned int count = apLoadGameBuffer->ReadElementCount();
     m_b4.SetSize(count, 1);
     unsigned int i = 0;
     for (; i < count; ++i)
     {
         ParentSpaceNode& node = m_b4.GetAt((int)i);
-        buffer->ReadTypedData(&node, 12);
+        apLoadGameBuffer->ReadTypedData(&node, 12);
     }
-    buffer->ReadTypedData(static_cast<void*>(&m_c4), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&m_c8), 12u);
-    buffer->ReadTypedData(static_cast<void*>(&m_d4), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_c4), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_c8), 12u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_d4), 4u);
 }
 
 // @fnv 0x006e5a40
 // src: COMMUNITY 0x006e5a40
+// pdb: PathingRequestLOS::operator= | PathingRequestLOS.obj | debug, object-file gap fill, medium
+// pdb params: aRequest
 void PathingRequestLOS::SetSearchCenter(NiPoint3 v, float w)
 {
     m_c8 = v;
@@ -74,6 +83,9 @@ void PathingRequestLOS::SetSearchCenter(NiPoint3 v, float w)
 }
 
 // @fnv 0x006e5a80
+// pdb: PathingRequestLOS::CopyTo | PathingRequestLOS.obj | retail, upstream name already matches, high
+// pdb params: apDest
+// pdb locals: pdest
 void PathingRequestLOS::CopyTo(PathingRequest* apDest)
 {
     PathingRequest* pdest = apDest;
@@ -85,6 +97,9 @@ void PathingRequestLOS::CopyTo(PathingRequest* apDest)
 }
 
 // @fnv 0x006e5b20
+// pdb: PathingRequestLOS::SaveGame | PathingRequestLOS.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: isaveGameCount, i, ignoreLoc
 void PathingRequestLOS::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     PathingRequest::PathingRequest_SaveGame(apSaveGameBuffer);
@@ -113,6 +128,7 @@ void PathingRequestLOS::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 extern float g_fFUN006e57e0_c4;
 
 // @fnv 0x006e57e0
+// pdb: PathingRequestLOS::PathingRequestLOS | PathingRequestLOS.obj | debug, call graph, medium
 PathingRequestLOS::PathingRequestLOS()
     : PathingRequest(),
       m_b0(((*reinterpret_cast<void**>(this) = &g_PathingRequestLOS_vtable), 0)),
@@ -123,16 +139,18 @@ PathingRequestLOS::PathingRequestLOS()
 }
 
 // @fnv 0x006e58d0
+// pdb: PathingRequestLOS::~PathingRequestLOS | PathingRequestLOS.obj | retail, upstream name already matches, high
 PathingRequestLOS::~PathingRequestLOS()
 {}
 
 // @fnv 0x006e5940
-PathingRequestLOS::PathingRequestLOS(const PathingRequestLOS& kOther)
-    : PathingRequest(const_cast<PathingRequestLOS*>(&kOther)),
-      m_b0(((*reinterpret_cast<void**>(this) = &g_PathingRequestLOS_vtable), kOther.m_b0)),
-      m_c4(kOther.m_c4)
+// pdb: PathingRequestLOS::PathingRequestLOS | PathingRequestLOS.obj | retail, object-file run extension, high
+PathingRequestLOS::PathingRequestLOS(const PathingRequestLOS& aRequest)
+    : PathingRequest(const_cast<PathingRequestLOS*>(&aRequest)),
+      m_b0(((*reinterpret_cast<void**>(this) = &g_PathingRequestLOS_vtable), aRequest.m_b0)),
+      m_c4(aRequest.m_c4)
 {
-    kOther.m_b4.CopyTo(&m_b4);
+    aRequest.m_b4.CopyTo(&m_b4);
     float kPos[3];
-    Place(kOther.GetPosition(*reinterpret_cast<NiPoint3*>(kPos)), kOther.GetRadius());
+    Place(aRequest.GetPosition(*reinterpret_cast<NiPoint3*>(kPos)), aRequest.GetRadius());
 }

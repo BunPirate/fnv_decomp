@@ -57,7 +57,7 @@ class ReferencePlacementData
     NiPoint3 Location;                    // +0x14, 12 bytes
     NiPoint3 Angle;                       // +0x20, 12 bytes
     unsigned char m_ucFlags;              // +0x2C, 1 bytes
-    bool GetCellAndWorld(TESObjectCELL*& apCell, TESWorldSpace*& apWorld);
+    bool GetLocationCellAndWorld(TESObjectCELL*& arpCell, TESWorldSpace*& arpWorld);
 };
 #pragma pack(pop)
 // Packet records are byte packed on disk.
@@ -76,6 +76,7 @@ INITIAL_DATA_ASSERT(offsetof(ReferencePlacementData, m_ucFlags) == 44);
 #undef INITIAL_DATA_JOIN
 #undef INITIAL_DATA_JOIN_IMPL
 
+// pdb: class BGSSaveLoadInitialData, size 0x1, 0 members
 class BGSSaveLoadInitialData
 {
   public:

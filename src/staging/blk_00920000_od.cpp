@@ -41,6 +41,7 @@ struct FUN_0092c890_class
 
 // @fnv 0x0092c890
 // src: COMMUNITY 0x0092c890
+// pdb: NiPointer<BSCloneReserver>::~NiPointer<BSCloneReserver> | MiddleHighProcess.obj | debug, object-file run extension, low
 void FUN_0092c890_class::BSCloneReserverPtr_Free()
 {
     if (reinterpret_cast<int*>(this)[0])
@@ -49,8 +50,9 @@ void FUN_0092c890_class::BSCloneReserverPtr_Free()
 
 int __fastcall bhkCharacterController_GetState(char*);
 // @fnv 0x009306b0
-// src: COMMUNITY 0x009306b0
-bool __fastcall bhkCharacterController_GetIsSwimming(bhkCharacterController* self)
+// src: XBOX_DEBUG_PDB 0x009306b0
+// pdb: bhkCharacterController::QIsSwimming | MobileObject.obj | debug, call graph (shared callers), high
+bool __fastcall bhkCharacterController_QIsSwimming(bhkCharacterController* self)
 {
     return bhkCharacterController_GetState(reinterpret_cast<char*>(self)) == 5;
 }
@@ -78,6 +80,7 @@ FUN_0042ed70_* XActor::GetExtra()
 
 // @fnv 0x00934430
 // src: XBOX_PDB 0x00934430
+// pdb: TESObjectREFR::GetSayToTopicInfo | MobileObject.obj | debug, upstream name already matches, high
 void XActor::TESObjectREFR_GetSayToTopicInfo()
 {
     GetExtra()->ExtraDataList_GetExtraSayToTopicInfo();
@@ -121,9 +124,11 @@ FUN_00937d30_cls* FUN_00937d30_cls::Modifier_Modifier_1()
 }
 
 // @fnv 0x00937d50
+// pdb: ModifierList::Revert | ModifierList.obj | debug, call graph (shared callers), low
+// pdb params: apLoadGameBuffer
 void ActorValueModifierList::InitLoadGame(BGSLoadFormBuffer* apBuffer)
 {
-    RemoveAllModifiers();
+    DeleteAllModifiers();
 }
 
 extern int DAT_011e0750;
@@ -136,6 +141,8 @@ struct FUN_00937f40_Class
 
 // If DAT_011e0750 is nonzero and m_Array is set, deletes each non-null element, deletes the array, and clears m_Array.
 // @fnv 0x00937f40
+// pdb: FastModifierCollection::~FastModifierCollection | ModifierList.obj | retail, object-file run extension, low
+// pdb locals: i
 void FUN_00937f40_Class::FreeArrayItems()
 {
     void* pArray;
@@ -157,6 +164,7 @@ void FUN_00937f40_Class::FreeArrayItems()
     }
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool, unsigned int);
@@ -167,6 +175,8 @@ void TaskQueueInterface::SetTaskFlagDWord(bool, unsigned int)
 {}
 
 // @fnv 0x00938160
+// pdb: NiAVObject::SetPlayer | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: abBit
 void TaskQueueInterface::SetEnabledFlag(bool enabled)
 {
     SetTaskFlagDWord(enabled, 0x8000000);
@@ -219,6 +229,8 @@ struct FUN_0092c900_shell
     FUN_0092c900_shell* AssignPointer(FUN_0092c900_shell* src);
 };
 // @fnv 0x0092c900
+// pdb: NiPointer<BSCloneReserver>::operator= | MiddleHighProcess.obj | debug, object-file run extension, low
+// pdb params: ptr
 FUN_0092c900_shell* FUN_0092c900_shell::AssignPointer(FUN_0092c900_shell* apSource)
 {
     if (p != apSource->p)
@@ -252,6 +264,7 @@ struct FUN_0092ca00 : FUN_0092c950
 };
 // Destructor for FUN_0092ca00; empty body, base and member destructors run automatically.
 // @fnv 0x0092ca00
+// pdb: MiddleLowProcess::~MiddleLowProcess | MiddleLowProcess.obj | debug, object-file gap fill, medium
 FUN_0092ca00::~FUN_0092ca00()
 {}
 
@@ -267,9 +280,12 @@ TESForm* __cdecl _ref_004839c0(int id);
 // Looks up a TESForm by id; if it exists and IsEnabled returns true, calls SetAccumulate(true) and FUN_00936aa0(b) on it.
 // @fnv 0x00936ac0
 // src: COMMUNITY 0x00936ac0
-void MobileObject_DialogueConversationCallBack(int aiFormId, bool b)
+// pdb: MobileObject::DialogueConversationCallBack | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: apContext, abSucceeded
+// pdb locals: iactorid, pform, pactor
+void MobileObject_DialogueConversationCallBack(int apContext, bool abSucceeded)
 {
-    int iFormId = aiFormId;
+    int iFormId = apContext;
     TESForm* p = _ref_004839c0(iFormId);
     if (p && ((bool(__thiscall*)(TESForm*))(*(void***)p)[63])(p))
     {
@@ -277,7 +293,7 @@ void MobileObject_DialogueConversationCallBack(int aiFormId, bool b)
         if (q)
         {
             ((_Dummy_004bc4a0*)q)->SetAccumulate(true);
-            ((FUN_00936aa0_shell*)q)->MobileObject_SetSoundCallBackSuccess(b);
+            ((FUN_00936aa0_shell*)q)->MobileObject_SetSoundCallBackSuccess(abSucceeded);
         }
     }
 }
@@ -292,9 +308,10 @@ struct FUN_00937030_Class : public ListX
     ~FUN_00937030_Class();
 };
 // @fnv 0x00937030
+// pdb: ModifierList::~ModifierList | ModifierList.obj | retail, call graph (shared callers), high
 FUN_00937030_Class::~FUN_00937030_Class()
 {
-    ((ActorValueModifierList*)this)->RemoveAllModifiers();
+    ((ActorValueModifierList*)this)->DeleteAllModifiers();
 }
 
 struct FUN_0055a2b0_Class
@@ -315,6 +332,10 @@ void* __thiscall FUN_0055a2b0_Class::DestroyIfFlagged(unsigned int flags)
 
 // Returns 0 for a null response, otherwise counts the response and its chained GetNext() responses.
 // @fnv 0x009369d0
+// pdb: MobileObject::DisplaySubTitleCallback | MobileObject.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESResponse::GetListCount
+// pdb params: apContext, aiDuration
+// pdb locals: iactorid, pform, pactor
 int __fastcall GetResponseCount(TESResponse* apResponse)
 {
     if (!apResponse)
@@ -352,6 +373,9 @@ struct FUN_00937b50_cls
 };
 // @fnv 0x00937b50
 // src: COMMUNITY 0x00937b50
+// pdb: ModifierList::SaveGame | ModifierList.obj | debug, object-file run extension, low
+// pdb params: apSaveGameBuffer
+// pdb locals: icount, plist, iposition, pmod, i
 void FUN_00937b50_cls::ModifierList_SaveGameBGS(BGSSaveFormBuffer* buf)
 {
     unsigned int uiPos;
@@ -396,6 +420,9 @@ void FUN_009380e0_rec(NiAVObject* obj);
 
 // @fnv 0x009380e0
 // src: COMMUNITY 0x009380e0
+// pdb: RecursiveSetPlayerFlag | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apObject
+// pdb locals: pnode, n, pobj
 void MarkPlayerBones(TaskQueueInterface* self)
 {
     if (!self)
@@ -421,6 +448,8 @@ void* __cdecl GetObjectFromNode(NiAVObject*, bool, int);
 
 // @fnv 0x00930870
 // src: COMMUNITY 0x00930870
+// pdb: MobileObject::DetachHavok | MobileObject.obj | retail, upstream name already matches, high
+// pdb locals: bres, pav
 bool __fastcall MobileObject_DetachHavok(Actor* pActor)
 {
     bool result;
@@ -453,6 +482,8 @@ struct FUN_00933810
 };
 // Calls Call on the object stored at this+0x3ec, passing the value at this+0x3f0, and returns its result.
 // @fnv 0x00933810
+// pdb: bhkCharacterController::GetCurrentState | MobileObject.obj | debug, call graph, medium
+// pdb locals: char_state
 int FUN_00933810::Method()
 {
     int result = ((FUN_00cbc510*)*((int*)((char*)this + 0x3ec)))->Call(*(int*)((char*)this + 0x3f0));
@@ -463,6 +494,9 @@ namespace fnv_00935cc0 {
 
 // @fnv 0x00935cc0
 // src: XBOX_PDB 0x00935cc0
+// pdb: MobileObject::SoundFileCallBack | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: apContext, abSucceeded
+// pdb locals: iactorid, pform, pactor, pdial, ppack
 void MobileObject_SoundFileCallBack(int param_1)
 {
     int form = param_1;
@@ -476,11 +510,11 @@ void MobileObject_SoundFileCallBack(int param_1)
 
             if (actor != 0)
             {
-                actor->m_bFourthBooleanValue = 1;
+                actor->bSoundFileDone = 1;
 
-                if (actor->m_bSecondBooleanValue)
+                if (actor->bTalkingToPlayer)
                 {
-                    actor->m_bFirstFlag = 1;
+                    actor->bSpeakingDone = 1;
                 }
 
                 TESPackage* currentPackage = actor->MobileObject::GetCurrentPackage();
@@ -493,7 +527,7 @@ void MobileObject_SoundFileCallBack(int param_1)
 
                 if (dialoguePackage != 0)
                 {
-                    if (actor->m_bFourthBooleanValue)
+                    if (actor->bSoundFileDone)
                     {
                         *reinterpret_cast<float*>(reinterpret_cast<char*>(dialoguePackage) + 0x90) =
                             0.30000001192092896f;
@@ -517,6 +551,7 @@ struct FUN_009369a0_shell
 // Returns the result of GetResponseCount on m_next, or 0 when m_next is null.
 // @fnv 0x009369a0
 // src: COMMUNITY 0x009369a0
+// pdb: ResponseListWrapper::GetListCount | MobileObject.obj | debug, upstream name already matches, high
 int FUN_009369a0_shell::ResponseListWrapper_GetListCount()
 {
     return m_next ? GetResponseCount(m_next) : 0;
@@ -548,6 +583,7 @@ struct FUN_00937000 : public SL
 };
 
 // @fnv 0x00937000
+// pdb: ModifierList::ModifierList | ModifierList.obj | debug, call graph (shared callers), high
 FUN_00937000::FUN_00937000() : SL()
 {
     m_uiFilterValue = 0;
@@ -561,6 +597,8 @@ struct FUN_00986500_shell
 // If the pointer at this+0xd64 is non-null, forwards apActor to its RemoveByTarget method.
 // @fnv 0x0093a660
 // src: XBOX_PDB 0x0093a660
+// pdb: PlayerCharacter::RemoveActorFromPlayercombatList | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apActor
 void Actor::PlayerCharacter_RemoveActorFromPlayercombatList(Actor* apActor)
 {
     if (*(void**)((char*)this + 0xd64) == 0)
@@ -570,10 +608,12 @@ void Actor::PlayerCharacter_RemoveActorFromPlayercombatList(Actor* apActor)
 
 struct FUN_0093e840_shell : GameTimerRecord
 {
-    void ApplyGlobalTimeMultiplier();
+    void BSTimer_RestoreGlobalTimeMultiplierCache();
 };
 // @fnv 0x0093e840
-void FUN_0093e840_shell::ApplyGlobalTimeMultiplier()
+// src: XBOX_DEBUG_PDB 0x0093e840
+// pdb: BSTimer::RestoreGlobalTimeMultiplierCache | PlayerCharacter.obj | debug, call graph, high
+void FUN_0093e840_shell::BSTimer_RestoreGlobalTimeMultiplierCache()
 {
     SetGlobalTimeMultiplier(DAT_011ac3a8, false);
 }
@@ -614,6 +654,8 @@ struct OwnerObject
 // Returns true if the state object obtained from FUN_009306d0 has a virtual element whose v3() equals 2.
 // @fnv 0x009337b0
 // src: XBOX_PDB 0x009337b0
+// pdb: MobileObject::IsInAir | MobileObject.obj | retail, upstream name already matches, high
+// pdb locals: bresult, pcon
 bool OwnerObject::MobileObject_IsInAir()
 {
     StateObject* pointer;
@@ -810,14 +852,16 @@ struct FUN_00934450_cls
     unsigned int unk60;
     unsigned int unk64;
     FUN_00934450_Obj68* m_68;
-    void MobileObject_PutCreatedPackage(int a1, int a2, int a3);
+    void MobileObject_PutCreatedPackage(int apPack, int abTempPack, int abIsaCreatedPackage);
 };
 
 // @fnv 0x00934450
 // src: COMMUNITY 0x00934450
-void FUN_00934450_cls::MobileObject_PutCreatedPackage(int a1, int a2, int a3)
+// pdb: MobileObject::PutCreatedPackage | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: apPack, abTempPack, abIsaCreatedPackage
+void FUN_00934450_cls::MobileObject_PutCreatedPackage(int apPack, int abTempPack, int abIsaCreatedPackage)
 {
-    m_68->v140(a1, this);
+    m_68->v140(apPack, this);
     m_68->v145();
 }
 
@@ -1548,9 +1592,12 @@ const char* FixedStrings_QTalking();
 
 // @fnv 0x00935d90
 // src: COMMUNITY 0x00935d90
-void MobileObject_ChangeDialogueAnimation(unsigned int id, bool b)
+// pdb: MobileObject::ChangeDialogueAnimation | MobileObject.obj | retail, upstream name already matches, high
+// pdb params: apContext, abSucceeded
+// pdb locals: iactorid, pform, pactor, pmanager, pref, pseq
+void MobileObject_ChangeDialogueAnimation(unsigned int apContext, bool abSucceeded)
 {
-    unsigned int formID = id;
+    unsigned int formID = apContext;
     FormX* form4 = _ref_004839c0(formID);
     if (form4 && form4->IsReference())
     {
@@ -1582,7 +1629,7 @@ void MobileObject_ChangeDialogueAnimation(unsigned int id, bool b)
                 }
             }
         }
-        if (!b)
+        if (!abSucceeded)
         {
             DAT_011d951c = *DAT_011d32c4.Float();
         }
@@ -1743,6 +1790,8 @@ struct FUN_00936ef0_Class
 // Reads the current value from g_011dea3c, converts it via FUN_00572380, and returns whether the result is at or below the value from g_011cd2f4.FUN_00403e20().
 // @fnv 0x00936ef0
 // src: COMMUNITY 0x00936ef0
+// pdb: MobileObject::CheckHighDetail | MobileObject.obj | debug, object-file run extension, low
+// pdb locals: ihigh, fdist
 int FUN_00936ef0_Class::Actor_CheckHighDetail()
 {
     float currentValue = TESObjectREFR_GetDistanceFromPoint(g_011dea3c->GetCurrentValue());
@@ -1781,6 +1830,8 @@ FUN_0066e920_Class* __cdecl ActorValue_GetActorValueInfo(int index);
 // If not yet built, maps each of 0x4d objects whose unk44 bit 0 is set to a running count in DAT_011e0618, stores the total in DAT_011e0750 and sets DAT_011e074c.
 // @fnv 0x00937fd0
 // src: XBOX_PDB 0x00937fd0
+// pdb: FastModifierCollection::CheckInitializeMapping | ModifierList.obj | retail, upstream name already matches, high
+// pdb locals: icount, i, pinfo
 void __cdecl FastModifierCollection_CheckInitializeMapping()
 {
     if (!DAT_011e074c)
@@ -2214,11 +2265,14 @@ class FUN_0093a850_shell
     virtual void v100(int a, float f);
 };
 FUN_0093a850_shell* __fastcall FUN_004181e0(FUN_0093a850_cls* self);
-void __cdecl Interface_UpdateActorValue(int a);
+void __cdecl Interface_UpdateActorValue(int aeWhich);
 
 // Reads a bool via v291; if set calls v292 with the float, otherwise forwards to the shell's v100, then calls FUN_00704e10 and FUN_008808f0.
 // @fnv 0x0093a850
 // src: COMMUNITY 0x0093a850
+// pdb: PlayerCharacter::SetActorBaseValue | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: aiWhich, afValue
+// pdb locals: foverride, boverride
 void FUN_0093a850_cls::PlayerCharacter_SetActorBaseValueF(int a1, float f)
 {
     bool b = false;
@@ -2245,7 +2299,7 @@ extern float g_f5920GameTime;
 class F5920ExtraDataList
 {
   public:
-    void AddRecord(void* pvRecord);
+    void AddRecord(void* apInfo);
 };
 
 class F5920Record
@@ -2290,6 +2344,9 @@ class F5920Ref
 
 // Builds a timestamp from the game hour, minute and day, creates a record from the load buffer, adds it to the target's extra data and marks the target changed.
 // @fnv 0x00935920
+// pdb: MobileObject::AddSayOnceTopicInfo | MobileObject.obj | debug, object-file run extension, low
+// pdb params: apTopicInfo
+// pdb locals: idate, psayonceinfo, pref
 void F5920Ref::LoadRecord(void* pvLoadBuffer)
 {
     int iStamp = (g_u5920Hour << 9) | g_c5920Minute | (g_u5920Day << 13);
@@ -3694,20 +3751,22 @@ struct Anim122
     int unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24;
 };
 extern Anim122 DAT_011a3ad4[];
-void LoadWeaponWobbleModels();
-void FUN_008d1820();
+void InitGunWobble();
+void InitCameraShake();
 void* GetTime64(int);
 void* BGSEncounterZone_GetNoZone();
 void* ourMemset(void*, int, unsigned int);
 // @fnv 0x00938180
+// pdb: PlayerCharacter::PlayerCharacter | PlayerCharacter.obj | debug, call graph, high
+// pdb locals: phighProcess, iflags, tempMemContext, iNumHotKeys, pcon, i, icolFilter, igroup
 FUN_00938180::FUN_00938180() : f634(0), f694(0), f69c(0), f764(1), f854(0x25), f864(0), f868(0), fd3c(0), fdec(0)
 {
     Profile122 profile4(0x34, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\AI\\PlayerCharacter.cpp", 0x2c7);
     FUN_00484ab0(0);
     fdd4 = DAT_011f426c;
     fde0 = DAT_011f426c;
-    LoadWeaponWobbleModels();
-    FUN_008d1820();
+    InitGunWobble();
+    InitCameraShake();
     DAT_011e0b5c = *DAT_011ccf2c.Setting_Float_00403e20();
     f79a = 0;
     for (int i = 0; i < 77; i++)
@@ -3944,7 +4003,7 @@ extern GlobalObject_006815c0 g_011e05e0;
 
 struct FUN_00933700_Target
 {
-    void BSBound_GetBoundMax(GlobalObject_006815c0* a);
+    void BSBound_GetBoundMax(GlobalObject_006815c0* arPoint);
 };
 
 struct FUN_00933700_Obj68
@@ -4361,12 +4420,14 @@ struct FUN_00933700_cls
     unsigned int unk60;
     unsigned int unk64;
     FUN_00933700_Obj68* m_68;
-    void TESObjectREFR_GetMaxBounds(GlobalObject_006815c0* a);
+    void TESObjectREFR_GetMaxBounds(GlobalObject_006815c0* apObj);
     GlobalObject_006815c0* GetGlobalObject(GlobalObject_006815c0* out);
 };
 
 // If m_68 and its v17c() are non-null, calls FUN_0050ea50 on the result and copies g_011e05e0 to out; otherwise calls FUN_0056fba0(out).
 // @fnv 0x00933700
+// pdb: MobileObject::GetBoundMax | MobileObject.obj | retail, vtable slot, high
+// pdb locals: pbsBound
 GlobalObject_006815c0* FUN_00933700_cls::GetGlobalObject(GlobalObject_006815c0* out)
 {
     if (m_68 != 0 && m_68->v17c() != 0)
@@ -4455,6 +4516,9 @@ struct FUN_004bc4a0_obj
 
 // Looks up a form by formID, and if found and its s63 check passes, sets its accumulate mode to 3.
 // @fnv 0x00935f00
+// pdb: MobileObject::DisplaySubTitleCallback | MobileObject.obj | debug, object-file run extension, low
+// pdb params: apContext, aiDuration
+// pdb locals: iactorid, pform, pactor
 void __cdecl SetFormAccumulate(int formID)
 {
     int id = formID;
@@ -4571,8 +4635,8 @@ extern xPickGlobal xg_Pick;
 extern const xPoint3 xg_Zero;
 extern xPod* xg_Buf774;
 extern xPod* xg_Buf760;
-void xFree8d68d0();
-void xFree8d1920();
+void FreeGunWobble();
+void FreeCameraShake();
 
 struct xB0
 {
@@ -4631,7 +4695,7 @@ struct FUN_009398d0 : xCharacter
     void F962490(void*, unsigned char);
     void F9655a0();
     void F9655e0();
-    void F952f90();
+    void PlayerCharacter_RemovePlayerMapMarker();
     xList m_5e4;
     int m_uiStandInValue[4];
     xList m_5fc;
@@ -4700,8 +4764,8 @@ FUN_009398d0::~FUN_009398d0()
     F947d10();
     F948050();
     m_764.m_kNode.RemoveAll();
-    xFree8d68d0();
-    xFree8d1920();
+    FreeGunWobble();
+    FreeCameraShake();
     F950c20(0);
     delete m_68;
     m_68 = 0;
@@ -4823,7 +4887,7 @@ FUN_009398d0::~FUN_009398d0()
     m_5e4.RemoveAll();
     F9655a0();
     F9655e0();
-    F952f90();
+    PlayerCharacter_RemovePlayerMapMarker();
     delete xg_Buf774;
     delete xg_Buf760;
 }
@@ -4916,7 +4980,7 @@ struct TickWeapon
         unk80, unk84, unk88, unk8c, unk90, unk94, unk98, unk9c, unka0;
     struct Clip
     {
-        bool FUN_00474a80();
+        bool BGSAmmoForm_IsRockItLauncher();
     } unka4;
     bool IsFlagSet() const;
     bool FUN_004ad030();
@@ -4942,7 +5006,7 @@ struct TickVATS
     bool VATS_IsInVats();
     void QuitVATSPlayback(bool, bool);
     TickVatsEntry* VATS_GetCurrentAction();
-    void CreateCommandAndUpdateHUD();
+    void VATS_InitPlayerDeath();
 };
 struct TickAvo
 {
@@ -5028,10 +5092,10 @@ struct TickData
 };
 struct TickLists
 {
-    void ProcessLists_FinishMagicShaderHitEffect_00974af0(void*);
+    void ProcessLists_FinishMagicShaderHitEffectAll(void*);
     void ProcessLists_MoveFollowersOnToPlayer();
     void ProcessLists_SortActorsCloseToPlayer();
-    bool HasNearbyDetectedActor(unsigned char);
+    bool ProcessLists_AreHostilActorsNear(unsigned char);
     bool IsFlagged();
 };
 struct TickAudio
@@ -5046,7 +5110,7 @@ struct TickAudio
 struct TickTime
 {
     void FUN_00aa4db0(float, bool);
-    void ApplyGlobalTimeMultiplier();
+    void BSTimer_RestoreGlobalTimeMultiplierCache();
     float FUN_0084d030();
 };
 struct TickAmmoList
@@ -5091,7 +5155,7 @@ struct TickSoundForm
 };
 struct TickContext
 {
-    void SetValueFromExtraData(BSSoundHandle*);
+    void ExtraDataList_GetActivateLoopSound(BSSoundHandle*);
     void ExtraDataList_GetCreatureAwakeSound(BSSoundHandle*);
     void ExtraDataList_SetCreatureAwakeSound(BSSoundHandle*);
     void* ExtraDataList_GetTrespassPackage();
@@ -5162,16 +5226,16 @@ struct TickIO
 };
 struct TickMenu
 {
-    bool FUN_008d51f0();
+    bool QReadyToLevelUp();
     void LevelUpPlayer();
 };
 struct TickPending
 {
-    void ShowMessageBox();
+    void DisplayReputationTitleChange();
 };
 struct TickVisual
 {
-    float GetHeadTail();
+    float NiAVObject_GetWorldBoundRadius();
 };
 struct TickRefList
 {
@@ -5325,7 +5389,7 @@ struct PV34 : VSlot<PV33, 22>
 };
 struct TickProc : VSlot<PV34, 0>
 {
-    bool FUN_008fec10(TickPlayer*);
+    bool FadeUpdate(TickPlayer*);
 };
 struct TickFaceV0 : VSlot<VSlotRoot, 45>
 {
@@ -5942,9 +6006,9 @@ struct TickPlayer : VSlot<AV17, 0>
     void TESObjectREFR_AttachWeapon(int);
     void ResetCachedGunSkill();
     void PlayerCharacter_UpdateConflictingObjects();
-    int GetReferenceFromPhysicsController();
+    int PlayerCharacter_GetBumpedRef();
     void SetEffectValue(int, float, int);
-    int GetActorFromPhysicsController();
+    int PlayerCharacter_GetBumpedActor();
     void Actor_SetActionSoundValue(int);
     bool Actor_GetIronSights();
     TickCell* FUN_008d6f30();
@@ -5959,7 +6023,7 @@ struct TickPlayer : VSlot<AV17, 0>
     bool PlayerCharacter_IsStandingOnFurniture();
     TickController* FUN_009306d0();
     void PlayerCharacter_CheckGetAwayFromGuards();
-    void RestorePlayerLocation(bool);
+    void PlayerCharacter_ReturnToLastKnownGoodPosition(bool);
     TickRef* GetField688();
     void SetField688(int);
     unsigned int GetVtbl20Result();
@@ -6029,7 +6093,7 @@ struct TickPlayer : VSlot<AV17, 0>
     void PlayerCharacter_StopVanityMode();
     void PlayerCharacter_HandlePhysicsGrab(float);
     void UpdateScopeZoom(float);
-    void ProcessEvents();
+    void Actor_HandlePostAnimationActions();
     TickMenu* GetCharacterProgressionInfo();
     bool PlayerCharacter_IsPlayerCharacterInCombat(bool*);
     bool PlayerCharacter_GetInChargen();
@@ -6061,7 +6125,7 @@ extern "C" void FUN_005299a0(void*, float, void*);
 extern "C" void FUN_00529c90(void*);
 extern "C" float FUN_00716440();
 extern "C" void* TESObjectREFR_FindReferenceFor3D(void*);
-extern "C" void UpdateTargetHealthHUD(void*, bool);
+extern "C" void HUDMainMenu_SetTargetType(void*, bool);
 extern "C" TickScene* Main_GetWorldSceneGraph();
 extern "C" void FUN_005e58f0(int, ...);
 extern "C" int Interface_GetDetectionLevel();
@@ -6075,7 +6139,7 @@ extern TickSave* DAT_011de134;
 extern MSetting DAT_011cd62c, DAT_011cd5c8;
 extern TickStringSetting DAT_011d4528, DAT_011d400c, DAT_011d4b40;
 extern char DAT_011a28e0, DAT_011841cc;
-extern "C" void FUN_00709c40(int);
+extern "C" void Interface_SetGunScopeVisible(int);
 void StartMenu_ChooseMainMenu();
 void PlayerCharacter_DeathMenu();
 extern "C" void Interface_CreateMessageMenu(const char*, int, int, void (*)(), int, int, float, float, const char*, const char*, int);
@@ -6085,7 +6149,7 @@ extern "C" TickRef* FUN_00703350();
 extern "C" void* FUN_00ec43fb(void*, int, void*, void*, int);
 extern "C" void Interface_SetInfoForRef(int, int, int);
 extern "C" bool BuildActionMenu(TickList*, TickRef*);
-extern "C" TickSoundForm* GetUIActivateNothingSound();
+extern "C" TickSoundForm* FalloutAudio_GetNoActivationSound();
 extern "C" int InterfaceManager_CheckMenuButton(int, int);
 extern "C" bool Interface_IsPipboyOpening();
 extern "C" bool InterfaceManager_Has360Controller();
@@ -6139,7 +6203,7 @@ extern "C" bool Interface_InDialog();
 void TESObjectCELL_UpdateSeenDataForPlayer();
 unsigned char HUDMainMenu_IsXPMeterFinishedMoving();
 unsigned char InterfaceManager_GetContainerMenuQueued();
-bool IsSomethingZero();
+bool Interface_IsPipboyClosed();
 bool IsStartMenuFlag1Set();
 extern float DAT_011e0bac;
 extern const float DAT_01016248;
@@ -6148,15 +6212,18 @@ extern "C" float BSMAX_00404010(float, float);
 extern "C" unsigned int Cmd_GetSessionTime_Execute();
 extern unsigned int DAT_011e0ba8;
 extern char DAT_01186568, DAT_01183108;
-extern "C" TickSoundID* GetBrushSound(int);
+extern "C" TickSoundID* TESSound_GetPassThroughSound(int);
 extern "C" unsigned int FUN_00944460(int, int);
 
 // @fnv 0x0093e860
 // src: XBOX_PDB 0x0093e860
-void TickPlayer::PlayerCharacter_Update(float elapsed)
+// pdb: PlayerCharacter::Update | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: bSlowMoCam, slastMoveMode, currentMatrix, bdropping, fCheckForItemsPerk, ijoyY, pweapon, bputtingAwayWeapon, eactions, ijoyX, pcurrentWeaponItem, bjustPressed, oldPos, bhas360Controller, bgetUp, phitRef, tempMemContext, pWorldRoot, panim1st, smoveMode, bresetWalkRunSpeed, bIronSights, currentPos, forwardVec ...
+void TickPlayer::PlayerCharacter_Update(float afDelta)
 {
     TickInput* input = DAT_011dea0c->Main_GetControls();
-    DAT_011e07e8 -= elapsed;
+    DAT_011e07e8 -= afDelta;
     if (DAT_011f21d0)
     {
         if (DAT_011f21d1)
@@ -6187,13 +6254,13 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         }
     }
     if (unke1c > 0.0)
-        unke1c -= elapsed;
+        unke1c -= afDelta;
     bool slowing = false;
     if (unke18 > 0.0)
     {
         if (input->Controls_GetUserAction(5, 1))
             unke18 = 0.0f;
-        unke18 -= elapsed;
+        unke18 -= afDelta;
         DAT_011f6394.FUN_00aa4db0(DAT_01017870, false);
         if (unke20)
         {
@@ -6212,7 +6279,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
     }
     if (GetFieldE28() > 0.0)
     {
-        SetFieldE28(GetFieldE28() - elapsed);
+        SetFieldE28(GetFieldE28() - afDelta);
     }
     if (unka4.vf008(0x33) > 0 && !slowing)
     {
@@ -6233,7 +6300,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         void* effect = FUN_00483a00(DAT_0108b078);
         FUN_00529c90(effect);
         if (unke21)
-            DAT_011f6394.ApplyGlobalTimeMultiplier();
+            DAT_011f6394.BSTimer_RestoreGlobalTimeMultiplierCache();
         unke21 = false;
     }
     if (unk1f0 && !unk68->vf474(true))
@@ -6243,7 +6310,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
     }
     if (unk681 && !DAT_011dea0c->TESMain_IsInMenuMode())
     {
-        unk684 -= elapsed;
+        unk684 -= afDelta;
         if (unk684 < 0.0)
         {
             unk684 = 0.0f;
@@ -6252,7 +6319,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
     }
     DAT_011e077c = 0;
     void* pickedRef = TESObjectREFR_FindReferenceFor3D(unkd3c.Modelloader_GetReferencedThis());
-    UpdateTargetHealthHUD(pickedRef, unkd40);
+    HUDMainMenu_SetTargetType(pickedRef, unkd40);
     unkd3c.FUN_0066b0d0(0);
     ResetCachedGunSkill();
     AutoMemContext mem((MEM_CONTEXT)0x34, true, DAT_0108a8e0, 0xc41);
@@ -6271,9 +6338,9 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         unk150 = 0;
     PlayerCharacter_UpdateConflictingObjects();
     unk68->vf464(this);
-    if (GetReferenceFromPhysicsController())
-        SetEffectValue(7, DAT_010162c0, GetReferenceFromPhysicsController());
-    if (GetActorFromPhysicsController() && unk154 <= 0.0)
+    if (PlayerCharacter_GetBumpedRef())
+        SetEffectValue(7, DAT_010162c0, PlayerCharacter_GetBumpedRef());
+    if (PlayerCharacter_GetBumpedActor() && unk154 <= 0.0)
         Actor_SetActionSoundValue(*DAT_011cdde0.Setting_Int());
     bool weaponDrawn = Actor_GetIronSights();
     if (weaponDrawn && unk68->vf454())
@@ -6333,19 +6400,19 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
     }
     else if (unke2e && !weaponDrawn)
     {
-        ((TickLists*)&DAT_011e0e80)->ProcessLists_FinishMagicShaderHitEffect_00974af0(DAT_011c3f2c->GetField630());
+        ((TickLists*)&DAT_011e0e80)->ProcessLists_FinishMagicShaderHitEffectAll(DAT_011c3f2c->GetField630());
         unke2e = false;
     }
     if (unka4.vf008(0x32) > 0)
         unke2d = true;
     else if (unke2d && unka4.vf008(0x32) <= 0)
     {
-        ((TickLists*)&DAT_011e0e80)->ProcessLists_FinishMagicShaderHitEffect_00974af0(DAT_011c3f2c->PlayerCharacter_GetGrabObject());
+        ((TickLists*)&DAT_011e0e80)->ProcessLists_FinishMagicShaderHitEffectAll(DAT_011c3f2c->PlayerCharacter_GetGrabObject());
         unke2d = false;
     }
     float perk = 0.0f;
     FUN_005e58f0(0x47, DAT_011dea3c, &perk);
-    unke30 -= elapsed;
+    unke30 -= afDelta;
     if (perk > 0.0 && unke30 <= 0.0 && weaponDrawn)
     {
         unke30 = *DAT_011d0658.Setting_Float_00403e20();
@@ -6397,11 +6464,11 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
             vf2b8();
     }
     if (unk22c > 0.0)
-        unk22c -= elapsed;
+        unk22c -= afDelta;
     else
         unk22c = DAT_01012054;
     if (unk234 > 0.0)
-        unk234 -= elapsed;
+        unk234 -= afDelta;
     else
         unk234 = DAT_01012054;
     if (unk6e0 <= 0.0)
@@ -6410,11 +6477,11 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         unk6e0 = *DAT_011cd8f0.Setting_Float_00403e20();
     }
     else
-        unk6e0 -= elapsed;
+        unk6e0 -= afDelta;
     if (unk79d)
     {
         unk79d = false;
-        RestorePlayerLocation(true);
+        PlayerCharacter_ReturnToLastKnownGoodPosition(true);
     }
     if (GetField688())
     {
@@ -6442,7 +6509,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
                 unk668 = 0.0f;
             }
             else
-                unk668 += elapsed;
+                unk668 += afDelta;
         }
     }
     else if (IsSwimming_005a2030() && IsMoving_004938e0())
@@ -6450,30 +6517,30 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         if (unk664 > 1.0)
             unk664 = 0.0f;
         else
-            unk664 += elapsed;
+            unk664 += afDelta;
     }
     else if ((movement & 0x200) && IsMoving_004938e0())
     {
         if (unk660 > 1.0)
             unk660 = 0.0f;
         else
-            unk660 += elapsed;
+            unk660 += afDelta;
     }
     animGroup = movement & 0xcc00;
     unkb0->bhkRagdollPenetrationUtil_Update();
-    if (PlayerCharacter_UpdateHeadingAndLooking(elapsed, 0, &animGroup, false))
+    if (PlayerCharacter_UpdateHeadingAndLooking(afDelta, 0, &animGroup, false))
         flag = true;
-    if ((!DAT_011e07b8 && !DAT_011e07c1 || unk68->vf610()) && unk68->FUN_008fec10(this))
+    if ((!DAT_011e07b8 && !DAT_011e07c1 || unk68->vf610()) && unk68->FadeUpdate(this))
     {
         if (unk634.Modelloader_GetReferencedThis())
             PlayerCharacter_ForcePhysicsGrabDrop();
         PlayerCharacter_ForceGrenadeHold();
         unk64a = !unk64a;
-        UpdateFaceAnimation(elapsed);
-        Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), elapsed);
+        UpdateFaceAnimation(afDelta);
+        Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), afDelta);
         unk64a = !unk64a;
-        UpdateFaceAnimation(elapsed);
-        Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), elapsed);
+        UpdateFaceAnimation(afDelta);
+        Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), afDelta);
         PlayerCharacter_UpdateCamera(false, false);
         return;
     }
@@ -6531,7 +6598,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         }
         if (GetByteAt798())
         {
-            DAT_011e0798 += elapsed;
+            DAT_011e0798 += afDelta;
             if (unk68->vf228(this) || vf214() == 4 || unk68->vf4bc() == 9 || !unk68->vf27c())
             {
                 FUN_0093a5f0(false);
@@ -6541,7 +6608,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         }
         else if (PlayerCharacter_GetAIControlledFromPos())
         {
-            DAT_011e0798 += elapsed;
+            DAT_011e0798 += afDelta;
             if (!vf214())
             {
                 PlayerCharacter_SetAIControlledFromPos(false);
@@ -6550,9 +6617,9 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
             }
         }
         if (unk64c == unk64a)
-            Actor_Process(elapsed);
+            Actor_Process(afDelta);
         unk190->FUN_009ea570(*(MPt*)&DAT_011f426c);
-        unk190->vf014(elapsed);
+        unk190->vf014(afDelta);
 
         if (*DAT_011cd62c.Setting_Float_00403e20() > 0.0)
         {
@@ -6560,10 +6627,10 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
             {
                 if (DAT_011a3b34 < 0.0)
                 {
-                    FUN_00709c40(0);
+                    Interface_SetGunScopeVisible(0);
                     DAT_011a3b34 = *DAT_011cd62c.Setting_Float_00403e20();
                 }
-                DAT_011a3b34 -= elapsed;
+                DAT_011a3b34 -= afDelta;
                 if (DAT_011a3b34 < 0.0)
                 {
                     DAT_011a3b34 = DAT_01012054;
@@ -6577,7 +6644,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         else if (GameSettingCollection_File() == 2 && !DAT_011e07c0)
         {
             vf2a0();
-            FUN_00709c40(0);
+            Interface_SetGunScopeVisible(0);
             if (DAT_011de134->IsField5Set())
                 Interface_CreateMessageMenu(DAT_011d4b40.FUN_00403df0(), 0, 0, PlayerCharacter_DeathMenu, 1, 0x17, 0.0f, 0.0f,
                              DAT_011d400c.FUN_00403df0(), DAT_011d4528.FUN_00403df0(), 0);
@@ -6591,11 +6658,11 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         unk64a = !unk64a;
         if (unk64a)
             Actor_PickAnimations(DAT_011a3b3c, DAT_011a3b40);
-        UpdateFaceAnimation(elapsed);
-        Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), elapsed);
+        UpdateFaceAnimation(afDelta);
+        Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), afDelta);
         unk64a = !unk64a;
-        UpdateFaceAnimation(elapsed);
-        Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), elapsed);
+        UpdateFaceAnimation(afDelta);
+        Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), afDelta);
         PlayerCharacter_UpdateCamera(false, false);
         FUN_008d6f30()->UpdateRefPlacement(this, 1, 0);
         FUN_00450b80(0)->FUN_00b5d9f0(vf1d0(), true);
@@ -6608,7 +6675,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
                 if ((input->Controls_GetUserAction(5, 1) || input->Controls_GetUserAction(5, 0)) && !FUN_005a03f0(1))
                 {
                     vf1e4()->Animation_SetLoopCount(7, 1);
-                    repeatDelay -= elapsed;
+                    repeatDelay -= afDelta;
                     while (repeatDelay < 0.0)
                     {
                         repeatDelay += *DAT_011cd5c8.Setting_Float_00403e20();
@@ -6619,7 +6686,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
                 else
                 {
                     BSSoundHandle repeatSound;
-                    DAT_011dea3c->BSFile_GetDevice()->SetValueFromExtraData(&repeatSound);
+                    DAT_011dea3c->BSFile_GetDevice()->ExtraDataList_GetActivateLoopSound(&repeatSound);
                     repeatSound.Stop();
                     vf1e4()->Animation_SetLoopCount(7, 0);
                     repeatDelay = *DAT_011cd5c8.Setting_Float_00403e20();
@@ -6722,7 +6789,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
                 if (failed || blocked)
                 {
                     BSFile_GetDevice()->ExtraDataList_GetCreatureAwakeSound(&sound);
-                    TickSoundForm* errorSound = GetUIActivateNothingSound();
+                    TickSoundForm* errorSound = FalloutAudio_GetNoActivationSound();
                     if (!sound.IsValid() && errorSound)
                         sound = BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(errorSound->TESSound_GetFilename(), 0x121, errorSound);
                     if (!sound.IsPlaying())
@@ -6745,7 +6812,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
     PlayerCharacter_ModPlayerGreetTimer();
     UpdatePlayerStateIfActive();
     bool weaponToggled = false;
-    unkd50 += elapsed;
+    unkd50 += afDelta;
     if (input->Controls_GetUserAction(0x12, 1) && unk68->vf148() && IsWeaponDrawn())
     {
         int key1 = InterfaceManager_CheckMenuButton(1, 0);
@@ -6766,12 +6833,12 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
     {
         if (!FUN_005a03f0(8))
         {
-            DAT_011e07e0 += elapsed;
+            DAT_011e07e0 += afDelta;
             if (Actor_CanMove() && GetAnimAction_008a7570() == -1)
             {
                 if (!DAT_011e0bc1 &&
                     (DAT_011e07e0 > *DAT_011cdfcc.Setting_Float_00403e20() || !weapon ||
-                     !weapon->TESObjectWEAP_GetCurrentAmmo(DAT_011dea3c) && !weapon->unka4.FUN_00474a80()) &&
+                     !weapon->TESObjectWEAP_GetCurrentAmmo(DAT_011dea3c) && !weapon->unka4.BGSAmmoForm_IsRockItLauncher()) &&
                     Actor_GetWantWeaponDrawn())
                 {
                     weaponToggled = true;
@@ -6792,7 +6859,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         DAT_011e07e0 = 0.0f;
         DAT_011e0bc1 = false;
     }
-    PlayerCharacter_UpdateMenuModeButton(elapsed);
+    PlayerCharacter_UpdateMenuModeButton(afDelta);
     if (input->Controls_GetUserAction(0xa, 1))
         unk651 = !unk651;
     if (input->Controls_GetUserAction(0xb, 1))
@@ -6864,7 +6931,7 @@ void TickPlayer::PlayerCharacter_Update(float elapsed)
         cameraMatrix.NiMatrix3_GetCol(0, &side);
     bool adjusted = false;
     if (unk63c == 2)
-        adjusted = PlayerCharacter_UpdateDropSpring(elapsed);
+        adjusted = PlayerCharacter_UpdateDropSpring(afDelta);
     PlayerCharacter_HavokActivateDroppedReference();
     int axisX = 0;
     int axisY = 0;
@@ -7075,7 +7142,7 @@ axesDone:
     unk190->vf00c(animGroup);
     if (sneakPressed)
         SetWalkRunFlagDirty();
-    unk190->vf018(elapsed);
+    unk190->vf018(afDelta);
     PlayerCharacter_UpdateTemp3rdPerson();
     PlayerCharacter_UpdateTemp1stPerson();
     unk648 = unk64a;
@@ -7172,7 +7239,7 @@ axesDone:
             DispatchMessageToSink(DAT_011d28b0.FUN_00403df0(), 0, DAT_010208a0, 0, DAT_010162c0, false);
         else if (Actor_IsPointDeepUnderWater(vf1f4(), FUN_008d6f30(), DAT_01084d20))
             DispatchMessageToSink(DAT_011d4948.FUN_00403df0(), 0, DAT_010208a0, 0, DAT_010162c0, false);
-        else if (((TickLists*)&DAT_011e0e80)->HasNearbyDetectedActor(DAT_011dea3c->TESObjectREFR_GetInterior()))
+        else if (((TickLists*)&DAT_011e0e80)->ProcessLists_AreHostilActorsNear(DAT_011dea3c->TESObjectREFR_GetInterior()))
             DispatchMessageToSink(DAT_011d2e50.FUN_00403df0(), 0, DAT_010208a0, 0, DAT_010162c0, false);
         else if (DAT_011dea3c->FUN_009306d0()->bhkCharacterController_GetState() == 1 || DAT_011dea3c->FUN_009306d0()->bhkCharacterController_GetState() == 2)
             DispatchMessageToSink(DAT_011d3e20.FUN_00403df0(), 0, DAT_010208a0, 0, DAT_010162c0, false);
@@ -7209,13 +7276,13 @@ axesDone:
             FUN_00693ef0(true);
         }
         MPt delta = origin - oldOrigin;
-        delta *= elapsed;
+        delta *= afDelta;
         vf2a8(oldOrigin + MPt(0.0f, 0.0f, delta.z));
     }
     else
         FUN_00693ef0(false);
     unk190->FUN_009ea570(side);
-    unk190->vf014(elapsed);
+    unk190->vf014(afDelta);
     PlayerCharacter_CheckBorderRegion();
     if (animGroup & 0xf)
         flag = true;
@@ -7304,7 +7371,7 @@ axesDone:
                     DAT_011e0b60 = 0.0f;
                     DAT_011e0bbc = DAT_011e0b5c;
                 }
-                DAT_011e07c8 += elapsed;
+                DAT_011e07c8 += afDelta;
             }
         }
         else if (input->Controls_GetUserAction(0xd, 2) || (DAT_011e07b8 && !DAT_011e07b9))
@@ -7426,7 +7493,7 @@ axesDone:
         {
             BSSoundHandle failSound;
             BSFile_GetDevice()->ExtraDataList_GetCreatureAwakeSound(&failSound);
-            TickSoundForm* errorSound = GetUIActivateNothingSound();
+            TickSoundForm* errorSound = FalloutAudio_GetNoActivationSound();
             if (!failSound.IsValid() && errorSound)
                 failSound = BSAudio_QInstance()->BSAudio_GetSoundHandleByFilename(errorSound->TESSound_GetFilename(), 0x121, errorSound);
             if (!failSound.IsPlaying())
@@ -7441,8 +7508,8 @@ axesDone:
             PlayerCharacter_StopVanityMode();
         else
         {
-            DAT_011e08fc -= *DAT_011cd4cc.Setting_Float_00403e20() * DAT_01023128 * elapsed;
-            DAT_011e0bb8 += *DAT_011cd198.Setting_Float_00403e20() * DAT_01023128 * elapsed;
+            DAT_011e08fc -= *DAT_011cd4cc.Setting_Float_00403e20() * DAT_01023128 * afDelta;
+            DAT_011e0bb8 += *DAT_011cd198.Setting_Float_00403e20() * DAT_01023128 * afDelta;
             DAT_011e08f4 = (float)(sin_004e44b0(DAT_011e0bb8) * (double)*DAT_011cd984.Setting_Float_00403e20() * DAT_01023128);
             if (DAT_011e0bb8 > DAT_0101ff48)
                 DAT_011e0bb8 = (float)(DAT_011e0bb8 - DAT_0101ff48);
@@ -7453,7 +7520,7 @@ axesDone:
         if (flag)
             DAT_011e07c4 = 0.0f;
         else
-            DAT_011e07c4 += elapsed;
+            DAT_011e07c4 += afDelta;
         if (DAT_011e09e0.FUN_004b9930() && DAT_011e07c4 > *DAT_011ccf50.Setting_Float_00403e20() && !FUN_005a03f0(0x10))
         {
             DAT_011e07bc = DAT_011e0b5c;
@@ -7469,7 +7536,7 @@ axesDone:
             DAT_011e07c3 = true;
         }
     }
-    PlayerCharacter_HandlePhysicsGrab(elapsed);
+    PlayerCharacter_HandlePhysicsGrab(afDelta);
     if (DAT_011e07ec && DAT_011e0bb4++ < 0x14)
     {
         MPt debugPos = origin;
@@ -7484,23 +7551,23 @@ axesDone:
     firstPersonAnim->SetMoveSpeed(thirdPersonAnim->GetMoveSpeed_009442a0());
     firstPersonAnim->Animation_SetAttackSpeed(thirdPersonAnim->Projectile_GetDistanceMoved());
     if (!Interface_InDialog())
-        UpdateScopeZoom(elapsed);
+        UpdateScopeZoom(afDelta);
     unk64a = !unk64a;
-    UpdateFaceAnimation(elapsed);
-    Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), elapsed);
+    UpdateFaceAnimation(afDelta);
+    Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), afDelta);
     unk64a = !unk64a;
-    UpdateFaceAnimation(elapsed);
-    Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), elapsed);
-    ProcessEvents();
+    UpdateFaceAnimation(afDelta);
+    Actor_UpdateAnimationMovement(FUN_00950a60(!unk64a), afDelta);
+    Actor_HandlePostAnimationActions();
     if (!DAT_011f21d0)
         PlayerCharacter_UpdateCamera(false, false);
     FUN_008d6f30()->UpdateRefPlacement(this, 1, 0);
     FUN_00450b80(0)->FUN_00b5d9f0(vf1d0(), true);
     if (unk68->vf6b8())
-        unk68->vf6b8()->MuzzleFlash_Update(elapsed, this);
+        unk68->vf6b8()->MuzzleFlash_Update(afDelta, this);
     if (vf22c(0) &&
         !(DAT_011f2250.FUN_0044ddc0() == 4 && DAT_011f2250.VATS_GetCurrentAction() && DAT_011f2250.VATS_GetCurrentAction()->unk00 == 0xf))
-        DAT_011f2250.CreateCommandAndUpdateHUD();
+        DAT_011f2250.VATS_InitPlayerDeath();
     TESObjectCELL_UpdateSeenDataForPlayer();
     if (!DAT_011e0bb0 || DAT_011e0bb0 != FUN_008d6f30())
     {
@@ -7513,17 +7580,17 @@ axesDone:
         }
     }
     menuBusy = false;
-    if (GetCharacterProgressionInfo()->FUN_008d51f0() && !PlayerCharacter_IsPlayerCharacterInCombat(&menuBusy) && !DAT_011f2250.VATS_IsInVats() && HUDMainMenu_IsXPMeterFinishedMoving() &&
-        IsSomethingZero() && !InterfaceManager_GetContainerMenuQueued() && !PlayerCharacter_GetInChargen())
+    if (GetCharacterProgressionInfo()->QReadyToLevelUp() && !PlayerCharacter_IsPlayerCharacterInCombat(&menuBusy) && !DAT_011f2250.VATS_IsInVats() && HUDMainMenu_IsXPMeterFinishedMoving() &&
+        Interface_IsPipboyClosed() && !InterfaceManager_GetContainerMenuQueued() && !PlayerCharacter_GetInChargen())
         GetCharacterProgressionInfo()->LevelUpPlayer();
     if (unke0c && !PlayerCharacter_IsPlayerCharacterInCombat(&menuBusy) && !DAT_011f2250.VATS_IsInVats() && !Interface_InDialog() && !IsStartMenuFlag1Set())
     {
-        unke0c->ShowMessageBox();
+        unke0c->DisplayReputationTitleChange();
         unke0c = 0;
     }
     if (unk68)
         unk68->vf104();
-    PlayerCharacter_UpdatePlayerCombat(elapsed);
+    PlayerCharacter_UpdatePlayerCombat(afDelta);
 
     if (DAT_011dea3c->Actor_IsAttacking())
     {
@@ -7546,7 +7613,7 @@ axesDone:
         unkd70 = *DAT_011cedb8.Setting_Float_00403e20();
     if (unkd70 > 0.0)
     {
-        unkd70 -= elapsed;
+        unkd70 -= afDelta;
         unkd70 = BSMAX_00404010(unkd70, 0.0f);
     }
     if (unk68->vf148())
@@ -7588,18 +7655,18 @@ axesDone:
                     {
                         TESObjectSTAT* stat =
                             dynamic_cast<TESObjectSTAT*>((TESBoundObject*)(*item->FUN_006815c0())->BGSSaveFormBuffer_GetForm());
-                        if (stat && static_cast<signed char>(stat->m_cType) != -1)
+                        if (stat && static_cast<signed char>(stat->cPassThroughSoundIndex) != -1)
                         {
                             TickRef* refA = *item->FUN_006815c0();
                             if (refA->vf1d0())
                             {
                                 TickRef* refB = *item->FUN_006815c0();
-                                float radius = refB->vf1d0()->GetHeadTail();
+                                float radius = refB->vf1d0()->NiAVObject_GetWorldBoundRadius();
                                 radius *= radius;
                                 TickRef* refC = *item->FUN_006815c0();
                                 if ((double)radius > (*refC->vf1f4() - *vf1f4()).FUN_004a7290())
                                 {
-                                    TickSoundID* ambient = GetBrushSound(static_cast<signed char>(stat->m_cType));
+                                    TickSoundID* ambient = TESSound_GetPassThroughSound(static_cast<signed char>(stat->cPassThroughSoundIndex));
                                     if (ambient)
                                     {
                                         BSAudio_QInstance()

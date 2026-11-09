@@ -84,23 +84,26 @@ static inline int IsLighting(S_00b6fa40_Prop* p)
 
 // @fnv 0x00b6fa40
 // src: XBOX_PDB 0x00b6fa40
-void __cdecl BSShaderNoLightingProperty_SetFalloffRecurse(S_00b6fa40_Obj* obj, const float* pf)
+// pdb: BSShaderNoLightingProperty::SetFalloffRecurse | BSShaderNoLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: apObject, aFalloffData
+// pdb locals: pgeometry, pproperty, pnlprop, pnode, ucount, uindex, pchild
+void __cdecl BSShaderNoLightingProperty_SetFalloffRecurse(S_00b6fa40_Obj* apObject, const float* aFalloffData)
 {
-    if (!obj)
+    if (!apObject)
         return;
-    if (obj->v7())
+    if (apObject->v7())
     {
-        S_00b6fa40_Prop* p = obj->FUN_00a59d30(3);
+        S_00b6fa40_Prop* p = apObject->FUN_00a59d30(3);
         if (!IsLighting(p))
             return;
-        if (*pf != -1.0f)
+        if (*aFalloffData != -1.0f)
         {
             if (!((char)p->unk20 & 0x40))
             {
                 p->unk38 = 0;
             }
             p->unk20 |= 0x40;
-            p->CopySourceValues(pf);
+            p->CopySourceValues(aFalloffData);
         }
         else
         {
@@ -116,7 +119,7 @@ void __cdecl BSShaderNoLightingProperty_SetFalloffRecurse(S_00b6fa40_Obj* obj, c
         }
         return;
     }
-    S_00b6fa40_Obj* n = obj->v3();
+    S_00b6fa40_Obj* n = apObject->v3();
     if (n)
     {
         unsigned int count = n->unka6;
@@ -125,7 +128,7 @@ void __cdecl BSShaderNoLightingProperty_SetFalloffRecurse(S_00b6fa40_Obj* obj, c
             S_00b6fa40_Obj* c = n->unka0[i];
             if (c)
             {
-                BSShaderNoLightingProperty_SetFalloffRecurse(c, pf);
+                BSShaderNoLightingProperty_SetFalloffRecurse(c, aFalloffData);
             }
         }
     }

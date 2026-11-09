@@ -14,12 +14,13 @@ class TESFileFormVersion
     unsigned short GetFormVersion();
 };
 
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
-    unsigned int opaque0;
+    unsigned int pOwnerForm;
     unsigned int opaque4;
-    unsigned int opaque8;
+    unsigned int fHealthMult;
     ContainerItemExtra();
     bool Load(TESFile*);
 };

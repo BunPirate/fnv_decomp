@@ -102,7 +102,7 @@ class B479FB0IdleList
     short unk06;
     B479FB0Idle** m_ppkIdles;
 
-    bool BGSIdleCollection_HasIdleForActor(B479FB0Actor* pkActor, int iArg);
+    bool BGSIdleCollection_HasIdleForActor(B479FB0Actor* apActor, int apTargetRef);
 };
 int __cdecl B489480Stricmp(const char* pcA, const char* pcB);
 struct FUN_004898a0_shell;
@@ -152,7 +152,7 @@ struct DestructionStage
     TESForm* debris;
     unsigned int debrisCount;
     TESModel* replacementModel;
-    void EnsureB2_4fe();
+    void DestructibleObjectStage_CreateReplacementModel();
 };
 struct DestructibleData
 {
@@ -189,40 +189,43 @@ void __cdecl TESModel_LoadModelTextureChunk(TESModel*, TESFile*);
 
 // @fnv 0x004781e0
 // src: XBOX_PDB 0x004781e0
-void __cdecl BGSDestructibleObjectForm_LoadChunk(BGSDestructibleObjectForm* component, TESFile* file)
+// pdb: BGSDestructibleObjectForm::LoadChunk | BGSDestructibleObjectForm.obj | retail, string-set bridge, high
+// pdb params: apDestruct, apFile
+// pdb locals: chunk, pdata, saveData, pform, stageSaveData, ccurrentStage, pmessage, isize
+void __cdecl BGSDestructibleObjectForm_LoadChunk(BGSDestructibleObjectForm* apDestruct, TESFile* apFile)
 {
-    if (!file || !component)
+    if (!apFile || !apDestruct)
         return;
-    int chunkID = file->GetChunkID();
-    component->EnsureCurrentEntry();
-    DestructibleData* pkData = component->FUN_00726070();
+    int chunkID = apFile->GetChunkID();
+    apDestruct->EnsureCurrentEntry();
+    DestructibleData* pkData = apDestruct->FUN_00726070();
     switch (chunkID)
     {
     case 0x54534544: {
         DestructibleHeader header;
-        if (file->GetChunkSize() != 8)
+        if (apFile->GetChunkSize() != 8)
         {
-            TESForm* form = dynamic_cast<TESForm*>(component);
+            TESForm* form = dynamic_cast<TESForm*>(apDestruct);
             Warning_005b5e40("MASTERFILE: Old Destruction data found on form %08X %s.  It needs to be resaved.",
                          static_cast<const TESForm*>(form)->GetFormID(), form->GetName());
-            component->BGSDestructibleObjectForm_RemoveData();
+            apDestruct->BGSDestructibleObjectForm_RemoveData();
             return;
         }
-        file->GetChunkData(&header, 0);
-        if (file->IsEndianConversionRequired())
+        apFile->GetChunkData(&header, 0);
+        if (apFile->IsEndianConversionRequired())
             header.QuestPerkEntryData_Endian();
         pkData->health = header.health;
         pkData->stageCount = header.stageCount;
         pkData->flags = header.flags;
         if (pkData->stageCount)
-            pkData->stages = component->AllocateSpawnedItemArray(pkData->stageCount);
+            pkData->stages = apDestruct->AllocateSpawnedItemArray(pkData->stageCount);
         break;
     }
     case 0x44545344: {
         DestructionStageChunk stage;
         memset(&stage, 0, sizeof(stage));
-        file->GetChunkData(&stage, sizeof(stage));
-        if (file->IsEndianConversionRequired())
+        apFile->GetChunkData(&stage, sizeof(stage));
+        if (apFile->IsEndianConversionRequired())
             stage.SAVE_DESTRUCTIBLE_OBJECT_STAGE_Endian();
         unsigned char index = stage.index;
         if (index < pkData->stageCount)
@@ -234,33 +237,33 @@ void __cdecl BGSDestructibleObjectForm_LoadChunk(BGSDestructibleObjectForm* comp
             pkData->stages[index]->explosion = stage.explosion;
             pkData->stages[index]->debris = stage.debris;
             pkData->stages[index]->debrisCount = stage.debrisCount;
-            while ((chunkID = file->GetChunkID()) != 0)
+            while ((chunkID = apFile->GetChunkID()) != 0)
             {
                 switch (chunkID)
                 {
                 case 0x4c444d44: {
-                    pkData->stages[index]->EnsureB2_4fe();
-                    char* path = (char*)_alloca(file->GetChunkSize());
-                    file->GetChunkData(path, 0);
+                    pkData->stages[index]->DestructibleObjectStage_CreateReplacementModel();
+                    char* path = (char*)_alloca(apFile->GetChunkSize());
+                    apFile->GetChunkData(path, 0);
                     pkData->stages[index]->replacementModel->SetModelFilePath(path);
                     break;
                 }
                 case 0x54444d44:
-                    pkData->stages[index]->EnsureB2_4fe();
-                    TESModel_LoadModelTextureChunk(pkData->stages[index]->replacementModel, file);
+                    pkData->stages[index]->DestructibleObjectStage_CreateReplacementModel();
+                    TESModel_LoadModelTextureChunk(pkData->stages[index]->replacementModel, apFile);
                     break;
                 case 0x53444d44: {
-                    pkData->stages[index]->EnsureB2_4fe();
-                    unsigned int size = file->GetChunkSize();
+                    pkData->stages[index]->DestructibleObjectStage_CreateReplacementModel();
+                    unsigned int size = apFile->GetChunkSize();
                     void* pBuffer = _alloca(size);
-                    file->GetChunkData(pBuffer, size);
-                    pkData->stages[index]->replacementModel->LoadTextureSwapList(pBuffer, size, file->GetFormVersion());
+                    apFile->GetChunkData(pBuffer, size);
+                    pkData->stages[index]->replacementModel->UnpackTextureSwapChunkData(pBuffer, size, apFile->GetFormVersion());
                     break;
                 }
                 case 0x46545344:
                     return;
                 }
-                if (!file->NextChunk())
+                if (!apFile->NextChunk())
                     break;
             }
         }

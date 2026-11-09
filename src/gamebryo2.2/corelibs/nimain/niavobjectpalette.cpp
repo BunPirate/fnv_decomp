@@ -10,6 +10,8 @@ char* __cdecl _FUN_00a7d330(const char*);
 extern char const* const g_011f4a04_arg1;
 // Appends the string returned by _FUN_00a7d330(g_011f4a04_arg1) to pkStrings, growing it if the current index reaches its size.
 // @fnv 0x00a88a70
+// pdb: NiAVObjectPalette::GetViewerStrings | NiAVObjectPalette.obj | debug, call graph, medium
+// pdb params: pkStrings
 void NiAVObjectPalette::AppendString(StrArr* pkStrings)
 {
     AppendCameraPathEntries(pkStrings);

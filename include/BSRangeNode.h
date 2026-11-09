@@ -2,6 +2,7 @@
 
 #include "BSNiNode.h"
 
+// pdb: class BSRangeNode, size 0xe0 (here 0xb0), bases: BSNiNode, 4 members
 class BSRangeNode : public BSNiNode
 {
 public:

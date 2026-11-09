@@ -10,7 +10,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 struct FUN_00cd06c0_t
 {
-    void __thiscall hkFreeListMemorySystem_setAllocator(int v);
+    void __thiscall hkFreeListMemorySystem_setAllocator(int a);
 };
 extern int DAT_010cacd0;
 struct FUN_00cd06a0
@@ -72,7 +72,7 @@ struct FUN_00cd0940_iface
 };
 struct FUN_00cd0940_shell
 {
-    void __thiscall ResetRecordState(int* param, unsigned char mode);
+    void __thiscall ResetRecordState(int* router, unsigned char flags);
 };
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
 struct PtrArrayMember
@@ -192,7 +192,7 @@ struct Sub0b0c
 };
 struct FUN_00d5e960_t
 {
-    void __thiscall InitStream(int v);
+    void __thiscall hkSolverAllocator_setBuffer(int vbuffer);
 };
 struct Owner
 {
@@ -220,7 +220,7 @@ struct Owner
     int unk0b08;
     Sub0b0c sub0b0c;
     FUN_00d5e960_t cnt0b30;
-    Sub0b0c* hkFreeListMemorySystem_mainInit(const Pair* p, Flags flags);
+    Sub0b0c* hkFreeListMemorySystem_mainInit(const Pair* info, Flags flags);
 };
 extern "C" unsigned int DAT_012686cc;
 struct S_00cd0a60_sub8
@@ -917,10 +917,10 @@ struct S_00cd0a60_sub1c
     int unka90;
     int unka94;
     int unka98;
-    void hkFreeListAllocator_00d60270(S_00cd0a60_sub8* a1);
+    void hkFreeListAllocator_ctor(S_00cd0a60_sub8* server);
     __forceinline S_00cd0a60_sub1c(S_00cd0a60_sub8* a1)
     {
-        hkFreeListAllocator_00d60270(a1);
+        hkFreeListAllocator_ctor(a1);
     }
 };
 struct S_00cd0a60_VtBase
@@ -959,10 +959,10 @@ struct S_00cd0a60_sub0ad0
     int unk24;
     int unk28;
     int unk2c;
-    void ProcessAndReturnValue_00cf6da0(int a1);
+    void hkCriticalSection_ctor(int a1);
     __forceinline S_00cd0a60_sub0ad0()
     {
-        ProcessAndReturnValue_00cf6da0(0);
+        hkCriticalSection_ctor(0);
     }
 };
 struct S_00cd0a60_sub0b00
@@ -1160,7 +1160,7 @@ struct S_00cd0a60_elem
     char unk12c;
     int unk130;
     int unk134;
-    void hkThreadMemory_hkThreadMemory();
+    void hkThreadMemory_ctor();
 };
 struct S_00cd0a60_arr
 {
@@ -1170,7 +1170,7 @@ struct S_00cd0a60_arr
         S_00cd0a60_elem* p = e;
         for (int i = 31; i >= 0; --i)
         {
-            p->hkThreadMemory_hkThreadMemory();
+            p->hkThreadMemory_ctor();
             p->unk128 = 0;
             p->unk12c = 0;
             p->unk130 = 0;
@@ -1238,7 +1238,7 @@ struct CD07B0_Buffer
     {
         return m_pRecordEnd - m_pBegin;
     }
-    void InitStream(int a1, int a2);
+    void hkSolverAllocator_setBuffer(int vbuffer, int bufferSize);
 };
 struct FUN_00cd07b0_cls
 {
@@ -1280,7 +1280,7 @@ struct FUN_00cd07b0_cls
     int unkb08;
     Sub0b0c m_kSub;
     CD07B0_Buffer m_kBuffer;
-    int Cleanup(Flags akFlags);
+    int Cleanup(Flags flags);
 };
 
 #include <windows.h>
@@ -1291,7 +1291,7 @@ extern int DAT_010cacd0;
 void __fastcall hkThreadMemory_releaseCachedMemory(void* self);
 void __fastcall UpdateFields_00cbf1a0(void* self);
 void __fastcall ResetVftableAndDeleteCriticalSection(void* self);
-void __fastcall SetVtableAndProcessState_00d5ffd0(void* self);
+void __fastcall hkFreeListAllocator_dtor(void* self);
 void __fastcall SetVirtualTable_00cbbfe0(void* self);
 
 struct Base_cd09d0
@@ -1395,7 +1395,7 @@ struct Mem1c_cd09d0
     int unk0a80, unk0a84, unk0a88, unk0a8c, unk0a90, unk0a94, unk0a98;
     ~Mem1c_cd09d0()
     {
-        SetVtableAndProcessState_00d5ffd0(this);
+        hkFreeListAllocator_dtor(this);
     }
 };
 struct MemAB8_cd09d0
@@ -1460,6 +1460,7 @@ class Pool_cd09d0 : public Base_cd09d0
 };
 
 // @fnv 0x00cd09d0
+// pdb: hkFreeListMemorySystem::~hkFreeListMemorySystem | hkFreeListMemorySystem.obj | retail, object-file gap fill, high
 Pool_cd09d0::~Pool_cd09d0()
 {
     m_vptr = (void*)&DAT_010cad74;

@@ -23,6 +23,8 @@ struct D3dxTransformResult_00ee6df8 { float x, y, z, w; };
 
 // Stores renderer in DAT_0126f710 and, if non-null, copies the pointer at offset 0x8b8 into DAT_0126f714, otherwise clears DAT_0126f714.
 // @fnv 0x00e7eea0
+// pdb: NiD3DRenderStateGroup::SetD3DRenderer | NiD3DRenderStateGroup.obj | debug, call graph, medium
+// pdb params: pkD3DRenderer
 void NiD3DPass::SetActiveRenderer(void* renderer)
 {
     DAT_0126f710 = renderer;
@@ -59,6 +61,9 @@ void NiTArray_NiPointer_NiD3DTextureStage__NiTNewInterface_NiPointer_NiD3DTextur
 }
 
 // @fnv 0x00e7eb00
+// pdb: ShadowLightShader::SetupPassOpt_ApplyAttMap | ShadowLightShader.obj | debug, call graph, medium
+// pdb params: aiStage
+// pdb locals: pkStage
 bool NiD3DPass::ApplyRenderStateChanges(bool force)
 {
     NiD3DPassPoolRecord* record = reinterpret_cast<NiD3DPassPoolRecord*>(this);
@@ -73,19 +78,24 @@ bool NiD3DPass::ApplyRenderStateChanges(bool force)
 
 // Stores count and clears reserved, allocates an SNAEntry array of that size (or null when zero), and returns this.
 // @fnv 0x00e7f0f0
-NiD3DPass* NiD3DPass::SetD3DDevice(unsigned int count)
+// pdb: NiD3DPass::SetD3DDevice | NiD3DPass.obj | debug, upstream name already matches, high
+// pdb params: pkD3DDevice
+NiD3DPass* NiD3DPass::SetD3DDevice(unsigned int pkD3DDevice)
 {
     NiD3DPassAllocation* allocation = reinterpret_cast<NiD3DPassAllocation*>(this);
-    allocation->count = count;
+    allocation->count = pkD3DDevice;
     allocation->reserved = 0;
-    if (count > 0)
-        allocation->entries = new SNAEntry[count];
+    if (pkD3DDevice > 0)
+        allocation->entries = new SNAEntry[pkD3DDevice];
     else
         allocation->entries = 0;
     return this;
 }
 
 // @fnv 0x00e804d0
+// pdb: NiD3DPass::CreateNewPass | NiD3DPass.obj | retail, call graph, high
+// pdb params: aspD3DPass
+// pdb locals: spReturn
 void NiD3DPass::CreateD3DPass(NiPointer<NiD3DPass>& output)
 {
     NiD3DPass* pass = DAT_0126f72c->Get();
@@ -110,6 +120,7 @@ void NiD3DPass::CreateD3DPass(NiPointer<NiD3DPass>& output)
 }
 
 // @fnv 0x00e80190
+// pdb: NiD3DPass::ReturnPassToPool | NiD3DPass.obj | retail, call graph, high
 void NiD3DPass::DestroyPass()
 {
     if (!m_bRendererOwned)
@@ -198,6 +209,9 @@ struct Self_00e7f000
 
 // Searches list1 then list2 for a node whose key matches, sets foundInSecond to indicate which list matched, and returns the node or null.
 // @fnv 0x00e7f000
+// pdb: NiD3DRenderStateGroup::FindRenderStateEntry | NiD3DRenderStateGroup.obj | debug, call graph, medium
+// pdb params: uiState, bInSaveList
+// pdb locals: pkCheckEntry
 Node_00e7f000* __fastcall FindNodeByKey(Self_00e7f000* self, int, int key, bool& foundInSecond)
 {
     for (Node_00e7f000* pNode = self->list1; pNode; pNode = pNode->next)
@@ -251,6 +265,8 @@ extern int DAT_010ef378;
 
 // @fnv 0x00e80020
 // src: COMMUNITY 0x00e80020
+// pdb: NiTArray<NiPointer<NiD3DTextureStage>,NiTNewInterface<NiPointer<NiD3DTextureStage> > >::`scalar deleting destructor' | NiD3DPass.obj | retail, object-file run extension, low
+// pdb params: this
 void* __fastcall NiTObjectArray_NiPointer_NiD3DTextureStage_Init(void* pThis, int, unsigned int uiMaxSize, unsigned int uiGrowBy)
 {
     *(int**)pThis = &DAT_010ef35c;
@@ -274,6 +290,7 @@ void __cdecl NiMemObject_ReleaseStorage_00aa1490(void* pMem, size_t stElementSiz
 
 // Destroys an array of 0x68-byte elements, calling FUN_00e7fea0 on each and freeing the base block when flags has bit 1 set.
 // @fnv 0x00e80080
+// pdb: NiD3DPass::`vector deleting destructor' | NiD3DPass.obj | retail, object-file run extension, low
 void* __fastcall FUN_00e80080(char* pThis, int, unsigned int flags)
 {
     if (flags & 2)
@@ -308,6 +325,7 @@ extern unsigned int* _DAT_0126f72c;
 // Allocates a 0x18-byte block, zeroes its first four words, sets words 4 and 5 to 8, and stores it in _DAT_0126f72c (or stores null on failure).
 // @fnv 0x00e80150
 // src: COMMUNITY 0x00e80150
+// pdb: NiD3DPass::InitializePools | NiD3DPass.obj | retail, upstream name already matches, high
 void __cdecl NiD3DPass_InitializePools()
 {
     unsigned int* p = (unsigned int*)g_memoryManager.Allocate(0x18);
@@ -406,6 +424,9 @@ struct PassLike
 };
 // @fnv 0x00e7f7d0
 // src: XBOX_PDB 0x00e7f7d0
+// pdb: NiD3DPass::PostProcessRenderingPass | NiD3DPass.obj | retail, upstream name already matches, high
+// pdb params: uiPass
+// pdb locals: kErr
 unsigned int __fastcall NiD3DPass_PostProcessRenderingPass(PassLike* self, int edx, unsigned int uiPass)
 {
     if (self->m_p)
@@ -456,12 +477,14 @@ extern int DAT_0126f728;
 
 // @fnv 0x00e7f920
 // src: COMMUNITY 0x00e7f920
-void __cdecl NiD3DPass_SetD3DRenderer(int pObject)
+// pdb: NiD3DPass::SetD3DRenderer | NiD3DPass.obj | retail, upstream name already matches, high
+// pdb params: pkD3DRenderer
+void __cdecl NiD3DPass_SetD3DRenderer(int pkD3DRenderer)
 {
-    DAT_0126f724 = pObject;
-    if (pObject)
+    DAT_0126f724 = pkD3DRenderer;
+    if (pkD3DRenderer)
     {
-        int state = *(int*)((char*)pObject + 0x288);
+        int state = *(int*)((char*)pkD3DRenderer + 0x288);
         if (DAT_0126f720)
         {
             int obj = DAT_0126f720;
@@ -514,6 +537,7 @@ struct FUN_00e800f0
     FUN_00e800f0();
 };
 // @fnv 0x00e800f0
+// pdb: NiD3DPass::NiD3DPass | NiD3DPass.obj | retail, object-file run extension, low
 FUN_00e800f0::FUN_00e800f0()
 {
     f14 = 0;
@@ -652,7 +676,7 @@ void* Outer_00e7ddf0::NiD3DTextureStage_GetTexCoordIndex()
 }
 
 extern int EmptyFS;
-void __cdecl RemoveGlobalConstant(char**);
+void __cdecl NiShaderFactory_ReleaseGlobalShaderConstant(char**);
 void __cdecl ResetAndRegister(void*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
@@ -672,6 +696,8 @@ struct This00e7de30
 };
 // @fnv 0x00e7de30
 // src: GUESS 0x00e7de30 (confidence: low)
+// pdb: ShadowSceneLight::SetClipSpacePlanes | ShadowLightShader.obj | retail, object-file run extension, low
+// pdb params: apfClipPlanes
 void This00e7de30::UpdateReferenceState_00e7de30()
 {
     Holder00e7de30* p = _18;
@@ -680,7 +706,7 @@ void This00e7de30::UpdateReferenceState_00e7de30()
         if (p->_8 != *(char**)&EmptyFS)
             InterlockedIncrement((volatile long*)(p->_8 - 8));
         char* tmp = p->_8;
-        RemoveGlobalConstant(&tmp);
+        NiShaderFactory_ReleaseGlobalShaderConstant(&tmp);
         if (tmp != *(char**)&EmptyFS)
             InterlockedDecrement((volatile long*)(tmp - 8));
     }
@@ -813,6 +839,10 @@ struct MyCls
     void SetBuffer(unsigned int, unsigned int, void*, bool);
 };
 // @fnv 0x00e81ca0
+// pdb: NiShaderConstantMapEntry::SetData | NiD3DShaderConstantMap.obj | retail, call graph, low
+// pdb note: debug build links it to NiD3DShaderConstantMap::SetD3DDevice
+// pdb params: uiDataSize, uiDataStride, pvDataSource, bCopyData
+// pdb locals: uiByteSize
 void MyCls::SetBuffer(unsigned int uiSize, unsigned int a1, void* pData, bool bCopy)
 {
     m28 = uiSize;
@@ -941,12 +971,14 @@ extern int DAT_0126f6c8;
 
 // @fnv 0x00e7e8d0
 // src: COMMUNITY 0x00e7e8d0
-void NiD3DTextureStage_SetD3DRenderer(int pObject)
+// pdb: NiD3DTextureStage::SetD3DRenderer | NiD3DTextureStage.obj | retail, upstream name already matches, high
+// pdb params: pkD3DRenderer
+void NiD3DTextureStage_SetD3DRenderer(int pkD3DRenderer)
 {
-    DAT_0126f6c4 = pObject;
-    if (pObject)
+    DAT_0126f6c4 = pkD3DRenderer;
+    if (pkD3DRenderer)
     {
-        int pNewObject = *(int*)(pObject + 0x288);
+        int pNewObject = *(int*)(pkD3DRenderer + 0x288);
         if (DAT_0126f6c0)
         {
             typedef void(__stdcall * ReleaseFunction)(int);
@@ -1200,6 +1232,9 @@ struct Shader
 };
 // Assigns textures to both texture stages from the geometry, builds a matrix from DAT_011f91e0[0]'s transform, and draws the pass target through the device.
 // @fnv 0x00b7ded0
+// pdb: ShadowLightShader::SetupGeometry_ADT4_Opt | ShadowLightShader.obj | debug, object-file run extension, low
+// pdb params: apState
+// pdb locals: pgeometry, d3dInvWorld, apRenderPass, pkStage, aWorld, pprop
 void Shader::SetupTextureStages(Arg* arg)
 {
     Geometry* geometry = arg->geometry;
@@ -1263,6 +1298,9 @@ extern NiDSBListNode* __fastcall NiDSBPoolAddHead(void* pPool);
 
 // Runs the inline base constructors, clears the D3D format, then under a critical section allocates a list node and links it into the global list.
 // @fnv 0x00e7d940
+// pdb: NiRenderTargetGroup::Create | NiRenderTargetGroup.obj | debug, object-file run extension, low
+// pdb params: pkBuffer, apkRenderer, bUseDefaultDepthStencil, bCreateCompatibleDepthStencil
+// pdb locals: pkRenderer, pkDSBuffer
 NiDX9AdditionalDepthStencilBufferData::NiDX9AdditionalDepthStencilBufferData() throw() : m_eCreateFormat(0)
 {
     EnterCriticalSection(reinterpret_cast<CRITICAL_SECTION*>(&DAT_0126f600));
@@ -1399,6 +1437,8 @@ class E7DE90Owner
 
 // Looks up the pair at uiIndex and passes its first and second values to the state object as stages 1 and 2.
 // @fnv 0x00e7de90
+// pdb: ShadowLightShader::SetTextureMode | ShadowLightShader.obj | retail, call graph, high
+// pdb params: apStage, apProp
 void E7DE90Owner::ApplyPairToState(unsigned int uiPairIndex)
 {
     E7DE90Pair kPair = g_aE7DE90Pairs[uiPairIndex];
@@ -1443,6 +1483,7 @@ class E7DEF0TextureStage
 // Sets sampler states 5, 6 and 7 to the U, V and W addresses of the clamp entry for eMode, then stores eMode in m_eClampMode.
 // @fnv 0x00e7def0
 // src: COMMUNITY 0x00e7def0
+// pdb: BSShaderPPLightingProperty::GetRefractionPower | ShadowLightShader.obj | debug, object-file run extension, low
 void E7DEF0TextureStage::NiD3DTextureStage_SetFilterMode(int eMode)
 {
     m_pkState->SetSamplerState(5, GetClampEntry(eMode).m_uiAddressU, 0, false);
@@ -1731,7 +1772,7 @@ unsigned int F860Shader::RenderShader(void* pvGeometry, void* pvSkin, void* pvPa
     return uiResult;
 }
 
-extern "C" void __cdecl ReleaseRenderStateGroup_e7fea0(D3DRenderStateGroup* group);
+extern "C" void __cdecl ReleaseRenderStateGroup_e7fea0(D3DRenderStateGroup* pkGroup);
 
 struct PassRefObject_e7fea0
 {
@@ -1964,8 +2005,11 @@ void __stdcall D3DXVec3TransformNormal_00ee6df2(Vec3f* out, Vec3f* in, unsigned 
 void __stdcall D3DXVec3Normalize_00ee6dec(float* a, Vec3f* b);
 
 // @fnv 0x00b7c7b0
-// src: COMMUNITY 0x00b7c7b0
-void __stdcall BSShader_SetLightDirection(unsigned int param)
+// src: XBOX_DEBUG_PDB 0x00b7c7b0
+// pdb: ShadowLightShader::SetupGeometryOpt_LightDir | ShadowLightShader.obj | debug, call graph, high
+// pdb params: aInvworld
+// pdb locals: vLightDir, psslLight, pdirLight, vLightObjectDir, apRenderPass
+void __stdcall ShadowLightShader_SetupGeometryOpt_LightDir(unsigned int aInvworld)
 {
     void* owner = DAT_011f91e0->unk0C;
     void** ownerVt = *(void***)owner;
@@ -1980,7 +2024,7 @@ void __stdcall BSShader_SetLightDirection(unsigned int param)
     v1.z = scaledZ;
 
     Vec3f out;
-    D3DXVec3TransformNormal_00ee6df2(&out, &v1, param);
+    D3DXVec3TransformNormal_00ee6df2(&out, &v1, aInvworld);
     D3DXVec3Normalize_00ee6dec(&v1.x, &out);
 
     BloodSplatterHubStub* hub = (BloodSplatterHubStub*)DAT_0126f74c->unk5C;
@@ -2120,7 +2164,7 @@ struct BSLightHandler
                        BSVec4* apVec, int a7, int a8);
 };
 
-void __cdecl BSBuildMatrix(BSTransform* apTransform, int aiUnk, SwizzledMatrix* apOut);
+void __cdecl BSBuildMatrix(BSTransform* aWorld, int apSkin, SwizzledMatrix* aOut);
 BSVec4* __stdcall BSTransformCoord(BSVec4* apOut, const BSVec4* apIn, const SwizzledMatrix* apMatrix);
 
 
@@ -2339,6 +2383,9 @@ struct SamplerStandIn
 };
 
 // @fnv 0x00e7e940
+// pdb: NiTPool<NiD3DTextureStage,NiTNewInterface<NiD3DTextureStage> >::CreateNewObjects | NiD3DTextureStage.obj | retail, object-file run extension, low
+// pdb params: uiSize
+// pdb locals: pkNewContainer, i
 void SamplerStandIn::BindTexture()
 {
     if (m_04 >= DAT_011bf558)
@@ -2392,7 +2439,7 @@ typedef int(__stdcall* FnvInterlockedOperation)(void*);
 extern FnvInterlockedOperation DAT_00fdf1c0;
 extern FnvInterlockedOperation DAT_00fdf1c4;
 
-void __cdecl RemoveGlobalConstant(int* value);
+void __cdecl NiShaderFactory_ReleaseGlobalShaderConstant(int* kKey);
 void __cdecl ResetAndRegister(void* value);
 void __cdecl NiMemObject_ReleaseStorage_00aa1490(void* value, unsigned int size);
 void __cdecl FUN_00aa1460(void* value, unsigned int size);
@@ -2415,7 +2462,7 @@ struct HolderRef
             if (h->name != DAT_0109b220)
                 DAT_00fdf1c0((void*)(h->name - 8));
             int value = h->name;
-            RemoveGlobalConstant(&value);
+            NiShaderFactory_ReleaseGlobalShaderConstant(&value);
             if (value != DAT_0109b220)
                 DAT_00fdf1c4((void*)(value - 8));
         }
@@ -2550,6 +2597,9 @@ struct StageArrayStorage_e7fea0
 };
 // Sets the StagePtr at the given index, growing the array if needed and updating the element count when the value differs from the default.
 // @fnv 0x00e7fb80
+// pdb: NiD3DPass::SetupRenderingPass | NiD3DPass.obj | debug, object-file run extension, low
+// pdb params: pkGeometry, pkSkin, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass
+// pdb locals: uiRet, uiNumStages, ui, kErr, pkStage
 void StageArrayStorage_e7fea0::Set(unsigned int index, const StagePtr& value)
 {
     if (!(DAT_0126f734 & 1))
@@ -3282,15 +3332,17 @@ struct TextureStageParameter
 };
 struct PassUpdate : NiD3DPass
 {
-    unsigned int NiD3DPass_SetupShaderPrograms(unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, unsigned int p5,
-                              unsigned int p6, unsigned int p7, unsigned int p8, unsigned int p9);
+    unsigned int NiD3DPass_SetupShaderPrograms(unsigned int pkGeometry, unsigned int pkSkin, unsigned int pkPartition, unsigned int pkBuffData, unsigned int pkState,
+                              unsigned int pkEffects, unsigned int kWorld, unsigned int kWorldBound, unsigned int uiPass);
 };
 // Sets pixel and vertex shader programs and constants, configures texture stage states, and falls back to render entry or value when no vertex shader is present.
 // @fnv 0x00e7f990
 // src: XBOX_PDB 0x00e7f990
-unsigned int PassUpdate::NiD3DPass_SetupShaderPrograms(unsigned int apContext, unsigned int p2, unsigned int ap3, unsigned int ap4,
-                                      unsigned int p5, unsigned int p6, unsigned int p7, unsigned int p8,
-                                      unsigned int p9)
+// pdb: NiD3DPass::SetupShaderPrograms | NiD3DPass.obj | debug, upstream name already matches, high
+// pdb params: pkGeometry, pkSkin, pkPartition, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass
+unsigned int PassUpdate::NiD3DPass_SetupShaderPrograms(unsigned int pkGeometry, unsigned int pkSkin, unsigned int pkPartition, unsigned int pkBuffData,
+                                      unsigned int pkState, unsigned int pkEffects, unsigned int kWorld, unsigned int kWorldBound,
+                                      unsigned int uiPass)
 {
     ShaderProgram* pPixelShader = reinterpret_cast<ShaderProgram*>(m_spPixelShader.m_pObject);
     if (pPixelShader)
@@ -3298,7 +3350,7 @@ unsigned int PassUpdate::NiD3DPass_SetupShaderPrograms(unsigned int apContext, u
         reinterpret_cast<RendererApi*>(DAT_0126f728)->SetPixelProgram(pPixelShader->GetPixelProgram(), 0);
         ShaderConstantMap* pConstantMap = reinterpret_cast<ShaderConstantMap*>(m_spPixelConstantMap.m_pObject);
         if (pConstantMap)
-            pConstantMap->ApplyConstants(m_spPixelShader.m_pObject, apContext, p2, ap3, ap4, p5, p6, p7, p8, p9,
+            pConstantMap->ApplyConstants(m_spPixelShader.m_pObject, pkGeometry, pkSkin, pkPartition, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass,
                                          0);
     }
     else
@@ -3311,7 +3363,7 @@ unsigned int PassUpdate::NiD3DPass_SetupShaderPrograms(unsigned int apContext, u
         reinterpret_cast<RendererApi*>(DAT_0126f728)->SetVertexProgram(pVertexShader->GetVertexProgram(), 0);
         ShaderConstantMap* pConstantMap = reinterpret_cast<ShaderConstantMap*>(m_spVertexConstantMap.m_pObject);
         if (pConstantMap)
-            pConstantMap->ApplyConstants(m_spVertexShader.m_pObject, apContext, p2, ap3, ap4, p5, p6, p7, p8, p9,
+            pConstantMap->ApplyConstants(m_spVertexShader.m_pObject, pkGeometry, pkSkin, pkPartition, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass,
                                          0);
         for (unsigned int stageIndex = 0; stageIndex < (unsigned int)DAT_011bf558; ++stageIndex)
         {
@@ -3339,14 +3391,14 @@ unsigned int PassUpdate::NiD3DPass_SetupShaderPrograms(unsigned int apContext, u
     else
     {
         reinterpret_cast<RendererApi*>(DAT_0126f728)->SetVertexProgram(0, 0);
-        unsigned int* context = reinterpret_cast<unsigned int*>(ap4);
+        unsigned int* context = reinterpret_cast<unsigned int*>(pkBuffData);
         if (!context)
         {
-            if (ap3)
-                context = reinterpret_cast<unsigned int*>(*reinterpret_cast<unsigned int*>(ap3 + 0x28));
+            if (pkPartition)
+                context = reinterpret_cast<unsigned int*>(*reinterpret_cast<unsigned int*>(pkPartition + 0x28));
             else
             {
-                unsigned int ctx = *reinterpret_cast<unsigned int*>(apContext + 0xb8);
+                unsigned int ctx = *reinterpret_cast<unsigned int*>(pkGeometry + 0xb8);
                 context = reinterpret_cast<unsigned int*>(*reinterpret_cast<unsigned int*>(ctx + 0x34));
             }
         }
@@ -4011,7 +4063,7 @@ struct Shell_b7e1
 {
     void* GetTextureByIndex(GeometryData*, int);
     void ShadowLightShader_SetupGeometryOpt_WorldViewProj(GeometryData*, TransformData*);
-    void BSShader_SetLightDirection(Matrix4*);
+    void ShadowLightShader_SetupGeometryOpt_LightDir(Matrix4*);
     void ShadowLightShader_Setup_ADT_PxOpt(DrawArg*);
 };
 // Sets stage textures and states from the geometry, computes a world transform, and uploads vertex shader constants.
@@ -4039,7 +4091,7 @@ void Shell_b7e1::ShadowLightShader_Setup_ADT_PxOpt(DrawArg* apDrawArg)
     TransformData* transform = &world->world;
     BSUtilities_GetInverseWorldMatrix(transform, 0, &matrix);
     ShadowLightShader_SetupGeometryOpt_WorldViewProj(world, transform);
-    BSShader_SetLightDirection(&matrix);
+    ShadowLightShader_SetupGeometryOpt_LightDir(&matrix);
     float scale = transform->scale;
     // FUN_00ee6df8 fills the vector without a separate constructor call.
     float dataStorage[sizeof(D3dxTransformResult_00ee6df8) / sizeof(float)];

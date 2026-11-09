@@ -51,9 +51,9 @@ __forceinline void hkVector4::setBroadcast3(const hkVector4& v)
     m_vComponents = _mm_shuffle_ps(v.m_vComponents, v.m_vComponents, 0xff);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const __m128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    const __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const __m128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return hkSimdReal(_mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), sum));
 }
@@ -123,17 +123,19 @@ struct SkeletonPoseData
 
 // @fnv 0x00cda340
 // src: COMMUNITY 0x00cda340
+// pdb: hkaPose::syncModelSpace | hkaPose.obj | retail, upstream name already matches, high
+// pdb locals: numBones, assertBuf, ostr
 void SkeletonPoseData::hkaPose_syncModelSpace()
 {
     if (m_bPoseFlag)
         return;
 
-    const int numBones = m_pSkeleton->m_kBones.m_iElementCount;
+    const int numBones = m_pSkeleton->m_bones.m_iElementCount;
     for (int b = 0; b < numBones; b++)
     {
         if (m_pBoneFlags[b] & 2)
         {
-            const short parentId = m_pSkeleton->m_kParentIndices.m_data[b];
+            const short parentId = m_pSkeleton->m_parentIndices.m_data[b];
             const hkQsTransform& local = m_pLocalPose[b];
             if (parentId != -1)
             {

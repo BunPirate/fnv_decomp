@@ -84,6 +84,8 @@ template <class T> inline NiPointer<T>& NiPointer<T>::operator=(T* pkNew)
 
 // Creates a shader declaration, configures its entries via vfn_08c/vfn_094, builds a BoltShader from it, and runs its setup calls before returning it.
 // @fnv 0x00bc10e0
+// pdb: BoltShader::CreateShader | BoltShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDecl, eInput, pshader
 BSShader* BoltShader::CreateShader()
 {
     BoltShader* shader = 0;
@@ -113,28 +115,32 @@ BSShader* BoltShader::CreateShader()
     return shader;
 }
 
-void __fastcall ConfigurePassRenderStates(char* pThis);
+void __fastcall BoltShader_PresetStages(char* pThis);
 
 // Ensures the NiD3DPass pointer at pThis+0x168 is set, then calls ConfigurePassRenderStates(pThis) and returns true.
 // @fnv 0x00bc1570
-bool __fastcall EnsurePassAndUpdate(char* pThis)
+// src: XBOX_RETAIL_PDB 0x00bc1570
+// pdb: BoltShader::LoadStagesAndPasses | BoltShader.obj | retail, object-file gap fill, high
+bool __fastcall BoltShader_LoadStagesAndPasses(char* pThis)
 {
     NiPointer<NiD3DPass>& pass = *(NiPointer<NiD3DPass>*)(pThis + 0x168);
     if (!pass.m_pObject)
         NiD3DPass::CreateD3DPass(pass);
-    ConfigurePassRenderStates(pThis);
+    BoltShader_PresetStages(pThis);
     return true;
 }
 
 struct X
 {
     void FUN_00bc0f80();
-    void* DestroyIfFlagged(unsigned int);
+    void* BoltShader_ScalarDtor(unsigned int);
 };
 void __cdecl _delete(void*, unsigned int);
 // Calls FUN_00bc0f80, then if f has bit 1 set calls _delete on this with size 0x194, and returns this.
 // @fnv 0x00bc1540
-void* X::DestroyIfFlagged(unsigned int auiFlags)
+// src: XBOX_RETAIL_PDB 0x00bc1540
+// pdb: BoltShader::`scalar deleting destructor' | BoltShader.obj | retail, object-file gap fill, high
+void* X::BoltShader_ScalarDtor(unsigned int auiFlags)
 {
     FUN_00bc0f80();
     if (auiFlags & 1)
@@ -279,11 +285,14 @@ struct OMStagePtr
 };
 struct FUN_00bc1210_t
 {
-    void ConfigurePassRenderStates();
+    void BoltShader_PresetStages();
 };
 // Copies the pass from this+0x168, creates a stage if it has none, assigns two refs from this+0x18c/0x190, then sets a series of render states.
 // @fnv 0x00bc1210
-void FUN_00bc1210_t::ConfigurePassRenderStates()
+// src: XBOX_RETAIL_PDB 0x00bc1210
+// pdb: BoltShader::PresetStages | BoltShader.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage
+void FUN_00bc1210_t::BoltShader_PresetStages()
 {
     OMPassPtr spRenderPass;
     OMStagePtr spStage;
@@ -311,7 +320,7 @@ void FUN_00bc1210_t::ConfigurePassRenderStates()
 
 struct FUN_00bc1950_shell : public BoltShader
 {
-    void InitShaderConstantMaps();
+    void BoltShader_CreateConstantMaps();
 };
 
 struct ConstMapPtr
@@ -343,7 +352,10 @@ extern int fnv_particle_shader_renderer_level;
 
 // Creates the vertex and pixel shader constant maps if missing and registers their entries, caching a bolt-data entry count in DAT_01201f50.
 // @fnv 0x00bc1950
-void FUN_00bc1950_shell::InitShaderConstantMaps()
+// src: XBOX_RETAIL_PDB 0x00bc1950
+// pdb: BoltShader::CreateConstantMaps | BoltShader.obj | retail, string-set bridge, high
+// pdb locals: uiDefinedMatrixFlags, uiConstantPoint4Flags, uiConstantMatrixFlags, isegmentCount
+void FUN_00bc1950_shell::BoltShader_CreateConstantMaps()
 {
     char* self = (char*)this;
     ConstMapPtr& spVS = *(ConstMapPtr*)(self + 0x34);
@@ -478,11 +490,14 @@ struct Obj_bc18d0
 };
 
 Obj_bc18d0* __cdecl BoltShader_GetBoltGeometry();
-void __cdecl FUN_00b57e30(Obj_bc18d0* pkObj, int a2, int a3);
+void __cdecl FUN_00b57e30(Obj_bc18d0* apObject, int abFaceGenModel, int abSkipPreCache);
 
 // Clones a node from FUN_00bc15a0, attaches it to pkNode, gets property type 3, and if its m_iType1c is 0xf increments DAT_01201f54 and calls v39 on it.
 // @fnv 0x00bc18d0
 // src: COMMUNITY 0x00bc18d0
+// pdb: BoltShader::Start | BoltShader.obj | retail, upstream name already matches, high
+// pdb params: apNode, abStartFromPoint
+// pdb locals: pboltGeometry, pclone, pboltProp, pprop
 Prop_bc18d0* __cdecl BoltShader_Start(Obj_bc18d0* pkNode)
 {
     if (pkNode)
@@ -648,18 +663,21 @@ extern Fn1470Ref* DAT_01201f58;
 // Calls Slot3c for each matching result; when the counter is nonpositive, releases and clears the global reference and resets the counter.
 // @fnv 0x00bc1470
 // src: COMMUNITY 0x00bc1470
-void __cdecl BoltShader_Stop(Fn1470Owner* pOwner, Fn1470Result* pWanted)
+// pdb: BoltShader::Stop | BoltShader.obj | retail, upstream name already matches, high
+// pdb params: apNode, apProp
+// pdb locals: i, pObject, ppsProp, pprop
+void __cdecl BoltShader_Stop(Fn1470Owner* apNode, Fn1470Result* apProp)
 {
-    if (pOwner == 0 || pWanted == 0)
+    if (apNode == 0 || apProp == 0)
     {
         return;
     }
     unsigned int i = 0;
-    if (0 < pOwner->m_a8)
+    if (0 < apNode->m_a8)
     {
         do
         {
-            Fn1470Item* item = pOwner->m_a0[i];
+            Fn1470Item* item = apNode->m_a0[i];
             Fn1470Result* r;
             if (item != 0)
             {
@@ -679,12 +697,12 @@ void __cdecl BoltShader_Stop(Fn1470Owner* pOwner, Fn1470Result* pWanted)
                 bMatch = (r->m_1c == 0xf);
             }
             Fn1470Result* v = bMatch ? r : 0;
-            if (v != 0 && v == pWanted)
+            if (v != 0 && v == apProp)
             {
-                pOwner->Slot3c(i);
+                apNode->Slot3c(i);
             }
             i++;
-        } while (i < pOwner->m_a8);
+        } while (i < apNode->m_a8);
     }
     if (--DAT_01201f54 > 0)
     {
@@ -711,7 +729,7 @@ struct IndexU16
     }
 };
 
-void* __cdecl GetOrCreateTable();
+void* __cdecl BoltShader_GetSegmentIndices();
 
 class FUN_00ba63e0 : public NiObject
 {
@@ -909,6 +927,8 @@ inline unsigned int GetSegmentCount()
 // Returns the cached object or creates one from repeated quad vertex and index data and stores it in the cache.
 // @fnv 0x00bc15a0
 // src: XBOX_PDB 0x00bc15a0
+// pdb: BoltShader::GetBoltGeometry | BoltShader.obj | retail, upstream name already matches, high
+// pdb locals: usnumVertices, usnumTriangles, inumsegments, pnewGeometry, ptriangleIndices, pnewShapeData, pdata, pvertex, bound, inumQuads, pprop, i, ivert, itri
 Obj_bc18d0* BoltShader_GetBoltGeometry()
 {
     if (CachedShape())
@@ -956,7 +976,7 @@ Obj_bc18d0* BoltShader_GetBoltGeometry()
 
     FUN_00ba63e0* pkExt = new FUN_00ba63e0(usNumVertices, 1);
     pkExt->SetSize_Thunk(1);
-    pkExt->NiAdditionalGeometryData_SetDataBlock(0, GetOrCreateTable(), (unsigned short)usNumVertices * 4, 1);
+    pkExt->NiAdditionalGeometryData_SetDataBlock(0, BoltShader_GetSegmentIndices(), (unsigned short)usNumVertices * 4, 1);
     pkExt->NiAdditionalGeometryData_SetDataStream(0, 0, 0, 1, usNumVertices, 4, 4);
 
     pkData->FUN_00a67260(pkExt);

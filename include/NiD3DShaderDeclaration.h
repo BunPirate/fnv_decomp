@@ -12,6 +12,7 @@ class NiSkinInstance;
 class NiVBChip;
 struct IDirect3DVertexDeclaration9;
 
+// pdb: class NiD3DShaderDeclaration, size 0x2c, bases: NiShaderDeclaration, 9 members
 class NiD3DShaderDeclaration : public NiShaderDeclaration
 {
 public:
@@ -42,14 +43,14 @@ public:
                      unsigned int, unsigned int, unsigned int, unsigned int);
     void Finalize();
 
-    GraphicsRenderer* m_pOwnerShader;
-    VertexDeclarationLayout* m_pShaderStreamInfo;
-    Direct3DDeviceInterface* m_pD3DDevice;
-    unsigned int m_uiVertexElementCount;
-    unsigned int m_uiBufferStride;
-    unsigned int m_uiShaderRegisterCount;
-    unsigned int m_uiRegisterStreamCount;
-    NiD3DShaderDeclaration__ShaderRegisterStream* m_pShaderRegisterStream;
-    bool m_bHasChanges;
+    GraphicsRenderer* m_pkRenderer;
+    VertexDeclarationLayout* m_pkVBManager;
+    Direct3DDeviceInterface* m_pkD3DDevice;
+    unsigned int m_uiDeclSize;
+    unsigned int m_uiCurrDeclIndex;
+    unsigned int m_uiMaxStreamEntryCount;
+    unsigned int m_uiStreamCount;
+    NiD3DShaderDeclaration__ShaderRegisterStream* m_pkStreamEntries;
+    bool m_bModified;
     unsigned char layoutPadding29[3];
 };

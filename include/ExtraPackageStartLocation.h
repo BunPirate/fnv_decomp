@@ -11,6 +11,7 @@ namespace extra_save
     class SForm;
 }
 
+// pdb: class ExtraPackageStartLocation, size 0x20, bases: BSExtraData, 1 members
 class ExtraPackageStartLocation : public BSExtraData
 {
 public:

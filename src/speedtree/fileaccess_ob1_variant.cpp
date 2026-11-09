@@ -21,7 +21,7 @@ struct FUN_00b3ef80_shell
     int m_iValueAt00;
     void* m_pObjectAt04;
     float CTreeFileAccess_ParseFloat();
-    CVec3 GetVector3();
+    CVec3 BSSoundMessage_GetVector3();
 };
 struct FUN_00b3ed20_range
 {
@@ -149,6 +149,8 @@ struct SpeedTreeFileInput
 };
 // @fnv 0x00b3ee40
 // src: COMMUNITY 0x00b3ee40
+// pdb: CTreeFileAccess::ParseString | FileAccess.obj | retail, upstream name already matches, high
+// pdb locals: nLength, strReturn, i
 Str_00b3ee40 SpeedTreeFileInput::CTreeFileAccess_ParseString()
 {
     Str_00b3ee40 s;

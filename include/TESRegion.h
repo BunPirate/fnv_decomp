@@ -10,6 +10,7 @@ class TESWeather;
 class ListProxy;
 class DataProxy;
 
+// pdb: class TESRegion, size 0x38, bases: TESForm, 6 members
 class TESRegion : public TESForm
 {
 public:
@@ -26,8 +27,8 @@ public:
     virtual void SaveForm();
     virtual void ClearData();
     virtual void InitItem();
-    bool Load(TESFile* file);
-    TESRegion* Clone(TESRegion* destination);
+    bool Load(TESFile* apFile);
+    TESRegion* Clone(TESRegion* apCopyInto);
     void WarnCopyUnsupported(TESRegion* destination);
     ListProxy* FUN_00441110();
     DataProxy* NiAVObject_GetParent();
@@ -35,7 +36,7 @@ public:
     RegionDataList* GetRegionDataList() const;
     BSSimpleList<RegionPointList*>* GetRegionPointLists() const;
     TESWorldSpace* GetParentWorldSpace() const;
-    void AssignWorldSpace(TESWorldSpace* world);
+    void SetWorldSpace(TESWorldSpace* world);
     RegionDataList* GetDataList();
     NiColor* GetDiffuseColor();
 };

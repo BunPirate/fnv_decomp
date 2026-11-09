@@ -20,7 +20,7 @@ struct TopicH
 };
 void HK2NI_00624b10(NiTransform*, NiPoint3*);
 NiPoint3& SetNiPoint3FromHkVector4(NiPoint3&, const hkVector4&);
-NiTransform* HK2NI_00624ad0(NiTransform* arNiTran, TopicH* arTopicH);
+NiTransform* HK2NI_00624ad0(NiTransform* arNiTran, TopicH* arhkTran);
 
 // FUN_00624be0 : 8-byte MSVC this-adjusting (virtual) thunk.
 //     sub ecx, 0x4 ; jmp FUN_00624190

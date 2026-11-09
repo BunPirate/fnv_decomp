@@ -33,7 +33,7 @@ struct S00e39e90_Info
     int unk0C;
     hkArray<hkpTyremarksWheel*> m_kTyremarksWheels;
 
-    void __thiscall hkpTyremarksInfo_getWheelTyremarksStrips(int arg1, int wheelIndex, hkpTyremark* out);
+    void __thiscall hkpTyremarksInfo_getWheelTyremarksStrips(int vehicle, int wheelIndex, hkpTyremark* strips_out);
 };
 
 struct Scalar4
@@ -346,7 +346,7 @@ struct P2
 struct BObj
 {
     V4 v0;
-    void hkVector4_setRotatedDir(void* a, void* b);
+    void hkVector4_setRotatedDir(void* quat, void* direction);
 };
 class Seg
 {
@@ -399,20 +399,23 @@ __forceinline float toFloat(__m128 v)
 
 // @fnv 0x00e39fd0
 // src: HAVOK_SRC 0x00e39fd0
-void hkpTyremarksInfo::updateTyremarksInfo(float p1, void* vehicle)
+// pdb: hkpTyremarksInfo::updateTyremarksInfo | hkpTyremarksInfo.obj | retail, upstream name already matches, high
+// pdb params: timestep, vehicle
+// pdb locals: right_ws, offset, point_right_ws, new_point
+void hkpTyremarksInfo::updateTyremarksInfo(float timestep, void* vehicle)
 {
     P2* p2 = static_cast<P2*>(vehicle);
     V4 A;
-    A.scaled(p1, p2->f18->f_1b0);
+    A.scaled(timestep, p2->f18->f_1b0);
     BObj B;
     B.hkVector4_setRotatedDir(&p2->f18->f_f0, &p2->f1c->f_50);
     for (int i = 0; i < p2->f1c->count20; ++i)
     {
         Obj* obj = &p2->f48[i];
-        float energy = obj->f_c8 - m_fMinTyremarkPointDistance;
+        float energy = obj->f_c8 - m_minTyremarkEnergy;
         if (energy > 0.0f)
         {
-            energy *= 255.0 / (m_fMaxTyremarkPointDistance - m_fMinTyremarkPointDistance);
+            energy *= 255.0 / (m_maxTyremarkEnergy - m_minTyremarkEnergy);
             if (energy > 255.0f)
                 energy = 255.0f;
         }
@@ -439,6 +442,6 @@ void hkpTyremarksInfo::updateTyremarksInfo(float p1, void* vehicle)
         seg.v1.y = (W.laneAt(1) + A.laneAt(1));
         seg.v1.z = (W.laneAt(2) + A.laneAt(2));
         seg.v1.w = energy;
-        m_kTyremarksWheels.m_data[i]->addTyremarkPoint(reinterpret_cast<hkpTyremark*>(&seg));
+        m_tyremarksWheel.m_data[i]->addTyremarkPoint(reinterpret_cast<hkpTyremark*>(&seg));
     }
 }

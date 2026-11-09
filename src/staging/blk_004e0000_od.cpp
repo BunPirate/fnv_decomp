@@ -110,9 +110,10 @@ struct FUN_004e3280_shell
 
 // @fnv 0x004e3280
 // src: COMMUNITY 0x004e3280
+// pdb: BGSPlaceableWater::GetRefractionEnabled | TESWater.obj | debug, upstream name already matches, high
 void FUN_004e3280_shell::BGSPlaceableWater_GetRefractionEnabled()
 {
-    reinterpret_cast<BGSPlaceableWater*>(this)->HasFlags(0x200);
+    reinterpret_cast<BGSPlaceableWater*>(this)->IsFlagSet(0x200);
 }
 
 namespace fnv_004e3300 {
@@ -125,9 +126,10 @@ struct FUN_004e3300_shell : BGSPlaceableWater
 
 // @fnv 0x004e3300
 // src: COMMUNITY 0x004e3300
+// pdb: BGSPlaceableWater::GetSilhouetteReflections | TESWater.obj | debug, upstream name already matches, high
 void FUN_004e3300_shell::BGSPlaceableWater_GetSilhouetteReflections()
 {
-    HasFlags(0x40000);
+    IsFlagSet(0x40000);
 }
 }  // namespace fnv_004e3300
 
@@ -140,6 +142,7 @@ struct FUN_004e3c00_Class
 
 // @fnv 0x004e3c00
 // src: COMMUNITY 0x004e3c00
+// pdb: BSShaderProperty::ClearRenderPasses | TESWater.obj | debug, upstream name already matches, high
 void FUN_004e3c00_Class::BSShaderProperty_ClearRenderPasses()
 {
     if (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x3c))
@@ -165,9 +168,10 @@ void FUN_004e3c20_class::ClearField()
 
 // @fnv 0x004e3c50
 // src: COMMUNITY 0x004e3c50
+// pdb: BGSPlaceableWater::GetReflectionEnabled | TESWater.obj | debug, upstream name already matches, high
 bool BGSPlaceableWater::GetReflectionEnabled()
 {
-    return HasFlags(1);
+    return IsFlagSet(1);
 }
 
 
@@ -183,9 +187,10 @@ struct FUN_004e3c70_shell : BGSPlaceableWater
 
 // @fnv 0x004e3c70
 // src: COMMUNITY 0x004e3c70
+// pdb: BGSPlaceableWater::IsUnderwaterFoggingPassEnabled | TESWater.obj | debug, object-file run extension, low
 bool FUN_004e3c70_shell::BGSPlaceableWater_GetUnderwaterFog()
 {
-    return !HasFlags(0x80000000);
+    return !IsFlagSet(0x80000000);
 }
 }  // namespace fnv_004e3c70
 
@@ -195,7 +200,7 @@ bool FUN_004e3c70_shell::BGSPlaceableWater_GetUnderwaterFog()
 // src: COMMUNITY 0x004e3ca0
 void BGSPlaceableWater::GetObjectTexCoordsEnabled()
 {
-    HasFlags(0x20000000);
+    IsFlagSet(0x20000000);
 }
 
 
@@ -205,6 +210,7 @@ struct FUN_004e3cc0_Class
 };
 
 // @fnv 0x004e3cc0
+// pdb: Explosion::GetExplosionBase | Explosion.obj | debug, call graph (shared callers), medium
 float FUN_004e3cc0_Class::GetFloatAtOffset9C()
 {
     return *(float*)((char*)this + 0x9c);
@@ -260,6 +266,7 @@ struct GlobalObject_0045cf30
 extern GlobalObject_0045cf30 g_011c7ac4;
 // @fnv 0x004e89e0
 // src: COMMUNITY 0x004e89e0
+// pdb: TESWaterSystem::GetUseWaterDisplacements | TESWater.obj | debug, object-file gap fill, medium
 unsigned char Water_bUseWaterDisplacements_Get()
 {
     return *g_011c7ac4.Bool();
@@ -277,6 +284,7 @@ struct FUN_004ea9e0_Class
 };
 // @fnv 0x004ea9e0
 // src: COMMUNITY 0x004ea9e0
+// pdb: BGSTerrainManager::GetTreeNode | TESWater.obj | debug, upstream name already matches, high
 NiNode* __thiscall FUN_004ea9e0_Class::BGSTerrainManager_GetTreeNode()
 {
     return (NiNode*)((Flt*)&g_011d86bc)->operator unsigned int();
@@ -292,6 +300,8 @@ struct FUN_004ed7a0_class
 // Calls FUN_004ed960(a), sets m_ptr to &DAT_010231f4, and returns this.
 // @fnv 0x004ed7a0
 // src: GUESS 0x004ed7a0 (confidence: low)
+// pdb: NiTPointerMap<TESObjectREFR *,TESObjectREFR *>::NiTPointerMap<TESObjectREFR *,TESObjectREFR *> | TESWater.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* __thiscall FUN_004ed7a0_class::InitializeFields_004ed7a0(void* apArg)
 {
     FUN_004ed960(apArg);
@@ -311,6 +321,8 @@ struct FUN_004ed7d0_class
 // Calls FUN_004eda60 with a, sets p to point at DAT_01023214, and returns this.
 // @fnv 0x004ed7d0
 // src: GUESS 0x004ed7d0 (confidence: low)
+// pdb: NiTPointerMap<TESWaterForm *,bool>::NiTPointerMap<TESWaterForm *,bool> | TESWater.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_004ed7d0_class* FUN_004ed7d0_class::UpdateState_004ed7d0(int a)
 {
     NiTMapBase_NiTPointerAllocator_unsigned_int_TESWaterForm_bool_NiTMapBase_NiTPointerAllocator_unsigned_int_TESWaterForm_bool(a);
@@ -331,6 +343,8 @@ struct FUN_004ed800Class
 // Calls FUN_004edb60 with arg, sets p to point at DAT_01023234, and returns this.
 // @fnv 0x004ed800
 // src: GUESS 0x004ed800 (confidence: low)
+// pdb: NiTPointerMap<TESObjectREFR *,WadingWaterData *>::NiTPointerMap<TESObjectREFR *,WadingWaterData *> | TESWater.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_004ed800Class* __thiscall FUN_004ed800Class::InitializeFields_004ed800(int aiValue)
 {
     this->NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_WadingWaterData_NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_WadingWaterData(aiValue);
@@ -350,6 +364,8 @@ struct FUN_004eeae0_shell
 
 // @fnv 0x004eeae0
 // src: GUESS 0x004eeae0 (confidence: low)
+// pdb: NiControllerSequence::SetAccumRootName | BSAnimGroupSequence.obj | debug, object-file run extension, low
+// pdb params: kAccumRootName
 void FUN_004eeae0_shell::ForwardCall_004eeae0(int arg)
 {
     ((FUN_0043ba10_shell*)((char*)this + 0x5c))->AssignInternedString((FUN_0043ba10_shell*)arg);
@@ -364,6 +380,7 @@ struct FUN_00456630_helper
 
 // @fnv 0x004f0140
 // src: XBOX_PDB 0x004f0140
+// pdb: NiAVObject::GetSelectiveUpdate | BSBipNode.obj | debug, upstream name already matches, high
 bool NiAVObject::GetSelectiveUpdate()
 {
     return ((FUN_00456630_helper*)this)->NiAVObject_GetBit(2);
@@ -387,22 +404,26 @@ struct FUN_004f05a0_Class
 
 // @fnv 0x004f05a0
 // src: XBOX_PDB 0x004f05a0
+// pdb: NiTimeController::GetActive | BSBipNode.obj | debug, upstream name already matches, high
 void FUN_004f05a0_Class::NiTimeController_GetActive()
 {
     HasFlag(8);
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool enabled, unsigned int flag);
-    void NiAVObject_SetRelevantImposter(bool enabled);
+    void NiAVObject_SetRelevantImposter(bool abRelevant);
 };
 
 // @fnv 0x004f2620
 // src: COMMUNITY 0x004f2620
-void TaskQueueInterface::NiAVObject_SetRelevantImposter(bool enabled)
+// pdb: NiAVObject::SetRelevantImposter | TESRegionDataImposter.obj | debug, upstream name already matches, high
+// pdb params: abRelevant
+void TaskQueueInterface::NiAVObject_SetRelevantImposter(bool abRelevant)
 {
-    SetTaskFlagDWord(enabled, 0x10000000);
+    SetTaskFlagDWord(abRelevant, 0x10000000);
 }
 
 struct FUN_004f2770_Class
@@ -439,6 +460,7 @@ struct FUN_004f3660_class
 // Sets the object's p field to "p`r" and v to 0, then returns this.
 // @fnv 0x004f3660
 // src: GUESS 0x004f3660 (confidence: low)
+// pdb: BSSimpleList<TESRegionData *>::~BSSimpleList<TESRegionData *> | TESRegionDataList.obj | debug, object-file run extension, low
 FUN_004f3660_class* FUN_004f3660_class::InitializeFields_004f3660()
 {
     p = "p`r";
@@ -453,6 +475,7 @@ struct S7010
 };
 
 // @fnv 0x004f4280
+// pdb: BSStringT<char>::ByteLengthWithNull | TESRegionDataMap.obj | debug, object-file run extension, low
 unsigned int S7010::GetLengthPlusOne()
 {
     return Length() + 1;
@@ -466,6 +489,7 @@ struct FUN_004f6fc0_shell
 
 // @fnv 0x004f87e0
 // src: GUESS 0x004f87e0 (confidence: low)
+// pdb: TESRegionPointList::ScaleResult::ScaleResult | TESRegionPointList.obj | debug, object-file run extension, low
 FUN_004f6fc0_shell* FUN_004f6fc0_shell::ProcessAndReturnValue_004f87e0()
 {
     TESRegionPoint_TESRegionPoint();
@@ -480,6 +504,8 @@ struct FUN_004f8a60_class
 
 // Calls FUN_004f8ac0(0) and stores a at offset 0x108 of this object.
 // @fnv 0x004f8a60
+// pdb: SettingCollection<Setting>::SetFileHandle | XGameSetting.obj | debug, object-file gap fill, medium
+// pdb params: apHandle
 void __thiscall FUN_004f8a60_class::SetField108(int aiValue)
 {
     SettingCollection_SetIniPath(0);
@@ -489,15 +515,17 @@ void __thiscall FUN_004f8a60_class::SetField108(int aiValue)
 
 struct FUN_004f8a90_Class
 {
-    void SettingCollectionMap_Setting_Get(unsigned int key, unsigned int& value);
+    void SettingCollectionMap_Setting_Get(unsigned int apID, unsigned int& arpGS);
 };
 
 // Looks up the value for key in the DummyPointerMap at offset 0x10c of this object and writes it to value.
 // @fnv 0x004f8a90
 // src: XBOX_PDB 0x004f8a90
-void FUN_004f8a90_Class::SettingCollectionMap_Setting_Get(unsigned int key, unsigned int& value)
+// pdb: SettingCollectionMap<Setting>::Get | XGameSetting.obj | debug, call graph, high
+// pdb params: apID, arpGS
+void FUN_004f8a90_Class::SettingCollectionMap_Setting_Get(unsigned int apID, unsigned int& arpGS)
 {
-    ((DummyPointerMap*)((char*)this + 0x10c))->GetAt(key, value);
+    ((DummyPointerMap*)((char*)this + 0x10c))->GetAt(apID, arpGS);
 }
 
 
@@ -511,6 +539,7 @@ struct FUN_004f9ef0_shell
 };
 
 // @fnv 0x004f9ef0
+// pdb: BGSDebrisData::~BGSDebrisData | BGSDebris.obj | debug, object-file gap fill, medium
 void FUN_004f9ef0_shell::CallInnerMethod()
 {
     m2.FileEntryList::~FileEntryList();
@@ -551,6 +580,7 @@ int __thiscall FUN_004fd4f0_Class::BGSProjectile_GetMotionType()
 
 // @fnv 0x004fdf20
 // src: COMMUNITY 0x004fdf20
+// pdb: BGSProjectile::GetCanTurnOff | BGSProjectile.obj | debug, upstream name already matches, high
 bool BGSProjectile::GetCanTurnOff() const
 {
     return GetFlag(0x20);
@@ -561,6 +591,7 @@ bool BGSProjectile::GetCanTurnOff() const
 
 // @fnv 0x004fdf40
 // src: COMMUNITY 0x004fdf40
+// pdb: BGSProjectile::GetCanPickup | BGSProjectile.obj | debug, upstream name already matches, high
 bool BGSProjectile::GetCanPickup()
 {
     return GetFlag(0x40);
@@ -592,6 +623,7 @@ struct FUN_004ed830_Class
 };
 // Calls FUN_004ed9d0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x004ed830
+// pdb: NiTPointerMap<TESObjectREFR *,TESObjectREFR *>::`scalar deleting destructor' | TESWater.obj | retail, vtable slot, high
 void* __thiscall FUN_004ed830_Class::FUN_004ed830(unsigned int flags)
 {
     FUN_004ed9d0();
@@ -611,6 +643,7 @@ struct FUN_004ed860_class
 };
 // Calls FUN_004edad0 on this, deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x004ed860
+// pdb: NiTPointerMap<TESWaterForm *,bool>::`scalar deleting destructor' | TESWater.obj | retail, vtable slot, high
 void* __thiscall FUN_004ed860_class::FUN_004ed860(unsigned int flags)
 {
     ((FUN_004edad0_shell*)this)->FUN_004edad0();
@@ -627,6 +660,7 @@ struct FUN_004ed890_Class
 };
 // Calls FUN_004edbd0, frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x004ed890
+// pdb: NiTPointerMap<TESObjectREFR *,WadingWaterData *>::`scalar deleting destructor' | TESWater.obj | retail, vtable slot, high
 void* __thiscall FUN_004ed890_Class::FUN_004ed890(unsigned int flags)
 {
     FUN_004edbd0();
@@ -640,6 +674,9 @@ void __cdecl BSSleep(unsigned long);
 // If DAT_011c7870 is nonzero, clamps it to 0x14, passes it to FUN_0040fca0, then resets DAT_011c7870 to 0.
 // @fnv 0x004e1610
 // src: COMMUNITY 0x004e1610
+// pdb: BSSimpleArray<NiPoint2,1024>::Add | TESWater.obj | retail, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 void SleepManager_RunSleep()
 {
     if (DAT_011c7870 != 0)
@@ -688,6 +725,7 @@ extern GlobalObject_00633c90 g_011c7c28;
 
 // @fnv 0x004e7ff0
 // src: XBOX_PDB 0x004e7ff0
+// pdb: TESWaterSystem::GetWaterRoot | TESWater.obj | debug, upstream name already matches, high
 unsigned int TESWaterSystem_GetWaterRoot()
 {
     return ((Flt*)&g_011c7c28)->operator unsigned int();
@@ -702,6 +740,7 @@ extern GlobalObject_00633c90 g_011c7c28;
 // If the global object holds a non-null pointer, calls FUN_004def90 on it, then assigns 0 to the global object.
 // @fnv 0x004e8000
 // src: COMMUNITY 0x004e8000
+// pdb: TESWaterSystem::ClearWaterRoot | TESWater.obj | retail, upstream name already matches, high
 void TESWaterSystem_ClearWaterRoot()
 {
     if (reinterpret_cast<Flt*>(&g_011c7c28)->operator unsigned int())
@@ -743,6 +782,7 @@ void __thiscall FUN_004f0110_Holder::bhkBlendCollisionObjectAddRotation_SetAddit
     d = *pSource;
 }
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier
 {
     float GetValue();
@@ -757,6 +797,7 @@ struct FUN_004f02e0_This
 // Returns true when the modifier's value differs from the negated DAT_01023900 constant.
 // @fnv 0x004f02e0
 // src: COMMUNITY 0x004f02e0
+// pdb: NiQuatTransform::IsRotateValid | BSBipNode.obj | debug, upstream name already matches, high
 bool FUN_004f02e0_This::NiQuatTransform_IsRotateValid()
 {
     return mod.GetValue() != -DAT_01023900;
@@ -810,6 +851,8 @@ struct FUN_004f5590 : FUN_004f5600_shell
     FUN_004f5590(int, int);
 };
 // @fnv 0x004f5590
+// pdb: TESRegionGrassObject::TESRegionGrassObject | TESRegionGrassObject.obj | debug, object-file run extension, low
+// pdb params: apObject, apParent
 FUN_004f5590::FUN_004f5590(int aiFirst, int aiSecond)
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_01023ec4);
@@ -827,6 +870,8 @@ struct FUN_004f5db0 : SL
 };
 // Initializes the object by storing the byte argument in mC and setting m10 to zero.
 // @fnv 0x004f5db0
+// pdb: TESRegionGrassObjectList::TESRegionGrassObjectList | TESRegionGrassObjectList.obj | debug, object-file run extension, low
+// pdb params: abOwnsTESRegionGrassObjectMemory
 FUN_004f5db0::FUN_004f5db0(unsigned char aucValue)
 {
     mC = aucValue;
@@ -843,6 +888,9 @@ struct Vec3i
 };
 // @fnv 0x004f6e00
 // src: XBOX_PDB 0x004f6e00
+// pdb: TESRegionObject::ConvertNormalToAngle | TESRegionObject.obj | retail, upstream name already matches, high
+// pdb params: aNormal
+// pdb locals: flength, temp
 float TESRegionObject_ConvertNormalToAngle(int aiX, int aiY, int aiZ)
 {
     Vec3i v;
@@ -889,6 +937,8 @@ struct FUN_004f7030 : BaseS
 };
 // Initializes the object by passing p[0] to FUN_0052ce20 and p[1] to SetValue.
 // @fnv 0x004f7030
+// pdb: TESRegionPoint::TESRegionPoint | TESRegionPoint.obj | debug, call graph (shared callers), medium
+// pdb params: aNP3
 FUN_004f7030::FUN_004f7030(float* afPair)
 {
     ((AlphaColor*)this)->TESRegionPoint_SetX(afPair[0]);
@@ -911,11 +961,14 @@ struct BaseS
 };
 struct FUN_004f7070_shell
 {
-    void* __thiscall SetValues(float, float);
+    void* __thiscall NiActorManager_TimelineData_SetValues(float, float);
 };
 // Calls _ref_006815c0, then FUN_0052ce20 with a and SetValue with b, and returns this.
 // @fnv 0x004f7070
-void* __thiscall FUN_004f7070_shell::SetValues(float afFirst, float afSecond)
+// src: XBOX_DEBUG_PDB 0x004f7070
+// pdb: NiActorManager::TimelineData::SetValues | NiActorManager.obj | debug, upstream name already matches, high
+// pdb params: fEventTime, eEventType, eSequenceID, pkMatchObject, kTextKeyMatched
+void* __thiscall FUN_004f7070_shell::NiActorManager_TimelineData_SetValues(float afFirst, float afSecond)
 {
     ((BaseS*)this)->_ref_006815c0();
     ((AlphaColor*)this)->TESRegionPoint_SetX(afFirst);
@@ -932,6 +985,8 @@ struct FUN_004f71f0_Class
 };
 // @fnv 0x004f71f0
 // src: GUESS 0x004f71f0 (confidence: low)
+// pdb: TESRegionPoint::GetDistance | TESRegionPoint.obj | debug, object-file run extension, low
+// pdb params: apOther
 float FUN_004f71f0_Class::EvaluateValue_004f71f0(int a)
 {
     if (a == 0)
@@ -970,6 +1025,8 @@ struct TaskQueueAttachHelper
 };
 // @fnv 0x004f8ac0
 // src: COMMUNITY 0x004f8ac0
+// pdb: SettingCollection<Setting>::SetFileName | XGameSetting.obj | debug, object-file run extension, low
+// pdb params: apFileName
 void __thiscall FUN_004f8a60_class::SettingCollection_SetIniPath(int apSource)
 {
     if (apSource)
@@ -986,12 +1043,13 @@ struct BlkOffset08View
 };
 struct S_004fee20
 {
-    bool BGSTalkingActivator_IsNonPipboyRadioStation_0();
+    bool BGSTalkingActivator_IsNonPipboyRadioStation();
 };
 // Returns true when the talking activator is a radio station and the associated check succeeds.
 // @fnv 0x004fee20
-// src: COMMUNITY 0x004fee20
-bool S_004fee20::BGSTalkingActivator_IsNonPipboyRadioStation_0()
+// src: XBOX_RETAIL_PDB 0x004fee20
+// pdb: BGSTalkingActivator::IsNonPipboyRadioStation | BGSTalkingActivator.obj | retail, object-file run extension, high
+bool S_004fee20::BGSTalkingActivator_IsNonPipboyRadioStation()
 {
     return ((BGSTalkingActivator*)this)->IsRadioStation() && ((BlkOffset08View*)this)->HasFlag10000000();
 }
@@ -1000,17 +1058,19 @@ namespace fnv_004fee60 {
 
 struct FUN_004fee20_shell
 {
-    bool BGSTalkingActivator_IsNonPipboyRadioStation_0() const;
+    bool BGSTalkingActivator_IsNonPipboyRadioStation() const;
 };
 // Returns true if form is a talking activator (type 0x16) that is a radio station and passes the FUN_004fee20 check.
 // @fnv 0x004fee60
-bool IsRadioStationTalkingActivator(TESForm* form)
+// src: XBOX_RETAIL_PDB 0x004fee60
+// pdb: BGSTalkingActivator::IsNonPipboyRadioStation | BGSTalkingActivator.obj | retail, object-file run extension, high
+bool BGSTalkingActivator_IsNonPipboyRadioStation(TESForm* form)
 {
     bool result = false;
     if (form && form->GetFormType() == 0x16)
     {
         BGSTalkingActivator* activator = (BGSTalkingActivator*)form;
-        if (activator->IsRadioStation() && ((FUN_004fee20_shell*)activator)->BGSTalkingActivator_IsNonPipboyRadioStation_0())
+        if (activator->IsRadioStation() && ((FUN_004fee20_shell*)activator)->BGSTalkingActivator_IsNonPipboyRadioStation())
             result = true;
     }
     return result;
@@ -1019,7 +1079,7 @@ bool IsRadioStationTalkingActivator(TESForm* form)
 
 struct FUN_004e83e0_class
 {
-    bool __thiscall IsPlayerNearWaterActor(void* arg);
+    bool __thiscall TESWaterSystem_ActorWithinRangeOfWadingWater(void* apGroup);
 };
 struct ReferenceList4e
 {
@@ -1036,6 +1096,8 @@ struct FUN_004e8950_class
 // Iterates the list at offset 0x3c and returns true if IsPlayerNearWaterActor accepts any referenced object, otherwise false.
 // @fnv 0x004e8950
 // src: COMMUNITY 0x004e8950
+// pdb: TESWaterSystem::CheckUpdateActorsInWater | TESWater.obj | retail, upstream name already matches, high
+// pdb locals: next, iter, pgroup
 bool __thiscall FUN_004e8950_class::TESWaterSystem_CheckUpdateActorsInWater()
 {
     if (Water_bUseWaterDisplacements_Get())
@@ -1051,7 +1113,7 @@ bool __thiscall FUN_004e8950_class::TESWaterSystem_CheckUpdateActorsInWater()
                 TESObjectREFR* item = *reinterpret_cast<TESObjectREFR**>(
                     reinterpret_cast<FUN_006317a0_struct*>(reinterpret_cast<unsigned char*>(this) + 0x3c)
                         ->AddEight(count));
-                if (reinterpret_cast<FUN_004e83e0_class*>(this)->IsPlayerNearWaterActor(item))
+                if (reinterpret_cast<FUN_004e83e0_class*>(this)->TESWaterSystem_ActorWithinRangeOfWadingWater(item))
                     return true;
             }
             count = reinterpret_cast<unsigned int>(next);
@@ -1079,17 +1141,20 @@ struct RDL_004f3330
     int list[2];
     bool owns;
     RDL_004f3330(bool owns);
-    bool TESRegionDataList_Add(RDLItem* item);
-    RDL_004f3330* TESRegionDataList_Copy(RDL_004f3330* dest);
+    bool TESRegionDataList_Add(RDLItem* apData);
+    RDL_004f3330* TESRegionDataList_Copy(RDL_004f3330* apCopyIntoList);
 };
 // Copies each item of the node list into dest (or a new list), cloning items when the list owns them, and returns the destination list.
 // @fnv 0x004f3470
 // src: COMMUNITY 0x004f3470
-RDL_004f3330* RDL_004f3330::TESRegionDataList_Copy(RDL_004f3330* dest)
+// pdb: TESRegionDataList::Copy | TESRegionDataList.obj | retail, upstream name already matches, high
+// pdb params: apCopyIntoList
+// pdb locals: pdataCopy, pcopy, pcurrent
+RDL_004f3330* RDL_004f3330::TESRegionDataList_Copy(RDL_004f3330* apCopyIntoList)
 {
     RDLNode* node = (RDLNode*)this;
     {
-        RDL_004f3330* result = dest ? dest : new RDL_004f3330(owns);
+        RDL_004f3330* result = apCopyIntoList ? apCopyIntoList : new RDL_004f3330(owns);
         {
             RDLItem* copy = 0;
             while (node)
@@ -1136,6 +1201,7 @@ bool FUN_004f70b0_Class::j_8TESRegionPoint_QEBA_NAEBV0_Z(RegionPoint* other)
 
 
 // @fnv 0x004f93b0
+// pdb: BGSConstructibleObject::BGSConstructibleObject | BGSConstructibleObject.obj | retail, upstream name already matches, high
 BGSConstructibleObject::BGSConstructibleObject()
 {
     SetFormType(0x32);
@@ -1207,10 +1273,12 @@ extern GlobalObject_004ee810 g_011d6a30;
 // Wraps p in a NiPointer, removes it from g_011d6a30, then decrements DAT_011d6a20.
 // @fnv 0x004ee2e0
 // src: COMMUNITY 0x004ee2e0
-void __cdecl BSTempEffect_RemoveDecalFromList(void* apObject)
+// pdb: BSTempEffect::RemoveDecalFromList | BGSDecalNode.obj | retail, upstream name already matches, high
+// pdb params: apDecal
+void __cdecl BSTempEffect_RemoveDecalFromList(void* apDecal)
 {
     {
-        NiPointer<NiRefObject> tmp(static_cast<NiRefObject*>(apObject));
+        NiPointer<NiRefObject> tmp(static_cast<NiRefObject*>(apDecal));
         g_011d6a30.Remove(tmp);
     }
     DAT_011d6a20 -= 1;
@@ -1259,11 +1327,14 @@ void* __thiscall FUN_004ede90_Class::InsertBefore(void* apNode, void** apNewNode
 struct InterpControllerTargetAccess
 {
     unsigned short NiMultiTargetTransformController_HasTarget(unsigned int value);
-    void NiMultiTargetTransformController_SetInterpolatorTarget(unsigned short index, TaskQueueInterface* queue);
+    void NiMultiTargetTransformController_SetInterpolatorTarget(unsigned short index, TaskQueueInterface* pkTarget);
 };
 
 // @fnv 0x004f0640
 // src: COMMUNITY 0x004f0640
+// pdb: BSTransCon::RemoveControlledItems | BSBipNode.obj | debug, object-file run extension, low
+// pdb params: apObject
+// pdb locals: pnode, usindex, I
 void NiInterpController::NiMultiTargetTransformController_RemoveNodeRecurse(NiAVObject* object)
 {
     if (object)
@@ -1315,6 +1386,9 @@ class FUN_00a35910_shell : public FUN_00a35fc0_shell
 
 // @fnv 0x004f06d0
 // src: COMMUNITY 0x004f06d0
+// pdb: BSTransCon::RemoveTreadControlledItems | BSBipNode.obj | debug, object-file run extension, low
+// pdb params: apObject
+// pdb locals: pmtt, pnode, usindex, I
 void FUN_00a35910_shell::BSMultiTargetTreadTransfController_RemoveNodeRecurse(NiAVObject* object)
 {
     NiNode* node;
@@ -1344,43 +1418,46 @@ struct FUN_00564f00_shell
 
 struct FUN_00564f40_shell
 {
-    void TESObjectREFR_SetIsImposter(int value);
+    void TESObjectREFR_SetIsImposter(int abIsImposter);
 };
 
 void _FNV_Warning(int value1, const char* value2, const char* value3, unsigned int value4);
 
 // @fnv 0x004f24e0
 // src: COMMUNITY 0x004f24e0
-void TESRegionDataImposter_SetImposterVisible(TESObjectREFR* object, bool visible, bool useDefault)
+// pdb: TESRegionDataImposter::SetImposterVisible | TESRegionDataImposter.obj | retail, upstream name already matches, high
+// pdb params: apImposter, abVisible, abInstantly
+// pdb locals: pFadeNode
+void TESRegionDataImposter_SetImposterVisible(TESObjectREFR* apImposter, bool abVisible, bool abInstantly)
 {
-    if (object == 0)
+    if (apImposter == 0)
         return;
 
-    if (!reinterpret_cast<FUN_00564f00_shell*>(object)->TESObjectREFR_GetIsImposter())
+    if (!reinterpret_cast<FUN_00564f00_shell*>(apImposter)->TESObjectREFR_GetIsImposter())
     {
-        reinterpret_cast<FUN_00564f40_shell*>(object)->TESObjectREFR_SetIsImposter(1);
-        _FNV_Warning(0xe, "SetImposterVisible: ObjectREFR is not flagged as an imposter (%s:%X)", object->GetName(),
-                     object->GetFormID());
+        reinterpret_cast<FUN_00564f40_shell*>(apImposter)->TESObjectREFR_SetIsImposter(1);
+        _FNV_Warning(0xe, "SetImposterVisible: ObjectREFR is not flagged as an imposter (%s:%X)", apImposter->GetName(),
+                     apImposter->GetFormID());
     }
 
     TaskQueueInterface* task = 0;
-    if (object->GetNiNode())
-        task = reinterpret_cast<TaskQueueInterface*>(object->GetNiNode()->IsFadeNode());
+    if (apImposter->GetNiNode())
+        task = reinterpret_cast<TaskQueueInterface*>(apImposter->GetNiNode()->IsFadeNode());
 
     if (task == 0)
-        useDefault = true;
+        abInstantly = true;
 
-    if (useDefault)
+    if (abInstantly)
     {
-        if (object && object->GetNiNode())
+        if (apImposter && apImposter->GetNiNode())
         {
-            object->GetNiNode()->SetAppCulled(!visible);
-            reinterpret_cast<TaskQueueInterface*>(object->GetNiNode())->NiAVObject_SetRelevantImposter(visible);
+            apImposter->GetNiNode()->SetAppCulled(!abVisible);
+            reinterpret_cast<TaskQueueInterface*>(apImposter->GetNiNode())->NiAVObject_SetRelevantImposter(abVisible);
         }
     }
-    else if (visible)
+    else if (abVisible)
     {
-        object->GetNiNode()->SetAppCulled(false);
+        apImposter->GetNiNode()->SetAppCulled(false);
         task->NiAVObject_SetRelevantImposter(true);
     }
     else
@@ -1408,6 +1485,7 @@ struct FUN_004ea9a0_Class
 };
 // @fnv 0x004ea9a0
 // src: COMMUNITY 0x004ea9a0
+// pdb: BGSTerrainManager::GetLODLandRoot | TESWater.obj | debug, upstream name already matches, high
 const char* FUN_004ea9a0_Class::BGSTerrainManager_GetLODLandRoot()
 {
     return g_011d86a8.String();
@@ -1428,6 +1506,7 @@ struct GlobalNodeAccessor
 
 // @fnv 0x004ea9c0
 // src: COMMUNITY 0x004ea9c0
+// pdb: BGSTerrainManager::GetLODObjectRoot | TESWater.obj | debug, upstream name already matches, high
 void* GlobalNodeAccessor::BGSTerrainManager_GetLODObjectRoot()
 {
     return g_011d8690.operator->();
@@ -1497,7 +1576,7 @@ struct GlobalRemovalList
     void RemoveMatchingItem(void** object);
 };
 extern GlobalRemovalList g_011c7d20;
-void __cdecl BSTempEffect_RemoveDecalFromList(void* item);
+void __cdecl BSTempEffect_RemoveDecalFromList(void* apDecal);
 
 struct FUN_004ee1e0 : FUN_00a5e930
 {
@@ -1505,6 +1584,9 @@ struct FUN_004ee1e0 : FUN_00a5e930
     virtual ~FUN_004ee1e0();
 };
 // @fnv 0x004ee1e0
+// pdb: BSSimpleList<NiPointer<BSTempEffect> >::RemoveAll | BGSDecalNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSDecalNode::~BGSDecalNode
+// pdb locals: pkSave
 FUN_004ee1e0::~FUN_004ee1e0()
 {
     FUN_004ee1e0* self = this;
@@ -1648,6 +1730,8 @@ class FUN_004ee770_cls
 // Calls FUN_004ee920 on m_ac if set, then invokes v60 for every index up to FUN_0043b480().
 // @fnv 0x004ee770
 // src: COMMUNITY 0x004ee770
+// pdb: BGSDecalNode::RemoveDecals | BGSDecalNode.obj | debug, upstream name already matches, high
+// pdb locals: i
 void FUN_004ee770_cls::BGSDecalNode_RemoveDecals()
 {
     if (m_ac != 0)
@@ -1678,6 +1762,8 @@ struct FUN_004ee840_cls : EmptyBase_b4473
 
 // Destructor for the class; destroys its embedded sub-object and base.
 // @fnv 0x004ee840
+// pdb: BSSimpleList<NiPointer<ObstacleData> >::~BSSimpleList<NiPointer<ObstacleData> > | NavMeshObstacleManager.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSSimpleList<NiPointer<bhkSerializable> >::~BSSimpleList<NiPointer<bhkSerializable> >
 FUN_004ee840_cls::~FUN_004ee840_cls()
 {}
 
@@ -1746,7 +1832,7 @@ class B4EFE80Controller
 class B4EFE80Node
 {
   public:
-    void FUN_004eff50(B4EFE80UpdateData& kData, bool bFlag);
+    void FUN_004eff50(B4EFE80UpdateData& UpdateData, bool bProperties);
 };
 
 extern B4EFE80RTTI g_kB4EFE80RTTIA;
@@ -1763,6 +1849,9 @@ class B4EFE80Object
 };
 
 // @fnv 0x004efe80
+// pdb: BSAnimGroupSequence::BSAnimGroupSequence | BSAnimGroupSequence.obj | retail, object-file run extension, low
+// pdb params: apAnimGroup, apSeq
+// pdb locals: cloningProcess
 void B4EFE80Object::UpdateControllers(float fTime, B4EFE80Node* pkNode)
 {
     bhkNiCollisionObject_SetSyncMode(3);
@@ -1857,8 +1946,11 @@ extern TESObjectREFR* _g_thePlayer;
 
 // Walks the player's region node list and returns true if any child list contains target.
 // @fnv 0x004f2640
-// src: COMMUNITY 0x004f2640
-bool __cdecl TESObjectREFR_IsImposterInActiveRegionList(RDLItem* target)
+// src: XBOX_DEBUG_PDB 0x004f2640
+// pdb: TESRegionDataImposter::IsImposterInActiveRegionList | TESRegionDataImposter.obj | debug, call graph, high
+// pdb params: apImposter
+// pdb locals: pRegionIter, pRegion, pData, pImposterData, pList
+bool __cdecl TESRegionDataImposter_IsImposterInActiveRegionList(RDLItem* apImposter)
 {
     RDLNode* regionNode = reinterpret_cast<RegionPlayer*>(_g_thePlayer)->PlayerCharacter_GetAllOccupiedRegions();
     RDLItem* listEntry;
@@ -1885,7 +1977,7 @@ bool __cdecl TESObjectREFR_IsImposterInActiveRegionList(RDLItem* target)
                 entryNode = listReference->FUN_00413f40();
                 while (entryNode != 0)
                 {
-                    if (*entryNode->FUN_006815c0() != 0 && *entryNode->FUN_006815c0() == target)
+                    if (*entryNode->FUN_006815c0() != 0 && *entryNode->FUN_006815c0() == apImposter)
                         return true;
                     entryNode = entryNode->FUN_00726070();
                 }
@@ -1916,6 +2008,8 @@ struct ActionIterator
 // Walks the iterator's action items and returns false as soon as one item's CheckState fails, otherwise true.
 // @fnv 0x004f3610
 // src: GUESS 0x004f3610 (confidence: high)
+// pdb: TESRegionDataList::Validate | TESRegionDataList.obj | debug, object-file run extension, low
+// pdb locals: pcurrent
 bool ActionIterator::CheckAllActionStates()
 {
     ActionIterator* pIterator = this;
@@ -1981,14 +2075,17 @@ struct FUN_004f6320 : SL_4f6320
 {
     bool owns;
     virtual ~FUN_004f6320();
-    FUN_004f6320(bool owns);
+    FUN_004f6320(bool abOwnsRegionMemory);
 };
 
 // Stores the ownership flag; if owned and the pool is uninitialised, deletes both objects in each of the 9 pool entries and increments the pool init count.
 // @fnv 0x004f6320
-FUN_004f6320::FUN_004f6320(bool abOwns)
+// pdb: TESRegionList::TESRegionList | TESRegionList.obj | retail, call graph, high
+// pdb params: abOwnsRegionMemory
+// pdb locals: plistDelete, pdataDelete, i
+FUN_004f6320::FUN_004f6320(bool abOwnsRegionMemory)
 {
-    owns = abOwns;
+    owns = abOwnsRegionMemory;
     if (owns)
     {
         if (g_poolInitCount_4f6320 == 0)
@@ -2042,6 +2139,8 @@ struct FUN_004f6640_cls
 
 // @fnv 0x004f6640
 // src: XBOX_PDB 0x004f6640
+// pdb: TESRegionList::Clear | TESRegionList.obj | retail, upstream name already matches, high
+// pdb locals: premove
 void FUN_004f6640_cls::TESRegionList_Clear()
 {
     FUN_004f6640_item* item = *m_node.FUN_006815c0();
@@ -2114,6 +2213,9 @@ struct FUN_004f6850_Class
 
 // @fnv 0x004f6850
 // src: COMMUNITY 0x004f6850
+// pdb: TESRegionList::GetDerivedData | TESRegionList.obj | debug, object-file run extension, low
+// pdb params: aeFind, apPoint, apWorldSpace
+// pdb locals: shighestOverride, bfoundOverride, ppoints, pfound, pderived, pcurrent, pregion, pRegionsWithData, phighestOverride, plistDelete, pdataDelete
 RDLItem* FUN_004f6850_Class::TESRegionList_GetDerivedData(int arg0, int arg1, int arg2)
 {
     bool foundC = false;
@@ -2267,6 +2369,8 @@ class FUN_004f6f70_cls
 };
 // Returns whether m_04 is non-null and casts to TESLandTexture.
 // @fnv 0x004f6f70
+// pdb: acosf | TESRegionObject.obj | debug, object-file run extension, low
+// pdb params: _X
 unsigned char FUN_004f6f70_cls::IsLandTexture()
 {
     return m_04 != 0 ? (unsigned char)(dynamic_cast<TESLandTexture*>(m_04) != 0) : (unsigned char)0;
@@ -2287,15 +2391,18 @@ class FUN_004f7130_cls
   public:
     float AStarSearch_EvaluateValue_006a7f50();
     float CombatTimer_GetTargetTime();
-    SpawnedObject* TESRegionPoint_Copy(SpawnedObject* src);
+    SpawnedObject* TESRegionPoint_Copy(SpawnedObject* apCopyInto);
 };
 
 // Creates a SpawnedObject if src is null, sets its two float values from FUN_006a7f50 and FUN_006b9130, and returns it.
 // @fnv 0x004f7130
 // src: COMMUNITY 0x004f7130
-SpawnedObject* FUN_004f7130_cls::TESRegionPoint_Copy(SpawnedObject* src)
+// pdb: TESRegionPoint::Copy | TESRegionPoint.obj | retail, upstream name already matches, high
+// pdb params: apCopyInto
+// pdb locals: pcopy
+SpawnedObject* FUN_004f7130_cls::TESRegionPoint_Copy(SpawnedObject* apCopyInto)
 {
-    SpawnedObject* obj = src ? src : new SpawnedObject();
+    SpawnedObject* obj = apCopyInto ? apCopyInto : new SpawnedObject();
     obj->TESRegionPoint_SetX(this->AStarSearch_EvaluateValue_006a7f50());
     obj->FUN_004f5d90(this->CombatTimer_GetTargetTime());
     return obj;
@@ -2429,16 +2536,18 @@ class FUN_004ff0e0_cls
     unsigned int unk88;
     unsigned int unk8C;
     FUN_004ff0e0_arg* m_090;
-    void BGSTalkingActivator_SetTempRef(FUN_004ff0e0_arg* a1);
+    void BGSTalkingActivator_SetTempRef(FUN_004ff0e0_arg* pref);
 };
 // @fnv 0x004ff0e0
 // src: COMMUNITY 0x004ff0e0
-void FUN_004ff0e0_cls::BGSTalkingActivator_SetTempRef(FUN_004ff0e0_arg* a1)
+// pdb: BGSTalkingActivator::SetTempRef | BGSTalkingActivator.obj | retail, upstream name already matches, high
+// pdb params: pref
+void FUN_004ff0e0_cls::BGSTalkingActivator_SetTempRef(FUN_004ff0e0_arg* pref)
 {
-    if (a1 == 0 || a1->vf100() != 0)
+    if (pref == 0 || pref->vf100() != 0)
     {
-        m_090 = a1;
-        if (a1 != 0)
+        m_090 = pref;
+        if (pref != 0)
         {
             vf048(0x800000);
         }
@@ -2588,6 +2697,7 @@ class FUN_004e1650
 };
 
 // @fnv 0x004e1650
+// pdb: TESWaterSystem::TESWaterSystem | TESWater.obj | retail, string-set bridge, high
 FUN_004e1650::FUN_004e1650()
     : sp08(0), sp0c(0), sp10(0), sp14(0), sp18(0), sp1c(0), sp20(0), k4c(0x25), k5c(0x25), k6c(0x25), k7c(0x25)
 {
@@ -2712,7 +2822,7 @@ struct FUN_004e19c0
     ListC_4e19c0 m_6c;
     ListD_4e19c0 m_7c;
     ListE_4e19c0 m_8c;
-    void Shutdown(int a, int b);
+    void TESWaterSystem_DisableWaterSystem(int a, int b);
     ~FUN_004e19c0();
 };
 
@@ -2720,7 +2830,7 @@ struct FUN_004e19c0
 // @fnv 0x004e19c0
 FUN_004e19c0::~FUN_004e19c0()
 {
-    Shutdown(1, 1);
+    TESWaterSystem_DisableWaterSystem(1, 1);
     g_011c7be8 = 0;
     g_011c7cb8 = 0;
     if (g_011c7c2c)
@@ -2852,6 +2962,7 @@ struct FUN_004ed3e0
 };
 
 // @fnv 0x004ed3e0
+// pdb: PlaceableWaterGroup::~PlaceableWaterGroup | TESWater.obj | debug, object-file run extension, low
 FUN_004ed3e0::~FUN_004ed3e0()
 {
     ptr94.FUN_0066b0d0(0);
@@ -2885,7 +2996,7 @@ class Handle4EE
 class CopyInfo4EE
 {
   public:
-    CopyInfo4EE(unsigned int uiFlags);
+    CopyInfo4EE(unsigned int uiHashSize);
     ~CopyInfo4EE();
 
     int unk00;
@@ -2955,6 +3066,9 @@ class FUN_004ee9f0 : public Base4EE
 
 // Initializes a Base4EE-derived object from a source: stores target and source name handles, copies interval and mode, then registers with the source.
 // @fnv 0x004ee9f0
+// pdb: BSAnimGroupSequence::BSAnimGroupSequence | BSAnimGroupSequence.obj | debug, object-file run extension, low
+// pdb params: apAnimGroup, apSeq
+// pdb locals: cloningProcess
 FUN_004ee9f0::FUN_004ee9f0(const void* pvTarget, Source4EE* pkSource)
     : Base4EE(pkSource->GetList(), 0, 1), m_kRoomNode(0)
 {
@@ -2988,6 +3102,7 @@ struct FUN_004f15f0 : TESRegionData
 
 // Constructs the object and allocates a new FUN_004f5e20 with flag 1, storing it in m_08.
 // @fnv 0x004f15f0
+// pdb: TESRegionDataGrass::TESRegionDataGrass | TESRegionDataGrass.obj | debug, call graph, medium
 FUN_004f15f0::FUN_004f15f0()
 {
     m_08 = new FUN_004f5e20(1);
@@ -3036,6 +3151,7 @@ class FUN_004f42a0 : public Base4F4
 
 // Initializes the data range to zero and clears the list.
 // @fnv 0x004f42a0
+// pdb: TESRegionDataSound::TESRegionDataSound | TESRegionDataSound.obj | debug, call graph, medium
 FUN_004f42a0::FUN_004f42a0()
 {
     m_kData.m_iFirst = 0;
@@ -3053,71 +3169,77 @@ class B4F72A0Point
 // Linearly interpolates between two points' values at fTime using their times, returning 0 if either point is null.
 // @fnv 0x004f72a0
 // src: COMMUNITY 0x004f72a0
-float __cdecl TESRegionPoint_XIntercept(B4F72A0Point* pkCurrentObject, B4F72A0Point* pkSecond, float fTime)
+// pdb: TESRegionPoint::XIntercept | TESRegionPoint.obj | debug, upstream name already matches, high
+// pdb params: apVertex1, apVertex2, afTestY
+// pdb locals: fxV2, fyV2
+float __cdecl TESRegionPoint_XIntercept(B4F72A0Point* apVertex1, B4F72A0Point* apVertex2, float afTestY)
 {
-    if (!pkCurrentObject || !pkSecond)
+    if (!apVertex1 || !apVertex2)
         return 0.0f;
-    float fSecondValue = pkSecond->GetValue();
-    float fSecondTime = pkSecond->GetTime();
+    float fSecondValue = apVertex2->GetValue();
+    float fSecondTime = apVertex2->GetTime();
     return fSecondValue -
-           (fSecondTime - fTime) * ((pkCurrentObject->GetValue() - fSecondValue) / (pkCurrentObject->GetTime() - fSecondTime));
+           (fSecondTime - afTestY) * ((apVertex1->GetValue() - fSecondValue) / (apVertex1->GetTime() - fSecondTime));
 }
 
 // Returns false if any point is null or the segments' bounding boxes don't overlap, then tests the segment intersection parameters against the denominator.
 // @fnv 0x004f7310
 // src: COMMUNITY 0x004f7310
-bool __cdecl TESRegionPoint_LineSegmentsIntersect(NiPoint3* apSeg1Start, NiPoint3* apSeg1End, NiPoint3* apSeg2Start, NiPoint3* apSeg2End)
+// pdb: TESRegionPoint::LineSegmentsIntersect | TESRegionPoint.obj | debug, upstream name already matches, high
+// pdb params: apP1, apP2, apR1, apR2
+// pdb locals: fyDistP1R1, fyLow, fP1P2xP1R1, fxLow, fxDistP1P2, fP1R1xR1R2, fyDistP1P2, fxHigh, fP1P2xR1R2, fyDistR1R2, fxDistP1R1, fxDistR1R2, fyHigh
+bool __cdecl TESRegionPoint_LineSegmentsIntersect(NiPoint3* apP1, NiPoint3* apP2, NiPoint3* apR1, NiPoint3* apR2)
 {
-    if (!apSeg1Start || !apSeg1End || !apSeg2Start || !apSeg2End)
+    if (!apP1 || !apP2 || !apR1 || !apR2)
         return false;
-    float dx3 = apSeg1End->GetX() - apSeg1Start->GetX();
-    float dx2 = apSeg2Start->GetX() - apSeg2End->GetX();
+    float dx3 = apP2->GetX() - apP1->GetX();
+    float dx2 = apR1->GetX() - apR2->GetX();
     float minx, maxx2;
     if (dx3 < 0.0)
     {
-        minx = apSeg1Start->GetX();
-        maxx2 = apSeg1End->GetX();
+        minx = apP1->GetX();
+        maxx2 = apP2->GetX();
     }
     else
     {
-        minx = apSeg1End->GetX();
-        maxx2 = apSeg1Start->GetX();
+        minx = apP2->GetX();
+        maxx2 = apP1->GetX();
     }
     if (dx2 > 0.0)
     {
-        if (minx < apSeg2End->GetX() || maxx2 > apSeg2Start->GetX())
+        if (minx < apR2->GetX() || maxx2 > apR1->GetX())
             return false;
     }
     else
     {
-        if (minx < apSeg2Start->GetX() || maxx2 > apSeg2End->GetX())
+        if (minx < apR1->GetX() || maxx2 > apR2->GetX())
             return false;
     }
-    float dy1 = apSeg1End->GetY() - apSeg1Start->GetY();
-    float dy2 = apSeg2Start->GetY() - apSeg2End->GetY();
+    float dy1 = apP2->GetY() - apP1->GetY();
+    float dy2 = apR1->GetY() - apR2->GetY();
     float miny6, maxy;
     if (dy1 < 0.0)
     {
-        miny6 = apSeg1Start->GetY();
-        maxy = apSeg1End->GetY();
+        miny6 = apP1->GetY();
+        maxy = apP2->GetY();
     }
     else
     {
-        miny6 = apSeg1End->GetY();
-        maxy = apSeg1Start->GetY();
+        miny6 = apP2->GetY();
+        maxy = apP1->GetY();
     }
     if (dy2 > 0.0)
     {
-        if (miny6 < apSeg2End->GetY() || maxy > apSeg2Start->GetY())
+        if (miny6 < apR2->GetY() || maxy > apR1->GetY())
             return false;
     }
     else
     {
-        if (miny6 < apSeg2Start->GetY() || maxy > apSeg2End->GetY())
+        if (miny6 < apR1->GetY() || maxy > apR2->GetY())
             return false;
     }
-    float rx = apSeg1Start->GetX() - apSeg2Start->GetX();
-    float ry = apSeg1Start->GetY() - apSeg2Start->GetY();
+    float rx = apP1->GetX() - apR1->GetX();
+    float ry = apP1->GetY() - apR1->GetY();
     float denom8 = dy1 * dx2 - dx3 * dy2;
     float numer9 = dx3 * ry - dy1 * rx;
     float numer3 = dy2 * rx - dx2 * ry;
@@ -3158,14 +3280,17 @@ struct Polygon : PolygonNode
     unsigned int FUN_0059bb30();
     float TESRegionPointList_GetMinX();
     float TESRegionPointList_GetMaxX();
-    float GetMinimumY();
-    float GetMaxY();
+    float TESRegionPointList_GetMinY();
+    float TESRegionPointList_GetMaxY();
     bool TESRegionPointList_IsInsideRegion(PolygonPoint*);
 };
 // NiPoint3-in-polygon test (even-odd crossing rule) after a bounding-box reject.
 // @fnv 0x004f8360
 // src: COMMUNITY 0x004f8360
-bool Polygon::TESRegionPointList_IsInsideRegion(PolygonPoint* pPoint)
+// pdb: TESRegionPointList::IsInsideRegion | TESRegionPointList.obj | retail, upstream name already matches, high
+// pdb params: apTest
+// pdb locals: pcurrentItem, fytest, fynext, fycurrent, pnext, pnextItem, pcurrent, icrossings, fxcurrent, fxnext, fxtest, buse
+bool Polygon::TESRegionPointList_IsInsideRegion(PolygonPoint* apTest)
 {
     PolygonPoint* a2;
     PolygonPoint* b_;
@@ -3175,11 +3300,11 @@ bool Polygon::TESRegionPointList_IsInsideRegion(PolygonPoint* pPoint)
     float ay_;
     int count7 = 0;
     bool _crossing = false;
-    if (!pPoint || FUN_0059bb30() < 3)
+    if (!apTest || FUN_0059bb30() < 3)
         return false;
-    float x = pPoint->AStarSearch_EvaluateValue_006a7f50();
-    float by = pPoint->CombatTimer_GetTargetTime();
-    if (x < TESRegionPointList_GetMinX() || x > TESRegionPointList_GetMaxX() || by < GetMinimumY() || by > GetMaxY())
+    float x = apTest->AStarSearch_EvaluateValue_006a7f50();
+    float by = apTest->CombatTimer_GetTargetTime();
+    if (x < TESRegionPointList_GetMinX() || x > TESRegionPointList_GetMaxX() || by < TESRegionPointList_GetMinY() || by > TESRegionPointList_GetMaxY())
         return false;
     PolygonNode* node6 = this;
     PolygonNode* nextX = 0;
@@ -3221,7 +3346,7 @@ struct RegionPointMatch
 {
     float SquaredDistanceTo(RegionPointMatch* other);
     float EvaluateValue_004f71f0(RegionPointMatch* other);
-    void TESRegionPoint_Copy(void* destination);
+    void TESRegionPoint_Copy(void* apCopyInto);
 };
 struct RegionNodeMatch
 {
@@ -3242,10 +3367,13 @@ struct FUN_004f87e0
 struct RegionMatch : RegionNodeMatch
 {
     FUN_004f87e0* cache;
-    bool TESRegionPointList_IsInsideRegion(RegionPointMatch* point);
+    bool TESRegionPointList_IsInsideRegion(RegionPointMatch* apTest);
     float ComputeRegionValue(RegionPointMatch* point, float range);
 };
 // @fnv 0x004f8560
+// pdb: TESRegionPointList::GetScaleBasedOnLocation | TESRegionPointList.obj | retail, object-file run extension, low
+// pdb params: apTest, afDistInsideAtMax
+// pdb locals: fdistsqPV1, fdistV1I, bQuit, fdistV1V2, pnext, fdistPI, fdistsqV1V2, pcurrent, fminDistPI, freturn, fdistsqPV2, bisInsideRegion
 float RegionMatch::ComputeRegionValue(RegionPointMatch* point, float range)
 {
     float j;             // squared distance to the current endpoint
@@ -3322,8 +3450,8 @@ class Ref4FF;
 class ExtraList4FF
 {
   public:
-    void AddOwner(void* pkOwner, Ref4FF* pkRef);
-    ExtraOwner4FF* GetOwner();
+    void AddOwner(void* apTalkAct, Ref4FF* apRef);
+    ExtraOwner4FF* ExtraDataList_GetTalkingActorExtra();
 };
 
 class Ref4FF
@@ -3355,18 +3483,21 @@ class Ref4FF
 class Owner4FF
 {
   public:
-    int BGSTalkingActivator_AddMobileObjectExtra(Ref4FF* pkRef);
+    int BGSTalkingActivator_AddMobileObjectExtra(Ref4FF* apRef);
 };
 
 // @fnv 0x004ff070
 // src: XBOX_PDB 0x004ff070
-int Owner4FF::BGSTalkingActivator_AddMobileObjectExtra(Ref4FF* pkRef)
+// pdb: BGSTalkingActivator::AddMobileObjectExtra | BGSTalkingActivator.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: pobject
+int Owner4FF::BGSTalkingActivator_AddMobileObjectExtra(Ref4FF* apRef)
 {
     int iResult = 0;
-    pkRef->GetExtraData()->AddOwner(this, pkRef);
-    pkRef->SetFlag(0x80000000);
-    if (pkRef->GetExtraData()->GetOwner())
-        iResult = pkRef->GetExtraData()->GetOwner()->m_iValue;
+    apRef->GetExtraData()->AddOwner(this, apRef);
+    apRef->SetFlag(0x80000000);
+    if (apRef->GetExtraData()->ExtraDataList_GetTalkingActorExtra())
+        iResult = apRef->GetExtraData()->ExtraDataList_GetTalkingActorExtra()->m_iValue;
     return iResult;
 }
 
@@ -3385,6 +3516,9 @@ class ListX
 // Deletes all nodes in the m_pHead linked list and resets m_spNode to null.
 // @fnv 0x004ee920
 // src: XBOX_PDB 0x004ee920
+// pdb: BSSimpleList<NiPointer<ObstacleData> >::RemoveAll | NavMeshObstacleManager.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleList<NiPointer<BSTempEffect> >::RemoveAll
+// pdb locals: pkSave
 void ListX::BSSimpleList_NiPointer_bhkAction_RemoveAll()
 {
     while (m_pHead)
@@ -3417,6 +3551,7 @@ class FUN_004ffba0 : public TESObjectACTI, public TESDescription
 
 // Destructor that calls FUN_004ffc90.
 // @fnv 0x004ffba0
+// pdb: BGSTerminal::~BGSTerminal | BGSTerminal.obj | debug, object-file gap fill, medium
 FUN_004ffba0::~FUN_004ffba0()
 {
     FUN_004ffc90();
@@ -3462,9 +3597,9 @@ struct xProp : public xMemObj
 struct xTriShape : public xMemObj
 {
     int m_kNextStreamField[0x31];
-    xTriShape(unsigned short usVerts, xPt3* pkVerts, xPt3* pkNormals, void* pkColors, xPt2* pkUVs,
-              unsigned short usUVSets, unsigned int uiFlags, unsigned short usTris, unsigned short* pusTris);
-    void AttachProperty(xProp* pkProp);
+    xTriShape(unsigned short usVertices, xPt3* pkVertex, xPt3* pkNormal, void* pkColor, xPt2* pkTexture,
+              unsigned short usNumTextureSets, unsigned int eNBTMethod, unsigned short usTriangles, unsigned short* pusTriList);
+    void AttachProperty(xProp* pkProperty);
 };
 
 struct xNode : public xMemObj
@@ -3554,12 +3689,15 @@ extern float xScaleX;
 extern float xScaleY;
 
 float xRand01();
-float xRandomFloat(float fMin, float fScaledValue);
-bool xChance(float afChance);
-void xUpdate(xTriShape* pkShape, int a, int b);
+float xRandomFloat(float afMin, float afMax);
+bool xChance(float afPercentTrue);
+void xUpdate(xTriShape* apObject, int abFaceGenModel, int abSkipPreCache);
 
 // Creates a node with one or two triangle shapes of randomly scattered quads using settings and textures.
 // @fnv 0x004e08a0
+// pdb: ScreenSplatter::CreateGeometry | ScreenSplatter.obj | retail, object-file run extension, low
+// pdb params: auiCount
+// pdb locals: ptexcoordsA, pshaderprop, pflareTexcoordsA, pnode, pverticesA, pindicesA, pflareIndicesA, i, pgeom, pflareVerticesA, falpha2, uibase, fy, translate, rotationMatrix, fscale, falpha1, texTranslate, fuoffset, fx, fflareSize, fvoffset, uiindexBase
 xNode* CreateScatterShapes(unsigned int aiQuadCount)
 {
     xNode* qpTd = new xNode(0);
@@ -3656,6 +3794,7 @@ struct FUN_004f09e0
     virtual ~FUN_004f09e0();
 };
 // @fnv 0x004f09e0
+// pdb: TESRegionDataList::`scalar deleting destructor' | TESRegion.obj | debug, object-file gap fill, medium
 FUN_004f09e0::~FUN_004f09e0()
 {}
 
@@ -3679,6 +3818,7 @@ struct MyClass004f6fc0
 // Calls _ref_006815c0, then FUN_0052ce20 and SetValue each with 0.0f, and returns this.
 // @fnv 0x004f6fc0
 // src: XBOX_PDB 0x004f6fc0
+// pdb: TESRegionPoint::TESRegionPoint | TESRegionPoint.obj | debug, call graph, medium
 MyClass004f6fc0* __thiscall MyClass004f6fc0::TESRegionPoint_TESRegionPoint()
 {
     ((Base006815c0*)this)->_ref_006815c0();
@@ -3840,7 +3980,7 @@ struct Obj20
     Vec4f m_54;
     unsigned int GetNoiseTextureNameLength();
     unsigned char GetByteAtOffset190();
-    void GetNoiseTexture(void* arg);
+    void GetNoiseTexture(void* aspTexture);
     void* GetNoiseTextureName(void* arg, int a2, int a3);
     void SetByteAtOffset190(int arg);
     float GetFieldE8Float();
@@ -3904,7 +4044,7 @@ extern GlobalObject_0045cf30 g_011c7b98;
 
 struct TESObj
 {
-    void FUN_004568c0(void* arg);
+    void FUN_004568c0(void* apfilename);
 };
 struct ImgMgr
 {
@@ -3917,7 +4057,7 @@ float __cdecl sin_004e44b0(float value);
 float __cdecl cos(float value);
 float __cdecl FUN_004e4430(float value);
 float __cdecl BSMAX_00404010(float a, float b);
-void __cdecl WrapValueToRange(float* ptr, float a, float b);
+void __cdecl BSWrap(float* ptr, float a, float b);
 void* __cdecl BSShaderManager_GetRenderer();
 BSTextureManager* __stdcall BSShaderManager_GetTextureManager();
 extern int DAT_011ad81c;
@@ -3936,21 +4076,24 @@ struct Self
 {
     int f00[27];
     Map6c m_6c;
-    ItemObj* TESWaterSystem_GetWaterGeometry(Refr* rrefr);
+    ItemObj* TESWaterSystem_GetWaterGeometry(Refr* apWaterRef);
     void AssignMemberToSource(void* arg);
-    void TESWaterSystem_UpdateWaterNoise(ParamObj* param);
+    void TESWaterSystem_UpdateWaterNoise(ParamObj* apWaterGroup);
 };
 // Iterates param's list; for entries whose ProcObj FUN_008d8520 returns 13, updates texture pointers and vectors and writes DAT_011ffe* globals.
 // @fnv 0x004e3d60
 // src: COMMUNITY 0x004e3d60
-void Self::TESWaterSystem_UpdateWaterNoise(ParamObj* param)
+// pdb: TESWaterSystem::UpdateWaterNoise | TESWater.obj | retail, upstream name already matches, high
+// pdb params: apWaterGroup
+// pdb locals: waternext, wateriter, ptype, pwater, pref, pobj, pshader, pgeom, bfound, pprop, pkWaterProp, spTempTexture, dir1, dir2, ftime, dir0
+void Self::TESWaterSystem_UpdateWaterNoise(ParamObj* apWaterGroup)
 {
-    void* zpos = param->m_24.Modelloader_GetReferencedThis();
+    void* zpos = apWaterGroup->m_24.Modelloader_GetReferencedThis();
     void* next = 0;
     while (zpos != 0)
     {
-        next = param->m_24.DereferenceIfNotNull(zpos);
-        Refr* rrefr = param->m_24.AddEight(zpos);
+        next = apWaterGroup->m_24.DereferenceIfNotNull(zpos);
+        Refr* rrefr = apWaterGroup->m_24.AddEight(zpos);
         BoundObj* bound = rrefr->BGSSaveFormBuffer_GetForm();
         Obj20* obj = (Obj20*)bound->getObj80();
         if (obj != 0)
@@ -4028,12 +4171,12 @@ void Self::TESWaterSystem_UpdateWaterNoise(ParamObj* param)
                                                       (obj->FUN_006447f0() * f_44);
                                     obj->m_54.v[1] +=
                                         (double)cos((float)(f48 * 0.01745329238474369)) * (obj->FUN_006447f0() * f_44);
-                                    WrapValueToRange(&obj->m_34.v[0], 0.0f, 1.0f);
-                                    WrapValueToRange(&obj->m_34.v[1], 0.0f, 1.0f);
-                                    WrapValueToRange(&obj->m_44.v[0], 0.0f, 1.0f);
-                                    WrapValueToRange(&obj->m_44.v[1], 0.0f, 1.0f);
-                                    WrapValueToRange(&obj->m_54.v[0], 0.0f, 1.0f);
-                                    WrapValueToRange(&obj->m_54.v[1], 0.0f, 1.0f);
+                                    BSWrap(&obj->m_34.v[0], 0.0f, 1.0f);
+                                    BSWrap(&obj->m_34.v[1], 0.0f, 1.0f);
+                                    BSWrap(&obj->m_44.v[0], 0.0f, 1.0f);
+                                    BSWrap(&obj->m_44.v[1], 0.0f, 1.0f);
+                                    BSWrap(&obj->m_54.v[0], 0.0f, 1.0f);
+                                    BSWrap(&obj->m_54.v[1], 0.0f, 1.0f);
                                     DAT_011ffe4c = obj->m_34;
                                     DAT_011ffe5c = obj->m_44;
                                     DAT_011ffe6c = obj->m_54;

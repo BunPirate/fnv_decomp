@@ -9,6 +9,7 @@ class AvoidanceVectorData;
 class TopicInfoRecord;
 class NiPoint3;
 
+// pdb: class PathingAvoidNodeArray, size 0x18, bases: BSSimpleArrayRefCounted<PathingAvoidNode, 0 members
 class PathingAvoidNodeArray : public BSSimpleArrayRefCounted<PathingAvoidNode,1024>
 {
 public:
@@ -25,7 +26,7 @@ public:
     void FUN_006e3960();
     void FUN_006e39d0();
     PathingAvoidNode* BSSimpleArray_PathingAvoidNode_1024_GetAt(unsigned int);
-    void SetSize(unsigned int, bool);
+    void BSSimpleArray_PathingAvoidNode_1024_SetSize(unsigned int, bool);
     unsigned int AppendNode(const AvoidanceEntry&);
     void AppendNode(const AvoidanceVectorData&, float, float);
     void AppendNode(TopicInfoRecord*);

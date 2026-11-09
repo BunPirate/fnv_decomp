@@ -116,19 +116,22 @@ static __forceinline void calcTimInfo(const hkMotionState& ms0, const hkMotionSt
     LocalM128 r0 = _mm_load_ss(&work.a);
     LocalM128 s0 = _mm_shuffle_ps(r0, r0, 0);
     timInfo.m_vComponents = (_mm_add_ps(
-        (_mm_mul_ps((_mm_sub_ps((ms0.m_kSweptTransform.m_vCenterOfMass0.m_vComponents), (ms0.m_kSweptTransform.m_vCenterOfMass1.m_vComponents))), s0)),
+        (_mm_mul_ps((_mm_sub_ps((ms0.m_kSweptTransform.m_centerOfMass0.m_vComponents), (ms0.m_kSweptTransform.m_vCenterOfMass1.m_vComponents))), s0)),
         (_mm_mul_ps((_mm_shuffle_ps((_mm_load_ss(&work.b)), (_mm_load_ss(&work.b)), 0)),
-                    (_mm_sub_ps((ms1.m_kSweptTransform.m_vCenterOfMass1.m_vComponents), (ms1.m_kSweptTransform.m_vCenterOfMass0.m_vComponents)))))));
+                    (_mm_sub_ps((ms1.m_kSweptTransform.m_vCenterOfMass1.m_vComponents), (ms1.m_kSweptTransform.m_centerOfMass0.m_vComponents)))))));
     timInfo(3) =
-        (*(const volatile float*)&(ms0.m_kDeltaAngle(3))) * work.a * (*(const volatile float*)&(ms0.m_fObjectRadius)) +
-        (*(const volatile float*)&(ms1.m_kDeltaAngle(3))) * work.b * (*(const volatile float*)&(ms1.m_fObjectRadius));
+        (*(const volatile float*)&(ms0.m_deltaAngle(3))) * work.a * (*(const volatile float*)&(ms0.m_objectRadius)) +
+        (*(const volatile float*)&(ms1.m_deltaAngle(3))) * work.b * (*(const volatile float*)&(ms1.m_objectRadius));
 }
 
 // @fnv 0x00dacd50
-void hkpGskfAgent::ProcessAgent(const hkpCdBody& a, const hkpCdBody& b, const GskAgentInput& input, WorldOperationEntry& result)
+// pdb: hkpGskfAgent::processCollision | hkpGskfAgent.obj | retail, unique string literal, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: assertBuf, ostr, timInfo
+void hkpGskfAgent::ProcessAgent(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const GskAgentInput& input, WorldOperationEntry& result)
 {
     SweepFactors work;
-    hkVector4& separatingNormal = m_vSeparatingNormal;
+    hkVector4& separatingNormal = m_separatingNormal;
     {
         hkMonitorStream& s = hkMonitorStream::getInstance();
         if (s.getEnd() < s.m_capacityMinus16.m_storage)
@@ -143,10 +146,10 @@ void hkpGskfAgent::ProcessAgent(const hkpCdBody& a, const hkpCdBody& b, const Gs
             s.setEnd((char*)(h + 1));
         }
     }
-    if (m_fFloatValue != input.m_uiStartTime)
+    if (m_timeOfSeparatingNormal != input.m_uiStartTime)
     {
         hkVector4 timInfo;
-        calcTimInfo(*(const hkMotionState*)a.m_pMotionState, *(const hkMotionState*)b.m_pMotionState, input.m_fTimeStep, timInfo, work);
+        calcTimInfo(*(const hkMotionState*)bodyA.m_motion, *(const hkMotionState*)bodyB.m_motion, input.m_fTimeStep, timInfo, work);
         if (separatingNormal(3) > input.m_fScalar)
         {
             LocalM128 p = _mm_mul_ps(separatingNormal.m_vComponents, timInfo.m_vComponents);
@@ -173,8 +176,8 @@ void hkpGskfAgent::ProcessAgent(const hkpCdBody& a, const hkpCdBody& b, const Gs
             s.setEnd((char*)(h + 1));
         }
     }
-    m_fFloatValue = input.m_fEndTime;
-    ProcessGskCollision(a, b, input, result);
+    m_timeOfSeparatingNormal = input.m_fEndTime;
+    ProcessGskCollision(bodyA, bodyB, input, result);
 END: {
     hkMonitorStream& s = hkMonitorStream::getInstance();
     if (s.getEnd() < s.m_capacityMinus16.m_storage)

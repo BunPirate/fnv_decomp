@@ -8,6 +8,7 @@ FNV_STATIC_ASSERT(sizeof(NiPixelFormat) == 0x44);
 
 // Initializes the pixel format to an 8-bit palettized format with an index component and three empty components.
 // @fnv 0x00a7cca0
+// pdb: NiPixelFormat::NiPixelFormat | NiPixelFormat.obj | debug, call graph, medium
 NiPixelFormat::NiPixelFormat()
 {
     m_ucBitsPerPixel = 8;
@@ -53,6 +54,9 @@ struct NiPixelFormatMasks : public NiPixelFormat
 };
 
 // @fnv 0x00a7cd20
+// pdb: NiPixelFormat::CreateFromRGBAMasks | NiPixelFormat.obj | retail, object-file run extension, low
+// pdb params: ucBitsPerPixel, uiMaskRed, uiMaskGreen, uiMaskBlue, uiMaskAlpha
+// pdb locals: uiComponent, aucSizes, auiMasks, kFormat, aeComps, i, j, eTempComp, uiTempMask, ucTempSize, ui, uj
 NiPixelFormatMasks NiPixelFormatMasks::CreateFromMasks(unsigned char ucBitsPerPixel, unsigned int uiRedMask,
                                                        unsigned int uiGreenMask, unsigned int uiBlueMask,
                                                        unsigned int uiAlphaMask)
@@ -303,46 +307,50 @@ template <class T> inline void LoadPixelEnum(PixelStream& stream, T& value)
 class PixelFormatReader : public NiPixelFormat
 {
   public:
-    void NiPixelFormat_ConvertOldPixelFormat(Format format, unsigned char bits, unsigned int* masks);
-    void ReadFromStream(PixelStream& stream);
+    void NiPixelFormat_ConvertOldPixelFormat(Format format, unsigned char ucBPP, unsigned int* auiColorMasks);
+    void NiPixelFormat_LoadBinary(PixelStream& kStream);
 };
 // @fnv 0x00a7ced0
-void PixelFormatReader::ReadFromStream(PixelStream& stream)
+// src: XBOX_RETAIL_PDB 0x00a7ced0
+// pdb: NiPixelFormat::LoadBinary | NiPixelFormat.obj | retail, call graph, high
+// pdb params: kStream
+// pdb locals: auiColorMasks, uiOldFastCompare, uiBPP, i, eTiling, ui, kBool
+void PixelFormatReader::NiPixelFormat_LoadBinary(PixelStream& kStream)
 {
-    if (stream.version < 0x0A030003)
+    if (kStream.version < 0x0A030003)
     {
-        LoadPixelEnum(stream, m_eFormat);
+        LoadPixelEnum(kStream, m_eFormat);
         unsigned int masks[4];
         for (unsigned int i = 0; i < 4; ++i)
-            LoadPixelValue(stream, masks[i]);
+            LoadPixelValue(kStream, masks[i]);
         unsigned int bits;
-        LoadPixelValue(stream, bits);
+        LoadPixelValue(kStream, bits);
         m_ucBitsPerPixel = (unsigned char)bits;
         unsigned int fastCompare;
-        LoadPixelValue(stream, fastCompare);
-        LoadPixelValue(stream, fastCompare);
-        if (stream.version >= 0x0A00010B)
+        LoadPixelValue(kStream, fastCompare);
+        LoadPixelValue(kStream, fastCompare);
+        if (kStream.version >= 0x0A00010B)
         {
             unsigned int fastCompare2;
-            LoadPixelValue(stream, fastCompare2);
+            LoadPixelValue(kStream, fastCompare2);
         }
         NiPixelFormat_ConvertOldPixelFormat(m_eFormat, m_ucBitsPerPixel, masks);
     }
     else
     {
-        LoadPixelEnum(stream, m_eFormat);
-        LoadPixelValue(stream, m_ucBitsPerPixel);
-        LoadPixelValue(stream, m_uiRendererHint);
-        LoadPixelValue(stream, m_uiExtraData);
-        LoadPixelValue(stream, m_uiObjectFlags);
-        LoadPixelEnum(stream, m_eTiling);
+        LoadPixelEnum(kStream, m_eFormat);
+        LoadPixelValue(kStream, m_ucBitsPerPixel);
+        LoadPixelValue(kStream, m_uiRendererHint);
+        LoadPixelValue(kStream, m_uiExtraData);
+        LoadPixelValue(kStream, m_uiObjectFlags);
+        LoadPixelEnum(kStream, m_eTiling);
         for (unsigned int i = 0; i < 4; ++i)
         {
-            LoadPixelEnum(stream, m_akComponents[i].m_eComponent);
-            LoadPixelEnum(stream, m_akComponents[i].m_eRepresentation);
-            LoadPixelValue(stream, m_akComponents[i].m_ucBits);
+            LoadPixelEnum(kStream, m_akComponents[i].m_eComponent);
+            LoadPixelEnum(kStream, m_akComponents[i].m_eRepresentation);
+            LoadPixelValue(kStream, m_akComponents[i].m_ucBits);
             unsigned char isSigned;
-            LoadPixelValue(stream, isSigned);
+            LoadPixelValue(kStream, isSigned);
             m_akComponents[i].m_bSigned = isSigned > 0;
         }
     }
@@ -367,9 +375,12 @@ extern const NiPixelFormat kBUMPLUMA32;
 // Stores the format, bits per pixel, and renderer hint, then maps the format and color masks to a NiPixelFormat constant or marks it unknown.
 // @fnv 0x00a7c9f0
 // src: COMMUNITY 0x00a7c9f0
-void PixelFormatReader::NiPixelFormat_ConvertOldPixelFormat(Format eFormat, unsigned char ucBitsPerPixel, unsigned int* apuiMasks)
+// pdb: NiPixelFormat::ConvertOldPixelFormat | NiPixelFormat.obj | debug, upstream name already matches, high
+// pdb params: eFormat, ucBPP, auiColorMasks
+// pdb locals: pcInvalidString
+void PixelFormatReader::NiPixelFormat_ConvertOldPixelFormat(Format eFormat, unsigned char ucBPP, unsigned int* auiColorMasks)
 {
-    m_ucBitsPerPixel = ucBitsPerPixel;
+    m_ucBitsPerPixel = ucBPP;
     m_eFormat = eFormat;
     m_uiRendererHint = 0xffffffff;
     m_uiExtraData = 0;
@@ -379,18 +390,18 @@ void PixelFormatReader::NiPixelFormat_ConvertOldPixelFormat(Format eFormat, unsi
     switch (eFormat)
     {
     case FORMAT_RGB:
-        switch (ucBitsPerPixel)
+        switch (ucBPP)
         {
         case 16:
-            if (apuiMasks[0] == 0xf800 && apuiMasks[1] == 0x7e0 && apuiMasks[2] == 0x1f && apuiMasks[3] == 0)
+            if (auiColorMasks[0] == 0xf800 && auiColorMasks[1] == 0x7e0 && auiColorMasks[2] == 0x1f && auiColorMasks[3] == 0)
                 *(NiPixelFormat*)this = kRGB565;
             else
                 m_eFormat = FORMAT_UNKNOWN;
             break;
         case 24:
-            if (apuiMasks[0] == 0xff && apuiMasks[1] == 0xff00 && apuiMasks[2] == 0xff0000 && apuiMasks[3] == 0)
+            if (auiColorMasks[0] == 0xff && auiColorMasks[1] == 0xff00 && auiColorMasks[2] == 0xff0000 && auiColorMasks[3] == 0)
                 *(NiPixelFormat*)this = kBGR888;
-            else if (apuiMasks[0] == 0xff0000 && apuiMasks[1] == 0xff00 && apuiMasks[2] == 0xff && apuiMasks[3] == 0)
+            else if (auiColorMasks[0] == 0xff0000 && auiColorMasks[1] == 0xff00 && auiColorMasks[2] == 0xff && auiColorMasks[3] == 0)
                 *(NiPixelFormat*)this = kRGB888;
             else
                 m_eFormat = FORMAT_UNKNOWN;
@@ -401,21 +412,21 @@ void PixelFormatReader::NiPixelFormat_ConvertOldPixelFormat(Format eFormat, unsi
         }
         break;
     case FORMAT_RGBA:
-        switch (ucBitsPerPixel)
+        switch (ucBPP)
         {
         case 16:
-            if (apuiMasks[0] == 0x1f && apuiMasks[1] == 0x3e0 && apuiMasks[2] == 0x7c00 && apuiMasks[3] == 0x8000)
+            if (auiColorMasks[0] == 0x1f && auiColorMasks[1] == 0x3e0 && auiColorMasks[2] == 0x7c00 && auiColorMasks[3] == 0x8000)
                 *(NiPixelFormat*)this = kBGRA5551;
-            else if (apuiMasks[0] == 0x7c00 && apuiMasks[1] == 0x3e0 && apuiMasks[2] == 0x1f && apuiMasks[3] == 0x8000)
+            else if (auiColorMasks[0] == 0x7c00 && auiColorMasks[1] == 0x3e0 && auiColorMasks[2] == 0x1f && auiColorMasks[3] == 0x8000)
                 *(NiPixelFormat*)this = kRGBA5551;
-            else if (apuiMasks[0] == 0xf00 && apuiMasks[1] == 0xf0 && apuiMasks[2] == 0xf && apuiMasks[3] == 0xf000)
+            else if (auiColorMasks[0] == 0xf00 && auiColorMasks[1] == 0xf0 && auiColorMasks[2] == 0xf && auiColorMasks[3] == 0xf000)
                 *(NiPixelFormat*)this = kRGBA4444;
             else
                 m_eFormat = FORMAT_UNKNOWN;
             break;
         case 32:
-            if (apuiMasks[0] == 0xff0000 && apuiMasks[1] == 0xff00 && apuiMasks[2] == 0xff &&
-                apuiMasks[3] == 0xff000000)
+            if (auiColorMasks[0] == 0xff0000 && auiColorMasks[1] == 0xff00 && auiColorMasks[2] == 0xff &&
+                auiColorMasks[3] == 0xff000000)
                 *(NiPixelFormat*)this = kRGBA32;
             else
                 *(NiPixelFormat*)this = kBGRA32;
@@ -426,7 +437,7 @@ void PixelFormatReader::NiPixelFormat_ConvertOldPixelFormat(Format eFormat, unsi
         }
         break;
     case FORMAT_PAL:
-        switch (ucBitsPerPixel)
+        switch (ucBPP)
         {
         case 8:
             *(NiPixelFormat*)this = kPAL8;
@@ -437,7 +448,7 @@ void PixelFormatReader::NiPixelFormat_ConvertOldPixelFormat(Format eFormat, unsi
         }
         break;
     case FORMAT_PALALPHA:
-        switch (ucBitsPerPixel)
+        switch (ucBPP)
         {
         case 8:
             *(NiPixelFormat*)this = kPALA8;

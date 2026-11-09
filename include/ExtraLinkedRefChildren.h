@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraLinkedRefChildren, size 0x14 (here 0x10), bases: BSExtraData, 1 members
 class ExtraLinkedRefChildren : public BSExtraData
 {
 public:

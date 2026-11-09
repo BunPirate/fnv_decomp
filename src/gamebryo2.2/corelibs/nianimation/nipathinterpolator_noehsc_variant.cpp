@@ -49,18 +49,21 @@ template <class T> inline NiPointer<T>& NiPointer<T>::operator=(const NiPointer<
 class FloatDataRangeOps : public NiFloatData
 {
   public:
-    void GetControllerSequence(float fA, float fB, NiPointer<NiFloatData>& spOut);
+    void NiFloatData_GetSequenceData(float fA, float fB, NiPointer<NiFloatData>& spOut);
 };
 
 // @fnv 0x00a3e6f0
-NiInterpolator* NiPathInterpolator::CloneForTimeRange(float fA, float fB)
+// pdb: NiPathInterpolator::GetSequenceInterpolator | NiPathInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: pkSeqInterp, spNewPctData
+NiInterpolator* NiPathInterpolator::CloneForTimeRange(float fStartTime, float fEndTime)
 {
-    NiPathInterpolator* pkCopy = static_cast<NiPathInterpolator*>(NiInterpolator::CloneForTimeRange(fA, fB));
-    if (m_pPathInterp)
+    NiPathInterpolator* pkCopy = static_cast<NiPathInterpolator*>(NiInterpolator::CloneForTimeRange(fStartTime, fEndTime));
+    if (m_spPctData)
     {
         NiPointer<NiFloatData> spInterp;
-        static_cast<FloatDataRangeOps*>(m_pPathInterp)->GetControllerSequence(fA, fB, spInterp);
-        *reinterpret_cast<NiPointer<NiFloatData>*>(&pkCopy->m_pPathInterp) = spInterp;
+        static_cast<FloatDataRangeOps*>(m_spPctData)->NiFloatData_GetSequenceData(fStartTime, fEndTime, spInterp);
+        *reinterpret_cast<NiPointer<NiFloatData>*>(&pkCopy->m_spPctData) = spInterp;
         pkCopy->m_uiPercentKeyCount = 0;
     }
     return pkCopy;

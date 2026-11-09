@@ -53,7 +53,7 @@ class IdleAnimationManager
     void AddIdleToArray(TESIdleForm*);
     bool InterfaceManager_GetMagicPageNumber();
     NiFormArray* GetIdleArray(TESForm*);
-    NiFormArray* GetFormArray(TESIdleForm*);
+    NiFormArray* TESIdleManager_AddRootIdleArray(TESIdleForm*);
 };
 extern TESDataHandler* g_dataHandler;
 extern IdleAnimationManager* DAT_011cb6a0;

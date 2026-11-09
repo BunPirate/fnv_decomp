@@ -38,7 +38,7 @@ extern float DAT_01011d78;
 extern float DAT_01016410;
 struct FUN_00e46f90_Obj
 {
-    void FUN_00e46f90(int a);
+    void hkpBallGun_ctor(int a);
 };
 struct HKStr
 {
@@ -87,7 +87,7 @@ struct MBG
 };
 struct FUN_00e45150_class
 {
-    MBG* Initialize(int a);
+    MBG* hkpMountedBallGun_ctor(int numBullets);
 };
 void* __cdecl hkMemoryRouter_getInstance();
 void __cdecl hkString_memCpy(void* dst, const void* src, int numBytes);
@@ -173,7 +173,7 @@ struct S00e451b0_ZBody
     S00e451b0_SIMD::LocalM128 unk40, unk50, unk60, unk70, unk80;
     int unk90, unk94, unk98;
     float unk9c;
-    S00e451b0_ZBody* AllocateStorage_00ca8c90(S00e451b0_ZInfo*);
+    S00e451b0_ZBody* hkpRigidBody_ctor(S00e451b0_ZInfo*);
     void FUN_00c905b0();
 };
 struct S00e451b0_ZListener
@@ -243,11 +243,14 @@ struct S00e451b0_ZGun : hkpMountedBallGun
 };
 // @fnv 0x00e451b0
 // src: HAVOK_SRC 0x00e451b0
-void S00e451b0_ZGun::hkpMountedBallGun_fireGun(S00e451b0_ZWorld* world, const hkTransform* transform)
+// pdb: hkpMountedBallGun::fireGun | hkpMountedBallGun.obj | retail, upstream name already matches, high
+// pdb params: world, viewTransform
+// pdb locals: target, ci, targetPos, charPos, to, rb
+void S00e451b0_ZGun::hkpMountedBallGun_fireGun(S00e451b0_ZWorld* world, const hkTransform* viewTransform)
 {
-    S00e451b0_SIMD::LocalM128 direction = *(const S00e451b0_SIMD::LocalM128*)&transform->m_rotation.m_kColumn0;
+    S00e451b0_SIMD::LocalM128 direction = *(const S00e451b0_SIMD::LocalM128*)&viewTransform->m_rotation.m_kColumn0;
     S00e451b0_SIMD::LocalM128 start =
-        S00e451b0_SIMD::_mm_add_ps(S00e451b0_SIMD::_mm_load_ps(reinterpret_cast<const float*>(&transform->m_vTranslation)), direction);
+        S00e451b0_SIMD::_mm_add_ps(S00e451b0_SIMD::_mm_load_ps(reinterpret_cast<const float*>(&viewTransform->m_vTranslation)), direction);
     S00e451b0_ZScalar distance(200.0f);
     S00e451b0_SIMD::LocalM128 end = S00e451b0_SIMD::_mm_add_ps(
         S00e451b0_SIMD::_mm_mul_ps(S00e451b0_SIMD::_mm_shuffle_ps(distance.q, distance.q, 0), direction), start);
@@ -255,48 +258,48 @@ void S00e451b0_ZGun::hkpMountedBallGun_fireGun(S00e451b0_ZWorld* world, const hk
     info.InitializePhysicsFields();
     S00e451b0_ZSphere* sphere = (S00e451b0_ZSphere*)ZMem::hkMemoryRouter_getInstance().heap().blockAlloc(0x20);
     sphere->unk04 = 0x20;
-    sphere = sphere->FUN_00cd8160(m_fBulletRadius);
-    info.unk90 = m_fBulletMass;
-    S00e451b0_SIMD::LocalM128 position = *(S00e451b0_SIMD::LocalM128*)&m_vContactPosition;
+    sphere = sphere->FUN_00cd8160(m_bulletRadius);
+    info.unk90 = m_bulletMass;
+    S00e451b0_SIMD::LocalM128 position = *(S00e451b0_SIMD::LocalM128*)&m_position;
     info.unkB0 = 0.01f;
     info.unkA4 = 0.2f;
-    const hkVector4* posPtr = &m_vContactPosition;
+    const hkVector4* posPtr = &m_position;
     info.unkA0 = 1.0f;
     info.unk04 = sphere;
     info.unkB7 = 6;
     info.unk10 = position;
     info.unkB4 = 2;
-    hkpInertiaTensorComputer_setShapeVolumeMassProperties(sphere, m_fBulletMass * 2.0f, &info);
-    info.unk90 = m_fBulletMass;
+    hkpInertiaTensorComputer_setShapeVolumeMassProperties(sphere, m_bulletMass * 2.0f, &info);
+    info.unk90 = m_bulletMass;
     info.unk94 = 0.0f;
     info.unk98 = DAT_010231a8;
     S00e451b0_ZCastResult target;
     if (!hkpWorldq_CastSphereAndStoreHit(world, &start, DAT_010181bc, &end, &target))
     {
-        hkpFirstPersonGun_calcVelocityToTarget(&info.unk10, &target.point, &world->unk10, m_fBulletVelocity, &info.unk30);
+        hkpFirstPersonGun_calcVelocityToTarget(&info.unk10, &target.point, &world->unk10, m_bulletVelocity, &info.unk30);
     }
     else
     {
-        S00e451b0_SIMD::LocalM128 speed = S00e451b0_SIMD::_mm_load_ss(&m_fBulletVelocity);
+        S00e451b0_SIMD::LocalM128 speed = S00e451b0_SIMD::_mm_load_ss(&m_bulletVelocity);
         info.unk30 = S00e451b0_SIMD::_mm_mul_ps(S00e451b0_SIMD::_mm_shuffle_ps(speed, speed, 0), direction);
     }
     S00e451b0_SIMD::LocalM128 hit = target.point;
-    for (int i = 0; i < m_kListeners.m_iElementCount; ++i)
-        ((S00e451b0_ZListener**)m_kListeners.m_data)[i]->v14(posPtr, &hit);
+    for (int i = 0; i < m_listeners.m_iElementCount; ++i)
+        ((S00e451b0_ZListener**)m_listeners.m_data)[i]->v14(posPtr, &hit);
     S00e451b0_ZBody* body = (S00e451b0_ZBody*)ZMem::hkMemoryRouter_getInstance().heap().blockAlloc(0x220);
     body->unk04 = 0x220;
-    body = body->AllocateStorage_00ca8c90(&info);
+    body = body->hkpRigidBody_ctor(&info);
     info.unk04->FUN_00c905b0();
-    body->unk9c = m_fBulletSpread;
-    for (int i = 0; i < m_kListeners.m_iElementCount; ++i)
-        ((S00e451b0_ZListener**)m_kListeners.m_data)[i]->vC(body);
+    body->unk9c = m_damageMultiplier;
+    for (int i = 0; i < m_listeners.m_iElementCount; ++i)
+        ((S00e451b0_ZListener**)m_listeners.m_data)[i]->vC(body);
     world->hkpWorld_addEntity(body, 1);
-    ((S00e451b0_ZQueue*)m_pBulletQueue)->push(body);
-    if (((S00e451b0_ZQueue*)m_pBulletQueue)->unk10 > m_iBulletBatchCount)
+    ((S00e451b0_ZQueue*)m_addedBodies)->push(body);
+    if (((S00e451b0_ZQueue*)m_addedBodies)->unk10 > m_maxBulletsInWorld)
     {
-        body = ((S00e451b0_ZQueue*)m_pBulletQueue)->pop();
-        for (int i = m_kListeners.m_iElementCount - 1; i >= 0; --i)
-            ((S00e451b0_ZListener**)m_kListeners.m_data)[i]->v10(body);
+        body = ((S00e451b0_ZQueue*)m_addedBodies)->pop();
+        for (int i = m_listeners.m_iElementCount - 1; i >= 0; --i)
+            ((S00e451b0_ZListener**)m_listeners.m_data)[i]->v10(body);
         if (body->unk08)
         {
             bool removed;

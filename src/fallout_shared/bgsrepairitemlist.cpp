@@ -15,24 +15,27 @@ BGSListForm* __fastcall GetRepairItemList(BGSRepairItemList* component);
 
 // Resolves pListForm's form ID to a BGSListForm and warns if the lookup fails, naming the owner when available.
 // @fnv 0x0047b8e0
-void BGSRepairItemList::InitItem(TESForm* owner)
+// pdb: BGSRepairItemList::InitItem | BGSRepairItemList.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: itempint, pownerFile
+void BGSRepairItemList::InitItem(TESForm* apOwner)
 {
     unsigned int formID = (unsigned int)pListForm;
     if (formID)
     {
-        TESFile* file = owner ? owner->GetFile(-1) : 0;
+        TESFile* file = apOwner ? apOwner->GetFile(-1) : 0;
         TESForm::RemapFormIDForFile(formID, file);
         pListForm = dynamic_cast<BGSListForm*>(TESForm::GetFormByID(formID));
         if (!pListForm)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (((BGSCameraPath*)owner)->HasNameForWarning())
+                if (((BGSCameraPath*)apOwner)->HasNameForWarning())
                     Warning("MASTERFILE: Unable to find repair item list (%08X) for owner object \"%s\".", formID,
-                            owner->GetName());
+                            apOwner->GetName());
                 else
                     Warning("MASTERFILE: Unable to find repair item list (%08X) for owner object (%08X).", formID,
-                            owner->GetFormID());
+                            apOwner->GetFormID());
             }
             else
                 Warning("MASTERFILE: Unable to find repair item list (%08X) for unknown owner.", formID);
@@ -41,12 +44,14 @@ void BGSRepairItemList::InitItem(TESForm* owner)
 }
 
 // @fnv 0x0047b850
+// pdb: BGSRepairItemList::BGSRepairItemList | BGSRepairItemList.obj | debug, upstream name already matches, high
 BGSRepairItemList::BGSRepairItemList()
 {
     BGSRepairItemList::InitializeComponent();
 }
 
 // @fnv 0x0047b880
+// pdb: BGSRepairItemList::~BGSRepairItemList | BGSRepairItemList.obj | debug, upstream name already matches, high
 BGSRepairItemList::~BGSRepairItemList()
 {
     BGSRepairItemList::Free();
@@ -54,7 +59,10 @@ BGSRepairItemList::~BGSRepairItemList()
 
 void __cdecl TESForm_AddChunk_00485910(unsigned int, unsigned int);
 // @fnv 0x0047b8a0
-void __fastcall SaveRepairItemList(BGSRepairItemList* component)
+// src: XBOX_DEBUG_PDB 0x0047b8a0
+// pdb: BGSRepairItemList::Save | BGSRepairItemList.obj | debug, call graph, high
+// pdb locals: tempint
+void __fastcall BGSRepairItemList_Save(BGSRepairItemList* component)
 {
     unsigned int formID;
     if (component->pListForm != 0)
@@ -66,6 +74,9 @@ void __fastcall SaveRepairItemList(BGSRepairItemList* component)
 
 // Copies the repair list when the source component is a BGSRepairItemList.
 // @fnv 0x0047b9d0
+// pdb: BGSRepairItemList::CopyComponent | BGSRepairItemList.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
 void BGSRepairItemList::CopyFromBase(BaseFormComponent* apCopyFC)
 {
     BGSRepairItemList* pcopy = dynamic_cast<BGSRepairItemList*>(apCopyFC);
@@ -76,9 +87,12 @@ void BGSRepairItemList::CopyFromBase(BaseFormComponent* apCopyFC)
 
 // Returns true if the component has a different repair list or component type.
 // @fnv 0x0047ba20
-bool BGSRepairItemList::CompareWithBase(BaseFormComponent* component)
+// pdb: BGSRepairItemList::CompareComponent | BGSRepairItemList.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcomp
+bool BGSRepairItemList::CompareWithBase(BaseFormComponent* apCompareFC)
 {
-    BGSRepairItemList* other = dynamic_cast<BGSRepairItemList*>(component);
+    BGSRepairItemList* other = dynamic_cast<BGSRepairItemList*>(apCompareFC);
     if (!other)
         return true;
     if (GetRepairItemList(other) != GetRepairItemList(this))

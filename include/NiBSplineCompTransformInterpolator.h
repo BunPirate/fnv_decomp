@@ -2,14 +2,15 @@
 
 #include "NiBSplineTransformInterpolator.h"
 
+// pdb: class NiBSplineCompTransformInterpolator, size 0x60, bases: NiBSplineTransformInterpolator, 1 members
 class NiBSplineCompTransformInterpolator : public NiBSplineTransformInterpolator
 {
 public:
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual bool UpdateTransform(float time, NiObjectNET* target, NiQuatTransform& value);
 
     void CopyMemberData(NiBSplineCompTransformInterpolator* destination, CloningProcess& cloningProcess);
-    bool Update(float time, NiObjectNET* target, NiQuatTransform& value);
+    bool Update(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue);
 
-    float m_afOffsetAndHalfRange[6];
+    float m_afCompScalars[6];
 };

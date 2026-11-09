@@ -18,7 +18,7 @@ struct FUN_00da07b0_class
     void __thiscall ReturnSelf(void*);
 };
 void __cdecl finishLoadedObjecthkSimpleLocalFrame(void* a, void* b);
-void __cdecl InitBlockPool(void*);
+void __cdecl hkAgent1nMachine_Create(void*);
 void* __cdecl InitAndReturnTail(void* a, void* b, void* c);
 void __cdecl Object_InvokeVirtualMethod_00da08c0(void** a);
 extern int DAT_010c59f4;
@@ -33,14 +33,14 @@ struct FUN_00db7ab0_class
 };
 int __cdecl Crc32ShiftRight8(unsigned int a);
 void __cdecl Object_HkAgent1nMachine_Destroy_Thunk(void*);
-void __cdecl hkListAgent3_ProcessAndReturnValue_00da6de0(void*);
+void __cdecl hkListAgent3_calcStatistics(void*);
 void __cdecl Hkplistagent3_HkAgent1nMachine_WarpTime_Thunk(void*);
 void __cdecl Object_UpdateFields_00da6e60(void*);
-void __cdecl BuildEventIndex(void);
+void __cdecl hkListAgent3_process(void);
 void* __cdecl InitAndReturnTail(void* a, void* b, void* c);
 void* __cdecl Runtime_ForwardCall_00da6e10(void* a, void* b, void* c);
 void __cdecl Object_InitializeDispatchFunctionTable(void* p);
-void __cdecl finishLoadedObjecthkpLinkedCollidable(char* a, int b);
+void __cdecl finishLoadedObjecthkpLinkedCollidable(char* p, int finishing);
 struct FUN_00da0740_vt
 {
     virtual void v0(int);
@@ -55,7 +55,7 @@ struct FUN_00db7cf0_class
 {
     int __thiscall hkVersionPatchManager_UidFromClassVersion_getName(int a, int b);
 };
-extern int g_unk0126958c;
+extern int hkpPropertyValueClass;
 void* __cdecl Runtime_GetUnk0126958cAddress();
 extern char DAT_012695bc;
 char* __cdecl Runtime_GetDAT012695bcAddress(void);
@@ -69,9 +69,9 @@ struct FUN_00da0720_Class
 };
 void __cdecl Object_InvokeVirtualMethod_00da0720(FUN_00da0720_Class* param_1);
 struct CpuOpaque;
-extern CpuOpaque DAT_0126967c;
+extern CpuOpaque hkLocalFrameGroupClass;
 CpuOpaque* __cdecl Runtime_GetDAT0126967cAddress();
-extern int DAT_012696c4;
+extern int hkSimpleLocalFrameClass;
 int* __cdecl Runtime_GetDAT012696c4Address();
 // FUN_00da08a0 : cdecl, 13 bytes
 //   mov ecx, [esp+4]
@@ -88,7 +88,7 @@ struct FUN_00da08a0_cls
 int __cdecl Object_InvokeVirtualMethod_00da08a0(FUN_00da08a0_cls* pObj);
 extern int DAT_0126970c;
 int* __cdecl Runtime_GetDAT0126970cAddress();
-extern int DAT_01269754;
+extern int hkpMaxSizeMotionClass;
 void* __cdecl Runtime_GetDAT01269754Address(void);
 extern int DAT_010c6bec;
 void* __cdecl Runtime_GetDAT010c6becAddress(void);
@@ -292,7 +292,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00da0a20();
 // FUN_00da0a40 : a one-line function - getter
 extern int g_target_00da0a40;
 void* Object_GetGlobalObjectAddress_00da0a40();
-extern int DAT_012698ec;
+extern int hkSemanticsAttributeClass;
 void* __cdecl Object_GetGlobalObjectAddress_00da0a60();
 // FUN_00da0a80 : returns the address of a global data object.
 extern int DAT_0126991c;
@@ -309,7 +309,7 @@ struct FUN_00da0af0_Class
     virtual void vf00(int value);
 };
 void __cdecl Runtime_ForwardCall_00da0af0(FUN_00da0af0_Class* param_1);
-extern int DAT_01269a0c;
+extern int hkpSingleShapeContainerClass;
 void* __cdecl Object_GetGlobalObjectAddress_00da0b00();
 extern int DAT_010c6fd0;
 void* __cdecl Object_GetGlobalObjectAddress_00da0b20();
@@ -352,7 +352,7 @@ struct FUN_00db75b0_class
     FUN_00db75b0_entry* unk04;
     int unk08;
 
-    unsigned int __thiscall hkClassEnum_getValueOfName(int a1, unsigned int* a2);
+    unsigned int __thiscall hkClassEnum_getValueOfName(int name, unsigned int* val);
 };
 struct FUN_00db78a0_item
 {
@@ -368,7 +368,7 @@ class FUN_00db78a0_cls
     virtual void vSlot04();
     virtual void vSlot08();
     virtual void vSlot0c(void* field, void* item);
-    void hkVtableClassRegistry_registerList(FUN_00db78a0_item** a, void** b);
+    void hkVtableClassRegistry_registerList(FUN_00db78a0_item** infos, void** classes);
 };
 BSAudio* __cdecl hkMemoryRouter_getInstance();
 inline hkMemoryRouter* audio()
@@ -599,7 +599,7 @@ struct DBA430Owner
     int m_08;
     DBA430Inner m_0C;
 
-    void Reset();
+    void hkSerializeMultiMap_unsigned_int64_int_dtor();
 };
 union FeaturePair
 {
@@ -730,7 +730,7 @@ struct DA2D70Object
 };
 extern BSAudio* __cdecl hkMemoryRouter_getInstance();
 void __cdecl nullsub_21();
-void __cdecl hkAgent1nMachine_VisitAllAgents(int a, int b, void* pvCallback);
+void __cdecl hkAgent1nMachine_VisitAllAgents(int agentTrack, int vin, void* visitor);
 void __cdecl ProcessCollisionEntry();
 void __cdecl Object_HkAgent1nMachine_VisitAllAgents_Thunk(int a, int b);
 void* __cdecl hkpAgent1nSector_ProcessEntries_00da3510(void*, void*);
@@ -757,7 +757,7 @@ struct SubObject
     int unk04;
     int unk08;
     int unk0C;
-    void FUN_00d87790(int flags);
+    void FUN_00d87790(int ops);
 };
 struct CreatedObject
 {
@@ -899,17 +899,20 @@ struct StackTracer
 {
     int unk00, unk04;
     DebugFunctions* functions;
-    void hkStackTracer_dumpStackTrace(unsigned int* addresses, int count, void(__cdecl* output)(const char*, void*), void* context);
+    void hkStackTracer_dumpStackTrace(unsigned int* trace, int maxtrace, void(__cdecl* pfunc)(const char*, void*), void* context);
 };
 // @fnv 0x00da2990
 // src: HAVOK_LIB 0x00da2990
-void StackTracer::hkStackTracer_dumpStackTrace(unsigned int* addresses, int count, void(__cdecl* output)(const char*, void*),
+// pdb: hkStackTracer::dumpStackTrace | hkStackTracer.obj | debug, upstream name already matches, high
+// pdb params: trace, maxtrace, pfunc, context
+// pdb locals: buffer
+void StackTracer::hkStackTracer_dumpStackTrace(unsigned int* trace, int maxtrace, void(__cdecl* pfunc)(const char*, void*),
                                void* context)
 {
     void* process = GetCurrentProcess();
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < maxtrace; ++i)
     {
-        unsigned int address = addresses[i];
+        unsigned int address = trace[i];
         SymbolInfoBuffer symbol;
         memset(&symbol, 0, 24);
         unsigned int displacement = 0;
@@ -919,7 +922,7 @@ void StackTracer::hkStackTracer_dumpStackTrace(unsigned int* addresses, int coun
         {
             if (!DAT_01269a88)
             {
-                output(
+                pfunc(
                     "**************************************************************\n* Cannot find symbol for an address\n* Either debug information was not found or your version of\n* dbghelp.dll may be too old to understand the debug format.\n* See the comments in hkStackTracer::hkStackTracer()\n* d:\\Projects\\fallout\\code\\Havok\\Source\\Common/Base/System/StackTracer/Impl/hkStackTracerWin32.cxx\n**************************************************************\n",
                     context);
                 DAT_01269a88 = 1;
@@ -934,7 +937,7 @@ void StackTracer::hkStackTracer_dumpStackTrace(unsigned int* addresses, int coun
         functions->lineFromAddress(process, address, &displacement, &line);
         char buffer[2048];
         FUN_00eca38d(buffer, 2048, "%s(%i):'%s'\n", line.fileName, line.lineNumber, symbol.name);
-        output(buffer, context);
+        pfunc(buffer, context);
     }
 }
 
@@ -957,6 +960,10 @@ struct RowTable
 
 // @fnv 0x00dad340
 // src: GUESS 0x00dad340 (confidence: low)
+// pdb: hkGskManifold_convertEdgeEdge | hkpGskManifoldUtil.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkGskManifold_verify
+// pdb params: work, feature, out
+// pdb locals: dots
 static __declspec(noinline) int Object_ProcessAndReturnValue_00dad340(const dad340_quad* q, const RowTable* table, __m128* out)
 {
     const char* rows = (const char*)table;
@@ -1187,6 +1194,9 @@ struct GridMesh
 
 // @fnv 0x00da0d50
 // src: GUESS 0x00da0d50 (confidence: low)
+// pdb: hkGeometryUtils::computeVolume | hkGeometryUtils.obj | retail, object-file run extension, low
+// pdb params: geometry
+// pdb locals: tris, verts, vol, i
 void __cdecl Runtime_ProcessEntries_00da0d50(GridMesh& mesh, int resolution)
 {
     GridBounds bounds;

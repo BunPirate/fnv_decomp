@@ -43,13 +43,13 @@ class SandboxPackageOperations : public SandBoxActorPackageData
 {
 public:
     bool IsObjectWithinLocationRadius(MobileObject*, float);
-    void ResetReference();
+    void SandBoxActorPackageData_ReleaseTargetObject();
     void BeginGettingUp();
     void ClearTargetReferences(void*, void*);
     void SelectActivity();
     void SelectSandboxActivity(Actor*, TESPackage*);
     void ScanSandboxTargets(Actor*);
-    void InitializeLocation(Actor*, TESPackage*);
+    void SandBoxActorPackageData_InitLocation(Actor*, TESPackage*);
 };
 
 #ifndef NULL
@@ -71,7 +71,7 @@ class SandboxProcedureData
     TESObjectREFR* GetTarget();
     SANDBOX_PROCEDURE GetProcedure();
     void LoadGame(BGSLoadFormBuffer* apBuffer);
-    void InitLoadGame(BGSLoadFormBuffer* apBuffer);
+    void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 #pragma pack(pop)
 FNV_STATIC_ASSERT(sizeof(SandboxProcedureData) == 16);
@@ -81,6 +81,7 @@ FNV_STATIC_ASSERT(offsetof(SandboxProcedureData, m_iActivityState) == 8);
 FNV_STATIC_ASSERT(offsetof(SandboxProcedureData, m_iProcedureData) == 12);
 
 #pragma pack(push, 4)
+// pdb: class Calendar, size 0x1c, 7 members
 class Calendar
 {
   public:

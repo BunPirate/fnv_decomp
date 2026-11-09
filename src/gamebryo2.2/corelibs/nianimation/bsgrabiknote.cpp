@@ -67,17 +67,20 @@ struct ArmNoteBase
     void BaseGetViewerStrings(ViewerStrings* pkStrings);
 };
 
+// pdb: class BSGrabIKNote, size 0x1c, bases: BSAnimNote, 3 members
 struct BSGrabIKNote : ArmNoteBase
 {
-    unsigned int m_eArm;
-    float m_fGain;
-    unsigned int m_eAnimationState;
-    void* Clone(CloningProcess* process);
+    unsigned int eArm;
+    float fGain;
+    unsigned int eState;
+    void* Clone(CloningProcess* arCloneData);
     void GetViewerStrings_00a44650(ViewerStrings* pkStrings);
 };
 
 // @fnv 0x00a44380
 // src: EXE 0x00a44380
+// pdb: BSGrabIKNote::CreateObject | BSGrabIKNote.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl BSGrabIKNote_CreateObject()
 {
     BSGrabIKNote* node = static_cast<BSGrabIKNote*>(BSFadeNode::operator new(28));
@@ -86,9 +89,9 @@ void* __cdecl BSGrabIKNote_CreateObject()
         reinterpret_cast<BSFadeNode*>(node)->_Call_a5d3a0();
         node->m_fTime = 0.0f;
         node->m_eType = 1;
-        node->m_fGain = 0.0f;
+        node->fGain = 0.0f;
         node->m_ppVirtualMethodTable = &DAT_01097d34;
-        node->m_eAnimationState = 0;
+        node->eState = 0;
         return node;
     }
     return 0;
@@ -106,6 +109,8 @@ struct FUN_00a43f10_shell : BSAnimNote_shell
 
 // @fnv 0x00a43f10
 // src: XBOX_PDB 0x00a43f10
+// pdb: BSGrabIKNote::RegisterStreamables | BSGrabIKNote.obj | debug, upstream name already matches, high
+// pdb params: arStream
 bool FUN_00a43f10_shell::BSGrabIKNote_RegisterStreamables(NiStream& arStream)
 {
     return BSAnimNote_shell::BSAnimNote_RegisterStreamables(arStream);
@@ -116,7 +121,10 @@ struct FUN_00a44850_holder
     void CopyMembersStreamAndFields(FUN_00a44850_holder*, CloningProcess*);
 };
 // @fnv 0x00a443c0
-void* BSGrabIKNote::Clone(CloningProcess* process)
+// pdb: BSGrabIKNote::CreateClone | BSGrabIKNote.obj | retail, object-file gap fill, high
+// pdb params: arCloneData
+// pdb locals: pkCtlr
+void* BSGrabIKNote::Clone(CloningProcess* arCloneData)
 {
     BSGrabIKNote* node = static_cast<BSGrabIKNote*>(BSFadeNode::operator new(28));
     if (node)
@@ -124,13 +132,13 @@ void* BSGrabIKNote::Clone(CloningProcess* process)
         reinterpret_cast<BSFadeNode*>(node)->_Call_a5d3a0();
         node->m_fTime = 0.0f;
         node->m_eType = 1;
-        node->m_fGain = 0.0f;
+        node->fGain = 0.0f;
         node->m_ppVirtualMethodTable = (void*)&DAT_01097d34;
-        node->m_eAnimationState = 0;
+        node->eState = 0;
     }
     else
         node = 0;
-    ((FUN_00a44850_holder*)this)->CopyMembersStreamAndFields((FUN_00a44850_holder*)node, process);
+    ((FUN_00a44850_holder*)this)->CopyMembersStreamAndFields((FUN_00a44850_holder*)node, arCloneData);
     *(void**)((char*)node + 0x10) = *(void**)((char*)this + 0x10);
     *(float*)((char*)node + 0x14) = *(float*)((char*)this + 0x14);
     *(unsigned int*)((char*)node + 0x18) = *(unsigned int*)((char*)this + 0x18);
@@ -319,6 +327,8 @@ struct S_00a44530_Class
 };
 // Calls ReadBinaryFields, then reads three 4-byte values from the stream into unk10, unk14 and unk18.
 // @fnv 0x00a44530
+// pdb: BSGrabIKNote::LoadBinary | BSGrabIKNote.obj | retail, object-file run extension, low
+// pdb params: arStream
 void __thiscall S_00a44530_Class::LoadFromStream(S_00a44530_Stream* stream)
 {
     ReadBinaryFields(stream);
@@ -367,6 +377,8 @@ static unsigned int StreamReadPart(StreamFile* f, void* buf)
 }
 // Reads three 4-byte values from the stream into m_10, m_14 and m_18, advancing the stream position after each read.
 // @fnv 0x00a445c0
+// pdb: BSGrabIKNote::SaveBinary | BSGrabIKNote.obj | retail, object-file run extension, low
+// pdb params: arStream
 void FUN_00a445c0_cls::ReadFromStream(StreamOwner* stream)
 {
     FUN_00a44a90(stream);
@@ -378,7 +390,7 @@ void FUN_00a445c0_cls::ReadFromStream(StreamOwner* stream)
     f->m_04 += StreamReadPart(f, &m_18);
 }
 
-char* NiGetViewerStr(const char* pcName, const char* pcValue);
+char* NiGetViewerStr(const char* pcPrefix, const char* pcValue);
 char* NiGetViewerString_00a7d550(const char* pcName, float fValue);
 
 struct ViewerStrings
@@ -404,10 +416,12 @@ struct ViewerStrings
 // Appends the arm, gain and state viewer strings to pkStrings after the base viewer strings.
 // @fnv 0x00a44650
 // src: XBOX_PDB 0x00a44650
+// pdb: BSGrabIKNote::GetViewerStrings | BSGrabIKNote.obj | retail, object-file run extension, low
+// pdb params: apStrings
 void BSGrabIKNote::GetViewerStrings_00a44650(ViewerStrings* pkStrings)
 {
     BaseGetViewerStrings(pkStrings);
-    switch (m_eArm)
+    switch (eArm)
     {
     case 0:
         pkStrings->Add(NiGetViewerStr("Arm", "Left"));
@@ -416,8 +430,8 @@ void BSGrabIKNote::GetViewerStrings_00a44650(ViewerStrings* pkStrings)
     default:
         pkStrings->Add(NiGetViewerStr("Arm", ""));
     }
-    pkStrings->Add(NiGetViewerString_00a7d550("Gain", m_fGain));
-    switch (m_eAnimationState)
+    pkStrings->Add(NiGetViewerString_00a7d550("Gain", fGain));
+    switch (eState)
     {
     case 1:
         pkStrings->Add(NiGetViewerStr("State", "Start"));
@@ -436,7 +450,7 @@ struct S00a44430_Str
 {
     int m_kHandle;
     void AssignString(const char* apStr);
-    bool NiString_ToFloat(float* apOut);
+    bool NiString_ToFloat(float* f);
     void ReleaseHandle();
 };
 int FUN_00ec8a19(const char*, const char*, int);
@@ -460,6 +474,9 @@ struct S00a44430_Obj : TextKeyHandlerBase
 // Parses apTextKey for a prefix, side flag, gain value, and mode string, storing results in m_10, m_14, and m_18.
 // @fnv 0x00a44430
 // src: XBOX_PDB 0x00a44430
+// pdb: BSGrabIKNote::ParseTextKey | BSGrabIKNote.obj | retail, string-set bridge, high
+// pdb params: apTextKey
+// pdb locals: bret, ptext, gainStr, gain
 bool S00a44430_Obj::BSGrabIKNote_ParseTextKey(const char* apTextKey)
 {
     bool bret = FUN_00a44930(apTextKey);

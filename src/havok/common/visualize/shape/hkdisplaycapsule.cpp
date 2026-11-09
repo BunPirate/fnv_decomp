@@ -22,11 +22,12 @@ typedef union __declspec(intrin_type) __declspec(align(16)) {
 
 struct StaticHelper
 {
-    static void HandleObjectEvent(void* a, void* b, float c, void* d, void* e, void* f, void* g);
+    static void HandleObjectEvent(void* start, void* end, float c, void* heightSamples, void* thetaSamples, void* f, void* geometryOut);
 };
 
 // @fnv 0x00d22d70
 // src: HAVOK_LIB 0x00d22d70
+// pdb: hkDisplayCapsule::buildGeometry | hkDisplayCapsule.obj | retail, upstream name already matches, high
 void hkDisplayCapsule::buildGeometry()
 {
     StaticHelper::HandleObjectEvent((char*)this + 0x60, (char*)this + 0x70, *(float*)((char*)this + 0x80),
@@ -270,6 +271,9 @@ static __forceinline LocalM128 prefixColumns(Context* context, Record* a, Record
 // Uses the cross product of a and b's axes to compute a point written to out; if that is degenerate or out of bounds, calls FUN_00d234e0 on both records.
 // @fnv 0x00d23850
 // src: GUESS 0x00d23850 (confidence: low)
+// pdb: hkSimplexSolverSolve2d | hkpSimplexSolver.obj | retail, object-file run extension, low
+// pdb params: info, sci0, sci1, velocityIn, velocityOut
+// pdb locals: invAxisLen, axisProjVelocity
 static __declspec(noinline) void hkVector4_ComputeValues_00d23850(Context* context, Record* a, Record* b, VecArg point, hkVector4* out)
 {
     float threshold = DAT_0104da4c;
@@ -662,6 +666,8 @@ struct Wrap_result
 // Computes the intersection point of three planes using a cross-product basis, falling back to sequential pairwise intersection if the determinant is near zero.
 // @fnv 0x00d23ca0
 // src: GUESS 0x00d23ca0 (confidence: low)
+// pdb: hkSimplexSolverSolve3d | hkpSimplexSolver.obj | retail, object-file run extension, low
+// pdb params: info, sci0, sci1, sci2, allowResort, velocityIn, velocityOut
 static __declspec(noinline) void Object_ProcessAndReturnValue_00d23ca0(IntersectionContext* ctx, PlaneRecord* apPlaneA, PlaneRecord* apPlaneB,
                                               PlaneRecord* apPlaneC, Wrap_reorder reorder, Wrap_fallback fallback,
                                               Wrap_result result)
@@ -1040,6 +1046,9 @@ template <typename T> static __forceinline T hkMax2(T a, T b)
 // Iteratively reduces the active plane set by testing velocity against planes and resolving intersections until a stable result is written to the ray-cast output.
 // @fnv 0x00d23f50
 // src: GUESS 0x00d23f50 (confidence: low)
+// pdb: hkSimplexSolverExamineActivePlanes | hkpSimplexSolver.obj | retail, object-file run extension, low
+// pdb params: info
+// pdb locals: velocity, assertBuf, ostr
 static __declspec(noinline) void hkVector4_ProcessEntries_00d23f50(SimplexInfo& info)
 {
     while (true)

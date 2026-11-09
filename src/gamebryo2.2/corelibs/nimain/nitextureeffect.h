@@ -27,6 +27,7 @@ struct PlaneInitializer : NiPlane
 };
 
 // The shared NiTextureEffect header is not available yet; retain its local layout.
+// pdb: class NiTextureEffect, size 0x1b0 (here 0x15c), bases: NiDynamicEffect, 12 members
 class NiTextureEffect : public NiDynamicEffect
 {
   public:

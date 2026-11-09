@@ -309,7 +309,7 @@ class FC010Derived : public FC010Primary, public FC010Secondary
   public:
     FC010Derived();
 // @fnv 0x005fc010
-    virtual void FUN_005fc010(unsigned int uiA, unsigned int uiB);
+    virtual void FUN_005fc010(unsigned int aiFlags, unsigned int aiCurrentFlags);
 };
 
 FC010Derived::FC010Derived()

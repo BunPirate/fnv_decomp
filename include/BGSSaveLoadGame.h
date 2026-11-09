@@ -19,6 +19,7 @@ class TESForm;
 class TESObjectCELL;
 class TESObjectREFR;
 
+// pdb: class BGSSaveLoadGame, size 0x24c, 15 members
 class BGSSaveLoadGame
 {
 public:
@@ -45,27 +46,27 @@ public:
     static void Create();
     static void Destroy();
     void ApplyFormChanges(BGSSaveLoadChangesMap*, FormIDConverter*);
-    void LoadCellChanges(bool);
+    void InitForms(bool);
     void LoadForm(TESForm*);
     void SetFormLoaded(TESForm*, bool);
     bool ShouldUnloadForm(TESForm*);
     void FormReconstructionMap(TESObjectCELL*);
     bool ContainsReference(unsigned int);
-    bool ShouldSaveForm(TESForm*, bool);
+    bool ShouldAddChanges(TESForm*, bool);
     void NotifyFormIDChanged(TESForm*, FormChangeMask, bool);
     bool HasFormChangeFlags(TESForm*, FormChangeMask);
     bool GetOldChange(TESForm*, FormChangeMask);
     bool IsFormChanged(TESForm*);
     void ClearFormChangeFlags(TESForm*, FormChangeMask);
-    void HasFormChanges(TESForm*);
-    void ClearAllForms();
+    void RemoveChanges(TESForm*);
+    void RevertAllChanges();
     void CleanupExpiredData();
     void ProcessSubBuffer(int, BGSLoadFormBuffer*, TESForm*);
     void ClearForm(TESForm*);
     void ClearFormID(unsigned int);
     void DeleteForm(TESForm*);
-    void ChangeFormID(unsigned int, unsigned int);
-    unsigned int GetNewFormID(unsigned int);
+    void AddChangedFormID(unsigned int, unsigned int);
+    unsigned int GetChangedFormID(unsigned int);
     bool IsFormIDRemapped(unsigned int);
     void AreStringsEqual(char*, char*);
     void DisplayReferenceDebugText(TESObjectREFR*, IDebugText*);
@@ -105,9 +106,9 @@ public:
     bool LoadGame(SaveLoadFile*, bool);
     void PrepareLoadGame(SaveLoadFile*);
     bool IsValidSaveGame(SaveLoadFile*);
-    unsigned int LoadFormRecord(SaveLoadFile*, BGSLoadFormBuffer*, FormIDConverter*);
+    unsigned int CheckInitialData(SaveLoadFile*, BGSLoadFormBuffer*, FormIDConverter*);
     bool FindFormByID(TESForm**, unsigned int, bool);
-    void InitializePackageLocations(Actor*);
+    void QueueInitPackageLocations(Actor*);
     void CancelInitPackageLocations(Actor*);
     void ClearFormChanges();
     BGSSaveLoadChangesMap* GetChangesMap();
@@ -122,7 +123,7 @@ public:
     SavedEntryMap* Modelloader_GetReferencedThis();
     bool BGSSaveLoadGame_GetPlayerLocationInvalid();
     void __thiscall RevertCurrentChanges(int, int);
-    void FUN_00849730(void*, int);
+    void BGSSaveLoadGame_UnloadForm(void*, int);
     void SetLoadingMovedRefs_00849c00(bool);
     void QueueSubBuffer(int, BGSLoadFormBuffer*, int);
     void SaveGameWarningFunction(const char* apMessage, char* varArgs);

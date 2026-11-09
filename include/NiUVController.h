@@ -7,6 +7,7 @@ class StrArr;
 struct UVKey;
 struct MyStreamWriter;
 
+// pdb: class NiUVController, size 0x50, bases: NiTimeController, 7 members
 class NiUVController : public NiTimeController
 {
 public:
@@ -47,13 +48,13 @@ public:
     unsigned int* __thiscall CloneUVData(unsigned int flags);
     void WriteToStream(MyStreamWriter* stream);
 
-    unsigned int m_uiLastIdx0;
-    unsigned int m_uiLastIdx1;
-    unsigned int m_uiLastIdx2;
-    unsigned int m_uiLastIdx3;
-    unsigned short m_usValue;
+    unsigned int m_uiLastUOffsetIdx;
+    unsigned int m_uiLastUTilingIdx;
+    unsigned int m_uiLastVOffsetIdx;
+    unsigned int m_uiLastVTilingIdx;
+    unsigned short m_usTextureSet;
     unsigned short unk46;
-    NiPointer<NiUVData> m_pData;
+    NiPointer<NiUVData> m_spUVData;
     union
     {
         bool m_bUpdateEnabled;

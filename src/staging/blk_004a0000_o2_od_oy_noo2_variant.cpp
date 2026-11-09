@@ -132,7 +132,7 @@ struct Shape
 };
 struct ImpactData
 {
-    float GetModifierValue();
+    float BGSImpactData_GetDecalMaxWidth();
     float BGSImpactData_GetDecalMinWidth();
     void* FUN_006733e0();
     bool BGSImpactData_GetIsParallax();
@@ -154,7 +154,7 @@ bool __cdecl IsStartMenuFlag1Set();
 float __cdecl FUN_00476b70(float, float);
 struct Splatter
 {
-    void FUN_006233c0(int);
+    void DecalCaster_SetCustomPickCollisions(int);
     void DecalCaster_SetCollision(int, unsigned char);
     void DecalCaster_Add(World*);
 };
@@ -184,7 +184,7 @@ NiPoint3 __cdecl FUN_004a3760(float, const NiPoint3&);
 NiPoint3& __cdecl HK2NINS(NiPoint3&, const ImpactVector4&);
 Ref* __cdecl bhkUtilFunctions_GetNiAVObject(HitBody*);
 void* __cdecl TESObjectREFR_FindReferenceFor3D(Ref*);
-bool __cdecl IsAcousticSpaceFormTypeAllowed(void*, bool);
+bool __cdecl BGSDecalManager_IsValidDecalImpact(void*, bool);
 float __cdecl RandomFloatTwoPi();
 float __cdecl FUN_00406cc0(float);
 struct ImpactTask
@@ -199,6 +199,8 @@ struct ImpactTask
 };
 // @fnv 0x004a2d50
 // src: XBOX_PDB 0x004a2d50
+// pdb: BGSDecalEmitter::Update | BGSDecalManager.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pw, dir, pcaster, origin, fdecalSize, pd, pcollector, bhit, fdecalThrowDistance, ihits, fgravityOffset, bdecalApplied, to, filter, plines, I, pcol, ekey, data, contactNormal, ematerialB, contactPoint, pavobj ...
 void ImpactTask::BGSDecalEmitter_Update()
 {
     if (FUN_0071b160(1)->MenuConsole_IsVisible() || IsStartMenuFlag1Set())
@@ -214,9 +216,9 @@ void ImpactTask::BGSDecalEmitter_Update()
         reference.Modelloader_GetReferencedThis()->FUN_00490e40()->NiAVObject_GetRotate_006a9540()->FUN_00476930(2, direction);
         direction.Unitize_004a0c10();
         NiPoint3 origin = reference.Modelloader_GetReferencedThis()->FUN_00490e40()->GetTranslate_0043c490();
-        float radius = FUN_00476b70(impact->BGSImpactData_GetDecalMinWidth(), impact->GetModifierValue());
+        float radius = FUN_00476b70(impact->BGSImpactData_GetDecalMinWidth(), impact->BGSImpactData_GetDecalMaxWidth());
         Splatter* splatter = FUN_00622a70(radius, true);
-        splatter->FUN_006233c0(0);
+        splatter->DecalCaster_SetCustomPickCollisions(0);
         splatter->DecalCaster_SetCollision(8, 0);
         splatter->DecalCaster_SetCollision(29, 0);
         Cell* cell = reference.Modelloader_GetReferencedThis()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
@@ -283,7 +285,7 @@ void ImpactTask::BGSDecalEmitter_Update()
                     else
                         target = bhkUtilFunctions_GetNiAVObject(body);
                     void* object = TESObjectREFR_FindReferenceFor3D(target);
-                    if (!landscape && (!object || !IsAcousticSpaceFormTypeAllowed(object, true)))
+                    if (!landscape && (!object || !BGSDecalManager_IsValidDecalImpact(object, true)))
                         continue;
                     Ref* owner = g_TES->TES_GetCellForPoint(position);
                     FUN_004a37b0 decal;
@@ -329,26 +331,29 @@ struct FUN_004b4cf0_shell
 struct FUN_004b4ab0_Class
 {
     __m128 value;
-    void hkVector4__setRotatedInverseDir(FUN_004b4cf0_shell* matrix, __m128* vector);
+    void hkVector4__setRotatedInverseDir(FUN_004b4cf0_shell* r, __m128* v);
 };
 
 // @fnv 0x004b4ad0
 // src: COMMUNITY 0x004b4ad0
-void FUN_004b4ab0_Class::hkVector4__setRotatedInverseDir(FUN_004b4cf0_shell* matrix, __m128* vector)
+// pdb: hkVector4::_setRotatedInverseDir | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: r, v
+// pdb locals: vxz, col0, col1, vv, col2, vy, vz, vyw, vx
+void FUN_004b4ab0_Class::hkVector4__setRotatedInverseDir(FUN_004b4cf0_shell* r, __m128* v)
 {
-    __m128 row0 = *matrix->FUN_004b4cf0(0);
-    __m128 row1 = *matrix->FUN_004b4cf0(1);
-    __m128 row2 = *matrix->FUN_004b4cf0(2);
+    __m128 row0 = *r->FUN_004b4cf0(0);
+    __m128 row1 = *r->FUN_004b4cf0(1);
+    __m128 row2 = *r->FUN_004b4cf0(2);
     __m128 low = _mm_unpacklo_ps(row0, row1);
     __m128 high = _mm_shuffle_ps(_mm_unpackhi_ps(row0, row1), row2, 0xe4);
     row0 = _mm_movelh_ps(low, row2);
     row1 = _mm_shuffle_ps(_mm_movehl_ps(row0, low), row2, 0xd4);
     row2 = high;
-    __m128 sx = _mm_shuffle_ps(*vector, *vector, 0);
+    __m128 sx = _mm_shuffle_ps(*v, *v, 0);
     __m128 x = _mm_mul_ps(row0, sx);
-    __m128 sy = _mm_shuffle_ps(*vector, *vector, 0x55);
+    __m128 sy = _mm_shuffle_ps(*v, *v, 0x55);
     __m128 y = _mm_mul_ps(row1, sy);
-    __m128 sz = _mm_shuffle_ps(*vector, *vector, 0xaa);
+    __m128 sz = _mm_shuffle_ps(*v, *v, 0xaa);
     __m128 z = _mm_mul_ps(row2, sz);
     value = _mm_add_ps(_mm_add_ps(x, y), z);
 }

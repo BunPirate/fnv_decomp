@@ -13,12 +13,13 @@
 extern "C" void __stdcall closesocket(int);
 // Keep the original out-of-line calls after consolidating the socket declarations.
 // @fnv 0x00da2dc0
+// pdb: hkBsdSocket::close | hkBsdSocket.obj | retail, vtable slot, high
 __declspec(noinline) void hkBsdSocket::CloseSocket()
 {
-    if (m_pSocket != -1)
+    if (m_socket != -1)
     {
-        closesocket(m_pSocket);
-        m_pSocket = -1;
+        closesocket(m_socket);
+        m_socket = -1;
     }
 }
 
@@ -44,7 +45,7 @@ void* __thiscall hkBsdSocket::InitWithParam(int param)
 {
     FUN_00d2b850();
     *(void**)this = &DAT_010d5030;
-    m_pSocket = param;
+    m_socket = param;
     if (param == -1)
         createSocket();
     return this;
@@ -54,7 +55,7 @@ void* __thiscall hkBsdSocket::InitWithParam(int param)
 // src: HAVOK_LIB 0x00da2db0
 bool* hkBsdSocket::isOk_00da2db0(bool* pOut)
 {
-    *pOut = (m_pSocket != -1);
+    *pOut = (m_socket != -1);
     return pOut;
 }
 
@@ -63,12 +64,14 @@ extern "C" int __cdecl FUN_00ee6d50(void);
 
 // @fnv 0x00da2e60
 // src: HAVOK_SRC 0x00da2e60
-int hkBsdSocket::write_00da2e60(int a, int b)
+// pdb: hkBsdSocket::write | hkBsdSocket.obj | retail, vtable slot, high
+// pdb params: buf, nbytes
+int hkBsdSocket::write_00da2e60(int buf, int nbytes)
 {
     int r;
-    if (m_pSocket != -1)
+    if (m_socket != -1)
     {
-        r = FUN_00ee6d5c(m_pSocket, a, b, 0);
+        r = FUN_00ee6d5c(m_socket, buf, nbytes, 0);
         if (r > 0 && r != -1)
             return r;
         if (FUN_00ee6d50() != 0x2733)
@@ -83,22 +86,25 @@ int __stdcall FUN_00ee6d4a(int, int, int);
 
 // @fnv 0x00da2de0
 // src: HAVOK_LIB 0x00da2de0
+// pdb: hkBsdSocket::createSocket | hkBsdSocket.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 __declspec(noinline) int hkBsdSocket::createSocket()
 {
     this->CloseSocket();
 
     int result = FUN_00ee6d4a(2, 1, 0);
     bool success = result == -1;
-    m_pSocket = result;
+    m_socket = result;
     return success;
 }
 
 extern "C" int __stdcall FUN_00ee6d7a(int, int, int, int);
 // @fnv 0x00da2f90
 // src: HAVOK_LIB 0x00da2f90
+// pdb: hkBsdSocket::~hkBsdSocket | hkBsdSocket.obj | debug, object-file run extension, low
 bool hkBsdSocket::asyncSelect(int aiArg1, int aiArg2, int c)
 {
-    return FUN_00ee6d7a(m_pSocket, aiArg1, aiArg2, ((c & 3) | ((c & 0xc) << 2))) != 0;
+    return FUN_00ee6d7a(m_socket, aiArg1, aiArg2, ((c & 3) | ((c & 0xc) << 2))) != 0;
 }
 
 // FUN_00ee6d9e: 6-byte 'jmp [IAT]' forwarder to WSOCK32 ordinal 21 (setsockopt, stdcall, 5 args).
@@ -116,11 +122,13 @@ extern "C" int __stdcall FUN_00ee6d56(int, void*, int, int);
 extern "C" int __cdecl FUN_00ee6d50(void);
 
 // @fnv 0x00da2e10
-int hkBsdSocket::Read(void* buf, int len)
+// pdb: hkBsdSocket::read | hkBsdSocket.obj | retail, vtable slot, high
+// pdb params: buf, nbytes
+int hkBsdSocket::Read(void* buf, int nbytes)
 {
-    if (m_pSocket != -1)
+    if (m_socket != -1)
     {
-        int res = FUN_00ee6d56(m_pSocket, buf, len, 0);
+        int res = FUN_00ee6d56(m_socket, buf, nbytes, 0);
         if (res > 0 && res != -1)
         {
             return res;
@@ -136,7 +144,7 @@ int hkBsdSocket::Read(void* buf, int len)
 // InitBuffer initializes the array; the finishing constructor avoids redundant stores.
 inline hkStringBuf::hkStringBuf() throw() : m_string(FinishingFlag())
 {
-    InitBuffer();
+    hkStringBuf_ctor();
 }
 
 // FUN_00cbbd40 performs the complete array cleanup in this unit.
@@ -146,18 +154,19 @@ template <> __forceinline hkArray<char, hkContainerTempAllocator>::~hkArray()
 
 inline hkStringBuf::~hkStringBuf() throw()
 {
-    UpdateFields_00cbbd40();
+    Writer_MemberWriteFlags_dtor();
 }
 
-inline hkStringBuf& hkStringBuf::operator=(const char* pcString)
+inline hkStringBuf& hkStringBuf::operator=(const char* s)
 {
-    FUN_00d61c10(pcString);
+    FUN_00d61c10(s);
     return *this;
 }
 
 // @fnv 0x00cbbd40
-// src: GUESS 0x00cbbd40 (confidence: low)
-__declspec(noinline) void hkStringBuf::UpdateFields_00cbbd40() throw()
+// src: XBOX_RETAIL_PDB 0x00cbbd40
+// pdb: Writer::MemberWriteFlags::~MemberWriteFlags | hkBinaryTagfileWriter.obj | retail, call graph, high
+__declspec(noinline) void hkStringBuf::Writer_MemberWriteFlags_dtor() throw()
 {
     hkMemoryRouter* pHolder = (&hkMemoryRouter::getInstance());
     hkMemoryAllocator* r = reinterpret_cast<hkMemoryAllocator*>(pHolder->m_temp);
@@ -173,6 +182,8 @@ extern "C" int __stdcall FUN_00ee6d80(unsigned int s, long lCmd, unsigned long* 
 
 // Sets the socket to non-blocking mode via FUN_00ee6d80 and returns whether the call succeeded.
 // @fnv 0x00da2fc0
+// pdb: hkBsdSocket::hkBsdSocket | hkBsdSocket.obj | debug, object-file run extension, low
+// pdb params: s
 bool hkBsdSocket::SetNonBlocking(bool blocking)
 {
     bool* pBlocking = &blocking;
@@ -180,7 +191,7 @@ bool hkBsdSocket::SetNonBlocking(bool blocking)
 
     ulNonBlocking = (*pBlocking == 0);
 
-    int result = FUN_00ee6d80(m_pSocket, 0x8004667e, const_cast<unsigned long*>(&ulNonBlocking));
+    int result = FUN_00ee6d80(m_socket, 0x8004667e, const_cast<unsigned long*>(&ulNonBlocking));
 
     return !!result;
 }
@@ -194,7 +205,10 @@ extern hkError* DAT_01268360;
 
 // When the flag is clear, calls FUN_00ee6d86 with 0x202, reports failure, and sets the flag.
 // @fnv 0x00da2ff0
-void InitWinsock()
+// src: XBOX_RETAIL_PDB 0x00da2ff0
+// pdb: hkBsdNetworkInit | hkBsdSocket.obj | retail, string-set bridge, high
+// pdb locals: xnsp, wsaData, assertBuf, ostr
+void hkBsdNetworkInit()
 {
     if (DAT_01269acc == 0)
     {
@@ -246,30 +260,33 @@ struct HostEntry
 // Resolves the host to an IPv4 address, ensures a socket exists, and calls the connection routine with the address and port.
 // @fnv 0x00da2ec0
 // src: HAVOK_LIB 0x00da2ec0
-int hkBsdSocket::connect(const char* host, int port)
+// pdb: hkBsdSocket::connect | hkBsdSocket.obj | retail, upstream name already matches, high
+// pdb params: servername, portNumber
+// pdb locals: server, assertBuf, ostr
+int hkBsdSocket::connect(const char* servername, int portNumber)
 {
     // Word storage preserves the original stack protection with the shared sin_zero character array.
     unsigned int targetStorage[sizeof(sockaddr_in) / sizeof(unsigned int)];
     sockaddr_in& target = *reinterpret_cast<sockaddr_in*>(targetStorage);
     hkString_memSet(&target, 0, sizeof(target));
     target.sin_family = 2;
-    target.sin_port = (unsigned short)FUN_00ee6d74(port);
+    target.sin_port = (unsigned short)FUN_00ee6d74(portNumber);
 
-    if (*hkIsDigit(host[0], (bool*)&port))
+    if (*hkIsDigit(servername[0], (bool*)&portNumber))
     {
-        target.sin_addr.S_un.S_addr = FUN_00ee6d6e(host);
+        target.sin_addr.S_un.S_addr = FUN_00ee6d6e(servername);
     }
     else
     {
-        HostEntry* pHostEntry = (HostEntry*)FUN_00ee6d68(host);
+        HostEntry* pHostEntry = (HostEntry*)FUN_00ee6d68(servername);
         if (!pHostEntry)
             return 1;
         hkString_memCpy(&target.sin_addr.S_un.S_addr, pHostEntry->addresses[0], pHostEntry->address_length);
     }
 
-    if (m_pSocket == -1 && createSocket())
+    if (m_socket == -1 && createSocket())
         return 1;
-    int iResult = FUN_00ee6d62(m_pSocket, &target, sizeof(target));
+    int iResult = FUN_00ee6d62(m_socket, &target, sizeof(target));
     if (iResult != -1)
         goto success;
     if (FUN_00ee6d50() == 0x2733)
@@ -296,7 +313,10 @@ typedef hkOstream& (__thiscall *AppendSocketHostMethod)(hkOstream*, const hkStri
 // Binds the socket to the given port, sets it to listen with backlog 2, and logs the host name and port.
 // @fnv 0x00da30d0
 // src: HAVOK_LIB 0x00da30d0
-int hkBsdSocket::listen_00da30d0(int iPort) throw()
+// pdb: hkBsdSocket::listen | hkBsdSocket.obj | retail, unique string literal, high
+// pdb params: port
+// pdb locals: xnHostAddr, local, addrString, option, assertBuf, ostr, reportBuf
+int hkBsdSocket::listen_00da30d0(int port) throw()
 {
     if (createSocket() != 0)
         return 1;
@@ -306,17 +326,17 @@ int hkBsdSocket::listen_00da30d0(int iPort) throw()
     sockaddr_in& kName = *reinterpret_cast<sockaddr_in*>(nameStorage);
     kName.sin_family = 2;
     kName.sin_addr.S_un.S_addr = 0;
-    kName.sin_port = FUN_00ee6d74((unsigned short)iPort);
+    kName.sin_port = FUN_00ee6d74((unsigned short)port);
 
     int iOn = 1;
-    setsockopt_0(m_pSocket, 0xffff, 4, (const void*)&iOn, sizeof(int));
+    setsockopt_0(m_socket, 0xffff, 4, (const void*)&iOn, sizeof(int));
 
-    if (bind_0(m_pSocket, &kName, sizeof(kName)) == -1)
+    if (bind_0(m_socket, &kName, sizeof(kName)) == -1)
     {
         CloseSocket();
         return 1;
     }
-    if (listen_0(m_pSocket, 2) == -1)
+    if (listen_0(m_socket, 2) == -1)
     {
         CloseSocket();
         return 1;
@@ -330,7 +350,7 @@ int hkBsdSocket::listen_00da30d0(int iPort) throw()
         unsigned int auiReportBuf[128];
         hkOstream kReportStream(auiReportBuf, sizeof(auiReportBuf));
         reinterpret_cast<AppendSocketHostMethod>(AppendSocketHost)(
-            &kReportStream.ProcessAndReturnValue_00cc01c0(str_010d505c), kHost).ProcessAndReturnValue_00cc01c0(str_010d5070).WriteInt(iPort);
+            &kReportStream.ProcessAndReturnValue_00cc01c0(str_010d505c), kHost).ProcessAndReturnValue_00cc01c0(str_010d5070).WriteInt(port);
         DAT_01268360->message(0, -1, (const char*)auiReportBuf, str_010d4fdc, 364);
     }
     return 0;
@@ -338,13 +358,14 @@ int hkBsdSocket::listen_00da30d0(int iPort) throw()
 
 // Scalar deleting wrapper: ECX holds self; the unused EDX preserves the thiscall stack arguments.
 // @fnv 0x00da33d0
+// pdb: hkBsdSocket::`scalar deleting destructor' | hkBsdSocket.obj | retail, vtable slot, high
 hkBsdSocket* __fastcall DestroySocket(hkBsdSocket* self, void*, bool flag)
 {
     self->Destroy();
     if (flag & 1)
     {
         hkMemoryRouter* router = (&hkMemoryRouter::getInstance());
-        reinterpret_cast<hkMemoryAllocator*>(router->m_heap)->blockFree(self, self->m_usMemSizeAndFlags);
+        reinterpret_cast<hkMemoryAllocator*>(router->m_heap)->blockFree(self, self->m_memSizeAndFlags);
     }
     return self;
 }

@@ -4,6 +4,8 @@
 #include "sky_Dependencies.h"
 
 // @fnv 0x0046dd00
+// pdb: Sky::GetInstance | TESDataHandler.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 Sky* Sky::GetInstance()
 {
     if (!pInstance)
@@ -15,11 +17,12 @@ Sky* Sky::GetInstance()
 }
 
 // @fnv 0x0059e950
+// pdb: Sky::IsRaining | TESConditionFunctions.obj | debug, upstream name already matches, high
 bool Sky::IsRaining()
 {
-    return (m_pRegionWeather && m_pRegionWeather->IsRainy() &&
-            m_fWeatherBlend > m_pRegionWeather->GetWeatherData(6, 0.999f, 0.0f)) ||
-           (m_pPreviousWeather && m_pPreviousWeather->IsRainy() &&
-            m_fWeatherBlend < m_pPreviousWeather->GetWeatherData(7, 1.0f, 0.001f));
+    return (pCurrentWeather && pCurrentWeather->IsRainy() &&
+            fCurrentWeatherPct > pCurrentWeather->GetWeatherData(6, 0.999f, 0.0f)) ||
+           (pLastWeather && pLastWeather->IsRainy() &&
+            fCurrentWeatherPct < pLastWeather->GetWeatherData(7, 1.0f, 0.001f));
 }
 #endif

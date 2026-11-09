@@ -35,7 +35,7 @@ public:
     virtual void InitItem();
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     bool GetHasExplosion();
     bool GetFlag(unsigned int flag) const;
     bool GetHasExplosionDetonates() const;
@@ -53,7 +53,7 @@ public:
     bool GetSupersonic();
     bool GetCanPickup();
     bool GetHitScan() const;
-    float GetGravity_00966980();
+    float GetGravity();
     float FUN_009a7c40();
     BGSProjectile* _FNV_GetObjectReference();
     int _FNV_GetFormType();

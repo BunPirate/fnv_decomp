@@ -6,6 +6,7 @@
 
 class Sky;
 
+// pdb: class Moon, size 0x7c, bases: SkyObject, 14 members
 class Moon : public SkyObject
 {
 public:
@@ -16,28 +17,28 @@ public:
         US_INITIALIZE = 2
     };
 
-    Moon(const char* name, float fadeStart, float fadeEnd, float shadowEarlyFade,
-         float speed, float zOffset, unsigned int size);
+    Moon(const char* apMoonName, float afAngleFadeStart, float afAngleFadeEnd, float afAngleShadowEarlyFade,
+         float afSpeed, float afZOffset, unsigned int aiSize);
     virtual ~Moon();
-    virtual void Initialize(NiNode* root, const char* name);
+    virtual void Initialize(NiNode* apSkyRoot, const char* apName);
     virtual void Update(Sky* sky, float elapsed);
 
     static bool IsMoonVisible(const Sky* sky);
     float GetMoonVisibility();
     float GetMoonShadowVisibility();
 
-    NiPointer<NiNode> m_pMoonNode;
-    NiPointer<NiNode> m_pMoonShadowNode;
-    NiPointer<NiTriShape> m_pMoonShape;
-    NiPointer<NiTriShape> m_pMoonShadowShape;
-    BSStringT<char> m_kMoonTexturePaths[8];
-    float m_fFadeStartAngle;
-    float m_fFadeEndAngle;
-    float m_fFadeAngleRange;
+    NiPointer<NiNode> spMoonNode;
+    NiPointer<NiNode> spShadowNode;
+    NiPointer<NiTriShape> spMoonMesh;
+    NiPointer<NiTriShape> spShadowMesh;
+    BSStringT<char> strTextures[8];
+    float fAngleFadeStart;
+    float fAngleFadeEnd;
+    float fAngleShadowEarlyFade;
     float fSpeed;
-    float m_fGlyphVerticalOffset;
+    float fZOffset;
     unsigned int iSize;
-    UpdateStatus m_eUpdateStatus;
+    UpdateStatus eUpdateMoonTexture;
     float fPos;
-    float m_fValue;
+    float fLastPosUpdate;
 };

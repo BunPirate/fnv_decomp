@@ -26,7 +26,7 @@ extern "C"
 
 // Havok's inline bodies (hkVector4.inl) for the forms the shared header only declares; the original inlines them.
 __forceinline hkSimdReal::hkSimdReal(const LocalM128& x) { m_vValue = x; }
-__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& a) { m_vComponents = _mm_mul_ps(r.m_vValue, a.m_vComponents); }
+__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x) { m_vComponents = _mm_mul_ps(r.m_vValue, x.m_vComponents); }
 __forceinline void hkVector4::addMul4(const hkSimdReal& r, const hkVector4& a) { m_vComponents = _mm_add_ps(m_vComponents, _mm_mul_ps(r.m_vValue, a.m_vComponents)); }
 __forceinline hkSimdReal hkVector4::getSimdAt0() const { return _mm_shuffle_ps(m_vComponents, m_vComponents, 0); }
 
@@ -53,6 +53,8 @@ struct D892State
 
 // @fnv 0x00d892f0
 // src: GUESS 0x00d892f0 (confidence: low)
+// pdb: hkSolver::applyAngularImpulse0 | hkpSolver.obj | debug, object-file run extension, low
+// pdb params: imp, jac, mA, mB, sr
 static __declspec(noinline) void hkVector4_UpdateState_00d892f0(const D892Params* params, bool update, D892State* state,
                                               const hkVector4* vel, const hkVector4* damping)
 {

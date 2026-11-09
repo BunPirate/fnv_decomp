@@ -20,12 +20,15 @@ void __fastcall RemoveLightEffect(LightEffect* effect);
 
 // @fnv 0x0080ee50
 // src: XBOX_PDB 0x0080ee50
-void LightEffect_AttachBestLightEffect(MagicTarget* target)
+// pdb: LightEffect::AttachBestLightEffect | LightEffect.obj | retail, upstream name already matches, high
+// pdb params: apTarget
+// pdb locals: plist, pbestLightEffect, peffect, plightEffect
+void LightEffect_AttachBestLightEffect(MagicTarget* apTarget)
 {
-    if (!target)
+    if (!apTarget)
         return;
     LightEffect* strongest = 0;
-    BSSimpleList<ActiveEffect*>* node = target->GetActiveEffectList();
+    BSSimpleList<ActiveEffect*>* node = apTarget->GetActiveEffectList();
     while (node && !node->IsEmpty())
     {
         ActiveEffect* effect = node->GetItem();
@@ -46,5 +49,5 @@ void LightEffect_AttachBestLightEffect(MagicTarget* target)
         node = node->GetNext();
     }
     if (strongest)
-        strongest->AttachLightEffect();
+        strongest->AttachLight();
 }

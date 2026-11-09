@@ -48,16 +48,16 @@ public:
     TESObjectBOOK& operator=(const TESObjectBOOK& other);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Destroy();
-    void CopyBookData(TESForm* source);
+    void CopyBookData(TESForm* apCopy);
     BookData* Sky_GetSunLightSpecularColor();
-    bool Compare_00514f50(TESForm* other);
+    bool Compare_00514f50(TESForm* apCompare);
     unsigned short GetSaveSize_00515220(unsigned int flags);
     void SaveGame_00515290(unsigned int flags);
     void LoadGame_005152e0(unsigned int flags, unsigned int currentFlags);
-    void SaveGame_00515340(BGSSaveFormBuffer* buffer);
-    void LoadGame_005153a0(BGSLoadFormBuffer* buffer);
+    void SaveGame_00515340(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadGame_005153a0(BGSLoadFormBuffer* apLoadGameBuffer);
     bool TESObjectBOOK_GetScroll();
 
     BookData Data;

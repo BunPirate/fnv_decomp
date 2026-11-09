@@ -20,7 +20,7 @@ class InterfaceInterfaceView
     static float GetInterfaceFloat();
     static Tile* GetPrimaryInterfaceTile();
     static Tile* GetSecondaryInterfaceTile();
-    static NiNode* GetInterfaceNode();
+    static NiNode* Interface_GetInterfaceRoot();
     static bool IsAnyMenuOpen();
 
     static bool IsWorldSpaceEnabled(TESWorldSpace* apSpace);

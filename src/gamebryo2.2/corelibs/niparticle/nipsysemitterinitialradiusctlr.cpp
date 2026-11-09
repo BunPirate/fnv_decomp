@@ -14,6 +14,7 @@ void* __cdecl NiPSysEmitterInitialRadiusCtlr_GetRTTI()
     return &g_01202748;
 }
 
+// pdb: class NiPSysEmitterInitialRadiusCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysEmitterInitialRadiusCtlr : NiPSysModifierFloatCtlr
 {
     NiPSysEmitterInitialRadiusCtlr() throw()
@@ -29,14 +30,14 @@ struct NiPSysEmitterInitialRadiusCtlr : NiPSysModifierFloatCtlr
 // src: XBOX_PDB 0x00c2b760
 void NiPSysEmitterInitialRadiusCtlr::GetTargetFloatValue_00c2b760(float& fOut) const
 {
-    fOut = *(float*)((const char*)m_pkTargetModifier + 0x40);
+    fOut = *(float*)((const char*)m_pkModifier + 0x40);
 }
 
 // @fnv 0x00c2b770
 // src: XBOX_PDB 0x00c2b770
 void __thiscall NiPSysEmitterInitialRadiusCtlr::SetTargetFloatValue_00c2b770(float value)
 {
-    float* p = reinterpret_cast<float*>(m_pkTargetModifier);
+    float* p = reinterpret_cast<float*>(m_pkModifier);
     p[0x10] = value;
 }
 
@@ -45,6 +46,8 @@ char* __cdecl _FUN_00a7d330(const char*);
 // Appends the string returned by _FUN_00a7d330(g_01202748) to pkStrings, growing it via SetSize when full and storing it with SetAt.
 // @fnv 0x00c2b820
 // src: XBOX_PDB 0x00c2b820
+// pdb: NiPSysEmitterInitialRadiusCtlr::GetViewerStrings | NiPSysEmitterInitialRadiusCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysEmitterInitialRadiusCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);

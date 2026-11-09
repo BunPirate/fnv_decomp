@@ -8,65 +8,74 @@
 #include "../../../include/ActorValueOwner.h" // the player's ActorValueOwner at +0xa4 (slots 2 and 7)
 
 // @fnv 0x00701740
+// pdb: HotKeysWheel::GetVisible | HotKeysWheel.obj | debug, object-file gap fill, medium
 bool HotkeyWheelDisplay::GetVisible()
 {
-    return m_pWheelTile->ContainsTrait(0xFA3);
+    return pWheel->ContainsTrait(0xFA3);
 }
 
 // @fnv 0x00701760
-void HotkeyWheelDisplay::SetVisible(bool visible)
+// pdb: HotKeysWheel::SetVisible | HotKeysWheel.obj | retail, call graph, high
+// pdb params: abVisible
+void HotkeyWheelDisplay::SetVisible(bool abVisible)
 {
-    if (visible)
+    if (abVisible)
     {
         RefreshHotkeyWheel();
-        m_pWheelTile->Set(0xFA3, 1);
+        pWheel->Set(0xFA3, 1);
     }
     else
-        m_pWheelTile->Set(0xFA3, 0);
+        pWheel->Set(0xFA3, 0);
 }
 
 // @fnv 0x00701610
-void HotkeyWheelDisplay::Initialize(Tile* parent)
+// pdb: HotKeysWheel::Initialize | HotKeysWheel.obj | retail, unique string literal, high
+// pdb params: apWheel
+// pdb locals: strtemp, ihotkeyCt
+void HotkeyWheelDisplay::Initialize(Tile* apWheel)
 {
     BSStringT<char> itemName;
-    if (!parent)
+    if (!apWheel)
     {
         Warning(DAT_0106eaa0);
         return;
     }
 
-    m_pWheelTile = parent;
+    pWheel = apWheel;
     for (int i = 0; i < 8; ++i)
     {
         itemName.PrintfString(DAT_0106ea94, i);
-        m_ppHotkeySlotTiles[i] = m_pWheelTile->GetNamedChild(itemName.String());
+        pHotkeyTilesA[i] = pWheel->GetNamedChild(itemName.String());
     }
 
-    m_iTileValueIdAtOffset2C = GetTileValueID(DAT_0106ea84, -1);
-    m_iTileValueIdAtOffset30 = GetTileValueID(DAT_0106ea74, -1);
-    m_bHasHotkeySelection = false;
-    m_pWheelTile->Set(m_iTileValueIdAtOffset2C, -1);
-    m_pWheelTile->Set(m_iTileValueIdAtOffset30, g_emptyTopicInfoPrompt, true);
+    iUT_HighlightedHotkey = GetTileValueID(DAT_0106ea84, -1);
+    iUT_HighlightedText = GetTileValueID(DAT_0106ea74, -1);
+    bSelectingHotkey = false;
+    pWheel->Set(iUT_HighlightedHotkey, -1);
+    pWheel->Set(iUT_HighlightedText, g_emptyTopicInfoPrompt, true);
 }
 
 // @fnv 0x00a24660
 // src: XBOX_PDB 0x00a24660
-int InputManager::Controls_GetUserAction(int key, int state)
+// pdb: Controls::GetUserAction | XControls.obj | retail, upstream name already matches, high
+// pdb params: eAction, toggleFlags
+// pdb locals: iRetVal, uistateMask, MotionVec, imotion, fMotionMagnitude, fForward, fLateral
+int InputManager::Controls_GetUserAction(int eAction, int toggleFlags)
 {
-    if (key < 28)
+    if (eAction < 28)
     {
         int result = 0;
         if (DAT_011f35c8)
-            result = Controls_GetButtonState(3, controller[key], state);
+            result = Controls_GetButtonState(3, controller[eAction], toggleFlags);
         else
         {
             for (int device = 0; device < 2; ++device)
             {
-                if (keyboard[device][key] != 255)
-                    result += Controls_GetButtonState(device, keyboard[device][key], state);
+                if (keyboard[device][eAction] != 255)
+                    result += Controls_GetButtonState(device, keyboard[device][eAction], toggleFlags);
             }
         }
-        if (key == 14 && result > 0)
+        if (eAction == 14 && result > 0)
         {
             bool flagWasSet;
             if (flags & HotkeySuppressedMask())
@@ -79,7 +88,7 @@ int InputManager::Controls_GetUserAction(int key, int state)
             if (flagWasSet)
             {
                 result = 0;
-                if (state == 0 || state == 1)
+                if (toggleFlags == 0 || toggleFlags == 1)
                     flags |= HotkeySuppressedMask();
             }
         }
@@ -87,7 +96,7 @@ int InputManager::Controls_GetUserAction(int key, int state)
     }
     if (!DAT_011f35c8)
     {
-        switch (key)
+        switch (eAction)
         {
         case 28:
             if (HandleHotkeyInput(1, 1) || Controls_GetControllerButton(6, 1))
@@ -100,7 +109,7 @@ int InputManager::Controls_GetUserAction(int key, int state)
             return HandleHotkeyInput(183, 1);
         }
     }
-    else if (key == 28)
+    else if (eAction == 28)
     {
         if (Controls_GetControllerButton(6, 1))
             return 1;
@@ -120,22 +129,24 @@ struct S_00701e00_Class
     int unk2c;
     int unk30;
 
-    void HotKeysWheel_HighlightHotkey(int index);
+    void HotKeysWheel_HighlightHotkey(int aiIndex);
 };
 
 // Updates the owner with unk2c and a per-index item pointer (or a default), then stores index in unk28 and sets unk24 to 1 when index is non-negative.
 // @fnv 0x00701e00
 // src: XBOX_PDB 0x00701e00
-void S_00701e00_Class::HotKeysWheel_HighlightHotkey(int index)
+// pdb: HotKeysWheel::HighlightHotkey | HotKeysWheel.obj | retail, upstream name already matches, high
+// pdb params: aiIndex
+void S_00701e00_Class::HotKeysWheel_HighlightHotkey(int aiIndex)
 {
-    unk00->FUN_00700320(unk2c, index);
+    unk00->FUN_00700320(unk2c, aiIndex);
 
-    unk00->Tile_Set_00a01350(unk30, (index >= 0 && index != 1) ? unk04[index]->Tile_GetString(0xfc4) : &DAT_01011584,
+    unk00->Tile_Set_00a01350(unk30, (aiIndex >= 0 && aiIndex != 1) ? unk04[aiIndex]->Tile_GetString(0xfc4) : &DAT_01011584,
                         1);
 
-    if (index >= 0)
+    if (aiIndex >= 0)
     {
-        unk28 = index;
+        unk28 = aiIndex;
         unk24 = 1;
     }
 }
@@ -146,6 +157,7 @@ int __cdecl HotkeyWheelProbeB(int, int);
 // Returns 1 if HotkeyWheelProbeA succeeds and any of HotkeyWheelProbeB(2/1/4/3, 0) is not -1, otherwise 0.
 // @fnv 0x00702140
 // src: XBOX_PDB 0x00702140
+// pdb: HotKeysWheel::IsDPadPressed | HotKeysWheel.obj | retail, upstream name already matches, high
 unsigned char HotKeysWheel_IsDPadPressed()
 {
     int result;
@@ -177,7 +189,7 @@ struct Entry
 };
 struct Inventory
 {
-    Entry* FindEntryWithExtraListType(int);
+    Entry* InventoryChanges_GetHotKeyItem(int);
 };
 struct Process
 {
@@ -798,10 +810,12 @@ struct Wheel
 };
 // @fnv 0x00701e80
 // src: XBOX_PDB 0x00701e80
+// pdb: HotKeysWheel::UseHotkeyItem | HotKeysWheel.obj | retail, upstream name already matches, high
+// pdb locals: pinventory, pitem, bisThrownWeap, pextra
 void Wheel::HotKeysWheel_UseHotkeyItem()
 {
     Inventory* inv3 = FUN_004bf220(DAT_011dea3c);
-    Entry* entry5 = inv3 ? inv3->FindEntryWithExtraListType(*(int*)((char*)this + 0x28)) : 0;
+    Entry* entry5 = inv3 ? inv3->InventoryChanges_GetHotKeyItem(*(int*)((char*)this + 0x28)) : 0;
     void* extra = entry5 && entry5->Modelloader_GetReferencedThis() ? *entry5->Modelloader_GetReferencedThis()->FUN_006815c0() : 0;
     bool ammo4 =
         (entry5 && entry5->FUN_0044ddc0()->FUN_00401170() == 0x28 && entry5->FUN_0044ddc0()->TESObjectWEAP_IsThrownWeapon()) ? 1 : 0;
@@ -848,7 +862,7 @@ extern TESObjectREFR* _g_thePlayer;
 
 #include "../../../include/BGSEquipType.h"
 
-const char* GetMenuIconName(int);
+const char* GetEquipTypeIconFilename(int);
 int Tile_TextToTrait(const char*);
 
 static const char str_InterfaceIcons[] = "Interface\\Icons\\";
@@ -864,6 +878,8 @@ struct HotkeyWheelUpdate : HotkeyWheelDisplay
 // Updates hotkey slot tiles with item icons, assigned state, and count labels from the player's inventory changes.
 // @fnv 0x007017b0
 // src: XBOX_PDB 0x007017b0
+// pdb: HotKeysWheel::UpdateHotkeyList | HotKeysWheel.obj | retail, string-set bridge, high
+// pdb locals: pinventory, strtemp, ihotkeyCt, pcurrHotkeyedItem
 void HotkeyWheelUpdate::HotKeysWheel_UpdateHotkeyList()
 {
     InventoryChanges* invChanges2 = InventoryChanges::GetOrAddInventoryChanges(_g_thePlayer);
@@ -879,9 +895,9 @@ void HotkeyWheelUpdate::HotKeysWheel_UpdateHotkeyList()
             if (item3)
             {
                 str3 = str_InterfaceIcons;
-                str3 += GetMenuIconName(BGSEquipType::GetEquipType(item3->GetObject()));
-                this->m_ppHotkeySlotTiles[i]->Set(Tile_TextToTrait(str_HotKeyIcon), str3.String(), true);
-                this->m_ppHotkeySlotTiles[i]->Set(Tile_TextToTrait(str_HotKeyAssigned), 1);
+                str3 += GetEquipTypeIconFilename(BGSEquipType::GetEquipType(item3->GetObject()));
+                this->pHotkeyTilesA[i]->Set(Tile_TextToTrait(str_HotKeyIcon), str3.String(), true);
+                this->pHotkeyTilesA[i]->Set(Tile_TextToTrait(str_HotKeyAssigned), 1);
                 if (item3->FUN_00726070() > 1)
                 {
                     str3.PrintfString(str_FormatCount, item3->GetTargetFullName(), item3->FUN_00726070());
@@ -890,12 +906,12 @@ void HotkeyWheelUpdate::HotKeysWheel_UpdateHotkeyList()
                 {
                     str3 = item3->GetTargetFullName();
                 }
-                this->m_ppHotkeySlotTiles[i]->Set(0xfc4, str3.String(), true);
+                this->pHotkeyTilesA[i]->Set(0xfc4, str3.String(), true);
             }
             else
             {
-                this->m_ppHotkeySlotTiles[i]->Set(Tile_TextToTrait(str_HotKeyAssigned), 0);
-                this->m_ppHotkeySlotTiles[i]->Set(0xfc4, "", true);
+                this->pHotkeyTilesA[i]->Set(Tile_TextToTrait(str_HotKeyAssigned), 0);
+                this->pHotkeyTilesA[i]->Set(0xfc4, "", true);
             }
         }
         for (int j_ = 0; j_ < 8; ++j_)
@@ -915,7 +931,7 @@ struct TimeGlobal
 
 struct HWShell : HotkeyWheelDisplay
 {
-    int HotKeysWheel_MoveHighlight(int index);
+    int HotKeysWheel_MoveHighlight(int aiNewIndex);
 };
 
 bool __cdecl InterfaceManager_Has360Controller();
@@ -928,20 +944,23 @@ extern "C" unsigned int DAT_011d88f4;
 // Determines the active hotkey wheel slot from probe states or a direct index, updates the stored selection and timestamp, and triggers a tile change when needed.
 // @fnv 0x00701bd0
 // src: XBOX_PDB 0x00701bd0
-int HWShell::HotKeysWheel_MoveHighlight(int index)
+// pdb: HotKeysWheel::MoveHighlight | HotKeysWheel.obj | retail, upstream name already matches, high
+// pdb params: aiNewIndex
+// pdb locals: iresult, icurrHighlightIndex, bup, bright, bdown, ileftState, bleft, idownState, irightState, iupState
+int HWShell::HotKeysWheel_MoveHighlight(int aiNewIndex)
 {
     int result5 = -1;
-    if (index == 1)
+    if (aiNewIndex == 1)
         return -1;
     if (!InterfaceManager_Has360Controller())
     {
-        if (index >= 0)
-            result5 = index;
+        if (aiNewIndex >= 0)
+            result5 = aiNewIndex;
         ((S_00701e00_Class*)this)->HotKeysWheel_HighlightHotkey(result5);
     }
     else
     {
-        if (index < 0)
+        if (aiNewIndex < 0)
         {
             int vAB = HotkeyWheelProbeB(2, 0);
             int vB3 = HotkeyWheelProbeB(1, 0);
@@ -972,7 +991,7 @@ int HWShell::HotKeysWheel_MoveHighlight(int index)
             else if (bD_)
                 result5 = 4;
         }
-        int cur = (int)this->m_pWheelTile->FUN_00a011b0(this->m_iTileValueIdAtOffset2C);
+        int cur = (int)this->pWheel->FUN_00a011b0(this->iUT_HighlightedHotkey);
         if (result5 != cur)
         {
             if (result5 != DAT_0119f33c)

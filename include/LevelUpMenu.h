@@ -59,6 +59,7 @@ template <class T> struct LevelUpOwnedList
     ~LevelUpOwnedList();
 };
 
+// pdb: class LevelUpMenu, size 0xcc, bases: Menu, 7 members
 class LevelUpMenu : public Menu
 {
 public:
@@ -103,7 +104,7 @@ public:
             int unk60;
         };
     };
-    Member64 unk64;
-    Member94 unk94;
-    LevelUpOwnedList<void*> unkC4;
+    Member64 lbSkillsList;
+    Member94 lbPerksList;
+    LevelUpOwnedList<void*> AvailablePerks;
 };

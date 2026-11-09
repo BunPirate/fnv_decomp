@@ -10,6 +10,7 @@ class hkOstream;
 // temp, heap, debug, solver and global allocators and m_userData). getInstance is 0x00c85750 (Xbox PDB), the
 // constructor 0x00c85770. The accessors are inline in the class as in Havok.
 // src: HAVOK_SRC (class name, member names, layout and method list; getInstance at 0x00c85750 per src: XBOX_PDB)
+// pdb: class hkMemoryRouter, size 0x24, 7 members
 class hkMemoryRouter
 {
 public:

@@ -18,10 +18,11 @@ class Block3;
 class Parent;
 class Obj;
 
+// pdb: class BSTempEffectParticle, size 0x90 (here 0x74), bases: BSTempEffect, 7 members
 class BSTempEffectParticle : public BSTempEffect
 {
   public:
-    BSTempEffectParticle(TESObjectCELL* cell, float radius, const char* filename, void* node);
+    BSTempEffectParticle(TESObjectCELL* apCell, float afLifetime, const char* apParticleFilename, void* apFollowObject);
     virtual ~BSTempEffectParticle();
     virtual const NiRTTI* GetRTTI() const;
     virtual void Detach();
@@ -42,23 +43,23 @@ class BSTempEffectParticle : public BSTempEffect
     ParticleSource* GetSource();
     void SetParentCell(TESObjectCELL* apCell);
     bool CheckShouldSave();
-    void PlaySequence(const char* name);
+    void PlaySequence(const char* apcSequenceName);
     void Detach_006896c0();
-    bool UpdateTransform(float time);
+    bool UpdateTransform(float afTimeDelta);
     bool LoadFromSave();
 
     void StopSounds();
-    void InitLoopSounds();
+    void BSTempEffectParticle_StartSounds();
     void PlayImpactDataSounds(void* pValue);
     void BSTempEffectParticle_ResetGravity(void* searchArg);
     void AttachModel(NiNode* parent, NiMatrix3 rotation, NiPoint3 position, float scale, unsigned int flags);
     void AttachModel(Parent* parent, NiMatrix3 rotation, NiPoint3 position, float scale, unsigned int flags);
     void AttachModel(void* parent, Matrix rotation, NiPoint3 position, float scale, int flags);
     void AttachModel(void* parent, Block9 rotation, Block3 position, float scale, unsigned int flags);
-    float ComputeTraversalValue(TraversalItem* entry);
+    float ComputeTraversalValue(TraversalItem* apAVObject);
     void CollectUniqueChildValues(NiNode* node, ArrQ* values, int* count);
-    float Calc(Obj* object);
-    void Setup(Obj* object);
+    float Calc(Obj* apAVObject);
+    void Setup(Obj* apObject);
 
     GO m_flt;
     const char* pFilename;

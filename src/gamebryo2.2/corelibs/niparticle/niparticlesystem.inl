@@ -21,8 +21,9 @@ inline NiPSysModifier* NiParticleFindModifier(NiParticleSystem* owner, const NiF
     return 0;
 }
 // @fnv 0x00C31400
+// pdb: NiPSysModifierCtlr::GetModifierPointerFromName | NiPSysModifierCtlr.obj | debug, call graph, medium
 void __fastcall FindParticleModifier(NiPSysModifierCtlr* controller, void*)
 {
-    controller->m_pkTargetModifier = NiParticleFindModifier(
-        static_cast<NiParticleSystem*>(controller->m_pkTarget), controller->m_kTargetModifierName);
+    controller->m_pkModifier = NiParticleFindModifier(
+        static_cast<NiParticleSystem*>(controller->m_pkTarget), controller->m_kModifierName);
 }

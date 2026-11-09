@@ -32,15 +32,18 @@
 
 // @fnv 0x009ac170
 // src: COMMUNITY 0x009ac170
+// pdb: Explosion::SetActorCause | Explosion.obj | debug, object-file gap fill, low
+// pdb params: apActorCause
 void __thiscall Explosion::SetActorCause_009ac170(ActorCause* apActorCause)
 {
-    m_pActorCause = apActorCause;
+    spActorCause = apActorCause;
 }
 
 void __cdecl _Deallocate(void*);
 
 // Runs the Explosion destructor and, when flags has bit 0 set, deallocates this; returns this.
 // @fnv 0x009ac1d0
+// pdb: Explosion::`scalar deleting destructor' | Explosion.obj | retail, vtable slot, high
 void* Explosion::Destroy(unsigned int flags)
 {
     Explosion::~Explosion();
@@ -71,6 +74,7 @@ struct FUN_009afc30_shell
 
 // @fnv 0x009afc30
 // src: XBOX_PDB 0x009afc30
+// pdb: hkpFixedBufferCdPointCollector::getHits | Explosion.obj | debug, upstream name already matches, high
 NavMesh* FUN_009afc30_shell::hkpFixedBufferCdPointCollector_getHits()
 {
     return ((NavMeshPtr*)((char*)this + 8))->AnimatingText_GetFullText();
@@ -85,13 +89,17 @@ struct MobileObjectLoadStep
 
 // @fnv 0x009b2770
 // src: XBOX_PDB 0x009b2770
+// pdb: Explosion::FinishLoadGame | Explosion.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void Explosion::FinishLoadGame_009b2770(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     reinterpret_cast<MobileObjectLoadStep*>(this)->ApplyLoadBuffer(apLoadGameBuffer);
 }
 
 // @fnv 0x009ad5f0
-int BSOcclusionPlane::IsNotCulled()
+// src: XBOX_DEBUG_PDB 0x009ad5f0
+// pdb: Explosion::IsDistant | Explosion.obj | debug, call graph, high
+int BSOcclusionPlane::Explosion_IsDistant()
 {
     return !GetCullResult();
 }
@@ -100,16 +108,17 @@ struct FUN_009afbb0_shell
 {
     virtual ~FUN_009afbb0_shell();
     void* FUN_009afbb0(unsigned int flags);
-    void ForwardCall_009afc10();
+    void hkpFixedBufferCdPointCollector_dtor();
 };
 
 extern "C" void __cdecl Object_UpdateFields_009afbe0(void*);
 
 // Calls FUN_009afc10, then if bit 0 of flags is set calls FUN_009afbe0 on this, and returns this.
 // @fnv 0x009afbb0
+// pdb: hkpFixedBufferCdPointCollector::`scalar deleting destructor' | Explosion.obj | retail, vtable slot, high
 void* FUN_009afbb0_shell::FUN_009afbb0(unsigned int flags)
 {
-    ForwardCall_009afc10();
+    hkpFixedBufferCdPointCollector_dtor();
     if (flags & 1)
         Object_UpdateFields_009afbe0(this);
     return this;
@@ -122,12 +131,13 @@ struct FUN_00621100_shell
 
 struct FUN_009afc10_shell
 {
-    void __thiscall ForwardCall_009afc10();
+    void __thiscall hkpFixedBufferCdPointCollector_dtor();
 };
 
 // @fnv 0x009afc10
-// src: GUESS 0x009afc10 (confidence: low)
-void __thiscall FUN_009afc10_shell::ForwardCall_009afc10()
+// src: XBOX_DEBUG_PDB 0x009afc10
+// pdb: hkpFixedBufferCdPointCollector::~hkpFixedBufferCdPointCollector | Explosion.obj | debug, call graph (shared callers), high
+void __thiscall FUN_009afc10_shell::hkpFixedBufferCdPointCollector_dtor()
 {
     ((FUN_00621100_shell*)this)->SetVtable();
 }
@@ -141,6 +151,7 @@ struct FUN_009afc50_shell
 
 // @fnv 0x009afc50
 // src: XBOX_PDB 0x009afc30
+// pdb: hkpFixedBufferCdPointCollector::getNumHits | Explosion.obj | debug, call graph, high
 NavMesh* FUN_009afc50_shell::hkpFixedBufferCdPointCollector_getHits()
 {
     return m_navMeshPtr.AnimatingText_GetFullText();
@@ -154,6 +165,7 @@ struct FUN_009ac910_shell
 };
 // Calls FUN_009ac940, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009ac910
+// pdb: Explosion::ExplosionTarget::`scalar deleting destructor' | Explosion.obj | debug, object-file run extension, low
 void* __thiscall FUN_009ac910_shell::FUN_009ac910(unsigned int flags)
 {
     FUN_009ac940();
@@ -173,6 +185,7 @@ struct StandIn
 };
 // Calls FUN_00cbc920 on this, then frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x009ae250
+// pdb: bhkLiquidAction::`scalar deleting destructor' | Explosion.obj | retail, vtable slot, high
 void* StandIn::FUN_009ae250(unsigned int flags)
 {
     ((FUN_00cbc920_shell*)this)->FUN_00cbc920();
@@ -190,11 +203,14 @@ extern GameTimerRecord g_timeGlobal;
 
 // @fnv 0x009ae580
 // src: XBOX_PDB 0x009ae580
+// pdb: Explosion::ProcessMovement | Explosion.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: fdelta
 void Explosion::ProcessMovement(float afDelta)
 {
     float fdelta = reinterpret_cast<GameTimerAccessorBridge*>(&g_timeGlobal)->GetStoredFloatValue();
     Update(fdelta);
-    m_fFirstFloatValue += fdelta;
+    fAge += fdelta;
 }
 
 BSAudio* __cdecl _FUN_00c85750();
@@ -206,6 +222,8 @@ struct UnkObj
 };
 // @fnv 0x009afbe0
 // src: GUESS 0x009afbe0 (confidence: low)
+// pdb: hkpFixedBufferCdPointCollector::operator delete | Explosion.obj | debug, call graph, medium
+// pdb params: p
 void __cdecl Object_UpdateFields_009afbe0(void* a1)
 {
     if (a1 != 0)
@@ -228,6 +246,7 @@ struct S009afc70
 // Calls FUN_00622570 on a1 with true when m_navMeshPtr.FUN_00458b50() returns a value greater than 0, then returns a1.
 // @fnv 0x009afc70
 // src: COMMUNITY 0x009afc70
+// pdb: hkpFixedBufferCdPointCollector::hasHit | Explosion.obj | debug, upstream name already matches, high
 void* __thiscall S009afc70::hkpFixedBufferCdPointCollector_hasHit(void* apTarget)
 {
     ((H00622570*)apTarget)->UpdateState_00622570((int)m_navMeshPtr.AnimatingText_GetFullText() > 0);
@@ -290,10 +309,13 @@ struct FUN_009b0d30_shell
 };
 // @fnv 0x009b0d30
 // src: COMMUNITY 0x009b0d30
-void __thiscall FUN_009b0d30_shell::hkpRigidBody_applyAngularImpulse(int a1)
+// pdb: hkpRigidBody::applyAngularImpulse | Explosion.obj | retail, upstream name already matches, high
+// pdb params: imp
+// pdb locals: assertBuf, ostr
+void __thiscall FUN_009b0d30_shell::hkpRigidBody_applyAngularImpulse(int imp)
 {
     this->activate_00c9c1d0();
-    reinterpret_cast<RagdollCallView*>(reinterpret_cast<TESDataHandler*>(this)->GetBGSRagdollList())->F21(a1);
+    reinterpret_cast<RagdollCallView*>(reinterpret_cast<TESDataHandler*>(this)->GetBGSRagdollList())->F21(imp);
 }
 
 struct RetObj
@@ -340,6 +362,7 @@ struct RetObj
 // Returns true if _FNV_GetObjectReference() is non-null and its vf37() call returns true, otherwise false.
 // @fnv 0x00565690
 // src: COMMUNITY 0x00565690
+// pdb: TESObjectREFR::GetQuestObject | TESObjectREFR.obj | debug, object-file run extension, low
 bool Actor::TESObjectREFR_BaseIsQuestItem()
 {
     return _FNV_GetObjectReference() ? _FNV_GetObjectReference()->vf37() : false;
@@ -352,6 +375,7 @@ struct ExplosionFlagAccessor
 };
 extern Setting originalRuntimeFloatSetting818;
 // @fnv 0x009ad5a0
+// pdb: BGSExplosion::GetRadiationRadiusBSUnits | Explosion.obj | debug, object-file gap fill, medium
 float __thiscall BGSExplosion::GetScaledValue()
 {
     return (float)(reinterpret_cast<ExplosionFlagAccessor*>(this)->HasAnyFlags(1) ? (double)Data.m_fImpactThirdValue
@@ -366,14 +390,15 @@ struct FUN_009ae0f0
     float mC;
     float m10;
     float m14;
-    void __thiscall hkUnaryActionCinfo_hkUnaryActionCinfo();
+    void __thiscall hkUnaryActionCinfo_ctor();
     FUN_009ae0f0();
 };
 // Calls FUN_00537bb0, then sets m8 to runtimeFloatSettingDefault247 and mC, m10, m14 to 15.0f, 64.0f, 15.0f.
 // @fnv 0x009ae0f0
+// pdb: hkLiquidActionCinfo::hkLiquidActionCinfo | Explosion.obj | debug, object-file run extension, low
 FUN_009ae0f0::FUN_009ae0f0()
 {
-    hkUnaryActionCinfo_hkUnaryActionCinfo();
+    hkUnaryActionCinfo_ctor();
     m8 = runtimeFloatSettingDefault247;
     mC = 15.0f;
     m10 = 64.0f;
@@ -384,7 +409,7 @@ void* __cdecl operator new(unsigned int);
 // TESObjectWEAP.h forward-declares enum SOUND_LEVEL, which conflicts with
 // the SOUND_LEVEL typedef imported by BaseProcess.h.
 TESForm* GetFormByID(unsigned int);
-ActorCause* FindStateByValue(int);
+ActorCause* ActorCause_GetActorCauseByID(int);
 struct FUN_00825ad0
 {
     unsigned int unk00;
@@ -401,49 +426,52 @@ struct FUN_00825ad0
 
 // @fnv 0x009b22c0
 // src: XBOX_PDB 0x009b22c0
+// pdb: Explosion::LoadGame | Explosion.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+// pdb locals: iactorCauseID, bhasCaster
 void Explosion::LoadGame_009b22c0(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     MobileObject::ApplyLoadBuffer(apLoadGameBuffer);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_fFirstFloatValue), 4u);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&f3DLifetime), 4u);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fOuterRadius), 4u);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&ExplosionRuntimeData), 4u);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&ReferenceCauseInfo), 1u);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_iValueE4), 4u);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fInnerRadius), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fAge), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fLifetime), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fRadius), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fImageSpaceRadius), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bDecalsPlaced), 1u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iFrameCount), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fBuildTime), 4u);
     if (apLoadGameBuffer->GetVersion() >= 0xe)
     {
-        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_fFourthRecordValue), 4u);
-        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&MagicWeaponState), 1u);
-        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bUnderwater), 1u);
-        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&kClosestPoint), 0xcu);
-        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&kClosestPointNormal), 0xcu);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fWeaponCondition), 4u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bIgnoreImageSpaceSwap), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bUnderWater), 1u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&ClosestPoint), 0xcu);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&ClosestPointNormal), 0xcu);
     }
     if (apLoadGameBuffer->GetVersion() >= 0x14)
-        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_fClosestPointScalar), 4u);
-    apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&pOwnerRef));
-    apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&ReferenceSoundCauseData));
-    m_pFiringWeapon =
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fCalculatedDamage), 4u);
+    apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&pOwner));
+    apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&pExplodedRef));
+    pWeaponSource =
         dynamic_cast<TESObjectWEAP*>(GetFormByID(((BGSLoadGameBuffer*)apLoadGameBuffer)->ReadFormIdentifier()));
     int iactorCauseID = -1;
     apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iactorCauseID), 4u);
-    m_pActorCause = FindStateByValue(iactorCauseID);
+    spActorCause = ActorCause_GetActorCauseByID(iactorCauseID);
     bool bhasCaster = true;
     if (apLoadGameBuffer->GetVersion() >= 7)
         apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bhasCaster), 1u);
     if (bhasCaster)
     {
-        if (!m_pEffectInstance)
-            m_pEffectInstance = reinterpret_cast<NonActorMagicCaster*>(new FUN_00825ad0(this));
-        apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&reinterpret_cast<FUN_00825ad0*>(m_pEffectInstance)->uiFormID18));
-        apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&reinterpret_cast<FUN_00825ad0*>(m_pEffectInstance)->uiFormID1C));
-        apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&reinterpret_cast<FUN_00825ad0*>(m_pEffectInstance)->uiFormID20));
+        if (!pCaster)
+            pCaster = reinterpret_cast<NonActorMagicCaster*>(new FUN_00825ad0(this));
+        apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&reinterpret_cast<FUN_00825ad0*>(pCaster)->uiFormID18));
+        apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&reinterpret_cast<FUN_00825ad0*>(pCaster)->uiFormID1C));
+        apLoadGameBuffer->ReadFormIdentifier(static_cast<void*>(&reinterpret_cast<FUN_00825ad0*>(pCaster)->uiFormID20));
     }
-    if (m_iValueE4 > 0)
+    if (iFrameCount > 0)
     {
-        m_bFlagD5 = true;
-        m_bFlagD6 = true;
-        m_bFlagD7 = true;
+        bTargetsFound = true;
+        bTargetsProcessed = true;
+        bForcesApplied = true;
     }
 }
 
@@ -722,6 +750,7 @@ struct FUN_005762b0_cls
 // Calls vf125 with a1 and the result of a chain of vf118/vf119 calls on local Vec3f values, then passes that to Callee00439e90, and returns a1.
 // @fnv 0x005762b0
 // src: COMMUNITY 0x005762b0
+// pdb: TESObjectREFR::GetLookingAtLocation | TESObjectREFR.obj | retail, upstream name already matches, high
 int FUN_005762b0_cls::TESObjectREFR_GetLookingAtLocation(int a1)
 {
     Vec3f a2;
@@ -745,6 +774,7 @@ struct FUN_009ac550_cls : ExplosionFlagAccessor
 
 // Returns m_8C, or m_8C multiplied by the float setting when HasAnyFlags(1) is zero.
 // @fnv 0x009ac550
+// pdb: BGSExplosion::GetImageSpaceRadiusBSUnits | Explosion.obj | debug, object-file run extension, low
 float FUN_009ac550_cls::GetEffectiveValue()
 {
     return (float)((HasAnyFlags(1) != 0) ? (double)m_8C : (double)(m_8C * *originalRuntimeFloatSetting818.Float()));
@@ -783,12 +813,14 @@ struct FUN_009ae140_cls : Ae140Base
     Ae140Vec m_30;
     unsigned char m_3c;
 
-    void Setup(unsigned int aArg);
+    void Setup(unsigned int arInfo);
     FUN_009ae140_cls(unsigned int aArg);
 };
 
 // Initialises the object's fields to defaults, calls Setup with aArg, and increments g_ae140Count.
 // @fnv 0x009ae140
+// pdb: bhkLiquidAction::bhkLiquidAction | Explosion.obj | retail, call graph, medium
+// pdb params: arInfo
 FUN_009ae140_cls::FUN_009ae140_cls(unsigned int aArg)
 {
     m_10 = 0;
@@ -834,6 +866,8 @@ struct FUN_009afaf0 : BaseObject
 };
 // Constructs the object and initialises its four VectorHolder members with firstValue, firstValue, secondValue and 0.
 // @fnv 0x009afaf0
+// pdb: hkpFixedBufferCdPointCollector::hkpFixedBufferCdPointCollector | Explosion.obj | debug, object-file gap fill, medium
+// pdb params: buffer, capacity
 FUN_009afaf0::FUN_009afaf0(unsigned int firstValue, unsigned int secondValue)
 {
     first.FUN_00537e90(firstValue);
@@ -850,6 +884,9 @@ struct FUN_009afca0_holder
 extern void(__cdecl* g_01268430)(void* param, void* thisptr);
 
 // @fnv 0x009afca0
+// pdb: hkpFixedBufferCdPointCollector::addCdPoint | Explosion.obj | debug, vtable slot, medium
+// pdb params: event
+// pdb locals: assertBuf, ostr
 void __thiscall FUN_009afca0_holder::InvokeCallback(void* param)
 {
     g_01268430(param, this);
@@ -876,6 +913,9 @@ struct SearchOwner : MobileObject
 };
 // Walks the entries node chain until a matching category is found, returning a pointer to that entry's result or null.
 // @fnv 0x009b1720
+// pdb: Explosion::GetAffectedLimbList | Explosion.obj | debug, object-file gap fill, medium
+// pdb params: apTarget
+// pdb locals: ptargets, presult, ptarget
 int* SearchOwner::FindEntryResultByCategory(int category)
 {
     int* pResult = 0;
@@ -892,7 +932,7 @@ int* SearchOwner::FindEntryResultByCategory(int category)
 
 class TESForm;
 TESForm* GetFormByID(unsigned int);
-void* LookupThing18(void*);
+void* GetMagicItemByNumericID(void*);
 void* LookupThing1C(void*);
 struct CasterData
 {
@@ -915,19 +955,21 @@ struct MobileObjectFinishLoadStep
 
 // @fnv 0x009b25b0
 // src: COMMUNITY 0x009b25b0
-void Explosion::InitLoadGame_009b25b0(void* apBuffer)
+// pdb: Explosion::InitLoadGame | Explosion.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+void Explosion::InitLoadGame_009b25b0(void* apLoadGameBuffer)
 {
-    reinterpret_cast<MobileObjectFinishLoadStep*>(this)->BaseFinishLoad(apBuffer);
-    pOwnerRef = pOwnerRef ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)pOwnerRef)) : 0;
-    ReferenceSoundCauseData = ReferenceSoundCauseData ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)ReferenceSoundCauseData)) : 0;
-    if (m_pEffectInstance)
+    reinterpret_cast<MobileObjectFinishLoadStep*>(this)->BaseFinishLoad(apLoadGameBuffer);
+    pOwner = pOwner ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)pOwner)) : 0;
+    pExplodedRef = pExplodedRef ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)pExplodedRef)) : 0;
+    if (pCaster)
     {
-        reinterpret_cast<CasterData*>(m_pEffectInstance)->pUnk18 = reinterpret_cast<CasterData*>(m_pEffectInstance)->pUnk18 ? LookupThing18(reinterpret_cast<CasterData*>(m_pEffectInstance)->pUnk18) : 0;
-        reinterpret_cast<CasterData*>(m_pEffectInstance)->pUnk1C = reinterpret_cast<CasterData*>(m_pEffectInstance)->pUnk1C ? LookupThing1C(reinterpret_cast<CasterData*>(m_pEffectInstance)->pUnk1C) : 0;
-        reinterpret_cast<CasterData*>(m_pEffectInstance)->pRef20 =
-            reinterpret_cast<CasterData*>(m_pEffectInstance)->pRef20 ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)reinterpret_cast<CasterData*>(m_pEffectInstance)->pRef20)) : 0;
+        reinterpret_cast<CasterData*>(pCaster)->pUnk18 = reinterpret_cast<CasterData*>(pCaster)->pUnk18 ? GetMagicItemByNumericID(reinterpret_cast<CasterData*>(pCaster)->pUnk18) : 0;
+        reinterpret_cast<CasterData*>(pCaster)->pUnk1C = reinterpret_cast<CasterData*>(pCaster)->pUnk1C ? LookupThing1C(reinterpret_cast<CasterData*>(pCaster)->pUnk1C) : 0;
+        reinterpret_cast<CasterData*>(pCaster)->pRef20 =
+            reinterpret_cast<CasterData*>(pCaster)->pRef20 ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)reinterpret_cast<CasterData*>(pCaster)->pRef20)) : 0;
     }
-    if (IsNotCulled())
+    if (Explosion_IsDistant())
         Initialize();
 }
 
@@ -1053,6 +1095,7 @@ struct FUN_009abf30 : FUN_0092eb50
 };
 
 // @fnv 0x009abf30
+// pdb: Explosion::Explosion | Explosion.obj | debug, call graph, low
 FUN_009abf30::FUN_009abf30() : m_a0(0), m_c4(0), m_d0(0)
 {
     m_68 = 0;
@@ -1264,6 +1307,9 @@ struct FUN_009ac200 : MobileC
     FUN_009ac200(void*, OwnerC*, void*, Vec3f, MatrixC);
 };
 // @fnv 0x009ac200
+// pdb: Explosion::FindTargets | Explosion.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Explosion::Explosion
+// pdb locals: pplayerTargetEntry, i, pav, pref, pbody, ptargetEntry, bdynamic, pactor
 FUN_009ac200::FUN_009ac200(void* form, OwnerC* source, void* parent, Vec3f location, MatrixC rotation)
     : object(0), another(0), cause(0)
 {
@@ -1328,9 +1374,12 @@ class B17A0Node
 
 // If the 3D is loaded and present, builds update data from the current time and updates the 3D node.
 // @fnv 0x009b17a0
+// pdb: Explosion::UpdateNonRenderSafeMovement | Explosion.obj | debug, object-file gap fill, medium
+// pdb params: afDelta
+// pdb locals: update
 void Explosion::Update3D(int iUnused)
 {
-    if (IsNotCulled() && GetNiNode())
+    if (Explosion_IsDistant() && GetNiNode())
     {
         B17A0UpdateData kData(g_fB17A0CurrentTime, true, false);
         reinterpret_cast<B17A0Node*>(GetNiNode())->Update(kData);
@@ -1369,25 +1418,27 @@ extern Vec3W7 __NiPoint3_ZERO;
 
 // @fnv 0x009b2790
 // src: COMMUNITY 0x009b2790
-void Explosion::RevertBGS_009b2790(BGSLoadFormBuffer* apBuffer)
+// pdb: Explosion::Revert | Explosion.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+void Explosion::RevertBGS_009b2790(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    MobileObject::Revert(apBuffer);
-    ReferenceCauseInfo = 0;
-    m_bFlagD5 = 0;
-    m_bFlagD6 = 0;
-    m_bFlagD7 = 0;
-    reinterpret_cast<Holder0042f780&>(m_pActorCause).AssignRetainedObject(0);
-    m_fFourthRecordValue = 1.0f;
-    MagicWeaponState = 0;
-    bUnderwater = 0;
-    reinterpret_cast<Vec3W7&>(kClosestPoint) = __NiPoint3_ZERO;
-    reinterpret_cast<Vec3W7&>(kClosestPointNormal) = __NiPoint3_ZERO;
-    while (!reinterpret_cast<ListW7&>(kTargets)._ref_008256d0())
+    MobileObject::Revert(apLoadGameBuffer);
+    bDecalsPlaced = 0;
+    bTargetsFound = 0;
+    bTargetsProcessed = 0;
+    bForcesApplied = 0;
+    reinterpret_cast<Holder0042f780&>(spActorCause).AssignRetainedObject(0);
+    fWeaponCondition = 1.0f;
+    bIgnoreImageSpaceSwap = 0;
+    bUnderWater = 0;
+    reinterpret_cast<Vec3W7&>(ClosestPoint) = __NiPoint3_ZERO;
+    reinterpret_cast<Vec3W7&>(ClosestPointNormal) = __NiPoint3_ZERO;
+    while (!reinterpret_cast<ListW7&>(TargetList)._ref_008256d0())
     {
-        HeadW7* head = *reinterpret_cast<ListW7&>(kTargets)._ref_006815c0();
+        HeadW7* head = *reinterpret_cast<ListW7&>(TargetList)._ref_006815c0();
         HeadW7* toFree = head;
         toFree ? toFree->FUN_009ac910(1) : 0;
-        reinterpret_cast<ListW7&>(kTargets)._ref_0063f7b0();
+        reinterpret_cast<ListW7&>(TargetList)._ref_0063f7b0();
     }
 }
 
@@ -1763,7 +1814,7 @@ struct RefX
     float Explosion_GetRadius();
     void Explosion_TestExplosionUnderWater();
     void Init3D();
-    bool IsNotCulled();
+    bool Explosion_IsDistant();
     void Explosion_AttachDistant();
     void* TESObjectREFR_GetWorldSpace();
     CellX* FUN_008d6f30();
@@ -1801,12 +1852,14 @@ SceneX* CreateOctahedron(float, const NiColorA*, int);
 void* TESImageSpaceModifier_GetExplosionInFace();
 void FUN_005299a0(void*, float, SceneX*);
 float ComputeSquaredRatioComplement(float, float);
-float GetAnimValueByPrefix(SceneX*, const char*, const char*);
-void UpdateDistanceFade(float, const ExplosionPosition&);
+float FindTimeForNoteKey(SceneX*, const char*, const char*);
+void ShakeCamera(float, const ExplosionPosition&);
 float RandomFloatTwoPi();
 void BSTempEffectParticle_Spawn_00689210(CellX*, float, const char*, MatrixWater, ExplosionPosition, float, int, int);
 // Updates an explosion reference: scales by distance, spawns effects, updates cell membership, reacts actors, plays splash sounds and applies image-space effects.
 // @fnv 0x009acd60
+// pdb: Explosion::Initialize | Explosion.obj | retail, unique string literal, high
+// pdb locals: bcreateProcess, fdistance, tempMemContext, fpower, bloadingSaveGame, pcell, pfade, pav, pnode, pcause, pact, underWaterSound, splashLocation, fscale, rotation, white, pdebug
 void RefX::UpdateExplosion()
 {
     AutoMemContext memory3(49, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\AI\\Combat\\Explosion.cpp", 376);
@@ -1820,7 +1873,7 @@ void RefX::UpdateExplosion()
         FUN_005299a0(TESImageSpaceModifier_GetExplosionInFace(), 1.0f, 0);
     Explosion_TestExplosionUnderWater();
     Init3D();
-    if (IsNotCulled())
+    if (Explosion_IsDistant())
         Explosion_AttachDistant();
     else
     {
@@ -1851,7 +1904,7 @@ void RefX::UpdateExplosion()
         SceneX* fade9 = node7 ? node7->AsFade() : 0;
         if (fade9)
             fade9->BSFadeNode_TurnFadeNodeOn();
-        animationTime = GetAnimValueByPrefix(sceneB, "SpecialIdle_AreaEffect", "Hit");
+        animationTime = FindTimeForNoteKey(sceneB, "SpecialIdle_AreaEffect", "Hit");
     }
     if (!loading4)
     {
@@ -1864,7 +1917,7 @@ void RefX::UpdateExplosion()
         }
         StartSounds();
         if (soundAC.FUN_00ad8ce0() || soundB8.FUN_00ad8ce0())
-            UpdateDistanceFade(radius * *DAT_011d0280.Setting_Float_00403e20(), GetPosition());
+            ShakeCamera(radius * *DAT_011d0280.Setting_Float_00403e20(), GetPosition());
         if (FUN_008d6f30() && GetByteAtOffsetD9())
         {
             ExplosionPosition position8 = GetPosition();
@@ -2006,12 +2059,12 @@ struct DRDeletable
 
 struct DRPortalGraph
 {
-    void RemoveObject(DRObject3D* apObject);
+    void RemoveObject(DRObject3D* pkChild);
 };
 
 struct DRWorld
 {
-    static void __cdecl RemoveObject(DRObject3D* apObject, bool abRecurse, bool abUnk);
+    static void __cdecl RemoveObject(DRObject3D* apObject, bool abRecurse, bool abForce);
 };
 
 struct DRCell
@@ -2099,7 +2152,7 @@ struct DRRef : DRRefPrimary, DRRefSecondary
     DRObject3D* Get3DSimple();
     DRCell* GetParentCell();
     void Explosion_FreeLight();
-    void MobileObject_CleanUpOtherMobileObjects(bool abFlag);
+    void MobileObject_CleanUpOtherMobileObjects(bool abMagicCaster);
     void Explosion_StopSounds();
 };
 
@@ -2123,6 +2176,8 @@ struct FUN_009ac5a0 : DRRef
 };
 
 // @fnv 0x009ac5a0
+// pdb: Explosion::~Explosion | Explosion.obj | debug, object-file run extension, low
+// pdb locals: pcell, p3d, bFoundObj, bFound, nextobj, iterobj, pobjref, pgraph
 FUN_009ac5a0::~FUN_009ac5a0()
 {
     if (Get3DSimple() && Get3DSimple()->GetAsNode() && DRIsAttached(Get3DSimple()->GetAsNode()))
@@ -2217,34 +2272,37 @@ struct MobileObjectSaveStep
 
 // Writes explosion save fields, actor cause ID, and optional caster data to the save buffer.
 // @fnv 0x009b2040
-void Explosion::WriteToSaveBuffer(BGSSaveFormBuffer* buffer)
+// pdb: Explosion::SaveGame | Explosion.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+// pdb locals: iactorCauseID, bhasCaster
+void Explosion::WriteToSaveBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    reinterpret_cast<MobileObjectSaveStep*>(this)->MobileObject_SaveGame(buffer);
-    buffer->FUN_00865e50(&m_fFirstFloatValue, 4, 0);
-    buffer->FUN_00865e50(&f3DLifetime, 4, 0);
-    buffer->FUN_00865e50(&fOuterRadius, 4, 0);
-    buffer->FUN_00865e50(&ExplosionRuntimeData, 4, 0);
-    buffer->FUN_00865e50(&ReferenceCauseInfo, 1, 0);
-    buffer->FUN_00865e50(&m_iValueE4, 4, 0);
-    buffer->FUN_00865e50(&fInnerRadius, 4, 0);
-    buffer->FUN_00865e50(&m_fFourthRecordValue, 4, 0);
-    buffer->FUN_00865e50(&MagicWeaponState, 1, 0);
-    buffer->FUN_00865e50(&bUnderwater, 1, 0);
-    buffer->FUN_00865e50(&kClosestPoint, 12, 0);
-    buffer->FUN_00865e50(&kClosestPointNormal, 12, 0);
-    buffer->FUN_00865e50(&m_fClosestPointScalar, 4, 0);
-    buffer->FUN_00865df0(pOwnerRef, 0);
-    buffer->FUN_00865df0(ReferenceSoundCauseData, 0);
-    buffer->FUN_00865df0(m_pFiringWeapon, 0);
-    unsigned int causeID = reinterpret_cast<SavedActorCausePointer&>(m_pActorCause).Modelloader_GetReferencedThis() ? reinterpret_cast<SavedActorCausePointer&>(m_pActorCause).Modelloader_GetReferencedThis()->FUN_00825c00() : -1;
-    buffer->FUN_00865e50(&causeID, 4, 0);
-    bool casterPresent = reinterpret_cast<ExplosionCasterData*>(m_pEffectInstance);
-    buffer->FUN_00865e50(&casterPresent, 1, 0);
+    reinterpret_cast<MobileObjectSaveStep*>(this)->MobileObject_SaveGame(apSaveGameBuffer);
+    apSaveGameBuffer->FUN_00865e50(&fAge, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&fLifetime, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&fRadius, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&fImageSpaceRadius, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&bDecalsPlaced, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&iFrameCount, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&fBuildTime, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&fWeaponCondition, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&bIgnoreImageSpaceSwap, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&bUnderWater, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&ClosestPoint, 12, 0);
+    apSaveGameBuffer->FUN_00865e50(&ClosestPointNormal, 12, 0);
+    apSaveGameBuffer->FUN_00865e50(&fCalculatedDamage, 4, 0);
+    apSaveGameBuffer->FUN_00865df0(pOwner, 0);
+    apSaveGameBuffer->FUN_00865df0(pExplodedRef, 0);
+    apSaveGameBuffer->FUN_00865df0(pWeaponSource, 0);
+    unsigned int causeID = reinterpret_cast<SavedActorCausePointer&>(spActorCause).Modelloader_GetReferencedThis() ? reinterpret_cast<SavedActorCausePointer&>(spActorCause).Modelloader_GetReferencedThis()->FUN_00825c00() : -1;
+    apSaveGameBuffer->FUN_00865e50(&causeID, 4, 0);
+    bool casterPresent = reinterpret_cast<ExplosionCasterData*>(pCaster);
+    apSaveGameBuffer->FUN_00865e50(&casterPresent, 1, 0);
     if (casterPresent)
     {
-        buffer->FUN_00865db0(reinterpret_cast<ExplosionCasterData*>(m_pEffectInstance)->reference ? reinterpret_cast<ExplosionCasterData*>(m_pEffectInstance)->reference->FUN_0040a1e0() : 0, 0);
-        buffer->FUN_00865db0(reinterpret_cast<ExplosionCasterData*>(m_pEffectInstance)->source ? reinterpret_cast<ExplosionCasterData*>(m_pEffectInstance)->source->RefreshItem() : 0, 0);
-        buffer->FUN_00865df0(reinterpret_cast<ExplosionCasterData*>(m_pEffectInstance)->weapon, 0);
+        apSaveGameBuffer->FUN_00865db0(reinterpret_cast<ExplosionCasterData*>(pCaster)->reference ? reinterpret_cast<ExplosionCasterData*>(pCaster)->reference->FUN_0040a1e0() : 0, 0);
+        apSaveGameBuffer->FUN_00865db0(reinterpret_cast<ExplosionCasterData*>(pCaster)->source ? reinterpret_cast<ExplosionCasterData*>(pCaster)->source->RefreshItem() : 0, 0);
+        apSaveGameBuffer->FUN_00865df0(reinterpret_cast<ExplosionCasterData*>(pCaster)->weapon, 0);
     }
 }
 
@@ -2274,6 +2332,8 @@ struct Derived : Base1, Base2
 // Calls m_sub.FUN_0057c400(a) and returns the result cast to Derived*.
 // @fnv 0x00576870
 // src: COMMUNITY 0x00576870
+// pdb: ZoneEntry::GetZoneEntry | TESObjectREFR.obj | debug, object-file gap fill, medium
+// pdb params: apZone
 Base1* FUN_00576870_cls::ZoneEntry_GetZoneEntry_0(int a)
 {
     return static_cast<Derived*>(m_sub.bhkTTNode_TESObjectREFR_GetEntry(a));

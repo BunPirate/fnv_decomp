@@ -67,7 +67,7 @@ struct FUN_0066d510_shell
 {
     const void* bhkMultiSphereShape_GetRTTI();
 };
-extern const void* g_012683e0;
+extern const void* bhkMultiSphereShape_ms_RTTI;
 struct FUN_0066d520_shell
 {
     void FUN_00cb78b0();
@@ -297,7 +297,7 @@ struct This
     int unk00;
     int unk04;
     Middle* middle;
-    void bhkShape_CopyCinfo(unsigned int* output);
+    void bhkShape_CopyCinfo(unsigned int* arInfo);
 };
 struct LegacyLinker : NiCollisionObject
 {
@@ -369,7 +369,7 @@ struct C8C330Owner
     virtual C8C330Child* GetOrCreateChild(bool* pbCreated);
 
     void bhkShape_LinkObject(C8C330Node* pkNode);
-    void bhkTransformShape_LinkObject(C8C330Node* pkNode);
+    void bhkTransformShape_LinkObject(C8C330Node* arStream);
 };
 typedef unsigned int C8CA60size_t;
 struct C8CA60MemoryManager
@@ -416,8 +416,8 @@ struct C8CA60Owner
     void* m_pParentNode;
     C8CA60Child* m_pkChild;
 
-    void bhkTransformShape_CopyCinfo(C8CA60Child* pkChild);
-    C8CA60Child* bhkTransformShape_CreateCinfo(bool* pbCreated);
+    void bhkTransformShape_CopyCinfo(C8CA60Child* arInfo);
+    C8CA60Child* bhkTransformShape_CreateCinfo(bool* arCreated);
 };
 struct NativeTransform
 {
@@ -646,10 +646,10 @@ struct S_00cb79d0
     virtual void v047();
     virtual void v048();
     virtual void v049(S_00cb79d0_Base* obj, int arg);
-    S_00cb79d0_C* bhkMultiSphereShape_CreateClone(int arg);
+    S_00cb79d0_C* bhkMultiSphereShape_CreateClone(int arCloneData);
 };
 void SwapByteQuadWords(void* buffer, int words);
-void __cdecl bhkStream_SwapHKArray(void* buffer, int bytes, NiPoint3* vector);
+void __cdecl bhkStream_SwapHKArray(void* apCInfo, int aiSize, NiPoint3* apArray);
 struct TlsBlock_t
 {
     int unk000;
@@ -943,8 +943,8 @@ struct FUN_00caaea0_shell
     virtual void v43() = 0;
     virtual void v44() = 0;
     virtual ScaleMatrix* getMatrix(bool* outFlag) = 0;
-    void bhkShape_CopyMembers(void* context, SourceObject* source);
-    void bhkCapsuleShape_CopyMembers(void* context, SourceObject* source);
+    void bhkShape_CopyMembers(void* apDest, SourceObject* arCloneData);
+    void bhkCapsuleShape_CopyMembers(void* apDest, SourceObject* arCloneData);
 };
 struct S_00caaf40_Tls
 {
@@ -1201,7 +1201,7 @@ struct S_00caaf40
     virtual void vfn_bc();
     virtual void vfn_c0();
     virtual void vfn_c4(S_00caaf40_Obj* o, int a);
-    S_00caaf40_Obj* bhkCapsuleShape_CreateClone(int a);
+    S_00caaf40_Obj* bhkCapsuleShape_CreateClone(int arCloneData);
 };
 struct AudioTlsState
 {
@@ -1262,7 +1262,7 @@ struct FUN_00d22590
     int unk34;
     int unk38;
     int unk3C;
-    FUN_00d22590(int a, int b, float c);
+    FUN_00d22590(int vertexA, int vertexB, float c);
     void FUN_00c905b0();
     static void* operator new(unsigned int size)
     {
@@ -1458,16 +1458,16 @@ struct Shader
     virtual void f43();
     virtual void f44();
     virtual int* f45(struct Pass** pass);
-    void bhkShape_LoadBinary(struct Pass* pass);
-    void bhkMultiSphereShape_LoadBinary(struct Pass* pass);
+    void bhkShape_LoadBinary(struct Pass* arStream);
+    void bhkMultiSphereShape_LoadBinary(struct Pass* arStream);
 };
 struct Pass
 {
     int unk000;
     char unk004;
 };
-void bhkStream_SwapHKArray(int* a, int b, int* c);
-void bhkStream_LoadBinary(Pass* pass, int* b);
+void bhkStream_SwapHKArray(int* apCInfo, int aiSize, int* apArray);
+void bhkStream_LoadBinary(Pass* arStream, int* arArray);
 struct A1Owner
 {
     unsigned int unk00;
@@ -1604,8 +1604,8 @@ struct OwnerB
     unsigned int unk00;
     Triple m04;
 };
-void __cdecl bhkStream_SwapHKArray(void* a, void* b, void* c);
-void __cdecl bhkStream_SaveBinary(void* a, void* b);
+void __cdecl bhkStream_SwapHKArray(void* apCInfo, void* aiSize, void* apArray);
+void __cdecl bhkStream_SaveBinary(void* arStream, void* arArray);
 struct TmpGuard
 {
     unsigned int m0;
@@ -1678,8 +1678,8 @@ struct FUN_00cb8010_cls
     virtual void vB0();
     virtual OwnerB* v45(unsigned char* pFlag);
 
-    void __thiscall bhkShape_SaveBinary(A1Owner* a1);
-    void __thiscall bhkMultiSphereShape_SaveBinary(A1Owner* a1);
+    void __thiscall bhkShape_SaveBinary(A1Owner* arStream);
+    void __thiscall bhkMultiSphereShape_SaveBinary(A1Owner* arStream);
 };
 struct CTarget
 {
@@ -1758,9 +1758,9 @@ struct CObj
     int unk04;
     CLevel1* unk08;
 
-    bool __thiscall bhkTransformShape_CanShare(int value);
+    bool __thiscall bhkTransformShape_CanShare(int arCloneData);
 };
-bool __stdcall bhkShape_CanShare(void* value);
+bool __stdcall bhkShape_CanShare(void* arCloneData);
 inline bool Walk(CObj* o, int v, bool r)
 {
     if (o)
@@ -1780,7 +1780,7 @@ inline bool Walk(CObj* o, int v, bool r)
     return r;
 }
 extern "C" unsigned long __cdecl _byteswap_ulong(unsigned long);
-void __cdecl bhkStream_Endian(unsigned int* apData);
+void __cdecl bhkStream_Endian(unsigned int* arTrans);
 struct FUN_00c8c1e0_arg
 {
     int unk00;
@@ -1939,7 +1939,7 @@ struct FUN_00c8c1e0_rec
     int unk0C;
     FUN_00c8c1e0_sub sub;
 };
-extern "C" void __cdecl bhkStream_Endian(void* p);
+extern "C" void __cdecl bhkStream_Endian(void* arTrans);
 struct FUN_00c8c1e0_cls
 {
     virtual void v00()
@@ -2033,8 +2033,8 @@ struct FUN_00c8c1e0_cls
     virtual void v44()
     {}
     virtual FUN_00c8c1e0_rec* GetRec(FUN_00c8c1e0_arg*& a);
-    void bhkShape_LoadBinary(FUN_00c8c1e0_arg* a);
-    void bhkTransformShape_LoadBinary(FUN_00c8c1e0_arg* a1);
+    void bhkShape_LoadBinary(FUN_00c8c1e0_arg* arStream);
+    void bhkTransformShape_LoadBinary(FUN_00c8c1e0_arg* arStream);
 };
 struct C8C260Block
 {
@@ -2045,7 +2045,7 @@ struct C8C260Block
     int m_kHeader[12];
     unsigned int m_iSlotIds[4];
 };
-void __cdecl bhkStream_Endian(int* header);
+void __cdecl bhkStream_Endian(int* arTrans);
 inline void C8C260Swap32(unsigned int* p)
 {
     *p = _byteswap_ulong(*p);
@@ -2268,8 +2268,8 @@ struct C8C260Shader
     int unk04;
     C8C260Link* m_link;
 
-    void bhkShape_SaveBinary(C8C260Renderer* pkRenderer);
-    void bhkTransformShape_SaveBinary(C8C260Renderer* pkRenderer);
+    void bhkShape_SaveBinary(C8C260Renderer* arStream);
+    void bhkTransformShape_SaveBinary(C8C260Renderer* arStream);
 };
 inline void* C8C260GetTarget(C8C260Shader* p)
 {
@@ -2279,12 +2279,12 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volati
 typedef void(__thiscall* ReleaseFn_t)(S_00c8c810_A* apObj);
 struct CollisionStreamLoader : NiCollisionObject
 {
-    void __thiscall bhkNiCollisionObject_LoadBinary(NiStream& stream);
-    void __thiscall FUN_00a80fd0(NiStream& stream);
+    void __thiscall bhkNiCollisionObject_LoadBinary(NiStream& arStream);
+    void __thiscall FUN_00a80fd0(NiStream& kStream);
 };
 struct LegacyCollisionLoader : CollisionStreamLoader
 {
-    void __thiscall bhkPCollisionObject_LoadBinary(NiStream& stream);
+    void __thiscall bhkPCollisionObject_LoadBinary(NiStream& arStream);
 };
 
 #include <xmmintrin.h>
@@ -2307,9 +2307,10 @@ struct Contact
 {
     hkVector4 position, normal;
 };
+// pdb: structure Sphere, size 0x10, 2 members
 struct Sphere
 {
-    hkVector4 center;
+    hkVector4 Center;
 };
 extern "C" void __cdecl hkLineSegmentUtil_closestPointLineSeg(const Sphere*, LocalM128*, LocalM128*, LocalM128*);
 extern const float DAT_01011d78;
@@ -2354,12 +2355,15 @@ inline float squaredNorm(const LocalM128& v)
     return scalar(_mm_add_ss(z, _mm_add_ss(y, v)));
 }
 // @fnv 0x00cab3c0
-bool bhkCapsuleShape::GetClosestPoints(const hkSphere& sphereArg, const hkTransform& matrixArg, hkContactPoint& contactArg)
+// pdb: bhkCapsuleShape::GetClosestPoints | bhkCapsuleShape.obj | retail, upstream name already matches, high
+// pdb params: arSphere, arTrans, arCPoint
+// pdb locals: aMinusB, radiusSum, result, dist, pcapsule, distSquared, rposA, pcapsB, refDist, edge, norm
+bool bhkCapsuleShape::GetClosestPoints(const hkSphere& arSphere, const hkTransform& arTrans, hkContactPoint& arCPoint)
 {
-    const Sphere* sphere = reinterpret_cast<const Sphere*>(&sphereArg);
-    const Matrix* matrix = reinterpret_cast<const Matrix*>(&matrixArg);
-    Contact* contact = reinterpret_cast<Contact*>(&contactArg);
-    CapsuleData* shape = this ? reinterpret_cast<CapsuleData*>(m_pHavokObject) : 0;
+    const Sphere* sphere = reinterpret_cast<const Sphere*>(&arSphere);
+    const Matrix* matrix = reinterpret_cast<const Matrix*>(&arTrans);
+    Contact* contact = reinterpret_cast<Contact*>(&arCPoint);
+    CapsuleData* shape = this ? reinterpret_cast<CapsuleData*>(phkObject) : 0;
     LocalM128 endpoints[2];
     LocalM128 m0 = matrix->c[0], m1 = matrix->c[1], m2 = matrix->c[2], m3 = matrix->c[3];
     for (int i = 1; i >= 0; --i)
@@ -2377,8 +2381,8 @@ bool bhkCapsuleShape::GetClosestPoints(const hkSphere& sphereArg, const hkTransf
     }
     LocalM128 closest;
     hkLineSegmentUtil_closestPointLineSeg(sphere, &endpoints[0], &endpoints[1], &closest);
-    float totalRadius = sphere->center.f[3] + shape->radius;
-    LocalM128 delta = _mm_sub_ps(sphere->center.v, closest);
+    float totalRadius = sphere->Center.f[3] + shape->radius;
+    LocalM128 delta = _mm_sub_ps(sphere->Center.v, closest);
 
     // Preserve the complete squared vector for the later reciprocal-square-root path.
     LocalM128 squares = _mm_mul_ps(delta, delta);
@@ -2424,7 +2428,7 @@ bool bhkCapsuleShape::GetClosestPoints(const hkSphere& sphereArg, const hkTransf
     p = _mm_shuffle_ps(p, p, 0);
     LocalM128 n = contact->normal.v;
     LocalM128 result = _mm_mul_ps(p, n);
-    result = _mm_add_ps(result, sphere->center.v);
+    result = _mm_add_ps(result, sphere->Center.v);
     contact->position.v = result;
     float* depth = &contact->normal.f[3];
     *depth = distance - totalRadius;
@@ -2452,11 +2456,14 @@ struct BhkVecArray
 };
 // @fnv 0x00cb7a90
 // src: XBOX_PDB 0x00cb7a90
-void bhkSphereShape::bhkMultiSphereShape_CopyMembers(void* a1, ArgB* a2)
+// pdb: bhkMultiSphereShape::CopyMembers | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: fscale, cinfo, I
+void bhkSphereShape::bhkMultiSphereShape_CopyMembers(void* apDest, ArgB* arCloneData)
 {
     char flag;
     BhkVecArray* arr = reinterpret_cast<BhkVecArray*>(this->slotB4(&flag));
-    float f = a2->unk10;
+    float f = arCloneData->unk10;
     if (f != 1.0f)
     {
         unsigned int n = arr->m_uCount;
@@ -2473,7 +2480,7 @@ void bhkSphereShape::bhkMultiSphereShape_CopyMembers(void* a1, ArgB* a2)
             } while (n != 0);
         }
     }
-    this->bhkSphereShape::bhkShape_CopyMembers(a1, a2);
+    this->bhkSphereShape::bhkShape_CopyMembers(apDest, arCloneData);
 }
 
 #include <xmmintrin.h>
@@ -2546,6 +2553,8 @@ struct BstreenodeVector4fView
 
 // @fnv 0x00c88020
 // src: XBOX_PDB 0x00c88020
+// pdb: bhkPCollisionObject::hktoNiTransform | bhkPCollisionObject.obj | retail, upstream name already matches, high
+// pdb locals: pp, nit, vol
 void CollisionBoundsUpdater::bhkPCollisionObject_hktoNiTransform()
 {
     ShapeHolder* shape = reinterpret_cast<ShapeHolder*>(m_10);

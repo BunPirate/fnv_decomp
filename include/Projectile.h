@@ -31,6 +31,7 @@ class TESObjectWEAP;
 class NiPoint3;
 class hkpCollidable;
 
+// pdb: class Projectile, size 0x170 (here 0x150), bases: MobileObject, 31 members
 class Projectile : public MobileObject
 {
 public:
@@ -71,9 +72,9 @@ public:
     virtual bool OnActorHit(Actor* actor, bool silent);
     virtual bool GetCharacterSex() const;
     virtual bool IsProximityDetonationTriggered();
-    virtual bool OnCollision(Actor* actor, const NiPoint3& contactPoint,
-                             const NiPoint3& contactNormal, hkpCollidable* collidable,
-                             unsigned int collisionShapeKey, unsigned int hitMaterial);
+    virtual bool OnCollision(Actor* apCollidee, const NiPoint3& aContactPoint,
+                             const NiPoint3& aContactNormal, hkpCollidable* apTargetCollidable,
+                             unsigned int aiKey, unsigned int aeForceMaterial);
 
     ImpactList kImpacts;
     union { bool m_bHasImpactData; unsigned char byte90; int unk90; };
@@ -231,35 +232,35 @@ public:
         return *reinterpret_cast<BSSoundHandle*>(reinterpret_cast<unsigned char*>(&kCountdownSound) + 0x0);
     }
 
-    Projectile(bool bTempRef);
+    Projectile(bool abAdd);
     Projectile(int a, int b, int c, NiPoint3 position, float magnitude, float duration);
     Type GetProjectileType() const;
     void Initialize();
     void ResetProjectile();
     bool ProcessProjectile();
     bool IsProjectileActive() const;
-    void InitLoadGame(BGSLoadFormBuffer* buffer);
+    void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void Primary();
     void Secondary();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     BGSProjectile* GetProjectileBase() const;
     const char* GetFullName();
     void SetByteAtOffset1B0(char c);
-    void InitRagdollController(void* p0, unsigned char b1, unsigned char b2, unsigned char b3);
+    void Actor_CreateRagdollInstance(void* apObject, unsigned char abDeleteCurrInst, unsigned char abSystemInspect, unsigned char abForceUniqueSkeleton);
     void SetFormType(int type);
     float GetFirstLightParameter();
     float GetField90Float();
     float GetUnka4();
-    void UpdateMotion(float delta);
-    void DeleteAllNodes();
+    void UpdateMotion(float afDelta);
+    void ClearTargetList();
     void LoadFromStream(int, int);
     void Explode();
     PickTarget* GetPick();
-    void GetLaunch(NiPoint3* pos, NiPoint3* dir, bool b);
+    void GetLaunch(NiPoint3* aOrigin, NiPoint3* aDirection, bool abIncludeCameraOffset);
 
     bool FUN_00440d80() const;
     int GetFormEditorIDLength();
-    S150 TESObjectREFR_MultipleMatrixByRace(const S150& value);
+    S150 TESObjectREFR_MultipleMatrixByRace(const S150& apRotIn);
     Controller* FUN_009306d0();
     void FUN_00931ed0(void* value);
     void Actor_RegisterGrabIKNote();
@@ -276,7 +277,7 @@ public:
     void MagicBoltProjectile_SetState(int);
     void TESForm_LoadGameDataOLD(void*, unsigned int);
     void TESForm_LoadNumericID(void*, unsigned int);
-    void PlayerCharacter_UpdateMouseSpring(int value);
+    void PlayerCharacter_UpdateMouseSpring(int afTimeDelta);
     void FUN_009bc470();
     int BGSProjectile_GetExplosion();
 

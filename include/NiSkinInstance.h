@@ -8,6 +8,7 @@ class NiSkinData;
 class NiSkinPartition;
 class FaceObject;
 
+// pdb: class NiSkinInstance, size 0x34 (here 0x18), bases: NiObject, 11 members
 class NiSkinInstance : public NiObject
 {
   public:
@@ -15,13 +16,13 @@ class NiSkinInstance : public NiObject
     virtual ~NiSkinInstance();
     virtual const NiRTTI* GetRTTI() const;
     virtual NiObject* MakeClone(CloningProcess& arCloning);
-    virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void LinkObject(NiStream& kStream);
     virtual bool RegisterStreamables(NiStream& arStream);
     virtual void SaveBinary(NiStream& arStream);
     virtual bool IsEqual(NiObject* apObject) const;
-    virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
-    virtual void PostLinkObject(NiStream& arStream);
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
+    virtual void PostLinkObject(NiStream& kStream);
 
     bool IsCloneable(CloningProcess& kCloning);
     void CopyMemberData(NiSkinInstance* pkDest, CloningProcess& kCloning);

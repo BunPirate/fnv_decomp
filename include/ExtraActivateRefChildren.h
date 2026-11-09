@@ -3,6 +3,7 @@
 #include "BSExtraData.h"
 #include "SL.h"
 
+// pdb: class ExtraActivateRefChildren, size 0x18, bases: BSExtraData, 2 members
 class ExtraActivateRefChildren : public BSExtraData
 {
 public:
@@ -13,6 +14,6 @@ public:
     void __thiscall FUN_00433830();
     void* __thiscall FUN_00433800(unsigned int flags);
 
-    SL m;
+    SL ChildList;
     float f;
 };

@@ -212,8 +212,8 @@ struct S93ba0_Conn {
 };
 
 struct S93ba0_Stager {
-    void FUN_00cf70f0(S93ba0_Pair* data, int size);
-    void hkpTypedBroadPhaseDispatcher_addPairs(S93ba0_Pair* data, int size, void* extra);
+    void FUN_00cf70f0(S93ba0_Pair* deletedPairs, int numDeletedPairs);
+    void hkpTypedBroadPhaseDispatcher_addPairs(S93ba0_Pair* newPairs, int numNewPairs, void* extra);
 };
 
 struct S93ba0_Device {
@@ -427,7 +427,7 @@ struct S93ba0_Device {
 };
 
 struct S93ba0_Builder {
-    void FUN_00d0c030(int a, int b, void* device, S93ba0_LocalArray* first, S93ba0_LocalArray* second);
+    void hkpContinuousSimulation_collideEntitiesBroadPhaseContinuousFindPairs(int entities, int numEntities, void* device, S93ba0_LocalArray* first, S93ba0_LocalArray* second);
 };
 
 struct S93ba0_Setup {
@@ -553,13 +553,13 @@ struct S93ba0_Owner {
 };
 
 struct S93ba0_Output {
-    void* ProcessCallback(void* a, void* b, int c);
-    void* hkJobQueue_finishAddAndGetNextJob(int a, int b, void* job, int c);
+    void* ProcessCallback(void* oldJob, void* jobOut, int waitStatus);
+    void* hkJobQueue_finishAddAndGetNextJob(int oldJobType, int b, void* job, int c);
 };
 
-extern "C" void __cdecl hkpWorldOperationUtil_markIslandInactiveMt(void* device, void* setup);
-extern "C" void __cdecl hkpWorldCallbackUtil_fireContactImpulseLimitBreached(void* device, void* data, int count);
-extern "C" void* __cdecl FUN_00d96530(int count, int size);
+extern "C" void __cdecl hkpWorldOperationUtil_markIslandInactiveMt(void* device, void* island);
+extern "C" void __cdecl hkpWorldCallbackUtil_fireContactImpulseLimitBreached(void* device, void* breachedContacts, int numBreachedContacts);
+extern "C" void* __cdecl hkpAgentSectorHeader_allocate(int numTasks, int numAgentNnEntriesPerTask);
 
 __forceinline void S93ba0_copy4(void* dst,const void* src,int n) { const u32* s=(const u32*)src; u32* d=(u32*)dst; for(int j=0;j<n;++j) { *d++=*s++; } }
 struct T26_WaitExport { u32 begin; union {u32 end; int total;}; };
@@ -589,7 +589,10 @@ _ReadWriteBarrier();
 }
 // @fnv 0x00d93ba0
 // src: COMMUNITY 0x00d93ba0
-void* __cdecl hkpSingleThreadedJobsOnIsland_cpuBroadPhaseJob(S93ba0_Owner* owner, S93ba0_Output* output, S93ba0_Job* nextJobOut) throw()
+// pdb: hkpSingleThreadedJobsOnIsland::cpuBroadPhaseJob | hkpCpuBroadPhaseJob.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, nextJobOut
+// pdb locals: delPairs, newPairs, assertBuf, ostr
+void* __cdecl hkpSingleThreadedJobsOnIsland_cpuBroadPhaseJob(S93ba0_Owner* tl, S93ba0_Output* jobQueue, S93ba0_Job* nextJobOut) throw()
 {
     S93ba0_Job* job = nextJobOut;
 
@@ -601,16 +604,16 @@ void* __cdecl hkpSingleThreadedJobsOnIsland_cpuBroadPhaseJob(S93ba0_Owner* owner
     int index; S93ba0_Conn** conn;
     S93ba0_Setup* setup = job->setup;
     S93ba0_timer( str_010d3e68);
-    if (job->block->pending && owner->device->enabled &&
+    if (job->block->pending && tl->device->enabled &&
         (setup->newFlags & 12) && !(setup->oldFlags & 12))
-        hkpWorldOperationUtil_markIslandInactiveMt(owner->device, setup);
+        hkpWorldOperationUtil_markIslandInactiveMt(tl->device, setup);
 
     marker = &job->block->state;
-    S93ba0_LocalArray first(owner->device->pairCapacity);
-    S93ba0_LocalArray second(owner->device->pairCapacity);
+    S93ba0_LocalArray first(tl->device->pairCapacity);
+    S93ba0_LocalArray second(tl->device->pairCapacity);
     S93ba0_Block* block = job->block;
-    owner->builder->FUN_00d0c030(
-        (int)setup->conn, setup->buildParam, owner->device, &first, &second);
+    tl->builder->hkpContinuousSimulation_collideEntitiesBroadPhaseContinuousFindPairs(
+        (int)setup->conn, setup->buildParam, tl->device, &first, &second);
 
     last = 1 - block->numThreads;
     int left = 0;
@@ -641,7 +644,7 @@ void* __cdecl hkpSingleThreadedJobsOnIsland_cpuBroadPhaseJob(S93ba0_Owner* owner
                 S93ba0_copy4(copy + index * 16, src, n);
                 index += c->count;
             }
-            hkpWorldCallbackUtil_fireContactImpulseLimitBreached(owner->device, copy, total);
+            hkpWorldCallbackUtil_fireContactImpulseLimitBreached(tl->device, copy, total);
             hkMemoryRouter_getInstance()->lifoCursor = copy;
         }
         *marker = 2;
@@ -660,7 +663,7 @@ void* __cdecl hkpSingleThreadedJobsOnIsland_cpuBroadPhaseJob(S93ba0_Owner* owner
     if (first.m_iElementCount + second.m_iElementCount > 0) {
         S93ba0_timer( str_010d3e38, str_010cc5bc);
         conn = setup->conn;
-        S93ba0_Device* device = (S93ba0_Device*)owner->device;
+        S93ba0_Device* device = (S93ba0_Device*)tl->device;
         if (first.m_iElementCount + second.m_iElementCount > 0) {
             S93ba0_timer( str_010cc5e4);
             device->FUN_00c911d0((*conn)->lockId);
@@ -714,21 +717,21 @@ void* __cdecl hkpSingleThreadedJobsOnIsland_cpuBroadPhaseJob(S93ba0_Owner* owner
 
     int count = (*(S93ba0_Setup* volatile*)&setup)->count;
     if (count > 0) {
-        S93ba0_Device* dev = owner->device;
+        S93ba0_Device* dev = tl->device;
         int cap = dev->outputCapacity;
         _ReadWriteBarrier();
 int param=setup->param;int pitch=setup->pitch;
 initNext(job,dev,param,count,cap,pitch);
         if (count > cap) {
             int n = (count - 1) / cap + 1;
-            job->blocks = FUN_00d96530(n, 16);
+            job->blocks = hkpAgentSectorHeader_allocate(n, 16);
             job->numBlocks = (u16)n;
         }
         S93ba0_timer( str_010c41f8);
-        return output->hkJobQueue_finishAddAndGetNextJob(0, 1, job, 0);
+        return jobQueue->hkJobQueue_finishAddAndGetNextJob(0, 1, job, 0);
     } else {
         S93ba0_timer( str_010c41f8);
-        return output->ProcessCallback(job, job, 0);
+        return jobQueue->ProcessCallback(job, job, 0);
     }
 
 }

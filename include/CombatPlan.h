@@ -5,15 +5,16 @@ class BGSSaveFormBuffer;
 class BGSLoadFormBuffer;
 class CombatController;
 
+// pdb: class CombatPlan, size 0x18, 6 members
 class CombatPlan
 {
 public:
-    int unk00;
-    int unk04;
-    int unk08;
-    int unk0C;
-    int unk10;
-    int unk14;
+    int pPlanSteps;
+    int iLength;
+    int iCurrentAction;
+    int pGoal;
+    int iCombatLocation;
+    int pCombatController;
 
     CombatPlan(CombatController* controller);
     ~CombatPlan();

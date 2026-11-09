@@ -33,6 +33,7 @@ struct GridEuler;
 namespace H { class NiMatrix3; }
 namespace PC { class NiMatrix3; }
 
+// pdb: class NiAVObject, size 0xc0 (here 0x9c), bases: NiObjectNET, 7 members
 class NiAVObject : public NiObjectNET
 {
   public:
@@ -49,20 +50,20 @@ class NiAVObject : public NiObjectNET
     virtual void ProcessClone(CloningProcess& process);
     virtual void SetObjectBound(NiBound* bound);
 
-    virtual void UpdateControllers(NiUpdateData& arData);
+    virtual void UpdateControllers(NiUpdateData& UpdateData);
     virtual void ApplyTransform(const NiMatrix3& arRotation, const NiPoint3& arPosition, bool abOnLeft);
     virtual void SetMaterialNeedsUpdate(bool abNeedsUpdate);
     virtual void SetDefaultMaterialNeedsUpdateFlag(bool abNeedsUpdate);
     virtual NiAVObject* GetObjectByName(const NiFixedString& arName) const;
     virtual void SetSelectiveUpdateFlags(bool& arSelectiveUpdate, bool abSelectiveUpdateTransforms, bool& arRigid);
-    virtual void UpdateDownwardPass(NiUpdateData& arData, unsigned int auiFlags);
-    virtual void UpdateSelectedDownwardPass(NiUpdateData& arData, unsigned int auiFlags);
-    virtual void UpdateRigidDownwardPass(NiUpdateData& arData, unsigned int auiFlags);
+    virtual void UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    virtual void UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    virtual void UpdateRigidDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
     virtual void UpdatePropertiesDownwardPass(NiPropertyState* apParentState);
     virtual void UpdateEffectsDownward(NiDynamicEffectState* apEffectState);
-    virtual void UpdateWorldData(NiUpdateData& arData);
+    virtual void UpdateWorldData(NiUpdateData& UpdateData);
     virtual void UpdateWorldBound();
-    virtual void UpdateTransformAndBounds(NiUpdateData& arData);
+    virtual void UpdateTransformAndBounds(NiUpdateData& UpdateData);
     virtual void PreAttachUpdate(NiNode* apEventualParent, NiUpdateData& arData);
     virtual void PreAttachUpdateProperties(NiNode* apEventualParent);
     virtual void FinalizeAttachUpdate(NiNode* apEventualParent);
@@ -81,12 +82,12 @@ class NiAVObject : public NiObjectNET
     void SetName(const NiFixedString& name);
     void SetName(const FixedText& name);
     using NiObjectNET::SetName;
-    bool AddExtraData(void* extra);
-    bool AddExtraData(const NiFixedString& name, NiExtraData* extra);
+    bool NiObjectNET_InsertExtraData(void* pkExtra);
+    bool NiObjectNET_AddExtraData(const NiFixedString& kKey, NiExtraData* pkExtra);
     using NiObjectNET::AddExtraData;
     bool DeleteExtraDataByKey(const NiFixedString& name);
     bool RemoveExtraDataByName(const NiFixedString& name);
-    NiExtraData* GetExtraData(const NiFixedString& name);
+    NiExtraData* GetExtraData(const NiFixedString& kKey);
     NiTimeController* GetController(const NiRTTI* rtti);
     NiFixedString& GetName();
     const NiFixedString& GetName() const;
@@ -98,12 +99,12 @@ class NiAVObject : public NiObjectNET
     NiNode* GetParentNode();
     void AssignParent(NiNode* parent);
     void SetEventualParent(NiNode* parent);
-    void AssignCollisionObject(NiCollisionObject* collision);
+    void AssignCollisionObject(NiCollisionObject* pkCollisionObject);
     NiProperty* GetProperty(unsigned int type);
-    void AttachProperty(NiObject* property);
-    void AttachProperty(NiAlphaProperty* property);
-    void RemoveProperty(unsigned int type);
-    void BuildPropertyState(NiPropertyState* parentState, bool copy, NiPropertyState*& state);
+    void AttachProperty(NiObject* pkProperty);
+    void AttachProperty(NiAlphaProperty* pkProperty);
+    void RemoveProperty(unsigned int iType);
+    void PushLocalProperties(NiPropertyState* pkParentState, bool bCopyOnChange, NiPropertyState*& aspPropertyState);
     void CopyMemberData();
 
     void SetBit(bool value, unsigned int mask);
@@ -130,35 +131,35 @@ class NiAVObject : public NiObjectNET
     NiPoint3 GetWorldTranslation();
     const NiTransform& GetWorldTransform() const;
     float GetFloatAt64();
-    float GetHeadTail();
+    float NiAVObject_GetWorldBoundRadius();
     void SetRotation(const NiMatrix3& rotation);
     void SetLocalRotation(const NiMatrix3& rotation);
     void SetLocalRotation(const H::NiMatrix3& rotation);
     void SetLocalRotation(const PC::NiMatrix3& rotation);
     void SetLocalRotation(const M3_& rotation);
     void SetLocalRotation(const Mtx& rotation);
-    void SetLocalRotation(float x, float y, float z, float w);
+    void SetLocalRotation(float fAngle, float y, float z, float w);
     void SetPosition(float x, float y, float z);
     void SetScale(float scale);
     void SetEffectColor(const NiPoint3& color);
 
-    void Update(NiUpdateData& data);
+    void Update(NiUpdateData& UpdateData);
     void Update(const NiUpdateData& data);
     void Update(NiUpdateDataH& data);
     void UpdateSceneObject();
     void UpdateModelBound();
-    void UpdateTimeControllers(NiUpdateData& data, bool updateProperties);
+    void UpdateTimeControllers(NiUpdateData& UpdateData, bool bProperties);
     void UpdateWorldLoc();
     void Cull(NiCullingProcess& culler);
 
-    NiAVObject* NiNode_GetAtChecked(int index);
-    NiProperty* NiNode_GetAtChecked(bool flag);
+    NiAVObject* NiNode_GetAtChecked(int i);
+    NiProperty* NiNode_GetAtChecked(bool i);
     void NiRefObject_DecRefCount();
     PropertyList& FUN_00430830();
     int EvaluateValue_0043c470();
     NiPoint3& GetTranslate_0043c490();
     const NiBound& NiAVObject_GetWorldBound() const;
-    void NiAVObject_AttachProperty(void* value);
+    void NiAVObject_AttachProperty(void* pkProperty);
     void SetRotate_0043fa80(NiTransform* transform);
     void SetRotate_0043fa80(const void* rotation);
     void SetRotate_0043fa80(const NiMatrix3& rotation);
@@ -177,7 +178,7 @@ class NiAVObject : public NiObjectNET
     const NiTransform& NiAVObject_GetWorldRotate() const;
     void FUN_004b4880(NiTransform* transform);
     void NiAVObject_SetTranslate_004bc1f0(float x, float y, float z);
-    void SetHasMovingSound(bool value);
+    void SetHasMovingSound(bool abSound);
     void NiAVObject_SetWorldTranslate(void* value);
     bool GetSelectiveUpdate();
     void NiNode_SetRotate(const NiQuaternion& rotation);
@@ -190,9 +191,9 @@ class NiAVObject : public NiObjectNET
     void NiAVObject_Update(const GridEuler& rotation);
     int GetObjectByName_00a59e20(int value);
     void UpdateProperties();
-    void NiAVObject_CloneProperties(NiAVObject* object, void* data, CloningProcess& process);
+    void NiAVObject_CloneProperties(NiAVObject* pkDest, void* pkList, CloningProcess& kCloning);
     void CopyMembers_00a5ac90(NiAVObject* object, CloningProcess& process);
-    NiExtraData* FUN_00a5bdd0(const NiFixedString& name);
+    NiExtraData* FUN_00a5bdd0(const NiFixedString& kKey);
     bool SetExtraDataName(NiExtraData* extra);
     void RemoveAllControllers();
     NiAVObjectPalette* FUN_00a64620();

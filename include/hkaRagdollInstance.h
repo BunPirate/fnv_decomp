@@ -8,6 +8,7 @@ class hkpConstraintInstance;
 class hkpRigidBody;
 struct hkQsTransform;
 
+// pdb: class hkaRagdollInstance, size 0x30, bases: hkReferencedObject, 4 members
 class hkaRagdollInstance : public hkReferencedObject
 {
 public:
@@ -22,7 +23,7 @@ public:
     virtual hkaRagdollInstance* hkaRagdollInstance_clone(int cloneMode) const throw();
 
     void ApplyPoseAndClearVelocities(const hkQsTransform* pose);
-    int addToWorld(void* world, unsigned char flag);
+    int addToWorld(void* world, unsigned char updateFilter);
     void hkaRagdollInstance_getPoseWorldSpace(hkQsTransform* poseOut, const hkQsTransform& root,
                       const hkQsTransform* localPose);
     void hkaRagdollInstance_getPoseWorldSpace_00ce18d0(hkQsTransform* poseOut);
@@ -44,15 +45,15 @@ public:
                                     hkaSkeleton* skeleton);
     void hkaRagdollInstance_getApproxCurrentPoseWorldSpace(hkQsTransform* transforms);
 
-    const hkaSkeleton* getSkeleton() const { return m_pSkeleton; }
+    const hkaSkeleton* getSkeleton() const { return m_skeleton; }
     hkpRigidBody* getRigidBodyOfBone(int bone) const
     {
-        int body = m_kBoneMap.m_data[bone];
-        return body < 0 ? 0 : static_cast<hkpRigidBody*>(m_ppRigidBodies.m_data[body]);
+        int body = m_boneToRigidBodyMap.m_data[bone];
+        return body < 0 ? 0 : static_cast<hkpRigidBody*>(m_rigidBodies.m_data[body]);
     }
 
-    hkArray<void*> m_ppRigidBodies;
-    hkArray<hkpConstraintInstance*> m_ppConstraints;
-    hkArray<hkInt32> m_kBoneMap;
-    hkaSkeleton* m_pSkeleton;
+    hkArray<void*> m_rigidBodies;
+    hkArray<hkpConstraintInstance*> m_constraints;
+    hkArray<hkInt32> m_boneToRigidBodyMap;
+    hkaSkeleton* m_skeleton;
 };

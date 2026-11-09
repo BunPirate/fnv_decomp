@@ -269,6 +269,9 @@ class B5Owner
 
 // @fnv 0x00b5eed0
 // src: XBOX_PDB 0x00b5eed0
+// pdb: ShadowSceneNode::RemoveGeometryFromPropertyLights | ShadowSceneNode.obj | debug, object-file run extension, low
+// pdb params: apGeom
+// pdb locals: ppropstate, pslprop, pprop, pscenelight, propiter
 void B5Owner::ShadowSceneNode_RemoveLight(unsigned int key)
 {
     if (key == 0)

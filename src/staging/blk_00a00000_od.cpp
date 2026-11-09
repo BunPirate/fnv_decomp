@@ -15,6 +15,9 @@ struct FUN_00a1c020_Class
 
 // Allocates size << 5 bytes through g_memoryManager and returns the resulting pointer.
 // @fnv 0x00a1c020
+// pdb: BSSimpleArray<ButtonIcon,1024>::_Allocate | Font.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* FUN_00a1c020_Class::AllocateShifted(unsigned int size)
 {
     void* result = g_memoryManager.Allocate(size << 5);
@@ -31,6 +34,8 @@ struct FUN_00a1c050_Class
 
 // @fnv 0x00a1c050
 // src: GUESS 0x00a1c050 (confidence: medium)
+// pdb: BSSimpleArray<ButtonIcon,1024>::_Reallocate | Font.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiNewSizeInItem
 void* __thiscall FUN_00a1c050_Class::Reallocate_Thunk(void* p, unsigned int n)
 {
     return g_memoryManager.Reallocate(p, n << 5);
@@ -77,6 +82,8 @@ struct FUN_00a11d80_Class
 };
 // Calls InitAndClear, then deallocates this via g_memoryManager when flags has bit 1 set, and returns this.
 // @fnv 0x00a11d80
+// pdb: CThreadBase::`scalar deleting destructor' | graphmgr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<DebugText::sPrintData *,1024>::`scalar deleting destructor'
 void* __thiscall FUN_00a11d80_Class::DestroyIfFlagged(unsigned int flags)
 {
     InitAndClear();
@@ -95,6 +102,7 @@ struct FUN_00a1c100_Class
 };
 
 // @fnv 0x00a1c100
+// pdb: BSSimpleArray<ButtonIcon,1024>::`scalar deleting destructor' | Font.obj | retail, vtable slot, high
 void* __thiscall FUN_00a1c100_Class::FUN_00a1c100(unsigned int flags)
 {
     Reset();
@@ -195,6 +203,7 @@ struct FUN_00a0d5f0_class
 // Sets the vtable, stores size, allocates size*4 bytes, zeroes them and stores the pointer in m_data.
 // @fnv 0x00a0d5f0
 // src: COMMUNITY 0x00a0d5f0
+// pdb: NiTStringPointerMap<int>::`scalar deleting destructor' | Tile.obj | debug, object-file run extension, low
 FUN_00a0d5f0_class* __thiscall FUN_00a0d5f0_class::NiTMapBase_NiTPointerAllocator_unsigned_int_char_const_int_NiTMapBase_NiTPointerAllocator_unsigned_int_char_const_int(unsigned int size)
 {
     unsigned int iAllocationSize;
@@ -224,6 +233,9 @@ struct FUN_00a0d8e0
 };
 // Sets the vtable, stores count, allocates count*4 bytes, and zero-fills the buffer.
 // @fnv 0x00a0d8e0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,Tile::Value *,Tile::Reaction *>::NiTMapBase<NiTPointerAllocator<unsigned int>,Tile::Value *,Tile::Reaction *> | Tile.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_00a0d8e0::FUN_00a0d8e0(int count)
 {
     m_vtbl = (int*)&DAT_01094e9c;
@@ -245,6 +257,8 @@ struct FUN_00a1c080_Class
 };
 // Unlinks the head node from a singly linked list, clears its field, deallocates it, decrements the count and returns the node's stored value.
 // @fnv 0x00a1c080
+// pdb: NiTPointerListBase<DFALL<NiTListItem<NiTriShape *> >,NiTriShape *>::RemoveHead | Font.obj | debug, object-file run extension, low
+// pdb locals: pkNode, element
 int FUN_00a1c080_Class::PopFront()
 {
     FUN_00a1c080_Class* oldNext;
@@ -277,6 +291,8 @@ struct FUN_00a1e450_Class
 
 // Sets the vtable, stores size and x, zeroes two fields, and allocates size*4 bytes into m_data when size is greater than zero.
 // @fnv 0x00a1e450
+// pdb: NiTPrimitiveArray<XMLStorage *>::NiTPrimitiveArray<XMLStorage *> | Menu.obj | debug, call graph, medium
+// pdb params: uiMaxSize, uiGrowBy
 FUN_00a1e450_Class::FUN_00a1e450_Class(unsigned short size, unsigned short x)
 {
     m_vtbl = (int*)&DAT_01095524;
@@ -308,6 +324,8 @@ struct FUN_00a1eaa0
 };
 // Sets the vtable, stores n as count, allocates count*4 bytes and zero-fills the data buffer.
 // @fnv 0x00a1eaa0
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,XMLStorage *>,XMLStorage *>::NiTStringTemplateMap<NiTPointerMap<char const *,XMLStorage *>,XMLStorage *> | Menu.obj | debug, object-file run extension, low
+// pdb params: uiHashSize, bCopy
 FUN_00a1eaa0::FUN_00a1eaa0(int aiCount)
 {
     int size;
@@ -394,6 +412,9 @@ struct FUN_00a0d710_class
 };
 // @fnv 0x00a0d710
 // src: COMMUNITY 0x00a0d710
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,int>::NiTMapBase<NiTPointerAllocator<unsigned int>,int,int> | Tile.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_00a0d710_class* FUN_00a0d710_class::NiTMapBase_NiTPointerAllocator_unsigned_int_int_int_Init(unsigned int size)
 {
     unsigned int a;
@@ -419,6 +440,8 @@ struct FUN_00a1ee60_class
     FUN_00a1ee60_class* __thiscall FUN_00a1ee60(int freeMem);
 };
 // @fnv 0x00a1ee60
+// pdb: NiTArray<Tile *,NiTMallocInterface<Tile *> >::`scalar deleting destructor' | Menu.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00a1ee60_class* FUN_00a1ee60_class::FUN_00a1ee60(int freeMem)
 {
     m_vtbl = &DAT_0109568c;
@@ -462,6 +485,7 @@ extern unsigned int DAT_0109504c;
 
 // Sets the object's vtable pointer to DAT_0109504c, then calls Clear(true) on the object.
 // @fnv 0x00a11d00
+// pdb: BSSimpleArray<DebugText::sPrintData *,1024>::~BSSimpleArray<DebugText::sPrintData *,1024> | DebugText.obj | debug, call graph (shared callers), high
 void FUN_00a11d80_Class::InitAndClear()
 {
     int unused;
@@ -556,6 +580,7 @@ struct FUN_00a0d5c0_Class
 
 // Calls FUN_00a0d2a0 on this, then if bit 0 of arg is set calls FUN_00aa4060 on this, and returns this as an int.
 // @fnv 0x00a0d5c0
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,int>,int>::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
 int __thiscall FUN_00a0d5c0_Class::FUN_00a0d5c0(int aiFlags)
 {
     FUN_00a0d5c0_Local local;
@@ -623,6 +648,8 @@ class FUN_00a11fa0_cls
 
 // Unlinks the node after this one, releases it to the pool, decrements the count and returns the removed node's value.
 // @fnv 0x00a11fa0
+// pdb: CPointerList<LEAPCORE::IGraphNode,16,4294967295,0>::AddHead | graphmgr.obj | retail, object-file run extension, low
+// pdb params: pNewElement
 int FUN_00a11fa0_cls::RemoveNextNode()
 {
     FUN_00a11fa0_cls* node2 = this->m_04;
@@ -652,6 +679,7 @@ struct FUN_00a1e880_class : S00a0d390
 };
 // @fnv 0x00a1e880
 // src: GUESS 0x00a1e880 (confidence: low)
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,XMLStorage *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,XMLStorage *> | Menu.obj | debug, object-file run extension, low
 void FUN_00a1e880_class::SetVirtualTable_00a1e880()
 {
     m_vtbl = (int*)&DAT_010955e4;
@@ -679,6 +707,8 @@ struct FUN_00a1ea70_Class
     void* __thiscall FUN_00a1ea70(unsigned int a2);
 };
 // @fnv 0x00a1ea70
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,XMLStorage *>,XMLStorage *>::`scalar deleting destructor' | Menu.obj | retail, vtable slot, high
+// pdb params: this
 void* __thiscall FUN_00a1ea70_Class::FUN_00a1ea70(unsigned int auiFlags)
 {
     Q7 q;
@@ -704,6 +734,7 @@ struct FUN_00a1ebf0_Class : S00a0d390
 void _NiFree_00aa10f0(void* arg);
 
 // @fnv 0x00a1ebf0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,Tile::BuildStorage *>::`scalar deleting destructor' | Menu.obj | retail, vtable slot, high
 void* __thiscall FUN_00a1ebf0_Class::FUN_00a1ebf0(int flags)
 {
     int _temp1;
@@ -758,6 +789,10 @@ class S_00a0c9f0
 
 // @fnv 0x00a0c9f0
 // src: COMMUNITY 0x00a0c9f0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,unsigned int>::AddHead | HackingMenu.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::AddHead
+// pdb params: element
+// pdb locals: pkNode
 void __thiscall S_00a0c9f0::_NiTListBase_AddHead(int* pValue)
 {
     volatile int dummy_frame[7];
@@ -806,6 +841,7 @@ struct FUN_00a0d990_cls : S00a0d390
 };
 
 // @fnv 0x00a0d990
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,Tile::Value *,Tile::Reaction *>::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
 int __thiscall FUN_00a0d990_cls::FUN_00a0d990(int aiFlags)
 {
     int a;
@@ -830,6 +866,7 @@ struct FUN_00a1ebc0
 };
 
 // @fnv 0x00a1ebc0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,Tile::BuildStorage *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,Tile::BuildStorage *> | Menu.obj | debug, object-file run extension, low
 FUN_00a1ebc0::~FUN_00a1ebc0()
 {
     unsigned int i;
@@ -871,6 +908,8 @@ struct FUN_00a1ec40_Class
 
 // Calls FUN_00a1ec70, then if bit 0 of flags is set calls DAT_011f6238.FUN_00aa4060 on this, and returns this.
 // @fnv 0x00a1ec40
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,Tile::BuildStorage *>,Tile::BuildStorage *>::`scalar deleting destructor' | Menu.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00a1ec40_Class* FUN_00a1ec40_Class::FUN_00a1ec40(unsigned int flags)
 {
     int l0, l1, l2, l3, l4, l5, l6;
@@ -906,6 +945,9 @@ class S00a0ca70_List
 // Allocates a node from m_kNodePool, sets its m_val, and splices it into the linked list at the position pointed to by pos.
 // @fnv 0x00a0ca70
 // src: GUESS 0x00a0ca70 (confidence: high)
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::InsertAfter | Tile.obj | debug, call graph, high
+// pdb params: kPos, element
+// pdb locals: pkNode
 S00a0ca70_Node* S00a0ca70_List::AllocateAndInsertListNode(S00a0ca70_Node** pos, const unsigned int* value)
 {
     S00a0ca70_Node** pForm;

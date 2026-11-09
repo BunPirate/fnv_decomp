@@ -55,19 +55,21 @@ struct ObjQ
 };
 // @fnv 0x00c4b310
 // src: XBOX_PDB 0x00c4b310
-ResultQ* __cdecl BSUtilities_GetObjectByName_00c4b310(ObjQ* pObj, const char* pcName, bool bRecurse)
+// pdb: BSUtilities::GetObjectByName | BSUtilities.obj | retail, call graph, high
+// pdb params: apScene, apName
+ResultQ* __cdecl BSUtilities_GetObjectByName_00c4b310(ObjQ* apScene, const char* apName, bool bTestScenegraph)
 {
-    if (!pObj || !pcName)
+    if (!apScene || !apName)
         return 0;
-    ExtQ* pExt3 = pObj->NiObjectNET_GetController(&DAT_011f36ac);
-    FixStrQ kName9(pcName);
+    ExtQ* pExt3 = apScene->NiObjectNET_GetController(&DAT_011f36ac);
+    FixStrQ kName9(apName);
     if (pExt3)
     {
         ResultQ* pRes2 = pExt3->GetFinder()->Find(kName9);
         if (pRes2)
             return pRes2;
     }
-    if (bRecurse)
-        return pObj->GetObjectByName(kName9);
+    if (bTestScenegraph)
+        return apScene->GetObjectByName(kName9);
     return 0;
 }

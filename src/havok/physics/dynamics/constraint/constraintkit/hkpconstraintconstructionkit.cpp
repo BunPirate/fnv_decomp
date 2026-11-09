@@ -47,17 +47,21 @@ struct FUN_00d522b0_P
 };
 
 extern void* __cdecl hkMemoryRouter_getInstance(void);
-extern void __cdecl ResizeAudioStream(void* apCtx, void* apVec, int aElemSize);
+extern void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct FUN_00d522b0_cls
 {
     int m_00;
     FUN_00d522b0_P* m_04;
-    int AddVertexCommand(unsigned char aFlag, float aX, float aY);
+    int hkpConstraintConstructionKit_setAngularLimit(unsigned char axis, float aX, float aY);
 };
 
 // @fnv 0x00d522b0
-int FUN_00d522b0_cls::AddVertexCommand(unsigned char aFlag, float aX, float aY)
+// src: XBOX_RETAIL_PDB 0x00d522b0
+// pdb: hkpConstraintConstructionKit::setAngularLimit | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: axis, min, max
+// pdb locals: limit, assertBuf, ostr
+int FUN_00d522b0_cls::hkpConstraintConstructionKit_setAngularLimit(unsigned char axis, float aX, float aY)
 {
     FUN_00d522b0_Vec* pCmds = &m_04->m_cmds;
     FUN_00d522b0_Ctx* ctx = (FUN_00d522b0_Ctx*)hkMemoryRouter_getInstance();
@@ -68,7 +72,7 @@ int FUN_00d522b0_cls::AddVertexCommand(unsigned char aFlag, float aX, float aY)
     *piSlot = 0x11;
     ++pCmds->m_uiItemCount;
 
-    int flag = aFlag;
+    int flag = axis;
 
     pCmds = &m_04->m_cmds;
     ctx = (FUN_00d522b0_Ctx*)hkMemoryRouter_getInstance();
@@ -106,21 +110,24 @@ struct FUN_00d52140_cls
     int unk14;
     unsigned char m_18;
     unsigned char m_19;
-    int ProcessAndReturnValue_00d52000(hkVector4* t);
-    void ProcessAndReturnValue_00d520a0(hkVector4* t);
-    int hkpConstraintConstructionKit_setPivotsHelper(char* a1, char* a2, const LocalM128* a3);
+    int hkpConstraintConstructionKit_setPivotA(hkVector4* pivot);
+    void hkpConstraintConstructionKit_setPivotB(hkVector4* t);
+    int hkpConstraintConstructionKit_setPivotsHelper(char* bodyA, char* bodyB, const LocalM128* pivot);
 };
 
 // @fnv 0x00d52140
 // src: HAVOK_LIB 0x00d52140
-int FUN_00d52140_cls::hkpConstraintConstructionKit_setPivotsHelper(char* a1, char* a2, const LocalM128* a3)
+// pdb: hkpConstraintConstructionKit::setPivotsHelper | hkpConstraintConstructionKit.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, pivot
+// pdb locals: attachB, attachA
+int FUN_00d52140_cls::hkpConstraintConstructionKit_setPivotsHelper(char* bodyA, char* bodyB, const LocalM128* pivot)
 {
     hkVector4 t1;
     hkVector4 t2;
-    t1.hkVector4_setTransformedInversePos((const hkTransform*)(a1 + 0xf0), (const hkVector4*)a3);
-    t2.hkVector4_setTransformedInversePos((const hkTransform*)(a2 + 0xf0), (const hkVector4*)a3);
-    int iResult = this->ProcessAndReturnValue_00d52000(&t1);
-    this->ProcessAndReturnValue_00d520a0(&t2);
+    t1.hkVector4_setTransformedInversePos((const hkTransform*)(bodyA + 0xf0), (const hkVector4*)pivot);
+    t2.hkVector4_setTransformedInversePos((const hkTransform*)(bodyB + 0xf0), (const hkVector4*)pivot);
+    int iResult = this->hkpConstraintConstructionKit_setPivotA(&t1);
+    this->hkpConstraintConstructionKit_setPivotB(&t2);
     this->m_18 = 1;
     this->m_19 = 1;
     return iResult;
@@ -139,7 +146,7 @@ struct hkMemoryRouterD
     }
 };
 
-void __cdecl ResizeAudioStream(hkMemoryAllocatorD* pkAlloc, void* pkArray, int iElemSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocatorD* mem, void* array, int sizeElem);
 
 template <class T> __forceinline void constructWithCopyD(T* p, int n, const T& t)
 {
@@ -174,7 +181,7 @@ struct hkGeometryBufferD
 class hkCommandWriterD
 {
   public:
-    int AppendCommandWithVector2Parameter(unsigned char ucKind, float fX, float fY);
+    int hkpConstraintConstructionKit_setLinearLimit(unsigned char axis, float fX, float fY);
 
     unsigned int unk;
     hkGeometryBufferD* m_pBuffer;
@@ -182,11 +189,14 @@ class hkCommandWriterD
 
 // Appends a command and a 2D vector parameter to the geometry buffer, updates byte/command/param counts, and returns the parameter index.
 // @fnv 0x00d521b0
-// src: GUESS 0x00d521b0 (confidence: medium)
-int hkCommandWriterD::AppendCommandWithVector2Parameter(unsigned char ucKind, float fX, float fY)
+// src: XBOX_RETAIL_PDB 0x00d521b0
+// pdb: hkpConstraintConstructionKit::setLinearLimit | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: axis, min, max
+// pdb locals: limit, assertBuf, ostr
+int hkCommandWriterD::hkpConstraintConstructionKit_setLinearLimit(unsigned char axis, float fX, float fY)
 {
     hkArrayD_AddBack(m_pBuffer->m_commands, 0x10);
-    hkArrayD_AddBack<int>(m_pBuffer->m_commands, ucKind);
+    hkArrayD_AddBack<int>(m_pBuffer->m_commands, axis);
     const int iIndex = m_pBuffer->m_params.GetLogicalSize();
     hkVector4 kParam;
     kParam.set(fX, fY, 0.0f, 0.0f);
@@ -246,12 +256,16 @@ struct Draw328_cls
     int unk00;
     Draw328_mgr* m_pMgr;
 
-    unsigned int AppendHeaderAndVector(unsigned char a1, float a2);
+    unsigned int hkpConstraintConstructionKit_setConeLimit(unsigned char axis, float angle);
 };
 
 // Appends 0x12 and a1 to m_auiHeaderValues, appends a cosf(a2) vector to m_vec, and returns the previous m_vec count.
 // @fnv 0x00d523b0
-unsigned int Draw328_cls::AppendHeaderAndVector(unsigned char a1, float a2)
+// src: XBOX_RETAIL_PDB 0x00d523b0
+// pdb: hkpConstraintConstructionKit::setConeLimit | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: axis, angle
+// pdb locals: limit, assertBuf, ostr
+unsigned int Draw328_cls::hkpConstraintConstructionKit_setConeLimit(unsigned char axis, float angle)
 {
     Draw328_intarr* ints = &m_pMgr->m_auiHeaderValues;
     Draw328_Holder* holder = (Draw328_Holder*)hkMemoryRouter_getInstance();
@@ -262,7 +276,7 @@ unsigned int Draw328_cls::AppendHeaderAndVector(unsigned char a1, float a2)
     FillWords328(ints->data + ints->count, 1, 0x12);
     ++ints->count;
 
-    int tag = a1;
+    int tag = axis;
     ints = &m_pMgr->m_auiHeaderValues;
     holder = (Draw328_Holder*)hkMemoryRouter_getInstance();
     if (ints->count == (int)(ints->capFlags & 0x3fffffffu))
@@ -272,7 +286,7 @@ unsigned int Draw328_cls::AppendHeaderAndVector(unsigned char a1, float a2)
     FillWords328(ints->data + ints->count, 1, tag);
     ++ints->count;
 
-    float x = cosf(a2);
+    float x = cosf(angle);
     LocalM128 v = _mm_setr_ps(x, DAT_01016410, DAT_01011d78, DAT_01011d78);
 
     Draw328_mgr* mgr = m_pMgr;
@@ -352,17 +366,20 @@ struct GeomWriter
 {
     int m_00;
     GeomBuffer* m_buffer;
-    int AppendSineVectorCommand(unsigned char a1, unsigned char a2, float a3, float a4);
+    int hkpConstraintConstructionKit_setTwistLimit(unsigned char twistAxis, unsigned char planeAxis, float a3, float a4);
 };
 
 // Appends command 0x13 with a1 and a2, then a vector (sin(a3), sin(a4), 0, 0) to the buffer, updates its counters, and returns the vector's index.
 // @fnv 0x00d524d0
-// src: GUESS 0x00d524d0 (confidence: medium)
-int GeomWriter::AppendSineVectorCommand(unsigned char a1, unsigned char a2, float a3, float a4)
+// src: XBOX_RETAIL_PDB 0x00d524d0
+// pdb: hkpConstraintConstructionKit::setTwistLimit | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: twistAxis, planeAxis, min, max
+// pdb locals: limit, assertBuf, ostr
+int GeomWriter::hkpConstraintConstructionKit_setTwistLimit(unsigned char twistAxis, unsigned char planeAxis, float a3, float a4)
 {
     m_buffer->m_cmds.pushBack(0x13);
-    m_buffer->m_cmds.pushBack(a1);
-    m_buffer->m_cmds.pushBack(a2);
+    m_buffer->m_cmds.pushBack(twistAxis);
+    m_buffer->m_cmds.pushBack(planeAxis);
     hkVector4 v;
     v.set(sin(a3), sin(a4), 0.0f, 0.0f);
     int index = m_buffer->m_verts.m_iElementCount;

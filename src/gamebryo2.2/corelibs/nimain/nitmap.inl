@@ -8,12 +8,15 @@ NiTMap<unsigned int, BGSReconstructCellSubBlocksMap*>::NewItem() {
 }
 // @fnv 0x00975cf0
 // src: COMMUNITY 0x00975cf0
+// pdb: BSTempEffect::RemoveAllDecals | ProcessLists.obj | debug, upstream name already matches, high
 void BSTempEffect_RemoveAllDecals() {
     g_011d6a30.BSSimpleList_NiPointer_bhkAction_RemoveAll();
     DAT_011d6a20 = 0;
 }
 // @fnv 0x0048eff0
 // src: XBOX_PDB 0x0048eff0
+// pdb: ModelLoader::ReleaseKFFile | Animation.obj | debug, object-file gap fill, medium
+// pdb params: apFilename
 void ModelLoader::ReleaseKFFile_0048eff0(unsigned int key) {
     ModelLoader_ReleaseKF(key, true);
 }

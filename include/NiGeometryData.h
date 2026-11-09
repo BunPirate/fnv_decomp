@@ -17,6 +17,7 @@ enum NiGeometryData__DataFlags
     DataFlags_None = 0
 };
 
+// pdb: class NiGeometryData, size 0x40, bases: NiObject, 16 members
 class NiGeometryData : public NiObject
 {
   public:

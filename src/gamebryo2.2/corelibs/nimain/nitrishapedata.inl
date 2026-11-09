@@ -11,4 +11,6 @@ public:
 
 // MSVC emits its vector constructor iterator for this array initialization.
 // @fnv 0x00401050
+// pdb: `vector constructor iterator' | BGSDehydration.obj | debug, call graph, medium
+// pdb params: __t, __s, __n, __f
 static NiTriShapeData__SNAMemBlock s_SNAMemBlocks[2];

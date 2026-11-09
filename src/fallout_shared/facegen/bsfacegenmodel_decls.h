@@ -88,7 +88,7 @@ class FaceGenTriData
     unsigned int data[60];
     FaceGenTriData();
     ~FaceGenTriData();
-    unsigned int ProcessEntries_0065a5a0();
+    unsigned int FffTriFileDataS_numModelVtx();
     unsigned int std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
     NiPoint3& GetCheckedElement(unsigned int);
 };
@@ -124,6 +124,7 @@ class CloningProcess
     CloningProcess(float);
     ~CloningProcess();
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
@@ -143,6 +144,6 @@ int __cdecl BSstricmp(const char*, const char*);
 int Warning(const char*, ...);
 int NiTexturingProperty_GetType();
 bool fffReadTriFile(const NarrowString&, FaceGenTriData*);
-FaceGenTextureFile* BSFaceGenModel_EGTData_Create(const char*);
-NiAVObject* GetGeomExtraData(NiAVObject*);
+FaceGenTextureFile* EGTData_Create(const char*);
+NiAVObject* BSFaceGenManager_GetFaceGenModelExtraData(NiAVObject*);
 #endif

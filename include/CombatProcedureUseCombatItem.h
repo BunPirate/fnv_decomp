@@ -7,6 +7,7 @@ class CombatItemDebugOutput;
 class UCIActor;
 class UCIController;
 
+// pdb: class CombatProcedureUseCombatItem, size 0x18, bases: CombatProcedure, 2 members
 class CombatProcedureUseCombatItem : public CombatProcedure
 {
 public:
@@ -24,11 +25,11 @@ public:
     void SetVtableAndInit();
     void* DestroyIfFlagged(unsigned int flags);
     void UpdateCombatItemUse();
-    void PrintDebugInfo(CombatItemDebugOutput* pPrinter, unsigned int a2, unsigned int a3);
+    void PrintDebugInfo(CombatItemDebugOutput* apDebugText, unsigned int aeLocation, unsigned int aeJustify);
     void LoadGame_009dac80(BGSLoadFormBuffer* apLoadGameBuffer);
     UCIActor* CombatProcedure_GetAttacker();
     void SetState();
 
     TESBoundObject* pItem;
-    bool m_bItemFlag;
+    bool bAnimating;
 };

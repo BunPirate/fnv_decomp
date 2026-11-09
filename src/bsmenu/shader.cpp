@@ -10,6 +10,9 @@ struct FUN_0043ba10_shell
 // If other's m differs from this m, calls FUN_0043ba60 with other's m, calls FUN_004381d0 on this, then stores other's m; returns this.
 // @fnv 0x0043ba10
 // src: GUESS 0x0043ba10 (confidence: high)
+// pdb: NiFixedString::operator= | ModelLoader.obj | debug, object-file gap fill, medium
+// pdb params: kString
+// pdb locals: kHandle
 FUN_0043ba10_shell* FUN_0043ba10_shell::AssignInternedString(FUN_0043ba10_shell* other)
 {
     int tmp;

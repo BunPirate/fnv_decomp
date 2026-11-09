@@ -10,23 +10,24 @@ class TESForm;
 class TESFile;
 enum PACK_EVENT_ACTION_TYPE;
 
-class PackageEventActionData_packageeventaction
+// pdb: class PackageEventAction, size 0x10, 4 members
+class PackageEventAction
 {
 public:
-    TESIdleForm* m_pIdleForm;
-    Script* m_pScript;
+    TESIdleForm* pIdle;
+    Script* pResultScript;
     TESTopic* pTopic;
     PACK_EVENT_ACTION_TYPE eType;
 
-    PackageEventActionData_packageeventaction();
+    PackageEventAction();
     void Clear();
-    void CopyFrom(PackageEventActionData_packageeventaction* apCopy);
-    bool IsDifferentFrom(PackageEventActionData_packageeventaction* apParam);
+    void Copy(PackageEventAction* apCopy);
+    bool Compare(PackageEventAction* apCompare);
     void Save(int aeChunk);
     void* GetScript();
-    void InitItem(TESForm* owner);
+    void InitItem(TESForm* apOwner);
     void InitItem(int item);
-    void Load(TESFile* file);
+    void Load(TESFile* apFile);
 };
 #include "../../include/BSSimpleList.h"
 #include "../../include/TESObjectREFR.h"
@@ -51,146 +52,154 @@ TESForm* GetFormByID(unsigned int);
 extern ScriptVariableInfo* DAT_011d66ac;
 
 // @fnv 0x00680890
-PackageEventActionData_packageeventaction::PackageEventActionData_packageeventaction()
+// pdb: TESCondition::TESCondition | TESCondition.obj | debug, call graph, medium
+PackageEventAction::PackageEventAction()
 {
     // The original initializes the two leading pointers through this list constructor.
     reinterpret_cast<BSSimpleList<TESForm*>*>(this)->BSSimpleList<TESForm*>::BSSimpleList();
 }
 
 // @fnv 0x0067e190
-void PackageEventActionData_packageeventaction::InitItem(TESForm* owner)
+// pdb: PackageEventAction::InitItem | PackageEventAction.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: pidle, ptopic, tempint, iwarnings, iprevwarnings, pscriptname
+void PackageEventAction::InitItem(TESForm* apOwner)
 {
-    unsigned int id = (unsigned int)m_pIdleForm;
-    TESForm::RemapFormIDForFile(id, owner->GetFile(-1));
+    unsigned int id = (unsigned int)pIdle;
+    TESForm::RemapFormIDForFile(id, apOwner->GetFile(-1));
     TESObjectANIO* idle = dynamic_cast<TESObjectANIO*>(GetFormByID(id));
     if (idle)
-        m_pIdleForm = reinterpret_cast<TESIdleForm*>(idle);
+        pIdle = reinterpret_cast<TESIdleForm*>(idle);
     else if (id)
     {
-        if (((BGSCameraPath*)owner)->HasNameForWarning())
-            Warning("MASTERFILE: Unable to find Idle (%08X) on owner object \"%s\".", id, owner->GetName());
+        if (((BGSCameraPath*)apOwner)->HasNameForWarning())
+            Warning("MASTERFILE: Unable to find Idle (%08X) on owner object \"%s\".", id, apOwner->GetName());
         else
-            Warning("MASTERFILE: Unable to find Idle (%08X) on owner object (%08X).", id, owner->GetFormID());
-        m_pIdleForm = 0;
+            Warning("MASTERFILE: Unable to find Idle (%08X) on owner object (%08X).", id, apOwner->GetFormID());
+        pIdle = 0;
     }
     id = (unsigned int)pTopic;
-    TESForm::RemapFormIDForFile(id, owner->GetFile(-1));
+    TESForm::RemapFormIDForFile(id, apOwner->GetFile(-1));
     TESTopic* topic = dynamic_cast<TESTopic*>(GetFormByID(id));
     if (topic)
         pTopic = topic;
     else if (id)
     {
-        if (((BGSCameraPath*)owner)->HasNameForWarning())
-            Warning("MASTERFILE: Unable to find Topic (%08X) on owner object \"%s\".", id, owner->GetName());
+        if (((BGSCameraPath*)apOwner)->HasNameForWarning())
+            Warning("MASTERFILE: Unable to find Topic (%08X) on owner object \"%s\".", id, apOwner->GetName());
         else
-            Warning("MASTERFILE: Unable to find Topic (%08X) on owner object (%08X).", id, owner->GetFormID());
+            Warning("MASTERFILE: Unable to find Topic (%08X) on owner object (%08X).", id, apOwner->GetFormID());
         pTopic = 0;
     }
-    if (m_pScript)
+    if (pResultScript)
     {
         int errors;
         int oldWarning = Warning();
         SetWarningState(true);
         BGSMessageWarningAuxiliary(0);
-        ((Script*)m_pScript)->NotifySaveLoadGameOfFormChange();
-        ((Script*)m_pScript)->InitItem(owner);
-        ((Script*)m_pScript)->GetHeader()->m_bQuest = false;
+        ((Script*)pResultScript)->NotifySaveLoadGameOfFormChange();
+        ((Script*)pResultScript)->InitItem(apOwner);
+        ((Script*)pResultScript)->GetHeader()->m_bQuest = false;
         SetWarningState(false);
         errors = Warning();
         BGSMessageWarningAuxiliary(oldWarning);
         if (errors)
             Warning("MASTERFILE: Errors were encountered during InitItem for result script on eventaction for package '%s' (%08X)\n\nSee Warnings file for more information.",
-                    owner->GetName(), owner->GetFormID());
+                    apOwner->GetName(), apOwner->GetFormID());
     }
 }
 
 // Loads a Script from a TESFile: reads variable, condition, data, reference and item/topic chunks, then discards the script if it has no data.
 // @fnv 0x0067dd20
-void PackageEventActionData_packageeventaction::Load(TESFile* file)
+// pdb: PackageEventAction::Load | PackageEventAction.obj | debug, call graph, high
+// pdb params: apFile
+// pdb locals: iid, bbreak, pMessage, tmpdata, n, pNewItem, tempID
+void PackageEventAction::Load(TESFile* apFile)
 {
     unsigned int id;
-    m_pIdleForm = 0;
+    pIdle = 0;
     pTopic = 0;
-    if (m_pScript)
+    if (pResultScript)
     {
-        delete (Script*)m_pScript;
-        m_pScript = 0;
+        delete (Script*)pResultScript;
+        pResultScript = 0;
     }
-    m_pScript = new Script;
+    pResultScript = new Script;
     for (;;)
     {
         bool done = false;
-        switch ((int)file->GetChunkID())
+        switch ((int)apFile->GetChunkID())
         {
         case 0x44534c53:
         case 0x52564353:
-            if (file->GetChunkID() == 0x44534c53)
+            if (apFile->GetChunkID() == 0x44534c53)
             {
                 DAT_011d66ac = new ScriptVariableInfo;
-                DAT_011d66ac->Load(file);
-                ((Script*)m_pScript)->GetVariableList()->AddTail(DAT_011d66ac);
+                DAT_011d66ac->Load(apFile);
+                ((Script*)pResultScript)->GetVariableList()->AddTail(DAT_011d66ac);
             }
             else if (DAT_011d66ac)
             {
-                char* name = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(name, 512);
+                char* name = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(name, 512);
                 DAT_011d66ac->name.Set(name, 0);
             }
             break;
         case 0x52484353:
-            file->GetChunkData(((Script*)m_pScript)->GetHeader(), 0);
-            if (file->IsEndianConversionRequired())
-                ((Script*)m_pScript)->GetHeader()->Endian();
+            apFile->GetChunkData(((Script*)pResultScript)->GetHeader(), 0);
+            if (apFile->IsEndianConversionRequired())
+                ((Script*)pResultScript)->GetHeader()->Endian();
             break;
         case 0x41444353: {
-            unsigned int size = file->GetChunkSize();
+            unsigned int size = apFile->GetChunkSize();
             char* data = (char*)_alloca(size);
             memset(data, 0, size);
-            file->GetChunkData(data, 0);
-            ((Script*)m_pScript)->SetScriptData(size, data);
+            apFile->GetChunkData(data, 0);
+            ((Script*)pResultScript)->SetCompileData(size, data);
             break;
         }
         case 0x4f524353: {
             unsigned int formID;
             ScriptReferencedObject* object = new ScriptReferencedObject;
-            file->GetChunkData(&formID);
+            apFile->GetChunkData(&formID);
             object->pForm = (TESForm*)formID;
-            ((Script*)m_pScript)->GetReferencedObjectList()->AddTail(object);
+            ((Script*)pResultScript)->GetReferencedObjectList()->AddTail(object);
             break;
         }
         case 0x56524353: {
             unsigned int formID;
             ScriptReferencedObject* object = new ScriptReferencedObject;
-            file->GetChunkData(&formID);
+            apFile->GetChunkData(&formID);
             object->m_uiFormID = formID;
-            ((Script*)m_pScript)->GetReferencedObjectList()->AddTail(object);
+            ((Script*)pResultScript)->GetReferencedObjectList()->AddTail(object);
             break;
         }
         break;
         case 0x4d414e49:
-            file->GetChunkData(&id);
-            m_pIdleForm = (TESIdleForm*)id;
+            apFile->GetChunkData(&id);
+            pIdle = (TESIdleForm*)id;
             break;
         case 0x4d414e54:
-            file->GetChunkData(&id);
+            apFile->GetChunkData(&id);
             pTopic = (TESTopic*)id;
             done = true;
             break;
         }
         if (done)
             break;
-        file->NextChunk();
+        apFile->NextChunk();
     }
-    ((Script*)m_pScript)->SetInitializationState(false);
-    if (!((Script*)m_pScript)->GetData())
+    ((Script*)pResultScript)->SetInitializationState(false);
+    if (!((Script*)pResultScript)->GetData())
     {
-        delete (Script*)m_pScript;
-        m_pScript = 0;
+        delete (Script*)pResultScript;
+        pResultScript = 0;
     }
 }
 
 // @fnv 0x0067da80
-void PackageEventActionData_packageeventaction::Clear()
+// pdb: PackageEventAction::~PackageEventAction | PackageEventAction.obj | debug, call graph, medium
+void PackageEventAction::Clear()
 {
     *(int*)this = 0;
     *((int*)this + 2) = 0;
@@ -203,18 +212,21 @@ extern "C" void TESForm_AddChunk_00485910(int, int);
 // This adapter supplies only the missing methods, with no copied Script layout.
 struct PackageEventScriptMethods
 {
-    void ProcessHeader();
-    bool IsDifferentFrom(void*);
+    void Script_SaveResultScript();
+    bool Script_CompareResultScripts(void*);
 };
 // @fnv 0x0067dc80
-void PackageEventActionData_packageeventaction::Save(int aeChunk)
+// pdb: PackageEventAction::Save | PackageEventAction.obj | retail, object-file run extension, high
+// pdb params: aeChunk
+// pdb locals: iid
+void PackageEventAction::Save(int aeChunk)
 {
     TESForm_AddChunk(aeChunk);
-    unsigned int iid = m_pIdleForm ? ((TESForm*)m_pIdleForm)->GetFormID() : 0;
+    unsigned int iid = pIdle ? ((TESForm*)pIdle)->GetFormID() : 0;
     TESForm_AddChunk_00485910(0x4d414e49, iid);
     iid = pTopic ? pTopic->GetFormID() : 0;
-    if (m_pScript)
-        ((PackageEventScriptMethods*)m_pScript)->ProcessHeader();
+    if (pResultScript)
+        ((PackageEventScriptMethods*)pResultScript)->Script_SaveResultScript();
     TESForm_AddChunk_00485910(0x4d414e54, iid);
 }
 
@@ -227,7 +239,10 @@ void* __cdecl operator new(unsigned int);
 
 // Copies quantity, flags and form ID from apCopy, then clones or clears the script pointer depending on whether apCopy has one.
 // @fnv 0x0067dad0
-void PackageEventActionData_packageeventaction::CopyFrom(PackageEventActionData_packageeventaction* apCopy)
+// src: XBOX_RETAIL_PDB 0x0067dad0
+// pdb: PackageEventAction::Copy | PackageEventAction.obj | retail, object-file run extension, high
+// pdb params: apCopy
+void PackageEventAction::Copy(PackageEventAction* apCopy)
 {
     reinterpret_cast<QuantityData*>(this)->SetQuantity(reinterpret_cast<const GO*>(apCopy)->operator unsigned int());
 
@@ -235,34 +250,37 @@ void PackageEventActionData_packageeventaction::CopyFrom(PackageEventActionData_
 
     reinterpret_cast<MagicCaster*>(this)->SetSelectedMagicItem(reinterpret_cast<TESForm*>(apCopy)->GetFormID());
 
-    if (apCopy->m_pScript)
+    if (apCopy->pResultScript)
     {
-        if (!m_pScript)
+        if (!pResultScript)
         {
-            m_pScript = new Script;
-            ((Script*)m_pScript)->NotifySaveLoadGameOfFormChange();
+            pResultScript = new Script;
+            ((Script*)pResultScript)->NotifySaveLoadGameOfFormChange();
         }
-        ((Script*)m_pScript)->CopyScriptContents((Script*)apCopy->m_pScript);
+        ((Script*)pResultScript)->CopyResultScript((Script*)apCopy->pResultScript);
     }
     else
     {
-        delete (Script*)m_pScript;
-        m_pScript = 0;
+        delete (Script*)pResultScript;
+        pResultScript = 0;
     }
 }
 
 // @fnv 0x0067dbf0
-bool PackageEventActionData_packageeventaction::IsDifferentFrom(PackageEventActionData_packageeventaction* apParam)
+// src: XBOX_RETAIL_PDB 0x0067dbf0
+// pdb: PackageEventAction::Compare | PackageEventAction.obj | retail, call graph (shared callers), high
+// pdb params: apCompare
+bool PackageEventAction::Compare(PackageEventAction* apCompare)
 {
-    if ((int)m_pIdleForm != (int)reinterpret_cast<const GO*>(apParam)->operator unsigned int())
+    if ((int)pIdle != (int)reinterpret_cast<const GO*>(apCompare)->operator unsigned int())
         return true;
-    if ((int)pTopic != reinterpret_cast<TESObjectREFR*>(apParam)->GetFlags())
+    if ((int)pTopic != reinterpret_cast<TESObjectREFR*>(apCompare)->GetFlags())
         return true;
-    if ((void*)m_pScript || apParam->GetScript())
+    if ((void*)pResultScript || apCompare->GetScript())
     {
-        if (!(void*)m_pScript || !apParam->GetScript())
+        if (!(void*)pResultScript || !apCompare->GetScript())
             return true;
-        if (((PackageEventScriptMethods*)m_pScript)->IsDifferentFrom(apParam->GetScript()))
+        if (((PackageEventScriptMethods*)pResultScript)->Script_CompareResultScripts(apCompare->GetScript()))
             return true;
     }
     return false;

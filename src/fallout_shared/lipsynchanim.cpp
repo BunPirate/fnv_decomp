@@ -3,12 +3,15 @@
 #include "lipsynchanim_decls.h"
 
 // @fnv 0x004d5930
+// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | retail, object-file gap fill, medium
+// pdb note: debug build links it to LipSynchAnim::ApplyToNode
+// pdb params: aFilename
 bool LipSyncAnimation::ApplyToAnimationData(BSFaceGenAnimationData* animation, float endDelay)
 {
     if (!animation)
         return false;
 
-    animation->SetTransitionDuration(BSMIN(0.2f, GetNegativeMagnitude(false, true, true, true, false)));
+    animation->SetTransitionDuration(BSMIN(0.2f, LipSynchAnim_LoadFromFile(false, true, true, true, false)));
 
     float phonemes[16];
     float modifiers[17];
@@ -31,6 +34,9 @@ bool LipSyncAnimation::ApplyToAnimationData(BSFaceGenAnimationData* animation, f
 // Scalar deleting destructor entry; the destructor body is a separate callee.
 // Calls FUN_004d5080, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x004d5850
+// pdb: LipSynchAnim::~LipSynchAnim | LipSynchAnim.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to LipSynchAnim::`scalar deleting destructor'
+// pdb locals: pfloatBuffer
 void* LipSyncAnimation::DeleteThis(unsigned int flags)
 {
     ReleaseStorage_004d5080();
@@ -42,6 +48,9 @@ void* LipSyncAnimation::DeleteThis(unsigned int flags)
 // Reads characters from stream into output until size bytes are consumed, expanding zero markers into runs of zero bytes.
 // @fnv 0x004d5880
 // src: COMMUNITY 0x004d5880
+// pdb: LipSynchAnim::Decompress | LipSynchAnim.obj | retail, upstream name already matches, high
+// pdb params: apFile, apDest, aiBufferSize, aiDecompSize
+// pdb locals: iprocessed, bok, c, scount
 bool __cdecl LipSynchAnim_Decompress(NiBinaryStream* stream, char* output, unsigned int size)
 {
     bool success = true;
@@ -103,6 +112,9 @@ bool __cdecl LipSynchAnim_Decompress(NiBinaryStream*, char*, unsigned int, unsig
 
 // Reads a 12-byte header from the stream, decompresses or reads the payload into a buffer, parses it into an animation, and deletes the stream and buffer.
 // @fnv 0x004d5350
+// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | debug, object-file run extension, low
+// pdb params: apFile
+// pdb locals: isize, pretval, pdata, LHead, pbuffer, nIndex, ibufferSize, pEnd
 LipSyncAnimation* __cdecl ReadAnimationFromStream(Stream* stream)
 {
     Header headerTmp;

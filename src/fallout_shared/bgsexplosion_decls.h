@@ -15,7 +15,7 @@ struct TESFormInitFlag : public TESForm
 class TESFileChunkData16
 {
   public:
-    bool GetChunkData(unsigned short* data);
+    bool GetChunkData(unsigned short* apData);
 };
 
 class CombatController;

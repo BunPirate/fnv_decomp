@@ -9,6 +9,7 @@
 struct BRRayCastInput;
 struct BRRayCastOutput;
 
+// pdb: class hkpBoxShape, size 0x30, bases: hkpConvexShape, 1 members
 class hkpBoxShape : public hkpConvexShape
 {
 public:
@@ -27,7 +28,7 @@ public:
                                  hkVector4& separatingNormalInOut) const;
     virtual void GetCentre(hkVector4& centreOut) const;
 
-    inline const hkVector4& getHalfExtents() const { return m_vHalfExtents; }
+    inline const hkVector4& getHalfExtents() const { return m_halfExtents; }
     void SetHalfExtents(const hkVector4& halfExtents);
     void GetHalfExtents(hkVector4& result) const;
     void GetAabb(const hkTransform& transform, hkReal tolerance, hkAabb& out) const;
@@ -37,5 +38,5 @@ public:
     hkpBoxShape* SetExtentsAndRadius(const hkVector4& halfExtents, float radius);
 
     char pad14[0xC];
-    hkVector4 m_vHalfExtents;
+    hkVector4 m_halfExtents;
 };

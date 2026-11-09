@@ -16,22 +16,26 @@ Actor* __fastcall GetCombatProcedureActor(CombatProcedure*);
 void __fastcall SetCombatProcedureState(CombatProcedure*);
 
 // @fnv 0x009da7a0
+// pdb: CombatProcedureSwitchWeapon::~CombatProcedureSwitchWeapon | CombatProcedureSwitchWeapon.obj | debug, upstream name already matches, high
 CombatProcedureSwitchWeapon::~CombatProcedureSwitchWeapon()
 {
 }
 
 // Saves the base combat procedure, then writes pWeapon and the 1-byte field at offset 0x14 to the save buffer.
 // @fnv 0x009da970
-void CombatProcedureSwitchWeapon::SaveGame(BGSSaveFormBuffer* buffer)
+// pdb: CombatProcedureUseCombatItem::SaveGame | CombatProcedureUseCombatItem.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+void CombatProcedureSwitchWeapon::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    CombatProcedure::SaveGame(buffer);
-    buffer->SerializeFormData(pWeapon, 0);
-    buffer->SaveData(reinterpret_cast<char*>(this) + 0x14, 1, 0);
+    CombatProcedure::SaveGame(apSaveGameBuffer);
+    apSaveGameBuffer->SerializeFormData(pWeapon, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<char*>(this) + 0x14, 1, 0);
 }
 
 void __cdecl Deallocate(void*);
 // Calls the destructor, then deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x009da770
+// pdb: CombatProcedureSwitchWeapon::`scalar deleting destructor' | CombatProcedureSwitchWeapon.obj | debug, vtable slot, medium
 void* CombatProcedureSwitchWeapon::DestroyIfFlagged(unsigned int flags)
 {
     this->~CombatProcedureSwitchWeapon();
@@ -43,6 +47,8 @@ void* CombatProcedureSwitchWeapon::DestroyIfFlagged(unsigned int flags)
 TESForm* __cdecl _ref_004839c0(unsigned int);
 // Loads the base combat procedure state, resolves the weapon form from the buffer, and reads one byte into the field at offset 0x14.
 // @fnv 0x009da9b0
+// pdb: CombatProcedureSwitchWeapon::LoadGame | CombatProcedureSwitchWeapon.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
 void CombatProcedureSwitchWeapon::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     CombatProcedure::LoadGame(apLoadGameBuffer);
@@ -52,10 +58,12 @@ void CombatProcedureSwitchWeapon::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 
 // Calls the base constructor, installs the vtable, stores apWeapon in pWeapon and clears the byte flag.
 // @fnv 0x009da720
+// pdb: CombatProcedureSwitchWeapon::CombatProcedureSwitchWeapon | CombatProcedureSwitchWeapon.obj | debug, upstream name already matches, high
+// pdb params: apWeapon
 CombatProcedureSwitchWeapon::CombatProcedureSwitchWeapon(TESObjectWEAP* apWeapon)
 {
     pWeapon = apWeapon;
-    m_ucWeaponState = 0;
+    bEquipQueued = 0;
 }
 
 struct ExtraDataList;
@@ -67,9 +75,11 @@ struct InvEntry
 bool __fastcall TESObjectWEAP_IsThrownWeapon(TESForm*);
 bool __fastcall TESObjectWEAP_IsMeleeWeapon(TESForm*);
 // @fnv 0x009da7c0
+// pdb: CombatProcedureSwitchWeapon::Update | CombatProcedureSwitchWeapon.obj | retail, vtable slot, high
+// pdb locals: pcurrentWeaponItem, pcurrentWeapon, pattacker, icount
 void CombatProcedureSwitchWeapon::UpdateWeaponDraw()
 {
-    if (m_pCombatController->IsFleeing_00981990())
+    if (pCombatController->IsFleeing_00981990())
     {
         SetCombatProcedureState(this);
         return;
@@ -79,7 +89,7 @@ void CombatProcedureSwitchWeapon::UpdateWeaponDraw()
         return;
     InvEntry* entry = reinterpret_cast<InvEntry*>(reinterpret_cast<BaseProcess*>(actor->FUN_008d8520())->GetActiveWeapon());
     TESForm* weap = entry ? entry->FUN_0044ddc0() : 0;
-    if (!m_ucWeaponState && weap != pWeapon)
+    if (!bEquipQueued && weap != pWeapon)
     {
         if (reinterpret_cast<BaseProcess*>(actor->FUN_008d8520())->IsAdditionalActorFlagSet())
         {
@@ -97,14 +107,14 @@ void CombatProcedureSwitchWeapon::UpdateWeaponDraw()
         {
             actor->QueueUnEquipObject(weap, entry->FUN_00726070(), false, false, false, true);
         }
-        m_ucWeaponState = true;
+        bEquipQueued = true;
     }
     else if (weap == pWeapon)
     {
         if (!reinterpret_cast<BaseProcess*>(actor->FUN_008d8520())->IsAdditionalActorFlagSet())
             actor->Actor_SetWantWeaponDrawn(true);
         if (!weap || TESObjectWEAP_IsMeleeWeapon(weap))
-            m_pCombatController->UpdateActorValues();
+            pCombatController->DeterminePowerAttackDeltas();
         SetCombatProcedureState(this);
     }
 }

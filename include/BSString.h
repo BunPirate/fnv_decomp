@@ -26,7 +26,7 @@ public:
         return m_dataLen;
     }
 
-    bool Set(const char* text, unsigned int requested);
+    bool Set(const char* apString, unsigned int aiMaxLen);
     int Sprintf(const char* fmt, ...);
     int PrintfString(const char*, ...);
     unsigned int Length();

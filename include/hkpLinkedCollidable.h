@@ -7,6 +7,7 @@
 class NarrowPhaseAgentEntry;
 struct hkFinishLoadedObjectFlagCD2C;
 
+// pdb: class hkpLinkedCollidable, size 0x5c, bases: hkpCollidable, 1 members
 class hkpLinkedCollidable : public hkpCollidable
 {
 public:
@@ -31,5 +32,5 @@ public:
     static void* __cdecl operator new(std::size_t nbytes);
     const hkArray<CollisionKeyEntry>& getCollisionEntriesDeterministicUnchecked() const;
 
-    hkArray<char> m_kCollisionEntries;
+    hkArray<char> m_collisionEntries;
 };

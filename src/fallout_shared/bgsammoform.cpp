@@ -6,6 +6,9 @@
 #include "../../include/BaseFormComponent.h"
 
 // @fnv 0x00474b70
+// pdb: BGSAmmoForm::CompareComponent | BGSAmmoForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcompare
 bool BGSAmmoForm::CompareWithBase(BaseFormComponent* apCompareFC)
 {
     BGSAmmoForm* pcompare = dynamic_cast<BGSAmmoForm*>(apCompareFC);
@@ -22,6 +25,8 @@ struct DeallocHolder
     unsigned int __thiscall _ref_0084e3a0();
 };
 // @fnv 0x00474af0
+// pdb: BGSAmmoForm::Save | BGSAmmoForm.obj | debug, call graph, high
+// pdb locals: itempint
 void BGSAmmoForm::Free()
 {
     if (m_pAmmo != 0)
@@ -32,6 +37,9 @@ void BGSAmmoForm::Free()
 }
 
 // @fnv 0x00474b30
+// pdb: BGSAmmoForm::CopyComponent | BGSAmmoForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
 void BGSAmmoForm::CopyFromBase(BaseFormComponent* apCopyFC)
 {
     BGSAmmoForm* pcopy = dynamic_cast<BGSAmmoForm*>(apCopyFC);
@@ -54,7 +62,10 @@ struct GroupHolder
 // The shared class does not yet declare the scripted-ammo queries.
 GroupHolder* __fastcall GetAmmoScript(BGSAmmoForm* ammoForm);
 // @fnv 0x00474a80
-bool __fastcall HasAmmoScript(BGSAmmoForm* ammoForm)
+// src: XBOX_RETAIL_PDB 0x00474a80
+// pdb: BGSAmmoForm::IsRockItLauncher | BGSAmmoForm.obj | retail, call graph, high
+// pdb locals: testform, testammo
+bool __fastcall BGSAmmoForm_IsRockItLauncher(BGSAmmoForm* ammoForm)
 {
     if (GetAmmoScript(ammoForm))
     {
@@ -87,12 +98,15 @@ extern const char str_0101a404[];
 extern const char str_0101a444[];
 
 // @fnv 0x00474bc0
-void BGSAmmoForm::InitItem(TESForm* apCompareFC)
+// pdb: BGSAmmoForm::InitItem | BGSAmmoForm.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: itempint
+void BGSAmmoForm::InitItem(TESForm* apOwner)
 {
     if (m_pAmmo)
     {
         void* oldAmmo = m_pAmmo;
-        ResolveFormID(&oldAmmo, reinterpret_cast<ComparisonInfo*>(apCompareFC)->FUN_00484e60(-1));
+        ResolveFormID(&oldAmmo, reinterpret_cast<ComparisonInfo*>(apOwner)->FUN_00484e60(-1));
         m_pAmmo = static_cast<TESForm*>(TESForm_GetFormByNumericID(oldAmmo));
         if (m_pAmmo && reinterpret_cast<AmmoRecord*>(m_pAmmo)->FUN_00401170() != 0x29 &&
             reinterpret_cast<AmmoRecord*>(m_pAmmo)->FUN_00401170() != 0x55)
@@ -101,17 +115,17 @@ void BGSAmmoForm::InitItem(TESForm* apCompareFC)
         }
         if (!m_pAmmo)
         {
-            if (apCompareFC)
+            if (apOwner)
             {
-                if (reinterpret_cast<ComparisonInfo*>(apCompareFC)->GetFormEditorIDLength())
+                if (reinterpret_cast<ComparisonInfo*>(apOwner)->GetFormEditorIDLength())
                 {
                     Warning_005b5e40(str_0101a444, oldAmmo,
                                  (reinterpret_cast<int(__thiscall*)(TESForm*)>(
-                                     (*reinterpret_cast<void***>(apCompareFC))[0x130 / 4]))(apCompareFC));
+                                     (*reinterpret_cast<void***>(apOwner))[0x130 / 4]))(apOwner));
                 }
                 else
                 {
-                    Warning_005b5e40(str_0101a404, oldAmmo, reinterpret_cast<DeallocHolder*>(apCompareFC)->_ref_0084e3a0());
+                    Warning_005b5e40(str_0101a404, oldAmmo, reinterpret_cast<DeallocHolder*>(apOwner)->_ref_0084e3a0());
                 }
             }
             else

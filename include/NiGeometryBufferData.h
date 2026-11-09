@@ -7,6 +7,7 @@ class COMUnknownInterface;
 class COMBaseInterface;
 class NiVBChip;
 
+// pdb: class NiGeometryBufferData, size 0x50 (here 0x54), bases: NiGeometryData::RendererData, 19 members
 class NiGeometryBufferData : public NiGeometryData::RendererData
 {
 public:

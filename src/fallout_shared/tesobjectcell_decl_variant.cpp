@@ -16,6 +16,7 @@ unsigned int TESTerrainLODManager_GetGrassNode();
 NiAVObject* TESMain_GetWeatherRoot();
 
 extern TES* g_TES;
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void ModelLoader_QueueReference(TESObjectREFR*, void*, int);
@@ -25,7 +26,10 @@ extern TESObjectSTAT* DAT_011ca238;
 extern TESObjectSTAT* DAT_011ca230;
 // @fnv 0x005571a0
 // src: XBOX_PDB 0x005571a0
-void TESObjectCELL::QueueReferences(bool active)
+// pdb: TESObjectCELL::QueueReferences | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: abHighPriorityOnly
+// pdb locals: plist, epriority, pref
+void TESObjectCELL::QueueReferences(bool abHighPriorityOnly)
 {
     CellRefLockEnter();
     void* list = g_TES->TES_GetCellPriority(this, 0);
@@ -37,7 +41,7 @@ void TESObjectCELL::QueueReferences(bool active)
         {
             if (!reference->GetNiNode() || reference->TESObjectREFR_HasTemp3D())
             {
-                if (!reference->FUN_00440da0() && !reference->IsDeleted() && (!active || reference->TESObjectREFR_Is3DHighPriority()))
+                if (!reference->FUN_00440da0() && !reference->IsDeleted() && (!abHighPriorityOnly || reference->TESObjectREFR_Is3DHighPriority()))
                     g_pModelLoader->ModelLoader_QueueReference(reference, list, 1);
             }
             else
@@ -56,7 +60,7 @@ void TESObjectCELL::QueueReferences(bool active)
         {
             if (!other->GetNiNode() || other->TESObjectREFR_HasTemp3D())
             {
-                if (!other->FUN_00440da0() && !other->IsDeleted() && (!active || other->TESObjectREFR_Is3DHighPriority()))
+                if (!other->FUN_00440da0() && !other->IsDeleted() && (!abHighPriorityOnly || other->TESObjectREFR_Is3DHighPriority()))
                     g_pModelLoader->ModelLoader_QueueReference(other, list, 1);
             }
             else

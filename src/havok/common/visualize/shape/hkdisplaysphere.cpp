@@ -73,6 +73,8 @@ struct __declspec(align(16)) FUN_00e0af50 : ShapeBase
 };
 
 // @fnv 0x00e0af50
+// pdb: hkDisplaySphere::hkDisplaySphere | hkDisplaySphere.obj | retail, object-file run extension, low
+// pdb params: sphere, xRes, yRes
 FUN_00e0af50::FUN_00e0af50(const hkVector4& aVec, int a, int b)
 {
     m_vec.m_vComponents.m128_i32[0] = aVec.m_vComponents.m128_i32[0];

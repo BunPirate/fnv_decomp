@@ -5,6 +5,7 @@
 class TESGrass;
 class TESLandTexture;
 
+// pdb: class TESRegionGrassObject, size 0xc, bases: TESRegionObjectBase, 2 members
 class TESRegionGrassObject : public TESRegionObjectBase
 {
 public:

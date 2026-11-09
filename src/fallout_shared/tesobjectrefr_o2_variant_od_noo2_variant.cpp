@@ -21,7 +21,7 @@ void FalloutRadio_NewCellEntered();
 void TESWaterSystem_SetPlayerForceUnderwater(unsigned char value);
 float BSAudio_GetMinDialogDist();
 float BSAudio_GetMaxDialogDist();
-void CheckWithinMultiBoundTask_CancelAttachment(unsigned int index);
+void CheckWithinMultiBoundTask_CancelAttachment(unsigned int apMoribundRef);
 struct FUN_00c9c240_holder
 {
     void* m0;
@@ -58,7 +58,7 @@ struct FUN_00c9d4c0_holder
 };
 struct CallRet
 {
-    void hkpWorld_updateCollisionFilterOnEntity(void* a, int b, int c);
+    void hkpWorld_updateCollisionFilterOnEntity(void* a, int updateMode, int updateShapeCollectionFilter);
 };
 struct Holder00c9d5d0
 {
@@ -117,7 +117,7 @@ struct FUN_00c9f3b0 : FUN_00c876a0_holder
 };
 struct WorldHolder
 {
-    void UpdatePhantom(void* a, int b);
+    void hkpWorld_updateCollisionFilterOnPhantom(void* phantom, int updateShapeCollectionFilter);
 };
 extern float DAT_010c72bc;
 struct InnerS
@@ -129,7 +129,7 @@ struct MyObj
 {
     char pad[8];
     InnerS* p8;
-    void __thiscall bhkShape_CopyCinfo(void* a);
+    void __thiscall bhkShape_CopyCinfo(void* arInfo);
 };
 struct OutS
 {
@@ -200,7 +200,7 @@ struct S_00cb3070
 };
 struct MM
 {
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
     void FUN_00cb2ff0();
     void* FUN_00cb30a0(unsigned int);
 };
@@ -418,8 +418,8 @@ struct WorldObjectView
     virtual void v43();
     virtual void v44();
     virtual CollisionResult* GetResult(unsigned char* used);
-    void bhkSerializable_CopyMembers(int a, int b);
-    void bhkWorldObject_CopyMembers(int a, int b);
+    void bhkSerializable_CopyMembers(int pDest, int arCloneData);
+    void bhkWorldObject_CopyMembers(int apDest, int arCloneData);
 };
 #include "../../include/NiTMallocInterface.h"
 template <class T, class A> struct DebugPrimitiveArray
@@ -477,7 +477,7 @@ struct DebugHelper_c849b0
     int value;
     DebugHelper_c849b0(int v) : value(v)
     {}
-    void Fill(DebugStrArray* arr);
+    void CFilter_GetViewerStrings(DebugStrArray* apStrings);
 };
 extern __declspec(thread) int tlsHeapContext;
 struct HeapContextGuard
@@ -494,7 +494,7 @@ struct HeapContextGuard
     }
 };
 char* MakeDebugHeader(const char* name);
-char* MakeDebugLine(const char* label, const char* value);
+char* MakeDebugLine(const char* pcPrefix, const char* pcValue);
 int SprintfS(char* buf, int size, const char* fmt, ...);
 extern const char* g_debugHeaderName;
 struct bhkBase_c878c0
@@ -728,8 +728,8 @@ inline void* operator new(unsigned int n)
 }
 struct FUN_00c9efa0_cls
 {
-    void bhkWorldObject_CopyMembers(FUN_00c6d190* p, unsigned int flag);
-    bhkRefObject* bhkSimpleShapePhantom_CreateClone(unsigned int flag);
+    void bhkWorldObject_CopyMembers(FUN_00c6d190* apDest, unsigned int arCloneData);
+    bhkRefObject* bhkSimpleShapePhantom_CreateClone(unsigned int arCloneData);
 };
 struct S_00c9f1e0_Shape
 {
@@ -947,7 +947,7 @@ struct S_00c9f1e0_Obj
     virtual S_00c9f1e0_Holder* GetWorld();
     int unk04;
     S_00c9f1e0_Ctx* ctx;
-    void bhkSimpleShapePhantom_GetFixedClosestPoints(S_00c9f1e0_Range* r);
+    void bhkSimpleShapePhantom_GetFixedClosestPoints(S_00c9f1e0_Range* arCollector);
 };
 extern __declspec(thread) int g_iC9F270MemContext;
 class C9F270MemContext
@@ -992,8 +992,8 @@ class C9F270StrArray
 class C9F270Object
 {
   public:
-    void GetViewerStringsBase(C9F270StrArray* pkStrings);
-    void bhkSimpleShapePhantom_GetViewerStrings(C9F270StrArray* pkStrings);
+    void GetViewerStringsBase(C9F270StrArray* apStrings);
+    void bhkSimpleShapePhantom_GetViewerStrings(C9F270StrArray* apStrings);
 };
 extern __declspec(thread) int tlsMode;
 struct ReleaseObject
@@ -1006,7 +1006,7 @@ struct FUN_00c9f320_object
     int unk04;
     int unk08;
     int unk0c;
-    void bhkAabbPhantom_KillCinfo(char release);
+    void bhkAabbPhantom_KillCinfo(char abCreated);
 };
 struct TlsGuard
 {
@@ -1080,8 +1080,8 @@ void __cdecl bhkSerializable_CloneCritLock();
 void __cdecl bhkSerializable_CloneCritUnlock();
 struct ProjectileCreator
 {
-    void __thiscall bhkWorldObject_CopyMembers(Object_00c9f5a0* projectile, int mode);
-    Object_00c9f5a0* __thiscall bhkAabbPhantom_CreateClone(int mode);
+    void __thiscall bhkWorldObject_CopyMembers(Object_00c9f5a0* apDest, int arCloneData);
+    Object_00c9f5a0* __thiscall bhkAabbPhantom_CreateClone(int arCloneData);
 };
 struct TLSBlock
 {
@@ -1297,7 +1297,7 @@ struct FUN_00cf2cb0
         return p;
     }
     static void operator delete(void*);
-    FUN_00cf2cb0(void* contents, int tag);
+    FUN_00cf2cb0(void* aabb, int collisionFilterInfo);
 };
 extern "C" void __fastcall FUN_00c905b0(FUN_00cf2cb0*);
 struct Input
@@ -1356,7 +1356,7 @@ struct Receiver
     virtual void v45();
     virtual void v46();
     virtual void finish(void*);
-    void bhkAabbPhantom_Init(Input* input);
+    void bhkAabbPhantom_Init(Input* arInfo);
 };
 extern __declspec(thread) int g_iC9F970AllocTag;
 struct BC9F970AllocTagScope
@@ -1391,8 +1391,8 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 class FUN_00c9f970_cls
 {
   public:
-    void bhkPhantom_GetViewerStrings(BC9F970StringArray* pkArray);
-    void bhkAabbPhantom_GetViewerStrings(BC9F970StringArray* pkArray);
+    void bhkPhantom_GetViewerStrings(BC9F970StringArray* apStrings);
+    void bhkAabbPhantom_GetViewerStrings(BC9F970StringArray* apStrings);
 };
 struct MemContextTLS
 {
@@ -1452,7 +1452,7 @@ struct SphereShapeBase
 {
     void* vtbl;
     int unk04;
-    void BaseGetViewerStrings(ViewerStringArray* apViewerStrings);
+    void BaseGetViewerStrings(ViewerStringArray* apStrings);
 };
 struct SphereShape : SphereShapeBase
 {
@@ -1461,7 +1461,7 @@ struct SphereShape : SphereShapeBase
     {
         return (this && pHkShape) ? pHkShape->fRadius : DAT_010c72bc;
     }
-    void bhkConvexShape_GetViewerStrings(ViewerStringArray* apViewerStrings);
+    void bhkConvexShape_GetViewerStrings(ViewerStringArray* apStrings);
 };
 extern int DAT_0126825c;
 class FUN_00c9fd70_cls : public FUN_00c9fb00
@@ -1477,7 +1477,7 @@ struct SphereScaleFields
 };
 struct SphereScalingMethod : bhkSphereShape
 {
-    void __thiscall bhkBoxShape_CopyMembers(void* first, ArgB* second);
+    void __thiscall bhkBoxShape_CopyMembers(void* apDest, ArgB* arCloneData);
 };
 struct Tls_ca0090
 {
@@ -1689,7 +1689,7 @@ struct FUN_00ca0090_cls
     void* m08;
     void* m0C;
     void bhkConvexShape_CopyCinfo(void* a);
-    void* bhkBoxShape_CreateCinfo(unsigned char* out);
+    void* bhkBoxShape_CreateCinfo(unsigned char* arCreated);
 };
 class CA0540Base
 {
@@ -1726,8 +1726,8 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 class FUN_00ca05b0_cls
 {
   public:
-    void bhkShape_GetViewerStrings(BCA05B0StringArray* pkArray);
-    void bhkSphereRepShape_GetViewerStrings(BCA05B0StringArray* pkArray);
+    void bhkShape_GetViewerStrings(BCA05B0StringArray* apStrings);
+    void bhkSphereRepShape_GetViewerStrings(BCA05B0StringArray* apStrings);
 };
 extern int DAT_01268280;
 class FUN_00ca0660_base
@@ -1790,7 +1790,7 @@ class CA0840Constraint
     CA0840Output* m_pkOutput;
 
     void SetOutput(CA0840Output* pkOutput);
-    CA0840Output* bhkSphereShape_CreateCinfo(bool* pbCreated);
+    CA0840Output* bhkSphereShape_CreateCinfo(bool* arCreated);
 };
 class CAACF0Base
 {
@@ -1894,7 +1894,7 @@ struct HkFlags_c6b
 };
 struct HkWorld_c6b
 {
-    HkResult_c6b hkpWorldObject_removeProperty(const void* apKey);
+    HkResult_c6b hkpWorldObject_removeProperty(const void* key);
     void AddEntry(const void* apKey, void* apListener, HkFlags_c6b kFlags);
 };
 extern char DAT_01267b70[];
@@ -1911,7 +1911,7 @@ struct FUN_00c6b980_cls
 {
     int unk00, unk04, unk08, unk0c;
     World_c6b* m_spWorld;
-    void bhkNiCollisionObject_SetWorldObject(World_c6b* apWorld);
+    void bhkNiCollisionObject_SetWorldObject(World_c6b* apWorldObject);
 };
 extern int DAT_011f4280;
 struct S_00c85c10_pair
@@ -1967,7 +1967,7 @@ struct S_00c85c10_data
     S_00c85c10_entry* entries;
     int count;
 
-    void hkpWorldObject_removeProperty(int* result, int* value);
+    void hkpWorldObject_removeProperty(int* key, int* value);
     void AddEntry(int* value, int* result, S_00c85c10_flag flag);
 };
 struct S_00c85c10
@@ -1976,7 +1976,7 @@ struct S_00c85c10
     void* unk04;
     S_00c85c10_data* unk08;
 
-    void bhkWorldObject_SetAVObject(int* result, int* value);
+    void bhkWorldObject_SetAVObject(int* apObject, int* aiKey);
 };
 struct ActionC68bf0
 {
@@ -2011,10 +2011,10 @@ struct ObjectCA06
     ObjectCA06();
 };
 ObjectCA06* __cdecl bhkSphereShape_CreateObject();
-extern const char* DAT_01268288;
+extern const char* bhkSphereShape_ms_RTTI;
 struct FUN_00ca0ac0_class : SphereShape
 {
-    void bhkSphereShape_GetViewerStrings(ViewerStringArray* strings);
+    void bhkSphereShape_GetViewerStrings(ViewerStringArray* apStrings);
 };
 extern int DAT_012686d0;
 struct FUN_00cd2de0 : FUN_00c84c50
@@ -2036,7 +2036,7 @@ struct TmpObj
     TmpObj();
 };
 
-int __cdecl NI2HK(TmpObj* out, int a);
+int __cdecl NI2HK(TmpObj* arhkTran, int arNiTran);
 
 struct VtblHolder
 {
@@ -2100,13 +2100,16 @@ struct VtblHolder
 
 struct FUN_005610f0_cls : VtblHolder
 {
-    void bhkRigidBody_SetNiPosition(int a1);
+    void bhkRigidBody_SetNiPosition(int arPos);
 };
 
 // @fnv 0x005610f0
 // src: COMMUNITY 0x005610f0
-void FUN_005610f0_cls::bhkRigidBody_SetNiPosition(int a1)
+// pdb: bhkRigidBody::SetPosition | TESObjectREFR.obj | debug, call graph, high
+// pdb params: arPos
+// pdb locals: hkv
+void FUN_005610f0_cls::bhkRigidBody_SetNiPosition(int arPos)
 {
     __declspec(align(16)) TmpObj tmp;
-    this->v55(NI2HK(&tmp, a1));
+    this->v55(NI2HK(&tmp, arPos));
 }

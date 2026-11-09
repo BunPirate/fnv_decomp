@@ -31,21 +31,21 @@ struct FUN_00e39e60_class
 struct FUN_00e3f340_Class
 {
     int __thiscall FindEntryByKey(int arg);
-    void* __thiscall GetEntryByArg(int arg);
+    void* __thiscall hkxEnvironment_getVariableValue(int name);
 };
 struct FUN_00e3f900_class
 {
     int __thiscall ReturnSelf(int a);
     int __thiscall ProcessAndReturnValue_00e3f900(int a);
 };
-int __cdecl hkaSplineCompressedAnimation_packMaskAndQuantizationType(int a, int b);
+int __cdecl hkaSplineCompressedAnimation_packMaskAndQuantizationType(int a, int floatQuatization);
 struct S_00df8990_Obj;
 extern void(__cdecl* DAT_0126ec04)(void*, void*, S_00df8990_Obj*);
 void __cdecl Runtime_ProcessEntries_00e2b9b0(void*, void*, S_00df8990_Obj*);
 void __cdecl Runtime_SetDAT0126ec04();
 extern int DAT_010eb3b8[];
 extern int DAT_010eb3d0[];
-int __cdecl hkaSplineCompressedAnimation_handleEndianQuaternion(int a, int b);
+int __cdecl hkaSplineCompressedAnimation_handleEndianQuaternion(int type, int dataInOut);
 void __cdecl AlignAndAdvance(char flags, int a, int b, int* p);
 extern int DAT_010eb770;
 struct FUN_00e34800
@@ -114,7 +114,7 @@ struct SplitChunk
     int unk68;
     int unk6c;
 };
-void __cdecl InitSplitChunks(int a1, int a2, int a3, int a4, int a5, SplitChunk* out);
+void __cdecl hkKdTreeRayCastJobUtil_initializeBuildSetupJobs(int collidablesPtr, int numCollidables, int entries, int semaphore, int numJobs, SplitChunk* jobsOut);
 struct E2baaSrc
 {
     int unk00;
@@ -1104,7 +1104,7 @@ struct FUN_00e2d0d0_cls
 struct RefHolderE2
 {
     void* m_ptr;
-    RefHolderE2(const RefHolderE2& other);
+    RefHolderE2(const RefHolderE2& strRef);
     ~RefHolderE2();
     RefHolderE2& operator=(const RefHolderE2& other);
 };
@@ -1131,7 +1131,7 @@ unsigned short NormalizeToUShort(float fMin, float fScaledValue, float fValue);
 void __cdecl SwapBytesAndAdvance(int n, unsigned char** pp);
 void __cdecl FillInterpolatedValues(int count, float** array, float first, float last);
 unsigned int __cdecl hkaSplineCompressedAnimation_handleEndianKnots(unsigned char a1, unsigned int* a2);
-void __cdecl hkaSplineCompressedAnimation_handleEndianScalarControlPoints(unsigned char a1, unsigned int a2, unsigned int a3, unsigned int* a4);
+void __cdecl hkaSplineCompressedAnimation_handleEndianScalarControlPoints(unsigned char a1, unsigned int n, unsigned int type, unsigned int* dataInOut);
 void __cdecl Object_UpdateFields_00e31740(unsigned char flag, unsigned int a2, unsigned int* out);
 int __cdecl hkaSplineCompressedAnimation_handleEndianKnots(int a, int* c);
 void __cdecl AlignAndAdvance(int a, int result, int b, int* c);
@@ -1147,7 +1147,7 @@ struct FUN_00e33910_item
     int unk10;
     int unk14;
     int unk18;
-    bool* Test(bool* result);
+    bool* isOk(bool* result);
 };
 class FUN_00e33910_cls
 {
@@ -1337,7 +1337,7 @@ class FUN_00e3dfb0_cls
     int unk34;
     int m_38;
 
-    int hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* rec);
+    int hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* elem);
 };
 struct FUN_00e3ec00_Class
 {
@@ -1389,7 +1389,7 @@ struct S_00e3ed00_Foo
     S_00e3ed00_Result* __thiscall hkMemoryRouter_getInstance();
     int __thiscall AppendToTraversalList(S_00e3ed00_Foo* param1, S_00e3ed00_List* param2);
 };
-void __cdecl ResizeAudioStream(int param1, S_00e3ed00_List* param2, int param3);
+void __cdecl ResizeAudioStream(int mem, S_00e3ed00_List* array, int sizeElem);
 hkMemoryRouter& GetMemoryRouter();
 struct hkReferencedObj
 {
@@ -1464,7 +1464,7 @@ struct FUN_00e3ed80 : BaseE3EAA0
 struct E3F0F0Less
 {
 };
-void __cdecl HeapSort(int* piFirst, int* piLast, E3F0F0Less kPred);
+void __cdecl D3DXShader_HeapSort(int* piFirst, int* piLast, E3F0F0Less kPred);
 struct E3F0F0Owner
 {
     int unk00;
@@ -1538,7 +1538,7 @@ struct FUN_00e3df50_Class
 {
     FUN_00e3df50_Class* __thiscall ReturnSelf(int param);
 };
-int __cdecl hkxVertexBuffer_getVertexDataPtr(int param_1, int* param_2);
+int __cdecl hkxVertexBuffer_getVertexDataPtr(int elem, int* param_2);
 int __cdecl Object_HkxVertexBuffer_getVertexDataPtr_Thunk(int param_1, int* param_2);
 struct FNVTreeNode
 {
@@ -1611,38 +1611,41 @@ struct FUN_00e3f370_cls
     int unk04;
     FUN_00e3f370_pair* m_pItems;
     int m_iArrayLength;
-    void ReleaseItems();
+    void hkxEnvironment_clear();
 };
 
 extern "C" unsigned int __cdecl _rotl(unsigned int, int);
 // @fnv 0x00e315a0
 // src: HAVOK_LIB 0x00e315a0
-void __cdecl hkaSplineCompressedAnimation_handleEndianScalarControlPoints(unsigned char flags, unsigned int count, unsigned int wide, unsigned int* cursor)
+// pdb: hkaSplineCompressedAnimation::handleEndianScalarControlPoints | hkaSplineCompressedAnimationCtor.obj | debug, upstream name already matches, high
+// pdb params: mask, n, type, dataInOut
+// pdb locals: assertBuf, ostr
+void __cdecl hkaSplineCompressedAnimation_handleEndianScalarControlPoints(unsigned char flags, unsigned int n, unsigned int type, unsigned int* dataInOut)
 {
     if (!flags)
         return;
-    *cursor = (*cursor + 3) & ~3u;
+    *dataInOut = (*dataInOut + 3) & ~3u;
     int paired = 0;
     unsigned int mask = 1;
     for (int i = 0; i < 3; ++i)
     {
         if (flags & _rotl(mask, 4))
         {
-            SwapBytesAndAdvance(4, (unsigned char**)cursor);
-            SwapBytesAndAdvance(4, (unsigned char**)cursor);
+            SwapBytesAndAdvance(4, (unsigned char**)dataInOut);
+            SwapBytesAndAdvance(4, (unsigned char**)dataInOut);
             ++paired;
         }
         else if (flags & mask)
         {
-            SwapBytesAndAdvance(4, (unsigned char**)cursor);
+            SwapBytesAndAdvance(4, (unsigned char**)dataInOut);
         }
         mask = _rotl(mask, 1);
     }
     if (paired)
     {
-        int stride = wide ? 2 : 1;
-        for (int j = 0; j <= (int)count; ++j)
+        int stride = type ? 2 : 1;
+        for (int j = 0; j <= (int)n; ++j)
             for (int k = 0; k < paired; ++k)
-                SwapBytesAndAdvance(stride, (unsigned char**)cursor);
+                SwapBytesAndAdvance(stride, (unsigned char**)dataInOut);
     }
 }

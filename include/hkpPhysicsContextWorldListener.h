@@ -3,6 +3,7 @@
 class ContactArray;
 class hkpWorld;
 
+// pdb: class hkpPhysicsContextWorldListener, size 0x4, 0 members
 class hkpPhysicsContextWorldListener
 {
 public:

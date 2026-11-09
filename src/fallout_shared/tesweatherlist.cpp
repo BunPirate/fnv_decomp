@@ -4,7 +4,10 @@
 
 // Deletes each WeatherEntry in the list, then calls RemoveAll to clear the list.
 // @fnv 0x00582780
-void TESWeatherList::ClearWeatherSounds()
+// src: XBOX_RETAIL_PDB 0x00582780
+// pdb: TESWeatherList::FlushList | TESWeatherList.obj | retail, call graph (shared callers), high
+// pdb locals: pCurrentNode
+void TESWeatherList::FlushList()
 {
     BSSimpleList<WeatherEntry*>* current = this;
     while (current)
@@ -19,40 +22,44 @@ void TESWeatherList::ClearWeatherSounds()
 // @fnv 0x00824340
 WeatherEntry::WeatherEntry()
 {
-    m_weather = 0;
-    m_uiFilterValue = 0;
-    m_otherWeather = 0;
+    pWeather = 0;
+    uiChance = 0;
+    pChanceVar = 0;
 }
 
 // Reads weather entries from the file chunk, resolves each weather and global form, adds them to the list, sorts it, and warns on failures.
 // @fnv 0x00582940
-void TESWeatherList::LoadWeatherEntries(TESWeatherList* list, TESFile* file, TESForm* form)
+// src: XBOX_RETAIL_PDB 0x00582940
+// pdb: TESWeatherList::LoadWeatherListChunk | TESWeatherList.obj | retail, call graph (shared callers), high
+// pdb params: apWeatherList, apFile, pForm
+// pdb locals: uiCount, tmpArray, ui
+void TESWeatherList::LoadWeatherListChunk(TESWeatherList* apWeatherList, TESFile* apFile, TESForm* pForm)
 {
-    if (!file || !list || !form)
+    if (!apFile || !apWeatherList || !pForm)
         return;
-    unsigned int count = file->GetChunkSize() / 12;
+    unsigned int count = apFile->GetChunkSize() / 12;
     if (count > 0)
     {
-        list->ClearWeatherSounds();
+        apWeatherList->FlushList();
         FUN_00582570* pEntries = new FUN_00582570[count];
-        if (!file->GetChunkData(pEntries, count * 12))
-            Warning(DAT_010318b4, form->GetFormID());
+        if (!apFile->GetChunkData(pEntries, count * 12))
+            Warning(DAT_010318b4, pForm->GetFormID());
         for (unsigned int i = 0; i < count; i++)
         {
-            if (file->IsEndianConversionRequired())
+            if (apFile->IsEndianConversionRequired())
                 ((ContainerItemExtraFileData*)&pEntries[i])->Endian();
-            TESForm::RemapFormIDForFile(pEntries[i].m_unk00, file);
-            list->AddHead(new WeatherEntry);
-            if (!(list->GetItem()->m_weather =
+            TESForm::RemapFormIDForFile(pEntries[i].m_unk00, apFile);
+            apWeatherList->AddHead(new WeatherEntry);
+            if (!(apWeatherList->GetItem()->pWeather =
                       (TESWeather*)__RTDynamicCast(TESForm::GetFormByID(pEntries[i].m_unk00), 0,
                                                    (void*)DAT_01183028, (void*)DAT_0118629c, 0)))
                 Warning(DAT_01031858, pEntries[i].m_unk00);
-            list->GetItem()->m_uiFilterValue = pEntries[i].m_unk04;
-            TESForm::RemapFormIDForFile(pEntries[i].m_unk08, file);
-            list->GetItem()->m_otherWeather =
+            apWeatherList->GetItem()->uiChance = pEntries[i].m_unk04;
+            TESForm::RemapFormIDForFile(pEntries[i].m_unk08, apFile);
+            apWeatherList->GetItem()->pChanceVar =
                 dynamic_cast<TESGlobal*>(TESForm::GetFormByID(pEntries[i].m_unk08));
         }
-        list->Sort(CompareSecondElement);
+        apWeatherList->Sort(CompareSecondElement);
         delete[] pEntries;
     }
 }
@@ -68,9 +75,10 @@ struct FUN_00582320 : ListX
     ~FUN_00582320();
 };
 // @fnv 0x00582320
+// pdb: TESWeatherList::~TESWeatherList | TESWeatherList.obj | debug, object-file gap fill, medium
 FUN_00582320::~FUN_00582320()
 {
-    ((TESWeatherList*)this)->ClearWeatherSounds();
+    ((TESWeatherList*)this)->FlushList();
 }
 
 struct FUN_00582570_Data
@@ -83,6 +91,7 @@ struct FUN_00582570_Data
 // Sets the three integer fields to zero and returns this.
 // @fnv 0x00582570
 // src: GUESS 0x00582570 (confidence: low)
+// pdb: tmpWeatherEntry::Endian | TESWeatherList.obj | debug, object-file gap fill, medium
 FUN_00582570_Data* FUN_00582570_Data::ClearFields_00582570()
 {
     unk2 = 0;
@@ -103,6 +112,8 @@ struct FUN_005827d0_node
 
 // @fnv 0x005827d0
 // src: XBOX_PDB 0x005827d0
+// pdb: TESWeatherList::GetRandomWeather | TESWeatherList.obj | retail, upstream name already matches, high
+// pdb locals: uiSum, pCurrentNode, uiLow, uiHigh, pEntry, uiRand, i
 TESWeather* FUN_005827d0_list::TESWeatherList_GetRandomWeather()
 {
     BSSimpleList<WeatherEntry*>* pCurrent7;
@@ -113,11 +124,11 @@ TESWeather* FUN_005827d0_list::TESWeatherList_GetRandomWeather()
         {
             if (((FUN_005827d0_node*)pCurrent7)->_ref_006815c0())
             {
-                if (((FUN_005827d0_node*)pCurrent7)->_ref_006815c0()->m_otherWeather)
+                if (((FUN_005827d0_node*)pCurrent7)->_ref_006815c0()->pChanceVar)
                     uiTotalChance5 += (unsigned int)((FUN_005827d0_node*)pCurrent7)
-                                          ->_ref_006815c0()->m_otherWeather->GetValue();
+                                          ->_ref_006815c0()->pChanceVar->GetValue();
                 else
-                    uiTotalChance5 += ((FUN_005827d0_node*)pCurrent7)->_ref_006815c0()->m_uiFilterValue;
+                    uiTotalChance5 += ((FUN_005827d0_node*)pCurrent7)->_ref_006815c0()->uiChance;
             }
             pCurrent7 = pCurrent7->GetNext();
         }
@@ -139,9 +150,9 @@ TESWeather* FUN_005827d0_list::TESWeatherList_GetRandomWeather()
                 if (pEntry)
                 {
                     unsigned int m_uiWeatherChance =
-                        pEntry->m_otherWeather
-                            ? (unsigned int)pEntry->m_otherWeather->GetValue()
-                            : pEntry->m_uiFilterValue;
+                        pEntry->pChanceVar
+                            ? (unsigned int)pEntry->pChanceVar->GetValue()
+                            : pEntry->uiChance;
                     if (m_uiWeatherChance)
                     {
                         uiUpper += m_uiWeatherChance;
@@ -153,7 +164,7 @@ TESWeather* FUN_005827d0_list::TESWeatherList_GetRandomWeather()
                 pIter4 = pIter4->GetNext();
             }
             if (pEntry)
-                return pEntry->m_weather;
+                return pEntry->pWeather;
         }
     }
     return 0;
@@ -173,12 +184,15 @@ struct FUN_005825a0_shell : public TESWeatherList
     void CopyWeatherList(const TESWeatherList* apCopyWL, bool abAppend);
 };
 // @fnv 0x005825a0
+// pdb: TESWeatherList::CopyComponent | TESWeatherList.obj | retail, call graph, high
+// pdb params: apCopyWL, abAppend
+// pdb locals: pCurrentNode, pNewEntry
 void FUN_005825a0_shell::CopyWeatherList(const TESWeatherList* apCopyWL, bool abAppend)
 {
     if (!apCopyWL)
         return;
     if (!abAppend)
-        ClearWeatherSounds();
+        FlushList();
     if (!((FUN_005827d0_shell*)apCopyWL)->TESWeatherList_GetRandomWeather())
     {
         BSSimpleList<WeatherEntry*>* pSourceNode = (BSSimpleList<WeatherEntry*>*)apCopyWL;
@@ -202,12 +216,16 @@ int __cdecl _memcmp(const void* pDest, const void* pSrc, unsigned int uiSize);
 
 struct FUN_00582690_shell : public TESWeatherList
 {
-    bool IsDifferentFrom(TESWeatherList* apCompareWL);
+    bool TESWeatherList_CompareComponent(TESWeatherList* apCompareWL);
 };
 
 // Compares this weather list against another: returns true if the other is null, sizes differ, or any entry has no matching 12-byte-equal entry.
 // @fnv 0x00582690
-bool FUN_00582690_shell::IsDifferentFrom(TESWeatherList* apCompareWL)
+// src: XBOX_DEBUG_PDB 0x00582690
+// pdb: TESWeatherList::CompareComponent | TESWeatherList.obj | debug, call graph, high
+// pdb params: apCompareWL
+// pdb locals: pThisNode, bFound, pCompNode
+bool FUN_00582690_shell::TESWeatherList_CompareComponent(TESWeatherList* apCompareWL)
 {
     BSSimpleList<WeatherEntry*>* pThisNode;
     bool bFound;
@@ -318,12 +336,16 @@ void __cdecl WriteWeatherData(void* apDest, void* apData, unsigned int auiSize);
 struct FUN_00582380_shell : public TESWeatherList
 {
     int GetSize();
-    void WriteWeatherList(void* apDest);
+    void TESWeatherList_Save(void* aeChunkID);
 };
 
 // Builds a WeatherSaveEntry array from the list's weather entries, endian-swaps if needed, writes it to apDest, then swaps back and frees it.
 // @fnv 0x00582380
-void FUN_00582380_shell::WriteWeatherList(void* apDest)
+// src: XBOX_RETAIL_PDB 0x00582380
+// pdb: TESWeatherList::Save | TESWeatherList.obj | retail, call graph, high
+// pdb params: aeChunkID
+// pdb locals: uiCount, tmpArray, pCurrentNode, i
+void FUN_00582380_shell::TESWeatherList_Save(void* aeChunkID)
 {
     unsigned int ItemUpdateArray = GetSize();
     if (ItemUpdateArray > 0)
@@ -333,10 +355,10 @@ void FUN_00582380_shell::WriteWeatherList(void* apDest)
         BSSimpleList<WeatherEntry*>* pNode = this;
         while (pNode)
         {
-            pEntries[ItemUpdateArray].m_weatherID = ((TESForm*)pNode->GetItem()->m_weather)->GetFormID();
-            pEntries[ItemUpdateArray].m_uiFilterValue = pNode->GetItem()->m_uiFilterValue;
+            pEntries[ItemUpdateArray].m_weatherID = ((TESForm*)pNode->GetItem()->pWeather)->GetFormID();
+            pEntries[ItemUpdateArray].m_uiFilterValue = pNode->GetItem()->uiChance;
             pEntries[ItemUpdateArray].m_globalID =
-                pNode->GetItem()->m_otherWeather ? pNode->GetItem()->m_otherWeather->GetFormID() : 0;
+                pNode->GetItem()->pChanceVar ? pNode->GetItem()->pChanceVar->GetFormID() : 0;
             ItemUpdateArray++;
             pNode = pNode->GetNext();
         }
@@ -345,7 +367,7 @@ void FUN_00582380_shell::WriteWeatherList(void* apDest)
             for (unsigned int i = 0; i < ItemUpdateArray; i++)
                 pEntries[i].Endian();
         }
-        WriteWeatherData(apDest, pEntries, ItemUpdateArray * sizeof(WeatherSaveEntry));
+        WriteWeatherData(aeChunkID, pEntries, ItemUpdateArray * sizeof(WeatherSaveEntry));
         if (IsEndianSwapNeeded())
         {
             for (unsigned int j = 0; j < ItemUpdateArray; j++)

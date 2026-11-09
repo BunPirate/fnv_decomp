@@ -494,22 +494,25 @@ struct Basis
 extern void __cdecl hkpCollision_BuildResponseMatrices(const D9Row&, const D9Row&, const Basis&, D9Equation&);
 extern float __cdecl Object_ProcessAndReturnValue_00df5f80(const D9Equation&, void*, D9Pair&, D9Pair&);
 // @fnv 0x00d9ee50
-// src: GUESS 0x00d9ee50 (confidence: low)
-void __cdecl hkMatrix3_setMul_ProcessEntries_00d9ee50(D9Solver* solver, const D9Contact& contact, void* parameters, D9Body* ownerA, D9Body* ownerB,
-                          D9Shape* accumulatorA, D9Shape* accumulatorB, float& result)
+// src: XBOX_RETAIL_PDB 0x00d9ee50
+// pdb: hkpSimpleCollisionResponse::solveSingleContact2 | hkpSimpleCollisionResponse.obj | retail, call graph, high
+// pdb params: constraintData, cp, params, rigidBodyA, rigidBodyB, bodyA, bodyB, output
+// pdb locals: info, vela, ina, directions, t, x
+void __cdecl hkpSimpleCollisionResponse_solveSingleContact2(D9Solver* constraintData, const D9Contact& cp, void* params, D9Body* rigidBodyA, D9Body* rigidBodyB,
+                          D9Shape* bodyA, D9Shape* bodyB, float& output)
 {
     D9Row inputs[2];
     D9Pair velocities[2];
     {
-        D9Shape* accumulator = accumulatorA;
-        D9Body* owner = ownerA;
+        D9Shape* accumulator = bodyA;
+        D9Body* owner = rigidBodyA;
         for (int index = 0; index < 2; ++index)
         {
             D9Row& input = inputs[index];
             D9Pair& velocity = velocities[index];
             input.unk40 = accumulator->unk30;
             const D9Vector& center = accumulator->center();
-            input.unk00.subtract(contact.position(), center);
+            input.unk00.subtract(cp.position(), center);
             const D9Vector& inverseMasses = accumulator->unk30;
             velocity.unk00 = accumulator->unk10;
             {
@@ -527,32 +530,32 @@ void __cdecl hkMatrix3_setMul_ProcessEntries_00d9ee50(D9Solver* solver, const D9
                 input.unk10.hkMatrix3_setMul(scaled, accumulator->rotation());
             }
             input.unk50 = &owner->unkf0;
-            accumulator = accumulatorB;
-            owner = ownerB;
+            accumulator = bodyB;
+            owner = rigidBodyB;
         }
     }
     D9Equation equation;
     Basis basis;
-    basis.setNormalBasis(contact.normal());
-    solver->f40(contact, inputs[0], velocities[0], inputs[1], velocities[1]);
+    basis.setNormalBasis(cp.normal());
+    constraintData->f40(cp, inputs[0], velocities[0], inputs[1], velocities[1]);
     hkpCollision_BuildResponseMatrices(inputs[0], inputs[1], basis, equation);
-    result = Object_ProcessAndReturnValue_00df5f80(equation, parameters, velocities[0], velocities[1]);
-    solver->f44(contact, result, inputs[0], velocities[0], inputs[1], velocities[1]);
-    accumulatorA->unk10 = velocities[0].unk00;
-    if (ownerA->unke8 != 5)
+    output = Object_ProcessAndReturnValue_00df5f80(equation, params, velocities[0], velocities[1]);
+    constraintData->f44(cp, output, inputs[0], velocities[0], inputs[1], velocities[1]);
+    bodyA->unk10 = velocities[0].unk00;
+    if (rigidBodyA->unke8 != 5)
     {
-        ownerA->unk1b0 = velocities[0].unk00;
-        ownerA->unk1c0 = velocities[0].unk10;
+        rigidBodyA->unk1b0 = velocities[0].unk00;
+        rigidBodyA->unk1c0 = velocities[0].unk10;
     }
-    accumulatorB->unk10 = velocities[1].unk00;
-    if (ownerB->unke8 != 5)
+    bodyB->unk10 = velocities[1].unk00;
+    if (rigidBodyB->unke8 != 5)
     {
-        ownerB->unk1b0 = velocities[1].unk00;
-        ownerB->unk1c0 = velocities[1].unk10;
+        rigidBodyB->unk1b0 = velocities[1].unk00;
+        rigidBodyB->unk1c0 = velocities[1].unk10;
     }
     {
-        D9Shape* accumulator = accumulatorA;
-        for (int index = 0; index < 2; accumulator = accumulatorB, ++index)
+        D9Shape* accumulator = bodyA;
+        for (int index = 0; index < 2; accumulator = bodyB, ++index)
             accumulator->unk20.rotate(accumulator->rotation(), velocities[index].unk10);
     }
 }

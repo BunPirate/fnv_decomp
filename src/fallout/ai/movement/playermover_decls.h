@@ -2,6 +2,7 @@
 #ifndef FNV_PLAYERMOVER_DECLS_H
 #define FNV_PLAYERMOVER_DECLS_H
 
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:

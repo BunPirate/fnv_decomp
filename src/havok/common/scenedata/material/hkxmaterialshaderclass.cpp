@@ -24,6 +24,7 @@ struct FUN_00e02230
 
 // Initializes m_u04 and m_u06 to zero.
 // @fnv 0x00e02230
+// pdb: hkxMaterialShader::`scalar deleting destructor' | hkxMaterialShaderClass.obj | retail, vtable slot, high
 FUN_00e02230::FUN_00e02230()
 {
     m_u04 = 0;

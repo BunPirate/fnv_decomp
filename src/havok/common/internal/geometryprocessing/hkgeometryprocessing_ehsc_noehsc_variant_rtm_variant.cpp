@@ -88,9 +88,9 @@ __forceinline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b,
     m_vComponents =
         _mm_add_ps(a.m_vComponents, _mm_mul_ps(_mm_shuffle_ps(r.m_vValue, r.m_vValue, 0), b.m_vComponents));
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const LocalM128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    const LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const LocalM128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     const LocalM128 z = _mm_shuffle_ps(x2, x2, 0xaa);
     return _mm_add_ss(z, xySum);
@@ -201,7 +201,7 @@ struct Sub08_cls
     unsigned int unk0C;
     unsigned int unk10;
     unsigned int unk14;
-    Vertex* PushFront(PendingBlock* out);
+    Vertex* hkgpAbstractMeshDefinitions_List_hkgpMeshBase_Vertex_hkgpAbstractMeshDefinitions_List_hkgpMeshBase_Vertex_hkgpMeshBase_BaseVertex_hkGeometryProcessing_PoolAllocator_hkgpMeshBase_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpMeshBase_Vertex_32_hkContainerHeapAllocator_allocate(PendingBlock* value);
 };
 struct Sub20_cls
 {
@@ -213,7 +213,7 @@ struct FUN_00e19200_cls
     unsigned int unk04;
     Sub08_cls m_08;
     Sub20_cls m_20;
-    void SplitTriangleWithNewVertex(Triangle* a, const LocalM128* b, int c);
+    void hkgpMesh_splitTriangle(Triangle* triangle, const LocalM128* position, int updatePlanes);
 };
 extern LocalM128 DAT_01017d10;
 extern float DAT_01011d78;
@@ -306,8 +306,8 @@ __forceinline Sdedf10_Allocator& Sdedf10_heap()
     return Sdedf10_MemoryRouter::GetMonitorStream().heap();
 }
 
-void __cdecl Sdedf10_reserve(Sdedf10_Allocator& a, void* array, int reqElem, int sizeElem);
-void __cdecl Sdedf10_reserveMore(Sdedf10_Allocator& a, void* array, int sizeElem);
+void __cdecl Sdedf10_reserve(Sdedf10_Allocator& mem, void* array, int numElem, int sizeElem);
+void __cdecl Sdedf10_reserveMore(Sdedf10_Allocator& mem, void* array, int sizeElem);
 
 template <typename T> __forceinline void Sdedf10_construct(T* t, int n, Sdedf10_TypeIsPod)
 {}
@@ -453,7 +453,7 @@ __forceinline void hkVector4::operator=(const hkVector4& vector)
 {
     memcpy(this, &vector, sizeof(*this));
 }
-__forceinline void hkVector4::SetAllComponents(float a)
+__forceinline void hkVector4::setAll(float a)
 {
     m_vComponents = _mm_set_ps1(a);
 }
@@ -484,7 +484,7 @@ class Sdedf10_Aabb
 __forceinline void Sdedf10_calcAabb(const hkVector4& center, float innerRadius, Sdedf10_Aabb& aabbOut)
 {
     hkVector4 ir;
-    ir.SetAllComponents(innerRadius);
+    ir.setAll(innerRadius);
     aabbOut.m_kMinimumCorner.setSub4(center, ir);
     aabbOut.m_kMaximumCorner.setAdd4(center, ir);
     aabbOut.m_kMinimumCorner(3) = 0;
@@ -599,9 +599,9 @@ struct __declspec(align(16)) Sdedf10_Mesh
 
     Sdedf10_Mesh();
     ~Sdedf10_Mesh();
-    void AppendGeometry(const Sdedf10_Geometry& geometry, const Sdedf10_Transform& transform, int material);
+    void AppendGeometry(const Sdedf10_Geometry& geometry, const Sdedf10_Transform& xform, int partId);
     void assignVertexNormals();
-    void FinalizeMesh();
+    void hkgpMesh_rebuildTrianglesTree();
 };
 
 struct Sdedf10_NodeManager
@@ -656,12 +656,12 @@ struct Sdedf10_Collector
     virtual float GetHitDistance(const Sdedf10_TreeNode* leaf) = 0;
 };
 
-struct Sdedf10_ClosestPointCollector : Sdedf10_Collector
+struct ClosestPointCollector : Sdedf10_Collector
 {
-    __forceinline Sdedf10_ClosestPointCollector(const hkVector4& point, float initDistanceSquared)
+    __forceinline ClosestPointCollector(const hkVector4& point, float initDistanceSquared)
         : m_kPoint(point), m_fValue(initDistanceSquared)
     {}
-    virtual ~Sdedf10_ClosestPointCollector()
+    virtual ~ClosestPointCollector()
     {}
     virtual float GetHitDistance(const Sdedf10_TreeNode* leaf) = 0;
 
@@ -669,12 +669,12 @@ struct Sdedf10_ClosestPointCollector : Sdedf10_Collector
     float m_fValue;
 };
 
-struct Sdedf10_NearestFeaturePolicy : Sdedf10_ClosestPointCollector
+struct NearestFeaturePolicy : ClosestPointCollector
 {
-    __forceinline Sdedf10_NearestFeaturePolicy(const hkVector4& point, float maxDistance)
-        : Sdedf10_ClosestPointCollector(point, maxDistance), m_nearest(0)
+    __forceinline NearestFeaturePolicy(const hkVector4& point, float maxDistance)
+        : ClosestPointCollector(point, maxDistance), m_nearest(0)
     {}
-    virtual ~Sdedf10_NearestFeaturePolicy()
+    virtual ~NearestFeaturePolicy()
     {}
     virtual float GetHitDistance(const Sdedf10_TreeNode* leaf);
 
@@ -684,7 +684,7 @@ struct Sdedf10_NearestFeaturePolicy : Sdedf10_ClosestPointCollector
 void __cdecl Sdedf10_queryClosestPoint(const Sdedf10_Tree* tree, const hkVector4& point,
                                        Sdedf10_Collector* collector);
 bool __cdecl Sdedf10_generateRandomDistribution(const Sdedf10_Mesh& mesh, int numPoints,
-                                                Sdedf10_Array<hkVector4>& points, Sdedf10_PseudoRandom& rng);
+                                                Sdedf10_Array<hkVector4>& points, Sdedf10_PseudoRandom& rndGenerator);
 
 __forceinline const Sdedf10_IFunction* Sdedf10_getUnityFunction()
 {
@@ -694,6 +694,9 @@ __forceinline const Sdedf10_IFunction* Sdedf10_getUnityFunction()
 
 // @fnv 0x00dedf10
 // src: GUESS 0x00dedf10 (confidence: low)
+// pdb: hkGeometryProcessing::generateUniformDistribution | hkGeometryProcessing.obj | retail, object-file run extension, low
+// pdb params: geometry, numPoints, points, maxIterations, seed, densityFunction
+// pdb locals: mesh, rndGen, leaves, tree, userData, samples, probes, volumes, aabb, d, policy
 bool __cdecl hkVector4_ProcessEntries_00dedf10(const Sdedf10_Geometry& geometry, int numPoints, Sdedf10_Array<hkVector4>& points,
                           int maxIterations, int seed, const Sdedf10_IFunction* densityFunction)
 {
@@ -707,7 +710,7 @@ bool __cdecl hkVector4_ProcessEntries_00dedf10(const Sdedf10_Geometry& geometry,
     Sdedf10_Mesh mesh;
     mesh.AppendGeometry(geometry, DAT_01268370, -1);
     mesh.assignVertexNormals();
-    mesh.FinalizeMesh();
+    mesh.hkgpMesh_rebuildTrianglesTree();
 
     const int base = points.GetLogicalSize();
     if (!Sdedf10_generateRandomDistribution(mesh, numPoints, points, rng))
@@ -749,7 +752,7 @@ bool __cdecl hkVector4_ProcessEntries_00dedf10(const Sdedf10_Geometry& geometry,
             }
             for (int j = 0; j < samples.GetLogicalSize(); ++j)
             {
-                Sdedf10_NearestFeaturePolicy policy(samples[j], 3.40282e38f);
+                NearestFeaturePolicy policy(samples[j], 3.40282e38f);
                 Sdedf10_queryClosestPoint(&tree, samples[j], &policy);
                 if (policy.m_nearest)
                 {

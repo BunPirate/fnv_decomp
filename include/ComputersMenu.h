@@ -11,6 +11,7 @@ class TextSource;
 class TextAnimator;
 class TESObjectREFR;
 
+// pdb: class ComputersMenu, size 0xfc, bases: Menu, 15 members
 class ComputersMenu : public Menu
 {
 public:
@@ -56,25 +57,25 @@ public:
             Tile* tile64;
         };
     };
-    ComputerEntryList entries;
-    BSSimpleList<BGSTerminal*> notes;
-    unsigned int unka0;
-    void* unka4;
-    BGSTerminal* terminal;
-    TESObjectREFR* reference;
-    int unkb0;
-    StrMem text;
+    ComputerEntryList lbMenuItems;
+    BSSimpleList<BGSTerminal*> TerminalStack;
+    unsigned int uiResultDisplayTimeout;
+    void* pCursorVis;
+    BGSTerminal* pTerminal;
+    TESObjectREFR* pTerminalRef;
+    int eMode;
+    StrMem strNoteText;
     union
     {
         const char* m_pText;
         const char* unkbc;
     };
-    bool unkc0;
-    bool bRefreshed;
+    bool bTutorial;
+    bool bDisplayFlag;
     unsigned char unkC2[2];
-    BSSoundHandle sounds[3];
-    TextAnimator* manager;
-    void (*callbackec)();
+    BSSoundHandle Sounds[3];
+    TextAnimator* pATManager;
+    void (*NoteActivationFn)();
     void (*callbackf0)();
     void (*callbackf4)();
     int unkf8;
@@ -84,10 +85,10 @@ public:
     bool __thiscall HasAllTiles(int*);
     bool HandleButtonInput(int, float);
     void UpdateBlink();
-    void RefreshDisplay();
-    void BuildAnimation();
-    void SetTextSource(TextSource*);
-    void SetTextSource(int);
+    void FinishIntro();
+    void DisplayIntro();
+    void DisplayNoteText(TextSource*);
+    void DisplayNoteText(int);
     void PlayNoteSound(BGSNote*);
     void DoClick(int, Tile*);
     void DoIdle_00758470();

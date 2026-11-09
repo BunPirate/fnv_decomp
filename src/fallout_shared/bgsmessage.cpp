@@ -18,6 +18,7 @@ struct BGSMessageInitItemLocals
 };
 
 // @fnv 0x00590530
+// pdb: BGSMessage::BGSMessage | BGSMessage.obj | retail, upstream name already matches, high
 BGSMessage::BGSMessage()
 {
     SetFormType(ENUM_FORM_ID_MESG_ID);
@@ -29,17 +30,20 @@ void BGSMessage::ResetFormData()
 {
     pIcon = 0;
     iFlags = 1;
-    m_uiDisplayDuration = 2;
+    iDisplayTime = 2;
 }
 
 // @fnv 0x005906d0
+// pdb: BGSMessage::ClearData | BGSMessage.obj | debug, upstream name already matches, high
 void BGSMessage::ClearData()
 {
     SetIcon(0);
-    ClearButtons();
+    ClearButtonList();
 }
 
 // @fnv 0x005906f0
+// pdb: BGSMessage::InitItem | BGSMessage.obj | retail, upstream name already matches, high
+// pdb locals: plist, iindex, itempInt, pitem, iwarnings, iprevwarnings
 void BGSMessage::InitItem()
 {
     if (IsFormInitialized())
@@ -98,48 +102,51 @@ struct BGSMessageLoadLocals
 };
 
 // @fnv 0x00590880
-bool BGSMessage::Load(TESFile* file)
+// pdb: BGSMessage::Load | BGSMessage.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, plastitem, btn, formid, iid, pMessage, ptext, pbutton
+bool BGSMessage::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
-    LoadRecordHeader(file);
+    unsigned char formType = apFile->GetTESForm();
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
 
     BGSMessageLoadLocals locals;
     locals.currentButton = 0;
     locals.unused = 0;
-    while ((locals.chunkID = file->GetChunkID()) != 0)
+    while ((locals.chunkID = apFile->GetChunkID()) != 0)
     {
         switch (locals.chunkID)
         {
         case 0x44494445: {
-            locals.editorIDText = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(locals.editorIDText, 0x200);
+            locals.editorIDText = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(locals.editorIDText, 0x200);
             SetEditorID_AtRuntime(locals.editorIDText);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x43534544:
-            TESDescription::ReadDescriptionFromFile(static_cast<TESDescription*>(this), file);
+            TESDescription::ReadDescriptionFromFile(static_cast<TESDescription*>(this), apFile);
             break;
         case 0x4c4c5546:
-            TESFullNameLoader::LoadFullNameChunk(static_cast<TESFullName*>(this), file);
+            TESFullNameLoader::LoadFullNameChunk(static_cast<TESFullName*>(this), apFile);
             break;
         case 0x4d414e49: {
-            file->GetChunkData(&locals.iconFormID);
+            apFile->GetChunkData(&locals.iconFormID);
             SetIcon(reinterpret_cast<BGSMenuIcon*>(locals.iconFormID));
             break;
         }
         case 0x4d414e44:
-            file->GetChunkData(&iFlags);
+            apFile->GetChunkData(&iFlags);
             break;
         case 0x4d414e54:
-            file->GetChunkData(&m_uiDisplayDuration);
+            apFile->GetChunkData(&iDisplayTime);
             break;
         case 0x54585449: {
-            locals.buttonText = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(locals.buttonText, 0);
+            locals.buttonText = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(locals.buttonText, 0);
             locals.newButton = new PerkButtonEntry;
             locals.newButton->cButtonText.Set(locals.buttonText, 0);
             AddButton(locals.newButton);
@@ -149,14 +156,14 @@ bool BGSMessage::Load(TESFile* file)
         case 0x41445443:
             if (locals.currentButton)
             {
-                locals.currentButton->Conditions.Load(file);
+                locals.currentButton->Conditions.Load(apFile);
             }
             break;
         default:
             break;
         }
 
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
         {
             break;
         }
@@ -167,12 +174,15 @@ bool BGSMessage::Load(TESFile* file)
 
 // Removes every item from the button list, deleting each button until the list is empty.
 // @fnv 0x005910d0
-void BGSMessage::ClearButtons()
+// src: XBOX_RETAIL_PDB 0x005910d0
+// pdb: BGSMessage::ClearButtonList | BGSMessage.obj | retail, object-file run extension, high
+// pdb locals: pitem
+void BGSMessage::ClearButtonList()
 {
-    while (!m_kButtonEntries.IsEmpty())
+    while (!ButtonList.IsEmpty())
     {
-        PerkButtonEntry* button = m_kButtonEntries.GetItem();
-        m_kButtonEntries.RemoveHead();
+        PerkButtonEntry* button = ButtonList.GetItem();
+        ButtonList.RemoveHead();
         delete button;
     }
 }
@@ -193,11 +203,13 @@ bool BGSMessage::IsFlagSet()
 // If apItem is non-null, appends it to the button list.
 // @fnv 0x005911d0
 // src: COMMUNITY 0x005911d0
+// pdb: BGSMessage::AddButton | BGSMessage.obj | debug, call graph, high
+// pdb params: apItem
 void BGSMessage::AddButton_005911d0(PerkButtonEntry* apItem)
 {
     if (apItem != 0)
     {
-        m_kButtonEntries.AddTail(apItem);
+        ButtonList.AddTail(apItem);
     }
 }
 
@@ -215,6 +227,7 @@ void BGSMessage::SetAutoDisplay_00590ef0(bool enabled)
 }
 
 // @fnv 0x00590610
+// pdb: BGSMessage::~BGSMessage | BGSMessage.obj | retail, upstream name already matches, high
 BGSMessage::~BGSMessage()
 {
     ClearData();
@@ -222,22 +235,25 @@ BGSMessage::~BGSMessage()
 
 struct ButtonTextAccess
 {
-    BSStringT<char>& Assign(const BSStringT<char>& other);
+    BSStringT<char>& Assign(const BSStringT<char>& arString);
 };
 
 struct ConditionCopyAccess
 {
-    void CopyFrom(PerkEntryConditionSet* other, bool flag);
+    void Copy(PerkEntryConditionSet* apCopy, bool apOwner);
 };
 
 // Clears the message data, copies icon, auto-display, message-box flag, quest and button list from form, then copies the base form.
 // @fnv 0x00590d20
-void BGSMessage::CopyFromMessage(TESForm* form)
+// pdb: BGSMessage::Copy | BGSMessage.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pcopy, pcopyitem, pitem
+void BGSMessage::CopyFromMessage(TESForm* apCopy)
 {
     BSSimpleList<PerkButtonEntry*>* node;
     ClearData();
-    BGSMessage* src = (BGSMessage*)form;
-    SetIcon(((BGSMessage*)form)->GetIcon());
+    BGSMessage* src = (BGSMessage*)apCopy;
+    SetIcon(((BGSMessage*)apCopy)->GetIcon());
     SetAutoDisplay(src->GetAutoDisplay());
     SetMessageBoxFlag(src->GetMessageBoxFlag());
     SetQuest(src->GetQuest());
@@ -248,10 +264,10 @@ void BGSMessage::CopyFromMessage(TESForm* form)
         node = node->GetNext();
         PerkButtonEntry* button = new PerkButtonEntry;
         ((ButtonTextAccess*)&button->cButtonText)->Assign(item->cButtonText);
-        ((ConditionCopyAccess*)&button->Conditions)->CopyFrom(&item->Conditions, false);
+        ((ConditionCopyAccess*)&button->Conditions)->Copy(&item->Conditions, false);
         AddButton(button);
     }
-    CopyBase(form);
+    CopyBase(apCopy);
 }
 
 struct String0bc0
@@ -261,7 +277,7 @@ struct String0bc0
 };
 struct Conditions0bc0
 {
-    void ProcessItems();
+    void Save();
 };
 struct Button0bc0
 {
@@ -278,6 +294,8 @@ void __cdecl TESForm_AddChunk_00485910(unsigned int, unsigned int);
 int __cdecl BSstrlen(const char*);
 void __cdecl TESForm_AddChunkArray(unsigned int, const char*, unsigned int);
 // @fnv 0x00590bc0
+// pdb: BGSMessage::Save | BGSMessage.obj | retail, vtable slot, high
+// pdb locals: plist, iid, pitem
 void BGSMessage::WriteToStream()
 {
     BeginFormRecord();
@@ -287,7 +305,7 @@ void BGSMessage::WriteToStream()
     TESForm_AddChunk_00485910(0x4d414e49, id);
     TESForm_AddChunk_00485910(0x4d414e44, iFlags);
     if (!GetIsMessageBox())
-        TESForm_AddChunk_00485910(0x4d414e54, m_uiDisplayDuration);
+        TESForm_AddChunk_00485910(0x4d414e54, iDisplayTime);
     List0bc0* node = reinterpret_cast<List0bc0*>(GetButtonList());
     while (node && !node->FUN_008256d0())
     {
@@ -297,7 +315,7 @@ void BGSMessage::WriteToStream()
             TESForm_AddChunkArray(0x54585449, button->text.Modelloader_GetReferencedThis(), BSstrlen(button->text.Modelloader_GetReferencedThis()) + 1);
         else
             TESForm_AddChunk_00485910(0x54585449, 0);
-        button->conditions.ProcessItems();
+        button->conditions.Save();
     }
     FinishFormRecord();
 }
@@ -320,9 +338,12 @@ struct ButtonListView
     ButtonListView* FUN_00726070();
 };
 // @fnv 0x00590f40
-bool BGSMessage::IsNotEqual(TESForm* form)
+// pdb: BGSMessage::Compare | BGSMessage.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp, plist, pcomplist, pcompitem, pitem
+bool BGSMessage::IsNotEqual(TESForm* apCompare)
 {
-    BGSMessage* right = static_cast<BGSMessage*>(form);
+    BGSMessage* right = static_cast<BGSMessage*>(apCompare);
     if (!right)
         return true;
     if (GetIcon() != right->GetIcon())
@@ -348,7 +369,7 @@ bool BGSMessage::IsNotEqual(TESForm* form)
         other = other->FUN_00726070();
         left = left->FUN_00726070();
     }
-    if (TESForm::Compare(form))
+    if (TESForm::Compare(apCompare))
         return true;
     return false;
 }

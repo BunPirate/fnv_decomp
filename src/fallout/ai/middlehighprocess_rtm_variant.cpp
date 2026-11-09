@@ -34,9 +34,11 @@ struct AcquireSortProcess : MiddleHighProcess
 
 // @fnv 0x0091b640
 // src: COMMUNITY 0x0091b640
+// pdb: MiddleHighProcess::SortObjectListByDistance | MiddleHighProcess.obj | debug, object-file gap fill, medium
+// pdb locals: pFirst, pSecond, iCount, bSwappedItems, pFirstData, pSecondData
 void AcquireSortProcess::HighProcess_SortObjectsListByValue()
 {
-    AcquireSortNode* outer2 = (AcquireSortNode*)&ReferenceListNode;
+    AcquireSortNode* outer2 = (AcquireSortNode*)&ObjectList;
     AcquireSortNode* inner5 = 0;
     if (outer2 != 0)
     {
@@ -120,20 +122,23 @@ extern FurnitureSearchManager* DAT_011c3f2c;
 extern FurnitureList DAT_011e0424;
 extern FurnitureSetting DAT_011cd24c;
 extern FurnitureTime DAT_011f6394;
-void __cdecl EvaluateReferenceforSitSleep(::TESObjectREFR*, ::Actor*);
+void __cdecl MiddleHighProcess_EvaluateReferenceforSitSleep(::TESObjectREFR*, ::Actor*);
 struct SearchFurnitureProcess : ::MiddleHighProcess
 {
     void MiddleHighProcess_FindBedChairs(::Actor*, bool, ::TESObjectREFR*);
 };
 // @fnv 0x00922670
 // src: COMMUNITY 0x00922670
-void SearchFurnitureProcess::MiddleHighProcess_FindBedChairs(::Actor* actor, bool flag, ::TESObjectREFR* target)
+// pdb: MiddleHighProcess::FindBedChairs | MiddleHighProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor, abSit, apRefLoc
+// pdb locals: plist, pFirst, pPack, pLocation, facquireDist, pCell, pSecond, pointB, loc, iCount, bSwappedItems, pFirstData, pSecondData
+void SearchFurnitureProcess::MiddleHighProcess_FindBedChairs(::Actor* apActor, bool abSit, ::TESObjectREFR* apRefLoc)
 {
-    DAT_011e040c = flag;
-    ::TESObjectCELL* a = actor->GetParentCell();
-    ::NiPoint3 p = *static_cast<const ::TESObjectREFR*>(actor)->GetPos();
+    DAT_011e040c = abSit;
+    ::TESObjectCELL* a = apActor->GetParentCell();
+    ::NiPoint3 p = *static_cast<const ::TESObjectREFR*>(apActor)->GetPos();
     FurniturePackage* f = reinterpret_cast<FurniturePackage*>(static_cast<const ::BaseProcess*>(this)->GetOneTimePackage());  // virtual slot 0x9F (the const declaration)
-    if (!f || !actor)
+    if (!f || !apActor)
         return;
     FurnitureLocation* s = f->FUN_0055b980();
     float i = 0.0f;
@@ -142,35 +147,35 @@ void SearchFurnitureProcess::MiddleHighProcess_FindBedChairs(::Actor* actor, boo
         if (s && s->PackageLocation_GetLocType() == 1 && reinterpret_cast<FurnitureCell*>(s->FUN_0067f3e0())->FUN_00425fd0())
             i = 3.402823466e38f;
         else
-            i = static_cast<float>(f->FUN_00676280(actor));
+            i = static_cast<float>(f->FUN_00676280(apActor));
     }
-    else if (!f->FUN_006728a0(actor, &i))
+    else if (!f->FUN_006728a0(apActor, &i))
     {
         if (s && s->PackageLocation_GetLocType() == 1 && reinterpret_cast<FurnitureCell*>(s->FUN_0067f3e0())->FUN_00425fd0())
             i = 3.402823466e38f;
         else
             i = *DAT_011cd24c.Setting_Float_00403e20();
     }
-    if (target)
+    if (apRefLoc)
     {
-        ::NiPoint3* targetPosition = static_cast<const ::TESObjectREFR*>(target)->GetPos();
+        ::NiPoint3* targetPosition = static_cast<const ::TESObjectREFR*>(apRefLoc)->GetPos();
         reinterpret_cast<FurnitureSearchManager*>(DAT_011c3f2c)
-            ->FUN_0046f280(target->GetParentCell(), *targetPosition, i, *targetPosition, i, EvaluateReferenceforSitSleep, actor);
+            ->FUN_0046f280(apRefLoc->GetParentCell(), *targetPosition, i, *targetPosition, i, MiddleHighProcess_EvaluateReferenceforSitSleep, apActor);
     }
     else
     {
         reinterpret_cast<FurnitureSearchManager*>(DAT_011c3f2c)
-            ->FUN_0046f280(a, p, i, f->TESPackage_GetLocationCoord(actor), i, EvaluateReferenceforSitSleep, actor);
+            ->FUN_0046f280(a, p, i, f->TESPackage_GetLocationCoord(apActor), i, MiddleHighProcess_EvaluateReferenceforSitSleep, apActor);
     }
-    reinterpret_cast<FurnitureList*>(&m_kSecondaryReferenceList)->FUN_00470470();
+    reinterpret_cast<FurnitureList*>(&RefListChairBed)->FUN_00470470();
     FurnitureList* cf = &DAT_011e0424;
     while (cf && cf->FUN_006815c0())
     {
-        reinterpret_cast<FurnitureList*>(&m_kSecondaryReferenceList)->FUN_005ae3d0(cf->FUN_006815c0());
+        reinterpret_cast<FurnitureList*>(&RefListChairBed)->FUN_005ae3d0(cf->FUN_006815c0());
         cf = cf->FUN_00726070();
     }
     DAT_011e0424.FUN_00470470();
-    FurnitureList* eb = reinterpret_cast<FurnitureList*>(&m_kSecondaryReferenceList);
+    FurnitureList* eb = reinterpret_cast<FurnitureList*>(&RefListChairBed);
     FurnitureList* h = 0;
     if (eb)
     {
@@ -197,7 +202,7 @@ void SearchFurnitureProcess::MiddleHighProcess_FindBedChairs(::Actor* actor, boo
             --item2;
         }
     }
-    m_uiFaceGenDataFlags = DAT_011f6394.FUN_00825c00();
+    nFurnitureListTimer = DAT_011f6394.FUN_00825c00();
 }
 
 }
@@ -235,6 +240,8 @@ struct Holder91b580
 
 // @fnv 0x0091b580
 // src: COMMUNITY 0x0091b580
+// pdb: MiddleHighProcess::SortObjectListByType | MiddleHighProcess.obj | debug, object-file gap fill, medium
+// pdb locals: pFirst, pSecond, iCount, bSwappedItems, pFirstData, pSecondData
 void Holder91b580::HighProcess_SortObjectsListByType()
 {
     BSSimpleList<TESClass*>* pOuter = &m_kNode;

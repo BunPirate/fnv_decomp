@@ -2,6 +2,7 @@
 
 #include "TESPackageData.h"
 
+// pdb: class TESPatrolPackageData, size 0x8, bases: TESPackageData, 2 members
 class TESPatrolPackageData : public TESPackageData
 {
 public:
@@ -24,8 +25,8 @@ public:
     virtual void vf06(BGSLoadFormBuffer* buffer) override;
     virtual void vf07(BGSLoadFormBuffer* buffer) override;
 
-    bool m_bPrimaryComparisonFlag;
-    bool m_bSecondaryComparisonFlag;
+    bool bRepeatable;
+    bool bStartingLocationAtLinkedRef;
 
     void Unused();
     TESPatrolPackageData* __thiscall TESPatrolPackageData_TESPatrolPackageData(PatrolParams aParams);

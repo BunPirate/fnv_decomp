@@ -15,6 +15,7 @@ struct S_00538f40
 
 // @fnv 0x00538f40
 // src: XBOX_PDB 0x00538f40
+// pdb: hkpMoppCode::~hkpMoppCode | TESLand.obj | retail, object-file run extension, low
 void S_00538f40::hkVector4_setZero4()
 {
     m = _mm_setzero_ps();

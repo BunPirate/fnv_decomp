@@ -26,6 +26,7 @@ enum SearchResult
 
 // Runs the destructor, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006a9290
+// pdb: NavMeshSearchFlee::`scalar deleting destructor' | NavMeshSearchFlee.obj | debug, vtable slot, medium
 void* NavMeshSearchFlee::DestroyIfFlagged(unsigned int flags)
 {
     this->~NavMeshSearchFlee();
@@ -36,9 +37,10 @@ void* NavMeshSearchFlee::DestroyIfFlagged(unsigned int flags)
 
 // Initializes the vtable pointer and clears the fields at offsets 0x20a4 and 0x20a8.
 // @fnv 0x006ab410
+// pdb: NavMeshSearchMaxCost::NavMeshSearchMaxCost | NavMeshSearchMaxCost.obj | retail, upstream name already matches, high
 NavMeshSearchMaxCost::NavMeshSearchMaxCost()
 {
-    maxCost = 0.0f;
+    fMaxDist = 0.0f;
     hasGoal = false;
 }
 
@@ -53,11 +55,14 @@ template <class N, class L> class AStarNode
 extern double _gModifierZero;
 
 // @fnv 0x006a9a70
+// pdb: NavMeshSearchFlee::IsGoalNode | NavMeshSearchFlee.obj | retail, vtable slot, high
+// pdb params: apNode
+// pdb locals: pdest, fscore, nodeCenter, fsqrLength, spmeshPtr, sgoalTri, thisNode, destinationVec, originDestinationVec
 bool NavMeshSearchFlee::IsNodeValid(const AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* apNode)
 {
-    PathingLocation* pdest = pRequest->NiAVObject_GetRotate_006a9540();
+    PathingLocation* pdest = pCurrentRequest->NiAVObject_GetRotate_006a9540();
     float fscore;
-    if (bHasDestination)
+    if (bFavorGoingTowardsGoal)
     {
         NavMeshPtr spmeshPtr;
         unsigned short sgoalTri;
@@ -72,20 +77,20 @@ bool NavMeshSearchFlee::IsNodeValid(const AStarNode<NavMeshTriangleReference, Na
     if (apNode == GetFieldAt2050())
         return false;
     NiPoint3 nodeCenter = apNode->kNode.FastNavMeshTriLocation_GetLocation();
-    float fsqrLength = (pRequest->GetOrigin()->FUN_005c3420() - nodeCenter).GetSquaredXYLength();
-    if (fsqrLength < static_cast<const PathingRequest*>(pRequest)->GetFloatAtOffsetB0() *
-                        static_cast<const PathingRequest*>(pRequest)->GetFloatAtOffsetB0())
+    float fsqrLength = (pCurrentRequest->GetOrigin()->FUN_005c3420() - nodeCenter).GetSquaredXYLength();
+    if (fsqrLength < static_cast<const PathingRequest*>(pCurrentRequest)->GetFloatAtOffsetB0() *
+                        static_cast<const PathingRequest*>(pCurrentRequest)->GetFloatAtOffsetB0())
         return false;
-    if (bHasDestination)
+    if (bFavorGoingTowardsGoal)
     {
-        NiPoint3 destinationVec = kDestination - nodeCenter;
-        NiPoint3 originDestinationVec = pRequest->GetOrigin()->FUN_005c3420() - kDestination;
+        NiPoint3 destinationVec = GoalLocation - nodeCenter;
+        NiPoint3 originDestinationVec = pCurrentRequest->GetOrigin()->FUN_005c3420() - GoalLocation;
         if (originDestinationVec.FUN_004a7290() < destinationVec.FUN_004a7290())
             return false;
     }
     fscore = 0.0f;
-    if (static_cast<const PathingRequest*>(pRequest)->GetString())
-        fscore = static_cast<const PathingRequest*>(pRequest)->GetString()->GetAvoidanceAtPoint(nodeCenter);
+    if (static_cast<const PathingRequest*>(pCurrentRequest)->GetString())
+        fscore = static_cast<const PathingRequest*>(pCurrentRequest)->GetString()->GetAvoidanceAtPoint(nodeCenter);
     return fscore <= _gModifierZero;
 }
 
@@ -104,6 +109,9 @@ struct FleeNodeLayout
 
 // Stores the navmesh and triangle on the node, computes the triangle center, and sets the node cost from the flee range minus the distance to the avoid vector.
 // @fnv 0x006a9580
+// pdb: NavMeshSearchFlee::`scalar deleting destructor' | NavMeshSearchFlee.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMeshSearchFlee::SetNodeData
+// pdb params: this
 void NavMeshSearchFlee::SetNodeFleeCost(AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* apNode,
                                      NavMesh* apNavMesh, unsigned short aiTriangle)
 {
@@ -116,10 +124,10 @@ void NavMeshSearchFlee::SetNodeFleeCost(AStarNode<NavMeshTriangleReference, NavM
     reinterpret_cast<FleeNodeLayout*>(apNode)->m_fCenterY = center.y;
     reinterpret_cast<FleeNodeLayout*>(apNode)->m_fCenterZ = center.z;
 
-    NiPoint3 avoidVector = reinterpret_cast<const NiPoint3&>(center) - kAvoidVector;
-    float fcost = fFleeRange - avoidVector.Length();
+    NiPoint3 avoidVector = reinterpret_cast<const NiPoint3&>(center) - AvoidNodeCenter;
+    float fcost = fDistanceUpperBound - avoidVector.Length();
 
-    BSClamp_float(fcost, 0.0f, fFleeRange);
+    BSClamp_float(fcost, 0.0f, fDistanceUpperBound);
 
     reinterpret_cast<FleeNodeLayout*>(apNode)->fcost = fcost;
 }
@@ -130,6 +138,7 @@ void NavMeshSearchFlee::SetNodeFleeCost(AStarNode<NavMeshTriangleReference, NavM
 // the class vtable pointer into the object and then runs the base class
 // destructor on the same object.
 // @fnv 0x006a92c0
+// pdb: NavMeshSearchFlee::~NavMeshSearchFlee | NavMeshSearchFlee.obj | debug, upstream name already matches, high
 NavMeshSearchFlee::~NavMeshSearchFlee()
 {}
 
@@ -150,30 +159,34 @@ struct FleeAvoidNodes : PathingAvoidNodeArray
 extern const NiPoint3 NiPoint3_ZERO;
 float BSMIN(float, float);
 // @fnv 0x006a92e0
-bool NavMeshSearchFlee::StartFleeSearch(PathingRequest* request, const FleeStartNode* start, FleePath* path,
-                                       unsigned int limit)
+// src: XBOX_DEBUG_PDB 0x006a92e0
+// pdb: NavMeshSearchFlee::BuildNodePath | NavMeshSearchFlee.obj | debug, call graph, high
+// pdb params: apRequest, aStartNode, apReturnNodeArray, apReturnLinkArray
+// pdb locals: startPoint, bresult, pstartNode, endLocation, endNode, fminDistance, vec
+bool NavMeshSearchFlee::BuildNodePath(PathingRequest* apRequest, const FleeStartNode* aStartNode, FleePath* apReturnNodeArray,
+                                       unsigned int apReturnLinkArray)
 {
-    pRequest = request;
-    reinterpret_cast<FleeStartNode&>(pad205c) = *start;
-    NiPoint3 a = request->GetOrigin()->FUN_005c3420();
-    reinterpret_cast<NiPoint3&>(kAvoidVector) = NiPoint3_ZERO;
-    fFleeRange = static_cast<const PathingRequest*>(request)->GetFloatAtOffsetB0();
-    if (static_cast<const PathingRequest*>(pRequest)->GetString())
-        static_cast<FleeAvoidNodes*>(static_cast<const PathingRequest*>(pRequest)->GetString())->PathingAvoidNodeArray_ComputeCenter(a, kAvoidVector);
+    pCurrentRequest = apRequest;
+    reinterpret_cast<FleeStartNode&>(StartNode) = *aStartNode;
+    NiPoint3 a = apRequest->GetOrigin()->FUN_005c3420();
+    reinterpret_cast<NiPoint3&>(AvoidNodeCenter) = NiPoint3_ZERO;
+    fDistanceUpperBound = static_cast<const PathingRequest*>(apRequest)->GetFloatAtOffsetB0();
+    if (static_cast<const PathingRequest*>(pCurrentRequest)->GetString())
+        static_cast<FleeAvoidNodes*>(static_cast<const PathingRequest*>(pCurrentRequest)->GetString())->PathingAvoidNodeArray_ComputeCenter(a, AvoidNodeCenter);
     AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* p =
-        FUN_006a7c90(GetKeyForNode_006a94f0(start->m_pLocationNavMesh, start->m_usTriangleIdentifier), start, 0.0f);
-    SetNodeFleeCost(p, start->m_pLocationNavMesh, start->m_usTriangleIdentifier);
-    if (!request->NiAVObject_GetRotate_006a9540()->PathingLocation_QUnused())
+        FUN_006a7c90(GetKeyForNode_006a94f0(aStartNode->m_pLocationNavMesh, aStartNode->m_usTriangleIdentifier), aStartNode, 0.0f);
+    SetNodeFleeCost(p, aStartNode->m_pLocationNavMesh, aStartNode->m_usTriangleIdentifier);
+    if (!apRequest->NiAVObject_GetRotate_006a9540()->PathingLocation_QUnused())
     {
-        bHasDestination = true;
-        kDestination = pRequest->NiAVObject_GetRotate_006a9540()->FUN_005c3420();
+        bFavorGoingTowardsGoal = true;
+        GoalLocation = pCurrentRequest->NiAVObject_GetRotate_006a9540()->FUN_005c3420();
     }
-    bool h = FUN_006a7d60(path, limit, pRequest->GetByteAtOffset9B());
-    if (!h && !path->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
+    bool h = FUN_006a7d60(apReturnNodeArray, apReturnLinkArray, pCurrentRequest->GetByteAtOffset9B());
+    if (!h && !apReturnNodeArray->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
     {
-        const NavMeshTriangleReference* f = path->GetLastElement();
+        const NavMeshTriangleReference* f = apReturnNodeArray->GetLastElement();
         NiPoint3 eb = f->FastNavMeshTriLocation_GetLocation();
-        float s = static_cast<const PathingRequest*>(pRequest)->GetFloatAtOffsetB0() * 0.5;
+        float s = static_cast<const PathingRequest*>(pCurrentRequest)->GetFloatAtOffsetB0() * 0.5;
         s = BSMIN(s, 256.0f);
         NiPoint3 i = a - eb;
         if (i.FUN_004a7290() > s * s)
@@ -192,6 +205,7 @@ struct Threshold
 };
 extern Threshold g_threshold;
 float __cdecl BSMAX_00404010(float, float);
+// pdb: structure EdgeExtraInfo, size 0xc (here 0x4), 2 members
 struct EdgeExtraInfo
 {
     int type;
@@ -229,20 +243,23 @@ struct NodeArray
     void FUN_007cb2e0(Node*&);
 };
 // @fnv 0x006a9620
-bool NavMeshSearchFlee::ExpandNode(Node* node, NodeArray* output)
+// pdb: NavMeshSearchFlee::GetNodeConnections | NavMeshSearchFlee.obj | retail, vtable slot, high
+// pdb params: apNode, apRetNodes
+// pdb locals: pavoidNodes, aNodeCenter, avoidDir, pmutableNode, i, potherMesh, iotherEdge, usotherTri, fdoorMultiplier, pextra, toOtherNode, fcost, pnode, nodeCenter, doorID, pdoor, doorLock, bmustPick, lockData, ftowardThreat, unitToOtherNode, fdistToGoal
+bool NavMeshSearchFlee::ExpandNode(Node* apNode, NodeArray* apRetNodes)
 {
     float position[3];  // Raw storage avoids invoking NiPoint3's default constructor.
-    NiPoint3 direction = ((NodeGeometry*)&node->edgeData)->FastNavMeshTriLocation_GetLocation();
-    PathingAvoidNodeArray* avoid = static_cast<const PathingRequest*>(pRequest)->GetString();
+    NiPoint3 direction = ((NodeGeometry*)&apNode->edgeData)->FastNavMeshTriLocation_GetLocation();
+    PathingAvoidNodeArray* avoid = static_cast<const PathingRequest*>(pCurrentRequest)->GetString();
     reinterpret_cast<NiPoint3&>(position) = *(const NiPoint3*)&pathingrequestZero;
     if (avoid)
     {
-        reinterpret_cast<NiPoint3&>(position) = *(NiPoint3*)&kAvoidVector - direction;
+        reinterpret_cast<NiPoint3&>(position) = *(NiPoint3*)&AvoidNodeCenter - direction;
         reinterpret_cast<NiPoint3&>(position).Unitize();
     }
-    if (!_finite(node->cost))
+    if (!_finite(apNode->cost))
     {
-        float& initial = node->cost;
+        float& initial = apNode->cost;
         initial = 0.0f;
     }
     for (int edge = 0; edge < 3; ++edge)
@@ -250,15 +267,15 @@ bool NavMeshSearchFlee::ExpandNode(Node* node, NodeArray* output)
         NavMesh* edgeData;
         unsigned short triangle;
         int mesh;
-        if (node->edgeData->FindAdjacentEdge(node->triangle, edge, &edgeData, &triangle, &mesh))
+        if (apNode->edgeData->FindAdjacentEdge(apNode->triangle, edge, &edgeData, &triangle, &mesh))
         {
-            EdgeExtraInfo* next = node->edgeData->GetEdgeExtraInfo(node->triangle, edge);
+            EdgeExtraInfo* next = apNode->edgeData->GetEdgeExtraInfo(apNode->triangle, edge);
             if (next && next->type == 1)
                 continue;
             float delta = 1.0f;
             if (edgeData->FUN_005582f0(triangle)->FUN_00691140(0x1000))
             {
-                if (pRequest->FUN_0073cb80())
+                if (pCurrentRequest->FUN_0073cb80())
                     continue;
                 else
                 {
@@ -267,7 +284,7 @@ bool NavMeshSearchFlee::ExpandNode(Node* node, NodeArray* output)
                     if (id)
                     {
                         DoorAccessData result(reinterpret_cast<TESObjectREFR*>(id));
-                        const PathingActorData* lock = pRequest->GetActorLockData();
+                        const PathingActorData* lock = pCurrentRequest->GetActorLockData();
                         bool actor;
                         if (!result.CanUnlockDoor(lock, reinterpret_cast<TESObjectREFR*>(id), actor))
                             continue;
@@ -276,7 +293,7 @@ bool NavMeshSearchFlee::ExpandNode(Node* node, NodeArray* output)
                     }
                 }
             }
-            if (static_cast<const PathingRequest*>(pRequest)->GetFloatAtOffset68() > *g_threshold.Float() &&
+            if (static_cast<const PathingRequest*>(pCurrentRequest)->GetFloatAtOffset68() > *g_threshold.Float() &&
                 edgeData->FUN_005582f0(triangle)->FUN_00691140(0x10))
                 continue;
             Node* neighbour;
@@ -284,19 +301,19 @@ bool NavMeshSearchFlee::ExpandNode(Node* node, NodeArray* output)
             NiPoint3 multiplier = edgeData->FUN_00558220(triangle);
             NiPoint3 cost = reinterpret_cast<const NiPoint3&>(multiplier) - direction;
             // Accumulated path cost.
-            float extra = static_cast<const NiPoint3&>(cost).Length() * delta + node->cost;
+            float extra = static_cast<const NiPoint3&>(cost).Length() * delta + apNode->cost;
             if (avoid)
             {
-                extra += static_cast<const PathingRequest*>(pRequest)->GetString()->GetAvoidanceAtPoint(multiplier);
+                extra += static_cast<const PathingRequest*>(pCurrentRequest)->GetString()->GetAvoidanceAtPoint(multiplier);
                 NiPoint3 penalty = cost;
                 penalty.Unitize();
                 float travel = BSMAX_00404010(0.0f, penalty.Dot(reinterpret_cast<NiPoint3&>(position)));
                 extra += travel * g_positionWeight;
             }
-            if (bHasDestination)
+            if (bFavorGoingTowardsGoal)
             {
                 float distance = static_cast<const NiPoint3&>(reinterpret_cast<const NiPoint3&>(multiplier) -
-                                  reinterpret_cast<const NiPoint3&>(kDestination)).Length();
+                                  reinterpret_cast<const NiPoint3&>(GoalLocation)).Length();
                 extra += distance * 10.0;
             }
             switch (FUN_006a7e00(GetKeyForNode_006a94f0(), edgeData, triangle, extra, &neighbour))
@@ -304,10 +321,10 @@ bool NavMeshSearchFlee::ExpandNode(Node* node, NodeArray* output)
             case 0:
                 SetNodeFleeCost(reinterpret_cast<SearchNode*>(neighbour), edgeData, triangle);
             case 1:
-                neighbour->parentMesh = node->edgeData;
-                neighbour->parentTriangle = node->triangle;
+                neighbour->parentMesh = apNode->edgeData;
+                neighbour->parentTriangle = apNode->triangle;
                 neighbour->parentEdge = edge;
-                output->FUN_007cb2e0(neighbour);
+                apRetNodes->FUN_007cb2e0(neighbour);
                 break;
             }
         }

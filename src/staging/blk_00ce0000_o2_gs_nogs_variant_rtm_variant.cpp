@@ -71,7 +71,7 @@ struct FUN_00cf69c0_class {
     int m_kPointA;
     int m_auiShapeKeys;
     int m_kPointB;
-    int __thiscall hkSingletonInitNode_findByName(int a);
+    int __thiscall hkSingletonInitNode_findByName(int name);
 };
 int __cdecl hkString_strCmp(int a, int b);
 struct FUN_00cf86e0_class {
@@ -114,7 +114,7 @@ struct FnvProbe {
     int m_04;
     int m_08;
     int m_0c;
-    unsigned char* Match(FnvSpawnedObject** ref);
+    unsigned char* hkQuaternion_isOk(FnvSpawnedObject** ref);
     unsigned char* Check(FnvSpawnedObject** ref);
 };
 struct FnvSpawnedObject {
@@ -126,10 +126,10 @@ struct FnvSpawnedObject {
     FnvProbe m_20;
     unsigned char* Check(FnvSpawnedObject** ref);
 };
-bool __cdecl hkaSkeletonMapper_checkTransform(int unused, FnvSpawnedObject* obj);
+bool __cdecl hkaSkeletonMapper_checkTransform(int type, FnvSpawnedObject* q);
 void __cdecl Object_UpdateFields_00ce2ca0(int a1, int a2, int* a3, int a4);
 void __cdecl hkaSkeletonMapper_mapExtractedMotion(int param_1, int param_2, int param_3);
-void __cdecl hkaSkeletonMapper_mapPoseLocalSpace(int a1, int a2, int a3, int a4, int a5, int a6);
+void __cdecl hkaSkeletonMapper_mapPoseLocalSpace(int poseALocalSpaceOriginal, int poseBLocalSpaceInOut, int boneToTrackIndicesA, int boneToTrackIndicesB, int a5, int a6);
 void __cdecl hkaSkeletonMapper_mapPoseLocalSpace_00ce4330(int a1, int a2, int a3, int a4);
 struct FnvKeyRec {
     unsigned short m_iOwnerObjectOffset;
@@ -156,18 +156,18 @@ struct FUN_00ce5480_cls {
     int m_uiItemCount;
 };
 void* __cdecl FindKeyRecord(unsigned short aKey, FUN_00ce5480_cls* pBox);
-void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(void* stream, void* self);
+void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(void* arStream, void* arMotor);
 struct FUN_00cf4490_cls {
     char unk00[0x14];
     unsigned int m_14;
     unsigned int m_18;
     unsigned char m_1c;
-    void bhkVelocityConstraintMotor_SaveBinary(void* stream);
+    void bhkVelocityConstraintMotor_SaveBinary(void* arStream);
 };
 struct CpuOpaque;
-extern CpuOpaque DAT_01268740;
+extern CpuOpaque bhkSpringDamperConstraintMotor_ms_RTTI;
 CpuOpaque* __cdecl bhkSpringDamperConstraintMotor_GetRTTI();
-struct SerializedObject { int base00,base04,base08,base0C,base10,word14,word18;void __thiscall SerializeToStream(int source); };
+struct SerializedObject { int base00,base04,base08,base0C,base10,word14,word18;void __thiscall bhkSpringDamperConstraintMotor_SaveBinary(int arStream); };
 extern "C" void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(int,SerializedObject*);
 // Save a Havok-wrapped object: write its type id, then let a type-specific saver write the rest.
 extern __declspec(thread) int g_iCF4BC0AllocTag;
@@ -211,10 +211,10 @@ public:
     virtual void Unk_02();
     virtual void SaveBinary(NiStream& kStream);
 
-    void SetObject(CF4BC0Object* pkObject);
+    void SetObject(CF4BC0Object* apData);
 };
-CF4BC0Saver* __cdecl CF4BC0CreateSaver(unsigned int uiType);
-void __cdecl bhkConstraintManager_SaveBinary(NiStream& kStream, CF4BC0Object* pkObject);
+CF4BC0Saver* __cdecl CF4BC0CreateSaver(unsigned int aiType);
+void __cdecl bhkConstraintManager_SaveBinary(NiStream& arStream, CF4BC0Object* apData);
 extern int DAT_010cc2fc;
 extern int DAT_0102e388;
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
@@ -376,7 +376,7 @@ struct Saver09 : CF4840Saver { Saver09() throw(); };
 struct Saver10 : CF4840Saver { Saver10() throw(); };
 struct Saver12 : CF4840Saver { Saver12() throw(); };
 struct Saver13 : CF4840Saver { Saver13() throw(); };
-CF4840Saver* __cdecl CreateSaver(unsigned int uiType);
+CF4840Saver* __cdecl CreateSaver(unsigned int aiType);
 // Build the Havok object for a serialized node: find its creator, run it, keep the result and delete the creator.
 extern __declspec(thread) int g_iF4A30AllocTag;
 struct F4A30AllocTagScope {
@@ -410,12 +410,12 @@ public:
     virtual ~F4A30Creator();
     virtual void Create(int iFlags, void* pvContext);
 
-    void Init(F4A30Node* pkNode);
+    void Init(F4A30Node* apData);
 
     F4A30Result* m_pkResult;
 };
-F4A30Creator* __cdecl F4A30FindCreator(int iTypeID);
-F4A30Result* CreateF4A30Result(F4A30Node* pkNode, void* pvContext);
+F4A30Creator* __cdecl F4A30FindCreator(int aiType);
+F4A30Result* bhkConstraintManager_Clone(F4A30Node* apData, void* arCloneData);
 void __cdecl BuildMatrixFromRotationScaleAndPosition();
 void __cdecl Object_ForwardCall_00ce5300();
 class FUN_00ce5360_This {
@@ -463,20 +463,23 @@ struct ArrayData {
     int m_iElementCount;
 };
 // @fnv 0x00cf0e90
-extern "C" unsigned int __cdecl SaveUIntArray(NiStream& kStream, const ArrayData& kArray)
+// pdb: bhkStream::SaveBinary | bhkStream.obj | retail, object-file gap fill, high
+// pdb params: arStream, arArray
+// pdb locals: isize, ielements, I, hke
+extern "C" unsigned int __cdecl SaveUIntArray(NiStream& arStream, const ArrayData& arArray)
 {
-    unsigned int count = kArray.m_iElementCount;
-    CF4BC0SaveBinary(kStream, count);
+    unsigned int count = arArray.m_iElementCount;
+    CF4BC0SaveBinary(arStream, count);
 
     unsigned int totalSize = count * sizeof(unsigned int);
     int i = 0;
     if ((int)count > 0) {
         do {
-            unsigned int val = kArray.m_data[i];
-            if ((unsigned char)kStream.m_bSaveLittleEndian != 1) {
+            unsigned int val = arArray.m_data[i];
+            if ((unsigned char)arStream.m_bSaveLittleEndian != 1) {
                 val = _byteswap_ulong(val);
             }
-            CF4BC0SaveBinary(kStream, val);
+            CF4BC0SaveBinary(arStream, val);
             ++i;
         } while (i < (int)count);
     }
@@ -493,16 +496,16 @@ struct FUN_00cdf560 {
 struct FUN_00cf4190 : FUN_00cdf560 {
     FUN_00cf4190();
 };
-extern int DAT_01268730;
+extern int bhkPositionConstraintMotor_ms_RTTI;
 int* bhkPositionConstraintMotor_GetRTTI();
-extern "C" void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(void* view, void* object);
+extern "C" void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(void* arStream, void* arMotor);
 struct SerializedRecord {
     unsigned int unk00, unk04, unk08, unk0c, unk10;
     unsigned int m_14, m_18, m_1c, m_20;
-    void bhkPositionConstraintMotor_LoadBinary(NiStream* view);
+    void bhkPositionConstraintMotor_LoadBinary(NiStream* arStream);
 };
 struct CpuOpaque;
-extern CpuOpaque DAT_01268738;
+extern CpuOpaque bhkVelocityConstraintMotor_ms_RTTI;
 CpuOpaque* __cdecl bhkVelocityConstraintMotor_GetRTTI();
 template <class T>
 inline void NiStreamSaveBinaryCF46(NiBinaryStream& kStream, const T& kValue)
@@ -510,7 +513,7 @@ inline void NiStreamSaveBinaryCF46(NiBinaryStream& kStream, const T& kValue)
     unsigned int uiSize = sizeof(T);
     kStream.BinaryWrite(&kValue, sizeof(T), &uiSize, 1);
 }
-void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream* ar, void* obj);
+void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream* arStream, void* arMotor);
 class hkObjCF46 {
 public:
     int unk00;
@@ -777,8 +780,8 @@ public:
     virtual void Unk05();
     virtual void EnableConstraints();
 };
-void __cdecl hkpWorldConstraintUtil_removeAndDeleteModifier(CE0020Target* pTarget, CE0020Subject* pSubject, int iType);
-void __cdecl EnableConstraintsAndZeroArrays(CE0020Target* pTarget, CE0020Subject* pSubject);
+void __cdecl hkpWorldConstraintUtil_removeAndDeleteModifier(CE0020Target* pTarget, CE0020Subject* constraintOwner, int type);
+void __cdecl hkpResponseModifier_enableConstraint(CE0020Target* instance, CE0020Subject* constraintOwner);
 void __cdecl Runtime_ProcessEntries_00ce2d10();
 void __cdecl Runtime_ForwardCall_00ce2f30();
 template <class T>
@@ -788,7 +791,7 @@ inline void NiStreamLoadBinaryCF42(NiBinaryStream& kStream, T& kValue)
     kStream.BinaryRead(&kValue, sizeof(T), &uiSize, 1);
 }
 class SerializableCF42;
-void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(NiStream& kStream, SerializableCF42* pkObject);
+void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(NiStream& arStream, SerializableCF42* arMotor);
 class SerializableCF42 {
 public:
     int unk00, unk04, unk08, unk0C, unk10;
@@ -797,7 +800,7 @@ public:
     unsigned int m_uiValue1C;
     unsigned int m_uiValue20;
 
-    void bhkPositionConstraintMotor_SaveBinary(NiStream& kStream);
+    void bhkPositionConstraintMotor_SaveBinary(NiStream& arStream);
 };
 // bhkVelocityConstraintMotor ctor (hkpVelocityConstraintMotor chain):
 // vptr(0), memSizeAndFlags(4), referenceCount(6), motor type(8), min/max force, tau, damping, velocity-clamp bool.
@@ -827,7 +830,7 @@ inline void NiStreamLoadBinaryCF44(NiBinaryStream& kStream, T& kValue)
     kStream.BinaryRead(&kValue, sizeof(T), &uiSize, 1);
 }
 class SerializableCF44;
-void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream& kStream, SerializableCF44* pkObject);
+void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream& arStream, SerializableCF44* arMotor);
 class SerializableCF44 {
 public:
     int unk00, unk04, unk08, unk0C, unk10;
@@ -835,7 +838,7 @@ public:
     unsigned int m_uiValue18;
     unsigned char m_ucValue1C;
 
-    void bhkVelocityConstraintMotor_LoadBinary(NiStream& kStream);
+    void bhkVelocityConstraintMotor_LoadBinary(NiStream& arStream);
 };
 class CF4BC0SaverLoader {
 public:
@@ -848,7 +851,7 @@ public:
 struct TagState { int oldTag; int newTag; };
 __forceinline TagState GetTag(int tag) { TagState state={g_iCF4BC0AllocTag,tag}; return state; }
 struct AllocScope { int saved; AllocScope(TagState t):saved(t.oldTag){g_iCF4BC0AllocTag=t.newTag;} ~AllocScope(){g_iCF4BC0AllocTag=saved;} };
-hkReferencedObject* __cdecl bhkConstraintManager_LoadBinary(NiStream& kStream);
+hkReferencedObject* __cdecl bhkConstraintManager_LoadBinary(NiStream& arStream);
 void Runtime_DoNothing_00cf6d10();
 class hkRefObjCF70 : public hkBaseObject {
 public:
@@ -965,7 +968,7 @@ struct TransformOwner {
 };
 extern "C" TransformOwner* cf8b60_self(void);
 extern "C" __m128* cf8b60_quat(void);
-static void Object_UpdateFields_00cf8b60(TransformOwner* self, __m128* pQuat);
+static void setRotationAroundCentreOfMass(TransformOwner* rb, __m128* newRotation);
 void cf8b60_caller(void);
 struct ResultByte { char value; __forceinline ResultByte(bool b) : value(b) {} };
 struct ScalarValue {
@@ -1009,14 +1012,14 @@ inline hkSimdReal __cdecl operator+(const hkSimdReal& a,const hkSimdReal& b) { r
 __forceinline __m128& hkVector4::getQuad() { return m_vComponents; }
 __forceinline const __m128& hkVector4::getQuad() const { return m_vComponents; }
 __forceinline void hkVector4::setZero4() { m_vComponents=_mm_setzero_ps(); }
-__forceinline void hkVector4::setMul4(const hkSimdReal& s,const hkVector4& x) { m_vComponents=_mm_mul_ps(s.broadcast(),x.m_vComponents); }
+__forceinline void hkVector4::setMul4(const hkSimdReal& r,const hkVector4& x) { m_vComponents=_mm_mul_ps(r.broadcast(),x.m_vComponents); }
 __forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const {
     __m128 squares = _mm_mul_ps(m_vComponents,x.m_vComponents);
     __m128 xy = _mm_add_ss(_mm_shuffle_ps(squares,squares,0x55),squares);
     return _mm_add_ss(_mm_shuffle_ps(squares,squares,0xaa),xy);
 }
 __forceinline hkSimdReal hkVector4::length3() const { return _mm_sqrt_ss(dot3(*this).getQuad()); }
-__forceinline void hkVector4::setAddMul4(const hkVector4& a,const hkVector4& b,const hkVector4& c) { m_vComponents=_mm_add_ps(a.m_vComponents,_mm_mul_ps(b.m_vComponents,c.m_vComponents)); }
+__forceinline void hkVector4::setAddMul4(const hkVector4& a,const hkVector4& b,const hkVector4& r) { m_vComponents=_mm_add_ps(a.m_vComponents,_mm_mul_ps(b.m_vComponents,r.m_vComponents)); }
 __forceinline void hkVector4::setBroadcast(const hkVector4& a,int lane) { if(lane==0) m_vComponents=_mm_shuffle_ps(a.m_vComponents,a.m_vComponents,0); else if(lane==1) m_vComponents=_mm_shuffle_ps(a.m_vComponents,a.m_vComponents,0x55); else if(lane==2) m_vComponents=_mm_shuffle_ps(a.m_vComponents,a.m_vComponents,0xaa); else if(lane==3) m_vComponents=_mm_shuffle_ps(a.m_vComponents,a.m_vComponents,0xff); }
 __forceinline void hkVector4::broadcast(int lane) { if(lane==0) m_vComponents=_mm_shuffle_ps(m_vComponents,m_vComponents,0); else if(lane==1) m_vComponents=_mm_shuffle_ps(m_vComponents,m_vComponents,0x55); else if(lane==2) m_vComponents=_mm_shuffle_ps(m_vComponents,m_vComponents,0xaa); else if(lane==3) m_vComponents=_mm_shuffle_ps(m_vComponents,m_vComponents,0xff); }
 __forceinline void hkVector4::setCross(const hkVector4& a,const hkVector4& b) {
@@ -1115,11 +1118,11 @@ inline void RotationX::SetQuaternionProduct(const RotationX& b) throw() {
     vec.setXYZW(result,real);
 }
 // src: COMMUNITY 0x00c74ac0
-inline void RotationX::setMulInverse(const RotationX& a,const RotationX& b) throw() {
-    hkVector4 result; result.setCross(b.imag(),a.imag());
-    result.subMul4(a.vec.getSimdAt(3),b.imag());
-    result.addMul4(b.vec.getSimdAt(3),a.imag());
-    hkVector4 real; real.SetAllComponents(a.vec.dot4(b.vec));
+inline void RotationX::setMulInverse(const RotationX& q0,const RotationX& q1) throw() {
+    hkVector4 result; result.setCross(q1.imag(),q0.imag());
+    result.subMul4(q0.vec.getSimdAt(3),q1.imag());
+    result.addMul4(q1.vec.getSimdAt(3),q0.imag());
+    hkVector4 real; real.SetAllComponents(q0.vec.dot4(q1.vec));
     vec.setXYZW(result,real);
 }
 struct PoseX { hkVector4 translation; RotationX rotation; hkVector4 scale;
@@ -1234,7 +1237,10 @@ static __declspec(noinline) void hkVector4_ComputeValues_00ce2a50(hkVector4& a,h
 
 // @fnv 0x00ce3090
 // src: XBOX_PDB 0x00ce3090
-void __cdecl MapperX::hkaSkeletonMapper_mapPoseLocalSpace(const PoseX* original,PoseX* output,const short* mapA,const short* mapB,bool additive) const {
+// pdb: hkaSkeletonMapper::mapPoseLocalSpace | hkaSkeletonMapper.obj | retail, upstream name already matches, high
+// pdb params: poseALocalSpaceOriginal, poseBLocalSpaceInOut, boneToTrackIndicesA, boneToTrackIndicesB, additive
+// pdb locals: assertBuf, ostr, numChainMappings, i, lengthA, endPosB, endPosA, shortestRotation
+void __cdecl MapperX::hkaSkeletonMapper_mapPoseLocalSpace(const PoseX* poseALocalSpaceOriginal,PoseX* poseBLocalSpaceInOut,const short* boneToTrackIndicesA,const short* boneToTrackIndicesB,bool additive) const {
     {
         ClockX& timer=ClockX::instance();
         if(timer.current<timer.end) {
@@ -1265,20 +1271,20 @@ void __cdecl MapperX::hkaSkeletonMapper_mapPoseLocalSpace(const PoseX* original,
             timer.current=(char*)(event+1);
         }
     }
-    const BoolX sparse=mapA&&mapB;
+    const BoolX sparse=boneToTrackIndicesA&&boneToTrackIndicesB;
     BufferX<PoseX> scratch(first->bones.count());
-    if (additive) Runtime_ForwardCall_00ce2f30(original,first->reference.begin(),mapA,first->bones.count(),scratch.begin());
-    const PoseX* input=additive?scratch.begin():original;
+    if (additive) Runtime_ForwardCall_00ce2f30(poseALocalSpaceOriginal,first->reference.begin(),boneToTrackIndicesA,first->bones.count(),scratch.begin());
+    const PoseX* input=additive?scratch.begin():poseALocalSpaceOriginal;
     {
         const int total=records.count();
         for(int i=0;i<total;++i) {
             _mm_prefetch((const char*)&records[i]+128,_MM_HINT_NTA);
             const RecordX& r=records[i];
             int a=r.a,b=r.b;
-            if(sparse) { a=mapA[a]; if(a<0) continue; b=mapB[b]; }
-            Object_UpdateFields_00ce2ca0(property,output[b],r.offset,input[a]);
+            if(sparse) { a=boneToTrackIndicesA[a]; if(a<0) continue; b=boneToTrackIndicesB[b]; }
+            Object_UpdateFields_00ce2ca0(property,poseBLocalSpaceInOut[b],r.offset,input[a]);
             _mm_prefetch((const char*)&input[a]+128,_MM_HINT_NTA);
-            _mm_prefetch((const char*)&output[b]+128,_MM_HINT_NTA);
+            _mm_prefetch((const char*)&poseBLocalSpaceInOut[b]+128,_MM_HINT_NTA);
         }
     }
     {
@@ -1305,7 +1311,7 @@ void __cdecl MapperX::hkaSkeletonMapper_mapPoseLocalSpace(const PoseX* original,
             hkSimdReal length=0.0f;
             bool valid=true;
             for(short bone=r.b;bone>r.a;bone=first->parents[bone]) {
-                short track=sparse?mapA[bone]:bone;
+                short track=sparse?boneToTrackIndicesA[bone]:bone;
                 if(track<0) { valid=false; break; }
                 const PoseX& t=input[track];
                 hkVector4 prev(posA);
@@ -1313,28 +1319,28 @@ void __cdecl MapperX::hkaSkeletonMapper_mapPoseLocalSpace(const PoseX* original,
                 posA.add4(t.position());
                 length=length+t.position().length3();
             }
-            if(sparse) { valid=valid&&mapA[r.a]>=0; if(!valid) continue; }
+            if(sparse) { valid=valid&&boneToTrackIndicesA[r.a]>=0; if(!valid) continue; }
             hkVector4 scale; scale.setMul4(length,r.end.sizing());
             for(short bone=r.d;bone>r.c;bone=second->parents[bone]) {
-                short track=sparse?mapB[bone]:bone;
-                PoseX& t=output[track];
+                short track=sparse?boneToTrackIndicesB[bone]:bone;
+                PoseX& t=poseBLocalSpaceInOut[track];
                 t.translation.mul4(scale);
                 hkVector4 prev(posB);
                 RotateVector(posB,t.orient(),prev);
                 posB.add4(t.position());
             }
             int a=r.a,c=r.c,b=r.b,d=r.d;
-            if(sparse) { a=mapA[a];c=mapB[c];b=mapA[b];d=mapB[d]; }
-            Object_UpdateFields_00ce2ca0(property,output[c],r.root,input[a]);
+            if(sparse) { a=boneToTrackIndicesA[a];c=boneToTrackIndicesB[c];b=boneToTrackIndicesA[b];d=boneToTrackIndicesB[d]; }
+            Object_UpdateFields_00ce2ca0(property,poseBLocalSpaceInOut[c],r.root,input[a]);
             hkVector4_ComputeValues_00ce2a50(posA,posB);
             RotationX shortest; shortest.ComputeValues_00cd9d10(posB,posA);
             RotationX offset; offset.vec=r.end.translation;
             RotationX applied; applied.setMulInverse(shortest,offset);
-            output[c].rotation.SetQuaternionProduct(applied);
-            output[d].rotation.setMul(r.end.rotation,input[b].rotation);
+            poseBLocalSpaceInOut[c].rotation.SetQuaternionProduct(applied);
+            poseBLocalSpaceInOut[d].rotation.setMul(r.end.rotation,input[b].rotation);
         }
     }
-    if(additive) hkaSkeletonMapper_additivePoseFromCombinedPoseAndReferencePose(output,second->reference.begin(),mapB,second->bones.count(),output);
+    if(additive) hkaSkeletonMapper_additivePoseFromCombinedPoseAndReferencePose(poseBLocalSpaceInOut,second->reference.begin(),boneToTrackIndicesB,second->bones.count(),poseBLocalSpaceInOut);
     {
         ClockX& timer=ClockX::instance();
         if(timer.current<timer.end) {

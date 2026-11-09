@@ -10,6 +10,7 @@ class CombatOwner;
 class Output;
 class Ref;
 
+// pdb: class CombatProcedureEngageTarget, size 0x64, bases: CombatProcedure, 14 members
 class CombatProcedureEngageTarget : public CombatProcedure
 {
 public:
@@ -32,8 +33,8 @@ public:
     virtual void Unk0c();
     virtual void d05();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     void ResetCombatState();
     Actor* GetActor();
@@ -54,18 +55,18 @@ public:
     void ResetState();
     void UpdateEngagement();
 
-    int m_iFadeIndex;
-    float m_fMinRange;
-    float m_fMaxRange;
-    float m_fFarRange;
-    TimeoutTimer m_timer20;
-    TimeoutTimer m_timer28;
-    bool m_bDodgeWait;
-    bool m_bCovered;
-    bool m_bDodging;
-    signed char m_cFallback;
-    NiPoint3 m_dodgePos;
-    Location m_dest;
-    Location m_lastTarget;
-    CombatTargetTimestamp m_stamp60;
+    int eState;
+    float fMinOptimalRange;
+    float fMaxOptimalRange;
+    float fAbsoluteMaxRange;
+    TimeoutTimer HoldingTimer;
+    TimeoutTimer LeftRightDodgeLOSTimer;
+    bool bLeftRightDodgeHadLOS;
+    bool bLeftRightDodgeCheckLOS;
+    bool bLeftRightDodgeLostLOS;
+    signed char cCheckedOptimalPath;
+    NiPoint3 LeftRightDodgeStartLocation;
+    Location Destination;
+    Location TargetOptimalWorldLoc;
+    CombatTargetTimestamp fOptimalLocationPathingFailedTimeStamp;
 };

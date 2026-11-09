@@ -31,6 +31,7 @@ struct FUN_00e01f70_cls
 };
 
 // @fnv 0x00e01f70
+// pdb: hkxMeshSection::~hkxMeshSection | hkxMeshSectionClass.obj | retail, object-file run extension, low
 void FUN_00e01f70_cls::Destroy()
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -118,6 +119,7 @@ struct FUN_00e02090
 
 // Constructor that zeroes m_u04 and m_u06.
 // @fnv 0x00e02090
+// pdb: hkxMeshSection::`scalar deleting destructor' | hkxMeshSectionClass.obj | retail, vtable slot, high
 FUN_00e02090::FUN_00e02090()
 {
     m_u04 = 0;

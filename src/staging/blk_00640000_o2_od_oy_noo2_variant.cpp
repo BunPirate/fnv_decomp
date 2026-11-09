@@ -18,9 +18,9 @@ extern int DAT_011a9598;
 
 double FloatFloor(float v);
 bool BSShaderManager_GetTintMipMaps();
-void BSShaderUtil_TintUncompressedPixelDataByMipMap(void* p);
+void BSShaderUtil_TintUncompressedPixelDataByMipMap(void* apData);
 NiTexture* NiSourceTexture_Create(void* p, int a, void* b);
-NiTexture* BSShaderUtil_ConvertTexture(NiTexture* t, void* p);
+NiTexture* BSShaderUtil_ConvertTexture(NiTexture* apTex, void* arFormat);
 
 extern Setting g_011d59ac;
 
@@ -62,9 +62,12 @@ struct FaceGenImage
 
 // @fnv 0x0064ceb0
 // src: COMMUNITY 0x0064ceb0
-NiTexture* NiTexture::BSFaceGenImage_GetCompressedImage(float lo, float hi, float scale, void* srcv)
+// pdb: BSFaceGenImage::GetCompressedImage | BSFaceGenImage.obj | retail, upstream name already matches, high
+// pdb params: afUncompressedMin, afUncompressedMax, afScale, aFormat
+// pdb locals: ppixeldata, pbuffer, imageConverter, ipixels, ppixeldataDest, fval, uncItr, sptex, i, c4, vscale, c2, c1, vmax, vmin, c3, nameA
+NiTexture* NiTexture::BSFaceGenImage_GetCompressedImage(float afUncompressedMin, float afUncompressedMax, float afScale, void* aFormat)
 {
-    if (((NiPtrTex*)&m_kName)->Modelloader_GetReferencedThis() == 0 && ((FaceGenImage*)&m_spControllers)->ForwardCall_0064db00() == 0 && (*(int*)&m_pkRendererData) != 0 && (*(int*)&m_pkPrev) != 0 && lo < hi)
+    if (((NiPtrTex*)&m_kName)->Modelloader_GetReferencedThis() == 0 && ((FaceGenImage*)&m_spControllers)->ForwardCall_0064db00() == 0 && (*(int*)&m_pkRendererData) != 0 && (*(int*)&m_pkPrev) != 0 && afUncompressedMin < afUncompressedMax)
     {
         __declspec(align(128)) NiDevImageConverter creator;
         NiPtrTex result(0);
@@ -75,20 +78,20 @@ NiTexture* NiTexture::BSFaceGenImage_GetCompressedImage(float lo, float hi, floa
         int count = (*(int*)&m_pkRendererData) * (*(int*)&m_pkPrev);
         unsigned char* cursor = 0;
         float value;
-        if (((NiTexture*)srcv)->FUN_00726070() == 0)
+        if (((NiTexture*)aFormat)->FUN_00726070() == 0)
         {
             pixelData = new NiPixelData((*(int*)&m_pkRendererData), (*(int*)&m_pkPrev), &DAT_011aa2e8, 1, 1);
             cursor = (unsigned char*)pixelData->NiPixelData_GetPixels(0, 0);
             for (unsigned int i = 0; i < (unsigned int)count; i++)
             {
                 value = view.ForwardCall_0064dbd0()[0];
-                cursor[0] = (unsigned char)((FloatFloor(value >= lo ? (value <= hi ? value : hi) : lo) - lo) * scale);
+                cursor[0] = (unsigned char)((FloatFloor(value >= afUncompressedMin ? (value <= afUncompressedMax ? value : afUncompressedMax) : afUncompressedMin) - afUncompressedMin) * afScale);
 
                 value = view.ForwardCall_0064dbd0()[1];
-                cursor[1] = (unsigned char)((FloatFloor(value >= lo ? (value <= hi ? value : hi) : lo) - lo) * scale);
+                cursor[1] = (unsigned char)((FloatFloor(value >= afUncompressedMin ? (value <= afUncompressedMax ? value : afUncompressedMax) : afUncompressedMin) - afUncompressedMin) * afScale);
 
                 value = view.ForwardCall_0064dbd0()[2];
-                cursor[2] = (unsigned char)((FloatFloor(value >= lo ? (value <= hi ? value : hi) : lo) - lo) * scale);
+                cursor[2] = (unsigned char)((FloatFloor(value >= afUncompressedMin ? (value <= afUncompressedMax ? value : afUncompressedMax) : afUncompressedMin) - afUncompressedMin) * afScale);
 
                 cursor += 3;
                 FaceGenImageView tmp;
@@ -102,16 +105,16 @@ NiTexture* NiTexture::BSFaceGenImage_GetCompressedImage(float lo, float hi, floa
             for (unsigned int i = 0; i < (unsigned int)count; i++)
             {
                 value = view.ForwardCall_0064dbd0()[0];
-                cursor[0] = (unsigned char)((FloatFloor(value >= lo ? (value <= hi ? value : hi) : lo) - lo) * scale);
+                cursor[0] = (unsigned char)((FloatFloor(value >= afUncompressedMin ? (value <= afUncompressedMax ? value : afUncompressedMax) : afUncompressedMin) - afUncompressedMin) * afScale);
 
                 value = view.ForwardCall_0064dbd0()[1];
-                cursor[1] = (unsigned char)((FloatFloor(value >= lo ? (value <= hi ? value : hi) : lo) - lo) * scale);
+                cursor[1] = (unsigned char)((FloatFloor(value >= afUncompressedMin ? (value <= afUncompressedMax ? value : afUncompressedMax) : afUncompressedMin) - afUncompressedMin) * afScale);
 
                 value = view.ForwardCall_0064dbd0()[2];
-                cursor[2] = (unsigned char)((FloatFloor(value >= lo ? (value <= hi ? value : hi) : lo) - lo) * scale);
+                cursor[2] = (unsigned char)((FloatFloor(value >= afUncompressedMin ? (value <= afUncompressedMax ? value : afUncompressedMax) : afUncompressedMin) - afUncompressedMin) * afScale);
 
                 value = view.ForwardCall_0064dbd0()[3];
-                cursor[3] = (unsigned char)((FloatFloor(value >= lo ? (value <= hi ? value : hi) : lo) - lo) * scale);
+                cursor[3] = (unsigned char)((FloatFloor(value >= afUncompressedMin ? (value <= afUncompressedMax ? value : afUncompressedMax) : afUncompressedMin) - afUncompressedMin) * afScale);
 
                 cursor += 4;
                 FaceGenImageView tmp;
@@ -134,13 +137,13 @@ NiTexture* NiTexture::BSFaceGenImage_GetCompressedImage(float lo, float hi, floa
             result.FUN_0066b0d0(NiSourceTexture_Create(pixelData, 0, &DAT_011a9598));
         }
 
-        if (((NiTexture*)srcv)->FUN_00726070() == 1 || ((NiTexture*)srcv)->FUN_00726070() == 0)
+        if (((NiTexture*)aFormat)->FUN_00726070() == 1 || ((NiTexture*)aFormat)->FUN_00726070() == 0)
         {
             ((NiPtrTex*)&m_kName)->FUN_006e5cc0(result);
         }
         else
         {
-            ((NiPtrTex*)&m_kName)->FUN_0066b0d0(BSShaderUtil_ConvertTexture(result.Modelloader_GetReferencedThis(), srcv));
+            ((NiPtrTex*)&m_kName)->FUN_0066b0d0(BSShaderUtil_ConvertTexture(result.Modelloader_GetReferencedThis(), aFormat));
         }
 
         if (!((NiPtrTex*)&m_kName)->Modelloader_GetReferencedThis())

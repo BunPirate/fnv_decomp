@@ -5,18 +5,20 @@
 
 class NiRenderedTexture;
 
+// pdb: structure _D3DLOCKED_RECT, size 0x8 (here 0x4), 2 members
 struct _D3DLOCKED_RECT
 {
     int dummy;
 };
 
+// pdb: class ExtraCellCanopyShadowMask, size 0x1c, bases: BSExtraData, 3 members
 class ExtraCellCanopyShadowMask : public BSExtraData
 {
 public:
     int eState;
-    GO mGO;
-    _D3DLOCKED_RECT rect;
+    GO spMask;
+    _D3DLOCKED_RECT Rect;
     int layoutPadding;
 
-    ExtraCellCanopyShadowMask(int state, NiRenderedTexture* texture);
+    ExtraCellCanopyShadowMask(int aeState, NiRenderedTexture* apTex);
 };

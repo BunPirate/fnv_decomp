@@ -2,6 +2,7 @@
 
 #include "CombatGoal.h"
 
+// pdb: class CombatGoalUseCombatItem, size 0x1c, bases: CombatGoal, 0 members
 class CombatGoalUseCombatItem : public CombatGoal
 {
 public:

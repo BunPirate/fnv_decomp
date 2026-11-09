@@ -16,15 +16,16 @@ class ShaderPassRenderer;
 class GraphicsRenderer;
 #include "../../include/BSShaderManager.h"
 #pragma pack(push, 4)
+// pdb: class BeamShader, size 0xc0, bases: BSShader, 6 members
 class BeamShader : public BSShader
 {
   public:
-    BSShaderManager::eBSSMPassEnum m_ePass;            // +0x6C, 4 bytes
-    float m_fPackageValue;                                      // +0x70, 4 bytes
-    float m_fMatrix[16];                               // +0x74, 64 bytes
-    NiPointer<NiD3DPass> m_pD3DPass;                   // +0xB4, 4 bytes
-    NiPointer<NiD3DVertexShader> D3DShaderRenderData;  // +0xB8, 4 bytes
-    NiPointer<NiD3DPixelShader> D3DShaderPassState;    // +0xBC, 4 bytes
+    BSShaderManager::eBSSMPassEnum ePass;            // +0x6C, 4 bytes
+    float fTimer;                                      // +0x70, 4 bytes
+    float fVars[16];                               // +0x74, 64 bytes
+    NiPointer<NiD3DPass> spBeamPass;                   // +0xB4, 4 bytes
+    NiPointer<NiD3DVertexShader> spBeamVertexShader;  // +0xB8, 4 bytes
+    NiPointer<NiD3DPixelShader> spBeamPixelShader;    // +0xBC, 4 bytes
     virtual void InitializeVertexShader();
     virtual void InitializePixelShader();
     // const NiRTTI* __cdecl BeamShader::*()

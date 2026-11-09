@@ -6,7 +6,10 @@
 #include "../../../include/OSGlobals.h"
 // Clears DAT_011dfecc, builds the CameraShake.nif path, and if it exists loads it via g_modelLoader and sets its name.
 // @fnv 0x008d1820
-void InitializeCameraShake()
+// src: XBOX_RETAIL_PDB 0x008d1820
+// pdb: InitCameraShake | CameraShake.obj | retail, unique string literal, high
+// pdb locals: filename
+void InitCameraShake()
 {
     char path[260];
     DAT_011dfecc = 0;
@@ -24,8 +27,9 @@ struct ModelLoader_target
 };
 // If DAT_011dfecc is set, passes its GetName() string to g_modelLoader's FUN_0045a5e0 and clears DAT_011dfecc.
 // @fnv 0x008d1920
-// src: GUESS 0x008d1920 (confidence: medium)
-void Object_ProcessAndClearModelPath()
+// src: XBOX_RETAIL_PDB 0x008d1920
+// pdb: FreeCameraShake | CameraShake.obj | retail, object-file gap fill, high
+void FreeCameraShake()
 {
     if (DAT_011dfecc)
     {
@@ -40,9 +44,10 @@ class SettingFloat
     float* Float();
 };
 
+// pdb: class Controls, size 0x470 (here 0x1), bases: XInputManager, 19 members
 struct Controls
 {
-    void Controls_Rumble(float afLeft, float afRight, int aiDuration, int aiArg3, int aiArg4, int aiArg5, int aiArg6);
+    void Controls_Rumble(float leftMotor, float rightMotor, int timeInMillis, int iWavelength, int aRumblePattern, int abAlternate, int bOverride);
 };
 
 // Exe 0x008d1960: unit-local CamerashakeInterfaceView view used by this matched implementation.
@@ -66,7 +71,11 @@ extern float DAT_011dfed4;
 extern float DAT_011dfed8;
 
 // @fnv 0x008d1960
-void UpdateDistanceFade(float afMult, const NiPoint3& arPos)
+// src: XBOX_RETAIL_PDB 0x008d1960
+// pdb: ShakeCamera | CameraShake.obj | retail, call graph (shared callers), high
+// pdb params: afMult, arPos
+// pdb locals: fdelta, fFadeDelta, fFadeStart, cameraPos, pcontrols
+void ShakeCamera(float afMult, const NiPoint3& arPos)
 {
     if (DAT_011dfecc && afMult > 0.0)
     {
@@ -117,6 +126,9 @@ extern TimeView DAT_011f6394;
 extern SettingFloat g_011d08b0;
 // Advances a camera shake timer, samples the camera controller matrix into output, and returns the current shake amount.
 // @fnv 0x008d1b30
+// pdb: GetCameraShake | CameraShake.obj | retail, object-file run extension, low
+// pdb params: afTime, apReturnShake
+// pdb locals: startRot, pcontroller, fstartTime, UpdateData1, UpdateData2
 float UpdateCameraShake(float time, MatrixView* output)
 {
     if (DAT_011dfecc && DAT_011dfed4 != 0.0 && DAT_011dfed8 != 0.0)

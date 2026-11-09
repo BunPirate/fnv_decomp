@@ -70,7 +70,7 @@ double NiAbs_00408820(float value);
 // @fnv 0x00408570
 void EffectSetting::UpdateEffectName(const char* name)
 {
-    int comparison = GetEffectName().StrCmp(name, true);
+    int comparison = EffectSetting_GetEffectName().StrCmp(name, true);
     if (comparison)
         SetFullName(name);
 }
@@ -95,44 +95,47 @@ bool EffectSetting::HasNoAssociatedActorValue()
 
 // Loads an EffectSetting record from a TESFile, dispatching on chunk IDs to read editor ID, name, description, texture, model, data and counter effects.
 // @fnv 0x00407ac0
-bool EffectSetting::Load(TESFile* file)
+// pdb: EffectSetting::Load | EffectSetting.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: echunkid, pMessage, uiID, psetting
+bool EffectSetting::Load(TESFile* apFile)
 {
-    if (ReadEffectFormType(file) != 16)
+    if (ReadEffectFormType(apFile) != 16)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     int chunk;
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445:  // EDID
         {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 512);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
         }
         break;
         case 0x444e424f:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:  // FULL
-            TESFullNameLoader::LoadFullNameChunk(this, file);
+            TESFullNameLoader::LoadFullNameChunk(this, apFile);
             break;
         case 0x43534544:  // DESC
-            TESDescription::ReadDescriptionFromFile(this, file);
+            TESDescription::ReadDescriptionFromFile(this, apFile);
             break;
         case 0x4e4f4349:  // ICON
-            TESTexture::ReadTextureData(this, file);
+            TESTexture::ReadTextureData(this, apFile);
             break;
         case 0x4c444f4d:  // MODL
         case 0x54444f4d:  // MODT
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x41544144:  // DATA
             memset(&data, 0, sizeof(data));
             data.fSpeed = 1.0f;
-            file->GetChunkData(&data, sizeof(data));
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&data, sizeof(data));
+            if (apFile->IsEndianConversionRequired())
                 data.Endian();
             SetFlag(PLAYER_KNOWS, false);
             break;
@@ -143,10 +146,10 @@ bool EffectSetting::Load(TESFile* file)
                 unsigned int formID;
                 EffectSetting* effect;
             } counterRef;
-            file->GetChunkData(&counterRef.formID);
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&counterRef.formID);
+            if (apFile->IsEndianConversionRequired())
                 BSEndian(&counterRef.formID, EndianSizeTag<4>());
-            TESForm::RemapFormIDForFile(counterRef.formID, file);
+            TESForm::RemapFormIDForFile(counterRef.formID, apFile);
             counterRef.effect = dynamic_cast<EffectSetting*>(TESForm::GetFormByID(counterRef.formID));
             if (counterRef.effect)
             {
@@ -159,7 +162,7 @@ bool EffectSetting::Load(TESFile* file)
         }
         break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -167,6 +170,8 @@ bool EffectSetting::Load(TESFile* file)
 
 // Resolves the effect's associated item, light, sounds and shaders by form ID, warns on missing forms, and marks the item initialized.
 // @fnv 0x00407e50
+// pdb: EffectSetting::InitItem | EffectSetting.obj | retail, string-set bridge, high
+// pdb locals: itempInt, itempint
 void EffectSetting::InitItem()
 {
     unsigned int formID;
@@ -263,11 +268,15 @@ int EffectSetting::IncEffectLoadedCount()
 }
 // Sets or clears the given EffectFlag bit in data.iFlags according to value.
 // @fnv 0x00407e00
+// pdb: EffectSetting::SetCounterEffects | EffectSetting.obj | retail, object-file run extension, low
+// pdb params: apCounterEffects
+// pdb locals: psetting, pnode
 void EffectSetting::SetFlag(EffectFlag flag, bool value)
 {
     value ? data.iFlags |= flag : data.iFlags &= ~flag;
 }
 // @fnv 0x00408970
+// pdb: EffectSetting::QueueAssociatedItem | EffectSetting.obj | retail, upstream name already matches, high
 int EffectSetting::QueueAssociatedItem()
 {
     if (m_iActorValue > 0)
@@ -277,6 +286,7 @@ int EffectSetting::QueueAssociatedItem()
     return m_iActorValue;
 }
 // @fnv 0x004089c0
+// pdb: EffectSetting::QueueEffect | EffectSetting.obj | retail, object-file run extension, low
 int EffectSetting::NormalizeEffectLoadedCount()
 {
     m_iActorValue = (int)NiAbs_00408820((float)m_iActorValue);
@@ -357,6 +367,8 @@ float __cdecl abs(float);
 
 // @fnv 0x00408820
 // src: XBOX_PDB 0x00408820
+// pdb: NiAbs | EffectSetting.obj | debug, call graph, medium
+// pdb params: fValue
 double NiAbs_00408820(float fValue)
 {
     return std::abs(fValue);
@@ -366,6 +378,8 @@ double __cdecl _fabs(double);
 
 // @fnv 0x00408860
 // src: XBOX_PDB 0x00408860
+// pdb: fabsf | EffectSetting.obj | debug, call graph, medium
+// pdb params: _X
 float fabsf_00408860(float afValue)
 {
     return (float)_fabs((double)afValue);
@@ -375,6 +389,8 @@ int __cdecl FUN_00ec6da0(const char*, const char*);
 
 // @fnv 0x00408b20
 // src: XBOX_PDB 0x00408b20
+// pdb: BSstrcmp | EffectSetting.obj | debug, upstream name already matches, high
+// pdb params: apString1, apString2
 int __cdecl BSstrcmp(const char* apString1, const char* apString2)
 {
     return FUN_00ec6da0(apString1, apString2);
@@ -425,6 +441,7 @@ struct EffectDestroyFlags
 };
 
 // @fnv 0x00407200
+// pdb: EffectSetting::`scalar deleting destructor' | EffectSetting.obj | retail, vtable slot, high
 void* __fastcall DestroyEffectSettingIfFlagged(EffectSetting* self, EffectDestroyFlags flags)
 {
     self->EffectSetting::~EffectSetting();
@@ -451,6 +468,7 @@ int __fastcall GetEffectCounterCount(EffectSetting* self)
 }
 
 // @fnv 0x004086a0
+// pdb: EffectSetting::GetProjectileType | EffectSetting.obj | debug, call graph (shared callers), medium
 int __fastcall GetEffectFlagMode(EffectSetting* self)
 {
     return (self->IsFlagSet_00403e60(0x2000000) ? 2 : 0) + (self->IsFlagSet_00403e60(0x4000000) ? 1 : 0);
@@ -504,9 +522,11 @@ struct BSStringCompareArguments
     bool ignoreCase;
 };
 bool __fastcall BSStringsEqual(BSStringT<char>* self, BSStringArgument string);
-int __fastcall CompareBSStrings(BSStringT<char>* self, BSStringCompareArguments args);
+int __fastcall CompareBSStrings(BSStringT<char>* arString, BSStringCompareArguments abIgnoreCase);
 
 // @fnv 0x00501c30
+// pdb: BSStringT<char>::operator!= | BGSTerminal.obj | debug, call graph, high
+// pdb params: arString
 bool __fastcall BSStringsNotEqual(BSStringT<char>* self, BSStringArgument string)
 {
     return !reinterpret_cast<bool (__thiscall*)(BSStringT<char>*, const BSStringT<char>*)>(BSStringsEqual)(
@@ -514,6 +534,8 @@ bool __fastcall BSStringsNotEqual(BSStringT<char>* self, BSStringArgument string
 }
 
 // @fnv 0x00501c60
+// pdb: BSStringT<char>::operator== | BGSTerminal.obj | debug, object-file gap fill, medium
+// pdb params: arString
 bool __fastcall BSStringsEqual(BSStringT<char>* self, BSStringArgument string)
 {
     return !reinterpret_cast<int (__thiscall*)(BSStringT<char>*, const BSStringT<char>*, bool)>(CompareBSStrings)(
@@ -521,9 +543,11 @@ bool __fastcall BSStringsEqual(BSStringT<char>* self, BSStringArgument string)
 }
 
 // @fnv 0x00501c90
-int __fastcall CompareBSStrings(BSStringT<char>* self, BSStringCompareArguments args)
+// pdb: BSStringT<char>::StrCmp | BGSTerminal.obj | debug, call graph, high
+// pdb params: arString, abIgnoreCase
+int __fastcall CompareBSStrings(BSStringT<char>* arString, BSStringCompareArguments abIgnoreCase)
 {
-    return self->StrCmp(static_cast<const char*>(*args.value), args.ignoreCase);
+    return arString->StrCmp(static_cast<const char*>(*abIgnoreCase.value), abIgnoreCase.ignoreCase);
 }
 
 struct IMH
@@ -535,6 +559,7 @@ struct TargetDoorController
 {
 };
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
 };
@@ -576,13 +601,16 @@ void __fastcall CopyEffectCounterValues(EffectSetting* self, EffectCounterSource
 
 // Copies fields from an EffectSetting into this object, assigning a new ref ID when this form is non-temporary and has no form ID.
 // @fnv 0x00407600
-void EffectSetting::CopyFromBase(BaseFormComponent* component)
+// pdb: EffectSetting::Copy | EffectSetting.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: psetting
+void EffectSetting::CopyFromBase(BaseFormComponent* apCopy)
 {
-    EffectSetting* psetting = dynamic_cast<EffectSetting*>(reinterpret_cast<TESForm*>(component));
+    EffectSetting* psetting = dynamic_cast<EffectSetting*>(reinterpret_cast<TESForm*>(apCopy));
     if (!psetting)
         return;
 
-    TESForm::CopyFrom(reinterpret_cast<TESForm*>(component));
+    TESForm::CopyFrom(reinterpret_cast<TESForm*>(apCopy));
     reinterpret_cast<LowProcess*>(this)->LowProcess::SetPackageObjectType(
         reinterpret_cast<TESChallenge*>(psetting)->GetThreshold());
     this->BSShaderProperty_SetDepthBias(reinterpret_cast<TESGrass*>(psetting)->TESGrass::GetLowestAllowedSlope());
@@ -617,6 +645,7 @@ void BSEndian(unsigned int*, EndianSizeTag<2>);
 
 // Byte-swaps the 4-byte fields at offsets 0x00-0x40 and the 2-byte field at 0x14 of this object via BSEndian.
 // @fnv 0x004078c0
+// pdb: EffectSetting::EffectSettingData::Endian | EffectSetting.obj | retail, call graph (shared callers), medium
 void EffectSetting__EffectSettingData::Endian()
 {
     BSEndian((unsigned int*)((unsigned char*)this + 0x00), EndianSizeTag<4>());
@@ -640,6 +669,7 @@ void EffectSetting__EffectSettingData::Endian()
 }
 
 // @fnv 0x00407230
+// pdb: EffectSetting::~EffectSetting | EffectSetting.obj | retail, upstream name already matches, high
 EffectSetting::~EffectSetting()
 {
     ClearData();
@@ -670,12 +700,15 @@ extern int DAT_011837c4;
 void* __cdecl FUN_00ec43fb(void* a1, int a2, int* a3, int* a4, int a5);
 
 // @fnv 0x004082f0
-bool EffectSetting::CompareWithBase(BaseFormComponent* component)
+// pdb: EffectSetting::Compare | EffectSetting.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: psetting, ptmp1, ptmp2, ptest1, ptest2
+bool EffectSetting::CompareWithBase(BaseFormComponent* apCompare)
 {
-    EffectSetting* other = (EffectSetting*)FUN_00ec43fb(component, 0, &DAT_01183028, &DAT_011837c4, 0);
+    EffectSetting* other = (EffectSetting*)FUN_00ec43fb(apCompare, 0, &DAT_01183028, &DAT_011837c4, 0);
     if (other == 0)
         return 1;
-    if (TESForm::Compare(reinterpret_cast<TESForm*>(component)))
+    if (TESForm::Compare(reinterpret_cast<TESForm*>(apCompare)))
         return 1;
     if (reinterpret_cast<TESChallenge*>(this)->GetThreshold() != reinterpret_cast<TESChallenge*>(other)->GetThreshold() ||
         !(GetEffectBaseCostForComparison(this) == GetEffectBaseCostForComparison(other)) ||

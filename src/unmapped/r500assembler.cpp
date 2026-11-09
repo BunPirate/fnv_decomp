@@ -11,6 +11,7 @@ struct FUN_0085fbb0 : public BSFile
 };
 
 // @fnv 0x0085fbb0
+// pdb: SaveGameFile::~SaveGameFile | TESSaveLoadGame.obj | debug, object-file run extension, low
 void FUN_0085fbb0::Method_0085fbb0()
 {
     BSFile::~BSFile();
@@ -173,6 +174,8 @@ struct SaveLoadList
     void LoadSaveFiles();
 };
 // @fnv 0x0085f900
+// pdb: TESSaveLoadGame::BuildSaveGameList | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb locals: iNumSaves, sFileNameAndPath, pTempFile, iItemIdx
 void SaveLoadList::LoadSaveFiles()
 {
     char path[260];
@@ -308,6 +311,8 @@ struct SpawnedObject
 
 // @fnv 0x0085fb40
 // src: GUESS 0x0085fb40 (confidence: low)
+// pdb: SaveGameFile::SaveGameFile | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: apName, aeMode, aiBufferSize
 SpawnedObject* SpawnedObject::InitializeFields_0085fb40(int a1, int a2, int a3)
 {
     this->Init(a1, a2, a3, 0);
@@ -344,6 +349,8 @@ struct FUN_0085fbd0_class
 
 // Iterates the list, deletes each item, clears the list, deletes the list, and nulls the pointer.
 // @fnv 0x0085fbd0
+// pdb: TESSaveLoadGame::DeleteSaveGameList | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb locals: plist, pfile
 void __thiscall FUN_0085fbd0_class::DeleteAllItems()
 {
     if (m_kNode)
@@ -373,6 +380,7 @@ struct SaveGameFileDeleteEntry85 : public FUN_0085fbb0
 
 // Calls Method_0085fbb0 of the base, deletes this when bit 0 of flags is set, and returns this.
 // @fnv 0x0085fb80
+// pdb: SaveGameFile::`scalar deleting destructor' | TESSaveLoadGame.obj | debug, vtable slot, medium
 void* __thiscall SaveGameFileDeleteEntry85::FUN_0085fb80(unsigned int flags)
 {
     FUN_0085fbb0::Method_0085fbb0();

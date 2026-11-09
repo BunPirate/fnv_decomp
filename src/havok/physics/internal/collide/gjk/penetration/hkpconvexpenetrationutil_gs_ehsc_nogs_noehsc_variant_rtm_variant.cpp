@@ -348,6 +348,9 @@ static __forceinline void makePerp(const hkVector4& edge, hkVector4& perp)
 }
 // @fnv 0x00df9fe0
 // src: GUESS 0x00df9fe0 (confidence: low)
+// pdb: hkpConvexPenetrationUtil::builtTetrahedron | hkpConvexPenetrationUtil.obj | retail, object-file run extension, low
+// pdb params: output, gjkStatus
+// pdb locals: triangleNormal, a, f, lambda, assertBuf, ostr
 int Host::ProcessAndReturnValue_00df9fe0(Output* out, int* pfeat)
 {
     const hkVector4* point;

@@ -6,10 +6,13 @@
 // @fnv 0x00521690
 void TESObjectWEAP::SetMeleeBlockSound(TESSound* sound)
 {
-    m_pWeaponSound6 = sound;
+    pMeleeBlockSound = sound;
 }
 
 // @fnv 0x004be380
+// pdb: TESEnchantableForm::GetFormEnchantmentAmount | InventoryChanges.obj | debug, object-file run extension, low
+// pdb params: apForm
+// pdb locals: pEF
 float TESObjectWEAP::GetWeightForForm(bool modded)
 {
     if (modded)

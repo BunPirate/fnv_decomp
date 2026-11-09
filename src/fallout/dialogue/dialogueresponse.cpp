@@ -13,6 +13,8 @@ struct FUN_0083d420_shell
 // Sums the sizes returned by two FUN_0083d890 calls plus one each, then adds 8, and returns the total.
 // @fnv 0x0083d420
 // src: GUESS 0x0083d420 (confidence: low)
+// pdb: DialogueResponse::GetSaveSize | DialogueResponse.obj | debug, object-file gap fill, medium
+// pdb locals: cvoiceLength, isize, ctextLength
 unsigned short FUN_0083d420_shell::ProcessAndReturnValue_0083d420()
 {
     unsigned short result = 0;
@@ -37,6 +39,7 @@ struct FUN_0083d890_shell : S7010
 
 // @fnv 0x0083d890
 // src: GUESS 0x0083d890 (confidence: medium)
+// pdb: BSStringT<char>::ByteLength | DialogueResponse.obj | debug, object-file gap fill, medium
 unsigned int FUN_0083d890_shell::Length_Thunk()
 {
     return Length();
@@ -56,6 +59,8 @@ struct FUN_0083d490_shell : FUN_0083d420_shell
 
 // Writes two length-prefixed byte blocks from this and this+0x10, then the 4-byte values at offsets 8 and 0xc, to the save game stream.
 // @fnv 0x0083d490
+// pdb: DialogueResponse::SaveGame | DialogueResponse.obj | debug, object-file gap fill, medium
+// pdb locals: cvoiceLength, ctextLength
 void FUN_0083d490_shell::SaveToGame()
 {
     unsigned char c1 = Length_Thunk();
@@ -104,6 +109,7 @@ struct FUN_0083d1e0
 
 // Initializes the object's fields unk08, unk0C, unk18, unk1C, unk20 and unk28 to zero.
 // @fnv 0x0083d1e0
+// pdb: DialogueResponse::DialogueResponse | DialogueResponse.obj | debug, call graph, high
 FUN_0083d1e0::FUN_0083d1e0()
 {
     unk18 = 0;
@@ -129,7 +135,7 @@ struct FUN_0083d280_Sub
 
     FUN_0083d280_Sub();
     ~FUN_0083d280_Sub();
-    void Assign(unsigned int aValue);
+    void Assign(unsigned int apString);
     FUN_0083d280_Obj Get();
 };
 
@@ -165,6 +171,9 @@ struct FUN_0083d280_cls
 };
 
 // @fnv 0x0083d280
+// pdb: DialogueResponse::DialogueResponse | DialogueResponse.obj | debug, object-file gap fill, medium
+// pdb params: apQuest, apTopic, apInfo, apSpeaker, apResponse
+// pdb locals: sResponseText
 FUN_0083d280_cls::FUN_0083d280_cls(int aiArg1, int aiArg2, int aiArg3, int aiArg4, FUN_0083d280_Src* apSrc)
 {
     if (apSrc != 0)
@@ -211,6 +220,8 @@ struct Record
 // Reads two ::BSStringT<char> fields, flags, and value from g_TESSaveLoadGame via FUN_008579e0, setting empty strings when lengths are zero.
 // @fnv 0x0083d550
 // src: XBOX_PDB 0x0083d550
+// pdb: DialogueResponse::LoadGame | DialogueResponse.obj | debug, call graph, high
+// pdb locals: cvoiceLength, ctextLength, ptext, pvoice
 void Record::DialogueResponse_LoadGame()
 {
     unsigned char firstLength, secondLength;

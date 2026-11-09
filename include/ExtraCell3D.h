@@ -5,10 +5,11 @@
 
 class NiCell3DNode;
 
+// pdb: class ExtraCell3D, size 0x10, bases: BSExtraData, 1 members
 class ExtraCell3D : public BSExtraData
 {
 public:
     virtual ~ExtraCell3D();
 
-    NiPointer<NiCell3DNode> m_pController;
+    NiPointer<NiCell3DNode> spCellNode;
 };

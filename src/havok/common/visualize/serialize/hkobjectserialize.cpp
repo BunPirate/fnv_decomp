@@ -16,7 +16,7 @@ inline hkMemoryAllocator& GetAudioAllocator(hkMemoryRouter& holder)
 }
 
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct C68E30PrimaryBase
 {
@@ -105,18 +105,21 @@ struct C68E30Owner
     int unk78;
     C68E30PairArray m_kListeners;
 
-    void bhkWorld_SetDebugObjectColor(C68E30Holder* holder, int value);
+    void bhkWorld_SetDebugObjectColor(C68E30Holder* apObject, int aiColor);
 };
 
 // @fnv 0x00c68e30
 // src: XBOX_PDB 0x00c68e30
-void C68E30Owner::bhkWorld_SetDebugObjectColor(C68E30Holder* holder, int value)
+// pdb: bhkWorld::SetDebugObjectColor | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, aiColor
+// pdb locals: pc, ent
+void C68E30Owner::bhkWorld_SetDebugObjectColor(C68E30Holder* apObject, int aiColor)
 {
     C68E30Pair pair;
-    pair.m_uiFilterValue = value;
+    pair.m_uiFilterValue = aiColor;
     C68E30Listener* listener = 0;
-    if (holder->m_pEntity)
-        listener = holder->m_pEntity;
+    if (apObject->m_pEntity)
+        listener = apObject->m_pEntity;
     pair.m_kListener = listener;
     m_kListeners.pushBack(pair);
 }
@@ -124,7 +127,7 @@ void C68E30Owner::bhkWorld_SetDebugObjectColor(C68E30Holder* holder, int value)
 namespace fnvc_adapt {
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl hkArrayUtil__reserve(void* apOwner, void* apArray, int aiSize, int aiAlign);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 
 extern int DAT_01268fd0;
 
@@ -168,13 +171,16 @@ struct FUN_00d641f0_cls
     SweptEntry** m_30;
     int m_34;
 
-    void ClearSweptEntry(int aiIndex);
+    void hkpSweptTransformDisplayViewer_removeAllGeometries(int worldIndex);
 };
 
 // @fnv 0x00d641f0
-void FUN_00d641f0_cls::ClearSweptEntry(int aiIndex)
+// src: XBOX_RETAIL_PDB 0x00d641f0
+// pdb: hkpSweptTransformDisplayViewer::removeAllGeometries | hkpSweptTransformDisplayViewer.obj | retail, object-file gap fill, high
+// pdb params: worldIndex
+void FUN_00d641f0_cls::hkpSweptTransformDisplayViewer_removeAllGeometries(int worldIndex)
 {
-    SweptEntry* pEntry = m_30[aiIndex];
+    SweptEntry* pEntry = m_30[worldIndex];
     int i = 0;
     if (pEntry->m_04.m_04 > 0)
     {
@@ -235,7 +241,7 @@ struct Buffer
     unsigned short state, references;
     Sink* stream;
     bool byteSwap;
-    void hkOArchive_InitializeWriterWithByteSwap(Sink*, ByteSwap) throw();
+    void hkOArchive_ctor(Sink*, ByteSwap) throw();
     void hkOArchive_WriteBinaryData_Thunk_00d609e0(unsigned int, unsigned int) throw();
     void WriteInt(unsigned int) throw();
     void hkOArchive_write32u(unsigned int) throw();
@@ -245,6 +251,9 @@ struct Buffer
 // Serializes a1-a4, data pairs/triples, and payload into sink via buffer, returning total bytes written or -1 on failure.
 // @fnv 0x00e0b850
 // src: HAVOK_LIB 0x00e0b850
+// pdb: _writeData | hkObjectSerialize.obj | retail, upstream name already matches, high
+// pdb params: s, dataID, classID, data, dataSize, reloc, endianSwap
+// pdb locals: a, assertBuf, ostr
 static __declspec(noinline) int _writeData(unsigned int a1, unsigned int a2, unsigned int a3, unsigned int a4,
                                              const void* payload, unsigned int payloadBytes, ByteSwap byteSwap,
                                              FixupLists* data, Sink* sink)
@@ -253,7 +262,7 @@ static __declspec(noinline) int _writeData(unsigned int a1, unsigned int a2, uns
     unsigned int bytes;
     unsigned int count;
     Buffer buffer;
-    buffer.hkOArchive_InitializeWriterWithByteSwap(sink, byteSwap);
+    buffer.hkOArchive_ctor(sink, byteSwap);
     buffer.hkOArchive_WriteBinaryData_Thunk_00d609e0(a1, a2);
     if (!*sink->Get(&status))
     {
@@ -317,10 +326,11 @@ int SerializeData(unsigned int a1, unsigned int a2, unsigned int a3, unsigned in
     return _writeData(a1, a2, a3, a4, payload, payloadBytes, byteSwap, data, sink);
 }
 
-void __cdecl hkArrayUtil__reserve(void* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 void* __cdecl AllocateWithHeader(void* alloc, int size);
 void __cdecl hkMemoryRouter_easyFree(void* alloc, void* p);
 
+// pdb: class hkStreamReader, size 0x8 (here 0x4), bases: hkReferencedObject, 0 members
 struct hkStreamReader
 {
     virtual ~hkStreamReader() throw();
@@ -371,25 +381,29 @@ template <typename T> static __forceinline void SetSizeAndGrow(hkArrayBase<T>& a
 
 // Reads a header, tag, relocation table, item list, and allocated buffer from a stream, applies relocations to the buffer, and returns the header value.
 // @fnv 0x00e0ba10
-unsigned __int64 __cdecl ReadRelocatedData(hkStreamReader* stream, char** outBuffer, int* outAllocSize,
-                                           hkArray<Item24>& outItems, void* tag)
+// src: XBOX_RETAIL_PDB 0x00e0ba10
+// pdb: hkObjectSerialize::readObject | hkObjectSerialize.obj | retail, object-file gap fill, high
+// pdb params: s, data, dataSize, globalFixups, klassID
+// pdb locals: numLocal, numGlobal, localFixups, id
+unsigned __int64 __cdecl hkObjectSerialize_readObject(hkStreamReader* s, char** data, int* dataSize,
+                                           hkArray<Item24>& globalFixups, void* klassID)
 {
     int numRelocs;
     int numItems;
     int i;
     unsigned __int64 header;
 
-    stream->read(&header, 8);
-    if (!stream->IsStreamValid())
+    s->read(&header, 8);
+    if (!s->IsStreamValid())
         return 0;
 
-    stream->read(tag, 8);
-    if (!stream->IsStreamValid())
+    s->read(klassID, 8);
+    if (!s->IsStreamValid())
         return 0;
 
     hkArrayBase<Reloc> relocs;
-    stream->read(&numRelocs, 4);
-    if (!stream->IsStreamValid())
+    s->read(&numRelocs, 4);
+    if (!s->IsStreamValid())
     {
         ClearAndRelease(relocs, GetAudioAllocator(hkMemoryRouter_getInstance()));
         return 0;
@@ -400,48 +414,48 @@ unsigned __int64 __cdecl ReadRelocatedData(hkStreamReader* stream, char** outBuf
     for (i = 0; i < (unsigned int)numRelocs; ++i)
     {
         Reloc& r = relocs[i];
-        stream->read(&r.m_iSourceOffset, 4);
-        stream->read(&r.toOffset, 4);
-        if (!stream->IsStreamValid())
+        s->read(&r.m_iSourceOffset, 4);
+        s->read(&r.toOffset, 4);
+        if (!s->IsStreamValid())
         {
             ClearAndRelease(relocs, GetAudioAllocator(hkMemoryRouter_getInstance()));
             return 0;
         }
     }
 
-    stream->read(&numItems, 4);
-    if (!stream->IsStreamValid())
+    s->read(&numItems, 4);
+    if (!s->IsStreamValid())
     {
         ClearAndRelease(relocs, GetAudioAllocator(hkMemoryRouter_getInstance()));
         return 0;
     }
 
     count = numItems;
-    SetSizeAndGrow(outItems, GetAudioAllocator(hkMemoryRouter_getInstance()), count);
+    SetSizeAndGrow(globalFixups, GetAudioAllocator(hkMemoryRouter_getInstance()), count);
     for (i = 0; i < (unsigned int)numItems; ++i)
     {
-        char* item = (char*)&outItems[i];
-        stream->read(item, 4);
-        stream->read(item + 8, 8);
-        stream->read(item + 16, 8);
-        if (!stream->IsStreamValid())
+        char* item = (char*)&globalFixups[i];
+        s->read(item, 4);
+        s->read(item + 8, 8);
+        s->read(item + 16, 8);
+        if (!s->IsStreamValid())
         {
             ClearAndRelease(relocs, GetAudioAllocator(hkMemoryRouter_getInstance()));
             return 0;
         }
     }
 
-    stream->read(outAllocSize, 4);
-    if (!stream->IsStreamValid())
+    s->read(dataSize, 4);
+    if (!s->IsStreamValid())
     {
         ClearAndRelease(relocs, GetAudioAllocator(hkMemoryRouter_getInstance()));
         return 0;
     }
 
-    int iAllocationSize = *outAllocSize;
+    int iAllocationSize = *dataSize;
     char* buffer = (char*)AllocateWithHeader(&GetAudioAllocator(hkMemoryRouter_getInstance()), iAllocationSize);
-    stream->read(buffer, *outAllocSize);
-    if (!stream->IsStreamValid())
+    s->read(buffer, *dataSize);
+    if (!s->IsStreamValid())
     {
         hkMemoryRouter_easyFree(&GetAudioAllocator(hkMemoryRouter_getInstance()), buffer);
         ClearAndRelease(relocs, GetAudioAllocator(hkMemoryRouter_getInstance()));
@@ -457,7 +471,7 @@ unsigned __int64 __cdecl ReadRelocatedData(hkStreamReader* stream, char** outBuf
         }
     }
 
-    *outBuffer = buffer;
+    *data = buffer;
     unsigned __int64 ret = header;
     ClearAndRelease(relocs, GetAudioAllocator(hkMemoryRouter_getInstance()));
     return ret;
@@ -487,7 +501,7 @@ static __declspec(noinline) int _writeData(FixupLists* fixups, Sink* output, uns
     Buffer archive;
     ByteSwap endian;
     endian.value = swap;
-    archive.hkOArchive_InitializeWriterWithByteSwap(output, endian);
+    archive.hkOArchive_ctor(output, endian);
     archive.hkOArchive_WriteBinaryData_Thunk_00d609e0(idLow, idHigh);
     if (!*output->Get(&ok))
     {
@@ -624,8 +638,8 @@ struct ObjectWriteX
     int unk04;
     int unk08;
     int unk0c;
-    void hkPlatformObjectWriter_hkPlatformObjectWriter(ObjectWriteInfo* info);
-    void hkPlatformObjectWriter_writeObject(ObjectWriteZ* z, int a, int b, ObjectWriteW* w);
+    void hkPlatformObjectWriter_ctor(ObjectWriteInfo* layout);
+    void hkPlatformObjectWriter_writeObject(ObjectWriteZ* writer, int dataIn, int klass, ObjectWriteW* reloc);
     void FUN_00e02c70();
 };
 
@@ -634,11 +648,14 @@ extern char DAT_011b7b89;
 // Writes an object record to a sink by serializing its fixups and payload via FUN_00e0b850, returning the total bytes written.
 // @fnv 0x00e0bd40
 // src: HAVOK_LIB 0x00e0bd40
+// pdb: hkObjectSerialize::writeObject | hkObjectSerialize.obj | retail, upstream name already matches, high
+// pdb params: s, destLayout, dataID, data, klass, globalFixups
+// pdb locals: pw, buffer, reloc, asw
 int __cdecl hkObjectSerialize_writeObject(Sink* p1, ObjectWriteInfo* p2, unsigned int aiIdLow, unsigned int aiIdHigh, int p5,
                          unsigned int p6, ObjectWriteArrItem* out)
 {
     ObjectWriteX x;
-    x.hkPlatformObjectWriter_hkPlatformObjectWriter(p2);
+    x.hkPlatformObjectWriter_ctor(p2);
     ObjectWriteArrByte y;
     y.m_data = 0;
     y.m_iElementCount = 0;

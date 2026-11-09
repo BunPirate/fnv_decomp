@@ -10,30 +10,36 @@ unsigned int BaseProcess::GetAttackChance(Actor* argument0, float argument1, flo
 }
 
 // @fnv 0x008d03a0
+// pdb: BaseProcess::ClearCurrentPackage | BaseProcess.obj | debug, call graph, medium
 void BaseProcess::StopPackage()
 {
     m_kProcessData.Clear();
 }
 
 // @fnv 0x00859670
+// pdb: BaseProcess::GetPackageThatIsRunning | TESSaveLoadGame.obj | debug, object-file gap fill, medium
 TESPackage* BaseProcess::GetOneTimePackage() const
 {
     return GetCurrentPackage();
 }
 
 // @fnv 0x008d0450
+// pdb: BaseProcess::GetInstanceDataThatIsRunning | BaseProcess.obj | debug, object-file run extension, low
 int BaseProcess::GetPackageInfoValue() const
 {
     return GetPackageState();
 }
 
 // @fnv 0x008d0400
+// pdb: BaseProcess::AddToCurrentProcedureIndex | BaseProcess.obj | debug, object-file run extension, low
+// pdb params: aiOffset
 void BaseProcess::SetPackageExecutionState(int amount)
 {
     m_kProcessData.AddToProcedureIndex(amount);
 }
 
 // @fnv 0x008d0470
+// pdb: BaseProcess::GetProcedureIndexRunning | BaseProcess.obj | debug, object-file run extension, low
 void BaseProcess::SetAnimationState(unsigned int index)
 {
     SetPackageInfoState(index);

@@ -14,6 +14,8 @@ extern int DAT_0109b72c;
 // Allocates a 0x1c-byte NiProperty, constructs it, sets a short field at offset 0x18 to 8 and installs the vtable, returning the object or null.
 // @fnv 0x00a5f280
 // src: EXE 0x00a5f280
+// pdb: NiVertexColorProperty::CreateObject | NiVertexColorProperty.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiProperty* NiVertexColorProperty_CreateObject()
 {
     NiVertexColorProperty* p = static_cast<NiVertexColorProperty*>(BSFadeNode::operator new(0x1c));
@@ -35,6 +37,9 @@ struct PropertyRoutines
     void AppendString(StrArr*);
 };
 // @fnv 0x00a5f090
+// pdb: NiVertexColorProperty::IsEqual | NiVertexColorProperty.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkVC
 bool NiVertexColorProperty::IsVertexColorPropertyEqual(NiObject* pkObject)
 {
     NiVertexColorProperty* pkVC;
@@ -53,11 +58,13 @@ bool NiVertexColorProperty::IsVertexColorPropertyEqual(NiObject* pkObject)
 extern double* _g_011f4430;
 char* __cdecl _FUN_00a7d330(double* value);
 char* __cdecl BuildSourceString(const char* name, unsigned int value);
-char* __cdecl BuildLightingEnumString(const char* name, unsigned int value);
+char* __cdecl BuildLightingEnumString(const char* pcPrefix, unsigned int eMode);
 
 // For routines absent from the shared declaration, an unused EDX parameter
 // preserves the original member-function ABI while using the shared object layout.
 // @fnv 0x00a5f3a0
+// pdb: NiVertexColorProperty::GetViewerStrings | NiVertexColorProperty.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall AppendVertexColorProperties(NiVertexColorProperty* self, void*, StrArr* strings)
 {
     reinterpret_cast<PropertyRoutines*>(self)->AppendString(strings);
@@ -87,6 +94,10 @@ void* __cdecl Object_DispatchCommandFour(unsigned int size);
 void __stdcall CreateVertexBufferSet(void* self, unsigned int arg);
 
 // @fnv 0x00a5f210
+// pdb: NiVertexColorProperty::CreateClone | NiVertexColorProperty.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiVertexColorProperty::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 void* __fastcall CloneVertexColorProperty(NiVertexColorProperty* self, void*, unsigned int a1)
 {
     if (self->m_spControllers != 0)
@@ -120,20 +131,23 @@ int __cdecl FUN_00a305b0(char* buffer, unsigned int size, const char* format, ..
 
 // Allocates a buffer and formats name with a lighting enum value (LIGHTING_E, LIGHTING_E_A_D, or UNKNOWN) into it, returning the buffer.
 // @fnv 0x00a5f160
-char* __cdecl BuildLightingEnumString(const char* name, unsigned int value)
+// pdb: NiVertexColorProperty::GetViewerString | NiVertexColorProperty.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eMode
+// pdb locals: pcString, uiLen
+char* __cdecl BuildLightingEnumString(const char* pcPrefix, unsigned int eMode)
 {
-    unsigned int size = strlen(name) + 0x1a;
+    unsigned int size = strlen(pcPrefix) + 0x1a;
     char* buffer = (char*)NiMalloc(size);
-    switch (value)
+    switch (eMode)
     {
     case 0:
-        FUN_00a305b0(buffer, size, "%s = LIGHTING_E", name);
+        FUN_00a305b0(buffer, size, "%s = LIGHTING_E", pcPrefix);
         break;
     case 1:
-        FUN_00a305b0(buffer, size, "%s = LIGHTING_E_A_D", name);
+        FUN_00a305b0(buffer, size, "%s = LIGHTING_E_A_D", pcPrefix);
         break;
     default:
-        FUN_00a305b0(buffer, size, "%s = UNKNOWN!!!", name);
+        FUN_00a305b0(buffer, size, "%s = UNKNOWN!!!", pcPrefix);
         break;
     }
     return buffer;
@@ -144,6 +158,9 @@ int _NiSprintf(char*, unsigned int, const char*, ...);
 
 // Allocates a string of uiLen + 0x1a bytes and formats pcPrefix with a source name selected by eMode into it, returning the string.
 // @fnv 0x00a5f0d0
+// pdb: NiVertexColorProperty::GetViewerString | NiVertexColorProperty.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eMode
+// pdb locals: pcString, uiLen
 char* BuildSourceString(const char* pcPrefix, int eMode)
 {
     char* pcString;
@@ -369,6 +386,9 @@ static __forceinline void SetBits(unsigned short& f, unsigned int v, unsigned in
     f = (unsigned short)((f & ~mask) | (v << shift));
 }
 // @fnv 0x00a5f2b0
+// pdb: NiVertexColorProperty::LoadBinary | NiVertexColorProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: eSource, eLighting
 void __fastcall ReadFromStream(NiVertexColorProperty* self, void*, Stream* apStream)
 {
     self->NiProperty::LoadBinary(*reinterpret_cast<NiStream*>(apStream));

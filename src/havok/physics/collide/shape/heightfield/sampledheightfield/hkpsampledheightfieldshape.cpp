@@ -35,6 +35,8 @@ struct Cls_00d24670 {
 
 // @fnv 0x00d24670
 // src: GUESS 0x00d24670 (confidence: low)
+// pdb: hkpSampledHeightFieldShape::getHeightAndNormalAt | hkpSampledHeightFieldShape.obj | retail, object-file run extension, low
+// pdb params: xPos, zPos, subX, subZ, normalOut, heightOut, triangleIndexOut
 void Cls_00d24670::UpdateState_00d24670(int x, int y, float fx, float fy, LocalM128* nrm, float* height, int* flag)
 {
     *nrm = _mm_load_ps1(&DAT_01012068);
@@ -108,15 +110,18 @@ struct FUN_00d24b50_Obj {
 
 class hkShapeD260 : public FUN_00d24b50_Obj {
 public:
-    hkBoolResult __thiscall hkpSampledHeightFieldShape_castRayImpl(void* object, hkInfoD260* info);
+    hkBoolResult __thiscall hkpSampledHeightFieldShape_castRayImpl(void* input, hkInfoD260* results);
 };
 
 // Runs FUN_00d24b50 on object with a collector built from info and returns whether the collector recorded a hit.
 // @fnv 0x00d26080
 // src: HAVOK_LIB 0x00d26080
-hkBoolResult __thiscall hkShapeD260::hkpSampledHeightFieldShape_castRayImpl(void* object, hkInfoD260* info) {
-    hkCollectorD260 collector(info);
-    this->hkpSampledHeightFieldShape_castRayInternal(object, 0, hkBoolResult(false), 0.0f, &collector);
+// pdb: hkpSampledHeightFieldShape::castRayImpl | hkpSampledHeightFieldShape.obj | retail, upstream name already matches, high
+// pdb params: input, results
+// pdb locals: myCollector
+hkBoolResult __thiscall hkShapeD260::hkpSampledHeightFieldShape_castRayImpl(void* input, hkInfoD260* results) {
+    hkCollectorD260 collector(results);
+    this->hkpSampledHeightFieldShape_castRayInternal(input, 0, hkBoolResult(false), 0.0f, &collector);
     hkBoolResult result;
     result.m_cBooleanValue = static_cast<char>(collector.m_bHasHit);
     return result;
@@ -170,19 +175,22 @@ struct Local12 {
 
 struct Host {
     void hkpSampledHeightFieldShape_castRayInternal(int a1, int a2, hkBoolResult v, float f, Local12* pLocal);
-    void hkpSampledHeightFieldShape_castRayWithCollectorImpl(int a1, int a2, const Arg3* a3);
+    void hkpSampledHeightFieldShape_castRayWithCollectorImpl(int input, int cdBody, const Arg3* collector);
 };
 
 // Builds a local record from DAT_010ce310 and a3 (its float and pointer), then calls FUN_00d24b50 with a1, a2, a false hkBoolResult, 0.0f and that record.
 // @fnv 0x00d260d0
 // src: HAVOK_LIB 0x00d260d0
-void Host::hkpSampledHeightFieldShape_castRayWithCollectorImpl(int a1, int a2, const Arg3* a3)
+// pdb: hkpSampledHeightFieldShape::castRayWithCollectorImpl | hkpSampledHeightFieldShape.obj | retail, upstream name already matches, high
+// pdb params: input, cdBody, collector
+// pdb locals: myCollector
+void Host::hkpSampledHeightFieldShape_castRayWithCollectorImpl(int input, int cdBody, const Arg3* collector)
 {
     Local12 local;
     local.m_00 = &DAT_010ce310;
-    local.m_04 = a3->m_04;
-    local.m_08 = a3;
-    hkpSampledHeightFieldShape_castRayInternal(a1, a2, hkBoolResult(false), 0.0f, &local);
+    local.m_04 = collector->m_04;
+    local.m_08 = collector;
+    hkpSampledHeightFieldShape_castRayInternal(input, cdBody, hkBoolResult(false), 0.0f, &local);
 }
 
 struct __declspec(align(16)) RayData {
@@ -210,13 +218,16 @@ struct Obj {
     float unk24;
 
     void hkpSampledHeightFieldShape_castRayInternal(RayData* data, void* arg2, hkBoolResult arg3, float arg4, void* arg5);
-    void hkpSampledHeightFieldShape_castSphere(Input* input, void* arg2, void* arg3);
+    void hkpSampledHeightFieldShape_castSphere(Input* input, void* cdBody, void* collector);
 };
 
 // Copies the input ray, offsets its Y and endY by a signed value, and calls FUN_00d24b50 with the modified ray.
 // @fnv 0x00d26120
 // src: HAVOK_LIB 0x00d26120
-void Obj::hkpSampledHeightFieldShape_castSphere(Input* input, void* arg2, void* arg3) {
+// pdb: hkpSampledHeightFieldShape::castSphere | hkpSampledHeightFieldShape.obj | retail, upstream name already matches, high
+// pdb params: input, cdBody, collector
+// pdb locals: in2
+void Obj::hkpSampledHeightFieldShape_castSphere(Input* input, void* cdBody, void* collector) {
     float a = input->f30;
     RayData local = input->base;
 
@@ -226,7 +237,7 @@ void Obj::hkpSampledHeightFieldShape_castSphere(Input* input, void* arg2, void* 
     local.y += a;
     local.endY += a;
 
-    this->hkpSampledHeightFieldShape_castRayInternal(&local, arg2, true, input->f34, arg3);
+    this->hkpSampledHeightFieldShape_castRayInternal(&local, cdBody, true, input->f34, collector);
 }
 
 extern "C" LocalM128 _mm_mul_ps(LocalM128, LocalM128);
@@ -234,7 +245,7 @@ extern "C" LocalM128 _mm_mul_ps(LocalM128, LocalM128);
 __declspec(align(16)) const float halfScale[4] = {0.5f, 0.5f, 0.5f, 0.5f};
 
 struct SampledHeightField : hkpSampledHeightFieldShape {
-    void hkpSampledHeightFieldShape_getAabbImpl(hkUlong transform, float tolerance, hkUlong aabb);
+    void hkpSampledHeightFieldShape_getAabbImpl(hkUlong localToWorld, float tolerance, hkUlong out);
 };
 
 void __cdecl hkAabbUtil_calcAabb_00d26230(hkUlong, const hkVector4&, const hkVector4&, float, hkUlong);
@@ -242,29 +253,32 @@ void __cdecl hkAabbUtil_calcAabb_00d26230(hkUlong, const hkVector4&, const hkVec
 // If the cached height range is not yet set, scans all heights to compute it; then calls FUN_00d26230 with the box center and half extents, tolerance and aabb.
 // @fnv 0x00d249f0
 // src: HAVOK_SRC 0x00d249f0
-void SampledHeightField::hkpSampledHeightFieldShape_getAabbImpl(hkUlong transform, float tolerance, hkUlong aabb)
+// pdb: hkpSampledHeightFieldShape::getAabbImpl | hkpSampledHeightFieldShape.obj | retail, upstream name already matches, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: center
+void SampledHeightField::hkpSampledHeightFieldShape_getAabbImpl(hkUlong localToWorld, float tolerance, hkUlong out)
 {
     float fMinHeight = GetHeightAtGridPoint(0, 0);
     float maximum = fMinHeight;
-    if (SetCenterPosition.y < 0.0f) {
-        for (int x = 0; x < m_iXResolution; ++x) {
-            for (int z = 0; z < m_iZResolution; ++z) {
+    if (m_extents.y < 0.0f) {
+        for (int x = 0; x < m_xRes; ++x) {
+            for (int z = 0; z < m_zRes; ++z) {
                 float height = GetHeightAtGridPoint(x, z);
                 fMinHeight = fMinHeight < height ? fMinHeight : height;
                 maximum = maximum > height ? maximum : height;
             }
         }
-        fMinHeight *= m_kHeightScaleVector.y;
-        maximum *= m_kHeightScaleVector.y;
+        fMinHeight *= m_intToFloatScale.y;
+        maximum *= m_intToFloatScale.y;
         float oldMinimum = fMinHeight;
         fMinHeight = fMinHeight < maximum ? fMinHeight : maximum;
         maximum = maximum < oldMinimum ? oldMinimum : maximum;
-        m_fHeightScale = (fMinHeight + maximum) * 0.5;
-        SetCenterPosition.y = maximum - fMinHeight;
+        m_heightCenter = (fMinHeight + maximum) * 0.5;
+        m_extents.y = maximum - fMinHeight;
     }
     __declspec(align(16)) hkVector4 center;
-    *reinterpret_cast<LocalM128*>(&center) = _mm_mul_ps(*reinterpret_cast<const LocalM128*>(&SetCenterPosition), *reinterpret_cast<const LocalM128*>(&halfScale));
+    *reinterpret_cast<LocalM128*>(&center) = _mm_mul_ps(*reinterpret_cast<const LocalM128*>(&m_extents), *reinterpret_cast<const LocalM128*>(&halfScale));
     __declspec(align(16)) hkVector4 halfExtents = center;
-    center.y = m_fHeightScale;
-    hkAabbUtil_calcAabb_00d26230(transform, halfExtents, center, tolerance, aabb);
+    center.y = m_heightCenter;
+    hkAabbUtil_calcAabb_00d26230(localToWorld, halfExtents, center, tolerance, out);
 }

@@ -3,6 +3,7 @@
 class DownloadableContentManager;
 class PathingRequest;
 
+// pdb: class BSSystemUtility, size 0x98, 7 members
 class BSSystemUtility
 {
 public:
@@ -12,7 +13,7 @@ public:
     virtual void Update_00af3340();
     virtual bool vf10(void*);
 
-    unsigned char storage[0x94];
+    unsigned char cTitle[0x94];
 
     void vfn_00();
     void vfn_04();

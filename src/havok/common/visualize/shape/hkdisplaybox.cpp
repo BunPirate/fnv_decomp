@@ -24,7 +24,7 @@ struct __declspec(align(16)) DisplayBoxVector
     }
 };
 
-__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 typedef hkArrayBase<DisplayBoxVector> hkVector4Array;
 template<> __forceinline void hkArrayBase<DisplayBoxVector>::_setSize(hkMemoryAllocator& sharedAlloc, int n)
@@ -54,13 +54,16 @@ struct hkBoxGeometry
     int unk5c;
     DisplayBoxVector m_vHalfExtents;
 
-    void GetEdgeLines(hkVector4Array& lines, hkMemoryAllocator& alloc);
+    void GetEdgeLines(hkVector4Array& lines, hkMemoryAllocator& a);
 };
 
 // @fnv 0x00de2050
-void hkBoxGeometry::GetEdgeLines(hkVector4Array& aEdgeLines, hkMemoryAllocator& aAllocator)
+// pdb: hkDisplayBox::getWireframeGeometry | hkDisplayBox.obj | retail, vtable slot, high
+// pdb params: lines, a
+// pdb locals: points, v
+void hkBoxGeometry::GetEdgeLines(hkVector4Array& lines, hkMemoryAllocator& a)
 {
-    aEdgeLines._setSize(aAllocator, 24);
+    lines._setSize(a, 24);
 
     DisplayBoxVector verts[8];
     for (int iVertex = 0; iVertex < 8; iVertex++)
@@ -83,8 +86,8 @@ void hkBoxGeometry::GetEdgeLines(hkVector4Array& aEdgeLines, hkMemoryAllocator& 
             int iOtherVertex = iVertex ^ iBit;
             if (iVertex < iOtherVertex)
             {
-                aEdgeLines.m_data[n++].set(verts[iVertex]);
-                aEdgeLines.m_data[n++].set(verts[iOtherVertex]);
+                lines.m_data[n++].set(verts[iVertex]);
+                lines.m_data[n++].set(verts[iOtherVertex]);
             }
         }
     }
@@ -159,6 +162,8 @@ struct FUN_00d58510 : public ShapeD22DC0
 };
 
 // @fnv 0x00d58510
+// pdb: hkDisplayCylinder::hkDisplayCylinder | hkDisplayCylinder.obj | retail, object-file run extension, low
+// pdb params: top, bottom, radius, numSides, numHeightSegments
 FUN_00d58510::FUN_00d58510(const Vector4D22DC0& kA, const Vector4D22DC0& kB, float afBoundRadius, int iA,
                            int iB) throw()
     : ShapeD22DC0(9), m_iA(iA), m_iB(iB)

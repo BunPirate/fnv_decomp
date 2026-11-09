@@ -4,6 +4,7 @@
 
 class ScrapHeapManager;
 
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x14), 2 members
 class ScrapHeapBuffer
 {
   public:
@@ -20,6 +21,7 @@ class ScrapHeapBuffer
     void* Allocate(unsigned int size, unsigned int alignment);
 };
 
+// pdb: class ScrapHeapManager, size 0x210 (here 0x240), 4 members
 class ScrapHeapManager
 {
   public:
@@ -36,7 +38,7 @@ class ScrapHeapManager
     RecursiveSpinLock bufferLock;
 
     static ScrapHeapManager& Instance();
-    char* RequestBuffer(unsigned int& size);
+    char* RequestBuffer(unsigned int& ariRequestedInitialSize);
     void ReleaseBuffer(char* buffer, unsigned int size);
     char* AllocateBuffer(unsigned int size);
     void ReleaseBufferContents(char* buffer, unsigned int offset, unsigned int size);

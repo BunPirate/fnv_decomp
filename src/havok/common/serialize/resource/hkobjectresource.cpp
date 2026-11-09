@@ -12,37 +12,41 @@ struct FUN_00e04eb0_class
 {
     char _pad[0x10];
     hkReferencedObject* m_p;
-    void hkObjectResource_setClassNameRegistry(hkReferencedObject* p);
+    void hkObjectResource_setClassNameRegistry(hkReferencedObject* classReg);
 };
 
 // @fnv 0x00e04eb0
 // src: XBOX_PDB 0x00e04eb0
-void FUN_00e04eb0_class::hkObjectResource_setClassNameRegistry(hkReferencedObject* apObject)
+// pdb: hkObjectResource::setClassNameRegistry | hkObjectResource.obj | retail, upstream name already matches, high
+// pdb params: classReg
+void FUN_00e04eb0_class::hkObjectResource_setClassNameRegistry(hkReferencedObject* classReg)
 {
-    if (apObject)
-        apObject->addReference();
+    if (classReg)
+        classReg->addReference();
     if (m_p)
         m_p->removeReference();
-    m_p = apObject;
+    m_p = classReg;
 }
 
 namespace fnv_00e04ee0 {
 struct FUN_00e04ee0_class
 {
-    void __thiscall hkObjectResource_setTypeInfoRegistry(hkReferencedObject* p);
+    void __thiscall hkObjectResource_setTypeInfoRegistry(hkReferencedObject* typeReg);
     char _pad[0x14];
     hkReferencedObject* m_p;
 };
 
 // @fnv 0x00e04ee0
 // src: XBOX_PDB 0x00e04ee0
-void __thiscall FUN_00e04ee0_class::hkObjectResource_setTypeInfoRegistry(hkReferencedObject* apObject)
+// pdb: hkObjectResource::setTypeInfoRegistry | hkObjectResource.obj | retail, upstream name already matches, high
+// pdb params: typeReg
+void __thiscall FUN_00e04ee0_class::hkObjectResource_setTypeInfoRegistry(hkReferencedObject* typeReg)
 {
-    if (apObject)
-        apObject->addReference();
+    if (typeReg)
+        typeReg->addReference();
     if (m_p)
         m_p->removeReference();
-    m_p = apObject;
+    m_p = typeReg;
 }
 }  // namespace fnv_00e04ee0
 
@@ -69,12 +73,12 @@ struct FUN_00e05090_class
 {
     virtual FUN_00e05090_class* FUN_00e05090(int flags);
     unsigned short m_resourceId;
-    void ReleaseResource();
+    void NiXenonRenderer_ReleaseResource();
 };
 
 FUN_00e05090_class* FUN_00e05090_class::FUN_00e05090(int flags)
 {
-    ReleaseResource();
+    NiXenonRenderer_ReleaseResource();
 
     if (flags & 1)
     {
@@ -93,18 +97,20 @@ class FUN_00d46d40_s
     const char* FUN_00d46d40();
     FUN_00d46d40_s* FUN_00d46d50();
 
-    hkBool hkClass_isSuperClass(FUN_00d46d40_s* pkNode);
+    hkBool hkClass_isSuperClass(FUN_00d46d40_s* k);
 };
 
 // @fnv 0x00d46d80
 // src: HAVOK_LIB 0x00d46d80
-hkBool FUN_00d46d40_s::hkClass_isSuperClass(FUN_00d46d40_s* pkNode)
+// pdb: hkClass::isSuperClass | hkClass.obj | retail, upstream name already matches, high
+// pdb params: k
+hkBool FUN_00d46d40_s::hkClass_isSuperClass(FUN_00d46d40_s* k)
 {
-    while (pkNode)
+    while (k)
     {
-        if (hkString_strCmp((int)pkNode->FUN_00d46d40(), (int)FUN_00d46d40()) == 0)
+        if (hkString_strCmp((int)k->FUN_00d46d40(), (int)FUN_00d46d40()) == 0)
             return true;
-        pkNode = pkNode->FUN_00d46d50();
+        k = k->FUN_00d46d50();
     }
     return false;
 }
@@ -133,14 +139,16 @@ struct FUN_00e04e70_class
     int unknown04;
     void* value08;
     void* value0c;
-    int hkObjectResource_stealContentsPointer(void* first, void* second);
+    int hkObjectResource_stealContentsPointer(void* typeName, void* typeRegistry);
 };
 // Calls vf6 with the two arguments, clears value08 and value0c, and returns the result of vf6.
 // @fnv 0x00e04e70
 // src: HAVOK_SRC 0x00e04e70
-int FUN_00e04e70_class::hkObjectResource_stealContentsPointer(void* first, void* second)
+// pdb: hkObjectResource::stealContentsPointer | hkObjectResource.obj | retail, upstream name already matches, high
+// pdb params: typeName, typeRegistry
+int FUN_00e04e70_class::hkObjectResource_stealContentsPointer(void* typeName, void* typeRegistry)
 {
-    int result = vf6(first, second);
+    int result = vf6(typeName, typeRegistry);
     value08 = 0;
     value0c = 0;
     return result;
@@ -171,6 +179,8 @@ class FUN_00e04f10_Class
     FUN_00e04f10_Class* Initialize(const FUN_00e04f10_Values* init);
 };
 // @fnv 0x00e04f10
+// pdb: NiXenonRenderer::GetMultiSampleType | NiXenonRenderer.obj | debug, object-file run extension, low
+// pdb params: uiMode
 FUN_00e04f10_Class* FUN_00e04f10_Class::Initialize(const FUN_00e04f10_Values* pInitValues)
 {
     refCount = 1;
@@ -212,7 +222,7 @@ struct ListenerVTable_00e04f80
 
 struct Registry_00e04f80
 {
-    char* hkClass_isSuperClass(char* status, Resource_00e04f80* resource);
+    char* hkClass_isSuperClass(char* k, Resource_00e04f80* resource);
 };
 
 extern Registry_00e04f80 DAT_01268748;
@@ -229,11 +239,15 @@ struct FUN_00e04f80_class
     hkReferencedObject* context;
     Listener_00e04f80* listener;
 
-    void ReleaseResource();
+    void NiXenonRenderer_ReleaseResource();
 };
 
 // @fnv 0x00e04f80
-void FUN_00e04f80_class::ReleaseResource()
+// src: XBOX_RETAIL_PDB 0x00e04f80
+// pdb: NiXenonRenderer::ReleaseResource | NiXenonRenderer.obj | retail, upstream name already matches, high
+// pdb params: pkResource
+// pdb locals: icurThreadID, pkDevice, iownerThreadID, pkTask
+void FUN_00e04f80_class::NiXenonRenderer_ReleaseResource()
 {
     Resource_00e04f80* oldResource = resource;
     vtable = &DAT_010ea4dc;
@@ -278,7 +292,7 @@ namespace fnv_00e05030 {
 struct FUN_00d46d40_s
 {
     const char* FUN_00d46d40();
-    hkBool hkClass_isSuperClass(FUN_00d46d40_s* other);
+    hkBool hkClass_isSuperClass(FUN_00d46d40_s* k);
 };
 
 struct Registry
@@ -298,21 +312,24 @@ struct MyClass
     D481D0Class* unk0C;
     Registry* unk10;
 
-    void* LookupByName(const char* name, hkBool b);
+    void* LookupByName(const char* typeName, hkBool typeRegistry);
 };
 
 // Looks up two registry nodes by the object's name and the given name, compares them, and returns unk08 if they match or name is null, otherwise 0.
 // @fnv 0x00e05030
-void* MyClass::LookupByName(const char* pcName, hkBool abMatch)
+// pdb: hkObjectResource::getContentsPointer | hkObjectResource.obj | retail, vtable slot, high
+// pdb params: typeName, typeRegistry
+// pdb locals: assertBuf, ostr
+void* MyClass::LookupByName(const char* typeName, hkBool typeRegistry)
 {
-    if (pcName)
+    if (typeName)
     {
         Registry* reg = unk10;
         const char* n = unk0C->getName();
         FUN_00d46d40_s* node1 = reg->GetClassByName(n);
-        FUN_00d46d40_s* node2 = reg->GetClassByName(pcName);
-        abMatch = node2->hkClass_isSuperClass(node1);
-        if (abMatch.m_cBooleanValue)
+        FUN_00d46d40_s* node2 = reg->GetClassByName(typeName);
+        typeRegistry = node2->hkClass_isSuperClass(node1);
+        if (typeRegistry.m_cBooleanValue)
             return unk08;
         return 0;
     }

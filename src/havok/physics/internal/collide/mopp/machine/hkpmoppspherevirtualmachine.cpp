@@ -13,7 +13,7 @@ extern unsigned char DAT_0126efbb;
 void __cdecl ValidateHavokKeyCode(unsigned char*);
 struct FmtObj {
     int unk00, unk04, unk08;
-    void FUN_00cb1600(char* buf, int size);
+    void FUN_00cb1600(char* buf, int bufSize);
     void ProcessAndReturnValue_00cc01c0(void* s);
     void FUN_00cc00e0();
 };
@@ -37,146 +37,149 @@ __forceinline void reportCorruption() {
 struct MoppMachine { HitArray* hits; int unk04,unk08,unk0c; int axis[3]; int radius; void hkpMoppSphereVirtualMachine_querySphereOnTree(MoppState*, const unsigned char*); };
 // @fnv 0x00e64870
 // src: HAVOK_LIB 0x00e64870
-void MoppMachine::hkpMoppSphereVirtualMachine_querySphereOnTree(MoppState* state, const unsigned char* code) {
+// pdb: hkpMoppSphereVirtualMachine::querySphereOnTree | hkpMoppSphereVirtualMachine.obj | retail, upstream name already matches, high
+// pdb params: query, PC
+// pdb locals: scaledQuery, assertBuf, ostr
+void MoppMachine::hkpMoppSphereVirtualMachine_querySphereOnTree(MoppState* query, const unsigned char* PC) {
     MoppState local;
     if (!DAT_0126efbb) { ValidateHavokKeyCode(&DAT_0126efbb); if (!DAT_0126efbb) return; }
     int hit = 0;
     for (;;) {
-        unsigned command = *code;
+        unsigned command = *PC;
         int low, high, position, r;
         switch(command) {
         case 0: return;
         case 19:
-            low = 2 * code[1]; high = 2 * code[2];
-            position = state->axis[2] + state->axis[1];
-            r = state->radius + (state->radius >> 1) + 1;
+            low = 2 * PC[1]; high = 2 * PC[2];
+            position = query->axis[2] + query->axis[1];
+            r = query->radius + (query->radius >> 1) + 1;
             goto test_interval;
         case 20:
             // Preserve the compiler's shared subtraction and radius tails.
             try {
-                position = state->axis[1];
-                low = 2 * code[1]; high = 2 * code[2];
-                position -= state->axis[2];
+                position = query->axis[1];
+                low = 2 * PC[1]; high = 2 * PC[2];
+                position -= query->axis[2];
                 position += 255;
-                r = state->radius + (state->radius >> 1) + 1;
+                r = query->radius + (query->radius >> 1) + 1;
             } catch (...) { throw; }
             goto test_interval;
         case 21:
-            low = 2 * code[1]; high = 2 * code[2];
-            position = state->axis[2] + state->axis[0];
-            r = state->radius + (state->radius >> 1) + 1;
+            low = 2 * PC[1]; high = 2 * PC[2];
+            position = query->axis[2] + query->axis[0];
+            r = query->radius + (query->radius >> 1) + 1;
             goto test_interval;
         case 22:
-            position = state->axis[0];
-            low = 2 * code[1]; high = 2 * code[2];
-            position -= state->axis[2];
+            position = query->axis[0];
+            low = 2 * PC[1]; high = 2 * PC[2];
+            position -= query->axis[2];
             position += 255;
-            r = state->radius + (state->radius >> 1) + 1;
+            r = query->radius + (query->radius >> 1) + 1;
             goto test_interval;
         case 23:
-            low = 2 * code[1]; high = 2 * code[2];
-            position = state->axis[1] + state->axis[0];
-            r = state->radius + (state->radius >> 1) + 1;
+            low = 2 * PC[1]; high = 2 * PC[2];
+            position = query->axis[1] + query->axis[0];
+            r = query->radius + (query->radius >> 1) + 1;
             goto test_interval;
         case 24:
-            low = 2 * code[1]; high = 2 * code[2];
-            position = state->axis[0] - state->axis[1];
+            low = 2 * PC[1]; high = 2 * PC[2];
+            position = query->axis[0] - query->axis[1];
             position += 255;
-            r = state->radius + (state->radius >> 1) + 1;
+            r = query->radius + (query->radius >> 1) + 1;
             goto test_interval;
         case 25:
-            position = state->axis[2] + state->axis[1];
-            low = 3 * code[1]; high = 3 * code[2];
-            position += state->axis[0];
-            r = 4 * state->radius;
+            position = query->axis[2] + query->axis[1];
+            low = 3 * PC[1]; high = 3 * PC[2];
+            position += query->axis[0];
+            r = 4 * query->radius;
             goto test_interval;
         case 26:
-            low = 3 * code[1]; high = 3 * code[2];
-            position = state->axis[1] - state->axis[2];
-            position += state->axis[0] + 255;
-            r = 4 * state->radius;
+            low = 3 * PC[1]; high = 3 * PC[2];
+            position = query->axis[1] - query->axis[2];
+            position += query->axis[0] + 255;
+            r = 4 * query->radius;
             goto test_interval;
         case 27:
-            low = 3 * code[1]; high = 3 * code[2];
-            position = state->axis[2] - state->axis[1];
-            position += state->axis[0] + 255;
-            r = 4 * state->radius;
+            low = 3 * PC[1]; high = 3 * PC[2];
+            position = query->axis[2] - query->axis[1];
+            position += query->axis[0] + 255;
+            r = 4 * query->radius;
             goto test_interval;
         case 28:
-            position = state->axis[0] - state->axis[2] - state->axis[1] + 510;
-            low = 3 * code[1]; high = 3 * code[2];
-            r = 4 * state->radius;
+            position = query->axis[0] - query->axis[2] - query->axis[1] + 510;
+            low = 3 * PC[1]; high = 3 * PC[2];
+            r = 4 * query->radius;
             goto test_interval;
-        case 16: case 17: case 18: low=code[1];high=code[2];position=state->axis[command-16];r=state->radius;
+        case 16: case 17: case 18: low=PC[1];high=PC[2];position=query->axis[command-16];r=query->radius;
         test_interval: {
-            code+=4; if(position+r<high) break; int skip=code[-1]; code+=skip; if(position>r+low) break;
-            hkpMoppSphereVirtualMachine_querySphereOnTree(state,code-skip); break;
+            PC+=4; if(position+r<high) break; int skip=PC[-1]; PC+=skip; if(position>r+low) break;
+            hkpMoppSphereVirtualMachine_querySphereOnTree(query,PC-skip); break;
         }
         case 32: case 33: case 34: {
-            int low = code[1];
-            int r = state->radius;
-            position = state->axis[command - 32];
-            code += 3;
+            int low = PC[1];
+            int r = query->radius;
+            position = query->axis[command - 32];
+            PC += 3;
             if (position + r < low) break;
-            int skip = code[-1];
-            code += skip;
+            int skip = PC[-1];
+            PC += skip;
             if (position > r + low + 1) break;
-            hkpMoppSphereVirtualMachine_querySphereOnTree(state, code - skip);
+            hkpMoppSphereVirtualMachine_querySphereOnTree(query, PC - skip);
             break;
         }
         case 35: case 36: case 37: {
-            int low = code[1];
-            int high = code[2];
-            int position = state->axis[command - 35];
-            int r = state->radius;
-            int skip1 = (code[3] << 8) + code[4];
-            code += 7;
+            int low = PC[1];
+            int high = PC[2];
+            int position = query->axis[command - 35];
+            int r = query->radius;
+            int skip1 = (PC[3] << 8) + PC[4];
+            PC += 7;
             if (position + r < high) {
-                code += skip1;
+                PC += skip1;
                 break;
             }
-            int skip2 = (code[-2] << 8) + code[-1];
-            code += skip2;
+            int skip2 = (PC[-2] << 8) + PC[-1];
+            PC += skip2;
             if (position > r + low)
                 break;
-            hkpMoppSphereVirtualMachine_querySphereOnTree(state, code + (skip1 - skip2));
+            hkpMoppSphereVirtualMachine_querySphereOnTree(query, PC + (skip1 - skip2));
             break;
         }
         case 38: case 39: case 40: {
-            int position=state->axis[command-38];int r=state->radius;
-            if(position+r<code[1] || position>r+code[2]) return;
-            code+=3;break;
+            int position=query->axis[command-38];int r=query->radius;
+            if(position+r<PC[1] || position>r+PC[2]) return;
+            PC+=3;break;
         }
         case 41: case 42: case 43: {
             int position=axis[command-41];int r=radius;
-            int low=((code[1]<<8)+code[2])*256+code[3];
+            int low=((PC[1]<<8)+PC[2])*256+PC[3];
             if(position+r<low) return;
-            int high=((code[4]<<8)+code[5])*256+code[6];
+            int high=((PC[4]<<8)+PC[5])*256+PC[6];
             if(position>r+high) return;
-            code+=7;break;
+            PC+=7;break;
         }
-        case 5: code+=code[1]+2; break;
-        case 6: code+= (code[1]<<8)+code[2]+3; break;
-        case 7: code+= ((code[1]<<8)+code[2])*256+code[3]+4; break;
+        case 5: PC+=PC[1]+2; break;
+        case 6: PC+= (PC[1]<<8)+PC[2]+3; break;
+        case 7: PC+= ((PC[1]<<8)+PC[2])*256+PC[3]+4; break;
         case 1: case 2: case 3: case 4: {
-            int shift=state->shift-command;
+            int shift=query->shift-command;
             local.shift=shift;
-            local.origin[0]=(state->origin[0]+code[1])<<command; local.axis[0]=(axis[0]>>shift)-local.origin[0];
-            local.origin[1]=(state->origin[1]+code[2])<<command; local.axis[1]=(axis[1]>>shift)-local.origin[1];
-            local.origin[2]=(state->origin[2]+code[3])<<command; local.axis[2]=(axis[2]>>shift)-local.origin[2];
+            local.origin[0]=(query->origin[0]+PC[1])<<command; local.axis[0]=(axis[0]>>shift)-local.origin[0];
+            local.origin[1]=(query->origin[1]+PC[2])<<command; local.axis[1]=(axis[1]>>shift)-local.origin[1];
+            local.origin[2]=(query->origin[2]+PC[3])<<command; local.axis[2]=(axis[2]>>shift)-local.origin[2];
             local.radius=(radius>>shift)+1;
-            local.offset=state->offset; local.properties[0]=state->properties[0];
-            state=&local; code+=4; break;
+            local.offset=query->offset; local.properties[0]=query->properties[0];
+            query=&local; PC+=4; break;
         }
-        case 9: { int value=code[1]; if(state!=&local) {local=*state;state=&local;} local.offset += value; code+=2; break; }
-        case 10: { int value=(code[1]<<8)+code[2]; if(state!=&local) {local=*state;state=&local;} local.offset += value; code+=3; break; }
-        case 11: { int value=(((code[1]<<8)+code[2])*256+code[3])*256+code[4]; if(state!=&local) {local=*state;state=&local;} local.offset = value; code+=5; break; }
+        case 9: { int value=PC[1]; if(query!=&local) {local=*query;query=&local;} local.offset += value; PC+=2; break; }
+        case 10: { int value=(PC[1]<<8)+PC[2]; if(query!=&local) {local=*query;query=&local;} local.offset += value; PC+=3; break; }
+        case 11: { int value=(((PC[1]<<8)+PC[2])*256+PC[3])*256+PC[4]; if(query!=&local) {local=*query;query=&local;} local.offset = value; PC+=5; break; }
         case 96:
         case 97:
         case 98:
         case 99: {
-            int value = code[1];
-            code += 2;
+            int value = PC[1];
+            PC += 2;
             local.properties[command - 96] = value;
             goto update_property;
         }
@@ -184,29 +187,29 @@ void MoppMachine::hkpMoppSphereVirtualMachine_querySphereOnTree(MoppState* state
         case 101:
         case 102:
         case 103:
-            local.properties[command - 100] = (code[1] << 8) + code[2];
-            code += 3;
+            local.properties[command - 100] = (PC[1] << 8) + PC[2];
+            PC += 3;
             goto update_property;
         case 104:
         case 105:
         case 106:
         case 107:
-            local.properties[command - 104] = (((((code[1] << 8) + code[2]) << 8) + code[3]) << 8) + code[4];
-            code += 5;
+            local.properties[command - 104] = (((((PC[1] << 8) + PC[2]) << 8) + PC[3]) << 8) + PC[4];
+            PC += 5;
         update_property: {
             int saved = local.properties[0];
-            if (state != &local) {
-                local = *state;
-                state = &local;
+            if (query != &local) {
+                local = *query;
+                query = &local;
             }
             local.properties[0] = saved;
             break;
         }
         default: { reportCorruption(); break; }
-        case 80: hit = code[1]; goto add_hit;
-        case 81: hit = (code[1] << 8) + code[2]; goto add_hit;
-        case 82: hit = (((code[1] << 8) + code[2]) << 8) + code[3]; goto add_hit;
-        case 83: hit = (((((code[1] << 8) + code[2]) << 8) + code[3]) << 8) + code[4]; goto add_hit;
+        case 80: hit = PC[1]; goto add_hit;
+        case 81: hit = (PC[1] << 8) + PC[2]; goto add_hit;
+        case 82: hit = (((PC[1] << 8) + PC[2]) << 8) + PC[3]; goto add_hit;
+        case 83: hit = (((((PC[1] << 8) + PC[2]) << 8) + PC[3]) << 8) + PC[4]; goto add_hit;
         case 48:
         case 49:
         case 50:
@@ -241,7 +244,7 @@ void MoppMachine::hkpMoppSphereVirtualMachine_querySphereOnTree(MoppState* state
         case 79:
             hit=command-48;
         add_hit: {
-            hit+=state->offset;
+            hit+=query->offset;
             HitArray* output=hits;
             MemoryManager* manager=hkMemoryRouter_getInstance();
             if(output->size==(output->capacity&0x3fffffff)) ResizeAudioStream(manager->allocator,output,4);
@@ -257,15 +260,18 @@ struct xMoppCode { int unk00, unk04, unk08, unk0c; float offset[3]; float scale;
 struct xSphere { float pos[3]; float radius; };
 
 struct xSphereMachine : MoppMachine {
-    void hkpMoppSphereVirtualMachine_querySphere(const xMoppCode* code, const xSphere& sphere, HitArray* out);
+    void hkpMoppSphereVirtualMachine_querySphere(const xMoppCode* code, const xSphere& sphere, HitArray* primitiveResults);
 };
 
 // @fnv 0x00e64f00
 // src: HAVOK_LIB 0x00e64f00
-void xSphereMachine::hkpMoppSphereVirtualMachine_querySphere(const xMoppCode* code, const xSphere& sphere, HitArray* out)
+// pdb: hkpMoppSphereVirtualMachine::querySphere | hkpMoppSphereVirtualMachine.obj | retail, upstream name already matches, high
+// pdb params: code, sphere, primitiveResults
+// pdb locals: query
+void xSphereMachine::hkpMoppSphereVirtualMachine_querySphere(const xMoppCode* code, const xSphere& sphere, HitArray* primitiveResults)
 {
     const unsigned char* program = code->data;
-    hits = out;
+    hits = primitiveResults;
     axis[0] = fnv_FloatToInt((sphere.pos[0] - code->offset[0]) * code->scale) - 1;
     axis[1] = fnv_FloatToInt((sphere.pos[1] - code->offset[1]) * code->scale) - 1;
     axis[2] = fnv_FloatToInt((sphere.pos[2] - code->offset[2]) * code->scale) - 1;

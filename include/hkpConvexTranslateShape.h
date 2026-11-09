@@ -3,6 +3,7 @@
 #include "hkpConvexTransformShapeBase.h"
 #include "hkVector4.h"
 
+// pdb: class hkpConvexTranslateShape, size 0x30, bases: hkpConvexTransformShapeBase, 1 members
 class hkpConvexTranslateShape : public hkpConvexTransformShapeBase
 {
 public:
@@ -11,11 +12,11 @@ public:
 
     const hkVector4& getTranslation() const
     {
-        return m_vTranslation;
+        return m_translation;
     }
 
     const hkpConvexShape* GetShapeForKey() const;
     hkpConvexTranslateShape* init(const hkpConvexShape* child, const hkVector4& translation);
 
-    hkVector4 m_vTranslation;
+    hkVector4 m_translation;
 };

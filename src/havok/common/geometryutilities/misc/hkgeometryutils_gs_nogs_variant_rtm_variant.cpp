@@ -28,8 +28,8 @@ __forceinline hkThreadMemory* getThreadMemory() throw()
 {
     return (hkThreadMemory*)hkMemoryRouter_getInstance();
 }
-void __cdecl FUN_00c90940(void* mem, void* array, int elemSize) throw();
-void __cdecl hkArrayUtil__reserve(void* mem, void* array, int reqCapacity, int elemSize) throw();
+void __cdecl FUN_00c90940(void* mem, void* array, int sizeElem) throw();
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem) throw();
 extern const float DAT_01016248;
 extern const float DAT_01017718;
 extern const float DAT_01011d78;
@@ -64,9 +64,9 @@ __forceinline void hkVector4::broadcast(int i)
 {
     m_vComponents = _mm_shuffle_ps(m_vComponents, m_vComponents, 0);
 }
-__forceinline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& c, const hkVector4& scale)
+__forceinline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& c, const hkVector4& r)
 {
-    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(c.m_vComponents, scale.m_vComponents));
+    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(c.m_vComponents, r.m_vComponents));
 }
 __forceinline void hkVector4::set(float x, float y, float z, float w)
 {
@@ -85,9 +85,9 @@ static __forceinline void capsuleMul4(hkVector4& vector, float s) throw()
     __m128 scalar = _mm_load_ss(&s);
     vector.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), vector.m_vComponents);
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 m = _mm_mul_ps(_mm_load_ps((const float*)&m_vComponents), a.m_vComponents);
+    __m128 m = _mm_mul_ps(_mm_load_ps((const float*)&m_vComponents), x.m_vComponents);
     __m128 sum = _mm_add_ss(_mm_shuffle_ps(m, m, 0x55), m);
     sum = _mm_add_ss(_mm_shuffle_ps(m, m, 0xaa), sum);
     return hkSimdReal(sum);
@@ -266,14 +266,14 @@ static __forceinline void appendCapsuleEnd(hkGeometry* geom, int numSides, int s
 {
     if (numSides > 0)
     {
-        CapsuleArrayView<hkGeometry::Triangle>& triangles = reinterpret_cast<CapsuleArrayView<hkGeometry::Triangle>&>(geom->m_uiTriangleCount);
+        CapsuleArrayView<hkGeometry::Triangle>& triangles = reinterpret_cast<CapsuleArrayView<hkGeometry::Triangle>&>(geom->m_triangles);
         int i = 1;
         int remaining = numSides;
         do
         {
-            tri.m_kPointB = startVertex + i - 1;
-            tri.m_kPointA = startVertex + i % numSides;
-            tri.m_iThirdValue = startVertex + numSides;
+            tri.m_b = startVertex + i - 1;
+            tri.m_a = startVertex + i % numSides;
+            tri.m_c = startVertex + numSides;
             addBack(triangles, tri);
             ++i;
         } while (--remaining);
@@ -281,14 +281,17 @@ static __forceinline void appendCapsuleEnd(hkGeometry* geom, int numSides, int s
 }
 // @fnv 0x00da16d0
 // src: XBOX_PDB 0x00da16d0
-void __cdecl hkGeometryUtils_createCapsuleGeometry(const hkVector4& top, const hkVector4& bottom, float radius, int numHeightSegments,
-                          int numSides, const hkTransform& transform, hkGeometry*& outGeom) throw()
+// pdb: hkGeometryUtils::createCapsuleGeometry | hkGeometryUtils.obj | retail, upstream name already matches, high
+// pdb params: start, end, radius, heightSamples, thetaSamples, transform, geometryOut
+// pdb locals: j, capsuleToLocal, currentBaseIndex, height, geom, binormalInGeom, axisNInGeom, normalInGeom, phiSamples, verts, tr, i, bottomInGeom, axisInGeom, axis, vert, topInGeom, canonicalZ, col0, rotation, col1, col2, toCentre, topElevation ...
+void __cdecl hkGeometryUtils_createCapsuleGeometry(const hkVector4& start, const hkVector4& end, float radius, int heightSamples,
+                          int thetaSamples, const hkTransform& transform, hkGeometry*& geometryOut) throw()
 {
-    const int halfSides = numSides >> 1;
+    const int halfSides = thetaSamples >> 1;
     CapsuleVertices vertexBuffer;
     CapsuleArrayView<hkVector4>& localVertices = vertexBuffer.array;
     hkVector4 axis;
-    axis.setSub4(bottom, top);
+    axis.setSub4(end, start);
     float len = capsuleLength3(axis);
     hkTransform localTransform;
     if (len > 0.0f)
@@ -316,11 +319,11 @@ void __cdecl hkGeometryUtils_createCapsuleGeometry(const hkVector4& top, const h
         reinterpret_cast<hkRotation&>(localTransform).setIdentity();
     }
     hkVector4 center;
-    center.setAdd4(bottom, top);
+    center.setAdd4(end, start);
     capsuleMul4(center, 0.5f);
     localTransform.position = center;
     double halfLen;
-    int numVerts = (numHeightSegments + halfSides * 2 - 1) * numSides + 2;
+    int numVerts = (heightSamples + halfSides * 2 - 1) * thetaSamples + 2;
     hkVector4 topCenter;
     {
         float scalar = (float)(-len * 0.5);
@@ -361,15 +364,15 @@ void __cdecl hkGeometryUtils_createCapsuleGeometry(const hkVector4& top, const h
         v3.SetRotatedDirection(qY, unitX);
 
         j = 0;
-        if (numSides > 0)
+        if (thetaSamples > 0)
         {
             __m128 yz;
             (void)yz;
             __m128 zx = _mm_shuffle_ps(v3.m_vComponents, v3.m_vComponents, 0xd2);
             yz = _mm_shuffle_ps(v3.m_vComponents, v3.m_vComponents, 0xc9);
-            for (; j < numSides; ++j)
+            for (; j < thetaSamples; ++j)
             {
-                float sideAngle = (float)((float)j / (float)numSides * 3.1415927410125732421875 * 2.0);
+                float sideAngle = (float)((float)j / (float)thetaSamples * 3.1415927410125732421875 * 2.0);
                 GeometryQuaternionLocal_00da16d0 sideRotation;
                 sideRotation.hkQuaternion_setAxisAngle(unitZ, sideAngle);
                 hkVector4 radial;
@@ -384,17 +387,17 @@ void __cdecl hkGeometryUtils_createCapsuleGeometry(const hkVector4& top, const h
     }
     // Cylinder body
     const hkVector4& cylinderAxis = unitX;
-    for (j = numHeightSegments - 1; j > 0; --j)
+    for (j = heightSamples - 1; j > 0; --j)
     {
-        for (i = 0; i < numSides; ++i)
+        for (i = 0; i < thetaSamples; ++i)
         {
-            float sideAngle = (float)((float)i / (float)numSides * 3.1415927410125732421875 * 2.0);
+            float sideAngle = (float)((float)i / (float)thetaSamples * 3.1415927410125732421875 * 2.0);
             GeometryQuaternionLocal_00da16d0 sideRotation;
             sideRotation.hkQuaternion_setAxisAngle(unitZ, sideAngle);
             hkVector4 radial;
             radial.SetRotatedDirection(sideRotation, cylinderAxis);
 
-            float vRing = (float)j / (float)numHeightSegments;
+            float vRing = (float)j / (float)heightSamples;
             hkVector4 segCenter;
             segCenter.setAddMul4(topCenter, axisDelta, hkSimdReal(vRing));
             float radiusScale = radius;
@@ -411,9 +414,9 @@ void __cdecl hkGeometryUtils_createCapsuleGeometry(const hkVector4& top, const h
         qY.hkQuaternion_setAxisAngle(negUnitY, angle);
         hkVector4 v3;
         v3.SetRotatedDirection(qY, unitX);
-        for (j = 0; j < numSides; ++j)
+        for (j = 0; j < thetaSamples; ++j)
         {
-            float sideAngle = (float)((float)j / (float)numSides * 3.1415927410125732421875 * 2.0);
+            float sideAngle = (float)((float)j / (float)thetaSamples * 3.1415927410125732421875 * 2.0);
             GeometryQuaternionLocal_00da16d0 sideRotation;
             sideRotation.hkQuaternion_setAxisAngle(unitZ, sideAngle);
             hkVector4 radial;
@@ -433,54 +436,54 @@ void __cdecl hkGeometryUtils_createCapsuleGeometry(const hkVector4& top, const h
         addBack(localVertices, pt);
     }
     hkGeometry* geom = new hkGeometry();
-    assignArray(reinterpret_cast<CapsuleArrayView<hkVector4>&>(geom->m_kVertices), localVertices);
-    for (int i = 0; i < reinterpret_cast<CapsuleArrayView<hkVector4>&>(geom->m_kVertices).m_iElementCount; ++i)
+    assignArray(reinterpret_cast<CapsuleArrayView<hkVector4>&>(geom->m_vertices), localVertices);
+    for (int i = 0; i < reinterpret_cast<CapsuleArrayView<hkVector4>&>(geom->m_vertices).m_iElementCount; ++i)
     {
-        reinterpret_cast<CapsuleArrayView<hkVector4>&>(geom->m_kVertices).m_data[i].SetTransformedPoint(transform, reinterpret_cast<CapsuleArrayView<hkVector4>&>(geom->m_kVertices).m_data[i]);
+        reinterpret_cast<CapsuleArrayView<hkVector4>&>(geom->m_vertices).m_data[i].SetTransformedPoint(transform, reinterpret_cast<CapsuleArrayView<hkVector4>&>(geom->m_vertices).m_data[i]);
     }
     hkGeometry::Triangle tri;
-    tri.m_iMaterialIndex = -1;
+    tri.m_material = -1;
     int startVertex = 1;
-    if (numSides > 0)
+    if (thetaSamples > 0)
     {
-        CapsuleArrayView<hkGeometry::Triangle>& triangles = reinterpret_cast<CapsuleArrayView<hkGeometry::Triangle>&>(geom->m_uiTriangleCount);
+        CapsuleArrayView<hkGeometry::Triangle>& triangles = reinterpret_cast<CapsuleArrayView<hkGeometry::Triangle>&>(geom->m_triangles);
         int i = 1;
-        int remaining = numSides;
+        int remaining = thetaSamples;
         do
         {
-            tri.m_kPointA = 0;
-            tri.m_kPointB = i;
-            tri.m_iThirdValue = i % numSides + 1;
+            tri.m_a = 0;
+            tri.m_b = i;
+            tri.m_c = i % thetaSamples + 1;
             addBack(triangles, tri);
             ++i;
         } while (--remaining);
     }
-    for (j = 0; j < numHeightSegments + halfSides * 2 - 2; ++j)
+    for (j = 0; j < heightSamples + halfSides * 2 - 2; ++j)
     {
         {
-            if (numSides > 0)
+            if (thetaSamples > 0)
             {
-                CapsuleArrayView<hkGeometry::Triangle>& triangles = reinterpret_cast<CapsuleArrayView<hkGeometry::Triangle>&>(geom->m_uiTriangleCount);
+                CapsuleArrayView<hkGeometry::Triangle>& triangles = reinterpret_cast<CapsuleArrayView<hkGeometry::Triangle>&>(geom->m_triangles);
                 int i = 1;
-                int remaining = numSides;
+                int remaining = thetaSamples;
                 do
                 {
-                    tri.m_kPointA = startVertex + i - 1;
-                    tri.m_kPointB = startVertex + i - 1 + numSides;
-                    tri.m_iThirdValue = startVertex + i % numSides + numSides;
+                    tri.m_a = startVertex + i - 1;
+                    tri.m_b = startVertex + i - 1 + thetaSamples;
+                    tri.m_c = startVertex + i % thetaSamples + thetaSamples;
                     addBack(triangles, tri);
-                    tri.m_kPointB = startVertex + i - 1;
-                    tri.m_kPointA = startVertex + i % numSides;
-                    tri.m_iThirdValue = startVertex + numSides + i % numSides;
+                    tri.m_b = startVertex + i - 1;
+                    tri.m_a = startVertex + i % thetaSamples;
+                    tri.m_c = startVertex + thetaSamples + i % thetaSamples;
                     addBack(triangles, tri);
                     ++i;
                 } while (--remaining);
             }
-            startVertex += numSides;
+            startVertex += thetaSamples;
         }
     }
-    appendCapsuleEnd(geom, numSides, startVertex, tri);
-    outGeom = geom;
+    appendCapsuleEnd(geom, thetaSamples, startVertex, tri);
+    geometryOut = geom;
 }
 
 

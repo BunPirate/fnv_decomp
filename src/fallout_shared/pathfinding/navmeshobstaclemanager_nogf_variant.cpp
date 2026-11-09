@@ -40,7 +40,7 @@ struct S006c4ad0_Queue
     virtual void f2();
     virtual void f3();
     virtual unsigned int Count();
-    void LockFreeQueue_bhkRigidBody_Pop(S006c4ad0_Body** out);
+    void LockFreeQueue_bhkRigidBody_Pop(S006c4ad0_Body** arData);
 };
 struct S006c4ad0_Body
 {
@@ -120,12 +120,14 @@ struct ObsMgr
     int unkD8;
     int unkDC;
     S006c4ad0_Map mapE0;
-    void NavMeshObstacleManager_UpdateObstacle(S006c4ad0_Ptr* sp);
+    void NavMeshObstacleManager_UpdateObstacle(S006c4ad0_Ptr* spObstacle);
     void NavMeshObstacleManager_ProcessDeactivatedObstacles();
 };
 
 // @fnv 0x006c4ad0
 // src: COMMUNITY 0x006c4ad0
+// pdb: NavMeshObstacleManager::ProcessDeactivatedObstacles | NavMeshObstacleManager.obj | retail, upstream name already matches, high
+// pdb locals: iobstacleToRemoveCount, i, prb, spObstacle, pos, hkPos
 void ObsMgr::NavMeshObstacleManager_ProcessDeactivatedObstacles()
 {
     unsigned int count = queueA0.Count();

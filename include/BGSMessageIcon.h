@@ -5,6 +5,7 @@
 
 class TESFile;
 
+// pdb: class BGSMessageIcon, size 0x10, bases: BaseFormComponent, 1 members
 class BGSMessageIcon : public BaseFormComponent
 {
 public:
@@ -13,16 +14,16 @@ public:
 
     void InitializeComponent();
     void ClearComponent();
-    void BaseFormRecord(BaseFormComponent* component);
-    bool IsEqualToBase(BaseFormComponent* component);
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
+    bool IsEqualToBase(BaseFormComponent* apCompareFC);
 
-    void Save(int chunk);
-    static void LoadMessageIcon(BGSMessageIcon* icon, TESFile* file);
-    static void LoadMessageIconChunk(BGSMessageIcon* icon, TESFile* file);
+    void Save(int aeTextureID);
+    static void LoadMessageIcon(BGSMessageIcon* apIcon, TESFile* apFile);
+    static void LoadMessageIconChunk(BGSMessageIcon* apIcon, TESFile* apFile);
     TESIcon* GetIcon();
     char* GetMessageIconTextureName();
     unsigned int GetMessageIconTextureNameLength();
-    void SetMessageIconTextureName(char* name);
+    void SetMessageIconTextureName(char* apTexture);
     void SetMessageIconTextureName(const char* name);
 
     TESIcon Icon;

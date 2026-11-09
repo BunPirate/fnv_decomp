@@ -5,6 +5,7 @@
 
 class hkpTyremarksWheel;
 
+// pdb: class hkpTyremarksInfo, size 0x1c, bases: hkReferencedObject, 3 members
 class hkpTyremarksInfo : public hkReferencedObject
 {
 public:
@@ -12,9 +13,9 @@ public:
     virtual void vf03();
     virtual void vf04();
 
-    void updateTyremarksInfo(float deltaTime, void* vehicle); // exe: 0x00e39fd0
+    void updateTyremarksInfo(float timestep, void* vehicle); // exe: 0x00e39fd0
 
-    hkReal m_fMinTyremarkPointDistance;
-    hkReal m_fMaxTyremarkPointDistance;
-    hkArray<hkpTyremarksWheel*> m_kTyremarksWheels;
+    hkReal m_minTyremarkEnergy;
+    hkReal m_maxTyremarkEnergy;
+    hkArray<hkpTyremarksWheel*> m_tyremarksWheel;
 };

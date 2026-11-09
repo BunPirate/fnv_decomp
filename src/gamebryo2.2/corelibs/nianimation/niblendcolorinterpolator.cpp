@@ -18,13 +18,13 @@ void NiBlendColorInterpolator::SaveBinary_00a56040(NiStream& kStream)
     m_kColorValue.SaveBinary(kStream);
 }
 
-extern "C" void* g_011f4074;
+extern "C" void* NiBlendColorInterpolator_ms_RTTI;
 
 // @fnv 0x00a56060
 // src: COMMUNITY 0x00a56060
 void* __cdecl NiBlendColorInterpolator_GetRTTI()
 {
-    return &g_011f4074;
+    return &NiBlendColorInterpolator_ms_RTTI;
 }
 
 void __fastcall NiBlendInterpolator_NiBlendInterpolator(void*);
@@ -57,10 +57,12 @@ NiBlendColorInterpolator* __cdecl CreateBlendColorInterpolator()
 
 // Constructs the object: installs the vtable, copies four ints from DAT_011a9430 into offset 0x30, and clears the flag at the end.
 // @fnv 0x00a55f80
-NiBlendColorInterpolator::NiBlendColorInterpolator(bool a, float b, unsigned char c)
-    : NiBlendInterpolator(a, b, c), m_kColorValue(DAT_011a9430)
+// pdb: NiBlendColorInterpolator::NiBlendColorInterpolator | NiBlendColorInterpolator.obj | retail, call graph, high
+// pdb params: bManagerControlled, fWeightThreshold, ucArraySize
+NiBlendColorInterpolator::NiBlendColorInterpolator(bool bManagerControlled, float fWeightThreshold, unsigned char ucArraySize)
+    : NiBlendInterpolator(bManagerControlled, fWeightThreshold, ucArraySize), m_kColorValue(DAT_011a9430)
 {
-    m_bValueValid = 0;
+    m_bValidValue = 0;
 }
 
 void __fastcall DestroyInterpolatorArray(void*);
@@ -81,12 +83,14 @@ void NiBlendColorInterpolator::LoadBinary_00a56460(NiStream& kStream)
     NiBlendInterpolator::LoadBinary(kStream);
     m_kColorValue.LoadBinary(kStream);
     if (m_kColorValue != DAT_011a9430)
-        m_bValueValid = true;
+        m_bValidValue = true;
 }
 
 // Tests whether the interpolator supports color values.
 // @fnv 0x00a55fd0
 // src: XBOX_PDB 0x00a55fd0
+// pdb: NiBlendColorInterpolator::InterpolatorIsCorrectType | NiBlendColorInterpolator.obj | debug, upstream name already matches, high
+// pdb params: pkInterpolator
 bool __stdcall NiBlendColorInterpolator_InterpolatorIsCorrectType(NiInterpolator* pkInterpolator)
 {
     return pkInterpolator->IsColorAValueSupported();
@@ -156,15 +160,15 @@ extern float DAT_0109696c;
 // @fnv 0x00a56110
 bool NiBlendColorInterpolator::GetColorAtTime(float fTime, NiObjectNET* pkTarget, NiColorA* kOut)
 {
-    if (m_uiObjectFlags & 1)
+    if (m_uFlags & 1)
     {
-        fTime = m_fSingleInterpolatorTime;
+        fTime = m_fSingleTime;
     }
     if (fTime == DAT_0109696c)
     {
         return false;
     }
-    if (m_pSingleInterpolator->UpdateColorA(fTime, pkTarget, m_kColorValue))
+    if (m_pkSingleInterpolator->UpdateColorA(fTime, pkTarget, m_kColorValue))
     {
         *kOut = m_kColorValue;
         return true;
@@ -193,7 +197,7 @@ bool NiBlendColorInterpolator::IsEqual_00a564a0(void* pkOther)
     return bOk;
 }
 
-extern "C" void* g_011f4074;
+extern "C" void* NiBlendColorInterpolator_ms_RTTI;
 extern int DAT_01096f1c;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 
@@ -210,7 +214,7 @@ struct ArraySource
 };
 struct BlendViewerStrings
 {
-    void AppendInterpolatorStrings(ArraySource* source);
+    void AppendInterpolatorStrings(ArraySource* pkStrings);
 };
 struct AssignmentMember
 {
@@ -218,19 +222,21 @@ struct AssignmentMember
 };
 // Calls FUN_00a38080, then appends the result of FUN_00a7d330 and a member lookup from offset 0x30 into the array source, growing it as needed.
 // @fnv 0x00a564d0
-void NiBlendColorInterpolator::AppendTwoEntries(ArraySource* pArraySource)
+// pdb: NiBlendColorInterpolator::GetViewerStrings | NiBlendColorInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiBlendColorInterpolator::AppendTwoEntries(ArraySource* pkStrings)
 {
-    reinterpret_cast<BlendViewerStrings*>(this)->AppendInterpolatorStrings(pArraySource);
-    void* result = NiViewerStrings_NiGetViewerString_Title(g_011f4074);
-    unsigned int index = pArraySource->m_usSize;
-    if (index >= pArraySource->m_usMaxSize)
-        pArraySource->FUN_0096ad30(index + pArraySource->m_usGrowBy);
-    pArraySource->FUN_0096ae90(index, &result);
+    reinterpret_cast<BlendViewerStrings*>(this)->AppendInterpolatorStrings(pkStrings);
+    void* result = NiViewerStrings_NiGetViewerString_Title(NiBlendColorInterpolator_ms_RTTI);
+    unsigned int index = pkStrings->m_usSize;
+    if (index >= pkStrings->m_usMaxSize)
+        pkStrings->FUN_0096ad30(index + pkStrings->m_usGrowBy);
+    pkStrings->FUN_0096ae90(index, &result);
     result = reinterpret_cast<AssignmentMember*>(reinterpret_cast<char*>(this) + 0x30)->ToString(&DAT_01096f1c);
-    index = pArraySource->m_usSize;
-    if (index >= pArraySource->m_usMaxSize)
-        pArraySource->FUN_0096ad30(index + pArraySource->m_usGrowBy);
-    pArraySource->FUN_0096ae90(index, &result);
+    index = pkStrings->m_usSize;
+    if (index >= pkStrings->m_usMaxSize)
+        pkStrings->FUN_0096ad30(index + pkStrings->m_usGrowBy);
+    pkStrings->FUN_0096ae90(index, &result);
 }
 
 inline NiColorA::NiColorA(float r0, float g0, float b0, float a0)
@@ -300,7 +306,7 @@ inline bool NiBlendColorInterpolator::GetUpdateTimeForItem(float& fTime, NiBlend
     NiInterpolator* pkInterpolator = kItem.m_spControllerInterpolator;
     if (pkInterpolator && kItem.m_fNormalizedWeight != 0.0f)
     {
-        if (m_uiObjectFlags & 1)
+        if (m_uFlags & 1)
             fTime = kItem.m_fLastEvaluationTime;
         if (fTime == DAT_0109696c)
             return false;
@@ -312,17 +318,17 @@ inline bool NiBlendColorInterpolator::GetUpdateTimeForItem(float& fTime, NiBlend
 // @fnv 0x00a561c0
 bool NiBlendColorInterpolator::UpdateBlend(float fTime, NiObjectNET* pkInterpTarget, NiColorA& kValue)
 {
-    m_bValueValid = false;
+    m_bValidValue = false;
     m_kColorValue = NiColorA(0.0f, 0.0f, 0.0f, 0.0f);
     float fTotalWeight = 1.0f;
     for (unsigned char uc = 0; uc < m_ucArraySize; uc++)
     {
-        NiBlendInterpolator__InterpArrayItem& kItem = m_pInterpArray[uc];
+        NiBlendInterpolator__InterpArrayItem& kItem = m_pkInterpArray[uc];
         if (kItem.m_spControllerInterpolator && kItem.m_fNormalizedWeight > 0.0f)
         {
             NiColorA kTempValue(0.0f, 0.0f, 0.0f, 0.0f);
             float fUpdateTime = fTime;
-            NiBlendInterpolator__InterpArrayItem& kItem2 = m_pInterpArray[uc];
+            NiBlendInterpolator__InterpArrayItem& kItem2 = m_pkInterpArray[uc];
             if (!GetUpdateTimeForItem(fUpdateTime, kItem2))
             {
                 fTotalWeight -= kItem.m_fNormalizedWeight;
@@ -331,16 +337,16 @@ bool NiBlendColorInterpolator::UpdateBlend(float fTime, NiObjectNET* pkInterpTar
             bool bSuccess = kItem.m_spControllerInterpolator->UpdateColorA(fUpdateTime, pkInterpTarget, kTempValue);
             if (bSuccess)
             {
-                m_kColorValue += kTempValue * m_pInterpArray[uc].m_fNormalizedWeight;
-                m_bValueValid = true;
+                m_kColorValue += kTempValue * m_pkInterpArray[uc].m_fNormalizedWeight;
+                m_bValidValue = true;
             }
             else
             {
-                fTotalWeight -= m_pInterpArray[uc].m_fNormalizedWeight;
+                fTotalWeight -= m_pkInterpArray[uc].m_fNormalizedWeight;
             }
         }
     }
-    if (!m_bValueValid)
+    if (!m_bValidValue)
     {
         m_kColorValue = DAT_011a9430;
         kValue = m_kColorValue;

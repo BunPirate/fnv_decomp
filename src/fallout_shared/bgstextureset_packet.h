@@ -43,9 +43,10 @@ struct DecalDataDeleter : public DecalData
 };
 
 // ModelLoader queue call (0x00443af0) on the global at 0x011c3b3c.
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
-    void QueueTextureFile(BSFileEntry* apEntry, int aePriority, QueuedFile* apQueuedFile);
+    void QueueTextureFile(BSFileEntry* apTextureFileEntry, int aePriority, QueuedFile* apParent);
 };
 extern ModelLoader* g_pModelLoader;
 
@@ -69,6 +70,7 @@ struct TESTextureLoader
 {
     static void ReadTextureData(TESTexture*, TESFile*);
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void CopyStringToBuffer(char*, unsigned int, const char*);
@@ -81,6 +83,7 @@ class FileNameHash
   public:
     static void CreateDirectoryAndFileHashes(const char*, FileNameHash&, FileNameHash&);
 };
+// pdb: class ArchiveManager, size 0x1, 0 members
 struct ArchiveManager
 {
     static BSFileEntry* FindFileEntry(ARCHIVE_TYPE_INDEX, FileNameHash&, FileNameHash&, const char*);

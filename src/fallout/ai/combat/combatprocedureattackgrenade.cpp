@@ -122,6 +122,7 @@ namespace loader
 
 // @fnv 0x009cafc0
 // src: XBOX_PDB 0x009cafc0
+// pdb: CombatProcedureAttackGrenade::Shutdown | CombatProcedureAttackGrenade.obj | debug, vtable slot, medium
 void CombatProcedureAttackGrenade::Shutdown_009cafc0()
 {
     CombatProcedure::RunProcedure();
@@ -149,6 +150,7 @@ struct FUN_009caeb0_shell
 
 // Calls FUN_009cafa0, then frees this object with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009caeb0
+// pdb: CombatProcedureAttackGrenade::`scalar deleting destructor' | CombatProcedureAttackGrenade.obj | debug, vtable slot, medium
 void* __thiscall FUN_009caeb0_shell::FUN_009caeb0(unsigned int flags)
 {
     UpdateFields_009cafa0();
@@ -168,6 +170,7 @@ struct FUN_009cafa0_shell
 };
 // @fnv 0x009cafa0
 // src: GUESS 0x009cafa0 (confidence: low)
+// pdb: CombatProcedureAttackGrenade::~CombatProcedureAttackGrenade | CombatProcedureAttackGrenade.obj | debug, object-file gap fill, medium
 void FUN_009cafa0_shell::UpdateFields_009cafa0()
 {
     *reinterpret_cast<int**>(this) = &DAT_010909bc;
@@ -189,6 +192,8 @@ struct FUN_009cb830_shell
 };
 // @fnv 0x009cb830
 // src: XBOX_PDB 0x009cb830
+// pdb: CombatProcedureAttackGrenade::FiredProjectile | CombatProcedureAttackGrenade.obj | debug, upstream name already matches, high
+// pdb params: apProjectile
 void __thiscall FUN_009cb830_shell::CombatProcedureAttackGrenade_FiredProjectile(Projectile* apProjectile)
 {
     if (*(bool*)((char*)this + 0x30))
@@ -213,19 +218,21 @@ struct CombatProcedureSaveGameShell
 };
 struct FUN_009cb9c0_shell
 {
-    void __thiscall CombatProcedureAttackGrenade_SaveGame(BGSSaveFormBuffer* p);
+    void __thiscall CombatProcedureAttackGrenade_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
 };
 // @fnv 0x009cb9c0
 // src: XBOX_PDB 0x009cb9c0
-void __thiscall FUN_009cb9c0_shell::CombatProcedureAttackGrenade_SaveGame(BGSSaveFormBuffer* pBuffer)
+// pdb: CombatProcedureAttackGrenade::SaveGame | CombatProcedureAttackGrenade.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+void __thiscall FUN_009cb9c0_shell::CombatProcedureAttackGrenade_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    ((CombatProcedureSaveGameShell*)this)->SaveGame(pBuffer);
-    pBuffer->SaveData((char*)this + 0x10, 4, 0);
-    pBuffer->SaveData((char*)this + 0x14, 1, 0);
-    pBuffer->SaveData((char*)this + 0x18, 0xc, 0);
-    pBuffer->SaveData((char*)this + 0x24, 0xc, 0);
-    pBuffer->SaveData((char*)this + 0x30, 1, 0);
-    ((FUN_009a5eb0_shell*)((char*)this + 0x34))->FUN_009a5eb0(pBuffer);
+    ((CombatProcedureSaveGameShell*)this)->SaveGame(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData((char*)this + 0x10, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x14, 1, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x18, 0xc, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x24, 0xc, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x30, 1, 0);
+    ((FUN_009a5eb0_shell*)((char*)this + 0x34))->FUN_009a5eb0(apSaveGameBuffer);
 }
 
 struct CombatProcedure_LoadGame
@@ -286,47 +293,52 @@ struct FUN_009cba50_shell
     int m_ax;
     int m_ay;
     int m_az;
-    void __thiscall CombatProcedureAttackGrenade_LoadGame(BGSLoadFormBuffer* buffer);
+    void __thiscall CombatProcedureAttackGrenade_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // @fnv 0x009cba50
 // src: XBOX_PDB 0x009cba50
-void __thiscall FUN_009cba50_shell::CombatProcedureAttackGrenade_LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: CombatProcedureAttackGrenade::LoadGame | CombatProcedureAttackGrenade.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void __thiscall FUN_009cba50_shell::CombatProcedureAttackGrenade_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    ((CombatProcedure_LoadGame*)this)->LoadGame(buffer);
-    buffer->ReadTypedData((char*)this + 0x10, 4);
-    buffer->ReadTypedData((char*)this + 0x14, 1);
-    buffer->ReadTypedData((char*)this + 0x18, 0xc);
-    buffer->ReadTypedData((char*)this + 0x24, 0xc);
-    buffer->ReadTypedData((char*)this + 0x30, 1);
-    ((TimeoutTimer*)((char*)this + 0x34))->LoadGame(buffer);
+    ((CombatProcedure_LoadGame*)this)->LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x10, 4);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x14, 1);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x18, 0xc);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x24, 0xc);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x30, 1);
+    ((TimeoutTimer*)((char*)this + 0x34))->LoadGame(apLoadGameBuffer);
 }
 
-NiPoint3* __cdecl CombatUtilities_GetAttackerFiringLocation(NiPoint3* result, void* actor);
-void __cdecl GetTargetLocationWithOffset(NiPoint3* result, void* target, int mode);
-NiPoint3 __cdecl GetTriple12(void* target);
-unsigned char __cdecl CombatUtilities_CheckProjectileArc_009a7670(void* actor, void* target, unsigned int flags, NiPoint3 origin, NiPoint3 direction,
-                                   NiPoint3 offset, unsigned int mode, unsigned int category, float scale);
+NiPoint3* __cdecl CombatUtilities_GetAttackerFiringLocation(NiPoint3* apAttacker, void* actor);
+void __cdecl CombatUtilities_GetTargetFiringLocation(NiPoint3* result, void* target, int mode);
+NiPoint3 __cdecl CombatUtilities_GetTargetVelocity(void* target);
+unsigned char __cdecl CombatUtilities_CheckProjectileArc_009a7670(void* apAttacker, void* apTarget, unsigned int apProjectile, NiPoint3 aStartLocation, NiPoint3 aTargetLocation,
+                                   NiPoint3 aTargetVelocity, unsigned int arbHighArc, unsigned int arTargetedPoint, float afMinHitFraction);
 
 // @fnv 0x009a7580
 // src: XBOX_PDB 0x009a7580
-unsigned char __cdecl CombatUtilities_CheckProjectileArc(void* actor, void* target, unsigned int flags, NiPoint3* optionalOrigin,
-                                   unsigned int mode, unsigned int category, float scale)
+// pdb: CombatUtilities::CheckProjectileArc | CombatUtilities.obj | retail, call graph (shared callers), high
+// pdb params: apAttacker, apTarget, apProjectile, apReleasePoint, arbHighArc, arTargetedPoint, afMinHitFraction
+// pdb locals: targetLoc, attackerLoc, targetVelocity
+unsigned char __cdecl CombatUtilities_CheckProjectileArc(void* apAttacker, void* apTarget, unsigned int apProjectile, NiPoint3* apReleasePoint,
+                                   unsigned int arbHighArc, unsigned int arTargetedPoint, float afMinHitFraction)
 {
-    if (!actor || !target)
+    if (!apAttacker || !apTarget)
         return 0;
     float offset[3];
     reinterpret_cast<NiPoint3*>(offset)->FUN_006815c0();
-    if (optionalOrigin)
-        reinterpret_cast<NiPoint3&>(offset) = *optionalOrigin;
+    if (apReleasePoint)
+        reinterpret_cast<NiPoint3&>(offset) = *apReleasePoint;
     else
     {
         float temp[3];
-        reinterpret_cast<NiPoint3&>(offset) = *CombatUtilities_GetAttackerFiringLocation(reinterpret_cast<NiPoint3*>(temp), actor);
+        reinterpret_cast<NiPoint3&>(offset) = *CombatUtilities_GetAttackerFiringLocation(reinterpret_cast<NiPoint3*>(temp), apAttacker);
     }
     float origin[3];
-    GetTargetLocationWithOffset(reinterpret_cast<NiPoint3*>(origin), target, 2);
-    NiPoint3 direction = GetTriple12(target);
-    return CombatUtilities_CheckProjectileArc_009a7670(actor, target, flags, reinterpret_cast<NiPoint3&>(offset), reinterpret_cast<NiPoint3&>(origin), direction, mode, category, scale);
+    CombatUtilities_GetTargetFiringLocation(reinterpret_cast<NiPoint3*>(origin), apTarget, 2);
+    NiPoint3 direction = CombatUtilities_GetTargetVelocity(apTarget);
+    return CombatUtilities_CheckProjectileArc_009a7670(apAttacker, apTarget, apProjectile, reinterpret_cast<NiPoint3&>(offset), reinterpret_cast<NiPoint3&>(origin), direction, arbHighArc, arTargetedPoint, afMinHitFraction);
 }
 
 
@@ -363,6 +375,7 @@ struct FUN_009cadf0_cls : CombatBaseObj
 
 // Initialises the object: sets the vtable, zeroes m_10/m_14/m_30, copies DAT_011f426c into m_18 and m_24, and calls m_34.Init().
 // @fnv 0x009cadf0
+// pdb: CombatProcedureAttackGrenade::CombatProcedureAttackGrenade | CombatProcedureAttackGrenade.obj | debug, call graph, medium
 FUN_009cadf0_cls::FUN_009cadf0_cls()
 {
     m_vptr = &DAT_010909bc;
@@ -415,18 +428,20 @@ class FUN_009caee0 : public Base_b6365
     unsigned char m_30;
     Member_b6365 m_34;
 
-    FUN_009caee0(const NiPoint3* src, unsigned char flag);
+    FUN_009caee0(const NiPoint3* aTargetLocation, unsigned char abHighArc);
 };
 
 // Initialises the object: stores a copy of src into m_18, sets m_24 from DAT_011f426c, m_14 to 1, m_30 to flag, and resets m_34.
 // @fnv 0x009caee0
-FUN_009caee0::FUN_009caee0(const NiPoint3* src, unsigned char flag) : Base_b6365()
+// pdb: CombatProcedureAttackGrenade::CombatProcedureAttackGrenade | CombatProcedureAttackGrenade.obj | debug, call graph, high
+// pdb params: aTargetLocation, abHighArc
+FUN_009caee0::FUN_009caee0(const NiPoint3* aTargetLocation, unsigned char abHighArc) : Base_b6365()
 {
     m_10 = 0;
     m_14 = 1;
-    reinterpret_cast<NiPoint3&>(m_18) = *src;
+    reinterpret_cast<NiPoint3&>(m_18) = *aTargetLocation;
     reinterpret_cast<NiPoint3&>(m_24) = DAT_011f426c;
-    m_30 = flag;
+    m_30 = abHighArc;
     m_34.Reset();
 }
 }  // namespace fnv_009caee0
@@ -451,7 +466,7 @@ class B9CB380Actor
 class B9CB380World
 {
   public:
-    bool IsThreatWithinLimits(B9CB380Mobile* pkMobile, B9CB380Form* pkForm, int iArg, float fArg);
+    bool IsThreatWithinLimits(B9CB380Mobile* apAttacker, B9CB380Form* apExplosion, int arTargetedPoint, float afTime);
 };
 
 class B9CB380Timer
@@ -488,21 +503,24 @@ class B9CB380Package
     B9CB380Timer m_kTimer;
 
     void SetState();
-    bool CombatProcedureAttackGrenade_CheckExplosion(B9CB380Form* pkForm, int iArg, float fArg);
+    bool CombatProcedureAttackGrenade_CheckExplosion(B9CB380Form* apExplosion, int arLocation, float afTime);
 };
 
 // @fnv 0x009cb380
 // src: XBOX_PDB 0x009cb380
-bool B9CB380Package::CombatProcedureAttackGrenade_CheckExplosion(B9CB380Form* pkForm, int iArg, float fArg)
+// pdb: CombatProcedureAttackGrenade::CheckExplosion | CombatProcedureAttackGrenade.obj | retail, upstream name already matches, high
+// pdb params: apExplosion, arLocation, afTime
+// pdb locals: pcombatState, pattacker
+bool B9CB380Package::CombatProcedureAttackGrenade_CheckExplosion(B9CB380Form* apExplosion, int arLocation, float afTime)
 {
     B9CB380Mobile* pkMobile2 = m_pkActor->GetMobile();
     B9CB380Process* pkProcess = m_pkActor->GetProcess();
-    if (!g_pkB9CB380World->IsThreatWithinLimits(pkMobile2, pkForm, iArg, fArg))
+    if (!g_pkB9CB380World->IsThreatWithinLimits(pkMobile2, apExplosion, arLocation, afTime))
     {
         if (!m_kTimer.CombatTimer_IsSet())
             m_kTimer.FUN_008d7f40(*g_kB9CB380Setting.Float());
         else if (m_kTimer.FUN_008d7f80())
-            pkProcess->SetTarget(pkForm);
+            pkProcess->SetTarget(apExplosion);
         if (m_bFlag14)
         {
             pkProcess->CombatState_SetTargetFlushed(true);
@@ -519,8 +537,8 @@ extern const NiPoint3 NiPoint3_ZERO;
 extern Setting originalRuntimeFloatSetting375;
 
 
-NiPoint3 __cdecl ComputeTrajectory(Actor* actor, void* target, int unused, PathingRequest* req, float dist, bool flag);
-NiPoint3 __cdecl TESObjectREFR_ForwardCall_009a8d80(Actor* actor, NiPoint3* point, int unused, PathingRequest* req, float dist, bool flag);
+NiPoint3 __cdecl ComputeTrajectory(Actor* apAttacker, void* aTargetLocation, int aTargetVelocity, PathingRequest* apReleasePoint, float apProjectile, bool afProjectileSpeed);
+NiPoint3 __cdecl TESObjectREFR_ForwardCall_009a8d80(Actor* apAttacker, NiPoint3* aTargetLocation, int apReleasePoint, PathingRequest* apProjectile, float afProjectileSpeed, bool abHighArc);
 
 struct CombatProcedureShell
 {
@@ -538,11 +556,14 @@ struct CombatProcedureShell
 
     Actor* CombatProcedure_GetAttacker();
     void* GetTarget_00996e00();
-    NiPoint3 GetPathingPoint();
+    NiPoint3 CombatProcedureAttackGrenade_CalculateTargetedPoint();
 };
 
 // @fnv 0x009cb6e0
-NiPoint3 CombatProcedureShell::GetPathingPoint()
+// src: XBOX_DEBUG_PDB 0x009cb6e0
+// pdb: CombatProcedureAttackGrenade::CalculateTargetedPoint | CombatProcedureAttackGrenade.obj | debug, call graph, high
+// pdb locals: pprojectile, fprojectileSpeed, pweapon, targetPoint
+NiPoint3 CombatProcedureShell::CombatProcedureAttackGrenade_CalculateTargetedPoint()
 {
     if (!b14 && !GetTarget_00996e00())
     {
@@ -581,6 +602,7 @@ struct Owner
     Manager* ManagerGet();
     Process* ProcessGet();
 };
+// pdb: class Procedure, size 0x1 (here 0x34), 0 members
 struct Procedure
 {
     int unk00;
@@ -594,7 +616,7 @@ struct Procedure
     TESObjectREFR* TargetGet();
     bool Validate(void*, LocalPoint*, float);
     void Reset();
-    bool CombatProcedureAttackGrenade_GetTargetedPoint(LocalPoint* output, LocalPoint* input);
+    bool CombatProcedureAttackGrenade_GetTargetedPoint(LocalPoint* arTargetedPoint, LocalPoint* arReleasePoint);
 };
 extern LocalPoint zeroPoint;
 extern const float scaleValue;
@@ -603,7 +625,10 @@ unsigned char Direct(void*, TESObjectREFR*, Item*, LocalPoint*, unsigned char*, 
 float Distance(Item*, LocalPoint, LocalPoint, unsigned char, float);
 // @fnv 0x009cb460
 // src: XBOX_PDB 0x009cb460
-bool Procedure::CombatProcedureAttackGrenade_GetTargetedPoint(LocalPoint* output, LocalPoint* input)
+// pdb: CombatProcedureAttackGrenade::GetTargetedPoint | CombatProcedureAttackGrenade.obj | retail, upstream name already matches, high
+// pdb params: arTargetedPoint, arReleasePoint
+// pdb locals: pprojectile, pexplosion, pweapon, ptarget, barcValid, pattacker, ftime, hitLocation
+bool Procedure::CombatProcedureAttackGrenade_GetTargetedPoint(LocalPoint* arTargetedPoint, LocalPoint* arReleasePoint)
 {
     void* i;
     i = ActorGet();
@@ -619,17 +644,17 @@ bool Procedure::CombatProcedureAttackGrenade_GetTargetedPoint(LocalPoint* output
     ptr = false;
     if (active)
     {
-        if (Arc(i, targetVal, z, *input, origin, zeroPoint, &category, &destination, scaleValue))
+        if (Arc(i, targetVal, z, *arReleasePoint, origin, zeroPoint, &category, &destination, scaleValue))
         {
-            *output = destination;
+            *arTargetedPoint = destination;
             ptr = true;
         }
     }
     else
     {
-        if (Direct(ActorGet(), TargetGet(), sound->Select(i), input, &category, &destination, scaleValue))
+        if (Direct(ActorGet(), TargetGet(), sound->Select(i), arReleasePoint, &category, &destination, scaleValue))
         {
-            *output = destination;
+            *arTargetedPoint = destination;
             ptr = true;
         }
     }
@@ -644,7 +669,7 @@ bool Procedure::CombatProcedureAttackGrenade_GetTargetedPoint(LocalPoint* output
             position7.z = static_cast<const TESObjectREFR*>(targetVal)->GetPos()->z;
         }
         float distance7;
-        distance7 = Distance(z, *input, position7, category, 0.0f);
+        distance7 = Distance(z, *arReleasePoint, position7, category, 0.0f);
         if (!Validate(pForm, &position7, distance7))
             ptr = false;
     }
@@ -942,7 +967,7 @@ struct ActorObj
     bool Actor_IsAttacking();
     int GetAnimAction_008a7570();
     ProcessObj* FUN_008d8520();
-    bool TryAttack(int a);
+    bool TryAttack(int aeAttack);
     virtual void vfn_000();
     virtual void vfn_004();
     virtual void vfn_008();
@@ -1080,7 +1105,7 @@ struct MidObj
 };
 struct Obj703
 {
-    MidObj* GetOrFallback(ActorObj* a);
+    MidObj* GetOrFallback(ActorObj* apWeaponHolder);
 };
 struct Obj586
 {
@@ -1103,8 +1128,8 @@ struct Member34
 {
     void TESWeightForm_InitializeDataComponent();
 };
-void __cdecl CombatUtilities_ComputeOptimalWeaponRanges(Sub04* a, Obj703* b, float* x, float* y, float* z);
-unsigned char __cdecl CombatUtilities_CheckProjectileArc(ActorObj* a, ActorObj* b, MidObj* c, void* d, unsigned char* e, NiPoint3* f, float g);
+void __cdecl CombatUtilities_ComputeOptimalWeaponRanges(Sub04* apCombatController, Obj703* apEquippedWeapon, float* arfMinRange, float* arfMaxRange, float* arfAbsoluteMaxRange);
+unsigned char __cdecl CombatUtilities_CheckProjectileArc(ActorObj* apAttacker, ActorObj* apTarget, MidObj* apProjectile, void* apReleasePoint, unsigned char* arbHighArc, NiPoint3* arTargetedPoint, float afMinHitFraction);
 bool __cdecl IsExplosionRadiusValid(SoundObj* a);
 
 struct Package
@@ -1129,12 +1154,14 @@ struct Package
     void CombatProcedure_SetFailed(const char* msg);
     void ClearLookAtTarget_00996ea0();
     void SetLookAtPoint(NiPoint3* p, int a);
-    NiPoint3* GetPathingPoint(NiPoint3* out);
-    bool CombatProcedureAttackGrenade_CheckExplosion(SoundObj* s, NiPoint3* p, float f);
+    NiPoint3* CombatProcedureAttackGrenade_CalculateTargetedPoint(NiPoint3* out);
+    bool CombatProcedureAttackGrenade_CheckExplosion(SoundObj* apExplosion, NiPoint3* arLocation, float afTime);
     void UpdateWeaponFire();
 };
 
 // @fnv 0x009cafe0
+// pdb: CombatProcedureAttackGrenade::Update | CombatProcedureAttackGrenade.obj | retail, string-set bridge, high
+// pdb locals: pprojectile, pexplosion, pweapon, fminRange, fmaxRange, fabsoluteMaxRange, ptarget, pcombatState, targetVector, panim, pattacker, hitLocation
 void Package::UpdateWeaponFire()
 {
     ActorObj* actor2;
@@ -1175,7 +1202,7 @@ void Package::UpdateWeaponFire()
     }
     DAT_011f1708->CombatDialogueManager_StartDialogue(m_04, 2, 0, 0);
     float AJ[3];
-    m_24 = *GetPathingPoint(&reinterpret_cast<NiPoint3&>(AJ));
+    m_24 = *CombatProcedureAttackGrenade_CalculateTargetedPoint(&reinterpret_cast<NiPoint3&>(AJ));
     float dir3[3];
     reinterpret_cast<NiPoint3&>(dir3).x = 0.0f;
     reinterpret_cast<NiPoint3&>(dir3).y = 0.0f;
@@ -1244,6 +1271,7 @@ struct CTSHelper
     float __thiscall GetElapsedTime();
 };
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier
 {
     bool __thiscall CombatTimer_IsSet();
@@ -1252,36 +1280,38 @@ struct Modifier
 
 struct FUN_009cb890_shell
 {
-    void __thiscall WriteDebugText(IDebugText* debugText, int location, int justify);
+    void __thiscall WriteDebugText(IDebugText* apDebugText, int aeLocation, int aeJustify);
 };
 
 // Writes debug lines for the state, targeted point, high-arc flag and blocked-timer values via debugText->Print.
 // @fnv 0x009cb890
-void FUN_009cb890_shell::WriteDebugText(IDebugText* debugText, int location, int justify)
+// pdb: CombatProcedureAttackGrenade::DisplayDebugText | CombatProcedureAttackGrenade.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aeLocation, aeJustify
+void FUN_009cb890_shell::WriteDebugText(IDebugText* apDebugText, int aeLocation, int aeJustify)
 {
     switch (*reinterpret_cast<int*>(reinterpret_cast<unsigned char*>(this) + 0x10))
     {
     case 0:
-        debugText->Print(static_cast<DEBUGTEXT_LOCATION>(location), static_cast<DEBUGTEXT_JUSTIFY>(justify), "IDLE");
+        apDebugText->Print(static_cast<DEBUGTEXT_LOCATION>(aeLocation), static_cast<DEBUGTEXT_JUSTIFY>(aeJustify), "IDLE");
         break;
     case 1:
-        debugText->Print(static_cast<DEBUGTEXT_LOCATION>(location), static_cast<DEBUGTEXT_JUSTIFY>(justify), "ATTACKING");
+        apDebugText->Print(static_cast<DEBUGTEXT_LOCATION>(aeLocation), static_cast<DEBUGTEXT_JUSTIFY>(aeJustify), "ATTACKING");
         break;
     }
 
-    debugText->Print(static_cast<DEBUGTEXT_LOCATION>(location), static_cast<DEBUGTEXT_JUSTIFY>(justify), "Targeted Point: %.02f, %.02f, %.02f",
+    apDebugText->Print(static_cast<DEBUGTEXT_LOCATION>(aeLocation), static_cast<DEBUGTEXT_JUSTIFY>(aeJustify), "Targeted Point: %.02f, %.02f, %.02f",
                      *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0x24),
                      *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0x28),
                      *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0x2c));
 
     if (*reinterpret_cast<unsigned char*>(reinterpret_cast<unsigned char*>(this) + 0x30))
     {
-        debugText->Print(static_cast<DEBUGTEXT_LOCATION>(location), static_cast<DEBUGTEXT_JUSTIFY>(justify), "HIGH ARC");
+        apDebugText->Print(static_cast<DEBUGTEXT_LOCATION>(aeLocation), static_cast<DEBUGTEXT_JUSTIFY>(aeJustify), "HIGH ARC");
     }
 
     if (reinterpret_cast<Modifier*>(reinterpret_cast<unsigned char*>(this) + 0x34)->CombatTimer_IsSet())
     {
-        debugText->Print(static_cast<DEBUGTEXT_LOCATION>(location), static_cast<DEBUGTEXT_JUSTIFY>(justify), "Explosive Projectile Blocked Timer: %.02f/%.02f",
+        apDebugText->Print(static_cast<DEBUGTEXT_LOCATION>(aeLocation), static_cast<DEBUGTEXT_JUSTIFY>(aeJustify), "Explosive Projectile Blocked Timer: %.02f/%.02f",
                          reinterpret_cast<CTSHelper*>(reinterpret_cast<unsigned char*>(this) + 0x34)->GetElapsedTime(),
                          reinterpret_cast<Modifier*>(reinterpret_cast<unsigned char*>(this) + 0x34)->GetValue());
     }

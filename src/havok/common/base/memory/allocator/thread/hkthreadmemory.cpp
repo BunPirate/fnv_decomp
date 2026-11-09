@@ -38,20 +38,22 @@ struct FUNClass
     virtual void unused();
     virtual unsigned int generate(int value);
     SlowPath* unk04;
-    void hkThreadMemory_blockAllocBatch(int* output, int count, int value);
+    void hkThreadMemory_blockAllocBatch(int* ptrsOut, int numPtrs, int blockSize);
 };
 // If value is at most 0x2000, fills output with count values from generate(value); otherwise delegates to unk04->process.
 // @fnv 0x00d2c030
 // src: HAVOK_LIB 0x00d2c030
-void FUNClass::hkThreadMemory_blockAllocBatch(int* output, int count, int value)
+// pdb: hkThreadMemory::blockAllocBatch | hkThreadMemory.obj | retail, upstream name already matches, high
+// pdb params: ptrsOut, numPtrs, blockSize
+void FUNClass::hkThreadMemory_blockAllocBatch(int* ptrsOut, int numPtrs, int blockSize)
 {
-    if (value <= 0x2000)
+    if (blockSize <= 0x2000)
     {
-        for (int i = 0; i < count; ++i)
-            output[i] = generate(value);
+        for (int i = 0; i < numPtrs; ++i)
+            ptrsOut[i] = generate(blockSize);
         return;
     }
-    unk04->process(output, count, value);
+    unk04->process(ptrsOut, numPtrs, blockSize);
 }
 
 struct Helper
@@ -71,19 +73,21 @@ struct Owner
     virtual void v1();
     virtual void check(unsigned int value, int threshold);
     Helper* helper;
-    void ProcessValues(unsigned int* values, int count, int threshold);
+    void ProcessValues(unsigned int* ptrsIn, int numPtrs, int blockSize);
 };
 // If threshold is at most 0x2000, calls check on each value; otherwise forwards values, count and threshold to helper->dispatch.
 // @fnv 0x00d2c090
-void Owner::ProcessValues(unsigned int* values, int count, int threshold)
+// pdb: hkThreadMemory::blockFreeBatch | hkThreadMemory.obj | retail, vtable slot, high
+// pdb params: ptrsIn, numPtrs, blockSize
+void Owner::ProcessValues(unsigned int* ptrsIn, int numPtrs, int blockSize)
 {
-    if (threshold <= 0x2000)
+    if (blockSize <= 0x2000)
     {
-        for (int i = 0; i < count; ++i)
-            check(values[i], threshold);
+        for (int i = 0; i < numPtrs; ++i)
+            check(ptrsIn[i], blockSize);
     }
     else
-        helper->dispatch(values, count, threshold);
+        helper->dispatch(ptrsIn, numPtrs, blockSize);
 }
 
 struct ComponentValue
@@ -169,6 +173,9 @@ struct CachedBlockAllocator
     }
 };
 // @fnv 0x00d2c3c0
+// pdb: hkThreadMemory::onRowEmpty | hkThreadMemory.obj | retail, object-file run extension, low
+// pdb params: rowIndex
+// pdb locals: ptrs
 void* CachedBlockAllocator::AllocateBlock(int index)
 {
     int count = batchCount;
@@ -230,6 +237,9 @@ struct D2C520ThreadMemory
 
 // @fnv 0x00d2c520
 // src: HAVOK_LIB 0x00d2c520
+// pdb: hkThreadMemory::clearRow | hkThreadMemory.obj | retail, upstream name already matches, high
+// pdb params: rowIndex
+// pdb locals: ptrs
 void D2C520ThreadMemory::hkThreadMemory_clearRow(int rowIndex)
 {
     int numElem = m_kFreeListEntries[rowIndex].m_iBlockCount;
@@ -303,17 +313,19 @@ struct SelfCls
     virtual void* vslot1(void* p);
     virtual void vslot2(int a, int b);
 
-    void* hkThreadMemory_bufRealloc(int a1, int a2, FUN_00d2c3a0_class* a3);
+    void* hkThreadMemory_bufRealloc(int pold, int oldNum, FUN_00d2c3a0_class* reqNumInOut);
 };
 
 // @fnv 0x00d2c6d0
 // src: HAVOK_LIB 0x00d2c6d0
-void* SelfCls::hkThreadMemory_bufRealloc(int a1, int a2, FUN_00d2c3a0_class* a3)
+// pdb: hkThreadMemory::bufRealloc | hkThreadMemory.obj | retail, upstream name already matches, high
+// pdb params: pold, oldNum, reqNumInOut
+void* SelfCls::hkThreadMemory_bufRealloc(int pold, int oldNum, FUN_00d2c3a0_class* reqNumInOut)
 {
-    void* res = this->vslot1(a3->m0);
-    int n = (int)a3->m0 < a2 ? (int)a3->m0 : a2;
-    hkMemUtil_memCpy_00d2caa0(res, a1, n);
-    this->vslot2(a1, a2);
+    void* res = this->vslot1(reqNumInOut->m0);
+    int n = (int)reqNumInOut->m0 < oldNum ? (int)reqNumInOut->m0 : oldNum;
+    hkMemUtil_memCpy_00d2caa0(res, pold, n);
+    this->vslot2(pold, oldNum);
     return res;
 }
 
@@ -337,6 +349,7 @@ struct FUN_00d2c7a0_class
 // Iterates the 17 slots backwards and calls FUN_00d2c520 on each index whose slot holds an object.
 // @fnv 0x00d2c7a0
 // src: HAVOK_LIB 0x00d2c7a0
+// pdb: hkThreadMemory::releaseCachedMemory | hkThreadMemory.obj | retail, upstream name already matches, high
 void FUN_00d2c7a0_class::hkThreadMemory_releaseCachedMemory()
 {
     int index = 16;
@@ -550,7 +563,7 @@ struct FUN_00d2c600_cls
     FUN_00d2c600_obj* m_04;
     int m_08;
 
-    void hkThreadMemory_onRowFull(int index, void* p);
+    void hkThreadMemory_onRowFull(int rowIndex, void* p);
     void Free(void* p, int size);
 };
 
@@ -740,21 +753,24 @@ struct Owner219
     CacheSlot219 caches[17];
     int blockSizes[17];
 
-    void hkThreadMemory_onRowFull(int index, Node219* out);
+    void hkThreadMemory_onRowFull(int rowIndex, Node219* p);
 };
 // Uses blockSizes[index] to release out directly when batchThreshold is zero; otherwise trims cache batches and pushes out onto its head.
 // @fnv 0x00d2c450
 // src: HAVOK_LIB 0x00d2c450
-void Owner219::hkThreadMemory_onRowFull(int aiSizeIndex, Node219* apBlock)
+// pdb: hkThreadMemory::onRowFull | hkThreadMemory.obj | retail, upstream name already matches, high
+// pdb params: rowIndex, p
+// pdb locals: ptrs
+void Owner219::hkThreadMemory_onRowFull(int rowIndex, Node219* p)
 {
-    int blockSize = blockSizes[aiSizeIndex];
+    int blockSize = blockSizes[rowIndex];
     int threshold = batchThreshold;
     if (threshold == 0)
     {
-        allocator->v2(apBlock, blockSize);
+        allocator->v2(p, blockSize);
         return;
     }
-    CacheSlot219* slot = caches + aiSizeIndex;
+    CacheSlot219* slot = caches + rowIndex;
     int count = slot->count;
     int half = threshold / 2;
     while (count > half)
@@ -766,10 +782,10 @@ void Owner219::hkThreadMemory_onRowFull(int aiSizeIndex, Node219* apBlock)
         count -= n;
         allocator->v7((void**)batch, n, blockSize);
     }
-    Node219* head = caches[aiSizeIndex].head;
-    caches[aiSizeIndex].count++;
-    apBlock->next = head;
-    caches[aiSizeIndex].head = apBlock;
+    Node219* head = caches[rowIndex].head;
+    caches[rowIndex].count++;
+    p->next = head;
+    caches[rowIndex].head = p;
 }
 
 extern "C" char DAT_010cacd0;
@@ -795,7 +811,7 @@ struct HKThreadMemory : ThreadMemoryBase
     unsigned char freeList[0x29];
     int bigBlocks[8];
     void InitSizeClasses();
-    HKThreadMemory* hkThreadMemory_hkThreadMemory();
+    HKThreadMemory* hkThreadMemory_ctor();
 };
 
 // src: HAVOK_LIB 0x00d2c3a0
@@ -896,8 +912,9 @@ __declspec(noinline) void HKThreadMemory::InitSizeClasses()
 
 // Sets m0, clears 17 block entries, calls FUN_00d2c100 and FUN_00d2c3a0(0, 8), then returns this.
 // @fnv 0x00d2c720
-// src: HAVOK_LIB 0x00d2c720
-HKThreadMemory* HKThreadMemory::hkThreadMemory_hkThreadMemory()
+// src: XBOX_RETAIL_PDB 0x00d2c720
+// pdb: hkThreadMemory::hkThreadMemory | hkThreadMemory.obj | retail, object-file gap fill, high
+HKThreadMemory* HKThreadMemory::hkThreadMemory_ctor()
 {
     m0 = &DAT_010cacd0;
     BlockEntry* p = blocks;
@@ -933,7 +950,7 @@ struct ThreadMemoryView : FUN_00d2c3a0_class
     int bigBlocks[8];
     void InitSizeClasses();
     void hkThreadMemory_setMemory(void* allocator, int limit);
-    ThreadMemoryView* hkThreadMemory_hkThreadMemory_00d2c760(void* allocator);
+    ThreadMemoryView* hkThreadMemory_ctor(void* memoryInstance);
 };
 
 // src: HAVOK_LIB 0x00d2c3a0
@@ -949,8 +966,9 @@ __declspec(noinline) void ThreadMemoryView::InitSizeClasses()
 
 // Zeroes the 17 BlockEntry slots, calls FUN_00d2c100 and FUN_00d2c3a0(allocator, 8), then returns this.
 // @fnv 0x00d2c760
-// src: HAVOK_LIB 0x00d2c760
-ThreadMemoryView* ThreadMemoryView::hkThreadMemory_hkThreadMemory_00d2c760(void* allocator)
+// src: XBOX_RETAIL_PDB 0x00d2c760
+// pdb: hkThreadMemory::hkThreadMemory | hkThreadMemory.obj | retail, object-file gap fill, high
+ThreadMemoryView* ThreadMemoryView::hkThreadMemory_ctor(void* memoryInstance)
 {
     m0 = &DAT_010cacd0;
     BlockEntry* entry = blocks;
@@ -962,7 +980,7 @@ ThreadMemoryView* ThreadMemoryView::hkThreadMemory_hkThreadMemory_00d2c760(void*
         ++entry;
     } while (--remaining >= 0);
     InitSizeClasses();
-    hkThreadMemory_setMemory(allocator, 8);
+    hkThreadMemory_setMemory(memoryInstance, 8);
     return this;
 }
 }  // namespace fnv_00d2c760

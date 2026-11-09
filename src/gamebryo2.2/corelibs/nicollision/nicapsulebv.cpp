@@ -24,6 +24,8 @@ extern P03MM g_memoryManager;
 void __fastcall UpdateCapsuleSegment(NiCapsuleBV* capsule);
 
 // @fnv 0x00ea0700
+// pdb: NiCapsuleBV::Clone | NiCapsuleBV.obj | retail, upstream name already matches, high
+// pdb locals: pClone
 NiBoundingVolume* NiCapsuleBV::Clone()
 {
     NiCapsuleBV* pNewInstance = (NiCapsuleBV*)g_memoryManager.Allocate(0x3c);
@@ -38,6 +40,7 @@ struct ComparableRecord
 };
 
 // @fnv 0x00e9f170
+// pdb: NiUnionBV::`scalar deleting destructor' | NiUnionBV.obj | debug, object-file run extension, low
 int NiCapsuleBV::IsEqual(const NiBoundingVolume& kABV) const
 {
     if (kABV.F3() == 2 && reinterpret_cast<const ComparableRecord*>(((const NiCapsuleBV&)kABV)._pad)->IsEquivalentWithEqualFloat(*reinterpret_cast<const ComparableRecord*>(_pad)))
@@ -46,12 +49,15 @@ int NiCapsuleBV::IsEqual(const NiBoundingVolume& kABV) const
 }
 
 // @fnv 0x00e9f280
+// pdb: NiCapsuleBV::operator== | NiCapsuleBV.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiCapsuleBV::Copy
+// pdb params: kABV
 void NiCapsuleBV::Copy(const NiBoundingVolume& kABV)
 {
     NiCapsuleBV* kCBV = (NiCapsuleBV*)&kABV;
     m_kCenter = kCBV->m_kCenter;
-    m_kAxisDirection = kCBV->m_kAxisDirection;
-    m_fHalfLength = kCBV->m_fHalfLength;
+    m_kAxis = kCBV->m_kAxis;
+    m_fExtent = kCBV->m_fExtent;
     m_fBoundRadius = kCBV->m_fBoundRadius;
     UpdateCapsuleSegment(this);
 }
@@ -59,16 +65,19 @@ void NiCapsuleBV::Copy(const NiBoundingVolume& kABV)
 extern int DAT_010f17d0;
 
 // @fnv 0x00ea0640
+// pdb: NiCapsuleBV::NiCapsuleBV | NiCapsuleBV.obj | retail, object-file gap fill, medium
+// pdb note: debug build links it to NiSegment::NiSegment
+// pdb params: fRadius, fExtent, kCenter, kAxis
 __declspec(noinline) NiCapsuleBV* NiCapsuleBV::CopyConstruct(const NiCapsuleBV& source)
 {
     *(void**)this = &DAT_010f17d0;
     reinterpret_cast<unsigned int&>(m_kCenter.x) = reinterpret_cast<const unsigned int&>(source.m_kCenter.x);
     reinterpret_cast<unsigned int&>(m_kCenter.y) = reinterpret_cast<const unsigned int&>(source.m_kCenter.y);
     reinterpret_cast<unsigned int&>(m_kCenter.z) = reinterpret_cast<const unsigned int&>(source.m_kCenter.z);
-    reinterpret_cast<unsigned int&>(m_kAxisDirection.x) = reinterpret_cast<const unsigned int&>(source.m_kAxisDirection.x);
-    reinterpret_cast<unsigned int&>(m_kAxisDirection.y) = reinterpret_cast<const unsigned int&>(source.m_kAxisDirection.y);
-    reinterpret_cast<unsigned int&>(m_kAxisDirection.z) = reinterpret_cast<const unsigned int&>(source.m_kAxisDirection.z);
-    m_fHalfLength = source.m_fHalfLength;
+    reinterpret_cast<unsigned int&>(m_kAxis.x) = reinterpret_cast<const unsigned int&>(source.m_kAxis.x);
+    reinterpret_cast<unsigned int&>(m_kAxis.y) = reinterpret_cast<const unsigned int&>(source.m_kAxis.y);
+    reinterpret_cast<unsigned int&>(m_kAxis.z) = reinterpret_cast<const unsigned int&>(source.m_kAxis.z);
+    m_fExtent = source.m_fExtent;
     m_fBoundRadius = source.m_fBoundRadius;
     UpdateCapsuleSegment(this);
     return this;
@@ -85,22 +94,25 @@ struct MatchList
     unsigned short unk12;
     unsigned int foundIndex;
 };
-bool __cdecl NiBoundingVolume_FindTriIntersect(float value, void* item, unsigned int arg3, unsigned int arg4, unsigned int arg5,
-                          unsigned int arg6, unsigned int arg7, unsigned int arg8, unsigned int arg9,
-                          unsigned int arg10, unsigned int arg11, unsigned int arg12);
+bool __cdecl NiBoundingVolume_FindTriIntersect(float fTime, void* kBV0, unsigned int kVel0, unsigned int kVert0, unsigned int kVert1,
+                          unsigned int kVert2, unsigned int kVel1, unsigned int fIntrTime, unsigned int kIntrPt,
+                          unsigned int bCalcNormals, unsigned int kNormal0, unsigned int kNormal1);
 // Scans list->entries for the first item accepted by FUN_00e9ca50, stores its index in list->foundIndex and returns true, otherwise returns false.
 // @fnv 0x00e9ec10
 // src: COMMUNITY 0x00e9ec10
-bool __cdecl NiUnionBV_UnionTriFindIntersect(float value, MatchList* pMatchList, unsigned int arg3, unsigned int arg4, unsigned int arg5,
-                          unsigned int arg6, unsigned int arg7, unsigned int arg8, unsigned int arg9,
-                          unsigned int arg10, unsigned int arg11, unsigned int arg12)
+// pdb: NiUnionBV::UnionTriFindIntersect | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kVert0, kVert1, kVert2, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kUnionABV0, i, pkABV
+bool __cdecl NiUnionBV_UnionTriFindIntersect(float fTime, MatchList* kABV0, unsigned int kV0, unsigned int kVert0, unsigned int kVert1,
+                          unsigned int kVert2, unsigned int kV1, unsigned int fIntrTime, unsigned int kIntrPt,
+                          unsigned int bCalcNormals, unsigned int kNormal0, unsigned int kNormal1)
 {
-    for (unsigned int i = 0; i < pMatchList->count; ++i)
+    for (unsigned int i = 0; i < kABV0->count; ++i)
     {
-        void* item = pMatchList->entries[i];
-        if (NiBoundingVolume_FindTriIntersect(value, item, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12))
+        void* item = kABV0->entries[i];
+        if (NiBoundingVolume_FindTriIntersect(fTime, item, kV0, kVert0, kVert1, kVert2, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1))
         {
-            pMatchList->foundIndex = i;
+            kABV0->foundIndex = i;
             return true;
         }
     }
@@ -136,13 +148,15 @@ inline S_00e9f1b0_P3 operator-(const S_00e9f1b0_P3& a, const S_00e9f1b0_P3& b)
 
 // Computes m20 as m04 minus m10 scaled by (m1c - m38), and m2c as that scaled delta times DAT_01011590.
 // @fnv 0x00e9f1b0
+// pdb: NiCapsuleBV::NiCapsuleBV | NiCapsuleBV.obj | debug, object-file run extension, low
+// pdb params: fRadius, fExtent, kCenter, kAxis
 __declspec(noinline) void NiCapsuleBV::UpdateSegment()
 {
     const S_00e9f1b0_P3& center = reinterpret_cast<const S_00e9f1b0_P3&>(m_kCenter);
-    const S_00e9f1b0_P3& axis = reinterpret_cast<const S_00e9f1b0_P3&>(m_kAxisDirection);
-    S_00e9f1b0_P3 origin = center - axis * (m_fHalfLength - m_fBoundRadius);
+    const S_00e9f1b0_P3& axis = reinterpret_cast<const S_00e9f1b0_P3&>(m_kAxis);
+    S_00e9f1b0_P3 origin = center - axis * (m_fExtent - m_fBoundRadius);
     memcpy(_pad, &origin, sizeof(origin));
-    S_00e9f1b0_P3 direction = (axis * (m_fHalfLength - m_fBoundRadius)) * DAT_01011590;
+    S_00e9f1b0_P3 direction = (axis * (m_fExtent - m_fBoundRadius)) * DAT_01011590;
     memcpy(_pad + 12, &direction, sizeof(direction));
 }
 
@@ -184,27 +198,30 @@ struct S_00e9f400_Obj
 
 // @fnv 0x00e9f400
 // src: XBOX_PDB 0x00e9f400
-bool __cdecl NiCapsuleBV_CapsuleSphereFindIntersect(float p1, int p2, int p3, int p4, int p5, float* p6, S_00e9f400_P3* p7, bool abWantNormal,
-                          S_00e9f400_P3* p9, S_00e9f400_P3* p10)
+// pdb: NiCapsuleBV::CapsuleSphereFindIntersect | NiCapsuleBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kIntersector
+bool __cdecl NiCapsuleBV_CapsuleSphereFindIntersect(float fTime, int kABV0, int kV0, int kABV1, int kV1, float* fIntrTime, S_00e9f400_P3* kIntrPt, bool bCalcNormals,
+                          S_00e9f400_P3* kNormal0, S_00e9f400_P3* kNormal1)
 {
     S_00e9f400_Obj obj;
-    obj.InitFromParams(p2, p4, p1, DAT_01017d00, DAT_010141cc, 0x20);
-    obj.Solve(p3, p5);
-    *p6 = obj.NiIntersector_GetContactTime();
+    obj.InitFromParams(kABV0, kABV1, fTime, DAT_01017d00, DAT_010141cc, 0x20);
+    obj.Solve(kV0, kV1);
+    *fIntrTime = obj.NiIntersector_GetContactTime();
     if (obj.FUN_00be0aa0() != 3 && obj.FUN_00be0aa0() != 2)
     {
         obj.SetVtbl();
         return false;
     }
-    *p7 = *obj.NiIntersector_GetContactPoint();
-    if (abWantNormal)
+    *kIntrPt = *obj.NiIntersector_GetContactPoint();
+    if (bCalcNormals)
     {
-        *p9 = *obj.NiIntersector_GetContactNormal();
+        *kNormal0 = *obj.NiIntersector_GetContactNormal();
         S_00e9f400_P3 n;
-        n.x = -p9->x;
-        n.y = -p9->y;
-        n.z = -p9->z;
-        *p10 = n;
+        n.x = -kNormal0->x;
+        n.y = -kNormal0->y;
+        n.z = -kNormal0->z;
+        *kNormal1 = n;
     }
     obj.SetVtbl();
     return true;
@@ -236,6 +253,9 @@ float __cdecl NiSqrDistance_Compute(const S_Seg* a, const S_Seg* b, float* s, fl
 float __cdecl DistanceSquaredToSegment(const S_Vec3* p, const S_Seg* b, float* s);
 
 // @fnv 0x00e9f620
+// pdb: NiCapsuleBV::CapsuleSphereTestIntersect | NiCapsuleBV.obj | retail, object-file run extension, low
+// pdb params: fTime, kABV0, kV0, kABV1, kV1
+// pdb locals: fRadiusSumSqr, kSphABV, fRadiusSum, kCapABV, kDeltaV, fSqrDist, fS0, fS1, kSegment
 bool __cdecl SweepSphereAgainstCapsule(float t, NiCapsuleBV* apCapsule, const S_Vec3* from, S_Sphere* apSphere,
                                        const S_Vec3* to)
 {
@@ -279,17 +299,21 @@ extern "C" NiPoint3 DAT_011a946c;
 
 __forceinline void ConstructCapsule(NiCapsuleBV* p, NiPoint3 v1, NiPoint3 v2) throw()
 {
-    p->m_fHalfLength = 1.0f;
+    p->m_fExtent = 1.0f;
     p->m_fBoundRadius = 1.0f;
     *(void**)p = &DAT_010f17d0;
     reinterpret_cast<NiPoint3&>(p->m_kCenter) = v2;
-    reinterpret_cast<NiPoint3&>(p->m_kAxisDirection) = v1;
+    reinterpret_cast<NiPoint3&>(p->m_kAxis) = v1;
     UpdateCapsuleSegment(p);
 }
 
 // Allocates a NiCapsuleBV from two global NiPoint3 values, calls vfn_00 with arg, and returns the object.
 // @fnv 0x00ea04b0
-NiCapsuleBV* CreateObjWithArg(void* arg)
+// src: XBOX_RETAIL_PDB 0x00ea04b0
+// pdb: NiCapsuleBV::CreateFromStream | NiCapsuleBV.obj | retail, object-file gap fill, high
+// pdb params: stream
+// pdb locals: pBV
+NiCapsuleBV* NiCapsuleBV_CreateFromStream(void* stream)
 {
     void* mem = DAT_011f6238.Game_DoHeapAlloc(0x3c);
     NiCapsuleBV* p;
@@ -302,7 +326,7 @@ NiCapsuleBV* CreateObjWithArg(void* arg)
     {
         p = 0;
     }
-    p->LoadBinary(*static_cast<NiStream*>(arg));
+    p->LoadBinary(*static_cast<NiStream*>(stream));
     return p;
 }
 }  // namespace fnv_00ea04b0
@@ -328,6 +352,8 @@ void __cdecl LoadBoundingVolume();
 typedef void (__thiscall* LoadBoundingVolumeFn)(NiBoundingVolume*, unsigned int);
 
 // @fnv 0x00ea0540
+// pdb: NiCapsuleBV::LoadBinary | NiCapsuleBV.obj | retail, object-file gap fill, high
+// pdb params: stream
 void __fastcall LoadCapsuleBinary(NiCapsuleBV* capsule, void*, unsigned int a1)
 {
     unsigned int obj = a1;
@@ -388,12 +414,14 @@ typedef void (__thiscall* SaveBoundingVolumeFn)(NiBoundingVolume*, void*);
 
 // Saves the base bounding volume, two point helpers, half-length, and radius.
 // @fnv 0x00ea05c0
+// pdb: NiCapsuleBV::SaveBinary | NiCapsuleBV.obj | retail, object-file gap fill, high
+// pdb params: stream
 void __fastcall SaveCapsuleBinary(NiCapsuleBV* capsule, void*, void* stream)
 {
     reinterpret_cast<SaveBoundingVolumeFn>(&SaveBoundingVolume)(capsule, stream);
     reinterpret_cast<NiColorSaveHelper*>(&capsule->m_kCenter)->SaveBinary(stream);
-    reinterpret_cast<NiColorSaveHelper*>(&capsule->m_kAxisDirection)->SaveBinary(stream);
-    BinW(*reinterpret_cast<S_00ea05c0_Bin**>((char*)stream + 0x250), &capsule->m_fHalfLength, 4);
+    reinterpret_cast<NiColorSaveHelper*>(&capsule->m_kAxis)->SaveBinary(stream);
+    BinW(*reinterpret_cast<S_00ea05c0_Bin**>((char*)stream + 0x250), &capsule->m_fExtent, 4);
     BinW(*reinterpret_cast<S_00ea05c0_Bin**>((char*)stream + 0x250), &capsule->m_fBoundRadius, 4);
 }
 
@@ -413,6 +441,7 @@ extern int DAT_011a9474;
 // Allocates a 0x3c-byte object, initializes its vtable, center and axis vectors and two floats to 1.0, calls FUN_00e9f1b0, and returns it.
 // @fnv 0x00ea0690
 // src: GAMEBRYO_SRC 0x00ea0690
+// pdb: NiCapsuleBV::Create | NiCapsuleBV.obj | retail, upstream name already matches, high
 NiCapsuleBV* __cdecl NiCapsuleBV_Create()
 {
     NiCapsuleBV* p = (NiCapsuleBV*)g_memoryManager.Allocate(0x3c);
@@ -420,11 +449,11 @@ NiCapsuleBV* __cdecl NiCapsuleBV_Create()
     {
         S_P3 c = {DAT_011f426c, DAT_011f4270, DAT_011f4274};
         S_P3 a = {DAT_011a946c, DAT_011a9470, DAT_011a9474};
-        p->m_fHalfLength = 1.0f;
+        p->m_fExtent = 1.0f;
         p->m_fBoundRadius = 1.0f;
         *(void**)p = &DAT_010f17d0;
         reinterpret_cast<S_P3&>(p->m_kCenter) = c;
-        reinterpret_cast<S_P3&>(p->m_kAxisDirection) = a;
+        reinterpret_cast<S_P3&>(p->m_kAxis) = a;
         UpdateCapsuleSegment(p);
         return p;
     }
@@ -469,24 +498,27 @@ extern float DAT_010141cc;
 extern float DAT_01017d00;
 // @fnv 0x00e9f510
 // src: XBOX_PDB 0x00e9f510
-bool __cdecl NiCapsuleBV_CapsuleCapsuleFindIntersect(float p1, int p2, int p3, int p4, int p5, float* p6, Vec3e* p7, bool abWantNormal, Vec3e* p9,
-                          Vec3e* p10)
+// pdb: NiCapsuleBV::CapsuleCapsuleFindIntersect | NiCapsuleBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kIntersector
+bool __cdecl NiCapsuleBV_CapsuleCapsuleFindIntersect(float fTime, int kABV0, int kV0, int kABV1, int kV1, float* fIntrTime, Vec3e* kIntrPt, bool bCalcNormals, Vec3e* kNormal0,
+                          Vec3e* kNormal1)
 {
     IsectObj o;
-    o.Initialize(p2, p4, p1, DAT_01017d00, DAT_010141cc, 0x20);
-    o.Solve(p3, p5);
-    *p6 = o.NiIntersector_GetContactTime();
+    o.Initialize(kABV0, kABV1, fTime, DAT_01017d00, DAT_010141cc, 0x20);
+    o.Solve(kV0, kV1);
+    *fIntrTime = o.NiIntersector_GetContactTime();
     if (o.FUN_00be0aa0() != 3 && o.FUN_00be0aa0() != 2)
     {
         o.SetVtbl();
         return false;
     }
-    *p7 = *o.NiIntersector_GetContactPoint();
-    if (abWantNormal)
+    *kIntrPt = *o.NiIntersector_GetContactPoint();
+    if (bCalcNormals)
     {
-        *p9 = *o.NiIntersector_GetContactNormal();
-        Vec3e n = {-p9->x, -p9->y, -p9->z};
-        *p10 = n;
+        *kNormal0 = *o.NiIntersector_GetContactNormal();
+        Vec3e n = {-kNormal0->x, -kNormal0->y, -kNormal0->z};
+        *kNormal1 = n;
     }
     o.SetVtbl();
     return true;
@@ -528,6 +560,9 @@ inline bool operator!=(const S_Vec3& kA, const S_Vec3& kB)
 }
 
 // @fnv 0x00e9f760
+// pdb: NiCapsuleBV::CapsuleCapsuleTestIntersect | NiCapsuleBV.obj | retail, object-file run extension, low
+// pdb params: fTime, kABV0, kV0, kABV1, kV1
+// pdb locals: CapABV1, fRadiusSumSqr, CapABV0, fRadiusSum, kDeltaV, fSqrDist, fS0, fP1, kPgm, fP0, fS1
 bool __cdecl IsCapsuleSweptHit(float fTime, NiCapsuleBV* pkCapsule0, const S_Vec3* pkVelocity0, NiCapsuleBV* pkCapsule1,
                                const S_Vec3* pkVelocity1)
 {
@@ -585,14 +620,17 @@ struct S9f2c0_M3
 };
 // Transforms the capsule's center, axis, half-length, and bound radius from model to world space using the given transform, then calls FUN_00e9f1b0.
 // @fnv 0x00e9f2c0
+// pdb: NiCapsuleBV::UpdateWorldData | NiCapsuleBV.obj | retail, object-file run extension, low
+// pdb params: kModelABV, kWorld
+// pdb locals: kModelCapABV
 void NiCapsuleBV::TransformToWorld(const NiCapsuleBV& kModel, const NiTransform& kWorld)
 {
     reinterpret_cast<S9f2c0_P3&>(m_kCenter) =
         (reinterpret_cast<const S9f2c0_M3&>(kWorld.m_Rotate) * reinterpret_cast<const S9f2c0_P3&>(kModel.m_kCenter)) *
         kWorld.m_fScale + reinterpret_cast<const S9f2c0_P3&>(kWorld.m_Translate);
-    reinterpret_cast<S9f2c0_P3&>(m_kAxisDirection) =
-        reinterpret_cast<const S9f2c0_M3&>(kWorld.m_Rotate) * reinterpret_cast<const S9f2c0_P3&>(kModel.m_kAxisDirection);
-    m_fHalfLength = kWorld.m_fScale * kModel.m_fHalfLength;
+    reinterpret_cast<S9f2c0_P3&>(m_kAxis) =
+        reinterpret_cast<const S9f2c0_M3&>(kWorld.m_Rotate) * reinterpret_cast<const S9f2c0_P3&>(kModel.m_kAxis);
+    m_fExtent = kWorld.m_fScale * kModel.m_fExtent;
     m_fBoundRadius = kWorld.m_fScale * kModel.m_fBoundRadius;
     UpdateCapsuleSegment(this);
 }
@@ -615,9 +653,9 @@ inline NiPoint3 NiPoint3::operator*(float s) const
 {
     return NiPoint3(x * s, y * s, z * s);
 }
-inline NiPoint3 NiPoint3::Cross(const NiPoint3& b) const
+inline NiPoint3 NiPoint3::Cross(const NiPoint3& pt) const
 {
-    return NiPoint3(y * b.z - z * b.y, z * b.x - x * b.z, x * b.y - y * b.x);
+    return NiPoint3(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
 }
 inline float NiPoint3::LengthSquared() const
 {
@@ -689,6 +727,9 @@ float __cdecl NiSqrDistance_Compute_00eb1d20(NiPoint3* c20, Query* q, float* pf3
 float __cdecl TriangleTriangleDistance(Query* q, BigStruct* bs, float* p30, float* pftmp, float* pR, float* pf3c);
 // Tests capsule proximity to the triangle formed by pOrg, pA, and pB, then compares the computed squared distance with the squared radius.
 // @fnv 0x00e9f8c0
+// pdb: NiCapsuleBV::CapsuleTriTestIntersect | NiCapsuleBV.obj | retail, object-file run extension, low
+// pdb params: fTime, kABV0, kV0, kVert0, kVert1, kVert2, kV1
+// pdb locals: kTriNormal, kTri, fT0, PseudoRadius, fNdotC, fNormRadiusSqr, kCapABV, kDeltaV, fNdotT, fDistCapTri, fSqrDist, fT1, kSurfacePt, fP1, kPgm, fP0, fS0
 bool __cdecl CapsuleTriangleIntersect(float afScale, NiCapsuleBV* apCapsule, NiPoint3* p2, NiPoint3* apOrigin, NiPoint3* apVecA,
                                       NiPoint3* apVecB, NiPoint3* apVec6)
 {
@@ -704,7 +745,7 @@ bool __cdecl CapsuleTriangleIntersect(float afScale, NiCapsuleBV* apCapsule, NiP
     NiPoint3 n = -s.V.Cross(s.U);
     n.Dot(n);
     fResult = reinterpret_cast<const CenterPoint&>(apCapsule->m_kCenter).Dot(n);
-    big = apCapsule->m_fHalfLength > apCapsule->m_fBoundRadius ? apCapsule->m_fHalfLength : apCapsule->m_fBoundRadius;
+    big = apCapsule->m_fExtent > apCapsule->m_fBoundRadius ? apCapsule->m_fExtent : apCapsule->m_fBoundRadius;
     i = apOrigin->Dot(n);
     float dist = fResult - i;
     if (dist * dist > (float)(n.LengthSquared() * big * big))
@@ -780,6 +821,9 @@ inline S_Vec3 cross3(const S_Vec3& a, const S_Vec3& b)
 // Computes the squared distance between segments a and b and writes the closest-point parameters s and t.
 // @fnv 0x00eaf310
 // src: XBOX_PDB 0x00eaf310
+// pdb: NiSqrDistance::Compute | NiDistSegSeg.obj | retail, call graph (shared callers), low
+// pdb params: kPoint, kBox, fBoxParam0, fBoxParam1, fBoxParam2
+// pdb locals: kClosest, fSqrDistance, kDiff, i, fDelta
 float __cdecl NiSqrDistance_Compute(const S_Seg& a, const S_Seg& b, float& s, float& t)
 {
     float edge;
@@ -1043,15 +1087,18 @@ struct S_00ea0730_Arr
 };
 // Formats name as "name = CAPSULE_BV", grows the array if needed, and appends the buffer pointer to arr.
 // @fnv 0x00ea0730
-void __stdcall AddCapsuleBV(const char* name, S_00ea0730_Arr* arr)
+// pdb: NiCapsuleBV::AddViewerStrings | NiCapsuleBV.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, pkStrings
+// pdb locals: pString, uiLen
+void __stdcall AddCapsuleBV(const char* pcPrefix, S_00ea0730_Arr* pkStrings)
 {
-    unsigned int n = strlen(name) + 14;
+    unsigned int n = strlen(pcPrefix) + 14;
     char* buf = (char*)_NiMalloc_00aa1070(n);
-    FUN_00a305b0(buf, n, "%s = CAPSULE_BV", name);
-    unsigned int i = arr->esize;
-    if (i >= arr->size)
-        arr->FUN_0096ad30(i + arr->growBy);
-    arr->FUN_0096ae90(i, buf);
+    FUN_00a305b0(buf, n, "%s = CAPSULE_BV", pcPrefix);
+    unsigned int i = pkStrings->esize;
+    if (i >= pkStrings->size)
+        pkStrings->FUN_0096ad30(i + pkStrings->growBy);
+    pkStrings->FUN_0096ae90(i, buf);
 }
 
 namespace fnv_00e9fdc0 {
@@ -1129,41 +1176,44 @@ struct DistanceData
 // Tests a moving capsule against a triangle for static overlap and swept collision, returning contact time, point, and normal.
 // @fnv 0x00e9fdc0
 // src: XBOX_PDB 0x00e9fdc0
-bool __cdecl NiCapsuleBV_CapsuleTriFindIntersect(float afTime, NiCapsuleBV* apCapsule, NiPoint3* a2, const NiPoint3* apTriA, NiPoint3* apTriB, NiPoint3* apTriC,
-                          NiPoint3* a6, float* a7, NiPoint3* apPoint, bool abNormal, NiPoint3* apNormal, NiPoint3* apNormal2)
+// pdb: NiCapsuleBV::CapsuleTriFindIntersect | NiCapsuleBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kVert0, kVert1, kVert2, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kTriNormal, PseudoRadius, fNdotC, kIntersector, fF0, fEpsilon, fNormRadiusSqr, kCapABV, kData, fNdotT, fDistCapTri, kSurfacePt
+bool __cdecl NiCapsuleBV_CapsuleTriFindIntersect(float fTime, NiCapsuleBV* kABV0, NiPoint3* kV0, const NiPoint3* kVert0, NiPoint3* kVert1, NiPoint3* kVert2,
+                          NiPoint3* kV1, float* fIntrTime, NiPoint3* kIntrPt, bool bCalcNormals, NiPoint3* kNormal0, NiPoint3* kNormal1)
 {
     DistanceData collisionData;
-    CopyVector(collisionData.segment.p, *reinterpret_cast<const NiPoint3*>(apCapsule->_pad));
-    CopyVector(collisionData.segment.d, *reinterpret_cast<const NiPoint3*>(apCapsule->_pad + 12));
-    collisionData.radiusSquared = apCapsule->m_fBoundRadius * apCapsule->m_fBoundRadius;
-    CopyVector(collisionData.triangle.p, *apTriA);
-    CopyVector(collisionData.triangle.u, *apTriB - *apTriA);
-    CopyVector(collisionData.triangle.v, *apTriC - *apTriA);
+    CopyVector(collisionData.segment.p, *reinterpret_cast<const NiPoint3*>(kABV0->_pad));
+    CopyVector(collisionData.segment.d, *reinterpret_cast<const NiPoint3*>(kABV0->_pad + 12));
+    collisionData.radiusSquared = kABV0->m_fBoundRadius * kABV0->m_fBoundRadius;
+    CopyVector(collisionData.triangle.p, *kVert0);
+    CopyVector(collisionData.triangle.u, *kVert1 - *kVert0);
+    CopyVector(collisionData.triangle.v, *kVert2 - *kVert0);
     float separation = NiSqrDistance_Compute_00eb1d20(&collisionData.segment, &collisionData.triangle, &collisionData.segmentParameter,
                                     &collisionData.triangleU, &collisionData.triangleV) -
                        collisionData.radiusSquared;
     if (separation <= 0.0f)
     {
-        *a7 = 0.0f;
-        CopyVector(*apPoint, (collisionData.triangle.p + collisionData.triangleU * collisionData.triangle.u) +
+        *fIntrTime = 0.0f;
+        CopyVector(*kIntrPt, (collisionData.triangle.p + collisionData.triangleU * collisionData.triangle.u) +
                    collisionData.triangleV * collisionData.triangle.v);
-        if (abNormal)
+        if (bCalcNormals)
         {
-            CopyVector(*apNormal2, collisionData.triangle.NiTrigon_GetNormal());
-            CopyVector(*apNormal, -*apNormal2);
+            CopyVector(*kNormal1, collisionData.triangle.NiTrigon_GetNormal());
+            CopyVector(*kNormal0, -*kNormal1);
         }
         return true;
     }
-    NiPoint3 motion = *a2 - *a6;
+    NiPoint3 motion = *kV0 - *kV1;
     CopyVector(collisionData.motion, motion);
     float lengthSquared = collisionData.motion.LengthSquared();
-    if (lengthSquared * afTime <= DAT_0101dae8)
+    if (lengthSquared * fTime <= DAT_0101dae8)
         return false;
     NiPoint3 normal = -collisionData.triangle.u.Cross(collisionData.triangle.v);
-    float centerPlane = reinterpret_cast<const CenterPoint&>(apCapsule->m_kCenter).Dot(normal);
-    float extent = apCapsule->m_fHalfLength > apCapsule->m_fBoundRadius ? apCapsule->m_fHalfLength : apCapsule->m_fBoundRadius;
+    float centerPlane = reinterpret_cast<const CenterPoint&>(kABV0->m_kCenter).Dot(normal);
+    float extent = kABV0->m_fExtent > kABV0->m_fBoundRadius ? kABV0->m_fExtent : kABV0->m_fBoundRadius;
     float radiusPlaneSquared = normal.LengthSquared() * extent * extent;
-    float trianglePlane = normal.Dot(*apTriA);
+    float trianglePlane = normal.Dot(*kVert0);
     float planeDistance = centerPlane - trianglePlane;
     if (planeDistance * planeDistance > radiusPlaneSquared)
     {
@@ -1174,41 +1224,41 @@ bool __cdecl NiCapsuleBV_CapsuleTriFindIntersect(float afTime, NiCapsuleBV* apCa
             float speed = motion.Dot(normal);
             if (speed >= DAT_01011d78)
                 return false;
-            CopyVector(support, reinterpret_cast<const NiPoint3&>(apCapsule->m_kCenter).SubtractIntoVector(FUN_004a3760(extent, normal)));
+            CopyVector(support, reinterpret_cast<const NiPoint3&>(kABV0->m_kCenter).SubtractIntoVector(FUN_004a3760(extent, normal)));
         }
         else
         {
             float speed = motion.Dot(normal);
             if (speed <= DAT_01011d78)
                 return false;
-            CopyVector(support, reinterpret_cast<const NiPoint3&>(apCapsule->m_kCenter).FUN_00439e90(FUN_004a3760(extent, normal)));
+            CopyVector(support, reinterpret_cast<const NiPoint3&>(kABV0->m_kCenter).FUN_00439e90(FUN_004a3760(extent, normal)));
         }
-        trianglePlane = normal.Dot(*apTriA);
+        trianglePlane = normal.Dot(*kVert0);
         double planeLimit = trianglePlane + (double)0.001f;
         float supportPlane = normal.Dot(support);
         if (supportPlane > planeLimit)
         {
-            if (reinterpret_cast<CapsuleDotProductFn>(&CapsuleDotProduct)(&normal, AddCapsuleVectors(support, FUN_004a3760(afTime, collisionData.motion))) >
+            if (reinterpret_cast<CapsuleDotProductFn>(&CapsuleDotProduct)(&normal, AddCapsuleVectors(support, FUN_004a3760(fTime, collisionData.motion))) >
                 trianglePlane + (double)0.001f)
                 return false;
         }
     }
     CapsuleTriangleQuery query;
-    query.FUN_00eb3750(apCapsule, apTriA, apTriB, apTriC, afTime, DAT_01017d00, DAT_010141cc, 0x20);
-    query.Solve((int)a2, (int)a6);
-    *a7 = query.NiIntersector_GetContactTime();
+    query.FUN_00eb3750(kABV0, kVert0, kVert1, kVert2, fTime, DAT_01017d00, DAT_010141cc, 0x20);
+    query.Solve((int)kV0, (int)kV1);
+    *fIntrTime = query.NiIntersector_GetContactTime();
     if (query.FUN_00be0aa0() != 3 && query.FUN_00be0aa0() != 2)
     {
         query.SetVtbl();
         return false;
     }
     const NiPoint3* point = query.NiIntersector_GetContactPoint();
-    CopyVector(*apPoint, *point);
-    if (abNormal)
+    CopyVector(*kIntrPt, *point);
+    if (bCalcNormals)
     {
         const NiPoint3* pNormal = query.NiIntersector_GetContactNormal();
-        CopyVector(*apNormal, *pNormal);
-        CopyVector(*apNormal2, -*apNormal);
+        CopyVector(*kNormal0, *pNormal);
+        CopyVector(*kNormal1, -*kNormal0);
     }
     query.SetVtbl();
     return true;

@@ -38,10 +38,10 @@ BSRotAccumTransfInterpolator* CreateRotAccumTransfInterpolator()
     {
         pInterpolator->NiTransformInterpolator::CopyMemberData(0);
         *(void**)pInterpolator = (void*)&DAT_01097af4;
-        *(int*)&pInterpolator->m_kAccumulatedRotation.m_fVectorX = *(int*)&NiQuaternion::IDENTITY;
-        *(int*)&pInterpolator->m_kAccumulatedRotation.m_fVectorY = DAT_011a9ea8;
-        *(int*)&pInterpolator->m_kAccumulatedRotation.m_fVectorZ = DAT_011a9eac;
-        *(int*)&pInterpolator->m_kAccumulatedRotation.m_fScalarPart = DAT_011a9eb0;
+        *(int*)&pInterpolator->PrevKeyRot.m_fW = *(int*)&NiQuaternion::IDENTITY;
+        *(int*)&pInterpolator->PrevKeyRot.m_fX = DAT_011a9ea8;
+        *(int*)&pInterpolator->PrevKeyRot.m_fY = DAT_011a9eac;
+        *(int*)&pInterpolator->PrevKeyRot.m_fZ = DAT_011a9eb0;
         return pInterpolator;
     }
     return 0;
@@ -59,17 +59,17 @@ BSRotAccumTransfInterpolator* BSRotAccumTransfInterpolator::CreateInterpolator(i
     {
         obj->NiTransformInterpolator::CopyMemberData(0);
         *(void**)obj = (void*)&DAT_01097af4;
-        *(int*)&obj->m_kAccumulatedRotation.m_fVectorX = DAT_011a9ea4;
-        *(int*)&obj->m_kAccumulatedRotation.m_fVectorY = DAT_011a9ea8;
-        *(int*)&obj->m_kAccumulatedRotation.m_fVectorZ = DAT_011a9eac;
-        *(int*)&obj->m_kAccumulatedRotation.m_fScalarPart = DAT_011a9eb0;
+        *(int*)&obj->PrevKeyRot.m_fW = DAT_011a9ea4;
+        *(int*)&obj->PrevKeyRot.m_fX = DAT_011a9ea8;
+        *(int*)&obj->PrevKeyRot.m_fY = DAT_011a9eac;
+        *(int*)&obj->PrevKeyRot.m_fZ = DAT_011a9eb0;
     }
     else
     {
         obj = 0;
     }
-    FUN_00a40360(obj, a);
-    memcpy(&obj->m_kAccumulatedRotation, &m_kAccumulatedRotation, sizeof(NiQuaternion));
+    CopyMembers(obj, a);
+    memcpy(&obj->PrevKeyRot, &PrevKeyRot, sizeof(NiQuaternion));
     return obj;
 }
 
@@ -82,12 +82,12 @@ struct TimedRotationKey
 
 inline TimedRotationKey* BSRotAccumTransfInterpolator::GetRotData(unsigned int& uiNumKeys, int& eType, unsigned char& ucSize) const
 {
-    if (m_spTransformData.m_pObject)
+    if (m_spData.m_pObject)
     {
-        uiNumKeys = m_spTransformData.m_pObject->m_usNumRotKeys;
-        eType = m_spTransformData.m_pObject->m_eRotationKeyType;
-        ucSize = m_spTransformData.m_pObject->m_ucRotationKeySize;
-        return m_spTransformData.m_pObject->m_pkRotationKeys;
+        uiNumKeys = m_spData.m_pObject->m_usNumRotKeys;
+        eType = m_spData.m_pObject->m_eRotationKeyType;
+        ucSize = m_spData.m_pObject->m_ucRotSize;
+        return m_spData.m_pObject->m_pkRotationKeys;
     }
     uiNumKeys = 0;
     eType = 0;
@@ -106,13 +106,15 @@ void BSRotAccumTransfInterpolator::UpdateRotValue(int a)
     TimedRotationKey* pkKeys = GetRotData(uiNumKeys, eType, ucSize);
     if (uiNumKeys != 0)
     {
-        memcpy(&m_kAccumulatedRotation, &pkKeys[0].m_kRotationValue, sizeof(NiQuaternion));
+        memcpy(&PrevKeyRot, &pkKeys[0].m_kRotationValue, sizeof(NiQuaternion));
     }
 }
 
 void __cdecl FUN_00a3f7b0();
 // @fnv 0x00a43a70
 // src: XBOX_PDB 0x00a43a70
+// pdb: BSRotAccumTransfInterpolator::LoadBinary | BSRotAccumTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: arStream
 void __cdecl BSRotAccumTransfInterpolator_LoadBinary()
 {
     FUN_00a3f7b0();
@@ -122,6 +124,9 @@ extern void __cdecl FUN_00a3f870();
 
 // @fnv 0x00a43a80
 // src: XBOX_PDB 0x00a43a80
+// pdb: BSRotAccumTransfInterpolator::RegisterStreamables | BSRotAccumTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: bret
 void __cdecl BSRotAccumTransfInterpolator_RegisterStreamables()
 {
     FUN_00a3f870();
@@ -130,6 +135,8 @@ void __cdecl BSRotAccumTransfInterpolator_RegisterStreamables()
 void __cdecl FUN_00a3f8a0();
 // @fnv 0x00a43a90
 // src: XBOX_PDB 0x00a43a90
+// pdb: BSRotAccumTransfInterpolator::SaveBinary | BSRotAccumTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: arStream
 void __cdecl BSRotAccumTransfInterpolator_SaveBinary()
 {
     FUN_00a3f8a0();
@@ -139,6 +146,9 @@ extern void FUN_00a3f8d0();
 
 // @fnv 0x00a43aa0
 // src: XBOX_PDB 0x00a43aa0
+// pdb: BSRotAccumTransfInterpolator::IsEqual | BSRotAccumTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bret
 void BSRotAccumTransfInterpolator_IsEqual()
 {
     FUN_00a3f8d0();
@@ -193,8 +203,8 @@ inline NiQuatTransform& NiQuatTransform::operator=(const NiQuatTransform& r)
 
 __forceinline bool HasValidTransform(const NiQuatTransform& value)
 {
-    if (value.scale == -3.4028234663852886e38 && value.qy == -3.4028234663852886e38 &&
-        value.x == -3.4028234663852886e38)
+    if (value.m_fScale == -3.4028234663852886e38 && value.qy == -3.4028234663852886e38 &&
+        value.m_kTranslate == -3.4028234663852886e38)
         return false;
     return true;
 }
@@ -212,16 +222,16 @@ bool BSRotAccumTransfInterpolator::UpdateTransform(float time, NiObjectNET* targ
 {
     NiAVObject* object = (NiAVObject*)target;
     NiQuatTransform& result = output;
-    if (m_bPoseValid)
+    if (bPose)
     {
         m_fLastTime = time;
-        result = m_kDefaultTransform;
+        result = m_kTransformValue;
         return true;
     }
     if (m_fLastTime == time)
     {
-        result = m_kDefaultTransform;
-        return HasValidTransform(m_kDefaultTransform);
+        result = m_kTransformValue;
+        return HasValidTransform(m_kTransformValue);
     }
     unsigned int count;
     int type;
@@ -230,43 +240,43 @@ bool BSRotAccumTransfInterpolator::UpdateTransform(float time, NiObjectNET* targ
     void* keys = ((GetTransformKeys)FUN_00a3f990)(this, &count, &type, &stride);
     if (count > 0)
     {
-        index = m_usLastRotationKeyIndex;
-        AssignPosition(*(NiPoint3*)&m_kDefaultTransform.x, FUN_00a27490(time, keys, type, count, index, stride));
-        m_usLastRotationKeyIndex = (unsigned short)index;
+        index = m_usLastTransIdx;
+        AssignPosition(*(NiPoint3*)&m_kTransformValue.m_kTranslate, FUN_00a27490(time, keys, type, count, index, stride));
+        m_usLastTransIdx = (unsigned short)index;
     }
     keys = ((GetTransformKeys)NiTransformInterpolator_GetRotData)(this, &count, &type, &stride);
     if (count > 0)
     {
-        index = m_usLastPositionKeyIndex;
+        index = m_usLastRotIdx;
         QuaternionValue rotation = FUN_00a28740(time, keys, type, count, index, stride);
         if (object)
         {
-            QQuatOps delta = rotation.MultiplyQuaternion(FUN_00a6dc00((QuaternionValue&)m_kAccumulatedRotation));
+            QQuatOps delta = rotation.MultiplyQuaternion(FUN_00a6dc00((QuaternionValue&)PrevKeyRot));
             QQuatOps objectRotation;
             objectRotation.FUN_00a6df40(&object->m_kLocal.m_Rotate);
             (QuaternionValue&)objectRotation = objectRotation.MultiplyQuaternion(delta);
             objectRotation.FUN_00a38560();
-            *(QuaternionValue*)&m_kDefaultTransform.qx = objectRotation;
+            *(QuaternionValue*)&m_kTransformValue.m_kRotate = objectRotation;
         }
         else
         {
-            *(QuaternionValue*)&m_kDefaultTransform.qx = rotation;
+            *(QuaternionValue*)&m_kTransformValue.m_kRotate = rotation;
         }
-        (QuaternionValue&)m_kAccumulatedRotation = rotation;
-        m_usLastPositionKeyIndex = (unsigned short)index;
+        (QuaternionValue&)PrevKeyRot = rotation;
+        m_usLastRotIdx = (unsigned short)index;
     }
     {
         int scaleType;
         keys = ((GetTransformKeys)NiTransformInterpolator_GetScaleData)(this, &count, &scaleType, &stride);
         if (count > 0)
         {
-            index = m_usLastScaleKeyIndex;
-            m_kDefaultTransform.scale = InterpolateKey(time, keys, scaleType, count, index, stride);
-            m_usLastScaleKeyIndex = (unsigned short)index;
+            index = m_usLastScaleIdx;
+            m_kTransformValue.m_fScale = InterpolateKey(time, keys, scaleType, count, index, stride);
+            m_usLastScaleIdx = (unsigned short)index;
         }
     }
-    result = m_kDefaultTransform;
-    if (!HasValidTransform(m_kDefaultTransform))
+    result = m_kTransformValue;
+    if (!HasValidTransform(m_kTransformValue))
         return false;
     m_fLastTime = time;
     return true;
@@ -280,7 +290,7 @@ void __cdecl FUN_00aa1460(void* apMemory, unsigned int auiSize);
 BSRotAccumTransfInterpolator* BSRotAccumTransfInterpolator::FUN_00a43df0(unsigned char acFlags)
 {
     *(volatile int*)this = (int)&DAT_01097af4;
-    NiRefObject* pCounted = *(NiRefObject* volatile*)&m_spTransformData.m_pObject;
+    NiRefObject* pCounted = *(NiRefObject* volatile*)&m_spData.m_pObject;
     if (pCounted != 0)
     {
         if (InterlockedDecrement((long volatile*)&pCounted->m_uiRefCount) == 0)

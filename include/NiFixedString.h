@@ -4,6 +4,7 @@
 
 class FixedStringHeader;
 
+// pdb: class NiFixedString, size 0x4, 1 members
 class NiFixedString
 {
   public:
@@ -42,7 +43,7 @@ class NiFixedString
     void Clear();
     void Release();
     __declspec(noalias) void AssignInternedString(const NiFixedString& text);
-    void* FUN_004b9900(unsigned int flags);
+    void* NiFixedString_ScalarDtor(unsigned int flags);
     void FUN_00761760(int* data, unsigned int count);
 #if !defined(_MSC_VER)
     void* __vecDelDtor(unsigned int flags);

@@ -6,6 +6,7 @@ class NiAVObject;
 class NiGeometry;
 class ShadowSceneLight;
 
+// pdb: class BSShaderProperty, size 0x60, bases: NiShadeProperty, 15 members
 class BSShaderProperty : public NiShadeProperty
 {
   public:
@@ -34,7 +35,7 @@ class BSShaderProperty : public NiShadeProperty
     void CopyMemberData(BSShaderProperty* property, CloningProcess* cloning);
     static NiObject* CreateObject();
     void* QRenderPasses();
-    void CheckCreateRenderPassArray(int count);
+    void CheckCreateRenderPassArray(int aiNumPasses);
     void CheckCreateDepthMapRenderPassArray(int count);
     void CheckCreateLocalMapRenderPassArray(int count);
     void CheckCreateSIBlockRenderPassArray(int count);
@@ -44,7 +45,7 @@ class BSShaderProperty : public NiShadeProperty
     void SetLastRenderPassState(int state);
     bool CompareFlags(BSShaderProperty* property);
     bool GetFlag(unsigned int flag);
-    void SetFlag(unsigned int flag, bool enabled);
+    void SetFlag(unsigned int aiFlag, bool abSetFlag);
     void SetAlpha(float alpha);
     float GetAlpha();
     float GetFadeAlpha();
@@ -123,8 +124,8 @@ class BSShaderProperty::ShaderPassEntry
 class BSShaderProperty::ShaderPassList
 {
   public:
-    void Add(NiGeometry* geometry, unsigned short passType, bool first, unsigned char lightCount, ShadowSceneLight* light0,
-             ShadowSceneLight* light1, ShadowSceneLight* light2, ShadowSceneLight* light3);
+    void Add(NiGeometry* apGeometry, unsigned short ausPassEnum, bool abFirstPass, unsigned char ausNumLights, ShadowSceneLight* apSceneLight,
+             ShadowSceneLight* apSceneLight1, ShadowSceneLight* apSceneLight2, ShadowSceneLight* apSceneLight3);
 
     // NiTObjectArray<ShaderPassEntry*> in the original (vftable, base, max size, size, used, grow by); its layout is
     // spelled out here because the shared array templates (NiNode.h) cannot be included by this header's users.

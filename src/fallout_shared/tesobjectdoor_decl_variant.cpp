@@ -28,6 +28,7 @@
 #include "../../include/TESSound.h"
 
 // @fnv 0x00517500
+// pdb: TESObjectDOOR::~TESObjectDOOR | TESObjectDOOR.obj | retail, upstream name already matches, high
 TESObjectDOOR::~TESObjectDOOR()
 {
     ClearData();

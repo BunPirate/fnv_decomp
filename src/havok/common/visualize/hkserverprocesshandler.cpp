@@ -15,7 +15,7 @@ inline void* hkReferencedObject::operator new(std::size_t size)
 {
     hkReferencedObject* p = static_cast<hkReferencedObject*>(
         hkMemoryRouter::getInstance().heap().blockAlloc(size));
-    p->m_usMemSizeAndFlags = static_cast<unsigned short>(size);
+    p->m_memSizeAndFlags = static_cast<unsigned short>(size);
     return p;
 }
 
@@ -27,6 +27,7 @@ struct FUN_00d60bb0
     FUN_00d60bb0(unsigned char);
 };
 // @fnv 0x00d60bb0
+// pdb: hkProcess::`scalar deleting destructor' | hkServerProcessHandler.obj | retail, vtable slot, high
 FUN_00d60bb0::FUN_00d60bb0(unsigned char p)
 {
     m_p = &DAT_010d1508;
@@ -38,6 +39,8 @@ extern "C" void* DAT_011b5d38;
 
 // @fnv 0x00d60bf0
 // src: HAVOK_LIB 0x00d60bf0
+// pdb: hkIArchive::read32 | hkServerProcessHandler.obj | debug, object-file gap fill, medium
+// pdb locals: t
 void __stdcall hkServerProcessHandler_getConsumableCommands(void** ppOut, void** b)
 {
     *ppOut = &DAT_011b5d38;
@@ -62,21 +65,23 @@ struct FUN_00d607b0_s
 };
 struct FUN_00d60ca0_s
 {
-    int hkServerProcessHandler_registerProcess(int a, int b);
+    int hkServerProcessHandler_registerProcess(int name, int id);
 };
 int __cdecl hkString_strLen(int);
 // @fnv 0x00d60ca0
 // src: HAVOK_LIB 0x00d60ca0
-int FUN_00d60ca0_s::hkServerProcessHandler_registerProcess(int a, int b)
+// pdb: hkServerProcessHandler::registerProcess | hkServerProcessHandler.obj | retail, upstream name already matches, high
+// pdb params: name, id
+int FUN_00d60ca0_s::hkServerProcessHandler_registerProcess(int name, int id)
 {
-    int iClamped = hkString_strLen(a);
+    int iClamped = hkString_strLen(name);
     if (iClamped > 0xffff)
         iClamped = 0xffff;
     ((FUN_00d60940_s*)*(void**)((char*)this + 0x10))->WriteInt32(iClamped + 7);
     ((FUN_00d605d0_s*)*(void**)((char*)this + 0x10))->WriteUint8(0xc0);
-    ((FUN_00d60940_s*)*(void**)((char*)this + 0x10))->WriteInt32(b);
+    ((FUN_00d60940_s*)*(void**)((char*)this + 0x10))->WriteInt32(id);
     ((FUN_00d60920_s*)*(void**)((char*)this + 0x10))->AssignInteger(iClamped);
-    ((FUN_00d607b0_s*)*(void**)((char*)this + 0x10))->writeVec(a, iClamped);
+    ((FUN_00d607b0_s*)*(void**)((char*)this + 0x10))->writeVec(name, iClamped);
     return 0;
 }
 
@@ -91,15 +96,17 @@ struct FUN_00d605d0_Class
 struct FUN_00d60d10_Class
 {
     int* m_p;
-    int hkServerProcessHandler_selectProcess(unsigned int a);
+    int hkServerProcessHandler_selectProcess(unsigned int id);
 };
 // @fnv 0x00d60d10
 // src: HAVOK_LIB 0x00d60d10
-int FUN_00d60d10_Class::hkServerProcessHandler_selectProcess(unsigned int a)
+// pdb: hkServerProcessHandler::selectProcess | hkServerProcessHandler.obj | retail, upstream name already matches, high
+// pdb params: id
+int FUN_00d60d10_Class::hkServerProcessHandler_selectProcess(unsigned int id)
 {
     ((FUN_00d60940_Class*)(*(int**)((char*)this + 0x10)))->WriteInt(5);
     ((FUN_00d605d0_Class*)(*(int**)((char*)this + 0x10)))->hkOArchive_write8u(0xc1);
-    ((FUN_00d60940_Class*)(*(int**)((char*)this + 0x10)))->WriteInt(a);
+    ((FUN_00d60940_Class*)(*(int**)((char*)this + 0x10)))->WriteInt(id);
     return 0;
 }
 
@@ -134,15 +141,17 @@ struct FUN_00d60c10_s
 };
 
 // @fnv 0x00d60c10
-void FUN_00d60c10_s::HandleCommand(unsigned char ucCommand)
+// pdb: hkServerProcessHandler::consumeCommand | hkServerProcessHandler.obj | retail, vtable slot, high
+// pdb params: command
+void FUN_00d60c10_s::HandleCommand(unsigned char command)
 {
-    switch (ucCommand)
+    switch (command)
     {
     case 0xc3: {
         int iValue;
 
         m_pArchive->hkIArchive_readArrayGeneric(&iValue, 4, 1);
-        if (*m_pArchive->GetStreamResult(&ucCommand))
+        if (*m_pArchive->GetStreamResult(&command))
             ((FUN_00d60c10_VirtualBase*)((char*)this - 4))->FUN_00d60c10_v6(iValue);
         break;
     }
@@ -167,6 +176,8 @@ struct FUN_00d60d40_Element
 
 // Empty virtual function body; does nothing.
 // @fnv 0x00d60d40
+// pdb: hkServerProcessHandler::findProcessByTag | hkServerProcessHandler.obj | retail, upstream name already matches, high
+// pdb params: tag
 inline void FUN_00d60d40_Element::FUN_00d60d40_Dummy()
 {}
 
@@ -181,17 +192,17 @@ struct FUN_00d60d40_Class
     FUN_00d60d40_Element** m_p;
     int m_uiItemCount;
 
-    int hkServerProcessHandler_findProcessByTag(int value);
+    int hkServerProcessHandler_findProcessByTag(int tag);
 };
 
 // src: HAVOK_LIB 0x00d60d40
-int FUN_00d60d40_Class::hkServerProcessHandler_findProcessByTag(int value)
+int FUN_00d60d40_Class::hkServerProcessHandler_findProcessByTag(int tag)
 {
     int count = m_uiItemCount;
     int index = 0;
     while (index < count)
     {
-        if (m_p[index]->FUN_00d60d40_GetValue() == value)
+        if (m_p[index]->FUN_00d60d40_GetValue() == tag)
             return index;
         ++index;
     }
@@ -201,13 +212,13 @@ int FUN_00d60d40_Class::hkServerProcessHandler_findProcessByTag(int value)
 extern int DAT_01269cd0;
 struct FUN_00dd9270_Class
 {
-    void FindEntry();
+    void hkProcessFactory_getProcessId();
 };
 // @fnv 0x00d61240
 // src: GUESS 0x00d61240 (confidence: medium)
 void __cdecl Object_FindEntry_Thunk()
 {
-    ((FUN_00dd9270_Class*)DAT_01269cd0)->FindEntry();
+    ((FUN_00dd9270_Class*)DAT_01269cd0)->hkProcessFactory_getProcessId();
 }
 
 struct FUN_00d61260_Class
@@ -221,6 +232,7 @@ struct FUN_00d61260_Class
 
 // @fnv 0x00d61260
 // src: COMMUNITY 0x00d61260
+// pdb: hkServerProcessHandler::`scalar deleting destructor' | hkServerProcessHandler.obj | retail, vtable slot, high
 void* FUN_00d61260_Class::hkServerProcessHandler_Destroy(int flags)
 {
     FUN_00d610e0();
@@ -257,6 +269,7 @@ class hkObjD60B : public hkBaseD60B
 };
 
 // @fnv 0x00d60bd0
+// pdb: hkProcessHandler::`scalar deleting destructor' | hkServerProcessHandler.obj | retail, vtable slot, high
 hkObjD60B* hkObjD60B::FUN_00d60bd0(unsigned int uiFlags) throw()
 {
     this->hkBaseD60B::~hkBaseD60B();
@@ -293,12 +306,14 @@ struct hkObjD60D
     int unk04;
     hkVisitorD60D m_visitor;
 
-    int VisitEntryNames();
+    int hkServerProcessHandler_registerAllAvailableProcesss();
 };
 
 // Iterates the registry entry array and calls the visitor's v04 with each entry's name pointer and index, then returns 0.
 // @fnv 0x00d60d80
-int hkObjD60D::VisitEntryNames()
+// src: XBOX_RETAIL_PDB 0x00d60d80
+// pdb: hkServerProcessHandler::registerAllAvailableProcesss | hkServerProcessHandler.obj | retail, object-file gap fill, high
+int hkObjD60D::hkServerProcessHandler_registerAllAvailableProcesss()
 {
     hkArray<ProcessRegistration>& entries = reinterpret_cast<hkRegistryD60D*>(DAT_01269cd0)->m_entries;
     for (int i = 0; i < entries.m_iElementCount; i++)
@@ -319,7 +334,7 @@ struct FUN_00d60dd0_Elem
 
 struct FUN_00dd9660_Class
 {
-    void ReadCommands(float* p, void* obj);
+    void hkCommandRouter_consumeCommands(float* p, void* obj);
 };
 
 struct FUN_00d60dd0_Class
@@ -338,20 +353,22 @@ struct FUN_00d60dd0_Class
     FUN_00d60dd0_Elem** unk2c;
     int unk30;
 
-    void ApplyToElements(float f);
+    void ApplyToElements(float frameTimeInMs);
 };
 
 // Calls FUN_00d60dd0_v6(f) on each element in unk2c in reverse order, then passes f and unk08 to unk18.ReadCommands if unk08 is set.
 // @fnv 0x00d60dd0
-void FUN_00d60dd0_Class::ApplyToElements(float afValue)
+// pdb: hkServerProcessHandler::step | hkServerProcessHandler.obj | retail, vtable slot, high
+// pdb params: frameTimeInMs
+void FUN_00d60dd0_Class::ApplyToElements(float frameTimeInMs)
 {
     for (int i = unk30 - 1; i >= 0; i--)
     {
-        unk2c[i]->FUN_00d60dd0_v6(afValue);
+        unk2c[i]->FUN_00d60dd0_v6(frameTimeInMs);
     }
     if (unk08)
     {
-        unk18.ReadCommands(&afValue, unk08);
+        unk18.hkCommandRouter_consumeCommands(&frameTimeInMs, unk08);
     }
 }
 
@@ -455,6 +472,7 @@ class FUN_00d610e0 : public hkReferencedObject, public hkInterfaceAD610, public 
 
 // Destructor: deletes every element of m_38, then deletes m_14, m_18 and m_1c; member destructors run afterwards.
 // @fnv 0x00d610e0
+// pdb: hkServerProcessHandler::~hkServerProcessHandler | hkServerProcessHandler.obj | retail, object-file gap fill, high
 FUN_00d610e0::~FUN_00d610e0() throw()
 {
     for (int i = 0; i < m_38.m_iElementCount; i++)
@@ -484,6 +502,7 @@ class hkObjD611
 // Returns 1 if m_inner is non-null and its ForwardValueToObject() returns true, otherwise 0.
 // @fnv 0x00d611e0
 // src: HAVOK_LIB 0x00d611e0
+// pdb: hkProcess::isOk | hkServerProcessHandler.obj | retail, upstream name already matches, high
 int hkObjD611::hkProcess_isOk() const throw()
 {
     if (m_inner && m_inner->ForwardValueToObject())
@@ -534,15 +553,17 @@ class FUN_00dd9cc0 : public hkReferencedObject, public hkListenerBaseDD9C
     void* m_pOwnerObject;
     FUN_00cf6da0* m_kNodePool;
 
-    FUN_00dd9cc0(void* pvOwner) throw();
+    FUN_00dd9cc0(void* stream) throw();
     virtual ~FUN_00dd9cc0() throw();
 };
 
 // Stores pvOwner and allocates a FUN_00cf6da0 with capacity 1000 into the second member.
 // @fnv 0x00dd9cc0
-FUN_00dd9cc0::FUN_00dd9cc0(void* pvOwner) throw()
+// pdb: hkServerDebugDisplayHandler::hkServerDebugDisplayHandler | hkServerDebugDisplayHandler.obj | retail, object-file gap fill, high
+// pdb params: stream
+FUN_00dd9cc0::FUN_00dd9cc0(void* stream) throw()
 {
-    m_pOwnerObject = pvOwner;
+    m_pOwnerObject = stream;
     m_kNodePool = new FUN_00cf6da0(1000);
 }
 }  // namespace fnv_00dd9cc0
@@ -591,13 +612,13 @@ class EntryD60E
 class EntryFactoryD60E
 {
   public:
-    EntryD60E* InvokeRecord(int aiSoundId, void* pvParam);
+    EntryD60E* InvokeRecord(int tag, void* contexts);
 };
 
 class EntryListD60E
 {
   public:
-    void ProcessInputData(EntryD60E* pkEntry);
+    void hkCommandRouter_registerProcess(EntryD60E* handler);
 };
 
 class OwnerBaseD60E
@@ -621,18 +642,21 @@ class OwnerD60E : public OwnerBaseD60E, public ListenerD60E
     hkArray<EntryD60E*> m_kEntries;
     int m_unk44;
 
-    int hkServerProcessHandler_findProcessByTag(int aiSoundId);
-    virtual int hkServerProcessHandler_createProcess(int aiSoundId);
+    int hkServerProcessHandler_findProcessByTag(int tag);
+    virtual int hkServerProcessHandler_createProcess(int id);
 };
 
 // Creates an EntryD60E for aiSoundId via DAT_01269cd0, configures it with owner state, adds it to m_kEntries, and processes it through m_kEntryList.
 // @fnv 0x00d60e80
 // src: HAVOK_LIB 0x00d60e80
-int OwnerD60E::hkServerProcessHandler_createProcess(int aiSoundId)
+// pdb: hkServerProcessHandler::createProcess | hkServerProcessHandler.obj | retail, upstream name already matches, high
+// pdb params: id
+// pdb locals: p
+int OwnerD60E::hkServerProcessHandler_createProcess(int id)
 {
-    if (hkServerProcessHandler_findProcessByTag(aiSoundId) >= 0)
+    if (hkServerProcessHandler_findProcessByTag(id) >= 0)
         return 0;
-    EntryD60E* pkEntry = ((EntryFactoryD60E*)DAT_01269cd0)->InvokeRecord(aiSoundId, &m_unk44);
+    EntryD60E* pkEntry = ((EntryFactoryD60E*)DAT_01269cd0)->InvokeRecord(id, &m_unk44);
     if (pkEntry)
     {
         EntryD60E* const receiver = pkEntry;
@@ -642,7 +666,7 @@ int OwnerD60E::hkServerProcessHandler_createProcess(int aiSoundId)
         receiver->m_unk10 = m_unk1C;
         receiver->vfn_14();
         m_kEntries.pushBack(pkEntry);
-        m_kEntryList.ProcessInputData(pkEntry);
+        m_kEntryList.hkCommandRouter_registerProcess(pkEntry);
         return 0;
     }
     return 1;
@@ -668,12 +692,12 @@ struct Item_d60e
 
 struct Owner_d60e
 {
-    int hkServerProcessHandler_findProcessByTag(void* key);
+    int hkServerProcessHandler_findProcessByTag(void* tag);
 };
 
 struct Listeners_d60e
 {
-    void hkCommandRouter_unregisterProcess(Item_d60e* item);
+    void hkCommandRouter_unregisterProcess(Item_d60e* handler);
 };
 
 struct Part_d60e
@@ -682,15 +706,18 @@ struct Part_d60e
     Listeners_d60e m_kListeners;
     int unk20, unk24, unk28, unk2C;
     hkArray<Item_d60e*> m_items;
-    int hkServerProcessHandler_deleteProcess(void* key);
+    int hkServerProcessHandler_deleteProcess(void* id);
 };
 
 // Looks up an item by key in the owner, removes it from m_items, notifies m_kListeners, and deletes the item.
 // @fnv 0x00d60e20
 // src: HAVOK_LIB 0x00d60e20
-int Part_d60e::hkServerProcessHandler_deleteProcess(void* key)
+// pdb: hkServerProcessHandler::deleteProcess | hkServerProcessHandler.obj | retail, upstream name already matches, high
+// pdb params: id
+// pdb locals: assertBuf, ostr
+int Part_d60e::hkServerProcessHandler_deleteProcess(void* id)
 {
-    int index = ((Owner_d60e*)((char*)this - 8))->hkServerProcessHandler_findProcessByTag(key);
+    int index = ((Owner_d60e*)((char*)this - 8))->hkServerProcessHandler_findProcessByTag(id);
     if (index >= 0)
     {
         Item_d60e* item = m_items[index];
@@ -770,7 +797,7 @@ struct OwnerObject : hkReferencedObject
     OwnerObject() throw()
     {}
     virtual void OwnerObject_v1();
-    void ProcessInputData(struct ListenerC* listener) throw();
+    void hkCommandRouter_registerProcess(struct ListenerC* handler) throw();
 };
 
 struct ListenerB
@@ -811,7 +838,7 @@ struct FUN_00dd9cc0 : hkReferencedObject, ChildBase
 {
     int unk0c;
     int unk10;
-    FUN_00dd9cc0(FUN_00dda6e0* src) throw();
+    FUN_00dd9cc0(FUN_00dda6e0* stream) throw();
 };
 
 struct FUN_00d60f30 : hkReferencedObject, ListenerB, ListenerC
@@ -824,7 +851,7 @@ struct FUN_00d60f30 : hkReferencedObject, ListenerB, ListenerC
     hkArray<int> m_arr38;
     hkArray<int> m_arr44;
 
-    FUN_00d60f30(const hkArray<int>& arr, void* first, void* second) throw();
+    FUN_00d60f30(const hkArray<int>& contexts, void* inStream, void* outStream) throw();
     virtual void Thing_v1();
     virtual void ListenerB_v0();
     virtual void ListenerC_v0();
@@ -832,12 +859,14 @@ struct FUN_00d60f30 : hkReferencedObject, ListenerB, ListenerC
 
 // Calls m_pOwnerObject.FUN_00dd9600(this), copies arr to m_arr44, conditionally constructs two objects, then constructs a child and assigns m_kListener.
 // @fnv 0x00d60f30
-FUN_00d60f30::FUN_00d60f30(const hkArray<int>& apArray, void* first, void* second) throw()
+// pdb: hkServerProcessHandler::hkServerProcessHandler | hkServerProcessHandler.obj | retail, object-file gap fill, high
+// pdb params: contexts, inStream, outStream
+FUN_00d60f30::FUN_00d60f30(const hkArray<int>& contexts, void* inStream, void* outStream) throw()
 {
-    m_pOwnerObject.ProcessInputData(this);
-    m_arr44 = apArray;
-    m_pHeadNode = first ? new FUN_00ddabe0(first) : 0;
-    m_iSecondInteger = second ? new FUN_00dda6e0(second) : 0;
+    m_pOwnerObject.hkCommandRouter_registerProcess(this);
+    m_arr44 = contexts;
+    m_pHeadNode = inStream ? new FUN_00ddabe0(inStream) : 0;
+    m_iSecondInteger = outStream ? new FUN_00dda6e0(outStream) : 0;
     m_pChildAtom = new FUN_00dd9cc0(m_iSecondInteger);
     m_kListener = this;
 }

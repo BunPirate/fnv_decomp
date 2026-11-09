@@ -17,7 +17,9 @@ void FUN_008691b0::Lock()
 extern "C" __declspec(dllimport) void __stdcall Sleep(unsigned long ms);
 // @fnv 0x0040fca0
 // src: XBOX_PDB 0x0040fca0
-void BSSleep(unsigned long ms)
+// pdb: BSSleep | ExtraDataList.obj | debug, upstream name already matches, high
+// pdb params: auiMSec
+void BSSleep(unsigned long auiMSec)
 {
-    Sleep(ms);
+    Sleep(auiMSec);
 }

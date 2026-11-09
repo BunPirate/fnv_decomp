@@ -5934,13 +5934,13 @@ struct Controller
     EventQueue* queue;
     int unk1b84;
     unsigned char enabled;
-    void Controls_Rumble(float left, float right, int a, int b, int value, unsigned char state, bool force);
+    void Controls_Rumble(float leftMotor, float rightMotor, int timeInMillis, int iWavelength, int aRumblePattern, unsigned char abAlternate, bool bOverride);
 };
 int __cdecl FUN_00ec68e4(const char* name, unsigned int a1);
 class FUN_00a261a0_cls
 {
   public:
-    int XGamerProfile_GetContentBit(unsigned int a1);
+    int XGamerProfile_GetContentBit(unsigned int cCode);
 };
 struct WaveConfig
 {
@@ -5990,6 +5990,7 @@ struct FUN_00a25b00 : PoolDelQ
 };
 extern FUN_00a25b00* DAT_011f3634Q;
 // @fnv 0x00a25b00
+// pdb: XGamerProfile::~XGamerProfile | XGamerProfile.obj | debug, object-file run extension, low
 FUN_00a25b00::~FUN_00a25b00()
 {
     if (DAT_011f3634Q)
@@ -6118,7 +6119,7 @@ struct Mgr
     unsigned char m1b90;
     unsigned char m1b91;
     unsigned short m1b92;
-    Mgr* Controls_Controls(int arg);
+    Mgr* Controls_ctor(int arg);
     void SetEnabled(int enable);
     void Controls_InitDefaultKeybinds(int a);
 };
@@ -6131,8 +6132,10 @@ __forceinline Elem2* NewZeroedElem2()
 }
 
 // @fnv 0x00a22660
-// src: COMMUNITY 0x00a22660
-Mgr* Mgr::Controls_Controls(int arg)
+// src: XBOX_RETAIL_PDB 0x00a22660
+// pdb: Controls::Controls | XControls.obj | retail, upstream name already matches, high
+// pdb locals: I, ikeyIdx
+Mgr* Mgr::Controls_ctor(int arg)
 {
     this->m18f4 = 0;
     this->m04 = 0;
@@ -6267,6 +6270,7 @@ struct S_00a25920_Obj
 extern S_00a25920_Obj* DAT_011f3634;
 // @fnv 0x00a25920
 // src: XBOX_PDB 0x00a25920
+// pdb: XGamerProfile::Instance | XGamerProfile.obj | retail, upstream name already matches, high
 S_00a25920_Obj* __cdecl XGamerProfile_Instance()
 {
     if (DAT_011f3634 == 0)
@@ -6278,6 +6282,7 @@ S_00a25920_Obj* __cdecl XGamerProfile_Instance()
 
 // @fnv 0x00a25880
 // src: GUESS 0x00a25880 (confidence: low)
+// pdb: XGamerProfile::Init | XGamerProfile.obj | retail, object-file run extension, low
 void Object_UpdateFields_00a25880()
 {
     if (!DAT_011f3634)

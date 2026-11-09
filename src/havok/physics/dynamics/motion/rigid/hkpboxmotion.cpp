@@ -134,9 +134,9 @@ __forceinline void hkVector4::setCross(const hkVector4& v1, const hkVector4& v2)
     m_vComponents = _mm_sub_ps(cross0, cross1);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const LocalM128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    const LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const LocalM128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     const LocalM128 z = _mm_shuffle_ps(x2, x2, 0xaa);
     return hkSimdReal(_mm_add_ss(z, xySum));
@@ -199,6 +199,9 @@ __forceinline void RotateContactArmInverse(hkVector4& out, const hkRotation& rot
 }
 
 // @fnv 0x00d1e670
+// pdb: hkpBoxMotion::setMass | hkpBoxMotion.obj | debug, vtable slot, medium
+// pdb params: mass
+// pdb locals: assertBuf, ostr
 void hkpBoxMotion::SetBodyMass(float value)
 {
     SetMassInv(1.0f / value);
@@ -207,9 +210,9 @@ void hkpBoxMotion::SetBodyMass(float value)
 // @fnv 0x00d1e7b0
 void hkpBoxMotion::WriteInverseInertiaDiagonal(float* pOut)
 {
-    float fDiag0 = m_kInertiaAndMassInv.x;
-    float fDiag1 = m_kInertiaAndMassInv.y;
-    float fDiag2 = m_kInertiaAndMassInv.z;
+    float fDiag0 = m_inertiaAndMassInv.x;
+    float fDiag1 = m_inertiaAndMassInv.y;
+    float fDiag2 = m_inertiaAndMassInv.z;
     LocalM128 z = _mm_setzero_ps();
     ((LocalM128*)pOut)[0] = z;
     ((LocalM128*)pOut)[1] = z;
@@ -221,55 +224,64 @@ void hkpBoxMotion::WriteInverseInertiaDiagonal(float* pOut)
 
 
 // @fnv 0x00d1e810
+// pdb: hkpBoxMotion::hkpBoxMotion | hkpBoxMotion.obj | retail, object-file run extension, low
+// pdb params: position, rotation
 void hkpBoxMotion::SetInertiaInvLocal(const hkMatrix3& kInertiaInv)
 {
-    m_kInertiaAndMassInv.set(kInertiaInv(0, 0), kInertiaInv(1, 1), kInertiaInv(2, 2), m_kInertiaAndMassInv(3));
+    m_inertiaAndMassInv.set(kInertiaInv(0, 0), kInertiaInv(1, 1), kInertiaInv(2, 2), m_inertiaAndMassInv(3));
 }
 
 // @fnv 0x00d1eba0
-void hkpBoxMotion::GetProjectedPointVelocity(const hkVector4& p, const hkVector4& normal, float& velOut,
+// pdb: hkpBoxMotion::getProjectedPointVelocity | hkpBoxMotion.obj | retail, vtable slot, high
+// pdb params: pos, normal, velOut, invVirtMassOut
+void hkpBoxMotion::GetProjectedPointVelocity(const hkVector4& pos, const hkVector4& normal, float& velOut,
                                             float& invVirtMassOut) const
 {
     hkVector4 arm;
     {
         hkVector4 relPos;
-        relPos.setSub4(p, m_kMotionState.m_kSweptTransform.m_vCenterOfMass1);
+        relPos.setSub4(pos, m_kMotionState.m_kSweptTransform.m_vCenterOfMass1);
         arm.setCross(relPos, normal);
     }
     velOut = m_kAngularVelocity.dot3(arm) + m_kTranslationalVelocity.dot3(normal);
 
     hkVector4 armLocal;
-    RotateContactArmInverse(armLocal, m_kMotionState.m_kMotionTransform.m_rotation, arm);
+    RotateContactArmInverse(armLocal, m_kMotionState.m_transform.m_rotation, arm);
     hkVector4 r;
-    r.setMul4(m_kInertiaAndMassInv, armLocal);
-    invVirtMassOut = m_kInertiaAndMassInv.w + r.dot3(armLocal);
+    r.setMul4(m_inertiaAndMassInv, armLocal);
+    invVirtMassOut = m_inertiaAndMassInv.w + r.dot3(armLocal);
 }
 
 extern LocalM128 DAT_010c7200;
 // @fnv 0x00d1e8c0
-void hkpBoxMotion::GetInertiaWorld(hkMatrix3& out)
+// pdb: hkpBoxMotion::getInertiaWorld | hkpBoxMotion.obj | retail, vtable slot, high
+// pdb params: inertia
+// pdb locals: invI
+void hkpBoxMotion::GetInertiaWorld(hkMatrix3& inertia)
 {
     hkVector4 inv;
-    inv.m_vComponents = _mm_max_ps(m_kInertiaAndMassInv.m_vComponents, DAT_010c7200);
-    SetBoxInertiaDiagonal(out, 1.0f / inv(0), 1.0f / inv(1), 1.0f / inv(2));
-    out.SetFromRotation(m_kMotionState.m_kMotionTransform.m_rotation);
+    inv.m_vComponents = _mm_max_ps(m_inertiaAndMassInv.m_vComponents, DAT_010c7200);
+    SetBoxInertiaDiagonal(inertia, 1.0f / inv(0), 1.0f / inv(1), 1.0f / inv(2));
+    inertia.SetFromRotation(m_kMotionState.m_transform.m_rotation);
 }
 
 // @fnv 0x00d1e9f0
+// pdb: hkpBoxMotion::applyPointImpulse | hkpBoxMotion.obj | retail, vtable slot, high
+// pdb params: imp, p
 void hkpBoxMotion::ApplyImpulseAtPoint(const hkVector4& imp, const hkVector4& p)
 {
-    m_kTranslationalVelocity.addMul4(m_kInertiaAndMassInv.getSimdAt(3), imp);
+    m_kTranslationalVelocity.addMul4(m_inertiaAndMassInv.getSimdAt(3), imp);
 
     hkVector4 relPos;
     relPos.setSub4(p, m_kMotionState.m_kSweptTransform.m_vCenterOfMass1);
     hkVector4 crossWs;
     crossWs.setCross(relPos, imp);
     hkVector4 crossLs;
-    crossLs._setRotatedInverseDir(m_kMotionState.m_kMotionTransform.m_rotation, crossWs);
+    crossLs._setRotatedInverseDir(m_kMotionState.m_transform.m_rotation, crossWs);
     hkVector4 deltaVelLs;
-    deltaVelLs.setMul4(m_kInertiaAndMassInv, crossLs);
+    deltaVelLs.setMul4(m_inertiaAndMassInv, crossLs);
     hkVector4 deltaVelWs;
-    deltaVelWs._setRotatedDir(m_kMotionState.m_kMotionTransform.m_rotation, deltaVelLs);
+    deltaVelWs._setRotatedDir(m_kMotionState.m_transform.m_rotation, deltaVelLs);
     m_kAngularVelocity.add4(deltaVelWs);
 }
 
@@ -278,7 +290,7 @@ void hkpBoxMotion::ApplyImpulseAtPoint(const hkVector4& imp, const hkVector4& p)
 // Preserve the original aliasing of the reloads; typed member loads change SIMD scheduling.
 void hkpBoxMotion::ApplyAngularImpulseToBodies(const hkVector4& impulse)
 {
-    const hkRotation& r = m_kMotionState.m_kMotionTransform.m_rotation;
+    const hkRotation& r = m_kMotionState.m_transform.m_rotation;
     LocalM128 a = r.m_kColumn0.m_vComponents, b = r.m_kColumn1.m_vComponents, c = r.m_kColumn2.m_vComponents;
     LocalM128 tmp = _mm_unpacklo_ps(a, b);
     LocalM128 ctmp = _mm_shuffle_ps(_mm_unpackhi_ps(a, b), c, 0xe4);
@@ -310,20 +322,22 @@ hkpBoxMotion* hkpBoxMotion::InitializeBoxMotion(int a1, int a2)
 {
     __assume(this != 0);
     ::new (this) hkpMotion(*reinterpret_cast<const hkVector4*>(a1), *reinterpret_cast<const hkQuaternion*>(a2), false);
-    *(LocalM128*)&m_kInertiaAndMassInv = _mm_setr_ps(DAT_01012068, DAT_01012068, DAT_01012068, DAT_01012068);
+    *(LocalM128*)&m_inertiaAndMassInv = _mm_setr_ps(DAT_01012068, DAT_01012068, DAT_01012068, DAT_01012068);
     *(const char**)this = DAT_010c6dc4;
     m_type = MOTION_BOX_INERTIA;
     return this;
 }
 
 // @fnv 0x00d1e750
+// pdb: hkpBoxMotion::setInertiaLocal | hkpBoxMotion.obj | debug, vtable slot, medium
+// pdb params: inertia
 const hkMatrix3& hkpBoxMotion::StoreInertiaLocal(const hkMatrix3& inertia)
 {
     float f[3];
     f[0] = 1.0f / inertia.m_kColumn0.x;
     f[1] = 1.0f / inertia.m_kColumn1.y;
     f[2] = 1.0f / inertia.m_kColumn2.z;
-    *(LocalM128*)&m_kInertiaAndMassInv = _mm_setr_ps(f[0], f[1], f[2], m_kInertiaAndMassInv.w);
+    *(LocalM128*)&m_inertiaAndMassInv = _mm_setr_ps(f[0], f[1], f[2], m_inertiaAndMassInv.w);
     return inertia;
 }
 
@@ -334,7 +348,7 @@ extern const float DAT_0104da4c;
 void hkpBoxMotion::GetInertiaLocal(hkMatrix3& kInertiaInv) const
 {
     __declspec(align(16)) float afInertia[4];
-    LocalM128 m = m_kInertiaAndMassInv.m_vComponents;
+    LocalM128 m = m_inertiaAndMassInv.m_vComponents;
     _ReadWriteBarrier();
     _mm_store_ps(afInertia, _mm_max_ps(_mm_load_ps1(&DAT_0104da4c), m));
     SetBoxInertiaDiagonal(kInertiaInv, 1.0f / afInertia[0], 1.0f / afInertia[1], 1.0f / afInertia[2]);

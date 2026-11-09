@@ -16,6 +16,8 @@ extern int EmptyFS;
 
 // @fnv 0x00a4ecd0
 // src: EXE 0x00a4ecd0
+// pdb: NiFloatsExtraDataPoint3Controller::CreateObject | NiFloatsExtraDataPoint3Controller.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 int* __cdecl NiFloatsExtraDataPoint3Controller_CreateObject()
 {
     int* p = (int*)BSFadeNode::operator new(0x48);
@@ -33,6 +35,8 @@ int* __cdecl NiFloatsExtraDataPoint3Controller_CreateObject()
 // These file-local entry points use ECX for the shared controller, with the
 // unused EDX argument preserving the original stack arguments and cleanup.
 // @fnv 0x00a4ec80
+// pdb: NiFloatsExtraDataPoint3Controller::CopyMembers | NiFloatsExtraDataPoint3Controller.obj | debug, object-file run extension, low
+// pdb params: pkDest, kCloning
 NiFloatsExtraDataPoint3Controller* __fastcall ClonePoint3Controller(
     NiFloatsExtraDataPoint3Controller* self, int, void* proc)
 {
@@ -82,7 +86,7 @@ void __fastcall SetInterpolatorPoint3(NiFloatsExtraDataPoint3Controller* self, i
     } else {
         pkFloatInterp = pkInterp->DynamicCast((const NiRTTI*)&g_011f3f70);
     }
-    pkFloatsED = (NiFloatsExtraData*)self->m_pExtraData.m_pObject;
+    pkFloatsED = (NiFloatsExtraData*)self->m_spExtraData.m_pObject;
     kPt.x = pkFloatsED->GetValueAt(self->m_iFloatsExtraDataIndex);
     kPt.y = pkFloatsED->GetValueAt(self->m_iFloatsExtraDataIndex + 1);
     kPt.z = pkFloatsED->GetValueAt(self->m_iFloatsExtraDataIndex + 2);
@@ -92,7 +96,7 @@ void __fastcall SetInterpolatorPoint3(NiFloatsExtraDataPoint3Controller* self, i
 void __stdcall AddExtraDataViewerStrings(StrArr* strings);
 extern void* g_011f3fc4;
 char* __cdecl _FUN_00a7d330(void* value);
-char* __cdecl NiGetViewerString_00a7d4d0(char const* name, int value);
+char* __cdecl NiGetViewerString_00a7d4d0(char const* pcPrefix, int iValue);
 
 // @fnv 0x00a4eed0
 void __fastcall GetPoint3ControllerViewerStrings(NiFloatsExtraDataPoint3Controller* self, int, StrArr* strings)
@@ -125,9 +129,12 @@ struct Vec12Sink {
 };
 
 // @fnv 0x00a4eb50
+// pdb: NiFloatsExtraDataController::CreatePoseInterpolator | NiFloatsExtraDataController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatsExtraDataPoint3Controller::CreateBlendInterpolator
+// pdb params: usIndex
 int __fastcall BuildAndDispatchVec12(NiFloatsExtraDataPoint3Controller* self, int, int unused)
 {
-    NiFloatsExtraData* stub = (NiFloatsExtraData*)self->m_pExtraData.m_pObject;
+    NiFloatsExtraData* stub = (NiFloatsExtraData*)self->m_spExtraData.m_pObject;
     Vec12 v;
     v.x = stub->GetValueAt(self->m_iFloatsExtraDataIndex);
     v.y = stub->GetValueAt(self->m_iFloatsExtraDataIndex + 1);
@@ -145,6 +152,8 @@ void __cdecl FUN_00aa1460(void* ptr, unsigned int size);
 void __fastcall DestroyExtraDataController(NiExtraDataController* self);
 
 // @fnv 0x00a4ed10
+// pdb: NiFloatsExtraDataPoint3Controller::LoadBinary | NiFloatsExtraDataPoint3Controller.obj | debug, object-file run extension, low
+// pdb params: kStream
 NiFloatsExtraDataPoint3Controller* __fastcall DestroyPoint3Controller(
     NiFloatsExtraDataPoint3Controller* self, int, unsigned char acFlags)
 {
@@ -161,7 +170,7 @@ NiFloatsExtraDataPoint3Controller* __fastcall DestroyPoint3Controller(
     return self;
 }
 
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME;
 struct Pt4edd { float x, y, z; };
 class Interp4edd {
 public:
@@ -193,16 +202,16 @@ static unsigned char GetManagerControlledFlag(const NiFloatsExtraDataPoint3Contr
 void __fastcall UpdateController(NiFloatsExtraDataPoint3Controller* self, int, const float& fTime)
 {
     if (GetManagerControlledFlag(self))
-        self->m_fControllerTime = DAT_01096324;
+        self->m_fScaledTime = NiInterpController_INVALID_TIME;
     else if (self->DontDoUpdate(fTime)
-        && (!self->m_spControllerInterpolator.m_pObject ||
-            !((Interp4edd*)self->m_spControllerInterpolator.m_pObject)->AlwaysUpdate()))
+        && (!self->m_spInterpolator.m_pObject ||
+            !((Interp4edd*)self->m_spInterpolator.m_pObject)->AlwaysUpdate()))
         return;
 
-    if (self->m_spControllerInterpolator.m_pObject) {
+    if (self->m_spInterpolator.m_pObject) {
         Pt4edd kValue;
-        if (((Interp4edd*)self->m_spControllerInterpolator.m_pObject)->Update(self->m_fControllerTime, self->m_pkTarget, kValue)) {
-            NiFloatsExtraData* pkData = (NiFloatsExtraData*)self->m_pExtraData.m_pObject;
+        if (((Interp4edd*)self->m_spInterpolator.m_pObject)->Update(self->m_fScaledTime, self->m_pkTarget, kValue)) {
+            NiFloatsExtraData* pkData = (NiFloatsExtraData*)self->m_spExtraData.m_pObject;
             if (pkData) {
                 pkData->SetValue((unsigned int)self->m_iFloatsExtraDataIndex, kValue.x);
                 pkData->SetValue((unsigned int)self->m_iFloatsExtraDataIndex + 1, kValue.y);
@@ -304,12 +313,15 @@ struct VertexRenderer {
     __declspec(noalias) void NiDX9VertexBufferManager_GenerateVertexParameters(VertexSource*, VertexData*, unsigned*, unsigned*, unsigned*, unsigned*, unsigned*, unsigned*, unsigned*);
     bool NiDX9VertexBufferManager_AllocateBufferSpace(RenderBuffer*, unsigned);
     void* NiDX9VertexBufferManager_LockVB(unsigned, unsigned, unsigned, IDirect3DVertexBuffer9*);
-    VertexBufferLockInfo* NiDX9VertexBufferManager_PackSkinnedVB(VertexSource*, unsigned, VertexData*, unsigned, VertexBufferLockInfo*, char*);
+    VertexBufferLockInfo* NiXenonVertexBufferManager_PackSkinnedVB(VertexSource*, unsigned, VertexData*, unsigned, VertexBufferLockInfo*, char*);
 };
 
 // @fnv 0x00e8c820
-// src: COMMUNITY 0x00e8c820
-VertexBufferLockInfo* VertexRenderer::NiDX9VertexBufferManager_PackSkinnedVB(VertexSource* source, unsigned unused, VertexData* data, unsigned flags, VertexBufferLockInfo* existing, char* option)
+// src: XBOX_DEBUG_PDB 0x00e8c820
+// pdb: NiXenonVertexBufferManager::PackSkinnedVB | NiXenonVBManager.obj | debug, unique string literal, high
+// pdb params: pkData, pkSkin, pkPartition, usDirtyFlags, pakVertexElements, pkOldVBChip, pvLockedBuff
+// pdb locals: uiVertexTypeDesc, uiT, uiVertexStride, bUnlock, uiColorOffset, pkVBChip, pkP, uiWeightOffset, pkN, uiTexOffset, usVerts, pusVertMap, uiPosOffset, uiIndexOffset, ui, pucTmp, uiNormOffset, pkC, usBones, pkBuffData, kVBDesc, uiBoneIndex, pfWeight, pfTmp ...
+VertexBufferLockInfo* VertexRenderer::NiXenonVertexBufferManager_PackSkinnedVB(VertexSource* source, unsigned unused, VertexData* data, unsigned flags, VertexBufferLockInfo* existing, char* option)
 {
     unsigned vertexCount;
     unsigned dataFlags;

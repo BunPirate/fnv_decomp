@@ -19,12 +19,13 @@ typedef ::__m128 LocalM128;
 class ScriptParameter;
 #include "../../include/OBJECT_ACTION.h"
 class BGSMusicType;
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:
     static void PlayMedia(BGSMusicType*);
     static void EndMediaUpdate();
-    static void Update();
+    static void FalloutAudioMedia_Update();
 };
 class ScriptLocals;
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*,
@@ -416,7 +417,7 @@ struct ObjX
     virtual void w105();
     virtual void w106();
     virtual void Gate41c(float);
-    void FadeIn_008bcd20();
+    void FadeIn();
     void TESObjectREFR_SetHealth(float);
 };
 struct DataHandlerS
@@ -624,7 +625,7 @@ bool Cmd_PlaceAtReticle_Execute(const ScriptParameter* a0, const char* a1, TESOb
             {
                 ObjX* objX2 = objX;
                 objX2->Gate41c(0.0f);
-                objX2->FadeIn_008bcd20();
+                objX2->FadeIn();
             }
             if (hf)
             {
@@ -655,6 +656,9 @@ class S005dbe60_Object
 
 // @fnv 0x005dbe60
 // src: COMMUNITY 0x005dbe60
+// pdb: bhkPickData::CalcHitPoint | TESScriptFunctions.obj | debug, call graph (shared callers), medium
+// pdb params: arPoint
+// pdb locals: hkv
 void S005dbe60_Object::bhkPickData_NiCalcHitPoint(NiPoint3* pTarget) const
 {
     S005dbe60_Vector kValue;
@@ -726,6 +730,9 @@ struct BlendTarget
 };
 // @fnv 0x005dbf70
 // src: XBOX_PDB 0x005dbf70
+// pdb: hkVector4::setInterpolate4 | TESScriptFunctions.obj | debug, upstream name already matches, high
+// pdb params: a, b, t
+// pdb locals: temp, s, x
 void BlendTarget::hkVector4_setInterpolate4(const N::LocalM128* pA, const N::LocalM128* pB, BlendSource* pSource)
 {
     N::LocalM128 pos;
@@ -811,7 +818,7 @@ bool Cmd_PlaceAtReticle_Execute(const ScriptParameter* a0, const char* a1, TESOb
             {
                 ObjX* objX2 = objX;
                 objX2->Gate41c(0.0f);
-                objX2->FadeIn_008bcd20();
+                objX2->FadeIn();
             }
             if (hf)
             {

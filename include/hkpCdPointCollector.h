@@ -4,6 +4,7 @@
 
 struct ContactPointPair;
 
+// pdb: class hkpCdPointCollector, size 0x8, 1 members
 class hkpCdPointCollector
 {
 public:
@@ -15,5 +16,5 @@ public:
     float getEarlyOutDistance() const;
     static void* __cdecl operator new(std::size_t nbytes);
 
-    float m_fEarlyOutDistance;
+    float m_earlyOutDistance;
 };

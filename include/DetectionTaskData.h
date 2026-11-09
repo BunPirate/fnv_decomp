@@ -2,9 +2,10 @@
 
 #include "MobileObjectTaskletData.h"
 
+// pdb: class DetectionTaskData, size 0x40, bases: MobileObjectTaskletData, 2 members
 class DetectionTaskData : public MobileObjectTaskletData
 {
 public:
-    float m_fDetectionValue;
-    int m_iDetectionState;
+    float fNumber;
+    int iUpdated;
 };

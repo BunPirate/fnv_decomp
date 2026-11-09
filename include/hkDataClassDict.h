@@ -9,6 +9,7 @@ struct hkRefObjDC82;
 struct hkHandleDC82;
 template <class T> class hkRefPtrDC82;
 
+// pdb: class hkDataClassDict, size 0x40, bases: hkDataClassImpl, 7 members
 class hkDataClassDict : public hkDataClassImpl
 {
 public:
@@ -22,10 +23,10 @@ public:
     virtual hkBool isSuperClass(const hkDataClassImpl* k) const;
     virtual int getNumDeclaredMembers() const;
     virtual void getDeclaredMemberInfo(int i, hkDataClassMemberInfo& info) const;
-    virtual int getDeclaredMemberIndexByName(const char* name) const;
+    virtual int getDeclaredMemberIndexByName(const char* nameIn) const;
     virtual int getNumMembers() const;
-    virtual void getMemberInfo(int i, hkDataClassMemberInfo& info) const;
-    virtual int getMemberIndexByName(const char* name) const;
+    virtual void getMemberInfo(int memberIndex, hkDataClassMemberInfo& info) const;
+    virtual int getMemberIndexByName(const char* nameIn) const;
 
     hkDataMemberInfo* FindEntry(const char* name);
     void setParent(hkDataClassDict* p);
@@ -51,8 +52,8 @@ public:
         int unk14;
         int m_version;
     };
-    hkDataClassDict* parent;
-    int unk1c;
+    hkDataClassDict* m_parent;
+    int m_enums;
     int unk20;
     int unk24;
     union
@@ -66,7 +67,7 @@ public:
         int unk2c;
     };
     int unk30;
-    int unk34;
+    int m_hiddenMemberInfo;
     int unk38;
     int unk3c;
 };

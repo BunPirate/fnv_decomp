@@ -94,10 +94,11 @@ struct __declspec(align(16)) bhkrigidbody_vector
         return *this;
     }
 };
-class BhkRigidBody : public bhkRigidBodyPrefix
+// pdb: structure bhkRigidBodyCinfo, size 0xe0, bases: hkEntityCinfo, 1 members
+class bhkRigidBodyCinfo : public bhkRigidBodyPrefix
 {
   public:
-    WorldPhysicsSettings rigidBody;
-    BhkRigidBody();
+    WorldPhysicsSettings hk;
+    bhkRigidBodyCinfo();
 };
 #endif

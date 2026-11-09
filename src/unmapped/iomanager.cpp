@@ -7,16 +7,19 @@
 #include "../../include/QueuedMagicItem.h"
 
 // @fnv 0x0043daa0
+// pdb: QueuedFileLoad::Finish | ModelLoader.obj | debug, upstream name already matches, high
 void QueuedFileLoad::Finish()
 {
     QueuedFile::Finish();
 }
 
 // @fnv 0x0043db30
-QueuedMagicItem::QueuedMagicItem(MagicItem* aMagicItem, EffectSetting* aEffect, IO_TASK_PRIORITY aPriority) : QueuedFile(aPriority)
+// pdb: QueuedMagicItem::QueuedMagicItem | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: apMagicItem, apAVEffectSetting, aePriority
+QueuedMagicItem::QueuedMagicItem(MagicItem* apMagicItem, EffectSetting* apAVEffectSetting, IO_TASK_PRIORITY aePriority) : QueuedFile(aePriority)
 {
-    pMagicItem = aMagicItem;
-    m_pEffectSetting = aEffect;
+    pMagicItem = apMagicItem;
+    pEffectSetting = apAVEffectSetting;
 }
 
 struct QHeadPtr
@@ -31,13 +34,15 @@ struct C_00449210
 };
 struct FUN_0043d6b0_shell
 {
-    void __thiscall IOManager_AddPostProcessTask(IOTask* aHead);
+    void __thiscall IOManager_AddPostProcessTask(IOTask* apTask);
 };
 // Wraps aHead in a QHeadPtr and passes its priority and the wrapper to the object at this+0x64 via FUN_00449210.
 // @fnv 0x0043d6b0
 // src: XBOX_PDB 0x0043d6b0
-void FUN_0043d6b0_shell::IOManager_AddPostProcessTask(IOTask* aHead)
+// pdb: IOManager::AddPostProcessTask | ModelLoader.obj | retail, upstream name already matches, high
+// pdb params: apTask
+void FUN_0043d6b0_shell::IOManager_AddPostProcessTask(IOTask* apTask)
 {
-    QHeadPtr head(aHead);
-    (*(C_00449210**)((char*)this + 0x64))->LockFreePriorityQueue_NiPointer_IOTask_Push(aHead->GetPriority(), &head);
+    QHeadPtr head(apTask);
+    (*(C_00449210**)((char*)this + 0x64))->LockFreePriorityQueue_NiPointer_IOTask_Push(apTask->GetPriority(), &head);
 }

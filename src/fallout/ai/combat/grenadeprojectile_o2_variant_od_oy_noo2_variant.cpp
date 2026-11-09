@@ -40,12 +40,12 @@ class RigidBodyMotionAccess
   public:
     int GetMotionType();
     void* GetLinearVelocity();
-    void SetLinearVelocity(ProjectileVelocityVector* pkVelocity);
+    void SetLinearVelocity(ProjectileVelocityVector* arVel);
 };
 
 bhkCollisionObject* __cdecl FUN_0043b610(void* pvRoot);
-bool __cdecl bhkRigidBody_IsMotionTypeDynamic(int* piFlags);
-bool __cdecl CanProjectileHit(TESObjectREFR* pkTarget, int iArg, void* pvActor, void* pvProcess);
+bool __cdecl bhkRigidBody_IsMotionTypeDynamic(int* areMotion);
+bool __cdecl Projectile_IsValidImpact(TESObjectREFR* apCollidee, int apTargetCollidable, void* apProjectile, void* apProjectileBase);
 void __cdecl TESHavokUtilities_AddVelocity(void* pvRoot, const void* pvPos, int iFlag);
 extern const float g_kZeroPoint9B4[3];
 
@@ -207,15 +207,18 @@ class GrenadeImpactState
     bool m_bHasImpactData;
 
     void* GetProjectileBase();
-    bool ProcessCollision(TESObjectREFR* pkTarget, int a2, int a3, int a4, int a5, int a6);
+    bool ProcessCollision(TESObjectREFR* apCollidee, int aContactPoint, int aContactNormal, int apTargetCollidable, int aiKey, int aeForceMaterial);
     float FUN_00885bd0();
-    void Object_ProcessAndReturnValue_009b4740();
-    bool GrenadeProjectile_AddImpact(TESObjectREFR* pkTarget, int a2, int a3, int a4, int a5, int a6);
+    void GrenadeProjectile_ProcessBounce();
+    bool GrenadeProjectile_AddImpact(TESObjectREFR* apCollidee, int aContactPoint, int aContactNormal, int apTargetCollidable, int aiKey, int aeForceMaterial);
 };
 
 // @fnv 0x009b4460
 // src: XBOX_PDB 0x009b4460
-bool GrenadeImpactState::GrenadeProjectile_AddImpact(TESObjectREFR* pkTarget, int a2, int a3, int a4, int a5, int a6)
+// pdb: GrenadeProjectile::AddImpact | GrenadeProjectile.obj | retail, upstream name already matches, high
+// pdb params: apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aiKey, aeForceMaterial
+// pdb locals: pcol, prb, velocity, fMult
+bool GrenadeImpactState::GrenadeProjectile_AddImpact(TESObjectREFR* apCollidee, int aContactPoint, int aContactNormal, int apTargetCollidable, int aiKey, int aeForceMaterial)
 {
     if (g_kGameMode9B4.GetMode() == 4)
     {
@@ -239,16 +242,16 @@ bool GrenadeImpactState::GrenadeProjectile_AddImpact(TESObjectREFR* pkTarget, in
             }
         }
     }
-    if (m_kImpacts.IsEmpty() && CanProjectileHit(pkTarget, a4, this, GetProjectileBase()) &&
-        ProcessCollision(pkTarget, a2, a3, a4, a5, a6))
+    if (m_kImpacts.IsEmpty() && Projectile_IsValidImpact(apCollidee, apTargetCollidable, this, GetProjectileBase()) &&
+        ProcessCollision(apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aiKey, aeForceMaterial))
     {
-        if (pkTarget && pkTarget->IsActor())
+        if (apCollidee && apCollidee->IsActor())
         {
             TESHavokUtilities_AddVelocity(Get3D(), g_kZeroPoint9B4, 1);
         }
         else if (FUN_00885bd0() == 0.0)
         {
-            Object_ProcessAndReturnValue_009b4740();
+            GrenadeProjectile_ProcessBounce();
             m_bHasImpactData = true;
         }
         return true;
@@ -264,6 +267,7 @@ struct hkVector4Mul
 };
 // @fnv 0x009b4670
 // src: GUESS 0x009b4670 (confidence: high)
+// pdb: GrenadeProjectile::GrenadeProjectile | GrenadeProjectile.obj | retail, object-file run extension, low
 void hkVector4Mul::MultiplyComponentsInPlace(const hkVector4Mul& a)
 {
     m_vComponents = _mm_mul_ps(m_vComponents, a.m_vComponents);

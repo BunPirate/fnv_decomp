@@ -6,29 +6,29 @@
 void NiTexturingProperty::SetBaseMapFilterMode(FilterMode mode)
 {
     Map* baseMap;
-    baseMap = m_kStringArray.GetAt(0);
+    baseMap = m_kMaps.GetAt(0);
 
     if (baseMap == 0)
     {
         baseMap = new Map;
-        m_kStringArray.SetAt(0, baseMap);
+        m_kMaps.SetAt(0, baseMap);
     }
 
     baseMap->SetFilterMode(mode);
 }
 
-void NiTexturingProperty::SetBaseMapClampMode(ClampMode mode)
+void NiTexturingProperty::SetBaseMapClampMode(ClampMode eMode)
 {
     Map* baseMap;
-    baseMap = m_kStringArray.GetAt(0);
+    baseMap = m_kMaps.GetAt(0);
 
     if (baseMap == 0)
     {
         baseMap = new Map;
-        m_kStringArray.SetAt(0, baseMap);
+        m_kMaps.SetAt(0, baseMap);
     }
 
-    baseMap->SetClampMode(mode);
+    baseMap->SetClampMode(eMode);
 }
 
 // @fnv 0x00ae8b80

@@ -42,7 +42,9 @@ void* __fastcall NiTConvertingStrideIterator_NiTConvertingStrideIterator(Pathing
 
 // Reads a BSStringT at thisPtr+0xb8, treats it as a TESForm and returns that form's source file list.
 // @fnv 0x00537b10
-BSSimpleList<TESFile*>* __fastcall GetSourceFilesFromForm(char* thisPtr)
+// src: XBOX_DEBUG_PDB 0x00537b10
+// pdb: NiGeometry::GetModelBound | TESLand.obj | debug, call graph, high
+BSSimpleList<TESFile*>* __fastcall NiGeometry_GetModelBound(char* thisPtr)
 {
     return ((TESForm*)(const char*)(*(BSStringT<char>*)(thisPtr + 0xb8)))->GetSourceFiles();
 }
@@ -111,6 +113,7 @@ struct blob12
 CellMopp* __fastcall ExtraDataList_GetCellMopp(void* pThis);
 
 // @fnv 0x00537b30
+// pdb: TESObjectCELL::GetCellMopp | TESLand.obj | debug, call graph, medium
 CellMopp* __fastcall GetCellMopp(char* pThis)
 {
     return ExtraDataList_GetCellMopp(pThis + 0x28);
@@ -133,6 +136,9 @@ void __fastcall SetVtable(FUN_00538e30_class* this_ptr)
 // Returns a new NiPoint3 with each component divided by denom.
 // @fnv 0x0053d280
 // src: GUESS 0x0053d280 (confidence: low)
+// pdb: NiPoint3::operator/ | TESLand.obj | debug, call graph, medium
+// pdb params: fScalar
+// pdb locals: fInvScalar
 NiPoint3 NiPoint3::ProcessAndReturnValue_0053d280(float denom) const
 {
     float inv = 1.0f / denom;

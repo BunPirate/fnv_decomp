@@ -6,6 +6,7 @@
 
 // Swaps two adjacent ints at a and b when the pointers differ.
 // @fnv 0x00aa3530
+// pdb: NiSmallObjectAllocator::~NiSmallObjectAllocator | NiStandardAllocator.obj | debug, object-file run extension, low
 void __cdecl SwapIntPairs(int* paiFirst, int* paiSecond)
 {
     if (paiFirst != paiSecond)
@@ -27,18 +28,20 @@ extern P03MM g_memoryManager;
 
 // @fnv 0x00aa3370
 // src: COMMUNITY 0x00aa3370
-void __stdcall NiStandardAllocator_DeallocateExternal(void* apBlock, int e, unsigned int s)
+// pdb: NiStandardAllocator::DeallocateExternal | NiStandardAllocator.obj | debug, upstream name already matches, high
+// pdb params: pvMemory, eEventType, stSizeInBytes
+void __stdcall NiStandardAllocator_DeallocateExternal(void* pvMemory, int eEventType, unsigned int stSizeInBytes)
 {
-    if (apBlock)
+    if (pvMemory)
     {
-        if (e == 0x10)
-            apBlock = (char*)apBlock - *(unsigned char*)((char*)apBlock - 1);
-        g_memoryManager.Deallocate(apBlock);
+        if (eEventType == 0x10)
+            pvMemory = (char*)pvMemory - *(unsigned char*)((char*)pvMemory - 1);
+        g_memoryManager.Deallocate(pvMemory);
     }
 }
 
 namespace fnv_00aa3430 {
-extern int DAT_011f622c;
+extern int NiStandardAllocator_ms_pkSmallAlloc;
 
 struct P03MM
 {
@@ -48,22 +51,24 @@ struct P03MM
 P03MM g_memoryManager;
 
 // @fnv 0x00aa3430
+// pdb: NiStandardAllocator::Initialize | NiStandardAllocator.obj | retail, object-file run extension, low
 void __cdecl AllocateStandardAllocator()
 {
     void* p = g_memoryManager.Allocate(0x10080);
     if (p)
     {
-        DAT_011f622c = (int)((NiStandardAllocator*)p)->NiStandardObjectAllocHelper(0x6400);
+        NiStandardAllocator_ms_pkSmallAlloc = (int)((NiStandardAllocator*)p)->NiStandardObjectAllocHelper(0x6400);
     }
     else
     {
-        DAT_011f622c = 0;
+        NiStandardAllocator_ms_pkSmallAlloc = 0;
     }
 }
 }  // namespace fnv_00aa3430
 
 // Reads four bytes from pMemory into an unsigned int and returns it.
 // @fnv 0x00aa3090
+// pdb: NiSmallObjectAllocator::~NiSmallObjectAllocator | NiStandardAllocator.obj | retail, object-file run extension, low
 unsigned int __cdecl ReadUInt32(void* pMemory)
 {
     char* pBytes;
@@ -82,16 +87,18 @@ struct SmallAlloc
 {
     void __thiscall NiSmallObjectAllocator_Deallocate(void* p, unsigned int s);
 };
-extern SmallAlloc* DAT_011f622c;
+extern SmallAlloc* NiStandardAllocator_ms_pkSmallAlloc;
 unsigned int __cdecl ReadUInt32(void* p);
 void __cdecl FreeAllocatorBlock(void* p);
 // @fnv 0x00aa3150
 // src: COMMUNITY 0x00aa3150
-void __stdcall NiStandardAllocator_Deallocate(void* pvMemory, int aiAllocationType, unsigned int stSizeInBytes)
+// pdb: NiStandardAllocator::Deallocate | NiStandardAllocator.obj | retail, upstream name already matches, high
+// pdb params: pvMemory, eEventType, stSizeInBytes
+void __stdcall NiStandardAllocator_Deallocate(void* pvMemory, int eEventType, unsigned int stSizeInBytes)
 {
     if (pvMemory)
     {
-        if (aiAllocationType != 10 && aiAllocationType != 8)
+        if (eEventType != 10 && eEventType != 8)
         {
             if (stSizeInBytes == 0xffffffff)
             {
@@ -100,7 +107,7 @@ void __stdcall NiStandardAllocator_Deallocate(void* pvMemory, int aiAllocationTy
             }
         }
         if (stSizeInBytes <= 0x100)
-            DAT_011f622c->NiSmallObjectAllocator_Deallocate(pvMemory, stSizeInBytes);
+            NiStandardAllocator_ms_pkSmallAlloc->NiSmallObjectAllocator_Deallocate(pvMemory, stSizeInBytes);
         else
             FreeAllocatorBlock(pvMemory);
     }
@@ -113,7 +120,7 @@ void __stdcall NiStandardAllocator_Deallocate(void* pvMemory, int aiAllocationTy
 // checker binds the call relocations to the addresses found in the original bytes.
 struct MemPool
 {
-    void* __thiscall FUN_00aa3810_x(unsigned int s);
+    void* __thiscall FUN_00aa3810_x(unsigned int stNumBytes);
 };
 void* __cdecl FUN_00aa1130_x(int count, int type);
 
@@ -131,38 +138,41 @@ union Pun
 // manager, when the record is a 4-byte type and the caller's flag is clear.
 // @fnv 0x00aa30c0
 // src: COMMUNITY 0x00aa30c0
-unsigned char* __stdcall NiStandardAllocator_Allocate(unsigned int* pCount, int* pType, int eType, unsigned char bFlag, int a4, int a5,
-                                      int a6)
+// pdb: NiStandardAllocator::Allocate | NiStandardAllocator.obj | retail, upstream name already matches, high
+// pdb params: stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, pcFile, iLine, pcFunction
+// pdb locals: pvMemory, bPrependSize
+unsigned char* __stdcall NiStandardAllocator_Allocate(unsigned int* stSizeInBytes, int* stAlignment, int eEventType, unsigned char bProvideAccurateSizeOnDeallocate, int pcFile, int iLine,
+                                      int pcFunction)
 {
     bool bWriteCount = false;
     unsigned char* pBuffer = 0;
 
-    if (*pType == 4 && bFlag == 0)
+    if (*stAlignment == 4 && bProvideAccurateSizeOnDeallocate == 0)
     {
-        if (eType != 7)
+        if (eEventType != 7)
         {
-            if (eType != 8)
+            if (eEventType != 8)
             {
-                *pCount += 4;
+                *stSizeInBytes += 4;
                 bWriteCount = true;
             }
         }
     }
 
-    if (eType != 7 && eType != 8 && *pCount <= 0x100 && *pType == 4)
+    if (eEventType != 7 && eEventType != 8 && *stSizeInBytes <= 0x100 && *stAlignment == 4)
     {
-        pBuffer = (unsigned char*)((MemPool*)DAT_011f622c)->FUN_00aa3810_x(*pCount);
+        pBuffer = (unsigned char*)((MemPool*)NiStandardAllocator_ms_pkSmallAlloc)->FUN_00aa3810_x(*stSizeInBytes);
     }
     else
     {
-        pBuffer = (unsigned char*)FUN_00aa1130_x(*pCount, *pType);
+        pBuffer = (unsigned char*)FUN_00aa1130_x(*stSizeInBytes, *stAlignment);
     }
 
     if (pBuffer && bWriteCount)
     {
         {
             Pun u;
-            u.i = *pCount;
+            u.i = *stSizeInBytes;
             unsigned char* bytes = (unsigned char*)&u;
             pBuffer[0] = bytes[0];
             pBuffer[1] = bytes[1];
@@ -177,7 +187,7 @@ unsigned char* __stdcall NiStandardAllocator_Allocate(unsigned int* pCount, int*
 
 extern P03MM g_memoryManager;
 
-extern SmallAlloc* DAT_011f622c;
+extern SmallAlloc* NiStandardAllocator_ms_pkSmallAlloc;
 
 struct AA3460Pool
 {
@@ -270,10 +280,11 @@ struct AA3460Pools
 
 // Deletes the AA3460Pools object at DAT_011f622c and clears the pointer.
 // @fnv 0x00aa3460
+// pdb: NiStandardAllocator::Shutdown | NiStandardAllocator.obj | retail, object-file run extension, low
 void __cdecl DestroySmallAllocPools()
 {
-    delete reinterpret_cast<AA3460Pools*>(DAT_011f622c);
-    DAT_011f622c = 0;
+    delete reinterpret_cast<AA3460Pools*>(NiStandardAllocator_ms_pkSmallAlloc);
+    NiStandardAllocator_ms_pkSmallAlloc = 0;
 }
 
 struct FUN_00aa34b0_entry
@@ -300,6 +311,7 @@ struct FUN_00aa34b0_cls
 
 // Searches the entry array outward from m_18 for an entry whose [m_base, m_base + m_04*m_00) range contains p, returning it or null.
 // @fnv 0x00aa34b0
+// pdb: NiSmallObjectAllocator::`scalar deleting destructor' | NiStandardAllocator.obj | debug, object-file run extension, low
 FUN_00aa34b0_entry* FUN_00aa34b0_cls::FindEntryContaining(unsigned int auiAddress)
 {
     FUN_00aa34b0_entry* back = m_18;
@@ -365,18 +377,21 @@ struct StdAllocator
                            bool bProvideAccurateSizeOnDeallocate, const char* pcFile, int iLine,
                            const char* pcFunction);
     virtual void Deallocate(void* pvMemory, int aiAllocationType, unsigned int stSizeinBytes);
-    void* NiStandardAllocator_Reallocate(void* pvMemory, unsigned int& stSizeInBytes, unsigned int& stAlignment, int aiAllocationType,
+    void* NiStandardAllocator_Reallocate(void* pvMemory, unsigned int& stSizeInBytes, unsigned int& stAlignment, int eEventType,
                        bool bProvideAccurateSizeOnDeallocate, unsigned int stSizeCurrent, const char* pcFile, int iLine,
                        const char* pcFunction);
 };
 
 // @fnv 0x00aa31b0
 // src: COMMUNITY 0x00aa31b0
+// pdb: NiStandardAllocator::Reallocate | NiStandardAllocator.obj | retail, upstream name already matches, high
+// pdb params: pvMemory, stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, stSizeCurrent, pcFile, iLine, pcFunction
+// pdb locals: bPrependSize, pvNewMemory, pvMemoryToCopy, stSizeToCopy
 void* StdAllocator::NiStandardAllocator_Reallocate(void* pvMemory, unsigned int& stSizeInBytes, unsigned int& stAlignment,
-                                 int aiAllocationType, bool bProvideAccurateSizeOnDeallocate,
+                                 int eEventType, bool bProvideAccurateSizeOnDeallocate,
                                  unsigned int stSizeCurrent, const char* pcFile, int iLine, const char* pcFunction)
 {
-    if (aiAllocationType != 10 && aiAllocationType != 8 && stSizeCurrent == (unsigned int)-1 &&
+    if (eEventType != 10 && eEventType != 8 && stSizeCurrent == (unsigned int)-1 &&
         !bProvideAccurateSizeOnDeallocate)
     {
         pvMemory = (char*)pvMemory - 4;
@@ -384,7 +399,7 @@ void* StdAllocator::NiStandardAllocator_Reallocate(void* pvMemory, unsigned int&
     }
 
     bool bPrependSize = false;
-    if (stAlignment == 4 && !bProvideAccurateSizeOnDeallocate && aiAllocationType != 7 && aiAllocationType != 8)
+    if (stAlignment == 4 && !bProvideAccurateSizeOnDeallocate && eEventType != 7 && eEventType != 8)
     {
         stSizeInBytes += 4;
         bPrependSize = true;
@@ -397,16 +412,16 @@ void* StdAllocator::NiStandardAllocator_Reallocate(void* pvMemory, unsigned int&
     }
 
     void* pvNewMemory;
-    if (aiAllocationType != 7 && aiAllocationType != 8 && (stSizeCurrent <= 0x100 || stSizeInBytes <= 0x100))
+    if (eEventType != 7 && eEventType != 8 && (stSizeCurrent <= 0x100 || stSizeInBytes <= 0x100))
     {
         stSizeInBytes -= 4;
-        pvNewMemory = Allocate(stSizeInBytes, stAlignment, aiAllocationType, bProvideAccurateSizeOnDeallocate, pcFile,
+        pvNewMemory = Allocate(stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, pcFile,
                                iLine, pcFunction);
         bPrependSize = false;
         if (stSizeCurrent != (unsigned int)-1)
         {
             memcpy(pvNewMemory, (char*)pvMemory + 4, stSizeCurrent - 4);
-            Deallocate(pvMemory, aiAllocationType, stSizeCurrent);
+            Deallocate(pvMemory, eEventType, stSizeCurrent);
         }
     }
     else
@@ -438,23 +453,26 @@ void* _fnv_zlib_memset(void* pvDest, int iValue, int iCount);
 // Allocates memory via the memory manager, applying alignment for type 0xe and zeroing the returned block.
 // @fnv 0x00aa33a0
 // src: COMMUNITY 0x00aa33a0
-void* __stdcall NiStandardAllocator_ReallocateExternal(void* pvMem, unsigned int* puiSize, unsigned char* pucAlign, int iType, int iUnk,
-                             int iUnkCur, int iUnkValue, int iNewUnk, int iTmpUnk)
+// pdb: NiStandardAllocator::ReallocateExternal | NiStandardAllocator.obj | retail, upstream name already matches, high
+// pdb params: pvMemory, stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, stSizeCurrent, pcFile, iLine, pcFunction
+// pdb locals: pmem
+void* __stdcall NiStandardAllocator_ReallocateExternal(void* pvMemory, unsigned int* stSizeInBytes, unsigned char* stAlignment, int eEventType, int bProvideAccurateSizeOnDeallocate,
+                             int stSizeCurrent, int pcFile, int iLine, int pcFunction)
 {
     void* pNewMem;
-    if (iType != 0xe)
+    if (eEventType != 0xe)
     {
-        unsigned int uiSize = *puiSize;
-        pNewMem = _g_memoryManager.FUN_00aa4150(pvMem, uiSize);
+        unsigned int uiSize = *stSizeInBytes;
+        pNewMem = _g_memoryManager.FUN_00aa4150(pvMemory, uiSize);
     }
     else
     {
-        unsigned int uiSize = *puiSize;
-        unsigned char ucAlign = *pucAlign;
-        if (pvMem)
+        unsigned int uiSize = *stSizeInBytes;
+        unsigned char ucAlign = *stAlignment;
+        if (pvMemory)
         {
-            pvMem = (char*)pvMem - ((unsigned char*)pvMem)[-1];
-            pNewMem = _g_memoryManager.FUN_00aa4150(pvMem, ucAlign + uiSize);
+            pvMemory = (char*)pvMemory - ((unsigned char*)pvMemory)[-1];
+            pNewMem = _g_memoryManager.FUN_00aa4150(pvMemory, ucAlign + uiSize);
             unsigned char ucOffset = ucAlign - ((ucAlign - 1) & (unsigned char)(unsigned int)pNewMem);
             pNewMem = (char*)pNewMem + ucOffset;
             ((unsigned char*)pNewMem)[-1] = ucOffset;
@@ -464,7 +482,7 @@ void* __stdcall NiStandardAllocator_ReallocateExternal(void* pvMem, unsigned int
             pNewMem = 0;
         }
     }
-    return _fnv_zlib_memset(pNewMem, 0, *puiSize);
+    return _fnv_zlib_memset(pNewMem, 0, *stSizeInBytes);
 }
 
 #include <windows.h>
@@ -485,6 +503,9 @@ struct FUN_00aa3560
 };
 // Frees each allocated block in m_ptr, then frees the m_ptr array and deletes the critical section.
 // @fnv 0x00aa3560
+// pdb: NiFixedAllocator::~NiFixedAllocator | NiSmallObjectAllocator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFixedAllocator::Reserve
+// pdb locals: i
 FUN_00aa3560::~FUN_00aa3560()
 {
     for (unsigned int i = 0; i < m_cnt; ++i)
@@ -501,25 +522,28 @@ struct MMHeap
 // Allocates and zeroes a block, applying the requested alignment when iType is 0xd.
 // @fnv 0x00aa3300
 // src: COMMUNITY 0x00aa3300
-void* __stdcall NiStandardAllocator_AllocateExternal(unsigned int puiSize, unsigned char* pucAlign, int iType, int iUnk, int iUnkCur,
-                             int iUnkValue, int iNewUnk)
+// pdb: NiStandardAllocator::AllocateExternal | NiStandardAllocator.obj | retail, upstream name already matches, high
+// pdb params: stSizeInBytes, stAlignment, eEventType, bProvideAccurateSizeOnDeallocate, pcFile, iLine, pcFunction
+// pdb locals: pmem
+void* __stdcall NiStandardAllocator_AllocateExternal(unsigned int stSizeInBytes, unsigned char* stAlignment, int eEventType, int bProvideAccurateSizeOnDeallocate, int pcFile,
+                             int iLine, int pcFunction)
 {
     MMHeap* pkHeap = (MMHeap*)&_g_memoryManager;
     void* pvNew;
-    if (iType != 0xd)
+    if (eEventType != 0xd)
     {
-        unsigned int uiSize = *(unsigned int*)puiSize;
+        unsigned int uiSize = *(unsigned int*)stSizeInBytes;
         pvNew = pkHeap->Game_DoHeapAlloc(uiSize);
     }
     else
     {
-        unsigned int uiSize = *(unsigned int*)puiSize;
-        unsigned char ucAlign = *pucAlign;
+        unsigned int uiSize = *(unsigned int*)stSizeInBytes;
+        unsigned char ucAlign = *stAlignment;
         pvNew = pkHeap->Game_DoHeapAlloc(ucAlign + uiSize);
         unsigned char ucOffset = ucAlign - ((ucAlign - 1) & (unsigned char)(unsigned int)pvNew);
         pvNew = (char*)pvNew + ucOffset;
         ((unsigned char*)pvNew)[-1] = ucOffset;
     }
-    puiSize = *(unsigned int*)puiSize;
-    return _fnv_zlib_memset(pvNew, 0, puiSize);
+    stSizeInBytes = *(unsigned int*)stSizeInBytes;
+    return _fnv_zlib_memset(pvNew, 0, stSizeInBytes);
 }

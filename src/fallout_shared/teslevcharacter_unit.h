@@ -39,12 +39,13 @@ class TESFileFormVersion
   public:
     unsigned short GetFormVersion();
 };
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
     ContainerItemExtra();
     bool Load(TESFile*);
-    unsigned char data[12];
+    unsigned char pOwnerForm[12];
 };
 class LeveledObject
 {
@@ -53,7 +54,7 @@ class LeveledObject
     unsigned short pad;
     TESForm* form;
     ContainerItemExtra* extra;
-    void SwapEndian();
+    void LEVELED_OBJECT_FILE_Endian();
 };
 extern LeveledObject* DAT_011c8e64;
 extern "C" void* memset(void*, int, unsigned int);

@@ -34,7 +34,7 @@ struct S_d2f5a0
     int unk4;
     int unk8;
     S_d2f5a0_Array m_aiIndexedValues;
-    void hkpBvTreeAgent_invalidateTim(int a);
+    void hkpBvTreeAgent_invalidateTim(int input);
 };
 struct TargetObject
 {
@@ -59,7 +59,7 @@ struct ValueSource
     int unk04;
     float m_fAmount;
 };
-void __cdecl ApplyTransformToTarget(Holder* apFirst, Holder* apSecond, ValueSource* apValue, void* apContext);
+void __cdecl hkpBvTreeAgent_staticCalcAabb(Holder* bodyA, Holder* bodyB, ValueSource* input, void* aabbOut);
 struct Allocator
 {
     virtual void* release();
@@ -81,10 +81,10 @@ struct Built
     void __thiscall FUN_00d2f980(int);
 };
 extern "C" Global* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkpBvTreeAgent_createShapeBvAgent(int arg1, int arg2, int arg3, int arg4);
+void __cdecl hkpBvTreeAgent_createShapeBvAgent(int bodyA, int bodyB, int input, int mgr);
 void __cdecl hkpBvTreeAgent_staticLinearCast(void* apFirst, void* apSecond, void* apThird, void* apFourth, void* apFifth);
 void __stdcall hkpBvTreeAgent_linearCast(void* apFirst, void* apSecond, void* apThird, void* apFourth, void* apFifth);
-extern "C" void __cdecl hkpBvTreeAgent_staticGetClosestPoints(void* arg0, void* arg1, void* arg2, void* arg3);
+extern "C" void __cdecl hkpBvTreeAgent_staticGetClosestPoints(void* bodyA, void* arg1, void* arg2, void* collector);
 // @fnv 0x00d315d0
 // src: HAVOK_SRC 0x00d315d0
 extern "C" void __stdcall hkpBvTreeAgent_getClosestPoints(void* arg0, void* arg1, void* arg2, void* arg3)
@@ -161,7 +161,7 @@ class D2FA00ShapeAgent : public D2FA00Agent
 D2FA00Agent* __cdecl hkpBvTreeAgent_createBvTreeShapeAgent(const void* bodyA, const void* bodyB, const void* input, void* mgr);
 extern char str_010ce9a4[];
 extern char str_010ce9ac[];
-extern "C" void* __cdecl hkStatisticsCollector_getAllocatedSize(void* apBuffer, int aiCount);
+extern "C" void* __cdecl hkStatisticsCollector_getAllocatedSize(void* p, int size);
 struct S_00d2f8f0_Elem
 {
     int unk00;
@@ -207,7 +207,7 @@ struct S_00d2f8f0
     S_00d2f8f0_Array m_aiIndexedValues;
     int m_iFlags;
 
-    void WriteToStream(S_00d2f8f0_Arg* apStream, int aiUnused);
+    void WriteToStream(S_00d2f8f0_Arg* collector, int cls);
 };
 class ListenerD2F5
 {
@@ -235,7 +235,7 @@ class OwnerD2F5
     int unk04[2];
     hkArray<EntryD2F5> m_entries;
 
-    void hkpBvTreeAgent_cleanup(void* pArg);
+    void hkpBvTreeAgent_cleanup(void* info);
 };
 
 #include <xmmintrin.h>
@@ -301,19 +301,22 @@ struct SlotBox
 
 // @fnv 0x00d2f690
 // src: XBOX_PDB 0x00d2f690
-void hkpBvTreeAgent_calcAabbLinearCast(SlotRef* a, SlotRef* b, SlotParam* p, SlotBox* box)
+// pdb: hkpBvTreeAgent::calcAabbLinearCast | hkpBvTreeAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, aabbOut
+// pdb locals: bTa
+void hkpBvTreeAgent_calcAabbLinearCast(SlotRef* bodyA, SlotRef* bodyB, SlotParam* input, SlotBox* aabbOut)
 {
     Transform t1;
     SlotTemp2 t2;
-    t1.hkTransform_setMulInverseMul(reinterpret_cast<const Transform*>(b->m_08), reinterpret_cast<const Transform*>(a->m_08));
-    SlotObj* obj = a->m_ent;
-    obj->Eval(&t1, p->m_08, box);
-    t2.Build(b->m_08, (char*)p + 0x50);
+    t1.hkTransform_setMulInverseMul(reinterpret_cast<const Transform*>(bodyB->m_08), reinterpret_cast<const Transform*>(bodyA->m_08));
+    SlotObj* obj = bodyA->m_ent;
+    obj->Eval(&t1, input->m_08, aabbOut);
+    t2.Build(bodyB->m_08, (char*)input + 0x50);
     __m128 t = _mm_load_ps((float*)&t2);
     __m128 zero = _mm_setzero_ps();
-    __m128 lo = _mm_add_ps(_mm_min_ps(zero, t), box->lo);
-    _mm_store_ps((float*)&box->lo, lo);
-    box->hi = _mm_add_ps(_mm_max_ps(zero, t), box->hi);
+    __m128 lo = _mm_add_ps(_mm_min_ps(zero, t), aabbOut->lo);
+    _mm_store_ps((float*)&aabbOut->lo, lo);
+    aabbOut->hi = _mm_add_ps(_mm_max_ps(zero, t), aabbOut->hi);
 }
 
 class SolBool
@@ -1079,18 +1082,21 @@ template <class E> struct SolMerge
 };
 // @fnv 0x00d2fac0
 // src: XBOX_PDB 0x00d2fac0
-void SolUpdater::hkpBvTreeAgent_prepareCollisionPartners(const SolBody& first, const SolBody& second, const SolInput& value, SolOwner& context)
+// pdb: hkpBvTreeAgent::prepareCollisionPartners | hkpBvTreeAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, constraintOwner
+// pdb locals: aabb, hitList, bTa, helper, assertBuf, ostr
+void SolUpdater::hkpBvTreeAgent_prepareCollisionPartners(const SolBody& bodyA, const SolBody& bodyB, const SolInput& input, SolOwner& constraintOwner)
 {
     SolBox bounds;
     {
         Transform transform;
         {
-            const Transform& secondTransform = second.getTransform();
-            const Transform& firstTransform = first.getTransform();
+            const Transform& secondTransform = bodyB.getTransform();
+            const Transform& firstTransform = bodyA.getTransform();
             transform.hkTransform_setMulInverseMul(secondTransform, firstTransform);
         }
-        float extra = value.getTolerance() * 0.5;
-        first.getShape()->getAabb(transform, value.getTolerance() + extra, bounds);
+        float extra = input.getTolerance() * 0.5;
+        bodyA.getShape()->getAabb(transform, input.getTolerance() + extra, bounds);
         if (DAT_011b4284)
         {
             if (m_kBoundingBox.contains(bounds))
@@ -1098,7 +1104,7 @@ void SolUpdater::hkpBvTreeAgent_prepareCollisionPartners(const SolBody& first, c
             m_kBoundingBox = bounds;
         }
     }
-    const SolTreeShape* shape = static_cast<const SolTreeShape*>(second.getShape());
+    const SolTreeShape* shape = static_cast<const SolTreeShape*>(bodyB.getShape());
     SolFixedArray<unsigned, 128> keys;
     shape->GetAabbHits(bounds, keys);
     int amount = (keys.GetLogicalSize() - m_kEntries.GetLogicalSize()) * 128;
@@ -1108,13 +1114,13 @@ void SolUpdater::hkpBvTreeAgent_prepareCollisionPartners(const SolBody& first, c
         return;
     }
     const SolContainer* container = shape->GetShapeContainer();
-    SolChildState state(second);
+    SolChildState state(bodyB);
     state.container = container;
     if (DAT_01268ad4)
-        SolMerge<SolEntry>::fast(m_kEntries, keys, first, second, value, m_pContactManager, context, state);
+        SolMerge<SolEntry>::fast(m_kEntries, keys, bodyA, bodyB, input, m_pContactManager, constraintOwner, state);
     else
     {
         SolAlgorithm::quickSort(keys.begin(), keys.GetLogicalSize());
-        SolMerge<SolEntry>::slow(m_kEntries, keys, first, second, value, m_pContactManager, context, state);
+        SolMerge<SolEntry>::slow(m_kEntries, keys, bodyA, bodyB, input, m_pContactManager, constraintOwner, state);
     }
 }

@@ -16,7 +16,7 @@
 #include "../../../../../../../include/hkpShape.h"
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int newCapacity, int elemSize);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 
 
 template <class T>
@@ -85,8 +85,8 @@ template <typename T> inline void InitializeGeometryArray(hkArray<T>& array)
 
 inline hkGeometry::hkGeometry()
 {
-    InitializeGeometryArray(m_kVertices);
-    InitializeGeometryArray(m_uiTriangleCount);
+    InitializeGeometryArray(m_vertices);
+    InitializeGeometryArray(m_triangles);
 }
 
 inline void* hkGeometry::operator new(size_t nbytes) throw()
@@ -104,7 +104,7 @@ struct FloatArrayDescriptor
 inline void* hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(hkMemoryRouter_getInstance()->heap().blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = static_cast<unsigned short>(nbytes);
+    b->m_memSizeAndFlags = static_cast<unsigned short>(nbytes);
     return b;
 }
 
@@ -120,10 +120,13 @@ void __cdecl InitAndSetB(const FloatArrayDescriptor& vertices, hkGeometry& geome
 
 // @fnv 0x00de3360
 // src: HAVOK_LIB 0x00de3360
-static __declspec(noinline) hkpShape* _createConvexDisplayFromPlanes(const VertexSource* src, const hkTransform& transform)
+// pdb: _createConvexDisplayFromPlanes | hkpConvexRadiusBuilder.obj | retail, upstream name already matches, high
+// pdb params: planeEqs, transform
+// pdb locals: transformedVerts, stridedVerts, verts
+static __declspec(noinline) hkpShape* _createConvexDisplayFromPlanes(const VertexSource* planeEqs, const hkTransform& transform)
 {
     hkArray<hkVector4, VertexArrayPolicy> localVertices;
-    hkGeometryUtility_createVerticesFromPlaneEquations(src, reinterpret_cast<hkArray<hkVector4>*>(&localVertices));
+    hkGeometryUtility_createVerticesFromPlaneEquations(planeEqs, reinterpret_cast<hkArray<hkVector4>*>(&localVertices));
     const int numVertices = localVertices.GetLogicalSize();
     if (numVertices < 1)
     {

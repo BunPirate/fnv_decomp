@@ -19,12 +19,13 @@ class ScriptHeaderData;
 #include "../../include/OBJECT_ACTION.h"
 
 class BGSMusicType;
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:
     static void PlayMedia(BGSMusicType*);
     static void EndMediaUpdate();
-    static void Update();
+    static void FalloutAudioMedia_Update();
 };
 class ScriptLocals;
 
@@ -56,20 +57,23 @@ extern Actor* g_thePlayer;
 void Interface_UpdateInventory();
 
 // @fnv 0x005d0300
-// src: EXE 0x005d0300
-bool Cmd_UnequipItem_Execute(const ScriptParameter* param, const char* desc, TESObjectREFR* obj, TESObjectREFR* obj2,
-                  Script* script, ScriptLocals* locals, double& result, unsigned int& opcode)
+// src: XBOX_RETAIL_PDB 0x005d0300
+// pdb: Script::UnEquipItemFunction | TESScriptFunctions.obj | retail, string-set bridge, high
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iFlag, pItem, iHideMessageFlag, pactor, abforce, pinventory, pextra, pstring, pitem
+bool Script_UnEquipItemFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
+                  Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
 {
     TESForm* pForm = 0;
     int iCount = 0;
     int iFlag = 0;
 
-    if (!ExtractArgs(param, desc, &opcode, obj, obj2, script, locals, &pForm, &iCount, &iFlag))
+    if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &pForm, &iCount, &iFlag))
         return false;
 
-    if (obj)
+    if (apRefObject)
     {
-        Actor* pActor = dynamic_cast<Actor*>(obj);
+        Actor* pActor = dynamic_cast<Actor*>(apRefObject);
         bool bSet = false;
         if (iCount > 0)
             bSet = true;
@@ -78,7 +82,7 @@ bool Cmd_UnequipItem_Execute(const ScriptParameter* param, const char* desc, TES
         {
             if (pActor)
             {
-                InventoryChanges* pChanges = InventoryChanges::GetOrAddInventoryChanges(obj);
+                InventoryChanges* pChanges = InventoryChanges::GetOrAddInventoryChanges(apRefObject);
                 if (pChanges)
                 {
                     ExtraDataList* pExtra = 0;
@@ -105,7 +109,7 @@ bool Cmd_UnequipItem_Execute(const ScriptParameter* param, const char* desc, TES
         }
         else
         {
-            InventoryChanges* pChanges2 = InventoryChanges::GetOrAddInventoryChanges(obj);
+            InventoryChanges* pChanges2 = InventoryChanges::GetOrAddInventoryChanges(apRefObject);
             if (pChanges2)
             {
                 InventoryStackRecord* pHolder = pChanges2->InventoryChanges_GetInventoryItem(pForm, 0);
@@ -126,7 +130,7 @@ bool Cmd_UnequipItem_Execute(const ScriptParameter* param, const char* desc, TES
                     }
                     else
                     {
-                        pHolder->m_pExtraDataLists = new BSSimpleList<ExtraDataList*>();
+                        pHolder->pExtraObjectList = new BSSimpleList<ExtraDataList*>();
                         ExtraDataList* pNew2 = new ExtraDataList();
                         pNew2->ExtraDataList_SetCanNotWear(bSet);
                         pHolder->Modelloader_GetReferencedThis()->AddHead(pNew2);

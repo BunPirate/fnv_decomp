@@ -10,7 +10,7 @@
 class SaveLoadFile
 {
   public:
-    void AdvancePosition(unsigned int bytes);
+    void BGSSaveLoadFile_SeekCurrent(unsigned int aiPosition);
 };
 
 TESForm* GetFormByID(unsigned int formID);
@@ -30,6 +30,7 @@ class PackedFormID
     unsigned char m_ucIDByte2;
 };
 
+// pdb: structure BGSSaveLoadFormInfo, size 0x1, 1 members
 class BGSSaveLoadFormInfo
 {
   public:

@@ -47,6 +47,8 @@ struct DF6B10Object : DF6B10Primary, DF6B10Listener
 };
 
 // @fnv 0x00df6b10
+// pdb: hkCpuWorldGetClosestPointsCollector::addLeaf | hkpCpuWorldGetClosestPointsJob.obj | debug, vtable slot, medium
+// pdb params: leaf
 int DF6B10Object::HandleEvent(DF6B10Event* event)
 {
     void* body = event->m_kCollisionBody;
@@ -279,6 +281,8 @@ struct DF6A60CastCollector
 };
 
 // @fnv 0x00df6a60
+// pdb: hkCpuWorldGetClosestPointsCollector::testCollidable | hkpCpuWorldGetClosestPointsJob.obj | debug, call graph (shared callers), medium
+// pdb params: collidable
 float DF6A60CastCollector::LinearCastAgainst(const DF6A60Collidable* collidableB)
 {
     const DF6A60Shape* shapeB = collidableB->m_pCollisionShape;
@@ -305,6 +309,8 @@ struct FUN_00df6af0_cls
 };
 
 // @fnv 0x00df6af0
+// pdb: hkCpuWorldGetClosestPointsCollector::addBroadPhaseHandle | hkpCpuWorldGetClosestPointsJob.obj | debug, vtable slot, medium
+// pdb params: broadphaseHandle, castIndex
 float FUN_00df6af0_cls::GetHelperResultForOffset(int aiBase, int aiUnused)
 {
     signed char c = *(signed char*)(aiBase + 5);
@@ -324,6 +330,8 @@ struct FUN_00df6b30_cls
 
 // @fnv 0x00df6b30
 // src: HAVOK_LIB 0x00df6b30
+// pdb: hkCpuWorldGetClosestPointsCollector::addMidPhaseHit | hkpCpuWorldGetClosestPointsJob.obj | retail, upstream name already matches, high
+// pdb params: primId
 unsigned char* FUN_00df6b30_cls::hkCpuWorldGetClosestPointsCollector_addMidPhaseHit(unsigned char* out, int a)
 {
     ((SiblingCls_df6a60*)((char*)this - 8))->Call(a);
@@ -422,17 +430,20 @@ inline QueryPoint* allocateResults(PairCommand* command, const QueryCollector& c
 // Iterates over PairCommand entries, dispatches collision queries via the dispatcher, and copies resulting QueryPoints into each command's output buffer.
 // @fnv 0x00df6e00
 // src: XBOX_PDB 0x00df6e00
-void hkCpuPairGetClosestPointsImplementation(const QueryJob* job, const QueryInput* source, PairCommand* commands, int count)
+// pdb: hkCpuPairGetClosestPointsImplementation | hkpCpuPairGetClosestPointsJob.obj | retail, upstream name already matches, high
+// pdb params: pairGetClosestPointsJob, collisionInput, commandsBase, numCommands
+// pdb locals: collector, input, resultsArray, assertBuf, ostr
+void hkCpuPairGetClosestPointsImplementation(const QueryJob* pairGetClosestPointsJob, const QueryInput* collisionInput, PairCommand* commandsBase, int numCommands)
 {
     QueryPoint buffer[16];
     QueryCollector collector(buffer, 1);
     QueryInput input;
-    input.tolerance = job->tolerance;
-    input.dispatcher = source->dispatcher;
-    input.unk0C = source->unk0C;
-    for (int i = 0; i < count; ++i)
+    input.tolerance = pairGetClosestPointsJob->tolerance;
+    input.dispatcher = collisionInput->dispatcher;
+    input.unk0C = collisionInput->unk0C;
+    for (int i = 0; i < numCommands; ++i)
     {
-        PairCommand* command = &commands[i];
+        PairCommand* command = &commandsBase[i];
         const DF6A60Collidable* a = command->a;
         const DF6A60Collidable* b = command->b;
         const DF6A60Shape* pShapeA = a->m_pCollisionShape;
@@ -444,7 +455,7 @@ void hkCpuPairGetClosestPointsImplementation(const QueryJob* job, const QueryInp
         collector.table = &DAT_0108f288;
         collector.count = 0;
         QueryFunction pQueryFunc =
-            (QueryFunction)source->dispatcher->getLinearCastFunc(pShapeA->m_type, pShapeB->m_type);
+            (QueryFunction)collisionInput->dispatcher->getLinearCastFunc(pShapeA->m_type, pShapeB->m_type);
         pQueryFunc(*a, *b, input, collector);
         QueryPoint* out;
         if (!command->sharedIndex)
@@ -563,6 +574,7 @@ struct FUN_00df6dd0 : S_00df6dd0_A, S_00df6dd0_B, S_00df6dd0_C
 
 // Default constructor for the FUN_00df6dd0 class, initializing its multiple inheritance bases.
 // @fnv 0x00df6dd0
+// pdb: hkCpuWorldGetClosestPointsCollector::`scalar deleting destructor' | hkpCpuWorldGetClosestPointsJob.obj | retail, vtable slot, high
 FUN_00df6dd0::FUN_00df6dd0()
 {}
 FUN_00df6dd0::~FUN_00df6dd0()

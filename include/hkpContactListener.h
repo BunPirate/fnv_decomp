@@ -2,6 +2,7 @@
 
 // Havok 7.1 hkpContactListener: the destructor is the fourth virtual slot (RTTI vftable 0x0104dd7c,
 // slot 3 = 0x00623510, its deleting destructor; 0x006234f0 is the destructor).
+// pdb: class hkpContactListener, size 0x4, 0 members
 class hkpContactListener
 {
 public:

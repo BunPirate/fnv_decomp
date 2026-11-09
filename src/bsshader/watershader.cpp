@@ -34,7 +34,10 @@ static __forceinline NiShaderConstantMapEntry* LookupWaterConstant(
 
 // Creates the vertex and pixel shader constant maps once, registers their constants and stores the resulting handles in globals.
 // @fnv 0x00b86f20
-void WaterShader::UpdateShaderConstants()
+// src: XBOX_RETAIL_PDB 0x00b86f20
+// pdb: WaterShader::CreateConstantMaps | WaterShader.obj | retail, unique string literal, high
+// pdb locals: uiDefinedMatrixFlags, uiConstantPoint4Flags, tempMemContext, uiConstantMatrixFlags, uiConstantPoint8Flags
+void WaterShader::CreateConstantMaps()
 {
     WaterShaderThreadState* threadState = WaterShaderGetThreadState();
     WaterShaderMemContext m_uiMemoryContext(threadState, 29);
@@ -76,6 +79,7 @@ void WaterShader::UpdateShaderConstants()
 }
 
 // @fnv 0x00b86bd0
+// pdb: WaterShader::WaterShader | WaterShader.obj | retail, upstream name already matches, high
 WaterShader::WaterShader()
 {
     iShaderType = 13;
@@ -97,6 +101,8 @@ WaterShader::WaterShader()
 
 // Builds a vertex declaration with four entries, creates and initializes a WaterShader, assigns the declaration, and returns the shader.
 // @fnv 0x00b86de0
+// pdb: WaterShader::CreateShader | WaterShader.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, spShaderDecl, pshader
 BSShader* WaterShader::CreateShader()
 {
     WaterShaderThreadState* threadState = WaterShaderGetThreadState();
@@ -110,7 +116,7 @@ BSShader* WaterShader::CreateShader()
     WaterShader* shader = new WaterShader;
     shader->Initialize();
     shader->InitializeShaderData();
-    shader->InitWaterPasses();
+    shader->WaterShader_LoadStagesAndPasses();
     shader->InitShaderConstants();
     shader->UseShaderDeclaration(declaration);
     m_uiMemoryContext.Restore(threadState);
@@ -120,25 +126,27 @@ BSShader* WaterShader::CreateShader()
 struct GlobalObjectO2_00a7b610
 {
 };
-extern GlobalObjectO2_00a7b610 g_011ff498;
+extern GlobalObjectO2_00a7b610 WaterShader_ms_RTTI;
 
 // @fnv 0x00b827b0
 // src: COMMUNITY 0x00b827b0
 GlobalObjectO2_00a7b610* __cdecl WaterShader_GetRTTI()
 {
-    return &g_011ff498;
+    return &WaterShader_ms_RTTI;
 }
 
 extern "C" void __cdecl _delete(void*, int);
 
 struct FUN_00b86db0_shell
 {
-    void* FUN_00b86db0(int);
+    void* WaterShader_ScalarDtor(int);
 };
 
 // Calls FUN_00b824b0, then deletes this with size 0x250 when bit 0 of arg is set, and returns this.
 // @fnv 0x00b86db0
-void* FUN_00b86db0_shell::FUN_00b86db0(int aiFlags)
+// src: XBOX_RETAIL_PDB 0x00b86db0
+// pdb: WaterShader::`scalar deleting destructor' | WaterShader.obj | retail, object-file gap fill, high
+void* FUN_00b86db0_shell::WaterShader_ScalarDtor(int aiFlags)
 {
     extern void __cdecl FUN_00b824b0();
     FUN_00b824b0();
@@ -165,6 +173,9 @@ struct FUN_00b86b80_arg
 // Reads the global mode and the inner object's flags and byte, calling FUN_00b98480 or _FUN_00b98070 depending on the mode and flag checks.
 // @fnv 0x00b86b80
 // src: COMMUNITY 0x00b86b80
+// pdb: WaterShader::PostGeometry | WaterShader.obj | debug, object-file run extension, low
+// pdb params: apState
+// pdb locals: uiCurrentPass, pprop
 void __stdcall WaterShader_SetStencil(FUN_00b86b80_arg* apArg)
 {
     FUN_00b86b80_inner* pInner = apArg->m_p;
@@ -333,10 +344,13 @@ static __forceinline void SetSpecial112(NiD3DPass* pass)
 }
 struct Water112 : WaterShader
 {
-    bool InitWaterPasses();
+    bool WaterShader_LoadStagesAndPasses();
 };
 // @fnv 0x00b83dd0
-bool Water112::InitWaterPasses()
+// src: XBOX_RETAIL_PDB 0x00b83dd0
+// pdb: WaterShader::LoadStagesAndPasses | WaterShader.obj | retail, call graph, high
+// pdb locals: i, spStage
+bool Water112::WaterShader_LoadStagesAndPasses()
 {
     for (int iPass = 0; iPass < 74; ++iPass)
     {
@@ -824,6 +838,9 @@ struct MaterialShader
 };
 // Clears the five texture slots, then binds textures from the material properties (unless mode is 0x288/0x289) and calls v66.
 // @fnv 0x00b863a0
+// pdb: WaterShader::SetupGeometryTextures | WaterShader.obj | debug, object-file run extension, low
+// pdb params: apState
+// pdb locals: uiCurrentPass, ppass, pkWaterProp
 void MaterialShader::BindMaterialTextures(ShaderArgument* argument)
 {
     unsigned int mode = DAT_011f91e4;
@@ -879,6 +896,8 @@ extern ShaderConstantB824B0 g_akPixelConstantsB824B0[31];
 
 // Destructor that nulls the water shader NiPointers and arrays and zeroes the global vertex and pixel constant arrays.
 // @fnv 0x00b824b0
+// pdb: WaterShader::~WaterShader | WaterShader.obj | retail, upstream name already matches, high
+// pdb locals: i
 WaterShader::~WaterShader()
 {
     m_spVertexShader1 = 0;
@@ -955,6 +974,8 @@ class WaterShaderLoader : public WaterShader
 
 // @fnv 0x00b827c0
 // src: COMMUNITY 0x00b827c0
+// pdb: WaterShader::LoadShaders | WaterShader.obj | retail, upstream name already matches, high
+// pdb locals: pShader, ptempFName, vertexShaderParams_Lighting, vertexShaderParams_Vc, ptarget, tempMemContext, vertexShaderParams, pdir, pcacheFName, plighting, i
 void WaterShaderLoader::WaterShader_LoadShaders()
 {
     WaterShaderMemScope kScope(0x1d);
@@ -1059,10 +1080,11 @@ struct WaterShaderReleaser : WaterShader
 
 // @fnv 0x00b861c0
 // src: COMMUNITY 0x00b861c0
+// pdb: WaterShader::ReloadShaders | WaterShader.obj | retail, upstream name already matches, high
 void WaterShaderReleaser::WaterShader_ReloadShaders()
 {
     ReleaseBase();
-    InitWaterPasses();
+    WaterShader_LoadStagesAndPasses();
 }
 
 struct WaterVec3
@@ -1606,7 +1628,7 @@ void BSRenderState_SetStencilFunc(int, int, unsigned int, int);
 
 void BSRenderState_SetStencilAction(int, int, int, int);
 
-void AddToSlot(unsigned int, int);
+void BSRenderState_SetStencilWriteMask(unsigned int, int);
 
 extern WaterVec4 DAT_011ff598;
 
@@ -1650,7 +1672,7 @@ __forceinline void SetWaterAlpha(WaterMaterial* material, unsigned int mode)
     if (mode == 0x288 || mode == 0x289)
     {
 
-        AddToSlot(material->alpha, 0);
+        BSRenderState_SetStencilWriteMask(material->alpha, 0);
 
         return;
     }
@@ -1667,7 +1689,7 @@ __forceinline void SetWaterAlpha(WaterMaterial* material, unsigned int mode)
 
         BSRenderState_SetStencilAction(0, 0, 3, 0);
 
-        AddToSlot(255, 0);
+        BSRenderState_SetStencilWriteMask(255, 0);
 
         return;
     }
@@ -1678,13 +1700,16 @@ __forceinline void SetWaterAlpha(WaterMaterial* material, unsigned int mode)
 
     BSRenderState_SetStencilAction(0, 0, 0, 0);
 
-    AddToSlot(255, 0);
+    BSRenderState_SetStencilWriteMask(255, 0);
 }
 
 // Fills global water shader constants from the material, fog and lights, then configures the vertex and pixel shader constant maps.
 // @fnv 0x00b864d0
 // src: COMMUNITY 0x00b864d0
-void WaterSetup::WaterShader_SetupGeometryConstants(WaterRenderArg* arg)
+// pdb: WaterShader::SetupGeometryConstants | WaterShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: pgeometry, keyeposcol, kiter, keyepos, uiCurrentPass, qposadjust, worldTransform, pfog, pbsfog, apRenderPass, i, worldBound, pbufferData, pskin, pkWaterProp, kfogcolor, knear, fpower, kfar, plight, lightpos, pcolor
+void WaterSetup::WaterShader_SetupGeometryConstants(WaterRenderArg* apState)
 {
 
     WaterSetup* volatile savedSetup = this;
@@ -1712,7 +1737,7 @@ void WaterSetup::WaterShader_SetupGeometryConstants(WaterRenderArg* arg)
 
     (*reinterpret_cast<WaterVec4*>(DAT_011ff588)) = WaterVec4(vDifference.x, vDifference.y, vDifference.z, 0);
 
-    WaterMaterial* material = arg->material;
+    WaterMaterial* material = apState->material;
 
     DAT_011ff598 = material->color1;
 
@@ -1835,7 +1860,7 @@ void WaterSetup::WaterShader_SetupGeometryConstants(WaterRenderArg* arg)
         if (shader)
             vertex->ConfigureShaderConstantMap(shader, reinterpret_cast<NiGeometry*>(geometry),
                 static_cast<const NiSkinInstance*>(geometryData), static_cast<const NiSkinPartition::Partition*>(0),
-                static_cast<NiGeometryBufferData*>(properties), reinterpret_cast<const NiPropertyState*>(arg),
+                static_cast<NiGeometryBufferData*>(properties), reinterpret_cast<const NiPropertyState*>(apState),
                 static_cast<const NiDynamicEffectState*>(0), *static_cast<const NiTransform*>(world),
                 *static_cast<const NiBound*>(bound), 0, true);
     }
@@ -1847,7 +1872,7 @@ void WaterSetup::WaterShader_SetupGeometryConstants(WaterRenderArg* arg)
         if (shader)
             pixel->ConfigureShaderConstantMap(shader, reinterpret_cast<NiGeometry*>(geometry),
                 static_cast<const NiSkinInstance*>(geometryData), static_cast<const NiSkinPartition::Partition*>(0),
-                static_cast<NiGeometryBufferData*>(properties), reinterpret_cast<const NiPropertyState*>(arg),
+                static_cast<NiGeometryBufferData*>(properties), reinterpret_cast<const NiPropertyState*>(apState),
                 static_cast<const NiDynamicEffectState*>(0), *static_cast<const NiTransform*>(world),
                 *static_cast<const NiBound*>(bound), 0, true);
     }

@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+// pdb: class NiCriticalSection, size 0x80, 1 members
 class NiCriticalSection
 {
 public:

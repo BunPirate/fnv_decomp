@@ -10,6 +10,7 @@ class SpellItem;
 class TESForm;
 class TESLevSpell;
 
+// pdb: class TESSpellList, size 0x14, bases: BaseFormComponent, 2 members
 class TESSpellList : public BaseFormComponent
 {
 public:
@@ -26,13 +27,13 @@ public:
 
     void InitializeComponent();
     void ClearComponent();
-    void ClearSpells();
-    void BaseFormRecord(BaseFormComponent* component);
-    void InitItem(TESForm* form);
+    void FreeSpellList();
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
+    void InitItem(TESForm* apOwner);
     void Save();
-    void TESSpellList_AddSpell_0048d210(TESLevSpell* spell);
+    void TESSpellList_AddSpell(TESLevSpell* apSpellIn);
     void TESSpellList_AddSpell_0048d290(unsigned int spellID);
-    void TESSpellList_SaveSubRecord();
+    void TESSpellList_Save();
     BSSimpleList<InventoryStackRecord*>* GetOffsetC();
     void LoadGame(BGSLoadFormBuffer* buffer);
     static bool RemoveSpell(BSFileEntry* spell);

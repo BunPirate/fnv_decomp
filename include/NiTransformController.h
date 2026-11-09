@@ -2,6 +2,7 @@
 
 #include "NiSingleInterpController.h"
 
+// pdb: class NiTransformController, size 0x38, bases: NiSingleInterpController, 0 members
 class NiTransformController : public NiSingleInterpController
 {
 public:

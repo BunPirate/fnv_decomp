@@ -337,59 +337,62 @@ static __forceinline void makeBasis(const hkVector4& normal, Matrix& basis)
 }
 
 // @fnv 0x00d9f250
-// src: GUESS 0x00d9f250 (confidence: medium)
-extern "C" void __cdecl hkpCollision_ProcessBodyResponse(const SimpleContactPoint& point, float time, Params& params, Motion* a, Motion* b, Manager* mgr,
-                                     Result& result)
+// src: XBOX_RETAIL_PDB 0x00d9f250
+// pdb: hkpSimpleCollisionResponse::solveSingleContact | hkpSimpleCollisionResponse.obj | retail, call graph, high
+// pdb params: cp, time, params, bodyA, bodyB, contactMgr, output
+// pdb locals: inB, origVelB, info, velA, inA, velB, directions, origVelA, finalVelocityWhenBothBodiesAreReintegrated, pB, pA, assertBuf, ostr
+extern "C" void __cdecl hkpSimpleCollisionResponse_solveSingleContact(const SimpleContactPoint& cp, float time, Params& params, Motion* bodyA, Motion* bodyB, Manager* contactMgr,
+                                     Result& output)
 {
     Input ia;
     {
-        ia.inverseMass = a->inverseMass;
+        ia.inverseMass = bodyA->inverseMass;
         hkVector4 center;
-        centerAt(*a->motionState(), time, center);
-        ia.relative.subtract(point.pos(), center);
-        a->inverseInertia(ia.inertia);
-        ia.transform = &a->transform();
+        centerAt(*bodyA->motionState(), time, center);
+        ia.relative.subtract(cp.pos(), center);
+        bodyA->inverseInertia(ia.inertia);
+        ia.transform = &bodyA->transform();
     }
     Input ib;
     {
-        ib.inverseMass = b->inverseMass;
+        ib.inverseMass = bodyB->inverseMass;
         hkVector4 center;
-        centerAt(*b->motionState(), time, center);
-        ib.relative.subtract(point.pos(), center);
-        b->inverseInertia(ib.inertia);
-        ib.transform = &b->transform();
+        centerAt(*bodyB->motionState(), time, center);
+        ib.relative.subtract(cp.pos(), center);
+        bodyB->inverseInertia(ib.inertia);
+        ib.transform = &bodyB->transform();
     }
     Velocity va, vb;
-    va.linear = a->linearVelocity();
-    va.angular = a->angularVelocity();
-    vb.linear = b->linearVelocity();
-    vb.angular = b->angularVelocity();
+    va.linear = bodyA->linearVelocity();
+    va.angular = bodyA->angularVelocity();
+    vb.linear = bodyB->linearVelocity();
+    vb.angular = bodyB->angularVelocity();
     Velocity oa, ob;
-    velocityOf(*a->motionState(), oa.linear, oa.angular);
-    velocityOf(*b->motionState(), ob.linear, ob.angular);
+    velocityOf(*bodyA->motionState(), oa.linear, oa.angular);
+    velocityOf(*bodyB->motionState(), ob.linear, ob.angular);
     Constraint info;
     Matrix basis;
-    makeBasis(point.dir(), basis);
-    mgr->begin(point, ia, va, ib, vb);
+    makeBasis(cp.dir(), basis);
+    contactMgr->begin(cp, ia, va, ib, vb);
     hkpCollision_BuildResponseMatrices(ia, ib, basis, info);
-    result.impulse = Object_ProcessAndReturnValue_00df5f80(info, params, va, vb);
-    mgr->end(point, result.impulse, ia, va, ib, vb);
+    output.impulse = Object_ProcessAndReturnValue_00df5f80(info, params, va, vb);
+    contactMgr->end(cp, output.impulse, ia, va, ib, vb);
     {
         hkVector4 pa, pb;
         hkVector4_UpdateFields_00df5e80(info, oa, vb, pa);
         hkVector4_UpdateFields_00df5e80(info, va, ob, pb);
-        result.velocityA = pa(0);
-        result.velocityB = pb(0);
+        output.velocityA = pa(0);
+        output.velocityB = pb(0);
     }
-    if (a->type != 5)
+    if (bodyA->type != 5)
     {
-        a->setLinear(va.linear);
-        a->setAngular(va.angular);
+        bodyA->setLinear(va.linear);
+        bodyA->setAngular(va.angular);
     }
-    if (b->type != 5)
+    if (bodyB->type != 5)
     {
-        b->setLinear(vb.linear);
-        b->setAngular(vb.angular);
+        bodyB->setLinear(vb.linear);
+        bodyB->setAngular(vb.angular);
     }
 }
 
@@ -527,14 +530,14 @@ inline void hkMatrix3::addTo(hkMatrix3& dst) const
     dst.m_kColumn2.m_vComponents = _mm_add_ps(dst.m_kColumn2.m_vComponents, m_kColumn2.m_vComponents);
 }
 
-__forceinline void hkMatrix3::SetProduct(const hkMatrix3& a, const hkMatrix3& b) throw()
+__forceinline void hkMatrix3::SetProduct(const hkMatrix3& aTb, const hkMatrix3& bTc) throw()
 {
-    const hkQuadReal c0 = a.m_kColumn0.m_vComponents;
-    const hkQuadReal c1 = a.m_kColumn1.m_vComponents;
-    const hkQuadReal c2 = a.m_kColumn2.m_vComponents;
+    const hkQuadReal c0 = aTb.m_kColumn0.m_vComponents;
+    const hkQuadReal c1 = aTb.m_kColumn1.m_vComponents;
+    const hkQuadReal c2 = aTb.m_kColumn2.m_vComponents;
     for (int i = 2; i >= 0; i--)
     {
-        const hkQuadReal t = b.getColumn(i).m_vComponents;
+        const hkQuadReal t = bTc.getColumn(i).m_vComponents;
         const hkQuadReal xb = _mm_shuffle_ps(t, t, 0x00);
         const hkQuadReal yb = _mm_shuffle_ps(t, t, 0x55);
         const hkQuadReal zb = _mm_shuffle_ps(t, t, 0xaa);

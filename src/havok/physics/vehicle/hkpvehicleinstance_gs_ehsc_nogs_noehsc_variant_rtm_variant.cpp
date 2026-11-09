@@ -96,11 +96,11 @@ class S00e384e0_hkQuaternionE38
   public:
     S00e384e0_hkVector4E38 m_vec;
 
-    __declspec(noinline) void SetAxisAngle(const S00e384e0_hkVector4E38& kAxis, float fAngleDifference)
+    __declspec(noinline) void SetAxisAngle(const S00e384e0_hkVector4E38& axis, float angle)
     {
-        float fHalf = (float)(fAngleDifference * 0.5);
+        float fHalf = (float)(angle * 0.5);
         float fSin = (float)sin(fHalf);
-        m_vec.m_vComponents = _mm_mul_ps(_mm_set_ps1(fSin), kAxis.m_vComponents);
+        m_vec.m_vComponents = _mm_mul_ps(_mm_set_ps1(fSin), axis.m_vComponents);
         m_vec.m_vComponents.m128_f32[3] = (float)cos(fHalf);
     }
 
@@ -345,29 +345,32 @@ class S00e384e0_WheelCollectorE38
     unsigned int unk44;
     S00e384e0_WheelInfoE38* m_kWheelInfoArray;
 
-    void hkpVehicleInstance_calcCurrentPositionAndRotation(const S00e384e0_ChassisE38* pkChassis, const S00e384e0_VehicleDataE38* pkData, int iWheel,
-                      S00e384e0_hkVector4E38& kPosOut, S00e384e0_hkQuaternionE38& kRotOut);
+    void hkpVehicleInstance_calcCurrentPositionAndRotation(const S00e384e0_ChassisE38* chassis, const S00e384e0_VehicleDataE38* suspension, int wheelNo,
+                      S00e384e0_hkVector4E38& posOut, S00e384e0_hkQuaternionE38& rotOut);
 };
 
 // @fnv 0x00e384e0
 // src: HAVOK_SRC 0x00e384e0
-void S00e384e0_WheelCollectorE38::hkpVehicleInstance_calcCurrentPositionAndRotation(const S00e384e0_ChassisE38* pkChassis,
-                                               const S00e384e0_VehicleDataE38* pkData, int iWheel,
-                                               S00e384e0_hkVector4E38& kPosOut, S00e384e0_hkQuaternionE38& kRotOut)
+// pdb: hkpVehicleInstance::calcCurrentPositionAndRotation | hkpVehicleInstance.obj | retail, upstream name already matches, high
+// pdb params: chassis, suspension, wheelNo, posOut, rotOut
+// pdb locals: suspLen, spin_rotation
+void S00e384e0_WheelCollectorE38::hkpVehicleInstance_calcCurrentPositionAndRotation(const S00e384e0_ChassisE38* chassis,
+                                               const S00e384e0_VehicleDataE38* suspension, int wheelNo,
+                                               S00e384e0_hkVector4E38& posOut, S00e384e0_hkQuaternionE38& rotOut)
 {
-    const S00e384e0_WheelInfoE38& kWheel = m_kWheelInfoArray[iWheel];
+    const S00e384e0_WheelInfoE38& kWheel = m_kWheelInfoArray[wheelNo];
 
     S00e384e0_hkQuaternionE38 kSpin;
     kSpin.SetAxisAngle(kWheel.m_spinAxis, -kWheel.m_fSpinAngle);
     S00e384e0_hkQuaternionE38 kSteer;
-    kSteer.SetProduct(pkChassis->m_rotation, kWheel.m_steeringOrientation);
-    kRotOut.SetProduct(kSteer, kSpin);
+    kSteer.SetProduct(chassis->m_rotation, kWheel.m_steeringOrientation);
+    rotOut.SetProduct(kSteer, kSpin);
 
     float fLen = kWheel.m_fContactFriction;
     float fSuspension = (fLen < DAT_01012060) ? 0.0f : fLen;
 
-    setTransformedPosE38(kPosOut, pkChassis->m_kMotionTransform, pkData->m_kWheelParams[iWheel].m_vContactPosition);
+    setTransformedPosE38(posOut, chassis->m_kMotionTransform, suspension->m_kWheelParams[wheelNo].m_vContactPosition);
     __m128 s = _mm_load_ss(&fSuspension);
-    kPosOut.m_vComponents = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(s, s, 0), kWheel.m_suspensionDirection.m_vComponents),
-                                       kPosOut.m_vComponents);
+    posOut.m_vComponents = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(s, s, 0), kWheel.m_suspensionDirection.m_vComponents),
+                                       posOut.m_vComponents);
 }

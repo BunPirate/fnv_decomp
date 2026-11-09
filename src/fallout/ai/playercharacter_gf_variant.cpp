@@ -57,7 +57,7 @@ struct __declspec(align(16)) BigObj
     unsigned int shapeKeysA[8];
     int unk48, unk4c;
     unsigned int shapeKeysB[8];
-    void __thiscall ProcessAndReturnValue_00621c40();
+    void __thiscall hkpRootCdPoint_ctor();
 };
 struct PointSubtract
 {
@@ -66,9 +66,9 @@ struct PointSubtract
 struct Field21c
 {
     int __thiscall CameraCaster_GetWorld();
-    void __thiscall CameraCaster_Add(int x);
-    unsigned char __thiscall CameraCaster_Pick(NiPoint3* a, NiPoint3* b, BigObj* c);
-    unsigned char __thiscall CameraCaster_KeepOutOfCharacter(void* o, NiPoint3* p, float a, float b);
+    void __thiscall CameraCaster_Add(int apWorld);
+    unsigned char __thiscall CameraCaster_Pick(NiPoint3* arFrom, NiPoint3* arTo, BigObj* arPoint);
+    unsigned char __thiscall CameraCaster_KeepOutOfCharacter(void* apController, NiPoint3* arPoint, float afRadius, float afScaleOffset);
 };
 struct Obj621ad0
 {
@@ -497,34 +497,37 @@ struct ThisShell
     unsigned char unk64b;
     bool bThirdPerson;
     unsigned char byte64d;
-    void __thiscall PlayerCharacter_UpdateChaseCamera(NiPoint3* p1, NiPoint3* p2, unsigned char flag);
+    void __thiscall PlayerCharacter_UpdateChaseCamera(NiPoint3* apCameraPos, NiPoint3* apTargetPos, unsigned char abSnapXY);
     void __thiscall FUN_008c4640();
     void* __thiscall FUN_009306d0();
 };
 // @fnv 0x0094a0c0
 // src: XBOX_PDB 0x0094a0c0
-void ThisShell::PlayerCharacter_UpdateChaseCamera(NiPoint3* p1, NiPoint3* p2, unsigned char flag)
+// pdb: PlayerCharacter::UpdateChaseCamera | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apCameraPos, apTargetPos, abSnapXY
+// pdb locals: cameraLocation, dir, fMaxDistance, bfadeOut, newCameraPos, toPos, fzoomingMult, fhitDistance, czoomingMode, fchaseSpeed, from, result, to, pw, fscaleOffset, pcharController, cameraDelta, testDelta
+void ThisShell::PlayerCharacter_UpdateChaseCamera(NiPoint3* apCameraPos, NiPoint3* apTargetPos, unsigned char abSnapXY)
 {
     NiPoint3 vec;
     signed char state = (signed char)((unsigned char)bThirdPerson - byte64a);
     float f = 1.0f;
     if (state != 0)
     {
-        if (flag || DAT_011e07c3)
+        if (abSnapXY || DAT_011e07c3)
             state = 0;
         else
             f = *DAT_011ccfd8.Setting_Float_00403e20() + ((DAT_011e0b5c - *DAT_011cda94.Setting_Float_00403e20()) /
                                                 (*DAT_011cde14.Setting_Float_00403e20() - *DAT_011cda94.Setting_Float_00403e20())) *
                                                    *DAT_011cdd60.Setting_Float_00403e20();
     }
-    if (flag || DAT_011e07c3)
+    if (abSnapXY || DAT_011e07c3)
     {
-        vec = *p1;
+        vec = *apCameraPos;
         DAT_011e0808 = vec;
     }
     else
     {
-        vec = *p1;
+        vec = *apCameraPos;
         if (DAT_011e07b9)
         {
             ((StoreShell*)&DAT_011e0808)
@@ -534,15 +537,15 @@ void ThisShell::PlayerCharacter_UpdateChaseCamera(NiPoint3* p1, NiPoint3* p2, un
         else
             DAT_011e0808 = vec;
     }
-    NiPoint3 v60 = vec - *p2;
+    NiPoint3 v60 = vec - *apTargetPos;
     float len = ((PtLen*)&v60)->FUN_00457910();
     DAT_011e07c2 = 0;
     if (field21c)
     {
-        NiPoint3 a70 = *p2;
+        NiPoint3 a70 = *apTargetPos;
         NiPoint3 a7c = vec;
         BigObj big;
-        big.ProcessAndReturnValue_00621c40();
+        big.hkpRootCdPoint_ctor();
         if (field21c->CameraCaster_GetWorld() == 0)
         {
             int handle = FUN_009306d0() ? ((Obj621ad0*)FUN_009306d0())->bhkCharacterController_GetWorld() : 0;
@@ -583,7 +586,7 @@ void ThisShell::PlayerCharacter_UpdateChaseCamera(NiPoint3* p1, NiPoint3* p2, un
             state = 0;
         }
     }
-    else if (flag || DAT_011e07c3)
+    else if (abSnapXY || DAT_011e07c3)
     {
         DAT_011e0768 = len;
         DAT_011e07c3 = 0;
@@ -601,7 +604,7 @@ void ThisShell::PlayerCharacter_UpdateChaseCamera(NiPoint3* p1, NiPoint3* p2, un
         if (DAT_011e0768 > lim)
             DAT_011e0768 = lim;
     }
-    NiPoint3 v128 = *p2 + v60 * DAT_011e0768;
+    NiPoint3 v128 = *apTargetPos + v60 * DAT_011e0768;
     bool ok = false;
     if (state != 0 || DAT_011f2250.FUN_0044ddc0() == 4)
     {
@@ -645,14 +648,14 @@ void ThisShell::PlayerCharacter_UpdateChaseCamera(NiPoint3* p1, NiPoint3* p2, un
         }
         DAT_011a3b32 = 0;
     }
-    NiPoint3 v14c = *p2 + v60 * DAT_011e0768;
+    NiPoint3 v14c = *apTargetPos + v60 * DAT_011e0768;
     if (state != 0)
     {
-        NiPoint3 v158 = *p1 - v14c;
+        NiPoint3 v158 = *apCameraPos - v14c;
         DAT_011e07dc = v158.Length() / DAT_011f6394.FUN_0084d030();
         if (state == -1)
         {
-            NiPoint3 v16c = *p1 - *(NiPoint3*)((ListShell*)DAT_011e07d0)->NiAVObject_GetWorldTranslate();
+            NiPoint3 v16c = *apCameraPos - *(NiPoint3*)((ListShell*)DAT_011e07d0)->NiAVObject_GetWorldTranslate();
             if (v158.Length() >= v16c.Length())
             {
                 DAT_011e07dc = 0.0f;
@@ -660,5 +663,5 @@ void ThisShell::PlayerCharacter_UpdateChaseCamera(NiPoint3* p1, NiPoint3* p2, un
             }
         }
     }
-    *p1 = v14c;
+    *apCameraPos = v14c;
 }

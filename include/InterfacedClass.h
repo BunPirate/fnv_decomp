@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class InterfacedClass, size 0x4, 0 members
 class InterfacedClass
 {
 public:

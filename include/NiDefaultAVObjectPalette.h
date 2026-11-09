@@ -8,6 +8,7 @@ class NiFixedString;
 class NiStream;
 class CloningProcess;
 
+// pdb: class NiDefaultAVObjectPalette, size 0x1c, bases: NiAVObjectPalette, 2 members
 class NiDefaultAVObjectPalette : public NiAVObjectPalette
 {
 public:
@@ -18,7 +19,7 @@ public:
     virtual void vf37(NiAVObject*);
     virtual NiAVObject* vf38();
 
-    void BuildPalette();
+    void ResetAndFillFromScenegraph();
     void ProcessCloneBase(CloningProcess&);
 
     union

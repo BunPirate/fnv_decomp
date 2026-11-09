@@ -3,6 +3,7 @@
 #include "NiPointLight.h"
 #include "NiPoint3.h"
 
+// pdb: class NiSpotLight, size 0x150 (here 0x114), bases: NiPointLight, 4 members
 class NiSpotLight : public NiPointLight
 {
   public:

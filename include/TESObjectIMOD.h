@@ -33,12 +33,12 @@ public:
     virtual ~TESObjectIMOD();
     bool Load(TESFile*);
     virtual void InitItem();
-    virtual void LoadGameLegacy(unsigned int changedFlags, unsigned int currentFlags);
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
+    virtual void LoadGameLegacy(unsigned int aiFlags, unsigned int aiCurrentFlags);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void* Destroy(unsigned int flags);
     unsigned short GetSaveSizeLegacy(unsigned int flags);
     virtual void SaveGameLegacy(unsigned int flags);
-    virtual void SaveGame(BGSSaveFormBuffer* buffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     void SaveRecord();
     virtual void CopyFrom(const TESForm* form);
     virtual bool Compare(TESForm* form);

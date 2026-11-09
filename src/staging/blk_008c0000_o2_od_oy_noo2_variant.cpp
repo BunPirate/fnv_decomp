@@ -14,7 +14,7 @@
 #include "../../include/bhkCollisionObject.h"
 #include "../../include/bhkRigidBody.h"
 
-hkVector4* __cdecl NI2HK(hkVector4* destination, const NiPoint3* source);
+hkVector4* __cdecl NI2HK(hkVector4* arhkTran, const NiPoint3* arNiTran);
 class FUN_008c5d90_Class
 {
   public:
@@ -107,7 +107,7 @@ class Sink_8cc740
     virtual void Attach(Listener_8cc740* pkListener);
     virtual void s044();
     virtual void SetActive(int iActive);
-    void TryCast(void* pkObject);
+    void TryCast(void* apSource);
 };
 
 class Effect_8cc740
@@ -396,7 +396,7 @@ class Controller_8cc740
 
 struct Grid_8cc740
 {
-    unsigned int TES_GetLandMaterialType(const NiPoint3& kPos);
+    unsigned int TES_GetLandMaterialType(const NiPoint3& aCoord);
 };
 
 void __cdecl FUN_00458620(NiPoint3* pkOut, const Rotation_8cc740* pkRot);
@@ -547,14 +547,17 @@ class Owner_8cc740
     Emitter30_8cc740* DialoguePackage_GetActorStartedConversation();
     Emitter18_8cc740* FUN_004f9bf0();
     void* BGSSaveFormBuffer_GetForm();
-    void ArrowProjectile_Bounce(const NiPoint3& kPos, const NiPoint3& kWorldPosition);
+    void ArrowProjectile_Bounce(const NiPoint3& aContactPoint, const NiPoint3& aContactNormal);
     void EffectSetting_SetAreaSound(int iState);
-    void ArrowProjectile_CollideTerrain(const NiPoint3& kPos, const NiPoint3& kWorldPosition);
+    void ArrowProjectile_CollideTerrain(const NiPoint3& aContactPoint, const NiPoint3& aContactNormal);
 };
 
 // @fnv 0x008cc740
 // src: XBOX_PDB 0x008cc740
-void Owner_8cc740::ArrowProjectile_CollideTerrain(const NiPoint3& kPos, const NiPoint3& kWorldPosition)
+// pdb: ArrowProjectile::CollideTerrain | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aContactPoint, aContactNormal
+// pdb locals: move, emat, velocity
+void Owner_8cc740::ArrowProjectile_CollideTerrain(const NiPoint3& aContactPoint, const NiPoint3& aContactNormal)
 {
     m_pUserData = new ProjectionData_8cc740;
     NiPoint3 kIntersectionOffset = m_kOffset;
@@ -563,8 +566,8 @@ void Owner_8cc740::ArrowProjectile_CollideTerrain(const NiPoint3& kPos, const Ni
     m_pUserData->m_iFadeIndex = 2;
     m_pUserData->m_iFlags = 0;
     m_pUserData->m_iArrayLength = 0;
-    m_pUserData->m_kLightVector = kWorldPosition;
-    m_pUserData->m_kStartPoint = kPos + kIntersectionOffset;
+    m_pUserData->m_kLightVector = aContactNormal;
+    m_pUserData->m_kStartPoint = aContactPoint + kIntersectionOffset;
     m_pUserData->m_kRotationMatrix = DAT_011a9448;
     m_pUserData->m_kValue = DAT_011f426c;
     if (FUN_009306d0())
@@ -578,7 +581,7 @@ void Owner_8cc740::ArrowProjectile_CollideTerrain(const NiPoint3& kPos, const Ni
         else
             FUN_00458620(&m_pUserData->m_kValue, &kRot);
     }
-    unsigned int uiType = DAT_011dea10->TES_GetLandMaterialType(kPos);
+    unsigned int uiType = DAT_011dea10->TES_GetLandMaterialType(aContactPoint);
     switch (uiType)
     {
     case 0:
@@ -588,13 +591,13 @@ void Owner_8cc740::ArrowProjectile_CollideTerrain(const NiPoint3& kPos, const Ni
     case 11:
     case 13:
     case 15:
-        ArrowProjectile_Bounce(kPos, kWorldPosition);
+        ArrowProjectile_Bounce(aContactPoint, aContactNormal);
         break;
     }
     m_iActive = 1;
-    ArrowProjectile_PlayArrowCollisionSound(m_pUserData->m_kValue.Length(), kPos, 0, uiType);
+    ArrowProjectile_PlayArrowCollisionSound(m_pUserData->m_kValue.Length(), aContactPoint, 0, uiType);
     if (m_pkController && m_pkController->GetEffect())
-        m_pkController->GetEffect()->FUN_008d0600(kPos, 0);
+        m_pkController->GetEffect()->FUN_008d0600(aContactPoint, 0);
     if (m_pkController)
     {
         if (DialoguePackage_GetCurrentDialogItem())
@@ -780,19 +783,22 @@ struct xActor
     int m_90, m_94;
     float m_98;
     xHolder* FUN_009306d0();
-    void ArrowProjectile_Bounce(const NiPoint3& akA, const NiPoint3& akB);
+    void ArrowProjectile_Bounce(const NiPoint3& aContactPoint, const NiPoint3& aContactNormal);
 };
 
 // @fnv 0x008ccce0
 // src: XBOX_PDB 0x008ccce0
-void xActor::ArrowProjectile_Bounce(const NiPoint3& akA, const NiPoint3& akB)
+// pdb: ArrowProjectile::Bounce | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aContactPoint, aContactNormal
+// pdb locals: velocity
+void xActor::ArrowProjectile_Bounce(const NiPoint3& aContactPoint, const NiPoint3& aContactNormal)
 {
     if (m_88)
     {
-        if (akB != NiPoint3::ZERO)
-            m_88->m_10 = akB;
-        if (akA != NiPoint3::ZERO)
-            m_88->m_iWordAt04 = akA;
+        if (aContactNormal != NiPoint3::ZERO)
+            m_88->m_10 = aContactNormal;
+        if (aContactPoint != NiPoint3::ZERO)
+            m_88->m_iWordAt04 = aContactPoint;
         m_88->m_iWordAt00 = 3;
         m_88->m_28 = 0;
         return;
@@ -801,8 +807,8 @@ void xActor::ArrowProjectile_Bounce(const NiPoint3& akA, const NiPoint3& akB)
     m_88->m_iWordAt00 = 3;
     m_88->m_2c = 0;
     m_88->m_28 = 0;
-    m_88->m_10 = akB;
-    m_88->m_iWordAt04 = akA;
+    m_88->m_10 = aContactNormal;
+    m_88->m_iWordAt04 = aContactPoint;
     m_88->m_30 = xg_11a9448;
     m_88->m_1c = NiPoint3::ZERO;
     if (FUN_009306d0())
@@ -980,12 +986,15 @@ struct xActor
     int m_90, m_94;
     float m_98;
     xHolder* FUN_009306d0();
-    void ArrowProjectile_Simulate(int aiValue);
+    void ArrowProjectile_Simulate(int apCollidee);
 };
 
 // @fnv 0x008ccfb0
 // src: XBOX_PDB 0x008ccfb0
-void xActor::ArrowProjectile_Simulate(int aiValue)
+// pdb: ArrowProjectile::Simulate | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: apCollidee
+// pdb locals: velocity
+void xActor::ArrowProjectile_Simulate(int apCollidee)
 {
     if (m_88)
         m_88->m_iWordAt00 = 4;
@@ -994,7 +1003,7 @@ void xActor::ArrowProjectile_Simulate(int aiValue)
         m_88 = new xData;
         m_88->m_iWordAt00 = 4;
         m_88->m_2c = 0;
-        m_88->m_28 = aiValue;
+        m_88->m_28 = apCollidee;
         m_88->m_10 = NiPoint3::ZERO;
         m_88->m_iWordAt04 = NiPoint3::ZERO;
         m_88->m_30 = xg_11a9448;
@@ -1020,7 +1029,7 @@ void xActor::ArrowProjectile_Simulate(int aiValue)
 class SpellHandle8CD
 {
   public:
-    SpellHandle8CD(int iType, int iValue, int iFlags);
+    SpellHandle8CD(int aeLayer, int aiGroup, int aePart);
     void SetFlags(int iFlags);
     int m_iHandle;
 };
@@ -1090,7 +1099,7 @@ class Caster8CD
     virtual void vc0e8();
     virtual void vc0ec();
     virtual void GetTransform(hkVector4& kOut);
-    void SetHandle(SpellHandle8CD kHandle);
+    void SetHandle(SpellHandle8CD aiFilter);
 };
 
 class Listener8CD
@@ -1123,9 +1132,9 @@ class Target8CD
     void* m_pvTarget;
 };
 
-void* __cdecl FindFirstCollisionObject(void* pvTarget);
-void __cdecl bhkWorld_SetMotion(void* pvSource, int a, int b, int c, int d);
-void __cdecl TESArrowTargetListener_AddArrowTarget(hkVector4* pkTransform, void* pvTarget);
+void* __cdecl FindFirstCollisionObject(void* ap3D);
+void __cdecl bhkWorld_SetMotion(void* apObject, int aeType, int abRecurse, int abForce, int abAllowActivate);
+void __cdecl TESArrowTargetListener_AddArrowTarget(hkVector4* aArrowCenterOfMassWorld, void* apTargetObject);
 void __cdecl Warning_005b5e40(const char* pcMessage);
 
 // 0x008cd520 binds ArrowProjectile::HandleType1; its collision pointer is at +0x88, unlike Projectile.
@@ -1336,14 +1345,17 @@ class ArrowImpactHandler
     unsigned int unk84;
     Target8CD* m_pkTarget;
 
-    bool ArrowProjectile_ProcessCollisionReference(Caster8CD* pkCaster);
+    bool ArrowProjectile_ProcessCollisionReference(Caster8CD* apArrowRB);
 };
 
 // Preserve the original stack-cookie coverage after replacing the local vector representation.
 #pragma strict_gs_check(push, on)
 // @fnv 0x008cd520
 // src: XBOX_PDB 0x008cd520
-bool ArrowImpactHandler::ArrowProjectile_ProcessCollisionReference(Caster8CD* pkCaster)
+// pdb: ArrowProjectile::ProcessCollisionReference | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: apArrowRB
+// pdb locals: plist, pcol, filter, ptargetRB, centerOfMass
+bool ArrowImpactHandler::ArrowProjectile_ProcessCollisionReference(Caster8CD* apArrowRB)
 {
     Prepare();
     if (m_pkTarget->m_iActive)
@@ -1356,16 +1368,16 @@ bool ArrowImpactHandler::ArrowProjectile_ProcessCollisionReference(Caster8CD* pk
         SpellHandle8CD kHandle(6, pkItem->bhkWorldObject_GetCollisionFilter().CFilter_GetGroup(), 0);
         if (pkItem->bhkWorldObject_GetCollisionFilter().CFilter_GetLayer() != 4)
             kHandle.SetFlags(0xf);
-        pkCaster->SetHandle(kHandle);
+        apArrowRB->SetHandle(kHandle);
         Listener8CD* pkListener = g_kListeners8CD.Get();
         if (pkListener)
             pkListener->Add((void*)this);
-        if (pkCaster)
+        if (apArrowRB)
         {
             if (pkItem->GetBodyMass() > 0.0)
             {
                 hkVector4 kTransform;
-                pkCaster->GetTransform(kTransform);
+                apArrowRB->GetTransform(kTransform);
                 TESArrowTargetListener_AddArrowTarget(&kTransform, m_pkTarget->m_pvTarget);
             }
         }
@@ -1444,21 +1456,24 @@ struct TargetD0020
     bool GetByteAtOffsetC3();
     float NiAVObject_GetWorldScale();
     void SetByteAtOffsetC3(bool);
-    void ArrowProjectile_ApplyCollisionForce(NiPoint3 position, NiPoint3 direction, ObjectD0020* object);
+    void ArrowProjectile_ApplyCollisionForce(NiPoint3 aContactPoint, NiPoint3 aDirection, ObjectD0020* apTargetBody);
 };
 // Preserve the original stack-cookie coverage after replacing the local vector representation.
 #pragma strict_gs_check(push, on)
 // @fnv 0x008d0020
 // src: XBOX_PDB 0x008d0020
-void TargetD0020::ArrowProjectile_ApplyCollisionForce(NiPoint3 position, NiPoint3 direction, ObjectD0020* object)
+// pdb: ArrowProjectile::ApplyCollisionForce | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: aContactPoint, aDirection, apTargetBody
+// pdb locals: pw, colfilter, impulse, fmass, location, fforce
+void TargetD0020::ArrowProjectile_ApplyCollisionForce(NiPoint3 aContactPoint, NiPoint3 aDirection, ObjectD0020* apTargetBody)
 {
-    if (!object || GetByteAtOffsetC3())
+    if (!apTargetBody || GetByteAtOffsetC3())
         return;
-    BodyD0020* body = object->GetBody();
+    BodyD0020* body = apTargetBody->GetBody();
     if (body)
     {
         float strength = NiAVObject_GetWorldScale();
-        bhkFilter type = object->bhkWorldObject_GetCollisionFilter();
+        bhkFilter type = apTargetBody->bhkWorldObject_GetCollisionFilter();
         switch (type.CFilter_GetLayer())
         {
         case 14:
@@ -1474,19 +1489,19 @@ void TargetD0020::ArrowProjectile_ApplyCollisionForce(NiPoint3 position, NiPoint
             strength *= *DAT_011ce798.Setting_Float_00403e20();
             break;
         }
-        float weight = object->bhkRigidBody_GetMass();
+        float weight = apTargetBody->bhkRigidBody_GetMass();
         if (weight < *DAT_011cf114.Setting_Float_00403e20())
             strength *= weight / *DAT_011cf114.Setting_Float_00403e20();
         strength *= *DAT_011ce224.Setting_Float_00403e20();
         hkVector4 dir;
-        NI2HK(&dir, &direction);
+        NI2HK(&dir, &aDirection);
         hkVector4 pos;
-        NI2HK(&pos, &position);
+        NI2HK(&pos, &aContactPoint);
         dir.normalize3_0062aea0();
         hkSimdReal scale(strength);
         dir.hkVector4_mul4(scale);
         body->FUN_00483710();
-        object->Bipedanim_GetReferenceFlagsOrZero(dir, pos)->ApplyVirtualCall();
+        apTargetBody->Bipedanim_GetReferenceFlagsOrZero(dir, pos)->ApplyVirtualCall();
         body->FUN_00483710();
     }
     SetByteAtOffsetC3(true);
@@ -1574,6 +1589,9 @@ struct Holder00807080
 };
 // @fnv 0x008d1180
 // src: GUESS 0x008d1180 (confidence: low)
+// pdb: bhkCharacterListenerArrow::processConstraintsCallback | bhkCharacterListenerArrow.obj | debug, vtable slot, medium
+// pdb params: arManifold, arInput
+// pdb locals: iorigConstraints, i, elayer, pbody, ifilter, rsurface, rpnt, ptarget
 void Holder00807080::ProcessEntries_008d1180(FUN_00807770_Class* nodes, Data08* data)
 {
     int count = data->count;

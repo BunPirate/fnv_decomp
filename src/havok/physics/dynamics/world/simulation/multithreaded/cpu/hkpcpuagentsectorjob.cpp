@@ -207,7 +207,7 @@ struct Physics {
     int fieldc0, fieldc4, fieldc8, fieldcc, fieldd0, fieldd4, fieldd8, fielddc;
     int fielde0, fielde4, fielde8, fieldec, fieldf0, fieldf4, fieldf8, fieldfc;
     int toiQueue;
-    void AddToiEvent(Output *, Entry *, int *);
+    void hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(Output *, Entry *, int *);
 };
 struct Globals {
     World *world;
@@ -257,15 +257,18 @@ __forceinline void storeResults(Statistics *s, Owner &owner) {
 }
 // @fnv 0x00d93380
 // src: COMMUNITY 0x00d93380
-int hkCpuAgentSectorJob(Globals *globals, Queue *queue, Job *job) {
+// pdb: hkCpuAgentSectorJob | hkpCpuAgentSectorJob.obj | retail, upstream name already matches, high
+// pdb params: tl, jobQueue, nextJobOut
+// pdb locals: inputCopy, processOutput, constraintOwner, island, nextEntry, numSectors, assertBuf, ostr
+int hkCpuAgentSectorJob(Globals *tl, Queue *jobQueue, Job *nextJobOut) {
     union WorkSlot { Island *savedIsland; int i; }; WorkSlot work;
     // The job initializes this context in place without constructing its time vector.
     __declspec(align(16)) void *contextStorage[sizeof(Context) / sizeof(void *)];
     Context &context = *(Context *)contextStorage;
-    (Input &)context = (Input &)globals->input;
+    (Input &)context = (Input &)tl->input;
     context.allocation = 0;
-    context.FUN_00cfa7d0(&globals->input);
-    memcpy(&context.time, &job->time, sizeof(context.time));
+    context.FUN_00cfa7d0(&tl->input);
+    memcpy(&context.time, &nextJobOut->time, sizeof(context.time));
     Owner owner;
     owner.references = 1;
     owner.dispatch = &DAT_010d3df8;
@@ -276,12 +279,12 @@ int hkCpuAgentSectorJob(Globals *globals, Queue *queue, Job *job) {
     owner.maximum = 0; owner.added = 0; owner.removed = 0; owner.changed = 0;
     owner.pending = 0; owner.critical = 0;
     output.owner = &owner;
-    if (job->type == 13) {
+    if (nextJobOut->type == 13) {
         {
-        Island *island = job->island; work.savedIsland = island;
+        Island *island = nextJobOut->island; work.savedIsland = island;
         profile(str_010cc54c, DAT_0126835c);
-        int num = job->count;
-        int index = job->sector;
+        int num = nextJobOut->count;
+        int index = nextJobOut->sector;
         int remaining = num - 1;
         Entry *current = island->sectors[index];
         char *end = (char *)current + (index + 1 == island->sectorCount ? island->lastSize : 512);
@@ -291,7 +294,7 @@ int hkCpuAgentSectorJob(Globals *globals, Queue *queue, Job *job) {
         else if ((char *)prefetched >= end) prefetched = 0;
         do {
             void *bodyA = current->bodyA;
-            Physics *physics = globals->physics;
+            Physics *physics = tl->physics;
             void *bodyB = current->bodyB;
             context.quality = qualityAt(context, current->quality);
             context.field14 = ((Quality *)context.quality)->createPredictive;
@@ -299,7 +302,7 @@ int hkCpuAgentSectorJob(Globals *globals, Queue *queue, Job *job) {
             output.end = output.contacts; output.count = 0;
             hkAgentNnMachine_ProcessAgent(current, &context, &output, current->manager);
             if (output.end != output.contacts) current->manager->process(bodyA, bodyB, &context, &output);
-            if (output.toi.time != 3.402820018375656e38) physics->AddToiEvent(&output, current, &physics->toiQueue);
+            if (output.toi.time != 3.402820018375656e38) physics->hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(&output, current, &physics->toiQueue);
             owner.flush();
             current = next; next = prefetched;
             if (DAT_01269200 == 1) break;
@@ -319,24 +322,24 @@ int hkCpuAgentSectorJob(Globals *globals, Queue *queue, Job *job) {
                 }
             }
         } while (current);
-        if (!job->batch) {
+        if (!nextJobOut->batch) {
             if ((owner.maximum | owner.added | owner.removed | owner.changed) || owner.commands.size) {
                 island = work.savedIsland;
-                globals->world->EnterLock(island);
+                tl->world->EnterLock(island);
                 island->maximum = island->maximum > owner.maximum ? island->maximum : owner.maximum;
                 island->added += owner.added; island->removed += owner.removed; island->changed += owner.changed;
-                if (owner.commands.size) hkPhysicsCommandMachineProcess(globals->world, (char *)&owner.commands + owner.commands.offset, owner.commands.size);
-                globals->world->hkpWorld_unlockIslandForConstraintUpdate(island);
+                if (owner.commands.size) hkPhysicsCommandMachineProcess(tl->world, (char *)&owner.commands + owner.commands.offset, owner.commands.size);
+                tl->world->hkpWorld_unlockIslandForConstraintUpdate(island);
             }
-        } else storeResults(job->batch->results[job->index], owner);
+        } else storeResults(nextJobOut->batch->results[nextJobOut->index], owner);
         }
         profile(str_010d3e28, DAT_0126835c);
     } else {
         profile(str_010cd440, DAT_0126835c);
-        int start = job->stride * (unsigned short)job->index;
-        for (work.i = 0; work.i < job->count; ++work.i) {
-            Entry *entry = job->entries[start + work.i];
-            if (job->useContinuousQuality) {
+        int start = nextJobOut->stride * (unsigned short)nextJobOut->index;
+        for (work.i = 0; work.i < nextJobOut->count; ++work.i) {
+            Entry *entry = nextJobOut->entries[start + work.i];
+            if (nextJobOut->useContinuousQuality) {
                 context.quality = qualityAt(context, 7);
                 context.field14 = qualityAt(context, entry->quality)->createPredictive;
             } else {
@@ -347,14 +350,14 @@ int hkCpuAgentSectorJob(Globals *globals, Queue *queue, Job *job) {
             output.end = output.contacts; output.count = 0;
             hkAgentNnMachine_ProcessAgent(entry, &context, &output, entry->manager);
             if (output.end != output.contacts) entry->manager->process(entry->bodyA, entry->bodyB, &context, &output);
-            if (output.toi.time != 3.402820018375656e38) globals->physics->AddToiEvent(&output, entry, &globals->physics->toiQueue);
+            if (output.toi.time != 3.402820018375656e38) tl->physics->hkpMultiThreadedSimulation_addToiEventWithCriticalSectionLock(&output, entry, &tl->physics->toiQueue);
             owner.flush();
             if (DAT_01269200 == 1) break;
         }
-        storeResults(job->batch->results[job->index], owner);
+        storeResults(nextJobOut->batch->results[nextJobOut->index], owner);
         profile(str_010d3e14, DAT_0126835c);
     }
-    int result = queue->ProcessCallback(job, job, 0);
+    int result = jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
     owner.dispatch = &DAT_0102e388;
     if (context.allocation) { Memory *m = hkMemoryRouter_getInstance(); Allocator *a = m->allocator; a->release(context.allocation, 512); }
     return result;

@@ -31,6 +31,9 @@ struct ColorContainer
 // Saves the four colors and the extra vector to the stream, writing the vector as 12 bytes through the buffer's write function.
 // @fnv 0x00eae630
 // src: XBOX_PDB 0x00eae630
+// pdb: NiBox::SaveBinary | NiBox.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: i
 void ColorContainer::NiBox_SaveBinary(NiStream* stream)
 {
     firstColor.SaveBinary(*stream);
@@ -62,6 +65,9 @@ struct FUN_00eae5d0_cls : ColorContainer
 };
 
 // @fnv 0x00eae5d0
+// pdb: NiBox::LoadBinary | NiBox.obj | retail, object-file run extension, low
+// pdb params: stream
+// pdb locals: i
 void FUN_00eae5d0_cls::WriteToStream(NiStream* stream)
 {
     firstColor.LoadBinary(*stream);

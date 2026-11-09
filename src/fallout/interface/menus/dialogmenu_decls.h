@@ -463,7 +463,7 @@ public:
     virtual void HandleSelection(int, Tile*);
     virtual void UpdateDialog();
     virtual int GetClass();
-    virtual bool HandleMenuInput(int button, float value);
+    virtual bool HandleMenuInput(int aiButton, float afValue);
 
     DialogState m_eDialogState;
     GoodbyeState m_eGoodbyeState;
@@ -493,16 +493,16 @@ public:
 
     void SetActive(bool abActive);
     void RefreshTopics();
-    void SetCurrentTopic(MenuTopic* topic);
-    DialogState BeginDialogueResponse(bool);
-    void LoadTopicsList();
+    void DialogMenu_SetGoodbyeState(MenuTopic* apTopic);
+    DialogState DialogMenu_LoadNextScreen(bool);
+    void DialogMenu_LoadTopicsList();
     bool AreTilesInitialized();
     bool DialogMenu_IsWellFormedMenu();
     TESSound* GetCastSound();
 
     static int ms_iDialogMenuValue;
-    static void Close();
-    static Tile* Create(MobileObjectView*, TESTopic*, MobileObjectView*);
+    static void DialogMenu_Close();
+    static Tile* DialogMenu_Create(MobileObjectView*, TESTopic*, MobileObjectView*);
     static void* Create(void*, void*, void*);
 };
 
@@ -515,7 +515,7 @@ class DialogMenuInterfaceCalls
     };
     static bool GetSelectedTargetIndex(enumMenus menu);
     static bool IsConsoleActive();
-    static void SetHUDVisible(bool);
+    static void Interface_SetGunScopeVisible(bool);
 };
 
 FNV_STATIC_ASSERT(sizeof(Menu) == 0x28);

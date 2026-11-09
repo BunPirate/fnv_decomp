@@ -6,6 +6,7 @@
 class NiQuadWords;
 class StrArr;
 
+// pdb: class NiBlendQuaternionInterpolator, size 0x40, bases: NiBlendInterpolator, 1 members
 class NiBlendQuaternionInterpolator : public NiBlendInterpolator
 {
 public:
@@ -22,7 +23,7 @@ public:
     void AppendInterpolatorStrings(StrArr* strings);
     unsigned char CheckWithOffset(void* object);
     bool UpdateSingle(float time, void* target, NiQuadWords* value);
-    bool BlendValues(float time, void* target, NiQuaternion& value);
+    bool BlendValues(float time, void* pkInterpTarget, NiQuaternion& value);
 
     NiQuaternion m_kQuaternionValue;
 };

@@ -45,14 +45,14 @@ struct LightRecordAccess : TESObjectLIGH
     LightSourceData* GetLightData();
     unsigned short GetSize(unsigned int flags);
     void MarkChanged(unsigned int flags);
-    void MarkUnchanged(unsigned int first, unsigned int second);
-    void SaveChanged(unsigned int flags);
-    void LoadLightGame(BGSLoadFormBuffer* buffer);
+    void MarkUnchanged(unsigned int aiFlags, unsigned int aiCurrentFlags);
+    void SaveChanged(unsigned int apSaveGameBuffer);
+    void LoadLightGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void* DestroyIfFlagged(unsigned int flags);
     void CopyFromLight(TESForm* form);
     void SaveLight();
-    bool LoadLight(TESFile* file);
-    bool CompareLight(TESForm* form);
+    bool LoadLight(TESFile* apFile);
+    bool CompareLight(TESForm* apCompare);
     void SetLightFlag(bool value);
     TESSound* GetSound();
     void SetFadeAmount(float value);
@@ -81,11 +81,14 @@ struct FormRecordAccess : TESForm
 
 // Returns the reference's model node, or a new NiSortAdjustNode when the model name is empty or the node has no children.
 // @fnv 0x0050d4c0
-NiAVObject* TESObjectLIGH::Get3DObject(TESObjectREFR* reference)
+// pdb: TESObjectLIGH::LoadGraphics | TESLight.obj | retail, vtable slot, high
+// pdb params: apRef
+// pdb locals: pData3D, pnode
+NiAVObject* TESObjectLIGH::Get3DObject(TESObjectREFR* apRef)
 {
     NiAVObject* result = 0;
     if (BSStringLength(GetModelFilePath()))
-        result = TESBoundObject::Get3DObject(reference);
+        result = TESBoundObject::Get3DObject(apRef);
     else
         result = new NiSortAdjustNode(0);
 
@@ -100,15 +103,18 @@ NiAVObject* TESObjectLIGH::Get3DObject(TESObjectREFR* reference)
 
 // Recursively searches a NiNode's children for the first NiAVObject matching DAT_011f4a28 and returns it as a NiLight, or null.
 // @fnv 0x0050d6d0
-NiLight* FindLightInNode(NiNode* node)
+// pdb: FindLight | TESLight.obj | retail, object-file gap fill, high
+// pdb params: apNode
+// pdb locals: plight, n, spchild
+NiLight* FindLightInNode(NiNode* apNode)
 {
     NiLight* result = 0;
-    if (!node)
+    if (!apNode)
         return result;
 
-    for (unsigned int index = 0; index < node->GetNumChildren(); ++index)
+    for (unsigned int index = 0; index < apNode->GetNumChildren(); ++index)
     {
-        NiPointer<NiAVObject> child(node->GetAt(index));
+        NiPointer<NiAVObject> child(apNode->GetAt(index));
         if (child)
         {
             if (static_cast<NiAVObject*>(child)->IsSceneNode())
@@ -127,21 +133,26 @@ NiLight* FindLightInNode(NiNode* node)
 }
 
 // @fnv 0x00489100
-void TESFullName::SetFullName(const char* name)
+// pdb: TESFullName::SetFullName | EffectSetting.obj | debug, upstream name already matches, high
+// pdb params: apFullName
+void TESFullName::SetFullName(const char* apFullName)
 {
-    m_kName.Set(name, 0);
+    m_kName.Set(apFullName, 0);
 }
 
 // @fnv 0x0050c990
+// pdb: TESObjectLIGH::InitializeData | TESLight.obj | retail, vtable slot, high
 void TESObjectLIGH::ResetFormData()
 {
     FUN_0050c9e0(0);
     memset(&data, 0, 0x18);
-    fFadeAmount = 1.0f;
+    fFade = 1.0f;
     data.fFOV = DAT_010249d8;
 }
 
 // @fnv 0x0050ca00
+// pdb: TESObjectLIGH::InitItem | TESLight.obj | retail, string-set bridge, high
+// pdb locals: tempint
 void TESObjectLIGH::InitItem()
 {
     if (IsFormInitialized())
@@ -151,12 +162,12 @@ void TESObjectLIGH::InitItem()
     BGSDestructibleObjectForm::InitItem(static_cast<TESForm*>(this));
     TESModelTextureSwap::InitItem(static_cast<TESForm*>(this));
 
-    if (m_pGameSound)
+    if (m_pSound)
     {
-        unsigned int formID = reinterpret_cast<unsigned int>(m_pGameSound);
+        unsigned int formID = reinterpret_cast<unsigned int>(m_pSound);
         TESForm::RemapFormIDForFile(formID, GetFile(-1));
-        m_pGameSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if (!m_pGameSound)
+        m_pSound = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if (!m_pSound)
             Warning(DAT_01029064, formID, GetName());
     }
     SetInitializationState(true);
@@ -165,10 +176,12 @@ void TESObjectLIGH::InitItem()
 // @fnv 0x0050c9e0
 void TESObjectLIGH::SetSound(TESSound* sound)
 {
-    m_pGameSound = sound;
+    m_pSound = sound;
 }
 
 // @fnv 0x0050c630
+// pdb: NiPointLight::SetConstantAttenuation | TESLight.obj | debug, upstream name already matches, high
+// pdb params: fC
 void NiPointLight::SetConstantAttenuation(float fC)
 {
     *reinterpret_cast<float*>(storage) = fC;
@@ -176,6 +189,8 @@ void NiPointLight::SetConstantAttenuation(float fC)
 }
 
 // @fnv 0x0050c660
+// pdb: NiPointLight::SetLinearAttenuation | TESLight.obj | debug, upstream name already matches, high
+// pdb params: fL
 void NiPointLight::SetLinearAttenuation(float fL)
 {
     *reinterpret_cast<float*>(storage + 4) = fL;
@@ -197,6 +212,8 @@ bool TESObjectLIGH::GetDynamic()
 
 // Stores fQ at offset 0xf8 of the object and increments its revision ID.
 // @fnv 0x0050c690
+// pdb: NiPointLight::SetQuadraticAttenuation | TESLight.obj | debug, upstream name already matches, high
+// pdb params: fQ
 void NiPointLight::SetQuadraticAttenuation(float fQ)
 {
     *reinterpret_cast<float*>(storage + 8) = fQ;
@@ -204,6 +221,8 @@ void NiPointLight::SetQuadraticAttenuation(float fQ)
 }
 
 // @fnv 0x0050dd50
+// pdb: NiLight::SetSpecularColor | TESLight.obj | debug, call graph, high
+// pdb params: color
 void NiPointLight::SetSpecularColor(const NiPoint3& color)
 {
     m_kSpec = reinterpret_cast<const NiColor&>(color);
@@ -213,7 +232,7 @@ void NiPointLight::SetSpecularColor(const NiPoint3& color)
 // @fnv 0x0050c820
 NiColor* TESObjectLIGH::GetLightColor()
 {
-    return &m_kDiffuseColor;
+    return &EmittanceColor;
 }
 
 // @fnv 0x0050d100
@@ -224,6 +243,9 @@ LightSourceData* LightRecordAccess::GetLightData()
 
 // Returns the sum of the sizes reported by FUN_00484bf0 on this and FUN_0048e9b0 on the object at offset 0x8c, both called with aiFlags.
 // @fnv 0x0050e4f0
+// pdb: TESObjectLIGH::GetSaveSize | TESLight.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short __thiscall LightRecordAccess::GetSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -234,6 +256,8 @@ unsigned short __thiscall LightRecordAccess::GetSize(unsigned int aiFlags)
 
 // Forwards aiFlags to FUN_00484c20 on this and to FUN_0048e9e0 on the object at offset 0x8c.
 // @fnv 0x0050e550
+// pdb: TESObjectLIGH::SaveGame | TESLight.obj | retail, vtable slot, high
+// pdb params: aiFlags
 void LightRecordAccess::MarkChanged(unsigned int aiFlags)
 {
     reinterpret_cast<FormRecordAccess*>(this)->BeginRecordSave(aiFlags);
@@ -241,30 +265,37 @@ void LightRecordAccess::MarkChanged(unsigned int aiFlags)
 }
 
 // @fnv 0x0050e580
-void LightRecordAccess::MarkUnchanged(unsigned int a1, unsigned int a2)
+// pdb: TESObjectLIGH::LoadGame | TESLight.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void LightRecordAccess::MarkUnchanged(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    reinterpret_cast<FormRecordAccess*>(this)->LoadRecordArguments(a1, a2);
-    ((TESValueForm*)((char*)this + 0x8c))->LoadGame_0048ea10(a1, a2);
+    reinterpret_cast<FormRecordAccess*>(this)->LoadRecordArguments(aiFlags, aiCurrentFlags);
+    ((TESValueForm*)((char*)this + 0x8c))->LoadGame_0048ea10(aiFlags, aiCurrentFlags);
 }
 
 // @fnv 0x0050e5c0
-void LightRecordAccess::SaveChanged(unsigned int aiFlags)
+// pdb: TESObjectLIGH::SaveGame | TESLight.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void LightRecordAccess::SaveChanged(unsigned int apSaveGameBuffer)
 {
-    reinterpret_cast<FormRecordAccess*>(this)->SaveIfChanged(aiFlags);
-    reinterpret_cast<TESValueForm*>(reinterpret_cast<char*>(this) + 0x8c)->SaveGameBGS_0048ea40(reinterpret_cast<BGSSaveFormBuffer*>(aiFlags));
+    reinterpret_cast<FormRecordAccess*>(this)->SaveIfChanged(apSaveGameBuffer);
+    reinterpret_cast<TESValueForm*>(reinterpret_cast<char*>(this) + 0x8c)->SaveGameBGS_0048ea40(reinterpret_cast<BGSSaveFormBuffer*>(apSaveGameBuffer));
 }
 
 // Loads the TESForm base and the TESValueForm subobject at offset 0x8c from the buffer.
 // @fnv 0x0050e5f0
-void LightRecordAccess::LoadLightGame(BGSLoadFormBuffer* pBuffer)
+// pdb: TESObjectLIGH::LoadGame | TESLight.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void LightRecordAccess::LoadLightGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    reinterpret_cast<TESForm*>(this)->TESForm::LoadGame(pBuffer);
-    reinterpret_cast<TESValueForm*>(reinterpret_cast<char*>(this) + 0x8c)->LoadGame(pBuffer);
+    reinterpret_cast<TESForm*>(this)->TESForm::LoadGame(apLoadGameBuffer);
+    reinterpret_cast<TESValueForm*>(reinterpret_cast<char*>(this) + 0x8c)->LoadGame(apLoadGameBuffer);
 }
 
 void _Deallocate(void*);
 // Destroys the light, deallocates it when bit 0 of flags is set, and returns this.
 // @fnv 0x0050c840
+// pdb: TESObjectLIGH::`scalar deleting destructor' | TESLight.obj | retail, vtable slot, high
 void* LightRecordAccess::DestroyIfFlagged(unsigned int flags)
 {
     TESObjectLIGH::~TESObjectLIGH();
@@ -274,7 +305,8 @@ void* LightRecordAccess::DestroyIfFlagged(unsigned int flags)
 }
 
 // @fnv 0x0050c6c0
-TESObjectLIGH::TESObjectLIGH() : m_kDiffuseColor(0.0f, 0.0f, 0.0f)
+// pdb: TESObjectLIGH::TESObjectLIGH | TESLight.obj | retail, upstream name already matches, high
+TESObjectLIGH::TESObjectLIGH() : EmittanceColor(0.0f, 0.0f, 0.0f)
 {
     TESForm::SetFormType((ENUM_FORM_ID)0x1e);
     ResetFormData();
@@ -297,6 +329,9 @@ struct FUN_00510130_shell
     void RemoveNode(NiNode* pNode);
 };
 // @fnv 0x00510130
+// pdb: TESObjectList::lnk_Remove | TESObject.obj | debug, object-file run extension, low
+// pdb params: lpNode
+// pdb locals: pSelect
 void FUN_00510130_shell::RemoveNode(NiNode* pNode)
 {
     if (pNode == *(NiNode**)((char*)this + 4))
@@ -325,6 +360,9 @@ float __fastcall GetFieldB4Float(char* value);
 
 // Copies light data from apCopy after casting it to TESObjectLIGH, then sets a float value and the sound from the source light.
 // @fnv 0x0050d060
+// pdb: TESObjectLIGH::Copy | TESLight.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: ligh
 void LightRecordAccess::CopyFromLight(TESForm* apCopy)
 {
     TESObjectLIGH* ligh = dynamic_cast<TESObjectLIGH*>(apCopy);
@@ -348,6 +386,8 @@ void _FUN_00485910(unsigned int, unsigned int);
 void __fastcall SwapEndian(void*);
 
 // @fnv 0x0050cf20
+// pdb: TESObjectLIGH::Save | TESLight.obj | retail, vtable slot, high
+// pdb locals: tempint
 void LightRecordAccess::SaveLight()
 {
     TESForm::BeginFormRecord();
@@ -376,11 +416,11 @@ void LightRecordAccess::SaveLight()
     if (_FUN_00401500())
         SwapEndian(&data.time);
 
-    _FUN_00485910(0x4d414e46, fFadeAmount);
+    _FUN_00485910(0x4d414e46, fFade);
 
-    if (m_pGameSound)
+    if (m_pSound)
     {
-        unsigned int formID = m_pGameSound->GetFormID();
+        unsigned int formID = m_pSound->GetFormID();
         _FUN_00485910(0x4d414e53, formID);
     }
 
@@ -388,89 +428,93 @@ void LightRecordAccess::SaveLight()
 }
 
 // @fnv 0x0050c870
+// pdb: TESObjectLIGH::~TESObjectLIGH | TESLight.obj | retail, upstream name already matches, high
 TESObjectLIGH::~TESObjectLIGH()
 {}
 
 // @fnv 0x0050caf0
-bool LightRecordAccess::LoadLight(TESFile* file)
+// pdb: TESObjectLIGH::Load | TESLight.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, tempint
+bool LightRecordAccess::LoadLight(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 30)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     data.fFOV = 0.0f;
     data.m_fLightFalloff = 0.0f;
     int chunk;
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
         case 0x44534f4d:
         case 0x44444f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {
-            unsigned int dataSize = file->GetChunkSize();
+            unsigned int dataSize = apFile->GetChunkSize();
             void* swapData = _alloca(dataSize);
-            file->GetChunkData(swapData, dataSize);
-            TESModelTextureSwap::ParseTextureSwapData(swapData, dataSize, file->GetFormVersion());
+            apFile->GetChunkData(swapData, dataSize);
+            TESModelTextureSwap::UnpackTextureSwapChunkData(swapData, dataSize, apFile->GetFormVersion());
             break;
         }
         case 0x4e4f4349:
-            TESTexture::ReadTextureData(this, file);
+            TESTexture::ReadTextureData(this, apFile);
             break;
         case 0x4f43494d:
-            BGSMessageIcon::LoadMessageIcon(this, file);
+            BGSMessageIcon::LoadMessageIcon(this, apFile);
             break;
         case 0x49524353: {
             unsigned int scriptID = 0;
-            file->GetChunkData(&scriptID);
+            apFile->GetChunkData(&scriptID);
             TESScriptableForm::FUN_006ecd40(scriptID);
             TESScriptableForm::InitItem(this);
             break;
         }
         case 0x54534544:
         case 0x44545344:
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 0x41544144:
-            TESForm_LoadData(file, &data, 24);
+            TESForm_LoadData(apFile, &data, 24);
             break;
         case 0x4d414e46:
-            file->GetChunkData((unsigned int*)&fFadeAmount);
+            apFile->GetChunkData((unsigned int*)&fFade);
             break;
         case 0x4d414e53: {
             unsigned int soundID = 0;
-            file->GetChunkData(&soundID);
-            m_pGameSound = (TESSound*)soundID;
+            apFile->GetChunkData(&soundID);
+            m_pSound = (TESSound*)soundID;
             break;
         }
         }
         if (chunk == 0x41544144)
         {
-            if (file->IsEndianConversionRequired())
+            if (apFile->IsEndianConversionRequired())
                 SwapEndian(&data);
             if (data.fFOV == 0.0)
                 data.fFOV = DAT_010249d8;
             if (data.m_fLightFalloff == 0.0)
                 data.m_fLightFalloff = 1.0f;
         }
-        if (!file->GetNextChunk())
+        if (!apFile->GetNextChunk())
             break;
     }
     return true;
@@ -755,34 +799,38 @@ struct Manager
 };
 Manager* __cdecl FUN_00450b80(int);
 bool __cdecl TESObjectREFR_HasAddonNodes(Scene*);
-void __cdecl ProcessListItems(Scene*);
+void __cdecl TESObjectLIGH_StopParticlesRecursive(Scene*);
 const char* __cdecl FixedStrings_GetAttachLight();
 Light* __cdecl FUN_0050d6d0(Scene*);
 void __cdecl BSsprintf(char*, unsigned int, const char*, ...);
-void __cdecl ConfigurePointLight(Light*, unsigned int);
+void __cdecl SetLightAttenuation(Light*, unsigned int);
 extern const char DAT_010290a4[];
 extern const Color DAT_011f4998;
 extern const double DAT_0101e568;
 }  // namespace LightCreation
 
 // @fnv 0x0050d810
-NiLight* TESObjectLIGH::CreateLight(TESObjectREFR* reference, NiAVObject* pScene, bool force)
+// src: XBOX_RETAIL_PDB 0x0050d810
+// pdb: TESObjectLIGH::GenDynamic | TESLight.obj | retail, string-set bridge, high
+// pdb params: pRequester, pModel, abForceDynamic
+// pdb locals: plight, pobj, pattachnode, color, fRadius, pkCtrl, pObj, temp
+NiLight* TESObjectLIGH::GenDynamic(TESObjectREFR* pRequester, NiAVObject* pModel, bool abForceDynamic)
 {
     using namespace LightCreation;
-    if (!reinterpret_cast<Scene*>(pScene))
+    if (!reinterpret_cast<Scene*>(pModel))
         return 0;
     TESForm* base;
-    if (reinterpret_cast<Reference*>(reference))
+    if (reinterpret_cast<Reference*>(pRequester))
     {
-        base = reinterpret_cast<Reference*>(reference)->BGSSaveFormBuffer_GetForm();
-        if ((data.flags & 0x20) || (reinterpret_cast<Reference*>(reference)->FUN_008d6f30() && reinterpret_cast<Reference*>(reference)->GetPosition()->z < reinterpret_cast<Reference*>(reference)->TESObjectREFR_GetRelevantWaterHeight()))
+        base = reinterpret_cast<Reference*>(pRequester)->BGSSaveFormBuffer_GetForm();
+        if ((data.flags & 0x20) || (reinterpret_cast<Reference*>(pRequester)->FUN_008d6f30() && reinterpret_cast<Reference*>(pRequester)->GetPosition()->z < reinterpret_cast<Reference*>(pRequester)->TESObjectREFR_GetRelevantWaterHeight()))
         {
-            if (base->GetFormType() == 30 && TESObjectREFR_HasAddonNodes(reinterpret_cast<Scene*>(pScene)))
+            if (base->GetFormType() == 30 && TESObjectREFR_HasAddonNodes(reinterpret_cast<Scene*>(pModel)))
             {
-                reinterpret_cast<Reference*>(reference)->TESForm_SetFireOff(true);
-                ProcessListItems(reinterpret_cast<Scene*>(pScene));
+                reinterpret_cast<Reference*>(pRequester)->TESForm_SetFireOff(true);
+                TESObjectLIGH_StopParticlesRecursive(reinterpret_cast<Scene*>(pModel));
             }
-            if (!reinterpret_cast<Reference*>(reference)->IsPersistent() && (data.flags & 0x20))
+            if (!reinterpret_cast<Reference*>(pRequester)->IsPersistent() && (data.flags & 0x20))
                 return 0;
         }
     }
@@ -794,11 +842,11 @@ NiLight* TESObjectLIGH::CreateLight(TESObjectREFR* reference, NiAVObject* pScene
     if (data.flags & 4)
         tintSlot1 = tintSlot1.GetNegatedVector();
     Scene* rootSlot19 = 0;
-    Extra* extra = reinterpret_cast<Scene*>(pScene)->GetExtra(FixedStrings_GetAttachLight());
+    Extra* extra = reinterpret_cast<Scene*>(pModel)->GetExtra(FixedStrings_GetAttachLight());
     if (extra)
         rootSlot19 = extra->GetScene();
     if (!rootSlot19)
-        rootSlot19 = reinterpret_cast<Scene*>(pScene);
+        rootSlot19 = reinterpret_cast<Scene*>(pModel);
     lightSlot12 = FUN_0050d6d0(rootSlot19);
     if (!lightSlot12)
     {
@@ -808,17 +856,17 @@ NiLight* TESObjectLIGH::CreateLight(TESObjectREFR* reference, NiAVObject* pScene
         lightSlot12->SetName(NiFixedString(static_cast<const char*>(name)));
         rootSlot19->Attach(lightSlot12, true);
     }
-    if (reinterpret_cast<Reference*>(reference))
-        reinterpret_cast<Reference*>(reference)->TESObjectREFR_SetLight(lightSlot12);
+    if (reinterpret_cast<Reference*>(pRequester))
+        reinterpret_cast<Reference*>(pRequester)->TESObjectREFR_SetLight(lightSlot12);
     reinterpret_cast<AmbientLightColorAccess*>(lightSlot12)->SetAmbientColor(DAT_011f4998);
     lightSlot12->SetSpecularColor(reinterpret_cast<const NiPoint3&>(DAT_011f4998));
     float radiusValueSlot21 = (float)data.radius;
-    if (reinterpret_cast<Reference*>(reference))
-        radiusValueSlot21 = reinterpret_cast<Reference*>(reference)->TESObjectREFR_GetRadius();
+    if (reinterpret_cast<Reference*>(pRequester))
+        radiusValueSlot21 = reinterpret_cast<Reference*>(pRequester)->TESObjectREFR_GetRadius();
     lightSlot12->SetSpecularColor(NiPoint3(radiusValueSlot21, radiusValueSlot21, radiusValueSlot21));
     lightSlot12->SetEffectColor(reinterpret_cast<const NiPoint3&>(tintSlot1));
     Parent* parentSlot6;
-    for (parentSlot6 = reinterpret_cast<Scene*>(pScene)->NiObjectNET_GetControllers(); parentSlot6; parentSlot6 = parentSlot6->NiTimeController_GetNext())
+    for (parentSlot6 = reinterpret_cast<Scene*>(pModel)->NiObjectNET_GetControllers(); parentSlot6; parentSlot6 = parentSlot6->NiTimeController_GetNext())
     {
         if (parentSlot6->IsSpecial())
         {
@@ -826,14 +874,14 @@ NiLight* TESObjectLIGH::CreateLight(TESObjectREFR* reference, NiAVObject* pScene
             break;
         }
     }
-    if (!(reinterpret_cast<Reference*>(reference) && reinterpret_cast<Reference*>(reference)->BSFile_GetDevice()->ExtraDataList_GetLitWaterRefs()) ||
-        (reinterpret_cast<Reference*>(reference) && reinterpret_cast<Reference*>(reference)->BSFile_GetDevice()->ExtraDataList_GetLitWaterRefs() &&
-         reinterpret_cast<Reference*>(reference)->BSFile_GetDevice()->ExtraDataList_GetLitWaterRefs()->FUN_008256d0()))
-        FUN_00450b80(0)->FUN_00b5c940(lightSlot12, force ? true : GetDynamic());
+    if (!(reinterpret_cast<Reference*>(pRequester) && reinterpret_cast<Reference*>(pRequester)->BSFile_GetDevice()->ExtraDataList_GetLitWaterRefs()) ||
+        (reinterpret_cast<Reference*>(pRequester) && reinterpret_cast<Reference*>(pRequester)->BSFile_GetDevice()->ExtraDataList_GetLitWaterRefs() &&
+         reinterpret_cast<Reference*>(pRequester)->BSFile_GetDevice()->ExtraDataList_GetLitWaterRefs()->FUN_008256d0()))
+        FUN_00450b80(0)->FUN_00b5c940(lightSlot12, abForceDynamic ? true : GetDynamic());
     if (lightSlot12)
     {
-        ConfigurePointLight(lightSlot12, (unsigned int)radiusValueSlot21);
-        lightSlot12->SetDimmer(fFadeAmount);
+        SetLightAttenuation(lightSlot12, (unsigned int)radiusValueSlot21);
+        lightSlot12->SetDimmer(fFade);
     }
     return lightSlot12;
 }
@@ -854,7 +902,7 @@ class GlobalObject_0045cfe0
 class GlobalObject_0045cf30
 {
   public:
-    bool IOTask_SetPriority_Thunk(bool b);
+    bool IOTask_SetPriority_Thunk(bool abRef);
 };
 
 extern GlobalObject_0044f440 g_011c8fb0;
@@ -873,9 +921,13 @@ extern TES* g_TES;
 NiAVObject* NiDynamicCast(const NiRTTI* type, NiAVObject* object);
 
 // @fnv 0x0050c350
-void ConfigurePointLight(NiAVObject* object, unsigned int count)
+// src: XBOX_DEBUG_PDB 0x0050c350
+// pdb: SetLightAttenuation | TESLight.obj | debug, call graph, high
+// pdb params: apLight, aiRadius
+// pdb locals: ppointLight, useRadius
+void SetLightAttenuation(NiAVObject* apLight, unsigned int aiRadius)
 {
-    NiPointLight* light = (NiPointLight*)NiDynamicCast(&DAT_011f4a98, object);
+    NiPointLight* light = (NiPointLight*)NiDynamicCast(&DAT_011f4a98, apLight);
     if (light)
     {
         light->SetConstantAttenuation((DAT_011c8fa0 & 1) ? *g_011c9000.Float() : 0.0f);
@@ -884,7 +936,7 @@ void ConfigurePointLight(NiAVObject* object, unsigned int count)
 
         if ((DAT_011c8fa0 & 2) || (g_TES->GetPrevPath() != 0 && g_011c8fc0.IOTask_SetPriority_Thunk(true)))
         {
-            float a = (double)count * *g_011c8fb0.Float();
+            float a = (double)aiRadius * *g_011c8fb0.Float();
             switch (*g_011c9054.Int())
             {
             case 0:
@@ -901,14 +953,14 @@ void ConfigurePointLight(NiAVObject* object, unsigned int count)
 
         if ((DAT_011c8fa0 & 4) || (g_TES->GetPrevPath() == 0 && g_011c8fc0.IOTask_SetPriority_Thunk(true)))
         {
-            float b = (double)count * *g_011c906c.Float();
+            float b = (double)aiRadius * *g_011c906c.Float();
             switch (*g_011c907c.Int())
             {
             case 0:
                 light->SetQuadraticAttenuation(*g_011c9040.Float());
                 break;
             case 1:
-                light->SetQuadraticAttenuation((b != 0.0) ? ((1.0 / (double)count) * g_011c9040.FUN_00450410()) : 0.01f);
+                light->SetQuadraticAttenuation((b != 0.0) ? ((1.0 / (double)aiRadius) * g_011c9040.FUN_00450410()) : 0.01f);
                 break;
             default:
                 light->SetQuadraticAttenuation((b != 0.0) ? (g_011c9040.FUN_00450410() / (b * b)) : 0.01f);
@@ -923,14 +975,17 @@ extern float __fastcall GetFieldB4Float(char*);
 
 // Returns true if this light fails the component, sound, data, or computed-value comparisons.
 // @fnv 0x0050d120
-bool LightRecordAccess::CompareLight(TESForm* form)
+// pdb: TESObjectLIGH::Compare | TESLight.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pComp
+bool LightRecordAccess::CompareLight(TESForm* apCompare)
 {
-    TESObjectLIGH* pOtherLight = dynamic_cast<TESObjectLIGH*>(form);
+    TESObjectLIGH* pOtherLight = dynamic_cast<TESObjectLIGH*>(apCompare);
     if (!pOtherLight)
         return true;
     if (TESForm::Compare(pOtherLight))
         return true;
-    if (m_pGameSound != reinterpret_cast<LightRecordAccess*>(pOtherLight)->GetSound())
+    if (m_pSound != reinterpret_cast<LightRecordAccess*>(pOtherLight)->GetSound())
         return true;
     if (_memcmp(&data, reinterpret_cast<LightRecordAccess*>(pOtherLight)->GetLightData(), sizeof(data)))
         return true;

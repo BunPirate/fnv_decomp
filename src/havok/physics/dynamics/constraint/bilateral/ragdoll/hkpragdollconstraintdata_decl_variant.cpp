@@ -17,7 +17,7 @@ struct FUN_00cde960_cls
 {
     void __thiscall FUN_00cde960(float a);
 };
-void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int c);
+void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int infoOut);
 struct FUN_00cde9b0_cls
 {
     char* FUN_00cde9b0(int a);
@@ -187,15 +187,16 @@ struct FnvCpu_FUN_00cdf530_CpuObject
 
 // @fnv 0x00cdf090
 // src: HAVOK_LIB 0x00cdf090
+// pdb: hkpRagdollConstraintData::isValid | hkpRagdollConstraintData.obj | retail, vtable slot, high
 hkBool hkpRagdollConstraintData::isValid_00cdf090() const
 {
     hkBool valid = true;
-    valid = valid && m_kBridgeAtoms.m_kTransforms.m_kBodyALocalFrame.m_rotation.IsOrthonormal(0.001f);
+    valid = valid && m_kBridgeAtoms.m_kTransforms.m_transformA.m_rotation.IsOrthonormal(0.001f);
     valid = valid && m_kBridgeAtoms.m_kTransforms.m_kBodyBLocalFrame.m_rotation.IsOrthonormal(0.001f);
-    valid = valid && m_kBridgeAtoms.m_kConeLimit.m_fMinAngle == -100.0;
-    valid = valid && m_kBridgeAtoms.m_kConeLimit.m_fMaxAngle >= 0.0f;
-    valid = valid && m_kBridgeAtoms.m_kConeLimit.m_fMaxAngle < 3.1415927410125732;
-    valid = valid && m_kBridgeAtoms.m_kPlaneLimit.m_fMinAngle <= m_kBridgeAtoms.m_kPlaneLimit.m_fMaxAngle;
-    valid = valid && m_kBridgeAtoms.m_kTwistLimit.m_fMinAngle <= m_kBridgeAtoms.m_kTwistLimit.m_fMaxAngle;
+    valid = valid && m_kBridgeAtoms.m_kConeLimit.m_minAngle == -100.0;
+    valid = valid && m_kBridgeAtoms.m_kConeLimit.m_maxAngle >= 0.0f;
+    valid = valid && m_kBridgeAtoms.m_kConeLimit.m_maxAngle < 3.1415927410125732;
+    valid = valid && m_kBridgeAtoms.m_kPlaneLimit.m_minAngle <= m_kBridgeAtoms.m_kPlaneLimit.m_maxAngle;
+    valid = valid && m_kBridgeAtoms.m_kTwistLimit.m_minAngle <= m_kBridgeAtoms.m_kTwistLimit.m_maxAngle;
     return valid;
 }

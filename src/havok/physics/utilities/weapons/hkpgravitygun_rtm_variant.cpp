@@ -46,25 +46,28 @@ __forceinline void hkVector4::mul4(const float& factor)
 
 // @fnv 0x00e46080
 // src: XBOX_PDB 0x00e46080
-void hkpGravityGun::gravityGunPull(hkTransform* a4, hkpRigidBody* a3, hkpWorld* world)
+// pdb: hkpGravityGun::gravityGunPull | hkpGravityGun.obj | retail, upstream name already matches, high
+// pdb params: viewTransform, characterBody, world
+// pdb locals: impulse
+void hkpGravityGun::gravityGunPull(hkTransform* viewTransform, hkpRigidBody* characterBody, hkpWorld* world)
 {
-    hkVector4* direction = (hkVector4*)a4;
-    int argC = (int)a3;
+    hkVector4* direction = (hkVector4*)viewTransform;
+    int argC = (int)characterBody;
     int arg10 = (int)world;
     hkpGravityGun* gun = this;
     hkpRigidBody* target = gun->FindVisibleRigidBodyToGrab((int)direction, argC, arg10);
 
     if (target != 0)
     {
-        LocalM128 massVector = _mm_load_ps((const float*)&target->m_pMotionState.m_kInertiaAndMassInv);
+        LocalM128 massVector = _mm_load_ps((const float*)&target->m_motion.m_inertiaAndMassInv);
         massVector = _mm_shuffle_ps(massVector, massVector, 0xff);
 
         float mass;
         _mm_store_ss(&mass, massVector);
 
-        if (!(gun->m_fMaxPickMass * mass < DAT_01012070))
+        if (!(gun->m_maxMassOfObjectPicked * mass < DAT_01012070))
         {
-            if (gun->m_kPickedBodies.m_iElementCount < gun->m_iMaxPickedBodies)
+            if (gun->m_grabbedBodies.m_iElementCount < gun->m_maxNumObjectsPicked)
             {
                 gun->takeObject(target);
                 return;
@@ -73,8 +76,8 @@ void hkpGravityGun::gravityGunPull(hkTransform* a4, hkpRigidBody* a3, hkpWorld* 
 
         hkVector4 impulse;
         _mm_store_ps((float*)&impulse, _mm_load_ps((const float*)direction));
-        impulse.mul4(-gun->m_fPickAngle);
+        impulse.mul4(-gun->m_impulseAppliedWhenObjectNotPicked);
         target->activate_00c9c1d0();
-        target->m_pMotionState.SetCollisionShape(impulse);
+        target->m_motion.SetCollisionShape(impulse);
     }
 }

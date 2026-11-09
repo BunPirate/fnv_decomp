@@ -20,7 +20,9 @@ void NiAccumulator::SetSortingCamera(const NiCamera* camera)
 }
 // Sums the strip lengths in m_pusStripLengths over m_usStrips entries and returns the total.
 // @fnv 0x00a81c20
-unsigned int NiSkinPartition::Partition::GetStripIndexCount()
+// src: XBOX_RETAIL_PDB 0x00a81c20
+// pdb: NiSkinPartition::Partition::GetStripLengthSum | NiSkinPartition.obj | retail, call graph, high
+unsigned int NiSkinPartition::Partition::NiSkinPartition_Partition_GetStripLengthSum()
 {
     unsigned int sum = 0;
     for (unsigned int i = 0; i < m_usStrips; ++i)
@@ -73,7 +75,7 @@ bool Holder::ContainsSortedSubset(const Holder* pkOther)
 extern int DAT_0109e47c;
 struct P03MM
 {
-    void __thiscall _DeallocateAlias(void* p);
+    void __thiscall _DeallocateAlias(void* apMem);
 };
 extern P03MM g_memoryManager;
 struct S : NiRefObject
@@ -84,6 +86,7 @@ struct S : NiRefObject
 };
 // @fnv 0x00a824d0
 // src: GUESS 0x00a824d0 (confidence: low)
+// pdb: NiSkinPartition::~NiSkinPartition | NiSkinPartition.obj | retail, object-file run extension, low
 void __thiscall S::SetVtableAndProcessState_00a824d0()
 {
     *(void**)this = (void*)&DAT_0109e47c;
@@ -155,6 +158,9 @@ struct FUN_00a82710_shell
 
 // @fnv 0x00a82710
 // src: COMMUNITY 0x00a82710
+// pdb: NiTSet<unsigned short,NiTMallocInterface<unsigned short> >::Realloc | NiSkinPartition.obj | retail, call graph (shared callers), low
+// pdb params: uiNewSize
+// pdb locals: pNewBase, i
 void FUN_00a82710_shell::NiTSet_UInt16_Add(unsigned int n)
 {
     if (n != m_iElementCount)
@@ -217,6 +223,9 @@ struct C082d30
 };
 // Scans the first c entries of b and appends the index of each entry equal to a to f0, growing the buffer via FUN_00a82710 when full.
 // @fnv 0x00a82d30
+// pdb: NiSkinPartition::TriangleSet::AddTriangles | NiSkinPartition.obj | retail, object-file run extension, low
+// pdb params: uiPartition, puiTriangleToPartition, uiTriangles
+// pdb locals: t
 void C082d30::AppendMatchingIndices(int aiValue, int* paiValues, unsigned int c)
 {
     for (unsigned int i = 0; i < c; ++i)
@@ -257,6 +266,8 @@ extern int DAT_0109e574;
 int __cdecl NiSkinData_ComputeBoneBounds();
 // Initialises the object: sets the vtable, clears _08, copies a3 into _0c, stores a2 and a1, then calls FUN_00a853c0(a4) and returns this.
 // @fnv 0x00a854c0
+// pdb: NiSkinData::NiSkinData | NiSkinData.obj | retail, object-file run extension, low
+// pdb params: uiBones, pkBoneData, kRootParentToSkin, pkVerts
 MyCls* MyCls::InitFromData(int a1, int a2, const Dummy13& aData, int a4)
 {
     _Call_a5d3a0();
@@ -282,6 +293,9 @@ struct FUN_00a826b0_shell
 
 // @fnv 0x00a826b0
 // src: GUESS 0x00a826b0 (confidence: low)
+// pdb: NiTSet<NiSkinPartition::Interaction,NiTMallocInterface<NiSkinPartition::Interaction> >::Realloc | NiSkinPartition.obj | retail, object-file run extension, low
+// pdb params: uiNewSize
+// pdb locals: pNewBase, i
 void FUN_00a826b0_shell::ReleaseStorage_00a826b0(unsigned int n)
 {
     if (n == m_uiItemCount)
@@ -325,7 +339,7 @@ struct FUN_00a81ff0_elem
     int m_20;
     int m_24;
     int m_28;
-    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* other);
+    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* kPartition);
 };
 
 struct FUN_00a81ff0_cls
@@ -334,7 +348,7 @@ struct FUN_00a81ff0_cls
     int m_04;
     unsigned int m_uiItemCount;
     FUN_00a81ff0_elem* m_pElements;
-    bool IsSameAs(const FUN_00a81ff0_cls* other);
+    bool IsSameAs(const FUN_00a81ff0_cls* pObject);
     bool Equals(const FUN_00a81ff0_cls* other);
 };
 
@@ -531,6 +545,9 @@ struct PartitionEx : NiSkinPartition::Partition
 
 // Builds an old-to-new vertex remap table from the partition's triangles, allocates the inverse new-to-old table, and stores the new vertex count.
 // @fnv 0x00a822d0
+// pdb: NiSkinPartition::Partition::CreateVertexMap | NiSkinPartition.obj | retail, object-file run extension, low
+// pdb params: kTriangles, pkTriData
+// pdb locals: uiPartitionVertices, pusVertexPartitionIndex, uiVertices, v, t, ausTriangle, usTriangle, uiVert, usPartitionVert
 unsigned short* PartitionEx::BuildVertexRemapTable(const TriIndexList& kTriangles, const GeomData* pkData)
 {
     unsigned short* pusOldToNew;
@@ -555,12 +572,12 @@ unsigned short* PartitionEx::BuildVertexRemapTable(const TriIndexList& kTriangle
         }
     }
 
-    m_pusSourceVertexIndices = (unsigned short*)NiMalloc(lNew * sizeof(unsigned short));
+    m_pusVertexMap = (unsigned short*)NiMalloc(lNew * sizeof(unsigned short));
     m_usVertices = (unsigned short)lNew;
     for (unsigned int i = 0; i < uiVertices; i++)
     {
         if (pusOldToNew[i] != 0xffff)
-            m_pusSourceVertexIndices[pusOldToNew[i]] = (unsigned short)i;
+            m_pusVertexMap[pusOldToNew[i]] = (unsigned short)i;
     }
     return pusOldToNew;
 }
@@ -578,19 +595,23 @@ struct EntryGroup
 };
 // For each of three group indices, inserts each entry's key and weight into the map only if the key is absent or its stored weight is lower.
 // @fnv 0x00a82530
-void __stdcall MergeGroupWeights(NiTPointerMap<unsigned int, float>* map, const unsigned short* groupIndices, EntryGroup* __restrict groups)
+// src: XBOX_RETAIL_PDB 0x00a82530
+// pdb: NiSkinPartition::MakeBoneMap | NiSkinPartition.obj | retail, call graph, high
+// pdb params: kMap, pusTriangle, pkVertexInteraction
+// pdb locals: v, pkI, uiVertexBones, uiVert, b, fWeight, bMapped, uiBone
+void __stdcall NiSkinPartition_MakeBoneMap(NiTPointerMap<unsigned int, float>* kMap, const unsigned short* pusTriangle, EntryGroup* __restrict pkVertexInteraction)
 {
     for (unsigned int groupIndex = 0; groupIndex < 3; ++groupIndex)
     {
-        EntryGroup* group = &groups[groupIndices[groupIndex]];
+        EntryGroup* group = &pkVertexInteraction[pusTriangle[groupIndex]];
         unsigned int itemCount = group->count;
         for (unsigned int itemIndex = 0; itemIndex < itemCount; ++itemIndex)
         {
             unsigned int key = (unsigned int)group->entries[itemIndex].key;
-            NiTMapItem<unsigned int, float>* node = map->m_ppkHashTable[map->KeyToHashIndex(key)];
+            NiTMapItem<unsigned int, float>* node = kMap->m_ppkHashTable[kMap->KeyToHashIndex(key)];
             while (node)
             {
-                if (map->IsKeysEqual(key, node->m_key))
+                if (kMap->IsKeysEqual(key, node->m_key))
                 {
                     volatile float previousWeight = node->m_val;
                     if (!(previousWeight < group->entries[itemIndex].weight))
@@ -599,7 +620,7 @@ void __stdcall MergeGroupWeights(NiTPointerMap<unsigned int, float>* map, const 
                 }
                 node = node->m_pkNext;
             }
-            map->SetAt(key, group->entries[itemIndex].weight);
+            kMap->SetAt(key, group->entries[itemIndex].weight);
         nextItem:;
         }
     }
@@ -681,44 +702,47 @@ __forceinline bool EqualBuffers(const void* right, const void* left, unsigned in
 }
 struct PartitionCompare : NiSkinPartition::Partition
 {
-    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* other);
+    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* kPartition);
 };
 // @fnv 0x00a81c90
 // src: GAMEBRYO_LIB 0x00a81c90
-bool PartitionCompare::NiSkinPartition_Partition_IsEqual(const PartitionCompare* other)
+// pdb: NiSkinPartition::Partition::IsEqual | NiSkinPartition.obj | debug, upstream name already matches, high
+// pdb params: kPartition
+// pdb locals: uiInteractions, uiStripLengthSum
+bool PartitionCompare::NiSkinPartition_Partition_IsEqual(const PartitionCompare* kPartition)
 {
-    if (m_usVertices != other->m_usVertices)
+    if (m_usVertices != kPartition->m_usVertices)
         return false;
-    if (m_usTriangles != other->m_usTriangles)
+    if (m_usTriangles != kPartition->m_usTriangles)
         return false;
-    if (m_usBoneCount != other->m_usBoneCount)
+    if (m_usBones != kPartition->m_usBones)
         return false;
-    if (m_usStrips != other->m_usStrips)
+    if (m_usStrips != kPartition->m_usStrips)
         return false;
-    if (m_usWeightsPerVertex != other->m_usWeightsPerVertex)
+    if (m_usBonesPerVertex != kPartition->m_usBonesPerVertex)
         return false;
-    if (!EqualBuffers(other->m_pusBonePalette, m_pusBonePalette, m_usBoneCount * sizeof(unsigned short)))
+    if (!EqualBuffers(kPartition->m_pusBones, m_pusBones, m_usBones * sizeof(unsigned short)))
         return false;
-    if (!EqualBuffers(other->m_pusSourceVertexIndices, m_pusSourceVertexIndices, m_usVertices * sizeof(unsigned short)))
+    if (!EqualBuffers(kPartition->m_pusVertexMap, m_pusVertexMap, m_usVertices * sizeof(unsigned short)))
         return false;
-    unsigned int count = m_usVertices * m_usWeightsPerVertex;
-    if (!EqualBuffers(other->m_pfVertexWeights, m_pfVertexWeights, count * sizeof(float)))
+    unsigned int count = m_usVertices * m_usBonesPerVertex;
+    if (!EqualBuffers(kPartition->m_pfWeights, m_pfWeights, count * sizeof(float)))
         return false;
     if (!m_usStrips)
     {
-        if (!EqualBuffers(other->m_pusTriList, m_pusTriList, m_usTriangles * 3 * sizeof(unsigned short)))
+        if (!EqualBuffers(kPartition->m_pusTriList, m_pusTriList, m_usTriangles * 3 * sizeof(unsigned short)))
             return false;
     }
     else
     {
-        if (!EqualBuffers(other->m_pusStripLengths, m_pusStripLengths, m_usStrips * sizeof(unsigned short)))
+        if (!EqualBuffers(kPartition->m_pusStripLengths, m_pusStripLengths, m_usStrips * sizeof(unsigned short)))
             return false;
-        if (!EqualBuffers(other->m_pusTriList, m_pusTriList, GetStripIndexCount() * sizeof(unsigned short)))
+        if (!EqualBuffers(kPartition->m_pusTriList, m_pusTriList, NiSkinPartition_Partition_GetStripLengthSum() * sizeof(unsigned short)))
             return false;
     }
-    if ((m_pucBoneIndices == 0) != (other->m_pucBoneIndices == 0))
+    if ((m_pucBonePalette == 0) != (kPartition->m_pucBonePalette == 0))
         return false;
-    if (m_pucBoneIndices && !EqualBuffers(other->m_pucBoneIndices, m_pucBoneIndices, count))
+    if (m_pucBonePalette && !EqualBuffers(kPartition->m_pucBonePalette, m_pucBonePalette, count))
         return false;
     return true;
 }
@@ -845,6 +869,9 @@ class A2400Partition
 
 // Allocates a triangle index list and fills it by fetching each triangle from the source and remapping its three indices through pusRemap.
 // @fnv 0x00a82400
+// pdb: NiSkinPartition::Partition::CreateTriangleList | NiSkinPartition.obj | retail, object-file run extension, low
+// pdb params: kTriangles, pkTriData, pusVertexPartitionIndex
+// pdb locals: t, ausTriangle, usTriangle, pusPartitionTriangle, v
 void A2400Partition::BuildTriangleList(A2400TriangleSet* pkSet, A2400Source* pkSource, unsigned short* pusRemap)
 {
     m_pusTriList = (unsigned short*)NiMalloc(m_usTriangles * 3 * sizeof(unsigned short));
@@ -1000,41 +1027,45 @@ struct SkinBuilder
     int unk00;
     int unk04;
     unsigned int count;
-    __declspec(nothrow) void BuildBoneLODControllerSets(SkinGeom*, void*, SkinItems*, int*) throw();
+    __declspec(nothrow) void NiSkinPartition_CreateInitialBoneSets(SkinGeom*, void*, SkinItems*, int*) throw();
     __declspec(nothrow) void NiSkinPartition_MergeBoneSets(unsigned int, SkinItems*) throw();
-    bool BuildTriangleSetMapping(SkinGeom*, void*, unsigned int, void*, SkinItems*, int**, int*) throw();
+    bool NiSkinPartition_MakeBoneSets(SkinGeom*, void*, unsigned int, void*, SkinItems*, int**, int*) throw();
 };
 // Builds a per-triangle set index mapping from group IDs or weights, compacts unused sets, and returns false if a triangle's vertices span three distinct groups.
 // @fnv 0x00a84310
-bool SkinBuilder::BuildTriangleSetMapping(SkinGeom* geom, void* unused, unsigned int input, void* weights,
-                                          SkinItems* sets, int** mapping, int* groupIDs) throw()
+// src: XBOX_RETAIL_PDB 0x00a84310
+// pdb: NiSkinPartition::MakeBoneSets | NiSkinPartition.obj | retail, object-file gap fill, high
+// pdb params: pkTriData, pkSkinData, ucBonesPerPartition, pkVertexInteraction, kBoneSets, puiTriangleToPartition, apWArray
+// pdb locals: uiTriangles, pbAssigned, cWMap, i, pSet, t, iBoneSetW, usTriangle, iWValLarge, iWValSmall, p, ausTriangle, iPart, uiOldIndex
+bool SkinBuilder::NiSkinPartition_MakeBoneSets(SkinGeom* pkTriData, void* pkSkinData, unsigned int ucBonesPerPartition, void* pkVertexInteraction,
+                                          SkinItems* kBoneSets, int** puiTriangleToPartition, int* apWArray) throw()
 {
-    unsigned int triangles = geom->triangleCount;
-    BuildBoneLODControllerSets(geom, weights, sets, groupIDs);
-    NiSkinPartition_MergeBoneSets(input, sets);
-    *mapping = (int*)NiMalloc(triangles * sizeof(int));
-    unsigned int setCount = sets->count;
+    unsigned int triangles = pkTriData->triangleCount;
+    NiSkinPartition_CreateInitialBoneSets(pkTriData, pkVertexInteraction, kBoneSets, apWArray);
+    NiSkinPartition_MergeBoneSets(ucBonesPerPartition, kBoneSets);
+    *puiTriangleToPartition = (int*)NiMalloc(triangles * sizeof(int));
+    unsigned int setCount = kBoneSets->count;
     unsigned char* pUsedFlags = (unsigned char*)NiMalloc(setCount);
     unsigned short indices[3];
-    if (groupIDs)
+    if (apWArray)
     {
         NiTMap<int, int> map;
-        for (unsigned int k = 0; k < sets->count; k++)
-            map.SetAt(sets->items[k]->key, k);
+        for (unsigned int k = 0; k < kBoneSets->count; k++)
+            map.SetAt(kBoneSets->items[k]->key, k);
         for (unsigned int tri = 0; tri < triangles; tri++)
         {
             int found = -1;
-            geom->GetTriangle(tri, indices[0], indices[1], indices[2]);
-            if (groupIDs[indices[0]] == groupIDs[indices[1]] && groupIDs[indices[1]] == groupIDs[indices[2]] &&
-                groupIDs[indices[0]] == groupIDs[indices[2]])
+            pkTriData->GetTriangle(tri, indices[0], indices[1], indices[2]);
+            if (apWArray[indices[0]] == apWArray[indices[1]] && apWArray[indices[1]] == apWArray[indices[2]] &&
+                apWArray[indices[0]] == apWArray[indices[2]])
             {
-                map.GetAt(groupIDs[indices[0]], found);
+                map.GetAt(apWArray[indices[0]], found);
                 if (found != -1)
-                    (*mapping)[tri] = found;
+                    (*puiTriangleToPartition)[tri] = found;
             }
             else
             {
-                int a = groupIDs[indices[0]], b = groupIDs[indices[1]], c = groupIDs[indices[2]];
+                int a = apWArray[indices[0]], b = apWArray[indices[1]], c = apWArray[indices[2]];
                 int lowBC = (b < c ? b : c);
                 int low = a < lowBC ? a : lowBC;
                 int highBC = (b > c ? b : c);
@@ -1043,47 +1074,47 @@ bool SkinBuilder::BuildTriangleSetMapping(SkinGeom* geom, void* unused, unsigned
                     low = high;
                 int selected = LookupSkinSet(map, low);
                 if (selected != -1)
-                    (*mapping)[tri] = selected;
+                    (*puiTriangleToPartition)[tri] = selected;
             }
-            if (groupIDs[indices[0]] != groupIDs[indices[1]] && groupIDs[indices[1]] != groupIDs[indices[2]] &&
-                groupIDs[indices[0]] != groupIDs[indices[2]])
+            if (apWArray[indices[0]] != apWArray[indices[1]] && apWArray[indices[1]] != apWArray[indices[2]] &&
+                apWArray[indices[0]] != apWArray[indices[2]])
                 return false;
         }
     }
     else
     {
-        for (unsigned int k = 0; k < sets->count; k++)
+        for (unsigned int k = 0; k < kBoneSets->count; k++)
             pUsedFlags[k] = 0;
         for (unsigned int tri = 0; tri < triangles; tri++)
         {
-            geom->GetTriangle(tri, indices[0], indices[1], indices[2]);
+            pkTriData->GetTriangle(tri, indices[0], indices[1], indices[2]);
             if (Degenerate(indices))
-                (*mapping)[tri] = -1;
+                (*puiTriangleToPartition)[tri] = -1;
             else
             {
-                int selected = FindMatchingItem((ItemSet*)sets, indices, weights, pUsedFlags, 1);
+                int selected = FindMatchingItem((ItemSet*)kBoneSets, indices, pkVertexInteraction, pUsedFlags, 1);
                 if (selected < 0)
-                    selected = FindMatchingItem((ItemSet*)sets, indices, weights, pUsedFlags, 0);
-                (*mapping)[tri] = selected;
+                    selected = FindMatchingItem((ItemSet*)kBoneSets, indices, pkVertexInteraction, pUsedFlags, 0);
+                (*puiTriangleToPartition)[tri] = selected;
             }
         }
         unsigned int k = 0;
-        while (k < sets->count)
+        while (k < kBoneSets->count)
         {
             if (pUsedFlags[k])
                 ++k;
             else
             {
-                --sets->count;
-                sets->items[k] = sets->items[sets->count];
-                unsigned int oldIndex = sets->count;
+                --kBoneSets->count;
+                kBoneSets->items[k] = kBoneSets->items[kBoneSets->count];
+                unsigned int oldIndex = kBoneSets->count;
                 for (unsigned int tri = 0; tri < triangles; tri++)
-                    if ((*mapping)[tri] == oldIndex)
-                        (*mapping)[tri] = k;
+                    if ((*puiTriangleToPartition)[tri] == oldIndex)
+                        (*puiTriangleToPartition)[tri] = k;
             }
         }
     }
-    count = sets->count;
+    count = kBoneSets->count;
     NiFreeAlias(pUsedFlags);
     return true;
 }
@@ -1141,7 +1172,7 @@ class SkinObjectBase
 {
   public:
     virtual ~SkinObjectBase();
-    void GetViewerStrings(SkinViewerStrings* pkStrings);
+    void GetViewerStrings(SkinViewerStrings* pStrings);
 };
 
 class SkinPartitionOwner : public SkinObjectBase
@@ -1158,6 +1189,9 @@ class SkinPartitionOwner : public SkinObjectBase
 // Appends the RTTI name and one line per partition listing its bone count to the viewer strings array.
 // @fnv 0x00a846e0
 // src: XBOX_PDB 0x00a846e0
+// pdb: NiSkinPartition::GetViewerStrings | NiSkinPartition.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: ui, strpartInfo
 void SkinPartitionOwner::NiSkinPartition_GetViewerStrings(SkinViewerStrings* pkStrings)
 {
     SkinObjectBase::GetViewerStrings(pkStrings);
@@ -1166,7 +1200,7 @@ void SkinPartitionOwner::NiSkinPartition_GetViewerStrings(SkinViewerStrings* pkS
     for (unsigned int i = 0; i < m_uiPartitionCount; i++)
     {
         char acTemp[32];
-        SkinSprintf(acTemp, 32, "Partition %d = %d bones", i, m_pPartitions[i].m_usBoneCount);
+        SkinSprintf(acTemp, 32, "Partition %d = %d bones", i, m_pPartitions[i].m_usBones);
         pkStrings->Add(SkinGetViewerString(acTemp));
     }
 }
@@ -1205,29 +1239,32 @@ struct PartitionSave : NiSkinPartition::Partition
 };
 
 // @fnv 0x00a830d0
+// pdb: NiSkinPartition::Partition::SaveBinary | NiSkinPartition.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: bHasWeights, bHasList, bHasPalette, uiListLen, uiInteractions, bHasMap, uiStripLengthSum
 void PartitionSave::WriteToStream(NiStream& kStream)
 {
     SerializeValue(kStream, m_usVertices);
     SerializeValue(kStream, m_usTriangles);
-    SerializeValue(kStream, m_usBoneCount);
+    SerializeValue(kStream, m_usBones);
     SerializeValue(kStream, m_usStrips);
-    SerializeValue(kStream, m_usWeightsPerVertex);
-    SerializeValue(kStream, m_pusBonePalette, m_usBoneCount);
+    SerializeValue(kStream, m_usBonesPerVertex);
+    SerializeValue(kStream, m_pusBones, m_usBones);
 
-    bool bHasVertexMap = m_pusSourceVertexIndices != 0;
+    bool bHasVertexMap = m_pusVertexMap != 0;
     SerializeValue(kStream, bHasVertexMap);
     if (bHasVertexMap)
     {
-        SerializeValue(kStream, m_pusSourceVertexIndices, m_usVertices);
+        SerializeValue(kStream, m_pusVertexMap, m_usVertices);
     }
 
-    unsigned int uiBonePaletteSize = (unsigned int)m_usWeightsPerVertex * m_usVertices;
+    unsigned int uiBonePaletteSize = (unsigned int)m_usBonesPerVertex * m_usVertices;
 
-    bool bHasWeights = m_pfVertexWeights != 0;
+    bool bHasWeights = m_pfWeights != 0;
     SerializeValue(kStream, bHasWeights);
     if (bHasWeights)
     {
-        SerializeValue(kStream, m_pfVertexWeights, uiBonePaletteSize);
+        SerializeValue(kStream, m_pfWeights, uiBonePaletteSize);
     }
 
     unsigned int uiTriListLength;
@@ -1238,7 +1275,7 @@ void PartitionSave::WriteToStream(NiStream& kStream)
     else
     {
         SerializeValue(kStream, m_pusStripLengths, m_usStrips);
-        uiTriListLength = GetStripIndexCount();
+        uiTriListLength = NiSkinPartition_Partition_GetStripLengthSum();
     }
 
     bool bHasTriList = m_pusTriList != 0;
@@ -1248,11 +1285,11 @@ void PartitionSave::WriteToStream(NiStream& kStream)
         SerializeValue(kStream, m_pusTriList, uiTriListLength);
     }
 
-    bool bHasBonePalette = m_pucBoneIndices != 0;
+    bool bHasBonePalette = m_pucBonePalette != 0;
     SerializeValue(kStream, bHasBonePalette);
     if (bHasBonePalette)
     {
-        SerializeValue(kStream, m_pucBoneIndices, uiBonePaletteSize);
+        SerializeValue(kStream, m_pucBonePalette, uiBonePaletteSize);
     }
 }
 
@@ -1294,11 +1331,11 @@ void Skp_00a828d0_cls::PopulateSkinData(GeomData* pkData, Skp_00a828d0_src* pkSr
     int n = (int)pkSrc->count;
     if (n <= (int)ucBonesPerVertex)
         n = (int)ucBonesPerVertex;
-    m_usBoneCount = (unsigned short)n;
+    m_usBones = (unsigned short)n;
     m_usTriangles = pkData->m_usVertices;
-    m_pusBonePalette = (unsigned short*)AllocBlock((unsigned short)n * 2);
-    for (unsigned int i = 0; i < m_usBoneCount; ++i)
-        m_pusBonePalette[i] = (i < pkSrc->count) ? pkSrc->data[i] : 0;
+    m_pusBones = (unsigned short*)AllocBlock((unsigned short)n * 2);
+    for (unsigned int i = 0; i < m_usBones; ++i)
+        m_pusBones[i] = (i < pkSrc->count) ? pkSrc->data[i] : 0;
 
     unsigned short* remap = SplitTriangles(pkData, pkSet);
     ExpandTriangles(pkData, pkSet, remap);
@@ -1308,22 +1345,22 @@ void Skp_00a828d0_cls::PopulateSkinData(GeomData* pkData, Skp_00a828d0_src* pkSr
     unsigned int s;
     if (bWeights)
     {
-        m_usWeightsPerVertex = ucBonesPerVertex;
-        unsigned int cnt = (unsigned int)m_usWeightsPerVertex * m_usVertices;
-        m_pfVertexWeights = (float*)AllocBlock(cnt * 4);
-        m_pucBoneIndices = (unsigned char*)AllocBlock(cnt);
+        m_usBonesPerVertex = ucBonesPerVertex;
+        unsigned int cnt = (unsigned int)m_usBonesPerVertex * m_usVertices;
+        m_pfWeights = (float*)AllocBlock(cnt * 4);
+        m_pucBonePalette = (unsigned char*)AllocBlock(cnt);
         unsigned int* table = (unsigned int*)AllocBlock(uiBones * 4);
         pkSet = table;
         for (unsigned int i = 0; i < pkSrc->count; ++i)
-            table[m_pusBonePalette[i]] = i;
+            table[m_pusBones[i]] = i;
 
-        float* outW = m_pfVertexWeights;
-        unsigned char* outP = m_pucBoneIndices;
-        float* tmpW = (float*)AllocBlock(m_usWeightsPerVertex * 4);
-        unsigned char* tmpP = (unsigned char*)AllocBlock(m_usWeightsPerVertex);
+        float* outW = m_pfWeights;
+        unsigned char* outP = m_pucBonePalette;
+        float* tmpW = (float*)AllocBlock(m_usBonesPerVertex * 4);
+        unsigned char* tmpP = (unsigned char*)AllocBlock(m_usBonesPerVertex);
         for (s = 0; s < m_usVertices; ++s)
         {
-            Skp_00a828d0_grp* g = &pkGroups[m_pusSourceVertexIndices[s]];
+            Skp_00a828d0_grp* g = &pkGroups[m_pusVertexMap[s]];
             float* pW = tmpW;
             unsigned char* pP = tmpP;
             for (j = 0; j < g->count; ++j)
@@ -1332,16 +1369,16 @@ void Skp_00a828d0_cls::PopulateSkinData(GeomData* pkData, Skp_00a828d0_src* pkSr
                 *pW++ = it->weight;
                 *pP++ = (unsigned char)((unsigned int*)pkSet)[it->key];
             }
-            for (; j < m_usWeightsPerVertex; ++j)
+            for (; j < m_usBonesPerVertex; ++j)
             {
                 *pW++ = 0.0f;
                 *pP++ = 0;
             }
-            for (unsigned int k = 0; k < m_usWeightsPerVertex; ++k)
+            for (unsigned int k = 0; k < m_usBonesPerVertex; ++k)
             {
                 unsigned int idx = 0;
                 float best = tmpW[0];
-                for (j = 1; j < m_usWeightsPerVertex; ++j)
+                for (j = 1; j < m_usBonesPerVertex; ++j)
                 {
                     if (tmpW[j] > best)
                     {
@@ -1360,13 +1397,13 @@ void Skp_00a828d0_cls::PopulateSkinData(GeomData* pkData, Skp_00a828d0_src* pkSr
     }
     else
     {
-        m_usWeightsPerVertex = m_usBoneCount;
-        unsigned int cnt = (unsigned int)m_usBoneCount * m_usVertices;
-        m_pfVertexWeights = (float*)AllocBlock(cnt * 4);
-        float* outW = m_pfVertexWeights;
+        m_usBonesPerVertex = m_usBones;
+        unsigned int cnt = (unsigned int)m_usBones * m_usVertices;
+        m_pfWeights = (float*)AllocBlock(cnt * 4);
+        float* outW = m_pfWeights;
         for (s = 0; s < m_usVertices; ++s)
         {
-            Skp_00a828d0_grp* g = &pkGroups[m_pusSourceVertexIndices[s]];
+            Skp_00a828d0_grp* g = &pkGroups[m_pusVertexMap[s]];
             for (j = 0; j < pkSrc->count; ++j)
             {
                 float w;
@@ -1382,16 +1419,16 @@ void Skp_00a828d0_cls::PopulateSkinData(GeomData* pkData, Skp_00a828d0_src* pkSr
             store:
                 *outW++ = w;
             }
-            for (; j < m_usBoneCount; ++j)
+            for (; j < m_usBones; ++j)
                 *outW++ = 0.0f;
         }
         if (bZeroPalette)
         {
-            m_pucBoneIndices = (unsigned char*)AllocBlock(cnt);
-            unsigned char* outP = m_pucBoneIndices;
+            m_pucBonePalette = (unsigned char*)AllocBlock(cnt);
+            unsigned char* outP = m_pucBonePalette;
             for (s = 0; s < m_usVertices; ++s)
             {
-                for (j = 0; j < m_usBoneCount; ++j)
+                for (j = 0; j < m_usBones; ++j)
                     *outP++ = (unsigned char)j;
             }
         }
@@ -1433,16 +1470,19 @@ struct PartitionLoader : NiSkinPartition::Partition
 // Reads skin partition vertex, triangle, strip, weight and bone palette data from kStream, allocating buffers as needed.
 // @fnv 0x00a82d90
 // src: COMMUNITY 0x00a82d90
+// pdb: NiSkinPartition::Partition::LoadBinary | NiSkinPartition.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bHasWeights, bHasList, bHasPalette, uiListLen, uiInteractions, bHasMap
 void PartitionLoader::NiSkinPartition_Partition_LoadBinary(NiStream& kStream)
 {
     ReadBinaryValue(kStream, &m_usVertices);
     ReadBinaryValue(kStream, &m_usTriangles);
-    ReadBinaryValue(kStream, &m_usBoneCount);
+    ReadBinaryValue(kStream, &m_usBones);
     ReadBinaryValue(kStream, &m_usStrips);
-    ReadBinaryValue(kStream, &m_usWeightsPerVertex);
+    ReadBinaryValue(kStream, &m_usBonesPerVertex);
 
-    m_pusBonePalette = (unsigned short*)NiMalloc(sizeof(unsigned short) * m_usBoneCount);
-    ReadBinaryValue(kStream, m_pusBonePalette, m_usBoneCount);
+    m_pusBones = (unsigned short*)NiMalloc(sizeof(unsigned short) * m_usBones);
+    ReadBinaryValue(kStream, m_pusBones, m_usBones);
 
     bool bHasVertexMap;
     if (kStream.GetFileVersion() >= 0x0a000112)
@@ -1455,11 +1495,11 @@ void PartitionLoader::NiSkinPartition_Partition_LoadBinary(NiStream& kStream)
     }
     if (bHasVertexMap)
     {
-        m_pusSourceVertexIndices = (unsigned short*)NiMalloc(sizeof(unsigned short) * m_usVertices);
-        ReadBinaryValue(kStream, m_pusSourceVertexIndices, m_usVertices);
+        m_pusVertexMap = (unsigned short*)NiMalloc(sizeof(unsigned short) * m_usVertices);
+        ReadBinaryValue(kStream, m_pusVertexMap, m_usVertices);
     }
 
-    unsigned int bHasTriList = m_usWeightsPerVertex * m_usVertices;
+    unsigned int bHasTriList = m_usBonesPerVertex * m_usVertices;
     bool bHasWeights;
     if (kStream.GetFileVersion() >= 0x0a000112)
     {
@@ -1471,8 +1511,8 @@ void PartitionLoader::NiSkinPartition_Partition_LoadBinary(NiStream& kStream)
     }
     if (bHasWeights)
     {
-        m_pfVertexWeights = (float*)NiMalloc(sizeof(float) * bHasTriList);
-        ReadBinaryValue(kStream, m_pfVertexWeights, bHasTriList);
+        m_pfWeights = (float*)NiMalloc(sizeof(float) * bHasTriList);
+        ReadBinaryValue(kStream, m_pfWeights, bHasTriList);
     }
 
     unsigned int uiTriListLength;
@@ -1484,7 +1524,7 @@ void PartitionLoader::NiSkinPartition_Partition_LoadBinary(NiStream& kStream)
     {
         m_pusStripLengths = (unsigned short*)NiMalloc(sizeof(unsigned short) * m_usStrips);
         ReadBinaryValue(kStream, m_pusStripLengths, m_usStrips);
-        uiTriListLength = GetStripIndexCount();
+        uiTriListLength = NiSkinPartition_Partition_GetStripLengthSum();
     }
 
     bool uiNumWeights;
@@ -1506,8 +1546,8 @@ void PartitionLoader::NiSkinPartition_Partition_LoadBinary(NiStream& kStream)
     ReadBinaryValue(kStream, &bHasBonePalette);
     if (bHasBonePalette)
     {
-        m_pucBoneIndices = (unsigned char*)NiMalloc(sizeof(unsigned char) * bHasTriList);
-        ReadBinaryValue(kStream, m_pucBoneIndices, bHasTriList);
+        m_pucBonePalette = (unsigned char*)NiMalloc(sizeof(unsigned char) * bHasTriList);
+        ReadBinaryValue(kStream, m_pucBonePalette, bHasTriList);
     }
 }
 
@@ -1531,6 +1571,9 @@ class SaverA83C : public FUN_00a89af0_helper
 // Calls the base serialization method, writes m_uiCount, then serializes each partition.
 // @fnv 0x00a83ce0
 // src: XBOX_PDB 0x00a83ce0
+// pdb: NiSkinPartition::SaveBinary | NiSkinPartition.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
 void SaverA83C::NiSkinPartition_SaveBinary(NiStream& kStream)
 {
     nullsub_3(kStream);
@@ -1726,31 +1769,35 @@ public:
 };
 // Builds and deduplicates BoneLODControllerArray sets from mesh triangles and vertex bone weights, optionally remapping vertex indices.
 // @fnv 0x00a83d40
-void __stdcall BuildBoneLODControllerSets(ScriptProgram* mesh, BoneWeights* weights,
-                                          BoneArray<BoneLODControllerArray*>* sets, unsigned int* remap)
+// src: XBOX_RETAIL_PDB 0x00a83d40
+// pdb: NiSkinPartition::CreateInitialBoneSets | NiSkinPartition.obj | retail, object-file gap fill, high
+// pdb params: pkTriData, pkVertexInteraction, kBoneSets, apWArray
+// pdb locals: uiTriangles, i, iwcoords, bwValueFound, iindices, v, s, pBoneSet, v1, b, pNewSet, t, ausTriangle, pkNewSet, pkI, uiVertexBones, uiVert, uiBone, pkExistingSet
+void __stdcall NiSkinPartition_CreateInitialBoneSets(ScriptProgram* pkTriData, BoneWeights* pkVertexInteraction,
+                                          BoneArray<BoneLODControllerArray*>* kBoneSets, unsigned int* apWArray)
 {
-    unsigned int triangleCount = mesh->triangles;
+    unsigned int triangleCount = pkTriData->triangles;
     unsigned short vertices[3];
-    if (remap)
+    if (apWArray)
     {
-        for (unsigned int mappedTriangle = 0; mappedTriangle < mesh->triangles; ++mappedTriangle)
+        for (unsigned int mappedTriangle = 0; mappedTriangle < pkTriData->triangles; ++mappedTriangle)
         {
-            mesh->GetTriangle(mappedTriangle, vertices[0], vertices[1], vertices[2]);
-            unsigned int keys[3] = {remap[vertices[0]], remap[vertices[1]], remap[vertices[2]]};
+            pkTriData->GetTriangle(mappedTriangle, vertices[0], vertices[1], vertices[2]);
+            unsigned int keys[3] = {apWArray[vertices[0]], apWArray[vertices[1]], apWArray[vertices[2]]};
             for (unsigned int corner = 0; corner < 3; ++corner)
             {
                 bool found = false;
-                for (unsigned int index = 0; index < sets->count; ++index)
+                for (unsigned int index = 0; index < kBoneSets->count; ++index)
                 {
-                    BoneLODControllerArray* set = sets->data[index];
+                    BoneLODControllerArray* set = kBoneSets->data[index];
                     if (set->key == keys[corner])
                     {
                         found = true;
                         for (unsigned int vertex = 0; vertex < 3; ++vertex)
                         {
-                            for (unsigned int entry = 0; entry < weights[vertices[vertex]].count; ++entry)
+                            for (unsigned int entry = 0; entry < pkVertexInteraction[vertices[vertex]].count; ++entry)
                             {
-                                unsigned short bone = weights[vertices[vertex]].data[entry].bone;
+                                unsigned short bone = pkVertexInteraction[vertices[vertex]].data[entry].bone;
                                 if (set->Find(bone) == -1)
                                     set->Add(bone);
                             }
@@ -1764,15 +1811,15 @@ void __stdcall BuildBoneLODControllerSets(ScriptProgram* mesh, BoneWeights* weig
                     set->key = keys[corner];
                     for (unsigned int vertex = 0; vertex < 3; ++vertex)
                     {
-                        for (unsigned int entry = 0; entry < weights[vertices[vertex]].count; ++entry)
+                        for (unsigned int entry = 0; entry < pkVertexInteraction[vertices[vertex]].count; ++entry)
                         {
-                            unsigned short bone = weights[vertices[vertex]].data[entry].bone;
+                            unsigned short bone = pkVertexInteraction[vertices[vertex]].data[entry].bone;
                             if (set->Find(bone) == -1)
                                 set->Add(bone);
                         }
                     }
                     FUN_00ec6f20(set->data, set->count, 2, NiSkinData_BoneVertData_Compare);
-                    sets->Add(set);
+                    kBoneSets->Add(set);
                 }
             }
         }
@@ -1781,13 +1828,13 @@ void __stdcall BuildBoneLODControllerSets(ScriptProgram* mesh, BoneWeights* weig
     {
         for (unsigned int ordinaryTriangle = 0; ordinaryTriangle < triangleCount; ++ordinaryTriangle)
         {
-            mesh->GetTriangle(ordinaryTriangle, vertices[0], vertices[1], vertices[2]);
+            pkTriData->GetTriangle(ordinaryTriangle, vertices[0], vertices[1], vertices[2]);
             if (!(vertices[0] == vertices[1] || vertices[1] == vertices[2] || vertices[2] == vertices[0]))
             {
                 BoneLODControllerArray* set = new BoneLODControllerArray;
                 for (unsigned int corner = 0; corner < 3; ++corner)
                 {
-                    BoneWeights* list = weights + vertices[corner];
+                    BoneWeights* list = pkVertexInteraction + vertices[corner];
                     unsigned int count = list->count;
                     for (unsigned int entry = 0; entry < count; ++entry)
                     {
@@ -1802,9 +1849,9 @@ void __stdcall BuildBoneLODControllerSets(ScriptProgram* mesh, BoneWeights* weig
                 }
                 FUN_00ec6f20(set->data, set->count, 2, NiSkinData_BoneVertData_Compare);
                 unsigned int index = 0;
-                while (index < sets->count)
+                while (index < kBoneSets->count)
                 {
-                    BoneLODControllerArray* other = sets->data[index];
+                    BoneLODControllerArray* other = kBoneSets->data[index];
                     if (other->Contains(set))
                     {
                         delete set;
@@ -1813,17 +1860,17 @@ void __stdcall BuildBoneLODControllerSets(ScriptProgram* mesh, BoneWeights* weig
                     if (set->Contains(other))
                     {
                         delete other;
-                        --sets->count;
-                        sets->data[index] = sets->data[sets->count];
+                        --kBoneSets->count;
+                        kBoneSets->data[index] = kBoneSets->data[kBoneSets->count];
                     }
                     else
                         ++index;
                 }
-                if (index == sets->count)
+                if (index == kBoneSets->count)
                 {
-                    if (sets->count == sets->capacity)
-                        ((NiStreamLinkIDSet_niskinpartition*)sets)->Realloc(sets->capacity > 0 ? 2 * sets->capacity : 1);
-                    sets->data[sets->count++] = set;
+                    if (kBoneSets->count == kBoneSets->capacity)
+                        ((NiStreamLinkIDSet_niskinpartition*)kBoneSets)->Realloc(kBoneSets->capacity > 0 ? 2 * kBoneSets->capacity : 1);
+                    kBoneSets->data[kBoneSets->count++] = set;
                 }
             }
         }
@@ -1868,6 +1915,9 @@ class CA82770MergeIterator
 
 // Iterates through the merged sequence of this and pkOther index arrays and returns the total number of elements visited.
 // @fnv 0x00a82770
+// pdb: NiSkinPartition::BoneSet::MergedSize | NiSkinPartition.obj | retail, object-file run extension, low
+// pdb params: kThat
+// pdb locals: kMerger, uiMergeSize
 unsigned int CA82770IndexArray::GetMergeCount(CA82770IndexArray* pkOther)
 {
     CA82770MergeIterator kIter(this, pkOther);
@@ -1902,6 +1952,9 @@ struct ListMergeIter
 
 // Appends values returned by kIter.Next to a new buffer, then replaces m_pusData and updates m_u4 and m_uiCount.
 // @fnv 0x00a827f0
+// pdb: NiSkinPartition::BoneSet::Merge | NiSkinPartition.obj | retail, object-file run extension, low
+// pdb params: kThat
+// pdb locals: pusNewBase, kMerger, uiNewAlloced, uiMergeSize
 void ListMerge::Merge(const ListMerge* pkOther)
 {
     ListMergeIter kIter;
@@ -2149,14 +2202,14 @@ struct Geometry
     int unk3c;
     unsigned short triangles, unk42;
 
-    __declspec(nothrow) void BuildIndexMappings(unsigned short**, unsigned short**, bool) throw();
-    __declspec(nothrow) int CompareVertices(unsigned int, unsigned int, bool) throw();
+    __declspec(nothrow) void NiGeometryData_IndexSort(unsigned short**, unsigned short**, bool) throw();
+    __declspec(nothrow) int NiGeometryData_VertexCompare(unsigned int, unsigned int, bool) throw();
 };
 
 struct Processor
 {
-    __declspec(nothrow) void MergeGroupWeights(NiTPointerMap<unsigned int, float>*, const unsigned short*, Group*) throw();
-    bool ReduceGroupWeights(Geometry*, unsigned char, unsigned char, Group*);
+    __declspec(nothrow) void NiSkinPartition_MakeBoneMap(NiTPointerMap<unsigned int, float>*, const unsigned short*, Group*) throw();
+    bool NiSkinPartition_RemoveExcessInteractions(Geometry*, unsigned char, unsigned char, Group*);
 };
 
 struct State
@@ -2167,28 +2220,32 @@ struct State
 };
 // Limits bone weights per triangle and vertex by removing lowest-weight bones, returning false if a group becomes empty.
 // @fnv 0x00a833b0
-bool Processor::ReduceGroupWeights(Geometry* geometry, unsigned char maxTriangle, unsigned char maxVertex,
-                                   Group* groups)
+// src: XBOX_RETAIL_PDB 0x00a833b0
+// pdb: NiSkinPartition::RemoveExcessInteractions | NiSkinPartition.obj | retail, call graph, high
+// pdb params: pkTriData, ucBonesPerPartition, ucBonesPerVertex, pkVertexInteraction
+// pdb locals: kMap, t, pusIndex1, uiTriangles, pusIndex0, kCoincidentVerts, uiVertices, v, ausTriangle, uiBones, pos, fMinWeight, uiMinBone, fWeight, uiBone, pkI, uiStart, uiCoincidentVert, uiEnd, uiVert, j
+bool Processor::NiSkinPartition_RemoveExcessInteractions(Geometry* pkTriData, unsigned char ucBonesPerPartition, unsigned char ucBonesPerVertex,
+                                   Group* pkVertexInteraction)
 {
     State state;
-    unsigned int vertices = geometry->vertices;
-    state.triangles = geometry->triangles;
+    unsigned int vertices = pkTriData->vertices;
+    state.triangles = pkTriData->triangles;
     NiTPointerMap<unsigned int, float> map;
     unsigned int triangle, corner;
     IndexList linkedVertices;
     unsigned short* order;
     unsigned short* reverse;
-    geometry->BuildIndexMappings(&order, &reverse, true);
+    pkTriData->NiGeometryData_IndexSort(&order, &reverse, true);
 
     for (triangle = 0; triangle < state.triangles; triangle++)
     {
         unsigned short indices[3];
-        geometry->GetTriangleNoThrow(triangle, indices[0], indices[1], indices[2]);
+        pkTriData->GetTriangleNoThrow(triangle, indices[0], indices[1], indices[2]);
         if (indices[0] != indices[1] && indices[1] != indices[2] && indices[2] != indices[0])
         {
-            MergeGroupWeights(&map, indices, groups);
+            NiSkinPartition_MakeBoneMap(&map, indices, pkVertexInteraction);
             unsigned int count = map.m_kItemCount.m_uiCount;
-            if (count > maxTriangle)
+            if (count > ucBonesPerPartition)
             {
                 for (;;)
                 {
@@ -2211,20 +2268,20 @@ bool Processor::ReduceGroupWeights(Geometry* geometry, unsigned char maxTriangle
                     {
                         unsigned int vertex = indices[corner];
                         linkedVertices.Add(vertex, linkedVertices.capacity);
-                        Group* group = &groups[vertex];
+                        Group* group = &pkVertexInteraction[vertex];
                         unsigned int before, center, other;
                         before = center = reverse[vertex];
 
-                        while (before > 0 && !geometry->CompareVertices(other = order[before - 1], vertex, true))
+                        while (before > 0 && !pkTriData->NiGeometryData_VertexCompare(other = order[before - 1], vertex, true))
                         {
-                            if (groups[other].SameBones(*group))
+                            if (pkVertexInteraction[other].SameBones(*group))
                                 linkedVertices.Add(other, linkedVertices.capacity);
                             --before;
                         }
                         while (center < vertices - 1 &&
-                               !geometry->CompareVertices(other = order[center + 1], vertex, true))
+                               !pkTriData->NiGeometryData_VertexCompare(other = order[center + 1], vertex, true))
                         {
-                            if (groups[other].SameBones(*group))
+                            if (pkVertexInteraction[other].SameBones(*group))
                                 linkedVertices.Add(other, linkedVertices.capacity);
                             ++center;
                         }
@@ -2232,7 +2289,7 @@ bool Processor::ReduceGroupWeights(Geometry* geometry, unsigned char maxTriangle
                         for (unsigned int n = 0; n < linkedVertices.count; n++)
                         {
                             other = linkedVertices.data[n];
-                            group = &groups[other];
+                            group = &pkVertexInteraction[other];
                             if (group->Remove(remove))
                             {
                                 if (group->count == 0)
@@ -2247,10 +2304,10 @@ bool Processor::ReduceGroupWeights(Geometry* geometry, unsigned char maxTriangle
                         }
                         linkedVertices.count = 0;
                     }
-                    if (--count == maxTriangle)
+                    if (--count == ucBonesPerPartition)
                         break;
                     map.RemoveAll();
-                    MergeGroupWeights(&map, indices, groups);
+                    NiSkinPartition_MakeBoneMap(&map, indices, pkVertexInteraction);
                 }
             }
             map.RemoveAll();
@@ -2259,11 +2316,11 @@ bool Processor::ReduceGroupWeights(Geometry* geometry, unsigned char maxTriangle
 
     for (corner = 0; corner < vertices; corner++)
     {
-        Group* group = &groups[corner];
-        if (group->count > maxVertex)
+        Group* group = &pkVertexInteraction[corner];
+        if (group->count > ucBonesPerVertex)
         {
             FUN_00ec6f20(group->entries, group->count, 8, CompareFloatDescending);
-            group->count = maxVertex;
+            group->count = ucBonesPerVertex;
             group->NormalizeWeights();
         }
     }

@@ -12,6 +12,7 @@ struct S00
 void __cdecl _delete(void*, unsigned int);
 // Calls _FUN_00a72010, then if flags has bit 1 set deletes this with size 0xF0, and returns this.
 // @fnv 0x00a9b3a0
+// pdb: NiAmbientLight::NiAmbientLight | NiAmbientLight.obj | debug, object-file run extension, low
 void* S00::DestroyIfFlagged(unsigned int flags)
 {
     _FUN_00a72010();
@@ -26,22 +27,26 @@ extern void const* const g_011f5f6c;
 // Appends the string returned by _FUN_00a7d330(g_011f5f6c) to the StrArr, growing it via SetSize when the size reaches the max.
 // @fnv 0x00a9b430
 // src: XBOX_PDB 0x00a9b430
-void __stdcall NiAmbientLight_GetViewerStrings(StrArr* pStrArr)
+// pdb: NiAmbientLight::GetViewerStrings | NiAmbientLight.obj | retail, upstream name already matches, high
+// pdb params: pStrings
+void __stdcall NiAmbientLight_GetViewerStrings(StrArr* pStrings)
 {
-    AppendEffectProperties(pStrArr);
+    AppendEffectProperties(pStrings);
     char* pkString = _FUN_00a7d330(g_011f5f6c);
-    unsigned int uiIndex = pStrArr->m_usSize;
-    if (uiIndex >= pStrArr->m_usMaxSize)
+    unsigned int uiIndex = pStrings->m_usSize;
+    if (uiIndex >= pStrings->m_usMaxSize)
     {
-        pStrArr->SetSize(uiIndex + pStrArr->m_usGrowBy);
+        pStrings->SetSize(uiIndex + pStrings->m_usGrowBy);
     }
-    pStrArr->SetAt(uiIndex, pkString);
+    pStrings->SetAt(uiIndex, pkString);
 }
 
 void __cdecl FUN_00a72080();
 
 // @fnv 0x00a75c00
 // src: XBOX_PDB 0x00a75c00
+// pdb: NiAmbientLight::LoadBinary | NiAmbientLight.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiAmbientLight_LoadBinary()
 {
     FUN_00a72080();
@@ -51,6 +56,8 @@ void NiLight_RegisterStreamables();
 
 // @fnv 0x00a75c10
 // src: XBOX_PDB 0x00a75c10
+// pdb: NiAmbientLight::RegisterStreamables | NiAmbientLight.obj | debug, upstream name already matches, high
+// pdb params: stream
 void NiAmbientLight_RegisterStreamables()
 {
     NiLight_RegisterStreamables();
@@ -74,30 +81,34 @@ class FUN_00a71f60
     char unk09e[0x52];
 };
 
-class CloneA9B3 : public FUN_00a71f60
+// pdb: class NiAmbientLight, size 0x120 (here 0xf0), bases: NiLight, 0 members
+class NiAmbientLight : public FUN_00a71f60
 {
   public:
-    CloneA9B3() throw()
+    NiAmbientLight() throw()
     {
         m_b9d = false;
     }
-    virtual ~CloneA9B3() throw();
+    virtual ~NiAmbientLight() throw();
 
     static void* operator new(unsigned int n)
     {
         return TESObjectDoorController::operator new(n);
     }
 
-    void FUN_00a71ec0(CloneA9B3* dest, CloningProcessA9B3& cloning);
-    CloneA9B3* NiAmbientLight_CreateClone(CloningProcessA9B3& cloning);
+    void FUN_00a71ec0(NiAmbientLight* dest, CloningProcessA9B3& cloning);
+    NiAmbientLight* NiAmbientLight_CreateClone(CloningProcessA9B3& kCloning);
 };
 
 // Allocates a new CloneA9B3, calls FUN_00a71ec0 with the instance and cloning argument, then returns it.
 // @fnv 0x00a9b3d0
 // src: XBOX_PDB 0x00a9b3d0
-CloneA9B3* CloneA9B3::NiAmbientLight_CreateClone(CloningProcessA9B3& cloning)
+// pdb: NiAmbientLight::CreateClone | NiAmbientLight.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
+NiAmbientLight* NiAmbientLight::NiAmbientLight_CreateClone(CloningProcessA9B3& kCloning)
 {
-    CloneA9B3* p = new CloneA9B3;
-    FUN_00a71ec0(p, cloning);
+    NiAmbientLight* p = new NiAmbientLight;
+    FUN_00a71ec0(p, kCloning);
     return p;
 }

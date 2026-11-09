@@ -9,6 +9,8 @@ void NetworkSystemUtility::RegisterCallback(void(__cdecl* callback)(NetEvent, un
         callback(NetworkStatusChanged, m_bSteamRunning != 0);
 }
 // @fnv 0x00af2c90
+// pdb: BSAwardsSystemUtility::Initialize | BSAwardsSystemUtility_Xenon.obj | retail, call graph, low
+// pdb note: debug build links it to BSNetworkSystemUtility::QInstance
 NetworkSystemUtility& NetworkSystemUtility::GetRandomGenerator()
 {
     if (!DAT_011f7270)
@@ -17,8 +19,9 @@ NetworkSystemUtility& NetworkSystemUtility::GetRandomGenerator()
 }
 
 // @fnv 0x00af2d40
-// src: COMMUNITY 0x00af2d40
-void* __fastcall BSNetworkSystemUtility_BSNetworkSystemUtility(void* pThis)
+// src: XBOX_DEBUG_PDB 0x00af2d40
+// pdb: BSNetworkSystemUtility::BSNetworkSystemUtility | BSNetworkSystemUtility_Xenon.obj | debug, upstream name already matches, high
+void* __fastcall BSNetworkSystemUtility_ctor(void* pThis)
 {
     *(bool*)pThis = false;
     *((void**)pThis + 1) = 0;

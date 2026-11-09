@@ -122,7 +122,7 @@ class Query9B6
 {
   public:
     void SetWorld(World9B6* pkWorld);
-    void Cast(NiPoint3& kFrom, NiPoint3& kWorldPosition, float fScaleMultiplier);
+    void Cast(NiPoint3& aOrigin, NiPoint3& aDirection, float afPickDistance);
     Results9B6* GetResults();
 };
 
@@ -136,8 +136,8 @@ class SpherePick9B6
 {
   public:
     SpherePick9B6();
-    void SetPosition(const hkVector4& kPos);
-    void SetRadius(float fRadius);
+    void SetPosition(const hkVector4& newPos);
+    void SetRadius(float newRadius);
     hkVector4 m_kPathOffset;
 };
 
@@ -152,7 +152,7 @@ class BodyPart9B6
 class BodyPartData9B6
 {
   public:
-    BodyPart9B6* GetPartByType(int iType);
+    BodyPart9B6* GetPartByType(int aeIndex);
     BodyPart9B6* GetPart(int iIndex);
 };
 
@@ -498,7 +498,7 @@ class Ref9B6
     virtual void v35c();
     virtual bool IsCrippled();
     Base9B6* GetBaseObject();
-    int GetPartIndex(NiAVObject* pkObject);
+    int GetPartIndex(NiAVObject* apNode);
     unsigned int unk04;
     unsigned int unk08;
     unsigned int unk0c;
@@ -661,8 +661,8 @@ class Attacker9B6
     virtual void v1c8();
     virtual void v1cc();
     virtual NiAVObject* Get3D();
-    NiPoint3 GetEyePosition(int iMode);
-    void GetLook(NiPoint3& kPos, NiPoint3& kWorldPosition, int iMode);
+    NiPoint3 GetEyePosition(int abWorldSpace);
+    void GetLook(NiPoint3& aOrigin, NiPoint3& aDirection, int abIncludeCameraOffset);
     Middle9B6* GetMiddle();
 };
 extern Attacker9B6* g_pkPlayer9B6;
@@ -711,21 +711,21 @@ extern FloatSetting9B6 g_kLinkScale9B6;
 extern FloatSetting9B6 g_kCrippledScale9B6;
 
 bool __cdecl ActionPoints_IsMeleeAttackAction(void* pvForm);
-Query9B6* __cdecl HitCaster_GetInstance(int iNotPlayer, int iMode);
-NiAVObject* __cdecl GetAVObjectForCollidable(Collidable9B6* pkCollidable);
+Query9B6* __cdecl HitCaster_GetInstance(int eSize, int abCreate);
+NiAVObject* __cdecl GetAVObjectForCollidable(Collidable9B6* aphkCol);
 Ref9B6* __cdecl TESObjectREFR_FindReferenceFor3D(NiAVObject* pkObject);
 Entity9B6* __cdecl hkpGetRigidBody(Collidable9B6* pkCollidable);
 void __cdecl FUN_00458620(NiPoint3& kOut, const hkVector4& kIn);
-void __cdecl NI2HK(hkVector4& kOut, const NiPoint3& kIn);
-Collision9B6* __cdecl bhkUtilFunctions_GetClosestBody(NiAVObject* pkRoot, SpherePick9B6* pkPick, int iFlags);
-float __cdecl CombatFormulas_CalcTargetedLimbDamage(ActorValueOwner* pkOwner, BodyPart9B6* pkPart, float afChance);
+void __cdecl NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
+Collision9B6* __cdecl bhkUtilFunctions_GetClosestBody(NiAVObject* apRoot, SpherePick9B6* arSphere, int abIgnoreHead);
+float __cdecl CombatFormulas_CalcTargetedLimbDamage(ActorValueOwner* apTarget, BodyPart9B6* apBodyPart, float afHealthDamage);
 
 class Target9B6
 {
   public:
     bool HasFlag(int iFlag);
     void SetChance(float afChance);
-    void HitData_SetTargetedLimb(Event9B6* pkEvent);
+    void HitData_SetTargetedLimb(Event9B6* apProjectile);
     Attacker9B6* m_pkAttacker;
     Ref9B6* m_pkTarget;
     int unk08;
@@ -750,7 +750,10 @@ class Target9B6
 #pragma strict_gs_check(on)
 // @fnv 0x009b6620
 // src: XBOX_PDB 0x009b6620
-void Target9B6::HitData_SetTargetedLimb(Event9B6* pkEvent)
+// pdb: HitData::SetTargetedLimb | HitData.obj | retail, upstream name already matches, high
+// pdb params: apProjectile
+// pdb locals: pbodyPart, buseWeaponPosition, pbodyPartData, pimpactData, pcell, origin, eyepos, fdistance, viewdir, bodyPartChooser, roughHitPos, direction, bhitvictim, pcollector, phitCaster, i, pav, pref, hitPoint, pbody, elimb, ppossibleHit, victimPos, pos ...
+void Target9B6::HitData_SetTargetedLimb(Event9B6* apProjectile)
 {
     if (!m_pkTarget || !m_pkTarget->IsActor())
         return;
@@ -780,16 +783,16 @@ void Target9B6::HitData_SetTargetedLimb(Event9B6* pkEvent)
             m_iPart = 0xe;
         }
     }
-    else if (pkEvent)
+    else if (apProjectile)
     {
         bSearch = false;
-        Contact9B6* pkContact = pkEvent->FindContact(m_pkTarget);
+        Contact9B6* pkContact = apProjectile->FindContact(m_pkTarget);
         if (pkContact)
         {
             m_iPart = pkContact->m_iPart;
             pkPart = pkParts->GetPart(m_iPart);
             m_kPathOffset = pkContact->m_kPathOffset;
-            m_kLightVector = pkEvent->GetDirection();
+            m_kLightVector = apProjectile->GetDirection();
             m_kLightVector.Unitize();
             m_kLightVector.ComputeValue_0063c8a0(-pkContact->m_kPlaneNormal);
             m_kLightVector.Unitize();

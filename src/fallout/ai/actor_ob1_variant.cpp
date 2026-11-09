@@ -172,7 +172,10 @@ __forceinline void ConstructColors(ArrowColor* const& memory)
 }
 // @fnv 0x00c59a50
 // src: XBOX_PDB 0x00c59a50
-ArrowGeometry* __cdecl BSTestObjects_CreateDirArrow(const ArrowPoint& direction, const ArrowColor* color)
+// pdb: BSTestObjects::CreateDirArrow | BSTestObjects.obj | retail, string-set bridge, high
+// pdb params: arDir, apColor
+// pdb locals: pnt1, dir, flength, flag, pnt2, cross, lines, vertex, color
+ArrowGeometry* __cdecl BSTestObjects_CreateDirArrow(const ArrowPoint& arDir, const ArrowColor* apColor)
 {
     ArrowPoint n3;
     float q;
@@ -198,7 +201,7 @@ ArrowGeometry* __cdecl BSTestObjects_CreateDirArrow(const ArrowPoint& direction,
         ArrowColor green8;
         ArrowColor c;
         unsigned char* connectionResult4;
-        n3 = direction;
+        n3 = arDir;
         q = n3.Length();
         if (q < 8.0)
         {
@@ -225,13 +228,13 @@ ArrowGeometry* __cdecl BSTestObjects_CreateDirArrow(const ArrowPoint& direction,
         connections[2] = head;
         connections[3] = n3;
         connections[4] = left5;
-        if (!color)
-            color = &DAT_012032f8;
+        if (!apColor)
+            apColor = &DAT_012032f8;
         constructionResult = (ArrowColor*)_g_memoryManager.Allocate(96);
         aColorResult = constructionResult ? (ConstructColors(constructionResult), constructionResult) : 0;
         normalizedC = aColorResult;
-        normalizedC[0] = *color;
-        normalizedC[1] = *color;
+        normalizedC[0] = *apColor;
+        normalizedC[1] = *apColor;
         aX.r = 0;
         aX.g = 1;
         aX.b = 0;

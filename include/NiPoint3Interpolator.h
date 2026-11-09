@@ -9,6 +9,7 @@ class ImageSpaceModifierInstanceDOF;
 class TESBoundObject;
 class ExtraDataList;
 
+// pdb: class NiPoint3Interpolator, size 0x20 (here 0x48), bases: NiKeyBasedInterpolator, 3 members
 class NiPoint3Interpolator : public NiKeyBasedInterpolator
 {
   public:
@@ -23,8 +24,8 @@ class NiPoint3Interpolator : public NiKeyBasedInterpolator
     virtual void LoadBinary(NiStream& arStream);
     virtual bool RegisterStreamables(NiStream& arStream);
     virtual void SaveBinary(NiStream& arStream);
-    virtual bool IsEqual(NiObject* apObject) const;
-    virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
+    virtual bool IsEqual(NiObject* pkObject) const;
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
     virtual bool UpdatePoint3(float time, NiObjectNET* target, NiPoint3& value);
     virtual bool IsPoint3ValueSupported() const;
     virtual void Collapse();
@@ -39,15 +40,15 @@ class NiPoint3Interpolator : public NiKeyBasedInterpolator
     virtual unsigned char GetColorKeySize(unsigned short usChannel) const;
     virtual void vf61(unsigned short usChannel);
 
-    bool Update(float time, NiObjectNET* target, NiPoint3& value);
+    bool Update(float fTime, NiObjectNET* pkInterpTarget, NiPoint3& kValue);
     void CreateObject(int mode, bool force);
     void CopyMemberData(NiPoint3Interpolator* pkDest, CloningProcess& kCloning);
     void CopyMemberData(NiPoint3Interpolator* pkDest, void* pvCloning);
     void CloneTo(NiPoint3Interpolator* pkDest, CloningProcess& kCloning);
-    NiPoint3Interpolator* CreateClone_00a49b30(void* pvCloning);
-    NiPoint3Interpolator* CreateRangeInterpolator(float startTime, float endTime);
+    NiPoint3Interpolator* CreateClone_00a49b30(void* kCloning);
+    NiPoint3Interpolator* CreateRangeInterpolator(float fStartTime, float fEndTime);
     void CollapseConstantPosData();
-    void SetPoseValue(NiPoint3 value);
+    void SetPoseValue(NiPoint3 kPoseValue);
 
     union
     {

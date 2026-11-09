@@ -3,6 +3,7 @@
 #include "NiTPointerMap.h"
 
 // RTTI: NumericIDBufferMap : NiTPointerMap<unsigned int,void *>, vftable 0x01080554: only the destructor is its own.
+// pdb: class NumericIDBufferMap, size 0x10, bases: NiTPointerMap<unsigned int, 0 members
 class NumericIDBufferMap : public NiTPointerMap<unsigned int, void*>
 {
 public:

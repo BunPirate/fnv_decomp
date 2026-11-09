@@ -42,7 +42,7 @@ public:
                                       hkpShapeKey uKeyA,
                                       hkpShapeKey uKeyB) const = 0;
 
-    unsigned int m_prepad0;
+    unsigned int m_prepad;
     unsigned int m_prepad1;
     unsigned int m_type;
 

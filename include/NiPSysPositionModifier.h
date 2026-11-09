@@ -2,6 +2,7 @@
 
 #include "NiPSysModifier.h"
 
+// pdb: class NiPSysPositionModifier, size 0x18, bases: NiPSysModifier, 0 members
 class NiPSysPositionModifier : public NiPSysModifier
 {
 public:

@@ -24,6 +24,7 @@ enum
 
 // Zero-initialises the condition item and sets its function code to 0x1048.
 // @fnv 0x006811e0
+// pdb: TESConditionItem::TESConditionItem | TESConditionItem.obj | retail, upstream name already matches, high
 TESConditionItem::TESConditionItem()
 {
     memset(this, 0, sizeof(TESConditionItem));
@@ -32,7 +33,10 @@ TESConditionItem::TESConditionItem()
 }
 
 // @fnv 0x00681490
-float TESConditionItem::GetConditionValue()
+// src: XBOX_DEBUG_PDB 0x00681490
+// pdb: TESConditionItem::GetComparisonValue | TESConditionItem.obj | debug, call graph, high
+// pdb locals: fretval
+float TESConditionItem::GetComparisonValue()
 {
     float value = 0.0f;
     if (GetParamCount())
@@ -49,23 +53,25 @@ float TESConditionItem::GetConditionValue()
 
 // Loads a TESConditionItem from a TESFile chunk, applies endian fixup, and derives the object type from m_flags bits 2 and 8.
 // @fnv 0x00681950
-void TESConditionItem::Load(TESFile* file)
+// pdb: TESConditionItem::Load | TESConditionItem.obj | retail, upstream name already matches, high
+// pdb params: apFile
+void TESConditionItem::Load(TESFile* apFile)
 {
-    if (file && file->GetChunkID() == kConditionDataChunk)
+    if (apFile && apFile->GetChunkID() == kConditionDataChunk)
     {
-        file->GetChunkData(this, sizeof(TESConditionItem));
-        if (file->IsEndianConversionRequired())
+        apFile->GetChunkData(this, sizeof(TESConditionItem));
+        if (apFile->IsEndianConversionRequired())
             FixupAfterLoad();
     }
-    if (m_flags & 2)
+    if (Data & 2)
     {
         SetObjectType(1);
-        m_flags &= ~2;
+        Data &= ~2;
     }
-    if (m_flags & 8)
+    if (Data & 8)
     {
         SetObjectType(2);
-        m_flags &= ~8;
+        Data &= ~8;
     }
 }
 
@@ -75,47 +81,51 @@ void TESConditionItem::Load(TESFile* file)
 // and dValue the function data.
 // Evaluates the condition item's script function against the subject/target references and compares the result to the comparison value.
 // @fnv 0x00681600
-bool TESConditionItem::ContainsTrait(TESObjectREFR* pSubjectRef, TESObjectREFR* target, bool& special)
+// src: XBOX_RETAIL_PDB 0x00681600
+// pdb: TESConditionItem::IsTrue | TESConditionItem.obj | retail, call graph (shared callers), high
+// pdb params: apActionRef, apTargetRef
+// pdb locals: bIgnoreMe
+bool TESConditionItem::IsTrue(TESObjectREFR* apActionRef, TESObjectREFR* apTargetRef, bool& abDispositionFailure)
 {
     bool pData = false;
     double pParam = 0.0;
-    TESObjectREFR* pTarget = pSubjectRef;
-    TESObjectREFR* pSubject = target;
-    special = false;
+    TESObjectREFR* pTarget = apActionRef;
+    TESObjectREFR* pSubject = apTargetRef;
+    abDispositionFailure = false;
     switch (((TimeGlobal*)this)->GetTimeStamp())
     {
     case 0:
         break;
     case 1:
         pTarget = pSubject;
-        pSubject = pSubjectRef;
+        pSubject = apActionRef;
         break;
     case 2:
         pTarget = m_objectRef;
         break;
     case 3:
         pTarget = 0;
-        pSubject = pSubjectRef;
-        if (pSubjectRef && pSubjectRef->IsActor())
+        pSubject = apActionRef;
+        if (apActionRef && apActionRef->IsActor())
         {
-            Actor* pActor = (Actor*)pSubjectRef;
+            Actor* pActor = (Actor*)apActionRef;
             pTarget = pActor->GetCombatTarget();
         }
         break;
     case 4:
         pTarget = 0;
         pSubject = 0;
-        if (pSubjectRef)
-            pTarget = pSubjectRef->GetLinkedRef();
+        if (apActionRef)
+            pTarget = apActionRef->GetLinkedRef();
         break;
     }
     FUNCTION_DATA* dValue = (FUNCTION_DATA*)((TESTopicInfoData*)this)->GetLinkToList();
-    TESObjectREFR* bResult = dValue->param;
+    TESObjectREFR* bResult = dValue->pParam;
     if (!bResult && ScriptFunctionData::GetParamIsReference(dValue, 0))
         bResult = pSubject;
-    if (g_scriptCommands[dValue->function].eval && (!g_scriptCommands[dValue->function].needsRef || pTarget))
+    if (g_scriptCommands[dValue->iFunction].eval && (!g_scriptCommands[dValue->iFunction].needsRef || pTarget))
     {
-        if (g_scriptCommands[dValue->function].eval(pTarget, bResult, dValue->param2, pParam))
+        if (g_scriptCommands[dValue->iFunction].eval(pTarget, bResult, dValue->param2, pParam))
         {
             float fComparison;
             if (m_comparisonGlobal && GetParamCount())
@@ -130,10 +140,10 @@ bool TESConditionItem::ContainsTrait(TESObjectREFR* pSubjectRef, TESObjectREFR* 
                 {
                 case 0x104c:
                     if (GetComparisonCondition() == 2 || GetComparisonCondition() == 3)
-                        special = true;
+                        abDispositionFailure = true;
                     break;
                 case 0x1193:
-                    special = true;
+                    abDispositionFailure = true;
                     break;
                 }
             }
@@ -146,18 +156,21 @@ bool TESConditionItem::ContainsTrait(TESObjectREFR* pSubjectRef, TESObjectREFR* 
 // info form, quest holds its topic, and text holds its quest. These spellings
 // preserve the original compiler allocation order.
 // @fnv 0x006819e0
-void TESConditionItem::InitItem(TESForm* owner)
+// pdb: TESConditionItem::InitItem | TESConditionItem.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: itempint, formstring, infotext, pinfo, ptopic, pquest, formID
+void TESConditionItem::InitItem(TESForm* apOwner)
 {
-    ScriptFunctionData::InitItem(owner, (FUNCTION_DATA*)((TESTopicInfoData*)this)->GetLinkToList());
+    ScriptFunctionData::TESParameters_InitItem(apOwner, (FUNCTION_DATA*)((TESTopicInfoData*)this)->GetLinkToList());
     unsigned int referenceID = (unsigned int)m_objectRef;
     if (referenceID)
     {
-        TESForm::RemapFormIDForFile(referenceID, owner->GetFile(-1));
+        TESForm::RemapFormIDForFile(referenceID, apOwner->GetFile(-1));
         m_objectRef = dynamic_cast<TESObjectREFR*>(TESForm::GetFormByID(referenceID));
         if (!m_objectRef)
         {
-            if (owner)
-                Warning(DAT_010694b0, referenceID, owner->TESForm_GetFormTypeString(), owner->GetName(), owner->GetFormID());
+            if (apOwner)
+                Warning(DAT_010694b0, referenceID, apOwner->TESForm_GetFormTypeString(), apOwner->GetName(), apOwner->GetFormID());
             else
                 Warning(DAT_01069458, referenceID);
         }
@@ -165,51 +178,51 @@ void TESConditionItem::InitItem(TESForm* owner)
     if (!g_scriptCommands[GetConditionFunction()].eval)
     {
         char buffer[0x410];
-        if (((const TESForm*)owner)->GetFormType() == 0x46)
+        if (((const TESForm*)apOwner)->GetFormType() == 0x46)
         {
-            TESTopicInfo* topic = dynamic_cast<TESTopicInfo*>(owner);
+            TESTopicInfo* topic = dynamic_cast<TESTopicInfo*>(apOwner);
             TESTopic* quest = TESTopic::GetTopicFromInfo(topic);
             TESQuest* text = 0;
             if (quest)
                 text = quest->GetParentQuest(topic);
             BSStringT<char> info;
-            topic->FormatDebugInfo(info, false);
+            topic->GetInfoDisplayText(info, false);
             sprintf(buffer, DAT_0104cae0, topic->GetFormID(), ((NiPointer<NiNode>*)&info)->operator->(),
                     text ? text->GetEditorName() : g_011c72c0_arg1, text ? text->GetFormID() : 0,
                     quest ? quest->GetName() : g_011c72c0_arg1, quest ? quest->GetFormID() : 0);
         }
         else
         {
-            sprintf(buffer, DAT_01069440, owner->TESForm_GetFormTypeString(), owner->GetName(), owner->GetFormID());
+            sprintf(buffer, DAT_01069440, apOwner->TESForm_GetFormTypeString(), apOwner->GetName(), apOwner->GetFormID());
         }
-        Warning(DAT_010693d8, buffer, ((TESDataHandler*)owner->GetFile(-1))->GetTESImageSpaceList(),
+        Warning(DAT_010693d8, buffer, ((TESDataHandler*)apOwner->GetFile(-1))->GetTESImageSpaceList(),
                 g_scriptCommands[GetConditionFunction()].name);
     }
     if (GetParamCount() && m_comparisonGlobal)
     {
         unsigned int globalID = (unsigned int)m_comparisonGlobal;
-        TESForm::RemapFormIDForFile(globalID, owner->GetFile(-1));
+        TESForm::RemapFormIDForFile(globalID, apOwner->GetFile(-1));
         m_comparisonGlobal = dynamic_cast<TESGlobal*>(TESForm::GetFormByID(globalID));
         if (!m_comparisonGlobal)
         {
             char buffer[0x410];
-            if (((const TESForm*)owner)->GetFormType() == 0x46)
+            if (((const TESForm*)apOwner)->GetFormType() == 0x46)
             {
-                TESTopicInfo* topic = dynamic_cast<TESTopicInfo*>(owner);
+                TESTopicInfo* topic = dynamic_cast<TESTopicInfo*>(apOwner);
                 TESTopic* quest = TESTopic::GetTopicFromInfo(topic);
                 TESQuest* text = 0;
                 if (quest)
                     text = quest->GetParentQuest(topic);
                 BSStringT<char> info;
-                topic->FormatDebugInfo(info, false);
+                topic->GetInfoDisplayText(info, false);
                 FUN_00eca38d(buffer, 0x410, DAT_0104cae0, topic->GetFormID(), ((NiPointer<NiNode>*)&info)->operator->(),
                              text ? text->GetEditorName() : g_011c72c0_arg1, text ? text->GetFormID() : 0,
                              quest ? quest->GetName() : g_011c72c0_arg1, quest ? quest->GetFormID() : 0);
             }
             else
             {
-                FUN_00eca38d(buffer, 0x410, DAT_01069440, owner->TESForm_GetFormTypeString(), owner->GetName(),
-                             owner->GetFormID());
+                FUN_00eca38d(buffer, 0x410, DAT_01069440, apOwner->TESForm_GetFormTypeString(), apOwner->GetName(),
+                             apOwner->GetFormID());
             }
             Warning(DAT_01069378, globalID, buffer);
         }
@@ -229,6 +242,8 @@ struct FUN_00681460_helper : public TESConditionItem
 };
 
 // @fnv 0x00681460
+// pdb: TESConditionItem::SetConditionFunction | TESConditionItem.obj | debug, object-file gap fill, medium
+// pdb params: aiFunc
 void FUN_00681460_helper::ClearAndSetFunctionCode(int functionCode)
 {
     memset(&m_usFunctionCode, 0, 0x0C);
@@ -247,6 +262,7 @@ struct FUN_00681110_shell
     void ClearFields();
 };
 // @fnv 0x00681170
+// pdb: CONDITION_ITEM_DATA::Endian | TESConditionItem.obj | debug, call graph (shared callers), high
 void TESConditionItem::FixupAfterLoad()
 {
     BSEndian(reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 4), EndianSizeTag<2>());
@@ -263,6 +279,9 @@ struct S_006815c0
 int __cdecl _memcmp(const void*, const void*, int);
 // Compares 0x1C bytes of apCompare's referenced data against this object and returns true if they differ.
 // @fnv 0x006815d0
+// pdb: TESConditionItem::IsTrue | TESConditionItem.obj | debug, object-file run extension, low
+// pdb params: apActionRef, apTargetRef
+// pdb locals: bIgnoreMe
 bool TESConditionItem::IsDifferentFrom(TESConditionItem* apCompare)
 {
     if (_memcmp(((S_006815c0*)apCompare)->_ref_006815c0(), this, 0x1C))
@@ -291,7 +310,7 @@ struct ConditionSerializer
     TESForm* reference;
     int FUN_00413f40();
     bool FUN_006814e0();
-    void SerializeCondition();
+    void TESConditionItem_Save();
 };
 void FUN_00401460(void*, const void*, unsigned int);
 int FUN_00682270(int);
@@ -299,7 +318,10 @@ bool FUN_006822a0(int, int);
 bool TESForm_QEndianSwapOnSave();
 void AppendChunk(unsigned int, const void*, unsigned int);
 // @fnv 0x00681840
-void ConditionSerializer::SerializeCondition()
+// src: XBOX_RETAIL_PDB 0x00681840
+// pdb: TESConditionItem::Save | TESConditionItem.obj | retail, object-file gap fill, high
+// pdb locals: saveData, pfuncdata, iparamcount, i, pform
+void ConditionSerializer::TESConditionItem_Save()
 {
     SavedCondition savedCondition;
     FUN_00401460(&savedCondition, this, 0x1c);
@@ -341,6 +363,9 @@ struct FUN_00681530_class
 
 // Normalizes functionCode into the 0x280 range, applies it via ClearAndSetFunctionCode, then sets count and value based on the function code.
 // @fnv 0x00681220
+// pdb: TESConditionItem::SetDefaultDataForFunction | TESConditionItem.obj | debug, call graph, medium
+// pdb params: aiFunc
+// pdb locals: ifunc
 void TESConditionItem::SetFunction(int functionCode)
 {
     int iNormalizedFunction = functionCode;

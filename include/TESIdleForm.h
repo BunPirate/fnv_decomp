@@ -22,15 +22,16 @@ public:
     void SwapEndian();
 };
 
+// pdb: class TESIdleForm, size 0x54, bases: TESForm, TESModelAnim, 6 members
 class TESIdleForm : public TESForm, public TESModelAnim
 {
 public:
     PerkEntryConditionSet Conditions;
     IdleAnimationData data;
-    NiFormArray* m_pParentPath;
-    TESIdleForm* m_pParentIdleForm;
-    TESIdleForm* m_pIdleForm;
-    unsigned char unk4C[8];
+    NiFormArray* pChildIdles;
+    TESIdleForm* pParentIdle;
+    TESIdleForm* pPrevIdle;
+    unsigned char cFormEditorID[8];
 
     TESIdleForm();
     virtual ~TESIdleForm();
@@ -48,10 +49,10 @@ public:
     TESIdleForm* GetChildByIndex(unsigned int index);
     bool Load(TESFile* file);
     // TESForm vtable slot 8 (vftable 0x1049d0c slot 8 = 0x5fe810)
-    bool LoadForm(TESFile* file);
-    bool HasMissingPathArray();
-    void BuildIdleParentPath(NiFormArray* array);
-    bool IsIdleFile();
+    bool LoadForm(TESFile* apFile);
+    bool InitParents();
+    void FixNextIdles(NiFormArray* apArray);
+    bool CheckIdleFile();
     TESIdleForm* FindIdleFormForObject(
         TESObjectREFR* actionRef, TESObjectREFR* targetRef,
         BSSimpleList<IdleReplayDelayEntry*>* replayDelays);

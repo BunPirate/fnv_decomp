@@ -23,6 +23,7 @@ struct FUN_00e02650_cls
 };
 
 // @fnv 0x00e02650
+// pdb: hkxAnimatedMatrix::`scalar deleting destructor' | hkxAnimatedMatrixClass.obj | retail, vtable slot, high
 FUN_00e02650_cls* FUN_00e02650_cls::Destroy(unsigned char acFlags)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();

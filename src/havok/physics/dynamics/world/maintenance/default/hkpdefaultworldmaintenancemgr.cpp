@@ -15,17 +15,18 @@ struct S_00d0b250_RefObj
     {}
 };
 
-struct FUN_00d0b250 : S_00d0b250_RefObj
+// pdb: class hkpDefaultWorldMaintenanceMgr, size 0x10, bases: hkpWorldMaintenanceMgr, 2 members
+struct hkpDefaultWorldMaintenanceMgr : S_00d0b250_RefObj
 {
-    float m_kPointA;
-    float m_kPointB;
-    FUN_00d0b250();
-    virtual ~FUN_00d0b250();
+    float m_minAllowedTimeValue;
+    float m_maxAllowedTimeValue;
+    hkpDefaultWorldMaintenanceMgr();
+    virtual ~hkpDefaultWorldMaintenanceMgr();
 };
 
 // Initializes the object's two float members to 33.0 and 63.0 and sets the base reference count to 1.
 // @fnv 0x00d0b250
-FUN_00d0b250::FUN_00d0b250() : m_kPointA(33.0f), m_kPointB(63.0f)
+hkpDefaultWorldMaintenanceMgr::hkpDefaultWorldMaintenanceMgr() : m_minAllowedTimeValue(33.0f), m_maxAllowedTimeValue(63.0f)
 {}
 
 struct S_00d0b230_Dst
@@ -93,13 +94,15 @@ struct FUN_00d0b280_cls
     int unk04;
     int unk08;
     float unk0c;
-    void hkpDefaultWorldMaintenanceMgr_performMaintenance(float* first, float* second);
+    void hkpDefaultWorldMaintenanceMgr_performMaintenance(float* world, float* stepInfo);
     void hkpDefaultWorldMaintenanceMgr_resetWorldTime(float* first, float* second);
 };
 // Writes trace entries, calls FUN_00cb6f30(first), and if *second >= unk0c calls FUN_00d0b3e0(first, second) between further trace entries.
 // @fnv 0x00d0b280
 // src: HAVOK_LIB 0x00d0b280
-void FUN_00d0b280_cls::hkpDefaultWorldMaintenanceMgr_performMaintenance(float* first, float* second)
+// pdb: hkpDefaultWorldMaintenanceMgr::performMaintenance | hkpDefaultWorldMaintenanceMgr.obj | retail, string-set bridge, high
+// pdb params: world, stepInfo
+void FUN_00d0b280_cls::hkpDefaultWorldMaintenanceMgr_performMaintenance(float* world, float* stepInfo)
 {
     TraceBuffer* buffer = (TraceBuffer*)TlsGetValue(DAT_0126835c);
     unsigned char* current = buffer->current;
@@ -114,8 +117,8 @@ void FUN_00d0b280_cls::hkpDefaultWorldMaintenanceMgr_performMaintenance(float* f
         current += 16;
         buffer->current = current;
     }
-    hkpWorldOperationUtil_splitSimulationIslands(first);
-    if (*second >= unk0c)
+    hkpWorldOperationUtil_splitSimulationIslands(world);
+    if (*stepInfo >= unk0c)
     {
         buffer = (TraceBuffer*)TlsGetValue(DAT_0126835c);
         current = buffer->current;
@@ -129,7 +132,7 @@ void FUN_00d0b280_cls::hkpDefaultWorldMaintenanceMgr_performMaintenance(float* f
             current += 12;
             buffer->current = current;
         }
-        hkpDefaultWorldMaintenanceMgr_resetWorldTime(first, second);
+        hkpDefaultWorldMaintenanceMgr_resetWorldTime(world, stepInfo);
     }
     buffer = (TraceBuffer*)TlsGetValue(DAT_0126835c);
     current = buffer->current;
@@ -157,11 +160,13 @@ struct FUN_00d0b350_cls
     int unk08;
     float unk0c;
     void hkpDefaultWorldMaintenanceMgr_resetWorldTime(float* first, float* second);
-    void TraceConditionalCall(float* first, float* second);
+    void TraceConditionalCall(float* world, float* stepInfo);
 };
 // Writes a trace entry, calls FUN_00d0b3e0(first, second) if *second >= unk0c, then writes a closing trace entry.
 // @fnv 0x00d0b350
-void FUN_00d0b350_cls::TraceConditionalCall(float* first, float* second)
+// pdb: hkpDefaultWorldMaintenanceMgr::performMaintenanceNoSplit | hkpDefaultWorldMaintenanceMgr.obj | retail, string-set bridge, high
+// pdb params: world, stepInfo
+void FUN_00d0b350_cls::TraceConditionalCall(float* world, float* stepInfo)
 {
     TraceBuffer* buffer = (TraceBuffer*)TlsGetValue(DAT_0126835c);
     unsigned char* current = buffer->current;
@@ -176,8 +181,8 @@ void FUN_00d0b350_cls::TraceConditionalCall(float* first, float* second)
         current += 16;
         buffer->current = current;
     }
-    if (*second >= unk0c)
-        hkpDefaultWorldMaintenanceMgr_resetWorldTime(first, second);
+    if (*stepInfo >= unk0c)
+        hkpDefaultWorldMaintenanceMgr_resetWorldTime(world, stepInfo);
     buffer = (TraceBuffer*)TlsGetValue(DAT_0126835c);
     current = buffer->current;
     if (current < buffer->end)
@@ -223,7 +228,7 @@ static __forceinline hkStepInfo& WorldStepInfo(hkpWorld* world)
     return *reinterpret_cast<hkStepInfo*>(world->pad1C8 + 8);
 }
 
-void __cdecl ProcessBlocks(hkpSimulationIsland* island, float oldTime, float newTime, CollisionAgentContext* input);
+void __cdecl hkpWorldAgentUtil_warpTime(hkpSimulationIsland* island, float oldTime, float newTime, CollisionAgentContext* collisionInput);
 
 struct TimeRebaser
 {
@@ -235,36 +240,38 @@ struct TimeRebaser
 
 // @fnv 0x00d0b3e0
 // src: HAVOK_LIB 0x00d0b3e0
+// pdb: hkpDefaultWorldMaintenanceMgr::resetWorldTime | hkpDefaultWorldMaintenanceMgr.obj | retail, upstream name already matches, high
+// pdb params: world, stepInfo
 void TimeRebaser::hkpDefaultWorldMaintenanceMgr_resetWorldTime(hkpWorld* world, hkStepInfo& stepInfo)
 {
-    float deltaTime = stepInfo.m_fEndTime - stepInfo.m_uiStartTime;
+    float deltaTime = stepInfo.m_endTime - stepInfo.m_startTime;
     hkStepInfo& si = WorldStepInfo(world);
     const TimeRebaser* owner = this;
-    si.m_uiStartTime = owner->m_newTime;
-    si.m_fEndTime = owner->m_newTime + deltaTime;
-    si.m_fTimeStep = deltaTime;
-    si.m_fInverseDeltaTime = 1.0f / si.m_fTimeStep;
+    si.m_startTime = owner->m_newTime;
+    si.m_endTime = owner->m_newTime + deltaTime;
+    si.m_deltaTime = deltaTime;
+    si.m_invDeltaTime = 1.0f / si.m_deltaTime;
 
-    float shift = WorldStepInfo(world).m_uiStartTime - stepInfo.m_uiStartTime;
-    hkpSimulation* pSimulation = world->m_pSimulation;
-    pSimulation->m_fElapsedSimulationTime += shift;
-    pSimulation->m_fSimulationTime = WorldStepInfo(world).m_uiStartTime;
-    if (pSimulation->m_fFrameMarkerTime != -1.0f)
+    float shift = WorldStepInfo(world).m_startTime - stepInfo.m_startTime;
+    hkpSimulation* pSimulation = world->m_simulation;
+    pSimulation->m_currentTime += shift;
+    pSimulation->m_currentPsiTime = WorldStepInfo(world).m_startTime;
+    if (pSimulation->m_simulateUntilTime != -1.0f)
     {
-        world->m_pSimulation->m_fFrameMarkerTime = (float)(world->m_pSimulation->m_fFrameMarkerTime + shift);
+        world->m_simulation->m_simulateUntilTime = (float)(world->m_simulation->m_simulateUntilTime + shift);
     }
 
-    for (int iIsland = 0; iIsland < world->m_kActiveSimulationIslands.m_iElementCount; iIsland++)
+    for (int iIsland = 0; iIsland < world->m_activeSimulationIslands.m_iElementCount; iIsland++)
     {
-        hkpSimulationIsland* island = static_cast<hkpSimulationIsland*>(world->m_kActiveSimulationIslands.m_data[iIsland]);
+        hkpSimulationIsland* island = static_cast<hkpSimulationIsland*>(world->m_activeSimulationIslands.m_data[iIsland]);
         for (int iActor = 0; iActor < island->m_iActorEntryCount; iActor++)
         {
-            island->m_kActorEntries[iActor]->m_pMotionState.m_kMotionState.m_kSweptTransform.m_vCenterOfMass0.w += shift;
+            island->m_kActorEntries[iActor]->m_motion.m_kMotionState.m_kSweptTransform.m_centerOfMass0.w += shift;
         }
-        ProcessBlocks(island, stepInfo.m_fEndTime, WorldStepInfo(world).m_fEndTime, static_cast<CollisionAgentContext*>(world->m_pCollisionInput));
+        hkpWorldAgentUtil_warpTime(island, stepInfo.m_endTime, WorldStepInfo(world).m_endTime, static_cast<CollisionAgentContext*>(world->m_collisionInput));
     }
 
-    world->m_pSimulation->shiftTime(shift);
+    world->m_simulation->shiftTime(shift);
     stepInfo = WorldStepInfo(world);
-    static_cast<CollisionAgentContext*>(world->m_pCollisionInput)->m_pStepInfo = WorldStepInfo(world);
+    static_cast<CollisionAgentContext*>(world->m_collisionInput)->m_pStepInfo = WorldStepInfo(world);
 }

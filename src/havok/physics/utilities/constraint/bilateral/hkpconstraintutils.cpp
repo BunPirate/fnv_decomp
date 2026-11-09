@@ -102,11 +102,14 @@ struct Instance : hkReferencedObject
 inline void* hkAlloc(int size)
 {
     hkReferencedObject* p = (hkReferencedObject*)hkMemoryRouter_getInstance()->heap().blockAlloc(size);
-    p->m_usMemSizeAndFlags = (unsigned short)size;
+    p->m_memSizeAndFlags = (unsigned short)size;
     return p;
 }
 
 // @fnv 0x00e5aac0
+// pdb: hkpConstraintUtils::convertToLimits | hkpConstraintUtils.obj | retail, object-file run extension, low
+// pdb params: originalConstraint
+// pdb locals: assertBuf, ostr
 Instance* __cdecl CloneInstanceFromSource(Instance* apSource)
 {
     SourceData* data = apSource->unk0c;
@@ -177,7 +180,7 @@ extern FnvSink* DAT_01268360;
 class MsgWriter
 {
   public:
-    void Init(char* buf, unsigned int cap) throw();
+    void Init(char* buf, unsigned int bufSize) throw();
     void Append(const char* s) throw();
     void Finish() throw();
     unsigned int unk00;
@@ -217,27 +220,30 @@ class FnvHolder
 // Reads the inner constraint's kind and copies two __m128 vectors into a1/a2, or logs an unsupported-type error and returns 1.
 // @fnv 0x00e5ad40
 // src: XBOX_PDB 0x00e5ad40
-int hkpConstraintUtils_getConstraintPivots(FnvHolder* pHolder, LocalM128* pOutA, LocalM128* pOutB)
+// pdb: hkpConstraintUtils::getConstraintPivots | hkpConstraintUtils.obj | retail, upstream name already matches, high
+// pdb params: constraint, pivotInAOut, pivotInBOut
+// pdb locals: assertBuf, ostr
+int hkpConstraintUtils_getConstraintPivots(FnvHolder* pHolder, LocalM128* pivotInAOut, LocalM128* pivotInBOut)
 {
     FnvInner* inner = pHolder->m_0c;
 
     switch (inner->GetKind())
     {
     case 0:
-        *pOutA = inner->m_20;
-        *pOutB = inner->m_30;
+        *pivotInAOut = inner->m_20;
+        *pivotInBOut = inner->m_30;
         return 0;
     case 1:
-        *pOutA = inner->m_50;
-        *pOutB = inner->m_90;
+        *pivotInAOut = inner->m_50;
+        *pivotInBOut = inner->m_90;
         return 0;
     case 2:
-        *pOutA = inner->m_50;
-        *pOutB = inner->m_90;
+        *pivotInAOut = inner->m_50;
+        *pivotInBOut = inner->m_90;
         return 0;
     case 7:
-        *pOutA = inner->m_50;
-        *pOutB = inner->m_90;
+        *pivotInAOut = inner->m_50;
+        *pivotInBOut = inner->m_90;
         return 0;
     }
 
@@ -257,7 +263,7 @@ struct S_00e5ae60_Stream
     int unk00;
     int unk04;
     int unk08;
-    S_00e5ae60_Stream(char* buf, int size) throw();
+    S_00e5ae60_Stream(char* buf, int bufSize) throw();
     S_00e5ae60_Stream& ProcessAndReturnValue_00cc01c0(const char* s) throw();
     ~S_00e5ae60_Stream() throw();
 };
@@ -333,25 +339,29 @@ struct S_00e5ae60_Constraint
 
 // Reads motor values from the constraint into a, b and d based on its type; for unsupported types logs an error and returns 1.
 // @fnv 0x00e5ae60
-int __cdecl GetConstraintMotorValues(S_00e5ae60_Constraint* pConstraint, int* piValueA, int* piValueB,
-                                     int* piValueD) throw()
+// src: XBOX_RETAIL_PDB 0x00e5ae60
+// pdb: hkpConstraintUtils::getConstraintMotors | hkpConstraintUtils.obj | retail, string-set bridge, high
+// pdb params: constraintData, motor0, motor1, motor2
+// pdb locals: assertBuf, ostr
+int __cdecl hkpConstraintUtils_getConstraintMotors(S_00e5ae60_Constraint* constraintData, int* motor0, int* motor1,
+                                     int* motor2) throw()
 {
-    switch (pConstraint->GetType())
+    switch (constraintData->GetType())
     {
     case 2:
-        *piValueA = pConstraint->m_b0;
-        *piValueB = 0;
-        *piValueD = 0;
+        *motor0 = constraintData->m_b0;
+        *motor1 = 0;
+        *motor2 = 0;
         return 0;
     case 7:
-        *piValueA = pConstraint->hkpRagdollConstraintData_getTwistMotor();
-        *piValueB = pConstraint->hkpRagdollConstraintData_getConeMotor();
-        *piValueD = pConstraint->hkpRagdollConstraintData_getPlaneMotor();
+        *motor0 = constraintData->hkpRagdollConstraintData_getTwistMotor();
+        *motor1 = constraintData->hkpRagdollConstraintData_getConeMotor();
+        *motor2 = constraintData->hkpRagdollConstraintData_getPlaneMotor();
         return 0;
     default:
-        *piValueD = 0;
-        *piValueB = 0;
-        *piValueA = 0;
+        *motor2 = 0;
+        *motor1 = 0;
+        *motor0 = 0;
         {
             unsigned int buf[128];  // 512-byte text buffer (int array avoids a GS cookie)
             S_00e5ae60_Stream s((char*)buf, 0x200);

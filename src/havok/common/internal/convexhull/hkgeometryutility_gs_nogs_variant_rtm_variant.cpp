@@ -19,7 +19,7 @@ struct FUN_00d5a5e0_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void FinishA();
 };
 struct FUN_00d5a5e0_ctxB
@@ -44,7 +44,7 @@ struct FUN_00d5a630_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void SetF(float f, int zero);
     void SetC(int a3);
     void FinishA();
@@ -138,7 +138,7 @@ struct D5C110Geometry
 };
 void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl InitAndSetB(const D5C110StridedVertices& vertices, D5C110Geometry& out);
-void __cdecl BuildGeometryFromShape(const void* shape, D5C110Geometry& out);
+void __cdecl hkGeometryUtility_createGeometryFromPlaneEquations(const void* planeEquationsIn, D5C110Geometry& geometryOut);
 struct D5C110VertexArray;
 void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl hkGeometryUtility_createVerticesFromPlaneEquations(const void* shape, D5C110VertexArray& vertices);
@@ -177,7 +177,7 @@ struct __declspec(align(16)) S00d5c060_Result
 char* __cdecl AllocateWithHeader(D5C110Allocator* alloc, int size);
 char* __cdecl hkMemoryRouter_easyFree(D5C110Allocator* owner, char* data);
 void __cdecl Hkgeometryutility_ProcessEntries_00d5beb0(S00d5c060_Result* self, char* data, int count, int flags, float scale);
-S00d5c060_Result hkGeometryUtility_createMinBoundingSphere(const S00d5c060_Src* src, float scale);
+S00d5c060_Result hkGeometryUtility_createMinBoundingSphere(const S00d5c060_Src* stridedVertsIn, float radiusEpsilon);
 
 extern "C" LocalM128 _mm_load_ps(const float*);
 extern "C" LocalM128 _mm_mul_ps(LocalM128, LocalM128);

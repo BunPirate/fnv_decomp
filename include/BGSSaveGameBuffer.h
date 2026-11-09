@@ -9,6 +9,7 @@ class TESObjectREFR;
 class NiMatrix3;
 class hkVector4;
 
+// pdb: class BGSSaveGameBuffer, size 0x14, 4 members
 class BGSSaveGameBuffer
 {
 public:
@@ -54,7 +55,7 @@ public:
     void SerializeFormData(unsigned int, unsigned int);
     void SerializeFormData(void*, int);
     void SaveGameString(char*, unsigned int);
-    void SaveGameString(const char*, int);
+    void SaveString(const char*, int);
     unsigned int GetBufferLength();
     void SetBufferPosition(unsigned int, unsigned int);
     void SetBufferPosition(unsigned int);
@@ -62,7 +63,7 @@ public:
     void CopyBufferData(void*, unsigned int, unsigned int, unsigned int);
     void WriteBufferData(void*, unsigned int, bool);
     void WriteBufferData(void*, unsigned int, unsigned int, bool);
-    void ReleaseBufferContents();
+    void BGSSaveFormBuffer_dtor();
     void ShiftBuffer(unsigned int, int);
     void WriteAtOffset(void*, unsigned int, unsigned int);
     void FUN_00865c40(void*);

@@ -35,6 +35,8 @@ template <class T> inline NiPointer<T>::~NiPointer()
 }
 
 // @fnv 0x00C2CF90
+// pdb: NiPSysColorModifier::LoadBinary | NiPSysColorModifier.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiPSysColorModifier::LoadBinary(NiStream& kStream)
 {
     NiPSysModifier::LoadBinary(kStream);
@@ -51,6 +53,9 @@ void* __cdecl NiPSysColorModifier_GetRTTI()
 }
 
 // @fnv 0x00c2d0d0
+// pdb: NiPSysColorModifier::IsEqual | NiPSysColorModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiPSysColorModifier::IsEqual(NiObject* pkObject) const
 {
     NiPSysColorModifier* pkDest;
@@ -72,6 +77,7 @@ void DestroyPSysModifier();
 void __cdecl _delete(void*, unsigned int);
 // Scalar deleting-destructor ABI entry: releases color data, destroys the base, then optionally frees the object.
 // @fnv 0x00c2d1f0
+// pdb: NiPSysColorModifier::`scalar deleting destructor' | NiPSysColorModifier.obj | retail, object-file gap fill, high
 void* __fastcall DestroyColorModifier(NiPSysColorModifier* pkModifier, void*, unsigned int auiFlags)
 {
     NiObject* pkColorData = *reinterpret_cast<NiObject**>(reinterpret_cast<char*>(pkModifier) + 0x18);
@@ -85,6 +91,8 @@ void* __fastcall DestroyColorModifier(NiPSysColorModifier* pkModifier, void*, un
 }
 
 // @fnv 0x00c2d1c0
+// pdb: NiPSysColorModifier::LinkObject | NiPSysColorModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiPSysColorModifier::LinkObject(NiStream& kStream)
 {
     NiPSysModifier::LinkObject(kStream);
@@ -99,6 +107,8 @@ void GetPSysModifierViewerStrings();
 extern void* _g_01202778;
 
 // @fnv 0x00c2d2a0
+// pdb: NiPSysColorModifier::GetViewerStrings | NiPSysColorModifier.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void NiPSysColorModifier::GetViewerStrings(NiViewerStringsArray* pkViewerStrings)
 {
     StrArr* pkStrings = reinterpret_cast<StrArr*>(pkViewerStrings);
@@ -121,6 +131,8 @@ void NiPSysColorModifier::GetViewerStrings(NiViewerStringsArray* pkViewerStrings
 
 // Replaces the stored color data with pkColorData, updating reference counts and recomputing the low and high key times from its key times.
 // @fnv 0x00c2d100
+// pdb: NiPSysColorModifier::SetColorData | NiPSysColorModifier.obj | retail, upstream name already matches, high
+// pdb params: pkColorData
 void NiPSysColorModifier::SetColorData(NiColorData* pkColorData)
 {
     if (m_spColorData.m_pObject != pkColorData)
@@ -145,8 +157,8 @@ void NiPSysColorModifier::SetColorData(NiColorData* pkColorData)
     if (pColorData != 0)
     {
         unsigned int uiNumKeys = pColorData->m_uiNumKeys;
-        unsigned char ucKeyStride = pColorData->m_ucKeyDataSize;
-        char* pKeyTimeArray = reinterpret_cast<char*>(pColorData->m_pKeyArray);
+        unsigned char ucKeyStride = pColorData->m_ucKeySize;
+        char* pKeyTimeArray = reinterpret_cast<char*>(pColorData->m_pkKeys);
         if (uiNumKeys != 0)
         {
             m_fLoKeyTime = *(float*)pKeyTimeArray;
@@ -157,10 +169,13 @@ void NiPSysColorModifier::SetColorData(NiColorData* pkColorData)
 }
 
 // @fnv 0x00c2d240
+// pdb: NiPSysColorModifier::CreateClone | NiPSysColorModifier.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiPSysColorModifier::MakeClone(CloningProcess& kCloning)
 {
     void* pObject = new NiPSysColorModifier;
-    CopyMemberData(static_cast<NiPSysModifier*>(static_cast<NiPSysColorModifier*>(pObject)),
+    CopyMembers(static_cast<NiPSysModifier*>(static_cast<NiPSysColorModifier*>(pObject)),
                    kCloning);
     NiColorData* tmp = m_spColorData.m_pObject;
     static_cast<NiPSysColorModifier*>(pObject)->SetColorData(static_cast<NiColorData*>(tmp));
@@ -238,8 +253,8 @@ struct PData
     PInfo* m_pkInfo;
 };
 
-void __cdecl InterpolateColor(FnvColorAView* out, float t, char* keys, unsigned int typeBits, unsigned int n,
-                              unsigned int* idx, unsigned char stride);
+void __cdecl NiColorKey_GenInterp(FnvColorAView* fTime, float pkKeys, char* eType, unsigned int uiNumKeys, unsigned int uiLastIdx,
+                              unsigned int* ucSize, unsigned char stride);
 
 inline float Mx(float a, float b)
 {
@@ -252,6 +267,9 @@ inline float Mn(float a, float b)
 
 // For each active particle, computes a clamped time from PInfo values and samples the color key data to update the particle color array.
 // @fnv 0x00c2cfb0
+// pdb: NiPSysColorModifier::Update | NiPSysColorModifier.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkData
+// pdb locals: uiNumKeys, pkKeys, pkCurrentParticle, uiLastIdx, ucSize, usNumParticles, pkColor, fScaledAge, eType, us, kColor
 void NiPSysColorModifier::Update(float fTime, NiPSysData* pkData)
 {
     PData* d = (PData*)pkData;
@@ -264,9 +282,9 @@ void NiPSysColorModifier::Update(float fTime, NiPSysData* pkData)
     NiColorData* pColorData = m_spColorData.m_pObject;
     unsigned int idx = 0;
     unsigned int n = pColorData->m_uiNumKeys;
-    unsigned int uiTypeBits = pColorData->m_eRequestType;
-    unsigned char ucStride = pColorData->m_ucKeyDataSize;
-    char* keys = reinterpret_cast<char*>(pColorData->m_pKeyArray);
+    unsigned int uiTypeBits = pColorData->m_eType;
+    unsigned char ucStride = pColorData->m_ucKeySize;
+    char* keys = reinterpret_cast<char*>(pColorData->m_pkKeys);
 
     for (unsigned short iIndex = 0; iIndex < usActiveCount; iIndex++)
     {
@@ -277,7 +295,7 @@ void NiPSysColorModifier::Update(float fTime, NiPSysData* pkData)
 
         FnvColorAView cColor;
         idx = 0;
-        InterpolateColor(&cColor, t, keys, uiTypeBits, n, &idx, ucStride);
+        NiColorKey_GenInterp(&cColor, t, keys, uiTypeBits, n, &idx, ucStride);
         r = cColor;
     }
 }

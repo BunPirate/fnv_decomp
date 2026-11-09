@@ -44,5 +44,6 @@ class FUN_0051d0d0 : public SpawnedBase
 };
 
 // @fnv 0x0051d0d0
+// pdb: BSShaderTextureSet::BSShaderTextureSet | TESObjectTREE.obj | retail, call graph, medium
 FUN_0051d0d0::FUN_0051d0d0()
 {}

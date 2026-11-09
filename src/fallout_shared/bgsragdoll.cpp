@@ -84,34 +84,35 @@ void __cdecl operator delete(void*);
 // The shared string header lacks the BSStringT comparison overload at 0x00501c90.
 struct RagdollStringOperations : BSStringT<char>
 {
-    int CompareText(const BSStringT<char>* string, bool ignoreCase);
+    int CompareText(const BSStringT<char>* arString, bool abIgnoreCase);
 };
 
 // Shared ragdoll headers lack these copy/compare declarations. These views add no data.
 struct RagdollAnimationOperations : RagdollAnimationData
 {
-    void CopyFrom(const RagdollAnimationOperations&);
+    void RagdollFeedbackData_Copy(const RagdollAnimationOperations&);
     bool Differs(const RagdollAnimationOperations&);
 };
 struct FootIKOperations : FootIK_DATA
 {
-    void CopyData(const FootIK_DATA&);
-    bool Differs(const FootIK_DATA&);
+    void FootIK_DATA_Copy(const FootIK_DATA&);
+    bool FootIK_DATA_Compare(const FootIK_DATA&);
 };
 struct LookIKOperations : LookIK_DATA
 {
-    void CopyData(const LookIK_DATA&);
-    bool Differs(const LookIK_DATA&);
+    void LookIK_DATA_Copy(const LookIK_DATA&);
+    bool LookIK_DATA_Compare(const LookIK_DATA&);
 };
 struct GrabIKOperations : GrabIK_DATA
 {
-    void CopyData(const GrabIK_DATA&);
-    bool Differs(const GrabIK_DATA&);
+    void GrabIK_DATA_Copy(const GrabIK_DATA&);
+    bool GrabIK_DATA_Compare(const GrabIK_DATA&);
 };
-struct RagdollFeedbackOperations : RagdollFeedbackProfile
+// pdb: structure PoseMatching_DATA, size 0x24, 3 members
+struct PoseMatching_DATA : RagdollFeedbackProfile
 {
-    void CopyData(const RagdollFeedbackProfile&);
-    bool Differs(const RagdollFeedbackProfile&);
+    void Copy(const RagdollFeedbackProfile&);
+    bool Compare(const RagdollFeedbackProfile&);
 };
 struct RagdollOperations : BGSRagdoll
 {
@@ -120,6 +121,8 @@ struct RagdollOperations : BGSRagdoll
 };
 
 // @fnv 0x005edd00
+// pdb: BGSRagdoll::InitializeData | BGSRagdoll.obj | retail, vtable slot, high
+// pdb locals: ui
 void BGSRagdoll::ResetFormData()
 {
     struct InitLocals
@@ -132,81 +135,82 @@ void BGSRagdoll::ResetFormData()
         unsigned int footIndex;
     } locals;
 
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter1 = 0.8f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.fHeirGain = 0.17f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter3 = 0.05f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.fVelGain = 0.6f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter5 = 1.0f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.fSnapGain = 0.1f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter7 = 0.0f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter8 = 3.0f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter9 = 0.3f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter10 = 0.3f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter11 = 3.0f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter12 = 14.0f;
-    m_kRagdollAnimationData.m_kRagdollFeedbackData.m_fFeedbackParameter13 = 18.0f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter1 = 0.8f;
+    FeedbackData.m_kRagdollFeedbackData.fHeirGain = 0.17f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter3 = 0.05f;
+    FeedbackData.m_kRagdollFeedbackData.fVelGain = 0.6f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter5 = 1.0f;
+    FeedbackData.m_kRagdollFeedbackData.fSnapGain = 0.1f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter7 = 0.0f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter8 = 3.0f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter9 = 0.3f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter10 = 0.3f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter11 = 3.0f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter12 = 14.0f;
+    FeedbackData.m_kRagdollFeedbackData.m_fFeedbackParameter13 = 18.0f;
 
-    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kRagdollAnimationData.m_kFootIndices)->Clear(true);
+    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&FeedbackData.m_kFootIndices)->Clear(true);
 
     for (locals.footIndex = 0;
          locals.footIndex <
-         reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kFootIKData.m_kFootNames)->GetSize();
+         reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&FootIKData.LegSystemsNameA)->GetSize();
          ++locals.footIndex)
     {
         locals.footName =
-            reinterpret_cast<NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >*>(&m_kFootIKData.m_kFootNames)
+            reinterpret_cast<NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >*>(&FootIKData.LegSystemsNameA)
                 ->GetAt(locals.footIndex);
         ::operator delete(locals.footName);
     }
-    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kFootIKData.m_kLegData)->Clear(true);
-    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kFootIKData.m_kFootNames)->Clear(true);
+    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&FootIKData.LegSystemsA)->Clear(true);
+    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&FootIKData.LegSystemsNameA)->Clear(true);
 
-    m_kFootIKData.m_kRagdollFeedbackData.fOnOffGain = 0.0f;
-    m_kFootIKData.m_kRagdollFeedbackData.fGroundAscendingGain = 0.0f;
-    m_kFootIKData.m_kRagdollFeedbackData.fGroundDescendingGain = 0.0f;
-    m_kFootIKData.m_kRagdollFeedbackData.fFootRaisedGain = 0.0f;
-    m_kFootIKData.m_kRagdollFeedbackData.m_fAdditionalFeedbackGain1 = 0.0f;
-    m_kFootIKData.m_kRagdollFeedbackData.m_fAdditionalFeedbackGain2 = 0.0f;
+    FootIKData.SystemData.fOnOffGain = 0.0f;
+    FootIKData.SystemData.fGroundAscendingGain = 0.0f;
+    FootIKData.SystemData.fGroundDescendingGain = 0.0f;
+    FootIKData.SystemData.fFootRaisedGain = 0.0f;
+    FootIKData.SystemData.m_fAdditionalFeedbackGain1 = 0.0f;
+    FootIKData.SystemData.m_fAdditionalFeedbackGain2 = 0.0f;
 
     for (locals.lookIndex = 0;
          locals.lookIndex <
-         reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kLookIKData.m_kLookNames)->GetSize();
+         reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&LookIKData.HeadSystemsNameA)->GetSize();
          ++locals.lookIndex)
     {
         locals.lookName =
-            reinterpret_cast<NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >*>(&m_kLookIKData.m_kLookNames)
+            reinterpret_cast<NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >*>(&LookIKData.HeadSystemsNameA)
                 ->GetAt(locals.lookIndex);
         ::operator delete(locals.lookName);
     }
-    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kLookIKData.m_kHeadData)->Clear(true);
-    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kLookIKData.m_kLookNames)->Clear(true);
+    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&LookIKData.HeadSystemsA)->Clear(true);
+    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&LookIKData.HeadSystemsNameA)->Clear(true);
 
     for (locals.grabIndex = 0;
          locals.grabIndex <
-         reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kGrabIKData.m_kGrabNames)->GetSize();
+         reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&GrabIKData.ArmSystemsNameA)->GetSize();
          ++locals.grabIndex)
     {
         locals.grabName =
-            reinterpret_cast<NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >*>(&m_kGrabIKData.m_kGrabNames)
+            reinterpret_cast<NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >*>(&GrabIKData.ArmSystemsNameA)
                 ->GetAt(locals.grabIndex);
         ::operator delete(locals.grabName);
     }
-    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kGrabIKData.m_kGrabArmData)->Clear(true);
-    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kGrabIKData.m_kGrabNames)->Clear(true);
+    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&GrabIKData.ArmSystemsA)->Clear(true);
+    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&GrabIKData.ArmSystemsNameA)->Clear(true);
 
-    m_kRagdollFeedbackProfile.m_kRagdollFeedbackData.m_sFirstRagdollFeedbackIndex = -1;
-    m_kRagdollFeedbackProfile.m_kRagdollFeedbackData.m_sSecondRagdollFeedbackIndex = -1;
-    m_kRagdollFeedbackProfile.m_kRagdollFeedbackData.m_sThirdRagdollFeedbackIndex = -1;
-    m_kRagdollAnimationData.bEnabled = false;
-    m_kFootIKData.bEnabled = false;
-    m_kLookIKData.bEnabled = false;
-    m_kGrabIKData.bEnabled = false;
-    m_kRagdollFeedbackProfile.bEnabled = false;
-    m_pActorBase = 0;
-    m_pBodyPartDataCur = 0;
+    PoseMatchingData.m_kRagdollFeedbackData.m_sFirstRagdollFeedbackIndex = -1;
+    PoseMatchingData.m_kRagdollFeedbackData.m_sSecondRagdollFeedbackIndex = -1;
+    PoseMatchingData.m_kRagdollFeedbackData.m_sThirdRagdollFeedbackIndex = -1;
+    FeedbackData.bEnabled = false;
+    FootIKData.bEnabled = false;
+    LookIKData.bEnabled = false;
+    GrabIKData.bEnabled = false;
+    PoseMatchingData.bEnabled = false;
+    pPreviewActor = 0;
+    pBodyPartData = 0;
 }
 
 // @fnv 0x005ed680
+// pdb: BGSRagdoll::BGSRagdoll | BGSRagdoll.obj | retail, upstream name already matches, high
 BGSRagdoll::BGSRagdoll()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x63));
@@ -214,6 +218,8 @@ BGSRagdoll::BGSRagdoll()
 }
 
 // @fnv 0x005eea20
+// pdb: BGSRagdoll::InitItem | BGSRagdoll.obj | retail, string-set bridge, high
+// pdb locals: uitemp
 void BGSRagdoll::InitItem()
 {
     if (GetInitialized())
@@ -221,22 +227,22 @@ void BGSRagdoll::InitItem()
 
     TESForm::ClearData();
 
-    unsigned int formID = reinterpret_cast<unsigned int>(m_pBodyPartDataCur);
+    unsigned int formID = reinterpret_cast<unsigned int>(pBodyPartData);
     if (formID)
     {
         TESForm::RemapFormIDForFile(formID, GetFile(-1));
-        m_pBodyPartDataCur = dynamic_cast<BGSBodyPartData*>(TESForm::GetFormByID(formID));
-        if (!m_pBodyPartDataCur)
+        pBodyPartData = dynamic_cast<BGSBodyPartData*>(TESForm::GetFormByID(formID));
+        if (!pBodyPartData)
             Warning("MASTERFILE: Could not find body part data (%08X) for ragdoll '%s' (%08X).", formID, GetName(),
                     GetFormID());
     }
 
-    formID = reinterpret_cast<unsigned int>(m_pActorBase);
+    formID = reinterpret_cast<unsigned int>(pPreviewActor);
     if (formID)
     {
         TESForm::RemapFormIDForFile(formID, GetFile(-1));
-        m_pActorBase = dynamic_cast<TESActorBase*>(TESForm::GetFormByID(formID));
-        if (!m_pActorBase)
+        pPreviewActor = dynamic_cast<TESActorBase*>(TESForm::GetFormByID(formID));
+        if (!pPreviewActor)
             Warning("MASTERFILE: Could not find preview actor (%08X) for ragdoll '%s' (%08X).", formID, GetName(),
                     GetFormID());
     }
@@ -246,11 +252,14 @@ void BGSRagdoll::InitItem()
 
 // Reads a BGSRagdoll record from a TESFile, handling EDID, OBND, MODL/MODT, DATA, XNAM, TNAM, RAFD, RAFB, RAPS and ANAM chunks.
 // @fnv 0x005ee640
-bool BGSRagdoll::LoadForm(TESFile* file)
+// pdb: BGSRagdoll::Load | BGSRagdoll.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, saveStruct, itempint, isize, i, ptemp
+bool BGSRagdoll::LoadForm(TESFile* apFile)
 {
-    if (GetRagdollRecordType(file) != 0x63)
+    if (GetRagdollRecordType(apFile) != 0x63)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     struct LoadLocals
     {
         char* filename;
@@ -262,91 +271,91 @@ bool BGSRagdoll::LoadForm(TESFile* file)
         char* editorID;
         int chunk;
     } locals;
-    while ((locals.chunk = file->GetChunkID()) != 0)
+    while ((locals.chunk = apFile->GetChunkID()) != 0)
     {
         switch (locals.chunk)
         {
         case 0x44494445: {
-            locals.editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(locals.editorID, 512);
+            locals.editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(locals.editorID, 512);
             SetEditorID_AtRuntime(locals.editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x41544144: {
-            file->GetChunkData(&locals.saved, sizeof(locals.saved));
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&locals.saved, sizeof(locals.saved));
+            if (apFile->IsEndianConversionRequired())
                 locals.saved.SwapEndianFourShorts();
-            reinterpret_cast<BSSimpleArray<unsigned short, 1024>*>(&m_kRagdollAnimationData.m_kFootIndices)
+            reinterpret_cast<BSSimpleArray<unsigned short, 1024>*>(&FeedbackData.m_kFootIndices)
                 ->SetSize(locals.saved.m_usFootIndexCount, true);
-            m_kFootIKData.m_kLegData.SetSize(locals.saved.m_usLegDataCount, true);
-            m_kLookIKData.m_kHeadData.SetSize(locals.saved.m_usHeadDataCount, true);
-            m_kGrabIKData.m_kGrabArmData.SetSize(locals.saved.m_usGrabArmDataCount, true);
-            m_kRagdollAnimationData.bEnabled = locals.saved.m_bRagdollAnimationEnabled;
-            m_kFootIKData.bEnabled = locals.saved.m_bFootIKEnabled;
-            m_kLookIKData.bEnabled = locals.saved.m_bLookIKEnabled;
-            m_kGrabIKData.bEnabled = locals.saved.m_bGrabIKEnabled;
-            m_kRagdollFeedbackProfile.bEnabled = locals.saved.m_bRagdollFeedbackEnabled;
+            FootIKData.LegSystemsA.SetSize(locals.saved.m_usLegDataCount, true);
+            LookIKData.HeadSystemsA.SetSize(locals.saved.m_usHeadDataCount, true);
+            GrabIKData.ArmSystemsA.SetSize(locals.saved.m_usGrabArmDataCount, true);
+            FeedbackData.bEnabled = locals.saved.m_bRagdollAnimationEnabled;
+            FootIKData.bEnabled = locals.saved.m_bFootIKEnabled;
+            LookIKData.bEnabled = locals.saved.m_bLookIKEnabled;
+            GrabIKData.bEnabled = locals.saved.m_bGrabIKEnabled;
+            PoseMatchingData.bEnabled = locals.saved.m_bRagdollFeedbackEnabled;
             break;
         }
         case 0x4d414e58: {
             locals.preview = 0;
-            file->GetChunkData(&locals.preview);
-            m_pActorBase = reinterpret_cast<TESActorBase*>(locals.preview);
+            apFile->GetChunkData(&locals.preview);
+            pPreviewActor = reinterpret_cast<TESActorBase*>(locals.preview);
             break;
         }
         case 0x4d414e54: {
             locals.body = 0;
-            file->GetChunkData(&locals.body);
-            m_pBodyPartDataCur = reinterpret_cast<BGSBodyPartData*>(locals.body);
+            apFile->GetChunkData(&locals.body);
+            pBodyPartData = reinterpret_cast<BGSBodyPartData*>(locals.body);
             break;
         }
         case 0x44464152:
-            file->GetChunkData(&m_kRagdollAnimationData.m_kRagdollFeedbackData,
-                               sizeof(m_kRagdollAnimationData.m_kRagdollFeedbackData));
-            if (file->IsEndianConversionRequired())
-                SwapRagdollFeedbackEndian(&m_kRagdollAnimationData.m_kRagdollFeedbackData);
+            apFile->GetChunkData(&FeedbackData.m_kRagdollFeedbackData,
+                               sizeof(FeedbackData.m_kRagdollFeedbackData));
+            if (apFile->IsEndianConversionRequired())
+                SwapRagdollFeedbackEndian(&FeedbackData.m_kRagdollFeedbackData);
             break;
         case 0x42464152: {
-            file->GetChunkData(
-                &reinterpret_cast<BSSimpleArray<unsigned short, 1024>*>(&m_kRagdollAnimationData.m_kFootIndices)
+            apFile->GetChunkData(
+                &reinterpret_cast<BSSimpleArray<unsigned short, 1024>*>(&FeedbackData.m_kFootIndices)
                      ->GetAt(0),
-                reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kRagdollAnimationData.m_kFootIndices)
+                reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&FeedbackData.m_kFootIndices)
                         ->GetSize() *
                     2);
             locals.count =
-                reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&m_kRagdollAnimationData.m_kFootIndices)
+                reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&FeedbackData.m_kFootIndices)
                     ->GetSize();
-            if (file->IsEndianConversionRequired())
+            if (apFile->IsEndianConversionRequired())
             {
                 for (locals.i = 0; locals.i < locals.count; ++locals.i)
                     BSEndian(
-                        &reinterpret_cast<BSSimpleArray<unsigned short, 1024>*>(&m_kRagdollAnimationData.m_kFootIndices)
+                        &reinterpret_cast<BSSimpleArray<unsigned short, 1024>*>(&FeedbackData.m_kFootIndices)
                              ->GetAt(locals.i),
                         EndianSizeTag<2>());
             }
             break;
         }
         case 0x53504152:
-            file->GetChunkData(&m_kRagdollFeedbackProfile.m_kRagdollFeedbackData,
-                               sizeof(m_kRagdollFeedbackProfile.m_kRagdollFeedbackData));
-            if (file->IsEndianConversionRequired())
-                SwapPoseMatchingEndian(&m_kRagdollFeedbackProfile.m_kRagdollFeedbackData);
+            apFile->GetChunkData(&PoseMatchingData.m_kRagdollFeedbackData,
+                               sizeof(PoseMatchingData.m_kRagdollFeedbackData));
+            if (apFile->IsEndianConversionRequired())
+                SwapPoseMatchingEndian(&PoseMatchingData.m_kRagdollFeedbackData);
             break;
         case 0x4d414e41: {
-            locals.filename = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(locals.filename, 0);
-            m_kRagdollFeedbackProfile.m_kAnimationFileName.Set(locals.filename, 0);
+            locals.filename = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(locals.filename, 0);
+            PoseMatchingData.m_kAnimationFileName.Set(locals.filename, 0);
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -356,8 +365,9 @@ void __fastcall RagdollFeedbackData_RagdollFeedbackSystemData_RagdollFeedbackSys
 void __fastcall BSSimpleArray_short_1024_BSSimpleArray_short_1024(void*);
 
 // @fnv 0x005ed760
-// src: COMMUNITY 0x005ed760
-void* __fastcall BGSRagdoll_Feedback_Init(char* pThis)
+// src: XBOX_DEBUG_PDB 0x005ed760
+// pdb: RagdollFeedbackData::RagdollFeedbackData | BGSRagdoll.obj | debug, call graph, high
+void* __fastcall RagdollFeedbackData_ctor(char* pThis)
 {
     *pThis = 0;
     RagdollFeedbackData_RagdollFeedbackSystemData_RagdollFeedbackSystemData(pThis + 4);
@@ -407,6 +417,7 @@ struct FootIKConstruction
 };
 
 // @fnv 0x005ed850
+// pdb: FootIK_DATA::FootIK_DATA | BGSRagdoll.obj | debug, call graph, medium
 FootIKConstruction::FootIKConstruction() : bEnabled(false)
 {}
 
@@ -426,10 +437,12 @@ float* __fastcall Object_ComputeValue_005ed8c0(float* pThis)
 }
 
 // @fnv 0x005ed910
+// pdb: LookIK_DATA::LookIK_DATA | BGSRagdoll.obj | debug, upstream name already matches, high
 LookIK_DATA::LookIK_DATA() : bEnabled(false)
 {}
 
 // @fnv 0x005ed980
+// pdb: GrabIK_DATA::GrabIK_DATA | BGSRagdoll.obj | debug, upstream name already matches, high
 GrabIK_DATA::GrabIK_DATA() : bEnabled(false)
 {}
 
@@ -458,6 +471,7 @@ void* __fastcall InitDefaults(char* pThis)
 
 // Byte-swaps four consecutive 16-bit values starting at thisPtr via BSEndian.
 // @fnv 0x005ee510
+// pdb: RagdollSaveStruct::Endian | BGSRagdoll.obj | debug, object-file gap fill, medium
 void SaveMetadata::SwapEndianFourShorts()
 {
     BSEndian(&m_usFootIndexCount, EndianSizeTag<2>());
@@ -475,7 +489,11 @@ int __cdecl Copy(char* apDest, unsigned int auiSize, const char* apSrc);
 
 // Clears this object's arrays, resizes them to match arData, copies the arm data and duplicated strings, then copies bEnabled.
 // @fnv 0x005ed360
-void GrabIKOperations::CopyData(const GrabIK_DATA& arSource)
+// src: XBOX_RETAIL_PDB 0x005ed360
+// pdb: GrabIK_DATA::Copy | BGSRagdoll.obj | retail, call graph, high
+// pdb params: arData
+// pdb locals: ui, inameLen, parmName
+void GrabIKOperations::GrabIK_DATA_Copy(const GrabIK_DATA& arData)
 {
     ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)this + 0x14))->Clear(true);
     for (unsigned int ui = 0; ui < ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)this + 4))->GetSize(); ui++)
@@ -483,41 +501,45 @@ void GrabIKOperations::CopyData(const GrabIK_DATA& arSource)
     ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)this + 4))->Clear(true);
 
     ((BSSimpleArray<GrabIK_DATA__GrabIK_Arm_DATA, 1024>*)((char*)this + 0x14))
-        ->SetSize(((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)&arSource + 0x14))->GetSize(), true);
-    ((BSSimpleArray<const char*, 1024>*)((char*)this + 4))->SetSize(((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)&arSource + 4))->GetSize(), true);
+        ->SetSize(((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)&arData + 0x14))->GetSize(), true);
+    ((BSSimpleArray<const char*, 1024>*)((char*)this + 4))->SetSize(((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)&arData + 4))->GetSize(), true);
 
-    for (unsigned int ui = 0; ui < ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)&arSource + 0x14))->GetSize(); ui++)
+    for (unsigned int ui = 0; ui < ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)&arData + 0x14))->GetSize(); ui++)
         ((BSSimpleArray<GrabIK_DATA__GrabIK_Arm_DATA, 1024>*)((char*)this + 0x14))->GetAt(ui) =
-            ((BSSimpleArray<GrabIK_DATA__GrabIK_Arm_DATA, 1024>*)((char*)&arSource + 0x14))->GetAt(ui);
+            ((BSSimpleArray<GrabIK_DATA__GrabIK_Arm_DATA, 1024>*)((char*)&arData + 0x14))->GetAt(ui);
 
-    for (unsigned int ui = 0; ui < ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)&arSource + 4))->GetSize(); ui++)
+    for (unsigned int ui = 0; ui < ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)&arData + 4))->GetSize(); ui++)
     {
-        unsigned int uiLength = BSStringLength((const char*)((BSSimpleArray<unsigned int, 1024>*)((char*)&arSource + 4))->GetAt(ui)) + 1;
+        unsigned int uiLength = BSStringLength((const char*)((BSSimpleArray<unsigned int, 1024>*)((char*)&arData + 4))->GetAt(ui)) + 1;
         char* pString = new char[uiLength];
-        RagdollStrings::Copy(pString, uiLength, (const char*)((BSSimpleArray<unsigned int, 1024>*)((char*)&arSource + 4))->GetAt(ui));
+        RagdollStrings::Copy(pString, uiLength, (const char*)((BSSimpleArray<unsigned int, 1024>*)((char*)&arData + 4))->GetAt(ui));
         ((BSSimpleArray<unsigned int, 1024>*)((char*)this + 4))->GetAt(ui) = (unsigned int)pString;
     }
 
-    bEnabled = arSource.bEnabled;
+    bEnabled = arData.bEnabled;
 }
 
 
 // @fnv 0x005ed4f0
-bool RagdollFeedbackOperations::Differs(const RagdollFeedbackProfile& arOther)
+// src: XBOX_DEBUG_PDB 0x005ed4f0
+// pdb: PoseMatching_DATA::Compare | BGSRagdoll.obj | debug, call graph, high
+// pdb params: arData
+// pdb locals: bret
+bool PoseMatching_DATA::Compare(const RagdollFeedbackProfile& arData)
 {
     bool bret = false;
     if (((RagdollStringOperations*)((char*)this + 4))
-            ->CompareText((const BSStringT<char>*)((const char*)&arOther + 4), true))
+            ->CompareText((const BSStringT<char>*)((const char*)&arData + 4), true))
         bret = true;
-    if (bret || bEnabled != arOther.bEnabled ||
-        *(short*)((char*)this + 0xc) != *(const short*)((const char*)&arOther + 0xc) ||
-        *(short*)((char*)this + 0xe) != *(const short*)((const char*)&arOther + 0xe) ||
-        *(short*)((char*)this + 0x10) != *(const short*)((const char*)&arOther + 0x10) ||
-        *(float*)((char*)this + 0x14) != *(const float*)((const char*)&arOther + 0x14) ||
-        *(float*)((char*)this + 0x1c) != *(const float*)((const char*)&arOther + 0x1c) ||
-        *(unsigned char*)((char*)this + 0x12) != *(const unsigned char*)((const char*)&arOther + 0x12) ||
-        *(float*)((char*)this + 0x20) != *(const float*)((const char*)&arOther + 0x20) ||
-        *(float*)((char*)this + 0x18) != *(const float*)((const char*)&arOther + 0x18))
+    if (bret || bEnabled != arData.bEnabled ||
+        *(short*)((char*)this + 0xc) != *(const short*)((const char*)&arData + 0xc) ||
+        *(short*)((char*)this + 0xe) != *(const short*)((const char*)&arData + 0xe) ||
+        *(short*)((char*)this + 0x10) != *(const short*)((const char*)&arData + 0x10) ||
+        *(float*)((char*)this + 0x14) != *(const float*)((const char*)&arData + 0x14) ||
+        *(float*)((char*)this + 0x1c) != *(const float*)((const char*)&arData + 0x1c) ||
+        *(unsigned char*)((char*)this + 0x12) != *(const unsigned char*)((const char*)&arData + 0x12) ||
+        *(float*)((char*)this + 0x20) != *(const float*)((const char*)&arData + 0x20) ||
+        *(float*)((char*)this + 0x18) != *(const float*)((const char*)&arData + 0x18))
         bret = true;
     return bret;
 }
@@ -525,24 +547,29 @@ bool RagdollFeedbackOperations::Differs(const RagdollFeedbackProfile& arOther)
 
 // Copies a string, a flag and several numeric fields from arData into this object.
 // @fnv 0x005ed5f0
-void RagdollFeedbackOperations::CopyData(const RagdollFeedbackProfile& arSource)
+// src: XBOX_RETAIL_PDB 0x005ed5f0
+// pdb: PoseMatching_DATA::Copy | BGSRagdoll.obj | retail, call graph, high
+// pdb params: arData
+void PoseMatching_DATA::Copy(const RagdollFeedbackProfile& arData)
 {
-    *(BSStringT<char>*)((char*)this + 4) = *(const BSStringT<char>*)((const char*)&arSource + 4);
-    bEnabled = arSource.bEnabled;
-    *(unsigned short*)((char*)this + 0xc) = *(const unsigned short*)((const char*)&arSource + 0xc);
-    *(unsigned short*)((char*)this + 0xe) = *(const unsigned short*)((const char*)&arSource + 0xe);
-    *(unsigned short*)((char*)this + 0x10) = *(const unsigned short*)((const char*)&arSource + 0x10);
-    *(float*)((char*)this + 0x14) = *(const float*)((const char*)&arSource + 0x14);
-    *(float*)((char*)this + 0x1c) = *(const float*)((const char*)&arSource + 0x1c);
-    *(unsigned char*)((char*)this + 0x12) = *(const unsigned char*)((const char*)&arSource + 0x12);
-    *(float*)((char*)this + 0x18) = *(const float*)((const char*)&arSource + 0x18);
-    *(float*)((char*)this + 0x20) = *(const float*)((const char*)&arSource + 0x20);
+    *(BSStringT<char>*)((char*)this + 4) = *(const BSStringT<char>*)((const char*)&arData + 4);
+    bEnabled = arData.bEnabled;
+    *(unsigned short*)((char*)this + 0xc) = *(const unsigned short*)((const char*)&arData + 0xc);
+    *(unsigned short*)((char*)this + 0xe) = *(const unsigned short*)((const char*)&arData + 0xe);
+    *(unsigned short*)((char*)this + 0x10) = *(const unsigned short*)((const char*)&arData + 0x10);
+    *(float*)((char*)this + 0x14) = *(const float*)((const char*)&arData + 0x14);
+    *(float*)((char*)this + 0x1c) = *(const float*)((const char*)&arData + 0x1c);
+    *(unsigned char*)((char*)this + 0x12) = *(const unsigned char*)((const char*)&arData + 0x12);
+    *(float*)((char*)this + 0x18) = *(const float*)((const char*)&arData + 0x18);
+    *(float*)((char*)this + 0x20) = *(const float*)((const char*)&arData + 0x20);
 }
 
 namespace fnv_005edfb0 {
 
 // Frees each element of three arrays at offsets 0xb0, 0xd4 and 0xf8, then clears those arrays and the objects at 0x80, 0xc0, 0xe4 and 0x108.
 // @fnv 0x005edfb0
+// pdb: BGSRagdoll::ClearData | BGSRagdoll.obj | retail, vtable slot, high
+// pdb locals: ui
 void __fastcall ClearRagdollData(BGSRagdoll* ragdoll)
 {
     ((BSSimpleArray<SandboxProcedureData, 1024>*)((char*)ragdoll + 0x80))->Clear(true);
@@ -568,6 +595,7 @@ void __cdecl BSEndian(unsigned int*, EndianSizeTag<4>);
 
 // Byte-swaps each of the 15 unsigned int fields of this struct via BSEndian.
 // @fnv 0x005ee380
+// pdb: RagdollFeedbackData::RagdollFeedbackSystemData::Endian | BGSRagdoll.obj | debug, object-file gap fill, medium
 void __fastcall SwapRagdollFeedbackEndian(RagdollFeedbackData__RagdollFeedbackSystemData* data)
 {
     BSEndian(reinterpret_cast<unsigned int*>(&data->m_fFeedbackParameter1), EndianSizeTag<4>());
@@ -591,6 +619,7 @@ void __cdecl BSEndian(unsigned int*, EndianSizeTag<4>);
 
 // Byte-swaps the three 16-bit and four 32-bit fields of the struct via BSEndian.
 // @fnv 0x005ee580
+// pdb: PoseMatching_DATA::PoseMatching_System_DATA::Endian | BGSRagdoll.obj | debug, object-file gap fill, medium
 void __fastcall SwapPoseMatchingEndian(PoseMatching_DATA__PoseMatching_System_DATA* data)
 {
     BSEndian(reinterpret_cast<unsigned short*>(&data->m_sFirstRagdollFeedbackIndex), EndianSizeTag<2>());
@@ -605,25 +634,31 @@ void __fastcall SwapPoseMatchingEndian(PoseMatching_DATA__PoseMatching_System_DA
 
 // Casts apCopy to BGSRagdoll, then copies its fields and embedded sub-objects into this ragdoll.
 // @fnv 0x005eeb70
+// pdb: BGSRagdoll::Copy | BGSRagdoll.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void RagdollOperations::CopyData(TESForm* apCopy)
 {
     BGSRagdoll* pcopy = dynamic_cast<BGSRagdoll*>(apCopy);
     if (!pcopy)
         return;
     TESForm::CopyFrom(apCopy);
-    m_pActorBase = pcopy->m_pActorBase;
-    m_pBodyPartDataCur = pcopy->m_pBodyPartDataCur;
-    m_iRagdollType = pcopy->m_iRagdollType;
-    ((RagdollAnimationOperations*)((char*)this + 0x40))->CopyFrom(*(RagdollAnimationOperations*)((char*)pcopy + 0x40));
-    ((FootIKOperations*)((char*)this + 0x90))->CopyData(*(FootIK_DATA*)((char*)pcopy + 0x90));
-    ((LookIKOperations*)((char*)this + 0xd0))->CopyData(*(LookIK_DATA*)((char*)pcopy + 0xd0));
-    ((GrabIKOperations*)((char*)this + 0xf4))->CopyData(*(GrabIK_DATA*)((char*)pcopy + 0xf4));
-    ((RagdollFeedbackOperations*)((char*)this + 0x118))->CopyData(*(RagdollFeedbackProfile*)((char*)pcopy + 0x118));
+    pPreviewActor = pcopy->pPreviewActor;
+    pBodyPartData = pcopy->pBodyPartData;
+    iSkeletonID = pcopy->iSkeletonID;
+    ((RagdollAnimationOperations*)((char*)this + 0x40))->RagdollFeedbackData_Copy(*(RagdollAnimationOperations*)((char*)pcopy + 0x40));
+    ((FootIKOperations*)((char*)this + 0x90))->FootIK_DATA_Copy(*(FootIK_DATA*)((char*)pcopy + 0x90));
+    ((LookIKOperations*)((char*)this + 0xd0))->LookIK_DATA_Copy(*(LookIK_DATA*)((char*)pcopy + 0xd0));
+    ((GrabIKOperations*)((char*)this + 0xf4))->GrabIK_DATA_Copy(*(GrabIK_DATA*)((char*)pcopy + 0xf4));
+    ((PoseMatching_DATA*)((char*)this + 0x118))->Copy(*(RagdollFeedbackProfile*)((char*)pcopy + 0x118));
 }
 
 
 // Compares this BGSRagdoll with apCompare field by field, returning true if any compared member differs or the cast fails.
 // @fnv 0x005eec60
+// pdb: BGSRagdoll::Compare | BGSRagdoll.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool RagdollOperations::Differs(TESForm* apCompare)
 {
     BGSRagdoll* pcomp = dynamic_cast<BGSRagdoll*>(apCompare);
@@ -631,19 +666,19 @@ bool RagdollOperations::Differs(TESForm* apCompare)
         return true;
     if (TESForm::Compare(pcomp))
         return true;
-    if (m_iRagdollType != pcomp->m_iRagdollType)
+    if (iSkeletonID != pcomp->iSkeletonID)
         return true;
     if (((RagdollAnimationOperations*)((char*)this + 0x40))->Differs(*(RagdollAnimationOperations*)((char*)pcomp + 0x40)))
         return true;
-    if (((FootIKOperations*)((char*)this + 0x90))->Differs(*(FootIK_DATA*)((char*)pcomp + 0x90)))
+    if (((FootIKOperations*)((char*)this + 0x90))->FootIK_DATA_Compare(*(FootIK_DATA*)((char*)pcomp + 0x90)))
         return true;
-    if (((LookIKOperations*)((char*)this + 0xd0))->Differs(*(LookIK_DATA*)((char*)pcomp + 0xd0)))
+    if (((LookIKOperations*)((char*)this + 0xd0))->LookIK_DATA_Compare(*(LookIK_DATA*)((char*)pcomp + 0xd0)))
         return true;
-    if (((GrabIKOperations*)((char*)this + 0xf4))->Differs(*(GrabIK_DATA*)((char*)pcomp + 0xf4)))
+    if (((GrabIKOperations*)((char*)this + 0xf4))->GrabIK_DATA_Compare(*(GrabIK_DATA*)((char*)pcomp + 0xf4)))
         return true;
-    if (((RagdollFeedbackOperations*)((char*)this + 0x118))->Differs(*(RagdollFeedbackProfile*)((char*)pcomp + 0x118)))
+    if (((PoseMatching_DATA*)((char*)this + 0x118))->Compare(*(RagdollFeedbackProfile*)((char*)pcomp + 0x118)))
         return true;
-    if (m_pBodyPartDataCur != pcomp->m_pBodyPartDataCur)
+    if (pBodyPartData != pcomp->pBodyPartData)
         return true;
     return false;
 }
@@ -653,6 +688,7 @@ extern int DAT_010472d0;
 
 // The constructor and destructor store the BSSimpleArray<char const *,1024> vftable 0x010472d0.
 // @fnv 0x005eede0
+// pdb: BSSimpleArray<char const *,1024>::BSSimpleArray<char const *,1024> | BGSRagdoll.obj | debug, call graph (shared callers), high
 template <>
 BSSimpleArray<const char*, 1024>::BSSimpleArray()
 {
@@ -660,6 +696,7 @@ BSSimpleArray<const char*, 1024>::BSSimpleArray()
 }
 
 // @fnv 0x005eee10
+// pdb: BSSimpleArray<char const *,1024>::~BSSimpleArray<char const *,1024> | BGSRagdoll.obj | debug, call graph (shared callers), high
 template <>
 BSSimpleArray<const char*, 1024>::~BSSimpleArray()
 {
@@ -667,14 +704,17 @@ BSSimpleArray<const char*, 1024>::~BSSimpleArray()
 }
 
 // @fnv 0x005edb10
+// pdb: FootIK_DATA::~FootIK_DATA | BGSRagdoll.obj | debug, upstream name already matches, high
 FootIK_DATA::~FootIK_DATA()
 {}
 
 // @fnv 0x005edb70
+// pdb: LookIK_DATA::~LookIK_DATA | BGSRagdoll.obj | debug, upstream name already matches, high
 LookIK_DATA::~LookIK_DATA()
 {}
 
 // @fnv 0x005edbd0
+// pdb: GrabIK_DATA::~GrabIK_DATA | BGSRagdoll.obj | debug, upstream name already matches, high
 GrabIK_DATA::~GrabIK_DATA()
 {}
 
@@ -695,6 +735,8 @@ struct FootIKArrayResize
 
 // @fnv 0x005ef010
 // src: COMMUNITY 0x005ef010
+// pdb: BSSimpleArray<FootIK_DATA::FootIK_Leg_DATA,1024>::SetSize | BGSRagdoll.obj | retail, call graph (shared callers), high
+// pdb params: aiNewSize, abFreeMemory
 void FootIKArrayResize::BSSimpleArray_FootIK_DATA_FootIK_Leg_DATA_1024_SetLength(unsigned int aiNewSize, bool abFreeMemory)
 {
     if (aiNewSize == 0)
@@ -751,6 +793,8 @@ struct LookIKArrayResize
 
 // @fnv 0x005ef1f0
 // src: COMMUNITY 0x005ef1f0
+// pdb: BSSimpleArray<LookIK_DATA::LookIK_Head_DATA,1024>::SetSize | BGSRagdoll.obj | retail, call graph (shared callers), high
+// pdb params: aiNewSize, abFreeMemory
 void LookIKArrayResize::BSSimpleArray_LookIK_DATA_LookIK_Head_DATA_1024_SetLength(unsigned int aiNewSize, bool abFreeMemory)
 {
     if (aiNewSize == 0)
@@ -807,6 +851,8 @@ struct GrabIKArrayResize
 
 // @fnv 0x005ef3d0
 // src: COMMUNITY 0x005ef3d0
+// pdb: BSSimpleArray<GrabIK_DATA::GrabIK_Arm_DATA,1024>::SetSize | BGSRagdoll.obj | retail, call graph (shared callers), high
+// pdb params: aiNewSize, abFreeMemory
 void GrabIKArrayResize::BSSimpleArray_GrabIK_DATA_GrabIK_Arm_DATA_1024_SetLength(unsigned int aiNewSize, bool abFreeMemory)
 {
     if (aiNewSize == 0)
@@ -856,6 +902,8 @@ void __cdecl TESForm_AddChunkArray16_ForwardCall_00485730(void*, void*, void*);
 void __cdecl TESForm_AddChunkArray(unsigned int, void*, unsigned int);
 
 // @fnv 0x005ee110
+// pdb: BGSRagdoll::Save | BGSRagdoll.obj | retail, vtable slot, high
+// pdb locals: saveStruct, itempint
 void __fastcall SaveRagdoll(BGSRagdoll* ragdoll)
 {
     SaveMetadata saveData;
@@ -863,7 +911,7 @@ void __fastcall SaveRagdoll(BGSRagdoll* ragdoll)
     reinterpret_cast<TESForm*>(ragdoll)->BeginFormRecord();
 
     reinterpret_cast<TESModel*>(reinterpret_cast<unsigned char*>(ragdoll) + 0x18)
-        ->WriteToBuffer(0x4c444f4d, 0x54444f4d);
+        ->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
 
     _FUN_00485910(0x5245564e, 1);
 
@@ -955,10 +1003,12 @@ void __fastcall SaveRagdoll(BGSRagdoll* ragdoll)
 }  // namespace fnv_005ee110
 
 // @fnv 0x005edaf0
+// pdb: RagdollFeedbackData::~RagdollFeedbackData | BGSRagdoll.obj | debug, call graph, medium
 RagdollAnimationData::~RagdollAnimationData()
 {}
 
 // @fnv 0x005edc30
+// pdb: BGSRagdoll::~BGSRagdoll | BGSRagdoll.obj | retail, upstream name already matches, high
 BGSRagdoll::~BGSRagdoll()
 {
     fnv_005edfb0::ClearRagdollData(this);

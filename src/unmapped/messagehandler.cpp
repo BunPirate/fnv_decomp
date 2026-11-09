@@ -14,6 +14,7 @@ int __cdecl MessageHandler_QWarningCount()
 extern __declspec(thread) int DAT_tls_0046e8a0;
 // @fnv 0x004fffe0
 // src: XBOX_PDB 0x004fffe0
+// pdb: PackageEventAction::GetDebugName | PackageEventAction.obj | debug, call graph, medium
 void __cdecl MessageHandler_SetWarningCount(int value)
 {
     DAT_tls_0046e8a0 = value;

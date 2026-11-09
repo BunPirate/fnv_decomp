@@ -10,12 +10,15 @@
 #include "../../../include/TESSaveLoadGameGlobals.h"
 
 // @fnv 0x0087a0e0
+// pdb: SeenData::LoadGame | SeenData.obj | debug, vtable slot, medium
+// pdb params: apLoadGameBuffer
 void SeenData::LoadGame(BGSLoadFormBuffer* buffer)
 {
     buffer->ReadTypedData(static_cast<void*>(m_uiSeenData), 0x20u);
 }
 
 // @fnv 0x00879940
+// pdb: SeenData::SeenData | SeenData.obj | retail, upstream name already matches, high
 SeenData::SeenData()
 {
     memset(m_uiSeenData, 0, 0x20);
@@ -41,23 +44,25 @@ void SeenData::GetPositionForIndex(unsigned int index, NiPoint3& position)
 }
 
 // @fnv 0x0087a570
-void IntSeenData::LoadGame(BGSLoadFormBuffer* pLoadBuffer)
+// pdb: IntSeenData::LoadGame | SeenData.obj | retail, vtable slot, high
+// pdb params: aiCount
+void IntSeenData::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     struct LoadCursor
     {
         unsigned int count;
         IntSeenData* section;
     } cursor;
-    cursor.count = pLoadBuffer->ReadElementCount();
+    cursor.count = apLoadGameBuffer->ReadElementCount();
     cursor.section = this;
     for (unsigned int index = 0; index < cursor.count; ++index)
     {
-        pLoadBuffer->ReadTypedData(&cursor.section->field_24, 1u);
-        pLoadBuffer->ReadTypedData(&cursor.section->field_25, 1u);
-        cursor.section->SeenData::LoadGame(pLoadBuffer);
+        apLoadGameBuffer->ReadTypedData(&cursor.section->cSectionX, 1u);
+        apLoadGameBuffer->ReadTypedData(&cursor.section->cSectionY, 1u);
+        cursor.section->SeenData::LoadGame(apLoadGameBuffer);
         if (index < cursor.count - 1)
-            cursor.section->field_28 = new IntSeenData(char(0), char(0));
-        cursor.section = cursor.section->field_28;
+            cursor.section->pNextSection = new IntSeenData(char(0), char(0));
+        cursor.section = cursor.section->pNextSection;
     }
 }
 
@@ -180,6 +185,8 @@ TESSaveLoadGame* g_TESSaveLoadGame;
 
 // @fnv 0x0087a090
 // src: XBOX_PDB 0x0087a090
+// pdb: SeenData::LoadGame | SeenData.obj | debug, vtable slot, medium
+// pdb params: acCount
 void __thiscall SeenData::LoadGame_0087a090(unsigned short)
 {
     g_TESSaveLoadGame->ReadTypedData(m_uiSeenData, 0x20);
@@ -187,6 +194,8 @@ void __thiscall SeenData::LoadGame_0087a090(unsigned short)
 
 // Calls SaveData on the buffer with this+4 and a size of 0x20.
 // @fnv 0x0087a0c0
+// pdb: SeenData::SaveGame | SeenData.obj | debug, vtable slot, medium
+// pdb params: apSaveGameBuffer
 void __thiscall SeenData::SaveFormData(void* buf)
 {
     ((BGSSaveFormBuffer*)buf)->SaveData(m_uiSeenData, 0x20, 0);
@@ -194,6 +203,7 @@ void __thiscall SeenData::SaveFormData(void* buf)
 
 void __cdecl _Deallocate(void*);
 // @fnv 0x00879970
+// pdb: SeenData::`scalar deleting destructor' | SeenData.obj | retail, vtable slot, high
 void* SeenData::FUN_00879970(unsigned int flags)
 {
     SetVtable();
@@ -209,6 +219,8 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 // Passes the seen-data array and size 0x20 to TESSaveLoadGame::FUN_008579b0.
 // @fnv 0x0087a060
 // src: XBOX_PDB 0x0087a060
+// pdb: SeenData::SaveGame | SeenData.obj | debug, vtable slot, medium
+// pdb params: abRecursing
 void SeenData::SaveGame_0087a060(bool abRecursing)
 {
     fnv_0087a060::g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&field_04, 0x20);
@@ -217,6 +229,7 @@ void SeenData::SaveGame_0087a060(bool abRecursing)
 void _Deallocate(void*);
 // Calls FUN_0087a170, then if the low bit of flags is set deallocates this, and returns this.
 // @fnv 0x0087a140
+// pdb: IntSeenData::`scalar deleting destructor' | SeenData.obj | retail, vtable slot, high
 void* IntSeenData::FUN_0087a140(unsigned int flags)
 {
     IntSeenData::~IntSeenData();
@@ -227,20 +240,23 @@ void* IntSeenData::FUN_0087a140(unsigned int flags)
 
 // Saves each node's bytes at offsets 0x24 and 0x25 and its linked data to the buffer, then writes the node count at the recorded position.
 // @fnv 0x0087a4e0
-void IntSeenData::SaveToBuffer(BGSSaveFormBuffer* buffer)
+// pdb: IntSeenData::SaveGame | SeenData.obj | retail, vtable slot, high
+// pdb params: abRecursing
+// pdb locals: icount, pseen
+void IntSeenData::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned int icount = 0;
-    unsigned int icountPosition = buffer->StartVariableSizedValue();
+    unsigned int icountPosition = apSaveGameBuffer->StartVariableSizedValue();
     IntSeenData* pNode = this;
     while (pNode)
     {
-        buffer->SaveData(&pNode->field_24, 1, 0);
-        buffer->SaveData(&pNode->field_25, 1, 0);
-        pNode->SaveFormData(buffer);
-        pNode = pNode->field_28;
+        apSaveGameBuffer->SaveData(&pNode->cSectionX, 1, 0);
+        apSaveGameBuffer->SaveData(&pNode->cSectionY, 1, 0);
+        pNode->SaveFormData(apSaveGameBuffer);
+        pNode = pNode->pNextSection;
         ++icount;
     }
-    buffer->SaveVariableSizedValue_00865ff0(icount, icountPosition);
+    apSaveGameBuffer->SaveVariableSizedValue_00865ff0(icount, icountPosition);
 }
 
 // @fnv 0x008799a0
@@ -263,6 +279,8 @@ extern SaveManager* DAT_011de45c;
 
 // @fnv 0x0087a3e0
 // src: XBOX_PDB 0x0087a090
+// pdb: IntSeenData::LoadGame | SeenData.obj | retail, vtable slot, high
+// pdb params: aiCount
 void IntSeenData::LoadGame_0087a090(unsigned short aiCount)
 {
     SeenData::LoadGame_0087a090(0xffff);
@@ -270,16 +288,16 @@ void IntSeenData::LoadGame_0087a090(unsigned short aiCount)
     if (aiCount == 0xffff)
         reinterpret_cast<TESSaveLoadGame*>(fnv_0087a3e0::DAT_011de45c)->ReadTypedData(&aiCount, 2);
 
-    reinterpret_cast<TESSaveLoadGame*>(fnv_0087a3e0::DAT_011de45c)->ReadTypedData(&field_24, 1);
-    reinterpret_cast<TESSaveLoadGame*>(fnv_0087a3e0::DAT_011de45c)->ReadTypedData(&field_25, 1);
+    reinterpret_cast<TESSaveLoadGame*>(fnv_0087a3e0::DAT_011de45c)->ReadTypedData(&cSectionX, 1);
+    reinterpret_cast<TESSaveLoadGame*>(fnv_0087a3e0::DAT_011de45c)->ReadTypedData(&cSectionY, 1);
 
     aiCount--;
 
     if (aiCount > 0)
     {
-        field_28 = new IntSeenData(char(0), char(0));
+        pNextSection = new IntSeenData(char(0), char(0));
 
-        field_28->LoadGame_0087a090(aiCount);
+        pNextSection->LoadGame_0087a090(aiCount);
     }
 }
 
@@ -348,9 +366,12 @@ struct Parent
     virtual void Attach(Marker*, int);
 };
 // @fnv 0x00879f20
-void SeenData::AttachMarkersForSeenData(NiNode* parent, const NiPoint3& offset, int unused)
+// pdb: SeenData::DrawSeenData | SeenData.obj | retail, vtable slot, high
+// pdb params: apDrawNode, aSeenStart, abDrawSeen
+// pdb locals: fhalfsize, drawcolor, i, prect, seencoord
+void SeenData::AttachMarkersForSeenData(NiNode* apDrawNode, const NiPoint3& aSeenStart, int abDrawSeen)
 {
-    if (parent)
+    if (apDrawNode)
     {
         NiColorA effectColor(1.0f, 0.0f, 0.0f, 0.0f);
         float half = DAT_011a31e8 / 2.0;
@@ -362,9 +383,9 @@ void SeenData::AttachMarkersForSeenData(NiNode* parent, const NiPoint3& offset, 
                 float positionStorage[3];
                 reinterpret_cast<NiPoint3*>(positionStorage)->FUN_006815c0();
                 SeenData::GetPositionForIndex(i3, *reinterpret_cast<NiPoint3*>(positionStorage));
-                reinterpret_cast<NiPoint3*>(positionStorage)->ComputeValue_0063c8a0(offset);
+                reinterpret_cast<NiPoint3*>(positionStorage)->ComputeValue_0063c8a0(aSeenStart);
                 Marker* marker3 = CreateSquareLines(DAT_011a31e8, &effectColor, 1);
-                reinterpret_cast<Parent*>(parent)->Attach(marker3, 1);
+                reinterpret_cast<Parent*>(apDrawNode)->Attach(marker3, 1);
                 marker3->NiAVObject_SetTranslate_004bc1f0(reinterpret_cast<NiPoint3*>(positionStorage)->x + half, reinterpret_cast<NiPoint3*>(positionStorage)->y + half, reinterpret_cast<NiPoint3*>(positionStorage)->z);
             }
         }
@@ -373,40 +394,49 @@ void SeenData::AttachMarkersForSeenData(NiNode* parent, const NiPoint3& offset, 
 
 // Computes the section centre, attaches its markers, then forwards the position and flag to the next section.
 // @fnv 0x0087a200
-void IntSeenData::AddToNode(NiNode* pvContext, NiPoint3& kPosition, bool bFlag)
+// pdb: IntSeenData::DrawSeenData | SeenData.obj | retail, vtable slot, high
+// pdb params: apDrawNode, aSeenStart, abDrawSeen
+// pdb locals: sectionstart, isectionx, isectiony
+void IntSeenData::AddToNode(NiNode* apDrawNode, NiPoint3& aSeenStart, bool abDrawSeen)
 {
-    int iX = field_24;
-    int iY = field_25;
-    NiPoint3 kTargetCenter((float)((iX << 12) + 2048), (float)((iY << 12) + 2048), kPosition.z);
-    AttachMarkersForSeenData(pvContext, kTargetCenter, bFlag);
-    if (field_28)
-        field_28->AddToNode(pvContext, kPosition, bFlag);
+    int iX = cSectionX;
+    int iY = cSectionY;
+    NiPoint3 kTargetCenter((float)((iX << 12) + 2048), (float)((iY << 12) + 2048), aSeenStart.z);
+    AttachMarkersForSeenData(apDrawNode, kTargetCenter, abDrawSeen);
+    if (pNextSection)
+        pNextSection->AddToNode(apDrawNode, aSeenStart, abDrawSeen);
 }
 
 // Computes the save size, including the section count and any following sections.
 // @fnv 0x0087a2a0
-unsigned short IntSeenData::GetSaveSize(bool bFull)
+// pdb: IntSeenData::GetSaveSize | SeenData.obj | retail, upstream name already matches, high
+// pdb params: abRecursing
+// pdb locals: isize
+unsigned short IntSeenData::GetSaveSize(bool abRecursing)
 {
     unsigned short usSize = 0;
     usSize += SeenData::GetSaveSize(false);
-    if (!bFull)
+    if (!abRecursing)
         usSize += 2;
     usSize += 1;
     usSize += 1;
-    if (field_28)
-        usSize += field_28->GetSaveSize(true);
+    if (pNextSection)
+        usSize += pNextSection->GetSaveSize(true);
     return usSize;
 }
 
 struct SaveDataWriter
 {
-    void TESSaveLoadGame_SaveGameDataOLD(void* data, unsigned int size);
+    void TESSaveLoadGame_SaveGameDataOLD(void* apData, unsigned int aiSize);
 };
 extern SaveDataWriter* DAT_011de45c;
 
 // Writes the section's two bytes and, when not recursing, the section count, then recurses into the next section.
 // @fnv 0x0087a330
 // src: XBOX_PDB 0x0087a060
+// pdb: IntSeenData::SaveGame | SeenData.obj | retail, vtable slot, high
+// pdb params: abRecursing
+// pdb locals: icount, pseen
 void IntSeenData::SaveGame_0087a060(bool abRecursing)
 {
     IntSeenData* pSection;
@@ -416,23 +446,26 @@ void IntSeenData::SaveGame_0087a060(bool abRecursing)
         unsigned short usSectionCount;
         usSectionCount = 1;
         pSection = this;
-        while ((pSection = pSection->field_28) != 0)
+        while ((pSection = pSection->pNextSection) != 0)
         {
             ++usSectionCount;
         }
         DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&usSectionCount, 2);
     }
-    DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&field_24, 1);
-    DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&field_25, 1);
-    if (field_28)
+    DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&cSectionX, 1);
+    DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&cSectionY, 1);
+    if (pNextSection)
     {
-        field_28->SaveGame_0087a060(true);
+        pNextSection->SaveGame_0087a060(true);
     }
 }
 
 extern float DAT_011a31e8;
 // Converts a world position into cell-local x/y offsets, dividing by DAT_011a31e8, using centered or grid-aligned cell origins.
 // @fnv 0x00879da0
+// pdb: SeenData::GetPosForCoord | SeenData.obj | debug, object-file run extension, low
+// pdb params: aCoord, abInterior, aiOutX, aiOutY
+// pdb locals: isecty, isectx, icellx, icelly
 void WorldToCellOffset(const NiPoint3& position, bool centered, int& x, int& y)
 {
     if (centered)
@@ -457,7 +490,8 @@ void WorldToCellOffset(const NiPoint3& position, bool centered, int& x, int& y)
 
 // Deletes the following sections; SeenData's destructor destroys the base part.
 // @fnv 0x0087a170
+// pdb: IntSeenData::~IntSeenData | SeenData.obj | debug, upstream name already matches, high
 IntSeenData::~IntSeenData()
 {
-    delete field_28;
+    delete pNextSection;
 }

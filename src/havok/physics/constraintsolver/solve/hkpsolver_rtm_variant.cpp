@@ -69,6 +69,8 @@ struct SpawnedElem {
 struct BeginArg { SpawnedElem* p; BeginArg(SpawnedElem* q):p(q){} };
 // @fnv 0x00d89ed0
 // src: GUESS 0x00d89ed0 (confidence: low)
+// pdb: hkSolveApplyGravityByTheSteps | hkpSolver.obj | debug, call graph, medium
+// pdb params: info, accumulators, accumulatorsEnd
 void __cdecl Hkpsolver_ProcessEntries_00d89ed0(SpawnedOwner* owner, BeginArg begin, SpawnedElem* limit)
 {
     SpawnedVec4 scale = owner->m_vec10;
@@ -408,24 +410,27 @@ static void Step_debugPrintfAccumulators(int mode, const Step_SolverInfo& info, 
 struct Step_InArg { Step_Accumulator* value; Step_InArg() {} };
 struct Step_OutArg { Step_Bool* value; Step_OutArg() {} };
 // @fnv 0x00d89f80
-// src: GUESS 0x00d89f80 (confidence: low)
-extern "C" __declspec(noinline) int __cdecl Object_ProcessAndReturnValue_00d89f80(
+// src: XBOX_RETAIL_PDB 0x00d89f80
+// pdb: hkSolveIntegrateVelocitiesByTheSteps | hkpSolver.obj | retail, call graph, high
+// pdb params: info, currentSolverStep, accumulators, accumulatorsEnd, outSolveFinished
+// pdb locals: isLast, sumVelFactor
+extern "C" __declspec(noinline) int __cdecl hkSolveIntegrateVelocitiesByTheSteps(
     const Step_SolverInfo& info,
     int currentSolverStep,
-    Step_InArg inputArg,
-    Step_Accumulator* end,
-    Step_OutArg outputArg)
+    Step_InArg accumulators,
+    Step_Accumulator* accumulatorsEnd,
+    Step_OutArg outSolveFinished)
 {
  Step_Vector4 gravityPerStep=info.m_kGravity;
  Step_Vector4 damping; damping.setAll3(info.m_fInverseStepCount*info.GetTimeStepFactor(0));
  bool lastStep=false;
  {
-  Step_Bool& out=*outputArg.value;
+  Step_Bool& out=*outSolveFinished.value;
   out=false;
   int n=info.m_iToiEventCount-1;
   if(currentSolverStep>=n) { lastStep=true; out=true; }
  }
- Step_Accumulator* p=inputArg.value;
- Step_integrateVelocities(info,gravityPerStep,lastStep,damping,p,end);
+ Step_Accumulator* p=accumulators.value;
+ Step_integrateVelocities(info,gravityPerStep,lastStep,damping,p,accumulatorsEnd);
  return 1;
 }

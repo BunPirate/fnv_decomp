@@ -7,6 +7,8 @@ extern MemoryPool* ms_pPoolAddressMap[];
 extern MemoryPool* DAT_011f67b8[];
 
 // @fnv 0x00aa6840
+// pdb: MemoryPool::InitPools | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void ClearMemoryPoolTables()
 {
     unsigned int uiIndex;

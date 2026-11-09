@@ -31,7 +31,7 @@ public:
     static void InitializeMultiBounds();
     static void SetRenderCamera(NiCamera* camera, BSShaderAccumulator* accumulator, bool unused);
     static void SetRenderCamera(AnimIdle* camera, AnimIdle* accumulator, bool unused);
-    static void SetRenderCamera(void* camera, unsigned int accumulator, bool unused);
+    static void SetRenderCamera(void* apCamera, unsigned int apAccumulator, bool abUseSPU);
     static void SetAlphaOnNode(NiNode* node, float alpha);
 };
 #include "../../../include/BSTextureManager.h"
@@ -155,6 +155,7 @@ extern NiPointer<NiNode> g_011dee84;
 // Creates a new SceneGraph named "Menu" and stores it in the global NiPointer g_011dee84.
 // @fnv 0x004dc5c0
 // src: COMMUNITY 0x004dc5c0
+// pdb: Main::CreateMenuRootNode | Main.obj | debug, object-file run extension, low
 void TESMain_CreateMenuRootNode()
 {
     g_011dee84 = reinterpret_cast<NiNode*>(new SceneGraph("Menu", true, 0));
@@ -174,6 +175,8 @@ struct FUN_004ed8c0_shell
 // Gets a Node via FUN_0049fa80, stores the int pointed to by e into its v field, then passes the node to FUN_00559a70.
 // @fnv 0x004ed8c0
 // src: XBOX_PDB 0x004ed8c0
+// pdb: NiTPointerAllocator<unsigned int>::Allocate | MultiBoundMarkerData.obj | retail, call graph, medium
+// pdb locals: pTmp
 void FUN_004ed8c0_shell::NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSMultiBoundRoom_AddTail(int* piValue)
 {
     Node* n = NiTPointerListBase_NiTPointerAllocator_unsigned_int_unsigned_int_NewItem();
@@ -200,6 +203,8 @@ struct S86
 };
 // @fnv 0x0086bae0
 // src: COMMUNITY 0x0086bae0
+// pdb: D3DDevice::FlushHiZStencil | BSRenderedTexture.obj | debug, object-file run extension, low
+// pdb params: FlushType
 unsigned int S86::NiDX9Renderer_AddResetNotificationFunc(unsigned int key, BGSAddonNode* node)
 {
     unsigned int idx = i.ForwardCall_00877a50(key);
@@ -254,6 +259,7 @@ void __cdecl NiSearchPath_SetSearchPathCreateCallback(void(__cdecl*)());
 
 // @fnv 0x0086bd70
 // src: COMMUNITY 0x0086bd70
+// pdb: BSSearchPath::InitCallback | Main.obj | debug, upstream name already matches, high
 void __cdecl BSSearchPath_InitCallback()
 {
     NiSearchPath_SetSearchPathCreateCallback(BSSearchPath_GetBSSearchPath);
@@ -305,6 +311,7 @@ extern float DAT_011f9484;
 
 // @fnv 0x0086bf70
 // src: XBOX_PDB 0x0086bf70
+// pdb: Main_ShaderInit | Main.obj | debug, upstream name already matches, high
 void __cdecl Main_ShaderInit()
 {
     InterfaceDebug::PrintDebugMessage((BGSLoadGameBuffer*)"Initializing Shader System...");
@@ -320,12 +327,15 @@ void __cdecl Main_ShaderInit()
 void __fastcall SetReferencePosition(TESObjectREFR*, NiPoint3);
 
 // @fnv 0x0086d490
+// pdb: TESObjectREFR::SetLocationOnReference | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: arPoint
+// pdb locals: pworld
 void TESObjectREFR::SetLocationOnReference(const NiPoint3& arPoint)
 {
     ::SetReferencePosition(this, reinterpret_cast<const NiPoint3&>(arPoint));
 }
 
-int __cdecl NiXAdapaterDesc_GetDeviceCaps(int, int);
+int __cdecl Renderer_Init(int, int);
 const char* __cdecl Renderer_GetReason();
 int __cdecl sprintf(char*, const char*, ...);
 namespace main_win32 {
@@ -339,7 +349,7 @@ __declspec(dllimport) void __stdcall ExitProcess(unsigned int);
 void __fastcall TESMain_InitRenderer(int* pThis)
 {
     char buf[512];
-    if (!NiXAdapaterDesc_GetDeviceCaps(pThis[2], pThis[3]))
+    if (!Renderer_Init(pThis[2], pThis[3]))
     {
         sprintf(buf, "Failed to initialize renderer.\n%s", Renderer_GetReason());
         main_win32::MessageBoxA(0, buf, "Fallout", 0);
@@ -359,9 +369,11 @@ struct FUN_0086e3f0_shell : public NiGeometry
 // Forwards the vertex count, triangle count and triangle list to the geometry data's FUN_00a87ae0 and returns its result.
 // @fnv 0x0086e3f0
 // src: COMMUNITY 0x0086e3f0
+// pdb: NiScreenElements::Insert | Main.obj | debug, upstream name already matches, high
+// pdb params: usNumVertices, usNumTriangles, ausTriList
 bool FUN_0086e3f0_shell::NiScreenElements_Insert(unsigned short usNumVertices, unsigned short usNumTriangles, int ausTriList)
 {
-    return ((NiScreenElementsData*)GetModelData())->FUN_00a87ae0(usNumVertices, usNumTriangles, ausTriList);
+    return ((NiScreenElementsData*)GetModelData())->NiScreenElementsData_Insert(usNumVertices, usNumTriangles, ausTriList);
 }
 
 class NiGeometryData;
@@ -370,13 +382,15 @@ using ::NiGeometry;
 using ::NiScreenElementsData;
 struct FUN_0086e420_shell : NiGeometry
 {
-    void NiScreenElements_SetRectangle(int a, float b, float c, float d, float e);
+    void NiScreenElements_SetRectangle(int iPolygon, float fLeft, float fTop, float fWidth, float fHeight);
 };
 // @fnv 0x0086e420
 // src: COMMUNITY 0x0086e420
-void FUN_0086e420_shell::NiScreenElements_SetRectangle(int a, float b, float c, float d, float e)
+// pdb: NiScreenElements::SetRectangle | Main.obj | debug, upstream name already matches, high
+// pdb params: iPolygon, fLeft, fTop, fWidth, fHeight
+void FUN_0086e420_shell::NiScreenElements_SetRectangle(int iPolygon, float fLeft, float fTop, float fWidth, float fHeight)
 {
-    ((NiScreenElementsData*)GetModelData())->SetRectangleBounds(a, b, c, d, e);
+    ((NiScreenElementsData*)GetModelData())->SetRectangleBounds(iPolygon, fLeft, fTop, fWidth, fHeight);
 }
 }  // namespace fnv_0086e420
 
@@ -390,6 +404,8 @@ struct FUN_0086e460_shell : public NiGeometry
 // Forwards the polygon, set and rectangle coordinates to the screen elements data returned by FUN_005495f0 and returns its result.
 // @fnv 0x0086e460
 // src: COMMUNITY 0x0086e460
+// pdb: NiScreenElements::SetTextures | Main.obj | debug, upstream name already matches, high
+// pdb params: iPolygon, usSet, fLeft, fTop, fRight, fBottom
 bool FUN_0086e460_shell::NiScreenElements_SetTextures(int iPolygon, unsigned short usSet, float fLeft, float fTop, float fRight,
                                       float fBottom)
 {
@@ -406,12 +422,14 @@ using ::NiScreenElementsData;
 
 // @fnv 0x0086e4b0
 // src: COMMUNITY 0x0086e4b0
+// pdb: NiScreenElements::UpdateBound | Main.obj | debug, upstream name already matches, high
 void __fastcall NiScreenElements_UpdateBound(NiGeometry* apGeometry)
 {
     ((NiScreenElementsData*)apGeometry->GetModelData())->NiScreenElementsData_UpdateBound();
 }
 }  // namespace fnv_0086e4b0
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, const char*);
@@ -421,6 +439,8 @@ extern char DAT_011f9308[];
 
 // @fnv 0x0086e4e0
 // src: COMMUNITY 0x0086e4e0
+// pdb: BSShaderManager::SetDefaultShaderPath | Main.obj | debug, upstream name already matches, high
+// pdb params: apPath
 void __cdecl BSShaderManager_SetDefaultShaderPath(const char* apPath)
 {
     TaskQueueInterface::CopyStringToBuffer(DAT_011f9308, 0x104, apPath);
@@ -430,6 +450,8 @@ extern NiPointer<NiNode> DAT_011f9508;
 
 // @fnv 0x0086e520
 // src: COMMUNITY 0x0086e520
+// pdb: BSShaderManager::SetRenderer | Main.obj | debug, upstream name already matches, high
+// pdb params: apRenderer
 void __cdecl BSShaderManager_SetRenderer(NiNode* apRenderer)
 {
     DAT_011f9508 = apRenderer;
@@ -561,6 +583,8 @@ extern NiPointer<NiNode> g_011d86bc;
 
 // @fnv 0x0086e630
 // src: COMMUNITY 0x0086e630
+// pdb: BGSTerrainManager::SetTreeNode | Main.obj | debug, upstream name already matches, high
+// pdb params: apTreeNode
 void BGSTerrainManager_SetTreeNode(NiNode* apTreeNode)
 {
     g_011d86bc = apTreeNode;
@@ -580,6 +604,7 @@ extern StartMenu* DAT_011daac0;
 
 // @fnv 0x0086efa0
 // src: COMMUNITY 0x0086efa0
+// pdb: StartMenu::CreditsMenuIsActive | Main.obj | debug, upstream name already matches, high
 bool StartMenu_CreditsMenuIsActive()
 {
     return DAT_011daac0 && DAT_011daac0->IsFlagSet((StartMenu::Flag)0x10000);
@@ -626,6 +651,7 @@ struct Mover
 };
 // @fnv 0x0086f260
 // src: COMMUNITY 0x0086f260
+// pdb: Main::OnIdle_UpdateTimer | Main.obj | debug, object-file run extension, low
 void Mover::TESMain_OnIdle_UpdateTimer()
 {
     ((BGSLoadFormBuffer*)&g_timeGlobal)->SetVersion(*g_011dedbc.GetLifeStateControlFlag());
@@ -646,6 +672,8 @@ extern float DAT_011f940c[4];
 // Fills the four-element DAT_011f940c array by calling DAT_011f91f0 for each index, or storing 0.0f when the function pointer is null.
 // @fnv 0x0086f330
 // src: COMMUNITY 0x0086f330
+// pdb: BSShaderManager::UpdateTimers | Main.obj | retail, upstream name already matches, high
+// pdb locals: i
 void BSShaderManager_UpdateTimers()
 {
     for (int i = 0; i < 4; i++)
@@ -688,6 +716,7 @@ HotkeyWheelDisplay* __cdecl Controls_GetInstance();
 bool __cdecl Interface_IsPipboyOpening();
 // @fnv 0x0086f390
 // src: COMMUNITY 0x0086f390
+// pdb: Main::OnIdle_PollControls | Main.obj | debug, object-file gap fill, medium
 void FUN_0086f390_shell::TESMain_OnIdle_PollControls()
 {
     PollHotkeys_00a23010(Controls_GetInstance());
@@ -710,26 +739,28 @@ struct FUN_0086f640_shell : public Main
 
 
 
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:
-    static void __cdecl Update();
+    static void __cdecl FalloutAudioMedia_Update();
 };
 
 class SoundPlaybackManager
 {
   public:
-    static void __cdecl ProcessPendingSounds();
+    static void __cdecl UpdateRegionSounds();
 };
 
 // @fnv 0x0086f640
 // src: COMMUNITY 0x0086f640
+// pdb: Main::OnIdle_UpdateAudio | Main.obj | debug, object-file gap fill, medium
 void FUN_0086f640_shell::TESMain_OnIdle_UpdateAudio()
 {
     ::BSAudio::GetSingleton()->Update(true);
     FalloutRadio::Update(false);
-    FalloutAudioMedia::Update();
-    SoundPlaybackManager::ProcessPendingSounds();
+    FalloutAudioMedia::FalloutAudioMedia_Update();
+    SoundPlaybackManager::UpdateRegionSounds();
 }
 
 struct FUN_0086f670_shell : public Main
@@ -747,6 +778,7 @@ void __fastcall TES_RunScripts(TES* pTES);
 
 // @fnv 0x0086f670
 // src: XBOX_PDB 0x0086f670
+// pdb: Main::RunScripts | Main.obj | retail, upstream name already matches, high
 void FUN_0086f670_shell::Main_RunScripts()
 {
     DAT_012682f8 = 0;
@@ -800,6 +832,7 @@ void __fastcall PlayerCharacter_UpdateAutoAimActor(void* pThis);
 
 // @fnv 0x0086f890
 // src: XBOX_PDB 0x0086f890
+// pdb: Main::OnIdle_UpdateProcessLists | Main.obj | retail, upstream name already matches, high
 void FUN_0086f890_shell::Main_OnIdle_UpdateProcessLists()
 {
     if (*g_011c3ea4.Int() == 1)
@@ -828,6 +861,7 @@ void __cdecl Interface_PostIdleStuff();
 
 // @fnv 0x0086fd70
 // src: COMMUNITY 0x0086fd70
+// pdb: BSPSysDebugTextManager::ClearActiveParticleSystems | Main.obj | debug, object-file run extension, low
 void __fastcall TESMain_OnIdle_DoInterfaceIdle(void* pThis)
 {
     Interface_PreIdleStuff();
@@ -860,6 +894,7 @@ void __fastcall Main_RunScripts(void* pThis);
 // Calls FUN_0086f640, FUN_0086f890, then FUN_00552570 if *g_011c3ea4.Int() > 1, and finally FUN_0086f670 on pThis.
 // @fnv 0x008705d0
 // src: COMMUNITY 0x008705d0
+// pdb: Main::PostSwapProcess | Main.obj | debug, object-file run extension, low
 void __fastcall TESMain_PostSwapProcess(void* pThis)
 {
     TESMain_OnIdle_UpdateAudio(pThis);
@@ -875,7 +910,7 @@ void __fastcall TESMain_PostSwapProcess(void* pThis)
 namespace fnv_00870610 {
 struct FUN_00870610_shell : public Main
 {
-    void TESMain_OnIdle_PostThreadsProcess();
+    void Main_OnIdle_PostThreadsProcess();
 };
 
 class GlobalObject2_0040c150
@@ -904,8 +939,10 @@ void __fastcall TaskQueueInterface_ThreadEndSecondaryInput(TaskQueueInterface*);
 void __fastcall DebugText_HandleQueuedPrints(DebugText*);
 
 // @fnv 0x00870610
-// src: COMMUNITY 0x00870610
-void FUN_00870610_shell::TESMain_OnIdle_PostThreadsProcess()
+// src: XBOX_DEBUG_PDB 0x00870610
+// pdb: Main::OnIdle_PostThreadsProcess | Main.obj | debug, call graph, high
+// pdb locals: tempAutoEvent
+void FUN_00870610_shell::Main_OnIdle_PostThreadsProcess()
 {
     Script_RunDelayedScriptActionsOnReferences();
     if (*g_011c3ea4.Int() > 1)
@@ -925,6 +962,7 @@ void __cdecl Interface_CloseAllSupportMenus(int);
 // If the byte at offset 0x4cc is set, calls FUN_00706320(0) and clears that byte.
 // @fnv 0x00870680
 // src: COMMUNITY 0x00870680
+// pdb: InterfaceManager::UpdateQueuedMenuClosings | Main.obj | debug, upstream name already matches, high
 void __fastcall InterfaceManager_UpdateQueuedMenuClosings(int param_1)
 {
     if (*(unsigned char*)(param_1 + 0x4cc))
@@ -968,17 +1006,20 @@ struct MainStub
 BSFaceGenNiNode* __cdecl Main_GetWorldSceneGraph();
 // @fnv 0x008706b0
 // src: XBOX_PDB 0x008706b0
-void FUN_008706b0_shell::Main_DrawWorld(BSRenderedTexture* pTexture, bool bCheckMenu, bool bFlag)
+// pdb: Main::DrawWorld | Main.obj | retail, upstream name already matches, high
+// pdb params: apDestination, abRenderedMenuMode, abSkipFirstPerson
+// pdb locals: bwireframe
+void FUN_008706b0_shell::Main_DrawWorld(BSRenderedTexture* apDestination, bool abRenderedMenuMode, bool abSkipFirstPerson)
 {
     bool f = GetWireframe(NiAdditionalGeometryData::GetShadowSceneNodeForIndex(0));
     SetEyePosition(NiAdditionalGeometryData::GetShadowSceneNodeForIndex(0),
         AnimationPosition_0045bb80(Main_GetWorldSceneGraph()->::BSFaceGenNiNode::GetAnimationData()));
-    if (bCheckMenu && !MainInterfaceView::IsMenuActive((MainInterfaceView::enumMenus)0x3f5, 0))
-        ((MainStub*)this)->TESMain_DrawWorldRenderedMenu(pTexture, f);
+    if (abRenderedMenuMode && !MainInterfaceView::IsMenuActive((MainInterfaceView::enumMenus)0x3f5, 0))
+        ((MainStub*)this)->TESMain_DrawWorldRenderedMenu(apDestination, f);
     else if (f)
-        ((MainStub*)this)->Main_DrawWorldWireframe(pTexture, bFlag);
+        ((MainStub*)this)->Main_DrawWorldWireframe(apDestination, abSkipFirstPerson);
     else
-        ((MainStub*)this)->TESMain_DrawWorldStandard(pTexture, bFlag);
+        ((MainStub*)this)->TESMain_DrawWorldStandard(apDestination, abSkipFirstPerson);
 }
 }  // namespace fnv_008706b0
 
@@ -1021,6 +1062,7 @@ extern GO871 g_011c7810;
 // Returns false if g_011c7810 is null, otherwise returns whether its FUN_00453470 result is greater than zero.
 // @fnv 0x00871260
 // src: COMMUNITY 0x00871260
+// pdb: ScreenCustomSplatter::IsActiveSplatter | Main.obj | debug, upstream name already matches, high
 bool ScreenCustomSplatter_IsActiveSplatter()
 {
     if (!(::NiNode*)g_011c7810)
@@ -1082,6 +1124,8 @@ struct FUN_00871c90_shell
 };
 // @fnv 0x00871c90
 // src: COMMUNITY 0x00871c90
+// pdb: Main::GetSceneGraph | Main.obj | debug, object-file run extension, low
+// pdb params: aeType
 void FUN_00871c90_shell::TESMain_SetActive(bool abEnabled)
 {
     if (*((FlagGetterView*)&g_011deed8)->GetLifeStateControlFlag())
@@ -1150,14 +1194,16 @@ struct S872
 {
     char p[0x30];
     H872 h[1];
-    int BSRenderedTexture_GetWidth(unsigned int i);
+    int BSRenderedTexture_GetWidth(unsigned int aiIndex);
 };
 // Returns the virtual call result of the element at index i, or 0 when that element is null.
 // @fnv 0x00872370
 // src: COMMUNITY 0x00872370
-int S872::BSRenderedTexture_GetWidth(unsigned int uiIndex)
+// pdb: BSRenderedTexture::GetWidth | Main.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+int S872::BSRenderedTexture_GetWidth(unsigned int aiIndex)
 {
-    return h[uiIndex] ? ((O872*)h[uiIndex])->vf() : 0;
+    return h[aiIndex] ? ((O872*)h[aiIndex])->vf() : 0;
 }
 
 namespace fnv_008723d0 {
@@ -1212,14 +1258,16 @@ struct S872
 {
     char p[0x30];
     H872 h[1];
-    int BSRenderedTexture_GetHeight(unsigned int i);
+    int BSRenderedTexture_GetHeight(unsigned int aiIndex);
 };
 // Returns the result of the virtual call on the object at index i, or 0 if that slot is null.
 // @fnv 0x008723d0
 // src: COMMUNITY 0x008723d0
-int S872::BSRenderedTexture_GetHeight(unsigned int uiIndex)
+// pdb: BSRenderedTexture::GetHeight | Main.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+int S872::BSRenderedTexture_GetHeight(unsigned int aiIndex)
 {
-    return h[uiIndex] ? ((O872*)h[uiIndex])->vf() : 0;
+    return h[aiIndex] ? ((O872*)h[aiIndex])->vf() : 0;
 }
 }  // namespace fnv_008723d0
 
@@ -1278,6 +1326,9 @@ struct MainInterfaceView
 void __cdecl BSRenderState_RestoreColorWriteEnable(int);
 // @fnv 0x00874ac0
 // src: COMMUNITY 0x00874ac0
+// pdb: Main::DrawWorld_VATS | Main.obj | debug, call graph, medium
+// pdb params: abIssuedVATSQuery
+// pdb locals: pvatsTarget
 void FUN_00874ac0_shell::TESMain_DrawWorld_VATS(bool b)
 {
     void* seq = MainInterfaceView::GetVATSEffect()->GetControllerSequence();
@@ -1308,17 +1359,20 @@ struct FUN_00874b50_shell : public Main
 
 struct NiRenderTargetGroup;
 
-bool __cdecl BSRenderedTexture_IsOutsideFrame(void);
+bool __cdecl BSRenderedTexture_QOutsideFrame(void);
 ImageSpaceManager* __cdecl BSShaderManager_GetImageSpaceManager(void);
 void* __cdecl BSShaderManager_GetRenderer(void);
 void __cdecl BSRenderedTexture_StartOffscreen(unsigned int, NiRenderTargetGroup*);
 
 // @fnv 0x00874b50
 // src: COMMUNITY 0x00874b50
+// pdb: Main::DrawWorld_RestartRenderTexture | Main.obj | retail, call graph, medium
+// pdb params: apRenderTexture, abMultiSampleEnabled, auiClearMode
+// pdb locals: apImagespaceManager, apRenderer
 void FUN_00874b50_shell::TESMain_DrawWorld_RestartRenderTexture(BSRenderedTexture* apRenderTexture, bool abMultiSampleEnabled,
                                       unsigned int auiClearMode)
 {
-    if (BSRenderedTexture_IsOutsideFrame())
+    if (BSRenderedTexture_QOutsideFrame())
     {
         ImageSpaceManager* apImagespaceManager = BSShaderManager_GetImageSpaceManager();
         void* apRenderer = BSShaderManager_GetRenderer();
@@ -1340,7 +1394,7 @@ using ::ImageSpaceManager;
 typedef char _sizecheck_ImageSpaceManager[sizeof(ImageSpaceManager) == 796 ? 1 : -1];
 struct FUN_00874b90_shell : public Main
 {
-    void TESMain_DrawWorld_CopyMenuBG(ImageSpaceManager*, ::NiRenderer*, bool, BSRenderedTexture*);
+    void Main_DrawWorld_CopyMenuBG(ImageSpaceManager*, ::NiRenderer*, bool, BSRenderedTexture*);
 };
 
 struct StrG
@@ -1355,14 +1409,16 @@ struct ISMStub
 void __cdecl BSRenderState_RestoreAlphaBlendEnable(int);
 void __cdecl BSRenderState_RestoreColorWriteEnable(int);
 // @fnv 0x00874b90
-// src: COMMUNITY 0x00874b90
-void FUN_00874b90_shell::TESMain_DrawWorld_CopyMenuBG(ImageSpaceManager* pManager, ::NiRenderer* r, bool c, BSRenderedTexture* d)
+// src: XBOX_RETAIL_PDB 0x00874b90
+// pdb: Main::DrawWorld_CopyMenuBG | Main.obj | retail, call graph (shared callers), high
+// pdb params: apImagespaceManager, apRenderer, abMultiSampleEnabled, apDestination
+void FUN_00874b90_shell::Main_DrawWorld_CopyMenuBG(ImageSpaceManager* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled, BSRenderedTexture* apDestination)
 {
     if ((const char*)g_011ded3c)
     {
         BSRenderStateManager_main::SetColorWriteMask(7, (BSRENDERSTATE_LOCK)1);
         BSRenderStateManager_main::SetDepthBufferEnabled(false, (BSRENDERSTATE_LOCK)1);
-        ((ISMStub*)pManager)->ImageSpaceManager_RenderEffect(0x22, r, (const char*)g_011ded3c, c ? 0u : (unsigned int)d, 0, 1);
+        ((ISMStub*)apImagespaceManager)->ImageSpaceManager_RenderEffect(0x22, apRenderer, (const char*)g_011ded3c, abMultiSampleEnabled ? 0u : (unsigned int)apDestination, 0, 1);
         BSRenderState_RestoreAlphaBlendEnable(1);
         BSRenderState_RestoreColorWriteEnable(1);
     }
@@ -1413,6 +1469,7 @@ void __cdecl ArchiveManager_OpenMasterArchives();
 
 // @fnv 0x00876d20
 // src: COMMUNITY 0x00876d20
+// pdb: Main_InitArchive | Main.obj | debug, object-file run extension, low
 void __cdecl SetupArchiveSettings_AndLoadBSAs()
 {
     ArchiveManager_Init(*g_011dee3c.GetLifeStateControlFlag(), ((const StartMenu&)g_011c4030).GetMenuTitle(), ((const StartMenu&)g_011deb94).GetMenuTitle(), 0x200000);
@@ -1426,7 +1483,7 @@ void __cdecl SetupArchiveSettings_AndLoadBSAs()
 namespace fnv_00877430 {
 struct FUN_00877430_shell : public Main
 {
-    void TESMain_KillMenuBGTexture();
+    void Main_KillMenuBGTexture();
 };
 
 struct StrG
@@ -1439,8 +1496,9 @@ using ::ImageSpaceManager;
 ImageSpaceManager* __cdecl BSShaderManager_GetImageSpaceManager();
 BSTextureManager* __stdcall BSShaderManager_GetTextureManager(const char*);
 // @fnv 0x00877430
-// src: COMMUNITY 0x00877430
-void FUN_00877430_shell::TESMain_KillMenuBGTexture()
+// src: XBOX_RETAIL_PDB 0x00877430
+// pdb: Main::KillMenuBGTexture | Main.obj | retail, call graph, high
+void FUN_00877430_shell::Main_KillMenuBGTexture()
 {
     if ((const char*)g_011ded3c)
     {
@@ -1463,6 +1521,7 @@ Controls* __cdecl Controls_GetInstance();
 
 // @fnv 0x00877720
 // src: XBOX_PDB 0x00877720
+// pdb: Main::GetControls | Main.obj | retail, upstream name already matches, high
 Controls* FUN_00877720_shell::Main_GetControls()
 {
     return Controls_GetInstance();
@@ -1489,6 +1548,8 @@ struct Dummy_00a239e0
 // Returns the int stored at offset 0x1B24, 0x1B28 or 0x1B2C of this object depending on a2 (1, 2 or 3), otherwise 0.
 // @fnv 0x00a239e0
 // src: COMMUNITY 0x00a239e0
+// pdb: Controls::GetMouseAxis | XControls.obj | retail, upstream name already matches, high
+// pdb params: piX, piY
 int Dummy_00a239e0::Controls_GetMouseAxis(int aiIndex)
 {
     switch (aiIndex)
@@ -1530,6 +1591,7 @@ struct MainStandIn
 };
 // @fnv 0x0086fbe0
 // src: XBOX_PDB 0x0086fbe0
+// pdb: Main::OnIdle_UpdateCurrentGridCell | Main.obj | retail, upstream name already matches, high
 void MainStandIn::Main_OnIdle_UpdateCurrentGridCell()
 {
     if (!DAT_011dea2b && !DAT_011d8907 && !flag7)
@@ -1564,6 +1626,7 @@ struct Obj008731d0
 // If the pointer field f is non-null, assigns it to the helper member h.
 // @fnv 0x008731d0
 // src: COMMUNITY 0x008731d0
+// pdb: BSRenderedTexture::UsePreRestoreGroup | Main.obj | debug, upstream name already matches, high
 void Obj008731d0::BSRenderedTexture_UsePreRestoreGroup()
 {
     if (*(Flt*)&f)
@@ -1600,6 +1663,8 @@ extern NP_0081c630 g_011deb38;
 
 // @fnv 0x008749b0
 // src: COMMUNITY 0x008749b0
+// pdb: Main::DrawWorld_VATSOcclusionQuery | Main.obj | debug, call graph, high
+// pdb locals: bissuedVATSQuery
 bool __fastcall TESMain_DrawWorld_VATSOcclusionQuery(void* self)
 {
     bool bissuedVATSQuery = false;
@@ -1736,6 +1801,7 @@ extern NiPointer<NiNode> g_011d86bc;
 // Clears the three global objects by assigning null to g_011d86bc, g_011d86a8 and g_011d8690.
 // @fnv 0x0086beb0
 // src: COMMUNITY 0x0086beb0
+// pdb: BGSTerrainManager::DeallocateStaticNodes | Main.obj | debug, object-file run extension, low
 void BGSTerrainManager_FreeLODNodes()
 {
     g_011d86bc = 0;
@@ -1751,6 +1817,7 @@ struct FUN_0086bf40
 
 // Calls FUN_0086c880, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0086bf40
+// pdb: Main::`scalar deleting destructor' | Main.obj | debug, object-file run extension, low
 void* __thiscall FUN_0086bf40::DeleteThis(unsigned int flags)
 {
     FUN_0086c880();
@@ -1789,13 +1856,13 @@ int* __cdecl Renderer_GetReason()
 }  // namespace fnv_0086d580
 
 // ::NiAVObject is named in full below: the shared ExtraDataList forward-declares ::NiAVObject.
-extern unsigned int(__cdecl* DAT_011f91ec)(::NiAVObject*);
+extern unsigned int(__cdecl* BSShaderManager_pObjectTypeCallback)(::NiAVObject*);
 
 // @fnv 0x0086e4d0
 // src: COMMUNITY 0x0086e4d0
 void BSShaderManager_SetObjectTypeCallback(unsigned int(__cdecl* apObjectTypeFunc)(::NiAVObject*))
 {
-    DAT_011f91ec = apObjectTypeFunc;
+    BSShaderManager_pObjectTypeCallback = apObjectTypeFunc;
 }
 
 extern bool DAT_011f91de;
@@ -1885,6 +1952,7 @@ struct FUN_0086efe0_t
 
 // @fnv 0x0086efe0
 // src: XBOX_PDB 0x0086efe0
+// pdb: Main::OnIdle_ScaleLOD | Main.obj | retail, upstream name already matches, high
 void FUN_0086efe0_t::Main_OnIdle_ScaleLOD()
 {
     if (Main_GetSceneIsComplex())
@@ -1993,8 +2061,8 @@ struct Twin_0084d030
 extern Twin_0084d030 g_timeGlobal;
 struct ProcessListsH
 {
-    void ProcessLists_UpdateTempEffectsParallel(float afTimeDelta);
-    void FUN_00974420(float afTimeDelta);
+    void ProcessLists_UpdateTempEffectsParallel(float afDeltaTime);
+    void FUN_00974420(float afDeltaTime);
 };
 extern ProcessListsH DAT_011e0e80;
 using ::NiUpdateData;
@@ -2004,11 +2072,13 @@ void __fastcall RefreshTES_004537c0(TES*);
 extern TES* g_TES;
 struct SceneGraphH
 {
-    void BSParticleSystemManager_UpdateParallel(NiUpdateData* apUpdateData);
+    void BSParticleSystemManager_UpdateParallel(NiUpdateData* updateData);
 };
 SceneGraphH* __cdecl Main_GetMasterParticleSystemManager();
 // @fnv 0x0086fc60
 // src: XBOX_PDB 0x0086fc60
+// pdb: Main::OnIdle_UpdateAnimationsAndEffects | Main.obj | retail, upstream name already matches, high
+// pdb locals: UpdateData
 void FUN_0086fc60_shell::Main_OnIdle_UpdateAnimationsAndEffects()
 {
     if ((!DAT_011dea2b || DAT_011dea2c || DAT_011dea2d) && !*((bool*)this + 7))
@@ -2042,13 +2112,13 @@ void FUN_0086fc60_shell::Main_OnIdle_UpdateAnimationsAndEffects()
 }
 }  // namespace fnv_0086fc60
 
-extern unsigned char DAT_0118abb0;
+extern unsigned char TESImageSpaceModifier_bEnable;
 
 // @fnv 0x0086ff40
 // src: COMMUNITY 0x0086ff40
 unsigned char __cdecl TESImageSpaceModifier_GetEnable()
 {
-    return DAT_0118abb0;
+    return TESImageSpaceModifier_bEnable;
 }
 
 extern char DAT_01189184;
@@ -2071,6 +2141,7 @@ unsigned char BSShaderManager_GetImageSpaceEffects()
 
 struct HWND__;
 extern "C" __declspec(dllimport) HWND__* __stdcall GetForegroundWindow();
+// pdb: class Controls, size 0x470 (here 0x1), bases: XInputManager, 19 members
 struct Controls
 {
     int Controls_IsMouseInBackground();
@@ -2078,8 +2149,8 @@ struct Controls
 Controls* __cdecl Controls_GetInstance();
 int __cdecl Renderer_GetScreenWidth();
 int __cdecl Renderer_GetScreenHeight();
-void __cdecl Interface_SetCursorPos(float x, float y);
-void __cdecl Interface_SetSurgeryCursorPos(int x, int y);
+void __cdecl Interface_SetCursorPos(float afX, float afY);
+void __cdecl Interface_SetSurgeryCursorPos(int aiXPos, int aiYPos);
 
 struct FUN_00871d10_t
 {
@@ -2088,6 +2159,8 @@ struct FUN_00871d10_t
 
 // @fnv 0x00871d10
 // src: COMMUNITY 0x00871d10
+// pdb: Main::SetActive | Main.obj | debug, object-file run extension, low
+// pdb params: abValue
 bool FUN_00871d10_t::TESMain_HandleMouseMove(int x, int y)
 {
     if (GetForegroundWindow() != *(HWND__**)((char*)this + 8))
@@ -2146,6 +2219,8 @@ extern bool DAT_011ff8c4;
 
 // @fnv 0x008727d0
 // src: COMMUNITY 0x008727d0
+// pdb: Main::DrawWorld_UpdateWater | Main.obj | debug, call graph, medium
+// pdb locals: isavemaxaniso, pscene, bwasLightUpdateDisabled, i
 void FUN_008727d0_shell::TESMain_DrawWorld_UpdateWater()
 {
     if (*g_011c7adc.GetLifeStateControlFlag())
@@ -2202,14 +2277,14 @@ void __cdecl BSShaderAccumulator_SetRunBoundingSphereTests(bool abFlag1, bool ab
 struct GlobalObjectO2_00a7b610
 {
 };
-extern GlobalObjectO2_00a7b610 g_01201f7c;
+extern GlobalObjectO2_00a7b610 BSFadeNodeCuller_ms_RTTI;
 
 
 
 // @fnv 0x00872ef0
 void* ::BSFadeNodeCuller::GetRTTI()
 {
-    return &g_01201f7c;
+    return &BSFadeNodeCuller_ms_RTTI;
 }
 
 void __fastcall DestroyFadeNode(BSFadeNodeCuller*);
@@ -2219,6 +2294,7 @@ extern "C" void __cdecl _Deallocate(void*);
 
 // Calls FUN_00872f30, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00872f00
+// pdb: BSFadeNodeCuller::`scalar deleting destructor' | Main.obj | retail, vtable slot, high
 void* __thiscall BSFadeNodeCuller::DeleteThis(unsigned int flags)
 {
     DestroyFadeNode(this);
@@ -2247,6 +2323,7 @@ GlobalObject_00633c90 g_011c7840;
 
 // @fnv 0x00874690
 // src: COMMUNITY 0x00874690
+// pdb: ScreenSplatter::GetCamera | Main.obj | debug, upstream name already matches, high
 void ScreenSplatter_GetCamera()
 {
     g_011c7840.operator->();
@@ -2264,6 +2341,7 @@ extern GlobalObject_00633c90 g_011c781c;
 
 // @fnv 0x008746b0
 // src: COMMUNITY 0x008746b0
+// pdb: ScreenCustomSplatter::GetCamera | Main.obj | debug, upstream name already matches, high
 int* ScreenCustomSplatter_GetCamera()
 {
     return g_011c781c.operator->();
@@ -2284,6 +2362,7 @@ void BSShaderBloodSplatterProperty_ResetShapeCount()
 
 
 // @fnv 0x008748d0
+// pdb: ImageSpaceEffectDepthOfField::BorrowMaskTexture | Main.obj | debug, upstream name already matches, high
 // 0x008748d0 uses the real ImageSpaceTexture at owner +0x7c.
 struct MainRenderTargetOwner_008748d0 { void ImageSpaceEffectDepthOfField_BorrowMaskTexture(); };
 // src: COMMUNITY 0x008748d0
@@ -2303,6 +2382,9 @@ struct FUN_00874920_t
 // Gets the face-gen scene node and passes its animation data with the render texture to the shader accumulator.
 // @fnv 0x00874920
 // src: COMMUNITY 0x00874920
+// pdb: Main::DrawWorld_Refraction | Main.obj | debug, object-file run extension, low
+// pdb params: apShaderAccum, apRenderTexture
+// pdb locals: pscene, tempMemContext
 void FUN_00874920_t::TESMain_DrawWorld_Refraction(::BSShaderAccumulator* apShaderAccum, BSRenderedTexture* apRenderTexture)
 {
     BSFaceGenNiNode* pscene;
@@ -2337,15 +2419,18 @@ int __thiscall FUN_00a236b0_Class::Controls_GetButtonCount(int index)
 
 struct FUN_0086ba60_Class
 {
-    bool NiRenderer_Check_FrameState(void* a1, void* a2);
+    bool NiRenderer_Check_FrameState(void* pcCallingFunction, void* eExpectedValue);
 };
 
 // Returns true if the pointer stored at offset 0x200 of this object equals a2.
 // @fnv 0x0086ba60
 // src: XBOX_PDB 0x0086ba60
-bool FUN_0086ba60_Class::NiRenderer_Check_FrameState(void* apUnused, void* a2)
+// pdb: NiRenderer::Check_FrameState | BSRenderedTexture.obj | debug, upstream name already matches, high
+// pdb params: pcCallingFunction, eExpectedValue
+// pdb locals: apcNextStepStrings, apcCurrentValueStrings
+bool FUN_0086ba60_Class::NiRenderer_Check_FrameState(void* pcCallingFunction, void* eExpectedValue)
 {
-    if (*(void**)((char*)this + 0x200) == a2)
+    if (*(void**)((char*)this + 0x200) == eExpectedValue)
         return true;
     return false;
 }
@@ -2365,6 +2450,7 @@ struct SomeClass
 // Looks up index via FUN_0086bb70; if found, removes that entry from the two lists at offsets 0xad4 and 0xae4 and returns true, else false.
 // @fnv 0x0086bb20
 // src: GUESS 0x0086bb20 (confidence: medium)
+// pdb: NiXenonRenderer::SetOutsideFrame | BSRenderedTexture.obj | debug, object-file run extension, low
 bool SomeClass::RemoveEntryFromBothLists(unsigned int index)
 {
     int result = FindIndexedValue(index);
@@ -2413,6 +2499,7 @@ extern Flt g_011c7810;
 
 // @fnv 0x008746a0
 // src: COMMUNITY 0x008746a0
+// pdb: ScreenCustomSplatter::GetCurrentRoot | Main.obj | debug, upstream name already matches, high
 void ScreenCustomSplatter_GetCurrentRoot()
 {
     g_011c7810.operator unsigned int();
@@ -2453,6 +2540,7 @@ void FUN_008776e0::SetFlags()
 
 // @fnv 0x00877700
 // src: COMMUNITY 0x00877700
+// pdb: PlayerCharacter::StopHeartbeatSound | Main.obj | debug, upstream name already matches, high
 bool __fastcall PlayerCharacter_StopHeartbeatSound(::BSSoundHandle* self)
 {
     return ((::BSSoundHandle*)((char*)self + 0x77c))->FadeOutAndRelease(0x3e8);
@@ -2499,6 +2587,7 @@ extern "C" void __cdecl UpdateFields_00a693e0();
 void __fastcall DestroyBaseCuller(BSFadeNodeCuller*);
 
 // @fnv 0x00872f30
+// pdb: BSFadeNodeCuller::~BSFadeNodeCuller | Main.obj | debug, object-file gap fill, medium
 void __fastcall DestroyFadeNode(BSFadeNodeCuller* self)
 {
     DestroyBaseCuller(self);
@@ -2517,6 +2606,8 @@ struct FUN_00875bd0_Class
 
 // @fnv 0x00875bd0
 // src: COMMUNITY 0x00875bd0
+// pdb: FOPipboyManager::GetButtonGlow | Main.obj | debug, object-file run extension, low
+// pdb params: aiButton
 unsigned int __thiscall FUN_00875bd0_Class::FOPipboyManager_GetPipboyLightGlow(int aiIndex)
 {
     return ((Flt*)((char*)this + 0xf4 + aiIndex * 4))->operator unsigned int();
@@ -2526,12 +2617,13 @@ unsigned int __thiscall FUN_00875bd0_Class::FOPipboyManager_GetPipboyLightGlow(i
 struct FUN_00456630_helper
 {
     bool NiAVObject_GetBit(unsigned int);
-    void NiAVObject_GetAlwaysDraw();
+    void NiAVObject_QAlwaysDraw();
 };
 
 // @fnv 0x00876810
-// src: COMMUNITY 0x00876810
-void FUN_00456630_helper::NiAVObject_GetAlwaysDraw()
+// src: XBOX_DEBUG_PDB 0x00876810
+// pdb: NiAVObject::QAlwaysDraw | Main.obj | debug, call graph, high
+void FUN_00456630_helper::NiAVObject_QAlwaysDraw()
 {
     NiAVObject_GetBit(0x800);
 }
@@ -2555,6 +2647,7 @@ struct FUN_00877a50Class
 // Calls FUN_00877e10 with m_000a and param_2.
 // @fnv 0x00877a50
 // src: GUESS 0x00877a50 (confidence: low)
+// pdb: BSSimpleList<TESPackage *>::~BSSimpleList<TESPackage *> | TESDataHandler.obj | debug, object-file run extension, low
 void FUN_00877a50Class::ForwardCall_00877a50(int param_2)
 {
     EvaluateValue_00877e10(m_000a, param_2);
@@ -2606,6 +2699,7 @@ struct FUN_0086bd40_class
 };
 
 // @fnv 0x0086bd40
+// pdb: FileFinder::`scalar deleting destructor' | Main.obj | debug, object-file run extension, low
 void* __thiscall FUN_0086bd40_class::FUN_0086bd40(unsigned int flags)
 {
     FUN_00afdcf0();
@@ -2623,6 +2717,7 @@ struct FUN_0086bee0_class
 };
 
 // @fnv 0x0086bee0
+// pdb: TES::`scalar deleting destructor' | Main.obj | debug, object-file run extension, low
 void* __thiscall FUN_0086bee0_class::FUN_0086bee0(unsigned int flags)
 {
     FUN_00450770();
@@ -2640,6 +2735,7 @@ struct FUN_0086bf10
 };
 // Calls FUN_00700650, frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0086bf10
+// pdb: FaderManager::`scalar deleting destructor' | Main.obj | debug, object-file run extension, low
 void* __thiscall FUN_0086bf10::DeleteThis(unsigned int flags)
 {
     ClearThreePerformanceEntries();
@@ -2850,6 +2946,8 @@ extern GameTimerRecord g_timeGlobal;
 
 // @fnv 0x0086f6a0
 // src: XBOX_PDB 0x0086f6a0
+// pdb: Main::UpdateNonRenderSafeAITasks | Main.obj | retail, upstream name already matches, high
+// pdb locals: ppipboy, pmob, pact
 void FUN_0086f6a0_shell::Main_UpdateNonRenderSafeAITasks()
 {
     FOPipboyManager* ppipboy;
@@ -2967,6 +3065,9 @@ using ::TES;
 extern TES* g_TES;
 // @fnv 0x0086fd90
 // src: XBOX_PDB 0x0086fd90
+// pdb: Main::OnIdle_UpdateImageSpace | Main.obj | retail, upstream name already matches, high
+// pdb params: abAdvanceTime
+// pdb locals: plistmodifiers, iweatherCount, iactiveWeatherCount, pimagespacemodinstance
 void FUN_0086fd90_shell::Main_OnIdle_UpdateImageSpace(bool abAdvanceTime)
 {
     ISM_00b8b500(BSShaderManager_GetImageSpaceManager());
@@ -3058,6 +3159,9 @@ float __fastcall PlayerCharacter_GetWorldFOV(PC_00605d70*);
 extern NiColor DAT_011f4998;
 // @fnv 0x008746d0
 // src: COMMUNITY 0x008746d0
+// pdb: Main::DrawWorld_Add1stPersonToDepthBuffer | Main.obj | debug, object-file run extension, low
+// pdb params: apRenderTexture
+// pdb locals: savedBackground, bwas1stPersonCulled, prenderer, p1stperson3d, pscenegraph, p1stPersonNode, p1stpersonBuffer, bIronSights, pimagespacemanager, pculler
 void FUN_008746d0_shell::TESMain_DrawWorld_Add1stPersonToDepthBuffer(BSRenderedTexture* apRenderTexture)
 {
     S4* pimagespacemanager = BSShaderManager_GetImageSpaceManager();
@@ -3118,7 +3222,7 @@ unsigned int __cdecl Main_GetWorldSceneGraph(void);
 struct NiObjectCopyInfo
 {
     int a, b, c, d;
-    NiObjectCopyInfo(unsigned int flags);
+    NiObjectCopyInfo(unsigned int uiHashSize);
     ~NiObjectCopyInfo();
 };
 struct FUN_00875e40_Clone
@@ -3155,13 +3259,16 @@ using ::BSShaderManager;
 using ::BSShaderAccumulator;
 struct FUN_00875e40_shell
 {
-    void Main_DrawWorld_DoDepth(BSShaderAccumulator* pAccum, BSRenderedTexture* pTexture);
+    void Main_DrawWorld_DoDepth(BSShaderAccumulator* apShaderAccum, BSRenderedTexture* apRenderTexture);
 };
 
 // Clones the scene graph's animation data as a camera, sets FOV and depth via pAccum->SetupDepth, then deletes the cloned camera.
 // @fnv 0x00875e40
 // src: XBOX_PDB 0x00875e40
-void FUN_00875e40_shell::Main_DrawWorld_DoDepth(BSShaderAccumulator* pAccum, BSRenderedTexture* pTexture)
+// pdb: Main::DrawWorld_DoDepth | Main.obj | retail, upstream name already matches, high
+// pdb params: apShaderAccum, apRenderTexture
+// pdb locals: kClone, p1stpersoncam, tempMemContext, apSceneGraph
+void FUN_00875e40_shell::Main_DrawWorld_DoDepth(BSShaderAccumulator* apShaderAccum, BSRenderedTexture* apRenderTexture)
 {
     BSFaceGenNiNode* pkSceneGraph = (BSFaceGenNiNode*)Main_GetWorldSceneGraph();
     if (DAT_011f2250.GetFlags() != 4)
@@ -3173,7 +3280,7 @@ void FUN_00875e40_shell::Main_DrawWorld_DoDepth(BSShaderAccumulator* pAccum, BSR
         if (DAT_011f2250.GetFlags() != 4)
             pkSceneGraph->SceneGraph_SetCameraFOV(PlayerCharacter_Get1stPersonFOV((const char*)g_thePlayer), 0, pkCamera, 0);
         AutoMemHelper kMemHelper(0x27, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0x234c);
-        pAccum->SetupDepth((::NiCamera*)pkSceneGraph->::BSFaceGenNiNode::GetAnimationData(), (::NiCamera*)pkCamera, (::BSRenderedTexture*)pTexture);
+        apShaderAccum->SetupDepth((::NiCamera*)pkSceneGraph->::BSFaceGenNiNode::GetAnimationData(), (::NiCamera*)pkCamera, (::BSRenderedTexture*)apRenderTexture);
         delete pkCamera;
     }
 }
@@ -3193,6 +3300,9 @@ struct Outer00875fa0
 // Calls FUN_0045c670 to get a BSFaceGenNiNode, then passes its animation data and b to FUN_00b651e0 on a.
 // @fnv 0x00875fa0
 // src: COMMUNITY 0x00875fa0
+// pdb: Main::DrawWorld_DoVolumetricFog | Main.obj | debug, object-file gap fill, medium
+// pdb params: apShaderAccum, apRenderTexture
+// pdb locals: pscene
 void Outer00875fa0::TESMain_DrawWorld_DoVolumetricFog(Param00875fa0* pParam, void* b)
 {
     BSFaceGenNiNode* tmp = (BSFaceGenNiNode*)Main_GetWorldSceneGraph();
@@ -3423,6 +3533,9 @@ extern Flt DAT_011fa008;
 
 // @fnv 0x00876850
 // src: COMMUNITY 0x00876850
+// pdb: Main::DrawWorld_End | Main.obj | retail, call graph, medium
+// pdb params: apRenderTexture, apImagespaceManager, apRenderer, apSun
+// pdb locals: pd3ddevice, apCuller, apSceneGraph
 void FUN_00876850_shell::TESMain_DrawWorld_End(BSRenderedTexture* apRenderTexture, ImageSpaceManager* apImagespaceManager,
                                       ::NiRenderer* apRenderer, Sun* apSun)
 {
@@ -3496,11 +3609,11 @@ extern GlobalObject_0045cfe0 g_011c63cc;
 extern int g_TES;
 struct FUN_0054cfd0_S
 {
-    bool TESObjectCELL_GetCOCPlacementInfo(::NiPoint3* apPos, ::NiPoint3* apRot);
+    bool TESObjectCELL_GetCOCPlacementInfo(::NiPoint3* aOutPos, ::NiPoint3* aOutRot);
 };
 struct FUN_00548230_S
 {
-    void FUN_00548230(TESObjectREFR* apRef, bool abFlag);
+    void FUN_00548230(TESObjectREFR* apRef, bool abOnTop);
 };
 struct FUN_00456520_Class
 {
@@ -3707,6 +3820,9 @@ extern PlayerVT* _g_thePlayer;
 
 // @fnv 0x00877260
 // src: XBOX_PDB 0x00877260
+// pdb: Main_InitPlayerStart | Main.obj | retail, upstream name already matches, high
+// pdb params: apos
+// pdb locals: pcell, UpdateData, rot, tempMemContext
 void __cdecl Main_InitPlayerStart(::NiPoint3 apos)
 {
     TESObjectCELL* pcell = (TESObjectCELL*)((CP_008c48d0*)g_TES)->GetPrevPath();
@@ -3841,10 +3957,10 @@ void __cdecl SPECIALBookMenu_Draw3DElements(void);
 
 struct MainTarget
 {
-    int TESMain_DrawWorld_InitRenderTexture(::NiRenderer* prenderer, BSRenderedTexture* apDestination, int parameter, bool bmultiSampleEnabled);
-    void TESMain_DrawWorld_CopyMenuBG(ImageSpaceManager* pimagespacemanager, ::NiRenderer* prenderer, bool bmultiSampleEnabled,
+    int TESMain_DrawWorld_InitRenderTexture(::NiRenderer* apRenderer, BSRenderedTexture* apDestination, int abWireframe, bool abMultiSampleEnabled);
+    void Main_DrawWorld_CopyMenuBG(ImageSpaceManager* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled,
                       BSRenderedTexture* apDestination);
-    void TESMain_DrawWorld_ImageSpace(bool bmultiSampleEnabled, int result, ::NiRenderer* prenderer, BSRenderedTexture* apDestination);
+    void TESMain_DrawWorld_ImageSpace(bool abMultiSampleEnabled, int apRenderTexture, ::NiRenderer* apRenderer, BSRenderedTexture* apDestination);
     void TESMain_DrawWorld_StopRenderTarget(bool bmultiSampleEnabled, BSRenderedTexture* apDestination);
     void TESMain_DrawWorld_End(int result, ImageSpaceManager* pimagespacemanager, ::NiRenderer* prenderer, int parameter);
 
@@ -3853,6 +3969,9 @@ struct MainTarget
 
 // @fnv 0x00872940
 // src: XBOX_PDB 0x00872940
+// pdb: Main::DrawWorldMenu3D | Main.obj | retail, upstream name already matches, high
+// pdb params: apDestination
+// pdb locals: apRenderTexture, prenderer, bmultiSampleEnabled, pimagespacemanager
 void MainTarget::Main_DrawWorldMenu3D(BSRenderedTexture* apDestination)
 {
     ::NiRenderer* prenderer = NiXenonRenderer_GetRenderer();
@@ -3864,7 +3983,7 @@ void MainTarget::Main_DrawWorldMenu3D(BSRenderedTexture* apDestination)
 
     result = TESMain_DrawWorld_InitRenderTexture(prenderer, apDestination, 0, bmultiSampleEnabled);
 
-    TESMain_DrawWorld_CopyMenuBG(pimagespacemanager, prenderer, bmultiSampleEnabled, apDestination);
+    Main_DrawWorld_CopyMenuBG(pimagespacemanager, prenderer, bmultiSampleEnabled, apDestination);
 
     if (MainInterfaceView::IsMenuActive(MainInterfaceView::MENU_ID_0x41e, 0))
         Interface_DrawSurgeryMenu3D();
@@ -3929,6 +4048,7 @@ class FUN_004505a0_cls
 // Returns the result of calling Get on m_28 if it is non-null, otherwise returns 0.
 // @fnv 0x004505a0
 // src: XBOX_PDB 0x004505a0
+// pdb: Sky::GetLight | TES.obj | debug, upstream name already matches, high
 int FUN_004505a0_cls::Sky_GetLight()
 {
     return (m_28 != 0) ? m_28->Get() : 0;
@@ -4162,12 +4282,13 @@ struct OffScreenFrameHost
     int unk1F8;
     int unk1FC;
     int m_200;
-    bool NiRenderer_Check_FrameState(const char* name, int flags);
+    bool NiRenderer_Check_FrameState(const char* pcCallingFunction, int eExpectedValue);
     bool NiXenonRenderer_EndOffScreenFrame();
 };
 // Calls FUN_0086ba60 with "EndOffScreenFrame" and flags 2, then v60; on success clears m_200 and returns true.
 // @fnv 0x0086ba90
 // src: XBOX_PDB 0x0086ba90
+// pdb: NiXenonRenderer::EndOffScreenFrame | BSRenderedTexture.obj | retail, upstream name already matches, high
 bool OffScreenFrameHost::NiXenonRenderer_EndOffScreenFrame()
 {
     if (!NiRenderer_Check_FrameState("EndOffScreenFrame", 2))
@@ -4217,6 +4338,9 @@ class C86D4C0Timer
 // Stores the timer interval as 1000 divided by uiFrequency, or 0 when uiFrequency is zero.
 // @fnv 0x0086d4c0
 // src: COMMUNITY 0x0086d4c0
+// pdb: TESObjectREFR::SetLocationOnReferenceZ | TESObjectREFR.obj | retail, object-file run extension, low
+// pdb params: afZ
+// pdb locals: loc
 void C86D4C0Timer::BSTimer_ClampAt(unsigned int uiFrequency)
 {
     m_fInterval = uiFrequency ? 1000.0 / uiFrequency : 0.0;
@@ -4378,6 +4502,7 @@ class B86F190Owner
 
 // @fnv 0x0086f190
 // src: COMMUNITY 0x0086f190
+// pdb: Main::OnIdle_UpdateMessageBox | Main.obj | debug, object-file run extension, low
 void B86F190Owner::TESMain_OnIdle_FixActorBones()
 {
     if (g_bB86F190Enabled)
@@ -4409,12 +4534,14 @@ extern "C" __declspec(dllimport) void __stdcall DebugBreak();
 
 struct FUN_00872ed0_shell
 {
-    void NiCullingProcess_AppendVirtual(int param_1);
+    void NiCullingProcess_AppendVirtual(int kVisible);
 };
 
 // @fnv 0x00872ed0
 // src: XBOX_PDB 0x00872ed0
-void FUN_00872ed0_shell::NiCullingProcess_AppendVirtual(int aiUnused)
+// pdb: NiCullingProcess::AppendVirtual | Main.obj | debug, upstream name already matches, high
+// pdb params: kVisible
+void FUN_00872ed0_shell::NiCullingProcess_AppendVirtual(int kVisible)
 {
     DebugBreak();
 }
@@ -4435,16 +4562,19 @@ extern NiPoint3 DAT_012003e0;
 // Compares the object's current scale vectors against stored ones, sets DAT_012003cc when any component ratio exceeds 0.01, and stores the new vectors.
 // @fnv 0x008744a0
 // src: COMMUNITY 0x008744a0
-void __cdecl ImageSpaceEffectFullScreenBlur_CheckCamera(ScaleSource* apScaleSource)
+// pdb: ImageSpaceEffectFullScreenBlur::CheckCamera | Main.obj | debug, upstream name already matches, high
+// pdb params: apCam
+// pdb locals: kcamLocChange, kcurrentCamLoc, kcamDirDiff, kcamDirChange, kcurrentCamDir, kcamLocDiff
+void __cdecl ImageSpaceEffectFullScreenBlur_CheckCamera(ScaleSource* apCam)
 {
-    if (apScaleSource == 0)
+    if (apCam == 0)
     {
         DAT_012003d4 = DAT_011a9490;
         DAT_012003cc = false;
         return;
     }
-    NiPoint3 kCurA = *NiAVObject_GetWorldTranslate(apScaleSource);
-    NiPoint3 kCurB = apScaleSource->GetScale3();
+    NiPoint3 kCurA = *NiAVObject_GetWorldTranslate(apCam);
+    NiPoint3 kCurB = apCam->GetScale3();
     NiPoint3 kDiffA_2 = kCurA - DAT_012003e0;
     NiPoint3 kDiffB5 = kCurB - DAT_012003d4;
     ::NiPoint3 kRatioA(kDiffA_2.x / DAT_012003e0.x, kDiffA_2.y / DAT_012003e0.y, kDiffA_2.z / DAT_012003e0.z);
@@ -5044,6 +5174,8 @@ class InputManager245
 // Dispatches a key/button state query to the keyboard, mouse, other, or joystick handlers based on the device id, returning 0 for unknown devices.
 // @fnv 0x00a24560
 // src: COMMUNITY 0x00a24560
+// pdb: Controls::GetButtonState | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb params: eButton
 int InputManager245::Controls_GetButtonState(int iControlSlot, unsigned char ucKeyCode, int iState)
 {
     switch (iControlSlot)
@@ -5093,6 +5225,7 @@ struct FUN_00ec1800_cls
 
 // @fnv 0x00ec1800
 // src: COMMUNITY 0x00ec1800
+// pdb: MoviePlayer::WaitForSequenceToEnd | MoviePlayer_Xenon.obj | retail, upstream name already matches, high
 void __thiscall FUN_00ec1800_cls::MoviePlayer_WaitForSequenceToEnd()
 {
     if (hObject != 0)
@@ -5120,15 +5253,18 @@ bool __cdecl IsStartMenuFlag1Set();
 // Enables detach, walks the root tile's children and removes tiles by menu ID, calling handlers for the book and love tester menus, then disables detach.
 // @fnv 0x00706320
 // src: XBOX_PDB 0x00706320
+// pdb: Interface::CloseAllSupportMenus | Interface.obj | retail, upstream name already matches, high
+// pdb params: abExceptSubtitleMenu
+// pdb locals: xelem, proot, pitem, itype, pmenu
 void __cdecl Interface_CloseAllSupportMenus(int)
 {
     s_bAllowDetach = true;
     ::Tile* root = InterfaceManager_GetSingleton()->CombatController_GetCombatState();
     {
-        void* position = reinterpret_cast<TileList&>(root->m_kChildTileList).GetHeadPos();
+        void* position = reinterpret_cast<TileList&>(root->xChildren).GetHeadPos();
         while (position)
         {
-            ::Tile* tile = reinterpret_cast<TileList&>(root->m_kChildTileList).GetNext(position);
+            ::Tile* tile = reinterpret_cast<TileList&>(root->xChildren).GetNext(position);
             if (tile && tile->GetMenu())
             {
                 unsigned int id = tile->GetMenu()->GetClass();
@@ -5146,24 +5282,24 @@ void __cdecl Interface_CloseAllSupportMenus(int)
                     SPECIALBookMenu* pBookMenu = tile ? dynamic_cast<SPECIALBookMenu*>(tile->GetMenu()) : 0;
                     if (pBookMenu)
                         SPECIALBookMenu_Close();
-                    delete reinterpret_cast<TileList&>(root->m_kChildTileList).Remove(tile);
+                    delete reinterpret_cast<TileList&>(root->xChildren).Remove(tile);
                     break;
                 }
                 case 1074: {
                     LoveTesterMenu* pLoveMenu = tile ? dynamic_cast<LoveTesterMenu*>(tile->GetMenu()) : 0;
                     if (pLoveMenu)
                         LoveTesterMenu_Close();
-                    delete reinterpret_cast<TileList&>(root->m_kChildTileList).Remove(tile);
+                    delete reinterpret_cast<TileList&>(root->xChildren).Remove(tile);
                     break;
                 }
                 case 1013:
                     if (IsStartMenuFlag1Set())
                     {
-                        delete reinterpret_cast<TileList&>(root->m_kChildTileList).Remove(tile);
+                        delete reinterpret_cast<TileList&>(root->xChildren).Remove(tile);
                     }
                     break;
                 default:
-                    delete reinterpret_cast<TileList&>(root->m_kChildTileList).Remove(tile);
+                    delete reinterpret_cast<TileList&>(root->xChildren).Remove(tile);
                     break;
                 }
             }
@@ -5207,7 +5343,7 @@ struct Receiver86
 
     void FUN_0066b0d0(int);
     void BSTextureManager_ReturnRenderedTexture(int);
-    void CancelAllFiles_00448420();
+    void ModelLoader_CancelAllFiles();
     void AILinearTaskThreadManager_Kill();
     Receiver86* FUN_008d8520();
     void Sky_Destroy();
@@ -5217,7 +5353,7 @@ struct Receiver86
     void* FUN_0086bf40(unsigned int);
     void ReleaseAndClearObject();
     void* FUN_00717e50();
-    void INISettingCollection_SaveAll(void*);
+    void SettingCollection_Setting_WriteSettingsToFile(void*);
     void RemoveEntryFromBothLists(void*);
     void RemoveMatchingParallelEntries(void*);
     int MemoryManager_OutputDebugInfo(void*, int);
@@ -5226,10 +5362,10 @@ struct Receiver86
     Receiver86* TESDataHandler_GetWorldSpaceList();
     int* FUN_006815c0();
     void TES_SetWorldSpace(int);
-    void ClearIdleAnims();
+    void PlayerCharacter_Preload1stPersonAnimsFileList();
     void ExtraDismemberedLimbs_SetEaten(int);
     void ProcessLists_InitPackageLocations();
-    void FUN_004614e0();
+    void UpdateAutoCalcNPCs();
     void BGSSaveLoadGame_SetGlobalAllowChanges(int);
     void FUN_00483710();
     void FUN_004f15a0(int);
@@ -5266,9 +5402,9 @@ struct Receiver86
     int FUN_006629f0();
     void FUN_006eb8c0();
     void NavMeshObstacleManager_CreateListeners();
-    void FUN_008c7290();
+    void CreateThreads();
     void TESMain_InitRenderer();
-    void TESMain_InitSceneGraph();
+    void Main_InitSceneGraph();
     void TESMain_SetActive(int);
 
     Receiver86* BSSystemUtility_GetMsgDialogUtility();
@@ -5367,7 +5503,7 @@ int __cdecl BSSystemUtility_GetMsgDialogUtility(...);
 int __cdecl FUN_006ecd40(...);
 int __cdecl NiStaticDataManager_Init(...);
 int __cdecl BSMain_InitSDM(...);
-int __cdecl FUN_004b7920(...);
+int __cdecl FixedStrings_InitSDM(...);
 int __cdecl Menu_InitSDM(...);
 int __cdecl FUN_00bc2940(...);
 int __cdecl TES_InitSDM(...);
@@ -5501,9 +5637,9 @@ int __cdecl Interface3DSceneGraph_Destroy(...);
 int __cdecl Interface_Free(...);
 int __cdecl FUN_008d8520(...);
 int __cdecl Sky_Destroy(...);
-int __cdecl Object_ProcessEntries_004e0800(...);
+int __cdecl ScreenSplatter_Shutdown(...);
 int __cdecl Object_ProcessEntries_004def20(...);
-int __cdecl PurgeTerminalModel(...);
+int __cdecl FORenderedTerminal_ReleaseStaticGeometry(...);
 int __cdecl FalloutRadio_Shutdown(...);
 int __cdecl FUN_008304a0(...);
 int __cdecl FalloutAudioMedia_Shutdown(...);
@@ -5515,7 +5651,7 @@ int __cdecl FUN_0086bee0(...);
 int __cdecl ReleaseAndClearObject(...);
 int __cdecl BSFaceGenManager_DestroySystem(...);
 int __cdecl CombatManager_FreeAll(...);
-int __cdecl BSTreeManager_Destroy_(...);
+int __cdecl BSTreeManager_Destroy(...);
 int __cdecl BGSLoadedReferenceCollection_Destroy(...);
 int __cdecl EffectSettingCollection_Destroy(...);
 int __cdecl FUN_0086bf10(...);
@@ -5528,7 +5664,7 @@ int __cdecl NavMeshRender_Destroy(...);
 int __cdecl BSTexturePalette_Kill(...);
 int __cdecl Object_UpdateFields_00bc2960(...);
 int __cdecl Object_UpdateFields_0086bd00(...);
-int __cdecl Runtime_ProcessState_0045b050(...);
+int __cdecl TES_KillSDM(...);
 int __cdecl Object_UpdateFields_00c5d520(...);
 int __cdecl FreeNiNodeBlocks(...);
 int __cdecl Runtime_ReleaseStorage_00a1c790(...);
@@ -5608,6 +5744,8 @@ __declspec(dllimport) int __stdcall SetForegroundWindow(int);
 // Creates the game window and subsystems, runs the message/render loop until exit, then tears everything down and returns 0.
 // @fnv 0x0086a850
 // src: COMMUNITY 0x0086a850
+// pdb: main | Main.obj | retail, unique string literal, high
+// pdb locals: bdisableWarningMessageBox, bUsingParallelUpdate, pos, pforceLoadFile, dwStatus, tm, currentDir, tempMemContext, file, dwLaunchDataSize, pforceLoadCell, File, pLaunchData, pCustomData
 int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsigned int param_3, unsigned int param_4)
 
 {
@@ -5693,7 +5831,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 FUN_00af2640()->BSSystemUtility_GetMsgDialogUtility()->FUN_006ecd40(SystemUtilityDialogIdleCallback);
                 NiStaticDataManager_Init(0);
                 BSMain_InitSDM();
-                FUN_004b7920();
+                FixedStrings_InitSDM();
                 Menu_InitSDM();
                 FUN_00bc2940();
                 TES_InitSDM();
@@ -5807,7 +5945,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 NiXenonRenderer_GetRenderer()->NiDX9Renderer_AddLostDeviceNotificationFunc(&SUB_005d4a40, 0);
                 NiXenonRenderer_GetRenderer()->NiDX9Renderer_AddResetNotificationFunc(&UNK_00872570, 0);
                 Main_ShaderInit();
-                ((Receiver86*)_DAT_011dea0c)->TESMain_InitSceneGraph();
+                ((Receiver86*)_DAT_011dea0c)->Main_InitSceneGraph();
                 FUN_00702250(1);
                 BSFaceGenManager_InitializeSystem();
                 ((Receiver86*)_DAT_011dea0c)->TESMain_SetActive(1);
@@ -5822,7 +5960,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 BSTreeManager_SetCamera(((Receiver86*)Main_GetWorldSceneGraph())->FUN_006629f0());
                 if (*g_011c3ea4.Int() > 1)
                 {
-                    AILinearTaskThreadManager_GetSingleton()->FUN_008c7290();
+                    AILinearTaskThreadManager_GetSingleton()->CreateThreads();
                 }
                 Pathing_Init();
                 GetPathManager()->FUN_006eb8c0();
@@ -5836,11 +5974,11 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 startupFlags3 = 0;
                 position25.SetComponents(_DAT_01018bfc, _DAT_01018bfc, _DAT_0101e704);
                 ((Receiver86*)_DAT_011dea10)->TES_SetWorldSpace(*g_dataHandler->TESDataHandler_GetWorldSpaceList()->FUN_006815c0());
-                ((Receiver86*)_DAT_011dea3c)->ClearIdleAnims();
+                ((Receiver86*)_DAT_011dea3c)->PlayerCharacter_Preload1stPersonAnimsFileList();
                 g_TESSaveLoadGame->ExtraDismemberedLimbs_SetEaten(1);
                 ProgramFlow(&UNK_0108293c);
                 ((Receiver86*)&DAT_011e0e80)->ProcessLists_InitPackageLocations();
-                g_dataHandler->FUN_004614e0();
+                g_dataHandler->UpdateAutoCalcNPCs();
                 g_BGSSaveLoadGame->BGSSaveLoadGame_SetGlobalAllowChanges(1);
                 ProgramFlow(&UNK_01082924);
                 Main_InitStartCell(startupFlags3, &position25);
@@ -5982,7 +6120,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 {
                     NiParallelUpdateTaskManager_Shutdown();
                 }
-                g_modelLoader->CancelAllFiles_00448420();
+                g_modelLoader->ModelLoader_CancelAllFiles();
                 if (*g_011c3ea4.Int() > 1)
                 {
                     AILinearTaskThreadManager_GetSingleton()->AILinearTaskThreadManager_Kill();
@@ -5995,9 +6133,9 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 {
                     ((Receiver86*)_DAT_011dea10)->FUN_008d8520()->Sky_Destroy();
                 }
-                Object_ProcessEntries_004e0800();
+                ScreenSplatter_Shutdown();
                 Object_ProcessEntries_004def20();
-                PurgeTerminalModel();
+                FORenderedTerminal_ReleaseStaticGeometry();
                 FalloutRadio_Shutdown();
                 FUN_008304a0();
                 FalloutAudioMedia_Shutdown();
@@ -6018,7 +6156,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 BSFaceGenManager_DestroySystem();
                 CombatManager_FreeAll();
                 ((Manager86*)FUN_00b00a00())->Stop();
-                BSTreeManager_Destroy_();
+                BSTreeManager_Destroy();
                 BGSLoadedReferenceCollection_Destroy();
                 EffectSettingCollection_Destroy();
                 ImpactMixer_DeInitialize();
@@ -6030,7 +6168,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 globalsDeleteTarget3 ? globalsDeleteTarget3->FUN_0086bf40(1) : 0;
                 _DAT_011dea0c = (unsigned char*)0x0;
                 ((Manager86*)FUN_00aff100())->Stop();
-                FUN_004de490()->INISettingCollection_SaveAll(FUN_004de490()->FUN_00717e50());
+                FUN_004de490()->SettingCollection_Setting_WriteSettingsToFile(FUN_004de490()->FUN_00717e50());
                 NiXenonRenderer_GetRenderer()->RemoveEntryFromBothLists(&UNK_00872570);
                 NiXenonRenderer_GetRenderer()->RemoveMatchingParallelEntries(&SUB_005d4a40);
                 NavMeshRender_Destroy();
@@ -6038,7 +6176,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 Object_UpdateFields_00bc2960();
                 Renderer_Kill(1);
                 Object_UpdateFields_0086bd00();
-                Runtime_ProcessState_0045b050();
+                TES_KillSDM();
                 Object_UpdateFields_00c5d520();
                 FreeNiNodeBlocks();
                 Runtime_ReleaseStorage_00a1c790();
@@ -6297,6 +6435,7 @@ struct FUN_0086ba10_target
 // Calls FUN_0086ba60 with DAT_01082acc and 0, then unk5f; on success sets unk200 to 2 and returns true.
 // @fnv 0x0086ba10
 // src: XBOX_PDB 0x0086ba10
+// pdb: NiXenonRenderer::BeginOffScreenFrame | BSRenderedTexture.obj | retail, upstream name already matches, high
 bool FUN_0086ba10_target::NiXenonRenderer_BeginOffScreenFrame()
 {
     if (!reinterpret_cast<FUN_0086ba60_Class*>(this)->NiRenderer_Check_FrameState(&DAT_01082acc, 0))
@@ -6314,6 +6453,7 @@ extern FUN_0086bd40_class* DAT_011f81dc;
 // If the global object pointer DAT_011f81dc is non-null, calls its FUN_0086bd40 method with 1.
 // @fnv 0x0086bd00
 // src: GUESS 0x0086bd00 (confidence: low)
+// pdb: FileFinder::Close | Main.obj | debug, object-file run extension, low
 void __cdecl Object_UpdateFields_0086bd00(void)
 {
     if (DAT_011f81dc)
@@ -6368,7 +6508,7 @@ struct SkyInit
 };
 extern SkyInit* DAT_011dea20;
 extern int DAT_011dea1c;
-void TESMain_InitSky();
+void Main_InitSky();
 int TESMain_GetObjectLODRoot();
 ScenePart* Main_LandLODNode();
 void LogInit(const char*, ...);
@@ -6434,7 +6574,7 @@ extern WorldInit* worldInstance;
 void CreateTrees(bool);
 struct TaskInit
 {
-    void Activate();
+    void BSTaskletManager_SignalInstanceAvailable();
 };
 TaskInit& GetTasks();
 void BGSLoadedReferenceCollection_Create();
@@ -6465,8 +6605,8 @@ struct FileInit
 };
 struct HandlerInit
 {
-    FileInit* Find(const char*);
-    void Load(bool);
+    FileInit* GetListFile(const char*);
+    void CompileFiles(bool);
     void Scripts();
 };
 extern HandlerInit* handlerInstance;
@@ -7571,11 +7711,11 @@ struct PlayerInit
     PlayerInit();
     void SetBase(void*);
     void Position(const ::NiPoint3&);
-    void Enable(bool);
+    void Actor_CastPermanentMagic(bool);
 };
 extern PlayerInit* playerInstance;
-void FUN_005f5880();
-void FUN_0068b3e0();
+void TESChallengeManager_LoadChallenges();
+void PreloadDecalData();
 
 ::TESForm* LookupForm(unsigned int);
 extern ::NiPoint3 zeroPoint;
@@ -7592,12 +7732,15 @@ struct BootInit
 // Initializes the game world, plugins, player, terrain, and scripts in sequence, logging each stage.
 // @fnv 0x0086cf20
 // src: XBOX_PDB 0x0086cf20
-void BootInit::Main_InitTES(ScenePart* scene)
+// pdb: Main::InitTES | Main.obj | retail, upstream name already matches, high
+// pdb params: pScene
+// pdb locals: bFilesChecked, UpdateData, pLands, pObjects, tempMemContext, pInitT, pTestFiles, pchild, n, pFile, ivalue, pNPC, message
+void BootInit::Main_InitTES(ScenePart* pScene)
 {
     MemScope memory5(10, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0xe4f);
     memory5.Enter(10, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0xe51);
     DAT_011dea20 = SkyInit::GetInstance();
-    TESMain_InitSky();
+    Main_InitSky();
     int mode = TESMain_GetObjectLODRoot();
     ScenePart* root_2 = Main_LandLODNode();
     if (root_2)
@@ -7613,13 +7756,13 @@ void BootInit::Main_InitTES(ScenePart* scene)
     LogInit("Initializing TreeManager...");
     CreateTrees(false);
     LogInit("Activating Tasklet Threads...");
-    GetTasks().Activate();
+    GetTasks().BSTaskletManager_SignalInstanceAvailable();
     BGSLoadedReferenceCollection_Create();
     CombatManager_Create();
     memory5.Enter(25, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0xe85);
-    scene->Reset();
+    pScene->Reset();
     UpdateInfo update9(0.0f, false, false);
-    scene->Update(update9);
+    pScene->Update(update9);
     memory5.Leave();
     bool found3 = false;
     InitSetting* plugins3[10] = {&g_011debf0, &g_011deb88, &g_011decf8, &g_011dee9c, &g_011dec34,
@@ -7628,7 +7771,7 @@ void BootInit::Main_InitTES(ScenePart* scene)
     {
         if (plugins3[index2]->String() && strlen(plugins3[index2]->String()))
         {
-            FileInit* aFile = handlerInstance->Find(PrepareScriptMessage(plugins3[index2]->String(), false));
+            FileInit* aFile = handlerInstance->GetListFile(PrepareScriptMessage(plugins3[index2]->String(), false));
             if (aFile)
             {
                 aFile->Enable(true);
@@ -7640,7 +7783,7 @@ void BootInit::Main_InitTES(ScenePart* scene)
         found3 = true;
     if (!found3)
     {
-        FileInit* _fallback = handlerInstance->Find("Fallout.esm");
+        FileInit* _fallback = handlerInstance->GetListFile("Fallout.esm");
         if (_fallback)
             _fallback->Enable(true);
     }
@@ -7649,14 +7792,14 @@ void BootInit::Main_InitTES(ScenePart* scene)
     playerInstance->SetID(20, true);
     memory5.Leave();
     LogInit("Loading Files...");
-    handlerInstance->Load(false);
-    FUN_005f5880();
+    handlerInstance->CompileFiles(false);
+    TESChallengeManager_LoadChallenges();
     worldInstance->LoadTerrain();
     worldInstance->LoadLandscape();
     if (*g_011c7adc.Bool())
         worldInstance->Extra();
     worldInstance->Finish();
-    FUN_0068b3e0();
+    PreloadDecalData();
     LogInit("Initializing Player...");
     memory5.Enter(52, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0xf00);
     {
@@ -7665,7 +7808,7 @@ void BootInit::Main_InitTES(ScenePart* scene)
         playerInstance->SetAngles(::NiPoint3(2048.0f, 2048.0f, 0.0f));
         playerInstance->Position(zeroPoint);
         playerInstance->Refresh();
-        playerInstance->Enable(false);
+        playerInstance->Actor_CastPermanentMagic(false);
         int healthB = playerInstance->values.Get(16);
         if (!healthB)
             LogInit("ERROR: Health value is 0 on the Player. Fix '%s' with the editor.",
@@ -7861,7 +8004,7 @@ struct Service
     void UpdateQueue();
     void TES_ShowLoadingMenu(int, int, int);
     void BSTextureManager_Update(Service*, bool);
-    void FUN_007011d0(bool);
+    void UpdateFaders(bool);
     bool TES_CellTestRunning();
     bool TES_CellTestRunning2();
     void TES_TestAllCells(int);
@@ -7952,7 +8095,7 @@ float __cdecl Pathing_ProfilePathing(void*, void*, int, int);
 void __cdecl BSTreeManager_Update(Service*, bool);
 void __cdecl FUN_00b54000(float);
 Service* __cdecl FUN_00450b80(int);
-void __cdecl FUN_008c80e0(bool);
+void __cdecl SetMainRendering(bool);
 int __cdecl TESActorBaseData_GetAlignmentForKarma(float);
 void __cdecl TESMain_SetOpenConsole(int);
 void __cdecl MemoryPool_SortFreeBlocks(unsigned int);
@@ -7992,7 +8135,7 @@ struct MainLoop
     void TESMain_OnIdle_UpdateTimer();
     void TESMain_OnIdle_PollControls();
     void Main_OnIdle_ScaleLOD();
-    void FUN_0086f450();
+    void Main_OnIdle_HandleMenuBackground();
     void Main_OnIdle_UpdateCurrentGridCell();
     void TESMain_OnIdle_DoInterfaceIdle();
     void Main_OnIdle_UpdateAnimationsAndEffects();
@@ -8000,13 +8143,15 @@ struct MainLoop
     void Main_Swap();
     void TESMain_PostSwapProcess();
     void Main_UpdateNonRenderSafeAITasks();
-    void TESMain_OnIdle_PostThreadsProcess();
+    void Main_OnIdle_PostThreadsProcess();
     void TESObjectREFR_GetIsChildSize(float);
     void Main_OnIdle_UpdateImageSpace(bool);
     void Main_OnIdle();
 };
 // @fnv 0x0086e650
 // src: XBOX_PDB 0x0086e650
+// pdb: Main::OnIdle | Main.obj | retail, upstream name already matches, high
+// pdb locals: bnotMenu, bInTerminal, pviscamera, isectionCount, bdrawSandboxDebug, pcamera, ialign
 void MainLoop::Main_OnIdle()
 {
     TESObjectREFR_GetIsChildSize(DAT_011a3010);
@@ -8057,8 +8202,8 @@ void MainLoop::Main_OnIdle()
     }
     Main_OnIdle_ScaleLOD();
     BSShaderManager_GetTextureManager()->BSTextureManager_Update(Main_WorldRootCamera(), DAT_011dea2b);
-    FUN_0086f450();
-    DAT_011d8804->FUN_007011d0(true);
+    Main_OnIdle_HandleMenuBackground();
+    DAT_011d8804->UpdateFaders(true);
     if (!DAT_011dea2b && !paused)
     {
         ScreenSplatter_Update();
@@ -8122,7 +8267,7 @@ void MainLoop::Main_OnIdle()
     {
         if (*DAT_011c3ea4.Setting_Int() > 1)
         {
-            FUN_008c80e0(true);
+            SetMainRendering(true);
             AILinearTaskThreadManager_GetSingleton()->AILinearTaskThreadManager_StartThreads();
         }
         else
@@ -8173,7 +8318,7 @@ void MainLoop::Main_OnIdle()
             DAT_011e0fe0.AITaskManager_WaitForTasksDuringRendering();
     }
     Main_UpdateNonRenderSafeAITasks();
-    TESMain_OnIdle_PostThreadsProcess();
+    Main_OnIdle_PostThreadsProcess();
     if (TESMain_GetOpenConsole())
     {
         TESMain_SetOpenConsole(0);
@@ -8204,7 +8349,7 @@ struct StrObj
 
 struct MTHelper
 {
-    void MTRenderingSystem_SetThreadStage(int a, int b);
+    void MTRenderingSystem_SetThreadStage(int aiThreadIndex, int aiStage);
     void MTRenderingSystem_WaitOnThreadStage(int a, int b);
 };
 MTHelper* __cdecl FUN_004ea970();
@@ -8218,11 +8363,11 @@ RMenu* __cdecl Interface_GetCurrentRenderedMenu();
 bool __cdecl TESRenderer_GetMultiSampleEnabled();
 bool __cdecl Interface_IsInPipboyMenu();
 unsigned char __cdecl BSShaderManager_GetImageSpaceEffects();
-void __cdecl FUN_008c80e0(int);
+void __cdecl SetMainRendering(int);
 
 struct FNode
 {
-    void BSCullingProcess_SetAccumulator(const char* s);
+    void BSCullingProcess_SetAccumulator(const char* apAccumulator);
     void FUN_0041fd00(AnimData* a);
 };
 struct FGen
@@ -8232,7 +8377,7 @@ struct FGen
 AnimData* __cdecl Main_WorldRootCamera();
 struct SSN
 {
-    void ShadowSceneNode_PreOnVisible(FNode* n);
+    void ShadowSceneNode_PreOnVisible(FNode* arCuller);
 };
 SSN* __cdecl FUN_00450b80(int);
 
@@ -8277,13 +8422,13 @@ struct RenderMgr
 
     void FUN_00872ad0();
     void Main_DrawWorld_UpdateOffscreenBuffers();
-    int TESMain_DrawWorld_InitRenderTexture(::NiRenderer* r, int p1, bool p2, bool b);
-    void TESMain_DrawWorld_CopyMenuBG(ISMgr* m, ::NiRenderer* r, bool b, int p1);
+    int TESMain_DrawWorld_InitRenderTexture(::NiRenderer* apRenderer, int apDestination, bool abWireframe, bool abMultiSampleEnabled);
+    void Main_DrawWorld_CopyMenuBG(ISMgr* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled, int apDestination);
     void Main_DrawWorld_MTSetup1stPerson();
-    void TESMain_DrawWorld_MTRender1stPerson(::NiRenderer* r, RootNode* root, int z, int res);
+    void TESMain_DrawWorld_MTRender1stPerson(::NiRenderer* apRenderer, RootNode* apRenderedMenuGeom, int apSun, int apRenderTexture);
     void TESMain_DrawWorld_RenderedMenuScene();
-    void TESMain_DrawWorld_ImageSpace(bool b, int res, ::NiRenderer* r, int p1);
-    void Main_DrawWorld_RenderedMenu(RootNode* root, ::NiRenderer* r);
+    void TESMain_DrawWorld_ImageSpace(bool abMultiSampleEnabled, int apRenderTexture, ::NiRenderer* apRenderer, int apDestination);
+    void Main_DrawWorld_RenderedMenu(RootNode* apPipboyGeom, ::NiRenderer* apRenderer);
     void TESMain_DrawWorld_StopRenderTarget(bool b, int p1);
     void TESMain_DrawWorld_End(int res, ISMgr* m, ::NiRenderer* r, int z);
 
@@ -8293,6 +8438,9 @@ struct RenderMgr
 // Runs the render update: resets helpers, computes a result via FUN_00872f50, sets up a node when FUN_00705a00 is true, and dispatches the remaining render steps.
 // @fnv 0x008707c0
 // src: COMMUNITY 0x008707c0
+// pdb: Main::DrawWorldRenderedMenu | Main.obj | retail, call graph, medium
+// pdb params: apDestination, bwireframe
+// pdb locals: apRenderTexture, prenderer, bmultiSampleEnabled, pimagespacemanager, prenderedMenuGeom, i, psg, pcamera, pculler
 void RenderMgr::TESMain_DrawWorldRenderedMenu(int p1, bool p2)
 {
     ISMgr* ism2 = BSShaderManager_GetImageSpaceManager();
@@ -8307,9 +8455,9 @@ void RenderMgr::TESMain_DrawWorldRenderedMenu(int p1, bool p2)
     }
     Main_DrawWorld_UpdateOffscreenBuffers();
     int res4 = TESMain_DrawWorld_InitRenderTexture(renderer, p1, p2, flag_);
-    TESMain_DrawWorld_CopyMenuBG(ism2, renderer, flag_, p1);
+    Main_DrawWorld_CopyMenuBG(ism2, renderer, flag_, p1);
     if (*g_011c3ea4.Int() > 1)
-        FUN_008c80e0(0);
+        SetMainRendering(0);
     FUN_004ea970()->MTRenderingSystem_SetThreadStage(0, 0x15);
     FUN_004ea970()->MTRenderingSystem_WaitOnThreadStage(1, 0x15);
     if (Interface_IsInPipboyMenu())
@@ -8362,18 +8510,18 @@ struct MenuStub870
 };
 struct RenderSysStub870
 {
-    void EnableA(int a, int b);
+    void EnableA(int aiThreadIndex, int aiStage);
     void EnableB(int a, int b);
 };
 
 ::NiRenderer* GetRenderer870();
 ISManagerStub870* GetISManager870();
 bool IsFlag870();
-void SetupState870(int a, int b);
+void SetupState870(int abEnable, int aeLock);
 MenuStub870* GetMenu870();
 bool MenuCheck870();
 RenderSysStub870* GetRenderSys870();
-void SetState870(int a);
+void SetState870(int aeLock);
 
 struct SceneRendererStub870
 {
@@ -8382,21 +8530,24 @@ struct SceneRendererStub870
     void Prepare2();
     bool CheckX();
     void Prepare3();
-    RTexStub870* RenderMain(::NiRenderer* renderer, TexStub870* target, int unk, bool flag);
-    void ShaderPassEntry(TexStub870* tex, bool draw, bool unk, bool x);
+    RTexStub870* RenderMain(::NiRenderer* apRenderer, TexStub870* apDestination, int abWireframe, bool abMultiSampleEnabled);
+    void ShaderPassEntry(TexStub870* psun, bool abDo1stPerson, bool abWireframe, bool abIssueVATSPartialQuery);
     void Finish1();
     void TESMain_DrawWorld_RestartRenderTexture(RTexStub870* rt, bool flag, unsigned int unk);
-    void Composite(::NiRenderer* renderer, int unk, TexStub870* tex, RTexStub870* rt);
+    void Composite(::NiRenderer* apRenderer, int apRenderedMenuGeom, TexStub870* apSun, RTexStub870* apRenderTexture);
     void CopyTarget(bool flag, TexStub870* target);
-    void RenderAlt(bool flag, RTexStub870* rt, ::NiRenderer* renderer, TexStub870* target);
+    void RenderAlt(bool abMultiSampleEnabled, RTexStub870* apRenderTexture, ::NiRenderer* apRenderer, TexStub870* apDestination);
     void RenderImageSpace(RTexStub870* rt, ISManagerStub870* ism, ::NiRenderer* renderer, int unk);
 
-    void Main_DrawWorldWireframe(TexStub870* target, bool skip);
+    void Main_DrawWorldWireframe(TexStub870* apDestination, bool abSkipFirstPerson);
 };
 
 // @fnv 0x00870a00
 // src: XBOX_PDB 0x00870a00
-void SceneRendererStub870::Main_DrawWorldWireframe(TexStub870* target, bool skip)
+// pdb: Main::DrawWorldWireframe | Main.obj | retail, upstream name already matches, high
+// pdb params: apDestination, abSkipFirstPerson
+// pdb locals: apRenderTexture, prenderer, bmultiSampleEnabled, bdo1stPerson, psun, bissuesVATSQuery, pimagespacemanager, b1stPersonCulled
+void SceneRendererStub870::Main_DrawWorldWireframe(TexStub870* apDestination, bool abSkipFirstPerson)
 {
     ::NiRenderer* renderer2 = GetRenderer870();
     ISManagerStub870* ism = GetISManager870();
@@ -8409,8 +8560,8 @@ void SceneRendererStub870::Main_DrawWorldWireframe(TexStub870* target, bool skip
     Prepare2();
     bool checkXA = CheckX();
     Prepare3();
-    RTexStub870* rt4 = RenderMain(renderer2, target, 0, flagVal);
-    bool draw2 = !nodeFlag4 && !skip && !GetMenu870()->GetMenuRoot() && !MenuCheck870();
+    RTexStub870* rt4 = RenderMain(renderer2, apDestination, 0, flagVal);
+    bool draw2 = !nodeFlag4 && !abSkipFirstPerson && !GetMenu870()->GetMenuRoot() && !MenuCheck870();
     ShaderPassEntry(tex2, draw2, true, checkXA);
     if (draw2)
     {
@@ -8423,16 +8574,16 @@ void SceneRendererStub870::Main_DrawWorldWireframe(TexStub870* target, bool skip
         GetRenderSys870()->EnableA(0, 0x16);
         GetRenderSys870()->EnableB(1, 0x16);
     }
-    if (target)
-        CopyTarget(flagVal, target);
+    if (apDestination)
+        CopyTarget(flagVal, apDestination);
     SetState870(1);
     if (BSShaderManager_GetImageSpaceEffects())
     {
-        RenderAlt(flagVal, rt4, renderer2, target);
+        RenderAlt(flagVal, rt4, renderer2, apDestination);
     }
-    else if (target)
+    else if (apDestination)
     {
-        CopyTarget(flagVal, target);
+        CopyTarget(flagVal, apDestination);
     }
     RenderImageSpace(rt4, ism, renderer2, 0);
 }
@@ -8495,7 +8646,7 @@ struct ShadowMap
     unsigned short ShadowSceneLight_GetFrustumCull();
     float GetFirstLightParameter();
     void UpdateShadow(ShadowView*, int);
-    void FUN_00b9fba0();
+    void ShadowSceneLight_InsertUnusedFence();
     void FUN_00ba0110(ShadowNode*);
     void ShadowSceneLight_RemoveUnusedGeom();
 };
@@ -8505,7 +8656,7 @@ struct ShadowSystem
     void ShadowSceneNode_DisableAllShadowLights();
     void FUN_00b5c3c0();
     void* FUN_00b5cbd0(ShadowNode*);
-    void FUN_00b5cde0(void*);
+    void ShadowSceneNode_SortShadowLights(void*);
     ShadowMap* FUN_00b5afc0();
     ShadowMap* FUN_00b5b010();
     void* ShadowSceneNode_QPortalGraph();
@@ -8710,11 +8861,13 @@ struct ShadowActor
 struct ShadowHost
 {
     void Main_DrawWorld_UpdateOffscreenBuffers();
-    void TESMain_UpdateOffscreenInterface();
+    void Main_UpdateOffscreenInterface();
 };
 // Toggles shadow rendering based on two flags, builds the shadow map from actors, renders visible shadow maps up to a limit, and resets unused shadow targets.
 // @fnv 0x00871290
 // src: XBOX_PDB 0x00871290
+// pdb: Main::DrawWorld_UpdateOffscreenBuffers | Main.obj | retail, upstream name already matches, high
+// pdb locals: pssnode, imaxActorShadows, icount, inumCloseActors, pcloseActorsA, p1stPerson3d, pplayerShadow, icurCloseActor, pactor, pbound, kextents, fbradius, ienabledShadows, b1stcull, psg, psslight, bgrasscull, pculler, pgnode, kbound, UpdateData, ppgraph, i
 void ShadowHost::Main_DrawWorld_UpdateOffscreenBuffers()
 {
     if (BSShaderManager_GetShadows() && Main_GetSceneIsComplex())
@@ -8770,7 +8923,7 @@ void ShadowHost::Main_DrawWorld_UpdateOffscreenBuffers()
                 }
             }
             DAT_011f1180.BSSpinLock_Unlock();
-            system->FUN_00b5cde0(playerShadow32);
+            system->ShadowSceneNode_SortShadowLights(playerShadow32);
             ShadowNode* playerNode50 = DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(1);
             if (playerNode50)
             {
@@ -8818,7 +8971,7 @@ void ShadowHost::Main_DrawWorld_UpdateOffscreenBuffers()
                                 ShadowUpdate update53(0.0f, false, false);
                                 shadow4->ShadowSceneLight_GetLight()->NiAVObject_Update(&update53);
                                 shadow4->UpdateShadow(view8, rendered62 - 1);
-                                shadow4->FUN_00b9fba0();
+                                shadow4->ShadowSceneLight_InsertUnusedFence();
                                 void* renderer12 = FUN_00450b80(0)->ShadowSceneNode_QPortalGraph();
                                 FUN_00450b80(0)->FUN_00b5d300(shadow4);
                                 if (*DAT_011c7664.FUN_00408d60())
@@ -8854,7 +9007,7 @@ void ShadowHost::Main_DrawWorld_UpdateOffscreenBuffers()
             FUN_004ea970(1, i)->MTRenderingSystem_WaitOnThreadStage();
         }
     }
-    TESMain_UpdateOffscreenInterface();
+    Main_UpdateOffscreenInterface();
 }
 
 namespace fnv_00871a50 {
@@ -8862,7 +9015,7 @@ extern bool __cdecl Interface_IsInMenuMode();
 extern bool __cdecl Interface_IsInRenderedMenu();
 extern bool __cdecl Interface_IsInPipboyMenu();
 extern void __cdecl Interface_LastMinuteUpdate();
-extern bool __cdecl Interface_IsActiveMenuTheRenderedMenu();
+extern bool __cdecl Interface_IsCurrentRenderedMenuTopmost();
 extern bool __cdecl Interface_IsMenuIDVisible(unsigned int, int);
 struct RenderFlag
 {
@@ -8904,12 +9057,14 @@ extern void* __cdecl NiXenonRenderer_GetRenderer();
 extern const char DAT_010829c4[];
 struct HudRenderPass
 {
-    void TESMain_UpdateOffscreenInterface();
+    void Main_UpdateOffscreenInterface();
 };
 // When the HUD conditions hold, ensures the render holder has a node, draws it via the UI renderer, and temporarily hides menu 1001's node while drawing.
 // @fnv 0x00871a50
-// src: COMMUNITY 0x00871a50
-void HudRenderPass::TESMain_UpdateOffscreenInterface()
+// src: XBOX_RETAIL_PDB 0x00871a50
+// pdb: Main::UpdateOffscreenInterface | Main.obj | retail, call graph, high
+// pdb locals: binPipboy, tempMemContext, btopmost, bmessageCulled, pmessage, bhideMessage
+void HudRenderPass::Main_UpdateOffscreenInterface()
 {
     if (Interface_IsInMenuMode() && (*DAT_011db2cc.FUN_00408d60() || *DAT_011d8ba0.FUN_00408d60()) && Interface_IsInRenderedMenu())
     {
@@ -8921,7 +9076,7 @@ void HudRenderPass::TESMain_UpdateOffscreenInterface()
             DAT_011dec64.FUN_0066b0d0(BSShaderManager_GetTextureManager(NiXenonRenderer_GetRenderer(), 45, 0, 0, 0)->BSTextureManager_BorrowRenderedTexture());
         if (!wasActive)
             Interface_GetPipboy()->SetScreenTexture(0);
-        bool show = Interface_IsActiveMenuTheRenderedMenu() || Tile_GetMenuByClass(1001) || Tile_GetMenuByClass(1016) || Tile_GetMenuByClass(1059);
+        bool show = Interface_IsCurrentRenderedMenuTopmost() || Tile_GetMenuByClass(1001) || Tile_GetMenuByClass(1016) || Tile_GetMenuByClass(1059);
         if (Interface_IsInRenderedMenu() && show)
         {
             bool hide = wasActive && Interface_IsMenuIDVisible(1001, 0);
@@ -8995,7 +9150,7 @@ struct MTRenderer
     void MTRenderingSystem_WaitOnThreadStage(int, int);
 };
 MTRenderer* FUN_004ea970();
-void AutoTileLock_AutoTileLock();
+void AutoTileLock_ctor();
 void Object___imp__LeaveCriticalSection_Thunk();
 struct MenuTarget
 {
@@ -9100,6 +9255,8 @@ struct FUN_00871dc0_class
 };
 // @fnv 0x00871dc0
 // src: XBOX_PDB 0x00871dc0
+// pdb: Main::RenderMenuBackground | Main.obj | retail, upstream name already matches, high
+// pdb locals: pmod, tempMemContext, beof, bskip1st, fxviewmax, fyviewmax, bsculler, pcam
 void FUN_00871dc0_class::Main_RenderMenuBackground()
 {
     AutoMemHelper modifier(13, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 7193);
@@ -9109,7 +9266,7 @@ void FUN_00871dc0_class::Main_RenderMenuBackground()
     DAT_011ad884 = true;
     unk9c = true;
     NiXenonRenderer_GetRenderer()->NiXenonRenderer_LockRenderer();
-    AutoTileLock_AutoTileLock();
+    AutoTileLock_ctor();
     FUN_004ea970()->MTRenderingSystem_StartThreads();
     if (g_011ded3c.Get())
         BSShaderManager_GetTextureManager()->BSTextureManager_ReturnRenderedTexture(g_011ded3c.Get());
@@ -9186,8 +9343,8 @@ extern const char str_010829c4[];
 struct NiRenderTargetGroup;
 struct TexObj
 {
-    unsigned int BSRenderedTexture_GetWidth(unsigned int i);
-    unsigned int BSRenderedTexture_GetHeight(unsigned int i);
+    unsigned int BSRenderedTexture_GetWidth(unsigned int aiIndex);
+    unsigned int BSRenderedTexture_GetHeight(unsigned int aiIndex);
     void BSRenderedTexture_UsePreRestoreGroup();
 };
 extern BSRenderedTexture* DAT_011f9438;
@@ -9257,37 +9414,40 @@ Mgr* __stdcall BSShaderManager_GetTextureManager(P1* a, int b, int c, int d, int
 
 unsigned char BSShaderManager_GetImageSpaceEffects();
 double dMin(double b, float a);
-void __cdecl BSRenderedTexture_StartOffscreen(unsigned int id, NiRenderTargetGroup* ausAnimationGroup);
-void __cdecl BSRenderedTexture_Start(unsigned int id, NiRenderTargetGroup* ausAnimationGroup);
+void __cdecl BSRenderedTexture_StartOffscreen(unsigned int aiClearMode, NiRenderTargetGroup* apTarget);
+void __cdecl BSRenderedTexture_Start(unsigned int aiClearMode, NiRenderTargetGroup* apTarget);
 
 ::BSFaceGenAnimationData* __cdecl Main_WorldRootCamera();
 
 struct Host
 {
-    BSRenderedTexture* TESMain_DrawWorld_InitRenderTexture(P1* a1, BSRenderedTexture* a2, unsigned char a3, unsigned char a4);
+    BSRenderedTexture* TESMain_DrawWorld_InitRenderTexture(P1* apRenderer, BSRenderedTexture* apDestination, unsigned char abWireframe, unsigned char abMultiSampleEnabled);
 };
 
 // @fnv 0x00872f50
 // src: COMMUNITY 0x00872f50
-BSRenderedTexture* Host::TESMain_DrawWorld_InitRenderTexture(P1* apSource, BSRenderedTexture* apFallbackTexture, unsigned char abSkipCreate,
-                                      unsigned char abUseSourceGroup)
+// pdb: Main::DrawWorld_InitRenderTexture | Main.obj | retail, call graph, high
+// pdb params: apRenderer, apDestination, abWireframe, abMultiSampleEnabled
+// pdb locals: prenderTexture, tempMemContext, fxviewmax, fyviewmax
+BSRenderedTexture* Host::TESMain_DrawWorld_InitRenderTexture(P1* apRenderer, BSRenderedTexture* apDestination, unsigned char abWireframe,
+                                      unsigned char abMultiSampleEnabled)
 {
     BSRenderedTexture* tex = 0;
-    if (BSShaderManager_GetImageSpaceEffects() && !abSkipCreate)
+    if (BSShaderManager_GetImageSpaceEffects() && !abWireframe)
     {
         AutoMemHelper helper(0x27, true, str_010829c4, 0x1e6d);
-        tex = BSShaderManager_GetTextureManager(apSource, 4, 0, 0, 0)->BSTextureManager_BorrowRenderedTexture();
+        tex = BSShaderManager_GetTextureManager(apRenderer, 4, 0, 0, 0)->BSTextureManager_BorrowRenderedTexture();
         ((TexObj*)tex)->BSRenderedTexture_UsePreRestoreGroup();
         DAT_011f9438 = tex;
-        if (apSource->FUN_004dee10() != ((TexObj*)tex)->BSRenderedTexture_GetWidth(0) ||
-            apSource->FUN_004dee70() != ((TexObj*)tex)->BSRenderedTexture_GetHeight(0))
+        if (apRenderer->FUN_004dee10() != ((TexObj*)tex)->BSRenderedTexture_GetWidth(0) ||
+            apRenderer->FUN_004dee70() != ((TexObj*)tex)->BSRenderedTexture_GetHeight(0))
         {
             float fa;
             fa = (float)dMin(
-                (double)apSource->FUN_004dee10() * DAT_01082d20 / (double)((TexObj*)tex)->BSRenderedTexture_GetWidth(0), 1.0f);
+                (double)apRenderer->FUN_004dee10() * DAT_01082d20 / (double)((TexObj*)tex)->BSRenderedTexture_GetWidth(0), 1.0f);
             float fb;
             fb = (float)dMin(
-                (double)apSource->FUN_004dee70() * DAT_01082d20 / (double)((TexObj*)tex)->BSRenderedTexture_GetHeight(0), 1.0f);
+                (double)apRenderer->FUN_004dee70() * DAT_01082d20 / (double)((TexObj*)tex)->BSRenderedTexture_GetHeight(0), 1.0f);
             Main_WorldRootCamera()->FUN_00712e60(&(NiColorA&)NiColorA(0.0f, fa, fb, 0.0f));
         }
         BSRenderedTexture_StartOffscreen(7, tex->GetGroup());
@@ -9295,15 +9455,15 @@ BSRenderedTexture* Host::TESMain_DrawWorld_InitRenderTexture(P1* apSource, BSRen
     else
     {
         AutoMemHelper helper(0x26, true, str_010829c4, 0x1e84);
-        if (apFallbackTexture)
+        if (apDestination)
         {
-            if (abUseSourceGroup)
+            if (abMultiSampleEnabled)
             {
-                BSRenderedTexture_StartOffscreen(7, apSource->GetRenderGroup());
+                BSRenderedTexture_StartOffscreen(7, apRenderer->GetRenderGroup());
             }
             else
             {
-                BSRenderedTexture_StartOffscreen(7, apFallbackTexture->GetGroup());
+                BSRenderedTexture_StartOffscreen(7, apDestination->GetGroup());
             }
         }
         else
@@ -9480,6 +9640,8 @@ struct MainShell
 // Updates the player's face gen node and render objects, toggling DAT_011de9d1 and submitting spObjA0/spObj8C to the rendering system.
 // @fnv 0x00874c10
 // src: XBOX_PDB 0x00874c10
+// pdb: Main::DrawWorld_MTSetup1stPerson | Main.obj | retail, upstream name already matches, high
+// pdb locals: psceneGraph, tempMemContext, p1stPersonNode, pcamera, kupdate, oldPos, ppiplight, k1stPersonAdjust, ktransform
 void MainShell::Main_DrawWorld_MTSetup1stPerson()
 {
     AutoMemHelper memHelper5(0x34, 1, str_010829c4, 0x21b1);
@@ -9948,7 +10110,10 @@ struct Main
 };
 // @fnv 0x00875110
 // src: COMMUNITY 0x00875110
-void Main::TESMain_DrawWorld_MTRender1stPerson(Scene* root, Scene* firstPerson, Scene* extra, Scene* pass)
+// pdb: Main::DrawWorld_MTRender1stPerson | Main.obj | retail, call graph (shared callers), high
+// pdb params: apRenderer, apRenderedMenuGeom, apSun, apRenderTexture
+// pdb locals: ap1stPerson3d, tempMemContext, p1stPersonNode, apCuller, pcamera, apSceneGraph, sptempaccum, prenderedMenuAlpha, pscene, kupdate, bcull
+void Main::TESMain_DrawWorld_MTRender1stPerson(Scene* apRenderer, Scene* apRenderedMenuGeom, Scene* apSun, Scene* apRenderTexture)
 {
     Scene* renderSlot52 = Main_GetWorldSceneGraph();
     Context* contextSlot26 = renderSlot52->FUN_008d80e0();
@@ -9959,7 +10124,7 @@ void Main::TESMain_DrawWorld_MTRender1stPerson(Scene* root, Scene* firstPerson, 
     FUN_004ea970()->MTRenderingSystem_WaitOnThreadStage(1, 22);
     surface.Modelloader_GetReferencedThis()->visible = 0;
     Guard guardSlot1(0x34, 1, DAT_010829c4, 0x221f);
-    root->RendererClearBufferHook(0, 4);
+    apRenderer->RendererClearBufferHook(0, 4);
     if (DAT_011f9426 && (!NiXenonRenderer_GetRenderer()->Primary() || NiXenonRenderer_GetRenderer()->Primary() == NiXenonRenderer_GetRenderer()->Secondary()))
         camera.Modelloader_GetReferencedThis()->FUN_00712e60(DAT_011ad840);
     else
@@ -9967,10 +10132,10 @@ void Main::TESMain_DrawWorld_MTRender1stPerson(Scene* root, Scene* firstPerson, 
     renderSlot52->SceneGraph_SetCameraFOV(DAT_011dea3c->PlayerCharacter_Get1stPersonFOV(), 0, 0, 0);
     FUN_00b54000(DAT_011dea3c->PlayerCharacter_Get1stPersonFOV());
     camera.Modelloader_GetReferencedThis()->FUN_00a6faf0(viewSlot23->FUN_0045bbe0());
-    if (firstPerson)
+    if (apRenderedMenuGeom)
     {
         Interface_GetCurrentRenderedMenu()->SetScreenTexture(0);
-        firstPerson->FUN_00450f90(0);
+        apRenderedMenuGeom->FUN_00450f90(0);
         if (Interface_IsInRenderedMenu())
         {
             if (Interface_IsInPipboyMenu() && DAT_011dea3c->IsRefractive())
@@ -10048,13 +10213,13 @@ void Main::TESMain_DrawWorld_MTRender1stPerson(Scene* root, Scene* firstPerson, 
         {
             FUN_00b6b790();
             DAT_011f9438->Object_DoNothing();
-            BSRenderedTexture_StartOffscreen(6, pass->FUN_00b6b260());
+            BSRenderedTexture_StartOffscreen(6, apRenderTexture->FUN_00b6b260());
             if (DAT_011f9426)
                 Main_WorldRootCamera()->FUN_00712e60(DAT_011ad840);
         }
         Scene* render3Slot0 = Main_GetWorldSceneGraph();
-        surface.Modelloader_GetReferencedThis()->BSShaderAccumulator_RenderNormals(camera.Modelloader_GetReferencedThis(), pass);
-        TESMain_DrawWorld_RestartRenderTexture(pass, 0, 0);
+        surface.Modelloader_GetReferencedThis()->BSShaderAccumulator_RenderNormals(camera.Modelloader_GetReferencedThis(), apRenderTexture);
+        TESMain_DrawWorld_RestartRenderTexture(apRenderTexture, 0, 0);
     }
     if (DAT_011de9d1)
     {
@@ -10067,25 +10232,25 @@ void Main::TESMain_DrawWorld_MTRender1stPerson(Scene* root, Scene* firstPerson, 
     if (DAT_011f2250.FUN_0044ddc0() != 4)
         Main_GetWorldSceneGraph()->SceneGraph_SetCameraFOV(DAT_011dea3c->PlayerCharacter_GetWorldFOV(), 0, 0, 0);
     FUN_00b54000(DAT_011dea3c->PlayerCharacter_GetWorldFOV());
-    if (extra && !extra->NiObjectNET_GetControllers()->GetAppCulled_00456610())
+    if (apSun && !apSun->NiObjectNET_GetControllers()->GetAppCulled_00456610())
     {
-        bool previousSlot0 = extra->NiObjectNET_GetControllers()->GetAppCulled_00456610();
-        extra->NiObjectNET_GetControllers()->FUN_00450f90(0);
+        bool previousSlot0 = apSun->NiObjectNET_GetControllers()->GetAppCulled_00456610();
+        apSun->NiObjectNET_GetControllers()->FUN_00450f90(0);
         Scene* render4Slot20 = Main_GetWorldSceneGraph();
         Scene* view4Slot48 = render4Slot20->FUN_006629f0();
         Context* context4 = render4Slot20->FUN_008d80e0();
         Pointer texture4(texture);
         context4->BSCullingProcess_SetAccumulator(texture4.Modelloader_GetReferencedThis());
         texture4.Modelloader_GetReferencedThis()->MobileObject_SetSoundCallBackSuccess(1);
-        BSShaderUtil_AccumulateScene(view4Slot48, extra->NiObjectNET_GetControllers(), context4);
+        BSShaderUtil_AccumulateScene(view4Slot48, apSun->NiObjectNET_GetControllers(), context4);
         FUN_00b6c0d0(view4Slot48, texture4.Modelloader_GetReferencedThis(), 0);
         context4->BSCullingProcess_SetAccumulator(0);
         texture4.Modelloader_GetReferencedThis()->MobileObject_SetSoundCallBackSuccess(0);
         texture4.FUN_0066b0d0(0);
-        extra->NiObjectNET_GetControllers()->FUN_00450f90(previousSlot0);
+        apSun->NiObjectNET_GetControllers()->FUN_00450f90(previousSlot0);
     }
-    if (extra)
-        extra->FUN_006426a0(2, texture.Modelloader_GetReferencedThis(), DAT_011deb7c.Modelloader_GetReferencedThis()->FUN_006629f0());
+    if (apSun)
+        apSun->FUN_006426a0(2, texture.Modelloader_GetReferencedThis(), DAT_011deb7c.Modelloader_GetReferencedThis()->FUN_006629f0());
     renderSlot52->SceneGraph_SetCameraFOV(DAT_011dea3c->PlayerCharacter_Get1stPersonFOV(), 0, 0, 0);
     FUN_00b54000(DAT_011dea3c->PlayerCharacter_Get1stPersonFOV());
 }
@@ -10107,7 +10272,7 @@ bool __cdecl Interface_IsInRenderedMenu();
 struct RenderEffectManager
 {
     void PrepareEffect(void*, BSShaderAccumulator*, int, unsigned char);
-    void VATSEffect_ShutdownEffect();
+    void ShutdownEffect();
 };
 RenderEffectManager* __cdecl Interface_GetVATSEffect();
 struct AccumulatorPointer
@@ -10194,16 +10359,19 @@ struct FrameRenderer
 
 // @fnv 0x00875fd0
 // src: COMMUNITY 0x00875fd0
-void FrameRenderer::TESMain_DrawWorld_ImageSpace(void* unused, void* renderer, void* scene, void* target)
+// pdb: Main::DrawWorld_ImageSpace | Main.obj | retail, call graph (shared callers), high
+// pdb params: abMultiSampleEnabled, apRenderTexture, apRenderer, apDestination
+// pdb locals: tempMemContext, bdoAlphaMask, ffadeAmt
+void FrameRenderer::TESMain_DrawWorld_ImageSpace(void* abMultiSampleEnabled, void* apRenderTexture, void* apRenderer, void* apDestination)
 {
     AutoMemHelper m_uiMemoryContext(39, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 9058);
-    if (!BSRenderedTexture_IsOutsideFrame())
+    if (!BSRenderedTexture_QOutsideFrame())
         FUN_00b6b790();
     if (!Interface_IsInPipboyMenu() && !Interface_IsInMenuMode() && !FUN_00705e80() && !g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading() &&
         !g_BGSSaveLoadGame->FUN_005621d0() && !bSkipScene)
         Interface_Accumulate();
     if (DAT_011deb38.Modelloader_GetReferencedThis())
-        Interface_GetVATSEffect()->PrepareEffect(renderer, DAT_011deb38.Modelloader_GetReferencedThis(), 0, 0);
+        Interface_GetVATSEffect()->PrepareEffect(apRenderTexture, DAT_011deb38.Modelloader_GetReferencedThis(), 0, 0);
     bool menuActive = Interface_IsInRenderedMenu() && !bSkipScene && DAT_011dea29;
     if (menuActive)
     {
@@ -10212,10 +10380,10 @@ void FrameRenderer::TESMain_DrawWorld_ImageSpace(void* unused, void* renderer, v
         DAT_011add08 = renderScale;
     }
     DAT_011f917c = Main_GetWorldSceneGraph()->::BSFaceGenNiNode::GetAnimationData();
-    BSShaderManager_RenderImageSpaceEffects(scene, renderer, target);
+    BSShaderManager_RenderImageSpaceEffects(apRenderer, apRenderTexture, apDestination);
     if (DAT_011deb38.Modelloader_GetReferencedThis())
     {
-        Interface_GetVATSEffect()->VATSEffect_ShutdownEffect();
+        Interface_GetVATSEffect()->ShutdownEffect();
         BSShaderManager_GetTextureManager()->BSTextureManager_ReturnRenderedTexture(DAT_011deb38.Modelloader_GetReferencedThis());
         DAT_011deb38.FUN_0066b0d0(0);
     }
@@ -10248,7 +10416,7 @@ struct R876
 };
 struct Camera876
 {
-    bool NiAVObject_GetAlwaysDraw();
+    bool NiAVObject_QAlwaysDraw();
     T876* NiAVObject_GetRotate_006a9540();
     void NiAVObject_SetTranslate(V876*);
     void NiAVObject_Update(V876*);
@@ -10366,7 +10534,10 @@ struct Shell876
 // Sets up the player camera and scene nodes, applies camera transforms and render passes, then restores the previous camera state.
 // @fnv 0x008761e0
 // src: XBOX_PDB 0x008761e0
-void Shell876::Main_DrawWorld_RenderedMenu(int unused, Input876* input)
+// pdb: Main::DrawWorld_RenderedMenu | Main.obj | retail, upstream name already matches, high
+// pdb params: apPipboyGeom, apRenderer
+// pdb locals: kcamtransform, ppipboyAlpha, kupdate, balwaysdraw, p1stPersonNode, apCuller, pcam, pcamera, apSceneGraph, p1stnodetransform
+void Shell876::Main_DrawWorld_RenderedMenu(int apPipboyGeom, Input876* apRenderer)
 {
     Player876* p;
     R876 h;
@@ -10387,12 +10558,12 @@ void Shell876::Main_DrawWorld_RenderedMenu(int unused, Input876* input)
     p = (Player876*)Main_GetWorldSceneGraph();
     s = p->FUN_008d80e0();
     i = Interface_GetCurrentRenderedMenu()->FUN_008b6200();
-    input->RendererClearBufferHook(0, 4);
+    apRenderer->RendererClearBufferHook(0, 4);
     f = Interface_GetCurrentRenderedMenu()->FUN_005585e0();
     s->SetImpactDataSet_004fb0b0(true);
     cf.FUN_0043d410(0.0f, 0, 0);
     b.NiTransform_NiTransform();
-    eb = f->NiAVObject_GetAlwaysDraw();
+    eb = f->NiAVObject_QAlwaysDraw();
     a = i ? i : p->FUN_006629f0();
 
     if (DAT_011dea3c->PlayerCharacter_IsPipboyActive())
@@ -10591,9 +10762,9 @@ struct SLDataHandler
 {
     SLWorldSpaceList* GetWorldSpaces();
     SLCell* GetCellByName(const char* apName);
-    SLWorldSpace* GetWorldSpaceForCell(const char* apName, int* apX, int* apY);
-    SLCell* GetContainingCell(int aiX, int aiY, SLWorldSpace* apWorld, bool abCreate);
-    void FUN_004650a0(int aiValue);
+    SLWorldSpace* GetWorldSpaceForCell(const char* apCellID, int* aiOutX, int* aiOutY);
+    SLCell* GetContainingCell(int aiX, int aiY, SLWorldSpace* apWorldSpace, bool abCreateCell);
+    void FUN_004650a0(int aiLargeBuffer);
 };
 
 struct SLSky
@@ -10603,10 +10774,10 @@ struct SLSky
 
 struct SLTES
 {
-    void AssignWorldSpace(SLWorldSpace* apWorld);
+    void AssignWorldSpace(SLWorldSpace* apWorldSpace);
     void SetPosition(SLPoint3* apPos);
     void SetInteriorCell(SLCell* apCell, SLPoint3* apPos);
-    void LoadArea(SLPoint3* apPos, bool abFlag);
+    void LoadArea(SLPoint3* apPos, bool abFullreload);
     SLSky* GetSky();
 };
 
@@ -10632,16 +10803,19 @@ extern double g_dCellHalfSize;
 // Resolves the starting cell from a name or the starting-cell INI settings, positions the player there, and warns if the cell cannot be found.
 // @fnv 0x00876dd0
 // src: XBOX_PDB 0x00876dd0
-void __cdecl Main_InitStartCell(const char* apCellName, SLPoint3* apPos)
+// pdb: Main_InitStartCell | Main.obj | retail, string-set bridge, high
+// pdb params: pforceLoadCell, apos
+// pdb locals: pstartcell, bfindcell, bloadcell, iy, pworld, ix, pstartworld, icellx, icelly
+void __cdecl Main_InitStartCell(const char* pforceLoadCell, SLPoint3* apos)
 {
     SLCell* pCell4 = 0;
     bool bWarn = true;
     bool bLoad7 = true;
 
-    if ((apCellName && BSStringLength(apCellName)) || strlen(g_kStartingCell.GetString()))
+    if ((pforceLoadCell && BSStringLength(pforceLoadCell)) || strlen(g_kStartingCell.GetString()))
     {
-        if (apCellName && BSStringLength(apCellName))
-            pCell4 = g_pSLDataHandler->GetCellByName(apCellName);
+        if (pforceLoadCell && BSStringLength(pforceLoadCell))
+            pCell4 = g_pSLDataHandler->GetCellByName(pforceLoadCell);
         else
             pCell4 = g_pSLDataHandler->GetCellByName(PrepareScriptMessage(g_kStartingCell.GetString(), false));
         if (!pCell4)
@@ -10653,10 +10827,10 @@ void __cdecl Main_InitStartCell(const char* apCellName, SLPoint3* apPos)
             if (pWorld8)
             {
                 g_pSLTES->AssignWorldSpace(pWorld8);
-                apPos->x = (iX << 12) + g_dCellHalfSize;
-                apPos->y = (iY4 << 12) + g_dCellHalfSize;
-                apPos->z = 0.0f;
-                g_pSLTES->SetPosition(apPos);
+                apos->x = (iX << 12) + g_dCellHalfSize;
+                apos->y = (iY4 << 12) + g_dCellHalfSize;
+                apos->z = 0.0f;
+                g_pSLTES->SetPosition(apos);
                 pCell4 = g_pSLDataHandler->GetContainingCell(iX, iY4, pWorld8, false);
                 bLoad7 = false;
             }
@@ -10697,15 +10871,15 @@ void __cdecl Main_InitStartCell(const char* apCellName, SLPoint3* apPos)
         {
             if (pCell4->IsInterior())
             {
-                g_pSLTES->SetInteriorCell(pCell4, apPos);
+                g_pSLTES->SetInteriorCell(pCell4, apos);
             }
             else
             {
                 g_pSLTES->AssignWorldSpace(pCell4->GetParentWorldSpace());
-                apPos->x = (pCell4->GetPosX() << 12) + g_dCellHalfSize;
-                apPos->y = (pCell4->GetPosY() << 12) + g_dCellHalfSize;
-                apPos->z = 0.0f;
-                g_pSLTES->SetPosition(apPos);
+                apos->x = (pCell4->GetPosX() << 12) + g_dCellHalfSize;
+                apos->y = (pCell4->GetPosY() << 12) + g_dCellHalfSize;
+                apos->z = 0.0f;
+                g_pSLTES->SetPosition(apos);
             }
             bLoad7 = false;
         }
@@ -10734,7 +10908,7 @@ void __cdecl Main_InitStartCell(const char* apCellName, SLPoint3* apPos)
         g_pSLDataHandler->FUN_004650a0(-1);
         if (bLoad7)
         {
-            g_pSLTES->LoadArea(apPos, true);
+            g_pSLTES->LoadArea(apos, true);
             g_pSLTES->GetSky()->AttachAllLand3D();
         }
     }
@@ -10944,12 +11118,12 @@ struct FUN_008774a0_player
 struct FUN_007d6bd0_save
 {
     bool BGSSaveLoadGame_SetGlobalAllowChanges(bool abFlag);
-    void FUN_0084a840();
+    void RevertAllChanges();
 };
 
 struct FUN_004539a0_tes
 {
-    void TES_ClearAllCells(int a1, int a2);
+    void TES_ClearAllCells(int abBufferedonly, int abDoNotSetInterior);
     void FUN_007037c0(int aiValue);
     void FUN_0061cc40(int aiValue);
     void TES_CleanupTemporaryParticleCache();
@@ -10969,7 +11143,7 @@ struct FUN_00970d50_lists
 };
 struct FUN_004614e0_dh
 {
-    void FUN_004614e0();
+    void UpdateAutoCalcNPCs();
 };
 struct FUN_00b631d0_obj
 {
@@ -10983,7 +11157,7 @@ void GarbageCollector_ClearAll(int aiValue);
 void NiObjectGarbage_ClearAll(int aiValue);
 FUN_00b631d0_obj* BSShaderManager_GetAccumulator();
 void __cdecl ProgramFlow();
-void Interface_CloseAllSupportMenus(int aiValue);
+void Interface_CloseAllSupportMenus(int abExceptSubtitleMenu);
 void __cdecl Interface_CreateMainMenu();
 
 extern FUN_008774a0_player* DAT_011dea3c;
@@ -10996,14 +11170,17 @@ struct FUN_008774a0_shell
     bool TESRegionData_GetOverride();
     void FUN_004f15a0(int aiValue);
     void FUN_008776e0();
-    void Main_PerformGameReset(bool abFlag);
+    void Main_PerformGameReset(bool abCreateMainMenu);
 };
 
 extern FUN_008774a0_shell* DAT_011dea0c;
 
 // @fnv 0x008774a0
 // src: XBOX_PDB 0x008774a0
-void FUN_008774a0_shell::Main_PerformGameReset(bool abFlag)
+// pdb: Main::PerformGameReset | Main.obj | retail, upstream name already matches, high
+// pdb params: abCreateMainMenu
+// pdb locals: pnode, p3D, bonIdle, bresetAllowChanges
+void FUN_008774a0_shell::Main_PerformGameReset(bool abCreateMainMenu)
 {
     bool bState = TESRegionData_GetOverride();
     FUN_004f15a0(0);
@@ -11030,14 +11207,14 @@ void FUN_008774a0_shell::Main_PerformGameReset(bool abFlag)
     GarbageCollector_ClearAll(0);
     NiObjectGarbage_ClearAll(0);
     DAT_011dea3c->v115(0, 0);
-    DAT_011ddf38->FUN_0084a840();
+    DAT_011ddf38->RevertAllChanges();
     ((FUN_00970d50_lists*)&DAT_011e0e80)->ProcessLists_InitPackageLocations();
-    DAT_011c3f2c->FUN_004614e0();
+    DAT_011c3f2c->UpdateAutoCalcNPCs();
     BSShaderManager_GetAccumulator()->BSShaderAccumulator_ClearAllQueries();
     ProgramFlow();
     Interface_CloseAllSupportMenus(0);
     DAT_011dea10->TES_CleanupTemporaryParticleCache();
-    if (abFlag)
+    if (abCreateMainMenu)
         Interface_CreateMainMenu();
     DAT_011ddf38->BGSSaveLoadGame_SetGlobalAllowChanges(bSaveFlag);
     DAT_011dea0c->FUN_008776e0();
@@ -11136,7 +11313,7 @@ struct ViewNode
     ViewNode* ShadowSceneNode_QPortalGraph();
     ViewList* FUN_00436aa0();
     ViewList* TESCombatStyle_GetAdvancedData();
-    ViewGeometry* BSPortal_GetSharedGeometry();
+    ViewGeometry* BSPortal_QSharedGeometryNode();
     bool BSCullingProcess_AddShared(ViewGeometry*);
     int Projectile_GetShooter();
     int Projectile_GetDesiredTarget();
@@ -11208,7 +11385,7 @@ void FUN_00b6c0d0(ViewNode*, ViewNode*, bool);
 void FUN_00b98380(int, int);
 void BSRenderState_RestoreColorWriteEnable(int);
 void BSShaderBloodSplatter_ComputeScreenSpaceLightLoc(ViewNode*);
-void FUN_008c80e0(int);
+void SetMainRendering(int);
 void ImageSpaceEffectFullScreenBlur_CheckCamera(ViewNode*);
 void BSShaderAccumulator_SetRunBoundingSphereTests(bool, bool);
 extern ViewNode* DAT_011dea3c;
@@ -11261,12 +11438,15 @@ struct MainView
     ViewHandle m_8c;
     int unk90;
     ViewHandle m_94;
-    void TESMain_DrawWorld_DrawScene(ViewNode* listener, int unused, bool hide, bool drawInterface);
+    void TESMain_DrawWorld_DrawScene(ViewNode* psun, int abDo1stPerson, bool abWireframe, bool abIssueVATSPartialQuery);
 };
 // Builds visible lists from the scene graph, renders the main view and secondary passes, and restores the saved visibility state.
 // @fnv 0x00873200
 // src: COMMUNITY 0x00873200
-void MainView::TESMain_DrawWorld_DrawScene(ViewNode* listener, int unused, bool hide, bool drawInterface)
+// pdb: Main::DrawWorld_DrawScene | Main.obj | debug, call graph, high
+// pdb params: psun, abDo1stPerson, abWireframe, abIssueVATSPartialQuery
+// pdb locals: b1stcull, apRenderer, pscenegraph, pdofeffect, tempMemContext, paccumcamera, apCuller, pculler, pcamera, kfrustum, kcullproc, pssn, lAccumOne, pavobj, pnode, lAccumTwo, lAccumThree, i, pcnode, j, pchobj, pchnode, inodeiter, paddobj ...
+void MainView::TESMain_DrawWorld_DrawScene(ViewNode* psun, int abDo1stPerson, bool abWireframe, bool abIssueVATSPartialQuery)
 {
     ViewNode* root3 = Main_GetWorldSceneGraph();
     ViewNode* process = root3->FUN_008d80e0();
@@ -11274,14 +11454,14 @@ void MainView::TESMain_DrawWorld_DrawScene(ViewNode* listener, int unused, bool 
     ViewNode* cameraX;
     void* renderer2;
     DAT_011f9684 = root3->FUN_006629f0();
-    if (listener)
-        listener->Sun_StartSunOcclusion();
+    if (psun)
+        psun->Sun_StartSunOcclusion();
     bool savedVisibility = DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(true)->GetAppCulled_00456610();
     DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(true)->FUN_00450f90(true);
-    m_88.Modelloader_GetReferencedThis()->m_38 = !hide;
+    m_88.Modelloader_GetReferencedThis()->m_38 = !abWireframe;
     ViewNode* imageEffect5 = BSShaderManager_GetImageSpaceManager()->GetEffect_004ebbc0(4);
-    m_88.Modelloader_GetReferencedThis()->m_3a = !hide && imageEffect5->ImageSpaceEffectDepthOfField_DoDepth();
-    m_8c.Modelloader_GetReferencedThis()->m_3a = !hide && imageEffect5->ImageSpaceEffectDepthOfField_DoDepth();
+    m_88.Modelloader_GetReferencedThis()->m_3a = !abWireframe && imageEffect5->ImageSpaceEffectDepthOfField_DoDepth();
+    m_8c.Modelloader_GetReferencedThis()->m_3a = !abWireframe && imageEffect5->ImageSpaceEffectDepthOfField_DoDepth();
     MemoryContext memory7(15, true, DAT_010829c4, 0x1eb7);
     cameraX = 0;
     cameraX = root3->FUN_006629f0();
@@ -11460,9 +11640,9 @@ void MainView::TESMain_DrawWorld_DrawScene(ViewNode* listener, int unused, bool 
                     while (itemPosition)
                     {
                         ViewNode* object = room->TESCombatStyle_GetAdvancedData()->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetNext(&itemPosition)->value;
-                        if (object && process->BSCullingProcess_AddShared(object->BSPortal_GetSharedGeometry()))
+                        if (object && process->BSCullingProcess_AddShared(object->BSPortal_QSharedGeometryNode()))
                         {
-                            ViewGeometry* geometry = object->BSPortal_GetSharedGeometry();
+                            ViewGeometry* geometry = object->BSPortal_QSharedGeometryNode();
                             if (geometry)
                             {
                                 if (object->Projectile_GetShooter() && object->Projectile_GetDesiredTarget())
@@ -11485,9 +11665,9 @@ void MainView::TESMain_DrawWorld_DrawScene(ViewNode* listener, int unused, bool 
                 while (objectPosition)
                 {
                     ViewNode* object2 = area->FUN_007d6bb0()->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetNext(&objectPosition)->value;
-                    if (object2 && process->BSCullingProcess_AddShared(object2->BSPortal_GetSharedGeometry()))
+                    if (object2 && process->BSCullingProcess_AddShared(object2->BSPortal_QSharedGeometryNode()))
                     {
-                        ViewGeometry* geometry2 = object2->BSPortal_GetSharedGeometry();
+                        ViewGeometry* geometry2 = object2->BSPortal_QSharedGeometryNode();
                         if (geometry2)
                         {
                             if (visibleCount % 2)
@@ -11558,7 +11738,7 @@ void MainView::TESMain_DrawWorld_DrawScene(ViewNode* listener, int unused, bool 
     }
     // Finish the main scene and draw the requested interface layer.
     BSShaderUtil_RenderScenePreResolveDepth(root3->FUN_006629f0(), m_88.Modelloader_GetReferencedThis(), true);
-    if (drawInterface)
+    if (abIssueVATSPartialQuery)
     {
         FUN_00b98380(0, 1);
         Interface_GetVATSEffect()->FOVATSEffectManager_DrawTargetToTexture(0, 2, 1, 0, 0, 0);
@@ -11595,11 +11775,11 @@ void MainView::TESMain_DrawWorld_DrawScene(ViewNode* listener, int unused, bool 
     process->BSCullingProcess_SetAccumulator(0);
     otherProcess->SetImpactDataSet_004fb0b0(false);
     if (*DAT_011c3ea4.Setting_Int() > 1)
-        FUN_008c80e0(0);
+        SetMainRendering(0);
     if (DAT_011f94a9)
         ImageSpaceEffectFullScreenBlur_CheckCamera(root3->FUN_006629f0());
-    if (listener)
-        listener->FUN_006426a0(true, m_88.Modelloader_GetReferencedThis(), DAT_011deb7c.Modelloader_GetReferencedThis()->FUN_006629f0());
+    if (psun)
+        psun->FUN_006426a0(true, m_88.Modelloader_GetReferencedThis(), DAT_011deb7c.Modelloader_GetReferencedThis()->FUN_006629f0());
     BSShaderAccumulator_SetRunBoundingSphereTests(false, false);
     DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(true)->FUN_00450f90(savedVisibility);
 }
@@ -11639,7 +11819,7 @@ extern GlobalObject_0045cf30 g_011deadc;
 
 struct ProcObj
 {
-    void Sky_Initialize(void* a, void* b);
+    void Sky_Initialize(void* apRoot, void* apFog);
     void* FUN_0045cd60();
     void* Sky_GetLight();
 };
@@ -11729,7 +11909,7 @@ struct HostV
 
 struct LightShell
 {
-    void FUN_00b5aac0(void* p);
+    void ShadowSceneNode_SetSunLight(void* p);
 };
 
 struct ISM2
@@ -11740,17 +11920,19 @@ struct ISM2
 void ProgramFlow(const char* s);
 LightShell* FUN_00450b80(unsigned int i);
 ImageSpaceManager* BSShaderManager_GetImageSpaceManager();
-void FUN_00b57e30(void* p, int a, int b);
+void FUN_00b57e30(void* apObject, int abFaceGenModel, int abSkipPreCache);
 
 // @fnv 0x00877730
-// src: COMMUNITY 0x00877730
-void TESMain_InitSky()
+// src: XBOX_DEBUG_PDB 0x00877730
+// pdb: Main::InitSky | Main.obj | debug, unique string literal, high
+// pdb locals: SkyUpdateData, tempMemContext, WeatherUpdateData, pskyStencil
+void Main_InitSky()
 {
     AutoMemHelper helper8(0x21, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0x26bd);
     ProgramFlow("Initializing Sky...");
     DAT_011dea20->Sky_Initialize(DAT_011deb34.Modelloader_GetReferencedThis(), DAT_011deb00.Modelloader_GetReferencedThis());
     ((HostV*)g_011deda4.Modelloader_GetReferencedThis())->v37(((ModelOps*)(void*)DAT_011dea20->FUN_0045cd60())->NiObjectNET_GetControllers(), 1);
-    ((LightShell*)FUN_00450b80(0))->FUN_00b5aac0((void*)DAT_011dea20->Sky_GetLight());
+    ((LightShell*)FUN_00450b80(0))->ShadowSceneNode_SetSunLight((void*)DAT_011dea20->Sky_GetLight());
     DAT_011deb34.Modelloader_GetReferencedThis()->UpdateProperties();
     ((ISM2*)BSShaderManager_GetImageSpaceManager())->ImageSpaceManager_SetUseSunbeams(((SettingT<INISettingCollection>*)&g_011deadc)->Bool()[0]);
     if (((SettingT<INISettingCollection>*)&g_011deadc)->Bool()[0])
@@ -11826,6 +12008,9 @@ struct FUN_00a23390_t
 
 // Returns the state of the specified controller axis, reading from per-device state or global fallback values for axes 7-10.
 // @fnv 0x00a23390
+// pdb: Controls::GetMouseAxis | XControls.obj | debug, call graph, medium
+// pdb params: uiFlags, piX, piY
+// pdb locals: idY, ilY, ilX, irY, irX, idX
 int FUN_00a23390_t::GetAxisState(int device, int axis)
 {
     int* pAxisState = (int*)((char*)this + device * 0xa0 + 0x34);
@@ -11961,7 +12146,7 @@ struct CamWatcher
     int unk00;
     CamWatcher();
     ~CamWatcher();
-    void HighActorCuller_Run(NiCamera* cam);
+    void HighActorCuller_Run(NiCamera* apCamera);
 };
 extern unsigned char DAT_011f9fc0;
 extern unsigned char DAT_011f9fc1;
@@ -12020,6 +12205,8 @@ struct MainX
 
 // Applies image-space parameters, sets FOV, updates two scene objects from camera data, and returns a sky-provided pointer when conditions match.
 // @fnv 0x00872b00
+// pdb: Main::DrawWorld_Init | Main.obj | debug, call graph, high
+// pdb locals: SkyUpdateData, pviscamera, WeatherUpdateData, psun, pcamera
 void* MainX::UpdateCamera()
 {
     ((ISMgr*)Main_GetWorldSceneGraph()->::BSFaceGenNiNode::GetAnimationData())->FUN_00712e60(DAT_011ad840);
@@ -12068,11 +12255,11 @@ struct Main86 : Main
 {
     void Main_Swap();
     void Main_RenderMenuBackground();
-    void TESMain_KillMenuBGTexture();
+    void Main_KillMenuBGTexture();
     void Main_DrawWorld(int, int, int);
-    void TESMain_UpdateOffscreenInterface();
+    void Main_UpdateOffscreenInterface();
     void Main_DrawWorldMenu3D(int);
-    void TESMain_DrawWorld_CopyMenuBG(int);
+    void Main_DrawWorld_CopyMenuBG(int);
 };
 struct Extra86
 {
@@ -12214,7 +12401,7 @@ struct Core86
 struct Input86
 {
     bool FUN_00701450(int);
-    void FUN_007010e0(int, int);
+    void RemoveFader(int, int);
     bool IsFaderActive(int);
 };
 struct Topic86
@@ -12307,11 +12494,11 @@ extern void __cdecl SaveScreenshot(int);
 extern void __cdecl NiObjectGarbage_Update();
 extern void __cdecl FUN_00b6b730();
 extern void __cdecl BSSceneGraph_SetCameraScene();
-extern void __cdecl FUN_008c80e0(int);
+extern void __cdecl SetMainRendering(int);
 extern void __cdecl BSsprintf(char*, unsigned int, const char*, int, int);
 extern "C" __declspec(dllimport) int __stdcall CreateDirectoryA(const char*, void*);
 extern int __stdcall BSShaderManager_GetImageSpaceManager(Core86*, int, int);
-extern void __cdecl RenderOrFallback(int, int);
+extern void __cdecl Interface_Click(int, int);
 struct SwapMessage86
 {
     void BSTextureManager_ReturnRenderedTexture();
@@ -12355,7 +12542,7 @@ extern int __cdecl ProgramFlow(...);
 extern void __cdecl NiXenonRenderer_UnlockRenderer();
 extern float __cdecl FUN_00450820();
 extern void __cdecl Interface_PostIdleStuff();
-extern void __cdecl RenderOrFallback(int, int);
+extern void __cdecl Interface_Click(int, int);
 struct Control86
 {
     int Controls_GetUserAction();
@@ -12379,6 +12566,8 @@ extern int __cdecl FUN_00559450_unused();
 // Runs player, input, audio, and state update calls, then performs frame cleanup and resource updates.
 // @fnv 0x0086ff70
 // src: XBOX_PDB 0x0086ff70
+// pdb: Main::Swap | Main.obj | retail, upstream name already matches, high
+// pdb locals: p3DInterfaceTex, pr, b3cull, b1cull, i
 void Main86::Main_Swap()
 {
     Core86* core = reinterpret_cast<Core86*>(NiXenonRenderer_GetRenderer());
@@ -12412,15 +12601,15 @@ void Main86::Main_Swap()
         ++DAT_011def04;
         if (DAT_011def00 >= DAT_01012070 && DAT_011def04 >= 10)
         {
-            DAT_011d8804->FUN_007010e0(1, 0);
-            DAT_011d8804->FUN_007010e0(2, 0);
+            DAT_011d8804->RemoveFader(1, 0);
+            DAT_011d8804->RemoveFader(2, 0);
             DAT_011de45c->FUN_004534f0(0);
             if (DAT_011de45c->FUN_0047c850())
             {
                 DAT_011de45c->FUN_004534f0(0);
                 DAT_011de45c->FUN_00483710();
             }
-            TESMain_KillMenuBGTexture();
+            Main_KillMenuBGTexture();
         }
     }
     else
@@ -12454,19 +12643,19 @@ void Main86::Main_Swap()
             FUN_004ea970(0, i)->MTRenderingSystem_SetThreadStage();
             FUN_004ea970(1, i)->MTRenderingSystem_WaitOnThreadStage();
         }
-        TESMain_UpdateOffscreenInterface();
+        Main_UpdateOffscreenInterface();
         if ((unsigned char)Interface_IsMenuIDVisible(0x41e, 0) || (unsigned char)Interface_IsMenuIDVisible(0x3f6, 0) ||
             (unsigned char)Interface_IsMenuIDVisible(0x424, 0) || (unsigned char)Interface_IsMenuIDVisible(0x432, 0) ||
             (unsigned char)Interface_IsMenuIDVisible(0x438, 0) || (unsigned char)Interface_IsMenuIDVisible(0x439, 0) ||
             (unsigned char)Interface_IsMenuIDVisible(0x43a, 0) || (unsigned char)Interface_IsMenuIDVisible(0x43b, 0))
             Main_DrawWorldMenu3D(0);
         else if (DAT_011ded3c.Modelloader_GetReferencedThis())
-            TESMain_DrawWorld_CopyMenuBG(BSShaderManager_GetImageSpaceManager(core, TESRenderer_GetMultiSampleEnabled(), 0));
+            Main_DrawWorld_CopyMenuBG(BSShaderManager_GetImageSpaceManager(core, TESRenderer_GetMultiSampleEnabled(), 0));
     }
     if (Cmd_Default_Execute() == 1)
         BSShaderManager_RenderDebugTexture();
     Interface_DrawHUDMenu3D();
-    RenderOrFallback(eventState, DAT_011dec64.Modelloader_GetReferencedThis());
+    Interface_Click(eventState, DAT_011dec64.Modelloader_GetReferencedThis());
     FUN_004ea970()->MTRenderingSystem_WaitForThreads();
     if (DAT_011dec64.Modelloader_GetReferencedThis())
     {
@@ -12505,7 +12694,7 @@ void Main86::Main_Swap()
     reinterpret_cast<Resource86*>(DAT_011deb7c.Modelloader_GetReferencedThis())->BSSceneGraph_SetCameraScene();
     core->NiXenonRenderer_UnlockRenderer();
     if (*DAT_011c3ea4.Setting_Int() > 1)
-        FUN_008c80e0(0);
+        SetMainRendering(0);
 }
 }  // namespace fnv_0086ff70
 
@@ -12553,7 +12742,7 @@ struct CameraHolder
 };
 struct ProjectionResult
 {
-    bool ProjectPointToScreen();
+    bool NiCamera_WorldPtToScreenPt3();
 };
 struct ProjectionView
 {
@@ -12680,7 +12869,7 @@ struct RenderCoordinator
     void Main_DrawWorld_DoDepth(ShaderView*, BSRenderedTexture*);
     void TESMain_DrawWorld_DoVolumetricFog(ShaderView*, BSRenderedTexture*);
     void TESMain_DrawWorld_ImageSpace(bool, BSRenderedTexture*, RenderView*, int);
-    void TESMain_DrawWorld_ScreenSplatter(RenderView*);
+    void Main_DrawWorld_ScreenSplatter(RenderView*);
     void TESMain_DrawWorld_StopRenderTarget(bool, int);
     void TESMain_DrawWorld_End(BSRenderedTexture*, ImageView*, RenderView*, ::Sun*);
     void TESMain_DrawWorldStandard(int, bool);
@@ -12688,6 +12877,9 @@ struct RenderCoordinator
 // Renders the scene into a BSRenderedTexture, applying effects, post-processing, and camera projection based on the given argument and skip flag.
 // @fnv 0x00870bd0
 // src: COMMUNITY 0x00870bd0
+// pdb: Main::DrawWorldStandard | Main.obj | retail, call graph, medium
+// pdb params: apDestination, abSkipFirstPerson
+// pdb locals: apRenderTexture, bsunbeamsactive, bgunscope, bisdepthoffieldactive, prenderer, pdofeffect, bdovolumetricfog, b1stpersonwait, bmultiSampleEnabled, bdo1stPerson, useScopeScissoring, bdovelocity, psun, bissuesVATSQuery, bglareocclude, pimagespacemanager, b1stPersonCulled, uiw, fx0, uih, fhalfamt, fx1, btrans, suny ...
 void RenderCoordinator::TESMain_DrawWorldStandard(int arg, bool skip)
 {
     RenderView* l = NiXenonRenderer_GetRenderer();
@@ -12764,14 +12956,14 @@ void RenderCoordinator::TESMain_DrawWorldStandard(int arg, bool skip)
         float w, u, n;
         w = u = n = 0.0f;
         ProjectionView* a = (ProjectionView*)Main_GetWorldSceneGraph();
-        bool f = a->FUN_006629f0(v, w, u, n, 0.00001f)->ProjectPointToScreen();
+        bool f = a->FUN_006629f0(v, w, u, n, 0.00001f)->NiCamera_WorldPtToScreenPt3();
         ((ImageView*)BSShaderManager_GetImageSpaceManager())->ImageSpaceManager_SetSunPosition(NiPoint2(w, u));
     }
     if (BSShaderManager_GetImageSpaceEffects())
     {
         TESMain_DrawWorld_ImageSpace(q, j, l, arg);
         if ((ScreenCustomSplatter_IsActiveSplatter() || ScreenSplatter_IsActiveSplatter()) && !Interface_IsInPipboyMenu())
-            TESMain_DrawWorld_ScreenSplatter(l);
+            Main_DrawWorld_ScreenSplatter(l);
     }
     else if (arg)
         TESMain_DrawWorld_StopRenderTarget(q, arg);
@@ -12834,7 +13026,7 @@ struct CellGrid_ML
 };
 struct WorldAudio_ML
 {
-    void ReleaseWaterResources(int, int);
+    void TESWaterSystem_DisableWaterSystem(int, int);
     void TESWaterSystem_EnableWaterSystem();
 };
 class TES_ML
@@ -12850,7 +13042,7 @@ class OSGlobals_ML
     int unk00;
     int unk04;
     HWND__* window;
-    void TESMain_KillMenuBGTexture();
+    void Main_KillMenuBGTexture();
 };
 void __cdecl BSSleep(unsigned long);
 unsigned char __cdecl TESRenderer_GetFullScreen();
@@ -12910,7 +13102,7 @@ bool __cdecl TESMain_ResetDeviceCallback(bool active)
                     }
                 }
             }
-            MainLoopGlobals::g_osGlobals->TESMain_KillMenuBGTexture();
+            MainLoopGlobals::g_osGlobals->Main_KillMenuBGTexture();
             if (TESRenderer_GetFullScreen())
             {
                 long style;
@@ -12935,7 +13127,7 @@ bool __cdecl TESMain_ResetDeviceCallback(bool active)
             ImageSpaceEffectHDR_ClearAdaptedLight();
         if (MainLoopGlobals::DAT_011dea10->DetailedActorPathHandler_GetCurrentNodeIndex() && TESWaterSystem_GetWaterEnabled())
         {
-            MainLoopGlobals::DAT_011dea10->DetailedActorPathHandler_GetCurrentNodeIndex()->ReleaseWaterResources(1, 0);
+            MainLoopGlobals::DAT_011dea10->DetailedActorPathHandler_GetCurrentNodeIndex()->TESWaterSystem_DisableWaterSystem(1, 0);
             MainLoopGlobals::DAT_011dea10->DetailedActorPathHandler_GetCurrentNodeIndex()->TESWaterSystem_EnableWaterSystem();
         }
     }
@@ -13423,7 +13615,7 @@ struct PlayerCalls
 {
     bool PlayerCharacter_HandlePositionPlayerRequest();
     void PlayerCharacter_ForceGrenadeHold();
-    void PlayerCharacter_UpdateFlyCamera(float delta, unsigned char mode);
+    void PlayerCharacter_UpdateFlyCamera(float afDelta, unsigned char abFreezeTime);
     NiPoint3* GetAddTopicList();
     void PlayerCharacter_SetAcousticSpaceTransition(char value);
 };
@@ -13482,6 +13674,8 @@ struct PlayerUpdateState
 // Updates player state and may transfer the player to a destination cell when the current cell is exterior and a position check fails.
 // @fnv 0x0086f940
 // src: XBOX_PDB 0x0086f940
+// pdb: Main::OnIdle_UpdatePlayer | Main.obj | retail, upstream name already matches, high
+// pdb locals: bfreemem, pcurrentcell, point, pnewcell, paccum
 void PlayerUpdateState::Main_OnIdle_UpdatePlayer()
 {
     bool bChanged;
@@ -13576,7 +13770,7 @@ struct ResourceObject
     void NiAVObject_Update(void*);
     void AssignFixedString(const NiFixedString&);
     void BSMultiBoundNode_SetCullingMode(int);
-    void FUN_005467c0(int);
+    void NiAVObject_SetFixedBound(int);
     void NiAVObject_SetAlwaysDraw(int);
     void SetDepthParams(float);
     void NiAlphaProperty_SetAlphaBlending(int);
@@ -13682,7 +13876,7 @@ struct InputObject : ModuleRoot
     InputObject* FUN_00a6aa40();
     void BSMultiBoundNode_SetCullingMode(int);
     void NiAVObject_SetAlwaysDraw(int);
-    void FUN_005467c0(int);
+    void NiAVObject_SetFixedBound(int);
     void AssignFixedString(const NiFixedString&);
     void NiMaterialProperty_SetEmittance(void*);
     void SetBaseTexture(int);
@@ -13697,7 +13891,7 @@ struct InputObject : ModuleRoot
 };
 struct RenderSystem
 {
-    void TESMain_InitSceneGraph();
+    void Main_InitSceneGraph();
     int unknown_00;
     int unknown_04;
     int unknown_08;
@@ -13772,7 +13966,7 @@ extern NiNode* Renderer_GetNIRenderer();
 extern unsigned char TESRenderer_GetDoCanopyShadowPass();
 
 extern void BSShaderManager_SetDefaultShaderPath(const char*);
-extern void InitRenderSystem();
+extern void BSShaderManager_Initialize();
 extern void BSShaderManager_SetShadowSceneNode(int, void*);
 extern int FUN_00450b80(int);
 
@@ -13787,7 +13981,7 @@ extern bool TESRenderer_GetDoStaticAndArchShadows();
 extern unsigned int TESObjectREFR_GetLightingObjectType(::NiAVObject*);
 extern void FUN_00b55540(int, void*);
 extern void TESMain_CreateMenuRootNode();
-extern void FUN_004dc650();
+extern void CreateMenuRootNode3D();
 
 extern void NiAVObject_SetTranslate_004bc1f0();
 extern void* BSShaderManager_GetAccumulator();
@@ -14254,8 +14448,10 @@ extern Setting DAT_011dedc8;
 extern const char str_0101fe78[];
 // Creates a SceneGraph, associates resources and input objects, configures render state, and initializes additional scene objects.
 // @fnv 0x0086d590
-// src: COMMUNITY 0x0086d590
-void RenderSystem::TESMain_InitSceneGraph()
+// src: XBOX_DEBUG_PDB 0x0086d590
+// pdb: Main::InitSceneGraph | Main.obj | debug, unique string literal, high
+// pdb locals: plodnode, UpdateData, plodtreenode, spccw, tempMemContext, pshadowSceneNode, iShadowCasters, ilightingPasses, ptexprop, pmatprop
+void RenderSystem::Main_InitSceneGraph()
 {
     // Memory context, scene root, and graph construction.
     AutoMemHelper h(25, 1, str_010829c4, 0xf4c);
@@ -14264,7 +14460,7 @@ void RenderSystem::TESMain_InitSceneGraph()
     DataObject* p = (DataObject*)new FUN_00b5e0f0;
     (BSShaderManager_SetRenderer)(Renderer_GetNIRenderer());
     BSShaderManager_SetDefaultShaderPath(str_01082c8c);
-    InitRenderSystem();
+    BSShaderManager_Initialize();
     DAT_011deb7c.Modelloader_GetReferencedThis()->FUN_006629f0()->FUN_00712e60(&DAT_011ad840);
     ((ResourceObject*)p)->ShadowSceneNode_SetSceneGraphIndex(0);
     BSShaderManager_SetShadowSceneNode(0, p);
@@ -14297,17 +14493,17 @@ void RenderSystem::TESMain_InitSceneGraph()
 
     DAT_011deb34.FUN_0066b0d0((InputObject*)new FUN_00c46970());
     DAT_011deb34.Modelloader_GetReferencedThis()->BSMultiBoundNode_SetCullingMode(1);
-    DAT_011deb34.Modelloader_GetReferencedThis()->FUN_005467c0(1);
+    DAT_011deb34.Modelloader_GetReferencedThis()->NiAVObject_SetFixedBound(1);
     DAT_011deb34.Modelloader_GetReferencedThis()->AssignFixedString(NiFixedString(str_01082c88));
     p->virtual_f8(0, DAT_011deb34.Modelloader_GetReferencedThis());
 
     DAT_011deda4.FUN_0066b0d0((InputObject*)new FUN_00a5ecb0(0));
     DAT_011deda4.Modelloader_GetReferencedThis()->NiAVObject_SetAlwaysDraw(1);
-    DAT_011deda4.Modelloader_GetReferencedThis()->FUN_005467c0(1);
+    DAT_011deda4.Modelloader_GetReferencedThis()->NiAVObject_SetFixedBound(1);
     DAT_011deda4.Modelloader_GetReferencedThis()->AssignFixedString(NiFixedString(str_0101fe78));
     p->virtual_f8(1, DAT_011deda4.Modelloader_GetReferencedThis());
     TESMain_CreateMenuRootNode();
-    FUN_004dc650();
+    CreateMenuRootNode3D();
 
     DAT_011dea14 = (InputObject*)new FUN_00bc2980();
     DAT_011dea14->AssignFixedString(NiFixedString(str_01082c80));
@@ -14316,26 +14512,26 @@ void RenderSystem::TESMain_InitSceneGraph()
     // s is the active scene parent; a is its tree child.
     InputObject* s = (InputObject*)new FUN_00a5ecb0(0);
     s->NiAVObject_SetAlwaysDraw(1);
-    s->FUN_005467c0(1);
+    s->NiAVObject_SetFixedBound(1);
     s->AssignFixedString(NiFixedString(str_01082c78));
     DAT_011dea14->virtual_dc(s, 1);
 
     DAT_011ad808 = *DAT_011dedc8.Setting_Float_00403e20();
     s = (InputObject*)new FUN_00a5ecb0(0);
     s->NiAVObject_SetAlwaysDraw(1);
-    s->FUN_005467c0(1);
+    s->NiAVObject_SetFixedBound(1);
     s->AssignFixedString(NiFixedString(str_01082c68));
     DAT_011dea14->virtual_dc(s, 1);
 
     DAT_011dea1c = (int)(InputObject*)new FUN_00a5ecb0(0);
     ((InputObject*)DAT_011dea1c)->NiAVObject_SetAlwaysDraw(1);
-    ((InputObject*)DAT_011dea1c)->FUN_005467c0(1);
+    ((InputObject*)DAT_011dea1c)->NiAVObject_SetFixedBound(1);
     ((InputObject*)DAT_011dea1c)->AssignFixedString(NiFixedString(str_01082c5c));
     DAT_011dea14->virtual_dc((InputObject*)DAT_011dea1c, 1);
 
     InputObject* a = (InputObject*)new FUN_00a5ecb0(0);
     a->NiAVObject_SetAlwaysDraw(1);
-    a->FUN_005467c0(1);
+    a->NiAVObject_SetFixedBound(1);
     a->AssignFixedString(NiFixedString(str_01082c50));
     s->virtual_dc(a, 1);
     DistantLODShaderProperty_SetLODTreeParent((int)a);
@@ -14343,7 +14539,7 @@ void RenderSystem::TESMain_InitSceneGraph()
 
     DAT_011dea18 = (int)(InputObject*)new FUN_00a5ecb0(0);
     ((InputObject*)DAT_011dea18)->NiAVObject_SetAlwaysDraw(1);
-    ((InputObject*)DAT_011dea18)->FUN_005467c0(1);
+    ((InputObject*)DAT_011dea18)->NiAVObject_SetFixedBound(1);
     ((InputObject*)DAT_011dea18)->AssignFixedString(NiFixedString(str_01082c40));
     p->virtual_f8(3, ((InputObject*)DAT_011dea18));
 
@@ -14455,6 +14651,8 @@ struct S00875bf0_Shell875
 // Sets up the face scene and camera, invokes rendering calls with the target scene, and restores the scene state.
 // @fnv 0x00875bf0
 // src: COMMUNITY 0x00875bf0
+// pdb: Main::DrawWorld_DrawRenderedMenuParent | Main.obj | debug, object-file run extension, low
+// pdb locals: apCuller, pcam, apSceneGraph
 void S00875bf0_Shell875::TESMain_DrawWorld_RenderedMenuScene()
 {
     if (!g_011deb38.Modelloader_GetReferencedThis() && Interface_GetCurrentRenderedMenu() && Interface_GetCurrentRenderedMenu() != Interface_GetPipboy())

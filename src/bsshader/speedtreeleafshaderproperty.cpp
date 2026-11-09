@@ -22,6 +22,8 @@ NiRefObject::NiRefObject()
 }
 
 // @fnv 0x00bb33c0
+// pdb: SpeedTreeShaderLightingProperty::SpeedTreeShaderLightingProperty | SpeedTreeShaderProperty.obj | debug, object-file run extension, low
+// pdb params: apData
 FUN_00bb33c0::FUN_00bb33c0()
 {
     m_kPointB = 0;

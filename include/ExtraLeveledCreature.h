@@ -4,6 +4,7 @@
 
 class TESActorBase;
 
+// pdb: class ExtraLeveledCreature, size 0x14, bases: BSExtraData, 2 members
 class ExtraLeveledCreature : public BSExtraData
 {
 public:

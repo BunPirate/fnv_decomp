@@ -231,7 +231,7 @@ struct HolderType
 struct ClientType
 {
     void hkpWorld_getCinfo(void*);
-    void AddPhysicsSystem(void*);
+    void hkpWorld_getWorldAsSystems(void*);
 };
 struct ArrayType
 {
@@ -258,7 +258,7 @@ struct Owner
     int unk04;
     int** m_08;
     int m_0c;
-    void hkpPhysicsSystem_removeRigidBody(int index);
+    void hkpPhysicsSystem_removeRigidBody(int i);
 };
 struct Entity
 {
@@ -279,7 +279,7 @@ struct Entity
     int unk38;
     int unk3c;
     unsigned char m_40;
-    void AddShape(int value);
+    void AddShape(int rb);
 };
 struct OwnerArg
 {
@@ -300,7 +300,7 @@ template <class T> __forceinline int findValue(T* self, Value* value)
     return -1;
 }
 typedef int Owner::*MemberPtr;
-static void tryMoveEntity(Owner* owner, Entity* volatile entityArg, MemberPtr valueArg);
+static void tryMoveEntity(Owner* fromSystem, Entity* volatile toSystem, MemberPtr valueArg);
 extern Owner* volatile probeOwner;
 extern Value* volatile probeValue;
 extern Entity* volatile probeEntity;
@@ -690,18 +690,18 @@ static __forceinline SplitSystem* makeSystem()
 }
 typedef int SplitSystem::*MoveMember;
 // src: HAVOK_LIB 0x00d4bf70
-static __declspec(noinline) void tryMoveEntity(SplitSystem* from, SplitSystem* volatile toArg, MoveMember encoded)
+static __declspec(noinline) void tryMoveEntity(SplitSystem* fromSystem, SplitSystem* volatile toSystem, MoveMember encoded)
 {
-    SplitSystem* to = toArg;
+    SplitSystem* to = toSystem;
     SplitBody* body;
     memcpy(&body, &encoded, 4);
-    int fromIndex = from->getRigidBodies().indexOf(body);
+    int fromIndex = fromSystem->getRigidBodies().indexOf(body);
     int toIndex = to->getRigidBodies().indexOf(body);
     if (toIndex == -1 && fromIndex != -1)
     {
         to->setActive(to->isActive() || body->isActive_00c9bff0());
         to->AddShape(body);
-        from->hkpPhysicsSystem_removeRigidBody(fromIndex);
+        fromSystem->hkpPhysicsSystem_removeRigidBody(fromIndex);
     }
 }
 static __forceinline void moveConnected(SplitSystem* from, SplitSystem* to, SplitEntity* item)
@@ -713,17 +713,20 @@ static __forceinline void moveConnected(SplitSystem* from, SplitSystem* to, Spli
 
 // @fnv 0x00d4c3b0
 // src: HAVOK_LIB 0x00d4c3b0
-void hkpPhysicsData_splitPhysicsSystems(const SplitSystem* source, SplitOutput& output)
+// pdb: hkpPhysicsData::splitPhysicsSystems | hkpPhysicsData.obj | retail, string-set bridge, high
+// pdb params: inputSystemConst, output
+// pdb locals: fixedSystem, keyframedSystem, ballisticSystem, currentSystem, newBodyAdded, j, entities
+void hkpPhysicsData_splitPhysicsSystems(const SplitSystem* inputSystemConst, SplitOutput& output)
 {
     SplitSystem* remaining = makeSystem();
-    for (int i = 0; i < source->getRigidBodies().GetLogicalSize(); ++i)
-        remaining->AddShape(source->getRigidBodies()[i]);
-    for (int i = 0; i < source->getActions().GetLogicalSize(); ++i)
-        remaining->hkpPhysicsSystem_addAction(source->getActions()[i]);
-    for (int i = 0; i < source->getConstraints().GetLogicalSize(); ++i)
-        remaining->hkpPhysicsSystem_addConstraint(source->getConstraints()[i]);
-    for (int i = 0; i < source->getPhantomArray().GetLogicalSize(); ++i)
-        remaining->hkpPhysicsSystem_addPhantom(source->getPhantomArray()[i]);
+    for (int i = 0; i < inputSystemConst->getRigidBodies().GetLogicalSize(); ++i)
+        remaining->AddShape(inputSystemConst->getRigidBodies()[i]);
+    for (int i = 0; i < inputSystemConst->getActions().GetLogicalSize(); ++i)
+        remaining->hkpPhysicsSystem_addAction(inputSystemConst->getActions()[i]);
+    for (int i = 0; i < inputSystemConst->getConstraints().GetLogicalSize(); ++i)
+        remaining->hkpPhysicsSystem_addConstraint(inputSystemConst->getConstraints()[i]);
+    for (int i = 0; i < inputSystemConst->getPhantomArray().GetLogicalSize(); ++i)
+        remaining->hkpPhysicsSystem_addPhantom(inputSystemConst->getPhantomArray()[i]);
 
     const SplitArray<SplitBody*>& bodies = remaining->getRigidBodies();
     SplitSystem* moving = makeSystem();

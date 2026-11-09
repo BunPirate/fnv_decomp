@@ -143,7 +143,7 @@ __forceinline hkMemoryAllocator& heapOf(hkMemoryRouter* record)
     return *record->m_heap;
 }
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 class SimdReal
 {
@@ -407,34 +407,34 @@ void __cdecl hkVehicleFrictionDescriptionInitValues(const FrictionCinfo& ci, hkp
 
 __forceinline hkArrayBase<WheelComponentParams>& wheelParamsOf(hkpVehicleData& d)
 {
-    return reinterpret_cast<hkArrayBase<WheelComponentParams>&>(d.m_kWheelParams);
+    return reinterpret_cast<hkArrayBase<WheelComponentParams>&>(d.m_wheelParams);
 }
 __forceinline hkArrayBase<signed char>& wheelsPerAxleOf(hkpVehicleData& d)
 {
-    return reinterpret_cast<hkArrayBase<signed char>&>(d.m_kNumWheelsPerAxle);
+    return reinterpret_cast<hkArrayBase<signed char>&>(d.m_numWheelsPerAxle);
 }
 __forceinline const FloatMatrix3& orientationOf(const hkpVehicleData& d)
 {
-    return reinterpret_cast<const FloatMatrix3&>(d.m_kChassisOrientation);
+    return reinterpret_cast<const FloatMatrix3&>(d.m_chassisOrientation);
 }
 __forceinline VehiclePacketLocal_00e2& inertiaInvDiagOf(hkpVehicleData& d)
 {
-    return reinterpret_cast<VehiclePacketLocal_00e2&>(d.m_vChassisUnitInertiaAndMassInv);
+    return reinterpret_cast<VehiclePacketLocal_00e2&>(d.m_chassisFrictionInertiaInvDiag);
 }
 
 __forceinline void initVehicleComponents(hkpVehicleData& self,
                                          const hkArrayBase<SuspensionWheelParameters>& suspensionWheelParams,
                                          const RigidBody* chassis)
 {
-    self.m_bWheelsUseChassisForGround = true;
+    self.m_alreadyInitialised = true;
     _ReadWriteBarrier();
 
     int axle = 0;
-    if (self.m_iWheelCount > 0)
+    if (self.m_numWheels > 0)
     {
         _ReadWriteBarrier();
         hkArrayBase<WheelComponentParams>& wheels = wheelParamsOf(self);
-        int remaining = self.m_iWheelCount;
+        int remaining = self.m_numWheels;
         int i = 0;
         do
         {
@@ -459,9 +459,9 @@ __forceinline void initVehicleComponents(hkpVehicleData& self,
     {
         hkArrayBase<WheelComponentParams>& params = wheelParamsOf(self);
         int i = 0;
-        if (i < self.m_iWheelCount)
+        if (i < self.m_numWheels)
         {
-            for (int offset = 0; i < self.m_iWheelCount; ++i, offset += sizeof(WheelComponentParams))
+            for (int offset = 0; i < self.m_numWheels; ++i, offset += sizeof(WheelComponentParams))
             {
                 int axleIdx = reinterpret_cast<const WheelComponentParams*>(
                     reinterpret_cast<const char*>(params.m_data) + offset)->m_iAxle;
@@ -479,9 +479,9 @@ __forceinline void initVehicleComponents(hkpVehicleData& self,
         absRight.setAbs4(orientationOf(self).getColumn(2));
 
         VehiclePacketLocal_00e2 ptr;
-        ptr.setMul4(self.m_fTorqueMin / self.m_fTorqueRollFactor, absUp);
-        ptr.addMul4(self.m_fChassisMass / self.m_fTorqueYawFactor, absForward);
-        ptr.addMul4(self.m_fTorqueMax / self.m_fExtraTorqueFactor, absRight);
+        ptr.setMul4(self.m_torqueYawFactor / self.m_chassisUnitInertiaYaw, absUp);
+        ptr.addMul4(self.m_torqueRollFactor / self.m_chassisUnitInertiaRoll, absForward);
+        ptr.addMul4(self.m_torquePitchFactor / self.m_chassisUnitInertiaPitch, absRight);
         ptr(3) = 1.0f;
 
         float idx = 1.0f / chassis->GetMassValue();
@@ -501,13 +501,13 @@ __forceinline void initVehicleComponents(hkpVehicleData& self,
         }
         ci.m_fMaxVelocityForPositionalFriction = chassis->getMassInv();
         ci.m_kVectorD.setAbs4(orientationOf(self).getColumn(0));
-        ci.m_fChassisUnitInertiaRoll = self.m_fChassisUnitInertiaRoll;
+        ci.m_fChassisUnitInertiaRoll = self.m_frictionEqualizer;
         ci.m_kVectorC.setAbs4(orientationOf(self).getColumn(1));
         ci.m_fAxisFrictionTuning4[0] = 0.0f;
         ci.m_fAxisFrictionTuning4[1] = 0.0f;
         ci.m_kVectorB.setAbs4(orientationOf(self).getColumn(2));
 
-        for (int i = 0; i < self.m_iWheelCount; i++)
+        for (int i = 0; i < self.m_numWheels; i++)
         {
             const SuspensionWheelParameters& sp = suspensionWheelParams[i];
             const WheelComponentParams& wp = wheelParamsOf(self)[i];
@@ -518,12 +518,15 @@ __forceinline void initVehicleComponents(hkpVehicleData& self,
             ci.m_fAxisFrictionTuning4[numAxles] += wp.m_fViscosityFriction * wp.m_fSphereRadius;
         }
 
-        hkVehicleFrictionDescriptionInitValues(ci, self.m_kFrictionDescription);
+        hkVehicleFrictionDescriptionInitValues(ci, self.m_frictionDescription);
     }
 }
 
 // @fnv 0x00e39ab0
 // src: HAVOK_SRC 0x00e39ab0
+// pdb: hkpVehicleData::init | hkpVehicleData.obj | retail, upstream name already matches, high
+// pdb params: suspensionWheelParams, chassis
+// pdb locals: assertBuf, ostr, unitDiagonal, ci, in
 void __fastcall hkpVehicleData_init(hkpVehicleData* self, int, const hkArrayBase<SuspensionWheelParameters>& suspensionWheelParams,
                              const RigidBody* chassis)
 {

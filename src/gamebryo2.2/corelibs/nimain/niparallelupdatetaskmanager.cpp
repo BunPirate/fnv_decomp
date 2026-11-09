@@ -3,7 +3,9 @@
 #include "niparallelupdatetaskmanager_decls.h"
 
 // @fnv 0x0086f450
-void NiParallelUpdateTaskManager::DispatchParallelUpdates()
+// src: XBOX_RETAIL_PDB 0x0086f450
+// pdb: Main::OnIdle_HandleMenuBackground | Main.obj | retail, call graph, high
+void NiParallelUpdateTaskManager::Main_OnIdle_HandleMenuBackground()
 {
     if (DAT_011dea2b && !Interface::GetSelectedTargetIndex(Interface::DialogueMenu) && !StartMenu_MainMenuIsActive() &&
         !Interface::IsMenuActive(Interface::VATSMenu, 11) && !Interface::IsMenuActive(Interface::MessageMenu, 11) &&
@@ -21,6 +23,6 @@ void NiParallelUpdateTaskManager::DispatchParallelUpdates()
              !Interface::IsMenuActive(Interface::Menu_439, 0) && !Interface::IsMenuActive(Interface::Menu_43a, 0) &&
              !Interface::IsMenuActive(Interface::Menu_43b, 0))
     {
-        reinterpret_cast<Main*>(this)->RefreshAfterSave();
+        reinterpret_cast<Main*>(this)->Main_KillMenuBGTexture();
     }
 }

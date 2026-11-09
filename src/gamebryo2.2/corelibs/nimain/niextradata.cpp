@@ -59,13 +59,17 @@ void NiAccumulator::ClearCamera()
     m_pkCamera = 0;
 }
 // @fnv 0x00a7b3b0
-void NiExtraData::LinkObject(NiStream& stream)
+// pdb: NiExtraData::LinkObject | NiExtraData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiExtraData::LinkObject(NiStream& kStream)
 {
-    if (stream.GetFileVersion() < 0x0500000b)
-        m_kName.m_kHandle = reinterpret_cast<char*>(stream.GetLoadedObject());
+    if (kStream.GetFileVersion() < 0x0500000b)
+        m_kName.m_kHandle = reinterpret_cast<char*>(kStream.GetLoadedObject());
 }
 // Constructs a NiExtraData: sets the vtable, then assigns name from src with interlocked refcount updates on the string handle.
 // @fnv 0x00a7b440
+// pdb: NiExtraData::NiExtraData | NiExtraData.obj | retail, object-file gap fill, medium
+// pdb note: debug build links it to BSBound::BSBound
 NiExtraData::NiExtraData(const NiFixedString& aName)
 {
     const NiFixedString& src = aName;
@@ -82,31 +86,36 @@ NiExtraData::NiExtraData(const NiFixedString& aName)
 }
 // Loads NiExtraData from a stream: reads a count and byte buffer for old versions, otherwise reads the name, registering a NiBinaryExtraData object.
 // @fnv 0x00a7b4a0
-void NiExtraData::LoadBinary(NiStream& stream)
+// pdb: NiExtraData::LoadBinary | NiExtraData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiSize, pcChunk, pkBinaryExtraData
+void NiExtraData::LoadBinary(NiStream& kStream)
 {
-    NiObject::LoadBinary(stream);
-    if (stream.GetFileVersion() < 0x0500000b)
+    NiObject::LoadBinary(kStream);
+    if (kStream.GetFileVersion() < 0x0500000b)
     {
-        stream.ResetStreamState();
+        kStream.ResetStreamState();
         unsigned int count;
-        ReadCount(stream, count);
+        ReadCount(kStream, count);
         if (count > 0 && IsExactKindOf(g_011c7820_arg1, this))
         {
             unsigned char* buffer = (unsigned char*)_NiMalloc(count);
-            ReadBinaryValue(stream, buffer, count);
+            ReadBinaryValue(kStream, buffer, count);
             NiBinaryExtraData* extra = new NiBinaryExtraData(count, buffer);
             if (extra)
-                stream.ChangeObject(extra);
+                kStream.ChangeObject(extra);
         }
     }
-    else if (stream.GetFileVersion() < 0x14010001)
-        stream.ReadFixedString(m_kName);
+    else if (kStream.GetFileVersion() < 0x14010001)
+        kStream.ReadFixedString(m_kName);
     else
-        stream.ReadStringTableEntry(m_kName);
+        kStream.ReadStringTableEntry(m_kName);
 }
 
 // The shared header does not declare this override; preserve its thiscall ABI.
 // @fnv 0x00a7b290
+// pdb: NiExtraData::RegisterStreamables | NiExtraData.obj | retail, vtable slot, high
+// pdb params: kStream
 bool __fastcall RegisterExtraDataStreamables(NiExtraData* self, void*, NiStream& kStream)
 {
     if (!self->NiObject::RegisterStreamables(kStream))
@@ -119,6 +128,9 @@ bool __fastcall RegisterExtraDataStreamables(NiExtraData* self, void*, NiStream&
 
 // @fnv 0x00a7b330
 // src: XBOX_PDB 0x00a7b330
+// pdb: NiExtraData::CopyMembers | NiExtraData.obj | retail, call graph, low
+// pdb note: debug build links it to NiVertWeightsExtraData::CopyMembers
+// pdb params: pDest, kCloning
 void NiExtraData::CopyMembers_00a7b330(void* destination, CloningProcess* kCloning)
 {
     NiExtraData* pkDest = static_cast<NiExtraData*>(destination);
@@ -142,6 +154,8 @@ inline void* __cdecl operator new(unsigned int, void* p)
 // Allocates a 12-byte NiExtraData, constructs it, sets its vtable and copies a stored int into offset 8, returning the object or null.
 // @fnv 0x00a7b380
 // src: EXE 0x00a7b380
+// pdb: NiExtraData::CreateObject | NiExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiExtraData* NiExtraData_CreateObject()
 {
     NiExtraData* p = (NiExtraData*)NiExtraData::operator new(sizeof(NiExtraData));
@@ -156,6 +170,8 @@ NiExtraData* NiExtraData_CreateObject()
 }
 
 // @fnv 0x00a7b2c0
+// pdb: NiExtraData::SaveBinary | NiExtraData.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiExtraData::SaveBinary(NiStream& kStream)
 {
     // The empty base implementation is folded with LinkObject in the original.
@@ -166,6 +182,7 @@ void NiExtraData::SaveBinary(NiStream& kStream)
 // Restores the NiExtraData vtable, releases the reference-counted object at offset 8 if not the empty sentinel, then calls the NiRefObject destructor.
 // @fnv 0x00a7b300
 // src: GUESS 0x00a7b300 (confidence: medium)
+// pdb: NiExtraData::~NiExtraData | NiExtraData.obj | debug, call graph, medium
 void NiExtraData::DestroyFields_00a7b300()
 {
     *reinterpret_cast<void* volatile*>(this) = kVtbl_NiExtraData;
@@ -179,12 +196,16 @@ void NiExtraData::DestroyFields_00a7b300()
 }
 
 // @fnv 0x00a7b2e0
+// pdb: NiExtraData::NiExtraData | NiExtraData.obj | retail, call graph, medium
 __fastcall NiExtraData::NiExtraData()
 {
 }
 
 // The shared header does not declare this comparison override.
 // @fnv 0x00a7b3d0
+// pdb: NiExtraData::IsEqual | NiExtraData.obj | retail, vtable slot, high
+// pdb params: pObject
+// pdb locals: pkExtra
 unsigned char __fastcall IsExtraDataEqual(NiExtraData* self, void*, NiExtraData* object)
 {
     if (!self->NiObject::IsSameAs(object))
@@ -198,6 +219,7 @@ void __cdecl FUN_00aa1460(void* ptr, unsigned int size);
 
 // The compiler-generated deleting destructor is represented explicitly here.
 // @fnv 0x00a7b400
+// pdb: NiExtraData::`scalar deleting destructor' | NiExtraData.obj | retail, object-file gap fill, high
 NiExtraData* __fastcall DestroyExtraData(NiExtraData* self, void*, unsigned char acFlags)
 {
     *reinterpret_cast<void* volatile*>(self) = kVtbl_NiExtraData;
@@ -227,6 +249,8 @@ extern "C" char* NiViewerStrings_NiGetViewerString_Title(const char*);
 char* NiGetViewerString_00a7d5e0(const char*, const char*);
 // The shared header does not declare the StrArr viewer-string overload.
 // @fnv 0x00a7b580
+// pdb: NiExtraData::GetViewerStrings | NiExtraData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall GetExtraDataViewerStrings(NiExtraData* self, void*, StrArr* strings)
 {
     AppendExtraDataString(strings, NiViewerStrings_NiGetViewerString_Title(g_01270908_arg1));

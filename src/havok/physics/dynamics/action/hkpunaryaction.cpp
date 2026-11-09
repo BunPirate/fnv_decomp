@@ -46,13 +46,14 @@ struct FUN_00d2b2b0_class
     S_00d49310_Lock lock;
     hkpEntity* entity;
 
-    void ReleaseReference_00d2b2b0();
+    void hkpUnaryAction_dtor();
 };
 
 // Resets the vtable, releases the entity reference if present, then destroys the lock and resets the vtable again.
 // @fnv 0x00d2b2b0
-// src: GUESS 0x00d2b2b0 (confidence: medium)
-void FUN_00d2b2b0_class::ReleaseReference_00d2b2b0()
+// src: XBOX_RETAIL_PDB 0x00d2b2b0
+// pdb: hkpUnaryAction::~hkpUnaryAction | hkpUnaryAction.obj | retail, call graph (shared callers), high
+void FUN_00d2b2b0_class::hkpUnaryAction_dtor()
 {
     vptr = &DAT_010ce528;
 
@@ -67,7 +68,7 @@ void FUN_00d2b2b0_class::ReleaseReference_00d2b2b0()
     vptr = &_DAT_0102e388;
 }
 
-void ReleaseReference_00d2b2b0();
+void hkpUnaryAction_dtor();
 hkMemoryRouter* _D1A0E0GetMemoryRouter();
 
 struct Action
@@ -82,7 +83,7 @@ struct Action
 // @fnv 0x00d4d950
 Action* Action::FUN_00d4d950(unsigned char flags)
 {
-    ReleaseReference_00d2b2b0();
+    hkpUnaryAction_dtor();
 
     if (flags & 1)
     {
@@ -100,22 +101,25 @@ class UnaryActionHelper : public hkpUnaryAction
 };
 
 // @fnv 0x00d2b210
+// pdb: hkpUnaryAction::setEntity | hkpUnaryAction.obj | retail, object-file run extension, low
+// pdb params: entity
+// pdb locals: assertBuf, ostr
 void UnaryActionHelper::SetEntity(hkpEntity* entity)
 {
-    if (m_pEntity)
+    if (m_entity)
     {
-        if (hkpWorld* world = m_pOwningWorld)
+        if (hkpWorld* world = m_world)
         {
-            world->RemoveActionFromEntity(this, m_pEntity);
+            world->RemoveActionFromEntity(this, m_entity);
         }
-        m_pEntity->removeReference();
-        m_pEntity = 0;
+        m_entity->removeReference();
+        m_entity = 0;
     }
-    m_pEntity = entity;
-    m_pEntity->RetainReference();
-    if (hkpWorld* world = m_pOwningWorld)
+    m_entity = entity;
+    m_entity->RetainReference();
+    if (hkpWorld* world = m_world)
     {
-        world->hkpWorld_attachActionToEntity(this, m_pEntity);
+        world->hkpWorld_attachActionToEntity(this, m_entity);
     }
 }
 
@@ -137,6 +141,8 @@ struct FUN_00d2b260
     FUN_00d2b260(hkpEntity* entity, unsigned int userData);
 };
 // @fnv 0x00d2b260
+// pdb: hkpUnaryAction::hkpUnaryAction | hkpUnaryAction.obj | retail, call graph (shared callers), high
+// pdb params: flag
 FUN_00d2b260::FUN_00d2b260(hkpEntity* apEntity, unsigned int auiUserData)
 {
     referenceCount = 1;
@@ -153,7 +159,7 @@ FUN_00d2b260::FUN_00d2b260(hkpEntity* apEntity, unsigned int auiUserData)
 
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance();
 
-void __cdecl ResizeAudioStream(void* pvAlloc, void* apvArray, int iElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> __forceinline void constructWithCopyXd2b2f0(T* p, int n, const T& t)
 {
@@ -182,12 +188,14 @@ class hkObjXd2b2f0
     int unk14;
     void* m_uiFilterValue;
 
-    void AppendPointer(hkArrayBase<void*>& kArray);
+    void AppendPointer(hkArrayBase<void*>& entitiesOut);
 };
 
 // Appends the object's stored pointer to the given array.
 // @fnv 0x00d2b2f0
-void hkObjXd2b2f0::AppendPointer(hkArrayBase<void*>& kArray)
+// pdb: hkpUnaryAction::getEntities | hkpUnaryAction.obj | retail, vtable slot, high
+// pdb params: entitiesOut
+void hkObjXd2b2f0::AppendPointer(hkArrayBase<void*>& entitiesOut)
 {
-    hkArrayXd2b2f0_AddBack(kArray, m_uiFilterValue);
+    hkArrayXd2b2f0_AddBack(entitiesOut, m_uiFilterValue);
 }

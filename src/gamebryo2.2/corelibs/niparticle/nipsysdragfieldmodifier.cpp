@@ -16,13 +16,13 @@ extern "C"
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_01202770;
+extern GlobalObjectO2_00a7b610 NiPSysDragFieldModifier_ms_RTTI;
 
 // @fnv 0x00c2c800
 // src: COMMUNITY 0x00c2c800
 GlobalObjectO2_00a7b610* __cdecl NiPSysDragFieldModifier_GetRTTI()
 {
-    return &g_01202770;
+    return &NiPSysDragFieldModifier_ms_RTTI;
 }
 
 void __cdecl FUN_00c31750(void);
@@ -50,6 +50,7 @@ struct CloningProcess
 {
     NiObject* operator()(NiObject*);
 };
+// pdb: class NiPSysDragFieldModifier, size 0x40 (here 0x30), bases: NiPSysFieldModifier, 2 members
 struct NiPSysDragFieldModifier : NiPSysFieldModifier
 {
     NiPSysFieldModifier* __thiscall CreateClone_00c2c8d0(CloningProcess&);
@@ -62,6 +63,9 @@ inline void* operator new(unsigned int, void* p)
 // Allocates and initialises a NiPSysDragFieldModifier clone, copies the byte at offset 0x30 and the NiPoint3 at offset 0x34 from this, and returns it.
 // @fnv 0x00c2c8d0
 // src: XBOX_PDB 0x00c2c8d0
+// pdb: NiPSysDragFieldModifier::CreateClone | NiPSysDragFieldModifier.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysFieldModifier* __thiscall NiPSysDragFieldModifier::CreateClone_00c2c8d0(CloningProcess& process)
 {
     NiPSysFieldModifier* clone = static_cast<NiPSysFieldModifier*>(BSFadeNode::operator new(0x40));
@@ -185,18 +189,21 @@ struct FUN_00c2cae0_cls
     unsigned char m_30;
     DragFieldData m_34;
     bool FUN_00c32060(FUN_00c2cae0_cls* other);
-    bool NiPSysDragFieldModifier_IsEqual(FUN_00c2cae0_cls* other);
+    bool NiPSysDragFieldModifier_IsEqual(FUN_00c2cae0_cls* pkObject);
 };
 
 // @fnv 0x00c2cae0
 // src: XBOX_PDB 0x00c2cae0
-bool FUN_00c2cae0_cls::NiPSysDragFieldModifier_IsEqual(FUN_00c2cae0_cls* other)
+// pdb: NiPSysDragFieldModifier::IsEqual | NiPSysDragFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool FUN_00c2cae0_cls::NiPSysDragFieldModifier_IsEqual(FUN_00c2cae0_cls* pkObject)
 {
-    if (FUN_00c32060(other))
+    if (FUN_00c32060(pkObject))
     {
-        if (other->m_30 == this->m_30)
+        if (pkObject->m_30 == this->m_30)
         {
-            if (!other->m_34.FUN_00439090(&this->m_34))
+            if (!pkObject->m_34.FUN_00439090(&this->m_34))
             {
                 return true;
             }
@@ -224,18 +231,21 @@ struct Subobject
 };
 struct FUN_00c2ce10_owner
 {
-    void __thiscall InvokeCallbackAndUpdate(void* object);
+    void __thiscall InvokeCallbackAndUpdate(void* kStream);
 };
 // @fnv 0x00c2ce10
-void FUN_00c2ce10_owner::InvokeCallbackAndUpdate(void* object)
+// pdb: NiPSysDragFieldModifier::LoadBinary | NiPSysDragFieldModifier.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: bBool
+void FUN_00c2ce10_owner::InvokeCallbackAndUpdate(void* kStream)
 {
-    void* original = object;
+    void* original = kStream;
     LoadFromStream(original);
     Callback* pCallback = *reinterpret_cast<Callback**>(static_cast<char*>(original) + 0x24c);
 
-    pCallback->count += pCallback->invoke(pCallback, &object, 1, State(1), 1);
+    pCallback->count += pCallback->invoke(pCallback, &kStream, 1, State(1), 1);
     *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(this) + 0x30) =
-        *reinterpret_cast<unsigned char*>(&object) != 0;
+        *reinterpret_cast<unsigned char*>(&kStream) != 0;
     reinterpret_cast<Subobject*>(reinterpret_cast<char*>(this) + 0x34)->FUN_00a59be0(original);
 }
 
@@ -271,15 +281,18 @@ struct FNVMain
 // Calls FUN_00c321f0, invokes the owner's callback0c with the enabled byte and adds its result to total04, then calls child34.FUN_00a69780.
 // @fnv 0x00c2ce70
 // src: XBOX_PDB 0x00c2ce70
-void __thiscall FNVMain::NiPSysDragFieldModifier_SaveBinary(FNVParameter* pParameter)
+// pdb: NiPSysDragFieldModifier::SaveBinary | NiPSysDragFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bBool
+void __thiscall FNVMain::NiPSysDragFieldModifier_SaveBinary(FNVParameter* kStream)
 {
-    FUN_00c321f0(pParameter);
+    FUN_00c321f0(kStream);
     unsigned char enabled = enabled30;
-    FNVCallbackOwner* owner = pParameter->owner();
+    FNVCallbackOwner* owner = kStream->owner();
     int(__cdecl * pCallback)(FNVCallbackOwner*, unsigned char*, int, int*, int) = owner->callback0c;
     int value = 1;
     owner->total04 += pCallback(owner, &enabled, 1, &value, 1);
-    child34.FUN_00a69780(pParameter);
+    child34.FUN_00a69780(kStream);
 }
 
 struct FNVArray195
@@ -296,17 +309,17 @@ struct FNVArray195
 struct FNVSubObject195
 {
     int unk00;
-    void* __thiscall GetViewerString_00a59af0(const void* key);
+    void* __thiscall GetViewerString_00a59af0(const void* pPrefix);
 };
 struct GlobalObjectO2_00a7b610
 {
     void* object;
 };
-extern GlobalObjectO2_00a7b610 g_01202770;
+extern GlobalObjectO2_00a7b610 NiPSysDragFieldModifier_ms_RTTI;
 extern char UNK_010bffd0;
 extern char UNK_01044b44;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* object);
-void* __cdecl NiGetViewerString(const void* key, unsigned int attribute);
+void* __cdecl NiGetViewerString(const void* pcPrefix, unsigned int bValue);
 struct FNVObject195
 {
     int unk00, unk04, unk08, unk0c;
@@ -315,15 +328,17 @@ struct FNVObject195
     unsigned char attribute30;
     FNVSubObject195 subobject34;
     void __thiscall FUN_00c322b0(FNVArray195* storage);
-    void __thiscall NiPSysDragFieldModifier_GetViewerStrings(FNVArray195* storage);
+    void __thiscall NiPSysDragFieldModifier_GetViewerStrings(FNVArray195* pkStrings);
 };
 // @fnv 0x00c2cec0
 // src: XBOX_PDB 0x00c2cec0
-void __thiscall FNVObject195::NiPSysDragFieldModifier_GetViewerStrings(FNVArray195* pArray)
+// pdb: NiPSysDragFieldModifier::GetViewerStrings | NiPSysDragFieldModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void __thiscall FNVObject195::NiPSysDragFieldModifier_GetViewerStrings(FNVArray195* pkStrings)
 {
-    FNVArray195* const array = pArray;
+    FNVArray195* const array = pkStrings;
     FUN_00c322b0(array);
-    void* value = NiViewerStrings_NiGetViewerString_Title(g_01202770.object);
+    void* value = NiViewerStrings_NiGetViewerString_Title(NiPSysDragFieldModifier_ms_RTTI.object);
     unsigned int uiIndex = array->count;
     if (uiIndex >= array->capacity)
     {
@@ -435,6 +450,9 @@ struct FieldModStandIn
 };
 
 // @fnv 0x00c2c950
+// pdb: NiPSysDragFieldModifier::UpdateNoAttenuationNoDir | NiPSysDragFieldModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: pkCurrentParticle, kParticlePosition, kDrag, kInvPSys, kPosition, kPSys, kDragToPSys, fReduction, us
 void FieldModStandIn::ApplyFieldModToParticles(float fTime, PSysDataStandIn* pkData)
 {
     NiTransform kField;
@@ -535,6 +553,9 @@ struct DragModifier
 // Applies a drag field modifier to active particles, scaling or zeroing their velocity based on influence, distance, and motion direction.
 // @fnv 0x00c2cb20
 // src: XBOX_PDB 0x00c2cb20
+// pdb: NiPSysDragFieldModifier::Update | NiPSysDragFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkData
+// pdb locals: kDrag, kDragAxis, kInvPSys, kPosition, kPSys, kDragToPSys, us, pkCurrentParticle, fDeltaT, kParticlePosition, fDistance, fReduction, fProj, kParticleDirection
 void __thiscall DragModifier::NiPSysDragFieldModifier_Update(float fTime, BoundDataBlock* pkData)
 {
     if (m_fInfluence == 0.0f)

@@ -172,6 +172,9 @@ struct TriangleSolver
 // Computes three dot products into m_barycentric, stores the normal, and may flip the winding and swap values when mask is 7.
 // @fnv 0x00e4da90
 // src: GUESS 0x00e4da90 (confidence: medium)
+// pdb: hkGsk::checkTriangleBoundaries<1> | hkGsk.obj | retail, object-file run extension, low
+// pdb params: a, b, supportOut
+// pdb locals: dots
 int TriangleSolver::ComputeTriangleBarycentricTerms(const hkVector4& p, TriangleVerts& tri, hkVector4& normalOut)
 {
     hkVector4 e0;
@@ -429,6 +432,10 @@ struct State
 // Branches on flag, updates shape points and anchors, writes through out1 or out2 on selected paths, and returns status values.
 // @fnv 0x00e4bbe0
 // src: GUESS 0x00e4bbe0 (confidence: low)
+// pdb: hkGsk::processEdgeTriangle | hkGsk.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkGsk::handlePenetration
+// pdb params: vertexA, vertexB, dimA, dimB, comingFromEdgeEdge, supportType
+// pdb locals: edge1, edge0, result0, result1, edgeA
 int State::ProcessAndReturnValue_00e4bbe0(Shape* apShapeA, Shape* apShapeB, int* __restrict apOutCount1, int* __restrict apOutCount2,
                         unsigned char flag, int val)
 {

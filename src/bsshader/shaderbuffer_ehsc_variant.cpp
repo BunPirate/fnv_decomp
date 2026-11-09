@@ -21,7 +21,7 @@ extern MemoryManager g_memoryManager;
 void InitializeShaderBufferTables();
 struct FUN_00aa4060_Manager
 {
-    void* MemoryManager_Deallocate(void* object);
+    void* MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00aa4060_Manager DAT_011f6238;
 extern void* DAT_010ef53c;
@@ -108,7 +108,7 @@ struct Thing_b9704
     unsigned int unkFC;
     unsigned int unk100;
     unsigned int unk104;
-    Thing_b9704(unsigned int a1, unsigned int a2, Thing_b9704* a3);
+    Thing_b9704(unsigned int a1, unsigned int apData, Thing_b9704* aiSize);
     static void* operator new(unsigned int size)
     {
         return ((S00b7fd90_Alloc*)&DAT_011f6238)->Game_DoHeapAlloc(size);
@@ -129,18 +129,21 @@ struct S00b7fd90_cls
     unsigned short m_usGrowBy;
     void Expand_b9704(unsigned int newSize);
     void SetAt_b9704(unsigned int index, Thing_b9704*& item);
-    void ShaderBufferCreator_Add(unsigned int a1, unsigned int a2, Thing_b9704* a3);
+    void ShaderBufferCreator_Add(unsigned int apName, unsigned int apShader, Thing_b9704* aiSize);
 };
 
 // @fnv 0x00b7fd90
 // src: COMMUNITY 0x00b7fd90
-void S00b7fd90_cls::ShaderBufferCreator_Add(unsigned int a1, unsigned int a2, Thing_b9704* a3)
+// pdb: ShaderBufferCreator::Add | ShaderBuffer.obj | retail, upstream name already matches, high
+// pdb params: apName, apShader, aiSize
+// pdb locals: pdata
+void S00b7fd90_cls::ShaderBufferCreator_Add(unsigned int apName, unsigned int apShader, Thing_b9704* aiSize)
 {
-    a3 = new Thing_b9704(a1, a2, a3);
+    aiSize = new Thing_b9704(apName, apShader, aiSize);
     unsigned int index = m_usSize;
     if (index >= m_usMaxSize)
     {
         Expand_b9704(m_usGrowBy + index);
     }
-    SetAt_b9704(index, a3);
+    SetAt_b9704(index, aiSize);
 }

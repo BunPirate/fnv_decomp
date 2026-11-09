@@ -13,6 +13,7 @@ class TESTopic;
 class TESSound;
 class ImageSpaceModifierInstanceDOF;
 
+// pdb: class DialogMenu, size 0x13c, bases: Menu, 22 members
 class DialogMenu : public Menu
 {
 public:
@@ -41,32 +42,32 @@ public:
     virtual void HandleSelection(int, Tile*);
     virtual void UpdateDialog();
     virtual int GetClass();
-    virtual bool HandleMenuInput(int button, float value);
+    virtual bool HandleMenuInput(int aiButton, float afValue);
 
-    DialogState m_eDialogState;
-    GoodbyeState m_eGoodbyeState;
-    Tile* m_pTiles[4];
-    ListBox_int_ m_kResponseListBox;
-    TopicMenuController* pDialogueItem;
-    BSSoundHandle m_kActorProcessResult;
-    MobileObject* m_pDialogueSpeaker;
-    char m_cCurrentTopicLabel[128];
-    bool m_bResponseStarted;
+    DialogState eDialogState;
+    GoodbyeState eGoodbyeState;
+    Tile* pTiles[4];
+    ListBox_int_ lbResponseList;
+    TopicMenuController* pTopicManager;
+    BSSoundHandle hSpeechFile;
+    MobileObject* pSpeaker;
+    char strCurrTopicID[128];
+    bool bResponseShown;
     unsigned char layoutPadding105[3];
-    float m_fCameraTransitionTime;
-    unsigned int m_uiDialogMenuFlags;
-    DialogMenuPoint2 m_kDialogMenuPoint1;
-    DialogMenuPoint2 m_kDialogMenuPoint2;
-    DialogMenuPoint2 m_kDialogMenuPoint3;
-    float m_fCameraTransitionAlpha;
-    ImageSpaceModifierInstanceDOF* m_pDialogueDepthOfFieldModifier;
-    bool m_bPauseRequested;
+    float fElapsedSecs;
+    unsigned int uiIgnoreInputStartTime;
+    DialogMenuPoint2 DOFDepth;
+    DialogMenuPoint2 DOFRange;
+    DialogMenuPoint2 DOFStrength;
+    float fPercentZoomed;
+    ImageSpaceModifierInstanceDOF* pDepthOfFieldInstance;
+    bool bIsIn3rdPerson;
     bool bPaused;
     unsigned char layoutPadding132[2];
-    DialogState m_eStateBeforePause;
-    bool m_bServiceDialogue;
-    bool m_bSuppressDialogueText;
-    bool m_bServiceMenuRequested;
+    DialogState ePausedState;
+    bool bInServiceMenu;
+    bool bShowingTutorial;
+    bool bDoServiceLoad;
     unsigned char layoutPadding13B[1];
 
     void SetActive(bool abActive);
@@ -79,7 +80,7 @@ public:
     TESSound* GetCastSound();
 
     static int ms_iDialogMenuValue;
-    static void Close();
-    static Tile* Create(MobileObject*, TESTopic*, MobileObject*);
-    static void* Create(void*, void*, void*);
+    static void DialogMenu_Close();
+    static Tile* DialogMenu_Create(MobileObject*, TESTopic*, MobileObject*);
+    static void* DialogMenu_Create(void*, void*, void*);
 };

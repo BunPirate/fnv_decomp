@@ -89,6 +89,8 @@ void Object_ProcessState_00dfb490(FUN_00cb0c00_class* self)
 
 // @fnv 0x00dfb9d0
 // src: HAVOK_LIB 0x00dfb9d0
+// pdb: cleanupLoadedObjecthkaSkeletonLocalFrameOnBone | hkaSkeletonClass.obj | retail, upstream name already matches, high
+// pdb params: p
 void cleanupLoadedObjecthkaSkeletonLocalFrameOnBone(hkReferencedObject** p)
 {
     if (*p)
@@ -264,13 +266,15 @@ struct FUN_00cb0a70
 
 // @fnv 0x00dff1f0
 // src: HAVOK_LIB 0x00dff1f0
-void __cdecl finishLoadedObjecthkpPhysicsSystemWithContacts(int* pObject, int iValue)
+// pdb: finishLoadedObjecthkpPhysicsSystemWithContacts | hkpPhysicsSystemWithContactsClass.obj | retail, upstream name already matches, high
+// pdb params: p, finishing
+void __cdecl finishLoadedObjecthkpPhysicsSystemWithContacts(int* p, int finishing)
 {
-    if (pObject)
+    if (p)
     {
-        *pObject = (int)&DAT_010cce28;
-        ((FUN_00cb0a70*)(pObject + 14))->m_00cb0a70(iValue);
-        *pObject = (int)&DAT_010d07f4;
+        *p = (int)&DAT_010cce28;
+        ((FUN_00cb0a70*)(p + 14))->m_00cb0a70(finishing);
+        *p = (int)&DAT_010d07f4;
     }
 }
 
@@ -863,16 +867,18 @@ struct FUN_00cb0a70_m_helper
 };
 // @fnv 0x00dff270
 // src: HAVOK_LIB 0x00dff270
-void __cdecl finishLoadedObjecthkpMouseSpringAction(void* pObject, void* b)
+// pdb: finishLoadedObjecthkpMouseSpringAction | hkpMouseSpringActionClass.obj | retail, upstream name already matches, high
+// pdb params: p, finishing
+void __cdecl finishLoadedObjecthkpMouseSpringAction(void* p, void* finishing)
 {
-    if (pObject)
+    if (p)
     {
-        *(int*)pObject = (int)&DAT_010cc2fc;
-        ((FUN_00cb0a70_m_helper*)((char*)pObject + 0x14))->m((int)b);
-        *(int*)pObject = (int)&DAT_010c8e94;
-        *(int*)((char*)pObject + 0x54) = 0;
-        *(int*)((char*)pObject + 0x58) = 0;
-        *(int*)((char*)pObject + 0x5c) = 0x80000000;
+        *(int*)p = (int)&DAT_010cc2fc;
+        ((FUN_00cb0a70_m_helper*)((char*)p + 0x14))->m((int)finishing);
+        *(int*)p = (int)&DAT_010c8e94;
+        *(int*)((char*)p + 0x54) = 0;
+        *(int*)((char*)p + 0x58) = 0;
+        *(int*)((char*)p + 0x5c) = 0x80000000;
     }
 }
 
@@ -1345,14 +1351,14 @@ void __cdecl Runtime_ForwardCall_00dfcc30(FUN_00dfcc30_vt* p)
 
 struct FUN_00dd0420_Class
 {
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_ctor(int);
 };
 // @fnv 0x00dfcd80
 // src: GUESS 0x00dfcd80 (confidence: low)
 void __cdecl Object_ProcessState_00dfcd80(FUN_00dd0420_Class* self, int a)
 {
     if (self)
-        self->hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(a);
+        self->hkpGenericConstraintDataScheme_ctor(a);
 }
 
 struct FUN_00dfce00_vt
@@ -1598,13 +1604,15 @@ extern int DAT_010e587c;
 // If a is non-null, stores &DAT_010e587c at its start and calls m(b) on the helper objects at offsets 8 and 0x54.
 // @fnv 0x00dfe5b0
 // src: HAVOK_LIB 0x00dfe5b0
-void __cdecl finishLoadedObjecthkaBoneAttachment(void* pObject, int iValue)
+// pdb: finishLoadedObjecthkaBoneAttachment | hkaBoneAttachmentClass.obj | retail, upstream name already matches, high
+// pdb params: p, finishing
+void __cdecl finishLoadedObjecthkaBoneAttachment(void* p, int finishing)
 {
-    if (pObject)
+    if (p)
     {
-        *(int*)pObject = (int)&DAT_010e587c;
-        ((FUN_00cb0a70_m_helper*)((char*)pObject + 8))->m(iValue);
-        ((FUN_00cb0a70_m_helper*)((char*)pObject + 0x54))->m(iValue);
+        *(int*)p = (int)&DAT_010e587c;
+        ((FUN_00cb0a70_m_helper*)((char*)p + 8))->m(finishing);
+        ((FUN_00cb0a70_m_helper*)((char*)p + 0x54))->m(finishing);
     }
 }
 
@@ -1843,6 +1851,8 @@ struct FUN_00de10e0_cls
 };
 
 // @fnv 0x00de10e0
+// pdb: hkpUserConvexRadiusBuilder::`scalar deleting destructor' | hkpConvexRadiusBuilder.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00de10e0_cls* FUN_00de10e0_cls::FUN_00de10e0(unsigned char acFlags)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -1961,6 +1971,7 @@ class BDE43E0Shape : public BDE43E0ReferencedObject
 
 // Allocates and constructs a new BDE43E0Shape via its overloaded operator new and returns it as a BDE43E0ReferencedObject pointer.
 // @fnv 0x00de43e0
+// pdb: hkpUserConvexRadiusBuildercreate | hkpConvexRadiusBuilder.obj | retail, object-file run extension, low
 BDE43E0ReferencedObject* __cdecl CreateShape()
 {
     return new BDE43E0Shape;
@@ -2523,204 +2534,204 @@ int __cdecl Runtime_EvaluateValue_00de8150()
     return reinterpret_cast<int>(&DAT_01269ce8);
 }
 
-extern int DAT_01269d18;
+extern int hkpBridgeConstraintAtomClass;
 
 // @fnv 0x00de8170
 // src: GUESS 0x00de8170 (confidence: low)
 int* __cdecl Runtime_GetDAT01269d18Address()
 {
-    return &DAT_01269d18;
+    return &hkpBridgeConstraintAtomClass;
 }
 
-extern int DAT_01269d48;
+extern int hkpBridgeAtomsClass;
 
 // @fnv 0x00de8190
 // src: GUESS 0x00de8190 (confidence: low)
 void* Runtime_GetDAT01269d48Address()
 {
-    return &DAT_01269d48;
+    return &hkpBridgeAtomsClass;
 }
 
-extern int g_unk01269d78;
+extern int hkpSimpleContactConstraintAtomClass;
 
 // @fnv 0x00de81d0
 // src: GUESS 0x00de81d0 (confidence: low)
 void* __cdecl Runtime_GetUnk01269d78Address()
 {
-    return &g_unk01269d78;
+    return &hkpSimpleContactConstraintAtomClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_01269da8;
+extern CpuOpaque hkpBallSocketConstraintAtomClass;
 // @fnv 0x00de81f0
 // src: GUESS 0x00de81f0 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT01269da8Address()
 {
-    return &DAT_01269da8;
+    return &hkpBallSocketConstraintAtomClass;
 }
 
-extern int DAT_01269dd8;
+extern int hkpStiffSpringConstraintAtomClass;
 
 // @fnv 0x00de8210
 // src: GUESS 0x00de8210 (confidence: low)
 void* __cdecl Runtime_GetDAT01269dd8Address()
 {
-    return &DAT_01269dd8;
+    return &hkpStiffSpringConstraintAtomClass;
 }
 
-extern int g_unk01269e08;
+extern int hkpSetLocalTransformsConstraintAtomClass;
 
 // @fnv 0x00de8230
 // src: GUESS 0x00de8230 (confidence: low)
 int* Runtime_GetUnk01269e08Address()
 {
-    return &g_unk01269e08;
+    return &hkpSetLocalTransformsConstraintAtomClass;
 }
 
 struct GlobalObject
 {
     int unk00;
 };
-extern GlobalObject g_global;
+extern GlobalObject hkpSetLocalTranslationsConstraintAtomClass;
 
 // @fnv 0x00de8250
 // src: GUESS 0x00de8250 (confidence: high)
 GlobalObject* __cdecl Runtime_GetGlobalAddress()
 {
-    return &g_global;
+    return &hkpSetLocalTranslationsConstraintAtomClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_01269e68;
+extern CpuOpaque hkpSetLocalRotationsConstraintAtomClass;
 // @fnv 0x00de8270
 // src: GUESS 0x00de8270 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT01269e68Address()
 {
-    return &DAT_01269e68;
+    return &hkpSetLocalRotationsConstraintAtomClass;
 }
 
-extern int g_unk01269e98;
+extern int hkpOverwritePivotConstraintAtomClass;
 
 // @fnv 0x00de8290
 // src: GUESS 0x00de8290 (confidence: low)
 void* __cdecl Runtime_GetUnk01269e98Address()
 {
-    return &g_unk01269e98;
+    return &hkpOverwritePivotConstraintAtomClass;
 }
 
-extern int g_unk01269ec8;
+extern int hkpLinConstraintAtomClass;
 
 // @fnv 0x00de82b0
 // src: GUESS 0x00de82b0 (confidence: low)
 void* __cdecl Runtime_GetUnk01269ec8Address()
 {
-    return &g_unk01269ec8;
+    return &hkpLinConstraintAtomClass;
 }
 
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_01269ef8;
+extern GlobalObjectO2_00d472a0 hkpLinSoftConstraintAtomClass;
 // @fnv 0x00de82d0
 // src: GUESS 0x00de82d0 (confidence: low)
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField01269ef8Address()
 {
-    return &g_01269ef8;
+    return &hkpLinSoftConstraintAtomClass;
 }
 
-extern int DAT_01269f28;
+extern int hkpLinLimitConstraintAtomClass;
 
 // @fnv 0x00de82f0
 // src: GUESS 0x00de82f0 (confidence: low)
 void* __cdecl Runtime_GetDAT01269f28Address()
 {
-    return &DAT_01269f28;
+    return &hkpLinLimitConstraintAtomClass;
 }
 
-extern int g_unkGlobal01269f58;
+extern int hkp2dAngConstraintAtomClass;
 
 // @fnv 0x00de8310
 // src: GUESS 0x00de8310 (confidence: low)
 void* __cdecl Runtime_GetUnkGlobal01269f58Address()
 {
-    return &g_unkGlobal01269f58;
+    return &hkp2dAngConstraintAtomClass;
 }
 
-extern int DAT_01269f88;
+extern int hkpAngConstraintAtomClass;
 
 // @fnv 0x00de8330
 // src: GUESS 0x00de8330 (confidence: low)
 void* __cdecl Runtime_GetDAT01269f88Address()
 {
-    return &DAT_01269f88;
+    return &hkpAngConstraintAtomClass;
 }
 
 // FUN_00de8350 : a one-line function - getter
-extern int g_target_00de8350;
+extern int hkpAngLimitConstraintAtomClass;
 // @fnv 0x00de8350
 // src: GUESS 0x00de8350 (confidence: low)
 void* Runtime_GetTarget00de8350Address()
 {
-    return &g_target_00de8350;
+    return &hkpAngLimitConstraintAtomClass;
 }
 
-extern int DAT_0126a018;
+extern int hkpConeLimitConstraintAtomClass;
 
 // @fnv 0x00de8390
 // src: GUESS 0x00de8390 (confidence: low)
 void* __cdecl Runtime_GetDAT0126a018Address()
 {
-    return &DAT_0126a018;
+    return &hkpConeLimitConstraintAtomClass;
 }
 
-extern int DAT_0126a048;
+extern int hkpAngFrictionConstraintAtomClass;
 // @fnv 0x00de83b0
 // src: GUESS 0x00de83b0 (confidence: low)
 int* Runtime_GetDAT0126a048Address()
 {
-    return &DAT_0126a048;
+    return &hkpAngFrictionConstraintAtomClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a078;
+extern CpuOpaque hkpAngMotorConstraintAtomClass;
 // @fnv 0x00de83d0
 // src: GUESS 0x00de83d0 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126a078Address()
 {
-    return &DAT_0126a078;
+    return &hkpAngMotorConstraintAtomClass;
 }
 
-extern int DAT_0126a0a8;
+extern int hkpRagdollMotorConstraintAtomClass;
 
 // @fnv 0x00de83f0
 // src: GUESS 0x00de83f0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126a0a8Address()
 {
-    return &DAT_0126a0a8;
+    return &hkpRagdollMotorConstraintAtomClass;
 }
 
-extern int DAT_0126a0d8;
+extern int hkpLinFrictionConstraintAtomClass;
 
 // @fnv 0x00de8410
 // src: GUESS 0x00de8410 (confidence: low)
 void* __cdecl Runtime_GetDAT0126a0d8Address()
 {
-    return &DAT_0126a0d8;
+    return &hkpLinFrictionConstraintAtomClass;
 }
 
-extern int DAT_0126a108;
+extern int hkpLinMotorConstraintAtomClass;
 // @fnv 0x00de8430
 // src: GUESS 0x00de8430 (confidence: low)
 int* __cdecl Runtime_GetDAT0126a108Address()
 {
-    return &DAT_0126a108;
+    return &hkpLinMotorConstraintAtomClass;
 }
 
-extern int DAT_0126a138;
+extern int hkpPulleyConstraintAtomClass;
 
 // @fnv 0x00de8450
 // src: GUESS 0x00de8450 (confidence: low)
 void* __cdecl Runtime_GetDAT0126a138Address()
 {
-    return &DAT_0126a138;
+    return &hkpPulleyConstraintAtomClass;
 }
 
 extern int DAT_0126a168;
@@ -2732,60 +2743,60 @@ void* __cdecl Runtime_GetDAT0126a168Address()
     return &DAT_0126a168;
 }
 
-extern int DAT_0126a198;
+extern int hkpSoftContactModifierConstraintAtomClass;
 
 // @fnv 0x00de8490
 // src: GUESS 0x00de8490 (confidence: low)
 int* __cdecl Runtime_GetDAT0126a198Address()
 {
-    return &DAT_0126a198;
+    return &hkpSoftContactModifierConstraintAtomClass;
 }
 
-extern int DAT_0126a1c8;
+extern int hkpMassChangerModifierConstraintAtomClass;
 
 // @fnv 0x00de84b0
 // src: GUESS 0x00de84b0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126a1c8Address()
 {
-    return &DAT_0126a1c8;
+    return &hkpMassChangerModifierConstraintAtomClass;
 }
 
-extern FUN_00de87c0_class DAT_0126a1f8;
+extern FUN_00de87c0_class hkpCenterOfMassChangerModifierConstraintAtomClass;
 
 // @fnv 0x00de84d0
 // src: GUESS 0x00de84d0 (confidence: low)
 FUN_00de87c0_class* __cdecl Runtime_GetDAT0126a1f8Address()
 {
-    return &DAT_0126a1f8;
+    return &hkpCenterOfMassChangerModifierConstraintAtomClass;
 }
 
 // FUN_00de84f0 : returns the address of a global data object.
 // Original: mov eax, offset DAT_0126a228 ; ret
-extern int DAT_0126a228;
+extern int hkpViscousSurfaceModifierConstraintAtomClass;
 
 // @fnv 0x00de84f0
 // src: GUESS 0x00de84f0 (confidence: low)
 int* __cdecl Runtime_GetDAT0126a228Address()
 {
-    return &DAT_0126a228;
+    return &hkpViscousSurfaceModifierConstraintAtomClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a258;
+extern CpuOpaque hkpMovingSurfaceModifierConstraintAtomClass;
 // @fnv 0x00de8510
 // src: GUESS 0x00de8510 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126a258Address()
 {
-    return &DAT_0126a258;
+    return &hkpMovingSurfaceModifierConstraintAtomClass;
 }
 
-extern int g_0126a288;
+extern int hkpIgnoreModifierConstraintAtomClass;
 
 // @fnv 0x00de8530
 // src: GUESS 0x00de8530 (confidence: low)
 int* __cdecl Runtime_GetField0126a288Address()
 {
-    return &g_0126a288;
+    return &hkpIgnoreModifierConstraintAtomClass;
 }
 
 struct FUN_00de8570_cls
@@ -2809,22 +2820,22 @@ void __cdecl hkpBridgeConstraintAtom_init_ProcessState_00de8570(FUN_00de8570_cls
     }
 }
 
-extern int DAT_0126a378;
+extern int hkAabbClass;
 
 // @fnv 0x00de8750
 // src: GUESS 0x00de8750 (confidence: low)
 void* __cdecl Runtime_GetDAT0126a378Address()
 {
-    return &DAT_0126a378;
+    return &hkAabbClass;
 }
 
-extern int g_unk126a3a8;
+extern int hkAabbUint32Class;
 
 // @fnv 0x00de8770
 // src: GUESS 0x00de8770 (confidence: low)
 void* __cdecl Runtime_GetUnk126a3a8Address()
 {
-    return &g_unk126a3a8;
+    return &hkAabbUint32Class;
 }
 
 class FUN_00de8780_cls
@@ -2957,7 +2968,7 @@ struct DF25D0Owner
     DF25D0State* m_pkState;
 };
 
-void __cdecl hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(void* pkItem, DF25D0Owner* pkOwner);
+void __cdecl hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(void* pkItem, DF25D0Owner* constraint);
 
 // @fnv 0x00df25d0
 static __declspec(noinline) void SetOwnerStateFlags(void* pkItem, DF25D0Owner* pkOwner, unsigned char m_ucEntryType)
@@ -3076,22 +3087,22 @@ void __cdecl Object_ProcessState_00df6440(Handler_cls* pHandler, int value)
         pHandler->Handle(value);
 }
 
-extern int g_0126a430;
+extern int hkpWorldClass;
 
 // @fnv 0x00df6490
 // src: GUESS 0x00df6490 (confidence: low)
 int* __cdecl Runtime_GetField0126a430Address()
 {
-    return &g_0126a430;
+    return &hkpWorldClass;
 }
 
-extern int DAT_0126a478;
+extern int hkpCollidableBoundingVolumeDataClass;
 
 // @fnv 0x00df64b0
 // src: GUESS 0x00df64b0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126a478Address()
 {
-    return &DAT_0126a478;
+    return &hkpCollidableBoundingVolumeDataClass;
 }
 
 extern "C" int DAT_0126a4a8;
@@ -3153,6 +3164,9 @@ struct FloatPair
 // Initialises first/second from constants, calls ctx->FUN_00e63af0 and, if it returns 1, delegates to TraverseNode; otherwise returns 2.
 // @fnv 0x00dfb040
 // src: HAVOK_LIB 0x00dfb040
+// pdb: hkpWingedEdge::findVisibilityBoundaryEdges | hkpConvexPenetrationUtil.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkWingedEdge::findVisibilityBoundaryEdges
+// pdb params: initialTriangle, pointOfView, chainLength, edgeChain
 int __thiscall FloatPair::hkWingedEdge_findVisibilityBoundaryEdges(ParserContext* ctx, int input, int* outA, ParserContext** outB)
 {
     double initial = DAT_010dbb3c;
@@ -3167,21 +3181,21 @@ int __thiscall FloatPair::hkWingedEdge_findVisibilityBoundaryEdges(ParserContext
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a5f8;
+extern CpuOpaque hkpVehicleSuspensionSuspensionWheelParametersClass;
 // @fnv 0x00dfb260
 // src: GUESS 0x00dfb260 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfb260()
 {
-    return &DAT_0126a5f8;
+    return &hkpVehicleSuspensionSuspensionWheelParametersClass;
 }
 
-extern int g_unk0126aa18;
+extern int hkpMoppBvTreeShapeClass;
 
 // @fnv 0x00dfb280
 // src: GUESS 0x00dfb280 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb280()
 {
-    return &g_unk0126aa18;
+    return &hkpMoppBvTreeShapeClass;
 }
 
 struct FUN_00dfb2d0_class
@@ -3197,31 +3211,31 @@ void __cdecl Object_ProcessState_00dfb290(FUN_00dfb2d0_class* pObject, int a)
         pObject->FUN_00dfb2d0(a);
 }
 
-extern int DAT_0126aac0;
+extern int hkMeshSectionClass;
 
 // @fnv 0x00dfb360
 // src: GUESS 0x00dfb360 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb360()
 {
-    return &DAT_0126aac0;
+    return &hkMeshSectionClass;
 }
 
-extern int DAT_0126aaf0;
+extern int hkMeshSectionCinfoClass;
 
 // @fnv 0x00dfb380
 // src: GUESS 0x00dfb380 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfb380()
 {
-    return &DAT_0126aaf0;
+    return &hkMeshSectionCinfoClass;
 }
 
-extern int DAT_0126abe0;
+extern int hkMemoryResourceHandleExternalLinkClass;
 
 // @fnv 0x00dfb3c0
 // src: GUESS 0x00dfb3c0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb3c0(void)
 {
-    return &DAT_0126abe0;
+    return &hkMemoryResourceHandleExternalLinkClass;
 }
 
 // Null-guarded forwarder: the first argument is an object pointer; when it
@@ -3229,7 +3243,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfb3c0(void)
 // object (ecx = object, one stack argument).
 struct FUN_00dfb3d0_cls
 {
-    void __thiscall hkaMeshBinding_hkaMeshBinding(int a1);
+    void __thiscall hkMemoryResourceHandle_ctor(int flag);
 };
 
 // @fnv 0x00dfb3d0
@@ -3238,22 +3252,22 @@ void __cdecl Object_ProcessState_00dfb3d0(FUN_00dfb3d0_cls* pObject, int a1)
 {
     if (pObject != 0)
     {
-        pObject->hkaMeshBinding_hkaMeshBinding(a1);
+        pObject->hkMemoryResourceHandle_ctor(a1);
     }
 }
 
-extern unsigned char DAT_0126ac10;
+extern unsigned char hkMemoryResourceHandleClass;
 
 // @fnv 0x00dfb420
 // src: GUESS 0x00dfb420 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfb420()
 {
-    return &DAT_0126ac10;
+    return &hkMemoryResourceHandleClass;
 }
 
 struct FUN_00e2ebc0_cls
 {
-    void __thiscall Init(void* a);
+    void __thiscall hkMemoryResourceContainer_ctor(void* flag);
 };
 
 // @fnv 0x00dfb430
@@ -3261,50 +3275,50 @@ struct FUN_00e2ebc0_cls
 void __cdecl Object_ProcessState_00dfb430(FUN_00e2ebc0_cls* pObject, void* pArg)
 {
     if (pObject != 0)
-        pObject->Init(pArg);
+        pObject->hkMemoryResourceContainer_ctor(pArg);
 }
 
-extern "C" int DAT_0126ac58;
+extern "C" int hkMemoryResourceContainerClass;
 // @fnv 0x00dfb480
 // src: GUESS 0x00dfb480 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb480(void)
 {
-    return &DAT_0126ac58;
+    return &hkMemoryResourceContainerClass;
 }
 
-extern int DAT_0126acd0;
+extern int hkaKeyFrameHierarchyUtilityControlDataClass;
 
 // @fnv 0x00dfb4d0
 // src: GUESS 0x00dfb4d0 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00dfb4d0()
 {
-    return reinterpret_cast<int>(&DAT_0126acd0);
+    return reinterpret_cast<int>(&hkaKeyFrameHierarchyUtilityControlDataClass);
 }
 
-extern int DAT_0126ad00;
+extern int hkaKeyFrameHierarchyUtilityClass;
 // @fnv 0x00dfb4f0
 // src: GUESS 0x00dfb4f0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126ad00Address()
 {
-    return &DAT_0126ad00;
+    return &hkaKeyFrameHierarchyUtilityClass;
 }
 
-extern int DAT_0126ad30;
+extern int hkaWaveletCompressedAnimationCompressionParamsClass;
 
 // @fnv 0x00dfb510
 // src: GUESS 0x00dfb510 (confidence: low)
 void* __cdecl Runtime_GetDAT0126ad30Address()
 {
-    return &DAT_0126ad30;
+    return &hkaWaveletCompressedAnimationCompressionParamsClass;
 }
 
-extern void* DAT_0126ad60;
+extern void* hkaWaveletCompressedAnimationQuantizationFormatClass;
 
 // @fnv 0x00dfb540
 // src: GUESS 0x00dfb540 (confidence: low)
 int __cdecl Object_ComputeValue_00dfb540()
 {
-    return reinterpret_cast<int>(&DAT_0126ad60);
+    return reinterpret_cast<int>(&hkaWaveletCompressedAnimationQuantizationFormatClass);
 }
 
 class DFB550Object
@@ -3320,13 +3334,13 @@ void Runtime_DestroySubobject_00dfb550(DFB550Object* pkObject)
     pkObject->~DFB550Object();
 }
 
-extern int DAT_0126ad90;
+extern int hkaWaveletCompressedAnimationClass;
 
 // @fnv 0x00dfb560
 // src: GUESS 0x00dfb560 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb560()
 {
-    return &DAT_0126ad90;
+    return &hkaWaveletCompressedAnimationClass;
 }
 
 inline void* operator new(unsigned int, void* pvWhere) throw()
@@ -3371,31 +3385,31 @@ void* __cdecl Runtime_GetDAT010ddc5cAddress()
     return &DAT_010ddc5c;
 }
 
-extern int DAT_0126add8;
+extern int hkaSplineCompressedAnimationTrackCompressionParamsClass;
 
 // @fnv 0x00dfb860
 // src: GUESS 0x00dfb860 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb860()
 {
-    return &DAT_0126add8;
+    return &hkaSplineCompressedAnimationTrackCompressionParamsClass;
 }
 
-extern unsigned char g_fnvDat0126ae08;
+extern unsigned char hkaSplineCompressedAnimationAnimationCompressionParamsClass;
 
 // @fnv 0x00dfb880
 // src: GUESS 0x00dfb880 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfb880()
 {
-    return &g_fnvDat0126ae08;
+    return &hkaSplineCompressedAnimationAnimationCompressionParamsClass;
 }
 
 // FUN_00dfb8a0 : a one-line function - getter
-extern int g_target_00dfb8a0;
+extern int hkaSplineCompressedAnimationClass;
 // @fnv 0x00dfb8a0
 // src: GUESS 0x00dfb8a0 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfb8a0()
 {
-    return &g_target_00dfb8a0;
+    return &hkaSplineCompressedAnimationClass;
 }
 
 // ResetVTable -- installs a fixed vtable on an object and, when the second
@@ -3436,21 +3450,21 @@ void* Runtime_GetDAT010de0ecAddress()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126ae80;
+extern CpuOpaque hkaSkeletonMapperDataSimpleMappingClass;
 // @fnv 0x00dfb920
 // src: GUESS 0x00dfb920 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfb920()
 {
-    return &DAT_0126ae80;
+    return &hkaSkeletonMapperDataSimpleMappingClass;
 }
 
-extern int DAT_0126aeb0;
+extern int hkaSkeletonMapperDataChainMappingClass;
 
 // @fnv 0x00dfb940
 // src: GUESS 0x00dfb940 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfb940()
 {
-    return &DAT_0126aeb0;
+    return &hkaSkeletonMapperDataChainMappingClass;
 }
 
 class CalleeObj
@@ -3469,13 +3483,13 @@ void __cdecl Runtime_ProcessState_00dfb950(CalleeObj* pCallee, void* pSecond)
     }
 }
 
-extern int DAT_0126aee0;
+extern int hkaSkeletonMapperDataClass;
 
 // @fnv 0x00dfb970
 // src: GUESS 0x00dfb970 (confidence: low)
 int* __cdecl Runtime_GetDAT0126aee0Address()
 {
-    return &DAT_0126aee0;
+    return &hkaSkeletonMapperDataClass;
 }
 
 struct FUN_00ce5370_cls
@@ -3490,13 +3504,13 @@ void __cdecl Object_ForwardCall_00dfb980(FUN_00ce5370_cls* p)
     p->UpdateState_00ce5370();
 }
 
-extern int DAT_0126af10;
+extern int hkaSkeletonLocalFrameOnBoneClass;
 
 // @fnv 0x00dfb990
 // src: GUESS 0x00dfb990 (confidence: low)
 int* __cdecl Runtime_GetDAT0126af10Address()
 {
-    return &DAT_0126af10;
+    return &hkaSkeletonLocalFrameOnBoneClass;
 }
 
 // FUN_00dfb9a0 : __cdecl, 13 bytes
@@ -3520,20 +3534,20 @@ int __cdecl Object_InvokeVirtualMethod_00dfb9a0(FUN_00dfb9a0_cls* pObj)
     return pObj->v00(0);
 }
 
-extern int DAT_0126af40;
+extern int hkaSkeletonClass;
 // @fnv 0x00dfb9b0
 // src: GUESS 0x00dfb9b0 (confidence: low)
 int* __cdecl Runtime_GetDAT0126af40Address(void)
 {
-    return &DAT_0126af40;
+    return &hkaSkeletonClass;
 }
 
-extern int DAT_0126af88;
+extern int hkaMeshBindingMappingClass;
 // @fnv 0x00dfba40
 // src: GUESS 0x00dfba40 (confidence: low)
 int* Object_GetGlobalObjectAddress_00dfba40()
 {
-    return &DAT_0126af88;
+    return &hkaMeshBindingMappingClass;
 }
 
 // FUN_00dfba50: null-guarded forwarding of a second argument to a
@@ -3554,13 +3568,13 @@ void __cdecl Object_ProcessState_00dfba50(FUN_00dfba50_cls* pObject, int a1)
     }
 }
 
-extern int g_unk0126afb8;
+extern int hkaMeshBindingClass;
 
 // @fnv 0x00dfbaa0
 // src: GUESS 0x00dfbaa0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbaa0()
 {
-    return &g_unk0126afb8;
+    return &hkaMeshBindingClass;
 }
 
 namespace fnv_00dfbac0 {
@@ -3609,21 +3623,21 @@ void __cdecl cleanupLoadedObjecthkaMeshBindingMapping(FUN_00dfbac0_cls* apBuffer
 }  // namespace fnv_00dfbac0
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b000;
+extern CpuOpaque hkaDeltaCompressedAnimationQuantizationFormatClass;
 // @fnv 0x00dfbb20
 // src: GUESS 0x00dfbb20 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfbb20()
 {
-    return &DAT_0126b000;
+    return &hkaDeltaCompressedAnimationQuantizationFormatClass;
 }
 
-extern int DAT_0126b030;
+extern int hkaDeltaCompressedAnimationClass;
 
 // @fnv 0x00dfbb40
 // src: GUESS 0x00dfbb40 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbb40()
 {
-    return &DAT_0126b030;
+    return &hkaDeltaCompressedAnimationClass;
 }
 
 // FUN_00dfbb50 : installs the class vtable into the object and, when the
@@ -3661,31 +3675,31 @@ void* __cdecl Runtime_GetDAT010de90cAddress()
     return &DAT_010de90c;
 }
 
-extern "C" int DAT_0126b078;
+extern "C" int hkaBoneClass;
 
 // @fnv 0x00dfbc10
 // src: GUESS 0x00dfbc10 (confidence: low)
 extern "C" void* __cdecl Runtime_GetGlobal0126B078Address()
 {
-    return &DAT_0126b078;
+    return &hkaBoneClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b0a8;
+extern CpuOpaque hkaAnnotationTrackAnnotationClass;
 // @fnv 0x00dfbc50
 // src: GUESS 0x00dfbc50 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126b0a8Address()
 {
-    return &DAT_0126b0a8;
+    return &hkaAnnotationTrackAnnotationClass;
 }
 
-extern int DAT_0126b0d8;
+extern int hkaAnnotationTrackClass;
 
 // @fnv 0x00dfbc60
 // src: GUESS 0x00dfbc60 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfbc60()
 {
-    return &DAT_0126b0d8;
+    return &hkaAnnotationTrackClass;
 }
 
 namespace fnv_00dfbcc0 {
@@ -3693,23 +3707,23 @@ struct GlobalObject
 {
     int unk00;
 };
-extern GlobalObject g_global;
+extern GlobalObject hkpVehicleLinearCastWheelCollideWheelStateClass;
 
 // @fnv 0x00dfbcc0
 // src: GUESS 0x00dfbcc0 (confidence: low)
 GlobalObject* __cdecl Object_GetGlobalObjectAddress_00dfbcc0()
 {
-    return &g_global;
+    return &hkpVehicleLinearCastWheelCollideWheelStateClass;
 }
 }  // namespace fnv_00dfbcc0
 
-extern int DAT_0126b138;
+extern int hkpVehicleLinearCastWheelCollideClass;
 
 // @fnv 0x00dfbce0
 // src: GUESS 0x00dfbce0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbce0()
 {
-    return &DAT_0126b138;
+    return &hkpVehicleLinearCastWheelCollideClass;
 }
 
 // InitVTable : __cdecl initializer for an object with several vtable slots.
@@ -3770,67 +3784,67 @@ void* __cdecl Runtime_GetDAT010dec3cAddress()
     return &DAT_010dec3c;
 }
 
-extern int DAT_0126b180;
+extern int hkpVehicleInstanceWheelInfoClass;
 
 // @fnv 0x00dfbdc0
 // src: GUESS 0x00dfbdc0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbdc0()
 {
-    return &DAT_0126b180;
+    return &hkpVehicleInstanceWheelInfoClass;
 }
 
-extern int DAT_0126b1b0;
+extern int hkpVehicleInstanceClass;
 
 // @fnv 0x00dfbde0
 // src: GUESS 0x00dfbde0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbde0()
 {
-    return &DAT_0126b1b0;
+    return &hkpVehicleInstanceClass;
 }
 
-extern int DAT_0126b1f8;
+extern int hkpVehicleFrictionDescriptionAxisDescriptionClass;
 
 // @fnv 0x00dfbe90
 // src: GUESS 0x00dfbe90 (confidence: low)
 void* __cdecl Runtime_GetDAT0126b1f8Address()
 {
-    return &DAT_0126b1f8;
+    return &hkpVehicleFrictionDescriptionAxisDescriptionClass;
 }
 
-extern unsigned char DAT_0126b228;
+extern unsigned char hkpVehicleFrictionDescriptionClass;
 
 // @fnv 0x00dfbeb0
 // src: GUESS 0x00dfbeb0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126b228Address()
 {
-    return &DAT_0126b228;
+    return &hkpVehicleFrictionDescriptionClass;
 }
 
-extern int DAT_0126b258;
+extern int hkpVehicleFrictionStatusAxisStatusClass;
 
 // @fnv 0x00dfbed0
 // src: GUESS 0x00dfbed0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126b258Address()
 {
-    return &DAT_0126b258;
+    return &hkpVehicleFrictionStatusAxisStatusClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b288;
+extern CpuOpaque hkpVehicleFrictionStatusClass;
 // @fnv 0x00dfbef0
 // src: GUESS 0x00dfbef0 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126b288Address()
 {
-    return &DAT_0126b288;
+    return &hkpVehicleFrictionStatusClass;
 }
 
-extern int DAT_0126b2b8;
+extern int hkpVehicleDefaultSuspensionWheelSpringSuspensionParametersClass;
 
 // @fnv 0x00dfbf20
 // src: GUESS 0x00dfbf20 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbf20()
 {
-    return &DAT_0126b2b8;
+    return &hkpVehicleDefaultSuspensionWheelSpringSuspensionParametersClass;
 }
 
 struct FUN_00dfbf30_class
@@ -3845,13 +3859,13 @@ void __cdecl Runtime_ForwardCall_00dfbf30(void* p)
     ((FUN_00dfbf30_class*)p)->m0(0);
 }
 
-extern int DAT_0126b2e8;
+extern int hkpVehicleDefaultSuspensionClass;
 
 // @fnv 0x00dfbf40
 // src: GUESS 0x00dfbf40 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfbf40()
 {
-    return &DAT_0126b2e8;
+    return &hkpVehicleDefaultSuspensionClass;
 }
 
 // @fnv 0x00dfbf60
@@ -3861,25 +3875,25 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfbf60()
     return &DAT_010df89c;
 }
 
-extern int DAT_0126b330;
+extern int hkpVehicleDefaultBrakeWheelBrakingPropertiesClass;
 
 // @fnv 0x00dfc030
 // src: GUESS 0x00dfc030 (confidence: low)
 void* __cdecl Runtime_GetDAT0126b330Address()
 {
-    return &DAT_0126b330;
+    return &hkpVehicleDefaultBrakeWheelBrakingPropertiesClass;
 }
 
 // FUN_00dfc050 : a constant getter - MSVC emits mov eax, OFFSET <global> ; ret.
 // The global is declared extern so the store becomes a relocation; the checker
 // binds it to the original's own immediate.
-extern int g_target_FUN_00dfc050;
+extern int hkpVehicleDefaultBrakeClass;
 
 // @fnv 0x00dfc050
 // src: GUESS 0x00dfc050 (confidence: low)
 void* __cdecl Runtime_GetTargetFUN00dfc050Address()
 {
-    return &g_target_FUN_00dfc050;
+    return &hkpVehicleDefaultBrakeClass;
 }
 
 // FUN_00dfc070 : a one-line function - getter
@@ -3891,13 +3905,13 @@ void* Runtime_GetTarget00dfc070Address()
     return &g_target_00dfc070;
 }
 
-extern int DAT_0126b3a8;
+extern int hkpVehicleDataWheelComponentParamsClass;
 
 // @fnv 0x00dfc100
 // src: GUESS 0x00dfc100 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc100()
 {
-    return &DAT_0126b3a8;
+    return &hkpVehicleDataWheelComponentParamsClass;
 }
 
 struct S_00dfc110_vt
@@ -3915,13 +3929,13 @@ void __cdecl Runtime_ForwardCall_00dfc110(void* p)
     ((S_00dfc110_vt*)p)->m0(0);
 }
 
-extern int g_0126b3d8;
+extern int hkpVehicleDataClass;
 
 // @fnv 0x00dfc120
 // src: GUESS 0x00dfc120 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc120()
 {
-    return &g_0126b3d8;
+    return &hkpVehicleDataClass;
 }
 
 extern int DAT_010dff44;
@@ -3992,6 +4006,7 @@ struct FUN_00dfc150_cls : public BufferBase
 // Frees both owned buffers through the global allocator, resets their data pointers, counts and capacities, then destroys the base object.
 // @fnv 0x00dfc150
 // src: GUESS 0x00dfc150 (confidence: medium)
+// pdb: hkpVehicleData::~hkpVehicleData | hkpVehicleDataClass.obj | retail, object-file run extension, low
 void FUN_00dfc150_cls::FreeOwnedBuffersAndDestroyBase()
 {
     hkMemoryRouter* h = hkMemoryRouter_getInstance();
@@ -4020,13 +4035,13 @@ void FUN_00dfc150_cls::FreeOwnedBuffersAndDestroyBase()
 }
 }  // namespace fnv_00dfc150
 
-extern unsigned char DAT_0126b420;
+extern unsigned char hkpTyremarkPointClass;
 
 // @fnv 0x00dfc220
 // src: GUESS 0x00dfc220 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfc220()
 {
-    return &DAT_0126b420;
+    return &hkpTyremarkPointClass;
 }
 
 namespace fnv_00dfc240 {
@@ -4034,22 +4049,22 @@ struct GlobalObject
 {
     int unk00;
 };
-extern GlobalObject g_global;
+extern GlobalObject hkpTyremarksWheelClass;
 
 // @fnv 0x00dfc240
 // src: GUESS 0x00dfc240 (confidence: low)
 GlobalObject* __cdecl Object_GetGlobalObjectAddress_00dfc240()
 {
-    return &g_global;
+    return &hkpTyremarksWheelClass;
 }
 }  // namespace fnv_00dfc240
 
-extern char DAT_0126b498;
+extern char hkpTyremarksInfoClass;
 // @fnv 0x00dfc260
 // src: GUESS 0x00dfc260 (confidence: low)
 char* __cdecl Object_GetGlobalObjectAddress_00dfc260()
 {
-    return &DAT_0126b498;
+    return &hkpTyremarksInfoClass;
 }
 
 extern int DAT_010e00cc;
@@ -4080,22 +4095,22 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfc360()
     return &DAT_0126b528;
 }
 
-extern int g_unk0126b4e0;
+extern int hkpSerializedSubTrack1nInfoClass;
 
 // @fnv 0x00dfc370
 // src: GUESS 0x00dfc370 (confidence: low)
 void* __cdecl Runtime_GetUnk0126b4e0Address()
 {
-    return &g_unk0126b4e0;
+    return &hkpSerializedSubTrack1nInfoClass;
 }
 
-extern void* DAT_0126b558;
+extern void* hkpSerializedAgentNnEntryClass;
 
 // @fnv 0x00dfc390
 // src: GUESS 0x00dfc390 (confidence: low)
 void* Runtime_GetDAT0126b558Address()
 {
-    return &DAT_0126b558;
+    return &hkpSerializedAgentNnEntryClass;
 }
 
 struct FUN_00e05c20_class
@@ -4123,12 +4138,12 @@ void __cdecl Runtime_ForwardCall_00dfc3b0(FUN_00dfc3b0_target* pTarget)
 }
 
 // FUN_00dfc440 : a one-line function - getter
-extern int g_target_00dfc440;
+extern int hkpSerializedDisplayRbTransformsDisplayTransformPairClass;
 // @fnv 0x00dfc440
 // src: GUESS 0x00dfc440 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfc440()
 {
-    return &g_target_00dfc440;
+    return &hkpSerializedDisplayRbTransformsDisplayTransformPairClass;
 }
 
 class VirtualDispatchObj
@@ -4144,13 +4159,13 @@ void __cdecl Runtime_ForwardCall_00dfc450(VirtualDispatchObj* p)
     p->Invoke0(0);
 }
 
-extern void* DAT_0126b588;
+extern void* hkpSerializedDisplayRbTransformsClass;
 
 // @fnv 0x00dfc460
 // src: GUESS 0x00dfc460 (confidence: low)
 int __cdecl Object_ComputeValue_00dfc460()
 {
-    return reinterpret_cast<int>(&DAT_0126b588);
+    return reinterpret_cast<int>(&hkpSerializedDisplayRbTransformsClass);
 }
 
 extern int DAT_010e04ac;
@@ -4162,31 +4177,31 @@ void* __cdecl Object_GetGlobalObjectAddress_00dfc480()
     return &DAT_010e04ac;
 }
 
-extern int g_unk0126b678;
+extern int hkpPoweredChainMapperTargetClass;
 
 // @fnv 0x00dfc4d0
 // src: GUESS 0x00dfc4d0 (confidence: low)
 void* __cdecl Runtime_GetUnk0126b678Address()
 {
-    return &g_unk0126b678;
+    return &hkpPoweredChainMapperTargetClass;
 }
 
-extern int DAT_0126b648;
+extern int hkpPoweredChainMapperLinkInfoClass;
 
 // @fnv 0x00dfc4f0
 // src: GUESS 0x00dfc4f0 (confidence: low)
 int* __cdecl Runtime_GetDAT0126b648Address()
 {
-    return &DAT_0126b648;
+    return &hkpPoweredChainMapperLinkInfoClass;
 }
 
-extern int DAT_0126b600;
+extern int hkpPoweredChainMapperClass;
 
 // @fnv 0x00dfc510
 // src: GUESS 0x00dfc510 (confidence: low)
 int* __cdecl Runtime_GetDAT0126b600Address()
 {
-    return &DAT_0126b600;
+    return &hkpPoweredChainMapperClass;
 }
 
 extern int DAT_010e0654;
@@ -4198,40 +4213,40 @@ int* __cdecl Runtime_GetDAT010e0654Address()
     return &DAT_010e0654;
 }
 
-extern int DAT_0126b6a8;
+extern int hkpMassPropertiesClass;
 
 // @fnv 0x00dfc590
 // src: GUESS 0x00dfc590 (confidence: low)
 int* __cdecl Runtime_GetDAT0126b6a8Address(void)
 {
-    return &DAT_0126b6a8;
+    return &hkpMassPropertiesClass;
 }
 
 // FUN_00dfc5b0 : a one-line function - getter
-extern int g_target_00dfc5b0;
+extern int hkpCharacterProxyCinfoClass;
 // @fnv 0x00dfc5b0
 // src: GUESS 0x00dfc5b0 (confidence: low)
 void* Runtime_GetTarget00dfc5b0Address()
 {
-    return &g_target_00dfc5b0;
+    return &hkpCharacterProxyCinfoClass;
 }
 
-extern int DAT_0126b708;
+extern int hkpMoppCodeReindexedTerminalClass;
 
 // @fnv 0x00dfc5d0
 // src: GUESS 0x00dfc5d0 (confidence: low)
 int* __cdecl Runtime_GetDAT0126b708Address()
 {
-    return &DAT_0126b708;
+    return &hkpMoppCodeReindexedTerminalClass;
 }
 
-extern int DAT_0126b738;
+extern int hkpMoppCodeCodeInfoClass;
 
 // @fnv 0x00dfc5f0
 // src: GUESS 0x00dfc5f0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126b738Address()
 {
-    return &DAT_0126b738;
+    return &hkpMoppCodeCodeInfoClass;
 }
 
 struct FUN_00dfc600_vt
@@ -4245,13 +4260,13 @@ void __cdecl Object_InvokeVirtualMethod_00dfc600(FUN_00dfc600_vt* p)
     p->m0(0);
 }
 
-extern unsigned char DAT_0126b768;
+extern unsigned char hkpMoppCodeClass;
 
 // @fnv 0x00dfc610
 // src: GUESS 0x00dfc610 (confidence: low)
 void* __cdecl Runtime_GetDAT0126b768Address()
 {
-    return &DAT_0126b768;
+    return &hkpMoppCodeClass;
 }
 
 extern int DAT_0102e368;
@@ -4263,22 +4278,22 @@ int* __cdecl Runtime_GetDAT0102e368Address()
     return &DAT_0102e368;
 }
 
-extern int DAT_0126b7b0;
+extern int hkpSimpleContactConstraintDataInfoClass;
 
 // @fnv 0x00dfc660
 // src: GUESS 0x00dfc660 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc660()
 {
-    return &DAT_0126b7b0;
+    return &hkpSimpleContactConstraintDataInfoClass;
 }
 
 // FUN_00dfc680 : a one-line function - getter
-extern int g_target_00dfc680;
+extern int hkpWheelConstraintDataAtomsClass;
 // @fnv 0x00dfc680
 // src: GUESS 0x00dfc680 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfc680()
 {
-    return &g_target_00dfc680;
+    return &hkpWheelConstraintDataAtomsClass;
 }
 
 struct FUN_00dfc690_vt
@@ -4293,13 +4308,13 @@ void __cdecl Runtime_ForwardCall_00dfc690(FUN_00dfc690_vt* p)
     p->m0(0);
 }
 
-extern int DAT_0126b810;
+extern int hkpWheelConstraintDataClass;
 
 // @fnv 0x00dfc6a0
 // src: GUESS 0x00dfc6a0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfc6a0()
 {
-    return &DAT_0126b810;
+    return &hkpWheelConstraintDataClass;
 }
 
 extern int DAT_010d0a64;
@@ -4311,22 +4326,22 @@ int* __cdecl Runtime_GetDAT010d0a64Address()
     return &DAT_010d0a64;
 }
 
-extern char DAT_0126b858;
+extern char hkpStiffSpringConstraintDataAtomsClass;
 
 // @fnv 0x00dfc6f0
 // src: GUESS 0x00dfc6f0 (confidence: low)
 void* Runtime_GetDAT0126b858Address()
 {
-    return &DAT_0126b858;
+    return &hkpStiffSpringConstraintDataAtomsClass;
 }
 
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126b888;
+extern GlobalObjectO2_00d472a0 hkpStiffSpringConstraintDataClass;
 // @fnv 0x00dfc710
 // src: GUESS 0x00dfc710 (confidence: low)
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField0126b888Address()
 {
-    return &g_0126b888;
+    return &hkpStiffSpringConstraintDataClass;
 }
 
 extern int DAT_010d0aac;
@@ -4338,13 +4353,13 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfc740()
     return &DAT_010d0aac;
 }
 
-extern int g_unk0126b8d0;
+extern int hkpStiffSpringChainDataConstraintInfoClass;
 
 // @fnv 0x00dfc760
 // src: GUESS 0x00dfc760 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc760()
 {
-    return &g_unk0126b8d0;
+    return &hkpStiffSpringChainDataConstraintInfoClass;
 }
 
 namespace fnv_00dfc770 {
@@ -4362,31 +4377,31 @@ void __cdecl Runtime_ProcessState_00dfc770(Handler_cls* pHandler, int value)
 }
 }  // namespace fnv_00dfc770
 
-extern int g_0126b900;
+extern int hkpStiffSpringChainDataClass;
 
 // @fnv 0x00dfc7c0
 // src: GUESS 0x00dfc7c0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc7c0()
 {
-    return &g_0126b900;
+    return &hkpStiffSpringChainDataClass;
 }
 
-extern int DAT_0126b948;
+extern int hkpSimpleShapePhantomCollisionDetailClass;
 
 // @fnv 0x00dfc7e0
 // src: GUESS 0x00dfc7e0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc7e0()
 {
-    return &DAT_0126b948;
+    return &hkpSimpleShapePhantomCollisionDetailClass;
 }
 
-extern int DAT_0126b978;
+extern int hkpSimpleShapePhantomClass;
 
 // @fnv 0x00dfc800
 // src: GUESS 0x00dfc800 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfc800()
 {
-    return &DAT_0126b978;
+    return &hkpSimpleShapePhantomClass;
 }
 
 class DFC810Object
@@ -4530,22 +4545,22 @@ FUN_00dfc850::FUN_00dfc850(int aiValue) : SpawnedBase(aiValue)
     *(volatile int*)&m_168 = (int)0x80000000;
 }
 
-extern int DAT_0126b9c0;
+extern int hkpRotationalConstraintDataAtomsClass;
 
 // @fnv 0x00dfc8c0
 // src: GUESS 0x00dfc8c0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc8c0()
 {
-    return &DAT_0126b9c0;
+    return &hkpRotationalConstraintDataAtomsClass;
 }
 
-extern int g_unk0126b9f0;
+extern int hkpRotationalConstraintDataClass;
 
 // @fnv 0x00dfc8e0
 // src: GUESS 0x00dfc8e0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc8e0()
 {
-    return &g_unk0126b9f0;
+    return &hkpRotationalConstraintDataClass;
 }
 
 extern int DAT_010e11ec;
@@ -4556,13 +4571,13 @@ int* __cdecl Runtime_GetDAT010e11ecAddress()
     return &DAT_010e11ec;
 }
 
-extern int g_0126ba38;
+extern int hkpRagdollLimitsDataAtomsClass;
 
 // @fnv 0x00dfc930
 // src: GUESS 0x00dfc930 (confidence: low)
 int* __cdecl Runtime_GetField0126ba38Address()
 {
-    return &g_0126ba38;
+    return &hkpRagdollLimitsDataAtomsClass;
 }
 
 struct FUN_00dfc940_class
@@ -4577,13 +4592,13 @@ void __cdecl Object_InvokeVirtualMethod_00dfc940(FUN_00dfc940_class* p)
     p->m0(0);
 }
 
-extern int DAT_0126ba68;
+extern int hkpRagdollLimitsDataClass;
 
 // @fnv 0x00dfc950
 // src: GUESS 0x00dfc950 (confidence: low)
 void* __cdecl Runtime_GetDAT0126ba68Address()
 {
-    return &DAT_0126ba68;
+    return &hkpRagdollLimitsDataClass;
 }
 
 extern int DAT_010d0af4;
@@ -4649,14 +4664,16 @@ struct S_00dfc970_Obj
 // Sets the object's vtable pointer and, when flag and unk9a are set, calls FUN_00d4f270 with a flag value of 1.
 // @fnv 0x00dfc970
 // src: HAVOK_LIB 0x00dfc970
-void __cdecl finishLoadedObjecthkpRagdollLimitsData(S_00dfc970_Obj* pObj, int flag)
+// pdb: finishLoadedObjecthkpRagdollLimitsData | hkpRagdollLimitsDataClass.obj | retail, upstream name already matches, high
+// pdb params: p, finishing
+void __cdecl finishLoadedObjecthkpRagdollLimitsData(S_00dfc970_Obj* p, int finishing)
 {
-    if (pObj)
+    if (p)
     {
-        pObj->vptr = &DAT_010d0af4;
-        if (flag && pObj->unk9a)
+        p->vptr = &DAT_010d0af4;
+        if (finishing && p->unk9a)
         {
-            pObj->hkpRagdollLimitsData_setConeLimitStabilization(S_00dfc970_Flag(1));
+            p->hkpRagdollLimitsData_setConeLimitStabilization(S_00dfc970_Flag(1));
         }
     }
 }
@@ -4670,13 +4687,13 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfc9a0()
     return &DAT_010d0af4;
 }
 
-extern int DAT_0126bab0;
+extern int hkpRagdollConstraintDataAtomsClass;
 
 // @fnv 0x00dfc9c0
 // src: GUESS 0x00dfc9c0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc9c0()
 {
-    return &DAT_0126bab0;
+    return &hkpRagdollConstraintDataAtomsClass;
 }
 
 class DFC9D0Object
@@ -4692,13 +4709,13 @@ void Runtime_DestroySubobject_00dfc9d0(DFC9D0Object* pkObject)
     pkObject->~DFC9D0Object();
 }
 
-extern int DAT_0126bae0;
+extern int hkpRagdollConstraintDataClass;
 
 // @fnv 0x00dfc9e0
 // src: GUESS 0x00dfc9e0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc9e0()
 {
-    return &DAT_0126bae0;
+    return &hkpRagdollConstraintDataClass;
 }
 
 extern int DAT_010cb71c;
@@ -4710,13 +4727,13 @@ void* __cdecl Runtime_GetDAT010cb71cAddress()
     return &DAT_010cb71c;
 }
 
-extern int DAT_0126bb28;
+extern int hkpPulleyConstraintDataAtomsClass;
 
 // @fnv 0x00dfca50
 // src: GUESS 0x00dfca50 (confidence: low)
 void* __cdecl Runtime_GetDAT0126bb28Address()
 {
-    return &DAT_0126bb28;
+    return &hkpPulleyConstraintDataAtomsClass;
 }
 
 class DFCA60Object
@@ -4732,13 +4749,13 @@ void Object_InvokeVirtualMethod_00dfca60(DFCA60Object* pkObject)
     pkObject->~DFCA60Object();
 }
 
-extern char g_unk0126bb58;
+extern char hkpPulleyConstraintDataClass;
 
 // @fnv 0x00dfca70
 // src: GUESS 0x00dfca70 (confidence: low)
 void* __cdecl Runtime_GetUnk0126bb58Address()
 {
-    return &g_unk0126bb58;
+    return &hkpPulleyConstraintDataClass;
 }
 
 extern int DAT_010da04c;
@@ -4750,22 +4767,22 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfcaa0()
     return &DAT_010da04c;
 }
 
-extern int DAT_0126bba0;
+extern int hkpPrismaticConstraintDataAtomsClass;
 
 // @fnv 0x00dfcac0
 // src: GUESS 0x00dfcac0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfcac0()
 {
-    return &DAT_0126bba0;
+    return &hkpPrismaticConstraintDataAtomsClass;
 }
 
-extern void* DAT_0126bbd0;
+extern void* hkpPrismaticConstraintDataClass;
 
 // @fnv 0x00dfcae0
 // src: GUESS 0x00dfcae0 (confidence: low)
 int __cdecl Object_ComputeValue_00dfcae0()
 {
-    return reinterpret_cast<int>(&DAT_0126bbd0);
+    return reinterpret_cast<int>(&hkpPrismaticConstraintDataClass);
 }
 
 extern int DAT_010d0b3c;
@@ -4776,18 +4793,18 @@ int* __cdecl Runtime_GetDAT010d0b3cAddress()
     return &DAT_010d0b3c;
 }
 
-extern int DAT_0126bc18;
+extern int hkpPoweredChainDataConstraintInfoClass;
 // @fnv 0x00dfcb30
 // src: GUESS 0x00dfcb30 (confidence: low)
 void* __cdecl Runtime_GetDAT0126bc18Address()
 {
-    return &DAT_0126bc18;
+    return &hkpPoweredChainDataConstraintInfoClass;
 }
 
 namespace fnv_00dfcb40 {
 struct Handler_cls
 {
-    void __thiscall Handle(int value);
+    void __thiscall Handle(int f);
 };
 
 // @fnv 0x00dfcb40
@@ -4848,24 +4865,24 @@ void** __cdecl Object_GetGlobalObjectAddress_00dfcc00()
 }
 
 // FUN_00dfcc20 : a one-line function - getter
-extern int g_target_00dfcc20;
+extern int hkpLimitedHingeConstraintDataAtomsClass;
 // @fnv 0x00dfcc20
 // src: GUESS 0x00dfcc20 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfcc20()
 {
-    return &g_target_00dfcc20;
+    return &hkpLimitedHingeConstraintDataAtomsClass;
 }
 
 struct S_00dfcc40_Obj
 {
     int unk00;
 };
-extern S_00dfcc40_Obj DAT_0126bd38;
+extern S_00dfcc40_Obj hkpLimitedHingeConstraintDataClass;
 // @fnv 0x00dfcc40
 // src: GUESS 0x00dfcc40 (confidence: low)
 S_00dfcc40_Obj* __cdecl Object_GetGlobalObjectAddress_00dfcc40()
 {
-    return &DAT_0126bd38;
+    return &hkpLimitedHingeConstraintDataClass;
 }
 
 // FUN_00dfcc70 : a one-line function - getter
@@ -4877,13 +4894,13 @@ void* Runtime_GetTarget00dfcc70Address()
     return &g_target_00dfcc70;
 }
 
-extern int DAT_0126bd80;
+extern int hkpHingeLimitsDataAtomsClass;
 
 // @fnv 0x00dfcc90
 // src: GUESS 0x00dfcc90 (confidence: low)
 int* __cdecl Runtime_GetDAT0126bd80Address()
 {
-    return &DAT_0126bd80;
+    return &hkpHingeLimitsDataAtomsClass;
 }
 
 // Forwarder: takes the object pointer, calls its first virtual slot with a
@@ -4901,12 +4918,12 @@ int __cdecl Object_InvokeVirtualMethod_00dfcca0(VtblForwarder* p)
 }
 
 // FUN_00dfccb0 : a one-line function - getter
-extern int g_target_00dfccb0;
+extern int hkpHingeLimitsDataClass;
 // @fnv 0x00dfccb0
 // src: GUESS 0x00dfccb0 (confidence: low)
 void* Runtime_GetTarget00dfccb0Address()
 {
-    return &g_target_00dfccb0;
+    return &hkpHingeLimitsDataClass;
 }
 
 extern int DAT_010d0be4;
@@ -4918,22 +4935,22 @@ void* __cdecl Object_GetGlobalObjectAddress_00dfcce0()
     return &DAT_010d0be4;
 }
 
-extern int DAT_0126bdf8;
+extern int hkpHingeConstraintDataAtomsClass;
 
 // @fnv 0x00dfcd00
 // src: GUESS 0x00dfcd00 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfcd00()
 {
-    return &DAT_0126bdf8;
+    return &hkpHingeConstraintDataAtomsClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126be28;
+extern CpuOpaque hkpHingeConstraintDataClass;
 // @fnv 0x00dfcd20
 // src: GUESS 0x00dfcd20 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfcd20()
 {
-    return &DAT_0126be28;
+    return &hkpHingeConstraintDataClass;
 }
 
 extern int DAT_010c91ec;
@@ -4945,48 +4962,48 @@ int* Runtime_GetDAT010c91ecAddress()
     return &DAT_010c91ec;
 }
 
-extern int DAT_0126be70;
+extern int hkpGenericConstraintDataSchemeConstraintInfoClass;
 
 // @fnv 0x00dfcd70
 // src: GUESS 0x00dfcd70 (confidence: low)
 int* __cdecl Runtime_GetDAT0126be70Address()
 {
-    return &DAT_0126be70;
+    return &hkpGenericConstraintDataSchemeConstraintInfoClass;
 }
 
-extern int DAT_0126bea0;
+extern int hkpGenericConstraintDataSchemeClass;
 
 // @fnv 0x00dfcda0
 // src: GUESS 0x00dfcda0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfcda0()
 {
-    return &DAT_0126bea0;
+    return &hkpGenericConstraintDataSchemeClass;
 }
 
 struct FUN_00dfcdb0_target
 {
-    void Run();
+    void hkpGenericConstraintDataScheme_dtor();
 };
 
 // @fnv 0x00dfcdb0
 // src: GUESS 0x00dfcdb0 (confidence: low)
 void __cdecl Runtime_ForwardCall_00dfcdb0(FUN_00dfcdb0_target* pTarget)
 {
-    pTarget->Run();
+    pTarget->hkpGenericConstraintDataScheme_dtor();
 }
 
-extern char DAT_0126bed0;
+extern char hkpBallSocketChainDataConstraintInfoClass;
 
 // @fnv 0x00dfcdd0
 // src: GUESS 0x00dfcdd0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126bed0Address()
 {
-    return &DAT_0126bed0;
+    return &hkpBallSocketChainDataConstraintInfoClass;
 }
 
 struct DFD5E0
 {
-    void __thiscall FUN_00d53df0(void* p);
+    void __thiscall FUN_00d53df0(void* f);
 };
 // @fnv 0x00dfcde0
 // src: GUESS 0x00dfcde0 (confidence: low)
@@ -4998,22 +5015,22 @@ void __cdecl Object_ProcessState_00dfcde0(void* pTarget, void* b)
     }
 }
 
-extern int DAT_0126bf00;
+extern int hkpBallSocketChainDataClass;
 
 // @fnv 0x00dfce30
 // src: GUESS 0x00dfce30 (confidence: low)
 void* __cdecl Runtime_GetDAT0126bf00Address()
 {
-    return &DAT_0126bf00;
+    return &hkpBallSocketChainDataClass;
 }
 
-extern int DAT_0126bf48;
+extern int hkpBallAndSocketConstraintDataAtomsClass;
 
 // @fnv 0x00dfce50
 // src: GUESS 0x00dfce50 (confidence: low)
 int* __cdecl Runtime_GetDAT0126bf48Address()
 {
-    return &DAT_0126bf48;
+    return &hkpBallAndSocketConstraintDataAtomsClass;
 }
 
 namespace fnv_00dfce60 {
@@ -5032,13 +5049,13 @@ int __cdecl Object_InvokeVirtualMethod_00dfce60(VtblForwarder* p)
 }
 }  // namespace fnv_00dfce60
 
-extern int DAT_0126bf78;
+extern int hkpBallAndSocketConstraintDataClass;
 
 // @fnv 0x00dfce70
 // src: GUESS 0x00dfce70 (confidence: low)
 void* __cdecl Runtime_GetDAT0126bf78Address()
 {
-    return &DAT_0126bf78;
+    return &hkpBallAndSocketConstraintDataClass;
 }
 
 extern int DAT_010d0cd4;
@@ -5050,30 +5067,30 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfcea0()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126bfc0;
+extern CpuOpaque hkpTypedBroadPhaseHandleClass;
 // @fnv 0x00dfcec0
 // src: GUESS 0x00dfcec0 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfcec0()
 {
-    return &DAT_0126bfc0;
+    return &hkpTypedBroadPhaseHandleClass;
 }
 
-extern int DAT_0126bff0;
+extern int hkpSimpleMeshShapeTriangleClass;
 
 // @fnv 0x00dfcef0
 // src: GUESS 0x00dfcef0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126bff0Address()
 {
-    return &DAT_0126bff0;
+    return &hkpSimpleMeshShapeTriangleClass;
 }
 
-extern int DAT_0126c020;
+extern int hkpSimpleMeshShapeClass;
 
 // @fnv 0x00dfcf10
 // src: GUESS 0x00dfcf10 (confidence: low)
 void* __cdecl Runtime_GetDAT0126c020Address()
 {
-    return &DAT_0126c020;
+    return &hkpSimpleMeshShapeClass;
 }
 
 struct FUN_00dfcf20_cls
@@ -5139,13 +5156,13 @@ FUN_00dfcf60_cls* FUN_00dfcf60_cls::InitializeVtables(int flag)
     return this;
 }
 
-extern int DAT_0126c068;
+extern int hkpMultiRayShapeRayClass;
 
 // @fnv 0x00dfd0c0
 // src: GUESS 0x00dfd0c0 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfd0c0()
 {
-    return &DAT_0126c068;
+    return &hkpMultiRayShapeRayClass;
 }
 
 struct FUN_00dfd0d0_cls
@@ -5160,13 +5177,13 @@ void Runtime_ForwardCall_00dfd0d0(FUN_00dfd0d0_cls* pTarget)
     pTarget->Call(0);
 }
 
-extern int DAT_0126c098;
+extern int hkpMultiRayShapeClass;
 
 // @fnv 0x00dfd0e0
 // src: GUESS 0x00dfd0e0 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfd0e0()
 {
-    return &DAT_0126c098;
+    return &hkpMultiRayShapeClass;
 }
 
 extern "C" void* DAT_010e222c;
@@ -5200,6 +5217,8 @@ struct FUN_00dfd130_cls
 
 // Frees the data array through the audio allocator, resets the object's fields and vtable, and frees the object itself when acFlags bit 0 is set.
 // @fnv 0x00dfd130
+// pdb: hkpMultiRayShape::`scalar deleting destructor' | hkpMultiRayShapeClass.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00dfd130_cls* FUN_00dfd130_cls::FUN_00dfd130(unsigned char acFlags)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -5223,12 +5242,12 @@ FUN_00dfd130_cls* FUN_00dfd130_cls::FUN_00dfd130(unsigned char acFlags)
 }
 }  // namespace fnv_00dfd130
 
-extern unsigned char DAT_0126c0e0;
+extern unsigned char hkpListShapeChildInfoClass;
 // @fnv 0x00dfd1b0
 // src: GUESS 0x00dfd1b0 (confidence: low)
 unsigned char* __cdecl Runtime_GetDAT0126c0e0Address()
 {
-    return &DAT_0126c0e0;
+    return &hkpListShapeChildInfoClass;
 }
 
 // @fnv 0x00dfd1c0
@@ -5238,13 +5257,13 @@ void __cdecl Object_ProcessAndTransformResult_00dfd1c0(void* p)
     (*(void(__thiscall**)(void*, int)) * (int*)p)(p, 0);
 }
 
-extern int DAT_0126c110;
+extern int hkpListShapeClass;
 
 // @fnv 0x00dfd1d0
 // src: GUESS 0x00dfd1d0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126c110Address()
 {
-    return &DAT_0126c110;
+    return &hkpListShapeClass;
 }
 
 // FUN_00dfd1e0: null-guarded forwarding of a second argument to a
@@ -5265,22 +5284,22 @@ void __cdecl Object_ProcessState_00dfd1e0(FUN_00dfd1e0_cls* pObject, int aiValue
     }
 }
 
-extern int DAT_0126c158;
+extern int hkpConvexVerticesShapeFourVectorsClass;
 
 // @fnv 0x00dfd230
 // src: GUESS 0x00dfd230 (confidence: low)
 int* __cdecl Runtime_GetDAT0126c158Address()
 {
-    return &DAT_0126c158;
+    return &hkpConvexVerticesShapeFourVectorsClass;
 }
 
 // FUN_00dfd250 : a one-line function - getter
-extern int g_target_00dfd250;
+extern int hkpConvexVerticesShapeClass;
 // @fnv 0x00dfd250
 // src: GUESS 0x00dfd250 (confidence: low)
 void* Runtime_GetTarget00dfd250Address()
 {
-    return &g_target_00dfd250;
+    return &hkpConvexVerticesShapeClass;
 }
 
 struct S_00dfd260_Foo
@@ -5298,31 +5317,31 @@ void __cdecl Object_ProcessState_00dfd260(S_00dfd260_Foo* pFoo, int arg)
     }
 }
 
-extern int DAT_0126c1d0;
+extern int hkpCompressedMeshShapeChunkClass;
 
 // @fnv 0x00dfd2a0
 // src: GUESS 0x00dfd2a0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfd2a0()
 {
-    return &DAT_0126c1d0;
+    return &hkpCompressedMeshShapeChunkClass;
 }
 
-extern int DAT_0126c200;
+extern int hkpCompressedMeshShapeBigTriangleClass;
 
 // @fnv 0x00dfd2c0
 // src: GUESS 0x00dfd2c0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfd2c0()
 {
-    return &DAT_0126c200;
+    return &hkpCompressedMeshShapeBigTriangleClass;
 }
 
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126c230;
+extern GlobalObjectO2_00d472a0 hkpCompressedMeshShapeConvexPieceClass;
 // @fnv 0x00dfd2d0
 // src: GUESS 0x00dfd2d0 (confidence: low)
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField0126c230Address()
 {
-    return &g_0126c230;
+    return &hkpCompressedMeshShapeConvexPieceClass;
 }
 
 struct FUN_00dfd2e0_Class
@@ -5338,12 +5357,12 @@ void __cdecl Object_InvokeVirtualMethod_00dfd2e0(FUN_00dfd2e0_Class* param_1)
 }
 
 // FUN_00dfd2f0 : a one-line function - getter
-extern int g_target_00dfd2f0;
+extern int hkpCompressedMeshShapeClass;
 // @fnv 0x00dfd2f0
 // src: GUESS 0x00dfd2f0 (confidence: low)
 void* Runtime_GetTarget00dfd2f0Address()
 {
-    return &g_target_00dfd2f0;
+    return &hkpCompressedMeshShapeClass;
 }
 
 struct FUN_00e3dbd0_class
@@ -5401,21 +5420,21 @@ void* __cdecl Object_GetGlobalObjectAddress_00dfd500()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c308;
+extern CpuOpaque hkpAgent1nSectorClass;
 // @fnv 0x00dfd540
 // src: GUESS 0x00dfd540 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfd540()
 {
-    return &DAT_0126c308;
+    return &hkpAgent1nSectorClass;
 }
 
-extern int DAT_0126c338;
+extern int hkxVertexDescriptionElementDeclClass;
 
 // @fnv 0x00dfd560
 // src: GUESS 0x00dfd560 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfd560()
 {
-    return &DAT_0126c338;
+    return &hkxVertexDescriptionElementDeclClass;
 }
 
 // FUN_00dfd570: null-guarded forwarder. The first argument (an object
@@ -5437,13 +5456,13 @@ void __cdecl Object_ProcessState_00dfd570(FUN_00dfd570_cls* pObject, int aiValue
     }
 }
 
-extern int DAT_0126c368;
+extern int hkxVertexDescriptionClass;
 
 // @fnv 0x00dfd590
 // src: GUESS 0x00dfd590 (confidence: low)
 int* __cdecl Runtime_GetDAT0126c368Address()
 {
-    return &DAT_0126c368;
+    return &hkxVertexDescriptionClass;
 }
 
 namespace fnv_00dfd5a0 {
@@ -5473,19 +5492,19 @@ void __cdecl ClearAndFreeData(FUN_00dfd5a0_cls* obj)
 }
 }  // namespace fnv_00dfd5a0
 
-extern int DAT_0126c398;
+extern int hkxVertexBufferVertexDataClass;
 
 // @fnv 0x00dfd5f0
 // src: GUESS 0x00dfd5f0 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00dfd5f0()
 {
-    return reinterpret_cast<int>(&DAT_0126c398);
+    return reinterpret_cast<int>(&hkxVertexBufferVertexDataClass);
 }
 
 class FUN_00dfd600_cls
 {
   public:
-    void Callee(unsigned int value);
+    void Callee(unsigned int f);
 };
 
 // @fnv 0x00dfd600
@@ -5499,48 +5518,48 @@ void __cdecl Object_ProcessState_00dfd600(FUN_00dfd600_cls* target, unsigned int
 }
 
 // FUN_00dfd650 : a one-line function - getter
-extern int g_target_00dfd650;
+extern int hkxVertexBufferClass;
 // @fnv 0x00dfd650
 // src: GUESS 0x00dfd650 (confidence: low)
 void* Runtime_GetTarget00dfd650Address()
 {
-    return &g_target_00dfd650;
+    return &hkxVertexBufferClass;
 }
 
-extern int DAT_0126c410;
+extern int hkxNodeAnnotationDataClass;
 
 // @fnv 0x00dfd790
 // src: GUESS 0x00dfd790 (confidence: low)
 int* __cdecl Runtime_GetDAT0126c410Address()
 {
-    return &DAT_0126c410;
+    return &hkxNodeAnnotationDataClass;
 }
 
-extern int DAT_0126c440;
+extern int hkxNodeClass;
 
 // @fnv 0x00dfd7b0
 // src: GUESS 0x00dfd7b0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126c440Address()
 {
-    return &DAT_0126c440;
+    return &hkxNodeClass;
 }
 
-extern int DAT_0126c488;
+extern int hkxMaterialTextureStageClass;
 
 // @fnv 0x00dfd930
 // src: GUESS 0x00dfd930 (confidence: low)
 void* __cdecl Runtime_GetDAT0126c488Address()
 {
-    return &DAT_0126c488;
+    return &hkxMaterialTextureStageClass;
 }
 
-extern int DAT_0126c4b8;
+extern int hkxMaterialClass;
 
 // @fnv 0x00dfd950
 // src: GUESS 0x00dfd950 (confidence: low)
 int* __cdecl Runtime_GetDAT0126c4b8Address()
 {
-    return &DAT_0126c4b8;
+    return &hkxMaterialClass;
 }
 
 extern int DAT_010e33dc;
@@ -5564,13 +5583,13 @@ void __cdecl Runtime_SetVtableAndProcessState_00dfd990(FUN_00dfd990_class* objec
     }
 }
 
-extern int DAT_0126c500;
+extern int hkxEnvironmentVariableClass;
 
 // @fnv 0x00dfda40
 // src: GUESS 0x00dfda40 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfda40()
 {
-    return &DAT_0126c500;
+    return &hkxEnvironmentVariableClass;
 }
 
 struct S_00e3f510_Foo
@@ -5588,13 +5607,13 @@ void __cdecl Object_ProcessState_00dfda50(void* pObject, int aiValue)
     }
 }
 
-extern int DAT_0126c530;
+extern int hkxEnvironmentClass;
 
 // @fnv 0x00dfdaa0
 // src: GUESS 0x00dfdaa0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfdaa0()
 {
-    return &DAT_0126c530;
+    return &hkxEnvironmentClass;
 }
 
 struct AdjacentObjects
@@ -5611,31 +5630,31 @@ void __cdecl Runtime_ProcessState_00dfdab0(AdjacentObjects* objects)
     objects->first.Object_UpdateFields_00cb0c00();
 }
 
-extern int DAT_0126c578;
+extern int hkxEnumItemClass;
 
 // @fnv 0x00dfdaf0
 // src: GUESS 0x00dfdaf0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126c578Address()
 {
-    return &DAT_0126c578;
+    return &hkxEnumItemClass;
 }
 
 // FUN_00dfdb10 : a one-line function - getter
-extern int g_target_00dfdb10;
+extern int hkxEnumClass;
 // @fnv 0x00dfdb10
 // src: GUESS 0x00dfdb10 (confidence: low)
 void* Runtime_GetTarget00dfdb10Address()
 {
-    return &g_target_00dfdb10;
+    return &hkxEnumClass;
 }
 
-extern int DAT_0126c5f0;
+extern int hkxSparselyAnimatedEnumClass;
 
 // @fnv 0x00dfdb30
 // src: GUESS 0x00dfdb30 (confidence: low)
 void* __cdecl Runtime_GetDAT0126c5f0Address()
 {
-    return &DAT_0126c5f0;
+    return &hkxSparselyAnimatedEnumClass;
 }
 
 extern int DAT_010e351c;
@@ -5655,49 +5674,49 @@ void* __cdecl Object_GetGlobalObjectAddress_00dfdb80()
     return &DAT_010e352c;
 }
 
-extern int DAT_0126c638;
+extern int hkxAttributeGroupClass;
 
 // @fnv 0x00dfdd20
 // src: GUESS 0x00dfdd20 (confidence: low)
 int* Object_GetGlobalObjectAddress_00dfdd20()
 {
-    return &DAT_0126c638;
+    return &hkxAttributeGroupClass;
 }
 
-extern int DAT_0126c668;
+extern int hkxAttributeClass;
 
 // @fnv 0x00dfdd80
 // src: GUESS 0x00dfdd80 (confidence: low)
 int __cdecl Object_ComputeValue_00dfdd80()
 {
-    return reinterpret_cast<int>(&DAT_0126c668);
+    return reinterpret_cast<int>(&hkxAttributeClass);
 }
 
-extern int DAT_0126c698;
+extern int hkPackfileSectionHeaderClass;
 
 // @fnv 0x00dfddc0
 // src: GUESS 0x00dfddc0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfddc0()
 {
-    return &DAT_0126c698;
+    return &hkPackfileSectionHeaderClass;
 }
 
-extern int DAT_0126c6c8;
+extern int hkPackfileHeaderClass;
 
 // @fnv 0x00dfdde0
 // src: GUESS 0x00dfdde0 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfdde0()
 {
-    return &DAT_0126c6c8;
+    return &hkPackfileHeaderClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c6f8;
+extern CpuOpaque hkTraceStreamTitleClass;
 // @fnv 0x00dfde00
 // src: GUESS 0x00dfde00 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfde00()
 {
-    return &DAT_0126c6f8;
+    return &hkTraceStreamTitleClass;
 }
 
 struct FUN_00dfde10_vtable
@@ -5713,13 +5732,13 @@ void __cdecl Runtime_ForwardCall_00dfde10(void* p)
     reinterpret_cast<FUN_00dfde10_vtable*>(p)->slot0(0);
 }
 
-extern int DAT_0126c728;
+extern int hkTraceStreamClass;
 
 // @fnv 0x00dfde20
 // src: GUESS 0x00dfde20 (confidence: low)
 int __cdecl Object_ComputeValue_00dfde20()
 {
-    return reinterpret_cast<int>(&DAT_0126c728);
+    return reinterpret_cast<int>(&hkTraceStreamClass);
 }
 
 extern int DAT_010d3cc0;
@@ -5730,30 +5749,30 @@ int* __cdecl Runtime_GetDAT010d3cc0Address()
     return &DAT_010d3cc0;
 }
 
-extern char DAT_0126c770;
+extern char hkSweptTransformClass;
 // @fnv 0x00dfde70
 // src: GUESS 0x00dfde70 (confidence: low)
 char* __cdecl Runtime_GetDAT0126c770Address(void)
 {
-    return &DAT_0126c770;
+    return &hkSweptTransformClass;
 }
 
-extern int DAT_0126c7a0;
+extern int hkSphereClass;
 
 // @fnv 0x00dfde90
 // src: GUESS 0x00dfde90 (confidence: low)
 void* __cdecl Runtime_GetDAT0126c7a0Address()
 {
-    return &DAT_0126c7a0;
+    return &hkSphereClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c7d0;
+extern CpuOpaque hkMotionStateClass;
 // @fnv 0x00dfdeb0
 // src: GUESS 0x00dfdeb0 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126c7d0Address()
 {
-    return &DAT_0126c7d0;
+    return &hkMotionStateClass;
 }
 
 // FUN_00dfdec0: null-guarded forwarding of a second argument to a
@@ -5774,13 +5793,13 @@ void __cdecl Object_ProcessState_00dfdec0(FUN_00dfdec0_cls* pObject, int aiValue
     }
 }
 
-extern unsigned char DAT_0126c800;
+extern unsigned char hkMonitorStreamStringMapStringMapClass;
 
 // @fnv 0x00dfdee0
 // src: GUESS 0x00dfdee0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfdee0()
 {
-    return &DAT_0126c800;
+    return &hkMonitorStreamStringMapStringMapClass;
 }
 
 // FUN_00dfdef0: null-guarded forwarding of a second argument to a
@@ -5801,31 +5820,31 @@ void __cdecl Object_ProcessState_00dfdef0(FUN_00dfdef0_cls* pObject, int aiValue
     }
 }
 
-extern int g_unk0126c830;
+extern int hkMonitorStreamStringMapClass;
 
 // @fnv 0x00dfdf10
 // src: GUESS 0x00dfdf10 (confidence: low)
 void* __cdecl Runtime_GetUnk0126c830Address()
 {
-    return &g_unk0126c830;
+    return &hkMonitorStreamStringMapClass;
 }
 
-extern int DAT_0126c860;
+extern int hkMonitorStreamFrameInfoClass;
 
 // @fnv 0x00dfdf30
 // src: GUESS 0x00dfdf30 (confidence: low)
 int* __cdecl Runtime_GetDAT0126c860Address()
 {
-    return &DAT_0126c860;
+    return &hkMonitorStreamFrameInfoClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c890;
+extern CpuOpaque hkMonitorStreamColorTableColorPairClass;
 // @fnv 0x00dfdf40
 // src: GUESS 0x00dfdf40 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfdf40()
 {
-    return &DAT_0126c890;
+    return &hkMonitorStreamColorTableColorPairClass;
 }
 
 class DFDF50Object
@@ -5841,13 +5860,13 @@ void __cdecl Runtime_DestroySubobject_00dfdf50(DFDF50Object* pkObject)
     pkObject->~DFDF50Object();
 }
 
-extern int DAT_0126c8c0;
+extern int hkMonitorStreamColorTableClass;
 
 // @fnv 0x00dfdf60
 // src: GUESS 0x00dfdf60 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfdf60()
 {
-    return &DAT_0126c8c0;
+    return &hkMonitorStreamColorTableClass;
 }
 
 extern int DAT_010e3e5c;
@@ -5932,6 +5951,7 @@ struct ArrayContainer : ArrayBase
 };
 // Resets the contents array using the engine heap, then destroys the ArrayBase subobject.
 // @fnv 0x00dfdfe0
+// pdb: hkMonitorStreamColorTable::~hkMonitorStreamColorTable | hkMonitorStreamAnalyzerClass.obj | retail, object-file run extension, low
 void ArrayContainer::ResetAndDestroy()
 {
     EngineHeap* heap = hkMemoryRouter_getInstance()->heap;
@@ -5940,67 +5960,67 @@ void ArrayContainer::ResetAndDestroy()
 }
 }  // namespace fnv_00dfdfe0
 
-extern int DAT_0126c908;
+extern int hkGeometryTriangleClass;
 
 // @fnv 0x00dfe090
 // src: GUESS 0x00dfe090 (confidence: low)
 int* __cdecl Runtime_GetDAT0126c908Address()
 {
-    return &DAT_0126c908;
+    return &hkGeometryTriangleClass;
 }
 
-extern int DAT_0126c938;
+extern int hkGeometryClass;
 
 // @fnv 0x00dfe0a0
 // src: GUESS 0x00dfe0a0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe0a0()
 {
-    return &DAT_0126c938;
+    return &hkGeometryClass;
 }
 
-extern int DAT_0126c968;
+extern int hkCustomAttributesAttributeClass;
 
 // @fnv 0x00dfe0e0
 // src: GUESS 0x00dfe0e0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe0e0()
 {
-    return &DAT_0126c968;
+    return &hkCustomAttributesAttributeClass;
 }
 
-extern int DAT_0126c998;
+extern int hkCustomAttributesClass;
 
 // @fnv 0x00dfe100
 // src: GUESS 0x00dfe100 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe100()
 {
-    return &DAT_0126c998;
+    return &hkCustomAttributesClass;
 }
 
 // FUN_00dfe120 : a one-line function - getter
-extern int g_target_00dfe120;
+extern int hkContactPointMaterialClass;
 // @fnv 0x00dfe120
 // src: GUESS 0x00dfe120 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfe120()
 {
-    return &g_target_00dfe120;
+    return &hkContactPointMaterialClass;
 }
 
-extern int DAT_0126c9f8;
+extern int hkContactPointClass;
 
 // @fnv 0x00dfe140
 // src: GUESS 0x00dfe140 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe140()
 {
-    return &DAT_0126c9f8;
+    return &hkContactPointClass;
 }
 
 // FUN_00dfe160 : a one-line function - getter
-extern int g_target_00dfe160;
+extern int hkColorClass;
 // @fnv 0x00dfe160
 // src: GUESS 0x00dfe160 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfe160()
 {
-    return &g_target_00dfe160;
+    return &hkColorClass;
 }
 
 extern int DAT_0126ca58;
@@ -6039,13 +6059,13 @@ void* __cdecl Object_GetGlobalObjectAddress_00dfe1e0()
     return &DAT_0126cae8;
 }
 
-extern int DAT_0126cb18;
+extern int hkBitFieldClass;
 
 // @fnv 0x00dfe1f0
 // src: GUESS 0x00dfe1f0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126cb18Address()
 {
-    return &DAT_0126cb18;
+    return &hkBitFieldClass;
 }
 
 namespace fnv_00dfe210 {
@@ -6087,31 +6107,31 @@ void __cdecl Object_ProcessState_00dfe250(FUN_00dfe250_cls* pObject, int aiValue
 }
 
 // FUN_00dfe2a0: cdecl, returns the address of a global object.
-extern char g_unk0126cb48;
+extern char hkaRagdollInstanceClass;
 
 // @fnv 0x00dfe2a0
 // src: GUESS 0x00dfe2a0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe2a0()
 {
-    return &g_unk0126cb48;
+    return &hkaRagdollInstanceClass;
 }
 
-extern void* DAT_0126cb90;
+extern void* hkaSkeletonMapperClass;
 
 // @fnv 0x00dfe2c0
 // src: GUESS 0x00dfe2c0 (confidence: low)
 int __cdecl Object_ComputeValue_00dfe2c0()
 {
-    return reinterpret_cast<int>(&DAT_0126cb90);
+    return reinterpret_cast<int>(&hkaSkeletonMapperClass);
 }
 
 // FUN_00dfe330 : a one-line function - getter
-extern int g_target_00dfe330;
+extern int hkaInterleavedUncompressedAnimationClass;
 // @fnv 0x00dfe330
 // src: GUESS 0x00dfe330 (confidence: low)
 void* Runtime_GetTarget00dfe330Address()
 {
-    return &g_target_00dfe330;
+    return &hkaInterleavedUncompressedAnimationClass;
 }
 
 extern int DAT_010e5474;
@@ -6140,12 +6160,12 @@ void __cdecl Object_ProcessState_00dfe410(FUN_00cb0a70_obj* pObject, int value)
 }
 
 // FUN_00dfe460 : a one-line function - getter
-extern int g_target_00dfe460;
+extern int hkaFootstepAnalysisInfoClass;
 // @fnv 0x00dfe460
 // src: GUESS 0x00dfe460 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfe460()
 {
-    return &g_target_00dfe460;
+    return &hkaFootstepAnalysisInfoClass;
 }
 
 // @fnv 0x00dfe470
@@ -6155,23 +6175,23 @@ void __cdecl Runtime_ForwardCall_00dfe470(FUN_00dfe430_class* p)
     p->ReturnSelf(0);
 }
 
-extern int DAT_0126cc68;
+extern int hkaFootstepAnalysisInfoContainerClass;
 
 // @fnv 0x00dfe480
 // src: GUESS 0x00dfe480 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe480()
 {
-    return &DAT_0126cc68;
+    return &hkaFootstepAnalysisInfoContainerClass;
 }
 
 // FUN_00dfe4f0: cdecl, returns the address of a global object.
-extern char g_unk0126ccb0;
+extern char hkaDefaultAnimatedReferenceFrameClass;
 
 // @fnv 0x00dfe4f0
 // src: GUESS 0x00dfe4f0 (confidence: low)
 void* __cdecl Runtime_GetUnk0126ccb0Address()
 {
-    return &g_unk0126ccb0;
+    return &hkaDefaultAnimatedReferenceFrameClass;
 }
 
 extern int DAT_010e57a4;
@@ -6184,22 +6204,22 @@ int* Runtime_GetDAT010e57a4Address()
 }
 
 // FUN_00dfe5a0: cdecl, returns the address of a global object.
-extern char g_unk0126ccf8;
+extern char hkaBoneAttachmentClass;
 
 // @fnv 0x00dfe5a0
 // src: GUESS 0x00dfe5a0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe5a0()
 {
-    return &g_unk0126ccf8;
+    return &hkaBoneAttachmentClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126cd40;
+extern CpuOpaque hkaAnimationPreviewColorContainerClass;
 // @fnv 0x00dfe680
 // src: GUESS 0x00dfe680 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfe680()
 {
-    return &DAT_0126cd40;
+    return &hkaAnimationPreviewColorContainerClass;
 }
 
 extern int DAT_010e58c8;
@@ -6222,13 +6242,13 @@ void __cdecl Object_InvokeVirtualMethod_00dfe6e0(FUN_00dfe6e0_Class* param_1)
     param_1->vf00(0);
 }
 
-extern unsigned char DAT_0126cd88;
+extern unsigned char hkaAnimationContainerClass;
 
 // @fnv 0x00dfe6f0
 // src: GUESS 0x00dfe6f0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126cd88Address()
 {
-    return &DAT_0126cd88;
+    return &hkaAnimationContainerClass;
 }
 
 extern int DAT_010e59ac;
@@ -6252,22 +6272,22 @@ void __cdecl Runtime_ForwardCall_00dfe970(FUN_00dfe970_class* p)
     p->m_iWordAt00(0);
 }
 
-extern int g_unk0126cdd0;
+extern int hkaAnimationBindingClass;
 
 // @fnv 0x00dfe980
 // src: GUESS 0x00dfe980 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe980()
 {
-    return &g_unk0126cdd0;
+    return &hkaAnimationBindingClass;
 }
 
-extern int DAT_0126ce18;
+extern int hkpVehicleRayCastWheelCollideClass;
 
 // @fnv 0x00dfeab0
 // src: GUESS 0x00dfeab0 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00dfeab0()
 {
-    return reinterpret_cast<int>(&DAT_0126ce18);
+    return reinterpret_cast<int>(&hkpVehicleRayCastWheelCollideClass);
 }
 
 extern int DAT_010dec04;
@@ -6306,13 +6326,13 @@ int* Object_GetGlobalObjectAddress_00dfeb00()
     return &DAT_010e5ae4;
 }
 
-extern int DAT_0126ce60;
+extern int hkpVehicleRayCastBatchingManagerClass;
 
 // @fnv 0x00dfeb50
 // src: GUESS 0x00dfeb50 (confidence: low)
 int* __cdecl Runtime_GetDAT0126ce60Address()
 {
-    return &DAT_0126ce60;
+    return &hkpVehicleRayCastBatchingManagerClass;
 }
 
 extern int DAT_010e5b68;
@@ -6336,6 +6356,8 @@ struct FnvCpu_FUN_00dfeb80_CpuObject
 };
 // Calls FUN_00e42740, and if bit 0 of flags is set, frees this through the allocator using size, then returns this.
 // @fnv 0x00dfeb80
+// pdb: hkpVehicleManager::`scalar deleting destructor' | hkpVehicleRayCastBatchingManagerClass.obj | retail, vtable slot, high
+// pdb params: this
 FnvCpu_FUN_00dfeb80_CpuObject* FnvCpu_FUN_00dfeb80_CpuObject::FUN_00dfeb80(unsigned int flags)
 {
     FUN_00e42740();
@@ -6365,14 +6387,14 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfebe0()
     return &DAT_010e5b4c;
 }
 
-extern int DAT_0126cef0;
+extern int hkpVehicleLinearCastBatchingManagerClass;
 
 // Returns the address of a global object (mov eax, offset global; ret).
 // @fnv 0x00dfec00
 // src: GUESS 0x00dfec00 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dfec00()
 {
-    return &DAT_0126cef0;
+    return &hkpVehicleLinearCastBatchingManagerClass;
 }
 
 extern int DAT_010e5bfc;
@@ -6387,13 +6409,13 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfec20()
 // FUN_00dfec40 : a constant getter - MSVC emits mov eax, OFFSET <global> ; ret.
 // The global is declared extern so the store becomes a relocation; the checker
 // binds it to the original's own immediate.
-extern int g_target_FUN_00dfec40;
+extern int hkpVehicleDriverInputAnalogStatusClass;
 
 // @fnv 0x00dfec40
 // src: GUESS 0x00dfec40 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfec40()
 {
-    return &g_target_FUN_00dfec40;
+    return &hkpVehicleDriverInputAnalogStatusClass;
 }
 
 class DFEC50Object
@@ -6410,12 +6432,12 @@ void __cdecl Runtime_DestroySubobject_00dfec50(DFEC50Object* pkObject)
 }
 
 // FUN_00dfec60 : a one-line function - getter
-extern int g_target_00dfec60;
+extern int hkpVehicleDefaultAnalogDriverInputClass;
 // @fnv 0x00dfec60
 // src: GUESS 0x00dfec60 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfec60()
 {
-    return &g_target_00dfec60;
+    return &hkpVehicleDefaultAnalogDriverInputClass;
 }
 
 // FUN_00dfec80: cdecl, returns the address of a global data symbol.
@@ -6437,13 +6459,13 @@ void* __cdecl Object_GetGlobalObjectAddress_00dfeca0()
     return &DAT_010e5da8;
 }
 
-extern int DAT_0126cfc8;
+extern int hkpVehicleDefaultVelocityDamperClass;
 
 // @fnv 0x00dfecc0
 // src: GUESS 0x00dfecc0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfecc0()
 {
-    return &DAT_0126cfc8;
+    return &hkpVehicleDefaultVelocityDamperClass;
 }
 
 extern int DAT_010e5e9c;
@@ -6456,12 +6478,12 @@ int* __cdecl Object_GetGlobalObjectAddress_00dfece0()
 }
 
 // FUN_00dfed00 : a one-line function - getter
-extern int g_target_00dfed00;
+extern int hkpVehicleDefaultTransmissionClass;
 // @fnv 0x00dfed00
 // src: GUESS 0x00dfed00 (confidence: low)
 void* Object_GetGlobalObjectAddress_00dfed00()
 {
-    return &g_target_00dfed00;
+    return &hkpVehicleDefaultTransmissionClass;
 }
 
 // @fnv 0x00dfed20
@@ -6471,13 +6493,13 @@ int* Object_GetGlobalObjectAddress_00dfed20()
     return &DAT_010e5ff4;
 }
 
-extern int DAT_0126d058;
+extern int hkpVehicleDefaultSteeringClass;
 
 // @fnv 0x00dfedf0
 // src: GUESS 0x00dfedf0 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00dfedf0()
 {
-    return reinterpret_cast<int>(&DAT_0126d058);
+    return reinterpret_cast<int>(&hkpVehicleDefaultSteeringClass);
 }
 
 extern int DAT_010e60c4;
@@ -6489,13 +6511,13 @@ int* __cdecl Runtime_GetDAT010e60c4Address()
     return &DAT_010e60c4;
 }
 
-extern int DAT_0126d0a0;
+extern int hkpVehicleDefaultEngineClass;
 
 // @fnv 0x00dfee90
 // src: GUESS 0x00dfee90 (confidence: low)
 int* __cdecl Runtime_GetDAT0126d0a0Address()
 {
-    return &DAT_0126d0a0;
+    return &hkpVehicleDefaultEngineClass;
 }
 
 extern int DAT_010e62a4;
@@ -6507,13 +6529,13 @@ void* __cdecl Runtime_GetDAT010e62a4Address()
     return &DAT_010e62a4;
 }
 
-extern int DAT_0126d0e8;
+extern int hkpVehicleDefaultAerodynamicsClass;
 
 // @fnv 0x00dfeed0
 // src: GUESS 0x00dfeed0 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00dfeed0()
 {
-    return reinterpret_cast<int>(&DAT_0126d0e8);
+    return reinterpret_cast<int>(&hkpVehicleDefaultAerodynamicsClass);
 }
 
 extern int DAT_010e6394;
@@ -6525,13 +6547,13 @@ int* __cdecl Runtime_GetDAT010e6394Address()
     return &DAT_010e6394;
 }
 
-extern int DAT_0126d130;
+extern int hkpRejectChassisListenerClass;
 
 // @fnv 0x00dfef10
 // src: GUESS 0x00dfef10 (confidence: low)
 void* __cdecl Runtime_GetDAT0126d130Address()
 {
-    return &DAT_0126d130;
+    return &hkpRejectChassisListenerClass;
 }
 
 namespace fnv_00dfef20 {
@@ -6580,13 +6602,13 @@ void Object_InvokeVirtualMethod_00dfef80(DFEF80Object* pkObject)
 }
 
 // FUN_00dfefc0: returns the address of the global object at DAT_0126d190.
-extern int DAT_0126d190;
+extern int hkpSpringActionClass;
 
 // @fnv 0x00dfefc0
 // src: GUESS 0x00dfefc0 (confidence: low)
 int* Object_GetGlobalObjectAddress_00dfefc0()
 {
-    return &DAT_0126d190;
+    return &hkpSpringActionClass;
 }
 
 // FUN_00dfefd0 : cdecl, 13 bytes
@@ -6604,13 +6626,13 @@ int __cdecl Runtime_ForwardCall_00dfefd0(FUN_00dfefd0_cls* pObj)
     return pObj->v00(0);
 }
 
-extern int DAT_0126d1d8;
+extern int hkpSerializedDisplayMarkerListClass;
 
 // @fnv 0x00dfefe0
 // src: GUESS 0x00dfefe0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dfefe0()
 {
-    return &DAT_0126d1d8;
+    return &hkpSerializedDisplayMarkerListClass;
 }
 
 extern int DAT_010e66fc;
@@ -6634,13 +6656,13 @@ void __cdecl Runtime_ForwardCall_00dff0b0(FUN_00dff0b0_class* p)
     p->m0(0);
 }
 
-extern int DAT_0126d220;
+extern int hkpSerializedDisplayMarkerClass;
 
 // @fnv 0x00dff0c0
 // src: GUESS 0x00dff0c0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dff0c0()
 {
-    return &DAT_0126d220;
+    return &hkpSerializedDisplayMarkerClass;
 }
 
 extern int DAT_010e676c;
@@ -6665,20 +6687,20 @@ void __cdecl Object_InvokeVirtualMethod_00dff120(FUN_00dff120_Class* param_1)
 }
 
 // Getter returning the address of a global object.
-extern int DAT_0126d268;
+extern int hkpReorientActionClass;
 
 // @fnv 0x00dff160
 // src: GUESS 0x00dff160 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dff160()
 {
-    return &DAT_0126d268;
+    return &hkpReorientActionClass;
 }
 
 // Null-guarded forwarder: the first argument is an object pointer; when it is
 // non-null the second argument is passed to a member function of that object.
 struct FUN_00dff170_cls
 {
-    void __thiscall FUN_00e45010(int a1);
+    void __thiscall FUN_00e45010(int flag);
 };
 
 // @fnv 0x00dff170
@@ -6703,22 +6725,22 @@ void __cdecl Object_ForwardCall_00dff190(FUN_00dff190_cls* pObject)
     pObject->m_v00(0);
 }
 
-extern int DAT_0126d298;
+extern int hkpProjectileGunClass;
 
 // @fnv 0x00dff1c0
 // src: GUESS 0x00dff1c0 (confidence: low)
 int __cdecl Object_ComputeValue_00dff1c0()
 {
-    return reinterpret_cast<int>(&DAT_0126d298);
+    return reinterpret_cast<int>(&hkpProjectileGunClass);
 }
 
-extern int DAT_0126d2f8;
+extern int hkpPhysicsSystemWithContactsClass;
 
 // @fnv 0x00dff1e0
 // src: GUESS 0x00dff1e0 (confidence: low)
 int __cdecl Object_ComputeValue_00dff1e0()
 {
-    return reinterpret_cast<int>(&DAT_0126d2f8);
+    return reinterpret_cast<int>(&hkpPhysicsSystemWithContactsClass);
 }
 
 struct FUN_00dff250_class
@@ -6733,13 +6755,13 @@ void __cdecl Runtime_ForwardCall_00dff250(FUN_00dff250_class* p)
     p->m0(0);
 }
 
-extern int DAT_0126d328;
+extern int hkpMouseSpringActionClass;
 
 // @fnv 0x00dff260
 // src: GUESS 0x00dff260 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dff260()
 {
-    return &DAT_0126d328;
+    return &hkpMouseSpringActionClass;
 }
 
 struct DFF2E0FinishFlag
@@ -6770,31 +6792,31 @@ void Object_ConstructInPlace(void* apMemory, int finishing)
     }
 }
 
-extern int DAT_0126d370;
+extern int hkpMountedBallGunClass;
 
 // @fnv 0x00dff330
 // src: GUESS 0x00dff330 (confidence: low)
 int* __cdecl Runtime_GetDAT0126d370Address()
 {
-    return &DAT_0126d370;
+    return &hkpMountedBallGunClass;
 }
 
-extern int DAT_0126d3d0;
+extern int hkpMotorActionClass;
 
 // @fnv 0x00dff3b0
 // src: GUESS 0x00dff3b0 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00dff3b0()
 {
-    return reinterpret_cast<int>(&DAT_0126d3d0);
+    return reinterpret_cast<int>(&hkpMotorActionClass);
 }
 
-extern int DAT_0126d418;
+extern int hkpGroupCollisionFilterClass;
 
 // @fnv 0x00dff3d0
 // src: GUESS 0x00dff3d0 (confidence: low)
 int* __cdecl Runtime_GetDAT0126d418Address()
 {
-    return &DAT_0126d418;
+    return &hkpGroupCollisionFilterClass;
 }
 
 namespace fnv_00dff3e0 {
@@ -6909,6 +6931,8 @@ struct FUN_00dff470_cls : SpawnedBase0, SpawnedBase1, SpawnedBase2, SpawnedBase3
 
 // Runs the base-class destructors, then, if acFlags has bit 0 set, frees this object through the audio allocator using m_uSize.
 // @fnv 0x00dff470
+// pdb: bhkCollisionFilter::`scalar deleting destructor' | bhkWorld.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00dff470_cls* FUN_00dff470_cls::DestroySelf(unsigned char acFlags)
 {
     this->SpawnedBase4::~SpawnedBase4();
@@ -6933,6 +6957,7 @@ struct FUN_00e46300_class
 
 // @fnv 0x00dff4c0
 // src: GUESS 0x00dff4c0 (confidence: low)
+// pdb: bhkCollisionFilter::~bhkCollisionFilter | bhkWorld.obj | debug, object-file run extension, low
 void __cdecl Object_ProcessState_00dff4c0(FUN_00e46300_class* pObject, int aiValue)
 {
     if (pObject)
@@ -6951,13 +6976,13 @@ void Object_Destroy_Thunk(DFF4E0Object* pkObject)
     pkObject->Destroy(false);
 }
 
-extern unsigned char DAT_0126d448;
+extern unsigned char hkpGravityGunClass;
 
 // @fnv 0x00dff510
 // src: GUESS 0x00dff510 (confidence: low)
 void* __cdecl Runtime_GetDAT0126d448Address()
 {
-    return &DAT_0126d448;
+    return &hkpGravityGunClass;
 }
 
 struct DFF520FinishFlag
@@ -6998,30 +7023,30 @@ int __cdecl Runtime_EvaluateValue_00dff570()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d4d8;
+extern CpuOpaque hkpDisplayBindingDataRigidBodyClass;
 // @fnv 0x00dff590
 // src: GUESS 0x00dff590 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126d4d8Address()
 {
-    return &DAT_0126d4d8;
+    return &hkpDisplayBindingDataRigidBodyClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d508;
+extern CpuOpaque hkpDisplayBindingDataPhysicsSystemClass;
 // @fnv 0x00dff5b0
 // src: GUESS 0x00dff5b0 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126d508Address()
 {
-    return &DAT_0126d508;
+    return &hkpDisplayBindingDataPhysicsSystemClass;
 }
 
-extern int DAT_0126d550;
+extern int hkpDisplayBindingDataClass;
 
 // @fnv 0x00dff5d0
 // src: GUESS 0x00dff5d0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126d550Address()
 {
-    return &DAT_0126d550;
+    return &hkpDisplayBindingDataClass;
 }
 
 extern int DAT_010e75cc;
@@ -7064,13 +7089,13 @@ int __cdecl Runtime_ForwardCall_00dff870(FUN_00dff870_cls* p)
     return p->v0(0);
 }
 
-extern int DAT_0126d5c8;
+extern int hkpDisableEntityCollisionFilterClass;
 
 // @fnv 0x00dff880
 // src: GUESS 0x00dff880 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00dff880()
 {
-    return &DAT_0126d5c8;
+    return &hkpDisableEntityCollisionFilterClass;
 }
 
 // FUN_00dff890: forwards a second argument to a method of the first argument
@@ -7134,22 +7159,22 @@ FNVRecordPointers* __thiscall FNVRecordPointers::InitializeRecordPointers(int un
     return this;
 }
 
-extern int DAT_0126d610;
+extern int hkpDashpotActionClass;
 
 // @fnv 0x00dffa20
 // src: GUESS 0x00dffa20 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dffa20()
 {
-    return &DAT_0126d610;
+    return &hkpDashpotActionClass;
 }
 
-extern int g_unk0126d658;
+extern int hkpConstrainedSystemFilterClass;
 
 // @fnv 0x00dffa40
 // src: GUESS 0x00dffa40 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00dffa40()
 {
-    return &g_unk0126d658;
+    return &hkpConstrainedSystemFilterClass;
 }
 
 // FUN_00dffa50: forwards a value to a helper on the passed-in object
@@ -7290,22 +7315,22 @@ int* __cdecl Runtime_GetDAT0126d688Address()
     return &DAT_0126d688;
 }
 
-extern int DAT_0126d6e8;
+extern int hkpAngularDashpotActionClass;
 
 // @fnv 0x00dffc50
 // src: GUESS 0x00dffc50 (confidence: low)
 void* __cdecl Runtime_GetDAT0126d6e8Address()
 {
-    return &DAT_0126d6e8;
+    return &hkpAngularDashpotActionClass;
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d718;
+extern CpuOpaque hkpConvexPieceStreamDataClass;
 // @fnv 0x00dffc70
 // src: GUESS 0x00dffc70 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126d718Address()
 {
-    return &DAT_0126d718;
+    return &hkpConvexPieceStreamDataClass;
 }
 
 extern int DAT_010e7c24;
@@ -7317,13 +7342,13 @@ int* __cdecl Runtime_GetDAT010e7c24Address()
     return &DAT_010e7c24;
 }
 
-extern int DAT_0126d760;
+extern int hkpVelocityConstraintMotorClass;
 
 // @fnv 0x00dffd90
 // src: GUESS 0x00dffd90 (confidence: low)
 void* Runtime_GetDAT0126d760Address()
 {
-    return &DAT_0126d760;
+    return &hkpVelocityConstraintMotorClass;
 }
 
 extern int DAT_010cc0d8;
@@ -7335,12 +7360,12 @@ int* __cdecl Runtime_GetDAT010cc0d8Address()
 }
 
 // FUN_00dffdd0 : a one-line function - getter
-extern int g_target_00dffdd0;
+extern int hkpThinBoxMotionClass;
 // @fnv 0x00dffdd0
 // src: GUESS 0x00dffdd0 (confidence: low)
 void* Runtime_GetTarget00dffdd0Address()
 {
-    return &g_target_00dffdd0;
+    return &hkpThinBoxMotionClass;
 }
 
 namespace fnv_00dffde0 {
@@ -7461,13 +7486,13 @@ void* Runtime_GetDAT010c6e34Address()
     return &DAT_010c6e34;
 }
 
-extern int DAT_0126d7f0;
+extern int hkpSpringDamperConstraintMotorClass;
 
 // @fnv 0x00dffe30
 // src: GUESS 0x00dffe30 (confidence: low)
 void* __cdecl Runtime_GetDAT0126d7f0Address()
 {
-    return &DAT_0126d7f0;
+    return &hkpSpringDamperConstraintMotorClass;
 }
 
 extern int DAT_010d3838;
@@ -7479,13 +7504,13 @@ void* __cdecl Runtime_GetDAT010d3838Address()
     return &DAT_010d3838;
 }
 
-extern char g_unk0126d838;
+extern char hkpSphereMotionClass;
 
 // @fnv 0x00dffe70
 // src: GUESS 0x00dffe70 (confidence: low)
 void* __cdecl Runtime_GetUnk0126d838Address()
 {
-    return &g_unk0126d838;
+    return &hkpSphereMotionClass;
 }
 
 extern void* DAT_010c59f4;
@@ -7548,13 +7573,13 @@ int __cdecl Object_InvokeVirtualMethod_00dffec0(FUN_00dffec0_cls* p)
     return p->v0(0);
 }
 
-extern int DAT_0126d880;
+extern int hkpPositionConstraintMotorClass;
 
 // @fnv 0x00dffed0
 // src: GUESS 0x00dffed0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126d880Address()
 {
-    return &DAT_0126d880;
+    return &hkpPositionConstraintMotorClass;
 }
 
 extern int DAT_010cb798;
@@ -7615,13 +7640,13 @@ int* __cdecl Runtime_GetDAT010da004Address()
     return &DAT_010da004;
 }
 
-extern int DAT_0126d910;
+extern int hkpMalleableConstraintDataClass;
 
 // @fnv 0x00dfff70
 // src: GUESS 0x00dfff70 (confidence: low)
 int* __cdecl Runtime_GetDAT0126d910Address()
 {
-    return &DAT_0126d910;
+    return &hkpMalleableConstraintDataClass;
 }
 
 struct S_00dfff80_Foo
@@ -7639,12 +7664,12 @@ void __cdecl CallFooMethodIfNotNull(S_00dfff80_Foo* pFoo, int aiValue)
 }
 
 // FUN_00dfffd0 : a one-line function - getter
-extern int g_target_00dfffd0;
+extern int hkpLinearParametricCurveClass;
 // @fnv 0x00dfffd0
 // src: GUESS 0x00dfffd0 (confidence: low)
 void* Runtime_GetTarget00dfffd0Address()
 {
-    return &g_target_00dfffd0;
+    return &hkpLinearParametricCurveClass;
 }
 
 extern void* DAT_010e80b4;
@@ -7845,6 +7870,8 @@ class FUN_00de5450 : public DE5450Shape
 };
 
 // @fnv 0x00de5450
+// pdb: hkDisplayCone::hkDisplayCone | hkDisplayCone.obj | retail, object-file run extension, low
+// pdb params: coneAngle, coneHeight, numSegments, coneAxis, startPos
 FUN_00de5450::FUN_00de5450()
 {
     m_valueA = 0.0f;
@@ -8087,13 +8114,15 @@ class BDFCA00Object
 // Placement-constructs a BDFCA00Object at pvObject, passing iFinishing as the finish flag.
 // @fnv 0x00dfca00
 // src: HAVOK_LIB 0x00dfca00
-void __cdecl finishLoadedObjecthkpRagdollConstraintData(void* pvObject, int iFinishing)
+// pdb: finishLoadedObjecthkpRagdollConstraintData | hkpRagdollConstraintDataClass.obj | retail, upstream name already matches, high
+// pdb params: p, finishing
+void __cdecl finishLoadedObjecthkpRagdollConstraintData(void* p, int finishing)
 {
-    if (pvObject)
+    if (p)
     {
         BDFCA00FinishFlag kFlag;
-        kFlag.m_bFinishing = iFinishing;
-        new (pvObject) BDFCA00Object(kFlag);
+        kFlag.m_bFinishing = finishing;
+        new (p) BDFCA00Object(kFlag);
     }
 }
 
@@ -8571,19 +8600,23 @@ struct KdJob
 };
 struct KdQueue
 {
-    int FinishJob(const KdJob* a, const KdJob* b, int flag);
+    int FinishJob(const KdJob* oldJob, const KdJob* jobOut, int waitStatus);
 };
-void __cdecl MixChannels(KdPair* p, int a2, int a3, int a4, int a5, int a6, int* out);
+void __cdecl hkKdTreeBuildingUtils_buildTree(KdPair* buffers, int treeOut, int projEntOut, int treeSize, int numPrims, int _numAvailableEmptyNodes, int* maxDepth);
 // @fnv 0x00df7d60
-int __cdecl FinishJobWithPair(KdQueue* queue, KdJob* job)
+// src: XBOX_RETAIL_PDB 0x00df7d60
+// pdb: hkCpuKdTreeBuildJobFast | hkpCpuKdTreeBuildJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: depth, set
+int __cdecl hkCpuKdTreeBuildJobFast(KdQueue* jobQueue, KdJob* nextJobOut)
 {
     TimerCommandKdWrite(DAT_010dba3c);
-    KdPair pair = job->m_38;
+    KdPair pair = nextJobOut->m_38;
     int out = 0;
-    MixChannels(&pair, job->m_24, job->m_28, job->m_30, job->m_20, job->m_34, &out);
-    *job->m_2c = out;
+    hkKdTreeBuildingUtils_buildTree(&pair, nextJobOut->m_24, nextJobOut->m_28, nextJobOut->m_30, nextJobOut->m_20, nextJobOut->m_34, &out);
+    *nextJobOut->m_2c = out;
     TimerCommandKdWrite(DAT_010c41f8);
-    return queue->FinishJob(job, job, 0);
+    return jobQueue->FinishJob(nextJobOut, nextJobOut, 0);
 }
 
 struct FnvCpu_FUN_00df8920_CpuObject
@@ -9180,7 +9213,7 @@ struct S00de0fe0_Obj10
     int unk0c;
     int unk10;
     void __thiscall hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(int* value);
-    void __thiscall UpdateState_00de0f90(int count, S00de0fe0_Element*** array);
+    void __thiscall hkpShapeDisplayBuilder_buildDisplayGeometries(int count, S00de0fe0_Element*** displayGeometries);
 };
 
 struct S00de0fe0_Local
@@ -9205,6 +9238,9 @@ __declspec(noinline) void S00de0fe0_Arr::hkpShapeDisplayBuilder_hkpShapeDisplayB
 // Fills a local pointer array, calls ForEachCall on DAT_012681e0 with it, calls vf00(1) on each element, then frees the array buffer.
 // @fnv 0x00de0fe0
 // src: HAVOK_LIB 0x00de0fe0
+// pdb: hkpShapeDisplayBuilder::addObjectToDebugDisplay | hkpShapeDisplayBuilder.obj | retail, upstream name already matches, high
+// pdb params: shape, t, id
+// pdb locals: displayGeometries, builder, env
 void __cdecl hkpShapeDisplayBuilder_addObjectToDebugDisplay(int arg1, int arg2, int arg3, int arg4)
 {
     S00de0fe0_Local local;
@@ -9215,7 +9251,7 @@ void __cdecl hkpShapeDisplayBuilder_addObjectToDebugDisplay(int arg1, int arg2, 
     local.arr.data = 0;
     local.arr.count = 0;
     local.arr.cap = 0x80000000;
-    local.o.UpdateState_00de0f90(arg1, &local.arr.data);
+    local.o.hkpShapeDisplayBuilder_buildDisplayGeometries(arg1, &local.arr.data);
 
     ((S00de0fe0_C983Obj*)DAT_012681e0)->ForEachCall((int*)&local.arr, arg2, arg3, 0, arg1);
 
@@ -9248,13 +9284,13 @@ void __cdecl hkpShapeDisplayBuilder_addObjectToDebugDisplay(int arg1, int arg2, 
 }
 
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_01269fe8;
+extern GlobalObjectO2_00d472a0 hkpTwistLimitConstraintAtomClass;
 
 // @fnv 0x00de8370
 // src: GUESS 0x00de8370 (confidence: low)
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField01269fe8Address()
 {
-    return &g_01269fe8;
+    return &hkpTwistLimitConstraintAtomClass;
 }
 
 struct cls_d530
@@ -9362,15 +9398,19 @@ struct WorkQueue
 };
 struct ExecutionContext
 {
-    void ProcessCallback(WorkQueue* source, WorkQueue* target, int flags);
+    void ProcessCallback(WorkQueue* oldJob, WorkQueue* jobOut, int waitStatus);
 };
 extern unsigned long DAT_0126835c;
 extern "C" const char str_010db918[];
 extern "C" const char str_010c41f8[];
-int __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(void* processor, WorkItem* item, unsigned int* value, int remaining);
+int __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(void* processor, WorkItem* aabbIn, unsigned int* hitsOut, int maxHits);
 // Records a profile event, dispatches each WorkItem in queue to its processors via FUN_00d1b930, records a closing event, then calls context->ProcessCallback.
 // @fnv 0x00df6950
-void __cdecl ProcessWorkQueue(ExecutionContext* context, WorkQueue* queue)
+// src: XBOX_RETAIL_PDB 0x00df6950
+// pdb: hkCpuKdTreeAabbJob | hkpCpuKdTreeAabbJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: writeIterator
+void __cdecl hkCpuKdTreeAabbJob(ExecutionContext* jobQueue, WorkQueue* nextJobOut)
 {
     ThreadProfile* trace = (ThreadProfile*)TlsGetValue(DAT_0126835c);
     ProfileEvent* entry = trace->next;
@@ -9382,8 +9422,8 @@ void __cdecl ProcessWorkQueue(ExecutionContext* context, WorkQueue* queue)
         entry->cycles = ticks;
         trace->next = entry + 1;
     }
-    int count = queue->taskCount;
-    WorkItem* item = queue->tasks;
+    int count = nextJobOut->taskCount;
+    WorkItem* item = nextJobOut->tasks;
     if (count > 0)
     {
         int work = count;
@@ -9393,11 +9433,11 @@ void __cdecl ProcessWorkQueue(ExecutionContext* context, WorkQueue* queue)
             int remaining = item->remaining;
             int n = 0;
             item->processed = 0;
-            if (queue->processorCount > 0)
+            if (nextJobOut->processorCount > 0)
             {
                 do
                 {
-                    void* processor = queue->processors[n];
+                    void* processor = nextJobOut->processors[n];
                     if (processor)
                     {
                         int consumed = hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(processor, item, &value, remaining);
@@ -9405,7 +9445,7 @@ void __cdecl ProcessWorkQueue(ExecutionContext* context, WorkQueue* queue)
                         remaining -= consumed;
                     }
                     ++n;
-                } while (n < queue->processorCount);
+                } while (n < nextJobOut->processorCount);
             }
             ++item;
         } while (--work != 0);
@@ -9420,7 +9460,7 @@ void __cdecl ProcessWorkQueue(ExecutionContext* context, WorkQueue* queue)
         entry->cycles = ticks;
         trace->next = entry + 1;
     }
-    context->ProcessCallback(queue, queue, 0);
+    jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
 }
 
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long dwTlsIndex);
@@ -9445,6 +9485,7 @@ static inline void TimerMark(const char* name)
     }
 }
 
+// pdb: class Key, size 0x8 (here 0x2), 2 members
 struct Key
 {
     unsigned char m_type;
@@ -9462,22 +9503,24 @@ struct Job
     int m_2c;
 };
 
-void __cdecl hkCpuPairGetClosestPointsImplementation(Job* job, int a, int b, int c);
+void __cdecl hkCpuPairGetClosestPointsImplementation(Job* pairGetClosestPointsJob, int collisionInput, int commandsBase, int numCommands);
 
 struct Scheduler
 {
-    int ProcessCallback(Key* key, int b, int a);
+    int ProcessCallback(Key* oldJob, int jobOut, int waitStatus);
 };
 
 // Records a timer mark, calls FUN_00df6e00 with job's m_18, m_28 and m_2c, records a second mark, then calls self->ProcessCallback with the job.
 // @fnv 0x00df6f80
 // src: HAVOK_LIB 0x00df6f80
-void __cdecl hkCpuPairGetClosestPointsJob(Scheduler* self, Job* job)
+// pdb: hkCpuPairGetClosestPointsJob | hkpCpuPairGetClosestPointsJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+void __cdecl hkCpuPairGetClosestPointsJob(Scheduler* jobQueue, Job* nextJobOut)
 {
     TimerMark("TtCollQueryPairGetClosestPoints");
-    hkCpuPairGetClosestPointsImplementation(job, job->m_18, job->m_28, job->m_2c);
+    hkCpuPairGetClosestPointsImplementation(nextJobOut, nextJobOut->m_18, nextJobOut->m_28, nextJobOut->m_2c);
     TimerMark("Et");
-    self->ProcessCallback((Key*)job, (int)job, 0);
+    jobQueue->ProcessCallback((Key*)nextJobOut, (int)nextJobOut, 0);
 }
 
 struct FUN_00df9840_Class
@@ -9586,6 +9629,8 @@ struct ElemDFB5A0
 // Destructs the array elements, frees m_pData unless the top capacity bit is set, resets it to empty, then calls FUN_00cb0c00 on this.
 // @fnv 0x00dfb5a0
 // src: GUESS 0x00dfb5a0 (confidence: low)
+// pdb: hkaAnnotationTrack::~hkaAnnotationTrack | hkaWaveletCompressedAnimationClass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkaAnimation::operator delete
 void FUN_00dfb5a0_cls::UpdateFields_00dfb5a0()
 {
     hkMemoryAllocator* pAlloc = reinterpret_cast<hkMemoryAllocator*>(hkMemoryRouter_getInstance()->m_heap);
@@ -9600,7 +9645,7 @@ void FUN_00dfb5a0_cls::UpdateFields_00dfb5a0()
     ((FUN_00cb0c00_class*)this)->Object_UpdateFields_00cb0c00();
 }
 
-void __cdecl ResizeAudioStream(hkMemoryAllocator* alloc, void* array, int sizeOfElement);
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem);
 
 // 0x00de30a0 stores a pointer payload and an integer lookup key; Pair.h stores two integer handles.
 struct RegistryValueKey
@@ -9626,20 +9671,23 @@ struct Registry_de30
 {
     int unk00, unk04;
     hkArray<RegistryValueKey> m_pairs;
-    void hkpUserConvexRadiusBuilder_registerUserConvexRadiusDisplayBuilder(void* value, int key);
+    void hkpUserConvexRadiusBuilder_registerUserConvexRadiusDisplayBuilder(void* f, int key);
 };
 
 // Adds a value/key pair to m_pairs if no existing pair has the same key.
 // @fnv 0x00de30a0
 // src: XBOX_PDB 0x00de30a0
-void Registry_de30::hkpUserConvexRadiusBuilder_registerUserConvexRadiusDisplayBuilder(void* value, int key)
+// pdb: hkpUserConvexRadiusBuilder::registerUserConvexRadiusDisplayBuilder | hkpConvexRadiusBuilder.obj | retail, upstream name already matches, high
+// pdb params: f, type
+// pdb locals: b, assertBuf, ostr
+void Registry_de30::hkpUserConvexRadiusBuilder_registerUserConvexRadiusDisplayBuilder(void* f, int key)
 {
     for (int i = 0; i < m_pairs.m_iElementCount; i++)
     {
         if (m_pairs.m_data[i].m_key == key)
             return;
     }
-    AppendRegistryValue(m_pairs, RegistryValueKey(value, key));
+    AppendRegistryValue(m_pairs, RegistryValueKey(f, key));
 }
 
 // @fnv 0x00de9b00
@@ -9758,13 +9806,16 @@ struct S00df2640_cls
     int unk1C;
     unsigned short m_20;
 
-    int hkpBroadPhaseJob_popJobTask(S00df2640_a1* a1, S00df2640_a2* a2);
+    int hkpBroadPhaseJob_popJobTask(S00df2640_a1* islands, S00df2640_a2* out);
 };
 
 // If m_18 has pending entries, appends them to a2's list and frees its array; otherwise decrements m_20 when above 1; returns 1 on either, else 0.
 // @fnv 0x00df2640
 // src: HAVOK_LIB 0x00df2640
-int S00df2640_cls::hkpBroadPhaseJob_popJobTask(S00df2640_a1* a1, S00df2640_a2* a2)
+// pdb: hkpBroadPhaseJob::popJobTask | hkpDynamicsJobs.obj | retail, upstream name already matches, high
+// pdb params: islands, out
+// pdb locals: assertBuf, ostr, island
+int S00df2640_cls::hkpBroadPhaseJob_popJobTask(S00df2640_a1* islands, S00df2640_a2* out)
 {
     S00df2640_P* p = m_18;
     if (p != 0)
@@ -9774,10 +9825,10 @@ int S00df2640_cls::hkpBroadPhaseJob_popJobTask(S00df2640_a1* a1, S00df2640_a2* a
         {
             p->m_0C += count;
             p->m_10 += count;
-            m_10 = a1->m_04;
+            m_10 = islands->m_04;
             m_20 = (unsigned short)count;
 
-            S00df2640_list* list = &a2->m_14->m_18->m_28;
+            S00df2640_list* list = &out->m_14->m_18->m_28;
             for (int i = 0; i < count; i++)
             {
                 S00df2640_item* item = (S00df2640_item*)p->m_5C[i];
@@ -9813,7 +9864,7 @@ int S00df2640_cls::hkpBroadPhaseJob_popJobTask(S00df2640_a1* a1, S00df2640_a2* a
         ax--;
         m_20 = ax;
         m_10++;
-        a2->m_20 = 1;
+        out->m_20 = 1;
         return 1;
     }
     return 0;
@@ -9986,6 +10037,9 @@ struct Obj_df7a90
 // Decrements the object's reference count and calls FUN_00df7a60 when it reaches zero, then returns 1.
 // @fnv 0x00df7a90
 // src: HAVOK_LIB 0x00df7a90
+// pdb: hkpCollisionQueryJobQueueUtils::finishCollisionJob | hkpCollisionQueryJobQueueUtils.obj | retail, upstream name already matches, high
+// pdb params: queue, data, jobIn, newJobCreated
+// pdb locals: assertBuf, ostr
 int __cdecl hkpCollisionQueryJobQueueUtils_finishCollisionJob(int iArg0, int iArg1, Obj_df7a90* pkObj)
 {
     int* piRefCount = pkObj->m_piRefCount;
@@ -10180,25 +10234,28 @@ struct KdJob2
 };
 struct KdQueue2
 {
-    int ProcessCallback(const KdJob2* a, const KdJob2* b, int flag);
+    int ProcessCallback(const KdJob2* oldJob, const KdJob2* jobOut, int waitStatus);
 };
 void __cdecl hkTreeBundleRayCastUtil_autoBundleFromList(int, int, int, int, int, float, float, KdPair, int*, int, int*);
 void __cdecl hkTreeBundleRayCastUtil_autoBundleScanAll(int, int, int, int, float, float, KdPair, int*, int, int*);
 // Runs FUN_00e29cd0 if job->m_20 is nonzero, else FUN_00e2a010, between timer markers, then returns queue->ProcessCallback(job, job, 0).
 // @fnv 0x00df7c00
-int __cdecl ExecuteJob(KdQueue2* queue, KdJob2* job)
+// src: XBOX_RETAIL_PDB 0x00df7c00
+// pdb: hkCpuAutoRayBundleJob | hkpCpuAutoRayBundleJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+int __cdecl hkCpuAutoRayBundleJob(KdQueue2* jobQueue, KdJob2* nextJobOut)
 {
     TimerCommandKdWrite(DAT_010dba24);
-    job->m_48 = 0;
-    job->m_50 = 0;
-    if (job->m_20)
-        hkTreeBundleRayCastUtil_autoBundleFromList(job->m_20, job->m_28, job->m_2c, job->m_30, job->m_34, job->m_38, job->m_3c, job->m_40, &job->m_48,
-                     job->m_4c, &job->m_50);
+    nextJobOut->m_48 = 0;
+    nextJobOut->m_50 = 0;
+    if (nextJobOut->m_20)
+        hkTreeBundleRayCastUtil_autoBundleFromList(nextJobOut->m_20, nextJobOut->m_28, nextJobOut->m_2c, nextJobOut->m_30, nextJobOut->m_34, nextJobOut->m_38, nextJobOut->m_3c, nextJobOut->m_40, &nextJobOut->m_48,
+                     nextJobOut->m_4c, &nextJobOut->m_50);
     else
-        hkTreeBundleRayCastUtil_autoBundleScanAll(job->m_24, job->m_2c, job->m_30, job->m_34, job->m_38, job->m_3c, job->m_40, &job->m_48, job->m_4c,
-                     &job->m_50);
+        hkTreeBundleRayCastUtil_autoBundleScanAll(nextJobOut->m_24, nextJobOut->m_2c, nextJobOut->m_30, nextJobOut->m_34, nextJobOut->m_38, nextJobOut->m_3c, nextJobOut->m_40, &nextJobOut->m_48, nextJobOut->m_4c,
+                     &nextJobOut->m_50);
     TimerCommandKdWrite(DAT_010c41f8);
-    return queue->ProcessCallback(job, job, 0);
+    return jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
 }
 
 struct InDF8800
@@ -10259,13 +10316,16 @@ void __cdecl FillAabbArray(CollDF8800* pkCollector, int i0x58, int iCount, int i
 
 struct WorldDF8800
 {
-    void* ProcessCallback(InDF8800* pkSource, InDF8800* pkTarget, int iFlags) throw();
+    void* ProcessCallback(InDF8800* oldJob, InDF8800* jobOut, int waitStatus) throw();
 };
 
 // Logs a TtCpuKdTreeBuildSetup timer entry, runs FillAabbArray and pkWorld->ProcessCallback, logs an Et entry, and returns the ProcessCallback result.
 // @fnv 0x00df8800
 // src: HAVOK_LIB 0x00df8800
-void* hkCpuKdTreeBuildSetupJob(WorldDF8800* pkWorld, InDF8800* pkInput)
+// pdb: hkCpuKdTreeBuildSetupJob | hkpCpuKdTreeBuildJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: collidables, mediator
+void* hkCpuKdTreeBuildSetupJob(WorldDF8800* jobQueue, InDF8800* nextJobOut)
 {
     {
         MonitorStreamKd* pkStream = (MonitorStreamKd*)TlsGetValue(DAT_0126835c);
@@ -10283,12 +10343,12 @@ void* hkCpuKdTreeBuildSetupJob(WorldDF8800* pkWorld, InDF8800* pkInput)
     void* pvResult;
     {
         ArrDF8800 kItems;
-        kItems.m_ppGeometries = pkInput->m_ppGeometries;
-        kItems.m_uiLogicalSize = pkInput->m_iArrayLength;
-        kItems.m_iCapacityAndFlags = pkInput->m_iArrayLength | 0x80000000;
+        kItems.m_ppGeometries = nextJobOut->m_ppGeometries;
+        kItems.m_uiLogicalSize = nextJobOut->m_iArrayLength;
+        kItems.m_iCapacityAndFlags = nextJobOut->m_iArrayLength | 0x80000000;
         CollDF8800 kCollector(kItems, 0);
-        FillAabbArray(&kCollector, pkInput->m_i0x58, pkInput->m_iArrayLength, pkInput->m_i0x54);
-        pvResult = pkWorld->ProcessCallback(pkInput, pkInput, 0);
+        FillAabbArray(&kCollector, nextJobOut->m_i0x58, nextJobOut->m_iArrayLength, nextJobOut->m_i0x54);
+        pvResult = jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
     }
 
     {
@@ -11489,6 +11549,7 @@ Derived::Derived()
 namespace fnv_00dfed30 {
 // Declares a Heap interface with four unnamed virtual methods and a virtual release(void*, unsigned int).
 // @fnv 0x00dfed30
+// pdb: hkpVehicleDefaultTransmission::~hkpVehicleDefaultTransmission | hkpVehicleDefaultTransmissionClass.obj | retail, object-file run extension, low
 struct Heap
 {
     virtual void a();
@@ -12156,52 +12217,54 @@ void CopyFields(void*, void*);
 // Switches on src->m_type: decrements the counter or calls FUN_00df9840, and for types 5 and 7 builds a JobA or JobB in out and returns 0, else returns 1.
 // @fnv 0x00df9920
 // src: HAVOK_LIB 0x00df9920
-int __cdecl hkpRayCastQueryJobQueueUtils_finishRayCastQueryJob(void* a1, void* a2, JobSrc* src, JobOut* out)
+// pdb: hkpRayCastQueryJobQueueUtils::finishRayCastQueryJob | hkpRayCastQueryJobQueueUtils.obj | retail, upstream name already matches, high
+// pdb params: queue, data, jobIn, newJobCreated
+int __cdecl hkpRayCastQueryJobQueueUtils_finishRayCastQueryJob(void* queue, void* data, JobSrc* jobIn, JobOut* newJobCreated)
 {
-    int* counter = src->m_pCounter;
-    switch (src->m_type)
+    int* counter = jobIn->m_pCounter;
+    switch (jobIn->m_type)
     {
     case 0:
     case 1:
     case 4:
         if (--*counter == 0)
-            src->ProcessState_00df9840();
+            jobIn->ProcessState_00df9840();
         break;
     case 2:
-        src->ProcessState_00df9840();
+        jobIn->ProcessState_00df9840();
         break;
     case 5:
         if (counter)
             --*counter;
-        if (!src->m_60)
+        if (!jobIn->m_60)
         {
-            src->ProcessState_00df9840();
+            jobIn->ProcessState_00df9840();
             break;
         }
         if (*counter)
             break;
-        new (&out->m_10) JobA(src->m_pCounter);
-        out->m_iWordAt00 = 0;
-        CopyFields(src, &out->m_10);
+        new (&newJobCreated->m_10) JobA(jobIn->m_pCounter);
+        newJobCreated->m_iWordAt00 = 0;
+        CopyFields(jobIn, &newJobCreated->m_10);
         return 0;
     case 3:
-        if (src->m_i38 < 8)
-            src->ProcessState_00df9840();
+        if (jobIn->m_i38 < 8)
+            jobIn->ProcessState_00df9840();
         break;
     case 6:
         if (*counter == 0)
-            src->ProcessState_00df9840();
+            jobIn->ProcessState_00df9840();
         break;
     case 7: {
-        new (&out->m_10) JobB(src->m_54, src->m_p58, src->m_44, src->m_48, src->m_60, src->m_5c);
-        JobB* job = (JobB*)&out->m_10;
-        job->m_38 = src->m_64;
-        job->m_3c = src->m_68;
-        job->m_40 = src->m_6c;
-        job->m_2c = src->m_4c;
-        job->m_30 = src->m_50;
-        out->m_iWordAt00 = 1;
-        out->m_12 = 1;
+        new (&newJobCreated->m_10) JobB(jobIn->m_54, jobIn->m_p58, jobIn->m_44, jobIn->m_48, jobIn->m_60, jobIn->m_5c);
+        JobB* job = (JobB*)&newJobCreated->m_10;
+        job->m_38 = jobIn->m_64;
+        job->m_3c = jobIn->m_68;
+        job->m_40 = jobIn->m_6c;
+        job->m_2c = jobIn->m_4c;
+        job->m_30 = jobIn->m_50;
+        newJobCreated->m_iWordAt00 = 1;
+        newJobCreated->m_12 = 1;
         return 0;
     }
     }
@@ -12391,10 +12454,10 @@ class TaskTarget
     unsigned long m_38;
 };
 
-void __cdecl hkCpuPairLinearCastImplementation(void* a, void* b, void* c, void* d);
+void __cdecl hkCpuPairLinearCastImplementation(void* pairLinearCastJob, void* collisionInput, void* commandsBase, void* numCommands);
 struct FUN_00d04e80_cls
 {
-    void ProcessCallback(void* b, void* c, unsigned int d);
+    void ProcessCallback(void* oldJob, void* jobOut, unsigned int waitStatus);
 };
 
 typedef void*(__stdcall* PFN_TlsGetValue)(unsigned long dwTlsIndex);
@@ -12402,7 +12465,9 @@ typedef void*(__stdcall* PFN_TlsGetValue)(unsigned long dwTlsIndex);
 // Records a TtCollQueryPairLinearCast profiler tick, calls FUN_00df7760 on a2's fields, records an Et tick, then calls ProcessCallback on a1.
 // @fnv 0x00df79d0
 // src: HAVOK_LIB 0x00df79d0
-void __cdecl hkCpuPairLinearCastJob(void* a1, TaskTarget* a2)
+// pdb: hkCpuPairLinearCastJob | hkpCpuPairLinearCastJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+void __cdecl hkCpuPairLinearCastJob(void* jobQueue, TaskTarget* nextJobOut)
 {
     PFN_TlsGetValue pfnTls = TlsGetValue;
     hkMonitorStream* pBuf = (hkMonitorStream*)pfnTls(DAT_0126835c);
@@ -12416,7 +12481,7 @@ void __cdecl hkCpuPairLinearCastJob(void* a1, TaskTarget* a2)
         pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
     }
 
-    hkCpuPairLinearCastImplementation(a2, (void*)a2->m_18, (void*)a2->m_34, (void*)a2->m_38);
+    hkCpuPairLinearCastImplementation(nextJobOut, (void*)nextJobOut->m_18, (void*)nextJobOut->m_34, (void*)nextJobOut->m_38);
 
     pBuf = (hkMonitorStream*)pfnTls(DAT_0126835c);
     if (pBuf->m_end.m_storage < pBuf->m_capacityMinus16.m_storage)
@@ -12429,7 +12494,7 @@ void __cdecl hkCpuPairLinearCastJob(void* a1, TaskTarget* a2)
         pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
     }
 
-    ((FUN_00d04e80_cls*)a1)->ProcessCallback(a2, a2, 0);
+    ((FUN_00d04e80_cls*)jobQueue)->ProcessCallback(nextJobOut, nextJobOut, 0);
 }
 
 extern "C" void _mm_store_ps(float*, __m128);
@@ -12531,6 +12596,8 @@ class FUN_00dfbf70 : public SuspensionObject
 
 // Destructor for the suspension object that owns m_wheels and m_springs arrays.
 // @fnv 0x00dfbf70
+// pdb: hkpVehicleDefaultSuspension::~hkpVehicleDefaultSuspension | hkpVehicleDefaultSuspensionClass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkpVehicleSuspension::`scalar deleting destructor'
 FUN_00dfbf70::~FUN_00dfbf70() throw()
 {}
 
@@ -12587,6 +12654,8 @@ struct FUN_00de4a80
 
 // Stores &DAT_010d8274 at offset 0, sets m_06=1, m_50=5, m_10/m_24/m_38=1.0f, and zeroes m_08, m_90-m_9c and several 16-byte blocks.
 // @fnv 0x00de4a80
+// pdb: hkDisplaySemiCircle::hkDisplaySemiCircle | hkDisplaySemiCircle.obj | retail, object-file run extension, low
+// pdb params: center, normal, startPerp, thetaMin, thetaMax, radius, numSegments
 FUN_00de4a80::FUN_00de4a80()
 {
     int zero = 0;
@@ -12742,7 +12811,7 @@ int __cdecl hkKdTreeBuilder_hkKdTreeProjectedEntry_const_hkKdTreeProjectedEntry_
 
 struct S00df8440_Owner
 {
-    int ProcessCallback(S00df8440_Job* a, S00df8440_Job* b, int c);
+    int ProcessCallback(S00df8440_Job* oldJob, S00df8440_Job* jobOut, int waitStatus);
 };
 
 static inline void S00df8440_TimerEnd(const char* name)
@@ -12761,29 +12830,32 @@ static inline void S00df8440_TimerEnd(const char* name)
 // Builds a Desc from job fields, calls FUN_00df56a0, stores 2 plus its result through job->m_50, then calls owner->ProcessCallback and returns its result.
 // @fnv 0x00df8440
 // src: XBOX_PDB 0x00df8440
-int __cdecl hkCpuKdTreeBuildFastDistributedSubJob(S00df8440_Owner* owner, S00df8440_Job* job)
+// pdb: hkCpuKdTreeBuildFastDistributedSubJob | hkpCpuKdTreeBuildJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: sparseWriter, tree, emptyNodesRemaining, input, workingSetLocal, subNodes
+int __cdecl hkCpuKdTreeBuildFastDistributedSubJob(S00df8440_Owner* jobQueue, S00df8440_Job* nextJobOut)
 {
     TimerCommandKdWrite(str_010dba74);
     S00df8440_Pair pair;
-    pair.m_kPointA = job->m_2c;
-    pair.m_kPointB = job->m_30;
+    pair.m_kPointA = nextJobOut->m_2c;
+    pair.m_kPointB = nextJobOut->m_30;
     S00df8440_Desc desc;
     desc.m_pPair = &pair;
-    desc.m_04 = job->m_28;
+    desc.m_04 = nextJobOut->m_28;
     desc.m_40 = DAT_012684d0;
-    desc.m_0c = job->m_34;
-    desc.m_10 = job->m_38;
-    desc.m_20 = job->m_40;
-    desc.m_08 = job->m_54;
+    desc.m_0c = nextJobOut->m_34;
+    desc.m_10 = nextJobOut->m_38;
+    desc.m_20 = nextJobOut->m_40;
+    desc.m_08 = nextJobOut->m_54;
     S00df8440_Builder q;
     desc.m_pDescriptionBuilder = &q;
-    int res = job->m_58;
+    int res = nextJobOut->m_58;
     int d = res;
     int x = 1;
-    int obj = job->m_20;
-    int tmp3 = hkKdTreeBuilder_hkKdTreeProjectedEntry_const_hkKdTreeProjectedEntry_restrict_0_buildTreeRecursive(&desc, &obj, job->m_24, &x, &d);
-    *job->m_50 = 2 + tmp3;
-    int result = owner->ProcessCallback(job, job, 0);
+    int obj = nextJobOut->m_20;
+    int tmp3 = hkKdTreeBuilder_hkKdTreeProjectedEntry_const_hkKdTreeProjectedEntry_restrict_0_buildTreeRecursive(&desc, &obj, nextJobOut->m_24, &x, &d);
+    *nextJobOut->m_50 = 2 + tmp3;
+    int result = jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
     q.hkKdTreeBuilderSparseWriter_flush();
     S00df8440_TimerEnd(DAT_010c41f8);
     return result;
@@ -13374,7 +13446,10 @@ struct LeafCursor
 // Traverses a PTree with a cast ray, testing leaf bounding boxes against the ray and passing hits to the sink.
 // @fnv 0x00df2750
 // src: XBOX_PDB 0x00df2750
-extern "C" ByteAnswer __cdecl hkKdTreeAabbCastUtils_castAabb(const PTree* tree, PCast& input, PCollector* sink, float margin)
+// pdb: hkKdTreeAabbCastUtils::castAabb | hkKdTreeAabbCastUtils.obj | retail, upstream name already matches, high
+// pdb params: tree, castInput, collector, aabbCheckTolerance
+// pdb locals: aabbHalfExtents, orig, projectedEntries, offset, aabbTolerance, scale, stackSize, spuNode, invDir, aabb, narrowPhaseHit
+extern "C" ByteAnswer __cdecl hkKdTreeAabbCastUtils_castAabb(const PTree* tree, PCast& castInput, PCollector* collector, float aabbCheckTolerance)
 {
     const PNode* node = tree->root;
     const PEntry* leaves = tree->leaves;
@@ -13387,15 +13462,15 @@ extern "C" ByteAnswer __cdecl hkKdTreeAabbCastUtils_castAabb(const PTree* tree, 
     PState* base = reserveStack<PState>(capacity);
     TraversalCursor traversal;
     traversal.stack = base;
-    PVec start = input.from;
+    PVec start = castInput.from;
     PVec inverse;
-    PhaseVector phase = *(const PhaseVector*)&input.to;
+    PhaseVector phase = *(const PhaseVector*)&castInput.to;
     PVec dir;
     dir.sub(*(const PVec*)&phase, start);
     float length = dir.normalize();
-    phase = *(const PhaseVector*)&input.half;
+    phase = *(const PhaseVector*)&castInput.half;
     PVec tolerance;
-    tolerance.uniform(margin);
+    tolerance.uniform(aabbCheckTolerance);
     tolerance.add(*(const PVec*)&phase);
     traversal.nearD = 0;
     float farD = length;
@@ -13414,7 +13489,7 @@ extern "C" ByteAnswer __cdecl hkKdTreeAabbCastUtils_castAabb(const PTree* tree, 
         inverse.xyz0(inverse);
         inverse.pick(inverse, zero, flat);
     }
-    float limit = pmin(sink->fraction() * length, farD);
+    float limit = pmin(collector->fraction() * length, farD);
 
     if (!flat.all(PMask::XYZ))
     {
@@ -13477,7 +13552,7 @@ extern "C" ByteAnswer __cdecl hkKdTreeAabbCastUtils_castAabb(const PTree* tree, 
                         ++traversal.stack;
                         node = first;
                         farD = pmin(leave, farD);
-                        limit = pmin(sink->fraction() * length, farD);
+                        limit = pmin(collector->fraction() * length, farD);
                     }
                     nodeCopy = *getNode(node, true);
                 }
@@ -13495,7 +13570,7 @@ extern "C" ByteAnswer __cdecl hkKdTreeAabbCastUtils_castAabb(const PTree* tree, 
                     box.lo.sub(tolerance);
                     if (hitsBox(origin, inverse, traversal.nearD, limit, box))
                     {
-                        ByteAnswer hit = sink->process(id.get());
+                        ByteAnswer hit = collector->process(id.get());
                     }
                 }
             }
@@ -13507,13 +13582,13 @@ extern "C" ByteAnswer __cdecl hkKdTreeAabbCastUtils_castAabb(const PTree* tree, 
             nodeCopy = *getNode(node, true);
             farD = traversal.stack->farD;
             traversal.nearD = traversal.stack->nearD;
-            limit = pmin(sink->fraction() * length, farD);
+            limit = pmin(collector->fraction() * length, farD);
             if (limit <= traversal.nearD)
                 goto pop;
         }
     }
     restoreStack(base);
-    return sink->finish();
+    return collector->finish();
 }
 
 

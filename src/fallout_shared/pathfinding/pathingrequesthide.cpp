@@ -9,6 +9,7 @@ extern "C" void __cdecl _delete(void*, unsigned int);
 
 // Runs the destructor and, when flags has bit 0 set, frees the object with _delete; returns this.
 // @fnv 0x006e55a0
+// pdb: PathingRequestHide::`scalar deleting destructor' | PathingRequestHide.obj | retail, vtable slot, high
 void* PathingRequestHide::Destroy(unsigned int flags)
 {
     this->PathingRequestHide::~PathingRequestHide();
@@ -30,11 +31,13 @@ struct HidePathView
 };
 
 // @fnv 0x006e5640
-PathingRequestHide::PathingRequestHide(Actor* pkActor)
-    : PathingRequest(reinterpret_cast<PathingRequestOwner*>(pkActor))
+// pdb: PathingRequestHide::PathingRequestHide | PathingRequestHide.obj | debug, call graph, high
+// pdb params: aRequest
+PathingRequestHide::PathingRequestHide(Actor* aRequest)
+    : PathingRequest(reinterpret_cast<PathingRequestOwner*>(aRequest))
 {
-    m_Location = *reinterpret_cast<HideActorView*>(pkActor)->hkpAabbPhantom_getAabb();
-    m_fHideDistance = reinterpret_cast<HideActorView*>(pkActor)->FUN_00885bd0();
+    ThreatLocation = *reinterpret_cast<HideActorView*>(aRequest)->hkpAabbPhantom_getAabb();
+    fMinHideDistance = reinterpret_cast<HideActorView*>(aRequest)->FUN_00885bd0();
     reinterpret_cast<HidePathView*>(&Destination)->FUN_006d2c00();
 }
 
@@ -44,35 +47,43 @@ class __declspec(novtable) PathingRequestHide;
 
 // Destroys the embedded location and the base request.
 // @fnv 0x006e55e0
+// pdb: PathingRequestHide::~PathingRequestHide | PathingRequestHide.obj | debug, upstream name already matches, high
 PathingRequestHide::~PathingRequestHide()
 {}
 
 // Saves the base request, hide location, and hide distance.
 // @fnv 0x006e5740
+// pdb: PathingRequestHide::SaveGame | PathingRequestHide.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
 void PathingRequestHide::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     PathingRequest::PathingRequest_SaveGame(apSaveGameBuffer);
-    m_Location.SaveGame(reinterpret_cast<BGSSaveGameBuffer*>(apSaveGameBuffer));
-    apSaveGameBuffer->SaveData(&m_fHideDistance, 4, 0);
+    ThreatLocation.SaveGame(reinterpret_cast<BGSSaveGameBuffer*>(apSaveGameBuffer));
+    apSaveGameBuffer->SaveData(&fMinHideDistance, 4, 0);
 }
 
 // Loads the base request, hide location, and hide distance.
 // @fnv 0x006e5790
+// pdb: PathingRequestHide::LoadGame | PathingRequestHide.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
 void PathingRequestHide::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     PathingRequest::LoadGame(apLoadGameBuffer);
-    m_Location.LoadGame(apLoadGameBuffer);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_fHideDistance), 4u);
+    ThreatLocation.LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fMinHideDistance), 4u);
 }
 
 // Copies the base request, hide location, and hide distance.
 // @fnv 0x006e56f0
 // src: XBOX_PDB 0x006e56f0
+// pdb: PathingRequestHide::CopyTo | PathingRequestHide.obj | retail, vtable slot, high
+// pdb params: apDest
+// pdb locals: pdest
 void PathingRequestHide::CopyTo_006e56f0(PathingRequest* apDest)
 {
     PathingRequestHide* pdest = static_cast<PathingRequestHide*>(apDest);
     PathingRequest::CopyTo(pdest);
-    pdest->m_Location = m_Location;
-    pdest->m_fHideDistance = m_fHideDistance;
+    pdest->ThreatLocation = ThreatLocation;
+    pdest->fMinHideDistance = fMinHideDistance;
 }
 

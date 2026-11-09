@@ -29,6 +29,7 @@ extern "C" void __cdecl __Dummy_00b6fef0(void* p, int size);
 // The shared controller has no deleting-destructor helper declaration.
 // An unused EDX argument preserves its ECX receiver and stack arguments.
 // @fnv 0x00a4fb10
+// pdb: NiColorExtraDataController::NiColorExtraDataController | NiColorExtraDataController.obj | debug, object-file run extension, low
 void* __fastcall FUN_00a4fb10(NiColorExtraDataController* self, void*, int aiFlags)
 {
     FUN_00a572d0();
@@ -46,6 +47,8 @@ extern int DAT_0109947c;
 // Allocates a 0x40-byte BSFadeNode, initialises it via InitTimeController, sets its vtable to DAT_0109947c, and returns it (or null on allocation failure).
 // @fnv 0x00a4fac0
 // src: EXE 0x00a4fac0
+// pdb: NiColorExtraDataController::CreateObject | NiColorExtraDataController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiColorExtraDataController_CreateObject()
 {
     void* mem = BSFadeNode::operator new(0x40);
@@ -64,11 +67,13 @@ struct Holder_00a55f80
 };
 // @fnv 0x00a4fa70
 // src: XBOX_PDB 0x00a4fa70
-void* __stdcall NiColorExtraDataController_CreateBlendInterpolator(int a1, int a2, int a3, float a4, int a5)
+// pdb: NiColorExtraDataController::CreateBlendInterpolator | NiColorExtraDataController.obj | retail, upstream name already matches, high
+// pdb params: usIndex, bManagerControlled, bAccumulateAnimations, fWeightThreshold, ucArraySize
+void* __stdcall NiColorExtraDataController_CreateBlendInterpolator(int usIndex, int bManagerControlled, int bAccumulateAnimations, float fWeightThreshold, int ucArraySize)
 {
     void* p = BSFadeNode::operator new(0x44);
     if (p)
-        return ((Holder_00a55f80*)p)->FUN_00a55f80(a2, a4, a5);
+        return ((Holder_00a55f80*)p)->FUN_00a55f80(bManagerControlled, fWeightThreshold, ucArraySize);
     return 0;
 }
 
@@ -78,28 +83,33 @@ struct Interp9
 };
 // @fnv 0x00a4fb30
 // src: XBOX_PDB 0x00a4fb30
+// pdb: NiColorExtraDataController::CreatePoseInterpolator | NiColorExtraDataController.obj | retail, upstream name already matches, high
+// pdb params: usIndex
 void* __thiscall NiColorExtraDataController::CreatePoseInterpolator(unsigned short usIndex)
 {
     void* mem = BSFadeNode::operator new(0x24);
     if (mem)
     {
         Interp9* p = (Interp9*)mem;
-        return p->FUN_00a3bd80(reinterpret_cast<const NiColorA&>(static_cast<NiColorExtraData*>(m_pExtraData.m_pObject)->m_kFogTint));
+        return p->FUN_00a3bd80(reinterpret_cast<const NiColorA&>(static_cast<NiColorExtraData*>(m_spExtraData.m_pObject)->m_kColorA));
     }
     return 0;
 }
 
-extern NiRTTI _g_011f3730;
+extern NiRTTI NiColorInterpolator_ms_RTTI;
 // @fnv 0x00a4fc90
 // src: XBOX_PDB 0x00a4fc90
+// pdb: NiColorExtraDataController::SynchronizePoseInterpolator | NiColorExtraDataController.obj | retail, upstream name already matches, high
+// pdb params: pkInterp, usIndex
+// pdb locals: pkColorInterp
 void NiColorExtraDataController::SynchronizePoseInterpolator(NiInterpolator* pkInterp, unsigned short usIndex)
 {
     NiColorInterpolator* pkColorInterp;
     if (!pkInterp)
         pkColorInterp = 0;
     else
-        pkColorInterp = (NiColorInterpolator*)pkInterp->DynamicCast(&_g_011f3730);
-    pkColorInterp->SetColorValue(static_cast<NiColorExtraData*>(m_pExtraData.m_pObject)->m_kFogTint);
+        pkColorInterp = (NiColorInterpolator*)pkInterp->DynamicCast(&NiColorInterpolator_ms_RTTI);
+    pkColorInterp->SetColorValue(static_cast<NiColorExtraData*>(m_spExtraData.m_pObject)->m_kColorA);
 }
 
 
@@ -110,6 +120,8 @@ struct Base57420
 char* __cdecl _FUN_00a7d330(const char*);
 // Appends the string returned by _FUN_00a7d330(g_011f3fdc) to pkStrings, growing the array if its size has reached its allocation.
 // @fnv 0x00a4fd90
+// pdb: NiColorExtraDataController::GetViewerStrings | NiColorExtraDataController.obj | retail, object-file run extension, low
+// pdb params: pkStrings
 void __thiscall NiColorExtraDataController::AppendString(StrArr* pkStrings)
 {
     reinterpret_cast<Base57420*>(this)->FUN_00a57420(pkStrings);
@@ -174,6 +186,8 @@ struct InterpVT_00a4faa0
 // Calls IsCorrectType on the interpolator's vtable and returns the result, ignoring the index.
 // @fnv 0x00a4faa0
 // src: XBOX_PDB 0x00a4faa0
+// pdb: NiColorExtraDataController::InterpolatorIsCorrectType | NiColorExtraDataController.obj | debug, upstream name already matches, high
+// pdb params: pkInterpolator, usIndex
 bool __stdcall NiColorExtraDataController_InterpolatorIsCorrectType(NiInterpolator* pkInterpolator, unsigned short usIndex)
 {
     return reinterpret_cast<InterpVT_00a4faa0*>(pkInterpolator)->IsCorrectType();
@@ -186,6 +200,9 @@ extern "C" void FUN_00c312f0();
 
 // Allocates a 0x40-byte object, initialises it with InitTimeController and a vtable, then calls FUN_00c312f0 with arg and returns it.
 // @fnv 0x00a4fb80
+// pdb: NiColorExtraDataController::CreateClone | NiColorExtraDataController.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiColorExtraDataController* __fastcall CreateObject(NiColorExtraDataController* self, void*, unsigned int arg)
 {
     NiColorExtraDataController* p = (NiColorExtraDataController*)Object_DispatchCommandFour(0x40);
@@ -211,29 +228,32 @@ NiColorA::NiColorA(float fR, float fG, float fB, float fA)
     a = fA;
 }
 
-extern const float INVALID_TIME_A4F;
+extern const float NiInterpController_INVALID_TIME;
 
 // Keep the update entry point local until the shared controller declares it.
 // @fnv 0x00a4fce0
+// pdb: NiColorExtraDataController::Update | NiColorExtraDataController.obj | retail, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: kValue
 void __fastcall UpdateColorController(NiColorExtraDataController* self, void*, NiUpdateData& kUpdateData)
 {
     if ((bool)(((self->m_uiObjectFlags & 0x0020) >> 5) & 1))
     {
-        self->m_fControllerTime = INVALID_TIME_A4F;
+        self->m_fScaledTime = NiInterpController_INVALID_TIME;
     }
     else if (self->AdvanceController(kUpdateData.fTime) &&
-             (!self->m_spControllerInterpolator.m_pObject || !self->m_spControllerInterpolator.m_pObject->AlwaysUpdate()))
+             (!self->m_spInterpolator.m_pObject || !self->m_spInterpolator.m_pObject->AlwaysUpdate()))
     {
         return;
     }
 
-    if (self->m_spControllerInterpolator.m_pObject)
+    if (self->m_spInterpolator.m_pObject)
     {
         NiColorA kColor;
-        if (self->m_spControllerInterpolator.m_pObject->UpdateColorA(self->m_fControllerTime, self->m_pkTarget, *reinterpret_cast<NiColorA*>(&kColor)))
+        if (self->m_spInterpolator.m_pObject->UpdateColorA(self->m_fScaledTime, self->m_pkTarget, *reinterpret_cast<NiColorA*>(&kColor)))
         {
-            if (self->m_pExtraData.m_pObject)
-                static_cast<NiColorExtraData*>(self->m_pExtraData.m_pObject)->SetColor(*reinterpret_cast<NiColorA*>(&kColor));
+            if (self->m_spExtraData.m_pObject)
+                static_cast<NiColorExtraData*>(self->m_spExtraData.m_pObject)->SetColor(*reinterpret_cast<NiColorA*>(&kColor));
         }
     }
 }
@@ -242,6 +262,8 @@ extern "C" void __cdecl IsEquivalent();
 
 // @fnv 0x00a4faf0
 // src: XBOX_PDB 0x00a4faf0
+// pdb: NiColorExtraDataController::IsEqual | NiColorExtraDataController.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 void __cdecl NiColorExtraDataController_IsEqual()
 {
     IsEquivalent();

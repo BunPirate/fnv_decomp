@@ -53,7 +53,7 @@ extern PlayerCharacter* g_thePlayer;
 // two SettingT<INISettingCollection> bools and a game-setting int (the grid size: Int() 0x0043d4d0)
 extern Setting DAT_011c9670, DAT_011c3d40;
 extern Setting DAT_011c63cc;
-extern TESQueuedCellManager* DAT_011c9618;
+extern ExteriorCellLoader* DAT_011c9618;
 
 bool AreVectorsEqual(const NiPoint3&, const NiPoint3&, float);
 bool IsApproximatelyEqual(float, float, float);

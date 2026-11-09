@@ -13,6 +13,8 @@ struct FUN_00cb18f0_t
 
 // @fnv 0x00cb1fb0
 // src: XBOX_PDB 0x00cb1fb0
+// pdb: hkMapBase<unsigned long,unsigned long,hkMapOperations<unsigned long> >::remove | hkMap.obj | retail, call graph (shared callers), high
+// pdb params: it
 int __thiscall FUN_00cb18f0_t::hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_remove(int key)
 {
     int found = FindSlot(key);
@@ -90,6 +92,8 @@ struct DepthLimit
 };
 // Hashes key, and if the hash is within the limit, writes the bucket's paired value to out and returns 0; otherwise returns 1.
 // @fnv 0x00cb1980
+// pdb: hkMapBase<unsigned long,unsigned long,hkMapOperations<unsigned long> >::get | hkMap.obj | retail, call graph, high
+// pdb params: key, out
 int __fastcall LookupBucketValue(DepthLimit* self, int edx, int key, int* paiOut)
 {
     int iHash = self->FindSlot(key);
@@ -296,6 +300,8 @@ class hkMapBaseCB19
 
 // Removes the map entry at the given slot, invalidates its key, and shifts later entries back to fill the gap.
 // @fnv 0x00cb19b0
+// pdb: hkMapBase<unsigned long,unsigned long,hkMapOperations<unsigned long> >::remove | hkMap.obj | retail, call graph (shared callers), high
+// pdb params: it
 void hkMapBaseCB19::RemoveEntry(void* it) throw()
 {
     typedef hkMapOperatorsCB19 OPS;
@@ -380,6 +386,7 @@ class hkMapCB1E
 
 // @fnv 0x00cb1e00
 // src: GUESS 0x00cb1e00 (confidence: low)
+// pdb: __savegprlr | crtgpr.obj | debug, call graph, medium
 void hkMapCB1E::ProcessEntries_00cb1e00()
 {
     int n = m_iPairCount + 1;
@@ -401,6 +408,8 @@ struct FUN_00cb1fe0_t
 };
 
 // @fnv 0x00cb1fe0
+// pdb: D3DXShader::DynamicBitSet<unsigned int,&D3DXShader::CompilerHeap::AllocInContext,&D3DXShader::CompilerHeap::FreeInContext>::EnsureCapacity | regopt.obj | retail, upstream name already matches, high
+// pdb params: nBits
 void FUN_00cb1fe0_t::EnsureCapacity(int a1, int n)
 {
     int iWantedSize = n * 2;
@@ -426,6 +435,8 @@ class FUN_00cb2000_cls
 
 // @fnv 0x00cb2000
 // src: GUESS 0x00cb2000 (confidence: low)
+// pdb: hkMapBase<unsigned __int64,unsigned __int64,hkMapOperations<unsigned __int64> >::remove | hkMap.obj | retail, call graph, medium
+// pdb params: it
 int FUN_00cb2000_cls::ProcessAndReturnValue_00cb2000(int iArg0, int iArg1)
 {
     int iCount = hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_findKey(iArg0, iArg1);
@@ -454,6 +465,9 @@ class FUN_00cb1830
 };
 
 // @fnv 0x00cb1830
+// pdb: hkMapBase<unsigned long,unsigned long,hkMapOperations<unsigned long> >::insert | hkMap.obj | retail, call graph (shared callers), low
+// pdb params: alloc, key, val
+// pdb locals: assertBuf, ostr
 FUN_00cb1830::FUN_00cb1830(void* apElements, unsigned int sizeInBytes)
 {
     int maxKeys = sizeInBytes / sizeof(hkMapPairCB18);
@@ -489,6 +503,8 @@ class hkMapBaseCB18
 // Inserts or updates a key/val pair in the hash map, resizing if needed, and returns 1 if the key was new.
 // @fnv 0x00cb1870
 // src: XBOX_PDB 0x00cb1870
+// pdb: hkMapBase<unsigned long,unsigned long,hkMapOperations<unsigned long> >::getNext | hkMap.obj | debug, object-file run extension, low
+// pdb params: it
 int hkMapBaseCB18::hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(hkMemoryAllocatorCB18& alloc, unsigned int key, unsigned int val)
 {
     if ((m_iCapacityFlags & 0x7fffffff) * 2 > m_iPairCount)
@@ -569,6 +585,8 @@ struct Target
 // Checks that every edge in the vertex list appears exactly twice with opposite orientation, returning true only when all edge keys have value 3.
 // @fnv 0x00e48e80
 // src: HAVOK_LIB 0x00e48e80
+// pdb: hkpConvexVerticesConnectivity::isClosed | hkpConvexVerticesConnectivity.obj | retail, upstream name already matches, high
+// pdb locals: edgeMap
 bool* Target::hkpConvexVerticesConnectivity_isClosed(bool* apResult)
 {
     EdgeMap edgeMap = {0, 0, -1};
@@ -715,6 +733,8 @@ class hkMapBaseU64
 // Invalidates the entry at index it and rehashes subsequent entries to close the gap in the open-addressed map.
 // @fnv 0x00cb1d20
 // src: XBOX_PDB 0x00cb1d20
+// pdb: hkMapBase<unsigned __int64,unsigned __int64,hkMapOperations<unsigned __int64> >::remove | hkMap.obj | retail, call graph (shared callers), medium
+// pdb params: it
 void hkMapBaseU64::hkMapBase_unsigned_int64_unsigned_int64_hkMapOperations_unsigned_int64_remove(unsigned aiIndex)
 {
     unsigned i = aiIndex;
@@ -840,6 +860,9 @@ class hkMapBaseCB1F
 // Grows the table if over half full, adds key/val if key is absent, and returns the key's slot index.
 // @fnv 0x00cb1f40
 // src: GUESS 0x00cb1f40 (confidence: medium)
+// pdb: hkMapBase<unsigned long,unsigned long,hkMapOperations<unsigned long> >::findOrInsertKey | hkMap.obj | retail, object-file run extension, low
+// pdb params: alloc, key, val
+// pdb locals: assertBuf, ostr
 int hkMapBaseCB1F::InsertKeyIfAbsent(hkMemoryAllocatorCB1F& alloc, unsigned int key, unsigned int uiValue)
 {
     {
@@ -867,6 +890,8 @@ int hkMapBaseCB1F::InsertKeyIfAbsent(hkMemoryAllocatorCB1F& alloc, unsigned int 
 
 // Hashes key into the open-addressing table and linearly probes for a matching entry, returning its slot index or a not-found value.
 // @fnv 0x00cb18f0
+// pdb: hkMapBase<unsigned long,unsigned long,hkMapOperations<unsigned long> >::isValid | hkMap.obj | debug, call graph, medium
+// pdb params: it
 int FUN_00cb18f0_t::FindSlot(int key)
 {
     int mod = m_iPairCount;

@@ -11,6 +11,8 @@ struct Struct6c89e0
     Struct6c89e0& AssignFrom(Struct6c89e0 const*);
 };
 // @fnv 0x006c89e0
+// pdb: ObstacleTaskNavMeshOperation::operator= | NavMeshObstacleTask.obj | debug, call graph, medium
+// pdb params: __that
 Struct6c89e0& Struct6c89e0::AssignFrom(Struct6c89e0 const* apSource)
 {
     f0 = apSource->f0;

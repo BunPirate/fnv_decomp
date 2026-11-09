@@ -11,13 +11,14 @@ class PathingActorData;
 
 #include "Pathing.h"
 
+// pdb: class NavMeshInfoSearch, size 0x209c, bases: AStarSearch<NavMeshInfo const *, 8 members
 class NavMeshInfoSearch : public AStarSearch<NavMeshInfo const *, TESObjectREFR *>
 {
 public:
     NavMeshInfoSearch();
     virtual ~NavMeshInfoSearch();
-    virtual bool CollectConnections(const AStarNodeType* pNode,
-        BSSimpleArray<AStarNodeType*, 1024>* pConnectionArray);
+    virtual bool CollectConnections(const AStarNodeType* apNode,
+        BSSimpleArray<AStarNodeType*, 1024>* apRetNodes);
     virtual bool HasReachedGoal(const AStarNodeType* pNode);
 
     void* DestroyAndFree(unsigned int flags);

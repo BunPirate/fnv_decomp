@@ -6941,23 +6941,24 @@ extern void* DAT_011f3dd0;
 void __cdecl NiStepPosKey_DeleteArray();
 void __cdecl NiBezPosKey_Copy();
 void __cdecl AllocateElem64Array();
-void __cdecl LoadBezPosKeys();
-void __cdecl SaveKeyArray();
-void __cdecl Object_UpdateFields_00a28620(int, int);
+void __cdecl NiBezPosKey_CreateFromStream();
+void __cdecl NiBezPosKey_SaveToStream();
+void __cdecl NiBezPosKey_RegisterSupportedFunctions(int, int);
 // @fnv 0x00a28680
 // src: GAMEBRYO_LIB 0x00a28680
+// pdb: NiBezPosKey::RegisterLoader | NiBezPosKey.obj | retail, upstream name already matches, high
 int __cdecl NiBezPosKey_RegisterLoader()
 {
     if (DAT_011f3668)
         return 0;
     DAT_011f3668 = 1;
-    DAT_011f3dd0 = (void*)LoadBezPosKeys;
-    DAT_011f3a70 = (void*)SaveKeyArray;
+    DAT_011f3dd0 = (void*)NiBezPosKey_CreateFromStream;
+    DAT_011f3a70 = (void*)NiBezPosKey_SaveToStream;
     DAT_011f39e0 = (void*)NiBezPosKey_Copy;
     DAT_011f3950 = (void*)AllocateElem64Array;
     DAT_011f38c0 = (void*)NiStepPosKey_DeleteArray;
     DAT_011f3760 = 0x40;
-    Object_UpdateFields_00a28620(1, 2);
+    NiBezPosKey_RegisterSupportedFunctions(1, 2);
     return 1;
 }
 
@@ -6977,6 +6978,7 @@ extern int DAT_011f3dcc;
 
 // @fnv 0x00a2aab0
 // src: GAMEBRYO_LIB 0x00a2aab0
+// pdb: NiLinPosKey::RegisterLoader | NiLinPosKey.obj | retail, upstream name already matches, high
 int __cdecl NiLinPosKey_RegisterLoader()
 {
     if (DAT_011f3693)
@@ -7009,6 +7011,7 @@ extern int DAT_011f3dd4;
 
 // @fnv 0x00a2bb90
 // src: GAMEBRYO_LIB 0x00a2bb90
+// pdb: NiTCBPosKey::RegisterLoader | NiTCBPosKey.obj | retail, upstream name already matches, high
 int __cdecl NiTCBPosKey_RegisterLoader()
 {
     if (DAT_011f3695)
@@ -7053,6 +7056,7 @@ void __cdecl FUN_00a28cb0_Fn0();
 
 // @fnv 0x00a28cb0
 // src: GUESS 0x00a28cb0 (confidence: low)
+// pdb: NiRotKey::RegisterLoader | NiRotKey.obj | retail, object-file run extension, low
 int __cdecl CrtCallbackStatus_UpdateState_00a28cb0()
 {
     if (FUN_00a28cb0_bRegistered)
@@ -7093,7 +7097,7 @@ extern S_00a29110_Fn DAT_011f38d8;
 extern S_00a29110_Fn DAT_011f3cc8;
 void __cdecl CallSpawnTarget();
 extern S_00a29110_Fn DAT_011f3b18;
-void __cdecl CompareBounds();
+void __cdecl NiBezRotKey_Equal();
 extern S_00a29110_Fn DAT_011f37b8;
 void __cdecl NiBezRotKey_FillDerivedVals();
 extern S_00a29110_Fn DAT_011f3848;
@@ -7101,6 +7105,7 @@ void __cdecl NiBezRotKey_Insert();
 void __cdecl NiStepPosKey_DeleteArray();
 // @fnv 0x00a29110
 // src: COMMUNITY 0x00a29110
+// pdb: NiBezRotKey::RegisterLoader | NiBezRotKey.obj | retail, upstream name already matches, high
 int NiBezRotKey_RegisterLoader()
 {
     if (DAT_011f367c)
@@ -7116,7 +7121,7 @@ int NiBezRotKey_RegisterLoader()
     DAT_011f38d8 = NiStepPosKey_DeleteArray;
     DAT_011f3766 = 0x24;
     DAT_011f3cc8 = CallSpawnTarget;
-    DAT_011f3b18 = CompareBounds;
+    DAT_011f3b18 = NiBezRotKey_Equal;
     DAT_011f37b8 = NiBezRotKey_FillDerivedVals;
     DAT_011f3848 = NiBezRotKey_Insert;
     return 1;
@@ -7190,6 +7195,7 @@ void __cdecl Object_SetKeyFunctionTable(int, int);
 
 // @fnv 0x00a27b00
 // src: GAMEBRYO_LIB 0x00a27b00
+// pdb: NiPosKey::RegisterLoader | NiPosKey.obj | retail, upstream name already matches, high
 int NiPosKey_RegisterLoader()
 {
     if (DAT_011f3656)
@@ -7227,6 +7233,7 @@ void __cdecl RegisterCurveOps(int, int);
 
 // @fnv 0x00a294f0
 // src: GAMEBRYO_LIB 0x00a294f0
+// pdb: NiBoolKey::RegisterLoader | NiBoolKey.obj | retail, upstream name already matches, high
 int NiBoolKey_RegisterLoader()
 {
     if (DAT_011f367e)
@@ -7309,7 +7316,7 @@ extern RuntimeCallback DAT_011f3b1c;
 extern RuntimeCallback DAT_011f37bc;
 extern RuntimeCallback DAT_011f384c;
 
-void __cdecl Object_ProcessEntries_00a2c420();
+void __cdecl NiTCBRotKey_CreateFromStream();
 void __cdecl NiTCBRotKey_SaveToStream();
 void __cdecl NiTCBRotKey_Copy();
 void __cdecl Object_GetIndexedValue_00a2be60();
@@ -7317,10 +7324,12 @@ void __cdecl NiStepPosKey_DeleteArray();
 void __cdecl InvokeSpawnTarget();
 void __cdecl BezRotKeyEqual();
 void __cdecl NiTCBRotKey_FillDerivedVals();
-void __cdecl NiTCBRotKey_FillDerivedVals_AllocateStorage_00a2c1b0();
+void __cdecl NiTCBRotKey_Insert();
 
 // @fnv 0x00a2c4c0
 // src: GUESS 0x00a2c4c0 (confidence: low)
+// pdb: NiTCBRotKey::RegisterLoader | NiTCBRotKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTCBRotKey::SaveBinary
 int __cdecl Object_ComputeValue_00a2c4c0()
 {
     if (DAT_011f3696 != 0)
@@ -7330,7 +7339,7 @@ int __cdecl Object_ComputeValue_00a2c4c0()
     DAT_011f3d5c = 0;
     DAT_011f3c3c = 0;
     DAT_011f3bac = 0;
-    DAT_011f3dec = Object_ProcessEntries_00a2c420;
+    DAT_011f3dec = NiTCBRotKey_CreateFromStream;
     DAT_011f3a8c = NiTCBRotKey_SaveToStream;
     DAT_011f39fc = NiTCBRotKey_Copy;
     DAT_011f396c = Object_GetIndexedValue_00a2be60;
@@ -7339,7 +7348,7 @@ int __cdecl Object_ComputeValue_00a2c4c0()
     DAT_011f3ccc = InvokeSpawnTarget;
     DAT_011f3b1c = BezRotKeyEqual;
     DAT_011f37bc = NiTCBRotKey_FillDerivedVals;
-    DAT_011f384c = NiTCBRotKey_FillDerivedVals_AllocateStorage_00a2c1b0;
+    DAT_011f384c = NiTCBRotKey_Insert;
     return 1;
 }
 
@@ -7369,6 +7378,8 @@ void __cdecl NiTCBFloatKey_FillDerivedVals_AllocateStorage_00a2c890();
 
 // @fnv 0x00a2cb80
 // src: GUESS 0x00a2cb80 (confidence: low)
+// pdb: NiTCBFloatKey::RegisterLoader | NiTCBFloatKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTCBFloatKey::SaveBinary
 int __cdecl Object_ComputeValue_00a2cb80()
 {
     if (DAT_011f3697 != 0)
@@ -7516,6 +7527,7 @@ void __cdecl Object_ProcessAndReturnValue_00a2d6c0();
 
 // @fnv 0x00a2d810
 // src: GUESS 0x00a2d810 (confidence: low)
+// pdb: NiAnimationSDM::NiAnimationSDM | NiAnimationSDM.obj | debug, object-file run extension, low
 int __cdecl NiStepPosKey_DeleteArray_UpdateState_00a2d810()
 {
     if (DAT_011f369c != 0)
@@ -7646,15 +7658,15 @@ int CrtCallbackStatus_FillMemory_00a299f0()
 extern unsigned char DAT_011f3690;
 extern unsigned char DAT_011f3768;
 extern unsigned int DAT_011f3d60, DAT_011f3c40, DAT_011f3bb0;
-extern void Runtime_AllocateStorage_00a2a070();
+extern void NiEulerRotKey_CreateFromStream();
 extern void NiEulerRotKey_SaveToStream();
-extern void CopyKeyData();
-extern void Runtime_GetIndexedValue_00a29db0();
+extern void NiEulerRotKey_Copy();
+extern void NiEulerRotKey_CreateArray();
 extern void NiStepPosKey_DeleteArray();
 extern void Runtime_ProcessEntries_00a29b10();
 extern void NiEulerRotKey_Equal();
-extern void DispatchEntryCallbacks();
-extern void UpdateArrayElements();
+extern void NiEulerRotKey_FillDerivedVals();
+extern void NiEulerRotKey_Insert();
 extern void (*DAT_011f3df0)();
 extern void (*DAT_011f3a90)();
 extern void (*DAT_011f3a00)();
@@ -7666,6 +7678,8 @@ extern void (*DAT_011f37c0)();
 extern void (*DAT_011f3850)();
 // @fnv 0x00a2a110
 // src: GUESS 0x00a2a110 (confidence: low)
+// pdb: NiEulerRotKey::RegisterLoader | NiEulerRotKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiEulerRotKey::SaveBinary
 int __cdecl NiEulerRotKey_SaveToStream_FillMemory_00a2a110()
 {
     if (DAT_011f3690)
@@ -7674,16 +7688,16 @@ int __cdecl NiEulerRotKey_SaveToStream_FillMemory_00a2a110()
     DAT_011f3c40 = 0;
     DAT_011f3bb0 = 0;
     memset(&DAT_011f3690, 1, 1);
-    DAT_011f3df0 = &Runtime_AllocateStorage_00a2a070;
+    DAT_011f3df0 = &NiEulerRotKey_CreateFromStream;
     DAT_011f3a90 = &NiEulerRotKey_SaveToStream;
-    DAT_011f3a00 = &CopyKeyData;
-    DAT_011f3970 = &Runtime_GetIndexedValue_00a29db0;
+    DAT_011f3a00 = &NiEulerRotKey_Copy;
+    DAT_011f3970 = &NiEulerRotKey_CreateArray;
     DAT_011f38e0 = &NiStepPosKey_DeleteArray;
     DAT_011f3768 = 0x48;
     DAT_011f3cd0 = &Runtime_ProcessEntries_00a29b10;
     DAT_011f3b20 = &NiEulerRotKey_Equal;
-    DAT_011f37c0 = &DispatchEntryCallbacks;
-    DAT_011f3850 = &UpdateArrayElements;
+    DAT_011f37c0 = &NiEulerRotKey_FillDerivedVals;
+    DAT_011f3850 = &NiEulerRotKey_Insert;
     return 1;
 }
 

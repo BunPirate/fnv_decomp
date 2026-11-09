@@ -81,6 +81,7 @@ class EffectSetting__EffectSettingData
     void Endian();
 };
 
+// pdb: class EffectSetting, size 0xb0, bases: TESForm, TESModel, TESDescription, TESFullName, TESIcon, 6 members
 class EffectSetting : public TESForm, public TESModel, public TESDescription, public TESFullName, public TESIcon
 {
 public:
@@ -102,20 +103,20 @@ public:
     virtual ~EffectSetting();
     virtual void Init();
     virtual void Free();
-    virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual void CopyFromBase(BaseFormComponent* apCopy);
+    virtual bool CompareWithBase(BaseFormComponent* apCompare);
     virtual void InitItem();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void UpdateEffectName(const char* name);
-    BSStringT<char> GetEffectName() const;
+    BSStringT<char> EffectSetting_GetEffectName() const;
     bool HasEffectID();
     int GetEffectID();
     void SetEffectID(int value);
     bool IsScriptEffect();
     bool IsDetrimental();
     bool IsAssociatedActorValueUsed();
-    bool HasAssociatedActorValue();
+    bool IsAssociatedActorValueFixed();
     int GetAssociatedActorValue();
     void SetAssociatedActorValue(int value);
     bool IsModelLoaded();
@@ -131,7 +132,7 @@ public:
     int GetArchetype();
     bool IsFlagSet(unsigned int flag);
     bool HasAllFlags(unsigned int flags);
-    bool IsDetrimentalToActorValue(int actorValue);
+    bool ShouldNegateMagnitude(int aeActorValue);
     ::TESObjectLIGH* GetLight();
     void SetLight(::TESObjectLIGH* light);
     TESSound* GetCastSound();

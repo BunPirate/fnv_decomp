@@ -5,5 +5,5 @@ class TESRegionPointList_CellExtraList
 {
   public:
     TESRegionList* ExtraDataList_GetRegionList();
-    void SetRegionList(TESRegionList*);
+    void ExtraDataList_SetRegionList(TESRegionList*);
 };

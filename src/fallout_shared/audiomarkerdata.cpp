@@ -17,6 +17,8 @@ struct MediaLocation
 };
 // @fnv 0x005897c0
 // src: XBOX_PDB 0x005897c0
+// pdb: AudioMarkerData::Compare | AudioMarkerData.obj | retail, upstream name already matches, high
+// pdb params: apCompare
 bool MediaLocation::AudioMarkerData_Compare(MediaLocation* apCompare)
 {
     if (v4(apCompare))

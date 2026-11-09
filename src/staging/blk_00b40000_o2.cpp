@@ -102,9 +102,11 @@ extern ImageSpaceManager* DAT_011f91ac;
 
 // @fnv 0x00b4f430
 // src: COMMUNITY 0x00b4f430
-void __cdecl BSShaderManager_SetImageSpaceParameters(int arg)
+// pdb: BSShaderManager::SetImageSpaceParameters | BSShaderManager.obj | debug, upstream name already matches, high
+// pdb params: apParamData
+void __cdecl BSShaderManager_SetImageSpaceParameters(int apParamData)
 {
-    DAT_011f91ac->SetValue(arg);
+    DAT_011f91ac->SetValue(apParamData);
 }
 
 extern BSTextureManager* DAT_011f91a8;
@@ -113,6 +115,7 @@ extern BSRenderedTexture* DAT_011f949c;
 // If the global rendered texture is set, passes it to the texture manager and clears the global pointer.
 // @fnv 0x00b4f510
 // src: COMMUNITY 0x00b4f510
+// pdb: BSShaderManager::ReturnVelocityBuffers | BSShaderManager.obj | retail, upstream name already matches, high
 void BSShaderManager_ReturnVelocityBuffers()
 {
     if (DAT_011f949c)
@@ -127,6 +130,7 @@ extern ImageSpaceManager* DAT_011f91ac;
 
 // @fnv 0x00b540b0
 // src: COMMUNITY 0x00b540b0
+// pdb: BSShaderManager::ReturnSceneDepthTexture | BSShaderManager.obj | debug, upstream name already matches, high
 void BSShaderManager_ReturnSceneDepthTexture()
 {
     ((ImageSpaceTexture*)DAT_011f91ac->DepthTexture)->AddRenderedTexture();
@@ -138,6 +142,7 @@ void __cdecl AddToCounterIfIdle(unsigned int, unsigned int);
 
 // @fnv 0x00b540d0
 // src: COMMUNITY 0x00b540d0
+// pdb: BSShaderManager::DisableFullScreenScissor | BSShaderManager.obj | debug, upstream name already matches, high
 void __cdecl BSShaderManager_DisableFullScreenScissor()
 {
     DAT_011ffa10 -= 1;
@@ -208,6 +213,7 @@ struct FUN_00b5a3f0_Class
 
 // @fnv 0x00b5a3f0
 // src: COMMUNITY 0x00b5a3f0
+// pdb: ImageSpaceEffectDepthRadialBlur::IsActive | ImageSpaceEffectRadialBlur.obj | debug, upstream name already matches, high
 int __thiscall FUN_00b5a3f0_Class::ImageSpaceEffectDepthRadialBlur_IsActive()
 {
     if (*(float*)((char*)this + 0x6c) > 0.0f && DAT_011f968c)
@@ -294,6 +300,7 @@ struct FUN_00b58570_Class
 // Allocates a node from the pool at this+8, links it after the current tail (this+4) or as the first node, and returns it.
 // @fnv 0x00b58570
 // src: COMMUNITY 0x00b58570
+// pdb: DistantLODGroup::`scalar deleting destructor' | DistantLODShaderProperty.obj | debug, object-file run extension, low
 void* __thiscall FUN_00b58570_Class::NiTPointerListBase_AddTail(void* source)
 {
     void* node = ((NodePoolView*)((char*)this + 8))->AddHead();
@@ -314,6 +321,8 @@ void* __thiscall FUN_00b58570_Class::NiTPointerListBase_AddTail(void* source)
 }
 
 // @fnv 0x00b5aa70
+// pdb: BSCubeMapCamera::SetRenderedCubeMap | ShadowSceneNode.obj | debug, object-file run extension, low
+// pdb params: apRenderedCubeMap
 int CompareFloatAtOffsetC(int* pLeft, int* pRight)
 {
     float x = *(float*)((char*)pLeft[0] + 0xc);
@@ -369,6 +378,7 @@ FUN_00b584e0_Node* FUN_00b584e0_Class::AllocateStorage_00b584e0(void* pData)
     return pNewNode;
 }
 
+// pdb: class ImageSpaceShaderParam, size 0x88 (here 0x1), bases: ImageSpaceEffectParam, 13 members
 struct ImageSpaceShaderParam
 {
     void SetShaderConstantVector4(int, float, float, float, float);
@@ -378,6 +388,9 @@ struct FUN_00b59cb0_Class
     bool ApplyShaderParams(int arg);
 };
 // @fnv 0x00b59cb0
+// pdb: ImageSpaceEffectRadialBlur::UpdateParams | ImageSpaceEffectRadialBlur.obj | debug, object-file run extension, low
+// pdb params: apParam
+// pdb locals: pparam
 bool FUN_00b59cb0_Class::ApplyShaderParams(int arg)
 {
     ImageSpaceShaderParam* pShaderParam = *reinterpret_cast<ImageSpaceShaderParam**>(*(int*)((char*)this + 0x1c));
@@ -401,6 +414,7 @@ struct FUN_00b5a8d0_List
 };
 // Unlinks node a from the list and reinserts it immediately before node b, updating head, tail and neighbour links.
 // @fnv 0x00b5a8d0
+// pdb: ShadowSceneNode::ClearVisibilityData | ShadowSceneNode.obj | debug, object-file run extension, low
 void __thiscall FUN_00b5a8d0_List::MoveBefore(FUN_00b5a8d0_Node* pNodeToMove, FUN_00b5a8d0_Node* pInsertBefore)
 {
     if (pNodeToMove != pInsertBefore)
@@ -430,6 +444,8 @@ struct FUN_00b5a3a0_Class
 
 // @fnv 0x00b5a3a0
 // src: COMMUNITY 0x00b5a3a0
+// pdb: ImageSpaceEffectRadialBlur::ImageSpaceEffectRadialBlur | ImageSpaceEffectRadialBlur.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceEffectDepthRadialBlur::ReturnTextures
 void FUN_00b5a3a0_Class::ImageSpaceEffectDepthRadialBlur_ReturnTextures()
 {
     int iZero;
@@ -448,14 +464,17 @@ void __cdecl AccumulateAndDispatch(unsigned int, unsigned int, unsigned int, uns
 // Calls AccumulateAndDispatch with the four arguments and 1, then calls AddToCounterIfIdle with 1 and 1.
 // @fnv 0x00b4f540
 // src: COMMUNITY 0x00b4f540
-void __cdecl BSShaderManager_EnableFullScreenScissor(unsigned int a, unsigned int b, unsigned int c, unsigned int d)
+// pdb: BSShaderManager::EnableFullScreenScissor | BSShaderManager.obj | retail, upstream name already matches, high
+// pdb params: uiX0, uiY0, uiX1, uiY1
+void __cdecl BSShaderManager_EnableFullScreenScissor(unsigned int uiX0, unsigned int uiY0, unsigned int uiX1, unsigned int uiY1)
 {
-    AccumulateAndDispatch(a, b, c, d, 1);
+    AccumulateAndDispatch(uiX0, uiY0, uiX1, uiY1, 1);
     AddToCounterIfIdle(1, 1);
 }
 
 // @fnv 0x00b59d10
 // src: COMMUNITY 0x00b59d10
+// pdb: ImageSpaceEffectRadialBlur::IsActive | ImageSpaceEffectRadialBlur.obj | debug, upstream name already matches, high
 int __fastcall ImageSpaceEffectRadialBlur_IsActive(char* p, int)
 {
     if (*(float*)(p + 0x58) > 0.0f && DAT_011f968c)
@@ -538,6 +557,7 @@ struct FUN_00b4e1e0 : S_00b4e1e0_Base
 };
 // Destructor that releases the two embedded items by calling their cleanup routine.
 // @fnv 0x00b4e1e0
+// pdb: BSFadeNode::~BSFadeNode | BSFadeNode.obj | retail, object-file run extension, low
 FUN_00b4e1e0::~FUN_00b4e1e0()
 {
     unk212.BSFadeNode_FreeLinkedNodesRecursively();
@@ -557,6 +577,7 @@ extern int DAT_011f95ec;
 
 // @fnv 0x00b4f5c0
 // src: XBOX_PDB 0x00b4f5c0
+// pdb: BSShaderManager::GetAccumulator | BSShaderManager.obj | debug, upstream name already matches, high
 int BSShaderManager_GetAccumulator()
 {
     return DAT_011f95ec;
@@ -670,20 +691,24 @@ class B55480Node : public B55480AVObject
 };
 
 // @fnv 0x00b55480
-void SetPropertyValueRecursive(B55480AVObject* pkObject, int iValue)
+// src: XBOX_RETAIL_PDB 0x00b55480
+// pdb: BSShaderManager::SetExternalEmittanceRecurse | BSShaderManager.obj | retail, call graph, high
+// pdb params: apObject, aColor
+// pdb locals: pmatproperty, pgeometry, pshaderproperty, pnode, ucount, uindex, pchild
+void BSShaderManager_SetExternalEmittanceRecurse(B55480AVObject* apObject, int aColor)
 {
-    if (!pkObject)
+    if (!apObject)
         return;
-    if (pkObject->IsGeometry())
+    if (apObject->IsGeometry())
     {
-        B55480Property* pkProp = static_cast<B55480Property*>(pkObject->GetProperty(2));
-        B55480ShaderProperty* pkShader = static_cast<B55480ShaderProperty*>(pkObject->GetProperty(3));
+        B55480Property* pkProp = static_cast<B55480Property*>(apObject->GetProperty(2));
+        B55480ShaderProperty* pkShader = static_cast<B55480ShaderProperty*>(apObject->GetProperty(3));
         if (pkProp && pkShader && (pkShader->m_uiValue1 & 0x20000000) > 0)
-            pkProp->m_iValue = iValue;
+            pkProp->m_iValue = aColor;
     }
     else
     {
-        B55480Node* pkNode = pkObject->IsSceneNode();
+        B55480Node* pkNode = apObject->IsSceneNode();
         if (pkNode)
         {
             unsigned int ItemUpdateArray = pkNode->m_usSize;
@@ -691,7 +716,7 @@ void SetPropertyValueRecursive(B55480AVObject* pkObject, int iValue)
             {
                 B55480AVObject* pkChild = pkNode->m_pkChildren[i];
                 if (pkChild)
-                    SetPropertyValueRecursive(pkChild, iValue);
+                    BSShaderManager_SetExternalEmittanceRecurse(pkChild, aColor);
             }
         }
     }
@@ -886,12 +911,12 @@ FUN_00b57f90::FUN_00b57f90() : FUN_00b7c000_Base()
 }
 
 // FUN_00b57fd0 : a one-line function - getter
-extern int g_target_00b57fd0;
+extern int DistantLODShaderProperty_ms_RTTI;
 // @fnv 0x00b57fd0
 // src: XBOX_PDB 0x00b57fd0
 void* DistantLODShaderProperty_GetRTTI()
 {
-    return &g_target_00b57fd0;
+    return &DistantLODShaderProperty_ms_RTTI;
 }
 
 class B57FF0Base
@@ -979,6 +1004,9 @@ class B58070AVObject
 extern B58070AVObject* g_pkB58070Root;
 
 // @fnv 0x00b58070
+// pdb: DistantLODShaderProperty::SetDistantLODCulled | DistantLODShaderProperty.obj | debug, call graph, medium
+// pdb params: abDistLODStatus
+// pdb locals: bretval
 bool SetRootAppCulled(bool bCulled)
 {
     B58070AVObject* pkRoot = g_pkB58070Root;
@@ -1087,7 +1115,7 @@ struct FUN_00b58140_Class
     NiRefObject* reference80;
     unsigned int copiedValue84;
     unsigned int copiedValue88;
-    void __thiscall BSShaderLightingProperty_CopyMembers(FUN_00b58140_Class* destination, unsigned int flags);
+    void __thiscall BSShaderLightingProperty_CopyMembers(FUN_00b58140_Class* pDest, unsigned int arCloneData);
     void __thiscall CopyTo(FUN_00b58140_Class* destination, unsigned int flags);
 };
 
@@ -1211,7 +1239,7 @@ BlobObj* FUN_00b58420_cls::CreateBlobObj(unsigned int arg)
 
 struct PoolAllocator_b4009
 {
-    void Free(void* apPtr);
+    void Free(void* apMem);
 };
 
 extern "C" PoolAllocator_b4009 DAT_011f6238;
@@ -1235,6 +1263,7 @@ struct FUN_00b58530_cls
 // Walks the linked list from m_00, clearing each node's m_08 and freeing it, then resets m_00, m_04 and m_08.
 // @fnv 0x00b58530
 // src: GUESS 0x00b58530 (confidence: low)
+// pdb: NiTList<unsigned int>::~NiTList<unsigned int> | DistantLODShaderProperty.obj | debug, object-file run extension, low
 void FUN_00b58530_cls::ProcessEntries_00b58530()
 {
     ListNode_b4009* cur = m_00;
@@ -1258,7 +1287,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volati
 class BB595B0Heap
 {
   public:
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 
 extern BB595B0Heap g_kB595B0Heap;
@@ -1345,6 +1374,9 @@ class FUN_00b595b0_cls
 
 // Releases the held reference object, clears the queue, deletes all entry pointers in the list, then removes the list nodes.
 // @fnv 0x00b595b0
+// pdb: DistantLODShaderProperty::CachedDistantLOD::~CachedDistantLOD | DistantLODShaderProperty.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DistantLODShaderProperty::GetGroupKey
+// pdb locals: kiter, plodgroup
 FUN_00b595b0_cls::~FUN_00b595b0_cls()
 {
     m_pReferencedObject = 0;
@@ -1471,6 +1503,9 @@ struct Effect
 };
 // Writes camera near/far plane derived values into value60/64/68 and sets four-component parameters on both shader params, returning true.
 // @fnv 0x00b5a220
+// pdb: ImageSpaceEffectDepthRadialBlur::UpdateParams | ImageSpaceEffectRadialBlur.obj | retail, object-file run extension, low
+// pdb params: apParam
+// pdb locals: ffar, pparam, fnear
 bool Effect::UpdateShaderParams(int)
 {
     ImageSpaceShaderParam* pSecondParam = parameters->second;
@@ -1490,7 +1525,7 @@ bool Effect::UpdateShaderParams(int)
 
 struct FUN_00ba3840_Class
 {
-    void __thiscall ImageSpaceTexture_BorrowRenderedTexture(int value);
+    void __thiscall ImageSpaceTexture_BorrowRenderedTexture(int aeType);
 };
 struct FUN_00ba3aa0_Class
 {
@@ -1506,6 +1541,9 @@ struct FUN_00b5a340_Class
     void __thiscall InitSubObjects(int arg);
 };
 // @fnv 0x00b5a340
+// pdb: ImageSpaceEffectDepthRadialBlur::BorrowTextures | ImageSpaceEffectRadialBlur.obj | retail, object-file run extension, low
+// pdb params: pParam
+// pdb locals: ptex
 void FUN_00b5a340_Class::InitSubObjects(int arg)
 {
     char* value;
@@ -1526,6 +1564,7 @@ struct PaletteFieldFlags
 
 // Packs four zero-comparison results of bytes at offsets 0xe6-0xe9 into a 4-bit value, with 0xe6 as the lowest bit.
 // @fnv 0x00b5aa00
+// pdb: ShadowSceneLight::GetDynamicShadowMap | ShadowSceneNode.obj | debug, object-file run extension, low
 unsigned int __thiscall PaletteFieldFlags::GetPackedZeroFlags() const
 {
     const unsigned char* const fieldBytes = reinterpret_cast<const unsigned char*>(this);
@@ -1773,6 +1812,9 @@ class BB5F0C0Visitor
 };
 
 // @fnv 0x00b5f0c0
+// pdb: ShadowSceneNode::FindAndCullLightRecurse | ShadowSceneNode.obj | debug, object-file run extension, low
+// pdb params: apNode, abCull
+// pdb locals: uichildren, i, pavobj, pchlight, pchnode
 void BB5F0C0Visitor::VisitNodeChildren(BB5F0C0Node* pkNode, bool bAttach)
 {
     unsigned int ItemUpdateArray = pkNode->m_usSize;
@@ -1808,21 +1850,24 @@ void __stdcall VisitNodeChildren(void* pTarget, int flag);
 
 struct FunSceneManager
 {
-    void ShadowSceneNode_FindAndCullLight(void* pTarget, int flag);
+    void ShadowSceneNode_FindAndCullLight(void* apNode, int abCull);
 };
 
 // @fnv 0x00b5f150
 // src: COMMUNITY 0x00b5f150
-void FunSceneManager::ShadowSceneNode_FindAndCullLight(void* pTarget, int flag)
+// pdb: ShadowSceneNode::FindAndCullLight | ShadowSceneNode.obj | debug, upstream name already matches, high
+// pdb params: apNode, abCull
+void FunSceneManager::ShadowSceneNode_FindAndCullLight(void* apNode, int abCull)
 {
-    if (pTarget != 0)
-        VisitNodeChildren(pTarget, flag);
+    if (apNode != 0)
+        VisitNodeChildren(apNode, abCull);
 }
 
 extern int DAT_011f95f0;
 
 // @fnv 0x00b4f5d0
 // src: COMMUNITY 0x00b4f5d0
+// pdb: BSShaderManager::GetCurrentAccumulator | BSShaderManager.obj | debug, upstream name already matches, high
 int BSShaderManager_GetCurrentAccumulator()
 {
     return DAT_011f95f0;
@@ -1856,7 +1901,7 @@ extern int DAT_011f91e4;
 extern int DAT_011f91e0;
 extern int DAT_011f91d8;
 extern int DAT_011f91f0;
-extern int DAT_011f91ec;
+extern int BSShaderManager_pObjectTypeCallback;
 extern int DAT_011f91c0;
 extern int DAT_011f91bc;
 extern int DAT_011f9178;
@@ -1898,7 +1943,7 @@ FUN_00b54280::FUN_00b54280()
     DAT_011f91d8 = 47;
     DAT_011f91f8 = BSShaderManager_DefaultFileCreateFunc;
     DAT_011f91f0 = 0;
-    DAT_011f91ec = 0;
+    BSShaderManager_pObjectTypeCallback = 0;
     DAT_011f91c7 = true;
     DAT_011f91c6 = false;
     DAT_011f91c5 = false;
@@ -1946,14 +1991,14 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volati
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* plAddend);
 
 template <> __declspec(noinline) bool NamedObjectMapBase::GetAt(
-    const char* key, NiPointer<NiRefObject>& value) const
+    const char* key, NiPointer<NiRefObject>& val) const
 {
     unsigned int index = KeyToHashIndex(key);
     for (EntryType* item = m_ppkHashTable[index]; item; item = item->m_pkNext)
     {
         if (IsKeysEqual(key, item->m_key))
         {
-            value = item->m_val;
+            val = item->m_val;
             return true;
         }
     }
@@ -1964,13 +2009,17 @@ NamedObjectMap* __cdecl GetNiTStringMap();
 
 // Looks up pcName in the named map and returns true if a non-null object is found.
 // @fnv 0x00b58720
-bool __cdecl IsNamedObjectPresent(const char* pcName)
+// src: XBOX_RETAIL_PDB 0x00b58720
+// pdb: DistantLODShaderProperty::HasCachedGeometry | DistantLODShaderProperty.obj | retail, object-file gap fill, high
+// pdb params: aiFormID
+// pdb locals: bretval, spgeom
+bool __cdecl DistantLODShaderProperty_HasCachedGeometry(const char* aiFormID)
 {
     bool bFound = false;
-    if (pcName)
+    if (aiFormID)
     {
         NiPointer<NiRefObject> spRetainedObject;
-        if (GetNiTStringMap()->GetAt(pcName, spRetainedObject) && spRetainedObject)
+        if (GetNiTStringMap()->GetAt(aiFormID, spRetainedObject) && spRetainedObject)
             bFound = true;
     }
     return bFound;
@@ -2013,6 +2062,8 @@ struct FUN_00b5a110 : FUN_00ba3d30
 };
 // Destructor that deletes the item at index 2 and the params at indices 1 and 0, clearing each slot via FUN_00ba3aa0.
 // @fnv 0x00b5a110
+// pdb: ImageSpaceEffectDepthRadialBlur::~ImageSpaceEffectDepthRadialBlur | ImageSpaceEffectRadialBlur.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceEffectDepthRadialBlur::ImageSpaceEffectDepthRadialBlur
 FUN_00b5a110::~FUN_00b5a110()
 {
     if (items.values[2])
@@ -2105,9 +2156,12 @@ struct Rend
 }
 // @fnv 0x00b55ac0
 // src: COMMUNITY 0x00b55ac0
-void __cdecl BSShaderManager_RenderImageSpaceEffects(int a, int b, int c)
+// pdb: BSShaderManager::RenderImageSpaceEffects | BSShaderManager.obj | retail, upstream name already matches, high
+// pdb params: apRenderer, apScreenBuffer, apDestinationBuffer
+// pdb locals: i
+void __cdecl BSShaderManager_RenderImageSpaceEffects(int apRenderer, int apScreenBuffer, int apDestinationBuffer)
 {
-    DAT_011f91ac->RenderEndOfFrameEffects((GraphicsRenderer*)a, (BSRenderedTexture**)&b, (BSRenderedTexture**)&c);
+    DAT_011f91ac->RenderEndOfFrameEffects((GraphicsRenderer*)apRenderer, (BSRenderedTexture**)&apScreenBuffer, (BSRenderedTexture**)&apDestinationBuffer);
     for (int i = 0; i < 8; i++)
         ((nb::Rend*)DAT_011f9508)->m_8b8->SetTarget(i, 0);
 }
@@ -2186,7 +2240,10 @@ extern int DAT_011f963c;
 extern int DAT_011f9640;
 // Iterates the map from its first position, deletes each stored value, then removes all entries and resets DAT_011f963c and DAT_011f9640 to zero.
 // @fnv 0x00b59890
-void ClearMap()
+// src: XBOX_RETAIL_PDB 0x00b59890
+// pdb: DistantLODShaderProperty::RemoveAllDistantLOD | DistantLODShaderProperty.obj | retail, call graph, high
+// pdb locals: kiter, plod, iignore
+void DistantLODShaderProperty_RemoveAllDistantLOD()
 {
     void* pkItem = ((RenderItemMap*)B59890GetMap())->GetFirstPos();
     void* pos = pkItem;
@@ -2229,6 +2286,7 @@ struct FUN_00b5a410 : FUN_00ba4080
     virtual ~FUN_00b5a410();
 };
 // @fnv 0x00b5a410
+// pdb: ImageSpaceEffectRadialBlur::`scalar deleting destructor' | ImageSpaceEffectRadialBlur.obj | debug, object-file run extension, low
 FUN_00b5a410::FUN_00b5a410()
 {
     array28.FUN_00a90180(2);
@@ -2238,6 +2296,9 @@ FUN_00b5a410::FUN_00b5a410()
 
 // @fnv 0x00b5a8c0
 // src: COMMUNITY 0x00b5a8c0
+// pdb: ShadowSceneNode::EnableTestLight | ShadowSceneNode.obj | debug, upstream name already matches, high
+// pdb params: abEnable, akPosition, afRadius, afMagnitude
+// pdb locals: plight
 void __stdcall ShadowSceneNode_EnableTestLight(int, int, int, int, int, int)
 {}
 
@@ -2256,6 +2317,9 @@ struct FUN_00b59c20 : FUN_00ba3d30
 
 // Deletes the first Param in params.values and resets the params container when it is non-null.
 // @fnv 0x00b59c20
+// pdb: ImageSpaceEffectRadialBlur::Setup | ImageSpaceEffectRadialBlur.obj | debug, object-file run extension, low
+// pdb params: apManager, apParam
+// pdb locals: pparam
 __thiscall FUN_00b59c20::~FUN_00b59c20()
 {
     if (params.values[0])
@@ -2589,6 +2653,9 @@ struct TextureOwner
 // If value.ptr->unk240 differs from unk1E0 adds value to m_c0 or m_b4, otherwise finds it there and calls RemoveLightFromNode; unkEC picks the list.
 // @fnv 0x00b5ef90
 // src: COMMUNITY 0x00b5ef90
+// pdb: ShadowSceneNode::RemoveObjectRecurse | ShadowSceneNode.obj | debug, object-file run extension, low
+// pdb params: apNode
+// pdb locals: pscenelight, i, child, trigeom, node
 void TextureOwner::ShadowSceneNode_RemoveQueuedLight(const RefPtr_b9fcc0& value)
 {
     if (value.ptr->unk240 != unk1E0)
@@ -2634,6 +2701,7 @@ inline NiTPointerMap<TKEY, TVAL>::NiTPointerMap(unsigned int uiHashSize)
 // Returns the static render-item cache, creating it on first call.
 // @fnv 0x00b585c0
 // src: GUESS 0x00b585c0 (confidence: medium)
+// pdb: DistantLODShaderProperty::GetDistantLODMap | DistantLODShaderProperty.obj | retail, call graph, high
 RenderItemMap* __cdecl Object_GetOrCreateRenderItemCache()
 {
     static RenderItemMap map(37);
@@ -2642,6 +2710,7 @@ RenderItemMap* __cdecl Object_GetOrCreateRenderItemCache()
 
 // Returns the static named-object cache, creating it on first call.
 // @fnv 0x00b58670
+// pdb: DistantLODShaderProperty::GetCachedGeometryMap | DistantLODShaderProperty.obj | retail, call graph, high
 NamedObjectMap* __cdecl GetNiTStringMap()
 {
     static NamedObjectMap s_kMap;
@@ -3486,7 +3555,7 @@ struct RTEntry
     }
 };
 
-extern "C" RTTexture* __cdecl DistantLODShaderProperty_GetCachedGeometry(RTKey* key);
+extern "C" RTTexture* __cdecl DistantLODShaderProperty_GetCachedGeometry(RTKey* apDistantLODParam);
 
 struct RTRenderer
 {
@@ -3559,7 +3628,11 @@ static __forceinline bool Lookup(int k, RTEntry*& found)
 
 // Finds or creates an RTItem for key using a snapped position value, stores it in *out and returns usTotal minus usUsed.
 // @fnv 0x00b596a0
-int __cdecl GetOrCreateItem(RTKey* key, unsigned int pos, RTItem** ppItem)
+// src: XBOX_RETAIL_PDB 0x00b596a0
+// pdb: DistantLODShaderProperty::GetDistantLODGroup | DistantLODShaderProperty.obj | retail, call graph, high
+// pdb params: apDistantLODParam, aiCellChunk, apDistantLODGroup, apDistantLODNode
+// pdb locals: plist, piter, plod, pcachedGeom, plodgroup
+int __cdecl DistantLODShaderProperty_GetDistantLODGroup(RTKey* key, unsigned int pos, RTItem** ppItem)
 {
     int n = DAT_011f9654;
     unsigned int snap;

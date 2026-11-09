@@ -7,6 +7,7 @@ class Actor;
 class TESPackage;
 class TESEscortPackageData;
 
+// pdb: class EscortActorPackageData, size 0x18, bases: ActorPackageData, 4 members
 class EscortActorPackageData : public ActorPackageData
 {
 public:
@@ -16,7 +17,7 @@ public:
     virtual PTYPE GetPackageType();
     virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
     virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
-    virtual void InitLoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     void FUN_0067d920();
     void RegisterActor(Actor* apActor);
@@ -25,6 +26,6 @@ public:
 
     Actor* pActor;
     TESPackage* pPackage;
-    const TESEscortPackageData* m_pEscortPackageData;
-    BSSimpleList<Actor*> m_kActorList;
+    const TESEscortPackageData* pPackageData;
+    BSSimpleList<Actor*> EscortedActors;
 };

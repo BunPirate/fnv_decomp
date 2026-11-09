@@ -20,13 +20,13 @@ void __fastcall GetAlphaValue(NiAlphaController* self, void*, float& fValue)
     fValue = p[0x3c / 4];
 }
 
-extern int g_011f4084;
+extern int NiAlphaController_ms_RTTI;
 
 // @fnv 0x00a56a80
 // src: COMMUNITY 0x00a56a80
 int* __cdecl NiAlphaController_GetRTTI()
 {
-    return &g_011f4084;
+    return &NiAlphaController_ms_RTTI;
 }
 
 extern int DAT_0109a76c;
@@ -36,6 +36,8 @@ inline void* __cdecl operator new(unsigned int, void* p)
 }
 // Allocates a 0x38-byte NiFloatInterpController, constructs it in place, sets its vtable to DAT_0109a76c, and returns it (or null on allocation failure).
 // @fnv 0x00a56b30
+// pdb: NiAlphaController::IsEqual | NiAlphaController.obj | debug, object-file run extension, low
+// pdb params: pkObject
 NiFloatInterpController* __cdecl CreateFloatInterpController()
 {
     NiFloatInterpController* p = (NiFloatInterpController*)BSFadeNode::operator new(0x38);
@@ -53,7 +55,7 @@ struct FUN_00bc3050_RTTI
     const char* m_pcName;
     FUN_00bc3050_RTTI* m_pParentNode;
 };
-extern FUN_00bc3050_RTTI g_011f4a5c;
+extern FUN_00bc3050_RTTI NiMaterialProperty_ms_RTTI;
 struct FUN_00bc3050_Obj
 {
     virtual void f0();
@@ -63,6 +65,8 @@ struct FUN_00bc3050_Obj
 // Checks whether pkTarget's RTTI chain contains g_011f4a5c, returning false for a null target or null RTTI.
 // @fnv 0x00bc3050
 // src: COMMUNITY 0x00bc3050
+// pdb: NiMaterialColorController::InterpTargetIsCorrectType | NiMaterialColorController.obj | debug, upstream name already matches, high
+// pdb params: pkTarget
 bool __stdcall NiMaterialColorController_InterpTargetIsCorrectType(FUN_00bc3050_Obj* pkTarget)
 {
     if (!pkTarget)
@@ -72,7 +76,7 @@ bool __stdcall NiMaterialColorController_InterpTargetIsCorrectType(FUN_00bc3050_
         return false;
     do
     {
-        if (pkRTTI == &g_011f4a5c)
+        if (pkRTTI == &NiMaterialProperty_ms_RTTI)
             return true;
         pkRTTI = pkRTTI->m_pParentNode;
     } while (pkRTTI);
@@ -95,10 +99,12 @@ char* __cdecl _FUN_00a7d330(const char*);
 // Grows pkStrings if full, then appends the string returned by _FUN_00a7d330(g_011f4084) at the current size index.
 // @fnv 0x00a56b60
 // src: XBOX_PDB 0x00a56b60
+// pdb: NiAlphaController::GetViewerStrings | NiAlphaController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiAlphaController_GetViewerStrings(AlphaPrimitiveArray<char*>* pkStrings)
 {
     NiFloatInterpController_GetViewerStrings(pkStrings);
-    char* pszStr = _FUN_00a7d330((const char*)g_011f4084);
+    char* pszStr = _FUN_00a7d330((const char*)NiAlphaController_ms_RTTI);
     unsigned int uiSize = pkStrings->m_usSize;
     if (uiSize >= pkStrings->m_usMaxSize)
         pkStrings->SetSize(uiSize + pkStrings->m_usGrowBy);
@@ -108,6 +114,8 @@ void __stdcall NiAlphaController_GetViewerStrings(AlphaPrimitiveArray<char*>* pk
 extern int DAT_0109a76c;
 // Allocates and initialises a NiFloatInterpController, then copies p into it via Copy and returns the new object, or null if allocation fails.
 // @fnv 0x00a56ae0
+// pdb: NiAlphaController::SaveBinary | NiAlphaController.obj | debug, object-file run extension, low
+// pdb params: kStream
 NiFloatInterpController* __fastcall CreateAndCopy(NiAlphaController* self, void*, CloningProcess* apSource)
 {
     NiFloatInterpController* n = (NiFloatInterpController*)NiFloatInterpController::operator new(0x38);
@@ -126,7 +134,7 @@ NiFloatInterpController* __fastcall CreateAndCopy(NiAlphaController* self, void*
     return r;
 }
 
-static const float kInvalidTime = -3.402823466e+38f;
+static const float NiInterpController_INVALID_TIME = -3.402823466e+38f;
 struct FloatTarget
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
@@ -161,23 +169,25 @@ inline bool NiTimeController::GetManagerControlled() const
     return ((m_uiObjectFlags >> 5) & 1) ? true : false;
 }
 // @fnv 0x00a56a00
+// pdb: Actor::UpdateAlpha | Actor_Magic.obj | retail, upstream name already matches, high
+// pdb locals: ffade, finvisibility, ffinalAlpha, fchameleon, binvisible, fextra
 void __fastcall UpdateAlpha(NiAlphaController* self, void*, UpdateData& kData)
 {
     if (self->GetManagerControlled())
     {
-        self->m_fControllerTime = kInvalidTime;
+        self->m_fScaledTime = NiInterpController_INVALID_TIME;
     }
     else if (self->DontDoUpdate(kData.m_fTime) &&
-             (!self->m_spControllerInterpolator.m_pObject ||
-              !reinterpret_cast<FloatInterpolator*>(self->m_spControllerInterpolator.m_pObject)->AlwaysUpdate()))
+             (!self->m_spInterpolator.m_pObject ||
+              !reinterpret_cast<FloatInterpolator*>(self->m_spInterpolator.m_pObject)->AlwaysUpdate()))
     {
         return;
     }
-    if (self->m_spControllerInterpolator.m_pObject)
+    if (self->m_spInterpolator.m_pObject)
     {
         float fValue;
-        if (reinterpret_cast<FloatInterpolator*>(self->m_spControllerInterpolator.m_pObject)->Update(
-                self->m_fControllerTime, reinterpret_cast<FloatTarget*>(self->m_pkTarget), fValue))
+        if (reinterpret_cast<FloatInterpolator*>(self->m_spInterpolator.m_pObject)->Update(
+                self->m_fScaledTime, reinterpret_cast<FloatTarget*>(self->m_pkTarget), fValue))
         {
             reinterpret_cast<FloatTarget*>(self->m_pkTarget)->SetValue(fValue);
         }
@@ -189,9 +199,11 @@ void __cdecl FUN_00a6d290();
 void __cdecl _delete(void*, unsigned int);
 // Releases the interpolator, destroys the base, and optionally deletes the controller.
 // @fnv 0x00a56a90
+// pdb: NiAlphaController::RegisterStreamables | NiAlphaController.obj | debug, object-file run extension, low
+// pdb params: kStream
 void* __fastcall DeleteAlphaController(NiAlphaController* self, void*, unsigned int uiFlags)
 {
-    NiInterpolator* p = self->m_spControllerInterpolator.m_pObject;
+    NiInterpolator* p = self->m_spInterpolator.m_pObject;
     if (p)
     {
         if (InterlockedDecrement(reinterpret_cast<LONG*>(&p->m_uiRefCount)) == 0)

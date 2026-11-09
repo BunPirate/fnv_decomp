@@ -11,6 +11,7 @@ class Projectile;
 class SoundObj;
 class Target;
 
+// pdb: class CombatProcedureAttackGrenade, size 0x3c, bases: CombatProcedure, 6 members
 class CombatProcedureAttackGrenade : public CombatProcedure
 {
 public:
@@ -51,5 +52,5 @@ public:
     bool Validate(void* object, NiPoint3* point, float value);
     void Reset();
 
-    unsigned char unk10[0x2C];
+    unsigned char eState[0x2C];
 };

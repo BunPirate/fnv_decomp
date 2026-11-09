@@ -20,14 +20,14 @@
 // src: HAVOK_LIB 0x00e3b720
 void hkpPoweredChainData::getConstraintInfo_00e3b720(int* info) const
 {
-    info[4] = (int)&m_kBridgeAtoms;
+    info[4] = (int)&m_atoms;
     int zero = 0;
     info[2] = zero;
     info[3] = zero;
     info[0] = zero;
     info[1] = 0x10;
     info[5] = 0xc;
-    int count = m_pConstraintInfo.m_iElementCount;
+    int count = m_infos.m_iElementCount;
     int total = count * 3;
     int size = (count * 0x534 + 0x53) & 0xfffffff0;
     total = total * 2;
@@ -54,16 +54,19 @@ struct FUN_00e3b7d0_object
 // Clears a two-bit field at the given bit position in the byte at index within a 48-byte-strided block and sets it to 2.
 // @fnv 0x00e3b7d0
 // src: HAVOK_LIB 0x00e3b7d0
-void hkpPoweredChainData_disableMotor(FUN_00e3b7d0_object* object, int index, int bit)
+// pdb: hkpPoweredChainData::disableMotor | hkpPoweredChainData.obj | debug, upstream name already matches, high
+// pdb params: instance, constraintIndex, motorIndex
+// pdb locals: assertBuf, ostr
+void hkpPoweredChainData_disableMotor(FUN_00e3b7d0_object* instance, int constraintIndex, int motorIndex)
 {
-    int count = object->first->m_pConstraintInfo.m_iElementCount;
-    FUN_00e3b7d0_second* second = object->second;
+    int count = instance->first->m_infos.m_iElementCount;
+    FUN_00e3b7d0_second* second = instance->second;
     unsigned char* data = second->data;
     data += count * 48;
 
-    unsigned char mask = static_cast<unsigned char>(3 << (bit * 2));
-    unsigned char value = static_cast<unsigned char>(2 << (bit * 2));
-    data[index] = static_cast<unsigned char>((data[index] & ~mask) | value);
+    unsigned char mask = static_cast<unsigned char>(3 << (motorIndex * 2));
+    unsigned char value = static_cast<unsigned char>(2 << (motorIndex * 2));
+    data[constraintIndex] = static_cast<unsigned char>((data[constraintIndex] & ~mask) | value);
 }
 
 // @fnv 0x00e3b670
@@ -119,6 +122,7 @@ class FUN_00e3b8f0 : public hkBaseE3B8
 
 // Initializes the float members to default values and calls m_link.FUN_00d21ce0 with this as owner.
 // @fnv 0x00e3b8f0
+// pdb: hkpPoweredChainData::hkpPoweredChainData | hkpPoweredChainData.obj | retail, object-file gap fill, high
 FUN_00e3b8f0::FUN_00e3b8f0() throw()
 {
     m_24 = 0.6f;
@@ -155,14 +159,15 @@ class FUN_00e3b960 : public hkReferencedObject
     int unk08;
     hkMemberE3B9 m_kMemberDescriptor;
 
-    FUN_00e3b960(FinishingFlag flag);
+    FUN_00e3b960(FinishingFlag f);
     virtual ~FUN_00e3b960();
 };
 
 // @fnv 0x00e3b960
-FUN_00e3b960::FUN_00e3b960(FinishingFlag flag) : hkReferencedObject(flag), m_kMemberDescriptor(flag)
+// pdb: hkpPoweredChainData::hkpPoweredChainData | hkpPoweredChainData.obj | retail, object-file gap fill, high
+FUN_00e3b960::FUN_00e3b960(FinishingFlag f) : hkReferencedObject(f), m_kMemberDescriptor(f)
 {
-    if (flag.m_bFinishing)
+    if (f.m_bFinishing)
         m_kMemberDescriptor.hkpBridgeConstraintAtom_init(this);
 }
 }  // namespace fnv_00e3b960
@@ -172,7 +177,7 @@ extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 inline void hkReferencedObject::operator delete(void* p)
 {
     reinterpret_cast<hkMemoryAllocator&>(::hkMemoryRouter_getInstance().heap())
-        .blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+        .blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 inline hkpConstraintData::~hkpConstraintData() throw()
@@ -182,7 +187,7 @@ inline hkpConstraintData::~hkpConstraintData() throw()
 // src: HAVOK_LIB 0x00e3b770
 void hkpPoweredChainData::getRuntimeInfo_00e3b770(int unused, RuntimeInfo* result)
 {
-    int size = m_pConstraintInfo.m_iElementCount;
+    int size = m_infos.m_iElementCount;
     int stride = size * 6;
 
     result->stride = stride;
@@ -215,28 +220,30 @@ public:
     };
     bool enabled;
 };
-extern void __cdecl ResizeAudioStream(void* allocator, hkArray<hkpPoweredChainDataConstraintInfo>* array, int elementSize);
+extern void __cdecl ResizeAudioStream(void* mem, hkArray<hkpPoweredChainDataConstraintInfo>* array, int sizeElem);
 extern const __m128 DAT_012683b0;
 // Appends a constraint entry, storing frames and motor pointers, and retaining each motor.
 // @fnv 0x00e3b850
 // src: XBOX_PDB 0x00e3b850
-void hkpPoweredChainData::addConstraintInfoInBodySpace(const __m128* apFrameA, const __m128* apFrameB, const __m128* apFrameC,
-                                    Motor* motorA, Motor* motorB, Motor* motorC)
+// pdb: hkpPoweredChainData::addConstraintInfoInBodySpace | hkpPoweredChainData.obj | retail, upstream name already matches, high
+// pdb params: pivotInA, pivotInB, aTc, xMotor, yMotor, zMotor
+void hkpPoweredChainData::addConstraintInfoInBodySpace(const __m128* pivotInA, const __m128* pivotInB, const __m128* aTc,
+                                    Motor* xMotor, Motor* yMotor, Motor* zMotor)
 {
-    hkArray<hkpPoweredChainDataConstraintInfo>* array = &m_pConstraintInfo;
+    hkArray<hkpPoweredChainDataConstraintInfo>* array = &m_infos;
     hkMemoryRouter* router = hkMemoryRouter_getInstance();
     if (array->m_iElementCount == (int)(array->m_iCapacityState & 0x3fffffff))
         ResizeAudioStream(router->m_heap, array, sizeof(hkpPoweredChainDataConstraintInfo));
     hkpPoweredChainDataConstraintInfo& info = array->m_data[array->m_iElementCount++];
-    info.frameA = *apFrameA;
-    info.frameB = *apFrameB;
-    info.frameC = *apFrameC;
-    info.motorA = motorA;
-    motorA->FUN_00c90510();
-    info.motorB = motorB;
-    motorB->FUN_00c90510();
-    info.motorC = motorC;
-    motorC->FUN_00c90510();
+    info.frameA = *pivotInA;
+    info.frameB = *pivotInB;
+    info.frameC = *aTc;
+    info.motorA = xMotor;
+    xMotor->FUN_00c90510();
+    info.motorB = yMotor;
+    yMotor->FUN_00c90510();
+    info.motorC = zMotor;
+    zMotor->FUN_00c90510();
     info.enabled = false;
     info.frameD = DAT_012683b0;
 }
@@ -315,14 +322,15 @@ template <typename T, typename A> __forceinline hkArray<T, A>::~hkArray()
 
 // Releases all retained motors, then frees the constraint-entry array.
 // @fnv 0x00e3b9a0
+// pdb: hkpPoweredChainData::~hkpPoweredChainData | hkpPoweredChainData.obj | retail, upstream name already matches, high
 hkpPoweredChainData::~hkpPoweredChainData() throw()
 {
-    for (int i = 0; i < m_pConstraintInfo.m_iElementCount; i++)
+    for (int i = 0; i < m_infos.m_iElementCount; i++)
     {
         for (int j = 0; j < 3; j++)
         {
-            if (m_pConstraintInfo.m_data[i].m_apkObjects[j])
-                m_pConstraintInfo.m_data[i].m_apkObjects[j]->removeReference();
+            if (m_infos.m_data[i].m_apkObjects[j])
+                m_infos.m_data[i].m_apkObjects[j]->removeReference();
         }
     }
 }

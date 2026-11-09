@@ -10,6 +10,7 @@ struct SkinBoneData;
 struct SkinMapContext;
 struct SkinBoneContainer;
 
+// pdb: class NiSkinData, size 0x60 (here 0x48), bases: NiObject, 4 members
 class NiSkinData : public NiObject
 {
   public:

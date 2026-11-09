@@ -5,6 +5,7 @@
 
 struct ClassMemberDescriptor;
 
+// pdb: class hkContactPointMaterial, size 0x8, 5 members
 class hkContactPointMaterial
 {
 public:
@@ -16,10 +17,10 @@ public:
         CONTACT_IS_DISABLED = 8
     };
 
-    unsigned int m_ulUserData;
-    QuantizedFloat8 m_fSlipAngle;
-    unsigned char m_fElasticity;
-    QuantizedFloat8 m_usFlags;
+    unsigned int m_userData;
+    QuantizedFloat8 m_friction;
+    unsigned char m_restitution;
+    QuantizedFloat8 m_maxImpulse;
     unsigned char m_flags;
 
     static const ClassMemberDescriptor Members[];

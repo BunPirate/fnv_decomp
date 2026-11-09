@@ -7,7 +7,10 @@
 
 // Reads a DATA chunk from the current TESFile and stores its payload into the setting according to the setting's type.
 // @fnv 0x004f8860
-bool GameSettingCollection::ReadSetting(Setting& setting)
+// pdb: GameSettingCollection::ReadSetting | XGameSetting.obj | retail, vtable slot, high
+// pdb params: arSetting
+// pdb locals: bres, pfile, pmessage
+bool GameSettingCollection::ReadSetting(Setting& arSetting)
 {
     bool result = false;
     if (GameSettingCollection_File())
@@ -16,18 +19,18 @@ bool GameSettingCollection::ReadSetting(Setting& setting)
         file->NextChunk();
         if (file->GetChunkID() == 0x41544144)
         {
-            switch (setting.Setting_DataType())
+            switch (arSetting.Setting_DataType())
             {
             case 3:
-                result = file->GetChunkData(&setting.uValue.u);
+                result = file->GetChunkData(&arSetting.uValue.u);
                 break;
             case 5:
-                result = file->GetChunkData(&setting.uValue.u);
+                result = file->GetChunkData(&arSetting.uValue.u);
                 break;
             case 6:
                 char* buffer = static_cast<char*>(_alloca(file->GetChunkSize()));
                 result = file->GetChunkData(buffer, 0);
-                setting.SetStringAndPromoteKeyOwnership(buffer);
+                arSetting.SetStringAndPromoteKeyOwnership(buffer);
                 break;
             }
         }
@@ -37,12 +40,15 @@ bool GameSettingCollection::ReadSetting(Setting& setting)
 
 // Reads a setting from the file by key, returning whether a matching setting was found and read, then closes the file.
 // @fnv 0x004f89c0
-bool GameSettingCollection::ReadSetting(TESFile* file, const char* key)
+// pdb: GameSettingCollection::ReadSetting | XGameSetting.obj | retail, vtable slot, high
+// pdb params: arSetting
+// pdb locals: bres, pfile, pmessage
+bool GameSettingCollection::ReadSetting(TESFile* apFile, const char* apKey)
 {
     bool result = false;
-    SetField108(file);
+    SetField108(apFile);
     {
-        Setting* setting = SettingCollectionMap_Setting_GetPtr(PrepareScriptMessage(key, false));
+        Setting* setting = SettingCollectionMap_Setting_GetPtr(PrepareScriptMessage(apKey, false));
         if (setting)
             result = ReadSetting(*setting);
     }
@@ -58,6 +64,9 @@ bool GameSettingCollection::Close()
 }
 
 // @fnv 0x0096a610
+// pdb: NiTArray<unsigned int,NiTMallocInterface<unsigned int> >::Add | TESObjectTREE.obj | retail, call graph, low
+// pdb note: debug build links it to NiTArray<char *,NiTMallocInterface<char *> >::Add
+// pdb params: element
 void StrArr::AddFirstEmpty(char*& element)
 {
     SetAtGrow(m_usSize, element);
@@ -79,6 +88,7 @@ struct S00404b40
 };
 // Calls FUN_00404b70, frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x00404b40
+// pdb: GameSettingCollection::`scalar deleting destructor' | EffectItem.obj | debug, vtable slot, medium
 void* S00404b40::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00404b70();
@@ -101,12 +111,15 @@ struct Holder004f8800 : Base00404fd0
 };
 // Adds "GameSettings" and "Total GameSettings" strings to apStrings and returns the count from FUN_00404fd0.
 // @fnv 0x004f8800
-unsigned int Holder004f8800::AddGameSettingsStrings(NiTPrimitiveArray<unsigned int>* apStrings)
+// pdb: GameSettingCollection::GetViewerStrings | XGameSetting.obj | retail, string-set bridge, high
+// pdb params: apStringsA
+// pdb locals: I
+unsigned int Holder004f8800::AddGameSettingsStrings(NiTPrimitiveArray<unsigned int>* apStringsA)
 {
     unsigned int I;
-    apStrings->AddFirstEmpty((unsigned int)_FUN_00a7d330("GameSettings"));
-    I = GetViewerStrings_00404fd0(apStrings);
-    apStrings->AddFirstEmpty((unsigned int)NiGetViewerString_00a7d510("Total GameSettings", I));
+    apStringsA->AddFirstEmpty((unsigned int)_FUN_00a7d330("GameSettings"));
+    I = GetViewerStrings_00404fd0(apStringsA);
+    apStringsA->AddFirstEmpty((unsigned int)NiGetViewerString_00a7d510("Total GameSettings", I));
     return I;
 }
 
@@ -118,6 +131,8 @@ struct Pad12
 };
 // Appends element to the array, growing it by m_usGrowBy if full, and returns the index it was stored at.
 // @fnv 0x00c4c8d0
+// pdb: NiTArray<BSAttachPointPair *,NiTMallocInterface<BSAttachPointPair *> >::Add | BSAttachPoints.obj | debug, call graph, medium
+// pdb params: element
 unsigned int StrArr::Add(char*& element)
 {
     Pad12 pad;
@@ -134,11 +149,14 @@ char* __cdecl FUN_00ec7750(const char* key, const char* name);
 
 // @fnv 0x00c4bd20
 // src: COMMUNITY 0x00c4bd20
-int __cdecl BSUtilities_GetSequenceFileName(Setting* setting)
+// pdb: BSUtilities::GetSequenceFileName | BSUtilities.obj | debug, upstream name already matches, high
+// pdb params: apSequence
+// pdb locals: pfname, pname
+int __cdecl BSUtilities_GetSequenceFileName(Setting* apSequence)
 {
     int res = 0;
     char* dst;
-    const char* n = setting->pKey;
+    const char* n = apSequence->pKey;
     const char* p = n;
     if (p)
     {

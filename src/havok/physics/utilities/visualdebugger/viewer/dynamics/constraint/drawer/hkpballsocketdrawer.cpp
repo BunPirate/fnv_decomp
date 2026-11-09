@@ -50,9 +50,9 @@ struct Obj
     hkVector4 m50;
     char pad2[0x60];
     Sub mC0;
-    void hkpConstraintDrawer_updateCommonParameters(Body* b, hkTransform* t, hkTransform* r);
+    void hkpConstraintDrawer_updateCommonParameters(Body* b, hkTransform* refLocalToWorld, hkTransform* attLocalToWorld);
     void hkpConstraintDrawer_drawPivots(int a, int b);
-    void hkpConstraintDrawer_drawBodyFrames(int a, int b);
+    void hkpConstraintDrawer_drawBodyFrames(int id, int tag);
     void FireMotionEvent(Body* b, Listener* l, int a, int c);
 };
 

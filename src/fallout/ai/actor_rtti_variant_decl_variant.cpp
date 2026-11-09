@@ -27,7 +27,7 @@ struct FUN_009eb500
     FUN_009eb500(int, TESObjectREFR*, Actor*, int, int, int);
     Actor* FUN_0044ddc0();
     Actor* GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    void AddActor(Actor*);
+    void ProcessArray_AddActor(Actor*);
 };
 
 struct CrimeLimit
@@ -52,14 +52,17 @@ extern CrimeQueue g_011e0e80;
 extern PlayerCharacter* DAT_011dea3c;
 // @fnv 0x008c00e0
 // src: XBOX_PDB 0x008c00e0
-void Actor::PickpocketAlarm(TESObjectREFR* victimRef, int amount, int crimeValue)
+// pdb: Actor::PickpocketAlarm | Actor.obj | retail, upstream name already matches, high
+// pdb params: apRef, apObj, ainumb
+// pdb locals: bpers, pnpc, ptargactor, elevel, bsendwarning, pactor, pcrime, pdetect, battack, iday
+void Actor::PickpocketAlarm(TESObjectREFR* apRef, int apObj, int ainumb)
 {
     bool status = false;
     if ((Actor*)this != DAT_011dea3c)
         return;
     if (DAT_011dea3c->GetField230() < *g_011cd9f4.Setting_Int() && (Actor*)this == DAT_011dea3c)
         status = true;
-    Actor* entry = dynamic_cast<Actor*>(victimRef);
+    Actor* entry = dynamic_cast<Actor*>(apRef);
     if (entry->IsDead() || entry->IsDisabled())
     {
         entry->GetProcess()->SetIsWeaponReady(true);
@@ -68,8 +71,8 @@ void Actor::PickpocketAlarm(TESObjectREFR* victimRef, int amount, int crimeValue
     if ((Actor*)this != DAT_011dea3c && ActorValueOwner::GetActorValueAsInteger(static_cast<ActorValue::Index>(42)) == 100 && IsSneaking())
         return;
     FUN_009eb500* isLowLevel = 0;
-    isLowLevel = new FUN_009eb500(1, victimRef, (Actor*)this, amount, crimeValue, 0);
-    Actor* target = (Actor*)victimRef;
+    isLowLevel = new FUN_009eb500(1, apRef, (Actor*)this, apObj, ainumb, 0);
+    Actor* target = (Actor*)apRef;
     bool crime = false;
     if ((isLowLevel && target == isLowLevel->FUN_0044ddc0()) || isLowLevel->FUN_0044ddc0()->TESObjectREFR_IsAnOwner(target, true))
         crime = true;
@@ -82,20 +85,20 @@ void Actor::PickpocketAlarm(TESObjectREFR* victimRef, int amount, int crimeValue
     TESNPC* form = dynamic_cast<TESNPC*>(target->GetObjectReference());
     entry->GetProcess()->SetIsWeaponReady(true);
     target->GetExtraData()->AddOrCreateExtraItem(isLowLevel, g_011de7b8.FUN_00867da0());
-    isLowLevel->AddActor((Actor*)this);
+    isLowLevel->ProcessArray_AddActor((Actor*)this);
     g_011e0e80.AddObjectToList(isLowLevel);
     target->Actor_IncrementMinorCrimes();
     target->Actor_AddFactionMinorCrime(true, true);
-    if (m_bActorListValid)
+    if (bAttackOnNextTheft)
     {
         bool alert = true;
-        if (m_iIntegerAfterActorListValid > 0)
+        if (iThiefCrimeStamp > 0)
         {
-            int day = m_iIntegerAfterActorListValid & 0x1ff;
+            int day = iThiefCrimeStamp & 0x1ff;
             if (day != g_011de7b8.FUN_00867d60())
             {
                 alert = false;
-                m_bActorListValid = false;
+                bAttackOnNextTheft = false;
             }
         }
         if (alert)
@@ -106,8 +109,8 @@ void Actor::PickpocketAlarm(TESObjectREFR* victimRef, int amount, int crimeValue
     }
     else
     {
-        m_bActorListValid = true;
-        m_iIntegerAfterActorListValid =
+        bAttackOnNextTheft = true;
+        iThiefCrimeStamp =
             (g_011de7b8.FUN_00867d20() << 9) | g_011de7b8.FUN_00867d60() | (g_011de7b8.Calendar_GetYear() << 13);
     }
     target->Actor_InitiatePickPocketWarning((Actor*)this);

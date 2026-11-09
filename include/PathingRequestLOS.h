@@ -18,7 +18,7 @@ public:
 
 
     void* DestroyAndFree(unsigned int flags);
-    void InitFromActor(void*);
+    void PathingRequest_SetOrigin(void*);
     void SetCantOpenDoors(bool);
     void PathingRequest_SetNoDestination();
     void AssignAtOffsetB0(const NiPointer<void>&);

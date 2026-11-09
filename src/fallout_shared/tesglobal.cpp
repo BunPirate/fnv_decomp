@@ -16,36 +16,39 @@
 
 // Reads a TESGlobal record from the file, handling EDID, OBND, FNAM and FLTV chunks until the chunk list ends.
 // @fnv 0x005a64b0
-bool TESGlobal::Load(TESFile* file)
+// pdb: TESGlobal::Load | TESGlobal.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage
+bool TESGlobal::Load(TESFile* apFile)
 {
     // This caller compares the full return register, as in the original unsigned-int declaration.
-    if ((file->*reinterpret_cast<unsigned int (TESFile::*)()>(&TESFile::GetTESForm))() != 6)
+    if ((apFile->*reinterpret_cast<unsigned int (TESFile::*)()>(&TESFile::GetTESForm))() != 6)
         return false;
 
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
 
     int chunkID;
-    while ((chunkID = (int)file->GetChunkID()) != 0)
+    while ((chunkID = (int)apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case FNV_FOURCC('E', 'D', 'I', 'D'): {
-            char* buffer = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(buffer, 0x200);
+            char* buffer = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(buffer, 0x200);
             SetEditorID_AtRuntime(buffer);
             break;
         }
         case FNV_FOURCC('O', 'B', 'N', 'D'):
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case FNV_FOURCC('F', 'N', 'A', 'M'):
-            file->GetChunkData(&cType, 1);
+            apFile->GetChunkData(&cType, 1);
             break;
         case FNV_FOURCC('F', 'L', 'T', 'V'):
-            file->GetChunkData((unsigned int*)&fValue);
+            apFile->GetChunkData((unsigned int*)&fValue);
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
 
@@ -54,6 +57,7 @@ bool TESGlobal::Load(TESFile* file)
 
 
 // @fnv 0x0052b310
+// pdb: TESImageSpace::TESImageSpace | TESImageSpace.obj | retail, call graph, high
 TESImageSpace::TESImageSpace()
 {
     SetFormType((ENUM_FORM_ID)0x53);
@@ -62,9 +66,11 @@ TESImageSpace::TESImageSpace()
 
 // Sets the global's editor ID, then returns true.
 // @fnv 0x005a63a0
-bool TESGlobal::SetEditorID_AtRuntime(char const* apString)
+// pdb: TESGlobal::SetFormEditorID | TESGlobal.obj | retail, vtable slot, high
+// pdb params: apEditorID
+bool TESGlobal::SetEditorID_AtRuntime(char const* apEditorID)
 {
-    cGlobalEditorID.Set(apString, 0);
+    cFormEditorID.Set(apEditorID, 0);
     return 1;
 }
 
@@ -73,6 +79,7 @@ void __cdecl _FUN_00485910(unsigned int, float);
 
 // Writes the global's type and value chunks.
 // @fnv 0x005a6460
+// pdb: TESGlobal::Save | TESGlobal.obj | retail, vtable slot, high
 void TESGlobal::SaveForm()
 {
     TESForm::BeginFormRecord();
@@ -82,6 +89,9 @@ void TESGlobal::SaveForm()
 }
 
 // @fnv 0x005a65e0
+// pdb: TESGlobal::Copy | TESGlobal.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pCopy
 void TESGlobal::CopyFrom(const TESForm* apCopy)
 {
     TESGlobal* pCopy = dynamic_cast<TESGlobal*>(const_cast<TESForm*>(apCopy));
@@ -94,6 +104,9 @@ void TESGlobal::CopyFrom(const TESForm* apCopy)
 
 // Returns true when the other form is not a global or its base data, type or value differs.
 // @fnv 0x005a6640
+// pdb: TESGlobal::Compare | TESGlobal.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp
 bool TESGlobal::Compare(TESForm* apCompare)
 {
     TESGlobal* pComp = dynamic_cast<TESGlobal*>(apCompare);
@@ -109,6 +122,7 @@ bool TESGlobal::Compare(TESForm* apCompare)
 }
 
 // @fnv 0x005a63f0
+// pdb: TESGlobal::~TESGlobal | TESGlobal.obj | debug, upstream name already matches, high
 TESGlobal::~TESGlobal()
 {
     TESForm::ClearData();

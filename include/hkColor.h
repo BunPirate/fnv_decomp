@@ -22,5 +22,5 @@ class hkColor  // src: HAVOK_SRC (class and colour names)
     // 8-bit channels -> packed colour; alpha opaque unless given
     static int __cdecl rgbFromChars(unsigned char ucR, unsigned char ucG, unsigned char ucB, unsigned char ucA = 0xff);
     // float channels in [0,1] -> packed colour (body in src/havok/common/base/types/color/hkcolor.cpp)
-    static int __cdecl PackColorBigEndian(const hkReal fR, const hkReal fG, const hkReal fB, const hkReal fA = 1.0f);
+    static int __cdecl PackColorBigEndian(const hkReal red, const hkReal green, const hkReal blue, const hkReal alpha = 1.0f);
 };

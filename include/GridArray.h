@@ -3,6 +3,7 @@
 class TESForm;
 class GridVector;
 
+// pdb: class GridArray, size 0x10, 3 members
 class GridArray
 {
 public:
@@ -13,7 +14,7 @@ public:
     virtual void DetachAllCells();
     virtual void AttachAllCells();
     virtual bool SetGridPosition(int x, int y);
-    virtual void Shift(int x, int y);
+    virtual void Shift(int aiCols, int aiRows);
     virtual void Detach(unsigned int, unsigned int);
     virtual void ClearTileExtraPair(unsigned int, unsigned int);
     virtual void MoveItem(unsigned int, unsigned int, unsigned int, unsigned int);
@@ -47,5 +48,5 @@ public:
         int iCenterPixelY;
         int count;
     };
-    unsigned int uiDimension;
+    unsigned int iDimension;
 };

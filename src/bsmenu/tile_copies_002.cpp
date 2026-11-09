@@ -8,6 +8,7 @@ struct Twin_0084d030 : public Tile__FloatAction
     float GetStoredFloatValue();
 };
 // @fnv 0x0084d030
+// pdb: BSPerformanceTimer::Start | TES.obj | debug, call graph, medium
 float Twin_0084d030::GetStoredFloatValue()
 {
     return fValue;

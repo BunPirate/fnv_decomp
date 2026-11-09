@@ -68,7 +68,7 @@ struct S_Out
 };
 struct S_Str : S_Arr
 {
-    S_Str* InitBuffer();
+    S_Str* hkStringBuf_ctor();
     int unk0c;
     int unk10;
     int unk14;
@@ -125,7 +125,7 @@ int WriteCompilerInfo(const char* name)
     outStream.WriteUInt16(n);
     outStream.hkOArchive_writeRaw("PC_32", n);
     S_Str versionStr;
-    versionStr.InitBuffer();
+    versionStr.hkStringBuf_ctor();
     hkStringBuf_printf(&versionStr, "%s:%i", "MSVC", 1500);
     int iVersionLen = versionStr.size - 1;
     if (iVersionLen > 0xffff)

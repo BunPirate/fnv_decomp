@@ -9,6 +9,7 @@ class TESSound;
 class TimedFloatKey;
 class AlphaColor;
 
+// pdb: class TESImageSpaceModifier, size 0x730, bases: TESForm, 31 members
 class TESImageSpaceModifier : public TESForm
 {
 public:
@@ -22,7 +23,7 @@ public:
     virtual bool Compare(TESForm* form);
 
     void __vslot_10();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Save();
     void Copy(TESForm* form);
     void ResetFormData();
@@ -32,7 +33,7 @@ public:
     void SetDuration(float duration);
     static void SetEnable(bool enable);
     static bool GetEnable();
-    void Apply(float startTime, float strength, NiAVObject* target);
+    void Apply(float afStartTime, float afStrength, NiAVObject* apTarget);
     void EvaluateInterpolators(float startTime, float strength);
     bool IsExpired(float startTime);
     static void BlendModifiers(float blendWeight, TESImageSpaceModifier* lastModifier,
@@ -61,31 +62,31 @@ public:
     TESSound* pIntroSound;
     ImageSpaceModifierEffectData Data;
     NiFloatInterpolator m_akFloatInterpolators[21][2];
-    NiFloatInterpolator m_kFloatInterpolatorOne;
-    NiFloatInterpolator m_kFloatInterpolatorTwo;
-    NiColorInterpolator m_kColorInterpolatorOne;
-    NiColorInterpolator m_kColorInterpolatorTwo;
-    NiFloatInterpolator m_kFloatInterpolatorNine;
-    NiFloatInterpolator m_kFloatInterpolatorTen;
-    NiFloatInterpolator m_kFloatInterpolatorEleven;
-    NiFloatInterpolator m_kFloatInterpolatorThree;
-    NiFloatInterpolator m_kFloatInterpolatorFour;
-    NiFloatInterpolator m_kFloatInterpolatorFive;
-    NiFloatInterpolator m_kFloatInterpolatorSix;
-    NiFloatInterpolator m_kFloatInterpolatorSeven;
-    NiFloatInterpolator m_kFloatInterpolatorEight;
+    NiFloatInterpolator BlurInterpolator;
+    NiFloatInterpolator DoubleInterpolator;
+    NiColorInterpolator TintColorInterpolator;
+    NiColorInterpolator FadeColorInterpolator;
+    NiFloatInterpolator RadialBlurStrengthInterpolator;
+    NiFloatInterpolator RadialBlurRampupInterpolator;
+    NiFloatInterpolator RadialBlurStartInterpolator;
+    NiFloatInterpolator RadialBlurRampDownInterpolator;
+    NiFloatInterpolator RadialBlurDownStartInterpolator;
+    NiFloatInterpolator DepthOfFieldStrengthInterpolator;
+    NiFloatInterpolator DepthOfFieldDistanceInterpolator;
+    NiFloatInterpolator DepthOfFieldRangeInterpolator;
+    NiFloatInterpolator MotionBlurStrengthInterpolator;
     TimedFloatKey* pEffectEntryTable[21][2];
-    TimedFloatKey* pSecondEffectEntries;
-    TimedFloatKey* pThirdEffectEntries;
-    AlphaColor* pFirstEffectRecordArray;
-    AlphaColor* pSecondEffectRecordArray;
-    TimedFloatKey* pTenthEffectEntries;
-    TimedFloatKey* pEleventhEffectEntries;
-    TimedFloatKey* pTwelfthEffectEntries;
-    TimedFloatKey* pFourthEffectEntries;
-    TimedFloatKey* pFifthEffectEntries;
-    TimedFloatKey* pSeventhEffectEntries;
-    TimedFloatKey* pEighthEffectEntries;
-    TimedFloatKey* pNinthEffectEntries;
-    TimedFloatKey* pSixthEffectEntries;
+    TimedFloatKey* pBlurFloatKey;
+    TimedFloatKey* pDoubleFloatKey;
+    AlphaColor* pTintColorKey;
+    AlphaColor* pFadeColorKey;
+    TimedFloatKey* pRadialBlurStrengthFloatKey;
+    TimedFloatKey* pRadialBlurRampupFloatKey;
+    TimedFloatKey* pRadialBlurStartFloatKey;
+    TimedFloatKey* pRadialBlurRampDownFloatKey;
+    TimedFloatKey* pRadialBlurDownStartFloatKey;
+    TimedFloatKey* pDepthOfFieldStrengthFloatKey;
+    TimedFloatKey* pDepthOfFieldDistanceFloatKey;
+    TimedFloatKey* pDepthOfFieldRangeFloatKey;
+    TimedFloatKey* pMotionBlurStrengthFloatKey;
 };

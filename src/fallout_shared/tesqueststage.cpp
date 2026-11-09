@@ -55,7 +55,7 @@ bool PlayerQuestData::Load(TESFile* file)
         char* data = static_cast<char*>(_alloca(size));
         memset(data, 0, size);
         file->GetChunkData(data, 0);
-        m_pScript.SetScriptData(size, data);
+        m_pScript.SetCompileData(size, data);
         break;
     }
     case 0x4f524353: {
@@ -95,6 +95,7 @@ bool PlayerQuestData::Load(TESFile* file)
 
 // Empty destructor for the object; performs no work.
 // @fnv 0x0060c840
+// pdb: TESQuestStage::`scalar deleting destructor' | TESQuest.obj | debug, object-file gap fill, medium
 QuestStage::~QuestStage()
 {}
 
@@ -105,6 +106,9 @@ void TriggerTESQuestStageDelete(QuestStage* stage)
 
 // Reads a QSTA chunk from the file, applies endian conversion if needed, and stores its two fields into the object.
 // @fnv 0x00610120
+// pdb: TESQuestTarget::Load | TESQuestTarget.obj | retail, object-file run extension, low
+// pdb params: apFile
+// pdb locals: filedata
 void RegionObjectEntry::Load(TESFile* file)
 {
     if (file)
@@ -123,6 +127,9 @@ void RegionObjectEntry::Load(TESFile* file)
 }
 
 // @fnv 0x0060fb60
+// pdb: TESQuestStage::SetDone | TESQuestStage.obj | retail, string-set bridge, high
+// pdb params: apQuest, abAllItems
+// pdb locals: pList, pItem
 void QuestStage::MarkDone(bool done)
 {
     if (m_pCompletionDate && m_pSharedOwner && !m_pSharedOwner->GetAllowRepeatStages())
@@ -166,13 +173,16 @@ void QuestStage::MarkDone(bool done)
 
 // Walks the quest's stage list and returns the entry whose index matches the given index, or null if none matches.
 // @fnv 0x0060db40
-QuestStage* TESQuest::GetStage(unsigned char index)
+// pdb: TESQuest::GetStage | TESQuest.obj | debug, upstream name already matches, high
+// pdb params: acIndex
+// pdb locals: pstages, pstage
+QuestStage* TESQuest::GetStage(unsigned char acIndex)
 {
     BSSimpleList<TESFile*>* stage = reinterpret_cast<BSSimpleList<TESFile*>*>(GetStageList());
     while (stage)
     {
         QuestStage* item = reinterpret_cast<QuestStage*>(stage->GetItem());
-        if (item && item->GetIndex() == index)
+        if (item && item->GetIndex() == acIndex)
             return item;
         stage = stage->GetNext();
     }
@@ -180,7 +190,11 @@ QuestStage* TESQuest::GetStage(unsigned char index)
 }
 
 // @fnv 0x0060fa10
-void PlayerQuestData::InitItem(TESForm* form, QuestStage* stage)
+// src: XBOX_RETAIL_PDB 0x0060fa10
+// pdb: TESQuestStage::InitItem | TESQuestStage.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: iItemCount, pList, pitem
+void PlayerQuestData::TESQuestStage_InitItem(TESForm* form, QuestStage* stage)
 {
     int iErrorCount;
     unsigned int auiFormId;
@@ -218,8 +232,9 @@ class QuestStageItemList
 };
 
 // @fnv 0x0060f210
-// src: COMMUNITY 0x0060f210
-void* __fastcall TESQuestStage_TESQuestStage(char* pThis)
+// src: XBOX_DEBUG_PDB 0x0060f210
+// pdb: TESQuestStage::TESQuestStage | TESQuestStage.obj | debug, upstream name already matches, high
+void* __fastcall TESQuestStage_ctor(char* pThis)
 {
     ResetFlags(pThis);
     ((QuestStageItemList*)(pThis + 4))->QuestStageItemList::QuestStageItemList();
@@ -238,6 +253,9 @@ struct FUN_0060f260
     ~FUN_0060f260();
 };
 // @fnv 0x0060f260
+// pdb: TESQuestStage::GetStageItem | TESQuestStage.obj | debug, object-file run extension, low
+// pdb params: acIndex
+// pdb locals: pstageitems, pstageitem
 FUN_0060f260::~FUN_0060f260()
 {
     ProcessEntries_0060f3a0();
@@ -265,7 +283,7 @@ void FUN_0060f320_shell::TESQuestStage_InitItem(TESForm* apOwner)
         PlayerQuestData* pitem = *_ref_006815c0(pNode);
         if (pitem)
         {
-            pitem->InitItem(apOwner, this);
+            pitem->TESQuestStage_InitItem(apOwner, this);
             reinterpret_cast<unsigned char*>(pitem->GetOffsetC()->GetHeader())[0x10] = 0;
             iCount = iCount + 1;
         }
@@ -377,6 +395,7 @@ class FUN_0060f240_cls
 };
 
 // @fnv 0x0060f240
+// pdb: TESQuestStage::~TESQuestStage | TESQuestStage.obj | debug, object-file run extension, low
 FUN_0060f240_cls* FUN_0060f240_cls::ResetFlags()
 {
     m_bDone = 0;
@@ -389,7 +408,7 @@ FUN_0060f240_cls* FUN_0060f240_cls::ResetFlags()
 class F5F0String
 {
   public:
-    bool Set(const char* pcText, unsigned int uiLength);
+    bool Set(const char* apString, unsigned int aiMaxLen);
 };
 
 extern int g_iF5F0CurrentEntry;

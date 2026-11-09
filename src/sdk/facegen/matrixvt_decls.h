@@ -35,7 +35,7 @@ template <class T> class FaceGenMatrix;
 
 
 
-void __cdecl ReportAssertionViolation(const char* file, unsigned int line);
+void __cdecl ReportAssertionViolation(const char* fname, unsigned int line);
 float __cdecl SquareFloat(float value);
 
 #endif

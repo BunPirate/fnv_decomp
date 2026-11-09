@@ -82,12 +82,14 @@ struct FUN_00de1d20 : S_00de1d20_Mid
 
 // Constructor that initializes the base class with the given int and stores it in the unk8 field.
 // @fnv 0x00de1d20
+// pdb: hkDisplayConvex::hkDisplayConvex | hkDisplayConvex.obj | retail, object-file run extension, low
+// pdb params: geom
 FUN_00de1d20::FUN_00de1d20(int aiValue) : S_00de1d20_Mid(aiValue)
 {
     unk8 = aiValue;
 }
 
-void __cdecl ResizeAudioStream(void* alloc, void* array, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <typename T> __forceinline void hkConstructWithCopy(T* p, int n, const T& t)
 {
@@ -126,22 +128,24 @@ struct EdgeBuilder
 // For each triangle in the source geometry, appends three vertex pairs (a-b, a-c, b-c) to lines.
 // @fnv 0x00de1d70
 // src: HAVOK_SRC 0x00de1d70
+// pdb: hkDisplayConvex::getWireframeGeometry | hkDisplayConvex.obj | retail, upstream name already matches, high
+// pdb params: lines, a
 void EdgeBuilder::hkDisplayConvex_getWireframeGeometry(hkArray<hkVector4>& lines, hkMemoryAllocator& alloc)
 {
     if (m_pSourceGeometry)
     {
-        for (int i = m_pSourceGeometry->m_uiTriangleCount.m_iElementCount - 1; i >= 0; i--)
+        for (int i = m_pSourceGeometry->m_triangles.m_iElementCount - 1; i >= 0; i--)
         {
             TriIndices k;
-            k.a = m_pSourceGeometry->m_uiTriangleCount.m_data[i].m_kPointA;
-            k.b = m_pSourceGeometry->m_uiTriangleCount.m_data[i].m_kPointB;
-            k.c = m_pSourceGeometry->m_uiTriangleCount.m_data[i].m_iThirdValue;
-            lines._pushBack(alloc, m_pSourceGeometry->m_kVertices.m_data[k.a]);
-            lines._pushBack(alloc, m_pSourceGeometry->m_kVertices.m_data[k.b]);
-            lines._pushBack(alloc, m_pSourceGeometry->m_kVertices.m_data[k.a]);
-            lines._pushBack(alloc, m_pSourceGeometry->m_kVertices.m_data[k.c]);
-            lines._pushBack(alloc, m_pSourceGeometry->m_kVertices.m_data[k.b]);
-            lines._pushBack(alloc, m_pSourceGeometry->m_kVertices.m_data[k.c]);
+            k.a = m_pSourceGeometry->m_triangles.m_data[i].m_a;
+            k.b = m_pSourceGeometry->m_triangles.m_data[i].m_b;
+            k.c = m_pSourceGeometry->m_triangles.m_data[i].m_c;
+            lines._pushBack(alloc, m_pSourceGeometry->m_vertices.m_data[k.a]);
+            lines._pushBack(alloc, m_pSourceGeometry->m_vertices.m_data[k.b]);
+            lines._pushBack(alloc, m_pSourceGeometry->m_vertices.m_data[k.a]);
+            lines._pushBack(alloc, m_pSourceGeometry->m_vertices.m_data[k.c]);
+            lines._pushBack(alloc, m_pSourceGeometry->m_vertices.m_data[k.b]);
+            lines._pushBack(alloc, m_pSourceGeometry->m_vertices.m_data[k.c]);
         }
     }
 }

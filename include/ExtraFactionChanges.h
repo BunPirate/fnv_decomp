@@ -6,6 +6,7 @@ class FactionReaction;
 class TESFaction;
 template <class T> class BSSimpleList;
 
+// pdb: class ExtraFactionChanges, size 0x10, bases: BSExtraData, 1 members
 class ExtraFactionChanges : public BSExtraData
 {
 public:

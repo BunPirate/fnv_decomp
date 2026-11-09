@@ -41,27 +41,30 @@ struct S8d280_Mat
 class FUN_00c8d280_cls : public bhkRefObject
 {
   public:
-    S8d280_Mat* bhkRigidBody_GetTransform(S8d280_Mat* out);
+    S8d280_Mat* bhkRigidBody_GetTransform(S8d280_Mat* arTrans);
 };
 
 // @fnv 0x00c8d280
 // src: XBOX_PDB 0x00c8d280
-S8d280_Mat* FUN_00c8d280_cls::bhkRigidBody_GetTransform(S8d280_Mat* out)
+// pdb: bhkRigidBody::GetTransform | bhkRigidBody.obj | debug, upstream name already matches, high
+// pdb params: arTrans
+// pdb locals: pb
+S8d280_Mat* FUN_00c8d280_cls::bhkRigidBody_GetTransform(S8d280_Mat* arTrans)
 {
     if (this != 0)
     {
-        if (m_pHavokObject != 0)
+        if (phkObject != 0)
         {
-            S8d280_Mat* src = (S8d280_Mat*)((char*)m_pHavokObject + 0xf0);
-            out->r0.m_vComponents = src->r0.m_vComponents;
-            out->r1.m_vComponents = src->r1.m_vComponents;
-            out->r2.m_vComponents = src->r2.m_vComponents;
-            out->r3.m_vComponents = src->r3.m_vComponents;
-            return out;
+            S8d280_Mat* src = (S8d280_Mat*)((char*)phkObject + 0xf0);
+            arTrans->r0.m_vComponents = src->r0.m_vComponents;
+            arTrans->r1.m_vComponents = src->r1.m_vComponents;
+            arTrans->r2.m_vComponents = src->r2.m_vComponents;
+            arTrans->r3.m_vComponents = src->r3.m_vComponents;
+            return arTrans;
         }
     }
-    out->setIdentity();
-    return out;
+    arTrans->setIdentity();
+    return arTrans;
 }
 
 // Preserves full 2026-10-24 prior contributor reconstruction; prior observed  /Od compiler mismatch.
@@ -326,7 +329,7 @@ struct PointFormat
 struct QuaternionFormat
 {
     float w, x, y, z;
-    void* format(const char*) const;
+    void* GetViewerString(const char*) const;
 };
 struct __declspec(align(16)) FloatVector
 {
@@ -402,21 +405,24 @@ extern void* __cdecl MakeFloat(const char*, float);
 extern void* __cdecl MakeInt(const char*, const char*);
 extern void* __cdecl MakeCount(const char*, unsigned int);
 extern void __cdecl ExtractPoint(PointFormat*, const FloatVector*);
-extern void __cdecl AddMotion(InspectorList*, int);
+extern void __cdecl bhkRigidBody_AddMotionType(InspectorList*, int);
 extern int __cdecl FormatText(char*, unsigned int, const char*, ...);
 // @fnv 0x00c8f870
 // src: XBOX_PDB 0x00c8f870
-void MaterialInspector::bhkRigidBody_GetViewerStrings(InspectorList* output)
+// pdb: bhkRigidBody::GetViewerStrings | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: plist, pnt, tempMemContext, rot, kinertiaMatrix, pstr, ci, kinertia, pac
+void MaterialInspector::bhkRigidBody_GetViewerStrings(InspectorList* apStrings)
 {
     MemoryContext context;
-    BaseInspect(output);
+    BaseInspect(apStrings);
     {
         void* entry = MakeHeading(DAT_012681c0.m_pcName);
         {
-            unsigned int index = output->length;
-            if (index >= output->capacity)
-                output->Grow(index + output->growth);
-            output->SetAt(index, &entry);
+            unsigned int index = apStrings->length;
+            if (index >= apStrings->capacity)
+                apStrings->Grow(index + apStrings->growth);
+            apStrings->SetAt(index, &entry);
         }
     }
     AlignedDynamicArray info;
@@ -432,62 +438,62 @@ void MaterialInspector::bhkRigidBody_GetViewerStrings(InspectorList* output)
         rotation.w = info.position.w;
         entry = point.format("Position");
         {
-            unsigned int index = output->length;
-            if (index >= output->capacity)
-                output->Grow(index + output->growth);
-            output->SetAt(index, &entry);
+            unsigned int index = apStrings->length;
+            if (index >= apStrings->capacity)
+                apStrings->Grow(index + apStrings->growth);
+            apStrings->SetAt(index, &entry);
         }
-        entry = rotation.format("Rotation");
+        entry = rotation.GetViewerString("Rotation");
         {
-            unsigned int index = output->length;
-            if (index >= output->capacity)
-                output->Grow(index + output->growth);
-            output->SetAt(index, &entry);
+            unsigned int index = apStrings->length;
+            if (index >= apStrings->capacity)
+                apStrings->Grow(index + apStrings->growth);
+            apStrings->SetAt(index, &entry);
         }
         ExtractPoint(&point, &info.centerOfMass);
         entry = point.format("COM");
         {
-            unsigned int index = output->length;
-            if (index >= output->capacity)
-                output->Grow(index + output->growth);
-            output->SetAt(index, &entry);
+            unsigned int index = apStrings->length;
+            if (index >= apStrings->capacity)
+                apStrings->Grow(index + apStrings->growth);
+            apStrings->SetAt(index, &entry);
         }
         entry = MakeFloat("MASS", info.mass);
         {
-            unsigned int index = output->length;
-            if (index >= output->capacity)
-                output->Grow(index + output->growth);
-            output->SetAt(index, &entry);
+            unsigned int index = apStrings->length;
+            if (index >= apStrings->capacity)
+                apStrings->Grow(index + apStrings->growth);
+            apStrings->SetAt(index, &entry);
         }
         entry = MakeFloat("LINDAMP", info.linDamp);
         {
-            unsigned int index = output->length;
-            if (index >= output->capacity)
-                output->Grow(index + output->growth);
-            output->SetAt(index, &entry);
+            unsigned int index = apStrings->length;
+            if (index >= apStrings->capacity)
+                apStrings->Grow(index + apStrings->growth);
+            apStrings->SetAt(index, &entry);
         }
         entry = MakeFloat("ANGDAMP", info.angDamp);
         {
-            unsigned int index = output->length;
-            if (index >= output->capacity)
-                output->Grow(index + output->growth);
-            output->SetAt(index, &entry);
+            unsigned int index = apStrings->length;
+            if (index >= apStrings->capacity)
+                apStrings->Grow(index + apStrings->growth);
+            apStrings->SetAt(index, &entry);
         }
         entry = MakeFloat("FRICTION", info.friction);
-        output->append(entry);
+        apStrings->append(entry);
         entry = MakeFloat("REST", info.restitution);
-        output->append(entry);
-        AddMotion(output, info.motionType);
+        apStrings->append(entry);
+        bhkRigidBody_AddMotionType(apStrings, info.motionType);
         entry = MakeFloat("MAXLINVEL", info.maxLinVel);
-        output->append(entry);
+        apStrings->append(entry);
         entry = MakeFloat("MAXANGVEL", info.maxAngVel);
-        output->append(entry);
+        apStrings->append(entry);
         ExtractPoint(&point, &info.linVelocity);
         entry = point.format("LinVel");
-        output->append(entry);
+        apStrings->append(entry);
         ExtractPoint(&point, &info.angVelocity);
         entry = point.format("AngVel");
-        output->append(entry);
+        apStrings->append(entry);
         FloatMatrix3 inertia;
         inertia = info.inertia;
         PointFormat diagonal;
@@ -495,11 +501,11 @@ void MaterialInspector::bhkRigidBody_GetViewerStrings(InspectorList* output)
         diagonal.y = inertia.b.y;
         diagonal.z = inertia.c.z;
         entry = diagonal.format("InertiaTensor");
-        output->append(entry);
+        apStrings->append(entry);
         entry = MakeFloat("PENDEPTH", info.penetration);
-        output->append(entry);
+        apStrings->append(entry);
         entry = MakeInt("QUALITYTYPE", info.quality());
-        output->append(entry);
+        apStrings->append(entry);
         unsigned int count = 0;
         InspectionNode* node = &firstField;
         while (node && node->item)
@@ -508,7 +514,7 @@ void MaterialInspector::bhkRigidBody_GetViewerStrings(InspectorList* output)
             node = node->next;
         }
         entry = MakeCount("ACTCONCOUNT", count);
-        output->append(entry);
+        apStrings->append(entry);
     }
     for (InspectionNode* current = &firstField; current && current->item; current = current->next)
     {
@@ -516,7 +522,7 @@ void MaterialInspector::bhkRigidBody_GetViewerStrings(InspectorList* output)
         const char* name = field->description()->m_pcName;
         char message[128];
         FormatText(message, 128, "%s: 0x%8X", name, field);
-        output->appendInline(MakeInt("ACTCON", message));
+        apStrings->appendInline(MakeInt("ACTCON", message));
     }
 }
 
@@ -779,34 +785,37 @@ struct Q8f6e0_Obj
     virtual void vac();
     virtual void vb0();
     virtual Q8f6e0_Dummy* vB4(unsigned char* p);
-    int bhkRigidBody_LoadCInfo(Q8f6e0_Arg* a);
-    int bhkSerializable_LoadCInfo(Q8f6e0_Arg* a);
+    int bhkRigidBody_LoadCInfo(Q8f6e0_Arg* arStream);
+    int bhkSerializable_LoadCInfo(Q8f6e0_Arg* arStream);
 };
 // @fnv 0x00c8f6e0
 // src: XBOX_PDB 0x00c8f6e0
-int Q8f6e0_Obj::bhkRigidBody_LoadCInfo(Q8f6e0_Arg* a)
+// pdb: bhkRigidBody::LoadCInfo | bhkRigidBody.obj | retail, string-set bridge, high
+// pdb params: arStream
+// pdb locals: isize, breport, bwarn, cinfo, uirigidBody551CinfoSize, bhkserializeTo, pfileName, fileMsg
+int Q8f6e0_Obj::bhkRigidBody_LoadCInfo(Q8f6e0_Arg* arStream)
 {
     unsigned char flag;
     int r = this->vA8();
     Q8f6e0_Dummy* pD = this->vB4(&flag);
     bool warn = false;
     bool recovered = false;
-    if (a->count < 0x23u)
+    if (arStream->count < 0x23u)
     {
         Q8f6e0_Pre pre;
-        Q8f6e0_Mem* m = a->mem;
+        Q8f6e0_Mem* m = arStream->mem;
         m->Read(&pre, 0xe0, 0, 0);
         pD->FromOldCinfo(&pre);
         recovered = true;
     }
     else
     {
-        bhkSerializable_LoadCInfo(a);
+        bhkSerializable_LoadCInfo(arStream);
     }
     if (warn || recovered)
     {
         char buf[0x100];
-        BSsprintf(buf, 0x100, str_010c6118, a->name);
+        BSsprintf(buf, 0x100, str_010c6118, arStream->name);
         DAT_01268360->log(!recovered, 0x234f2250, buf, str_010c60dc, 0x220);
     }
     return r;

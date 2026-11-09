@@ -51,16 +51,19 @@ inline NiPointer<NiBoolData>& NiPointer<NiBoolData>::operator=(const NiPointer& 
 void __fastcall CloneBoolDataForTimeRange(NiBoolData*, void*, float, float, NiPointer<NiBoolData>&);
 
 // @fnv 0x00a53300
-NiInterpolator* NiBoolInterpolator::CloneForTimeRange(float fA, float fB)
+// pdb: NiBoolInterpolator::GetSequenceInterpolator | NiBoolInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: pkSeqInterp, spNewBoolData
+NiInterpolator* NiBoolInterpolator::CloneForTimeRange(float fStartTime, float fEndTime)
 {
-    NiBoolInterpolator* pkCopy = static_cast<NiBoolInterpolator*>(NiInterpolator::CloneForTimeRange(fA, fB));
+    NiBoolInterpolator* pkCopy = static_cast<NiBoolInterpolator*>(NiInterpolator::CloneForTimeRange(fStartTime, fEndTime));
     if (m_spBoolData.m_pObject)
     {
         NiPointer<NiBoolData> spData;
         typedef void (__thiscall* CloneRangeFunction)(NiBoolData*, float, float, NiPointer<NiBoolData>&);
-        reinterpret_cast<CloneRangeFunction>(&CloneBoolDataForTimeRange)(m_spBoolData.m_pObject, fA, fB, spData);
+        reinterpret_cast<CloneRangeFunction>(&CloneBoolDataForTimeRange)(m_spBoolData.m_pObject, fStartTime, fEndTime, spData);
         pkCopy->m_spBoolData = spData;
-        pkCopy->m_uiLastKeyIndex = 0;
+        pkCopy->m_uiLastIdx = 0;
     }
     return pkCopy;
 }

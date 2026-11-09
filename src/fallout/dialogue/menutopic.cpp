@@ -19,6 +19,7 @@
 #include "../../../include/TESSaveLoadGame.h"
 
 // @fnv 0x0083e170
+// pdb: MenuTopic::GetCurrentResponse | MenuTopic.obj | debug, call graph, medium
 DialogueResponse* MenuTopic::GetActiveResponse()
 {
     if (m_pCurrentResponseList)
@@ -32,6 +33,7 @@ DialogueResponse* MenuTopic::GetActiveResponse()
 }
 
 // @fnv 0x0083e4c0
+// pdb: MenuTopicManager::GetCurrentTopic | MenuTopic.obj | debug, call graph, medium
 MenuTopic* TopicMenuController::GetSelectedTopic()
 {
     if (m_pCurrentTopicList)
@@ -45,6 +47,7 @@ MenuTopic* TopicMenuController::GetSelectedTopic()
 }
 
 // @fnv 0x0083e4f0
+// pdb: MenuTopicManager::GetGreeting | MenuTopic.obj | debug, call graph, high
 MenuTopic* TopicMenuController::GetFirstTopic()
 {
     return MenuTopicManager_GetCurrentTopicList()->GetItem();
@@ -52,6 +55,7 @@ MenuTopic* TopicMenuController::GetFirstTopic()
 
 // Advances the stored iterator to its next entry and returns whether it exists and has an item.
 // @fnv 0x0083e3e0
+// pdb: MenuTopicManager::NextTopic | MenuTopic.obj | debug, object-file gap fill, medium
 bool TopicMenuController::AdvanceTopic()
 {
     if (m_pCurrentTopicList)
@@ -61,10 +65,12 @@ bool TopicMenuController::AdvanceTopic()
 
 // Advances the stored iterator when advance is set and it is non-null, then returns whether the iterator exists and has an item.
 // @fnv 0x0083e370
-bool TopicMenuController::SelectTopic(bool advance)
+// pdb: MenuTopicManager::FirstTopic | MenuTopic.obj | debug, call graph, high
+// pdb params: abSkipGreeting
+bool TopicMenuController::SelectTopic(bool abSkipGreeting)
 {
     m_pCurrentTopicList = MenuTopicManager_GetCurrentTopicList();
-    if (advance && m_pCurrentTopicList)
+    if (abSkipGreeting && m_pCurrentTopicList)
         m_pCurrentTopicList = m_pCurrentTopicList->GetNext();
     return m_pCurrentTopicList && m_pCurrentTopicList->GetItem();
 }
@@ -76,7 +82,10 @@ void TopicMenuController::IncrementMiscStat(int aiStatId)
 }
 
 // @fnv 0x0083e620
-bool TopicMenuController::Initialize(MobileObject* speaker, TESTopic* requestedTopic)
+// pdb: MenuTopicManager::Initialize | MenuTopic.obj | retail, string-set bridge, high
+// pdb params: apSpeaker, apForceGreeting
+// pdb locals: pGreeting, pGreetTopic, bdummyBool, pInfo, pQuest
+bool TopicMenuController::Initialize(MobileObject* apSpeaker, TESTopic* apForceGreeting)
 {
     // Keep the greeting context together in the original stack-frame order.
     struct GreetingLocals
@@ -92,10 +101,10 @@ bool TopicMenuController::Initialize(MobileObject* speaker, TESTopic* requestedT
     MenuTopicManager_ClearData();
     locals.topicList = new BSSimpleList<MenuTopic*>;
     m_kTopicListStack.AddHead(locals.topicList);
-    m_pDialogueSpeaker = (TESObjectREFR*)speaker;
+    m_pDialogueSpeaker = (TESObjectREFR*)apSpeaker;
     m_bControllerFlag = false;
     m_iTopicIndex = 0;
-    locals.topic = requestedTopic;
+    locals.topic = apForceGreeting;
     if (!locals.topic)
         locals.topic = TESTopic::GetAudioBackendData((DIALOGUE_TYPE)0, 0);
     locals.menuTopic = 0;
@@ -128,8 +137,9 @@ bool TopicMenuController::Initialize(MobileObject* speaker, TESTopic* requestedT
 
 // Initializes a MenuTopic from quest, topic, info and speaker, optionally substituting a refusal info and resolving owner quest/topic.
 // @fnv 0x0083db00
-MenuTopic::MenuTopic(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, MobileObject* speaker,
-                     bool substituteRefusal)
+// pdb: MenuTopic::MenuTopic | MenuTopic.obj | retail, call graph (shared callers), high
+MenuTopic::MenuTopic(TESQuest* apQuest, TESTopic* apTopic, TESTopicInfo* apInfo, MobileObject* apSpeaker,
+                     bool abInfoRefusal)
 {
     // Selected and owning topic contexts can differ after refusal substitution.
     struct TopicLocals
@@ -145,8 +155,8 @@ MenuTopic::MenuTopic(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, Mobil
     pQuest = 0;
     pTopic = 0;
     pInfo = 0;
-    m_pOriginalTopic = topic;
-    if (topic->IsRemappedRumors())
+    m_pOriginalTopic = apTopic;
+    if (apTopic->IsRemappedRumors())
     {
         m_bIsRemappedRumor = true;
         m_bFirstFlag = false;
@@ -155,17 +165,17 @@ MenuTopic::MenuTopic(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, Mobil
         m_bIsRemappedRumor = false;
     m_bIsRefusal = false;
     m_bThirdFlag = false;
-    locals.selectedQuest = quest;
-    locals.selectedTopic = topic;
-    if (topic && info)
+    locals.selectedQuest = apQuest;
+    locals.selectedTopic = apTopic;
+    if (apTopic && apInfo)
     {
-        m_bInfoHasBeenRead = !info->IsNew();
-        pInfo = info;
-        if (substituteRefusal && !info->IsRefusal())
+        m_bInfoHasBeenRead = !apInfo->IsNew();
+        pInfo = apInfo;
+        if (abInfoRefusal && !apInfo->IsRefusal())
         {
             locals.refusalTopic = TESTopic::GetAudioBackendData((DIALOGUE_TYPE)6, 12);
             locals.refusalInfo =
-                locals.refusalTopic ? locals.refusalTopic->FindMatchingTopicInfo(speaker, g_thePlayer) : 0;
+                locals.refusalTopic ? locals.refusalTopic->FindMatchingTopicInfo(apSpeaker, g_thePlayer) : 0;
             if (locals.refusalInfo)
             {
                 pInfo = locals.refusalInfo;
@@ -175,25 +185,25 @@ MenuTopic::MenuTopic(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, Mobil
             m_bIsRefusal = true;
         }
         else
-            m_bIsRefusal = info->IsRefusal();
+            m_bIsRefusal = apInfo->IsRefusal();
         if (((Actor*)g_thePlayer)->GetActorValue((ActorValue::Index)9) <= *g_011d0dc8.Int() &&
-            topic->HasDummyPrompt())
-            m_kPrompt.Set(topic->GetDummyPrompt());
-        else if (info->HasPrompt())
-            m_kPrompt.Set(info->GetPrompt());
+            apTopic->HasDummyPrompt())
+            m_kPrompt.Set(apTopic->GetDummyPrompt());
+        else if (apInfo->HasPrompt())
+            m_kPrompt.Set(apInfo->GetPrompt());
         else
-            m_kPrompt.Set(topic->GetFullName());
+            m_kPrompt.Set(apTopic->GetFullName());
         m_kPrompt.Set(BSStringT_char_RemoveCurlyContent());
         if (!m_bIsRemappedRumor)
             m_bFirstFlag = pInfo->GetConversationData() && !pInfo->GetConversationData()->GetLinkToList()->IsEmpty();
-        if (topic->IsPersuasion())
+        if (apTopic->IsPersuasion())
             m_bThirdFlag = true;
         locals.ownerQuest = pInfo->GetParentQuest();
         locals.ownerTopic = TESTopic::GetTopicFromInfo(pInfo);
         if (locals.selectedQuest != locals.ownerQuest || locals.selectedTopic != locals.ownerTopic)
-            MenuTopic_FillResponseList_0083df80(locals.ownerQuest, locals.ownerTopic, pInfo, speaker);
+            MenuTopic_FillResponseList_0083df80(locals.ownerQuest, locals.ownerTopic, pInfo, apSpeaker);
         else
-            MenuTopic_FillResponseList_0083df80(locals.selectedQuest, locals.selectedTopic, pInfo, speaker);
+            MenuTopic_FillResponseList_0083df80(locals.selectedQuest, locals.selectedTopic, pInfo, apSpeaker);
     }
     pTopic = locals.selectedTopic;
     pQuest = locals.selectedQuest;
@@ -201,6 +211,7 @@ MenuTopic::MenuTopic(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, Mobil
 
 // Initializes the object's two fields to zero.
 // @fnv 0x0083e1a0
+// pdb: MenuTopicManager::MenuTopicManager | MenuTopic.obj | debug, object-file gap fill, medium
 TopicMenuController::TopicMenuController()
 {
     m_pCurrentTopicList = 0;
@@ -208,6 +219,7 @@ TopicMenuController::TopicMenuController()
 }
 
 // @fnv 0x0083e590
+// pdb: MenuTopicManager::Instance | MenuTopic.obj | debug, object-file gap fill, medium
 TopicMenuController* TopicMenuController::GetInstance()
 {
     if (!g_011ddde4)
@@ -223,7 +235,10 @@ bool TESTopicInfo::IsRunForRumors()
 }
 
 // @fnv 0x0083ebb0
-void TopicMenuController::RunTopicResultScript()
+// src: XBOX_DEBUG_PDB 0x0083ebb0
+// pdb: MenuTopicManager::ProcessCurrentTopic | MenuTopic.obj | debug, call graph (shared callers), high
+// pdb locals: ptopic, presultinfo
+void TopicMenuController::ProcessCurrentTopic()
 {
     // Keep the topic and info locals in the original stack-frame order.
     struct TopicLocals
@@ -251,6 +266,7 @@ unsigned int __fastcall BSStringT_char_Length(void*);
 
 // @fnv 0x0083de40
 // src: XBOX_PDB 0x0083de40
+// pdb: TESTopicInfo::HasPrompt | MenuTopic.obj | debug, upstream name already matches, high
 bool FUN_0083de40_shell::TESTopicInfo_HasPrompt()
 {
     return BSStringT_char_Length(reinterpret_cast<char*>(this) + 0x28) > 0;
@@ -264,6 +280,7 @@ struct FUN_0083de60_shell : public TESTopic
 // Returns true when the form ID is 0xFD or 0x118.
 // @fnv 0x0083de60
 // src: COMMUNITY 0x0083de60
+// pdb: TESTopic::IsPersuasion | MenuTopic.obj | debug, upstream name already matches, high
 bool FUN_0083de60_shell::TESTopic_IsPersuasion()
 {
     return GetFormID() == 0xFD || GetFormID() == 0x118;
@@ -280,11 +297,13 @@ void __fastcall _ref_0063f7b0(void* pThis);
 
 struct FUN_0083e2d0_helper
 {
-    void MenuTopicManager_ClearTopicList(void* pList, bool bDeleteGreeting);
+    void MenuTopicManager_ClearTopicList(void* apList, bool abClearGreeting);
 };
 
 // @fnv 0x0083e230
 // src: XBOX_PDB 0x0083e230
+// pdb: MenuTopicManager::ClearData | MenuTopic.obj | retail, upstream name already matches, high
+// pdb locals: plist, bdeletegreeting
 void FUN_0083e230_shell::MenuTopicManager_ClearData()
 {
     bool bdeletegreeting;
@@ -309,6 +328,9 @@ struct FUN_0083e430_shell : public TopicMenuController
 
 // @fnv 0x0083e430
 // src: COMMUNITY 0x0083e430
+// pdb: MenuTopicManager::GoToTopic | MenuTopic.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex
+// pdb locals: ptopic, a
 bool FUN_0083e430_shell::DialogMenu_SetClickedMenuItem(int aiIndex)
 {
     int a = 0;
@@ -339,6 +361,7 @@ void** __fastcall _ref_006815c0(void* pThis);
 
 // @fnv 0x0083f260
 // src: XBOX_PDB 0x0083f260
+// pdb: MenuTopicManager::GetCurrentTopicList | MenuTopic.obj | debug, upstream name already matches, high
 void* FUN_0083f260_shell::MenuTopicManager_GetCurrentTopicList()
 {
     return *_ref_006815c0((char*)this + 4);
@@ -371,15 +394,18 @@ void* __fastcall _ref_00726070(void* pThis);
 struct TopicHolder
 {
     void* head;
-    void MenuTopicManager_ClearTopicList(void* list, bool flag);
+    void MenuTopicManager_ClearTopicList(void* apList, bool abClearGreeting);
 };
 // @fnv 0x0083e2d0
 // src: XBOX_PDB 0x0083e2d0
-void TopicHolder::MenuTopicManager_ClearTopicList(void* list, bool flag)
+// pdb: MenuTopicManager::ClearTopicList | MenuTopic.obj | retail, upstream name already matches, high
+// pdb params: apList, abClearGreeting
+// pdb locals: pList, ptopic
+void TopicHolder::MenuTopicManager_ClearTopicList(void* apList, bool abClearGreeting)
 {
     head = 0;
-    void* node = list;
-    if (!flag && node)
+    void* node = apList;
+    if (!abClearGreeting && node)
         node = _ref_00726070(node);
     while (node && !_ref_008256d0(node))
     {
@@ -393,7 +419,7 @@ void TopicHolder::MenuTopicManager_ClearTopicList(void* list, bool flag)
 
 struct FUN_0083ec30_shell : public TopicMenuController
 {
-    void UpdateTopicList();
+    void MenuTopicManager_LoadNextTopicList();
 };
 
 struct FUN_00464e30_shell
@@ -407,19 +433,22 @@ struct FUN_0083ec30_topic : MenuTopic
 };
 struct FUN_0083ec30_mgr : TopicMenuController
 {
-    void PopTopicList();
+    void MenuTopicManager_PopTopicList();
     void MenuTopicManager_ClearTopicList(BSSimpleList<MenuTopic*>*, bool);
 };
 
 // @fnv 0x0083ec30
-void FUN_0083ec30_shell::UpdateTopicList()
+// src: XBOX_DEBUG_PDB 0x0083ec30
+// pdb: MenuTopicManager::LoadNextTopicList | MenuTopic.obj | debug, call graph, high
+// pdb locals: ptopic, bIsChoice, ptopicObj, pList
+void FUN_0083ec30_shell::MenuTopicManager_LoadNextTopicList()
 {
     FUN_0083ec30_topic* pMenuTopicEntry = (FUN_0083ec30_topic*)GetSelectedTopic();
     if (pMenuTopicEntry && pMenuTopicEntry->GetTopicInfo())
         pMenuTopicEntry->GetTopicInfo()->AddTopicList();
     if (m_bControllerFlag && pMenuTopicEntry && !pMenuTopicEntry->IsChoice())
     {
-        ((FUN_0083ec30_mgr*)this)->PopTopicList();
+        ((FUN_0083ec30_mgr*)this)->MenuTopicManager_PopTopicList();
         m_bControllerFlag = false;
     }
     else if (pMenuTopicEntry && !pMenuTopicEntry->m_bIsRemappedRumor)
@@ -448,6 +477,8 @@ struct FUN_0083f110_topic : MenuTopic
 // Compares two topics by the value returned from FUN_00526ae0, returning -1, 1 or 0 for descending order.
 // @fnv 0x0083f110
 // src: GUESS 0x0083f110 (confidence: high)
+// pdb: MenuTopicManager::PrioritySort | MenuTopic.obj | debug, object-file run extension, low
+// pdb params: apTopic1, apTopic2
 int TESTopic_GetPriority_GetUnk28_CompareTopicPrioritiesDescending(FUN_0083f110_topic* apTopicA, FUN_0083f110_topic* apTopicB)
 {
     return TESTopic_GetPriority_GetUnk28(apTopicA->GetAudioBackendData()) > TESTopic_GetPriority_GetUnk28(apTopicB->GetAudioBackendData())
@@ -459,11 +490,14 @@ int TESTopic_GetPriority_GetUnk28_CompareTopicPrioritiesDescending(FUN_0083f110_
 struct FUN_0083f1d0_t : TopicMenuController
 {
     void MenuTopicManager_ClearTopicList(BSSimpleList<MenuTopic*>*, bool);
-    BSSimpleList<MenuTopic*>* PopTopicList();
+    BSSimpleList<MenuTopic*>* MenuTopicManager_PopTopicList();
 };
 
 // @fnv 0x0083f1d0
-BSSimpleList<MenuTopic*>* FUN_0083f1d0_t::PopTopicList()
+// src: XBOX_RETAIL_PDB 0x0083f1d0
+// pdb: MenuTopicManager::PopTopicList | MenuTopic.obj | retail, upstream name already matches, high
+// pdb locals: pkilllist
+BSSimpleList<MenuTopic*>* FUN_0083f1d0_t::MenuTopicManager_PopTopicList()
 {
     if (m_kTopicListStack.GetNext())
     {
@@ -481,6 +515,7 @@ BSSimpleList<MenuTopic*>* FUN_0083f1d0_t::PopTopicList()
 
 // The 0x004fd3e0 accessor returns this change record: form ID +0, type +4, flags +5, version +9.
 // Retained locally until include/ supplies SaveFormHeader.
+// pdb: structure SaveFormHeader, size 0xa (here 0xc), 4 members
 struct SaveFormHeader
 {
     unsigned int formID;
@@ -509,6 +544,8 @@ struct FUN_0083f280_t : MenuTopic
 // Computes the save size of a MenuTopic by summing field sizes and optionally logs the size and form header details.
 // @fnv 0x0083f280
 // src: COMMUNITY 0x0083f280
+// pdb: MenuTopic::GetSaveSize | MenuTopic.obj | retail, upstream name already matches, high
+// pdb locals: isize, itempStartSize, ptext, pheader, pform
 unsigned short FUN_0083f280_t::MenuTopic_GetSaveSize()
 {
     unsigned short isize = 0;
@@ -561,6 +598,7 @@ struct FUN_0083e1d0
     ~FUN_0083e1d0();
 };
 // @fnv 0x0083e1d0
+// pdb: MenuTopicManager::~MenuTopicManager | MenuTopic.obj | debug, object-file gap fill, medium
 FUN_0083e1d0::~FUN_0083e1d0()
 {
     ((TopicMenuController*)this)->MenuTopicManager_ClearData();
@@ -569,6 +607,7 @@ FUN_0083e1d0::~FUN_0083e1d0()
 // If the global pointer g_011ddde4 is non-null, deletes it and resets it to null.
 // @fnv 0x0083e510
 // src: XBOX_PDB 0x0083e510
+// pdb: MenuTopicManager::Destroy | MenuTopic.obj | retail, upstream name already matches, high
 void MenuTopicManager_Destroy()
 {
     if (g_011ddde4)
@@ -586,6 +625,7 @@ struct Struct_0083e560
 };
 // Calls FUN_0083e1d0, then if bit 0 of flags is set calls _Deallocate on this, and returns this.
 // @fnv 0x0083e560
+// pdb: MenuTopicManager::`scalar deleting destructor' | MenuTopic.obj | debug, object-file gap fill, medium
 void* Struct_0083e560::FUN_0083e560(unsigned int flags)
 {
     FUN_0083e1d0();
@@ -616,32 +656,35 @@ struct Owner83F1A0
 {
     int _pad;
     G2 _list;
-    void AddHeadIfNotNull(int*);
+    void MenuTopicManager_PushTopicList(int*);
 };
 // @fnv 0x0083f1a0
-void Owner83F1A0::AddHeadIfNotNull(int* a1)
+// src: XBOX_DEBUG_PDB 0x0083f1a0
+// pdb: MenuTopicManager::PushTopicList | MenuTopic.obj | debug, call graph, high
+// pdb params: apList
+void Owner83F1A0::MenuTopicManager_PushTopicList(int* apList)
 {
-    if (a1)
+    if (apList)
     {
-        _list.AddHead(a1);
+        _list.AddHead(apList);
     }
 }
 
 // Shared Actor does not yet declare this nonvirtual method. Its only argument is in ECX.
-bool __fastcall HasNoRumors(Actor* actor);
+bool __fastcall Actor_HasNoRumors(Actor* actor);
 
 struct FUN_00619df0_shell
 {
     bool TESTopic_IsRemappedRumors();
-    TESTopicInfo* FUN_0061a790(bool* apbFlag, TESObjectREFR* apSpeaker, PlayerCharacter* apPlayer, int a4,
-                               TESTopic* apTopic, int a6);
+    TESTopicInfo* GetMatchingInfo(bool* abDispositionFailure, TESObjectREFR* apSpeaker, PlayerCharacter* apTarget, int abIsConversation,
+                               TESTopic* apPreviousTopic, int apConversationList);
     TESQuest* FindQuestForTopicInfo(TESTopicInfo* apInfo);
 };
 
 struct FUN_0042df90_shell
 {
-    MenuTopic* ExtraDataList_GetInfoGeneralTopic(TESObjectREFR* apRef);
-    void ExtraDataList_SetInfoGeneralTopic(MenuTopic* apTopic);
+    MenuTopic* ExtraDataList_GetInfoGeneralTopic(TESObjectREFR* apSpeaker);
+    void ExtraDataList_SetInfoGeneralTopic(MenuTopic* apItem);
 };
 FUN_0042df90_shell* __fastcall BSFile_GetDevice(TESObjectREFR* apRef);
 
@@ -696,12 +739,15 @@ struct FUN_0083ed50_ref
 
 struct FUN_0083ed50_shell : public TopicMenuController
 {
-    void BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool abFlag, bool abNoSort, TESTopic* apTopic);
+    void BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool abPersuasion, bool abIsChoiceList, TESTopic* apPreviousTopic);
 };
 
 // Iterates a TESTopic list, filters by flag and type against an actor value, builds MenuTopic entries, adds new ones to the list, and optionally sorts it.
 // @fnv 0x0083ed50
-void FUN_0083ed50_shell::BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool abFlag, bool abNoSort, TESTopic* apTopic)
+// pdb: MenuTopicManager::FillTopicList | MenuTopic.obj | debug, call graph, high
+// pdb params: apList, abPersuasion, abIsChoiceList, apPreviousTopic
+// pdb locals: bgeneral, pactor, bDispositionFailure, pTopic, pInfo, DummyFlag, pMenuTopic, bSetTopic, pQuest, badd
+void FUN_0083ed50_shell::BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool abPersuasion, bool abIsChoiceList, TESTopic* apPreviousTopic)
 {
     bool bStateChanged = false;
     Actor* pActorCur = dynamic_cast<Actor*>(m_pDialogueSpeaker);
@@ -709,9 +755,9 @@ void FUN_0083ed50_shell::BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool a
     {
         TESTopic* pTopic = apList->GetItem();
         apList = apList->GetNext();
-        if (abFlag && !((FUN_0083de60_shell*)pTopic)->TESTopic_IsPersuasion())
+        if (abPersuasion && !((FUN_0083de60_shell*)pTopic)->TESTopic_IsPersuasion())
             continue;
-        if (!abFlag && ((FUN_0083de60_shell*)pTopic)->TESTopic_IsPersuasion())
+        if (!abPersuasion && ((FUN_0083de60_shell*)pTopic)->TESTopic_IsPersuasion())
             continue;
 
         int iTypeValue = ((FUN_0083f0d0_shell*)pTopic)->TESTopic_GetDummyNodeState();
@@ -726,7 +772,7 @@ void FUN_0083ed50_shell::BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool a
                 continue;
         }
 
-        if (((FUN_00619df0_shell*)pTopic)->TESTopic_IsRemappedRumors() && !HasNoRumors(pActorCur))
+        if (((FUN_00619df0_shell*)pTopic)->TESTopic_IsRemappedRumors() && !Actor_HasNoRumors(pActorCur))
         {
             MenuTopic* pExisting = 0;
             pExisting = BSFile_GetDevice(m_pDialogueSpeaker)->ExtraDataList_GetInfoGeneralTopic(m_pDialogueSpeaker);
@@ -741,7 +787,7 @@ void FUN_0083ed50_shell::BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool a
 
         bool bChoice = false;
         TESTopicInfo* pInfo =
-            ((FUN_00619df0_shell*)pTopic)->FUN_0061a790(&bChoice, m_pDialogueSpeaker, g_thePlayer, 0, apTopic, 0);
+            ((FUN_00619df0_shell*)pTopic)->GetMatchingInfo(&bChoice, m_pDialogueSpeaker, g_thePlayer, 0, apPreviousTopic, 0);
         if (pInfo)
         {
             TESQuest* pQuest4 = ((FUN_00619df0_shell*)pTopic)->FindQuestForTopicInfo(pInfo);
@@ -749,7 +795,7 @@ void FUN_0083ed50_shell::BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool a
             bool bCreate5 = true;
             if (((FUN_00619df0_shell*)pTopic)->TESTopic_IsRemappedRumors())
             {
-                if (!bStateChanged && !HasNoRumors(pActorCur))
+                if (!bStateChanged && !Actor_HasNoRumors(pActorCur))
                     bSave = true;
                 else
                     bCreate5 = false;
@@ -774,7 +820,7 @@ void FUN_0083ed50_shell::BuildMenuTopics(BSSimpleList<TESTopic*>* apList, bool a
             }
         }
     }
-    if (!abNoSort)
+    if (!abIsChoiceList)
         ((FUN_005f65d0_list*)MenuTopicManager_GetCurrentTopicList())->SortItems(TESTopic_GetPriority_GetUnk28_CompareTopicPrioritiesDescending);
 }
 
@@ -793,10 +839,14 @@ void FNV_Warning(const char*, ...);
 void* memset(void*, int, unsigned int);
 struct TopicLoad : MenuTopic
 {
-    void LoadFromSave(void*);
+    void MenuTopic_LoadGame(void*);
 };
 // @fnv 0x0083f680
-void TopicLoad::LoadFromSave(void*)
+// src: XBOX_RETAIL_PDB 0x0083f680
+// pdb: MenuTopic::LoadGame | MenuTopic.obj | retail, string-set bridge, high
+// pdb params: apSpeaker
+// pdb locals: istartBufferPosition, iblockSize, clength, ptext, itopicID, iinfoID, iquestID, iblockHeader, pheader, pform, icurrentBufferPosition
+void TopicLoad::MenuTopic_LoadGame(void*)
 {
     unsigned int uiChunkType, infoID, topicID;
     {
@@ -1185,7 +1235,7 @@ struct InfoShell
 
 struct TopicShell
 {
-    TESTopicInfo* FUN_0061a790(char* a, void* b, void* c, int d, int e, int f);
+    TESTopicInfo* GetMatchingInfo(char* abDispositionFailure, void* apSpeaker, void* apTarget, int abIsConversation, int apPreviousTopic, int apConversationList);
     TESQuest* FindQuestForTopicInfo(TESTopicInfo* p);
 };
 
@@ -1215,8 +1265,8 @@ unsigned int DialogueRandom();
 int Warning_005b5e40(int a, const char* b);
 int FUN_004d5c60(int a);
 TESTopic* GetTopicSubTypeName(int a, int b);
-float GamePlayFormulas_GetSpeechFailPenalty(int a);
-int ComputeWeightedValue(float a, float b, int c);
+float GamePlayFormulas_GetSpeechFailPenalty(int aiSuccessChance);
+int GamePlayFormulas_GetSpeechChallengeChance(float afPlayerSpeech, float afTargetDisposition, int aiTopicDifficulty);
 
 class Mgr
 {
@@ -1228,21 +1278,25 @@ class Mgr
     char pad[3];
     int m_iTopicIndex;
     MenuTopic* FUN_0083e4f0();
-    void FUN_0083e370(int a);
-    void AddHeadIfNotNull(void* p);
+    void FUN_0083e370(int abSkipGreeting);
+    void MenuTopicManager_PushTopicList(void* apList);
     ListShell* MenuTopicManager_GetCurrentTopicList(MenuTopic** p);
-    bool CheckTopicInfoChance(MenuTopic* pTopic);
+    bool MenuTopicManager_DoSpeechChallengeCheck(MenuTopic* pSpeechTopic);
 };
 
 // @fnv 0x0083e850
-bool Mgr::CheckTopicInfoChance(MenuTopic* pTopic)
+// src: XBOX_RETAIL_PDB 0x0083e850
+// pdb: MenuTopicManager::DoSpeechChallengeCheck | MenuTopic.obj | retail, call graph (shared callers), high
+// pdb params: pSpeechTopic
+// pdb locals: iChallengeChance, idieRoll, pspeechFailInfo, pspeechFailTopic, bdummy, pnewTopic, pnewList, pmob
+bool Mgr::MenuTopicManager_DoSpeechChallengeCheck(MenuTopic* pSpeechTopic)
 {
-    if (pTopic && ((InfoShell*)pTopic->GetTopicInfo())->IsChallengeFlagSet())
+    if (pSpeechTopic && ((InfoShell*)pSpeechTopic->GetTopicInfo())->IsChallengeFlagSet())
     {
-        int iChance2 = ComputeWeightedValue(((Actor*)g_thePlayer)->GetActorValueFloatByIndex(0x2b),
+        int iChance2 = GamePlayFormulas_GetSpeechChallengeChance(((Actor*)g_thePlayer)->GetActorValueFloatByIndex(0x2b),
                                             m_pDialogueSpeaker->v64() ? (float)m_pDialogueSpeaker->v209(g_thePlayer, 0)
                                                                       : *g_011d0a24.Float(),
-                                            ((InfoShell*)pTopic->GetTopicInfo())->FUN_0061f2b0());
+                                            ((InfoShell*)pSpeechTopic->GetTopicInfo())->FUN_0061f2b0());
         int iRoll5 = DialogueRandom() % 100;
         if (iRoll5 >= iChance2)
         {
@@ -1251,8 +1305,8 @@ bool Mgr::CheckTopicInfoChance(MenuTopic* pTopic)
             char _flag;
             TESTopic* pT2 = GetTopicSubTypeName(0, 0xb);
             TESTopicInfo* pInfo = ((TopicShell*)pT2)
-                                      ->FUN_0061a790(&_flag, m_pDialogueSpeaker, g_thePlayer, 0,
-                                                     ((ProcShell*)pTopic)->GetProcessLevel(), 0);
+                                      ->GetMatchingInfo(&_flag, m_pDialogueSpeaker, g_thePlayer, 0,
+                                                     ((ProcShell*)pSpeechTopic)->GetProcessLevel(), 0);
             if (!pInfo)
             {
                 Warning_005b5e40(6, (const char*)&DAT_0107dd28);
@@ -1263,20 +1317,20 @@ bool Mgr::CheckTopicInfoChance(MenuTopic* pTopic)
                 MenuTopic* pNew = new MenuTopic(((TopicShell*)pT2)->FindQuestForTopicInfo(pInfo), pT2, pInfo,
                                                 (MobileObject*)m_pDialogueSpeaker, false);
                 pNew->FillResponseList();
-                ((InfoShell*)pTopic->GetTopicInfo())->MarkAsRefusal();
-                if (((InfoShell*)pTopic->GetTopicInfo())->TESTopicInfo_IsSayOnce() ||
-                    ((InfoShell*)pTopic->GetTopicInfo())->IsSayOnceADay())
+                ((InfoShell*)pSpeechTopic->GetTopicInfo())->MarkAsRefusal();
+                if (((InfoShell*)pSpeechTopic->GetTopicInfo())->TESTopicInfo_IsSayOnce() ||
+                    ((InfoShell*)pSpeechTopic->GetTopicInfo())->IsSayOnceADay())
                 {
-                    if (((InfoShell*)pTopic->GetTopicInfo())->IsSayOnceADay() && m_pDialogueSpeaker->v63())
+                    if (((InfoShell*)pSpeechTopic->GetTopicInfo())->IsSayOnceADay() && m_pDialogueSpeaker->v63())
                     {
                         SpeakerVt* pSpk7 = m_pDialogueSpeaker;
-                        pSpk7->LoadRecord(pTopic->GetTopicInfo());
+                        pSpk7->LoadRecord(pSpeechTopic->GetTopicInfo());
                     }
-                    MenuTopicManager_GetCurrentTopicList(&pTopic)->RemoveMatchingItem();
+                    MenuTopicManager_GetCurrentTopicList(&pSpeechTopic)->RemoveMatchingItem();
                 }
                 ((BSSimpleList<MenuTopic*>*)pList)->AddTail(FUN_0083e4f0());
                 ((BSSimpleList<MenuTopic*>*)pList)->AddTail(pNew);
-                AddHeadIfNotNull(pList);
+                MenuTopicManager_PushTopicList(pList);
                 FUN_0083e370(1);
             }
             if (m_pDialogueSpeaker->v64())
@@ -1284,7 +1338,7 @@ bool Mgr::CheckTopicInfoChance(MenuTopic* pTopic)
         }
         else
         {
-            m_iTopicIndex = ExperiencePoints_GetExperiencePoints(4, ((InfoShell*)pTopic->GetTopicInfo())->GetType() - 1);
+            m_iTopicIndex = ExperiencePoints_GetExperiencePoints(4, ((InfoShell*)pSpeechTopic->GetTopicInfo())->GetType() - 1);
         }
     }
     return m_bControllerFlag;
@@ -1309,6 +1363,8 @@ void __cdecl Warning_005b5e40(const char* pcFormat, ...);
 
 // Writes a BLOK record for this topic to the save stream: text length and string, three bytes, quest/topic/info form IDs, and patches the block size.
 // @fnv 0x0083f3e0
+// pdb: MenuTopic::SaveGame | MenuTopic.obj | retail, object-file run extension, high
+// pdb locals: itempStartPosition, iblockSize, clength, ptext, itopicID, iinfoID, pblockSize, iquestID, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void MenuTopic::SaveTopic()
 {
     using namespace fnv_0083f3e0;
@@ -1382,19 +1438,20 @@ struct FUN_0061e760_shell
     TESResponseList* FUN_0061e760(TESResponseList*);
 };
 struct TESIdleForm;
+// pdb: class DialogueResponse, size 0x2c, 9 members
 class DialogueResponse
 {
   public:
     DialogueResponse(TESQuest*, TESTopic*, TESTopicInfo*, TESObjectREFR*, TESResponse*);
-    BSStringT<char> m_kResponseText;
+    BSStringT<char> cText;
     unsigned int eEmotion;
-    unsigned int m_uiEmotionValue;
-    BSStringT<char> m_kResponseNotes;
-    TESIdleForm* m_pFirstIdleForm;
-    TESIdleForm* m_pSecondIdleForm;
-    TESTopic* pTopic;
-    TESTopicInfo* pInfo;
-    TESQuest* pQuest;
+    unsigned int uiEmotion;
+    BSStringT<char> cVoice;
+    TESIdleForm* pSpeakerIdle;
+    TESIdleForm* pListenIdle;
+    TESTopic* pVoiceSound;
+    TESTopicInfo* bUseEmotion;
+    TESQuest* nResponseID;
 };
 struct ResponseFillOwner : MenuTopic
 {
@@ -1404,6 +1461,9 @@ struct ResponseFillOwner : MenuTopic
 // Iterates the response list obtained from pInfo and appends eligible DialogueResponse entries to m_kResponseList.
 // @fnv 0x0083df80
 // src: XBOX_PDB 0x0083df80
+// pdb: MenuTopic::FillResponseList | MenuTopic.obj | debug, call graph, high
+// pdb params: apQuest, apTopic, apInfo, apSpeaker
+// pdb locals: lResponseList, i, presponse, pMenuResponse
 void ResponseFillOwner::MenuTopic_FillResponseList_0083df80(TESQuest* apQuest, TESTopic* apTopic, TESTopicInfo* apInfo,
                                      TESObjectREFR* apSpeaker)
 {
@@ -1416,7 +1476,7 @@ void ResponseFillOwner::MenuTopic_FillResponseList_0083df80(TESQuest* apQuest, T
     i = 0;
     while (presponse)
     {
-        if (presponse->GetLength() && (!m_bIsRemappedRumor || i == 0))
+        if (presponse->AngleSinCosArc_GetLength() && (!m_bIsRemappedRumor || i == 0))
         {
             ::DialogueResponse* pMenuResponse = reinterpret_cast< ::DialogueResponse*>(
                 new DialogueResponse(apQuest, apTopic, apInfo, apSpeaker, presponse));

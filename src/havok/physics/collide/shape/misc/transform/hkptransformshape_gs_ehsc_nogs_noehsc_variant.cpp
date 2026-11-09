@@ -69,7 +69,7 @@ struct CF5Output
     int unk1c;
     int m_keys[8];
     int m_iValueAtOffset04;
-    void hkVector4_setRotatedDir(const CF5Rot* rot, float* dir);
+    void hkVector4_setRotatedDir(const CF5Rot* quat, float* direction);
 };
 static __forceinline void xfInvPos(CF5Vec& dst, const CF5Transform& xf, const CF5Vec& v)
 {
@@ -104,25 +104,28 @@ static void stamp1(CF5Mon* mon, const char* tag)
 }
 
 // @fnv 0x00cf5b20
-hkBool hkpTransformShape::IntersectRayWithShape(const ShapeRayCastQuery& input, ShapeRayCastOutput& output) const
+// pdb: hkpTransformShape::castRayImpl | hkpTransformShape.obj | retail, vtable slot, high
+// pdb params: input, results
+// pdb locals: subInput, oldnormal
+hkBool hkpTransformShape::IntersectRayWithShape(const ShapeRayCastQuery& input, ShapeRayCastOutput& results) const
 {
     const CF5Input& in = reinterpret_cast<const CF5Input&>(input);
-    CF5Output& out = reinterpret_cast<CF5Output&>(output);
+    CF5Output& out = reinterpret_cast<CF5Output&>(results);
     {
         CF5Mon* mon = (CF5Mon*)TlsGetValue(DAT_0126835c);
         stamp1(mon, str_010cc448);
     }
     CF5Input sub = in;
-    xfInvPos(sub.m_vFrom, reinterpret_cast<const CF5Transform&>(m_kMotionTransform), in.m_vFrom);
-    xfInvPos(sub.m_vTo, reinterpret_cast<const CF5Transform&>(m_kMotionTransform), in.m_vTo);
+    xfInvPos(sub.m_vFrom, reinterpret_cast<const CF5Transform&>(m_transform), in.m_vFrom);
+    xfInvPos(sub.m_vTo, reinterpret_cast<const CF5Transform&>(m_transform), in.m_vTo);
     out.m_iValueAtOffset04++;
-    hkBool hit = m_pContainedShape.m_pContainedShape->IntersectRayWithShape(
+    hkBool hit = m_childShape.m_childShape->IntersectRayWithShape(
         reinterpret_cast<const ShapeRayCastQuery&>(sub), reinterpret_cast<ShapeRayCastOutput&>(out));
     out.m_iValueAtOffset04--;
     if (hit.m_cBooleanValue)
     {
         CF5Vec n = out.m_vHitNormal;
-        out.hkVector4_setRotatedDir(&reinterpret_cast<const CF5Transform&>(m_kMotionTransform).rotation, &n.x);
+        out.hkVector4_setRotatedDir(&reinterpret_cast<const CF5Transform&>(m_transform).rotation, &n.x);
         out.m_keys[out.m_iValueAtOffset04] = 0;
     }
     {
@@ -211,26 +214,29 @@ static __forceinline __m128 transformInversePos(const SolTransform& t, __m128 v)
 }
 
 // @fnv 0x00cf5cc0
+// pdb: hkpTransformShape::castRayWithCollectorImpl | hkpTransformShape.obj | retail, vtable slot, high
+// pdb params: input, cdBody, collector
+// pdb locals: t, body, subInput
 void hkpTransformShape::CastRayWithCollector(const ShapeRayCastQuery& ray, const hkpCdBody& cdBody,
                                             hkpRayHitCollector& collector) const
 {
     const hkpShapeRayCastInputSse& input = reinterpret_cast<const hkpShapeRayCastInputSse&>(ray);
     timerCommand("TtrcTransform");
 
-    __m128 from = transformInversePos(reinterpret_cast<const SolTransform&>(m_kMotionTransform), input.m_vFrom.m_vComponents);
+    __m128 from = transformInversePos(reinterpret_cast<const SolTransform&>(m_transform), input.m_vFrom.m_vComponents);
     hkpShapeRayCastInputSse subInput = input;
     subInput.m_vFrom.m_vComponents = from;
-    subInput.m_vTo.m_vComponents = transformInversePos(reinterpret_cast<const SolTransform&>(m_kMotionTransform), input.m_vTo.m_vComponents);
+    subInput.m_vTo.m_vComponents = transformInversePos(reinterpret_cast<const SolTransform&>(m_transform), input.m_vTo.m_vComponents);
 
     hkTransform t;
-    t.SetProduct(*static_cast<const hkTransform*>(cdBody.m_pMotionState), m_kMotionTransform);
+    t.SetProduct(*static_cast<const hkTransform*>(cdBody.m_motion), m_transform);
 
     hkpCdBody body;
-    body.m_pMotionState = &t;
+    body.m_motion = &t;
     body.m_parent = &cdBody;
-    const hkpShape* child = m_pContainedShape.m_pContainedShape;
-    body.m_pCollisionShape = child;
-    body.m_uiCollisionShapeKey = 0;
+    const hkpShape* child = m_childShape.m_childShape;
+    body.m_shape = child;
+    body.m_shapeKey = 0;
     child->CastRayWithCollector(reinterpret_cast<const ShapeRayCastQuery&>(subInput), body, collector);
 
     timerCommand("Et");

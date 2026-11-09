@@ -5,6 +5,7 @@
 #include "hkBase.h"
 #include "hkpConvexListFilter.h"
 #pragma pack(push, 1)
+// pdb: class hkpDefaultConvexListFilter, size 0x8, bases: hkpConvexListFilter, 0 members
 class hkpDefaultConvexListFilter : public hkpConvexListFilter
 {
   public:

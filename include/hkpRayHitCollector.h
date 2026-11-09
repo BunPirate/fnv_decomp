@@ -4,6 +4,7 @@
 
 struct RayCastHitResult;
 
+// pdb: class hkpRayHitCollector, size 0x8, 1 members
 class hkpRayHitCollector
 {
 public:
@@ -14,5 +15,5 @@ public:
 
     void reset();
 
-    float m_fEarlyOutHitFraction;
+    float m_earlyOutHitFraction;
 };

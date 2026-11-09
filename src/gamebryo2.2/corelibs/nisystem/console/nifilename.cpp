@@ -3,6 +3,10 @@
 #include "nifilename_packet.h"
 // Initialises the object and splits path into drive, directory, filename and extension buffers via _splitpath_s.
 // @fnv 0x00aa27d0
+// pdb: GetThreadPriority | xthread.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFilename::NiFilename
+// pdb params: hThread
+// pdb locals: Thread
 FileNameComponents::FileNameComponents(const char* path)
 {
     m_acDirectoryComponent[0] = 0;
@@ -12,6 +16,8 @@ FileNameComponents::FileNameComponents(const char* path)
 #pragma optimize("", off)
 // Copies path into the buffer at offset 0x144, appends DAT_010a47b0, zeroes the fields at offsets 0 and 0x248, and returns the latter.
 // @fnv 0x00b006b0
+// pdb: BSSystemDir::DoOpen | BSSystemDir_Xenon.obj | debug, object-file run extension, low
+// pdb params: apcPath
 int FileNameComponents::SetFullPath(const char* path)
 {
     if (!path)

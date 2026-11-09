@@ -6,6 +6,7 @@
 // and 8 are _purecall, 0x00aa7830 is the shared empty /Od body). BSWin32AudioListener (vftable 0x010a3b7c) derives
 // from it. Layout from the /Od bodies: vptr at 0x00, position 0x04, velocity 0x10, forward 0x1C, up 0x28,
 // flags 0x44 (written by slot 10, cleared by the slot-0 deleting destructor); size 0x48.
+// pdb: class BSAudioListener, size 0x48, 9 members
 class BSAudioListener
 {
 public:
@@ -23,13 +24,13 @@ public:
     virtual unsigned int GetListenerID();                   // 0x2C 0x00aeab70
     virtual void SetRolloffFactor(float afRolloffFactor);   // 0x30 0x00aeab90
 
-    NiPoint3 m_kListenerPosition;    // +0x04
-    NiPoint3 m_kListenerVelocity;    // +0x10
-    NiPoint3 m_kForward;             // +0x1C
-    NiPoint3 m_kUp;                  // +0x28
-    unsigned int m_uiListenerID;     // +0x34
-    float m_fGain;                   // +0x38
-    float m_fDopplerScale;           // +0x3C
-    float m_fDistanceScale;          // +0x40
-    unsigned int m_uiListenerFlags;  // +0x44
+    NiPoint3 ListenerPosition;    // +0x04
+    NiPoint3 FrontOrientation;    // +0x10
+    NiPoint3 TopOrientation;             // +0x1C
+    NiPoint3 vVelocity;                  // +0x28
+    unsigned int dwTimeLastUpdated;     // +0x34
+    float fVelocity;                   // +0x38
+    float fRolloffFactor;           // +0x3C
+    float fGain;          // +0x40
+    unsigned int iEvironmentType;  // +0x44
 };

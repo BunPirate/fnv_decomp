@@ -3,25 +3,26 @@
 #include "ValueModifierEffect.h"
 #include "NiAVObject.h"
 
+// pdb: class AbsorbEffect, size 0x5c, bases: ValueModifierEffect, 4 members
 class AbsorbEffect : public ValueModifierEffect
 {
 public:
     virtual ~AbsorbEffect();
     virtual ActiveEffect* Copy();
-    virtual void Update(float delta);
+    virtual void Update(float afSecondsElapsed);
     virtual void FinishLoadGameTES(Actor* actor);
     virtual bool CanApply(MagicCaster* apCaster);
     virtual void CopyData(ActiveEffect* other);
     virtual void Start();
     virtual void Finish();
 
-    NiPointer<NiAVObject> spBolt;
-    NiPointer<NiAVObject> spNode50;
-    NiPointer<NiAVObject> spNode54;
-    NiPointer<NiAVObject> m_spTargetObject;
+    NiPointer<NiAVObject> spBoltNode;
+    NiPointer<NiAVObject> spSource;
+    NiPointer<NiAVObject> spTarget;
+    NiPointer<NiAVObject> spBoltProperty;
 
-    AbsorbEffect(MagicCaster* caster, MagicItem* item, EffectItem* effect);
-    void __thiscall InitBoltEffect();
+    AbsorbEffect(MagicCaster* caster, MagicItem* apSpell, EffectItem* effect);
+    void __thiscall Start3D();
     void __thiscall FinishInitLoadGame(Actor* apActor);
     void CopyData_0082a650(ActiveEffect* apDestination);
     void FUN_00802e20();

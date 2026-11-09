@@ -42,12 +42,12 @@ inline void hkVector4::operator=(const hkVector4& other)
 }
 inline float hkContactPoint::getDistance() const
 {
-    return m_vSeparatingNormal.m_vComponents.m128_f32[3];
+    return m_separatingNormal.m_vComponents.m128_f32[3];
 }
 inline hkContactPoint& hkContactPoint::operator=(const hkContactPoint& other)
 {
-    m_vContactPosition = other.m_vContactPosition;
-    m_vSeparatingNormal = other.m_vSeparatingNormal;
+    m_position = other.m_position;
+    m_separatingNormal = other.m_separatingNormal;
     return *this;
 }
 
@@ -59,6 +59,8 @@ extern "C" void* __cdecl FUN_00d33940();
 extern "C" void __cdecl hkpAgent1nSector_ProcessEntries_00da3510(void*, void*);
 
 // @fnv 0x00d33770
+// pdb: hkpConvexListAgent::invalidateTim | hkpConvexListAgent.obj | debug, vtable slot, medium
+// pdb params: input
 void __thiscall hkpConvexListAgent::vf09(int a)
 {
     if (*(char*)((char*)this + 0x84))
@@ -78,7 +80,7 @@ void __fastcall hkpConvexListAgent_getClosestPoints(hkpConvexListAgent* self, vo
 
 extern "C"
 {
-    void __cdecl hkpConvexListAgent_staticGetPenetrations(void* a, void* b, void* c, void* d);
+    void __cdecl hkpConvexListAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, void* collector);
 }
 
 // @fnv 0x00d33c80
@@ -100,6 +102,9 @@ extern void* __cdecl hkpConvexListAgent_staticLinearCast();
 extern void* __cdecl hkpConvexListAgent_createConvexListConvexListAgent();
 // Fills a collision-function table three times and registers it with the dispatcher for the 0x16/0x12, 0x12/0x16 and 0x16/0x16 type pairs.
 // @fnv 0x00d346b0
+// pdb: hkpConvexListAgent::registerAgent | hkpConvexListAgent.obj | retail, object-file run extension, low
+// pdb params: dispatcher
+// pdb locals: af
 void __cdecl RegisterConvexListAgentCollisionFuncs(hkpCollisionDispatcher* self)
 {
     // Preserve the original uninitialized table; its shared constructor adds initialization.
@@ -160,6 +165,8 @@ extern void __cdecl hkpAgentMachineUtil_calc1nStatistics(void*, void*, void*);
 // If the byte at offset 0x84 is zero, calls FUN_00d97250 with this+0x30, the pointer at a+8 and a.
 // @fnv 0x00d33740
 // src: HAVOK_LIB 0x00d33740
+// pdb: hkpConvexListAgent::calcContentStatistics | hkpConvexListAgent.obj | debug, upstream name already matches, high
+// pdb params: collector, cls
 void __fastcall hkpConvexListAgent_calcContentStatistics(hkpConvexListAgent* self, void*, int a, int iUnused)
 {
     if (*(char*)((char*)self + 0x84) == 0)
@@ -172,9 +179,11 @@ void __cdecl hkAgent1nMachine_Destroy(void*, int, int, int);
 // Calls FUN_00da42b0 with fields at offsets 0x30, 0x80 and 8 plus a, then clears the field at 0x30 and sets the byte at 0x84 to 1.
 // @fnv 0x00d33850
 // src: HAVOK_LIB 0x00d33850
+// pdb: hkpConvexListAgent::switchToGskMode | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
 void __fastcall hkpConvexListAgent_switchToGskMode(hkpConvexListAgent* self, void*, int a)
 {
-    hkAgent1nMachine_Destroy((char*)&self->m_kContactManifold, *(int*)((char*)self + 0x80), (int)self->m_pContactManager, a);
+    hkAgent1nMachine_Destroy((char*)&self->m_kContactManifold, *(int*)((char*)self + 0x80), (int)self->m_contactMgr, a);
     *(int*)&self->m_kContactManifold = 0;
     *(char*)((char*)self + 0x84) = 1;
 }
@@ -220,6 +229,9 @@ inline void D338e0Dispatch(D338e0Local* local, int* ownerField, int result)
 // If unk84 is zero, fills a D338e0Local from the parameters and unk08, calls vf10 on the agent at param2, and dispatches the result with unk30.
 // @fnv 0x00d338e0
 // src: HAVOK_LIB 0x00d338e0
+// pdb: hkpConvexListAgent::updateShapeCollectionFilter | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, listShapeBodyB, input, constraintOwner
+// pdb locals: vin
 void __fastcall hkpConvexListAgent_updateShapeCollectionFilter(hkpConvexListAgent* self, void*, int aiArg1, int apAgentPtr, int aiArg3, int aiArg4)
 {
     if (*(unsigned char*)((char*)self + 0x84) == 0)
@@ -228,7 +240,7 @@ void __fastcall hkpConvexListAgent_updateShapeCollectionFilter(hkpConvexListAgen
         local.field00 = aiArg1;
         local.field04 = apAgentPtr;
         local.field10 = aiArg3;
-        local.field14 = (int)self->m_pContactManager;
+        local.field14 = (int)self->m_contactMgr;
         local.field18 = aiArg4;
 
         hkpCollisionAgent** ppAgent = reinterpret_cast<hkpCollisionAgent**>(apAgentPtr);
@@ -242,6 +254,7 @@ void __fastcall hkpConvexListAgent_updateShapeCollectionFilter(hkpConvexListAgen
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
 
 // The convex-list filter is not yet supplied by a shared header.
+// pdb: class hkpConvexListFilter, size 0x8 (here 0x4), bases: hkReferencedObject, 0 members
 class hkpConvexListFilter
 {
   public:
@@ -256,7 +269,7 @@ class hkpConvexListFilter
 __forceinline void* hkpCollisionAgent::operator new(std::size_t uiSize)
 {
     hkpCollisionAgent* p = (hkpCollisionAgent*)hkMemoryRouter_getInstance()->heap().blockAlloc(uiSize);
-    p->m_usMemSizeAndFlags = (unsigned short)uiSize;
+    p->m_memSizeAndFlags = (unsigned short)uiSize;
     return p;
 }
 
@@ -311,13 +324,16 @@ static __forceinline hkpCollisionAgent* MakeFlippedShapeCollectionAgent(
 
 // Creates a collision agent for the two bodies: picks the agent class from the convex list filter's result, or a default agent when pkMgr is null.
 // @fnv 0x00d33dd0
+// pdb: hkpConvexListAgent::createConvexListConvexAgent | hkpConvexListAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, mgr
+// pdb locals: assertBuf, ostr
 hkpCollisionAgent* __cdecl CreateConvexListAgent(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB,
                                                      const hkpCollisionInput& kInput,
                                                      hkpContactMgr* pkMgr) throw()
 {
     if (pkMgr)
     {
-        switch (kInput.m_pConvexListCollisionFilter->ShouldBodiesCollide(kBodyA, kBodyB, kInput))
+        switch (kInput.m_convexListFilter->ShouldBodiesCollide(kBodyA, kBodyB, kInput))
         {
         case 0:
             return MakeFlippedConvexListAgent(kBodyB, kBodyA, kInput, pkMgr);
@@ -331,18 +347,20 @@ hkpCollisionAgent* __cdecl CreateConvexListAgent(const hkpCdBody& kBodyA, const 
     return MakeShapeCollectionAgent(kBodyA, kBodyB, kInput, 0);
 }
 
-void __cdecl ReleaseAllEntries(void* out, void* src, void* arg);
-void InitBlockPool(void* p);
+void __cdecl hkGskManifold_cleanup(void* manifold, void* mgr, void* constraintOwner);
+void hkAgent1nMachine_Create(void* agentTrack);
 
 // Reinitializes the embedded array, clears m_84 and m_3c, and sets m_86 to 0x19.
 // @fnv 0x00d33ef0
 // src: HAVOK_LIB 0x00d33ef0
+// pdb: hkpConvexListAgent::switchToStreamMode | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
 void __fastcall hkpConvexListAgent_switchToStreamMode(hkpConvexListAgent* self, void*, void* arg)
 {
-    ReleaseAllEntries(((char*)&self->m_kContactManifold), self->m_pContactManager, arg);
+    hkGskManifold_cleanup(((char*)&self->m_kContactManifold), self->m_contactMgr, arg);
     *(char*)((char*)self + 0x84) = 0;
     new (((char*)&self->m_kContactManifold)) hkArray<void*>();
-    InitBlockPool(((char*)&self->m_kContactManifold));
+    hkAgent1nMachine_Create(((char*)&self->m_kContactManifold));
     *(float*)((char*)self + 0x3c) = 0.0f;
     *(short*)((char*)self + 0x86) = 0x19;
 }
@@ -362,23 +380,26 @@ static __forceinline hkpCollisionAgent* MakeConvexListAgent(
 
 // @fnv 0x00d343f0
 // src: HAVOK_LIB 0x00d343f0
-hkpCollisionAgent* __cdecl hkpConvexListAgent_createConvexConvexListAgent(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB,
-                                            const hkpCollisionInput& kInput, hkpContactMgr* pkMgr) throw()
+// pdb: hkpConvexListAgent::createConvexConvexListAgent | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, mgr
+// pdb locals: assertBuf, ostr
+hkpCollisionAgent* __cdecl hkpConvexListAgent_createConvexConvexListAgent(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
+                                            const hkpCollisionInput& input, hkpContactMgr* mgr) throw()
 {
-    if (pkMgr)
+    if (mgr)
     {
-        switch (kInput.m_pConvexListCollisionFilter->ShouldBodiesCollide(kBodyB, kBodyA, kInput))
+        switch (input.m_convexListFilter->ShouldBodiesCollide(bodyB, bodyA, input))
         {
         case 0:
-            return MakeConvexListAgent(kBodyA, kBodyB, kInput, pkMgr);
+            return MakeConvexListAgent(bodyA, bodyB, input, mgr);
         case 1:
-            return MakeFlippedShapeCollectionAgent(kBodyA, kBodyB, kInput, pkMgr);
+            return MakeFlippedShapeCollectionAgent(bodyA, bodyB, input, mgr);
         case 2:
-            return MakePredGskfAgent(kBodyA, kBodyB, pkMgr);
+            return MakePredGskfAgent(bodyA, bodyB, mgr);
         }
         return 0;
     }
-    return MakeFlippedShapeCollectionAgent(kBodyA, kBodyB, kInput, 0);
+    return MakeFlippedShapeCollectionAgent(bodyA, bodyB, input, 0);
 }
 }  // namespace fnv_00d343f0
 
@@ -407,6 +428,9 @@ extern "C" void __cdecl hkpShapeCollectionAgent_staticGetPenetrations(void* a, v
 // Constructs an hkCollectorD347 with the given filter and passes it to FUN_00d43dc0 along with a, b and c.
 // @fnv 0x00d34790
 // src: GUESS 0x00d34790 (confidence: low)
+// pdb: hkpSymmetricAgentLinearCast<hkpShapeCollectionAgent>::staticGetPenetrations | hkpConvexListAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
 void __cdecl hkCollectorD347_ProcessState_00d34790(void* b, void* a, void* c, int filter)
 {
     hkCollectorD347 collector(filter);
@@ -430,6 +454,8 @@ void __cdecl _hkAgent1nMachine_WarpTime(hkMemberD337* member, float a, float b, 
 
 // Sets a value on the object, calling SetValueIfExpected when m_84 is true, otherwise delegating to FUN_00da35f0 on m_30.
 // @fnv 0x00d337a0
+// pdb: hkpConvexListAgent::warpTime | hkpConvexListAgent.obj | debug, vtable slot, medium
+// pdb params: oldTime, newTime, input
 void __fastcall SetValue(hkpConvexListAgent* self, void*, float a, float b, int c)
 {
     if (*(bool*)((char*)self + 0x84))
@@ -439,17 +465,19 @@ void __fastcall SetValue(hkpConvexListAgent* self, void*, float a, float b, int 
 }
 
 // @fnv 0x00d33890
-extern void __cdecl ReleaseAllEntries(void*, int, void*);
+// pdb: hkpConvexListAgent::cleanup | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
+extern void __cdecl hkGskManifold_cleanup(void*, int, void*);
 // src: HAVOK_LIB 0x00d33890
 void __fastcall hkpConvexListAgent_cleanup(hkpConvexListAgent* self, void*, void* input)
 {
     if (*(unsigned char*)((char*)self + 0x84))
     {
-        ReleaseAllEntries(((char*)&self->m_kContactManifold), (int)self->m_pContactManager, input);
+        hkGskManifold_cleanup(((char*)&self->m_kContactManifold), (int)self->m_contactMgr, input);
     }
     else
     {
-        hkAgent1nMachine_Destroy(((char*)&self->m_kContactManifold), *(int*)((char*)self + 0x80), (int)self->m_pContactManager, (int)input);
+        hkAgent1nMachine_Destroy(((char*)&self->m_kContactManifold), *(int*)((char*)self + 0x80), (int)self->m_contactMgr, (int)input);
     }
     ((void (__thiscall*)(hkpConvexListAgent*, int))(*(void***)self)[0])(self, 1);
 }
@@ -480,11 +508,14 @@ struct __declspec(align(16)) S00d33940_Out
 
 struct S00d33940_Sub
 {
-    void hkpGskCache_init(int a, int b, S00d33940_Out* c);
+    void hkpGskCache_init(int shapeA, int shapeB, S00d33940_Out* aTb);
 };
 
 // Calls FUN_00dacbd0(a, b, d), sets vt to DAT_010cebf0 and unk80 to *c, sets unk84/85, calls FUN_00dafcd0 on unk0c, and sets unk18 and unk2c to DAT_01012054.
 // @fnv 0x00d33940
+// pdb: hkpConvexListAgent::hkpConvexListAgent | hkpConvexListAgent.obj | retail, call graph (shared callers), high
+// pdb params: bodyA, bodyB, input, mgr
+// pdb locals: t
 hkpConvexListAgent* __fastcall InitializeConvexListAgent(hkpConvexListAgent* self, void*, int* a, int* b, int* c, void* d)
 {
     ((void (__thiscall*)(hkpGskfAgent*, int*, int*, void*))FUN_00dacbd0)(self, a, b, d);
@@ -497,8 +528,8 @@ hkpConvexListAgent* __fastcall InitializeConvexListAgent(hkpConvexListAgent* sel
     S00d33940_Out o;
     o.hkTransform_setMulInverseMul(a[2], b[2]);
     ((S00d33940_Sub*)((char*)self + 0x0c))->hkpGskCache_init(v1, v0, &o);
-    float* __restrict p2 = &self->m_vSeparatingNormal.m_vComponents.m128_f32[3];
-    float* __restrict p1 = &self->m_fFloatValue;
+    float* __restrict p2 = &self->m_separatingNormal.m_vComponents.m128_f32[3];
+    float* __restrict p1 = &self->m_timeOfSeparatingNormal;
     *p1 = *p2 = DAT_01012054;
     return self;
 }
@@ -515,7 +546,10 @@ void __cdecl hkCollectorD347_ProcessState_00d34790(void* a, void* b, void* c, vo
 // Writes timer entries (LtCvxList/StcheckHull, Stchildren, lt), calls TestGsk with a collector, and calls FUN_00d34790 if the collector registered a hit.
 // @fnv 0x00d33b90
 // src: HAVOK_LIB 0x00d33b90
-extern "C" void __cdecl hkpConvexListAgent_staticGetPenetrations(void* a, void* b, void* c, void* d)
+// pdb: hkpConvexListAgent::staticGetPenetrations | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: checker
+extern "C" void __cdecl hkpConvexListAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, void* collector)
 {
     volatile DWORD tick;
     hkMonitorStream* pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -534,7 +568,7 @@ extern "C" void __cdecl hkpConvexListAgent_staticGetPenetrations(void* a, void* 
     hkpFlagCdBodyPairCollector& col = *(hkpFlagCdBodyPairCollector*)flagStorage;
     *(const void**)&col = &DAT_010cebd0;
     col.m_flag = false;
-    TestGsk(a, b, c, &col);
+    TestGsk(bodyA, bodyB, input, &col);
     if (col.m_flag)
     {
         pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -547,7 +581,7 @@ extern "C" void __cdecl hkpConvexListAgent_staticGetPenetrations(void* a, void* 
             pRec->m_time0 = tick;
             pBuf->m_end.m_storage = reinterpret_cast<char*>((hkMonitorStream::TimerCommand*)((char*)pRec + 0xc));
         }
-        hkCollectorD347_ProcessState_00d34790(a, b, c, d);
+        hkCollectorD347_ProcessState_00d34790(bodyA, bodyB, input, collector);
     }
 
     pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -588,6 +622,9 @@ struct ContactPointPair
 // If TestGsk reports a hit calls QueryClosestPoints; else adds the closest point to a4 when its distance exceeds b's shape threshold, otherwise calls QueryClosestPoints.
 // @fnv 0x00d339d0
 // src: GUESS 0x00d339d0 (confidence: medium)
+// pdb: hkpConvexListAgent::staticGetClosestPoints | hkpConvexListAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: checker, closestPoint, hit
 extern "C" void __cdecl hkpConvexListAgent_QueryClosestPointsAfterHullTest(int apBodyA, int apBodyB, int a3, int apCollector)
 {
     {
@@ -631,23 +668,23 @@ extern "C" void __cdecl hkpConvexListAgent_QueryClosestPointsAfterHullTest(int a
         // Pointer storage keeps the original stack layout and avoids constructors/destructors.
         __declspec(align(16)) void* closestStorage[sizeof(hkpClosestCdPointCollector) / sizeof(void*)];
         hkpClosestCdPointCollector& x = *(hkpClosestCdPointCollector*)closestStorage;
-        x.m_kHitPoint.m_kPoint.m_vSeparatingNormal.m_vComponents.m128_f32[3] = DAT_0104da48;
-        x.m_fEarlyOutDistance = DAT_0104da48;
+        x.m_hitPoint.m_kPoint.m_separatingNormal.m_vComponents.m128_f32[3] = DAT_0104da48;
+        x.m_earlyOutDistance = DAT_0104da48;
         *(const void**)&x = &DAT_010c476c;
-        x.m_kHitPoint.m_pRootCollidableA = 0;
+        x.m_hitPoint.m_pRootCollidableA = 0;
         FUN_00dac450((const void*)apBodyA, (const void*)apBodyB, (const void*)a3, &x);
-        if (!x.m_kHitPoint.m_pRootCollidableA)
+        if (!x.m_hitPoint.m_pRootCollidableA)
         {
             goto timer_end;
         }
-        const hkpConvexListShape* shapeB = (const hkpConvexListShape*)((const hkpCdBody*)apBodyB)->m_pCollisionShape;
-        if (x.m_kHitPoint.m_kPoint.getDistance() > shapeB->m_minDistanceToUseConvexHull)
+        const hkpConvexListShape* shapeB = (const hkpConvexListShape*)((const hkpCdBody*)apBodyB)->m_shape;
+        if (x.m_hitPoint.m_kPoint.getDistance() > shapeB->m_minDistanceToUseConvexHull)
         {
             __declspec(align(16)) void* pointStorage[sizeof(ContactPointPair) / sizeof(void*)];
             ContactPointPair& point = *(ContactPointPair*)pointStorage;
             point.m_pBodyA = (const void*)apBodyA;
             point.m_pBodyB = (const void*)apBodyB;
-            point.m_kPoint = x.m_kHitPoint.m_kPoint;
+            point.m_kPoint = x.m_hitPoint.m_kPoint;
             ((hkpCdPointCollector*)apCollector)->AddCdPoint(point);
             goto timer_end;
         }
@@ -713,7 +750,10 @@ struct __declspec(align(16)) S00d33ca0_Local
 // Writes a timer entry, calls FUN_00daf8e0, and if local.unk08 is set writes another entry and calls FUN_00d34810; then writes a closing timer entry.
 // @fnv 0x00d33ca0
 // src: HAVOK_LIB 0x00d33ca0
-extern "C" void __cdecl hkpConvexListAgent_staticLinearCast(int a, int b, int c, int d, int e)
+// pdb: hkpConvexListAgent::staticLinearCast | hkpConvexListAgent.obj | retail, string-set bridge, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: checker
+extern "C" void __cdecl hkpConvexListAgent_staticLinearCast(int bodyA, int bodyB, int input, int collector, int startCollector)
 {
     hkMonitorStream* buf;
     unsigned int* p;
@@ -737,7 +777,7 @@ extern "C" void __cdecl hkpConvexListAgent_staticLinearCast(int a, int b, int c,
         local.unk04 = DAT_0104da48;
         local.unk00 = &DAT_010cebe0;
         local.unk08 = 0;
-        Object_ProcessEntries_00daf8e0(a, b, c, &local, &local);
+        Object_ProcessEntries_00daf8e0(bodyA, bodyB, input, &local, &local);
         if (local.unk08 != 0)
         {
             buf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -750,7 +790,7 @@ extern "C" void __cdecl hkpConvexListAgent_staticLinearCast(int a, int b, int c,
                 p[1] = ts;
                 buf->m_end.m_storage = reinterpret_cast<char*>((hkMonitorStream::TimerCommand*)(p + 3));
             }
-            hkpShapeCollectionAgent_staticLinearCast_UpdateState_00d34810(a, b, c, d, e);
+            hkpShapeCollectionAgent_staticLinearCast_UpdateState_00d34810(bodyA, bodyB, input, collector, startCollector);
         }
     }
 
@@ -789,19 +829,22 @@ typedef void*(__thiscall* PfnD33940)(void* self, void* bodyA, void* bodyB, void*
 // Dispatches on collision type to allocate and initialize the appropriate agent object for the given body pair and contact manager.
 // @fnv 0x00d34510
 // src: HAVOK_LIB 0x00d34510
-void* __cdecl hkpConvexListAgent_createConvexListConvexListAgent(void* bodyA, void* bodyB, hkpCollisionInput* input, void* contactMgr)
+// pdb: hkpConvexListAgent::createConvexListConvexListAgent | hkpConvexListAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, mgr
+// pdb locals: assertBuf, ostr
+void* __cdecl hkpConvexListAgent_createConvexListConvexListAgent(void* bodyA, void* bodyB, hkpCollisionInput* input, void* mgr)
 {
-    if (contactMgr)
+    if (mgr)
     {
-        switch (input->m_pConvexListCollisionFilter->ShouldBodiesCollide(
+        switch (input->m_convexListFilter->ShouldBodiesCollide(
             *(const hkpCdBody*)bodyA, *(const hkpCdBody*)bodyB, *input))
         {
         case 0: {
             hkMemoryRouter* pMemoryRouter = hkMemoryRouter_getInstance();
             int iAllocSize = 0x90;
             void* agent = ((ChunkAllocator*)pMemoryRouter->m_heap)->allocate(iAllocSize);
-            ((hkpCollisionAgent*)agent)->m_usMemSizeAndFlags = (unsigned short)iAllocSize;
-            ((PfnD33940)FUN_00d33940)(agent, bodyB, bodyA, input, contactMgr);
+            ((hkpCollisionAgent*)agent)->m_memSizeAndFlags = (unsigned short)iAllocSize;
+            ((PfnD33940)FUN_00d33940)(agent, bodyB, bodyA, input, mgr);
             *(void**)agent = (void*)DAT_010cec68;
             return agent;
         }
@@ -809,26 +852,26 @@ void* __cdecl hkpConvexListAgent_createConvexListConvexListAgent(void* bodyA, vo
             hkMemoryRouter* pMemoryRouter = hkMemoryRouter_getInstance();
             int iAllocSize = 0x38;
             void* agent = ((ChunkAllocator*)pMemoryRouter->m_heap)->allocate(iAllocSize);
-            ((hkpCollisionAgent*)agent)->m_usMemSizeAndFlags = (unsigned short)iAllocSize;
-            return ((PfnD440f0)FUN_00d440f0)(agent, bodyA, bodyB, input, contactMgr);
+            ((hkpCollisionAgent*)agent)->m_memSizeAndFlags = (unsigned short)iAllocSize;
+            return ((PfnD440f0)FUN_00d440f0)(agent, bodyA, bodyB, input, mgr);
         }
         case 2: {
-            switch (input->m_pConvexListCollisionFilter->ShouldBodiesCollide(
+            switch (input->m_convexListFilter->ShouldBodiesCollide(
                 *(const hkpCdBody*)bodyB, *(const hkpCdBody*)bodyA, *input))
             {
             case 0: {
                 hkMemoryRouter* pMemoryRouter = hkMemoryRouter_getInstance();
                 int iAllocSize = 0x90;
                 void* agent = ((ChunkAllocator*)pMemoryRouter->m_heap)->allocate(iAllocSize);
-                ((hkpCollisionAgent*)agent)->m_usMemSizeAndFlags = (unsigned short)iAllocSize;
-                return ((PfnD33940)FUN_00d33940)(agent, bodyA, bodyB, input, contactMgr);
+                ((hkpCollisionAgent*)agent)->m_memSizeAndFlags = (unsigned short)iAllocSize;
+                return ((PfnD33940)FUN_00d33940)(agent, bodyA, bodyB, input, mgr);
             }
             case 1: {
                 hkMemoryRouter* pMemoryRouter = hkMemoryRouter_getInstance();
                 int iAllocSize = 0x38;
                 void* agent = ((ChunkAllocator*)pMemoryRouter->m_heap)->allocate(iAllocSize);
-                ((hkpCollisionAgent*)agent)->m_usMemSizeAndFlags = (unsigned short)iAllocSize;
-                ((PfnD440f0)FUN_00d440f0)(agent, bodyB, bodyA, input, contactMgr);
+                ((hkpCollisionAgent*)agent)->m_memSizeAndFlags = (unsigned short)iAllocSize;
+                ((PfnD440f0)FUN_00d440f0)(agent, bodyB, bodyA, input, mgr);
                 *(void**)agent = (void*)DAT_010ce8b0;
                 return agent;
             }
@@ -836,8 +879,8 @@ void* __cdecl hkpConvexListAgent_createConvexListConvexListAgent(void* bodyA, vo
                 hkMemoryRouter* pMemoryRouter = hkMemoryRouter_getInstance();
                 int iAllocSize = 0x80;
                 void* agent = ((ChunkAllocator*)pMemoryRouter->m_heap)->allocate(iAllocSize);
-                ((hkpCollisionAgent*)agent)->m_usMemSizeAndFlags = (unsigned short)iAllocSize;
-                ((PfnDacbd0)FUN_00dacbd0)(agent, bodyA, bodyB, contactMgr);
+                ((hkpCollisionAgent*)agent)->m_memSizeAndFlags = (unsigned short)iAllocSize;
+                ((PfnDacbd0)FUN_00dacbd0)(agent, bodyA, bodyB, mgr);
                 *(void**)agent = (void*)DAT_010ceb94;
                 return agent;
             }
@@ -852,7 +895,7 @@ void* __cdecl hkpConvexListAgent_createConvexListConvexListAgent(void* bodyA, vo
         hkMemoryRouter* pMemoryRouter = hkMemoryRouter_getInstance();
         int iAllocSize = 0x38;
         void* agent = ((ChunkAllocator*)pMemoryRouter->m_heap)->allocate(iAllocSize);
-        ((hkpCollisionAgent*)agent)->m_usMemSizeAndFlags = (unsigned short)iAllocSize;
+        ((hkpCollisionAgent*)agent)->m_memSizeAndFlags = (unsigned short)iAllocSize;
         return ((PfnD440f0)FUN_00d440f0)(agent, bodyA, bodyB, input, 0);
     }
 }

@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraReflectorRefs, size 0x14, bases: BSExtraData, 1 members
 class ExtraReflectorRefs : public BSExtraData
 {
 public:

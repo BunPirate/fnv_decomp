@@ -30,12 +30,14 @@ __declspec(noinline) void __cdecl hkpGskfAgent::InitAgentFunc(hkpCollisionDispat
     f.m_bIsPredictive = false;
 }
 
-void __cdecl ReleaseAllEntries(void*, void*, void*);
+void __cdecl hkGskManifold_cleanup(void*, void*, void*);
 
 // @fnv 0x00dacaf0
-void hkpGskfAgent::cleanup(hkpConstraintOwner& arg)
+// pdb: hkpGskfAgent::cleanup | hkpGskfAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
+void hkpGskfAgent::cleanup(hkpConstraintOwner& constraintOwner)
 {
-    ReleaseAllEntries(&m_kContactManifold, m_pContactManager, &arg);
+    hkGskManifold_cleanup(&m_kContactManifold, m_contactMgr, &constraintOwner);
     delete this;
 }
 
@@ -79,7 +81,9 @@ void hkpGskfAgent::CommitPotentialContactPoint(hkContactPointId value)
 }
 
 // @fnv 0x00dacbd0
-__declspec(noinline) hkpGskfAgent::hkpGskfAgent(const hkpCdBody& a, const hkpCdBody& b, hkpContactMgr* c) : hkpGskBaseAgent(a, b, c)
+// pdb: hkpGskfAgent::hkpGskfAgent | hkpGskfAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, mgr
+__declspec(noinline) hkpGskfAgent::hkpGskfAgent(const hkpCdBody& bodyA, const hkpCdBody& bodyB, hkpContactMgr* mgr) : hkpGskBaseAgent(bodyA, bodyB, mgr)
 {
     *(int*)&m_kContactManifold = 0;
 }
@@ -142,6 +146,9 @@ struct Dsrc
 void ProcessCollision(Dtask* task, int* ctx1, int* ctx2, int* node, int* a5, int* a6, int a7);
 
 // @fnv 0x00daccd0
+// pdb: hkpGskfAgent::processCollisionNoTim | hkpGskfAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, output
+// pdb locals: in3, dummyEntry, dummyAgentData
 void hkpGskfAgent::ProcessAgent(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const GskAgentInput& input, WorldOperationEntry& result)
 {
     Dsrc* a1 = (Dsrc*)&bodyA;
@@ -153,10 +160,10 @@ void hkpGskfAgent::ProcessAgent(const hkpCdBody& bodyA, const hkpCdBody& bodyB, 
     res.f08 = 0;
     res.f00 = a1;
     res.f04 = a2;
-    res.f10 = (int)m_pContactManager;
+    res.f10 = (int)m_contactMgr;
     res.f0c = a3;
     res.sub.hkTransform_setMulInverseMul(a1->f08, a2->f08);
-    ProcessCollision(&res, &ctx.f0, &ctx.f1, (int*)m_pAccess, (int*)&m_kContactManifold, (int*)&m_vSeparatingNormal, a4);
+    ProcessCollision(&res, &ctx.f0, &ctx.f1, (int*)m_cache, (int*)&m_kContactManifold, (int*)&m_separatingNormal, a4);
 }
 
 struct hkAllocHeaderDACC
@@ -179,6 +186,8 @@ inline void* allocateAgentDACC(int nbytes)
 }
 
 // @fnv 0x00dacc00
+// pdb: hkpGskfAgent::createGskfAgent | hkpGskfAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, mgr
 hkpCollisionAgent* __cdecl hkpGskfAgent::m_pVirtualFunction0(const hkpCdBody& a, const hkpCdBody& b, const CollisionAgentContext& unused, hkpContactMgr* c)
 {
     if (c)
@@ -189,7 +198,7 @@ hkpCollisionAgent* __cdecl hkpGskfAgent::m_pVirtualFunction0(const hkpCdBody& a,
 // The approved dispatcher header does not yet declare this registration entry.
 struct GskAgentRegistration
 {
-    void registerCollisionAgent(hkpCollisionDispatcher::CollisionAgentFunctionTable& funcs, int a, int b);
+    void registerCollisionAgent(hkpCollisionDispatcher::CollisionAgentFunctionTable& f, int typeA, int typeB);
 };
 
 // @fnv 0x00dacca0

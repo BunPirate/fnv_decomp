@@ -15,6 +15,7 @@ class TESWorldSpace;
 
 typedef BSSimpleArray<NavMeshInfo*, 1024> NavMeshInfoArray;
 
+// pdb: class NavMeshInfoMap, size 0x40, bases: TESForm, 4 members
 class NavMeshInfoMap : public TESForm
 {
 public:
@@ -26,21 +27,21 @@ public:
     virtual void InitItem(void);
     virtual void SetQuestItem(bool set);
 
-    bool m_bNavMeshInfoArraysValid;
+    bool bUpdateAll;
     unsigned char pad19[3];
-    NiTPointerMap<unsigned int, NavMeshInfo*> m_kNavMeshInfosByFormID;
+    NiTPointerMap<unsigned int, NavMeshInfo*> InfoMap;
     NiTPointerMap<unsigned int, NiTPointerMap<unsigned int, NavMeshInfoArray*>*>
         m_kNavMeshInfoArraysByWorldspace;
-    bool m_bKeepNavMeshLoaded;
+    bool bInit;
     unsigned char pad3D[3];
 
     NavMeshInfoMap();
     bool Load(TESFile* file);
     NavMeshInfo* FUN_00693d70(unsigned int formID);
-    bool ValidateNavMeshInfoArrays();
-    void InsertNavMeshInfo(NavMeshInfo* info);
+    bool CheckAllNavmeshBoundingBoxes();
+    void AddInfoToCellKeyMap(NavMeshInfo* apNavMeshInfo);
     void ClearNavMeshInfoMaps();
-    void ValidateNavMeshes();
+    void CheckMap();
     bool LoadNavMeshInfoMap(TESFile* file);
     void SaveNavMeshInfoMap();
     void StartSave();
@@ -50,16 +51,16 @@ public:
     bool ProcessBeforeSave();
     bool SavesBefore_006b6910(TESForm* form);
     void RegisterNavMeshInfo(TeleportableReference* info);
-    void ProcessState_006b6990(unsigned int id);
-    void ProcessState_006b6990(NavMesh* mesh);
-    void ActivateNavigationEntry(int identifier);
-    int FindNavMeshInfoForCell(TESObjectCELL* cell);
+    void RemoveNavMeshInfo(unsigned int auiNavMeshID);
+    void RemoveNavMeshInfo(NavMesh* auiNavMeshID);
+    void DeleteNavMeshInfo(int auiNavMeshID);
+    int FindNavMeshInfoForCell(TESObjectCELL* apCell);
     void* FindNavMeshInfoForCellKey(TESWorldSpace* worldSpace, int cellKey);
     int FindNavMeshInfoForCellKey(void* worldSpace, int cellKey);
     unsigned int LookupScriptMessageValue(const char* message);
     int LookupScriptMessageValue(TESObjectCELL* cell);
-    void GetAllNavMeshInfo(BSSimpleArray<void*, 1024>* array);
-    void RemoveInfoFromCellKeyMap(NavMeshInfo* info);
-    void RemoveInfoFromCellKeyMap(unsigned int info);
-    void RemoveInfoFromCellKeyMap(NavigationRequest* request);
+    void GetAllNavMeshInfo(BSSimpleArray<void*, 1024>* apReturnArray);
+    void RemoveInfoFromCellKeyMap(NavMeshInfo* apNavMeshInfo);
+    void RemoveInfoFromCellKeyMap(unsigned int apNavMeshInfo);
+    void RemoveInfoFromCellKeyMap(NavigationRequest* apNavMeshInfo);
 };

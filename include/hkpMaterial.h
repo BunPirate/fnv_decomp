@@ -7,6 +7,7 @@
 typedef signed char hkInt8;
 typedef std::size_t hk_size_t;
 
+// pdb: class hkpMaterial, size 0xc, 3 members
 class hkpMaterial
 {
 public:
@@ -19,10 +20,10 @@ public:
         RESPONSE_MAX_ID = 4
     };
 
-    hkEnum<ResponseType, hkInt8> m_eResponseType;
+    hkEnum<ResponseType, hkInt8> m_responseType;
     char pad1[3];
-    hkReal m_fSlipAngle;
-    hkReal m_fElasticity;
+    hkReal m_friction;
+    hkReal m_restitution;
 
     hkpMaterial(FinishingFlag flag);
     static void* __cdecl operator new(hk_size_t nbytes);

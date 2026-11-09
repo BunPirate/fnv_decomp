@@ -46,8 +46,8 @@ public:
     int unk30;
     VBSetLocal_00e94b00();
     ~VBSetLocal_00e94b00();
-    VbNode* NiVBSet_AllocateChip(unsigned int size, bool flag);
-    void FreeChip(unsigned int uiArrayIndex, unsigned int uiChipIndex);
+    VbNode* NiVBSet_AllocateChip(unsigned int size, bool bForceNewBlock);
+    void FreeChip(unsigned int uiBlockIndex, unsigned int uiChipIndex);
 };
 
 typedef NiTMapBase<NiTPointerAllocator<unsigned int>, unsigned int, NiVBSet*> GeometryMapBase;
@@ -77,6 +77,9 @@ struct NiVBChip
 };
 // @fnv 0x00e94770
 // src: COMMUNITY 0x00e94770
+// pdb: NiStaticGeometryGroup::ReleaseChip | NiStaticGeometryGroup.obj | retail, upstream name already matches, high
+// pdb params: pkBuffData, uiStream
+// pdb locals: pkChip, pkBlock
 void __stdcall NiStaticGeometryGroup_ReleaseChip(NiGeometryBufferData* pkBuffData, unsigned int uiStream)
 {
     NiVBChip* pkChip;
@@ -89,7 +92,7 @@ void __stdcall NiStaticGeometryGroup_ReleaseChip(NiGeometryBufferData* pkBuffDat
             if (pkChip->m_pkOwningStream)
             {
                 pkBlock = pkChip->m_pkTreeBlock;
-                reinterpret_cast<VBSetLocal_00e94b00*>(pkBlock->m_pBuffer)->FreeChip(pkBlock->m_04, pkChip->m_uiPosition);
+                reinterpret_cast<VBSetLocal_00e94b00*>(pkBlock->m_pBuffer)->FreeChip(pkBlock->m_uiIndex, pkChip->m_uiPosition);
             }
             if (uiStream < pkBuffData->m_uiRegisterStreamCount)
                 pkBuffData->m_ppkVertexBuffers[uiStream] = 0;
@@ -105,11 +108,14 @@ extern int DAT_010f0fb4;
 extern int DAT_010f0fd4;
 // Resets vtables, clears the map at offset 12, frees its buffer, calls cleanup, and optionally deletes the object.
 // @fnv 0x00e94890
+// pdb: NiVBDynamicSet::Create | NiDynamicGeometryGroup.obj | debug, object-file run extension, low
+// pdb params: uiBlockSize, pkD3DDevice, uiFVF, uiIndex
+// pdb locals: pkSet
 void* NiStaticGeometryGroup::Destroy(unsigned int flag)
 {
     *reinterpret_cast<void**>(this) = &DAT_010f0fd4;
     Purge_00e946b0();
-    GeometryMapBase* pSets = reinterpret_cast<GeometryMapBase*>(&map);
+    GeometryMapBase* pSets = reinterpret_cast<GeometryMapBase*>(&m_kSets);
     *reinterpret_cast<void**>(pSets) = &DAT_010f0fb4;
     pSets->RemoveAll();
     *reinterpret_cast<void**>(pSets) = &DAT_010f0f94;
@@ -136,6 +142,8 @@ struct S
 };
 // Sets f0 to DAT_010f0f84, frees f4, and if flag bit 0 is set deallocates this via g_memoryManager, returning this.
 // @fnv 0x00e94a80
+// pdb: NiStaticGeometryGroup::`scalar deleting destructor' | NiStaticGeometryGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiVBSet::`scalar deleting destructor'
 void* S::FUN_00e94a80(unsigned int flag)
 {
     void* tmp = f4;
@@ -191,12 +199,15 @@ __declspec(nothrow) inline NiTPointerMap<unsigned int, NiVBSet*>::NiTPointerMap(
 
 // Constructs the group and allocates and zeroes its map bucket array.
 // @fnv 0x00e94ab0
+// pdb: NiStaticGeometryGroup::NiStaticGeometryGroup | NiStaticGeometryGroup.obj | retail, upstream name already matches, high
 __declspec(noinline) __declspec(nothrow) NiStaticGeometryGroup::NiStaticGeometryGroup()
 {}
 
 namespace fnv_00e94c00 {
 // @fnv 0x00e94c00
 // src: XBOX_PDB 0x00e94c00
+// pdb: NiStaticGeometryGroup::Create | NiStaticGeometryGroup.obj | retail, upstream name already matches, high
+// pdb locals: pkGroup
 NiStaticGeometryGroup* __cdecl NiStaticGeometryGroup_Create()
 {
     return new NiStaticGeometryGroup;
@@ -208,7 +219,7 @@ NiStaticGeometryGroup* __cdecl NiStaticGeometryGroup_Create()
 void NiStaticGeometryGroup::Purge_00e946b0()
 {
     GeometryMapItem* pFirstNode = 0;
-    GeometryMapBase* pMap = reinterpret_cast<GeometryMapBase*>(&map);
+    GeometryMapBase* pMap = reinterpret_cast<GeometryMapBase*>(&m_kSets);
     unsigned int i = 0;
     unsigned int count = pMap->m_uiHashSize;
 
@@ -339,6 +350,9 @@ void __cdecl RegisterStaticGeometryBuffer();
 typedef void (__thiscall* RegisterStaticGeometryBufferFn)(NiStaticGeometryGroup*, NiGeometryBufferData*);
 
 // @fnv 0x00e948f0
+// pdb: NiStaticGeometryGroup::AddObject | NiStaticGeometryGroup.obj | retail, object-file run extension, low
+// pdb params: pkData, pkSkinInstance, pkPartition
+// pdb locals: pkBuffData, uiT, bNorms, bBinormsTangents, bColors
 void __fastcall InitStaticGeometryData(NiStaticGeometryGroup* group, void*, S_00e948f0_Obj* apObj, int aiUnused, S_00e948f0_Y* apY)
 {
     NiGeometryBufferData* d;
@@ -407,6 +421,7 @@ extern int DAT_011c0ce0;
 extern int DAT_011c0ce4;
 
 // @fnv 0x00e94b00
+// pdb: NiVBSet::NiVBSet | NiStaticGeometryGroup.obj | retail, object-file gap fill, high
 VBSetLocal_00e94b00::VBSetLocal_00e94b00()
 {
     unk0c = DAT_011c0ce0;
@@ -429,7 +444,7 @@ struct VbNode
     unsigned int m_0c;
 };
 
-void* __cdecl NiVBSet_Create(unsigned int a, void* b, unsigned int key, unsigned int usage, unsigned int c);
+void* __cdecl NiVBSet_Create(unsigned int uiBlockSize, void* pkD3DDevice, unsigned int uiFVF, unsigned int uiFlags, unsigned int uiIndex);
 
 struct VbDesc
 {
@@ -481,6 +496,9 @@ struct VbDesc
 
 // Looks up or creates a VbNode, calls FUN_00e94650 with vertex-count times stride and count>1, then stores a quotient in d->m_38.
 // @fnv 0x00e94c20
+// pdb: NiStaticGeometryGroup::CreateChip | NiStaticGeometryGroup.obj | retail, object-file run extension, low
+// pdb params: pkBuffData, uiStream
+// pdb locals: uiFlags, uiNumStreams, pkSet, pkChip, uiStride, uiIndex
 VbNode* __fastcall GetOrCreateNode(NiStaticGeometryGroup* group, void*, VbDesc* apDesc, unsigned int uiStrideIndex)
 {
     VBSetLocal_00e94b00* pNode = 0;
@@ -499,10 +517,10 @@ VbNode* __fastcall GetOrCreateNode(NiStaticGeometryGroup* group, void*, VbDesc* 
         key |= 0x40000000u;
         usage = 0x80000000u;
     }
-    if (!owner->map.GetAt(key, reinterpret_cast<NiVBSet*&>(pNode)) || !(object = pNode))
+    if (!owner->m_kSets.GetAt(key, reinterpret_cast<NiVBSet*&>(pNode)) || !(object = pNode))
     {
-        object = (VBSetLocal_00e94b00*)NiVBSet_Create(0x10000, owner->m_pD3DDevice, key, usage, 0);
-        owner->map.SetAt(key, reinterpret_cast<NiVBSet*>(object));
+        object = (VBSetLocal_00e94b00*)NiVBSet_Create(0x10000, owner->m_pkD3DDevice, key, usage, 0);
+        owner->m_kSets.SetAt(key, reinterpret_cast<NiVBSet*>(object));
     }
     unsigned int count = apDesc->GetCount();
     VbNode* r = object->NiVBSet_AllocateChip(apDesc->GetVertexCount() * stride, count > 1);
@@ -529,13 +547,16 @@ inline void* operator new(unsigned int n, S00e94b80_Heap) throw()
 // Allocates a FUN_00e94b00, assigns its fields, AddRefs b when nonnull, releases the prior stored pointer otherwise, and calls FUN_00e941a0.
 // @fnv 0x00e94b80
 // src: COMMUNITY 0x00e94b80
-void* __cdecl NiVBSet_Create(unsigned int a, void* apUnknown, unsigned int key, unsigned int usage, unsigned int c)
+// pdb: NiVBSet::Create | NiStaticGeometryGroup.obj | retail, upstream name already matches, high
+// pdb params: uiBlockSize, pkD3DDevice, uiFVF, uiFlags, uiIndex
+// pdb locals: pkSet
+void* __cdecl NiVBSet_Create(unsigned int uiBlockSize, void* pkD3DDevice, unsigned int uiFVF, unsigned int uiFlags, unsigned int uiIndex)
 {
     VBSetLocal_00e94b00* object = new (s00e94b80_heap) VBSetLocal_00e94b00;
     if (object)
     {
-        object->unk0c = a;
-        S00e94b80_Unknown* pUnknown = (S00e94b80_Unknown*)apUnknown;
+        object->unk0c = uiBlockSize;
+        S00e94b80_Unknown* pUnknown = (S00e94b80_Unknown*)pkD3DDevice;
         if (pUnknown)
         {
             object->unk10 = (int)pUnknown;
@@ -548,9 +569,9 @@ void* __cdecl NiVBSet_Create(unsigned int a, void* apUnknown, unsigned int key, 
                 pOldUnknown->Release();
             object->unk10 = 0;
         }
-        object->unk04 = key;
-        object->unk08 = usage;
-        object->unk00 = c;
+        object->unk04 = uiFVF;
+        object->unk08 = uiFlags;
+        object->unk00 = uiIndex;
         NiVBSet_DetermineUsageAndPool(object);
     }
     return object;
@@ -562,9 +583,11 @@ struct P03MM
 };
 // Allocates and initializes a NiGeometryBufferData buffer when pkScreenTexture->m_pkGeometryRendererData is null, then calls NiGeometryGroup_AddObject.
 // @fnv 0x00e94a30
+// pdb: NiStaticGeometryGroup::~NiStaticGeometryGroup | NiStaticGeometryGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiStaticGeometryGroup::`scalar deleting destructor'
 void __fastcall InitStaticScreenTexture(NiStaticGeometryGroup* group, void*, NiScreenTexture* pkScreenTexture)
 {
-    if (!pkScreenTexture->m_pkGeometryRendererData)
+    if (!pkScreenTexture->m_pkBuffData)
     {
         void* p = reinterpret_cast<P03MM*>(&g_memoryManager)->Allocate(0x54);
         NiGeometryBufferData* pkBuffData;

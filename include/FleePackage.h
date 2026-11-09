@@ -16,6 +16,7 @@ namespace FleeUpdate
     class Target;
 }
 
+// pdb: class FleePackage, size 0xac, bases: TESPackage, 10 members
 class FleePackage : public TESPackage
 {
 public:
@@ -30,18 +31,18 @@ public:
     virtual unsigned short LoadGameTESAlt();
     virtual void InitLoadGameTES();
 
-    unsigned char flag80;
-    unsigned char flag81;
+    unsigned char bEvaluatePoint;
+    unsigned char bCombatMode;
     unsigned short unk82;
-    NiPoint3 position;
-    float timer;
-    unsigned char flag94;
+    NiPoint3 pFleePoint;
+    float fFleeTimer;
+    unsigned char bFleeSucceeded;
     unsigned char unk95[3];
-    BSSimpleList<TESObjectREFR*> AvoidedRefList;
-    TESObjectREFR* pRefA0;
-    TESObjectREFR* pRefA4;
-    unsigned char flagA8;
-    unsigned char flagA9;
+    BSSimpleList<TESObjectREFR*> pAvoidRefList;
+    TESObjectREFR* pTeleportDoor;
+    TESObjectREFR* pRefFleeTo;
+    unsigned char bknowstarget;
+    unsigned char busehorse;
 
     bool MobileObject_IsTalkingActivator(); // 0x00574900
     Actor* GetAVEffect(); // 0x004fd400
@@ -64,20 +65,20 @@ public:
     void bhkCharacterControllerCinfo_SetAvoidBox(int state);
     void FleePackage_ModFleeTimer(float elapsed);
     Actor* FUN_005e3fc0();
-    void FindTeleportDoor(Actor* actor, Actor* target);
+    void FindTeleportDoor(Actor* apActor, Actor* apThreat);
     using TESPackage::FUN_00676280;
-    unsigned int FUN_00676280(Actor* actor);
+    unsigned int FUN_00676280(Actor* apActor);
     PathingAvoidNodeArray* BuildAvoidNodeArray();
 
     using TESPackage::LoadGame;
-    void RemoveRef(TESObjectREFR* reference);
+    void RemoveAvoidedRef(TESObjectREFR* reference);
     void RemoveInvalidAvoidedReferences(AvoidanceContext* context);
     TESObjectREFR* FindNearestRef(TESObjectREFR* reference);
-    bool FindTeleportDoor(TESObjectREFR* reference, TESObjectREFR* context);
+    bool FindTeleportDoor(TESObjectREFR* apActor, TESObjectREFR* apThreat);
     bool ShouldShutDown();
     void SaveExtraData(BGSSaveFormBuffer* buffer);
     void LoadGame_009f24d0(BGSLoadFormBuffer* buffer);
     void SaveFleePackage();
     void LoadGame_009f1e80();
-    void InitLoadGame_009f25f0(void* buffer);
+    void InitLoadGame_009f25f0(void* apLoadGameBuffer);
 };

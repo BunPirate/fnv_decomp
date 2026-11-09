@@ -7,6 +7,7 @@ class NiPoint3;
 
 typedef size_t hk_size_t;
 
+// pdb: class hkAabb, size 0x20, 2 members
 class hkAabb
 {
 public:

@@ -5,9 +5,12 @@ extern "C" int __cdecl FUN_00eccbdc(int, int);
 
 // @fnv 0x00aa2d10
 // src: COMMUNITY 0x00aa2d10
-int NiPath_GetCurrentWorkingDirectory(int aiValue1, int aiValue2)
+// pdb: NiPath::GetCurrentWorkingDirectory | NiPath_Xenon.obj | retail, upstream name already matches, high
+// pdb params: pcPath, stDestSize
+// pdb locals: iRet
+int NiPath_GetCurrentWorkingDirectory(int pcPath, int stDestSize)
 {
-    int r = FUN_00eccbdc(aiValue1, aiValue2);
+    int r = FUN_00eccbdc(pcPath, stDestSize);
     r = !r;
     r = !r;
     return r;

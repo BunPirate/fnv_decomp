@@ -10,6 +10,7 @@ class hkMemberInfo;
 class hkMemberInfoDBBE;
 class Shape;
 
+// pdb: class hkDataClassNative, size 0x14, bases: hkDataClassImpl, 2 members
 class hkDataClassNative : public hkDataClassImpl
 {
 public:
@@ -27,9 +28,9 @@ public:
     virtual int getMemberIndexByName(const char* name) const;                      // 0x00dbba00
 
     // 0x00dbbe80: fills info from one hkClassMember
-    void GetMemberInfo(const Shape* member, hkDataClassMemberInfo& info) const;
+    void fillMemberInfo(const Shape* mem, hkDataClassMemberInfo& info) const;
     void GetMemberInfo(const hkClassMemberDBBE& kMember, hkMemberInfoDBBE& kInfo) const throw();
-    void GetMemberInfo(const hkClassMember& kMember, hkMemberInfo& kInfo) const throw();
+    void fillMemberInfo(const hkClassMember& mem, hkMemberInfo& info) const throw();
 
     union
     {

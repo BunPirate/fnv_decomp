@@ -45,7 +45,7 @@ struct FUN_005e02e0
 {
     int m0;
     int m4;
-    void Init();
+    void NiTArray_NiPointer_NiTexture_NiTNewInterface_NiPointer_NiTexture_dtor();
 };
 extern "C" void* DAT_0103d3f0;
 struct FUN_005e0310_class
@@ -59,7 +59,7 @@ struct FUN_005e0340Class
 {
     int m_vtbl;
     ActorCombatGroup** m_ptr;
-    void ReleaseStorage_005e0340();
+    void NiTArray_TESModel_NiTMallocInterface_TESModel_dtor();
 };
 extern int DAT_0103d3f8;
 extern int DAT_0103d400;
@@ -72,7 +72,7 @@ struct FUN_005e0370_Class
 struct QuantityData
 {
     void SetQuantity(unsigned int);
-    void hkStackMemory_deallocateStack(unsigned int quantity);
+    void hkStackMemory_deallocateStack(unsigned int p);
 };
 struct FUN_005e1140_Class
 {
@@ -90,7 +90,7 @@ struct Stub
 struct TESFaction_RankDataView
 {
     unsigned char* GetRankDataList();
-    bool HasFlag20();
+    bool TESQuest_GetDisplayedInHUD();
 };
 struct FUN_005ec8f0_class
 {
@@ -232,7 +232,7 @@ struct Standin005e03a0
 {
     void* vtbl;
     void* m4;
-    void __thiscall SetVirtualTable_005e03a0();
+    void __thiscall NiTArray_TESTexture_NiTMallocInterface_TESTexture_dtor();
 };
 int __cdecl Object_UpdateFields_005e0aa0(void* a, int b);
 struct FUN_005e05d0 : NiBound
@@ -246,7 +246,7 @@ struct Holder005e0620
 };
 struct FUN_005dd810_Class
 {
-    void NiTObjectArray_NiPointer_NiTexture_Free();
+    void NiTObjectArray_NiPointer_NiTexture_dtor();
     void* __thiscall NiTObjectArray_NiPointer_NiTexture_Destroy(unsigned int flags);
 };
 void __cdecl Deallocate(void* p);
@@ -258,12 +258,12 @@ struct FUN_005e0680_Class : FUN_005e0340Class
 void __cdecl Deallocate(void*);
 struct FUN_005dd7b0_class
 {
-    void __thiscall ForwardCall_005dd7b0();
+    void __thiscall NiTPrimitiveArray_TESModel_dtor();
     void* __thiscall NiTPrimitiveArray_TESModel_Destroy(unsigned int flags);
 };
 struct FUN_005e03a0_Class
 {
-    void __thiscall SetVirtualTable_005e03a0();
+    void __thiscall NiTArray_TESTexture_NiTMallocInterface_TESTexture_dtor();
 };
 void __cdecl operator delete(void*);
 struct FUN_005e06e0_Class
@@ -272,7 +272,7 @@ struct FUN_005e06e0_Class
 };
 struct FUN_005dd7d0_Class
 {
-    void ForwardCall_005dd7d0();
+    void NiTPrimitiveArray_TESTexture_dtor();
 };
 void __cdecl Deallocate(void* p);
 struct FUN_005e0710_Class
@@ -281,7 +281,7 @@ struct FUN_005e0710_Class
 };
 struct FUN_005e0460_class
 {
-    void UpdateFields_005e0460();
+    void NiTArray_char_const_NiTMallocInterface_char_const_dtor();
 };
 struct FUN_005e0740_class : FUN_005e0460_class
 {
@@ -290,7 +290,7 @@ struct FUN_005e0740_class : FUN_005e0460_class
 void __cdecl operator delete(void*);
 struct FUN_005dd7f0_class
 {
-    void NiTPrimitiveArray_char_const_Free();
+    void NiTPrimitiveArray_char_const_dtor();
 };
 struct FUN_005e0770_class
 {
@@ -304,7 +304,7 @@ struct _Mem_20a4
 void __cdecl operator delete(void*);
 struct FUN_005e0590_shell
 {
-    void UpdateState_005e0590();
+    void BSSimpleArray_TESNPC_1024_dtor();
 };
 struct FUN_005e0800_class
 {
@@ -324,7 +324,7 @@ struct FUN_005e0b10_holder
 unsigned int __cdecl hkAddByteOffset_005e0b50(void*, int);
 struct S_005e0ad0
 {
-    void* __thiscall hkStackMemory_allocateStack(int a, int b);
+    void* __thiscall hkStackMemory_allocateStack(int numBytes, int what);
 };
 void __cdecl Object_ComputeValue_005e0b40(void*, void*);
 struct FUN_005e0b10_Cls
@@ -346,7 +346,7 @@ struct T2870
 };
 struct FUN_005ec700_shell : TESFaction_RankDataView
 {
-    void SetFlag20(bool b);
+    void TESQuest_SetDisplayedInHUD(bool abVal);
 };
 struct FUN_005ed160_Class
 {
@@ -427,7 +427,7 @@ struct FUN_005f2b20_Class
 struct FUN_005f6000_Class : TESChallenge
 {
     int m_flags;
-    void SetFlagAndMarkForSave(bool bFlag);
+    void SetFlagAndMarkForSave(bool abVal);
 };
 struct FUN_005f6060_class
 {
@@ -571,7 +571,7 @@ struct FUN_005f74b0_cls
     virtual void d99();
     virtual void d100();
     virtual void Target(int, int);
-    void __thiscall TargetWithFloatArg(int a, float b);
+    void __thiscall TargetWithFloatArg(int aiWhich, float b);
 };
 struct Inner74e0
 {
@@ -708,7 +708,7 @@ struct FUN_005ff560_shell
 };
 struct FUN_005ff5d0_class
 {
-    void TESIdleForm_RemoveChild(unsigned int a);
+    void TESIdleForm_RemoveChild(unsigned int apChild);
 };
 char** __cdecl NiTObjectArray_NiPointer_NiTexture_NiTObjectArray_NiPointer_NiTexture(unsigned int);
 struct FUN_005e08e0_class
@@ -827,7 +827,7 @@ FUN_005eee10::~FUN_005eee10()
 {}
 struct FUN_005f11f0_shell : TESAttributes
 {
-    unsigned char GetAttributeValue5();
+    unsigned char GetStrength();
 };
 struct FUN_005f1290_shell : TESAttributes
 {
@@ -1147,7 +1147,7 @@ class FUN_005f21c0_cls : public RootCls_b9637
     int unk34;
     int unk38;
 
-    FUN_005f21c0_cls(unsigned short a);
+    FUN_005f21c0_cls(unsigned short asType);
     void SetAnimGroupType(unsigned short a);
 };
 struct PairRecord16
@@ -1225,11 +1225,11 @@ struct AudioPlaybackHandle
     AudioPlaybackHandle();
     ~AudioPlaybackHandle();
     AudioPlaybackHandle& operator=(const AudioPlaybackHandle& o);
-    void SetPos(float x, float y, float z);
+    void SetPos(float afX, float afY, float afZ);
     void SetVolume(float v);
     void SetNode(void* node);
-    void SetFreq(float f);
-    void Play(bool b);
+    void SetFreq(float afNewFrequency);
+    void Play(bool abLoopPlayback);
 };
 struct SndList
 {
@@ -1401,9 +1401,9 @@ struct Ref
     virtual void v86();
     virtual bool IsAlive();
     bool IsSomething();
-    void HandleRef(Ref* r);
+    void HandleRef(Ref* apRef);
     SndList* GetSndList();
-    Holder* GetHolder(int n);
+    Holder* GetHolder(int aePart);
     Proc* GetProc();
 };
 union EntryData
@@ -1423,10 +1423,10 @@ extern double g_dPercent;
 extern float g_fVolume;
 extern double g_dZero;
 int __cdecl GetFlagBits(int v);
-bool __cdecl CheckDist(SndForm* form, NiPoint3 pos3, float f);
-void __cdecl DoTypeA(Ref* r, int type);
-void __cdecl DoTypeB(Ref* r, int n);
-void __cdecl DoShake(float f, NiPoint3* pos3);
+bool __cdecl SoundDistanceTest(SndForm* apSound, NiPoint3 aLoc, float aMod);
+void __cdecl ImpactMixer_PlayFootstep(Ref* apRef, int aiFootType);
+void __cdecl ImpactMixer_PlayEquipSound(Ref* apRef, int aiType);
+void __cdecl ShakeCamera(float f, NiPoint3* pos3);
 double __cdecl StrToD(const char* s);
 struct FUN_005f2b60_cls
 {
@@ -1477,17 +1477,17 @@ class B5FA120Form
 class B5FA120Checker
 {
   public:
-    bool TESCreature_CanWearItem(B5FA120Form* pkForm);
+    bool TESCreature_CanWearItem(B5FA120Form* apItem);
 };
 struct FUN_005fbdd0_cls
 {
-    void TESCreature_CheckEmbeddedWeaponNodes(int a1);
+    void TESCreature_CheckEmbeddedWeaponNodes(int ap3D);
     void* FUN_00717e50();
     void* FUN_006815c0();
     int FUN_00401170();
     unsigned char TESObjectWEAP_IsEmbeddedWeapon();
     int TESObjectWEAP_GetEmbeddedWeaponNode();
-    void FUN_00481790(void* item);
+    void FUN_00481790(void* apCObj);
     void* FUN_00726070();
 };
 int __cdecl BSUtilities_GetObjectByName(int a, int b);
@@ -1676,7 +1676,7 @@ class FUN_005ffb60_cls : public FUN_005ffb60_base
 };
 struct C5E0200AutoMemHelper
 {
-    C5E0200AutoMemHelper(int iType, bool bFlag, const char* pcFile, int iLine);
+    C5E0200AutoMemHelper(int memContext, bool overridable, const char* pcFile, int aiLine);
     ~C5E0200AutoMemHelper();
 
     int m_uiLogicalSize;
@@ -1728,7 +1728,7 @@ struct SkinPartObj_S
 };
 SkinPartObj_S* NiDynamicCast(const NiRTTI_S* rtti, SkinInst_S* obj);
 extern const NiRTTI_S g_011f49d8;
-void SetPartitionVisibility(int partition, AVObj_S* root);
+void BGSBodyPart_ShowLimb(int aeLimb, AVObj_S* root);
 struct CompareEntry
 {
     bool Differs(CompareEntry*);
@@ -1764,7 +1764,7 @@ struct CompareData
     float f1C;
     CompareStrings strings;
     CompareArray entries;
-    bool BGSRagdoll_FootIK_Compare(CompareData* other);
+    bool FootIK_DATA_Compare(CompareData* arData);
 };
 struct Entry005ed1e0
 {
@@ -1794,7 +1794,7 @@ struct Target005ed1e0
     unsigned short unknown_02;
     StringArray005ed1e0 strings_04;
     EntryArray005ed1e0 entries_14;
-    bool BGSRagdoll_GrabIK_Compare(Target005ed1e0* other);
+    bool GrabIK_DATA_Compare(Target005ed1e0* arData);
 };
 void* __cdecl operator new(unsigned int, void*);
 struct SpawnItem : FUN_005ef7f0_Data
@@ -1879,7 +1879,7 @@ struct ChallengeView : TESChallenge
 };
 struct ChallengeReward
 {
-    void RunScriptOnTarget(void*, int);
+    void RunScriptEffectStart(void*, int);
 };
 extern ChallengeNode DAT_011cb448;
 extern GlobalObject_0045cf30 g_011cb4d4;
@@ -1889,7 +1889,7 @@ int __cdecl BSsprintf(char*, int, const char*, ...);
 const char* __cdecl TESTexture_GetTextureName(ChallengeView*, int);
 bool __cdecl QueueUIMessage(const char*, int, const char*, const char*, float, bool);
 void __cdecl Interface_PlayMenuSound(int);
-void __cdecl FUN_005f5880();
+void __cdecl TESChallengeManager_LoadChallenges();
 bool __cdecl IncrementScriptedChallenge(ChallengeView* source, int amount);
 int __cdecl BSstrcmp(const char*, const char*);
 #include "../../include/NavMeshStaticAvoidNode.h"
@@ -1902,25 +1902,25 @@ struct FUN_005ece50_class
     unsigned char m0;
     BSSimpleArray<const char*, 1024> m4;
     NodeArray m14;
-    unsigned char BGSRagdoll_LookIK_Compare(FUN_005ece50_class* other);
+    unsigned char LookIK_DATA_Compare(FUN_005ece50_class* arData);
 };
 struct TESSound;
 struct SoundDataHandler
 {
-    TESSound* GetSoundByEditorID(const char*);
+    TESSound* GetSound(const char*);
 };
 extern PlayerCharacter* g_thePlayer;
 extern SoundDataHandler* DAT_011c3f2c;
 const char* __cdecl GetStringByIndex(const char*);
 int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
-TESSound* GetBrushSound(const char* apPrefix);
+TESSound* TESSound_GetPassThroughSound(const char* index);
 extern const char* DAT_01196d40[10];
 const char* __cdecl GetStringByIndex(int index);
 
 struct FUN_005e2c10_shell
 {
     ::BSStringT<char> m3c;
-    bool SetString(const char* a);
+    bool SetString(const char* apEditorID);
 };
 extern const char $SG3295[];
 struct FUN_005e2c30_class
@@ -1949,7 +1949,7 @@ struct SoundData
     int unk1C;
     int unk20;
 };
-void __cdecl TESForm_AddChunk_3(unsigned int chunkId, unsigned char value);
+void __cdecl TESForm_AddChunk_3(unsigned int aeChunkID, unsigned char aiData);
 void __cdecl AppendChunk(unsigned int chunkId, void* data, unsigned int size);
 unsigned char __cdecl TESForm_QEndianSwapOnSave();
 struct FUN_005e2fa0_SoundFile
@@ -2014,11 +2014,11 @@ class DataHandler
     BSSimpleList<TESSound*>* hkpMotion_getLinearVelocity();
 };
 extern DataHandler* g_dataHandler;
-TESSound* __cdecl TESSound_FindSoundByFilename(char const* filename);
+TESSound* __cdecl TESSound_FindSoundByFilename(char const* apFilename);
 int strcpy_s(char* dst, unsigned int size, const char* src);
 int strcat_s(char* dst, unsigned int size, const char* src);
 bool __cdecl ArchiveManager_GetInvalidateOlderFiles();
-bool __cdecl ResolveArchivePath(const char*, char*, int);
+bool __cdecl ArchiveManager_GetRandomFileNameForDirectory(const char*, char*, int);
 BSSimpleList<char*>* __cdecl FileFinder_BuildFileList(const char*, char*, int, int);
 unsigned int __cdecl DialogueRandom();
 unsigned int __cdecl FUN_00ae9d80(const char*);
@@ -2116,7 +2116,7 @@ struct FUN_005e5320_class
     FUN_0066e010_entry m1b4;
     FUN_0066e010_entry m1d4;
     FUN_0066e010_entry m1f4;
-    void __thiscall BGSBodyPartData_BuildIKPartList(G2* list);
+    void __thiscall BGSBodyPartData_BuildIKPartList(G2* apOutList);
 };
 struct FUN_005e5380_Class
 {
@@ -2285,9 +2285,9 @@ struct Runner
     char pad28[0xa1 - 0x28];
     bool m_a1;
 
-    bool FUN_005e13a0(A8* a1, int* pv24, unsigned int* pi, int* pv14, int* pv20, bool b);
-    bool FUN_005e1550(A8* a1, int v24, void* v20, int* pv14, unsigned int i, int* pv10, int count, int zero1,
-                      int zero2);
+    bool GetNextLine(A8* apScript, int* aeNextExp, unsigned int* auiDataOffset, int* aiLineSize, int* appRefObject, bool abSkip);
+    bool EvaluateLine(A8* apScript, int aeExp, void* apFunctionOwner, int* aiLineSize, unsigned int auiDataOffset, int* aiSkipLines, int auiCurrentLine, int abEndian,
+                      int abActionInit);
     bool RunScript(A8* a1, void* a2, SLoc* a3, int a4, bool a5, char a6, char a7, float a8);
 };
 // Stand-in for the native TESBoundAnimObject base subobject (size 0x30).
@@ -2375,7 +2375,7 @@ struct Skin55 : BaseObject55
 };
 struct Node55 : Object55
 {
-    Object55* FUN_0043b4a0(unsigned int index);
+    Object55* FUN_0043b4a0(unsigned int i);
     unsigned int FUN_0043b480();
 };
 struct Geometry55 : Object55
@@ -2405,7 +2405,7 @@ struct Body55
     int unk2C;
     int unk30;
     Name55* names[15];
-    void HidePartitionsUnderAncestor(Object55* ancestor, Object55* root, int excluded, Object55* object);
+    void BGSBodyPartData_HideChildLimbs(Object55* apParentObj, Object55* root, int aeParent, Object55* apObj);
 };
 namespace s5e5d20 {
 
@@ -2414,13 +2414,16 @@ bool BGSEntryPointFunction_CheckFunctionArguments(int iArg0, int iArg1, void* pv
                   Actor* pkActor);
 
 // @fnv 0x005e5d20
-// src: COMMUNITY 0x005e5d20
-void EntryPointFunction_MultiplyValue(void* pvArg0, void* pvArg1, unsigned char ucArg2, float** ppfValue, Actor* pkActor)
+// src: XBOX_RETAIL_PDB 0x005e5d20
+// pdb: BGSEntryPointFunction::MultiplyValueFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
+// pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
+// pdb locals: pvalue, pfunctionData
+void BGSEntryPointFunction_MultiplyValueFunction(void* apPerkOwner, void* aeFunctionType, unsigned char acArgumentCount, float** apFunctionArgument, Actor* apData)
 {
-    if (!BGSEntryPointFunction_CheckFunctionArguments(0, 1, pvArg0, pvArg1, ucArg2, ppfValue, pkActor))
+    if (!BGSEntryPointFunction_CheckFunctionArguments(0, 1, apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData))
         return;
-    float* pfValue = *ppfValue;
-    Actor* pkTarget = pkActor;
+    float* pfValue = *apFunctionArgument;
+    Actor* pkTarget = apData;
     *pfValue = pkTarget->CombatTimer_GetTargetTime() * *pfValue;
 }
 
@@ -2445,6 +2448,7 @@ struct Derived : Base
 
 // @fnv 0x005e63f0
 // src: GUESS 0x005e63f0 (confidence: low)
+// pdb: BGSEntryPointFunctionDataOneValue::BGSEntryPointFunctionDataOneValue | BGSEntryPointFunction.obj | debug, call graph, medium
 Derived* Derived::UpdateState_005e63f0()
 {
     BGSEntryPointFunctionData_BGSEntryPointFunctionData();
@@ -2467,6 +2471,7 @@ struct Holder
 
 // @fnv 0x005e6420
 // src: EXE 0x005e6420
+// pdb: BGSEntryPointFunctionDataOneValue::`scalar deleting destructor' | BGSEntryPointFunction.obj | debug, object-file gap fill, medium
 Holder* Holder::BGSEntryPointFunctionData_BGSEntryPointFunctionData()
 {
     m_pTable = DAT_010462e0;
@@ -2590,9 +2595,11 @@ struct FUN_005ff890
     FUN_005ff890(const char*);
 };
 // @fnv 0x005ff890
-FUN_005ff890::FUN_005ff890(const char* text)
+// pdb: IDLE_ANIM_ROOT::IDLE_ANIM_ROOT | TESIdleManager.obj | retail, call graph, high
+// pdb params: apIdleDir
+FUN_005ff890::FUN_005ff890(const char* apIdleDir)
 {
-    name.Set(text, 0);
+    name.Set(apIdleDir, 0);
     first.SetSize(1);
     first.SetGrowth(1);
     second.SetSize(1);

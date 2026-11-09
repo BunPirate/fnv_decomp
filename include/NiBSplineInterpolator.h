@@ -5,6 +5,7 @@
 #include "NiBSplineData.h"
 #include "NiBSplineBasisData.h"
 
+// pdb: class NiBSplineInterpolator, size 0x1c, bases: NiInterpolator, 4 members
 class NiBSplineInterpolator : public NiInterpolator
 {
   public:
@@ -12,7 +13,7 @@ class NiBSplineInterpolator : public NiInterpolator
     virtual ~NiBSplineInterpolator();
     NiBSplineInterpolator& operator=(const NiBSplineInterpolator&);
 
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual void GetInterpolatorTimeRange(float& beginTime, float& endTime) const;
     virtual void SetActiveTimeRange(float startTime, float endTime);
     virtual NiInterpolator* CloneForTimeRange(float startTime, float endTime);
@@ -29,6 +30,6 @@ class NiBSplineInterpolator : public NiInterpolator
 
     float m_fStartTime;
     float m_fEndTime;
-    NiPointer<NiBSplineData> m_spTransformData;
-    NiPointer<NiBSplineBasisData> m_spSplineBasisData;
+    NiPointer<NiBSplineData> m_spData;
+    NiPointer<NiBSplineBasisData> m_spBasisData;
 };

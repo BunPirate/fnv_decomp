@@ -33,6 +33,7 @@ struct FUN_0044bbc0_Class
 
 // @fnv 0x0044bbc0
 // src: COMMUNITY 0x0044bbc0
+// pdb: ActorCause::IncRefCount | ExtraDataList.obj | debug, upstream name already matches, high
 void FUN_0044bbc0_Class::ActorCause_IncRefCount()
 {
     InitScriptRunLock((char*)this + 0x18);
@@ -147,12 +148,15 @@ struct FUN_0044c760_class : InterfacedClass
     int unk1C;
     unsigned char m_kNode[sizeof(SL)];
 
-    FUN_0044c760_class(unsigned int a, unsigned int b, unsigned int c);
+    FUN_0044c760_class(unsigned int aiMaxThreads, unsigned int aiNumBuckets, unsigned int aiDeleteBatchSize);
 };
 
 // Initializes the object: allocates bucket and slot arrays, stores the bucket count and parameter, and creates the manager.
 // @fnv 0x0044c760
-FUN_0044c760_class::FUN_0044c760_class(unsigned int auiSlotCount, unsigned int auiBucketCount, unsigned int aiParam)
+// pdb: LockFreeMap<BSFileEntry *,NiPointer<QueuedTexture> >::LockFreeMap<BSFileEntry *,NiPointer<QueuedTexture> > | ModelLoader.obj | retail, call graph, high
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
+FUN_0044c760_class::FUN_0044c760_class(unsigned int aiMaxThreads, unsigned int aiNumBuckets, unsigned int aiDeleteBatchSize)
     : InterfacedClass()
 {
     reinterpret_cast<SL*>(m_kNode)->SL::SL();
@@ -160,11 +164,11 @@ FUN_0044c760_class::FUN_0044c760_class(unsigned int auiSlotCount, unsigned int a
     AutoMemHelper autoMemHelper(6, true, _kThreadSafeStructuresSourceFile, 0x390);
 
     m_iArrayLength = 0;
-    m_uiBuckets = auiBucketCount;
+    m_uiBuckets = aiNumBuckets;
     m_pBuckets = new CF_0081c630[m_uiBuckets];
-    m_pSlots = new unsigned int[3 * auiSlotCount];
-    m_iParam = aiParam;
-    m_pManager = new ThreadInterfaceManager<LockFreeQueue<bhkRigidBody*>::QueueDeleteManagerTag>(auiSlotCount);
+    m_pSlots = new unsigned int[3 * aiMaxThreads];
+    m_iParam = aiDeleteBatchSize;
+    m_pManager = new ThreadInterfaceManager<LockFreeQueue<bhkRigidBody*>::QueueDeleteManagerTag>(aiMaxThreads);
 }
 
 void* __cdecl operator new(unsigned int);
@@ -180,23 +184,26 @@ struct FUN_006ec660 : InterfacedClass
     int unk1C;
     unsigned char m_kNode[sizeof(SL)];
 
-    FUN_006ec660(unsigned int a, unsigned int b, int c);
+    FUN_006ec660(unsigned int aiMaxThreads, unsigned int aiNumBuckets, int aiDeleteBatchSize);
 };
 
 // Allocates the bucket array, slot array and manager from the given sizes, storing the counts and parameter.
 // @fnv 0x006ec660
-FUN_006ec660::FUN_006ec660(unsigned int auiSlotCount, unsigned int auiBucketCount, int aiParam)
+// pdb: LockFreeMap<PathingRequest *,PathingTaskData *>::LockFreeMap<PathingRequest *,PathingTaskData *> | PathManager.obj | retail, object-file run extension, high
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
+FUN_006ec660::FUN_006ec660(unsigned int aiMaxThreads, unsigned int aiNumBuckets, int aiDeleteBatchSize)
 {
     reinterpret_cast<SL*>(m_kNode)->SL::SL();
 
     AutoMemHelper memHelper(6, true, _kThreadSafeStructuresSourceFile, 0x390);
 
     m_iArrayLength = 0;
-    m_uiBuckets = auiBucketCount;
+    m_uiBuckets = aiNumBuckets;
     m_pBuckets = new CF_0081c630[m_uiBuckets];
-    m_pSlots = new int[auiSlotCount * 3];
-    m_iParam = aiParam;
-    m_pManager = new ThreadInterfaceManager<LockFreeQueue<bhkRigidBody*>::QueueDeleteManagerTag>(auiSlotCount);
+    m_pSlots = new int[aiMaxThreads * 3];
+    m_iParam = aiDeleteBatchSize;
+    m_pManager = new ThreadInterfaceManager<LockFreeQueue<bhkRigidBody*>::QueueDeleteManagerTag>(aiMaxThreads);
 }
 
 
@@ -220,6 +227,9 @@ struct FUN_0044b500 : public InterfacedClass
 };
 
 // @fnv 0x0044b500
+// pdb: LockFreeQueue<NiPointer<AttachDistant3DTask> >::LockFreeQueue<NiPointer<AttachDistant3DTask> > | ModelLoader.obj | retail, call graph, medium
+// pdb params: aiMaxThreads, aiDeleteBatchSize
+// pdb locals: tempMemContext
 FUN_0044b500::FUN_0044b500(unsigned int numBuckets, void* value)
 {
     reinterpret_cast<SL*>(m_kNode)->SL::SL();
@@ -249,6 +259,9 @@ struct FUN_00906160 : InterfacedClass
 };
 
 // @fnv 0x00906160
+// pdb: LockFreeMap<MobileObject *,NiPointer<LipTask> >::LockFreeMap<MobileObject *,NiPointer<LipTask> > | LipSyncBackgroundManager.obj | debug, object-file run extension, low
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
 FUN_00906160::FUN_00906160(int a, unsigned int auiBucketCount, int aiParam)
 {
     reinterpret_cast<SL*>(m_kNode)->SL::SL();
@@ -290,6 +303,9 @@ struct FUN_0044b8d0_Class
 };
 // Locks, walks the iteration to find a matching item via FUN_00449f80, stores its value in result, and returns whether the item passes FUN_00528bb0.
 // @fnv 0x0044b8d0
+// pdb: LockFreeMap<TESObjectREFR *,NiPointer<QueuedReference> >::GetNext | ModelLoader.obj | debug, object-file run extension, low
+// pdb params: arIterator, arKey, arData, abSwitchBuckets
+// pdb locals: bresult
 bool FUN_0044b8d0_Class::ProcessIteration(Iteration* pIteration, unsigned int* puiResult, unsigned int extra,
                                           bool retry)
 {
@@ -365,6 +381,9 @@ struct FUN_0044c000_cls
 // Calls v09 on m_00 with a, a, b, c and passes the result to InsertOrReplace.
 // @fnv 0x0044c000
 // src: COMMUNITY 0x0044c000
+// pdb: LockFreeMap<TESObjectREFR *,NiPointer<QueuedHelmet> >::GetAt | ModelLoader.obj | debug, object-file run extension, low
+// pdb params: aKey, arData
+// pdb locals: bResult
 void FUN_0044c000_cls::LockFreeMap_TESObjectREFR_NiPointer_QueuedReference_LockFreeMapInterface_SetAt(unsigned int uiValue, unsigned int b, unsigned char c)
 {
     InsertOrReplace(m_00->v09(uiValue, uiValue, b, c));
@@ -409,6 +428,7 @@ struct FUN_0044c3f0 : InterfacedClass
 };
 // Calls FUN_0044c480(1), then frees the second and first pointers with operator delete.
 // @fnv 0x0044c3f0
+// pdb: LockFreeMap<PathingRequest *,PathingTaskData *>::~LockFreeMap<PathingRequest *,PathingTaskData *> | PathManager.obj | debug, object-file run extension, low
 FUN_0044c3f0::~FUN_0044c3f0()
 {
     ClearBucketsAndRecreateManager(1);
@@ -463,6 +483,10 @@ struct TSHashTable
 // Locks the table, deletes m_pManager, frees every bucket node, and unless bNoRecreate recreates m_pManager with the saved param, then unlocks.
 // @fnv 0x0044c480
 // src: GUESS 0x0044c480 (confidence: medium)
+// pdb: LockFreeMap<PathingRequest *,PathingTaskData *>::LockFreeMapInterface::GetNext | PathManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to LockFreeMap<PathingRequest *,PathingTaskData *>::RemoveAll
+// pdb params: aiBucket, arKey, arData
+// pdb locals: bresult
 void TSHashTable::ClearBucketsAndRecreateManager(bool bNoRecreate)
 {
     AutoMemHelper memContext2(6, true, _kThreadSafeStructuresSourceFile, 0x42c);
@@ -519,15 +543,19 @@ struct Queue44c640
     RecursiveSpinLock lock;
     QueueEntry44c640* GetEntry(unsigned int idx, void** item, int param);
     unsigned int GetCount();
-    bool TryGetNextEntry(QueueIter44c640* iter, void** out, int param, bool repeat);
+    bool LockFreeMap_PathingRequest_PathingTaskData_GetNext(QueueIter44c640* arIterator, void** arKey, int arData, bool abSwitchBuckets);
 };
 
 // @fnv 0x0044c640
-bool Queue44c640::TryGetNextEntry(QueueIter44c640* iter, void** out, int param, bool repeat)
+// src: XBOX_RETAIL_PDB 0x0044c640
+// pdb: LockFreeMap<PathingRequest *,PathingTaskData *>::GetNext | PathManager.obj | retail, call graph (shared callers), high
+// pdb params: arIterator, arKey, arData, abSwitchBuckets
+// pdb locals: bresult
+bool Queue44c640::LockFreeMap_PathingRequest_PathingTaskData_GetNext(QueueIter44c640* arIterator, void** arKey, int arData, bool abSwitchBuckets)
 {
     lock.Lock(0);
     bool result = false;
-    if (iter->IsDone())
+    if (arIterator->IsDone())
     {
         result = false;
     }
@@ -535,31 +563,31 @@ bool Queue44c640::TryGetNextEntry(QueueIter44c640* iter, void** out, int param, 
     {
         while (1)
         {
-            if (!iter->IsAlt())
+            if (!arIterator->IsAlt())
             {
-                result = GetEntry(iter->uiIndex, &iter->pItem, param)->TryA();
-                iter->SetVisible(true);
+                result = GetEntry(arIterator->uiIndex, &arIterator->pItem, arData)->TryA();
+                arIterator->SetVisible(true);
             }
             else
             {
-                result = GetEntry(iter->uiIndex, &iter->pItem, param)->TryB();
+                result = GetEntry(arIterator->uiIndex, &arIterator->pItem, arData)->TryB();
             }
             if (!result)
             {
-                iter->uiIndex++;
-                if (iter->uiIndex >= GetCount())
+                arIterator->uiIndex++;
+                if (arIterator->uiIndex >= GetCount())
                 {
-                    iter->SetFinished(true);
+                    arIterator->SetFinished(true);
                 }
-                else if (repeat)
+                else if (abSwitchBuckets)
                 {
-                    iter->SetVisible(false);
+                    arIterator->SetVisible(false);
                     continue;
                 }
             }
             else
             {
-                *out = iter->pItem;
+                *arKey = arIterator->pItem;
             }
             break;
         }
@@ -594,6 +622,9 @@ class C44C8E0Map
 
 // Computes the hash of iKey with the map's hasher and returns the bucket index for that hash.
 // @fnv 0x0044c8e0
+// pdb: LockFreeMap<BSFileEntry *,NiPointer<QueuedTexture> >::GetAt | ModelLoader.obj | debug, object-file run extension, low
+// pdb params: aKey, arData
+// pdb locals: bResult
 int C44C8E0Map::LookupBucket(int iKey, int iSize)
 {
     return GetBucket(m_pkHasher->Hash(iKey, iKey, iSize));
@@ -673,6 +704,7 @@ struct FUN_006661e0 : InterfacedClass
 };
 // Calls FUN_0044c480(1), then deletes m_pBuckets and m_pSlots.
 // @fnv 0x006661e0
+// pdb: LockFreeMap<TESObjectREFR *,BSTreeNode *>::~LockFreeMap<TESObjectREFR *,BSTreeNode *> | BSTreeManager.obj | debug, object-file run extension, low
 FUN_006661e0::~FUN_006661e0()
 {
     ClearBucketsAndRecreateManager(1);
@@ -820,6 +852,9 @@ struct FUN_00665cb0 : InterfacedClass
 
 // Allocates bucket array, slot array and manager, and stores the bucket count and parameter.
 // @fnv 0x00665cb0
+// pdb: LockFreeMap<TESObjectREFR *,BSTreeNode *>::LockFreeMap<TESObjectREFR *,BSTreeNode *> | BSTreeManager.obj | retail, object-file run extension, low
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
 FUN_00665cb0::FUN_00665cb0(unsigned int a, unsigned int uiBucketCount, int iParam)
 {
     reinterpret_cast<SL*>(m_kNode)->SL::SL();

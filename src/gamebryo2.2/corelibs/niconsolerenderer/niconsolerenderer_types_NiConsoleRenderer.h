@@ -97,6 +97,7 @@ FNV_STATIC_ASSERT(offsetof(NiCriticalSection, m_kCriticalSection) == 0);
 FNV_STATIC_ASSERT(offsetof(NiCriticalSection, m_ulThreadOwner) == 28);
 FNV_STATIC_ASSERT(offsetof(NiCriticalSection, m_uiLockCount) == 32);
 #pragma pack(push, 4)
+// pdb: structure _D3DVSHADERCAPS2_0, size 0x10, 4 members
 class _D3DVSHADERCAPS2_0
 {
   public:
@@ -112,6 +113,7 @@ FNV_STATIC_ASSERT(offsetof(_D3DVSHADERCAPS2_0, DynamicFlowControlDepth) == 4);
 FNV_STATIC_ASSERT(offsetof(_D3DVSHADERCAPS2_0, NumTemps) == 8);
 FNV_STATIC_ASSERT(offsetof(_D3DVSHADERCAPS2_0, StaticFlowControlDepth) == 12);
 #pragma pack(push, 4)
+// pdb: structure _D3DPSHADERCAPS2_0, size 0x14, 5 members
 class _D3DPSHADERCAPS2_0
 {
   public:
@@ -129,6 +131,7 @@ FNV_STATIC_ASSERT(offsetof(_D3DPSHADERCAPS2_0, NumTemps) == 8);
 FNV_STATIC_ASSERT(offsetof(_D3DPSHADERCAPS2_0, StaticFlowControlDepth) == 12);
 FNV_STATIC_ASSERT(offsetof(_D3DPSHADERCAPS2_0, NumInstructionSlots) == 16);
 #pragma pack(push, 4)
+// pdb: structure _D3DCAPS9, size 0x130, 69 members
 class _D3DCAPS9
 {
   public:
@@ -293,6 +296,7 @@ FNV_STATIC_ASSERT(offsetof(Direct3DResourceRecord, m_uiFieldAtOffset0C) == 12);
 FNV_STATIC_ASSERT(offsetof(Direct3DResourceRecord, m_pPointerAtOffset10) == 16);
 FNV_STATIC_ASSERT(offsetof(Direct3DResourceRecord, m_uiFieldAtOffset14) == 20);
 #pragma pack(push, 4)
+// pdb: structure _D3DMATRIX, size 0x40, 17 members
 class _D3DMATRIX
 {
   public:
@@ -340,6 +344,7 @@ FNV_STATIC_ASSERT(offsetof(_D3DMATRIX, _43) == 56);
 FNV_STATIC_ASSERT(offsetof(_D3DMATRIX, _44) == 60);
 FNV_STATIC_ASSERT(offsetof(_D3DMATRIX, m) == 0);
 #pragma pack(push, 4)
+// pdb: structure _D3DVIEWPORT9, size 0x18, 6 members
 class _D3DVIEWPORT9
 {
   public:

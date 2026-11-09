@@ -9,7 +9,7 @@
 #include "../../../../../../include/hkaSplineCompressedAnimation.h"
 
 extern char DAT_010c3aa0[];
-extern void __cdecl _hkErrorMessage(const char* message);
+extern void __cdecl hkErrorMessage(const char* message);
 extern int __cdecl Hksystemtime_Time64_Thunk();
 extern "C" void _ReadWriteBarrier(void);
 
@@ -40,14 +40,16 @@ static char* findDot(char* p)
 
 static void invalidKey()
 {
-    _hkErrorMessage("Product:hka Key Code is invalid.\nPlease contact Havok.com\nNo simulation possible.");
+    hkErrorMessage("Product:hka Key Code is invalid.\nPlease contact Havok.com\nNo simulation possible.");
 }
 
 // @fnv 0x00e63c60
 // src: XBOX_PDB 0x00e63c60
-int __cdecl hkaProcessFlyingColors(bool* valid)
+// pdb: hkaProcessFlyingColors | hkaProcessFlyingColors.obj | retail, upstream name already matches, high
+// pdb params: flyingColors
+int __cdecl hkaProcessFlyingColors(bool* flyingColors)
 {
-    *valid = false;
+    *flyingColors = false;
     int status = 0;
     unsigned long second;
     second = 0xfffffffful;
@@ -92,7 +94,7 @@ int __cdecl hkaProcessFlyingColors(bool* valid)
         int remaining = first - now;
         if (first < now || remaining > 0x96c99)
         {
-            _hkErrorMessage(
+            hkErrorMessage(
                 "Product:hka Key Code has expired .\nPlease contact Havok.com for an extension.\nNo simulation possible.");
             return 2;
         }
@@ -113,6 +115,6 @@ int __cdecl hkaProcessFlyingColors(bool* valid)
             return 1;
         }
     }
-    *valid = true;
+    *flyingColors = true;
     return status;
 }

@@ -53,6 +53,10 @@ struct NiPSysGravityModifier : NiPSysModifier
 // Allocates and constructs a copy of this gravity modifier, copies its fields, runs the base clone step with process, and returns the clone.
 // @fnv 0x00c22b00
 // src: XBOX_PDB 0x00c22b00
+// pdb: NiPSysGravityModifier::CreateClone | NiPSysGravityModifier.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysGravityModifier::NiPSysGravityModifier
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysGravityModifier* NiPSysGravityModifier::CreateClone_00c22b00(CloningProcess& process)
 {
     NiPSysGravityModifier* clone = static_cast<NiPSysGravityModifier*>(operator new(0x40));
@@ -60,7 +64,7 @@ NiPSysGravityModifier* NiPSysGravityModifier::CreateClone_00c22b00(CloningProces
         clone = clone->InitDefaults();
     else
         clone = 0;
-    CopyMemberData(clone, process);
+    CopyMembers(clone, process);
     clone->m_kGravityDirection = m_kGravityDirection;
     clone->m_fDistanceDecay = m_fDistanceDecay;
     clone->m_fValue = m_fValue;
@@ -73,10 +77,12 @@ NiPSysGravityModifier* NiPSysGravityModifier::CreateClone_00c22b00(CloningProces
 }  // namespace fnv_00c22b00
 
 // @fnv 0x00c2e520
-void NiPSysBombModifier::LinkObject(NiStream& stream)
+// pdb: NiPSysBombModifier::LinkObject | NiPSysBombModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysBombModifier::LinkObject(NiStream& kStream)
 {
-    NiPSysModifier::LinkObject(stream);
-    m_pkBombObject = stream.GetLoadedObject();
+    NiPSysModifier::LinkObject(kStream);
+    m_pkBombObj = kStream.GetLoadedObject();
 }
 
 struct S_00c236b0_BinaryStream;
@@ -280,6 +286,8 @@ struct S_00c236b0_Obj : NiPSysModifier
 
 // Loads the object's base data, member m_1C, m_28, m_2C, m_30, and conditionally m_34, m_38 and m_3C from kStream based on version checks.
 // @fnv 0x00c236b0
+// pdb: NiPSysGravityModifier::LoadBinary | NiPSysGravityModifier.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void S_00c236b0_Obj::LoadFromStream(S_00c236b0_Stream& kStream)
 {
     NiPSysModifier::LoadBinary(reinterpret_cast<NiStream&>(kStream));
@@ -322,37 +330,39 @@ struct FNVSerializer
 };
 // Writes a header, a subproperty, and five 4-byte values plus one 1-byte value from this object to the stream writer.
 // @fnv 0x00c237c0
-void FNVSerializer::WriteToStream(FNVStreamArchive* stream)
+// pdb: NiPSysGravityModifier::SaveBinary | NiPSysGravityModifier.obj | retail, object-file gap fill, high
+// pdb params: kStream
+void FNVSerializer::WriteToStream(FNVStreamArchive* kStream)
 {
-    FUN_00c31950(stream);
+    FUN_00c31950(kStream);
     typedef void(__thiscall * HeaderWriter)(FNVStreamArchive*, unsigned int);
-    HeaderWriter pHeaderWriter = reinterpret_cast<HeaderWriter>((*reinterpret_cast<void***>(stream))[12]);
-    pHeaderWriter(stream, *reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(this) + 0x18));
-    reinterpret_cast<FNVSubproperty*>(reinterpret_cast<char*>(this) + 0x1c)->FUN_00a69780(stream);
+    HeaderWriter pHeaderWriter = reinterpret_cast<HeaderWriter>((*reinterpret_cast<void***>(kStream))[12]);
+    pHeaderWriter(kStream, *reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(this) + 0x18));
+    reinterpret_cast<FNVSubproperty*>(reinterpret_cast<char*>(this) + 0x1c)->FUN_00a69780(kStream);
     FNVStreamWriter* __restrict writer;
     unsigned int length;
     length = 4;
-    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     writer->writtenBytes +=
         writer->write(writer, reinterpret_cast<char*>(this) + 0x28, 4, reinterpret_cast<unsigned int*>(&length), 1);
     length = 4;
-    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     writer->writtenBytes +=
         writer->write(writer, reinterpret_cast<char*>(this) + 0x2c, 4, reinterpret_cast<unsigned int*>(&length), 1);
     length = 4;
-    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     writer->writtenBytes +=
         writer->write(writer, reinterpret_cast<char*>(this) + 0x30, 4, reinterpret_cast<unsigned int*>(&length), 1);
     length = 4;
-    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     writer->writtenBytes +=
         writer->write(writer, reinterpret_cast<char*>(this) + 0x34, 4, reinterpret_cast<unsigned int*>(&length), 1);
     length = 4;
-    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     writer->writtenBytes +=
         writer->write(writer, reinterpret_cast<char*>(this) + 0x38, 4, reinterpret_cast<unsigned int*>(&length), 1);
     length = 1;
-    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<FNVStreamWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     writer->writtenBytes +=
         writer->write(writer, reinterpret_cast<char*>(this) + 0x3c, 1, reinterpret_cast<unsigned int*>(&length), 1);
 }
@@ -403,6 +413,9 @@ struct NiPSysGravityModifierImpl
 
 // Appends the gravity modifier's RTTI name, gravity object, axis, decay, strength, turbulence, force type and world-aligned flag to the viewer strings array.
 // @fnv 0x00c238c0
+// pdb: NiPSysGravityModifier::GetViewerStrings | NiPSysGravityModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: pcGravityObj, pcForceType
 void NiPSysGravityModifierImpl::AddViewerStrings(GravityViewerStringsArray* pkStrings)
 {
     FUN_00c319e0(pkStrings);
@@ -475,32 +488,35 @@ struct FUN_00c235f0_cls
     char m_3c;
 
     bool FUN_00c31830(FUN_00c235f0_cls* o);
-    bool IsEqual(FUN_00c235f0_cls* o);
+    bool IsEqual(FUN_00c235f0_cls* pkObject);
 };
 
 // Compares two FUN_00c235f0_cls objects for equality, checking m_18, m_1c, and the float/int/char fields m_28 through m_3c.
 // @fnv 0x00c235f0
-bool FUN_00c235f0_cls::IsEqual(FUN_00c235f0_cls* apOther)
+// pdb: NiPSysGravityModifier::IsEqual | NiPSysGravityModifier.obj | retail, object-file gap fill, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool FUN_00c235f0_cls::IsEqual(FUN_00c235f0_cls* pkObject)
 {
-    if (FUN_00c31830(apOther))
+    if (FUN_00c31830(pkObject))
     {
-        if ((m_18 && !apOther->m_18) || (!m_18 && apOther->m_18))
+        if ((m_18 && !pkObject->m_18) || (!m_18 && pkObject->m_18))
             return false;
-        if (m_18 && apOther->m_18 && !m_18->v5c(apOther->m_18))
+        if (m_18 && pkObject->m_18 && !m_18->v5c(pkObject->m_18))
             return false;
-        if (apOther->m_1c != m_1c)
+        if (pkObject->m_1c != m_1c)
             return false;
-        if (apOther->m_28 != m_28)
+        if (pkObject->m_28 != m_28)
             return false;
-        if (apOther->m_2c != m_2c)
+        if (pkObject->m_2c != m_2c)
             return false;
-        if (apOther->m_30 != m_30)
+        if (pkObject->m_30 != m_30)
             return false;
-        if (apOther->m_34 != m_34)
+        if (pkObject->m_34 != m_34)
             return false;
-        if (apOther->m_38 != m_38)
+        if (pkObject->m_38 != m_38)
             return false;
-        if (apOther->m_3c != m_3c)
+        if (pkObject->m_3c != m_3c)
             return false;
         return true;
     }
@@ -715,16 +731,19 @@ struct EffectC22
         return result;
     }
 
-    void NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter);
+    void NiPSysGravityModifier_Update(float fTime, EmitterC22* pkData);
 };
 
 // Moves each active particle in the emitter by applying force, decay, and turbulence based on the effect's movement type and elapsed time.
 // @fnv 0x00c22b70
 // src: XBOX_PDB 0x00c22b70
-void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
+// pdb: NiPSysGravityModifier::Update | NiPSysGravityModifier.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkData
+// pdb locals: fStrength, us, kDirection, kInvPSys, kPosition, kPSys, kGravityToPSys, usNumParticles, kGravity, pkCurrentParticle, kTurbulence, fTurbulenceScale, pkParticlePosition, fDecay, kDir, fDist
+void EffectC22::NiPSysGravityModifier_Update(float fTime, EmitterC22* pkData)
 {
 
-    if (!emitter->GetActiveCount() || !directionSource)
+    if (!pkData->GetActiveCount() || !directionSource)
         return;
 
     NiTransform x;
@@ -752,7 +771,7 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
     NiPoint3_Unitize(&vForceDirection);
 
     unsigned short j;
-    j = emitter->GetActiveCount();
+    j = pkData->GetActiveCount();
 
     float fSourceStrength;
 
@@ -773,12 +792,12 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
             (void)s;
             (void)p;
             ParticleC22* pParticle;
-            pParticle = emitter->GetParticles();
+            pParticle = pkData->GetParticles();
 
             for (i = 0; i < j; ++i, ++pParticle)
             {
 
-                s = (elapsed - pParticle->GetActiveTime()) * fSourceStrength;
+                s = (fTime - pParticle->GetActiveTime()) * fSourceStrength;
 
                 NiPoint3 vDisplacement = vForceDirection * s;
                 p = &pParticle->position;
@@ -792,7 +811,7 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
         {
 
             ParticleC22* pParticle;
-            pParticle = emitter->GetParticles();
+            pParticle = pkData->GetParticles();
 
             float randomScale = (float)(GetTurbulence() * GetTurbulenceScale() * 500.0);
 
@@ -810,17 +829,17 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
 
                 vOffset.z = NiSymmetricRandom_006397c0() * randomScale;
 
-                AddGravityVector(pParticle->position, (kIter + vOffset) * (elapsed - pParticle->activeTime));
+                AddGravityVector(pParticle->position, (kIter + vOffset) * (fTime - pParticle->activeTime));
             }
         }
         else if (radialStrength != 0.0f && GetTurbulence() == 0.0f)
         {
 
             ParticleC22* pParticle;
-            pParticle = emitter->GetParticles();
+            pParticle = pkData->GetParticles();
 
             NiPoint3* y;
-            y = emitter->GetSourcePositions();
+            y = pkData->GetSourcePositions();
 
             for (unsigned short i = 0; i < j; ++i, ++pParticle, ++y)
             {
@@ -840,7 +859,7 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
                     fDecay = DecayExp(fDot * -GetDecay());
 
                 AddGravityVector(pParticle->GetPosition(),
-                    vForceDirection * ((elapsed - pParticle->GetActiveTime()) * (fSourceStrength * fDecay)));
+                    vForceDirection * ((fTime - pParticle->GetActiveTime()) * (fSourceStrength * fDecay)));
             }
         }
         else if (GetDecay() != 0.0f && GetTurbulence() != 0.0f)
@@ -848,10 +867,10 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
 
             ParticleC22* pParticle;
 
-            pParticle = emitter->GetParticles();
+            pParticle = pkData->GetParticles();
 
             NiPoint3* y;
-            y = emitter->GetSourcePositions();
+            y = pkData->GetSourcePositions();
 
             float randomScale;
 
@@ -884,7 +903,7 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
                 else
                     v = DecayExp(fDot * -GetDecay());
 
-                pParticle->ApplyMotion(v * kIter + vOffset, elapsed);
+                pParticle->ApplyMotion(v * kIter + vOffset, fTime);
             }
         }
 
@@ -896,10 +915,10 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
         {
 
             ParticleC22* pParticle;
-            pParticle = emitter->GetParticles();
+            pParticle = pkData->GetParticles();
 
             NiPoint3* y;
-            y = emitter->GetSourcePositions();
+            y = pkData->GetSourcePositions();
 
             for (unsigned short i = 0; i < j; ++i, ++pParticle, ++y)
             {
@@ -912,7 +931,7 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
 
                 NiPoint3_Unitize(&vForceDirection);
 
-                float s = (elapsed - pParticle->activeTime) * fSourceStrength;
+                float s = (fTime - pParticle->activeTime) * fSourceStrength;
                 AddGravityVector(pParticle->GetPosition(), vForceDirection * s);
             }
         }
@@ -921,9 +940,9 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
 
             float randomScale = (float)(GetTurbulenceScale() * GetTurbulence() * 500.0);
 
-            ParticleC22* pParticle = emitter->GetParticles();
+            ParticleC22* pParticle = pkData->GetParticles();
 
-            NiPoint3* y = emitter->GetSourcePositions();
+            NiPoint3* y = pkData->GetSourcePositions();
 
             for (unsigned short i = 0; i < j; ++i, ++pParticle, ++y)
             {
@@ -945,7 +964,7 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
                 vOffset.z = NiSymmetricRandom_006397c0() * randomScale;
 
                 AddGravityVector(pParticle->GetPosition(),
-                    (fSourceStrength * vForceDirection + vOffset) * (elapsed - pParticle->GetActiveTime()));
+                    (fSourceStrength * vForceDirection + vOffset) * (fTime - pParticle->GetActiveTime()));
             }
         }
         else if (GetDecay() != 0.0f && GetTurbulence() == 0.0f)
@@ -955,9 +974,9 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
 
             ParticleC22* pParticle;
 
-            pParticle = emitter->GetParticles();
+            pParticle = pkData->GetParticles();
 
-            y = emitter->GetSourcePositions();
+            y = pkData->GetSourcePositions();
 
             for (unsigned short i = 0; i < j; ++i, ++pParticle, ++y)
             {
@@ -970,18 +989,18 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
 
                 float fDecay = DecayExp((float)(-GetDecay() * FUN_00457910(&vForceDirection)));
 
-                float s = fDecay * fSourceStrength * (elapsed - pParticle->GetActiveTime());
+                float s = fDecay * fSourceStrength * (fTime - pParticle->GetActiveTime());
                 AddGravityVector(pParticle->GetPosition(), vForceDirection * s);
             }
         }
         else if (GetDecay() != 0.0f && dispersion != 0.0f)
         {
 
-            ParticleC22* pParticle = emitter->GetParticles();
+            ParticleC22* pParticle = pkData->GetParticles();
 
             NiPoint3* y;
 
-            y = emitter->GetSourcePositions();
+            y = pkData->GetSourcePositions();
 
             float randomScale;
             randomScale = (float)(GetTurbulence() * GetTurbulenceScale() * 500.0);
@@ -1004,7 +1023,7 @@ void EffectC22::NiPSysGravityModifier_Update(float elapsed, EmitterC22* emitter)
                 float fDecay;
                 fDecay = DecayExp((float)(-GetDecay() * FUN_00457910(&z)));
 
-                pParticle->ApplyMotion(kIter * fDecay + vOffset, elapsed);
+                pParticle->ApplyMotion(kIter * fDecay + vOffset, fTime);
             }
         }
 

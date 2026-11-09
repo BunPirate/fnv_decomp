@@ -14,25 +14,25 @@ class hkCpuWorldRayCastCollector
       public hkAabbTreeQueryUtils<hkAabbTreeData::hkAabbTreeAabb16, unsigned short>::Collector
 {
 public:
-    int m_iFilter;
-    float m_fHitFraction;
-    int m_bHasHit;
-    int m_iFieldAfterHasHit;
-    int m_iFieldBeforeResult;
+    int m_filter;
+    float m_hitFraction;
+    int m_hit;
+    int m_command;
+    int m_originalInput;
     int m_result;
-    int m_iFieldAfterResult;
+    int m_nextFreeResult;
     int unk2c;
-    hkVector4 m_workFrom;
+    hkVector4 m_workInput;
     hkVector4 m_workTo;
     int m_workFilter;
     int m_workCollection;
     int unk58;
     int unk5c;
-    hkpFixedBufferRayHitCollector* m_fixedBufferRayHitFilterCollector;
+    hkpFixedBufferRayHitCollector* m_fixedBufferRayHitCollector;
     int unk64;
     int unk68;
     int unk6c;
-    hkVector4 m_fEarlyOutHitFraction;
+    hkVector4 m_earlyOutHitFraction;
 
     hkCpuWorldRayCastCollector();
     virtual float ReleaseCollector(const hkpBroadPhaseHandle*, int);

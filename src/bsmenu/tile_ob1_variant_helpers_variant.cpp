@@ -72,7 +72,7 @@ struct S00a0d390
 struct FUN_00a03c90_shell : public Tile {
     Menu* Tile_GetMenu();
 };
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 void __cdecl _FUN_00a04500();
 struct FUN_00a03d40_shell {
     Tile* Tile_GetMenuTile();
@@ -205,7 +205,7 @@ struct FrameLocals {
 };
 extern ScrapListShell DAT_011f3308;
 ScrapHeapBuffer* __cdecl Tile_GetExtraDataFromTraitName(char const* apName);
-void __cdecl Tile_AddToTable(char const* apName, int aiValue);
+void __cdecl Tile_AddToTable(char const* apText, int aiIndex);
 struct TileNode;
 struct TileObject {
     void* unk00;
@@ -259,11 +259,11 @@ __forceinline BSMapEntry<unsigned long, ScrapHeapBuffer*>* FindFirstHeapEntry(
     }
     return 0;
 }
-ScrapHeapBuffer* __cdecl Tile_TraitToText(unsigned int requestedKey);
-void __cdecl AutoTileLock_AutoTileLock();
+ScrapHeapBuffer* __cdecl Tile_TraitToText(unsigned int aiTrait);
+void __cdecl AutoTileLock_ctor();
 void __cdecl _FUN_00a04500();
 struct TileLockGuard {
-    TileLockGuard() { AutoTileLock_AutoTileLock(); }
+    TileLockGuard() { AutoTileLock_ctor(); }
     ~TileLockGuard() { _FUN_00a04500(); }
 };
 struct FlaggedTile {
@@ -318,7 +318,7 @@ static inline NiAVObject* A0B1F0GetChild(NiNode* pkNode, unsigned int uiIndex) {
 extern int DAT_01094d9c;
 class FUN_00a0d220_pool {
 public:
-    void MemoryManager_Deallocate(void* apMemory);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00a0d220_pool DAT_011f6238;
 struct FUN_00a0d220_frame {
@@ -426,7 +426,7 @@ struct Storage_00a0ae70 {
     TileTemplate_00a0ae70* m_pTileTemplate;
     bool m_owns;
 
-    TileTemplate_00a0ae70* Tile_BuildStorage_NewSubTemplate(const char* apName);
+    TileTemplate_00a0ae70* Tile_BuildStorage_NewSubTemplate(const char* pName);
 };
 struct NiTexture;
 struct FUN_00a07530_shell { void Tile_SetChangeFlag(int); };
@@ -473,10 +473,10 @@ struct Item_00a0ba50 {
     static void operator delete(void* apMemory) { DAT_011f6238.MemoryManager_Deallocate(apMemory); }
 };
 void __cdecl Tile_DeleteGlobalItems();
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 extern "C" void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 struct TileSearchLock {
-    TileSearchLock() { AutoTileLock_AutoTileLock(); }
+    TileSearchLock() { AutoTileLock_ctor(); }
     ~TileSearchLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 struct TileFloatList {
@@ -488,7 +488,7 @@ struct TileFloatList {
         kPos = kPos->m_pkNext;
         return element;
     }
-    Tile* Tile_GetChildByID(int iValue);
+    Tile* Tile_GetChildByID(int aiID);
 };
 struct TilePool_ac80 {
     void* Game_DoHeapAlloc(unsigned int auiSize);
@@ -517,7 +517,7 @@ struct FUN_00a0ac80 {
     bool bOwns;
     FUN_00a0ac80();
 };
-void AutoTileLock_AutoTileLock();
+void AutoTileLock_ctor();
 void Object___imp__LeaveCriticalSection_Thunk();
 class TileV;
 class TileValueV
@@ -531,7 +531,7 @@ public:
 class FnvTileLock
 {
 public:
-    FnvTileLock() { AutoTileLock_AutoTileLock(); }
+    FnvTileLock() { AutoTileLock_ctor(); }
     ~FnvTileLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 inline bool HasValue(TileValueV* pList, int m_iValueId)
@@ -562,7 +562,7 @@ public:
     void ProcessEntries_00a0b420(TileValueV* pValues, float fValue);
 };
 void NiSinCos_004169a0(float,float&,float&);
-struct Mat { float m00,m01,m02,m10,m11,m12,m20,m21,m22; void FUN_0043f850(float angle) { float sn,cs; NiSinCos_004169a0(angle,sn,cs); float negativeSin=-sn; float cosine=cs; m00=cosine; m01=0; m02=negativeSin; m10=0; m11=1; m12=0; m20=sn; m21=0; m22=cosine; } NiPoint3 FUN_004b4500(const NiPoint3* v) { return NiPoint3(m00*v->x+m01*v->y+m02*v->z,m10*v->x+m11*v->y+m12*v->z,m20*v->x+m21*v->y+m22*v->z); } };
+struct Mat { float m00,m01,m02,m10,m11,m12,m20,m21,m22; void FUN_0043f850(float fAngle) { float sn,cs; NiSinCos_004169a0(fAngle,sn,cs); float negativeSin=-sn; float cosine=cs; m00=cosine; m01=0; m02=negativeSin; m10=0; m11=1; m12=0; m20=sn; m21=0; m22=cosine; } NiPoint3 FUN_004b4500(const NiPoint3* v) { return NiPoint3(m00*v->x+m01*v->y+m02*v->z,m10*v->x+m11*v->y+m12*v->z,m20*v->x+m21*v->y+m22*v->z); } };
 extern const NiPoint3 NiPoint3_ZERO;
 extern const double DAT_0106f290;
 struct Rtti { const char* name; Rtti* parent; };
@@ -657,7 +657,7 @@ struct ReuseNode {
 };
 inline void* operator new(unsigned int size) { return g_mm.Allocate(size); }
 void operator delete(void* memory);
-ReuseNode* Tile_TileTemplate_GetItem(int a, float f, const char* s, int b, int c);
+ReuseNode* Tile_TileTemplate_GetItem(int aiCmd, float afVal, const char* apStr, int aiTA, int aiLine);
 struct Sub_00a0c020 {
     int unk00;
     int unk04;
@@ -694,7 +694,7 @@ struct S00ac5490_Str {
 };
 struct S00ac5490_Base {
     int unk04;
-    S00ac5490_Base(S00ac5490_Str s);
+    S00ac5490_Base(S00ac5490_Str a_fileId);
     virtual ~S00ac5490_Base();
 };
 struct FUN_00ac5490 : public S00ac5490_Base {
@@ -714,7 +714,7 @@ struct FUN_00ac5490 : public S00ac5490_Base {
     int unk3C;
     int unk40;
     int unk44;
-    FUN_00ac5490(S00ac5490_Str a);
+    FUN_00ac5490(S00ac5490_Str apString);
 };
 struct _RTL_CRITICAL_SECTION;
 extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(_RTL_CRITICAL_SECTION*);
@@ -778,7 +778,7 @@ public:
     void Tile_Release();
     
 };
-void ClearInterfaceRefs(FUN_009ff340*);
+void Interface_TileIsBeingDeleted(FUN_009ff340*);
 namespace tileext {
 
 class ExtraObject {
@@ -794,11 +794,11 @@ public:
 
 extern const char* DAT_011f34cc;
 
-void AutoTileLock_AutoTileLock();
+void AutoTileLock_ctor();
 void Object___imp__LeaveCriticalSection_Thunk();
 
 struct TileListLock {
-    TileListLock() { AutoTileLock_AutoTileLock(); }
+    TileListLock() { AutoTileLock_ctor(); }
     ~TileListLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
@@ -813,20 +813,23 @@ struct ExtraNode {
 
     ExtraNode* GetParent() { return m_pParentNode; }
     static const char* GetKey() { return DAT_011f34cc; }
-    ExtraObject* FUN_00a5bdd0(const char* pcKey);
+    ExtraObject* FUN_00a5bdd0(const char* kKey);
 };
 
 // @fnv 0x00a01630
 // src: COMMUNITY 0x00a01630
-int Tile_GetTileFromNode(ExtraNode* pkNode)
+// pdb: Tile::GetTileFromNode | Tile.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: __my_auto_tile_lock, ptile, spextra
+int Tile_GetTileFromNode(ExtraNode* apNode)
 {
     TileListLock kLock;
     int iValue = 0;
-    if (pkNode)
+    if (apNode)
     {
-        NiPointer<ExtraObject> spExtra = pkNode->FUN_00a5bdd0(ExtraNode::GetKey());
-        if (!spExtra && pkNode->GetParent())
-            spExtra = pkNode->GetParent()->FUN_00a5bdd0(ExtraNode::GetKey());
+        NiPointer<ExtraObject> spExtra = apNode->FUN_00a5bdd0(ExtraNode::GetKey());
+        if (!spExtra && apNode->GetParent())
+            spExtra = apNode->GetParent()->FUN_00a5bdd0(ExtraNode::GetKey());
         if (spExtra)
             iValue = spExtra->m_iValue;
     }
@@ -836,11 +839,11 @@ int Tile_GetTileFromNode(ExtraNode* pkNode)
 }
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile* lpAddend);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* lpAddend);
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 class MenuLockA01 {
 public:
-    MenuLockA01() { AutoTileLock_AutoTileLock(); }
+    MenuLockA01() { AutoTileLock_ctor(); }
     ~MenuLockA01() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 class RefObjectA01 {
@@ -865,7 +868,7 @@ public:
 };
 class ListA01 {
 public:
-    RefObjectA01* FUN_00a5bdd0(void* pKey);
+    RefObjectA01* FUN_00a5bdd0(void* kKey);
     unsigned short GetCount() const { return m_usElementCount; }
     ActionA01* FindA(void* pKey) { return (ActionA01*)FUN_00a5bdd0(pKey); }
     ActionA01* FindN(void* pKey);
@@ -953,7 +956,7 @@ struct ClipTile {
     __forceinline ClipNode* Model() { return model; }
     bool IsTraitNonZero(int);
     bool FUN_00a03c60();
-    void Tile_ReClipChildren(float left, float top, float right, float bottom);
+    void Tile_ReClipChildren(float afx, float afy, float afx2, float afy2);
 };
 float __cdecl FUN_00706e40();
 float __cdecl FUN_00706e10();
@@ -1070,12 +1073,12 @@ struct MenuArray {
 };
 extern MenuArray DAT_011f3508;
 int __cdecl Tile_GetMenuByClass(int id);
-void __cdecl AutoTileLock_AutoTileLock();
+void __cdecl AutoTileLock_ctor();
 void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 extern const double _gModifierZero;
 class MenuLockB35 {
 public:
-    MenuLockB35() { AutoTileLock_AutoTileLock(); }
+    MenuLockB35() { AutoTileLock_ctor(); }
     ~MenuLockB35() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 unsigned int __cdecl BSstrlen(const char* text);
@@ -1215,6 +1218,7 @@ struct TileBaseA0BBF0 {
 };
 struct FUN_00a0bbf0 : TileBaseA0BBF0 {
 // @fnv 0x00a0bbf0
+// pdb: TileText::`scalar deleting destructor' | Tile.obj | debug, vtable slot, medium
     virtual ~FUN_00a0bbf0()
     {
         if (!GetFlag(0x2000))
@@ -1339,6 +1343,9 @@ struct EvalValue {
 };
 // @fnv 0x00a09410
 // src: COMMUNITY 0x00a09410
+// pdb: Tile::Value::SetFloat | Tile.obj | retail, upstream name already matches, high
+// pdb params: afValue, abClearActions
+// pdb locals: bforceUpdate
 void EvalValue::Tile_Value_SetFloat(bool update) {
  if((pTile->flags&0x10000) && m_iValueId!=4004) return;
  if(!pTile || pTile->Flag(0x4000)) return;
@@ -1490,14 +1497,14 @@ __forceinline StrMem::StrMem() { Init(); }
 __forceinline StrMem::~StrMem() { Set(0, 0); }
 __forceinline const char* StrMem::String() const { return text; }
 __forceinline unsigned int StrMem::Length() const { return length == 65535 ? StringLength(text) : length; }
-inline bool StrMem::Set(const char* text, unsigned int capacity) {
-    unsigned int length = text ? StringLength(text) : 0;
-    unsigned int needed = CapacityMaximum(length, capacity);
+inline bool StrMem::Set(const char* apString, unsigned int aiMaxLen) {
+    unsigned int length = apString ? StringLength(apString) : 0;
+    unsigned int needed = CapacityMaximum(length, aiMaxLen);
     unsigned int previousCapacity = MaxLength();
     char* previousBuffer = this->text;
     if (needed <= previousCapacity) {
         if (needed) {
-            if (text) FUN_00401460(previousBuffer, text, length + 1);
+            if (apString) FUN_00401460(previousBuffer, apString, length + 1);
             else previousBuffer[0] = 0;
         } else {
             if (previousBuffer) delete[] previousBuffer;
@@ -1508,7 +1515,7 @@ inline bool StrMem::Set(const char* text, unsigned int capacity) {
     } else {
         char* old = previousBuffer;
         this->text = new char[needed + 1];
-        if (text) FUN_00401460(this->text, text, length + 1);
+        if (apString) FUN_00401460(this->text, apString, length + 1);
         else this->text[0] = 0;
         if (old) delete[] old;
         SetCapacity(needed);
@@ -1516,16 +1523,16 @@ inline bool StrMem::Set(const char* text, unsigned int capacity) {
     SetLength(length);
     return length != 0;
 }
-inline StrMem& StrMem::FUN_00404820(const char* text) {
-    if (text) {
+inline StrMem& StrMem::FUN_00404820(const char* apString) {
+    if (apString) {
         const char* current = String();
         if (current) {
-            unsigned int extra = text ? StringLength(text) : 0;
+            unsigned int extra = apString ? StringLength(apString) : 0;
             unsigned int needed = Length() + extra;
             if (needed > MaxLength()) Set(current, needed);
-            FUN_00401460(this->text + Length(), text, extra + 1);
+            FUN_00401460(this->text + Length(), apString, extra + 1);
             SetLength(needed);
-        } else Set(text, 0);
+        } else Set(apString, 0);
     }
     return *this;
 }
@@ -1537,15 +1544,18 @@ struct Record02D40 {
     inline ~Record02D40() { FUN_00a0be70(); }
     inline void operator delete(void* p) { DAT_011f6238.MemoryManager_Deallocate(p); }
 };
-extern Record02D40* __cdecl GetOrLoadXML(const char*, int);
+extern Record02D40* __cdecl Menu_GetXML(const char*, int);
 // @fnv 0x00a02d40
 // src: XBOX_PDB 0x00a02d40
-bool __cdecl Tile_InsertIncludedFiles(Input02D40* arg) {
-    char* source3 = arg->m04;
+// pdb: Tile::InsertIncludedFiles | Tile.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: pstartIndex, pincludeIndex, strfinalVersion, bdone, strtempSize, strtemp, ptmpXML, strincludeFilename, iincludeTagLength, ptokenContext, pincludeIndex2
+bool __cdecl Tile_InsertIncludedFiles(Input02D40* apFile) {
+    char* source3 = apFile->m04;
     char* begin_2 = FUN_00ec7750(source3, str_01094a64);
     if (begin_2) {
         StrMem i;
-        unsigned int h = arg->m00 + 1;
+        unsigned int h = apFile->m00 + 1;
         char* p9 = new char[h];
         FUN_00ec61c0(p9, 0, h);
         CopyPrefix(p9, source3, begin_2);
@@ -1558,7 +1568,7 @@ bool __cdecl Tile_InsertIncludedFiles(Input02D40* arg) {
             char* context_2;
             FUN_00ecc5f8(begin_2, str_01021184, &context_2);
             BSStringT_char_SPrintF(&tokenA, str_01094a4c, FUN_00ecc5f8(0, str_01021184, &context_2));
-            Record02D40* record = GetOrLoadXML(tokenA.String(), 0);
+            Record02D40* record = Menu_GetXML(tokenA.String(), 0);
             i.FUN_00404820(record->m04);
             delete record;
             char* next9 = FUN_00ec7750(begin_2 + skip, str_01094a64);
@@ -1573,12 +1583,12 @@ bool __cdecl Tile_InsertIncludedFiles(Input02D40* arg) {
             i.FUN_00404820(p9);
 
         }
-        delete[] arg->m04;
-        arg->m04 = new char[i.Length() + 1];
-        RenderCopyData(arg->m04, i.Length() + 1, i.String());
-        arg->m00 = i.Length();
+        delete[] apFile->m04;
+        apFile->m04 = new char[i.Length() + 1];
+        RenderCopyData(apFile->m04, i.Length() + 1, i.String());
+        apFile->m00 = i.Length();
         delete[] p9;
-        Tile_InsertIncludedFiles(arg);
+        Tile_InsertIncludedFiles(apFile);
         return true;
     }
     return false;

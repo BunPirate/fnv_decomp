@@ -41,7 +41,7 @@ void NiPSysRadialFieldModifier::SaveBinary_00c27770(NiStream& kStream)
     unsigned int size = 4;
     *reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(output) + 4) +=
         (*reinterpret_cast<NiBinaryStream::WriteFunction*>(reinterpret_cast<char*>(output) + 12))(
-            output, &m_fBoundRadius, 4, &size, 1);
+            output, &m_fRadialType, 4, &size, 1);
 }
 
 // @fnv 0x00c28760
@@ -53,22 +53,24 @@ void NiPSysRadialFieldModifier::LoadBinary_00c28760(NiStream& stream)
     unsigned int size = 4;
     *reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(input) + 4) +=
         (*reinterpret_cast<NiBinaryStream::ReadFunction*>(reinterpret_cast<char*>(input) + 8))(
-            input, &m_fBoundRadius, 4, &size, 1);
+            input, &m_fRadialType, 4, &size, 1);
 }
 
 extern int DAT_010c0b5c;
 // The shared modifier base has no constructor declaration. Keep its original
 // initialization call through the existing position-modifier constructor.
 // @fnv 0x00c31ff0
+// pdb: NiPSysFieldModifier::NiPSysFieldModifier | NiPSysFieldModifier.obj | retail, call graph, high
+// pdb params: pcName, pkFieldObj, fMagnitude, fAttenuation, bUseMaxDistance, fMaxDistance
 NiPSysFieldModifier* __fastcall ConstructFieldModifier(NiPSysFieldModifier* modifier)
 {
     reinterpret_cast<NiPSysPositionModifier*>(modifier)->NiPSysPositionModifier::NiPSysPositionModifier();
-    modifier->m_spFieldObject = 0;
-    modifier->m_fInfluence = 0.0f;
-    modifier->m_fFieldAttenuation = 0.0f;
-    modifier->m_bEnableMaxDistance = false;
-    modifier->m_fDistanceLimit = 0.0f;
-    modifier->m_fFieldStrength = 0.0f;
+    modifier->m_pkFieldObj = 0;
+    modifier->m_fMagnitude = 0.0f;
+    modifier->m_fAttenuation = 0.0f;
+    modifier->m_bUseMaxDistance = false;
+    modifier->m_fMaxDistance = 0.0f;
+    modifier->m_fMaxDistanceSqr = 0.0f;
     *(int*)modifier = (int)&DAT_010c0b5c;
     return modifier;
 }
@@ -77,9 +79,11 @@ extern "C" char __stdcall FUN_00c32060(void*);
 
 // @fnv 0x00c285a0
 // src: XBOX_PDB 0x00c285a0
-unsigned char __stdcall NiPSysRadialFieldModifier_IsEqual(void* p)
+// pdb: NiPSysRadialFieldModifier::IsEqual | NiPSysRadialFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+unsigned char __stdcall NiPSysRadialFieldModifier_IsEqual(void* pkObject)
 {
-    return FUN_00c32060(p) != 0;
+    return FUN_00c32060(pkObject) != 0;
 }
 
 struct S_00c28a90_Arr
@@ -110,12 +114,14 @@ __forceinline void S_00c28a90_Add(S_00c28a90_Arr* a, char* s)
     a->FUN_0096ae90(i, s);
 }
 // @fnv 0x00c28a90
-void NiPSysRadialFieldModifier::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiPSysRadialFieldModifier::GetViewerStrings | NiPSysRadialFieldModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiPSysRadialFieldModifier::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    reinterpret_cast<FieldModifierViewerStrings*>(this)->GetViewerStrings(strings);
-    S_00c28a90_Arr* pArray = reinterpret_cast<S_00c28a90_Arr*>(strings);
+    reinterpret_cast<FieldModifierViewerStrings*>(this)->GetViewerStrings(pkStrings);
+    S_00c28a90_Arr* pArray = reinterpret_cast<S_00c28a90_Arr*>(pkStrings);
     S_00c28a90_Add(pArray, NiViewerStrings_NiGetViewerString_Title(DAT_012026b0));
-    S_00c28a90_Add(pArray, NiGetViewerString_00a7d550("RadialType", m_fBoundRadius));
+    S_00c28a90_Add(pArray, NiGetViewerString_00a7d550("RadialType", m_fRadialType));
 }
 
 inline NiPoint3::NiPoint3(float fX, float fY, float fZ)
@@ -160,6 +166,9 @@ struct Point3ParameterData
 };
 // Applies a time-scaled field influence to each active particle's position using the delta between the field object and target transforms.
 // @fnv 0x00c28620
+// pdb: NiPSysRadialFieldModifier::Update | NiPSysRadialFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkData
+// pdb locals: kRadial, kInvPSys, kPosition, kPSys, kRadialToPSys, fHalfAttenuation, us, pkCurrentParticle, fDeltaT, kParticlePosition, fDistanceSqr, kDirection, kDeltaV
 void NiPSysRadialFieldModifier::Update(float fTime, NiPSysData* data)
 {
     NiPSysData* pkData = data;
@@ -167,7 +176,7 @@ void NiPSysRadialFieldModifier::Update(float fTime, NiPSysData* data)
     // Copy their bytes directly so shared matrix constructors are not invoked.
     float fieldStorage[sizeof(NiTransform) / sizeof(float)];
     NiTransform& kField = *reinterpret_cast<NiTransform*>(fieldStorage);
-    memcpy(&kField, &m_spFieldObject->m_kWorld, sizeof(kField));
+    memcpy(&kField, &m_pkFieldObj->m_kWorld, sizeof(kField));
     float inverseStorage[sizeof(NiTransform) / sizeof(float)];
     NiTransform& kInv = *reinterpret_cast<NiTransform*>(inverseStorage);
     {
@@ -179,7 +188,7 @@ void NiPSysRadialFieldModifier::Update(float fTime, NiPSysData* data)
     {
         NiTransform kDelta = reinterpret_cast<const FieldTransformProduct*>(&kInv)->Multiply(kField);
         NiPoint3* pkPos = pkData->m_pkVertex;
-        float fMag = m_fInfluence;
+        float fMag = m_fMagnitude;
         for (unsigned short i = 0; i < pkData->m_usActive; i++)
         {
             Point3ParameterData* pkInfo = &pkData->m_pkParticleInfo[i];

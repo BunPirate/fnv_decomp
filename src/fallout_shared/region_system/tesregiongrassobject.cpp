@@ -82,6 +82,7 @@ struct FUN_004f55d0_shell
 };
 // Calls FUN_004f5920 on this, frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x004f55d0
+// pdb: TESRegionGrassObject::`scalar deleting destructor' | TESRegionGrassObject.obj | retail, vtable slot, high
 void* FUN_004f55d0_shell::FUN_004f55d0(unsigned int flags)
 {
     ((FUN_004f5920_shell*)this)->SetVirtualTable_004f5920();
@@ -104,13 +105,16 @@ struct FUN_004f5940_factory
     virtual int GetFirst();
     virtual void v2();
     virtual int GetSecond();
-    FUN_004f5590* TESRegionGrassObject_Copy(FUN_004f5590* existing);
+    FUN_004f5590* TESRegionGrassObject_Copy(FUN_004f5590* apCopyInto);
 };
 // @fnv 0x004f5940
 // src: XBOX_PDB 0x004f5940
-FUN_004f5590* FUN_004f5940_factory::TESRegionGrassObject_Copy(FUN_004f5590* existing)
+// pdb: TESRegionGrassObject::Copy | TESRegionGrassObject.obj | retail, upstream name already matches, high
+// pdb params: apCopyInto
+// pdb locals: pcopy
+FUN_004f5590* FUN_004f5940_factory::TESRegionGrassObject_Copy(FUN_004f5590* apCopyInto)
 {
-    FUN_004f5590* result = existing != 0 ? existing : new FUN_004f5590(GetFirst(), GetSecond());
+    FUN_004f5590* result = apCopyInto != 0 ? apCopyInto : new FUN_004f5590(GetFirst(), GetSecond());
     return result;
 }
 
@@ -146,9 +150,9 @@ struct PlcSound
 
 struct PlcWater
 {
-    PlcSound* GetSoundByEditorID(PlcPoint2* apPos);
-    void GetHeight(PlcPoint2* apPos, float* apHeight);
-    bool GetSlopeVectors(PlcPoint2* apPos, PlcPoint3* apA, PlcPoint3* apB);
+    PlcSound* GetSoundByEditorID(PlcPoint2* aCoord);
+    void GetHeight(PlcPoint2* coord, float* height);
+    bool GetSlopeVectors(PlcPoint2* aCoord, PlcPoint3* aNormal, PlcPoint3* aFaceNormal);
 };
 
 struct PlcWorldSpace;
@@ -158,7 +162,7 @@ struct PlcCell
     bool IsInterior();
     float UpdateTESState();
     PlcWater* GetLandscape();
-    float GetActorValueModifierAmount(PlcModifier* apMod, int aiType, void* apSource);
+    float GetActorValueModifierAmount(PlcModifier* apTest, int aID, void* apObjectBase);
 };
 
 struct PlcDataHandler
@@ -295,11 +299,14 @@ struct PlcPlacer
     virtual PlcSound* GetSoundByEditorID();
     PlcObject* pObject;
 
-    float GetPlacementChance(PlcPoint2* apPos, PlcWorldSpace* apWorld, bool abApplyModifier);
+    float GetPlacementChance(PlcPoint2* arWorldLoc, PlcWorldSpace* apWorldSpace, bool abRegionTest);
 };
 
 // @fnv 0x004f59f0
-float PlcPlacer::GetPlacementChance(PlcPoint2* apPos, PlcWorldSpace* apWorld, bool abApplyModifier)
+// pdb: TESRegionGrassObject::GetGenerateChance | TESRegionGrassObject.obj | retail, vtable slot, high
+// pdb params: arWorldLoc, apWorldSpace, abRegionTest
+// pdb locals: pcell, fchance, pgrass, locAsPt, ptexTest, fwaterdist, flandheight, fwaterheight, fdist, normal, facenormal, fangle
+float PlcPlacer::GetPlacementChance(PlcPoint2* arWorldLoc, PlcWorldSpace* apWorldSpace, bool abRegionTest)
 {
     PlcModifier kModifier;
     float fResult = 0.0f;
@@ -307,17 +314,17 @@ float PlcPlacer::GetPlacementChance(PlcPoint2* apPos, PlcWorldSpace* apWorld, bo
         return 0.0f;
 
     PlcObject* pObj8 = pObject;
-    PlcCell* pCell8 = g_pPlcDataHandler->GetCellAt(apPos->x, apPos->y, apWorld, false);
+    PlcCell* pCell8 = g_pPlcDataHandler->GetCellAt(arWorldLoc->x, arWorldLoc->y, apWorldSpace, false);
     if (!pCell8 || pCell8->IsInterior())
         return 0.0f;
 
     fResult = pObj8->GetChance() / 100.0;
-    kModifier.SetValueA(apPos->x);
-    kModifier.SetValueB(apPos->y);
+    kModifier.SetValueA(arWorldLoc->x);
+    kModifier.SetValueB(arWorldLoc->y);
 
     if (GetSoundByEditorID())
     {
-        PlcSound* pSoundA = pCell8->GetLandscape()->GetSoundByEditorID(apPos);
+        PlcSound* pSoundA = pCell8->GetLandscape()->GetSoundByEditorID(arWorldLoc);
         if (!pSoundA || pSoundA->GetID() != GetSoundByEditorID()->GetID())
             return 0.0f;
     }
@@ -326,7 +333,7 @@ float PlcPlacer::GetPlacementChance(PlcPoint2* apPos, PlcWorldSpace* apWorld, bo
         float fHeightVal = pObject->GetHeight();
         float fWaterZ5 = pCell8->UpdateTESState();
         float fZ;
-        pCell8->GetLandscape()->GetHeight(apPos, &fZ);
+        pCell8->GetLandscape()->GetHeight(arWorldLoc, &fZ);
 
         switch (pObject->GetPlacement())
         {
@@ -376,7 +383,7 @@ float PlcPlacer::GetPlacementChance(PlcPoint2* apPos, PlcWorldSpace* apWorld, bo
         {
             PlcPoint3 kA7;
             PlcPoint3 kB3;
-            if (pCell8->GetLandscape()->GetSlopeVectors(apPos, &kA7, &kB3))
+            if (pCell8->GetLandscape()->GetSlopeVectors(arWorldLoc, &kA7, &kB3))
             {
                 fSlope_ = PlcGetSlope(kA7);
                 if (fSlope_ > pObject->GetSecondFloat() || fSlope_ < pObject->GetFirstFloat())
@@ -385,7 +392,7 @@ float PlcPlacer::GetPlacementChance(PlcPoint2* apPos, PlcWorldSpace* apWorld, bo
         }
     }
 
-    if (abApplyModifier)
+    if (abRegionTest)
         fResult *= pCell8->GetActorValueModifierAmount(&kModifier, 6, this);
     return fResult;
 }
@@ -500,29 +507,31 @@ struct FUN_004f5620 : BaseGrass
 {
     RegionForm* object;
     RegionForm* parent;
-    FUN_004f5620(GrassIds* ids);
+    FUN_004f5620(GrassIds* apObjectData);
 };
 // Resolves the object and parent form IDs from GrassIds, validates their types, and assigns them to the object and parent fields with warnings on mismatch.
 // @fnv 0x004f5620
-FUN_004f5620::FUN_004f5620(GrassIds* apGrassIds)
+// pdb: TESRegionGrassObject::TESRegionGrassObject | TESRegionGrassObject.obj | retail, string-set bridge, high
+// pdb params: apObject, apParent
+FUN_004f5620::FUN_004f5620(GrassIds* apObjectData)
 {
     RegionForm* texture;
     RegionForm* grass;
     if (g_dataHandler && g_dataHandler->Manager() && g_dataHandler->Manager()->Current())
     {
         RegionForm* pRegion = g_dataHandler->Manager()->Current();
-        unsigned int formId = apGrassIds->object;
+        unsigned int formId = apObjectData->object;
         void* region = pRegion->GetFile(-1);
         Resolve(&formId, region);
         texture = Lookup(formId);
-        formId = apGrassIds->parent;
+        formId = apObjectData->parent;
         Resolve(&formId, region);
         grass = Lookup(formId);
     }
     else
     {
-        texture = Lookup(apGrassIds->object);
-        grass = Lookup(apGrassIds->parent);
+        texture = Lookup(apObjectData->object);
+        grass = Lookup(apObjectData->parent);
     }
     object = 0;
     if (texture)

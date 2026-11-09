@@ -45,6 +45,8 @@ void __cdecl MessageHandler_SetYesToAll(bool);
 
 // @fnv 0x007aa5c0
 // src: COMMUNITY 0x007aa5c0
+// pdb: MessageMenu::ProcessYesToAll | MessageMenu.obj | debug, upstream name already matches, high
+// pdb locals: disableContext, imessageCt, pEntry
 void MessageMenu_ProcessYesToAll()
 {
     if (FUN_007a92a0())
@@ -90,6 +92,8 @@ struct PerkActivationEntry
 
 // @fnv 0x007aae70
 // src: GUESS 0x007aae70 (confidence: low)
+// pdb: MessageMenu::HandlePerkActivationResults | MessageMenu.obj | debug, object-file gap fill, medium
+// pdb locals: ibuttonClicked, icount
 void BSSimpleArray_UpdateState_007aae70()
 {
     unsigned int ibuttonClicked;

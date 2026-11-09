@@ -4,6 +4,7 @@
 
 class NiBoolInterpolator;
 
+// pdb: class NiBoolInterpController, size 0x38, bases: NiSingleInterpController, 0 members
 class NiBoolInterpController : public NiSingleInterpController
 {
 public:
@@ -12,7 +13,7 @@ public:
     virtual void LinkObject(NiStream& stream);
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
-    virtual bool IsEqual(NiObject* object) const;
+    virtual bool IsEqual(NiObject* pkObject) const;
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
     virtual NiInterpolator* GetInterpolatorAtIndex(unsigned short index);
     virtual void SetInterpolatorForTarget(NiInterpolator* interpolator, unsigned short index);
@@ -23,5 +24,5 @@ public:
 
     void CopyMemberData(NiBoolInterpController* clone, CloningProcess& process);
     void SetBoolInterpolatorValue(NiInterpolator* interpolator, unsigned short index);
-    NiBoolInterpolator* LinkObject(NiStream* stream);
+    NiBoolInterpolator* NiBoolInterpolator_ctor(NiStream* pkBoolData);
 };

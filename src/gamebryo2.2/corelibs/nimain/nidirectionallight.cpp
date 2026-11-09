@@ -8,6 +8,8 @@
 #include <string.h>
 
 // @fnv 0x00a71ec0
+// pdb: NiLight::CopyMembers | NiLight.obj | retail, call graph, medium
+// pdb params: pDest, kCloning
 void NiDirectionalLight::CopyMemberData(NiDirectionalLight* pDest, CloningProcess& process)
 {
     NiLight::CopyMemberData(pDest, process);
@@ -25,8 +27,9 @@ inline NiPoint3::NiPoint3(float a, float b, float c) : x(a), y(b), z(c)
 
 // Calls FUN_00a71f60, sets the vtable to &DAT_0109d7b4, stores NiPoint3(1,0,0) at pThis+0xf0 and byte 3 at pThis+0x9d, then returns pThis.
 // @fnv 0x00a75c20
-// src: EXE 0x00a75c20
-void* __fastcall NiDirectionalLight_NiDirectionalLight(char* pObject)
+// src: XBOX_RETAIL_PDB 0x00a75c20
+// pdb: NiDirectionalLight::NiDirectionalLight | NiDirectionalLight.obj | retail, upstream name already matches, high
+void* __fastcall NiDirectionalLight_ctor(char* pObject)
 {
     FUN_00a71f60(pObject);
     *(int**)pObject = &DAT_0109d7b4;
@@ -66,6 +69,8 @@ NiDirectionalLight* __fastcall FUN_00a75c80(NiDirectionalLight* light, void*, in
 // Calls NiAVObject::UpdateWorldData, copies three floats from offsets 0x68/0x74/0x80 to 0xf0/0xf4/0xf8, and increments the int at 0xa8.
 // @fnv 0x00a75cb0
 // src: XBOX_PDB 0x00a75cb0
+// pdb: NiDirectionalLight::UpdateWorldData | NiDirectionalLight.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
 void __fastcall NiDirectionalLight_UpdateWorldData(NiDirectionalLight* light, void*, NiUpdateData* UpdateData)
 {
     light->NiAVObject::UpdateWorldData(*UpdateData);
@@ -91,6 +96,8 @@ extern GlobalObjectO2_00a7b610 g_011f4a68;
 char* _FUN_00a7d330(const char*);
 // @fnv 0x00a75d70
 // src: XBOX_PDB 0x00a75d70
+// pdb: NiDirectionalLight::GetViewerStrings | NiDirectionalLight.obj | retail, upstream name already matches, high
+// pdb params: pStrings
 void __fastcall NiDirectionalLight_GetViewerStrings(NiDirectionalLight* light, void*, NiTPrimitiveArray<char*>* apArray)
 {
     reinterpret_cast<NiLightViewerOperations*>(light)->AppendEffectProperties(apArray);
@@ -108,6 +115,8 @@ inline void* operator new(unsigned int, void* memory) throw()
     return memory;
 }
 // @fnv 0x00a75d50
+// pdb: NiDirectionalLight::CreateObject | NiDirectionalLight.obj | retail, object-file gap fill, high
+// pdb locals: pkObject
 NiDirectionalLight* __cdecl CreateNiDirectionalLight()
 {
     return ::new (Object_DispatchCommandFour(sizeof(NiDirectionalLight))) NiDirectionalLight;
@@ -116,12 +125,15 @@ NiDirectionalLight* __cdecl CreateNiDirectionalLight()
 // Allocates a NiDirectionalLight, initializes it via FUN_00a75c20, copies member data and m_kWorldDir from the source, and returns the new object.
 // @fnv 0x00a75cf0
 // src: XBOX_PDB 0x00a75cf0
+// pdb: NiDirectionalLight::CreateClone | NiDirectionalLight.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* __fastcall NiDirectionalLight_CreateClone(NiDirectionalLight* light, void*, CloningProcess* kCloning)
 {
     NiDirectionalLight* pkObject = (NiDirectionalLight*)Object_DispatchCommandFour(sizeof(NiDirectionalLight));
 
     if (pkObject)
-        pkObject = (NiDirectionalLight*)NiDirectionalLight_NiDirectionalLight((char*)pkObject);
+        pkObject = (NiDirectionalLight*)NiDirectionalLight_ctor((char*)pkObject);
     else
         pkObject = 0;
 

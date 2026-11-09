@@ -2,6 +2,7 @@
 
 #include "BGSPrimitive.h"
 
+// pdb: class BGSPrimitivePlane, size 0x34, bases: BGSPrimitive, 0 members
 class BGSPrimitivePlane : public BGSPrimitive
 {
 public:
@@ -10,7 +11,7 @@ public:
     virtual void vf06();
     virtual void vf07();
 
-    void SetColor(NiColorA& color);
+    void SetColor(NiColorA& aColor);
     void Build();
     void NormalizeRadii(NiPoint3& radii);
 };

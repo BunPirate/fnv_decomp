@@ -2,6 +2,7 @@
 
 #include "NiMemObject.h"
 
+// pdb: class NiGeometryGroupManager, size 0x4, bases: NiMemObject, 0 members
 class NiGeometryGroupManager : public NiMemObject
 {
 public:

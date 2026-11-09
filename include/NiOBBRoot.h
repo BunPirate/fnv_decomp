@@ -2,6 +2,7 @@
 
 #include "NiPoint3.h"
 
+// pdb: class NiOBBRoot, size 0x80 (here 0x1c), 6 members
 class NiOBBRoot
 {
 public:

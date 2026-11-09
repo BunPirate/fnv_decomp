@@ -81,7 +81,7 @@ class GraphicsRenderer : public NiMemObject
     unsigned int pad24;
     RendererPacketEntry** entries;
     __declspec(noinline) bool HasPendingPackets();
-    static const char* GetD3DFormatName(_D3DFORMAT);
+    static const char* NiXenonRenderer_GetD3DFormatString(_D3DFORMAT);
     char remaining[0xb80 - 44];
     static GraphicsRenderer* Create(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int,
                                     unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int,
@@ -101,7 +101,7 @@ extern unsigned int DAT_011c5f84;
 class ShaderPassRenderer
 {
   public:
-    static unsigned int Create(unsigned int);
+    static unsigned int NiXenonRenderer_CreateDirect3D9(unsigned int);
 };
 class NiObject;
 extern "C" int fnv_CopyFilePath(char*, unsigned int, const char*, unsigned int);
@@ -192,7 +192,7 @@ char* NiTPointerListBase<NiTPointerAllocator<unsigned int>, char*>::RemoveTail()
 }
 extern "C" void* g_011f4430;
 void* __cdecl NiVertexColorProperty_GetRTTI();
-extern "C" int g_011f443c;
+extern "C" int NiZBufferProperty_ms_RTTI;
 int __cdecl NiZBufferProperty_GetRTTI();
 int __cdecl NiZBufferProperty_GetType_0();
 int __cdecl Object_ComputeValue_00dc9e60();
@@ -217,7 +217,7 @@ struct FUN_00e69b40_shell
     unsigned int count;
     unsigned int pad24;
     unsigned int* entries;
-    unsigned int GetEntry(unsigned int index);
+    unsigned int NiD3DShaderConstantMap_GetEntry(unsigned int pszKey);
 };
 unsigned int GetValueForIndex(unsigned int param);
 extern NiPoint3 DAT_011f474c;
@@ -264,7 +264,7 @@ struct FUN_00e75840_shell
     unsigned int color;
     void NiDX9Renderer_SetBackgroundColor(float* param);
 };
-extern "C" void* g_01270900;
+extern "C" void* NiShaderDeclaration_ms_RTTI;
 void* __cdecl NiShaderDeclaration_GetRTTI();
 struct FUN_00e758f0_shell
 {
@@ -480,7 +480,7 @@ struct BSBatchRenderer__AlphaList
 };
 struct NiConsoleRenderer_shellEx : GraphicsRenderer
 {
-    void __thiscall NiDX9Renderer_ReleaseD3DShader(NiD3DShaderInterface* shader);
+    void __thiscall NiXenonRenderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader);
 };
 void _delete(void*, unsigned int);
 struct S
@@ -825,7 +825,7 @@ struct FUN_00e76c30_Info
     unsigned int pad28;
     unsigned char* pucDest;  // +0x2c
 };
-unsigned int NiD3DShaderDeclaration_Pack_FloatToShort(FUN_00e76c30_Info* pkInfo);
+unsigned int NiD3DShaderDeclaration_Pack_FloatToShort(FUN_00e76c30_Info* kParams);
 void* _fnv_zlib_memset(void*, int, unsigned int);
 struct FUN_00e79f40_Stream
 {
@@ -844,7 +844,7 @@ struct FUN_00e79f40_Stream
     unsigned int pad28;
     char* dst;
 };
-int NiD3DShaderDeclaration_Pack_ByteToUByteColor(FUN_00e79f40_Stream* s);
+int NiD3DShaderDeclaration_Pack_ByteToUByteColor(FUN_00e79f40_Stream* kParams);
 struct FUN_00e78bd0_shell
 {
     bool flag;       // +0x00
@@ -872,7 +872,7 @@ extern DepthDevice* DAT_0126f0d8;
 int __cdecl _NiSprintf(char*, unsigned int, const char*, int, const char*, ...);
 void* _fnv_zlib_memset(void*, int, unsigned int);
 extern void* DAT_011c5f58;
-void __stdcall ReleaseRefCountedNode(void* param_1);
+void __stdcall ReleaseRefCountedNode(void* pkItem);
 struct FUN_00e76500_shell
 {
     unsigned int pad[7];
@@ -3012,7 +3012,7 @@ struct Packet_e6da60
     unsigned int unk1C;
     unsigned int m_uiCount;
     unsigned int* m_puiStreams;
-    void ResizeStreams(unsigned int ItemUpdateArray);
+    void ResizeStreams(unsigned int uiStreamCount);
     void SetSingleStream(unsigned int uiValue);
     void SetStreams(unsigned int uiValue);
 };
@@ -3733,6 +3733,7 @@ struct SourceManager
 extern const char DAT_010ed96c[];
 char* __cdecl GetHRESULTText(unsigned int status);
 void __cdecl Object_DoNothing(const char* format, const char* message);
+// pdb: class Renderer, size 0x1, 0 members
 struct Renderer
 {
     void* __thiscall LockRenderSource(SourceManager* manager, int* pitch);
@@ -4725,7 +4726,7 @@ struct RenderResource : RefObject
     unsigned int dataOffset;
     unsigned int unk54, unk58;
     unsigned char** dataBase;
-    RenderResource* FUN_00a7c190(int a, int b, ResourceDescriptor* d, int c, int e);
+    RenderResource* FUN_00a7c190(int uiWidth, int uiHeight, ResourceDescriptor* kFormat, int uiMipmapLevels, int uiFaces);
 };
 struct ResourceParameters
 {
@@ -4757,7 +4758,7 @@ struct RendererBridge
     bool InitializeRendererResources();
 };
 extern "C" __declspec(dllimport) long __stdcall fnv_InterlockedDecrement(long volatile*);
-extern char g_sentinel_012708e4;
+extern char NiRenderedCubeMap_ms_RTTI;
 class PktRefCounted
 {
   public:
@@ -6393,7 +6394,7 @@ struct D3DShaderStub
     virtual void v49();
     virtual void v50();
     virtual void UnloadShader();
-    void SetShaderObject(void* pkRenderer);
+    void SetShaderObject(void* pkD3DRenderer);
 };
 struct ConsoleRendererShaders
 {
@@ -9324,7 +9325,7 @@ struct StreamCopyInfo
     unsigned char* destination;
 };
 void* __cdecl _fnv_zlib_memset(void*, int, unsigned int);
-unsigned int __cdecl CopyVertexStream(StreamCopyInfo* stream);
+unsigned int __cdecl CopyVertexStream(StreamCopyInfo* kParams);
 void* _fnv_zlib_memset(void* dst, int val, unsigned int size);
 struct PackShortInfo
 {
@@ -9343,7 +9344,7 @@ struct PackShortInfo
     unsigned int pad28;
     unsigned char* pucDest;
 };
-unsigned int PackShortVertexData(PackShortInfo* pkInfo);
+unsigned int PackShortVertexData(PackShortInfo* kParams);
 void* _fnv_zlib_memset(void*, int, unsigned int);
 struct FUN_00e77590_Info
 {
@@ -9362,7 +9363,7 @@ struct FUN_00e77590_Info
     unsigned int pad28;
     unsigned char* pucDest;
 };
-unsigned int NiD3DShaderDeclaration_Pack_ByteToShort(FUN_00e77590_Info* pkInfo);
+unsigned int NiD3DShaderDeclaration_Pack_ByteToShort(FUN_00e77590_Info* kParams);
 void* _fnv_zlib_memset(void*, int, unsigned int);
 struct FUN_00e77950_Info
 {
@@ -9381,7 +9382,7 @@ struct FUN_00e77950_Info
     unsigned int pad28;
     unsigned char* pucDest;
 };
-unsigned int NiD3DShaderDeclaration_Pack_FloatToUnsignedByte(FUN_00e77950_Info* pkInfo);
+unsigned int NiD3DShaderDeclaration_Pack_FloatToUnsignedByte(FUN_00e77950_Info* kParams);
 void* _fnv_zlib_memset(void* dst, int val, unsigned int size);
 struct FUN_00e77eb0_Info
 {
@@ -9400,8 +9401,8 @@ struct FUN_00e77eb0_Info
     unsigned int pad28;
     unsigned char* pucDest;
 };
-unsigned int NiD3DShaderDeclaration_Pack_ShortToUnsignedByte(FUN_00e77eb0_Info* pkInfo);
-int __cdecl CopyStreamElements(FUN_00e79f40_Stream* pkInfo);
+unsigned int NiD3DShaderDeclaration_Pack_ShortToUnsignedByte(FUN_00e77eb0_Info* kParams);
+int __cdecl CopyStreamElements(FUN_00e79f40_Stream* kParams);
 struct Stream_e78910
 {
     unsigned int unk00;
@@ -9428,7 +9429,7 @@ static inline unsigned int PackColor_e78910(const short* v, unsigned short comps
         a = (unsigned short)v[3];
     return (((short)a & 0xff00) << 16) | ((v[0] & 0xff00) << 8) | (v[1] & 0xff00) | ((v[2] >> 8) & 0xff);
 }
-int PackVertexColors(Stream_e78910* s);
+int PackVertexColors(Stream_e78910* kParams);
 extern const char DAT_010ee7cc[];
 void __cdecl NiMemObject_ReleaseStorage_00aa1490(void* apMemory, unsigned int auiSize);
 struct FUN_00e78be0_cls
@@ -9466,7 +9467,7 @@ struct FUN_00e79370_Info
     unsigned int pad28;
     unsigned char* pucDest;
 };
-unsigned int NiD3DShaderDeclaration_Pack_UnsignedLongToFloat(FUN_00e79370_Info* pkInfo);
+unsigned int NiD3DShaderDeclaration_Pack_UnsignedLongToFloat(FUN_00e79370_Info* kParams);
 struct NormalizedStream
 {
     unsigned short lastComponent, unk02;
@@ -9477,7 +9478,7 @@ struct NormalizedStream
     unsigned unk14, sourceStride, elementSize, destStride, unk24, unk28;
     unsigned char* dest;
 };
-unsigned __cdecl NormalizeVertexStream(NormalizedStream* s);
+unsigned __cdecl NormalizeVertexStream(NormalizedStream* kParams);
 extern "C" const char DAT_010ee8a0[];
 struct FUN_00e7a640
 {
@@ -9933,7 +9934,7 @@ struct PackingGeometry
 };
 struct PackingVertexManager
 {
-    unsigned int NiDX9VertexBufferManager_PackSkinnedVB(NiGeometryData*, void*, PackingData*, unsigned short, void*, unsigned int);
+    unsigned int NiXenonVertexBufferManager_PackSkinnedVB(NiGeometryData*, void*, PackingData*, unsigned short, void*, unsigned int);
 };
 struct PackingIndexManager
 {
@@ -10023,7 +10024,7 @@ struct Mgr_e6e
 {
     unsigned int NiDX9SystemDesc_GetNearestDepthStencilFormat(int iA, int iFormat, int iB, int iC);
 };
-int __cdecl FUN_00e7bd20(int iFormat);
+int __cdecl FUN_00e7bd20(int kDesc);
 void* __cdecl CreatePixelFormat(unsigned int uiKey);
 struct FUN_00e6ee00_cls
 {
@@ -10869,7 +10870,7 @@ static inline bool IsKindOfType(const NiRTTI* pkTarget, const DepthBuffer* pkObj
     {
         if (pkRTTI == pkTarget)
             return true;
-        pkRTTI = pkRTTI->m_pBaseRTTI;
+        pkRTTI = pkRTTI->m_pkBaseRTTI;
     }
     return false;
 }
@@ -12079,7 +12080,7 @@ struct ResolveRenderer
     BoundCache cache;
     bool NiDX9Renderer_EndUsingRenderTargetGroup();
 };
-unsigned int ConvertVertexComponents(FUN_00e76c30_Info* info);
+unsigned int ConvertVertexComponents(FUN_00e76c30_Info* kParams);
 extern "C" void* __cdecl FUN_00ec61c0(void*, int, unsigned int);
 struct ByteVertexConversion
 {
@@ -12112,7 +12113,7 @@ struct ByteVertexConversion
 
     unsigned char* destination;
 };
-unsigned int __cdecl ConvertVertexFormat(ByteVertexConversion* info);
+unsigned int __cdecl ConvertVertexFormat(ByteVertexConversion* kParams);
 void* _fnv_zlib_memset(void* dst, int val, unsigned int size);
 struct FUN_00e77b50_Info
 {
@@ -12131,7 +12132,7 @@ struct FUN_00e77b50_Info
     unsigned int pad28;
     unsigned char* pucDest;
 };
-unsigned int NiD3DShaderDeclaration_Pack_LongToUnsignedByte(FUN_00e77b50_Info* pkInfo);
+unsigned int NiD3DShaderDeclaration_Pack_LongToUnsignedByte(FUN_00e77b50_Info* kParams);
 struct PackByteInfo
 {
     unsigned int field00;
@@ -12142,7 +12143,7 @@ struct PackByteInfo
     unsigned int field14, sourceStride, elementSize, destStride, field24, field28;
     unsigned char* dest;
 };
-unsigned int __cdecl PackByteElements(PackByteInfo* s);
+unsigned int __cdecl PackByteElements(PackByteInfo* kParams);
 extern "C" void* __cdecl fnv_zlib_memset(void*, int, unsigned int);
 inline unsigned short minimum(unsigned short a, unsigned short b)
 {
@@ -12156,7 +12157,7 @@ struct ByteFloatStream
     unsigned unk14, sourceStride, elementSize, destStride, unk24, unk28;
     unsigned char* dest;
 };
-unsigned __cdecl ConvertByteFloatStream(ByteFloatStream* s);
+unsigned __cdecl ConvertByteFloatStream(ByteFloatStream* kParams);
 struct ColorStream
 {
     unsigned int unk00;
@@ -12893,7 +12894,7 @@ struct ArrayObj;
 struct TargetObj
 {
 
-    bool Invoke(FUN_00e744b0_Src* p);
+    bool Invoke(FUN_00e744b0_Src* pkSkinPartition);
 };
 struct ArrayEntry
 {
@@ -13816,7 +13817,7 @@ struct FUN_00e759c0_cls
     unsigned char unk5e3;
     void NiDX9Renderer_GetBackgroundColor(float* out);
 };
-unsigned int __cdecl ConvertNormalizedShortsToFloats(NormalizedStream* s);
+unsigned int __cdecl ConvertNormalizedShortsToFloats(NormalizedStream* kParams);
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
 extern "C" const char* __stdcall D3DXGetVertexShaderProfile(void* pDevice);
@@ -13851,8 +13852,8 @@ struct ShaderEntry
     {
         return Object_DispatchCommandFour(size);
     }
-    ShaderEntry(unsigned int id, int target, int type, const ShaderName& name, const char* libraryName, int a2, int a3,
-                int a5, int a4) throw();
+    ShaderEntry(unsigned int uiVersion, int pcWorkingDir, int eType, const ShaderName& kShaderProfile, const char* pcMaterialIdentifier, int bAutoWriteCacheToDisk, int bWriteDebugHLSLFile,
+                int bLocked, int bLoad) throw();
     int unk00;
     int unk04;
     int unk08;
@@ -14075,6 +14076,9 @@ struct ShaderRenderer
 
 // @fnv 0x00e6bdc0
 // src: COMMUNITY 0x00e6bdc0
+// pdb: NiXenonRenderer::SetDefaultProgramCache | NiXenonRenderer.obj | retail, object-file run extension, low
+// pdb params: pkMaterial, bAutoWriteToDisk, bWriteDebugFile, bLoad, bNoNewProgramCreation, pcWorkingDir
+// pdb locals: pkCache, pcProfile, eType
 void ShaderRenderer::NiDX9Renderer_SetDefaultProgramCache(ShaderLibrary* lib, int a2, int a3, int a4, int a5, int target)
 {
     const char* profile = D3DXGetVertexShaderProfile(m_pDirectInputDevice);

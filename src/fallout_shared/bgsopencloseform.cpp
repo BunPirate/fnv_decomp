@@ -30,6 +30,7 @@ class AIThreadManager
     static TESObjectREFR* IsConditionMet();
 };
 bool IsConditionMet();
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -47,6 +48,9 @@ extern float DAT_0101ab70;
 void bhkNiCollisionObject_ResetSim(NiNode*, bool);
 
 // @fnv 0x0047a490
+// pdb: BGSOpenCloseForm::IsOpenCloseForm | BGSOpenCloseForm.obj | debug, call graph (shared callers), medium
+// pdb params: apForm
+// pdb locals: bskipcheck, bretval, ptest
 bool BGSOpenCloseForm::HasOpenCloseComponent(TESForm* apForm)
 {
     bool bResult = false;
@@ -74,18 +78,21 @@ bool BGSOpenCloseForm::HasOpenCloseComponent(TESForm* apForm)
 }
 
 // @fnv 0x0047b250
-int BGSOpenCloseForm::GetOpenState(TESObjectREFR* ref)
+// pdb: BGSOpenCloseForm::GetOpenState | BGSOpenCloseForm.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: eretval, bopen, ptopav, pmanager, po, popenseq, pcloseseq
+int BGSOpenCloseForm::GetOpenState(TESObjectREFR* apRef)
 {
     // Local names preserve MSVC9 stack allocation order.
     OPEN_STATE eState = CLOSED_UNKNOWN;
-    if (ref && HasOpenCloseComponent(ref->GetObjectReference()))
+    if (apRef && HasOpenCloseComponent(apRef->GetObjectReference()))
     {
-        bool pManager = ref->GetAction(OBJECT_ACTION_OBJECT_ACTION_OPEN);  // Saved open action flag.
+        bool pManager = apRef->GetAction(OBJECT_ACTION_OBJECT_ACTION_OPEN);  // Saved open action flag.
         if (pManager)
             eState = OPEN;
         else
             eState = CLOSED;
-        NiNode* pController = ref->GetNiNode();                                   // Reference scene node.
+        NiNode* pController = apRef->GetNiNode();                                   // Reference scene node.
         NiTimeController* pNode = pController ? pController->NiObjectNET::GetControllers() : 0;  // Controller chain.
         // Runtime RTTI cast to the controller manager.
         NiControllerManager* bOpen = (NiControllerManager*)NiObject_DynamicCast(&DAT_011f36ac, (NiProperty*)pNode);
@@ -107,21 +114,24 @@ int BGSOpenCloseForm::GetOpenState(TESObjectREFR* ref)
 }
 
 // @fnv 0x0047aec0
-bool BGSOpenCloseForm::SetOpenState(TESObjectREFR* ref, bool open, bool immediate)
+// pdb: BGSOpenCloseForm::SetOpenState | BGSOpenCloseForm.obj | retail, upstream name already matches, high
+// pdb params: apRef, abOpen, abSnap
+// pdb locals: bplayedanims, ptopav, pmanager, po, popenseq, pseqtostop, pseqtoplay, pcloseseq, UpdateData
+bool BGSOpenCloseForm::SetOpenState(TESObjectREFR* apRef, bool abOpen, bool abSnap)
 {
     bool result = false;
-    if (ref && HasOpenCloseComponent(ref->GetObjectReference()))
+    if (apRef && HasOpenCloseComponent(apRef->GetObjectReference()))
     {
-        if (IsConditionMet() && ref != AIThreadManager::IsConditionMet())
+        if (IsConditionMet() && apRef != AIThreadManager::IsConditionMet())
         {
-            TaskQueueInterface::GetSingleton()->TaskQueueInterface_QueueSetOpenState(ref, open, immediate);
+            TaskQueueInterface::GetSingleton()->TaskQueueInterface_QueueSetOpenState(apRef, abOpen, abSnap);
             return true;
         }
-        if (open)
-            ref->PerformAction(OBJECT_ACTION_OBJECT_ACTION_OPEN);
+        if (abOpen)
+            apRef->PerformAction(OBJECT_ACTION_OBJECT_ACTION_OPEN);
         else
-            ref->CloseReference(OBJECT_ACTION_OBJECT_ACTION_OPEN);
-        NiNode* node = ref->GetNiNode();
+            apRef->CloseReference(OBJECT_ACTION_OBJECT_ACTION_OPEN);
+        NiNode* node = apRef->GetNiNode();
         NiTimeController* manager = node ? node->NiObjectNET::GetControllers() : 0;  // Controller chain.
         // Runtime RTTI cast to the controller manager.
         NiControllerManager* controller = (NiControllerManager*)NiObject_DynamicCast(&DAT_011f36ac, (NiProperty*)manager);
@@ -133,7 +143,7 @@ bool BGSOpenCloseForm::SetOpenState(TESObjectREFR* ref, bool open, bool immediat
             NiControllerSequence* closing = controller->FindSequenceByName(*NiControllerManager::FindSequenceByName());
             if (opening && closing)
             {
-                if (open)
+                if (abOpen)
                 {
                     active = opening;
                     inactive = closing;
@@ -144,17 +154,17 @@ bool BGSOpenCloseForm::SetOpenState(TESObjectREFR* ref, bool open, bool immediat
                     inactive = opening;
                 }
                 controller->FUN_0047aa40(true);
-                if (immediate)
+                if (abSnap)
                 {
-                    ref->GetExtraData()->CallExtraDataListMethod36(0);
+                    apRef->GetExtraData()->ExtraDataList_SetRagDollData(0);
                     controller->StopSequence(active, 0.0f);
                     controller->ActivateControllerSequence(inactive, 0, false, 1.0f, 0.0f, static_cast<NiControllerSequence*>(0));
                     inactive->PathingLOSGridMap_SetSightRadius(-DAT_0101ab70);
                     NiUpdateData data(inactive->NiPSysSpawnModifier_GetLifeSpan(), true, false);
-                    ref->GetNiNode()->Update(static_cast<const NiUpdateData&>(data));
+                    apRef->GetNiNode()->Update(static_cast<const NiUpdateData&>(data));
                     controller->StopSequence(inactive, 0.0f);
-                    ref->TESObjectREFR_SetLastFinishedSequence(static_cast<const NiControllerSequence*>(active)->GetName());
-                    bhkNiCollisionObject_ResetSim(ref->GetNiNode(), true);
+                    apRef->TESObjectREFR_SetLastFinishedSequence(static_cast<const NiControllerSequence*>(active)->GetName());
+                    bhkNiCollisionObject_ResetSim(apRef->GetNiNode(), true);
                 }
                 else
                 {
@@ -162,26 +172,26 @@ bool BGSOpenCloseForm::SetOpenState(TESObjectREFR* ref, bool open, bool immediat
                     controller->ActivateControllerSequence(active, 0, false, 1.0f, 0.0f, static_cast<NiControllerSequence*>(0));
                     active->PathingLOSGridMap_SetSightRadius(-DAT_0101ab70);
                     NiUpdateData data(active->NiPSysSpawnModifier_GetLifeSpan(), true, false);
-                    ref->GetNiNode()->Update(static_cast<const NiUpdateData&>(data));
+                    apRef->GetNiNode()->Update(static_cast<const NiUpdateData&>(data));
                 }
                 result = true;
             }
         }
         else
         {
-            if (open)
-                ref->TESObjectREFR_SetLastFinishedSequence(DAT_01011f30);
+            if (abOpen)
+                apRef->TESObjectREFR_SetLastFinishedSequence(DAT_01011f30);
             else
-                ref->TESObjectREFR_SetLastFinishedSequence(g_011d22b0_arg1);
+                apRef->TESObjectREFR_SetLastFinishedSequence(g_011d22b0_arg1);
         }
-        if (immediate && *((Setting*)&g_011d7188)->FUN_00408d60() &&
-            static_cast<const TESForm*>(ref->GetObjectReference())->GetFormType() == ENUM_FORM_ID_DOOR_ID && ref->GetNiNode() &&
-            !ref->GetExtraRadioData())
+        if (abSnap && *((Setting*)&g_011d7188)->FUN_00408d60() &&
+            static_cast<const TESForm*>(apRef->GetObjectReference())->GetFormType() == ENUM_FORM_ID_DOOR_ID && apRef->GetNiNode() &&
+            !apRef->GetExtraRadioData())
         {
-            if (open)
-                NavMeshObstacleManager::GetSingleton()->RemoveObstacleReference(ref);
+            if (abOpen)
+                NavMeshObstacleManager::GetSingleton()->RemoveObstacleReference(apRef);
             else
-                NavMeshObstacleManager::GetSingleton()->AddObstacleReference(ref);
+                NavMeshObstacleManager::GetSingleton()->AddObstacleReference(apRef);
         }
     }
     return result;
@@ -211,6 +221,9 @@ NiFixedString* __cdecl FixedStrings_QSpecialIdle_AreaEffect()
 }
 
 // @fnv 0x0047a3a0
+// pdb: BGSOpenCloseForm::GetAsOpenCloseForm | BGSOpenCloseForm.obj | debug, call graph (shared callers), high
+// pdb params: apForm
+// pdb locals: pretval, pform
 BGSOpenCloseForm* GetOpenCloseForm(TESForm* apForm)
 {
     BGSOpenCloseForm* pOpenCloseForm = 0;
@@ -255,7 +268,7 @@ struct Ref;
 struct EventExtra
 {
     Ref* GetTarget();
-    void ResetTargetPointer(Ref*);
+    void ExtraDataList_SetOpenCloseActivateRef(Ref*);
 };
 struct Ref
 {
@@ -293,52 +306,56 @@ OpenCloseHandler* GetHandler(TESForm*);
 bool ShouldQueue();
 EventQueue* GetQueue();
 // @fnv 0x0047ac70
-void __cdecl ProcessOpenCloseEvent(Ref* ref, SequenceEvent* sequence)
+// src: XBOX_RETAIL_PDB 0x0047ac70
+// pdb: BGSOpenCloseForm::HandleAnimEnd | BGSOpenCloseForm.obj | retail, object-file run extension, high
+// pdb params: apAnimRef, apEndSeq
+// pdb locals: bwasOpenCloseAnim, pactionref, pocform
+void __cdecl BGSOpenCloseForm_HandleAnimEnd(Ref* apAnimRef, SequenceEvent* apEndSeq)
 {
     bool handled = false;
-    if (ref && sequence)
+    if (apAnimRef && apEndSeq)
     {
-        handled = ProcessEvent(ref, sequence);
-        if (!CompareEvent(sequence->GetName(), "Open"))
+        handled = ProcessEvent(apAnimRef, apEndSeq);
+        if (!CompareEvent(apEndSeq->GetName(), "Open"))
         {
             handled = true;
-            SetEventFlags(ref, ref->Extra(), 0x10000);
-            Ref* openTarget = ref->Extra()->GetTarget();
+            SetEventFlags(apAnimRef, apAnimRef->Extra(), 0x10000);
+            Ref* openTarget = apAnimRef->Extra()->GetTarget();
             if (openTarget)
             {
-                OpenCloseHandler* openHandler = GetHandler(ref->Base());
+                OpenCloseHandler* openHandler = GetHandler(apAnimRef->Base());
                 if (openHandler)
-                    openHandler->Open(ref, openTarget);
-                ref->Extra()->ResetTargetPointer(0);
+                    openHandler->Open(apAnimRef, openTarget);
+                apAnimRef->Extra()->ExtraDataList_SetOpenCloseActivateRef(0);
                 if (openTarget == player && openHandler && openHandler->IsSpecial())
                     player->Reset(false);
             }
-            if (*setting.Bool() && ref->Base()->GetFormType() == 28)
+            if (*setting.Bool() && apAnimRef->Base()->GetFormType() == 28)
             {
                 if (ShouldQueue())
-                    GetQueue()->Open(ref);
+                    GetQueue()->Open(apAnimRef);
                 else
-                    ObstacleManager::GetSingleton()->Open(ref);
+                    ObstacleManager::GetSingleton()->Open(apAnimRef);
             }
         }
-        else if (!CompareEvent(sequence->GetName(), "Close"))
+        else if (!CompareEvent(apEndSeq->GetName(), "Close"))
         {
             handled = true;
-            SetEventFlags(ref, ref->Extra(), 0x20000);
-            Ref* closeTarget = ref->Extra()->GetTarget();
+            SetEventFlags(apAnimRef, apAnimRef->Extra(), 0x20000);
+            Ref* closeTarget = apAnimRef->Extra()->GetTarget();
             if (closeTarget)
             {
-                OpenCloseHandler* closeHandler = GetHandler(ref->Base());
+                OpenCloseHandler* closeHandler = GetHandler(apAnimRef->Base());
                 if (closeHandler)
-                    closeHandler->Close(ref, closeTarget);
-                ref->Extra()->ResetTargetPointer(0);
+                    closeHandler->Close(apAnimRef, closeTarget);
+                apAnimRef->Extra()->ExtraDataList_SetOpenCloseActivateRef(0);
             }
-            if (*setting.Bool() && ref->Base()->GetFormType() == 28)
+            if (*setting.Bool() && apAnimRef->Base()->GetFormType() == 28)
             {
                 if (ShouldQueue())
-                    GetQueue()->Close(ref);
+                    GetQueue()->Close(apAnimRef);
                 else
-                    ObstacleManager::GetSingleton()->Close(ref);
+                    ObstacleManager::GetSingleton()->Close(apAnimRef);
             }
         }
     }

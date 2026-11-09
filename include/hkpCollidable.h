@@ -12,6 +12,7 @@ class hkpShape;
 struct ClassMemberDescriptor;
 struct hkFinishLoadedObjectFlagCD2C;
 
+// pdb: class hkpCollidable, size 0x50, bases: hkpCdBody, 6 members
 class hkpCollidable
 {
 public:
@@ -103,10 +104,10 @@ public:
     unsigned int m_uiCollisionShapeKey;
     const void* m_pMotionState;
     const hkpCdBody* m_parent;
-    signed char m_iOwnerOffset;
-    unsigned char m_uiForceCollideOntoPpu;
-    unsigned short m_uiShapeSizeOnSpu;
-    hkpTypedBroadPhaseHandle m_kBroadPhaseHandle;
-    hkpCollidableBoundingVolumeData m_kBoundingVolumeData;
-    float m_fAllowedPenetrationDepth;
+    signed char m_ownerOffset;
+    unsigned char m_forceCollideOntoPpu;
+    unsigned short m_shapeSizeOnSpu;
+    hkpTypedBroadPhaseHandle m_broadPhaseHandle;
+    hkpCollidableBoundingVolumeData m_boundingVolumeData;
+    float m_allowedPenetrationDepth;
 };

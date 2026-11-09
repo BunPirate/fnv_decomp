@@ -3,6 +3,7 @@
 #include "ingredientitem.h"
 
 // @fnv 0x00409c40
+// pdb: IngredientItem::ClearData | IngredientItem.obj | debug, object-file run extension, low
 void IngredientItem::ResetFormData()
 {
     data.m_iEffectIndex = -1;
@@ -11,6 +12,7 @@ void IngredientItem::ResetFormData()
 }
 
 // @fnv 0x00409d40
+// pdb: IngredientItem::InitItem | IngredientItem.obj | retail, upstream name already matches, high
 void IngredientItem::InitItem()
 {
     if (IsFormInitialized())
@@ -31,6 +33,7 @@ struct FUN_00409a30_shell
 // Returns true if the byte at offset 0xa0 has any of the bits in aFlag set.
 // @fnv 0x00409a30
 // src: COMMUNITY 0x00409a30
+// pdb: IngredientItem::IsAutoCalc | IngredientItem.obj | debug, object-file run extension, low
 bool FUN_00409a30_shell::IngredientItem_GetFlag(unsigned int aFlag)
 {
     return (reinterpret_cast<unsigned char*>(this)[0xa0] & aFlag) != 0;
@@ -58,6 +61,7 @@ struct FUN_00409a10_shell : public FUN_00409a30_shell
 };
 // @fnv 0x00409a10
 // src: COMMUNITY 0x00409a10
+// pdb: IngredientItem::IsFood | IngredientItem.obj | debug, upstream name already matches, high
 void FUN_00409a10_shell::IngredientItem_IsFood()
 {
     ((FUN_00409a30_shell*)((char*)this - 0x3C))->IngredientItem_GetFlag(2);
@@ -70,6 +74,8 @@ struct FUN_00409a50_shell : FUN_00409a30_shell
 
 // @fnv 0x00409a50
 // src: COMMUNITY 0x00409a50
+// pdb: IngredientItem::SetAutoCalc | IngredientItem.obj | debug, object-file run extension, low
+// pdb params: abValue
 bool FUN_00409a50_shell::IngredientItem_EffectItemList_GetIngredientFlag1()
 {
     return !IngredientItem_GetFlag(1);
@@ -119,6 +125,7 @@ struct FUN_00409c70_shell
 
 // @fnv 0x00409c70
 // src: XBOX_PDB 0x00409c70
+// pdb: IngredientItem::SaveMagicItemComponents | IngredientItem.obj | retail, upstream name already matches, high
 void __thiscall FUN_00409c70_shell::IngredientItem_SaveMagicItemComponents()
 {
     ((S_0048a520*)((char*)this + 0x1c))->ProcessAndFreeData(0x4c444f4d, 0x54444f4d, 0x53444f4d);
@@ -192,6 +199,7 @@ struct FUN_004098f0 : FUN_00402b40, B2_4fe, TESIcon, FUN_0048cc50, FUN_0048eac0,
     FUN_004098f0();
 };
 // @fnv 0x004098f0
+// pdb: IngredientItem::IngredientItem | IngredientItem.obj | retail, call graph, high
 FUN_004098f0::FUN_004098f0()
 {
     ((S_004f15a0*)this)->FUN_004f15a0(0x1d);
@@ -313,14 +321,17 @@ struct FUN_0040a040_cls
     char unk00[0x70];
     unsigned char m_70;
 
-    void IngredientItem_CopyMagicItemData(unsigned int aFlag);
+    void IngredientItem_CopyMagicItemData(unsigned int apCopy);
 };
 
 // @fnv 0x0040a040
 // src: COMMUNITY 0x0040a040
-void FUN_0040a040_cls::IngredientItem_CopyMagicItemData(unsigned int aFlag)
+// pdb: IngredientItem::CopyMagicItemData | IngredientItem.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: palchemy
+void FUN_0040a040_cls::IngredientItem_CopyMagicItemData(unsigned int apCopy)
 {
-    S_00586150_obj* obj = (S_00586150_obj*)FUN_00ec43fb(aFlag, 0, DAT_01183140, DAT_011839dc, 0);
+    S_00586150_obj* obj = (S_00586150_obj*)FUN_00ec43fb(apCopy, 0, DAT_01183140, DAT_011839dc, 0);
     if (obj == 0)
     {
     }
@@ -336,7 +347,7 @@ extern "C" void* __cdecl _alloca(unsigned int);
 struct LCFile
 {
     unsigned int GetChunkSize();
-    bool GetChunkData(void* apData, unsigned int auiSize);
+    bool GetChunkData(void* pdata, unsigned int maxSize);
     bool GetChunkData(unsigned int* apData);
     unsigned short GetFormVersion();
 };
@@ -356,7 +367,7 @@ struct LCForm
     int unk28;
     int unk2C;
 
-    void ReadTypedData(LCFile* apFile, void* apUnk, unsigned short ausVersion);
+    void ReadTypedData(LCFile* apFile, void* apData, unsigned short asSize);
 };
 
 struct LCLoader
@@ -381,7 +392,7 @@ struct LCModel
     int unk18;
     int unk1C;
 
-    bool LoadTextureSwaps(void* apData, unsigned int auiSize, unsigned int auiVersion);
+    bool UnpackTextureSwapChunkData(void* apData, unsigned int auiSize, unsigned int auiVersion);
 };
 
 struct LCScriptable
@@ -393,7 +404,7 @@ struct LCScriptable
     int unk10;
 
     void SetScriptID(unsigned int auiFormID);
-    void InitItem(LCForm* apForm);
+    void InitItem(LCForm* apOwner);
 };
 
 struct LCEquipType
@@ -410,19 +421,22 @@ struct LCDestructible
 };
 
 void __cdecl LCLoadModel(LCModel* apModel, LCFile* apFile);
-void __cdecl LCLoadIcon(TESIcon* apIcon, LCFile* apFile);
-void __cdecl LCLoadDestructible(LCDestructible* apDestructible, LCFile* apFile);
+void __cdecl LCLoadIcon(TESIcon* apTexture, LCFile* apFile);
+void __cdecl LCLoadDestructible(LCDestructible* apDestruct, LCFile* apFile);
 
 struct LCItem : LCForm, LCLoader, LCModel, TESIcon, LCScriptable, LCEquipType, LCDestructible
 {
-    virtual void IngredientItem_LoadMagicItemChunk(LCFile* apFile, int aiChunk);
+    virtual void IngredientItem_LoadMagicItemChunk(LCFile* apFile, int apChunkID);
 };
 
 // @fnv 0x00409da0
 // src: COMMUNITY 0x00409da0
-void LCItem::IngredientItem_LoadMagicItemChunk(LCFile* apFile, int aiChunk)
+// pdb: IngredientItem::LoadMagicItemChunk | IngredientItem.obj | retail, upstream name already matches, high
+// pdb params: apFile, apChunkID
+// pdb locals: isize, pdata, tempint
+void LCItem::IngredientItem_LoadMagicItemChunk(LCFile* apFile, int apChunkID)
 {
-    switch (aiChunk)
+    switch (apChunkID)
     {
     case 'LDOM':
     case 'DSOM':
@@ -434,7 +448,7 @@ void LCItem::IngredientItem_LoadMagicItemChunk(LCFile* apFile, int aiChunk)
         unsigned int uiSize = apFile->GetChunkSize();
         void* pBuffer = _alloca(uiSize);
         apFile->GetChunkData(pBuffer, uiSize);
-        LCModel::LoadTextureSwaps(pBuffer, uiSize, apFile->GetFormVersion());
+        LCModel::UnpackTextureSwapChunkData(pBuffer, uiSize, apFile->GetFormVersion());
         break;
     }
     case 'NOCI':
@@ -507,6 +521,7 @@ class Obj409 : public PrimaryBase409, public StreamIface409
 
 // @fnv 0x00409ce0
 // src: COMMUNITY 0x00409ce0
+// pdb: IngredientItem::Endian | IngredientItem.obj | debug, upstream name already matches, high
 void Obj409::IngredientItem_Endian()
 {
     if (TESForm_QEndianSwapOnSave())
@@ -535,6 +550,7 @@ struct FUN_0040a140 : BaseZero, BaseTwelve
 };
 // Destructor that calls BaseTwelve::FUN_00406340().
 // @fnv 0x0040a140
+// pdb: MagicItem::~MagicItem | MagicItem.obj | retail, call graph, high
 FUN_0040a140::~FUN_0040a140()
 {
     BaseTwelve::RemoveAllEffects();

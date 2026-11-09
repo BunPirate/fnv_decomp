@@ -11,14 +11,17 @@ struct FUN_00d2bcd0_class
     void* m_08;
     void* m_0c;
     char m_10;
-    void ReadOrMarkFailed(void* buffer, unsigned int count);
+    void ReadOrMarkFailed(void* buf, unsigned int nbytes);
 };
 
 // Reads count bytes from the stream at m_0c into buffer; if fread returns no bytes, sets m_10 to 0.
 // @fnv 0x00d2bcd0
-void FUN_00d2bcd0_class::ReadOrMarkFailed(void* buffer, unsigned int count)
+// pdb: hkStdioStreamReader::read | hkStdioStreamReader.obj | retail, vtable slot, high
+// pdb params: buf, nbytes
+// pdb locals: assertBuf, ostr
+void FUN_00d2bcd0_class::ReadOrMarkFailed(void* buf, unsigned int nbytes)
 {
-    if ((int)fread(buffer, 1, count, m_0c) > 0)
+    if ((int)fread(buf, 1, nbytes, m_0c) > 0)
         return;
     m_10 = 0;
 }
@@ -81,12 +84,14 @@ struct FileObject
     void* unk08;
     void* stream;
     int unk10;
-    bool Seek(long offset, int origin);
+    bool Seek(long offset, int whence);
 };
 // @fnv 0x00d2bd30
-bool FileObject::Seek(long lOffset, int origin)
+// pdb: hkStdioStreamReader::seek | hkStdioStreamReader.obj | retail, vtable slot, high
+// pdb params: offset, whence
+bool FileObject::Seek(long offset, int whence)
 {
-    return _fseek(stream, lOffset, origin) != 0;
+    return _fseek(stream, offset, whence) != 0;
 }
 
 struct ReaderWithPosition
@@ -105,10 +110,12 @@ struct ReaderWithPosition
     virtual int GetPosition() = 0;
     int unk04;
     int position;
-    int SetPositionFromReader(int unused);
+    int SetPositionFromReader(int markLimit);
 };
 // @fnv 0x00d2bdd0
-int ReaderWithPosition::SetPositionFromReader(int unused)
+// pdb: hkSeekableStreamReader::setMark | hkStdioStreamReader.obj | retail, vtable slot, high
+// pdb params: markLimit
+int ReaderWithPosition::SetPositionFromReader(int markLimit)
 {
     int value = GetPosition();
     int failed = value == -1;
@@ -207,6 +214,8 @@ struct StdioStreamReader
 
 // Initialises the stream object and opens fname in binary read mode, storing the handle and setting the flag to whether opening succeeded.
 // @fnv 0x00d2bd60
+// pdb: hkStdioStreamReader::hkStdioStreamReader | hkStdioStreamReader.obj | debug, call graph, medium
+// pdb params: nameIn
 StdioStreamReader* StdioStreamReader::OpenFile(const char* fname)
 {
     refCount = 1;
@@ -241,6 +250,7 @@ struct CpuObject
     CpuObject* FUN_00d2be00(unsigned int flags);
 };
 // @fnv 0x00d2be00
+// pdb: hkStdioStreamReader::`scalar deleting destructor' | hkStdioStreamReader.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00d2be00(unsigned int flags)
 {
     DestroyFileHandle();

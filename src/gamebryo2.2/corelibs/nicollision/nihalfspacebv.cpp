@@ -111,17 +111,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -194,13 +194,13 @@ inline const Point& PlaneNormal(const NiPlane& plane)
 template <class Point>
 inline float PlaneDistance(const NiPlane& plane, const Point& point)
 {
-    return PlaneNormal<Point>(plane) * point - plane.c;
+    return PlaneNormal<Point>(plane) * point - plane.m_fConstant;
 }
 
 template <>
 inline float PlaneDistance<LocalVec3>(const NiPlane& plane, const LocalVec3& point)
 {
-    return PlaneNormal<LocalVec3>(plane).Dot(point) - plane.c;
+    return PlaneNormal<LocalVec3>(plane).Dot(point) - plane.m_fConstant;
 }
 
 // src/gamebryo2.2/corelibs/nicollision/nihalfspacebv.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nicollision/nihalfspacebv.cpp).
@@ -210,6 +210,9 @@ extern "C" void __cdecl SetFromPlane(const NiBoundingVolume* kABV);
 
 // @fnv 0x00e9cc10
 // src: GAMEBRYO_LIB 0x00e9cc10
+// pdb: NiHalfSpaceBV::Copy | NiHalfSpaceBV.obj | debug, upstream name already matches, high
+// pdb params: kABV
+// pdb locals: kHBV
 void __cdecl NiHalfSpaceBV_Copy(const NiBoundingVolume* kABV)
 {
     SetFromPlane(kABV + 1);
@@ -234,6 +237,8 @@ void NiHalfSpaceBV::SaveBinary_00e9cb80(NiStream& kStream)
 
 // Compares the type and half-space plane of the two bounding volumes.
 // @fnv 0x00e9cc20
+// pdb: NiHalfSpaceBV::operator!= | NiHalfSpaceBV.obj | debug, object-file run extension, low
+// pdb params: kABV
 int NiHalfSpaceBV::MatchesBoundingVolume(const NiBoundingVolume& kABV) const
 {
     if (kABV.F3() == 5)
@@ -255,11 +260,12 @@ extern P03MM g_memoryManager;
 
 // @fnv 0x00e9e700
 // src: GAMEBRYO_SRC 0x00e9e700
+// pdb: NiHalfSpaceBV::Create | NiHalfSpaceBV.obj | retail, upstream name already matches, high
 NiBoundingVolume* NiHalfSpaceBV_Create()
 {
     NiHalfSpaceBV* p = (NiHalfSpaceBV*)g_memoryManager.Allocate(32);
     if (p)
-        return p->NiHalfSpaceBV_00e9e680(_NiPoint3_ZERO, DAT_011a9478);
+        return p->NiHalfSpaceBV_ctor(_NiPoint3_ZERO, DAT_011a9478);
     return 0;
 }
 
@@ -272,19 +278,22 @@ struct D_00e9e980
     char _10[4];
     int m_found;
 };
-bool __cdecl CallConditionFunction(float, void*, void*, void*, void*);
+bool __cdecl NiBoundingVolume_TestIntersect(float, void*, void*, void*, void*);
 // Scans the pointer array in d up to m_cnt, calls CallConditionFunction on each element, and on success stores the index in m_found and returns true.
 // @fnv 0x00e9e980
 // src: GAMEBRYO_LIB 0x00e9e980
-bool __cdecl NiUnionBV_UnionOtherTestIntersect(float afValue, D_00e9e980* pContainer, void* a, void* b, void* c)
+// pdb: NiUnionBV::UnionOtherTestIntersect | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1
+// pdb locals: kUnionABV0, i, pkABV
+bool __cdecl NiUnionBV_UnionOtherTestIntersect(float fTime, D_00e9e980* kABV0, void* kV0, void* kABV1, void* kV1)
 {
     unsigned int i = 0;
-    for (; i < pContainer->m_cnt; ++i)
+    for (; i < kABV0->m_cnt; ++i)
     {
-        void* e = pContainer->m_pp[i];
-        if (CallConditionFunction(afValue, e, a, b, c))
+        void* e = kABV0->m_pp[i];
+        if (NiBoundingVolume_TestIntersect(fTime, e, kV0, kABV1, kV1))
         {
-            pContainer->m_found = (int)i;
+            kABV0->m_found = (int)i;
             return true;
         }
     }
@@ -303,13 +312,16 @@ void NiHalfSpaceBV::LoadBinary_00e9cb50(NiStream& stream)
 
 // Copies the plane normal into this half-space and stores the distance divided by the normal's length.
 // @fnv 0x00e9cbb0
+// pdb: NiHalfSpaceBV::SetPlane | NiHalfSpaceBV.obj | debug, object-file run extension, low
+// pdb params: kPlane
+// pdb locals: kNormal, fConstant, fLength
 void NiHalfSpaceBV::SetFromPlane(const NiPlane* apPlane)
 {
     NiPoint3 normalized = *reinterpret_cast<const NiPoint3*>(apPlane);
-    const double originalDistance = apPlane->c;
+    const double originalDistance = apPlane->m_fConstant;
     float adjustedDistance = static_cast<float>(originalDistance / reinterpret_cast<NiPoint3*>(&normalized)->FUN_00457910());
     *reinterpret_cast<NiPoint3*>(&m_kHalfSpacePlane) = normalized;
-    m_kHalfSpacePlane.c = adjustedDistance;
+    m_kHalfSpacePlane.m_fConstant = adjustedDistance;
 }
 
 struct AffineMatrix
@@ -318,21 +330,24 @@ struct AffineMatrix
 };
 
 // @fnv 0x00e9cc60
+// pdb: NiHalfSpaceBV::UpdateWorldData | NiHalfSpaceBV.obj | debug, object-file run extension, low
+// pdb params: kModelABV, kWorld
+// pdb locals: kModelHlfABV, kNormal, fConstant
 void NiHalfSpaceBV::TransformPlane(const NiHalfSpaceBV& source, const AffineMatrix& matrix)
 {
     NiPoint3 transformedNormal;
-    const volatile float& x = source.m_kHalfSpacePlane.x;
+    const volatile float& x = source.m_kHalfSpacePlane.m_kNormal;
     const volatile float& m = matrix.r00;
     transformedNormal.x = m * x + matrix.r01 * source.m_kHalfSpacePlane.y + matrix.r02 * source.m_kHalfSpacePlane.z;
-    transformedNormal.y = matrix.r10 * source.m_kHalfSpacePlane.x + matrix.r11 * source.m_kHalfSpacePlane.y + matrix.r12 * source.m_kHalfSpacePlane.z;
-    transformedNormal.z = matrix.r20 * source.m_kHalfSpacePlane.x + matrix.r21 * source.m_kHalfSpacePlane.y + matrix.r22 * source.m_kHalfSpacePlane.z;
+    transformedNormal.y = matrix.r10 * source.m_kHalfSpacePlane.m_kNormal + matrix.r11 * source.m_kHalfSpacePlane.y + matrix.r12 * source.m_kHalfSpacePlane.z;
+    transformedNormal.z = matrix.r20 * source.m_kHalfSpacePlane.m_kNormal + matrix.r21 * source.m_kHalfSpacePlane.y + matrix.r22 * source.m_kHalfSpacePlane.z;
     const volatile NiPoint3& t = transformedNormal;
     float translation = matrix.t0 * t.x + matrix.t1 * t.y + matrix.t2 * t.z;
     double newDistance = static_cast<volatile float&>(translation);
-    newDistance += matrix.scale * source.m_kHalfSpacePlane.c;
+    newDistance += matrix.scale * source.m_kHalfSpacePlane.m_fConstant;
     float result = (float)newDistance;
     *reinterpret_cast<NiPoint3*>(&m_kHalfSpacePlane) = transformedNormal;
-    m_kHalfSpacePlane.c = result;
+    m_kHalfSpacePlane.m_fConstant = result;
 }
 
 struct V3
@@ -355,25 +370,28 @@ static float Dot(const V3& l, const V3& r)
 }
 // @fnv 0x00e9cf50
 // src: GAMEBRYO_LIB 0x00e9cf50
-bool __cdecl NiHalfSpaceBV_HalfSpaceCapsuleTestIntersect(float afScale, NiHalfSpaceBV* apPlane, V3* apStart, PB* b, V3* apEnd)
+// pdb: NiHalfSpaceBV::HalfSpaceCapsuleTestIntersect | NiHalfSpaceBV.obj | debug, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1
+// pdb locals: kCapsule, fRHS, fSignedDistance0, fNdV, kCapABV, kDeltaV, kHalfABV, fSignedDistance1, kPlane
+bool __cdecl NiHalfSpaceBV_HalfSpaceCapsuleTestIntersect(float fTime, NiHalfSpaceBV* kABV0, V3* kV0, PB* kABV1, V3* kV1)
 {
-    float dist = Dot(b->u, PlaneNormal<V3>(apPlane->m_kHalfSpacePlane));
-    dist = dist - apPlane->m_kHalfSpacePlane.c;
-    float t = -b->r;
+    float dist = Dot(kABV1->u, PlaneNormal<V3>(kABV0->m_kHalfSpacePlane));
+    dist = dist - kABV0->m_kHalfSpacePlane.m_fConstant;
+    float t = -kABV1->r;
     if (dist >= t)
         return true;
-    float d2 = Dot(b->w, PlaneNormal<V3>(apPlane->m_kHalfSpacePlane));
+    float d2 = Dot(kABV1->w, PlaneNormal<V3>(kABV0->m_kHalfSpacePlane));
     d2 = d2 + dist;
     if (d2 >= t)
         return true;
     V3 v;
-    v.x = apEnd->x - apStart->x;
-    v.y = apEnd->y - apStart->y;
-    v.z = apEnd->z - apStart->z;
-    float fDot = PlaneNormal<V3>(apPlane->m_kHalfSpacePlane).x * v.x + PlaneNormal<V3>(apPlane->m_kHalfSpacePlane).y * v.y + PlaneNormal<V3>(apPlane->m_kHalfSpacePlane).z * v.z;
+    v.x = kV1->x - kV0->x;
+    v.y = kV1->y - kV0->y;
+    v.z = kV1->z - kV0->z;
+    float fDot = PlaneNormal<V3>(kABV0->m_kHalfSpacePlane).x * v.x + PlaneNormal<V3>(kABV0->m_kHalfSpacePlane).y * v.y + PlaneNormal<V3>(kABV0->m_kHalfSpacePlane).z * v.z;
     if (fDot <= 0.0f)
         return false;
-    float e = -(fDot * afScale + b->r);
+    float e = -(fDot * fTime + kABV1->r);
     return e <= dist || d2 >= e;
 }
 
@@ -383,15 +401,17 @@ extern void (__cdecl *const __identifier("??_7NiHalfSpaceBV@@6B@")[])();
 // The shared initializer names the constructor entry point without introducing
 // destructor cleanup that the original constructor does not have.
 // @fnv 0x00e9e680
-// src: GAMEBRYO_LIB 0x00e9e680
-NiBoundingVolume* NiHalfSpaceBV::NiHalfSpaceBV_00e9e680(const NiPoint3& akPoint, const NiPoint3& kNormal)
+// src: XBOX_RETAIL_PDB 0x00e9e680
+// pdb: NiHalfSpaceBV::NiHalfSpaceBV | NiHalfSpaceBV.obj | retail, call graph (shared callers), high
+// pdb params: kABV
+NiBoundingVolume* NiHalfSpaceBV::NiHalfSpaceBV_ctor(const NiPoint3& kPoint, const NiPoint3& kNormal)
 {
     *reinterpret_cast<const void**>(this) = reinterpret_cast<const void*>(__identifier("??_7NiHalfSpaceBV@@6B@"));
     m_kHalfSpacePlane.NiPlane::NiPlane();
-    m_kCenter = akPoint;
+    m_kCenter = kPoint;
     NiPlane m_kFogPlane;
     *reinterpret_cast<NiPoint3*>(&m_kFogPlane) = kNormal;
-    m_kFogPlane.c = akPoint.x * kNormal.x + akPoint.y * kNormal.y + akPoint.z * kNormal.z;
+    m_kFogPlane.m_fConstant = kPoint.x * kNormal.x + kPoint.y * kNormal.y + kPoint.z * kNormal.z;
     SetFromPlane(m_kFogPlane);
     return this;
 }
@@ -399,6 +419,8 @@ NiBoundingVolume* NiHalfSpaceBV::NiHalfSpaceBV_00e9e680(const NiPoint3& akPoint,
 // Allocates a half-space, initializes its plane, and copies the plane and center.
 // @fnv 0x00e9e730
 // src: GAMEBRYO_SRC 0x00e9e730
+// pdb: NiHalfSpaceBV::Clone | NiHalfSpaceBV.obj | retail, object-file gap fill, high
+// pdb locals: pkClone
 NiBoundingVolume* NiHalfSpaceBV::Clone_00e9e730()
 {
     NiHalfSpaceBV* clone = static_cast<NiHalfSpaceBV*>(g_memoryManager.Allocate(sizeof(NiHalfSpaceBV)));
@@ -424,18 +446,22 @@ NiBoundingVolume* NiHalfSpaceBV_Create();
 
 // Allocates a half-space from two point constants, then loads it from the stream.
 // @fnv 0x00e9e780
-NiBoundingVolume* __cdecl CreateBoundingVolumeAndCall(void* apArg)
+// src: XBOX_RETAIL_PDB 0x00e9e780
+// pdb: NiHalfSpaceBV::CreateFromStream | NiHalfSpaceBV.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: pkABV
+NiBoundingVolume* __cdecl NiHalfSpaceBV_CreateFromStream(void* kStream)
 {
     NiHalfSpaceBV* helper = static_cast<NiHalfSpaceBV*>(g_memoryManager.Allocate(0x20));
 
     NiBoundingVolume* result;
 
     if (helper)
-        result = helper->NiHalfSpaceBV_00e9e680(DAT_011f426c, DAT_011a9478);
+        result = helper->NiHalfSpaceBV_ctor(DAT_011f426c, DAT_011a9478);
     else
         result = 0;
 
-    result->LoadBinary(*static_cast<NiStream*>(apArg));
+    result->LoadBinary(*static_cast<NiStream*>(kStream));
     return result;
 }
 
@@ -468,33 +494,39 @@ class E9E7D0StrArray
 
 // Formats "<pcName> = HALFSPACE_BV" into a newly allocated buffer and appends it to pkStrings.
 // @fnv 0x00e9e7d0
-void NiHalfSpaceBV::AddViewerStrings(char* pcName, NiTPrimitiveArray<char*>* pkStrings)
+// pdb: NiHalfSpaceBV::AddViewerStrings | NiHalfSpaceBV.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, pkStrings
+// pdb locals: pString, uiLen
+void NiHalfSpaceBV::AddViewerStrings(char* pcPrefix, NiTPrimitiveArray<char*>* pkStrings)
 {
-    unsigned int uiLen = strlen(pcName) + 16;
+    unsigned int uiLen = strlen(pcPrefix) + 16;
     char* pcString = static_cast<char*>(NiMalloc(uiLen));
-    FUN_00a305b0(pcString, uiLen, "%s = HALFSPACE_BV", pcName);
+    FUN_00a305b0(pcString, uiLen, "%s = HALFSPACE_BV", pcPrefix);
     reinterpret_cast<E9E7D0StrArray*>(pkStrings)->Add(pcString);
 }
 
 // @fnv 0x00e9d070
 // src: GAMEBRYO_LIB 0x00e9d070
-bool __cdecl NiHalfSpaceBV_HalfSpaceHalfSpaceTestIntersect(float fT, NiHalfSpaceBV* a, NiPoint3* p0, NiHalfSpaceBV* b, NiPoint3* p1)
+// pdb: NiHalfSpaceBV::HalfSpaceHalfSpaceTestIntersect | NiHalfSpaceBV.obj | debug, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1
+// pdb locals: kHalfABV0, kHalfABV1, kPlane1, kPlane0, fNdV, kDeltaV, fDot
+bool __cdecl NiHalfSpaceBV_HalfSpaceHalfSpaceTestIntersect(float fTime, NiHalfSpaceBV* kABV0, NiPoint3* kV0, NiHalfSpaceBV* kABV1, NiPoint3* kV1)
 {
-    const NiPoint3& na = PlaneNormal<NiPoint3>(a->m_kHalfSpacePlane);
-    const NiPoint3& nb = PlaneNormal<NiPoint3>(b->m_kHalfSpacePlane);
-    float fDot = nb.y * na.y + na.x * PlaneNormal<NiPoint3>(b->m_kHalfSpacePlane).x + nb.z * na.z;
+    const NiPoint3& na = PlaneNormal<NiPoint3>(kABV0->m_kHalfSpacePlane);
+    const NiPoint3& nb = PlaneNormal<NiPoint3>(kABV1->m_kHalfSpacePlane);
+    float fDot = nb.y * na.y + na.x * PlaneNormal<NiPoint3>(kABV1->m_kHalfSpacePlane).x + nb.z * na.z;
     if (fDot > (double)-0.999999f)
         return true;
-    if (a->m_kHalfSpacePlane.c <= -b->m_kHalfSpacePlane.c)
+    if (kABV0->m_kHalfSpacePlane.m_fConstant <= -kABV1->m_kHalfSpacePlane.m_fConstant)
         return true;
     NiPoint3 vDelta;
-    vDelta.x = p1->x - p0->x;
-    vDelta.y = p1->y - p0->y;
-    vDelta.z = p1->z - p0->z;
+    vDelta.x = kV1->x - kV0->x;
+    vDelta.y = kV1->y - kV0->y;
+    vDelta.z = kV1->z - kV0->z;
     float fT2 = na.x * vDelta.x + na.y * vDelta.y + na.z * vDelta.z;
     if (fT2 <= 0.0f)
         return false;
-    return a->m_kHalfSpacePlane.c <= fT2 * fT - b->m_kHalfSpacePlane.c;
+    return kABV0->m_kHalfSpacePlane.m_fConstant <= fT2 * fTime - kABV1->m_kHalfSpacePlane.m_fConstant;
 }
 
 class SweepPoint
@@ -528,51 +560,54 @@ SweepPoint operator*(float fScalar, const SweepPoint& pt);
 
 // @fnv 0x00e9e2c0
 // src: GAMEBRYO_LIB 0x00e9e2c0
-bool __cdecl NiHalfSpaceBV_HalfSpaceTriFindIntersect(float fRadius, const NiHalfSpaceBV& akPlane, const SweepPoint& kStart, const SweepPoint& kP0,
-                          const SweepPoint& kP1, const SweepPoint& kP2, const SweepPoint& kEnd, float& fTime,
-                          SweepPoint& kIntersect, bool bCalcNormals, SweepPoint& akNormal, SweepPoint& akPlaneNormal)
+// pdb: NiHalfSpaceBV::HalfSpaceTriFindIntersect | NiHalfSpaceBV.obj | debug, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kVert0, kVert1, kVert2, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: fSignedDistance2, fRHS, fSignedDistance0, fNdV, kDeltaV, kHalfABV, fSignedDistance1, kPlane
+bool __cdecl NiHalfSpaceBV_HalfSpaceTriFindIntersect(float fRadius, const NiHalfSpaceBV& kABV0, const SweepPoint& kV0, const SweepPoint& kVert0,
+                          const SweepPoint& kVert1, const SweepPoint& kVert2, const SweepPoint& kV1, float& fIntrTime,
+                          SweepPoint& kIntrPt, bool bCalcNormals, SweepPoint& kNormal0, SweepPoint& kNormal1)
 {
-    const SweepPoint& kN = PlaneNormal<SweepPoint>(akPlane.m_kHalfSpacePlane);
-    float fD0 = kN * kP0 - akPlane.m_kHalfSpacePlane.c;
+    const SweepPoint& kN = PlaneNormal<SweepPoint>(kABV0.m_kHalfSpacePlane);
+    float fD0 = kN * kVert0 - kABV0.m_kHalfSpacePlane.m_fConstant;
     if (fD0 >= 0.0f)
     {
-        fTime = 0.0f;
-        kIntersect = kP0;
+        fIntrTime = 0.0f;
+        kIntrPt = kVert0;
         if (bCalcNormals)
         {
-            akPlaneNormal = PlaneNormal<SweepPoint>(akPlane.m_kHalfSpacePlane);
-            akNormal = -akPlaneNormal;
+            kNormal1 = PlaneNormal<SweepPoint>(kABV0.m_kHalfSpacePlane);
+            kNormal0 = -kNormal1;
         }
         return true;
     }
 
-    float fD1 = kN * kP1 - akPlane.m_kHalfSpacePlane.c;
+    float fD1 = kN * kVert1 - kABV0.m_kHalfSpacePlane.m_fConstant;
     if (fD1 >= 0.0f)
     {
-        fTime = 0.0f;
-        kIntersect = kP1;
+        fIntrTime = 0.0f;
+        kIntrPt = kVert1;
         if (bCalcNormals)
         {
-            akPlaneNormal = PlaneNormal<SweepPoint>(akPlane.m_kHalfSpacePlane);
-            akNormal = -akPlaneNormal;
+            kNormal1 = PlaneNormal<SweepPoint>(kABV0.m_kHalfSpacePlane);
+            kNormal0 = -kNormal1;
         }
         return true;
     }
 
-    float fD2 = kN * kP2 - akPlane.m_kHalfSpacePlane.c;
+    float fD2 = kN * kVert2 - kABV0.m_kHalfSpacePlane.m_fConstant;
     if (fD2 >= 0.0f)
     {
-        fTime = 0.0f;
-        kIntersect = kP2;
+        fIntrTime = 0.0f;
+        kIntrPt = kVert2;
         if (bCalcNormals)
         {
-            akPlaneNormal = PlaneNormal<SweepPoint>(akPlane.m_kHalfSpacePlane);
-            akNormal = -akPlaneNormal;
+            kNormal1 = PlaneNormal<SweepPoint>(kABV0.m_kHalfSpacePlane);
+            kNormal0 = -kNormal1;
         }
         return true;
     }
 
-    float fSpeed = (kEnd - kStart) * PlaneNormal<SweepPoint>(akPlane.m_kHalfSpacePlane);
+    float fSpeed = (kV1 - kV0) * PlaneNormal<SweepPoint>(kABV0.m_kHalfSpacePlane);
     if (fSpeed <= 0.0f)
         return false;
 
@@ -584,36 +619,37 @@ bool __cdecl NiHalfSpaceBV_HalfSpaceTriFindIntersect(float fRadius, const NiHalf
     {
         if (fD0 >= fD2)
         {
-            fTime = -fD0 / fSpeed;
-            kIntersect = kP0 + fRadius * kEnd;
+            fIntrTime = -fD0 / fSpeed;
+            kIntrPt = kVert0 + fRadius * kV1;
         }
         else
         {
-            fTime = -fD2 / fSpeed;
-            kIntersect = kP2 + fRadius * kEnd;
+            fIntrTime = -fD2 / fSpeed;
+            kIntrPt = kVert2 + fRadius * kV1;
         }
     }
     else
     {
         if (fD1 >= fD2)
         {
-            fTime = -fD1 / fSpeed;
-            kIntersect = kP1 + fRadius * kEnd;
+            fIntrTime = -fD1 / fSpeed;
+            kIntrPt = kVert1 + fRadius * kV1;
         }
         else
         {
-            fTime = -fD2 / fSpeed;
-            kIntersect = kP2 + fRadius * kEnd;
+            fIntrTime = -fD2 / fSpeed;
+            kIntrPt = kVert2 + fRadius * kV1;
         }
     }
     if (bCalcNormals)
     {
-        akPlaneNormal = PlaneNormal<SweepPoint>(akPlane.m_kHalfSpacePlane);
-        akNormal = -akPlaneNormal;
+        kNormal1 = PlaneNormal<SweepPoint>(kABV0.m_kHalfSpacePlane);
+        kNormal0 = -kNormal1;
     }
     return true;
 }
 
+// pdb: structure Sphere, size 0x10 (here 0x14), 2 members
 struct Sphere
 {
     void* vtable;
@@ -622,21 +658,24 @@ struct Sphere
 // Checks the sphere's signed plane distance against its radius, then tests whether motion over t reaches that threshold.
 // @fnv 0x00e9cd10
 // src: GAMEBRYO_LIB 0x00e9cd10
-bool __cdecl NiHalfSpaceBV_HalfSpaceSphereTestIntersect(float afTime, NiHalfSpaceBV* plane, LocalVec3* apStart, Sphere* sphere, LocalVec3* apEnd)
+// pdb: NiHalfSpaceBV::HalfSpaceSphereTestIntersect | NiHalfSpaceBV.obj | debug, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1
+// pdb locals: kSphABV, fSignedDistance, fNdV, kDeltaV, kHalfABV, kPlane
+bool __cdecl NiHalfSpaceBV_HalfSpaceSphereTestIntersect(float fTime, NiHalfSpaceBV* kABV0, LocalVec3* kV0, Sphere* kABV1, LocalVec3* kV1)
 {
-    float dot = sphere->cy * static_cast<volatile float&>(plane->m_kHalfSpacePlane.y) + sphere->cx * plane->m_kHalfSpacePlane.x + sphere->cz * plane->m_kHalfSpacePlane.z;
-    float distance = dot - plane->m_kHalfSpacePlane.c;
-    float radius = -sphere->r;
+    float dot = kABV1->cy * static_cast<volatile float&>(kABV0->m_kHalfSpacePlane.y) + kABV1->cx * kABV0->m_kHalfSpacePlane.m_kNormal + kABV1->cz * kABV0->m_kHalfSpacePlane.z;
+    float distance = dot - kABV0->m_kHalfSpacePlane.m_fConstant;
+    float radius = -kABV1->r;
     if (distance >= radius)
         return true;
     LocalVec3 relative;
-    relative.x = apEnd->x - apStart->x;
-    relative.y = apEnd->y - apStart->y;
-    relative.z = apEnd->z - apStart->z;
-    float speed = static_cast<volatile float&>(plane->m_kHalfSpacePlane.y) * relative.y + relative.x * plane->m_kHalfSpacePlane.x + plane->m_kHalfSpacePlane.z * relative.z;
+    relative.x = kV1->x - kV0->x;
+    relative.y = kV1->y - kV0->y;
+    relative.z = kV1->z - kV0->z;
+    float speed = static_cast<volatile float&>(kABV0->m_kHalfSpacePlane.y) * relative.y + relative.x * kABV0->m_kHalfSpacePlane.m_kNormal + kABV0->m_kHalfSpacePlane.z * relative.z;
     if (speed <= 0.0f)
         return false;
-    return distance + speed * afTime >= radius;
+    return distance + speed * fTime >= radius;
 }
 
 #include <math.h>
@@ -655,6 +694,9 @@ struct BoxBV : NiBoundingVolume
 
 // Tests whether an oriented box overlaps a half-space plane now or within fTime, using projected extents and relative velocity.
 // @fnv 0x00e9cde0
+// pdb: NiHalfSpaceBV::HalfSpaceBoxTestIntersect | NiHalfSpaceBV.obj | debug, object-file gap fill, medium
+// pdb params: fTime, kABV0, kV0, kABV1, kV1
+// pdb locals: kBoxABV, kBox, fSignedDistance, fNdV, kDeltaV, kHalfABV, afAxisNormalProjLength, kPlane, fRadius
 bool IsIntersectingFogPlane(float fTime, const NiBoundingVolume& kBV0, const LocalVec3& kV0, const NiBoundingVolume& kBV1, const LocalVec3& kV1)
 {
     const NiHalfSpaceBV& kHS = (const NiHalfSpaceBV&)kBV0;
@@ -668,7 +710,7 @@ bool IsIntersectingFogPlane(float fTime, const NiBoundingVolume& kBV0, const Loc
     afD[2] = box.m_akAxes[2].Dot(*reinterpret_cast<const LocalVec3*>(&m_kFogPlane)) * box.m_afExtents[2];
     float fRadius = fabsf(afD[0]) + fabsf(afD[1]) + fabsf(afD[2]);
 
-    float fDist = box.m_kCenter.Dot(*reinterpret_cast<const LocalVec3*>(&m_kFogPlane)) - m_kFogPlane.c;
+    float fDist = box.m_kCenter.Dot(*reinterpret_cast<const LocalVec3*>(&m_kFogPlane)) - m_kFogPlane.m_fConstant;
     if (fDist >= -fRadius)
         return true;
 
@@ -685,27 +727,30 @@ bool IsIntersectingFogPlane(float fTime, const NiBoundingVolume& kBV0, const Loc
 // Tests the three vertex distances, then compares a scaled dot product with those distances.
 // @fnv 0x00e9d150
 // src: GAMEBRYO_LIB 0x00e9d150
-bool __cdecl NiHalfSpaceBV_HalfSpaceTriTestIntersect(float afScale, NiHalfSpaceBV* apPlane, LocalVec3* apOrigin, LocalVec3* p0, LocalVec3* p1,
-                          LocalVec3* p2, LocalVec3* apPoint)
+// pdb: NiHalfSpaceBV::HalfSpaceTriTestIntersect | NiHalfSpaceBV.obj | debug, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kVert0, kVert1, kVert2, kV1
+// pdb locals: fSignedDistance2, fRHS, fSignedDistance0, fNdV, kDeltaV, kHalfABV, fSignedDistance1, kPlane
+bool __cdecl NiHalfSpaceBV_HalfSpaceTriTestIntersect(float fTime, NiHalfSpaceBV* kABV0, LocalVec3* kV0, LocalVec3* kVert0, LocalVec3* kVert1,
+                          LocalVec3* kVert2, LocalVec3* kV1)
 {
-    const NiPlane& m_kFogPlane = apPlane->m_kHalfSpacePlane;
-    float fDist0 = PlaneDistance<LocalVec3>(m_kFogPlane, *p0);
+    const NiPlane& m_kFogPlane = kABV0->m_kHalfSpacePlane;
+    float fDist0 = PlaneDistance<LocalVec3>(m_kFogPlane, *kVert0);
     if (fDist0 >= 0.0f)
         return true;
-    float fDist1 = PlaneDistance<LocalVec3>(m_kFogPlane, *p1);
+    float fDist1 = PlaneDistance<LocalVec3>(m_kFogPlane, *kVert1);
     if (fDist1 >= 0.0f)
         return true;
-    float d2 = PlaneDistance<LocalVec3>(m_kFogPlane, *p2);
+    float d2 = PlaneDistance<LocalVec3>(m_kFogPlane, *kVert2);
     if (d2 >= 0.0f)
         return true;
     LocalVec3 vDiff;
-    vDiff.x = apPoint->x - apOrigin->x;
-    vDiff.y = apPoint->y - apOrigin->y;
-    vDiff.z = apPoint->z - apOrigin->z;
-    float t = PlaneNormal<LocalVec3>(apPlane->m_kHalfSpacePlane).Dot(vDiff);
+    vDiff.x = kV1->x - kV0->x;
+    vDiff.y = kV1->y - kV0->y;
+    vDiff.z = kV1->z - kV0->z;
+    float t = PlaneNormal<LocalVec3>(kABV0->m_kHalfSpacePlane).Dot(vDiff);
     if (t <= 0.0f)
         return false;
-    float s = -afScale * t;
+    float s = -fTime * t;
     return s <= fDist0 || s <= fDist1 || s <= d2;
 }
 
@@ -779,8 +824,8 @@ __forceinline bool SweepContact(float fTime, const NiBoundingVolume& kBV0, const
     const BvPt& kNormal = *reinterpret_cast<const BvPt*>(&kSphere);
 
     float fDistance;
-    fDistance = kV * kNormal - m_kFogPlane.c;
-    float fNdV = -kSphere.r;
+    fDistance = kV * kNormal - m_kFogPlane.m_fConstant;
+    float fNdV = -kSphere.m_fRadius;
 
     if (fDistance >= fNdV)
     {
@@ -803,7 +848,7 @@ __forceinline bool SweepContact(float fTime, const NiBoundingVolume& kBV0, const
     if (!(fDistance + fTime * fNegRadius >= fNdV))
         return false;
 
-    fIntrTime = -(fDistance + kSphere.r) / fNegRadius;
+    fIntrTime = -(fDistance + kSphere.m_fRadius) / fNegRadius;
 
     if (bCalcNormals)
     {
@@ -811,17 +856,20 @@ __forceinline bool SweepContact(float fTime, const NiBoundingVolume& kBV0, const
         akNormal0 = -akNormal1;
     }
 
-    kIntrPt = (kNormal + kV1 * fIntrTime) + ScaleNormal(kSphere.r, akNormal1);
+    kIntrPt = (kNormal + kV1 * fIntrTime) + ScaleNormal(kSphere.m_fRadius, akNormal1);
     return true;
 }
 
 // Delegates to SweepContact to compute the intersection time and point between a moving sphere and a half-space plane.
 // @fnv 0x00e9d2c0
 // src: GAMEBRYO_LIB 0x00e9d2c0
-bool NiHalfSpaceBV_HalfSpaceSphereFindIntersect(float fTime, const NiBoundingVolume& kBV0, const BvPt& kV0, const NiBoundingVolume& kBV1,
-                  const BvPt& kV1, float& fIntrTime, BvPt& kIntrPt, bool bCalcNormals, BvPt& akNormal0, BvPt& akNormal1)
+// pdb: NiHalfSpaceBV::HalfSpaceSphereFindIntersect | NiHalfSpaceBV.obj | debug, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kSphABV, fSignedDistance, fNdV, kDeltaV, kHalfABV, kPlane
+bool NiHalfSpaceBV_HalfSpaceSphereFindIntersect(float fTime, const NiBoundingVolume& kABV0, const BvPt& kV0, const NiBoundingVolume& kABV1,
+                  const BvPt& kV1, float& fIntrTime, BvPt& kIntrPt, bool bCalcNormals, BvPt& kNormal0, BvPt& kNormal1)
 {
-    return SweepContact(fTime, kBV0, kV0, kBV1, kV1, fIntrTime, kIntrPt, bCalcNormals, akNormal0, akNormal1);
+    return SweepContact(fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1);
 }
 
 extern "C" void _ReadWriteBarrier();
@@ -856,7 +904,7 @@ struct Pt
 
 inline float PlaneConstant(const NiHalfSpaceBV* half)
 {
-    return half->m_kHalfSpacePlane.c;
+    return half->m_kHalfSpacePlane.m_fConstant;
 }
 
 inline Pt ScaleNormal(const Pt& p, float f)
@@ -865,6 +913,9 @@ inline Pt ScaleNormal(const Pt& p, float f)
 }
 // Computes a point and time for the two plane inputs, with optional output normals.
 // @fnv 0x00e9dfa0
+// pdb: NiHalfSpaceBV::HalfSpaceHalfSpaceFindIntersect | NiHalfSpaceBV.obj | debug, object-file gap fill, medium
+// pdb params: fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kHalfABV0, kHalfABV1, kPlane1, kPlane0, fNdV, kDeltaV, fDot, fU1, fU0, fFactor, fDiff
 bool __cdecl IntersectPlanes(float fTime, NiHalfSpaceBV* pkABV0, Pt* pkV0, NiHalfSpaceBV* pkABV1, Pt* pkV1, float* pfT, Pt* pkPoint,
                              bool bSide, Pt* pkSide0, Pt* pkSide1)
 {
@@ -876,8 +927,8 @@ bool __cdecl IntersectPlanes(float fTime, NiHalfSpaceBV* pkABV0, Pt* pkV0, NiHal
     if (fDot > -0.999999f)
     {
         float fInv = 1.0f / (1.0f - fDot * fDot);
-        float fC0 = (pkABV0->m_kHalfSpacePlane.c - pkABV1->m_kHalfSpacePlane.c * fDot) * fInv;
-        float fC1 = (pkABV1->m_kHalfSpacePlane.c - pkABV0->m_kHalfSpacePlane.c * fDot) * fInv;
+        float fC0 = (pkABV0->m_kHalfSpacePlane.m_fConstant - pkABV1->m_kHalfSpacePlane.m_fConstant * fDot) * fInv;
+        float fC1 = (pkABV1->m_kHalfSpacePlane.m_fConstant - pkABV0->m_kHalfSpacePlane.m_fConstant * fDot) * fInv;
 
         *pfT = 0.0f;
         *pkPoint = PlaneNormal<Pt>(pkABV0->m_kHalfSpacePlane) * fC0 + PlaneNormal<Pt>(pkABV1->m_kHalfSpacePlane) * fC1;
@@ -890,10 +941,10 @@ bool __cdecl IntersectPlanes(float fTime, NiHalfSpaceBV* pkABV0, Pt* pkV0, NiHal
         return true;
     }
 
-    if (pkABV0->m_kHalfSpacePlane.c <= -pkABV1->m_kHalfSpacePlane.c)
+    if (pkABV0->m_kHalfSpacePlane.m_fConstant <= -pkABV1->m_kHalfSpacePlane.m_fConstant)
     {
         *pfT = 0.0f;
-        *pkPoint = ScaleNormal(PlaneNormal<Pt>(pkABV0->m_kHalfSpacePlane), pkABV0->m_kHalfSpacePlane.c - pkABV1->m_kHalfSpacePlane.c);
+        *pkPoint = ScaleNormal(PlaneNormal<Pt>(pkABV0->m_kHalfSpacePlane), pkABV0->m_kHalfSpacePlane.m_fConstant - pkABV1->m_kHalfSpacePlane.m_fConstant);
 
         if (bSide)
         {
@@ -907,11 +958,11 @@ bool __cdecl IntersectPlanes(float fTime, NiHalfSpaceBV* pkABV0, Pt* pkV0, NiHal
     float fDot2 = kDiff * PlaneNormal<Pt>(pkABV0->m_kHalfSpacePlane);
     if (!(fDot2 <= 0.0f))
     {
-        if (pkABV0->m_kHalfSpacePlane.c <= fDot2 * fTime - pkABV1->m_kHalfSpacePlane.c)
+        if (pkABV0->m_kHalfSpacePlane.m_fConstant <= fDot2 * fTime - pkABV1->m_kHalfSpacePlane.m_fConstant)
         {
-            float fW = (PlaneConstant(pkABV1) + pkABV0->m_kHalfSpacePlane.c) / fDot2;
+            float fW = (PlaneConstant(pkABV1) + pkABV0->m_kHalfSpacePlane.m_fConstant) / fDot2;
             *pfT = fW;
-            *pkPoint = PlaneNormal<Pt>(pkABV0->m_kHalfSpacePlane) * pkABV0->m_kHalfSpacePlane.c + *pkV0 * *pfT;
+            *pkPoint = PlaneNormal<Pt>(pkABV0->m_kHalfSpacePlane) * pkABV0->m_kHalfSpacePlane.m_fConstant + *pkV0 * *pfT;
 
             if (bSide)
             {
@@ -951,20 +1002,23 @@ class S9d540_BoxBV
 // Tests a moving box against a half-space plane and writes a contact time, point, and optional normals.
 // @fnv 0x00e9d540
 // src: GAMEBRYO_LIB 0x00e9d540
-bool __cdecl NiHalfSpaceBV_HalfSpaceBoxFindIntersect(float fTime, const NiHalfSpaceBV& kBV0, const NiPoint3& kV0, const S9d540_BoxBV& kBV1,
+// pdb: NiHalfSpaceBV::HalfSpaceBoxFindIntersect | NiHalfSpaceBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kBoxABV, kBox, fSignedDistance, fNdV, kDeltaV, kHalfABV, afAxisNormalProjLength, kPlane, fRadius, i
+bool __cdecl NiHalfSpaceBV_HalfSpaceBoxFindIntersect(float fTime, const NiHalfSpaceBV& kABV0, const NiPoint3& kV0, const S9d540_BoxBV& kABV1,
                           const NiPoint3& kV1, float& fIntrTime, NiPoint3& kIntrPt, bool bCalcNormals,
-                          NiPoint3& akNormal0, NiPoint3& akNormal1)
+                          NiPoint3& kNormal0, NiPoint3& kNormal1)
 {
-    const NiPlane& m_kFogPlane = kBV0.m_kHalfSpacePlane;
-    const S9d540_Box& kBox = kBV1.GetBox();
+    const NiPlane& m_kFogPlane = kABV0.m_kHalfSpacePlane;
+    const S9d540_Box& kBox = kABV1.GetBox();
     const NiPoint3& kNormal = PlaneNormal<NiPoint3>(m_kFogPlane);
 
     float afProj[3];
     afProj[0] = (kNormal * kBox.m_akAxes[0]) * kBox.m_afExtents[0];
     afProj[1] = (kNormal * kBox.m_akAxes[1]) * kBox.m_afExtents[1];
-    afProj[2] = (PlaneNormal<NiPoint3>(kBV0.m_kHalfSpacePlane) * kBox.m_akAxes[2]) * kBox.m_afExtents[2];
+    afProj[2] = (PlaneNormal<NiPoint3>(kABV0.m_kHalfSpacePlane) * kBox.m_akAxes[2]) * kBox.m_afExtents[2];
     float fRadius = S9d540_Abs(afProj[0]) + S9d540_Abs(afProj[1]) + S9d540_Abs(afProj[2]);
-    float fDistance = PlaneDistance<NiPoint3>(m_kFogPlane, kBV1.m_kBoundsBox.m_kCenter);
+    float fDistance = PlaneDistance<NiPoint3>(m_kFogPlane, kABV1.m_kBoundsBox.m_kCenter);
 
     if (fDistance >= -fRadius)
     {
@@ -972,8 +1026,8 @@ bool __cdecl NiHalfSpaceBV_HalfSpaceBoxFindIntersect(float fTime, const NiHalfSp
         kIntrPt = kBox.m_kCenter - fDistance * kNormal;
         if (bCalcNormals)
         {
-            akNormal1 = kNormal;
-            akNormal0 = -akNormal1;
+            kNormal1 = kNormal;
+            kNormal0 = -kNormal1;
         }
         return true;
     }
@@ -998,8 +1052,8 @@ bool __cdecl NiHalfSpaceBV_HalfSpaceBoxFindIntersect(float fTime, const NiHalfSp
         }
         if (bCalcNormals)
         {
-            akNormal0 = -kNormal;
-            akNormal1 = kIntrPt - kBox.m_kCenter;
+            kNormal0 = -kNormal;
+            kNormal1 = kIntrPt - kBox.m_kCenter;
         }
         return true;
     }
@@ -1039,9 +1093,9 @@ Vec72 operator*(float k, const Vec72& v)
     return Vec72(k * v.x, k * v.y, k * v.z);
 }
 
-inline float NiPlane::Distance(const NiPoint3& point) const
+inline float NiPlane::Distance(const NiPoint3& kPoint) const
 {
-    return *reinterpret_cast<const Vec72*>(this) * reinterpret_cast<const Vec72&>(point) - c;
+    return *reinterpret_cast<const Vec72*>(this) * reinterpret_cast<const Vec72&>(kPoint) - m_fConstant;
 }
 
 struct CapsuleData72
@@ -1083,84 +1137,88 @@ bool NiHalfSpaceBV_HalfSpaceSphereFindIntersect(float, const NiHalfSpaceBV&, con
                   Vec72&);
 // Tests a capsule against a moving half-space, using sphere tests when an endpoint is within the capsule radius of the plane.
 // @fnv 0x00e9da30
-bool SweepCapsuleAgainstHalf(float maxTime, const NiHalfSpaceBV& half, const Vec72& halfVelocity, const Capsule72& capsule,
-                             const Vec72& capsuleVelocity, float& time, Vec72& point, bool normals,
-                             Vec72* __restrict normalHalf, Vec72* normalCapsule)
+// src: XBOX_RETAIL_PDB 0x00e9da30
+// pdb: NiHalfSpaceBV::HalfSpaceCapsuleFindIntersect | NiHalfSpaceBV.obj | retail, object-file run extension, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kCapsule, fRHS, fSignedDistance0, fNdV, kCapABV, kDeltaV, kHalfABV, fSignedDistance1, kPlane, kSphABV
+bool NiHalfSpaceBV_HalfSpaceCapsuleFindIntersect(float fTime, const NiHalfSpaceBV& kABV0, const Vec72& kV0, const Capsule72& kABV1,
+                             const Vec72& kV1, float& fIntrTime, Vec72& kIntrPt, bool bCalcNormals,
+                             Vec72* __restrict kNormal0, Vec72* kNormal1)
 {
-    const CapsuleData72& shape = capsule.geometry;
+    const CapsuleData72& shape = kABV1.geometry;
     const Vec72& origin = shape.origin;
-    const NiPlane& plane = half.m_kHalfSpacePlane;
+    const NiPlane& plane = kABV0.m_kHalfSpacePlane;
     const Vec72& direction = shape.direction;
     float distance0;
     float distance1;
-    distance0 = half.m_kHalfSpacePlane.Distance(reinterpret_cast<const NiPoint3&>(capsule.GetGeometry().origin));
+    distance0 = kABV0.m_kHalfSpacePlane.Distance(reinterpret_cast<const NiPoint3&>(kABV1.GetGeometry().origin));
     Vec72 endpoint;
     endpoint = shape.direction + origin;
     distance1 = plane.Distance(reinterpret_cast<const NiPoint3&>(endpoint));
     if ((distance0 < 0.0f && distance1 > 0.0f) || (distance0 > 0.0f && distance1 < 0.0f))
     {
-        time = 0.0f;
+        fIntrTime = 0.0f;
         float parameter = distance0 / (distance0 - distance1);
-        point = capsule.GetGeometry().origin + direction * parameter;
+        kIntrPt = kABV1.GetGeometry().origin + direction * parameter;
     }
     else if (-shape.radius <= distance0)
     {
-        time = 0.0f;
+        fIntrTime = 0.0f;
         Sphere72 sphere(1.0f, *(Vec72*)&DAT_011f426c);
-        sphere.radius = capsule.geometry.radius;
+        sphere.radius = kABV1.geometry.radius;
         if (distance1 >= -shape.radius)
         {
-            sphere.center = capsule.center;
-            return NiHalfSpaceBV_HalfSpaceSphereFindIntersect(maxTime, half, halfVelocity, sphere, capsuleVelocity, time, point, normals, *normalHalf,
-                                *normalCapsule);
+            sphere.center = kABV1.center;
+            return NiHalfSpaceBV_HalfSpaceSphereFindIntersect(fTime, kABV0, kV0, sphere, kV1, fIntrTime, kIntrPt, bCalcNormals, *kNormal0,
+                                *kNormal1);
         }
         else
         {
             sphere.center = shape.GetOrigin();
-            return NiHalfSpaceBV_HalfSpaceSphereFindIntersect(maxTime, half, halfVelocity, sphere, capsuleVelocity, time, point, normals, *normalHalf,
-                                *normalCapsule);
+            return NiHalfSpaceBV_HalfSpaceSphereFindIntersect(fTime, kABV0, kV0, sphere, kV1, fIntrTime, kIntrPt, bCalcNormals, *kNormal0,
+                                *kNormal1);
         }
     }
     else if (distance1 >= -shape.radius)
     {
-        time = 0.0f;
+        fIntrTime = 0.0f;
         Sphere72 sphere(1.0f, *(Vec72*)&DAT_011f426c);
-        sphere.radius = capsule.geometry.radius;
-        sphere.center = capsule.geometry.origin + capsule.geometry.direction;
-        return NiHalfSpaceBV_HalfSpaceSphereFindIntersect(maxTime, half, halfVelocity, sphere, capsuleVelocity, time, point, normals, *normalHalf,
-                            *normalCapsule);
+        sphere.radius = kABV1.geometry.radius;
+        sphere.center = kABV1.geometry.origin + kABV1.geometry.direction;
+        return NiHalfSpaceBV_HalfSpaceSphereFindIntersect(fTime, kABV0, kV0, sphere, kV1, fIntrTime, kIntrPt, bCalcNormals, *kNormal0,
+                            *kNormal1);
     }
     else
     {
         Vec72 relativeVelocity;
-        relativeVelocity = capsuleVelocity - halfVelocity;
+        relativeVelocity = kV1 - kV0;
         float rate = PlaneNormal<Vec72>(plane) * relativeVelocity;
         if (rate <= 0.0f)
             return false;
         float reach;
-        reach = -(rate * maxTime + shape.radius);
+        reach = -(rate * fTime + shape.radius);
         if (!(distance0 >= reach || distance1 >= reach))
             return false;
         if (distance1 + 0.000001f < distance0)
         {
-            time = -(shape.radius + distance0) / rate;
-            point = origin + time * capsuleVelocity + PlaneNormal<Vec72>(plane) * shape.radius;
+            fIntrTime = -(shape.radius + distance0) / rate;
+            kIntrPt = origin + fIntrTime * kV1 + PlaneNormal<Vec72>(plane) * shape.radius;
         }
         else if (distance0 + 0.000001f < distance1)
         {
-            time = -(distance1 + shape.radius) / rate;
-            point = origin + shape.GetDirection() + time * capsuleVelocity + PlaneNormal<Vec72>(plane) * shape.radius;
+            fIntrTime = -(distance1 + shape.radius) / rate;
+            kIntrPt = origin + shape.GetDirection() + fIntrTime * kV1 + PlaneNormal<Vec72>(plane) * shape.radius;
         }
         else
         {
-            time = -(shape.radius + distance1) / rate;
-            point = origin + direction * 0.5f + time * capsuleVelocity + PlaneNormal<Vec72>(half.m_kHalfSpacePlane) * shape.radius;
+            fIntrTime = -(shape.radius + distance1) / rate;
+            kIntrPt = origin + direction * 0.5f + fIntrTime * kV1 + PlaneNormal<Vec72>(kABV0.m_kHalfSpacePlane) * shape.radius;
         }
     }
-    if (normals)
+    if (bCalcNormals)
     {
-        *normalCapsule = PlaneNormal<Vec72>(half.m_kHalfSpacePlane);
-        *normalHalf = -*normalCapsule;
+        *kNormal1 = PlaneNormal<Vec72>(kABV0.m_kHalfSpacePlane);
+        *kNormal0 = -*kNormal1;
     }
     return true;
 }

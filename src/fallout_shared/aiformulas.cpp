@@ -27,11 +27,14 @@ namespace ActorValue
 
 // Returns base plus the attribute and luck contributions, each scaled by a runtime float setting and passed through a helper.
 // @fnv 0x00643c20
-float __cdecl AIFormulas::CalculateSkillValue(float base, float attribute, float luck)
+// pdb: AiFormulas::CalculateDerivedSkillValue | AiFormulas.obj | retail, object-file run extension, high
+// pdb params: afSkillBase, afPrimaryAttribute, afLuck
+// pdb locals: fresult
+float __cdecl AIFormulas::CalculateSkillValue(float afSkillBase, float afPrimaryAttribute, float afLuck)
 {
-    float result = base;
-    result += floorf(attribute * originalRuntimeFloatSetting326.Float()->f);
-    result += ceilf(luck * originalRuntimeFloatSetting314.Float()->f);
+    float result = afSkillBase;
+    result += floorf(afPrimaryAttribute * originalRuntimeFloatSetting326.Float()->f);
+    result += ceilf(afLuck * originalRuntimeFloatSetting314.Float()->f);
     return result;
 }
 
@@ -40,6 +43,9 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting293;
 // Returns 1 if afHeightOrLength is not above the runtime float setting, otherwise the integer quotient of afHeightOrLength divided by that setting.
 // @fnv 0x00642e80
 // src: XBOX_PDB 0x00642e80
+// pdb: AiFormulas::GetActorDetectionSize | AiFormulas.obj | debug, upstream name already matches, high
+// pdb params: afHeightOrLength
+// pdb locals: iresult
 int __cdecl AiFormulas_GetActorDetectionSize(float afHeightOrLength)
 {
     int iresult = 1;
@@ -59,6 +65,9 @@ float __cdecl RandomFloat(float, float);
 // Computes a base duration from settings scaled by energy level and proc index, then returns a random duration within a jittered min/max range.
 // @fnv 0x006435c0
 // src: COMMUNITY 0x006435c0
+// pdb: AiFormulas::ComputeRandomSandboxSubProcessDuration | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: aiEngergyLevel, aiProcIndex
+// pdb locals: fenergyMult, fdurationMax, fdurationMin, fbaseDuration, fenergy, fduration
 float AiFormulas_ComputeRandomSandboxSubProcessDuration(int aiEngergyLevel, int aiProcIndex)
 {
     float fenergyMult;
@@ -82,6 +91,8 @@ extern SettingT_GameSettingCollection_* DAT_0119b17c[];
 
 // Looks up the primary attribute and base value for a skill index from DAT_0119b144 and the setting table DAT_0119b17c, writing them to the output pointers.
 // @fnv 0x00643bf0
+// pdb: AiFormulas::AVGetDerivedSkillPrimaryAttributeAndBase | AiFormulas.obj | debug, call graph (shared callers), medium
+// pdb params: aiSkill, aiPrimaryAttribute, afBase
 void __cdecl GetSkillAttributeAndBase(int aiSkill, int* aiPrimaryAttribute, float* afBase)
 {
     *aiPrimaryAttribute = DAT_0119b144[aiSkill];
@@ -108,6 +119,9 @@ void __cdecl AiFormulas_CalculateDerivedFatigue(int*, float);
 
 // @fnv 0x00643820
 // src: COMMUNITY 0x00643820
+// pdb: AiFormulas::AVDeriveFatigue | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
+// pdb locals: fendurance
 void __cdecl AiFormulas_AVDeriveFatigue(int* pObj)
 {
     float result = reinterpret_cast<ActorValueOwner*>(pObj)->GetPermanentActorValueAdjustment((ActorValue::Index)7);
@@ -119,19 +133,24 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting310;
 
 // @fnv 0x00643a50
 // src: COMMUNITY 0x00643a50
+// pdb: AiFormulas::AVDeriveBodyPartCondition | AiFormulas.obj | debug, upstream name already matches, high
+// pdb params: apActor, aiWhich
 float AiFormulas_AVDeriveBodyPartCondition()
 {
     return originalRuntimeFloatSetting310.Float()->f;
 }
 
-float __cdecl GetSkillValue(ActorValueOwner*, int, bool);
+float __cdecl AiFormulas_AVDeriveSkill(ActorValueOwner*, int, bool);
 
 // Calls GetSkillValue with arg2, arg3 and false, returning the resulting float.
 // @fnv 0x00643bd0
 // src: COMMUNITY 0x00643bd0
+// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | debug, object-file gap fill, medium
+// pdb params: apActor, aiWhich
+// pdb locals: fresult
 float __cdecl callback4C(void* arg2, int arg3)
 {
-    float result = GetSkillValue(static_cast<ActorValueOwner*>(arg2), arg3, 0);
+    float result = AiFormulas_AVDeriveSkill(static_cast<ActorValueOwner*>(arg2), arg3, 0);
     return result;
 }
 
@@ -146,6 +165,9 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting156;
 
 // Computes a weighted sum of three inputs using float settings, truncates it to int, and clamps it between two setting bounds.
 // @fnv 0x00643400
+// pdb: AiFormulas::ComputePickpocketSuccess | AiFormulas.obj | debug, call graph, medium
+// pdb params: aiSneakSkillModed, aiTargetSneakModed, fAmountofItem
+// pdb locals: factorsneak, result, ftargetsneak, famount
 int __cdecl ComputeClampedSettingSum(int aiFirst, int aiSecond, float afThird)
 {
     int iresult = 0;
@@ -170,6 +192,9 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting312;
 // Reads actor value index 7 and returns the float from one of five settings based on the value (6-10), otherwise 0.
 // @fnv 0x00643a70
 // src: COMMUNITY 0x00643a70
+// pdb: AiFormulas::AVDeriveHealingRate | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
+// pdb locals: fresult
 float __cdecl AiFormulas_AVDeriveHealingRate(ActorValueOwner* apActor)
 {
     float fresult = 0.0f;
@@ -201,6 +226,9 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting155;
 // Computes a value from two float settings scaled by a, subtracts it from another setting, and halves the result.
 // @fnv 0x006434f0
 // src: COMMUNITY 0x006434f0
+// pdb: AiFormulas::ComputeTimeTillNextWander | AiFormulas.obj | debug, upstream name already matches, high
+// pdb params: aiEngergyLevel, afFatiguePercent
+// pdb locals: fenergylevel
 float AiFormulas_ComputeTimeTillNextWander(int aiValue)
 {
     float fResult = g_011cd550.Float()->f + g_011cd7f0.Float()->f * aiValue;
@@ -209,14 +237,17 @@ float AiFormulas_ComputeTimeTillNextWander(int aiValue)
 }
 
 namespace fnv_00643670 {
-void __cdecl ComputeActorLevel(ActorValueOwner*, float);
+void __cdecl AiFormulas_CalculateDerivedHealth(ActorValueOwner*, float);
 // @fnv 0x00643670
 // src: COMMUNITY 0x00643670
+// pdb: AiFormulas::AVDeriveHealth | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
+// pdb locals: fendurance
 void __cdecl AiFormulas_AVDeriveHealth(ActorValueOwner* p)
 {
     float f = p->GetPermanentActorValueAdjustment((ActorValue::Index)7);
     f = ActorValue::ClampValue((ActorValue::Index)7, f);
-    ComputeActorLevel(p, f);
+    AiFormulas_CalculateDerivedHealth(p, f);
 }
 }  // namespace fnv_00643670
 
@@ -225,6 +256,8 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting306;
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting307;
 // @fnv 0x006439d0
 // src: COMMUNITY 0x006439d0
+// pdb: AiFormulas::AVDeriveActionPoints | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
 float AiFormulas_AVDeriveActionPoints(ActorValueOwner* apActorValueOwner)
 {
     return (float)((double)apActorValueOwner->GetActorValueFloatByIndex((ActorValue::Index)10) *
@@ -238,6 +271,8 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting308;
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting309;
 // @fnv 0x00643a10
 // src: COMMUNITY 0x00643a10
+// pdb: AiFormulas::AVDeriveCarryWeight | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
 float AiFormulas_AVDeriveCarryWeight(ActorValueOwner* pActorValueOwner)
 {
     return (double)pActorValueOwner->GetActorValueFloatByIndex((ActorValue::Index)5) *
@@ -253,15 +288,18 @@ extern double _DAT_01012060;
 
 // @fnv 0x00643b50
 // src: COMMUNITY 0x00643b50
-float AiFormulas_AVDeriveFromPrimary(ActorValueOwner* owner, int value)
+// pdb: AiFormulas::AVDeriveFromPrimary | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
+// pdb locals: fresult, fbonus
+float AiFormulas_AVDeriveFromPrimary(ActorValueOwner* apActor, int aiWhich)
 {
     float fResult = 0.0f;
 
-    switch (value)
+    switch (aiWhich)
     {
     case 17: {
         float fClampedValue = floorf(static_cast<float>(
-            ((static_cast<double>(owner->GetActorValueFloatByIndex(5)) + originalRuntimeFloatSetting313.Float()->f) *
+            ((static_cast<double>(apActor->GetActorValueFloatByIndex(5)) + originalRuntimeFloatSetting313.Float()->f) *
              g_011cd12c.Float()->f)));
 
         if (fClampedValue > _DAT_01012060)
@@ -285,11 +323,14 @@ struct SettingSlot16
 
 extern SettingSlot16 DAT_011cd680[];
 
-float __cdecl AiFormulas_RandomHour(float a, float b);
-float __cdecl FUN_00476b70(float a, float b);
+float __cdecl AiFormulas_RandomHour(float afMin, float afMax);
+float __cdecl FUN_00476b70(float afMin, float afMax);
 
 // Reads four floats from the setting slot at aiIndex, combines the first two into afOutA and the last two into afOutB.
 // @fnv 0x00643540
+// pdb: AiFormulas::ComputeRandomSandboxActivityStartAndDuration | AiFormulas.obj | debug, object-file run extension, low
+// pdb params: aiActivity, afStartOut, afDurationOut
+// pdb locals: settings
 void __cdecl GetSettingPairValues(int aiIndex, float* afOutA, float* afOutB)
 {
     SettingSlot16* slot = &DAT_011cd680[aiIndex];
@@ -316,19 +357,23 @@ public:
 };
 // Computes a level value from afLevel and runtime float settings, branching on v218/v360 and adjusting for stub actors or positive GetLevel.
 // @fnv 0x006436c0
-float __cdecl ComputeActorLevel(ActorValueOwner* apObj, float afLevel)
+// src: XBOX_RETAIL_PDB 0x006436c0
+// pdb: AiFormulas::CalculateDerivedHealth | AiFormulas.obj | retail, call graph (shared callers), high
+// pdb params: apActor, afEndurance
+// pdb locals: bpc, bnpc, fresult, pactor, pnpc
+float __cdecl AiFormulas_CalculateDerivedHealth(ActorValueOwner* apActor, float afEndurance)
 {
     float fResult = 0.0f;
-    Actor* pActor2 = static_cast<Actor*>(apObj);
+    Actor* pActor2 = static_cast<Actor*>(apActor);
     bool b4 = pActor2->IsCharacter();
     bool b3 = pActor2->IsPlayerRef();
     if (b3)
     {
-        fResult = (afLevel + originalRuntimeFloatSetting295.Float()->f) * originalRuntimeFloatSetting294.Float()->f;
+        fResult = (afEndurance + originalRuntimeFloatSetting295.Float()->f) * originalRuntimeFloatSetting294.Float()->f;
     }
     else if (b4)
     {
-        fResult = (afLevel + originalRuntimeFloatSetting298.Float()->f) * originalRuntimeFloatSetting297.Float()->f;
+        fResult = (afEndurance + originalRuntimeFloatSetting298.Float()->f) * originalRuntimeFloatSetting297.Float()->f;
     }
     if (ActorIsStub(pActor2) && b4 && !b3)
     {
@@ -371,6 +416,9 @@ int BSMAX_00647b70(int, int);
 float BSMAX_00404010(float, float);
 double FUN_00ec9ac0(double, double);
 // @fnv 0x00642ed0
+// pdb: AiFormulas::GetActorDetectedTarget | AiFormulas.obj | debug, object-file run extension, low
+// pdb params: aiPercepA, aiSneakB, aiLineofSite, aiVisual, afDistance, aiLightLevelB, aiBlindess, abInvisibilityB, aiBootweightB, abMovingB, abSneakingB, abRunning, absleeping, abAlert, aiActionSound, aiTargetSize, bExterior, abInCombat, aiAmbushValue, afSoundSubtotal, afVisualSubtotal, afSkillSubtotal, iLevelA, iLevelB, iArmorB
+// pdb locals: fmodperception, fModifiedDistanceAttenuation, frunmult, iRunning, fmovement, fAction, iSneakModified, iAlert, iCombat, fcalvalue, afAmbushMod, iSneakStart, fmoving, idetection, iVisual, imoving, fDistanceAttenuation, fvisual, fSounds, fsize, fSkill, iLos, fSkillscore, iSleeping ...
 int __cdecl ComputeDamageResult(int aiLevel, int aiBaseDamage, int a10, int aiDamage, float afCurrentHealth, int a1c,
                                 int aiPercent, bool a24, int a28, bool abApplyAttackBonus, bool abApplyDeduction,
                                 bool abApplyMultiplier, bool abFlag38, bool abFlag3c, int aiCount, int aiRepeats,
@@ -491,17 +539,21 @@ bool __cdecl ActorValue_IsSkill(int);
 void __cdecl GetSkillAttributeAndBase(int aiSkill, int* aiPrimaryAttribute, float* afBase);
 float __cdecl CalcSkillBase(float, float, float);
 // @fnv 0x00643c90
-float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiSkill, bool abCurrent)
+// src: XBOX_RETAIL_PDB 0x00643c90
+// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | retail, object-file run extension, high
+// pdb params: apActor, aiWhich
+// pdb locals: fresult
+float __cdecl AiFormulas_AVDeriveSkill(ActorValueOwner* apActor, int aiWhich, bool abBaseDerivation)
 {
     float fResult = 0.0f;
-    if (ActorValue_IsSkill(aiSkill))
+    if (ActorValue_IsSkill(aiWhich))
     {
         int iAttribute = -1;
-        GetSkillAttributeAndBase(aiSkill, &iAttribute, &fResult);
+        GetSkillAttributeAndBase(aiWhich, &iAttribute, &fResult);
         bool bUnused = false;
         if (iAttribute != -1)
         {
-            if (!abCurrent)
+            if (!abBaseDerivation)
             {
                 fResult = CalcSkillBase(fResult, apActor->GetActorValueFloatByIndex(iAttribute),
                                         apActor->GetActorValueFloatByIndex(11));
@@ -525,7 +577,7 @@ float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiSkill, bool abCurren
             if (pForm->IsActor())
             {
                 TESNPC* pNPC = (TESNPC*)pForm;
-                if (pNPC->GetClass() && pNPC->GetClass()->IsTagSkill((ActorValue::Index)aiSkill))
+                if (pNPC->GetClass() && pNPC->GetClass()->IsTagSkill((ActorValue::Index)aiWhich))
                 {
                     fResult += originalRuntimeFloatSetting327.Float()->f;
                 }
@@ -566,6 +618,9 @@ float __cdecl BSMAX_00404010(float, float);
 
 // Builds a sorted list of the leader's followers whose current package is type 1 and returns the accumulated spacing offset up to the given actor.
 // @fnv 0x00643ff0
+// pdb: AiFormulas::GetFollowRadiusFudgeForMultipleFollowers | AiFormulas.obj | debug, object-file run extension, low
+// pdb params: apActor, apFollowTarget
+// pdb locals: pfollowerExtra, ffudge, inumActualFollowers, plist, pfollower, ppack, followerDists, fminFollowDist, i, followerInfo
 float __cdecl GetFollowerOffset(Actor* actor, Actor* leader)
 {
     float offset = 0.0f;
@@ -633,6 +688,9 @@ extern "C" SettingT_GameSettingCollection_ g_011cdb48;
 // Returns the sum of a base setting value and the owner's actor value 11 multiplied by another setting value.
 // @fnv 0x00643b10
 // src: COMMUNITY 0x00643b10
+// pdb: AiFormulas::AVDeriveCriticalChance | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
+// pdb locals: fresult
 float __cdecl AiFormulas_AVDeriveCriticalChance(ActorValueOwner* apActorValueOwner)
 {
     float result = g_011cdee0.Float()->f + apActorValueOwner->GetActorValueFloatByIndex(11) * g_011cdb48.Float()->f;
@@ -648,20 +706,23 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting304;
 // Computes a float result from afValue and runtime settings based on actor traits, level, and a shell check.
 // @fnv 0x00643870
 // src: COMMUNITY 0x00643870
-float __cdecl AiFormulas_CalculateDerivedFatigue(ActorValueOwner* apObj, float afValue)
+// pdb: AiFormulas::CalculateDerivedFatigue | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, afEndurance
+// pdb locals: bpc, bnpc, fresult, pactor, pnpc
+float __cdecl AiFormulas_CalculateDerivedFatigue(ActorValueOwner* apActor, float afEndurance)
 {
     float fResult = 0.0f;
-    Actor* pActor2 = static_cast<Actor*>(apObj);
+    Actor* pActor2 = static_cast<Actor*>(apActor);
     bool bHasTrait4 = pActor2->IsCharacter();
     bool bHasSpecial3 = pActor2->IsPlayerRef();
 
     if (bHasSpecial3)
     {
-        fResult = originalRuntimeFloatSetting300.Float()->f + afValue * originalRuntimeFloatSetting301.Float()->f;
+        fResult = originalRuntimeFloatSetting300.Float()->f + afEndurance * originalRuntimeFloatSetting301.Float()->f;
     }
     else if (bHasTrait4)
     {
-        fResult = originalRuntimeFloatSetting303.Float()->f + afValue * originalRuntimeFloatSetting304.Float()->f;
+        fResult = originalRuntimeFloatSetting303.Float()->f + afEndurance * originalRuntimeFloatSetting304.Float()->f;
     }
 
     if (ActorIsStub(pActor2) && bHasTrait4 && !bHasSpecial3)

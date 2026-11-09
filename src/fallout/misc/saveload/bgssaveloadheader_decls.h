@@ -9,16 +9,16 @@ class SaveLoadHeader
 {
   public:
     void ReadHeaderFromFile(SaveLoadFile* file, bool temporary, unsigned int kind, unsigned int unused);
-    NiTexture* LoadTextureFromFile(SaveLoadFile* file, unsigned int offset, unsigned int width, unsigned int height);
+    NiTexture* BGSSaveLoadHeader_LoadHeaderScreenshot(SaveLoadFile* apFile, unsigned int aiOffset, unsigned int aiWidth, unsigned int aiHeight);
     static int ReadHeaderFromFile(SaveLoadFile* file);
 };
 
 class SaveLoadFile
 {
   public:
-    unsigned int Read(void* buffer, unsigned int size);
-    void SetFilePosition(int offset);
-    void AdvancePosition(unsigned int size);
+    unsigned int Read(void* apBuffer, unsigned int aiBytes);
+    void SeekSet(int aiPosition);
+    void BGSSaveLoadFile_SeekCurrent(unsigned int aiPosition);
 };
 
 class FUN_004f31d0_holder

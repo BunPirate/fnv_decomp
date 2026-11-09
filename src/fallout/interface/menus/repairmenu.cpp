@@ -29,9 +29,9 @@ public:
     static AudioMgr_BSAudio* Get();
     AudioPlaybackHandle Make(int id, SndForm* form);
     AudioPlaybackHandle Make2(int id);
-    bool PlayAt(void* node, float f, int flags);
-    AudioPlaybackHandle GetHandle(const char* name, int flags, int a);
-    AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags, int a);
+    bool PlayAt(void* apObj, float afFadeSeconds, int aiFlags);
+    AudioPlaybackHandle GetHandle(const char* apSoundName, int aiTypeFlags, int a);
+    AudioPlaybackHandle GetSoundByEditorID(const char* apSoundName, int aiTypeFlags, int a);
     AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags);
     Snd Make(void* a, SndSrc* b);
 };
@@ -47,6 +47,10 @@ int RepairMenu::GetClass()
 }
 // Applies the accumulated movement offset at 0x274 to the menu's X/Y tile values and resets it to zero.
 // @fnv 0x0077f700
+// pdb: HUDMainMenu::UpdateStatusModeUI | HUDMainMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to HUDMainMenu::UpdateShake
+// pdb params: abIsHardcore
+// pdb locals: iTotalCrippledLimbs, factorRightArmCondition, fTotalLimbCondition, factorHeadCondition, factorLeftArmCondition, factorRightLegCondition, factorBodyCondition, factorLeftLegCondition
 void RepairMenu::UpdateRepairList()
 {
     static float baseX = ((TileListBoxCalls_repairmenu*)pMenu)->GetFloat(4001);
@@ -71,6 +75,8 @@ void RepairMenu::UpdateRepairList()
 }
 // Loads repair_menu.xml, stores the resulting RepairMenu, initializes its list and tiles, and returns the tile or null on failure.
 // @fnv 0x007b5520
+// pdb: RepairMenu::Create | RepairMenu.obj | retail, upstream name already matches, high
+// pdb locals: pin, ptile, pold_menu_tile
 Tile* RepairMenu::Create()
 {
     Menu* pExistingMenu;
@@ -93,10 +99,10 @@ Tile* RepairMenu::Create()
         }
         if (((TileListBoxCalls_repairmenu*)pTile)->GetFloat(4007) == 6006.0 || ((TileListBoxCalls_repairmenu*)pTile)->GetFloat(4007) == 102.0)
             pTile->Set(4013, Tile::GetInterfaceScale(), true);
-        DAT_011da75c->m_kItemList.Initialize(DAT_011da75c->m_pTiles[1], "RM_RepairListTemplate");
-        DAT_011da75c->m_kItemList.FUN_007a1930(false);
-        DAT_011da75c->m_pTiles[5]->SetTraitFloat(DAT_011da754, 1.0f);
-        DAT_011da75c->m_pTiles[10]->SetTraitFloat(DAT_011da754, 1.0f);
+        DAT_011da75c->lbRepairList.Initialize(DAT_011da75c->pTiles[1], "RM_RepairListTemplate");
+        DAT_011da75c->lbRepairList.FUN_007a1930(false);
+        DAT_011da75c->pTiles[5]->SetTraitFloat(DAT_011da754, 1.0f);
+        DAT_011da75c->pTiles[10]->SetTraitFloat(DAT_011da754, 1.0f);
         DAT_011da75c->SetMenuVisibility(true);
         return pTile;
     }
@@ -145,6 +151,8 @@ struct Standin007b6a00
 // For ID 14, clears tile 0xFA3 on _4c and, when _5c.FUN_0071ae60() returns more than 1, also clears it on _48.
 // @fnv 0x007b6a00
 // src: XBOX_PDB 0x007b6a00
+// pdb: RepairMenu::DoLeave | RepairMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
 void Standin007b6a00::RepairMenu_DoLeave(int aiID, Tile* apTarget)
 {
     if (aiID == 14)
@@ -168,6 +176,9 @@ struct FUN_007b6a50_Host
     bool HandleButton(int aiButton, float afValue);
 };
 // @fnv 0x007b6a50
+// pdb: RepairMenu::DoGamepadUpEvent | RepairMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
 bool FUN_007b6a50_Host::HandleButton(int aiButton, float afValue)
 {
     bool bhandled = false;
@@ -184,9 +195,10 @@ bool FUN_007b6a50_Host::HandleButton(int aiButton, float afValue)
 
 // Removes the tile with id 0xfa9 and clears DAT_011da75c.
 // @fnv 0x007b5770
+// pdb: RepairMenu::~RepairMenu | RepairMenu.obj | retail, upstream name already matches, high
 RepairMenu::~RepairMenu()
 {
-    m_pTiles[8]->UpdateTrait(0xfa9);
+    pTiles[8]->UpdateTrait(0xfa9);
     DAT_011da75c = 0;
 }
 
@@ -220,7 +232,7 @@ struct RepairTile
 
 struct SkillOwner
 {
-    void* GetSkill(int aiActorValue);
+    void* GetSkill(int aiWhich);
 };
 
 struct PlayerStub
@@ -272,13 +284,16 @@ struct PlayerStub
     SkillOwner skills;
 };
 
-float ComputeRepairAmount(void* apSkill, float afSourceHealth, float afTargetHealth, int* apOut);
+float GamePlayFormulas_GetRepairedCondition(void* aiRepairSkill, float afCondition1, float afCondition2, int* apiMinSkillNeeded);
 float BSMIN(float a, float b);
 
 extern HealthOwner* DAT_011da760;
 extern PlayerStub* g_thePlayer;
 
 // @fnv 0x007b57f0
+// pdb: RepairMenu::InitFunc | RepairMenu.obj | debug, object-file gap fill, medium
+// pdb params: apTile, apItem
+// pdb locals: iminSkillNeeded, fitemHealth, fnewHealthPercent, fbrokenItemHealth
 void UpdateRepairTile(RepairTile* apTile, HealthOwner* apItem)
 {
     if (!apTile || !apItem)
@@ -294,20 +309,22 @@ void UpdateRepairTile(RepairTile* apTile, HealthOwner* apItem)
     float fRepairHealth = DAT_011da760->GetHealthPercent(true);
     float fResult = 0.0f;
     int iOut = -1;
-    fResult = ComputeRepairAmount(g_thePlayer->skills.GetSkill(0x27), fRepairHealth, fHealthPercent, &iOut) / 100.0;
+    fResult = GamePlayFormulas_GetRepairedCondition(g_thePlayer->skills.GetSkill(0x27), fRepairHealth, fHealthPercent, &iOut) / 100.0;
     fResult = BSMIN(fResult, 1.0f);
     apTile->SetFloat(0x1004, fResult, true);
 }
 
 // @fnv 0x007b6970
-void RepairMenu::SetRepairMenuText(const char* apText)
+// pdb: RepairMenu::ShowErrorMessage | RepairMenu.obj | debug, call graph, high
+// pdb params: astrMessage
+void RepairMenu::SetRepairMenuText(const char* astrMessage)
 {
-    m_pTiles[8]->SetString(4036, apText, true);
-    m_pTiles[9]->Set(4003, 0);
-    m_pTiles[8]->Set(4003, 1);
-    if (!m_pTiles[8]->Tile_HasFadeControl(4009))
+    pTiles[8]->SetString(4036, astrMessage, true);
+    pTiles[9]->Set(4003, 0);
+    pTiles[8]->Set(4003, 1);
+    if (!pTiles[8]->Tile_HasFadeControl(4009))
     {
-        m_pTiles[8]->StartFade(4009, 255.0f, 64.0f, 2.0f, true);
+        pTiles[8]->StartFade(4009, 255.0f, 64.0f, 2.0f, true);
     }
 }
 
@@ -336,13 +353,15 @@ class RmTile
 };
 
 // @fnv 0x007b6fb0
+// pdb: StatsMenu::ToggleHealingMode | StatsMenu.obj | retail, call graph, low
+// pdb note: debug build links it to RepairMenu::ResetMenu
 void ResetRepairMenu()
 {
-    reinterpret_cast<RmSub*>(&DAT_011da75c->m_kItemList)->vf1c();
+    reinterpret_cast<RmSub*>(&DAT_011da75c->lbRepairList)->vf1c();
     DAT_011da760 = 0;
     DAT_011da75c->HandleMouseoverTileAlt(0xe, 0);
-    reinterpret_cast<RmTile*>(DAT_011da75c->m_pTiles[8])->CallA(0xfa9);
-    reinterpret_cast<RmTile*>(DAT_011da75c->m_pTiles[8])->CallB(0xfa3, 0);
+    reinterpret_cast<RmTile*>(DAT_011da75c->pTiles[8])->CallA(0xfa9);
+    reinterpret_cast<RmTile*>(DAT_011da75c->pTiles[8])->CallB(0xfa3, 0);
 }
 }  // namespace fnv_007b6fb0
 
@@ -363,9 +382,9 @@ struct RepairTile
 {
     void Tile_Set(int id, float value, int flag);
     void FUN_00700320(int id, int value);
-    void Tile_Set_00a01350(int id, const char* text);
-    void Tile_Set_00a01350(int id, const char* text, int flag);
-    void Tile_Set_00a01350(int id, int value);
+    void Tile_Set_00a01350(int id, const char* apString);
+    void Tile_Set_00a01350(int id, const char* apString, int flag);
+    void Tile_Set_00a01350(int id, int apString);
 };
 struct RepairString
 {
@@ -408,7 +427,7 @@ extern float __cdecl FUN_00646360(int, float);
 extern void __cdecl FUN_00406d30(char*, int, const char*);
 extern void __cdecl UpdateRepairTile();
 extern void __cdecl CompareSortEntries();
-extern void __cdecl PopulateRepairMenu();
+extern void __cdecl RepairMenu_Update();
 extern bool __cdecl InterfaceManager_Has360Controller();
 extern void __cdecl Interface_SetRepairMenuVisible(int, int, int);
 extern InterfaceManager* __stdcall InterfaceManager_GetSingleton(int);
@@ -417,25 +436,28 @@ extern int __stdcall RepairMenu_GetClassStatic(int);
 
 // @fnv 0x007b7020
 // src: XBOX_PDB 0x007b7020
-void __cdecl RepairMenu_InitRepairMenu(int target)
+// pdb: RepairMenu::InitRepairMenu | RepairMenu.obj | retail, upstream name already matches, high
+// pdb params: apBrokenItem
+// pdb locals: pBrokenItemObject, fcondition, eFormId, pBrokenArmor, fBrokenDR, fBrokenDT, strtemp
+void __cdecl RepairMenu_InitRepairMenu(int apBrokenItem)
 {
     if (DAT_011da75c != 0)
     {
-        if (target != 0)
+        if (apBrokenItem != 0)
         {
-            DAT_011da760 = reinterpret_cast<RepairInventory*>(target);
+            DAT_011da760 = reinterpret_cast<RepairInventory*>(apBrokenItem);
         }
         float percent = DAT_011da760->ItemChange_GetItemHealth(1) / DAT_01017a40;
-        reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[4])->Tile_Set(0x1004, percent, 1);
-        reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[4])->FUN_00700320(0xfa3, 1);
+        reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[4])->Tile_Set(0x1004, percent, 1);
+        reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[4])->FUN_00700320(0xfa3, 1);
         RepairForm* form = DAT_011da760->FUN_0044ddc0();
         int type = form->FUN_00401170();
         if (type == 0x28)
         {
-            reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])
+            reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])
                 ->Tile_Set_00a01350(DAT_011da74c, DAT_011d2c7c.FUN_00403df0(1));
-            reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])
-                ->FUN_00700320(DAT_011da754, (int)FUN_004bd510(GetWeaponDamage(form, percent, target, 0), 1.0f));
+            reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])
+                ->FUN_00700320(DAT_011da754, (int)FUN_004bd510(GetWeaponDamage(form, percent, apBrokenItem, 0), 1.0f));
         }
         else if (type == 0x18)
         {
@@ -444,23 +466,23 @@ void __cdecl RepairMenu_InitRepairMenu(int target)
             float maximum = FUN_00646360((int)branchForm->TESObjectARMO_GetDamageThreshold(), percent);
             if (maximum > DAT_01012060)
             {
-                reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])
+                reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])
                     ->Tile_Set_00a01350(DAT_011da74c, DAT_011d396c.FUN_00403df0(1));
-                reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])->FUN_00700320(DAT_011da754, (int)maximum);
+                reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])->FUN_00700320(DAT_011da754, (int)maximum);
             }
             else if (low > DAT_01012060)
             {
-                reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])
+                reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])
                     ->Tile_Set_00a01350(DAT_011da74c, DAT_011d20c4.FUN_00403df0(1));
-                reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])->FUN_00700320(DAT_011da754, (int)low);
+                reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])->FUN_00700320(DAT_011da754, (int)low);
             }
             else
             {
                 char unavailableText[128];
                 FUN_00406d30(unavailableText, 128, DAT_01047008);
-                reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])
+                reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])
                     ->Tile_Set_00a01350(DAT_011da74c, DAT_011d20c4.FUN_00403df0(1));
-                reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])
+                reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])
                     ->Tile_Set_00a01350(DAT_011da754, unavailableText, 1);
             }
         }
@@ -468,32 +490,32 @@ void __cdecl RepairMenu_InitRepairMenu(int target)
         {
             char unavailableText[128];
             FUN_00406d30(unavailableText, 128, DAT_01047008);
-            reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])
+            reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])
                 ->Tile_Set_00a01350(DAT_011da74c, DAT_011d20c4.FUN_00403df0(1));
-            reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[5])->Tile_Set_00a01350(DAT_011da754, unavailableText, 1);
+            reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[5])->Tile_Set_00a01350(DAT_011da754, unavailableText, 1);
         }
 
-        if (target != 0)
+        if (apBrokenItem != 0)
         {
-            reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[3])
+            reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[3])
                 ->Tile_Set_00a01350(0xfcc, DAT_011da760->GetIconFilename(0, 1));
-            PopulateRepairMenu();
+            RepairMenu_Update();
         }
-        reinterpret_cast<RepairList*>(&DAT_011da75c->m_kItemList)->ListBox_ItemChange_Traverse(&UpdateRepairTile, 0, 0x7fffffff);
-        reinterpret_cast<RepairList*>(&DAT_011da75c->m_kItemList)->vf20(&CompareSortEntries);
-        reinterpret_cast<RepairTile*>(DAT_011da75c->m_pTiles[0])
+        reinterpret_cast<RepairList*>(&DAT_011da75c->lbRepairList)->ListBox_ItemChange_Traverse(&UpdateRepairTile, 0, 0x7fffffff);
+        reinterpret_cast<RepairList*>(&DAT_011da75c->lbRepairList)->vf20(&CompareSortEntries);
+        reinterpret_cast<RepairTile*>(DAT_011da75c->pTiles[0])
             ->FUN_00700320(
                 DAT_011da754,
                 reinterpret_cast<RepairHud*>(reinterpret_cast<char*>(DAT_011dea3c) + 0xa4)->FUN_0066ef20(0x27));
-        if (target && InterfaceManager_Has360Controller())
+        if (apBrokenItem && InterfaceManager_Has360Controller())
         {
             reinterpret_cast<RepairManager*>(
-                InterfaceManager_GetSingleton(reinterpret_cast<RepairList*>(&DAT_011da75c->m_kItemList)->vf14(1, 0, 0xfc3, 1)))
+                InterfaceManager_GetSingleton(reinterpret_cast<RepairList*>(&DAT_011da75c->lbRepairList)->vf14(1, 0, 0xfc3, 1)))
                 ->InterfaceManager_SetCurrentFocusTarget();
         }
         DAT_011da75c
-            ->HandleMouseover(0xe, reinterpret_cast<Tile*>(reinterpret_cast<RepairList*>(&DAT_011da75c->m_kItemList)->vf04()));
-        if (target != 0)
+            ->HandleMouseover(0xe, reinterpret_cast<Tile*>(reinterpret_cast<RepairList*>(&DAT_011da75c->lbRepairList)->vf04()));
+        if (apBrokenItem != 0)
         {
             Interface_SetRepairMenuVisible(1, 0, 0);
             reinterpret_cast<RepairManager*>(reinterpret_cast<char*>(InterfaceManager_GetSingleton(6, RepairMenu_GetClassStatic(500))) + 0x4d4)
@@ -526,6 +548,9 @@ extern int DAT_011da748;
 
 // Compares two sort entries by a flag, a list value against 255, health, and a secondary predicate, returning -1, 0 or 1.
 // @fnv 0x007b5950
+// pdb: RepairMenu::SortFunc | RepairMenu.obj | debug, object-file gap fill, medium
+// pdb params: apItem1, apItem2
+// pdb locals: bisGreyedOut1, bisGreyedOut2, bisRepairItem1, iresult, bisRepairItem2
 int CompareSortEntries(SortEntry_7b* apA, SortEntry_7b* apB)
 {
     int iResult = 0;
@@ -602,7 +627,7 @@ struct RepairList
     virtual void vf0();
     virtual int SelectedIndex();
     ItemStub* Selected();
-    void Remove(int);
+    void ListBox_ItemChange_RemoveItem(int);
     unsigned int Count();
 };
 struct AudioPlaybackHandle
@@ -629,18 +654,21 @@ struct FUN_007b5b40_cls
     ClickTile* tiles[13];
     RepairList list;
     void DoRepair(ItemStub*);
-    void HandleRepairMenuAction(int id, ClickTile* target);
+    void HandleRepairMenuAction(int aiID, ClickTile* apTarget);
 };
 // @fnv 0x007b5b40
-void FUN_007b5b40_cls::HandleRepairMenuAction(int aiActionId, ClickTile* apTargetTile)
+// pdb: RepairMenu::DoClick | RepairMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: bsearch, pspareExtra, psparePart
+void FUN_007b5b40_cls::HandleRepairMenuAction(int aiID, ClickTile* apTarget)
 {
     bool unused4 = false;
-    if (!apTargetTile && aiActionId >= 0 && aiActionId < 13)
-        apTargetTile = tiles[aiActionId];
-    switch (aiActionId)
+    if (!apTarget && aiID >= 0 && aiID < 13)
+        apTarget = tiles[aiID];
+    switch (aiID)
     {
     case 14:
-        if ((*apTargetTile->values.Find(0xfa9))->Read() < 255.0)
+        if ((*apTarget->values.Find(0xfa9))->Read() < 255.0)
         {
         }
         else
@@ -652,7 +680,7 @@ void FUN_007b5b40_cls::HandleRepairMenuAction(int aiActionId, ClickTile* apTarge
                 DoRepair(item5);
                 DAT_011dea3c->RemoveItem(reinterpret_cast<TESForm*>(item5->GetObject()), reinterpret_cast<ExtraDataList*>(base), 1, 0, 0, 0, 0, 0, 1, 0);
                 GetAudio()->GetSoundByEditorID("UIRepairWeapon", 0x121, 0).Play();
-                list.Remove(list.SelectedIndex());
+                list.ListBox_ItemChange_RemoveItem(list.SelectedIndex());
                 if (list.Count() == 1 || DAT_011da760->GetHealthPercent(true) >= 99.0)
                     Click(12, 0);
                 else
@@ -701,11 +729,14 @@ unsigned int __cdecl FUN_004873d0(TESBoundObject*);
 void __cdecl FUN_004d5c60(int);
 // Computes a repair amount from skill and health, applies it to the item's extra data, and merges the repaired entry into the inventory changes list.
 // @fnv 0x007b5d80
-void RepairMenu::ApplyRepair(void* source)
+// pdb: RepairMenu::RepairItem | RepairMenu.obj | retail, object-file run extension, high
+// pdb params: apSparePart
+// pdb locals: pbrokenExtra, bfoundMatchingExtra, prepairedExtra, pWeap, pitemGroup, fnewHealth, iorigStackCount, pcurrExtraObj
+void RepairMenu::ApplyRepair(void* apSparePart)
 {
     float repairVal = 0.0f;
-    repairVal = ComputeRepairAmount(g_thePlayer->skills.GetSkill(39), DAT_011da760->GetHealthPercent(true),
-                                    static_cast<HealthOwner*>(source)->GetHealthPercent(true), 0) /
+    repairVal = GamePlayFormulas_GetRepairedCondition(g_thePlayer->skills.GetSkill(39), DAT_011da760->GetHealthPercent(true),
+                                    static_cast<HealthOwner*>(apSparePart)->GetHealthPercent(true), 0) /
                 100.0;
     repairVal = BSMIN(repairVal, 1.0f);
     TESObjectWEAP* bound = dynamic_cast<TESObjectWEAP*>(((RepairInventoryItem*)DAT_011da760)->FUN_0044ddc0());
@@ -846,10 +877,13 @@ struct PreviewMenu
 };
 
 // @fnv 0x007b6120
-void PreviewMenu::UpdatePreviewComparison(int event, PreviewTile* target)
+// pdb: RepairMenu::DoEnter | RepairMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: inewHighlightIndex, pcurrItem, strtemp, fMaintainValue, iminSkillNeeded, fnewHealthPercent, fhealthImprovement, fstatImprovement, fRepairedDR, pBrokenArmor, fBrokenDR, fBrokenDT, fRepairedDT, foldHealthPercent
+void PreviewMenu::UpdatePreviewComparison(int aiID, PreviewTile* apTarget)
 {
     char text[64];
-    switch (event)
+    switch (aiID)
     {
     case 14: {
         PreviewItem* item7 = list.Selected();
@@ -877,8 +911,8 @@ void PreviewMenu::UpdatePreviewComparison(int event, PreviewTile* target)
             }
             else
             {
-                float health4 = target->Value(0x1004);
-                int cost4 = (int)target->Value(0x1005);
+                float health4 = apTarget->Value(0x1004);
+                int cost4 = (int)apTarget->Value(0x1005);
                 if (cost4 > 100)
                 {
                     FormatPreview(text, 64, g_011d4ee8.String(), *g_011d018c.Float() * 10.0, "%");
@@ -1004,7 +1038,7 @@ struct ItemNode
 struct Changes
 {
     static Changes* GetOrAddInventoryChanges(void*);
-    void Collect(void*, ItemNode*);
+    void InventoryChanges_GetRepairItemGroup(void*, ItemNode*);
 };
 struct Value
 {
@@ -1023,7 +1057,7 @@ struct UITile
 struct Box
 {
     UITile* Add(Item*, const char*, int, int);
-    void Remove(UITile*);
+    void ListBox_ItemChange_RemoveItem(UITile*);
 };
 extern Setting gSystemLocaleState;
 extern Setting g_011d4378, g_011d4030, g_011d4da4, g_011d1f2c, g_011d29f4;
@@ -1039,7 +1073,10 @@ struct ExtraList
     void AddHead(Extra*&);
 };
 // @fnv 0x007b6aa0
-void __cdecl PopulateRepairMenu()
+// src: XBOX_RETAIL_PDB 0x007b6aa0
+// pdb: RepairMenu::Update | RepairMenu.obj | retail, unique string literal, high
+// pdb locals: pinventory, pnewItemGroup, pcurrItemObj, pnewItem, pnewTile, iitemCt, bHasMods, pextra, fcondition, fCeilcondition, pbrokenItemExtra, paddItemExtra, pheight, py, pcurrExtraObj
+void __cdecl RepairMenu_Update()
 {
     if (!selectedItem)
         return;
@@ -1047,7 +1084,7 @@ void __cdecl PopulateRepairMenu()
     {
         Changes* c;
         c = Changes::GetOrAddInventoryChanges(playerObject);
-        c->Collect(selectedItem->Form(), &selectedExtra);
+        c->InventoryChanges_GetRepairItemGroup(selectedItem->Form(), &selectedExtra);
     }
     for (ItemNode* node = &selectedExtra; node && node->Head(); node = node->Next())
     {
@@ -1072,7 +1109,7 @@ void __cdecl PopulateRepairMenu()
                 if (!index)
                 {
                     item = node->Head();
-                    n = reinterpret_cast<Box*>(&repairView->m_kItemList)->Add(item, item->Name(), 0, 0);
+                    n = reinterpret_cast<Box*>(&repairView->lbRepairList)->Add(item, item->Name(), 0, 0);
                     if (n && item->Form() == selectedItem->Form())
                     {
                         Extra* x;
@@ -1084,9 +1121,9 @@ void __cdecl PopulateRepairMenu()
                             selectedItem = item;
                             n->SetInt(DAT_011da748, 1);
                             Value* healthValue;
-                            healthValue = reinterpret_cast<UITile*>(repairView->m_pTiles[2])->GetValue(0xfb0);
+                            healthValue = reinterpret_cast<UITile*>(repairView->pTiles[2])->GetValue(0xfb0);
                             Value* p;
-                            p = reinterpret_cast<UITile*>(repairView->m_pTiles[2])->GetValue(0xfa2);
+                            p = reinterpret_cast<UITile*>(repairView->pTiles[2])->GetValue(0xfa2);
                             healthValue->Clear();
                             healthValue->Link(0x7d0, n, 0xfb0);
                             healthValue->SetNumber(0x7d2, 1.0f);
@@ -1096,7 +1133,7 @@ void __cdecl PopulateRepairMenu()
                             p->Finish(0);
                         }
                         else if (tmp || item->Equipped(false))
-                            reinterpret_cast<Box*>(&repairView->m_kItemList)->Remove(n);
+                            reinterpret_cast<Box*>(&repairView->lbRepairList)->ListBox_ItemChange_RemoveItem(n);
                     }
                 }
                 else
@@ -1105,7 +1142,7 @@ void __cdecl PopulateRepairMenu()
                     for (ExtraNode* extraNode = node->Head()->Extras(); extraNode && extraNode->Head();
                          extraNode = extraNode->Next())
                         ((ExtraList*)item->Extras())->AddHead(extraNode->Head());
-                    n = reinterpret_cast<Box*>(&repairView->m_kItemList)->Add(item, item->Name(), 0, 0);
+                    n = reinterpret_cast<Box*>(&repairView->lbRepairList)->Add(item, item->Name(), 0, 0);
                 }
             }
         }
@@ -1113,11 +1150,11 @@ void __cdecl PopulateRepairMenu()
     if (CompareText(gSystemLocaleState.String(), "ENGLISH"))
     {
         reinterpret_cast<UITile*>(repairView->FUN_00726070())->Child("RM_Headline_Title")->SetString(0xfc4, g_011d4378.String(), true);
-        reinterpret_cast<UITile*>(repairView->m_pTiles[0])->SetString(DAT_011da74c, g_011d4030.String(), true);
-        reinterpret_cast<UITile*>(repairView->m_pTiles[4])->SetString(DAT_011da74c, g_011d4da4.String(), true);
-        reinterpret_cast<UITile*>(repairView->m_pTiles[9])->SetString(DAT_011da74c, g_011d4da4.String(), true);
-        reinterpret_cast<UITile*>(repairView->m_pTiles[11])->SetString(0xfc4, g_011d1f2c.String(), true);
-        reinterpret_cast<UITile*>(repairView->m_pTiles[12])->SetString(0xfc4, g_011d29f4.String(), true);
+        reinterpret_cast<UITile*>(repairView->pTiles[0])->SetString(DAT_011da74c, g_011d4030.String(), true);
+        reinterpret_cast<UITile*>(repairView->pTiles[4])->SetString(DAT_011da74c, g_011d4da4.String(), true);
+        reinterpret_cast<UITile*>(repairView->pTiles[9])->SetString(DAT_011da74c, g_011d4da4.String(), true);
+        reinterpret_cast<UITile*>(repairView->pTiles[11])->SetString(0xfc4, g_011d1f2c.String(), true);
+        reinterpret_cast<UITile*>(repairView->pTiles[12])->SetString(0xfc4, g_011d29f4.String(), true);
     }
 }
 }  // namespace fnv_007b6aa0

@@ -32,11 +32,13 @@ template <class T> void NiBinaryStream::Read(T& value)
 }
 // Calls the base NiBSplineInterpolator::LoadBinary, then reads m_fFloatValue and m_kFloatCPHandle from the stream input.
 // @fnv 0x00a50cd0
-void NiBSplineFloatInterpolator::LoadBinary(NiStream& stream)
+// pdb: NiBSplineFloatInterpolator::LoadBinary | NiBSplineFloatInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiBSplineFloatInterpolator::LoadBinary(NiStream& kStream)
 {
-    NiBSplineInterpolator::LoadBinary(stream);
-    stream.m_pkIstr->Read(m_fFloatValue);
-    stream.m_pkIstr->Read(m_kFloatCPHandle);
+    NiBSplineInterpolator::LoadBinary(kStream);
+    kStream.m_pkIstr->Read(m_fFloatValue);
+    kStream.m_pkIstr->Read(m_kFloatCPHandle);
 }
 
 // @fnv 0x00a50a20
@@ -98,18 +100,21 @@ void* __fastcall FUN_00a50b80(void* self, int, unsigned int flags)
     return self;
 }
 
-void __fastcall InitializeBSplineInterpolator(NiBSplineInterpolator* self, int, int, int);
-void __fastcall CopyBSplineInterpolator(NiBSplineInterpolator* self, int, NiBSplineInterpolator* object,
+void __fastcall NiBSplineInterpolator_ctor(NiBSplineInterpolator* self, int, int, int);
+void __fastcall NiBSplineInterpolator_CopyMembers(NiBSplineInterpolator* pkDest, int, NiBSplineInterpolator* object,
                                        CloningProcess& cloning);
 extern int DAT_010997f4;
 // Allocates a new object, initialises it, copies the float value and handle from this, and returns the clone.
 // @fnv 0x00a50c20
+// pdb: NiBSplineFloatInterpolator::CreateClone | NiBSplineFloatInterpolator.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiBSplineFloatInterpolator* __fastcall CloneFloatInterpolator(NiBSplineFloatInterpolator* self, int, CloningProcess& kCloning)
 {
     NiBSplineFloatInterpolator* pkObject = (NiBSplineFloatInterpolator*)BSFadeNode::operator new(0x24);
     if (pkObject)
     {
-        (((ThisCallStub*)pkObject)->*MemberCall<void (ThisCallStub::*)(int, int)>(InitializeBSplineInterpolator))(0, 0);
+        (((ThisCallStub*)pkObject)->*MemberCall<void (ThisCallStub::*)(int, int)>(NiBSplineInterpolator_ctor))(0, 0);
         *(void**)pkObject = (void*)&DAT_010997f4;
         pkObject->m_kFloatCPHandle = 0xffff;
     }
@@ -117,7 +122,7 @@ NiBSplineFloatInterpolator* __fastcall CloneFloatInterpolator(NiBSplineFloatInte
     {
         pkObject = 0;
     }
-    (((ThisCallStub*)self)->*MemberCall<void (ThisCallStub::*)(NiBSplineInterpolator*, CloningProcess&)>(CopyBSplineInterpolator))(pkObject, kCloning);
+    (((ThisCallStub*)self)->*MemberCall<void (ThisCallStub::*)(NiBSplineInterpolator*, CloningProcess&)>(NiBSplineInterpolator_CopyMembers))(pkObject, kCloning);
     pkObject->m_fFloatValue = self->m_fFloatValue;
     pkObject->m_kFloatCPHandle = self->m_kFloatCPHandle;
     return pkObject;
@@ -130,6 +135,8 @@ char* __cdecl NiGetViewerString_00a7d550(char const* name, float value);
 char* __cdecl NiGetViewerString_00a7d510(char const* name, char const* value);
 
 // @fnv 0x00a50d30
+// pdb: NiBSplineFloatInterpolator::GetViewerStrings | NiBSplineFloatInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall SerializeToStrings(NiBSplineFloatInterpolator* self, int, StrArr* strings)
 {
     (((ThisCallStub*)self)->*MemberCall<void (ThisCallStub::*)(StrArr*)>(GetBSplineInterpolatorStrings))(strings);
@@ -163,6 +170,9 @@ void __fastcall EvaluateSpline(NiBSplineData* self, int, float t, float* out, in
                                NiBSplineBasisData* basis, unsigned int handle);
 
 // @fnv 0x00a50ba0
+// pdb: NiBSplineFloatInterpolator::Update | NiBSplineFloatInterpolator.obj | retail, object-file run extension, low
+// pdb params: fTime, pkInterpTarget, fValue
+// pdb locals: fNormTime
 bool __fastcall EvaluateAt(NiBSplineFloatInterpolator* self, int, float afTime, unsigned int unused, float* pfOut)
 {
     float t;
@@ -175,8 +185,8 @@ bool __fastcall EvaluateAt(NiBSplineFloatInterpolator* self, int, float afTime, 
     if (handle != 0xffff)
     {
         t = (afTime - self->m_fStartTime) / (self->m_fEndTime - self->m_fStartTime);
-        (((ThisCallStub*)self->m_spTransformData.m_pObject)->*MemberCall<void (ThisCallStub::*)(float, float*, int, NiBSplineBasisData*, unsigned int)>(EvaluateSpline))(
-            t, &self->m_fFloatValue, 1, self->m_spSplineBasisData.m_pObject, handle);
+        (((ThisCallStub*)self->m_spData.m_pObject)->*MemberCall<void (ThisCallStub::*)(float, float*, int, NiBSplineBasisData*, unsigned int)>(EvaluateSpline))(
+            t, &self->m_fFloatValue, 1, self->m_spBasisData.m_pObject, handle);
     }
     *pfOut = self->m_fFloatValue;
     self->m_fLastTime = afTime;
@@ -192,6 +202,8 @@ template <class T> inline void WriteValue(NiBinaryStream* stream, T* value)
 void __fastcall SaveBSplineInterpolator(NiBSplineInterpolator* self, int, NiStream& stream);
 
 // @fnv 0x00a50c70
+// pdb: NiBSplineFloatInterpolator::SaveBinary | NiBSplineFloatInterpolator.obj | retail, object-file run extension, low
+// pdb params: kStream
 void __fastcall SaveFloatInterpolator(NiBSplineFloatInterpolator* self, int, NiStream& stream)
 {
     (((ThisCallStub*)self)->*MemberCall<void (ThisCallStub::*)(NiStream&)>(SaveBSplineInterpolator))(stream);
@@ -205,10 +217,11 @@ extern int DAT_0109ae8c;
 void __fastcall DestroyInterpolator(NiInterpolator* self, int);
 
 // @fnv 0x00a57f80
+// pdb: NiBSplineInterpolator::~NiBSplineInterpolator | NiBSplineInterpolator.obj | retail, call graph (shared callers), medium
 __declspec(noinline) void __fastcall DestroyBSplineInterpolator(NiBSplineInterpolator* self, int)
 {
     *(void* volatile*)self = (void*)&DAT_0109ae8c;
-    NiBSplineBasisData* second = *(NiBSplineBasisData* volatile*)&self->m_spSplineBasisData.m_pObject;
+    NiBSplineBasisData* second = *(NiBSplineBasisData* volatile*)&self->m_spBasisData.m_pObject;
     if (second != 0)
     {
         if (InterlockedDecrement(reinterpret_cast<long*>(&second->m_uiRefCount)) == 0)
@@ -216,7 +229,7 @@ __declspec(noinline) void __fastcall DestroyBSplineInterpolator(NiBSplineInterpo
             second->DeleteThis();
         }
     }
-    NiBSplineData* first = self->m_spTransformData.m_pObject;
+    NiBSplineData* first = self->m_spData.m_pObject;
     if (first != 0)
     {
         if (InterlockedDecrement(reinterpret_cast<long*>(&first->m_uiRefCount)) == 0)

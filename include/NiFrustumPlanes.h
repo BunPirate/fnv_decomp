@@ -2,13 +2,14 @@
 
 #include "NiPlane.h"
 
+// pdb: class NiFrustumPlanes, size 0x64, 2 members
 class NiFrustumPlanes
 {
 public:
-    NiPlane m_akPlanes[6];
-    unsigned int m_uiActivePlaneMask;
+    NiPlane m_akCullingPlanes[6];
+    unsigned int m_uiActivePlanes;
 
-    NiFrustumPlanes() : m_uiActivePlaneMask(63) {}
+    NiFrustumPlanes() : m_uiActivePlanes(63) {}
 
     void Set(void*, void*);
     void Set(void*);

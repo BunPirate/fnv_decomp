@@ -11,7 +11,7 @@ struct AbstractHeapDiagnostics : AbstractHeap
     int CountLinkedNodes(int node);
     AbstractHeap* DestroyIfFlagged(unsigned int flags);
     void CheckFreeBlock(HeapFreeBlock* block);
-    void LogFreeBlockStats(unsigned int blockSize, HeapFreeList* list);
+    void AbstractHeap_OutputBlockFailure(unsigned int desired_size, HeapFreeList* list);
 };
 
 __forceinline void AddHeapFreeBlock(HeapFreeList* list, HeapFreeBlock* block)
@@ -35,6 +35,9 @@ __forceinline void AddHeapFreeBlock(HeapFreeList* list, HeapFreeBlock* block)
 }
 
 // @fnv 0x00aa9bd0
+// pdb: AbstractHeap::TryAndDefragment | AbstractHeap.obj | debug, object-file gap fill, medium
+// pdb params: apNewFree
+// pdb locals: pcur, pprev
 void AbstractHeap::InsertFreeBlock(HeapFreeBlock* freeBlock)
 {
     HeapFreeBlock* block = freeBlock;
@@ -65,16 +68,19 @@ void AbstractHeap::InsertFreeBlock(HeapFreeBlock* freeBlock)
 }
 
 // @fnv 0x00aa8f50
-void* AbstractHeap::BaseAllocate(unsigned int size)
+// pdb: AbstractHeap::BaseAllocate | AbstractHeap.obj | retail, upstream name already matches, high
+// pdb params: aSize
+// pdb locals: plist, curaSize, pmem, isub, isubID, pfreeCur, isizeDiff, pnewFree, bdecommitted, newSize, bres, msg, totalSize, pnext, itotalMem, itotalSize, pblock
+void* AbstractHeap::BaseAllocate(unsigned int aSize)
 {
     fnv_EnterCriticalSection(&CriticalSectionO);
-    if (size <= 8)
-        size = 8;
+    if (aSize <= 8)
+        aSize = 8;
     else
-        size = (size + iDefaultAlignment - 1) & ~(iDefaultAlignment - 1);
+        aSize = (aSize + iDefaultAlignment - 1) & ~(iDefaultAlignment - 1);
     unsigned int uiBlockSize;
     void* pMemory = 0;
-    HeapFreeList* pSizeClassFreeList = GetFreeList(size);
+    HeapFreeList* pSizeClassFreeList = GetFreeList(aSize);
     if (!pSizeClassFreeList->pTail && pSizeClassFreeList != &LargeFreeList)
     {
         pSizeClassFreeList += MinFreeBlockSize / iDefaultAlignment;
@@ -85,7 +91,7 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
         else
         {
             int iSubBucketIndex = 0;
-            int iFirstBucket = GetSubBucket(size + MinFreeBlockSize);
+            int iFirstBucket = GetSubBucket(aSize + MinFreeBlockSize);
             for (iSubBucketIndex = iFirstBucket; iSubBucketIndex < 16 && !pSizeClassFreeList->pTail; ++iSubBucketIndex)
             {
                 if (pSubBuckets[iSubBucketIndex].iCount)
@@ -106,7 +112,7 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
         while (pBlock)
         {
             uiBlockSize = pBlock->GetSize();
-            int iExtra = uiBlockSize - size;
+            int iExtra = uiBlockSize - aSize;
             if (iExtra == 0 || iExtra >= (int)MinFreeBlockSize)
             {
                 HeapFreeBlock* pNewBlock = 0;
@@ -116,7 +122,7 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
                 {
                     if (bDecommitted)
                     {
-                        unsigned int iCommitSize = size + 24;
+                        unsigned int iCommitSize = aSize + 24;
                         bool bCommitted = VirtualAlloc(pBlock, iCommitSize, 4096, 4) != 0;
                         if (!bCommitted)
                         {
@@ -132,8 +138,8 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
                             AbstractHeapLogger::Get()->vfn_14(2, szMessage, 0, 0, 0);
                         }
                     }
-                    pNewBlock = (HeapFreeBlock*)((char*)pBlock + size + sizeof(MemoryBlockHeader));
-                    unsigned int iRemainingSize = uiBlockSize - (size + sizeof(MemoryBlockHeader));
+                    pNewBlock = (HeapFreeBlock*)((char*)pBlock + aSize + sizeof(MemoryBlockHeader));
+                    unsigned int iRemainingSize = uiBlockSize - (aSize + sizeof(MemoryBlockHeader));
                     pNewBlock->m_pNextFree = 0;
                     pNewBlock->m_pPrevFree = 0;
                     pNewBlock->SetFlags(iRemainingSize, 0);
@@ -153,7 +159,7 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
                 {
                     if (bDecommitted)
                     {
-                        bool bCommitted = VirtualAlloc(pBlock, size + sizeof(MemoryBlockHeader), 4096, 4) != 0;
+                        bool bCommitted = VirtualAlloc(pBlock, aSize + sizeof(MemoryBlockHeader), 4096, 4) != 0;
                         if (!bCommitted)
                         {
                             AddBlockToFreeList(pBlock);
@@ -163,14 +169,14 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
                         pBlock->SetDecommitted(false);
                         char szMessage[256];
                         sprintf_s(szMessage, 256, "Committing perfectly matched Free Block: %08X, %08X\r\n", pBlock,
-                                  size + sizeof(MemoryBlockHeader));
+                                  aSize + sizeof(MemoryBlockHeader));
                         if (AbstractHeapHasLog())
                         {
                             AbstractHeapLogger::Get()->vfn_14(2, szMessage, 0, 0, 0);
                         }
                     }
                 }
-                pBlock->SetSize(size);
+                pBlock->SetSize(aSize);
                 pMemory = (char*)pBlock + sizeof(MemoryBlockHeader);
                 iBlockMemAllocated += pBlock->GetTotalSize();
                 break;
@@ -180,7 +186,7 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
     }
     if (!pMemory)
     {
-        unsigned int uiBlockAllocationSizeItem = size + sizeof(MemoryBlockHeader);
+        unsigned int uiBlockAllocationSizeItem = aSize + sizeof(MemoryBlockHeader);
         unsigned int iNeededSize = iMemAllocated + uiBlockAllocationSizeItem;
         if (iPageSize && iNeededSize > iCurrentSize && iNeededSize <= MemHeapSize)
             iCurrentSize += CreateMorePages(pMemHeap, iCurrentSize, uiBlockAllocationSizeItem);
@@ -189,7 +195,7 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
             MemoryBlockHeader* pBlock = (MemoryBlockHeader*)(pMemHeap + iMemAllocated);
             if (iPageSize)
             {
-                bool bCommitted = VirtualAlloc(pBlock, size + sizeof(MemoryBlockHeader), 4096, 4) != 0;
+                bool bCommitted = VirtualAlloc(pBlock, aSize + sizeof(MemoryBlockHeader), 4096, 4) != 0;
                 if (!bCommitted)
                 {
                     fnv_LeaveCriticalSection(&CriticalSectionO);
@@ -197,13 +203,13 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
                 }
                 char szMessage[256];
                 sprintf_s(szMessage, 256, "Committing memory on end of heap: %08X, %08X\r\n", pBlock,
-                          size + sizeof(MemoryBlockHeader));
+                          aSize + sizeof(MemoryBlockHeader));
                 if (AbstractHeapHasLog())
                 {
                     AbstractHeapLogger::Get()->vfn_14(2, szMessage, 0, 0, 0);
                 }
             }
-            pBlock->SetFlags(size, 0);
+            pBlock->SetFlags(aSize, 0);
             PushBlock(pBlock);
             iMemAllocated += uiBlockAllocationSizeItem;
             if (iMemAllocated > iMemAllocatedHigh)
@@ -217,6 +223,8 @@ void* AbstractHeap::BaseAllocate(unsigned int size)
 }
 
 // @fnv 0x00aa9a70
+// pdb: AbstractHeap::CleanEnd | AbstractHeap.obj | debug, object-file gap fill, medium
+// pdb locals: pcur, ifreeSize
 void AbstractHeap::RebuildFreeLists()
 {
     MemoryBlockHeader* block = pBlockTail;
@@ -248,6 +256,8 @@ void AbstractHeap::RebuildFreeLists()
 }
 
 // @fnv 0x00aa9970
+// pdb: AbstractHeap::MergeFreeBlocks | AbstractHeap.obj | debug, object-file gap fill, medium
+// pdb params: apFree1, apFree2
 void AbstractHeap::CoalesceFreeBlocks(HeapFreeBlock* pFirstBlock, HeapFreeBlock* pSecondBlock)
 {
     RemoveBlockFromFreeList(pFirstBlock);
@@ -264,12 +274,15 @@ void AbstractHeap::CoalesceFreeBlocks(HeapFreeBlock* pFirstBlock, HeapFreeBlock*
 }
 
 // @fnv 0x00aa98f0
-void AbstractHeap::BaseFree(void* pointer)
+// pdb: AbstractHeap::BaseFree | AbstractHeap.obj | retail, upstream name already matches, high
+// pdb params: apPointer
+// pdb locals: pcur
+void AbstractHeap::BaseFree(void* apPointer)
 {
-    if (!pointer)
+    if (!apPointer)
         return;
     fnv_EnterCriticalSection(&CriticalSectionO);
-    HeapFreeBlock* block = (HeapFreeBlock*)((char*)pointer - sizeof(MemoryBlockHeader));
+    HeapFreeBlock* block = (HeapFreeBlock*)((char*)apPointer - sizeof(MemoryBlockHeader));
     iBlockMemAllocated -= block->GetTotalSize();
     AddBlockToFreeList(block);
     InsertFreeBlock(block);
@@ -286,18 +299,24 @@ inline void AbstractHeap::RemoveBlockFromFreeList(HeapFreeBlock* block)
 // Clears the block's fields, marks it free, adds it to the free list for its size, and updates the free-block and sub-bucket counters.
 // @fnv 0x00aa9d30
 // src: COMMUNITY 0x00aa9d30
-void AbstractHeap::AddBlockToFreeList(HeapFreeBlock* block)
+// pdb: AbstractHeap::AddBlockToFreeList | AbstractHeap.obj | debug, upstream name already matches, high
+// pdb params: apBlock
+// pdb locals: plist
+void AbstractHeap::AddBlockToFreeList(HeapFreeBlock* apBlock)
 {
-    block->m_pPrevFree = 0;
-    block->m_pNextFree = 0;
-    block->SetFree(true);
-    HeapFreeList* list = GetFreeList(block->GetSize());
-    AddHeapFreeBlock(list, block);
+    apBlock->m_pPrevFree = 0;
+    apBlock->m_pNextFree = 0;
+    apBlock->SetFree(true);
+    HeapFreeList* list = GetFreeList(apBlock->GetSize());
+    AddHeapFreeBlock(list, apBlock);
     ++iNumFreeBlocks;
-    IncrementSubBucket(block->GetSize());
+    IncrementSubBucket(apBlock->GetSize());
 }
 // @fnv 0x00aa9e50
 // src: XBOX_PDB 0x00aa9e50
+// pdb: AbstractHeap::RemoveBlockFromFreeList | AbstractHeap.obj | debug, object-file gap fill, medium
+// pdb params: apList, apBlock
+// pdb locals: pnext, pprev
 void AbstractHeap::RemoveBlockFromFreeList_00aa9e50(HeapFreeList* apFreeList, HeapFreeBlock* block)
 {
     HeapFreeBlock* pPrev = block->m_pPrevFree;
@@ -313,6 +332,8 @@ void AbstractHeap::RemoveBlockFromFreeList_00aa9e50(HeapFreeList* apFreeList, He
 }
 // Unlinks this node from the free list by patching its neighbours' free-list links, then clears the previous and next free pointers.
 // @fnv 0x00aaa5e0
+// pdb: AbstractHeap::GetSubBucketIndex | AbstractHeap.obj | debug, object-file run extension, low
+// pdb params: aiBucketSize
 inline void HeapFreeBlock::RemoveFromFreeList()
 {
     if (m_pNextFree)
@@ -324,22 +345,30 @@ inline void HeapFreeBlock::RemoveFromFreeList()
 }
 // Computes the sub-bucket index for size and, if valid, increments that bucket's iCount.
 // @fnv 0x00aa9ef0
-void AbstractHeap::IncrementSubBucket(int size)
+// pdb: AbstractHeap::IncrementSubBucket | AbstractHeap.obj | debug, upstream name already matches, high
+// pdb params: aiBucketSize
+// pdb locals: id
+void AbstractHeap::IncrementSubBucket(int aiBucketSize)
 {
-    int bucket = GetSubBucket(size);
+    int bucket = GetSubBucket(aiBucketSize);
     if (bucket != -1)
         ++pSubBuckets[bucket].iCount;
 }
 // Looks up the sub-bucket for size and decrements its iCount if a bucket was found.
 // @fnv 0x00aa9f50
-void AbstractHeap::DecrementSubBucket(int size)
+// pdb: AbstractHeap::DecrementSubBucket | AbstractHeap.obj | debug, upstream name already matches, high
+// pdb params: aiBucketSize
+// pdb locals: id
+void AbstractHeap::DecrementSubBucket(int aiBucketSize)
 {
-    int bucket = GetSubBucket(size);
+    int bucket = GetSubBucket(aiBucketSize);
     if (bucket != -1)
         --pSubBuckets[bucket].iCount;
 }
 // Links block into the heap's block list, setting its previous pointer and updating the head/tail and count.
 // @fnv 0x00aa9ca0
+// pdb: AbstractHeap::AddBlockToList | AbstractHeap.obj | debug, object-file gap fill, medium
+// pdb params: apNewBlock
 void AbstractHeap::PushBlock(MemoryBlockHeader* block)
 {
     if (pBlockTail)
@@ -357,6 +386,9 @@ void AbstractHeap::PushBlock(MemoryBlockHeader* block)
 
 // Returns -1 if arg is null, otherwise counts nodes by following the pointer at offset 0x4C until it is null.
 // @fnv 0x00aaa560
+// pdb: AbstractHeap::GetLogIndex | AbstractHeap.obj | debug, object-file run extension, low
+// pdb params: apLogItem
+// pdb locals: iindex
 int AbstractHeapDiagnostics::CountLinkedNodes(int pNode)
 {
     if (!pNode)
@@ -373,6 +405,7 @@ int AbstractHeapDiagnostics::CountLinkedNodes(int pNode)
 extern MemoryManager g_memoryManager;
 // Calls the heap destructor, then deallocates this via g_memoryManager when flags has bit 1 set, and returns this.
 // @fnv 0x00aaa5b0
+// pdb: AbstractHeap::`scalar deleting destructor' | AbstractHeap.obj | debug, object-file run extension, low
 AbstractHeap* AbstractHeapDiagnostics::DestroyIfFlagged(unsigned int flags)
 {
     AbstractHeap::~AbstractHeap();
@@ -387,6 +420,8 @@ struct _RTL_CRITICAL_SECTION;
 extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(_RTL_CRITICAL_SECTION*);
 extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(_RTL_CRITICAL_SECTION*);
 // @fnv 0x00aa9fb0
+// pdb: AbstractHeap::CheckHeapIntegrity | AbstractHeap.obj | retail, upstream name already matches, high
+// pdb locals: pcur, pfreeCur, isub, i
 void AbstractHeap::CheckHeapIntegrity()
 {
     HeapFreeBlock* pblock;
@@ -430,6 +465,7 @@ void AbstractHeap::CheckHeapIntegrity()
     LeaveCriticalSection((_RTL_CRITICAL_SECTION*)CriticalSectionO);
 }
 
+// pdb: structure _MEMORYSTATUS, size 0x20, 8 members
 struct _MEMORYSTATUS
 {
     unsigned long dwLength;
@@ -445,7 +481,11 @@ extern "C" __declspec(dllimport) void __stdcall GlobalMemoryStatus(_MEMORYSTATUS
 
 // If heap logging is enabled, logs the block size, then counts free blocks in list and reports count, largest, total and available physical memory.
 // @fnv 0x00aa9760
-void AbstractHeapDiagnostics::LogFreeBlockStats(unsigned int blockSize, HeapFreeList* list)
+// src: XBOX_DEBUG_PDB 0x00aa9760
+// pdb: AbstractHeap::OutputBlockFailure | AbstractHeap.obj | debug, unique string literal, high
+// pdb params: desired_size, list
+// pdb locals: m, avail, memoryStatus, num, largest, block, size
+void AbstractHeapDiagnostics::AbstractHeap_OutputBlockFailure(unsigned int desired_size, HeapFreeList* list)
 {
     if (AbstractHeapHasLog())
     {
@@ -454,7 +494,7 @@ void AbstractHeapDiagnostics::LogFreeBlockStats(unsigned int blockSize, HeapFree
         unsigned int total = 0;
         _MEMORYSTATUS status3;
         char buffer[256];
-        sprintf_s(buffer, 256, "AbstractHeap: Checking list for block size %u\n", blockSize);
+        sprintf_s(buffer, 256, "AbstractHeap: Checking list for block size %u\n", desired_size);
         AbstractHeapLogger::Get()->vfn_14(2, buffer, 0, 0, 0);
         if (list)
         {
@@ -486,9 +526,12 @@ struct BucketInfo
 
 // Writes the bucket count and, for each bucket size, the number of free blocks to the given file, returning the total bytes written.
 // @fnv 0x00aaa310
-int AbstractHeap::OutputBucketInfo(IMemoryManagerFile* file)
+// pdb: AbstractHeap::OutputBucketInfo | AbstractHeap.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: iwritten, inumBuckets, bucket, icnt, plist, pcur
+int AbstractHeap::OutputBucketInfo(IMemoryManagerFile* apFile)
 {
-    if (!file)
+    if (!apFile)
         return 0;
     fnv_EnterCriticalSection(CriticalSectionO);
     BucketInfo bucketInfo;
@@ -500,7 +543,7 @@ int AbstractHeap::OutputBucketInfo(IMemoryManagerFile* file)
         HeapFreeList* list;
         total = 0;
         numBuckets = 0x401;
-        total += file->Write(&numBuckets, 4);
+        total += apFile->Write(&numBuckets, 4);
         for (i4 = 0; i4 < numBuckets; i4++)
         {
             bucketInfo.iSize = (i4 + 1) * iDefaultAlignment;
@@ -512,7 +555,7 @@ int AbstractHeap::OutputBucketInfo(IMemoryManagerFile* file)
                 bucketInfo.iCount++;
                 block = block->m_pPrevFree;
             }
-            total += file->Write(&bucketInfo, 8);
+            total += apFile->Write(&bucketInfo, 8);
         }
     }
     fnv_LeaveCriticalSection(CriticalSectionO);
@@ -531,15 +574,18 @@ struct HeapBlockInfo
 
 // Writes the heap block count and, when full is set, each block's size, free flag and owner to the file, returning bytes written.
 // @fnv 0x00aaa430
-int AbstractHeap::OutputBlockInfo(IMemoryManagerFile* file, bool full)
+// pdb: AbstractHeap::OutputBlockInfo | AbstractHeap.obj | retail, upstream name already matches, high
+// pdb params: apFile, abOutputWalk
+// pdb locals: iwritten, stats, i, pblock, zero
+int AbstractHeap::OutputBlockInfo(IMemoryManagerFile* apFile, bool abOutputWalk)
 {
-    if (!file)
+    if (!apFile)
         return 0;
     fnv_EnterCriticalSection(CriticalSectionO);
     int total2 = 0;
-    if (full)
+    if (abOutputWalk)
     {
-        total2 += file->Write(&iNumBlocks, 4);
+        total2 += apFile->Write(&iNumBlocks, 4);
         int i;
         HeapBlockInfo info2;
         info2.iType = 8;
@@ -549,13 +595,13 @@ int AbstractHeap::OutputBlockInfo(IMemoryManagerFile* file, bool full)
             info2.iSize = block7->GetSize();
             info2.bFree = block7->IsFree() != 0;
             info2.iOwner = -1;
-            total2 += file->Write(&info2, sizeof(info2));
+            total2 += apFile->Write(&info2, sizeof(info2));
         }
     }
     else
     {
         int zero4 = 0;
-        total2 += file->Write(&zero4, 4);
+        total2 += apFile->Write(&zero4, 4);
     }
     fnv_LeaveCriticalSection(CriticalSectionO);
     return total2;
@@ -582,53 +628,56 @@ class MemoryHeapStats
 };
 
 // @fnv 0x00aaa0e0
-void AbstractHeap::GetHeapStats(MemoryHeapStats* stats, bool full)
+// pdb: AbstractHeap::GetHeapStats | AbstractHeap.obj | retail, upstream name already matches, high
+// pdb params: apStats, abFullBlockInfo
+// pdb locals: iblockDebugOverhead, pcur, iheapBlockSize, itotalBlockDebugOverhead, isize
+void AbstractHeap::GetHeapStats(MemoryHeapStats* apStats, bool abFullBlockInfo)
 {
     fnv_EnterCriticalSection(&this->CriticalSectionO);
-    stats->pName = this->pName;
-    stats->iMemHeapSize = this->MemHeapSize;
-    stats->iCurrentSize = this->iCurrentSize;
-    stats->iMemAllocated = this->iMemAllocated;
-    stats->iNumBlocks = this->iNumBlocks;
-    stats->iNumFreeBlocks = this->iNumFreeBlocks;
+    apStats->pName = this->pName;
+    apStats->iMemHeapSize = this->MemHeapSize;
+    apStats->iCurrentSize = this->iCurrentSize;
+    apStats->iMemAllocated = this->iMemAllocated;
+    apStats->iNumBlocks = this->iNumBlocks;
+    apStats->iNumFreeBlocks = this->iNumFreeBlocks;
     int iZero4 = 0;
-    int iBlockBytes2 = stats->iNumBlocks * iZero4;
+    int iBlockBytes2 = apStats->iNumBlocks * iZero4;
     int iHeaderSize3 = sizeof(MemoryBlockHeader) - iZero4;
-    stats->iHeapStructSize = sizeof(AbstractHeap);
-    stats->iFreeListBytes = 0x2000;
-    stats->iFreeListBytes += 0x80;
-    stats->iBlockTableBytes = this->iNumBlocks * iHeaderSize3;
-    stats->iUnusedBytes = iBlockBytes2;
+    apStats->iHeapStructSize = sizeof(AbstractHeap);
+    apStats->iFreeListBytes = 0x2000;
+    apStats->iFreeListBytes += 0x80;
+    apStats->iBlockTableBytes = this->iNumBlocks * iHeaderSize3;
+    apStats->iUnusedBytes = iBlockBytes2;
     MemoryBlockHeader* aBlock = this->pBlockHead;
-    stats->iFreeSize = this->iMemAllocated - this->iBlockMemAllocated;
-    stats->iUsedSize = this->iBlockMemAllocated;
-    stats->iMinFreeBlock = 0xfffffff;
-    stats->iMaxFreeBlock = 0;
-    if (full)
+    apStats->iFreeSize = this->iMemAllocated - this->iBlockMemAllocated;
+    apStats->iUsedSize = this->iBlockMemAllocated;
+    apStats->iMinFreeBlock = 0xfffffff;
+    apStats->iMaxFreeBlock = 0;
+    if (abFullBlockInfo)
     {
-        stats->iFreeSize = 0;
-        stats->iUsedSize = 0;
+        apStats->iFreeSize = 0;
+        apStats->iUsedSize = 0;
         while (aBlock)
         {
             if (aBlock->IsFree())
             {
                 int freeSize = aBlock->GetSize();
-                stats->iFreeSize += freeSize + iHeaderSize3;
-                if (freeSize < stats->iMinFreeBlock)
-                    stats->iMinFreeBlock = freeSize;
-                if (freeSize > stats->iMaxFreeBlock)
-                    stats->iMaxFreeBlock = freeSize;
+                apStats->iFreeSize += freeSize + iHeaderSize3;
+                if (freeSize < apStats->iMinFreeBlock)
+                    apStats->iMinFreeBlock = freeSize;
+                if (freeSize > apStats->iMaxFreeBlock)
+                    apStats->iMaxFreeBlock = freeSize;
             }
             else
             {
                 int usedSize_ = aBlock->GetSize();
-                stats->iUsedSize += usedSize_ + iHeaderSize3;
+                apStats->iUsedSize += usedSize_ + iHeaderSize3;
             }
             aBlock = (aBlock == this->pBlockTail) ? 0 : aBlock->GetNext();
         }
-        if (stats->iNumFreeBlocks == 0)
-            stats->iMinFreeBlock = 0;
+        if (apStats->iNumFreeBlocks == 0)
+            apStats->iMinFreeBlock = 0;
     }
-    stats->m_uiTrailingStatsValue = stats->iMemHeapSize - stats->iMemAllocated + stats->iFreeSize;
+    apStats->m_uiTrailingStatsValue = apStats->iMemHeapSize - apStats->iMemAllocated + apStats->iFreeSize;
     fnv_LeaveCriticalSection(&this->CriticalSectionO);
 }

@@ -4,10 +4,11 @@
 
 class TESObjectREFR;
 
+// pdb: class ParalysisEffect, size 0x4c, bases: ValueModifierEffect, 0 members
 class ParalysisEffect : public ValueModifierEffect
 {
 public:
-    ParalysisEffect(void* caster, void* item, void* effect);
+    ParalysisEffect(void* apCaster, void* apSpell, void* apEffect);
 
     virtual ActiveEffect* Copy();
     virtual void Update(float delta);
@@ -17,9 +18,9 @@ public:
     virtual void Finish();
 
     void ApplyEffect();
-    void UpdateParalysisEffect(float afElapsed);
+    void UpdateParalysisEffect(float afSecondsElapsed);
     void Start_008263c0();
     void Finish_008264b0();
     void FinishInitLoadGame_00826550(Actor* apActor);
-    void Revert_00826570(TESObjectREFR* actor);
+    void Revert_00826570(TESObjectREFR* apActor);
 };

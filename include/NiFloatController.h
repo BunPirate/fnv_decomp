@@ -4,6 +4,7 @@
 #include "NiFloatData.h"
 #include "StrArr.h"
 
+// pdb: class NiFloatController, size 0x3c, bases: NiTimeController, 2 members
 class NiFloatController : public NiTimeController
 {
 public:
@@ -30,6 +31,6 @@ public:
     bool NiTimeController_IsEqual(NiFloatController* other);
     void FUN_00a6d830(StrArr* strings);
 
-    unsigned int unk34;
+    unsigned int m_uiLastIdx;
     NiFloatData* m_spFloatData;
 };

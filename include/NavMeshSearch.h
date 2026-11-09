@@ -20,6 +20,7 @@ template <class T, unsigned int Growth> class BSSimpleArray;
 
 typedef AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference> SearchNode;
 
+// pdb: class NavMeshSearch, size 0x20a4, bases: AStarSearch<NavMeshSearchNode, 6 members
 class NavMeshSearch : public AStarSearch<NavMeshSearchNode, NavMeshSearchLink>
 {
 public:
@@ -31,7 +32,7 @@ public:
     bool CollectConnections(const AStarNodeType*, BSSimpleArray<AStarNodeType*, 1024>*);
     bool HasReachedGoal(const AStarNodeType*);
 
-    void ClearSearch();
+    void AStarSearch_NavMeshSearchNode_NavMeshSearchLink_ClearSearchData();
     void FUN_006a7b10();
     void FUN_006a7bc0();
     void FUN_006a6b00();
@@ -42,18 +43,18 @@ public:
     unsigned int AddNode(NavMesh*, unsigned short, NavMeshNodeInfo*, float);
     void PushOpen(unsigned int);
     void Run(PathingSolution*, void*, bool);
-    bool Search(PathingRequest*, NavMeshNodeInfo*, PathingSolution*, void*);
-    bool ComputePath(const PathingRequest*, const NavMeshTriangleReference&,
+    bool NavMeshSearchClosePoint_BuildNodePath(PathingRequest*, NavMeshNodeInfo*, PathingSolution*, void*);
+    bool BuildNodePath(const PathingRequest*, const NavMeshTriangleReference&,
                      const NavMeshTriangleReference&,
                      BSSimpleArray<NavMeshTriangleReference, 1024>*,
                      BSSimpleArray<NavMeshTriangleEdgeReference, 1024>*,
                      BSSimpleArray<NavMeshInfo*, 1024>*);
-    void SetSearchNodeTriangle(SearchNode*, NavMesh*, unsigned short);
+    void SetNodeData(SearchNode*, NavMesh*, unsigned short);
     SearchNode* FindOrCreateSearchNode(unsigned int, const NavMeshTriangleReference&, float);
     bool Search(BSSimpleArray<NavMeshTriangleReference, 1024>*,
                 BSSimpleArray<NavMeshTriangleEdgeReference, 1024>*, bool);
     int CreateOrUpdateNode(unsigned int, float, SearchNode*&);
-    bool Search(int, int);
+    bool NavMesh_GetObstaclePOVsForTriangle(int, int);
 
     // Typed views preserve the canonical storage and do not require complete aggregate types.
     __declspec(property(get=GetNodeHashTableState)) AStarMapNav m_kNodeHashTable;
@@ -71,19 +72,19 @@ public:
     __declspec(property(get=GetStartingTriangleState)) NavMeshTriangleReference m_kStartingTriangle;
     __forceinline NavMeshTriangleReference& GetStartingTriangleState()
     {
-        return *reinterpret_cast<NavMeshTriangleReference*>(&unk205c);
+        return *reinterpret_cast<NavMeshTriangleReference*>(&StartNode);
     }
 
     __declspec(property(get=GetGoalTriangleState)) NavMeshTriangleReference m_kGoalTriangle;
     __forceinline NavMeshTriangleReference& GetGoalTriangleState()
     {
-        return *reinterpret_cast<NavMeshTriangleReference*>(&unk2070);
+        return *reinterpret_cast<NavMeshTriangleReference*>(&GoalNode);
     }
 
     __declspec(property(get=GetDoorAccessState)) DoorAccessData m_kDoorAccessData;
     __forceinline DoorAccessData& GetDoorAccessState()
     {
-        return *reinterpret_cast<DoorAccessData*>(&unk208c);
+        return *reinterpret_cast<DoorAccessData*>(&TempDoorLock);
     }
 
     union
@@ -2183,12 +2184,12 @@ public:
         int unk2058;
         const PathingRequest* m_pPathingRequest;
     };
-    int unk205c;
+    int StartNode;
     int unk2060;
     int unk2064;
     int unk2068;
     int unk206c;
-    int unk2070;
+    int GoalNode;
     int unk2074;
     int unk2078;
     int unk207c;
@@ -2203,7 +2204,7 @@ public:
         int unk2088;
         BSSimpleArray<NavMeshInfo*, 1024>* m_pNavMeshInfos;
     };
-    int unk208c;
+    int TempDoorLock;
     int unk2090;
     int unk2094;
     int unk2098;

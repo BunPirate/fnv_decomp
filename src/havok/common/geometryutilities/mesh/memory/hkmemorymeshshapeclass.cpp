@@ -2,13 +2,13 @@
 // src/havok/common/geometryutilities/mesh/memory/hkmemorymeshshapeclass.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/common/geometryutilities/mesh/memory/hkmemorymeshshapeclass.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern int DAT_0126e330;
+extern int hkMemoryMeshShapeClass;
 
 // @fnv 0x00e014c0
 // src: GUESS 0x00e014c0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e014c0()
 {
-    return &DAT_0126e330;
+    return &hkMemoryMeshShapeClass;
 }
 
 struct State
@@ -74,5 +74,6 @@ struct FUN_00e014d0
 };
 
 // @fnv 0x00e014d0
+// pdb: hkMemoryMeshShape::`scalar deleting destructor' | hkMemoryMeshShapeClass.obj | retail, vtable slot, high
 FUN_00e014d0::FUN_00e014d0()
 {}

@@ -22,6 +22,7 @@ class TESTopic;
 typedef ActorValue::Index ActorValue__Index;
 
 #pragma pack(push, 4)
+// pdb: class LowProcess, size 0xb4, bases: BaseProcess, 25 members
 class LowProcess : public BaseProcess
 {
 public:
@@ -55,7 +56,7 @@ public:
     virtual void SetAnimationComplete(bool abVal);
     virtual bool IsMovementComplete() const;
     virtual TESObjectREFR* GetTarget() const;
-    virtual void SetTarget(TESObjectREFR* apTarget);
+    virtual void SetTarget(TESObjectREFR* apRef);
     virtual unsigned int GetPackageObjectType() const;
     virtual bool IsAnimationStateActive() const;
     virtual void SetAnimationStateActive(bool abVal);
@@ -74,7 +75,7 @@ public:
     virtual void ProcessDialogueTopic(Actor* apActor, TESTopic* apTopic, bool abForceSub, bool abStop, bool abQueue, bool abSayCallBack);
     virtual void SetActorProcessTime(Actor* apActor, float afTimeDelta);
     virtual bool IsCurrentlyAlerted() const;
-    virtual void SetAlert(bool abVal);
+    virtual void SetAlert(bool abFlag);
     virtual bool ShouldAttackTarget(Actor* apActor, Actor* apTarget, bool, bool abIsEvil, ActorCombatGroup* apCombatGroup, bool, bool, bool abIsAggressor, bool, bool abIgnoreActorLimit, bool, bool, TESPackage* apPackage);
     virtual bool IsCurrentProcessComplete() const;
     virtual void SetCurrentProcessComplete(bool abVal);
@@ -93,7 +94,7 @@ public:
     virtual void UpdateCurrentPackage(Actor* apActor);
     virtual unsigned short GetSaveSize(unsigned int auiFlags, MobileObject* apObject);
     virtual void SaveGameBGS(BGSSaveGameBuffer* apBuffer);
-    virtual void SaveGameTES(unsigned int auiFlags, MobileObject* apObject);
+    virtual void SaveGameTES(unsigned int aiFlags, MobileObject* pmob);
     virtual void LoadGameBGS(BGSLoadFormBuffer* apBuffer);
     virtual void LoadGameTES(unsigned int auiFlags, unsigned int auiCurrentFlags, MobileObject* apObject);
     virtual void InitLoadGameBGS(BGSLoadFormBuffer* apBuffer);
@@ -140,34 +141,34 @@ public:
     virtual TESObjectREFR* vfn_814(Actor*, TESPackage*, bool);
     virtual void vfn_818(Actor*);
 
-    unsigned char m_uiObjectFlags;
+    unsigned char m_uFlags;
     unsigned char layoutPadding31;
     unsigned short layoutPadding32;
-    TESBoundObject* m_pCurrentWeapon;
-    TimeoutTimer m_kProcessData38;
+    TESBoundObject* pItemBeingUsed;
+    TimeoutTimer fCombatDelayTimer;
     TESObjectREFR* pTarget;
-    TESObjectREFR* m_pReference40;
-    TESObjectREFR* m_pReference44;
-    BGSListForm* m_pFormList;
-    short m_sFourthValue;
+    TESObjectREFR* pGenericLocation;
+    TESObjectREFR* pGenericSecondLocation;
+    BGSListForm* pTargetFormList;
+    short sFormListNumb;
     unsigned short layoutPadding52;
-    TESObjectREFR* m_pObjectReference;
-    int m_iValue58;
-    BSSimpleList<TargetDoorController*> ReferenceListNode;
-    TargetDoorController* m_pDetectionData60;
-    TargetDoorController* m_pDetectionData64;
-    BSSimpleList<TESObjectREFR*> m_kReferenceList68;
-    BSSimpleList<TargetDoorController*> m_kDetectionDataList;
-    BSSimpleList<TESObjectREFR*> m_kReferenceList70;
-    TESBoundObject* m_pBoundObject74;
-    TESBoundObject* m_pBoundObject78;
-    PACKAGE_OBJECT_TYPE m_eReferenceTypeInfo;
-    TESFaction* PackageFactionTarget;
-    ActorValueModifierList m_kActorValueModifiers;
-    float m_fValue88;
-    float m_fValue8C;
-    float m_fValue90;
-    bool m_bHasBoundObject;
+    TESObjectREFR* pPatrolLocation;
+    int iNumberItemsActivate;
+    BSSimpleList<TargetDoorController*> ObjectList;
+    TargetDoorController* pAcquireObject;
+    TargetDoorController* pSavedAcquireObject;
+    BSSimpleList<TESObjectREFR*> GenericLocationsList;
+    BSSimpleList<TargetDoorController*> TempObjectList;
+    BSSimpleList<TESObjectREFR*> TempLocList;
+    TESBoundObject* pObjecttoAcquire;
+    TESBoundObject* pObjectForLocation;
+    PACKAGE_OBJECT_TYPE eFormType;
+    TESFaction* pFactiontoAquire;
+    ActorValueModifierList pDamageModifiers;
+    float fEssentialDownTimer;
+    float fDeathTime;
+    float fTrackedDamage;
+    bool bSkippedTimeStampForPathing;
     unsigned char layoutPaddingB1;
     unsigned short layoutPaddingB2;
 
@@ -176,12 +177,12 @@ public:
     void SetFlag(bool, unsigned char);
     bool GetFlag(unsigned char) const;
     void UpdateTargetFromPackage();
-    void SetFlag40(int);
+    void SetPackageIdleDone(int);
     void HandlePackageChange(LowProcess*);
     void ClearData();
     int GetActorValue(TESActorBase*, ActorValue__Index, Actor*);
     bool CanProcessActor(Actor*, bool);
-    bool SelectNextPackage(Actor*);
+    bool SetCurrentPackageFromSchedule(Actor*);
     bool CanRunPackage(TESPackage*, bool);
     float GetCurrentActorValue(TESActorBase*, ActorValue__Index, Actor*);
     static bool HandlePackageTargetLoaded(TESObjectREFR*, long);
@@ -189,15 +190,15 @@ public:
     void Revert(BGSLoadFormBuffer*);
     void LoadGame(BGSLoadFormBuffer*);
     void InitLoadGame(BGSLoadFormBuffer*);
-    float GetActorTimeDelta(Actor*);
+    float GetTimeDelta(Actor*);
     TESObjectREFR* ResolvePackageLocation(Actor*, TESPackage*, bool);
     bool FindPatrolTarget(Actor*, PatrolActorPackageData*);
-    void ProcessPatrolPackage(Actor*, PatrolActorPackageData*);
-    float RunProcessUpdate(Actor*, PatrolActorPackageData*, float);
-    void HandlePatrolArrival(Actor*, PatrolActorPackageData*);
+    void ProcessPatrolStartTravelToNextRef(Actor*, PatrolActorPackageData*);
+    float ProcessPatrolTravelingToNextRef(Actor*, PatrolActorPackageData*, float);
+    void ProcessPatrolStartAtRefBehavior(Actor*, PatrolActorPackageData*);
     float UpdatePatrolProgress(Actor*, PatrolActorPackageData*, float);
     TESObjectREFR* ResolvePackageTarget(Actor*, TESPackage*);
-    void MiddleLowProcess_ProcessCombat(Actor* source);
+    void MiddleLowProcess_ProcessCombat(Actor* apActor);
     using BaseProcess::GetCurrentBoundObject;
     float GetPotentialThreatDamage(Actor*, Actor*);
     bool IsProcedureTypeAllowed();
@@ -238,7 +239,7 @@ public:
     TESObjectCELL* GetProcedureCell(Actor*);
     void* GetCurrentDestinationWorldSpace(Actor*);
     void SaveToStream(unsigned int, unsigned int);
-    void CollectSearchResults(TESObjectREFR*, TESObjectREFR*, int);
+    void BuildMulitTargetObjectList(TESObjectREFR*, TESObjectREFR*, int);
     void UpdateFollowerList(TESObjectREFR*, float);
     void StartPackagePathing(Actor*, TESForm*);
     void ProcessEscort(Actor*);

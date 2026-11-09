@@ -4,10 +4,11 @@
 
 class ArgB;
 
+// pdb: class bhkSphereShape, size 0x14, bases: bhkConvexShape, 0 members
 class bhkSphereShape : public bhkConvexShape
 {
 public:
-    bhkSphereShape(float fRadius, bool bFlag);
+    bhkSphereShape(float afRadius, bool abBS);
     virtual ~bhkSphereShape();
 
     virtual const NiRTTI* GetRTTI() const;
@@ -16,12 +17,12 @@ public:
     void* GetHavokShape();
     void* Bipedanim_GetReferenceFlagsOrZero();
     void bhkSphereShape_Init(float radius);
-    void bhkShape_CopyMembers(void* a, ArgB* b);
-    void CopyMembers_00ca0740(void* a, ArgB* b);
-    void bhkPackedNiTriStripsShape_CopyMembers(void* a, ArgB* b);
-    void bhkMultiSphereShape_CopyMembers(void* a, ArgB* b);
-    void ScaleTarget(void* a, ArgB* b);
+    void bhkShape_CopyMembers(void* apDest, ArgB* arCloneData);
+    void CopyMembers_00ca0740(void* apDest, ArgB* arCloneData);
+    void bhkPackedNiTriStripsShape_CopyMembers(void* apDest, ArgB* arCloneData);
+    void bhkMultiSphereShape_CopyMembers(void* apDest, ArgB* arCloneData);
+    void ScaleTarget(void* apDest, ArgB* arCloneData);
 
     static NiObject* __cdecl CreateObject();
-    static const NiRTTI ms_kRTTI;
+    static const NiRTTI bhkSphereShape_ms_RTTI;
 };

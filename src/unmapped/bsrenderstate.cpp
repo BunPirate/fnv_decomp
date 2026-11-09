@@ -9,22 +9,25 @@ extern unsigned int DAT_011ffa80;
 
 // Adds c to two counters indexed by DAT_011ffa7c and DAT_011ffa80, first invoking a virtual call with 0x13/0x14 and DAT_011ad8a8[a]/[b] when each counter is zero.
 // @fnv 0x00b97ff0
-void AddToTwoCounters(int aiIndexA, int aiIndexB, int aiAmount)
+// src: XBOX_RETAIL_PDB 0x00b97ff0
+// pdb: BSRenderState::SetAlphaBlendFunc | BSRenderState_Xenon.obj | retail, call graph, high
+// pdb params: aeSrcRGB, aeDestRGB, aeLock
+void BSRenderState_SetAlphaBlendFunc(int aeSrcRGB, int aeDestRGB, int aeLock)
 {
     int iCounterIndex = DAT_011ffa7c;
     if (DAT_011ff9d8[iCounterIndex] == 0)
     {
         ((void(__thiscall*)(void*, int, int, int, int))(*(void***)*(void**)((char*)DAT_011f9508 + 0x8b8))[0x68 / 4])(
-            *(void**)((char*)DAT_011f9508 + 0x8b8), 0x13, DAT_011ad8a8[aiIndexA], 0, 0);
+            *(void**)((char*)DAT_011f9508 + 0x8b8), 0x13, DAT_011ad8a8[aeSrcRGB], 0, 0);
     }
-    DAT_011ff9d8[iCounterIndex] += aiAmount;
+    DAT_011ff9d8[iCounterIndex] += aeLock;
     iCounterIndex = DAT_011ffa80;
     if (DAT_011ff9d8[iCounterIndex] == 0)
     {
         ((void(__thiscall*)(void*, int, int, int, int))(*(void***)*(void**)((char*)DAT_011f9508 + 0x8b8))[0x68 / 4])(
-            *(void**)((char*)DAT_011f9508 + 0x8b8), 0x14, DAT_011ad8a8[aiIndexB], 0, 0);
+            *(void**)((char*)DAT_011f9508 + 0x8b8), 0x14, DAT_011ad8a8[aeDestRGB], 0, 0);
     }
-    DAT_011ff9d8[iCounterIndex] += aiAmount;
+    DAT_011ff9d8[iCounterIndex] += aeLock;
 }
 
 struct B98070Renderer
@@ -637,12 +640,14 @@ extern int g_B98070Counts[];
 
 // Adjusts the renderer state 0x34 when the current index's count is zero, then adds count to g_B98070Counts[index].
 // @fnv 0x00b98070
-void __cdecl UpdateRendererStateCount(bool enable, int count)
+// pdb: BSRenderState::SetStencilEnable | BSRenderState_Xenon.obj | retail, call graph, high
+// pdb params: abEnabled, aeLock
+void __cdecl UpdateRendererStateCount(bool abEnabled, int aeLock)
 {
     unsigned int index = g_B98070Index;
     if (g_B98070Counts[index] == 0)
-        g_B98070Scene->m_renderer->SetState(0x34, enable, 0, 0);
-    g_B98070Counts[index] += count;
+        g_B98070Scene->m_renderer->SetState(0x34, abEnabled, 0, 0);
+    g_B98070Counts[index] += aeLock;
 }
 
 extern int DAT_011ad8a8[];
@@ -658,21 +663,23 @@ struct DeviceView
 // If the three tracked slots are zero, calls device vtable[26] with opcodes 0x35/0x36/0x37 and values from DAT_011ad8a8, then adds delta to the third slot.
 // @fnv 0x00b980c0
 // src: COMMUNITY 0x00b980c0
-void __cdecl BSRenderState_SetStencilAction(int aiFirstIndex, int aiSecondIndex, int aiThirdIndex, int delta)
+// pdb: BSRenderState::SetStencilAction | BSRenderState_Xenon.obj | retail, upstream name already matches, high
+// pdb params: aeFail, aeZFail, aePass, aeLock
+void __cdecl BSRenderState_SetStencilAction(int aeFail, int aeZFail, int aePass, int aeLock)
 {
     if (DAT_011ff9d8[DAT_011ffb04] == 0)
     {
         void* renderer = *(void* volatile*)&DAT_011f9508;
         DeviceView* device = *(DeviceView**)((char*)renderer + 0x8b8);
         ((void(__thiscall*)(DeviceView*, unsigned int, int, int, int))device->vtable[26])(
-            device, 0x35, DAT_011ad8a8[aiFirstIndex + 11], 0, 0);
+            device, 0x35, DAT_011ad8a8[aeFail + 11], 0, 0);
     }
     if (DAT_011ff9d8[DAT_011ffb08] == 0)
     {
         void* renderer = *(void* volatile*)&DAT_011f9508;
         DeviceView* device = *(DeviceView**)((char*)renderer + 0x8b8);
         ((void(__thiscall*)(DeviceView*, unsigned int, int, int, int))device->vtable[26])(
-            device, 0x36, DAT_011ad8a8[aiSecondIndex + 11], 0, 0);
+            device, 0x36, DAT_011ad8a8[aeZFail + 11], 0, 0);
     }
     unsigned int index = DAT_011ffb0c;
     if (DAT_011ff9d8[index] == 0)
@@ -680,9 +687,9 @@ void __cdecl BSRenderState_SetStencilAction(int aiFirstIndex, int aiSecondIndex,
         void* renderer = DAT_011f9508;
         DeviceView* device = *(DeviceView**)((char*)renderer + 0x8b8);
         ((void(__thiscall*)(DeviceView*, unsigned int, int, int, int))device->vtable[26])(
-            device, 0x37, DAT_011ad8a8[aiThirdIndex + 11], 0, 0);
+            device, 0x37, DAT_011ad8a8[aePass + 11], 0, 0);
     }
-    DAT_011ff9d8[index] += delta;
+    DAT_011ff9d8[index] += aeLock;
 }
 
 struct RenderState
@@ -1286,24 +1293,26 @@ extern int DAT_011ff9d8[];
 extern GraphicsRenderer* volatile g_pkRenderer;
 // @fnv 0x00b98180
 // src: COMMUNITY 0x00b98180
-void BSRenderState_SetStencilFunc(int a, int aiValue39, int aiValue3A, int aiSlotIncrement)
+// pdb: BSRenderState::SetStencilFunc | BSRenderState_Xenon.obj | retail, upstream name already matches, high
+// pdb params: aeFunc, auiRef, auiTestMask, aeLock
+void BSRenderState_SetStencilFunc(int aeFunc, int auiRef, int auiTestMask, int aeLock)
 {
     if (DAT_011ff9d8[DAT_011ffb10] == 0)
     {
         GraphicsRenderer* renderer = g_pkRenderer;
         RenderState* state = renderer->state;
-        state->Send(0x38, *(reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(&DAT_011ad884) + 4) + a), 0, 0);
+        state->Send(0x38, *(reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(&DAT_011ad884) + 4) + aeFunc), 0, 0);
     }
     if (DAT_011ff9d8[DAT_011ffb14] == 0)
     {
         GraphicsRenderer* renderer = g_pkRenderer;
         RenderState* state = renderer->state;
-        state->Send(0x39, aiValue39, 0, 0);
+        state->Send(0x39, auiRef, 0, 0);
     }
     unsigned int index = DAT_011ffb18;
     if (DAT_011ff9d8[index] == 0)
-        g_pkRenderer->state->Send(0x3A, aiValue3A, 0, 0);
-    DAT_011ff9d8[index] += aiSlotIncrement;
+        g_pkRenderer->state->Send(0x3A, auiTestMask, 0, 0);
+    DAT_011ff9d8[index] += aeLock;
 }
 
 namespace fnv_00b98320 {
@@ -1904,6 +1913,8 @@ extern int DAT_011ff9d8[];
 extern Renderer* g_pkRenderer;
 // Sends opcode 0xc3 with the float's bit pattern when the renderer slot is zero, then adds addend to that slot.
 // @fnv 0x00b98320
+// pdb: BSRenderState::SetDepthBias | BSRenderState_Xenon.obj | debug, object-file gap fill, medium
+// pdb params: afDepthBias, aeLock
 void SendFloatAdd(float value, int addend)
 {
     union
@@ -1957,15 +1968,18 @@ struct Service
 
 // If the current slot's counter is zero, calls V68(0x3b, apFirst, 0, 0) on the service, then adds aiSecond to that slot's counter.
 // @fnv 0x00b98230
-void __cdecl AddToSlot(void* apFirst, int aiSecond)
+// src: XBOX_RETAIL_PDB 0x00b98230
+// pdb: BSRenderState::SetStencilWriteMask | BSRenderState_Xenon.obj | retail, call graph (shared callers), high
+// pdb params: auiWriteMask, aeLock
+void __cdecl BSRenderState_SetStencilWriteMask(void* auiWriteMask, int aeLock)
 {
     int iSlotIndex = DAT_011ffb1c;
     if (DAT_011ff9d8[iSlotIndex] == 0)
     {
         Service* pService = *(Service**)((char*)DAT_011f9508 + 0x8b8);
-        pService->V68(0x3b, apFirst, 0, 0);
+        pService->V68(0x3b, auiWriteMask, 0, 0);
     }
-    DAT_011ff9d8[iSlotIndex] += aiSecond;
+    DAT_011ff9d8[iSlotIndex] += aeLock;
 }
 
 extern int DAT_011ffc90;
@@ -2004,20 +2018,22 @@ struct SpawnedObject
 };
 
 // @fnv 0x00b98280
-void UpdateSpawnedObjectFlags(unsigned char abFlag1, unsigned char abFlag2, unsigned char abFlag3,
-                              unsigned char abFlag4, unsigned char abFlag5, unsigned char abFlag6, int aiDelta)
+// pdb: BSRenderState::SetUserClipPlaneEnables | BSRenderState_Xenon.obj | retail, call graph, high
+// pdb params: abPlane0, abPlane1, abPlane2, abPlane3, abPlane4, abPlane5, aeLock
+void UpdateSpawnedObjectFlags(unsigned char abPlane0, unsigned char abPlane1, unsigned char abPlane2,
+                              unsigned char abPlane3, unsigned char abPlane4, unsigned char abPlane5, int aeLock)
 {
     int iIndex = DAT_011ffc90;
     if (DAT_011ff9d8[iIndex] == 0)
     {
         SpawnedObject* pObject = *(SpawnedObject**)((char*)DAT_011f9508 + 0x8b8);
-        unsigned int flags = (abFlag1 != 0) ? 1u : 0u;
-        flags |= (abFlag2 != 0) ? 2u : 0u;
-        flags |= (abFlag3 != 0) ? 4u : 0u;
-        flags |= (abFlag4 != 0) ? 8u : 0u;
-        flags |= (abFlag6 != 0) ? 0x20u : 0u;
-        flags |= (abFlag5 != 0) ? 0x10u : 0u;
+        unsigned int flags = (abPlane0 != 0) ? 1u : 0u;
+        flags |= (abPlane1 != 0) ? 2u : 0u;
+        flags |= (abPlane2 != 0) ? 4u : 0u;
+        flags |= (abPlane3 != 0) ? 8u : 0u;
+        flags |= (abPlane5 != 0) ? 0x20u : 0u;
+        flags |= (abPlane4 != 0) ? 0x10u : 0u;
         pObject->v26(0x98, (int)flags, 0, 0);
     }
-    DAT_011ff9d8[iIndex] += aiDelta;
+    DAT_011ff9d8[iIndex] += aeLock;
 }

@@ -6,6 +6,7 @@
 
 class Actor;
 
+// pdb: class CombatProcedureAttackRanged, size 0x48, bases: CombatProcedure, 7 members
 class CombatProcedureAttackRanged : public CombatProcedure
 {
 public:
@@ -17,18 +18,18 @@ public:
     virtual void d06();
     virtual void d07();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
     virtual void vf16();
 
     void Disarmed_009d1dc0(Actor* apOpponent);
     void CombatProcedure_SetFailed(const char* str);
 
-    unsigned int m_10;
-    NiPoint3 m_14;
-    TimeoutTimer m_20;
-    TimeoutTimer m_28;
-    TimeoutTimer m_30;
-    TimeoutTimer m_38;
-    TimeoutTimer m_40;
+    unsigned int eState;
+    NiPoint3 TargetedPoint;
+    TimeoutTimer ExplosiveProjectileBlockedTimer;
+    TimeoutTimer FiringTimer;
+    TimeoutTimer CooldownTimer;
+    TimeoutTimer FireDelayTimer;
+    TimeoutTimer SuppressiveFireTimer;
 };

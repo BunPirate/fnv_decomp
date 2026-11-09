@@ -13,6 +13,7 @@
 class TESForm;
 class TESFile;
 
+// pdb: class TESFullName, size 0xc, bases: BaseFormComponent, 1 members
 class TESFullName : public BaseFormComponent
 {
 public:
@@ -33,8 +34,8 @@ public:
     unsigned int GetFullNameLength();
     static char* GetFullName(TESForm* form);
     char* GetFullName();
-    void SetFullName(char* name);
-    void SetFullName(const char* name);
+    void SetFullName(char* apFullName);
+    void SetFullName(const char* apFullName);
     static void LoadFullNameChunk(TESFullName* fullName, TESFile* file);
     void* GetFullNameString();
     unsigned int GetModelLength() const;

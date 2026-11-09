@@ -74,15 +74,15 @@ struct DrawParams
     int m_i1c;
 };
 
-void __cdecl MixChannels(void* apTarget, int aiFirst, int aiSecond, int aiThird, int aiCount, int aiFifth,
-                         int* apExtra);
+void __cdecl hkKdTreeBuildingUtils_buildTree(void* buffers, int treeOut, int projEntOut, int treeSize, int numPrims, int _numAvailableEmptyNodes,
+                         int* maxDepth);
 
 // If the count field is positive, forwards the target and the parameter fields to MixChannels.
 // @fnv 0x00d9db30
 void __cdecl DrawIfCountPositive(void* apTarget, DrawParams* apParams)
 {
     if (apParams->m_iArrayLength > 0)
-        MixChannels(apTarget, apParams->m_i00, apParams->m_i1c, apParams->m_i04, apParams->m_iArrayLength, apParams->m_i18,
+        hkKdTreeBuildingUtils_buildTree(apTarget, apParams->m_i00, apParams->m_i1c, apParams->m_i04, apParams->m_iArrayLength, apParams->m_i18,
                     &apParams->m_i0c);
 }
 
@@ -103,7 +103,7 @@ struct D97770MemoryRouter
 };
 
 extern "C" D97770MemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(D97770Allocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(D97770Allocator* mem, void* array, int numElem, int sizeElem);
 
 struct D97770Interval
 {
@@ -150,14 +150,16 @@ struct D97770IntervalArrayLocalForm : hkArrayBase<D97770Interval>
         m_iElementCount = n;
     }
 
-    void hkKdTree_initNodeArray(int minSize);
+    void hkKdTree_initNodeArray(int numNodes);
 };
 
 // @fnv 0x00d97770
 // src: HAVOK_LIB 0x00d97770
-void D97770IntervalArrayLocalForm::hkKdTree_initNodeArray(int minSize)
+// pdb: hkKdTree::initNodeArray | hkKdTree.obj | retail, upstream name already matches, high
+// pdb params: numNodes
+void D97770IntervalArrayLocalForm::hkKdTree_initNodeArray(int numNodes)
 {
-    int n = (minSize > 2) ? minSize : 2;
+    int n = (numNodes > 2) ? numNodes : 2;
     if (m_iElementCount < n)
         SetSizeAndGrow(n);
     new (&m_data[0]) D97770Interval();
@@ -167,7 +169,7 @@ void D97770IntervalArrayLocalForm::hkKdTree_initNodeArray(int minSize)
 
 struct FUN_00d97770_base
 {
-    void hkKdTree_initNodeArray(unsigned int aValue);
+    void hkKdTree_initNodeArray(unsigned int numNodes);
 };
 
 struct FUN_00d97810_cls
@@ -183,11 +185,15 @@ struct FUN_00d97810_cls
     volatile unsigned int m_20;
     volatile unsigned int m_24;
 
-    FUN_00d97810_cls* Initialize(unsigned int aValue);
+    FUN_00d97810_cls* hkKdTree_ctor(unsigned int prealloc);
 };
 
 // @fnv 0x00d97810
-FUN_00d97810_cls* FUN_00d97810_cls::Initialize(unsigned int aValue)
+// src: XBOX_RETAIL_PDB 0x00d97810
+// pdb: hkKdTree::hkKdTree | hkKdTree.obj | retail, object-file gap fill, high
+// pdb params: prealloc
+// pdb locals: assertBuf, ostr
+FUN_00d97810_cls* FUN_00d97810_cls::hkKdTree_ctor(unsigned int prealloc)
 {
     m_00 = 0;
     m_04 = 0;
@@ -196,7 +202,7 @@ FUN_00d97810_cls* FUN_00d97810_cls::Initialize(unsigned int aValue)
     m_1c = 0;
     m_20 = 0;
     m_24 = 0x80000000u;
-    reinterpret_cast<FUN_00d97770_base*>(this)->hkKdTree_initNodeArray(aValue);
+    reinterpret_cast<FUN_00d97770_base*>(this)->hkKdTree_initNodeArray(prealloc);
     return this;
 }
 
@@ -235,12 +241,14 @@ class FUN_00d97850_cls
     int m_nCount20;
     unsigned int m_nFlags24;
 
-    void ClearBuffers();
+    void hkKdTree_dtor();
 };
 
 // Frees the two heap buffers through the global allocator when their flag's high bit is clear, then resets counts, pointers and flags.
 // @fnv 0x00d97850
-void FUN_00d97850_cls::ClearBuffers()
+// src: XBOX_RETAIL_PDB 0x00d97850
+// pdb: hkKdTree::~hkKdTree | hkKdTree.obj | retail, object-file gap fill, high
+void FUN_00d97850_cls::hkKdTree_dtor()
 {
     Holder* pAllocHolder = hkMemoryRouter_getInstance();
     Allocator* alloc = pAllocHolder->m_pAllocator;
@@ -344,13 +352,16 @@ struct Tree_d978
     int unk28, unk2C;
     __m128 m_kMinimumCorner;
     __m128 m_kMaximumCorner;
-    void hkKdTree_initNodeArray(int minSize);
+    void hkKdTree_initNodeArray(int numNodes);
     void hkKdTree_reset(const Cinfo_d978& cinfo);
 };
 
 // Copies bounds and object count from cinfo, computes node capacity and per-split size, then allocates the node collection.
 // @fnv 0x00d978d0
 // src: XBOX_PDB 0x00d978d0
+// pdb: hkKdTree::reset | hkKdTree.obj | retail, upstream name already matches, high
+// pdb params: cinfo
+// pdb locals: assertBuf, ostr
 void Tree_d978::hkKdTree_reset(const Cinfo_d978& cinfo)
 {
     m_pTreeNode = -1;

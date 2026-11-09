@@ -10,6 +10,7 @@ class hkaSkeletonMapperDataChainMapping;
 typedef short hkInt16;
 
 #pragma pack(push, 1)
+// pdb: class hkaSkeletonMapperData, size 0x70 (here 0x60), 8 members
 class hkaSkeletonMapperData
 {
 public:
@@ -19,13 +20,13 @@ public:
         HK_RETARGETING_MAPPING = 1
     };
 
-    hkaSkeleton* m_pSkeletonA;
-    hkaSkeleton* m_pSkeletonB;
-    hkArray<hkaSkeletonMapperDataSimpleMapping> m_kSimpleMappings;
-    hkArray<hkaSkeletonMapperDataChainMapping> m_kChainMappings;
-    hkArray<hkInt16> m_kUnmappedBones;
+    hkaSkeleton* m_skeletonA;
+    hkaSkeleton* m_skeletonB;
+    hkArray<hkaSkeletonMapperDataSimpleMapping> m_simpleMappings;
+    hkArray<hkaSkeletonMapperDataChainMapping> m_chainMappings;
+    hkArray<hkInt16> m_unmappedBones;
     char pad2C[0x4];
-    hkQsTransform m_kExtractedMotionMapping;
+    hkQsTransform m_extractedMotionMapping;
     hkBool m_bKeepUnmappedLocal;
     char pad61[0x3];
     hkInt32 m_eMappingType;

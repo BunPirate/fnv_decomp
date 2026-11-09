@@ -8,6 +8,7 @@
 class Actor;
 class NavMeshInfo;
 
+// pdb: class ExtraGuardedRefData, size 0x1c, bases: BSExtraData, 1 members
 class ExtraGuardedRefData : public BSExtraData
 {
 public:

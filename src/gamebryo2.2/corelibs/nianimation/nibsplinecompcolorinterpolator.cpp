@@ -13,9 +13,11 @@ char __stdcall NiBSplineColorInterpolator_RegisterStreamables(char);
 
 // @fnv 0x00a51210
 // src: XBOX_PDB 0x00a51210
-char __stdcall NiBSplineCompColorInterpolator_RegisterStreamables(char acValue)
+// pdb: NiBSplineCompColorInterpolator::RegisterStreamables | NiBSplineCompColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+char __stdcall NiBSplineCompColorInterpolator_RegisterStreamables(char kStream)
 {
-    char r = NiBSplineColorInterpolator_RegisterStreamables(acValue);
+    char r = NiBSplineColorInterpolator_RegisterStreamables(kStream);
     return r != 0;
 }
 
@@ -30,17 +32,17 @@ void* __cdecl NiBSplineCompColorInterpolator_GetRTTI()
 
 struct FUN_00a50110_obj
 {
-    void FUN_00a57fd0(FUN_00a50110_obj*, CloningProcess&);
+    void NiBSplineInterpolator_CopyMembers(FUN_00a50110_obj*, CloningProcess&);
 };
 
 // @fnv 0x00a51a60
 __declspec(noinline) void NiBSplineColorInterpolator::CopyTo(NiBSplineColorInterpolator* apTarget, CloningProcess& proc)
 {
-    ((FUN_00a50110_obj*)this)->FUN_00a57fd0((FUN_00a50110_obj*)apTarget, proc);
-    *(int*)&apTarget->m_kDiffuseColor.r = *(int*)&m_kDiffuseColor.r;
-    *(int*)&apTarget->m_kDiffuseColor.g = *(int*)&m_kDiffuseColor.g;
-    *(int*)&apTarget->m_kDiffuseColor.b = *(int*)&m_kDiffuseColor.b;
-    *(int*)&apTarget->m_kDiffuseColor.a = *(int*)&m_kDiffuseColor.a;
+    ((FUN_00a50110_obj*)this)->NiBSplineInterpolator_CopyMembers((FUN_00a50110_obj*)apTarget, proc);
+    *(int*)&apTarget->m_kColorAValue.r = *(int*)&m_kColorAValue.r;
+    *(int*)&apTarget->m_kColorAValue.g = *(int*)&m_kColorAValue.g;
+    *(int*)&apTarget->m_kColorAValue.b = *(int*)&m_kColorAValue.b;
+    *(int*)&apTarget->m_kColorAValue.a = *(int*)&m_kColorAValue.a;
     *(int*)&apTarget->m_kColorACPHandle = *(int*)&m_kColorACPHandle;
 }
 
@@ -81,6 +83,9 @@ struct FUN_00a51cf0_obj
     bool NiBSplineColorInterpolator_IsEqual(NiObject*);
 };
 // @fnv 0x00a51730
+// pdb: NiBSplineCompColorInterpolator::IsEqual | NiBSplineCompColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest, ui
 bool NiBSplineCompColorInterpolator::IsEqual(NiObject* pkObject) const
 {
     NiBSplineCompColorInterpolator* pkDest;
@@ -138,7 +143,7 @@ void NiBSplineCompColorInterpolator::GetViewerStrings_00a519b0(NiTPrimitiveArray
 static const float DAT_01099c2c = 3.402823466e+38f;
 struct ColorInterpolatorBaseConstruction
 {
-    void Construct(int, unsigned int, int) throw();
+    void NiBSplineColorInterpolator_ctor(int, unsigned int, int) throw();
 };
 extern int DAT_01099c34;
 // Allocates and returns a compressed color interpolator with default scalar values.
@@ -148,7 +153,7 @@ void* CreateSplineCompColorInterpolator()
     NiBSplineCompColorInterpolator* result = (NiBSplineCompColorInterpolator*)NiMemObject::operator new(0x3c);
     if (result)
     {
-        ((ColorInterpolatorBaseConstruction*)result)->Construct(0, 0xffff, 0);
+        ((ColorInterpolatorBaseConstruction*)result)->NiBSplineColorInterpolator_ctor(0, 0xffff, 0);
         *(void**)result = &DAT_01099c34;
         for (int i = 0; i < 2; i++)
             result->m_afScalars[i] = DAT_01099c2c;
@@ -166,22 +171,22 @@ char __fastcall EvaluateColor(NiBSplineCompColorInterpolator* self, void*, float
 {
     if (self->m_fLastTime == time)
     {
-        *output = reinterpret_cast<const NiColorA&>(self->m_kDiffuseColor);
+        *output = reinterpret_cast<const NiColorA&>(self->m_kColorAValue);
         return 1;
     }
     if (self->m_kColorACPHandle != 0xffff)
     {
         float values[4];
         float sampledColor[4];
-        self->m_spTransformData.m_pObject->CalculateSplineValue((time - self->m_fStartTime) / (self->m_fEndTime - self->m_fStartTime), values, 4,
-                                     self->m_spSplineBasisData.m_pObject, self->m_kColorACPHandle, self->bias, self->multiplier);
+        self->m_spData.m_pObject->CalculateSplineValue((time - self->m_fStartTime) / (self->m_fEndTime - self->m_fStartTime), values, 4,
+                                     self->m_spBasisData.m_pObject, self->m_kColorACPHandle, self->bias, self->multiplier);
         sampledColor[0] = values[0];
         sampledColor[1] = values[1];
         sampledColor[2] = values[2];
         sampledColor[3] = values[3];
-        reinterpret_cast<NiColorA&>(self->m_kDiffuseColor) = *(NiColorA*)sampledColor;
+        reinterpret_cast<NiColorA&>(self->m_kColorAValue) = *(NiColorA*)sampledColor;
     }
-    *output = reinterpret_cast<const NiColorA&>(self->m_kDiffuseColor);
+    *output = reinterpret_cast<const NiColorA&>(self->m_kColorAValue);
     self->m_fLastTime = time;
     return 1;
 }
@@ -195,7 +200,7 @@ NiBSplineCompColorInterpolator* NiBSplineCompColorInterpolator::CreateClone_00a5
     NiBSplineCompColorInterpolator* __restrict result = (NiBSplineCompColorInterpolator*)Object_DispatchCommandFour(0x3c);
     if (result)
     {
-        ((ColorInterpolatorBaseConstruction*)result)->Construct(0, 0xffff, 0);
+        ((ColorInterpolatorBaseConstruction*)result)->NiBSplineColorInterpolator_ctor(0, 0xffff, 0);
         *(void* volatile*)result = &DAT_01099c34;
         result->m_fStartValue = DAT_01099c2c;
         result->m_fEndValue = DAT_01099c2c;

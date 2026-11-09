@@ -10,6 +10,7 @@
 class LipTask;
 class MobileObject;
 
+// pdb: class LipSyncBackgroundManager, size 0x1c (here 0x40), 1 members
 class LipSyncBackgroundManager
 {
   public:

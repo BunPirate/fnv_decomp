@@ -73,6 +73,7 @@ struct __declspec(novtable) S_00dfee20 : S_00dfee20_Base
 
 // Runs the destructor and, when bit 0 of flags is set, frees the object via operator delete; returns this.
 // @fnv 0x00dfee20
+// pdb: hkpVehicleDefaultSteering::`scalar deleting destructor' | hkpVehicleDefaultSteeringClass.obj | retail, vtable slot, high
 S_00dfee20* S_00dfee20::DestroyAndMaybeFree(unsigned int flags)
 {
     this->S_00dfee20::~S_00dfee20();

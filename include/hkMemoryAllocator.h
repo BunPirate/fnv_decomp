@@ -10,6 +10,7 @@ template <> struct hkSizeOfTypeOrVoid<void> { enum { val = 1 }; };
 // (destructor 0x00cbf1a0, Xbox PDB). Declarations only: a unit whose original inlines a body defines it out of class.
 // src: HAVOK_SRC (class name, MemoryStatistics, the 13 virtual slots and their names; destructor address per
 // src: XBOX_PDB)
+// pdb: class hkMemoryAllocator, size 0x4, 0 members
 class hkMemoryAllocator
 {
 public:

@@ -21,19 +21,20 @@ class NiNode;
 class TESObjectREFR;
 class TESPackage;
 
+// pdb: class CombatManager, size 0x3c, 10 members
 class CombatManager
 {
 public:
-    NiTPrimitiveArray<ActorCombatGroup*> m_kCombatGroups;
-    NiTMap<Actor*, unsigned __int64>* m_pActorCombatGroupMap;
-    CombatThreatMap* m_pThreatMap;
-    CombatCoverMap* m_pCoverMap;
-    CombatTargetMap* m_pTargetMap;
-    CombatTargetTimestamp m_kFourByteManagerData;
-    TimeoutTimer m_kFirstEightByteManagerData;
-    TimeoutTimer m_kSecondEightByteManagerData;
-    unsigned int m_uiDebugFlags;
-    NiPointer<NiNode> m_spDebugRootNode;
+    NiTPrimitiveArray<ActorCombatGroup*> CombatGroups;
+    NiTMap<Actor*, unsigned __int64>* pLocalActorTargetingMap;
+    CombatThreatMap* pThreatMap;
+    CombatCoverMap* pCoverMap;
+    CombatTargetMap* pTargetMap;
+    CombatTargetTimestamp fCombatMusicStartedTimeStamp;
+    TimeoutTimer CombatMusicStopTimer;
+    TimeoutTimer CombatMusicUpdateTimer;
+    unsigned int iNextGroupID;
+    NiPointer<NiNode> spDebugGeometry;
 
     void ResetFormData();
     void ClearData(bool);
@@ -46,7 +47,7 @@ public:
     CombatController* AddCombatant(Actor*, Actor*, unsigned int, bool);
     CombatController* AddCombatantToGroup(Actor*, ActorCombatGroup*);
     CombatController* AddPretendCombatant(Actor*, TESPackage*);
-    unsigned int GetCombatGroupTargetCount(Actor* target, unsigned int* recentCount);
+    unsigned int CombatManager_GetCombatantCount(Actor* target, unsigned int* recentCount);
     bool CheckShouldFlee(Actor*, Actor*);
     void AssignCombatTarget(Actor*, Actor*);
     bool GetWanttoHelpGroup(Actor*, Actor*);
@@ -71,9 +72,9 @@ public:
     CombatCoverMap* GetCoverMap();
     CombatTargetMap* GetTargetMap();
     void SaveGame(BGSSaveGameBuffer*);
-    void LoadGame(BGSLoadGameBuffer* buffer);
+    void CombatManager_LoadGame(BGSLoadGameBuffer* buffer);
     void InitLoadGame(BGSLoadGameBuffer*);
-    void ApplyLoadBuffer(BGSLoadGameBuffer* buffer);
+    void FinishLoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
     void Revert(BGSLoadGameBuffer*);
     unsigned int GetCombatGroupCount();
     ActorCombatGroup* GetCombatGroupByIndex(unsigned int);
@@ -86,10 +87,10 @@ public:
     // MSVC supplies __vecDelDtor(unsigned int) from the destructor.
 #endif
     ~CombatManager();
-    void SwapAndDispatch(void*, void*);
+    void CombatManager_NotifyCombatGroupRemovedTarget(void*, void*);
     void FUN_008d0600(void*, void*);
     void CombatManager_UpdateCombatants();
-    ActorCombatGroup* FindByKey(unsigned int key);
+    ActorCombatGroup* FindByKey(unsigned int aiGroupID);
     void FUN_00993800(BGSLoadGameBuffer*);
-    void InitLoadGame_00993600(void* stream);
+    void InitLoadGame_00993600(void* apLoadGameBuffer);
 };

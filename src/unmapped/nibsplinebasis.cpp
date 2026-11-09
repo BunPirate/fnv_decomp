@@ -2,12 +2,12 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 class GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f4034;
+extern GlobalObjectO2_00a7b610 NiBSplineData_ms_RTTI;
 // @fnv 0x00a52500
 // src: COMMUNITY 0x00a52500
 GlobalObjectO2_00a7b610* NiBSplineData_GetRTTI()
 {
-    return &g_011f4034;
+    return &NiBSplineData_ms_RTTI;
 }
 
 struct CubicSplineBasis

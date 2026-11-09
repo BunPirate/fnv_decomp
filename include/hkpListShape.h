@@ -9,6 +9,7 @@ class hkpListShapeChildInfo;
 typedef unsigned short hkUint16;
 typedef unsigned int hkUint32_S;
 
+// pdb: class hkpListShape, size 0x70, bases: hkpShapeCollection, 6 members
 class hkpListShape : public hkpShapeCollection
 {
 public:
@@ -33,11 +34,11 @@ public:
                                const hkUint32_S* filterInfoArray = 0,
                                hkpShapeContainer::ReferencePolicy ref = hkpShapeContainer::REFERENCE_POLICY_INCREMENT);
 
-    hkArray<hkpListShapeChildInfo> m_kChildInfoList;
+    hkArray<hkpListShapeChildInfo> m_childInfo;
     hkUint16 m_flags;
-    hkUint16 m_usNumDisabledChildren;
+    hkUint16 m_numDisabledChildren;
     char pad28[8];
-    hkVector4 m_kAabbHalfExtents;
-    hkVector4 m_kAabbCenter;
-    hkUint32_S m_uiChildEnabledFlags[8];
+    hkVector4 m_aabbHalfExtents;
+    hkVector4 m_aabbCenter;
+    hkUint32_S m_enabledChildren[8];
 };

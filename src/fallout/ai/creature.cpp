@@ -11,11 +11,13 @@
 void Creature::LoadGame(BGSLoadFormBuffer* buffer)
 {
     Actor::LoadGame(buffer);
-    m_uiActorFlags = 0;
+    iMajorCrimes = 0;
 }
 
 // Returns the run speed from actor value 21 scaled by 0.01 and the run animation group multiplier, or 0 if overencumbered.
 // @fnv 0x008d4eb0
+// pdb: Creature::CalculateRunSpeed | Creature.obj | retail, upstream name already matches, high
+// pdb locals: fresult
 float Creature::CalculateRunSpeed()
 {
     float fRunSpeed = 0.0f;
@@ -36,7 +38,7 @@ float Creature::GetAnimationSpeedMultiplier(ANIM_GROUP_ENUM group)
     if (!((CreatureAnimationAccess*)this)->GetAnimData())
         return 32.0f;
     unsigned short animGroup =
-        ((CreatureAnimGroupCall*)this)->GetAnimGroup(group, ((CreatureProcessAccess*)m_pBaseProcess)->GetWeaponInfo(1, 0));
+        ((CreatureAnimGroupCall*)this)->GetAnimGroup(group, ((CreatureProcessAccess*)pCurrentProcess)->GetWeaponInfo(1, 0));
     return ((CreatureAnimationAccess*)this)->GetAnimData()->GetGroupSection(animGroup);
 }
 
@@ -53,6 +55,8 @@ bool __cdecl GetFlag(Index, unsigned int);
 // Returns 0x2d if the actor value at aiWhich has flag 0x400 set, otherwise returns aiWhich.
 // @fnv 0x008d4a80
 // src: COMMUNITY 0x008d4a80
+// pdb: Creature::MapActorValue | Creature.obj | debug, upstream name already matches, high
+// pdb params: aiWhich
 int FUN_008d4a80_shell::Creature_MapActorValue(int aiWhich)
 {
     if (ActorValue::GetFlag((ActorValue::Index)aiWhich, 0x400))
@@ -81,7 +85,8 @@ struct FUN_008d4500 : public FUN_0087d4a0
     FUN_008d4500(bool);
 };
 // @fnv 0x008d4500
-FUN_008d4500::FUN_008d4500(bool abUnk) : FUN_0087d4a0(abUnk)
+// pdb: Creature::Creature | Creature.obj | retail, object-file run extension, high
+FUN_008d4500::FUN_008d4500(bool abadd) : FUN_0087d4a0(abadd)
 {
     *(void**)((char*)this + 0x18) = &DAT_010870a0;
     *(void**)((char*)this + 0x88) = &DAT_0108704c;
@@ -196,6 +201,8 @@ struct Unk008d4a50
 // Calls FUN_008d4a80 with aiWhich and aiValue, then passes the result to SetActorValue.
 // @fnv 0x008d4a50
 // src: COMMUNITY 0x008d4a50
+// pdb: Creature::ModActorBaseValue | Creature.obj | debug, object-file run extension, low
+// pdb params: aiWhich, afValue
 void Unk008d4a50::Creature_ModActorBaseValueF(int aiWhich, float aiValue)
 {
     SetActorValue(Creature_MapActorValue(aiWhich, aiValue));
@@ -209,6 +216,7 @@ struct S
 };
 // Calls FUN_008d45f0, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x008d44d0
+// pdb: Creature::`scalar deleting destructor' | Creature.obj | debug, object-file run extension, low
 void* S::FUN_008d44d0(unsigned int flags)
 {
     FUN_008d45f0();
@@ -236,6 +244,8 @@ struct C008d46f0 : XActor
 // Casts the actor base to TESCreature and returns _h.f2(0x2D) as a float, or 0 if the cast fails.
 // @fnv 0x008d46f0
 // src: COMMUNITY 0x008d46f0
+// pdb: Creature::GetWeaponSkill | Creature.obj | retail, upstream name already matches, high
+// pdb locals: pcreature
 float C008d46f0::Creature_GetWeaponSkill()
 {
     TESCreature* pcreature;
@@ -330,6 +340,9 @@ struct FUN_008d4ab0_shell
 
 // @fnv 0x008d4ab0
 // src: COMMUNITY 0x008d4ab0
+// pdb: Creature::FindRagDoll | Creature.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pcol, bretVal, pnode
 bool FUN_008d4ab0_shell::Creature_FindRagDoll(NiAVObject* apObject)
 {
     bool bHasCollision = false;
@@ -746,6 +759,9 @@ struct FUN_008c50f0_shell
 };
 
 // @fnv 0x008c50f0
+// pdb: Actor::SetRefraction | Actor_Magic.obj | debug, object-file run extension, low
+// pdb params: abEnable, afRefractionPower
+// pdb locals: pextraDataList, benable, fpower
 void FUN_008c50f0_shell::ApplyModifier(bool abEnabled, float afModifier)
 {
     float f = afModifier;
@@ -884,7 +900,7 @@ struct ActorAnimData
 NiFixedString* FixedStrings_QBip01Head();
 NiFixedString* FixedStrings_GetBip01_L_UpperArm();
 NiFixedString* FixedStrings_GetBip01_R_UpperArm();
-void TESHavokUtilities_RemoveHavokFromSceneGraph(NiAVObject* obj);
+void TESHavokUtilities_RemoveHavokFromSceneGraph(NiAVObject* apObject);
 struct XActorQ
 {
     virtual void vx000();
@@ -1014,6 +1030,8 @@ struct XActorQ
 // For each set creature flag, looks up an object through the controller manager and passes it to FUN_0062bc10.
 // @fnv 0x008d4b60
 // src: COMMUNITY 0x008d4b60
+// pdb: Creature::CheckMissingLimbs | Creature.obj | retail, upstream name already matches, high
+// pdb locals: pcrea, panim, ppalette, pobj
 void XActorQ::Creature_CheckMissingLimbs()
 {
     TESCreature* pCreature = dynamic_cast<TESCreature*>(((XActor*)(void*)this)->GetActorBase());

@@ -50,7 +50,7 @@ struct Derived : FirstBase, SecondBase
 
 struct Target
 {
-    void hkpWorld_addWorldPostSimulationListener(SecondBase* apObject);
+    void hkpWorld_addWorldPostSimulationListener(SecondBase* worldListener);
 };
 
 // Calls FUN_00c93920 on apTarget, passing apObject as the argument.
@@ -126,13 +126,17 @@ struct FUN_00d9e450_class
     int unk24;
     int unk28;
     RecordArray records;
-    void AppendRecord(void* first, void* second, void* third);
+    void hkpEndOfStepCallbackUtil_unregisterCollision(void* mgr, void* listener, void* source);
 };
 MemoryManager* __cdecl FUN_00885750();
-void __cdecl FUN_00890940(void* allocator, RecordArray* array, unsigned int elementSize);
+void __cdecl FUN_00890940(void* mem, RecordArray* array, unsigned int sizeElem);
 // Appends a record of three pointers to the records array, growing it via the allocator when count reaches capacity.
 // @fnv 0x00d9e450
-void FUN_00d9e450_class::AppendRecord(void* first, void* second, void* third)
+// src: XBOX_RETAIL_PDB 0x00d9e450
+// pdb: hkpEndOfStepCallbackUtil::unregisterCollision | hkpEndOfStepCallbackUtil.obj | retail, object-file gap fill, high
+// pdb params: mgr, listener, source
+// pdb locals: assertBuf, ostr
+void FUN_00d9e450_class::hkpEndOfStepCallbackUtil_unregisterCollision(void* mgr, void* listener, void* source)
 {
     RecordArray* array = &records;
     MemoryManager* manager = FUN_00885750();
@@ -142,45 +146,46 @@ void FUN_00d9e450_class::AppendRecord(void* first, void* second, void* third)
     Record* data = array->data;
     Record* slot = data + index;
     array->count = index + 1;
-    slot->first = first;
-    slot->second = second;
-    slot->third = third;
+    slot->first = mgr;
+    slot->second = listener;
+    slot->third = source;
 }
 
-struct FUN_00d9e860 : hkReferencedObject, hkpWorldPostSimulationListener
+// pdb: class hkpEndOfStepCallbackUtil, size 0x38, bases: hkReferencedObject, hkpWorldPostSimulationListener, 5 members
+struct hkpEndOfStepCallbackUtil : hkReferencedObject, hkpWorldPostSimulationListener
 {
-    volatile int unk0C;
-    volatile unsigned char unk10;
-    volatile int unk14;
+    volatile int m_sequenceNumber;
+    volatile unsigned char m_deterministicOrder;
+    volatile int m_collisions;
     volatile int unk18;
     volatile int unk1C;
-    volatile int unk20;
+    volatile int m_newCollisions;
     volatile int unk24;
     volatile int unk28;
-    volatile int unk2C;
+    volatile int m_removedCollisions;
     volatile int unk30;
     volatile int unk34;
-    virtual ~FUN_00d9e860() throw() = 0;
-    FUN_00d9e860();
+    virtual ~hkpEndOfStepCallbackUtil() throw() = 0;
+    hkpEndOfStepCallbackUtil();
 };
 // @fnv 0x00d9e860
-FUN_00d9e860::FUN_00d9e860()
+hkpEndOfStepCallbackUtil::hkpEndOfStepCallbackUtil()
 {
-    unk0C = 0;
-    unk10 = 0;
-    unk14 = 0;
+    m_sequenceNumber = 0;
+    m_deterministicOrder = 0;
+    m_collisions = 0;
     unk18 = 0;
     unk1C = (int)0x80000000;
-    unk20 = 0;
+    m_newCollisions = 0;
     unk24 = 0;
     unk28 = (int)0x80000000;
-    unk2C = 0;
+    m_removedCollisions = 0;
     unk30 = 0;
     unk34 = (int)0x80000000;
 }
 
 extern "C" void* __cdecl hkMemoryRouter_getInstance(void);
-extern "C" void __cdecl ResizeAudioStream(void* heap, void* arr, int elemSize);
+extern "C" void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct S_00d9e3f0_Item
 {
@@ -205,17 +210,21 @@ struct FUN_00d9e3f0_class
 {
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
     S_00d9e3f0_Arr m_aiIndexedValues;
-    void AppendItem(int a, int b, int c);
+    void hkpEndOfStepCallbackUtil_registerCollision(int mgr, int listener, int source);
 };
 
 // Appends a new item to the array with the three given values and a sequence number taken from unk0C, which is then incremented.
 // @fnv 0x00d9e3f0
-void FUN_00d9e3f0_class::AppendItem(int a, int b, int c)
+// src: XBOX_RETAIL_PDB 0x00d9e3f0
+// pdb: hkpEndOfStepCallbackUtil::registerCollision | hkpEndOfStepCallbackUtil.obj | retail, object-file gap fill, high
+// pdb params: mgr, listener, source
+// pdb locals: assertBuf, ostr
+void FUN_00d9e3f0_class::hkpEndOfStepCallbackUtil_registerCollision(int mgr, int listener, int source)
 {
     S_00d9e3f0_Item& it = m_aiIndexedValues.AllocatePair();
-    it.unk00 = a;
-    it.unk04 = b;
-    it.unk08 = c;
+    it.unk00 = mgr;
+    it.unk04 = listener;
+    it.unk08 = source;
     it.unk0C = unk0C++;
 }
 
@@ -337,6 +346,9 @@ template <typename T> inline void S_00d9ec40_swap2(T& x, T& y)
 
 // Sorts the entry range [d,h] in place with a Hoare-style quicksort using cmpLess, recursing on the left part and looping on the right.
 // @fnv 0x00d9ec40
+// pdb: hkAlgorithm::quickSortRecursive<hkpEndOfStepCallbackUtil::NewCollision,hkAlgorithm::less<hkpEndOfStepCallbackUtil::NewCollision> > | hkpEndOfStepCallbackUtil.obj | retail, call graph, medium
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str, zal
 void QuickSortEntries(S_00d9ec40_Entry* pEntries, int iLow, int iHigh, S_00d9ec40_Less comparator)
 {
 setRecursionStart:
@@ -386,6 +398,7 @@ struct FUN_00d9ee20_cls
 // Calls FUN_00d0b0d0, then if acFlags bit 0 is set frees this through the allocator from FUN_00c85750 with m_uSize, and returns this.
 // @fnv 0x00d9ee20
 // src: COMMUNITY 0x00d9ee20
+// pdb: hkpEndOfStepCallbackUtil::`scalar deleting destructor' | hkpEndOfStepCallbackUtil.obj | retail, vtable slot, high
 FUN_00d9ee20_cls* FUN_00d9ee20_cls::hkpEndOfStepCallbackUtil_Destroy(unsigned char acFlags)
 {
     FUN_00d0b0d0();
@@ -414,7 +427,7 @@ static __forceinline hkMemoryAllocator& GetStreamHeap(hkMemoryRouter& holder)
     return *reinterpret_cast<hkMemoryAllocator*>(holder.m_heap);
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator*, void* arr, int n, int elemSize);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator*, void* array, int numElem, int sizeElem);
 
 struct S_00d9ea80_TimerEntry
 {
@@ -468,7 +481,7 @@ struct S_00d9ea80_Obj
     virtual void v3c();
     virtual S_00d9ea80_Sub* FUN_vfn40();
 };
-void __cdecl hkpEndOfStepCallbackUtil_fireContactPointEventsForCollision(S_00d9ea80_Obj* obj, int a, int b);
+void __cdecl hkpEndOfStepCallbackUtil_fireContactPointEventsForCollision(S_00d9ea80_Obj* mgr, int a, int source);
 
 struct S_00d9ea80_Src
 {
@@ -508,9 +521,9 @@ struct S_00d9ea80_Less
 {
     char c;
 };
-void __cdecl stripArray_struct_hkpEndOfStepCallbackUtil_NewCollision(void* c, S_00d9ea80_SrcArray* b);
-void __cdecl stripArray_struct_hkpEndOfStepCallbackUtil_Collision(void* c, S_00d9ea80_EntryArray* a);
-void __cdecl mergeArrays(S_00d9ea80_SrcArray* b, S_00d9ea80_EntryArray* a);
+void __cdecl stripArray_struct_hkpEndOfStepCallbackUtil_NewCollision(void* removals, S_00d9ea80_SrcArray* target);
+void __cdecl stripArray_struct_hkpEndOfStepCallbackUtil_Collision(void* removals, S_00d9ea80_EntryArray* target);
+void __cdecl mergeArrays(S_00d9ea80_SrcArray* source, S_00d9ea80_EntryArray* target);
 void __cdecl QuickSortEntries(S_00d9ea80_Src* data, int lo, int hi, S_00d9ea80_Less l);
 
 struct S_00d9ea80
@@ -522,13 +535,16 @@ struct S_00d9ea80
     S_00d9ea80_EntryArray m_entries;
     S_00d9ea80_SrcArray m_src;
     int m_iThirdValue[3];
-    void hkpEndOfStepCallbackUtil_postSimulationCallback(int arg);
+    void hkpEndOfStepCallbackUtil_postSimulationCallback(int world);
 };
 
 // Records a timer, merges m_src into m_entries (sorting if m_sort), invokes FUN_00d9e2e0 on flagged entries, and clears unk4.
 // @fnv 0x00d9ea80
 // src: HAVOK_LIB 0x00d9ea80
-void S_00d9ea80::hkpEndOfStepCallbackUtil_postSimulationCallback(int arg)
+// pdb: hkpEndOfStepCallbackUtil::postSimulationCallback | hkpEndOfStepCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world
+// pdb locals: assertBuf, ostr
+void S_00d9ea80::hkpEndOfStepCallbackUtil_postSimulationCallback(int world)
 {
     int off;
     S_00d9ea80_Timers* tm = (S_00d9ea80_Timers*)TlsGetValue(DAT_0126835c);
@@ -739,23 +755,26 @@ struct ListenerArg
 // Iterates block entries in reverse, calling the listener's Notify0 for each entry whose properties flag bit 1 is set or when the resource flags bit 8 is set.
 // @fnv 0x00d9e2e0
 // src: HAVOK_LIB 0x00d9e2e0
-void hkpEndOfStepCallbackUtil_fireContactPointEventsForCollision(S_Owner* self, ListenerArg listener, int aiSource)
+// pdb: hkpEndOfStepCallbackUtil::fireContactPointEventsForCollision | hkpEndOfStepCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: mgr, listener, source
+// pdb locals: event
+void hkpEndOfStepCallbackUtil_fireContactPointEventsForCollision(S_Owner* mgr, ListenerArg listener, int source)
 {
-    int a = self->v10()->unk14;
-    int c = self->v10()->unk18;
-    char* block = self->block;
+    int a = mgr->v10()->unk14;
+    int c = mgr->v10()->unk18;
+    char* block = mgr->block;
     S_Block* b = (S_Block*)block;
     int count = b->count;
     char* pProperties = block + 0x30 + (b->extra << 5);
     int stride = b->stride;
     char* pPoint = block + 0x30;
-    bool bResourceFlag = ((unsigned)(self->v10()->unk30->flags & 8)) > 0;
+    bool bResourceFlag = ((unsigned)(mgr->v10()->unk30->flags & 8)) > 0;
     for (int i = count - 1; i >= 0; --i)
     {
         if ((((NotifyProperties*)pProperties)->flags & 1) || bResourceFlag)
         {
             S_Listener* __restrict callbackListener = listener.p;
-            S_Notify n(aiSource, a, c, self, 3, pPoint, pProperties, 0, 0, bResourceFlag, i == count - 1, i == 0,
+            S_Notify n(source, a, c, mgr, 3, pPoint, pProperties, 0, 0, bResourceFlag, i == count - 1, i == 0,
                        pProperties + 0x14, 0, 0);
             callbackListener->Notify0(&n);
         }
@@ -898,9 +917,12 @@ static __forceinline void stripCollisionArrays(hkArray<StripCollisionD9E, ElemAr
 // Removes entries from the first array that are found in the second, then replaces the second array with the remaining entries.
 // @fnv 0x00d9e680
 // src: HAVOK_LIB 0x00d9e680
-void __cdecl stripArray_struct_hkpEndOfStepCallbackUtil_Collision(void* apFirstArray, S_00d9ea80_EntryArray* apSecondArray)
+// pdb: stripArray<hkpEndOfStepCallbackUtil::Collision> | hkpEndOfStepCallbackUtil.obj | retail, call graph, high
+// pdb params: removals, target
+// pdb locals: other
+void __cdecl stripArray_struct_hkpEndOfStepCallbackUtil_Collision(void* removals, S_00d9ea80_EntryArray* target)
 {
-    stripCollisionArrays(*static_cast<hkArray<StripCollisionD9E, ElemArrayD9EPolicy>*>(apFirstArray), *reinterpret_cast<hkArray<StripCollisionD9E, ElemArrayD9EPolicy>*>(apSecondArray));
+    stripCollisionArrays(*static_cast<hkArray<StripCollisionD9E, ElemArrayD9EPolicy>*>(removals), *reinterpret_cast<hkArray<StripCollisionD9E, ElemArrayD9EPolicy>*>(target));
 }
 
 struct hkMergeTarget8b0
@@ -950,15 +972,18 @@ static inline hkValue8b0* AllocArray8b0(hkMemoryAllocator* pkHeap, int& iCount)
 // Merges two arrays ordered by key into a new buffer, hands it to argOut via FUN_00d9ec10, zeroes pkNew's count and frees the temporary buffer.
 // @fnv 0x00d9e8b0
 // src: HAVOK_LIB 0x00d9e8b0
-void __cdecl mergeArrays(hkArray16_8b0* pkNew, hkArray12_8b0* volatile argOut)
+// pdb: mergeArrays | hkpEndOfStepCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: source, target
+// pdb locals: other
+void __cdecl mergeArrays(hkArray16_8b0* source, hkArray12_8b0* volatile target)
 {
-    hkArray12_8b0* pkOut = argOut;
-    hkEntry8b0* pkA = pkNew->m_pData;
-    hkEntry8b0* pkAEnd = pkA + pkNew->m_uiLogicalSize;
+    hkArray12_8b0* pkOut = target;
+    hkEntry8b0* pkA = source->m_pData;
+    hkEntry8b0* pkAEnd = pkA + source->m_uiLogicalSize;
     if (pkA == pkAEnd)
         return;
 
-    int iTotalCount = pkOut->m_uiLogicalSize + pkNew->m_uiLogicalSize;
+    int iTotalCount = pkOut->m_uiLogicalSize + source->m_uiLogicalSize;
     hkMemoryRouter& kRouter0 = *static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
     hkValue8b0* pkData = AllocArray8b0(reinterpret_cast<hkMemoryAllocator*>(kRouter0.m_heap), iTotalCount);
     int iCapacity = iTotalCount ? iTotalCount : 0x80000000;
@@ -982,8 +1007,8 @@ void __cdecl mergeArrays(hkArray16_8b0* pkNew, hkArray12_8b0* volatile argOut)
     while (pkB < pkBEnd)
         *pkDst++ = *pkB++;
 
-    ((hkMergeTarget8b0*)argOut)->SwapThreeInts((int*)&kMerged);
-    pkNew->m_uiLogicalSize = 0;
+    ((hkMergeTarget8b0*)target)->SwapThreeInts((int*)&kMerged);
+    source->m_uiLogicalSize = 0;
     hkMemoryRouter& kRouter = *static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
     hkMemoryAllocator* pkHeap = reinterpret_cast<hkMemoryAllocator*>(kRouter.m_heap);
     if ((kMerged.m_iCapacityAndFlags & 0x80000000) == 0)
@@ -1111,29 +1136,32 @@ struct IncomingArg
 // For each incoming item, removes it from destination if present, otherwise appends it to a temporary buffer, then swaps the buffer into incoming.
 // @fnv 0x00d9e4a0
 // src: HAVOK_LIB 0x00d9e4a0
-void __cdecl stripArray_struct_hkpEndOfStepCallbackUtil_NewCollision(PendingBatch& destination, IncomingBatch& incoming)
+// pdb: stripArray<hkpEndOfStepCallbackUtil::NewCollision> | hkpEndOfStepCallbackUtil.obj | retail, call graph, high
+// pdb params: removals, target
+// pdb locals: other
+void __cdecl stripArray_struct_hkpEndOfStepCallbackUtil_NewCollision(PendingBatch& removals, IncomingBatch& target)
 {
-    int initialCount = destination.size();
-    int sourceCount = incoming.size();
+    int initialCount = removals.size();
+    int sourceCount = target.size();
     if (initialCount)
     {
         BatchBuffer temporary(sourceCount);
         int written = 0;
         for (int i = 0; i < sourceCount; ++i)
         {
-            int matchIndex = destination.find((const BatchCollision&)incoming[i]);
+            int matchIndex = removals.find((const BatchCollision&)target[i]);
             if (matchIndex == -1)
             {
-                temporary[written] = incoming[i];
+                temporary[written] = target[i];
                 ++written;
             }
             else
             {
-                destination.remove(matchIndex);
+                removals.remove(matchIndex);
             }
         }
-        temporary.resize(sourceCount - initialCount + destination.size());
-        ((BatchSwap*)&incoming)->SwapThreeInts((int*)&temporary);
+        temporary.resize(sourceCount - initialCount + removals.size());
+        ((BatchSwap*)&target)->SwapThreeInts((int*)&temporary);
         temporary.clear();
     }
 }

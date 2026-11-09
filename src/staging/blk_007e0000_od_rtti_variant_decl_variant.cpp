@@ -52,7 +52,7 @@ struct FUN_007fd620_Class
 {
     char _0[0x24];
     GO m_go;
-    void SetGo(void* p);
+    void FORenderedMenu_SetCamera(void* apCamera);
 };
 
 extern ::BSStringT<char> g_011daed8;
@@ -79,6 +79,7 @@ struct FUN_007f7880_Class
     float f10;
     void __thiscall FOHUDEffectManager_TriggerShudder(float a, float b, float c);
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void QueueModelLoad(char*, bool, unsigned int);
@@ -91,7 +92,7 @@ struct Loader_S
 extern Loader_S* g_modelLoader;
 extern int DAT_011a0bb0;
 extern Flt g_011db63c;
-void PurgeTerminalModel();
+void FORenderedTerminal_ReleaseStaticGeometry();
 struct FUN_007e0e30_Class
 {
     void* m_p;
@@ -154,7 +155,7 @@ struct FUN_007e0d80_shell : Flt
     char* m_buffer;
     unsigned int BSStringT_char_Length();
     unsigned int FUN_004039a0();
-    void FUN_004037f0(char* oldBuffer, unsigned int requiredLength);
+    void FUN_004037f0(char* apString, unsigned int aiMaxLen);
     void FUN_004039c0(unsigned int newLength);
     unsigned int GetLengthPlusOne();
     void FUN_00438470(FUN_007e0d80_shell* other);
@@ -165,7 +166,7 @@ int SurgeryMenu_GetClassStatic();
 int __cdecl TextEdit_GetMenuID();
 struct SysMgr
 {
-    void Init(int a, int b);
+    void RemoveFader(int aeFader, int abForce);
 };
 struct TaskA
 {
@@ -269,7 +270,7 @@ class FUN_007e9130_cls : public Base
     int unk0118;
     MemB m_11c;
 };
-extern unsigned int* DAT_011f4aa8;
+extern unsigned int* NiPoint3_ms_pSqrtTable;
 float __cdecl FastSqrt(const float* v);
 int __cdecl VATSMenu_GetClassStatic();
 class B7F7790Ref
@@ -321,9 +322,10 @@ class FUN_007f7790_cls
 };
 class NiColor;
 struct Dummy_00718c90;
+// pdb: class SystemColorManager, size 0x10 (here 0x1), 2 members
 struct SystemColorManager
 {
-    bool GetColor(int id, NiColor& out);
+    bool GetColor(int aiID, NiColor& aOutColor);
 };
 Dummy_00718c90* __cdecl SystemColorManager_GetInstance();
 struct GlobalObject_0044f440
@@ -344,7 +346,7 @@ ShadowSceneNode* __cdecl FUN_00450b80(unsigned int uiIndex);
 class Light7FD
 {
   public:
-    void FORenderedMenuRaceSex_SetupLights(float fScale);
+    void FORenderedMenuRaceSex_SetupLights(float afScale);
 
     int unk000, unk004, unk008, unk00C, unk010, unk014, unk018, unk01C;
     int unk020, unk024, unk028, unk02C, unk030, unk034, unk038, unk03C;

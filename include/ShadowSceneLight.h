@@ -24,10 +24,11 @@ class NiTriBasedGeom;
 
 #include "D3DXMATRIX.h"
 
+// pdb: class ShadowSceneLight, size 0x250, bases: NiRefObject, 38 members
 class ShadowSceneLight : public NiRefObject
 {
 public:
-    int _unverified_iEnabledPasses;
+    int iEnabledPasses;
     float fLuminance;
     D3DXMATRIX kViewProjection;
     D3DXMATRIX kShadowView;
@@ -77,13 +78,13 @@ public:
     ShadowSceneLight();
     virtual ~ShadowSceneLight();
     void ClearShadowObjects();
-    void AddObject(NiAVObject* object);
-    void ProcessShadowObject(NiAVObject* object);
-    void AddShadowObject(NiAVObject* object);
+    void AddObject(NiAVObject* apAVObject);
+    void ParseObjectAddFrustum(NiAVObject* apObject);
+    void ParseObjectAddRadius(NiAVObject* apObject);
     void AddGeometry(NiTriBasedGeom* geometry);
     bool TestSphereFrustum(NiPoint3* sphere);
-    bool BoundWithinLightRadius(NiPoint3* sphere, NiLight* light, float scale);
+    bool BoundWithinLightRadius(NiPoint3* apBound, NiLight* light, float afRadiusScale);
     bool TestSphereFrustum(const NiSphere& sphere);
     float ComputeLightAttenuation(NiPoint3 point, NiLight* light);
-    float ComputeFade(int aiMemoryContext);
+    float ShadowSceneLight_GetLuminanceToBound(int apBound);
 };

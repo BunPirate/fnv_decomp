@@ -17,6 +17,8 @@ struct Owner
 // Passes a pointer to this+8 (or null when this equals 0x20) to container->ClearValue and returns its result.
 // @fnv 0x00d6a910
 // src: GUESS 0x00d6a910 (confidence: medium)
+// pdb: hkpBroadphaseViewer::operator new | hkpBroadphaseViewer.obj | debug, object-file run extension, low
+// pdb params: nbytes
 int Owner::ClearAdjustedValue(Container* container)
 {
     void* value;
@@ -29,17 +31,18 @@ int Owner::ClearAdjustedValue(Container* container)
 
 struct FUN_00dd9380_StandIn
 {
-    int hkProcessFactory_registerProcess(const char* name, void* constructor);
+    int hkProcessFactory_registerProcess(const char* viewerName, void* creationFunction);
 };
 extern FUN_00dd9380_StandIn* DAT_01269cd0;
 extern int DAT_01269028;
 extern char DAT_010c65b0;
-void hkpBroadphaseViewer_Create();
+void hkpBroadphaseViewer_create();
 // @fnv 0x00d6ad40
-// src: GUESS 0x00d6ad40 (confidence: low)
-void __cdecl Object_UpdateFields_00d6ad40()
+// src: XBOX_RETAIL_PDB 0x00d6ad40
+// pdb: hkpBroadphaseViewer::registerViewer | hkpBroadphaseViewer.obj | retail, string-set bridge, high
+void __cdecl hkpBroadphaseViewer_registerViewer()
 {
-    DAT_01269028 = DAT_01269cd0->hkProcessFactory_registerProcess(&DAT_010c65b0, (void*)&hkpBroadphaseViewer_Create);
+    DAT_01269028 = DAT_01269cd0->hkProcessFactory_registerProcess(&DAT_010c65b0, (void*)&hkpBroadphaseViewer_create);
 }
 
 extern int DAT_01269028;
@@ -52,7 +55,7 @@ int Object_GetDAT_01269028_00d6ad60()
 
 struct Target
 {
-    void hkpWorld_addWorldPostSimulationListener(void* apArg);
+    void hkpWorld_addWorldPostSimulationListener(void* worldListener);
 };
 
 struct FUN_00d6a8e0_cls
@@ -155,7 +158,7 @@ struct PostSimListener
 // one shape of the world; 0xc93920 appends a listener to its list at +0x164
 struct BroadElem
 {
-    void hkpWorld_addWorldPostSimulationListener(PostSimListener* p);
+    void hkpWorld_addWorldPostSimulationListener(PostSimListener* worldListener);
 };
 
 // the primary base at 0x00 (its vptr is the one at 0x00)
@@ -199,7 +202,7 @@ struct CtxListenerBase
 struct WorldViewerBase : PrimBase, ProcBase, CtxListenerBase
 {
     BroadCtx* m_ctx;  // +0x24
-    WorldViewerBase(void* a);
+    WorldViewerBase(void* contexts);
 };
 
 // hkpBroadphaseViewer itself (the class is named after the function so that
@@ -217,6 +220,8 @@ struct FUN_00d6a940 : WorldViewerBase, PostSimListener
 };
 
 // @fnv 0x00d6a940
+// pdb: hkpBroadphaseViewer::hkpBroadphaseViewer | hkpBroadphaseViewer.obj | retail, object-file run extension, low
+// pdb params: contexts
 FUN_00d6a940::FUN_00d6a940(void* a) : WorldViewerBase(a)
 {
     // The three flags are written through a pointer: that gives the stores an
@@ -347,6 +352,7 @@ struct FUN_00d6ac40_cls : PrimaryBase, MidBase, TailBase, SubObject
 };
 
 // @fnv 0x00d6ac40
+// pdb: hkpBroadphaseViewer::~hkpBroadphaseViewer | hkpBroadphaseViewer.obj | retail, object-file gap fill, high
 FUN_00d6ac40_cls::~FUN_00d6ac40_cls() throw()
 {
     if (m_pSharedOwner != 0)
@@ -407,15 +413,17 @@ struct SpawnedObject
 
 // Allocates a 0x38-byte object from the holder's allocator, sets its size, calls Init(arg), and returns the result plus 8 or 0.
 // @fnv 0x00d6ad00
-// src: COMMUNITY 0x00d6ad00
-int hkpBroadphaseViewer_Create(int arg)
+// src: XBOX_RETAIL_PDB 0x00d6ad00
+// pdb: hkpBroadphaseViewer::create | hkpBroadphaseViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+int hkpBroadphaseViewer_create(int contexts)
 {
     hkMemoryRouter* pAllocHolder = hkMemoryRouter_getInstance();
     hkMemoryAllocator* pAllocator = reinterpret_cast<hkMemoryAllocator*>(pAllocHolder->m_heap);
     SpawnedObject* pObject = (SpawnedObject*)(*reinterpret_cast<void* (__thiscall**)(hkMemoryAllocator*, int)>(
         *reinterpret_cast<char**>(pAllocator) + 4))(pAllocator, 0x38);
     pObject->m_wSize = 0x38;
-    int iInitResult = pObject->Init(arg);
+    int iInitResult = pObject->Init(contexts);
     return iInitResult != 0 ? iInitResult + 8 : 0;
 }
 }  // namespace fnv_00d6ad00
@@ -542,6 +550,7 @@ struct FUN_00d6ada0 : S_00d6ada0_ReferencedObject
 };
 
 // @fnv 0x00d6ada0
+// pdb: hkpBroadphaseViewer::`scalar deleting destructor' | hkpBroadphaseViewer.obj | retail, vtable slot, high
 FUN_00d6ada0::FUN_00d6ada0()
 {}
 }  // namespace fnv_00d6ada0

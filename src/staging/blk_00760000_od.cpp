@@ -13,6 +13,7 @@ template <>
 void BSSimpleArray<NiFixedString, 1024>::Clear(bool freeStorage);
 
 // @fnv 0x007614a0
+// pdb: BSSimpleArray<NiFixedString,1024>::~BSSimpleArray<NiFixedString,1024> | CreditsMenu.obj | debug, call graph, high
 template <>
 BSSimpleArray<NiFixedString, 1024>::~BSSimpleArray()
 {
@@ -23,6 +24,7 @@ extern bool* DAT_011d9510;
 
 // @fnv 0x007624d0
 // src: XBOX_PDB 0x007624d0
+// pdb: DialogMenu::GetDialogSpeaker | DialogMenu.obj | debug, upstream name already matches, high
 TESSound* DialogMenu_GetDialogSpeaker()
 {
     if (DAT_011d9510)
@@ -37,6 +39,7 @@ struct FUN_0076b610_Class
 
 // @fnv 0x0076b610
 // src: XBOX_PDB 0x0076b610
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::~NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *> | HackingMenu.obj | debug, object-file run extension, low
 bool FUN_0076b610_Class::NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty()
 {
     return *(int*)((char*)this + 8) == 0;
@@ -52,13 +55,14 @@ unsigned int __cdecl gm_GetTickCount();
 
 struct FUN_0076bda0_class
 {
-    FUN_0076bda0_class* __thiscall ProcessAndReturnValue_0076bda0();
+    FUN_0076bda0_class* __thiscall BSTimer_ctor();
     void __thiscall BSTimer_Init(unsigned int);
 };
 
 // @fnv 0x0076bda0
-// src: GUESS 0x0076bda0 (confidence: low)
-FUN_0076bda0_class* __thiscall FUN_0076bda0_class::ProcessAndReturnValue_0076bda0()
+// src: XBOX_DEBUG_PDB 0x0076bda0
+// pdb: BSTimer::BSTimer | HUDMainMenu.obj | debug, call graph (shared callers), high
+FUN_0076bda0_class* __thiscall FUN_0076bda0_class::BSTimer_ctor()
 {
     BSTimer_Init(gm_GetTickCount());
     return this;
@@ -95,6 +99,7 @@ template <>
 BSSimpleArray<HUDMainMenu__SubtitleData*, 1024>::~BSSimpleArray();
 
 // @fnv 0x0077f970
+// pdb: BSSimpleArray<HUDMainMenu::SubtitleData *,1024>::BSSimpleArray<HUDMainMenu::SubtitleData *,1024> | HUDMainMenu.obj | debug, object-file run extension, low
 template <>
 BSSimpleArray<HUDMainMenu__SubtitleData*, 1024>::BSSimpleArray()
 {
@@ -106,6 +111,8 @@ BSSimpleArray<HUDMainMenu__SubtitleData*, 1024>::BSSimpleArray()
 void __fastcall ReleaseFixedStringArrayBuffer(BSSimpleArray<NiFixedString, 1024>*);
 
 // @fnv 0x007615d0
+// pdb: CreditsMenu::~CreditsMenu | CreditsMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<bool,1024>::Clear
 template <>
 void BSSimpleArray<NiFixedString, 1024>::Clear(bool freeStorage)
 {
@@ -124,11 +131,14 @@ void BSSimpleArray<NiFixedString, 1024>::Clear(bool freeStorage)
 
 // Calls the deleting destructor with flag 0 for each fixed string.
 // @fnv 0x00761760
+// pdb: BSSimpleArray<NavMeshEdge,1024>::_ConstructItems | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 template <>
 void BSSimpleArray<NiFixedString, 1024>::ReleaseElements(NiFixedString* data, unsigned int n)
 {
     for (unsigned int i = 0; i < n; ++i)
-        (data + i)->FUN_004b9900(0);
+        (data + i)->NiFixedString_ScalarDtor(0);
 }
 
 struct GlobalObject_0076b930
@@ -138,6 +148,9 @@ struct GlobalObject_0076b930
 };
 // Calls FUN_0076b930 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0076b870
+// pdb: HackingMenu::WordList::ShuffleFn | HackingMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSoundHandle::operator==
+// pdb params: apString1, apString2
 GlobalObject_0076b930* __thiscall GlobalObject_0076b930::FUN_0076b870(unsigned int flags)
 {
     this->FUN_0076b930();
@@ -153,6 +166,8 @@ struct FUN_0076b8a0_class
 };
 // Destructor that removes all elements from the contained BSSimpleList.
 // @fnv 0x0076b8a0
+// pdb: BSSimpleList<BSSoundHandle>::RemoveAll | HackingMenu.obj | retail, call graph, high
+// pdb locals: pkSave
 FUN_0076b8a0_class::~FUN_0076b8a0_class()
 {
     m_kNode.RemoveAll();
@@ -165,6 +180,7 @@ struct FUN_0076b900 : BSSoundHandle
     FUN_0076b900(FUN_0076b900 const&);
 };
 // @fnv 0x0076b900
+// pdb: BSSimpleList<BSSoundHandle>::`scalar deleting destructor' | HackingMenu.obj | debug, object-file run extension, low
 FUN_0076b900::FUN_0076b900(FUN_0076b900 const& o) : BSSoundHandle(o)
 {
     fldC = 0;
@@ -180,6 +196,7 @@ struct FUN_0076b930
 };
 // Initializes the object: constructs the first member with sound ID zero and sets the field at offset 0x0C to 0.
 // @fnv 0x0076b930
+// pdb: BSSimpleList<BSSoundHandle>::~BSSimpleList<BSSoundHandle> | HackingMenu.obj | debug, object-file run extension, low
 FUN_0076b930::FUN_0076b930() : _00(0u)
 {
     _0C = 0;
@@ -196,9 +213,11 @@ int __cdecl QuestUpdateManager_SortQuestNamesByPriorityFunction(WeatherEntry*, W
 // Adds a WeatherEntry to the list at g_011d970c and sorts it using FUN_0076bb00 as the comparison.
 // @fnv 0x0076baa0
 // src: COMMUNITY 0x0076baa0
-void __cdecl QuestUpdateManager_AddQuestNamesHead(WeatherEntry* apEntry)
+// pdb: QuestUpdateManager::AddQuestNamesHead | HUDMainMenu.obj | debug, upstream name already matches, high
+// pdb params: pQuestUpdate
+void __cdecl QuestUpdateManager_AddQuestNamesHead(WeatherEntry* pQuestUpdate)
 {
-    ((G2*)&g_011d970c)->AddHead(apEntry);
+    ((G2*)&g_011d970c)->AddHead(pQuestUpdate);
     ((BSSimpleList<WeatherEntry*>*)&g_011d970c)->Sort(&QuestUpdateManager_SortQuestNamesByPriorityFunction);
 }
 
@@ -219,6 +238,7 @@ extern "C" void* _pme;
 
 // If _pme is set and its field at offset 0x1b8 equals param_1, clears that field to 0 and returns true; otherwise returns false.
 // @fnv 0x00778b40
+// pdb: HUDMainMenu::GetTopOfInfo | HUDMainMenu.obj | debug, object-file run extension, low
 bool __cdecl ClearPmeIfMatches(int aiValue)
 {
     if (_pme && *(int*)((char*)_pme + 0x1b8) == aiValue)
@@ -242,6 +262,9 @@ template <>
 void BSSimpleArray<NiFixedString, 1024>::InitializeItems(NiFixedString*, unsigned int);
 
 // @fnv 0x007614c0
+// pdb: BSSimpleArray<NiFixedString,1024>::Add | CreditsMenu.obj | retail, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 template <>
 unsigned int BSSimpleArray<NiFixedString, 1024>::ReserveIndex(const NiFixedString& value)
 {
@@ -252,6 +275,8 @@ unsigned int BSSimpleArray<NiFixedString, 1024>::ReserveIndex(const NiFixedStrin
 }
 
 // @fnv 0x007616d0
+// pdb: BSSimpleArray<NavMeshEdge,1024>::AddUninitialized | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb locals: inewSize
 template <>
 void BSSimpleArray<NiFixedString, 1024>::_InitialSetup(unsigned int requested, unsigned int savedSize)
 {
@@ -275,6 +300,8 @@ void BSSimpleArray<NiFixedString, 1024>::_InitialSetup(unsigned int requested, u
 }
 
 // @fnv 0x0076a3b0
+// pdb: BSSoundHandle::operator!= | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb params: aCmp
 bool BSSoundHandle::operator!=(unsigned int value)
 {
     return value != GetID();
@@ -286,12 +313,14 @@ struct TESFaction_RankDataView
     bool HasFlag40();
 };
 // @fnv 0x0077a590
+// pdb: TESQuest::GetFailed | HUDMainMenu.obj | debug, object-file gap fill, medium
 bool TESFaction_RankDataView::HasFlag40()
 {
     return (GetRankDataList()[0] & 0x40) != 0;
 }
 
 // @fnv 0x0077f9a0
+// pdb: BSSimpleArray<HUDMainMenu::SubtitleData *,1024>::~BSSimpleArray<HUDMainMenu::SubtitleData *,1024> | HUDMainMenu.obj | debug, call graph (shared callers), high
 template <>
 BSSimpleArray<HUDMainMenu__SubtitleData*, 1024>::~BSSimpleArray()
 {
@@ -303,6 +332,8 @@ bool __fastcall IsFixedStringArrayFull(BSSimpleArray<NiFixedString, 1024>*);
 unsigned int __fastcall NextFixedStringArrayCapacity(BSSimpleArray<NiFixedString, 1024>*);
 
 // @fnv 0x00761540
+// pdb: CreditsMenu::CreditsMenu | CreditsMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<NiPointer<ObstacleUndoData>,1024>::AddUninitialized
 template <>
 unsigned int BSSimpleArray<NiFixedString, 1024>::ReserveIndex()
 {
@@ -330,6 +361,8 @@ void __cdecl operator delete(void* p, void* where);
 
 // Placement-constructs count fixed strings into the array.
 // @fnv 0x00761630
+// pdb: BSSimpleArray<bool,1024>::_InitialSetup | NavMesh_Util.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 template <>
 void BSSimpleArray<NiFixedString, 1024>::InitializeItems(NiFixedString* pItems, unsigned int count)
 {
@@ -461,6 +494,7 @@ class FUN_0076b560 : public B76B560Base
 
 // Destructor that deletes m_pkFirst and m_pkSecond.
 // @fnv 0x0076b560
+// pdb: HackingMenu::TerminalIO::~TerminalIO | HackingMenu.obj | debug, object-file run extension, low
 FUN_0076b560::~FUN_0076b560()
 {
     delete m_pkFirst;
@@ -685,6 +719,7 @@ struct FUN_0076bb40 : Menu
 void* __cdecl memset(void*, int, unsigned int);
 
 // @fnv 0x0076bb40
+// pdb: HUDMainMenu::HUDMainMenu | HUDMainMenu.obj | debug, call graph, high
 FUN_0076bb40::FUN_0076bb40()
 {
     memset(&unk28, 0, 0x158);
@@ -807,6 +842,7 @@ struct FUN_007617a0 : Menu
     virtual ~FUN_007617a0();
 };
 // @fnv 0x007617a0
+// pdb: DialogMenu::DialogMenu | DialogMenu.obj | debug, call graph, medium
 FUN_007617a0::FUN_007617a0()
 {
     unk80 = 0;
@@ -828,6 +864,7 @@ FUN_007617a0::FUN_007617a0()
 }
 }  // namespace fnv_007617a0
 
+// pdb: structure WeatherEntry, size 0xc (here 0x324), 3 members
 struct WeatherEntry
 {
     int unk00;
@@ -847,33 +884,36 @@ void __cdecl QuestUpdateManager_AddQuestNamesTail(char*);
 // Allocates a WeatherEntry, copies the title, subtitle and icon strings, validates the fonts, and queues the entry by priority.
 // @fnv 0x0076b960
 // src: EXE 0x0076b960
-void __cdecl QuestUpdateManager_SetCustomQuestText(const char* title, const char* subtitle, int priority, int extra, int titleFont,
-                          int subtitleFont, const char* icon)
+// pdb: QuestUpdateManager::SetCustomQuestText | HUDMainMenu.obj | debug, upstream name already matches, high
+// pdb params: apCustomTextTitle, apCustomTextSubtitle, aiCustomQueuePriority, aiCustomTextJustification, aiCustomTextTitleFont, aiCustomTextSubtitleFont, apCustomSoundHandleName
+// pdb locals: pCustomQuestUpdate
+void __cdecl QuestUpdateManager_SetCustomQuestText(const char* apCustomTextTitle, const char* apCustomTextSubtitle, int aiCustomQueuePriority, int aiCustomTextJustification, int aiCustomTextTitleFont,
+                          int aiCustomTextSubtitleFont, const char* apCustomSoundHandleName)
 {
     WeatherEntry* entry = new WeatherEntry;
     entry->kind = 3;
-    strcpy_s(entry->title, 260, title);
-    strcpy_s(entry->subtitle, 260, subtitle);
-    entry->unk210 = extra;
-    entry->priority = priority;
-    if (titleFont == 0)
+    strcpy_s(entry->title, 260, apCustomTextTitle);
+    strcpy_s(entry->subtitle, 260, apCustomTextSubtitle);
+    entry->unk210 = aiCustomTextJustification;
+    entry->priority = aiCustomQueuePriority;
+    if (aiCustomTextTitleFont == 0)
     {
         Warning_005b5e40(
             7,
             "QuestUpdateManager::SetCustomQuestText() - FONT_1 is an invalid value for aiCustomTextTitleFont.  Setting to FONT_NONE.");
-        titleFont = -1;
+        aiCustomTextTitleFont = -1;
     }
-    entry->titleFont = titleFont;
-    if (subtitleFont == 0)
+    entry->titleFont = aiCustomTextTitleFont;
+    if (aiCustomTextSubtitleFont == 0)
     {
         Warning_005b5e40(
             7,
             "QuestUpdateManager::SetCustomQuestText() - FONT_1 is an invalid value for aiCustomTextSubtitleFont.  Setting to FONT_NONE.");
-        subtitleFont = -1;
+        aiCustomTextSubtitleFont = -1;
     }
-    entry->subtitleFont = subtitleFont;
-    strcpy_s(entry->icon, 260, icon);
-    switch (priority)
+    entry->subtitleFont = aiCustomTextSubtitleFont;
+    strcpy_s(entry->icon, 260, apCustomSoundHandleName);
+    switch (aiCustomQueuePriority)
     {
     case 1:
     case 2:
@@ -886,7 +926,7 @@ void __cdecl QuestUpdateManager_SetCustomQuestText(const char* title, const char
         Warning_005b5e40(
             7,
             "QuestUpdateManager::SetCustomQuestText() - Invalid aiCustomQueuePriority (%i)!  Setting to HCQQP_NORMAL.",
-            priority);
+            aiCustomQueuePriority);
         QuestUpdateManager_AddQuestNamesTail((char*)entry);
         break;
     }
@@ -1355,12 +1395,14 @@ struct C77a400
     int m_unk704;
     Arr77a400 m_Arr708;
 
-    unsigned int GetFirstOrFallback();
+    unsigned int PlayerCharacter_QPlayerMarkerTrackingRef();
 };
 
 // Returns the first element of m_Arr708 if the array is non-empty, otherwise returns m_unk6f4.
 // @fnv 0x0077a400
-unsigned int C77a400::GetFirstOrFallback()
+// src: XBOX_DEBUG_PDB 0x0077a400
+// pdb: PlayerCharacter::QPlayerMarkerTrackingRef | HUDMainMenu.obj | debug, call graph, high
+unsigned int C77a400::PlayerCharacter_QPlayerMarkerTrackingRef()
 {
     return this->m_Arr708.GetSize() > 0 ? (unsigned int)*this->m_Arr708.GetAt(0) : (unsigned int)this->m_unk6f4;
 }
@@ -1368,9 +1410,9 @@ unsigned int C77a400::GetFirstOrFallback()
 class HKTile
 {
   public:
-    const char* Tile_GetString(int m_iValueId);
+    const char* Tile_GetString(int aiTrait);
     float FUN_00a011b0(int m_iValueId);
-    void Tile_Set_00a01350(int m_iValueId, const char* pcValue, int iFlag);
+    void Tile_Set_00a01350(int m_iValueId, const char* apString, int iFlag);
     void FUN_00700320(int m_iValueId, int iValue);
     void Tile_Set(int m_iValueId, float fValue, int iFlag);
 };
@@ -1446,18 +1488,20 @@ class HKMenu
     int unk1c4[5];
     bool m_bShowing;  // +0x1d8
 
-    int GetScaledValue();
+    int GetCharHit();
     void ClearEntry();
-    void GetGarbageString(char* pcOut, const char* pcText);
-    HKTile* FindTile(int iColumn, unsigned int uiLine);
+    void GetGarbageString(char* apTarget, const char* apSource);
+    HKTile* FindTile(int aiIndex, unsigned int aiCol);
     void UpdateHighlight();
 };
 
 // Recomputes the cursor position and the word at it from the text tile, updates the guessed-word state and sounds, and sets m_pkHighlight's text and coordinates.
 // @fnv 0x00769b50
+// pdb: HackingMenu::DoInGame | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb locals: ioffset, bbreakfound, ibufferpos, pnode, floatingText, i, handle, poverstring, ibreakpos, iy1, iy2, ix1, ix2, pnext, pprev, csave
 void HKMenu::UpdateHighlight()
 {
-    int iPos = GetScaledValue() - 7;
+    int iPos = GetCharHit() - 7;
     if ((iPos == m_iLastPos && DAT_011d95bc->m_pkTextTile == m_pkLastTile) || (iPos < 0 && m_iLastPos < 0))
         return;
     m_iLastPos = iPos;
@@ -1496,9 +1540,9 @@ void HKMenu::UpdateHighlight()
     if (pkNodeTmp)
         FUN_00401460(acWordNext, *pkNodeTmp->FUN_006815c0(), m_uiWordLength);
     else if (!m_kSymbols.FUN_0049c680(&uiElapsedMilliseconds, 0))
-        GetGarbageString(acWordNext, DAT_011d95bc->m_pkTextTile->Tile_GetString(0xfc4) + GetScaledValue());
+        GetGarbageString(acWordNext, DAT_011d95bc->m_pkTextTile->Tile_GetString(0xfc4) + GetCharHit());
     else
-        acWordNext[0] = DAT_011d95bc->m_pkTextTile->Tile_GetString(0xfc4)[GetScaledValue()];
+        acWordNext[0] = DAT_011d95bc->m_pkTextTile->Tile_GetString(0xfc4)[GetCharHit()];
     if (m_kGuessed.ForwardCall_0076a3d0(acWordNext))
     {
         m_kGuessed.AssignString(acWordNext);
@@ -1520,7 +1564,7 @@ void HKMenu::UpdateHighlight()
         }
     }
     bool bFound = false;
-    iPos = GetScaledValue();
+    iPos = GetCharHit();
     if (pkNodeTmp)
     {
         const char* pcText = DAT_011d95bc->m_pkTextTile->Tile_GetString(0xfc4);

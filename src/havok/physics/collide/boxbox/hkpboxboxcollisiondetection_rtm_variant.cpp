@@ -317,6 +317,9 @@ static __forceinline void rotatedVector(hkVector4& d, const AxisRows& rows, cons
 
 // @fnv 0x00db0ec0
 // src: GUESS 0x00db0ec0 (confidence: low)
+// pdb: hkpBoxBoxCollisionDetection::checkIntersection | hkpBoxBoxCollisionDetection.obj | retail, object-file run extension, low
+// pdb params: tolerance
+// pdb locals: aRb_, bRa, vdProj, vXprodLengthInv
 __declspec(noinline) int ThisCls::ProcessAndReturnValue_00db0ec0(Vec4f* arg)
 {
 
@@ -573,7 +576,7 @@ struct ContactList
     unsigned char flag;
     void Drop(int);
     unsigned char* Lookup(unsigned char* flag, Input* p1);
-    int Insert(int a, int b, Input* p1);
+    int Insert(int bodyA, int bodyB, Input* fcp);
 };
 
 struct Owner
@@ -703,6 +706,9 @@ __declspec(noinline) unsigned char* Owner::Compute(unsigned char* result, Blob* 
 
 // @fnv 0x00db1990
 // src: GUESS 0x00db1990 (confidence: low)
+// pdb: hkpBoxBoxCollisionDetection::addAdditionalEdgeHelper | hkpBoxBoxCollisionDetection.obj | retail, object-file run extension, low
+// pdb params: manifold, fcp, closestPointDist
+// pdb locals: fpp
 __declspec(noinline) void Owner::ProcessEntries_00db1990(ContactList* p0, Input* p1, float p2)
 {
     unsigned char c;
@@ -953,13 +959,13 @@ __forceinline void ContactVector::_setRotatedDir(const hkRotation& aRb, const Co
 
 __forceinline void hkContactPoint::setDistance(float d)
 {
-    ((float*)&m_vSeparatingNormal)[3] = d;
+    ((float*)&m_separatingNormal)[3] = d;
 }
 static __forceinline void setContactPoint(hkContactPoint& point, const ContactVector& position,
                                          const ContactVector& separatingNormal, float distance)
 {
-    _mm_store_ps((float*)&point.m_vSeparatingNormal, separatingNormal.m_vComponents);
-    _mm_store_ps((float*)&point.m_vContactPosition, position.m_vComponents);
+    _mm_store_ps((float*)&point.m_separatingNormal, separatingNormal.m_vComponents);
+    _mm_store_ps((float*)&point.m_position, position.m_vComponents);
     point.setDistance(distance);
 }
 
@@ -1034,14 +1040,17 @@ struct BoxAgent
 
     void UpdateFields_00d40940();
     int ProcessAndReturnValue_00db0ec0(void* pUnk80);
-    __declspec(noalias) int hkpBoxBoxCollisionDetection_findClosestPoint(MyDb0920* a1, Local0c* a2, Local10* a3);
+    __declspec(noalias) int hkpBoxBoxCollisionDetection_findClosestPoint(MyDb0920* manifold, Local0c* fcp, Local10* fpp);
 
-    __declspec(noinline) hkBool& UpdateState_00db2750(hkBool& valid, hkContactPoint& outPoint);
+    __declspec(noinline) hkBool& hkpBoxBoxCollisionDetection_calculateClosestPoint(hkBool& valid, hkContactPoint& outPoint);
 };
 
 // @fnv 0x00db2750
-// src: GUESS 0x00db2750 (confidence: low)
-__declspec(noinline) hkBool& BoxAgent::UpdateState_00db2750(hkBool& valid, hkContactPoint& outPoint)
+// src: XBOX_RETAIL_PDB 0x00db2750
+// pdb: hkpBoxBoxCollisionDetection::calculateClosestPoint | hkpBoxBoxCollisionDetection.obj | retail, object-file gap fill, high
+// pdb params: contact
+// pdb locals: fpp, fcp, manifold, ccp
+__declspec(noinline) hkBool& BoxAgent::hkpBoxBoxCollisionDetection_calculateClosestPoint(hkBool& valid, hkContactPoint& outPoint)
 {
     valid = false;
     MyDb0920 local_80;
@@ -1186,7 +1195,7 @@ struct ClosestPointDetector
     Vec4 u1;             // 0xc0
     Vec4 u2;             // 0xd0
     mutable Vec4 pl[5];  // 0xe0..0x12f
-    __declspec(noinline) int hkpBoxBoxCollisionDetection_findClosestPoint(Arg0& ref0, KeyEntry& ref1, Out& ref2) const;
+    __declspec(noinline) int hkpBoxBoxCollisionDetection_findClosestPoint(Arg0& manifold, KeyEntry& fcp, Out& fpp) const;
     ClosestPointBool TestEdgeEdgeContact(Out* out) const;
 };
 static ClosestPointQuad load4(const Vec4& v)
@@ -1381,11 +1390,14 @@ static __forceinline const float* getSignAddress(const Out& out)
 }
 // @fnv 0x00db1ed0
 // src: XBOX_PDB 0x00db1ed0
-__declspec(noinline) int ClosestPointDetector::hkpBoxBoxCollisionDetection_findClosestPoint(Arg0& ref0, KeyEntry& ref1, Out& ref2) const
+// pdb: hkpBoxBoxCollisionDetection::findClosestPoint | hkpBoxBoxCollisionDetection.obj | retail, upstream name already matches, high
+// pdb params: manifold, fcp, fpp
+// pdb locals: featuresToConsider, result
+__declspec(noinline) int ClosestPointDetector::hkpBoxBoxCollisionDetection_findClosestPoint(Arg0& manifold, KeyEntry& fcp, Out& fpp) const
 {
-    Arg0* arg0 = &ref0;
-    KeyEntry* arg1 = &ref1;
-    Out* out = &ref2;
+    Arg0* arg0 = &manifold;
+    KeyEntry* arg1 = &fcp;
+    Out* out = &fpp;
     volatile float signF30;
     unsigned int bits;
     int counter = 8;
@@ -2558,7 +2570,10 @@ __forceinline void NDetector::extra(NManifold& m, NFeature keyA) const
 }
 // @fnv 0x00db2960
 // src: XBOX_PDB 0x00db2960
-__declspec(noinline) void NDetector::hkpBoxBoxCollisionDetection_calcManifold(NManifold& m) const
+// pdb: hkpBoxBoxCollisionDetection::calcManifold | hkpBoxBoxCollisionDetection.obj | retail, upstream name already matches, high
+// pdb params: manifold
+// pdb locals: minTol4, fpp, fcp, assertBuf, ostr
+__declspec(noinline) void NDetector::hkpBoxBoxCollisionDetection_calcManifold(NManifold& manifold) const
 {
     union
     {
@@ -2567,15 +2582,15 @@ __declspec(noinline) void NDetector::hkpBoxBoxCollisionDetection_calcManifold(NM
     };
     UpdateFields_00d40940();
     NRecord* saved = output->cursor;
-    refresh(m);
-    NBool request = query(m);
-    if (!request && m.complete)
+    refresh(manifold);
+    NBool request = query(manifold);
+    if (!request && manifold.complete)
         return;
     int intersect;
-    if (m.size())
+    if (manifold.size())
     {
         minimum = saved->distance();
-        for (int i = m.size() - 1; i > 0; --i)
+        for (int i = manifold.size() - 1; i > 0; --i)
             minimum = NMin(minimum, saved[i].distance());
         minimum -= tolerance4(0) * DAT_0103c7c8;
         NV bound;
@@ -2589,17 +2604,17 @@ __declspec(noinline) void NDetector::hkpBoxBoxCollisionDetection_calcManifold(NM
     NFeature& feature = *new (&keyBits) NFeature;
     NCache cache;
     cache.normal.setZero4();
-    int valid = hkpBoxBoxCollisionDetection_findClosestPoint(m, feature, cache);
+    int valid = hkpBoxBoxCollisionDetection_findClosestPoint(manifold, feature, cache);
     if (request && valid)
     {
-        normalFromCache(m.normal, feature, cache, valid == 2);
-        if (m.normalSet)
-            compact(m);
+        normalFromCache(manifold.normal, feature, cache, valid == 2);
+        if (manifold.normalSet)
+            compact(manifold);
     }
     if (valid != 2)
         return;
-    if (AddContactPoint(m, cache, feature) == 0)
-        extra(m, feature);
+    if (AddContactPoint(manifold, cache, feature) == 0)
+        extra(manifold, feature);
 }
 
 }

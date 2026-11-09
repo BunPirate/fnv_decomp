@@ -40,6 +40,7 @@ struct FUN_00791a80_shell
 };
 
 // @fnv 0x00791a80
+// pdb: LoveTesterMenu::LoveTesterButton::`scalar deleting destructor' | LoveTesterMenu.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_00791a80_shell::FUN_00791a80(unsigned int flags)
 {
     FUN_00795dc0();
@@ -136,6 +137,7 @@ struct FUN_00795dc0
     ~FUN_00795dc0();
 };
 // @fnv 0x00795dc0
+// pdb: LoveTesterMenu::LoveTesterButton::~LoveTesterButton | LoveTesterMenu.obj | retail, object-file run extension, low
 FUN_00795dc0::~FUN_00795dc0()
 {
     m = 0;
@@ -234,6 +236,9 @@ struct Param00795390
 // Calls m7 on the player's inner object with p->unk14, then invokes f60 on p->unk4 using the indexed arr entry from DAT_011da2c8.
 // @fnv 0x00795390
 // src: GUESS 0x00795390 (confidence: low)
+// pdb: LoveTesterMenu::RefreshActorValue | LoveTesterMenu.obj | debug, object-file run extension, low
+// pdb params: apTextItem
+// pdb locals: iav
 void NiSourceTexture_UpdateState_00795390(Param00795390* pParam)
 {
     int t = g_thePlayer->inner.m7(pParam->unk14);
@@ -246,12 +251,13 @@ extern LoveTesterMenu* DAT_011da2c8;
 
 // If the LoveTesterMenu singleton exists and its flag is set, calls StepPosition with 1 and then FUN_00795e20 on it.
 // @fnv 0x00795c60
-// src: GUESS 0x00795c60 (confidence: medium)
-void Object_StepLoveTesterPositionWithOne()
+// src: XBOX_RETAIL_PDB 0x00795c60
+// pdb: LoveTesterMenu::NextPage | LoveTesterMenu.obj | retail, call graph, high
+void LoveTesterMenu_NextPage()
 {
     if (DAT_011da2c8 && DAT_011da2c8->m_bState54)
     {
-        DAT_011da2c8->StepPosition(1);
+        DAT_011da2c8->TurnPage(1);
         DAT_011da2c8->RefreshPage();
     }
 }
@@ -261,12 +267,13 @@ namespace fnv_00795ca0 {
 extern LoveTesterMenu* DAT_011da2c8;
 
 // @fnv 0x00795ca0
-// src: GUESS 0x00795ca0 (confidence: medium)
-void __cdecl Object_StepLoveTesterPositionWithZero()
+// src: XBOX_RETAIL_PDB 0x00795ca0
+// pdb: LoveTesterMenu::PreviousPage | LoveTesterMenu.obj | retail, object-file gap fill, high
+void __cdecl LoveTesterMenu_PreviousPage()
 {
     if (DAT_011da2c8 && DAT_011da2c8->m_bState54)
     {
-        DAT_011da2c8->StepPosition(0);
+        DAT_011da2c8->TurnPage(0);
         DAT_011da2c8->RefreshPage();
     }
 }
@@ -292,6 +299,9 @@ struct Player_007927a0
 extern Player_007927a0* g_thePlayer;
 
 // @fnv 0x007927a0
+// pdb: LoveTesterMenu::DoKey | LoveTesterMenu.obj | debug, vtable slot, medium
+// pdb params: aiKey
+// pdb locals: bhandled
 bool LoveTesterMenu::HandleKeyInput(int aiKey)
 {
     switch (aiKey)
@@ -329,6 +339,7 @@ bool LoveTesterMenu::HandleKeyInput(int aiKey)
 // Sums the player's avOwner values for indices 5 through 11 and returns the total.
 // @fnv 0x00794d80
 // src: XBOX_PDB 0x00794d80
+// pdb: SPECIALBookMenu::GetTotalPointsUsed | SPECIALBookMenu.obj | retail, upstream name already matches, high
 int LoveTesterMenu::SPECIALBookMenu_GetTotalPointsUsed()
 {
     return g_thePlayer->avOwner.GetValue(5) + g_thePlayer->avOwner.GetValue(6) + g_thePlayer->avOwner.GetValue(7) +
@@ -346,6 +357,7 @@ void SetTargetFromGlobalState(Outer* apOuter)
         apOuter->q->Target(0, 0, (unsigned int)(NiSourceTexture*)DAT_011da2c8->tex[16]);
 }
 
+// pdb: class Date, size 0x4 (here 0xc), 2 members
 struct Date
 {
     int _0;
@@ -360,8 +372,9 @@ void __cdecl LoveTesterMenu_Close(void);
 extern int _data_011c16bc;
 
 // @fnv 0x00795ce0
-// src: GUESS 0x00795ce0 (confidence: low)
-void __cdecl Object_ProcessState_00795ce0(void* apButton)
+// src: XBOX_RETAIL_PDB 0x00795ce0
+// pdb: LoveTesterMenu::CloseCallback | LoveTesterMenu.obj | retail, string-set bridge, high
+void __cdecl LoveTesterMenu_CloseCallback(void* apButton)
 {
     if (DAT_011da2c8 && DAT_011da2c8->SPECIALBookMenu_GetTotalPointsUsed() == DAT_011da2c8->m_iEntryCount)
     {
@@ -402,6 +415,8 @@ void BSShaderUtil_AccumulateScene(unsigned int, void*, CameraHelper*);
 void FUN_00b6c0d0(unsigned int, int, int);
 // @fnv 0x007948d0
 // src: COMMUNITY 0x007948d0
+// pdb: LoveTesterMenu::Draw3DElements | LoveTesterMenu.obj | retail, upstream name already matches, high
+// pdb locals: spaccum, apCuller, pcam, apSceneGraph
 void LoveTesterMenu_Draw3DElements()
 {
     if (!DAT_011da2c8 || !(unsigned int)DAT_011da2f4)
@@ -427,17 +442,20 @@ struct FUN_00794e70
     int unk04;
     NiPointer<NiAVObject> spRetainedObject;
     NiProperty* pProperty;
-    FUN_00794e70(int a, int b, const char* name);
+    FUN_00794e70(int apButtonClick, int apRefresh, const char* apButtonName);
 };
 
 // Stores two ints, looks up a scene object by name, and stores its property 3 if its type is between 8 and 12, else null.
 // @fnv 0x00794e70
-FUN_00794e70::FUN_00794e70(int iFirst, int iSecond, const char* pcObjectName) : spRetainedObject(0)
+// pdb: LoveTesterMenu::LoveTesterButton::LoveTesterButton | LoveTesterMenu.obj | retail, call graph, high
+// pdb params: apButtonClick, apRefresh, apButtonName
+// pdb locals: pobj
+FUN_00794e70::FUN_00794e70(int apButtonClick, int apRefresh, const char* apButtonName) : spRetainedObject(0)
 {
-    unk00 = iFirst;
-    unk04 = iSecond;
-    spRetainedObject = DAT_011da2c8->root->GetObjectByName(NiFixedString(pcObjectName));
-    NiAVObject* obj = DAT_011da2c8->root->GetObjectByName(NiFixedString(pcObjectName));
+    unk00 = apButtonClick;
+    unk04 = apRefresh;
+    spRetainedObject = DAT_011da2c8->root->GetObjectByName(NiFixedString(apButtonName));
+    NiAVObject* obj = DAT_011da2c8->root->GetObjectByName(NiFixedString(apButtonName));
     pProperty = (!obj->GetProperty(3) ? false : (obj->GetProperty(3)->Type() >= 8 && obj->GetProperty(3)->Type() <= 12))
                     ? obj->GetProperty(3)
                     : 0;
@@ -454,32 +472,34 @@ struct FUN_007950b0
     int unk14;
     int unk18;
 
-    FUN_007950b0(int a1, const char* pcName, const char* pcName2, int a4, bool bFirst, int a6);
+    FUN_007950b0(int apRefreshFieldCallback, const char* apTextObjectName1, const char* apTextObjectName2, int aeActorValue, bool bElementOnDynamicGeometry, int anThresholdToLightAt);
 };
 
 // Looks up two named NiAVObjects on one of two scene nodes and stores their property of type 3 when its value is between 8 and 12.
 // @fnv 0x007950b0
-FUN_007950b0::FUN_007950b0(int a1, const char* pcObjectName, const char* pcSecondObjectName, int aiParam4,
-                           bool abUseFirstNode, int aiParam6)
+// pdb: LoveTesterMenu::LoveTesterTextItem::LoveTesterTextItem | LoveTesterMenu.obj | retail, call graph, high
+// pdb params: apRefreshFieldCallback, apTextObjectName1, apTextObjectName2, aeActorValue, bElementOnDynamicGeometry, anThresholdToLightAt
+FUN_007950b0::FUN_007950b0(int apRefreshFieldCallback, const char* apTextObjectName1, const char* apTextObjectName2, int aeActorValue,
+                           bool bElementOnDynamicGeometry, int anThresholdToLightAt)
 {
-    unk00 = a1;
-    unk14 = aiParam4;
-    unk18 = aiParam6;
-    if (abUseFirstNode)
-        unk0C = DAT_011da2c8->root->GetObjectByName(NiFixedString(pcObjectName));
+    unk00 = apRefreshFieldCallback;
+    unk14 = aeActorValue;
+    unk18 = anThresholdToLightAt;
+    if (bElementOnDynamicGeometry)
+        unk0C = DAT_011da2c8->root->GetObjectByName(NiFixedString(apTextObjectName1));
     else
-        unk0C = ((const NiAVObject*)DAT_011da2c8->cabinet)->GetObjectByName(NiFixedString(pcObjectName));
+        unk0C = ((const NiAVObject*)DAT_011da2c8->cabinet)->GetObjectByName(NiFixedString(apTextObjectName1));
     unk04 = (unk0C->GetProperty(3) == 0
                  ? 0
                  : (unk0C->GetProperty(3)->FUN_00441110() >= 8 && unk0C->GetProperty(3)->FUN_00441110() <= 12))
                 ? unk0C->GetProperty(3)
                 : 0;
-    if (pcSecondObjectName)
+    if (apTextObjectName2)
     {
-        if (abUseFirstNode)
-            unk10 = DAT_011da2c8->root->GetObjectByName(NiFixedString(pcSecondObjectName));
+        if (bElementOnDynamicGeometry)
+            unk10 = DAT_011da2c8->root->GetObjectByName(NiFixedString(apTextObjectName2));
         else
-            unk10 = ((const NiAVObject*)DAT_011da2c8->cabinet)->GetObjectByName(NiFixedString(pcSecondObjectName));
+            unk10 = ((const NiAVObject*)DAT_011da2c8->cabinet)->GetObjectByName(NiFixedString(apTextObjectName2));
         unk08 = (unk10->GetProperty(3) == 0
                      ? 0
                      : (unk10->GetProperty(3)->FUN_00441110() >= 8 && unk10->GetProperty(3)->FUN_00441110() <= 12))
@@ -503,6 +523,9 @@ struct DigitView
     NiAVObject* onesVisibility;
 };
 // @fnv 0x007953f0
+// pdb: LoveTesterMenu::RefreshTotalPointsText | LoveTesterMenu.obj | debug, object-file run extension, low
+// pdb params: apTextItem
+// pdb locals: ipoints
 void __cdecl UpdateDigitDisplay(DigitView* view)
 {
     if (!view->tens || !view->ones)
@@ -572,6 +595,9 @@ struct CallbackInput
 };
 // @fnv 0x007957c0
 // src: GUESS 0x007957c0 (confidence: medium)
+// pdb: LoveTesterMenu::DecreaseActorValue | LoveTesterMenu.obj | retail, object-file run extension, low
+// pdb params: apAVButton, eav
+// pdb locals: ioldValue, psoundHand
 void __cdecl Object_DecreaseLoveTesterActorValue(CallbackInput* input)
 {
     if (!DAT_011da2c8)
@@ -599,6 +625,9 @@ struct PlayerOps
 int BSMAX_00647b70(int, int);
 // @fnv 0x007958e0
 // src: GUESS 0x007958e0 (confidence: medium)
+// pdb: LoveTesterMenu::DecreaseCurrentActorValue | LoveTesterMenu.obj | retail, object-file run extension, low
+// pdb params: apAVButton, eav
+// pdb locals: ioldValue, psoundHand
 void Object_DecreaseCurrentLoveTesterActorValue()
 {
     if (!DAT_011da2c8)
@@ -649,10 +678,13 @@ extern const char str_01074bc8[];
 extern const char str_01074bb8[];
 // Builds texture paths with _sprintf_s and FUN_004b7240, then creates each texture via g_TES->CreateTextureImage into tex[0..26].
 // @fnv 0x00796100
+// src: XBOX_RETAIL_PDB 0x00796100
+// pdb: LoveTesterMenu::LoadButtonAndTextImages | LoveTesterMenu.obj | retail, string-set bridge, high
+// pdb locals: strPlatform, strtmp, pfilepath, i
 }  // namespace fnv_00796100
 
 // src: COMMUNITY 0x00796100
-void LoveTesterMenu::VigorTester_InitTextures()
+void LoveTesterMenu::LoadButtonAndTextImages()
 {
     using namespace fnv_00796100;
     char bufB[0x104];
@@ -740,6 +772,8 @@ void* LoveTesterMenu_GetClassStatic();
 IntegerBooleanHandler* Tile_GetMenuByClass(void*);
 // @fnv 0x007917a0
 // src: XBOX_PDB 0x007917a0
+// pdb: LoveTesterMenu::Close | LoveTesterMenu.obj | retail, upstream name already matches, high
+// pdb locals: ptile, epage, iindex
 void __cdecl LoveTesterMenu_Close()
 {
     int menu;
@@ -826,6 +860,8 @@ struct TimeGlobal
 };
 extern TimeGlobal g_timeGlobal;
 // @fnv 0x00791ab0
+// pdb: LoveTesterMenu::DoIdle | LoveTesterMenu.obj | retail, vtable slot, high
+// pdb locals: update, pspecialBookGeomController, pspecialBookGeomControllerManager, pseq, pmt, UpdateData
 void LoveTesterMenu::UpdateAnimation()
 {
     if (!Interface_IsTopMenuID(0x432))
@@ -937,12 +973,15 @@ extern SKPlayer* g_pSKPlayer;
 
 // In menu mode 0x432, maps a key to a click action (3 or 2) on the selected entry when mode and actor-value limits allow, returning whether it handled the key.
 // @fnv 0x00791cf0
-bool LoveTesterMenu::HandleMenuKey(int aiKey, int aiUnused)
+// pdb: LoveTesterMenu::DoGamepad | LoveTesterMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: eav
+bool LoveTesterMenu::HandleMenuKey(int aiButton, int afValue)
 {
     if (SKIsMenuMode(0x432))
     {
         int iIndex = GetSelectedIndex();
-        switch (aiKey)
+        switch (aiButton)
         {
         case 4:
             if (iMode != 8)
@@ -1134,11 +1173,14 @@ int Renderer_GetScreenWidth();
 float tan_0057dd70(float);
 struct SurgeryCameraMenu
 {
-    FUN_00a712f0* CreateSurgeryCamera();
+    FUN_00a712f0* LoveTesterMenu_InitCamera();
 };
 // Allocates and configures a new camera object from the aspect ratio, FOV and screen ratio settings, then returns it.
 // @fnv 0x007945f0
-FUN_00a712f0* SurgeryCameraMenu::CreateSurgeryCamera()
+// src: XBOX_RETAIL_PDB 0x007945f0
+// pdb: LoveTesterMenu::InitCamera | LoveTesterMenu.obj | retail, object-file run extension, high
+// pdb locals: theta, faspectDelta, fr, fHeightByWidth, pcam, port, UpdateData2
+FUN_00a712f0* SurgeryCameraMenu::LoveTesterMenu_InitCamera()
 {
     FUN_00a712f0* k = new FUN_00a712f0;
     NiColorA ba(0.0f, 1.0f, 1.0f, 0.0f);
@@ -1186,10 +1228,14 @@ extern const char* downNames170[];
 extern const char rtti170;
 // Moves position up or down within bounds, plays page-turn or limit sounds, and triggers the matching animation sequence on the scene controller.
 // @fnv 0x007949f0
-bool LoveTesterMenu::StepPosition(bool increase)
+// src: XBOX_RETAIL_PDB 0x007949f0
+// pdb: LoveTesterMenu::TurnPage | LoveTesterMenu.obj | retail, string-set bridge, high
+// pdb params: bForward
+// pdb locals: brunAnim, psoundHand, pSPECIALBookGeomController, pSPECIALBookGeomControllerManager, pseq
+bool LoveTesterMenu::TurnPage(bool bForward)
 {
     bool changed = false;
-    if (increase)
+    if (bForward)
     {
         increasing170 = true;
         if (position < 8)
@@ -1317,6 +1363,9 @@ struct WorkerActor
 };
 // @fnv 0x00795a00
 // src: GUESS 0x00795a00 (confidence: medium)
+// pdb: LoveTesterMenu::IncreaseActorValue | LoveTesterMenu.obj | retail, object-file run extension, low
+// pdb params: apAVButton, eav
+// pdb locals: ioldValue, psoundHand
 void Object_IncreaseLoveTesterActorValue(WorkerButton* button)
 {
     if (!DAT_011da2c8)
@@ -1353,6 +1402,8 @@ void FUN_00b6c0d0(unsigned int, int, int);
 // If DAT_011daa38 and DAT_011daa9c are set, configures the camera for scene DAT_011daa9c with a node from FUN_007fd640 and calls FUN_00b6bee0/FUN_00b6c0d0.
 // @fnv 0x007c9ca0
 // src: COMMUNITY 0x007c9ca0
+// pdb: SPECIALBookMenu::Draw3DElements | SPECIALBookMenu.obj | retail, upstream name already matches, high
+// pdb locals: spaccum, apCuller, pcam, apSceneGraph
 void __cdecl SPECIALBookMenu_Draw3DElements()
 {
     if (!DAT_011daa38 || !DAT_011daa9c)
@@ -1395,6 +1446,9 @@ struct Button_7caa80
     int stat;
 };
 // @fnv 0x007caa80
+// pdb: SPECIALBookMenu::IncreaseActorValue | SPECIALBookMenu.obj | debug, object-file run extension, low
+// pdb params: apAVButton, eav
+// pdb locals: ioldValue, psoundHand
 void __cdecl PlaySpecialBookSoundAndSetStat(Button_7caa80* button)
 {
     if (!DAT_011daa38)
@@ -1414,13 +1468,16 @@ void __cdecl PlaySpecialBookSoundAndSetStat(Button_7caa80* button)
             ((Player_7caa80*)g_thePlayer)->PlayerCharacter_SetActorBaseValue(key, MinInt(value + 1, 10));
         }
     }
-    DAT_011daa38->InvokeCallbacksForSlot();
+    DAT_011daa38->SPECIALBookMenu_RefreshPage();
 }
 }  // namespace fnv_007caa80
 
 int __cdecl MinInt(int, int);
 
 // @fnv 0x00795b30
+// pdb: LoveTesterMenu::IncreaseCurrentActorValue | LoveTesterMenu.obj | retail, object-file run extension, low
+// pdb params: apAVButton, eav
+// pdb locals: ioldValue, psoundHand
 void __cdecl UpdateLoveTester()
 {
     if (!DAT_011da2c8)
@@ -1661,13 +1718,15 @@ namespace fnv_007928e0 {
 void __cdecl Object_DecreaseCurrentLoveTesterActorValue(void*);
 void __cdecl UpdateLoveTester(void*);
 void __cdecl LoveTesterMenu_UpdateState_00795630(void*);
-void __cdecl Object_StepLoveTesterPositionWithOne(void*);
-void __cdecl Object_StepLoveTesterPositionWithZero(void*);
+void __cdecl LoveTesterMenu_NextPage(void*);
+void __cdecl LoveTesterMenu_PreviousPage(void*);
 void __cdecl NiSourceTexture_UpdateState_00795390(void*);
 void __cdecl Object_IncreaseLoveTesterActorValue(void*);
 int __cdecl BSsprintf(char*, unsigned int, const char*, ...);
 // Loads the front and cabinet NIF scenes, positions them, adds lights and creates the digit, value, adjustment and button widgets for the menu.
 // @fnv 0x007928e0
+// pdb: LoveTesterMenu::InitMachine | LoveTesterMenu.obj | retail, string-set bridge, high
+// pdb locals: rotMod, pPointsToAwardNum, update, fradius, pDownButton, pUpButton, pNextPage, inumlights, bLowDef, pSPECIALBookGeomController, cameraRot, UpdateData1, UpdateData2, pActorValueNumber, pSPECIALBookGeomControllerManager, pseq, pmt, UpdateData, ud, plight, iter, name, subsectiter, pGlow
 }  // namespace fnv_007928e0
 
 void LoveTesterMenu::Init()
@@ -1759,9 +1818,9 @@ void LoveTesterMenu::Init()
     DAT_011da2c8->controls.FUN_007cb2e0(decrease27);
     decrease27 = new Adjust109((void*)fnv_007928e0::UpdateLoveTester, (void*)fnv_007928e0::LoveTesterMenu_UpdateState_00795630, "P1_Increase_Btn:0", -1, 0);
     DAT_011da2c8->controls.FUN_007cb2e0(decrease27);
-    button12 = new Button109((void*)fnv_007928e0::Object_StepLoveTesterPositionWithOne, (void*)SetTargetFromGlobalState, "P1_RT_Btn:0");
+    button12 = new Button109((void*)fnv_007928e0::LoveTesterMenu_NextPage, (void*)SetTargetFromGlobalState, "P1_RT_Btn:0");
     DAT_011da2c8->controls.FUN_007cb2e0(button12);
-    button12 = new Button109((void*)fnv_007928e0::Object_StepLoveTesterPositionWithZero, (void*)Object_InvokeVirtualMethod_00795780, "P1_LT_Btn:0");
+    button12 = new Button109((void*)fnv_007928e0::LoveTesterMenu_PreviousPage, (void*)Object_InvokeVirtualMethod_00795780, "P1_LT_Btn:0");
     DAT_011da2c8->controls.FUN_007cb2e0(button12);
     for (int row = 1; row < 10; ++row)
     {
@@ -1802,7 +1861,7 @@ void LoveTesterMenu::Init()
     }
     total28 = new Label109((void*)UpdateDigitDisplay, "P1_PointsRemainDigit1:0", "P1_PointsRemainDigit2:0", -1, 1, 0);
     totals.FUN_007cb2e0(total28);
-    button12 = new Button109((void*)fnv_007928e0::Object_StepLoveTesterPositionWithOne, (void*)SetTargetFromGlobalState, "LookInside_Btn:0");
+    button12 = new Button109((void*)fnv_007928e0::LoveTesterMenu_NextPage, (void*)SetTargetFromGlobalState, "LookInside_Btn:0");
     misc.FUN_007cb2e0(button12);
     value4 = new Label109((void*)fnv_007928e0::NiSourceTexture_UpdateState_00795390, "Index_StrengthPointVal:0", 0, 5, 1, 0);
     values.FUN_007cb2e0(value4);
@@ -1860,11 +1919,11 @@ void LoveTesterMenu::Init()
     increase7 =
         new Adjust109((void*)fnv_007928e0::Object_IncreaseLoveTesterActorValue, (void*)fnv_007928e0::LoveTesterMenu_UpdateState_00795630, "Index_LuckIncrease_Btn:0", 11, 2, value4, total28);
     adjustments.FUN_007cb2e0(increase7);
-    button12 = new Button109((void*)Object_ProcessState_00795ce0, (void*)SetTargetFromGlobalState, "AllDone_Btn:0");
+    button12 = new Button109((void*)LoveTesterMenu_CloseCallback, (void*)SetTargetFromGlobalState, "AllDone_Btn:0");
     adjustments.FUN_007cb2e0(button12);
-    VigorTester_InitTextures();
+    LoadButtonAndTextImages();
     DAT_011da2c8->RefreshPage();
-    fnv_007928e0::Object_StepLoveTesterPositionWithOne(0);
+    fnv_007928e0::LoveTesterMenu_NextPage(0);
 }
 
 struct Cb_WM
@@ -1881,6 +1940,8 @@ struct Lvl_WM
 // When idx is at most 8, processes level entries and invokes pfn0 or pfn4 across the selected callback arrays.
 // @fnv 0x00795e20
 // src: XBOX_PDB 0x00795e20
+// pdb: LoveTesterMenu::RefreshPage | LoveTesterMenu.obj | retail, upstream name already matches, high
+// pdb locals: eRelatedStat, iav, iter, thresh, i
 void LoveTesterMenu::RefreshPage()
 {
     int iLevel;
@@ -2060,10 +2121,13 @@ extern float DAT_011ad84c;
 extern float DAT_011ad848;
 // Handles menu button cases for navigation, value changes, and ray-tested clicks on menu tiles.
 // @fnv 0x00791e40
-void LoveTesterMenu::HandleButton(int button, int unused)
+// pdb: LoveTesterMenu::DoClick | LoveTesterMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: bPageTurned, inewValue, ioldValue, eav, cy, pim, cx, iindex, dir, origin, activatePick, ipickIndex, ppickRecord
+void LoveTesterMenu::HandleButton(int aiID, int apTarget)
 {
     bool local720986 = false;
-    switch (button)
+    switch (aiID)
     {
     case 4:
         if (SPECIALBookMenu_GetTotalPointsUsed() == available)
@@ -2080,10 +2144,10 @@ void LoveTesterMenu::HandleButton(int button, int unused)
     case 1:
         if (finished)
         {
-            if (button == 0)
-                local720986 = StepPosition(true);
+            if (aiID == 0)
+                local720986 = TurnPage(true);
             else
-                local720986 = StepPosition(false);
+                local720986 = TurnPage(false);
             RefreshPage();
         }
         break;
@@ -2094,7 +2158,7 @@ void LoveTesterMenu::HandleButton(int button, int unused)
         if (this->LoveTesterMenu_GetCurrentStatesActorValue() != -1)
         {
             local972322 = ((InputPlayer*)g_thePlayer)->owner.GetBase(this->LoveTesterMenu_GetCurrentStatesActorValue());
-            if (button == 2)
+            if (aiID == 2)
             {
                 if (SPECIALBookMenu_GetTotalPointsUsed() < available)
                     ((PlayerSetter*)g_thePlayer)
@@ -2111,7 +2175,7 @@ void LoveTesterMenu::HandleButton(int button, int unused)
         {
             int local294918 = special + 4;
             local972322 = ((InputPlayer*)g_thePlayer)->owner.GetBase(local294918);
-            if (button == 2)
+            if (aiID == 2)
             {
                 if (SPECIALBookMenu_GetTotalPointsUsed() < available)
                     ((PlayerSetter*)g_thePlayer)->PlayerCharacter_SetActorBaseValue(local294918, MinInt(local972322 + 1, 10));
@@ -2229,6 +2293,9 @@ struct FUN_00794ff0 : FUN_00794e70
 
 // Initialises m_24 with iParam and appends iCount Animation* arguments from the variadic list to m_kAnims.
 // @fnv 0x00794ff0
+// pdb: LoveTesterMenu::ActorValueButton::ActorValueButton | LoveTesterMenu.obj | retail, call graph, high
+// pdb params: apButtonClick, apRefresh, apButtonName, aeActorValue, aiNumAffectedFields, pargs
+// pdb locals: i
 FUN_00794ff0::FUN_00794ff0(int aiParam1, int aiParam2, const char* pName, int iParam, int aiAnimCount, ...)
     : FUN_00794e70(aiParam1, aiParam2, pName)
 {

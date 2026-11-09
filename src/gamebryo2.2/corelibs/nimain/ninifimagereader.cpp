@@ -5,6 +5,8 @@
 extern "C" int __cdecl NiStricmp(char const*, char const*);
 
 // @fnv 0x00a8ad80
+// pdb: NiNIFImageReader::CanReadFile | NiNIFImageReader.obj | retail, string-set bridge, high
+// pdb params: pcFileExtension
 char __stdcall IsNifExtension(const char* pcFileExtension)
 {
     return NiStricmp(pcFileExtension, ".nif") == 0;
@@ -107,6 +109,7 @@ class FUN_00a8ae50 : public A8AE50ImageReader
 
 // Constructs the object, initializing its critical section via the base A8AE50ImageReader constructor.
 // @fnv 0x00a8ae50
+// pdb: NiNIFImageReader::NiNIFImageReader | NiNIFImageReader.obj | retail, object-file gap fill, high
 FUN_00a8ae50::FUN_00a8ae50()
 {}
 
@@ -182,13 +185,14 @@ struct A8Class
     int unkFC;
     A8NiStream unk100;
 
-    void __thiscall ProcessState_00a8ada0();
+    void __thiscall NiNIFImageReader_dtor();
 };
 
 // Sets unk00 to DAT_0109f3e4, calls unk100.FUN_00a65300, sets unk00 to DAT_0109f3d0, and deletes the critical section at unk80.
 // @fnv 0x00a8ada0
-// src: GUESS 0x00a8ada0 (confidence: low)
-void __thiscall A8Class::ProcessState_00a8ada0()
+// src: XBOX_RETAIL_PDB 0x00a8ada0
+// pdb: NiNIFImageReader::~NiNIFImageReader | NiNIFImageReader.obj | retail, object-file gap fill, high
+void __thiscall A8Class::NiNIFImageReader_dtor()
 {
     unk00 = DAT_0109f3e4;
     unk100.Object_ReleaseStorage_00a65300();
@@ -224,8 +228,8 @@ class FUN_00a8add0_cls
     virtual void v1();
     virtual FUN_00a8add0_cls* v2(const char* pcFileExtension, int iFlag);
 
-    bool NiNIFImageReader_ReadHeader(const char* pcFileExtension, unsigned int* pOut0, unsigned int* pOut1, FUN_00a8add0_blob* pBlob,
-                      bool* pFlag, unsigned int* pOut2);
+    bool NiNIFImageReader_ReadHeader(const char* kIst, unsigned int* uiWidth, unsigned int* uiHeight, FUN_00a8add0_blob* kFormat,
+                      bool* bMipmap, unsigned int* uiFaces);
 
     long m_04;
     FUN_00a8add0_blob m_08;
@@ -243,18 +247,21 @@ class FUN_00a8add0_cls
 // Calls v2 with pcFileExtension, then copies fields from the returned object to the output parameters.
 // @fnv 0x00a8add0
 // src: GAMEBRYO_LIB 0x00a8add0
-bool FUN_00a8add0_cls::NiNIFImageReader_ReadHeader(const char* pcFileExtension, unsigned int* pOut0, unsigned int* pOut1,
-                                    FUN_00a8add0_blob* pBlob, bool* pFlag, unsigned int* pOut2)
+// pdb: NiNIFImageReader::ReadHeader | NiNIFImageReader.obj | retail, upstream name already matches, high
+// pdb params: kIst, uiWidth, uiHeight, kFormat, bMipmap, uiFaces
+// pdb locals: spData
+bool FUN_00a8add0_cls::NiNIFImageReader_ReadHeader(const char* kIst, unsigned int* uiWidth, unsigned int* uiHeight,
+                                    FUN_00a8add0_blob* kFormat, bool* bMipmap, unsigned int* uiFaces)
 {
-    FUN_00a8add0_cls* obj = this->v2(pcFileExtension, 0);
+    FUN_00a8add0_cls* obj = this->v2(kIst, 0);
     if (obj != 0)
     {
         InterlockedIncrement(&obj->m_04);
-        *pOut0 = *obj->m_54;
-        *pOut1 = *obj->m_58;
-        *pBlob = obj->m_08;
-        *pFlag = obj->m_60 > 1;
-        *pOut2 = obj->m_6c;
+        *uiWidth = *obj->m_54;
+        *uiHeight = *obj->m_58;
+        *kFormat = obj->m_08;
+        *bMipmap = obj->m_60 > 1;
+        *uiFaces = obj->m_6c;
         if (InterlockedDecrement(&obj->m_04) == 0)
         {
             obj->v1();
@@ -276,7 +283,7 @@ struct FUN_00a8ae80_member
 
 struct FUN_00a8ae80_pool
 {
-    void Free(void* apMemory);
+    void Free(void* apMem);
 };
 extern FUN_00a8ae80_pool DAT_011f6238;
 
@@ -348,6 +355,7 @@ struct FUN_00a8ae80_cls
 
 // Calls Cleanup, updates m_vptr twice, deletes m_cs, and passes this to DAT_011f6238.Free when acFlags bit 0 is set.
 // @fnv 0x00a8ae80
+// pdb: NiNIFImageReader::`scalar deleting destructor' | NiNIFImageReader.obj | retail, object-file gap fill, high
 FUN_00a8ae80_cls* FUN_00a8ae80_cls::FUN_00a8ae80(unsigned char acFlags)
 {
     FUN_00a8ae80_member* pMember = &m_100;
@@ -363,7 +371,7 @@ FUN_00a8ae80_cls* FUN_00a8ae80_cls::FUN_00a8ae80(unsigned char acFlags)
 }
 }  // namespace fnv_00a8ae80
 
-extern int DAT_011f4a90;
+extern int NiPixelData_ms_RTTI;
 
 struct Node
 {
@@ -387,19 +395,22 @@ struct SubObj
 
 struct FnvMgr
 {
-    Obj* NiNIFImageReader_ReadFile(const char* name, int unused);
+    Obj* NiNIFImageReader_ReadFile(const char* kIst, int pkOptDest);
 };
 
 // Calls sub->v04 with name, then returns the object if its node list contains DAT_011f4a90.
 // @fnv 0x00a8aec0
 // src: GAMEBRYO_SRC 0x00a8aec0
-Obj* FnvMgr::NiNIFImageReader_ReadFile(const char* name, int unused)
+// pdb: NiNIFImageReader::ReadFile | NiNIFImageReader.obj | retail, upstream name already matches, high
+// pdb params: kIst, pkOptDest
+// pdb locals: pkPixelData
+Obj* FnvMgr::NiNIFImageReader_ReadFile(const char* kIst, int pkOptDest)
 {
     CRITICAL_SECTION* cs = (CRITICAL_SECTION*)((char*)this + 0x80);
     EnterCriticalSection(cs);
     SubObj* pSubObj = (SubObj*)((char*)this + 0x100);
     pSubObj->Init();
-    pSubObj->v04(name);
+    pSubObj->v04(kIst);
     if (*(int*)((char*)this + 0x328) == 1)
     {
         Obj* pObj = **(Obj***)((char*)this + 0x320);
@@ -410,7 +421,7 @@ Obj* FnvMgr::NiNIFImageReader_ReadFile(const char* name, int unused)
             {
                 for (Node* pNode = pHead; pNode != 0; pNode = pNode->next)
                 {
-                    if (pNode == (Node*)&DAT_011f4a90)
+                    if (pNode == (Node*)&NiPixelData_ms_RTTI)
                     {
                         LeaveCriticalSection(cs);
                         return pObj;

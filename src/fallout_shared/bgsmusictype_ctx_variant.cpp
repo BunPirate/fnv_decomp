@@ -26,9 +26,9 @@ class BSDirectoryIterator
     int unk24C;
     int unk250;
     int unk254;
-    BSDirectoryIterator(const char* path);
+    BSDirectoryIterator(const char* apcPath);
     ~BSDirectoryIterator();
-    int Next(bool* outDone);
+    int BSSystemDir_NextEntry(bool* abIsComplete);
     bool IsDirectory();
     const char* GetFileName();
 };
@@ -41,6 +41,8 @@ class MusicFileBuilder : public BGSMusicType
 
 // @fnv 0x005917b0
 // src: COMMUNITY 0x005917b0
+// pdb: BGSMusicType::BuildFileList | BGSMusicType.obj | retail, upstream name already matches, high
+// pdb locals: path, filename, bDone, Err, tempMemContext, TestExt, FindDir, psource, Ext
 void MusicFileBuilder::BGSMusicType_BuildFileList()
 {
     AutoMemHelper memContext(11, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\BGSMusicType.cpp", 352);
@@ -51,7 +53,7 @@ void MusicFileBuilder::BGSMusicType_BuildFileList()
     const char* ext_2 = ".mp3";
     bool done4 = false;
     BSDirectoryIterator iter(path5);
-    int res3 = iter.Next(&done4);
+    int res3 = iter.BSSystemDir_NextEntry(&done4);
     while (!done4 && res3 == 0)
     {
         if (!iter.IsDirectory() && iter.GetFileName())
@@ -62,9 +64,9 @@ void MusicFileBuilder::BGSMusicType_BuildFileList()
             {
                 sprintf_s(fullPathA, 0x104, "%s%s", path5, iter.GetFileName());
                 MusicTrack* entry = new MusicTrack(fullPathA);
-                m_kMusicFiles.AddHead(entry);
+                pMusicFileList.AddHead(entry);
             }
         }
-        res3 = iter.Next(&done4);
+        res3 = iter.BSSystemDir_NextEntry(&done4);
     }
 }

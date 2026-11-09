@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class NiAllocator, size 0x4, 0 members
 class NiAllocator
 {
 public:
@@ -18,5 +19,5 @@ public:
     virtual void vf09();
 
     void* __thiscall Allocate(unsigned int size);
-    void __thiscall Deallocate(void* memory);
+    void __thiscall Deallocate(void* apMem);
 };

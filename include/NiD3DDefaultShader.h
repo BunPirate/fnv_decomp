@@ -4,6 +4,7 @@
 
 class NiDynamicEffectState;
 
+// pdb: class NiD3DDefaultShader, size 0x5c, bases: NiD3DShader, 9 members
 class NiD3DDefaultShader : public NiD3DShader
 {
 public:

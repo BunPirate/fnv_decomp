@@ -227,6 +227,9 @@ struct Raycaster
 
 // @fnv 0x00d97a40
 // src: HAVOK_SRC 0x00d97a40
+// pdb: hkpKdTreeCollidableRaycaster::addMidPhaseHit | hkpKdTreeCollidableRaycaster.obj | retail, upstream name already matches, high
+// pdb params: primId
+// pdb locals: assertBuf, ostr, shapeInput
 bool* Raycaster::hkpKdTreeCollidableRaycaster_addMidPhaseHit(bool* const out, Ray* a1)
 {
     Node* v = a1->m_00;

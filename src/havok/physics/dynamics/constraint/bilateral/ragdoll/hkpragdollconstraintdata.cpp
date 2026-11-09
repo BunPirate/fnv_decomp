@@ -69,7 +69,7 @@ __forceinline void Vec4::setZero4()
 // Keep this declaration until those methods are available in the approved header.
 
 __forceinline hkpConstraintAtom::hkpConstraintAtom(FinishingFlag) {}
-__forceinline hkpConstraintData::hkpConstraintData() throw() { m_ulUserData = 0; }
+__forceinline hkpConstraintData::hkpConstraintData() throw() { m_userData = 0; }
 __forceinline hkpConstraintData::~hkpConstraintData() throw() {}
 __forceinline hkTransform::hkTransform() {}
 __forceinline void hkRotation::setIdentity()
@@ -96,18 +96,21 @@ void __stdcall hkpRagdollConstraintData_getRuntimeInfo(int* apUnused, int* apiOu
 }
 
 // @fnv 0x00cde980
+// pdb: hkpRagdollConstraintData::setBodyToNotify | hkpRagdollConstraintData.obj | debug, vtable slot, medium
+// pdb params: bodyIdx
+// pdb locals: assertBuf, ostr
 void __thiscall hkpRagdollConstraintData::vf05(int aiBitIndex)
 {
-    m_kBridgeAtoms.m_kBallSocket.m_ucBodiesToNotify = (char)(1 << aiBitIndex);
+    m_kBridgeAtoms.m_kBallSocket.m_bodiesToNotify = (char)(1 << aiBitIndex);
 }
 
 // @fnv 0x00cde960
 void __thiscall hkpRagdollConstraintData::vf03(float a)
 {
-    m_kBridgeAtoms.m_kBallSocket.m_usFlags = a;
+    m_kBridgeAtoms.m_kBallSocket.m_maxImpulse = a;
 }
 
-void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int c);
+void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int infoOut);
 
 // @fnv 0x00cde9b0
 char* hkpRagdollConstraintData::vf15(int aiIndex)
@@ -116,11 +119,12 @@ char* hkpRagdollConstraintData::vf15(int aiIndex)
 }
 
 // @fnv 0x00cdf1f0
+// pdb: hkpRagdollConstraintData::~hkpRagdollConstraintData | hkpRagdollConstraintData.obj | retail, upstream name already matches, high
 hkpRagdollConstraintData::~hkpRagdollConstraintData() throw()
 {
     for (int i = 0; i < 3; ++i)
     {
-        hkReferencedObject* p = reinterpret_cast<hkReferencedObject*>(m_kBridgeAtoms.m_kMotor.m_ppMotors[i]);
+        hkReferencedObject* p = reinterpret_cast<hkReferencedObject*>(m_kBridgeAtoms.m_kMotor.m_motors[i]);
         if (p)
             p->removeReference();
     }
@@ -129,7 +133,7 @@ hkpRagdollConstraintData::~hkpRagdollConstraintData() throw()
 // @fnv 0x00cde970
 float hkpRagdollConstraintData::vf04()
 {
-    return m_kBridgeAtoms.m_kBallSocket.m_usFlags;
+    return m_kBridgeAtoms.m_kBallSocket.m_maxImpulse;
 }
 
 // FUN_00cde9a0
@@ -144,9 +148,11 @@ float hkpRagdollConstraintData::vf04()
 // The getter returns that byte shifted right by one bit.
 
 // @fnv 0x00cde9a0
+// pdb: hkpRagdollConstraintData::getNotifiedBodyIndex | hkpRagdollConstraintData.obj | debug, vtable slot, medium
+// pdb locals: assertBuf, ostr
 int hkpRagdollConstraintData::vf06()
 {
-    return m_kBridgeAtoms.m_kBallSocket.m_ucBodiesToNotify >> 1;
+    return m_kBridgeAtoms.m_kBallSocket.m_bodiesToNotify >> 1;
 }
 
 // @fnv 0x00cdead0
@@ -160,9 +166,9 @@ int __cdecl hkpRagdollConstraintData_ReturnConstant_7()
 // @fnv 0x00cdf190
 void hkpRagdollConstraintData::getConstraintFrameA(hkRotation* out)
 {
-    out->m_kColumn0.m_vComponents = m_kBridgeAtoms.m_kTransforms.m_kBodyALocalFrame.m_kColumn0;
-    out->m_kColumn1.m_vComponents = m_kBridgeAtoms.m_kTransforms.m_kBodyALocalFrame.m_kColumn1;
-    out->m_kColumn2.m_vComponents = m_kBridgeAtoms.m_kTransforms.m_kBodyALocalFrame.m_kColumn2;
+    out->m_kColumn0.m_vComponents = m_kBridgeAtoms.m_kTransforms.m_transformA.m_kColumn0;
+    out->m_kColumn1.m_vComponents = m_kBridgeAtoms.m_kTransforms.m_transformA.m_kColumn1;
+    out->m_kColumn2.m_vComponents = m_kBridgeAtoms.m_kTransforms.m_transformA.m_kColumn2;
 }
 
 struct FnvCpu_FUN_00cdf530_CpuAllocator
@@ -183,7 +189,7 @@ FnvCpu_FUN_00cdf530_CpuAllocatorHolder* __cdecl hkMemoryRouter_getInstance();
 __forceinline void hkReferencedObject::operator delete(void* block)
 {
     FnvCpu_FUN_00cdf530_CpuAllocatorHolder* holder = hkMemoryRouter_getInstance();
-    holder->allocator->Invoke(block, static_cast<hkReferencedObject*>(block)->m_usMemSizeAndFlags);
+    holder->allocator->Invoke(block, static_cast<hkReferencedObject*>(block)->m_memSizeAndFlags);
 }
 
 // Copies body B's constraint frame into the output rotation.
@@ -209,29 +215,30 @@ class LocalhkpLimitedHingeConstraintData : public hkpConstraintData
 
 // Initializes m_kBridgeAtoms with identity transforms, default angular limits, friction, motor, and 2D angular constraint values.
 // @fnv 0x00cb9090
+// pdb: hkpLimitedHingeConstraintData::hkpLimitedHingeConstraintData | hkpLimitedHingeConstraintData.obj | retail, call graph (shared callers), high
 LocalhkpLimitedHingeConstraintData::LocalhkpLimitedHingeConstraintData() throw()
 {
-    m_kBridgeAtoms.m_kTransforms.m_kBodyALocalFrame.setIdentity();
+    m_kBridgeAtoms.m_kTransforms.m_transformA.setIdentity();
     m_kBridgeAtoms.m_kTransforms.m_kBodyBLocalFrame.setIdentity();
 
-    m_kBridgeAtoms.m_kTwoDimensionalAngular.m_ucFreeRotationAxis = 0;
+    m_kBridgeAtoms.m_kTwoDimensionalAngular.m_freeRotationAxis = 0;
 
-    m_kBridgeAtoms.m_kAngularLimit.m_ucLimitAxis = 0;
-    m_kBridgeAtoms.m_kAngularLimit.m_fMinAngle = -3.14159274f;
-    m_kBridgeAtoms.m_kAngularLimit.m_fMaxAngle = 3.14159274f;
-    m_kBridgeAtoms.m_kAngularLimit.m_fAngularLimitsTauFactor = 1.0f;
+    m_kBridgeAtoms.m_kAngularLimit.m_limitAxis = 0;
+    m_kBridgeAtoms.m_kAngularLimit.m_minAngle = -3.14159274f;
+    m_kBridgeAtoms.m_kAngularLimit.m_maxAngle = 3.14159274f;
+    m_kBridgeAtoms.m_kAngularLimit.m_angularLimitsTauFactor = 1.0f;
 
-    m_kBridgeAtoms.m_kFriction.m_ucFirstFrictionAxis = 0;
-    m_kBridgeAtoms.m_kFriction.m_ucNumFrictionAxes = 1;
-    m_kBridgeAtoms.m_kFriction.m_fMaxFrictionTorque = 0.0f;
+    m_kBridgeAtoms.m_kFriction.m_firstFrictionAxis = 0;
+    m_kBridgeAtoms.m_kFriction.m_numFrictionAxes = 1;
+    m_kBridgeAtoms.m_kFriction.m_maxFrictionTorque = 0.0f;
 
-    m_kBridgeAtoms.m_kAngularMotor.m_iInitializedOffset = 0x40;
-    m_kBridgeAtoms.m_kAngularMotor.m_iPreviousTargetAngleOffset = 0x44;
-    m_kBridgeAtoms.m_kAngularMotor.m_iCorrespondingAngLimitSolverResultOffset = 0x10;
-    m_kBridgeAtoms.m_kAngularMotor.m_bLimitEnabled = false;
-    m_kBridgeAtoms.m_kAngularMotor.m_fTargetAngle = 0.0f;
-    m_kBridgeAtoms.m_kAngularMotor.m_pMotor = 0;
-    m_kBridgeAtoms.m_kAngularMotor.m_ucMotorAxis = 0;
+    m_kBridgeAtoms.m_kAngularMotor.m_initializedOffset = 0x40;
+    m_kBridgeAtoms.m_kAngularMotor.m_previousTargetAngleOffset = 0x44;
+    m_kBridgeAtoms.m_kAngularMotor.m_correspondingAngLimitSolverResultOffset = 0x10;
+    m_kBridgeAtoms.m_kAngularMotor.m_isEnabled = false;
+    m_kBridgeAtoms.m_kAngularMotor.m_targetAngle = 0.0f;
+    m_kBridgeAtoms.m_kAngularMotor.m_motor = 0;
+    m_kBridgeAtoms.m_kAngularMotor.m_motorAxis = 0;
 }
 
 static __forceinline void hkNormalize3(hkVector4& v)
@@ -289,6 +296,9 @@ static __forceinline void hkSetTransposeMul(hkMatrix3& out, const hkMatrix3& a, 
 
 // Builds a constraint basis from twist and plane axes, then stores rotated and translated transforms into the ragdoll bridge atom data.
 // @fnv 0x00cdeae0
+// pdb: hkpRagdollConstraintData::setInWorldSpace | hkpRagdollConstraintData.obj | retail, upstream name already matches, high
+// pdb params: bodyATransform, bodyBTransform, pivot, twistAxisW, planeAxisW
+// pdb locals: assertBuf, ostr, constraintBaseInW
 void hkpRagdollConstraintData::setInWorldSpace(const hkTransform& bodyATransform, const hkTransform& bodyBTransform,
                                               const hkVector4& pivot, const hkVector4& twistAxisW,
                                               const hkVector4& planeAxisW)
@@ -302,13 +312,13 @@ void hkpRagdollConstraintData::setInWorldSpace(const hkTransform& bodyATransform
 
     hkpSetLocalTransformsConstraintAtom& t = m_kBridgeAtoms.m_kTransforms;
 
-    hkSetTransposeMul(reinterpret_cast<hkMatrix3&>(t.m_kBodyALocalFrame.m_rotation), reinterpret_cast<const hkMatrix3&>(bodyATransform.m_rotation), baseConstraint);
+    hkSetTransposeMul(reinterpret_cast<hkMatrix3&>(t.m_transformA.m_rotation), reinterpret_cast<const hkMatrix3&>(bodyATransform.m_rotation), baseConstraint);
     hkSetTransposeMul(reinterpret_cast<hkMatrix3&>(t.m_kBodyBLocalFrame.m_rotation), reinterpret_cast<const hkMatrix3&>(bodyBTransform.m_rotation), baseConstraint);
 
-    t.m_kBodyALocalFrame.position.SetTransformedPosition(bodyATransform, pivot);
+    t.m_transformA.position.SetTransformedPosition(bodyATransform, pivot);
     t.m_kBodyBLocalFrame.position.SetTransformedPosition(bodyBTransform, pivot);
 
-    reinterpret_cast<hkMatrix3&>(m_kBridgeAtoms.m_kMotor.m_kMotorAxes) = reinterpret_cast<hkMatrix3&>(t.m_kBodyBLocalFrame.m_rotation);
+    reinterpret_cast<hkMatrix3&>(m_kBridgeAtoms.m_kMotor.m_target_bRca) = reinterpret_cast<hkMatrix3&>(t.m_kBodyBLocalFrame.m_rotation);
 }
 
 extern const LocalM128 DAT_010c71e0;
@@ -349,11 +359,14 @@ __forceinline void Vec4::SetRotatedDirection(const Quat& quat, const Vec4& direc
 
 // Rotates m_dir about m_kAxisEndPoints by minus the midpoint of a and b, sets m_kStartPerpendicular to their cross, and stores (b - a) / 2 in m_halfRange.
 // @fnv 0x00cdef90
+// pdb: hkpRagdollConstraintData::setAsymmetricConeAngle | hkpRagdollConstraintData.obj | debug, object-file run extension, low
+// pdb params: cone_min, cone_max
+// pdb locals: baseModificationB, assertBuf, ostr
 void hkpRagdollConstraintData::setPlaneAngularLimit(float afStart, float afEnd)
 {
     Vec4& m_dir = reinterpret_cast<Vec4&>(m_kBridgeAtoms.m_kTransforms.m_kBodyBLocalFrame.m_kColumn0);
     Vec4& m_kAxisEndPoints = reinterpret_cast<Vec4&>(m_kBridgeAtoms.m_kTransforms.m_kBodyBLocalFrame.m_kColumn1);
-    float& m_halfRange = m_kBridgeAtoms.m_kConeLimit.m_fMaxAngle;
+    float& m_halfRange = m_kBridgeAtoms.m_kConeLimit.m_maxAngle;
     float center = (afStart + afEnd) * 0.5;
     Quat q;
     q.hkQuaternion_setAxisAngle(&m_kAxisEndPoints.getQuad(), -center);
@@ -371,25 +384,26 @@ void hkpRagdollConstraintData::setPlaneAngularLimit(float afStart, float afEnd)
 extern "C" float DAT_0104da48;
 
 // @fnv 0x00cb9170
+// pdb: hkpLimitedHingeConstraintData::Atoms::Atoms | hkpLimitedHingeConstraintData.obj | retail, object-file run extension, low
 __declspec(noinline) hkpLimitedHingeConstraintDataAtoms::hkpLimitedHingeConstraintDataAtoms() throw()
 {
     float f = 1.0f;
     m_kTransforms.m_type = 2;
     static_cast<volatile unsigned short&>(m_kAngularMotor.m_type) = 0x12;
-    static_cast<volatile char&>(m_kAngularMotor.m_bLimitEnabled.m_cBooleanValue) = 1;
-    static_cast<volatile short&>(m_kAngularMotor.m_iInitializedOffset) = 0;
-    static_cast<volatile short&>(m_kAngularMotor.m_iPreviousTargetAngleOffset) = 0;
-    static_cast<volatile unsigned char&>(m_kFriction.m_bLimitEnabled) = 1;
-    static_cast<volatile unsigned char&>(m_kFriction.m_ucNumFrictionAxes) = 1;
+    static_cast<volatile char&>(m_kAngularMotor.m_isEnabled.m_cBooleanValue) = 1;
+    static_cast<volatile short&>(m_kAngularMotor.m_initializedOffset) = 0;
+    static_cast<volatile short&>(m_kAngularMotor.m_previousTargetAngleOffset) = 0;
+    static_cast<volatile unsigned char&>(m_kFriction.m_isEnabled) = 1;
+    static_cast<volatile unsigned char&>(m_kFriction.m_numFrictionAxes) = 1;
     static_cast<volatile unsigned short&>(m_kFriction.m_type) = 0x11;
     static_cast<volatile unsigned short&>(m_kAngularLimit.m_type) = 0xe;
-    static_cast<volatile unsigned char&>(m_kAngularLimit.m_bLimitEnabled) = 1;
+    static_cast<volatile unsigned char&>(m_kAngularLimit.m_isEnabled) = 1;
     volatile unsigned short* limit = &m_kTwoDimensionalAngular.m_type;
     *limit = 0xc;
     static_cast<volatile unsigned short&>(m_kBallSocket.m_type) = 5;
-    m_kBallSocket.m_ucBodiesToNotify = 0;
-    reinterpret_cast<hkUFloat8&>(m_kBallSocket.m_solvingMethod).FindFloatTableIndex(&f);
-    m_kBallSocket.m_usFlags = DAT_0104da48;
+    m_kBallSocket.m_bodiesToNotify = 0;
+    reinterpret_cast<hkUFloat8&>(m_kBallSocket.m_stabilizationFactor).FindFloatTableIndex(&f);
+    m_kBallSocket.m_maxImpulse = DAT_0104da48;
 }
 
 // out = a x b, with the operands passed as (b, a)
@@ -404,21 +418,24 @@ static __forceinline void hkSetCrossReversed(hkVector4& out, const hkVector4& b,
 
 // Stores normalized twist and plane axes, their cross product and the pivot for each body, then copies body B's rotation into the motor axes.
 // @fnv 0x00cded30
+// pdb: hkpRagdollConstraintData::setInBodySpace | hkpRagdollConstraintData.obj | retail, upstream name already matches, high
+// pdb params: pivotA, pivotB, planeAxisA, planeAxisB, twistAxisA, twistAxisB
+// pdb locals: assertBuf, ostr
 void hkpRagdollConstraintData::setInBodySpace(const hkVector4& pivotA, const hkVector4& pivotB,
                                                      const hkVector4& planeAxisA, const hkVector4& planeAxisB,
                                                      const hkVector4& twistAxisA, const hkVector4& twistAxisB)
 {
     hkpSetLocalTransformsConstraintAtom& layout = m_kBridgeAtoms.m_kTransforms;
 
-    hkVector4& twistA = layout.m_kBodyALocalFrame.m_rotation.m_kColumn0;
+    hkVector4& twistA = layout.m_transformA.m_rotation.m_kColumn0;
     twistA.m_vComponents = twistAxisA.m_vComponents;
     hkNormalize3(twistA);
-    layout.m_kBodyALocalFrame.m_rotation.m_kColumn1.m_vComponents =
+    layout.m_transformA.m_rotation.m_kColumn1.m_vComponents =
         planeAxisA.m_vComponents;
-    hkNormalize3(layout.m_kBodyALocalFrame.m_rotation.m_kColumn1);
-    hkSetCross(layout.m_kBodyALocalFrame.m_rotation.m_kColumn2, layout.m_kBodyALocalFrame.m_rotation.m_kColumn0,
-               layout.m_kBodyALocalFrame.m_rotation.m_kColumn1);
-    layout.m_kBodyALocalFrame.m_vTranslation = pivotA.m_vComponents;
+    hkNormalize3(layout.m_transformA.m_rotation.m_kColumn1);
+    hkSetCross(layout.m_transformA.m_rotation.m_kColumn2, layout.m_transformA.m_rotation.m_kColumn0,
+               layout.m_transformA.m_rotation.m_kColumn1);
+    layout.m_transformA.m_vTranslation = pivotA.m_vComponents;
 
     hkVector4& twistB = layout.m_kBodyBLocalFrame.m_rotation.m_kColumn0;
     twistB.m_vComponents = twistAxisB.m_vComponents;
@@ -430,7 +447,7 @@ void hkpRagdollConstraintData::setInBodySpace(const hkVector4& pivotA, const hkV
                        layout.m_kBodyBLocalFrame.m_rotation.m_kColumn0);
     layout.m_kBodyBLocalFrame.m_vTranslation = pivotB.m_vComponents;
 
-    m_kBridgeAtoms.m_kMotor.m_kMotorAxes.m_kColumn0.m_vComponents = layout.m_kBodyBLocalFrame.m_rotation.m_kColumn0.m_vComponents;
-    m_kBridgeAtoms.m_kMotor.m_kMotorAxes.m_kColumn1.m_vComponents = layout.m_kBodyBLocalFrame.m_rotation.m_kColumn1.m_vComponents;
-    m_kBridgeAtoms.m_kMotor.m_kMotorAxes.m_kColumn2.m_vComponents = layout.m_kBodyBLocalFrame.m_rotation.m_kColumn2.m_vComponents;
+    m_kBridgeAtoms.m_kMotor.m_target_bRca.m_kColumn0.m_vComponents = layout.m_kBodyBLocalFrame.m_rotation.m_kColumn0.m_vComponents;
+    m_kBridgeAtoms.m_kMotor.m_target_bRca.m_kColumn1.m_vComponents = layout.m_kBodyBLocalFrame.m_rotation.m_kColumn1.m_vComponents;
+    m_kBridgeAtoms.m_kMotor.m_target_bRca.m_kColumn2.m_vComponents = layout.m_kBodyBLocalFrame.m_rotation.m_kColumn2.m_vComponents;
 }

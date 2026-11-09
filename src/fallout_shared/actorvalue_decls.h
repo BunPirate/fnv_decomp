@@ -58,10 +58,10 @@ FNV_STATIC_ASSERT(offsetof(TESFullName, m_kName) == 0x4);
 
 namespace ActorValue {
 ActorValueInfo* GetActorValueInfo(Index index);
-void LoadActorValueDefinitions();
+void ActorValue_RegisterActorValues();
 }
 namespace ActorValue {
-void RegisterActorValue(Index, char*, Section, unsigned int, ActorValueDeriveCallback, ActorValueMappingCallback,
+void ActorValue_RegisterActorValue(Index, char*, Section, unsigned int, ActorValueDeriveCallback, ActorValueMappingCallback,
                         ActorValueModifiedCallback, int, ...);
 }
 extern bool DAT_011d6154;
@@ -109,8 +109,8 @@ namespace ActorValue {
 
 Index GetActorValueForSectionIndex(Section, char);
 unsigned int GetCountForSection(Section);
-const char* GetActorValueName(Index);
-bool TryGetActorValue(ActorValueOwner*, Index, float&);
+const char* ActorValue_GetActorValueName(Index);
+bool ActorValue_GetDerivedActorValue(ActorValueOwner*, Index, float&);
 void NotifyActorValueChanged(ActorValueOwner*, Index, float, float, ActorValueOwner*);
 Index* GetDependentActorValueIndices(Index, int&);
 bool HasActorValueChangedCallback(Index);
@@ -124,7 +124,7 @@ namespace ActorValue {
 bool IsDerivedAttribute(Index);
 bool IsAIAttribute(Index);
 bool IsSkill(Index);
-Section GetSection(Index);
+Section ActorValue_GetSection(Index);
 unsigned char ToArrayIndex(int, Index);
 }
 bool ActorValue_IsAttribute(ActorValue::Index);

@@ -6,13 +6,13 @@
 #include "../../../../../include/hkStatisticsCollector.h"
 #include "../../../../../include/hkVector4.h"
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(const void* pvChunk, int iNumBytes) throw();
+int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size) throw();
 
 // The shared collector has no addArray template; keep its array reporting helper here.
 template <class T>
 __forceinline void addArray(hkStatisticsCollector* collector, const char* pcName, const hkArray<T>& kArray)
 {
-    if ((kArray.m_iCapacityState & 0x80000000) == 0 || collector->m_reportInplaceAllocations)
+    if ((kArray.m_iCapacityState & 0x80000000) == 0 || collector->m_includeUnmanagedArrayMemory)
     {
         const T* pData = kArray.m_data;
         int iAllocated = hkStatisticsCollector_getAllocatedSize(pData, kArray.getCapacity() * sizeof(T));
@@ -45,16 +45,18 @@ class hkObjE39E
     int unk0C;
     hkArray<hkPointSetE39E*> m_kPointSets;
 
-    void hkpTyremarksInfo_calcContentStatistics(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw();
+    void hkpTyremarksInfo_calcContentStatistics(hkStatisticsCollector* collector, const hkClass* cls) const throw();
 };
 
 // For each point set in the array, adds its ray array to the statistics collector under the name "Points".
 // @fnv 0x00e39ee0
 // src: HAVOK_LIB 0x00e39ee0
-void hkObjE39E::hkpTyremarksInfo_calcContentStatistics(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw()
+// pdb: hkpTyremarksInfo::calcContentStatistics | hkpTyremarksInfo.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void hkObjE39E::hkpTyremarksInfo_calcContentStatistics(hkStatisticsCollector* collector, const hkClass* cls) const throw()
 {
     for (int i = 0; i < m_kPointSets.GetLogicalSize(); i++)
-        addArray(pkCollector, "Points", m_kPointSets.m_data[i]->m_kPoints);
+        addArray(collector, "Points", m_kPointSets.m_data[i]->m_kPoints);
 }
 
 struct hkSampleE39F
@@ -86,6 +88,8 @@ class hkSampleRingE39F
 // Copies sample into the slot at m_pFirstNode and advances it with wraparound, unless the sample and the previous slot both give 0 from FUN_00e39e80.
 // @fnv 0x00e39f50
 // src: XBOX_PDB 0x00e39f50
+// pdb: hkpTyremarksWheel::getTyremarkPoint | hkpTyremarksInfo.obj | debug, object-file run extension, low
+// pdb params: point
 void hkSampleRingE39F::addTyremarkPoint(const hkSampleE39F& sample)
 {
     if (sample.GetUnk1C_00e39e80() == 0.0f && m_samples[(m_pFirstNode + m_pRayCursor - 1) % m_pRayCursor].GetUnk1C_00e39e80() == 0.0f)

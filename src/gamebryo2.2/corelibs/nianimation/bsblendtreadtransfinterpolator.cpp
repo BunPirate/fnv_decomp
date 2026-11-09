@@ -23,13 +23,13 @@ bool BSBlendTreadTransfInterpolator::UpdateTransform(float time, NiObjectNET* ta
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f3ed0;
+extern GlobalObjectO2_00a7b610 BSBlendTreadTransfInterpolator_ms_RTTI;
 
 // @fnv 0x00a42fe0
 // src: COMMUNITY 0x00a42fe0
 GlobalObjectO2_00a7b610* __cdecl BSBlendTreadTransfInterpolator_GetRTTI()
 {
-    return &g_011f3ed0;
+    return &BSBlendTreadTransfInterpolator_ms_RTTI;
 }
 
 extern int DAT_01097904;
@@ -42,7 +42,7 @@ NiObject* BSBlendTreadTransfInterpolator::MakeClone(CloningProcess& kCloning)
     if (pkObject)
     {
         NiBlendInterpolator_NiBlendInterpolator(pkObject);
-        pkObject->m_fPhase = 0.0f;
+        pkObject->fCurrLerp = 0.0f;
         *(void**)pkObject = (void*)&DAT_01097904;
     }
     else
@@ -50,12 +50,14 @@ NiObject* BSBlendTreadTransfInterpolator::MakeClone(CloningProcess& kCloning)
         pkObject = 0;
     }
     CopyMembers(pkObject, &kCloning);
-    pkObject->m_fPhase = m_fPhase;
+    pkObject->fCurrLerp = fCurrLerp;
     return pkObject;
 }
 
 // @fnv 0x00a39100
 // src: COMMUNITY 0x00a39100
+// pdb: NiBlendAccumTransformInterpolator::InterpolatorIsCorrectType | NiBlendAccumTransformInterpolator.obj | debug, upstream name already matches, high
+// pdb params: pkInterpolator
 bool __stdcall NiBlendAccumTransformInterpolator_InterpolatorIsCorrectType(NiInterpolator* pkInterpolator)
 {
     return pkInterpolator->IsTransformValueSupported();
@@ -84,9 +86,9 @@ static __forceinline void CopyTreadQuaternion(NiQuaternion& destination, const N
 
 __forceinline NiQuatTransform::NiQuatTransform()
 {
-    reinterpret_cast<NiPoint3&>(x) = fnv_00a43160::DAT_011a8400;
-    CopyTreadQuaternion(reinterpret_cast<NiQuaternion&>(qx), fnv_00a43160::DAT_011f3704);
-    scale = fnv_00a43160::DAT_01096b8c;
+    reinterpret_cast<NiPoint3&>(m_kTranslate) = fnv_00a43160::DAT_011a8400;
+    CopyTreadQuaternion(reinterpret_cast<NiQuaternion&>(m_kRotate), fnv_00a43160::DAT_011f3704);
+    m_fScale = fnv_00a43160::DAT_01096b8c;
 }
 
 class NiBlendInterpolator__InterpArrayItem
@@ -106,31 +108,31 @@ bool BSBlendTreadTransfInterpolator::UpdateAccumulatedTransform(float time, NiOb
     float total = 0.0f;
     for (unsigned char i = 0; i < m_ucArraySize; ++i)
     {
-        NiBlendInterpolator__InterpArrayItem& item = m_pInterpArray[i];
+        NiBlendInterpolator__InterpArrayItem& item = m_pkInterpArray[i];
         if (item.interpolator && item.normalizedWeight > 0.0f)
         {
             float sampleTime = time;
             if (item.normalizedWeight != 0.0f)
             {
-                if (m_uiObjectFlags & 1)
+                if (m_uFlags & 1)
                     sampleTime = item.time;
                 if (sampleTime != DAT_0109696c)
                 {
                     NiQuatTransform transform;
                     if (item.interpolator->UpdateTransform(sampleTime, object, transform))
                     {
-                        total += static_cast<BSTreadTransfInterpolator*>(item.interpolator)->secondValue * item.normalizedWeight;
+                        total += static_cast<BSTreadTransfInterpolator*>(item.interpolator)->fDiffLerp * item.normalizedWeight;
                     }
                 }
             }
         }
     }
-    float& combined = m_fPhase;
+    float& combined = fCurrLerp;
     combined += total;
     if (combined > 1.0f)
-        m_fPhase = combined - DAT_01012070;
+        fCurrLerp = combined - DAT_01012070;
     else if (combined < 0.0f)
-        m_fPhase = combined + DAT_01012070;
+        fCurrLerp = combined + DAT_01012070;
     float* __restrict pfOut = (float*)&arResult;
     pfOut[7] = pfOut[4] = pfOut[0] = DAT_01015f5c;
     return true;
@@ -139,6 +141,9 @@ bool BSBlendTreadTransfInterpolator::UpdateAccumulatedTransform(float time, NiOb
 void __cdecl NiBlendInterpolator_RegisterStreamables();
 // @fnv 0x00a40a00
 // src: XBOX_PDB 0x00a40a00
+// pdb: BSBlendTreadTransfInterpolator::RegisterStreamables | BSBlendTreadTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: bret
 void __cdecl BSBlendTreadTransfInterpolator_RegisterStreamables()
 {
     NiBlendInterpolator_RegisterStreamables();
@@ -147,6 +152,8 @@ void __cdecl BSBlendTreadTransfInterpolator_RegisterStreamables()
 void __cdecl NiBlendInterpolator_SaveBinary();
 // @fnv 0x00a40a10
 // src: XBOX_PDB 0x00a40a10
+// pdb: BSBlendTreadTransfInterpolator::SaveBinary | BSBlendTreadTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: arStream
 void __cdecl BSBlendTreadTransfInterpolator_SaveBinary()
 {
     NiBlendInterpolator_SaveBinary();
@@ -156,6 +163,8 @@ void __cdecl NiBlendInterpolator_LoadBinary();
 
 // @fnv 0x00a42fc0
 // src: XBOX_PDB 0x00a42fc0
+// pdb: BSBlendTreadTransfInterpolator::LoadBinary | BSBlendTreadTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: arStream
 void __cdecl BSBlendTreadTransfInterpolator_LoadBinary()
 {
     NiBlendInterpolator_LoadBinary();
@@ -165,6 +174,9 @@ void __cdecl NiBlendInterpolator_IsEqual();
 
 // @fnv 0x00a42fd0
 // src: XBOX_PDB 0x00a42fd0
+// pdb: BSBlendTreadTransfInterpolator::IsEqual | BSBlendTreadTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bret
 void __cdecl BSBlendTreadTransfInterpolator_IsEqual()
 {
     NiBlendInterpolator_IsEqual();
@@ -176,33 +188,33 @@ void __fastcall FUN_00a38560(NiQuaternion* quaternion);
 // @fnv 0x00a43040
 bool BSBlendTreadTransfInterpolator::UpdateSingleInterpolator(float afTime, NiObjectNET* target, NiQuatTransform& arTransform)
 {
-    if (m_uiObjectFlags & 1)
-        afTime = m_fSingleInterpolatorTime;
+    if (m_uFlags & 1)
+        afTime = m_fSingleTime;
     if (afTime == DAT_0109696c)
     {
-        arTransform.x = -3.4028234663852886e38f;
+        arTransform.m_kTranslate = -3.4028234663852886e38f;
         arTransform.qy = -3.4028234663852886e38f;
-        arTransform.scale = -3.4028234663852886e38f;
+        arTransform.m_fScale = -3.4028234663852886e38f;
         return false;
     }
-    if (m_pSingleInterpolator->UpdateTransform(afTime, target, arTransform))
+    if (m_pkSingleInterpolator->UpdateTransform(afTime, target, arTransform))
     {
-        m_fPhase += static_cast<BSTreadTransfInterpolator*>(m_pSingleInterpolator)->secondValue;
-        if (m_fPhase > 1.0f)
-            m_fPhase = m_fPhase - 1.0;
-        else if (m_fPhase < 0.0f)
-            m_fPhase = m_fPhase + 1.0;
+        fCurrLerp += static_cast<BSTreadTransfInterpolator*>(m_pkSingleInterpolator)->fDiffLerp;
+        if (fCurrLerp > 1.0f)
+            fCurrLerp = fCurrLerp - 1.0;
+        else if (fCurrLerp < 0.0f)
+            fCurrLerp = fCurrLerp + 1.0;
         if (arTransform.qy != -3.4028234663852886e38)
         {
-            NiQuaternion qRotation = reinterpret_cast<NiQuaternion&>(arTransform.qx);
+            NiQuaternion qRotation = reinterpret_cast<NiQuaternion&>(arTransform.m_kRotate);
             FUN_00a38560(&qRotation);
-            CopyTreadQuaternion(reinterpret_cast<NiQuaternion&>(arTransform.qx), qRotation);
+            CopyTreadQuaternion(reinterpret_cast<NiQuaternion&>(arTransform.m_kRotate), qRotation);
         }
         return true;
     }
-    arTransform.x = -3.4028234663852886e38f;
+    arTransform.m_kTranslate = -3.4028234663852886e38f;
     arTransform.qy = -3.4028234663852886e38f;
-    arTransform.scale = -3.4028234663852886e38f;
+    arTransform.m_fScale = -3.4028234663852886e38f;
     return false;
 }
 
@@ -214,22 +226,25 @@ void __fastcall InitializeInterpolator(NiInterpolator* interpolator);
 
 // @fnv 0x00a36890
 // src: GAMEBRYO_LIB 0x00a36890
+// pdb: NiBlendPoint3Interpolator::NiBlendPoint3Interpolator | NiBlendPoint3Interpolator.obj | retail, call graph, low
+// pdb note: debug build links it to NiTransformController::`scalar deleting destructor'
+// pdb params: bManagerControlled, fWeightThreshold, ucArraySize
 NiBlendInterpolator* __fastcall NiBlendInterpolator_NiBlendInterpolator(NiBlendInterpolator* interpolator)
 {
     InitializeInterpolator(interpolator);
     *reinterpret_cast<void**>(interpolator) = &DAT_0109697c;
-    interpolator->m_uiObjectFlags = 0;
+    interpolator->m_uFlags = 0;
     interpolator->m_ucArraySize = 0;
     interpolator->m_ucInterpCount = 0;
     interpolator->m_ucSingleIdx = 0xff;
     interpolator->m_cHighPriority = -128;
     interpolator->m_cNextHighPriority = -128;
-    interpolator->m_pInterpArray = 0;
-    interpolator->m_pSingleInterpolator = 0;
+    interpolator->m_pkInterpArray = 0;
+    interpolator->m_pkSingleInterpolator = 0;
     interpolator->m_fWeightThreshold = 0.0f;
-    interpolator->m_fSingleInterpolatorTime = BlendTimeValue;
+    interpolator->m_fSingleTime = BlendTimeValue;
     interpolator->m_fHighSumOfWeights = BlendTimeValue;
     interpolator->m_fNextHighSumOfWeights = BlendTimeValue;
-    interpolator->m_fTrailingValue = BlendTimeValue;
+    interpolator->m_fHighEaseSpinner = BlendTimeValue;
     return interpolator;
 }

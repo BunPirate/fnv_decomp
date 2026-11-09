@@ -3,6 +3,10 @@
 #include "bhkconvert_decls.h"
 #pragma strict_gs_check(on)
 // @fnv 0x0056df80
+// pdb: bhkBoxShape::Init | TESObjectREFR.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkRigidBodyCinfo::FromHK
+// pdb params: arExt
+// pdb locals: ci
 hkTransform& FromHK(hkTransform& out, const NiTransform& in)
 {
     VisitAndFetchThree(*reinterpret_cast<hkRotation*>(&reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(&out)->GetItem()),

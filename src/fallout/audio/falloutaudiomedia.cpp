@@ -14,14 +14,16 @@
 #include "../../../include/SETTING_VALUE.h"
 
 // @fnv 0x008304a0
+// pdb: FalloutAudioMedia::MediaClose | FalloutAudioMedia.obj | retail, call graph (shared callers), medium
 void FalloutAudioMedia::BeginMediaUpdate()
 {
     GetCurrentThreadId();
-    StartMenu::UpdateMedia();
+    StartMenu::FalloutAudioMedia_MediaClear();
     FalloutAudioMedia_MediaAccessLeave();
 }
 
 // @fnv 0x008304c0
+// pdb: FalloutAudioMedia::MediaPlay | FalloutAudioMedia.obj | retail, call graph, high
 void FalloutAudioMedia::EndMediaUpdate()
 {
     GetCurrentThreadId();
@@ -39,29 +41,32 @@ void FalloutAudioMedia::PlayMedia(BGSMusicType* musicType)
 }
 
 // @fnv 0x00830680
-void FalloutAudioMedia::FadeOutMedia(int fadeTime, MEDIATYPE mediaType)
+// pdb: FalloutAudioMedia::MediaFadeOut | FalloutAudioMedia.obj | retail, object-file gap fill, high
+// pdb params: aiFadeTime, aeType
+// pdb locals: ticks
+void FalloutAudioMedia::FadeOutMedia(int aiFadeTime, MEDIATYPE aeType)
 {
     GetCurrentThreadId();
     unsigned int currentTime = ((FORenderedMenu*)TESLandTexture::GetSoundSystem())->GetCurrentTimeMilliseconds();
-    if (DAT_011dd314 == mediaType || mediaType == 0)
+    if (DAT_011dd314 == aeType || aeType == 0)
     {
         if ((DAT_011dd310 & 8) == 0)
         {
             DAT_011dd310 |= 0x18;
             DAT_011dd304 = DAT_011dd300;
             DAT_011dd308 = 0.0f;
-            DAT_011dd328 = fadeTime;
+            DAT_011dd328 = aiFadeTime;
             DAT_011dd32c = currentTime + DAT_011dd328;
         }
     }
-    if (DAT_011dd348 == mediaType || mediaType == 0)
+    if (DAT_011dd348 == aeType || aeType == 0)
     {
         if ((DAT_011dd311 & 8) == 0)
         {
             DAT_011dd311 |= 0x18;
             DAT_011dd33c = DAT_011dd338;
             DAT_011dd340 = 0.0f;
-            DAT_011dd35c = fadeTime;
+            DAT_011dd35c = aiFadeTime;
             DAT_011dd360 = currentTime + DAT_011dd35c;
         }
     }
@@ -72,6 +77,7 @@ namespace fnv_anon_falloutaudiomedia {}
 using namespace fnv_anon_falloutaudiomedia;
 namespace fnv_anon_falloutaudiomedia {
 // @fnv 0x0082f7b0
+// pdb: `anonymous namespace'::FAMThread::ThreadProc | FalloutAudioMedia.obj | retail, vtable slot, high
 unsigned int FAMThread::ThreadProc()
 {
     state |= 2;
@@ -80,7 +86,7 @@ unsigned int FAMThread::ThreadProc()
         WaitForThread();
         EnsureArenaAllocated(&event);
         if (state & 1)
-            RunAudioChannel(&threadID);
+            FalloutAudioMedia_ThreadProc(&threadID);
     }
     state &= ~2;
     DoThreadShutdown(&event);
@@ -90,6 +96,8 @@ unsigned int FAMThread::ThreadProc()
 
 // Checks whether either radio state is active or a flag is set, stores the result in state.result, calls FUN_00830490 and returns it.
 // @fnv 0x00830ad0
+// pdb: FalloutAudioMedia::MediaIsRadio | FalloutAudioMedia.obj | retail, call graph (shared callers), high
+// pdb locals: ret
 char FalloutAudioMedia::IsRadioPlaying()
 {
     struct RadioState
@@ -118,6 +126,7 @@ namespace fnv_anon_falloutaudiomedia {}
 using namespace fnv_anon_falloutaudiomedia;
 namespace fnv_anon_falloutaudiomedia {
 // @fnv 0x0082f790
+// pdb: `anonymous namespace'::FAMThread::Wait | FalloutAudioMedia.obj | debug, call graph, medium
 void FAMThread::WaitForThread()
 {
     WaitForSingleObject(*reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x30), 0xFFFFFFFF);
@@ -126,6 +135,7 @@ void FAMThread::WaitForThread()
 
 // @fnv 0x0082f7b0
 // src: GUESS 0x0082f7b0 (confidence: low)
+// pdb: `anonymous namespace'::FAMThread::ThreadProc | FalloutAudioMedia.obj | retail, vtable slot, high
 unsigned int __fastcall Falloutaudiomedia_ProcessEntries_0082f7b0(FAMThread* pThis)
 {
     pThis->state |= 2;
@@ -134,7 +144,7 @@ unsigned int __fastcall Falloutaudiomedia_ProcessEntries_0082f7b0(FAMThread* pTh
         pThis->WaitForThread();
         EnsureArenaAllocated(&pThis->event);
         if (pThis->state & 1)
-            RunAudioChannel(&pThis->threadID);
+            FalloutAudioMedia_ThreadProc(&pThis->threadID);
     }
     pThis->state &= ~2;
     DoThreadShutdown(&pThis->event);
@@ -158,6 +168,9 @@ float __cdecl pow_004dd130(float, float);
 
 // Computes a volume from the media type's setting or BSAudio value, applies attenuation and dB clamping, then scales by the BSAudio factor and clamps the result.
 // @fnv 0x0082fec0
+// pdb: FalloutAudioMedia::MediaVolume | FalloutAudioMedia.obj | debug, call graph, medium
+// pdb params: aeMediaType, attenuation
+// pdb locals: volmdb, vol
 float __cdecl ComputeAttenuatedVolume(int aeMediaType, float attenuation)
 {
     float vol = 0.0f;
@@ -225,7 +238,7 @@ void __cdecl PlayMusicType(BGSMusicType* aiMusicType)
 // src: COMMUNITY 0x00830050
 bool BGSMusicType::GetLooping()
 {
-    return fVolumeScale > 0.0f ? true : false;
+    return fAttenuation > 0.0f ? true : false;
 }
 
 // Returns the float at offset 0x24 negated when it is greater than zero, otherwise returns it unchanged.
@@ -233,15 +246,16 @@ bool BGSMusicType::GetLooping()
 // src: COMMUNITY 0x00830080
 float BGSMusicType::GetAttenuation()
 {
-    return (fVolumeScale > 0.0)
-               ? -fVolumeScale
-               : fVolumeScale;
+    return (fAttenuation > 0.0)
+               ? -fAttenuation
+               : fAttenuation;
 }
 
 extern ActorTaskManager g_011dd3d8;
 
 // @fnv 0x00830470
 // src: XBOX_PDB 0x00830470
+// pdb: FalloutAudioMedia::MediaAccessEnter | DebugTextMedia.obj | debug, upstream name already matches, high
 void FalloutAudioMedia_MediaAccessEnter()
 {
     g_011dd3d8.QueryPerformanceCounter(0);
@@ -251,6 +265,7 @@ extern char DAT_011dd312;
 
 // @fnv 0x00830660
 // src: XBOX_PDB 0x00830660
+// pdb: FalloutAudioMedia::MediaMenuUnPause | FalloutAudioMedia.obj | retail, upstream name already matches, high
 void FalloutAudioMedia_MediaMenuUnPause()
 {
     GetCurrentThreadId();
@@ -259,6 +274,9 @@ void FalloutAudioMedia_MediaMenuUnPause()
 }
 
 // @fnv 0x00830680
+// pdb: FalloutAudioMedia::MediaFadeOut | FalloutAudioMedia.obj | retail, object-file gap fill, high
+// pdb params: aiFadeTime, aeType
+// pdb locals: ticks
 void __cdecl StartFade(int aiFadeTime, int aeType)
 {
     GetCurrentThreadId();
@@ -285,6 +303,9 @@ void __cdecl StartFade(int aiFadeTime, int aeType)
 
 // @fnv 0x00830750
 // src: COMMUNITY 0x00830750
+// pdb: FalloutAudioMedia::MediaIsPlaying | FalloutAudioMedia.obj | retail, upstream name already matches, high
+// pdb params: aeType, abIncludeFading
+// pdb locals: ret
 bool __cdecl FalloutAudioMedia_MediaIsPlaying(unsigned long aeType, bool abIncludeFading)
 {
     GetCurrentThreadId();
@@ -323,20 +344,23 @@ extern int DAT_011dd36c;
 
 // @fnv 0x00830970
 // src: COMMUNITY 0x00830970
-int __cdecl FalloutAudioMedia_MediaGetSubDuration(int auiThreadId)
+// pdb: FalloutAudioMedia::MediaGetSubDuration | FalloutAudioMedia.obj | retail, upstream name already matches, high
+// pdb params: aeType
+// pdb locals: ret
+int __cdecl FalloutAudioMedia_MediaGetSubDuration(int aeType)
 {
     GetCurrentThreadId();
     int result = 0;
-    if (auiThreadId == 0)
+    if (aeType == 0)
     {
         if (DAT_011dd36c == 1 && DAT_011dd334 != 0)
             result = DAT_011dd324;
         else if (DAT_011dd36c == 0 && DAT_011dd368 != 0)
             result = DAT_011dd358;
     }
-    if (DAT_011dd36c == 1 && DAT_011dd334 != 0 && DAT_011dd314 == (unsigned long)auiThreadId)
+    if (DAT_011dd36c == 1 && DAT_011dd334 != 0 && DAT_011dd314 == (unsigned long)aeType)
         result = DAT_011dd324;
-    else if (DAT_011dd36c == 0 && DAT_011dd368 != 0 && DAT_011dd348 == (unsigned long)auiThreadId)
+    else if (DAT_011dd36c == 0 && DAT_011dd368 != 0 && DAT_011dd348 == (unsigned long)aeType)
         result = DAT_011dd358;
     FalloutAudioMedia_MediaAccessLeave();
     return result;
@@ -349,11 +373,14 @@ extern unsigned long DAT_011dd36c;
 
 // @fnv 0x00830a20
 // src: COMMUNITY 0x00830a20
-unsigned long __cdecl FalloutAudioMedia_MediaGetPosition(unsigned long param_1)
+// pdb: FalloutAudioMedia::MediaGetPosition | FalloutAudioMedia.obj | retail, upstream name already matches, high
+// pdb params: aeType
+// pdb locals: ret
+unsigned long __cdecl FalloutAudioMedia_MediaGetPosition(unsigned long aeType)
 {
     GetCurrentThreadId();
     unsigned long result = 0;
-    if (param_1 == 0)
+    if (aeType == 0)
     {
         if (DAT_011dd36c == 1 && DAT_011dd334 != 0)
         {
@@ -364,11 +391,11 @@ unsigned long __cdecl FalloutAudioMedia_MediaGetPosition(unsigned long param_1)
             result = DAT_011dd350;
         }
     }
-    if (DAT_011dd36c == 1 && DAT_011dd334 != 0 && DAT_011dd314 == param_1)
+    if (DAT_011dd36c == 1 && DAT_011dd334 != 0 && DAT_011dd314 == aeType)
     {
         result = DAT_011dd31c;
     }
-    else if (DAT_011dd36c == 0 && DAT_011dd368 != 0 && DAT_011dd348 == param_1)
+    else if (DAT_011dd36c == 0 && DAT_011dd368 != 0 && DAT_011dd348 == aeType)
     {
         result = DAT_011dd350;
     }
@@ -382,6 +409,7 @@ extern ActorTaskManager g_011dd3d8;
 
 // @fnv 0x00830490
 // src: XBOX_PDB 0x00830490
+// pdb: FalloutAudioMedia::MediaAccessLeave | DebugTextMedia.obj | debug, upstream name already matches, high
 void __cdecl FalloutAudioMedia_MediaAccessLeave()
 {
     g_011dd3d8.WaitForTasksDuringRendering();
@@ -399,6 +427,7 @@ extern unsigned long DAT_011dd31c;
 
 // @fnv 0x008304f0
 // src: COMMUNITY 0x008304f0
+// pdb: FalloutAudioMedia::MediaStop | FalloutAudioMedia.obj | debug, upstream name already matches, high
 void FalloutAudioMedia_MediaStop()
 {
     GetCurrentThreadId();
@@ -427,6 +456,7 @@ void FalloutAudioMedia_MediaStop()
 
 // @fnv 0x008305e0
 // src: XBOX_PDB 0x008305e0
+// pdb: FalloutAudioMedia::MediaPause | FalloutAudioMedia.obj | retail, upstream name already matches, high
 void FalloutAudioMedia_MediaPause()
 {
     GetCurrentThreadId();
@@ -436,6 +466,7 @@ void FalloutAudioMedia_MediaPause()
 }
 
 // @fnv 0x00830610
+// pdb: FalloutAudioMedia::MediaUnPause | FalloutAudioMedia.obj | retail, object-file run extension, high
 void ResetThreadFlags()
 {
     GetCurrentThreadId();
@@ -448,6 +479,7 @@ extern char DAT_011dd312;
 
 // @fnv 0x00830640
 // src: COMMUNITY 0x00830640
+// pdb: FalloutAudioMedia::MediaMenuPause | FalloutAudioMedia.obj | debug, upstream name already matches, high
 void __cdecl FalloutAudioMedia_MediaMenuPause()
 {
     GetCurrentThreadId();
@@ -461,6 +493,9 @@ extern int DAT_011dd354;
 
 // @fnv 0x008308c0
 // src: COMMUNITY 0x008308c0
+// pdb: FalloutAudioMedia::MediaGetDuration | FalloutAudioMedia.obj | retail, upstream name already matches, high
+// pdb params: aeType
+// pdb locals: ret
 unsigned int FalloutAudioMedia_MediaGetDuration(unsigned long aeType)
 {
     GetCurrentThreadId();
@@ -491,6 +526,7 @@ extern void __cdecl FormHeapFreeAndLog_00401030(void*);
 
 // Destructor that runs cleanup, optionally frees the object (and its 4-byte header when flags bit 2 is set), and returns the object pointer.
 // @fnv 0x0082f950
+// pdb: `anonymous namespace'::FAMThread::`vector deleting destructor' | FalloutAudioMedia.obj | retail, vtable slot, high
 void* FUN_0082f950_shell::ScalarDeletingDestructor(unsigned int flags)
 {
     if ((flags & 2) != 0)
@@ -698,7 +734,7 @@ class PlayerMedia
     virtual void Unk089();
     virtual void Unk08a();
     virtual bool IsInCombat(bool);
-    MediaLocationController* GetMediaLocationController();
+    MediaLocationController* PlayerCharacter_GetMediaLocationController();
 };
 extern PlayerMedia* g_thePlayer;
 extern MediaLocationController* DAT_011dd374;
@@ -707,7 +743,10 @@ extern MediaLocationRecord* DAT_011dd380;
 bool Menu_IsMenuVisible(int);
 bool FUN_00830ad0();
 // @fnv 0x0082fb70
-void UpdateMediaLocation()
+// src: XBOX_RETAIL_PDB 0x0082fb70
+// pdb: FalloutAudioMedia::Update | FalloutAudioMedia.obj | retail, call graph, high
+// pdb locals: bInCombat, latestType, ticks, pregion, pRSD
+void FalloutAudioMedia_Update()
 {
     SetEvent(DAT_011dd3b0);
     if (DAT_011dd313)
@@ -734,7 +773,7 @@ void UpdateMediaLocation()
         if (DAT_011dd378)
             DAT_011dd378 = 0;
         if (g_thePlayer &&
-            (!g_thePlayer->GetMediaLocationController() || !g_thePlayer->GetMediaLocationController()->Update(combat)))
+            (!g_thePlayer->PlayerCharacter_GetMediaLocationController() || !g_thePlayer->PlayerCharacter_GetMediaLocationController()->Update(combat)))
         {
             DAT_011dd374 = 0;
             if (DAT_011dcfb4 && DAT_011dcfb4->FUN_006733e0())
@@ -799,6 +838,8 @@ extern ::FAMThread* DAT_011dd1f4;
 // Allocates two FAMThread objects, initializes each with a 0x4000 stack and name, sets priority 1, and calls FUN_00aa6550 with 0.
 // @fnv 0x0082f830
 // src: XBOX_PDB 0x0082f830
+// pdb: FalloutAudioMedia::Startup | FalloutAudioMedia.obj | retail, string-set bridge, high
+// pdb locals: processor
 void __cdecl FalloutAudioMedia_Startup()
 {
     DAT_011dd1f4 = new ::FAMThread[2];
@@ -854,6 +895,8 @@ extern GlobalObject_0096a2d0 g_011dd3c4;
 
 // Validates and queues an audio media file for playback, storing fade, loop, and attenuation settings into the active or standby media slot.
 // @fnv 0x008300c0
+// pdb: FalloutAudioMedia::MediaOpen | FalloutAudioMedia.obj | retail, call graph (shared callers), high
+// pdb params: aiMusicType
 void __cdecl PlayAudioMedia(int aeMediaType, char const* apFileName, unsigned int auiFadeTime, bool abLoop,
                             bool abForce, float afAttenuation, unsigned int auiSynchTime)
 {
@@ -864,7 +907,7 @@ void __cdecl PlayAudioMedia(int aeMediaType, char const* apFileName, unsigned in
 
     if (aeMediaType == 9)
     {
-        StartMenu::UpdateMedia();
+        StartMenu::FalloutAudioMedia_MediaClear();
         FalloutAudioMedia_MediaAccessLeave();
         return;
     }

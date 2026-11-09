@@ -37,7 +37,7 @@ int Warning(const char* format, ...);
 // @fnv 0x0067f390
 TESObjectREFR* LocationDescriptor::GetLocationReference()
 {
-    if (m_ucLocationType == 0)
+    if (eLocType == 0)
         return pRef;
     else
         return 0;
@@ -46,7 +46,7 @@ TESObjectREFR* LocationDescriptor::GetLocationReference()
 // @fnv 0x0067f3e0
 TESObjectCELL* LocationDescriptor::GetLocationCellReference()
 {
-    if (m_ucLocationType == 1)
+    if (eLocType == 1)
         return pCell;
     else
         return 0;
@@ -56,20 +56,23 @@ TESObjectCELL* LocationDescriptor::GetLocationCellReference()
 // src: XBOX_PDB 0x0067f3c0
 void LocationDescriptor::PackageLocation_SetLocReference(TESObjectREFR* reference)
 {
-    m_ucLocationType = PLT_REFERENCE;
+    eLocType = PLT_REFERENCE;
     pRef = reference;
 }
 
 // Resolves the stored form ID to a cell, object or reference by location type and stores it, warning if the form is missing.
 // @fnv 0x0067f760
-void LocationDescriptor::InitItem(TESForm* owner)
+// pdb: PackageLocation::InitItem | PackageLocation.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: tempint, pCell, pobj, pRef
+void LocationDescriptor::InitItem(TESForm* apOwner)
 {
     if (GetLocType() == PLT_TYPE)
         return;
 
     unsigned int formID = reinterpret_cast<unsigned int>(m_pLocationObject);
-    TESForm::RemapFormIDForFile(formID, owner->GetFile(-1));
-    switch (m_ucLocationType)
+    TESForm::RemapFormIDForFile(formID, apOwner->GetFile(-1));
+    switch (eLocType)
     {
     case PLT_CELL: {
         TESObjectCELL* cell = dynamic_cast<TESObjectCELL*>(TESForm::GetFormByID(formID));
@@ -77,12 +80,12 @@ void LocationDescriptor::InitItem(TESForm* owner)
             PackageLocation_SetLocCell(cell);
         else
         {
-            if (static_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+            if (static_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                 Warning("MASTERFILE: Unable to find Package Location Cell (%08X) on owner object \"%s\".", formID,
-                        owner->GetName());
+                        apOwner->GetName());
             else
                 Warning("MASTERFILE: Unable to find Package Location Cell (%08X) on owner object (%08X).", formID,
-                        owner->GetFormID());
+                        apOwner->GetFormID());
             PackageLocation_SetLocCell(0);
         }
     }
@@ -93,12 +96,12 @@ void LocationDescriptor::InitItem(TESForm* owner)
             SetValue(object);
         else
         {
-            if (static_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+            if (static_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                 Warning("MASTERFILE: Unable to find Package Location Object (%08X) on owner object \"%s\".", formID,
-                        owner->GetName());
+                        apOwner->GetName());
             else
                 Warning("MASTERFILE: Unable to find Package Location Object (%08X) on owner object (%08X).", formID,
-                        owner->GetFormID());
+                        apOwner->GetFormID());
             SetValue(0);
         }
     }
@@ -109,12 +112,12 @@ void LocationDescriptor::InitItem(TESForm* owner)
             PackageLocation_SetLocReference(reference);
         else
         {
-            if (static_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+            if (static_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                 Warning("MASTERFILE: Unable to find Package Location Reference (%08X) on owner object \"%s\".", formID,
-                        owner->GetName());
+                        apOwner->GetName());
             else
                 Warning("MASTERFILE: Unable to find Package Location Reference (%08X) on owner object (%08X).", formID,
-                        owner->GetFormID());
+                        apOwner->GetFormID());
             PackageLocation_SetLocReference(0);
         }
     }
@@ -124,7 +127,10 @@ void LocationDescriptor::InitItem(TESForm* owner)
 
 // Returns a TESObjectREFR based on the location type: the object itself, its linked ref, a stored reference, or a process reference.
 // @fnv 0x0067f2a0
-TESObjectREFR* LocationDescriptor::ResolveLocationReference(MobileObject* object)
+// pdb: PackageLocation::GetRunningPackageLocReference | PackageLocation.obj | retail, call graph (shared callers), high
+// pdb params: apActor
+// pdb locals: pRef, pref
+TESObjectREFR* LocationDescriptor::ResolveLocationReference(MobileObject* apActor)
 {
     TESObjectREFR* reference = 0;
     TESObjectREFR* processReference;
@@ -140,46 +146,47 @@ TESObjectREFR* LocationDescriptor::ResolveLocationReference(MobileObject* object
                 reference = GetLocationReference();
             break;
         case PLT_LINKEDREF:
-            if (object && object->GetLinkedRef())
-                reference = object->GetLinkedRef();
+            if (apActor && apActor->GetLinkedRef())
+                reference = apActor->GetLinkedRef();
             break;
         case PLT_EDITORLOC:
-            if (object)
-                reference = object;
+            if (apActor)
+                reference = apActor;
             break;
         case PLT_OBJECT:
         case PLT_TYPE: {
             processReference = reinterpret_cast<TESObjectREFR*>(
-                object->FUN_008d8520()->GetActiveCombatTarget());
+                apActor->FUN_008d8520()->GetActiveCombatTarget());
             if (processReference)
                 reference = processReference;
             else
-                reference = object;
+                reference = apActor;
         }
         break;
         }
     }
-    else if (object)
-        reference = object;
+    else if (apActor)
+        reference = apActor;
     return reference;
 }
 
 // @fnv 0x00826b40
 void TESPackage::SetMustReachLocation(bool enabled)
 {
-    enabled ? packageFlags |= 2 : packageFlags &= ~2;
+    enabled ? PackData |= 2 : PackData &= ~2;
 }
 
 // @fnv 0x00826b90
 void TESPackage::SetMustComplete(bool enabled)
 {
-    enabled ? packageFlags |= 4 : packageFlags &= ~4;
+    enabled ? PackData |= 4 : PackData &= ~4;
 }
 
 // @fnv 0x00984f60
+// pdb: FORenderedTerminal::FORenderedTerminal | Interface.obj | debug, call graph, medium
 void TESPackage::SetProcedureType(PACKAGE_PROCEDURE_TYPE procedure)
 {
-    procedureArrayIndex = procedure;
+    ePROCEDURE_TYPE = procedure;
 }
 
 // @fnv 0x0055b980
@@ -208,8 +215,8 @@ struct FUN_0067f110_shell : public LocationDescriptor
 // src: GUESS 0x0067f110 (confidence: low)
 void FUN_0067f110_shell::InitializeFields_0067f110()
 {
-    m_ucLocationType = -1;
-    m_pLocationData = 0;
+    eLocType = -1;
+    iRad = 0;
     pObject = 0;
 }
 
@@ -222,10 +229,10 @@ struct FUN_0067f140_shell : public LocationDescriptor
 // src: XBOX_PDB 0x0067f140
 void FUN_0067f140_shell::PackageLocation_SetLocType(int aeLoctype)
 {
-    if (aeLoctype != m_ucLocationType)
+    if (aeLoctype != eLocType)
     {
-        m_ucLocationType = aeLoctype;
-        switch (m_ucLocationType)
+        eLocType = aeLoctype;
+        switch (eLocType)
         {
         case 0:
         case 2:
@@ -237,7 +244,7 @@ void FUN_0067f140_shell::PackageLocation_SetLocType(int aeLoctype)
             break;
         case 1:
             pObject = 0;
-            m_pLocationData = 0;
+            iRad = 0;
             break;
         }
     }
@@ -252,13 +259,13 @@ struct FUN_0067f1c0_shell : public LocationDescriptor
 // src: XBOX_PDB 0x0067f1c0
 unsigned int FUN_0067f1c0_shell::PackageLocation_GetRadius()
 {
-    switch (m_ucLocationType)
+    switch (eLocType)
     {
     case -1:
     case 1:
         return 0;
     default:
-        return m_pLocationData;
+        return iRad;
     }
 }
 
@@ -292,7 +299,7 @@ struct FUN_0067f410_shell : public LocationDescriptor
 // src: XBOX_PDB 0x0067f410
 void FUN_0067f410_shell::PackageLocation_SetLocCell(TESObjectCELL* apCell)
 {
-    m_ucLocationType = 1;
+    eLocType = 1;
     pCell = apCell;
 }
 
@@ -303,6 +310,7 @@ struct FUN_0067f970_shell : public LocationDescriptor
 
 // @fnv 0x0067f970
 // src: COMMUNITY 0x0067f970
+// pdb: PackageLocation::IsLocationGeneric | PackageLocation.obj | debug, upstream name already matches, high
 bool FUN_0067f970_shell::PackageLocation_IsLocationGeneric()
 {
     if (GetLocType() > PLT_EDITORLOC)
@@ -317,6 +325,7 @@ class TESEyes;
 class BSAnimGroupSequence;
 #include "../../include/ACTION_FLAGS.h"
 #include "../../include/ANIM_GROUP_SECTION.h"
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:
@@ -349,7 +358,7 @@ struct NiPoint3_sub : public NiPoint3
 };
 struct ExtraDataList_helper : public ExtraDataList
 {
-    void CallExtraDataListMethod36(TESObjectREFR*);
+    void ExtraDataList_SetRagDollData(TESObjectREFR*);
 };
 class P01ObjA
 {
@@ -357,7 +366,7 @@ class P01ObjA
     TESForm* GetNext();
 };
 #include "../../include/TESResponse.h"
-void __cdecl StartHostilityAndCombat(Actor*, Actor*);
+void __cdecl CommandEffect_InitCommandedActor(Actor*, Actor*);
 void __cdecl CommandEffect_UpdateCommandedActor(Actor*, Actor*);
 struct FUN_00826be0_shell : public ActiveEffect
 {
@@ -368,6 +377,9 @@ struct FUN_00826be0_shell : public ActiveEffect
 #pragma strict_gs_check(push, on)
 // @fnv 0x00826be0
 // src: XBOX_PDB 0x00826be0
+// pdb: ReanimateEffect::Update | ReanimateEffect.obj | retail, upstream name already matches, high
+// pdb params: afSecondsElapsed
+// pdb locals: pcaster, ptarget, t, matrix, endPos, fy, startRot, fz, hkmatrix, startPos, dirToCaster, hkpos, pprocess, currentPos, fx, hkquat, endRot, pav, panim, pnpc, panimData
 void FUN_00826be0_shell::ReanimateEffect_Update(float afSecondsElapsed)
 {
     Actor* ptarget =
@@ -440,7 +452,7 @@ void FUN_00826be0_shell::ReanimateEffect_Update(float afSecondsElapsed)
                 BaseProcess* pprocess = static_cast<MobileObject*>(ptarget)->FUN_008d8520();
                 if (!pprocess->FUN_0045cd60())
                     pprocess->SetIdleStateFlag(false);
-                ((ExtraDataList_helper*)((TESObjectREFR*)ptarget)->GetExtraData())->CallExtraDataListMethod36(0);
+                ((ExtraDataList_helper*)((TESObjectREFR*)ptarget)->GetExtraData())->ExtraDataList_SetRagDollData(0);
                 *(float*)((char*)this + 0x50) = *(float*)((char*)this + 4);
             }
         }
@@ -468,7 +480,7 @@ void FUN_00826be0_shell::ReanimateEffect_Update(float afSecondsElapsed)
                 *(int*)((char*)this + 0x4c) = 50;
                 ptarget->SetAnimationGroupAction(4);
                 ptarget->Actor_SetGhost(false);
-                StartHostilityAndCombat(ptarget, pcaster);
+                CommandEffect_InitCommandedActor(ptarget, pcaster);
             }
         }
         else if (*(int*)((char*)this + 0x4c) == 50)
@@ -522,28 +534,31 @@ struct FUN_0067f430_shell : public LocationDescriptor
 
 struct FUN_0067f600_shell : public LocationDescriptor
 {
-    bool IsDifferentFrom(LocationDescriptor* other);
+    bool PackageLocation_Compare(LocationDescriptor* apCompare);
     unsigned int PackageLocation_GetRadius();
     int GetObjectType();
 };
 
 // @fnv 0x0067f600
-bool FUN_0067f600_shell::IsDifferentFrom(LocationDescriptor* other)
+// src: XBOX_DEBUG_PDB 0x0067f600
+// pdb: PackageLocation::Compare | PackageLocation.obj | debug, call graph, high
+// pdb params: apCompare
+bool FUN_0067f600_shell::PackageLocation_Compare(LocationDescriptor* apCompare)
 {
-    if (!other)
+    if (!apCompare)
         return true;
-    if (GetLocType() != other->GetLocType())
+    if (GetLocType() != apCompare->GetLocType())
         return true;
-    if (PackageLocation_GetRadius() != reinterpret_cast<FUN_0067f600_shell*>(other)->PackageLocation_GetRadius())
+    if (PackageLocation_GetRadius() != reinterpret_cast<FUN_0067f600_shell*>(apCompare)->PackageLocation_GetRadius())
         return true;
-    if (GetLocationReference() != other->GetLocationReference())
+    if (GetLocationReference() != apCompare->GetLocationReference())
         return true;
-    if (GetLocationCellReference() != other->GetLocationCellReference())
+    if (GetLocationCellReference() != apCompare->GetLocationCellReference())
         return true;
     if (reinterpret_cast<FUN_0067f430_shell*>(this)->GetLocationObject() !=
-        reinterpret_cast<FUN_0067f430_shell*>(other)->GetLocationObject())
+        reinterpret_cast<FUN_0067f430_shell*>(apCompare)->GetLocationObject())
         return true;
-    if (GetObjectType() != reinterpret_cast<FUN_0067f600_shell*>(other)->GetObjectType())
+    if (GetObjectType() != reinterpret_cast<FUN_0067f600_shell*>(apCompare)->GetObjectType())
         return true;
     return false;
 }
@@ -597,12 +612,15 @@ void __cdecl _FUN_00485990(unsigned int chunkId, ChunkPayloadHandler* location, 
 
 struct FUN_0067f6c0_shell : public LocationDescriptor
 {
-    void PackageLocation_Save(unsigned int chunkId);
+    void PackageLocation_Save(unsigned int aeChunk);
 };
 
 // @fnv 0x0067f6c0
 // src: XBOX_PDB 0x0067f6c0
-void FUN_0067f6c0_shell::PackageLocation_Save(unsigned int chunkId)
+// pdb: PackageLocation::Save | PackageLocation.obj | retail, upstream name already matches, high
+// pdb params: aeChunk
+// pdb locals: locStruct
+void FUN_0067f6c0_shell::PackageLocation_Save(unsigned int aeChunk)
 {
     ChunkPayloadHandler locStruct;
     memset(&locStruct, 0, sizeof(locStruct));
@@ -619,7 +637,7 @@ void FUN_0067f6c0_shell::PackageLocation_Save(unsigned int chunkId)
     if (_FUN_00401500())
         locStruct.PACK_LOC_FILE_Endian();
 
-    _FUN_00485990(chunkId, &locStruct, 0xc);
+    _FUN_00485990(aeChunk, &locStruct, 0xc);
 
     if (_FUN_00401500())
         locStruct.PACK_LOC_FILE_Endian();
@@ -681,8 +699,8 @@ class FUN_0067f220_cls
 {
   public:
     unsigned int m_00;
-    PkgLocNode* Lookup(int a1);
-    bool LookupAndStore(int a1, int a2, unsigned char* out);
+    PkgLocNode* Lookup(int apActor);
+    bool LookupAndStore(int apPackOwner, int apRef, unsigned char* abRefInsideTriggerOut);
 };
 
 class PkgLocNode
@@ -700,16 +718,19 @@ class PkgLocChild
 class PkgLocSink
 {
   public:
-    unsigned char Store(int a2, PkgLocNode* p);
+    unsigned char Store(int apRef, PkgLocNode* apTrigger);
 };
 
 PkgLocSink* PkgLocFind(PkgLocNode* p);
 
 // @fnv 0x0067f220
-bool FUN_0067f220_cls::LookupAndStore(int a1, int a2, unsigned char* pucOut)
+// pdb: PackageLocation::IsRefAtLocationTrigger | PackageLocation.obj | retail, call graph (shared callers), high
+// pdb params: apPackOwner, apRef, abRefInsideTriggerOut
+// pdb locals: plistener, ptrigger
+bool FUN_0067f220_cls::LookupAndStore(int apPackOwner, int apRef, unsigned char* abRefInsideTriggerOut)
 {
-    *pucOut = 0;
-    PkgLocNode* p = Lookup(a1);
+    *abRefInsideTriggerOut = 0;
+    PkgLocNode* p = Lookup(apPackOwner);
     if (p == 0)
     {
         return false;
@@ -723,7 +744,7 @@ bool FUN_0067f220_cls::LookupAndStore(int a1, int a2, unsigned char* pucOut)
     {
         return true;
     }
-    *pucOut = pSink->Store(a2, p);
+    *abRefInsideTriggerOut = pSink->Store(apRef, p);
     return true;
 }
 
@@ -736,11 +757,13 @@ struct FUN_0067fa00_shell : public LocationDescriptor
 // Serializes a form ID and object reference through the save/load game, writing the object's form ID for cases 0-4 and the pointer for case 5.
 // @fnv 0x0067fa00
 // src: GUESS 0x0067fa00 (confidence: medium)
+// pdb: PackageLocation::SaveGame | PackageLocation.obj | retail, object-file run extension, low
+// pdb locals: iformID
 void FUN_0067fa00_shell::SaveTargetReference()
 {
     DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(this, 1);
-    DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&m_pLocationData, 4);
-    switch (m_ucLocationType)
+    DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&iRad, 4);
+    switch (eLocType)
     {
         break;
     case 0:
@@ -774,6 +797,8 @@ struct FUN_0067fb20_holder
 
 // For status 0-4, replaces storedValue with the result of FUN_004839c0(storedValue); other statuses do nothing.
 // @fnv 0x0067fb20
+// pdb: PackageLocation::InitLoadGame | PackageLocation.obj | retail, object-file run extension, low
+// pdb locals: iformID
 void FUN_0067fb20_holder::UpdateStoredValue()
 {
     switch (status)
@@ -801,16 +826,18 @@ struct LocationInputStream
 };
 struct FUN_0067fb60_shell : LocationDescriptor
 {
-    void PackageLocation_SaveGame(LocationInputStream* input);
+    void PackageLocation_SaveGame(LocationInputStream* apSaveGameBuffer);
 };
 // Reads a one-byte type tag and a 4-byte value from the stream, then loads pObject as a form reference or a raw 4-byte value depending on the tag.
 // @fnv 0x0067fb60
 // src: XBOX_PDB 0x0067fb60
-void FUN_0067fb60_shell::PackageLocation_SaveGame(LocationInputStream* pStream)
+// pdb: PackageLocation::SaveGame | PackageLocation.obj | retail, call graph (shared callers), high
+// pdb locals: iformID
+void FUN_0067fb60_shell::PackageLocation_SaveGame(LocationInputStream* apSaveGameBuffer)
 {
-    pStream->FUN_00865e50(&m_ucLocationType, 1, 0);
-    pStream->FUN_00865e50(&m_pLocationData, 4, 0);
-    switch (m_ucLocationType)
+    apSaveGameBuffer->FUN_00865e50(&eLocType, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&iRad, 4, 0);
+    switch (eLocType)
     {
     case -1:
         break;
@@ -819,10 +846,10 @@ void FUN_0067fb60_shell::PackageLocation_SaveGame(LocationInputStream* pStream)
     case 2:
     case 3:
     case 4:
-        pStream->FUN_00865df0(pObject, 0);
+        apSaveGameBuffer->FUN_00865df0(pObject, 0);
         break;
     case 5:
-        pStream->FUN_00865e50(&pObject, 4, 0);
+        apSaveGameBuffer->FUN_00865e50(&pObject, 4, 0);
         break;
     }
 }
@@ -837,17 +864,19 @@ class PackageLoadStream
 class FUN_0067fbe0_cls : public LocationDescriptor
 {
   public:
-    void PackageLocation_LoadGame_0067fbe0(PackageLoadStream* apStream);
+    void PackageLocation_LoadGame(PackageLoadStream* apLoadGameBuffer);
 };
 
 // Reads a type byte and a 4-byte value from the stream, then reads pObject as a pointer for types 0-4 or as 4 raw bytes for type 5.
 // @fnv 0x0067fbe0
-// src: XBOX_PDB 0x0067fbe0
-void FUN_0067fbe0_cls::PackageLocation_LoadGame_0067fbe0(PackageLoadStream* apStream)
+// src: XBOX_RETAIL_PDB 0x0067fbe0
+// pdb: PackageLocation::LoadGame | PackageLocation.obj | retail, call graph (shared callers), high
+// pdb locals: iformID
+void FUN_0067fbe0_cls::PackageLocation_LoadGame(PackageLoadStream* apLoadGameBuffer)
 {
-    apStream->ReadBytes(&m_ucLocationType, 1);
-    apStream->ReadBytes(&m_pLocationData, 4);
-    switch (m_ucLocationType)
+    apLoadGameBuffer->ReadBytes(&eLocType, 1);
+    apLoadGameBuffer->ReadBytes(&iRad, 4);
+    switch (eLocType)
     {
         break;
     case 0:
@@ -855,10 +884,10 @@ void FUN_0067fbe0_cls::PackageLocation_LoadGame_0067fbe0(PackageLoadStream* apSt
     case 2:
     case 3:
     case 4:
-        apStream->ReadPtr(&pObject);
+        apLoadGameBuffer->ReadPtr(&pObject);
         break;
     case 5:
-        apStream->ReadBytes(&pObject, 4);
+        apLoadGameBuffer->ReadBytes(&pObject, 4);
         break;
     }
 }
@@ -899,7 +928,7 @@ unsigned short FUN_0067f990_C::PackageLocation_GetSaveSize()
 namespace fnv_0067faa0 {
 struct FileQ
 {
-    void TESSaveLoadGame_LoadGameDataOLD(void* p, int n);
+    void TESSaveLoadGame_LoadGameDataOLD(void* apData, int aiSize);
     void FUN_00857aa0(void* p, int n);
 };
 extern FileQ* DAT_011de45c;
@@ -913,6 +942,8 @@ struct OwnQ
 };
 // @fnv 0x0067faa0
 // src: XBOX_PDB 0x0067faa0
+// pdb: PackageLocation::LoadGame | PackageLocation.obj | retail, object-file run extension, low
+// pdb locals: iformID
 void OwnQ::PackageLocation_LoadGame()
 {
     int iTmp;
@@ -940,14 +971,17 @@ TESForm* TESForm_GetFormByNumericID(unsigned int formID);
 
 struct FUN_0067fc50_shell : LocationDescriptor
 {
-    void ResolveObject(int unused);
+    void PackageLocation_InitLoadGame(int apLoadGameBuffer);
 };
 
 // For PLT_REFERENCE, PLT_CELL, PLT_CURRLOC, PLT_EDITORLOC, or PLT_OBJECT, resolves non-null pObject through FUN_004839c0.
 // @fnv 0x0067fc50
-void FUN_0067fc50_shell::ResolveObject(int unused)
+// src: XBOX_RETAIL_PDB 0x0067fc50
+// pdb: PackageLocation::InitLoadGame | PackageLocation.obj | retail, object-file run extension, high
+// pdb locals: iformID
+void FUN_0067fc50_shell::PackageLocation_InitLoadGame(int apLoadGameBuffer)
 {
-    switch (m_ucLocationType)
+    switch (eLocType)
     {
     case PLT_REFERENCE:
     case PLT_CELL:

@@ -5,7 +5,8 @@
 
 // Initializes the character and operand stacks and sets the error state to zero.
 // @fnv 0x00593490
-ExpressionEvaluator::ExpressionEvaluator()
+// pdb: CExpression::CExpression | Expression.obj | debug, call graph, high
+CExpression::CExpression()
 {
     reinterpret_cast<ExpressionCharStackInit*>(&m_kOperatorStack)->Stack_enum_EXPRESSION_OPERATORS_64_Stack_enum_EXPRESSION_OPERATORS_64();
     reinterpret_cast<ExpressionOperandStackInit*>(&m_kOperandStack)->InitStack();
@@ -76,6 +77,8 @@ struct Holder5934d0
     void SetError(int);
 };
 // @fnv 0x005934d0
+// pdb: CExpression::SetError | Expression.obj | debug, object-file run extension, low
+// pdb params: errorCode
 void Holder5934d0::SetError(int aiErrorCode)
 {
     err = aiErrorCode;
@@ -167,6 +170,10 @@ struct ExpressionConverter
 };
 // Converts the infix expression in data to postfix in postfix using an operator stack, returning postfix and setting length, or 0 on error.
 // @fnv 0x00593500
+// pdb: CExpression::GetNextToken | Expression.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CExpression::InfixToPostfix
+// pdb params: appInput, apToken, aeOperator, abEndian, apScriptData
+// pdb locals: i2, ch, bFirstPass, uiSize, tmp, i1, tok, stmp1Endian, sSize, bPartialOperator, bFound, pops, n, i, pop
 char* ExpressionConverter::ConvertToPostfix(const char* pInfix, unsigned int* puiLength)
 {
     char token[64];

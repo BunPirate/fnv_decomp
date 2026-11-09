@@ -5,16 +5,17 @@
 class BipedAnim;
 class BGSLoadFormBuffer;
 
+// pdb: class Character, size 0x1c8, bases: Actor, 6 members
 class Character : public Actor
 {
 public:
     BipedAnim* pBiped;
-    float m_fFirstResetValue;
-    float m_fSecondValue;
-    bool m_bTrespassing;
-    bool m_bActorGuard;
+    float fArmorRating;
+    float fArmorThreshold;
+    bool bTrespassing;
+    bool bGuard;
     unsigned short layoutPadding1C2;
-    float m_fThirdValue;
+    float fequippedweight;
 
     virtual void Unk_137(void);
     virtual void Unk_138(void);

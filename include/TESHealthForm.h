@@ -4,10 +4,11 @@
 
 class TESForm;
 
+// pdb: class TESHealthForm, size 0x8, bases: BaseFormComponent, 1 members
 class TESHealthForm : public BaseFormComponent
 {
 public:
-    unsigned int m_uiHealthValue;
+    unsigned int iHealth;
 
     TESHealthForm();
     ~TESHealthForm();
@@ -17,7 +18,7 @@ public:
     void InitializeComponent();
     void ClearComponent();
     void BaseFormRecord(BaseFormComponent* component);
-    bool IsEqualToBase(BaseFormComponent* component);
+    bool IsEqualToBase(BaseFormComponent* apCompareFC);
     void Save();
     unsigned int GetBaseHealth();
     static TESHealthForm* GetFormAsHealthForm(TESForm* form);

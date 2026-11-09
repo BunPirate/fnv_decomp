@@ -44,6 +44,7 @@ enum KNOCK_STATE_ENUM;
 enum RESET_3D_FLAGS;
 
 #pragma pack(push, 4)
+// pdb: class MiddleHighProcess, size 0x25c, bases: MiddleLowProcess, 93 members
 class MiddleHighProcess : public MiddleLowProcess
 {
 public:
@@ -71,110 +72,110 @@ public:
     virtual bool ShouldAttackTarget(Actor*, Actor*, bool, bool, ActorCombatGroup*, bool, bool, bool, bool, bool, bool,
                                     bool, TESPackage*); // slot 207 override, 0x00916880 (HighProcess 0x009001c0 calls it directly)
 
-    BSSimpleList<TESObjectREFR*> m_kReferenceList; // 0x0C8
-    BSSimpleList<TESObjectREFR*> m_kSecondaryReferenceList; // 0x0D0
-    float m_kNinthUnshownMember; // 0x0D8
-    float m_kEighthUnshownMember; // 0x0DC
-    bool m_bPackageStateFlag2; // 0x0E0
-    bool m_bPackageStateFlag; // 0x0E1
-    bool m_bPackageStateFlag3; // 0x0E2
-    bool m_bPackageStateFlag4; // 0x0E3
-    ActorPackageContext PackageReference; // 0x0E4
-    NiPoint3 m_kPackageTargetPosition; // 0x0FC
-    PACKAGE_OBJECT_TYPE m_ePackageObjectType; // 0x108
-    TESIdleForm* m_pPackageIdleForm; // 0x10C
-    bool m_kSecondUnshownMember; // 0x110
+    BSSimpleList<TESObjectREFR*> DeadDetectList; // 0x0C8
+    BSSimpleList<TESObjectREFR*> RefListChairBed; // 0x0D0
+    float fPursueTimer; // 0x0D8
+    float fEquippedWeight; // 0x0DC
+    bool bDoneOnce; // 0x0E0
+    bool bAimingTarget; // 0x0E1
+    bool bNeedReparentWeapon; // 0x0E2
+    bool bDrawn; // 0x0E3
+    ActorPackageContext RunOncePackage; // 0x0E4
+    NiPoint3 lastSeenPostion; // 0x0FC
+    PACKAGE_OBJECT_TYPE eUseItem; // 0x108
+    TESIdleForm* pLastIdlePlayed; // 0x10C
+    bool bPickPackIdle; // 0x110
     unsigned char layoutPadding111[3]; // 0x111
     InventoryStackRecord* pWeapon; // 0x114
     InventoryStackRecord* pAmmo; // 0x118
-    NiPointer<QueuedFile> m_pQueuedWeaponFile; // 0x11C
-    NiPointer<ActorSupportClass> m_pWeaponData; // 0x120
-    bool m_bFirstWeaponFlag; // 0x124
-    bool m_bSecondWeaponFlag; // 0x125
-    bool m_bThirdWeaponFlag; // 0x126
-    bool m_bFourthWeaponFlag; // 0x127
-    bool m_bFifthWeaponFlag; // 0x128
-    bool m_bSixthWeaponFlag; // 0x129
-    bool m_bSeventhWeaponFlag; // 0x12A
+    NiPointer<QueuedFile> spWeaponPreload; // 0x11C
+    NiPointer<ActorSupportClass> spReserveProjectileClones; // 0x120
+    bool bWeaponGrenade; // 0x124
+    bool bWeaponMine; // 0x125
+    bool bWeaponThrown; // 0x126
+    bool bHeavyArmorWorn; // 0x127
+    bool bPowerArmorWorn; // 0x128
+    bool bPowerArmorHelmet; // 0x129
+    bool bHasBackPackWorn; // 0x12A
     unsigned char layoutPadding12B[1]; // 0x12B
-    NiNode* m_pActorNode; // 0x12C
-    NiAVObject* m_pActorObject; // 0x130
-    bool m_bFirstActorFlag; // 0x134
-    bool m_bAdditionalActorFlag; // 0x135
+    NiNode* pWeaponBone; // 0x12C
+    NiAVObject* pFireNode; // 0x130
+    bool bWantWeaponDrawn; // 0x134
+    bool bWeaponDrawn; // 0x135
     unsigned char layoutPadding136[2]; // 0x136
-    NiPointer<bhkCharacterController> m_pCharacterController; // 0x138
-    char m_cCharacterControllerState; // 0x13C
-    unsigned char m_ucFurnitureInteractionState; // 0x13D
+    NiPointer<bhkCharacterController> spCharController; // 0x138
+    char cKnockState; // 0x13C
+    unsigned char cSitSleepState; // 0x13D
     unsigned char layoutPadding13E[2]; // 0x13E
     TESObjectREFR* m_pFurnitureReference; // 0x140
-    unsigned char m_ucFurnitureMarkerIndex; // 0x144
+    unsigned char cCurrentFurnitureIndex; // 0x144
     unsigned char layoutPadding145[3]; // 0x145
     FurnitureMark FurnitureMarker; // 0x148
-    Actor* m_pCombatTarget; // 0x158
-    TESObjectWEAP* m_pEquippedWeapon; // 0x15C
-    MagicItem* m_pFirstMagicItem; // 0x160
-    MagicItem* m_pSecondMagicItem; // 0x164
-    bool m_bWeaponOut; // 0x168
+    Actor* pCommandingActor; // 0x158
+    TESObjectWEAP* pLastBoundWeapon; // 0x15C
+    MagicItem* pCurrentSpell; // 0x160
+    MagicItem* pCurrentPackageSpell; // 0x164
+    bool bCheckMagicNode; // 0x168
     unsigned char layoutPadding169[3]; // 0x169
-    TESEffectShader* m_pEffectShader; // 0x16C
-    float m_fFirstEffectShaderValue; // 0x170
-    float m_fSecondEffectShaderValue; // 0x174
-    BSFaceGenAnimationData* m_pFaceGenAnimationData; // 0x178
-    bool m_bFirstFaceGenFlag; // 0x17C
-    bool m_kSixthUnshownMember; // 0x17D
-    bool m_bThirdFaceGenFlag; // 0x17E
-    bool m_kSeventhUnshownMember; // 0x17F
-    bool m_kFifthUnshownMember; // 0x180
+    TESEffectShader* pCurrentWeaponEffect; // 0x16C
+    float fAlphaMult; // 0x170
+    float fScriptRefractPower; // 0x174
+    BSFaceGenAnimationData* m_pFaceAnimationData; // 0x178
+    bool bRefreshMagicShaderEffects; // 0x17C
+    bool bRefreshMagicShaderEffectBody; // 0x17D
+    bool bRefreshMagicShaderEffectWeapon; // 0x17E
+    bool bRefreshMagicShaderEffectLoading; // 0x17F
+    bool bRefreshFlareFlags; // 0x180
     unsigned char layoutPadding181[3]; // 0x181
-    unsigned int m_uiAnimationStateFlags; // 0x184
-    bool m_bAiming; // 0x188
-    bool m_bAimStateFlag; // 0x189
-    bool m_bCombatStateFlag; // 0x18A
-    bool m_bFourthStateFlag; // 0x18B
-    unsigned char m_ucProcessState; // 0x18C
-    bool m_bEquipStateFlag; // 0x18D
+    unsigned int uiFlareFlags; // 0x184
+    bool bPickPocketed; // 0x188
+    bool bDoneClothesChange; // 0x189
+    bool bDetectLifeDetected; // 0x18A
+    bool bSummonedCreature; // 0x18B
+    unsigned char cUpdate3DModel; // 0x18C
+    bool bForceNextUpdate; // 0x18D
     unsigned char layoutPadding18E[2]; // 0x18E
-    int m_iIdleState; // 0x190
-    TESIdleForm* m_pCurrentIdleForm; // 0x194
-    float m_fIdleAnimationTime; // 0x198
-    bool m_kThirdUnshownMember; // 0x19C
-    bool m_kFourthUnshownMember; // 0x19D
+    int iPackageIdleNumber; // 0x190
+    TESIdleForm* pCurrentIdle; // 0x194
+    float fPackageIdleTimer; // 0x198
+    bool bPlayedBeginIdles; // 0x19C
+    bool bPlayedEndIdles; // 0x19D
     unsigned char layoutPadding19E[2]; // 0x19E
-    LipSyncAnimation* m_pLipSyncAnimation; // 0x1A0
-    unsigned int m_uiLipSyncState; // 0x1A4
-    int m_iProjectileCount; // 0x1A8
-    BSSimpleList<ArrowProjectile*>* m_pArrowProjectileList; // 0x1AC
-    BSSimpleList<MiddleHighProcess__DeferredHideLimb*> m_kDeferredHideLimbList; // 0x1B0
-    BSSimpleList<ActiveEffect*>* m_pActiveEffectList; // 0x1B8
-    MagicTarget* m_pMagicTarget; // 0x1BC
-    Animation* pCurrentAnimation; // 0x1C0
-    BSAnimGroupSequence* m_apAnimGroupSequences[3]; // 0x1C4
-    float m_fAnimationTime; // 0x1D0
-    float m_fAnimationSpeed; // 0x1D4
-    unsigned char m_ucAnimationState; // 0x1D8
-    bool m_bFirstAnimationFlag; // 0x1D9
-    bool m_bAnimationStateFlag; // 0x1DA
+    LipSyncAnimation* pCreatureLipsynchAnim; // 0x1A0
+    unsigned int iCreatureLipsynchStartTime; // 0x1A4
+    int iReservationSlot; // 0x1A8
+    BSSimpleList<ArrowProjectile*>* pAttachedArrowList; // 0x1AC
+    BSSimpleList<MiddleHighProcess__DeferredHideLimb*> DeferredHideLimbList; // 0x1B0
+    BSSimpleList<ActiveEffect*>* pActiveEffectList; // 0x1B8
+    MagicTarget* pDesiredTarget; // 0x1BC
+    Animation* pAnimation; // 0x1C0
+    BSAnimGroupSequence* pAimSequence[3]; // 0x1C4
+    float fAimLooking; // 0x1D0
+    float fAutomaticShotDelay; // 0x1D4
+    unsigned char cShotsToFire; // 0x1D8
+    bool bSustainedFire; // 0x1D9
+    bool bBeenAttacked; // 0x1DA
     unsigned char layoutPadding1DB[1]; // 0x1DB
-    NiNode* m_apBodyPartNodes[15]; // 0x1DC
-    NiAVObject* m_pFirstAttachedObject; // 0x218
-    NiAVObject* m_pSecondAttachedObject; // 0x21C
-    NiPointer<BSShaderPPLightingProperty> m_pLightingProperty; // 0x220
-    BSBound* m_pBound; // 0x224
-    bool m_kFieldAfterWeaponFlags; // 0x228
+    NiNode* pDamageRootNode[15]; // 0x1DC
+    NiAVObject* pHeadNode; // 0x218
+    NiAVObject* pTorsoNode; // 0x21C
+    NiPointer<BSShaderPPLightingProperty> pLightingProperty; // 0x220
+    BSBound* pBSBound; // 0x224
+    bool bIronSights; // 0x228
     unsigned char layoutPadding229[1]; // 0x229
-    short m_sBoundDataValue; // 0x22A
-    unsigned int m_kEleventhUnshownMember; // 0x22C
-    BSSimpleList<PaddedFloatRecord*>* m_pkPaddedFloatRecordList; // 0x230
-    float m_kTenthUnshownMember; // 0x234
-    float m_fFirstFaceGenValue; // 0x238
-    float m_fSecondFaceGenValue; // 0x23C
-    BooleanFloatQuery* m_pData; // 0x240
-    int m_iFaceGenNodeIndex; // 0x244
-    BSFaceGenNiNode* m_pFirstFaceGenNode; // 0x248
-    BSFaceGenNiNode* m_pSecondFaceGenNode; // 0x24C
-    NiAVObject* m_pFaceGenObject; // 0x250
-    BooleanFloatQuery* m_pAdditionalFaceGenData; // 0x254
-    unsigned int m_uiFaceGenDataFlags; // 0x258
+    short iAnimActionSuccess; // 0x22A
+    unsigned int iMovementAnimations; // 0x22C
+    BSSimpleList<PaddedFloatRecord*>* pListItemstoEquipUnequip; // 0x230
+    float fRadiationDelta; // 0x234
+    float fRadiationMagicDelta; // 0x238
+    float fRadiationWaterDelta; // 0x23C
+    BooleanFloatQuery* pLastHitData; // 0x240
+    int iWeaponConditionStage; // 0x244
+    BSFaceGenNiNode* pFaceNode; // 0x248
+    BSFaceGenNiNode* pFaceNodeSkinned; // 0x24C
+    NiAVObject* pAnimFace; // 0x250
+    BooleanFloatQuery* pLastAttackHitData; // 0x254
+    unsigned int nFurnitureListTimer; // 0x258
 
     MiddleHighProcess();
     virtual ~MiddleHighProcess();

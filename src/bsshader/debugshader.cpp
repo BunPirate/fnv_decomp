@@ -69,14 +69,14 @@ inline void NiD3DShaderConstantMap::DecRefCount()
     NiRefObject::DecRefCount();
 }
 
-inline void NiD3DPass::SetVertexShader(NiD3DVertexShader* shader)
+inline void NiD3DPass::SetVertexShader(NiD3DVertexShader* pkVertexShader)
 {
-    m_spVertexShader = shader;
+    m_spVertexShader = pkVertexShader;
 }
 
-inline void NiD3DPass::SetPixelShader(NiD3DPixelShader* shader)
+inline void NiD3DPass::SetPixelShader(NiD3DPixelShader* pkPixelShader)
 {
-    m_spPixelShader = shader;
+    m_spPixelShader = pkPixelShader;
 }
 
 inline void NiD3DPass::SetRenderState(unsigned int state, unsigned int value, bool save)
@@ -93,10 +93,12 @@ inline NiScreenElementsData* NiScreenElements::GetData()
 
 inline const NiRTTI* NiRTTI::GetBaseRTTI() const
 {
-    return m_pBaseRTTI;
+    return m_pkBaseRTTI;
 }
 
 // @fnv 0x00bd1950
+// pdb: DebugShader::DebugShader | DebugShader.obj | retail, call graph, high
+// pdb locals: i
 BloodSplatterBeamShader::BloodSplatterBeamShader()
 {
     iShaderType = 10;
@@ -110,7 +112,10 @@ BloodSplatterBeamShader::BloodSplatterBeamShader()
 }
 
 // @fnv 0x00bd20e0
-bool BloodSplatterBeamShader::ConfigureShaderPass()
+// src: XBOX_RETAIL_PDB 0x00bd20e0
+// pdb: DebugShader::LoadStagesAndPasses | DebugShader.obj | retail, call graph, high
+// pdb locals: spStage
+bool BloodSplatterBeamShader::LoadStagesAndPasses()
 {
     NiD3DPass::CreateD3DPass(spPass[0]);
     NiPointer<BeamStage> stage;
@@ -131,6 +136,9 @@ bool BloodSplatterBeamShader::ConfigureShaderPass()
 }
 
 // @fnv 0x00bd23f0
+// src: XBOX_RETAIL_PDB 0x00bd23f0
+// pdb: DebugShader::CreateShader | DebugShader.obj | retail, call graph, high
+// pdb locals: spShaderDecl, pshader
 BSShader* BloodSplatterBeamShader::CreateShader()
 {
     NiD3DVertexDeclaration* decl = NiD3DVertexDeclaration::Create(DAT_011f9508, 2, 1);
@@ -140,7 +148,7 @@ BSShader* BloodSplatterBeamShader::CreateShader()
     BloodSplatterBeamShader* shader = new BloodSplatterBeamShader;
     shader->Initialize();
     shader->InitializeShaderData();
-    shader->ConfigureShaderPass();
+    shader->LoadStagesAndPasses();
     shader->UseShaderDeclaration(decl);
     return shader;
 }
@@ -151,12 +159,14 @@ struct FUN_00bd23c0_shell
 {
     virtual ~FUN_00bd23c0_shell();
     void FUN_00bd1ab0();
-    void* DestroyIfFlagged(int);
+    void* DebugShader_ScalarDtor(int);
 };
 
 // Calls FUN_00bd1ab0, then deletes this with size 0xc0 when arg has bit 0 set, and returns this.
 // @fnv 0x00bd23c0
-void* FUN_00bd23c0_shell::DestroyIfFlagged(int arg)
+// src: XBOX_RETAIL_PDB 0x00bd23c0
+// pdb: DebugShader::`scalar deleting destructor' | DebugShader.obj | retail, object-file gap fill, high
+void* FUN_00bd23c0_shell::DebugShader_ScalarDtor(int arg)
 {
     FUN_00bd1ab0();
     if (arg & 1)
@@ -171,6 +181,7 @@ struct FUN_00bd2720_shell
 
 // @fnv 0x00bd2720
 // src: XBOX_PDB 0x00bd2720
+// pdb: DistantLODShader::ReloadShaders | DistantLODShader.obj | debug, upstream name already matches, high
 void FUN_00bd2720_shell::DistantLODShader_ReloadShaders()
 {
     void** v = *(void***)this;
@@ -179,14 +190,15 @@ void FUN_00bd2720_shell::DistantLODShader_ReloadShaders()
 
 struct FUN_00bd3f80_shell
 {
-    void ProcessState_00bd3f80();
+    void SpeedTreeBranchShader_ReloadShaders();
 };
 extern int _fnv_particle_shader_renderer_level;
 typedef void(__thiscall* FUN_00bd3f80_Fn)(FUN_00bd3f80_shell*);
 // Calls virtual slots 81 and 87 on this, and slot 88 when _fnv_particle_shader_renderer_level is at least 2.
 // @fnv 0x00bd3f80
-// src: GUESS 0x00bd3f80 (confidence: low)
-void FUN_00bd3f80_shell::ProcessState_00bd3f80()
+// src: XBOX_RETAIL_PDB 0x00bd3f80
+// pdb: SpeedTreeBranchShader::ReloadShaders | SpeedTreeBranchShader.obj | retail, object-file gap fill, high
+void FUN_00bd3f80_shell::SpeedTreeBranchShader_ReloadShaders()
 {
     ((FUN_00bd3f80_Fn*)*(void***)this)[81](this);
     ((FUN_00bd3f80_Fn*)*(void***)this)[87](this);
@@ -210,6 +222,8 @@ void FUN_00bd2b40_class::CallVirtualWithMember()
 
 // Clears the vertex shader, both pixel shaders, the screen elements and all 16 texture pointers.
 // @fnv 0x00bd1ab0
+// pdb: DebugShader::~DebugShader | DebugShader.obj | retail, object-file gap fill, high
+// pdb locals: i
 BloodSplatterBeamShader::~BloodSplatterBeamShader()
 {
     m_spTreeVertexShader = 0;
@@ -316,13 +330,15 @@ class FUN_00bd1c50_cls
     unsigned int m_6c[20];
     unsigned int m_bc;
 
-    int DebugShader_UpdatePipeline(int a1, int a2, int a3, int a4, int a5, int a6, int a7);
+    int DebugShader_UpdatePipeline(int apGeometry, int apSkin, int apBuffData, int apState, int apEffects, int aWorld, int aWorldBound);
 };
 
 // Updates the first texture stage and pixel shader, then selects this render pass.
 // @fnv 0x00bd1c50
 // src: COMMUNITY 0x00bd1c50
-int FUN_00bd1c50_cls::DebugShader_UpdatePipeline(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
+// pdb: DebugShader::UpdatePipeline | DebugShader.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, apSkin, apBuffData, apState, apEffects, aWorld, aWorldBound
+int FUN_00bd1c50_cls::DebugShader_UpdatePipeline(int apGeometry, int apSkin, int apBuffData, int apState, int apEffects, int aWorld, int aWorldBound)
 {
     v59();
     m_5c->m_kStages.m_pBase[0].m_pObject->m_uiTextureStage = m_6c[m_bc];
@@ -355,13 +371,16 @@ class SpeedTreeFrondShaderX
     NiPointer<NiD3DVertexShader> m_pFrondVertexShaderVariants[4];
     NiPointer<NiD3DPixelShader> m_pFrondPixelShaderVariants[2];
 
-    NiD3DVertexShader* FUN_00be0fe0(char* apPath, ShaderMacroX* apMacros, const char* apProfile, char* apName);
+    NiD3DVertexShader* FUN_00be0fe0(char* apFilename, ShaderMacroX* apMacro, const char* apTarget, char* apCacheName);
     NiD3DPixelShader* FUN_00be1750(char* apPath, ShaderMacroX* apMacros, const char* apProfile, char* apName);
-    void CreateShaders();
+    void SpeedTreeFrondShader_LoadShaders();
 };
 
 // @fnv 0x00bd2730
-void SpeedTreeFrondShaderX::CreateShaders()
+// src: XBOX_RETAIL_PDB 0x00bd2730
+// pdb: SpeedTreeFrondShader::LoadShaders | SpeedTreeFrondShader.obj | retail, unique string literal, high
+// pdb locals: pvs1Shader, ptempFName, ptarget, pcacheFName, i, pps1Shader
+void SpeedTreeFrondShaderX::SpeedTreeFrondShader_LoadShaders()
 {
     ShaderDescX kVertexShaders[4];
     ShaderDescX kPixelShaders[2];
@@ -459,6 +478,8 @@ struct DebugShaderLoader : BloodSplatterBeamShader
 };
 
 // @fnv 0x00bd16f0
+// pdb: DebugShader::LoadShaders | DebugShader.obj | retail, string-set bridge, high
+// pdb locals: pixelShaderParams, ptempFName, ptarget, vertexShaderParams, pixelShaderChannelMaskParams, pcacheFName
 void DebugShaderLoader::LoadDebugShaders()
 {
     const char* profile = NiD3DGPUProgramCache::GetPixelShaderProfile(true);
@@ -509,7 +530,7 @@ struct QuadUpdate
 
 inline bool InsertScreenElement(NiScreenElements* geometry, int a, int b, int c)
 {
-    return geometry->GetData()->FUN_00a87ae0(a, b, c);
+    return geometry->GetData()->NiScreenElementsData_Insert(a, b, c);
 }
 
 inline bool SetScreenElementRectangle(NiScreenElements* geometry, int a, float b, float c, float d, float e)
@@ -534,11 +555,14 @@ struct DebugShaderInit : BloodSplatterBeamShader
         return m_pMenuBackgroundScreenGeometry.m_pObject;
     }
     bool FUN_00be0870();
-    bool InitDebugShader();
+    bool DebugShader_Initialize();
 };
 extern const float DAT_011ae620;
 // @fnv 0x00bd24c0
-bool DebugShaderInit::InitDebugShader()
+// src: XBOX_RETAIL_PDB 0x00bd24c0
+// pdb: DebugShader::Initialize | DebugShader.obj | retail, string-set bridge, high
+// pdb locals: UpdateData, retval, uiConstantPoint4Flags
+bool DebugShaderInit::DebugShader_Initialize()
 {
     bool result = FUN_00be0870();
     QuadUpdate update;
@@ -561,6 +585,7 @@ bool DebugShaderInit::InitDebugShader()
 void LoadDebugShaders();
 // @fnv 0x00bd1940
 // src: COMMUNITY 0x00bd1940
+// pdb: DebugShader::ReloadShaders | DebugShader.obj | debug, upstream name already matches, high
 void DebugShader_ReloadShaders()
 {
     LoadDebugShaders();
@@ -620,7 +645,7 @@ struct RenderRectangle
 
 struct RenderView
 {
-    void FUN_00a88020(int flags, float x, float y, float width, float height);
+    void FUN_00a88020(int flags, float x, float y, float fWidth, float fHeight);
     void NiScreenElementsData_UpdateBound();
 };
 
@@ -681,7 +706,7 @@ struct RenderContext : RenderResource
     {
         this->owner = owner;
     }
-    void NiScreenElements_Draw(void* device);
+    void NiScreenElements_Draw(void* pkRenderer);
 };
 
 struct DisplayTarget
@@ -1068,12 +1093,16 @@ class TextureRenderer
     int unk68;
     NiPointer<NiTexture> m_aspTextures[16];
 
-    void AddTexture(NiTexture* pkTexture);
+    void DebugShader_SetTextureToRender(NiTexture* apTexture);
 };
 
 // Finds a free slot in m_aspTextures and stores pkTexture there if it is a TextureKindA or TextureKindB.
 // @fnv 0x00bd22c0
-void TextureRenderer::AddTexture(NiTexture* pkTexture)
+// src: XBOX_RETAIL_PDB 0x00bd22c0
+// pdb: DebugShader::SetTextureToRender | DebugShader.obj | retail, call graph, high
+// pdb params: apTexture
+// pdb locals: freeidx, i
+void TextureRenderer::DebugShader_SetTextureToRender(NiTexture* apTexture)
 {
     int iSlot = -1;
     for (unsigned int i = 0; i < 16 && iSlot == -1; i++)
@@ -1085,8 +1114,8 @@ void TextureRenderer::AddTexture(NiTexture* pkTexture)
     if (iSlot == -1)
         return;
 
-    if (IsKindOfType(&TextureKindA::ms_kRTTI, pkTexture))
-        m_aspTextures[iSlot] = pkTexture;
-    else if (IsKindOfType(&TextureKindB::ms_kRTTI, pkTexture))
-        m_aspTextures[iSlot] = pkTexture;
+    if (IsKindOfType(&TextureKindA::ms_kRTTI, apTexture))
+        m_aspTextures[iSlot] = apTexture;
+    else if (IsKindOfType(&TextureKindB::ms_kRTTI, apTexture))
+        m_aspTextures[iSlot] = apTexture;
 }

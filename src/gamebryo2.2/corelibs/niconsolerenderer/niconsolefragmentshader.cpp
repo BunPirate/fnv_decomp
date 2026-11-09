@@ -76,13 +76,13 @@ void* __thiscall NiShaderInstanceDescriptor::FUN_00e8d370(unsigned int mode)
     return this;
 }
 
-extern "C" void* g_01270918;
+extern "C" void* NiFragmentShaderInstanceDescriptor_ms_RTTI;
 
 // @fnv 0x00e8d530
 // src: COMMUNITY 0x00e8d530
 void* __cdecl NiFragmentShaderInstanceDescriptor_GetRTTI()
 {
-    return &g_01270918;
+    return &NiFragmentShaderInstanceDescriptor_ms_RTTI;
 }
 
 struct GlobalObjectO2_00a7b610
@@ -384,20 +384,20 @@ struct FieldsMid_e8db90
     }
 };
 
-struct FUN_00e8db90 : BaseObj_e8db90, FieldsMid_e8db90
+struct NiDX9FragmentShader : BaseObj_e8db90, FieldsMid_e8db90
 {
     virtual void unk00();
     SubObj_e8db90 m_3c;
-    FUN_00e8db90(unsigned int a);
+    NiDX9FragmentShader(unsigned int a);
 };
 
 // @fnv 0x00e8db90
-FUN_00e8db90::FUN_00e8db90(unsigned int a)
+NiDX9FragmentShader::NiDX9FragmentShader(unsigned int a)
 {
     m_3c.m_inner.FUN_00ee8a10(a);
 }
 
-unsigned int __stdcall NiD3DShader_SetupRenderingPass(void* a, void* b, void* c, void* d, void* e, void* f, void* g);
+unsigned int __stdcall NiD3DShader_SetupRenderingPass(void* pkGeometry, void* pkSkin, void* pkRendererData, void* pkState, void* pkEffects, void* kWorld, void* kWorldBound);
 
 // @fnv 0x00e8d250
 // src: COMMUNITY 0x00e8d250
@@ -556,7 +556,7 @@ struct BloodSplatterView
     int unk2c;
     BloodMap* unk30;
     BloodArrView* NiD3DPass_GetD3DRenderState(void);
-    void NiD3DPass_SetRenderState(unsigned int a, int b, int c);
+    void NiD3DPass_SetRenderState(unsigned int uiRenderState, int uiValue, int abSave);
 };
 
 BloodMap* __stdcall FUN_00e7f5d0(void);

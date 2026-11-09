@@ -6,14 +6,14 @@ class BGSSaveFormBuffer;
 class TimeoutTimer
 {
 public:
-    float m_fStartTime;
-    float m_fTimeout;
+    float fStartTime;
+    float fTargetTime;
 
     TimeoutTimer();
     void TESWeightForm_InitializeDataComponent();
     float CombatTimer_GetTargetTime();
     bool CheckTimer() const;
-    void __thiscall LoadGame(BGSLoadFormBuffer* buffer);
+    void __thiscall LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void SaveGame(BGSSaveFormBuffer* buffer);
     void Start(float t);
     bool Expired();

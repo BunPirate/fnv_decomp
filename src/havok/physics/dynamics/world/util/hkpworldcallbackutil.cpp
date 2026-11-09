@@ -285,6 +285,8 @@ struct Owner
     void ClearReferences();
 };
 // @fnv 0x00c67bc0
+// pdb: bhkWorld::RemoveBatchedPhantoms | bhkWorld.obj | retail, call graph, high
+// pdb locals: tempMemContext, pw, i, pphantom
 void Owner::ClearReferences()
 {
     ScopedContext scope(16);
@@ -422,11 +424,14 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 }
 // Invokes ActionAddedCallback on each non-null hkpActionListener in world->m_kActionListeners, then removes null entries from the array.
 // @fnv 0x00d003c0
-void __cdecl NotifyActionAdded(hkpWorld* world, hkpAction* action)
+// src: XBOX_RETAIL_PDB 0x00d003c0
+// pdb: hkpWorldCallbackUtil::fireActionAdded | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, action
+void __cdecl hkpWorldCallbackUtil_fireActionAdded(hkpWorld* world, hkpAction* action)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = (Array833&)world->m_kActionListeners;
+    Array833& listeners = (Array833&)world->m_actionListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
@@ -487,11 +492,14 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 }
 // Invokes EntityAddedCallback on each non-null hkpEntityListener in the world's listener array, then compacts the array to remove null entries.
 // @fnv 0x00d00500
-void __cdecl NotifyEntityAdded(hkpWorld* world, hkpEntity* entity)
+// src: XBOX_RETAIL_PDB 0x00d00500
+// pdb: hkpWorldCallbackUtil::fireEntityAdded | hkpWorldCallbackUtil.obj | retail, call graph, high
+// pdb params: world, entity
+void __cdecl hkpWorldCallbackUtil_fireEntityAdded(hkpWorld* world, hkpEntity* entity)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = (Array833&)world->m_kEntityListenerArray;
+    Array833& listeners = (Array833&)world->m_entityListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
@@ -553,11 +561,14 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 }
 // Invokes entitySetMotionTypeCallback on each non-null listener in world->m_kEntityListenerArray, then compacts the listener array via FUN_00d00370.
 // @fnv 0x00d006e0
-void __cdecl NotifyEntitySetMotionType(hkpWorld* world, hkpEntity* entity)
+// src: XBOX_RETAIL_PDB 0x00d006e0
+// pdb: hkpWorldCallbackUtil::fireEntitySetMotionType | hkpWorldCallbackUtil.obj | retail, call graph, high
+// pdb params: world, entity
+void __cdecl hkpWorldCallbackUtil_fireEntitySetMotionType(hkpWorld* world, hkpEntity* entity)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = (Array833&)world->m_kEntityListenerArray;
+    Array833& listeners = (Array833&)world->m_entityListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
@@ -619,18 +630,21 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 }
 // Invokes PhantomAddedCallback on each non-null hkpPhantomListener in world->m_kPhantomListeners, then removes null entries via FUN_00d00370.
 // @fnv 0x00d00780
-void __cdecl NotifyPhantomAdded(hkpWorld* world, hkpPhantom* phantom)
+// src: XBOX_RETAIL_PDB 0x00d00780
+// pdb: hkpWorldCallbackUtil::firePhantomAdded | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, Phantom
+void __cdecl hkpWorldCallbackUtil_firePhantomAdded(hkpWorld* world, hkpPhantom* Phantom)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = (Array833&)world->m_kPhantomListeners;
+    Array833& listeners = (Array833&)world->m_phantomListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
         if (listeners.data[i])
         {
             TimerEvent833("TtphntAddCb", beginTicks);
-            listeners.data[i]->PhantomAddedCallback(phantom);
+            listeners.data[i]->PhantomAddedCallback(Phantom);
             TimerEvent833("Et", endTicks);
         }
     }
@@ -665,7 +679,9 @@ struct ListenerList
 // Iterates the listener list in apOwner in reverse, calling OnEvent on each non-null item with tracing, then calls FUN_00d00370 on the list.
 // @fnv 0x00d00bf0
 // src: HAVOK_LIB 0x00d00bf0
-void __cdecl hkpWorldCallbackUtil_fireConstraintRepaired(hkpWorld* apOwner, void* apParam)
+// pdb: hkpWorldCallbackUtil::fireConstraintRepaired | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, event
+void __cdecl hkpWorldCallbackUtil_fireConstraintRepaired(hkpWorld* world, void* event)
 {
     struct State
     {
@@ -673,7 +689,7 @@ void __cdecl hkpWorldCallbackUtil_fireConstraintRepaired(hkpWorld* apOwner, void
         hkArrayBase<void*>* list;
     } state;
     volatile DWORD beginTick;
-    state.list =  (hkArrayBase<void*>*)&apOwner->m_kConstraintListeners;
+    state.list =  (hkArrayBase<void*>*)&world->m_constraintListeners;
     int i = state.list->m_iElementCount - 1;
     if (i >= 0)
     {
@@ -693,7 +709,7 @@ void __cdecl hkpWorldCallbackUtil_fireConstraintRepaired(hkpWorld* apOwner, void
                     pRec->m_time0 = beginTick;
                     pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
                 }
-                pItem->OnEvent(apParam);
+                pItem->OnEvent(event);
                 hkMonitorStream* pBuf2 = (hkMonitorStream*)pfnTls(DAT_0126835c);
                 hkMonitorStream::TimerCommand* pRec2 = reinterpret_cast<hkMonitorStream::TimerCommand*>(pBuf2->m_end.m_storage);
                 if (reinterpret_cast<char*>(pRec2) < pBuf2->m_capacityMinus16.m_storage)
@@ -761,9 +777,11 @@ extern const char g_D00CA0TimerEnd[];
 // Invokes entityCallback on each non-null listener in the world's entity listener array, then removes null entries.
 // @fnv 0x00d00ca0
 // src: HAVOK_LIB 0x00d00ca0
-void __cdecl hkpWorldCallbackUtil_fireContactPointCallback(hkpWorld* world, void* entity)
+// pdb: hkpWorldCallbackUtil::fireContactPointCallback | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, event
+void __cdecl hkpWorldCallbackUtil_fireContactPointCallback(hkpWorld* world, void* event)
 {
-    hkArrayBase<D00CA0Listener*>& listeners = (hkArrayBase<D00CA0Listener*>&)world->m_kContactListeners;
+    hkArrayBase<D00CA0Listener*>& listeners = (hkArrayBase<D00CA0Listener*>&)world->m_contactListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -771,7 +789,7 @@ void __cdecl hkpWorldCallbackUtil_fireContactPointCallback(hkpWorld* world, void
             volatile unsigned int beginTicks;
             volatile unsigned int endTicks;
             D00CA0TimerBegin(g_D00CA0TimerEntityCb, beginTicks);
-            listeners.m_data[i]->entityCallback(entity);
+            listeners.m_data[i]->entityCallback(event);
             D00CA0TimerBegin(g_D00CA0TimerEnd, endTicks);
         }
     }
@@ -832,18 +850,21 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 }
 // Invokes newCollisionCallback on each valid collision listener in world->m_kContactListeners, then compacts the array by removing null entries.
 // @fnv 0x00d00d40
-void __cdecl DispatchCollisionEvents(hkpWorld* world, CollisionEvent* simulation)
+// src: XBOX_RETAIL_PDB 0x00d00d40
+// pdb: hkpWorldCallbackUtil::fireContactConstraintAddedCallback | hkpWorldCallbackUtil.obj | retail, object-file gap fill, high
+// pdb params: world, event
+void __cdecl hkpWorldCallbackUtil_fireContactConstraintAddedCallback(hkpWorld* world, CollisionEvent* event)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = (Array833&)world->m_kContactListeners;
+    Array833& listeners = (Array833&)world->m_contactListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
         if (listeners.data[i])
         {
             TimerEvent833("TtNewCollCb", beginTicks);
-            listeners.data[i]->newCollisionCallback(simulation);
+            listeners.data[i]->newCollisionCallback(event);
             TimerEvent833("Et", endTicks);
         }
     }
@@ -904,9 +925,11 @@ extern const char g_D00DE0TimerEnd[];
 // Invokes entityCallback on each non-null listener in the world's entity listener array, then removes null entries.
 // @fnv 0x00d00de0
 // src: HAVOK_LIB 0x00d00de0
-void __cdecl hkpWorldCallbackUtil_fireContactConstraintRemovedCallback(hkpWorld* world, void* entity)
+// pdb: hkpWorldCallbackUtil::fireContactConstraintRemovedCallback | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, event
+void __cdecl hkpWorldCallbackUtil_fireContactConstraintRemovedCallback(hkpWorld* world, void* event)
 {
-    hkArrayBase<D00DE0Listener*>& listeners = (hkArrayBase<D00DE0Listener*>&)world->m_kContactListeners;
+    hkArrayBase<D00DE0Listener*>& listeners = (hkArrayBase<D00DE0Listener*>&)world->m_contactListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -914,7 +937,7 @@ void __cdecl hkpWorldCallbackUtil_fireContactConstraintRemovedCallback(hkpWorld*
             volatile unsigned int beginTicks;
             volatile unsigned int endTicks;
             D00DE0TimerBegin(g_D00DE0TimerEntityCb, beginTicks);
-            listeners.m_data[i]->entityCallback(entity);
+            listeners.m_data[i]->entityCallback(event);
             D00DE0TimerBegin(g_D00DE0TimerEnd, endTicks);
         }
     }
@@ -980,10 +1003,12 @@ extern const char g_D00E80TimerEnd[];
 // Iterates the world's entity listener array in reverse, calling each non-null listener's actionCallback with the world, then compacts out null entries.
 // @fnv 0x00d00e80
 // src: HAVOK_LIB 0x00d00e80
+// pdb: hkpWorldCallbackUtil::fireWorldDeleted | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world
 void __cdecl hkpWorldCallbackUtil_fireWorldDeleted(hkpWorld* world)
 {
     D00E80TickPair kTicks;
-    hkArrayBase<D00E80Listener*>& listeners = (hkArrayBase<D00E80Listener*>&)world->m_kWorldDeletionListeners;
+    hkArrayBase<D00E80Listener*>& listeners = (hkArrayBase<D00E80Listener*>&)world->m_worldDeletionListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1051,11 +1076,14 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 }
 // Invokes WorldDeletedCallback on each non-null entry in world->m_kWorldDeletionListeners, then compacts the array via FUN_00d00370.
 // @fnv 0x00d00f30
-void __cdecl NotifyWorldDeleted(hkpWorld* world)
+// src: XBOX_RETAIL_PDB 0x00d00f30
+// pdb: hkpWorldCallbackUtil::fireWorldRemoveAll | hkpWorldCallbackUtil.obj | retail, object-file gap fill, high
+// pdb params: world
+void __cdecl hkpWorldCallbackUtil_fireWorldRemoveAll(hkpWorld* world)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = (Array833&)world->m_kWorldDeletionListeners;
+    Array833& listeners = (Array833&)world->m_worldDeletionListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
@@ -1125,11 +1153,13 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 // Iterates postSimulationListeners, calling postSimulationCallback on each non-null entry, then compacts the array via FUN_00d00370.
 // @fnv 0x00d01380
 // src: HAVOK_LIB 0x00d01380
+// pdb: hkpWorldCallbackUtil::firePostSimulationCallback | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world
 void __cdecl hkpWorldCallbackUtil_firePostSimulationCallback(hkpWorld* world)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = (Array833&)world->m_kWorldPostSimulationListeners;
+    Array833& listeners = (Array833&)world->m_worldPostSimulationListeners;
     int previousSize = listeners.size;
     int i = previousSize - 1;
     for (; i >= 0; --i)
@@ -1207,18 +1237,20 @@ __forceinline void TimerEvent833(const char* name, volatile unsigned int& ticks)
 // Iterates the world's postIntegrationListeners, calling each non-null listener's postIntegrationCallback with world and stepInfo, then compacts the array.
 // @fnv 0x00d01440
 // src: HAVOK_LIB 0x00d01440
-void __cdecl hkpWorldCallbackUtil_firePostIntegrateCallback(hkpWorld* world, void* stepInfo)
+// pdb: hkpWorldCallbackUtil::firePostIntegrateCallback | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, info
+void __cdecl hkpWorldCallbackUtil_firePostIntegrateCallback(hkpWorld* world, void* info)
 {
     volatile unsigned beginTicks;
     volatile unsigned endTicks;
-    Array833& listeners = (Array833&)world->m_kWorldPostIntegrateListeners;
+    Array833& listeners = (Array833&)world->m_worldPostIntegrateListeners;
     int i = listeners.size - 1;
     for (; i >= 0; --i)
     {
         if (listeners.data[i])
         {
             TimerEvent833("TtpostIntCb", beginTicks);
-            listeners.data[i]->postIntegrationCallback(world, stepInfo);
+            listeners.data[i]->postIntegrationCallback(world, info);
             TimerEvent833("Et", endTicks);
         }
     }
@@ -1285,16 +1317,18 @@ extern const char g_D014F0TimerEnd[];
 // Iterates the world's entity listener array, invoking collisionAddedCallback on each non-null listener with timing markers, then removes null entries.
 // @fnv 0x00d014f0
 // src: HAVOK_LIB 0x00d014f0
-void __cdecl hkpWorldCallbackUtil_firePostCollideCallback(hkpWorld* world, void* pvEvent)
+// pdb: hkpWorldCallbackUtil::firePostCollideCallback | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, info
+void __cdecl hkpWorldCallbackUtil_firePostCollideCallback(hkpWorld* world, void* info)
 {
     D014F0TickPair kTicks;
-    hkArrayBase<D014F0Listener*>& listeners = (hkArrayBase<D014F0Listener*>&)world->m_kWorldPostCollideListeners;
+    hkArrayBase<D014F0Listener*>& listeners = (hkArrayBase<D014F0Listener*>&)world->m_worldPostCollideListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
         {
             D014F0TimerBegin(g_D014F0TimerCollisionAddedCb, kTicks.m_uiBegin);
-            listeners.m_data[i]->collisionAddedCallback(world, pvEvent);
+            listeners.m_data[i]->collisionAddedCallback(world, info);
             D014F0TimerBegin(g_D014F0TimerEnd, kTicks.m_uiEndTick);
         }
     }
@@ -1353,9 +1387,11 @@ extern const char g_D015A0TimerEnd[];
 // Invokes contactCallback on each non-null listener in world->m_kIslandPostIntegrateListeners, then removes null entries from the array.
 // @fnv 0x00d015a0
 // src: HAVOK_LIB 0x00d015a0
-void __cdecl hkpWorldCallbackUtil_fireIslandPostIntegrateCallback(hkpWorld* world, void* apFirst, void* pkSecond)
+// pdb: hkpWorldCallbackUtil::fireIslandPostIntegrateCallback | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, island, info
+void __cdecl hkpWorldCallbackUtil_fireIslandPostIntegrateCallback(hkpWorld* world, void* island, void* info)
 {
-    hkArrayBase<D015A0Listener*>& listeners = (hkArrayBase<D015A0Listener*>&)world->m_kIslandPostIntegrateListeners;
+    hkArrayBase<D015A0Listener*>& listeners = (hkArrayBase<D015A0Listener*>&)world->m_islandPostIntegrateListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1363,7 +1399,7 @@ void __cdecl hkpWorldCallbackUtil_fireIslandPostIntegrateCallback(hkpWorld* worl
             volatile unsigned int beginTicks;
             volatile unsigned int endTicks;
             D015A0TimerBegin(g_D015A0TimerContactCb, beginTicks);
-            listeners.m_data[i]->contactCallback(apFirst, pkSecond);
+            listeners.m_data[i]->contactCallback(island, info);
             D015A0TimerBegin(g_D015A0TimerEnd, endTicks);
         }
     }
@@ -1422,9 +1458,11 @@ extern const char g_D01650TimerEnd[];
 // Invokes collisionAddedCallback on each non-null listener in the array, then removes null entries.
 // @fnv 0x00d01650
 // src: HAVOK_LIB 0x00d01650
-void __cdecl hkpWorldCallbackUtil_fireIslandPostCollideCallback(hkpWorld* world, void* pvEvent, void* pvContext)
+// pdb: hkpWorldCallbackUtil::fireIslandPostCollideCallback | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, island, info
+void __cdecl hkpWorldCallbackUtil_fireIslandPostCollideCallback(hkpWorld* world, void* island, void* info)
 {
-    hkArrayBase<D01650Listener*>& listeners = (hkArrayBase<D01650Listener*>&)world->m_kIslandPostCollideListeners;
+    hkArrayBase<D01650Listener*>& listeners = (hkArrayBase<D01650Listener*>&)world->m_islandPostCollideListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1432,7 +1470,7 @@ void __cdecl hkpWorldCallbackUtil_fireIslandPostCollideCallback(hkpWorld* world,
             volatile unsigned int beginTicks;
             volatile unsigned int endTicks;
             D01650TimerBegin(g_D01650TimerCollisionAddedCb, beginTicks);
-            listeners.m_data[i]->collisionAddedCallback(pvEvent, pvContext);
+            listeners.m_data[i]->collisionAddedCallback(island, info);
             D01650TimerBegin(g_D01650TimerEnd, endTicks);
         }
     }
@@ -1484,11 +1522,13 @@ static __forceinline void writeTimestamp(char* cur, const char* tag, volatile un
 // Iterates hkpWorld listener array, writes start/end timestamps to TLS buffer, invokes each listener, then compacts the array.
 // @fnv 0x00d01700
 // src: HAVOK_LIB 0x00d01700
-void __cdecl hkpWorldCallbackUtil_fireContactImpulseLimitBreached(hkpWorld* world, void* a1, void* a2)
+// pdb: hkpWorldCallbackUtil::fireContactImpulseLimitBreached | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, breachedContacts, numBreachedContacts
+void __cdecl hkpWorldCallbackUtil_fireContactImpulseLimitBreached(hkpWorld* world, void* breachedContacts, void* numBreachedContacts)
 {
     volatile unsigned int uiStartTsc;
     volatile unsigned int t1;
-    ListenerArray* arr = (ListenerArray*)&world->m_kContactImpulseLimitBreachedListeners;
+    ListenerArray* arr = (ListenerArray*)&world->m_contactImpulseLimitBreachedListeners;
     for (int i = arr->m_iElementCount - 1; i >= 0; --i)
     {
         if (arr->m_data[i])
@@ -1500,7 +1540,7 @@ void __cdecl hkpWorldCallbackUtil_fireContactImpulseLimitBreached(hkpWorld* worl
                 writeTimestamp(cur, "TtimpLimitCb", uiStartTsc);
                 ms->m_end.m_storage = cur + 12;
             }
-            arr->m_data[i]->vfunc1(a1, a2);
+            arr->m_data[i]->vfunc1(breachedContacts, numBreachedContacts);
             ms = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
             cur = ms->m_end.m_storage;
             if (cur < ms->m_capacityMinus16.m_storage)
@@ -1565,9 +1605,12 @@ extern const char g_D017B0TimerEnd[];
 
 // Invokes EntityRemovedCallback on each non-null listener in the world's entity listener array, then removes null entries.
 // @fnv 0x00d017b0
-void __cdecl NotifyEntityRemoved(hkpWorld* world, void* entity)
+// src: XBOX_RETAIL_PDB 0x00d017b0
+// pdb: hkpWorldCallbackUtil::fireInactiveEntityMoved | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, entity
+void __cdecl hkpWorldCallbackUtil_fireInactiveEntityMoved(hkpWorld* world, void* entity)
 {
-    hkArrayBase<D017B0Listener*>& listeners = (hkArrayBase<D017B0Listener*>&)world->m_kWorldPostSimulationListeners;
+    hkArrayBase<D017B0Listener*>& listeners = (hkArrayBase<D017B0Listener*>&)world->m_worldPostSimulationListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1645,10 +1688,13 @@ struct D019B0Event
 
 // Invokes shapeSetCallback on each non-null entity listener in the world's listener array, then removes any null entries.
 // @fnv 0x00d019b0
-void __cdecl NotifyShapeSetListeners(hkpWorld* world, D019B0Event* event)
+// src: XBOX_RETAIL_PDB 0x00d019b0
+// pdb: hkpWorldCallbackUtil::fireContactProcess | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, event
+void __cdecl hkpWorldCallbackUtil_fireContactProcess(hkpWorld* world, D019B0Event* event)
 {
     event->m_result = 0;
-    hkArrayBase<D019B0Listener*>& listeners = (hkArrayBase<D019B0Listener*>&)world->m_kContactListeners;
+    hkArrayBase<D019B0Listener*>& listeners = (hkArrayBase<D019B0Listener*>&)world->m_contactListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1690,9 +1736,12 @@ struct ActionListener
 };
 // Iterates world->m_kActionListeners in reverse, calling ActionRemovedCallback on each non-null listener, then calls FUN_00d00370 on the array.
 // @fnv 0x00d00460
-void __cdecl NotifyActionRemoved(hkpWorld* world, void* action)
+// src: XBOX_RETAIL_PDB 0x00d00460
+// pdb: hkpWorldCallbackUtil::fireActionRemoved | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, action
+void __cdecl hkpWorldCallbackUtil_fireActionRemoved(hkpWorld* world, void* action)
 {
-    hkArrayBase<void*>& listen = (hkArrayBase<void*>&)world->m_kActionListeners;
+    hkArrayBase<void*>& listen = (hkArrayBase<void*>&)world->m_actionListeners;
     for (int i = listen.m_iElementCount - 1; i >= 0; i--)
     {
         if (listen.m_data[i] != 0)
@@ -1753,9 +1802,11 @@ extern const char g_D005A0TimerEnd[];
 // Iterates the world's entity listener array, calling EntityRemovedCallback on each non-null listener, then removes null entries.
 // @fnv 0x00d005a0
 // src: HAVOK_LIB 0x00d005a0
+// pdb: hkpWorldCallbackUtil::fireEntityRemoved | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, entity
 void __cdecl hkpWorldCallbackUtil_fireEntityRemoved(hkpWorld* world, void* entity)
 {
-    hkArrayBase<hkpEntityListener*>& listeners = (hkArrayBase<hkpEntityListener*>&)world->m_kEntityListenerArray;
+    hkArrayBase<hkpEntityListener*>& listeners = (hkArrayBase<hkpEntityListener*>&)world->m_entityListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1815,9 +1866,12 @@ extern const char g_D00640TimerEnd[];
 
 // Iterates the entity listener array, calls shapeSetCallback on each non-null listener, then compacts out null entries.
 // @fnv 0x00d00640
-void __cdecl NotifyShapeSet(hkpWorld* world, void* entity)
+// src: XBOX_RETAIL_PDB 0x00d00640
+// pdb: hkpWorldCallbackUtil::fireEntityShapeSet | hkpWorldCallbackUtil.obj | retail, object-file gap fill, high
+// pdb params: world, entity
+void __cdecl hkpWorldCallbackUtil_fireEntityShapeSet(hkpWorld* world, void* entity)
 {
-    hkArrayBase<hkpEntityListener*>& listeners = (hkArrayBase<hkpEntityListener*>&)world->m_kEntityListenerArray;
+    hkArrayBase<hkpEntityListener*>& listeners = (hkArrayBase<hkpEntityListener*>&)world->m_entityListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1878,9 +1932,11 @@ extern const char g_D00820TimerEnd[];
 // Iterates the world's entity listener array, calls entityCallback on each non-null listener with the entity, then removes null entries.
 // @fnv 0x00d00820
 // src: HAVOK_LIB 0x00d00820
-void __cdecl hkpWorldCallbackUtil_firePhantomRemoved(hkpWorld* world, void* entity)
+// pdb: hkpWorldCallbackUtil::firePhantomRemoved | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, Phantom
+void __cdecl hkpWorldCallbackUtil_firePhantomRemoved(hkpWorld* world, void* Phantom)
 {
-    hkArrayBase<hkpPhantomListener*>& listeners = (hkArrayBase<hkpPhantomListener*>&)world->m_kPhantomListeners;
+    hkArrayBase<hkpPhantomListener*>& listeners = (hkArrayBase<hkpPhantomListener*>&)world->m_phantomListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1888,7 +1944,7 @@ void __cdecl hkpWorldCallbackUtil_firePhantomRemoved(hkpWorld* world, void* enti
             volatile unsigned int beginTicks;
             volatile unsigned int endTicks;
             D00820TimerBegin(g_D00820TimerSetShapeCb, beginTicks);
-            listeners.m_data[i]->PhantomRemovedCallback((hkpPhantom*)entity);
+            listeners.m_data[i]->PhantomRemovedCallback((hkpPhantom*)Phantom);
             D00820TimerBegin(g_D00820TimerEnd, endTicks);
         }
     }
@@ -1941,9 +1997,11 @@ extern const char g_D008C0TimerEnd[];
 // Iterates the world's entity listener array in reverse, invoking shapeSetCallback on each non-null listener, then compacts the array to remove null entries.
 // @fnv 0x00d008c0
 // src: HAVOK_LIB 0x00d008c0
-void __cdecl hkpWorldCallbackUtil_firePhantomShapeSet(hkpWorld* world, void* entity)
+// pdb: hkpWorldCallbackUtil::firePhantomShapeSet | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, Phantom
+void __cdecl hkpWorldCallbackUtil_firePhantomShapeSet(hkpWorld* world, void* Phantom)
 {
-    hkArrayBase<hkpPhantomListener*>& listeners = (hkArrayBase<hkpPhantomListener*>&)world->m_kPhantomListeners;
+    hkArrayBase<hkpPhantomListener*>& listeners = (hkArrayBase<hkpPhantomListener*>&)world->m_phantomListeners;
     for (int i = listeners.m_iElementCount - 1; i >= 0; i--)
     {
         if (listeners.m_data[i] != 0)
@@ -1951,7 +2009,7 @@ void __cdecl hkpWorldCallbackUtil_firePhantomShapeSet(hkpWorld* world, void* ent
             volatile unsigned int beginTicks;
             volatile unsigned int endTicks;
             D008C0TimerBegin(g_D008C0TimerSetShapeCb, beginTicks);
-            listeners.m_data[i]->phantomShapeSetCallback((hkpPhantom*)entity);
+            listeners.m_data[i]->phantomShapeSetCallback((hkpPhantom*)Phantom);
             D008C0TimerBegin(g_D008C0TimerEnd, endTicks);
         }
     }
@@ -1985,10 +2043,13 @@ __forceinline void ProfMark(const char* name, volatile DWORD& outTick)
 }
 // Iterates m_kTargets in reverse, calling v2 on each non-null ProfTarget with a2, then calls FUN_00d00370 on the array.
 // @fnv 0x00d00a00
-void __cdecl NotifyTargets(hkpWorld* pOwner, DWORD a2)
+// src: XBOX_RETAIL_PDB 0x00d00a00
+// pdb: hkpWorldCallbackUtil::fireConstraintRemoved | hkpWorldCallbackUtil.obj | retail, object-file gap fill, high
+// pdb params: world, constraint
+void __cdecl hkpWorldCallbackUtil_fireConstraintRemoved(hkpWorld* pOwner, DWORD constraint)
 {
     volatile DWORD beginTick, endTick;
-    hkArrayBase<void*>& targets = (hkArrayBase<void*>&)pOwner->m_kConstraintListeners;
+    hkArrayBase<void*>& targets = (hkArrayBase<void*>&)pOwner->m_constraintListeners;
     int i = (int)targets.m_iElementCount - 1;
     if (i >= 0)
     {
@@ -1997,7 +2058,7 @@ void __cdecl NotifyTargets(hkpWorld* pOwner, DWORD a2)
             if (((ProfTarget**)targets.m_data)[i] != 0)
             {
                 ProfMark("TtconRemCb", beginTick);
-                ((ProfTarget**)targets.m_data)[i]->v2(a2);
+                ((ProfTarget**)targets.m_data)[i]->v2(constraint);
                 ProfMark("Et", endTick);
             }
         } while (--i >= 0);
@@ -2022,9 +2083,11 @@ struct Phantom
 // Iterates owner's m_kListeners in reverse, calling v10 with a2 on each non-null listener between timer samples, then calls FUN_00d00370 on the array.
 // @fnv 0x00d00aa0
 // src: HAVOK_LIB 0x00d00aa0
-void __cdecl hkpWorldCallbackUtil_fireConstraintViolated(hkpWorld* owner, int a2)
+// pdb: hkpWorldCallbackUtil::fireConstraintViolated | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, constraint
+void __cdecl hkpWorldCallbackUtil_fireConstraintViolated(hkpWorld* world, int constraint)
 {
-    hkArrayBase<void*>& listen = (hkArrayBase<void*>&)owner->m_kConstraintListeners;
+    hkArrayBase<void*>& listen = (hkArrayBase<void*>&)world->m_constraintListeners;
     for (int i = listen.m_iElementCount - 1; i >= 0; i--)
     {
         if (listen.m_data[i] != 0)
@@ -2032,7 +2095,7 @@ void __cdecl hkpWorldCallbackUtil_fireConstraintViolated(hkpWorld* owner, int a2
             volatile unsigned int t1;
             volatile unsigned int t2;
             TimerWriteV(DAT_010ccab0, t1);
-            ((Phantom*)listen.m_data[i])->v10(a2);
+            ((Phantom*)listen.m_data[i])->v10(constraint);
             TimerWriteV(DAT_010c41f8, t2);
         }
     }
@@ -2234,17 +2297,20 @@ static __declspec(noinline) void RemoveZeroEntries(CallbackList* list)
 }
 // Calls game->m_kIslandActivationListeners callbacks with scene, then each scene entity's callbacks, bracketed by a field94 inc/dec; at zero may call FUN_00c91120 or FUN_00c91140.
 // @fnv 0x00d00fe0
-void __cdecl ProcessSceneCallbacks(hkpWorld* game, Scene* scene)
+// src: XBOX_RETAIL_PDB 0x00d00fe0
+// pdb: hkpWorldCallbackUtil::fireIslandActivated | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, island
+void __cdecl hkpWorldCallbackUtil_fireIslandActivated(hkpWorld* game, Scene* island)
 {
     struct
     {
         volatile unsigned int tick1;
         volatile unsigned int tick2;
     } timer;
-    ++game->m_iCriticalOperationsLockCount;
+    ++game->m_criticalOperationsLockCount;
     _ReadWriteBarrier();
-    int i = game->m_kIslandActivationListeners.m_iElementCount - 1;
-    hkArrayBase<void*>* pSlots = (hkArrayBase<void*>*)&game->m_kIslandActivationListeners;
+    int i = game->m_islandActivationListeners.m_iElementCount - 1;
+    hkArrayBase<void*>* pSlots = (hkArrayBase<void*>*)&game->m_islandActivationListeners;
     for (; i >= 0; --i)
     {
         if (pSlots->m_data[i])
@@ -2261,7 +2327,7 @@ void __cdecl ProcessSceneCallbacks(hkpWorld* game, Scene* scene)
                     log->m_end.m_storage = (char*)(current + 3);
                 }
             }
-            ((Callback*)pSlots->m_data[i])->invoke(scene);
+            ((Callback*)pSlots->m_data[i])->invoke(island);
             {
                 hkMonitorStream* log = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
                 unsigned int* current = (unsigned int*)log->m_end.m_storage;
@@ -2277,9 +2343,9 @@ void __cdecl ProcessSceneCallbacks(hkpWorld* game, Scene* scene)
         }
     }
     worldCallbackUtil_cleanupNullPointers(*pSlots);
-    for (int i = 0; i < scene->field4c; ++i)
+    for (int i = 0; i < island->field4c; ++i)
     {
-        Entity* ent = scene->field48[i];
+        Entity* ent = island->field48[i];
         if (ent->field214)
         {
             CallbackList* callbacks = ent->field214;
@@ -2299,7 +2365,7 @@ void __cdecl ProcessSceneCallbacks(hkpWorld* game, Scene* scene)
                             log->m_end.m_storage = (char*)(current + 3);
                         }
                     }
-                    callbacks->slots[j]->execute(scene->field48[i]);
+                    callbacks->slots[j]->execute(island->field48[i]);
                     {
                         hkMonitorStream* log = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
                         unsigned int* current = (unsigned int*)log->m_end.m_storage;
@@ -2317,11 +2383,11 @@ void __cdecl ProcessSceneCallbacks(hkpWorld* game, Scene* scene)
             RemoveZeroEntries(callbacks);
         }
     }
-    if (--game->m_iCriticalOperationsLockCount == 0 && !game->m_bBlockExecutingPendingOperations)
+    if (--game->m_criticalOperationsLockCount == 0 && !game->m_blockExecutingPendingOperations)
     {
-        if (game->m_iPendingOperationCount)
+        if (game->m_pendingOperationsCount)
             game->FUN_00c91120();
-        if (game->m_iPendingOperationQueueCount == 1 && game->m_iQueuedOperationCount)
+        if (game->m_pendingOperationQueueCount == 1 && game->m_pendingBodyOperationsCount)
             game->UpdateFields_00c91140();
     }
 }
@@ -2349,9 +2415,11 @@ struct RemovedEvent
 // Iterates world->m_kContactListeners in reverse, calling HandleContactEvent(&event) on each non-null listener between timer samples, then calls FUN_00d00370.
 // @fnv 0x00d01900
 // src: HAVOK_LIB 0x00d01900
+// pdb: hkpWorldCallbackUtil::fireContactPointRemoved | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, event
 void __cdecl hkpWorldCallbackUtil_fireContactPointRemoved(hkpWorld* world, RemovedEvent& event)
 {
-    hkArrayBase<void*>& listen = (hkArrayBase<void*>&)world->m_kContactListeners;
+    hkArrayBase<void*>& listen = (hkArrayBase<void*>&)world->m_contactListeners;
     event.m_iUnknownValue = 0;
     for (int i = listen.m_iElementCount - 1; i >= 0; i--)
     {
@@ -2386,7 +2454,9 @@ struct ListenerArrayQ
 // Iterates pOwner's listener array, profiling each call to v05(a2), then calls FUN_00d00370 on the array.
 // @fnv 0x00d00b40
 // src: HAVOK_LIB 0x00d00b40
-void __cdecl hkpWorldCallbackUtil_fireConstraintBroken(hkpWorld* pOwner, unsigned long a2)
+// pdb: hkpWorldCallbackUtil::fireConstraintBroken | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, event
+void __cdecl hkpWorldCallbackUtil_fireConstraintBroken(hkpWorld* world, unsigned long event)
 {
     volatile unsigned long tick1;
     struct ProfileState
@@ -2395,7 +2465,7 @@ void __cdecl hkpWorldCallbackUtil_fireConstraintBroken(hkpWorld* pOwner, unsigne
         ListenerArrayQ* arr;
     };
     ProfileState state;
-    state.arr =  (ListenerArrayQ*)&pOwner->m_kConstraintListeners;
+    state.arr =  (ListenerArrayQ*)&world->m_constraintListeners;
     int i = (int)state.arr->m_uiItemCount - 1;
     if (i >= 0)
     {
@@ -2416,7 +2486,7 @@ void __cdecl hkpWorldCallbackUtil_fireConstraintBroken(hkpWorld* pOwner, unsigne
                     pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
                 }
 
-                pItem->v05(a2);
+                pItem->v05(event);
 
                 pBuf = (hkMonitorStream*)getBuf(DAT_0126835c);
                 if (pBuf->m_end.m_storage < pBuf->m_capacityMinus16.m_storage)
@@ -2464,13 +2534,15 @@ struct S00d01850_ItemList
 // Zeroes pOut->unk0C, calls vtbl10(pOut) on each non-null list item from the end with profiler records, then calls FUN_00d00370 on the list.
 // @fnv 0x00d01850
 // src: HAVOK_LIB 0x00d01850
-void __cdecl hkpWorldCallbackUtil_fireContactPointAdded(hkpWorld* pOwner, S00d01850_Out* pOut)
+// pdb: hkpWorldCallbackUtil::fireContactPointAdded | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, event
+void __cdecl hkpWorldCallbackUtil_fireContactPointAdded(hkpWorld* world, S00d01850_Out* event)
 {
     volatile DWORD t1;
     volatile DWORD t2;
     volatile DWORD& rT2 = t2;
-    hkArrayBase<void*>* pCallbacks = (hkArrayBase<void*>*)&pOwner->m_kContactListeners;
-    pOut->unk0C = 0;
+    hkArrayBase<void*>* pCallbacks = (hkArrayBase<void*>*)&world->m_contactListeners;
+    event->unk0C = 0;
     int i = pCallbacks->m_iElementCount - 1;
     if (i >= 0)
     {
@@ -2489,7 +2561,7 @@ void __cdecl hkpWorldCallbackUtil_fireContactPointAdded(hkpWorld* pOwner, S00d01
                     pRec->m_time0 = t1;
                     pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
                 }
-                ((S00d01850_Item*)pCallbacks->m_data[i])->vtbl10(pOut);
+                ((S00d01850_Item*)pCallbacks->m_data[i])->vtbl10(event);
                 hkMonitorStream* pBuf2 = (hkMonitorStream*)pfnTls(DAT_0126835c);
                 if (pBuf2->m_end.m_storage < pBuf2->m_capacityMinus16.m_storage)
                 {
@@ -2692,16 +2764,18 @@ struct S011b0_Island
 // Calls the world's and each entity's listeners for isl with profiler records, then may run FUN_00c91120/FUN_00c91140 when w->m_iCriticalOperationsLockCount returns to 0 and m_9c is clear.
 // @fnv 0x00d011b0
 // src: HAVOK_LIB 0x00d011b0
-void __cdecl hkpWorldCallbackUtil_fireIslandDeactivated(hkpWorld* apWorld, S011b0_Island* apIsland)
+// pdb: hkpWorldCallbackUtil::fireIslandDeactivated | hkpWorldCallbackUtil.obj | retail, string-set bridge, high
+// pdb params: world, island
+void __cdecl hkpWorldCallbackUtil_fireIslandDeactivated(hkpWorld* apWorld, S011b0_Island* island)
 {
     struct
     {
         volatile DWORD first;
         volatile DWORD second;
     } timing;
-    apWorld->m_iCriticalOperationsLockCount++;
+    apWorld->m_criticalOperationsLockCount++;
     {
-        hkArrayBase<void*>& list = (hkArrayBase<void*>&)apWorld->m_kIslandActivationListeners;
+        hkArrayBase<void*>& list = (hkArrayBase<void*>&)apWorld->m_islandActivationListeners;
         for (int i = list.m_iElementCount - 1; i >= 0; i--)
         {
             if (list.m_data[i] != 0)
@@ -2716,7 +2790,7 @@ void __cdecl hkpWorldCallbackUtil_fireIslandDeactivated(hkpWorld* apWorld, S011b
                     pRec->m_time0 = timing.first;
                     pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
                 }
-                ((S011b0_Listener*)list.m_data[i])->v08(apIsland);
+                ((S011b0_Listener*)list.m_data[i])->v08(island);
                 pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
                 if (pBuf->m_end.m_storage < pBuf->m_capacityMinus16.m_storage)
                 {
@@ -2731,9 +2805,9 @@ void __cdecl hkpWorldCallbackUtil_fireIslandDeactivated(hkpWorld* apWorld, S011b
         }
         ::worldCallbackUtil_cleanupNullPointers(list);
     }
-    for (int iEntity = 0; iEntity < apIsland->m_nEnts; iEntity++)
+    for (int iEntity = 0; iEntity < island->m_nEnts; iEntity++)
     {
-        S011b0_Entity* ent = apIsland->m_ppEnts[iEntity];
+        S011b0_Entity* ent = island->m_ppEnts[iEntity];
         if (ent->m_pSub)
         {
             FNV_SmallArray_00d00320& l = ent->m_pSub->m_kContactListenerArray;
@@ -2751,7 +2825,7 @@ void __cdecl hkpWorldCallbackUtil_fireIslandDeactivated(hkpWorld* apWorld, S011b
                         pRec->m_time0 = timing.second;
                         pBuf->m_end.m_storage = reinterpret_cast<char*>(pRec + 1);
                     }
-                    ((S011b0_Listener*)l.m_pItems[j])->v04(apIsland->m_ppEnts[iEntity]);
+                    ((S011b0_Listener*)l.m_pItems[j])->v04(island->m_ppEnts[iEntity]);
                     pBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
                     if (pBuf->m_end.m_storage < pBuf->m_capacityMinus16.m_storage)
                     {
@@ -2767,11 +2841,11 @@ void __cdecl hkpWorldCallbackUtil_fireIslandDeactivated(hkpWorld* apWorld, S011b
             ::RemoveZeroEntries(&l);
         }
     }
-    if (--apWorld->m_iCriticalOperationsLockCount == 0 && !apWorld->m_bBlockExecutingPendingOperations)
+    if (--apWorld->m_criticalOperationsLockCount == 0 && !apWorld->m_blockExecutingPendingOperations)
     {
-        if (apWorld->m_iPendingOperationCount)
+        if (apWorld->m_pendingOperationsCount)
             apWorld->FUN_00c91120();
-        if (apWorld->m_iPendingOperationQueueCount == 1 && apWorld->m_iQueuedOperationCount)
+        if (apWorld->m_pendingOperationQueueCount == 1 && apWorld->m_pendingBodyOperationsCount)
             apWorld->UpdateFields_00c91140();
     }
 }
@@ -2785,11 +2859,13 @@ struct D00960Listener
 // Iterates owner->m_kTargets, records TtconAddCb/Et profiler ticks around each D00960Listener::method1 call, then calls FUN_00d00370 on the list.
 // @fnv 0x00d00960
 // src: HAVOK_LIB 0x00d00960
-void __cdecl hkpWorldCallbackUtil_fireConstraintAdded(::hkpWorld* owner, void* arg)
+// pdb: hkpWorldCallbackUtil::fireConstraintAdded | hkpWorldCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: world, constraint
+void __cdecl hkpWorldCallbackUtil_fireConstraintAdded(::hkpWorld* owner, void* constraint)
 {
     volatile unsigned long uiEndTick;
     volatile unsigned long* pEndTick = &uiEndTick;
-    ::hkArrayBase<void*>* list = (::hkArrayBase<void*>*)&owner->m_kConstraintListeners;
+    ::hkArrayBase<void*>* list = (::hkArrayBase<void*>*)&owner->m_constraintListeners;
     int i = list->m_iElementCount;
     while (--i >= 0)
     {
@@ -2807,7 +2883,7 @@ void __cdecl hkpWorldCallbackUtil_fireConstraintAdded(::hkpWorld* owner, void* a
                 rec->m_time0 = uiStartTick;
                 buf->m_end.m_storage = reinterpret_cast<char*>(rec + 1);
             }
-            ((D00960Listener*)list->m_data[i])->method1(arg);
+            ((D00960Listener*)list->m_data[i])->method1(constraint);
             buf = (::hkMonitorStream*)::TlsGetValue(::DAT_0126835c);
             rec = reinterpret_cast<hkMonitorStream::TimerCommand*>(buf->m_end.m_storage);
             if (reinterpret_cast<char*>(rec) < buf->m_capacityMinus16.m_storage)

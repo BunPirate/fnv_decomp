@@ -18,6 +18,9 @@ unsigned int FUN_00e34b40_s::hkaDeltaCompressedAnimation_getFullCacheKey(unsigne
 }
 
 // @fnv 0x00e34a90
+// pdb: hkaDeltaCompressedAnimation::sampleIndividualFloatTracks | hkaDeltaCompressedAnimation.obj | debug, vtable slot, medium
+// pdb params: time, tracks, numTracks, floatTracksOut
+// pdb locals: assertBuf, ostr
 void __stdcall ZeroBuffer(int aiUnused1, int aiUnused2, unsigned int count, unsigned int* puiDst)
 {
     if (count > 0)
@@ -101,21 +104,23 @@ struct FUN_00e34b50_s : hkaDeltaCompressedAnimation {
     virtual void v1c();
     virtual void v20_2();
     virtual int v20();
-    void hkaDeltaCompressedAnimation_clearAllCacheKeys(e34b50_reader* reader);
+    void hkaDeltaCompressedAnimation_clearAllCacheKeys(e34b50_reader* cache);
 };
 
 // For each block, calls reader->read with buf + 3, m_kCompressedData.m_data + i, and size.
 // @fnv 0x00e34b50
 // src: HAVOK_LIB 0x00e34b50
-void FUN_00e34b50_s::hkaDeltaCompressedAnimation_clearAllCacheKeys(e34b50_reader* reader) {
+// pdb: hkaDeltaCompressedAnimation::clearAllCacheKeys | hkaDeltaCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: cache
+void FUN_00e34b50_s::hkaDeltaCompressedAnimation_clearAllCacheKeys(e34b50_reader* cache) {
     int buf;
     int blockSize = m_iDofCount;
     int count = vf08();
     int numBlocks = (count - 1) / blockSize + 1;
-    int size = m_eQuantizationFormat.m_uiDynamicDofCount * blockSize * 4;
+    int size = m_qFormat.m_uiDynamicDofCount * blockSize * 4;
     int i;
     for (i = 0; i < numBlocks; i++) {
-        reader->read((char*)&buf + 3, m_kCompressedData.m_data + i, size);
+        cache->read((char*)&buf + 3, m_dataBuffer.m_data + i, size);
     }
 }
 
@@ -132,12 +137,12 @@ public:
 // @fnv 0x00e34bb0
 void DeltaAnimationStandIn::GetCompressedBlockRange(unsigned int blockIndex, unsigned int blockCount, CompressedBlockRange* apRange)
 {
-    unsigned int start = m_uiCompressedBlockSize * blockIndex +
-        (unsigned int)m_kCompressedData.m_data + m_uiNumDynamicDofs;
+    unsigned int start = m_totalBlockSize * blockIndex +
+        (unsigned int)m_dataBuffer.m_data + m_quantizedDataIdx;
     unsigned char offset = (unsigned char)start & 15;
     apRange->alignedStart = start & ~15u;
     apRange->prefixBytes = offset;
-    unsigned int actualSize = (blockIndex == blockCount - 1) ? m_iLastBlockSize : m_uiCompressedBlockSize;
+    unsigned int actualSize = (blockIndex == blockCount - 1) ? m_lastBlockSize : m_totalBlockSize;
     apRange->alignedSize = (actualSize + offset + 15) & ~15u;
 }
 
@@ -153,13 +158,14 @@ struct FUN_00e34c90_s : hkaDeltaCompressedAnimation {
 };
 
 // @fnv 0x00e34c90
+// pdb: hkaDeltaCompressedAnimation::getMaxSizeOfCombinedDataChunks | hkaDeltaCompressedAnimation.obj | retail, vtable slot, high
 unsigned int FUN_00e34c90_s::GetMaxBlockSize()
 {
     int maxSize = 0;
-    unsigned int numBlocks = (unsigned int)((m_iFrameCount + m_iDofCount - 1) / m_iDofCount);
+    unsigned int numBlocks = (unsigned int)((m_numberOfPoses + m_iDofCount - 1) / m_iDofCount);
     unsigned int i = 0;
     if (numBlocks > (unsigned int)maxSize) {
-        unsigned int chunkSize = (m_uiNumDynamicDofs + 0xf) & 0xfffffff0u;
+        unsigned int chunkSize = (m_quantizedDataIdx + 0xf) & 0xfffffff0u;
         do {
             BlkInfo info;
             info.a = 0;
@@ -243,32 +249,35 @@ struct S00e34c10_Cache {
 struct S00e34c10_Anim : hkaDeltaCompressedAnimation {
     void __thiscall GetCompressedBlockRange(unsigned int blockIndex, int numBlocks,
                                  S00e34c10_Block* apBlocks);
-    void __thiscall hkaDeltaCompressedAnimation_getDataChunks(unsigned int frameIndex, int unused,
-                                 S00e34c10_Cache* cache, int mode);
+    void __thiscall hkaDeltaCompressedAnimation_getDataChunks(unsigned int frame, int delta,
+                                 S00e34c10_Cache* dataChunks, int numDataChunks);
 };
 
 // Stores animation pointers and alignment in cache, computes block indices, and calls GetCompressedBlockRange to fill cache blocks.
 // @fnv 0x00e34c10
 // src: HAVOK_LIB 0x00e34c10
+// pdb: hkaDeltaCompressedAnimation::getDataChunks | hkaDeltaCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: frame, delta, dataChunks, numDataChunks
+// pdb locals: assertBuf, ostr
 void __thiscall S00e34c10_Anim::hkaDeltaCompressedAnimation_getDataChunks(
-    unsigned int frameIndex, int unused, S00e34c10_Cache* cache, int mode)
+    unsigned int frame, int delta, S00e34c10_Cache* dataChunks, int numDataChunks)
 {
-    cache->anim = this;
-    cache->animAlign = *(unsigned char*)&cache->anim & 0xf;
-    cache->unk04 = 0x80;
+    dataChunks->anim = this;
+    dataChunks->animAlign = *(unsigned char*)&dataChunks->anim & 0xf;
+    dataChunks->unk04 = 0x80;
 
-    cache->data = m_kCompressedData.m_data;
-    cache->quantizedDataOffset = (int)((m_uiNumDynamicDofs + 0xf) & 0xfffffff0);
-    cache->dataAlign = *(unsigned char*)&cache->data & 0xf;
+    dataChunks->data = m_dataBuffer.m_data;
+    dataChunks->quantizedDataOffset = (int)((m_quantizedDataIdx + 0xf) & 0xfffffff0);
+    dataChunks->dataAlign = *(unsigned char*)&dataChunks->data & 0xf;
 
-    unsigned int blockIndex = frameIndex / (unsigned int)m_iDofCount;
-    int numBlocks = (m_iFrameCount + m_iDofCount - 1) / m_iDofCount;
+    unsigned int blockIndex = frame / (unsigned int)m_iDofCount;
+    int numBlocks = (m_numberOfPoses + m_iDofCount - 1) / m_iDofCount;
 
-    GetCompressedBlockRange(blockIndex, numBlocks, &cache->blocks[0]);
+    GetCompressedBlockRange(blockIndex, numBlocks, &dataChunks->blocks[0]);
 
-    if (mode == 4) {
+    if (numDataChunks == 4) {
         unsigned int uiNextBlockIndex = (blockIndex + 1) % (unsigned int)numBlocks;
-        GetCompressedBlockRange(uiNextBlockIndex, numBlocks, &cache->blocks[1]);
+        GetCompressedBlockRange(uiNextBlockIndex, numBlocks, &dataChunks->blocks[1]);
     }
 }
 
@@ -315,7 +324,10 @@ static __declspec(noinline) void _decompress_00e349c0(float* dst, DqArgs args)
 // Decompresses delta-compressed animation data into dst by calling FUN_00e349c0 with quantization parameters and offsets from anim.
 // @fnv 0x00e34d80
 // src: HAVOK_LIB 0x00e34d80
-static __declspec(noinline) void decompressBlockToCache_00e34d80(hkaDeltaCompressedAnimation* anim, unsigned int time, float* dst, unsigned int count)
+// pdb: decompressBlockToCache | hkaDeltaCompressedAnimation.obj | retail, unique string literal, high
+// pdb params: animation, pose, data, numD
+// pdb locals: params
+static __declspec(noinline) void decompressBlockToCache_00e34d80(hkaDeltaCompressedAnimation* anim, unsigned int pose, float* dst, unsigned int count)
 {
     {
         hkMonitorStream* prof = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -329,8 +341,8 @@ static __declspec(noinline) void decompressBlockToCache_00e34d80(hkaDeltaCompres
         }
     }
     {
-        int numPoses = anim->m_iFrameCount;
-        unsigned int q = time / (unsigned int)anim->m_iDofCount;
+        int numPoses = anim->m_numberOfPoses;
+        unsigned int q = pose / (unsigned int)anim->m_iDofCount;
         int r = anim->m_iDofCount;
         if (r > numPoses) {
             r = numPoses;
@@ -340,16 +352,16 @@ static __declspec(noinline) void decompressBlockToCache_00e34d80(hkaDeltaCompres
         if (end > numPoses) {
             r = numPoses - anim->m_iDofCount * (int)q;
         }
-        unsigned char* data = (unsigned char*)anim->m_kCompressedData.m_data;
+        unsigned char* data = (unsigned char*)anim->m_dataBuffer.m_data;
         DqArgs args;
         args.m_uiItemCount = count;
         args.m_offset = (unsigned int)r;
-        args.m_ucSecondQuantizationParameter = anim->m_eQuantizationFormat.m_ucSecondQuantizationParameter;
-        args.m_ucFirstQuantizationParameter = anim->m_eQuantizationFormat.m_ucFirstQuantizationParameter;
-        args.m_offsetIdxOff = (unsigned int)(data + anim->m_eQuantizationFormat.m_uiOffsetIndexOffset);
-        args.m_scaleIdxOff = (unsigned int)(data + anim->m_eQuantizationFormat.m_uiScaleIndexOffset);
-        args.m_bitWidthIdxOff = (unsigned int)(data + anim->m_eQuantizationFormat.m_uiBitWidthIndexOffset);
-        args.m_quantOff = (unsigned int)(data + (anim->m_uiCompressedBlockSize * q + anim->m_uiNumDynamicDofs));
+        args.m_ucSecondQuantizationParameter = anim->m_qFormat.m_ucSecondQuantizationParameter;
+        args.m_ucFirstQuantizationParameter = anim->m_qFormat.m_ucFirstQuantizationParameter;
+        args.m_offsetIdxOff = (unsigned int)(data + anim->m_qFormat.m_uiOffsetIndexOffset);
+        args.m_scaleIdxOff = (unsigned int)(data + anim->m_qFormat.m_uiScaleIndexOffset);
+        args.m_bitWidthIdxOff = (unsigned int)(data + anim->m_qFormat.m_uiBitWidthIndexOffset);
+        args.m_quantOff = (unsigned int)(data + (anim->m_totalBlockSize * q + anim->m_quantizedDataIdx));
         args.m_iDofCount = (unsigned int)anim->m_iDofCount;
         _decompress_00e349c0(dst, args);
     }
@@ -426,24 +438,26 @@ struct AnimationEndian : hkaDeltaCompressedAnimation {
 // Swaps byte order of masks, static values, and dynamic offsets and scales when the first data byte is nonzero.
 // @fnv 0x00e35050
 // src: HAVOK_LIB 0x00e35050
+// pdb: hkaDeltaCompressedAnimation::handleEndian | hkaDeltaCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb locals: stats
 void AnimationEndian::hkaDeltaCompressedAnimation_handleEndian() {
-    if (m_uiFramesPerBlock != 4) return;
-    bool needsSwap = m_kCompressedData.m_data[0] != 0;
+    if (m_staticMaskIdx != 4) return;
+    bool needsSwap = m_dataBuffer.m_data[0] != 0;
     bool& swapRef = needsSwap;
     if (!swapRef) return;
-    unsigned short* masks = (unsigned short*)(m_kCompressedData.m_data + 4);
+    unsigned short* masks = (unsigned short*)(m_dataBuffer.m_data + 4);
     unsigned short* currentMask = masks;
     for (int i = 0; i < m_iNumberOfFloatTracks + m_iNumTransformTracks; ++i, ++currentMask)
         *currentMask = swapMask(*currentMask);
     AnimationStatistics statistics;
     hkaTrackAnalysis_calcStats(masks, masks + m_iNumTransformTracks, m_iNumTransformTracks, m_iNumberOfFloatTracks, &statistics);
     int staticCount = statistics.dynamicTranslation + (statistics.dynamicRotation + (statistics.dynamicScale + statistics.dynamicFloat));
-    float* staticValues = (float*)(m_kCompressedData.m_data + m_uiNumBlocks);
+    float* staticValues = (float*)(m_dataBuffer.m_data + m_staticDOFsIdx);
     for (int j = 0; j < staticCount; ++j, ++staticValues)
         *staticValues = swapFloat(*staticValues);
     unsigned int dynamicCount = statistics.staticTranslation + (statistics.staticRotation + (statistics.staticScale + statistics.staticFloat));
-    float* offsets = (float*)(m_kCompressedData.m_data + m_eQuantizationFormat.m_uiOffsetIndexOffset);
-    float* scales = (float*)(m_kCompressedData.m_data + m_eQuantizationFormat.m_uiScaleIndexOffset);
+    float* offsets = (float*)(m_dataBuffer.m_data + m_qFormat.m_uiOffsetIndexOffset);
+    float* scales = (float*)(m_dataBuffer.m_data + m_qFormat.m_uiScaleIndexOffset);
     for (unsigned int k = 0; k < dynamicCount; ++k, ++offsets, ++scales) {
         *offsets = swapFloat(*offsets);
         *scales = swapFloat(*scales);
@@ -505,16 +519,19 @@ struct hkaDeltaAnimExt : hkaDeltaCompressedAnimation {
 
 struct ChunkCacheRef { ChunkAccessManager* m_pAccessManager; };
 
-static void decompressBlockToCache_00e34d80(const hkaDeltaCompressedAnimation* anim, int block, void* out, int numPoses);
+static void decompressBlockToCache_00e34d80(const hkaDeltaCompressedAnimation* anim, int pose, void* out, int numPoses);
 
 // Locks the chunk access manager, retrieves or allocates a chunk, and returns its data pointer or null.
 // @fnv 0x00e34e80
 // src: XBOX_PDB 0x00e34e80
-static void* retrieveFromCache_00e34e80(ChunkCacheRef* cache, const hkaDeltaCompressedAnimation* anim, int block, int numPoses)
+// pdb: retrieveFromCache | hkaDeltaCompressedAnimation.obj | retail, unique string literal, high
+// pdb params: animation, poseIdx, numD, cache
+// pdb locals: assertBuf, ostr
+static void* retrieveFromCache_00e34e80(ChunkCacheRef* cache, const hkaDeltaCompressedAnimation* poseIdx, int block, int numPoses)
 {
     hkTimer("TtcacheD");
-    hkUint32 key = ((hkaDeltaAnimExt*)anim)->getBlockKey(block);
-    int size = anim->m_iDofCount * numPoses * 4;
+    hkUint32 key = ((hkaDeltaAnimExt*)poseIdx)->getBlockKey(block);
+    int size = poseIdx->m_iDofCount * numPoses * 4;
     ChunkAccessManager* c = cache->m_pAccessManager;
     c->lock();
     if (cache->m_pAccessManager->isLocked(key, size)) {
@@ -533,7 +550,7 @@ static void* retrieveFromCache_00e34e80(ChunkCacheRef* cache, const hkaDeltaComp
         cache->m_pAccessManager->markForRead(key, size);
         cache->m_pAccessManager->MarkForWrite(key, size);
         cache->m_pAccessManager->unlock();
-        decompressBlockToCache_00e34d80(anim, block, data, numPoses);
+        decompressBlockToCache_00e34d80(poseIdx, block, data, numPoses);
         cache->m_pAccessManager->lock();
         cache->m_pAccessManager->unmarkForWrite(key, size);
         cache->m_pAccessManager->unlock();
@@ -547,17 +564,17 @@ static void* retrieveFromCache_00e34e80(ChunkCacheRef* cache, const hkaDeltaComp
 
 extern int g_sink;
 // src: HAVOK_LIB 0x00e34d80
-static void decompressBlockToCache_00e34d80(const hkaDeltaCompressedAnimation* anim, int block, void* out, int numPoses)
+static void decompressBlockToCache_00e34d80(const hkaDeltaCompressedAnimation* anim, int pose, void* out, int numPoses)
 {
     hkTimer("TtcacheD");
-    g_sink = anim->m_iDofCount + anim->m_iFrameCount * block + (int)out + numPoses + anim->m_uiNumDynamicDofs;
+    g_sink = anim->m_iDofCount + anim->m_numberOfPoses * pose + (int)out + numPoses + anim->m_quantizedDataIdx;
     hkTimer("Et");
 }
 
 void* SampleCaller(const hkaDeltaCompressedAnimation* anim, int block, int numPoses)
 {
     ChunkCacheRef ref;
-    ref.m_pAccessManager = (ChunkAccessManager*)anim->m_pExtractedMotion;
+    ref.m_pAccessManager = (ChunkAccessManager*)anim->m_extractedMotion;
     return retrieveFromCache_00e34e80(&ref, anim, block, numPoses);
 }
 }  // namespace fnv_00e34e80
@@ -665,13 +682,16 @@ __forceinline void UpdateBlockTail(unsigned int f, const int& step, int total, i
 // Decodes delta-compressed animation chunks, interpolates between frames, and recomposes transforms and floats into output buffers.
 // @fnv 0x00e354b0
 // src: HAVOK_LIB 0x00e354b0
-void __cdecl hkaDeltaCompressedAnimation_samplePartialWithDataChunks(unsigned int frame, float delta, unsigned int numTransforms,
-                         hkQsTransform* transforms, unsigned int numFloats, float* floats,
-                         const Chunk* chunks, int chunkCount)
+// pdb: hkaDeltaCompressedAnimation::samplePartialWithDataChunks | hkaDeltaCompressedAnimation.obj | retail, string-set bridge, high
+// pdb params: frameIndex, delta, maxNumTransformTracks, transformTracksOut, maxNumFloatTracks, floatTracksOut, dataChunks, numDataChunks
+// pdb locals: params, combiner, assertBuf, ostr, stats
+void __cdecl hkaDeltaCompressedAnimation_samplePartialWithDataChunks(unsigned int frameIndex, float delta, unsigned int maxNumTransformTracks,
+                         hkQsTransform* transformTracksOut, unsigned int maxNumFloatTracks, float* floatTracksOut,
+                         const Chunk* dataChunks, int numDataChunks)
 {
     volatile unsigned int stamp;
     SampleScratch scratch;
-    const hkaDeltaCompressedAnimation* r = reinterpret_cast<const hkaDeltaCompressedAnimation*>(chunks[0].data + chunks[0].offset);
+    const hkaDeltaCompressedAnimation* r = reinterpret_cast<const hkaDeltaCompressedAnimation*>(dataChunks[0].data + dataChunks[0].offset);
     const hkaDeltaCompressedAnimation* it = r;
     hkMonitorStream* pStream = static_cast<hkMonitorStream*>(TlsGetValue(DAT_0126835c));
     if (pStream->m_end.m_storage < pStream->m_capacityMinus16.m_storage) {
@@ -684,19 +704,19 @@ void __cdecl hkaDeltaCompressedAnimation_samplePartialWithDataChunks(unsigned in
         record->m_time0 = stamp;
         pStream->m_end.m_storage = reinterpret_cast<char*>(const_cast<hkMonitorStream::TimerBeginListCommand*>(record)) + 16;
     }
-    const hkUint8* data = chunks[1].data + chunks[1].offset;
-    const hkUint16* masks = reinterpret_cast<const hkUint16*>(data + r->m_uiFramesPerBlock);
-    const float* staticDOFs = reinterpret_cast<const float*>(data + r->m_uiNumBlocks);
-    unsigned int numDOFs = r->m_eQuantizationFormat.m_uiDynamicDofCount;
+    const hkUint8* data = dataChunks[1].data + dataChunks[1].offset;
+    const hkUint16* masks = reinterpret_cast<const hkUint16*>(data + r->m_staticMaskIdx);
+    const float* staticDOFs = reinterpret_cast<const float*>(data + r->m_staticDOFsIdx);
+    unsigned int numDOFs = r->m_qFormat.m_uiDynamicDofCount;
     const unsigned int uiNumTransformTracks = r->m_iNumTransformTracks;
-    if (numTransforms != uiNumTransformTracks || numFloats != r->m_iNumberOfFloatTracks) {
+    if (maxNumTransformTracks != uiNumTransformTracks || maxNumFloatTracks != r->m_iNumberOfFloatTracks) {
         TrackStatistics& statistics = scratch.statistics;
         statistics.Reset();
-        if (numFloats == 0) {
-            AnalyzeTrackWithZeroCount(masks, masks + uiNumTransformTracks, numTransforms, 0, &statistics);
+        if (maxNumFloatTracks == 0) {
+            AnalyzeTrackWithZeroCount(masks, masks + uiNumTransformTracks, maxNumTransformTracks, 0, &statistics);
             numDOFs = statistics.selectedScales + statistics.selectedRotations + statistics.selectedTranslations;
         } else {
-            AnalyzeTrackWithZeroCount(masks, masks + uiNumTransformTracks, uiNumTransformTracks, numFloats, &statistics);
+            AnalyzeTrackWithZeroCount(masks, masks + uiNumTransformTracks, uiNumTransformTracks, maxNumFloatTracks, &statistics);
             numDOFs = statistics.selectedScales + statistics.selectedFloats + statistics.selectedRotations + statistics.selectedTranslations;
         }
     }
@@ -728,50 +748,50 @@ void __cdecl hkaDeltaCompressedAnimation_samplePartialWithDataChunks(unsigned in
     {
     const hkaDeltaCompressedAnimation* __restrict countAnimation = r;
     parameters.numValues = countAnimation->m_iDofCount;
-    if (parameters.numValues <= countAnimation->m_iFrameCount) {
-        UpdateBlockTail(frame, countAnimation->m_iDofCount, countAnimation->m_iFrameCount, parameters.numValues);
-    } else parameters.numValues = countAnimation->m_iFrameCount;
+    if (parameters.numValues <= countAnimation->m_numberOfPoses) {
+        UpdateBlockTail(frameIndex, countAnimation->m_iDofCount, countAnimation->m_numberOfPoses, parameters.numValues);
+    } else parameters.numValues = countAnimation->m_numberOfPoses;
     }
     const hkaDeltaCompressedAnimation* __restrict idxAnimation = r;
     const hkaDeltaCompressedAnimation* __restrict byteAnimation = r;
     int decodeBlockSize = r->m_iDofCount;
-    hkUint8 preserved = r->m_eQuantizationFormat.m_ucSecondQuantizationParameter;
+    hkUint8 preserved = r->m_qFormat.m_ucSecondQuantizationParameter;
     parameters.preserved = preserved;
     parameters.numDOFs = numDOFs;
     parameters.blockSize = decodeBlockSize;
-    parameters.maxBitWidth = byteAnimation->m_eQuantizationFormat.m_ucFirstQuantizationParameter;
-    parameters.offsets = reinterpret_cast<const float*>(data + idxAnimation->m_eQuantizationFormat.m_uiOffsetIndexOffset);
-    parameters.scales = reinterpret_cast<const float*>(data + idxAnimation->m_eQuantizationFormat.m_uiScaleIndexOffset);
-    parameters.bitWidths = data + idxAnimation->m_eQuantizationFormat.m_uiBitWidthIndexOffset;
+    parameters.maxBitWidth = byteAnimation->m_qFormat.m_ucFirstQuantizationParameter;
+    parameters.offsets = reinterpret_cast<const float*>(data + idxAnimation->m_qFormat.m_uiOffsetIndexOffset);
+    parameters.scales = reinterpret_cast<const float*>(data + idxAnimation->m_qFormat.m_uiScaleIndexOffset);
+    parameters.bitWidths = data + idxAnimation->m_qFormat.m_uiBitWidthIndexOffset;
     unsigned int i;
-    if (chunkCount == 3) {
-        parameters.data = chunks[2].data + chunks[2].offset;
+    if (numDataChunks == 3) {
+        parameters.data = dataChunks[2].data + dataChunks[2].offset;
         _decompress_00e349c0(decompressed, parameters);
         unsigned int blockSize = it->m_iDofCount;
         unsigned int value;
         float* destination = interpolated;
-        value = frame % blockSize;
+        value = frameIndex % blockSize;
         for (i = 0; i < (unsigned int)numDOFs; ++i) {
             destination[i] = delta * decompressed[value + 1] + inverseDelta * decompressed[value];
             value += blockSize;
         }
     } else {
-        parameters.data = chunks[2].data + chunks[2u].offset;
+        parameters.data = dataChunks[2].data + dataChunks[2u].offset;
         _decompress_00e349c0(decompressed, parameters);
         unsigned int blockSize = it->m_iDofCount;
         unsigned int value;
-        value = frame % blockSize;
+        value = frameIndex % blockSize;
         i = 0;
         while (i < numDOFs) {
             { interpolated[i] = inverseDelta * decompressed[value]; }
             value += blockSize;
             ++i;
         }
-        parameters.data = chunks[3].data + chunks[3].offset;
-        int block = (frame + 1) / blockSize;
+        parameters.data = dataChunks[3].data + dataChunks[3].offset;
+        int block = (frameIndex + 1) / blockSize;
         const hkaDeltaCompressedAnimation* k = it;
-        if ((block + 1) * k->m_iDofCount > k->m_iFrameCount)
-            parameters.numValues = k->m_iFrameCount - block * blockSize;
+        if ((block + 1) * k->m_iDofCount > k->m_numberOfPoses)
+            parameters.numValues = k->m_numberOfPoses - block * blockSize;
         _decompress_00e349c0(decompressed, parameters);
         unsigned int uiValue;
         uiValue = 0;
@@ -796,17 +816,17 @@ void __cdecl hkaDeltaCompressedAnimation_samplePartialWithDataChunks(unsigned in
         pStream->m_end.m_storage = reinterpret_cast<char*>(const_cast<hkMonitorStream::TimerBeginListCommand*>(record)) + 12;
     }
     RecomposeParameters& m_kRecomposeParameters = scratch.m_kRecomposeParameters;
-    m_kRecomposeParameters.numTransformTracks = numTransforms;
-    m_kRecomposeParameters.numFloatTracks = numFloats;
+    m_kRecomposeParameters.numTransformTracks = maxNumTransformTracks;
+    m_kRecomposeParameters.numFloatTracks = maxNumFloatTracks;
     m_kRecomposeParameters.staticTransforms = staticDOFs;
     m_kRecomposeParameters.transformMasks = masks;
     m_kRecomposeParameters.dynamicTransforms = interpolated;
     const hkaDeltaCompressedAnimation* resultAnimation = it;
-    m_kRecomposeParameters.staticFloats = staticDOFs + resultAnimation->m_uiOffsetDataOffset;
-    m_kRecomposeParameters.dynamicFloats = interpolated + resultAnimation->m_uiScaleDataOffset;
+    m_kRecomposeParameters.staticFloats = staticDOFs + resultAnimation->m_numStaticTransformDOFs;
+    m_kRecomposeParameters.dynamicFloats = interpolated + resultAnimation->m_numDynamicTransformDOFs;
     const hkInt32 iNumTransformTracks = resultAnimation->m_iNumTransformTracks;
     m_kRecomposeParameters.floatMasks = (masks + iNumTransformTracks);
-    hkaTrackAnalysis_recompose(&m_kRecomposeParameters, transforms, floats);
+    hkaTrackAnalysis_recompose(&m_kRecomposeParameters, transformTracksOut, floatTracksOut);
     hkMemoryRouter_getInstance()->current = reinterpret_cast<char*>(interpolated);
     hkMemoryRouter_getInstance()->current = reinterpret_cast<char*>(decompressed);
     pStream = static_cast<hkMonitorStream*>(TlsGetValue(DAT_0126835c));
@@ -881,7 +901,7 @@ struct ThreadMemory {
     HeapAllocator* m_pStreamAllocator;
 };
 ThreadMemory* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(HeapAllocator* alloc, void* arr, int cap, int elemSize);
+void __cdecl hkArrayUtil__reserve(HeapAllocator* mem, void* array, int numElem, int sizeElem);
 
 struct LocalFloatArray {
     float* m_data;
@@ -953,7 +973,7 @@ struct MaskStats {
           m_dynamicScaleDOFs(0), m_dynamicFloatDOFs(0), m_staticFloatDOFs(0),
           m_identityFloats(0), m_fScalar(0.0f) {}
 };
-void __cdecl AnalyzeTrackWithZeroCount(const hkUint16* mask, const hkUint16* maskEnd, hkUint32 numT, hkUint32 numF, MaskStats* stats);
+void __cdecl AnalyzeTrackWithZeroCount(const hkUint16* staticMaskT, const hkUint16* staticMaskF, hkUint32 numTracksT, hkUint32 numTracksF, MaskStats* out);
 
 struct RecomposeJob {
     hkUint32 m_numQsTransforms;
@@ -965,7 +985,7 @@ struct RecomposeJob {
     const float* m_dynamicFloats;
     const float* m_dynamicEnd;
 };
-void __cdecl hkaTrackAnalysis_recompose(RecomposeJob* job, hkQsTransform* transforms, float* floats);
+void __cdecl hkaTrackAnalysis_recompose(RecomposeJob* input, hkQsTransform* outputPose, float* outputFloatTracks);
 
 struct ChunkCache {
     virtual void v00();
@@ -1002,29 +1022,29 @@ public:
     virtual void v3c();
     virtual hkUint32 getChunkKey(hkUint32 frame) const;
 
-    void hkaAnimation_getFrameAndDelta(float time, hkUint32* frame, float* delta) const;
+    void hkaAnimation_getFrameAndDelta(float time, hkUint32* frameOut, float* deltaOut) const;
     void hkaDeltaCompressedAnimation_samplePartialTracks(float time, hkUint32 maxNumTransformTracks, hkQsTransform* transformTracksOut,
                       hkUint32 maxNumFloatTracks, float* floatTracksOut, ChunkCache* cache) const;
 };
 
 void __cdecl _decompress_00e349c0(int a, int b, int c, int d, int e, int f, int g, int h);
 
-static __declspec(noinline) void Decompress(const DeltaSampler* anim, hkUint32 frame, float* out, hkUint32 count)
+static __declspec(noinline) void Decompress(const DeltaSampler* anim, hkUint32 pose, float* out, hkUint32 count)
 {
     TimerSplit("StDecompressD");
     int block = anim->m_iDofCount;
-    hkUint32 b = frame / block;
+    hkUint32 b = pose / block;
     int n = block;
-    if (n > anim->m_iFrameCount) { n = anim->m_iFrameCount; b = 0; }
-    _decompress_00e349c0(b * block, n, anim->m_eQuantizationFormat.m_uiDynamicDofCount, anim->m_kCompressedData.m_iElementCount, (int)out, count, 0, 0);
+    if (n > anim->m_numberOfPoses) { n = anim->m_numberOfPoses; b = 0; }
+    _decompress_00e349c0(b * block, n, anim->m_qFormat.m_uiDynamicDofCount, anim->m_dataBuffer.m_iElementCount, (int)out, count, 0, 0);
     TimerSplit("StInterpD");
 }
 
-static __declspec(noinline) const float* GetCachedChunkData(ChunkCache** cache, const DeltaSampler* anim, hkUint32 frame, hkUint32 numD)
+static __declspec(noinline) const float* GetCachedChunkData(ChunkCache** cache, const DeltaSampler* poseIdx, hkUint32 frame, hkUint32 numD)
 {
     TimerSplit("StCache");
-    hkUint32 key = anim->getChunkKey(frame);
-    hkUint32 size = anim->m_iDofCount * numD * sizeof(float);
+    hkUint32 key = poseIdx->getChunkKey(frame);
+    hkUint32 size = poseIdx->m_iDofCount * numD * sizeof(float);
     (*cache)->lock();
     if (*(*cache)->query(&numD, key, size)) {
         (*cache)->unlock();
@@ -1042,7 +1062,7 @@ static __declspec(noinline) const float* GetCachedChunkData(ChunkCache** cache, 
         (*cache)->release(&numD, key, size);
         (*cache)->markB(&numD, key, size);
         (*cache)->unlock();
-        Decompress(anim, frame, data, numD);
+        Decompress(poseIdx, frame, data, numD);
         (*cache)->lock();
         (*cache)->markC(&numD, key, size);
         (*cache)->unlock();
@@ -1065,23 +1085,26 @@ static __declspec(noinline) void PutInCache(const DeltaSampler* anim, hkUint32 f
 
 
 // src: HAVOK_LIB 0x00e2f7c0
-__declspec(noinline) void DeltaSampler::hkaAnimation_getFrameAndDelta(float time, hkUint32* frame, float* delta) const
+__declspec(noinline) void DeltaSampler::hkaAnimation_getFrameAndDelta(float time, hkUint32* frameOut, float* deltaOut) const
 {
     hkUint32 last = getPoseCount() - 1;
-    float position = time / m_fAnimationDuration * last;
-    *frame = (hkUint32)position;
-    if (*frame > last-1) { *frame = last-1; *delta = 1.0f; }
-    else { *delta = position - *frame; }
+    float position = time / m_duration * last;
+    *frameOut = (hkUint32)position;
+    if (*frameOut > last-1) { *frameOut = last-1; *deltaOut = 1.0f; }
+    else { *deltaOut = position - *frameOut; }
 }
 // @fnv 0x00e359f0
 // src: HAVOK_LIB 0x00e359f0
+// pdb: hkaDeltaCompressedAnimation::samplePartialTracks | hkaDeltaCompressedAnimation.obj | retail, string-set bridge, high
+// pdb params: time, maxNumTransformTracks, transformTracksOut, maxNumFloatTracks, floatTracksOut, cache
+// pdb locals: delta, poseIdx, poseData, tmpCache, assertBuf, ostr, stats, combiner
 void DeltaSampler::hkaDeltaCompressedAnimation_samplePartialTracks(float time, hkUint32 maxNumTransformTracks, hkQsTransform* transformTracksOut,
                                 hkUint32 maxNumFloatTracks, float* floatTracksOut, ChunkCache* cache) const
 {
     TimerBeginList("LtSampleDelta", "StStaticD");
 
-    const hkUint32 numD = m_eQuantizationFormat.m_uiDynamicDofCount;
-    const hkUint16* staticMask = (const hkUint16*)(m_kCompressedData.m_data + m_uiFramesPerBlock);
+    const hkUint32 numD = m_qFormat.m_uiDynamicDofCount;
+    const hkUint16* staticMask = (const hkUint16*)(m_dataBuffer.m_data + m_staticMaskIdx);
     hkUint32 numDynamic = numD;
 
     if (maxNumTransformTracks != (hkUint32)m_iNumTransformTracks || maxNumFloatTracks != (hkUint32)m_iNumberOfFloatTracks) {
@@ -1157,15 +1180,15 @@ void DeltaSampler::hkaDeltaCompressedAnimation_samplePartialTracks(float time, h
     TimerSplit("StRecomposeD");
 
     {
-    const float* staticDOFs = (const float*)(m_kCompressedData.m_data + m_uiNumBlocks);
+    const float* staticDOFs = (const float*)(m_dataBuffer.m_data + m_staticDOFsIdx);
     RecomposeJob job;
     job.m_numQsTransforms = maxNumTransformTracks;
     job.m_numFloats = maxNumFloatTracks;
     job.m_static = staticDOFs;
     job.m_dynamicFloats = dynamicDOFs.m_data;
     job.m_uiMask = staticMask;
-    job.m_staticEnd = staticDOFs + m_uiOffsetDataOffset;
-    job.m_dynamicEnd = dynamicDOFs.m_data + m_uiScaleDataOffset;
+    job.m_staticEnd = staticDOFs + m_numStaticTransformDOFs;
+    job.m_dynamicEnd = dynamicDOFs.m_data + m_numDynamicTransformDOFs;
     job.m_maskEnd = staticMask + m_iNumTransformTracks;
     hkaTrackAnalysis_recompose(&job, transformTracksOut, floatTracksOut);
     }

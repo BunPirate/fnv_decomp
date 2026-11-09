@@ -2,13 +2,16 @@
 #include "bstmessagequeue_decls.h"
 template <>
 // @fnv 0x00905770
-bool BSTCommonLLMessageQueue<QueuedMessage>::RemoveMessage(QueuedMessage& output)
+// pdb: BSTCommonLLMessageQueue<ActorPathingMessage>::DoTryPop | HighProcess.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: pElem, bResult
+bool BSTCommonLLMessageQueue<QueuedMessage>::RemoveMessage(QueuedMessage& aMessage)
 {
     BSTFreeListElem<QueuedMessage>* pElem = pHead;
     bool bResult;
     if (pElem)
     {
-        output = reinterpret_cast<QueuedMessage&>(reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(pElem)->GetItem());
+        aMessage = reinterpret_cast<QueuedMessage&>(reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(pElem)->GetItem());
         pHead = pElem->pNext;
         pSizeClassFreeList->Elem(pElem);
         bResult = true;
@@ -19,11 +22,14 @@ bool BSTCommonLLMessageQueue<QueuedMessage>::RemoveMessage(QueuedMessage& output
 }
 template <>
 // @fnv 0x009056f0
-bool BSTCommonLLMessageQueue<QueuedMessage>::EnqueueMessage(const QueuedMessage& input)
+// pdb: BSTCommonLLMessageQueue<ActorPathingMessage>::DoTryPush | HighProcess.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: pElem, bResult
+bool BSTCommonLLMessageQueue<QueuedMessage>::EnqueueMessage(const QueuedMessage& aMessage)
 {
     BSTFreeListElem<QueuedMessage>* pElem;
     bool bResult;
-    if (pSizeClassFreeList && pSizeClassFreeList->BSTFreeList_Allocate_0(pElem, input))
+    if (pSizeClassFreeList && pSizeClassFreeList->BSTFreeList_Allocate_0(pElem, aMessage))
     {
         if (!pHead)
             m_ppTailLink = &pHead;

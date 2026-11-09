@@ -4,6 +4,7 @@
 
 class TESObjectREFR;
 
+// pdb: class ExtraMerchantContainer, size 0x10, bases: BSExtraData, 1 members
 class ExtraMerchantContainer : public BSExtraData
 {
 public:

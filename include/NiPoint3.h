@@ -4,6 +4,7 @@
 class NiStream;
 class TPoint3;
 
+// pdb: class NiPoint3, size 0xc, 3 members
 class NiPoint3
 {
   public:
@@ -76,9 +77,9 @@ class NiPoint3
     float DotProduct(const NiPoint3& point);
     float DotProduct(const NiPoint3& point) const;
     float DotProduct(NiPoint3* point);
-    NiPoint3 Cross(const NiPoint3& point) const;
+    NiPoint3 Cross(const NiPoint3& pt) const;
     NiPoint3 Cross(void* point);
-    NiPoint3 CrossProduct(const NiPoint3& point) const;
+    NiPoint3 CrossProduct(const NiPoint3& pt) const;
     NiPoint3 CrossProduct(void* point);
     NiPoint3 Perpendicular();
     float Length();
@@ -110,10 +111,10 @@ class NiPoint3
     NiPoint3* GetNegatedVector(NiPoint3* out);
     void FUN_004a0c90(float scalar);
     float FUN_004a7290() const;
-    NiPoint3 FUN_004b3800(const NiPoint3& point) const;
+    NiPoint3 FUN_004b3800(const NiPoint3& pt) const;
     NiPoint3* FUN_004b4500(void* context, NiPoint3* a, NiPoint3* b);
-    NiPoint3 FUN_0053d1a0(const NiPoint3& point);
-    NiPoint3 FUN_0053d1a0(const NiPoint3& point) const;
+    NiPoint3 FUN_0053d1a0(const NiPoint3& pt);
+    NiPoint3 FUN_0053d1a0(const NiPoint3& pt) const;
     NiPoint3 ProcessAndReturnValue_0053d280(float scalar) const;
     void FUN_005df510(unsigned int value, NiPoint3* point);
     NiPoint3* ComputeValue_0063c8a0(const NiPoint3& point);
@@ -160,7 +161,7 @@ class NiPoint3
     NiPoint3* SetComponents(float x, float y, float z);
     NiPoint3* FUN_00439e90(NiPoint3* output, const NiPoint3* other) const;
     void FUN_0043d410(float x, int y, int z);
-    char* GetViewerString_00a59af0(const char* prefix);
+    char* GetViewerString_00a59af0(const char* pPrefix);
     NiPoint3& AddComponents(const NiPoint3& point);
 
     NiPoint3 Add(const NiPoint3& point) const;
@@ -186,7 +187,7 @@ class NiPoint3
     void LoadBinary(NiStream& stream);
     void SaveBinary(NiStream* stream);
     char* FormatToBuffer(char* buffer);
-    char* FormatToBuffer(const char* prefix) const;
+    char* FormatToBuffer(const char* pPrefix) const;
 
     static const NiPoint3 ZERO;
     static const NiPoint3 UNIT_X;

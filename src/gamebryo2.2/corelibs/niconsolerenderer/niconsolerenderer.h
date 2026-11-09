@@ -10,6 +10,8 @@ void __cdecl Object_DoNothing(const char*, ...);
 #pragma optimize("", off)
 
 // @fnv 0x004dee10
+// pdb: NiXenonRenderer::GetBackbufferWidth | ScreenCustomSplatter.obj | debug, call graph, high
+// pdb locals: pkGroup, pkBuffer
 unsigned int GraphicsRenderer::GetRenderTargetWidth()
 {
     struct HeightLocals
@@ -27,6 +29,8 @@ unsigned int GraphicsRenderer::GetRenderTargetWidth()
 }
 
 // @fnv 0x004dee70
+// pdb: NiXenonRenderer::GetBackbufferHeight | ScreenCustomSplatter.obj | debug, call graph, high
+// pdb locals: pkGroup, pkBuffer
 unsigned int GraphicsRenderer::GetRenderTargetHeight()
 {
     struct WidthLocals
@@ -45,17 +49,20 @@ unsigned int GraphicsRenderer::GetRenderTargetHeight()
 
 #pragma optimize("", on)
 // @fnv 0x00b6b2a0
-bool GraphicsRenderer::BeginUsingRenderTargetGroup(NiRenderTargetGroup* group, unsigned int clear)
+// pdb: NiXenonRenderer::BeginUsingRenderTargetGroup | BSRenderedTexture.obj | retail, string-set bridge, high
+// pdb params: pkTarget, uiClearMode
+// pdb locals: bSuccess
+bool GraphicsRenderer::BeginUsingRenderTargetGroup(NiRenderTargetGroup* pkTarget, unsigned int uiClearMode)
 {
     if ((m_eFrameState != 1 && m_eFrameState != 2) || m_bRenderTargetGroupActive)
         return false;
-    if (!group)
+    if (!pkTarget)
     {
         Object_DoNothing(DAT_010ae590);
         return false;
     }
     fnv_EnterCriticalSection(&m_kRendererLock);
-    bool result = ((NiConsoleRendererPacketVTable*)this)->BeginGroup(group, clear);
+    bool result = ((NiConsoleRendererPacketVTable*)this)->BeginGroup(pkTarget, uiClearMode);
     if (result)
         m_bRenderTargetGroupActive = true;
     else

@@ -171,7 +171,10 @@ inline NiShaderConstantMapEntry* GetConstantMapEntry(NiD3DShaderConstantMap* map
 
 // Lazily creates the four NiD3DShaderConstantMap objects, registers their shader constants and caches the resulting handles in globals.
 // @fnv 0x00b7e430
-void ShadowLightShader::UpdateShaderConstants()
+// src: XBOX_RETAIL_PDB 0x00b7e430
+// pdb: ShadowLightShader::CreateConstantMaps | ShadowLightShader.obj | retail, string-set bridge, high
+// pdb locals: uiDefinedMatrixFlags, uiConstantPoint4Flags, uiConstantMatrixFlags, uiConstantPoint1Flags
+void ShadowLightShader::CreateConstantMaps()
 {
     if (!m_spSecondShaderConstantMap.m_pObject)
     {
@@ -241,7 +244,7 @@ void ShadowLightShader::UpdateShaderConstants()
         DAT_011fec24 = GetConstantMapEntry(m_spSecondShaderConstantMap.m_pObject, "PrevWorldViewPT");
         DAT_011fec28 = GetConstantMapEntry(m_spSecondShaderConstantMap.m_pObject, "PrevWorldViewT");
         DAT_011fec04 = GetConstantMapEntry(m_spSecondShaderConstantMap.m_pObject, "PrevBoneMatrix3");
-        m_spSecondPassConstantMap = m_spSecondShaderConstantMap;
+        spDefaultVertexConstantMap = m_spSecondShaderConstantMap;
     }
     if (!m_spFirstShaderConstantMap.m_pObject)
     {
@@ -300,26 +303,26 @@ void ShadowLightShader::UpdateShaderConstants()
         DAT_011fec7c = GetConstantMapEntry(m_spFirstShaderConstantMap.m_pObject, "FogPlane");
         DAT_011fec80 = GetConstantMapEntry(m_spFirstShaderConstantMap.m_pObject, "LODTEXPARAMS");
         DAT_011fec84 = GetConstantMapEntry(m_spFirstShaderConstantMap.m_pObject, "STBBColorConstants");
-        m_spFirstPassConstantMap = m_spFirstShaderConstantMap;
+        spDefaultPixelConstantMap = m_spFirstShaderConstantMap;
     }
-    if (!m_spFogConstantMap.m_pObject)
+    if (!spTexEffectVConstantMap.m_pObject)
     {
-        m_spFogConstantMap = new NiD3DShaderConstantMap(m_pShaderObject, 0u);
-        m_spFogConstantMap.m_pObject->AddConstant8(DAT_010A1E50, 0x20000009, 0, DAT_01011584, 0x0, 0, 0, false);
-        m_spFogConstantMap.m_pObject->AddConstant8("SkinWorldViewProjTranspose", 0x20000009, 4, DAT_01011584, 0x0, 0, 0,
+        spTexEffectVConstantMap = new NiD3DShaderConstantMap(m_pShaderObject, 0u);
+        spTexEffectVConstantMap.m_pObject->AddConstant8(DAT_010A1E50, 0x20000009, 0, DAT_01011584, 0x0, 0, 0, false);
+        spTexEffectVConstantMap.m_pObject->AddConstant8("SkinWorldViewProjTranspose", 0x20000009, 4, DAT_01011584, 0x0, 0, 0,
                                              false);
-        m_spFogConstantMap.m_pObject->SetConstant("BoneMatrix3", 0x20000009, 1179648, 14, 54, 0, 0x0, 0, 0, false);
-        m_spFogConstantMap.m_pObject->SetConstant("EyePosition", 0x10000007, 0, 8, 1, DAT_01011584, 0x10, 4, DAT_011fd894,
+        spTexEffectVConstantMap.m_pObject->SetConstant("BoneMatrix3", 0x20000009, 1179648, 14, 54, 0, 0x0, 0, 0, false);
+        spTexEffectVConstantMap.m_pObject->SetConstant("EyePosition", 0x10000007, 0, 8, 1, DAT_01011584, 0x10, 4, DAT_011fd894,
                                                false);
-        m_spFogConstantMap.m_pObject->SetConstant("U Offset", 0x10000004, 0, 9, 1, DAT_01011584, 0x4, 4, DAT_011fd85c,
+        spTexEffectVConstantMap.m_pObject->SetConstant("U Offset", 0x10000004, 0, 9, 1, DAT_01011584, 0x4, 4, DAT_011fd85c,
                                                false);
-        m_spFogConstantMap.m_pObject->SetConstant("V Offset", 0x10000004, 0, 10, 1, DAT_01011584, 0x4, 4, DAT_011fd860,
+        spTexEffectVConstantMap.m_pObject->SetConstant("V Offset", 0x10000004, 0, 10, 1, DAT_01011584, 0x4, 4, DAT_011fd860,
                                                false);
-        m_spFogConstantMap.m_pObject->SetConstant("Z scaler", 0x10000004, 0, 11, 1, DAT_01011584, 0x4, 4, DAT_011fd864,
+        spTexEffectVConstantMap.m_pObject->SetConstant("Z scaler", 0x10000004, 0, 11, 1, DAT_01011584, 0x4, 4, DAT_011fd864,
                                                false);
-        m_spFogConstantMap.m_pObject->SetConstant("FogParam", 0x10000007, 0, 12, 1, DAT_01011584, 0x10, 4, DAT_011fd934,
+        spTexEffectVConstantMap.m_pObject->SetConstant("FogParam", 0x10000007, 0, 12, 1, DAT_01011584, 0x10, 4, DAT_011fd934,
                                                false);
-        m_spFogConstantMap.m_pObject->SetConstant("FogColor", 0x10000007, 0, 13, 1, DAT_01011584, 0x10, 4, DAT_011fd924,
+        spTexEffectVConstantMap.m_pObject->SetConstant("FogColor", 0x10000007, 0, 13, 1, DAT_01011584, 0x10, 4, DAT_011fd924,
                                                false);
     }
     if (!m_spFillColorConstantMap.m_pObject)
@@ -344,6 +347,9 @@ struct __declspec(align(16)) Mat16
 
 // If the global at DAT_011fec08 has a nonzero byte at offset 8 and param_1 is nonzero, copies an identity 4x4 matrix into DAT_011fec88.
 // @fnv 0x00b79050
+// pdb: ShadowLightShader::SetupGeometryConstants_SkinToCube | ShadowLightShader.obj | debug, call graph, low
+// pdb params: apSkin
+// pdb locals: kD3DMat
 void __stdcall ResetTransform(int param_1)
 {
     if ((*(char**)&DAT_011fec08)[8] != 0 && param_1 != 0)
@@ -363,6 +369,8 @@ extern const double _DAT_0104eea0;
 
 // If the byte at offset 8 of DAT_011fec14.m_pObject is non-zero, writes a scaled value derived from param_1's int at offset 0xe4 to DAT_011fd868.
 // @fnv 0x00b790d0
+// pdb: ShadowLightShader::SetupGeometryConstants_RefractionTime | ShadowLightShader.obj | debug, call graph, low
+// pdb params: pprop
 void __stdcall UpdateScaledValue(const char* param_1)
 {
     if (*((const char*)DAT_011fec14.m_pObject + 8) != 0)
@@ -379,12 +387,15 @@ extern Vec4 _DAT_011FA0C0[];
 // For message 0x93/0x1f1-0x1f5 sets an object field from param_2[9]+2, then writes two Vec4 flag vectors into _DAT_011FA0C0 based on param_2[11].
 // @fnv 0x00b79410
 // src: COMMUNITY 0x00b79410
-void __stdcall ShadowLightShader_SetupGeometryConstants_LandTextureMask(unsigned int uiMessageId, unsigned char* pucPayload)
+// pdb: ShadowLightShader::SetupGeometryConstants_LandTextureMask | ShadowLightShader.obj | debug, upstream name already matches, high
+// pdb params: epass, apRenderPass
+// pdb locals: ic0, bset, ic1, itexture, kmask
+void __stdcall ShadowLightShader_SetupGeometryConstants_LandTextureMask(unsigned int epass, unsigned char* apRenderPass)
 {
     int iSlotA;
     int iSlotB;
 
-    switch (uiMessageId)
+    switch (epass)
     {
     case 0x93:
     case 0x1f1:
@@ -394,7 +405,7 @@ void __stdcall ShadowLightShader_SetupGeometryConstants_LandTextureMask(unsigned
     case 0x1f5: {
         iSlotA = 2;
         iSlotB = 3;
-        int iValue = pucPayload[9] + 2;
+        int iValue = apRenderPass[9] + 2;
         if (iValue <= 3)
             iValue = 3;
         *(int*)((char*)DAT_011fec38.m_pObject + 0x20) = iValue;
@@ -408,7 +419,7 @@ void __stdcall ShadowLightShader_SetupGeometryConstants_LandTextureMask(unsigned
         return;
     }
 
-    int c = pucPayload[11];
+    int c = apRenderPass[11];
     _DAT_011FA0C0[iSlotA] =
         Vec4(c == 1 ? 1.0f : 0.0f, c == 2 ? 1.0f : 0.0f, c == 3 ? 1.0f : 0.0f, c == 4 ? 1.0f : 0.0f);
     _DAT_011FA0C0[iSlotB] =
@@ -420,12 +431,14 @@ extern float DAT_011fd948;
 
 // @fnv 0x00b796f0
 // src: COMMUNITY 0x00b796f0
-void __stdcall ShadowLightShader_SetupGeometryConstants_RefractionPower(const char* param_1)
+// pdb: ShadowLightShader::SetupGeometryConstants_RefractionPower | ShadowLightShader.obj | debug, upstream name already matches, high
+// pdb params: pprop
+void __stdcall ShadowLightShader_SetupGeometryConstants_RefractionPower(const char* pprop)
 {
     if (*((const char*)DAT_011fec70.m_pObject + 8) != 0)
     {
-        *const_cast<float*>(DAT_011fd944) = *(const float*)(param_1 + 0xe0);
-        if ((*(const unsigned int*)(param_1 + 0x24) & 0x10) > 0)
+        *const_cast<float*>(DAT_011fd944) = *(const float*)(pprop + 0xe0);
+        if ((*(const unsigned int*)(pprop + 0x24) & 0x10) > 0)
             DAT_011fd948 = g_011c3bb8_arg1;
         else
             DAT_011fd948 = 1.0f;
@@ -444,15 +457,18 @@ struct Float4
 // If the byte at offset 8 of DAT_011fec80.m_pObject is non-zero, copies four floats from param_1[0x3c..0x3f] into DAT_011fa300 as a Float4.
 // @fnv 0x00b798c0
 // src: COMMUNITY 0x00b798c0
-void __stdcall ShadowLightShader_SetupGeometryConstants_LODTexParams(const float* afSource)
+// pdb: ShadowLightShader::SetupGeometryConstants_LODTexParams | ShadowLightShader.obj | debug, upstream name already matches, high
+// pdb params: pprop
+// pdb locals: texparams
+void __stdcall ShadowLightShader_SetupGeometryConstants_LODTexParams(const float* pprop)
 {
     if (*reinterpret_cast<const char*>(reinterpret_cast<const char*>(DAT_011fec80.m_pObject) + 8) != 0)
     {
         Float4 v;
-        v.x = afSource[0x3c];
-        v.y = afSource[0x3d];
-        v.w = afSource[0x3e];
-        v.z = afSource[0x3f];
+        v.x = pprop[0x3c];
+        v.y = pprop[0x3d];
+        v.w = pprop[0x3e];
+        v.z = pprop[0x3f];
 
         *reinterpret_cast<Float4*>(const_cast<float*>(DAT_011fa300)) = v;
     }
@@ -461,9 +477,11 @@ void __stdcall ShadowLightShader_SetupGeometryConstants_LODTexParams(const float
 // Assigns pObj to the NiPointer at pThis+0x5c, releasing the old object and incrementing the new one's reference count.
 // @fnv 0x00b79950
 // src: GAMEBRYO_LIB 0x00b79950
-void __fastcall NiD3DPass_SetVertexShader(char* pThis, int, NiRefObject* pObj)
+// pdb: NiD3DPass::SetVertexShader | NiXenonErrorShader.obj | debug, upstream name already matches, high
+// pdb params: pkVertexShader
+void __fastcall NiD3DPass_SetVertexShader(char* pkVertexShader, int, NiRefObject* pObj)
 {
-    NiPointer<NiRefObject>& spMember = *(NiPointer<NiRefObject>*)(pThis + 0x5c);
+    NiPointer<NiRefObject>& spMember = *(NiPointer<NiRefObject>*)(pkVertexShader + 0x5c);
     if (spMember.m_pObject != pObj)
     {
         if (spMember.m_pObject)
@@ -517,6 +535,8 @@ typedef void(__thiscall* Fn128)(void*, int);
 // Calls the virtual function at offset 0x128 on self for each int in DAT_011fdff8 up to &DAT_011febd4.
 // @fnv 0x00b78a40
 // src: COMMUNITY 0x00b78a40
+// pdb: ShadowLightShader::ClearPassStages | ShadowLightShader.obj | retail, upstream name already matches, high
+// pdb locals: i
 void __fastcall ShadowLightShader_ClearPassStages(void** self)
 {
     int* p = DAT_011fdff8;
@@ -532,6 +552,7 @@ extern float DAT_011fd958;
 
 // @fnv 0x00b78a70
 // src: COMMUNITY 0x00b78a70
+// pdb: ShadowLightShader::UpdateFarNear | ShadowLightShader.obj | debug, upstream name already matches, high
 void ShadowLightShader_UpdateFarNear()
 {
     const_cast<float*>(DAT_011fd954)[0] = 1.0f / DAT_012023e0;
@@ -550,7 +571,10 @@ extern float DAT_011f9600;
 
 // @fnv 0x00b79100
 // src: COMMUNITY 0x00b79100
-void __stdcall ShadowLightShader_SetupGeometryConstants_HighDetailRange(int unused)
+// pdb: ShadowLightShader::SetupGeometryConstants_HighDetailRange | ShadowLightShader.obj | debug, upstream name already matches, high
+// pdb params: apGeometry
+// pdb locals: adjustedLoadedRange, ploadedRange
+void __stdcall ShadowLightShader_SetupGeometryConstants_HighDetailRange(int apGeometry)
 {
     if ((*reinterpret_cast<char**>(&DAT_011fec18))[8])
     {
@@ -572,6 +596,10 @@ extern float DAT_011fd8bc;
 
 // @fnv 0x00b79180
 // src: COMMUNITY 0x00b79180
+// pdb: ShadowLightShader::PostGeometry | ShadowLightShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ShadowLightShader::SetupGeometryConstants_WorldBoundCenter
+// pdb params: apState
+// pdb locals: auiCurrentPass, pprop
 void __stdcall ShadowLightShader_SetupGeometryConstants_WorldBoundCenter(void* param_1)
 {
     NiShaderConstantMapEntry* p = *(NiShaderConstantMapEntry**)(void*)&DAT_011fec1c;
@@ -666,25 +694,27 @@ struct FUN_00b78980_shell
     void __thiscall ShadowLightShader_PresetEnvMapPasses_1x();
     void __thiscall ShadowLightShader_PresetFogPasses_1x();
     void __thiscall ConfigureBeamPasses();
-    void __thiscall InitDefaultShaderPasses();
+    void __thiscall ShadowLightShader_PresetLandscape_1x();
     void __thiscall ShadowLightShader_PresetADTPasses_2x();
-    void __thiscall SetupRenderPasses();
+    void __thiscall ShadowLightShader_PresetADTSPasses_2x();
     void __thiscall ShadowLightShader_PresetADPasses_2x();
-    void __thiscall ShadowLightShader_PresetDiffusePasses_2x();
+    void __thiscall ShadowLightShader_PresetDiffusePtPasses_2x();
     void __thiscall ShadowLightShader_PresetSpecularPasses_2x();
     void __thiscall ShadowLightShader_PresetEnvMapPasses_2x();
-    void __thiscall InitializeBeamPasses();
-    void __thiscall InitializeGraphicsSystems();
-    void __thiscall InitStageObjects();
+    void __thiscall ShadowLightShader_PresetLandscape_2x();
+    void __thiscall ShadowLightShader_PresetTextureEffectPasses_2x();
+    void __thiscall ShadowLightShader_PresetRenderNormalsPasses_2x();
     void __thiscall ShadowLightShader_PresetDepthPasses_2x();
-    void __thiscall InitShaderConfigs();
+    void __thiscall ShadowLightShader_PresetVelocityPasses_2x();
     void __thiscall ShadowLightShader_PresetLocalMapPasses_2x();
     void __thiscall ShadowLightShader_PresetWaterFogPasses_2x();
-    void __thiscall InitializeParticleShaderRenderer();
+    void __thiscall ShadowLightShader_ReloadShaders();
 };
 
 // @fnv 0x00b78980
-void __thiscall FUN_00b78980_shell::InitializeParticleShaderRenderer()
+// src: XBOX_RETAIL_PDB 0x00b78980
+// pdb: ShadowLightShader::ReloadShaders | ShadowLightShader.obj | retail, object-file gap fill, high
+void __thiscall FUN_00b78980_shell::ShadowLightShader_ReloadShaders()
 {
     ((void(__thiscall*)(void*))(*(void***)this)[0x51])(this);
     ShadowLightShader_PresetZOnlyPasses_1x();
@@ -701,21 +731,21 @@ void __thiscall FUN_00b78980_shell::InitializeParticleShaderRenderer()
     {
         ShadowLightShader_PresetADPasses_2x();
         ShadowLightShader_PresetADTPasses_2x();
-        SetupRenderPasses();
-        ShadowLightShader_PresetDiffusePasses_2x();
+        ShadowLightShader_PresetADTSPasses_2x();
+        ShadowLightShader_PresetDiffusePtPasses_2x();
         ShadowLightShader_PresetSpecularPasses_2x();
         ShadowLightShader_PresetEnvMapPasses_2x();
-        InitializeBeamPasses();
-        InitStageObjects();
+        ShadowLightShader_PresetLandscape_2x();
+        ShadowLightShader_PresetRenderNormalsPasses_2x();
         ShadowLightShader_PresetDepthPasses_2x();
-        InitShaderConfigs();
+        ShadowLightShader_PresetVelocityPasses_2x();
         ShadowLightShader_PresetLocalMapPasses_2x();
-        InitializeGraphicsSystems();
+        ShadowLightShader_PresetTextureEffectPasses_2x();
         ShadowLightShader_PresetWaterFogPasses_2x();
     }
     else
     {
-        InitDefaultShaderPasses();
+        ShadowLightShader_PresetLandscape_1x();
     }
 }
 
@@ -733,6 +763,9 @@ extern float DAT_011fa2a4;
 extern float DAT_011fa2a8;
 
 // @fnv 0x00b78ef0
+// pdb: ShadowLightShader::SetupGeometryConstants_EyePos | ShadowLightShader.obj | debug, call graph, low
+// pdb params: epass, aWorld, d3dInvWorld
+// pdb locals: eyepos, vEyeObjectPos, vEyePos, vEyeDir
 void __stdcall UpdateEyePosition(unsigned int type, char* geom, Matrix_b78ef0 matrix)
 {
     if ((*(char**)&DAT_011febfc)[8] || (*(char**)&DAT_011fec44)[8])
@@ -981,6 +1014,9 @@ struct ShaderS
 
 // Sets fog or pass-specific state, then updates DAT_011fa2dc/DAT_011fa2d8 alpha values from the geometry and material flags.
 // @fnv 0x00b795b0
+// pdb: ShadowLightShader::SetupGeometryConstants_Toggles | ShadowLightShader.obj | debug, call graph, low
+// pdb params: epass, pgeometry, pprop, pmaterialProperty, apRenderPass, palphaProp
+// pdb locals: pmasktex
 void ShaderS::ApplyFogAndAlpha(unsigned int uiPass, void* pArg2, GeomS* pGeom, void* pArg4, PropS* pProp, MatS* pMatrix)
 {
     if (!(*(char**)&DAT_011fec40)[8])
@@ -1024,6 +1060,8 @@ extern int DAT_011fa8e0[759];
 
 // Initializes the shader system, clears constant map entries and pass arrays, releases stored passes, and zeroes the shader state buffers.
 // @fnv 0x00b7a170
+// pdb: ShadowLightShader::Initialize | ShadowLightShader.obj | retail, object-file run extension, low
+// pdb locals: i
 bool __fastcall ResetShaderState(BSShader* shader)
 {
     shader->BSShader::Initialize();
@@ -1068,21 +1106,21 @@ struct FUN_00b78980_shell
     void ShadowLightShader_PresetSpecularPasses_1x();
     void ShadowLightShader_PresetEnvMapPasses_1x();
     void ShadowLightShader_PresetFogPasses_1x();
-    void InitDefaultShaderPasses();
+    void ShadowLightShader_PresetLandscape_1x();
     void ConfigureBeamPasses();
     void ShadowLightShader_PresetZOnlyPasses_1x();
     void ShadowLightShader_PresetConstAlphaPasses_1x();
     void ShadowLightShader_PresetADTPasses_2x();
-    void SetupRenderPasses();
+    void ShadowLightShader_PresetADTSPasses_2x();
     void ShadowLightShader_PresetADPasses_2x();
-    void ShadowLightShader_PresetDiffusePasses_2x();
+    void ShadowLightShader_PresetDiffusePtPasses_2x();
     void ShadowLightShader_PresetSpecularPasses_2x();
     void ShadowLightShader_PresetEnvMapPasses_2x();
-    void InitializeBeamPasses();
-    void InitializeGraphicsSystems();
-    void InitStageObjects();
+    void ShadowLightShader_PresetLandscape_2x();
+    void ShadowLightShader_PresetTextureEffectPasses_2x();
+    void ShadowLightShader_PresetRenderNormalsPasses_2x();
     void ShadowLightShader_PresetDepthPasses_2x();
-    void InitShaderConfigs();
+    void ShadowLightShader_PresetVelocityPasses_2x();
     void ShadowLightShader_PresetLocalMapPasses_2x();
     void ShadowLightShader_PresetWaterFogPasses_2x();
     bool InitializePasses();
@@ -1112,21 +1150,21 @@ bool FUN_00b78980_shell::InitializePasses()
     {
         ShadowLightShader_PresetADPasses_2x();
         ShadowLightShader_PresetADTPasses_2x();
-        SetupRenderPasses();
-        ShadowLightShader_PresetDiffusePasses_2x();
+        ShadowLightShader_PresetADTSPasses_2x();
+        ShadowLightShader_PresetDiffusePtPasses_2x();
         ShadowLightShader_PresetSpecularPasses_2x();
         ShadowLightShader_PresetEnvMapPasses_2x();
-        InitializeBeamPasses();
-        InitStageObjects();
+        ShadowLightShader_PresetLandscape_2x();
+        ShadowLightShader_PresetRenderNormalsPasses_2x();
         ShadowLightShader_PresetDepthPasses_2x();
-        InitShaderConfigs();
+        ShadowLightShader_PresetVelocityPasses_2x();
         ShadowLightShader_PresetLocalMapPasses_2x();
-        InitializeGraphicsSystems();
+        ShadowLightShader_PresetTextureEffectPasses_2x();
         ShadowLightShader_PresetWaterFogPasses_2x();
     }
     else
     {
-        InitDefaultShaderPasses();
+        ShadowLightShader_PresetLandscape_1x();
     }
     return true;
 }
@@ -1171,12 +1209,15 @@ struct ShaderEntry
 };
 struct B71
 {
-    void CreateVertexShaders();
-    void* FUN_00be0fe0(char* bufA, const char** field, const char* profile, char* bufB);
+    void ShadowLightShader_LoadVertexShaders();
+    void* FUN_00be0fe0(char* apFilename, const char** apMacro, const char* apTarget, char* apCacheName);
 };
 // Fills a shader-entry table and creates/refreshes the vertex shader objects in three global arrays, releasing replaced ones.
 // @fnv 0x00b71bf0
-void B71::CreateVertexShaders()
+// src: XBOX_RETAIL_PDB 0x00b71bf0
+// pdb: ShadowLightShader::LoadVertexShaders | ShadowLightShader.obj | retail, unique string literal, high
+// pdb locals: pvs1sShader, pvs1Shader, ptempFName, pcacheFName, i, pvs2Filename
+void B71::ShadowLightShader_LoadVertexShaders()
 {
     ShaderEntry shaderEntries[156];
     char pathBuffers[2][260];
@@ -2229,13 +2270,13 @@ inline void NiD3DPass::SetRenderState(unsigned int state, unsigned int value, bo
 {
     GetRenderStateGroup()->SetRenderState(state, value, save);
 }
-inline void NiD3DPass::SetVertexShader(NiD3DVertexShader* shader)
+inline void NiD3DPass::SetVertexShader(NiD3DVertexShader* pkVertexShader)
 {
-    m_spVertexShader = shader;
+    m_spVertexShader = pkVertexShader;
 }
-inline void NiD3DPass::SetPixelShader(NiD3DPixelShader* shader)
+inline void NiD3DPass::SetPixelShader(NiD3DPixelShader* pkPixelShader)
 {
-    m_spPixelShader = shader;
+    m_spPixelShader = pkPixelShader;
 }
 
 namespace fnv_00bebd20 {
@@ -2351,13 +2392,13 @@ class D3DPassObj
         if (--m_uiRefCount == 0)
             DestroyPass();
     }
-    void SetPixelShader(NiD3DPixelShader* pkShader)
+    void SetPixelShader(NiD3DPixelShader* pkVertexShader)
     {
-        m_spPixelShaderObject = pkShader;
+        m_spPixelShaderObject = pkVertexShader;
     }
-    void SetVertexShader(NiD3DVertexShader* pkShader)
+    void SetVertexShader(NiD3DVertexShader* pkPixelShader)
     {
-        m_spVertexShaderObject = pkShader;
+        m_spVertexShaderObject = pkPixelShader;
     }
     void SetRenderState(unsigned int uiState, unsigned int uiValue, SAVETYPE bSave)
     {
@@ -2393,7 +2434,7 @@ class D3DPassObj
     }
 };
 
-void SetupStage(BeamStage* pkStage, unsigned int uiStage, unsigned int a, unsigned int b, unsigned int c);
+void SetupStage(BeamStage* apStage, unsigned int aiStageNum, unsigned int aiAddressValue, unsigned int aiMipFilter, unsigned int abAniso);
 
 inline void CreateStage(NiPointer<BeamStage>& spStage, unsigned int uiStage, unsigned int a, unsigned int b,
                         unsigned int c)
@@ -2603,6 +2644,8 @@ extern NiPointer<D3DPassObj> DAT_011fe8cc;
 // For each global D3DPassObj, creates up to 8 stages via SetupStage, assigns shaders and render states, and sets render flags.
 // @fnv 0x00bebd20
 // src: COMMUNITY 0x00bebd20
+// pdb: ShadowLightShader::PresetADTPasses_2x | ShadowLightShader_Preset_2x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetADTPasses_2x()
 {
     NiPointer<D3DPassObj> spRenderPass;
@@ -3981,12 +4024,15 @@ extern GraphicsResource* DAT_011fdfbc;
 extern GraphicsResource* DAT_011fdc6c;
 extern int DAT_011fd5c0, DAT_011fc9e0, DAT_011fd5c4, DAT_011fc9e4;
 extern "C" void __cdecl AssignStageFromPool(ScopedTemporary* out);
-extern "C" void __cdecl ConfigureBeamStage(TemporaryResource* res, unsigned int a, unsigned int b, unsigned int c,
-                                           unsigned int d);
+extern "C" void __cdecl ConfigureBeamStage(TemporaryResource* apStage, unsigned int aiStageNum, unsigned int aiAddressValue, unsigned int aiMipFilter,
+                                           unsigned int abAniso);
 extern "C" GraphicsManager* __cdecl FUN_00e7f5d0();
 // For each of two global graphics systems, creates temporary resources when version < 2, assigns materials, and applies a fixed list of manager settings.
 // @fnv 0x00c00be0
-void __cdecl InitializeGraphicsSystems()
+// src: XBOX_RETAIL_PDB 0x00c00be0
+// pdb: ShadowLightShader::PresetTextureEffectPasses_2x | ShadowLightShader_Preset_2x.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage
+void __cdecl ShadowLightShader_PresetTextureEffectPasses_2x()
 {
     ScopedSystem systemScope;
     ScopedTemporary temporary;
@@ -4117,34 +4163,37 @@ float __cdecl BSMAX_00404010(float, float);
 float __cdecl BSMIN(float, float);
 // @fnv 0x00b791f0
 // src: COMMUNITY 0x00b791f0
-void __stdcall ShadowLightShader_SetupGeometryConstants_LODLandParams(unsigned int mode, Params* first, Params* second)
+// pdb: ShadowLightShader::SetupGeometryConstants_LODLandParams | ShadowLightShader.obj | retail, upstream name already matches, high
+// pdb params: epass, pprop, pgeometry
+// pdb locals: lerpedcenter, translate, fcurrenttime, flerpval
+void __stdcall ShadowLightShader_SetupGeometryConstants_LODLandParams(unsigned int epass, Params* pprop, Params* pgeometry)
 {
     if (!reinterpret_cast<Gate*>(DAT_011fec2c.m_pObject)->enabled)
         return;
-    if (mode == 254)
+    if (epass == 254)
     {
         (*reinterpret_cast<ShadowlightshaderVector4fView*>(const_cast<float*>(DAT_011fa0b0))) =
-            ShadowlightshaderVector4fView(first->value80, DAT_011ad808, 0.0f, 0.0f);
+            ShadowlightshaderVector4fView(pprop->value80, DAT_011ad808, 0.0f, 0.0f);
         return;
     }
-    if (mode == 97)
+    if (epass == 97)
     {
         (*reinterpret_cast<ShadowlightshaderVector4fView*>(const_cast<float*>(DAT_011fa0b0))) = ShadowlightshaderVector4fView(1.0f, 0.0f, 0.0f, 0.0f);
         return;
     }
-    if (mode == 560)
+    if (epass == 560)
     {
         struct Triple
         {
             float x, y, z;
         };
-        Triple pos = *reinterpret_cast<Triple*>(&second->x);
+        Triple pos = *reinterpret_cast<Triple*>(&pgeometry->x);
         float ratio = (DAT_011f940c - DAT_011f94ac) / (DAT_011ad838 * 5.0);
         ratio = BSMIN(1.0f, BSMAX_00404010(0.0f, ratio));
         NiPoint2 uv = (DAT_011f962c - DAT_011f9634) * ratio + DAT_011f9634;
         if (ratio == 1.0f)
             DAT_011f94aa = false;
-        (*reinterpret_cast<ShadowlightshaderVector4fView*>(const_cast<float*>(DAT_011fa0b0))) = *reinterpret_cast<ShadowlightshaderVector4fView*>(&first->z);
+        (*reinterpret_cast<ShadowlightshaderVector4fView*>(const_cast<float*>(DAT_011fa0b0))) = *reinterpret_cast<ShadowlightshaderVector4fView*>(&pprop->z);
         reinterpret_cast<ShadowlightshaderVector4fView*>(const_cast<float*>(DAT_011fa0b0))->z = uv.x - pos.x;
         reinterpret_cast<ShadowlightshaderVector4fView*>(const_cast<float*>(DAT_011fa0b0))->w = uv.y - pos.y;
     }
@@ -4180,6 +4229,8 @@ extern float DAT_011f9614;
 extern float DAT_011f9618;
 
 // @fnv 0x00b79730
+// pdb: ShadowLightShader::SetupGeometryConstants_WaterFog | ShadowLightShader.obj | debug, object-file run extension, low
+// pdb locals: knear, waterplane, eyepos, waterplanenormal, feyetoplanedist, kfar
 void __cdecl UpdatePlaneFromPoint()
 {
     if (reinterpret_cast<char*>(DAT_011fec7c.m_pObject)[8])
@@ -4253,6 +4304,8 @@ struct FUN_00b79b00 : ShaderBase
     FUN_00b79b00(NiRefObject*, NiRefObject*, NiRefObject*, NiRefObject*);
 };
 // @fnv 0x00b79b00
+// pdb: ShadowLightShader::ShadowLightShader | ShadowLightShader.obj | retail, call graph, medium
+// pdb params: apShaderDecl, apSkinnedShaderDecl, apModelSpaceNormShaderDecl, apSplatTexturingShaderDecl
 FUN_00b79b00::FUN_00b79b00(NiRefObject* apResourceA, NiRefObject* apResourceB, NiRefObject* apResourceC,
                            NiRefObject* apResourceD)
 {
@@ -4423,6 +4476,8 @@ class FUN_00b79b00
 // Builds four morph descriptors via FUN_00e76700, fills them with v035/v037 entries, creates a FUN_00b79b00 from them, runs its setup calls and returns it.
 // @fnv 0x00b7a380
 // src: COMMUNITY 0x00b7a380
+// pdb: ShadowLightShader::CreateShader | ShadowLightShader.obj | retail, upstream name already matches, high
+// pdb locals: pModelSpaceNormShaderDecl, pSplatTexturingShaderDecl, spShaderDecl, eInput, pshader, pSkinnedShaderDecl
 FUN_00b79b00* __cdecl ShadowLightShader_CreateShader()
 {
     FUN_00e76700_desc* pDesc0 = NiDX9ShaderDeclaration_Create(DAT_011f9508, 6, 1);
@@ -4564,7 +4619,7 @@ template <class T> struct NiPtr2
     }
 };
 void AssignStageFromPool(NiPtr2<Tmp>* out);
-void ConfigureBeamStage(Tmp* t, bool a, bool b, int c, bool d);
+void ConfigureBeamStage(Tmp* apStage, bool aiStageNum, bool aiAddressValue, int aiMipFilter, bool abAniso);
 extern NiPointer<Pass> DAT_011fe01c;
 extern NiPointer<Pass> DAT_011fe048;
 extern NiPointer<Pass> DAT_011fe04c;
@@ -4637,6 +4692,8 @@ extern unsigned int DAT_011fd7dc;
 
 // @fnv 0x00be22b0
 // src: COMMUNITY 0x00be22b0
+// pdb: ShadowLightShader::PresetAmbientPasses_1x | ShadowLightShader_Preset_1x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetAmbientPasses_1x()
 {
     NiPointer<Pass> pass;
@@ -4921,6 +4978,8 @@ extern unsigned int DAT_011fce70, DAT_011fc290, DAT_011fce74, DAT_011fc294;
 
 // Configures two graphics systems: sets materials and manager entries, and for version < 4 creates and registers four temporary resources per system.
 // @fnv 0x00be7420
+// pdb: ShadowLightShader::PresetAmbDiffDirAndPtPasses_1x | ShadowLightShader_Preset_1x.obj | debug, object-file gap fill, medium
+// pdb locals: sppass, spstage
 void __cdecl InitGraphicsResources()
 {
     ScopedSystem system;
@@ -5035,6 +5094,8 @@ extern unsigned int DAT_011f9538;
 extern unsigned int DAT_011f950c;
 // @fnv 0x00be78e0
 // src: COMMUNITY 0x00be78e0
+// pdb: ShadowLightShader::PresetDiffuseLightPasses_1x | ShadowLightShader_Preset_1x.obj | debug, object-file gap fill, medium
+// pdb locals: sppass, spstage
 void __cdecl ShadowLightShader_PresetDiffuseDirPasses_1x()
 {
     ScopedSystem system;
@@ -5319,6 +5380,8 @@ extern unsigned int DAT_011fd1c0;
 extern unsigned int DAT_011fd1c8;
 // @fnv 0x00be7f40
 // src: COMMUNITY 0x00be7f40
+// pdb: ShadowLightShader::PresetTexturePasses_1x | ShadowLightShader_Preset_1x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetTexturePasses_1x()
 {
     ShaderPassPointer pass;
@@ -5617,6 +5680,8 @@ extern unsigned int DAT_011fd1dc;
 extern unsigned int DAT_011fc5fc;
 // @fnv 0x00be8960
 // src: COMMUNITY 0x00be8960
+// pdb: ShadowLightShader::PresetSpecularPasses_1x | ShadowLightShader_Preset_1x.obj | debug, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetSpecularPasses_1x()
 {
     ShaderPassPointer pass;
@@ -5723,6 +5788,8 @@ extern unsigned int DAT_011fb1f8;
 
 // @fnv 0x00be8fb0
 // src: COMMUNITY 0x00be8fb0
+// pdb: ShadowLightShader::PresetEnvMapPasses_1x | ShadowLightShader_Preset_1x.obj | debug, upstream name already matches, high
+// pdb locals: sppass, spstage
 void __cdecl ShadowLightShader_PresetEnvMapPasses_1x()
 {
     ScopedSystem system;
@@ -6074,6 +6141,8 @@ extern unsigned int DAT_011fc0b0;
 extern unsigned int DAT_011fc0b4;
 // @fnv 0x00beb070
 // src: COMMUNITY 0x00beb070
+// pdb: ShadowLightShader::PresetZOnlyPasses_1x | ShadowLightShader_Preset_1x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetZOnlyPasses_1x()
 {
     ShaderPassPointer pass;
@@ -6268,7 +6337,10 @@ struct BfRef
     }
 };
 // @fnv 0x00bf0720
-void __cdecl SetupRenderPasses()
+// src: XBOX_RETAIL_PDB 0x00bf0720
+// pdb: ShadowLightShader::PresetADTSPasses_2x | ShadowLightShader_Preset_2x.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage
+void __cdecl ShadowLightShader_PresetADTSPasses_2x()
 {
     BfRef p;
     ScopedTemporary t;
@@ -8080,6 +8152,8 @@ extern GraphicsSystem* DAT_011fe3d8;
 
 // @fnv 0x00bf66c0
 // src: COMMUNITY 0x00bf66c0
+// pdb: ShadowLightShader::PresetADPasses_2x | ShadowLightShader_Preset_2x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetADPasses_2x()
 {
     ScopedSystem system;
@@ -8877,8 +8951,10 @@ extern unsigned int DAT_011fd154, DAT_011fc574;
 extern unsigned int DAT_011fd178, DAT_011fc598;
 extern unsigned int DAT_011fd184, DAT_011fc5a4;
 // @fnv 0x00bf8f70
-// src: COMMUNITY 0x00bf8f70
-void FUN_00b78980_shell::ShadowLightShader_PresetDiffusePasses_2x()
+// src: XBOX_RETAIL_PDB 0x00bf8f70
+// pdb: ShadowLightShader::PresetDiffusePtPasses_2x | ShadowLightShader_Preset_2x.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage
+void FUN_00b78980_shell::ShadowLightShader_PresetDiffusePtPasses_2x()
 {
     ScopedSystem system;
     ScopedTemporary temporary;
@@ -9227,6 +9303,8 @@ extern unsigned int DAT_011fd258;
 extern unsigned int DAT_011fc678;
 // @fnv 0x00bf96b0
 // src: COMMUNITY 0x00bf96b0
+// pdb: ShadowLightShader::PresetSpecularPasses_2x | ShadowLightShader_Preset_2x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetSpecularPasses_2x()
 {
     ShaderPassPointer pass;
@@ -9880,7 +9958,7 @@ struct StageReturn
 };
 void __cdecl AssignStageFromPool(StageReturn*&);
 typedef NiPointer<StageReturn> StagePtr;
-int __cdecl ConfigureBeamStage(void* a, int b, int c, int d, int e);
+int __cdecl ConfigureBeamStage(void* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 struct RendObj;
 struct StageSub
 {
@@ -9971,8 +10049,8 @@ struct RendObj2
 {
     void __thiscall NiD3DPass_SetStage(void* a, void* b);
     void __thiscall FUN_00e80190();
-    void __thiscall NiD3DPass_SetPixelShader(RendObj* a);
-    void __thiscall NiD3DPass_SetVertexShader(RendObj* a);
+    void __thiscall NiD3DPass_SetPixelShader(RendObj* pkPixelShader);
+    void __thiscall NiD3DPass_SetVertexShader(RendObj* pkVertexShader);
 };
 typedef NiPointer<RendObj> SPtr;
 struct PassObj : RendObj
@@ -10171,6 +10249,8 @@ struct FUN_00b78980_shell
 };
 // Configures each render pass: builds missing stages, assigns shaders and render objects, sets render states, and writes per-pass constants.
 // @fnv 0x00be39e0
+// pdb: ShadowLightShader::PresetAmbDiffTexPasses_1x | ShadowLightShader_Preset_1x.obj | debug, object-file gap fill, medium
+// pdb locals: sppass, spstage
 void __thiscall FUN_00b78980_shell::ConfigureRenderPasses()
 {
     SPtr pPass;
@@ -11354,7 +11434,7 @@ class Sub30
     void SetNodeValue(int a, int b, int c);
 };
 Sub30* FUN_00e7f5d0();
-void ConfigureBeamStage(StageReturn* sr, int a, int b, int c, int d);
+void ConfigureBeamStage(StageReturn* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 class NIPtr
 {
   public:
@@ -11454,10 +11534,13 @@ extern int DAT_011fc838;
 class FUN_00b78980_shell
 {
   public:
-    void InitStageObjects();
+    void ShadowLightShader_PresetRenderNormalsPasses_2x();
 };
 // @fnv 0x00c01020
-void FUN_00b78980_shell::InitStageObjects()
+// src: XBOX_RETAIL_PDB 0x00c01020
+// pdb: ShadowLightShader::PresetRenderNormalsPasses_2x | ShadowLightShader_Preset_2x.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage
+void FUN_00b78980_shell::ShadowLightShader_PresetRenderNormalsPasses_2x()
 {
     ObjPtr pObj;
     SRPtr sr;
@@ -11944,6 +12027,8 @@ static inline Quad119 QMul(const Quad119& v, float f)
 }
 // Updates shader light constants for a pass: writes light positions/radii or directions, adjusts diffuse color, and handles the id 0x24b case.
 // @fnv 0x00b78a90
+// pdb: ShadowLightShader::InitPass | ShadowLightShader.obj | debug, object-file run extension, low
+// pdb params: auiCurrentPass
 void __stdcall UpdateLightPass(Property119* pProperty, Pass119* pass, M_bbb890 matrix, Scale119* scale, unsigned int id,
                                unsigned int world)
 {
@@ -11958,17 +12043,17 @@ void __stdcall UpdateLightPass(Property119* pProperty, Pass119* pass, M_bbb890 m
         color[3] = reinterpret_cast<const unsigned int*>(&renderer->kSilhouetteColor)[3];
         return;
     }
-    if (*reinterpret_cast<unsigned char*>(&DAT_011febf0.m_pObject->unk08))
+    if (*reinterpret_cast<unsigned char*>(&DAT_011febf0.m_pObject->m_bEnabled))
     {
         if (pass->type >= 16 && pass->type <= 19)
-            DAT_011febf0.m_pObject->m_uiValue4 = 1;
+            DAT_011febf0.m_pObject->m_uiRegisterCount = 1;
         else
-            DAT_011febf0.m_pObject->m_uiValue4 = pass->count;
+            DAT_011febf0.m_pObject->m_uiRegisterCount = pass->count;
     }
-    if (*reinterpret_cast<unsigned char*>(&DAT_011fec38.m_pObject->unk08))
-        DAT_011fec38.m_pObject->m_uiValue4 = pass->count;
-    if (*reinterpret_cast<unsigned char*>(&DAT_011fec4c.m_pObject->unk08))
-        DAT_011fec4c.m_pObject->m_uiValue4 = pass->count - 1;
+    if (*reinterpret_cast<unsigned char*>(&DAT_011fec38.m_pObject->m_bEnabled))
+        DAT_011fec38.m_pObject->m_uiRegisterCount = pass->count;
+    if (*reinterpret_cast<unsigned char*>(&DAT_011fec4c.m_pObject->m_bEnabled))
+        DAT_011fec4c.m_pObject->m_uiRegisterCount = pass->count - 1;
     for (unsigned char i = 0; i < pass->count; ++i)
     {
         if (i >= 10)
@@ -12105,8 +12190,8 @@ struct StageReturn
     }
 };
 void AssignStageFromPool(StageReturn*& rpkStage);
-void ConfigureBeamStage(StageReturn* pkStage, unsigned int uiIndex, unsigned int ui, unsigned int uiB,
-                        unsigned int uiC);
+void ConfigureBeamStage(StageReturn* apStage, unsigned int aiStageNum, unsigned int aiAddressValue, unsigned int aiMipFilter,
+                        unsigned int abAniso);
 
 struct StagePtr_bfbf60
 {
@@ -12143,6 +12228,8 @@ extern unsigned int DAT_011f9544;
 // For each of four global passes, fills missing stages, assigns shader programs, sets render states and writes per-pass constants.
 // @fnv 0x00bfbf60
 // src: COMMUNITY 0x00bfbf60
+// pdb: ShadowLightShader::PresetEnvMapPasses_2x | ShadowLightShader_Preset_2x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetEnvMapPasses_2x()
 {
     NiPointer<NiD3DPass> spRenderPass;
@@ -12318,7 +12405,10 @@ extern const float DAT_01200458;
 
 // Assigns shader constant maps and config values to two FNVConfigObject instances and sets four global constants.
 // @fnv 0x00c01c20
-void __cdecl InitShaderConfigs()
+// src: XBOX_RETAIL_PDB 0x00c01c20
+// pdb: ShadowLightShader::PresetVelocityPasses_2x | ShadowLightShader_Preset_2x.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage
+void __cdecl ShadowLightShader_PresetVelocityPasses_2x()
 {
     NiPointer<FNVConfigObject> p;
     NiPointer<FNVConfigObject> unused;
@@ -12440,6 +12530,8 @@ extern unsigned int DAT_011fc858;
 
 // @fnv 0x00c01f60
 // src: COMMUNITY 0x00c01f60
+// pdb: ShadowLightShader::PresetLocalMapPasses_2x | ShadowLightShader_Preset_2x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void ShadowLightShader_PresetLocalMapPasses_2x()
 {
     NiPointer<NiD3DPass> spRenderPass;
@@ -12503,20 +12595,24 @@ struct ShaderAdapter : ShadowLightShader
 
 // Applies shader constants to a geometry pass using fog or second shader constant maps when specific layout and object conditions are met.
 // @fnv 0x00b7a2c0
+// pdb: ShadowLightShader::SetupBoneMatrices | ShadowLightShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ShadowLightShader::RecomputeProjectedShadowMatrix
+// pdb params: apGeometry, apSkin, apPartition, apBuffData, apState, apEffects, aWorld, aWorldBound
+// pdb locals: pfBoneMatrices
 int ShaderAdapter::ApplyShaderConstants(int a1, void* geometry, void* constantData, int a4, int a5, int a6,
                                         int transform, int a8)
 {
     if ((constantData && *reinterpret_cast<int*>(layoutPadding38) == 0 && DAT_011fec00.m_pObject &&
          *reinterpret_cast<char*>(reinterpret_cast<char*>(DAT_011fec00.m_pObject) + 8)) ||
-        m_spSecondShaderConstantMap.m_pObject == m_spFogConstantMap.m_pObject)
+        m_spSecondShaderConstantMap.m_pObject == spTexEffectVConstantMap.m_pObject)
     {
         DAT_011f9508->NiDX9Renderer_CalculateBoneMatrices(geometry, transform, 0, 3, 1);
         void* geometryData = *reinterpret_cast<void**>(reinterpret_cast<char*>(geometry) + 0x28);
-        if (m_spSecondShaderConstantMap.m_pObject == m_spFogConstantMap.m_pObject)
+        if (m_spSecondShaderConstantMap.m_pObject == spTexEffectVConstantMap.m_pObject)
         {
             ShaderVirtualObject* pass =
                 *reinterpret_cast<ShaderVirtualObject**>(reinterpret_cast<char*>(DAT_0126f74c) + 0x5c);
-            ShaderVirtualObject* map = reinterpret_cast<ShaderVirtualObject*>(m_spFogConstantMap.m_pObject);
+            ShaderVirtualObject* map = reinterpret_cast<ShaderVirtualObject*>(spTexEffectVConstantMap.m_pObject);
             void** applySlot = pass->vtable + 30;
             void* result = reinterpret_cast<FindConstantFn>(reinterpret_cast<void* volatile*>(map->vtable)[28])(
                 map, DAT_010A1CAC, geometryData,
@@ -12691,6 +12787,8 @@ extern PassSubObject* FUN_00e7f5d0();
 
 // Configures two beam render passes by assigning stages, setting shader constant maps, and updating sub-object node values.
 // @fnv 0x00beac70
+// pdb: ShadowLightShader::PresetTextureEffectPasses_1x | ShadowLightShader_Preset_1x.obj | debug, object-file gap fill, medium
+// pdb locals: sppass, spstage
 void ConfigureBeamPasses()
 {
     PassPointer spRenderPass;
@@ -12840,8 +12938,8 @@ class BeamStage
     }
 };
 extern "C" void __cdecl AssignStageFromPool(NiPointer<BeamStage>& stage);
-extern "C" void __cdecl ConfigureBeamStage(BeamStage* stage, unsigned int index, unsigned char a, unsigned int b,
-                                           unsigned char c);
+extern "C" void __cdecl ConfigureBeamStage(BeamStage* apStage, unsigned int aiStageNum, unsigned char aiAddressValue, unsigned int aiMipFilter,
+                                           unsigned char abAniso);
 extern unsigned char DAT_011ad80c;
 extern unsigned int DAT_011f953c, DAT_011f9540, DAT_011f9534;
 extern unsigned int DAT_011fab2c;
@@ -13257,7 +13355,10 @@ extern NiPointer<NiD3DPass> DAT_011fe8b4;
 extern NiPointer<NiD3DPass> DAT_011fe8b8;
 // Ensures stage counts, configures beam stages and render states on many pass objects, and assigns global values.
 // @fnv 0x00bfc860
-void InitializeBeamPasses()
+// src: XBOX_RETAIL_PDB 0x00bfc860
+// pdb: ShadowLightShader::PresetLandscape_2x | ShadowLightShader_Preset_2x.obj | retail, object-file gap fill, high
+// pdb locals: sppass, spstage, i
+void ShadowLightShader_PresetLandscape_2x()
 {
     NiPointer<NiD3DPass> system;
     NiPointer<BeamStage> temporary;
@@ -14530,6 +14631,8 @@ struct FUN_00b79de0 : FUN_00be0f10
 };
 // Destructor that zeroes global NiPointer arrays and member resource pointers.
 // @fnv 0x00b79de0
+// pdb: ShadowLightShader::~ShadowLightShader | ShadowLightShader.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00b79de0::~FUN_00b79de0()
 {
     for (int i = 0; i < 156; ++i)
@@ -14713,6 +14816,8 @@ extern RefObject* DAT_011fdf88;
 extern unsigned int DAT_011fd424, DAT_011fc844;
 // Returns the 32-bit value read from the address of the float parameter as an unsigned integer.
 // @fnv 0x00c017c0
+// pdb: ShadowLightShader::PresetDepthPasses_2x | ShadowLightShader_Preset_2x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 inline unsigned int FloatBits(float value)
 {
     return *(unsigned int*)&value;
@@ -14994,6 +15099,8 @@ extern const char shader_CONSTALPHA[];  // "CONSTALPHA"
 // Builds shader definition tables, resolves source paths, and calls Compile with index-based .pso filenames for selected entries.
 // @fnv 0x00b74210
 // src: COMMUNITY 0x00b74210
+// pdb: ShadowLightShader::LoadPixelShaders | ShadowLightShader.obj | retail, upstream name already matches, high
+// pdb locals: emitMult, ptempFName, specMult, elevel, pps2Filename, pcacheFName, i, pps1Shader, pc5, cpShadowMode, pc2, shadowbiasX
 void ShaderCompiler::ShadowLightShader_LoadPixelShaders()
 
 {
@@ -15737,9 +15844,9 @@ class OutX
     virtual void b0(), b1(), b2(), b3(), b4(), b5(), b6(), b7(), b8();
     virtual void Fn(Flg* f);
 };
-void __cdecl BSUtilities_GetInverseWorldMatrix(void* t, void* p, MatX* out);
-void __cdecl BSRenderState_SetZWriteEnable(int a, int b);
-void __cdecl FUN_00b98380(int a, int b);
+void __cdecl BSUtilities_GetInverseWorldMatrix(void* aWorld, void* apSkin, MatX* aOut);
+void __cdecl BSRenderState_SetZWriteEnable(int abEnabled, int aeLock);
+void __cdecl FUN_00b98380(int auiMask, int aeLock);
 void __cdecl UpdatePlaneFromPoint();
 class RX
 {
@@ -15758,27 +15865,30 @@ class RX
     int unk2c;
     LstX* m30;
     LstX* m34;
-    void ShadowLightShader_SetupGeometryOpt_WorldViewProj(GeoX* g, void* t);
+    void ShadowLightShader_SetupGeometryOpt_WorldViewProj(GeoX* apGeometry, void* aWorld);
     void SetupPass(GeoX* g, PropX* p, StX* s);
-    void ShadowLightShader_UpdatePipelineZOnlyTexEffect(GeoX* g, PropX* p, StX* s);
+    void ShadowLightShader_UpdatePipelineZOnlyTexEffect(GeoX* apGeometry, PropX* apBSSProp, StX* apPass);
     void UpdateLightPass(PropX* p, StX* s, MatX m, void* t, int type, void* q);
-    void ShadowLightShader_SetupGeometryConstants_AmbientEmittance(PropX* p, StX* s, GeoX* g, int c);
-    void ShadowLightShader_SetupGeometryConstants_ObjToCube(StX* s, int type, void* q, void* t);
+    void ShadowLightShader_SetupGeometryConstants_AmbientEmittance(PropX* pprop, StX* apRenderPass, GeoX* pgeometry, int pmat);
+    void ShadowLightShader_SetupGeometryConstants_ObjToCube(StX* apRenderPass, int epass, void* apSkin, void* aWorld);
     void UpdateWorldMatrix(ArgX* a, void* q, void* t);
     void UpdateEyePosition(int type, void* t, MatX m);
     void ResetTransform(void* q);
     void UpdateScaledValue(PropX* p);
     void ShadowLightShader_SetupGeometryConstants_WorldBoundCenter(GeoX* g);
-    void ShadowLightShader_SetupGeometryConstants_HighDetailRange(GeoX* g);
-    void ShadowLightShader_SetupGeometryConstants_LODLandParams(int type, PropX* p, GeoX* g);
-    void ShadowLightShader_SetupGeometryConstants_LandTextureMask(int type, StX* s);
+    void ShadowLightShader_SetupGeometryConstants_HighDetailRange(GeoX* apGeometry);
+    void ShadowLightShader_SetupGeometryConstants_LODLandParams(int epass, PropX* pprop, GeoX* pgeometry);
+    void ShadowLightShader_SetupGeometryConstants_LandTextureMask(int epass, StX* apRenderPass);
     void ApplyFogAndAlpha(int type, GeoX* g, PropX* p, int c, StX* s, Flg* f);
-    void ShadowLightShader_SetupGeometryConstants_RefractionPower(PropX* p);
-    void ShadowLightShader_SetupGeometryConstants_SimpleShadowClipPlanes(int type);
-    void ShadowLightShader_SetupGeometryConstants_LODTexParams(PropX* p);
+    void ShadowLightShader_SetupGeometryConstants_RefractionPower(PropX* pprop);
+    void ShadowLightShader_SetupGeometryConstants_SimpleShadowClipPlanes(int epass);
+    void ShadowLightShader_SetupGeometryConstants_LODTexParams(PropX* pprop);
     void UpdateRenderPass(ArgX* a);
 };
 // @fnv 0x00b7dab0
+// pdb: ShadowLightShader::SetupGeometryConstants | ShadowLightShader.obj | debug, object-file run extension, low
+// pdb params: apState
+// pdb locals: pgeometry, apSkin, epass, d3dInvWorld, pmaterialProperty, palphaProp, apRenderPass, aWorld, worldBound, pprop, pbufferData
 void RX::UpdateRenderPass(ArgX* apArg)
 {
     StX* s = DAT_011f91e0;
@@ -15890,7 +16000,7 @@ struct StageReturn
 };
 void __cdecl AssignStageFromPool(StageReturn*&);
 typedef NiPointer<StageReturn> StagePtr;
-int __cdecl ConfigureBeamStage(void* a, int b, int c, int d, int e);
+int __cdecl ConfigureBeamStage(void* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 struct RendObj;
 struct StageSub
 {
@@ -16014,6 +16124,8 @@ extern int DAT_011fd5d4, DAT_011fc9f4, DAT_011fbe14;
 // Configures four global render objects by adding a stage if needed, setting pixel/vertex shaders, render states, and associated global values.
 // @fnv 0x00be9920
 // src: COMMUNITY 0x00be9920
+// pdb: ShadowLightShader::PresetFogPasses_1x | ShadowLightShader_Preset_1x.obj | retail, upstream name already matches, high
+// pdb locals: sppass, spstage
 void __cdecl ShadowLightShader_PresetFogPasses_1x()
 {
     SPtr pRendObj;

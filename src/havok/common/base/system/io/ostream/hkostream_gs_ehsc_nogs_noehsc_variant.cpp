@@ -30,20 +30,23 @@ class hkWriter0080
 };
 
 // src: HAVOK_LIB 0x00cc0080
-static __declspec(noinline) void writeString(hkWriter0080* out, const char* str)
+static __declspec(noinline) void writeString(hkWriter0080* sb, const char* s)
 {
-    if (str)
+    if (s)
     {
-        out->write(str, hkString_strLen((int)str));
+        sb->write(s, hkString_strLen((int)s));
     }
     else
     {
-        out->write(str_010c9308, 6);
+        sb->write(str_010c9308, 6);
     }
 }
 
 // @fnv 0x00cc0410
 // src: HAVOK_LIB 0x00cc0410
+// pdb: hkOstream::printf | hkOStream.obj | retail, upstream name already matches, high
+// pdb params: fmt, buf
+// pdb locals: args
 void __cdecl hkOstream_printf(hkOstream* self, const char* fmt, ...)
 {
     char buf[0x2728];
@@ -51,5 +54,5 @@ void __cdecl hkOstream_printf(hkOstream* self, const char* fmt, ...)
     va_start(ap, fmt);
     hkString_vsnprintf(buf, 0x2728, fmt, ap);
     va_end(ap);
-    writeString((hkWriter0080*)self->m_pStreamWriter, buf);
+    writeString((hkWriter0080*)self->m_writer, buf);
 }

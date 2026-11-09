@@ -60,17 +60,20 @@ struct S_00eaee50
     float m_fParamA;
     float m_fParamB;
 
-    float NiCapsuleCapsuleIntersector_Pseudodistance(const NiPoint3& kOffsetA, const NiPoint3& kOffsetB, float fTime);
+    float NiCapsuleCapsuleIntersector_Pseudodistance(const NiPoint3& kV0, const NiPoint3& kV1, float fTime);
 };
 
 // @fnv 0x00eaee50
 // src: GAMEBRYO_LIB 0x00eaee50
-float S_00eaee50::NiCapsuleCapsuleIntersector_Pseudodistance(const NiPoint3& kOffsetA, const NiPoint3& kOffsetB, float fTime)
+// pdb: NiCapsuleCapsuleIntersector::Pseudodistance | NiCapsuleCapsuleIntersector.obj | retail, upstream name already matches, high
+// pdb params: kV0, kV1, fTime
+// pdb locals: kSegment1, fPseudodistance, kSegment0
+float S_00eaee50::NiCapsuleCapsuleIntersector_Pseudodistance(const NiPoint3& kV0, const NiPoint3& kV1, float fTime)
 {
     S_00eaee50_Line kA = m_pkShapeA->m_kLine;
     S_00eaee50_Line kB = m_pkShapeB->m_kLine;
-    kA.m_kStartPoint += kOffsetA * fTime;
-    kB.m_kStartPoint += kOffsetB * fTime;
+    kA.m_kStartPoint += kV0 * fTime;
+    kB.m_kStartPoint += kV1 * fTime;
     return NiSqrDistance_Compute(kA, kB, &m_fParamA, &m_fParamB) * m_fScale - 1.0;
 }
 
@@ -128,13 +131,16 @@ struct S_00eaef80
     float m_fParamA;
     float m_fParamB;
 
-    void UpdatePoints(const NiPoint3& kOffsetA, const NiPoint3& kOffsetB);
+    void UpdatePoints(const NiPoint3& ausParticle, const NiPoint3& afTime);
 };
 
 inline NiPoint3 CopyPoint(const NiPoint3& p) { return NiPoint3(p.x, p.y, p.z); }
 
 // @fnv 0x00eaef80
-void S_00eaef80::UpdatePoints(const NiPoint3& kOffsetA, const NiPoint3& kOffsetB)
+// pdb: BSStripPSysData::UpdatePoints | BSStripPSysData.obj | retail, upstream name already matches, high
+// pdb params: ausParticle, afTime
+// pdb locals: pkCurrentParticle, iprevindex, fsize, pprevDir, stripData, icurrindex
+void S_00eaef80::UpdatePoints(const NiPoint3& ausParticle, const NiPoint3& afTime)
 {
     NiPoint3 kPointA;
     m_pkShapeA->m_kLine.NiSegment_GetPoint(kPointA, m_fParamA);
@@ -145,10 +151,10 @@ void S_00eaef80::UpdatePoints(const NiPoint3& kOffsetA, const NiPoint3& kOffsetB
     if (unk18 == 2)
     {
         {
-            NiPoint3 t = CopyPoint(kOffsetA * unk1C);
+            NiPoint3 t = CopyPoint(ausParticle * unk1C);
             kPointA += t;
         }
-        FUN_Offset(kPointB, kOffsetB, unk1C);
+        FUN_Offset(kPointB, afTime, unk1C);
 
         m_kPoint2C = kPointB - kPointA;
         m_kPoint2C.Unitize_004a0c10();

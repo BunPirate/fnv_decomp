@@ -24,6 +24,7 @@ extern int DAT_0109f23c;
 void __cdecl operator delete(void* p, unsigned int size);
 
 // @fnv 0x00a8a7c0
+// pdb: NiLinesData::`scalar deleting destructor' | NiLinesData.obj | retail, object-file run extension, low
 void* NiLinesData::Destroy(unsigned int flags)
 {
     void* pkFlags = m_pkFlags;
@@ -36,13 +37,16 @@ void* NiLinesData::Destroy(unsigned int flags)
 }
 
 // @fnv 0x00a8a730
-bool NiLinesData::IsEqual(NiObject* other) const
+// pdb: NiLinesData::IsEqual | NiLinesData.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkLines, i
+bool NiLinesData::IsEqual(NiObject* pkObject) const
 {
-    if (!IsGeometryEqual(other))
+    if (!IsGeometryEqual(pkObject))
     {
         return false;
     }
-    const NiLinesData* data = static_cast<const NiLinesData*>(other);
+    const NiLinesData* data = static_cast<const NiLinesData*>(pkObject);
     if (m_pkFlags && !data->m_pkFlags)
     {
         return false;
@@ -65,10 +69,12 @@ bool NiLinesData::IsEqual(NiObject* other) const
 }
 
 // @fnv 0x00a8a850
-void NiLinesData::SaveBinary(NiStream& stream)
+// pdb: NiLinesData::SaveBinary | NiLinesData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiLinesData::SaveBinary(NiStream& kStream)
 {
-    NiGeometryData::SaveBinary(stream);
-    NiBinaryStream* io = stream.m_pkOstr;
+    NiGeometryData::SaveBinary(kStream);
+    NiBinaryStream* io = kStream.m_pkOstr;
     unsigned char* buf = m_pkFlags;
     unsigned int len = m_usVertices;
     {
@@ -91,14 +97,16 @@ inline unsigned int NiTArray<T, TAlloc>::Add(const T& s)
 
 extern int DAT_011f5b88;
 const char* NiViewerStrings_NiGetViewerString_Title(int g);
-const char* NiGetViewerString_00a7d5a0(const char* fmt, int v);
+const char* NiGetViewerString_00a7d5a0(const char* pcPrefix, int pvValue);
 
 // @fnv 0x00a8a890
-void NiLinesData::GetViewerStrings(NiViewerStringsArray* arr)
+// pdb: NiLinesData::GetViewerStrings | NiLinesData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiLinesData::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    RegisterGeometryFields(arr);
-    arr->Add(NiViewerStrings_NiGetViewerString_Title(DAT_011f5b88));
-    arr->Add(NiGetViewerString_00a7d5a0("m_pkFlags", reinterpret_cast<int>(m_pkFlags)));
+    RegisterGeometryFields(pkStrings);
+    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(DAT_011f5b88));
+    pkStrings->Add(NiGetViewerString_00a7d5a0("m_pkFlags", reinterpret_cast<int>(m_pkFlags)));
 }
 
 inline unsigned int NiBinaryStream::BinaryRead(void* pvBuffer, unsigned int uiTotalBytes,
@@ -124,6 +132,8 @@ template <class T> inline void ReadBinaryValue(NiStream& kStream, T* pValue, uns
 void* NiMalloc(unsigned int stSize);
 
 // @fnv 0x00a8a800
+// pdb: NiLinesData::LoadBinary | NiLinesData.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiLinesData::LoadBinary(NiStream& kStream)
 {
     NiGeometryData::LoadBinary(kStream);

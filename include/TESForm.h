@@ -16,6 +16,7 @@ template <class T> class BSTCaseInsensitiveStringMap;
 template <class T> class NiTLargePrimitiveArray;
 enum ENUM_FORM_ID;
 
+// pdb: class TESForm, size 0x18, bases: BaseFormComponent, 4 members
 class TESForm : public BaseFormComponent
 {
   public:
@@ -43,16 +44,16 @@ class TESForm : public BaseFormComponent
     virtual bool Sort(TESForm* form);
     virtual TESForm* CreateForm(void* arg0, void* mapToAddTo);
     virtual void Unk_11(void* arg);
-    virtual void MarkAsModified(unsigned int changedFlags);
-    virtual void MarkAsUnmodified(unsigned int changedFlags);
+    virtual void MarkAsModified(unsigned int aiChangeFlags);
+    virtual void MarkAsUnmodified(unsigned int aiChangeFlags);
     virtual unsigned int GetSaveSize(unsigned int changedFlags);
     // Exe/RTTI: slot 21 saves through a buffer; slot 22 is the legacy flags saver.
     // VC9 reverses virtual overload groups, so keep the legacy entry points distinct.
     virtual void SaveGame(BGSSaveFormBuffer* buffer);
     virtual void SaveGameLegacy(unsigned int changedFlags);
     // Slots 23 and 24 are the buffer and legacy two-flag loaders.
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
-    virtual void LoadGameLegacy(unsigned int changedFlags, unsigned int currentFlags);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    virtual void LoadGameLegacy(unsigned int aiFlags, unsigned int aiCurrentFlags);
     virtual void Unk_19(void* arg);
     virtual void Unk_1A();
     virtual void Unk_1B(void* arg0, void* arg1);
@@ -77,11 +78,11 @@ class TESForm : public BaseFormComponent
     virtual bool Unk_2E(void);
     virtual void Unk_2F(bool set);
     virtual bool Unk_30(void);
-    virtual void MarkForDeletion(bool set);
+    virtual void MarkForDeletion(bool abDeleted);
     virtual void SetAltered(bool set);
     virtual void SetQuestItem(bool set);
     virtual void SetFormFlag40(bool set);
-    virtual void SetHavokDeath(bool set);
+    virtual void SetHavokDeath(bool abDeath);
     virtual void SetNeedToChangeProcess(bool set);
     virtual void Unk_37(void);
     virtual void readOBNDSubRecord(TESFile* modInfo);
@@ -95,8 +96,8 @@ class TESForm : public BaseFormComponent
     virtual bool IsActor();
     virtual unsigned int Unk_41(void);
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
-    virtual bool CheckFormGRUP(void* arg);
+    virtual bool Compare(TESForm* apCompare);
+    virtual bool CheckFormGRUP(void* apGroupFORM);
     virtual void InitFormGRUP(void* dst, void* arg1);
     virtual bool Unk_46(void);
     virtual bool Unk_47(void);
@@ -104,25 +105,25 @@ class TESForm : public BaseFormComponent
     // Slot 73 (+0x124): TESNPC::Activate 0x00607990, TESCreature 0x005fa330, TESBoundObject 0x0050f670; all ret 0x14
     // (five arguments; the TESForm/TESObject default 0x00401270 returns false). Called on the base form at 0x008e8600.
     virtual bool Activate(TESObjectREFR* apTarget, TESObjectREFR* apActivator, bool abFlag, TESBoundObject* apObject, int aiCount);
-    virtual void SetRefID(unsigned int refID, bool generateID);
+    virtual void SetRefID(unsigned int aiID, bool abUpdateFile);
     virtual char* GetName2(void);
     virtual char* GetName(void) const;
     virtual bool SetEditorID_AtRuntime(const char* edid);
     TESForm();
     bool IsActor() const;
-    void FUN_00485110(TESFile* file);
+    void FUN_00485110(TESFile* apFile);
     void BeginFormRecord();
     void FinishFormRecord();
-    void TESForm___SaveData(void* data, int size);
+    void TESForm___SaveData(void* data, int aiSize);
     const char* TESForm_GetFormTypeString();
-    TESFile* FUN_00484e60(int fileIndex);
+    TESFile* FUN_00484e60(int aiIndex);
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     unsigned int FUN_00401170();
     int GetFormEditorIDLength();
     void TESForm_ClearDataAllComponents();
     bool GetMaster();
     bool FUN_00440da0();
-    TESFile* GetFile(int fileIndex);
+    TESFile* GetFile(int aiIndex);
     BSSimpleList<TESFile*>* GetSourceFiles();
     bool IsDeleted() const;
     unsigned int GetFormID();
@@ -138,9 +139,9 @@ class TESForm : public BaseFormComponent
     bool IsFormInitialized() const;
     bool GetInitialized() const;
     unsigned int GetDataSizeAdjustment();
-    void ReadTypedData(TESFile* file, void* data, unsigned short size);
+    void ReadTypedData(TESFile* apFile, void* apData, unsigned short asSize);
     void SetFormType(ENUM_FORM_ID type);
-    void LoadRecordHeader(TESFile* file);
+    void LoadRecordHeader(TESFile* apFile);
     static void RemapFormIDForFile(unsigned int& formID, TESFile* file);
     unsigned int GetFormID() const;
     bool GetDisabled();
@@ -149,16 +150,16 @@ class TESForm : public BaseFormComponent
     int GetFormType();
     TESFile* GetOwnerMaster();
     void SetMasterFile(bool set);
-    void SetDestroyed(bool set);
+    void SetDestroyed(bool abVal);
     void SetDestructible(bool set);
     void SetIgnoreFriendlyHits(bool set);
     static bool IsReservedFormID(unsigned int formID);
     bool IsReservedFormID();
-    void SetFormFlags(int flags);
+    void SetFormFlags(int aiChangeFlags);
     void UpdateFormChangeFlags();
-    static TESForm* LookupFormByEditorID(const char* editorID);
+    static TESForm* LookupFormByEditorID(const char* apSearchID);
     static TESForm* CreateFormByType(ENUM_FORM_ID type);
-    void SetFile(TESFile* file);
+    void SetFile(TESFile* apFile);
     static void InitializeFormIDMap();
     static NiTPointerMap<unsigned int, TESForm*>* ms_pFormIDMap;
     static BSTCaseInsensitiveStringMap<TESForm*>* ms_pEditorIDMap;
@@ -182,7 +183,7 @@ class TESForm : public BaseFormComponent
     unsigned int FNV_GetFormType() const;
     unsigned int _FNV_GetFormType();
     TESForm* GetLeveled();
-    TESForm* GetTemplate(int arg);
+    TESForm* GetTemplate(int apWeaponHolder);
     bool GetFlag() const;
     bool IsPlayable();
     bool IsTerminalUsable(RefX* reference);

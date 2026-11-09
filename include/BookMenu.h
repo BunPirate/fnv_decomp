@@ -5,6 +5,7 @@
 class BookInput;
 class BookTile;
 
+// pdb: class BookMenu, size 0x3c, bases: Menu, 5 members
 class BookMenu : public Menu
 {
 public:
@@ -33,16 +34,16 @@ public:
 
     int GetID();
     bool HasAllFlagsSet(int*);
-    void InitMenu();
-    void* CreateSurgery3DCamera();
-    void InvokeCallbacksForSlot();
-    void HandleKey(unsigned int key, int unused);
+    void InitBook();
+    void* SPECIALBookMenu_InitCamera();
+    void SPECIALBookMenu_RefreshPage();
+    void HandleKey(unsigned int aiID, int apTarget);
     void SetTileByID(int aiID, Tile* apTile);
-    void UpdateMenuTile();
+    void Close();
     bool HandleKey(int aikey);
     void ReadBook();
-    void HandleScrollInput(int a1, int a2);
-    void HandleMessage(int msg, int unused);
+    void HandleScrollInput(int aiID, int apTarget);
+    void HandleMessage(int aiID, int apTarget);
     void UpdateBookMenu(BookInput* input, int value);
     void LoadBookFile();
 

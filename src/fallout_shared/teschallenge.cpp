@@ -44,6 +44,8 @@ FNV_STATIC_ASSERT(offsetof(TESChallenge, m_pPrimaryForm) == 116);
 FNV_STATIC_ASSERT(offsetof(TESChallenge, m_pSecondaryForm) == 120);
 
 // @fnv 0x005F5080
+// pdb: TESChallenge::InitItem | TESChallenge.obj | retail, string-set bridge, high
+// pdb locals: itempInt
 void TESChallenge::InitItem()
 {
     if (GetInitialized())
@@ -69,14 +71,19 @@ void TESChallenge::InitItem()
 }
 
 // @fnv 0x005F57C0
-void TESChallenge::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESChallenge::LoadGame | TESChallenge.obj | retail, upstream name already matches, high
+// pdb params: aiFlags, aiCurrentFlags
+void TESChallenge::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::LoadGame(buffer);
-    buffer->ReadTypedData(&progress.iProgress, sizeof(progress.iProgress));
-    buffer->ReadTypedData(&progress.m_iCompletionCount, sizeof(progress.m_iCompletionCount));
+    TESForm::LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData(&progress.iProgress, sizeof(progress.iProgress));
+    apLoadGameBuffer->ReadTypedData(&progress.m_iCompletionCount, sizeof(progress.m_iCompletionCount));
 }
 
 // @fnv 0x005F5950
+// pdb: TESChallengeManager::UpdateChallenge | TESChallenge.obj | retail, call graph, medium
+// pdb params: cType, iCount, pFormOne, pFormTwo, nSpecialDataOne, nSpecialDataTwo, nSpecialDataThree
+// pdb locals: bCompletedChallenges, pChallenges, pItem, bFound, bAllowZeroForSpecialOne, pformlist, repDesc, iSpillOver, iInterval, nCheck, i
 bool ChallengeManager::UpdateChallengeProgress(CHALLENGE_TYPE type, int count, TESForm* formOne, TESForm* formTwo,
                                                unsigned short specialOne, unsigned short specialTwo,
                                                unsigned short specialThree)
@@ -213,7 +220,7 @@ bool ChallengeManager::UpdateChallengeProgress(CHALLENGE_TYPE type, int count, T
             if (challenge->GetProgressValue() >= challenge->GetThreshold())
             {
                 if (challenge->GetScript())
-                    challenge->GetScript()->ExecuteScript(reinterpret_cast<TESObjectREFR*>(g_thePlayer), 0);
+                    challenge->GetScript()->RunScriptEffectStart(reinterpret_cast<TESObjectREFR*>(g_thePlayer), 0);
                 if (challenge->GetChallengeType() != CHALLENGE_TYPE_CHALLENGE_TYPE_MISC_STAT ||
                     challenge->GetSpecialOne() != 27)
                     TopicMenuController::IncrementMiscStat(27);
@@ -271,74 +278,80 @@ bool ChallengeManager::UpdateChallengeProgress(CHALLENGE_TYPE type, int count, T
         list = list->GetNext();
     }
     if (completed)
-        CheckCompletedChallenges();
+        TESChallengeManager_LoadChallenges();
     return true;
 }
 
 // @fnv 0x005F51A0
-bool TESChallenge::Load(TESFile* file)
+// pdb: TESChallenge::Load | TESChallenge.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, tempint, itempint
+bool TESChallenge::Load(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     CHUNK_ID chunk;
-    while (chunk = (CHUNK_ID)file->GetChunkID())
+    while (chunk = (CHUNK_ID)apFile->GetChunkID())
     {
         switch (chunk)
         {
         case (CHUNK_ID)0x44494445: {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 512);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case (CHUNK_ID)0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case (CHUNK_ID)0x4c4c5546:
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case (CHUNK_ID)0x4e4f4349:
-            TESTexture::ReadTextureData(static_cast<TESIcon*>(this), file);
+            TESTexture::ReadTextureData(static_cast<TESIcon*>(this), apFile);
             break;
         case (CHUNK_ID)0x4f43494d:
-            BGSMessageIcon::LoadMessageIconChunk(this, file);
+            BGSMessageIcon::LoadMessageIconChunk(this, apFile);
             break;
         case (CHUNK_ID)0x49524353: {
             unsigned int scriptID = 0;
-            file->GetChunkData(&scriptID);
+            apFile->GetChunkData(&scriptID);
             SetScript(reinterpret_cast<Script*>(scriptID));
             TESScriptableForm::InitItem(this);
             break;
         }
         case (CHUNK_ID)0x43534544:
-            TESDescription::ReadDescriptionFromFile(this, file);
+            TESDescription::ReadDescriptionFromFile(this, apFile);
             break;
         case (CHUNK_ID)0x41544144:
-            ReadTypedData(file, &data, sizeof(data));
-            if (file->IsEndianConversionRequired())
-                data.SwapEndianFields();
+            ReadTypedData(apFile, &data, sizeof(data));
+            if (apFile->IsEndianConversionRequired())
+                data.CHALLENGE_DATA_Endian();
             break;
         case (CHUNK_ID)0x4d414e53: {
             unsigned int formID = 0;
-            file->GetChunkData(&formID);
+            apFile->GetChunkData(&formID);
             SetFormOne(reinterpret_cast<TESForm*>(formID));
             break;
         }
         case (CHUNK_ID)0x4d414e58: {
             unsigned int formID = 0;
-            file->GetChunkData(&formID);
+            apFile->GetChunkData(&formID);
             SetFormTwo(reinterpret_cast<TESForm*>(formID));
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
 }
 
 // @fnv 0x005F5880
-void ChallengeManager::CheckCompletedChallenges()
+// src: XBOX_RETAIL_PDB 0x005f5880
+// pdb: TESChallengeManager::LoadChallenges | TESChallenge.obj | retail, call graph (shared callers), high
+// pdb locals: pChallenges, pItem
+void ChallengeManager::TESChallengeManager_LoadChallenges()
 {
     Clear();
     BSSimpleList<TESChallenge*>* list = g_dataHandler->FUN_00461150();
@@ -355,6 +368,7 @@ void ChallengeManager::CheckCompletedChallenges()
 }
 
 // @fnv 0x005F4FD0
+// pdb: TESChallenge::InitializeData | TESChallenge.obj | retail, vtable slot, high
 void TESChallenge::ResetFormData()
 {
     memset(&data, 0, sizeof(data));
@@ -373,6 +387,8 @@ void TESChallenge::SetShowZero(bool show)
 
 // Clears all 14 entries by calling RemoveAll on both parallel arrays.
 // @fnv 0x005f5840
+// pdb: TESChallengeManager::UnloadChallenges | TESChallenge.obj | debug, object-file run extension, low
+// pdb locals: i
 void ChallengeManager::Clear()
 {
     for (int i = 0; i < 14; ++i)
@@ -383,6 +399,7 @@ void ChallengeManager::Clear()
 }
 
 // @fnv 0x005f5800
+// pdb: TESChallenge::MarkForSave | TESChallenge.obj | debug, upstream name already matches, high
 void TESChallenge::MarkForSave()
 {
     MarkAsModified(2);
@@ -395,6 +412,7 @@ int TESChallenge::GetStartsLocked()
 }
 
 // @fnv 0x005f4e00
+// pdb: TESChallenge::TESChallenge | TESChallenge.obj | retail, upstream name already matches, high
 TESChallenge::TESChallenge()
 {
     TESChallenge::ResetFormData();
@@ -405,12 +423,15 @@ TESChallenge::TESChallenge()
 struct ChallengeLegacyFormIO : TESForm
 {
     void SaveChangeFlags(unsigned int flags);
-    void LoadChangeFlags(unsigned int flags, unsigned int currentFlags);
+    void LoadChangeFlags(unsigned int aiFlags, unsigned int aiCurrentFlags);
     void SaveIfChanged(BGSSaveFormBuffer* buffer);
 };
 
 // @fnv 0x005a7770
 // src: XBOX_PDB 0x005a7770
+// pdb: TESCaravanCard::GetSaveSize | TESCaravan.obj | debug, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short __thiscall TESChallenge::TESCaravanCard_GetSaveSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -445,6 +466,9 @@ extern "C" int _memcmp(const void*, const void*, unsigned int);
 
 // Compares this TESChallenge against apCompare: returns true if it is not a TESChallenge or if data, form two, form one or the base comparison differ.
 // @fnv 0x005f56b0
+// pdb: TESChallenge::Compare | TESChallenge.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool __thiscall TESChallenge::Compare(TESForm* apCompare)
 {
     TESChallenge* pcomp = dynamic_cast<TESChallenge*>(apCompare);
@@ -464,6 +488,8 @@ bool __thiscall TESChallenge::Compare(TESForm* apCompare)
 bool __cdecl TESForm_QEndianSwapOnSave();
 void __cdecl TESForm_AddChunk_00485910(unsigned int, unsigned int);
 // @fnv 0x005f5540
+// pdb: TESChallenge::Save | TESChallenge.obj | retail, vtable slot, high
+// pdb locals: itempint
 void __thiscall TESChallenge::Initialize()
 {
     TESForm::BeginFormRecord();
@@ -473,10 +499,10 @@ void __thiscall TESChallenge::Initialize()
     TESScriptableForm::Save_0048cca0();
     TESDescription::Save_00482cb0();
     if (TESForm_QEndianSwapOnSave())
-        ((ChallengeData*)((char*)this + 0x54))->SwapEndianFields();
+        ((ChallengeData*)((char*)this + 0x54))->CHALLENGE_DATA_Endian();
     TESForm::TESForm___SaveData(&data, 0x18);
     if (TESForm_QEndianSwapOnSave())
-        ((ChallengeData*)((char*)this + 0x54))->SwapEndianFields();
+        ((ChallengeData*)((char*)this + 0x54))->CHALLENGE_DATA_Endian();
     if (*(unsigned int*)((char*)this + 0x74))
     {
         unsigned int v1 = ((TESForm**)((char*)this + 0x74))[0]->GetFormID();
@@ -496,6 +522,9 @@ void* __cdecl memcpy(void* dest, const void* src, unsigned int size);
 
 // Copies the TESChallenge data block and both forms from apCopy into this challenge, then calls FUN_004851b0 with apCopy.
 // @fnv 0x005f5630
+// pdb: TESChallenge::Copy | TESChallenge.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pmisc
 void __thiscall TESChallenge::CopyFromChallenge(TESForm* apCopy)
 {
     TESChallenge* challenge = dynamic_cast<TESChallenge*>(apCopy);
@@ -510,11 +539,13 @@ void __thiscall TESChallenge::CopyFromChallenge(TESForm* apCopy)
 // Calls the base save routine, then writes the 4-byte values at offsets 0x6C and 0x70 into the save buffer.
 // @fnv 0x005f5780
 // src: XBOX_PDB 0x005f5780
-void __thiscall TESChallenge::SaveGame_005f5780(BGSSaveFormBuffer* apBuffer)
+// pdb: TESChallenge::SaveGame | TESChallenge.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void __thiscall TESChallenge::SaveGame_005f5780(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    reinterpret_cast<ChallengeLegacyFormIO*>(this)->SaveIfChanged(apBuffer);
-    apBuffer->SaveData((char*)this + 0x6C, 4, 0);
-    apBuffer->SaveData((char*)this + 0x70, 4, 0);
+    reinterpret_cast<ChallengeLegacyFormIO*>(this)->SaveIfChanged(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData((char*)this + 0x6C, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x70, 4, 0);
 }
 
 struct BSIntToType1
@@ -556,7 +587,9 @@ void __cdecl BSEndian(unsigned char*, BSIntToType32);
 
 // Byte-swaps the fields at offsets 0, 4, 8, 12, 16, 18 and 20 of this object to the opposite endianness.
 // @fnv 0x005f5480
-void __thiscall ChallengeData::SwapEndianFields()
+// src: XBOX_DEBUG_PDB 0x005f5480
+// pdb: CHALLENGE_DATA::Endian | TESChallenge.obj | debug, call graph (shared callers), high
+void __thiscall ChallengeData::CHALLENGE_DATA_Endian()
 {
     BSEndian((unsigned char*)this, BSIntToType1());
     BSEndian((unsigned char*)this + 4, BSIntToType10());
@@ -568,6 +601,7 @@ void __thiscall ChallengeData::SwapEndianFields()
 }
 
 // @fnv 0x005f4f10
+// pdb: TESChallenge::~TESChallenge | TESChallenge.obj | retail, upstream name already matches, high
 TESChallenge::~TESChallenge()
 {
     TESForm::ClearData();

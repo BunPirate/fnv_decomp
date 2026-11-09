@@ -6,6 +6,7 @@
 
 class ColorAnimationKey;
 
+// pdb: class NiColorData, size 0x18, bases: NiObject, 4 members
 class NiColorData : public NiObject
 {
   public:
@@ -13,11 +14,11 @@ class NiColorData : public NiObject
     virtual ~NiColorData();
     virtual const NiRTTI* GetRTTI() const;
 
-    void SetColorKeys(ColorAnimationKey*, unsigned int, NiAnimationKey::KeyType);
+    void ReplaceAnim(ColorAnimationKey*, unsigned int, NiAnimationKey::KeyType);
 
     unsigned int m_uiNumKeys;
-    ColorAnimationKey* m_pKeyArray;
-    NiAnimationKey::KeyType m_eRequestType;
-    unsigned char m_ucKeyDataSize;
+    ColorAnimationKey* m_pkKeys;
+    NiAnimationKey::KeyType m_eType;
+    unsigned char m_ucKeySize;
     unsigned char m_aucPad[3];
 };

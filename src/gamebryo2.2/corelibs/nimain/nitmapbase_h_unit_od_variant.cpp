@@ -11,6 +11,7 @@ struct FUN_00404cd0_Class
 };
 
 // @fnv 0x00404cd0
+// pdb: SettingCollection<Setting>::`scalar deleting destructor' | EffectItem.obj | retail, vtable slot, high
 void* __thiscall FUN_00404cd0_Class::FUN_00404cd0(unsigned int flags)
 {
     UpdateFields_00404c80();

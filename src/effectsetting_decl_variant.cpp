@@ -31,13 +31,15 @@ void __cdecl TESForm_AddChunk_00485910(unsigned int, unsigned int);
 
 // @fnv 0x00407300
 // src: COMMUNITY 0x00407300
+// pdb: EffectSetting::Save | EffectSetting.obj | retail, vtable slot, high
+// pdb locals: psaveLight, psetting, psaveEffectShader, psaveCastSound, psaveBoltSound, psaveAreaSound, psaveItem, psaveEnchantEffect, psaveHitSound, pnode
 void EffectSetting::SaveAlt()
 {
     BeginFormRecord();
     TESFullName::Save_00487010();
     TESDescription::Save_00482cb0();
     TESIcon::Save(CHUNK_ICON);
-    TESModel::WriteToBuffer(CHUNK_MODL, CHUNK_MODT);
+    TESModel::BSSendSceneGraphCommand_WriteToBuffer(CHUNK_MODL, CHUNK_MODT);
 
     TESSound* pkCastSound = data.m_pCastSound;
     data.m_pCastSound = (TESSound*)(data.m_pCastSound ? static_cast<const TESForm*>(data.m_pCastSound)->GetFormID() : 0);

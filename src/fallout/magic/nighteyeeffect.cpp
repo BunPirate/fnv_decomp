@@ -6,14 +6,18 @@
 #include "../../../include/TESSaveLoadGame.h"
 
 // @fnv 0x0080cea0
+// pdb: NightEyeEffect::Update | NightEyeEffect.obj | debug, upstream name already matches, high
+// pdb params: afSecondsElapsed
 void NightEyeEffect::Update(float afSecondsElapsed)
 {
     ValueModifierEffect::Update(afSecondsElapsed);
 }
 
 // @fnv 0x00825710
-NightEyeEffect::NightEyeEffect(void* apArg1, void* apArg2, void* apArg3)
-    : ValueModifierEffect(apArg1, apArg2, apArg3)
+// pdb: NightEyeEffect::NightEyeEffect | NightEyeEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+NightEyeEffect::NightEyeEffect(void* apCaster, void* apSpell, void* apEffect)
+    : ValueModifierEffect(apCaster, apSpell, apEffect)
 {}
 
 struct PC7d;
@@ -30,6 +34,7 @@ struct VirtualObj
 };
 
 // @fnv 0x00825810
+// pdb: NightEyeEffect::Start | NightEyeEffect.obj | retail, upstream name already matches, high
 void NightEyeEffect::Start()
 {
     ActiveEffect_SetMagnitude(1.0f);
@@ -39,6 +44,7 @@ void NightEyeEffect::Start()
 }
 
 // @fnv 0x00825860
+// pdb: NightEyeEffect::Finish | NightEyeEffect.obj | retail, upstream name already matches, high
 void NightEyeEffect::Finish()
 {
     ApplyEffect();
@@ -48,6 +54,8 @@ void NightEyeEffect::Finish()
 
 // Calls ActiveEffect::InitLoadGame for apActor, then refreshes the player's image-space effect.
 // @fnv 0x00825920
+// pdb: NightEyeEffect::InitLoadGame | NightEyeEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void NightEyeEffect::InitLoadGame(Actor* apActor)
 {
     ActiveEffect::InitLoadGame(apActor);
@@ -60,6 +68,8 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 }  // namespace fnv_00825950
 
 // @fnv 0x00825950
+// pdb: NightEyeEffect::Revert | NightEyeEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void NightEyeEffect::Revert(Actor* apActor)
 {
     ((TESForm*)this)->Revert(reinterpret_cast<unsigned int>(apActor));
@@ -77,6 +87,8 @@ NightEyeEffect* NightEyeEffect_Create(void* apArg0, void* apArg1, void* apArg2)
 void* operator new(unsigned int size) throw();
 
 // @fnv 0x00825760
+// pdb: NightEyeEffect::Copy | NightEyeEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* NightEyeEffect::Copy()
 {
     ActiveEffect* e = new NightEyeEffect(m_pEffectInstance, pSpell, pEffect);
@@ -165,6 +177,8 @@ extern float DAT_011d1668;
 extern float DAT_011f947c;
 
 // @fnv 0x00825990
+// pdb: NightEyeEffect::ApplyVisualEffect | NightEyeEffect.obj | retail, call graph, medium
+// pdb locals: pmanager, peffect
 void UpdateImageSpaceEffectFromPlayerState()
 {
     FUN_00825990_ImageSpaceEffect* effect;

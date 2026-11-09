@@ -103,6 +103,8 @@ struct FUN_00665c50
 
 // Calls FUN_00665f50 with a, stores the address of DAT_01066434 into this, and returns this.
 // @fnv 0x00665c50
+// pdb: NiTPointerMap<TESObjectTREE *,NiPointer<BSTreeModel> *>::NiTPointerMap<TESObjectTREE *,NiPointer<BSTreeModel> *> | BSTreeManager.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 void* __thiscall FUN_00665c50::Set(int a)
 {
     NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectTREE_NiPointer_BSTreeModel_NiTMapBase(a);
@@ -135,6 +137,7 @@ extern Setting originalRuntimeFloatSetting1297;
 
 // @fnv 0x0066b0b0
 // src: XBOX_PDB 0x0066b0b0
+// pdb: BSTreeManager::GetSizeConversion | BSTreeModel.obj | debug, upstream name already matches, high
 float BSTreeManager_GetSizeConversion()
 {
     return *originalRuntimeFloatSetting1297.Float();
@@ -146,6 +149,7 @@ struct Flt
     operator unsigned int();
 };
 // @fnv 0x0066b660
+// pdb: BSTreeManager::GetHavokFlags | BSTreeNode.obj | debug, object-file gap fill, medium
 unsigned int __cdecl GetFltValueAtOffset16()
 {
     return ((Flt*)((char*)BSTreeManager_GetInstance(1) + 0x10))->operator unsigned int();
@@ -157,6 +161,7 @@ struct FUN_0066dd80_Class
 };
 
 // @fnv 0x0066dd80
+// pdb: ActionPoints::GetActionPointsRestoreRate | ActionPoints.obj | debug, object-file run extension, low
 bool FUN_0066dd80_Class::IsFlag8Set() const
 {
     return (*(const unsigned int*)((const char*)this + 0x12c) & 8) ? true : false;
@@ -288,6 +293,7 @@ struct FUN_00661d40_shell
 };
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x00661d60
+// pdb: BSFaceGenMorphData::`scalar deleting destructor' | BSFaceGenMorphData.obj | debug, vtable slot, medium
 void* __thiscall FUN_00661d40_shell::FUN_00661d60(unsigned int flags)
 {
     this->SetVTableAndDestroy();
@@ -315,6 +321,8 @@ unsigned int __cdecl FUN_00ec7c56();
 // Bounds-checks index a against the array count, then returns m_base plus a times 0x38.
 // @fnv 0x00662890
 // src: GUESS 0x00662890 (confidence: medium)
+// pdb: std::vector<FffTriStatMorphS,std::allocator<FffTriStatMorphS> >::operator[] | BSFaceGenMorphData.obj | debug, call graph, medium
+// pdb params: _Pos
 int __thiscall StatisticalArray::GetElementChecked_00662890(unsigned int uiIndex)
 {
     if (uiIndex >= EvaluateValue_0065cc30())
@@ -335,6 +343,7 @@ struct FUN_00665c80_Class
 
 // Calls FUN_00665fc0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00665c80
+// pdb: NiTPointerMap<TESObjectTREE *,NiPointer<BSTreeModel> *>::`scalar deleting destructor' | BSTreeManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00665c80_Class::FUN_00665c80(unsigned int flags)
 {
     FUN_00665fc0();
@@ -400,6 +409,7 @@ struct FUN_006661b0_Class
 };
 
 // @fnv 0x006661b0
+// pdb: LockFreeMap<TESObjectREFR *,BSTreeNode *>::`scalar deleting destructor' | BSTreeManager.obj | debug, object-file run extension, low
 void* __thiscall FUN_006661b0_Class::FUN_006661b0(unsigned int flags)
 {
     FUN_006661e0();
@@ -415,6 +425,7 @@ struct FUN_00666270_Holder
 };
 // Calls Init on this object, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x00666270
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,TESObjectTREE *,NiPointer<BSTreeModel> *>::`scalar deleting destructor' | BSTreeManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00666270_Holder::InitAndMaybeDeallocate(unsigned int flags)
 {
     ((FUN_00666020*)this)->Init();
@@ -448,17 +459,20 @@ struct FUN_0066c9c0_Class
 {
     T_ a;
     T_ b;
-    void hkContactPoint_set(T_& x, T_& y, float f);
+    void hkContactPoint_set(T_& position, T_& normal, float dist);
 };
 // @fnv 0x0066c9c0
 // src: XBOX_PDB 0x0066c9c0
-void FUN_0066c9c0_Class::hkContactPoint_set(T_& x, T_& y, float afValue)
+// pdb: hkContactPoint::set | BSTreeNode.obj | debug, upstream name already matches, high
+// pdb params: position, normal, dist
+void FUN_0066c9c0_Class::hkContactPoint_set(T_& position, T_& normal, float dist)
 {
-    a.SetValue(&x);
-    ((T_*)((char*)&a) + 16)->SetValue(&y);
-    ((bhkCharacterController*)((char*)&a + 16))->GetVectorElement(3) = afValue;
+    a.SetValue(&position);
+    ((T_*)((char*)&a) + 16)->SetValue(&normal);
+    ((bhkCharacterController*)((char*)&a + 16))->GetVectorElement(3) = dist;
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -547,6 +561,7 @@ struct FUN_0066df40_Class
 };
 // Calls FUN_0066df40, frees this with Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0066e300
+// pdb: ActorCause::`scalar deleting destructor' | ActorCause.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_0066df40_Class::FUN_0066e300(unsigned int flags)
 {
     ClearEffectsAndRegisterOwner();
@@ -623,6 +638,7 @@ struct FUN_0067ad70_cls
 void __cdecl _Deallocate(void*);
 // Runs the destructor, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0067ad40
+// pdb: TESPackageData::`scalar deleting destructor' | PackageDataAmbush.obj | debug, vtable slot, medium
 void* __thiscall FUN_0067ad70_cls::DestroyAndFree(unsigned int flags)
 {
     this->FUN_0067ad70_cls::~FUN_0067ad70_cls();
@@ -642,13 +658,16 @@ struct Holder
     void __thiscall SaveToBuffer(void*);
 };
 // @fnv 0x0067b000
-void __thiscall Holder::SaveToBuffer(void* apBuffer)
+// pdb: TESUseItemPackageData::SaveGame | PackageDataUseItem.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+// pdb locals: bhasLocation
+void __thiscall Holder::SaveToBuffer(void* apSaveGameBuffer)
 {
     unsigned char b;
     b = q != 0;
-    ((BGSSaveFormBuffer*)apBuffer)->SaveData(&b, 1u, 0);
+    ((BGSSaveFormBuffer*)apSaveGameBuffer)->SaveData(&b, 1u, 0);
     if (b)
-        q->PackageLocation_SaveGame(apBuffer);
+        q->PackageLocation_SaveGame(apSaveGameBuffer);
 }
 
 extern int DAT_010689e4;
@@ -680,6 +699,7 @@ struct FUN_0067d940_Class
 
 // Calls FUN_0067d970, then frees this object with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0067d940
+// pdb: ActorPackageData::`scalar deleting destructor' | PackageDataUseWeapon.obj | debug, vtable slot, medium
 void* __thiscall FUN_0067d940_Class::FUN_0067d940(unsigned int flags)
 {
     SetM();
@@ -700,6 +720,7 @@ struct FUN_0067eff0_Class
 };
 // @fnv 0x0067eff0
 // src: XBOX_PDB 0x0067eff0
+// pdb: PACK_LOC_FILE::Endian | PackageLocation.obj | debug, upstream name already matches, high
 void __thiscall FUN_0067eff0_Class::PACK_LOC_FILE_Endian()
 {
     BSEndian(reinterpret_cast<unsigned char*>(this) + 4, EndianSizeTag<1>());
@@ -722,6 +743,7 @@ struct FUN_0067ff10_Class
 
 // @fnv 0x0067ff10
 // src: XBOX_PDB 0x0067ff10
+// pdb: OBJ_WEAP_VATS_SPECIAL::Endian | TESObjectWEAP.obj | debug, upstream name already matches, high
 void __thiscall FUN_0067ff10_Class::OBJ_WEAP_VATS_SPECIAL_Endian()
 {
     BSEndian(&d[4], EndianSizeTag<1>());
@@ -739,21 +761,25 @@ struct FUN_0067b170
 };
 // If the package type is 15 or 28, lazily allocates packageData and stores b in its flag field.
 // @fnv 0x00672b70
-void TESPackage::SetPackageFlag(bool abFlag)
+// src: XBOX_RETAIL_PDB 0x00672b70
+// pdb: TESPackage::SetDialogueNoHeadTrack | Package.obj | retail, object-file gap fill, high
+// pdb params: abHead
+// pdb locals: pdata
+void TESPackage::SetDialogueNoHeadTrack(bool abHead)
 {
     if (GetPackType() == 15 || GetPackType() == 28)
     {
         FUN_0067b170* p = 0;
-        if (!packageData)
+        if (!pPackData)
         {
             p = new FUN_0067b170();
-            packageData = reinterpret_cast<TESPackageData*>(p);
+            pPackData = reinterpret_cast<TESPackageData*>(p);
         }
         else
         {
-            p = reinterpret_cast<FUN_0067b170*>(packageData);
+            p = reinterpret_cast<FUN_0067b170*>(pPackData);
         }
-        p->flag = abFlag;
+        p->flag = abHead;
     }
 }
 
@@ -770,6 +796,7 @@ struct FUN_0067b100_Class
 
 // @fnv 0x0067b100
 // src: XBOX_PDB 0x0067b100
+// pdb: PACK_DIALOGUE_DATA::Endian | PackageDataDialogue.obj | debug, upstream name already matches, high
 void __thiscall FUN_0067b100_Class::PACK_DIALOGUE_DATA_Endian()
 {
     BSEndian((unsigned char*)this, EndianSizeTag<1>());
@@ -784,6 +811,8 @@ struct FUN_0066d6a0 : bhkConvexShape
     FUN_0066d6a0(int a);
 };
 // @fnv 0x0066d6a0
+// pdb: bhkCapsuleShape::bhkCapsuleShape | BSTreeNode.obj | debug, object-file run extension, low
+// pdb params: arInfo
 FUN_0066d6a0::FUN_0066d6a0(int a)
 {
     bhkCapsuleShape_Init_00cab820(a);
@@ -800,6 +829,9 @@ struct Pair8
     GlobalObject_0045cfe0* b;
 };
 // @fnv 0x00670670
+// pdb: ExperiencePoints::GetExperiencePoints | ExperiencePoints.obj | debug, call graph, medium
+// pdb params: aiDifficulty, apDifficultyRewardList, aiPairCount
+// pdb locals: imaxReward, ireward, i
 int FindPairValue(int aiThreshold, Pair8* apPairs, int aiCount)
 {
     int i;
@@ -821,24 +853,29 @@ int FindPairValue(int aiThreshold, Pair8* apPairs, int aiCount)
 
 // If GetPackType() is 15 or 28, lazily allocates the object at offset 0x28 and stores value at its offset 4.
 // @fnv 0x00672c40
-void TESPackage::SetExtraValue(float value)
+// src: XBOX_RETAIL_PDB 0x00672c40
+// pdb: TESPackage::SetDialogueFOV | Package.obj | retail, object-file gap fill, high
+// pdb params: afFov
+// pdb locals: pdata
+void TESPackage::SetDialogueFOV(float afFov)
 {
     if (GetPackType() == 15 || GetPackType() == 28)
     {
         FUN_0067b170* extra = 0;
-        if (!*reinterpret_cast<FUN_0067b170**>(&packageData))
-            *reinterpret_cast<FUN_0067b170**>(&packageData) = extra = new FUN_0067b170;
+        if (!*reinterpret_cast<FUN_0067b170**>(&pPackData))
+            *reinterpret_cast<FUN_0067b170**>(&pPackData) = extra = new FUN_0067b170;
         else
-            extra = *reinterpret_cast<FUN_0067b170**>(&packageData);
-        *(float*)((char*)extra + 4) = value;
+            extra = *reinterpret_cast<FUN_0067b170**>(&pPackData);
+        *(float*)((char*)extra + 4) = afFov;
     }
 }
 
 #include "../../include/PackageList.h"
 // @fnv 0x0067e3a0
+// pdb: PackageList::~PackageList | PackageList.obj | retail, upstream name already matches, high
 PackageList::~PackageList()
 {
-    ClearPackageList();
+    FreePackageList();
 }
 
 // @fnv 0x00660400
@@ -901,12 +938,15 @@ struct DetectionViewData
     int padding[3];
 
     DetectionViewData();
-    void LoadGame(BGSLoadGameBuffer* buffer);
+    void DetectionState_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
     void ActorCause_LoadGameBGS(BGSLoadGameBuffer* buffer);
 };
 
 // @fnv 0x0066e440
 // src: COMMUNITY 0x0066e440
+// pdb: ActorCause::LoadGame | ActorCause.obj | debug, call graph, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, iloop, pdetectionState
 void DetectionViewData::ActorCause_LoadGameBGS(BGSLoadGameBuffer* buffer)
 {
     buffer->ReadTypedData(data, 12);
@@ -924,7 +964,7 @@ void DetectionViewData::ActorCause_LoadGameBGS(BGSLoadGameBuffer* buffer)
         for (int i = 0; i < count; ++i)
         {
             DetectionViewData* state = new DetectionViewData;
-            state->LoadGame(buffer);
+            state->DetectionState_LoadGame(buffer);
             list->AddHead(reinterpret_cast<SkySoundObj**>(&state));
         }
     }
@@ -942,6 +982,8 @@ struct FUN_0067caa0
 
 // @fnv 0x00672d10
 // src: XBOX_PDB 0x00672d10
+// pdb: TESPackage::GetOrCreateUseWeaponPackageData | Package.obj | retail, string-set bridge, high
+// pdb locals: pdata
 Schedule206* __thiscall TESPackage::GetOrCreateUseWeaponPackageData()
 {
     if (GetPackType() == 0x10)
@@ -953,14 +995,14 @@ Schedule206* __thiscall TESPackage::GetOrCreateUseWeaponPackageData()
     }
 
     FUN_0067caa0* result = 0;
-    if (!packageData)
+    if (!pPackData)
     {
         result = new FUN_0067caa0;
-        packageData = reinterpret_cast<TESPackageData*>(result);
+        pPackData = reinterpret_cast<TESPackageData*>(result);
     }
     else
     {
-        result = reinterpret_cast<FUN_0067caa0*>(packageData);
+        result = reinterpret_cast<FUN_0067caa0*>(pPackData);
     }
     return reinterpret_cast<Schedule206*>(result);
 }
@@ -1226,20 +1268,23 @@ struct FUN_0066ca50_cls
     int unk60;
     float m_f4;
 
-    bool BSTreeNode_CheckForCollision(float dt);
+    bool BSTreeNode_CheckForCollision(float afTime);
 };
 
 // @fnv 0x0066ca50
 // src: COMMUNITY 0x0066ca50
-bool FUN_0066ca50_cls::BSTreeNode_CheckForCollision(float dt)
+// pdb: BSTreeNode::CheckForCollision | BSTreeNode.obj | debug, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: bUpdate
+bool FUN_0066ca50_cls::BSTreeNode_CheckForCollision(float afTime)
 {
-    if (dt == g_dblConst)
+    if (afTime == g_dblConst)
     {
         return true;
     }
     else if (m_f4 == g_dblConst)
     {
-        m_f4 = (float)((double)(dt + *Setting_Float_00403e20(&g_timerA)) +
+        m_f4 = (float)((double)(afTime + *Setting_Float_00403e20(&g_timerA)) +
                        (*Setting_Float_00403e20(&g_timerA) / *Setting_Int(&g_timerB)) * g_counter);
         g_counter++;
         g_counter %= *Setting_Int(&g_timerB);
@@ -1248,9 +1293,9 @@ bool FUN_0066ca50_cls::BSTreeNode_CheckForCollision(float dt)
     else
     {
         bool result = false;
-        if (dt > m_f4)
+        if (afTime > m_f4)
         {
-            m_f4 = dt + *Setting_Float_00403e20(&g_timerA);
+            m_f4 = afTime + *Setting_Float_00403e20(&g_timerA);
             result = true;
         }
         return result;
@@ -1273,7 +1318,11 @@ void __cdecl FUN_005e58f0(int a, int b, int c, float* d);
 
 // Returns the object's value if it is ready, otherwise a value derived from its ref pointer, and passes it to FUN_005e58f0.
 // @fnv 0x0066dce0
-float __cdecl GetObjectValue(SpawnedObject* obj)
+// src: XBOX_RETAIL_PDB 0x0066dce0
+// pdb: ActionPoints::GetWeaponAttackActionPoints | ActionPoints.obj | retail, call graph, high
+// pdb params: apWeapon, abVATS, abSpecialAttack
+// pdb locals: eaction, famount
+float __cdecl ActionPoints_GetWeaponAttackActionPoints(SpawnedObject* obj)
 {
     int b = ActionPoints_GetAttackAction(obj ? obj->GetRefPtr() : 0);
     float f = 0.0f;
@@ -1299,6 +1348,7 @@ struct S_0066e2b0_Class : public FUN_0066df40_Class
 // Calls FUN_004019a0 on the object at offset 0x18; if it returns 0, calls FUN_0066e300(1) on this.
 // @fnv 0x0066e2b0
 // src: XBOX_PDB 0x0066e2b0
+// pdb: ActorCause::DecRefCount | ActorCause.obj | retail, upstream name already matches, high
 void __thiscall S_0066e2b0_Class::ActorCause_DecRefCount()
 {
     if (FUN_004019a0((void*)((char*)this + 0x18)) == 0)
@@ -1315,9 +1365,13 @@ extern G2 g_011d6124;
 
 // Scans the list at g_011d6124 for an item whose value equals the given non-negative value and returns it, or null if not found.
 // @fnv 0x0066e330
-DetectionViewData* __cdecl FindStateByValue(int value)
+// src: XBOX_DEBUG_PDB 0x0066e330
+// pdb: ActorCause::GetActorCauseByID | ActorCause.obj | debug, call graph, high
+// pdb params: aiActorCauseID
+// pdb locals: plist, pcause
+DetectionViewData* __cdecl ActorCause_GetActorCauseByID(int aiActorCauseID)
 {
-    if (value < 0)
+    if (aiActorCauseID < 0)
     {
         return 0;
     }
@@ -1325,7 +1379,7 @@ DetectionViewData* __cdecl FindStateByValue(int value)
     while (node)
     {
         DetectionViewData* state = node->GetItem();
-        if (state && state->value == (unsigned int)value)
+        if (state && state->value == (unsigned int)aiActorCauseID)
         {
             return state;
         }
@@ -1355,6 +1409,9 @@ struct DetClassCls
 };
 
 // @fnv 0x0066e390
+// pdb: ActorCause::SaveGame | ActorCause.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
+// pdb locals: plist, isaveGameBufferPos, isaveGameCount, pdetectionState
 void __thiscall DetClassCls::WriteToSaveBuffer(BGSSaveFormBuffer* buffer)
 {
     buffer->FUN_00865e50(&this->m_08, 0xc, 0);
@@ -1388,6 +1445,9 @@ class StatsGetterCls
 extern StatsGetterCls DAT_011d6458;
 
 // @fnv 0x00670700
+// pdb: ExperiencePoints::CheckDamageThreshold | ExperiencePoints.obj | debug, object-file run extension, low
+// pdb params: afPCDamage, afOriginalHealth
+// pdb locals: ipercentage
 bool __cdecl IsScaledValueAboveThreshold(float a, float b)
 {
     int scaled;
@@ -1416,6 +1476,7 @@ struct FUN_0067ca10_cls
 // Calls FUN_00407a90 on this+6, +8 and +0xa, then FUN_00401080 on this+0xc and this+0x10, each with a zero-initialised bool.
 // @fnv 0x0067ca10
 // src: XBOX_PDB 0x0067ca10
+// pdb: PACK_USE_WEAPON_DATA_PKW2::Endian | PackageDataUseWeapon.obj | debug, upstream name already matches, high
 void FUN_0067ca10_cls::PACK_USE_WEAPON_DATA_PKW2_Endian()
 {
     SpawnedFlag a = {};
@@ -1478,6 +1539,7 @@ class D9B0Container
 
 // Finds the entry for iKey in this container and erases it at the located position.
 // @fnv 0x0066d9b0
+// pdb: hkArray<hkVector4,hkContainerHeapAllocator>::hkArray<hkVector4,hkContainerHeapAllocator> | BSTreeNode.obj | debug, object-file run extension, low
 void D9B0Container::EraseByKey(int iKey)
 {
     EraseAt(D9B0Locate().Find(this, iKey));
@@ -1503,23 +1565,27 @@ extern E6D0Node g_kE6D0Items;
 
 // Writes the E6D0 header, saves each non-null item from the g_kE6D0Items list, and patches the item count at the recorded position.
 // @fnv 0x0066e6d0
-void SaveE6D0Items(BGSSaveFormBuffer* pkBuffer)
+// src: XBOX_RETAIL_PDB 0x0066e6d0
+// pdb: ActorCause::SaveActorCausesList | ActorCause.obj | retail, call graph, high
+// pdb params: apSaveGameBuffer
+// pdb locals: plist, isaveGameBufferPos, isaveGameCount, pactorCause
+void ActorCause_SaveActorCausesList(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    pkBuffer->SaveData(&g_iE6D0Header, 4, 0);
+    apSaveGameBuffer->SaveData(&g_iE6D0Header, 4, 0);
     int aiCountValue = 0;
-    unsigned int uiCountPos = pkBuffer->StartVariableSizedValue();
+    unsigned int uiCountPos = apSaveGameBuffer->StartVariableSizedValue();
     E6D0Node* pkNode = &g_kE6D0Items;
     while (pkNode)
     {
         E6D0Item* pkItem = *pkNode->GetItem();
         if (pkItem)
         {
-            pkItem->Save(pkBuffer);
+            pkItem->Save(apSaveGameBuffer);
             aiCountValue++;
         }
         pkNode = pkNode->GetNext();
     }
-    pkBuffer->SaveVariableSizedValue_00865ff0(aiCountValue, uiCountPos);
+    apSaveGameBuffer->SaveVariableSizedValue_00865ff0(aiCountValue, uiCountPos);
 }
 
 struct ComparisonEntry
@@ -1613,12 +1679,15 @@ struct E640Item
 };
 struct E640Cls : DetClassCls
 {
-    void __thiscall ActorCause_InitItem(BGSSaveFormBuffer* buffer);
+    void __thiscall ActorCause_InitLoadGame(BGSSaveFormBuffer* apLoadGameBuffer);
 };
 // Resolves m_00 to an Actor via dynamic_cast and calls ResolveActorFormId on each item found while walking the m_04 node list.
 // @fnv 0x0066e640
-// src: COMMUNITY 0x0066e640
-void E640Cls::ActorCause_InitItem(BGSSaveFormBuffer* buffer)
+// src: XBOX_RETAIL_PDB 0x0066e640
+// pdb: ActorCause::InitLoadGame | ActorCause.obj | retail, object-file run extension, high
+// pdb params: apLoadGameBuffer
+// pdb locals: plist, pdetectionState
+void E640Cls::ActorCause_InitLoadGame(BGSSaveFormBuffer* apLoadGameBuffer)
 {
     m_00 = m_00 ? dynamic_cast<Actor*>(TESForm_GetFormByNumericID(m_00)) : 0;
     SaveNodeCls* n = m_04;
@@ -1793,7 +1862,7 @@ struct TagD9E0
 {
 };
 
-void __cdecl ResizeAudioStream(void* pAlloc, void* pArray, int iElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 void __cdecl Runtime_AssignVectorValueToElements(ElemD9E0* pDest, int iCount, const ElemD9E0& kVal, TagD9E0 kTag);
 
 // local form of hkArrayBase: 0x0066d9e0 needs the /Od append/capacity split with the call at 0x0062a100; the shared form changes bytes.
@@ -1810,6 +1879,8 @@ class ArrD9E0
 
 // Appends kVal to the array, resizing the backing buffer via ResizeAudioStream when the size reaches capacity.
 // @fnv 0x0066d9e0
+// pdb: hkArray<hkVector4,hkContainerHeapAllocator>::pushBack | BSTreeNode.obj | debug, object-file run extension, low
+// pdb params: e
 void ArrD9E0::PushBack(void* pAlloc, const ElemD9E0& kVal)
 {
     if (m_iElementCount == GetSizeMasked())
@@ -1906,6 +1977,8 @@ class B6DF40Owner
 // Frees all effects in m_pkEffects, then registers this owner with g_011d6124 unless loading a save with m_iRefID of -1.
 // @fnv 0x0066df40
 // src: GUESS 0x0066df40 (confidence: medium)
+// pdb: ActorCause::~ActorCause | ActorCause.obj | debug, object-file run extension, low
+// pdb locals: bremove
 void B6DF40Owner::ClearEffectsAndRegisterOwner()
 {
     m_iArrayLength = 0;
@@ -1947,13 +2020,14 @@ struct S_0067caa0_Foo
     int unk20;
 
     void __thiscall FUN_0067ad20();
-    S_0067caa0_Foo* __thiscall InitializeFields_0067caa0();
+    S_0067caa0_Foo* __thiscall TESUseWeaponPackageData_ctor();
 };
 
 // Calls FUN_0067ad20, sets vtbl to DAT_01068a64, initializes the listed fields to constants (unk1c from DAT_010162c0), and returns this.
 // @fnv 0x0067caa0
-// src: GUESS 0x0067caa0 (confidence: low)
-S_0067caa0_Foo* __thiscall S_0067caa0_Foo::InitializeFields_0067caa0()
+// src: XBOX_DEBUG_PDB 0x0067caa0
+// pdb: TESUseWeaponPackageData::TESUseWeaponPackageData | PackageDataUseWeapon.obj | debug, call graph, high
+S_0067caa0_Foo* __thiscall S_0067caa0_Foo::TESUseWeaponPackageData_ctor()
 {
     FUN_0067ad20();
 

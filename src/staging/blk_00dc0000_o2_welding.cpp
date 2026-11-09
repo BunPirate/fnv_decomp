@@ -19,15 +19,15 @@ struct S_00ddecf0_Router
     }
 };
 S_00ddecf0_Router* hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* heap, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 extern const char DAT_010d8038[];
 
 struct S00ddf070_StringPtr
 {
     const char* m_pcText;
-    S00ddf070_StringPtr* InitializeTextHandle(const char* s) throw();
-    S00ddf070_StringPtr* FUN_00cb0bd0(const S00ddf070_StringPtr& other) throw();
+    S00ddf070_StringPtr* hkStringPtr_ctor(const char* string) throw();
+    S00ddf070_StringPtr* FUN_00cb0bd0(const S00ddf070_StringPtr& strRef) throw();
     void Object_UpdateFields_00cb0c00() throw();
     const char* cString() const
     {
@@ -48,7 +48,7 @@ struct S00ddf070_Node
     const char* m_name;
     int unk50;
     int unk54;
-    S00ddf070_Node* DoNothing_00e0d000(S00ddf070_Node* parent, const char* name, int type) throw();
+    S00ddf070_Node* hkMonitorStreamAnalyzer_Node_ctor(S00ddf070_Node* parent, const char* name, int type) throw();
 };
 struct S00ddf070_Heap
 {
@@ -61,11 +61,13 @@ int __cdecl hkString_strCmp(const char* a, const char* b) throw();
 // Finds or creates a child node by name, appends the name to the string pool if new, and accumulates value, count, and two counters on the node.
 // @fnv 0x00ddf070
 // src: HAVOK_LIB 0x00ddf070
-static __declspec(noinline) S00ddf070_Node* _newNode(S00ddf070_Node* parent, const char* name, int value, int count,
-                                                         hkArrayBase<S00ddf070_StringPtr>* strings)
+// pdb: _newNode | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: parent, name, size, allocSize, stringTable
+static __declspec(noinline) S00ddf070_Node* _newNode(S00ddf070_Node* parent, const char* name, int value, int allocSize,
+                                                         hkArrayBase<S00ddf070_StringPtr>* stringTable)
 {
-    if (count == 0)
-        count = value;
+    if (allocSize == 0)
+        allocSize = value;
     if (!name)
         name = DAT_010d8038;
 
@@ -80,27 +82,27 @@ static __declspec(noinline) S00ddf070_Node* _newNode(S00ddf070_Node* parent, con
     }
     if (!child)
     {
-        if (strings && name)
+        if (stringTable && name)
         {
             {
                 S00ddf070_StringPtr strName;
-                strName.InitializeTextHandle(name);
+                strName.hkStringPtr_ctor(name);
                 S00ddf070_Heap& heap = *(S00ddf070_Heap*)&hkMemoryRouter_getInstance()->heap();
-                if (strings->m_iElementCount == (strings->m_iCapacityState & 0x3fffffff))
-                    ResizeAudioStream(&heap, strings, 4);
-                S00ddf070_StringPtr* dest = strings->m_data + strings->m_iElementCount;
+                if (stringTable->m_iElementCount == (stringTable->m_iCapacityState & 0x3fffffff))
+                    ResizeAudioStream(&heap, stringTable, 4);
+                S00ddf070_StringPtr* dest = stringTable->m_data + stringTable->m_iElementCount;
                 if (dest)
                     dest->FUN_00cb0bd0(strName);
-                strings->m_iElementCount++;
+                stringTable->m_iElementCount++;
                 strName.Object_UpdateFields_00cb0c00();
             }
-            name = strings->back().cString();
+            name = stringTable->back().cString();
         }
         void* mem = ((S00ddf070_Heap*)&hkMemoryRouter_getInstance()->heap())->AllocateMemoryBlock(0x58);
-        child = mem ? ((S00ddf070_Node*)mem)->DoNothing_00e0d000(parent, name, 1) : 0;
+        child = mem ? ((S00ddf070_Node*)mem)->hkMonitorStreamAnalyzer_Node_ctor(parent, name, 1) : 0;
     }
     child->m_uiFilterValue[0] += (float)value;
-    child->m_uiFilterValue[1] += (float)count;
+    child->m_uiFilterValue[1] += (float)allocSize;
     child->m_uiItemCount[0] += 1;
     child->m_uiItemCount[1] += 1;
     return child;

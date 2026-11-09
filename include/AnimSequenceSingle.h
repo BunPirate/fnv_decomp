@@ -5,6 +5,7 @@
 class BSAnimGroupSequence;
 class TESAnimGroup;
 
+// pdb: class AnimSequenceSingle, size 0x8, bases: AnimSequenceBase, 1 members
 class AnimSequenceSingle : public AnimSequenceBase
 {
 public:
@@ -19,5 +20,5 @@ public:
     bool RemoveSequence(BSAnimGroupSequence* apSeq, bool abReleaseModelLoader);
     void __local_vftable_ctor_closure();
 
-    BSAnimGroupSequence* pForwardSequence;
+    BSAnimGroupSequence* pSeq;
 };

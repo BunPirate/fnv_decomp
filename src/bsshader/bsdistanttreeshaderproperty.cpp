@@ -11,6 +11,9 @@ struct FUN_00462d80_shell
 
 // Reads uiBytes into pvBuffer via InvokeAndAccumulate and returns the number of bytes read.
 // @fnv 0x00462d80
+// pdb: NiBinaryStream::Read | LipSynchAnim.obj | retail, call graph, high
+// pdb params: pvBuffer, uiBytes
+// pdb locals: uiBytesRead, uiSize
 unsigned int __thiscall FUN_00462d80_shell::ReadBytes(void* pvBuffer, unsigned int uiBytes)
 {
     unsigned int uiSize = 1;

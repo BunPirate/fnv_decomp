@@ -11,7 +11,10 @@
 
 // Computes the elapsed time since the last call and, when iFlags bit 0 is clear, adds it to m_uiValueAt00, then stores the current tick count in m_uiValueAt04.
 // @fnv 0x00aea100
-void BSAudioSyncTimer::UpdateAccumulatedTime()
+// src: XBOX_RETAIL_PDB 0x00aea100
+// pdb: BSAudioSynchTimer::Update | BSAudioSynchTimer.obj | retail, call graph, high
+// pdb locals: idelta, icurrent
+void BSAudioSyncTimer::BSAudioSynchTimer_Update()
 {
     unsigned int now = GetTickCount();
     unsigned int delta = now - m_uiValueAt04;

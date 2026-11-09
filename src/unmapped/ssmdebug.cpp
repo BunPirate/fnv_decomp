@@ -17,7 +17,7 @@ extern GcRefList g_kPendingRefs_011de8bc;
 
 struct GcManager
 {
-    void ModelLoader_CancelReference(void* pkRef);
+    void ModelLoader_CancelReference(void* apRef);
     bool FUN_00868250();
     void ModelLoader_UnlockModelMap();
 };
@@ -36,7 +36,7 @@ struct GcBaseForm
 };
 struct GcParentCell
 {
-    void FUN_006fcf30(void* pkRef);
+    void ReleaseTree(void* pkRef);
 };
 struct GcExtra
 {
@@ -333,52 +333,55 @@ extern const char g_szGcEnd[] = "";
 
 // @fnv 0x00867f90
 // src: COMMUNITY 0x00867f90
-void __cdecl GarbageCollector_Add_TESObjectREFR(GcRef* pkRef)
+// pdb: GarbageCollector::Add | GarbageCollector.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: tempAutoEvent, i, pactor, pworld
+void __cdecl GarbageCollector_Add_TESObjectREFR(GcRef* apRef)
 {
     GcScopedLock kLock(1, s_szLockName);
-    if (TESForm_GetFormByNumericID(pkRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0()) != pkRef)
+    if (TESForm_GetFormByNumericID(apRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0()) != apRef)
     {
-        delete pkRef;
+        delete apRef;
     }
     else
     {
-        pkRef->Set3D(1);
-        pkRef->TESObjectREFR_Release3DRelatedData();
-        if (pkRef->IsActor())
+        apRef->Set3D(1);
+        apRef->TESObjectREFR_Release3DRelatedData();
+        if (apRef->IsActor())
         {
-            GcRef* pkActor = pkRef;
+            GcRef* pkActor = apRef;
             pkActor->StopCombat(0);
         }
-        if (pkRef->IsDead())
+        if (apRef->IsDead())
         {
-            GcRef* pkDead = pkRef;
+            GcRef* pkDead = apRef;
             pkDead->Projectile_SetDesiredTarget(0);
             pkDead->Projectile_SetFlag(0x400, 0);
         }
-        g_pkGcManager_011c3b3c->ModelLoader_CancelReference(pkRef);
-        pkRef->TESForm_RemoveFromDataStructures();
-        if (pkRef->BGSSaveFormBuffer_GetForm()->TESForm_GetHasSpokenFlag())
+        g_pkGcManager_011c3b3c->ModelLoader_CancelReference(apRef);
+        apRef->TESForm_RemoveFromDataStructures();
+        if (apRef->BGSSaveFormBuffer_GetForm()->TESForm_GetHasSpokenFlag())
         {
-            GcExtra* pkExtra = pkRef->TESObjectREFR_GetWorldSpace();
+            GcExtra* pkExtra = apRef->TESObjectREFR_GetWorldSpace();
             if (pkExtra && pkExtra->FUN_00586170())
-                pkExtra->FUN_00586170()->FUN_006fcf30(pkRef);
+                pkExtra->FUN_00586170()->ReleaseTree(apRef);
         }
-        pkRef->AssignEditorID(0);
+        apRef->AssignEditorID(0);
         if (!t_bInLoad || (g_pkLoader_011ddf38 && g_pkLoader_011ddf38->BGSSaveLoadGame_GetSaveGameLoading()))
         {
             if (g_pkGcManager_011c3b3c->FUN_00868250())
             {
-                delete pkRef;
+                delete apRef;
                 g_pkGcManager_011c3b3c->ModelLoader_UnlockModelMap();
             }
             else
             {
-                g_kPendingRefs_011de8bc.FUN_008693c0(&pkRef);
+                g_kPendingRefs_011de8bc.FUN_008693c0(&apRef);
             }
         }
         else
         {
-            g_kDeferredRefs_011de874.FUN_008693c0(&pkRef);
+            g_kDeferredRefs_011de874.FUN_008693c0(&apRef);
         }
     }
 }

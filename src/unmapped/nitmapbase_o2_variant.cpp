@@ -10,14 +10,16 @@
 struct NiMapBase
 {
     void __thiscall BSShaderLightingProperty_SaveBinary(NiStream*);
-    void __thiscall TallGrassShaderProperty_SaveBinary(NiStream* stream);
+    void __thiscall TallGrassShaderProperty_SaveBinary(NiStream* kStream);
 };
 // @fnv 0x00b60210
 // src: COMMUNITY 0x00b60210
-void __thiscall NiMapBase::TallGrassShaderProperty_SaveBinary(NiStream* stream)
+// pdb: TallGrassShaderProperty::SaveBinary | TallGrassShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void __thiscall NiMapBase::TallGrassShaderProperty_SaveBinary(NiStream* kStream)
 {
-    BSShaderLightingProperty_SaveBinary(stream);
-    stream->SaveCString(*(const char**)((char*)this + 0x88));
+    BSShaderLightingProperty_SaveBinary(kStream);
+    kStream->SaveCString(*(const char**)((char*)this + 0x88));
 }
 
 
@@ -67,14 +69,16 @@ struct TexMap : TexBase
     NiTexture* m_texture;
     const char* m_path;
 
-    void TallGrassShaderProperty_PostLinkObject(NiStream* stream);
+    void TallGrassShaderProperty_PostLinkObject(NiStream* kStream);
 };
 
 // @fnv 0x00b60240
 // src: XBOX_PDB 0x00b60240
-void TexMap::TallGrassShaderProperty_PostLinkObject(NiStream* stream)
+// pdb: TallGrassShaderProperty::PostLinkObject | TallGrassShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void TexMap::TallGrassShaderProperty_PostLinkObject(NiStream* kStream)
 {
-    BSShaderProperty_PostLinkObject(stream);
+    BSShaderProperty_PostLinkObject(kStream);
     if (m_path)
         BSShaderManager::GetTexture(m_path, true, m_texture, true, false);
 }

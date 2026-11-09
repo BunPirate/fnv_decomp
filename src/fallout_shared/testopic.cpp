@@ -16,12 +16,13 @@
 #include "game_constants.h"
 // INFO_LINK_ELEMENT and DIALOGUE_TYPE as in include/INFO_LINK_ELEMENT.h and include/layout_support.h (no include/ home yet).
 #include "../../include/DIALOGUE_TYPE.h"
+// pdb: structure INFO_LINK_ELEMENT, size 0xc, 3 members
 class INFO_LINK_ELEMENT
 {
   public:
     unsigned int nID;     // +0x0
     TESTopicInfo* pInfo;  // +0x4
-    int m_iIndex;         // +0x8
+    int nDesiredIndex;         // +0x8
 };
 #include "../../include/AutoMemContext.h"
 #include "../../include/BSTempEffectDebris.h"
@@ -34,16 +35,22 @@ extern PlayerCharacter* g_thePlayer;
 extern unsigned int DialogueRandom();
 
 // @fnv 0x0061a790
-TESTopicInfo* TESTopic::FindMatchingTopicInfo(bool& deferred, TESObjectREFR* speaker, TESObjectREFR* listener,
-                                              bool filter, TESTopic* previousTopic,
-                                              BSSimpleList<DialogueItem*>* history)
+// src: XBOX_DEBUG_PDB 0x0061a790
+// pdb: TESTopic::GetMatchingInfo | TESTopic.obj | debug, call graph, high
+// pdb params: abDispositionFailure, apSpeaker, apTarget, abIsConversation, apPreviousTopic, apConversationList
+TESTopicInfo* TESTopic::GetMatchingInfo(bool& abDispositionFailure, TESObjectREFR* apSpeaker, TESObjectREFR* apTarget,
+                                              bool abIsConversation, TESTopic* apPreviousTopic,
+                                              BSSimpleList<DialogueItem*>* apConversationList)
 {
-    return FindMatchingTopicInfo(this, deferred, speaker, listener, filter, previousTopic, history);
+    return FindMatchingTopicInfo(this, abDispositionFailure, apSpeaker, apTarget, abIsConversation, apPreviousTopic, apConversationList);
 }
 
 // Picks a TESTopicInfo from the topic's quest info lists, honoring conditions, history, filters and random selection, and reports deferred info via deferred.
 // Scans quest topic info for dialogue candidates, applies link and history checks, and may return a deferred or randomly selected candidate.
 // @fnv 0x0061a7d0
+// pdb: TESTopic::GetMatchingInfo | TESTopic.obj | debug, object-file run extension, low
+// pdb params: apTopic, abDispositionFailure, apSpeaker, apTarget, abIsConversation, apPreviousTopic, apConversationList
+// pdb locals: pInfoRefusal, pUsedInfo, matchinginfolist, iinfocount, pchecktopic, pList, bFinished, pQuestInfo, pquest, maxLinkSize, pinfoarray, info, maxinfoSize, BuiltArray, iter, infoiter, infolinkiter, insertIdx, bNotSaidOnce, bDispositionInfoFailure, pmob, bOK, pconvdata, pLinkFromList ...
 TESTopicInfo* TESTopic::FindMatchingTopicInfo(const TESTopic* originalTopic, bool& deferred, TESObjectREFR* speaker,
                                               TESObjectREFR* listener, bool filter, TESTopic* previousTopic,
                                               BSSimpleList<DialogueItem*>* history)
@@ -77,7 +84,7 @@ TESTopicInfo* TESTopic::FindMatchingTopicInfo(const TESTopic* originalTopic, boo
             {
                 if (questInfo->m_kInfoLinks.GetAt(linkIndex).pInfo)
                 {
-                    int desiredIndex = questInfo->m_kInfoLinks.GetAt(linkIndex).m_iIndex;
+                    int desiredIndex = questInfo->m_kInfoLinks.GetAt(linkIndex).nDesiredIndex;
                     if (desiredIndex < 0 || static_cast<unsigned int>(desiredIndex) > sortedArray.GetSize())
                         desiredIndex = sortedArray.GetSize();
                     sortedArray.InsertInfoAt(desiredIndex, questInfo->m_kInfoLinks.GetAt(linkIndex).pInfo);
@@ -224,6 +231,8 @@ struct FUN_00616f40_shell
 };
 // If obj is non-null and its next object's form type is 0x16, 0x2a or 0x2b, forwards that next object to BuildVoiceFilePath; otherwise returns false.
 // @fnv 0x00616f40
+// pdb: TESResponse::GetAudioFullPath | TESResponse.obj | debug, object-file gap fill, medium
+// pdb params: apSpeaker, apQuest, apOwnerTopic, apOwnerInfo, aFullPath
 bool FUN_00616f40_shell::DispatchOnNextFormType(TESObject* obj, int a, int b, int c, int d)
 {
     if (obj)
@@ -241,14 +250,16 @@ bool FUN_00616f40_shell::DispatchOnNextFormType(TESObject* obj, int a, int b, in
 
 struct FUN_00619010_shell : public TESTopic
 {
-    void TESTopic_SetDumbDialogue(char*);
+    void TESTopic_SetDummyPrompt(char*);
 };
 
 // @fnv 0x00619010
-// src: COMMUNITY 0x00619010
-void FUN_00619010_shell::TESTopic_SetDumbDialogue(char* apPrompt)
+// src: XBOX_DEBUG_PDB 0x00619010
+// pdb: TESTopic::SetDummyPrompt | TESTopic.obj | debug, call graph, high
+// pdb params: apPrompt
+void FUN_00619010_shell::TESTopic_SetDummyPrompt(char* apPrompt)
 {
-    m_kDummyPrompt.Set(apPrompt, 0);
+    cDummyPrompt.Set(apPrompt, 0);
 }
 
 // @fnv 0x00619410
@@ -276,6 +287,9 @@ struct QuestInfoStub : public QuestDialogueInfo
 
 // Searches the quest info list for an entry matching apQuest, creating and appending a new entry if none is found.
 // @fnv 0x006195d0
+// pdb: TESTopic::InsertQuest | TESTopic.obj | retail, call graph (shared callers), high
+// pdb params: apQuest, abReSort
+// pdb locals: pQuestInfo, pList
 QuestDialogueInfo* FUN_006195d0_shell::GetOrCreateQuestInfo(TESQuest* apQuest, bool abReSort)
 {
     if (!apQuest)
@@ -349,6 +363,9 @@ extern BSSimpleList<QuestDialogueInfo*>* __fastcall _ref_00726070(const BSSimple
 
 // Searches the topic's quest info list for apInfo and returns the owning quest, recursing into the remapped rumor topic when applicable.
 // @fnv 0x00619d00
+// pdb: TESTopic::GetOwnerQuest | TESTopic.obj | debug, call graph, medium
+// pdb params: apInfo
+// pdb locals: pList, maxSize, pQuestInfo, i, pInfo
 TESQuest* FUN_00619d00_shell::FindQuestForTopicInfo(TESTopicInfo* apInfo)
 {
     if (!apInfo)
@@ -406,6 +423,9 @@ struct FUN_00619e10_impl : public TESTopic
 
 // Scans the quest info list, searching each info array forward or backward for a TESTopicInfo whose FormID equals aiInfoID, and returns it or null.
 // @fnv 0x00619e10
+// pdb: TESTopic::GetInfoByID | TESTopic.obj | debug, call graph (shared callers), medium
+// pdb params: aiInfoID, abReverse
+// pdb locals: pList, maxSize, pQuestInfo, i, pInfo
 TESTopicInfo* FUN_00619e10_impl::FindTopicInfoByFormID(unsigned int aiInfoID, bool abReverse)
 {
     BSSimpleList<QuestDialogueInfo*>* pList = static_cast<const TESTopic*>(this)->GetQuestInfoList();
@@ -447,6 +467,8 @@ TESTopicInfo* FUN_00619e10_impl::FindTopicInfoByFormID(unsigned int aiInfoID, bo
 
 // Returns the topic info at aiInfoIndex from apQuestInfo's info array if the index is in range, otherwise returns 0.
 // @fnv 0x00619f20
+// pdb: TESTopic::GetInfoByIndex | TESTopic.obj | debug, call graph (shared callers), high
+// pdb params: apQuestInfo, aiInfoIndex
 TESTopicInfo* __cdecl GetTopicInfoByIndex(QuestDialogueInfo* apQuestInfo, unsigned int aiInfoIndex)
 {
     if (!apQuestInfo)
@@ -465,6 +487,9 @@ struct TopicInfoStandin
 // For each entry in apInfoArray up to its form ID, calls FUN_0061f340 on the entry with its index as a 16-bit value.
 // @fnv 0x00619fe0
 // src: COMMUNITY 0x00619fe0
+// pdb: TESTopic::ResetInfoIndexes | TESTopic.obj | debug, call graph, high
+// pdb params: apInfoArray
+// pdb locals: maxSize, i, pInfo
 void TopicInfoArray_SetTopicIndices(TopicInfoArray* apInfoArray)
 {
     if (apInfoArray)
@@ -498,7 +523,7 @@ struct TopicDefaultEntry
 
 struct DataHandlerEx
 {
-    void AddTopic(TESTopic* topic);
+    void AddTopic(TESTopic* pNewTopic);
 };
 
 extern int DAT_0119a41c[];
@@ -508,7 +533,10 @@ extern TESGlobalMap* DAT_011c54c8;
 const char* __cdecl PrepareScriptMessage(const char*, bool);
 
 // @fnv 0x0061a040
-void __cdecl CreateDefaultTopics()
+// src: XBOX_DEBUG_PDB 0x0061a040
+// pdb: TESTopic::AddDefaultTopics | TESTopic.obj | debug, call graph, high
+// pdb locals: tempMemContext, topic, n
+void __cdecl TESTopic_AddDefaultTopics()
 {
     AutoMemContext memContext((MEM_CONTEXT)0x35, true,
                               "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TESTopic.cpp", 0x1573);
@@ -567,6 +595,9 @@ struct TopicHelper
 
 // Walks the data handler's topic list and returns the first TESTopic whose lookup of pInfo's form ID yields pInfo, else null.
 // @fnv 0x0061a310
+// pdb: TESTopic::GetOwnerTopic | TESTopic.obj | debug, call graph, medium
+// pdb params: pInfo
+// pdb locals: pList, pTopic
 TESTopic* __cdecl FindTopicByInfo(TESTopicInfo* pTopicInfo)
 {
     TESTopicInfoData* pList = FUN_004612e0(g_dataHandler);
@@ -593,7 +624,11 @@ struct SoundListView
 };
 
 // @fnv 0x0061a380
-void __cdecl AddTopicToList(TESTopic* apTopic, BSSimpleList<TESTopic*>* apTopicList, bool abUsePriority)
+// src: XBOX_DEBUG_PDB 0x0061a380
+// pdb: TESTopic::AddTopicToSortedList | TESTopic.obj | debug, call graph (shared callers), high
+// pdb params: apTopic, apTopicList, abUsePriority
+// pdb locals: plist, ptopic
+void __cdecl TESTopic_AddTopicToSortedList(TESTopic* apTopic, BSSimpleList<TESTopic*>* apTopicList, bool abUsePriority)
 {
     if (apTopic && apTopicList)
     {
@@ -633,6 +668,10 @@ extern double DAT_01030f28;
 // Compares two TESTopic objects by priority (when abUsePriority) or by name, returning whether the first sorts before the second.
 // @fnv 0x0061a450
 // src: COMMUNITY 0x0061a450
+// pdb: TESTopic::AddTopicToSortedList | TESTopic.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESTopic::CompareTopics
+// pdb params: apTopic, apTopicList, abUsePriority
+// pdb locals: plist, ptopic
 bool __cdecl TESTopic_CompareTopics(TESTopic* apTopic1, TESTopic* apTopic2, bool abUsePriority)
 {
     if (apTopic1 != 0 && apTopic2 != 0)
@@ -665,13 +704,15 @@ bool __cdecl TESTopic_CompareTopics(TESTopic* apTopic1, TESTopic* apTopic2, bool
 
 struct FUN_0061a760_shell : public TESTopic
 {
-    TESTopicInfo* GetTopicInfo(bool& deferred, TESObjectREFR* speaker, TESObjectREFR* listener);
+    TESTopicInfo* GetTopicInfo(bool& abDispositionFailure, TESObjectREFR* apSpeaker, TESObjectREFR* apTarget);
 };
 // Returns the topic info for the given speaker and listener by delegating to the topic info lookup with deferred output and no extra filters.
 // @fnv 0x0061a760
-TESTopicInfo* FUN_0061a760_shell::GetTopicInfo(bool& deferred, TESObjectREFR* speaker, TESObjectREFR* listener)
+// pdb: TESTopic::GetMatchingInfo | TESTopic.obj | debug, call graph (shared callers), high
+// pdb params: abDispositionFailure, apSpeaker, apTarget
+TESTopicInfo* FUN_0061a760_shell::GetTopicInfo(bool& abDispositionFailure, TESObjectREFR* apSpeaker, TESObjectREFR* apTarget)
 {
-    return FindMatchingTopicInfo(deferred, speaker, listener, false, 0, 0);
+    return GetMatchingInfo(abDispositionFailure, apSpeaker, apTarget, false, 0, 0);
 }
 
 // @fnv 0x0061aed0
@@ -683,6 +724,8 @@ bool __fastcall IsFlag20Set(char* pThis)
 __int64 __cdecl __time64(__int64*);
 
 // @fnv 0x0061b9d0
+// pdb: time | PlayerCharacter.obj | debug, call graph, medium
+// pdb params: _Time
 __int64 __cdecl GetTime64(__int64* pTime)
 {
     return __time64(pTime);
@@ -736,16 +779,17 @@ extern int DAT_01011584;
 
 struct FUN_00619010_helper
 {
-    void TESTopic_SetDumbDialogue(int* pData);
+    void TESTopic_SetDummyPrompt(int* pData);
 };
 
 // Clears the form's data via TESForm::ClearData, then passes DAT_01011584 to FUN_00619010 on this object.
 // @fnv 0x0061bcd0
 // src: COMMUNITY 0x0061bcd0
+// pdb: TESTopic::InitializeData | TESTopic.obj | retail, upstream name already matches, high
 void FUN_0061bcd0_shell::TESTopic_InitializeData()
 {
     TESForm::ClearData();
-    reinterpret_cast<FUN_00619010_helper*>(this)->TESTopic_SetDumbDialogue(&DAT_01011584);
+    reinterpret_cast<FUN_00619010_helper*>(this)->TESTopic_SetDummyPrompt(&DAT_01011584);
 }
 
 extern int DAT_0104d458;
@@ -758,6 +802,7 @@ struct Dummy_0061bf20
 
 // Sets the object's vtable to DAT_0104d458, calls FUN_006b3f40(0, 0), and returns the object.
 // @fnv 0x0061bf20
+// pdb: BSSimpleArray<INFO_LINK_ELEMENT,1024>::BSSimpleArray<INFO_LINK_ELEMENT,1024> | TESTopic.obj | debug, call graph, medium
 Dummy_0061bf20* __fastcall ConstructDummy(Dummy_0061bf20* apObject)
 {
     apObject->vtable = &DAT_0104d458;
@@ -776,6 +821,9 @@ struct NavShell2 : public S2f850
 // Calls AppendValue with apNavMesh and returns its result.
 // @fnv 0x00469500
 // src: COMMUNITY 0x00469500
+// pdb: NavMeshArray::AddNavMesh | TESDataHandler.obj | retail, upstream name already matches, high
+// pdb params: apNavMesh
+// pdb locals: ireturn
 unsigned int NavShell2::NavMeshArray_AddNavMesh(NavMeshPtr apNavMesh)
 {
     unsigned int ireturn = AppendValue(apNavMesh);
@@ -817,6 +865,8 @@ struct FUN_00618580 : public TESForm, public TESFullName
     ~FUN_00618580();
 };
 // @fnv 0x00618580
+// pdb: TESTopic::TESTopic | TESTopic.obj | debug, call graph, high
+// pdb params: type
 FUN_00618580::FUN_00618580(unsigned char aType)
 {
     memset(&m_Data, 0, sizeof(m_Data));
@@ -843,6 +893,7 @@ struct TopicSaver
     bool SaveTopicInfo(FileStub* apFile);
 };
 // @fnv 0x006189c0
+// pdb: TESTopic::Save | TESTopic.obj | retail, vtable slot, high
 bool TopicSaver::SaveTopicInfo(FileStub* apFile)
 {
     TESTopicInfo* info;
@@ -903,6 +954,7 @@ struct FUN_0061af10_shell : TESFaction_RankDataView
 };
 
 // @fnv 0x0061af10
+// pdb: TESQuest::GetAllowRepeats | TESTopic.obj | debug, object-file run extension, low
 bool FUN_0061af10_shell::HasFlag4()
 {
     return (*GetRankDataList() & 4) != 0;
@@ -911,6 +963,7 @@ bool FUN_0061af10_shell::HasFlag4()
 
 
 unsigned int __cdecl BSStringLength(const char*);
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, const char*);
@@ -921,6 +974,9 @@ struct TESTopic_shell
     bool SetStringIfDifferent(const char*);
 };
 // @fnv 0x006184f0
+// pdb: TESTopic::SetFormEditorID | TESTopic.obj | retail, vtable slot, medium
+// pdb note: debug build links it to AlphabeticalCompare
+// pdb params: apEditorID
 bool TESTopic_shell::SetStringIfDifferent(const char* apString)
 {
     char* p2;
@@ -941,6 +997,7 @@ struct Holder6186a0
 void _Deallocate(void*);
 // Calls FUN_006186d0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006186a0
+// pdb: TESTopic::`scalar deleting destructor' | TESTopic.obj | retail, vtable slot, high
 void* Holder6186a0::DestroyIfFlagged(unsigned int flags)
 {
     FUN_006186d0();
@@ -966,6 +1023,7 @@ struct FUN_00618960_obj
     void InitLoadingTopic();
 };
 // @fnv 0x00618960
+// pdb: TESTopic::Save | TESTopic.obj | retail, vtable slot, high
 void FUN_00618960_obj::InitLoadingTopic()
 {
     ((FUN_004855a0*)this)->M();
@@ -1023,11 +1081,14 @@ struct FUN_0061a720_shell : FUN_0061a760_shell
 // Calls GetTopicInfo with speaker and listener; returns its TESTopicInfo unless the deferred flag was set, in which case returns null.
 // @fnv 0x0061a720
 // src: XBOX_PDB 0x0061a720
-TESTopicInfo* FUN_0061a720_shell::TESTopic_GetMatchingInfo(MobileObject* speaker, PlayerCharacter* listener)
+// pdb: TESTopic::GetMatchingInfo | TESTopic.obj | retail, call graph (shared callers), high
+// pdb params: apSpeaker, apTarget
+// pdb locals: info, bInfoRefusal
+TESTopicInfo* FUN_0061a720_shell::TESTopic_GetMatchingInfo(MobileObject* apSpeaker, PlayerCharacter* apTarget)
 {
     bool deferred = false;
     TESTopicInfo* info;
-    info = GetTopicInfo(deferred, speaker, listener);
+    info = GetTopicInfo(deferred, apSpeaker, apTarget);
     if (deferred)
         return 0;
     else
@@ -1054,11 +1115,14 @@ struct TopicInfo_Ext
 bool __fastcall TESTopicInfo_IsRunImmediately(char const*);
 // @fnv 0x0061b320
 // src: XBOX_PDB 0x0061b320
+// pdb: TESTopic::CreateDialogueItem | TESTopic.obj | retail, upstream name already matches, high
+// pdb params: apSpeaker, apTarget, apPreviousTopic, apConversationList, abRunImmediate
+// pdb locals: bIgnoreMe, info, pConvItem
 DialogueItem* FUN_0061b320_shell::TESTopic_CreateDialogueItem(TESObjectREFR* apSpeaker, TESObjectREFR* apTarget,
                                                TESTopic* apPreviousTopic, void* apConversationList, bool abRunImmediate)
 {
     bool bIgnoreMe;
-    TESTopicInfo* info = FindMatchingTopicInfo(bIgnoreMe, apSpeaker, apTarget, true, apPreviousTopic,
+    TESTopicInfo* info = GetMatchingInfo(bIgnoreMe, apSpeaker, apTarget, true, apPreviousTopic,
                                                (BSSimpleList<DialogueItem*>*)apConversationList);
     if (info)
     {
@@ -1129,7 +1193,7 @@ struct FUN_006195d0_shell : public TESTopic
 };
 struct FUN_00619010_shell : public TESTopic
 {
-    void TESTopic_SetDumbDialogue(char*);
+    void TESTopic_SetDummyPrompt(char*);
 };
 
 extern TESTopic* g_loadingTopic;
@@ -1141,6 +1205,9 @@ struct FUN_00618aa0_t : public TESTopic
 
 // @fnv 0x00618aa0
 // src: COMMUNITY 0x00618aa0
+// pdb: TESTopic::Load | TESTopic.obj | retail, upstream name already matches, high
+// pdb params: pFile
+// pdb locals: chunkid, pLastQuestInfo, pQIList, formid, pQuestInfo, pMessage, questID, iOldMax, infoID, infolink, nDesiredIndex, IdxJustAdded, size, iter, szBuf, i, j
 bool FUN_00618aa0_t::TESTopic_Load(::TESFile* pFile)
 {
     unsigned char formid = (unsigned char)((TESFileRef*)pFile)->_ref_00472660();
@@ -1201,7 +1268,7 @@ bool FUN_00618aa0_t::TESTopic_Load(::TESFile* pFile)
                 INFO_LINK_ELEMENT infolink;
                 infolink.pInfo = 0;
                 infolink.nID = infoID;
-                infolink.m_iIndex = -1;
+                infolink.nDesiredIndex = -1;
                 ((BSSimpleArray<NavMeshTriangleEdgeReference, 1024>*)((char*)pLastQuestInfo + 0x1c))
                     ->Add(*(NavMeshTriangleEdgeReference*)&infolink);
             }
@@ -1232,19 +1299,19 @@ bool FUN_00618aa0_t::TESTopic_Load(::TESFile* pFile)
             break;
         }
         case 0x4d414e50:
-            ((TESFileRef*)pFile)->_ref_004727f0(&m_fTopicParamB);
+            ((TESFileRef*)pFile)->_ref_004727f0(&m_fPriority);
             break;
         case 0x4d554454: {
             char szBuffer[256];
             ((TESFileRef*)pFile)->_ref_00472890(szBuffer, 0x100);
-            ((FUN_00619010_shell*)this)->TESTopic_SetDumbDialogue(szBuffer);
+            ((FUN_00619010_shell*)this)->TESTopic_SetDummyPrompt(szBuffer);
             break;
         }
         case 0x41544144:
             ((TESFileRef*)pFile)->_ref_00472890(&m_Data, 2);
             break;
         case 0x58444958:
-            ((TESFileRef*)pFile)->_ref_004727f0(&m_iTopicFlags);
+            ((TESFileRef*)pFile)->_ref_004727f0(&m_iJournalIndex);
             break;
         }
         if (!((TESFileRef*)pFile)->_ref_004726f0())
@@ -1283,6 +1350,9 @@ struct FUN_00619430_shell : TESTopic
 };
 // @fnv 0x00619430
 // src: XBOX_PDB 0x00619430
+// pdb: TESTopic::SavesBefore | TESTopic.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: bretval, pinfo, ptopic, pothertopic
 bool FUN_00619430_shell::TESTopic_SavesBefore(TESForm* apForm)
 {
     bool bResult = false;
@@ -1357,11 +1427,14 @@ bool __fastcall _ref_008256d0(void*);
 struct TopicSort_0061a5a0
 {
     static bool __cdecl TESTopic_CompareTopics(TESTopic*, TESTopic*, bool);
-    static void __cdecl AddTopicToList(TESTopic*, BSSimpleList<TESTopic*>*, bool);
+    static void __cdecl TESTopic_AddTopicToSortedList(TESTopic*, BSSimpleList<TESTopic*>*, bool);
 };
 
 // Sorts the topic list by priority, moving out-of-order topics into a temporary list and reinserting them via AddTopicToList.
 // @fnv 0x0061a5a0
+// pdb: TESTopic::SortTopics | TESTopic.obj | retail, call graph, high
+// pdb params: abSortByPriority, apTopicList
+// pdb locals: plist, sortlist, pBaseList, plastlist, badvanced, ptopic2, ptopic1, ptopic
 void SortTopicList(bool abSortByPriority, BSSimpleList<TESTopic*>* apTopicList)
 {
     BSSimpleList<TESTopic*>* pBaseList = apTopicList;
@@ -1404,7 +1477,7 @@ void SortTopicList(bool abSortByPriority, BSSimpleList<TESTopic*>* apTopicList)
     {
         TESTopic* pMenuTopicEntry = (*(TESTopic**)((TESTopicInfoData*)(&sortlist))->GetLinkFromList());
         sortlist.FUN_0063f7b0();
-        TopicSort_0061a5a0::AddTopicToList(pMenuTopicEntry, pBaseList, abSortByPriority);
+        TopicSort_0061a5a0::TESTopic_AddTopicToSortedList(pMenuTopicEntry, pBaseList, abSortByPriority);
     }
 }
 }  // namespace fnv_0061a5a0
@@ -1439,6 +1512,9 @@ struct FUN_00619f70_shell : public TESTopic
 };
 
 // @fnv 0x00619f70
+// pdb: TESTopic::GetInfoArray | TESTopic.obj | debug, object-file run extension, low
+// pdb params: apQuest
+// pdb locals: pList, pQuestInfo
 TopicInfoArray* FUN_00619f70_shell::FindQuestInfoArray(TESTopicInfo* apInfo)
 {
     BSSimpleList<QuestDialogueInfo*>* list = static_cast<const TESTopic*>(this)->GetQuestInfoList();
@@ -1480,14 +1556,16 @@ struct FUN_006189a0_cls
     virtual void v08();
     virtual void v09();
     virtual void Forward(int a);
-    void TESTopic_SaveEdit(int a);
+    void TESTopic_SaveEdit(int apFile);
 };
 
 // @fnv 0x006189a0
 // src: XBOX_PDB 0x006189a0
-void FUN_006189a0_cls::TESTopic_SaveEdit(int a)
+// pdb: TESTopic::SaveEdit | TESTopic.obj | debug, upstream name already matches, high
+// pdb params: apFile
+void FUN_006189a0_cls::TESTopic_SaveEdit(int apFile)
 {
-    Forward(a);
+    Forward(apFile);
 }
 
 class FUN_00935a40_cls
@@ -1510,6 +1588,9 @@ class FUN_00935a40_cls
 
 // Walks the entry list reached through FUN_00574900/FUN_005e3fa0/FUN_005d43c0/FUN_0042efe0 and returns true if any entry's unk00 equals key.
 // @fnv 0x00935a40
+// pdb: MobileObject::HasSaidTopicInfo | MobileObject.obj | debug, object-file run extension, low
+// pdb params: apTopicInfo
+// pdb locals: pextra, pList, psayonceinfo
 bool FUN_00935a40_cls::HasEntryWithKey(int key)
 {
     FUN_00935a40_cls* res = 0;
@@ -1557,7 +1638,7 @@ struct TopicInfoStandin : public TESTopicInfo
 
 struct PlayerCharacter_Helper : public PlayerCharacter
 {
-    void NotifyTopic(TESTopic* topic, int arg2, int arg3);
+    void NotifyTopic(TESTopic* apNewTopic, int abResort, int abDisplayMessage);
 };
 
 struct TESTopic_Shell : public TESTopic
@@ -1568,6 +1649,8 @@ struct TESTopic_Shell : public TESTopic
 
 // Initializes the topic's quest info entries, resolves their quests and infos, compacts the info arrays, and notifies the player if the topic is random.
 // @fnv 0x00619030
+// pdb: TESTopic::InitItem | TESTopic.obj | retail, string-set bridge, high
+// pdb locals: pList, pLastList, pQuestInfo, pInfoArray, icount, i, pNewInfo, childID, bFound, search, pQuest, tempID, ibadcount, pinfo, maxSize, info
 void TESTopic_Shell::InitializeTopic()
 {
     if (GetInitialized())
@@ -1694,7 +1777,7 @@ class TopicMethods : public TESTopic
   public:
     QuestDialogueInfo* GetOrCreateQuestInfo(TESQuest* quest, bool create);
     TESTopicInfo* FindTopicInfoByFormID(unsigned int formID, bool searchAll);
-    bool AddTopicInfo(TESQuest* quest, TESTopicInfo* info, unsigned int previousInfoID);
+    bool AddTopicInfo(TESQuest* apQuest, TESTopicInfo* apInfo, unsigned int auiPrevInfoID);
 };
 extern TESTopic* g_loadingTopic;
 void FNV_Warning(const char* format, ...);
@@ -1702,12 +1785,15 @@ TESTopicInfo* GetTopicInfoByIndex(QuestDialogueInfo* questInfo, int index);
 void TopicInfoArray_SetTopicIndices(TopicInfoArray* array);
 
 // @fnv 0x00619820
-bool TopicMethods::AddTopicInfo(TESQuest* quest, TESTopicInfo* info, unsigned int previousInfoID)
+// pdb: TESTopic::InsertInfo | TESTopic.obj | retail, string-set bridge, high
+// pdb params: apQuest, apInfo, auiPrevInfoID
+// pdb locals: pQuestInfo, pPrevInfo, iinsertindex, iindex, lastspot
+bool TopicMethods::AddTopicInfo(TESQuest* apQuest, TESTopicInfo* apInfo, unsigned int auiPrevInfoID)
 {
-    if (!quest || !info)
+    if (!apQuest || !apInfo)
         return false;
-    QuestDialogueInfo* questInfo = GetOrCreateQuestInfo(quest, false);
-    if (previousInfoID)
+    QuestDialogueInfo* questInfo = GetOrCreateQuestInfo(apQuest, false);
+    if (auiPrevInfoID)
     {
         TESTopicInfo* previousInfo;
         {
@@ -1716,15 +1802,15 @@ bool TopicMethods::AddTopicInfo(TESQuest* quest, TESTopicInfo* info, unsigned in
                 unsigned int i;
                 {
                     int lastIndex;
-                    if (previousInfoID != 0xffffffffu && info->GetInfoIndex() != 0xffff)
+                    if (auiPrevInfoID != 0xffffffffu && apInfo->GetInfoIndex() != 0xffff)
                     {
                         TESTopicInfo* empty = 0;
-                        questInfo->GetInfoArray()->SetAt(info->GetInfoIndex(), empty);
+                        questInfo->GetInfoArray()->SetAt(apInfo->GetInfoIndex(), empty);
                     }
-                    if (previousInfoID != 0xffffffffu)
+                    if (auiPrevInfoID != 0xffffffffu)
                     {
-                        previousInfo = FindTopicInfoByFormID(previousInfoID, true);
-                        if (previousInfo && previousInfoID)
+                        previousInfo = FindTopicInfoByFormID(auiPrevInfoID, true);
+                        if (previousInfo && auiPrevInfoID)
                         {
                             insertionIndex = 0xffffffffu;
                             if (previousInfo->GetInfoIndex() == 0xffff)
@@ -1742,25 +1828,25 @@ bool TopicMethods::AddTopicInfo(TESQuest* quest, TESTopicInfo* info, unsigned in
                             {
                                 insertionIndex = previousInfo->GetInfoIndex() + 1;
                             }
-                            questInfo->GetInfoArray()->InsertInfoAt(insertionIndex, info);
+                            questInfo->GetInfoArray()->InsertInfoAt(insertionIndex, apInfo);
                         }
                         else
                         {
                             FNV_Warning(
                                 "QUESTS: Could not find previous info (%08X) for TopicInfo (%08X) in Topic \"%s\" (%08X).",
-                                previousInfoID, info->GetFormID(), g_loadingTopic->GetName(),
+                                auiPrevInfoID, apInfo->GetFormID(), g_loadingTopic->GetName(),
                                 g_loadingTopic->GetFormID());
-                            questInfo->GetInfoArray()->InsertInfoAt(0, info);
+                            questInfo->GetInfoArray()->InsertInfoAt(0, apInfo);
                         }
                     }
-                    else if (info->GetInfoIndex() == 0xffff)
+                    else if (apInfo->GetInfoIndex() == 0xffff)
                     {
                         lastIndex = questInfo->GetInfoArray()->GetSize() - 1;
                         while (lastIndex > 0 && !GetTopicInfoByIndex(questInfo, lastIndex))
                             lastIndex--;
                         lastIndex++;
-                        static_cast<TopicInfoMethods*>(info)->FUN_0061f340((unsigned short)lastIndex);
-                        questInfo->GetInfoArray()->SetAtGrow(lastIndex, info);
+                        static_cast<TopicInfoMethods*>(apInfo)->FUN_0061f340((unsigned short)lastIndex);
+                        questInfo->GetInfoArray()->SetAtGrow(lastIndex, apInfo);
                     }
                 }
             }
@@ -1768,7 +1854,7 @@ bool TopicMethods::AddTopicInfo(TESQuest* quest, TESTopicInfo* info, unsigned in
     }
     else
     {
-        questInfo->GetInfoArray()->InsertInfoAt(0, info);
+        questInfo->GetInfoArray()->InsertInfoAt(0, apInfo);
     }
     questInfo->GetInfoArray()->Compact();
     TopicInfoArray_SetTopicIndices(questInfo->GetInfoArray());
@@ -1786,9 +1872,11 @@ extern SettingFloat DAT_011d14d0;
 // Returns the negated DAT_011cff1c value minus DAT_011d14d0 multiplied by (1.0f minus iValue / 100.0f).
 // @fnv 0x00648f60
 // src: XBOX_PDB 0x00648f60
-float GamePlayFormulas_GetSpeechFailPenalty(int iValue)
+// pdb: GamePlayFormulas::GetSpeechFailPenalty | GamePlayFormulas.obj | debug, upstream name already matches, high
+// pdb params: aiSuccessChance
+float GamePlayFormulas_GetSpeechFailPenalty(int aiSuccessChance)
 {
-    return -*DAT_011cff1c.Float() - *DAT_011d14d0.Float() * (1.0f - iValue / 100.0f);
+    return -*DAT_011cff1c.Float() - *DAT_011d14d0.Float() * (1.0f - aiSuccessChance / 100.0f);
 }
 
 #include <stdlib.h>
@@ -1888,55 +1976,59 @@ void __cdecl DebugLog(const char*, ...);
 void __cdecl ourMemset(void*, int, unsigned int);
 // Adds dialogue items to history by selecting topics for speaker and listener, with random selection among available topic links.
 // @fnv 0x0061b440
-unsigned int __cdecl GenerateConversation(TESObjectREFR* speaker, TESObjectREFR* listener, DialogueList* history,
-                                          FUN_0061b320_shell* initialTopic)
+// src: XBOX_RETAIL_PDB 0x0061b440
+// pdb: TESTopic::CreateConversation | TESTopic.obj | retail, string-set bridge, high
+// pdb params: apSpeaker, apTarget, apConversationList, apStartingTopic
+// pdb locals: pNextTopic, tempAutoEvent, iNextTopic, pCurrentTarget, pspeakerForm, pLastTopic, pConvItem, pCurrentSpeaker, iTopicsUsed, pValidDiagItem, abTriedAll, iCount, iTotal, pList, pOldSpeaker, i, pItem
+unsigned int __cdecl TESTopic_CreateConversation(TESObjectREFR* apSpeaker, TESObjectREFR* apTarget, DialogueList* apConversationList,
+                                          FUN_0061b320_shell* apStartingTopic)
 {
     int used[500];
     DialogueItem* choice;
     bool item;
-    if (!history)
+    if (!apConversationList)
         return 0;
-    while (history && !history->FUN_008256d0())
+    while (apConversationList && !apConversationList->FUN_008256d0())
     {
-        delete (FUN_005c90d0*)history->FUN_006815c0();
-        history->FUN_0063f7b0();
+        delete (FUN_005c90d0*)apConversationList->FUN_006815c0();
+        apConversationList->FUN_0063f7b0();
     }
-    if (!speaker || !listener)
+    if (!apSpeaker || !apTarget)
         return 0;
-    TESObjectREFR* previous = speaker;
-    TESObjectREFR* currentSpeaker = listener;
+    TESObjectREFR* previous = apSpeaker;
+    TESObjectREFR* currentSpeaker = apTarget;
     FUN_0061b320_shell* nextItem = 0;
     TESTopic* currentListener = 0;
     TESBoundObject* topic = previous->GetObjectReference();
     if (topic && ((FormTypeView*)topic)->FUN_00401170() == 43 && !((ActorBaseView*)topic)->ai.GetDisposition())
         return 0;
-    nextItem = initialTopic;
+    nextItem = apStartingTopic;
     if (!nextItem)
         nextItem = ((DataHandlerView*)g_dataHandler)->TESDataHandler_GetTopic(210);
     DialogueItem* base = 0;
     int exhausted = -1;
     srand((unsigned int)GetTime64(0));
-    while (nextItem && history->FUN_005ae380() < 100)
+    while (nextItem && apConversationList->FUN_005ae380() < 100)
     {
         TopicList* topics;
-        base = nextItem->TESTopic_CreateDialogueItem(previous, currentSpeaker, currentListener, history, false);
+        base = nextItem->TESTopic_CreateDialogueItem(previous, currentSpeaker, currentListener, apConversationList, false);
         if (!base)
         {
-            if (!initialTopic || ((InfoView*)initialTopic)->GetSignedByteAtOffset36() == 1)
+            if (!apStartingTopic || ((InfoView*)apStartingTopic)->GetSignedByteAtOffset36() == 1)
             {
                 nextItem = ((DataHandlerView*)g_dataHandler)->TESDataHandler_GetTopic(212);
-                base = nextItem->TESTopic_CreateDialogueItem(previous, currentSpeaker, currentListener, history, false);
+                base = nextItem->TESTopic_CreateDialogueItem(previous, currentSpeaker, currentListener, apConversationList, false);
             }
             if (!base)
                 break;
         }
         if (base && ((ItemView*)base)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() && ((ItemView*)base)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->TESTopicInfo_IsRunImmediately())
         {
-            ((ItemView*)base)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->TESTopicInfo_RunResult(false, speaker);
-            ((ItemView*)base)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->TESTopicInfo_RunResult(true, speaker);
+            ((ItemView*)base)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->TESTopicInfo_RunResult(false, apSpeaker);
+            ((ItemView*)base)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->TESTopicInfo_RunResult(true, apSpeaker);
             ((ItemView*)base)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->FUN_0061f150();
         }
-        history->AddTail(base);
+        apConversationList->AddTail(base);
         currentListener = (TESTopic*)nextItem;
         nextItem = 0;
         choice = 0;
@@ -1983,7 +2075,7 @@ unsigned int __cdecl GenerateConversation(TESObjectREFR* speaker, TESObjectREFR*
                 for (unsigned int i = 0; i < (unsigned int)count && item; i++)
                     if (!used[i])
                         item = false;
-                choice = nextItem->TESTopic_CreateDialogueItem(previous, currentSpeaker, currentListener, history, false);
+                choice = nextItem->TESTopic_CreateDialogueItem(previous, currentSpeaker, currentListener, apConversationList, false);
             }
             else
                 item = true;
@@ -1992,7 +2084,7 @@ unsigned int __cdecl GenerateConversation(TESObjectREFR* speaker, TESObjectREFR*
     if (DAT_011cbeac)
     {
         DebugLog("------NEW CONVERSATION CREATED---------------------");
-        DialogueList* node = history;
+        DialogueList* node = apConversationList;
         {
             int index = 1;
             while (node && node->FUN_006815c0())
@@ -2015,5 +2107,5 @@ unsigned int __cdecl GenerateConversation(TESObjectREFR* speaker, TESObjectREFR*
             }
         }
     }
-    return history->FUN_005ae380();
+    return apConversationList->FUN_005ae380();
 }

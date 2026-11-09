@@ -152,10 +152,11 @@ inline void hkVector4::operator=(const hkVector4& vector)
     m_vComponents = vector.m_vComponents;
 }
 
+// pdb: class Key, size 0x8, 2 members
 struct Key {
-    int a;
-    int b;
-    Key& operator=(const Key& o) { a = o.a; b = o.b; a = o.a; return *this; }
+    int m_sKeyName;
+    int m_pChildren;
+    Key& operator=(const Key& o) { m_sKeyName = o.m_sKeyName; m_pChildren = o.m_pChildren; m_sKeyName = o.m_sKeyName; return *this; }
 };
 
 struct Elem {
@@ -178,11 +179,13 @@ struct ElemPool {
     int m_unk08;
     hkArray<int> m_freeArr;
 
-    void Grow(int newCapacity, int a, int b);
+    void Grow(int size, int rootNode, int rootIdx);
     int AllocElem(int a, int b, const Elem& e);
 };
 
 // @fnv 0x00d9cd80
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::NodeManager::pushBack | hkAabbTree.obj | retail, object-file run extension, low
+// pdb params: rootNode, rootIdx, node
 int ElemPool::AllocElem(int aiArg1, int aiArg2, const Elem& arElem)
 {
     if (m_freeArr.GetLogicalSize() == 0)
@@ -200,7 +203,7 @@ struct FUN_00d9ce00_Class
     int unk08;
     int* items;
     int count;
-    int hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int start, int first, int second);
+    int hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, int rootNode, int rootIdx);
     int* PopItem(int first, int second, int* output);
 };
 
@@ -217,6 +220,8 @@ int* FUN_00d9ce00_Class::PopItem(int first, int second, int* output)
 struct Owner { int unknown00, unknown04, unknown08; hkArray<unsigned short> buffer; hkMemoryRouter* hkMemoryRouter_getInstance(); unsigned short* AppendElement(unsigned short value); };
 // Grows the buffer if it is full, appends value at the end, increments the count and returns a pointer to the stored element.
 // @fnv 0x00d9bef0
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::NodeManager::removeAt | hkAabbTree.obj | retail, object-file run extension, low
+// pdb params: nodeIdx
 unsigned short* Owner::AppendElement(unsigned short value) {
     hkArray<unsigned short>* pBuffer = &buffer;
     hkMemoryRouter* context = hkMemoryRouter_getInstance();
@@ -266,6 +271,8 @@ struct FUN_00d9bf30_cls {
 };
 
 // @fnv 0x00d9bf30
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::NodeManager::reserve | hkAabbTree.obj | retail, object-file run extension, low
+// pdb params: size, rootNode, rootIdx
 void FUN_00d9bf30_cls::AllocateRecords(unsigned short newSize, S_d9bf30_Rec** apOutRec, unsigned short* apIndex)
 {
     int oldCount = m_uiItemCount;
@@ -338,6 +345,7 @@ struct FUN_00d9c010_cls {
 };
 
 // @fnv 0x00d9c010
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::NodeManager::~NodeManager | hkAabbTree.obj | retail, object-file run extension, low
 void FUN_00d9c010_cls::ClearBuffers()
 {
     {
@@ -379,6 +387,8 @@ struct FUN_00d9c090_cls {
 };
 
 // @fnv 0x00d9c090
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::NodeManager::~NodeManager | hkAabbTree.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int>
 void FUN_00d9c090_cls::ClearArrays()
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -415,6 +425,8 @@ struct RecordPool {
     unsigned short __thiscall AddRecord(int first,int second,const Record20* item);
 };
 // @fnv 0x00d9c210
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::NodeManager::pushBack | hkAabbTree.obj | retail, object-file run extension, low
+// pdb params: rootNode, rootIdx, node
 unsigned short RecordPool::AddRecord(int first,int second,const Record20* item) {
     if (!count) AllocateRecords((unsigned short)(type + 0x80),first,second);
     unsigned short slot=available[count - 1];
@@ -461,6 +473,8 @@ struct FUN_00d9c280_cls {
 };
 
 // @fnv 0x00d9c280
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::NodeManager::newNode | hkAabbTree.obj | retail, object-file run extension, low
+// pdb params: rootNode, rootIdx, newNodeIdx
 Glyph20* FUN_00d9c280_cls::PopGlyphRecord(int* outRecord, unsigned short* inChar, unsigned short* outChar) {
     if (m_nStack == 0) {
         unsigned short index = (unsigned short)(0x80 + m_nRecords);
@@ -499,6 +513,7 @@ struct FUN_00d9c320_cls {
 
 // Sets the vtable, calls BaseRelease and the sub-object's Release, and if bit 0 of acFlags is set frees this object through the audio allocator.
 // @fnv 0x00d9c320
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::`scalar deleting destructor' | hkAabbTree.obj | retail, vtable slot, high
 FUN_00d9c320_cls* FUN_00d9c320_cls::Destroy(unsigned char acFlags)
 {
     m_vptr = (int)&DAT_010d40ac;
@@ -554,26 +569,30 @@ struct D9C360Tree {
     int unk18;
     D9C360NodeArray m_kNodeCollection;
 
-    void TraverseTree(D9C360Node* root, void* context);
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(D9C360Node* root, void* skipNode);
 };
 
 // @fnv 0x00d9c360
-void D9C360Tree::TraverseTree(D9C360Node* node, void* context)
+// src: XBOX_RETAIL_PDB 0x00d9c360
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::checkConsistency | hkAabbTree.obj | retail, object-file gap fill, high
+// pdb params: root, skipNode
+// pdb locals: stack, childSkip0
+void D9C360Tree::hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(D9C360Node* root, void* skipNode)
 {
-    if (!node)
+    if (!root)
         return;
     D9C360Node* storage[128];
     hkArrayBase<D9C360Node*> stack(storage, 0, 128);
     for (;;) {
-        if (node->m_flags & 0x80000000) {
+        if (root->m_flags & 0x80000000) {
             if (stack.m_iElementCount == 0)
                 break;
-            node = stack.m_data[stack.m_iElementCount - 1];
+            root = stack.m_data[stack.m_iElementCount - 1];
             stack.m_iElementCount--;
             continue;
         }
-        node = m_kNodeCollection.get(node->m_pChildAtom);
-        D9C360Node* sibling = (node->m_sibling != 0x7fffffff) ? m_kNodeCollection.get(node->m_sibling) : 0;
+        root = m_kNodeCollection.get(root->m_pChildAtom);
+        D9C360Node* sibling = (root->m_sibling != 0x7fffffff) ? m_kNodeCollection.get(root->m_sibling) : 0;
         PushTreeNode(stack, sibling);
     }
     stack._clearAndDeallocate(GetHeap(hkMemoryRouter_getInstance()));
@@ -625,7 +644,7 @@ struct S_00d9d650_Node
 
 struct S_00d9d650_Pool
 {
-    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int numNodes, S_00d9d650_Node** root, int* a);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, S_00d9d650_Node** rootNode, int* rootIdx);
     S_00d9d650_Node* PopItem(S_00d9d650_Node** root, int* a, int* b);
 };
 
@@ -641,8 +660,8 @@ struct S_00d9d650_Tree
     S_00d9d650_Pool m_kNodePool;
 
     void ProcessEntries_00d9d1c0(S_00d9d650_Aabb* aabbs, const int* keys, int n, S_00d9d650_Node* root, hkArray<int>& out, int depth);
-    void MergeNode(S_00d9d650_Node* root, int a, int b);
-    void TraverseTree(S_00d9d650_Node* root, int a);
+    void XGRAPHICS_VerNode_MergeNode(S_00d9d650_Node* root, int a, int b);
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(S_00d9d650_Node* root, int skipNode);
     void BuildTree(const S_00d9d650_Aabb* aabbs, const int* keys, int n, hkArray<int>& out) throw();
 };
 
@@ -677,8 +696,8 @@ void S_00d9d650_Tree::BuildTree(const S_00d9d650_Aabb* aabbs, const int* keys, i
         {
             ProcessEntries_00d9d1c0(tmp.m_data, keys, n, m_pTreeNode, out, 0);
         }
-        MergeNode(m_pTreeNode, m_14, 0x7fffffff);
-        TraverseTree(m_pTreeNode, 0);
+        XGRAPHICS_VerNode_MergeNode(m_pTreeNode, m_14, 0x7fffffff);
+        hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(m_pTreeNode, 0);
     }
 }
 
@@ -711,14 +730,18 @@ struct Pool_d9c520
     int unk18;
     Resolver_d9c520 resolver;
 
-    void TraverseNodeTree(Node_d9c520* node, int second);
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_checkConsistency(Node_d9c520* root, int skipNode);
 };
 
 // Walks the node tree using a stack array, resolving children and pushing/popping nodes, then frees the tracked array if it was heap-allocated.
 // @fnv 0x00d9c520
-void Pool_d9c520::TraverseNodeTree(Node_d9c520* node, int second)
+// src: XBOX_RETAIL_PDB 0x00d9c520
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::checkConsistency | hkAabbTree.obj | retail, object-file gap fill, high
+// pdb params: root, skipNode
+// pdb locals: stack, childSkip0
+void Pool_d9c520::hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_checkConsistency(Node_d9c520* root, int skipNode)
 {
-    if (node != 0)
+    if (root != 0)
     {
         hkArrayBase<Node_d9c520*> nodeStack;
         Node_d9c520* stack[128];
@@ -727,17 +750,17 @@ void Pool_d9c520::TraverseNodeTree(Node_d9c520* node, int second)
         nodeStack.m_iCapacityState = 0x80000080;
         while (true)
         {
-            if ((node->unk10 & 0x8000) != 0)
+            if ((root->unk10 & 0x8000) != 0)
             {
                 if (nodeStack.m_iElementCount == 0)
                     break;
-                node = nodeStack.m_data[nodeStack.m_iElementCount - 1];
+                root = nodeStack.m_data[nodeStack.m_iElementCount - 1];
                 nodeStack.m_iElementCount = nodeStack.m_iElementCount - 1;
             }
             else
             {
-                node = resolver.GetEntryOffset(node->unk0C);
-                Node_d9c520* child = node->unk12 != 0x7fff ? resolver.ResolveChild(node->unk12) : 0;
+                root = resolver.GetEntryOffset(root->unk0C);
+                Node_d9c520* child = root->unk12 != 0x7fff ? resolver.ResolveChild(root->unk12) : 0;
                 hkMemoryRouter* holder = hkMemoryRouter_getInstance();
                 if (nodeStack.m_iElementCount == (nodeStack.m_iCapacityState & 0x3fffffff))
                     hkArrayUtil::_reserveMore(*reinterpret_cast<hkMemoryAllocator*>(holder->m_heap), &nodeStack, 4);
@@ -785,22 +808,25 @@ public:
     FreeListD9C7 m_kFreeList;
 
     void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_removeLeafInternal(NodeD9C7* pkNode, NodeD9C7** ppkOut);
-    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* pkNode);
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx);
 };
 
 // @fnv 0x00d9c7d0
-// src: HAVOK_LIB 0x00d9c7d0
-void FUN_00d9c7d0_C::hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* pkNode)
+// src: XBOX_RETAIL_PDB 0x00d9c7d0
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::remove | hkAabbTree.obj | retail, call graph (shared callers), high
+// pdb params: leafIdx
+// pdb locals: toDeleteIdx
+void FUN_00d9c7d0_C::hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx)
 {
     if (!(m_pkTreeNode->m_usFlags & 0x8000)) {
         NodeD9C7* pkOther;
-        hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_removeLeafInternal(pkNode, &pkOther);
+        hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_removeLeafInternal(leafIdx, &pkOther);
         m_kFreeList.Hkaabbtree_AppendElement_Thunk(pkOther);
     } else {
         m_sValue = 0x7fff;
         m_pkTreeNode = 0;
     }
-    m_kFreeList.Hkaabbtree_AppendElement_Thunk(pkNode);
+    m_kFreeList.Hkaabbtree_AppendElement_Thunk(leafIdx);
     m_iArrayLength--;
 }
 
@@ -834,6 +860,8 @@ struct FUN_00d9c110_cls {
 };
 
 // @fnv 0x00d9c110
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int> | hkAabbTree.obj | retail, call graph, high
+// pdb params: bitOffsetLow, bitOffsetHigh, bitScale
 FUN_00d9c110_cls::FUN_00d9c110_cls() {
     m40 = DAT_01267e30;
     m50 = DAT_01267e30;
@@ -859,20 +887,22 @@ struct Handle_d9c4 {
 struct HandlePool_d9c4 {
     hkArray<Handle_d9c4> m_handles;
     hkArray<int> m_kFreeListEntries;
-    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int newSize, Handle_d9c4** ppHandle, const int* pIndex);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, Handle_d9c4** rootNode, const int* rootIdx);
 };
 
 // @fnv 0x00d9c450
 // src: HAVOK_LIB 0x00d9c450
-void HandlePool_d9c4::hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int newSize, Handle_d9c4** ppHandle, const int* pIndex)
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::NodeManager::reserve | hkAabbTree.obj | retail, object-file gap fill, high
+// pdb params: size, rootNode, rootIdx
+void HandlePool_d9c4::hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, Handle_d9c4** rootNode, const int* rootIdx)
 {
     int oldSize = m_handles.m_iElementCount;
-    m_handles.setSize(newSize);
-    m_kFreeListEntries.reserve(newSize);
-    for (int i = newSize - 1; i >= oldSize; i--)
+    m_handles.setSize(size);
+    m_kFreeListEntries.reserve(size);
+    for (int i = size - 1; i >= oldSize; i--)
         m_kFreeListEntries.pushBackUnchecked(i);
-    if (*pIndex != 0x7fffffff)
-        *ppHandle = &m_handles.m_data[*pIndex];
+    if (*rootIdx != 0x7fffffff)
+        *rootNode = &m_handles.m_data[*rootIdx];
 }
 
 struct S_00d9af30_Node {
@@ -896,11 +926,14 @@ struct S_00d9af30 {
     int unk14;
     int unk18;
     S_00d9af30_Pool m_kNodePool;
-    void __thiscall MergeNode(S_00d9af30_Node* n, int a, int b);
+    void __thiscall XGRAPHICS_VerNode_MergeNode(S_00d9af30_Node* n, int a, int b);
 };
 // Stores b in n->unk2c; for nonleaf nodes, updates child flags, recurses, and combines their bounds into n.
 // @fnv 0x00d9af30
-void __thiscall S_00d9af30::MergeNode(S_00d9af30_Node* apNode, int a, int b)
+// src: XBOX_DEBUG_PDB 0x00d9af30
+// pdb: XGRAPHICS::VerNode::MergeNode | vercore.obj | debug, upstream name already matches, high
+// pdb params: pn
+void __thiscall S_00d9af30::XGRAPHICS_VerNode_MergeNode(S_00d9af30_Node* apNode, int a, int b)
 {
     apNode->unk2c = b;
     if ((apNode->m_flags & 0x80000000) == 0) {
@@ -908,8 +941,8 @@ void __thiscall S_00d9af30::MergeNode(S_00d9af30_Node* apNode, int a, int b)
         S_00d9af30_Node* r = m_kNodePool.ComputeValue_00d9a4c0(apNode->unk24);
         pLeft->m_flags = (pLeft->m_flags & 0x80000000) | a;
         r->m_flags = (r->m_flags & 0x80000000) | a;
-        MergeNode(pLeft, apNode->unk20, apNode->unk24);
-        MergeNode(r, apNode->unk24, b);
+        XGRAPHICS_VerNode_MergeNode(pLeft, apNode->unk20, apNode->unk24);
+        XGRAPHICS_VerNode_MergeNode(r, apNode->unk24, b);
         apNode->m_kMinimumCorner = _mm_min_ps(pLeft->m_kMinimumCorner, r->m_kMinimumCorner);
         apNode->m_kMaximumCorner = _mm_max_ps(pLeft->m_kMaximumCorner, r->m_kMaximumCorner);
     }
@@ -990,6 +1023,8 @@ struct __declspec(align(16)) FUN_00d9c180 : S_00d9c180_Base
 
 // Copies three input vectors into fields, computes a reciprocal approximation into unk70, and sets unk10 and unk18 to zero and unk14 to 0x7fff.
 // @fnv 0x00d9c180
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short> | hkAabbTree.obj | retail, object-file run extension, low
+// pdb params: bitOffsetLow, bitOffsetHigh, bitScale
 FUN_00d9c180::FUN_00d9c180(const hkVector4* apVecA, const hkVector4* apVecB, const hkVector4* apVecC)
 {
     unk40.m_vComponents = apVecA->m_vComponents;
@@ -1023,6 +1058,7 @@ struct TreeDeleteD9C2 {
 
 // Assigns a global address to a field, calls two member functions, optionally deallocates this when flags bit 0 is set, then returns this.
 // @fnv 0x00d9c2e0
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::`scalar deleting destructor' | hkAabbTree.obj | retail, vtable slot, high
 TreeDeleteD9C2* TreeDeleteD9C2::FUN_00d9c2e0(unsigned char flags)
 {
     m_ppVirtualMethodTable = DAT_010d40a4;

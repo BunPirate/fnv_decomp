@@ -4,6 +4,7 @@
 #include "hkpShapeContainer.h"
 #include "hkBool.h"
 
+// pdb: class hkpShapeCollection, size 0x18, bases: hkpShape, hkpShapeContainer, 2 members
 class hkpShapeCollection : public hkpShape, public hkpShapeContainer
 {
 public:
@@ -29,7 +30,7 @@ public:
     virtual void vf11(int);
     virtual void vf12(int, int);
 
-    hkBool m_bDisableWelding;
-    unsigned char m_eCollectionType;
+    hkBool m_disableWelding;
+    unsigned char m_collectionType;
     unsigned char unk16[2];
 };

@@ -100,16 +100,19 @@ extern FakeDevice* DAT_0126fa28;
 int __cdecl NiShaderFactory_ReportError(int, int, const char*, long);
 // Creates a vertex shader via DAT_0126fa28; on failure logs an error with the HRESULT and returns 0, otherwise returns the shader pointer.
 // @fnv 0x00e98890
-void* __stdcall CreateVertexShaderChecked(void* pShaderBytecode, void* pUnused, unsigned int uiUnused, void* pUnused2,
+// pdb: NiD3DShaderProgramCreator::CreateVertexShader | NiD3DShaderProgramCreator_Xenon.obj | retail, string-set bridge, high
+// pdb params: pvCode, __formal, __formal, __formal, __formal, __formal
+// pdb locals: hShader, eResult
+void* __stdcall CreateVertexShaderChecked(void* pvCode, void* pUnused, unsigned int uiUnused, void* pUnused2,
                                           unsigned int uiUnused2, unsigned int uiUnused3)
 {
-    long hr = DAT_0126fa28->CreateVertexShader((const unsigned long*)pShaderBytecode, (void**)&pShaderBytecode);
+    long hr = DAT_0126fa28->CreateVertexShader((const unsigned long*)pvCode, (void**)&pvCode);
     if (hr < 0)
     {
         NiShaderFactory_ReportError(1, 0, "Failed to create vertex shader\nError 0x%08x\n", hr);
         return 0;
     }
-    return pShaderBytecode;
+    return pvCode;
 }
 
 struct GeometryRelatedType;
@@ -136,11 +139,14 @@ struct PixelShaderDevice : FakeDevice
 // Creates a pixel shader from pvCode via DAT_0126fa28, logging an error and returning 0 on failure.
 // @fnv 0x00e988d0
 // src: GAMEBRYO_LIB 0x00e988d0
-GeometryRelatedType* __stdcall NiD3DShaderProgramCreator_CreatePixelShader(void* pvShaderCode)
+// pdb: NiD3DShaderProgramCreator::CreatePixelShader | NiD3DShaderProgramCreator_Xenon.obj | retail, string-set bridge, high
+// pdb params: pvCode
+// pdb locals: hShader, eResult
+GeometryRelatedType* __stdcall NiD3DShaderProgramCreator_CreatePixelShader(void* pvCode)
 {
     GeometryRelatedType* hShader;
     long m_kResult =
-        ((PixelShaderDevice*)DAT_0126fa28)->CreatePixelShader((const unsigned long*)pvShaderCode, &hShader);
+        ((PixelShaderDevice*)DAT_0126fa28)->CreatePixelShader((const unsigned long*)pvCode, &hShader);
     if (m_kResult < 0)
     {
         NiShaderFactory_ReportError(1, 0, "Failed to create pixel shader\nError 0x%08x\n", m_kResult);

@@ -2,6 +2,7 @@
 
 #include "NiRefObject.h"
 
+// pdb: class NiGPUProgram, size 0xc, bases: NiRefObject, 1 members
 class NiGPUProgram : public NiRefObject
 {
   public:
@@ -24,5 +25,5 @@ class NiGPUProgram : public NiRefObject
     void IncRefCount() throw();
     void DecRefCount() throw();
 
-    ProgramType m_iProgramType;
+    ProgramType m_eProgramType;
 };

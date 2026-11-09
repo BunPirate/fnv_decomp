@@ -27,7 +27,7 @@ struct RotationMatrix
 {
     float entry[3][3];
     RotationMatrix();
-    void FUN_004a0c90(float angle);
+    void FUN_004a0c90(float fAngle);
     NiPoint3 FUN_004b4500(const NiPoint3* axis);
 };
 // A native const Point3 member consumes only its receiver in ECX.
@@ -39,19 +39,22 @@ extern const NiPoint3 DAT_011a9484;
 extern const float DAT_01032adc;
 // @fnv 0x006da420
 // src: XBOX_PDB 0x006da420
-NiPoint3 __cdecl Pathing_ComputeFinalTangentForActor(float angle, const PathingLocation& sourceLocation, float width)
+// pdb: Pathing::ComputeFinalTangentForActor | Pathfind.obj | retail, upstream name already matches, high
+// pdb params: afHeading, aLocation, afRadius
+// pdb locals: startLoc, startLeft, retIntersection, goalRight, delta, startRight, start, end, rot, rightVec, goalLeft, direction
+NiPoint3 __cdecl Pathing_ComputeFinalTangentForActor(float afHeading, const PathingLocation& aLocation, float afRadius)
 {
     RotationMatrix seed_2;
-    seed_2.FUN_004a0c90(angle);
+    seed_2.FUN_004a0c90(afHeading);
     NiPoint3 base8 = seed_2.FUN_004b4500(&DAT_011a9478);
-    PathingLocation mainLocation(sourceLocation);
+    PathingLocation mainLocation(aLocation);
     NiPoint3 mainPoint4 = mainLocation.GetLocation();
     NiPoint3 endPoint6 = mainPoint4 - base8 * DAT_01032adc;
     PathingLocation hit;
     if (!FUN_006d7490(&mainLocation, &endPoint6, &hit, 0))
         endPoint6 = hit.GetLocation();
     NiPoint3 difference5 = endPoint6 - mainPoint4;
-    NiPoint3 offset_2 = difference5.CrossProduct(DAT_011a9484) * width;
+    NiPoint3 offset_2 = difference5.CrossProduct(DAT_011a9484) * afRadius;
     PathingLocation leftStart4(mainPoint4 - offset_2, mainLocation);
     PathingLocation leftEnd(endPoint6 - offset_2, mainLocation);
     if (!Pathing_CheckLineOfSight(leftStart4, leftEnd, &hit, 0))

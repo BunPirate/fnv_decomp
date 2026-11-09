@@ -5,6 +5,7 @@
 
 class bhkWorld;
 
+// pdb: class ExtraHavok, size 0x14, bases: BSExtraData, 2 members
 class ExtraHavok : public BSExtraData
 {
 public:
@@ -25,5 +26,5 @@ public:
         };
         bhkWorld* m_pHavokWorld;
     };
-    NP spMopp;
+    NP spCellMopp;
 };

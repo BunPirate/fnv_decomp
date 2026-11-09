@@ -77,6 +77,9 @@ inline void SwapRecords(Record& first, Record& second)
 // Sorts a range of records in place by key using a pivot and recursive quicksort, comparing with FUN_00ddcda0 and swapping with SwapRecords.
 // @fnv 0x00ddeb70
 // src: HAVOK_LIB 0x00ddeb70
+// pdb: hkArrayBase<hkEntry>::_pushBack | hkpMeshWeldingUtility.obj | debug, object-file run extension, low
+// pdb params: alloc, t
+// pdb locals: assertBuf, ostr
 void hkAlgorithm_quickSortRecursive_struct_hkEntry_class_hkAlgorithm_less_struct_hkEntry(Record* records, int left, int right, int comparator)
 {
     int i = left;
@@ -148,6 +151,9 @@ struct S_00ddecf0
 };
 
 // @fnv 0x00ddecf0
+// pdb: hkHistogram::addEntry | hkpMeshWeldingUtility.obj | retail, object-file run extension, low
+// pdb params: lo, hi, value
+// pdb locals: entry
 void S_00ddecf0::InsertKey(float t, float a, float b)
 {
     int n = m_keys.m_iElementCount;
@@ -172,6 +178,8 @@ extern double DAT_0101ff40;
 float Object_ComputeDihedralSinCos(int a1, int* pOut, float* pF);
 
 // @fnv 0x00dddc40
+// pdb: hkpMeshWeldingUtility::calcEdgeAngleBitcode | hkpMeshWeldingUtility.obj | retail, object-file run extension, low
+// pdb params: angle
 int GetIndexForValue(int aiArg)
 {
     int n;
@@ -348,10 +356,13 @@ __declspec(align(16)) struct QueryBuffer
     unsigned int unk1FC;
 };
 
-int hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(hkpShape* self, const hkpShape* a, void* b, int idx, int zero, int* out);
+int hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(hkpShape* bvTreeShape, const hkpShape* triangleShape, void* triangleShapeKey, int edgeIndex, int testConsistency, int* combinedBitcodesOut);
 
 // Reads a flag, clears it, runs up to three sub-queries via FUN_00dde4c0, sets result false if any returns 1, then restores the flag.
 // @fnv 0x00dde930
+// pdb: hkpMeshWeldingUtility::isTriangleWindingValid | hkpMeshWeldingUtility.obj | debug, object-file run extension, low
+// pdb params: shapeKey, bvTreeShape
+// pdb locals: buffer, isWindingAssertEnabled, assertBuf, ostr, combinedEdgeBitcodes
 bool* CheckSubQueries(bool* result, void* key, hkpShape* self)
 {
     QueryBuffer queryBuf;
@@ -382,7 +393,7 @@ bool* CheckSubQueries(bool* result, void* key, hkpShape* self)
     return result;
 }
 
-void* hkArrayUtil__reserve(void* alloc, void* arr, int numElems, int elemSize);
+void* hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 void hkMemUtil_memMove(void* dst, const void* src, int numBytes);
 
 inline void* operator new(unsigned int, void* p)
@@ -412,6 +423,8 @@ static __forceinline void S_00ddeab0_GrowArrayCapacity(hkArrayBase<S_00ddeab0_El
 
 // Replaces numdel elements at index with numtoinsert copies from p, shifting the tail and growing the buffer if needed.
 // @fnv 0x00ddeab0
+// pdb: hkArrayBase<hkEntry>::operator[] | hkpMeshWeldingUtility.obj | debug, object-file run extension, low
+// pdb params: i
 
 
 struct S_00ddecd0
@@ -433,9 +446,12 @@ struct LocalBuffer
 
 char* IsDegenerateTriangle(char* out, const hkVector4* v0, const hkVector4* v1, const hkVector4* v2,
                            float eps);
-int hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(hkpShape* p2, const hkpTriangleShape* trans, void* p1, int i, void* p3, int* outLocal);
+int hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(hkpShape* bvTreeShape, const hkpTriangleShape* triangleShape, void* triangleShapeKey, int edgeIndex, void* testConsistency, int* combinedBitcodesOut);
 
 // @fnv 0x00dde880
+// pdb: hkpMeshWeldingUtility::calcWeldingInfoForTriangle | hkpMeshWeldingUtility.obj | debug, object-file run extension, low
+// pdb params: shapeKey, bvTreeShape, testConsistency, info
+// pdb locals: buffer, combinedEdgeBitcodes, assertBuf, ostr
 int __cdecl CheckTransformAndProcess(void* p1, hkpShape* pOuter, void* p3, short* outWord)
 {
     LocalBuffer buffer;
@@ -644,6 +660,8 @@ __declspec(align(16)) struct FUN_00ddea00_cls
 
 // Copies all fields from the source struct into the welding_simd::__m128 members and m_i40 of this object, then returns this.
 // @fnv 0x00ddea00
+// pdb: hkArrayBase<hkEntry>::~hkArrayBase<hkEntry> | hkpMeshWeldingUtility.obj | debug, object-file run extension, low
+// pdb locals: assertBuf, ostr
 FUN_00ddea00_cls* FUN_00ddea00_cls::CopyFromSource(const FUN_00ddea00_src* src)
 {
     FUN_00ddea00_tmp tmp;
@@ -776,7 +794,7 @@ void hkpMeshWeldingUtility_calcAntiClockwiseTriangleNormal(const NormalVector* a
 }
 
 extern const double DAT_010290b8;
-void __cdecl ResizeAudioStream(void* heap, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 struct KeyLess
 {
@@ -839,6 +857,8 @@ struct Track : public S_00ddecf0
 // If m_keys is empty returns unk0; else sorts it, groups near-equal-b keys, and returns the smallest b of a group with summed a-t >= DAT_010290b8, or 0.
 // @fnv 0x00dded60
 // src: HAVOK_LIB 0x00dded60
+// pdb: hkHistogram::evaluate | hkpMeshWeldingUtility.obj | retail, upstream name already matches, high
+// pdb locals: accumulatedEntries, newEntry
 float Track::hkHistogram_evaluate()
 {
     if (m_keys.m_iElementCount == 0)
@@ -1020,14 +1040,17 @@ extern "C" void __cdecl hkpMeshWeldingUtility_computeWeldingInfoMultiShape(const
 // Copies DAT_01268370 into a local Item, allocates a scratch vector from the pool, and passes it to FUN_00dddcd0.
 // @fnv 0x00dde760
 // src: XBOX_PDB 0x00dde760
-void __cdecl hkpMeshWeldingUtility_computeWeldingInfo(int a, int aiPayload, int c, int d)
+// pdb: hkpMeshWeldingUtility::computeWeldingInfo | hkpMeshWeldingUtility.obj | retail, upstream name already matches, high
+// pdb params: collection, bvTree, weldingType, weldOpenEdges
+// pdb locals: info, shapes, assertBuf, ostr
+void __cdecl hkpMeshWeldingUtility_computeWeldingInfo(int collection, int bvTree, int weldingType, int weldOpenEdges)
 {
     Item item;
     welding_simd::_mm_store_ps(&item.transform.row0.x, welding_simd::_mm_load_ps(&DAT_01268370.row0.x));
     welding_simd::_mm_store_ps(&item.transform.row1.x, welding_simd::_mm_load_ps(&DAT_01268370.row1.x));
     welding_simd::_mm_store_ps(&item.transform.row2.x, welding_simd::_mm_load_ps(&DAT_01268370.row2.x));
     welding_simd::_mm_store_ps(&item.transform.row3.x, welding_simd::_mm_load_ps(&DAT_01268370.row3.x));
-    item.payload = aiPayload;
+    item.payload = bvTree;
     S00dde760_ScratchVector vector;
     vector.elements = 0;
     vector.size = 0;
@@ -1048,7 +1071,7 @@ void __cdecl hkpMeshWeldingUtility_computeWeldingInfo(int a, int aiPayload, int 
         reinterpret_cast<FUN_00ddea00_cls*>(destination)
             ->CopyFromSource(reinterpret_cast<const FUN_00ddea00_src*>(&item));
     ++vector.size;
-    hkpMeshWeldingUtility_computeWeldingInfoMultiShape(&DAT_01268370, a, c, &vector, d);
+    hkpMeshWeldingUtility_computeWeldingInfoMultiShape(&DAT_01268370, collection, weldingType, &vector, weldOpenEdges);
     char* finalCursor = vector.originalCursor;
     if (finalCursor == reinterpret_cast<char*>(vector.elements))
         vector.size = 0;

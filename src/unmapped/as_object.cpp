@@ -57,6 +57,8 @@ extern BGSLoadedReferenceCollection* DAT_011c95c8;
 extern TESObjectREFR* g_thePlayer;
 
 // @fnv 0x005508b0
+// pdb: TESObjectCELL::UnLoadAllTempData | TESObjectCELL.obj | retail, call graph (shared callers), medium
+// pdb locals: plist, brestoreAllowChanges, pnavArray, tempAutoEvent, plastlist, pland, pref, bdelete, pactor, pwat, pfile, tempMemContext, i, spnavMesh
 void TESObjectCELL::RemoveNonPersistentRefs()
 {
     TESObjectLAND* pLand;
@@ -87,7 +89,7 @@ void TESObjectCELL::RemoveNonPersistentRefs()
                     {
                         pNode->FUN_0063f7b0();
                     }
-                    DAT_011c95c8->RemoveReference_005270b0(pRef);
+                    DAT_011c95c8->RemoveReference(pRef);
                     if (pRef->IsActor())
                     {
                         MobileObject* pActor = (MobileObject*)pRef;
@@ -95,7 +97,7 @@ void TESObjectCELL::RemoveNonPersistentRefs()
                             ((FUN_00881d10*)pActor)->SetHoursPassed();
                     }
                     g_TESSaveLoadGame->FUN_008d0370(pRef);
-                    g_BGSSaveLoadGame->FUN_00849730(pRef, 0);
+                    g_BGSSaveLoadGame->BGSSaveLoadGame_UnloadForm(pRef, 0);
                     bool bPrint = true;
                     if (g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading() &&
                         ((Class_0084a700*)g_BGSSaveLoadGame)->HasChangeForForm(pRef, CF845(8)) &&
@@ -125,7 +127,7 @@ void TESObjectCELL::RemoveNonPersistentRefs()
             TESFile* pFile = ((TESForm*)pLand)->GetFile(-1);
             if (!pFile || pFile->IsMasterFile())
             {
-                SetLandscape(0);
+                SetLand(0);
                 pLand = 0;
             }
         }
@@ -140,7 +142,7 @@ void TESObjectCELL::RemoveNonPersistentRefs()
                 if (!pNavFile || pNavFile->IsMasterFile())
                 {
                     NavMeshPtr apSearchNavMesh = pNavMeshArray->GetNavMeshAt(i);
-                    g_BGSSaveLoadGame->FUN_00849730(apSearchNavMesh.AnimatingText_GetFullText(), 0);
+                    g_BGSSaveLoadGame->BGSSaveLoadGame_UnloadForm(apSearchNavMesh.AnimatingText_GetFullText(), 0);
                     pNavMeshArray->RemoveAndCollect(i);
                     i--;
                 }

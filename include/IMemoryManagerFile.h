@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class IMemoryManagerFile, size 0x4, 0 members
 class IMemoryManagerFile
 {
 public:

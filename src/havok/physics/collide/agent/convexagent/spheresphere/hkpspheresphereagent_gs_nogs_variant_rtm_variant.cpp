@@ -9,7 +9,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 #include "../../../../../../../include/Transform.h"
 
-extern "C" void __cdecl hkpSphereSphereAgent_staticGetPenetrations(void* a, void* b, void* c, void* d);
+extern "C" void __cdecl hkpSphereSphereAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, void* collector);
 void __stdcall hkpSphereSphereAgent_getPenetrations(void* a, void* c, void* b, void* d);
 struct S_00d3f660_Owner
 {
@@ -26,7 +26,7 @@ struct S_00d3f660
     int unk4;
     S_00d3f660_Owner* unk8;
     unsigned short unkC;
-    void ReleaseAndDelete(void* arg);
+    void ReleaseAndDelete(void* constraintOwner);
 };
 
 #include <xmmintrin.h>
@@ -111,7 +111,7 @@ struct S_00d3f780_Obj
     int unk4;
     S_00d3f780_Owner* unk8;
     unsigned short unkC;
-    void hkpSphereSphereAgent_processCollision(S_00d3f780_In* a, S_00d3f780_In* b, S_00d3f780_C* c, S_00d3f780_D* d);
+    void hkpSphereSphereAgent_processCollision(S_00d3f780_In* bodyA, S_00d3f780_In* bodyB, S_00d3f780_C* input, S_00d3f780_D* result);
 };
 
 // ---------------------------------------------------------------------------
@@ -130,7 +130,10 @@ extern "C" double __cdecl sqrt(double);
 
 // @fnv 0x00d3f780
 // src: HAVOK_SRC 0x00d3f780
-void S_00d3f780_Obj::hkpSphereSphereAgent_processCollision(S_00d3f780_In* a, S_00d3f780_In* b, S_00d3f780_C* c, S_00d3f780_D* d)
+// pdb: hkpSphereSphereAgent::processCollision | hkpSphereSphereAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: assertBuf, ostr, invDist
+void S_00d3f780_Obj::hkpSphereSphereAgent_processCollision(S_00d3f780_In* bodyA, S_00d3f780_In* bodyB, S_00d3f780_C* input, S_00d3f780_D* result)
 {
     float inv = 1.0f;
     union
@@ -153,13 +156,13 @@ void S_00d3f780_Obj::hkpSphereSphereAgent_processCollision(S_00d3f780_In* a, S_0
     }
 
     // the sum of the two radii and the extra offset
-    S_00d3f780_Node* shapeA = a->unk00;
-    S_00d3f780_Node* shapeB = b->unk00;
-    const __m128* posB = &b->unk08->r[3];
+    S_00d3f780_Node* shapeA = bodyA->unk00;
+    S_00d3f780_Node* shapeB = bodyB->unk00;
+    const __m128* posB = &bodyB->unk08->r[3];
 
     // the vector between the two placements and its squared length
-    __m128 diff = _mm_sub_ps(a->unk08->r[3], *posB);
-    float rad = shapeA->radius() + shapeB->radius() + c->unk08;
+    __m128 diff = _mm_sub_ps(bodyA->unk08->r[3], *posB);
+    float rad = shapeA->radius() + shapeB->radius() + input->unk08;
     __m128 sq = _mm_mul_ps(diff, diff);
     __m128 sum = _mm_add_ss(_mm_shuffle_ps(sq, sq, 0x55), sq);
     sum = _mm_add_ss(_mm_shuffle_ps(sq, sq, 0xAA), sum);
@@ -167,7 +170,7 @@ void S_00d3f780_Obj::hkpSphereSphereAgent_processCollision(S_00d3f780_In* a, S_0
 
     if (scratch.distance < rad * rad)
     {  // the spheres overlap
-        S_00d3f780_Out* out = d->unk00;
+        S_00d3f780_Out* out = result->unk00;
         float depth;
         if (scratch.distance > 0.0f)
         {
@@ -194,19 +197,19 @@ void S_00d3f780_Obj::hkpSphereSphereAgent_processCollision(S_00d3f780_In* a, S_0
 
         if (unkC == 0xffff)
         {  // no contact yet: ask the owner for one
-            unkC = unk8->v3(a, b, c, d, 0, out);
+            unkC = unk8->v3(bodyA, bodyB, input, result, 0, out);
         }
         if (unkC != 0xffff)
         {
             out->unk20 = unkC;
-            ++d->unk00;
+            ++result->unk00;
         }
     }
     else
     {  // the spheres are apart
         if (unkC != 0xffff)
         {  // drop the contact we had
-            unk8->Release(unkC, d->unk04);
+            unk8->Release(unkC, result->unk04);
             unkC = 0xffff;
         }
     }
@@ -303,7 +306,10 @@ struct Monitor
 };
 // @fnv 0x00d3f980
 // src: HAVOK_SRC 0x00d3f980
-void __stdcall hkpSphereSphereAgent_getClosestPoints(const Body* a, const Body* b, const Input* input, Collector* collector)
+// pdb: hkpSphereSphereAgent::getClosestPoints | hkpSphereSphereAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
+void __stdcall hkpSphereSphereAgent_getClosestPoints(const Body* bodyA, const Body* bodyB, const Input* input, Collector* collector)
 {
     ScalarScratch scratch;
     {
@@ -318,13 +324,13 @@ void __stdcall hkpSphereSphereAgent_getClosestPoints(const Body* a, const Body* 
             stream->current = p + 1;
         }
     }
-    const Shape* shapeA = a->shape;
-    const Shape* shapeB = b->shape;
-    const __m128& posB = b->transform->r[3];
+    const Shape* shapeA = bodyA->shape;
+    const Shape* shapeB = bodyB->shape;
+    const __m128& posB = bodyB->transform->r[3];
     CdPoint point;
-    point.a = a;
-    point.b = b;
-    __m128 diff = _mm_sub_ps(a->transform->r[3], posB);
+    point.a = bodyA;
+    point.b = bodyB;
+    __m128 diff = _mm_sub_ps(bodyA->transform->r[3], posB);
     scratch.collision.distance = shapeB->getRadius() + shapeA->radius + input->tolerance;
     __m128 sq = _mm_mul_ps(diff, diff);
     __m128 add1 = _mm_add_ss(_mm_shuffle_ps(sq, sq, 0x55), sq);

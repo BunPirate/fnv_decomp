@@ -33,6 +33,8 @@
 extern unsigned int DAT_011873c8;
 
 // @fnv 0x004739b0
+// pdb: TESFile::GetThreadSafeFile | TESFile.obj | retail, call graph (shared callers), high
+// pdb locals: pmainfile
 TESFile* TESFile::GetParentTESFile()
 {
     TESFile* file = this;
@@ -49,12 +51,14 @@ TESFile* TESFile::GetParentTESFile()
 
 #ifndef FNV_FIRST_TARGET_ONLY
 // @fnv 0x00473c70
+// pdb: TESFile::CopyThreadSafeParentAuxBuffer | TESFile.obj | debug, object-file run extension, low
+// pdb locals: pparentfile
 TESFile* TESFile::GetThreadSafeRootFile()
 {
-    TESFile* parent = m_pThreadSafeParent;
-    while (parent && parent->m_pThreadSafeParent)
+    TESFile* parent = pThreadSafeParent;
+    while (parent && parent->pThreadSafeParent)
     {
-        parent = parent->m_pThreadSafeParent;
+        parent = parent->pThreadSafeParent;
     }
     return parent;
 }
@@ -62,7 +66,7 @@ TESFile* TESFile::GetThreadSafeRootFile()
 // @fnv 0x00401680
 bool TESFile::IsEndianConversionRequired()
 {
-    return m_bIsSaving;
+    return bMustEndianConvert;
 }
 
 extern unsigned int kGroupFormType;
@@ -71,32 +75,35 @@ extern unsigned int kGroupFormType;
 // @fnv 0x00472100
 bool TESFile::IsCurrentFormCompressed()
 {
-    return m_kRecordInfo.form != kGroupFormType && (m_kRecordInfo.flags & kCompressedRecordFlag);
+    return m_currentform.form != kGroupFormType && (m_currentform.flags & kCompressedRecordFlag);
 }
 
 extern TESDataHandler* g_dataHandler;
 // Returns the TESFile cached for threadID, creating and registering a new read-only TESFile from this file's path and metadata if none exists.
 // @fnv 0x00473ae0
+// pdb: TESFile::GetThreadSafeFileForThread | TESFile.obj | debug, object-file run extension, low
+// pdb params: aiThreadID
+// pdb locals: pretfile
 TESFile* TESFile::GetFileForThread(unsigned int threadID)
 {
     TESFile* file = 0;
-    if (m_pThreadSafeFileMap)
+    if (pThreadSafeFileMap)
     {
-        m_pThreadSafeFileMap->GetAt(threadID, file);
+        pThreadSafeFileMap->GetAt(threadID, file);
     }
     if (!file)
     {
         file = new TESFile(GetPath(), GetFilename(), NiFile::READ_ONLY);
         file->SetMasterFile(IsMasterFile());
         file->SetCompileIndex(GetFileCompileIndex());
-        file->CheckMasterFiles(g_dataHandler->GetFileList(), false);
+        file->GenIndexTable(g_dataHandler->GetFileList(), false);
         file->SetThreadSafeParent(this);
         file->OpenTESFile(NiFile::READ_ONLY, false);
-        if (!m_pThreadSafeFileMap)
+        if (!pThreadSafeFileMap)
         {
-            m_pThreadSafeFileMap = new NiTPointerMap<unsigned int, TESFile*>(kThreadSafeFileMapBuckets);
+            pThreadSafeFileMap = new NiTPointerMap<unsigned int, TESFile*>(kThreadSafeFileMapBuckets);
         }
-        m_pThreadSafeFileMap->SetAt(threadID, file);
+        pThreadSafeFileMap->SetAt(threadID, file);
         file->InitializeComponent();
     }
     return file;
@@ -106,19 +113,22 @@ TESFile* TESFile::GetFileForThread(unsigned int threadID)
 // @fnv 0x00470b90
 BSSimpleList<_ULARGE_INTEGER*>* TESFile::GetMasterDataList()
 {
-    return &m_kFileSizeList;
+    return &listMastersData;
 }
 
 // @fnv 0x00470c70
-bool TESFile::OpenTESFile(NiFile::OpenMode openMode, bool closeOverride)
+// pdb: TESFile::OpenTES | TESFile.obj | debug, call graph, high
+// pdb params: accessmode, lock
+bool TESFile::OpenTESFile(NiFile::OpenMode accessmode, bool lock)
 {
-    return OpenTESFile((const char*)m_acPath, (const char*)m_acFilename, openMode, closeOverride);
+    return OpenTES((const char*)m_Path, (const char*)m_Filename, accessmode, lock);
 }
 
 // @fnv 0x00471c20
+// pdb: TESFile::ClearMasters | TESFile.obj | debug, object-file run extension, low
 bool TESFile::IsMasterFile()
 {
-    if (m_uiFileCount & 1)
+    if (m_Flags & 1)
         return true;
     else
         return false;
@@ -128,15 +138,15 @@ bool TESFile::IsMasterFile()
 void TESFile::SetMasterFile(bool master)
 {
     if (master)
-        m_uiFileCount |= 1;
+        m_Flags |= 1;
     else
-        m_uiFileCount &= ~1;
+        m_Flags &= ~1;
 }
 
 // @fnv 0x00471ca0
 bool TESFile::GetOptimizedFile()
 {
-    if (m_uiFileCount & 0x10)
+    if (m_Flags & 0x10)
         return true;
     else
         return false;
@@ -145,7 +155,7 @@ bool TESFile::GetOptimizedFile()
 // @fnv 0x00471cd0
 bool TESFile::GetIsChecked()
 {
-    if (m_uiFileCount & 4)
+    if (m_Flags & 4)
         return true;
     else
         return false;
@@ -155,62 +165,70 @@ bool TESFile::GetIsChecked()
 // @fnv 0x004720d0
 void TESFile::ClearCurrentChunk()
 {
-    m_eChunkID = CHUNK_ID_NO_CHUNK;
-    m_uiChunkSize = 0;
+    m_currentchunkID = CHUNK_ID_NO_CHUNK;
+    m_actualChunkSize = 0;
 }
 
 // @fnv 0x00473250
 unsigned char TESFile::GetFileCompileIndex()
 {
-    return m_ucCompileIndex;
+    return cCompileIndex;
 }
 
 // @fnv 0x00473640
 bool TESFile::GetHasGroups()
 {
-    return m_bIsLoading;
+    return bHasGroups;
 }
 
 // Walks up the parent chain to the topmost parent and stores it as this file's parent.
 // @fnv 0x00473cb0
+// pdb: TESFile::ClearAuxBuffer | TESFile.obj | debug, object-file run extension, low
+// pdb locals: pparentfile
 void TESFile::SetThreadSafeParent(TESFile* parent)
 {
-    while (parent->m_pThreadSafeParent)
-        parent = parent->m_pThreadSafeParent;
-    m_pThreadSafeParent = parent;
+    while (parent->pThreadSafeParent)
+        parent = parent->pThreadSafeParent;
+    pThreadSafeParent = parent;
 }
 
 // @fnv 0x00473d20
 void TESFile::SetTempIDOwner(bool owner)
 {
     if (owner)
-        m_uiFileCount |= 0x20;
+        m_Flags |= 0x20;
     else
-        m_uiFileCount &= ~0x20;
+        m_Flags &= ~0x20;
 }
 
 // @fnv 0x00473d70
+// pdb: TESFile::AddAuxBuffer | TESFile.obj | debug, object-file run extension, low
+// pdb params: aiMinIndex, aiMaxIndex
+// pdb locals: bretval
 bool TESFile::GetTempIDOwner()
 {
-    if (m_uiFileCount & 0x20)
+    if (m_Flags & 0x20)
         return true;
     return false;
 }
 
 // @fnv 0x004724c0
+// pdb: TESFile::GetOffsetChunk | TESFile.obj | debug, upstream name already matches, high
 unsigned int TESFile::GetOffsetChunk()
 {
-    return m_uiRecordSize + GetFORMSize() + m_uiRecordOffset;
+    return m_fileoffset + GetFORMSize() + m_formoffset;
 }
 
 // @fnv 0x00473660
+// pdb: TESFile::NextGroup | TESFile.obj | debug, call graph, high
+// pdb locals: bsuccess
 bool TESFile::IsGroupOpen()
 {
     bool next = false;
-    if (m_kRecordInfo.form == kGroupFormType)
+    if (m_currentform.form == kGroupFormType)
     {
-        m_kRecordInfo.form = 0;
-        m_kRecordInfo.length -= GetFORMSize();
+        m_currentform.form = 0;
+        m_currentform.length -= GetFORMSize();
         next = HasNextForm();
     }
     return next;
@@ -224,6 +242,8 @@ GlobalObject_00680890* __fastcall _ref_00726070(GlobalObject_00680890*);
 // Iterates the global form list and calls the virtual operation at slot 0x22.
 // @fnv 0x00408df0
 // src: COMMUNITY 0x00408df0
+// pdb: EffectSettingCollection::InitItems | EffectSettingCollection.obj | retail, upstream name already matches, high
+// pdb locals: peffect, pnode
 void EffectSettingCollection_InitItems()
 {
     TESForm* pItem;
@@ -238,6 +258,8 @@ void EffectSettingCollection_InitItems()
 // Retrieves extra data of type 0x8c from the list and returns the int stored at offset 0xc, or 0 if absent.
 // @fnv 0x0041c460
 // src: XBOX_PDB 0x0041c460
+// pdb: ExtraDataList::GetImpactSwap | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb locals: pExtra
 int __fastcall ExtraDataList_GetImpactSwap(BaseExtraList* apExtraList)
 {
     BSExtraData* pExtra = apExtraList->GetExtraData(0x8c);
@@ -256,45 +278,47 @@ bool __fastcall FUN_00471130(void*);
 void __cdecl _FNV_Warning(const char*, ...);
 
 // @fnv 0x00470710
+// pdb: TESFile::TESFile | TESFile.obj | retail, upstream name already matches, high
+// pdb params: ppath, pfilename, accessmode
 TESFile::TESFile(const char* ppath, const char* pfilename, NiFile::OpenMode accessmode)
 {
-    m_bIsMaster = 0;
-    m_bHasCurrentGroup = 0;
-    m_pDecompressedFormBuffer = 0;
-    m_uiAuxBufferSize = 0;
-    m_uiReadPosition = 0;
-    m_uiBufferSize = 0;
-    m_pCurrentCell = 0;
-    m_pThreadSafeParent = 0;
-    m_pThreadSafeFileMap = 0;
-    m_bIsSaving = 0;
-    m_eReturnCode = (TES_RETURN_CODE)0;
-    m_uiChunkOffset = 0;
-    m_uiRecordSize = 0;
-    m_uiRecordOffset = 0;
-    m_uiCurrentOffset = 0;
-    m_uiFileCount = 0;
-    m_ppTESFiles = 0;
-    m_pSecondaryFile = 0;
+    bCached = 0;
+    bCloseFileOverride = 0;
+    pDecompressedFormBuffer = 0;
+    iDecompressedFormBufferSize = 0;
+    m_firstCellOffset = 0;
+    m_currCellOffset = 0;
+    m_pCurrCell = 0;
+    pThreadSafeParent = 0;
+    pThreadSafeFileMap = 0;
+    bMustEndianConvert = 0;
+    m_lastError = (TES_RETURN_CODE)0;
+    m_filesize = 0;
+    m_fileoffset = 0;
+    m_formoffset = 0;
+    m_chunkoffset = 0;
+    m_Flags = 0;
+    m_pMasterPtrs = 0;
+    m_pLockedFile = 0;
     m_pFile = 0;
-    m_uiTESFileCount = 0;
-    m_ucCompileIndex = 0xFF;
-    m_uiFormCount = 0;
-    m_uiChunkValue1 = 0;
-    m_uiChunkValue2 = 0;
+    iMasterCount = 0;
+    cCompileIndex = 0xFF;
+    m_currRefOffset = 0;
+    m_saveformoffset = 0;
+    m_savechunkoffset = 0;
     m_pBuffer = 0;
     m_uiBufferAllocSize = DAT_01186740;
-    memset(&m_kRecordInfo, 0, 0x18);
-    memset(&m_kFindData, 0, 0x140);
-    memset(&m_kLastWriteTime, 0, 8);
-    m_uiChunkSize = 0;
-    m_eChunkID = (CHUNK_ID)0;
-    memset(&m_kFileMetadata.m_fRecordValue, 0, 0xC);
-    m_kFileMetadata.m_uiThirdUnsignedValue = 0x800;
-    m_kFileMetadata.m_fRecordValue = DAT_01019dd4;
-    if (!((TESFile*)this)->OpenTESFile(ppath, pfilename, accessmode, false))
+    memset(&m_currentform, 0, 0x18);
+    memset(&m_FileInfo, 0, 0x140);
+    memset(&DeletedFormTime, 0, 8);
+    m_actualChunkSize = 0;
+    m_currentchunkID = (CHUNK_ID)0;
+    memset(&fileHeaderInfo.m_fRecordValue, 0, 0xC);
+    fileHeaderInfo.m_uiThirdUnsignedValue = 0x800;
+    fileHeaderInfo.m_fRecordValue = DAT_01019dd4;
+    if (!((TESFile*)this)->OpenTES(ppath, pfilename, accessmode, false))
         return;
-    if ((m_kFindData.nFileSizeHigh != 0 || m_kFindData.nFileSizeLow != 0) && FUN_00471400(this) != 0)
+    if ((m_FileInfo.nFileSizeHigh != 0 || m_FileInfo.nFileSizeLow != 0) && FUN_00471400(this) != 0)
         _FNV_Warning("MASTERFILE: File '%s' is not a valid TES file.", pfilename);
     if (!::FUN_00471130(this))
         _FNV_Warning("MASTERFILE: Could not close file '%s'.", pfilename);
@@ -303,6 +327,7 @@ TESFile::TESFile(const char* ppath, const char* pfilename, NiFile::OpenMode acce
 BSSimpleList<char*>* __fastcall GetMasterList_00464df0(TESFile* pThis);
 
 // @fnv 0x00470bc0
+// pdb: TESFile::ClearMasterLists | TESFile.obj | retail, upstream name already matches, high
 void TESFile::ClearMasterLists()
 {
     while (::GetMasterList_00464df0(this)->GetItem())
@@ -315,7 +340,7 @@ void TESFile::ClearMasterLists()
         delete GetMasterDataList()->GetItem();
         GetMasterDataList()->RemoveHead();
     }
-    m_uiTESFileCount = 0;
+    iMasterCount = 0;
 }
 
 int __cdecl strcpy_s(char*, unsigned int, const char*);
@@ -330,9 +355,11 @@ void __cdecl MessageHandler_ForceNextWarningToDisplay();
 void __cdecl _FNV_Warning(const char*, ...);
 
 // @fnv 0x00471130
+// pdb: TESFile::CloseTES | TESFile.obj | retail, unique string literal, high
+// pdb locals: pExt, szTempname, szFilename
 bool TESFile::CloseTESFile()
 {
-    if (!m_bHasCurrentGroup && g_dataHandler && !TESDataHandler_GetClearingData(g_dataHandler))
+    if (!bCloseFileOverride && g_dataHandler && !TESDataHandler_GetClearingData(g_dataHandler))
         return true;
 
     ProcessGroups(this);
@@ -345,7 +372,7 @@ bool TESFile::CloseTESFile()
 
     FUN_00473960(this);
 
-    if (m_pSecondaryFile)
+    if (m_pLockedFile)
     {
         char szFilename[260];
         char szTempname[260];
@@ -368,8 +395,8 @@ bool TESFile::CloseTESFile()
             strcat_s(szTempname, 0x104, ".tes");
         }
 
-        delete m_pSecondaryFile;
-        m_pSecondaryFile = 0;
+        delete m_pLockedFile;
+        m_pLockedFile = 0;
 
         if (BSSystemFile_DeleteFileA(szFilename))
         {
@@ -397,13 +424,15 @@ bool TESFile::CloseTESFile()
 // @fnv 0x00471820
 void TESFile::SetGroupMode(bool abVal)
 {
-    m_bIsLoading = abVal;
+    bHasGroups = abVal;
 }
 
 unsigned int __fastcall GetFieldAt3FC(TESFile* _this);
 
 // Returns this for index 0, otherwise the TESFile* at index-1 in the array at offset 0x400, or null if index is out of range or the array is unset.
 // @fnv 0x00471a10
+// pdb: TESFile::GetIndexFile | TESFile.obj | debug, call graph, medium
+// pdb params: index
 TESFile* TESFile::GetFileByIndex(unsigned int index)
 {
     if (index < 0 || index > GetFieldAt3FC(this))
@@ -414,17 +443,18 @@ TESFile* TESFile::GetFileByIndex(unsigned int index)
     {
         return this;
     }
-    if (!m_ppTESFiles)
+    if (!m_pMasterPtrs)
     {
         return 0;
     }
-    return (m_ppTESFiles)[index - 1];
+    return (m_pMasterPtrs)[index - 1];
 }
 
 unsigned int __fastcall GetFieldAt3FC(TESFile*);
 
 // @fnv 0x00471ad0
 // src: COMMUNITY 0x00471ad0
+// pdb: TESFile::GetIndexCount | TESFile.obj | debug, upstream name already matches, high
 unsigned int TESFile::GetIndexCount()
 {
     return GetFieldAt3FC(this);
@@ -435,15 +465,18 @@ extern int DAT_010a2480;
 
 // Seeks the stream to offset DAT_010a2480, zeroes the fields at 0x264-0x26c and the 0x18-byte block at 0x240, then calls GetTESForm if getform is set.
 // @fnv 0x00471f80
-void TESFile::ResetFileState(bool getform)
+// src: XBOX_RETAIL_PDB 0x00471f80
+// pdb: TESFile::TESRewind | TESFile.obj | retail, call graph (shared callers), high
+// pdb params: getform
+void TESFile::TESRewind(bool getform)
 {
     if (m_pFile != 0)
     {
         (m_pFile)->Seek(0, DAT_010a2480);
     }
-    m_uiRecordSize = 0;
-    m_uiRecordOffset = 0;
-    m_uiCurrentOffset = 0;
+    m_fileoffset = 0;
+    m_formoffset = 0;
+    m_chunkoffset = 0;
     memset((char*)this + 0x240, 0, 0x18);
     if (getform)
     {
@@ -463,15 +496,18 @@ void __fastcall FUN_00473960(TESFile*);
 
 // @fnv 0x00472150
 // src: XBOX_PDB 0x00472150
+// pdb: TESFile::NextForm | TESFile.obj | retail, call graph, high
+// pdb params: abSkipIgnored
+// pdb locals: bresult
 bool TESFile::NextForm_00472150(bool abSkipIgnored)
 {
     FUN_00473960(this);
     bool bresult = HasNextForm();
     while (bresult && abSkipIgnored &&
-           m_kRecordInfo.form != kGroupFormType &&
-           m_kRecordInfo.form !=
+           m_currentform.form != kGroupFormType &&
+           m_currentform.form !=
                DAT_011873c8 &&
-           (m_kRecordInfo.flags & 0x1000))
+           (m_currentform.flags & 0x1000))
     {
         bresult = HasNextForm();
     }
@@ -490,6 +526,7 @@ void __fastcall ReadChunkHeader(TESFile* _this);
 
 // If the file's field at offset 0x240 is zero, calls ReadFormHeader and, on success, clears the current chunk and calls ReadChunkHeader.
 // @fnv 0x00472620
+// pdb: TESFile::GetTESFormNoRet | TESFile.obj | debug, object-file gap fill, medium
 void TESFile::ResetCurrentForm()
 {
     if (*(int*)((char*)this + 0x240) == 0)
@@ -506,6 +543,7 @@ int __cdecl FindFormEnumIndex(unsigned int);
 
 // Keep the full enum index: the shared GetTESForm declaration returns only a byte.
 // @fnv 0x00472660
+// pdb: TESFile::GetTESForm | TESFile.obj | retail, call graph, high
 int __fastcall TESFileGetFormType(TESFile* file)
 {
     if (*reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(file) + 0x240) == 0)
@@ -528,21 +566,26 @@ void __cdecl BSEndian(unsigned short*, EndianSizeTag<2>);
 
 // Reads a 2-byte chunk into value, byte-swaps it if GetChunkData succeeds, and returns whether the read succeeded.
 // @fnv 0x00472840
-bool TESFile::GetChunkData(unsigned short* value)
+// pdb: TESFile::GetChunkData | TESFile.obj | retail, call graph (shared callers), high
+// pdb params: apData
+// pdb locals: bres
+bool TESFile::GetChunkData(unsigned short* apData)
 {
-    bool ret = GetChunkData(value, 2);
+    bool ret = GetChunkData(apData, 2);
     if (GetChunkData())
-        BSEndian(value, EndianSizeTag<2>());
+        BSEndian(apData, EndianSizeTag<2>());
     return ret;
 }
 
 // @fnv 0x004731c0
+// pdb: TESFile::GetPercentage | TESFile.obj | debug, object-file run extension, low
+// pdb locals: currentPos
 void TESFile::SetFileLanguage(int language)
 {
     int iShiftedLanguage = language;
     iShiftedLanguage <<= 24;
-    m_uiFileCount &= 0x00FFFFFF;
-    m_uiFileCount |= iShiftedLanguage;
+    m_Flags &= 0x00FFFFFF;
+    m_Flags |= iShiftedLanguage;
 }
 
 struct BGSLoadFormBuffer;
@@ -571,6 +614,9 @@ extern FormEnumEntry DAT_01187008[];
 // Seeks the file to apForm's form type and ID, skipping groups and other records, and returns true when the matching record is found.
 // @fnv 0x004734d0
 // src: XBOX_PDB 0x004734d0
+// pdb: TESFile::FindForm | TESFile.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: bretval, bkeeplooking, ifileformid, ifileformtype
 bool TESFile::FindForm(TESForm* apForm)
 {
     bool bretval = false;
@@ -581,17 +627,17 @@ bool TESFile::FindForm(TESForm* apForm)
         {
             return true;
         }
-        this->ResetFileState(true);
-        while (m_kRecordInfo.form == DAT_01187014)
+        this->TESRewind(true);
+        while (m_currentform.form == DAT_01187014)
         {
             this->NextForm_00472150(true);
         }
         unsigned int uiFormType = DAT_01187008[apForm->GetTypeID()].formID;
         unsigned int ifileformid = ((TESSound*)apForm)->Deallocate();
         bool bkeeplooking = true;
-        while (m_kRecordInfo.form != 0 && bkeeplooking)
+        while (m_currentform.form != 0 && bkeeplooking)
         {
-            if (m_kRecordInfo.form == kGroupFormType)
+            if (m_currentform.form == kGroupFormType)
             {
                 if (((bool (__thiscall*)(TESForm*, void*, bool, bool))(*(void***)apForm)[0x44])(apForm, (char*)this + 0x240, true, false))
                 {
@@ -602,7 +648,7 @@ bool TESFile::FindForm(TESForm* apForm)
                     IsGroupOpen();
                 }
             }
-            else if (m_kRecordInfo.form == uiFormType &&
+            else if (m_currentform.form == uiFormType &&
                      *(unsigned int*)((char*)this + 0x24c) == ifileformid)
             {
                 bkeeplooking = false;
@@ -623,7 +669,10 @@ int __cdecl _sprintf(char*, const char*, ...);
 
 // Returns true and warns if the file version exceeds 1.34, otherwise returns false.
 // @fnv 0x004738a0
-bool TESFile::IsValidFileVersion()
+// src: XBOX_RETAIL_PDB 0x004738a0
+// pdb: TESFile::IsFileVersionTooHigh | TESFile.obj | retail, string-set bridge, high
+// pdb locals: bretval, ptempstr
+bool TESFile::IsFileVersionTooHigh()
 {
     bool bretval = false;
     if (this->GetFileVersion() > 1.34f)
@@ -663,6 +712,8 @@ struct TempMap_00473f20
 
 // Creates the global ID-to-TESFile map if needed, maps aiID to apFile, and increments the counter when the file has no temp ID owner yet.
 // @fnv 0x00473f20
+// pdb: TESFile::SetTempIDOwnedByFile | TESFile.obj | debug, object-file gap fill, medium
+// pdb params: aiID, apFile
 void __cdecl RegisterTempFileID(unsigned int aiID, TESFile* apFile)
 {
     if (!DAT_011c40b0)
@@ -689,6 +740,8 @@ void __fastcall FUN_005890c0(int* self, FUN_004744d0_arg a);
 // Calls FUN_005890c0 on self, then stores the address of DAT_01031fac into *self and returns self.
 // @fnv 0x004744d0
 // src: EXE 0x004744d0
+// pdb: NiTMap<unsigned int,TESFile *>::NiTMap<unsigned int,TESFile *> | TESFile.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 int* __fastcall NiTMap_unsigned_int_TESFile_NiTMap(int* self, FUN_004744d0_arg a)
 {
     FUN_005890c0(self, a);
@@ -711,6 +764,7 @@ bool __fastcall TESAnimGroup_GetDecal(bool* pFlags)
 
 // If GetSourceFiles returns a list, calls RemoveAll on it to clear the source files.
 // @fnv 0x00460110
+// pdb: TESForm::ClearFiles | TESDataHandler.obj | debug, call graph (shared callers), medium
 void TESForm::ClearFormData()
 {
     if (this->GetSourceFiles())
@@ -722,7 +776,7 @@ void __cdecl _Deallocate(void* p);
 // @fnv 0x00471850
 unsigned int __thiscall TESFile::GetMasterFileCount()
 {
-    return m_uiTESFileCount;
+    return iMasterCount;
 }
 
 extern int DAT_011c54d0;
@@ -736,7 +790,7 @@ int __fastcall GetTESFileGlobalValue(TESFile* file)
 // @fnv 0x004732f0
 void* TESFile::GetGroupList()
 {
-    return &m_kRecordList;
+    return &m_grouplist;
 }
 
 // This byte-returning helper has no matching shared member signature.
@@ -756,19 +810,25 @@ bool __thiscall TESFile::IsTempIDLoadable(unsigned int a, unsigned int b)
     return c;
 }
 
-void __fastcall DestroyTempFileMapBase(void* map);
+void __fastcall NiTArray_unsigned_int_NiTMallocInterface_unsigned_int_dtor(void* map);
 
 // @fnv 0x00473f00
-void __fastcall DestroyTempFileMap(void* map)
+// src: XBOX_DEBUG_PDB 0x00473f00
+// pdb: NiTPrimitiveArray<unsigned int>::~NiTPrimitiveArray<unsigned int> | TESFile.obj | debug, call graph, high
+void __fastcall NiTPrimitiveArray_unsigned_int_dtor(void* map)
 {
-    DestroyTempFileMapBase(map);
+    NiTArray_unsigned_int_NiTMallocInterface_unsigned_int_dtor(map);
 }
 
 extern NiTPointerMap<unsigned int, unsigned int>* DAT_011c40b0;
 
 // Looks up aiID in DAT_011c40b0 and returns the mapped owner file value, or 0 if the map is null or the key is absent.
 // @fnv 0x00474060
-unsigned int __cdecl GetOwnerFileByID(unsigned int aiID)
+// src: XBOX_RETAIL_PDB 0x00474060
+// pdb: TESFile::GetFileForTempID | TESFile.obj | retail, object-file run extension, high
+// pdb params: aiID
+// pdb locals: pownerfile
+unsigned int __cdecl TESFile_GetFileForTempID(unsigned int aiID)
 {
     unsigned int uiOwnerFile = 0;
     if (DAT_011c40b0 && ((DummyPointerMap*)DAT_011c40b0)->GetAt(aiID, uiOwnerFile))
@@ -794,11 +854,12 @@ void* __fastcall GetTESFileGlobalBuffer(TESFile* file)
 }
 
 // @fnv 0x00473930
+// pdb: TESFile::GetDecompressedBuffer | TESFile.obj | debug, upstream name already matches, high
 char* TESFile::GetDecompressedBuffer()
 {
-    if (m_pDecompressedFormBuffer == 0)
-        InflateCompressedForm();
-    return m_pDecompressedFormBuffer;
+    if (pDecompressedFormBuffer == 0)
+        DecompressCurrentForm();
+    return pDecompressedFormBuffer;
 }
 
 extern __int64 __cdecl FUN_00ec3bf0(__int64);
@@ -821,7 +882,11 @@ void _FNV_Warning(const char*, ...);
 
 // Matches each required master filename against the file list, stores the matching TESFile pointers in the array at offset 0x400, and warns about missing masters.
 // @fnv 0x00471870
-bool TESFile::CheckMasterFiles(void* pFileList, bool showerror)
+// src: XBOX_RETAIL_PDB 0x00471870
+// pdb: TESFile::GenIndexTable | TESFile.obj | retail, string-set bridge, high
+// pdb params: pFileList, showerror
+// pdb locals: pFList, foundall, pfile, size, pMList, pcheckfile
+bool TESFile::GenIndexTable(void* pFileList, bool showerror)
 {
     BSSimpleList<TESFile*>* pFList;
     bool foundall;
@@ -832,13 +897,13 @@ bool TESFile::CheckMasterFiles(void* pFileList, bool showerror)
     pFList = (BSSimpleList<TESFile*>*)pFileList;
     pMList = (BSSimpleList<char*>*)GetMasterList();
     size = GetFieldAt3FC(this);
-    if (m_ppTESFiles)
-        delete[] m_ppTESFiles;
-    m_ppTESFiles = 0;
+    if (m_pMasterPtrs)
+        delete[] m_pMasterPtrs;
+    m_pMasterPtrs = 0;
     if (!size)
         return true;
-    m_ppTESFiles = new TESFile*[size];
-    pfile = m_ppTESFiles;
+    m_pMasterPtrs = new TESFile*[size];
+    pfile = m_pMasterPtrs;
     size = 0;
     foundall = true;
     while (pMList && *((LItem_006815c0*)pMList)->_ref_006815c0())
@@ -880,35 +945,37 @@ extern "C" void* __cdecl memset(void*, int, unsigned int);
 }  // namespace fnv_00472bc0
 
 // @fnv 0x00472bc0
+// pdb: TESFile::ReadFormHeader | TESFile.obj | retail, upstream name already matches, high
+// pdb locals: bsuccess, pMaster
 bool TESFile::ReadFormHeader()
 {
     using namespace fnv_00472bc0;
     if (!this->m_pFile)
         return false;
     bool bsuccess = true;
-    if (this->m_pFile->Read(&this->m_kRecordInfo.form, 0x18) != 0x18)
+    if (this->m_pFile->Read(&this->m_currentform.form, 0x18) != 0x18)
         bsuccess = false;
     if (!bsuccess)
     {
-        fnv_00472bc0::memset(&this->m_kRecordInfo.form, 0, 0x18);
+        fnv_00472bc0::memset(&this->m_currentform.form, 0, 0x18);
         return false;
     }
     if (IsEndianConversionRequired())
-        ((MyForm*)&this->m_kRecordInfo.form)->FUN_00470650();
-    if (this->m_kRecordInfo.form != kGroupFormType &&
-        this->m_kRecordInfo.form != DAT_011873c8)
+        ((MyForm*)&this->m_currentform.form)->FUN_00470650();
+    if (this->m_currentform.form != kGroupFormType &&
+        this->m_currentform.form != DAT_011873c8)
     {
         TESFile* pMaster = 0;
-        if (this->m_ppTESFiles)
-            pMaster = GetMasterFile((this->m_kRecordInfo.iFormID >> 24) + 1);
+        if (this->m_pMasterPtrs)
+            pMaster = GetMasterFile((this->m_currentform.iFormID >> 24) + 1);
         if (pMaster)
-            this->m_kRecordInfo.iFormID = (pMaster->GetFileCompileIndex() << 24) |
-                                                 (this->m_kRecordInfo.iFormID & (unsigned int)&fnv_00472bc0::DAT_00ffffff);
+            this->m_currentform.iFormID = (pMaster->GetFileCompileIndex() << 24) |
+                                                 (this->m_currentform.iFormID & (unsigned int)&fnv_00472bc0::DAT_00ffffff);
         else
-            this->m_kRecordInfo.iFormID = (this->m_ucCompileIndex << 24) |
-                                                 (this->m_kRecordInfo.iFormID & (unsigned int)&fnv_00472bc0::DAT_00ffffff);
-        if (FUN_00484b40(this->m_kRecordInfo.iFormID & (unsigned int)&fnv_00472bc0::DAT_00ffffff))
-            this->m_kRecordInfo.iFormID = this->m_kRecordInfo.iFormID & (unsigned int)&fnv_00472bc0::DAT_00ffffff;
+            this->m_currentform.iFormID = (this->cCompileIndex << 24) |
+                                                 (this->m_currentform.iFormID & (unsigned int)&fnv_00472bc0::DAT_00ffffff);
+        if (FUN_00484b40(this->m_currentform.iFormID & (unsigned int)&fnv_00472bc0::DAT_00ffffff))
+            this->m_currentform.iFormID = this->m_currentform.iFormID & (unsigned int)&fnv_00472bc0::DAT_00ffffff;
     }
     return true;
 }
@@ -930,6 +997,8 @@ struct FUN_00472d30_CHUNK
 }  // namespace fnv_00472d30
 
 // @fnv 0x00472d30
+// pdb: TESFile::ReadChunkHeader | TESFile.obj | retail, upstream name already matches, high
+// pdb locals: tempchunk, pbuff, ichunkoffset, tempint
 bool TESFile::ReadChunkHeader()
 {
     using namespace fnv_00472d30;
@@ -944,7 +1013,7 @@ bool TESFile::ReadChunkHeader()
     }
     else
     {
-        unsigned int ichunkoffset = m_uiRecordOffset;
+        unsigned int ichunkoffset = m_formoffset;
         char* pbuff = (char*)GetDecompressedBuffer();
         if (pbuff && ichunkoffset < ((HighProcess*)this)->HighProcess::GetPostAnimationAction())
         {
@@ -960,7 +1029,7 @@ bool TESFile::ReadChunkHeader()
     if (IsEndianConversionRequired())
         tempchunk.CHUNK_Endian();
     *(unsigned int*)((char*)this + 0x258) = tempchunk.id;
-    m_uiChunkSize = tempchunk.size;
+    m_actualChunkSize = tempchunk.size;
     if (tempchunk.id == 0x58585858)
     {
         unsigned int tempint = 0;
@@ -968,7 +1037,7 @@ bool TESFile::ReadChunkHeader()
         if (IsEndianConversionRequired())
             fnv_00472d30::BSEndian((unsigned char*)&tempint, fnv_00472d30::EndianSizeTag<1>());
         NextChunk();
-        m_uiChunkSize = tempint;
+        m_actualChunkSize = tempint;
     }
     return true;
 }
@@ -990,11 +1059,14 @@ extern FormTypeInfo DAT_01187000[];
 
 struct FUN_00482f40_t : Menu
 {
-    void TESDescription_LoadDescription(TESForm* apForm, unsigned int auiChunk);
+    void TESDescription_LoadDescription(TESForm* apForm, unsigned int aeChunk);
 };
 // @fnv 0x00482f40
 // src: XBOX_PDB 0x00482f40
-void FUN_00482f40_t::TESDescription_LoadDescription(TESForm* apForm, unsigned int auiChunk)
+// pdb: TESDescription::LoadDescription | TESDescription.obj | retail, upstream name already matches, high
+// pdb params: apForm, aeChunk
+// pdb locals: chunkid, pfile, bfoundchunk, formid, pMessage
+void FUN_00482f40_t::TESDescription_LoadDescription(TESForm* apForm, unsigned int aeChunk)
 {
     unsigned char cType;
     bool bFound;
@@ -1018,7 +1090,7 @@ void FUN_00482f40_t::TESDescription_LoadDescription(TESForm* apForm, unsigned in
         do
         {
             unsigned int uiChunk = pFile->GetChunkID();
-            if (uiChunk == auiChunk)
+            if (uiChunk == aeChunk)
             {
                 char* pBuf = (char*)_alloca(pFile->GetChunkSize());
                 pFile->GetChunkData(pBuf, 0);
@@ -1058,6 +1130,8 @@ extern int DAT_00ffffff;
 }  // namespace fnv_00471400
 
 // @fnv 0x00471400
+// pdb: TESFile::LoadTESInfo | TESFile.obj | retail, call graph (shared callers), medium
+// pdb locals: inexttype, pMessage, pfilename, length, plargeint
 int TESFile::ReadTESInfo()
 {
     using namespace fnv_00471400;
@@ -1066,15 +1140,15 @@ int TESFile::ReadTESInfo()
     ClearMasterLists();
     if (m_pFile == 0)
     {
-        if (!OpenTESFile((const char*)this + 0x124, (const char*)this + 0x20, NiFile::READ_ONLY, false))
+        if (!OpenTES((const char*)this + 0x124, (const char*)this + 0x20, NiFile::READ_ONLY, false))
             return 2;
     }
     else
     {
-        this->ResetFileState(true);
+        this->TESRewind(true);
     }
-    m_uiChunkOffset = (m_pFile)->GetSize();
-    if (m_kRecordInfo.form != fnv_00471400::DAT_01187014)
+    m_filesize = (m_pFile)->GetSize();
+    if (m_currentform.form != fnv_00471400::DAT_01187014)
         return 0xb;
 
     do
@@ -1085,11 +1159,11 @@ int TESFile::ReadTESInfo()
             GetChunkData((char*)this + 0x3dc, 0xc);
             if (IsEndianConversionRequired())
                 ((ContainerItemExtraFileData*)((char*)this + 0x3dc))->Endian();
-            if (m_kFileMetadata.m_uiThirdUnsignedValue <= 0x7ff)
-                m_kFileMetadata.m_uiThirdUnsignedValue = 0x800;
-            m_kFileMetadata.m_uiThirdUnsignedValue =
+            if (fileHeaderInfo.m_uiThirdUnsignedValue <= 0x7ff)
+                fileHeaderInfo.m_uiThirdUnsignedValue = 0x800;
+            fileHeaderInfo.m_uiThirdUnsignedValue =
                 (*((unsigned char*)this + 0x40c) << 24) |
-                (m_kFileMetadata.m_uiThirdUnsignedValue & (unsigned int)&fnv_00471400::DAT_00ffffff);
+                (fileHeaderInfo.m_uiThirdUnsignedValue & (unsigned int)&fnv_00471400::DAT_00ffffff);
             break;
             break;
         case 0x4d414e43: {
@@ -1109,7 +1183,7 @@ int TESFile::ReadTESInfo()
             char* pfilename = new char[length];
             GetChunkData(pfilename, 0);
             ((SoundListView*)GetMasterList())->AddTail(pfilename);
-            (m_uiTESFileCount)++;
+            (iMasterCount)++;
         }
         break;
         case 0x41544144: {
@@ -1123,25 +1197,25 @@ int TESFile::ReadTESInfo()
         }
     } while (NextChunk());
 
-    if (m_kRecordInfo.flags & 1)
-        m_uiFileCount |= 1;
+    if (m_currentform.flags & 1)
+        m_Flags |= 1;
     else
-        m_uiFileCount &= ~1;
-    if (m_kRecordInfo.flags & 0x10)
-        m_uiFileCount |= 0x10;
+        m_Flags &= ~1;
+    if (m_currentform.flags & 0x10)
+        m_Flags |= 0x10;
     else
-        m_uiFileCount &= ~0x10;
-    if (m_kRecordInfo.flags & 0x80)
-        m_uiFileCount |= 0x80;
+        m_Flags &= ~0x10;
+    if (m_currentform.flags & 0x80)
+        m_Flags |= 0x80;
     else
-        m_uiFileCount &= ~0x80;
-    SetFileLanguage(m_uiFileCount >> 24);
+        m_Flags &= ~0x80;
+    SetFileLanguage(m_Flags >> 24);
 
     while (TESFileGetFormType(this) == 1)
         this->NextForm_00472150(true);
     inexttype = TESFileGetFormType(this);
     SetGroupMode(inexttype == 2 || inexttype == 0);
-    this->ResetFileState(true);
+    this->TESRewind(true);
     return 0;
 }
 
@@ -1170,28 +1244,30 @@ struct FileChunkHeader
 }  // namespace fnv_004721d0
 
 // @fnv 0x004721d0
+// pdb: TESFile::GetNextForm | TESFile.obj | debug, call graph, medium
+// pdb locals: currentoffset
 bool TESFile::HasNextForm()
 {
     using namespace fnv_004721d0;
     unsigned int currentoffset;
-    currentoffset = this->m_uiRecordSize;
-    if (this->m_kRecordInfo.form == kGroupFormType ||
-        this->m_kRecordInfo.form == DAT_011873c8)
-        this->m_uiRecordSize += GetFORMSize();
+    currentoffset = this->m_fileoffset;
+    if (this->m_currentform.form == kGroupFormType ||
+        this->m_currentform.form == DAT_011873c8)
+        this->m_fileoffset += GetFORMSize();
     else
-        this->m_uiRecordSize += GetFORMSize() + this->m_kRecordInfo.length;
-    if (this->m_uiRecordSize >= this->m_uiChunkOffset)
+        this->m_fileoffset += GetFORMSize() + this->m_currentform.length;
+    if (this->m_fileoffset >= this->m_filesize)
     {
-        fnv_004721d0::memset(&this->m_kRecordInfo, 0, sizeof(FileFormHeader));
+        fnv_004721d0::memset(&this->m_currentform, 0, sizeof(FileFormHeader));
         return false;
     }
-    currentoffset = this->m_uiRecordSize;
+    currentoffset = this->m_fileoffset;
     if (fnv_004721d0::MissileProjectile_GetImpactResult((int)this->m_pFile) != currentoffset)
     {
         this->m_pFile->Seek(currentoffset, fnv_004721d0::DAT_010a2480);
-        this->m_uiRecordSize = fnv_004721d0::MissileProjectile_GetImpactResult((int)this->m_pFile);
+        this->m_fileoffset = fnv_004721d0::MissileProjectile_GetImpactResult((int)this->m_pFile);
     }
-    if (this->m_uiRecordSize == -1)
+    if (this->m_fileoffset == -1)
     {
         char* lpMsgBuf;
         FormatMessageA(0x1300, 0, GetLastError(), 0x400, (char*)&lpMsgBuf, 0, 0);
@@ -1199,14 +1275,14 @@ bool TESFile::HasNextForm()
         LocalFree(lpMsgBuf);
         return false;
     }
-    this->m_uiRecordOffset = 0;
-    this->m_uiCurrentOffset = 0;
-    fnv_004721d0::memset(&this->m_kRecordInfo, 0, sizeof(FileFormHeader));
+    this->m_formoffset = 0;
+    this->m_chunkoffset = 0;
+    fnv_004721d0::memset(&this->m_currentform, 0, sizeof(FileFormHeader));
     ResetCurrentForm();
-    if (this->m_kRecordInfo.form == 0)
+    if (this->m_currentform.form == 0)
     {
         fnv_004721d0::_FNV_Warning("MASTERFILE: Trying to load a bad form in TESFile::NextForm.\r\nFile = %s\r\nOffset = %d",
-                     this->m_acFilename, this->m_uiRecordSize);
+                     this->m_Filename, this->m_fileoffset);
         return false;
     }
     return true;
@@ -1214,6 +1290,9 @@ bool TESFile::HasNextForm()
 
 // @fnv 0x00471a60
 // src: COMMUNITY 0x00471a60
+// pdb: TESFile::GetIndexName | TESFile.obj | debug, upstream name already matches, high
+// pdb params: index
+// pdb locals: pList, count
 const char* TESFile::GetIndexName(unsigned int count)
 {
     BSSimpleList<BGSPerk*>* list = reinterpret_cast<BSSimpleList<BGSPerk*>*>(GetMasterList_00464df0());
@@ -1237,13 +1316,16 @@ struct G2
 };
 
 // @fnv 0x00473440
+// pdb: TESFile::OpenGroup | TESFile.obj | debug, upstream name already matches, high
+// pdb params: apGroupData
+// pdb locals: pgroup
 void TESFile::OpenGroup(FormRecordHeader* apGroupData)
 {
     if (apGroupData)
     {
         void* pgroup = operator new(0x1c);
         void* plocal = pgroup;
-        ((G2*)&m_kRecordList)->AddHead(reinterpret_cast<int*>(&plocal));
+        ((G2*)&m_grouplist)->AddHead(reinterpret_cast<int*>(&plocal));
         __memcpy(plocal, apGroupData, 0x18);
     }
 }
@@ -1255,6 +1337,8 @@ struct FUN_004516b0_shell
 };
 // Loops over groups from FUN_004732d0, calling FUN_004733a0 or FreeIfPresent depending on g_dataHandler's FUN_004516b0 result.
 // @fnv 0x00473830
+// pdb: TESFile::CloseAllOpenGroups | TESFile.obj | debug, object-file run extension, low
+// pdb locals: pgroup
 void TESFile::ClearGroupStack()
 {
     void* pgroup = GetCurrentGroup();
@@ -1273,6 +1357,8 @@ int __fastcall BSFile_Tell(char*);
 
 // Resets the form offset fields, seeks past the current form when it is not compressed, clears the current chunk and returns the chunk ID.
 // @fnv 0x00472000
+// pdb: TESFile::TESRewindChunk | TESFile.obj | debug, object-file run extension, low
+// pdb locals: currentoffset
 unsigned int __fastcall RewindTESFileForm(TESFile* file)
 {
     *reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(file) + 0x268) = 0;
@@ -1316,39 +1402,42 @@ extern int DAT_010a2488;
 }  // namespace fnv_00472e60
 
 // @fnv 0x00472e60
+// pdb: TESFile::StartForm | TESFile.obj | debug, object-file gap fill, medium
+// pdb params: apForm
 int __thiscall TESFile::WriteForm(TESForm* apForm)
 {
     using namespace fnv_00472e60;
-    this->SetCurrentForm(apForm);
+    this->StartAndEndGroupsForForm(apForm);
 
-    m_kChunkInfo.flags =
+    m_saveform.flags =
         reinterpret_cast<TesfileOffset08View*>(apForm)->GetFlags();
-    m_kChunkInfo.flags =
-        m_kChunkInfo.flags & 0x30032FE0;
+    m_saveform.flags =
+        m_saveform.flags & 0x30032FE0;
 
-    *reinterpret_cast<unsigned int*>(&m_kChunkInfo) = g_FormTypes[_FNV_GetFormType(apForm)].formID;
+    *reinterpret_cast<unsigned int*>(&m_saveform) = g_FormTypes[_FNV_GetFormType(apForm)].formID;
 
-    m_kChunkInfo.iFormID =
+    m_saveform.iFormID =
         reinterpret_cast<TESSound*>(apForm)->Deallocate();
 
     *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(this) + 0x284) = return15();
     *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(this) + 0x286) = 0;
-    m_kChunkInfo.m_uiVersionControlInfo = 0;
-    m_kChunkInfo.length = 0;
+    m_saveform.m_uiVersionControlInfo = 0;
+    m_saveform.length = 0;
 
     m_pFile->Seek(0, fnv_00472e60::DAT_010a2488);
 
-    m_uiChunkValue1 =
+    m_saveformoffset =
         fnv_00472e60::BSFile_Tell(reinterpret_cast<char*>(m_pFile));
-    m_uiChunkValue2 = 0;
+    m_savechunkoffset = 0;
 
-    return this->ReadFileBuffer(&m_kChunkInfo, 0x18);
+    return this->EasyWrite(&m_saveform, 0x18);
 }
 
 // @fnv 0x004732d0
+// pdb: TESFile::GetCurrentGroup | TESFile.obj | debug, upstream name already matches, high
 TESFileGroup* TESFile::GetCurrentGroup()
 {
-    return m_kRecordList.GetItem();
+    return m_grouplist.GetItem();
 }
 
 namespace fnv_00473490 {
@@ -1362,6 +1451,9 @@ void _Deallocate(void* p);
 
 // Calls FUN_004732d0 on this; if it returns non-null, calls FUN_0063f7b0 on the list at this+0x290 and deallocates the returned pointer.
 // @fnv 0x00473490
+// pdb: TESFile::CurrentGroupMayContainForm | TESFile.obj | debug, object-file run extension, low
+// pdb params: apForm
+// pdb locals: bsuccess, pgroup
 void __fastcall ClearGroupStackEntry(TESFile* file)
 {
     void* p = file->GetCurrentGroup();
@@ -1384,40 +1476,45 @@ struct TESFormFileAccess : TESForm
 };
 
 // @fnv 0x00472f60
-void TESFile::LoadForm(TESForm* apTarget)
+// pdb: TESFile::LoadForm | TESFile.obj | retail, upstream name already matches, high
+// pdb params: apForm
+void TESFile::LoadForm(TESForm* apForm)
 {
-    ((TESFormFileAccess*)apTarget)->FUN_004f15a0(TESFileGetFormType(this));
-    if (((TESFormFileAccess*)apTarget)->TESForm_GetTemporary())
+    ((TESFormFileAccess*)apForm)->FUN_004f15a0(TESFileGetFormType(this));
+    if (((TESFormFileAccess*)apForm)->TESForm_GetTemporary())
     {
-        ((TESFormFileAccess*)apTarget)->FUN_00403550(GetFlags() | 0x4000);
+        ((TESFormFileAccess*)apForm)->FUN_00403550(GetFlags() | 0x4000);
     }
     else
     {
-        ((TESFormFileAccess*)apTarget)->FUN_00403550(GetFlags());
+        ((TESFormFileAccess*)apForm)->FUN_00403550(GetFlags());
     }
-    ((void (__thiscall*)(TESForm*, unsigned int, bool))(*(void***)apTarget)[0x4a])(apTarget, GetFormID(), true);
-    ((TESFormFileAccess*)apTarget)->FUN_00484f50(this);
+    ((void (__thiscall*)(TESForm*, unsigned int, bool))(*(void***)apForm)[0x4a])(apForm, GetFormID(), true);
+    ((TESFormFileAccess*)apForm)->FUN_00484f50(this);
 }
 
 struct Fun472Param
 {
     void* Probe1();
     int Probe2();
-    void Finish();
+    void TESForm_FreeFormBuffer();
 };
 extern int DAT_010a2488;
 // @fnv 0x00472fe0
+// pdb: TESFile::AddTESForm | TESFile.obj | retail, call graph (shared callers), medium
+// pdb params: apForm
+// pdb locals: retVal
 int TESFile::WriteFormContents(TESForm* apParam)
 {
     int result;
-    this->SetCurrentForm(apParam);
+    this->StartAndEndGroupsForForm(apParam);
     m_pFile->Seek(0, DAT_010a2488);
-    result = this->ReadFileBuffer(((Fun472Param*)apParam)->Probe1(), ((Fun472Param*)apParam)->Probe2());
+    result = this->EasyWrite(((Fun472Param*)apParam)->Probe1(), ((Fun472Param*)apParam)->Probe2());
     if (((Fun472Param*)apParam)->Probe1() && ((Fun472Param*)apParam)->Probe2())
     {
-        m_kFileMetadata.m_uiFileRecordTotal++;
+        fileHeaderInfo.m_uiFileRecordTotal++;
     }
-    ((Fun472Param*)apParam)->Finish();
+    ((Fun472Param*)apParam)->TESForm_FreeFormBuffer();
     return result;
 }
 
@@ -1426,21 +1523,25 @@ void __cdecl Warning_005b5e40(const char* message);
 extern const char DAT_0101a174[];
 
 // @fnv 0x00473110
-int __thiscall TESFile::ReadFileBuffer(void* buffer, unsigned int size)
+// src: XBOX_RETAIL_PDB 0x00473110
+// pdb: TESFile::EasyWrite | TESFile.obj | retail, string-set bridge, high
+// pdb params: ptr, count
+// pdb locals: error
+int __thiscall TESFile::EasyWrite(void* ptr, unsigned int count)
 {
-    if (buffer != 0)
+    if (ptr != 0)
     {
-        if ((unsigned int)m_pFile->NiBinaryStream_Write((const char*)buffer, size) < size)
+        if ((unsigned int)m_pFile->NiBinaryStream_Write((const char*)ptr, count) < count)
         {
             int error = *FUN_00ec85e3();
-            m_eReturnCode = TES_RETURN_CODE_TES_ERROR_WRITE_FAILURE;
+            m_lastError = TES_RETURN_CODE_TES_ERROR_WRITE_FAILURE;
             Warning_005b5e40(DAT_0101a174);
-            return m_eReturnCode;
+            return m_lastError;
         }
     }
 
-    m_eReturnCode = TES_RETURN_CODE_TES_ERROR_NONE;
-    return m_eReturnCode;
+    m_lastError = TES_RETURN_CODE_TES_ERROR_NONE;
+    return m_lastError;
 }
 
 // SpawnObject (thiscall, 1 stack arg)
@@ -1461,18 +1562,21 @@ extern unsigned int g_dat010a2488;
 
 // If arg is non-zero, calls CalleeA(arg); when m_10 is set, spawns an object via CalleeB, copies m_10's value into its m_18, calls CalleeD, and increments m_3e0.
 // @fnv 0x00473310
-void TESFile::GetAnimationSequence(FormRecordHeader* arg)
+// pdb: TESFile::StartGroup | TESFile.obj | retail, call graph (shared callers), high
+// pdb params: apNewGroupData
+// pdb locals: pgroup
+void TESFile::GetAnimationSequence(FormRecordHeader* apNewGroupData)
 {
-    if (arg != 0)
+    if (apNewGroupData != 0)
     {
-        OpenGroup(arg);
+        OpenGroup(apNewGroupData);
         if (m_pFile != 0)
         {
             SpawnedObject_b4476* tmp = (SpawnedObject_b4476*)GetCurrentGroup();
             m_pFile->Seek(0, g_dat010a2488);
             tmp->m_18 = m_pFile->GetFilePosition();
-            ReadFileBuffer(tmp, 0x18);
-            m_kFileMetadata.m_uiFileRecordTotal = m_kFileMetadata.m_uiFileRecordTotal + 1;
+            EasyWrite(tmp, 0x18);
+            fileHeaderInfo.m_uiFileRecordTotal = fileHeaderInfo.m_uiFileRecordTotal + 1;
         }
     }
 }
@@ -1493,6 +1597,9 @@ struct FUN_004733a0_rec
 };
 
 // @fnv 0x004733a0
+// pdb: TESFile::EndGroup | TESFile.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESFile::CloseGroup
+// pdb locals: pgroup
 void TESFile::CloseGroup()
 {
     FUN_004733a0_rec* x = (FUN_004733a0_rec*)GetCurrentGroup();
@@ -1503,7 +1610,7 @@ void TESFile::CloseGroup()
             m_pFile->Seek(0, DAT_010a2488);
             x->m_04 = BSFile_Tell((char*)m_pFile) - x->m_18;
             m_pFile->Seek(x->m_18, DAT_010a2480);
-            ReadFileBuffer(x, 0x18);
+            EasyWrite(x, 0x18);
         }
         fnv_00473490::ClearGroupStackEntry(this);
     }
@@ -1531,9 +1638,13 @@ struct GroupNode
 };
 
 // @fnv 0x004736c0
-void TESFile::SetCurrentForm(TESForm* form)
+// src: XBOX_RETAIL_PDB 0x004736c0
+// pdb: TESFile::StartAndEndGroupsForForm | TESFile.obj | retail, string-set bridge, high
+// pdb params: apForm
+// pdb locals: pgroup, pstopgroup, pgrouplist, groupform
+void TESFile::StartAndEndGroupsForForm(TESForm* apForm)
 {
-    if (form && form->FNV_GetFormType() != 1)
+    if (apForm && apForm->FNV_GetFormType() != 1)
     {
         GroupForm* group = 0;
         GroupForm* last = 0;
@@ -1541,7 +1652,7 @@ void TESFile::SetCurrentForm(TESForm* form)
         while (node2)
         {
             group = *node2->GetItem();
-            if (group && !((bool (__thiscall*)(TESForm*, void*, bool, bool))(*(void***)form)[0x44])(form, group, true, true))
+            if (group && !((bool (__thiscall*)(TESForm*, void*, bool, bool))(*(void***)apForm)[0x44])(apForm, group, true, true))
             {
                 last = group;
             }
@@ -1564,10 +1675,10 @@ void TESFile::SetCurrentForm(TESForm* form)
             }
         }
         group = (GroupForm*)GetCurrentGroup();
-        while (!group || !((bool (__thiscall*)(TESForm*, void*, bool, bool))(*(void***)form)[0x44])(form, group, false, true))
+        while (!group || !((bool (__thiscall*)(TESForm*, void*, bool, bool))(*(void***)apForm)[0x44])(apForm, group, false, true))
         {
             FormHeader header;
-            form->InitFormGRUP(&header, group);
+            apForm->InitFormGRUP(&header, group);
             if (header.type == kGroupFormType)
             {
                 GetAnimationSequence((FormRecordHeader*)&header);
@@ -1575,8 +1686,8 @@ void TESFile::SetCurrentForm(TESForm* form)
             }
             else
             {
-                FNV_Warning("FORMS: Failed to CreateGroupData for %s form '%s' (%08X)", form->TESForm_GetFormTypeString(),
-                            form->GetName(), form->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                FNV_Warning("FORMS: Failed to CreateGroupData for %s form '%s' (%08X)", apForm->TESForm_GetFormTypeString(),
+                            apForm->GetName(), apForm->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                 return;
             }
         }
@@ -1609,27 +1720,30 @@ class FUN_00841250_cls
   public:
     void Helper(int v);
     void Emit(void* p, FUN_00841250_pair v);
-    void ProcessRef(TESFormReferenceAccess* a1, void* a2, unsigned int a3);
+    void ProcessRef(TESFormReferenceAccess* apForm, void* aiFormID, unsigned int aiFlags);
 };
 
 // @fnv 0x00841250
-void FUN_00841250_cls::ProcessRef(TESFormReferenceAccess* apRef, void* apFallback, unsigned int auiValue)
+// pdb: BGSReconstructFormsMap::AddForm | BGSReconstructFormsInAllFilesMap.obj | retail, call graph, high
+// pdb params: apForm, aiFormID, aiFlags
+// pdb locals: iformID, tempFormData, pref
+void FUN_00841250_cls::ProcessRef(TESFormReferenceAccess* apForm, void* aiFormID, unsigned int aiFlags)
 {
-    void* p = apRef ? (void*)apRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0() : apFallback;
+    void* p = apForm ? (void*)apForm->GetHavokWorldObjectCountInSceneGraph_0084e3a0() : aiFormID;
     FUN_00841250_guard gTmp;
     gTmp.Init();
     FUN_00841250_pair pr;
     TESFormReferenceAccess* r7;
-    Emit(p, *pr.Build(apRef, auiValue));
-    if (apRef == 0)
+    Emit(p, *pr.Build(apForm, aiFlags));
+    if (apForm == 0)
     {
         Helper(6);
     }
     else
     {
-        if (apRef->GetIsReference())
+        if (apForm->GetIsReference())
         {
-            r7 = apRef;
+            r7 = apForm;
             if (r7->Check())
             {
                 Helper(2);
@@ -1641,7 +1755,7 @@ void FUN_00841250_cls::ProcessRef(TESFormReferenceAccess* apRef, void* apFallbac
         }
         else
         {
-            if (apRef->FUN_00401170() == 0x43)
+            if (apForm->FUN_00401170() == 0x43)
             {
                 Helper(4);
             }
@@ -1660,6 +1774,9 @@ struct FormPointReader
 void __cdecl BSEndian_00401080(float*, EndianSizeTag<4>);
 
 // @fnv 0x00438fc0
+// pdb: MultiBoundMarkerData::Load | MultiBoundMarkerData.obj | debug, object-file run extension, low
+// pdb params: apFile
+// pdb locals: bsuccess
 unsigned char FormPointReader::ReadFromFile(TESFile* pFile)
 {
     char result = 0;
@@ -1681,9 +1798,11 @@ unsigned char FormPointReader::ReadFromFile(TESFile* pFile)
 }
 
 // @fnv 0x004709f0
+// pdb: TESFile::~TESFile | TESFile.obj | retail, upstream name already matches, high
+// pdb locals: pMList, pDList, pname, pdata
 TESFile::~TESFile()
 {
-    m_bHasCurrentGroup = true;
+    bCloseFileOverride = true;
     CloseTESFile();
     BSSimpleList<char*>* pMaster = (BSSimpleList<char*>*)GetMasterList();
     while (pMaster)
@@ -1704,8 +1823,8 @@ TESFile::~TESFile()
     }
     GetMasterDataList()->RemoveAll();
     delete m_pBuffer;
-    delete m_ppTESFiles;
-    m_ppTESFiles = 0;
+    delete m_pMasterPtrs;
+    m_pMasterPtrs = 0;
     ClearTempIDOwner();
     ClearThreadSafeFiles();
 }
@@ -1713,6 +1832,9 @@ TESFile::~TESFile()
 int __cdecl sprintf_s(char* buffer, unsigned int size, const char* format, ...);
 
 // @fnv 0x00471af0
+// pdb: TESFile::GetFileIndex | TESFile.obj | debug, object-file run extension, low
+// pdb params: pFile
+// pdb locals: index, count
 bool TESFile::HasMasterFileChanged()
 {
     _ULARGE_INTEGER* pSize4;
@@ -1744,12 +1866,14 @@ bool TESFile::HasMasterFileChanged()
 }
 
 // @fnv 0x00473090
+// pdb: TESFile::RewriteFormHeader | TESFile.obj | debug, upstream name already matches, high
+// pdb locals: retVal
 int TESFile::RewriteFormHeader()
 {
-    m_kFileMetadata.m_uiFileRecordTotal++;
-    m_kChunkInfo.length = m_uiChunkValue2;
-    reinterpret_cast<BSFile*>(m_pFile)->Seek(m_uiChunkValue1, DAT_010a2480);
-    int result = ReadFileBuffer(&m_kChunkInfo, 0x18);
+    fileHeaderInfo.m_uiFileRecordTotal++;
+    m_saveform.length = m_savechunkoffset;
+    reinterpret_cast<BSFile*>(m_pFile)->Seek(m_saveformoffset, DAT_010a2480);
+    int result = EasyWrite(&m_saveform, 0x18);
     return result;
 }
 
@@ -1766,13 +1890,16 @@ struct Probe_B
 
 // @fnv 0x00473270
 // src: COMMUNITY 0x00473270
-void __cdecl TESFile_DeleteFileList(void* pObject)
+// pdb: TESFile::DeleteFileList | TESFile.obj | retail, upstream name already matches, high
+// pdb params: apFileList
+// pdb locals: pfile
+void __cdecl TESFile_DeleteFileList(void* apFileList)
 {
-    while (!((Probe_A*)pObject)->FUN_008256d0())
+    while (!((Probe_A*)apFileList)->FUN_008256d0())
     {
-        unsigned int a = *((Probe_B*)pObject)->FUN_006815c0();
+        unsigned int a = *((Probe_B*)apFileList)->FUN_006815c0();
         delete (TESFile*)a;
-        ((Probe_A*)pObject)->FUN_0063f7b0();
+        ((Probe_A*)apFileList)->FUN_0063f7b0();
     }
 }
 
@@ -1789,22 +1916,24 @@ class Map473
 
 // Initializes and deletes the per-thread files, then destroys and clears their map.
 // @fnv 0x00473a10
+// pdb: TESFile::ClearThreadSafeFiles | TESFile.obj | retail, upstream name already matches, high
+// pdb locals: iter, pfile, iignore
 void TESFile::ClearThreadSafeFiles()
 {
-    if (m_pThreadSafeFileMap)
+    if (pThreadSafeFileMap)
     {
-        NiTMapIterator473 kPos = ((Map473*)m_pThreadSafeFileMap)->GetFirstPos();
+        NiTMapIterator473 kPos = ((Map473*)pThreadSafeFileMap)->GetFirstPos();
         while (kPos)
         {
             unsigned int uiKey = 0;
             TESFile* pkValue = 0;
-            ((Map473*)m_pThreadSafeFileMap)->GetNext(kPos, uiKey, pkValue);
+            ((Map473*)pThreadSafeFileMap)->GetNext(kPos, uiKey, pkValue);
             pkValue->InitializeComponent();
             delete pkValue;
         }
-        ((Map473*)m_pThreadSafeFileMap)->RemoveAll();
-        delete (Map473*)m_pThreadSafeFileMap;
-        m_pThreadSafeFileMap = 0;
+        ((Map473*)pThreadSafeFileMap)->RemoveAll();
+        delete (Map473*)pThreadSafeFileMap;
+        pThreadSafeFileMap = 0;
     }
 }
 
@@ -1828,6 +1957,8 @@ struct MapView
 };
 // Clears the temp-ID owner flag; when the last owner is released it frees the map, otherwise it collects and removes this file's entries from it.
 // @fnv 0x00473d90
+// pdb: TESFile::RemoveFromOwnedIDMap | TESFile.obj | retail, call graph, medium
+// pdb locals: iindex, ownedIDs, iter, iid, pfile, i
 void TESFile::ClearTempIDOwner()
 {
     if (GetTempIDOwner())
@@ -1868,7 +1999,7 @@ namespace fnv_004740a0 {
 struct AutoMemX
 {
     int m;
-    AutoMemX(int a, int b, const char* f, int l);
+    AutoMemX(int memContext, int overridable, const char* f, int aiLine);
     ~AutoMemX();
 };
 struct TagX
@@ -1881,7 +2012,7 @@ bool FindFormEnumIndex(int id);
 void Warning_005b5e40(const char* fmt, ...);
 extern int g_iDat01187020;
 void* AllocateProduct(void* opaque, unsigned int items, unsigned int size);
-void simpleFree(void* opaque, void* p);
+void simpleFree(void* opaque, void* apPtr);
 struct ZStreamX
 {
     char* m_pNextInputByte;
@@ -1907,19 +2038,22 @@ int FUN_00b45db0(ZStreamX* s);
 }  // namespace fnv_004740a0
 
 // @fnv 0x004740a0
-void TESFile::InflateCompressedForm()
+// src: XBOX_RETAIL_PDB 0x004740a0
+// pdb: TESFile::DecompressCurrentForm | TESFile.obj | retail, unique string literal, high
+// pdb locals: tempMemContext, pbuffer, eform, ret, ioriginalsize, zstream, localState, pcompressedbuffer
+void TESFile::DecompressCurrentForm()
 {
     using namespace fnv_004740a0;
     AutoMemX kMem(0x30, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TESFile.cpp", 0xf8e);
-    if (m_kRecordInfo.length && m_kRecordInfo.form != g_iDat01187020 && IsCurrentFormCompressed())
+    if (m_currentform.length && m_currentform.form != g_iDat01187020 && IsCurrentFormCompressed())
     {
-        bool bOk = fnv_004740a0::FindFormEnumIndex(m_kRecordInfo.form);
+        bool bOk = fnv_004740a0::FindFormEnumIndex(m_currentform.form);
         if (!bOk)
             return;
-        char* pBufferVal = (char*)FormHeap_Allocate(m_kRecordInfo.length + 1);
+        char* pBufferVal = (char*)FormHeap_Allocate(m_currentform.length + 1);
         if (!pBufferVal)
             return;
-        if (m_pFile->Read(pBufferVal, m_kRecordInfo.length) != m_kRecordInfo.length)
+        if (m_pFile->Read(pBufferVal, m_currentform.length) != m_currentform.length)
         {
             fnv_004740a0::Warning_005b5e40("TESFile: Failed to read in buffer data for compressed form.");
         }
@@ -1929,9 +2063,9 @@ void TESFile::InflateCompressedForm()
             char* pData4 = pBufferVal + 4;
             if (IsEndianConversionRequired())
                 BSEndian_00401080(&uiSize7, TagX());
-            pBufferVal[m_kRecordInfo.length] = 0;
-            m_pDecompressedFormBuffer = (char*)FormHeap_Allocate(uiSize7);
-            m_uiAuxBufferSize = uiSize7;
+            pBufferVal[m_currentform.length] = 0;
+            pDecompressedFormBuffer = (char*)FormHeap_Allocate(uiSize7);
+            iDecompressedFormBufferSize = uiSize7;
             ZStreamX kStream;
             char acState[0x1ba4];
             kStream.m_pAllocateCallback = AllocateProduct;
@@ -1949,10 +2083,10 @@ void TESFile::InflateCompressedForm()
                 FormHeapFreeAndLog_00401030(pBufferVal);
                 return;
             }
-            kStream.m_uiAvailableInputBytes = m_kRecordInfo.length - 4;
+            kStream.m_uiAvailableInputBytes = m_currentform.length - 4;
             kStream.m_pNextInputByte = pData4;
             kStream.m_uiAvailableOutputBytes = uiSize7;
-            kStream.m_pNextOutputByte = m_pDecompressedFormBuffer;
+            kStream.m_pNextOutputByte = pDecompressedFormBuffer;
             iRet6 = FUN_00b44000(&kStream, 0);
             if (iRet6 == -2 || iRet6 == 2 || iRet6 == -3 || iRet6 == -4)
             {
@@ -1986,28 +2120,31 @@ extern unsigned int DAT_010a2480;
 }  // namespace fnv_00472890
 
 // @fnv 0x00472890
-bool TESFile::GetChunkData(void* data, unsigned int size)
+// pdb: TESFile::GetChunkData | TESFile.obj | retail, unique string literal, high
+// pdb params: apData
+// pdb locals: bres
+bool TESFile::GetChunkData(void* pdata, unsigned int maxSize)
 {
     using namespace fnv_00472890;
-    if (m_uiChunkSize == 0)
+    if (m_actualChunkSize == 0)
         return true;
     bool compressed = IsCurrentFormCompressed();
-    if (m_uiCurrentOffset > 0)
+    if (m_chunkoffset > 0)
     {
         if (!compressed)
         {
-            unsigned int offset = m_uiRecordSize + GetFORMSize() + m_uiRecordOffset + 6;
+            unsigned int offset = m_fileoffset + GetFORMSize() + m_formoffset + 6;
             ((BSFile*)m_pFile)->Seek(offset, fnv_00472890::DAT_010a2480);
         }
-        m_uiCurrentOffset = 0;
+        m_chunkoffset = 0;
     }
-    if (size != 0 && m_uiChunkSize > size)
+    if (maxSize != 0 && m_actualChunkSize > maxSize)
     {
-        ((char*)data)[size - 1] = 0;
+        ((char*)pdata)[maxSize - 1] = 0;
         if (!compressed)
         {
-            m_uiCurrentOffset = ((BSFile*)m_pFile)->Read(data, size - 1);
-            if (m_uiCurrentOffset != size - 1)
+            m_chunkoffset = ((BSFile*)m_pFile)->Read(pdata, maxSize - 1);
+            if (m_chunkoffset != maxSize - 1)
             {
                 char* message;
                 FormatMessageA(0x1300, 0, GetLastError(), 0x400, (char*)&message, 0, 0);
@@ -2018,33 +2155,33 @@ bool TESFile::GetChunkData(void* data, unsigned int size)
         }
         else
         {
-            unsigned int offset = m_uiRecordOffset + 6;
+            unsigned int offset = m_formoffset + 6;
             char* source = GetDecompressedBuffer() + offset;
-            FUN_00401460(data, source, size - 1);
-            m_uiCurrentOffset = size - 1;
+            FUN_00401460(pdata, source, maxSize - 1);
+            m_chunkoffset = maxSize - 1;
         }
         char b[5];
         char a[5];
-        b[0] = (char)(m_eChunkID & 0xff);
-        b[1] = (char)((m_eChunkID & 0xff00) >> 8);
-        b[2] = (char)((m_eChunkID & 0xff0000) >> 16);
-        b[3] = (char)((m_eChunkID & 0xff000000) >> 24);
+        b[0] = (char)(m_currentchunkID & 0xff);
+        b[1] = (char)((m_currentchunkID & 0xff00) >> 8);
+        b[2] = (char)((m_currentchunkID & 0xff0000) >> 16);
+        b[3] = (char)((m_currentchunkID & 0xff000000) >> 24);
         b[4] = 0;
-        a[0] = (char)(m_kRecordInfo.form & 0xff);
-        a[1] = (char)((m_kRecordInfo.form & 0xff00) >> 8);
-        a[2] = (char)((m_kRecordInfo.form & 0xff0000) >> 16);
-        a[3] = (char)((m_kRecordInfo.form & 0xff000000) >> 24);
+        a[0] = (char)(m_currentform.form & 0xff);
+        a[1] = (char)((m_currentform.form & 0xff00) >> 8);
+        a[2] = (char)((m_currentform.form & 0xff0000) >> 16);
+        a[3] = (char)((m_currentform.form & 0xff000000) >> 24);
         a[4] = 0;
         fnv_00472890::Warning_005b5e40(
             "FORMS: Chunk size %d too big in chunk %s_ID in form %s_ID (%08X).\r\nMax size is %d, data truncated to \"%s\".\r\n",
-            m_uiChunkSize, b, a, m_kRecordInfo.iFormID, size, data);
+            m_actualChunkSize, b, a, m_currentform.iFormID, maxSize, pdata);
     }
     else
     {
         if (!compressed)
         {
-            m_uiCurrentOffset = ((BSFile*)m_pFile)->Read(data, m_uiChunkSize);
-            if (m_uiCurrentOffset != m_uiChunkSize)
+            m_chunkoffset = ((BSFile*)m_pFile)->Read(pdata, m_actualChunkSize);
+            if (m_chunkoffset != m_actualChunkSize)
             {
                 char* message;
                 FormatMessageA(0x1300, 0, GetLastError(), 0x400, (char*)&message, 0, 0);
@@ -2055,10 +2192,10 @@ bool TESFile::GetChunkData(void* data, unsigned int size)
         }
         else
         {
-            unsigned int offset = m_uiRecordOffset + 6;
+            unsigned int offset = m_formoffset + 6;
             char* source = GetDecompressedBuffer() + offset;
-            FUN_00401460(data, source, m_uiChunkSize);
-            m_uiCurrentOffset = m_uiChunkSize;
+            FUN_00401460(pdata, source, m_actualChunkSize);
+            m_chunkoffset = m_actualChunkSize;
         }
     }
     return true;
@@ -2068,6 +2205,9 @@ bool TESFile::GetChunkData(void* data, unsigned int size)
 // Reads uiBytes into pvBuffer via CallAndAccumulate with a single 1-byte element size and returns the number of bytes read.
 // @fnv 0x00473180
 // src: XBOX_PDB 0x00473180
+// pdb: NiBinaryStream::Write | TESFile.obj | retail, upstream name already matches, high
+// pdb params: pvBuffer, uiBytes
+// pdb locals: uiBytesWritten, uiSize
 int BSFile::NiBinaryStream_Write(const char* pvBuffer, unsigned int uiBytes)
 {
     unsigned int uiElemSize = 1;
@@ -2083,20 +2223,23 @@ void __fastcall FUN_00473960(TESFile*);
 
 // Sets the record offset, seeks there when valid, reads a size, and resets record state on the invalid-offset and success paths.
 // @fnv 0x004723a0
+// pdb: TESFile::SetOffset | TESFile.obj | retail, upstream name already matches, high
+// pdb params: newoffset
+// pdb locals: currentoffset
 bool TESFile::SetOffset(unsigned int newoffset)
 {
     unsigned int currentoffset;
     FUN_00473960(this);
-    m_uiRecordSize = newoffset;
-    if (m_uiRecordSize >= m_uiChunkOffset)
+    m_fileoffset = newoffset;
+    if (m_fileoffset >= m_filesize)
     {
-        memset(&m_kRecordInfo, 0, 0x18);
+        memset(&m_currentform, 0, 0x18);
         return false;
     }
-    currentoffset = m_uiRecordSize;
+    currentoffset = m_fileoffset;
     ((BSFile*)m_pFile)->Seek(currentoffset, DAT_010a2480);
-    m_uiRecordSize = BSFile_Tell((char*)m_pFile);
-    if (m_uiRecordSize == 0xFFFFFFFF)
+    m_fileoffset = BSFile_Tell((char*)m_pFile);
+    if (m_fileoffset == 0xFFFFFFFF)
     {
         char* lpMsgBuf;
         FormatMessageA(0x1300, 0, GetLastError(), 0x400, (char*)&lpMsgBuf, 0, 0);
@@ -2104,15 +2247,18 @@ bool TESFile::SetOffset(unsigned int newoffset)
         LocalFree(lpMsgBuf);
         return false;
     }
-    m_uiRecordOffset = 0;
-    m_uiCurrentOffset = 0;
-    memset(&m_kRecordInfo, 0, 0x18);
+    m_formoffset = 0;
+    m_chunkoffset = 0;
+    memset(&m_currentform, 0, 0x18);
     GetTESForm();
     return true;
 }
 
 // For an uncompressed form, checks the computed record offset, seeks to newoffset when valid, and reloads current chunk state on success.
 // @fnv 0x004724f0
+// pdb: TESFile::SetOffsetChunk | TESFile.obj | retail, upstream name already matches, high
+// pdb params: newoffset
+// pdb locals: currentoffset
 bool TESFile::SetOffsetChunk(unsigned int newoffset)
 {
     unsigned int currentoffset;
@@ -2121,11 +2267,11 @@ bool TESFile::SetOffsetChunk(unsigned int newoffset)
         ::_FNV_Warning("FORMS: SetOffsetChunk failed for compressed form.");
         return false;
     }
-    m_uiRecordOffset = newoffset - m_uiRecordSize - GetFORMSize();
-    if (m_uiRecordOffset >= m_kRecordInfo.length)
+    m_formoffset = newoffset - m_fileoffset - GetFORMSize();
+    if (m_formoffset >= m_currentform.length)
     {
         ClearCurrentChunk();
-        ::memset(&m_kRecordInfo, 0, sizeof(m_kRecordInfo));
+        ::memset(&m_currentform, 0, sizeof(m_currentform));
         return false;
     }
     currentoffset = newoffset;
@@ -2139,7 +2285,7 @@ bool TESFile::SetOffsetChunk(unsigned int newoffset)
         ::LocalFree(lpMsgBuf);
         return false;
     }
-    m_uiCurrentOffset = 0;
+    m_chunkoffset = 0;
     ClearCurrentChunk();
     GetChunkID();
     return true;

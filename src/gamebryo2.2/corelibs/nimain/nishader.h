@@ -21,12 +21,14 @@ __forceinline bool NiShader::IsKindOfType(const NiRTTI* type) const
     {
         if (current == type)
             return true;
-        current = current->m_pBaseRTTI;
+        current = current->m_pkBaseRTTI;
     }
     return false;
 }
 // @fnv 0x0043b300
 // src: XBOX_PDB 0x0043b300
+// pdb: NiObject::IsKindOf | ModelLoader.obj | debug, call graph, medium
+// pdb params: pkRTTI, pkObject
 bool NiObject_IsKindOf(const NiRTTI* type, NiAVObject* object)
 {
     if (!object)
@@ -35,6 +37,8 @@ bool NiObject_IsKindOf(const NiRTTI* type, NiAVObject* object)
 }
 
 // @fnv 0x004b5a50
+// pdb: bhkNiCollisionObject::Getbhk | GlobalFunc.obj | debug, call graph, medium
+// pdb params: apBody
 NiAVObject* NiShader::DynamicCast(NiAVObject* object)
 {
     GarbageCollectorObjectPtr result;

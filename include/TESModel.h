@@ -8,6 +8,7 @@ class TESFile;
 class TESObject;
 class TESModelTextureSwap;
 
+// pdb: class TESModel, size 0x18, bases: BaseFormComponent, 3 members
 class TESModel : public BaseFormComponent
 {
 public:
@@ -16,7 +17,7 @@ public:
     virtual void Init();
     virtual void Free();
     virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual bool CompareWithBase(BaseFormComponent* apCompareFC);
     virtual ~TESModel();
     virtual const char* GetModelFilePath();
     virtual void SetModelFilePath(const char* path);
@@ -34,22 +35,22 @@ public:
     unsigned int GetModelLength();
     unsigned int GetModelLength() const;
     void InitializeComponent();
-    void BaseFormRecord(BaseFormComponent* component);
-    void WriteToBuffer(unsigned int chunk, unsigned int texChunk);
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
+    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int chunk, unsigned int texChunk);
     void WriteToStream();
-    void LoadTextureSwapList(void* buffer, unsigned int size, unsigned int version);
+    void UnpackTextureSwapChunkData(void* buffer, unsigned int size, unsigned int version);
     unsigned int TESModel_GetSkinFlags();
     bool TESModel_QHasFacegenData();
     void* FUN_00489010(unsigned int flags);
     void SetFlags_004893c0(unsigned char flags);
 
     static void LoadModelData(TESModel* model, TESFile* file);
-    static void LoadTextureSwapData(TESModel* model, TESFile* file);
-    static unsigned int GetModelLength(TESObject* object);
+    static void LoadTextureSwapData(TESModel* apModel, TESFile* apFile);
+    static unsigned int GetModelLength(TESObject* apObj);
     static const char* GetModelFilePath(TESObject* object);
 
     BSStringT<char> m_kModelFilePath;
-    FileEntryList m_pTextureSwapData;
+    FileEntryList TextureList;
     unsigned char cFlags;
     unsigned char unk15[3];
 };

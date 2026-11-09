@@ -169,6 +169,9 @@ struct SObj
 void CallAnimCallback(SStream*, SObj*);
 // Calls CallAnimCallback, then writes the object's enabled flag as one byte to the stream's output and adds the written count.
 // @fnv 0x00a295f0
+// pdb: NiBinaryStreamSave<int> | BSValueNode.obj | debug, object-file run extension, low
+// pdb params: os, pValue, uiNumEls
+// pdb locals: uiSize
 void WriteEnabledFlag(SStream* stream, SObj* object)
 {
     CallAnimCallback(stream, object);
@@ -192,15 +195,19 @@ extern InterpFn DAT_011f3d08[];
 
 // Returns the single BooleanKey value for one key or sentinel time; otherwise interpolates between bracketing keys and returns the result.
 // @fnv 0x00a29250
-bool InterpolateBooleanKey(float fTime, const NiAnimationKey* pkKeys, unsigned int uiType, unsigned int uiNumKeys,
-                           unsigned int* puiLastIdx, unsigned char ucKeySize)
+// src: XBOX_RETAIL_PDB 0x00a29250
+// pdb: NiBoolKey::GenInterp | NiBoolKey.obj | retail, call graph (shared callers), high
+// pdb params: fTime, pkKeys, eType, uiNumKeys, uiLastIdx, ucSize
+// pdb locals: fLastTime, uiNextIdx, fNormTime, uiNumKeysM1, kResult, interp, fNextTime, uiLastIdxCopy
+bool NiBoolKey_GenInterp(float fTime, const NiAnimationKey* pkKeys, unsigned int eType, unsigned int uiNumKeys,
+                           unsigned int* puiLastIdx, unsigned char ucSize)
 {
     if (uiNumKeys == 1 || fTime == -3.4028234663852886e+38)
         return ((const BooleanKey*)pkKeys)[0].m_bValue;
 
     unsigned int uiNumKeysM1 = uiNumKeys - 1;
     unsigned int uiLastIdx = *puiLastIdx;
-    float fLastTime = ((const NiAnimationKey*)((const char*)pkKeys + uiLastIdx * ucKeySize))->m_fTime;
+    float fLastTime = ((const NiAnimationKey*)((const char*)pkKeys + uiLastIdx * ucSize))->m_fTime;
 
     if (fTime < fLastTime)
     {
@@ -214,7 +221,7 @@ bool InterpolateBooleanKey(float fTime, const NiAnimationKey* pkKeys, unsigned i
     __assume(i <= uiNumKeysM1);
     for (; i <= uiNumKeysM1; i++)
     {
-        const NiAnimationKey* pkKey = (const NiAnimationKey*)((const char*)pkKeys + i * ucKeySize);
+        const NiAnimationKey* pkKey = (const NiAnimationKey*)((const char*)pkKeys + i * ucSize);
         fNextTime = pkKey->m_fTime;
         if (fTime <= fNextTime)
             break;
@@ -223,12 +230,12 @@ bool InterpolateBooleanKey(float fTime, const NiAnimationKey* pkKeys, unsigned i
     }
 
     float fNormTime = (fTime - fLastTime) / (fNextTime - fLastTime);
-    const NiAnimationKey* pkKey0 = (const NiAnimationKey*)((const char*)pkKeys + uiLastIdx * ucKeySize);
-    const NiAnimationKey* pkKey1 = (const NiAnimationKey*)((const char*)pkKeys + i * ucKeySize);
+    const NiAnimationKey* pkKey0 = (const NiAnimationKey*)((const char*)pkKeys + uiLastIdx * ucSize);
+    const NiAnimationKey* pkKey1 = (const NiAnimationKey*)((const char*)pkKeys + i * ucSize);
 
     bool bResult;
     typedef void(__cdecl * InterpFnType)(float, const NiAnimationKey*, const NiAnimationKey*, void*);
-    InterpFnType pfnInterp = DAT_011f3d08[uiType];
+    InterpFnType pfnInterp = DAT_011f3d08[eType];
     pfnInterp(fNormTime, pkKey0, pkKey1, &bResult);
 
     *puiLastIdx = uiLastIdx;

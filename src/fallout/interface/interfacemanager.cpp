@@ -35,7 +35,7 @@ class InterfaceH_interfacemanager
 {
 public:
     static bool __cdecl GetSelectedTargetIndex(int);
-    static void SetQuestTarget(TESForm*, bool);
+    static void Interface_CreateLoadingMenu(TESForm*, bool);
     static void SetLookAtReference(TESObjectREFR*);
     static double GetFourthInterfaceFloat();
     static double GetThirdInterfaceFloat();
@@ -271,6 +271,7 @@ template <class A, class T> class InterfaceLocalNiTPointerListBase
     T& GetNext(void*&);
 };
 class BSOcclusionPlane;
+// pdb: class SystemColorManager, size 0x10 (here 0x1), 2 members
 class SystemColorManager
 {
   public:
@@ -293,16 +294,22 @@ int InterfaceManager::GetMenuStackEntry(int index)
 // @fnv 0x008d8400
 void MiddleHighProcess::SetRunOncePackageIndex(int aiCastingType)
 {
-    reinterpret_cast<TESEnchantableForm*>(&PackageReference)->SetCastingType((MagicSystem__CastingType)aiCastingType);
+    reinterpret_cast<TESEnchantableForm*>(&RunOncePackage)->SetCastingType((MagicSystem__CastingType)aiCastingType);
 }
 // @fnv 0x00713da0
-void InterfaceManager::AddTileIfAbsent(Tile* tile)
+// src: XBOX_DEBUG_PDB 0x00713da0
+// pdb: InterfaceManager::AddTileToUpdateList | InterfaceManager.obj | debug, call graph, high
+// pdb params: apTile
+void InterfaceManager::AddTileToUpdateList(Tile* apTile)
 {
-    if (tile && !g_011d8b44.BSSimpleArray_BGSBodyPart_1024_IsInArray((TESIdleForm*&)tile))
-        g_011d8b44.Add((TESIdleForm*&)tile);
+    if (apTile && !g_011d8b44.BSSimpleArray_BGSBodyPart_1024_IsInArray((TESIdleForm*&)apTile))
+        g_011d8b44.Add((TESIdleForm*&)apTile);
 }
 // Multiplies both x and y of this NiPoint2 by scale and returns the resulting NiPoint2.
 // @fnv 0x004a4f40
+// pdb: BGSPrimitive::`scalar deleting destructor' | BGSPrimitive.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSPrimitive::CreatePlane
+// pdb params: this
 NiPoint2 NiPoint2::operator*(float scale) const
 {
     NiPoint2 result = *this;
@@ -313,6 +320,8 @@ NiPoint2 NiPoint2::operator*(float scale) const
 // Counts the non-null items in the list by walking each node and incrementing a counter when GetItem returns a value.
 // Counts the number of non-null items in the InterfaceLocalBSSimpleList by traversing from the head node to the end.
 // @fnv 0x005ae380
+// pdb: srand | rand.obj | retail, call graph, medium
+// pdb params: seed
 template <> unsigned int InterfaceLocalBSSimpleList<EffectSetting*>::ItemsInList()
 {
     struct Traversal
@@ -331,6 +340,8 @@ template <> unsigned int InterfaceLocalBSSimpleList<EffectSetting*>::ItemsInList
     return state.count;
 }
 // @fnv 0x00717de0
+// pdb: XInputManager::SetButtonState | InterfaceManager.obj | debug, object-file run extension, low
+// pdb params: iPad, eButton, newVal
 void InterfaceManager::SendGamepadButton(int button)
 {
     if (InterfaceManager_Has360Controller() && !((unsigned char*)InterfaceManager_GetSingleton())[0x7d])
@@ -341,6 +352,8 @@ void InterfaceManager::SendGamepadButton(int button)
     }
 }
 // @fnv 0x00715d40
+// pdb: InterfaceManager::GetScreenWidth | InterfaceManager.obj | debug, call graph, high
+// pdb locals: h, w
 float InterfaceManager::UpdateInterfaceState()
 {
     float height;
@@ -352,7 +365,10 @@ float InterfaceManager::UpdateInterfaceState()
         return DAT_0106ec38;
 }
 // @fnv 0x00718fb0
-SystemColorManager::SystemColor* SystemColorManager::Find(int trait)
+// pdb: SystemColorManager::Find | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: aiID
+// pdb locals: piter, pcolor
+SystemColorManager::SystemColor* SystemColorManager::Find(int aiID)
 {
     struct Search
     {
@@ -364,7 +380,7 @@ SystemColorManager::SystemColor* SystemColorManager::Find(int trait)
     {
         state.color = (SystemColor*)((InterfaceLocalNiTPointerListBase<InterfaceLocalNiTPointerAllocator<unsigned int>, BSOcclusionPlane*>*)this)
                           ->GetNext(state.position);
-        if (state.color && Tile::GetTraitID((const char*)((InterfaceLocalInterface*)state.color)->GetRoot()) == trait)
+        if (state.color && Tile::GetTraitID((const char*)((InterfaceLocalInterface*)state.color)->GetRoot()) == aiID)
             return state.color;
     }
     return 0;
@@ -386,6 +402,10 @@ int InterfaceManager::GetTopEnterStackEntry()
     return (int)auiMenuStack[index - 1];
 }
 // @fnv 0x00717920
+// pdb: InterfaceManager::SetCursorAlpha | InterfaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to InterfaceManager::IsPipboyMenuTopmost
+// pdb params: iAlpha
+// pdb locals: pmodel, pnode, pcursor, pmaterial
 bool InterfaceManager::IsInterfaceMenuActive()
 {
     if (ConsoleManager::Instance(true)->IsConsoleActive())
@@ -399,6 +419,8 @@ bool InterfaceManager::IsInterfaceMenuActive()
 // Initialises the object's fields: clears offsets 0x0, 0xc and 0x10, sets offset 0x4 to 0.0f and offset 0x8 to 0.001f, then returns pThis.
 // @fnv 0x0070a8a0
 // src: GUESS 0x0070a8a0 (confidence: low)
+// pdb: XUserInterface::CreateInstance | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb locals: tempMemContext
 void* __fastcall Object_InitializeFields_0070a8a0(void* pThis)
 {
     *(int*)((char*)pThis + 0xc) = 0;
@@ -412,8 +434,9 @@ void* __fastcall Object_InitializeFields_0070a8a0(void* pThis)
 void __fastcall ResetEntries(void*);
 
 // @fnv 0x0070a8e0
-// src: COMMUNITY 0x0070a8e0
-void* __fastcall InterfaceManager_TutorialManager_TutorialManager(void* p)
+// src: XBOX_DEBUG_PDB 0x0070a8e0
+// pdb: InterfaceManager::TutorialManager::TutorialManager | InterfaceManager.obj | debug, upstream name already matches, high
+void* __fastcall InterfaceManager_TutorialManager_ctor(void* p)
 {
     ResetEntries(p);
     return p;
@@ -434,10 +457,12 @@ void BSShaderManager_SetShadowSceneNode(unsigned char, SSN*);
 // Stores a byte at offset 0x120 of this object, then passes it and this to FUN_00b4f2f0.
 // @fnv 0x0070b760
 // src: COMMUNITY 0x0070b760
-void SSN::ShadowSceneNode_SetSceneGraphIndex(unsigned char ucValue)
+// pdb: ShadowSceneNode::SetSceneGraphIndex | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb params: acSceneGraphIndex
+void SSN::ShadowSceneNode_SetSceneGraphIndex(unsigned char acSceneGraphIndex)
 {
-    *(unsigned char*)((char*)this + 0x120) = ucValue;
-    BSShaderManager_SetShadowSceneNode(ucValue, this);
+    *(unsigned char*)((char*)this + 0x120) = acSceneGraphIndex;
+    BSShaderManager_SetShadowSceneNode(acSceneGraphIndex, this);
 }
 
 struct EffectSetting;
@@ -455,6 +480,9 @@ Tile* FindMenuById(int);
 // Stores a at offset 0x12, then looks up tile 0x3eb and, if it has a menu, forwards a to that menu's SetCurrentPageFromChar.
 // @fnv 0x0070b790
 // src: COMMUNITY 0x0070b790
+// pdb: InterfaceManager::SetStatsPageNumber | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: acTab
+// pdb locals: pmenu, ptile
 void FUN_0070b790_shell::InterfaceManager_SetStatsPageNumbe(char a)
 {
     *(char*)((char*)this + 0x12) = a;
@@ -475,7 +503,7 @@ struct FUN_0070b810_shell : public InterfaceManager
 };
 
 Menu* __cdecl FindMenuById(int);
-void __cdecl SetInventoryTab(int);
+void __cdecl InventoryMenu_SetCurrentTab(int);
 
 
 __declspec(noalias) inline Menu* CallTileGetMenu(Tile* pTile)
@@ -485,6 +513,9 @@ __declspec(noalias) inline Menu* CallTileGetMenu(Tile* pTile)
 
 // @fnv 0x0070b810
 // src: COMMUNITY 0x0070b810
+// pdb: InterfaceManager::SetInventoryPageNumber | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: acTab
+// pdb locals: pmenu, ptile
 void FUN_0070b810_shell::InterfaceManager_SetInventoryPageNumber(char acTab)
 {
     *((char*)this + 0x13) = acTab;
@@ -496,7 +527,7 @@ void FUN_0070b810_shell::InterfaceManager_SetInventoryPageNumber(char acTab)
     }
     if (pmenu)
     {
-        SetInventoryTab(acTab);
+        InventoryMenu_SetCurrentTab(acTab);
     }
 }
 }  // namespace fnv_0070b810
@@ -513,21 +544,24 @@ struct S0b870
 {
     char pad[0x15];
     char tab;
-    void InterfaceManager_SetMapPageNumber(char c);
+    void InterfaceManager_SetMapPageNumber(char acTab);
 };
 // Stores c in tab, then looks up tile 0x3ff and, if it has a menu, forwards c to FUN_007069f0.
 // @fnv 0x0070b870
 // src: COMMUNITY 0x0070b870
-void S0b870::InterfaceManager_SetMapPageNumber(char c)
+// pdb: InterfaceManager::SetMapPageNumber | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: acTab
+// pdb locals: pmenu, ptile
+void S0b870::InterfaceManager_SetMapPageNumber(char acTab)
 {
-    tab = c;
+    tab = acTab;
     Tile* pmenu = FindMenuById(0x3ff);
     {
         InterfaceMenuPageAccess* ptile = 0;
         if (pmenu)
             ptile = static_cast<InterfaceMenuPageAccess*>(pmenu->GetMenu());
         if (ptile)
-            ptile->FUN_007069f0(c);
+            ptile->FUN_007069f0(acTab);
     }
 }
 }  // namespace fnv_0070b870
@@ -552,6 +586,7 @@ struct InterfaceAudioForwardAccess : BSAudio
 };
 // @fnv 0x0070bba0
 // src: COMMUNITY 0x0070bba0
+// pdb: BSAudio::PauseAnimationSounds | InterfaceManager.obj | debug, upstream name already matches, high
 void InterfaceAudioForwardAccess::BSAudio_PauseAnimationSounds()
 {
     BSAudio_PauseAllOfType(0x40000000, 1);
@@ -560,9 +595,10 @@ void InterfaceAudioForwardAccess::BSAudio_PauseAnimationSounds()
 
 // @fnv 0x0070bbc0
 // src: COMMUNITY 0x0070bbc0
+// pdb: BSAudio::UnPauseAnimationSounds | InterfaceManager.obj | debug, upstream name already matches, high
 void __fastcall BSAudio_UnPauseAnimationSounds(BSAudioManager* pAudioManager)
 {
-    pAudioManager->DisableAudioPlayback(0x40000000, true);
+    pAudioManager->UnPauseAllOfType(0x40000000, true);
 }
 
 namespace fnv_0070bc00 {
@@ -570,9 +606,10 @@ namespace fnv_0070bc00 {
 
 // @fnv 0x0070bc00
 // src: XBOX_PDB 0x0070bc00
+// pdb: BSAudio::UnPauseWorldVoices | InterfaceManager.obj | debug, upstream name already matches, high
 void __fastcall BSAudio_UnPauseWorldVoices(BSAudioManager* pAudioManager)
 {
-    pAudioManager->DisableAudioPlayback(6, true);
+    pAudioManager->UnPauseAllOfType(6, true);
 }
 }  // namespace fnv_0070bc00
 
@@ -651,6 +688,7 @@ extern StartMenu* DAT_011daac0;
 // Returns true when DAT_011daac0 exists and its flag 1 is not set.
 // @fnv 0x0070edf0
 // src: XBOX_PDB 0x0070edf0
+// pdb: StartMenu::MainMenuIsActive | InterfaceManager.obj | debug, upstream name already matches, high
 bool __cdecl StartMenu_MainMenuIsActive()
 {
     return DAT_011daac0 && !DAT_011daac0->IsFlagSet((StartMenu::Flag)1);
@@ -666,6 +704,7 @@ float __fastcall PlayerCharacter_GetWorldFOV(PlayerCharacter* _this)
 
 // @fnv 0x00711e20
 // src: COMMUNITY 0x00711e20
+// pdb: InterfaceManager::GetScreenLeft | InterfaceManager.obj | debug, upstream name already matches, high
 float InterfaceManager_GetScreenLeft()
 {
     return -InterfaceManager::UpdateInterfaceState() / 2.0;
@@ -673,6 +712,7 @@ float InterfaceManager_GetScreenLeft()
 
 // @fnv 0x00711e40
 // src: COMMUNITY 0x00711e40
+// pdb: InterfaceManager::GetScreenRight | InterfaceManager.obj | debug, upstream name already matches, high
 float InterfaceManager_GetScreenRight()
 {
     return InterfaceManager::UpdateInterfaceState() / 2.0;
@@ -681,6 +721,7 @@ float InterfaceManager_GetScreenRight()
 float __cdecl InterfaceManager_GetScreenHeight(void);
 
 // @fnv 0x00711e60
+// pdb: InterfaceManager::GetScreenTop | InterfaceManager.obj | debug, object-file run extension, low
 float __cdecl GetNegativeHalfValue(void)
 {
     return -InterfaceManager_GetScreenHeight() / 2.0;
@@ -689,6 +730,7 @@ float __cdecl GetNegativeHalfValue(void)
 float __cdecl InterfaceManager_GetScreenHeight(void);
 
 // @fnv 0x00711e80
+// pdb: InterfaceManager::GetScreenBottom | InterfaceManager.obj | debug, object-file run extension, low
 float __cdecl GetHalfValue(void)
 {
     return InterfaceManager_GetScreenHeight() / 2.0;
@@ -706,9 +748,11 @@ struct S4
 // Calls FUN_004ebbc0 with 0xf and a, then calls SetByteAtOffset60 on the returned object.
 // @fnv 0x007123a0
 // src: XBOX_PDB 0x007123a0
-void S4::ImageSpaceManager_SetMenuBGBlendEnabled(unsigned char aucValue)
+// pdb: ImageSpaceManager::SetMenuBGBlendEnabled | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb params: abEnabled
+void S4::ImageSpaceManager_SetMenuBGBlendEnabled(unsigned char abEnabled)
 {
-    GetEffect_004ebbc0(0xf, aucValue)->SetByteAtOffset60();
+    GetEffect_004ebbc0(0xf, abEnabled)->SetByteAtOffset60();
 }
 
 struct BSRenderedTexture;
@@ -741,6 +785,8 @@ struct Dummy_00712420
 // Forwards afValue to the object returned by FUN_004ebbc0(0xf) via FUN_00712420.
 // @fnv 0x007123f0
 // src: COMMUNITY 0x007123f0
+// pdb: ImageSpaceManager::SetMenuBGBlendValue | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb params: afValue
 void FUN_007123f0_shell::ImageSpaceManager_SetMenuBGBlendValue(float afValue)
 {
     ((Dummy_00712420*)((Dummy_004ebbc0*)this)->GetEffect_004ebbc0(0xf))->ImageSpaceEffectMenuBG_SetBlendValue(afValue);
@@ -757,6 +803,8 @@ void InterfaceCameraAccess::SetPort(const NiRect<float>& kPort)
 
 // Stores the three floats a, b and c into the 12-byte element at index i of this object.
 // @fnv 0x007133b0
+// pdb: NiMatrix3::SetRow | TESScriptFunctions.obj | debug, call graph, medium
+// pdb params: uiRow, f0, f1, f2
 void NiMatrix3::SetRow(unsigned int uiIndex, float a, float b, float c)
 {
     *(float*)((char*)this + uiIndex * 12) = a;
@@ -779,7 +827,9 @@ extern InterfaceLocalNiTPointerListBase<InterfaceLocalNiTPointerAllocator<unsign
 
 // Queries the performance counter, deletes scripts from g_011d8b2c until the array check passes, then waits for tasks during rendering.
 // @fnv 0x00713c00
-void WaitForTasksAndClearScripts()
+// src: XBOX_DEBUG_PDB 0x00713c00
+// pdb: ClearRenderedMenuDeleteList | InterfaceManager.obj | debug, call graph, high
+void ClearRenderedMenuDeleteList()
 {
     g_011d8c18.QueryPerformanceCounter(0);
     while (!((BSSimpleArray<NavMeshEdgeSegment, 1024>*)&g_011d8b2c)->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
@@ -795,13 +845,16 @@ bool __cdecl Actor_AreReferencedValuesEqual(NavMesh* const&, NavMesh* const&);
 
 struct S3de0
 {
-    void InterfaceManager_RemoveTileFromUpdateList(NavMesh* p);
+    void InterfaceManager_RemoveTileFromUpdateList(NavMesh* apTile);
 };
 // @fnv 0x00713de0
 // src: COMMUNITY 0x00713de0
-void S3de0::InterfaceManager_RemoveTileFromUpdateList(NavMesh* p)
+// pdb: InterfaceManager::RemoveTileFromUpdateList | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: apTile
+// pdb locals: uiremoveIndex
+void S3de0::InterfaceManager_RemoveTileFromUpdateList(NavMesh* apTile)
 {
-    unsigned int idx = ((BSSimpleArray<NavMesh*, 1024>*)&g_011d8b44)->Find(p, 0, Actor_AreReferencedValuesEqual);
+    unsigned int idx = ((BSSimpleArray<NavMesh*, 1024>*)&g_011d8b44)->Find(apTile, 0, Actor_AreReferencedValuesEqual);
     if (idx != 0xFFFFFFFF)
         ((BSSimpleArray<NavMesh*, 1024>*)&g_011d8b44)->UpdateEntryValue(idx, 1);
 }
@@ -814,7 +867,7 @@ struct InterfaceTileRenderFlagAccess : public Tile
 // @fnv 0x00713ee0
 void InterfaceTileRenderFlagAccess::ClearFlag()
 {
-    m_bFlagAfterUiFlags = false;
+    bNeedsNiUpdate = false;
 }
 
 struct S148c0
@@ -826,6 +879,9 @@ struct S148c0
 typedef void(__thiscall* Fn148c0)(S148c0*, int, int);
 // @fnv 0x007148c0
 // src: COMMUNITY 0x007148c0
+// pdb: NiSemaphore::Wait | InterfaceManager.obj | retail, object-file run extension, low
+// pdb params: aiTime
+// pdb locals: ires
 void S148c0::RendererClearBufferHook(int aiArg1, int aiArg2)
 {
     if (!NiRenderer_Check_RenderTargetGroupActive("ClearBuffer", 1))
@@ -848,9 +904,11 @@ void __cdecl BSRenderState_SetZEnable(unsigned int, unsigned int);
 
 // @fnv 0x00714a40
 // src: COMMUNITY 0x00714a40
-void __cdecl BSRenderState_RestoreZEnable(int aiAmount)
+// pdb: BSRenderState::RestoreZEnable | Main.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreZEnable(int aeLock)
 {
-    DAT_011ff9d8 -= aiAmount;
+    DAT_011ff9d8 -= aeLock;
     BSRenderState_SetZEnable(1, 0);
 }
 
@@ -859,9 +917,11 @@ void __cdecl BSRenderState_SetZWriteEnable(unsigned int, unsigned int);
 
 // @fnv 0x00714a60
 // src: COMMUNITY 0x00714a60
-void __cdecl BSRenderState_RestoreZWriteEnable(int aiAmount)
+// pdb: BSRenderState::RestoreZWriteEnable | Main.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreZWriteEnable(int aeLock)
 {
-    DAT_011ff9dc -= aiAmount;
+    DAT_011ff9dc -= aeLock;
     BSRenderState_SetZWriteEnable(1, 0);
 }
 
@@ -870,9 +930,11 @@ void __cdecl BSRenderState_SetZFunc(int, int);
 
 // @fnv 0x00714a80
 // src: COMMUNITY 0x00714a80
-void __cdecl BSRenderState_RestoreZFunc(int aiAmount)
+// pdb: BSRenderState::RestoreZFunc | BSRenderedTexture.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreZFunc(int aeLock)
 {
-    DAT_011ff9e0 -= aiAmount;
+    DAT_011ff9e0 -= aeLock;
     BSRenderState_SetZFunc(3, 0);
 }
 
@@ -881,9 +943,11 @@ void __cdecl BSRenderState_SetAlphaTestEnable(int, int);
 
 // @fnv 0x00714aa0
 // src: COMMUNITY 0x00714aa0
-void __cdecl BSRenderState_RestoreAlphaTestEnable(int aiAmount)
+// pdb: BSRenderState::RestoreAlphaTestEnable | BSShaderAccumulator.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreAlphaTestEnable(int aeLock)
 {
-    DAT_011ff9e8 -= aiAmount;
+    DAT_011ff9e8 -= aeLock;
     BSRenderState_SetAlphaTestEnable(0, 0);
 }
 
@@ -892,9 +956,11 @@ void __cdecl BSRenderState_SetAlphaTestFuncRef(int, int, int);
 
 // @fnv 0x00714ac0
 // src: COMMUNITY 0x00714ac0
-void __cdecl BSRenderState_RestoreAlphaTestFuncRef(int aiAmount)
+// pdb: BSRenderState::RestoreAlphaTestFuncRef | BSRenderState_Xenon.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreAlphaTestFuncRef(int aeLock)
 {
-    DAT_011ff9ec -= aiAmount;
+    DAT_011ff9ec -= aeLock;
     BSRenderState_SetAlphaTestFuncRef(0, 0, 0);
 }
 
@@ -903,22 +969,26 @@ extern int DAT_011ff9f0;
 
 // @fnv 0x00714ae0
 // src: COMMUNITY 0x00714ae0
-void __cdecl BSRenderState_RestoreAlphaBlendEnable(int aiAmount)
+// pdb: BSRenderState::RestoreAlphaBlendEnable | Main.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreAlphaBlendEnable(int aeLock)
 {
-    DAT_011ff9f0 -= aiAmount;
+    DAT_011ff9f0 -= aeLock;
     BSRenderStateManager_interfacemanager::SetDepthBufferEnabled(false, BSRENDERSTATE_LOCK_BSRS_NOLOCK);
 }
 
 extern int DAT_011ff9f4;
-void __cdecl AddToTwoCounters(int, int, int);
+void __cdecl BSRenderState_SetAlphaBlendFunc(int, int, int);
 
 // Subtracts param_1 from DAT_011ff9f4, then calls AddToTwoCounters with (0, 1, 0).
 // @fnv 0x00714b00
 // src: COMMUNITY 0x00714b00
-void __cdecl BSRenderState_RestoreAlphaBlendFunc(int aiAmount)
+// pdb: BSRenderState::RestoreAlphaBlendFunc | BSRenderState_Xenon.obj | retail, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreAlphaBlendFunc(int aeLock)
 {
-    DAT_011ff9f4 -= aiAmount;
-    AddToTwoCounters(0, 1, 0);
+    DAT_011ff9f4 -= aeLock;
+    BSRenderState_SetAlphaBlendFunc(0, 1, 0);
 }
 
 extern int DAT_011ffa00;
@@ -927,9 +997,11 @@ void __cdecl BSRenderState_SetStencilAction(int, int, int, int);
 // Subtracts param_1 from DAT_011ffa00, then calls FUN_00b980c0 with four zero arguments.
 // @fnv 0x00714b20
 // src: COMMUNITY 0x00714b20
-void __cdecl BSRenderState_RestoreStencilAction(int aiAmount)
+// pdb: BSRenderState::RestoreStencilAction | BSRenderState_Xenon.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreStencilAction(int aeLock)
 {
-    DAT_011ffa00 -= aiAmount;
+    DAT_011ffa00 -= aeLock;
     BSRenderState_SetStencilAction(0, 0, 0, 0);
 }
 
@@ -939,22 +1011,26 @@ void __cdecl BSRenderState_SetStencilFunc(int, int, int, int);
 // Subtracts param_1 from DAT_011ffa04, then calls FUN_00b98180 with (0, 0, 0xff, 0).
 // @fnv 0x00714b50
 // src: COMMUNITY 0x00714b50
-void __cdecl BSRenderState_RestoreStencilFunc(int aiAmount)
+// pdb: BSRenderState::RestoreStencilFunc | BSRenderState_Xenon.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreStencilFunc(int aeLock)
 {
-    DAT_011ffa04 -= aiAmount;
+    DAT_011ffa04 -= aeLock;
     BSRenderState_SetStencilFunc(0, 0, 0xff, 0);
 }
 
 extern int DAT_011ffa08;
-void __cdecl AddToSlot(int, int);
+void __cdecl BSRenderState_SetStencilWriteMask(int, int);
 
 // Subtracts param_1 from DAT_011ffa08, then calls AddToSlot with 0xff and 0.
 // @fnv 0x00714b80
 // src: COMMUNITY 0x00714b80
-void __cdecl BSRenderState_RestoreStencilWriteMask(int aiAmount)
+// pdb: BSRenderState::RestoreStencilWriteMask | BSRenderState_Xenon.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreStencilWriteMask(int aeLock)
 {
-    DAT_011ffa08 -= aiAmount;
-    AddToSlot(0xff, 0);
+    DAT_011ffa08 -= aeLock;
+    BSRenderState_SetStencilWriteMask(0xff, 0);
 }
 
 extern int DAT_011ffa0c;
@@ -972,9 +1048,11 @@ extern int DAT_011ffa10;
 
 // @fnv 0x00714bd0
 // src: COMMUNITY 0x00714bd0
-void __cdecl BSRenderState_RestoreScissorRect(int param_1)
+// pdb: BSRenderState::RestoreScissorRect | BSShaderManager.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreScissorRect(int aeLock)
 {
-    DAT_011ffa10 -= param_1;
+    DAT_011ffa10 -= aeLock;
 }
 
 extern int DAT_011ff9e4;
@@ -983,9 +1061,11 @@ void __cdecl SendFloatAdd(float, int);
 // Subtracts param_1 from DAT_011ff9e4, then calls SendFloatAdd with 0.0f and 0.
 // @fnv 0x00714bf0
 // src: COMMUNITY 0x00714bf0
-void __cdecl BSRenderState_RestoreDepthBias(int param_1)
+// pdb: BSRenderState::RestoreDepthBias | BSShaderAccumulator.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreDepthBias(int aeLock)
 {
-    DAT_011ff9e4 -= param_1;
+    DAT_011ff9e4 -= aeLock;
     SendFloatAdd(0.0f, 0);
 }
 
@@ -994,9 +1074,11 @@ void __cdecl BSRenderState_SetWireframeEnable(int, int);
 
 // @fnv 0x00714c20
 // src: COMMUNITY 0x00714c20
-void __cdecl BSRenderState_RestoreWireframeEnable(int param_1)
+// pdb: BSRenderState::RestoreWireframeEnable | Main.obj | debug, upstream name already matches, high
+// pdb params: aeLock
+void __cdecl BSRenderState_RestoreWireframeEnable(int aeLock)
 {
-    DAT_011ffa20 -= param_1;
+    DAT_011ffa20 -= aeLock;
     BSRenderState_SetWireframeEnable(0, 0);
 }
 
@@ -1005,6 +1087,7 @@ int __cdecl BSRenderState_SetAlphaToCoverageEnable(int, int);
 
 // @fnv 0x00714c40
 // src: COMMUNITY 0x00714c40
+// pdb: FOVATSEffectManager::GetTarget | Main.obj | debug, object-file run extension, low
 int __cdecl BSRenderState_RestoreAlphaToCoverageEnable(int param_1)
 {
     DAT_011ffa28 -= param_1;
@@ -1018,6 +1101,9 @@ struct FUN_00714f90_shell : public InterfaceManager
 
 // @fnv 0x00714f90
 // src: COMMUNITY 0x00714f90
+// pdb: InterfaceManager::IsMenuInStack | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb params: aiMenuID
+// pdb locals: i
 bool FUN_00714f90_shell::InterfaceManager_IsMenuInStack(unsigned int aiMenuID)
 {
     for (unsigned int i = 0; i < 10; ++i)
@@ -1039,6 +1125,9 @@ void __cdecl Interface_HideMenus();
 void __fastcall MenuConsole_ToggleVisible(ConsoleManager*);
 
 // @fnv 0x00714fd0
+// pdb: InterfaceManager::PopFromEnterStack | InterfaceManager.obj | debug, call graph, high
+// pdb params: aiID, abForceRemoval
+// pdb locals: b, a, bfound, c
 int FUN_00714fd0_shell::RemoveFromStack(int aiID, bool abForceRemoval)
 {
     int a;
@@ -1101,6 +1190,8 @@ extern float DAT_0106f2dc;
 
 // @fnv 0x00715da0
 // src: XBOX_PDB 0x00715da0
+// pdb: InterfaceManager::GetScreenHeight | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb locals: h, w
 float __cdecl InterfaceManager_GetScreenHeight()
 {
     float w = Renderer_GetScreenWidth();
@@ -1113,13 +1204,14 @@ float __cdecl InterfaceManager_GetScreenHeight()
 
 
 extern TES* g_TES;
-void __cdecl PurgeTerminalModel();
+void __cdecl FORenderedTerminal_ReleaseStaticGeometry();
 
 // @fnv 0x007160b0
 // src: COMMUNITY 0x007160b0
+// pdb: InterfaceManager::ForceTextureRelease | InterfaceManager.obj | retail, upstream name already matches, high
 void __fastcall InterfaceManager_ForceTextureRelease(InterfaceManager* pThis)
 {
-    PurgeTerminalModel();
+    FORenderedTerminal_ReleaseStaticGeometry();
     pThis->CombatController_GetCombatState()->ClearTextures();
     MapMenu::OpenMap();
     g_TES->SetTESActive(true);
@@ -1138,12 +1230,16 @@ struct Node_007165d0
 
 // Walks the list at offset 0x164 of the object returned by FUN_004b7210, unlinks and deletes the first node whose id equals param_1.
 // @fnv 0x007165d0
-void __cdecl RemoveNodeById(int aiId)
+// src: XBOX_DEBUG_PDB 0x007165d0
+// pdb: InterfaceManager::ClearTimer | InterfaceManager.obj | debug, call graph (shared callers), high
+// pdb params: apIndex
+// pdb locals: ptimer, pnext
+void __cdecl InterfaceManager_ClearTimer(int apIndex)
 {
     Node_007165d0* node = (*(Node_007165d0**)((char*)InterfaceManager_GetSingleton() + 0x164))->next;
     while (node != 0)
     {
-        if (node->id == aiId)
+        if (node->id == apIndex)
         {
             Node_007165d0* next = node->next;
             node->prev->next = next;
@@ -1179,6 +1275,9 @@ struct Node_00716660
 
 // @fnv 0x00716660
 // src: COMMUNITY 0x00716660
+// pdb: InterfaceManager::GetTimerPercent | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: apIndex
+// pdb locals: ptimer
 float __cdecl InterfaceManager_GetMenuFade(int aiId)
 {
     Node_00716660* node = *(Node_00716660**)(*(int*)((char*)InterfaceManager_GetSingleton() + 0x164) + 0x10);
@@ -1212,6 +1311,8 @@ struct AI_
 // Stores the current time section at offset 0x154, clears offset 0x158, and stores the argument at offset 0x150.
 // @fnv 0x007166f0
 // src: COMMUNITY 0x007166f0
+// pdb: InterfaceManager::SetRepeatingKey | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: aiKey
 void AI_::InterfaceManager_SetRepeatKey(int a)
 {
     *(int*)((char*)this + 0x154) = g_timeGlobal.GetSection();
@@ -1231,6 +1332,9 @@ struct FUN_00716910_shell : InterfaceManager
 // Compares the tile's menu with the top tile's menu and returns false when the top tile's float at 0xfa7 is 0x66 or 0x1776 and the menus differ.
 // @fnv 0x00716910
 // src: COMMUNITY 0x00716910
+// pdb: InterfaceManager::TileIsAcceptingEvents | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: pTile
+// pdb locals: iType, pTopTile
 bool FUN_00716910_shell::InterfaceManager_TileIsAcceptingEvents(Tile* pTile)
 {
     int val;
@@ -1260,6 +1364,8 @@ struct S6a70
 };
 // Assigns the same C string to both string members a and b.
 // @fnv 0x00716a70
+// pdb: EditableTextField::SetText | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: sDefaultText
 void S6a70::SetBothStrings(const char* pcString)
 {
     a = pcString;
@@ -1273,6 +1379,8 @@ struct StackInt
 
 // @fnv 0x00716aa0
 // src: COMMUNITY 0x00716aa0
+// pdb: EditableTextField::SetMaxSize | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb params: iSize
 void __fastcall EditableTextField_SetMaxSize(int* pThis, StackInt arg)
 {
     pThis[5] = arg.value - 5;
@@ -1351,6 +1459,7 @@ struct Interface_shell : public InterfaceLocalInterface
 
 // @fnv 0x007177c0
 // src: XBOX_PDB 0x007177c0
+// pdb: InterfaceManager::GetScreenSafeX | InterfaceManager.obj | retail, upstream name already matches, high
 float __cdecl InterfaceManager_GetScreenSafeX(void)
 {
     if (IsEyefinity())
@@ -1375,6 +1484,7 @@ struct Interface_Wrap : public InterfaceLocalInterface
 
 // @fnv 0x00717820
 // src: XBOX_PDB 0x00717820
+// pdb: InterfaceManager::GetScreenSafeY | InterfaceManager.obj | retail, upstream name already matches, high
 float __cdecl InterfaceManager_GetScreenSafeY()
 {
     return ((bool(__cdecl*)()) & Interface_Wrap::IsInterfaceOpen)() ? *g_011d8bc0.Int() : *g_011d8bf0.Int();
@@ -1385,6 +1495,7 @@ bool __cdecl Interface_IsMenuIDVisible(int, unsigned int);
 
 // @fnv 0x007178a0
 // src: XBOX_PDB 0x007178a0
+// pdb: InterfaceManager::IsInPipboyMenu | InterfaceManager.obj | retail, upstream name already matches, high
 bool __cdecl InterfaceManager_IsInPipboyMenu()
 {
     if (Interface_IsMenuIDVisible(0x3eb, 0) || Interface_IsMenuIDVisible(0x3ea, 0) || Interface_IsMenuIDVisible(0x40b, 0) || Interface_IsMenuIDVisible(0x425, 0) ||
@@ -1416,6 +1527,8 @@ static InterfaceLocalNiNode* (Tile::*const pTileFunc)() = &Tile::GetModel_0056c7
 
 // @fnv 0x00717990
 // src: COMMUNITY 0x00717990
+// pdb: InterfaceManager::IsCurrentRenderedMenuTopmost | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: pmodel, topmenu, pmenu
 bool __cdecl InterfaceManager_IsCurrentRenderedMenuTopmost()
 {
     if (*(BSAudio**)(DAT_011d8a80 + 0x16c) == 0)
@@ -1467,6 +1580,9 @@ extern DummyNode g_011d8b54;
 
 // @fnv 0x00717e70
 // src: XBOX_PDB 0x00717e70
+// pdb: InterfaceManager::DoEnter | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: apMenu, aiID, apTarget
+// pdb locals: pnode
 void FUN_00717e70_shell::InterfaceManager_DoEnter(Menu* apMenu, int aiID, Tile* apTarget)
 {
     for (DummyNode* pnode = &g_011d8b54; pnode != 0 && *_ref_006815c0(pnode) != 0; pnode = _ref_00726070(pnode))
@@ -1492,6 +1608,9 @@ GlobalObject2_0096a2d0* __fastcall _ref_00726070(GlobalObject2_0096a2d0*);
 
 // @fnv 0x00717ef0
 // src: XBOX_PDB 0x00717ef0
+// pdb: InterfaceManager::DoLeave | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: apMenu, aiID, apTarget
+// pdb locals: pnode
 void FUN_00717ef0_shell::InterfaceManager_DoLeave(Menu* apMenu, int aiID, Tile* apTarget)
 {
     for (GlobalObject2_0096a2d0* pnode = &g_011d8b54; pnode && *_ref_006815c0(pnode); pnode = _ref_00726070(pnode))
@@ -1562,6 +1681,8 @@ struct InterfaceManager_helper
 // Returns a TESImageSpaceModifier chosen by player state, top menu ID, or whether the Player Name Entry Menu tile exists.
 // @fnv 0x00718ab0
 // src: XBOX_PDB 0x00718ab0
+// pdb: InterfaceManager::GetCurrentImagespaceMod | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: presultMod, etopID
 TESImageSpaceModifier* FUN_00718ab0_shell::InterfaceManager_GetCurrentImagespaceMod()
 {
     TESImageSpaceModifier* presultMod = 0;
@@ -1614,6 +1735,8 @@ bool __cdecl Actor_AreReferencedValuesEqual(NavMesh* const&, NavMesh* const&);
 // Returns whether Find locates aValue in the array using FUN_009a3830, i.e. the index is not -1.
 // @fnv 0x009962f0
 // src: XBOX_PDB 0x009962f0
+// pdb: BSSimpleArray<TESAmmo *,1024>::IsInArray | CombatState.obj | debug, call graph, high
+// pdb params: aValue
 template <> bool BSSimpleArray<NavMesh*, 1024>::BSSimpleArray_BGSBodyPart_1024_IsInArray(NavMesh*& aValue)
 {
     return ((BSSimpleArray<NavMesh*, 1024>*)this)->Find((NavMesh* const&)aValue, 0, Actor_AreReferencedValuesEqual) != (unsigned int)-1;
@@ -1632,6 +1755,7 @@ struct FUN_0070c440_stub
 };
 // @fnv 0x0070c440
 // src: COMMUNITY 0x0070c440
+// pdb: bhkCharacterController::GetCollisionFilter | InterfaceManager.obj | debug, upstream name already matches, high
 bhkFilter FUN_0070c440_stub::bhkCharacterController_GetCollisionFilter()
 {
     return m_kNinthAdditionalHighProcessField ? ((bhkWorldObject*)m_kNinthAdditionalHighProcessField)->GetFilter()
@@ -1655,6 +1779,9 @@ struct FUN_00717ef0_shell
 
 // If leaving and both pointers are set, clears two tile values and calls FUN_00717ef0, then nulls the pointers at offsets 0xcc and 0xd0.
 // @fnv 0x007157b0
+// pdb: InterfaceManager::ClearOverTileTarget | InterfaceManager.obj | retail, call graph (shared callers), high
+// pdb params: abDoLeave
+// pdb locals: ptarget, pmenu
 void FUN_007157b0_shell::ClearMenuTargets(bool abDoLeave)
 {
     if (abDoLeave && *(void**)((char*)this + 0xd0) && *(void**)((char*)this + 0xcc))
@@ -1685,6 +1812,10 @@ struct FUN_00716010_stub
 // Clears any of the five slots that equal p, then calls ClearPmeIfMatches(p).
 // @fnv 0x00716010
 // src: COMMUNITY 0x00716010
+// pdb: InterfaceManager::SetCursorTexture | InterfaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to InterfaceManager::ClearReferencePointers
+// pdb params: acFilename, abTextureOnly
+// pdb locals: flags
 void FUN_00716010_stub::InterfaceManager_ClearReferencePointers(void* p)
 {
     if (a[0] == p)
@@ -1729,6 +1860,8 @@ struct InterfaceHelper
 };
 void __cdecl QueueRenderedMenuDelete(FORenderedMenu*);
 // @fnv 0x007181d0
+// pdb: InterfaceManager::EnterRenderedMenu | InterfaceManager.obj | retail, call graph (shared callers), high
+// pdb params: apRenderedMenu
 void FUN_007181d0_shell::SetRenderedMenu(FORenderedMenu* apRenderedMenu)
 {
     if (apRenderedMenu)
@@ -1767,6 +1900,7 @@ struct DelStandIn
 };
 // Runs the destructor on this, then frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0070b690
+// pdb: TileImage::`scalar deleting destructor' | InterfaceManager.obj | debug, vtable slot, medium
 void* DelStandIn::DeleteIfFlagged(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -1786,12 +1920,15 @@ struct SystemColor
 {
     virtual void v0();
     virtual int GetValue() const;
-    void SystemColorManager_SystemColor_GetColor(NiColorA* aOutColor) const;
+    void GetColor(NiColorA* aOutColor) const;
 };
 
 // @fnv 0x007193b0
-// src: XBOX_PDB 0x007193b0
-void SystemColor::SystemColorManager_SystemColor_GetColor(NiColorA* aOutColor) const
+// src: XBOX_RETAIL_PDB 0x007193b0
+// pdb: SystemColorManager::SystemColor::GetColor | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: aOutColor
+// pdb locals: igreen, ired, iblue, ialpha
+void SystemColor::GetColor(NiColorA* aOutColor) const
 {
     unsigned int igreen;
     unsigned int ired;
@@ -2387,6 +2524,8 @@ struct PCS
 
 Tile* __fastcall _ref_00726070(MenuH*);
 // @fnv 0x0070c4a0
+// pdb: InterfaceManager::Idle | InterfaceManager.obj | retail, unique string literal, high
+// pdb locals: itmpY, bmenuModeButtonDisabled, bskipIdle, bMenuModeButtonClicked, itmpX, bforceOpenConsole, tempMemContext, pmc, pcontrols, irthumbXAxis, irthumbYAxis, phud, imouse_held, imouse_down, imouse_up, pover_target, pover_menu, CursorMenuPos, ptarget, pmenu, psoundHand, ftileX, ftileY, ikey ...
 void FUN_0070c4a0_shell::UpdateInterface()
 {
     AMC imenuType(0xd, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Interface\\InterfaceManager.cpp", 0x47a);
@@ -2732,7 +2871,7 @@ void FUN_0070c4a0_shell::UpdateInterface()
                 if (((IMX*)this)->md0 && ((IMX*)this)->md0->GetThreadID() == 1)
                 {
                     ((IMX*)this)->tcc->Set(0xfc3, 0);
-                    if (((ListH*)&((IMX*)this)->tcc->m_kChildTileList)->Find(pover_target, 0))
+                    if (((ListH*)&((IMX*)this)->tcc->xChildren)->Find(pover_target, 0))
                     {
                         ((IMX*)this)->md0->vf14((int)((IMX*)this)->tcc->GetFloat(0xfaa), ((IMX*)this)->tcc);
                     }
@@ -3100,10 +3239,10 @@ void FUN_0070c4a0_shell::UpdateInterface()
     DAT_011d8a85 = 0;
     if (!bDidFindMatch)
     {
-        void* xelem = (void*)((ListH*)&((IMX*)this)->t9c->m_kChildTileList)->Head();
+        void* xelem = (void*)((ListH*)&((IMX*)this)->t9c->xChildren)->Head();
         while (xelem && !DAT_011d8a85)
         {
-            Tile* ptile = ((ListH*)&((IMX*)this)->t9c->m_kChildTileList)->GetNext(xelem);
+            Tile* ptile = ((ListH*)&((IMX*)this)->t9c->xChildren)->GetNext(xelem);
             if (ptile)
             {
                 MenuH* pmenu = (MenuH*)ptile->GetMenu();
@@ -3225,13 +3364,15 @@ struct UIRoot
     bool flagB;
     char pad2[0x580 - 0x22];
     UIRoot();
-    void InitInterface(bool);
+    void InterfaceManager_Init(bool);
     void InterfaceManager_InitSecond();
 };
 extern UIRoot* DAT_011d8a80;
 extern bool DAT_011d8a84;
 // Checks FUN_009f996e into DAT_011d8a84, lazily creates DAT_011d8a80, runs stage 1 or 2 on it, then clears flagA and flagB.
 // @fnv 0x00709fd0
+// pdb: InterfaceManager::Initialize | InterfaceManager.obj | debug, object-file run extension, low
+// pdb params: istage, abInitialLoad
 void __cdecl InitUIRoot(unsigned int uiStage, bool abInitialLoad)
 {
     Scratch buf;
@@ -3239,7 +3380,7 @@ void __cdecl InitUIRoot(unsigned int uiStage, bool abInitialLoad)
     if (!DAT_011d8a80)
         DAT_011d8a80 = new UIRoot;
     if (uiStage == 1)
-        DAT_011d8a80->InitInterface(abInitialLoad);
+        DAT_011d8a80->InterfaceManager_Init(abInitialLoad);
     else if (uiStage == 2)
         DAT_011d8a80->InterfaceManager_InitSecond();
     DAT_011d8a80->flagA = false;
@@ -3405,10 +3546,12 @@ class InterfaceManagerCtorView_0070a130
     Obj0070a8e0 m_4d4;
 
     InterfaceManagerCtorView_0070a130();
-    InterfaceLocalNiNode* InterfaceManager_InitSceneGraph(void* apNode);
+    InterfaceLocalNiNode* InterfaceManager_CreateSceneGraph(void* apNode);
 };
 
 // @fnv 0x0070a130
+// pdb: InterfaceManager::InterfaceManager | InterfaceManager.obj | retail, unique string literal, high
+// pdb locals: tempMemContext, fHeight, a
 InterfaceManagerCtorView_0070a130::InterfaceManagerCtorView_0070a130()
     : m_pRenderedMenuObject(0), spMenu3DRoot(0), spAccum8c(0), spAccum90(0), spAlpha(0)
 {
@@ -3489,8 +3632,8 @@ InterfaceManagerCtorView_0070a130::InterfaceManagerCtorView_0070a130()
         spAlpha->NiAlphaProperty_SetDestBlendMode(7);
     }
 
-    spMenu3DRoot = InterfaceManager_InitSceneGraph(TESMain_Get3DMenuRoot("Menu3DRoot", 1));
-    m_pRenderedMenuObject = InterfaceManager_InitSceneGraph(TESMain_GetMenuRoot("MenuRoot", 0));
+    spMenu3DRoot = InterfaceManager_CreateSceneGraph(TESMain_Get3DMenuRoot("Menu3DRoot", 1));
+    m_pRenderedMenuObject = InterfaceManager_CreateSceneGraph(TESMain_GetMenuRoot("MenuRoot", 0));
 
     MenuSystem::Instance(true);
     m_13c = new Obj006319e0;
@@ -3524,7 +3667,7 @@ typedef char _sizecheck_AutoMemContext[sizeof(AutoMemContext) == 4 ? 1 : -1];
 typedef char _sizecheck_NiUpdateData[sizeof(NiUpdateData) == 12 ? 1 : -1];
 struct FUN_0070adb0_shell : public InterfaceManager
 {
-    void InitInterface(bool);
+    void InterfaceManager_Init(bool);
 };
 
 
@@ -3564,9 +3707,10 @@ class FUN_007f7a70
 
 struct MenuH
 {
-    static bool ReadMenuDefinition(const char*, Menu*);
+    static bool Menu_RemoveFromXMLArchive(const char*, Menu*);
 };
 
+// pdb: class KFModel, size 0x14 (here 0x1), 5 members
 struct KFModel
 {
     void* GetControllerSequence();
@@ -3600,7 +3744,11 @@ Dummy_00718c90* __cdecl SystemColorManager_GetInstance();
 void __fastcall BSFogProperty_SetDistance(BSFogProperty*, float, float);
 
 // @fnv 0x0070adb0
-void FUN_0070adb0_shell::InitInterface(bool abInitialLoad)
+// src: XBOX_RETAIL_PDB 0x0070adb0
+// pdb: InterfaceManager::Init | InterfaceManager.obj | retail, unique string literal, high
+// pdb params: abInitialLoad
+// pdb locals: faspect, tempMemContext, pscene_graph, spFog, UpdateData1
+void FUN_0070adb0_shell::InterfaceManager_Init(bool abInitialLoad)
 {
     float faspect;
     AutoMemContext tempMemContext(
@@ -3625,7 +3773,7 @@ void FUN_0070adb0_shell::InitInterface(bool abInitialLoad)
     Tile::UpdateAll(false);
     SystemColorManager_GetInstance();
     *(Tile**)((char*)this + 0xa0) = (*(Tile**)((char*)this + 0x9c))->ReadFile("Data\\Menus\\globals.xml");
-    MenuH::ReadMenuDefinition("Data\\Menus\\globals.xml", 0);
+    MenuH::Menu_RemoveFromXMLArchive("Data\\Menus\\globals.xml", 0);
     (*(Tile**)((char*)this + 0xa0))->SetParent(0, 0);
     (*(Tile**)((char*)this + 0xa0))
         ->Set(Tile::GetTraitID("_background_fill_alpha"), *g_011d3174.Float() * 255.0, true);
@@ -3656,7 +3804,7 @@ void FUN_0070adb0_shell::InitInterface(bool abInitialLoad)
     *(FUN_007f7a70**)((char*)this + 0x174) = new FUN_007f7a70;
     *(bool*)this = true;
     if (abInitialLoad)
-        InterfaceH_interfacemanager::SetQuestTarget(0, false);
+        InterfaceH_interfacemanager::Interface_CreateLoadingMenu(0, false);
 }
 
 
@@ -3677,6 +3825,7 @@ struct FUN_0070b6c0 : ReleasableObject
     ~FUN_0070b6c0();
 };
 // @fnv 0x0070b6c0
+// pdb: TileImage::~TileImage | InterfaceManager.obj | debug, object-file gap fill, medium
 FUN_0070b6c0::~FUN_0070b6c0()
 {
     b = (void*)0;
@@ -3849,6 +3998,8 @@ extern Setting g_011ca394;
 extern Setting g_011d8b78;
 
 // @fnv 0x0070bc20
+// pdb: InterfaceManager::RefreshActivateREFR | InterfaceManager.obj | debug, object-file run extension, low
+// pdb locals: dir, origin, pnextActiRef, fpickLength, dir2, rot, phud, pnextTeleRef, ppick_ref, fdistanceToRef, fltr, icolFilter, activatePick, ppickRecord, a, pcon, igroup, bcheckwater, etype, waterpick, pwaterref, phit3D
 void FUN_0070bc20_shell::UpdateActivatePick()
 {
     if (InterfaceManager_IsDebugTextVisible(this))
@@ -4260,6 +4411,8 @@ extern bool DAT_011cab24;
 
 // Steps the pipboy waiver state machine (0x4bc): closes menus, plays the access animation, updates the pipboy and restores anim groups.
 // @fnv 0x0070ee80
+// pdb: InterfaceManager::UpdatePipboy | InterfaceManager.obj | retail, unique string literal, high
+// pdb locals: panim, ftime, pweapon
 void FUN_0070ee80_shell::UpdatePipboyWaiver()
 {
     static const char sMissingWaiverIdle[] =
@@ -4424,7 +4577,7 @@ typedef char _sizecheck_NiMemObject[sizeof(NiMemObject) == 1 ? 1 : -1];
 typedef char _sizecheck_NiFrustum[sizeof(::NiFrustum) == 28 ? 1 : -1];
 struct FUN_00712e90_shell : public InterfaceManager
 {
-    SceneGraph* InterfaceManager_InitSceneGraph(SceneGraph*, char*, bool);
+    SceneGraph* InterfaceManager_CreateSceneGraph(SceneGraph*, char*, bool);
 };
 
 namespace Local {
@@ -4461,8 +4614,11 @@ extern FaderManager* DAT_011d8804;
 
 // Creates or reuses a SceneGraph, sets its camera rotation, aspect-based frustum and position, and adds main/cursor root nodes when not a buffer.
 // @fnv 0x00712e90
-// src: COMMUNITY 0x00712e90
-SceneGraph* FUN_00712e90_shell::InterfaceManager_InitSceneGraph(SceneGraph* apGraph, char* apName, bool abIsBuffer)
+// src: XBOX_RETAIL_PDB 0x00712e90
+// pdb: InterfaceManager::CreateSceneGraph | InterfaceManager.obj | retail, unique string literal, high
+// pdb params: apGraph, apName, abIsBuffer
+// pdb locals: faspectRatio, tempMemContext, rot, pscene_graph, pr, frust, xyz
+SceneGraph* FUN_00712e90_shell::InterfaceManager_CreateSceneGraph(SceneGraph* apGraph, char* apName, bool abIsBuffer)
 {
     float faspectRatio;
     AutoMemContext tempMemContext(
@@ -4590,7 +4746,7 @@ struct Updater
 {
     void InterfaceManager_UpdateTileModels();
 };
-void __cdecl WaitForTasksAndClearScripts();
+void __cdecl ClearRenderedMenuDeleteList();
 void __cdecl Tile_ResetUpdateCount();
 ATM* __cdecl Tile_GetTileUpdateAllCriticalSectionLock();
 Obj8c* __stdcall AILinearTaskThreadManager_GetSingleton(int);
@@ -4601,6 +4757,8 @@ void __cdecl Tile_UpdateFadeControls();
 extern bool DAT_011d8908;
 // @fnv 0x00713c70
 // src: COMMUNITY 0x00713c70
+// pdb: InterfaceManager::LastMinuteUpdate | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: pscene_graph
 void FUN_00713c70_shell::InterfaceManager_LastMinuteUpdate()
 {
     InterfaceLocalNiNode* pscene_graph;
@@ -4610,13 +4768,13 @@ void FUN_00713c70_shell::InterfaceManager_LastMinuteUpdate()
         if (AILinearTaskThreadManager_QRunningThreads())
             AILinearTaskThreadManager_GetSingleton(0)->WaitForEvent(1);
     }
-    WaitForTasksAndClearScripts();
+    ClearRenderedMenuDeleteList();
     DAT_011d8908 = true;
     pscene_graph = ((InterfaceLocalInterface*)this)->GetRoot();
     Tile_PromoteHibernators();
     *((bool*)this + 0xdc) = false;
     if (LoadingMenuHelper::IsInterfaceActive() && !StartMenu_MainMenuIsActive())
-        ((Tile*)FindMenuById(0x3ef))->SetSpeechChallengeFailure(false);
+        ((Tile*)FindMenuById(0x3ef))->UpdateChildren(false);
     else
         Tile::UpdateAll(false);
     Tile_UpdateFadeControls();
@@ -4663,6 +4821,8 @@ struct IMStandIn
 
 // @fnv 0x00713f00
 // src: COMMUNITY 0x00713f00
+// pdb: InterfaceManager::Accumulate | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: pscene_graph
 void IMStandIn::InterfaceManager_Accumulate()
 {
     m_flag148 = true;
@@ -4697,6 +4857,8 @@ struct IMStandIn
 bool InterfaceManager_Has360Controller();
 
 // @fnv 0x00715ca0
+// pdb: InterfaceManager::GetDefaultFocus | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb locals: ptarget, imax_focus
 void IMStandIn::UpdateFocusTarget()
 {
     int imax_focus = 0x80000000;
@@ -4734,6 +4896,8 @@ void __cdecl Interface_SetMainMenuDefaults(int, int, int, int);
 void __cdecl Interface_HideMenus();
 // @fnv 0x00717660
 // src: COMMUNITY 0x00717660
+// pdb: InterfaceManager::PreLoadMainMenus | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: cmode, pmenutile
 void FUN_00717660_shell::InterfaceManager_PreLoadMainMenus()
 {
     if (*((bool*)this + 0xc8))
@@ -4806,6 +4970,10 @@ struct DummyNode;
 extern DummyNode g_011d8b54;
 // Handles gamepad input for the menu, then searches list boxes belonging to it for a tile at the given button and focuses it.
 // @fnv 0x00717f80
+// pdb: InterfaceManager::DoWheelMove | InterfaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to InterfaceManager::DoGamepad
+// pdb params: apMenu, aiID, apTarget
+// pdb locals: fcursorY, pnode, pcurrChild, icurrIndex
 bool FUN_00717f80_shell::HandleMenuGamepadInput(Menu* apMenu, int aiButton, float afValue)
 {
     InterfaceListNode* node2;
@@ -4847,6 +5015,9 @@ struct TutorialState
 
 // Unpacks bits from apLoadString into the seen flag of each entry, stopping at index 0x29.
 // @fnv 0x00718890
+// pdb: InterfaceManager::TutorialManager::Load | InterfaceManager.obj | debug, object-file run extension, low
+// pdb params: apLoadString
+// pdb locals: ibyte, cdata, ibit, eindex
 void TutorialState::LoadTutorialSeenFlags(char* apLoadString)
 {
     for (unsigned int uiByteIndex = 0; uiByteIndex < InterfaceManager_TutorialManager_GetSaveLoadSize(); ++uiByteIndex)
@@ -4880,6 +5051,7 @@ struct FUN_00718c90 : public GlobalObject_0048f200
     void AddColor(const char*, int, int, int, int);
 };
 // @fnv 0x00718c90
+// pdb: SystemColorManager::SystemColorManager | InterfaceManager.obj | retail, string-set bridge, high
 FUN_00718c90::FUN_00718c90()
 {
     m_uiFormCount = 1;
@@ -4931,8 +5103,8 @@ struct IMGamepad
     Tile* GetActiveTile();
     int GetGamepadInput(bool repeatsV, bool repeatsH, bool* isUpEvent);
     void SetGamepadState(int state);
-    Tile* FindFocusTile(int* maxFocus, int unk);
-    void SetActiveTile(Tile* tile, int type, int unk);
+    Tile* FindFocusTile(int* aiMaxFocus, int apTarget);
+    void SetActiveTile(Tile* apTarget, int aiType, int abPlaySounds);
     bool HandleMenuInput(Menu* menu, int button, float value);
     void ClearMenuInput();
 };
@@ -4950,10 +5122,10 @@ void FUN_0070f6e0_shell::HandleGamepadButton(int aiButton)
 
     if (1)
     {
-        void* elem = ((InterfaceTileChildListAccess*)&((IMGamepad*)this)->GetMenuRoot()->m_kChildTileList)->GetTailPos();
+        void* elem = ((InterfaceTileChildListAccess*)&((IMGamepad*)this)->GetMenuRoot()->xChildren)->GetTailPos();
         while (elem)
         {
-            Tile* pmenutile = ((TileChildList_interfacemanager*)&((IMGamepad*)this)->GetMenuRoot()->m_kChildTileList)->GetPrev(elem);
+            Tile* pmenutile = ((TileChildList_interfacemanager*)&((IMGamepad*)this)->GetMenuRoot()->xChildren)->GetPrev(elem);
             Menu* pmenu = 0;
             if (pmenutile)
                 pmenu = pmenutile->GetMenu();
@@ -5079,10 +5251,10 @@ void FUN_0070f6e0_shell::HandleGamepadButton(int aiButton)
         {
             int iid;
             Tile* ptarget;
-            void* elem = ((InterfaceTileChildListAccess*)&((IMGamepad*)this)->GetMenuRoot()->m_kChildTileList)->GetTailPos();
+            void* elem = ((InterfaceTileChildListAccess*)&((IMGamepad*)this)->GetMenuRoot()->xChildren)->GetTailPos();
             while (elem)
             {
-                Tile* pmenutile = ((TileChildList_interfacemanager*)&((IMGamepad*)this)->GetMenuRoot()->m_kChildTileList)->GetPrev(elem);
+                Tile* pmenutile = ((TileChildList_interfacemanager*)&((IMGamepad*)this)->GetMenuRoot()->xChildren)->GetPrev(elem);
                 Menu* pmenu = 0;
                 if (pmenutile)
                     pmenu = pmenutile->GetMenu();
@@ -5196,11 +5368,12 @@ void __cdecl Tile_FreeMaybePostUpdateList()
 }
 
 // @fnv 0x0070b5d0
-TileImage::TileImage() : spTexture(0), m_spShaderProperty(0)
+// pdb: TileImage::TileImage | InterfaceManager.obj | retail, upstream name already matches, high
+TileImage::TileImage() : spTexture(0), spTSP(0)
 {
     fScale = 1.0f;
     spTexture = 0;
-    m_bTextureLoaded = false;
+    bIsScissor = false;
 }
 
 
@@ -5212,6 +5385,8 @@ const char* __thiscall TileImage::GetImageTag()
 
 
 // @fnv 0x0070b7f0
+// pdb: StatsMenu::SetCurrentTab | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: acTab
 void __thiscall StatsMenu::SetCurrentPageFromChar(char acPage)
 {
     SetCurrentPage((StatsMenu::Page)acPage);
@@ -5306,6 +5481,7 @@ extern GlobalObject_008c71d0 g_011dfa50;
 
 // @fnv 0x00713d80
 // src: COMMUNITY 0x00713d80
+// pdb: Main::OnIdle_DoInterfaceIdle | Main.obj | retail, call graph, medium
 GlobalObject_008c71d0* AILinearTaskThreadManager_GetSingleton()
 {
     return &g_011dfa50;
@@ -5330,6 +5506,7 @@ struct FUN_00714930
 // Returns the result of Get() on the object at offset 0x190 of DAT_011f5b04, or 0 if DAT_011f5b04 is null.
 // @fnv 0x00714900
 // src: COMMUNITY 0x00714900
+// pdb: NiParallelUpdateTaskManager::SignalRenderSema | InterfaceManager.obj | retail, upstream name already matches, high
 int __cdecl NiParallelUpdateTaskManager_SignalRenderSema()
 {
     if (DAT_011f5b04)
@@ -5371,6 +5548,9 @@ struct S4
 void _FNV_Warning(const char*);
 
 // @fnv 0x00714d90
+// pdb: InterfaceManager::AddToEnterStack | InterfaceManager.obj | debug, unique string literal, high
+// pdb params: aiID
+// pdb locals: a, itemp1, itemp2
 int FUN_00714d90_shell::PushMenuStackEntry(int aiID)
 {
     int a;
@@ -5443,6 +5623,8 @@ struct FUN_00715e00_t
 
 // If aiWidth is positive, calls FUN_0045ce80 on g_011d8bd8 and on g_011d8bf0 (with aiHeight or aiWidth), then sets four tile values on the tile at this+0x9c.
 // @fnv 0x00715e00
+// pdb: InterfaceManager::ResetPipboy | InterfaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to InterfaceManager::UpdateScreenShape
 void FUN_00715e00_t::SetTileValues(int aiWidth, int aiHeight)
 {
     if (aiWidth > 0)
@@ -5504,6 +5686,8 @@ struct FUN_00716320_shell
 };
 
 // @fnv 0x00716320
+// pdb: InterfaceManager::UpdateAllTimers | InterfaceManager.obj | debug, object-file run extension, low
+// pdb locals: ptimer, pnext
 void FUN_00716320_shell::UpdateNodeTimers()
 {
     FUN_00716320_Node* pNode = (*(FUN_00716320_List**)((char*)this + 0x164))->pTail;
@@ -5549,19 +5733,22 @@ struct FUN_007164c0_List
     int iUnk08;
     FUN_0070a8a0* pHead;
 };
-void __cdecl RemoveNodeById(int);
+void __cdecl InterfaceManager_ClearTimer(int);
 float __cdecl BSMAX_00404010(float, float);
 
 // @fnv 0x007164c0
 // src: XBOX_PDB 0x007164c0
-void InterfaceManager_NewTimer(int aiKey, float afValue)
+// pdb: InterfaceManager::NewTimer | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: apIndex, afSecs
+// pdb locals: pnew, tempMemContext
+void InterfaceManager_NewTimer(int apIndex, float afSecs)
 {
     AutoMemHelper MemContext(13, true,
                              "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Interface\\InterfaceManager.cpp", 5210);
-    RemoveNodeById(aiKey);
+    InterfaceManager_ClearTimer(apIndex);
     FUN_0070a8a0* pEntry7 = new FUN_0070a8a0;
-    pEntry7->iKey = aiKey;
-    pEntry7->fValue = BSMAX_00404010(afValue, 0.0f);
+    pEntry7->iKey = apIndex;
+    pEntry7->fValue = BSMAX_00404010(afSecs, 0.0f);
     pEntry7->pNext = (*(FUN_007164c0_List**)((char*)InterfaceManager_GetSingleton() + 0x164))->pHead;
     (*(FUN_007164c0_List**)((char*)InterfaceManager_GetSingleton() + 0x164))->pHead->pPrev = pEntry7;
     (*(FUN_007164c0_List**)((char*)InterfaceManager_GetSingleton() + 0x164))->pHead = pEntry7;
@@ -5588,6 +5775,9 @@ struct FUN_00716730_t : public InterfaceManager
 
 // @fnv 0x00716730
 // src: COMMUNITY 0x00716730
+// pdb: InterfaceManager::GetRepeatingKey | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: afSpeedMod
+// pdb locals: uCurTime, breleased
 int FUN_00716730_t::GetShouldKeyBeRepeated(float afScale)
 {
     bool bReset;
@@ -5655,6 +5845,8 @@ struct TextEditString
 
 // Builds a display string from kText, inserting a cursor marker at iCursorPos when a flag is set, stores it in kDisplayText and returns it.
 // @fnv 0x007170a0
+// pdb: EditableTextField::GetDisplayText | InterfaceManager.obj | debug, object-file run extension, low
+// pdb locals: iNewCharIdx, iOldCharIdx, iLength, sTemp, sNewText
 const char* TextEditString::GetDisplayText()
 {
     char acTemp[1024];
@@ -5709,6 +5901,10 @@ struct TutorialState
 
 // Packs the results of FUN_00718840 for indices i*8+j (skipping 41) into one bitmask byte per element of apFlags.
 // @fnv 0x007187a0
+// pdb: InterfaceManager::TutorialManager::Load | InterfaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to InterfaceManager::TutorialManager::Save
+// pdb params: apLoadString
+// pdb locals: ibyte, cdata, ibit, eindex
 void TutorialState::PackFlags(unsigned char* apFlags)
 {
     for (unsigned int i = 0; i < InterfaceManager_TutorialManager_GetSaveLoadSize(); i++)
@@ -5801,14 +5997,18 @@ extern GlobalObject_0045cfe0 g_011d8cfc;
 
 struct FUN_0071d380_t
 {
-    void ClampIndexByDelta(int aiDelta);
+    void MenuConsole_ScrollBy(int aiNumLines);
 };
 
 // Adds aiDelta to the value at offset 0x24, clamps it to the array's flags and to the global int, then stores it back.
 // @fnv 0x0071d380
-void FUN_0071d380_t::ClampIndexByDelta(int aiDelta)
+// src: XBOX_DEBUG_PDB 0x0071d380
+// pdb: MenuConsole::ScrollBy | MenuConsole.obj | debug, call graph (shared callers), high
+// pdb params: aiNumLines
+// pdb locals: ilast_line, ifirst_line
+void FUN_0071d380_t::MenuConsole_ScrollBy(int aiNumLines)
 {
-    int iIndex = *(int*)((char*)this + 0x24) + aiDelta;
+    int iIndex = *(int*)((char*)this + 0x24) + aiNumLines;
     if (iIndex > (int)((InterfacemanagerOffset08View*)((char*)this + 4))->GetFlags())
         iIndex = ((InterfacemanagerOffset08View*)((char*)this + 4))->GetFlags();
     int iTop = iIndex - *((GlobalObject2_0040c150*)&g_011d8cfc)->Int();
@@ -5877,22 +6077,25 @@ InterfaceAudioManagerAccess& __cdecl InterfaceAudioManagerAccess::GetRandomGener
 }
 
 // src: COMMUNITY 0x00adcb20
-void InterfaceAudioManagerAccess::BSAudioManager_PauseAllOfType(unsigned int a1, unsigned char a2)
+void InterfaceAudioManagerAccess::BSAudioManager_PauseAllOfType(unsigned int aiType, unsigned char abExactMatch)
 {
-    InterfaceAudioManagerAccess::GetRandomGenerator().BSAudioManager_PauseAllOfType(a1, a2);
+    InterfaceAudioManagerAccess::GetRandomGenerator().BSAudioManager_PauseAllOfType(aiType, abExactMatch);
 }
 
 // @fnv 0x00ad8510
 // src: COMMUNITY 0x00ad8510
-void InterfaceAudioManagerAccess::BSAudio_PauseAllOfType(unsigned int a1, unsigned char a2)
+// pdb: BSAudio::PauseAllOfType | BSAudio.obj | retail, upstream name already matches, high
+// pdb params: aiType, abExactMatch
+void InterfaceAudioManagerAccess::BSAudio_PauseAllOfType(unsigned int aiType, unsigned char abExactMatch)
 {
-    InterfaceAudioManagerAccess::GetRandomGenerator().BSAudioManager_PauseAllOfType(a1, a2);
+    InterfaceAudioManagerAccess::GetRandomGenerator().BSAudioManager_PauseAllOfType(aiType, abExactMatch);
 }
 }  // namespace fnv_00ad8510
 
 
 // Calls ResetSystemUtility(1) on the BSSystemUtility singleton if set, then clears the singleton pointer.
 // @fnv 0x0070ad30
+// pdb: LoadingMenu::KillThread | InterfaceManager.obj | debug, object-file run extension, low
 void __cdecl ResetSystemUtility()
 {
     BSSystemUtility* pInstance = BSSystemUtility::ms_pSystemUtility;
@@ -5918,6 +6121,7 @@ struct InterfaceAudioForwardAccess : BSAudio
 
 // @fnv 0x0070bbe0
 // src: COMMUNITY 0x0070bbe0
+// pdb: BSAudio::PauseWorldVoices | InterfaceManager.obj | debug, upstream name already matches, high
 void InterfaceAudioForwardAccess::BSAudio_PauseWorldVoices()
 {
     BSAudio_PauseAllOfType(6, 1);
@@ -5935,6 +6139,9 @@ struct FUN_00711dc0
 };
 
 // @fnv 0x00711dc0
+// pdb: Tile::GetFloat | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiTrait
+// pdb locals: pvalue
 float __thiscall FUN_00711dc0::GetFloat()
 {
     return *g_011f360c.Float();
@@ -6034,6 +6241,7 @@ float __cdecl InterfaceManager_GetScreenHeight(void);
 
 // Calls FUN_00706e20 and divides its result by the value returned by FUN_00715da0, returning the quotient as a float.
 // @fnv 0x0070ecb0
+// pdb: InterfaceManager::GetScreenAspect | InterfaceManager.obj | debug, call graph, medium
 float __cdecl GetRatio(void)
 {
     double dTemp8 = InterfaceManager_GetRealScreenHeight();
@@ -6046,7 +6254,7 @@ float __cdecl GetRatio(void)
 // @fnv 0x0070f670
 bool InterfaceHudAccess::GetVisible()
 {
-    return m_kMenuData.GetVisible();
+    return HKWheel.GetVisible();
 }
 
 struct FUN_0070f690_Class
@@ -6088,10 +6296,12 @@ extern ATM g_011d8c18;
 
 // @fnv 0x007182b0
 // src: XBOX_PDB 0x007182b0
-void QueueRenderedMenuDelete(void* p)
+// pdb: QueueRenderedMenuDelete | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb params: pRenderedMenu
+void QueueRenderedMenuDelete(void* pRenderedMenu)
 {
     g_011d8c18.QueryPerformanceCounter(0);
-    g_011d8b2c.NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSMultiBoundRoom_AddTail(&p);
+    g_011d8b2c.NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSMultiBoundRoom_AddTail(&pRenderedMenu);
     g_011d8c18.WaitForTasksDuringRendering();
 }
 }  // namespace fnv_007182b0
@@ -6106,6 +6316,7 @@ struct FUN_0070a100_Class
 
 // Calls FUN_0070a920, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0070a100
+// pdb: InterfaceManager::`scalar deleting destructor' | InterfaceManager.obj | debug, object-file run extension, low
 void* FUN_0070a100_Class::FUN_0070a100(unsigned int flags)
 {
     FUN_0070a920();
@@ -6125,6 +6336,7 @@ struct FUN_0070ad00_Class
 
 // Calls FUN_0071b040, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0070ad00
+// pdb: MenuConsole::`scalar deleting destructor' | InterfaceManager.obj | debug, object-file run extension, low
 void* __thiscall FUN_0070ad00_Class::FUN_0070ad00(unsigned int flags)
 {
     FUN_0071b040();
@@ -6145,6 +6357,7 @@ struct FUN_0070ad80_Class
 
 // Calls FUN_00631a50, frees this via _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0070ad80
+// pdb: ViewCaster::`scalar deleting destructor' | InterfaceManager.obj | debug, object-file run extension, low
 void* __thiscall FUN_0070ad80_Class::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00631a50();
@@ -6253,6 +6466,8 @@ struct FUN_0070b8f0_shell
 };
 // Advances the start menu state (3 to 5, 5 to 2), configures the tile and HUD, and toggles audio counters based on FUN_00644640.
 // @fnv 0x0070b8f0
+// pdb: InterfaceManager::PreIdleStuff | InterfaceManager.obj | debug, object-file run extension, low
+// pdb locals: tempMemContext, pcontrols, pmc
 void FUN_0070b8f0_shell::UpdateStartMenuState()
 {
     AutoMemHelper autoMem(0xd, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Interface\\InterfaceManager.cpp",
@@ -6386,7 +6601,7 @@ struct IfaceHelper_007134d0
     bool InterfaceManager_IsDebugTextVisible();
 };
 void __cdecl Interface_IsolateMenuElements(bool, bool);
-void __cdecl UpdateMenuTileVisibility();
+void __cdecl Interface_RestoreMenuElements();
 struct Interface_Helper
 {
     static bool __cdecl IsInterfaceActive();
@@ -6414,6 +6629,9 @@ extern NiRect<float> DAT_011ad840;
 
 // @fnv 0x007134d0
 // src: COMMUNITY 0x007134d0
+// pdb: InterfaceManager::DrawInterface_Screen | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: apCuller, abPipboyVisible
+// pdb locals: pr, praceSexMenu, pscene_graph, pcomputerMenu, phackingMenu
 void FUN_007134d0_shell::InterfaceManager_DrawInterface_Screen(BSCullingProcess* apCuller, bool abPipboyVisible)
 {
     reinterpret_cast<FUN_00c4f270_shell*>(apCuller)->BSCullingProcess_PushCullMode(1);
@@ -6471,7 +6689,7 @@ void FUN_007134d0_shell::InterfaceManager_DrawInterface_Screen(BSCullingProcess*
         if (phackingMenu && phackingMenu->GetModel_0056c7f0() && ((AVObject_007134d0*)phackingMenu->GetModel_0056c7f0())->GetAppCulled_00456610())
             phackingMenu->GetModel_0056c7f0()->SetAppCulled(false);
         if (reinterpret_cast<FUN_007079f0_shell*>(this)->InterfaceManager_IsInRenderedMenu() && !Interface_Helper::IsInterfaceActive())
-            UpdateMenuTileVisibility();
+            Interface_RestoreMenuElements();
         if (*g_011d8ab0.GetLifeStateControlFlag())
         {
             Interface_IsolateMenuElements(true, false);
@@ -6484,14 +6702,14 @@ void FUN_007134d0_shell::InterfaceManager_DrawInterface_Screen(BSCullingProcess*
                 reinterpret_cast<SceneRoot_007134d0*>(pscene_graph)->GetAnimationData(),
                 (Accum_007134d0*)(unsigned int)*reinterpret_cast<Flt_Helper*>((char*)this + 0x8c), false);
             reinterpret_cast<FUN_004a0fd0_shell*>(apCuller)->BSCullingProcess_SetAccumulator(0);
-            UpdateMenuTileVisibility();
+            Interface_RestoreMenuElements();
         }
     }
     else if (!*g_011d8ba0.GetLifeStateControlFlag() && !*g_011db2cc.GetLifeStateControlFlag())
     {
         if (*((unsigned char*)this + 0x148))
             reinterpret_cast<MTRenderingSystem_Helper*>(MTRender_007134d0::GetSingleton())->MTRenderingSystem_WaitOnThreadStage(1, 0x17);
-        UpdateMenuTileVisibility();
+        Interface_RestoreMenuElements();
         ::InterfaceLocalNiNode* pscene_graph = reinterpret_cast<InterfaceLocalInterface*>(this)->GetRoot();
         if (!*((unsigned char*)this + 0x148))
         {
@@ -6523,7 +6741,7 @@ void FUN_007134d0_shell::InterfaceManager_DrawInterface_Screen(BSCullingProcess*
             reinterpret_cast<SceneRoot_007134d0*>(pscene_graph)->GetAnimationData(),
             (Accum_007134d0*)(unsigned int)*reinterpret_cast<Flt_Helper*>((char*)this + 0x8c), false);
         reinterpret_cast<FUN_004a0fd0_shell*>(apCuller)->BSCullingProcess_SetAccumulator(0);
-        UpdateMenuTileVisibility();
+        Interface_RestoreMenuElements();
         Interface_IsolateMenuElements(false, false);
         pscene_graph = reinterpret_cast<InterfaceLocalInterface*>(this)->GetRoot();
         pr->SetCurrentCamera(reinterpret_cast<NiCamera*>(reinterpret_cast<SceneRoot_007134d0*>(pscene_graph)->GetAnimationData()));
@@ -6534,7 +6752,7 @@ void FUN_007134d0_shell::InterfaceManager_DrawInterface_Screen(BSCullingProcess*
             reinterpret_cast<SceneRoot_007134d0*>(pscene_graph)->GetAnimationData(),
             (Accum_007134d0*)(unsigned int)*reinterpret_cast<Flt_Helper*>((char*)this + 0x8c), false);
         reinterpret_cast<FUN_004a0fd0_shell*>(apCuller)->BSCullingProcess_SetAccumulator(0);
-        UpdateMenuTileVisibility();
+        Interface_RestoreMenuElements();
     }
     else if (!*g_011db2cc.GetLifeStateControlFlag())
     {
@@ -6557,7 +6775,7 @@ void FUN_007134d0_shell::InterfaceManager_DrawInterface_Screen(BSCullingProcess*
             reinterpret_cast<SceneRoot_007134d0*>(pscene_graph)->GetAnimationData(),
             (Accum_007134d0*)(unsigned int)*reinterpret_cast<Flt_Helper*>((char*)this + 0x8c), false);
         reinterpret_cast<FUN_004a0fd0_shell*>(apCuller)->BSCullingProcess_SetAccumulator(0);
-        UpdateMenuTileVisibility();
+        Interface_RestoreMenuElements();
     }
     else if (*((unsigned char*)this + 0x148))
     {
@@ -6575,6 +6793,7 @@ struct FUN_0070a100_Class
 extern FUN_0070a100_Class* DAT_011d8a80;
 // @fnv 0x0070a0b0
 // src: COMMUNITY 0x0070a0b0
+// pdb: InterfaceManager::Free | InterfaceManager.obj | debug, object-file run extension, low
 void InterfaceManager_Destroy()
 {
     if (DAT_011d8a80)
@@ -6597,6 +6816,7 @@ struct FUN_0070acb0_s
 };
 extern ConsoleManager* DAT_MenuConsole_pInstance;
 // @fnv 0x0070acb0
+// pdb: MenuConsole::Release | InterfaceManager.obj | debug, object-file run extension, low
 void DestroyMenuConsoleSingleton()
 {
     ConsoleManager* a;
@@ -6617,6 +6837,7 @@ void DestroyMenuConsoleSingleton()
 
 // @fnv 0x0070ed30
 // src: COMMUNITY 0x0070ed30
+// pdb: InventoryMenu::IsKeyringOpen | InterfaceManager.obj | retail, upstream name already matches, high
 char InventoryMenu_IsKeyringOpen()
 {
     int result;
@@ -6643,6 +6864,7 @@ extern SM7d6* DAT_011daac0;
 
 // Returns true when DAT_011daac0 has both flag F1 and flag F2 set.
 // @fnv 0x0070ee30
+// pdb: StartMenu::IsStartMenuSaving | InterfaceManager.obj | debug, object-file gap fill, medium
 bool IsBothFlagsSet()
 {
     return DAT_011daac0->IsFlagSet(SM7d6::F1) && DAT_011daac0->IsFlagSet(SM7d6::F2);
@@ -6658,11 +6880,14 @@ void NiParallelUpdateTaskManager_End();
 // If DAT_011f5b04 is set, calls Method(a) on the object at offset 0x190; when it returns 1, calls FUN_007149f0 and Method(-1). Returns 0.
 // @fnv 0x00714960
 // src: COMMUNITY 0x00714960
-int NiParallelUpdateTaskManager_WaitRenderSema(int a)
+// pdb: NiParallelUpdateTaskManager::WaitRenderSema | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: aiTime
+// pdb locals: ires
+int NiParallelUpdateTaskManager_WaitRenderSema(int aiTime)
 {
     if (DAT_011f5b04)
     {
-        int r = ((FUN_007149b0*)(DAT_011f5b04 + 0x190))->Method(a);
+        int r = ((FUN_007149b0*)(DAT_011f5b04 + 0x190))->Method(aiTime);
         if (r == 1)
         {
             NiParallelUpdateTaskManager_End();
@@ -6683,6 +6908,7 @@ struct FUN_00716a10
 
 // Destructor for a struct holding two ::BSStringT<char> members; the body is empty and the members are destroyed implicitly.
 // @fnv 0x00716a10
+// pdb: EditableTextField::~EditableTextField | InterfaceManager.obj | debug, object-file gap fill, medium
 FUN_00716a10::~FUN_00716a10()
 {}
 
@@ -6695,6 +6921,8 @@ struct FUN_00717600_shell
 };
 // @fnv 0x00717600
 // src: COMMUNITY 0x00717600
+// pdb: InterfaceManager::PreLoadMenus | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: cmode
 void FUN_00717600_shell::InterfaceManager_PreLoadMenus()
 {
     if (_g_thePlayer && ((unsigned char*)this)[0xc9] && !g_dataHandler->GetSaveLoad())
@@ -6733,6 +6961,9 @@ namespace fnv_0070ed80 {
 
 // Returns true if the StatsMenu singleton exists and its bIsActive flag is set, otherwise false.
 // @fnv 0x0070ed80
+// pdb: InterfaceManager::SetStatsPageNumber | InterfaceManager.obj | retail, object-file run extension, low
+// pdb params: acTab
+// pdb locals: pmenu, ptile
 bool IsStatsMenuActive()
 {
     int result;
@@ -6756,10 +6987,12 @@ LLD_PlayerCharacter* _g_thePlayer;
 
 // @fnv 0x00718930
 // src: XBOX_PDB 0x00718930
-void LLD_PlayerCharacter::InterfaceManager_SetLockpickControlsDisable(bool flag)
+// pdb: InterfaceManager::SetLockpickControlsDisable | InterfaceManager.obj | debug, upstream name already matches, high
+// pdb params: abDisable
+void LLD_PlayerCharacter::InterfaceManager_SetLockpickControlsDisable(bool abDisable)
 {
-    _g_thePlayer->SetFlag4(flag);
-    _g_thePlayer->SetCameraPathEnabled(flag, 1);
+    _g_thePlayer->SetFlag4(abDisable);
+    _g_thePlayer->SetCameraPathEnabled(abDisable, 1);
 }
 }  // namespace fnv_00718930
 
@@ -6778,6 +7011,9 @@ struct IMH : public Dummy00712450
 };
 
 // @fnv 0x00715ec0
+// pdb: InterfaceManager::EmergencyCloseAllMenusAndBreakStuff | InterfaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to InterfaceManager::ToggleSafeZone
+// pdb locals: a, ptile, pmenu
 void IMH::SetSafeZone(int value)
 {
     bool flag = true;
@@ -7262,7 +7498,7 @@ struct Obj50
     int d1;
     int d2;
     int d3;
-    void UpdateState_00509890(int);
+    void FurnitureMark_ctor(int);
     unsigned int FUN_005094b0();
 };
 struct BoundObj
@@ -7469,6 +7705,8 @@ struct FUN_00710ad0_shell
 };
 // Draws debug text lines for the selected reference (name, script, furniture, owner, count, markers, lock, teleport, action flags) and clears remaining lines.
 // @fnv 0x00710ad0
+// pdb: InterfaceManager::DisplayCurrentPickRef | InterfaceManager.obj | debug, unique string literal, high
+// pdb locals: ifontHeight, inewLastLoc, iloc, phitRef, irefCt, inameLoc, pcurrRefObj, xMessage, iactionFlags, pact, pactor, furnitureMarker, n, imarkerNumber, pfurniture, delta, plock, pcell, ptel, plinkedDoor, pcellName, pdoorName, message
 void FUN_00710ad0_shell::DrawDebugInfo()
 {
     static const char kStr0[] = "\"%s\" (%08x)";
@@ -7595,7 +7833,7 @@ void FUN_00710ad0_shell::DrawDebugInfo()
                 BoundObj* cy;
                 Obj50 co;
                 int ce;
-                co.UpdateState_00509890(255);
+                co.FurnitureMark_ctor(255);
                 ce = 0;
                 while (m_pReference->TESObjectREFR_GetMarkerAtIndex(ce, &co))
                 {
@@ -7782,6 +8020,7 @@ class B714930Semaphore
 // Initializes the lock, releases the semaphore by one, and returns the stored value.
 // @fnv 0x00714930
 // src: GUESS 0x00714930 (confidence: high)
+// pdb: NiSemaphore::Signal | InterfaceManager.obj | debug, object-file gap fill, medium
 int B714930Semaphore::InitializeLockAndReleaseSemaphore()
 {
     InitScriptRunLock(this);
@@ -7933,6 +8172,9 @@ class FUN_00717230_cls
 
 // @fnv 0x00717230
 // src: GUESS 0x00717230 (confidence: low)
+// pdb: EditableTextField::StringIsOk | InterfaceManager.obj | debug, object-file run extension, low
+// pdb params: sString
+// pdb locals: stringDims
 unsigned char FUN_00717230_cls::EvaluateValue_00717230(int arg)
 {
     struct
@@ -7959,25 +8201,28 @@ void HostY::SetFlag4(bool on)
 
 struct FUN_007190e0_Child
 {
-    void Apply(int v);
+    void Apply(int aInColor);
 };
 
 class FUN_007190e0_cls
 {
   public:
     int unk00;
-    FUN_007190e0_Child* Find(int key);
-    bool ApplyToChild(int a1, int a2);
+    FUN_007190e0_Child* Find(int aiID);
+    bool ApplyToChild(int aiID, int aInColor);
 };
 
 // Finds the child entry for a1 and, if found, applies a2 to it and returns true; otherwise returns false.
 // @fnv 0x007190e0
-bool FUN_007190e0_cls::ApplyToChild(int aiKey, int a2)
+// pdb: SystemColorManager::SetColor | InterfaceManager.obj | debug, call graph, high
+// pdb params: aiID, aInColor
+// pdb locals: pcolor
+bool FUN_007190e0_cls::ApplyToChild(int aiID, int aInColor)
 {
-    FUN_007190e0_Child* child = Find(aiKey);
+    FUN_007190e0_Child* child = Find(aiID);
     if (child != 0)
     {
-        child->Apply(a2);
+        child->Apply(aInColor);
         return true;
     }
     else
@@ -8001,6 +8246,8 @@ struct FUN_00719340_cls
 };
 
 // @fnv 0x00719340
+// pdb: SystemColorManager::SoftSystemColor::SetColor | InterfaceManager.obj | debug, vtable slot, medium
+// pdb params: aiColor
 void FUN_00719340_cls::SetValue(int value)
 {
     *m_pValueObj->GetValuePtr() = value;
@@ -8040,6 +8287,9 @@ struct FUN_00719740_cls
 
 // @fnv 0x00719740
 // src: COMMUNITY 0x00719740
+// pdb: SystemColorManager::SetColor | InterfaceManager.obj | retail, object-file run extension, low
+// pdb params: aiID, aInColor
+// pdb locals: pcolor
 void FUN_00719740_cls::InterfaceManager_SetXBOXController(bool flag)
 {
     DAT_011d8c4c.Setting_SetValueB(flag);
@@ -8072,6 +8322,8 @@ struct FUN_007e6700_Class
 // Calls object28 with 0xFC4 and a helper result, then if callback is set calls object2C with 0xFAF and the callback's result.
 // @fnv 0x007e6700
 // src: GUESS 0x007e6700 (confidence: low)
+// pdb: TextEntryMenu::Create | TextEntryMenu.obj | debug, object-file run extension, low
+// pdb params: title, defaultText, maxTextLen, func
 void __thiscall FUN_007e6700_Class::ProcessState_007e6700()
 {
     object28->Set(0xFC4, (const char*)helper.GetDisplayText(1));
@@ -8096,6 +8348,9 @@ float __cdecl EvaluateQuinticPolynomial(float value);
 void __cdecl BSNoise1D_lerp(float blend, float a, float b);
 
 // @fnv 0x00c5d320
+// pdb: BSNoise1D::Noise | BSNoise1D.obj | retail, call graph (shared callers), low
+// pdb params: afX
+// pdb locals: t, bx0, rx0, rx1, u, sx, bx1, v, j, k, i
 void __cdecl ApplyNoise(float input)
 {
     int nIndex;
@@ -8401,10 +8656,10 @@ void MenuManager_Free();
 void Tile_FreeTraitList();
 void Menu_FreeXMLArchive();
 void Runtime_UpdateState_00718bf0();
-void ClearAllElements();
+void MessageMenu_ClearMessageQueue();
 void Interface_ClearTempModel();
-void ClearStartMenuEntries();
-void WaitForTasksAndClearScripts();
+void StartMenu_DestroyMenuElements();
+void ClearRenderedMenuDeleteList();
 struct FUN_0070a920
 {
     int unk000;
@@ -8545,14 +8800,14 @@ FUN_0070a920::~FUN_0070a920()
     Menu_FreeXMLArchive();
     DAT_011d8b54.FUN_00470470();
     Runtime_UpdateState_00718bf0();
-    ClearAllElements();
+    MessageMenu_ClearMessageQueue();
     Interface_ClearTempModel();
     delete object174;
     root8c.FUN_0066b0d0(0);
     delete object94;
     delete object98;
-    ClearStartMenuEntries();
-    WaitForTasksAndClearScripts();
+    StartMenu_DestroyMenuElements();
+    ClearRenderedMenuDeleteList();
 }
 
 namespace cursor_init {
@@ -8818,6 +9073,8 @@ TileImage* HUDMainMenu_Create();
 void HUDMainMenu_UpdateVisibilityState(int);
 // @fnv 0x0070b240
 // src: COMMUNITY 0x0070b240
+// pdb: InterfaceManager::InitSecond | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, pmenutile, pcursor, UpdateData2
 void Manager::InterfaceManager_InitSecond()
 {
     AutoMemContext j(13, true, DAT_0106ef50, 667);
@@ -9366,7 +9623,7 @@ void IMStub::QueueHudCallback(void (*cb)(), int value)
 
 namespace fnv_00710060 {
 bool InterfaceManager_Has360Controller();
-int InterfaceManager_CheckMenuButton(int a, int b);
+int InterfaceManager_CheckMenuButton(int eAction, int abUseThumbstickInput);
 struct C877720
 {
     int Main_GetControls();
@@ -9721,6 +9978,9 @@ struct AlphaInterface
 };
 // Applies an alpha value to a node's geometry property and recurses into children, using a tile's alpha scale when present.
 // @fnv 0x00712450
+// pdb: InterfaceManager::RecursiveFade | InterfaceManager.obj | debug, object-file run extension, low
+// pdb params: apObject, afAmount, afLastAlpha
+// pdb locals: ptri, tempMemContext, pnode, ilast_alpha, ptile, ptsp, fadjustedAmount, a
 void AlphaInterface::SetNodeAlpha(AlphaNode* node, float value, float inheritedAlpha)
 {
     AutoMemContext contextTmp(
@@ -9796,6 +10056,9 @@ struct FUN_007151b0_shell
 };
 
 // @fnv 0x007151b0
+// pdb: InterfaceManager::SetCursorPos | InterfaceManager.obj | debug, call graph (shared callers), high
+// pdb params: afX, afY
+// pdb locals: UpdateData, xnewpos
 __declspec(dllexport) inline void FUN_007151b0_shell::UpdateTilePosition(float afX, float afY)
 {
     static NiPoint3 kLast;
@@ -9849,6 +10112,9 @@ struct KeyboardHandler : InterfaceManager
 
 // Translates a key event into a result code, updating modifier flags and shift state and forwarding special keys to FUN_007166f0.
 // @fnv 0x007154b0
+// pdb: InterfaceManager::GetChar | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: aiEventType, aikey
+// pdb locals: ireturn_val, trans
 unsigned int KeyboardHandler::HandleKeyEvent(int event, int key)
 {
     unsigned int result = 0;
@@ -9953,6 +10219,7 @@ unsigned int KeyboardHandler::HandleKeyEvent(int event, int key)
 
 // @fnv 0x00715770
 // src: COMMUNITY 0x00715770
+// pdb: StartMenu::IsInPreIIS | InterfaceManager.obj | debug, object-file gap fill, medium
 bool __cdecl IsInStartMenuAndLoadingMainMenu()
 {
     return StartMenu_MainMenuIsActive() && DAT_011daac0->IsFlagSet(static_cast<StartMenu::Flag>(0x80000));
@@ -10025,20 +10292,23 @@ struct FocusManager
     void NotifyOff(FocusMenu*, int, Tile*);
     void NotifyOn(FocusMenu*, int, Tile*);
     void Clear(int);
-    void InterfaceManager_SetCurrentFocusTarget(Tile* tile, int trait, bool sound);
+    void InterfaceManager_SetCurrentFocusTarget(Tile* apTarget, int aiType, bool abPlaySounds);
 };
 // Updates hover and active tile state for a trait change, notifying listeners, playing sounds and clearing the active tile when needed.
 // @fnv 0x00715860
 // src: XBOX_PDB 0x00715860
-void FocusManager::InterfaceManager_SetCurrentFocusTarget(Tile* tile, int trait, bool sound)
+// pdb: InterfaceManager::SetCurrentFocusTarget | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: apTarget, aiType, abPlaySounds
+// pdb locals: isound_type
+void FocusManager::InterfaceManager_SetCurrentFocusTarget(Tile* apTarget, int aiType, bool abPlaySounds)
 {
     int clickSound2;
-    if (active && active != tile && active->GetFloat(0xfd6) > 0.0)
+    if (active && active != apTarget && active->GetFloat(0xfd6) > 0.0)
     {
         count++;
         active->GetFloat(0xfd6, count);
     }
-    if (tile)
+    if (apTarget)
     {
         if (hover)
         {
@@ -10048,7 +10318,7 @@ void FocusManager::InterfaceManager_SetCurrentFocusTarget(Tile* tile, int trait,
         hover = 0;
         hoverState = 0;
     }
-    if (!tile)
+    if (!apTarget)
     {
         if (active)
         {
@@ -10058,33 +10328,33 @@ void FocusManager::InterfaceManager_SetCurrentFocusTarget(Tile* tile, int trait,
         Clear(0);
         active = 0;
     }
-    else if (trait == 0xfc3 && active != tile)
+    else if (aiType == 0xfc3 && active != apTarget)
     {
         if (active)
         {
             active->SetInt(0xfc3, 0);
             NotifyOff(((FocusMenu*)active->GetMenu()), (int)active->GetFloat(0xfaa), active);
         }
-        active = tile;
+        active = apTarget;
         if (active && active->GetFloat(0xfd6) > 0.0)
         {
             count++;
             active->GetFloat(0xfd6, count);
         }
-        tile->SetInt(0xfc3, 1);
-        if (sound)
-            tile->Tile_PlayTileSound(0xfe8);
+        apTarget->SetInt(0xfc3, 1);
+        if (abPlaySounds)
+            apTarget->Tile_PlayTileSound(0xfe8);
         NotifyOn(((FocusMenu*)active->GetMenu()), (int)active->GetFloat(0xfaa), active);
     }
-    else if (trait == 0xfc7)
+    else if (aiType == 0xfc7)
     {
-        clickSound2 = (int)tile->GetFloat(0xfcb);
-        if (sound && clickSound2)
+        clickSound2 = (int)apTarget->GetFloat(0xfcb);
+        if (abPlaySounds && clickSound2)
             PlayClick(clickSound2);
-        tile->SetInt(0xfc7, 1);
-        tile->SetInt(0xfc7, 0);
-        ((FocusMenu*)tile->GetMenu())->Click((int)tile->GetFloat(0xfaa), tile);
-        tile->SetSpeechChallengeFailure(0);
+        apTarget->SetInt(0xfc7, 1);
+        apTarget->SetInt(0xfc7, 0);
+        ((FocusMenu*)apTarget->GetMenu())->Click((int)apTarget->GetFloat(0xfaa), apTarget);
+        apTarget->UpdateChildren(0);
         if (active && (!active->IsVisible() || !active->ContainsTrait(0xfaf)))
         {
             active->SetInt(0xfc3, 0);
@@ -10108,34 +10378,37 @@ struct InterfaceMenuRegistry
 };
 InterfaceMenuRegistry* __cdecl FUN_0071e290(bool);
 // @fnv 0x007160f0
-Tile* InterfaceManager::ScanForMaxFocus(int* priority, Tile* tile)
+// pdb: InterfaceManager::ScanForMaxFocus | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: aiMaxFocus, apTarget
+// pdb locals: imax_focus, pbest_match, imin_index, elem, ifocus, pmenu, ptile, pvalue, iindex
+Tile* InterfaceManager::ScanForMaxFocus(int* aiMaxFocus, Tile* apTarget)
 {
     int current;
     void* childPos;
     int minOrder;
     Tile* result = 0;
     {
-        int maxPriority = *priority;
+        int maxPriority = *aiMaxFocus;
         minOrder = 0x7fffffff;
-        *priority = (-2147483647 - 1);
+        *aiMaxFocus = (-2147483647 - 1);
         current = (-2147483647 - 1);
-        if (!tile)
+        if (!apTarget)
         {
             Menu* root = FUN_0071e290(true)->FindTopMenu();
             if (root)
-                tile = root->GetTile();
+                apTarget = root->GetTile();
             else
                 return 0;
-            if (tile->GetType() == 0x389 && tile->GetMenu()->GetVisibilityState() != 1 &&
-                tile->GetMenu()->GetVisibilityState() != 8)
+            if (apTarget->GetType() == 0x389 && apTarget->GetMenu()->GetVisibilityState() != 1 &&
+                apTarget->GetMenu()->GetVisibilityState() != 8)
                 return 0;
         }
-        if (!tile->IsTraitNonZero(0xfa3))
+        if (!apTarget->IsTraitNonZero(0xfa3))
             return 0;
-        childPos = ((InterfaceFocusChildListAccess*)&tile->m_kChildTileList)->GetHeadPos();
+        childPos = ((InterfaceFocusChildListAccess*)&apTarget->xChildren)->GetHeadPos();
         while (childPos)
         {
-            Tile* child = ((InterfaceFocusChildListAccess*)&tile->m_kChildTileList)->GetNext(childPos);
+            Tile* child = ((InterfaceFocusChildListAccess*)&apTarget->xChildren)->GetNext(childPos);
             current = (-2147483647 - 1);
             child = ScanForMaxFocus(&current, child);
             if (child && current > maxPriority)
@@ -10157,33 +10430,33 @@ Tile* InterfaceManager::ScanForMaxFocus(int* priority, Tile* tile)
                 }
             }
         }
-        if (tile->IsTraitNonZero(0xfaf) && tile->IsTraitNonZero(0xfa3))
+        if (apTarget->IsTraitNonZero(0xfaf) && apTarget->IsTraitNonZero(0xfa3))
         {
-            InterfaceTraitFloatAccess* value = (InterfaceTraitFloatAccess*)tile->GetValue(0xfd6);
+            InterfaceTraitFloatAccess* value = (InterfaceTraitFloatAccess*)apTarget->GetValue(0xfd6);
             if (value)
             {
                 current = (int)value->ReadFloat();
                 if (current > maxPriority)
                 {
                     maxPriority = current;
-                    result = tile;
+                    result = apTarget;
                 }
                 else if (current == maxPriority)
                 {
-                    value = ((InterfaceFocusTraitAccess*)tile)->FindTraitValue(0xfac);
+                    value = ((InterfaceFocusTraitAccess*)apTarget)->FindTraitValue(0xfac);
                     if (value)
                     {
                         int tileTie = (int)value->ReadFloat();
                         if (tileTie < minOrder)
                         {
                             minOrder = tileTie;
-                            result = tile;
+                            result = apTarget;
                         }
                     }
                 }
             }
         }
-        *priority = maxPriority;
+        *aiMaxFocus = maxPriority;
         return result;
     }
 }
@@ -10192,6 +10465,7 @@ Tile* InterfaceManager::ScanForMaxFocus(int* priority, Tile* tile)
 // Calls FUN_00717890 to get an integer value and divides it by the result of FUN_00715da0, returning the quotient as a float.
 // @fnv 0x00717860
 // src: COMMUNITY 0x00717860
+// pdb: InterfaceManager::GetMenuHeight | InterfaceManager.obj | debug, upstream name already matches, high
 float __cdecl InterfaceManager_GetMenuHeight()
 {
     int value = InventoryMenu_GetHeight();
@@ -10207,21 +10481,23 @@ class FUN_00719490_cls
     virtual void v0();
     virtual void v1();
     virtual int v2(unsigned int);
-    int SystemColorManager_SystemColor_SetColor(float* p);
+    int SystemColorManager_SystemColor_SetColor(float* aInColor);
 };
 
 // @fnv 0x00719490
 // src: XBOX_PDB 0x00719490
-int FUN_00719490_cls::SystemColorManager_SystemColor_SetColor(float* p)
+// pdb: SystemColorManager::SystemColor::SetColor | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: aInColor
+int FUN_00719490_cls::SystemColorManager_SystemColor_SetColor(float* aInColor)
 {
-    return v2(PackRgba((unsigned int)FUN_004bd510((float)(p[0] * DAT_0101e568), 1.0f),
-                       (unsigned int)FUN_004bd510((float)(p[1] * DAT_0101e568), 1.0f),
-                       (unsigned int)FUN_004bd510((float)(p[2] * DAT_0101e568), 1.0f), 0xff));
+    return v2(PackRgba((unsigned int)FUN_004bd510((float)(aInColor[0] * DAT_0101e568), 1.0f),
+                       (unsigned int)FUN_004bd510((float)(aInColor[1] * DAT_0101e568), 1.0f),
+                       (unsigned int)FUN_004bd510((float)(aInColor[2] * DAT_0101e568), 1.0f), 0xff));
 }
 
 void Tile_AddToTable(const char*, bool);
 int Tile_TextToTrait(const char*);
-void Tile_Update360ControllerTraitRecurse(void*);
+void RecursivelySetVisibilityDirty(void*);
 void UpdateStartMenuTile();
 
 struct TileList
@@ -10283,11 +10559,11 @@ void Context::UpdateControllerState(int unused)
     InterfaceManager_GetSingleton();
     Tile_AddToTable("&xbox;", InterfaceManager_Has360Controller());
     target->Set(Tile_TextToTrait("_Has360Controller"), InterfaceManager_Has360Controller());
-    Tile_Update360ControllerTraitRecurse(root);
-    void* position = root ? ((TileList*)&root->m_kChildTileList)->GetHeadPos() : 0;
+    RecursivelySetVisibilityDirty(root);
+    void* position = root ? ((TileList*)&root->xChildren)->GetHeadPos() : 0;
     while (position)
     {
-        Tile* tile = ((TileList*)&root->m_kChildTileList)->GetNext(position);
+        Tile* tile = ((TileList*)&root->xChildren)->GetNext(position);
         if (tile && tile->Tile_GetMenu())
             tile->Tile_GetMenu()->HandleControllerConnectOrDisconnect(InterfaceManager_Has360Controller());
     }
@@ -10312,7 +10588,7 @@ struct AnimationActorValues
     virtual void Copy();
     virtual void Reset();
     virtual float GetCurrentValue(int value);
-    float FUN_0066ef50(int value);
+    float FUN_0066ef50(int aiWhich);
 };
 struct AnimationPlayer
 {
@@ -10367,8 +10643,12 @@ extern bool DAT_011d8a50;
 
 // Updates two animation tiles' trait 4009 values from a clamped fade level, sets a status tile, and advances the fade level between -230 and 485.
 // @fnv 0x00719790
-void __cdecl UpdateAnimationTileFade(Tile* apFirstTile, Tile* apSecondTile,
-                                     Tile* apStatusTile, AnimationReference* reference, bool alternate)
+// src: XBOX_RETAIL_PDB 0x00719790
+// pdb: InterfaceManager::UpdatePipBoyInventoryEffects | InterfaceManager.obj | retail, call graph (shared callers), high
+// pdb params: pTileFade1, pTileFade2, pTilePulseSTR, pItemPulseSTRREQ, abSkill
+// pdb locals: fMinAlpha, fAlphaDPSdisp, fAlphaFadeSpeed, fAlphaDAMdisp, iCurrTimeDiff, fMaxAlpha, iLastDPSFadeTimeLocal, pobj, fStrMod, fSkill
+void __cdecl InterfaceManager_UpdatePipBoyInventoryEffects(Tile* pTileFade1, Tile* pTileFade2,
+                                     Tile* pTilePulseSTR, AnimationReference* pItemPulseSTRREQ, bool abSkill)
 {
     // Local spellings and declaration order preserve the original MSVC9 stack layout.
     float elapsed = 485.0f;  // Upper animation bound.
@@ -10379,30 +10659,30 @@ void __cdecl UpdateAnimationTileFade(Tile* apFirstTile, Tile* apSecondTile,
     BSClamp_float(&maximum, 0.0f, 255.0f);
     float inverse = 255.0 - maximum;
     BSClamp_float(&inverse, 0.0f, 255.0f);
-    if (apFirstTile && apSecondTile)
+    if (pTileFade1 && pTileFade2)
     {
-        apFirstTile->Tile_Set(4009, inverse, true);
-        apSecondTile->Tile_Set(4009, maximum, true);
+        pTileFade1->Tile_Set(4009, inverse, true);
+        pTileFade2->Tile_Set(4009, maximum, true);
     }
-    if (apStatusTile && reference && !alternate)
+    if (pTilePulseSTR && pItemPulseSTRREQ && !abSkill)
     {
-        AnimationItem* item = reference ? reference->FUN_0044ddc0() : 0;
+        AnimationItem* item = pItemPulseSTRREQ ? pItemPulseSTRREQ->FUN_0044ddc0() : 0;
         float value = 0.0f;
-        FUN_005e58f0(53, DAT_011dea3c, reference->FUN_0044ddc0(), &value);
+        FUN_005e58f0(53, DAT_011dea3c, pItemPulseSTRREQ->FUN_0044ddc0(), &value);
         value += ((AnimationPlayer*)DAT_011dea3c)->values.FUN_0066ef50(5);
         if (item && item->FUN_00401170() == 40 && value < item->GetField19C())
-            apStatusTile->Tile_Set(4009, inverse > 128.0 ? inverse : maximum, true);
+            pTilePulseSTR->Tile_Set(4009, inverse > 128.0 ? inverse : maximum, true);
         else
-            apStatusTile->Tile_Set(4009, 255.0f, true);
+            pTilePulseSTR->Tile_Set(4009, 255.0f, true);
     }
-    else if (apStatusTile && reference && alternate)
+    else if (pTilePulseSTR && pItemPulseSTRREQ && abSkill)
     {
-        AnimationItem* item = reference ? reference->FUN_0044ddc0() : 0;
+        AnimationItem* item = pItemPulseSTRREQ ? pItemPulseSTRREQ->FUN_0044ddc0() : 0;
         float value = ((AnimationPlayer*)DAT_011dea3c)->values.GetCurrentValue(item->GetUnk15C());
         if (item && item->FUN_00401170() == 40 && value < item->GetField1BC())
-            apStatusTile->Tile_Set(4009, inverse > 128.0 ? inverse : maximum, true);
+            pTilePulseSTR->Tile_Set(4009, inverse > 128.0 ? inverse : maximum, true);
         else
-            apStatusTile->Tile_Set(4009, 255.0f, true);
+            pTilePulseSTR->Tile_Set(4009, 255.0f, true);
     }
     unsigned int alpha = g_timeGlobal.GetSection();  // Current time.
     unsigned int uiDelta = alpha - DAT_011d8a64;     // Elapsed time.
@@ -10794,7 +11074,7 @@ struct Obj7fa
 struct ScopeE8
 {
     int unk0;
-    ScopeE8(int a, int b, const char* f, int l);
+    ScopeE8(int memContext, int overridable, const char* f, int aiLine);
     ~ScopeE8();
 };
 
@@ -10848,9 +11128,9 @@ extern float DAT_010340a4;
 
 extern const char DAT_0106ef50[];
 
-bool __cdecl BSRenderedTexture_IsOutsideFrame();
+bool __cdecl BSRenderedTexture_QOutsideFrame();
 
-void __cdecl BSRenderedTexture_Start(int a, int b);
+void __cdecl BSRenderedTexture_Start(int aiClearMode, int apTarget);
 
 bool __cdecl IsEyefinity();
 
@@ -10860,7 +11140,7 @@ bool __cdecl NiParallelUpdateTaskManager_IsActive();
 
 void __cdecl NiParallelUpdateTaskManager_EndUpdate();
 
-void __cdecl NiParallelUpdateTaskManager_WaitRenderSema(int a);
+void __cdecl NiParallelUpdateTaskManager_WaitRenderSema(int aiTime);
 
 bool __cdecl InterfaceManager_IsInPipboyMenu();
 
@@ -10870,39 +11150,39 @@ void __cdecl NiParallelUpdateTaskManager_SignalRenderSema();
 
 void __cdecl FUN_00b6b730();
 
-void __cdecl BSRenderState_RestoreZEnable(int a);
+void __cdecl BSRenderState_RestoreZEnable(int aeLock);
 
-void __cdecl BSRenderState_RestoreZWriteEnable(int a);
+void __cdecl BSRenderState_RestoreZWriteEnable(int aeLock);
 
-void __cdecl BSRenderState_RestoreZFunc(int a);
+void __cdecl BSRenderState_RestoreZFunc(int aeLock);
 
-void __cdecl BSRenderState_RestoreAlphaTestEnable(int a);
+void __cdecl BSRenderState_RestoreAlphaTestEnable(int aeLock);
 
-void __cdecl BSRenderState_RestoreAlphaTestFuncRef(int a);
+void __cdecl BSRenderState_RestoreAlphaTestFuncRef(int aeLock);
 
-void __cdecl BSRenderState_RestoreAlphaBlendEnable(int a);
+void __cdecl BSRenderState_RestoreAlphaBlendEnable(int aeLock);
 
-void __cdecl BSRenderState_RestoreAlphaBlendFunc(int a);
+void __cdecl BSRenderState_RestoreAlphaBlendFunc(int aeLock);
 
-void __cdecl BSRenderState_RestoreColorWriteEnable(int a);
+void __cdecl BSRenderState_RestoreColorWriteEnable(int aeLock);
 
-void __cdecl BSRenderState_RestoreStencilEnable(int a);
+void __cdecl BSRenderState_RestoreStencilEnable(int aeLock);
 
-void __cdecl BSRenderState_RestoreStencilAction(int a);
+void __cdecl BSRenderState_RestoreStencilAction(int aeLock);
 
-void __cdecl BSRenderState_RestoreStencilFunc(int a);
+void __cdecl BSRenderState_RestoreStencilFunc(int aeLock);
 
-void __cdecl BSRenderState_RestoreStencilWriteMask(int a);
+void __cdecl BSRenderState_RestoreStencilWriteMask(int aeLock);
 
 void __cdecl BSRenderState_ResetScissorTest(int a);
 
-void __cdecl BSRenderState_RestoreScissorRect(int a);
+void __cdecl BSRenderState_RestoreScissorRect(int aeLock);
 
-void __cdecl BSRenderState_RestoreUserClipPlaneEnables(int a);
+void __cdecl BSRenderState_RestoreUserClipPlaneEnables(int aeLock);
 
-void __cdecl BSRenderState_RestoreDepthBias(int a);
+void __cdecl BSRenderState_RestoreDepthBias(int aeLock);
 
-void __cdecl BSRenderState_RestoreWireframeEnable(int a);
+void __cdecl BSRenderState_RestoreWireframeEnable(int aeLock);
 
 void __cdecl BSRenderState_RestoreAlphaToCoverageEnable(int a);
 
@@ -10981,7 +11261,7 @@ void MenuMgr::RenderMenu(int a, int b)
 
     bool bRestorec = false;
 
-    if (BSRenderedTexture_IsOutsideFrame())
+    if (BSRenderedTexture_QOutsideFrame())
     {
 
         if (DAT_011f9426)
@@ -11220,9 +11500,9 @@ class PickAVObject
 class PickNode
 {
   public:
-    PickAVObject* FUN_0043b4a0(int iIndex);
+    PickAVObject* FUN_0043b4a0(int i);
     void NiNode_CompactChildArray();
-    void* NiNode_GetAtChecked(int iIndex);
+    void* NiNode_GetAtChecked(int i);
 };
 
 
@@ -11235,7 +11515,7 @@ class PickValueNode
 
 // The original 0x00a03c90 call pushes an extra trait argument and views the result as a value node.
 struct InterfacePickMenuAccess : Tile { PickValueNode* GetMenuValueView(int); };
-Tile* Tile_GetTileFromNode(class PickObject* pkObject);
+Tile* Tile_GetTileFromNode(class PickObject* apNode);
 Tile* Tile_GetMenuByClass(void* pvMenu);
 int NiShadeProperty_GetType();
 
@@ -11646,13 +11926,16 @@ class IMView
     PickScene* SkyObject_GetNiNode();
     void* FUN_00714f00();
     bool InterfaceManager_TileIsAcceptingEvents(Tile* pkTileTmp);
-    Tile* InterfaceManager_PickMenus(bool bAny);
+    Tile* InterfaceManager_PickMenus(bool abExactTargetOnly);
 };
 
 // Performs a 3D pick at the cursor position, walks the hit results to find a Tile, and returns it or null.
 // @fnv 0x007126c0
 // src: COMMUNITY 0x007126c0
-Tile* IMView::InterfaceManager_PickMenus(bool bAny)
+// pdb: InterfaceManager::PickMenus | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: abExactTargetOnly
+// pdb locals: dir, origin, activatePick, ptarget, tempMemContext, fxpos, fypos, preturn, a, ppickRecord, pnode, ptile, bpipboy, ptsp, rect, x, y, pnew_target
+Tile* IMView::InterfaceManager_PickMenus(bool abExactTargetOnly)
 {
     AutoMemContext kMemContextCur(MEM_CONTEXT_MEM_CONTEXT_INTERFACE, true,
                                   "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Interface\\InterfaceManager.cpp",
@@ -11743,7 +12026,7 @@ Tile* IMView::InterfaceManager_PickMenus(bool bAny)
                 continue;
             if (pkTileTmp && pkTileTmp->IsTraitNonZero(0xfaf))
             {
-                if (!bAny && !((InterfaceFocusTraitAccess*)pkTileTmp)->FindTraitValue(0xfaa))
+                if (!abExactTargetOnly && !((InterfaceFocusTraitAccess*)pkTileTmp)->FindTraitValue(0xfaa))
                 {
                     Tile* pkParent = pkTileTmp->FUN_0045cd60();
                     while (pkParent && !((InterfaceFocusTraitAccess*)pkParent)->FindTraitValue(0xfaa))
@@ -11828,6 +12111,9 @@ struct Controller718080
 // Computes a time value, scans entries for each active source and applies the scan result, then calls pkTarget->Update.
 // @fnv 0x00718080
 // src: COMMUNITY 0x00718080
+// pdb: InterfaceManager::DoWheelMove | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: apMenu, aiID, apTarget
+// pdb locals: fcursorY, pnode, pcurrChild, icurrIndex
 void Controller718080::InterfaceManager_HandleMenuAndListboxScroll(Target718080* pkTarget, int iA, int iB)
 {
     float fTime = m_fValue40 / GetRatio();
@@ -12006,10 +12292,13 @@ static const char s_szUILevelUp[] = "UILevelUp";
 // Maps recognized values to editor IDs, assigns each fetched handle, then calls FUN_00ad8830(false).
 // @fnv 0x00717280
 // src: XBOX_PDB 0x00717280
-void InterfaceManager_PlayMenuSound(int aiSoundIndex)
+// pdb: InterfaceManager::PlayMenuSound | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: aeMenuSound
+// pdb locals: psoundHand
+void InterfaceManager_PlayMenuSound(int aeMenuSound)
 {
     BSSoundHandle kSound;
-    switch (aiSoundIndex)
+    switch (aeMenuSound)
     {
     case -1:
         return;
@@ -12099,7 +12388,10 @@ extern short DAT_011d8a76;
 // Returns 1, 2, 0, or -1 for a controller button or stick axis based on current and previous input state and FocusManager controllerBlocked.
 // @fnv 0x00717a40
 // src: XBOX_PDB 0x00717a40
-int __cdecl InterfaceManager_CheckMenuButton(int button, bool useStick)
+// pdb: InterfaceManager::CheckMenuButton | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: eAction, abUseThumbstickInput
+// pdb locals: efirst, pcontrols, esecond, uivalue, iy, ix
+int __cdecl InterfaceManager_CheckMenuButton(int eAction, bool abUseThumbstickInput)
 {
     unsigned int uiButtonMask;
     bool currentStick;
@@ -12108,7 +12400,7 @@ int __cdecl InterfaceManager_CheckMenuButton(int button, bool useStick)
     {
         if ((InterfaceManager_GetSingleton(), InterfaceManager_Has360Controller()) && !((FocusManager*)InterfaceManager_GetSingleton())->controllerBlocked)
         {
-            switch (button)
+            switch (eAction)
             {
             case 9:
                 uiButtonMask = 0x1000;
@@ -12156,11 +12448,11 @@ int __cdecl InterfaceManager_CheckMenuButton(int button, bool useStick)
                 uiButtonMask = 0;
                 break;
             }
-            if (button != 13 && button != 14)
+            if (eAction != 13 && eAction != 14)
             {
                 currentStick = false;
                 previousStick = false;
-                if (useStick)
+                if (abUseThumbstickInput)
                 {
                     switch (uiButtonMask)
                     {
@@ -12206,7 +12498,7 @@ int __cdecl InterfaceManager_CheckMenuButton(int button, bool useStick)
                         return -1;
                 }
             }
-            else if (button == 13)
+            else if (eAction == 13)
             {
                 if (DAT_011d8a72 > 0)
                 {
@@ -12366,6 +12658,8 @@ struct CursorX
 // Reads input to adjust and bound the tile position, updates stored cursor coordinates when x or z changes, and passes update data to the node.
 // @fnv 0x007118d0
 // src: COMMUNITY 0x007118d0
+// pdb: InterfaceManager::UpdateCursor | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, pcontrols, imouseX, UpdateData, fcursorMult, xyz, imouseY
 void CursorX::InterfaceManager_UpdateCursor()
 {
     if (InterfaceManager_Has360Controller() && !b7d && !FUN_0071b160(1)->MenuConsole_IsVisible())
@@ -12440,6 +12734,9 @@ struct FUN_007149b0_StandIn
 // Waits on the HANDLE in unk08 for a milliseconds; returns 1 on WAIT_TIMEOUT, otherwise calls FUN_004019a0 on this and returns its result.
 // @fnv 0x007149b0
 // src: GUESS 0x007149b0 (confidence: medium)
+// pdb: NiSemaphore::Wait | InterfaceManager.obj | debug, object-file run extension, low
+// pdb params: aiTime
+// pdb locals: ires
 int FUN_007149b0_StandIn::WaitWithTimeout(unsigned int auiTimeoutMs)
 {
     unsigned int result = WaitForSingleObject(unk08, auiTimeoutMs);
@@ -12487,6 +12784,7 @@ class SoundEntry
 };
 
 // @fnv 0x00716980
+// pdb: EditableTextField::EditableTextField | InterfaceManager.obj | debug, object-file gap fill, medium
 SoundEntry::SoundEntry()
 {
     m_bLooping = false;
@@ -12527,6 +12825,8 @@ struct Shell5 : public FUN_00718ee0_shell
 
 // Allocates a FUN_00719250_stand entry with packed RGBA, passes it to FUN_004ed8c0, and stores aiID + 1 at offset 0xc.
 // @fnv 0x00718ee0
+// pdb: SystemColorManager::Add | InterfaceManager.obj | debug, call graph, medium
+// pdb params: apName, aiRed, aiGreen, aiBlue, aiID
 void Shell5::AddColor(const char* apName, unsigned int aiRed, unsigned int aiGreen, unsigned int aiBlue, int aiID)
 {
     if (aiID < *(int*)((char*)this + 0xc))
@@ -12568,7 +12868,7 @@ unsigned int Cmd_GetSessionTime_Execute();
 bool Interface_IsTopMenuID(int iMenuID);
 bool Interface_IsTopMenuFadedIn();
 TESForm* TESForm_GetFormByNumericID(unsigned int auiFormId);
-bool InitTutorialMenu(BGSMessage* pkMessage, int iArg);
+bool TutorialMenu_Create(BGSMessage* apMessage, int abHelpManual);
 void Warning_005b5e40(const char* pcFormat, ...);
 
 static const char s_szTutorialError[] = "Error occurred while trying to display tutorial message";
@@ -12586,6 +12886,8 @@ struct TutorialState
 // Checks game and menu conditions, updates the current entry and due time, and invokes the message and entry routines for eligible entries.
 // @fnv 0x007182e0
 // src: COMMUNITY 0x007182e0
+// pdb: InterfaceManager::TutorialManager::Update | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: bcontinue, pmsg, eid
 void TutorialState::InterfaceManager_TutorialManager_Update()
 {
     if (IsStartMenuFlag1Set() || Interface_IsMenuQueuedToOpen())
@@ -12604,7 +12906,7 @@ void TutorialState::InterfaceManager_TutorialManager_Update()
                  Interface_IsTopMenuFadedIn())
         {
             BGSMessage* pkMessage = dynamic_cast<BGSMessage*>(TESForm_GetFormByNumericID(m_iCurrent + 0x168));
-            if (!pkMessage || !InitTutorialMenu(pkMessage, 0) || !SetFlag2(m_iCurrent))
+            if (!pkMessage || !TutorialMenu_Create(pkMessage, 0) || !SetFlag2(m_iCurrent))
                 Warning_005b5e40(s_szTutorialError);
             m_uiDueTime = 0;
             m_iCurrent = 41;
@@ -12667,6 +12969,8 @@ struct TileModelsUpdateEntry
 
 // @fnv 0x00713e20
 // src: COMMUNITY 0x00713e20
+// pdb: InterfaceManager::UpdateTileModels | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb locals: itileCt, pmodel, ptile, UpdateData
 void TileModelsUpdateEntry::InterfaceManager_UpdateTileModels()
 {
     unsigned int iTileIndex;
@@ -12714,6 +13018,8 @@ struct M788
 // When apSetting->Int() is zero, stores FUN_00718e90(...) there; allocates and passes a FUN_007192e0 entry to FUN_004ed8c0, then stores aiID + 1 at offset 0xc.
 // @fnv 0x00718db0
 // src: COMMUNITY 0x00718db0
+// pdb: SystemColorManager::Add | InterfaceManager.obj | debug, call graph, medium
+// pdb params: apName, aiRed, aiGreen, aiBlue, apSetting, aiID
 void FUN_00718db0_shell::SystemColorManager_Add(char* apName, unsigned int aiRed, unsigned int aiGreen, unsigned int aiBlue,
                                       SystemColorInfo* apSetting, int aiID)
 {
@@ -12748,6 +13054,9 @@ struct TutorialMessageGate718
 // For a valid index, stores the delay and accepted menu ID, then returns whether the form passes the view check, FUN_005d4a40, and unseen check.
 // @fnv 0x00718630
 // src: XBOX_PDB 0x00718630
+// pdb: InterfaceManager::TutorialManager::ShowMessage | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: aeID, aiMenuID, auiShowDelay
+// pdb locals: bshow, pmsg, pform
 bool TutorialMessageGate718::InterfaceManager_TutorialManager_ShowMessage(int aeID, unsigned int aiMenuID, unsigned int auiShowDelay)
 {
     bool bshow = false;

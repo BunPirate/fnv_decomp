@@ -54,32 +54,35 @@ inline void addAngularFriction(GenericConstraintAtomScheme* out, int schema, int
 // Fills a GenericConstraintAtomScheme with solver schema sizes, result counts, and temps by walking the hkpConstraintAtom array.
 // @fnv 0x00d21a60
 // src: HAVOK_LIB 0x00d21a60
-void __cdecl hkpConstraintData_getConstraintInfoUtil(const hkpConstraintAtom* atoms, int sizeOfAllAtoms, GenericConstraintAtomScheme* info)
+// pdb: hkpConstraintData::getConstraintInfoUtil | hkpConstraintData.obj | debug, upstream name already matches, high
+// pdb params: atoms, sizeOfAllAtoms, infoOut
+// pdb locals: assertBuf, ostr
+void __cdecl hkpConstraintData_getConstraintInfoUtil(const hkpConstraintAtom* atoms, int sizeOfAllAtoms, GenericConstraintAtomScheme* infoOut)
 {
-    info->atoms = atoms;
-    info->sizeOfAllAtoms = sizeOfAllAtoms;
-    info->maxSizeOfSchema = 0;
-    info->sizeOfSchemas = 0;
-    info->numSolverResults = 0;
-    info->numSolverElemTemps = 0;
+    infoOut->atoms = atoms;
+    infoOut->sizeOfAllAtoms = sizeOfAllAtoms;
+    infoOut->maxSizeOfSchema = 0;
+    infoOut->sizeOfSchemas = 0;
+    infoOut->numSolverResults = 0;
+    infoOut->numSolverElemTemps = 0;
     if (atoms->m_type == hkpConstraintAtom::CONTACT)
     {
-        int iContactPoints = reinterpret_cast<const hkpSimpleContactConstraintAtom*>(atoms)->m_usNumContactPoints;
+        int iContactPoints = reinterpret_cast<const hkpSimpleContactConstraintAtom*>(atoms)->m_numContactPoints;
         int schema = 128 + 112 * (iContactPoints >> 1) + 48 * (iContactPoints & 1);
-        info->sizeOfSchemas = schema;
-        info->maxSizeOfSchema = schema + 32;
-        info->numSolverResults = iContactPoints + 2;
-        info->numSolverElemTemps = iContactPoints + 3;
+        infoOut->sizeOfSchemas = schema;
+        infoOut->maxSizeOfSchema = schema + 32;
+        infoOut->numSolverResults = iContactPoints + 2;
+        infoOut->numSolverElemTemps = iContactPoints + 3;
         if (iContactPoints >= 2)
         {
-            ++info->numSolverResults;
-            ++info->numSolverElemTemps;
-            info->sizeOfSchemas = schema + 32;
+            ++infoOut->numSolverResults;
+            ++infoOut->numSolverElemTemps;
+            infoOut->sizeOfSchemas = schema + 32;
         }
         return;
     }
     const char* cursor = reinterpret_cast<const char*>(atoms);
-    info->sizeOfSchemas = 16;
+    infoOut->sizeOfSchemas = 16;
     const char* end = cursor + sizeOfAllAtoms;
     while (cursor < end)
     {
@@ -93,69 +96,69 @@ void __cdecl hkpConstraintData_getConstraintInfoUtil(const hkpConstraintAtom* at
             cursor = reinterpret_cast<const char*>((reinterpret_cast<unsigned long>(cursor) + 15) & ~15UL);
             goto dispatchAlignedAtom;
         case hkpConstraintAtom::BALL_SOCKET:
-            addSolverSchema(info, 144, 3, 3);
+            addSolverSchema(infoOut, 144, 3, 3);
             cursor += 8;
             break;
         case hkpConstraintAtom::STIFF_SPRING:
-            addSolverSchema(info, 48, 1, 1);
+            addSolverSchema(infoOut, 48, 1, 1);
             cursor += 8;
             break;
         case hkpConstraintAtom::LIN:
-            addSolverSchema(info, 48, 1, 1);
+            addSolverSchema(infoOut, 48, 1, 1);
             cursor += 4;
             break;
         case hkpConstraintAtom::LIN_SOFT:
         case hkpConstraintAtom::LIN_LIMIT:
-            addSolverSchema(info, 64, 1, 1);
+            addSolverSchema(infoOut, 64, 1, 1);
             cursor += 12;
             break;
         case hkpConstraintAtom::LIN_FRICTION:
-            addSolverSchema(info, 64, 1, 2);
+            addSolverSchema(infoOut, 64, 1, 2);
             cursor += 8;
             break;
         case hkpConstraintAtom::LIN_MOTOR:
-            info->sizeOfSchemas += 80;
-            info->numSolverResults += 1;
+            infoOut->sizeOfSchemas += 80;
+            infoOut->numSolverResults += 1;
             tempsDelta = 3;
             goto sharedContribution;
         case hkpConstraintAtom::ANG_2D:
-            addSolverSchema(info, 96, 2, 2);
+            addSolverSchema(infoOut, 96, 2, 2);
             cursor += 4;
             break;
         case hkpConstraintAtom::ANG: {
-            addSolverSchema(info, 48 * static_cast<const hkpAngConstraintAtom*>(atom)->m_ucNumConstrainedAxes,
-                            static_cast<const hkpAngConstraintAtom*>(atom)->m_ucNumConstrainedAxes,
-                            static_cast<const hkpAngConstraintAtom*>(atom)->m_ucNumConstrainedAxes);
+            addSolverSchema(infoOut, 48 * static_cast<const hkpAngConstraintAtom*>(atom)->m_numConstrainedAxes,
+                            static_cast<const hkpAngConstraintAtom*>(atom)->m_numConstrainedAxes,
+                            static_cast<const hkpAngConstraintAtom*>(atom)->m_numConstrainedAxes);
             cursor += 4;
             break;
         }
         case hkpConstraintAtom::ANG_LIMIT:
-            addSolverSchema(info, 48, 1, 1);
+            addSolverSchema(infoOut, 48, 1, 1);
             cursor += 16;
             break;
         case hkpConstraintAtom::TWIST_LIMIT:
         case hkpConstraintAtom::CONE_LIMIT:
-            addSolverSchema(info, 48, 1, 1);
+            addSolverSchema(infoOut, 48, 1, 1);
             cursor += 20;
             break;
         case hkpConstraintAtom::ANG_FRICTION: {
-            int axes = static_cast<const hkpAngFrictionConstraintAtom*>(atom)->m_ucNumFrictionAxes;
-            int temps = 2 * static_cast<const hkpAngFrictionConstraintAtom*>(atom)->m_ucNumFrictionAxes;
-            addAngularFriction(info, 48 * axes, axes, temps);
+            int axes = static_cast<const hkpAngFrictionConstraintAtom*>(atom)->m_numFrictionAxes;
+            int temps = 2 * static_cast<const hkpAngFrictionConstraintAtom*>(atom)->m_numFrictionAxes;
+            addAngularFriction(infoOut, 48 * axes, axes, temps);
             cursor += 12;
             break;
         }
         case hkpConstraintAtom::ANG_MOTOR:
-            addSolverSchema(info, 64, 1, 3);
+            addSolverSchema(infoOut, 64, 1, 3);
             cursor += 20;
             break;
         case hkpConstraintAtom::RAGDOLL_MOTOR:
-            info->sizeOfSchemas += 192;
-            info->numSolverResults += 3;
+            infoOut->sizeOfSchemas += 192;
+            infoOut->numSolverResults += 3;
             tempsDelta = 9;
             goto sharedContribution;
         case hkpConstraintAtom::PULLEY:
-            addSolverSchema(info, 64, 1, 1);
+            addSolverSchema(infoOut, 64, 1, 1);
             cursor += 64;
             break;
         case hkpConstraintAtom::SET_LOCAL_TRANSFORMS:
@@ -181,13 +184,13 @@ void __cdecl hkpConstraintData_getConstraintInfoUtil(const hkpConstraintAtom* at
     sharedContribution:
         if (tempsDelta == 3)
         {
-            info->numSolverElemTemps += 3;
+            infoOut->numSolverElemTemps += 3;
             _ReadWriteBarrier();
             cursor += 16;
         }
         else
         {
-            info->numSolverElemTemps += 9;
+            infoOut->numSolverElemTemps += 9;
             _ReadWriteBarrier();
             cursor += 80;
         }

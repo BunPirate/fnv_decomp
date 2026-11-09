@@ -16,22 +16,23 @@ void __fastcall ReleaseMorphTarget(NiMorphData::MorphTarget*);
 typedef void* (__thiscall* DestroyMorphTargetFn)(NiMorphData::MorphTarget*, unsigned char);
 typedef void (__thiscall* ReleaseMorphTargetFn)(NiMorphData::MorphTarget*);
 
-extern "C" void* g_011f3e74;
+extern "C" void* NiMorphData_ms_RTTI;
 
 // Returns the address of the global g_011f3e74.
 // @fnv 0x00a415e0
 // src: COMMUNITY 0x00a415e0
 void* __cdecl NiMorphData_GetRTTI()
 {
-    return &g_011f3e74;
+    return &NiMorphData_ms_RTTI;
 }
 
 extern int DAT_010976fc;
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x00a41a00
+// pdb: NiMorphData::`scalar deleting destructor' | NiMorphData.obj | retail, object-file run extension, low
 void* __fastcall DestroyMorphData(NiMorphData* self, int, unsigned int auiFlags)
 {
-    void* p = self->m_pMorphTargets;
+    void* p = self->m_aMorphTargets;
     *(void**)self = (void*)&DAT_010976fc;
     if (p)
         ((DestroyMorphTargetFn)DestroyMorphTarget)((NiMorphData::MorphTarget*)p, 3);
@@ -50,7 +51,7 @@ bool __fastcall RegisterMorphStreamables(NiMorphData* self, int, NiStream& kStre
     NiMorphData::MorphTarget* pkTarget;
     for (ui = 0; ui < self->m_uiNumTargets; ui++)
     {
-        pkTarget = (ui < self->m_uiNumTargets ? &self->m_pMorphTargets[ui] : 0);
+        pkTarget = (ui < self->m_uiNumTargets ? &self->m_aMorphTargets[ui] : 0);
         kStream.RegisterFixedString(pkTarget->m_kName);
     }
     return true;
@@ -66,10 +67,10 @@ extern int DAT_0109b220;
 // @fnv 0x00a415f0
 NiMorphData::MorphTarget* __fastcall InitializeMorphTarget(NiMorphData::MorphTarget* self)
 {
-    self->m_pkVertexPositions = 0;
+    self->m_aTargetVerts = 0;
     *(int*)&self->m_kName = DAT_0109b220;
-    *(volatile float*)&self->m_fMorphWeight = 0.0f;
-    self->m_spTargetInterpolator.m_pObject = 0;
+    *(volatile float*)&self->m_fLegacyWeight = 0.0f;
+    self->m_spLegacyInterpolator.m_pObject = 0;
     return self;
 }
 
@@ -81,9 +82,9 @@ typedef int(__stdcall* ReleaseFn_b9415)(int p);
 // @fnv 0x00a41610
 void __fastcall ReleaseMorphTarget(NiMorphData::MorphTarget* self)
 {
-    DAT_011f6238.Deallocate(self->m_pkVertexPositions);
+    DAT_011f6238.Deallocate(self->m_aTargetVerts);
     ReleaseFn_b9415 pfnRelease = (ReleaseFn_b9415)DAT_00fdf1c4;
-    NiRefObject* pRefItem = (NiRefObject*)self->m_spTargetInterpolator.m_pObject;
+    NiRefObject* pRefItem = (NiRefObject*)self->m_spLegacyInterpolator.m_pObject;
     if (pRefItem != 0)
     {
         if (pfnRelease((int)&pRefItem->m_uiRefCount) == 0)
@@ -108,8 +109,8 @@ void* __fastcall DestroyMorphTarget(NiMorphData::MorphTarget* self, int, unsigne
         while (--count >= 0)
         {
             --pEntry;
-            DAT_011f6238.Deallocate(pEntry->m_pkVertexPositions);
-            NiRefObject* ref = (NiRefObject*)pEntry->m_spTargetInterpolator.m_pObject;
+            DAT_011f6238.Deallocate(pEntry->m_aTargetVerts);
+            NiRefObject* ref = (NiRefObject*)pEntry->m_spLegacyInterpolator.m_pObject;
             if (ref)
             {
                 if (fnv_00a41660::InterlockedDecrement((volatile long*)&ref->m_uiRefCount) == 0)
@@ -156,20 +157,23 @@ static __forceinline unsigned int countBytes(const volatile unsigned int& count)
 }
 // @fnv 0x00a417b0
 // src: XBOX_PDB 0x00a417b0
-void __cdecl NiPoint3_SaveBinary(void* owner, void* source, unsigned int elementCount)
+// pdb: NiPoint3::SaveBinary | BSDecalPVExtraData.obj | retail, upstream name already matches, high
+// pdb params: stream, pkValues, uiNumValues
+void __cdecl NiPoint3_SaveBinary(void* stream, void* pkValues, unsigned int uiNumValues)
 {
-    NiBinaryStream* __restrict buffer = *reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(owner) + 0x250);
+    NiBinaryStream* __restrict buffer = *reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(stream) + 0x250);
     unsigned int stride = 4;
-    buffer->BinaryWrite(source, countBytes(elementCount), &stride, 1);
+    buffer->BinaryWrite(pkValues, countBytes(uiNumValues), &stride, 1);
 }
 
 // @fnv 0x00a417f0
+// pdb: NiMorphData::~NiMorphData | NiMorphData.obj | retail, object-file run extension, low
 bool __fastcall EqualMorphTargets(NiMorphData::MorphTarget* self, int, NiMorphData::MorphTarget* other, unsigned int n)
 {
     for (unsigned int i = 0; i < n; ++i)
     {
-        NiPoint3 b = other->m_pkVertexPositions[i];
-        NiPoint3 a = self->m_pkVertexPositions[i];
+        NiPoint3 b = other->m_aTargetVerts[i];
+        NiPoint3 a = self->m_aTargetVerts[i];
         if (!(a.x == b.x))
             return false;
         if (!(a.y == b.y))
@@ -233,7 +237,7 @@ inline void SaveMorphTarget(NiMorphData::MorphTarget* self, NiStream& kStream, u
 {
     ((SaveMorphTargetStringFn)SaveMorphTargetString)(&kStream, self->m_kName);
     if (m_uiScaleCount)
-        SerializeValue(kStream, self->m_pkVertexPositions, m_uiScaleCount);
+        SerializeValue(kStream, self->m_aTargetVerts, m_uiScaleCount);
 }
 
 // Preserve this unit's original base-save entry point and thiscall ABI.
@@ -241,15 +245,18 @@ void __fastcall SaveMorphDataBase(NiObject*, int, NiStream&);
 typedef void (__thiscall* SaveMorphDataBaseFn)(NiObject*, NiStream&);
 
 // @fnv 0x00a41d90
+// pdb: NiMorphData::SaveBinary | NiMorphData.obj | retail, object-file gap fill, high
+// pdb params: stream
+// pdb locals: bRelativeTargets, uiI
 void __fastcall SaveMorphData(NiMorphData* self, int, NiStream& kStream)
 {
     ((SaveMorphDataBaseFn)SaveMorphDataBase)(self, kStream);
     SerializeValue(kStream, self->m_uiNumTargets);
     SerializeValue(kStream, self->m_uiNumVertsPerTarget);
-    char cRelative = self->m_bTargetsAreRelative;
+    char cRelative = self->m_bRelativeTargets;
     SerializeValue(kStream, cRelative);
     for (unsigned int i = 0; i < self->m_uiNumTargets; i++)
-        SaveMorphTarget(&self->m_pMorphTargets[i], kStream, self->m_uiNumVertsPerTarget);
+        SaveMorphTarget(&self->m_aMorphTargets[i], kStream, self->m_uiNumVertsPerTarget);
 }
 
 struct ViewerStrings
@@ -300,17 +307,17 @@ struct ViewerStrings
     }
 };
 
-extern "C" void* g_011f3e74;
+extern "C" void* NiMorphData_ms_RTTI;
 
 char* NiViewerStrings_NiGetViewerString_Title(const char* pcName);
 char* NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);
 char* NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 
-void __stdcall AppendCameraPathEntries(ViewerStrings* pkStrings);
+void __stdcall AppendCameraPathEntries(ViewerStrings* pStrings);
 
 inline NiMorphData::MorphTarget* NiMorphData::GetTarget(unsigned int i) const
 {
-    return i < m_uiNumTargets ? &m_pMorphTargets[i] : 0;
+    return i < m_uiNumTargets ? &m_aMorphTargets[i] : 0;
 }
 
 inline const char* MorphTargetName(const NiMorphData::MorphTarget* target)
@@ -320,10 +327,13 @@ inline const char* MorphTargetName(const NiMorphData::MorphTarget* target)
 
 // Appends the base object's strings, the target and vertex counts, a MorphTargets header, and each target's name to pkStrings.
 // @fnv 0x00a41ea0
+// pdb: NiMorphData::GetViewerStrings | NiMorphData.obj | retail, string-set bridge, high
+// pdb params: pStrings
+// pdb locals: ui, pkTarget
 void __fastcall AppendMorphViewerStrings(NiMorphData* self, int, ViewerStrings* pkStrings)
 {
     AppendCameraPathEntries(pkStrings);
-    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title((const char*)g_011f3e74));
+    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title((const char*)NiMorphData_ms_RTTI));
     pkStrings->Add(NiGetViewerString_00a7d510("m_uiNumTargets", self->m_uiNumTargets));
     pkStrings->Add(NiGetViewerString_00a7d510("m_uiNumVertsPerTarget", self->m_uiNumVertsPerTarget));
     pkStrings->Add(NiViewerStrings_NiGetViewerString_Title("MorphTargets"));
@@ -338,10 +348,12 @@ template <class T> inline unsigned int FNVReadElements(NiBinaryStream& stream, c
 }
 // Reads count unsigned int elements from the input stream via FNVReadElements.
 // @fnv 0x00a41770
-void __cdecl ReadElements(NiStream* apStreamContext, const unsigned int* data, unsigned int count)
+// pdb: NiStreamLoadBinary<float> | BSDecalPVExtraData.obj | retail, call graph, high
+// pdb params: kStream, pValue, uiNumEls
+void __cdecl ReadElements(NiStream* kStream, const unsigned int* pValue, unsigned int uiNumEls)
 {
-    NiBinaryStream* stream = &apStreamContext->Istr();
-    FNVReadElements(*stream, data, count);
+    NiBinaryStream* stream = &kStream->Istr();
+    FNVReadElements(*stream, pValue, uiNumEls);
 }
 
 extern MemoryManager g_memoryManager;
@@ -357,6 +369,8 @@ inline void* __cdecl operator new[](size_t uiSize)
 
 // Reads the name and optional morph weight, then allocates and fills the vertex positions.
 // @fnv 0x00a41940
+// pdb: NiMorphData::MorphTarget::LoadBinary | NiMorphData.obj | retail, object-file run extension, low
+// pdb params: kStream, uiNumVerts
 void __fastcall LoadMorphTarget(NiMorphData::MorphTarget* self, int, NiStream& kStream, unsigned int m_uiScaleCount)
 {
     if (kStream.version() < 0x14010001)
@@ -364,15 +378,18 @@ void __fastcall LoadMorphTarget(NiMorphData::MorphTarget* self, int, NiStream& k
     else
         kStream.ReadStringTableEntry(self->m_kName);
     if (kStream.version() >= 0x0A010068 && kStream.version() < 0x14010003)
-        NiBinIstrLoad_a41940(&kStream.Istr(), &self->m_fMorphWeight, 1);
-    self->m_pkVertexPositions = new NiPoint3[m_uiScaleCount];
-    NiBinIstrLoad_a41940(&kStream.Istr(), (float*)self->m_pkVertexPositions, m_uiScaleCount * 3);
+        NiBinIstrLoad_a41940(&kStream.Istr(), &self->m_fLegacyWeight, 1);
+    self->m_aTargetVerts = new NiPoint3[m_uiScaleCount];
+    NiBinIstrLoad_a41940(&kStream.Istr(), (float*)self->m_aTargetVerts, m_uiScaleCount * 3);
 }
 
 typedef bool (__thiscall* EqualMorphTargetsFn)(NiMorphData::MorphTarget*, NiMorphData::MorphTarget*, unsigned int);
 
 // Compares counts, relative flags, and each morph target after the base comparison.
 // @fnv 0x00a418a0
+// pdb: NiMorphData::IsEqual | NiMorphData.obj | retail, object-file run extension, low
+// pdb params: pObject
+// pdb locals: pData, uiI
 bool __fastcall EqualMorphData(NiMorphData* self, int, NiMorphData* other)
 {
     if (!self->NiObject::IsSameAs(other))
@@ -390,12 +407,12 @@ bool __fastcall EqualMorphData(NiMorphData* self, int, NiMorphData* other)
     {
         return false;
     }
-    if (self->m_bTargetsAreRelative == other->m_bTargetsAreRelative)
+    if (self->m_bRelativeTargets == other->m_bRelativeTargets)
     {
         for (unsigned int i = 0; i < thisCount; ++i)
         {
-            NiMorphData::MorphTarget* pOtherTarget = (i < otherCount) ? (pOther->m_pMorphTargets + i) : 0;
-            NiMorphData::MorphTarget* pThisTarget = (i < thisCount) ? (self->m_pMorphTargets + i) : 0;
+            NiMorphData::MorphTarget* pOtherTarget = (i < otherCount) ? (pOther->m_aMorphTargets + i) : 0;
+            NiMorphData::MorphTarget* pThisTarget = (i < thisCount) ? (self->m_aMorphTargets + i) : 0;
             if (!((EqualMorphTargetsFn)EqualMorphTargets)(pThisTarget, pOtherTarget, self->m_uiNumVertsPerTarget))
             {
                 return false;

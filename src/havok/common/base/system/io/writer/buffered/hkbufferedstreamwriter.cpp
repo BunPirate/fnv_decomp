@@ -23,17 +23,19 @@ struct FUN_00d27260_standin
     int m_kRayEnd;
 
     int FlushToDestination();
-    int hkBufferedStreamWriter_write(const void* data, int size);
+    int hkBufferedStreamWriter_write(const void* mem, int memSize);
 };
 
 void _FUN_00cb1260(void* destination, const void* source, unsigned int size);
 
 // @fnv 0x00d27260
 // src: HAVOK_LIB 0x00d27260
-int __thiscall FUN_00d27260_standin::hkBufferedStreamWriter_write(const void* data, int size)
+// pdb: hkBufferedStreamWriter::write | hkBufferedStreamWriter.obj | retail, upstream name already matches, high
+// pdb params: mem, memSize
+int __thiscall FUN_00d27260_standin::hkBufferedStreamWriter_write(const void* mem, int memSize)
 {
-    int remaining = size;
-    const char* bytes = static_cast<const char*>(data);
+    int remaining = memSize;
+    const char* bytes = static_cast<const char*>(mem);
     int available = m_kRayEnd - m_vContactPosition;
 
     while (remaining > available)
@@ -46,14 +48,14 @@ int __thiscall FUN_00d27260_standin::hkBufferedStreamWriter_write(const void* da
         remaining -= available;
 
         if (FlushToDestination() != position)
-            return size - remaining;
+            return memSize - remaining;
 
         available = m_kRayEnd - m_vContactPosition;
     }
 
     _FUN_00cb1260(m_buffer + m_vContactPosition, bytes, remaining);
     m_vContactPosition += remaining;
-    return size;
+    return memSize;
 }
 
 struct FUN_00d27420_class
@@ -70,12 +72,14 @@ struct FUN_00d27420_class
 
 // Writes the Buffer and stream members to the given stream via its virtual methods.
 // @fnv 0x00d27420
-void FUN_00d27420_class::WriteToStream(FUN_00d27420_class* stream, int)
+// pdb: hkBufferedStreamWriter::calcContentStatistics | hkBufferedStreamWriter.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void FUN_00d27420_class::WriteToStream(FUN_00d27420_class* collector, int)
 {
-    stream->m5(1, "Buffer", *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x0c),
+    collector->m5(1, "Buffer", *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x0c),
                *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x14), 0);
 
-    stream->m3("stream", *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x08), 0);
+    collector->m3("stream", *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x08), 0);
 }
 
 void __cdecl hkBufferedStreamWriter_flush();
@@ -99,6 +103,7 @@ struct FUN_00d27520
 };
 
 // @fnv 0x00d27520
+// pdb: hkBufferedStreamWriter::~hkBufferedStreamWriter | hkBufferedStreamWriter.obj | retail, call graph (shared callers), medium
 FUN_00d27520::~FUN_00d27520()
 {
     m_vtbl = &DAT_010ce448;
@@ -126,6 +131,7 @@ struct FUN_00d27570Writer
 
 // Calls FUN_00d27520, then if deletingFlag has bit 0 set, deallocates this through the memory router using id, and returns this.
 // @fnv 0x00d27570
+// pdb: hkBufferedStreamWriter::`scalar deleting destructor' | hkBufferedStreamWriter.obj | retail, vtable slot, high
 void* FUN_00d27570Writer::DestroyWriter(unsigned char deletingFlag)
 {
     FUN_00d27520();
@@ -160,6 +166,7 @@ struct StreamBufferD27210
     int FlushToDestination();
 };
 // @fnv 0x00d27210
+// pdb: hkBufferedStreamWriter::flushBuffer | hkBufferedStreamWriter.obj | retail, object-file run extension, low
 int StreamBufferD27210::FlushToDestination()
 {
     if (m_destination != 0)
@@ -211,6 +218,7 @@ struct FUN_00d272e0_class
 
 // @fnv 0x00d272e0
 // src: HAVOK_LIB 0x00d272e0
+// pdb: hkBufferedStreamWriter::flush | hkBufferedStreamWriter.obj | retail, upstream name already matches, high
 void FUN_00d272e0_class::hkBufferedStreamWriter_flush()
 {
     reinterpret_cast<FUN_00d27260_standin*>(this)->FlushToDestination();
@@ -245,6 +253,7 @@ class hkObjD273
 };
 
 // @fnv 0x00d27300
+// pdb: hkBufferedStreamWriter::isOk | hkBufferedStreamWriter.obj | retail, vtable slot, high
 hkBool hkObjD273::GetBool()
 {
     return m_pObservedSource ? m_pObservedSource->isOk() : hkBool(m_10 != m_14);
@@ -281,29 +290,31 @@ class hkBufferedStreamD273
     int m_iElementCount;
 
     void FlushToDestination();
-    hkResultD273 hkBufferedStreamWriter_seek(int offset, int whence);
+    hkResultD273 hkBufferedStreamWriter_seek(int relOffset, int whence);
 };
 
 // @fnv 0x00d27380
 // src: HAVOK_LIB 0x00d27380
-hkResultD273 hkBufferedStreamD273::hkBufferedStreamWriter_seek(int offset, int whence)
+// pdb: hkBufferedStreamWriter::seek | hkBufferedStreamWriter.obj | retail, upstream name already matches, high
+// pdb params: relOffset, whence
+hkResultD273 hkBufferedStreamD273::hkBufferedStreamWriter_seek(int relOffset, int whence)
 {
     if (m_pChildAtom)
     {
         FlushToDestination();
-        return m_pChildAtom->seek(offset, whence);
+        return m_pChildAtom->seek(relOffset, whence);
     }
     int pos = -1;
     switch (whence)
     {
     case 0:
-        pos = offset;
+        pos = relOffset;
         break;
     case 1:
-        pos = m_pos + offset;
+        pos = m_pos + relOffset;
         break;
     case 2:
-        pos = m_pos - offset;
+        pos = m_pos - relOffset;
         break;
     }
     hkResultD273 res = HK_SUCCESS_D273;
@@ -337,6 +348,8 @@ class FUN_00d274c0 : public hkReferencedObject
 };
 
 // @fnv 0x00d274c0
+// pdb: hkBufferedStreamWriter::hkBufferedStreamWriter | hkBufferedStreamWriter.obj | retail, call graph (shared callers), medium
+// pdb params: mem, memSize, memoryIsString
 FUN_00d274c0::FUN_00d274c0(void* pvMem, int aiSize, char bMemoryIsString) throw()
 {
     m_offset = 0;
@@ -372,6 +385,7 @@ class FUN_00d27340_cls
 
 // Returns StreamWriterSeekTellSupported(m_inner) when m_inner is non-null, otherwise true.
 // @fnv 0x00d27340
+// pdb: hkBufferedStreamWriter::seekTellSupported | hkBufferedStreamWriter.obj | retail, vtable slot, high
 hkBool FUN_00d27340_cls::IsValid() const
 {
     return m_inner ? m_inner->seekTellSupported() : hkBool(true);
@@ -406,6 +420,7 @@ class FUN_00d273f0_cls
 // Returns the wrapped stream position plus buffered bytes, or -1 for an invalid position.
 // @fnv 0x00d273f0
 // src: HAVOK_LIB 0x00d273f0
+// pdb: hkBufferedStreamWriter::tell | hkBufferedStreamWriter.obj | retail, upstream name already matches, high
 int FUN_00d273f0_cls::hkBufferedStreamWriter_tell() const
 {
     int n = m_inner ? m_inner->tell() : 0;
@@ -417,7 +432,7 @@ int FUN_00d273f0_cls::hkBufferedStreamWriter_tell() const
 namespace hkRouterD274 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void* __cdecl hkMemoryRouter_alignedAlloc(hkMemoryAllocator& alloc, int iSize, int iAlign) throw();
+void* __cdecl hkMemoryRouter_alignedAlloc(hkMemoryAllocator& b, int nbytes, int alignment) throw();
 class hkBufStreamWriterD274 : public hkStreamWriter
 {
   public:
@@ -431,6 +446,9 @@ class hkBufStreamWriterD274 : public hkStreamWriter
 };
 // Stores s, allocates bufSize bytes with alignment argument 0x40, and initializes the buffer size and position.
 // @fnv 0x00d27460
+// pdb: hkBufferedStreamWriter::hkBufferedStreamWriter | hkBufferedStreamWriter.obj | debug, call graph, medium
+// pdb params: s, bufSize
+// pdb locals: assertBuf, ostr
 hkBufStreamWriterD274::hkBufStreamWriterD274(hkStreamWriter* apStream, int aiBufferSize) throw()
     : m_stream(apStream), m_bIsOk(true)
 {

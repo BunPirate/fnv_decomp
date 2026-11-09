@@ -48,6 +48,7 @@ struct FUN_00dfc2c0 : SizedBase
 
     // Empty virtual destructor; the m_kArray member's destructor then frees its array through the allocator.
 // @fnv 0x00dfc2c0
+// pdb: hkpTyremarksWheel::`scalar deleting destructor' | hkpTyremarksInfoClass.obj | retail, vtable slot, high
     virtual ~FUN_00dfc2c0() throw()
     {}
 
@@ -84,6 +85,7 @@ struct FUN_00dfc330
 
 // Empty default constructor of a class with size/flags and reference count fields.
 // @fnv 0x00dfc330
+// pdb: hkpTyremarksInfo::`scalar deleting destructor' | hkpTyremarksInfoClass.obj | retail, vtable slot, high
 FUN_00dfc330::FUN_00dfc330()
 {}
 }  // namespace fnv_00dfc330

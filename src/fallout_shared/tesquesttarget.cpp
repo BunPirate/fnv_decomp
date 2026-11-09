@@ -4,23 +4,26 @@
 
 // Resolves the stored reference form ID against the quest's file, warns if it is missing, then initializes the conditions.
 // @fnv 0x00610040
-void RegionObjectEntry::InitItem(TESForm* form)
+// pdb: TESQuestTarget::InitItem | TESQuestTarget.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: tempID
+void RegionObjectEntry::InitItem(TESForm* apOwner)
 {
     if (m_pReference)
     {
         unsigned int formID = reinterpret_cast<unsigned int>(m_pReference);
-        TESForm::RemapFormIDForFile(formID, form->GetFile(-1));
+        TESForm::RemapFormIDForFile(formID, apOwner->GetFile(-1));
         m_pReference = dynamic_cast<TESObjectREFR*>(TESForm::GetFormByID(formID));
         if (!m_pReference)
             Warning("MASTERFILE: Could not find target reference (%08X) on quest (%08X) '%s'.", formID,
-                    form->GetFormID(), form->GetName());
+                    apOwner->GetFormID(), apOwner->GetName());
     }
     else
     {
-        Warning("MASTERFILE: No reference on target for quest (%08X) '%s'.", form->GetFormID(), form->GetName());
+        Warning("MASTERFILE: No reference on target for quest (%08X) '%s'.", apOwner->GetFormID(), apOwner->GetName());
     }
     if (GetConditions())
-        GetConditions()->InitItem(form);
+        GetConditions()->InitItem(apOwner);
 }
 
 // @fnv 0x0060f440
@@ -44,10 +47,13 @@ void QuestStage::Load(TESFile* file)
 
 // Returns the stored reference, replacing it with its extra-data replacement when it is deleted and resolveDeleted is set.
 // @fnv 0x006101b0
-TESObjectREFR* RegionObjectEntry::GetReference(bool resolveDeleted)
+// pdb: TESQuestTarget::GetReference | TESQuestTarget.obj | retail, call graph (shared callers), high
+// pdb params: abAllowPickUpActor
+// pdb locals: pretref, pactor
+TESObjectREFR* RegionObjectEntry::GetReference(bool abAllowPickUpActor)
 {
     TESObjectREFR* reference = m_pReference;
-    if (reference && reference->TESForm::IsDeleted() && resolveDeleted)
+    if (reference && reference->TESForm::IsDeleted() && abAllowPickUpActor)
     {
         TESObjectREFR* replacement = reference->GetExtraData()->GetReplacementReference();
         if (replacement)
@@ -67,6 +73,7 @@ struct FUN_0060ff70
 };
 
 // @fnv 0x0060ff70
+// pdb: TESQuestTarget::TESQuestTarget | TESQuestTarget.obj | retail, object-file run extension, low
 FUN_0060ff70::FUN_0060ff70()
 {
     m_pReference = 0;
@@ -88,5 +95,6 @@ struct FUN_0060ffe0
 };
 // Destructor for the object; the body is empty, so member destruction is handled by the compiler-generated code.
 // @fnv 0x0060ffe0
+// pdb: TESQuestTarget::~TESQuestTarget | TESQuestTarget.obj | retail, object-file run extension, low
 FUN_0060ffe0::~FUN_0060ffe0()
 {}

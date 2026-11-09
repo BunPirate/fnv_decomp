@@ -4,6 +4,7 @@
 
 class LocationDescriptor;
 
+// pdb: class TESUseItemPackageData, size 0x8, bases: TESPackageData, 1 members
 class TESUseItemPackageData : public TESPackageData
 {
 public:
@@ -11,8 +12,8 @@ public:
     virtual bool vf02(TESPackageData* other) override;
     virtual void vf03();
 
-    void vf01(TESPackageData* source);
+    void vf01(TESPackageData* apCopy);
     void FUN_0067c9d0();
 
-    LocationDescriptor* m_pPackageTarget;
+    LocationDescriptor* pSearchLocation;
 };

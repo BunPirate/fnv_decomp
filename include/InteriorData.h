@@ -16,5 +16,5 @@ public:
     unsigned int m_uiTrailingValue;
 
     InteriorData();
-    void Endian();
+    void INTERIOR_DATA_Endian();
 };

@@ -20,7 +20,7 @@ class NiD3DTextureData : public NiPixelFormat
 {
   public:
     // Genuine supplied candidate name. The machine ABI and enum values are PC.
-    static D3DFORMAT __cdecl ConvertPixelFormatToD3DFormat(const NiPixelFormat& kPixelFormat);
+    static D3DFORMAT __cdecl ConvertPixelFormatToD3DFormat(const NiPixelFormat& kDesc);
 };
 
 FNV_PIXELFORMAT_ASSERT(sizeof(D3DFORMAT) == 4);

@@ -5,6 +5,7 @@
 
 class hkCharArray;
 
+// pdb: class hkArrayStreamWriter, size 0x14, bases: hkStreamWriter, 3 members
 class hkArrayStreamWriter : public hkStreamWriter
 {
 public:
@@ -14,9 +15,9 @@ public:
     virtual int write(const void* buf, int len);
     virtual void Reset();
 
-    int Seek(int iRelOffset, int eWhence);
+    int Seek(int offset, int whence);
 
-    hkArray<char>* m_aiIndexedValues;
+    hkArray<char>* m_arr;
     int m_offset;
-    int m_ownership;
+    int m_ownerShip;
 };

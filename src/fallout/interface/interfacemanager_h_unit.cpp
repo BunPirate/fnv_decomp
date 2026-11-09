@@ -10,6 +10,7 @@ struct TargetClass
 };
 // Calls FUN_00719390, deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x00719360
+// pdb: SystemColorManager::SoftSystemColor::`scalar deleting destructor' | InterfaceManager.obj | debug, vtable slot, medium
 void* TargetClass::DestroyIfFlagged(unsigned int flags)
 {
     SetVtableAndProcessState_00719390();

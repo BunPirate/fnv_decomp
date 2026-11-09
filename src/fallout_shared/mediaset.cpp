@@ -10,6 +10,8 @@
 #include "../../include/TES.h"
 
 // @fnv 0x00598a70
+// pdb: MediaSet::InitItem | MediaSet.obj | retail, string-set bridge, high
+// pdb locals: itempInt
 void MediaSet::InitItem()
 {
     unsigned int formID;
@@ -17,22 +19,22 @@ void MediaSet::InitItem()
         return;
 
     formID = 0;
-    formID = reinterpret_cast<unsigned int>(m_pSound1);
+    formID = reinterpret_cast<unsigned int>(pSoundOne);
     if (formID)
     {
         RemapFormIDForFile(formID, GetFile(-1));
-        m_pSound1 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if (!m_pSound1)
+        pSoundOne = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if (!pSoundOne)
             Warning("MASTERFILE: Could not find open sound (%08X) for MediaSet '%s' (%08X).", formID, GetName(),
                     GetFormID());
     }
 
-    formID = reinterpret_cast<unsigned int>(m_pSound2);
+    formID = reinterpret_cast<unsigned int>(pSoundTwo);
     if (formID)
     {
         RemapFormIDForFile(formID, GetFile(-1));
-        m_pSound2 = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
-        if (!m_pSound2)
+        pSoundTwo = dynamic_cast<TESSound*>(TESForm::GetFormByID(formID));
+        if (!pSoundTwo)
             Warning("MASTERFILE: Could not find open sound (%08X) for MediaSet '%s' (%08X).", formID, GetName(),
                     GetFormID());
     }
@@ -42,93 +44,102 @@ void MediaSet::InitItem()
 
 // Resets six entries, then zeroes two sound members.
 // @fnv 0x00599bd0
+// pdb: MediaSet::ClearData | MediaSet.obj | retail, upstream name already matches, high
 void MediaSet::ClearData()
 {
-    m_kMediaSetEntry1.Reset();
-    m_kMediaSetEntry2.Reset();
-    m_kMediaSetEntry3.Reset();
-    m_kMediaSetEntry4.Reset();
-    m_kMediaSetEntry5.Reset();
-    m_kMediaSetEntry6.Reset();
-    m_pSound1 = 0;
-    m_pSound2 = 0;
+    pMLOne.Reset();
+    pMLTwo.Reset();
+    pMLThree.Reset();
+    pMLFour.Reset();
+    pMLFive.Reset();
+    pMLSix.Reset();
+    pSoundOne = 0;
+    pSoundTwo = 0;
 }
 
 // @fnv 0x00599b30
+// pdb: MediaSet::InitializeData | MediaSet.obj | retail, vtable slot, high
 void MediaSet::ResetFormData()
 {
-    m_kMediaSetEntry1.Reset();
-    m_kMediaSetEntry2.Reset();
-    m_kMediaSetEntry3.Reset();
-    m_kMediaSetEntry4.Reset();
-    m_kMediaSetEntry5.Reset();
-    m_kMediaSetEntry6.Reset();
-    m_fMediaParameter1 = 0.0f;
-    fSkillValueBonus = 0.0f;
-    m_fMediaParameter3 = 0.0f;
-    m_fMediaValue = 0.0f;
-    m_pSound1 = 0;
-    m_pSound2 = 0;
+    pMLOne.Reset();
+    pMLTwo.Reset();
+    pMLThree.Reset();
+    pMLFour.Reset();
+    pMLFive.Reset();
+    pMLSix.Reset();
+    fOne = 0.0f;
+    fTwo = 0.0f;
+    fThree = 0.0f;
+    fFour = 0.0f;
+    pSoundOne = 0;
+    pSoundTwo = 0;
 }
 
 // @fnv 0x00597990
-bool MediaSet::Update(unsigned int time, bool force, MediaLocationController* controller)
+// pdb: MediaSet::Update | MediaSet.obj | retail, upstream name already matches, high
+// pdb params: ticks, abInCombat, pController
+bool MediaSet::Update(unsigned int ticks, bool abInCombat, MediaLocationController* pController)
 {
-    if (controller)
+    if (pController)
     {
         switch (Type)
         {
         case LAYER_LOCATION:
-            return UpdateLayerLocation(time, force, controller);
+            return UpdateLayerLocation(ticks, abInCombat, pController);
             break;
         case LAYER_DUNGEON:
-            return PointLocation(time, force, controller);
+            return PointLocation(ticks, abInCombat, pController);
             break;
         case BATTLE:
-            return UpdateBattleState(force, time, 4);
+            return UpdateBattleState(abInCombat, ticks, 4);
         }
     }
-    else if (!controller && Type == INCIDENTAL)
+    else if (!pController && Type == INCIDENTAL)
     {
-        if (DAT_011ca9fc > time)
+        if (DAT_011ca9fc > ticks)
             return true;
-        UpdateIncidental(time);
+        UpdateIncidental(ticks);
     }
-    else if (!controller && Type == BATTLE)
+    else if (!pController && Type == BATTLE)
     {
-        return UpdateBattleState(force, time, 4);
+        return UpdateBattleState(abInCombat, ticks, 4);
     }
     return false;
 }
 
 // @fnv 0x00597610
+// pdb: MediaSet::MediaSet | MediaSet.obj | retail, upstream name already matches, high
 MediaSet::MediaSet()
 {
     SetFormType(ENUM_FORM_ID_MSET_ID);
     Type = static_cast<MEDIASETTYPE>(-1);
-    m_kMediaSetEntry1.Reset();
-    m_kMediaSetEntry2.Reset();
-    m_kMediaSetEntry3.Reset();
-    m_kMediaSetEntry4.Reset();
-    m_kMediaSetEntry5.Reset();
-    m_kMediaSetEntry6.Reset();
-    m_fMediaParameter1 = 0.0f;
-    fSkillValueBonus = 0.0f;
-    m_fMediaParameter3 = 0.0f;
-    m_fMediaValue = 0.0f;
-    m_pSound1 = 0;
-    m_pSound2 = 0;
+    pMLOne.Reset();
+    pMLTwo.Reset();
+    pMLThree.Reset();
+    pMLFour.Reset();
+    pMLFive.Reset();
+    pMLSix.Reset();
+    fOne = 0.0f;
+    fTwo = 0.0f;
+    fThree = 0.0f;
+    fFour = 0.0f;
+    pSoundOne = 0;
+    pSoundTwo = 0;
     DAT_011ca9fc = 0;
-    m_uiMediaValue3 = 0;
-    m_uiMediaValue2 = 0;
-    bEffectFlag = false;
-    m_bActorStateFlag = false;
-    m_bConditionWasTrue = false;
-    m_cMediaState = 0;
+    uiLoopUpdate = 0;
+    uiSeekTime = 0;
+    bStarted = false;
+    bInCombat = false;
+    bIsDay = false;
+    cCurrentLayer = 0;
 }
 
 // Selects an incidental media layer for the controller based on scale and layer percentages, then starts or stops playback and updates cached state.
 // @fnv 0x00597a60
+// pdb: MediaSet::UpdateDungeon | MediaSet.obj | retail, call graph, low
+// pdb note: debug build links it to MediaSet::UpdateLocation
+// pdb params: ticks, abInCombat, pController
+// pdb locals: cLayer, bMusicPlaying, dur, bReturn, bLoop, newLayer, uiSeekTime
 bool MediaSet::UpdateLayerLocation(unsigned int time, bool force, MediaLocationController* controller)
 {
     bool bReturn;
@@ -144,10 +155,10 @@ bool MediaSet::UpdateLayerLocation(unsigned int time, bool force, MediaLocationC
         bool a;  // Restart after the previous incidental reaches its fade window.
         unsigned int fMinPercent = FalloutAudioMedia_MediaGetSubDuration(MEDIATYPE_MEDIA_LOCATION);
         a = false;
-        if (m_uiMediaValue3 && fMinPercent && time > m_uiMediaValue3 + fMinPercent - m_fMediaParameter3 * 1000.0)
+        if (uiLoopUpdate && fMinPercent && time > uiLoopUpdate + fMinPercent - fThree * 1000.0)
         {
-            FalloutAudioMedia::FadeOutMedia(static_cast<int>(m_fMediaParameter3 * 1000.0), MEDIATYPE_MEDIA_LOCATION);
-            m_uiMediaValue3 = time;
+            FalloutAudioMedia::FadeOutMedia(static_cast<int>(fThree * 1000.0), MEDIATYPE_MEDIA_LOCATION);
+            uiLoopUpdate = time;
             if (!controller->GetLoop())
                 a = true;
             else
@@ -157,54 +168,54 @@ bool MediaSet::UpdateLayerLocation(unsigned int time, bool force, MediaLocationC
         float m_uiPlaybackFlags = 1000.0f;  // Lowest eligible layer percentage.
         if (controller->GetByteAtOffset55())
         {
-            if ((m_cMediaFlag & 1) && m_kMediaSetEntry1.Percent > fNormalizedPosition &&
-                m_kMediaSetEntry1.Percent < m_uiPlaybackFlags)
+            if ((cEnableFlags & 1) && pMLOne.Percent > fNormalizedPosition &&
+                pMLOne.Percent < m_uiPlaybackFlags)
             {
                 cLayer = 1;
                 m_uiPlaybackFlags =
-                    m_kMediaSetEntry1.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : m_kMediaSetEntry1.Percent;
+                    pMLOne.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : pMLOne.Percent;
             }
-            if ((m_cMediaFlag & 2) && m_kMediaSetEntry2.Percent > fNormalizedPosition &&
-                m_kMediaSetEntry2.Percent < m_uiPlaybackFlags)
+            if ((cEnableFlags & 2) && pMLTwo.Percent > fNormalizedPosition &&
+                pMLTwo.Percent < m_uiPlaybackFlags)
             {
                 cLayer = 2;
                 m_uiPlaybackFlags =
-                    m_kMediaSetEntry2.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : m_kMediaSetEntry2.Percent;
+                    pMLTwo.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : pMLTwo.Percent;
             }
-            if ((m_cMediaFlag & 4) && m_kMediaSetEntry3.Percent > fNormalizedPosition &&
-                m_kMediaSetEntry3.Percent < m_uiPlaybackFlags)
+            if ((cEnableFlags & 4) && pMLThree.Percent > fNormalizedPosition &&
+                pMLThree.Percent < m_uiPlaybackFlags)
             {
                 cLayer = 3;
                 m_uiPlaybackFlags =
-                    m_kMediaSetEntry3.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : m_kMediaSetEntry3.Percent;
+                    pMLThree.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : pMLThree.Percent;
             }
         }
         else
         {
-            if ((m_cMediaFlag & 8) && m_kMediaSetEntry4.Percent > fNormalizedPosition &&
-                m_kMediaSetEntry4.Percent < m_uiPlaybackFlags)
+            if ((cEnableFlags & 8) && pMLFour.Percent > fNormalizedPosition &&
+                pMLFour.Percent < m_uiPlaybackFlags)
             {
                 cLayer = 1;
                 m_uiPlaybackFlags =
-                    m_kMediaSetEntry4.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : m_kMediaSetEntry4.Percent;
+                    pMLFour.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : pMLFour.Percent;
             }
-            if ((m_cMediaFlag & 16) && m_kMediaSetEntry5.Percent > fNormalizedPosition &&
-                m_kMediaSetEntry5.Percent < m_uiPlaybackFlags)
+            if ((cEnableFlags & 16) && pMLFive.Percent > fNormalizedPosition &&
+                pMLFive.Percent < m_uiPlaybackFlags)
             {
                 cLayer = 2;
                 m_uiPlaybackFlags =
-                    m_kMediaSetEntry5.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : m_kMediaSetEntry5.Percent;
+                    pMLFive.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : pMLFive.Percent;
             }
-            if ((m_cMediaFlag & 32) && m_kMediaSetEntry6.Percent > fNormalizedPosition &&
-                m_kMediaSetEntry6.Percent < m_uiPlaybackFlags)
+            if ((cEnableFlags & 32) && pMLSix.Percent > fNormalizedPosition &&
+                pMLSix.Percent < m_uiPlaybackFlags)
             {
                 cLayer = 3;
                 m_uiPlaybackFlags =
-                    m_kMediaSetEntry6.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : m_kMediaSetEntry6.Percent;
+                    pMLSix.Percent > m_uiPlaybackFlags ? m_uiPlaybackFlags : pMLSix.Percent;
             }
         }
-        if (!(bPlaying && m_bActorStateFlag == force && m_bConditionWasTrue == controller->GetByteAtOffset55() &&
-              m_cMediaState == cLayer) &&
+        if (!(bPlaying && bInCombat == force && bIsDay == controller->GetByteAtOffset55() &&
+              cCurrentLayer == cLayer) &&
                 DAT_011dd37c < time ||
             a)
         {
@@ -214,13 +225,13 @@ bool MediaSet::UpdateLayerLocation(unsigned int time, bool force, MediaLocationC
                 switch (cLayer)
                 {
                 case 1:
-                    pLayer = &m_kMediaSetEntry1;
+                    pLayer = &pMLOne;
                     break;
                 case 2:
-                    pLayer = &m_kMediaSetEntry2;
+                    pLayer = &pMLTwo;
                     break;
                 case 3:
-                    pLayer = &m_kMediaSetEntry3;
+                    pLayer = &pMLThree;
                 }
             }
             else
@@ -228,38 +239,38 @@ bool MediaSet::UpdateLayerLocation(unsigned int time, bool force, MediaLocationC
                 switch (cLayer)
                 {
                 case 1:
-                    pLayer = &m_kMediaSetEntry4;
+                    pLayer = &pMLFour;
                     break;
                 case 2:
-                    pLayer = &m_kMediaSetEntry5;
+                    pLayer = &pMLFive;
                     break;
                 case 3:
-                    pLayer = &m_kMediaSetEntry6;
+                    pLayer = &pMLSix;
                 }
             }
             if (pLayer)
             {
-                DAT_011dd37c = static_cast<unsigned int>(time + m_fMediaParameter1 * 1000.0);
+                DAT_011dd37c = static_cast<unsigned int>(time + fOne * 1000.0);
                 unsigned int uiElapsedMilliseconds = 0;
                 if (FalloutAudioMedia_MediaGetPosition(MEDIATYPE_MEDIA_LOCATION) && !a)
                     uiElapsedMilliseconds = time - FalloutAudioMedia_MediaGetPosition(MEDIATYPE_MEDIA_LOCATION);
                 FalloutAudioMedia::PlayMedia(
                     MEDIATYPE_MEDIA_LOCATION,
                     reinterpret_cast<const char*>(reinterpret_cast<const NiPointer<NiNode>*>(pLayer)->operator->()),
-                    static_cast<unsigned int>(m_fMediaParameter3 * 1000.0), !controller->GetLoop(), true,
+                    static_cast<unsigned int>(fThree * 1000.0), !controller->GetLoop(), true,
                     pLayer->Attenuation, uiElapsedMilliseconds);
                 FalloutAudioMedia::EndMediaUpdate();
-                m_uiMediaValue3 = time;
+                uiLoopUpdate = time;
             }
             else
             {
                 if (bPlaying)
-                    FalloutAudioMedia::FadeOutMedia(static_cast<int>(m_fMediaParameter3 * 1000.0), MEDIATYPE_MEDIA_LOCATION);
+                    FalloutAudioMedia::FadeOutMedia(static_cast<int>(fThree * 1000.0), MEDIATYPE_MEDIA_LOCATION);
                 bReturn = false;
             }
-            m_bActorStateFlag = force;
-            m_bConditionWasTrue = controller->GetByteAtOffset55();
-            m_cMediaState = cLayer;
+            bInCombat = force;
+            bIsDay = controller->GetByteAtOffset55();
+            cCurrentLayer = cLayer;
         }
     }
     return bReturn;
@@ -269,6 +280,7 @@ extern float const runtimeFloatSettingDefault313;
 
 // Clears the name and restores the attenuation and percentage defaults.
 // @fnv 0x00597850
+// pdb: MediaSet::MediaLayer::Clear | MediaSet.obj | debug, call graph, medium
 void MediaSetEntry::Reset()
 {
     Name.Set(0, 0);
@@ -278,6 +290,7 @@ void MediaSetEntry::Reset()
 
 // @fnv 0x007d9ec0
 // src: GUESS 0x007d9ec0 (confidence: medium)
+// pdb: MediaSet::MediaLayer::~MediaLayer | MediaSet.obj | debug, call graph, medium
 void __fastcall BSStringT_BSStringT_Thunk(BSStringT<char>* apString)
 {
     apString->BSStringT<char>::~BSStringT<char>();
@@ -295,6 +308,9 @@ struct MediaSetLoad : public MediaSet
 // Reads a MediaSet record from the file, handling EDID, OBND, FULL, type, name, attenuation, percent, sound and float chunks, then returns true.
 // @fnv 0x00598bc0
 // src: XBOX_PDB 0x00598bc0
+// pdb: MediaSet::Load | MediaSet.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: itempint, chunkid, pMessage, cSize, tF, stemp
 bool MediaSetLoad::MediaSet_Load(TESFile* apFile)
 {
     unsigned int itempint = 0;
@@ -341,22 +357,22 @@ bool MediaSetLoad::MediaSet_Load(TESFile* apFile)
                 switch (chunkid)
                 {
                 case '2MAN':
-                    ((::BSStringT<char>*)&m_kMediaSetEntry1.Name)->Set(stemp);
+                    ((::BSStringT<char>*)&pMLOne.Name)->Set(stemp);
                     break;
                 case '3MAN':
-                    ((::BSStringT<char>*)&m_kMediaSetEntry2.Name)->Set(stemp);
+                    ((::BSStringT<char>*)&pMLTwo.Name)->Set(stemp);
                     break;
                 case '4MAN':
-                    ((::BSStringT<char>*)&m_kMediaSetEntry3.Name)->Set(stemp);
+                    ((::BSStringT<char>*)&pMLThree.Name)->Set(stemp);
                     break;
                 case '5MAN':
-                    ((::BSStringT<char>*)&m_kMediaSetEntry4.Name)->Set(stemp);
+                    ((::BSStringT<char>*)&pMLFour.Name)->Set(stemp);
                     break;
                 case '6MAN':
-                    ((::BSStringT<char>*)&m_kMediaSetEntry5.Name)->Set(stemp);
+                    ((::BSStringT<char>*)&pMLFive.Name)->Set(stemp);
                     break;
                 case '7MAN':
-                    ((::BSStringT<char>*)&m_kMediaSetEntry6.Name)->Set(stemp);
+                    ((::BSStringT<char>*)&pMLSix.Name)->Set(stemp);
                     break;
                 }
             }
@@ -373,22 +389,22 @@ bool MediaSetLoad::MediaSet_Load(TESFile* apFile)
             switch (chunkid)
             {
             case '8MAN':
-                m_kMediaSetEntry1.Attenuation = tF;
+                pMLOne.Attenuation = tF;
                 break;
             case '9MAN':
-                m_kMediaSetEntry2.Attenuation = tF;
+                pMLTwo.Attenuation = tF;
                 break;
             case '0MAN':
-                m_kMediaSetEntry3.Attenuation = tF;
+                pMLThree.Attenuation = tF;
                 break;
             case 'MANA':
-                m_kMediaSetEntry4.Attenuation = tF;
+                pMLFour.Attenuation = tF;
                 break;
             case 'MANB':
-                m_kMediaSetEntry5.Attenuation = tF;
+                pMLFive.Attenuation = tF;
                 break;
             case 'MANC':
-                m_kMediaSetEntry6.Attenuation = tF;
+                pMLSix.Attenuation = tF;
                 break;
             }
             break;
@@ -404,28 +420,28 @@ bool MediaSetLoad::MediaSet_Load(TESFile* apFile)
             switch (chunkid)
             {
             case 'MANJ':
-                m_kMediaSetEntry1.Percent = tF;
+                pMLOne.Percent = tF;
                 break;
             case 'MANK':
-                m_kMediaSetEntry2.Percent = tF;
+                pMLTwo.Percent = tF;
                 break;
             case 'MANL':
-                m_kMediaSetEntry3.Percent = tF;
+                pMLThree.Percent = tF;
                 break;
             case 'MANM':
-                m_kMediaSetEntry4.Percent = tF;
+                pMLFour.Percent = tF;
                 break;
             case 'MANN':
-                m_kMediaSetEntry5.Percent = tF;
+                pMLFive.Percent = tF;
                 break;
             case 'MANO':
-                m_kMediaSetEntry6.Percent = tF;
+                pMLSix.Percent = tF;
                 break;
             }
             break;
         }
         case 'MANP':
-            ReadTypedData(apFile, &m_cMediaFlag, 1);
+            ReadTypedData(apFile, &cEnableFlags, 1);
             break;
         case 'MAND':
         case 'MANE':
@@ -436,16 +452,16 @@ bool MediaSetLoad::MediaSet_Load(TESFile* apFile)
             switch (chunkid)
             {
             case 'MAND':
-                m_fMediaParameter1 = tF;
+                fOne = tF;
                 break;
             case 'MANE':
-                fSkillValueBonus = tF;
+                fTwo = tF;
                 break;
             case 'MANF':
-                m_fMediaParameter3 = tF;
+                fThree = tF;
                 break;
             case 'MANG':
-                m_fMediaValue = tF;
+                fFour = tF;
                 break;
             }
             break;
@@ -457,10 +473,10 @@ bool MediaSetLoad::MediaSet_Load(TESFile* apFile)
             switch (chunkid)
             {
             case 'MANH':
-                m_pSound1 = (TESSound*)itempint;
+                pSoundOne = (TESSound*)itempint;
                 break;
             case 'MANI':
-                m_pSound2 = (TESSound*)itempint;
+                pSoundTwo = (TESSound*)itempint;
                 break;
             }
             break;
@@ -486,6 +502,7 @@ struct MediaSetLifetime
 void _Deallocate(void*);
 // Destroys the media set, optionally deallocates it, and returns its address.
 // @fnv 0x00597880
+// pdb: MediaSet::`scalar deleting destructor' | MediaSet.obj | retail, vtable slot, high
 void* MediaSetLifetime::Destroy(unsigned int flags)
 {
     reinterpret_cast<MediaSet*>(this)->MediaSet::~MediaSet();
@@ -504,11 +521,13 @@ struct UnnamedStr
 // adapter; all storage and offsets come from MediaSetEntry.
 struct MediaSetEntryOperations
 {
-    MediaSetEntry* CopyConstruct(const MediaSetEntry& other);
+    MediaSetEntry* MediaSet_MediaLayer_ctor(const MediaSetEntry& other);
 };
 
 // @fnv 0x00599780
-MediaSetEntry* MediaSetEntryOperations::CopyConstruct(const MediaSetEntry& other)
+// src: XBOX_RETAIL_PDB 0x00599780
+// pdb: MediaSet::MediaLayer::MediaLayer | MediaSet.obj | retail, object-file run extension, high
+MediaSetEntry* MediaSetEntryOperations::MediaSet_MediaLayer_ctor(const MediaSetEntry& other)
 {
     reinterpret_cast<UnnamedStr*>(this)->AssignFromString(*reinterpret_cast<const UnnamedStr*>(&other.Name));
     reinterpret_cast<MediaSetEntry*>(this)->Attenuation = other.Attenuation;
@@ -532,6 +551,7 @@ void __cdecl _FUN_00485910(unsigned int, unsigned int);
 void __cdecl _FUN_00485910(unsigned int, float);
 
 // @fnv 0x005991b0
+// pdb: MediaSet::Save | MediaSet.obj | retail, vtable slot, high
 void MediaSet::SaveMediaSet()
 {
     TESForm::BeginFormRecord();
@@ -626,6 +646,7 @@ void MediaSet::SaveMediaSet()
 }
 
 // @fnv 0x005978b0
+// pdb: MediaSet::~MediaSet | MediaSet.obj | retail, upstream name already matches, high
 MediaSet::~MediaSet()
 {}
 
@@ -638,13 +659,16 @@ unsigned int GetRandomNumberInRange(int aiMin, int aiMax);
 
 struct MediaSetBattle : public MediaSet
 {
-    bool UpdateBattleMusic(unsigned int auiTime);
+    bool UpdateBattleMusic(unsigned int ticks);
 };
 
 // @fnv 0x00598890
-bool MediaSetBattle::UpdateBattleMusic(unsigned int auiTime)
+// pdb: MediaSet::UpdateIncidentals | MediaSet.obj | retail, object-file run extension, high
+// pdb params: ticks
+// pdb locals: bDay, psky
+bool MediaSetBattle::UpdateBattleMusic(unsigned int ticks)
 {
-    if (auiTime <= DAT_011ca9fc)
+    if (ticks <= DAT_011ca9fc)
     {
         return true;
     }
@@ -654,15 +678,15 @@ bool MediaSetBattle::UpdateBattleMusic(unsigned int auiTime)
                                            : true;
     if (m_bConditionWasTrue)
     {
-        BSAudio::GetSingleton()->GetSoundHandleByFormID(m_pSound1->GetFormID(), 0x901).Play(false);
+        BSAudio::GetSingleton()->GetSoundHandleByFormID(pSoundOne->GetFormID(), 0x901).Play(false);
         DAT_011ca9fc =
-            GetRandomNumberInRange((int)(m_fMediaParameter1 * 1000.0), (int)(m_fMediaParameter3 * 1000.0)) + auiTime;
+            GetRandomNumberInRange((int)(fOne * 1000.0), (int)(fThree * 1000.0)) + ticks;
     }
     else
     {
-        BSAudio::GetSingleton()->GetSoundHandleByFormID(m_pSound2->GetFormID(), 0x901).Play(false);
+        BSAudio::GetSingleton()->GetSoundHandleByFormID(pSoundTwo->GetFormID(), 0x901).Play(false);
         DAT_011ca9fc =
-            GetRandomNumberInRange((int)(fSkillValueBonus * 1000.0), (int)(m_fMediaValue * 1000.0)) + auiTime;
+            GetRandomNumberInRange((int)(fTwo * 1000.0), (int)(fFour * 1000.0)) + ticks;
     }
     return true;
 }
@@ -682,30 +706,33 @@ struct MediaSetBaseCopy
 // 0x00599550 copies MediaSet fields; its missing shared declaration needs only a storage-free thiscall adapter.
 struct MediaFormCopyOperation
 {
-    void CopyFrom(TESForm* apForm);
+    void CopyFrom(TESForm* apCopy);
 };
 
 // Copies Type, six layer entries and several scalar fields from another MediaSet, then calls CopyBase.
 // @fnv 0x00599550
-void MediaFormCopyOperation::CopyFrom(TESForm* apForm)
+// pdb: MediaSet::Copy | MediaSet.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
+void MediaFormCopyOperation::CopyFrom(TESForm* apCopy)
 {
-    MediaSet* pOther = dynamic_cast<MediaSet*>(apForm);
+    MediaSet* pOther = dynamic_cast<MediaSet*>(apCopy);
     if (!pOther)
         return;
     reinterpret_cast<MediaSet*>(this)->Type = pOther->Type;
-    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->m_kMediaSetEntry1)->SetLayer(*(MediaLayerData*)&pOther->m_kMediaSetEntry1);
-    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->m_kMediaSetEntry2)->SetLayer(*(MediaLayerData*)&pOther->m_kMediaSetEntry2);
-    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->m_kMediaSetEntry3)->SetLayer(*(MediaLayerData*)&pOther->m_kMediaSetEntry3);
-    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->m_kMediaSetEntry4)->SetLayer(*(MediaLayerData*)&pOther->m_kMediaSetEntry4);
-    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->m_kMediaSetEntry5)->SetLayer(*(MediaLayerData*)&pOther->m_kMediaSetEntry5);
-    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->m_kMediaSetEntry6)->SetLayer(*(MediaLayerData*)&pOther->m_kMediaSetEntry6);
-    reinterpret_cast<MediaSet*>(this)->m_cMediaFlag = pOther->m_cMediaFlag;
-    reinterpret_cast<MediaSet*>(this)->m_fMediaParameter1 = pOther->m_fMediaParameter1;
-    reinterpret_cast<MediaSet*>(this)->fSkillValueBonus = pOther->fSkillValueBonus;
-    reinterpret_cast<MediaSet*>(this)->m_fMediaParameter3 = pOther->m_fMediaParameter3;
-    reinterpret_cast<MediaSet*>(this)->m_fMediaValue = pOther->m_fMediaValue;
-    reinterpret_cast<MediaSet*>(this)->m_pSound1 = pOther->m_pSound1;
-    reinterpret_cast<MediaSet*>(this)->m_pSound2 = pOther->m_pSound2;
+    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->pMLOne)->SetLayer(*(MediaLayerData*)&pOther->pMLOne);
+    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->pMLTwo)->SetLayer(*(MediaLayerData*)&pOther->pMLTwo);
+    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->pMLThree)->SetLayer(*(MediaLayerData*)&pOther->pMLThree);
+    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->pMLFour)->SetLayer(*(MediaLayerData*)&pOther->pMLFour);
+    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->pMLFive)->SetLayer(*(MediaLayerData*)&pOther->pMLFive);
+    ((MediaLayerData*)&reinterpret_cast<MediaSet*>(this)->pMLSix)->SetLayer(*(MediaLayerData*)&pOther->pMLSix);
+    reinterpret_cast<MediaSet*>(this)->cEnableFlags = pOther->cEnableFlags;
+    reinterpret_cast<MediaSet*>(this)->fOne = pOther->fOne;
+    reinterpret_cast<MediaSet*>(this)->fTwo = pOther->fTwo;
+    reinterpret_cast<MediaSet*>(this)->fThree = pOther->fThree;
+    reinterpret_cast<MediaSet*>(this)->fFour = pOther->fFour;
+    reinterpret_cast<MediaSet*>(this)->pSoundOne = pOther->pSoundOne;
+    reinterpret_cast<MediaSet*>(this)->pSoundTwo = pOther->pSoundTwo;
     ((MediaSetBaseCopy*)this)->CopyBase(pOther);
 }
 
@@ -724,6 +751,8 @@ struct StringRecord
     void SetValues(TextValue value, float firstValue, float secondValue);
 };
 // @fnv 0x00599700
+// pdb: MediaSet::MediaLayer::Copy | MediaSet.obj | debug, call graph, high
+// pdb params: l
 void StringRecord::SetValues(TextValue aTextValue, float afFirst, float afSecond)
 {
     FUN_004037f0(aTextValue.Modelloader_GetReferencedThis(0));
@@ -736,17 +765,19 @@ struct LayerInfo : MediaSetEntry
 
     const char* __thiscall Modelloader_GetReferencedThis(unsigned int index);
     int __thiscall FUN_00408a80(const char* text);
-    bool __thiscall EvaluateValue_00599a50(LayerInfo other);
+    bool __thiscall MediaSet_MediaLayer_Compare(LayerInfo l);
 };
 // @fnv 0x00599a50
-// src: GUESS 0x00599a50 (confidence: low)
-bool LayerInfo::EvaluateValue_00599a50(LayerInfo other)
+// src: XBOX_RETAIL_PDB 0x00599a50
+// pdb: MediaSet::MediaLayer::Compare | MediaSet.obj | retail, call graph, high
+// pdb params: l
+bool LayerInfo::MediaSet_MediaLayer_Compare(LayerInfo l)
 {
-    if (Attenuation != other.Attenuation)
+    if (Attenuation != l.Attenuation)
         return true;
-    if (Percent != other.Percent)
+    if (Percent != l.Percent)
         return true;
-    if (FUN_00408a80(other.Modelloader_GetReferencedThis(0)))
+    if (FUN_00408a80(l.Modelloader_GetReferencedThis(0)))
         return false;
     return true;
 }
@@ -757,6 +788,7 @@ struct MediaSetNameHolder : public TESForm, public TESFullName
 };
 
 // @fnv 0x00599d00
+// pdb: TESAmmoEffect::~TESAmmoEffect | TESAmmoEffect.obj | debug, object-file gap fill, medium
 MediaSetNameHolder::~MediaSetNameHolder()
 {}
 
@@ -769,6 +801,10 @@ void __cdecl FUN_008304c0();
 extern unsigned int DAT_011ca9fc;
 
 // @fnv 0x00598060
+// pdb: MediaSet::UpdateLocation | MediaSet.obj | retail, call graph, low
+// pdb note: debug build links it to MediaSet::UpdateDungeon
+// pdb params: ticks, abInCombat, pController
+// pdb locals: cLayer, bMusicPlaying, bReturn, fRadiusP, dur, bLoop, fRadius, newLayer, uiSeekTime
 bool MediaSet::PointLocation(unsigned int auiTime, bool abEnabled, MediaLocationController* apCtrl)
 {
     bool flagDTmp;
@@ -781,18 +817,18 @@ bool MediaSet::PointLocation(unsigned int auiTime, bool abEnabled, MediaLocation
     b2 = FalloutAudioMedia_MediaIsPlaying(3, true);
     retVal = true;
     b4 = reinterpret_cast<TESObjectREFR*>(apCtrl)->GetScale() < 100.0;
-    if (this->m_bActorStateFlag == 0 && abEnabled)
+    if (this->bInCombat == 0 && abEnabled)
     {
         DAT_011dd37c = 0;
     }
     local7 = FalloutAudioMedia_MediaGetDuration(2);
     flagDTmp = false;
-    if (this->m_uiMediaValue3 != 0 && local7 != 0)
+    if (this->uiLoopUpdate != 0 && local7 != 0)
     {
-        if ((double)auiTime > (double)(unsigned int)(this->m_uiMediaValue3 + local7) - this->m_fMediaParameter3 * 1000.0)
+        if ((double)auiTime > (double)(unsigned int)(this->uiLoopUpdate + local7) - this->fThree * 1000.0)
         {
-            StartFade((int)(this->m_fMediaParameter3 * 1000.0), 2);
-            this->m_uiMediaValue3 = auiTime;
+            StartFade((int)(this->fThree * 1000.0), 2);
+            this->uiLoopUpdate = auiTime;
             if (apCtrl->GetLoop() == 0)
             {
                 flagDTmp = true;
@@ -803,8 +839,8 @@ bool MediaSet::PointLocation(unsigned int auiTime, bool abEnabled, MediaLocation
             }
         }
     }
-    if (!((b2 && this->m_bActorStateFlag == abEnabled && this->m_bCountWasNonzero == GetControllerCondition(apCtrl) &&
-           ((char)this->m_cMediaState == (char)b4 || (char)this->m_cMediaState != 0)) ||
+    if (!((b2 && this->bInCombat == abEnabled && this->bInTension == GetControllerCondition(apCtrl) &&
+           ((char)this->cCurrentLayer == (char)b4 || (char)this->cCurrentLayer != 0)) ||
           DAT_011dd37c >= auiTime) ||
         flagDTmp)
     {
@@ -812,62 +848,62 @@ bool MediaSet::PointLocation(unsigned int auiTime, bool abEnabled, MediaLocation
         ptrLocal = 0;
         if (abEnabled)
         {
-            if (this->m_pSound1 != 0 && !this->bEffectFlag)
+            if (this->pSoundOne != 0 && !this->bStarted)
             {
-                BSAudio::BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0((int)this->m_pSound1->TESForm::GetHavokWorldObjectCountInSceneGraph_0084e3a0(), 0x901).Play(false);
+                BSAudio::BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0((int)this->pSoundOne->TESForm::GetHavokWorldObjectCountInSceneGraph_0084e3a0(), 0x901).Play(false);
             }
-            ptrLocal = &this->m_kMediaSetEntry1;
-            this->bEffectFlag = 1;
+            ptrLocal = &this->pMLOne;
+            this->bStarted = 1;
         }
         else if (GetControllerCondition(apCtrl))
         {
-            if (this->bEffectFlag && this->m_pSound2 != 0)
+            if (this->bStarted && this->pSoundTwo != 0)
             {
-                BSAudio::BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0((int)this->m_pSound2->TESForm::GetHavokWorldObjectCountInSceneGraph_0084e3a0(), 0x901).Play(false);
+                BSAudio::BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0((int)this->pSoundTwo->TESForm::GetHavokWorldObjectCountInSceneGraph_0084e3a0(), 0x901).Play(false);
             }
-            ptrLocal = &this->m_kMediaSetEntry3;
-            this->bEffectFlag = 0;
+            ptrLocal = &this->pMLThree;
+            this->bStarted = 0;
         }
         else
         {
-            if (this->bEffectFlag && this->m_pSound2 != 0)
+            if (this->bStarted && this->pSoundTwo != 0)
             {
-                BSAudio::BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0((int)this->m_pSound2->TESForm::GetHavokWorldObjectCountInSceneGraph_0084e3a0(), 0x901).Play(false);
+                BSAudio::BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0((int)this->pSoundTwo->TESForm::GetHavokWorldObjectCountInSceneGraph_0084e3a0(), 0x901).Play(false);
             }
-            ptrLocal = &this->m_kMediaSetEntry2;
-            this->bEffectFlag = 0;
+            ptrLocal = &this->pMLTwo;
+            this->bStarted = 0;
         }
         if (ptrLocal != 0)
         {
             DAT_011dd37c = auiTime;
             if (!abEnabled)
             {
-                DAT_011dd37c = (unsigned int)(this->m_fMediaParameter1 * 1000.0 + (double)DAT_011dd37c);
+                DAT_011dd37c = (unsigned int)(this->fOne * 1000.0 + (double)DAT_011dd37c);
             }
             local4 = 0;
             if (FalloutAudioMedia_MediaGetPosition((MEDIATYPE)3) != 0 && !flagDTmp)
             {
                 local4 = auiTime - FalloutAudioMedia_MediaGetPosition((MEDIATYPE)3);
             }
-            if (ptrLocal == &this->m_kMediaSetEntry1)
+            if (ptrLocal == &this->pMLOne)
             {
                 PlayAudioMedia(3, ptrLocal->Name.String(), 1000, true, true, ptrLocal->Attenuation, (unsigned int)local4);
             }
             else
             {
-                PlayAudioMedia(3, ptrLocal->Name.String(), (unsigned int)(this->m_fMediaParameter3 * 1000.0), true, true,
+                PlayAudioMedia(3, ptrLocal->Name.String(), (unsigned int)(this->fThree * 1000.0), true, true,
                                ptrLocal->Attenuation, (unsigned int)local4);
             }
             FUN_008304c0();
         }
         else
         {
-            StartFade((int)(this->m_fMediaParameter3 * 1000.0), 3);
+            StartFade((int)(this->fThree * 1000.0), 3);
             retVal = false;
         }
-        this->m_bActorStateFlag = abEnabled;
-        this->m_bCountWasNonzero = GetControllerCondition(apCtrl);
-        this->m_cMediaState = b4;
+        this->bInCombat = abEnabled;
+        this->bInTension = GetControllerCondition(apCtrl);
+        this->cCurrentLayer = b4;
     }
     else
     {
@@ -875,11 +911,11 @@ bool MediaSet::PointLocation(unsigned int auiTime, bool abEnabled, MediaLocation
         {
             if (auiTime > DAT_011ca9fc)
             {
-                if (this->bEffectFlag == 0)
+                if (this->bStarted == 0)
                 {
                     if (b2)
                     {
-                        StartFade((int)(this->m_fMediaParameter3 * 1000.0), 3);
+                        StartFade((int)(this->fThree * 1000.0), 3);
                     }
                     retVal = false;
                 }
@@ -902,119 +938,125 @@ void ResetThreadFlags();
 void StartFade(int, int);
 struct DungeonMediaSet : MediaSet
 {
-    bool UpdatePlayback(bool active, unsigned int time, int mediaType);
+    bool UpdatePlayback(bool bInCombat, unsigned int ticks, int mType);
 };
 // Starts, refreshes or fades the media set's audio based on active, time and mediaType, updating DAT_011ca9fc and the playing flag.
 // @fnv 0x00598550
-bool DungeonMediaSet::UpdatePlayback(bool active, unsigned int time, int mediaType)
+// pdb: MediaSet::UpdateBattle | MediaSet.obj | retail, call graph, high
+// pdb params: bInCombat, ticks, mType
+// pdb locals: bIsLoaded, dur, bShouldPlayIntro, bShouldPlayOutro
+bool DungeonMediaSet::UpdatePlayback(bool bInCombat, unsigned int ticks, int mType)
 {
     bool changed;
-    if (active)
+    if (bInCombat)
     {
         changed = false;
-        bool playing = FalloutAudioMedia_MediaIsPlaying(mediaType, false);
-        if (!playing && !bEffectFlag)
+        bool playing = FalloutAudioMedia_MediaIsPlaying(mType, false);
+        if (!playing && !bStarted)
         {
-            if (m_pSound1 && !bEffectFlag)
-                BSAudio::GetSingleton()->GetSoundHandleByFormID(m_pSound1->GetFormID(), 0x901).Play(false);
-            DAT_011ca9fc = time - 1;
-            bEffectFlag = true;
-            FalloutAudioMedia::PlayMedia((MEDIATYPE)mediaType, m_kMediaSetEntry1.Name.String(),
-                                         (unsigned int)(fSkillValueBonus * 1000.0), true, true,
-                                         m_kMediaSetEntry1.Attenuation, 0);
+            if (pSoundOne && !bStarted)
+                BSAudio::GetSingleton()->GetSoundHandleByFormID(pSoundOne->GetFormID(), 0x901).Play(false);
+            DAT_011ca9fc = ticks - 1;
+            bStarted = true;
+            FalloutAudioMedia::PlayMedia((MEDIATYPE)mType, pMLOne.Name.String(),
+                                         (unsigned int)(fTwo * 1000.0), true, true,
+                                         pMLOne.Attenuation, 0);
             FalloutAudioMedia::EndMediaUpdate();
             FalloutAudioMedia_MediaPause();
         }
-        if (time > DAT_011ca9fc + m_fMediaParameter1)
+        if (ticks > DAT_011ca9fc + fOne)
         {
             ResetThreadFlags();
-            bEffectFlag = true;
+            bStarted = true;
         }
-        unsigned int length = FalloutAudioMedia_MediaGetDuration(mediaType);
-        if (length && time > DAT_011ca9fc + length - 1000)
+        unsigned int length = FalloutAudioMedia_MediaGetDuration(mType);
+        if (length && ticks > DAT_011ca9fc + length - 1000)
         {
-            FalloutAudioMedia::PlayMedia((MEDIATYPE)mediaType, m_kMediaSetEntry1.Name.String(),
-                                         (unsigned int)(fSkillValueBonus * 1000.0), true, true,
-                                         m_kMediaSetEntry1.Attenuation, 0);
+            FalloutAudioMedia::PlayMedia((MEDIATYPE)mType, pMLOne.Name.String(),
+                                         (unsigned int)(fTwo * 1000.0), true, true,
+                                         pMLOne.Attenuation, 0);
             FalloutAudioMedia::EndMediaUpdate();
-            DAT_011ca9fc = time;
+            DAT_011ca9fc = ticks;
         }
     }
     else
     {
         bool fading = false;
-        if (FalloutAudioMedia_MediaIsPlaying(mediaType, false) && bEffectFlag)
+        if (FalloutAudioMedia_MediaIsPlaying(mType, false) && bStarted)
         {
             fading = true;
-            StartFade((int)(fSkillValueBonus * 1000.0), mediaType);
+            StartFade((int)(fTwo * 1000.0), mType);
         }
         if (fading)
         {
-            if (m_pSound2)
-                BSAudio::GetSingleton()->GetSoundHandleByFormID(m_pSound2->GetFormID(), 0x901).Play(false);
-            DAT_011ca9fc = time + m_fMediaParameter3 * 1000.0;
+            if (pSoundTwo)
+                BSAudio::GetSingleton()->GetSoundHandleByFormID(pSoundTwo->GetFormID(), 0x901).Play(false);
+            DAT_011ca9fc = ticks + fThree * 1000.0;
             if (DAT_011dd374)
                 DAT_011dd374->FUN_007037c0(DAT_011ca9fc);
-            bEffectFlag = false;
+            bStarted = false;
         }
     }
-    return active;
+    return bInCombat;
 }
 }  // namespace fnv_00598550
 
 struct MediaLayerCompare
 {
-    bool EvaluateValue_00599a50(MediaLayerData other);
+    bool MediaSet_MediaLayer_Compare(MediaLayerData l);
 };
 struct MediaFormCompare
 {
-    bool TESForm_CompareAllComponents(TESForm* other);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 struct MediaSetCompare : MediaSet
 {
-    bool IsDifferentFrom(TESForm* form);
+    bool IsDifferentFrom(TESForm* apCompare);
 };
 
 // Compares this MediaSet with form cast to MediaSet: returns true if any layer, scalar field or base comparison differs.
 // @fnv 0x005997c0
-bool MediaSetCompare::IsDifferentFrom(TESForm* form)
+// pdb: MediaSet::Compare | MediaSet.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool MediaSetCompare::IsDifferentFrom(TESForm* apCompare)
 {
-    MediaSet* other = dynamic_cast<MediaSet*>(form);
+    MediaSet* other = dynamic_cast<MediaSet*>(apCompare);
     if (!other)
         return true;
     if (other->Type != Type)
         return true;
-    if (reinterpret_cast<MediaLayerCompare*>(&m_kMediaSetEntry1)
-            ->EvaluateValue_00599a50(*reinterpret_cast<MediaLayerData*>(&other->m_kMediaSetEntry1)))
+    if (reinterpret_cast<MediaLayerCompare*>(&pMLOne)
+            ->MediaSet_MediaLayer_Compare(*reinterpret_cast<MediaLayerData*>(&other->pMLOne)))
         return true;
-    if (reinterpret_cast<MediaLayerCompare*>(&m_kMediaSetEntry2)
-            ->EvaluateValue_00599a50(*reinterpret_cast<MediaLayerData*>(&other->m_kMediaSetEntry2)))
+    if (reinterpret_cast<MediaLayerCompare*>(&pMLTwo)
+            ->MediaSet_MediaLayer_Compare(*reinterpret_cast<MediaLayerData*>(&other->pMLTwo)))
         return true;
-    if (reinterpret_cast<MediaLayerCompare*>(&m_kMediaSetEntry3)
-            ->EvaluateValue_00599a50(*reinterpret_cast<MediaLayerData*>(&other->m_kMediaSetEntry3)))
+    if (reinterpret_cast<MediaLayerCompare*>(&pMLThree)
+            ->MediaSet_MediaLayer_Compare(*reinterpret_cast<MediaLayerData*>(&other->pMLThree)))
         return true;
-    if (reinterpret_cast<MediaLayerCompare*>(&m_kMediaSetEntry4)
-            ->EvaluateValue_00599a50(*reinterpret_cast<MediaLayerData*>(&other->m_kMediaSetEntry4)))
+    if (reinterpret_cast<MediaLayerCompare*>(&pMLFour)
+            ->MediaSet_MediaLayer_Compare(*reinterpret_cast<MediaLayerData*>(&other->pMLFour)))
         return true;
-    if (reinterpret_cast<MediaLayerCompare*>(&m_kMediaSetEntry5)
-            ->EvaluateValue_00599a50(*reinterpret_cast<MediaLayerData*>(&other->m_kMediaSetEntry5)))
+    if (reinterpret_cast<MediaLayerCompare*>(&pMLFive)
+            ->MediaSet_MediaLayer_Compare(*reinterpret_cast<MediaLayerData*>(&other->pMLFive)))
         return true;
-    if (reinterpret_cast<MediaLayerCompare*>(&m_kMediaSetEntry6)
-            ->EvaluateValue_00599a50(*reinterpret_cast<MediaLayerData*>(&other->m_kMediaSetEntry6)))
+    if (reinterpret_cast<MediaLayerCompare*>(&pMLSix)
+            ->MediaSet_MediaLayer_Compare(*reinterpret_cast<MediaLayerData*>(&other->pMLSix)))
         return true;
-    if (m_cMediaFlag != other->m_cMediaFlag)
+    if (cEnableFlags != other->cEnableFlags)
         return true;
-    if (m_fMediaParameter1 != other->m_fMediaParameter1)
+    if (fOne != other->fOne)
         return true;
-    if (fSkillValueBonus != other->fSkillValueBonus)
+    if (fTwo != other->fTwo)
         return true;
-    if (m_fMediaParameter3 != other->m_fMediaParameter3)
+    if (fThree != other->fThree)
         return true;
-    if (m_fMediaValue != other->m_fMediaValue)
+    if (fFour != other->fFour)
         return true;
-    if (m_pSound1 != other->m_pSound1)
+    if (pSoundOne != other->pSoundOne)
         return true;
-    if (m_pSound2 != other->m_pSound2)
+    if (pSoundTwo != other->pSoundTwo)
         return true;
     if (reinterpret_cast<MediaFormCompare*>(this)->TESForm_CompareAllComponents(other))
         return true;

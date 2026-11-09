@@ -25,6 +25,7 @@ inline const unsigned int& NiTArray<unsigned int, NiTMallocInterface<unsigned in
 }
 template <> unsigned int NiTArray<unsigned int, NiTMallocInterface<unsigned int> >::RemoveAt(unsigned int uiIndex) throw();
 
+// pdb: class NiSwitchNode, size 0xf0 (here 0xcc), bases: NiNode, 5 members
 class NiSwitchNode : public NiNode
 {
   public:

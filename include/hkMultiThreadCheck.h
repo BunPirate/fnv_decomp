@@ -5,6 +5,7 @@
 class PhysicsSimulationContext;
 struct hkFinishLoadedObjectFlagCD2C;
 
+// pdb: class hkMultiThreadCheck, size 0x8, 3 members
 class hkMultiThreadCheck
 {
 public:
@@ -28,9 +29,9 @@ public:
         UNMARKED = 0xfffffff1
     };
 
-    unsigned int m_uiThreadId;
-    unsigned short m_usMarkedForWrite;
-    unsigned short m_usMarkCount;
+    unsigned int m_threadId;
+    unsigned short m_markCount;
+    unsigned short m_markBitStack;
 
     hkMultiThreadCheck();
     hkMultiThreadCheck(hkFinishLoadedObjectFlagCD2C flag);

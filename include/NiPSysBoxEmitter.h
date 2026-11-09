@@ -2,15 +2,16 @@
 
 #include "NiPSysVolumeEmitter.h"
 
+// pdb: class NiPSysBoxEmitter, size 0x64, bases: NiPSysVolumeEmitter, 3 members
 class NiPSysBoxEmitter : public NiPSysVolumeEmitter
 {
 public:
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
 
-    void CopyMemberData(NiPSysModifier* pkDest, CloningProcess& kProcess);
-    void CopyTo(NiPSysModifier* pkDest, CloningProcess& kProcess);
+    void CopyMembers(NiPSysModifier* pkDest, CloningProcess& kProcess);
+    void NiPSysEmitter_CopyMembers(NiPSysModifier* pkDest, CloningProcess& kCloning);
 
-    float width;
-    float height;
-    float depth;
+    float m_fEmitterWidth;
+    float m_fEmitterHeight;
+    float m_fEmitterDepth;
 };

@@ -14,6 +14,7 @@ union BSPackedTask__PackedTaskVariantData
     };
 };
 
+// pdb: structure BSPackedTask, size 0x20, 1 members
 class BSPackedTask
 {
 public:

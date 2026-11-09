@@ -3,11 +3,14 @@
 #include "idvspline_decls.h"
 
 // @fnv 0x00593DB0
-double ExpressionEvaluator::Eval(const char* data, TESObjectREFR* reference, TESObjectREFR* container, Script* script,
-                         ScriptLocals* locals, int length, bool skip)
+// pdb: CExpression::Eval | Expression.obj | retail, unique string literal, high
+// pdb params: sptr, apFunctionOwner, apContainer, script, scriptLocals, postfixSize, abEndian
+// pdb locals: tokenBuffer, skipPush, postfix, tokenInPostfix, reo, uiSize, pscriptData, leo, eOperator, token, eo, uiTokenOffset
+double CExpression::Eval(const char* sptr, TESObjectREFR* apFunctionOwner, TESObjectREFR* apContainer, Script* script,
+                         ScriptLocals* scriptLocals, int postfixSize, bool abEndian)
 {
     IdvSplineInputCursor input;
-    input.data = data;
+    input.data = sptr;
     IdvSplineToken token;
     token.type = EXPRESSION_OPERATORS_EXP_COUNT;
     char cNegate = 0;
@@ -16,21 +19,21 @@ double ExpressionEvaluator::Eval(const char* data, TESObjectREFR* reference, TES
     ExpressionValue eoOperand2, Value1;
     Value.Type = 0;
     Value.m_dFloatingPointValue = 0.0;
-    if (!length || m_eExpressionError)
+    if (!postfixSize || m_eExpressionError)
         return 0.0;
     m_kOperandStack.ResetField();
-    if (length > 512)
+    if (postfixSize > 512)
     {
         SetError(EXPRESSION_ERROR_ERROR_EXPRESSION_OUTOFMEMORY);
         return 0.0;
     }
     char Buffer[513];
     char Token[64];
-    memcpy(Buffer, data, length);
-    Buffer[length] = 0;
+    memcpy(Buffer, sptr, postfixSize);
+    Buffer[postfixSize] = 0;
     char* pToken = Buffer;
     token.text = Token;
-    input.consumed = ParseToken(&pToken, token.text, &token.type, skip, &input.data);
+    input.consumed = ParseToken(&pToken, token.text, &token.type, abEndian, &input.data);
     if (!input.consumed)
         token.text = 0;
     while (input.consumed)
@@ -365,7 +368,7 @@ double ExpressionEvaluator::Eval(const char* data, TESObjectREFR* reference, TES
                                 {
                                     if (Value1.m_lIntegerValue == 0)
                                     {
-                                        if (skip)
+                                        if (abEndian)
                                             Value1.m_dFloatingPointValue = 1.0;
                                         else
                                         {
@@ -383,7 +386,7 @@ double ExpressionEvaluator::Eval(const char* data, TESObjectREFR* reference, TES
                                 {
                                     if (Value1.m_dFloatingPointValue == 0)
                                     {
-                                        if (skip)
+                                        if (abEndian)
                                             Value1.m_dFloatingPointValue = 1.0;
                                         else
                                         {
@@ -406,7 +409,7 @@ double ExpressionEvaluator::Eval(const char* data, TESObjectREFR* reference, TES
                                 {
                                     if (Value1.m_lIntegerValue == 0)
                                     {
-                                        if (skip)
+                                        if (abEndian)
                                             Value1.m_dFloatingPointValue = 1.0;
                                         else
                                         {
@@ -426,7 +429,7 @@ double ExpressionEvaluator::Eval(const char* data, TESObjectREFR* reference, TES
                                 {
                                     if (Value1.m_dFloatingPointValue == 0)
                                     {
-                                        if (skip)
+                                        if (abEndian)
                                             Value1.m_dFloatingPointValue = 1.0;
                                         else
                                         {
@@ -480,11 +483,11 @@ double ExpressionEvaluator::Eval(const char* data, TESObjectREFR* reference, TES
             {
                 unsigned int iOffset = 0;
                 Value.Type = 1;
-                if (skip)
-                    Script::GetValue(Value.m_dFloatingPointValue, input.data, iOffset, reference, container, script,
-                                     locals, skip);
-                else if (!Script::GetValue(Value.m_dFloatingPointValue, token.text, iOffset, reference, container,
-                                           script, locals, false))
+                if (abEndian)
+                    Script::Script_GetValue(Value.m_dFloatingPointValue, input.data, iOffset, apFunctionOwner, apContainer, script,
+                                     scriptLocals, abEndian);
+                else if (!Script::Script_GetValue(Value.m_dFloatingPointValue, token.text, iOffset, apFunctionOwner, apContainer,
+                                           script, scriptLocals, false))
                 {
                     SetError(EXPRESSION_ERROR_ERROR_EXPRESSION_SYNTAX);
                     goto failure;
@@ -498,7 +501,7 @@ double ExpressionEvaluator::Eval(const char* data, TESObjectREFR* reference, TES
         if (input.consumed)
         {
             input.data += input.consumed;
-            input.consumed = ParseToken(&pToken, token.text, &token.type, skip, &input.data);
+            input.consumed = ParseToken(&pToken, token.text, &token.type, abEndian, &input.data);
             if (!input.consumed)
                 token.text = 0;
         }
@@ -529,6 +532,8 @@ extern const char* const DAT_01019f08;
 
 // @fnv 0x00b37f50
 // src: COMMUNITY 0x00b37f50
+// pdb: NextToken | IdvSpline.obj | retail, upstream name already matches, high
+// pdb params: pInput, pToken
 const char* __cdecl NextToken(const char* pInput, char* pToken)
 {
     while (FUN_00ec8965((int)*pInput))
@@ -595,6 +600,7 @@ struct Holder0394
 };
 // Calls FUN_00b3a050 on f18->f1, then points f18's f1, f0 and f2 links back to f18 and clears f1c.
 // @fnv 0x00b39400
+// pdb: std::_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> >,0> >::end | IdvSpline.obj | debug, object-file run extension, low
 void Holder0394::ResetList()
 {
     int padA;
@@ -755,9 +761,12 @@ struct HostB37
 // Parses x, y, z and an optional list of VecB37 pairs with a float from input, then applies each via FUN_00b380e0.
 // @fnv 0x00b37cc0
 // src: COMMUNITY 0x00b37cc0
-void HostB37::CIdvBezierSpline_Parse(InputB37* input)
+// pdb: CIdvBezierSpline::Parse | IdvSpline.obj | retail, string-set bridge, high
+// pdb params: strInput
+// pdb locals: szToken, pInput, nNumControlPoints, i, afControlPoint, fTangentLength, afTangent
+void HostB37::CIdvBezierSpline_Parse(InputB37* strInput)
 {
-    const char* _cursor = input->capacity >= 16 ? input->data.ptr : input->data.text;
+    const char* _cursor = strInput->capacity >= 16 ? strInput->data.ptr : strInput->data.text;
     char token[256];
     _cursor = NextToken(_cursor, token);
     if (FUN_00ec6da0(token, &DAT_010a57e8) == 0)
@@ -857,6 +866,8 @@ struct FUN_00b377c0
     void ProcessAndReturnValue_00b1c7a0(int a0);
 };
 // @fnv 0x00b377c0
+// pdb: CIdvBezierSpline::CIdvBezierSpline | IdvSpline.obj | debug, call graph, medium
+// pdb params: cRight
 FUN_00b377c0::FUN_00b377c0(int a0) : m0(), m1(), m2(), m3(), m4()
 {
     char buf[0x108];
@@ -927,6 +938,10 @@ struct SplineSampler
 
 // With 500 entries in m_vec, returns a random value within +/- unk08 times the unk04 of entry round(a1*499); otherwise returns 0.
 // @fnv 0x00b37fa0
+// pdb: std::_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> >,0> >::_Linsert | IdvSpline.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CIdvBezierSpline::ScaledVariance
+// pdb params: _Node, _Leftish
+// pdb locals: _Val, _Trynode, _Wherenode, _Addleft, _Where
 float SplineSampler::Sample(float a1)
 {
     float val4 = 0.0f;

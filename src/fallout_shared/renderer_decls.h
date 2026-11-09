@@ -8,6 +8,7 @@
 #include "../../include/NiDX9Renderer.h"
 
 
+// pdb: class Renderer, size 0x1, 0 members
 class Renderer
 {
   public:

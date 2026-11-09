@@ -132,19 +132,22 @@ struct FUN_00b6dd00_Owner
 {
     char m_acPad[0x78];
     TextureResourceList m_kList;
-    void BSTextureManager_Update(int iArg1, bool bArg2);
+    void BSTextureManager_Update(int apCamera, bool abMenuMode);
 };
 
 // @fnv 0x00b6dd00
 // src: COMMUNITY 0x00b6dd00
-void FUN_00b6dd00_Owner::BSTextureManager_Update(int iArg1, bool bArg2)
+// pdb: BSTextureManager::Update | BSTextureManager.obj | retail, upstream name already matches, high
+// pdb params: apCamera, abMenuMode
+// pdb locals: it, ptexData
+void FUN_00b6dd00_Owner::BSTextureManager_Update(int apCamera, bool abMenuMode)
 {
     void* pvPos = *(void**)((char*)this + 0x78);
     while (pvPos)
     {
         FUN_00b6dd00_Node* pkNode = (FUN_00b6dd00_Node*)pvPos;
         FUN_00b6dd00_Item* pkItem = pkNode->m_pkItem;
-        if (bArg2)
+        if (abMenuMode)
         {
             pvPos = pkNode->m_pkNext;
         }
@@ -230,6 +233,7 @@ struct RenderTarget
     virtual Surface* GetSurface(unsigned int);
     virtual Resource* GetDepth();
 };
+// pdb: class Renderer, size 0x1 (here 0x4), 0 members
 struct Renderer
 {
     virtual void slot0();
@@ -324,6 +328,8 @@ struct FUN_00b6dd80
     FUN_00b6dd80();
 };
 // @fnv 0x00b6dd80
+// pdb: BSTextureManager::BSTextureManager | BSTextureManager.obj | retail, object-file gap fill, high
+// pdb locals: uishadowWidth, pgroup, uimainDBWidth, uimainRTWidth, uimainRTHeight, uimainDBHeight, uishadowHeight, emultiSamplePreference, prenderer, uflags, iEDRAMFormat, iD3DFormat, eMSAAType, i
 FUN_00b6dd80::FUN_00b6dd80()
 {
     Renderer* renderer = DAT_011f9508;
@@ -664,6 +670,9 @@ struct FUN_00b97a80
 };
 
 // @fnv 0x00b97a80
+// pdb: ImageSpaceManager::RenderEffect | ImageSpaceManager.obj | debug, object-file run extension, low
+// pdb params: aiEffect, apRenderer, apSourceBuffer, apDestinationBuffer, apParam, abEndFrame
+// pdb locals: tempMemContext, peffect
 FUN_00b97a80::FUN_00b97a80() : m_kArray(0x74, 1)
 {
     m_f214 = 0.0f;
@@ -750,14 +759,17 @@ struct MultiBoundOwner
     int unk8c;
     MultiBoundList m_kInactiveList;
     MultiBoundList m_kActiveList;
-    void BSTextureManager_ReturnFrustumShadowTexture(BSMultiBound* pkBound);
+    void BSTextureManager_ReturnFrustumShadowTexture(BSMultiBound* apTexToReturn);
 };
 
 // @fnv 0x00b6d4c0
 // src: XBOX_PDB 0x00b6d4c0
-void MultiBoundOwner::BSTextureManager_ReturnFrustumShadowTexture(BSMultiBound* pkBound)
+// pdb: BSTextureManager::ReturnFrustumShadowTexture | BSTextureManager.obj | retail, upstream name already matches, high
+// pdb params: apTexToReturn
+// pdb locals: spfoundTexture, it
+void MultiBoundOwner::BSTextureManager_ReturnFrustumShadowTexture(BSMultiBound* apTexToReturn)
 {
-    if (!pkBound)
+    if (!apTexToReturn)
         return;
     NiPointer<BSMultiBound> pMultiBound;
     MultiBoundListItem* pkItem = m_kActiveList.m_pkHead;
@@ -765,7 +777,7 @@ void MultiBoundOwner::BSTextureManager_ReturnFrustumShadowTexture(BSMultiBound* 
     while (pkItem)
     {
         pMultiBound = pkItem->m_element;
-        if (pMultiBound == pkBound)
+        if (pMultiBound == apTexToReturn)
         {
             pos = pkItem;
             break;
@@ -1065,6 +1077,9 @@ class RenderTargetManager
 
 // @fnv 0x00b6d5e0
 // src: COMMUNITY 0x00b6d5e0
+// pdb: BSTextureManager::BorrowRenderedTexture | BSTextureManager.obj | retail, call graph (shared callers), medium
+// pdb params: apRenderer, aeType, alAdditionalFlags, apAliasTex, uiAliasOffset
+// pdb locals: uflags, uiheight, iEDRAMFormat, iD3DFormat, uiwidth, eMSAAType, pbsrtex
 RenderTexture* RenderTargetManager::BSTextureManager_BorrowRenderedTexture_0(NiRenderer* pkRenderer, unsigned int uiWidth, unsigned int uiHeight,
                                                  unsigned int uiFlags, int eFormat, int iUsage, int a7, int a8, int a9,
                                                  int a10)

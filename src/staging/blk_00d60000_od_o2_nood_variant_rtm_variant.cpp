@@ -200,7 +200,7 @@ static __forceinline void buildBasis(const MotionInput* input, __m128 normal, Ba
     basis.y = up;
     basis.z = input->axis;
 }
-void __cdecl hkpCharacterMovementUtil_calculateMovement(const MotionInput* input, float outputBits);
+void __cdecl hkpCharacterMovementUtil_calculateMovement(const MotionInput* input, float velocityOut);
 struct BodySource
 {
     Vec4 m_000, m_010, m_020, m_030, m_040, m_050, m_060, m_070;
@@ -228,7 +228,7 @@ struct BodyOut
     Vec4 m_20;
     Vec4 m_30;
 };
-void hkaKeyFrameHierarchyUtility_initialize(BodyList* list, BodyOut* out);
+void hkaKeyFrameHierarchyUtility_initialize(BodyList* bodies, BodyOut* internalReferencePose);
 struct __declspec(align(16)) V16
 {
     float x, y, z, w;
@@ -261,7 +261,7 @@ struct D6Idx
     unsigned char unk01;
     unsigned char idx02;
 };
-extern "C" void __cdecl hk1dLinearBilateralConstraintBuildJacobian(D6Vec3* s, void* d, void* e);
+extern "C" void __cdecl hk1dLinearBilateralConstraintBuildJacobian(D6Vec3* info, void* d, void* e);
 extern "C" V16* __cdecl D6GetArray(void);
 void Runtime_UpdateState_00d6c030(D6Owner* a, V16* b, D6Idx* c, void* d, void* e);
 extern volatile D6Owner* g_d6Owner;
@@ -468,30 +468,33 @@ __declspec(noinline) void hkQuaternion::setMul(const hkQuaternion& a, const hkQu
 }
 
 // @fnv 0x00d6b510
-// src: GUESS 0x00d6b510 (confidence: low)
-static __declspec(noinline) void hkQuaternion_ProcessEntries_00d6b510(Binding* binding, Weight* weights, const PoseQsTransform* root,
-                                              PoseQsTransform* output, const PoseQsTransform* __restrict transforms)
+// src: XBOX_RETAIL_PDB 0x00d6b510
+// pdb: calcComPoseUsingHierarchy | hkaKeyFrameHierarchyUtility.obj | retail, object-file gap fill, high
+// pdb params: desiredPoseLocalSpace, bodydata, controlPalette, worldFromPose, mc
+// pdb locals: poseOrientation, hierarchyGain, parentT, desiredBasedOnParent
+static __declspec(noinline) void calcComPoseUsingHierarchy(Binding* desiredPoseLocalSpace, Weight* bodydata, const PoseQsTransform* root,
+                                              PoseQsTransform* worldFromPose, const PoseQsTransform* __restrict mc)
 {
-    for (int i = 0; i < binding->count; ++i)
+    for (int i = 0; i < desiredPoseLocalSpace->count; ++i)
     {
-        const PoseQsTransform& input = transforms[i];
-        PoseQsTransform& outWorld = output[2 * i];
-        PoseQsTransform& outLocal = output[2 * i + 1];
-        int parentIndex = binding->parents[i];
-        const PoseQsTransform* parent = parentIndex >= 0 ? &output[2 * parentIndex + 1] : root;
+        const PoseQsTransform& input = mc[i];
+        PoseQsTransform& outWorld = worldFromPose[2 * i];
+        PoseQsTransform& outLocal = worldFromPose[2 * i + 1];
+        int parentIndex = desiredPoseLocalSpace->parents[i];
+        const PoseQsTransform* parent = parentIndex >= 0 ? &worldFromPose[2 * parentIndex + 1] : root;
         outLocal.SetProduct(*parent, input);
         Pose local;
         local.rotation = outLocal.rotation;
         local.position = outLocal.position;
-        int weightIndex = binding->indices ? binding->indices[i] : 0;
+        int weightIndex = desiredPoseLocalSpace->indices ? desiredPoseLocalSpace->indices[i] : 0;
         if (weightIndex == -1)
             continue;
-        float weight = weights[weightIndex].value;
-        if (binding->weights)
-            weight = (float)(weight * binding->weights[i]);
+        float weight = bodydata[weightIndex].value;
+        if (desiredPoseLocalSpace->weights)
+            weight = (float)(weight * desiredPoseLocalSpace->weights[i]);
         if (weight > 0.0f && parentIndex >= 0)
         {
-            BodySource* node = binding->nodes[parentIndex];
+            BodySource* node = desiredPoseLocalSpace->nodes[parentIndex];
             PoseQsTransform reference;
             reference.position = *reinterpret_cast<const PoseVector4*>(&node->m_120);
             reference.scale.quad() = SimdC::_mm_set_ps1(1.0f);
@@ -502,7 +505,7 @@ static __declspec(noinline) void hkQuaternion_ProcessEntries_00d6b510(Binding* b
             local.position.quad() = blendPosition(local.position, composed.position, weight);
         }
         PoseVector4 offset;
-        offset.SetRotatedDirection(local.rotation, *reinterpret_cast<const PoseVector4*>(&binding->nodes[i]->m_170));
+        offset.SetRotatedDirection(local.rotation, *reinterpret_cast<const PoseVector4*>(&desiredPoseLocalSpace->nodes[i]->m_170));
         outWorld.position.setAdd4(offset, local.position);
         reinterpret_cast<PoseVector4&>(outWorld.rotation).m_vComponents = reinterpret_cast<const PoseVector4&>(local.rotation).m_vComponents;
         outWorld.scale.quad() = SimdC::_mm_load_ps(&DAT_01267e30);
@@ -512,5 +515,5 @@ static __declspec(noinline) void hkQuaternion_ProcessEntries_00d6b510(Binding* b
 void RunCompose_d6b510(Binding* binding, Weight* weights, const PoseQsTransform* root, PoseQsTransform* output,
                        const PoseQsTransform* __restrict transforms)
 {
-    hkQuaternion_ProcessEntries_00d6b510(binding, weights, root, output, transforms);
+    calcComPoseUsingHierarchy(binding, weights, root, output, transforms);
 }

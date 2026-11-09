@@ -116,17 +116,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -192,9 +192,11 @@ struct FormChangeRecord
 
 // @fnv 0x005621f0
 // src: COMMUNITY 0x005621f0
-void FormChangeRecord::BGSSaveFormBuffer_RemoveChange(unsigned int flags)
+// pdb: BGSSaveFormBuffer::RemoveChange | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb params: aiFlags
+void FormChangeRecord::BGSSaveFormBuffer_RemoveChange(unsigned int aiFlags)
 {
-    ((BSFlags*)((char*)this + 0x17))->Clear(flags);
+    ((BSFlags*)((char*)this + 0x17))->Clear(aiFlags);
 }
 
 struct GlobalObject_00559cc0
@@ -205,6 +207,8 @@ extern GlobalObject_00559cc0 g_011ca0e0;
 
 // @fnv 0x00565670
 // src: COMMUNITY 0x00565670
+// pdb: TESObjectCELL::RemoveRefFromMultiboundTestMap | TESObjectREFR.obj | debug, call graph, medium
+// pdb params: apRef
 void TESObjectREFR_RemoveRefFromMultiboundTestMap(unsigned int index)
 {
     g_011ca0e0.RemoveAt(index);
@@ -222,21 +226,26 @@ unsigned char FUN_00566910_Class::NiControllerManager_IsCumulative()
     return ((unsigned char*)this)[0x68];
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagWord(bool, unsigned short);
-    void NiTimeController_SetComputeScaledTime(bool flag);
+    void NiTimeController_SetComputeScaledTime(bool bComputeScaledTime);
 };
 
 // @fnv 0x00566930
 // src: COMMUNITY 0x00566930
-void TaskQueueInterface::NiTimeController_SetComputeScaledTime(bool abSet)
+// pdb: NiTimeController::SetComputeScaledTime | NiLookAtController.obj | debug, upstream name already matches, high
+// pdb params: bComputeScaledTime
+void TaskQueueInterface::NiTimeController_SetComputeScaledTime(bool bComputeScaledTime)
 {
-    SetTaskFlagWord(abSet, 0x40);
+    SetTaskFlagWord(bComputeScaledTime, 0x40);
 }
 
 // Returns the extra data of the given type by forwarding to the actor's extra data list lookup.
 // @fnv 0x0056aa90
+// pdb: TESObjectREFR::SetEnableStateInverse | TESObjectREFR.obj | debug, object-file gap fill, medium
+// pdb params: abVal
 BSExtraData* TESObjectREFR::GetExtraData(unsigned char type) const
 {
     return static_cast<BSExtraData*>(const_cast<ExtraDataList*>(GetExtra())->ExtraDataList_SetEnableStateInverse(type));
@@ -249,6 +258,7 @@ struct ABD_005f92d0
 };
 
 // @fnv 0x0056af00
+// pdb: TESActorBaseData::GetRespawn | TESObjectREFR.obj | debug, call graph, medium
 bool ABD_005f92d0::GetFlag8()
 {
     return GetFlag(8);
@@ -267,7 +277,7 @@ bool __thiscall FUN_0056af20_Class::IsFlag2Set()
 
 struct FUN_0056d360_Class
 {
-    void bhkRigidBodyCinfo_SetMotionType(int a);
+    void bhkRigidBodyCinfo_SetMotionType(int aeType);
 };
 
 struct FUN_005407b0_Class
@@ -277,9 +287,11 @@ struct FUN_005407b0_Class
 
 // @fnv 0x0056d360
 // src: COMMUNITY 0x0056d360
-void FUN_0056d360_Class::bhkRigidBodyCinfo_SetMotionType(int aiValue)
+// pdb: bhkRigidBodyCinfo::SetMotionType | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb params: aeType
+void FUN_0056d360_Class::bhkRigidBodyCinfo_SetMotionType(int aeType)
 {
-    ((FUN_005407b0_Class*)((char*)this + 0xd4))->UpdateState_005407b0(aiValue);
+    ((FUN_005407b0_Class*)((char*)this + 0xd4))->UpdateState_005407b0(aeType);
 }
 
 extern "C" void* DAT_01030534;
@@ -292,12 +304,13 @@ struct FUN_0056d610_base
 struct FUN_0056d5f0_class : FUN_0056d610_base
 {
     void SetVtableAndProcessState_0056d610();
-    void* bhkWaterPhantomCallbackShape_bhkWaterPhantomCallbackShape();
+    void* bhkWaterPhantomCallbackShape_ctor();
 };
 
 // @fnv 0x0056d5f0
-// src: EXE 0x0056d5f0
-void* FUN_0056d5f0_class::bhkWaterPhantomCallbackShape_bhkWaterPhantomCallbackShape()
+// src: XBOX_DEBUG_PDB 0x0056d5f0
+// pdb: bhkWaterPhantomCallbackShape::bhkWaterPhantomCallbackShape | TESObjectREFR.obj | debug, upstream name already matches, high
+void* FUN_0056d5f0_class::bhkWaterPhantomCallbackShape_ctor()
 {
     SetVtableAndProcessState_0056d610();
     *reinterpret_cast<void**>(this) = &DAT_01030534;
@@ -315,6 +328,7 @@ struct FUN_0056d610Class
 // Calls FUN_0056d640 with 0x1d, stores the address of DAT_01030570 at the start of this, and returns this.
 // @fnv 0x0056d610
 // src: GUESS 0x0056d610 (confidence: low)
+// pdb: hkpPhantomCallbackShape::hkpPhantomCallbackShape | TESObjectREFR.obj | debug, call graph (shared callers), high
 FUN_0056d610Class* __thiscall FUN_0056d610Class::SetVtableAndProcessState_0056d610()
 {
     FUN_0056d640(0x1d);
@@ -334,6 +348,7 @@ struct FUN_0056d710_class : public FUN_0056d6c0_class
 
 // @fnv 0x0056d710
 // src: GUESS 0x0056d710 (confidence: low)
+// pdb: hkpPhantomCallbackShape::~hkpPhantomCallbackShape | TESObjectREFR.obj | debug, object-file run extension, low
 void __thiscall FUN_0056d710_class::ForwardCall_0056d710()
 {
     DestroyFields_0056d6c0();
@@ -346,6 +361,7 @@ struct FUN_0056d780_class
 };
 // @fnv 0x0056d780
 // src: GUESS 0x0056d780 (confidence: low)
+// pdb: hkEntityCinfo::~hkEntityCinfo | TESObjectREFR.obj | debug, object-file run extension, low
 void FUN_0056d780_class::ForwardCall_0056d780()
 {
     ForwardCall_0056d7a0();
@@ -363,6 +379,7 @@ struct FUN_0056d7a0Class
 
 // @fnv 0x0056d7a0
 // src: GUESS 0x0056d7a0 (confidence: low)
+// pdb: hkWorldObjectCinfo::~hkWorldObjectCinfo | TESObjectREFR.obj | debug, object-file run extension, low
 void FUN_0056d7a0Class::ForwardCall_0056d7a0()
 {
     ((FUN_0057c530Class*)((char*)this + 0xc))->FUN_0057c530();
@@ -376,6 +393,7 @@ struct FUN_0056d7c0_cls
 
 // @fnv 0x0056d7c0
 // src: GUESS 0x0056d7c0 (confidence: low)
+// pdb: bhkWaterPhantomCallbackShape::~bhkWaterPhantomCallbackShape | TESObjectREFR.obj | debug, object-file run extension, low
 void FUN_0056d7c0_cls::ForwardCall_0056d7c0()
 {
     ForwardCall_0056d710();
@@ -389,6 +407,7 @@ struct FUN_0056ded0 : hkRotation
 
 // Constructs the object by running the base hkRotation constructor and default-constructing its embedded member.
 // @fnv 0x0056ded0
+// pdb: hkTransform::hkTransform | TESObjectREFR.obj | debug, call graph, high
 FUN_0056ded0::FUN_0056ded0()
 {}
 
@@ -400,6 +419,7 @@ struct FUN_0056df00_class
 
 // @fnv 0x0056df00
 // src: XBOX_PDB 0x0056df00
+// pdb: hkRotation::hkRotation | TESObjectREFR.obj | debug, upstream name already matches, high
 FUN_0056df00_class* __thiscall FUN_0056df00_class::hkRotation_hkRotation()
 {
     hkMatrix3_hkMatrix3();
@@ -416,6 +436,7 @@ struct FUN_0056f690
     FUN_0056f690();
 };
 // @fnv 0x0056f690
+// pdb: bhkAcousticSpacePhantomCallbackShape::bhkAcousticSpacePhantomCallbackShape | TESObjectREFR.obj | debug, call graph, high
 FUN_0056f690::FUN_0056f690()
 {
     ((FUN_0056d610*)this)->Init();
@@ -430,6 +451,7 @@ struct FUN_00456630_helper
 
 // @fnv 0x00570ea0
 // src: COMMUNITY 0x00570ea0
+// pdb: NiAVObject::QHasMovingSound | TESObjectREFR.obj | debug, call graph, medium
 bool FUN_00456630_helper::NiAVObject_GetHasMovingSound()
 {
     return NiAVObject_GetBit(0x20000);
@@ -438,10 +460,12 @@ bool FUN_00456630_helper::NiAVObject_GetHasMovingSound()
 int __fastcall GetByteAtOffset38(void*);
 struct FUN_00570ec0
 {
-    int __thiscall Get();
+    int __thiscall TESObjectCELL_GetUnloading();
 };
 // @fnv 0x00570ec0
-int __thiscall FUN_00570ec0::Get()
+// src: XBOX_DEBUG_PDB 0x00570ec0
+// pdb: TESObjectCELL::GetUnloading | TESObjectREFR.obj | debug, call graph, high
+int __thiscall FUN_00570ec0::TESObjectCELL_GetUnloading()
 {
     return !(GetByteAtOffset38(this) - 1);
 }
@@ -454,6 +478,7 @@ struct FUN_00570ee0_class
 
 // @fnv 0x00570ee0
 // src: COMMUNITY 0x00570ee0
+// pdb: BSFadeNode::QHasMovingSound | TESObjectREFR.obj | debug, object-file gap fill, medium
 void FUN_00570ee0_class::BSFadeNode_HasMovingSound()
 {
     NiAVObject_GetHasMovingSound();
@@ -475,19 +500,21 @@ bool FUN_00570f40_Class::BGSSaveLoadGame_GetGlobalAllowChanges() const
 struct BSOcclusionPlane;
 struct FUN_006205e0_shell
 {
-    void __thiscall RemoveNode(void*);
+    void __thiscall BGSZoneTargetListener_RemoveZoneEntry(void*);
 };
 struct FUN_00576830_shell
 {
     void* BGSZoneTargetListener_GetZoneEntry(BSOcclusionPlane*);
-    void BGSZoneTargetListener_RemoveZone(BSOcclusionPlane* p);
+    void BGSZoneTargetListener_RemoveZone(BSOcclusionPlane* apZone);
 };
 // Calls FUN_00576830 on the occlusion plane, then passes the result to RemoveNode on this object.
 // @fnv 0x00576800
 // src: COMMUNITY 0x00576800
-void FUN_00576830_shell::BGSZoneTargetListener_RemoveZone(BSOcclusionPlane* apPlane)
+// pdb: BGSZoneTargetListener::RemoveZone | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb params: apZone
+void FUN_00576830_shell::BGSZoneTargetListener_RemoveZone(BSOcclusionPlane* apZone)
 {
-    ((FUN_006205e0_shell*)this)->RemoveNode(BGSZoneTargetListener_GetZoneEntry(apPlane));
+    ((FUN_006205e0_shell*)this)->BGSZoneTargetListener_RemoveZoneEntry(BGSZoneTargetListener_GetZoneEntry(apZone));
 }
 
 struct V4_538f40
@@ -501,6 +528,7 @@ struct FUN_00577070_class
 };
 // @fnv 0x00577070
 // src: COMMUNITY 0x00577070
+// pdb: hkTransform::setIdentity | TESObjectREFR.obj | debug, upstream name already matches, high
 void FUN_00577070_class::hkTransform_setIdentity()
 {
     UpdateState_00577090();
@@ -516,6 +544,8 @@ struct FUN_005770e0_shell : FUN_004b4cf0_shell
     float& GetCharacterControllerValue(unsigned int a, unsigned int b);
 };
 // @fnv 0x005770e0
+// pdb: hkMatrix3::operator() | TESObjectREFR.obj | debug, object-file run extension, low
+// pdb params: r, c
 float& FUN_005770e0_shell::GetCharacterControllerValue(unsigned int a, unsigned int b)
 {
     return ((bhkCharacterController*)FUN_004b4cf0(b))->GetVectorElement(a);
@@ -531,6 +561,8 @@ struct FUN_0057c470Class
 // Calls InitArray with a, stores the address of DAT_01030f6c in m, and returns &m.
 // @fnv 0x0057c470
 // src: EXE 0x0057c470
+// pdb: NiTPointerMap<TESObjectREFR *,bool>::NiTPointerMap<TESObjectREFR *,bool> | TESObjectREFR.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 int* __thiscall FUN_0057c470Class::NiTPointerMap_TESObjectREFR_bool_NiTPointerMap(int a)
 {
     InitArray(a);
@@ -556,13 +588,14 @@ void _NiFreeAlias(void*);
 struct FUN_0057ca30_Class
 {
     void NiTPointerMap_RemoveAll();
-    void SetVtableAndProcessState_0057ca30();
+    void NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_bool_dtor();
 };
 
 // Sets the vtable pointer, clears the pointer map, and frees the object at offset 8.
 // @fnv 0x0057ca30
-// src: GUESS 0x0057ca30 (confidence: low)
-void FUN_0057ca30_Class::SetVtableAndProcessState_0057ca30()
+// src: XBOX_DEBUG_PDB 0x0057ca30
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,bool>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,bool> | TESObjectREFR.obj | debug, call graph (shared callers), high
+void FUN_0057ca30_Class::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_bool_dtor()
 {
     *(void**)this = &DAT_01030fd4;
     NiTPointerMap_RemoveAll();
@@ -594,6 +627,7 @@ struct FUN_0057c370_Class
 };
 // Calls FUN_0057c3a0, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0057c370
+// pdb: LOADED_REF_DATA::`scalar deleting destructor' | TESObjectREFR.obj | debug, call graph, medium
 void* __thiscall FUN_0057c370_Class::FUN_0057c370(unsigned int flags)
 {
     FUN_0057c3a0();
@@ -609,6 +643,7 @@ struct FUN_0057c4a0_Class
 };
 // Calls FUN_0057c780, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x0057c4a0
+// pdb: BSMap<TESObjectREFR *,bool>::`scalar deleting destructor' | TESObjectREFR.obj | retail, vtable slot, high
 void* FUN_0057c4a0_Class::FUN_0057c4a0(unsigned int flags)
 {
     FUN_0057c780();
@@ -623,6 +658,7 @@ struct FUN_0057c500_Class
     void* __thiscall FUN_0057c500(unsigned int flags);
 };
 // @fnv 0x0057c500
+// pdb: NiTPointerMap<unsigned int,bool>::`scalar deleting destructor' | TESObjectREFR.obj | debug, vtable slot, medium
 void* FUN_0057c500_Class::FUN_0057c500(unsigned int flags)
 {
     FUN_0057c9d0();
@@ -638,6 +674,7 @@ struct FUN_0057ca60_Class
 };
 // Calls FUN_004b05b0, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x0057ca60
+// pdb: NiTPrimitiveArray<BSAnimNoteReceiver::BSAnimNoteReceiverType *>::`scalar deleting destructor' | TESObjectREFR.obj | debug, vtable slot, medium
 void* FUN_0057ca60_Class::FUN_0057ca60(unsigned int flags)
 {
     ForwardCall_004b05b0();
@@ -649,16 +686,17 @@ void* FUN_0057ca60_Class::FUN_0057ca60(unsigned int flags)
 extern "C" void _Deallocate(void*);
 struct FUN_0057c930_class
 {
-    void __thiscall SetVtableAndProcessState_0057c930();
+    void __thiscall NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_dtor();
 };
 struct FUN_0057ca90_Class
 {
     void* __thiscall FUN_0057ca90(unsigned int flags);
 };
 // @fnv 0x0057ca90
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,TESObjectREFR *,bool>::`scalar deleting destructor' | TESObjectREFR.obj | retail, vtable slot, high
 void* FUN_0057ca90_Class::FUN_0057ca90(unsigned int flags)
 {
-    reinterpret_cast<FUN_0057c930_class*>(this)->SetVtableAndProcessState_0057c930();
+    reinterpret_cast<FUN_0057c930_class*>(this)->NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -668,6 +706,7 @@ struct FUN_00560d10_shell
 {
     float& __thiscall GetVectorElement_Thunk(unsigned int);
 };
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier
 {
     void SetValue(float);
@@ -696,9 +735,11 @@ struct FUN_00560d50_Struct
 };
 // @fnv 0x00560d50
 // src: XBOX_PDB 0x00560d50
-void __thiscall FUN_00560d50_Struct::bhkRigidBody_GetLinearVelocity(hkVector4 const& aVector)
+// pdb: bhkRigidBody::GetLinearVelocity | TESObjectREFR.obj | debug, call graph (shared callers), high
+// pdb params: arPos
+void __thiscall FUN_00560d50_Struct::bhkRigidBody_GetLinearVelocity(hkVector4 const& arPos)
 {
-    SetNiPoint3FromHkVector4(aVector, bhkRigidBody_GetLinearVelocity_00560d80());
+    SetNiPoint3FromHkVector4(arPos, bhkRigidBody_GetLinearVelocity_00560d80());
 }
 
 struct ReferenceFlags : TESObjectREFR
@@ -707,6 +748,9 @@ struct ReferenceFlags : TESObjectREFR
 };
 
 // @fnv 0x00564d20
+// pdb: TESObjectREFR::SetCenterOnCreation | TESObjectREFR.obj | debug, object-file gap fill, medium
+// pdb params: abVal
+// pdb locals: iflags
 void __thiscall ReferenceFlags::SetFlag100000(unsigned char abSet)
 {
     if (!((bool(__thiscall*)(void*))(*reinterpret_cast<void***>(this))[0x40])(this))
@@ -722,6 +766,8 @@ void __thiscall ReferenceFlags::SetFlag100000(unsigned char abSet)
 
 // @fnv 0x00564d80
 // src: COMMUNITY 0x00564d80
+// pdb: TESObjectREFR::GetTargeted | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb locals: iflags
 bool TESObjectREFR::GetTargeted()
 {
     unsigned int flags = GetFlags();
@@ -739,10 +785,12 @@ struct ReferenceEncounterZoneAccess : TESObjectREFR
 };
 // @fnv 0x00567d90
 // src: XBOX_PDB 0x00567d90
+// pdb: TESObjectREFR::GetLocationEncounterZone | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pworld
 BGSEncounterZone* __thiscall ReferenceEncounterZoneAccess::TESObjectREFR_GetLocationEncounterZone()
 {
-    if (m_pOwningCell != 0)
-        return (m_pOwningCell)->FindEncounterZone();
+    if (pParentCell != 0)
+        return (pParentCell)->FindEncounterZone();
     TESWorldSpace* ws = GetParentWorldSpace();
     if (ws != 0)
         return (BGSEncounterZone*)ws->GetFieldD0();
@@ -926,6 +974,10 @@ struct S_00569620
 };
 // Copies the object returned by Get1f4() into a local and passes its address to p->Use_8c.
 // @fnv 0x00569620
+// pdb: TESObjectREFR::QBoundInsideMultibound | TESObjectREFR.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESObjectREFR::QCenterInsideMultibound
+// pdb params: apBound
+// pdb locals: p3D, bboundIn
 void S_00569620::CopyDataAndUse(Param_569620* apParam)
 {
     Data12_569620 tmp = *Get1f4();
@@ -937,11 +989,12 @@ extern "C" int DAT_012681fc;
 struct FUN_0056d410_Class
 {
     void __thiscall FUN_0056d440();
-    void* __thiscall bhkEntity_bhkEntity();
+    void* __thiscall bhkEntity_ctor();
 };
 // @fnv 0x0056d410
-// src: EXE 0x0056d410
-void* __thiscall FUN_0056d410_Class::bhkEntity_bhkEntity()
+// src: XBOX_RETAIL_PDB 0x0056d410
+// pdb: bhkEntity::bhkEntity | TESObjectREFR.obj | retail, upstream name already matches, high
+void* __thiscall FUN_0056d410_Class::bhkEntity_ctor()
 {
     FUN_0056d440();
     *(void**)(this) = &DAT_010302bc;
@@ -962,6 +1015,7 @@ struct FUN_0056d440 : FUN_004b5120
     FUN_0056d440();
 };
 // @fnv 0x0056d440
+// pdb: bhkWorldObject::bhkWorldObject | TESObjectREFR.obj | debug, call graph (shared callers), high
 FUN_0056d440::FUN_0056d440()
 {
     *(void**)this = (void*)&DAT_01030394;
@@ -1008,7 +1062,7 @@ struct PhysicsAccessHook
 };
 struct FUN_00c9e910_Class
 {
-    void __thiscall hkpShapePhantom_setTransform(int a);
+    void __thiscall hkpShapePhantom_setTransform(int transform);
 };
 struct FUN_0056e050_Class
 {
@@ -1061,6 +1115,8 @@ struct FUN_00577090_shell : FUN_005770e0_shell
 // Calls FUN_00577110 on this, then sets the base-class elements at indices 0, 1 and 2 to 1.0f.
 // @fnv 0x00577090
 // src: GUESS 0x00577090 (confidence: low)
+// pdb: hkMatrix3::setIdentity | TESObjectREFR.obj | debug, object-file run extension, low
+// pdb locals: one
 void FUN_00577090_shell::UpdateState_00577090()
 {
     ((FUN_00577110_shell*)this)->ProcessState_00577110();
@@ -1077,6 +1133,9 @@ struct Holder0057c400
 // Walks the list starting at this, calling Deallocate on each node, and returns the first node whose result equals id, or null.
 // @fnv 0x0057c400
 // src: XBOX_PDB 0x0057c400
+// pdb: bhkTTNode<TESObjectREFR>::GetEntry | TESObjectREFR.obj | debug, call graph (shared callers), medium
+// pdb params: apRef
+// pdb locals: pnode
 void* __thiscall Holder0057c400::bhkTTNode_TESObjectREFR_GetEntry(unsigned int id)
 {
     TESSound* cur = (TESSound*)this;
@@ -1099,7 +1158,9 @@ struct FUN_0057c440 : FUN_00559b40
     FUN_0057c440(int);
 };
 // @fnv 0x0057c440
-FUN_0057c440::FUN_0057c440(int aiValue) : FUN_00559b40(aiValue)
+// pdb: BSMap<TESObjectREFR *,bool>::BSMap<TESObjectREFR *,bool> | TESObjectREFR.obj | debug, call graph, high
+// pdb params: uiHashSize
+FUN_0057c440::FUN_0057c440(int uiHashSize) : FUN_00559b40(uiHashSize)
 {
     *(int*)this = (int)&DAT_01030f4c;
 }
@@ -1128,6 +1189,8 @@ struct FUN_0057c590_Class : public FUN_004ed8c0_shell
 // Gets a node from the script pool, stores p into the node's field at offset 8, then passes the node to FUN_00559a70.
 // @fnv 0x0057c590
 // src: COMMUNITY 0x0057c590
+// pdb: std::allocator<unsigned char>::deallocate | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: _Ptr, __formal
 void __thiscall FUN_0057c590_Class::DecalManager_AppendList08(Node* apNode)
 {
     Node* pNode = ((ScriptPool*)this)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_unsigned_int_NewItem();
@@ -1199,8 +1262,9 @@ int* FUN_0057c7e0_Class::InitArray(int count)
 extern int DAT_01030fb4;
 void _NiFree(void*);
 // @fnv 0x0057c930
-// src: GUESS 0x0057c930 (confidence: low)
-void __thiscall FUN_0057c930_class::SetVtableAndProcessState_0057c930()
+// src: XBOX_DEBUG_PDB 0x0057c930
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,TESObjectREFR *,bool>::~NiTMapBase<NiTPointerAllocator<unsigned int>,TESObjectREFR *,bool> | TESObjectREFR.obj | debug, call graph (shared callers), high
+void __thiscall FUN_0057c930_class::NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_dtor()
 {
     *(int*)this = (int)&DAT_01030fb4;
     ((FUN_0057ca30_Class*)this)->NiTPointerMap_RemoveAll();
@@ -1219,6 +1283,8 @@ struct FUN_0057c960
 };
 // Sets the vtable, stores the count, allocates count*4 bytes with NiMalloc and zeroes them with memset.
 // @fnv 0x0057c960
+// pdb: NiTPointerMap<unsigned int,bool>::NiTPointerMap<unsigned int,bool> | TESObjectREFR.obj | debug, call graph, medium
+// pdb params: uiHashSize
 FUN_0057c960::FUN_0057c960(int aiCount)
 {
     vtable = &DAT_01030fd4;
@@ -1235,9 +1301,10 @@ struct FUN_0057cac0_Holder : FUN_0057ca30_Class
 };
 // Calls the base constructor, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x0057cac0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,bool>::`scalar deleting destructor' | TESObjectREFR.obj | debug, vtable slot, medium
 void* __thiscall FUN_0057cac0_Holder::DestroyIfFlagged(unsigned int flags)
 {
-    SetVtableAndProcessState_0057ca30();
+    NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_bool_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1309,12 +1376,12 @@ float __cdecl NiCosQ(float a)
 
 struct FUN_0042dec0_shell
 {
-    void RemoveExtraType43();
+    void ExtraDataList_RemoveTeleportPtr();
     void ExtraDataList_RemoveNavMeshPortal();
 };
 struct FUN_0042e2a0_shell
 {
-    void* GetExtraNavMeshPortal();
+    void* ExtraDataList_GetNavMeshPortal();
 };
 struct FUN_004534f0_shell
 {
@@ -1326,10 +1393,12 @@ struct ReferenceNavMeshAccess : TESObjectREFR
 };
 // @fnv 0x00568f30
 // src: COMMUNITY 0x00568f30
+// pdb: TESObjectREFR::RemoveTeleport | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pportal, pnavmesh
 void ReferenceNavMeshAccess::TESObjectREFR_RemoveTeleport()
 {
-    ((FUN_0042dec0_shell*)static_cast<const TESObjectREFR*>(this)->GetExtra())->RemoveExtraType43();
-    void* portal = ((FUN_0042e2a0_shell*)static_cast<const TESObjectREFR*>(this)->GetExtra())->GetExtraNavMeshPortal();
+    ((FUN_0042dec0_shell*)static_cast<const TESObjectREFR*>(this)->GetExtra())->ExtraDataList_RemoveTeleportPtr();
+    void* portal = ((FUN_0042e2a0_shell*)static_cast<const TESObjectREFR*>(this)->GetExtra())->ExtraDataList_GetNavMeshPortal();
     if (portal)
     {
         FUN_004534f0_shell* form = *(FUN_004534f0_shell**)((char*)portal + 0xc);
@@ -1386,6 +1455,8 @@ struct FUN_0056ac00Class : RefH
 
 // @fnv 0x0056ac00
 // src: COMMUNITY 0x0056ac00
+// pdb: TESObjectREFR::UpdateEnableStateChildrenFlagsRecursive | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: plist, pref, bdisable
 void FUN_0056ac00Class::TESObjectREFR_UpdateEnableStateChildrenFlagsRecursive()
 {
     BSSimpleList<BGSPerk*>* list = ((Fn56ac90*)this)->TESObjectREFR_GetEnableStateChildList();
@@ -1433,16 +1504,19 @@ struct Arg2_S
 // Casts the object's world object to a rigid body and updates the counters' flags and counts based on its state.
 // @fnv 0x00563120
 // src: COMMUNITY 0x00563120
-void TESObjectREFR_GatherHavokSaveDataForCollisionObject(bhkCollisionObject* pCollObj, Arg2_S* arg)
+// pdb: TESObjectREFR::GatherHavokSaveDataForCollisionObject | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: pworldObject, phavokSaveData, prigidBody
+void TESObjectREFR_GatherHavokSaveDataForCollisionObject(bhkCollisionObject* apCollision, Arg2_S* arData)
 {
-    Counters_S* counters3 = arg->counters;
-    bhkWorldObject* world = pCollObj->bhkNiCollisionObject_GetWorldObject();
+    Counters_S* counters3 = arData->counters;
+    bhkWorldObject* world = apCollision->bhkNiCollisionObject_GetWorldObject();
     if (world)
     {
         bhkRigidBody* body = NiDynCast_S(&DAT_012681c0, world);
         if (body)
         {
-            if (pCollObj == counters3->target)
+            if (apCollision == counters3->target)
                 counters3->flags |= 2;
             if (body->IsActive_005609b0())
                 counters3->count04++;
@@ -1485,17 +1559,20 @@ struct SaveRequest
 };
 // @fnv 0x00563220
 // src: XBOX_PDB 0x00563220
-void TESObjectREFR_SaveHavokDataForCollisionObject(bhkCollisionObject* apCollisionObject, SaveRequest* request)
+// pdb: TESObjectREFR::SaveHavokDataForCollisionObject | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: pworldObject, phavokSaveData, apSaveGameBuffer, prigidBody, cboneFlags, bactive, rotation, position, angularVelocity, linearVelocity
+void TESObjectREFR_SaveHavokDataForCollisionObject(bhkCollisionObject* apCollision, SaveRequest* arData)
 {
-    SaveState* buffer = request->buffer;
+    SaveState* buffer = arData->buffer;
     BGSSaveFormBuffer* world = buffer->world;
-    bhkWorldObject* state = apCollisionObject->bhkNiCollisionObject_GetWorldObject();
+    bhkWorldObject* state = apCollision->bhkNiCollisionObject_GetWorldObject();
     if (state)
     {
         bhkRigidBody* body = NiObject_DynamicCast(&DAT_012681c0, state);
         if (body)
         {
-            if (apCollisionObject == buffer->object)
+            if (apCollision == buffer->object)
             {
             }
             else
@@ -1538,11 +1615,11 @@ extern NiRTTI g_rtti_bhkRigidBody_563380;
 // Additional state operations used by this unit; layout and virtual slots come from the shared base.
 struct RigidBodyStateAccess : bhkRigidBody
 {
-    void SetRotation(const NiQuaternion& q);
-    void SetPosition(const LocalVec3& p);
-    void SetLinearVelocity(const LocalVec3& v);
-    void SetAngularVelocity(const LocalVec3& v);
-    void Activate(bool active);
+    void SetRotation(const NiQuaternion& arRot);
+    void SetPosition(const LocalVec3& arPos);
+    void SetLinearVelocity(const LocalVec3& arVel);
+    void SetAngularVelocity(const LocalVec3& arVel);
+    void Activate(bool abTF);
 };
 RigidBodyStateAccess* NiDynamicCast_563380(const NiRTTI* rtti, bhkWorldObject* obj);
 
@@ -1657,16 +1734,18 @@ struct ReferenceAnimationAccess : TESObjectREFR
 
 // @fnv 0x00563530
 // src: COMMUNITY 0x00563530
+// pdb: TESObjectREFR::CheckSaveAnimation | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pmanager, inumSequences, i, pseq
 bool ReferenceAnimationAccess::TESObjectREFR_CheckSaveAnimation()
 {
     if (reinterpret_cast<HandleData*>(BSFile_GetDevice())->ExtraDataList_GetLastFinishedSequence())
         return true;
-    if (!reinterpret_cast<ModelHolder*>(m_pRenderData))
+    if (!reinterpret_cast<ModelHolder*>(pLoadedData))
         return false;
-    if (!(LoadedModel*)reinterpret_cast<ModelHolder*>(m_pRenderData)->m_pRenderedNodeEntry)
+    if (!(LoadedModel*)reinterpret_cast<ModelHolder*>(pLoadedData)->m_pRenderedNodeEntry)
         return false;
     NiControllerManager* pManager =
-        (NiControllerManager*)NiDynamicCast(&DAT_011f36ac, ((LoadedModel*)reinterpret_cast<ModelHolder*>(m_pRenderData)->m_pRenderedNodeEntry)->GetObject3D());
+        (NiControllerManager*)NiDynamicCast(&DAT_011f36ac, ((LoadedModel*)reinterpret_cast<ModelHolder*>(pLoadedData)->m_pRenderedNodeEntry)->GetObject3D());
     if (!pManager || !pManager->NiTimeController_GetActive())
         return false;
     unsigned int ItemUpdateArray = pManager->GetSequenceCount();
@@ -1695,6 +1774,8 @@ struct FUN_0056ae60_Class
 // Returns false if FUN_0056af40 is true; otherwise switches on the type from FUN_007af430 and calls GetFlag8 or IsFlag2Set on the object.
 // @fnv 0x0056ae60
 // src: XBOX_PDB 0x0056ae60
+// pdb: TESObjectREFR::GetRespawn | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: bretval, pactorbase, pcont
 bool FUN_0056ae60_Class::TESObjectREFR_GetRespawn()
 {
     bool result = false;
@@ -1736,7 +1817,7 @@ struct Obj8
 
 struct VisitorB
 {
-    void Visit(unsigned int index, Obj8* obj);
+    void Visit(unsigned int uiCol, Obj8* col);
 };
 
 struct FetcherC
@@ -1744,10 +1825,13 @@ struct FetcherC
     void* Fetch(unsigned int index);
 };
 
-void FUN_00553fc0_sink(void* value, Obj8* obj);
+void FUN_00553fc0_sink(void* arhkV, Obj8* arNiP);
 
 // Initializes an Obj8, then for indices 0..2 calls Visit on the visitor and passes Fetch's result with the object to a sink; returns the fetcher.
 // @fnv 0x0056dff0
+// pdb: NI2HK | TESObjectREFR.obj | debug, call graph, medium
+// pdb params: arhkRot, arNiRot
+// pdb locals: nic, I
 void* VisitAndFetchThree(FetcherC* pFetcher, VisitorB* pVisitor)
 {
     char guard[4];
@@ -1769,6 +1853,7 @@ struct ReferenceReset : TESObjectREFR
 
 // @fnv 0x00572270
 // src: XBOX_PDB 0x00572270
+// pdb: TESObjectREFR::MarkAsDeleted | TESObjectREFR.obj | retail, upstream name already matches, high
 void ReferenceReset::TESObjectREFR_MarkAsDeleted()
 {
     MarkForDeletion(true);
@@ -1801,6 +1886,7 @@ struct FUN_0057c3a0_cls : FUN_0057c3a0_BaseA, FUN_0057c3a0_BaseB
 
 // Destructor for the class; destroys its base subobjects and the embedded base member.
 // @fnv 0x0057c3a0
+// pdb: LOADED_REF_DATA::~LOADED_REF_DATA | TESObjectREFR.obj | debug, object-file run extension, low
 FUN_0057c3a0_cls::~FUN_0057c3a0_cls()
 {}
 
@@ -1808,7 +1894,7 @@ struct DtorBase_57c930 : FUN_0057c930_class
 {
     virtual __forceinline ~DtorBase_57c930()
     {
-        SetVtableAndProcessState_0057c930();
+        NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_dtor();
     }
 };
 struct FUN_0057c8d0 : DtorBase_57c930
@@ -1818,6 +1904,7 @@ struct FUN_0057c8d0 : DtorBase_57c930
 };
 // Destructor that calls FUN_00438af0 before the base destructor runs.
 // @fnv 0x0057c8d0
+// pdb: NiTPointerMap<TESObjectREFR *,bool>::~NiTPointerMap<TESObjectREFR *,bool> | TESObjectREFR.obj | debug, call graph (shared callers), high
 FUN_0057c8d0::~FUN_0057c8d0()
 {
     FUN_00438af0();
@@ -1841,6 +1928,7 @@ class FUN_0057c9d0_cls : public Base_57c9d0
 };
 
 // @fnv 0x0057c9d0
+// pdb: NiTPointerMap<unsigned int,bool>::~NiTPointerMap<unsigned int,bool> | TESObjectREFR.obj | debug, call graph, high
 FUN_0057c9d0_cls::~FUN_0057c9d0_cls()
 {
     Body();
@@ -1983,23 +2071,26 @@ bhkRigidBody* __cdecl PSDynamicCast(const NiRTTI* apRTTI, bhkWorldObject* apObje
 
 // @fnv 0x00560a10
 // src: XBOX_PDB 0x00560a10
-void __cdecl TESObjectREFR_SaveHavokDataForCollisionObjectOld(bhkCollisionObject* apRef, PSSaveContext* apContext)
+// pdb: TESObjectREFR::SaveHavokDataForCollisionObjectOld | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: pworldObject, phavokSaveData, psceneGraphObject, prigidBody, bactive, rotation, position, angularVelocity, linearVelocity
+void __cdecl TESObjectREFR_SaveHavokDataForCollisionObjectOld(bhkCollisionObject* apCollision, PSSaveContext* arData)
 {
-    PSSaveInfo* pInfo = apContext->pInfo;
-    NiAVObject* p3D = reinterpret_cast<CollisionSceneAccess*>(apRef)->GetSceneObject();
-    if (apRef != pInfo->pRef && p3D && (const char*)p3D->GetName() && !PSStricmp(p3D->GetName(), "Arrow"))
+    PSSaveInfo* pInfo = arData->pInfo;
+    NiAVObject* p3D = reinterpret_cast<CollisionSceneAccess*>(apCollision)->GetSceneObject();
+    if (apCollision != pInfo->pRef && p3D && (const char*)p3D->GetName() && !PSStricmp(p3D->GetName(), "Arrow"))
         return;
     if (pInfo->pBaseForm->IsActorBase() && PSIsKindOf(&g_kPSRTTI_Excluded, p3D))
         return;
 
-    bhkWorldObject* pCollision_ = apRef->bhkNiCollisionObject_GetWorldObject();
+    bhkWorldObject* pCollision_ = apCollision->bhkNiCollisionObject_GetWorldObject();
     if (pCollision_)
     {
         bhkRigidBody* pBody6 = PSDynamicCast(&g_kPSRTTI_RigidBody, pCollision_);
         if (pBody6)
         {
 
-            if (apRef == pInfo->pRef)
+            if (apCollision == pInfo->pRef)
             {
             }
             else
@@ -2141,24 +2232,27 @@ struct SceneSounds57
 };
 // @fnv 0x0057a410
 // src: XBOX_PDB 0x0057a410
-void SceneSounds57::TESObjectREFR_UpdateAddonNodeSoundsRecursive(NiAVObject* object, bool stop)
+// pdb: TESObjectREFR::UpdateAddonNodeSoundsRecursive | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: apRoot, abDetachAll
+// pdb locals: pnode, pvalueNode, paddonNode, spsoundHandleExtra, pos, isoundFlags, n, pobj
+void SceneSounds57::TESObjectREFR_UpdateAddonNodeSoundsRecursive(NiAVObject* apRoot, bool abDetachAll)
 {
-    if (!object)
+    if (!apRoot)
         return;
-    if (object->GetAppCulled_00456610())
-        stop = true;
-    if (NiObject_IsKindOf(&g_01202de8, object))
+    if (apRoot->GetAppCulled_00456610())
+        abDetachAll = true;
+    if (NiObject_IsKindOf(&g_01202de8, apRoot))
     {
-        NiAVObject* soundObject = object;
+        NiAVObject* soundObject = apRoot;
         SoundRecord57* record = g_dataHandler->FUN_004617e0(soundObject->DialoguePackage_GetActorStartedConversation());
         if (record && record->GetField54())
         {
-            NiPointer<FUN_004f91b0> extra(reinterpret_cast<FUN_004f91b0*>(object->FUN_00a5bdd0(BGSAddonNodeSoundHandleExtra_Tag())));
-            if (stop)
+            NiPointer<FUN_004f91b0> extra(reinterpret_cast<FUN_004f91b0*>(apRoot->FUN_00a5bdd0(BGSAddonNodeSoundHandleExtra_Tag())));
+            if (abDetachAll)
             {
                 if (extra.operator->())
                 {
-                    object->DeleteExtraDataByKey(BGSAddonNodeSoundHandleExtra_Tag());
+                    apRoot->DeleteExtraDataByKey(BGSAddonNodeSoundHandleExtra_Tag());
                     extra->handle.Stop();
                     extra->handle.Release();
                 }
@@ -2171,22 +2265,22 @@ void SceneSounds57::TESObjectREFR_UpdateAddonNodeSoundsRecursive(NiAVObject* obj
                                          ? (GetFlagMask(record->GetField54()->CopyBig().flags) | 2)
                                          : 0x102;
                 extra->handle.operator=(BSAudio_QInstance()->GetSoundHandleByFormID_00ad73b0(record->GetField54()->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), flags));
-                extra->handle.SetObjectToFollow(object);
-                position = reinterpret_cast<const PositionBits&>(object->NiAVObject_GetWorldTranslate());
+                extra->handle.SetObjectToFollow(apRoot);
+                position = reinterpret_cast<const PositionBits&>(apRoot->NiAVObject_GetWorldTranslate());
                 extra->handle.SetPosition(*(float*)&position.words[0], *(float*)&position.words[1], *(float*)&position.words[2]);
                 extra->handle.Play(false);
-                object->SetExtraDataName(reinterpret_cast<NiExtraData*>(extra.operator->()));
+                apRoot->SetExtraDataName(reinterpret_cast<NiExtraData*>(extra.operator->()));
             }
         }
     }
-    NiNode* node = object->IsSceneNode();
+    NiNode* node = apRoot->IsSceneNode();
     if (node)
     {
         for (unsigned int i = 0; i < node->GetNumChildren(); ++i)
         {
             NiAVObject* child = node->GetAt(i);
             if (child)
-                TESObjectREFR_UpdateAddonNodeSoundsRecursive(child, stop);
+                TESObjectREFR_UpdateAddonNodeSoundsRecursive(child, abDetachAll);
         }
     }
 }
@@ -2204,6 +2298,9 @@ struct PointerList : FUN_0057c6a0Class
 };
 // @fnv 0x0057c5d0
 // src: COMMUNITY 0x0057c5d0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<NiProperty> >::Remove | BSFaceGenManager.obj | debug, call graph, medium
+// pdb params: element
+// pdb locals: kPos
 SmartPointer PointerList::NiTPointerListBase_NiPropertyPtr_Remove(const SmartPointer& key)
 {
     void* position = NiTPointerListBase_NiPropertyPtr_FindPos((void*)&key, 0);
@@ -2220,6 +2317,7 @@ struct FUN_0057c530 : FUN_00483710
     ~FUN_0057c530();
 };
 // @fnv 0x0057c530
+// pdb: hkArray<HavokError::hkFileLine,hkContainerHeapAllocator>::~hkArray<HavokError::hkFileLine,hkContainerHeapAllocator> | HavokStream.obj | debug, call graph, medium
 FUN_0057c530::~FUN_0057c530()
 {
     hkArray_hkWorldObjectCinfo_Property_hkContainerHeapAllocator_clearAndDeallocate();
@@ -2277,11 +2375,13 @@ struct ReferenceStateAccess : TESObjectREFR
 
 // @fnv 0x0056b020
 // src: COMMUNITY 0x0056b020
-void ReferenceStateAccess::TESObjectREFR_SetLeveledCreature(int iA, int iB)
+// pdb: TESObjectREFR::SetLeveledCreature | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: apOriginalBase, apTemplate
+void ReferenceStateAccess::TESObjectREFR_SetLeveledCreature(int apOriginalBase, int apTemplate)
 {
     if (BGSSaveFormBuffer_GetForm() && BGSSaveFormBuffer_GetForm()->Unk_3E())
     {
-        if (iA && iB)
+        if (apOriginalBase && apTemplate)
         {
             FUN_00484b90(0x40000);
         }
@@ -2289,7 +2389,7 @@ void ReferenceStateAccess::TESObjectREFR_SetLeveledCreature(int iA, int iB)
         {
             MarkAsUnmodified(0x40000);
         }
-        reinterpret_cast<ExtraFlagAccess*>(BSFile_GetDevice())->ExtraDataList_SetLeveledCreature(iA, iB);
+        reinterpret_cast<ExtraFlagAccess*>(BSFile_GetDevice())->ExtraDataList_SetLeveledCreature(apOriginalBase, apTemplate);
     }
 }
 
@@ -2307,6 +2407,7 @@ struct FUN_0057c780 : PointerMapBase57c780
 
 // Destructor that calls FUN_00438af0.
 // @fnv 0x0057c780
+// pdb: BSMap<TESObjectREFR *,bool>::~BSMap<TESObjectREFR *,bool> | TESObjectREFR.obj | debug, call graph, medium
 FUN_0057c780::~FUN_0057c780()
 {
     FUN_00438af0();
@@ -2394,6 +2495,8 @@ struct Thing
 // Returns true if the scene pointer is valid, its vf() check passes, and the Sub object's FUN_004216d0() returns true.
 // @fnv 0x0056afc0
 // src: XBOX_PDB 0x0056afc0
+// pdb: TESObjectREFR::HasLeveledCreatureCalced | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: bretval
 bool Thing::TESObjectREFR_HasLeveledCreatureCalced()
 {
     bool result = false;
@@ -2424,6 +2527,7 @@ struct C_56d250 : Base_56d250
 // Copies the 16 bytes at DAT_010c71b0 to the address returned by FUN_006815c0().
 // @fnv 0x0056d250
 // src: GUESS 0x0056d250 (confidence: low)
+// pdb: hkQuaternion::setIdentity | TESObjectREFR.obj | debug, object-file gap fill, medium
 void C_56d250::ForwardCall_0056d250()
 {
     *(__m128*)FUN_006815c0() = *(const __m128*)&DAT_010c71b0;
@@ -2443,10 +2547,12 @@ struct FUN_00576870_class
 // Calls FUN_00576870 on the object at offset 4 when that pointer is non-null, passing p, and returns the result or 0.
 // @fnv 0x00576830
 // src: COMMUNITY 0x00576830
-void* FUN_00576830_shell::BGSZoneTargetListener_GetZoneEntry(BSOcclusionPlane* apOcclusionPlane)
+// pdb: BGSZoneTargetListener::GetZoneEntry | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb params: apZone
+void* FUN_00576830_shell::BGSZoneTargetListener_GetZoneEntry(BSOcclusionPlane* apZone)
 {
     return *(FUN_00576870_class**)((char*)this + 4)
-               ? (*(FUN_00576870_class**)((char*)this + 4))->ZoneEntry_GetZoneEntry_0(apOcclusionPlane)
+               ? (*(FUN_00576870_class**)((char*)this + 4))->ZoneEntry_GetZoneEntry_0(apZone)
                : 0;
 }
 
@@ -2456,5 +2562,6 @@ struct FUN_0057c4d0
 };
 typedef FUN_0057c4d0 FUN_0056aac0_map;
 // @fnv 0x0057c4d0
+// pdb: NiTPointerMap<TESObjectREFR *,bool>::`scalar deleting destructor' | TESObjectREFR.obj | retail, vtable slot, high
 FUN_0057c4d0::~FUN_0057c4d0()
 {}

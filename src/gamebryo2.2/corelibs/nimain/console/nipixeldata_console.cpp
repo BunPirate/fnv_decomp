@@ -31,19 +31,22 @@ class FUN_00a8f010_cls
     char* m_58;
     char* m_5C;
 
-    void AllocateBuffers(int a1, int a2, int a3);
+    void NiPixelData_AllocateData(int uiLevels, int uiFaces, int uiBytes);
 };
 
 // Allocates one block sized from a1, a2 and a3, then sets m_50..m_5C to offsets within it.
 // @fnv 0x00a8f010
-void FUN_00a8f010_cls::AllocateBuffers(int aiCount, volatile int aiRows, int aiStride)
+// src: XBOX_RETAIL_PDB 0x00a8f010
+// pdb: NiPixelData::AllocateData | NiPixelData_Xenon.obj | retail, call graph, high
+// pdb params: uiLevels, uiFaces, uiBytes
+void FUN_00a8f010_cls::NiPixelData_AllocateData(int uiLevels, volatile int uiFaces, int uiBytes)
 {
-    unsigned int stride = (unsigned int)(aiStride + 3) & 0xfffffffcu;
-    int rows = aiRows * (int)stride;
-    unsigned int total = (unsigned int)(rows + aiCount * 12 + 4);
+    unsigned int stride = (unsigned int)(uiBytes + 3) & 0xfffffffcu;
+    int rows = uiFaces * (int)stride;
+    unsigned int total = (unsigned int)(rows + uiLevels * 12 + 4);
     char* base = (char*)_NiMalloc_00aa1070(total);
     m_50 = base;
     m_54 = base + rows;
-    m_58 = m_54 + aiCount * 4;
-    m_5C = m_58 + aiCount * 4;
+    m_58 = m_54 + uiLevels * 4;
+    m_5C = m_58 + uiLevels * 4;
 }

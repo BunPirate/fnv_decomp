@@ -2,6 +2,7 @@
 
 #include "QueuedTexture.h"
 
+// pdb: class QueuedTreeBillboard, size 0x40 (here 0x30), bases: QueuedTexture, 1 members
 class QueuedTreeBillboard : public QueuedTexture
 {
 public:
@@ -14,7 +15,7 @@ public:
     void ApplyQueuedTexture();
     void QueueForPostProcess();
     bool GetDescription_0043d820(char* apDescription, unsigned int aiBufferSize);
-    bool QueuedFileEntry_GetDescription(char* apDescription, unsigned int aiBufferSize, const char* apStr);
+    bool QueuedFileEntry_GetDescription(char* apDescription, unsigned int aiBufferSize, const char* apFileEntryTypeDescription);
     void __thiscall FUN_0043d5b0();
     void* __thiscall FUN_0043d580(unsigned int flags);
 };

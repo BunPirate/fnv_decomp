@@ -106,7 +106,7 @@ struct S_00e062a0_Flag
     bool m_bValue;
 };
 
-void ProcessInput(void* pkStream, S_00e062a0_Block* pkBlockA, S_00e062a0_Block* pkBlockB, S_00e062a0_Flag kFlag,
+void XGRAPHICS_Compiler_ProcessInput(void* pkStream, S_00e062a0_Block* pkBlockA, S_00e062a0_Block* pkBlockB, S_00e062a0_Flag kFlag,
                   S_00e062a0_Flag* pkFlag, const S_00e062a0_Tag& kTag);
 
 template <class T> inline void S_00e062a0_Swap(T& a, T& b)
@@ -128,7 +128,7 @@ void SwapMeshRecords(void* pkStream, S_00e062a0_Mesh* pkMesh)
 {
     S_00e062a0_Flag kFlag;
     kFlag.m_bValue = true;
-    ProcessInput(pkStream, &pkMesh->m_kBlockA, &pkMesh->m_kBlockB, kFlag, &kFlag, S_00e062a0_Tag());
+    XGRAPHICS_Compiler_ProcessInput(pkStream, &pkMesh->m_kBlockA, &pkMesh->m_kBlockB, kFlag, &kFlag, S_00e062a0_Tag());
 
     int iStride = pkMesh->m_ucStride;
     int iRecordCount = pkMesh->m_iDataSize / iStride;

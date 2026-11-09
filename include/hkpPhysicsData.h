@@ -6,9 +6,10 @@
 class hkpWorldCinfo;
 class hkpPhysicsSystem;
 
+// pdb: class hkpPhysicsData, size 0x18, bases: hkReferencedObject, 2 members
 class hkpPhysicsData : public hkReferencedObject
 {
 public:
-    hkpWorldCinfo* m_pWorldCinfo;
-    hkArray<hkpPhysicsSystem*> m_kPhysicsSystems;
+    hkpWorldCinfo* m_worldCinfo;
+    hkArray<hkpPhysicsSystem*> m_systems;
 };

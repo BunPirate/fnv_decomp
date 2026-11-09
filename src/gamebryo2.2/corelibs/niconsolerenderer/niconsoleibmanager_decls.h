@@ -5,6 +5,7 @@
 #include "../../../../include/NiTPointerMap.h"
 #include "NiRefObject.h"
 
+// pdb: structure _D3DINDEXBUFFER_DESC, size 0x14, 5 members
 struct _D3DINDEXBUFFER_DESC
 {
     int Format;

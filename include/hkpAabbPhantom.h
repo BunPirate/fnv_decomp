@@ -11,6 +11,7 @@ struct WorldRayCastInput;
 struct WorldRayCastOutput;
 class hkpRayHitCollector;
 
+// pdb: class hkpAabbPhantom, size 0xe0, bases: hkpPhantom, 3 members
 class hkpAabbPhantom : public hkpPhantom
 {
 public:
@@ -20,17 +21,17 @@ public:
     hkpAabbPhantom* initialize(const hkAabb& aabb, unsigned int collisionFilterInfo);
     void setAabb(const hkAabbQ& aabb);
     void __thiscall castRay(void* input, void* output);
-    void hkpAabbPhantom_setAabb(const hkAabbQ& aabb);
-    void __thiscall hkpAabbPhantom_setAabb(const hkAabb& aabb);
+    void hkpAabbPhantom_setAabb(const hkAabbQ& newAabb);
+    void __thiscall hkpAabbPhantom_setAabb(const hkAabb& newAabb);
     hkpAabbPhantom* FUN_00cf2cb0(const hkAabb& aabb, unsigned int collisionFilterInfo);
     void __thiscall hkpAabbPhantom_castRay_00cf26b0(void* input, void* output);
     void hkpAabbPhantom_castRay_00cf26b0(const WorldRayCastInput& input, WorldRayCastOutput& output) const;
-    void hkpAabbPhantom_linearCast(const hkpCollidable* collA, const LinCastInputS& input, void* castCollector, void* startCollector);
+    void hkpAabbPhantom_linearCast(const hkpCollidable* toBeCast, const LinCastInputS& input, void* castCollector, void* startCollector);
     void hkpAabbPhantom_castRay(const WorldRayCastInput& input, hkpRayHitCollector& collector) const;
 
     char padA4[0xC];
-    hkAabb m_kBounds;
-    hkArray<void*> m_ppOverlappingCollidables;
-    hkBool m_bOrderDirty;
+    hkAabb m_aabb;
+    hkArray<void*> m_overlappingCollidables;
+    hkBool m_orderDirty;
     char padDD[0x3];
 };

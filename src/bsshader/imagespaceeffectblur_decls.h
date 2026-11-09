@@ -19,6 +19,7 @@ inline ImageSpaceEffect* ImageSpaceManager::GetEffect(int index)
     return reinterpret_cast<NiTPrimitiveArray<ImageSpaceEffect*>*>(pEffectList)->m_pBase[index];
 }
 class ImageSpaceTexture;
+// pdb: class ImageSpaceEffect, size 0x58 (here 0x38), 7 members
 class ImageSpaceEffect
 {
   public:
@@ -35,6 +36,7 @@ class ImageSpaceEffectFourTexturePass : public ImageSpaceEffect
   public:
     void Setup(ImageSpaceManager*, ImageSpaceEffectParam*);
 };
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public ImageSpaceEffectParam
 {
   public:

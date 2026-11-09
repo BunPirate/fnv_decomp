@@ -8,6 +8,7 @@ class NiObjectNET;
 class BSNodeReferences;
 template <class T> class NiTStringMap;
 
+// pdb: class BSStream, size 0x5cc, bases: NiStream, 2 members
 class BSStream : public NiStream
 {
 public:
@@ -32,10 +33,10 @@ public:
     virtual ~BSStream();
 
     using NiStream::BSStream_Load;
-    virtual bool BSStream_Load(const char* name);
+    virtual bool BSStream_Load(const char* apFileName);
 
-    unsigned int GetRefAt21C();
-    NiNode* GetStringAt(unsigned int index);
+    unsigned int NiStream_GetObjectCount();
+    NiNode* NiStream_GetObjectAt(unsigned int i);
     void DestroyObject();
     void* FUN_0043d150(unsigned int flags);
 };

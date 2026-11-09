@@ -83,7 +83,7 @@ class BSFaceGenTexture
 };
 #include "../../../../include/BSFaceGenModel.h"
 NiTexture* GetFaceGenManagerValue();
-FaceGenTextureFile* BSFaceGenModel_EGTData_Create(const char*);
+FaceGenTextureFile* EGTData_Create(const char*);
 bool BSFaceGenManager_LoadEGTData(BSFaceGenModel*);
 void BSFaceGenManager_LockFaceGenAccess();
 void BSFaceGenManager_UnlockFaceGenAccess();

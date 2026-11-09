@@ -34,7 +34,7 @@ class ChallengeManager
     static BSSimpleList<TESChallenge*> pChallengeList[14];
     static BSSimpleList<TESChallenge*> ms_kInactiveChallengesByType[14];
     static void Clear();
-    static void CheckCompletedChallenges();
+    static void TESChallengeManager_LoadChallenges();
     static bool UpdateChallengeProgress(CHALLENGE_TYPE type, int count, TESForm* formOne, TESForm* formTwo,
                                         unsigned short specialOne, unsigned short specialTwo,
                                         unsigned short specialThree);

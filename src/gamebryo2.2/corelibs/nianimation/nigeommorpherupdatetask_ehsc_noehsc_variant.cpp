@@ -9,7 +9,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 extern "C"
 {
-    extern const void* g_011f4100;
+    extern const void* NiGeomMorpherUpdateTask_ms_RTTI;
 }
 const void* __cdecl FUN_00a56c00();
 extern int DAT_011a9414;
@@ -78,7 +78,7 @@ extern "C" void __cdecl NiMemObject_ReleaseStorage_00aa1490(void* apMemory, unsi
 class A56DF0Heap
 {
   public:
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 extern A56DF0Heap g_kA56DF0Heap;
 void operator delete(void* pvMem)

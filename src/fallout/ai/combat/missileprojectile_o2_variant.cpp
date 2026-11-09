@@ -268,19 +268,22 @@ struct FUN_00cbdd60_cls
 {
     int unk00;
     int unk04;
-    void bhkConstraint_CopyMembers(SpawnedObject_t* obj, unsigned int arg);
-    SpawnedObject_t* bhkHingeConstraint_CreateClone(unsigned int arg);
+    void bhkConstraint_CopyMembers(SpawnedObject_t* pDest, unsigned int arCloneData);
+    SpawnedObject_t* bhkHingeConstraint_CreateClone(unsigned int arCloneData);
 };
 
 // @fnv 0x00cbdd60
 // src: XBOX_PDB 0x00cbdd60
-SpawnedObject_t* FUN_00cbdd60_cls::bhkHingeConstraint_CreateClone(unsigned int arg)
+// pdb: bhkHingeConstraint::CreateClone | bhkHingeConstraint.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj
+SpawnedObject_t* FUN_00cbdd60_cls::bhkHingeConstraint_CreateClone(unsigned int arCloneData)
 {
     TlsGuard_t guard;
     SpawnedObject_t* result = 0;
     bhkSerializable_CloneCritLock();
     result = new SpawnedObject_t();
-    bhkConstraint_CopyMembers(result, arg);
+    bhkConstraint_CopyMembers(result, arCloneData);
     bhkSerializable_CloneCritUnlock();
     return result;
 }
@@ -504,16 +507,19 @@ struct S_cbde40
     int unk04;
     int unk08;
     S_cbde40_Base* unk0c;
-    void CopyFromSource(S_cbde40_Obj* c);
-    S_cbde40_Base* bhkHingeConstraint_CreateCinfo(bool* created);
+    void CopyFromSource(S_cbde40_Obj* arInfo);
+    S_cbde40_Base* bhkHingeConstraint_CreateCinfo(bool* arCreated);
 };
 // @fnv 0x00cbde40
 // src: XBOX_PDB 0x00cbde40
-S_cbde40_Base* S_cbde40::bhkHingeConstraint_CreateCinfo(bool* created)
+// pdb: bhkHingeConstraint::CreateCinfo | bhkHingeConstraint.obj | retail, upstream name already matches, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+S_cbde40_Base* S_cbde40::bhkHingeConstraint_CreateCinfo(bool* arCreated)
 {
     S_cbde40_Guard guard;
     bool b = (unk0c == 0);
-    *created = b;
+    *arCreated = b;
     if (b)
     {
         S_cbde40_Obj* c = new S_cbde40_Obj;
@@ -554,8 +560,8 @@ struct CollisionObjectCountContext
 };
 
 typedef void (*CollisionObjectCountCallback)(NiCollisionObject*, CollisionObjectCountContext*);
-void bhkWorld_DoObjectRec(NiAVObject* pkObject, CollisionObjectCountContext* pkContext,
-                  CollisionObjectCountCallback pfnCallback);
+void bhkWorld_DoObjectRec(NiAVObject* apObject, CollisionObjectCountContext* arData,
+                  CollisionObjectCountCallback apFunc);
 extern CollisionObjectCountCallback DAT_011afec0;
 
 struct C6A0B0Properties
@@ -565,7 +571,7 @@ struct C6A0B0Properties
     int unk08;
     unsigned int m_uiValue1;
 };
-extern "C" C6A0B0Properties* GetExtraDataChecked(NiAVObject* pkObject);
+extern "C" C6A0B0Properties* GetExtraDataChecked(NiAVObject* apObject);
 static inline unsigned int C6A0B0IsEnabled(NiAVObject* pkObject)
 {
     C6A0B0Properties* pkProps = GetExtraDataChecked(pkObject);
@@ -574,19 +580,22 @@ static inline unsigned int C6A0B0IsEnabled(NiAVObject* pkObject)
 
 // @fnv 0x00c6a0b0
 // src: XBOX_PDB 0x00c6a0b0
-bool bhkWorld_EnableCollision(NiAVObject* pkObject, bool bValue, bool bRecurse, bool bForce)
+// pdb: bhkWorld::EnableCollision | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, abEnable, abRecurse, abForce
+// pdb locals: bres, recData
+bool bhkWorld_EnableCollision(NiAVObject* apObject, bool abEnable, bool abRecurse, bool abForce)
 {
     bool bResult = false;
-    if (pkObject && (bForce || C6A0B0IsEnabled(pkObject)))
+    if (apObject && (abForce || C6A0B0IsEnabled(apObject)))
     {
         CollisionObjectCountContext kContext;
         bResult = true;
         kContext.pCurrentObject = 0;
-        kContext.bRecurse = bRecurse;
+        kContext.bRecurse = abRecurse;
         kContext.uiTraversalFlags = 0xe;
-        kContext.uiValue = bValue;
+        kContext.uiValue = abEnable;
         if (DAT_011afec0)
-            bhkWorld_DoObjectRec(pkObject, &kContext, DAT_011afec0);
+            bhkWorld_DoObjectRec(apObject, &kContext, DAT_011afec0);
     }
     return bResult;
 }

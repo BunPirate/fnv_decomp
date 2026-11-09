@@ -10,10 +10,11 @@ class IkVector4;
 class hkVector4X;
 class hkVector4H;
 
+// pdb: class hkQuaternion, size 0x10, 1 members
 class hkQuaternion
 {
 public:
-    int unk00;
+    int m_vec;
     unsigned short unk04;
     unsigned short unk06;
     int unk08;
@@ -28,14 +29,14 @@ public:
     void operator=(const hkQuaternion& q);
     __forceinline void copyRotation(const hkQuaternion& q)
     {
-        unk00 = q.unk00;
+        m_vec = q.m_vec;
         *reinterpret_cast<unsigned int*>(&unk04) = *reinterpret_cast<const unsigned int*>(&q.unk04);
         unk08 = q.unk08;
         *reinterpret_cast<unsigned int*>(&unk0c) = *reinterpret_cast<const unsigned int*>(&q.unk0c);
     }
     const hkVector4& getImag() const;
     float getReal() const;
-    float GetAngle();
+    float hkQuaternion_getAngle();
     void normalize();
     void set(const hkRotation& rotation);
     void setInverseMul(const hkQuaternion& q0, const hkQuaternion& q1);
@@ -43,7 +44,7 @@ public:
     void SetProduct(const hkQuaternion& q0, const hkQuaternion& q1);
 
     void setMul(const hkQuaternion& q0, const hkQuaternion& q1);
-    __declspec(noalias) void normalize_005611c0();
+    __declspec(noalias) void hkQuaternion_normalize();
     void hkQuaternion_setAxisAngle(const hkVector4& axis, float angle);
     void hkQuaternion_setAxisAngle(const IkVector4& axis, float angle);
     void hkQuaternion_setAxisAngle(void* axis, float angle);
@@ -54,7 +55,7 @@ public:
     void hkQuaternion_decomposeRestAxis(void* axis, void* restOut, float* angleOut);
     void UpdateState_00cdb910(float gain, const IkVector4& from, const IkVector4& to);
     void setMulInverse(const hkQuaternion& q0, const hkQuaternion& q1);
-    void setMulInverse(const void* a, const void* b) throw();
+    void setMulInverse(const void* q0, const void* q1) throw();
     void D3D_ComputeClearColor(const hkQuaternion& q0, const hkQuaternion& q1, float t);
     void UpdateFields_00d6bec0(const hkQuaternion& to, hkVector4& angleOut) const;
     void ComputeValues_00cd9d10(const hkVector4& from, const hkVector4& to);

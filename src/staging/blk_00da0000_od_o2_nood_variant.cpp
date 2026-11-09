@@ -36,12 +36,15 @@ void __cdecl Object_InitializeDispatchFunctionTable(ScratchBlock* block);
 class ScratchOwner
 {
   public:
-    void AddEntry(ScratchBlock* block, int a, int b);
+    void hkpCollisionDispatcher_registerAgent3(ScratchBlock* f, int typeA, int typeB);
 };
 
 // @fnv 0x00da7020
 // src: HAVOK_LIB 0x00da7020
-void __cdecl hkListAgent3_registerAgent3(ScratchOwner* owner)
+// pdb: hkListAgent3::registerAgent3 | hkpListAgent3.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: f
+void __cdecl hkListAgent3_registerAgent3(ScratchOwner* dispatcher)
 {
     __declspec(align(16)) ScratchBlock s;
     s.unk30 = 0;
@@ -53,7 +56,7 @@ void __cdecl hkListAgent3_registerAgent3(ScratchOwner* owner)
     s.unk24 = 0;
     s.unk28 = 0;
     Object_InitializeDispatchFunctionTable(&s);
-    owner->AddEntry(&s, -1, 9);
+    dispatcher->hkpCollisionDispatcher_registerAgent3(&s, -1, 9);
 }
 
 struct S00da0780_Member
@@ -75,6 +78,8 @@ class __declspec(align(16)) S00da0780_Object
 
 // @fnv 0x00da0780
 // src: HAVOK_LIB 0x00da0780
+// pdb: getVtablehkLocalFrameGroup | hkLocalFrameClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkLocalFrameGroup()
 {
     FinishingFlag flag;
@@ -127,6 +132,8 @@ class __declspec(align(16)) S00da07d0_Object
 
 // @fnv 0x00da07d0
 // src: HAVOK_LIB 0x00da07d0
+// pdb: getVtablehkSimpleLocalFrame | hkLocalFrameClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkSimpleLocalFrame()
 {
     FinishingFlag flag;
@@ -200,6 +207,8 @@ class __declspec(align(16)) S00db7c40_Object
 
 // @fnv 0x00db7c40
 // src: HAVOK_LIB 0x00db7c40
+// pdb: getVtablehkpPhysicsSystem | hkpPhysicsSystemClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkpPhysicsSystem()
 {
     FinishingFlag flag;

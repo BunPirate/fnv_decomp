@@ -8,6 +8,7 @@ class Collider890;
 
 enum SEX;
 
+// pdb: class MissileProjectile, size 0x180 (here 0x160), bases: Projectile, 4 members
 class MissileProjectile : public Projectile
 {
 public:
@@ -41,12 +42,12 @@ public:
 
     void* FUN_009b7a20(unsigned int flags);
     void FUN_009b7bc0();
-    void UpdateProjectile_009b8030(float deltaTime);
-    void AdvanceStateAtOffset150_009b8a20();
-    bool AddImpact_009b8900(int arg1, int arg2, int arg3, Collider890* collider,
-                      int arg5, int arg6);
+    void UpdateProjectile_009b8030(float afDelta);
+    void MissileProjectile_DetermineImpactResult();
+    bool AddImpact_009b8900(int apCollidee, int aContactPoint, int aContactNormal, Collider890* apTargetCollidable,
+                      int aiKey, int aeForceMaterial);
     void ProcessImpale();
-    void SaveGame_009baaa0(BGSLoadFormBuffer* buffer);
+    void SaveGame_009baaa0(BGSLoadFormBuffer* apSaveGameBuffer);
     void LoadGame_009baad0(BGSLoadFormBuffer* buffer);
     void RevertBGS_009bab70(BGSLoadFormBuffer* buffer);
     void Initialize3D();
@@ -59,7 +60,7 @@ public:
     float Projectile_GetSpeed(NiPoint3* out, float f);
     NiPoint3* Projectile_GetMovementDirection(NiPoint3* out);
     void Projectile_Kill();
-    void FUN_009bf470(int a, int b);
+    void FUN_009bf470(int abSyncRotation, int abDoArcReorientation);
 
     // own state (0x160 per its allocations; cleared by both constructors, 0x150 saved and loaded)
     unsigned int uiImpactResult;   // 0x150: 3 and 4 are checked in impact handling

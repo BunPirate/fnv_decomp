@@ -26,7 +26,7 @@ typedef unsigned int NiUInt32;
 // @fnv 0x0DBBC10
 NiUInt32 NiD3DShaderProgram::GetCodeSize() const
 {
-    return m_uiProgramCodeSize;
+    return m_uiCodeSize;
 }
 
 extern MemoryManager g_memoryManager;
@@ -36,6 +36,8 @@ struct S
 };
 // @fnv 0x00e9efb0
 // src: GAMEBRYO_SRC 0x00e9efb0
+// pdb: NiUnionBV::Clone | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb locals: pClone
 S* __fastcall NiUnionBV_Clone(void* self)
 {
     S* p = (S*)g_memoryManager.Allocate(0x18);
@@ -76,6 +78,8 @@ class S00e9e860_Obj
 // Deletes each item in m_ppItems, nulls the pointers, and resets m_uCount and m_u10 to zero.
 // @fnv 0x00e9e860
 // src: GAMEBRYO_LIB 0x00e9e860
+// pdb: NiUnionBV::RemoveAllBoundingVolumes | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb locals: i
 void S00e9e860_Obj::NiUnionBV_RemoveAllBoundingVolumes()
 {
     {

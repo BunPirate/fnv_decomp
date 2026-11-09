@@ -22,6 +22,8 @@ extern "C" void FUN_00a3c500();
 
 // @fnv 0x00a576c0
 // src: XBOX_PDB 0x00a576c0
+// pdb: NiFloatInterpController::GetViewerStrings | NiFloatInterpController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiFloatInterpController_GetViewerStrings(StrArr* pkStrings)
 {
     FUN_00a390a0(pkStrings);
@@ -50,6 +52,10 @@ NiFloatInterpolator* NiFloatInterpController::CreateFadeNodeFromValue(unsigned s
 
 // Casts the interpolator, reads the controller value and sets the float pose.
 // @fnv 0x00a57670
+// pdb: NiFloatInterpController::SynchronizePoseInterpolator | NiFloatInterpController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatInterpController::IsEqual
+// pdb params: pkInterp, usIndex
+// pdb locals: pkFloatInterp, fValue
 void NiFloatInterpController::SetInterpolatorValue(NiInterpolator* pkInterp, unsigned short usIndex)
 {
     NiFloatInterpolator* pkFloatInterp;
@@ -63,12 +69,16 @@ void NiFloatInterpController::SetInterpolatorValue(NiInterpolator* pkInterp, uns
 }
 
 // @fnv 0x00a57630
+// pdb: NiFloatInterpController::LinkObject | NiFloatInterpController.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiFloatInterpController::LinkObject(NiStream& kStream)
 {
     NiSingleInterpController::LinkObject(kStream);
 }
 
 // @fnv 0x00a57c70
+// pdb: NiFloatInterpController::LoadBinary | NiFloatInterpController.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiFloatInterpController::LoadBinary(NiStream& kStream)
 {
     NiSingleInterpController::LoadBinary(kStream);

@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class hkBool, size 0x1, 1 members
 class hkBool
 {
 public:

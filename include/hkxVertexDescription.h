@@ -5,6 +5,7 @@
 
 class hkxVertexDescriptionElementDecl;
 
+// pdb: class hkxVertexDescription, size 0xc, 1 members
 class hkxVertexDescription
 {
 public:
@@ -34,7 +35,7 @@ public:
         HKX_DU_USERDATA = 256
     };
 
-    hkArray<hkxVertexDescriptionElementDecl> m_kElementDeclarations;
+    hkArray<hkxVertexDescriptionElementDecl> m_decls;
 
     hkxVertexDescription(FinishingFlag flag) throw();
     bool Equals(const hkxVertexDescription& other) const throw();

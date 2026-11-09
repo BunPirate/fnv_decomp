@@ -9,6 +9,8 @@
 
 // If FUN_007ab810 reports completion, passes its result to Finish and then calls FUN_007ab7c0.
 // @fnv 0x007ab7e0
+// pdb: PlayerNameEntryMenu::DoIdle | PlayerNameEntryMenu.obj | retail, vtable slot, high
+// pdb locals: bcanceled, presult
 void PlayerNameEntryMenu::UpdateDialog()
 {
     if (XVirtualKeyboard_IsActive())
@@ -54,7 +56,7 @@ struct FullNameEx
 {
     void SetFullName(char const*);
 };
-void _FUN_007df4e0();
+void StatsMenu_UpdatePlayerName();
 struct NPC007ab9a0
 {
     virtual void f00();
@@ -79,19 +81,22 @@ struct NPC007ab9a0
 };
 // If apName is set, updates the NPC at offset 0x28 and refreshes its name; then updates the menu tile and fade state.
 // @fnv 0x007ab9a0
+// pdb: PlayerNameEntryMenu::Finish | PlayerNameEntryMenu.obj | retail, upstream name already matches, high
+// pdb params: apName
 void PlayerNameEntryMenu::Finish(char const* apName)
 {
     if (apName)
     {
         ((FullNameEx*)((char*)*(NPC007ab9a0**)((char*)this + 0x28) + 0xd0))->SetFullName(apName);
         (*(NPC007ab9a0**)((char*)this + 0x28))->func48(0x20);
-        _FUN_007df4e0();
+        StatsMenu_UpdatePlayerName();
     }
     ((Tile*)pMenu)->Set(0x1772, 1);
-    m_eFadeState = Interface::FADING_OUT;
+    xFadeState = Interface::FADING_OUT;
 }
 
 // @fnv 0x007ab7a0
+// pdb: PlayerNameEntryMenu::~PlayerNameEntryMenu | PlayerNameEntryMenu.obj | debug, upstream name already matches, high
 PlayerNameEntryMenu::~PlayerNameEntryMenu()
 {}
 
@@ -99,6 +104,9 @@ void NormalizeSmartQuotes(unsigned char* apChar);
 
 // True if every character is printable in fonts 0 and 6 and at least one is not a space.
 // @fnv 0x007ab820
+// pdb: PlayerNameEntryMenu::IsValidName | PlayerNameEntryMenu.obj | retail, object-file run extension, low
+// pdb params: apText
+// pdb locals: binvalid, bvalid, pfont, ch
 bool __cdecl IsTextRenderable(const char* apText)
 {
     bool bHasNonSpace6 = false;

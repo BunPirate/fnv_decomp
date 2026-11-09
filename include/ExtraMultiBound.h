@@ -5,8 +5,9 @@
 
 class BSMultiBoundNode;
 
+// pdb: class ExtraMultiBound, size 0x10, bases: BSExtraData, 1 members
 class ExtraMultiBound : public BSExtraData
 {
 public:
-    NiPointer<BSMultiBoundNode> m_kMultiBoundNode;
+    NiPointer<BSMultiBoundNode> spBound;
 };

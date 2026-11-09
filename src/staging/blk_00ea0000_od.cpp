@@ -101,7 +101,7 @@ struct Struct_00ebfd20
 
 struct Standin_011f6238
 {
-    void MemoryManager_Deallocate(void* param_1);
+    void MemoryManager_Deallocate(void* apMem);
 };
 
 extern Standin_011f6238 DAT_011f6238;

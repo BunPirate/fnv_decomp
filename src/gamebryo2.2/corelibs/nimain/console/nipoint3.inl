@@ -5,12 +5,15 @@
 #include "nipoint3_decls.h"
 
 // @fnv 0x00457990
+// pdb: NiUnitRandom | Precipitation.obj | retail, call graph, low
 float NiPoint3::ComputeMagnitude() const
 {
     return NiSqrt_004579e0(x * x + y * y + z * z);
 }
 
 // @fnv 0x00457910
+// pdb: NiPoint3::UnitizeGetLength | TES.obj | debug, call graph, medium
+// pdb locals: v2, v1, v3
 float NiPoint3::GetLengthSquared()
 {
     float fScaleMultiplier = static_cast<const NiPoint3*>(this)->ComputeMagnitude();
@@ -32,12 +35,15 @@ float NiPoint3::GetLengthSquared()
 }
 
 // @fnv 0x0053d1a0
-NiPoint3 NiPoint3::CrossProduct(const NiPoint3& kPoint) const
+// pdb: NiPoint3::UnitCross | TESLand.obj | debug, call graph, high
+// pdb params: pt
+// pdb locals: fMul, cross, fLength
+NiPoint3 NiPoint3::CrossProduct(const NiPoint3& pt) const
 {
     NiPoint3 kCross(
-        y * kPoint.z - z * kPoint.y,
-        z * kPoint.x - x * kPoint.z,
-        x * kPoint.y - y * kPoint.x);
+        y * pt.z - z * pt.y,
+        z * pt.x - x * pt.z,
+        x * pt.y - y * pt.x);
     float fScaleMultiplier = static_cast<const NiPoint3&>(kCross).ComputeMagnitude();
     if (fScaleMultiplier > DAT_01017cf8)
         return kCross.ProcessAndReturnValue_0053d280(fScaleMultiplier);
@@ -47,10 +53,12 @@ NiPoint3 NiPoint3::CrossProduct(const NiPoint3& kPoint) const
 
 #pragma optimize("gty", on)
 // @fnv 0x00a69990
+// pdb: NiPlane::NiPlane | NiPlane.obj | debug, call graph (shared callers), high
+// pdb params: kNormal, kPoint
 NiPlane::NiPlane(const NiPoint3& kNormal, const NiPoint3& kPoint)
 {
-    *reinterpret_cast<NiPoint3*>(&x) = kNormal;
-    c = kNormal.x * kPoint.x + kNormal.y * kPoint.y + kNormal.z * kPoint.z;
+    *reinterpret_cast<NiPoint3*>(&m_kNormal) = kNormal;
+    m_fConstant = kNormal.x * kPoint.x + kNormal.y * kPoint.y + kNormal.z * kPoint.z;
 }
 #pragma optimize("", off)
 

@@ -8,6 +8,7 @@
 #include "../../../../../../include/hkpCollisionFilter.h"
 
 // No shared hkpCollisionFilterList header exists yet; retain its reflected layout.
+// pdb: class hkpCollisionFilterList, size 0x3c (here 0x40), bases: hkpCollisionFilter, 1 members
 class hkpCollisionFilterList : public hkpCollisionFilter
 {
   public:
@@ -54,16 +55,18 @@ class FilterList
     int unk20;
     hkArray<SubFilter*> m_kFilters;
 
-    hkBoolRet hkpCollisionFilterList_isCollisionEnabled_00e49cf0(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7);
+    hkBoolRet hkpCollisionFilterList_isCollisionEnabled_00e49cf0(void* input, void* collectionBodyA, void* collectionBodyB, void* containerShapeA, void* containerShapeB, void* keyA, void* keyB);
 };
 
 // @fnv 0x00e49cf0
 // src: HAVOK_LIB 0x00e49cf0
-hkBoolRet FilterList::hkpCollisionFilterList_isCollisionEnabled_00e49cf0(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7)
+// pdb: hkpCollisionFilterList::isCollisionEnabled | hkpCollisionFilterList.obj | retail, vtable slot, high
+// pdb params: a, b
+hkBoolRet FilterList::hkpCollisionFilterList_isCollisionEnabled_00e49cf0(void* input, void* collectionBodyA, void* collectionBodyB, void* containerShapeA, void* containerShapeB, void* keyA, void* keyB)
 {
     for (int i = m_kFilters.m_iElementCount - 1; i >= 0; --i)
     {
-        if (!m_kFilters.m_data[i]->IsCollisionEnabled(a1, a2, a3, a4, a5, a6, a7).b)
+        if (!m_kFilters.m_data[i]->IsCollisionEnabled(input, collectionBodyA, collectionBodyB, containerShapeA, containerShapeB, keyA, keyB).b)
         {
             return false;
         }
@@ -106,16 +109,18 @@ struct FilterChain
     FilterEntry** filters;
     int filterCount;
 
-    CheckResult EvaluateAllFilters(int first, int second);
+    CheckResult EvaluateAllFilters(int a, int collidableB);
 };
 
 // Evaluates each filter predicate from last to first and returns false as soon as one is disabled, otherwise true.
 // @fnv 0x00e49d60
-CheckResult FilterChain::EvaluateAllFilters(int first, int second)
+// pdb: hkpCollisionFilterList::isCollisionEnabled | hkpCollisionFilterList.obj | retail, vtable slot, high
+// pdb params: a, b
+CheckResult FilterChain::EvaluateAllFilters(int a, int collidableB)
 {
     for (int index = filterCount - 1; index >= 0; --index)
     {
-        if (!filters[index]->predicate.evaluate(first, second).enabled)
+        if (!filters[index]->predicate.evaluate(a, collidableB).enabled)
         {
             return CheckResult(false);
         }
@@ -168,6 +173,8 @@ class CollisionFilterList9BC0
 // Returns true if every filter in m_kFilters reports that collision between a and b is enabled, otherwise false.
 // @fnv 0x00e49bc0
 // src: HAVOK_LIB 0x00e49bc0
+// pdb: hkpCollisionFilterList::isCollisionEnabled | hkpCollisionFilterList.obj | retail, vtable slot, high
+// pdb params: a, b
 hkBool CollisionFilterList9BC0::hkpCollisionFilterList_isCollisionEnabled(const CollidableA9BC0& a, const CollidableB9BC0& b) const
 {
     for (int i = m_kFilters.GetLogicalSize() - 1; i >= 0; i--)
@@ -203,7 +210,7 @@ class Filter9C20 : public ReferencedObject9C20, public IfacePad9C20_0, public If
 class FilterList9C20
 {
   public:
-    hkBool hkpCollisionFilterList_isCollisionEnabled_00e49c20(const void* p0, const void* p1, const void* p2, const void* p3, const void* p4) const;
+    hkBool hkpCollisionFilterList_isCollisionEnabled_00e49c20(const void* input, const void* a, const void* b, const void* bContainer, const void* bKey) const;
     int unk00;
     int unk04;
     int unk08;
@@ -218,12 +225,14 @@ class FilterList9C20
 // Returns true only if every filter in m_kFilters reports IsCollisionEnabled true for the given arguments.
 // @fnv 0x00e49c20
 // src: HAVOK_LIB 0x00e49c20
-hkBool FilterList9C20::hkpCollisionFilterList_isCollisionEnabled_00e49c20(const void* p0, const void* p1, const void* p2, const void* p3,
-                                        const void* p4) const
+// pdb: hkpCollisionFilterList::isCollisionEnabled | hkpCollisionFilterList.obj | retail, vtable slot, high
+// pdb params: a, b
+hkBool FilterList9C20::hkpCollisionFilterList_isCollisionEnabled_00e49c20(const void* input, const void* a, const void* b, const void* bContainer,
+                                        const void* bKey) const
 {
     for (int i = m_kFilters.GetLogicalSize() - 1; i >= 0; i--)
     {
-        if (!m_kFilters[i]->IsCollisionEnabled(p0, p1, p2, p3, p4))
+        if (!m_kFilters[i]->IsCollisionEnabled(input, a, b, bContainer, bKey))
             return false;
     }
     return true;
@@ -257,7 +266,7 @@ class Filter9C90 : public ReferencedObject9C90, public IfacePad9C90_0, public If
 class FilterList9C90
 {
   public:
-    hkBool hkpCollisionFilterList_isCollisionEnabled_00e49c90(const void* p0, const void* p1, const void* p2, const void* p3) const;
+    hkBool hkpCollisionFilterList_isCollisionEnabled_00e49c90(const void* aInput, const void* bShape, const void* bContainer, const void* bKey) const;
     int unk00;
     int unk04;
     int unk08;
@@ -271,11 +280,13 @@ class FilterList9C90
 // Returns true only if every filter in m_kFilters reports IsCollisionEnabled true for the given arguments.
 // @fnv 0x00e49c90
 // src: HAVOK_LIB 0x00e49c90
-hkBool FilterList9C90::hkpCollisionFilterList_isCollisionEnabled_00e49c90(const void* p0, const void* p1, const void* p2, const void* p3) const
+// pdb: hkpCollisionFilterList::isCollisionEnabled | hkpCollisionFilterList.obj | retail, vtable slot, high
+// pdb params: a, b
+hkBool FilterList9C90::hkpCollisionFilterList_isCollisionEnabled_00e49c90(const void* aInput, const void* bShape, const void* bContainer, const void* bKey) const
 {
     for (int i = m_kFilters.GetLogicalSize() - 1; i >= 0; i--)
     {
-        if (!m_kFilters[i]->IsCollisionEnabled(p0, p1, p2, p3))
+        if (!m_kFilters[i]->IsCollisionEnabled(aInput, bShape, bContainer, bKey))
             return false;
     }
     return true;
@@ -294,6 +305,9 @@ struct FUN_00e49dc0_List : public hkpCollisionFilterList
 // Removes the given hkpCollisionFilter from m_kFilters by swapping it with the last element and calling FUN_00c905b0 on it.
 // @fnv 0x00e49dc0
 // src: HAVOK_LIB 0x00e49dc0
+// pdb: hkpCollisionFilterList::removeCollisionFilter | hkpCollisionFilterList.obj | debug, upstream name already matches, high
+// pdb params: filter
+// pdb locals: assertBuf, ostr
 void FUN_00e49dc0_List::hkpCollisionFilterList_removeCollisionFilter(hkpCollisionFilter* filter)
 {
     int count = m_kFilters.m_iElementCount;
@@ -405,6 +419,8 @@ struct FUN_00e49e50 : FilterE49
 };
 // Initializes type to 3, copies the source filter array into filters, and adds a reference to each filter element.
 // @fnv 0x00e49e50
+// pdb: hkpCollisionFilterList::hkpCollisionFilterList | hkpCollisionFilterList.obj | retail, object-file run extension, low
+// pdb params: collisionFilters
 FUN_00e49e50::FUN_00e49e50(const FilterArrayE49& source) throw()
 {
     type = 3;
@@ -491,6 +507,7 @@ struct FUN_00e49f40 : CollisionFilterE4
 };
 // Releases references to all collision filters held in the filters array.
 // @fnv 0x00e49f40
+// pdb: hkpCollisionFilterList::~hkpCollisionFilterList | hkpCollisionFilterList.obj | retail, object-file run extension, low
 FUN_00e49f40::~FUN_00e49f40() throw()
 {
     for (int i = 0; i < filters.size; ++i)
@@ -513,6 +530,7 @@ class FilterListAE90
 // Releases each FilterRefE4 reference, deallocates m_data, empties the list and sets the vftable pointer to DAT_0102e388.
 // @fnv 0x00e4ae90
 // src: GUESS 0x00e4ae90 (confidence: low)
+// pdb: hkxMaterialShaderSet::~hkxMaterialShaderSet | hkxMaterialShaderSet.obj | retail, object-file run extension, low
 void FilterListAE90::ProcessEntries_00e4ae90()
 {
     FilterRouterE4* router = GetFilterRouterE4();

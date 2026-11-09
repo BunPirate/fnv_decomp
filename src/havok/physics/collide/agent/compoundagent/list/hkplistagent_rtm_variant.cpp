@@ -128,7 +128,7 @@ void hkpListAgent::vf03(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
     input.a = a1;
     float dt = a3->f58;
     input.config = a3;
-    input.cache = this->m_pContactManager;
+    input.cache = this->m_contactMgr;
     S00d369a0_Motion* o = a1->m08;
     S00d369a0_Motion* p = a2->m08;
     LocalM128 d0 = _mm_sub_ps(o->v40, o->v50);
@@ -151,6 +151,6 @@ void hkpListAgent::vf03(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
             dst[n++] = i;
     }
     dst[n] = 0xffffffff;
-    hkAgent1nMachine_Process(this->m0 + 4, &input, bits, dst, a4);
+    hkAgent1nMachine_Process(this->m_dispatcher + 4, &input, bits, dst, a4);
     *(unsigned int*)hkMemoryRouter_getInstance() = (unsigned int)dst;
 }

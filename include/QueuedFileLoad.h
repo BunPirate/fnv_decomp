@@ -4,6 +4,7 @@
 
 class LoadedFile;
 
+// pdb: class QueuedFileLoad, size 0x38, bases: QueuedFileEntry, 2 members
 class QueuedFileLoad : public QueuedFileEntry
 {
 public:
@@ -17,7 +18,7 @@ public:
     void FUN_00441d20();
     void* FUN_00441cf0(unsigned int flags);
 
-    char m_pLoadedFile[4];
+    char spLoadedFile[4];
     union
     {
         int m_iLoadPriority;

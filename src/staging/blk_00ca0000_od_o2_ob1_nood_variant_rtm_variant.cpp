@@ -28,12 +28,15 @@ struct ArgB
 
 // @fnv 0x00ca5460
 // src: XBOX_PDB 0x00ca5460
-void bhkSphereShape::bhkPackedNiTriStripsShape_CopyMembers(void* a1, ArgB* a2)
+// pdb: bhkPackedNiTriStripsShape::CopyMembers | bhkPackedNiTriStripsShape.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: cinfo
+void bhkSphereShape::bhkPackedNiTriStripsShape_CopyMembers(void* apDest, ArgB* arCloneData)
 {
     unsigned char c;
     char* r = reinterpret_cast<char*>(this->slotB4((char*)&c));
-    float v = a2->f10;
+    float v = arCloneData->f10;
     __m128 t = _mm_load_ss(&v);
     *(__m128*)(r + 0x10) = _mm_mul_ps(_mm_shuffle_ps(t, t, 0), *(__m128*)(r + 0x10));
-    this->bhkSphereShape::bhkShape_CopyMembers(a1, a2);
+    this->bhkSphereShape::bhkShape_CopyMembers(apDest, arCloneData);
 }

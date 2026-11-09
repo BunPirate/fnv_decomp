@@ -67,17 +67,19 @@ struct FUN_00439410_cls
     int unk20;
     Sub24Object m_k24;
 
-    void NiAVObject_AttachProperty(ArgObject* apArg);
+    void NiAVObject_AttachProperty(ArgObject* pkProperty);
 };
 
 // If apArg's count is below 7, constructs a ScopedRef from apArg and passes it to m_k24.FUN_00439fd0.
 // @fnv 0x00439410
 // src: XBOX_PDB 0x00439410
-void FUN_00439410_cls::NiAVObject_AttachProperty(ArgObject* apArg)
+// pdb: NiAVObject::AttachProperty | MultiBoundMarkerData.obj | retail, upstream name already matches, high
+// pdb params: pkProperty
+void FUN_00439410_cls::NiAVObject_AttachProperty(ArgObject* pkProperty)
 {
-    if (apArg->GetCount() < 7)
+    if (pkProperty->GetCount() < 7)
     {
-        ScopedRef ref(apArg);
+        ScopedRef ref(pkProperty);
         m_k24.NiAVObject_AttachProperty_00439fd0(&ref);
     }
 }

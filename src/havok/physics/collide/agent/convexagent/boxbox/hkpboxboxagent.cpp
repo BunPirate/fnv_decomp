@@ -53,13 +53,15 @@ struct S_00d40180
     S_00d40180_Entry m_entries[8];
     unsigned char unk30;
     unsigned char m_uiItemCount;
-    void DispatchAndDelete(void* p);
+    void DispatchAndDelete(void* constraintOwner);
 };
 // @fnv 0x00d40180
-void S_00d40180::DispatchAndDelete(void* apArg)
+// pdb: hkpBoxBoxAgent::cleanup | hkpBoxBoxAgent.obj | retail, vtable slot, high
+// pdb params: constraintOwner
+void S_00d40180::DispatchAndDelete(void* constraintOwner)
 {
     for (int i = 0; i < m_uiItemCount; i++)
-        m_target->vfn_14(m_entries[i].m_iOwnerObjectOffset, apArg);
+        m_target->vfn_14(m_entries[i].m_iOwnerObjectOffset, constraintOwner);
     delete this;
 }
 
@@ -87,7 +89,11 @@ void __cdecl D41FD0StaticLinearCast();
 
 // Fills a collision agent function table with the static agent callbacks and registers it for collision type pair 0x12/0x12.
 // @fnv 0x00d41fd0
-void __cdecl RegisterStaticCollisionAgent(D41FD0CollisionDispatcher* dispatcher)
+// src: XBOX_RETAIL_PDB 0x00d41fd0
+// pdb: hkpPredGskfAgent::registerAgent | hkpPredGskfAgent.obj | retail, call graph, high
+// pdb params: dispatcher
+// pdb locals: af
+void __cdecl hkpPredGskfAgent_registerAgent(D41FD0CollisionDispatcher* dispatcher)
 {
     D41FD0AgentFuncs agentFuncs;
     agentFuncs.m_pCreateFunc = D41FD0CreateAgent;
@@ -146,16 +152,18 @@ class SpawnedObject
 
 // @fnv 0x00d401d0
 // src: HAVOK_LIB 0x00d401d0
-void* hkpBoxBoxAgent_createBoxBoxAgent(void* apFirst, void* apSecond, void* a3, void* a4)
+// pdb: hkpBoxBoxAgent::createBoxBoxAgent | hkpBoxBoxAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, contactMgr
+void* hkpBoxBoxAgent_createBoxBoxAgent(void* bodyA, void* bodyB, void* input, void* contactMgr)
 {
-    SrcObj* src = (SrcObj*)a3;
+    SrcObj* src = (SrcObj*)input;
     float fSrcValue = src->m_08;
-    float fLimit = (float)(*(float*)((char*)*(void**)apFirst + 0x2c) * DAT_010cf200);
+    float fLimit = (float)(*(float*)((char*)*(void**)bodyA + 0x2c) * DAT_010cf200);
     if (fSrcValue >= fLimit)
     {
         goto callPath;
     }
-    fLimit = (float)(*(float*)((char*)*(void**)apSecond + 0x2c) * DAT_010cf200);
+    fLimit = (float)(*(float*)((char*)*(void**)bodyB + 0x2c) * DAT_010cf200);
     if (src->m_08 >= fLimit)
     {
         goto callPath;
@@ -165,15 +173,15 @@ void* hkpBoxBoxAgent_createBoxBoxAgent(void* apFirst, void* apSecond, void* a3, 
     SpawnedObject* pSpawned = (SpawnedObject*)pAllocator->Alloc(0x50);
     pSpawned->m_04 = 0x50;
     pSpawned->m_06 = 1;
-    pSpawned->m_08 = a4;
+    pSpawned->m_08 = contactMgr;
     pSpawned->vptr = &DAT_010cf1c4;
     ((SubStub*)((char*)pSpawned + 0x10))->InitializeEmptyEntries();
     return pSpawned;
 callPath:
-    return FUN_00dacc00(apFirst, apSecond, a3, a4);
+    return FUN_00dacc00(bodyA, bodyB, input, contactMgr);
 }
 
-extern "C" void __cdecl hkpBoxBoxAgent_staticGetClosestPoints(void* a, void* b, void* c, void* d);
+extern "C" void __cdecl hkpBoxBoxAgent_staticGetClosestPoints(void* bodyA, void* bodyB, void* input, void* collector);
 
 // @fnv 0x00d406a0
 // src: HAVOK_SRC 0x00d406a0
@@ -197,17 +205,20 @@ __declspec(noinline) void __cdecl Object_InitializeAgentFunctionTable_00d408e0(F
 
 struct BoxAgentRegistry
 {
-    void __thiscall AppendRecordAndRegisterAgents(const FUN_00d408e0_1& kFuncs, int a, int b);
+    void __thiscall AppendRecordAndRegisterAgents(const FUN_00d408e0_1& f, int typeA, int typeB);
 };
 
 // Initializes a FUN_00d408e0_1 struct with zeroed fields, calls FUN_00d408e0 to populate it, and registers it with pkObj via FUN_00cfbbe0.
 // @fnv 0x00d40910
 // src: HAVOK_LIB 0x00d40910
-void __cdecl hkpBoxBoxAgent_registerAgent(BoxAgentRegistry* pkObj)
+// pdb: hkpBoxBoxAgent::registerAgent | hkpBoxBoxAgent.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: af
+void __cdecl hkpBoxBoxAgent_registerAgent(BoxAgentRegistry* dispatcher)
 {
     FUN_00d408e0_1 kFuncs;
     kFuncs.b1 = 0;
     kFuncs.b2 = 0;
     Object_InitializeAgentFunctionTable_00d408e0(&kFuncs);
-    pkObj->AppendRecordAndRegisterAgents(kFuncs, 4, 4);
+    dispatcher->AppendRecordAndRegisterAgents(kFuncs, 4, 4);
 }

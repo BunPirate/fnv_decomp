@@ -5,6 +5,7 @@
 class ActorValueInfo;
 class ExtraRecordData;
 
+// pdb: class ExtraAudioBuoyMarker, size 0x10, bases: BSExtraData, 1 members
 class ExtraAudioBuoyMarker : public BSExtraData
 {
 public:

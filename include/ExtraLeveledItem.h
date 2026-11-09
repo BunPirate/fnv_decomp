@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraLeveledItem, size 0x14, bases: BSExtraData, 2 members
 struct ExtraLeveledItem : public BSExtraData
 {
 public:

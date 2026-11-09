@@ -6,6 +6,7 @@
 // three hkPadSpu<void*> pointers, 12 bytes on PC. Declarations only: a unit whose original inlines a body defines it
 // out of class (Havok makes all but allocateStack HK_FORCE_INLINE; the four getters are inline in its class).
 // src: HAVOK_SRC (struct name, member names, layout and method list)
+// pdb: structure hkStackMemory, size 0xc, 3 members
 struct hkStackMemory
 {
 public:

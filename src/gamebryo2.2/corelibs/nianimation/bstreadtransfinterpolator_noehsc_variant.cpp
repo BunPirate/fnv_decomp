@@ -75,16 +75,19 @@ template <class T> inline void NiStreamLoadBinary(NiStream& kStream, T& kValue)
 }
 
 // @fnv 0x00a438d0
-void BSTreadTransfInterpolator::LoadBinary(NiStream& kStream)
+// pdb: BSTreadTransfInterpolator::LoadBinary | BSTreadTransfInterpolator.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: ui
+void BSTreadTransfInterpolator::LoadBinary(NiStream& arStream)
 {
-    NiKeyBasedInterpolator::LoadBinary(kStream);
-    NiStreamLoadBinary(kStream, count);
-    entries = new TreadTransformEntry[count];
-    for (unsigned int i = 0; i < count; i++)
+    NiKeyBasedInterpolator::LoadBinary(arStream);
+    NiStreamLoadBinary(arStream, uiNumLinks);
+    Links = new TreadTransformEntry[uiNumLinks];
+    for (unsigned int i = 0; i < uiNumLinks; i++)
     {
-        kStream.ReadStringTableEntry(entries[i].name);
-        entries[i].first.LoadBinary(kStream);
-        entries[i].second.LoadBinary(kStream);
+        arStream.ReadStringTableEntry(Links[i].name);
+        Links[i].first.LoadBinary(arStream);
+        Links[i].second.LoadBinary(arStream);
     }
-    reference = kStream.DeserializeObject();
+    spLerpData = arStream.DeserializeObject();
 }

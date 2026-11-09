@@ -17,6 +17,9 @@ enum
 
 // Copies text into the string buffer, resizing it to at least minimumCapacity when needed, and returns whether the result is non-empty.
 // @fnv 0x004037f0
+// pdb: BSStringT<char>::Set | AlchemyItem.obj | retail, call graph, high
+// pdb params: arString
+// pdb locals: inewLen, pold
 template <class T> bool BSStringT<T>::Set(const T* text, unsigned int minimumCapacity)
 {
     unsigned int length = text ? BSStringLength(text) : 0;
@@ -62,6 +65,7 @@ template <class T> BSStringT<T>::BSStringT()
 }
 
 // @fnv 0x004037d0
+// pdb: BSStringT<char>::~BSStringT<char> | EffectItem.obj | debug, call graph, medium
 template <class T> BSStringT<T>::~BSStringT()
 {
     Set(0, 0);
@@ -69,6 +73,7 @@ template <class T> BSStringT<T>::~BSStringT()
 
 // Resets the string by nulling pString and setting length and max length to zero.
 // @fnv 0x00403970
+// pdb: BSStringT<char>::Init | AlchemyItem.obj | debug, call graph, medium
 template <class T> void BSStringT<T>::Init()
 {
     pString = 0;
@@ -77,6 +82,8 @@ template <class T> void BSStringT<T>::Init()
 }
 
 // @fnv 0x004039a0
+// pdb: ourMemcpy | BGSDehydration.obj | debug, call graph (shared callers), medium
+// pdb params: apDest, apSrc, aCount
 template <class T> unsigned int BSStringT<T>::MaxLength()
 {
     return sMaxLen;
@@ -95,6 +102,8 @@ template <class T> void BSStringT<T>::SetMaxLength(unsigned int length)
 }
 
 // @fnv 0x00438390
+// pdb: BSStringT<char>::operator= | ExtraDataObjects.obj | debug, call graph, medium
+// pdb params: apString
 template <class T> BSStringT<T>& BSStringT<T>::operator=(const T* text)
 {
     Set(text, 0);
@@ -168,12 +177,14 @@ struct FUN_004046b0_cls
     int unk30;
     int unk34;
     FUN_004046b0_sub m_38;
-    FUN_004046b0_arg* AssignFromSub(FUN_004046b0_arg* a1);
+    FUN_004046b0_arg* EffectSetting_GetEffectName(FUN_004046b0_arg* a1);
 };
 
 // Calls AssignFromString on a1 with the result of m_38.FUN_00717e50, sets flag to 1, and returns a1.
 // @fnv 0x004046b0
-FUN_004046b0_arg* FUN_004046b0_cls::AssignFromSub(FUN_004046b0_arg* apArg)
+// src: XBOX_DEBUG_PDB 0x004046b0
+// pdb: EffectSetting::GetEffectName | EffectItem.obj | debug, call graph (shared callers), high
+FUN_004046b0_arg* FUN_004046b0_cls::EffectSetting_GetEffectName(FUN_004046b0_arg* apArg)
 {
     unsigned int flag = 0;
     apArg->AssignFromString(m_38.FUN_00717e50());
@@ -187,6 +198,9 @@ int _tolower(int character);
 // Returns a pointer to the first case-insensitive occurrence of apString2 within apString1, or 0 if not found.
 // @fnv 0x004b75a0
 // src: XBOX_PDB 0x004b75a0
+// pdb: BSstristr | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: apString1, apString2
+// pdb locals: j, ilen2, ilen1, i
 const char* BSstristr(const char* apString1, const char* apString2)
 {
     int j;
@@ -233,12 +247,15 @@ struct ScopeLock
 
 struct Outer
 {
-    void Console_Print(const char* fmt, va_list args);
+    void MenuConsole_PrintLine(const char* fmt, va_list args);
 };
 
 // Locks a scope, forwards the format string and variadic arguments to obj->FUN_0071d0a0, then releases the lock.
 // @fnv 0x0071d030
 // src: COMMUNITY 0x0071d030
+// pdb: MenuConsole::PrintLine | MenuConsole.obj | debug, object-file run extension, low
+// pdb params: apString, xlist
+// pdb locals: xstring
 void __cdecl _MenuConsole_PrintLine(Outer* apOuter, const char* fmt, ...)
 {
     ScopeLock lock;
@@ -246,7 +263,7 @@ void __cdecl _MenuConsole_PrintLine(Outer* apOuter, const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
-        apOuter->Console_Print(fmt, args);
+        apOuter->MenuConsole_PrintLine(fmt, args);
         va_end(args);
     }
 }
@@ -255,5 +272,5 @@ void __cdecl _MenuConsole_PrintLine(Outer* apOuter, const char* fmt, ...)
 // src: XBOX_PDB 0x006b9130
 float TimeoutTimer::CombatTimer_GetTargetTime()
 {
-    return m_fTimeout;
+    return fTargetTime;
 }

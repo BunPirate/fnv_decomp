@@ -7,10 +7,11 @@ class Actor;
 class CrimeList;
 typedef CrimeList CrimeNode;
 
+// pdb: class AlarmPackage, size 0x88, bases: TESPackage, 1 members
 class AlarmPackage : public TESPackage
 {
 public:
-    BSSimpleList<Actor*> list;  // 0x80
+    BSSimpleList<Actor*> Crimes;  // 0x80
 
     AlarmPackage();
     AlarmPackage(Actor* actor);

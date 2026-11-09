@@ -3,10 +3,11 @@
 #include "NiExtraData.h"
 #include "NiPoint3.h"
 
+// pdb: class BSFaceGenBaseMorphExtraData, size 0x1c (here 0x18), bases: NiExtraData, 4 members
 class BSFaceGenBaseMorphExtraData : public NiExtraData
 {
 public:
-    BSFaceGenBaseMorphExtraData(NiGeometry* geometry, NiPoint3* extraVertices, unsigned int extraCount);
+    BSFaceGenBaseMorphExtraData(NiGeometry* apMesh, NiPoint3* apAdditionalVertices, unsigned int aiAdditionalVerticesCount);
     virtual ~BSFaceGenBaseMorphExtraData();
     virtual const NiRTTI* GetRTTI() const;
 

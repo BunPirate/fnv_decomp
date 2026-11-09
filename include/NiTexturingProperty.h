@@ -13,6 +13,7 @@ struct TextureFormatPreferences;
 #include "NiTMallocInterface.h"
 #include "NiTPrimitiveArray.h"
 
+// pdb: class NiTexturingProperty, size 0x30, bases: NiProperty, 3 members
 class NiTexturingProperty : public NiProperty
 {
   public:
@@ -53,10 +54,10 @@ class NiTexturingProperty : public NiProperty
     class ParallaxMap;
     class ShaderMap;
 
-    unsigned short m_uiObjectFlags;
+    unsigned short m_uFlags;
     unsigned char unk1A[2];
-    NiTPrimitiveArray<Map*> m_kStringArray;
-    NiTPrimitiveArray<ShaderMap*>* m_pShaderMaps;
+    NiTPrimitiveArray<Map*> m_kMaps;
+    NiTPrimitiveArray<ShaderMap*>* m_pkShaderMaps;
 
     NiTexturingProperty();
     NiTexturingProperty(NiPixelData* pixelData, const NiFixedString& name, TextureFormatPreferences& preferences);
@@ -78,8 +79,8 @@ class NiTexturingProperty : public NiProperty
     void SetMultiTexture(bool multi);
     void UpdateMultiTexture();
     void SetBaseMapFilterMode(FilterMode mode);
-    void SetBaseMapClampMode(ClampMode mode);
-    void SetBaseMapClampMode(int mode);
+    void SetBaseMapClampMode(ClampMode eMode);
+    void SetBaseMapClampMode(int eMode);
 
     Map* GetBaseMap() const;
     Map* GetDarkMap() const;
@@ -116,13 +117,13 @@ class NiTexturingProperty::Map
     virtual unsigned int GetClassID();
 
     void SetClampMode(ClampMode eMode);
-    void SetFilterMode(FilterMode eMode);
+    void SetFilterMode(FilterMode eFilterMode);
     void SetTextureIndex(unsigned int uiIndex);
     static void* operator new(size_t uiSize);
 
-    unsigned short m_usFlags;
+    unsigned short m_uFlags;
     TexturePtr m_spTexture;
-    TextureMapTransform* m_pTextureTransform;
+    TextureMapTransform* m_pkTextureTransform;
 };
 
 // vftable 0x0109c4d8, 0x28 bytes.
@@ -145,7 +146,7 @@ class NiTexturingProperty::ParallaxMap : public Map
   public:
     ParallaxMap() throw();
 
-    float m_fParallaxOffset;
+    float m_fOffset;
 };
 
 // vftable 0x0109c4ec.

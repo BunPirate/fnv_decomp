@@ -150,12 +150,12 @@ struct FUN_00d75850_class {
     int m4;
     void hkgpConvexHull_reset();
 };
-int __stdcall hkgpConvexHull_getNeighbour(const int* p, int i);
+int __stdcall hkgpConvexHull_getNeighbour(const int* triangle, int index);
 struct FUN_00d7c200_cls { void __thiscall FreeAll(); };
 struct FUN_00d7c950_cls {
     void __thiscall ProcessState_00d7c950();
 };
-int __stdcall hkgpConvexHull_getVertex(int* arr, int idx);
+int __stdcall hkgpConvexHull_getVertex(int* triangle, int index);
 struct CpuScalar {
     unsigned int unk00;
     unsigned int unk04;
@@ -383,7 +383,7 @@ struct TextBuffer {
     int unk04;
     int unk08;
     int storage[128];
-    void FUN_00cb1600(char* buffer, int capacity);
+    void FUN_00cb1600(char* buf, int bufSize);
     TextBuffer* ProcessAndReturnValue_00cc01c0(const char* first, const char* middle, const char* last);
     TextBuffer* ProcessAndReturnValue_00cc01c0();
     TextBuffer* EvaluateValue_00cc02d0();
@@ -721,7 +721,7 @@ struct S_00d75210_Self {
     int unk00;
     int unk04;
     S_00d75210_Config* m_pConfiguration;
-    int hkgpConvexHull_getPlaneIndex(const S_00d75210_Data* v) const throw();
+    int hkgpConvexHull_getPlaneIndex(const S_00d75210_Data* triangle) const throw();
 };
 struct D762F0Target {
     void update();
@@ -733,7 +733,7 @@ struct D762F0Owner {
 
     void ForwardCall_00d762f0();
 };
-struct D76910Inner { void ProcessEntries_00d7cf00(); };
+struct D76910Inner { void hkgpConvexHullImpl_getEdgeLengths(); };
 struct D76910Owner {
     int unk00;
     int unk04;
@@ -761,7 +761,7 @@ struct Shape {
     float ProcessAndReturnValue_00d769c0(const NiPoint3& p);
 };
 struct AudioSink {
-    void hkgpConvexHullImpl_generateIndexedFaces_int_int(void* apFirst, void* apSecond, bool abIsNull, void* apThird);
+    void hkgpConvexHullImpl_generateIndexedFaces_int_int(void* vpf, void* vi, bool useSourceIndex, void* maximizeArea);
 };
 struct FUN_00d76c50_cls {
     int unk00;
@@ -775,7 +775,7 @@ struct Vec4i {
 };
 struct FUN_00d81510_Class {
     Vec4i m_00;
-    void hkgpConvexHullImpl_build(int a, int b, int c, int d);
+    void hkgpConvexHullImpl_build(int a, int b, int forcePlanar, int domain);
 };
 struct FUN_00d771c0_Owner {
     int unk00;
@@ -801,15 +801,15 @@ struct S_00d79f90_Opts
 struct S_00d79f90_Result
 {
     virtual ~S_00d79f90_Result();
-    void ProcessEntries_00d78720(float f, const S_00d79f90_Opts& opts);
+    void hkgpConvexHull_absoluteScale(float offset, const S_00d79f90_Opts& config);
 };
 struct S_00d79f90_World
 {
     S_00d79f90_Result* hkgpConvexHull_clone();
 };
-void __cdecl HkgpconvexhullGsEhscNogsNoehsc_ReleaseStorage_00d79ab0(S_00d79f90_World* world, int a, void* b, float c);
-void __cdecl hkgpConvexHull_booleanSubtraction_00d79580(S_00d79f90_Result* res, void* b, int n, float eps);
-void __cdecl hkgpConvexHull_createVoronoiFeatures(S_00d79f90_World* world, int a, void* b, int n, float d);
+void __cdecl hkgpConvexHull_createVoronoiCells(S_00d79f90_World* world, int a, void* b, float c);
+void __cdecl hkgpConvexHull_booleanSubtraction_00d79580(S_00d79f90_Result* operandA, void* operandsB, int n, float thickness);
+void __cdecl hkgpConvexHull_createVoronoiFeatures(S_00d79f90_World* domain, int points, void* cells, int edges, float margin);
 struct S_00d7a010_Alloc {
     virtual void unk0();
     virtual void unk4();
@@ -880,7 +880,7 @@ struct S_00d7c340_Router {
     S_00d7c340_Allocator* heap() { return unk10; }
 };
 S_00d7c340_Router* hkMemoryRouter_getInstance();
-int ResizeAudioStream(S_00d7c340_Allocator* alloc, void* array, int elemSize);
+int ResizeAudioStream(S_00d7c340_Allocator* mem, void* array, int sizeElem);
 struct S_00d7c340_Elem {
     S_00d7c340_Elem* next;
     int unk04; int unk08; int unk0C; int unk10; int unk14; int unk18; int unk1C;
@@ -926,7 +926,7 @@ struct PoolList {
     Node *head;
     int activeCount;
     NodeBank *hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_allocateNewPool();
-    Node *CloneNode(Node *source);
+    Node *hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(Node *value);
 };
 extern float DAT_0106ea1c;
 class FUN_00d74d40_cls
@@ -1113,7 +1113,7 @@ struct DiagStream {
     unsigned int m_04;
     unsigned int m_08;
     unsigned int m_buf[128];
-    void FUN_00cb1600(unsigned int* buf, unsigned int size);
+    void FUN_00cb1600(unsigned int* buf, unsigned int bufSize);
     DiagStream* ProcessAndReturnValue_00cc01c0(const char* fmt, unsigned int count, const char* tail);
     DiagStream* EvaluateValue_00cc02d0();
     void ProcessAndReturnValue_00cc01c0();
@@ -1242,15 +1242,15 @@ struct FUN_00d75390_cls {
     unsigned int unk00;
     unsigned int unk04;
     DiagState* m_08;
-    float GetMass();
+    float hkgpConvexHull_getSurfaceArea();
 };
 extern "C" double __cdecl pow(double base, double exponent);
 extern const double DAT_010d35e8;
 extern const double DAT_010d35e0;
 struct FUN_00d75440_cls {
     float hkgpConvexHull_getVolume();
-    double GetMass();
-    float ComputeScaledPowerRatio();
+    double hkgpConvexHull_getSurfaceArea();
+    float hkgpConvexHull_getSphericity();
 };
 struct FUN_00d75820_Tmp8 {
     int m00;
@@ -1264,7 +1264,7 @@ struct FUN_00d75820_cls {
     int m04;
     FUN_00d75820_Target* m08;
 
-    void CallTargetWithTemp(int a1, float a2, int a3);
+    void hkgpConvexHull_classify(int plane, float thickness, int bounds);
 };
 struct FUN_00d7b330_cls {
     void ProcessEntries_00d7b330(int a1, int a2, float a3);
@@ -1340,9 +1340,9 @@ struct FUN_00d79510_Object {
 };
 struct FUN_00d79510_A;
 struct FUN_00d79510_B;
-void __cdecl FUN_00d79250_helper(FUN_00d79510_A* a, FUN_00d79510_B* b,
-                                 FUN_00d79510_Object** out, void* p, float f);
-bool __cdecl hkgpConvexHull_booleanSubtraction(FUN_00d79510_A* a, FUN_00d79510_B* b, FUN_00d79510_Object* c, float f);
+void __cdecl FUN_00d79250_helper(FUN_00d79510_A* operandA, FUN_00d79510_B* operandB,
+                                 FUN_00d79510_Object** inside, void* outside, float thickness);
+bool __cdecl hkgpConvexHull_booleanSubtraction(FUN_00d79510_A* operandA, FUN_00d79510_B* operandB, FUN_00d79510_Object* output, float thickness);
 static int SortKeyOf(void* p)
 {
     return ((int*)p)[0xe];
@@ -1360,6 +1360,9 @@ struct Record {
 static __forceinline bool Greater(const Record &a,const Record &b) { return a.key-b.key>0.0f; }
 // @fnv 0x00d7b270
 // src: HAVOK_LIB 0x00d7b270
+// pdb: hkAlgorithm::quickSortRecursive<hkgpConvexHullImpl::SortedTriangle,hkAlgorithm::less<hkgpConvexHullImpl::SortedTriangle> > | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str
 extern "C" void hkAlgorithm_quickSortRecursive_struct_hkgpConvexHullImpl_SortedTriangle_class_hkAlgorithm_less_struct_hkgpConvexHullImpl_SortedTriangle(Record* records, int left, int right, int context)
 {
     int i;
@@ -1525,7 +1528,7 @@ public:
 	int unk00;
 	int unk04;
 	int unk08;
-	void Init(char *buf, int size);
+	void Init(char *buf, int bufSize);
 	DbgStr_cls *Append(const char *pszPrefix, int value, const char *pszSuffix);
 	DbgStr_cls *Pad(void);
 	DbgStr_cls *Last(void);
@@ -1545,7 +1548,7 @@ public:
 	int unk00;
 	int unk04;
 	SharedOwner *m_pSharedOwner;
-	void GetMassProperties(RetBlock64 *pOut64, RetBlock16 *pOut16);
+	void hkgpConvexHull_getLocalInertia(RetBlock64 *inertiaSpace, RetBlock16 *inertiaDiagonal);
 };
 struct D76250Allocator;
 struct D76250MemoryRouter {
@@ -1558,7 +1561,7 @@ struct D76250MemoryRouter {
     D76250Allocator& heap() { return *m_pStreamAllocator; }
 };
 namespace fnvc_adapt { extern "C" D76250MemoryRouter& __cdecl hkMemoryRouter_getInstance(); }
-void __cdecl hkArrayUtil__reserve(D76250Allocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(D76250Allocator* mem, void* array, int numElem, int sizeElem);
 
 struct D76250VectorArrayLocalForm { // local form of hkArray: 0x00d774a0 needs the original inline/out-of-line helper split; shared replacement changes bytes.
     hkVector4* m_data;
@@ -1588,12 +1591,12 @@ struct D76250VectorArrayLocalForm { // local form of hkArray: 0x00d774a0 needs t
 };
 struct D76250Shape {
     int getNumVertices() const;
-    const hkVector4& getVertex(int i) const;
+    const hkVector4& getVertex(int index) const;
 
     void CopyVerticesToArray(D76250VectorArrayLocalForm& vertices) const;
 };
 struct FUN_00d81510_cls {
-    void hkgpConvexHullImpl_build(int a1, int a2, int a3, int a4);
+    void hkgpConvexHullImpl_build(int a1, int a2, int forcePlanar, int domain);
 };
 struct FUN_00d77320_cls {
     int unk00;
@@ -1996,9 +1999,9 @@ __forceinline float& hkVector4::operator()(int a) { return reinterpret_cast<floa
 __forceinline const float& hkVector4::operator()(int a) const { return reinterpret_cast<const float*>(&m_vComponents)[a]; }
 __forceinline LocalM128& hkVector4::getQuad() { return m_vComponents; }
 __forceinline const LocalM128& hkVector4::getQuad() const { return m_vComponents; }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    LocalM128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     LocalM128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), xySum);
 }
@@ -2112,6 +2115,8 @@ struct S_00d75cb0
 
 // @fnv 0x00d75cb0
 // src: GUESS 0x00d75cb0 (confidence: low)
+// pdb: hkgpConvexHull::getFarthestVertex | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: inputs, point, vertexOut
 void S_00d75cb0::ProcessEntries_00d75cb0(int mode, const hkVector4& point, hkVector4& closest)
 {
     hkSimdReal best(DAT_0104da48);
@@ -2158,7 +2163,7 @@ void S_00d75cb0::ProcessEntries_00d75cb0(int mode, const hkVector4& point, hkVec
     }
 }
 
-int __cdecl Vsnprintf(void* buf, int size, const char* fmt, unsigned int arg);
+int __cdecl hkString_snprintf(void* buf, int size, const char* fmt, unsigned int arg);
 int __cdecl hkString_strLen(int x);
 extern const char str_010c1a98[];
 
@@ -2169,11 +2174,11 @@ struct Cc0080Stream {
 // Private-convention callee: str arrives in esi (entry null-check), out in edi
 // (used second, both live across FUN_00cb10d0).
 // src: HAVOK_LIB 0x00cc0080
-static __declspec(noinline) void writeString(Cc0080Stream* out, const char* str) {
-    if (!str)
-        out->Write("(null)", 6);
+static __declspec(noinline) void writeString(Cc0080Stream* sb, const char* s) {
+    if (!s)
+        sb->Write("(null)", 6);
     else
-        out->Write(str, hkString_strLen((int)str));
+        sb->Write(s, hkString_strLen((int)s));
 }
 
 struct FUN_00cc02d0_cls {
@@ -2181,14 +2186,17 @@ struct FUN_00cc02d0_cls {
     int m_04;
     Cc0080Stream* m_08;
 
-    FUN_00cc02d0_cls* EvaluateValue_00cc02d0(int arg);
+    FUN_00cc02d0_cls* EvaluateValue_00cc02d0(int u);
 };
 
 // @fnv 0x00cc02d0
 // src: GUESS 0x00cc02d0 (confidence: low)
-FUN_00cc02d0_cls* FUN_00cc02d0_cls::EvaluateValue_00cc02d0(int arg) {
+// pdb: hkOstream::operator<< | hkOStream.obj | retail, call graph, high
+// pdb params: p
+// pdb locals: buf
+FUN_00cc02d0_cls* FUN_00cc02d0_cls::EvaluateValue_00cc02d0(int u) {
     char buf[0x2728];
-    Vsnprintf(buf, 0x2728, str_010c1a98, arg);
+    hkString_snprintf(buf, 0x2728, str_010c1a98, u);
     writeString(m_08, buf);
     return this;
 }
@@ -2198,6 +2206,7 @@ using ::_mm_add_ps;
 struct GridVec4 {
     LocalM128 m_vComponents;
 };
+// pdb: structure GridCell, size 0x4 (here 0x2c), 1 members
 struct GridCell {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
     int x, y, z;
@@ -2250,9 +2259,9 @@ struct S00d756a0_Ostream {
     int m_00;
     int m_04;
     int m_08;
-    void FUN_00cb1600(char* buf, int size);
+    void FUN_00cb1600(char* buf, int bufSize);
     S00d756a0_Ostream* ProcessAndReturnValue_00cc01c0(const char* s);
-    S00d756a0_Ostream* EvaluateValue_00cc02d0(int v);
+    S00d756a0_Ostream* EvaluateValue_00cc02d0(int u);
     void FUN_00cc00e0();
     S00d756a0_Ostream(char* buf, int size) { FUN_00cb1600(buf, size); }
     ~S00d756a0_Ostream() { FUN_00cc00e0(); }
@@ -2278,13 +2287,15 @@ struct S00d756a0_Shape {
     int m_00;
     int m_04;
     char* m_08;
-    void GetMassProperties(hkVector4* axes, hkVector4* ext);
-    void UpdateFields_00d756a0(S00d756a0_Plain& out);
+    void hkgpConvexHull_getLocalInertia(hkVector4* inertiaSpace, hkVector4* inertiaDiagonal);
+    void hkgpConvexHull_getMajorPlane(S00d756a0_Plain& out);
 };
 
 // @fnv 0x00d756a0
-// src: GUESS 0x00d756a0 (confidence: low)
-void S00d756a0_Shape::UpdateFields_00d756a0(S00d756a0_Plain& out)
+// src: XBOX_RETAIL_PDB 0x00d756a0
+// pdb: hkgpConvexHull::getMajorPlane | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb locals: plane, local, inertia
+void S00d756a0_Shape::hkgpConvexHull_getMajorPlane(S00d756a0_Plain& out)
 {
     char* obj = m_08;
     if (*(bool*)(obj + 0x1b4) == false) {
@@ -2299,7 +2310,7 @@ void S00d756a0_Shape::UpdateFields_00d756a0(S00d756a0_Plain& out)
     {
     hkVector4 axes[4];
     hkVector4 ext;
-    GetMassProperties(axes, &ext);
+    hkgpConvexHull_getLocalInertia(axes, &ext);
 
     hkVector4 tmp;
     tmp.setXYZW(ext, *(const hkVector4*)&DAT_010c7170);
@@ -2421,6 +2432,9 @@ struct Self {
 
 // @fnv 0x00d75920
 // src: GUESS 0x00d75920 (confidence: low)
+// pdb: hkgpConvexHull::getBoundingBox | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: inputs, scale, radialScale
+// pdb locals: trsBox
 Box __thiscall Self::ProcessEntries_00d75920(int index, float a2, float a3)
 {
     int idx = index;
@@ -2682,7 +2696,7 @@ struct S_00d76410_Router {
     S_00d76410_Alloc* m_pStreamAllocator;
     S_00d76410_Alloc& heap() { return *m_pStreamAllocator; }
 };
-void __cdecl hkArrayUtil__reserve(S_00d76410_Alloc* alloc, void* array, int numElements, int elemSize);
+void __cdecl hkArrayUtil__reserve(S_00d76410_Alloc* mem, void* array, int numElem, int sizeElem);
 static __forceinline S_00d76410_Router& getRouter() { return *reinterpret_cast<S_00d76410_Router*>(hkMemoryRouter_getInstance()); }
 template <typename T>
 struct S_00d76410_ArrayLocalForm { // local form of hkArray: 0x00d76410 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -2882,7 +2896,7 @@ struct S_00d76410_Builder {
     S_00d76410_Hull* m_data;
     __forceinline void generateConvex(bool useSource, S_00d76410_Geometry& geom) const throw();
     __forceinline void generatePlanar(bool useSource, S_00d76410_Geometry& geom) const throw();
-    void hkgpConvexHull_generateGeometry(int mode, S_00d76410_Geometry& geom) const throw();
+    void hkgpConvexHull_generateGeometry(int inputs, S_00d76410_Geometry& geometry) const throw();
 };
 __forceinline void S_00d76410_Builder::generateConvex(bool useSource, S_00d76410_Geometry& geom) const throw()
 {
@@ -2945,15 +2959,18 @@ __forceinline void S_00d76410_Builder::generatePlanar(bool useSource, S_00d76410
 }
 // @fnv 0x00d76410
 // src: COMMUNITY 0x00d76410
-void S_00d76410_Builder::hkgpConvexHull_generateGeometry(int mode, S_00d76410_Geometry& geom) const throw()
+// pdb: hkgpConvexHull::generateGeometry | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: inputs, geometry
+// pdb locals: indices
+void S_00d76410_Builder::hkgpConvexHull_generateGeometry(int inputs, S_00d76410_Geometry& geometry) const throw()
 {
-    bool useSource = (mode == 0);
+    bool useSource = (inputs == 0);
     switch (m_data->m_eVertexFloatDimensions) {
     case 3:
-        generateConvex(useSource, geom);
+        generateConvex(useSource, geometry);
         break;
     case 2:
-        generatePlanar(useSource, geom);
+        generatePlanar(useSource, geometry);
         break;
     }
 }
@@ -2981,7 +2998,7 @@ struct S_00d77380_Router {
     S_00d77380_Allocator& heap() { return *m_pStreamAllocator; }
 };
 namespace fnvc_adapt2 { extern "C" S_00d77380_Router& __cdecl hkMemoryRouter_getInstance(); }
-void __cdecl hkArrayUtil__reserve(S_00d77380_Allocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(S_00d77380_Allocator* mem, void* array, int numElem, int sizeElem);
 
 __forceinline void hkVector4::set(float x, float y, float z, float w) { m_vComponents = _mm_setr_ps(x, y, z, w); }
 
@@ -3112,8 +3129,11 @@ LocalM128* OffsetOwner::Hkgpconvexhull_GetPayloadAddress(PayloadOwner* n) { retu
 PayloadOwner* OffsetOwner::Object_ReadPointedValue_00d75120(PayloadOwner* n) { return *(PayloadOwner**)n; }
 static __forceinline float OffsetMaximum(float a,float b) { return a>b?a:b; }
 // @fnv 0x00d78720
-// src: GUESS 0x00d78720 (confidence: low)
-void S_00d79f90_Result::ProcessEntries_00d78720(float f,const S_00d79f90_Opts& opts)
+// src: XBOX_RETAIL_PDB 0x00d78720
+// pdb: hkgpConvexHull::absoluteScale | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: offset, config
+// pdb locals: assertBuf, ostr, newVertices, delta, newPlanes, plane
+void S_00d79f90_Result::hkgpConvexHull_absoluteScale(float offset,const S_00d79f90_Opts& config)
 {
     OffsetOwner* owner=(OffsetOwner*)this;
     ChildData* state=owner->state;
@@ -3129,7 +3149,7 @@ void S_00d79f90_Result::ProcessEntries_00d78720(float f,const S_00d79f90_Opts& o
     OffsetVector centerCopy=*(owner->state->unk1b4?owner->hkgpConvexHull_getCenterOfMass():owner->ForwardCall_00d752d0());
     LocalM128 center=(LocalM128&)centerCopy;
     OffsetArray& array=work.array;
-    switch(opts.mode) {
+    switch(config.mode) {
     case 1: {
         array.init();
         array.reserve(owner->hkgpConvexHull_getNumPlanes());
@@ -3141,7 +3161,7 @@ void S_00d79f90_Result::ProcessEntries_00d78720(float f,const S_00d79f90_Opts& o
             LocalM128 y=_mm_add_ss(_mm_shuffle_ps(m,m,0x55),m);
             float dot;
             _mm_store_ss(&dot,_mm_add_ps(z,y));
-            float displacement=OffsetMaximum(opts.value+dot,f);
+            float displacement=OffsetMaximum(config.value+dot,offset);
             ((hkVec4&)plane).w-=displacement;
             array.AddBack((LocalM128&)plane);
         }
@@ -3163,9 +3183,9 @@ void S_00d79f90_Result::ProcessEntries_00d78720(float f,const S_00d79f90_Opts& o
             LocalM128 sum=_mm_add_ss(z,_mm_add_ss(y,q));
             float length;
             _mm_store_ss(&length,_mm_sqrt_ss(sum));
-            if(length>opts.value) {
-                float radius=length+f;
-                if(radius<opts.value) radius=opts.value;
+            if(length>config.value) {
+                float radius=length+offset;
+                if(radius<config.value) radius=config.value;
                 radius/=length;
                 LocalM128 value=_mm_add_ps(_mm_mul_ps(_mm_load_ps1(&radius),delta),c);
                 S_00d7a010_Router& router=S_00d7a010_Router::hkMemoryRouter_getInstance();
@@ -3254,6 +3274,9 @@ static __forceinline LocalM128 loadVector(const BlendInput* input,int index) {
 }
 // @fnv 0x00d78ca0
 // src: GUESS 0x00d78ca0 (confidence: low)
+// pdb: hkgpConvexHull::computeMinkowski | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: a, b, bScale
+// pdb locals: vertices, config
 BlendObject* __cdecl Object_ProcessEntries_00d78ca0(const BlendInput* a,const BlendInput* b,const LocalM128* scale) {
     int total=a->count;
     total*=b->count;
@@ -3481,6 +3504,9 @@ struct PoolAllocator40
 
 // @fnv 0x00d7adb0
 // src: HAVOK_LIB 0x00d7adb0
+// pdb: hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator>::release | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: object
+// pdb locals: assertBuf, ostr
 void PoolAllocator40::hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_release(PoolItem40* item)
 {
     if (item)
@@ -3577,6 +3603,9 @@ struct PoolAllocator48
 
 // @fnv 0x00d7aea0
 // src: HAVOK_LIB 0x00d7aea0
+// pdb: hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Triangle,32,hkContainerHeapAllocator>::release | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: object
+// pdb locals: assertBuf, ostr
 void PoolAllocator48::hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Triangle_32_struct_hkContainerHeapAllocator_release(PoolItem48* item)
 {
     if (item)
@@ -3656,7 +3685,7 @@ struct ProjectionHull {
         if(cached.m_iElementCount==0) build();
         hkVector4_FindSupportingVertex(&cached,&dir,&out);
     }
-    float GetDirectionalProjectionSpan(const hkVector4& direction,float& lower,float& upper);
+    float hkgpConvexHullImpl_getSpan(const hkVector4& axis,float& minBound,float& maxBound);
 };
 static __forceinline float dot3(const hkVector4& a,const hkVector4& b) {
     LocalM128 p=_mm_mul_ps(a.m_vComponents,b.m_vComponents);
@@ -3665,16 +3694,19 @@ static __forceinline float dot3(const hkVector4& a,const hkVector4& b) {
     float f; _mm_store_ss(&f,_mm_add_ss(z,_mm_add_ss(y,p))); return f;
 }
 // @fnv 0x00d7c610
-// src: GUESS 0x00d7c610 (confidence: medium)
-float ProjectionHull::GetDirectionalProjectionSpan(const hkVector4& direction,float& lower,float& upper) {
+// src: XBOX_RETAIL_PDB 0x00d7c610
+// pdb: hkgpConvexHullImpl::getSpan | hkgpConvexHull.obj | retail, call graph, high
+// pdb params: axis, minBound, maxBound
+// pdb locals: negAxis, maxSv, minSv
+float ProjectionHull::hkgpConvexHullImpl_getSpan(const hkVector4& axis,float& minBound,float& maxBound) {
     hkVector4 opposite;
-    opposite.m_vComponents=_mm_xor_ps(direction.m_vComponents,DAT_010c44d0);
+    opposite.m_vComponents=_mm_xor_ps(axis.m_vComponents,DAT_010c44d0);
     hkVector4 first,second;
-    support(direction,first);
+    support(axis,first);
     support(opposite,second);
-    upper=dot3(direction,first);
-    lower=dot3(direction,second);
-    return upper-lower;
+    maxBound=dot3(axis,first);
+    minBound=dot3(axis,second);
+    return maxBound-minBound;
 }
 
 namespace fnv_00d7e740 {
@@ -3788,12 +3820,15 @@ struct ExportShape {
     int dimension,unk1ac,index;
     unsigned char unk1b4;
     bool indexed;
-    int hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(ExportArray<unsigned char>& sizes,ExportArray<unsigned short>& indices,bool useIndex,bool rotate);
+    int hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(ExportArray<unsigned char>& vpf,ExportArray<unsigned short>& vi,bool useSourceIndex,bool maximizeArea);
 };
 
 // @fnv 0x00d7e740
 // src: HAVOK_LIB 0x00d7e740
-int ExportShape::hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(ExportArray<unsigned char>& sizes,ExportArray<unsigned short>& indices,bool useIndex,bool rotate)
+// pdb: hkgpConvexHullImpl::generateIndexedFaces<unsigned char,unsigned short> | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: vpf, vi, useSourceIndex, maximizeArea
+// pdb locals: numFaces, triangles, assertBuf, ostr, e, vtx, vertex, span
+int ExportShape::hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(ExportArray<unsigned char>& vpf,ExportArray<unsigned short>& vi,bool useSourceIndex,bool maximizeArea)
 {
     int count=0;
     ExportWorkspace workspace;
@@ -3805,10 +3840,10 @@ int ExportShape::hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_
         if(DAT_01268360->message(3,0x79f9d886,buffer,str_010d3540,0x148)) __debugbreak();
         stream.FUN_00cc00e0();
     }
-    sizes.size=0;
-    sizes.reserve(numPolygons);
-    indices.size=0;
-    indices.reserve(numVertices*3);
+    vpf.size=0;
+    vpf.reserve(numPolygons);
+    vi.size=0;
+    vi.reserve(numVertices*3);
     if(dimension==3) {
         ExportArray<ExportFace*>& sorted=workspace.sorted; sorted.init();
         sorted.reserve(numFaces);
@@ -3829,12 +3864,12 @@ int ExportShape::hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_
                     int num=0;
                     do {
                         ++num;
-                        if(useIndex) indices.AddBack((unsigned short)e.vertex()->index);
-                        else indices.AddBack((unsigned short)e.vertex()->alternateIndex);
+                        if(useSourceIndex) vi.AddBack((unsigned short)e.vertex()->index);
+                        else vi.AddBack((unsigned short)e.vertex()->alternateIndex);
                         e=e.next();
                         while(e.adjacent().face->mark==count) e=e.adjacent().next();
                     } while(e.vertex()!=start);
-                    sizes.AddBack((unsigned char)num);
+                    vpf.AddBack((unsigned char)num);
                     ++count;
                 }
             }
@@ -3842,20 +3877,20 @@ int ExportShape::hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_
         sorted.clearAndFree();
     } else if(dimension==2) {
         count=1;
-        sizes.AddBack((unsigned char)numVertices);
-        if(useIndex) {
-            for(ExportVertex* v=vertices;v;v=v->next) indices.AddBack((unsigned short)v->index);
+        vpf.AddBack((unsigned char)numVertices);
+        if(useSourceIndex) {
+            for(ExportVertex* v=vertices;v;v=v->next) vi.AddBack((unsigned short)v->index);
         } else {
-            for(int i=0;i<numVertices;++i) indices.AddBack((unsigned short)i);
+            for(int i=0;i<numVertices;++i) vi.AddBack((unsigned short)i);
         }
     }
-    if(rotate && count) {
+    if(maximizeArea && count) {
         ExportArray<ExportVertex*>& map=workspace.map; map.init();
-        unsigned short* polygon=indices.data;
+        unsigned short* polygon=vi.data;
         map.reserve(numVertices);
         for(ExportVertex* v=vertices;v;v=v->next) map.AddBack(v);
-        for(int p=0;p<sizes.size;++p) {
-            int n=sizes.data[p];
+        for(int p=0;p<vpf.size;++p) {
+            int n=vpf.data[p];
             if(n>=3) {
                 __int64 best=-1;
                 int corner=-1;
@@ -3926,6 +3961,8 @@ struct FUN_00d7a0b0_cls {
 
 // @fnv 0x00d7a0b0
 // src: GUESS 0x00d7a0b0 (confidence: low)
+// pdb: hkgpConvexHullImpl::getSupportingVertex<hkgpConvexHullImpl::PositionAsSource> | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: xform, axis, vertexOut
 void FUN_00d7a0b0_cls::ProcessEntries_00d7a0b0(const FUN_00d7a0b0_Matrix* m, const LocalM128* scale, LocalM128* out)
 {
 
@@ -4186,12 +4223,15 @@ struct PolygonMesh {
     int errorValue;
     char unk1b4;
     bool hasIndices;
-    int hkgpConvexHullImpl_generateIndexedFaces_int_int(PolygonArray<int>& counts, PolygonArray<int>& indices, bool ids, bool rotate);
+    int hkgpConvexHullImpl_generateIndexedFaces_int_int(PolygonArray<int>& vpf, PolygonArray<int>& vi, bool useSourceIndex, bool maximizeArea);
 };
 
 // @fnv 0x00d7df60
 // src: HAVOK_LIB 0x00d7df60
-int PolygonMesh::hkgpConvexHullImpl_generateIndexedFaces_int_int(PolygonArray<int>& counts, PolygonArray<int>& indices, bool ids, bool rotate)
+// pdb: hkgpConvexHullImpl::generateIndexedFaces<int,int> | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: vpf, vi, useSourceIndex, maximizeArea
+// pdb locals: numFaces, triangles, e, nv, assertBuf, ostr, i, vtx, vertex, span
+int PolygonMesh::hkgpConvexHullImpl_generateIndexedFaces_int_int(PolygonArray<int>& vpf, PolygonArray<int>& vi, bool useSourceIndex, bool maximizeArea)
 {
     int numPolygons = 0;
     PolygonArray<void*> scratch((PolygonArray<void*>::NoInit()));
@@ -4203,10 +4243,10 @@ int PolygonMesh::hkgpConvexHullImpl_generateIndexedFaces_int_int(PolygonArray<in
         if (DAT_01268360->message(3, 0x79f9d886, buffer, str_010d3540, 0x148)) __debugbreak();
         stream.FUN_00cc00e0();
     }
-    counts.size = 0;
-    counts.reserve(polygonCount);
-    indices.size = 0;
-    indices.reserve(vertexCount * 3);
+    vpf.size = 0;
+    vpf.reserve(polygonCount);
+    vi.size = 0;
+    vi.reserve(vertexCount * 3);
     if (dimension == 3) {
         PolygonArray<void*>& triangles = scratch;
         triangles.init();
@@ -4225,11 +4265,11 @@ int PolygonMesh::hkgpConvexHullImpl_generateIndexedFaces_int_int(PolygonArray<in
                     int length = 0;
                     do {
                         ++length;
-                        if (ids) indices.AddBack(e.vertex()->getID());
-                        else { const int& r = e.vertex()->getIndex(); indices.AddBack(r); }
+                        if (useSourceIndex) vi.AddBack(e.vertex()->getID());
+                        else { const int& r = e.vertex()->getIndex(); vi.AddBack(r); }
                         e.advance(numPolygons);
                     } while (e.vertex() != first);
-                    counts.AddBack(length);
+                    vpf.AddBack(length);
                     ++numPolygons;
                 }
             }
@@ -4238,21 +4278,21 @@ int PolygonMesh::hkgpConvexHullImpl_generateIndexedFaces_int_int(PolygonArray<in
     } else if (dimension == 2) {
         numPolygons = 1;
         int count = vertexCount;
-        counts.AddBack(count);
-        if (ids) {
-            for (PolygonVertex* v = vertexHead; v; v = v->next) indices.AddBack(v->getID());
+        vpf.AddBack(count);
+        if (useSourceIndex) {
+            for (PolygonVertex* v = vertexHead; v; v = v->next) vi.AddBack(v->getID());
         } else {
-            for (int i = 0; i < vertexCount; ++i) indices.AddBack(i);
+            for (int i = 0; i < vertexCount; ++i) vi.AddBack(i);
         }
     }
-    if (rotate && numPolygons) {
+    if (maximizeArea && numPolygons) {
         PolygonArray<void*>& vertices = scratch;
         vertices.init();
-        int* polygon = indices.data;
+        int* polygon = vi.data;
         vertices.reserve(vertexCount);
         for (PolygonVertex* v = vertexHead; v; v = v->next) vertices.AddBack((void*)v);
-        for (int i = 0; i < counts.size; ++i) {
-            int length = counts.data[i];
+        for (int i = 0; i < vpf.size; ++i) {
+            int length = vpf.data[i];
             if (length >= 3) {
                 __int64 bestArea = -1;
                 int bestCorner = -1;
@@ -4299,7 +4339,7 @@ struct D81340Dbg {
     void* unk00;
     int unk04;
     int unk08;
-    void __thiscall FUN_00cb1600(char* buf, unsigned int n);
+    void __thiscall FUN_00cb1600(char* buf, unsigned int bufSize);
     D81340Dbg* __thiscall ProcessAndReturnValue_00cc01c0(const char* fmt, int a, const char* b);
     D81340Dbg* __thiscall EvaluateValue_00cc02d0();
     void __thiscall ProcessAndReturnValue_00cc01c0();
@@ -4434,17 +4474,20 @@ struct D81340Cls {
     unsigned char m_1b5;
     unsigned char unk1b6;
     unsigned char unk1b7;
-    float __thiscall GetDirectionalProjectionSpan(int, float*, float*);
+    float __thiscall hkgpConvexHullImpl_getSpan(int, float*, float*);
     float __thiscall hkgpConvexHullImpl_getOrientedRectangle(int, D81340Vec4*, D81340Transform*);
-    void __thiscall ProcessEntries_00d81340(D81340Vec4& a0, D81340Transform& a1);
+    void __thiscall hkgpConvexHullImpl_getOrientedBoundingBox(D81340Vec4& halfExtents, D81340Transform& worldTransform);
 };
 
 // @fnv 0x00d81340
-// src: GUESS 0x00d81340 (confidence: low)
-void D81340Cls::ProcessEntries_00d81340(D81340Vec4& a0, D81340Transform& a1) {
+// src: XBOX_RETAIL_PDB 0x00d81340
+// pdb: hkgpConvexHullImpl::getOrientedBoundingBox | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: halfExtents, worldTransform
+// pdb locals: dBounds, extents, xform
+void D81340Cls::hkgpConvexHullImpl_getOrientedBoundingBox(D81340Vec4& halfExtents, D81340Transform& worldTransform) {
     D81340Workspace workspace;
     if (m_1a8 < 3) {
-        hkgpConvexHullImpl_getOrientedRectangle((int)&m_e0, &a0, &a1);
+        hkgpConvexHullImpl_getOrientedRectangle((int)&m_e0, &halfExtents, &worldTransform);
         return;
     }
     if (!m_1b5) {
@@ -4468,42 +4511,45 @@ void D81340Cls::ProcessEntries_00d81340(D81340Vec4& a0, D81340Transform& a1) {
     float s;
     for (int i = 0; i < m_58; ++i) {
         int elem = (int)m_54 + i * 16;
-        r = GetDirectionalProjectionSpan(elem, &u18, &u1c);
+        r = hkgpConvexHullImpl_getSpan(elem, &u18, &u1c);
         if (r < t24) {
             int elem2 = (int)m_54 + i * 16;
             t14 = hkgpConvexHullImpl_getOrientedRectangle(elem2, &v30, &v40) * (u1c - u18);
             if (t14 < t2c) {
                 t24 = r;
                 t2c = t14;
-                a0.q = v30.q;
-                a0.q.m128_f32[2] = r;
-                a1.c0.q = v40.c0.q;
-                a1.c1.q = v40.c1.q;
-                a1.c2.q = v40.c2.q;
-                a1.c3.q = v40.c3.q;
+                halfExtents.q = v30.q;
+                halfExtents.q.m128_f32[2] = r;
+                worldTransform.c0.q = v40.c0.q;
+                worldTransform.c1.q = v40.c1.q;
+                worldTransform.c2.q = v40.c2.q;
+                worldTransform.c3.q = v40.c3.q;
             }
         }
     }
-    volatile float& distance = a0.z;
+    volatile float& distance = halfExtents.z;
     distance *= DAT_01011588;
     s = -distance;
     LocalM128 sv = _mm_load_ss(&s);
     LocalM128 sb = _mm_shuffle_ps(sv, sv, 0);
-    a1.c3.q = _mm_add_ps(_mm_mul_ps(sb, a1.c2.q), a1.c3.q);
+    worldTransform.c3.q = _mm_add_ps(_mm_mul_ps(sb, worldTransform.c2.q), worldTransform.c3.q);
 }
 
 struct SupportVector { LocalM128 q; };
 struct SupportShape {
-    void ProcessEntries_00d76320(const SupportVector& input, SupportVector& output);
+    void hkgpConvexHull_getSupportingVertex(const SupportVector& direction, SupportVector& vertexOut);
     float ComputeValues_00d768b0(const SupportVector& input);
 };
 
 // @fnv 0x00d768b0
 // src: GUESS 0x00d768b0 (confidence: low)
+// pdb: hkgpConvexHull::getMaximumDistanceFromPlane | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: plane
+// pdb locals: sv
 float SupportShape::ComputeValues_00d768b0(const SupportVector& input)
 {
     SupportVector normal;
-    ProcessEntries_00d76320(input, normal);
+    hkgpConvexHull_getSupportingVertex(input, normal);
     LocalM128 c = normal.q;
     LocalM128 a = input.q;
     LocalM128 offset = _mm_shuffle_ps(a, a, 0xff);
@@ -4550,12 +4596,14 @@ struct PlaneArgument {
 };
 struct PlaneHull {
     int hkgpConvexHull_getNumPlanes();
-    const PlaneVector& hkgpConvexHull_getPlane(int i);
+    const PlaneVector& hkgpConvexHull_getPlane(int index);
     float hkgpConvexHull_maximumDistanceToPlanes(PlaneArgument point);
 };
 static __forceinline float greaterValue(float a,float b) { return a>b?a:b; }
 // @fnv 0x00d75880
 // src: XBOX_PDB 0x00d75880
+// pdb: hkgpConvexHull::maximumDistanceToPlanes | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: point
 float PlaneHull::hkgpConvexHull_maximumDistanceToPlanes(PlaneArgument point) {
     float best=DAT_0104e148;
     int i=0;
@@ -4961,8 +5009,11 @@ template <typename T>
 inline T __cdecl S00d79ab0_max2(T x, T y) { return x > y ? x : y; }
 
 // @fnv 0x00d79ab0
-// src: GUESS 0x00d79ab0 (confidence: low)
-void __cdecl HkgpconvexhullGsEhscNogsNoehsc_ReleaseStorage_00d79ab0(const S00d79ab0_Hull* domain, const S00d79ab0_Array<S00d79ab0_Vector4>& points, S00d79ab0_Array<S00d79ab0_Hull*>& cells, float margin)
+// src: XBOX_RETAIL_PDB 0x00d79ab0
+// pdb: hkgpConvexHull::createVoronoiCells | hkgpConvexHull.obj | retail, call graph, high
+// pdb params: domain, points, cells, margin
+// pdb locals: sites, sortedSites, cell, origin, plane, sides
+void __cdecl hkgpConvexHull_createVoronoiCells(const S00d79ab0_Hull* domain, const S00d79ab0_Array<S00d79ab0_Vector4>& points, S00d79ab0_Array<S00d79ab0_Hull*>& cells, float margin)
 {
     const float eps = 1.1920928955078125e-06f;
     const float offset = S00d79ab0_max2(eps, margin * 2 + eps);
@@ -5283,11 +5334,13 @@ struct S00d7cf00_Hull {
         for (const S00d7cf00_Vertex* v = m_firstVertex; v; v = v->m_next)
             *p++ = v->m_pObservedSource;
     }
-    float ProcessEntries_00d7cf00() const;
+    float hkgpConvexHullImpl_getEdgeLengths() const;
 };
 // @fnv 0x00d7cf00
-// src: GUESS 0x00d7cf00 (confidence: low)
-float S00d7cf00_Hull::ProcessEntries_00d7cf00() const
+// src: XBOX_RETAIL_PDB 0x00d7cf00
+// pdb: hkgpConvexHullImpl::getEdgeLengths | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb locals: vertices
+float S00d7cf00_Hull::hkgpConvexHullImpl_getEdgeLengths() const
 {
     float sum = 0.0f;
     switch (m_eVertexFloatDimensions) {
@@ -5410,10 +5463,10 @@ struct S_00d827b0_Owner {
 
     float ProcessEntries_00d7a810(S_00d827b0_Param* p, S_00d827b0_Xf* xf, hkVector4* out);
     void ProcessEntries_00d7a0b0(S_00d827b0_Xf* xf, hkVector4* dir, hkVector4* out);
-    void hkgpConvexHullImpl_build(hkVector4* data, int n, int a, int b);
+    void hkgpConvexHullImpl_build(hkVector4* data, int n, int forcePlanar, int domain);
     void ProcessEntries_00d7d2a0();
     void hkgpConvexHullImpl_buildMassProperties_hkgpConvexHullImpl_PositionAsTransform();
-    void CopyMemory_00d827b0(S_00d827b0_Param* param);
+    void CopyMemory_00d827b0(S_00d827b0_Param* points);
 };
 
 
@@ -5499,11 +5552,14 @@ extern "C" __declspec(noinline) void __cdecl Hkgpconvexhull_ComputeValues_00d74c
 
 // @fnv 0x00d827b0
 // src: GUESS 0x00d827b0 (confidence: low)
-void S_00d827b0_Owner::CopyMemory_00d827b0(S_00d827b0_Param* param)
+// pdb: hkgpConvexHullImpl::ensureContainment | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: points
+// pdb locals: scale, plane, origin, oldScale, vertices
+void S_00d827b0_Owner::CopyMemory_00d827b0(S_00d827b0_Param* points)
 {
     FixBool b5 = m_b1b5;
     FixBool b4 = m_b1b4;
-    int limit = param->count + 0x40;
+    int limit = points->count + 0x40;
     S_00d827b0_Xf xf;
     memcpy(&xf, &DAT_0126a3e0, 0x40);
     int iter = 0;
@@ -5512,7 +5568,7 @@ void S_00d827b0_Owner::CopyMemory_00d827b0(S_00d827b0_Param* param)
         do {
             LocalM128 plane;
             hkVector4& vec = *(hkVector4*)&plane;
-            float result = ProcessEntries_00d7a810(param, &xf, &vec);
+            float result = ProcessEntries_00d7a810(points, &xf, &vec);
             if (!(result > DAT_01032980))
                 break;
 
@@ -5674,7 +5730,7 @@ struct S00d82ad0_Edge {
 struct S00d82ad0_Less {
 };
 
-void __cdecl hkArrayUtil__reserve(void* alloc, void* arr, int n, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 void __cdecl hkAlgorithm_quickSortRecursive_struct_hkgpConvexHullImpl_SortedEdge_class_hkAlgorithm_less_struct_hkgpConvexHullImpl_SortedEdge(S00d82ad0_Edge* data, int lo, int hi, S00d82ad0_Less cmp);
 
 struct S00d82ad0_Alloc {
@@ -5761,9 +5817,9 @@ struct S00d82ad0_Stream {
     int unk00;
     int unk04;
     int unk08;
-    void FUN_00cb1600(char* buf, int size);
+    void FUN_00cb1600(char* buf, int bufSize);
     S00d82ad0_Stream& ProcessAndReturnValue_00cc01c0(const char* s);
-    S00d82ad0_Stream& WriteInt(int v);
+    S00d82ad0_Stream& WriteInt(int i);
     void FUN_00cc00e0();
 };
 
@@ -5922,11 +5978,11 @@ struct S00d82ad0_Hull {
         return r;
     }
 
-    bool ProcessEntries_00d82ad0(int numVerticesToKeep, bool abOptionalVertexReduction);
-    void CopyMemory_00d827b0(S00d82ad0_VecArr& v);
+    bool hkgpConvexHullImpl_decimateVertices(int numVerticesToKeep, bool containment);
+    void CopyMemory_00d827b0(S00d82ad0_VecArr& points);
     void ProcessEntries_00d7d2a0();
     void hkgpConvexHullImpl_buildMassProperties_hkgpConvexHullImpl_PositionAsTransform();
-    int hkgpConvexHullImpl_build(hkVector4* p, int n, int a, int b);
+    int hkgpConvexHullImpl_build(hkVector4* p, int n, int forcePlanar, int domain);
 };
 
 template <class F>
@@ -5993,8 +6049,11 @@ static __forceinline void S00d82ad0_sort(T* p, int size, L cmp = L())
 }
 
 // @fnv 0x00d82ad0
-// src: GUESS 0x00d82ad0 (confidence: low)
-bool S00d82ad0_Hull::ProcessEntries_00d82ad0(int numVerticesToKeep, bool abOptionalVertexReduction)
+// src: XBOX_RETAIL_PDB 0x00d82ad0
+// pdb: hkgpConvexHullImpl::decimateVertices | hkgpConvexHull.obj | retail, string-set bridge, high
+// pdb params: numVerticesToKeep, containment
+// pdb locals: hasIndexing, sources, hasMassProperties, edges, vertices, e
+bool S00d82ad0_Hull::hkgpConvexHullImpl_decimateVertices(int numVerticesToKeep, bool containment)
 {
     if (numVerticesToKeep < 4) numVerticesToKeep = 4;
     if (m_kVertices.m_iElementCount > numVerticesToKeep) {
@@ -6012,7 +6071,7 @@ bool S00d82ad0_Hull::ProcessEntries_00d82ad0(int numVerticesToKeep, bool abOptio
             }
             s.FUN_00cc00e0();
         }
-        if (abOptionalVertexReduction) {
+        if (containment) {
             hkVector4* dst = originalVertices.expandBy(m_kVertices.m_iElementCount);
             for (S00d82ad0_Vtx* v = m_kVertices.m_pHeadNode; v; v = v->next) {
                 *dst++ = v->m_pObservedSource;
@@ -6064,7 +6123,7 @@ bool S00d82ad0_Hull::ProcessEntries_00d82ad0(int numVerticesToKeep, bool abOptio
             }
             positions.destroy();
         }
-        if (abOptionalVertexReduction) CopyMemory_00d827b0(originalVertices);
+        if (containment) CopyMemory_00d827b0(originalVertices);
         if (hasPlanes) ProcessEntries_00d7d2a0();
         if (hasIndexing) hkgpConvexHullImpl_buildMassProperties_hkgpConvexHullImpl_PositionAsTransform();
         edges.destroy();
@@ -6099,7 +6158,7 @@ struct HullMemory {
     int unk0c;
     HullAllocator* m_pAllocator;
 };
-void __cdecl hkArrayUtil__reserve(HullAllocator* pAlloc, void* pArray, int iNewCap, int iElemSize) throw();
+void __cdecl hkArrayUtil__reserve(HullAllocator* mem, void* array, int numElem, int sizeElem) throw();
 void __cdecl ResizeAudioStream(HullAllocator* pAlloc, void* pArray, int iElemSize) throw();
 struct ErrReporter {
     virtual void v00();
@@ -6214,7 +6273,7 @@ struct VecArray : VecArrayBase {
 };
 struct ErrorWork {
     int unk00, unk04, unk08;
-    void FUN_00cb1600(void* buf, int size) throw();
+    void FUN_00cb1600(void* buf, int bufSize) throw();
     ErrorWork& ProcessAndReturnValue_00cc01c0(const char* text) throw();
     void FUN_00cc00e0() throw();
 };
@@ -6256,7 +6315,7 @@ struct HullImpl {
     int m_iDimension;
     __declspec(noinline) int ProcessEntries_00d7a200(const HullVec&,float,int*,float*) const;
     int hkgpConvexHullImpl_build(const HullVec*,int,bool,const HullImpl*);
-    int AllocateStorage_00d83430(const HullVec& plane,FUN_00d76ca0** ppFront,FUN_00d76ca0** ppBack,float fEps) const;
+    int AllocateStorage_00d83430(const HullVec& plane,FUN_00d76ca0** pos,FUN_00d76ca0** neg,float thickness) const;
 };
 inline float HullCrtAbs(float f) { return (float)fabs((double)f); }
 inline float HullFabsf(float f) { return ::fabsf(f); }
@@ -6286,15 +6345,18 @@ __declspec(noinline) int HullImpl::ProcessEntries_00d7a200(const HullVec& plane,
 }
 // @fnv 0x00d83430
 // src: GUESS 0x00d83430 (confidence: low)
-int HullImpl::AllocateStorage_00d83430(const HullVec& plane, FUN_00d76ca0** ppFront, FUN_00d76ca0** ppBack, float fEps) const
+// pdb: hkgpConvexHullImpl::splitByPlane<hkgpConvexHullImpl::PositionAsSource> | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: plane, pos, neg, thickness
+// pdb locals: counts, interval, assertBuf, ostr, negv, posv, s, sides, cvPosition, isec
+int HullImpl::AllocateStorage_00d83430(const HullVec& plane, FUN_00d76ca0** pos, FUN_00d76ca0** neg, float thickness) const
 {
     SplitWork workspace;
     {
-        FUN_00d76ca0** pp0 = ppFront;
+        FUN_00d76ca0** pp0 = pos;
         if (pp0 != 0) {
             *pp0 = 0;
         }
-        FUN_00d76ca0** pp1 = ppBack;
+        FUN_00d76ca0** pp1 = neg;
         if (pp1 != 0) {
             *pp1 = 0;
         }
@@ -6303,14 +6365,14 @@ int HullImpl::AllocateStorage_00d83430(const HullVec& plane, FUN_00d76ca0** ppFr
     case 3: {
         int counts[2]={0,0};
         float range[2];
-        if (ProcessEntries_00d7a200(plane,fEps,counts,range)==3) {
+        if (ProcessEntries_00d7a200(plane,thickness,counts,range)==3) {
         VecArrayBase& front=workspace.current.front; front.m_pData=0; front.m_uiLogicalSize=0; front.m_iCapAndFlags=0x80000000;
 VecArrayBase& back=workspace.back; back.m_pData=0; back.m_uiLogicalSize=0; back.m_iCapAndFlags=0x80000000;
         float rMin=range[0],rMax=range[1];
         {
             float ext = rMax - rMin;
             workspace.scratch.rounded=HullMin<double>(StageLow(rMin,workspace.scratch.rounded),StageHigh(rMax,workspace.scratch.rounded)); _ReadWriteBarrier();
-            if (ext <= fEps || workspace.scratch.rounded <= fEps) {
+            if (ext <= thickness || workspace.scratch.rounded <= thickness) {
                 if ((rMin + rMax) * DAT_01011588 >= DAT_01012060) {
                     back.Clear(); front.Clear(); return 1;
                 }
@@ -6354,21 +6416,21 @@ VecArrayBase& back=workspace.back; back.m_pData=0; back.m_uiLogicalSize=0; back.
                     }
                 }
             }
-            if (ppFront != 0) {
+            if (pos != 0) {
                 FUN_00d76ca0* o = new FUN_00d76ca0();
-                *ppFront = o;
+                *pos = o;
                 o->m_pImpl->m_pConfiguration = m_pConfiguration;
             }
-            if (ppBack != 0) {
+            if (neg != 0) {
                 FUN_00d76ca0* o = new FUN_00d76ca0();
-                *ppBack = o;
+                *neg = o;
                 o->m_pImpl->m_pConfiguration = m_pConfiguration;
             }
-            bool bFront = ppFront != 0 && (*ppFront)->m_pImpl->hkgpConvexHullImpl_build(&front[0],front.GetSize(), 0, this) == m_iDimension;
-            FUN_00d76ca0** pBack = ppBack;
+            bool bFront = pos != 0 && (*pos)->m_pImpl->hkgpConvexHullImpl_build(&front[0],front.GetSize(), 0, this) == m_iDimension;
+            FUN_00d76ca0** pBack = neg;
             bool bBack = pBack != 0 && (*pBack)->m_pImpl->hkgpConvexHullImpl_build(&back[0],back.GetSize(), 0, this) == m_iDimension;
             FUN_00d76ca0** pF;
-            if (!bFront && (pF = ppFront) != 0) {
+            if (!bFront && (pF = pos) != 0) {
                 delete *pF;
                 *pF = 0;
             }
@@ -6391,7 +6453,7 @@ VecArrayBase& back=workspace.back; back.m_pData=0; back.m_uiLogicalSize=0; back.
             HullVec p = plane;
             float d = plane.dot4xyz1(v->m_pos);
             v->m_fDist = d;
-            if (HullFabsf(d) <= fEps) {
+            if (HullFabsf(d) <= thickness) {
                 v->m_fDist = 0.0f;
             } else if (d < 0.0f) {
                 iNeg++;
@@ -6443,7 +6505,7 @@ const HullVec& position=*(const HullVec*)&workspace.current.position;
             prev = cur;
             cur = cur->m_pNext;
         }
-        FUN_00d76ca0** pp = ppBack;
+        FUN_00d76ca0** pp = neg;
         if (pp != 0) {
             *pp = new FUN_00d76ca0();
             (*pp)->m_pImpl->m_pConfiguration = m_pConfiguration;
@@ -6453,7 +6515,7 @@ const HullVec& position=*(const HullVec*)&workspace.current.position;
                 *pp = 0;
             }
         }
-        pp = ppFront;
+        pp = pos;
         if (pp != 0) {
             *pp = new FUN_00d76ca0();
             (*pp)->m_pImpl->m_pConfiguration = m_pConfiguration;
@@ -6533,6 +6595,9 @@ struct CentroidHull {
 
 // @fnv 0x00d7aa30
 // src: GUESS 0x00d7aa30 (confidence: low)
+// pdb: hkArrayBase<hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Triangle,32,hkContainerHeapAllocator>::Pool *>::_pushBack | hkgpConvexHull.obj | debug, object-file run extension, low
+// pdb params: alloc, t
+// pdb locals: assertBuf, ostr
 void* CentroidHull::ProcessEntries_00d7aa30()
 {
     LocalM128* out = &m_80;
@@ -6590,7 +6655,7 @@ struct BasisTransform {
 struct PlaneShape {
     int unk00, unk04;
     ChildData* state;
-    void GetMassProperties(BasisTransform*, void*);
+    void hkgpConvexHull_getLocalInertia(BasisTransform*, void*);
     float ProcessAndReturnValue_00d769c0(const PlaneVector&);
     void ProcessEntries_00d76a20(PlaneVector* planes);
 };
@@ -6638,7 +6703,7 @@ void PlaneShape::ProcessEntries_00d76a20(PlaneVector* planes) {
     BasisTransform transform;
     {
         float other[3];
-        GetMassProperties(&transform,other);
+        hkgpConvexHull_getLocalInertia(&transform,other);
     }
     float scores[3];
     __declspec(align(8)) int indices[3];
@@ -6701,24 +6766,27 @@ struct SampleBuilderRef { SampleBuilder* value; };
 struct SampleRandomRef { RandomGenerator* value; };
 // @fnv 0x00d76fa0
 // src: XBOX_PDB 0x00d76fa0
-void __cdecl hkgpConvexHull_createRandomSamples(SampleBuilderRef builder,SampleRandomRef random,int count,D76250VectorArrayLocalForm& out) {
+// pdb: hkgpConvexHull::createRandomSamples | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: domain, generator, numSamples, samples
+// pdb locals: halfExtents, worldTransform, weights, sample, assertBuf, ostr
+void __cdecl hkgpConvexHull_createRandomSamples(SampleBuilderRef domain,SampleRandomRef generator,int numSamples,D76250VectorArrayLocalForm& samples) {
     SampleWorkspace workspace(*(const hkVector4*)&DAT_01267e30);
     hkVector4 a=*(hkVector4*)&DAT_01268370;
     hkVector4 b=*(hkVector4*)&DAT_01268380;
     hkVector4 c=*(hkVector4*)&DAT_01268390;
     hkVector4 d=*(hkVector4*)&DAT_012683a0;
     SampleTransform transform(a,b,c,d);
-    builder.value->ForwardCall_00d76d80((hkVector4&)workspace.extents,transform);
-    for(int i=0;i<count;++i) {
+    domain.value->ForwardCall_00d76d80((hkVector4&)workspace.extents,transform);
+    for(int i=0;i<numSamples;++i) {
         SamplePoint point;
         int trial=0;
         do {
             hkVector4 r;
-            random.value->hkPseudoRandomGenerator_getRandomVector11((float*)&r);
+            generator.value->hkPseudoRandomGenerator_getRandomVector11((float*)&r);
             const hkVector4& e=(const hkVector4&)workspace.extents;
             point.m_vComponents=_mm_mul_ps(sampleRead(e),sampleRead(r));
             point.setTransformedPos_00c7f640(transform,point);
-            if(builder.value->hkgpConvexHull_isPointInside(point,builder.value->hull->flag1b5,0.0f)) {
+            if(domain.value->hkgpConvexHull_isPointInside(point,domain.value->hull->flag1b5,0.0f)) {
                 goto accepted;
             }
         } while(++trial<1024);
@@ -6732,7 +6800,7 @@ void __cdecl hkgpConvexHull_createRandomSamples(SampleBuilderRef builder,SampleR
             return;
         }
 accepted:
-        appendSample(out,point);
+        appendSample(samples,point);
     }
 }
 
@@ -6920,7 +6988,7 @@ extern float DAT_01012054;
 
 inline hkMemoryRouter* Holder() { return (hkMemoryRouter*)hkMemoryRouter_getInstance(); }
 
-void __cdecl hkArrayUtil__reduce(HullAllocator* alloc, void* arr, int elemSize, int unused, int n);
+void __cdecl hkArrayUtil__reduce(HullAllocator* mem, void* arr, int sizeElem, int inplaceMem, int n);
 struct IndexVertex {
     IndexVertex* m_pNext;
     int unk04;
@@ -7203,6 +7271,8 @@ inline LocalM128 Xform(const HullBuilder* h, const IndexVertex* v)
 }
 // @fnv 0x00d7d2a0
 // src: GUESS 0x00d7d2a0 (confidence: low)
+// pdb: hkgpConvexHullImpl::buildIndices<hkgpConvexHullImpl::PositionAsTransform> | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb locals: sortedTriangles, triangles2planeIndex, trianglesPlanes, stack, ti, e, assertBuf, ostr, delta
 void HullBuilder::ProcessEntries_00d7d2a0()
 {
     if (m_bPlanesBuilt != 0) {
@@ -7507,6 +7577,9 @@ struct ProbeObj {
 };
 // @fnv 0x00d75e30
 // src: GUESS 0x00d75e30 (confidence: low)
+// pdb: hkgpConvexHull::fetchPositions | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkgpConvexHull::isVertexUsed
+// pdb params: inputs, positions
 void ProbeObj::Helper_00d75e30(int mode,const MatchVector& input,MatchVector& output) {
     if(mode==0) probeScan<ProbeSource>(hull,input,output);
     else probeScan<ProbeTransform>(hull,input,output);
@@ -7887,7 +7960,7 @@ struct BevelHull {
     char m_1b4;
     char m_hasIndices;
 
-    void ProcessEntries_00d7caa0(float maxCos, BevelArray& out) const;
+    void ProcessEntries_00d7caa0(float maxCosAngle, BevelArray& bevelPlanes) const;
     __forceinline BevelVector position(const BevelVertex* v) const {
         BevelVector point;
         point.set((float)v->m_pos[0],(float)v->m_pos[1],(float)v->m_pos[2],DAT_01011d78);
@@ -7905,7 +7978,10 @@ struct BevelStream {
 };
 // @fnv 0x00d7caa0
 // src: GUESS 0x00d7caa0 (confidence: low)
-void BevelHull::ProcessEntries_00d7caa0(float maxCos, BevelArray& out) const {
+// pdb: hkgpConvexHullImpl::buildBevelPlanes<hkgpConvexHullImpl::PositionAsTransform> | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: maxCosAngle, bevelPlanes
+// pdb locals: bplane
+void BevelHull::ProcessEntries_00d7caa0(float maxCosAngle, BevelArray& bevelPlanes) const {
     if(!m_hasIndices) {
         char msg[512];
         BevelStream stream;
@@ -7922,7 +7998,7 @@ void BevelHull::ProcessEntries_00d7caa0(float maxCos, BevelArray& out) const {
                 const BevelVector& a=m_kPlaneArray[edge.triangle()->m_kTriangleNormal];
                 const BevelVector& b=m_kPlaneArray[neighbor.triangle()->m_kTriangleNormal];
                 float angle=a.dot(b);
-                if(angle<maxCos) {
+                if(angle<maxCosAngle) {
                     BevelVector plane;
                     plane.sum(a,b);
                     if(plane.normalize()==0) {
@@ -7933,7 +8009,7 @@ void BevelHull::ProcessEntries_00d7caa0(float maxCos, BevelArray& out) const {
                             }
                         }
                         plane(3)=-plane(3);
-                        out.append(plane);
+                        bevelPlanes.append(plane);
                     }
                 }
             }
@@ -7952,7 +8028,7 @@ struct BoxStream {
     int unk00;
     int unk04;
     int unk08;
-    BoxStream* FUN_00cb1600(void* buf, int size);
+    BoxStream* FUN_00cb1600(void* buf, int bufSize);
     BoxStream* ProcessAndReturnValue_00cc01c0(const char*,int,char*);
     BoxStream* EvaluateValue_00cc02d0();
     void ProcessAndReturnValue_00cc01c0();
@@ -8066,8 +8142,8 @@ struct BoxEdge {
 struct BoxIterator {
     BoxFace* m_tri;
     int m_uiEdgeIndex;
-    void FUN_00d7d220(BoxEdge e);
-    void hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next();
+    void FUN_00d7d220(BoxEdge first);
+    void hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_EdgeIterator_next();
     operator const void*() const { return m_tri ? this : 0; }
 };
 
@@ -8183,13 +8259,16 @@ struct BoxHull {
     int m_uiEdgeIndex;
     char unk1b4;
     char m_hasIndex;
-    float GetDirectionalProjectionSpan(const BoxVector& axis, float& mn, float& mx) const;
-    float hkgpConvexHullImpl_getOrientedRectangle(BoxPointer<const BoxVector*> plane, BoxVector& halfExtents, BoxTransform& transform) const;
+    float hkgpConvexHullImpl_getSpan(const BoxVector& axis, float& minBound, float& maxBound) const;
+    float hkgpConvexHullImpl_getOrientedRectangle(BoxPointer<const BoxVector*> projectionPlane, BoxVector& halfExtents, BoxTransform& worldTransform) const;
 };
 
 // @fnv 0x00d7f090
 // src: XBOX_PDB 0x00d7f090
-float BoxHull::hkgpConvexHullImpl_getOrientedRectangle(BoxPointer<const BoxVector*> plane, BoxVector& halfExtents, BoxTransform& transform) const
+// pdb: hkgpConvexHullImpl::getOrientedRectangle | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: projectionPlane, halfExtents, worldTransform
+// pdb locals: minCenter, assertBuf, ostr, edge, edgePlane, edgeAxis, wBounds, hBounds
+float BoxHull::hkgpConvexHullImpl_getOrientedRectangle(BoxPointer<const BoxVector*> projectionPlane, BoxVector& halfExtents, BoxTransform& worldTransform) const
 {
     if (!m_hasIndex) {
         unsigned int buf[128];
@@ -8215,13 +8294,13 @@ int result=DAT_01268360->message(3, 0x79f9d886, (const char*)buf, str_010d3540, 
         BoxIterator it;
         BoxVector e;
         BoxVector n;
-        for (it.FUN_00d7d220(BoxEdge(m_firstTri, 0)); it; it.hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next()) {
+        for (it.FUN_00d7d220(BoxEdge(m_firstTri, 0)); it; it.hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_EdgeIterator_next()) {
             BoxFace* o = (BoxFace*)(it.m_tri->m_ppLinks[it.m_uiEdgeIndex] & ~3);
             int pb = o->m_kTriangleNormal;
             int pa = it.m_tri->m_kTriangleNormal;
             if (pa == pb)
                 continue;
-            const BoxVector* __restrict pDir = plane.val();
+            const BoxVector* __restrict pDir = projectionPlane.val();
             const BoxVector& dir = *pDir;
             const BoxVector& b = m_kPlaneArray[pb];
             const BoxVector& a = m_kPlaneArray[pa];
@@ -8239,8 +8318,8 @@ int result=DAT_01268360->message(3, 0x79f9d886, (const char*)buf, str_010d3540, 
                         _mm_mul_ps(_mm_shuffle_ps(n.q(), n.q(), 0xd2), dir_yzx));
                     if(e.normalize()==0) {
                         float r0[2], r1[2];
-                        float f0 = GetDirectionalProjectionSpan(n, r0[0], r0[1]);
-                        float f1 = GetDirectionalProjectionSpan(e, r1[0], r1[1]);
+                        float f0 = hkgpConvexHullImpl_getSpan(n, r0[0], r0[1]);
+                        float f1 = hkgpConvexHullImpl_getSpan(e, r1[0], r1[1]);
                         float area = f0 * f1;
                         if (area < bestArea) {
                             bestArea = area;
@@ -8258,14 +8337,14 @@ int result=DAT_01268360->message(3, 0x79f9d886, (const char*)buf, str_010d3540, 
     } else if (m_eVertexFloatDimensions == 2) {
         for (int i = 0; i < m_iValue; i++) {
             BoxVector v = m_kPlaneArray[i];
-            const BoxVector* __restrict pDir = plane.val();
+            const BoxVector* __restrict pDir = projectionPlane.val();
             const BoxVector& dir = *pDir;
             BoxVector n;
             n.q() = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(v.q(), v.q(), 0xd2), _mm_shuffle_ps(dir.q(), dir.q(), 0xc9)), _mm_mul_ps(_mm_shuffle_ps(v.q(), v.q(), 0xc9), _mm_shuffle_ps(dir.q(), dir.q(), 0xd2)));
             if(n.normalize()==0) {
                 float r0[2], r1[2];
-                float f0 = GetDirectionalProjectionSpan(v, r0[0], r0[1]);
-                float f1 = GetDirectionalProjectionSpan(n, r1[0], r1[1]);
+                float f0 = hkgpConvexHullImpl_getSpan(v, r0[0], r0[1]);
+                float f1 = hkgpConvexHullImpl_getSpan(n, r1[0], r1[1]);
                 float area = f0 * f1;
                 if (area < bestArea) {
                     bestArea = area;
@@ -8279,13 +8358,13 @@ int result=DAT_01268360->message(3, 0x79f9d886, (const char*)buf, str_010d3540, 
             }
         }
     }
-    hkSetMul4(transform.m_vTranslation, centers[0], axes[0]);
-    hkAddMul4(transform.m_vTranslation, centers[1], axes[1]);
-    const BoxVector& dir = *plane.val();
-    hkSubMul4(transform.m_vTranslation, _mm_shuffle_ps(dir.q(), dir.q(), 0xff), dir);
-    transform.m_kColumn1 = axes[1];
-    transform.m_kColumn0 = axes[0];
-    transform.m_kColumn2 = dir;
+    hkSetMul4(worldTransform.m_vTranslation, centers[0], axes[0]);
+    hkAddMul4(worldTransform.m_vTranslation, centers[1], axes[1]);
+    const BoxVector& dir = *projectionPlane.val();
+    hkSubMul4(worldTransform.m_vTranslation, _mm_shuffle_ps(dir.q(), dir.q(), 0xff), dir);
+    worldTransform.m_kColumn1 = axes[1];
+    worldTransform.m_kColumn0 = axes[0];
+    worldTransform.m_kColumn2 = dir;
     hkSet(halfExtents, extents[0] * 0.5, extents[1] * 0.5, 0.0f, 0.0f);
     return bestArea;
 }
@@ -8321,7 +8400,7 @@ struct S00d81510_Stream {
     int unk00;
     int unk04;
     int unk08;
-    S00d81510_Stream* FUN_00cb1600(void* buf, int size);
+    S00d81510_Stream* FUN_00cb1600(void* buf, int bufSize);
     S00d81510_Stream& ProcessAndReturnValue_00cc01c0(const char* s);
     void FUN_00cc00e0();
 };
@@ -8411,7 +8490,7 @@ struct S00d81510_Router {
     S00d81510_Allocator* m_pStreamAllocator;
     __forceinline S00d81510_Allocator& heap() { return *m_pStreamAllocator; }
 };
-extern "C" void __cdecl hkArrayUtil__reserve(S00d81510_Allocator* alloc, void* array, int numElements, int sizeElem);
+extern "C" void __cdecl hkArrayUtil__reserve(S00d81510_Allocator* mem, void* array, int numElem, int sizeElem);
 
 template <typename T> __forceinline void S00d81510_construct(T* t, int n, S00d81510_TypeIsPod) {}
 template <typename T> __forceinline void S00d81510_destruct(T* t, int n, S00d81510_TypeIsPod) {}
@@ -8517,8 +8596,8 @@ template <typename T> __forceinline void S00d81510_quickSort(T* pArr, int iSize)
 struct S00d81510_VertexList {
     int unk00; int unk04; int unk08; int unk0c; int unk10; int unk14;
     int unk18; int unk1c; int unk20; int unk24; int unk28; int unk2c;
-    S00d81510_Vertex* CloneNode(const S00d81510_Vertex& v);
-    __forceinline S00d81510_Vertex* allocate(const S00d81510_Vertex& v = S00d81510_Vertex()) { return CloneNode(v); }
+    S00d81510_Vertex* hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(const S00d81510_Vertex& value);
+    __forceinline S00d81510_Vertex* allocate(const S00d81510_Vertex& v = S00d81510_Vertex()) { return hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(v); }
 };
 struct S00d81510_Bool {
     char m_cBooleanValue;
@@ -8559,11 +8638,11 @@ public:
     int unk1a0; int unk1a4;
     int m_eVertexFloatDimensions;
 
-    void hkgpConvexHullImpl_reset(bool planar);
+    void hkgpConvexHullImpl_reset(bool keepPlane);
     bool hkgpConvexHullImpl_flushPending();
     void ProcessEntries_00d7d2a0();
     void hkgpConvexHullImpl_buildMassProperties_hkgpConvexHullImpl_PositionAsTransform();
-    int hkgpConvexHullImpl_build(const hkVector4* points, int numPoints, bool planar, const S00d81510_Hull* domainSource);
+    int hkgpConvexHullImpl_build(const hkVector4* points, int numPoints, bool forcePlanar, const S00d81510_Hull* domain);
 
     __forceinline S00d81510_Vertex transformChecked(const hkVector4& x, bool& outOfRange) const
     {
@@ -8611,7 +8690,10 @@ public:
 
 // @fnv 0x00d81510
 // src: COMMUNITY 0x00d81510
-int S00d81510_Hull::hkgpConvexHullImpl_build(const hkVector4* points, int numPoints, bool planar, const S00d81510_Hull* domainSource)
+// pdb: hkgpConvexHullImpl::build | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: points, numPoints, forcePlanar, domain
+// pdb locals: newPoints, retry, maxp, minp, assertBuf, ostr, chain
+int S00d81510_Hull::hkgpConvexHullImpl_build(const hkVector4* points, int numPoints, bool forcePlanar, const S00d81510_Hull* domain)
 {
     if (numPoints && (((unsigned long)points) & 15)) {
         S00d81510_VecArray aligned;
@@ -8619,14 +8701,14 @@ int S00d81510_Hull::hkgpConvexHullImpl_build(const hkVector4* points, int numPoi
         for (int i = 0; i < numPoints; ++i) {
             aligned[i].set(points[i](0), points[i](1), points[i](2), points[i](3));
         }
-        return hkgpConvexHullImpl_build(&aligned[0], numPoints, planar, domainSource);
+        return hkgpConvexHullImpl_build(&aligned[0], numPoints, forcePlanar, domain);
     }
-    hkgpConvexHullImpl_reset(planar);
+    hkgpConvexHullImpl_reset(forcePlanar);
     if (numPoints > 0) {
-        if (domainSource) {
-            m_domainCenter = domainSource->m_domainCenter;
-            m_domainScale = domainSource->m_domainScale;
-            m_domainScaleInv = domainSource->m_domainScaleInv;
+        if (domain) {
+            m_domainCenter = domain->m_domainCenter;
+            m_domainScale = domain->m_domainScale;
+            m_domainScaleInv = domain->m_domainScaleInv;
         } else if (m_bFlagAtOffset0C) {
             m_domainCenter.set(0, 0, 0, 0);
             m_domainScale.set(1, 1, 1, 0);
@@ -8669,7 +8751,7 @@ int S00d81510_Hull::hkgpConvexHullImpl_build(const hkVector4* points, int numPoi
         }
         m_eVertexFloatDimensions = S00d81510_min2(numPoints - 1, 3);
         m_kVectorAtOffsetD0 = hkVector4::getZero();
-        if (planar) {
+        if (forcePlanar) {
             m_eVertexFloatDimensions = 2;
         } else {
             m_kVectorAtOffsetE0 = hkVector4::getZero();
@@ -8711,7 +8793,7 @@ int S00d81510_Hull::hkgpConvexHullImpl_build(const hkVector4* points, int numPoi
                 vectorSetInt24W(m_kVertices[i].m_pObservedSource, i);
             }
         }
-        if (!planar && m_bFlagAtOffset0B) {
+        if (!forcePlanar && m_bFlagAtOffset0B) {
             S00d81510_quickSort(&m_kVertices[0], m_kVertices.GetLogicalSize());
         }
         bool redo;
@@ -8796,12 +8878,14 @@ int S00d81510_Hull::hkgpConvexHullImpl_build(const hkVector4* points, int numPoi
 }
 
 // src: HAVOK_LIB 0x00d752c0
-__declspec(noinline) int __stdcall hkgpConvexHull_getVertex(int* arr, int idx) { return arr[idx + 2]; }
+__declspec(noinline) int __stdcall hkgpConvexHull_getVertex(int* triangle, int index) { return triangle[index + 2]; }
 struct HullPlaneOwner {
     void UpdateFields_00d75b80(LocalM128& out, const int* triangle);
 };
 // @fnv 0x00d75b80
 // src: GUESS 0x00d75b80 (confidence: low)
+// pdb: hkgpConvexHull::getNearestVertex | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: inputs, point, vertexOut
 void __thiscall HullPlaneOwner::UpdateFields_00d75b80(LocalM128& out, const int* triangle)
 {
     OffsetOwner* owner = (OffsetOwner*)this;
@@ -9056,7 +9140,7 @@ struct S83_Fmt {
     int unk00;
     int unk04;
     int unk08;
-    void FUN_00cb1600(char* buffer, int capacity);
+    void FUN_00cb1600(char* buf, int bufSize);
     S83_Fmt* ProcessAndReturnValue_00cc01c0(const char* text);
     S83_Fmt* ProcessAndReturnValue_00cc01c0(const char* text, int code, const char* tail);
     S83_Fmt* EvaluateValue_00cc02d0();
@@ -9197,20 +9281,23 @@ struct S83_Mesh {
     int diagnosticCode;
     unsigned char flag1b4;
     unsigned char flag1b5;
-    void ProcessEntries_00d83f30(S83_Options* options);
-    void ProcessEntries_00d82ad0(int limit, bool reseat);
-    int hkgpConvexHullImpl_build(const S83_Vec4* points, int numPoints, int a, int b);
+    void ProcessEntries_00d83f30(S83_Options* config);
+    void hkgpConvexHullImpl_decimateVertices(int limit, bool containment);
+    int hkgpConvexHullImpl_build(const S83_Vec4* points, int numPoints, int forcePlanar, int domain);
     void ProcessEntries_00d7d2a0();
     void hkgpConvexHullImpl_buildMassProperties_hkgpConvexHullImpl_PositionAsTransform();
-    void hkgpConvexHullImpl_generateIndexedFaces_int_int(S83_Array<int>* a, S83_Array<int>* b, int c, int d);
+    void hkgpConvexHullImpl_generateIndexedFaces_int_int(S83_Array<int>* vpf, S83_Array<int>* vi, int useSourceIndex, int maximizeArea);
 };
 // @fnv 0x00d83f30
 // src: GUESS 0x00d83f30 (confidence: low)
-void S83_Mesh::ProcessEntries_00d83f30(S83_Options* options)
+// pdb: hkgpConvexHullImpl::simplify | hkgpConvexHull.obj | retail, unique string literal, high
+// pdb params: config
+// pdb locals: hadMassProperties, hadIndexing, assertBuf, ostr, points, usedIndices, verticesPerFace, vertexIndices, old_points, new_points
+void S83_Mesh::ProcessEntries_00d83f30(S83_Options* config)
 {
     unsigned char oldFlagA = flag1b4;
     unsigned char oldFlagB = flag1b5;
-    bool changed = options->modified != 0;
+    bool changed = config->modified != 0;
     switch (state) {
     case 0:
     case 1:
@@ -9229,13 +9316,13 @@ void S83_Mesh::ProcessEntries_00d83f30(S83_Options* options)
         return;
     }
     }
-    if (options->vertexLimit >= 4) {
+    if (config->vertexLimit >= 4) {
         int before = vertexCount;
-        ProcessEntries_00d82ad0(options->vertexLimit, options->reseat != 0);
+        hkgpConvexHullImpl_decimateVertices(config->vertexLimit, config->reseat != 0);
         changed = vertexCount != before;
     }
-    if (options->tolerance > 0.0f) {
-        float maxArea = options->tolerance + options->tolerance;
+    if (config->tolerance > 0.0f) {
+        float maxArea = config->tolerance + config->tolerance;
         bool again;
         do {
             again = false;
@@ -9275,7 +9362,7 @@ void S83_Mesh::ProcessEntries_00d83f30(S83_Options* options)
             }
         } while (again && state == 3);
     }
-    if (options->rebuild != 0 && state == 3) {
+    if (config->rebuild != 0 && state == 3) {
         if (!flag1b5) {
             int text[128];
             S83_Fmt fmt;
@@ -9352,7 +9439,7 @@ struct S00d7fb80_Stream {
     int unk00;
     int unk04;
     int unk08;
-    S00d7fb80_Stream* FUN_00cb1600(void* buf, int size);
+    S00d7fb80_Stream* FUN_00cb1600(void* buf, int bufSize);
     S00d7fb80_Stream& ProcessAndReturnValue_00cc01c0(const char* s);
     void FUN_00cc00e0();
 };
@@ -9602,24 +9689,24 @@ struct S00d7fb80_VertexList {
     S00d7fb80_Vertex* m_uiBufferCapacity;
     int m_iAllocatedCount; int unk14;
     S00d7fb80_Vertex* allocateItem();
-    S00d7fb80_Vertex* CloneNode(const S00d7fb80_Vertex& v);
-    __forceinline S00d7fb80_Vertex* allocate(const S00d7fb80_Vertex& v = S00d7fb80_Vertex()) { return CloneNode(v); }
+    S00d7fb80_Vertex* hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(const S00d7fb80_Vertex& value);
+    __forceinline S00d7fb80_Vertex* allocate(const S00d7fb80_Vertex& v = S00d7fb80_Vertex()) { return hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(v); }
 };
 struct S00d7fb80_TriangleList {
     int unk00; int unk04; int unk08;
     S00d7fb80_Triangle* m_uiBufferCapacity;
     int m_iAllocatedCount; int unk14;
     S00d7fb80_Triangle* allocateItem();
-    S00d7fb80_Triangle* hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Triangle_struct_hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHull_Vertex_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_Item_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Triangle_32_struct_hkContainerHeapAllocator_allocate(const S00d7fb80_Triangle& t);
-    __forceinline S00d7fb80_Triangle* allocate(const S00d7fb80_Triangle& t = S00d7fb80_Triangle()) { return hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Triangle_struct_hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHull_Vertex_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_Item_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Triangle_32_struct_hkContainerHeapAllocator_allocate(t); }
+    S00d7fb80_Triangle* hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Triangle_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Triangle_32_hkContainerHeapAllocator_allocate(const S00d7fb80_Triangle& value);
+    __forceinline S00d7fb80_Triangle* allocate(const S00d7fb80_Triangle& t = S00d7fb80_Triangle()) { return hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Triangle_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Triangle_32_hkContainerHeapAllocator_allocate(t); }
     __forceinline S00d7fb80_Triangle* getFirst() const { return m_uiBufferCapacity; }
 };
 __forceinline void* operator new(unsigned int, S00d7fb80_Vertex* p) throw() { return p; }
 __forceinline void* operator new(unsigned int, S00d7fb80_Triangle* p) throw() { return p; }
 
-__declspec(noinline) S00d7fb80_Vertex* S00d7fb80_VertexList::CloneNode(const S00d7fb80_Vertex& v)
+__declspec(noinline) S00d7fb80_Vertex* S00d7fb80_VertexList::hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(const S00d7fb80_Vertex& value)
 {
-    S00d7fb80_Vertex* item = new (allocateItem()) S00d7fb80_Vertex(v);
+    S00d7fb80_Vertex* item = new (allocateItem()) S00d7fb80_Vertex(value);
     item->m_pSecondNode = 0;
     item->m_next = m_uiBufferCapacity;
     if (m_uiBufferCapacity) m_uiBufferCapacity->m_pSecondNode = item;
@@ -9628,9 +9715,9 @@ __declspec(noinline) S00d7fb80_Vertex* S00d7fb80_VertexList::CloneNode(const S00
     return item;
 }
 // src: HAVOK_LIB 0x00d7efc0
-__declspec(noinline) S00d7fb80_Triangle* S00d7fb80_TriangleList::hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Triangle_struct_hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHull_Vertex_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_Item_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Triangle_32_struct_hkContainerHeapAllocator_allocate(const S00d7fb80_Triangle& t)
+__declspec(noinline) S00d7fb80_Triangle* S00d7fb80_TriangleList::hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Triangle_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Triangle_32_hkContainerHeapAllocator_allocate(const S00d7fb80_Triangle& value)
 {
-    S00d7fb80_Triangle* item = new (allocateItem()) S00d7fb80_Triangle(t);
+    S00d7fb80_Triangle* item = new (allocateItem()) S00d7fb80_Triangle(value);
     item->m_pSecondNode = 0;
     item->m_next = m_uiBufferCapacity;
     if (m_uiBufferCapacity) m_uiBufferCapacity->m_pSecondNode = item;
@@ -9670,7 +9757,7 @@ public:
     int m_uiUniqueId;
 
     bool hkgpConvexHullImpl_flushPending();
-    void hkgpConvexHullImpl_clearHorizon(const S00d7fb80_Vertex& v, const S00d7fb80_Edge& edge, S00d7fb80_Edge& out);
+    void hkgpConvexHullImpl_clearHorizon(const S00d7fb80_Vertex& vertex, const S00d7fb80_Edge& root, S00d7fb80_Edge& horizon);
 
     template <typename T> static __forceinline T mul_32x32(int a, int b) { return (T)a * (T)b; }
     static __forceinline __int64 distanceToPlane(const S00d7fb80_Vertex& v, const S00d7fb80_Plane& p)
@@ -9775,6 +9862,8 @@ public:
 
 // @fnv 0x00d7fb80
 // src: XBOX_PDB 0x00d7fb80
+// pdb: hkgpConvexHullImpl::flushPending | hkgpConvexHull.obj | retail, string-set bridge, high
+// pdb locals: npendings, found, assertBuf, ostr, i, vi, j, k, plane, l
 bool S00d7fb80_Hull::hkgpConvexHullImpl_flushPending()
 {
     const int numVertices = m_kVertices.GetLogicalSize();
@@ -10126,7 +10215,7 @@ struct ExpandShape {
     __declspec(noinline) int hkgpConvexHull_build_00d77200(const ExpandView&,const ExpandHeader&);
     void SetValue(float,bool);
     void ForwardCall_00d762f0();
-    bool hkgpConvexHull_expandByPlanarMargin(float radius);
+    bool hkgpConvexHull_expandByPlanarMargin(float margin);
 };
 // src: GUESS 0x00d74e10 (confidence: medium)
 __declspec(noinline) int ExpandShape::GetInnerField1A8() { return state->dimension; }
@@ -10157,9 +10246,12 @@ __declspec(noinline) int ExpandShape::hkgpConvexHull_build_00d77200(const Expand
 __declspec(noinline) int ExpandShape::Object_ReadPointedValue_00d75120(int v) const { return *(const int*)v; }
 // @fnv 0x00d77be0
 // src: XBOX_PDB 0x00d77be0
-bool ExpandShape::hkgpConvexHull_expandByPlanarMargin(float radius)
+// pdb: hkgpConvexHull::expandByPlanarMargin | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: margin
+// pdb locals: halfMargin, config, assertBuf, ostr, vertices, direction, axeX, centroid, plane
+bool ExpandShape::hkgpConvexHull_expandByPlanarMargin(float margin)
 {
-    float halfRadius=radius*0.5;
+    float halfRadius=margin*0.5;
     ExpandState* source=state;
     ExpandHeader saved=source->header;
     struct __declspec(align(2)) { ExpandTruth flagB, flagA; } flags; flags.flagB=state->flagB;
@@ -10226,8 +10318,8 @@ seed.bits.w=source->first->point.bits.w;
         for (int v=GetUnk24_00d75060();v;v=Object_ReadPointedValue_00d75120(v)) {
             const ExpandVector* position=&Hkgpconvexhull_GetPayloadAddress(v);
             const ExpandVector& pos=*position;
-            points.AllocatePair().setAddMul(pos,normal,ExpandScalar(radius));
-            points.AllocatePair().setAddMul(pos,normal,ExpandScalar(-radius));
+            points.AllocatePair().setAddMul(pos,normal,ExpandScalar(margin));
+            points.AllocatePair().setAddMul(pos,normal,ExpandScalar(-margin));
         }
         ExpandView view; view.set(points);
         if (hkgpConvexHull_build_00d77200(view,saved)!=3) {
@@ -10235,7 +10327,7 @@ seed.bits.w=source->first->point.bits.w;
             points.AddBack(seed);
             view.set(points);
             hkgpConvexHull_build_00d77200(view,saved);
-            bool result=hkgpConvexHull_expandByPlanarMargin(radius); points.clearAndFree(); return result;
+            bool result=hkgpConvexHull_expandByPlanarMargin(margin); points.clearAndFree(); return result;
         }
         points.clearAndFree();
         break;
@@ -10251,7 +10343,7 @@ seed.bits.w=source->first->point.bits.w;
             if (*(unsigned char*)plane.FUN_00c7f520(&av.validity.valid,DAT_010141cc)) {
                 for (int i=0;i<3;++i) {
                     const ExpandVector& pos=Hkgpconvexhull_GetPayloadAddress(hkgpConvexHull_getVertex(f,i));
-                    points.AllocatePair().setAddMul(pos,plane,ExpandScalar(radius));
+                    points.AllocatePair().setAddMul(pos,plane,ExpandScalar(margin));
                 }
             }
         }

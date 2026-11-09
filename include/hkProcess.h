@@ -4,6 +4,7 @@
 
 typedef unsigned char hkUint8;
 
+// pdb: class hkProcess, size 0x18, 5 members
 class hkProcess
 {
 public:
@@ -19,9 +20,9 @@ public:
     virtual void init();
     virtual void step(float frameTimeInMs);
 
-    int unk04;
-    int unk08;
-    int unk0c;
-    int unk10;
-    int unk14;
+    int m_selectable;
+    int m_inStream;
+    int m_outStream;
+    int m_displayHandler;
+    int m_processHandler;
 };

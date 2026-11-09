@@ -143,6 +143,8 @@ struct FUN_005077a0_Class
 
 // @fnv 0x005077a0
 // src: XBOX_PDB 0x005077a0
+// pdb: ParticleShaderProperty::SetTexture | TESEffectShader.obj | debug, object-file run extension, low
+// pdb params: pTex
 void FUN_005077a0_Class::BoltShaderProperty_SetSegmentVariance(float value)
 {
     *(float*)((char*)this + 0x148) = value;
@@ -160,6 +162,9 @@ struct FUN_00507d80_Class
 
 // @fnv 0x00507d80
 // src: XBOX_PDB 0x00507d80
+// pdb: TESEffectShader::AnimateParticleEffectBirthrate | TESEffectShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FOPipboyManager::Get3rdPersonPipboyRoot
+// pdb params: afCurrentBirthrate, afTimeDelta, afTime, abFade
 unsigned int FUN_00507d80_Class::FOPipboyManager_Get3rdPersonPipboyRoot()
 {
     return *(Flt*)((char*)this + 0xdc);
@@ -194,17 +199,19 @@ extern "C" void __cdecl _ref_006815c0();
 struct FUN_00509890_class
 {
     void __thiscall _ref_006815c0();
-    void* __thiscall UpdateState_00509890(bool);
+    void* __thiscall FurnitureMark_ctor(bool);
 };
 
 // Calls _ref_006815c0, zeroes the short at offset 0xc, stores flag at offset 0xe, and returns this.
 // @fnv 0x00509890
-// src: GUESS 0x00509890 (confidence: low)
-void* __thiscall FUN_00509890_class::UpdateState_00509890(bool flag)
+// src: XBOX_DEBUG_PDB 0x00509890
+// pdb: FurnitureMark::FurnitureMark | TESFurniture.obj | debug, call graph, high
+// pdb params: aiNumber
+void* __thiscall FUN_00509890_class::FurnitureMark_ctor(bool aiNumber)
 {
     _ref_006815c0();
     *reinterpret_cast<short*>(reinterpret_cast<char*>(this) + 0xc) = 0;
-    *reinterpret_cast<char*>(reinterpret_cast<char*>(this) + 0xe) = flag;
+    *reinterpret_cast<char*>(reinterpret_cast<char*>(this) + 0xe) = aiNumber;
     return this;
 }
 
@@ -268,13 +275,15 @@ void FUN_00510110_class::ForwardCall_00510110()
 
 struct FUN_00510360_Class
 {
-    void* TESObjectList_lnk_GetNext(TESObject* p);
+    void* TESObjectList_lnk_GetNext(TESObject* lpNode);
 };
 // @fnv 0x00510360
 // src: COMMUNITY 0x00510360
-void* FUN_00510360_Class::TESObjectList_lnk_GetNext(TESObject* apObject)
+// pdb: TESObjectList::lnk_GetNext | TESObject.obj | debug, upstream name already matches, high
+// pdb params: lpNode
+void* FUN_00510360_Class::TESObjectList_lnk_GetNext(TESObject* lpNode)
 {
-    return apObject->GetNext();
+    return lpNode->GetNext();
 }
 
 struct FUN_00510380_Class
@@ -282,6 +291,8 @@ struct FUN_00510380_Class
     unsigned int __thiscall GetTerrainMinLevel(BGSTerrainManager* a);
 };
 // @fnv 0x00510380
+// pdb: TESObjectList::lnk_GetPrev | TESObject.obj | debug, object-file run extension, low
+// pdb params: lpNode
 unsigned int __thiscall FUN_00510380_Class::GetTerrainMinLevel(BGSTerrainManager* apTerrainManager)
 {
     return apTerrainManager->GetMinLevel();
@@ -328,6 +339,7 @@ struct BlkOffset08View
 };
 
 // @fnv 0x005113d0
+// pdb: TESObjectACTI::GetNonPipboyRadio | TESObjectACTI.obj | debug, call graph, medium
 unsigned int BlkOffset08View::HasFlag10000000()
 {
     return (GetFlags() & 0x10000000) != 0;
@@ -348,6 +360,7 @@ void FUN_00519020_Class::SetField688(int value)
 
 // @fnv 0x005194d0
 // src: XBOX_PDB 0x005194d0
+// pdb: TESObjectDOOR::IsRandomDoor | TESObjectDOOR.obj | debug, upstream name already matches, high
 bool TESObjectDOOR::IsRandomDoor()
 {
     if (!m_kRandomTeleportTargets.IsEmpty())
@@ -367,6 +380,8 @@ struct FUN_00519b20_cls
 // Calls ConstructArray with arg, sets m_p to the address of DAT_0102b3d0, and returns this.
 // @fnv 0x00519b20
 // src: GUESS 0x00519b20 (confidence: low)
+// pdb: NiTPointerMap<int,bool>::NiTPointerMap<int,bool> | TESObjectDOOR.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* __thiscall FUN_00519b20_cls::InitializeFields_00519b20(void* arg)
 {
     ConstructArray(arg);
@@ -381,6 +396,7 @@ struct Flt
     operator unsigned int();
 };
 // @fnv 0x0051cee0
+// pdb: BSTreeManager::GetDistantBillboardAlphaProperty | TESObjectTREE.obj | debug, object-file gap fill, medium
 unsigned int __cdecl GetFloatAsUInt()
 {
     return ((Flt*)((char*)BSTreeManager_GetInstance(1) + 0xc))->operator unsigned int();
@@ -401,6 +417,7 @@ struct FUN_0051cfe0_Class
 
 // @fnv 0x0051cfe0
 // src: GUESS 0x0051cfe0 (confidence: low)
+// pdb: NiBillboardNode::~NiBillboardNode | TESObjectTREE.obj | debug, call graph, medium
 unsigned int __thiscall FUN_0051cfe0_Class::ForwardCall_0051cfe0()
 {
     return ((Unk_00a5e930*)this)->UpdateFields_00c5faa0();
@@ -456,6 +473,8 @@ struct FUN_00519c50_class
 
 // @fnv 0x00519c50
 // src: GUESS 0x00519c50 (confidence: low)
+// pdb: NiTPointerMap<int,bool>::~NiTPointerMap<int,bool> | TESObjectDOOR.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<NiTPointerAllocator<unsigned int>,int,bool>::~NiTMapBase<NiTPointerAllocator<unsigned int>,int,bool>
 void __thiscall FUN_00519c50_class::ReleaseStorage_00519c50()
 {
     pVft = &DAT_0102b3f0;
@@ -472,6 +491,7 @@ struct FUN_005010c0_class
 };
 // Calls FUN_005010f0, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x005010c0
+// pdb: TERMINAL_MENU_ITEM::`scalar deleting destructor' | BGSTerminal.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_005010c0_class::FUN_005010c0(unsigned int flags)
 {
     FUN_005010f0();
@@ -501,6 +521,7 @@ struct FUN_00519b50_class
 };
 // Calls FUN_00519bf0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00519b50
+// pdb: NiTPointerMap<int,bool>::`scalar deleting destructor' | TESObjectDOOR.obj | retail, vtable slot, high
 void* __thiscall FUN_00519b50_class::FUN_00519b50(unsigned int flags)
 {
     FUN_00519bf0();
@@ -519,6 +540,7 @@ struct FUN_00519c80_class
 
 // Calls FUN_00519c50 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x00519c80
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,bool>::`scalar deleting destructor' | TESObjectDOOR.obj | retail, vtable slot, high
 void* __thiscall FUN_00519c80_class::FUN_00519c80(unsigned int flags)
 {
     ((FUN_00519c50_class*)this)->ReleaseStorage_00519c50();
@@ -535,11 +557,14 @@ struct FUN_00501cd0_class
     void* m_0c;
     unsigned int m_10;
     void* m_14;
-    void* __thiscall DoorLock_DoorLock();
+    void* __thiscall DoorLock_ctor();
 };
 // @fnv 0x00501cd0
-// src: XBOX_PDB 0x00501cd0
-void* __thiscall FUN_00501cd0_class::DoorLock_DoorLock()
+// src: XBOX_RETAIL_PDB 0x00501cd0
+// pdb: DoorLock::DoorLock | DoorLock.obj | retail, upstream name already matches, high
+// pdb params: apDoorRef
+// pdb locals: ptel, pDoorLock
+void* __thiscall FUN_00501cd0_class::DoorLock_ctor()
 {
     m_00 = 0;
     m_04 = 0;
@@ -554,6 +579,7 @@ TESForm* __cdecl GetFormByID(unsigned int id);
 
 // @fnv 0x00505000
 // src: XBOX_PDB 0x00505000
+// pdb: TESCombatStyle::GetDefaultCombatStyle | TESCombatStyle.obj | debug, upstream name already matches, high
 TESForm* __cdecl TESCombatStyle_GetDefaultCombatStyle()
 {
     return GetFormByID(0x3d);
@@ -631,7 +657,7 @@ struct FUN_00759450_shell
 };
 struct FUN_005082b0_shell
 {
-    void UpdateEnvelope(float, float, float, unsigned char, float, float, float, float, float);
+    void TESEffectShader_AnimateValue(float, float, float, unsigned char, float, float, float, float, float);
 };
 
 struct FUN_00508090_shell
@@ -641,16 +667,18 @@ struct FUN_00508090_shell
     float GetEndKeyTime_00508100();
     float NiControllerSequence_GetLastTime();
     float NiPSysSpawnModifier_GetLifeSpan();
-    void UpdateEnvelope(float, float, float, unsigned char, float, float, float, float, float);
-    void TESEffectShader_AnimateFillEffectAlpha(float a, float b, float c, unsigned char d);
+    void TESEffectShader_AnimateValue(float, float, float, unsigned char, float, float, float, float, float);
+    void TESEffectShader_AnimateFillEffectAlpha(float afCurrentAlpha, float afTimeDelta, float afTime, unsigned char abFade);
 };
 
 // Forwards a, b, c and d to UpdateEnvelope together with the results of FUN_009a9350, GetActorRadius, FUN_00508100, FUN_00508120 and FUN_00759450.
 // @fnv 0x00508090
 // src: COMMUNITY 0x00508090
-void __thiscall FUN_00508090_shell::TESEffectShader_AnimateFillEffectAlpha(float a, float b, float c, unsigned char d)
+// pdb: TESEffectShader::AnimateFillEffectAlpha | TESEffectShader.obj | debug, upstream name already matches, high
+// pdb params: afCurrentAlpha, afTimeDelta, afTime, abFade
+void __thiscall FUN_00508090_shell::TESEffectShader_AnimateFillEffectAlpha(float afCurrentAlpha, float afTimeDelta, float afTime, unsigned char abFade)
 {
-    UpdateEnvelope(a, b, c, d, TESCombatStyle_GetWeaponMinRangeMult(), GetActorRadius(), GetEndKeyTime_00508100(), NiControllerSequence_GetLastTime(), NiPSysSpawnModifier_GetLifeSpan());
+    TESEffectShader_AnimateValue(afCurrentAlpha, afTimeDelta, afTime, abFade, TESCombatStyle_GetWeaponMinRangeMult(), GetActorRadius(), GetEndKeyTime_00508100(), NiControllerSequence_GetLastTime(), NiPSysSpawnModifier_GetLifeSpan());
 }
 
 struct FUN_0050e640_Holder
@@ -661,6 +689,8 @@ struct FUN_0050e640_Holder
 };
 // Returns true when the holder's byte at offset 4 equals the given value, or false if the holder is null.
 // @fnv 0x0050e640
+// pdb: NiPointer<NiLight>::NiPointer<NiLight> | TESLight.obj | debug, object-file run extension, low
+// pdb params: ptr
 bool __thiscall FUN_0050e640_Holder::MatchesValue(unsigned char v)
 {
     return this ? _4 == v : false;
@@ -670,6 +700,7 @@ float __cdecl NiSqrt_004579e0(float);
 // Returns the square root of the sum of squares of the three short components pointed to by p.
 // @fnv 0x0050ec80
 // src: XBOX_PDB 0x0050ec80
+// pdb: stdext::exception::_Raise | TESObject.obj | retail, object-file run extension, low
 float __fastcall NiNPShortPoint3_Length(short* pComponents)
 {
     return NiSqrt_004579e0(
@@ -686,6 +717,7 @@ struct FUN_00514fd0_class
 };
 // @fnv 0x00514fd0
 // src: COMMUNITY 0x00514fd0
+// pdb: TESObjectBOOK::GetTeaches | TESObjectBOOK.obj | debug, upstream name already matches, high
 int __thiscall FUN_00514fd0_class::TESObjectBOOK_GetTeaches()
 {
     if (reinterpret_cast<const signed char*>(this)[0xc1] == -1)
@@ -700,14 +732,18 @@ struct LH
 };
 struct FUN_00519500_class
 {
-    bool HasEntry(int a);
+    bool TESObjectDOOR_RandomlyTeleportsTo(int apSpace);
 };
 // Returns true if a is non-zero, passes FUN_00519570, and is contained in the list at this+0x88.
 // @fnv 0x00519500
-bool FUN_00519500_class::HasEntry(int aiValue)
+// src: XBOX_DEBUG_PDB 0x00519500
+// pdb: TESObjectDOOR::RandomlyTeleportsTo | TESObjectDOOR.obj | debug, call graph, high
+// pdb params: apSpace
+// pdb locals: bretval
+bool FUN_00519500_class::TESObjectDOOR_RandomlyTeleportsTo(int apSpace)
 {
     bool r = false;
-    if (aiValue && TESObjectDOOR_CanBeRandomTeleport(aiValue) && ((LH*)((char*)this + 0x88))->IsInList(aiValue))
+    if (apSpace && TESObjectDOOR_CanBeRandomTeleport(apSpace) && ((LH*)((char*)this + 0x88))->IsInList(apSpace))
         r = true;
     return r;
 }
@@ -720,6 +756,9 @@ struct FUN_00519b20
 };
 // Sets the vtable and count, allocates a zeroed array of n 4-byte elements, and returns this.
 // @fnv 0x00519b80
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,bool>::GetAt | TESObjectDOOR.obj | debug, object-file run extension, low
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 void* __thiscall FUN_00519b20::ConstructArray(unsigned int n)
 {
     unsigned int size;
@@ -799,6 +838,7 @@ struct FUN_00509a10 : TESGrassBase
     void ResetFormData();
 };
 // @fnv 0x00509a10
+// pdb: TESGrass::TESGrass | TESGrass.obj | retail, call graph, medium
 FUN_00509a10::FUN_00509a10()
 {
     ((void**)this)[0] = (void*)DAT_0102814c;
@@ -808,6 +848,7 @@ FUN_00509a10::FUN_00509a10()
 }
 
 // @fnv 0x0050a5a0
+// pdb: TESKey::TESKey | TESKey.obj | retail, upstream name already matches, high
 TESKey::TESKey()
 {
     SetFormType(0x2e);
@@ -818,7 +859,7 @@ struct TESObjectREFR_Flags
 {
     unsigned int GetFlags();
     void SetFlags(unsigned int flags);
-    void MarkAsModified(int change);
+    void MarkAsModified(int aiChangeFlags);
     void __thiscall SetRefFlag40000000(bool set);
 };
 
@@ -900,25 +941,29 @@ extern TESBoundObject* g_pLockpickItem;
 
 struct FUN_00516cd0_class
 {
-    bool __thiscall CanUseLockedRef(TESObjectREFR* ref, Actor* actor, bool useLockpick);
+    bool __thiscall TESObjectCONT_CanActivate(TESObjectREFR* apItemActivated, Actor* apActionRef, bool abAllowLockpicking);
 };
 
 // @fnv 0x00516cd0
-bool __thiscall FUN_00516cd0_class::CanUseLockedRef(TESObjectREFR* ref, Actor* actor, bool useLockpick)
+// src: XBOX_RETAIL_PDB 0x00516cd0
+// pdb: TESObjectCONT::CanActivate | TESObjectCONT.obj | retail, object-file run extension, high
+// pdb params: apItemActivated, apActionRef, abAllowLockpicking
+// pdb locals: pLock, pActionActor, euseItem
+bool __thiscall FUN_00516cd0_class::TESObjectCONT_CanActivate(TESObjectREFR* apItemActivated, Actor* apActionRef, bool abAllowLockpicking)
 {
     int pLock;
     Actor* pActor;
     LockExtraData* iCount;
 
-    if (actor == 0 || !actor->IsActor())
+    if (apActionRef == 0 || !apActionRef->IsActor())
         return false;
 
-    iCount = ref->GetLock();
+    iCount = apItemActivated->GetLock();
     if (iCount == 0 || !iCount->IsLocked())
         return true;
 
-    pActor = actor;
-    if (actor != g_thePlayer && ref->CanBeUsed(pActor, true))
+    pActor = apActionRef;
+    if (apActionRef != g_thePlayer && apItemActivated->CanBeUsed(pActor, true))
         return true;
 
     pLock = 0;
@@ -928,7 +973,7 @@ bool __thiscall FUN_00516cd0_class::CanUseLockedRef(TESObjectREFR* ref, Actor* a
     }
     else
     {
-        if (useLockpick)
+        if (abAllowLockpicking)
         {
             if (pActor->Actor_HasObjects(g_pLockpickItem, 0, 1, 0, pLock))
                 return true;
@@ -948,7 +993,7 @@ int FixedStrings_GetArrowQuiver()
 
 struct FUN_00505b80_cls
 {
-    unsigned char DispatchByType(int aType);
+    unsigned char TESCombatStyle_GetPowerAttackChance(int aePowerAttack);
     unsigned char FUN_0073cb80();
     unsigned char TESCombatStyle_GetPowerAttackF();
     unsigned char GetByteAtOffset9A();
@@ -958,9 +1003,12 @@ struct FUN_00505b80_cls
 
 // Dispatches on aType (0x5c-0x60) to one of five member functions and returns its result, or 0 for other values.
 // @fnv 0x00505b80
-unsigned char FUN_00505b80_cls::DispatchByType(int aType)
+// src: XBOX_DEBUG_PDB 0x00505b80
+// pdb: TESCombatStyle::GetPowerAttackChance | TESCombatStyle.obj | debug, call graph, high
+// pdb params: aePowerAttack
+unsigned char FUN_00505b80_cls::TESCombatStyle_GetPowerAttackChance(int aePowerAttack)
 {
-    switch (aType)
+    switch (aePowerAttack)
     {
     case 0x5c:
         return FUN_0073cb80();
@@ -1100,6 +1148,7 @@ class FUN_00505c40 : public ThisBase_c40
 
 // Initializes the object by calling CallA_c40 with 0x4f and then CallB_c40.
 // @fnv 0x00505c40
+// pdb: TESEffectShader::TESEffectShader | TESEffectShader.obj | retail, call graph, high
 FUN_00505c40::FUN_00505c40()
 {
     CallA_c40(0x4f);
@@ -1115,7 +1164,7 @@ class FUN_00507da0_cls
     float BGSProjectile_GetMuzzleFlashDuration(float value);
     float GetField90Float(float value);
     float FUN_0051b8e0(float value);
-    void UpdateEnvelope(float a, float b, float c, unsigned char flag, float value);
+    void TESEffectShader_AnimateValue(float afCurrentValue, float afTimeDelta, float afTime, unsigned char abFade, float afFadeIn);
     void TESEffectShader_BirthParticles(float a, float b, float c, unsigned char flag);
 };
 
@@ -1124,7 +1173,7 @@ class FUN_00507da0_cls
 // src: COMMUNITY 0x00507da0
 void FUN_00507da0_cls::TESEffectShader_BirthParticles(float a, float b, float c, unsigned char flag)
 {
-    UpdateEnvelope(a, b, c, flag, FUN_0051b8e0(GetField90Float(BGSProjectile_GetMuzzleFlashDuration(Explosion_GetRadius(NiAVObject_GetWorldScale())))));
+    TESEffectShader_AnimateValue(a, b, c, flag, FUN_0051b8e0(GetField90Float(BGSProjectile_GetMuzzleFlashDuration(Explosion_GetRadius(NiAVObject_GetWorldScale())))));
 }
 
 extern "C" double gModifierZero;
@@ -1143,6 +1192,8 @@ class B5081D0Actor
 
 // @fnv 0x005081d0
 // src: COMMUNITY 0x005081d0
+// pdb: TESEffectShader::CalculateEdgeEffectPulse | TESEffectShader.obj | debug, object-file run extension, low
+// pdb params: afTime
 float B5081D0Actor::TESEffectShader_CalculateEdgeAlphaPulse(float fTime)
 {
     if (GetFloatAt64() > gModifierZero)
@@ -1167,6 +1218,8 @@ class C508240Ref
 
 // @fnv 0x00508240
 // src: COMMUNITY 0x00508240
+// pdb: TESEffectShader::CalculateFillEffectPulse | TESEffectShader.obj | debug, object-file run extension, low
+// pdb params: afTime
 float C508240Ref::TESEffectShader_CalculateFillAlphaPulse(float afValue)
 {
     if (GetScale() > gModifierZero)
@@ -1183,40 +1236,44 @@ float BSMIN(float, float);
 unsigned int FUN_00ba52d0();
 struct Envelope
 {
-    float UpdateEnvelope(float current, float rate, float elapsed, unsigned char releasing, float attack, float decay,
-                         float hold, float maximum, float minimum);
+    float TESEffectShader_AnimateValue(float afCurrentValue, float afTimeDelta, float afTime, unsigned char abFade, float afFadeIn, float afFadeOut,
+                         float afFullTime, float afFullValue, float afPersistentValue);
 };
 // @fnv 0x005082b0
-float Envelope::UpdateEnvelope(float current, float rate, float elapsed, unsigned char releasing, float attack,
-                               float decay, float hold, float maximum, float minimum)
+// src: XBOX_DEBUG_PDB 0x005082b0
+// pdb: TESEffectShader::AnimateValue | TESEffectShader.obj | debug, call graph (shared callers), high
+// pdb params: afCurrentValue, afTimeDelta, afTime, abFade, afFadeIn, afFadeOut, afFullTime, afFullValue, afPersistentValue
+// pdb locals: ffadeRate
+float Envelope::TESEffectShader_AnimateValue(float afCurrentValue, float afTimeDelta, float afTime, unsigned char abFade, float afFadeIn,
+                               float afFadeOut, float afFullTime, float afFullValue, float afPersistentValue)
 {
-    if (releasing)
+    if (abFade)
     {
-        if (elapsed < attack + hold)
-            releasing = 0;
+        if (afTime < afFadeIn + afFullTime)
+            abFade = 0;
         else
         {
             float scale = 0.0f;
-            if (decay > 0.0 && maximum - minimum != 0.0)
-                scale = (1.0 / decay) * std::abs(maximum - minimum);
+            if (afFadeOut > 0.0 && afFullValue - afPersistentValue != 0.0)
+                scale = (1.0 / afFadeOut) * std::abs(afFullValue - afPersistentValue);
             if (scale < 0.33f)
                 scale = 0.33f;
-            scale = FUN_00ba52d0() * rate * scale;
-            current = BSMAX_00404010(0.0f, current - scale);
+            scale = FUN_00ba52d0() * afTimeDelta * scale;
+            afCurrentValue = BSMAX_00404010(0.0f, afCurrentValue - scale);
         }
     }
-    if (!releasing)
+    if (!abFade)
     {
-        if (elapsed < attack)
-            current = BSMIN(maximum, current + rate / attack * maximum);
-        else if (hold > elapsed - attack)
-            current = maximum;
-        else if (decay > elapsed - attack - hold)
-            current = BSMAX_00404010(minimum, current - rate / decay * std::abs(maximum - minimum));
+        if (afTime < afFadeIn)
+            afCurrentValue = BSMIN(afFullValue, afCurrentValue + afTimeDelta / afFadeIn * afFullValue);
+        else if (afFullTime > afTime - afFadeIn)
+            afCurrentValue = afFullValue;
+        else if (afFadeOut > afTime - afFadeIn - afFullTime)
+            afCurrentValue = BSMAX_00404010(afPersistentValue, afCurrentValue - afTimeDelta / afFadeOut * std::abs(afFullValue - afPersistentValue));
         else
-            current = minimum;
+            afCurrentValue = afPersistentValue;
     }
-    return current;
+    return afCurrentValue;
 }
 
 extern char DAT_01026bd0;
@@ -1282,6 +1339,7 @@ class FUN_00508450_cls : public ActorStateBase
 };
 
 // @fnv 0x00508450
+// pdb: TESFlora::TESFlora | TESFlora.obj | retail, call graph, high
 FUN_00508450_cls::FUN_00508450_cls()
 {
     this->m_00 = (void*)&DAT_01026bd0;
@@ -1337,6 +1395,7 @@ struct FUN_0050a850 : FUN_0050a850_Primary, FUN_0050a850_Secondary30, FUN_0050a8
 };
 
 // @fnv 0x0050a850
+// pdb: TESLevCharacter::~TESLevCharacter | TESLevCharacter.obj | debug, object-file run extension, low
 FUN_0050a850::~FUN_0050a850()
 {}
 
@@ -1377,6 +1436,7 @@ class FUN_0050b8f0 : public B0B8F0Form, public B0B8F0Component
 };
 
 // @fnv 0x0050b8f0
+// pdb: TESLevSpell::TESLevSpell | TESLevSpell.obj | retail, call graph, high
 FUN_0050b8f0::FUN_0050b8f0()
 {
     SetFormType(0x4c);
@@ -1464,14 +1524,16 @@ struct S_0050de20_A
 struct S_0050de20_Class
 {
     bool __thiscall TESObjectLIGH_Update_(NiPointer<S_0050de20_Obj> p, int* q, int b);
-    bool __thiscall TESObjectLIGH_Update(S_0050de20_A* a, int b);
+    bool __thiscall TESObjectLIGH_Update(S_0050de20_A* apLight, int apExtra);
 };
 // Forwards the object pointer and the int field of the given entry to FUN_0050de60 along with b and returns its result.
 // @fnv 0x0050de20
 // src: COMMUNITY 0x0050de20
-bool __thiscall S_0050de20_Class::TESObjectLIGH_Update(S_0050de20_A* a, int b)
+// pdb: TESObjectLIGH::Update | TESLight.obj | retail, call graph, high
+// pdb params: apLight, apExtra
+bool __thiscall S_0050de20_Class::TESObjectLIGH_Update(S_0050de20_A* apLight, int apExtra)
 {
-    return TESObjectLIGH_Update_(a->unk00, &a->unk04, b);
+    return TESObjectLIGH_Update_(apLight->unk00, &apLight->unk04, apExtra);
 }
 
 extern int DAT_011f81dc;
@@ -1507,6 +1569,8 @@ struct S_5102e0_List
 };
 // @fnv 0x005102e0
 // src: GUESS 0x005102e0 (confidence: low)
+// pdb: TESObjectList::lnk_Destroy | TESObject.obj | debug, object-file gap fill, medium
+// pdb locals: lpNode
 void S_5102e0_List::ProcessEntries_005102e0()
 {
     while (head)
@@ -1581,6 +1645,7 @@ struct FUN_00519bf0 : NiTPointerMapBase
 
 // Destructor that calls NiTPointerMap_RemoveAll on this object to clear the map.
 // @fnv 0x00519bf0
+// pdb: NiTPointerMap<int,bool>::~NiTPointerMap<int,bool> | TESObjectDOOR.obj | debug, call graph, high
 FUN_00519bf0::~FUN_00519bf0()
 {
     ((FUN_00519c50_class*)this)->NiTPointerMap_RemoveAll();
@@ -1713,6 +1778,7 @@ struct FUN_0051cf00_NiBillboardNode : public NiBillboardBase
 
 // Initializes the billboard node: clears m_0ac and m_0b0, then calls FUN_0051d000(1) and FUN_0051d060(1).
 // @fnv 0x0051cf00
+// pdb: NiBillboardNode::NiBillboardNode | TESObjectTREE.obj | debug, call graph, high
 FUN_0051cf00_NiBillboardNode::FUN_0051cf00_NiBillboardNode() : NiBillboardBase(0)
 {
     m_0ac = 0;
@@ -1810,6 +1876,7 @@ class FUN_00508510_Activator : public ListPart508, public ActivatorBase508
 };
 
 // @fnv 0x00508510
+// pdb: TESFlora::~TESFlora | TESFlora.obj | retail, object-file gap fill, high
 FUN_00508510_Activator::~FUN_00508510_Activator()
 {
     ClearData();
@@ -1820,7 +1887,7 @@ struct Item;
 struct List
 {
     unsigned int __thiscall FUN_0043b480();
-    Item* __thiscall FUN_0043b4a0(unsigned int index);
+    Item* __thiscall FUN_0043b4a0(unsigned int i);
 };
 
 struct Item
@@ -1832,25 +1899,30 @@ struct Item
     void* __thiscall FUN_00a59d30(int kind);
 };
 
+// pdb: structure T, size 0x8 (here 0x1), 1 members
 struct T
 {
     void __thiscall NiMaterialProperty_SetEmittance(void* p);
 };
 
 extern void* DAT_011f4998;
-void __cdecl ProcessListItems(List* list);
+void __cdecl TESObjectLIGH_StopParticlesRecursive(List* pNode);
 
 // Iterates the list, recursing into items whose v3() is nonzero and otherwise calling FUN_004bc450 on the result of FUN_00a59d30(2).
 // @fnv 0x0050d640
-void __cdecl ProcessListItems(List* list)
+// src: XBOX_RETAIL_PDB 0x0050d640
+// pdb: TESObjectLIGH::StopParticlesRecursive | TESLight.obj | retail, object-file gap fill, high
+// pdb params: pNode
+// pdb locals: n, pObj, pProp, pMat
+void __cdecl TESObjectLIGH_StopParticlesRecursive(List* pNode)
 {
-    for (unsigned int i = 0; i < list->FUN_0043b480(); i++)
+    for (unsigned int i = 0; i < pNode->FUN_0043b480(); i++)
     {
-        Item* item = list->FUN_0043b4a0(i);
+        Item* item = pNode->FUN_0043b4a0(i);
         if (item != 0)
         {
             if (item->v3() != 0)
-                ProcessListItems((List*)item);
+                TESObjectLIGH_StopParticlesRecursive((List*)item);
             else
             {
                 void* t = item->FUN_00a59d30(2);
@@ -1902,7 +1974,7 @@ struct Obj
     void NiAVObject_SetTranslate_004bc1f0(float a, float b, float c);
     void NiAVObject_Update(NiUpdateData& u);
     float TESCombatStyle_GetDodgeDuringAttackMult();
-    void NiLight_SetDimmer(float v);
+    void NiLight_SetDimmer(float fDimmer);
 };
 struct Ptr
 {
@@ -1974,6 +2046,9 @@ struct Host
 };
 // @fnv 0x0050de60
 // src: COMMUNITY 0x0050de60
+// pdb: TESObjectLIGH::Update | TESLight.obj | debug, object-file run extension, low
+// pdb params: aspLight, apWantDimmer, apExtra
+// pdb locals: killTheLight, ppointLight, fsin2, foffset2, dimmer, foffset1, fsin3, fsin1, fflickerscale, imaxint, speedScale, foffset3, fextraflicker, UpdateData, currentDimmer, dimmerDelta
 bool Host::TESObjectLIGH_Update_(Ptr p1, float* apTime, NiPoint3* p3)
 {
     Obj* s;
@@ -2125,6 +2200,9 @@ unsigned int DialogueRandom();
 void* FindSelection(void*, Region*, void**);
 // Picks a random unvisited entry from the selector's list, resolves it via FindSelection against the reference's region, and records the chosen index.
 // @fnv 0x005195e0
+// pdb: TESObjectDOOR::FindRandomTeleportTarget | TESObjectDOOR.obj | debug, object-file gap fill, medium
+// pdb params: apStartDoor, apActionRef
+// pdb locals: pbackup, pretdoor, pstartspace, icount, ifailures, ilasttry, checked, ibackuptry, itry, plist, iindex, bchecked, ptryspace
 void* Selector::FindRandomSelection(Reference* apReference, int unused)
 {
     void* fallback = 0;
@@ -2237,6 +2315,7 @@ struct FUN_005010f0
 
 // Destructor for the FUN_005010f0 object; the body is empty and member destructors run implicitly.
 // @fnv 0x005010f0
+// pdb: TERMINAL_MENU_ITEM::~TERMINAL_MENU_ITEM | BGSTerminal.obj | debug, object-file gap fill, medium
 FUN_005010f0::~FUN_005010f0()
 {}
 
@@ -2378,26 +2457,29 @@ extern Setting g_011c93c4;
 // Links two door references by setting each door's teleport data to point at the other, using marker positions or computed offsets.
 // @fnv 0x00519810
 // src: XBOX_PDB 0x00519810
-void __cdecl TESObjectDOOR_LinkRandomTeleportDoors(TESObjectREFR* apDoorA, TESObjectREFR* apDoorB)
+// pdb: TESObjectDOOR::LinkRandomTeleportDoors | TESObjectDOOR.obj | retail, upstream name already matches, high
+// pdb params: apDoor1, apDoor2
+// pdb locals: pbasedoor1, pbasedoor2, ptel2, ptel1, fdefdist, pmark, f180, fautodist, delta
+void __cdecl TESObjectDOOR_LinkRandomTeleportDoors(TESObjectREFR* apDoor1, TESObjectREFR* apDoor2)
 {
-    if (apDoorA && apDoorB && apDoorA != apDoorB)
+    if (apDoor1 && apDoor2 && apDoor1 != apDoor2)
     {
-        TESObjectDOOR* pBaseA = dynamic_cast<TESObjectDOOR*>(apDoorA->BGSSaveFormBuffer_GetForm());
-        TESObjectDOOR* pBaseDoorB = dynamic_cast<TESObjectDOOR*>(apDoorB->BGSSaveFormBuffer_GetForm());
+        TESObjectDOOR* pBaseA = dynamic_cast<TESObjectDOOR*>(apDoor1->BGSSaveFormBuffer_GetForm());
+        TESObjectDOOR* pBaseDoorB = dynamic_cast<TESObjectDOOR*>(apDoor2->BGSSaveFormBuffer_GetForm());
         if (pBaseA && pBaseDoorB)
         {
-            if (!reinterpret_cast<GetDoorDataFn>(ReferenceGetDoorData)(apDoorA) && !reinterpret_cast<GetDoorDataFn>(ReferenceGetDoorData)(apDoorB))
+            if (!reinterpret_cast<GetDoorDataFn>(ReferenceGetDoorData)(apDoor1) && !reinterpret_cast<GetDoorDataFn>(ReferenceGetDoorData)(apDoor2))
             {
-                TeleportableReference* pTeleportDataA = reinterpret_cast<GetTeleportDataFn>(ReferenceGetTeleportData)(apDoorA);
-                TeleportableReference* pTeleportDataB = reinterpret_cast<GetTeleportDataFn>(ReferenceGetTeleportData)(apDoorB);
+                TeleportableReference* pTeleportDataA = reinterpret_cast<GetTeleportDataFn>(ReferenceGetTeleportData)(apDoor1);
+                TeleportableReference* pTeleportDataB = reinterpret_cast<GetTeleportDataFn>(ReferenceGetTeleportData)(apDoor2);
                 if (pTeleportDataA && pTeleportDataB)
                 {
                     float fDist = *g_011c9398.Float();
                     float afValueAfterThirdFloat = BSMAX_00404010(fDist, *g_011c93c4.Float() + 100.0);
                     float fPi = 3.1415927f;
 
-                    pTeleportDataA->FUN_00537e90(apDoorB);
-                    TESObjectREFR* pMarkerB = reinterpret_cast<GetDoorMarkerFn>(ReferenceGetDoorMarker)(apDoorB);
+                    pTeleportDataA->FUN_00537e90(apDoor2);
+                    TESObjectREFR* pMarkerB = reinterpret_cast<GetDoorMarkerFn>(ReferenceGetDoorMarker)(apDoor2);
                     if (pMarkerB)
                     {
                         pTeleportDataA->FUN_006f4ed0(*static_cast<const TESObjectREFR*>(pMarkerB)->GetPos());
@@ -2406,17 +2488,17 @@ void __cdecl TESObjectDOOR_LinkRandomTeleportDoors(TESObjectREFR* apDoorA, TESOb
                     else
                     {
                         float kOffsetB[3];
-                        reinterpret_cast<GetDoorOffsetFn>(ReferenceGetDoorOffset)(apDoorB, reinterpret_cast<NiPoint3*>(kOffsetB), fPi);
+                        reinterpret_cast<GetDoorOffsetFn>(ReferenceGetDoorOffset)(apDoor2, reinterpret_cast<NiPoint3*>(kOffsetB), fPi);
                         if (pBaseDoorB->IsAutomaticDoor())
                             (*reinterpret_cast<NiPoint3*>(kOffsetB)) *= afValueAfterThirdFloat;
                         else
                             (*reinterpret_cast<NiPoint3*>(kOffsetB)) *= fDist;
-                        pTeleportDataA->FUN_006f4ed0(*static_cast<const TESObjectREFR*>(apDoorB)->GetPos() + *reinterpret_cast<NiPoint3*>(kOffsetB));
-                        pTeleportDataA->SetVec(NiPoint3Init(0.0f, 0.0f, reinterpret_cast<GetDoorRotationFn>(ReferenceGetDoorRotation)(apDoorB).z + fPi));
+                        pTeleportDataA->FUN_006f4ed0(*static_cast<const TESObjectREFR*>(apDoor2)->GetPos() + *reinterpret_cast<NiPoint3*>(kOffsetB));
+                        pTeleportDataA->SetVec(NiPoint3Init(0.0f, 0.0f, reinterpret_cast<GetDoorRotationFn>(ReferenceGetDoorRotation)(apDoor2).z + fPi));
                     }
 
-                    pTeleportDataB->FUN_00537e90(apDoorA);
-                    pMarkerB = reinterpret_cast<GetDoorMarkerFn>(ReferenceGetDoorMarker)(apDoorA);
+                    pTeleportDataB->FUN_00537e90(apDoor1);
+                    pMarkerB = reinterpret_cast<GetDoorMarkerFn>(ReferenceGetDoorMarker)(apDoor1);
                     if (pMarkerB)
                     {
                         pTeleportDataB->FUN_006f4ed0(*static_cast<const TESObjectREFR*>(pMarkerB)->GetPos());
@@ -2425,13 +2507,13 @@ void __cdecl TESObjectDOOR_LinkRandomTeleportDoors(TESObjectREFR* apDoorA, TESOb
                     else
                     {
                         float kOffsetA[3];
-                        reinterpret_cast<GetDoorOffsetFn>(ReferenceGetDoorOffset)(apDoorA, reinterpret_cast<NiPoint3*>(kOffsetA), fPi);
+                        reinterpret_cast<GetDoorOffsetFn>(ReferenceGetDoorOffset)(apDoor1, reinterpret_cast<NiPoint3*>(kOffsetA), fPi);
                         if (pBaseA->IsAutomaticDoor())
                             (*reinterpret_cast<NiPoint3*>(kOffsetA)) *= afValueAfterThirdFloat;
                         else
                             (*reinterpret_cast<NiPoint3*>(kOffsetA)) *= fDist;
-                        pTeleportDataB->FUN_006f4ed0(*static_cast<const TESObjectREFR*>(apDoorA)->GetPos() + *reinterpret_cast<NiPoint3*>(kOffsetA));
-                        pTeleportDataB->SetVec(NiPoint3Init(0.0f, 0.0f, reinterpret_cast<GetDoorRotationFn>(ReferenceGetDoorRotation)(apDoorA).z + fPi));
+                        pTeleportDataB->FUN_006f4ed0(*static_cast<const TESObjectREFR*>(apDoor1)->GetPos() + *reinterpret_cast<NiPoint3*>(kOffsetA));
+                        pTeleportDataB->SetVec(NiPoint3Init(0.0f, 0.0f, reinterpret_cast<GetDoorRotationFn>(ReferenceGetDoorRotation)(apDoor1).z + fPi));
                     }
                 }
             }
@@ -2446,6 +2528,9 @@ struct TESObjectCELL_Ext : TESForm
 // Returns true if p is a cell (type 0x39) that is interior, or if p has form type 0x41.
 // @fnv 0x00519570
 // src: XBOX_PDB 0x00519570
+// pdb: TESObjectDOOR::CanBeRandomTeleport | TESObjectDOOR.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: bretval, pcell
 bool TESObjectDOOR_CanBeRandomTeleport(TESForm* apForm)
 {
     bool result = false;

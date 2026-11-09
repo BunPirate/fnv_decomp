@@ -278,7 +278,7 @@ struct hkMotionStateq
 struct SweptSampleInfo
 {
     hkTransformq m_frame;
-    void hkTransform_setInverse(const hkMotionStateq* motionState);
+    void hkTransform_setInverse(const hkMotionStateq* t);
 };
 
 struct SweptTransformSamples

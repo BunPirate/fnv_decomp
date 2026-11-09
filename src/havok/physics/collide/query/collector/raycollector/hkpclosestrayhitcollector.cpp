@@ -3,16 +3,17 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 extern void __cdecl operator delete(void*);
-void __fastcall Object_UpdateFields_0059cf00(void*);
+void __fastcall hkpClosestRayHitCollector_dtor(void*);
 struct HKPCloseStrayHitCollector
 {
     void* __thiscall Destroy(unsigned int flags);
 };
 // Calls FUN_0059cf00 on this, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x0059cf20
+// pdb: hkpClosestRayHitCollector::`scalar deleting destructor' | TESConditionFunctions.obj | debug, vtable slot, medium
 void* __thiscall HKPCloseStrayHitCollector::Destroy(unsigned int flags)
 {
-    Object_UpdateFields_0059cf00(this);
+    hkpClosestRayHitCollector_dtor(this);
     if (flags & 1)
         operator delete(this);
     return this;

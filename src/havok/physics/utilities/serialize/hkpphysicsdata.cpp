@@ -23,6 +23,8 @@ struct FUN_00d4c000
 };
 
 // @fnv 0x00d4c000
+// pdb: hkpPhysicsData::findPhysicsSystemByName | hkpPhysicsData.obj | retail, object-file run extension, low
+// pdb params: name
 int FUN_00d4c000::Method(int a)
 {
     for (int i = 0; i < m_10; i++)
@@ -73,6 +75,8 @@ struct FUN_00d4c050_obj
 
 // Scans m_10 entries, checks each entry's sub-items via CompareStringsCaseInsensitive on the masked field at offset 0x74, and returns the first matching item or 0.
 // @fnv 0x00d4c050
+// pdb: hkpPhysicsData::findRigidBodyByName | hkpPhysicsData.obj | retail, object-file run extension, low
+// pdb params: name
 int FUN_00d4c050_obj::FindMatchingEntry(int a)
 {
     for (int i = 0; i < m_10; ++i)
@@ -229,28 +233,31 @@ struct PhysicsDataExt : public hkpPhysicsData
 };
 
 // @fnv 0x00d4c0c0
+// pdb: hkpPhysicsData::createWorld | hkpPhysicsData.obj | retail, object-file run extension, low
+// pdb params: registerAllAgents
+// pdb locals: defaultCinfo, input
 hkpWorld* PhysicsDataExt::CreateWorld(char bRegisterWithMemoryManager) throw()
 {
     FUN_00553540 defaultCinfo;
     hkpWorld* world;
-    if (this->m_pWorldCinfo == 0)
+    if (this->m_worldCinfo == 0)
     {
-        world = ((hkpWorld*)hkpWorld::operator new(0x350))->hkpWorld_hkpWorld(reinterpret_cast<const hkpWorldCinfo*>(&defaultCinfo));
+        world = ((hkpWorld*)hkpWorld::operator new(0x350))->hkpWorld_ctor(reinterpret_cast<const hkpWorldCinfo*>(&defaultCinfo));
     }
     else
     {
-        world = ((hkpWorld*)hkpWorld::operator new(0x350))->hkpWorld_hkpWorld(this->m_pWorldCinfo);
+        world = ((hkpWorld*)hkpWorld::operator new(0x350))->hkpWorld_ctor(this->m_worldCinfo);
     }
 
     if (bRegisterWithMemoryManager)
     {
-        InitializeWorld(world->m_pDispatcher);
+        InitializeWorld(world->m_collisionDispatcher);
     }
 
-    for (int i = 0; i < this->m_kPhysicsSystems.m_iElementCount; ++i)
+    for (int i = 0; i < this->m_systems.m_iElementCount; ++i)
     {
-        world->hkpWorld_addPhysicsSystem(this->m_kPhysicsSystems.m_data[i]);
-        if (this->m_kPhysicsSystems.m_data[i]->vfunc4().val)
+        world->hkpWorld_addPhysicsSystem(this->m_systems.m_data[i]);
+        if (this->m_systems.m_data[i]->vfunc4().val)
         {
             ContactOptions opts;
             opts.m_00 = 0;
@@ -259,11 +266,11 @@ hkpWorld* PhysicsDataExt::CreateWorld(char bRegisterWithMemoryManager) throw()
             opts.m_08 = 1;
             opts.m_09 = 1;
             opts.m_0a = 0;
-            RunWithLocalContext(&opts, this->m_kPhysicsSystems.m_data[i], world);
+            RunWithLocalContext(&opts, this->m_systems.m_data[i], world);
         }
     }
 
-    if (this->m_pWorldCinfo && ((FUN_00553540*)this->m_pWorldCinfo)->m_pCollisionFilter.m_pRetainedObject)
+    if (this->m_worldCinfo && ((FUN_00553540*)this->m_worldCinfo)->m_pCollisionFilter.m_pRetainedObject)
     {
         world->hkpWorld_updateCollisionFilterOnWorld(0, 1);
     }
@@ -289,6 +296,7 @@ class FUN_00dcecc0
 
 // Runs the destructor and, when bit 0 of uiFlags is set, frees the object through the heap allocator, then returns this.
 // @fnv 0x00d4c8e0
+// pdb: hkpPhysicsSystemWithContacts::`scalar deleting destructor' | hkpPhysicsData.obj | retail, vtable slot, high
 FUN_00dcecc0* FUN_00dcecc0::Destroy(unsigned int uiFlags) throw()
 {
     this->FUN_00dcecc0::~FUN_00dcecc0();
@@ -352,7 +360,7 @@ struct SmallType
 struct ClientType
 {
     void hkpWorld_getCinfo(void*);
-    void AddPhysicsSystem(void*);
+    void hkpWorld_getWorldAsSystems(void*);
 };
 struct HostType
 {
@@ -366,7 +374,10 @@ struct HostType
 // Ensures m_08 is allocated, registers client and m_0c, and when value is set allocates a SmallType, calls ProcessCollisionRecords, and appends it to m_0c.
 // @fnv 0x00d4c2d0
 // src: HAVOK_LIB 0x00d4c2d0
-void HostType::hkpPhysicsData_populateFromWorld(ClientType* client, unsigned char ubFlag)
+// pdb: hkpPhysicsData::populateFromWorld | hkpPhysicsData.obj | retail, upstream name already matches, high
+// pdb params: world, saveContactPoints
+// pdb locals: assertBuf, ostr, input
+void HostType::hkpPhysicsData_populateFromWorld(ClientType* world, unsigned char saveContactPoints)
 {
     if (m_08 == 0)
     {
@@ -376,11 +387,11 @@ void HostType::hkpPhysicsData_populateFromWorld(ClientType* client, unsigned cha
         m_08 = big->FUN_00c90b80();
     }
 
-    client->hkpWorld_getCinfo(m_08);
+    world->hkpWorld_getCinfo(m_08);
     hkArray<SmallType*>* array = &m_0c;
-    client->AddPhysicsSystem(array);
+    world->hkpWorld_getWorldAsSystems(array);
 
-    if (ubFlag != 0)
+    if (saveContactPoints != 0)
     {
         struct Local
         {
@@ -399,7 +410,7 @@ void HostType::hkpPhysicsData_populateFromWorld(ClientType* client, unsigned cha
         small->m_00 = (int)&DAT_010d07f4;
         new (&small->m_ppData, D4C2Place()) hkArray<void*>();
 
-        ProcessCollisionRecords(&local, client, small);
+        ProcessCollisionRecords(&local, world, small);
 
         small->m_40 = 0;
 
@@ -426,7 +437,7 @@ struct Owner
     int unk04;
     int** m_08;
     int m_0c;
-    void hkpPhysicsSystem_removeRigidBody(int index);
+    void hkpPhysicsSystem_removeRigidBody(int i);
 };
 struct Entity
 {
@@ -447,7 +458,7 @@ struct Entity
     int unk38;
     int unk3c;
     unsigned char m_40;
-    void AddShape(int value);
+    void AddShape(int rb);
 };
 struct OwnerArg
 {
@@ -471,19 +482,21 @@ typedef int Owner::*MemberPtr;
 // If value is in owner's list but not entity's, sets entity->m_40, calls entity->AddShape(value) and owner->FUN_00d06130 with the owner index.
 // @fnv 0x00d4bf70
 // src: HAVOK_LIB 0x00d4bf70
-static __declspec(noinline) void tryMoveEntity(Owner* owner, Entity* volatile apEntity, MemberPtr valueArg)
+// pdb: tryMoveEntity | hkpPhysicsData.obj | retail, upstream name already matches, high
+// pdb params: fromSystem, toSystem, entity
+static __declspec(noinline) void tryMoveEntity(Owner* fromSystem, Entity* volatile toSystem, MemberPtr valueArg)
 {
-    Entity* entity = apEntity;
+    Entity* entity = toSystem;
     Value* pValue;
     memcpy(&pValue, &valueArg, 4);
     Value* value = pValue;
-    int ownerIndex = findValue(owner, value);
+    int ownerIndex = findValue(fromSystem, value);
     int entityIndex = findValue(entity, value);
     if (entityIndex == -1 && ownerIndex != -1)
     {
         entity->m_40 = entity->m_40 || value->isActive_00c9bff0().val;
         entity->AddShape((int)value);
-        owner->hkpPhysicsSystem_removeRigidBody(ownerIndex);
+        fromSystem->hkpPhysicsSystem_removeRigidBody(ownerIndex);
     }
 }
 Owner* volatile probeOwner;
@@ -521,6 +534,7 @@ class FUN_00d4c250 : public hkReferencedObject
 
 // Destructor: calls FUN_00c905b0 on m_pCollisionShape if set and on each element of m_children.
 // @fnv 0x00d4c250
+// pdb: hkpPhysicsData::~hkpPhysicsData | hkpPhysicsData.obj | retail, call graph, high
 FUN_00d4c250::~FUN_00d4c250()
 {
     if (m_pCollisionShape)

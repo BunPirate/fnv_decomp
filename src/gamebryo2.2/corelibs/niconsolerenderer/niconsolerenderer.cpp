@@ -124,7 +124,7 @@ public:
  GraphicsRenderer() throw();
  unsigned int pad[7]; unsigned int count; unsigned int pad24; RendererPacketEntry** entries;
  __declspec(noinline) bool HasPendingPackets();
- static const char* GetD3DFormatName(_D3DFORMAT);
+ static const char* NiXenonRenderer_GetD3DFormatString(_D3DFORMAT);
  char remaining[0xb80-44];
  static GraphicsRenderer* Create(unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int);
  bool Create(unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int,unsigned int);
@@ -144,7 +144,7 @@ public:
  T RemoveTail();
 };
 
-class ShaderPassRenderer { public: static unsigned int Create(unsigned int); };
+class ShaderPassRenderer { public: static unsigned int NiXenonRenderer_CreateDirect3D9(unsigned int); };
 extern "C" int fnv_CopyFilePath(char*,unsigned int,const char*,unsigned int);
 extern char DAT_011f4648[256];
 NiObject* NiPersistentSrcTextureRendererDataLoader();
@@ -246,7 +246,7 @@ char* ConsolePointerListBase<ConsolePointerAllocator<unsigned int>,char*>::Remov
 
 // @fnv 0x00e76210
 GraphicsRenderer* GraphicsRenderer::Create(unsigned int auiArg1,unsigned int auiArg2,unsigned int auiArg3,unsigned int auiArg4,unsigned int auiArg5,unsigned int auiArg6,unsigned int auiArg7,unsigned int auiArg8,unsigned int auiArg9,unsigned int auiArg10,unsigned int auiArg11,unsigned int auiArg12,unsigned int auiArg13,unsigned int auiArg14,unsigned int auiArg15) {
- if (ShaderPassRenderer::Create(auiArg15) == ~0u) {
+ if (ShaderPassRenderer::NiXenonRenderer_CreateDirect3D9(auiArg15) == ~0u) {
   fnv_CopyFilePath(DAT_011f4648,256,DAT_010ee6c8,255);
   NiD3DDefaultShader::SetShaderName(DAT_010ee688);
   return 0;
@@ -263,8 +263,11 @@ GraphicsRenderer* GraphicsRenderer::Create(unsigned int auiArg1,unsigned int aui
 }
 
 // @fnv 0x00e7a9a0
-const char* GraphicsRenderer::GetD3DFormatName(_D3DFORMAT format) {
- switch (format) {
+// src: XBOX_DEBUG_PDB 0x00e7a9a0
+// pdb: NiXenonRenderer::GetD3DFormatString | NiXenonRenderer.obj | debug, unique string literal, high
+// pdb params: eD3DFmt
+const char* GraphicsRenderer::NiXenonRenderer_GetD3DFormatString(_D3DFORMAT eD3DFmt) {
+ switch (eD3DFmt) {
  case 0x14: return DAT_010eec38;
  case 0x15: return DAT_010eec28;
  case 0x16: return DAT_010eec18;
@@ -337,13 +340,13 @@ void* __cdecl NiVertexColorProperty_GetRTTI()
     return &g_011f4430;
 }
 
-extern "C" int g_011f443c;
+extern "C" int NiZBufferProperty_ms_RTTI;
 
 // @fnv 0x00a5f4f0
 // src: COMMUNITY 0x00a5f4f0
 int __cdecl NiZBufferProperty_GetRTTI()
 {
-    return (int)&g_011f443c;
+    return (int)&NiZBufferProperty_ms_RTTI;
 }
 
 // @fnv 0x00a5f500
@@ -424,19 +427,26 @@ struct FUN_00e69b40_shell {
     unsigned int count;
     unsigned int pad24;
     unsigned int* entries;
-    unsigned int GetEntry(unsigned int index);
+    unsigned int NiD3DShaderConstantMap_GetEntry(unsigned int pszKey);
 };
 
 // @fnv 0x00e69b40
-unsigned int FUN_00e69b40_shell::GetEntry(unsigned int index)
+// src: XBOX_RETAIL_PDB 0x00e69b40
+// pdb: NiD3DShaderConstantMap::GetEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pszKey
+// pdb locals: bFound, pkEntry, uiSize, ui
+unsigned int FUN_00e69b40_shell::NiD3DShaderConstantMap_GetEntry(unsigned int pszKey)
 {
-    if (index < count)
-        return entries[index];
+    if (pszKey < count)
+        return entries[pszKey];
     return 0;
 }
 
 // Maps an index to a constant value via a switch, returning 0 for unmapped or default cases.
 // @fnv 0x00e69c90
+// pdb: NiRenderer::Error | NiRenderer.obj | debug, call graph, medium
+// pdb params: pcFormat, iIndex
+// pdb locals: acOutput, kArgs
 unsigned int GetValueForIndex(unsigned int uiIndex)
 {
     switch (uiIndex) {
@@ -521,6 +531,9 @@ struct LinkedListEntry { LinkedListEntry* next; LinkedListEntry* prev; char* dat
 
 // @fnv 0x00e6e8a0
 // src: COMMUNITY 0x00e6e8a0
+// pdb: BSFaceGenMorphData::DynamicCast | BSFaceGenManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTPointerMap<NiNode *,unsigned int>::DeleteItem
+// pdb params: pkRTTI, pkObject
 void __stdcall NiTPointerListBase_DeleteItem(LinkedListEntry* pNode)
 {
     pNode->data = 0;
@@ -562,6 +575,7 @@ struct NodePoolView {
 
 // The pointer-map instantiations share this allocator thunk in the game.
 // @fnv 0x00e72e50
+// pdb: NiTPointerMap<NiNode *,unsigned int>::NewItem | NiBSBoneLODController.obj | debug, vtable slot, medium
 template<>
 NiTMapItem<NiDynamicTexture*, NiDX9DynamicTextureData*>*
 NiTPointerMap<NiDynamicTexture*, NiDX9DynamicTextureData*>::NewItem() {
@@ -680,13 +694,13 @@ unsigned int __fastcall NiDX9Renderer_GetStencilClear(NiDX9Renderer* self, void*
 }
 }  // namespace fnv_00e75a30
 
-extern "C" void* g_01270900;
+extern "C" void* NiShaderDeclaration_ms_RTTI;
 
 // @fnv 0x00e766f0
 // src: COMMUNITY 0x00e766f0
 void* __cdecl NiShaderDeclaration_GetRTTI()
 {
-    return &g_01270900;
+    return &NiShaderDeclaration_ms_RTTI;
 }
 
 struct FUN_00e758f0_shell {
@@ -1212,6 +1226,7 @@ extern MemoryManager g_memoryManager;
 struct S00e72e20 { void *vf; void *ptr; void *__thiscall FUN_00e72e20(unsigned int); };
 // Frees the stored pointer, sets the vtable to DAT_010edaf4, and deallocates this when f has bit 0 set.
 // @fnv 0x00e72e20
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,NiNode *,unsigned int>::~NiTMapBase<NiTPointerAllocator<unsigned int>,NiNode *,unsigned int> | NiBSBoneLODController.obj | debug, object-file run extension, low
 void *__thiscall S00e72e20::FUN_00e72e20(unsigned int auiFlags)
 {
     void *tmp = ptr;
@@ -1228,14 +1243,16 @@ struct BSBatchRenderer__AlphaList {
 };
 
 struct NiConsoleRenderer_shellEx : GraphicsRenderer {
-    void __thiscall NiDX9Renderer_ReleaseD3DShader(NiD3DShaderInterface* shader);
+    void __thiscall NiXenonRenderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader);
 };
 // @fnv 0x00e75310
-// src: COMMUNITY 0x00e75310
-void __thiscall NiConsoleRenderer_shellEx::NiDX9Renderer_ReleaseD3DShader(NiD3DShaderInterface* shader)
+// src: XBOX_RETAIL_PDB 0x00e75310
+// pdb: NiXenonRenderer::ReleaseD3DShader | NiXenonRenderer.obj | retail, object-file run extension, high
+// pdb params: pkD3DShader
+void __thiscall NiConsoleRenderer_shellEx::NiXenonRenderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader)
 {
-    shader->SetShaderObject(0);
-    ((BSBatchRenderer__AlphaList*)((char*)this + 0x90c))->Remove((BSBatchRenderer__GeometryGroup*&)shader);
+    pkD3DShader->SetShaderObject(0);
+    ((BSBatchRenderer__AlphaList*)((char*)this + 0x90c))->Remove((BSBatchRenderer__GeometryGroup*&)pkD3DShader);
 }
 
 void _delete(void*, unsigned int);
@@ -1279,7 +1296,7 @@ FUN_00e76320::FUN_00e76320()
 bool NiDX9ShaderDeclaration::GenerateVertexParameters(IDirect3DVertexDeclaration9** a, unsigned int* b)
 {
  *a = (IDirect3DVertexDeclaration9*)GetD3DDeclaration();
- *b = m_uiRegisterStreamCount;
+ *b = m_uiStreamCount;
  return *a != 0;
 }
 
@@ -1288,6 +1305,7 @@ extern const void* DAT_010ee898;
 void __cdecl Object_ProcessEntries_00e7a760();
 // @fnv 0x00e7a860
 // src: COMMUNITY 0x00e7a860
+// pdb: NiD3DShaderDeclaration::_SDMInit | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
 void __cdecl NiD3DShaderDeclaration__SDMInit()
 {
     void* p = g_memoryManager.Allocate(0x10);
@@ -1356,6 +1374,10 @@ struct FakeRenderer {
 };
 // Clears the manager, releases the shader's handle if present, then purges the shader.
 // @fnv 0x00e699c0
+// pdb: NiXenonRenderer::PurgePixelShader | NiXenonRenderer.obj | retail, call graph, low
+// pdb note: debug build links it to NiD3DPixelShader::DestroyRendererData
+// pdb params: pkShader
+// pdb locals: pkShaderHandle, pkTask
 void FakeRenderer::PurgeShader(FakeShader* pkShader)
 {
 	mgr->Clear(0, 0);
@@ -1496,6 +1518,8 @@ struct FUN_00e752b0_shell {
 // Allocates a node from the pool, stores pkD3DShader in it, and links it at the head of the list, updating the tail when the list was empty.
 // @fnv 0x00e752b0
 // src: XBOX_PDB 0x00e752b0
+// pdb: NiXenonRenderer::RegisterD3DShader | NiXenonRenderer.obj | retail, upstream name already matches, high
+// pdb params: pkD3DShader
 void FUN_00e752b0_shell::NiXenonRenderer_RegisterD3DShader(void* pkD3DShader)
 {
     Node* pkNode = (Node*)m_Pool.AddHead();
@@ -1597,6 +1621,7 @@ struct ICom78510 { virtual int __stdcall Q(); virtual int __stdcall A(); virtual
 struct H78510 { void __thiscall ProcessEntries_00e78be0(); };
 struct S78510 { char pad[0x2c]; void* p1; ICom78510* p2; char tail[4]; void* __thiscall FUN_00e78510(unsigned int); };
 // @fnv 0x00e78510
+// pdb: NiXenonShaderDeclaration::`scalar deleting destructor' | NiXenonShaderDeclaration.obj | retail, object-file run extension, low
 void* __thiscall S78510::FUN_00e78510(unsigned int auiFlags)
 {
     void* v1 = p1;
@@ -1626,6 +1651,7 @@ struct FUN_00e78840_shell {
 
 // Calls FUN_00ee88b0, zeroes the pad array and flag, sets the vtable to DAT_010ee7cc, and returns this.
 // @fnv 0x00e78840
+// pdb: NiD3DShaderDeclaration::NiD3DShaderDeclaration | NiD3DShaderDeclaration.obj | retail, call graph, medium
 FUN_00e78840_shell* __thiscall FUN_00e78840_shell::Construct()
 {
     FUN_00ee88b0();
@@ -1726,47 +1752,50 @@ struct FUN_00e76c30_Info {
 
 // @fnv 0x00e76c30
 // src: COMMUNITY 0x00e76c30
-unsigned int NiD3DShaderDeclaration_Pack_FloatToShort(FUN_00e76c30_Info* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_FloatToShort | NiXenonShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, pfInData, usPackCount, psOutData, pucOutData, pusVertMap, pucInData, usInFloats, usOutShorts, us, usMapIndex, usPack
+unsigned int NiD3DShaderDeclaration_Pack_FloatToShort(FUN_00e76c30_Info* kParams)
 {
     unsigned int uiTotal = 0;
-    float* pfSrc = pkInfo->pfSrc;
-    unsigned short* pusRemap = pkInfo->pusRemap;
-    unsigned char* pucDest = pkInfo->pucDest;
+    float* pfSrc = kParams->pfSrc;
+    unsigned short* pusRemap = kParams->pusRemap;
+    unsigned char* pucDest = kParams->pucDest;
 
     if (!pfSrc)
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->uiDestSize);
-            uiTotal += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            _fnv_zlib_memset(pucDest, 0, kParams->uiDestSize);
+            uiTotal += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
         return uiTotal;
     }
 
-    unsigned short usComps = pkInfo->usComps;
-    unsigned short usMax = (pkInfo->eType == 6) ? 2 : 4;
+    unsigned short usComps = kParams->usComps;
+    unsigned short usMax = (kParams->eType == 6) ? 2 : 4;
     unsigned short m_usPassCountLocal = (usComps > usMax) ? usMax : usComps;
 
     if (pusRemap)
     {
         unsigned short usIndex = 0;
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            float* pfIn = (float*)((unsigned char*)pfSrc + pusRemap[usIndex++] * pkInfo->uiSrcStride);
+            float* pfIn = (float*)((unsigned char*)pfSrc + pusRemap[usIndex++] * kParams->uiSrcStride);
             short* psOut = (short*)pucDest;
             unsigned short j = 0;
             for (; j < m_usPassCountLocal; j++)
                 *psOut++ = (short)*pfIn++;
             for (; j < usMax; j++)
                 *psOut++ = 0;
-            uiTotal += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
             float* pfIn = pfSrc;
             short* psOut = (short*)pucDest;
@@ -1775,9 +1804,9 @@ unsigned int NiD3DShaderDeclaration_Pack_FloatToShort(FUN_00e76c30_Info* pkInfo)
                 *psOut++ = (short)*pfIn++;
             for (; j < usMax; j++)
                 *psOut++ = 0;
-            uiTotal += pkInfo->uiDestSize;
-            pfSrc = (float*)((unsigned char*)pfSrc + pkInfo->uiSrcStride);
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pfSrc = (float*)((unsigned char*)pfSrc + kParams->uiSrcStride);
+            pucDest += kParams->uiDestStride;
         }
     }
     return uiTotal;
@@ -1805,37 +1834,40 @@ struct FUN_00e79f40_Stream {
 // Converts s->count elements from src (via optional indices) into packed 32-bit values at dst, or fills dst with 0xff when src is null; returns total bytes.
 // @fnv 0x00e79f40
 // src: COMMUNITY 0x00e79f40
-int NiD3DShaderDeclaration_Pack_ByteToUByteColor(FUN_00e79f40_Stream* pStream)
+// pdb: NiD3DShaderDeclaration::Pack_ByteToUByteColor | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, usInBytes, pcInData, pucOutData, pusVertMap, pucInData, puiOutData, us, usMapIndex, cAlpha
+int NiD3DShaderDeclaration_Pack_ByteToUByteColor(FUN_00e79f40_Stream* kParams)
 {
-    char* src = pStream->src;
-    unsigned short* indices = pStream->indices;
+    char* src = kParams->src;
+    unsigned short* indices = kParams->indices;
     int total = 0;
-    char* dst = pStream->dst;
+    char* dst = kParams->dst;
     if (src == 0) {
-        for (unsigned short i = 0; i < pStream->count; i++) {
-            _fnv_zlib_memset(dst, 0xff, pStream->elemSize);
-            dst += pStream->dstStride;
-            total += pStream->elemSize;
+        for (unsigned short i = 0; i < kParams->count; i++) {
+            _fnv_zlib_memset(dst, 0xff, kParams->elemSize);
+            dst += kParams->dstStride;
+            total += kParams->elemSize;
         }
         return total;
     }
-    unsigned short comps = pStream->type - 0x14;
+    unsigned short comps = kParams->type - 0x14;
     if (indices) {
         unsigned short idx = 0;
-        for (unsigned short i = 0; i < pStream->count; i++) {
-            char* p = src + indices[idx++] * pStream->srcStride;
+        for (unsigned short i = 0; i < kParams->count; i++) {
+            char* p = src + indices[idx++] * kParams->srcStride;
             char a = (comps == 3) ? (char)0xff : p[3];
             *(unsigned int*)dst = ((unsigned int)((((a) & 0xff) << 24) | (((p[0]) & 0xff) << 16) | (((p[1]) & 0xff) << 8) | ((p[2]) & 0xff)));
-            dst += pStream->dstStride;
-            total += pStream->elemSize;
+            dst += kParams->dstStride;
+            total += kParams->elemSize;
         }
     } else {
-        for (unsigned short i = 0; i < pStream->count; i++) {
+        for (unsigned short i = 0; i < kParams->count; i++) {
             char a = (comps == 3) ? (char)0xff : src[3];
             *(unsigned int*)dst = ((unsigned int)((((a) & 0xff) << 24) | (((src[0]) & 0xff) << 16) | (((src[1]) & 0xff) << 8) | ((src[2]) & 0xff)));
-            src += pStream->srcStride;
-            dst += pStream->dstStride;
-            total += pStream->elemSize;
+            src += kParams->srcStride;
+            dst += kParams->dstStride;
+            total += kParams->elemSize;
         }
     }
     return total;
@@ -1933,9 +1965,11 @@ extern void* DAT_011c5f58;
 
 // Releases the object's referenced node via a decrement-and-destroy, then resets its fields and pushes it onto the DAT_011c5f58 list under a lock.
 // @fnv 0x00e6e830
-void __stdcall ReleaseRefCountedNode(void* param_1)
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<NiProperty> >::DeleteItem | BSFaceGenManager.obj | retail, call graph, high
+// pdb params: pkItem
+void __stdcall ReleaseRefCountedNode(void* pkItem)
 {
-    void** p = (void**)param_1;
+    void** p = (void**)pkItem;
     void* node = p[2];
     if (node)
     {
@@ -1950,7 +1984,7 @@ void __stdcall ReleaseRefCountedNode(void* param_1)
     g_011c5f80.Lock(0);
     p[1] = 0;
     p[0] = DAT_011c5f58;
-    DAT_011c5f58 = param_1;
+    DAT_011c5f58 = pkItem;
     if (--DAT_011c5f84 == 0)
         g_011c5f80.m_uiOwningThreadID = 0;
 }
@@ -2008,6 +2042,8 @@ extern AA1110MemManager* g_pkAA1110MemManager;
 // NiFree
 // @fnv 0x00aa1110
 // src: GAMEBRYO_LIB 0x00aa1110
+// pdb: _NiAlignedFree | NiMemoryDefines.obj | debug, upstream name already matches, high
+// pdb params: pvMem
 void _NiAlignedFree(void* pvMem)
 {
     if (pvMem)
@@ -3221,6 +3257,7 @@ struct RenderBufferAllocation {
 };
 
 // @fnv 0x00e69a00
+// pdb: NiD3DPixelShader::RecreateRendererData | NiD3DPixelShader.obj | debug, object-file run extension, low
 RenderBufferAllocation* __stdcall CreateRenderBufferAllocation(void* parameters)
 {
     RenderBufferAllocation* buffer = static_cast<RenderBufferAllocation*>(NiMemObject::operator new(84));
@@ -3786,6 +3823,8 @@ struct Holder {
 };
 // Picks the first non-null source per slot in a fixed order, allocates a 4x4 NiPixelData filled with 0xff, and returns false if slot 0 is empty.
 // @fnv 0x00e6c550
+// pdb: NiXenonRenderer::GenerateDefaultTextureData | NiXenonRenderer.obj | retail, object-file run extension, low
+// pdb locals: uiUsage, aeFormats, uiFmtIndex, uiDefaultFormatNum, eFmt, pkPixels
 bool Holder::InitFormats() {
     unsigned int auiPriorityOrder[6] = { 1, 0, 2, 4, 3, 5 };
     for (unsigned int i = 0; i < 4; i++) {
@@ -4182,7 +4221,7 @@ struct Packet_e6da60
     unsigned int unk1C;
     unsigned int m_uiCount;
     unsigned int* m_puiStreams;
-    void ResizeStreams(unsigned int ItemUpdateArray);
+    void ResizeStreams(unsigned int uiStreamCount);
     void SetSingleStream(unsigned int uiValue);
     void SetStreams(unsigned int uiValue);
 };
@@ -4483,6 +4522,7 @@ struct SourceManager {
 extern const char DAT_010ed96c[];
 char* __cdecl GetHRESULTText(unsigned int status);
 void __cdecl Object_DoNothing(const char* format, const char* message);
+// pdb: class Renderer, size 0x1, 0 members
 struct Renderer {
     void* __thiscall LockRenderSource(SourceManager* manager, int* pitch);
 };
@@ -5348,6 +5388,9 @@ struct RendererPool {
 struct RendererPoolView : GraphicsRenderer { void ResetPools(); };
 // Resets the two RendererPool objects located at offset 0xaf8 from this.
 // @fnv 0x00e6e7b0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<NiProperty> >::FindPos | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: element, kStart
+// pdb locals: kPos
 void RendererPoolView::ResetPools()
 {
     RendererPool* pools =
@@ -5429,7 +5472,7 @@ struct RenderResource : RefObject {
     unsigned int dataOffset;
     unsigned int unk54, unk58;
     unsigned char** dataBase;
-    RenderResource* FUN_00a7c190(int a, int b, ResourceDescriptor* d, int c, int e);
+    RenderResource* FUN_00a7c190(int uiWidth, int uiHeight, ResourceDescriptor* kFormat, int uiMipmapLevels, int uiFaces);
 };
 struct ResourceParameters {
     unsigned int count;
@@ -5507,7 +5550,7 @@ bool RendererBridge::InitializeRendererResources() {
 }
 
 extern "C" __declspec(dllimport) long __stdcall fnv_InterlockedDecrement(long volatile*);
-extern char g_sentinel_012708e4;
+extern char NiRenderedCubeMap_ms_RTTI;
 
 class PktRefCounted {
 public:
@@ -5661,7 +5704,7 @@ bool __stdcall ReleaseOwnerItems(PktOwner* pOwner)
             PktNode* n = pOwner->GetHead();
             if (n != 0) {
                 do {
-                    if ((void*)n == (void*)&g_sentinel_012708e4) {
+                    if ((void*)n == (void*)&NiRenderedCubeMap_ms_RTTI) {
                         goto found;
                     }
                     n = n->next;
@@ -5759,6 +5802,8 @@ struct Renderer {
     void ApplyGeometryTransforms(void* frame, void* mapping, void* geometry);
 };
 // @fnv 0x00e6fda0
+// pdb: NiXenonRenderer::SetSkinnedModelTransforms | NiXenonRenderer.obj | debug, call graph, medium
+// pdb params: pkSkin, pkPartition, kWorld
 void Renderer::ApplyGeometryTransforms(void* frame, void* mapping, void* geometry) {
     GetDebrisManager()->UpdateGeometry(geometry);
     const float weight = *reinterpret_cast<float*>(reinterpret_cast<char*>(geometry) + 0x30);
@@ -6535,6 +6580,9 @@ struct FUN_00e744b0_cls {
 extern char DAT_011f4288[16];
 
 // @fnv 0x00e744b0
+// pdb: NiXenonRenderer::CreateNiTextureFromD3DTexture | NiXenonRenderer.obj | debug, object-file run extension, low
+// pdb params: pkD3DTexture
+// pdb locals: spTexture
 void FUN_00e744b0_cls::ProcessVObj(FUN_00e744b0_Src* apSrc)
 {
     if (m_6fc == 0) {
@@ -7812,7 +7860,7 @@ void Renderer::RenderInput(Input* input) {
   p1->m_uiObjectFlags=(p1->m_uiObjectFlags & 0xffd7)|0x10;
   properties->SetSlot((::Property*)p1);
   NiAlphaProperty* p2=::new (AllocateAlphaProperty) NiAlphaProperty;
-  p2->m_usAlphaArg=(p2->m_usAlphaArg & 0xfeed)|0xed;
+  p2->m_uFlags=(p2->m_uFlags & 0xfeed)|0xed;
   properties->SetSlot((::Property*)p2);
   NiZBufferProperty* p3=new NiZBufferProperty;
   p3->flags&=0xfffc;
@@ -7902,7 +7950,7 @@ struct D3DShaderStub {
     virtual void v45(); virtual void v46(); virtual void v47(); virtual void v48(); virtual void v49();
     virtual void v50();
     virtual void UnloadShader();
-    void SetShaderObject(void* pkRenderer);
+    void SetShaderObject(void* pkD3DRenderer);
 };
 
 struct ConsoleRendererShaders {
@@ -8491,6 +8539,7 @@ struct ConsoleRendererShaders {
 
 // @fnv 0x00e75380
 // src: COMMUNITY 0x00e75380
+// pdb: NiXenonRenderer::PurgeAllD3DShaders | NiXenonRenderer.obj | retail, object-file run extension, low
 void ConsoleRendererShaders::NiDX9Renderer_PurgeAllD3DShaders() {
     while (m_kShaderList.count != 0) {
         D3DShaderStub* pkShader = (D3DShaderStub*)m_kShaderList.head->data;
@@ -10637,7 +10686,7 @@ struct ShaderD3DDevice {
 
 struct ShaderMemMgr {
     void* Allocate(unsigned int size);
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 extern ShaderMemMgr g_shaderMemMgr;
 
@@ -10798,31 +10847,34 @@ struct StreamCopyInfo {
 void* __cdecl _fnv_zlib_memset(void*, int, unsigned int);
 
 // @fnv 0x00e77010
-unsigned int __cdecl CopyVertexStream(StreamCopyInfo* stream)
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedLongToShort | NiXenonShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, usInULongs, usPackCount, psOutData, pucOutData, pusVertMap, pulInData, pucInData, usOutShorts, us, usMapIndex, usPack
+unsigned int __cdecl CopyVertexStream(StreamCopyInfo* kParams)
 {
     unsigned int bytesWritten = 0;
-    const unsigned char* source = stream->source;
-    unsigned char* destination = stream->destination;
-    const unsigned short* indices = stream->indices;
+    const unsigned char* source = kParams->source;
+    unsigned char* destination = kParams->destination;
+    const unsigned short* indices = kParams->indices;
 
     if (!source) {
-        for (unsigned short vertex = 0; vertex < stream->vertexCount; ++vertex) {
-            _fnv_zlib_memset(destination, 0, stream->bytesPerVertex);
-            destination += stream->outputStride;
-            bytesWritten += stream->bytesPerVertex;
+        for (unsigned short vertex = 0; vertex < kParams->vertexCount; ++vertex) {
+            _fnv_zlib_memset(destination, 0, kParams->bytesPerVertex);
+            destination += kParams->outputStride;
+            bytesWritten += kParams->bytesPerVertex;
         }
         return bytesWritten;
     }
 
-    unsigned short availableComponents = stream->inputBytes - 8;
-    unsigned short outputComponents = stream->format == 6 ? 2 : 4;
+    unsigned short availableComponents = kParams->inputBytes - 8;
+    unsigned short outputComponents = kParams->format == 6 ? 2 : 4;
     unsigned short components = availableComponents > outputComponents
         ? outputComponents : availableComponents;
 
     if (indices) {
         unsigned short indexPosition = 0;
-        for (unsigned short vertex = 0; vertex < stream->vertexCount; ++vertex) {
-            const unsigned char* input = source + indices[indexPosition++] * stream->sourceStride;
+        for (unsigned short vertex = 0; vertex < kParams->vertexCount; ++vertex) {
+            const unsigned char* input = source + indices[indexPosition++] * kParams->sourceStride;
             unsigned short* output = (unsigned short*)destination;
             unsigned short copied = 0;
             for (; copied < components; ++copied) {
@@ -10831,13 +10883,13 @@ unsigned int __cdecl CopyVertexStream(StreamCopyInfo* stream)
             }
             for (; copied < outputComponents; ++copied)
                 *output++ = 0;
-            destination += stream->outputStride;
-            bytesWritten += stream->bytesPerVertex;
+            destination += kParams->outputStride;
+            bytesWritten += kParams->bytesPerVertex;
         }
         return bytesWritten;
     }
 
-    for (unsigned short vertex = 0; vertex < stream->vertexCount; ++vertex) {
+    for (unsigned short vertex = 0; vertex < kParams->vertexCount; ++vertex) {
         const unsigned char* input = source;
         unsigned short* output = (unsigned short*)destination;
         unsigned short copied = 0;
@@ -10847,9 +10899,9 @@ unsigned int __cdecl CopyVertexStream(StreamCopyInfo* stream)
         }
         for (; copied < outputComponents; ++copied)
                 *output++ = 0;
-        source += stream->sourceStride;
-        destination += stream->outputStride;
-        bytesWritten += stream->bytesPerVertex;
+        source += kParams->sourceStride;
+        destination += kParams->outputStride;
+        bytesWritten += kParams->bytesPerVertex;
     }
     return bytesWritten;
 }
@@ -10874,47 +10926,50 @@ struct PackShortInfo {
 };
 
 // @fnv 0x00e773b0
-unsigned int PackShortVertexData(PackShortInfo* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedShortToShort | NiXenonShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: usInUShorts, uiPacked, usPackCount, psOutData, pucOutData, pusVertMap, pusInData, pucInData, usOutShorts, us, usMapIndex, usPack
+unsigned int PackShortVertexData(PackShortInfo* kParams)
 {
     unsigned int uiSize = 0;
-    unsigned char* pucDest = pkInfo->pucDest;
-    unsigned char* pucSrc = pkInfo->pucSrc;
-    unsigned short* pusRemap = pkInfo->pusRemap;
+    unsigned char* pucDest = kParams->pucDest;
+    unsigned char* pucSrc = kParams->pucSrc;
+    unsigned short* pusRemap = kParams->pusRemap;
 
     if (!pucSrc)
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->uiDestSize);
-            pucDest += pkInfo->uiDestStride;
-            uiSize += pkInfo->uiDestSize;
+            _fnv_zlib_memset(pucDest, 0, kParams->uiDestSize);
+            pucDest += kParams->uiDestStride;
+            uiSize += kParams->uiDestSize;
         }
         return uiSize;
     }
 
-    unsigned short usComps = pkInfo->usComps - 16;
-    unsigned short usMax = (pkInfo->eType != 6) ? 4 : 2;
+    unsigned short usComps = kParams->usComps - 16;
+    unsigned short usMax = (kParams->eType != 6) ? 4 : 2;
     unsigned short usCopy = (usComps > usMax) ? usMax : usComps;
 
     if (pusRemap)
     {
         unsigned short usIdx = 0;
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            short* pSrc = (short*)(pucSrc + pusRemap[usIdx++] * pkInfo->uiSrcStride);
+            short* pSrc = (short*)(pucSrc + pusRemap[usIdx++] * kParams->uiSrcStride);
             short* pDst = (short*)pucDest;
             unsigned short j;
             for (j = 0; j < usCopy; j++)
                 *pDst++ = *pSrc++;
             for (; j < usMax; j++)
                 *pDst++ = 0;
-            uiSize += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            uiSize += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
             short* pSrc = (short*)pucSrc;
             short* pDst = (short*)pucDest;
@@ -10923,9 +10978,9 @@ unsigned int PackShortVertexData(PackShortInfo* pkInfo)
                 *pDst++ = *pSrc++;
             for (; j < usMax; j++)
                 *pDst++ = 0;
-            uiSize += pkInfo->uiDestSize;
-            pucSrc += pkInfo->uiSrcStride;
-            pucDest += pkInfo->uiDestStride;
+            uiSize += kParams->uiDestSize;
+            pucSrc += kParams->uiSrcStride;
+            pucDest += kParams->uiDestStride;
         }
     }
     return uiSize;
@@ -10952,47 +11007,50 @@ struct FUN_00e77590_Info {
 
 // @fnv 0x00e77590
 // src: COMMUNITY 0x00e77590
-unsigned int NiD3DShaderDeclaration_Pack_ByteToShort(FUN_00e77590_Info* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_ByteToShort | NiXenonShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, usInBytes, psOutData, pcInData, pucOutData, pusVertMap, pucInData, usOutShorts, us, usMapIndex, usPack
+unsigned int NiD3DShaderDeclaration_Pack_ByteToShort(FUN_00e77590_Info* kParams)
 {
     unsigned int uiTotal = 0;
-    signed char* pcSrc = pkInfo->pcSrc;
-    unsigned short* pusRemap = pkInfo->pusRemap;
-    unsigned char* pucDest = pkInfo->pucDest;
+    signed char* pcSrc = kParams->pcSrc;
+    unsigned short* pusRemap = kParams->pusRemap;
+    unsigned char* pucDest = kParams->pucDest;
 
     if (!pcSrc)
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->uiDestSize);
-            uiTotal += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            _fnv_zlib_memset(pucDest, 0, kParams->uiDestSize);
+            uiTotal += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
         return uiTotal;
     }
 
-    unsigned short usSrcComps = pkInfo->usComps - 0x14;
-    unsigned short usDestComps = (pkInfo->eType != 6) ? 4 : 2;
+    unsigned short usSrcComps = kParams->usComps - 0x14;
+    unsigned short usDestComps = (kParams->eType != 6) ? 4 : 2;
     unsigned short usCopy = (usSrcComps > usDestComps) ? usDestComps : usSrcComps;
 
     if (pusRemap)
     {
         unsigned short usIdx = 0;
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            signed char* pcIn = pcSrc + pusRemap[usIdx++] * pkInfo->uiSrcStride;
+            signed char* pcIn = pcSrc + pusRemap[usIdx++] * kParams->uiSrcStride;
             short* psOut = (short*)pucDest;
             unsigned short j;
             for (j = 0; j < usCopy; j++)
                 *psOut++ = *pcIn++;
             for (; j < usDestComps; j++)
                 *psOut++ = 0;
-            uiTotal += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
             signed char* pcIn = pcSrc;
             short* psOut = (short*)pucDest;
@@ -11001,9 +11059,9 @@ unsigned int NiD3DShaderDeclaration_Pack_ByteToShort(FUN_00e77590_Info* pkInfo)
                 *psOut++ = *pcIn++;
             for (; j < usDestComps; j++)
                 *psOut++ = 0;
-            uiTotal += pkInfo->uiDestSize;
-            pcSrc += pkInfo->uiSrcStride;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pcSrc += kParams->uiSrcStride;
+            pucDest += kParams->uiDestStride;
         }
     }
     return uiTotal;
@@ -11030,45 +11088,48 @@ struct FUN_00e77950_Info {
 
 // @fnv 0x00e77950
 // src: COMMUNITY 0x00e77950
-unsigned int NiD3DShaderDeclaration_Pack_FloatToUnsignedByte(FUN_00e77950_Info* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_FloatToUnsignedByte | NiXenonShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, pfInData, usPackCount, pbyOutData, pucOutData, pusVertMap, pucInData, usInFloats, usOutUBytes, aucTemp, us, usMapIndex, usPack, puiOutData
+unsigned int NiD3DShaderDeclaration_Pack_FloatToUnsignedByte(FUN_00e77950_Info* kParams)
 {
     unsigned int uiTotal = 0;
-    unsigned char* pucDest = pkInfo->pucDest;
-    float* pfSrc = pkInfo->pfSrc;
-    unsigned short* pusRemap = pkInfo->pusRemap;
+    unsigned char* pucDest = kParams->pucDest;
+    float* pfSrc = kParams->pfSrc;
+    unsigned short* pusRemap = kParams->pusRemap;
 
     if (!pfSrc)
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->uiDestSize);
-            pucDest += pkInfo->uiDestStride;
-            uiTotal += pkInfo->uiDestSize;
+            _fnv_zlib_memset(pucDest, 0, kParams->uiDestSize);
+            pucDest += kParams->uiDestStride;
+            uiTotal += kParams->uiDestSize;
         }
         return uiTotal;
     }
 
-    unsigned short usComps = pkInfo->usComps > 4 ? 4 : pkInfo->usComps;
+    unsigned short usComps = kParams->usComps > 4 ? 4 : kParams->usComps;
 
     if (pusRemap)
     {
         unsigned short k = 0;
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            float* pfIn = (float*)((char*)pfSrc + pusRemap[k++] * pkInfo->uiSrcStride);
+            float* pfIn = (float*)((char*)pfSrc + pusRemap[k++] * kParams->uiSrcStride);
             unsigned char* pucOut = pucDest;
             unsigned short j;
             for (j = 0; j < usComps; j++)
                 *pucOut++ = (unsigned char)*pfIn++;
             if (j < 4)
                 _fnv_zlib_memset(pucOut, 0, (unsigned short)(4 - j));
-            pucDest += pkInfo->uiDestStride;
-            uiTotal += pkInfo->uiDestSize;
+            pucDest += kParams->uiDestStride;
+            uiTotal += kParams->uiDestSize;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
             float* pfIn = pfSrc;
             unsigned char* pucOut = pucDest;
@@ -11077,9 +11138,9 @@ unsigned int NiD3DShaderDeclaration_Pack_FloatToUnsignedByte(FUN_00e77950_Info* 
                 *pucOut++ = (unsigned char)*pfIn++;
             if (j < 4)
                 _fnv_zlib_memset(pucOut, 0, (unsigned short)(4 - j));
-            pfSrc = (float*)((char*)pfSrc + pkInfo->uiSrcStride);
-            pucDest += pkInfo->uiDestStride;
-            uiTotal += pkInfo->uiDestSize;
+            pfSrc = (float*)((char*)pfSrc + kParams->uiSrcStride);
+            pucDest += kParams->uiDestStride;
+            uiTotal += kParams->uiDestSize;
         }
     }
     return uiTotal;
@@ -11106,46 +11167,49 @@ struct FUN_00e77eb0_Info {
 
 // @fnv 0x00e77eb0
 // src: COMMUNITY 0x00e77eb0
-unsigned int NiD3DShaderDeclaration_Pack_ShortToUnsignedByte(FUN_00e77eb0_Info* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_ShortToUnsignedByte | NiXenonShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, psInData, usPackCount, usInShorts, pbyOutData, pucOutData, pusVertMap, pucInData, usOutUBytes, aucTemp, us, usMapIndex, usPack, puiOutData
+unsigned int NiD3DShaderDeclaration_Pack_ShortToUnsignedByte(FUN_00e77eb0_Info* kParams)
 {
     unsigned int uiSize = 0;
-    unsigned short* psSrc = pkInfo->psSrc;
-    unsigned short* pusRemap = pkInfo->pusRemap;
-    unsigned char* pucDest = pkInfo->pucDest;
+    unsigned short* psSrc = kParams->psSrc;
+    unsigned short* pusRemap = kParams->pusRemap;
+    unsigned char* pucDest = kParams->pucDest;
 
     if (!psSrc)
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->uiDestSize);
-            pucDest += pkInfo->uiDestStride;
-            uiSize += pkInfo->uiDestSize;
+            _fnv_zlib_memset(pucDest, 0, kParams->uiDestSize);
+            pucDest += kParams->uiDestStride;
+            uiSize += kParams->uiDestSize;
         }
         return uiSize;
     }
 
-    unsigned short usCompCount = pkInfo->usComps - 12;
+    unsigned short usCompCount = kParams->usComps - 12;
     unsigned short usComps = (usCompCount > 4) ? 4 : usCompCount;
 
     if (pusRemap)
     {
         unsigned short usIdx = 0;
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            unsigned short* psIn = (unsigned short*)((char*)psSrc + pusRemap[usIdx++] * pkInfo->uiSrcStride);
+            unsigned short* psIn = (unsigned short*)((char*)psSrc + pusRemap[usIdx++] * kParams->uiSrcStride);
             unsigned char* pucOut = pucDest;
             unsigned short j;
             for (j = 0; j < usComps; j++)
                 *pucOut++ = (unsigned char)*psIn++;
             if (j < 4)
                 _fnv_zlib_memset(pucOut, 0, (unsigned short)(4 - j));
-            uiSize += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            uiSize += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
             unsigned short* psIn = psSrc;
             unsigned char* pucOut = pucDest;
@@ -11154,44 +11218,47 @@ unsigned int NiD3DShaderDeclaration_Pack_ShortToUnsignedByte(FUN_00e77eb0_Info* 
                 *pucOut++ = (unsigned char)*psIn++;
             if (j < 4)
                 _fnv_zlib_memset(pucOut, 0, (unsigned short)(4 - j));
-            uiSize += pkInfo->uiDestSize;
-            psSrc = (unsigned short*)((char*)psSrc + pkInfo->uiSrcStride);
-            pucDest += pkInfo->uiDestStride;
+            uiSize += kParams->uiDestSize;
+            psSrc = (unsigned short*)((char*)psSrc + kParams->uiSrcStride);
+            pucDest += kParams->uiDestStride;
         }
     }
     return uiSize;
 }
 
 // @fnv 0x00e78060
-int __cdecl CopyStreamElements(FUN_00e79f40_Stream* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedShortToUnsignedByte | NiXenonShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: usInUShorts, uiPacked, usPackCount, pbyOutData, pucOutData, pusVertMap, pusInData, pucInData, usOutUBytes, aucTemp, us, usMapIndex, usPack, puiOutData
+int __cdecl CopyStreamElements(FUN_00e79f40_Stream* kParams)
 {
     int totalSize = 0;
-    unsigned char* pucSource = (unsigned char*)pkInfo->src;
-    unsigned short* pusIndices = pkInfo->indices;
-    unsigned char* pucDest = (unsigned char*)pkInfo->dst;
+    unsigned char* pucSource = (unsigned char*)kParams->src;
+    unsigned short* pusIndices = kParams->indices;
+    unsigned char* pucDest = (unsigned char*)kParams->dst;
 
     if (pucSource == 0) {
         unsigned short i = 0;
-        if (i < pkInfo->count) {
+        if (i < kParams->count) {
             do {
-                _fnv_zlib_memset(pucDest, 0, pkInfo->elemSize);
-                totalSize += pkInfo->elemSize;
-                pucDest += pkInfo->dstStride;
+                _fnv_zlib_memset(pucDest, 0, kParams->elemSize);
+                totalSize += kParams->elemSize;
+                pucDest += kParams->dstStride;
                 ++i;
-            } while (i < pkInfo->count);
+            } while (i < kParams->count);
         }
         return totalSize;
     }
 
-    unsigned short count = (unsigned short)(pkInfo->type - 16);
+    unsigned short count = (unsigned short)(kParams->type - 16);
     unsigned int uiCopyCount = count > 4 ? 4 : count;
 
     if (pusIndices) {
         unsigned short i = 0;
         unsigned short index = 0;
-        if (i < pkInfo->count) {
+        if (i < kParams->count) {
             do {
-                unsigned char* pRead = pucSource + pusIndices[index] * pkInfo->srcStride;
+                unsigned char* pRead = pucSource + pusIndices[index] * kParams->srcStride;
                 ++index;
                 unsigned char* pWrite = pucDest;
                 unsigned short copied = 0;
@@ -11207,14 +11274,14 @@ int __cdecl CopyStreamElements(FUN_00e79f40_Stream* pkInfo)
                 }
                 if (copied < 4)
                     _fnv_zlib_memset(pWrite, 0, (unsigned short)(4 - copied));
-                totalSize += pkInfo->elemSize;
-                pucDest += pkInfo->dstStride;
+                totalSize += kParams->elemSize;
+                pucDest += kParams->dstStride;
                 ++i;
-            } while (i < pkInfo->count);
+            } while (i < kParams->count);
         }
     } else {
         unsigned short i = 0;
-        if (i < pkInfo->count) {
+        if (i < kParams->count) {
             do {
                 unsigned char* pRead = pucSource;
                 unsigned char* pWrite = pucDest;
@@ -11231,11 +11298,11 @@ int __cdecl CopyStreamElements(FUN_00e79f40_Stream* pkInfo)
                 }
                 if (copied < 4)
                     _fnv_zlib_memset(pWrite, 0, (unsigned short)(4 - copied));
-                totalSize += pkInfo->elemSize;
-                pucSource += pkInfo->srcStride;
-                pucDest += pkInfo->dstStride;
+                totalSize += kParams->elemSize;
+                pucSource += kParams->srcStride;
+                pucDest += kParams->dstStride;
                 ++i;
-            } while (i < pkInfo->count);
+            } while (i < kParams->count);
         }
     }
     return totalSize;
@@ -11269,35 +11336,38 @@ static inline unsigned int PackColor_e78910(const short* v, unsigned short comps
 }
 
 // @fnv 0x00e78910
-int PackVertexColors(Stream_e78910* aStream)
+// pdb: NiD3DShaderDeclaration::Pack_ShortToUByteColor | NiD3DShaderDeclaration.obj | retail, object-file run extension, high
+// pdb params: kParams
+// pdb locals: uiPacked, psInData, usInShorts, pucOutData, pusVertMap, pucInData, puiOutData, us, usMapIndex, sAlpha
+int PackVertexColors(Stream_e78910* kParams)
 {
-    unsigned short* indices = aStream->indices;
-    unsigned int* dst = (unsigned int*)aStream->dst;
-    char* src = aStream->src;
+    unsigned short* indices = kParams->indices;
+    unsigned int* dst = (unsigned int*)kParams->dst;
+    char* src = kParams->src;
     int size = 0;
     if (src == 0) {
-        for (unsigned short i = 0; i < aStream->count; i++) {
+        for (unsigned short i = 0; i < kParams->count; i++) {
             *dst = 0xffffffff;
-            dst = (unsigned int*)((char*)dst + aStream->dstStride);
-            size += aStream->elemSize;
+            dst = (unsigned int*)((char*)dst + kParams->dstStride);
+            size += kParams->elemSize;
         }
         return size;
     }
-    unsigned short comps = aStream->type - 12;
+    unsigned short comps = kParams->type - 12;
     if (indices) {
         unsigned short j = 0;
-        for (unsigned short i = 0; i < aStream->count; i++) {
-            const short* v = (const short*)(src + indices[j++] * aStream->srcStride);
+        for (unsigned short i = 0; i < kParams->count; i++) {
+            const short* v = (const short*)(src + indices[j++] * kParams->srcStride);
             *dst = PackColor_e78910(v, comps);
-            dst = (unsigned int*)((char*)dst + aStream->dstStride);
-            size += aStream->elemSize;
+            dst = (unsigned int*)((char*)dst + kParams->dstStride);
+            size += kParams->elemSize;
         }
     } else {
-        for (unsigned short i = 0; i < aStream->count; i++) {
+        for (unsigned short i = 0; i < kParams->count; i++) {
             *dst = PackColor_e78910((const short*)src, comps);
-            src += aStream->srcStride;
-            dst = (unsigned int*)((char*)dst + aStream->dstStride);
-            size += aStream->elemSize;
+            src += kParams->srcStride;
+            dst = (unsigned int*)((char*)dst + kParams->dstStride);
+            size += kParams->elemSize;
         }
     }
     return size;
@@ -11374,47 +11444,50 @@ struct FUN_00e79370_Info {
 
 // @fnv 0x00e79370
 // src: COMMUNITY 0x00e79370
-unsigned int NiD3DShaderDeclaration_Pack_UnsignedLongToFloat(FUN_00e79370_Info* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedLongToFloat | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, usInULongs, usPackCount, usOutFloats, pucOutData, pusVertMap, pulInData, pfOutData, pucInData, us, usMapIndex, usPack
+unsigned int NiD3DShaderDeclaration_Pack_UnsignedLongToFloat(FUN_00e79370_Info* kParams)
 {
     unsigned int uiTotal = 0;
-    unsigned char* pucSrc = pkInfo->pucSrc;
-    unsigned char* pucDest = pkInfo->pucDest;
-    unsigned short* pusRemap = pkInfo->pusRemap;
+    unsigned char* pucSrc = kParams->pucSrc;
+    unsigned char* pucDest = kParams->pucDest;
+    unsigned short* pusRemap = kParams->pusRemap;
 
     if (!pucSrc)
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->uiDestSize);
-            uiTotal += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            _fnv_zlib_memset(pucDest, 0, kParams->uiDestSize);
+            uiTotal += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
         return uiTotal;
     }
 
-    unsigned short usSrcComps = pkInfo->usSrcType - 8;
-    unsigned short usDestComps = pkInfo->usDestComps + 1;
+    unsigned short usSrcComps = kParams->usSrcType - 8;
+    unsigned short usDestComps = kParams->usDestComps + 1;
     unsigned short usComps = (usSrcComps > usDestComps) ? usDestComps : usSrcComps;
 
     if (pusRemap)
     {
         unsigned short usIdx = 0;
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            unsigned int* puiSrc = (unsigned int*)(pucSrc + pusRemap[usIdx++] * pkInfo->uiSrcStride);
+            unsigned int* puiSrc = (unsigned int*)(pucSrc + pusRemap[usIdx++] * kParams->uiSrcStride);
             float* pfDest = (float*)pucDest;
             unsigned short j;
             for (j = 0; j < usComps; j++)
                 *pfDest++ = (float)*puiSrc++ * (1.0 / 4294967296.0);
             for (; j < usDestComps; j++)
                 *pfDest++ = 0.0f;
-            uiTotal += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
             unsigned int* puiSrc = (unsigned int*)pucSrc;
             float* pfDest = (float*)pucDest;
@@ -11423,9 +11496,9 @@ unsigned int NiD3DShaderDeclaration_Pack_UnsignedLongToFloat(FUN_00e79370_Info* 
                 *pfDest++ = (float)*puiSrc++ * (1.0 / 4294967296.0);
             for (; j < usDestComps; j++)
                 *pfDest++ = 0.0f;
-            uiTotal += pkInfo->uiDestSize;
-            pucSrc += pkInfo->uiSrcStride;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pucSrc += kParams->uiSrcStride;
+            pucDest += kParams->uiDestStride;
         }
     }
     return uiTotal;
@@ -11441,43 +11514,46 @@ struct NormalizedStream {
     unsigned char* dest;
 };
 // @fnv 0x00e79b40
-unsigned __cdecl NormalizeVertexStream(NormalizedStream* pStream) {
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedByteToFloat | NiD3DShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, pucInDataTemp, usOutFloats, pucOutData, pusVertMap, usInUBytes, pfOutData, pucInData, us, usMapIndex, usPack
+unsigned __cdecl NormalizeVertexStream(NormalizedStream* kParams) {
     unsigned a = 0;
-    unsigned char* src = pStream->source;
-    unsigned short* indices = pStream->indices;
-    unsigned char* dst = pStream->dest;
+    unsigned char* src = kParams->source;
+    unsigned short* indices = kParams->indices;
+    unsigned char* dst = kParams->dest;
     if (!src) {
-        for (unsigned short i = 0; i < pStream->vertices; ++i) {
-            _fnv_zlib_memset(dst, 0, pStream->elementSize);
-            dst += pStream->destStride;
-            a += pStream->elementSize;
+        for (unsigned short i = 0; i < kParams->vertices; ++i) {
+            _fnv_zlib_memset(dst, 0, kParams->elementSize);
+            dst += kParams->destStride;
+            a += kParams->elementSize;
         }
         return a;
     }
-    unsigned short srcComponents = pStream->type - 24;
-    unsigned short components = pStream->lastComponent + 1;
+    unsigned short srcComponents = kParams->type - 24;
+    unsigned short components = kParams->lastComponent + 1;
     unsigned short b = srcComponents > components ? components : srcComponents;
     if (indices) {
         unsigned short remapIndex = 0;
-        for (unsigned short i = 0; i < pStream->vertices; ++i) {
-            unsigned char* in = src + indices[remapIndex++] * pStream->sourceStride;
+        for (unsigned short i = 0; i < kParams->vertices; ++i) {
+            unsigned char* in = src + indices[remapIndex++] * kParams->sourceStride;
             float* out = (float*)dst;
             unsigned short j = 0;
             for (; j < b; ++j) *out++ = *in++ / 255.0;
             for (; j < components; ++j) *out++ = 0.0f;
-            a += pStream->elementSize;
-            dst += pStream->destStride;
+            a += kParams->elementSize;
+            dst += kParams->destStride;
         }
     } else {
-        for (unsigned short i = 0; i < pStream->vertices; ++i) {
+        for (unsigned short i = 0; i < kParams->vertices; ++i) {
             unsigned char* in = src;
             float* out = (float*)dst;
             unsigned short j = 0;
             for (; j < b; ++j) *out++ = *in++ / 255.0;
             for (; j < components; ++j) *out++ = 0.0f;
-            a += pStream->elementSize;
-            src += pStream->sourceStride;
-            dst += pStream->destStride;
+            a += kParams->elementSize;
+            src += kParams->sourceStride;
+            dst += kParams->destStride;
         }
     }
     return a;
@@ -11497,6 +11573,7 @@ struct FUN_00e7a640 {
 };
 
 // @fnv 0x00e7a640
+// pdb: NiD3DShaderDeclaration::NiPackerEntry::NiPackerEntry | NiD3DShaderDeclaration.obj | retail, object-file run extension, low
 FUN_00e7a640::FUN_00e7a640()
 {
     m_0c = 0;
@@ -11557,6 +11634,8 @@ inline NiTArray<E7A6A0Bucket*, NiTMallocInterface<E7A6A0Bucket*> >* E7A6A0GetBuc
 
 // Deletes every bucket in the global bucket array, clears the array, then deletes the array itself.
 // @fnv 0x00e7a6a0
+// pdb: NiD3DShaderDeclaration::_SDMShutdown | NiD3DShaderDeclaration.obj | retail, object-file run extension, low
+// pdb locals: i
 void __cdecl DestroyBucketTable()
 {
     for (unsigned int i = 0; i < E7A6A0GetBuckets()->GetSize(); i++) {
@@ -11944,6 +12023,7 @@ float* __stdcall WriteVertex(float* pVertexBuffer, const NiPoint3& kPos, const N
 
 // Maps a code to a small index via a switch, returning 0 for code 0 and any unmapped code.
 // @fnv 0x00e69d00
+// pdb: NiXenonRenderer::InitializeTextureDefaults | NiXenonRenderer.obj | debug, call graph, medium
 unsigned int __cdecl MapCodeToIndex(unsigned int code)
 {
     switch (code) {
@@ -12054,7 +12134,7 @@ struct PackingGeometry {
     unsigned int streamCount;
 };
 struct PackingVertexManager {
-    unsigned int NiDX9VertexBufferManager_PackSkinnedVB(NiGeometryData*, void*, PackingData*, unsigned short, void*, unsigned int);
+    unsigned int NiXenonVertexBufferManager_PackSkinnedVB(NiGeometryData*, void*, PackingData*, unsigned short, void*, unsigned int);
 };
 struct PackingIndexManager {
     void* FUN_00e8f200(void*, unsigned int, unsigned int, void*, void**, unsigned int, unsigned int);
@@ -12128,7 +12208,7 @@ bool PackingRenderer::UpdatePackingPacket(PackingPacket* packet, NiGeometryData*
             unsigned int packed = 0;
             if (geometry) packed = geometry->Pack(model, geometryData, data, dirty, stream, i, 0, 0, 0);
             if (!packed) {
-                if (streamCount != 1 || !((PackingVertexManager*)m_pShaderStreamInfo)->NiDX9VertexBufferManager_PackSkinnedVB(
+                if (streamCount != 1 || !((PackingVertexManager*)m_pShaderStreamInfo)->NiXenonVertexBufferManager_PackSkinnedVB(
                     model, geometryData, data, dirty, stream, 0))
                     return false;
             }
@@ -12239,7 +12319,7 @@ struct Map_e6e
     void InsertOrUpdate(unsigned int uiKey, void* pVal);
 };
 
-int __cdecl FUN_00e7bd20(int iFormat);
+int __cdecl FUN_00e7bd20(int kDesc);
 void* __cdecl CreatePixelFormat(unsigned int uiKey);
 
 struct FUN_00e6ee00_cls
@@ -13085,7 +13165,7 @@ static inline bool IsKindOfType(const NiRTTI* pkTarget, const DepthBuffer* pkObj
     {
         if (pkRTTI == pkTarget)
             return true;
-        pkRTTI = pkRTTI->m_pBaseRTTI;
+        pkRTTI = pkRTTI->m_pkBaseRTTI;
     }
     return false;
 }
@@ -13729,7 +13809,7 @@ inline bool PG_IsKindOf(const NiRTTI& kRTTI, PG_Geom* p)
 {
     if (!p)
         return false;
-    for (const NiRTTI* r = p->GetRTTI(); r; r = r->m_pBaseRTTI)
+    for (const NiRTTI* r = p->GetRTTI(); r; r = r->m_pkBaseRTTI)
         if (r == &kRTTI)
             return true;
     return false;
@@ -14125,6 +14205,8 @@ struct Renderer {
 };
 
 // @fnv 0x00e74840
+// pdb: NiXenonRenderer::Do_EndBatch | NiXenonRenderer.obj | retail, object-file run extension, low
+// pdb locals: uiRet, bFirstBoneMatrixUpdate, pkGeometry, pkData, pkWorldBound, pkCurrObject, uiMetricsDrawCalls, pkWorld, uiRemainingPasses, pkBuffData, pkSkinInstance, pkPartition, bHWSkinned, uiStartIndex, i, uiPrimitiveCount
 void Renderer::DrawGeometry(Geom* geom)
 {
     if (m_bDeviceLost)
@@ -14192,7 +14274,7 @@ class GlobalObjectO2_00a7b610 { public: const char* name; GlobalObjectO2_00a7b61
 // with the name "NiDX92DBufferData").
 __forceinline bool IsKindOfType(NiDX92DBufferData* p, const NiRTTI* type) {
  const NiRTTI* r=p->GetRTTI();
- while(r) {if(r==type)return true;r=r->m_pBaseRTTI;}return false;
+ while(r) {if(r==type)return true;r=r->m_pkBaseRTTI;}return false;
 }
 inline NiDX92DBufferData* CastBound(NiDX92DBufferData* p) {
  if(p==0)return 0;
@@ -14907,28 +14989,31 @@ bool ResolveRenderer::NiDX9Renderer_EndUsingRenderTargetGroup() {
 }
 
 // @fnv 0x00e76e30
-unsigned int ConvertVertexComponents(FUN_00e76c30_Info* info)
+// pdb: NiD3DShaderDeclaration::Pack_LongToShort | NiXenonShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, plInData, psOutData, pucOutData, pusVertMap, pucInData, usInLongs, usOutShorts, us, usMapIndex, usPack
+unsigned int ConvertVertexComponents(FUN_00e76c30_Info* kParams)
 {
     unsigned int total = 0;
-    unsigned char* source = reinterpret_cast<unsigned char*>(info->pfSrc);
-    unsigned char* output = info->pucDest;
-    unsigned short* indices = info->pusRemap;
+    unsigned char* source = reinterpret_cast<unsigned char*>(kParams->pfSrc);
+    unsigned char* output = kParams->pucDest;
+    unsigned short* indices = kParams->pusRemap;
     if (!source) {
-        for (unsigned short row = 0; row < info->usVerts; ++row) {
-            _fnv_zlib_memset(output, 0, info->uiDestSize);
-            total += info->uiDestSize;
-            output += info->uiDestStride;
+        for (unsigned short row = 0; row < kParams->usVerts; ++row) {
+            _fnv_zlib_memset(output, 0, kParams->uiDestSize);
+            total += kParams->uiDestSize;
+            output += kParams->uiDestStride;
         }
         return total;
     }
-    unsigned short available = info->usComps - 4;
-    unsigned short width = info->eType == 6 ? 2 : 4;
+    unsigned short available = kParams->usComps - 4;
+    unsigned short width = kParams->eType == 6 ? 2 : 4;
     unsigned short copied = available > width ? width : available;
     if (indices) {
         unsigned short mapped = 0;
-        for (unsigned short row = 0; row < info->usVerts; ++row) {
+        for (unsigned short row = 0; row < kParams->usVerts; ++row) {
             const unsigned short* pusValues = reinterpret_cast<const unsigned short*>(
-                source + indices[mapped++] * info->uiSrcStride);
+                source + indices[mapped++] * kParams->uiSrcStride);
             unsigned short* destination = reinterpret_cast<unsigned short*>(output);
             unsigned short component = 0;
             for (; component < copied; ++component) {
@@ -14937,11 +15022,11 @@ unsigned int ConvertVertexComponents(FUN_00e76c30_Info* info)
             }
             for (; component < width; ++component)
                 *destination++ = 0;
-            total += info->uiDestSize;
-            output += info->uiDestStride;
+            total += kParams->uiDestSize;
+            output += kParams->uiDestStride;
         }
     } else {
-        for (unsigned short row = 0; row < info->usVerts; ++row) {
+        for (unsigned short row = 0; row < kParams->usVerts; ++row) {
             const unsigned short* pusValues = reinterpret_cast<const unsigned short*>(source);
             unsigned short* destination = reinterpret_cast<unsigned short*>(output);
             unsigned short component = 0;
@@ -14951,9 +15036,9 @@ unsigned int ConvertVertexComponents(FUN_00e76c30_Info* info)
             }
             for (; component < width; ++component)
                 *destination++ = 0;
-            total += info->uiDestSize;
-            source += info->uiSrcStride;
-            output += info->uiDestStride;
+            total += kParams->uiDestSize;
+            source += kParams->uiSrcStride;
+            output += kParams->uiDestStride;
         }
     }
     return total;
@@ -14995,25 +15080,28 @@ struct ByteVertexConversion {
 
 // Converts info->count vertices from source to destination, zero-filling missing components and optionally indexing the source; returns bytes written.
 // @fnv 0x00e77770
-unsigned int __cdecl ConvertVertexFormat(ByteVertexConversion* info) {
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedByteToShort | NiXenonShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, pucInDataTemp, psOutData, pucOutData, pusVertMap, usInUBytes, pucInData, usOutShorts, us, usMapIndex, usPack
+unsigned int __cdecl ConvertVertexFormat(ByteVertexConversion* kParams) {
 
     unsigned int written = 0;
 
-    const unsigned char* source = info->source;
+    const unsigned char* source = kParams->source;
 
-    const unsigned short* indices = info->indices;
+    const unsigned short* indices = kParams->indices;
 
-    unsigned char* destination = info->destination;
+    unsigned char* destination = kParams->destination;
 
     if (!source) {
 
-        for (unsigned short i = 0; i < info->count; i++) {
+        for (unsigned short i = 0; i < kParams->count; i++) {
 
-            FUN_00ec61c0(destination, 0, info->destinationSize);
+            FUN_00ec61c0(destination, 0, kParams->destinationSize);
 
-            destination += info->destinationStride;
+            destination += kParams->destinationStride;
 
-            written += info->destinationSize;
+            written += kParams->destinationSize;
 
         }
 
@@ -15021,9 +15109,9 @@ unsigned int __cdecl ConvertVertexFormat(ByteVertexConversion* info) {
 
     }
 
-    unsigned short supplied = info->sourceType - 24;
+    unsigned short supplied = kParams->sourceType - 24;
 
-    unsigned short components = info->format == 6 ? 2 : 4;
+    unsigned short components = kParams->format == 6 ? 2 : 4;
 
     unsigned short copied = supplied > components ? components : supplied;
 
@@ -15031,9 +15119,9 @@ unsigned int __cdecl ConvertVertexFormat(ByteVertexConversion* info) {
 
         unsigned short index = 0;
 
-        for (unsigned short i = 0; i < info->count; i++) {
+        for (unsigned short i = 0; i < kParams->count; i++) {
 
-            const unsigned char* input = source + indices[index++] * info->sourceStride;
+            const unsigned char* input = source + indices[index++] * kParams->sourceStride;
 
             unsigned short* output = reinterpret_cast<unsigned short*>(destination);
 
@@ -15043,15 +15131,15 @@ unsigned int __cdecl ConvertVertexFormat(ByteVertexConversion* info) {
 
             for (; j < components; j++) *output++ = 0;
 
-            written += info->destinationSize;
+            written += kParams->destinationSize;
 
-            destination += info->destinationStride;
+            destination += kParams->destinationStride;
 
         }
 
     } else {
 
-        for (unsigned short i = 0; i < info->count; i++) {
+        for (unsigned short i = 0; i < kParams->count; i++) {
 
             const unsigned char* input = source;
 
@@ -15063,11 +15151,11 @@ unsigned int __cdecl ConvertVertexFormat(ByteVertexConversion* info) {
 
             for (; j < components; j++) *output++ = 0;
 
-            written += info->destinationSize;
+            written += kParams->destinationSize;
 
-            source += info->sourceStride;
+            source += kParams->sourceStride;
 
-            destination += info->destinationStride;
+            destination += kParams->destinationStride;
 
         }
 
@@ -15098,33 +15186,36 @@ struct FUN_00e77b50_Info {
 
 // @fnv 0x00e77b50
 // src: COMMUNITY 0x00e77b50
-unsigned int NiD3DShaderDeclaration_Pack_LongToUnsignedByte(FUN_00e77b50_Info* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_LongToUnsignedByte | NiXenonShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, plInData, pbyOutData, pucOutData, pusVertMap, pucInData, usInLongs, usOutUBytes, aucTemp, us, usMapIndex, usPack, puiOutData
+unsigned int NiD3DShaderDeclaration_Pack_LongToUnsignedByte(FUN_00e77b50_Info* kParams)
 {
     unsigned int uiTotal = 0;
-    unsigned char* pucSrc = pkInfo->pucSrc;
-    unsigned short* pusRemap = pkInfo->pusRemap;
-    unsigned char* pucDest = pkInfo->pucDest;
+    unsigned char* pucSrc = kParams->pucSrc;
+    unsigned short* pusRemap = kParams->pusRemap;
+    unsigned char* pucDest = kParams->pucDest;
 
     if (!pucSrc)
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->uiDestSize);
-            pucDest += pkInfo->uiDestStride;
-            uiTotal += pkInfo->uiDestSize;
+            _fnv_zlib_memset(pucDest, 0, kParams->uiDestSize);
+            pucDest += kParams->uiDestStride;
+            uiTotal += kParams->uiDestSize;
         }
         return uiTotal;
     }
 
-    unsigned short usExtra = pkInfo->usComps - 4;
+    unsigned short usExtra = kParams->usComps - 4;
     unsigned short ItemUpdateArray = usExtra > 4 ? 4 : usExtra;
 
     if (pusRemap)
     {
         unsigned short k = 0;
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
-            unsigned char* s = pucSrc + pusRemap[k++] * pkInfo->uiSrcStride;
+            unsigned char* s = pucSrc + pusRemap[k++] * kParams->uiSrcStride;
             unsigned char* d = pucDest;
             unsigned short j;
             for (j = 0; j < (unsigned short)ItemUpdateArray; j++)
@@ -15134,13 +15225,13 @@ unsigned int NiD3DShaderDeclaration_Pack_LongToUnsignedByte(FUN_00e77b50_Info* p
             }
             if (j < 4)
                 _fnv_zlib_memset(d, 0, (unsigned short)(4 - j));
-            uiTotal += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < pkInfo->usVerts; i++)
+        for (unsigned short i = 0; i < kParams->usVerts; i++)
         {
             unsigned char* s = pucSrc;
             unsigned char* d = pucDest;
@@ -15152,9 +15243,9 @@ unsigned int NiD3DShaderDeclaration_Pack_LongToUnsignedByte(FUN_00e77b50_Info* p
             }
             if (j < 4)
                 _fnv_zlib_memset(d, 0, (unsigned short)(4 - j));
-            uiTotal += pkInfo->uiDestSize;
-            pucSrc += pkInfo->uiSrcStride;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pucSrc += kParams->uiSrcStride;
+            pucDest += kParams->uiDestStride;
         }
     }
     return uiTotal;
@@ -15170,42 +15261,45 @@ struct PackByteInfo {
     unsigned char* dest;
 };
 // @fnv 0x00e77d00
-unsigned int __cdecl PackByteElements(PackByteInfo* pInfo) {
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedLongToUnsignedByte | NiXenonShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, usInULongs, usPackCount, pbyOutData, pucOutData, pusVertMap, pulInData, pucInData, usOutUBytes, aucTemp, us, usMapIndex, usPack, puiOutData
+unsigned int __cdecl PackByteElements(PackByteInfo* kParams) {
     unsigned int size=0;
-    unsigned int* src=pInfo->source;
-    unsigned short* indices=pInfo->indices;
-    unsigned char* dst=pInfo->dest;
+    unsigned int* src=kParams->source;
+    unsigned short* indices=kParams->indices;
+    unsigned char* dst=kParams->dest;
     if (!src) {
-        for(unsigned short i=0;i<pInfo->count;i++) {
-            _fnv_zlib_memset(dst,0,pInfo->elementSize);
-            dst+=pInfo->destStride;
-            size+=pInfo->elementSize;
+        for(unsigned short i=0;i<kParams->count;i++) {
+            _fnv_zlib_memset(dst,0,kParams->elementSize);
+            dst+=kParams->destStride;
+            size+=kParams->elementSize;
         }
         return size;
     }
-    unsigned int type=(unsigned short)(pInfo->type-8);
+    unsigned int type=(unsigned short)(kParams->type-8);
     unsigned short comps=(unsigned short)type>4 ? 4 : (unsigned short)type;
     if(indices) {
         unsigned short index=0;
-        for(unsigned short i=0;i<pInfo->count;i++) {
-            unsigned int* in=(unsigned int*)((unsigned char*)src+indices[index++]*pInfo->sourceStride);
+        for(unsigned short i=0;i<kParams->count;i++) {
+            unsigned int* in=(unsigned int*)((unsigned char*)src+indices[index++]*kParams->sourceStride);
             unsigned char* out=dst;
             unsigned short j;
             for(j=0;j<comps;j++) *out++=(unsigned char)*in++;
             if(j<4) _fnv_zlib_memset(out,0,(unsigned short)(4-j));
-            size+=pInfo->elementSize;
-            dst+=pInfo->destStride;
+            size+=kParams->elementSize;
+            dst+=kParams->destStride;
         }
     } else {
-        for(unsigned short i=0;i<pInfo->count;i++) {
+        for(unsigned short i=0;i<kParams->count;i++) {
             unsigned int* in=src;
             unsigned char* out=dst;
             unsigned short j;
             for(j=0;j<comps;j++) *out++=(unsigned char)*in++;
             if(j<4) _fnv_zlib_memset(out,0,(unsigned short)(4-j));
-            size+=pInfo->elementSize;
-            src=(unsigned int*)((unsigned char*)src+pInfo->sourceStride);
-            dst+=pInfo->destStride;
+            size+=kParams->elementSize;
+            src=(unsigned int*)((unsigned char*)src+kParams->sourceStride);
+            dst+=kParams->destStride;
         }
     }
     return size;
@@ -15222,27 +15316,30 @@ struct ByteFloatStream {
 };
 // Converts each vertex's signed-byte components to floats divided by 127 (clamped at -1), zero-fills the rest, and returns the total bytes written.
 // @fnv 0x00e79920
-unsigned __cdecl ConvertByteFloatStream(ByteFloatStream* pStream) {
+// pdb: NiD3DShaderDeclaration::Pack_ByteToFloat | NiD3DShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, usInBytes, pcInData, usOutFloats, pucOutData, pusVertMap, pfOutData, pucInData, us, usMapIndex, usPack, fTemp
+unsigned __cdecl ConvertByteFloatStream(ByteFloatStream* kParams) {
  unsigned total = 0;
- signed char* source = pStream->source;
- unsigned short* indices = pStream->indices;
- unsigned char* dest = pStream->dest;
+ signed char* source = kParams->source;
+ unsigned short* indices = kParams->indices;
+ unsigned char* dest = kParams->dest;
  if (!source) {
-  for (unsigned short i=0; i<pStream->vertices; ++i) {
-   fnv_zlib_memset(dest,0,pStream->elementSize);
-   dest += pStream->destStride;
-   total += pStream->elementSize;
+  for (unsigned short i=0; i<kParams->vertices; ++i) {
+   fnv_zlib_memset(dest,0,kParams->elementSize);
+   dest += kParams->destStride;
+   total += kParams->elementSize;
   }
   return total;
  }
  {
-  unsigned short available = pStream->type - 20;
-  unsigned short components = pStream->lastComponent + 1;
+  unsigned short available = kParams->type - 20;
+  unsigned short components = kParams->lastComponent + 1;
   unsigned short count = minimum(available, components);
   if (indices) {
    unsigned short remap=0;
-   for (unsigned short i=0; i<pStream->vertices; ++i) {
-    signed char* input = source + indices[remap++]*pStream->sourceStride;
+   for (unsigned short i=0; i<kParams->vertices; ++i) {
+    signed char* input = source + indices[remap++]*kParams->sourceStride;
     float* output = (float*)dest;
     unsigned short j=0;
     for (;j<count;++j) {
@@ -15251,11 +15348,11 @@ unsigned __cdecl ConvertByteFloatStream(ByteFloatStream* pStream) {
      ++input;
     }
     for (;j<components;++j) *output++ = 0;
-    dest += pStream->destStride;
-    total += pStream->elementSize;
+    dest += kParams->destStride;
+    total += kParams->elementSize;
    }
   } else {
-   for (unsigned short i=0; i<pStream->vertices; ++i) {
+   for (unsigned short i=0; i<kParams->vertices; ++i) {
     signed char* input = source;
     float* output = (float*)dest;
     unsigned short j=0;
@@ -15265,9 +15362,9 @@ unsigned __cdecl ConvertByteFloatStream(ByteFloatStream* pStream) {
      ++input;
     }
     for (;j<components;++j) *output++ = 0;
-    source += pStream->sourceStride;
-    dest += pStream->destStride;
-    total += pStream->elementSize;
+    source += kParams->sourceStride;
+    dest += kParams->destStride;
+    total += kParams->elementSize;
    }
   }
  }
@@ -15286,6 +15383,9 @@ struct ColorStream {
 void* _fnv_zlib_memset(void*, int, unsigned int);
 
 // @fnv 0x00e7a0a0
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedByteToUByteColor | NiD3DShaderDeclaration.obj | retail, object-file run extension, low
+// pdb params: kParams
+// pdb locals: uiPacked, usInBytes, pucInDataTemp, pucOutData, pusVertMap, pucInData, puiOutData, us, usMapIndex, ucAlpha
 unsigned int ConvertColorStream(ColorStream* pStream) {
     unsigned char* src = pStream->src;
     unsigned short* indices = pStream->indices;
@@ -15590,7 +15690,7 @@ struct ArrayObj;
 
 struct TargetObj {
 
-    bool Invoke(FUN_00e744b0_Src* p);
+    bool Invoke(FUN_00e744b0_Src* pkSkinPartition);
 
 };
 
@@ -17090,27 +17190,30 @@ void FUN_00e759c0_cls::NiDX9Renderer_GetBackgroundColor(float* out) {
 }
 
 // @fnv 0x00e79540
-unsigned int __cdecl ConvertNormalizedShortsToFloats(NormalizedStream* pStream)
+// pdb: NiD3DShaderDeclaration::Pack_ShortToFloat | NiD3DShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, psInData, usPackCount, usInShorts, usOutFloats, pucOutData, pusVertMap, pfOutData, pucInData, us, usMapIndex, usPack, fTemp
+unsigned int __cdecl ConvertNormalizedShortsToFloats(NormalizedStream* kParams)
 {
     unsigned int uiBytesWritten = 0;
-    unsigned char* pucSrc = pStream->source;
-    unsigned short* pusRemap = pStream->indices;
-    unsigned char* pucDest = pStream->dest;
+    unsigned char* pucSrc = kParams->source;
+    unsigned short* pusRemap = kParams->indices;
+    unsigned char* pucDest = kParams->dest;
     if (!pucSrc) {
-        for (unsigned short i = 0; i < pStream->vertices; i++) {
-            _fnv_zlib_memset(pucDest, 0, pStream->elementSize);
-            pucDest += pStream->destStride;
-            uiBytesWritten += pStream->elementSize;
+        for (unsigned short i = 0; i < kParams->vertices; i++) {
+            _fnv_zlib_memset(pucDest, 0, kParams->elementSize);
+            pucDest += kParams->destStride;
+            uiBytesWritten += kParams->elementSize;
         }
         return uiBytesWritten;
     }
-    unsigned short usSrcComps = pStream->type - 12;
-    unsigned short usDestComps = pStream->lastComponent + 1;
+    unsigned short usSrcComps = kParams->type - 12;
+    unsigned short usDestComps = kParams->lastComponent + 1;
     unsigned short usComps = (usSrcComps > usDestComps) ? usDestComps : usSrcComps;
     if (pusRemap) {
         unsigned short usIndex = 0;
-        for (unsigned short i = 0; i < pStream->vertices; i++) {
-            const short* psSrc = (const short*)(pucSrc + pusRemap[usIndex++] * pStream->sourceStride);
+        for (unsigned short i = 0; i < kParams->vertices; i++) {
+            const short* psSrc = (const short*)(pucSrc + pusRemap[usIndex++] * kParams->sourceStride);
             float* pfDest = (float*)pucDest;
             unsigned short j;
             for (j = 0; j < usComps; j++) {
@@ -17120,11 +17223,11 @@ unsigned int __cdecl ConvertNormalizedShortsToFloats(NormalizedStream* pStream)
             }
             for (; j < usDestComps; j++)
                 *pfDest++ = 0.0f;
-            pucDest += pStream->destStride;
-            uiBytesWritten += pStream->elementSize;
+            pucDest += kParams->destStride;
+            uiBytesWritten += kParams->elementSize;
         }
     } else {
-        for (unsigned short i = 0; i < pStream->vertices; i++) {
+        for (unsigned short i = 0; i < kParams->vertices; i++) {
             const short* psSrc = (const short*)pucSrc;
             float* pfDest = (float*)pucDest;
             unsigned short j;
@@ -17135,9 +17238,9 @@ unsigned int __cdecl ConvertNormalizedShortsToFloats(NormalizedStream* pStream)
             }
             for (; j < usDestComps; j++)
                 *pfDest++ = 0.0f;
-            pucSrc += pStream->sourceStride;
-            pucDest += pStream->destStride;
-            uiBytesWritten += pStream->elementSize;
+            pucSrc += kParams->sourceStride;
+            pucDest += kParams->destStride;
+            uiBytesWritten += kParams->elementSize;
         }
     }
     return uiBytesWritten;
@@ -17870,7 +17973,7 @@ struct PacketObj {
     int unk48;
     void SetPacket(unsigned int, int, int, int, int, int, unsigned int);
     void SetA(unsigned short, unsigned short*);
-    void SetB(unsigned short, int, int);
+    void NiTriStripsData_Replace(unsigned short, int, int);
 };
 
 // @fnv 0x00e6fa90
@@ -17900,7 +18003,7 @@ void __stdcall ApplyPacketUpdate(PacketObj* pPacketObj, PacketTarget* target, in
         if (NiObject_IsKindOf(&g_011f4a88, (NiAVObject*)pPacketObj))
             pPacketObj->SetA(pPacketObj->unk40, 0);
         else if (NiObject_IsKindOf(&g_011f4a70, (NiAVObject*)pPacketObj))
-            pPacketObj->SetB(pPacketObj->unk44, pPacketObj->unk48, 0);
+            pPacketObj->NiTriStripsData_Replace(pPacketObj->unk44, pPacketObj->unk48, 0);
     }
 }
 
@@ -18137,7 +18240,7 @@ unsigned int unk10,unk14,unk18,unk1c,unk20; void* colors; void* normals;
 unsigned int unk2c,unk30,unk34,unk38,unk3c;
 unsigned short triangles,unk42,strips,unk46; void* activeTriangles;
 void* FUN_00a75f10(); void* FUN_00a7b850();
- __forceinline bool IsKindOfType(const NiRTTI* type) {const NiRTTI* r = GetRTTI(); while(r) {if(r==type) return true;r=r->m_pBaseRTTI;} return false;}
+ __forceinline bool IsKindOfType(const NiRTTI* type) {const NiRTTI* r = GetRTTI(); while(r) {if(r==type) return true;r=r->m_pkBaseRTTI;} return false;}
 
 };
 } // namespace fnv_00e71fe0
@@ -18811,12 +18914,12 @@ bool GeometryPacketBuilder::PrepareGeometryPacket(Packet108* packet, fnv_00e71fe
  return true;
 }
 
-__declspec(noreturn) void __cdecl AddGeometryToBatch();
+__declspec(noreturn) void __cdecl NiXenonRenderer_AddToBatch();
 
 // @fnv 0x00e752a0
 // src: COMMUNITY 0x00e752a0
 void __cdecl NiDX9Renderer_BatchRenderShape() {
-    AddGeometryToBatch();
+    NiXenonRenderer_AddToBatch();
 }
 
 extern "C" void* __cdecl FUN_00ec61c0(void*, int, unsigned int);
@@ -18838,49 +18941,52 @@ struct StridedDataTransfer {
 };
 // Copies up to 4 bytes per row from source (indexed or sequential) into destination, zero-filling the remainder, and returns the total bytes processed.
 // @fnv 0x00e78210
-unsigned int CopyIndexedRows(StridedDataTransfer* pkData)
+// pdb: NiD3DShaderDeclaration::Pack_ByteToUnsignedByte | NiXenonShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, usInBytes, pbyOutData, pucOutData, pusVertMap, pbyInData, pucInData, usOutUBytes, aucTemp, us, usMapIndex, usPack, puiOutData
+unsigned int CopyIndexedRows(StridedDataTransfer* kParams)
 {
     unsigned int uiTotal = 0;
-    unsigned char* pucSrc = pkData->pucSrc;
-    unsigned short* pusIndex = pkData->pusIndex;
-    unsigned char* pucDst = pkData->pucDst;
+    unsigned char* pucSrc = kParams->pucSrc;
+    unsigned short* pusIndex = kParams->pusIndex;
+    unsigned char* pucDst = kParams->pucDst;
     if (!pucSrc)
     {
-        for (unsigned short i = 0; i < pkData->m_usPassCountLocal; i++)
+        for (unsigned short i = 0; i < kParams->m_usPassCountLocal; i++)
         {
-            FUN_00ec61c0(pucDst, 0, pkData->uiSize);
-            pucDst += pkData->uiDstStride;
-            uiTotal += pkData->uiSize;
+            FUN_00ec61c0(pucDst, 0, kParams->uiSize);
+            pucDst += kParams->uiDstStride;
+            uiTotal += kParams->uiSize;
         }
         return uiTotal;
     }
-    unsigned short usTypeOffset = pkData->usType - 0x14; unsigned short usCopyLen = (usTypeOffset > 4) ? 4 : usTypeOffset;
+    unsigned short usTypeOffset = kParams->usType - 0x14; unsigned short usCopyLen = (usTypeOffset > 4) ? 4 : usTypeOffset;
     if (pusIndex)
     {
         unsigned short j = 0;
-        for (unsigned short i = 0; i < pkData->m_usPassCountLocal; i++)
+        for (unsigned short i = 0; i < kParams->m_usPassCountLocal; i++)
         {
-            unsigned char* s = pucSrc + pusIndex[j++] * pkData->uiSrcStride;
+            unsigned char* s = pucSrc + pusIndex[j++] * kParams->uiSrcStride;
             unsigned char* d = pucDst;
             unsigned short k;
             for (k = 0; k < usCopyLen; k++) *d++ = *s++;
             if (k < 4) FUN_00ec61c0(d, 0, (unsigned short)(4 - k));
-            uiTotal += pkData->uiSize;
-            pucDst += pkData->uiDstStride;
+            uiTotal += kParams->uiSize;
+            pucDst += kParams->uiDstStride;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < pkData->m_usPassCountLocal; i++)
+        for (unsigned short i = 0; i < kParams->m_usPassCountLocal; i++)
         {
             unsigned char* s = pucSrc;
             unsigned char* d = pucDst;
             unsigned short k;
             for (k = 0; k < usCopyLen; k++) *d++ = *s++;
             if (k < 4) FUN_00ec61c0(d, 0, (unsigned short)(4 - k));
-            uiTotal += pkData->uiSize;
-            pucSrc += pkData->uiSrcStride;
-            pucDst += pkData->uiDstStride;
+            uiTotal += kParams->uiSize;
+            pucSrc += kParams->uiSrcStride;
+            pucDst += kParams->uiDstStride;
         }
     }
     return uiTotal;
@@ -20886,6 +20992,8 @@ public:
 // Inserts or updates a key/value pair in the hash map, managing reference counts on the stored object.
 // @fnv 0x00e72cf0
 // src: GUESS 0x00e72cf0 (confidence: high)
+// pdb: NiVertexDeclCache::NiVertexDeclCache | NiVertexDeclCache.obj | debug, call graph, medium
+// pdb params: uiNumBuckets, uiEntriesPerBucket, uiGrowBy
 void RendererPacketMap::SetMapEntryWithReferenceCounting(unsigned int key, ReferencePtr value) {
     unsigned int bucket = Bucket(key);
     MapEntry* entry = entries[bucket];
@@ -21037,39 +21145,42 @@ void* __cdecl FUN_00ec44d0(void*, const void*, unsigned int);
 // Copies or zeroes count destination elements using strides and optional indices, then returns the accumulated element sizes.
 // @fnv 0x00e78f80
 // src: COMMUNITY 0x00e78f80
-unsigned int __cdecl NiD3DShaderDeclaration_Pack_FloatToFloat(Stream_e78910* apStream)
+// pdb: NiD3DShaderDeclaration::Pack_FloatToFloat | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, pfInData, usOutFloats, pucOutData, pusVertMap, pucInData, pfOutData, usInFloats, usExtraOuts, us, usMapIndex, outSize, outStride, inStride, count, src, dest
+unsigned int __cdecl NiD3DShaderDeclaration_Pack_FloatToFloat(Stream_e78910* kParams)
 {
     unsigned int total = 0;
-    unsigned short* indices = apStream->indices;
-    char* dest = apStream->dst;
-    char* source = apStream->src;
+    unsigned short* indices = kParams->indices;
+    char* dest = kParams->dst;
+    char* source = kParams->src;
     if (source == 0)
     {
-        for (unsigned short i = 0; i < apStream->count; ++i)
+        for (unsigned short i = 0; i < kParams->count; ++i)
         {
-            FUN_00ec61c0(dest, 0, apStream->elemSize);
-            dest += apStream->dstStride;
-            total += apStream->elemSize;
+            FUN_00ec61c0(dest, 0, kParams->elemSize);
+            dest += kParams->dstStride;
+            total += kParams->elemSize;
         }
     }
     else if (indices != 0)
     {
-        for (unsigned short i = 0; i < apStream->count;)
+        for (unsigned short i = 0; i < kParams->count;)
         {
-            const char* p = source + indices[i] * apStream->srcStride;
+            const char* p = source + indices[i] * kParams->srcStride;
             ++i;
-            FUN_00ec44d0(dest, p, apStream->unk14);
-            dest += apStream->dstStride;
-            total += apStream->elemSize;
+            FUN_00ec44d0(dest, p, kParams->unk14);
+            dest += kParams->dstStride;
+            total += kParams->elemSize;
         }
     }
     else
     {
-    unsigned int srcStride = apStream->srcStride;
-    unsigned int dstStride = apStream->dstStride;
-    unsigned int elemSize = apStream->elemSize;
-    unsigned int count = apStream->count;
-    unsigned int size = apStream->unk14;
+    unsigned int srcStride = kParams->srcStride;
+    unsigned int dstStride = kParams->dstStride;
+    unsigned int elemSize = kParams->elemSize;
+    unsigned int count = kParams->count;
+    unsigned int size = kParams->unk14;
     unsigned int i;
     switch (size)
     {
@@ -21107,9 +21218,9 @@ unsigned int __cdecl NiD3DShaderDeclaration_Pack_FloatToFloat(Stream_e78910* apS
         }
         break;
     default:
-        for (i = 0; i < apStream->count; ++i)
+        for (i = 0; i < kParams->count; ++i)
         {
-            FUN_00ec44d0(dest, source, apStream->unk14);
+            FUN_00ec44d0(dest, source, kParams->unk14);
             dest += dstStride;
             total += elemSize;
             source += srcStride;
@@ -21141,41 +21252,44 @@ struct PixRow_00e79760 {
 // Converts available 16-bit values to floats, zero-fills remaining output values, and returns the accumulated row sizes.
 // @fnv 0x00e79760
 // src: COMMUNITY 0x00e79760
-unsigned int NiD3DShaderDeclaration_Pack_UnsignedShortToFloat(PixRow_00e79760* r)
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedShortToFloat | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: usInUShorts, uiPacked, usPackCount, usOutFloats, pucOutData, pusVertMap, pusInData, pfOutData, pucInData, us, usMapIndex, usPack
+unsigned int NiD3DShaderDeclaration_Pack_UnsignedShortToFloat(PixRow_00e79760* kParams)
 {
   unsigned int total = 0;
-  unsigned int base = r->m_srcBase;
-  unsigned short* index = r->m_uiEdgeIndex;
-  char* dst = r->m_dst;
+  unsigned int base = kParams->m_srcBase;
+  unsigned short* index = kParams->m_uiEdgeIndex;
+  char* dst = kParams->m_dst;
 
   if (base == 0) {
-    for (unsigned short i = 0; i < r->m_uiItemCount; i++) {
-      FUN_00ec61c0(dst, 0, r->m_rowSize);
-      dst += r->m_dstStride;
-      total += r->m_rowSize;
+    for (unsigned short i = 0; i < kParams->m_uiItemCount; i++) {
+      FUN_00ec61c0(dst, 0, kParams->m_rowSize);
+      dst += kParams->m_dstStride;
+      total += kParams->m_rowSize;
     }
     return total;
   }
 
-  unsigned short uiAvailWidth = r->m_w4 - 16;
-  unsigned short width = r->m_w0 + 1;
+  unsigned short uiAvailWidth = kParams->m_w4 - 16;
+  unsigned short width = kParams->m_w0 + 1;
   unsigned short n = uiAvailWidth > width ? width : uiAvailWidth;
 
   if (index != 0) {
     unsigned short idx = 0;
-    for (unsigned short i = 0; i < r->m_uiItemCount; i++) {
-      unsigned short* p = (unsigned short*)(index[idx++] * r->m_srcStride + base);
+    for (unsigned short i = 0; i < kParams->m_uiItemCount; i++) {
+      unsigned short* p = (unsigned short*)(index[idx++] * kParams->m_srcStride + base);
       float* d = (float*)dst;
       unsigned short j = 0;
       for (; j < n; j++)
         *d++ = (float)(*p++ / 65535.0);
       for (; j < width; j++)
         *d++ = 0.0f;
-      total += r->m_rowSize;
-      dst += r->m_dstStride;
+      total += kParams->m_rowSize;
+      dst += kParams->m_dstStride;
     }
   } else {
-    for (unsigned short i = 0; i < r->m_uiItemCount; i++) {
+    for (unsigned short i = 0; i < kParams->m_uiItemCount; i++) {
       unsigned short* p = (unsigned short*)base;
       float* d = (float*)dst;
       unsigned short j = 0;
@@ -21183,9 +21297,9 @@ unsigned int NiD3DShaderDeclaration_Pack_UnsignedShortToFloat(PixRow_00e79760* r
         *d++ = (float)(*p++ / 65535.0);
       for (; j < width; j++)
         *d++ = 0.0f;
-      total += r->m_rowSize;
-      base += r->m_srcStride;
-      dst += r->m_dstStride;
+      total += kParams->m_rowSize;
+      base += kParams->m_srcStride;
+      dst += kParams->m_dstStride;
     }
   }
   return total;
@@ -21193,41 +21307,44 @@ unsigned int NiD3DShaderDeclaration_Pack_UnsignedShortToFloat(PixRow_00e79760* r
 
 // @fnv 0x00e79d00
 // src: COMMUNITY 0x00e79d00
-unsigned int NiD3DShaderDeclaration_Pack_FloatToUByteColor(NormalizedStream* s)
+// pdb: NiD3DShaderDeclaration::Pack_FloatToUByteColor | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, pfInData, pucOutData, pusVertMap, pucInData, usInFloats, puiOutData, us, usMapIndex, fAlpha
+unsigned int NiD3DShaderDeclaration_Pack_FloatToUByteColor(NormalizedStream* kParams)
 {
-    unsigned char* source = s->source;
-    unsigned short* indices = s->indices;
-    unsigned char* dest = s->dest;
+    unsigned char* source = kParams->source;
+    unsigned short* indices = kParams->indices;
+    unsigned char* dest = kParams->dest;
     unsigned int size = 0;
     if (!source) {
         unsigned short i = 0;
-        if (i < s->vertices) {
+        if (i < kParams->vertices) {
             float a = 255.0f, r = 255.0f, g = 255.0f, b = 255.0f;
             do {
                 *(unsigned int*)dest = ((((unsigned int)fnv_FloatToInt(a) << 8) | (unsigned int)fnv_FloatToInt(r)) << 8 | (unsigned int)fnv_FloatToInt(g)) << 8 | (unsigned int)fnv_FloatToInt(b);
-                dest += s->destStride;
-                size += s->elementSize;
-            } while (++i < s->vertices);
+                dest += kParams->destStride;
+                size += kParams->elementSize;
+            } while (++i < kParams->vertices);
         }
     } else {
-        unsigned short components = s->type;
+        unsigned short components = kParams->type;
         if (indices) {
             unsigned short index = 0;
-            for (unsigned short i = 0; i < s->vertices; ++i) {
-                const float* v = (const float*)(source + indices[index++] * s->sourceStride);
+            for (unsigned short i = 0; i < kParams->vertices; ++i) {
+                const float* v = (const float*)(source + indices[index++] * kParams->sourceStride);
                 float a = components == 3 ? 1.0f : v[3];
                 *(unsigned int*)dest = ((((unsigned int)fnv_FloatToInt((float)(a * 255.0)) << 8) | (unsigned int)fnv_FloatToInt((float)(v[0] * 255.0))) << 8 | (unsigned int)fnv_FloatToInt((float)(v[1] * 255.0))) << 8 | (unsigned int)fnv_FloatToInt((float)(v[2] * 255.0));
-                dest += s->destStride;
-                size += s->elementSize;
+                dest += kParams->destStride;
+                size += kParams->elementSize;
             }
         } else {
-            for (unsigned short i = 0; i < s->vertices; ++i) {
+            for (unsigned short i = 0; i < kParams->vertices; ++i) {
                 const float* v = (const float*)source;
                 float a = components == 3 ? 1.0f : v[3];
                 *(unsigned int*)dest = ((((unsigned int)fnv_FloatToInt((float)(a * 255.0)) << 8) | (unsigned int)fnv_FloatToInt((float)(v[0] * 255.0))) << 8 | (unsigned int)fnv_FloatToInt((float)(v[1] * 255.0))) << 8 | (unsigned int)fnv_FloatToInt((float)(v[2] * 255.0));
-                source += s->sourceStride;
-                dest += s->destStride;
-                size += s->elementSize;
+                source += kParams->sourceStride;
+                dest += kParams->destStride;
+                size += kParams->elementSize;
             }
         }
     }
@@ -24553,7 +24670,7 @@ class RPtr74 { public:
 struct Node74 { Node74* next; Node74* prev; RPtr74 elem; };
 struct List74 {
     Node74* head; Node74* tail; unsigned int count;
-    void ReleaseRefCountedNode(Node74* p) throw();
+    void ReleaseRefCountedNode(Node74* pkItem) throw();
     void RemoveHead() {
         Node74* n = head;
         head = n->next;
@@ -24650,19 +24767,21 @@ struct S00e75340_Alpha {
     void NiTPointerListBase_Remove(S00e75340_Group** pp);
 };
 struct S00e75340_Renderer {
-    void __thiscall NiXenonRenderer_PurgeD3DShader(S00e75340_Group* volatile group);
+    void __thiscall NiXenonRenderer_PurgeD3DShader(S00e75340_Group* volatile pkD3DShader);
 };
 
 // Calls PrepareForRemoval and FUN_00e818d0(0), then passes the address of the group parameter to the function at offset 0x90c.
 // @fnv 0x00e75340
 // src: XBOX_PDB 0x00e75340
-void S00e75340_Renderer::NiXenonRenderer_PurgeD3DShader(S00e75340_Group* volatile group)
+// pdb: NiXenonRenderer::PurgeD3DShader | NiXenonRenderer.obj | retail, upstream name already matches, high
+// pdb params: pkD3DShader
+void S00e75340_Renderer::NiXenonRenderer_PurgeD3DShader(S00e75340_Group* volatile pkD3DShader)
 {
-    S00e75340_Group* g = group;
+    S00e75340_Group* g = pkD3DShader;
     g->PrepareForRemoval();
     g->FUN_00e818d0(0);
     S00e75340_Renderer* r = this;
-    reinterpret_cast<S00e75340_Alpha*>(reinterpret_cast<char*>(r) + 0x90c)->NiTPointerListBase_Remove((S00e75340_Group**)&group);
+    reinterpret_cast<S00e75340_Alpha*>(reinterpret_cast<char*>(r) + 0x90c)->NiTPointerListBase_Remove((S00e75340_Group**)&pkD3DShader);
 }
 
 struct ShaderDeclStandIn
@@ -24705,51 +24824,54 @@ void* _fnv_zlib_memset(void*, int, unsigned int);
 
 // Copies component data into pucDest, zero-fills remaining components, and returns the accumulated destination size.
 // @fnv 0x00e771f0
-unsigned int CopyPackedVerts(PackShortInfo* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_ShortToShort | NiXenonShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, psInData, usPackCount, usInShorts, psOutData, pucOutData, pusVertMap, pucInData, usOutShorts, us, usMapIndex, usPack
+unsigned int CopyPackedVerts(PackShortInfo* kParams)
 {
     unsigned int uiTotal = 0;
-    unsigned char* pucSrc = pkInfo->pucSrc;
-    unsigned short* pusRemap = pkInfo->pusRemap;
-    unsigned char* pucDest = pkInfo->pucDest;
+    unsigned char* pucSrc = kParams->pucSrc;
+    unsigned short* pusRemap = kParams->pusRemap;
+    unsigned char* pucDest = kParams->pucDest;
     unsigned short v;
     unsigned short c;
     unsigned short* pusFill;
     unsigned short usIdx;
 
     if (!pucSrc) {
-        for (v = 0; v < pkInfo->usVerts; v++) {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->uiDestSize);
-            pucDest += pkInfo->uiDestStride;
-            uiTotal += pkInfo->uiDestSize;
+        for (v = 0; v < kParams->usVerts; v++) {
+            _fnv_zlib_memset(pucDest, 0, kParams->uiDestSize);
+            pucDest += kParams->uiDestStride;
+            uiTotal += kParams->uiDestSize;
         }
         return uiTotal;
     }
 
-    unsigned short usComps = pkInfo->usComps - 12;
-    unsigned short usMaxComps = (pkInfo->eType == 6) ? 2 : 4;
+    unsigned short usComps = kParams->usComps - 12;
+    unsigned short usMaxComps = (kParams->eType == 6) ? 2 : 4;
     unsigned short usMinComps = (usComps > usMaxComps) ? usMaxComps : usComps;
 
     v = 0;
     if (pusRemap) {
         usIdx = 0;
-        for (; v < pkInfo->usVerts; v++) {
-            const unsigned char* pucVert = pucSrc + pusRemap[usIdx++] * pkInfo->uiSrcStride;
+        for (; v < kParams->usVerts; v++) {
+            const unsigned char* pucVert = pucSrc + pusRemap[usIdx++] * kParams->uiSrcStride;
             _memmove(pucDest, pucVert, usMinComps * 2);
             pusFill = (unsigned short*)(pucDest + usMinComps * 2);
             for (c = usMinComps; c < usMaxComps; c++)
                 *pusFill++ = 0;
-            uiTotal += pkInfo->uiDestSize;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pucDest += kParams->uiDestStride;
         }
     } else {
-        for (; v < pkInfo->usVerts; v++) {
+        for (; v < kParams->usVerts; v++) {
             _memmove(pucDest, pucSrc, usMinComps * 2);
             pusFill = (unsigned short*)(pucDest + usMinComps * 2);
             for (c = usMinComps; c < usMaxComps; c++)
                 *pusFill++ = 0;
-            uiTotal += pkInfo->uiDestSize;
-            pucSrc += pkInfo->uiSrcStride;
-            pucDest += pkInfo->uiDestStride;
+            uiTotal += kParams->uiDestSize;
+            pucSrc += kParams->uiSrcStride;
+            pucDest += kParams->uiDestStride;
         }
     }
     return uiTotal;
@@ -24768,23 +24890,26 @@ static inline void S00e783b0_Pad(unsigned char* pucPad, unsigned short usCopy)
 // Copies vertex data from source to destination with optional index remapping and padding, returning total bytes written.
 // @fnv 0x00e783b0
 // src: COMMUNITY 0x00e783b0
-unsigned int __cdecl NiD3DShaderDeclaration_Pack_UnsignedByteToUnsignedByte(StreamCopyInfo* pkInfo)
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedByteToUnsignedByte | NiXenonShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, pbyOutData, pucOutData, pusVertMap, usInUBytes, pbyInData, pucInData, usOutUBytes, aucTemp, us, usMapIndex, usPack, puiOutData
+unsigned int __cdecl NiD3DShaderDeclaration_Pack_UnsignedByteToUnsignedByte(StreamCopyInfo* kParams)
 {
     unsigned int uiBytesWritten = 0;
-    unsigned short* pusRemap = pkInfo->indices;
-    unsigned char* pucSrc = pkInfo->source;
-    unsigned char* pucDest = pkInfo->destination;
+    unsigned short* pusRemap = kParams->indices;
+    unsigned char* pucSrc = kParams->source;
+    unsigned char* pucDest = kParams->destination;
 
     if (pucSrc == 0) {
-        for (unsigned short k = 0; k < pkInfo->vertexCount; k++) {
-            _fnv_zlib_memset(pucDest, 0, pkInfo->bytesPerVertex);
-            pucDest += pkInfo->outputStride;
-            uiBytesWritten += pkInfo->bytesPerVertex;
+        for (unsigned short k = 0; k < kParams->vertexCount; k++) {
+            _fnv_zlib_memset(pucDest, 0, kParams->bytesPerVertex);
+            pucDest += kParams->outputStride;
+            uiBytesWritten += kParams->bytesPerVertex;
         }
         return uiBytesWritten;
     }
 
-    unsigned short usSize = pkInfo->inputBytes - 24;
+    unsigned short usSize = kParams->inputBytes - 24;
     unsigned short usCopyBytes;
     if (usSize > 4) {
         usCopyBytes = 4;
@@ -24795,68 +24920,71 @@ unsigned int __cdecl NiD3DShaderDeclaration_Pack_UnsignedByteToUnsignedByte(Stre
     unsigned short i = 0;
     if (pusRemap != 0) {
         unsigned short j = 0;
-        for (; i < pkInfo->vertexCount; i++) {
-            unsigned char* pucIn = pucSrc + pusRemap[j] * pkInfo->sourceStride;
+        for (; i < kParams->vertexCount; i++) {
+            unsigned char* pucIn = pucSrc + pusRemap[j] * kParams->sourceStride;
             j++;
             _memmove(pucDest, pucIn, usCopyBytes);
             S00e783b0_Pad(pucDest + usCopyBytes, usCopyBytes);
-            uiBytesWritten += pkInfo->bytesPerVertex;
-            pucDest += pkInfo->outputStride;
+            uiBytesWritten += kParams->bytesPerVertex;
+            pucDest += kParams->outputStride;
         }
         return uiBytesWritten;
     }
 
-    for (; i < pkInfo->vertexCount; i++) {
+    for (; i < kParams->vertexCount; i++) {
         _memmove(pucDest, pucSrc, usCopyBytes);
         S00e783b0_Pad(pucDest + usCopyBytes, usCopyBytes);
-        pucSrc += pkInfo->sourceStride;
-        pucDest += pkInfo->outputStride;
-        uiBytesWritten += pkInfo->bytesPerVertex;
+        pucSrc += kParams->sourceStride;
+        pucDest += kParams->outputStride;
+        uiBytesWritten += kParams->bytesPerVertex;
     }
     return uiBytesWritten;
 }
 
 // @fnv 0x00e78a70
 // src: COMMUNITY 0x00e78a70
-unsigned int NiD3DShaderDeclaration_Pack_UnsignedShortToUByteColor(Stream_e78910* apStream)
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedShortToUByteColor | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, usInShorts, pucOutData, pusVertMap, pusInData, pucInData, puiOutData, us, usMapIndex, usAlpha
+unsigned int NiD3DShaderDeclaration_Pack_UnsignedShortToUByteColor(Stream_e78910* kParams)
 {
-    unsigned short* indices = apStream->indices;
-    char* dst = apStream->dst;
-    char* src = apStream->src;
+    unsigned short* indices = kParams->indices;
+    char* dst = kParams->dst;
+    char* src = kParams->src;
 
     unsigned int uiBytesWritten = 0;
 
     if (!src) {
-        for (unsigned short i = 0; i < apStream->count; ++i) {
+        for (unsigned short i = 0; i < kParams->count; ++i) {
             *(unsigned int*)dst = 0xffffffff;
-            dst += apStream->dstStride;
-            uiBytesWritten += apStream->elemSize;
+            dst += kParams->dstStride;
+            uiBytesWritten += kParams->elemSize;
         }
         return uiBytesWritten;
     }
 
-    unsigned short comps = apStream->type - 0x10;
+    unsigned short comps = kParams->type - 0x10;
     if (indices) {
         unsigned short index = 0;
-        for (unsigned short i = 0; i < apStream->count; ++i) {
-            const unsigned short* v = (const unsigned short*)(src + indices[index++] * apStream->srcStride);
+        for (unsigned short i = 0; i < kParams->count; ++i) {
+            const unsigned short* v = (const unsigned short*)(src + indices[index++] * kParams->srcStride);
             unsigned short a = 0xffff;
             if (comps != 3)
                 a = v[3];
             *(unsigned int*)dst = ((a & 0xff00) << 16) | ((v[0] & 0xff00) << 8) | (v[1] & 0xff00) | (v[2] >> 8);
-            dst += apStream->dstStride;
-            uiBytesWritten += apStream->elemSize;
+            dst += kParams->dstStride;
+            uiBytesWritten += kParams->elemSize;
         }
     } else {
-        for (unsigned short i = 0; i < apStream->count; ++i) {
+        for (unsigned short i = 0; i < kParams->count; ++i) {
             const unsigned short* v = (const unsigned short*)src;
             unsigned short a = 0xffff;
             if (comps != 3)
                 a = v[3];
             *(unsigned int*)dst = ((a & 0xff00) << 16) | ((v[0] & 0xff00) << 8) | (v[1] & 0xff00) | (v[2] >> 8);
-            src += apStream->srcStride;
-            dst += apStream->dstStride;
-            uiBytesWritten += apStream->elemSize;
+            src += kParams->srcStride;
+            dst += kParams->dstStride;
+            uiBytesWritten += kParams->elemSize;
         }
     }
     return uiBytesWritten;
@@ -24879,38 +25007,41 @@ struct Stream78 {
 // With a source, copies bytes and zeroes following words; without one, zeroes each element, then returns accumulated element sizes.
 // @fnv 0x00e78e30
 // src: COMMUNITY 0x00e78e30
-unsigned int NiD3DShaderDeclaration_Pack_Float_ExtraOutsToZero(Stream78* pkInfo) {
+// pdb: NiD3DShaderDeclaration::Pack_Float_ExtraOutsToZero | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, pfInData, usOutFloats, usExtra, pucOutData, pusVertMap, pucInData, pfOutData, usInFloats, usExtraOuts, us, usMapIndex
+unsigned int NiD3DShaderDeclaration_Pack_Float_ExtraOutsToZero(Stream78* kParams) {
  unsigned int uiTotalBytes=0;
- char* pucSrc=pkInfo->pucSrc;
- unsigned short* pusRemap=pkInfo->pusRemap;
- char* pucDest=pkInfo->pucDest;
- unsigned short usPadding=pkInfo->type-pkInfo->components+1;
+ char* pucSrc=kParams->pucSrc;
+ unsigned short* pusRemap=kParams->pusRemap;
+ char* pucDest=kParams->pucDest;
+ unsigned short usPadding=kParams->type-kParams->components+1;
  unsigned short usVert;
  if(!pucSrc) {
-  for(usVert=0;usVert<pkInfo->vertices;usVert++) {
-   _fnv_zlib_memset(pucDest,0,pkInfo->elementSize);
-   uiTotalBytes+=pkInfo->elementSize;
-   pucDest+=pkInfo->destStride;
+  for(usVert=0;usVert<kParams->vertices;usVert++) {
+   _fnv_zlib_memset(pucDest,0,kParams->elementSize);
+   uiTotalBytes+=kParams->elementSize;
+   pucDest+=kParams->destStride;
   }
  } else if(pusRemap) {
   unsigned short usIndex=0;
-  for(usVert=0;usVert<pkInfo->vertices;usVert++) {
-   unsigned int uiElapsedMilliseconds=pusRemap[usIndex++]*pkInfo->sourceStride;
-   memcpy(pucDest,pucSrc+uiElapsedMilliseconds,pkInfo->copySize);
-   unsigned int* puiDest=(unsigned int*)(pucDest+pkInfo->copySize);
+  for(usVert=0;usVert<kParams->vertices;usVert++) {
+   unsigned int uiElapsedMilliseconds=pusRemap[usIndex++]*kParams->sourceStride;
+   memcpy(pucDest,pucSrc+uiElapsedMilliseconds,kParams->copySize);
+   unsigned int* puiDest=(unsigned int*)(pucDest+kParams->copySize);
    for(unsigned short usComp=0;usComp<usPadding;++usComp) puiDest[usComp]=0;
-   uiTotalBytes+=pkInfo->elementSize;
-   pucDest+=pkInfo->destStride;
+   uiTotalBytes+=kParams->elementSize;
+   pucDest+=kParams->destStride;
   }
   return uiTotalBytes;
  } else {
-  for(usVert=0;usVert<pkInfo->vertices;usVert++) {
-   memcpy(pucDest,pucSrc,pkInfo->copySize);
-   unsigned int* puiDest=(unsigned int*)(pucDest+pkInfo->copySize);
+  for(usVert=0;usVert<kParams->vertices;usVert++) {
+   memcpy(pucDest,pucSrc,kParams->copySize);
+   unsigned int* puiDest=(unsigned int*)(pucDest+kParams->copySize);
    for(unsigned short usComp=0;usComp<usPadding;++usComp) puiDest[usComp]=0;
-   uiTotalBytes+=pkInfo->elementSize;
-   pucSrc+=pkInfo->sourceStride;
-   pucDest+=pkInfo->destStride;
+   uiTotalBytes+=kParams->elementSize;
+   pucSrc+=kParams->sourceStride;
+   pucDest+=kParams->destStride;
   }
  }
  return uiTotalBytes;
@@ -24918,35 +25049,38 @@ unsigned int NiD3DShaderDeclaration_Pack_Float_ExtraOutsToZero(Stream78* pkInfo)
 
 // Decodes vertex data from a NormalizedStream, scaling int values to floats and writing them to the destination buffer.
 // @fnv 0x00e79160
-unsigned int __cdecl DecodeVertexData(NormalizedStream* apStream)
+// pdb: NiD3DShaderDeclaration::Pack_LongToFloat | NiD3DShaderDeclaration.obj | retail, object-file gap fill, high
+// pdb params: kParams
+// pdb locals: uiPacked, usPackCount, plInData, usOutFloats, pucOutData, pusVertMap, pfOutData, pucInData, usInLongs, us, usMapIndex, usPack, fTemp
+unsigned int __cdecl DecodeVertexData(NormalizedStream* kParams)
 {
     unsigned int bytes = 0;
-    unsigned char* dest = apStream->dest;
-    unsigned char* source = apStream->source;
-    unsigned short* indices = apStream->indices;
+    unsigned char* dest = kParams->dest;
+    unsigned char* source = kParams->source;
+    unsigned short* indices = kParams->indices;
     unsigned short j;
 
     if (!source)
     {
-        for (unsigned short i = 0; i < apStream->vertices; ++i)
+        for (unsigned short i = 0; i < kParams->vertices; ++i)
         {
-            _fnv_zlib_memset(dest, 0, apStream->elementSize);
-            dest += apStream->destStride;
-            bytes += apStream->elementSize;
+            _fnv_zlib_memset(dest, 0, kParams->elementSize);
+            dest += kParams->destStride;
+            bytes += kParams->elementSize;
         }
         return bytes;
     }
 
-    unsigned short available = apStream->type - 4;
-    unsigned short components = apStream->lastComponent + 1;
+    unsigned short available = kParams->type - 4;
+    unsigned short components = kParams->lastComponent + 1;
     unsigned short count = available > components ? components : available;
 
     if (indices)
     {
         unsigned short k = 0;
-        for (unsigned short i = 0; i < apStream->vertices; ++i)
+        for (unsigned short i = 0; i < kParams->vertices; ++i)
         {
-            int* input = (int*)(source + indices[k++] * apStream->sourceStride);
+            int* input = (int*)(source + indices[k++] * kParams->sourceStride);
             float* output = (float*)dest;
             for (j = 0; j < count; ++j)
             {
@@ -24956,13 +25090,13 @@ unsigned int __cdecl DecodeVertexData(NormalizedStream* apStream)
             }
             for (; j < components; ++j)
                 *output++ = 0.0f;
-            bytes += apStream->elementSize;
-            dest += apStream->destStride;
+            bytes += kParams->elementSize;
+            dest += kParams->destStride;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < apStream->vertices; ++i)
+        for (unsigned short i = 0; i < kParams->vertices; ++i)
         {
             int* input = (int*)source;
             float* output = (float*)dest;
@@ -24974,9 +25108,9 @@ unsigned int __cdecl DecodeVertexData(NormalizedStream* apStream)
             }
             for (; j < components; ++j)
                 *output++ = 0.0f;
-            bytes += apStream->elementSize;
-            source += apStream->sourceStride;
-            dest += apStream->destStride;
+            bytes += kParams->elementSize;
+            source += kParams->sourceStride;
+            dest += kParams->destStride;
         }
     }
     return bytes;
@@ -25085,6 +25219,8 @@ convert:
 // Maps key to two output values, writing each through its pointer and setting both to zero for unrecognized keys.
 // @fnv 0x00e7a8b0
 // src: GAMEBRYO_LIB 0x00e7a8b0
+// pdb: NiD3DShaderDeclaration::_SDMShutdown | NiD3DShaderDeclaration.obj | debug, object-file run extension, low
+// pdb locals: i
 void NiDX9DeviceDesc_DisplayFormatInfo_GetDepthStencilBPPFromFormat(int key, int* outA, int* outB)
 {
     switch (key)
@@ -25833,7 +25969,7 @@ public:
     unsigned int m_auiShaderVer7;
     unsigned int m_auiShaderVer8;
     unsigned int m_auiShaderVer9;
-    bool NiDX9Renderer_InitializeDeviceCaps(void* pkDevice);
+    bool NiXenonRenderer_InitializeDeviceCaps(void* kPresentParams);
     __forceinline void InitSamplerGlobals()
     {
     bool bAniso = (m_kDeviceCapabilities.TextureFilterCaps & 0x400) != 0;
@@ -25880,8 +26016,11 @@ public:
 
 // Queries device caps, validates multi-texture support, stores capability flags and shader versions, then initializes sampler globals.
 // @fnv 0x00e6c240
-// src: COMMUNITY 0x00e6c240
-bool DeviceCapabilityState::NiDX9Renderer_InitializeDeviceCaps(void* pkDevice)
+// src: XBOX_RETAIL_PDB 0x00e6c240
+// pdb: NiXenonRenderer::InitializeDeviceCaps | NiXenonRenderer.obj | retail, object-file run extension, high
+// pdb params: kPresentParams
+// pdb locals: pkD3DCaps9
+bool DeviceCapabilityState::NiXenonRenderer_InitializeDeviceCaps(void* kPresentParams)
 {
     if (m_pDirect3DDevice->GetDeviceCaps(&m_kDeviceCapabilities) < 0)
     {
@@ -28167,7 +28306,7 @@ struct InitVertexTable {
  void* slot12;
  void (__thiscall *Enable)(void*,unsigned);
 };
-struct InitTextureManager { InitTextureManager* FUN_00e8d0e0(InitDevice*); };
+struct InitTextureManager { InitTextureManager* NiXenonVertexBufferManager_ctor(InitDevice*); };
 struct InitLightManager { InitLightManager* FUN_00e8fb20(InitDevice*); };
 struct InitGeometryManager { InitGeometryManager* NiDX9TextureManager_NiDX9TextureManager(InitRenderer*); };
 struct InitShaderManager { InitShaderManager* NiDX9LightManager_NiDX9LightManager(InitVertexManager*, InitDevice*); };
@@ -28207,7 +28346,7 @@ InitCaps* __cdecl FUN_00e7d6b0(InitDevice*,InitPresent*,void**);
 void __cdecl FUN_00e7d850(InitDevice*,void**);
 InitState* __cdecl CreateShaderLevel(unsigned,InitRenderer*);
 InitVertexManager* __cdecl CreateRenderer(InitRenderer*,void*,unsigned);
-void __cdecl FUN_00e81940(InitRenderer*);
+void __cdecl InitializeShaderSystem(InitRenderer*);
 InitManager* __cdecl FUN_00e88eb0(InitDevice*,InitTextureManager*);
 
 extern const char DAT_010ee20c[];
@@ -29019,13 +29158,16 @@ struct InitRenderer {
  unsigned fieldacc;
  bool tall;
  bool NiDX9Renderer_InitializePresentParams(unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,InitPresent*);
- bool NiDX9Renderer_InitializeDeviceCaps(InitPresent*);
+ bool NiXenonRenderer_InitializeDeviceCaps(InitPresent*);
  bool InitializeRendererResources();
  void AssignRefObject(InitObject*);
  bool NiXenonRenderer_Create(unsigned width,unsigned height,unsigned options,unsigned deviceWindow,unsigned focusWindow,unsigned adapterIndex,unsigned deviceChoice,unsigned p8,unsigned p9,unsigned p10,unsigned p11,unsigned p12,unsigned p13,unsigned p14);
 };
 // @fnv 0x00e72e60
 // src: XBOX_PDB 0x00e72e60
+// pdb: NiXenonRenderer::Create | NiXenonRenderer.obj | retail, upstream name already matches, high
+// pdb params: uiWidth, uiHeight, uiUseFlags, eBackBufferFormat, eDepthStencilBufferFormat, eFrontBufferFormat, ePresentationInterval, uiFBMode
+// pdb locals: pkDepthBuffer, kD3DPresentParams, pkBackBuffer, pkErrorShader, eD3DRet, pkR, pkBackData, kFrust
 bool InitRenderer::NiXenonRenderer_Create(unsigned width,unsigned height,unsigned options,unsigned deviceWindow,unsigned focusWindow,unsigned adapterIndex,unsigned deviceChoice,unsigned p8,unsigned p9,unsigned p10,unsigned p11,unsigned p12,unsigned aiBackBufferCountOut,unsigned p14)
 {
  fielda98=width; fielda9c=height; fieldaa0=options; fieldaa4=deviceWindow; fieldaa8=focusWindow; fieldaac=adapterIndex;
@@ -29087,7 +29229,7 @@ bool InitRenderer::NiXenonRenderer_Create(unsigned width,unsigned height,unsigne
  }
  {
  if(!device) { NiDX9Renderer_SetLastErrorString(DAT_010edfac); Object_DoNothing(DAT_010edf60); return false; }
- if(!NiDX9Renderer_InitializeDeviceCaps(&present)) return false;
+ if(!NiXenonRenderer_InitializeDeviceCaps(&present)) return false;
  flag5d4=(field5cc&0x40)==0;
  flag5d5=(field5cc&0x80)!=0;
  color=0; depth=0;
@@ -29100,9 +29242,9 @@ bool InitRenderer::NiXenonRenderer_Create(unsigned width,unsigned height,unsigne
  field5d0=GetValueForIndex(MapCodeToIndex(state->GetFormat(0)->format));
  if(!InitializeRendererResources()) { Object_DoNothing(DAT_010edf10); return false; }
  vertices=CreateRenderer(this,&field28c,1);
- FUN_00e81940(this);
+ InitializeShaderSystem(this);
  InitTextureManager* textureMem=(InitTextureManager*)Object_DispatchCommandFour(0x100);
- textures=textureMem ? textureMem->FUN_00e8d0e0(device) : 0;
+ textures=textureMem ? textureMem->NiXenonVertexBufferManager_ctor(device) : 0;
  InitLightManager* lightMem=(InitLightManager*)Object_DispatchCommandFour(0x4c);
  lights=lightMem ? lightMem->FUN_00e8fb20(device) : 0;
  InitGeometryManager* geomMem=(InitGeometryManager*)Object_DispatchCommandFour(0x10);
@@ -29180,13 +29322,16 @@ extern void* DAT_0126f550;
 // Selects a callback by type and mode, then stores it in the CallbackRegistry bucket for that type.
 // @fnv 0x00e78560
 // src: COMMUNITY 0x00e78560
-void __cdecl NiD3DShaderDeclaration_SetDefaultPackingFunction(unsigned int type, unsigned int mode) {
- CallbackBucket* bucket = static_cast<CallbackRegistry*>(DAT_0126f550)->buckets[type];
+// pdb: NiD3DShaderDeclaration::SetDefaultPackingFunction | NiXenonShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: eType, uiAGDType
+// pdb locals: pPackEntry, pfnPack, uiIn, uiOut
+void __cdecl NiD3DShaderDeclaration_SetDefaultPackingFunction(unsigned int eType, unsigned int uiAGDType) {
+ CallbackBucket* bucket = static_cast<CallbackRegistry*>(DAT_0126f550)->buckets[eType];
  int callback = 0;
- if (!mode) { callback=reinterpret_cast<int>(cb_e7cd40); bucket->callbacks.SetAt(0,callback); return; }
- if(type<=3) {
- switch(mode) {
- case 1: case 2: case 3: case 4: if(mode-1==type) callback=reinterpret_cast<int>(cb_e78f80); else if(mode-1<type) goto sameFormat; else callback=reinterpret_cast<int>(cb_e78d50); break;
+ if (!uiAGDType) { callback=reinterpret_cast<int>(cb_e7cd40); bucket->callbacks.SetAt(0,callback); return; }
+ if(eType<=3) {
+ switch(uiAGDType) {
+ case 1: case 2: case 3: case 4: if(uiAGDType-1==eType) callback=reinterpret_cast<int>(cb_e78f80); else if(uiAGDType-1<eType) goto sameFormat; else callback=reinterpret_cast<int>(cb_e78d50); break;
  case 5: case 6: case 7: case 8: callback=reinterpret_cast<int>(cb_e79160); break;
  case 9: case 10: case 11: case 12: callback=reinterpret_cast<int>(cb_e79370); break;
  case 13: case 14: case 15: case 16: callback=reinterpret_cast<int>(cb_e79540); break;
@@ -29196,9 +29341,9 @@ void __cdecl NiD3DShaderDeclaration_SetDefaultPackingFunction(unsigned int type,
  case 29: case 30: case 31: case 32: sameFormat: callback=reinterpret_cast<int>(cb_e78e30); break;
  default: break;
  }
- if(callback) bucket->callbacks.SetAt(mode,callback);
- } else if(type==4) {
- switch(mode) {
+ if(callback) bucket->callbacks.SetAt(uiAGDType,callback);
+ } else if(eType==4) {
+ switch(uiAGDType) {
  case 1: case 2: case 6: case 7: case 8: case 10: case 11: case 12: case 13: case 14: case 15: case 17: case 18: case 19: callback=reinterpret_cast<int>(cb_e7cd40); break;
  case 3: case 4: goto packedFormat;
  case 5: callback=reinterpret_cast<int>(cb_e78880); break;
@@ -29210,10 +29355,10 @@ void __cdecl NiD3DShaderDeclaration_SetDefaultPackingFunction(unsigned int type,
  case 29: case 30: case 31: case 32: packedFormat: callback=reinterpret_cast<int>(cb_e79d00); break;
  default: break;
  }
- if(callback) bucket->callbacks.SetAt(mode,callback);
- } else if(type!=6 && type!=7) {
- if(type!=5) return;
- switch(mode) {
+ if(callback) bucket->callbacks.SetAt(uiAGDType,callback);
+ } else if(eType!=6 && eType!=7) {
+ if(eType!=5) return;
+ switch(uiAGDType) {
  case 1: case 2: case 3: case 4: callback=reinterpret_cast<int>(cb_e77950); break;
  case 5: case 6: case 7: case 8: callback=reinterpret_cast<int>(cb_e77b50); break;
  case 9: case 10: case 11: case 12: callback=reinterpret_cast<int>(cb_e77d00); break;
@@ -29224,9 +29369,9 @@ void __cdecl NiD3DShaderDeclaration_SetDefaultPackingFunction(unsigned int type,
  case 29: case 30: case 31: case 32: callback=reinterpret_cast<int>(cb_e7cd40); break;
  default: break;
  }
- if(callback) bucket->callbacks.SetAt(mode,callback);
+ if(callback) bucket->callbacks.SetAt(uiAGDType,callback);
  } else {
- switch(mode) {
+ switch(uiAGDType) {
  case 1: case 2: case 3: case 4: callback=reinterpret_cast<int>(cb_e76c30); break;
  case 5: case 6: case 7: case 8: callback=reinterpret_cast<int>(cb_e76e30); break;
  case 9: case 10: case 11: case 12: callback=reinterpret_cast<int>(cb_e77010); break;
@@ -29237,7 +29382,7 @@ void __cdecl NiD3DShaderDeclaration_SetDefaultPackingFunction(unsigned int type,
  case 29: case 30: case 31: case 32: callback=reinterpret_cast<int>(cb_e7cd40); break;
  default: break;
  }
- if(callback) bucket->callbacks.SetAt(mode,callback);
+ if(callback) bucket->callbacks.SetAt(uiAGDType,callback);
  }
  
 }
@@ -29260,37 +29405,40 @@ struct StreamE788 {
 // Copies one 32-bit value per element, using optional indices or writing -1 when the source is null; returns an accumulated count.
 // @fnv 0x00e78880
 // src: COMMUNITY 0x00e78880
-int __cdecl NiD3DShaderDeclaration_Pack_UnsignedLongToUByteColor(StreamE788* pkStream)
+// pdb: NiD3DShaderDeclaration::Pack_UnsignedLongToUByteColor | NiD3DShaderDeclaration.obj | debug, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, pucOutData, pusVertMap, pulInData, pucInData, puiOutData, us, usMapIndex
+int __cdecl NiD3DShaderDeclaration_Pack_UnsignedLongToUByteColor(StreamE788* kParams)
 {
-    char* pcDst = pkStream->m_pcDst;
-    unsigned short* pusIndices = pkStream->m_pusIndices;
-    char* pcSrc = pkStream->m_pcSrc;
+    char* pcDst = kParams->m_pcDst;
+    unsigned short* pusIndices = kParams->m_pusIndices;
+    char* pcSrc = kParams->m_pcSrc;
     int iTotal = 0;
 
     if (!pcSrc) {
-        for (unsigned short i = 0; i < pkStream->m_usElementCount; i++) {
+        for (unsigned short i = 0; i < kParams->m_usElementCount; i++) {
             *(int*)pcDst = -1;
-            pcDst += pkStream->m_iDstStride;
-            iTotal += pkStream->m_uiLogicalSize;
+            pcDst += kParams->m_iDstStride;
+            iTotal += kParams->m_uiLogicalSize;
         }
         return iTotal;
     }
     unsigned short j;
     if (pusIndices) {
         j=0;
-        for (; j < pkStream->m_usElementCount; ++j) {
+        for (; j < kParams->m_usElementCount; ++j) {
 
-            int* color = (int*)(pcSrc + pusIndices[j] * pkStream->m_iSrcStride);
+            int* color = (int*)(pcSrc + pusIndices[j] * kParams->m_iSrcStride);
             for (int k=0;k<1;k++) ((int*)pcDst)[k] = color[k];
-            pcDst += pkStream->m_iDstStride;
-            iTotal += pkStream->m_uiLogicalSize;
+            pcDst += kParams->m_iDstStride;
+            iTotal += kParams->m_uiLogicalSize;
         }
     } else {
-        for (unsigned short i = 0; i < pkStream->m_usElementCount; i++) {
+        for (unsigned short i = 0; i < kParams->m_usElementCount; i++) {
             for (int k=0;k<1;k++) ((int*)pcDst)[k] = ((int*)pcSrc)[k];
-            pcSrc += pkStream->m_iSrcStride;
-            pcDst += pkStream->m_iDstStride;
-            iTotal += pkStream->m_uiLogicalSize;
+            pcSrc += kParams->m_iSrcStride;
+            pcDst += kParams->m_iDstStride;
+            iTotal += kParams->m_uiLogicalSize;
         }
     }
     return iTotal;
@@ -29318,41 +29466,44 @@ struct CopyStreamData {
 
 // @fnv 0x00e78d50
 // src: COMMUNITY 0x00e78d50
-int __cdecl NiD3DShaderDeclaration_Pack_Float_DropIns(CopyStreamData* apStreamData) {
+// pdb: NiD3DShaderDeclaration::Pack_Float_DropIns | NiD3DShaderDeclaration.obj | retail, upstream name already matches, high
+// pdb params: kParams
+// pdb locals: uiPacked, pfInData, usOutFloats, pucOutData, pusVertMap, pucInData, pfOutData, usInFloats, us, usMapIndex
+int __cdecl NiD3DShaderDeclaration_Pack_Float_DropIns(CopyStreamData* kParams) {
     CopyFill zero = {};
     int total=zero.value;
-    char* destination = apStreamData->unk2C;
-    char* source = apStreamData->unk10;
-    unsigned short* indices = apStreamData->unk0C;
+    char* destination = kParams->unk2C;
+    char* source = kParams->unk10;
+    unsigned short* indices = kParams->unk0C;
 
     if (source == (char*)zero.value) {
-        for (unsigned short index = 0; index < apStreamData->unk08; ++index) {
-            FUN_00ec61c0(destination, zero.value, apStreamData->unk1C);
-            destination += apStreamData->unk20;
-            total += apStreamData->unk1C;
+        for (unsigned short index = 0; index < kParams->unk08; ++index) {
+            FUN_00ec61c0(destination, zero.value, kParams->unk1C);
+            destination += kParams->unk20;
+            total += kParams->unk1C;
         }
         return total;
     } else if (indices != (unsigned short*)zero.value) {
-        if (0 < apStreamData->unk08) {
+        if (0 < kParams->unk08) {
             unsigned int index=zero.value;
             do {
-            char* input = source + indices[(unsigned short)index++] * apStreamData->unk18;
-            FUN_00ec44d0(destination, input, apStreamData->unk1C);
-            destination += apStreamData->unk20;
-            total += apStreamData->unk1C;
-            } while ((unsigned short)index < apStreamData->unk08);
+            char* input = source + indices[(unsigned short)index++] * kParams->unk18;
+            FUN_00ec44d0(destination, input, kParams->unk1C);
+            destination += kParams->unk20;
+            total += kParams->unk1C;
+            } while ((unsigned short)index < kParams->unk08);
         }
         return total;
     } else {
-        if (0 < apStreamData->unk08) {
+        if (0 < kParams->unk08) {
             unsigned int index=zero.value;
             do {
-            FUN_00ec44d0(destination, source, apStreamData->unk1C);
-            source += apStreamData->unk18;
-            destination += apStreamData->unk20;
-            total += apStreamData->unk1C;
+            FUN_00ec44d0(destination, source, kParams->unk1C);
+            source += kParams->unk18;
+            destination += kParams->unk20;
+            total += kParams->unk1C;
             ++index;
-            } while ((unsigned short)index < apStreamData->unk08);
+            } while ((unsigned short)index < kParams->unk08);
         }
     }
     return total;
@@ -32791,6 +32942,8 @@ void NiXenonRenderer_InitToDefault();};
 // Resets selected renderer fields, clears four state, counter, and ref entries, sets the matrix to identity, and writes values to DAT_0126efd8.
 // @fnv 0x00e6b990
 // src: XBOX_PDB 0x00e6b990
+// pdb: NiXenonRenderer::InitToDefault | NiXenonRenderer.obj | retail, upstream name already matches, high
+// pdb locals: j, i
 void Renderer::NiXenonRenderer_InitToDefault(){unk288=0;FUN_00ec61c0(&unk28c,0,0x130);
 
 
@@ -33292,6 +33445,9 @@ extern float DAT_0106b9e0;
 // Updates the matrix buffer from per-bone transforms and reports whether a non-unit scale was detected.
 // @fnv 0x00e6fe30
 // src: COMMUNITY 0x00e6fe30
+// pdb: NiXenonRenderer::CalculateBoneMatrices | NiXenonRenderer.obj | retail, call graph (shared callers), low
+// pdb params: pkSkinInstance, kWorld, bTranspose, uiBoneMatrixRegisters, bPalettizedBones
+// pdb locals: iframeID, kSkinFromWorld, pkSkinData, uiCurrentAllocatedSize, uiNumStoredBoneMatrixRegisters, uiNumStoredBoneMatrices, ppkBones, uiNeededSize, pfBoneMatrices, kWorldFromSkinFromWorld, uiBones, pkBoneData, i, uiIndex, kBoneMatrix, pkD3DMat
 void __fastcall NiDX9Renderer_CalculateBoneMatrices(NiDX9Renderer* self, void*, SkinMatrixBlock* block, Xf* parent, bool transpose, unsigned int rows, bool skipExtra) {
     const char* cur = block->entry;
     if (cur == (*(NiD3DHLSLVertexShader**)self->_undescribed_8BC)->NiD3DHLSLVertexShader::GetEntryPoint() && rows == block->rowsStored)
@@ -33402,6 +33558,7 @@ void __fastcall NiDX9Renderer_CalculateBoneMatrices(NiDX9Renderer* self, void*, 
 
 struct SceneArg;
 
+// pdb: structure FrameInfo, size 0xc (here 0x34), 3 members
 struct FrameInfo {
     NiMatrix3 m_kOrientation;
     NiPoint3 m_kTranslation;
@@ -33991,7 +34148,7 @@ struct VertexData : Holder_00e8f040 {
 
 
 
-    void NiGeometryBufferData_SetStreamCount(int flag);
+    void NiGeometryBufferData_SetStreamCount(int uiStreamCount);
 
     // void FUN_00e8f040(unsigned int val);
 

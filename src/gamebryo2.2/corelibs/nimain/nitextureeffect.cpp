@@ -17,6 +17,7 @@ NiFixedString NiTextureEffect::ms_kTextureEffectNames[4];
 
 // Initializes the four NiFixedString entries with the strings ProjectedLight, ProjectedShadow, EnvironmentMap and FogMap, releasing the previous handles.
 // @fnv 0x00a927e0
+// pdb: NiTextureEffect::_SDMInit | NiTextureEffect.obj | retail, string-set bridge, high
 void NiTextureEffect::InitializePoint3()
 {
     char* pcOld = ms_kTextureEffectNames[0].m_kHandle;
@@ -52,13 +53,13 @@ void NiTextureEffect::InitializePoint3()
     }
 }
 
-extern int g_011f5e94;
+extern int NiTextureEffect_ms_RTTI;
 
 // @fnv 0x00a927d0
 // src: COMMUNITY 0x00a927d0
 int* __cdecl NiTextureEffect_GetRTTI()
 {
-    return &g_011f5e94;
+    return &NiTextureEffect_ms_RTTI;
 }
 
 extern long DAT_011f5ea0;
@@ -67,11 +68,13 @@ extern long DAT_011f5ea8;
 
 struct FUN_00a928b0_shell : NiTextureEffect
 {
-    void ClearFixedStrings();
+    void NiTextureEffect__SDMShutdown();
 };
 
 // @fnv 0x00a928b0
-void FUN_00a928b0_shell::ClearFixedStrings()
+// src: XBOX_DEBUG_PDB 0x00a928b0
+// pdb: NiTextureEffect::_SDMShutdown | NiTextureEffect.obj | debug, call graph, high
+void FUN_00a928b0_shell::NiTextureEffect__SDMShutdown()
 {
     NiFixedString* arr = ms_kTextureEffectNames;
     char* pOldHandle = arr[0].m_kHandle;
@@ -114,6 +117,8 @@ struct FUN_00a92a30_shell : NiTextureEffect
 };
 // @fnv 0x00a92a30
 // src: XBOX_PDB 0x00a92a30
+// pdb: NiTextureEffect::RegisterStreamables | NiTextureEffect.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool FUN_00a92a30_shell::NiTextureEffect_RegisterStreamables(NiStream& kStream)
 {
     if (!((FUN_00a6ff10_holder*)this)->NiDynamicEffect_RegisterStreamables(kStream))
@@ -147,6 +152,7 @@ inline void* operator new(size_t, NiDynamicEffect* object)
 
 // Constructs the dynamic-effect base, sets the vtable pointer, copies the projection matrices, and initializes the texture settings and planes.
 // @fnv 0x00a92710
+// pdb: NiTextureEffect::NiTextureEffect | NiTextureEffect.obj | retail, call graph, medium
 void* NiTextureEffect::InitializeEffect()
 {
     __assume(this != 0);
@@ -193,6 +199,8 @@ bool FixedSame(const char* pcTable, const char* pcKey)
 
 // Searches the four texture-effect type strings for one matching kType and, on a match, stores its index in uiType and returns true.
 // @fnv 0x00a92960
+// pdb: NiTextureEffect::_SDMShutdown | NiTextureEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTextureEffect::GetTypeNameFromID
 bool FindTexTypeIndex(const NiFixedString& kType, unsigned int& uiType)
 {
     for (unsigned int ui = 0; ui < 4; ui++)
@@ -236,6 +244,7 @@ struct TextureEffectMatch
 };
 
 // @fnv 0x00a92bd0
+// pdb: NiTextureEffect::`scalar deleting destructor' | NiTextureEffect.obj | retail, object-file run extension, low
 TextureEffectMatch* TextureEffectMatch::FUN_00a92bd0(unsigned int flags)
 {
     m_ppVirtualMethodTable = reinterpret_cast<void**>(&DAT_0109fd0c);
@@ -257,18 +266,20 @@ struct CallTarget_00a68c60
 };
 struct CallTarget_00a92c40
 {
-    int UpdateWorldProjection();
+    int NiTextureEffect_UpdateProjection();
 };
 struct SearchObject
 {
-    int NiTextureEffect_UpdateWorldData(unsigned int arg0);
+    int NiTextureEffect_UpdateWorldData(unsigned int UpdateData);
 };
 // @fnv 0x00a92ef0
 // src: XBOX_PDB 0x00a92ef0
-int SearchObject::NiTextureEffect_UpdateWorldData(unsigned int arg0)
+// pdb: NiTextureEffect::UpdateWorldData | NiTextureEffect.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+int SearchObject::NiTextureEffect_UpdateWorldData(unsigned int UpdateData)
 {
-    unsigned int callResult0 = (unsigned int)((CallTarget_00a68c60*)this)->FUN_00a68c60((int)arg0);
-    unsigned int callResult1 = (unsigned int)((CallTarget_00a92c40*)this)->UpdateWorldProjection();
+    unsigned int callResult0 = (unsigned int)((CallTarget_00a68c60*)this)->FUN_00a68c60((int)UpdateData);
+    unsigned int callResult1 = (unsigned int)((CallTarget_00a92c40*)this)->NiTextureEffect_UpdateProjection();
     return (int)callResult1;
 }
 
@@ -290,8 +301,8 @@ class SubCmpC
 class FUN_00a93040_cls
 {
   public:
-    bool FUN_00a68d80(FUN_00a93040_cls* other);
-    bool NiTextureEffect_IsEqual(FUN_00a93040_cls* other);
+    bool FUN_00a68d80(FUN_00a93040_cls* pkObject);
+    bool NiTextureEffect_IsEqual(FUN_00a93040_cls* pObject);
     unsigned int unk_000;
     unsigned int unk_004;
     unsigned int unk_008;
@@ -378,12 +389,15 @@ class FUN_00a93040_cls
 // Returns true when FUN_00a68d80 succeeds, the unk_0c4 subobjects match, the unk_0e8 and unk_13c subobjects differ, and m_128 through m_138 are equal.
 // @fnv 0x00a93040
 // src: XBOX_PDB 0x00a93040
-bool FUN_00a93040_cls::NiTextureEffect_IsEqual(FUN_00a93040_cls* other)
+// pdb: NiTextureEffect::IsEqual | NiTextureEffect.obj | retail, upstream name already matches, high
+// pdb params: pObject
+// pdb locals: pEffect
+bool FUN_00a93040_cls::NiTextureEffect_IsEqual(FUN_00a93040_cls* pObject)
 {
-    if (FUN_00a68d80(other) != 0 && reinterpret_cast<SubCmpA*>(&other->unk_0c4)->Equal(&unk_0c4) != 0 &&
-        reinterpret_cast<SubCmpB*>(&other->unk_0e8)->Equal(&unk_0e8) == 0 && other->m_128 == m_128 &&
-        other->m_12c == m_12c && other->m_130 == m_130 && other->m_134 == m_134 && other->m_138 == m_138 &&
-        reinterpret_cast<SubCmpC*>(&other->unk_13c)->Equal(&unk_13c) == 0)
+    if (FUN_00a68d80(pObject) != 0 && reinterpret_cast<SubCmpA*>(&pObject->unk_0c4)->Equal(&unk_0c4) != 0 &&
+        reinterpret_cast<SubCmpB*>(&pObject->unk_0e8)->Equal(&unk_0e8) == 0 && pObject->m_128 == m_128 &&
+        pObject->m_12c == m_12c && pObject->m_130 == m_130 && pObject->m_134 == m_134 && pObject->m_138 == m_138 &&
+        reinterpret_cast<SubCmpC*>(&pObject->unk_13c)->Equal(&unk_13c) == 0)
         return true;
     return false;
 }
@@ -420,6 +434,8 @@ namespace fnv_00a929d0 {
 // Links the stream's object to m_pObject, releasing the previous object and incrementing the new one's reference count.
 // @fnv 0x00a929d0
 // src: XBOX_PDB 0x00a929d0
+// pdb: NiTextureEffect::LinkObject | NiTextureEffect.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void FUN_00a929d0_Holder::NiTextureEffect_LinkObject(NiStream& kStream)
 {
     NiDynamicEffect::LinkObject(kStream);
@@ -462,6 +478,9 @@ struct TexEffectSaver : NiDynamicEffect
 // Saves the dynamic effect base, model projection matrix and translation, texture settings, source texture link, clipping flag and model plane to the stream.
 // @fnv 0x00a932f0
 // src: XBOX_PDB 0x00a932f0
+// pdb: NiTextureEffect::SaveBinary | NiTextureEffect.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bPlaneEnable
 void TexEffectSaver::NiTextureEffect_SaveBinary(NiStream& kStream)
 {
     NiDynamicEffect::SaveBinary(kStream);
@@ -480,6 +499,8 @@ void TexEffectSaver::NiTextureEffect_SaveBinary(NiStream& kStream)
 #include "../../../../include/NiMemObject.h"
 // @fnv 0x00a929b0
 // src: EXE 0x00a929b0
+// pdb: NiTextureEffect::CreateObject | NiTextureEffect.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiTextureEffect_CreateObject()
 {
     NiTextureEffect* obj = (NiTextureEffect*)NiMemObject::operator new(0x15c);
@@ -572,6 +593,8 @@ struct TextureEffectCandidate
 };
 // Copies this candidate into dest via FUN_00a68d40, then copies the texture reference (with refcount add/release), matrix, vectors and trailing fields.
 // @fnv 0x00a92f10
+// pdb: NiTextureEffect::CopyMembers | NiTextureEffect.obj | retail, object-file run extension, low
+// pdb params: pDest, kCloning
 void TextureEffectCandidate::CopyTo(TextureEffectCandidate* dest, void* context)
 {
     FUN_00a68d40(dest, context);
@@ -613,14 +636,14 @@ struct DynamicEffectViewer : NiDynamicEffect
 
 struct PlaneViewer : PlaneSaver
 {
-    char* FUN_00a69a60(const char* name);
+    char* NiPlane_GetViewerString(const char* name);
 };
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* name);
 char* __cdecl NiTextureEffect_GetViewerString(const char* name, int value);
 char* __cdecl BuildFilterModeString(const char* name, int value);
-char* __cdecl BuildTextureAddressModeString(const char* name, int value);
+char* __cdecl BuildTextureAddressModeString(const char* pcPrefix, int eMode);
 char* __cdecl BuildProjectionModeString(const char* name, int value);
-char* __cdecl NiGetViewerString(const char* name, bool value);
+char* __cdecl NiGetViewerString(const char* pcPrefix, bool bValue);
 struct TextureEffectViewer : DynamicEffectViewer
 {
     NiMatrix3 modelProjMat;
@@ -634,22 +657,24 @@ struct TextureEffectViewer : DynamicEffectViewer
     int coordMode;
     bool planeEnable;
     PlaneViewer modelPlane;
-    void AppendToStrings(StrArr& strings);
+    void AppendToStrings(StrArr& pStrings);
 };
 // @fnv 0x00a93400
-void TextureEffectViewer::AppendToStrings(StrArr& strings)
+// pdb: NiTextureEffect::GetViewerStrings | NiTextureEffect.obj | retail, string-set bridge, high
+// pdb params: pStrings
+void TextureEffectViewer::AppendToStrings(StrArr& pStrings)
 {
-    FUN_00a69140(strings);
-    strings.AppendInline(NiViewerStrings_NiGetViewerString_Title(reinterpret_cast<const char*>(g_011f5e94)));
-    strings.AppendInline(modelProjMat.GetViewerString("m_kModelProjMat"));
-    strings.AppendInline(modelProjTrans.GetViewerString_00a59af0("m_kModelProjTrans"));
-    strings.AppendInline(NiTextureEffect_GetViewerString("m_eTextureMode", textureMode));
-    strings.AppendInline(BuildFilterModeString("m_eFilter", filter));
-    strings.AppendInline(BuildTextureAddressModeString("m_eClamp", clamp));
-    strings.AppendInline(NiTextureEffect_GetViewerString("m_eTextureMode", textureMode));
-    strings.AppendInline(BuildProjectionModeString("m_eCoordMode", coordMode));
-    strings.AppendInline(NiGetViewerString("m_bPlaneEnable", planeEnable));
-    strings.AppendInline(modelPlane.FUN_00a69a60("m_kModelPlane"));
+    FUN_00a69140(pStrings);
+    pStrings.AppendInline(NiViewerStrings_NiGetViewerString_Title(reinterpret_cast<const char*>(NiTextureEffect_ms_RTTI)));
+    pStrings.AppendInline(modelProjMat.GetViewerString("m_kModelProjMat"));
+    pStrings.AppendInline(modelProjTrans.GetViewerString_00a59af0("m_kModelProjTrans"));
+    pStrings.AppendInline(NiTextureEffect_GetViewerString("m_eTextureMode", textureMode));
+    pStrings.AppendInline(BuildFilterModeString("m_eFilter", filter));
+    pStrings.AppendInline(BuildTextureAddressModeString("m_eClamp", clamp));
+    pStrings.AppendInline(NiTextureEffect_GetViewerString("m_eTextureMode", textureMode));
+    pStrings.AppendInline(BuildProjectionModeString("m_eCoordMode", coordMode));
+    pStrings.AppendInline(NiGetViewerString("m_bPlaneEnable", planeEnable));
+    pStrings.AppendInline(modelPlane.NiPlane_GetViewerString("m_kModelPlane"));
 }
 
 // Preserve the original inline arithmetic while using the shared point and matrix layouts.
@@ -695,12 +720,15 @@ struct TextureProjection
     float modelPlaneConstant;
     NiPoint3 worldPlaneNormal;
     float worldPlaneConstant;
-    void UpdateWorldProjection();
+    void NiTextureEffect_UpdateProjection();
 };
 
 // Builds worldProjection and projectionTranslation from coordGenType, computes the world plane normal and constant, and increments revision.
 // @fnv 0x00a92c40
-void TextureProjection::UpdateWorldProjection()
+// src: XBOX_RETAIL_PDB 0x00a92c40
+// pdb: NiTextureEffect::UpdateProjection | NiTextureEffect.obj | retail, call graph, high
+// pdb locals: normal, fConstant, fInvScale
+void TextureProjection::NiTextureEffect_UpdateProjection()
 {
     float y;
     float* p = &y;
@@ -795,6 +823,9 @@ struct TexEffectLoader : NiDynamicEffect
 };
 // @fnv 0x00a93140
 // src: XBOX_PDB 0x00a93140
+// pdb: NiTextureEffect::LoadBinary | NiTextureEffect.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bPlaneEnable, sLandK, abManual
 void TexEffectLoader::NiTextureEffect_LoadBinary(NiStream& kStream)
 {
     NiDynamicEffect::LoadBinary(kStream);
@@ -824,6 +855,9 @@ void TexEffectLoader::NiTextureEffect_LoadBinary(NiStream& kStream)
 
 // The constructor and copy targets are 0x00a92710 and 0x00a92f10, respectively.
 // @fnv 0x00a930f0
+// pdb: NiTextureEffect::CreateClone | NiTextureEffect.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiTextureEffect* NiTextureEffect::Clone(CloningProcess& kCloning)
 {
     NiTextureEffect* pkObject = new NiTextureEffect;
@@ -837,6 +871,9 @@ int __cdecl NiSprintf(char*, unsigned int, const char*, ...);
 
 // @fnv 0x00a92a60
 // src: XBOX_PDB 0x00a92a60
+// pdb: NiTextureEffect::GetViewerString | NiTextureEffect.obj | retail, string-set bridge, high
+// pdb params: pPrefix, eMode
+// pdb locals: pString, uiLen
 char* __cdecl NiTextureEffect_GetViewerString(const char* pPrefix, unsigned int eMode)
 {
     unsigned int uiLen = strlen(pPrefix) + 0x19;
@@ -867,6 +904,9 @@ extern "C"
 }
 // Allocates a buffer and formats pPrefix with a projection mode name selected by eMode into it.
 // @fnv 0x00a92b00
+// pdb: NiTextureEffect::GetViewerString | NiTextureEffect.obj | retail, string-set bridge, high
+// pdb params: pPrefix, eMode
+// pdb locals: pString, uiLen
 char* __cdecl BuildProjectionModeString(const char* pPrefix, int eMode)
 {
     unsigned int uiLen = strlen(pPrefix) + 25;

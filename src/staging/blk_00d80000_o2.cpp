@@ -113,6 +113,9 @@ public:
 };
 
 // @fnv 0x00d84ca0
+// pdb: hkpConstraintPivotsUtil::getPivotA | hkpConstraintPivotsUtil.obj | retail, object-file run extension, low
+// pdb params: data
+// pdb locals: assertBuf, ostr
 char* GetDispatchTarget(FNVDispatchNode* pNode)
 {
     unsigned int idx = pNode->v08();
@@ -196,13 +199,15 @@ struct FUN_00d85360_cls {
 
 // @fnv 0x00d85360
 // src: COMMUNITY 0x00d85360
-FUN_00d85360_cls* __cdecl hkpConstraintDataUtils_copyAtoms_hkpBallAndSocketConstraintData_(int pSource)
+// pdb: copyConstraintAtoms<hkpBallAndSocketConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+FUN_00d85360_cls* __cdecl hkpConstraintDataUtils_copyAtoms_hkpBallAndSocketConstraintData_(int constraintIn)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     FUN_00d85360_cls* obj = (FUN_00d85360_cls*)reinterpret_cast<AllocIface*>(holder->m_heap)->Alloc(0x50);
     obj->m_w04 = 0x50;
     obj = obj->FUN_00d54290();
-    hkString_memCpy((char*)obj + 0x10, (char*)pSource + 0x10, 0x38);
+    hkString_memCpy((char*)obj + 0x10, (char*)constraintIn + 0x10, 0x38);
     return obj;
 }
 
@@ -262,19 +267,21 @@ struct FUN_00d853a0_cls {
     int m_ia8;
     int m_iac;
 
-    FUN_00d853a0_cls* Init();
+    FUN_00d853a0_cls* hkpHingeConstraintData_ctor();
 };
 
 // Allocates a 0xb0-byte object via the global allocator, initializes it, copies 0x9c bytes from a1+0x10 into obj+0x10, and returns obj.
 // @fnv 0x00d853a0
 // src: HAVOK_LIB 0x00d853a0
-FUN_00d853a0_cls* __cdecl copyConstraintAtoms_class_hkpHingeConstraintData(int a1)
+// pdb: copyConstraintAtoms<hkpHingeConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+FUN_00d853a0_cls* __cdecl copyConstraintAtoms_class_hkpHingeConstraintData(int constraintIn)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     FUN_00d853a0_cls* obj = (FUN_00d853a0_cls*)reinterpret_cast<AllocIface*>(holder->m_heap)->Alloc(0xb0);
     obj->m_w04 = 0xb0;
-    obj = obj->Init();
-    hkString_memCpy((char*)obj + 0x10, (char*)a1 + 0x10, 0x9c);
+    obj = obj->hkpHingeConstraintData_ctor();
+    hkString_memCpy((char*)obj + 0x10, (char*)constraintIn + 0x10, 0x9c);
     return obj;
 }
 }  // namespace fnv_00d853a0
@@ -295,14 +302,16 @@ extern "C" void* __cdecl hkString_memCpy(void* pDst, const void* pSrc, unsigned 
 
 // @fnv 0x00d853f0
 // src: HAVOK_LIB 0x00d853f0
-ObjD853* __cdecl copyConstraintAtoms_class_hkpLimitedHingeConstraintData(char* pSource)
+// pdb: copyConstraintAtoms<hkpLimitedHingeConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+ObjD853* __cdecl copyConstraintAtoms_class_hkpLimitedHingeConstraintData(char* constraintIn)
 {
     hkMemoryRouter* pSingleton = hkMemoryRouter_getInstance();
     MemAllocD853* pAllocator = reinterpret_cast<MemAllocD853*>(pSingleton->m_heap);
     ObjD853* pObj = (ObjD853*)pAllocator->Alloc(0xe0);
     pObj->m_usSize = 0xe0;
     ObjD853* pResult = pObj->FUN_00cb9090();
-    hkString_memCpy((char*)pResult + 0x10, pSource + 0x10, 0xcc);
+    hkString_memCpy((char*)pResult + 0x10, constraintIn + 0x10, 0xcc);
     return pResult;
 }
 }  // namespace fnv_00d853f0
@@ -359,10 +368,12 @@ public:
 
 // Allocates a new D85440Shape and copies the source shape's vector into it, returning the new shape.
 // @fnv 0x00d85440
-D85440Shape* CloneShape(const D85440Shape* pkSource)
+// pdb: copyConstraintAtoms<hkpPointToPathConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+D85440Shape* CloneShape(const D85440Shape* constraintIn)
 {
     D85440Shape* pkShape = new D85440Shape();
-    D85440MemCpy(&pkShape->m_vHalfExtents, &pkSource->m_vHalfExtents, sizeof(D85440Vector3));
+    D85440MemCpy(&pkShape->m_vHalfExtents, &constraintIn->m_vHalfExtents, sizeof(D85440Vector3));
     return pkShape;
 }
 }  // namespace fnv_00d85440
@@ -388,7 +399,9 @@ extern void* __cdecl hkMemoryRouter_getInstance();
 extern void __cdecl hkString_memCpy(void* destination, const void* source, unsigned int size);
 
 // @fnv 0x00d85490
-void* __cdecl CloneAllocatedObject(int* source)
+// pdb: copyConstraintAtoms<hkpPrismaticConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+void* __cdecl CloneAllocatedObject(int* constraintIn)
 {
     hkMemoryRouter* manager =
         reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
@@ -401,7 +414,7 @@ void* __cdecl CloneAllocatedObject(int* source)
 
     hkString_memCpy(
         reinterpret_cast<unsigned char*>(result) + 0x10,
-        reinterpret_cast<const unsigned char*>(source) + 0x10,
+        reinterpret_cast<const unsigned char*>(constraintIn) + 0x10,
         0xC0);
 
     return result;
@@ -456,13 +469,15 @@ void __cdecl hkString_memCpy(void* dst, const void* src, unsigned int size);
 
 // Allocates a 0x140-byte object, sets its size, then copies the source payload into the constructed result.
 // @fnv 0x00d854e0
-D_Stub* __cdecl CloneStub(Src_Stub* src)
+// pdb: copyConstraintAtoms<hkpRagdollConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+D_Stub* __cdecl CloneStub(Src_Stub* constraintIn)
 {
     hkMemoryRouter* a = hkMemoryRouter_getInstance();
     C_Stub* obj = reinterpret_cast<B_Stub*>(a->m_heap)->Create(0x140);
     obj->unk04 = 0x140;
     D_Stub* result = obj->FUN_00cdf2f0();
-    hkString_memCpy(&result->unk10, &src->unk10, 0x130);
+    hkString_memCpy(&result->unk10, &constraintIn->unk10, 0x130);
     return result;
 }
 }  // namespace fnv_00d854e0
@@ -511,14 +526,16 @@ void* __cdecl hkString_memCpy(void* dst, const void* src, unsigned int size);
 // Allocates a 0x50-byte SpawnedObject from the holder's allocator, sets its size, constructs it, and copies 0x38 bytes from pSrc+0x10 into unk10.
 // @fnv 0x00d85530
 // src: COMMUNITY 0x00d85530
-SpawnedObject* __cdecl hkpConstraintDataUtils_copyAtoms_hkpStiffSpringConstraintData_(SpawnedSource* pSrc)
+// pdb: copyConstraintAtoms<hkpStiffSpringConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+SpawnedObject* __cdecl hkpConstraintDataUtils_copyAtoms_hkpStiffSpringConstraintData_(SpawnedSource* constraintIn)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
     SpawnedAllocator* pAllocator = reinterpret_cast<SpawnedAllocator*>(pHolder->m_heap);
     SpawnedObject* pObj = (SpawnedObject*)pAllocator->Alloc(0x50);
     pObj->m_usSize = 0x50;
     pObj = pObj->Ctor();
-    hkString_memCpy(&pObj->unk10, (char*)pSrc + 0x10, 0x38);
+    hkString_memCpy(&pObj->unk10, (char*)constraintIn + 0x10, 0x38);
     return pObj;
 }
 }  // namespace fnv_00d85530
@@ -627,13 +644,15 @@ struct FUN_00d85570_cls {
 };
 
 // @fnv 0x00d85570
-FUN_00d85570_cls* __cdecl CloneWithInit(int apSource)
+// pdb: copyConstraintAtoms<hkpWheelConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+FUN_00d85570_cls* __cdecl CloneWithInit(int constraintIn)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     FUN_00d85570_cls* obj = (FUN_00d85570_cls*)reinterpret_cast<AllocIface*>(holder->m_heap)->Alloc(0x160);
     obj->m_w04 = 0x160;
     obj = obj->Init();
-    hkString_memCpy((char*)obj + 0x10, (char*)apSource + 0x10, 0x124);
+    hkString_memCpy((char*)obj + 0x10, (char*)constraintIn + 0x10, 0x124);
     return obj;
 }
 }  // namespace fnv_00d85570
@@ -654,7 +673,9 @@ extern "C" void* __fastcall FUN_00d84bd0(void* object);
 extern "C" void* hkString_memCpy(void* destination, const void* source, unsigned int size);
 
 // @fnv 0x00d855c0
-void* __cdecl CloneDataBlock(void* source)
+// pdb: copyConstraintAtoms<hkpPointToPlaneConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+void* __cdecl CloneDataBlock(void* constraintIn)
 {
     hkMemoryRouter* manager = hkMemoryRouter_getInstance();
     FUN_00d855c0_Data* data = static_cast<FUN_00d855c0_Data*>(
@@ -665,7 +686,7 @@ void* __cdecl CloneDataBlock(void* source)
     void* result = FUN_00d84bd0(data);
     hkString_memCpy(
         static_cast<unsigned char*>(result) + 0x10,
-        static_cast<unsigned char*>(source) + 0x10,
+        static_cast<unsigned char*>(constraintIn) + 0x10,
         0x94);
 
     return result;
@@ -721,13 +742,15 @@ struct FUN_00d85610_cls {
 
 // Allocates an 0x80-byte object via the holder's allocator, sets its size field, calls Init, then copies 0x70 bytes from a1+0x10 into obj+0x10 and returns obj.
 // @fnv 0x00d85610
-FUN_00d85610_cls* __cdecl CloneWithCopiedPayload(int apSource)
+// pdb: copyConstraintAtoms<hkpPulleyConstraintData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+FUN_00d85610_cls* __cdecl CloneWithCopiedPayload(int constraintIn)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     FUN_00d85610_cls* obj = (FUN_00d85610_cls*)reinterpret_cast<AllocIface*>(holder->m_heap)->Alloc(0x80);
     obj->m_w04 = 0x80;
     obj = obj->Init();
-    hkString_memCpy((char*)obj + 0x10, (char*)apSource + 0x10, 0x70);
+    hkString_memCpy((char*)obj + 0x10, (char*)constraintIn + 0x10, 0x70);
     return obj;
 }
 }  // namespace fnv_00d85610
@@ -796,13 +819,15 @@ struct FUN_00d856b0_cls {
 };
 
 // @fnv 0x00d856b0
-FUN_00d856b0_cls* __cdecl CloneWithAllocatedCopy(int apSource)
+// pdb: copyConstraintAtoms<hkpRagdollLimitsData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+FUN_00d856b0_cls* __cdecl CloneWithAllocatedCopy(int constraintIn)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     FUN_00d856b0_cls* obj = (FUN_00d856b0_cls*)reinterpret_cast<AllocIface*>(holder->m_heap)->Alloc(0xc0);
     obj->m_w04 = 0xc0;
     obj = obj->Init();
-    hkString_memCpy((char*)obj + 0x10, (char*)apSource + 0x10, 0xac);
+    hkString_memCpy((char*)obj + 0x10, (char*)constraintIn + 0x10, 0xac);
     return obj;
 }
 }  // namespace fnv_00d856b0
@@ -877,12 +902,12 @@ S_00d85af0_Cls* S_00d85af0_Cls::AssignFrom(const S_00d85af0_Cls* o) {
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_01269514;
+extern CpuOpaque hkpSimulationClass;
 // @fnv 0x00d9f6c0
 // src: GUESS 0x00d9f6c0 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00d9f6c0()
 {
-    return &DAT_01269514;
+    return &hkpSimulationClass;
 }
 
 extern int DAT_010cc4f4;
@@ -965,10 +990,12 @@ public:
 // Allocates a new D85660Object and copies 0x84 bytes of data starting at m_iData010 from pkSource into it, returning the clone.
 // @fnv 0x00d85660
 // src: HAVOK_LIB 0x00d85660
-D85660Object* __cdecl copyConstraintAtoms_class_hkpHingeLimitsData(const D85660Object* pkSource)
+// pdb: copyConstraintAtoms<hkpHingeLimitsData> | hkpConstraintDataCloningUtil.obj | retail, call graph, high
+// pdb params: constraintIn
+D85660Object* __cdecl copyConstraintAtoms_class_hkpHingeLimitsData(const D85660Object* constraintIn)
 {
     D85660Object* pkClone = new D85660Object;
-    D85660MemCpy(&pkClone->m_iData010, &pkSource->m_iData010, 0x84);
+    D85660MemCpy(&pkClone->m_iData010, &constraintIn->m_iData010, 0x84);
     return pkClone;
 }
 
@@ -1056,6 +1083,9 @@ struct Derived_00d53200 : public FUN_00d53200_class {
 };
 
 // @fnv 0x00d86520
+// pdb: hkPointToPathConstraintCinfo::LoadBinary | bhkPointToPathConstraint.obj | retail, object-file run extension, low
+// pdb params: arStream
+// pdb locals: pd
 void Derived_00d53200::ReadFromStream(NiStream& stream)
 {
     hkConstraintCinfo_LoadBinary(stream);
@@ -1111,7 +1141,7 @@ struct Record {
     unsigned int words70;
 };
 
-void __stdcall hkConstraintCinfo_SaveBinary(NiStream* stream);
+void __stdcall hkConstraintCinfo_SaveBinary(NiStream* arStream);
 
 struct DataOwner {
     unsigned int unknown00;
@@ -1121,6 +1151,9 @@ struct DataOwner {
 
 // Reads a record header, flag, and two 64-byte blocks from the stream into the record via BinaryRead.
 // @fnv 0x00d865d0
+// pdb: hkPointToPathConstraintCinfo::SaveBinary | bhkPointToPathConstraint.obj | retail, object-file run extension, low
+// pdb params: arStream
+// pdb locals: pd
 void DataOwner::ReadRecord(NiStream* stream)
 {
     Record* destination = record;
@@ -1146,6 +1179,8 @@ inline int countBitsSetD866(unsigned int n)
 
 // Sums the set bits of each of iNumWords words in puiWords and returns the total count.
 // @fnv 0x00d86680
+// pdb: hkBitField::countBits | hkBitField.obj | debug, object-file run extension, low
+// pdb params: words, numWords
 int __cdecl CountBitsInWords(const unsigned int* puiWords, int iNumWords)
 {
     int iTotalBits = 0;
@@ -1204,14 +1239,18 @@ struct StringBuf {
     int unk88;
 
     void FUN_00d61a50(const char* s);
-    void FUN_00d61fc0(int from, int len);
+    void FUN_00d61fc0(int startOffset, int length);
     int Object_ForwardCall_00d616e0(const char* other);
-    void UpdateFields_00cbbd40();
+    void Writer_MemberWriteFlags_dtor();
 };
 
 // Matches typeName against known type prefixes and a type table, returning the corresponding type code or 0.
 // @fnv 0x00d86c00
-int __cdecl GetTypeCode(const char* typeName) {
+// src: XBOX_RETAIL_PDB 0x00d86c00
+// pdb: hkClassMember::getTypeOf | hkClassMember.obj | retail, string-set bridge, high
+// pdb params: name
+// pdb locals: sname
+int __cdecl hkClassMember_getTypeOf(const char* typeName) {
     if (j_strncmp(typeName, "enum ", 5) == 0)
         return 0x18;
     if (j_strncmp(typeName, "flags ", 6) == 0)
@@ -1241,14 +1280,14 @@ int __cdecl GetTypeCode(const char* typeName) {
     TypeEntry* pEntry = DAT_011b6ab4;
     do {
         if (buf.Object_ForwardCall_00d616e0(pEntry->name)) {
-            buf.UpdateFields_00cbbd40();
+            buf.Writer_MemberWriteFlags_dtor();
             return i;
         }
         ++pEntry;
         ++i;
     } while ((int)pEntry < (int)DAT_011b6c4c);
 
-    buf.UpdateFields_00cbbd40();
+    buf.Writer_MemberWriteFlags_dtor();
     return 0;
 }
 
@@ -1270,6 +1309,8 @@ struct FUN_00d871c0_class {
     FUN_00d871c0_class* Append(FUN_00d871c0_class* a, int b, const void* p);
 };
 // @fnv 0x00d871c0
+// pdb: hkClassMemberAccessor::hkClassMemberAccessor | hkClassMemberAccessor.obj | debug, object-file run extension, low
+// pdb params: obj, klass, memberName
 FUN_00d871c0_class* FUN_00d871c0_class::Append(FUN_00d871c0_class* apData, int b, const void* p)
 {
     ((D871A0Buffer*)this)->append(apData, b, (int)p);
@@ -1315,6 +1356,7 @@ struct FUN_00d873f0_Holder {
 // Calls unk04's method to get a value, passes unk00 and that value to a's method, and returns a.
 // @fnv 0x00d873f0
 // src: HAVOK_LIB 0x00d873f0
+// pdb: hkClassMemberAccessor::object | hkClassMemberAccessor.obj | retail, upstream name already matches, high
 FUN_00d873b0_Obj* FUN_00d873f0_Holder::hkClassMemberAccessor_object(FUN_00d873b0_Obj* pTarget) {
     int r = unk04->FUN_00d86910();
     pTarget->FUN_00d873b0(unk00, r);
@@ -1361,6 +1403,7 @@ extern "C" unsigned int (__stdcall *DAT_00fdf1d0)();
 
 // @fnv 0x00d87a40
 // src: GUESS 0x00d87a40 (confidence: low)
+// pdb: hkThread::getMyThreadId | hkWin32Thread.obj | retail, call graph (shared callers), low
 unsigned __int64 __cdecl Object_ForwardCall_00d87a40()
 {
     return DAT_00fdf1d0();
@@ -1393,6 +1436,7 @@ void __cdecl Runtime_DoNothing_00d87a90()
 
 extern int DAT_010d3cc0;
 // @fnv 0x00d87b90
+// pdb: hkTraceStreamcreate | hkTraceStream.obj | retail, object-file run extension, low
 D85660Object* __cdecl CreateD85660Object()
 {
     D85660Object* p = static_cast<D85660Object*>(GetObjectHeap(D85660GetMemoryRouter()).AllocateMemoryBlock(0x1c));
@@ -1525,10 +1569,14 @@ struct ChildCollisionAgentPayload {
 };
 
 // @fnv 0x00d92230
-void __cdecl AddChildAgent2ToCollector(void* pvContext, const ChildCollisionAgentPayload* pkEntry, void* pvUnused, hkStatisticsCollector* pkCollector)
+// src: XBOX_DEBUG_PDB 0x00d92230
+// pdb: hkAgent3Bridge::calcStatistics | hkpAgent3Bridge.obj | debug, unique string literal, high
+// pdb params: entry, agentData, input, collector
+// pdb locals: assertBuf, ostr
+void __cdecl hkAgent3Bridge_calcStatistics(void* entry, const ChildCollisionAgentPayload* agentData, void* input, hkStatisticsCollector* collector)
 {
     // Slot 3 collects a referenced object; the shared declaration calls this slot beginObject.
-    pkCollector->beginObject("ChildAgent2", reinterpret_cast<const hkClass*>(pkEntry->m_pCollisionAgent), 0);
+    collector->beginObject("ChildAgent2", reinterpret_cast<const hkClass*>(agentData->m_pCollisionAgent), 0);
 }
 
 class FUN_00d92250_obj {
@@ -1670,6 +1718,9 @@ struct FUN_00d92380_holder {
 };
 // Calls the virtual method v6 on h->m0 with v->a0, v->a4, v->ac and arg, then returns the address of h->m10.
 // @fnv 0x00d92380
+// pdb: hkAgent3Bridge::process | hkpAgent3Bridge.obj | retail, object-file run extension, low
+// pdb params: input, entry, agentData, separatingNormalOut, result
+// pdb locals: assertBuf, ostr
 int* __cdecl CallVirtualWithVectorArgs(FUN_00d92380_vec* pVec, int u1, FUN_00d92380_holder* pHolder, int u2, int arg)
 {
     pHolder->m0->v6(pVec->a0, pVec->a4, pVec->ac, arg);
@@ -1699,7 +1750,7 @@ extern "C" {
     void _ReadWriteBarrier(void);
     __declspec(dllimport) void* __stdcall TlsGetValue(unsigned int dwTlsIndex);
     extern unsigned int DAT_0126835c;
-    void __cdecl Object_ProcessAndReturnValue_00d89f80(void* p, int a2, int a3, int a4, bool* pb);
+    void __cdecl hkSolveIntegrateVelocitiesByTheSteps(void* p, int a2, int accumulators, int accumulatorsEnd, bool* outSolveFinished);
 }
 
 struct TargetObj {
@@ -1739,12 +1790,16 @@ struct Arg2 {
 };
 
 struct Arg1 {
-    void ProcessCallback(Arg2* a1, Arg2* a2, int a3);
+    void ProcessCallback(Arg2* oldJob, Arg2* jobOut, int waitStatus);
 };
 
 // Writes profiling markers to the TLS stream, calls FUN_00d89f80 on the sub-object, stores the result flag in a3->unk2c, then calls a2->ProcessCallback(a3, a3, 0).
 // @fnv 0x00d94670
-void LogIntegrateVelocity(Arg0* a1, Arg1* a2, Arg2* a3) {
+// src: XBOX_RETAIL_PDB 0x00d94670
+// pdb: hkCpuSolveIntegrateVelocitiesJob | hkpCpuSolveConstraintsJobs.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+// pdb locals: isSolvingFinished
+void hkCpuSolveIntegrateVelocitiesJob(Arg0* tl, Arg1* jobQueue, Arg2* jobInOut) {
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* cur = stream->m_end.m_storage;
     if (cur < stream->m_capacityMinus16.val()) {
@@ -1758,8 +1813,8 @@ void LogIntegrateVelocity(Arg0* a1, Arg1* a2, Arg2* a3) {
     }
 
     bool b = false;
-    Object_ProcessAndReturnValue_00d89f80(&a1->m_pSub->unk1e0, a3->unk28, a3->unk20, a3->unk24, &b);
-    a3->unk2c = b;
+    hkSolveIntegrateVelocitiesByTheSteps(&tl->m_pSub->unk1e0, jobInOut->unk28, jobInOut->unk20, jobInOut->unk24, &b);
+    jobInOut->unk2c = b;
 
     hkMonitorStream* stream2 = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* cur2 = stream2->m_end.m_storage;
@@ -1772,7 +1827,7 @@ void LogIntegrateVelocity(Arg0* a1, Arg1* a2, Arg2* a3) {
         stream2->m_end.m_storage = cur2;
     }
 
-    a2->ProcessCallback(a3, a3, 0);
+    jobQueue->ProcessCallback(jobInOut, jobInOut, 0);
 }
 
 extern "C" char str_010d4030[];
@@ -1782,20 +1837,25 @@ void __cdecl hkStringBuf_printf(unsigned int* result, char* text, double d0,
 
 // @fnv 0x00d97640
 // src: HAVOK_LIB 0x00d97640
-unsigned int __cdecl hkVector4Util_toString3(float* values, unsigned int* result,
-                                  signed char value) {
-    hkStringBuf_printf(result, str_010d4030, (double)values[0], value,
-                 (double)values[1], value, (double)values[2]);
-    return *result;
+// pdb: hkVector4Util::toString3 | hkVector4Util.obj | retail, string-set bridge, high
+// pdb params: x, s, separator
+unsigned int __cdecl hkVector4Util_toString3(float* x, unsigned int* s,
+                                  signed char separator) {
+    hkStringBuf_printf(s, str_010d4030, (double)x[0], separator,
+                 (double)x[1], separator, (double)x[2]);
+    return *s;
 }
 
 void __cdecl hkStringBuf_printf(...);
 
 // @fnv 0x00d97680
-int __cdecl FormatVec4(hkVector4* v, int* dst, char acSeparator)
+// src: XBOX_RETAIL_PDB 0x00d97680
+// pdb: hkVector4Util::toString4 | hkVector4Util.obj | retail, string-set bridge, high
+// pdb params: x, s, separator
+int __cdecl hkVector4Util_toString4(hkVector4* v, int* s, char separator)
 {
-    hkStringBuf_printf(dst, "%f%c%f%c%f%c%f", v->x, (int)acSeparator, v->y, (int)acSeparator, v->z, (int)acSeparator, v->w);
-    return *dst;
+    hkStringBuf_printf(s, "%f%c%f%c%f%c%f", v->x, (int)separator, v->y, (int)separator, v->z, (int)separator, v->w);
+    return *s;
 }
 
 struct hkRecordD983 {
@@ -1850,6 +1910,8 @@ void __cdecl Runtime_ProcessEntries_00d98630(void*, void*, void*, void*);
 // Calls FUN_00d98630 with the four arguments and returns a1.
 // @fnv 0x00d99540
 // src: HAVOK_LIB 0x00d99540
+// pdb: hkKdTreeUtils::isValidRayBundle | hkKdTreeUtils.obj | retail, upstream name already matches, high
+// pdb params: fromBundle, toBundle, activeRayMask
 void* __cdecl hkKdTreeUtils_isValidRayBundle(void* a1, void* a2, void* a3, void* a4)
 {
     Runtime_ProcessEntries_00d98630(a1, a2, a3, a4);
@@ -1866,15 +1928,18 @@ extern "C" void __cdecl hkKdTreeUtils_castRayIterative(unsigned char* scratch, c
 // Calls FUN_00d98ca0 for each entry with a payload and returns a result whose flag is set if any call reported a nonzero value.
 // @fnv 0x00d99f50
 // src: HAVOK_LIB 0x00d99f50
-FNV_00d99f50_Result __cdecl hkKdTreeUtils_castRayMultiTree(int count, const FNV_00d99f50_Entry* const* entries, void* context, void* left, void* right)
+// pdb: hkKdTreeUtils::castRayMultiTree | hkKdTreeUtils.obj | retail, upstream name already matches, high
+// pdb params: numTrees, trees, start, end, collector
+// pdb locals: thisHit
+FNV_00d99f50_Result __cdecl hkKdTreeUtils_castRayMultiTree(int numTrees, const FNV_00d99f50_Entry* const* trees, void* start, void* end, void* collector)
 {
     FNV_00d99f50_Result result;
     result.flag = 0;
-    for (int i = 0; i < count; ++i) {
-        const FNV_00d99f50_Entry* entry = entries[i];
+    for (int i = 0; i < numTrees; ++i) {
+        const FNV_00d99f50_Entry* entry = trees[i];
         if (entry && entry->payload) {
             unsigned char temporary;
-            hkKdTreeUtils_castRayIterative(&temporary, entry, context, left, right);
+            hkKdTreeUtils_castRayIterative(&temporary, entry, start, end, collector);
             unsigned char combined;
             if (result.flag || temporary)
                 combined = 1;
@@ -1910,16 +1975,18 @@ struct FUN_00d9a4a0_Obj {
     int unk0C;
     FUN_00d9a4a0_Float* unk10;
 
-    void __thiscall InvokeCallback(int a1);
+    void __thiscall hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(int collB);
 };
 
 // @fnv 0x00d9a4a0
 // src: GUESS 0x00d9a4a0 (confidence: low)
+// pdb: hkpAabbTreeWorldLinearCaster<hkAabbTreeData::hkAabbTreeAabb16>::addLeaf | hkpAabbTreeWorldLinearCaster.obj | retail, vtable slot, high
+// pdb params: leaf
 float __fastcall Object_ProcessAndReturnValue_00d9a4a0(
     FUN_00d9a4a0_Obj* self,
     int unused,
     FUN_00d9a4a0_Param* param) {
-    self->InvokeCallback(param->unk20);
+    self->hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(param->unk20);
     return self->unk10->unk04;
 }
 
@@ -1985,16 +2052,25 @@ void __stdcall nullsub_69(int, int, int) {
 
 // @fnv 0x00d9fcc0
 // src: COMMUNITY 0x00d9fcc0
+// pdb: hkpCollisionAgent::removePoint | hkpCollisionAgent.obj | debug, vtable slot, medium
+// pdb params: idToRemove
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_70(int) {
 }
 
 // @fnv 0x00d9fcd0
 // src: COMMUNITY 0x00d9fcd0
+// pdb: hkpCollisionAgent::commitPotential | hkpCollisionAgent.obj | debug, vtable slot, medium
+// pdb params: newId
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_71(int) {
 }
 
 // @fnv 0x00d9fce0
 // src: COMMUNITY 0x00d9fce0
+// pdb: hkpCollisionAgent::createZombie | hkpCollisionAgent.obj | debug, vtable slot, medium
+// pdb params: idTobecomeZombie
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_72(int) {
 }
 
@@ -2034,9 +2110,11 @@ static __declspec(noinline) D85Ctn* Object_ProcessEntries_00d85d40(D85Ctn* c) {
 
 // @fnv 0x00d85fa0
 // src: HAVOK_LIB 0x00d85fa0
-void __cdecl hkpConstraintCallbackUtil_fireConstraintBroken(D85Msg a) {
+// pdb: hkpConstraintCallbackUtil::fireConstraintBroken | hkpConstraintCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: event
+void __cdecl hkpConstraintCallbackUtil_fireConstraintBroken(D85Msg event) {
     volatile unsigned int stamps[2];
-    D85Ctn* ctn = (D85Ctn*)(a.p->unk04 + 0x20);
+    D85Ctn* ctn = (D85Ctn*)(event.p->unk04 + 0x20);
     int i = ctn->count - 1;
     if (i >= 0) {
         D85TlsFn tls = DAT_00fdf044;
@@ -2054,7 +2132,7 @@ void __cdecl hkpConstraintCallbackUtil_fireConstraintBroken(D85Msg a) {
                 // The shared c14 slot has no event parameter declaration yet.
                 typedef void (__thiscall* BrokenCallback)(hkpConstraintListener*, D85Msg);
                 hkpConstraintListener* listener = static_cast<hkpConstraintListener*>(ctn->entries[i]);
-                (*reinterpret_cast<BrokenCallback**>(listener))[5](listener, a);
+                (*reinterpret_cast<BrokenCallback**>(listener))[5](listener, event);
                 hkMonitorStream* p2 = (hkMonitorStream*)tls(DAT_0126835c);
                 hkTimerCommand_blk_00d80000_o2* e2 = reinterpret_cast<hkTimerCommand_blk_00d80000_o2*>(p2->m_end.val());
                 if (reinterpret_cast<char*>(e2) < p2->m_capacityMinus16.val()) {
@@ -2087,10 +2165,12 @@ struct SerializedUnsignedPairRecord {
 // Writes the m_0c and m_10 fields of pkData to the stream's backing binary stream via NiStreamSaveBinaryD861.
 // @fnv 0x00d86100
 // src: XBOX_PDB 0x00d86100
-void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream& kStream, SerializedUnsignedPairRecord* pkData)
+// pdb: bhkLimitedForceConstraintMotor::LoadBinary | bhkLimitedForceConstraintMotor.obj | retail, upstream name already matches, high
+// pdb params: arStream, arMotor
+void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(NiStream& arStream, SerializedUnsignedPairRecord* arMotor)
 {
-    NiStreamSaveBinaryD861(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x24c), pkData->m_0c);
-    NiStreamSaveBinaryD861(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x24c), pkData->m_10);
+    NiStreamSaveBinaryD861(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&arStream) + 0x24c), arMotor->m_0c);
+    NiStreamSaveBinaryD861(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&arStream) + 0x24c), arMotor->m_10);
 }
 
 template <class T>
@@ -2103,10 +2183,12 @@ inline void NiStreamLoadBinaryD8616(NiBinaryStream& kStream, T& value)
 // Reads two unsigned int fields from the stream into pkData->m_0c and pkData->m_10.
 // @fnv 0x00d86160
 // src: XBOX_PDB 0x00d86160
-void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(NiStream& kStream, SerializedUnsignedPairRecord* pkData)
+// pdb: bhkLimitedForceConstraintMotor::SaveBinary | bhkLimitedForceConstraintMotor.obj | retail, upstream name already matches, high
+// pdb params: arStream, arMotor
+void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(NiStream& arStream, SerializedUnsignedPairRecord* arMotor)
 {
-    NiStreamLoadBinaryD8616(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x250), pkData->m_0c);
-    NiStreamLoadBinaryD8616(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x250), pkData->m_10);
+    NiStreamLoadBinaryD8616(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&arStream) + 0x250), arMotor->m_0c);
+    NiStreamLoadBinaryD8616(**reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&arStream) + 0x250), arMotor->m_10);
 }
 
 extern int DAT_010d3838;
@@ -2139,13 +2221,13 @@ extern __declspec(thread) unsigned int tlsArr[0xb0];
 
 inline AutoMemContext::AutoMemContext()
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(tlsArr[0xaf]);
+    iOldMemContext = static_cast<MEM_CONTEXT>(tlsArr[0xaf]);
     tlsArr[0xaf] = 0x10;
 }
 
 inline AutoMemContext::~AutoMemContext()
 {
-    tlsArr[0xaf] = m_eMemoryContext;
+    tlsArr[0xaf] = iOldMemContext;
 }
 
 void __cdecl Object_UpdateFields_00c9eae0(void* p);
@@ -2220,6 +2302,8 @@ struct FUN_00d86470_cls {
 // Inside an AutoMemContext scope, allocates a FUN_00dee750 into m_04 if it is null, and returns 0xb0.
 // @fnv 0x00d86470
 // src: XBOX_PDB 0x00d86470
+// pdb: hkPointToPathConstraintCinfo::CreateData | bhkPointToPathConstraint.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 unsigned int FUN_00d86470_cls::hkPointToPathConstraintCinfo_CreateData()
 {
     AutoMemContext ctx;
@@ -2231,14 +2315,16 @@ unsigned int FUN_00d86470_cls::hkPointToPathConstraintCinfo_CreateData()
 
 // Sets or clears the bits in the last word of the bit field that extend beyond m_iNumBits based on value.
 // @fnv 0x00d867e0
-void hkBitField::fillUnusedBits(int value) throw()
+// pdb: hkBitField::fillUnusedBits | hkBitField.obj | debug, upstream name already matches, high
+// pdb params: fillValue
+void hkBitField::fillUnusedBits(int fillValue) throw()
 {
-    int lastWordIndex = (m_iNumBits - 1) >> 5;
-    unsigned int* lastWord = &m_auiBitFieldWords.m_data[lastWordIndex];
-    int numBitsInLastWord = m_iNumBits - (lastWordIndex << 5);
+    int lastWordIndex = (m_numBits - 1) >> 5;
+    unsigned int* lastWord = &m_words.m_data[lastWordIndex];
+    int numBitsInLastWord = m_numBits - (lastWordIndex << 5);
     if (numBitsInLastWord < 32) {
         unsigned int mask = 0xffffffff << numBitsInLastWord;
-        if (!value) {
+        if (!fillValue) {
             *lastWord &= ~mask;
         } else {
             *lastWord |= mask;
@@ -2292,6 +2378,7 @@ public:
 // Returns false if triggered while enabled, or after setting m_abFlags[iIndex] and m_bTriggered (enabled, flag unset, count >50, multiple of 3); else true.
 // @fnv 0x00d88100
 // src: HAVOK_LIB 0x00d88100
+// pdb: hkMemoryExceptionTestingUtil::destroy | hkMemoryExceptionTestingUtil.obj | retail, object-file run extension, low
 bool FUN_00d88100_Class::hkMemoryExceptionTestingUtil_isMemoryAvailableImpl(int iIndex)
 {
     if (m_bTriggered && m_bEnableState)
@@ -2334,6 +2421,7 @@ using hkGlobalsD881::DAT_012691fc;
 // Deletes the global FUN_00d88050 instance and replaces it with a newly allocated one.
 // @fnv 0x00d88150
 // src: HAVOK_LIB 0x00d88150
+// pdb: hkMemoryExceptionTestingUtil::create | hkMemoryExceptionTestingUtil.obj | retail, upstream name already matches, high
 void __cdecl hkMemoryExceptionTestingUtil_create()
 {
     delete DAT_012691fc;
@@ -2383,15 +2471,17 @@ struct S00d881a0_Obj {
     S00d881a0_Mid* m00;
 };
 int __cdecl hkRigidMotionUtilApplyAccumulators(void* a0, void* a1, void* a2, void* a3, void* a4, int a5);
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(int a0, void* a1, void* a2);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(int collisionInput, void* entityBatch, void* numEntities);
 
 // Calls FUN_00d29bf0 with eaxv + 0x80 and 0xe0, then FUN_00d1a330 with esi->m00->m08->m78, esi and edi, and returns the first call's result.
 // @fnv 0x00d881a0
 // src: HAVOK_LIB 0x00d881a0
-static __declspec(noinline) int hkConstraintSolverSetup_integrate2(void* p, void* ecxv, char* eaxv, S00d881a0_Obj* esi, void* edi)
+// pdb: hkConstraintSolverSetup_integrate2 | hkpConstraintSolverSetup.obj | retail, upstream name already matches, high
+// pdb params: si, info, accumulators, bodies, numBodies
+static __declspec(noinline) int hkConstraintSolverSetup_integrate2(void* si, void* info, char* accumulators, S00d881a0_Obj* bodies, void* numBodies)
 {
-    int r = hkRigidMotionUtilApplyAccumulators(p, ecxv, eaxv + 0x80, esi, edi, 0xe0);
-    hkpEntityAabbUtil_entityBatchRecalcAabb(esi->m00->m08->m78, esi, edi);
+    int r = hkRigidMotionUtilApplyAccumulators(si, info, accumulators + 0x80, bodies, numBodies, 0xe0);
+    hkpEntityAabbUtil_entityBatchRecalcAabb(bodies->m00->m08->m78, bodies, numBodies);
     return r;
 }
 
@@ -2405,6 +2495,9 @@ static unsigned char* S00d96870_outp;
 // Fills the block at out+0x10 from src and self fields, then sets *self from self+0x6c, clears *out, and sets out[0x12] to 1.
 // @fnv 0x00d96870
 // src: HAVOK_LIB 0x00d96870
+// pdb: spawnBuildJacobiansJobs | hkpDynamicsJobQueueUtils.obj | debug, upstream name already matches, high
+// pdb params: dynamicsJob, taskHeader, queue, data, newJobCreated
+// pdb locals: assertBuf, ostr
 static __declspec(noinline) void spawnBuildJacobiansJobs(unsigned char* self, int* src, unsigned char* out)
 {
     unsigned char* dst = out + 0x10;
@@ -2464,6 +2557,9 @@ void __cdecl IntersectTree(int a1, int a2, int a3, float* a4, int* a5,
 
 // Computes the difference between v40 and q30, then passes it to IntersectTree along with obj->unk1C and the input parameters.
 // @fnv 0x00d99fc0
+// pdb: hkKdTreeUtils::castRayRecursive | hkKdTreeUtils.obj | retail, object-file run extension, low
+// pdb params: tree, orig, dir, tNear, tFar, originalLength, collector
+// pdb locals: offset, scale
 void __cdecl ComputeAndDispatchDelta(D99FC0Object* obj, int a2, int a3, float a4,
                           float a5, float a6, int a7)
 {
@@ -2516,19 +2612,22 @@ struct FUN_00d9a410_Stub {
     int unk1c;
     unsigned char* unk20;
 
-    void __thiscall InvokeCallback(int* param);
+    void __thiscall hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(int* collB);
 };
 
 // If target->v01 returns nonzero, looks up an entry in the unk20 table and calls its function with unk18, param, &unk20, unk10 and unk14.
 // @fnv 0x00d9a410
-void FUN_00d9a410_Stub::InvokeCallback(int* param)
+// src: XBOX_RETAIL_PDB 0x00d9a410
+// pdb: hkpAabbTreeWorldLinearCaster<hkAabbTreeData::hkAabbTreeAabb16>::testCollidable | hkpAabbTreeWorldLinearCaster.obj | retail, call graph (shared callers), high
+// pdb params: collB
+void FUN_00d9a410_Stub::hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(int* collB)
 {
-    FUN_00d9a410_Object* object = (FUN_00d9a410_Object*)param[0];
+    FUN_00d9a410_Object* object = (FUN_00d9a410_Object*)collB[0];
 
-    if (object != 0 && unk18 != param) {
+    if (object != 0 && unk18 != collB) {
         char buffer;
         FUN_00d9a410_Target* target = unk0c;
-        char* result = target->v01(&buffer, unk18, param);
+        char* result = target->v01(&buffer, unk18, collB);
 
         if (*result != 0) {
             unsigned char* base = unk20;
@@ -2539,7 +2638,7 @@ void FUN_00d9a410_Stub::InvokeCallback(int* param)
             FUN_00d9a410_Entry* entry =
                 (FUN_00d9a410_Entry*)(base + 0x9ac + slot * 20);
 
-            entry->fn(unk18, param, &unk20, unk10, unk14);
+            entry->fn(unk18, collB, &unk20, unk10, unk14);
         }
     }
 }
@@ -2569,15 +2668,17 @@ public:
     int unk0C;
     InnerD9A4* m_pkInner;
 
-    void InvokeCallback(int iValue);
-    virtual float ProcessAndReturnValue_00d9a480(ArgD9A4* pkArg);
+    void hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(int collB);
+    virtual float ProcessAndReturnValue_00d9a480(ArgD9A4* leaf);
 };
 
 // @fnv 0x00d9a480
 // src: GUESS 0x00d9a480 (confidence: low)
-float ObjD9A4::ProcessAndReturnValue_00d9a480(ArgD9A4* pkArg)
+// pdb: hkpAabbTreeWorldLinearCaster<hkAabbTreeData::hkAabbTreeAabb16>::addLeaf | hkpAabbTreeWorldLinearCaster.obj | retail, vtable slot, high
+// pdb params: leaf
+float ObjD9A4::ProcessAndReturnValue_00d9a480(ArgD9A4* leaf)
 {
-    InvokeCallback(pkArg->unk0C);
+    hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(leaf->unk0C);
     return m_pkInner->m_fValue;
 }
 
@@ -2627,9 +2728,11 @@ struct BoolResult {
 // Returns true if the shape's GetType() is one of 0, 1, 2, 6, 7, 8, 9, 12, 13, 14 or 15, otherwise false.
 // @fnv 0x00d84c50
 // src: HAVOK_LIB 0x00d84c50
-BoolResult hkpConstraintPivotsUtil_constraintSupportsPivotGetSet(const Shape* pkShape)
+// pdb: hkpConstraintPivotsUtil::constraintSupportsPivotGetSet | hkpConstraintPivotsUtil.obj | retail, upstream name already matches, high
+// pdb params: data
+BoolResult hkpConstraintPivotsUtil_constraintSupportsPivotGetSet(const Shape* data)
 {
-    switch (pkShape->GetType())
+    switch (data->GetType())
     {
     case 0:
     case 1:
@@ -2675,6 +2778,9 @@ public:
 
 // Returns a pointer to shape data based on the shape type, following child shapes for types 12 and 13.
 // @fnv 0x00d84d30
+// pdb: hkpConstraintPivotsUtil::getPivotB | hkpConstraintPivotsUtil.obj | retail, object-file run extension, low
+// pdb params: data
+// pdb locals: assertBuf, ostr
 void* __cdecl GetShapeData(ShapeD84D* pkShape)
 {
     for (unsigned int t = pkShape->getType(); t <= 15; t = pkShape->getType()) {
@@ -2784,6 +2890,9 @@ struct PivotCData {
 
 // Walks the PivotCData chain to the leaf and stores the pivot __m128 value into the bridge atom or raw slot at pivotIndex.
 // @fnv 0x00d84dc0
+// pdb: hkpConstraintPivotsUtil::setPivot | hkpConstraintPivotsUtil.obj | retail, object-file run extension, low
+// pdb params: data, pivot, index
+// pdb locals: assertBuf, ostr
 void __cdecl SetPivotAtom(PivotCData* data, const LocalM128* pivot, int pivotIndex)
 {
     for (;;) {
@@ -2853,9 +2962,11 @@ static __declspec(noinline) D90Ctn* Object_ProcessEntries_00d85d40(D90Ctn* c) {
 // Iterates the owner's listener array in reverse, records a TtconAddCb/Et profiling event around each v01 call, then compacts the array.
 // @fnv 0x00d85d90
 // src: HAVOK_LIB 0x00d85d90
-D90Ctn* __cdecl hkpConstraintCallbackUtil_fireConstraintAdded(hkpConstraintInstance* pOwner) {
+// pdb: hkpConstraintCallbackUtil::fireConstraintAdded | hkpConstraintCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: constraint
+D90Ctn* __cdecl hkpConstraintCallbackUtil_fireConstraintAdded(hkpConstraintInstance* constraint) {
     volatile unsigned int ticks[2];
-    D90Ctn* ctn = reinterpret_cast<D90Ctn*>(&pOwner->m_kListeners);
+    D90Ctn* ctn = reinterpret_cast<D90Ctn*>(&constraint->m_listeners);
     int i = ctn->count - 1;
     if (i >= 0) {
         D90TlsFn tls = DAT_00fdf044;
@@ -2870,7 +2981,7 @@ D90Ctn* __cdecl hkpConstraintCallbackUtil_fireConstraintAdded(hkpConstraintInsta
                     ev->m_ticks = ticks[0];
                     prof->m_end.m_storage = reinterpret_cast<char*>(ev + 1);
                 }
-                static_cast<hkpConstraintListener*>(ctn->entries[i])->ConstraintAddedCallback(pOwner);
+                static_cast<hkpConstraintListener*>(ctn->entries[i])->ConstraintAddedCallback(constraint);
                 hkMonitorStream* p2 = (hkMonitorStream*)tls(DAT_0126835c);
                 hkTimerCommand_blk_00d80000_o2* e2 = reinterpret_cast<hkTimerCommand_blk_00d80000_o2*>(p2->m_end.val());
                 if (reinterpret_cast<char*>(e2) < p2->m_capacityMinus16.val()) {
@@ -2904,9 +3015,12 @@ static void Object_ProcessEntries_00d85d40(ListenerArray* array);
 
 // Invokes ConstraintRemovedCallback on each non-null listener in the constraint's listener array, then removes null entries.
 // @fnv 0x00d85e40
-void __cdecl NotifyConstraintRemoved(hkpConstraintInstance* constraint)
+// src: XBOX_RETAIL_PDB 0x00d85e40
+// pdb: hkpConstraintCallbackUtil::fireConstraintRemoved | hkpConstraintCallbackUtil.obj | retail, object-file gap fill, high
+// pdb params: constraint
+void __cdecl hkpConstraintCallbackUtil_fireConstraintRemoved(hkpConstraintInstance* constraint)
 {
-    hkpConstraintInstanceSmallArraySerializeOverrideType& listen = constraint->m_kListeners;
+    hkpConstraintInstanceSmallArraySerializeOverrideType& listen = constraint->m_listeners;
     for (int i = listen.m_iElementCount - 1; i >= 0; i--) {
         if (static_cast<hkpConstraintListener**>(listen.m_data)[i] != 0) {
             volatile unsigned int ticks[2];
@@ -2943,12 +3057,14 @@ __forceinline void hkArray<unsigned int>::setSize(int n, const unsigned int& fil
 }
 
 // @fnv 0x00d86820
-void hkBitField::setSize(int iNumBits, int iInitialValue)
+// pdb: hkBitField::setSize | hkBitField.obj | retail, upstream name already matches, high
+// pdb params: numBits, fillValue
+void hkBitField::setSize(int numBits, int fillValue)
 {
-    if (m_iNumBits > 0 && m_iNumBits < iNumBits)
-        fillUnusedBits(iInitialValue);
-    m_auiBitFieldWords.setSize((iNumBits + 31) >> 5, (iInitialValue ? ~0u : 0u));
-    m_iNumBits = iNumBits;
+    if (m_numBits > 0 && m_numBits < numBits)
+        fillUnusedBits(fillValue);
+    m_words.setSize((numBits + 31) >> 5, (fillValue ? ~0u : 0u));
+    m_numBits = numBits;
 }
 
 extern const char DAT_010d3aa0[];
@@ -2958,7 +3074,7 @@ int __cdecl j_strncmp(const char*, const char*, int) throw();
 int __cdecl hkString_strLen(const char*) throw();
 const char* __cdecl hkString_strChr(const char*, int) throw();
 int __cdecl CallWithZeroMiddleArg(const char*, int) throw();
-int __cdecl GetTypeCode(const char*) throw();
+int __cdecl hkClassMember_getTypeOf(const char*) throw();
 
 struct HkTempAllocator {
     virtual void slot00();
@@ -3009,17 +3125,21 @@ struct FUN_00d61b10 {
 
 // Parses a type-code string by matching known prefixes or extracting a bracketed substring, then returns its type code.
 // @fnv 0x00d86d70
-int __cdecl GetTypeCodeFromString(const char* name) throw()
+// src: XBOX_RETAIL_PDB 0x00d86d70
+// pdb: hkClassMember::getSubtypeOf | hkClassMember.obj | retail, string-set bridge, high
+// pdb params: name
+// pdb locals: s
+int __cdecl hkClassMember_getSubtypeOf(const char* name) throw()
 {
     if (j_strncmp(name, DAT_010d3aa0, 8) == 0) {
         name += 8;
         FUN_00d61b10 inner(name, hkString_strLen(name) - 1);
-        return GetTypeCode(inner.m_kStringBuffer.m_data);
+        return hkClassMember_getTypeOf(inner.m_kStringBuffer.m_data);
     }
     if (j_strncmp(name, DAT_010d3a90, 14) == 0) {
         name += 14;
         FUN_00d61b10 inner(name, hkString_strLen(name) - 1);
-        return GetTypeCode(inner.m_kStringBuffer.m_data);
+        return hkClassMember_getTypeOf(inner.m_kStringBuffer.m_data);
     }
     const char* openBracket = hkString_strChr(name, '[');
     if (openBracket) {
@@ -3031,15 +3151,17 @@ int __cdecl GetTypeCodeFromString(const char* name) throw()
 }
 
 struct FUN_00d87180_cls : S {
-    FUN_00d87180_cls* hkClassMemberAccessor_hkClassMemberAccessor(unsigned int a, B* b);
+    FUN_00d87180_cls* hkClassMemberAccessor_ctor(unsigned int obj, B* mem);
 };
 
 // @fnv 0x00d87180
-// src: HAVOK_LIB 0x00d87180
-FUN_00d87180_cls* FUN_00d87180_cls::hkClassMemberAccessor_hkClassMemberAccessor(unsigned int auiValue, B* apPtr)
+// src: XBOX_DEBUG_PDB 0x00d87180
+// pdb: hkClassMemberAccessor::hkClassMemberAccessor | hkClassMemberAccessor.obj | debug, call graph, high
+// pdb params: obj, mem
+FUN_00d87180_cls* FUN_00d87180_cls::hkClassMemberAccessor_ctor(unsigned int obj, B* mem)
 {
     void (S::*call)(unsigned int, B*) = &S::SetValueAndPtr;
-    (static_cast<S*>(this)->*call)(auiValue, apPtr);
+    (static_cast<S*>(this)->*call)(obj, mem);
     return this;
 }
 
@@ -3083,41 +3205,43 @@ static inline char* alignDownD881(char* p) { return (char*)((unsigned int)p & ~1
 
 // Stores step, solver, and query pointers, then carves the aligned buffer into velocity accumulators and three buffer states with computed ray start/end offsets.
 // @fnv 0x00d881d0
+// pdb: hkpConstraintSolverSetup::initializeSolverState | hkpConstraintSolverSetup.obj | retail, object-file run extension, low
+// pdb params: stepInfo, solverInfo, constraintQueryIn, buffer, bufferSize, s
 void __cdecl InitializeConstraintSolverResources(hkStepInfo* pkStepInfo, hkpSolverInfo* pkSolverInfo, hkpConstraintQueryIn* pkQueryIn, char* pcBuffer, int iBufferSize, hkpConstraintSolverResources* pkOut)
 {
-    pkOut->m_pStepInfo = pkStepInfo;
-    pkOut->m_pSolverInfo = pkSolverInfo;
-    pkOut->m_pConstraintQueryIn = pkQueryIn;
+    pkOut->m_stepInfo = pkStepInfo;
+    pkOut->m_solverInfo = pkSolverInfo;
+    pkOut->m_constraintQueryInput = pkQueryIn;
 
     iBufferSize -= iBufferSize % 16;
     const float fFactorA = -0.6f;
     const float fFactorB = -(1.0f + fFactorA);
 
     char* p = (char*)(((unsigned int)pcBuffer + 15) & ~15);
-    pkOut->m_pVelocityAccumulatorA = reinterpret_cast<hkpVelocityAccumulator*>(p);
+    pkOut->m_accumulators = reinterpret_cast<hkpVelocityAccumulator*>(p);
     p = alignDownD881(p + iBufferSize * 10 / 64);
-    pkOut->m_pVelocityAccumulatorB = reinterpret_cast<hkpVelocityAccumulator*>(p);
+    pkOut->m_accumulatorsEnd = reinterpret_cast<hkpVelocityAccumulator*>(p);
     pkOut->m_pBufferA = p;
     p = alignDownD881(p + iBufferSize * 4 / 64);
-    pkOut->m_akBufferStates[0].m_pRayStart = p;
-    pkOut->m_pBufferB = p;
+    pkOut->m_schemas[0].m_pRayStart = p;
+    pkOut->m_accumulatorsBackupEnd = p;
 
     float fSize = (float)(iBufferSize * 40);
     p = alignDownD881(p - (unsigned int)(fSize * fFactorA / 64.0));
-    pkOut->m_akBufferStates[1].m_pRayStart = p;
-    pkOut->m_akBufferStates[0].m_kRayEnd = p;
+    pkOut->m_schemas[1].m_pRayStart = p;
+    pkOut->m_schemas[0].m_kRayEnd = p;
 
     p = alignDownD881(p - (unsigned int)(fSize * fFactorB / 64.0));
-    pkOut->m_akBufferStates[2].m_kRayEnd = pcBuffer + iBufferSize;
-    pkOut->m_pVelocityAccumulatorC = pkOut->m_pVelocityAccumulatorA;
-    pkOut->m_akBufferStates[1].m_kRayEnd = p;
-    pkOut->m_akBufferStates[2].m_pRayStart = p;
-    pkOut->m_akBufferStates[0].m_pTileTemplate = pkOut->m_akBufferStates[0].m_pRayStart;
-    pkOut->m_akBufferStates[0].m_pValues = pkOut->m_akBufferStates[0].m_pRayStart;
-    pkOut->m_akBufferStates[2].m_pTileTemplate = pkOut->m_akBufferStates[2].m_pRayStart;
-    pkOut->m_akBufferStates[2].m_pValues = pkOut->m_akBufferStates[2].m_pRayStart;
-    pkOut->m_akBufferStates[1].m_pTileTemplate = pkOut->m_akBufferStates[1].m_pRayStart;
-    pkOut->m_akBufferStates[1].m_pValues = pkOut->m_akBufferStates[1].m_pRayStart;
+    pkOut->m_schemas[2].m_kRayEnd = pcBuffer + iBufferSize;
+    pkOut->m_accumulatorsCurrent = pkOut->m_accumulators;
+    pkOut->m_schemas[1].m_kRayEnd = p;
+    pkOut->m_schemas[2].m_pRayStart = p;
+    pkOut->m_schemas[0].m_pTileTemplate = pkOut->m_schemas[0].m_pRayStart;
+    pkOut->m_schemas[0].m_pValues = pkOut->m_schemas[0].m_pRayStart;
+    pkOut->m_schemas[2].m_pTileTemplate = pkOut->m_schemas[2].m_pRayStart;
+    pkOut->m_schemas[2].m_pValues = pkOut->m_schemas[2].m_pRayStart;
+    pkOut->m_schemas[1].m_pTileTemplate = pkOut->m_schemas[1].m_pRayStart;
+    pkOut->m_schemas[1].m_pValues = pkOut->m_schemas[1].m_pRayStart;
 }
 
 // @fnv 0x00d892e0
@@ -3129,37 +3253,40 @@ typedef hkpCollisionAgent* (__cdecl *CreateFuncD923)(
     const hkpCollisionInput&, hkpContactMgr*);
 
 // Shared hkpAgentEntry.h is absent; retain the local declaration required by this unit.
+// pdb: structure hkpAgentEntry, size 0x4, 4 members
 struct hkpAgentEntry {
-    unsigned char m_ucAgentType;
-    unsigned char m_ucNnTrackType;
-    unsigned char m_usNumContactPoints;
-    unsigned char m_iElementCount;
+    unsigned char m_streamCommand;
+    unsigned char m_agentType;
+    unsigned char m_numContactPoints;
+    unsigned char m_size;
 };
 inline CreateFuncD923 FindAgentCreateFunction(const hkpCollisionDispatcher& dispatcher, const hkpCdBody& bodyA, const hkpCdBody& bodyB, const hkpCollisionInput& input)
 {
-    int typeA = *reinterpret_cast<const int*>(&bodyA.m_pCollisionShape->m_type);
-    int typeB = *reinterpret_cast<const int*>(&bodyB.m_pCollisionShape->m_type);
-    const unsigned char* table = input.m_bCreatePredictiveAgents ? &dispatcher.m_agent3TypeMap[0][0] : &dispatcher.m_agent2TypeMap[0][0];
+    int typeA = *reinterpret_cast<const int*>(&bodyA.m_shape->m_type);
+    int typeB = *reinterpret_cast<const int*>(&bodyB.m_shape->m_type);
+    const unsigned char* table = input.m_createPredictiveAgents ? &dispatcher.m_agent3TypeMap[0][0] : &dispatcher.m_agent2TypeMap[0][0];
     unsigned char agentType = table[typeA * 32 + typeB];
     return reinterpret_cast<CreateFuncD923>(dispatcher.m_agent2Funcs[agentType].m_pCreateFunc);
 }
 
 // Creates a collision agent via the dispatcher's create function, stores it in freeMemory, and returns a pointer to the agent data at offset 16.
 // @fnv 0x00d92300
+// pdb: hkAgent3Bridge::create | hkpAgent3Bridge.obj | retail, object-file run extension, low
+// pdb params: input, entry, agentData
 hkpAgentData* __cdecl CreateAgent(const hkpAgent3Input& input,
                                        hkpAgentEntry* apAgentEntry,
                                        hkpAgentData* freeMemory)
 {
-    apAgentEntry->m_ucAgentType = (apAgentEntry->m_ucAgentType & 8) | 6;
-    hkpContactMgr* pContactMgr = input.m_pContactManager;
-    const hkpCdBody* bodyB = input.m_pBodyB;
-    const hkpCdBody* bodyA = input.m_pBodyA;
-    const hkpCollisionInput* in = reinterpret_cast<const hkpCollisionInput*>(input.m_pRayCastInput.val());
-    hkpCollisionDispatcher* pDispatcher = in->m_pCollisionDispatcher;
+    apAgentEntry->m_streamCommand = (apAgentEntry->m_streamCommand & 8) | 6;
+    hkpContactMgr* pContactMgr = input.m_contactMgr;
+    const hkpCdBody* bodyB = input.m_bodyB;
+    const hkpCdBody* bodyA = input.m_bodyA;
+    const hkpCollisionInput* in = reinterpret_cast<const hkpCollisionInput*>(input.m_input.val());
+    hkpCollisionDispatcher* pDispatcher = in->m_dispatcher;
     CreateFuncD923 f = FindAgentCreateFunction(*pDispatcher, *bodyA, *bodyB, *in);
     hkpCollisionAgent* agent = f(*bodyA, *bodyB, *in, pContactMgr);
     *reinterpret_cast<hkpCollisionAgent**>(freeMemory) = agent;
-    apAgentEntry->m_usNumContactPoints = 0xff;
+    apAgentEntry->m_numContactPoints = 0xff;
     return reinterpret_cast<hkpAgentData*>(reinterpret_cast<char*>(freeMemory) + 16);
 }
 
@@ -3221,67 +3348,69 @@ struct CleanupObject {
 // Frees the two linked block lists, the unk14 and unk50 buffers and the unk5C array through the allocators, then frees the object itself (0x80 bytes).
 // @fnv 0x00d93ab0
 // src: HAVOK_LIB 0x00d93ab0
-static __declspec(noinline) void deleteTaskHeaderResources(CleanupObject* self) {
-    while (self->unk68 != 0) {
-        void* block = self->unk68;
-        self->unk68 = *reinterpret_cast<void**>(block);
+// pdb: deleteTaskHeaderResources | hkpCpuBroadPhaseJob.obj | retail, upstream name already matches, high
+// pdb params: taskHeader
+static __declspec(noinline) void deleteTaskHeaderResources(CleanupObject* taskHeader) {
+    while (taskHeader->unk68 != 0) {
+        void* block = taskHeader->unk68;
+        taskHeader->unk68 = *reinterpret_cast<void**>(block);
 
         CleanupRouter* holder =
             reinterpret_cast<CleanupRouter*>(hkMemoryRouter_getInstance());
         holder->m_pThreadAllocator->unk08(block, 0x1000);
     }
 
-    while (self->unk78 != 0) {
-        void* block = self->unk78;
-        self->unk78 = *reinterpret_cast<void**>(block);
+    while (taskHeader->unk78 != 0) {
+        void* block = taskHeader->unk78;
+        taskHeader->unk78 = *reinterpret_cast<void**>(block);
 
         CleanupRouter* holder =
             reinterpret_cast<CleanupRouter*>(hkMemoryRouter_getInstance());
         holder->m_pThreadAllocator->unk08(block, 0x30);
     }
 
-    if (self->unk14 != 0) {
-        void* block = self->unk14;
-        int size = self->unk1C;
+    if (taskHeader->unk14 != 0) {
+        void* block = taskHeader->unk14;
+        int size = taskHeader->unk1C;
 
         CleanupRouter* holder =
             reinterpret_cast<CleanupRouter*>(hkMemoryRouter_getInstance());
         holder->m_allocator2->unk10(block, size);
 
-        self->unk14 = 0;
+        taskHeader->unk14 = 0;
     }
 
-    if (self->unk10 > 1) {
-        unsigned int size = static_cast<unsigned int>(self->unk56);
-        void* block = self->unk50;
+    if (taskHeader->unk10 > 1) {
+        unsigned int size = static_cast<unsigned int>(taskHeader->unk56);
+        void* block = taskHeader->unk50;
 
         CleanupRouter* holder =
             reinterpret_cast<CleanupRouter*>(hkMemoryRouter_getInstance());
         holder->m_pThreadAllocator->unk10(block, size * 4);
 
-        self->unk50 = 0;
+        taskHeader->unk50 = 0;
     }
 
     CleanupRouter* holder =
         reinterpret_cast<CleanupRouter*>(hkMemoryRouter_getInstance());
     CleanupAllocator* allocator = holder->m_pThreadAllocator;
 
-    int count = self->unk64;
-    self->unk60 = 0;
+    int count = taskHeader->unk64;
+    taskHeader->unk60 = 0;
 
     if ((static_cast<unsigned int>(count) & 0x80000000u) == 0) {
-        void* block = self->unk5C;
+        void* block = taskHeader->unk5C;
         allocator->unk10(
             block,
             static_cast<unsigned int>(count & 0x3FFFFFFF) * 4);
     }
 
-    self->unk5C = 0;
-    self->unk64 = 0x80000000;
+    taskHeader->unk5C = 0;
+    taskHeader->unk64 = 0x80000000;
 
     CleanupRouter* pRouter =
         reinterpret_cast<CleanupRouter*>(hkMemoryRouter_getInstance());
-    pRouter->m_pThreadAllocator->unk08(self, 0x80);
+    pRouter->m_pThreadAllocator->unk08(taskHeader, 0x80);
 }
 
 CleanupObject* volatile cleanupInput;
@@ -3329,14 +3458,16 @@ struct S00d944d0_Arg2 {
 };
 
 struct S00d944d0_Arg1 {
-    void ProcessCallback(S00d944d0_Arg2* a1, S00d944d0_Arg2* a2, int a3);
+    void ProcessCallback(S00d944d0_Arg2* oldJob, S00d944d0_Arg2* jobOut, int waitStatus);
 };
 
 // Records two timing entries (LtIntegrate, lt) in the TLS stream, calls FUN_00d89ed0, then invokes a2->ProcessCallback(a3, a3, 0).
 // @fnv 0x00d944d0
 // src: HAVOK_LIB 0x00d944d0
-void __cdecl hkCpuSolveApplyGravityJob(S00d944d0_Obj* apObj, S00d944d0_Arg1* a2,
-                         S00d944d0_Arg2* a3)
+// pdb: hkCpuSolveApplyGravityJob | hkpCpuSolveConstraintsJobs.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+void __cdecl hkCpuSolveApplyGravityJob(S00d944d0_Obj* tl, S00d944d0_Arg1* jobQueue,
+                         S00d944d0_Arg2* jobInOut)
 {
     hkMonitorStream* stream =
         (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -3356,8 +3487,8 @@ void __cdecl hkCpuSolveApplyGravityJob(S00d944d0_Obj* apObj, S00d944d0_Arg1* a2,
         stream->m_end.m_storage = (char*)(entry + 1);
     }
 
-    Hkpsolver_ProcessEntries_00d89ed0((char*)apObj->m_sub + 0x1e0,
-                 a3->m_20, a3->m_24);
+    Hkpsolver_ProcessEntries_00d89ed0((char*)tl->m_sub + 0x1e0,
+                 jobInOut->m_20, jobInOut->m_24);
 
     stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
 
@@ -3375,7 +3506,7 @@ void __cdecl hkCpuSolveApplyGravityJob(S00d944d0_Obj* apObj, S00d944d0_Arg1* a2,
         stream->m_end.m_storage = (char*)(entry2 + 1);
     }
 
-    a2->ProcessCallback(a3, a3, 0);
+    jobQueue->ProcessCallback(jobInOut, jobInOut, 0);
 }
 
 namespace fnv_00d94570 {
@@ -3609,10 +3740,10 @@ struct Fnv94570_Ctx {
     int unk28;
     Fnv94570_Data* unk2C;
 
-    void ProcessCallback(int a1, int a2, int a3);
+    void ProcessCallback(int oldJob, int jobOut, int waitStatus);
 };
 
-void __cdecl HkpsolverGsNogs_UpdateState_00d8fb70(
+void __cdecl hkSolveConstraintsByTheSteps(
     void* a1,
     int a2,
     int a3,
@@ -3623,7 +3754,10 @@ void __cdecl HkpsolverGsNogs_UpdateState_00d8fb70(
 // Writes timestamped entries to a per-thread buffer, zeroes the d10 block if a3->unk20 is 0, calls FUN_00d8fb70, then a2->ProcessCallback(a3, a3, 0).
 // @fnv 0x00d94570
 // src: HAVOK_LIB 0x00d94570
-void __cdecl hkCpuSolveConstraintBatchJob(Fnv94570_Obj** a1, int a2, Fnv94570_Ctx* apCtx)
+// pdb: hkCpuSolveConstraintBatchJob | hkpCpuSolveConstraintsJobs.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+// pdb locals: zero, assertBuf, ostr
+void __cdecl hkCpuSolveConstraintBatchJob(Fnv94570_Obj** tl, int jobQueue, Fnv94570_Ctx* jobInOut)
 {
     hkMonitorStream* tls;
     char* cursor;
@@ -3648,13 +3782,13 @@ void __cdecl hkCpuSolveConstraintBatchJob(Fnv94570_Obj** a1, int a2, Fnv94570_Ct
         tls->m_end.m_storage = cursor + 0x10;
     }
 
-    data = apCtx->unk2C;
+    data = jobInOut->unk2C;
     d08 = data->unk08;
     d0c = data->unk0C;
     d10 = data->unk10;
-    apCtx->unk24 = (*a1)->unk2F8;
+    jobInOut->unk24 = (*tl)->unk2F8;
 
-    if (apCtx->unk20 == 0) {
+    if (jobInOut->unk20 == 0) {
         zero.v0 = 0;
         zero.v1 = 0;
         zero.v2 = 0;
@@ -3674,10 +3808,10 @@ void __cdecl hkCpuSolveConstraintBatchJob(Fnv94570_Obj** a1, int a2, Fnv94570_Ct
         }
     }
 
-    HkpsolverGsNogs_UpdateState_00d8fb70(
-        &(*a1)->unk1E0,
-        apCtx->unk20,
-        apCtx->unk28,
+    hkSolveConstraintsByTheSteps(
+        &(*tl)->unk1E0,
+        jobInOut->unk20,
+        jobInOut->unk28,
         d0c,
         d08,
         d10);
@@ -3692,7 +3826,7 @@ void __cdecl hkCpuSolveConstraintBatchJob(Fnv94570_Obj** a1, int a2, Fnv94570_Ct
         tls->m_end.m_storage = cursor + 0x0C;
     }
 
-    ((Fnv94570_Ctx*)a2)->ProcessCallback((int)apCtx, (int)apCtx, 0);
+    ((Fnv94570_Ctx*)jobQueue)->ProcessCallback((int)jobInOut, (int)jobInOut, 0);
 }
 }  // namespace fnv_00d94570
 
@@ -3719,7 +3853,9 @@ void __cdecl hkExportImpulsesAndRhs(TargetObj*, int, int, int);
 // Records a profiler timestamp, calls FUN_00df0680 with the object's target fields, records a second timestamp, then calls ProcessCallback on context.
 // @fnv 0x00d94730
 // src: HAVOK_LIB 0x00d94730
-void __cdecl hkCpuSolveExportResultsJob(Arg0* world, Arg1* context, SolverObject* object)
+// pdb: hkCpuSolveExportResultsJob | hkpCpuSolveConstraintsJobs.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+void __cdecl hkCpuSolveExportResultsJob(Arg0* tl, Arg1* jobQueue, SolverObject* jobInOut)
 {
     hkMonitorStream* stream = static_cast<hkMonitorStream*>(TlsGetValue(DAT_0126835c));
     if (stream->m_end.m_storage < stream->m_capacityMinus16.val()) {
@@ -3731,8 +3867,8 @@ void __cdecl hkCpuSolveExportResultsJob(Arg0* world, Arg1* context, SolverObject
         record->time = time;
         stream->m_end.m_storage = reinterpret_cast<char*>(record + 1);
     }
-    SolverTarget* target = object->target;
-    hkExportImpulsesAndRhs(&world->m_pSub->unk1e0, target->unk10, target->unk0c, target->unk08);
+    SolverTarget* target = jobInOut->target;
+    hkExportImpulsesAndRhs(&tl->m_pSub->unk1e0, target->unk10, target->unk0c, target->unk08);
     stream = static_cast<hkMonitorStream*>(TlsGetValue(DAT_0126835c));
     if (stream->m_end.m_storage < stream->m_capacityMinus16.val()) {
         hkTimerCommand_blk_00d80000_o2* record = reinterpret_cast<hkTimerCommand_blk_00d80000_o2*>(stream->m_end.m_storage);
@@ -3742,7 +3878,7 @@ void __cdecl hkCpuSolveExportResultsJob(Arg0* world, Arg1* context, SolverObject
         record->m_ticks = time;
         stream->m_end.m_storage = reinterpret_cast<char*>(record + 1);
     }
-    context->ProcessCallback(reinterpret_cast<Arg2*>(object), reinterpret_cast<Arg2*>(object), 0);
+    jobQueue->ProcessCallback(reinterpret_cast<Arg2*>(jobInOut), reinterpret_cast<Arg2*>(jobInOut), 0);
 }
 
 struct StructItem {
@@ -3787,11 +3923,14 @@ struct StructB {
 
 extern double DAT_010c9300;
 struct LocalFlag { unsigned char value; };
-void __cdecl hkSimpleContactConstraintDataBuildJacobian(short* a1, StructB* a2, LocalFlag a3, int** a4);
-void __cdecl hkSolverBuildJacobianFromAtomsNotContact(short* a1, unsigned short a2, StructB* a3, int** a4);
+void __cdecl hkSimpleContactConstraintDataBuildJacobian(short* a1, StructB* a2, LocalFlag writeHeaderSchemas, int** a4);
+void __cdecl hkSolverBuildJacobianFromAtomsNotContact(short* a1, unsigned short a2, StructB* tmpIn, int** a4);
 
 // Fills b from each of a's items and calls FUN_00d72190 or FUN_00d6f460 on it, then ends the output at pC with a zero or, if a->unk18 is set, a size record.
 // @fnv 0x00d949a0
+// pdb: hkCpuBuildJacobiansFromTask | hkpCpuBuildJacobiansJob.obj | retail, object-file run extension, low
+// pdb params: input, queryIn
+// pdb locals: queryOut
 static __declspec(noinline) void WriteItems(StructA* apSource, StructB* apDest)
 {
     int* pOut = apSource->ptrC;
@@ -3940,7 +4079,7 @@ struct __declspec(align(16)) S00d96970_Local {
 };
 
 struct S00d96970_Target {
-    void __thiscall InsertItemAndNotify(int value, S00d96970_Local* local, int flag);
+    void __thiscall hkJobQueue_addJobQueueLocked(int data, S00d96970_Local* job, int priority);
 };
 
 struct S00d96970_Obj {
@@ -3958,20 +4097,23 @@ struct S00d96970_Obj {
 
 // @fnv 0x00d96970
 // src: HAVOK_LIB 0x00d96970
-static __declspec(noinline) void spawnSplitSimulationIslandJob(S00d96970_Obj* self, const S00d96970_Local* src, S00d96970_Target* target, int value)
+// pdb: spawnSplitSimulationIslandJob | hkpDynamicsJobQueueUtils.obj | retail, upstream name already matches, high
+// pdb params: dynamicsJob, localTaskHeader, queue, data
+// pdb locals: splitJob
+static __declspec(noinline) void spawnSplitSimulationIslandJob(S00d96970_Obj* dynamicsJob, const S00d96970_Local* localTaskHeader, S00d96970_Target* queue, int data)
 {
-    if (self->unk21 != 0) {
+    if (dynamicsJob->unk21 != 0) {
         S00d96970_Local local;
         local.unk00 = 5;
         local.unk01 = 0;
         local.unk02 = 2;
         local.unk04 = 0x20;
         local.unk06 = -1;
-        local.unk10 = src->unk10;
-        local.unk14 = src->unk14;
-        local.unk18 = src->unk18;
-        local.unk1C = src->unk1C;
-        target->InsertItemAndNotify(value, &local, 0);
+        local.unk10 = localTaskHeader->unk10;
+        local.unk14 = localTaskHeader->unk14;
+        local.unk18 = localTaskHeader->unk18;
+        local.unk1C = localTaskHeader->unk1C;
+        queue->hkJobQueue_addJobQueueLocked(data, &local, 0);
     }
 }
 
@@ -4122,7 +4264,7 @@ struct Out {
 
 struct Ev20;
 struct A0Cls {
-    int InsertItemAndNotify(int a1, Ev20* temp, int z);
+    int hkJobQueue_addJobQueueLocked(int data, Ev20* job, int priority);
 };
 
 static __forceinline void InitEv(Ev* e, Ev* ev, unsigned char type, unsigned char flag, unsigned short size)
@@ -4168,27 +4310,30 @@ struct Stage1 : Ev { __forceinline Stage1(Ev* ev, State* s){
 // Dispatches on ev->type, decrements the State reference count, and constructs the next event in out->m_kEvent when the count reaches zero.
 // @fnv 0x00d969e0
 // src: HAVOK_LIB 0x00d969e0
-int __cdecl hkpJobQueueUtils_finishIntegrateJob(A0Cls* a0, int a1, Ev* apEvent, Out* out)
+// pdb: hkpJobQueueUtils::finishIntegrateJob | hkpDynamicsJobQueueUtils.obj | retail, upstream name already matches, high
+// pdb params: queue, data, jobIn, newJobCreated
+// pdb locals: assertBuf, ostr
+int __cdecl hkpJobQueueUtils_finishIntegrateJob(A0Cls* queue, int data, Ev* jobIn, Out* newJobCreated)
 {
     int result = 1;
-    State* s = apEvent->m_18;
-    switch (apEvent->type) {
+    State* s = jobIn->m_18;
+    switch (jobIn->type) {
     case 1:
     case 2:
         if (--s->ref == 0) {
             if (s->m_74 > 0) {
-                Ev* e = &out->m_kEvent;
-                if (e) InitEv(e, apEvent, 3, 2, 0x20);
-                out->m_00 = 0;
+                Ev* e = &newJobCreated->m_kEvent;
+                if (e) InitEv(e, jobIn, 3, 2, 0x20);
+                newJobCreated->m_00 = 0;
                 return 0;
             } else {
-                spawnBuildJacobiansJobs((unsigned char*)s, (int*)apEvent, (unsigned char*)out);
+                spawnBuildJacobiansJobs((unsigned char*)s, (int*)jobIn, (unsigned char*)newJobCreated);
                 return 0;
             }
         }
         goto Fail;
     case 3: { EmptyScope scope;
-        spawnBuildJacobiansJobs((unsigned char*)s, (int*)apEvent, (unsigned char*)out);
+        spawnBuildJacobiansJobs((unsigned char*)s, (int*)jobIn, (unsigned char*)newJobCreated);
         return 0;
         goto Fail;
     }
@@ -4196,14 +4341,14 @@ int __cdecl hkpJobQueueUtils_finishIntegrateJob(A0Cls* a0, int a1, Ev* apEvent, 
         if (--s->ref == 0) {
             Ev* next;
             if (s->m_58) {
-                Ev* e=&out->m_kEvent; if(e) e=new(e) Stage0(apEvent,s); else e=0;
-                out->m_00 = 0;
-                out->m_kEvent.b02 = s->m_59 ? 2 : 1;
+                Ev* e=&newJobCreated->m_kEvent; if(e) e=new(e) Stage0(jobIn,s); else e=0;
+                newJobCreated->m_00 = 0;
+                newJobCreated->m_kEvent.b02 = s->m_59 ? 2 : 1;
                 next=e;
             } else {
-                Stage1* e = new(&out->m_kEvent) Stage1(apEvent,s);
-                out->m_00 = 0;
-                out->m_kEvent.b02 = 1;
+                Stage1* e = new(&newJobCreated->m_kEvent) Stage1(jobIn,s);
+                newJobCreated->m_00 = 0;
+                newJobCreated->m_kEvent.b02 = 1;
                 s->ref = s->m_38;
                 next=e;
             }
@@ -4220,7 +4365,7 @@ int __cdecl hkpJobQueueUtils_finishIntegrateJob(A0Cls* a0, int a1, Ev* apEvent, 
                 temp.b01 = 0;
                 temp.b02 = 2;
                 temp.m_1c = saved;
-                a0->InsertItemAndNotify(a1, &temp, 0);
+                queue->hkJobQueue_addJobQueueLocked(data, &temp, 0);
                 return 0;
             }
             goto ReturnZero;
@@ -4234,49 +4379,49 @@ int __cdecl hkpJobQueueUtils_finishIntegrateJob(A0Cls* a0, int a1, Ev* apEvent, 
         return result;
     case 7:
         if (--s->ref == 0) {
-            Ev* e = &out->m_kEvent;
+            Ev* e = &newJobCreated->m_kEvent;
             if (e) {
-                InitEv(e, apEvent, 8, 1, 0x30);
+                InitEv(e, jobIn, 8, 1, 0x30);
                 e->i2c = s->m_78;
                 e->m_20 = 0;
                 e->m_28 = 0;
             }
-            out->m_00 = 0;
-            out->m_kEvent.b02 = 1;
+            newJobCreated->m_00 = 0;
+            newJobCreated->m_kEvent.b02 = 1;
             s->ref = s->m_7c;
             return 0;
         }
         goto Fail;
     case 8:
         if (--s->ref == 0) {
-            int saved = apEvent->m_2c->m_1e;
+            int saved = jobIn->m_2c->m_1e;
             int newref;
             if (saved != 0) {
-                Ev* e = &out->m_kEvent;
+                Ev* e = &newJobCreated->m_kEvent;
                 if (e) {
-                    InitEv(e, apEvent, 8, 1, 0x30);
-                    *(Ev30*)e = *(Ev30*)apEvent;
-                    e->i2c = apEvent->m_2c->m_20;
+                    InitEv(e, jobIn, 8, 1, 0x30);
+                    *(Ev30*)e = *(Ev30*)jobIn;
+                    e->i2c = jobIn->m_2c->m_20;
                 }
                 newref = saved;
-            } else if ((unsigned int)(apEvent->m_28 + 1) < (unsigned int)apEvent->m_24) {
-                Ev* e = new(&out->m_kEvent) Placed2(apEvent,s);
+            } else if ((unsigned int)(jobIn->m_28 + 1) < (unsigned int)jobIn->m_24) {
+                Ev* e = new(&newJobCreated->m_kEvent) Placed2(jobIn,s);
                 e->m_28++;
                 e->i2c = s->m_78;
                 newref = s->m_7c;
             } else {
-                Ev* e = &out->m_kEvent;
+                Ev* e = &newJobCreated->m_kEvent;
                 if (e) {
-                    InitEv(e, apEvent, 9, 1, 0x30);
+                    InitEv(e, jobIn, 9, 1, 0x30);
                     e->m_20 = (M20*)s->m_30;
                     e->m_24 = s->m_34;
-                    e->ptr28 = apEvent->m_20;
+                    e->ptr28 = jobIn->m_20;
                     e->b2c = 0;
                 }
                 newref = s->m_3a;
             }
-            out->m_00 = 0;
-            out->m_kEvent.b02 = 1;
+            newJobCreated->m_00 = 0;
+            newJobCreated->m_kEvent.b02 = 1;
             s->ref = newref;
             result=0; goto Finish;
         }
@@ -4284,20 +4429,20 @@ int __cdecl hkpJobQueueUtils_finishIntegrateJob(A0Cls* a0, int a1, Ev* apEvent, 
     case 9:
         if (--s->ref == 0) {
             int count;
-            if (apEvent->b2c == 0) {
-                Ev* e = &out->m_kEvent;
+            if (jobIn->b2c == 0) {
+                Ev* e = &newJobCreated->m_kEvent;
                 if (e) {
-                    InitEv(e, apEvent, 8, 1, 0x30);
+                    InitEv(e, jobIn, 8, 1, 0x30);
                     e->i2c = s->m_78;
-                    e->m_20 = (M20*)(apEvent->m_28 + 1);
+                    e->m_20 = (M20*)(jobIn->m_28 + 1);
                     e->m_28 = 0;
                 }
                 count = s->m_7c;
 
             } else {
-                Ev* e = &out->m_kEvent;
+                Ev* e = &newJobCreated->m_kEvent;
                 if (e) {
-                    InitEv(e, apEvent, 11, 2, 0x40);
+                    InitEv(e, jobIn, 11, 2, 0x40);
                     e->m_20 = (M20*)s->m_78;
                     e->w36 = 0;
                     e->w34 = s->m_54;
@@ -4307,8 +4452,8 @@ int __cdecl hkpJobQueueUtils_finishIntegrateJob(A0Cls* a0, int a1, Ev* apEvent, 
                 count = s->m_6c;
 
             }
-            out->m_00 = 0;
-            out->m_kEvent.b02 = 1;
+            newJobCreated->m_00 = 0;
+            newJobCreated->m_kEvent.b02 = 1;
             s->ref = count;
 ReturnZero:
             return 0;
@@ -4316,7 +4461,7 @@ ReturnZero:
         goto Fail;
     case 10: {
         s->ref--;
-        Node* n = apEvent->m_20->m_0c;
+        Node* n = jobIn->m_20->m_0c;
         if (n->m_00 != 0) {
             n->m_04 = (int)s->m_24;
             s->m_24 = n;
@@ -4326,25 +4471,25 @@ ReturnZero:
         goto Fail;
     }
     case 11: {
-        if (apEvent->m_38 <= 5)
+        if (jobIn->m_38 <= 5)
             s->m_08 = 0;
-        result = (int)(((unsigned int)(unsigned short)apEvent->m_34 - 1) >> 7) + 1;
+        result = (int)(((unsigned int)(unsigned short)jobIn->m_34 - 1) >> 7) + 1;
 ProcessAmount:
         _ReadWriteBarrier();
-        int* count = &apEvent->m_18->m_04;
+        int* count = &jobIn->m_18->m_04;
         int v = *count - result;
         *count = v;
         if (v != 0)
             goto Fail;
         {
-            Ev* e = &out->m_kEvent;
+            Ev* e = &newJobCreated->m_kEvent;
             if (e) {
-                State* state = apEvent->m_18;
-                InitEv(e, apEvent, 12, 2, 0x30);
+                State* state = jobIn->m_18;
+                InitEv(e, jobIn, 12, 2, 0x30);
                 e->m_18 = state;
                 e->w20 = 1;
             }
-            out->m_00 = 0;
+            newJobCreated->m_00 = 0;
             return 0;
         }
         goto Fail;
@@ -4352,7 +4497,7 @@ ProcessAmount:
     case 12:
         goto Fail;
     case 13: {
-        M20* p = apEvent->m_20;
+        M20* p = jobIn->m_20;
         if (!p)
             goto Finish;
         {
@@ -4362,13 +4507,13 @@ ProcessAmount:
                 goto Fail;
         }
         {
-            Ev* e = &out->m_kEvent;
+            Ev* e = &newJobCreated->m_kEvent;
             if (e) {
-                InitEv(e, apEvent, 14, 2, 0x30);
-                e->w10 = apEvent->w10;
-                e->m_20 = apEvent->m_20;
+                InitEv(e, jobIn, 14, 2, 0x30);
+                e->w10 = jobIn->w10;
+                e->m_20 = jobIn->m_20;
             }
-            out->m_00 = 0;
+            newJobCreated->m_00 = 0;
             return 0;
         }
         goto Fail;
@@ -4484,28 +4629,31 @@ struct D87aa0Reporter {
 
 // @fnv 0x00d87aa0
 // src: HAVOK_LIB 0x00d87aa0
-void __cdecl hkTraceStream_printf(D87aa0Reporter* apReporter, const char* id, const char* fmt, ...)
+// pdb: hkTraceStream::printf | hkTraceStream.obj | retail, string-set bridge, high
+// pdb params: title, fmt, buf
+// pdb locals: args
+void __cdecl hkTraceStream_printf(D87aa0Reporter* title, const char* id, const char* fmt, ...)
 {
-    for (int i = 0; i < apReporter->m_numFilters; i++) {
-        D87aa0Name& e = apReporter->m_filters[i];
+    for (int i = 0; i < title->m_numFilters; i++) {
+        D87aa0Name& e = title->m_filters[i];
         if (hkString_strCmp((int)e.m_name, (int)id) == 0)
             return;
     }
-    int n = ++apReporter->m_uiItemCount;
+    int n = ++title->m_uiItemCount;
     if (n == 0x803)
-        apReporter->m_uiItemCount = n;
-    if (apReporter->m_stream) {
+        title->m_uiItemCount = n;
+    if (title->m_stream) {
         int buf[0x100];
         va_list args;
         va_start(args, fmt);
         if (*fmt == '#') {
             hkString_sprintf((char*)buf, DAT_010d3cb4, n);
-            apReporter->m_stream->ForwardCall_00cc0470((char*)buf, hkString_strLen((char*)buf));
+            title->m_stream->ForwardCall_00cc0470((char*)buf, hkString_strLen((char*)buf));
             hkString_vsnprintf((char*)buf, 0x400, fmt + 1, args);
         } else {
             hkString_vsnprintf((char*)buf, 0x400, fmt, args);
         }
-        apReporter->m_stream->ForwardCall_00cc0470((char*)buf, hkString_strLen((char*)buf));
+        title->m_stream->ForwardCall_00cc0470((char*)buf, hkString_strLen((char*)buf));
     }
 }
 }  // namespace fnv_00d87aa0
@@ -4562,6 +4710,9 @@ struct TransformShape : Shape {
 
 // @fnv 0x00d85040
 // src: GUESS 0x00d85040 (confidence: low)
+// pdb: hkpConstraintPivotsUtil::setPivotTransform | hkpConstraintPivotsUtil.obj | retail, object-file run extension, low
+// pdb params: data, pivot, index
+// pdb locals: assertBuf, ostr
 void Object_ProcessEntries_00d85040(Shape* pkShape, const Transform& kTransform, int iIndex)
 {
     for (;;)
@@ -4631,7 +4782,7 @@ extern unsigned int DAT_0126835c;
 typedef void* (__stdcall *StringCursorGetFn)(unsigned long);
 extern StringCursorGetFn DAT_00fdf044;
 extern const char str_010d3ef4[];
-void __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(char* p, unsigned int a, unsigned int b, unsigned int c, unsigned int d);
+void __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(char* info, unsigned int motions, unsigned int numMotions, unsigned int motionOffset, unsigned int accumulatorsOut);
 struct D94Sub {
     int u00;
     int u04;
@@ -4661,12 +4812,14 @@ struct D94Body {
     unsigned short us26;
 };
 struct D94Obj {
-    int ProcessCallback(D94Body* a, D94Body* b, int c);
+    int ProcessCallback(D94Body* oldJob, D94Body* jobOut, int waitStatus);
 };
 // Records two timing markers in a TLS buffer, calls FUN_00d29830 with a3 fields, then returns a2->ProcessCallback(a3, a3, 0).
 // @fnv 0x00d94df0
 // src: COMMUNITY 0x00d94df0
-int __cdecl hkCpuBuildAccumulatorsJob(char* a1, D94Obj* a2, D94Body* a3)
+// pdb: hkCpuBuildAccumulatorsJob | hkpCpuBuildAccumulatorsJob.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, nextJobOut
+int __cdecl hkCpuBuildAccumulatorsJob(char* tl, D94Obj* jobQueue, D94Body* nextJobOut)
 {
     StringCursorGetFn fn = DAT_00fdf044;
     hkMonitorStream* tp = (hkMonitorStream*)fn(DAT_0126835c);
@@ -4680,7 +4833,7 @@ int __cdecl hkCpuBuildAccumulatorsJob(char* a1, D94Obj* a2, D94Body* a3)
         cur++;
         tp->m_end.m_storage = reinterpret_cast<char*>(cur);
     }
-    hkRigidMotionUtilApplyForcesAndBuildAccumulators(a1 + 0xe0, (unsigned int)(a3->p20 + a3->us24), a3->us26, 0xe0, ((a3->us24 + 1) << 7) + a3->m18->m30);
+    hkRigidMotionUtilApplyForcesAndBuildAccumulators(tl + 0xe0, (unsigned int)(nextJobOut->p20 + nextJobOut->us24), nextJobOut->us26, 0xe0, ((nextJobOut->us24 + 1) << 7) + nextJobOut->m18->m30);
     hkMonitorStream* tp2 = (hkMonitorStream*)fn(DAT_0126835c);
     hkTimerCommand_blk_00d80000_o2* r = (hkTimerCommand_blk_00d80000_o2*)tp2->m_end.m_storage;
     if (r < (hkTimerCommand_blk_00d80000_o2*)tp2->m_capacityMinus16.m_storage) {
@@ -4691,7 +4844,7 @@ int __cdecl hkCpuBuildAccumulatorsJob(char* a1, D94Obj* a2, D94Body* a3)
         r++;
         tp2->m_end.m_storage = reinterpret_cast<char*>(r);
     }
-    return a2->ProcessCallback(a3, a3, 0);
+    return jobQueue->ProcessCallback(nextJobOut, nextJobOut, 0);
 }
 
 #include <string.h>
@@ -4873,7 +5026,7 @@ struct D96600Blob {
     int unk78;
     int unk7c;
 
-    int hkpBroadPhaseJob_popJobTask(int** slot, D96600Blob* dst);
+    int hkpBroadPhaseJob_popJobTask(int** islands, D96600Blob* out);
 };
 static __forceinline int popPart(D96600Blob* src, D96600Blob* dst)
 {
@@ -5028,6 +5181,9 @@ __forceinline const QuantizedBounds* projectAt(const TreeNode& node, const Quant
 struct BoundPair { LocalM128 minimum, maximum; void set(float a, float b) { minimum = _mm_set_ps1(a); maximum = _mm_set_ps1(b); } };
 // Recursively walks a tree of quantized bounds, testing leaf boxes against the ray interval and calling collector->AddHit for each hit.
 // @fnv 0x00d986c0
+// pdb: hkKdTreeUtils::_castRayRecursive | hkKdTreeUtils.obj | retail, object-file run extension, low
+// pdb params: root, ppuNode, projectedEntries, scale, offset, orig, dir, tNear, tFar, originalLength, collector
+// pdb locals: spuNode, aabb, rayhit, oldHadHit
 void __cdecl IntersectTree(void* tree, const TreeNode* node,
                         const QuantizedBounds* leaves,
                         const TreeVector* scale, const TreeVector* offset,
@@ -5176,12 +5332,12 @@ struct __declspec(align(16)) S00d94a80_Local {
     char* unk94;
 };
 
-void __cdecl hkSolverBuildJacobianFromAtomsNotContact(char* atom, int count, S00d94a80_Local* ctx, int** cursor);
+void __cdecl hkSolverBuildJacobianFromAtomsNotContact(char* atom, int count, S00d94a80_Local* tmpIn, int** cursor);
 struct S00d94a80_Bool {
     bool m_cBooleanValue;
     S00d94a80_Bool(bool v) { m_cBooleanValue = v; }
 };
-void __cdecl hkSimpleContactConstraintDataBuildJacobian(char* atom, S00d94a80_Local* ctx, S00d94a80_Bool bCopy, int** cursor);
+void __cdecl hkSimpleContactConstraintDataBuildJacobian(char* atom, S00d94a80_Local* ctx, S00d94a80_Bool writeHeaderSchemas, int** cursor);
 inline S00d94a80_Bool S00d94a80_True() { S00d94a80_Bool r(true); return r; }
 
 struct S00d94a80_A0 {
@@ -5297,7 +5453,10 @@ static __forceinline void S00d94a80_Process(Arg0* a1, Arg2* p)
 
 // @fnv 0x00d94a80
 // src: COMMUNITY 0x00d94a80
-void __cdecl hkCpuBuildJacobiansJob(Arg0* a1, Arg1* a2, Arg2* a3)
+// pdb: hkCpuBuildJacobiansJob | hkpCpuBuildJacobiansJob.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+// pdb locals: queryIn
+void __cdecl hkCpuBuildJacobiansJob(Arg0* tl, Arg1* jobQueue, Arg2* jobInOut)
 {
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* cur = stream->m_end.m_storage;
@@ -5308,7 +5467,7 @@ void __cdecl hkCpuBuildJacobiansJob(Arg0* a1, Arg1* a2, Arg2* a3)
         stream->m_end.m_storage = cur + 0x10;
     }
 
-    S00d94a80_Process(a1, a3);
+    S00d94a80_Process(tl, jobInOut);
     stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     cur = stream->m_end.m_storage;
     if (cur < stream->m_capacityMinus16.val()) {
@@ -5317,7 +5476,7 @@ void __cdecl hkCpuBuildJacobiansJob(Arg0* a1, Arg1* a2, Arg2* a3)
         stream->m_end.m_storage = cur + 0xc;
     }
 
-    a2->ProcessCallback(a3, a3, 0);
+    jobQueue->ProcessCallback(jobInOut, jobInOut, 0);
 }
 
 namespace fnv_00d86050 {
@@ -5356,8 +5515,10 @@ static __declspec(noinline) void Object_ProcessEntries_00d85d40(D86050Arr* arr) 
 // Invokes the v06 callback on each non-null element of the indexed array, bracketing each call with TtconRepairedCb/Et profiler stamps, then compacts the array.
 // @fnv 0x00d86050
 // src: HAVOK_LIB 0x00d86050
-void __cdecl hkpConstraintCallbackUtil_fireConstraintRepaired(D86050Self* self) {
-    D86050Arr* arr = reinterpret_cast<D86050Arr*>(&self->unk04->m_kListeners);
+// pdb: hkpConstraintCallbackUtil::fireConstraintRepaired | hkpConstraintCallbackUtil.obj | retail, upstream name already matches, high
+// pdb params: event
+void __cdecl hkpConstraintCallbackUtil_fireConstraintRepaired(D86050Self* event) {
+    D86050Arr* arr = reinterpret_cast<D86050Arr*>(&event->unk04->m_listeners);
     for (int i = (int)arr->m_uiItemCount - 1; i >= 0; --i) {
         if (arr->m_pElements[i] != 0) {
             volatile D86050Stamps stamp;
@@ -5374,7 +5535,7 @@ void __cdecl hkpConstraintCallbackUtil_fireConstraintRepaired(D86050Self* self) 
             // The shared c18 slot has no event parameter declaration yet.
             typedef void (__thiscall* RepairedCallback)(hkpConstraintListener*, D86050Self*);
             hkpConstraintListener* listener = static_cast<hkpConstraintListener*>(arr->m_pElements[i]);
-            (*reinterpret_cast<RepairedCallback**>(listener))[6](listener, self);
+            (*reinterpret_cast<RepairedCallback**>(listener))[6](listener, event);
             prof = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
             cur = prof->m_end.m_storage;
             if (cur < prof->m_capacityMinus16.m_storage) {
@@ -5403,6 +5564,8 @@ public:
 // Returns 2 if the thread handle is null, otherwise queries the thread exit code and returns 1 if it equals 0x103, else 0.
 // @fnv 0x00d87a10
 // src: HAVOK_LIB 0x00d87a10
+// pdb: hkThread::getStatus | hkWin32Thread.obj | retail, upstream name already matches, high
+// pdb locals: exitCode
 int FUN_00d87a10_Obj::hkThread_getStatus() {
     if (unk00 == 0)
         return 2;
@@ -5430,13 +5593,15 @@ void __cdecl ClearFlagsAndMarkDirty(int a, char* b);
 
 class Target_00d94340 {
 public:
-    void ProcessCallback(Arg_00d94340* a, Arg_00d94340* b, int c);
+    void ProcessCallback(Arg_00d94340* oldJob, Arg_00d94340* jobOut, int waitStatus);
 };
 
 // Records TtSplitIsle and Et timing markers via TLS stream, then calls pkTarget->ProcessCallback with pkArg twice and 0.
 // @fnv 0x00d94340
 // src: HAVOK_LIB 0x00d94340
-void hkCpuSplitSimulationIslandJob(int unusedA, Target_00d94340* pkTarget, Arg_00d94340* pkArg)
+// pdb: hkCpuSplitSimulationIslandJob | hkpCpuSplitSimulationIslandJob.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+void hkCpuSplitSimulationIslandJob(int tl, Target_00d94340* jobQueue, Arg_00d94340* jobInOut)
 {
     hkMonitorStream* s = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     hkTimerCommand_blk_00d80000_o2* c = reinterpret_cast<hkTimerCommand_blk_00d80000_o2*>(s->m_end.val());
@@ -5447,7 +5612,7 @@ void hkCpuSplitSimulationIslandJob(int unusedA, Target_00d94340* pkTarget, Arg_0
         c->m_ticks = t;
         s->m_end.m_storage = reinterpret_cast<char*>(c + 1);
     }
-    ClearFlagsAndMarkDirty(pkArg->m_iA, pkArg->m_pcB + 0x5c);
+    ClearFlagsAndMarkDirty(jobInOut->m_iA, jobInOut->m_pcB + 0x5c);
     hkMonitorStream* s2 = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     hkTimerCommand_blk_00d80000_o2* c2 = reinterpret_cast<hkTimerCommand_blk_00d80000_o2*>(s2->m_end.val());
     if (reinterpret_cast<char*>(c2) < s2->m_capacityMinus16.val()) {
@@ -5457,7 +5622,7 @@ void hkCpuSplitSimulationIslandJob(int unusedA, Target_00d94340* pkTarget, Arg_0
         c2->m_ticks = t2;
         s2->m_end.m_storage = reinterpret_cast<char*>(c2 + 1);
     }
-    pkTarget->ProcessCallback(pkArg, pkArg, 0);
+    jobQueue->ProcessCallback(jobInOut, jobInOut, 0);
 }
 }  // namespace fnv_00d94340
 
@@ -5551,6 +5716,8 @@ struct FUN_00d84bd0
 
 // Stores &DAT_010d37e4 at offset 0, sets m_06=1, m_10=2, m_a0=7, sets m_20/m_34/m_48 and m_60/m_74/m_88 to 1.0f, and zeroes the other 16-byte blocks.
 // @fnv 0x00d84bd0
+// pdb: NiBSplineBasisData::CopyMembers | NiBSplineBasisData.obj | debug, object-file run extension, low
+// pdb params: pkDest, kCloning
 FUN_00d84bd0::FUN_00d84bd0()
 {
     *(int**)this = &DAT_010d37e4;
@@ -5745,6 +5912,9 @@ namespace RayTraversal {
 // Walks the tree along the ray from start to end, calling collector->report with the key of each primitive box hit, and returns collector->finish().
 // @fnv 0x00d98ca0
 // src: XBOX_PDB 0x00d98ca0
+// pdb: hkKdTreeUtils::castRayIterative | hkKdTreeUtils.obj | retail, upstream name already matches, high
+// pdb params: tree, start, end, collector
+// pdb locals: A, orig, projectedEntries, offset, B, scale, stackSize, spuNode, aabb, narrowPhaseHit
 extern "C" FNV_00d99f50_Result __cdecl hkKdTreeUtils_castRayIterative(const TreeData* tree, const RayVector& start, const RayVector& end, RayCollector* collector) {
     PrimitiveRecord* primitives = tree->primitives;
     RayVector boundsMin = tree->minimum;

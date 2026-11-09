@@ -8,6 +8,7 @@ class DialogueActor;
 class DialogueItem;
 class DialogueResponse;
 
+// pdb: class DialoguePackage, size 0xd0, bases: TESPackage, 23 members
 class DialoguePackage : public TESPackage
 {
 public:
@@ -80,8 +81,8 @@ public:
         Conversation* m_pkConversation;
         Q* p;
     };
-    DialogueItem* item;
-    DialogueResponse* response;
+    DialogueItem* pCurrentItem;
+    DialogueResponse* pCurrentResponse;
     union
     {
         TESForm* quest;
@@ -93,18 +94,18 @@ public:
         MobileObject* pTargetActor;
         Actor* listener;
     };
-    MobileObject* m_pLinkedReference;
-    unsigned char unkBC;
-    unsigned char unkBD;
-    unsigned char unkBE;
-    unsigned char unkBF;
-    unsigned char unkC0;
-    unsigned char unkC1;
-    unsigned char unkC2;
+    MobileObject* pTalkingActivator;
+    unsigned char bActorHeadTrack;
+    unsigned char bCreatedPack;
+    unsigned char bContinueMoving;
+    unsigned char bTargetContinueMoving;
+    unsigned char bTargetMoveTowardStarter;
+    unsigned char bDoNotControlTargetMovement;
+    unsigned char bReachedAmbushLocation;
     unsigned char unkC3;
-    unsigned int unkC4;
-    unsigned int unkC8;
-    unsigned char unkCC;
+    unsigned int iEmotion;
+    unsigned int iEmotionValue;
+    unsigned char bSoundFile;
 
     void SavePackage();
     void TESForm_SaveGameDataOLD(void*, int);
@@ -118,7 +119,7 @@ public:
     unsigned short GetSaveSize_009ef560();
     void SaveGame_009ef6e0();
     void InitLoadGame_009f0740(BGSLoadFormBuffer* apLoadGameBuffer);
-    void LoadGame_009f0460(BGSLoadFormBuffer* apSaveBuffer);
+    void LoadGame_009f0460(BGSLoadFormBuffer* apLoadGameBuffer);
     void LoadSaveData();
     void ResolveReferences();
     void* Destroy(unsigned int flags);

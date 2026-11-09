@@ -82,6 +82,7 @@ class NiD3DVertexDeclaration : public NiD3DShaderDeclaration
     static NiD3DVertexDeclaration* Create(GraphicsRenderer*, UInt32, UInt32);
 };
 LIGHTING30_ASSERT(sizeof(NiD3DVertexDeclaration) == 0x34);
+// pdb: class Lighting30Shader, size 0xa4, bases: BSShader, 14 members
 class Lighting30Shader : public BSShader
 {
   public:
@@ -93,8 +94,8 @@ class Lighting30Shader : public BSShader
     virtual void InitializePixelShader();
     virtual bool ConfigureShaderPass();
     NiPointer<NiD3DShaderConstantMap> m_spFillColorConstantMap;
-    NiPointer<NiD3DShaderConstantMap> m_spFogConstantMap;
-    NiPointer<NiD3DShaderConstantMap> m_spFirstPassConstantMap;
+    NiPointer<NiD3DShaderConstantMap> spTexEffectVConstantMap;
+    NiPointer<NiD3DShaderConstantMap> spDefaultPixelConstantMap;
     NiPointer<NiD3DShaderConstantMap> m_spSecondPassConstantMap;
     NiPointer<NiD3DVertexDeclaration> m_pVertexDeclaration1;
     NiPointer<NiD3DVertexDeclaration> m_pVertexDeclaration2;

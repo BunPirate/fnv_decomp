@@ -5,6 +5,7 @@
 template <class T> class NiTPrimitiveArray;
 
 // RTTI: .?AVSetting@@ (a class).
+// pdb: class Setting, size 0xc, 2 members
 class Setting
 {
 public:
@@ -39,7 +40,7 @@ public:
     Setting& AssignStringValue(const char* value);
     void FUN_00404950();
     void* FUN_004049a0(unsigned int flags);
-    void Setting_GetViewerStrings(NiTPrimitiveArray<char*>* values);
+    void Setting_GetViewerStrings(NiTPrimitiveArray<char*>* apStringsA);
     float* Setting_Float_00403e20();
     int* Setting_Int();
     const char* FUN_00403df0();

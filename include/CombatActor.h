@@ -28,7 +28,7 @@ public:
     ActorBaseView* Base();
     unsigned Gather(FactionView**, unsigned, void*, void*);
     unsigned char FUN_00566950();
-    unsigned char IsHostileTo(void* target, int mode, int* result, unsigned char check);
+    unsigned char IsHostileTo(void* apActor, int bAttacked, int* aeReaction, unsigned char abIgnoreCombat);
     unsigned char Actor_IsAngryWithPlayer();
     CombatActor* FUN_0044ddc0();
     void* FUN_009344a0();

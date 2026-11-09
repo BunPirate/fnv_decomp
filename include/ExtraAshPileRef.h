@@ -4,10 +4,11 @@
 
 class TESObjectREFR;
 
+// pdb: class ExtraAshPileRef, size 0x10, bases: BSExtraData, 1 members
 class ExtraAshPileRef : public BSExtraData
 {
 public:
     ExtraAshPileRef();
 
-    TESObjectREFR* m_pAshPileRef;
+    TESObjectREFR* pAshPileRef;
 };

@@ -16,25 +16,26 @@ enum NiGeometryDataFlags
     NI_GEOM_DATA_DEFAULT = 0
 };
 
+// pdb: class NiTriShape, size 0xf0 (here 0xc4), bases: NiTriBasedGeom, 0 members
 class NiTriShape : public NiTriBasedGeom
 {
   public:
     NiTriShape(unsigned int data);
-    NiTriShape(unsigned short vertices, NiPoint3* vertex, NiPoint3* normal, void* color,
-               NiPoint2* texture, unsigned short textureSets, unsigned int nbtMethod,
-               unsigned short triangles, unsigned short* triangleList);
-    NiTriShape(unsigned short vertices, NiPoint3* vertex, NiPoint3* normal, void* color,
-               void* texture, unsigned short textureSets, unsigned int nbtMethod,
-               unsigned short triangles, unsigned short* triangleList);
+    NiTriShape(unsigned short usVertices, NiPoint3* pkVertex, NiPoint3* pkNormal, void* pkColor,
+               NiPoint2* pkTexture, unsigned short usNumTextureSets, unsigned int eNBTMethod,
+               unsigned short usTriangles, unsigned short* pusTriList);
+    NiTriShape(unsigned short usVertices, NiPoint3* pkVertex, NiPoint3* pkNormal, void* pkColor,
+               void* pkTexture, unsigned short usNumTextureSets, unsigned int eNBTMethod,
+               unsigned short usTriangles, unsigned short* pusTriList);
     NiTriShape(unsigned short vertices, NiPoint3V* vertex, NiPoint3V* normal, NiColorA* color,
                NiPoint2* texture, unsigned short textureSets, unsigned int nbtMethod,
                unsigned short triangles, unsigned short* triangleList);
     NiTriShape(unsigned short vertices, NiPoint3* vertex, NiPoint3* normal, NiColorA* color,
                NiPoint2* texture, unsigned short textureSets, NiGeometryDataFlags nbtMethod,
                unsigned short triangles, unsigned short* triangleList);
-    NiTriShape(unsigned short vertices, NiPoint3* vertex, NiPoint3* normal, NiColorA* color,
-               NiPoint2* texture, unsigned short textureSets, NiGeometryData__DataFlags nbtMethod,
-               unsigned short triangles, unsigned short* triangleList);
+    NiTriShape(unsigned short usVertices, NiPoint3* pkVertex, NiPoint3* pkNormal, NiColorA* pkColor,
+               NiPoint2* pkTexture, unsigned short usNumTextureSets, NiGeometryData__DataFlags eNBTMethod,
+               unsigned short usTriangles, unsigned short* pusTriList);
 
     NiTriShape(unsigned short vertices, NiPoint3* vertex, NiPoint3* normal, NiColorA* color,
                NiPoint2* texture, unsigned short textureSets, int nbtMethod,
@@ -62,10 +63,10 @@ class NiTriShape : public NiTriBasedGeom
     unsigned short* GetTriangleList();
     void AssignFixedString(const NiFixedString& name);
     void SetName(const NiFixedString& name);
-    void AttachProperty(NiObject* property);
+    void AttachProperty(NiObject* pkProperty);
     SkyShaderProperty* GetProperty(unsigned int type);
-    void NiAVObject_AttachProperty(void* property);
-    void NiAVObject_AttachProperty(NiObject* property);
+    void NiAVObject_AttachProperty(void* pkProperty);
+    void NiAVObject_AttachProperty(NiObject* pkProperty);
     void SetRotate_0043fa80(int rotation);
     void SetRotate_0043fa80(const void* rotation);
     using NiTriBasedGeom::SetRotate_0043fa80;
@@ -82,7 +83,7 @@ class NiTriShape : public NiTriBasedGeom
     void NiAVObject_SetWorldRotate(NineDw* transform);
     void UpdateProperties();
     void SetValue(float value);
-    NiBound* GetSourceFilesFromForm();
+    NiBound* NiGeometry_GetModelBound();
     void Method58();
     void __local_vftable_ctor_closure();
 };

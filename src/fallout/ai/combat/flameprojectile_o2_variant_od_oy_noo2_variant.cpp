@@ -26,10 +26,10 @@ struct NiMatrix33
 {
     float rows[9];
     void FUN_006815c0();
-    void FUN_004a0c90(float angle);
-    void FUN_00524ac0(float angle);
+    void FUN_004a0c90(float fAngle);
+    void FUN_00524ac0(float fAngle);
     NiMatrix33* FUN_0043f8d0(NiMatrix33* result, NiMatrix33* rhs);
-    void NiMatrix3_GetCol(int enabled, NiPoint3* output);
+    void NiMatrix3_GetCol(int uiCol, NiPoint3* col);
 };
 struct __declspec(align(16)) VisualState
 {
@@ -43,7 +43,7 @@ struct __declspec(align(16)) VisualState
     void BGSTerminal_SetPassword(void* state);
     void bhkPickData_SetFilter(unsigned int state);
     void bhkPickData_SetFrom(NiPoint3* point);
-    void bhkPickData_SetLength(const NiPoint3& point);
+    void bhkPickData_SetLength(const NiPoint3& arLength);
     void bhkPickData_SetAllCollector(void* result);
     bool bhkPickData_GetPickFailed();
 };
@@ -462,6 +462,8 @@ struct EmitterProperties
 };
 // @fnv 0x009b36f0
 // src: XBOX_PDB 0x009b36f0
+// pdb: FlameProjectile::RunTargetPick | FlameProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pw, pickPoints, origin, rot2, rot, bresult, direction, ipickPoints, filter, pd, i, collector, bhit, pdebug, color
 bool ProjectileEffect::FlameProjectile_RunTargetPick()
 {
     if (!FUN_008d6f30() || !FUN_008d6f30()->TESObjectCELL_GetbhkWorld())

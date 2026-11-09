@@ -21,7 +21,7 @@ struct PhantomShape
     int field00, field04, field08, field0c, field10, field14;
     PhantomShape(BoundShape* bounds);
     ~PhantomShape();
-    void bhkWorldObject_Add(void* form);
+    void bhkWorldObject_Add(void* apWorld);
     struct ListEntries* FUN_00818110();
     void bhkPhantom_Remove();
 };
@@ -104,12 +104,12 @@ struct Master
     int field10;
     int field14;
     int field18;
-    void MagicCaster_DoExplosion(NiPoint3 center, ListHandle* item, void* filter, RangeManager* source, TargetInterface* first,
-                      float scale, float strength);
+    void MagicCaster_DoExplosion(NiPoint3 aSourceLoc, ListHandle* apCell, void* apSpell, RangeManager* apDominantEffect, TargetInterface* aTargetList,
+                      float afPowerScale, float afAreaScale);
     TargetInterface* FUN_00815410();
     bool CheckHealthDamageKill(int* origin, void* filter);
-    void MagicCaster_ExplodeRigidBody(TargetInterface* selected, NiPoint3 location, RangeManager* source, float attenuation);
-    void ApplyExplosion(TargetInterface* selected, NiPoint3 location, RangeManager* source, float attenuation);
+    void MagicCaster_ExplodeRigidBody(TargetInterface* apRigidBody, NiPoint3 aSourceLoc, RangeManager* apDominantEffect, float afSpellCost);
+    void MagicCaster_ExplodeActor(TargetInterface* apTargetActor, NiPoint3 aSourceLoc, RangeManager* apDominantEffect, float afSpellCost);
 };
 extern TargetInterface* DAT_011dea3c;
 extern Setting originalRuntimeFloatSetting1112;
@@ -120,40 +120,43 @@ struct FormRef;
 struct MediaSelector
 {
     int field00;
-    FormRef* CFilter_CFilter(int type, void* context);
+    FormRef* CFilter_ctor(int aeLayer, void* aiGroup);
 };
 struct FormRef
 {
     int Modelloader_GetReferencedThis();
 };
 extern int __cdecl hkpGetRigidBody(int object);
-extern float __cdecl CalcEffectCost(float value, int area, int duration, int magnitude, bool special);
+extern float __cdecl MagicFormulas_GetMagicEffectCost(float value, int area, int duration, int magnitude, bool special);
 extern int __cdecl FUN_00ec62c0();
-extern void __cdecl NI2HK(NiPoint3* destination, NiPoint3* source);
+extern void __cdecl NI2HK(NiPoint3* arhkTran, NiPoint3* arNiTran);
 extern int* __cdecl Setting_Float_00403e20(unsigned int);
 extern void* __cdecl SetComponents(float, float, float);
 
 // @fnv 0x00817b90
 // src: XBOX_PDB 0x00817b90
-void Master::MagicCaster_DoExplosion(NiPoint3 center, ListHandle* item, void* filter, RangeManager* source, TargetInterface* first,
-                          float scale, float strength)
+// pdb: MagicCaster::DoExplosion | MagicCaster.obj | retail, upstream name already matches, high
+// pdb params: aSourceLoc, apCell, apSpell, apDominantEffect, aTargetList, afPowerScale, afAreaScale
+// pdb locals: farea, fspellCost, pw, info, pphantom, fareahalf, pmob, parray, pcasterActor, i, rb, pitem, ptargetActor, fdistance
+void Master::MagicCaster_DoExplosion(NiPoint3 aSourceLoc, ListHandle* apCell, void* apSpell, RangeManager* apDominantEffect, TargetInterface* aTargetList,
+                          float afPowerScale, float afAreaScale)
 {
-    if (source->FUN_00825c00()->IsFlagSet_00403e60(0x20000000))
+    if (apDominantEffect->FUN_00825c00()->IsFlagSet_00403e60(0x20000000))
     {
-        float range = (double)source->FUN_00404420() * *originalRuntimeFloatSetting1112.Setting_Float_00403e20() * strength;
+        float range = (double)apDominantEffect->FUN_00404420() * *originalRuntimeFloatSetting1112.Setting_Float_00403e20() * afAreaScale;
         if (range > DAT_01012060)
         {
-            float attenuation = CalcEffectCost(source->FUN_00825c00()->FUN_00639b20(), source->FUN_00404420(),
-                                               (int)(source->FUN_004044d0() * scale),
-                                               (int)(source->FUN_00404390() * scale), source->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 2);
+            float attenuation = MagicFormulas_GetMagicEffectCost(apDominantEffect->FUN_00825c00()->FUN_00639b20(), apDominantEffect->FUN_00404420(),
+                                               (int)(apDominantEffect->FUN_004044d0() * afPowerScale),
+                                               (int)(apDominantEffect->FUN_00404390() * afPowerScale), apDominantEffect->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 2);
             float size = (float)(range * DAT_01011588);
             BoundShape space;
-            NI2HK((NiPoint3*)&space.low, &center.FUN_00439e90(NiPoint3(-size, -size, -size)));
-            NI2HK((NiPoint3*)&space.high, &center.FUN_00439e90(NiPoint3(size, size, size)));
+            NI2HK((NiPoint3*)&space.low, &aSourceLoc.FUN_00439e90(NiPoint3(-size, -size, -size)));
+            NI2HK((NiPoint3*)&space.high, &aSourceLoc.FUN_00439e90(NiPoint3(size, size, size)));
             MediaSelector obj;
-            space.field00 = obj.CFilter_CFilter(0x29, bhkCollisionFilter_GetNewSystemGroup(0))->Modelloader_GetReferencedThis();
+            space.field00 = obj.CFilter_ctor(0x29, bhkCollisionFilter_GetNewSystemGroup(0))->Modelloader_GetReferencedThis();
             PhantomShape results(&space);
-            void* world = item->TESObjectCELL_GetbhkWorld();
+            void* world = apCell->TESObjectCELL_GetbhkWorld();
             results.bhkWorldObject_Add(world);
             ListEntries* entries = results.FUN_00818110();
             for (int i = 0; i < entries->FUN_00726070(); ++i)
@@ -161,12 +164,12 @@ void Master::MagicCaster_DoExplosion(NiPoint3 center, ListHandle* item, void* fi
                 int target = hkpGetRigidBody(*entries->NiTSet_NiControllerSequence_NiTMallocInterface_NiControllerSequence_GetAt(i));
                 if (target)
                 {
-                    MagicCaster_ExplodeRigidBody((TargetInterface*)target, center, source, attenuation);
+                    MagicCaster_ExplodeRigidBody((TargetInterface*)target, aSourceLoc, apDominantEffect, attenuation);
                 }
             }
 
             results.bhkPhantom_Remove();
-            TargetInterface* node = first;
+            TargetInterface* node = aTargetList;
             TargetInterface* skip = FUN_00815410();
             while (node && *node->FUN_006815c0())
             {
@@ -175,13 +178,13 @@ void Master::MagicCaster_DoExplosion(NiPoint3 center, ListHandle* item, void* fi
                 if (candidate)
                     if (candidate && candidate != skip && ((TargetActive)candidate->vtable[116])(candidate))
                     {
-                        float distance = candidate->TESObjectREFR_GetDistanceFromPoint(&center);
+                        float distance = candidate->TESObjectREFR_GetDistanceFromPoint(&aSourceLoc);
                         if (distance <= range && !((TargetDisabled)candidate->vtable[139])(candidate, 0) &&
                             !candidate->GetGhost_008ace90())
                         {
-                            if (CheckHealthDamageKill(candidate ? &candidate->origin94 : 0, filter))
+                            if (CheckHealthDamageKill(candidate ? &candidate->origin94 : 0, apSpell))
                             {
-                                ApplyExplosion(candidate, center, source, attenuation);
+                                MagicCaster_ExplodeActor(candidate, aSourceLoc, apDominantEffect, attenuation);
                             }
                         }
                     }
@@ -189,13 +192,13 @@ void Master::MagicCaster_DoExplosion(NiPoint3 center, ListHandle* item, void* fi
             }
             if (DAT_011dea3c && DAT_011dea3c != skip && ((TargetActive)DAT_011dea3c->vtable[116])(DAT_011dea3c))
             {
-                float distance = DAT_011dea3c->TESObjectREFR_GetDistanceFromPoint(&center);
+                float distance = DAT_011dea3c->TESObjectREFR_GetDistanceFromPoint(&aSourceLoc);
                 if (distance <= range && !((TargetDisabled)DAT_011dea3c->vtable[139])(DAT_011dea3c, 0) &&
                     !DAT_011dea3c->GetGhost_008ace90())
                 {
-                    if (CheckHealthDamageKill(DAT_011dea3c ? &DAT_011dea3c->origin94 : 0, filter))
+                    if (CheckHealthDamageKill(DAT_011dea3c ? &DAT_011dea3c->origin94 : 0, apSpell))
                     {
-                        ApplyExplosion(DAT_011dea3c, center, source, attenuation);
+                        MagicCaster_ExplodeActor(DAT_011dea3c, aSourceLoc, apDominantEffect, attenuation);
                     }
                 }
             }

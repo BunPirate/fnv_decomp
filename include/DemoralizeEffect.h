@@ -2,6 +2,7 @@
 
 #include "ActiveEffect.h"
 
+// pdb: class DemoralizeEffect, size 0x4c, bases: ActiveEffect, 1 members
 class DemoralizeEffect : public ActiveEffect
 {
 public:
@@ -18,5 +19,5 @@ public:
     static void* operator new(unsigned int);
     static void operator delete(void*);
 
-    unsigned char m_bDemoralized;
+    unsigned char bTurned;
 };

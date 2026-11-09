@@ -32,29 +32,32 @@ struct CloneInterpItem
 struct BlendCopy : NiBlendInterpolator
 {
     void NiCollisionObject_CopyMembers(NiBlendInterpolator* destination, CloningProcess* process);
-    void NiBlendInterpolator_CopyMembers(NiBlendInterpolator* destination, CloningProcess* process);
+    void NiBlendInterpolator_CopyMembers(NiBlendInterpolator* pkDest, CloningProcess* kCloning);
 };
 
 // @fnv 0x00a37510
 // src: XBOX_PDB 0x00a37510
-void BlendCopy::NiBlendInterpolator_CopyMembers(NiBlendInterpolator* destination, CloningProcess* process)
+// pdb: NiBlendInterpolator::CopyMembers | NiBlendInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkDest, kCloning
+// pdb locals: uc, kDestItem, kItem
+void BlendCopy::NiBlendInterpolator_CopyMembers(NiBlendInterpolator* pkDest, CloningProcess* kCloning)
 {
-    NiCollisionObject_CopyMembers(destination, process);
-    destination->m_uiObjectFlags = m_uiObjectFlags;
-    destination->m_ucArraySize = m_ucArraySize;
-    destination->m_pInterpArray = (NiBlendInterpolator__InterpArrayItem*)new CloneInterpItem[m_ucArraySize];
-    destination->m_fWeightThreshold = m_fWeightThreshold;
+    NiCollisionObject_CopyMembers(pkDest, kCloning);
+    pkDest->m_uFlags = m_uFlags;
+    pkDest->m_ucArraySize = m_ucArraySize;
+    pkDest->m_pkInterpArray = (NiBlendInterpolator__InterpArrayItem*)new CloneInterpItem[m_ucArraySize];
+    pkDest->m_fWeightThreshold = m_fWeightThreshold;
 
-    if ((m_uiObjectFlags & 1) == 0)
+    if ((m_uFlags & 1) == 0)
     {
         for (unsigned char i = 0; i < m_ucArraySize; ++i)
         {
-            CloneInterpItem& sourceItem = ((CloneInterpItem*)m_pInterpArray)[i];
-            CloneInterpItem& destinationItem = ((CloneInterpItem*)destination->m_pInterpArray)[i];
+            CloneInterpItem& sourceItem = ((CloneInterpItem*)m_pkInterpArray)[i];
+            CloneInterpItem& destinationItem = ((CloneInterpItem*)pkDest->m_pkInterpArray)[i];
             if (sourceItem.m_spControllerInterpolator)
             {
                 NiInterpolator* cloned =
-                    static_cast<NiInterpolator*>(sourceItem.m_spControllerInterpolator->MakeClone(*process));
+                    static_cast<NiInterpolator*>(sourceItem.m_spControllerInterpolator->MakeClone(*kCloning));
                 if (destinationItem.m_spControllerInterpolator != cloned)
                 {
                     if (destinationItem.m_spControllerInterpolator)
@@ -71,11 +74,11 @@ void BlendCopy::NiBlendInterpolator_CopyMembers(NiBlendInterpolator* destination
             destinationItem.m_fLastEvaluationTime = sourceItem.m_fLastEvaluationTime;
         }
 
-        destination->m_ucInterpCount = m_ucInterpCount;
-        destination->m_ucSingleIdx = m_ucSingleIdx;
-        destination->m_fSingleInterpolatorTime = m_fSingleInterpolatorTime;
-        destination->m_cHighPriority = m_cHighPriority;
-        destination->m_cNextHighPriority = m_cNextHighPriority;
+        pkDest->m_ucInterpCount = m_ucInterpCount;
+        pkDest->m_ucSingleIdx = m_ucSingleIdx;
+        pkDest->m_fSingleTime = m_fSingleTime;
+        pkDest->m_cHighPriority = m_cHighPriority;
+        pkDest->m_cNextHighPriority = m_cNextHighPriority;
     }
 }
 
@@ -105,6 +108,8 @@ class NiBlendInterpolatorW : public NiBlendInterpolator
 
 // @fnv 0x00a37690
 // src: XBOX_PDB 0x00a37690
+// pdb: NiBlendInterpolator::ReallocateArrays | NiBlendInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: ucNewArraySize, uc, pkNewInterpArray
 bool NiBlendInterpolatorW::NiBlendInterpolator_ReallocateArrays()
 {
     if (DAT_011a83ff == 0)
@@ -117,11 +122,11 @@ bool NiBlendInterpolatorW::NiBlendInterpolator_ReallocateArrays()
     FUN_00a370a0* pkNewInterpArray = new FUN_00a370a0[ucNewArraySize];
     for (unsigned char uc = 0; uc < m_ucArraySize; uc++)
     {
-        *(NiBlendInterpolator__InterpArrayItem*)&pkNewInterpArray[uc] = m_pInterpArray[uc];
+        *(NiBlendInterpolator__InterpArrayItem*)&pkNewInterpArray[uc] = m_pkInterpArray[uc];
     }
-    delete[] (FUN_00a370a0*)m_pInterpArray;
+    delete[] (FUN_00a370a0*)m_pkInterpArray;
 
-    m_pInterpArray = pkNewInterpArray;
+    m_pkInterpArray = pkNewInterpArray;
     m_ucArraySize = ucNewArraySize;
 
     return true;
@@ -144,7 +149,7 @@ struct FUN_00a370a0
     {
         return DAT_011f6238.Game_DoHeapAlloc(n);
     }
-    void LoadFromStream(Stream100&);
+    void NiBlendInterpolator_InterpArrayItem_LoadBinary(Stream100&);
 };
 
 typedef struct FUN_00a370a0 Item100;
@@ -477,82 +482,85 @@ struct Blend100
 
 // @fnv 0x00a37980
 // src: XBOX_PDB 0x00a37980
-void Blend100::NiBlendInterpolator_LoadBinary(Stream100& stream)
+// pdb: NiBlendInterpolator::LoadBinary | NiBlendInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: usArraySize, usArrayGrowBy, bOnlyUseHighestWeight, bManagerControlled, uc, usInterpCount, usSingleIndex, iHighPriority, iNextHighPriority
+void Blend100::NiBlendInterpolator_LoadBinary(Stream100& kStream)
 {
 
-    BSTextureSet_LoadBinary(stream);
+    BSTextureSet_LoadBinary(kStream);
 
-    if (stream.version >= 0x0a010070)
+    if (kStream.version >= 0x0a010070)
     {
-        stream.binary->Read(&flags, 1);
+        kStream.binary->Read(&flags, 1);
         flags &= ~4;
     }
 
-    if (stream.version < 0x0a01006e)
+    if (kStream.version < 0x0a01006e)
     {
         unsigned short oldSize, oldCount;
-        stream.binary->Read(&oldSize, 2);
+        kStream.binary->Read(&oldSize, 2);
         size = oldSize;
-        stream.binary->Read(&oldCount, 2);
+        kStream.binary->Read(&oldCount, 2);
     }
 
     else
-        stream.binary->Read(&size, 1);
+        kStream.binary->Read(&size, 1);
 
     array = new Item100[size];
 
-    if (stream.version < 0x0a010070)
+    if (kStream.version < 0x0a010070)
     {
 
         for (unsigned char i = 0; i < size; ++i)
-            array[i].LoadFromStream(stream);
+            array[i].NiBlendInterpolator_InterpArrayItem_LoadBinary(kStream);
 
         bool managerControlled;
-        stream.binary->Read(&managerControlled, 1);
+        kStream.binary->Read(&managerControlled, 1);
         if (managerControlled)
             flags |= 1;
         else
             flags &= ~1;
 
-        stream.binary->Read(&weightThreshold, 4);
+        kStream.binary->Read(&weightThreshold, 4);
 
         bool onlyHighest;
-        stream.binary->Read(&onlyHighest, 1);
+        kStream.binary->Read(&onlyHighest, 1);
         if (onlyHighest)
             flags |= 2;
         else
             flags &= ~2;
 
-        if (stream.version < 0x0a01006e)
+        if (kStream.version < 0x0a01006e)
         {
             unsigned short oldCount, oldSingle;
-            stream.binary->Read(&oldCount, 2);
+            kStream.binary->Read(&oldCount, 2);
             count = oldCount;
-            stream.binary->Read(&oldSingle, 2);
+            kStream.binary->Read(&oldSingle, 2);
             single = oldSingle;
         }
 
         else
         {
-            stream.binary->Read(&count, 1);
-            stream.binary->Read(&single, 1);
+            kStream.binary->Read(&count, 1);
+            kStream.binary->Read(&single, 1);
         }
 
-        if (stream.version >= 0x0a01006c)
+        if (kStream.version >= 0x0a01006c)
         {
-            singleInterpolator = stream.FUN_00a64620();
-            stream.binary->Read(&singleTime, 4);
+            singleInterpolator = kStream.FUN_00a64620();
+            kStream.binary->Read(&singleTime, 4);
         }
 
-        if (stream.version < 0x0a01006e)
+        if (kStream.version < 0x0a01006e)
         {
             int oldHigh, oldNext;
-            stream.binary->Read(&oldHigh, 4);
+            kStream.binary->Read(&oldHigh, 4);
             if (oldHigh == (-2147483647 - 1))
                 high = -128;
             else
                 high = oldHigh;
-            stream.binary->Read(&oldNext, 4);
+            kStream.binary->Read(&oldNext, 4);
             if (oldNext == (-2147483647 - 1))
                 next = -128;
             else
@@ -561,30 +569,30 @@ void Blend100::NiBlendInterpolator_LoadBinary(Stream100& stream)
 
         else
         {
-            stream.binary->Read(&high, 1);
-            stream.binary->Read(&next, 1);
+            kStream.binary->Read(&high, 1);
+            kStream.binary->Read(&next, 1);
         }
     }
     else
     {
 
-        stream.binary->Read(&weightThreshold, 4);
+        kStream.binary->Read(&weightThreshold, 4);
 
         if (!(flags & 1))
         {
-            stream.binary->Read(&count, 1);
-            stream.binary->Read(&single, 1);
-            stream.binary->Read(&high, 1);
-            stream.binary->Read(&next, 1);
-            stream.binary->Read(&singleTime, 4);
-            stream.binary->Read(&highSum, 4);
-            stream.binary->Read(&nextSum, 4);
-            stream.binary->Read(&highEase, 4);
+            kStream.binary->Read(&count, 1);
+            kStream.binary->Read(&single, 1);
+            kStream.binary->Read(&high, 1);
+            kStream.binary->Read(&next, 1);
+            kStream.binary->Read(&singleTime, 4);
+            kStream.binary->Read(&highSum, 4);
+            kStream.binary->Read(&nextSum, 4);
+            kStream.binary->Read(&highEase, 4);
 
             for (unsigned char i = 0; i < size; ++i)
-                array[i].LoadFromStream(stream);
+                array[i].NiBlendInterpolator_InterpArrayItem_LoadBinary(kStream);
 
-            singleInterpolator = stream.FUN_00a64620();
+            singleInterpolator = kStream.FUN_00a64620();
         }
     }
 }

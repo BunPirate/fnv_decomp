@@ -11,6 +11,8 @@ extern int DAT_0102e394;
 
 // @fnv 0x00a7f8e0
 // src: EXE 0x00a7f8e0
+// pdb: NiBinaryExtraData::CreateObject | NiBinaryExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiBinaryExtraData_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x14);
@@ -66,14 +68,16 @@ void* NiMalloc(unsigned int size);
 // Calls FUN_00a7b4a0, reads m_uiSize from the stream, and if nonzero allocates m_pData and reads m_uiSize bytes into it.
 // @fnv 0x00a7f9a0
 // src: XBOX_PDB 0x00a7f9a0
-void NiBinaryExtraData::LoadBinary_00a7f9a0(NiStream& stream)
+// pdb: NiBinaryExtraData::LoadBinary | NiBinaryExtraData.obj | retail, vtable slot, high
+// pdb params: kStream
+void NiBinaryExtraData::LoadBinary_00a7f9a0(NiStream& kStream)
 {
-    FUN_00a7b4a0(stream);
-    ReadBinaryValue(stream, m_uiSize);
+    FUN_00a7b4a0(kStream);
+    ReadBinaryValue(kStream, m_uiSize);
     if (m_uiSize <= 0)
         return;
     m_pData = (char*)NiMalloc(m_uiSize);
-    ReadBinaryValue(stream, m_pData, m_uiSize);
+    ReadBinaryValue(kStream, m_pData, m_uiSize);
 }
 
 namespace fnv_00a7fa20 {
@@ -103,10 +107,12 @@ struct FadeNode
 
 // @fnv 0x00a7fa20
 // src: XBOX_PDB 0x00a7fa20
-void NiBinaryExtraData::SaveBinary_00a7fa20(NiStream* apStream)
+// pdb: NiBinaryExtraData::SaveBinary | NiBinaryExtraData.obj | retail, vtable slot, high
+// pdb params: kStream
+void NiBinaryExtraData::SaveBinary_00a7fa20(NiStream* kStream)
 {
-    this->FUN_00a7b2c0(apStream);
-    fnv_00a7fa20::FadeNode* node = *reinterpret_cast<fnv_00a7fa20::FadeNode**>(reinterpret_cast<char*>(apStream) + 0x250);
+    this->FUN_00a7b2c0(kStream);
+    fnv_00a7fa20::FadeNode* node = *reinterpret_cast<fnv_00a7fa20::FadeNode**>(reinterpret_cast<char*>(kStream) + 0x250);
     {
         int flag = 4;
         node->unk04 += node->unk0c(node, &this->m_uiSize, 4, &flag, 1);
@@ -114,7 +120,7 @@ void NiBinaryExtraData::SaveBinary_00a7fa20(NiStream* apStream)
     unsigned int count = this->m_uiSize;
     if (count > 0)
     {
-        fnv_00a7fa20::FadeNode* node = *reinterpret_cast<fnv_00a7fa20::FadeNode**>(reinterpret_cast<char*>(apStream) + 0x250);
+        fnv_00a7fa20::FadeNode* node = *reinterpret_cast<fnv_00a7fa20::FadeNode**>(reinterpret_cast<char*>(kStream) + 0x250);
         void* data = this->m_pData;
         {
             int flag = 1;
@@ -130,23 +136,25 @@ void* __cdecl NiGetViewerString_00a7d510(const char* fmt, void* v);
 
 // @fnv 0x00a7fa90
 // src: XBOX_PDB 0x00a7fa90
-void NiBinaryExtraData::GetViewerStrings_00a7fa90(NiStream* pObj)
+// pdb: NiBinaryExtraData::GetViewerStrings | NiBinaryExtraData.obj | retail, vtable slot, high
+// pdb params: pStrings
+void NiBinaryExtraData::GetViewerStrings_00a7fa90(NiStream* pStrings)
 {
-    FUN_00a7b580(pObj);
+    FUN_00a7b580(pStrings);
     void* r = NiViewerStrings_NiGetViewerString_Title(DAT_011f4ab8);
-    unsigned int a = *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pObj) + 0x0a);
-    if (a >= *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pObj) + 0x08))
+    unsigned int a = *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pStrings) + 0x0a);
+    if (a >= *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pStrings) + 0x08))
     {
-        pObj->FUN_0096ad30(a + *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pObj) + 0x0e));
+        pStrings->FUN_0096ad30(a + *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pStrings) + 0x0e));
     }
-    pObj->FUN_0096ae90(a, reinterpret_cast<const unsigned int*>(&r));
+    pStrings->FUN_0096ae90(a, reinterpret_cast<const unsigned int*>(&r));
     r = NiGetViewerString_00a7d510(str_0109df4c, data);
-    a = *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pObj) + 0x0a);
-    if (a >= *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pObj) + 0x08))
+    a = *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pStrings) + 0x0a);
+    if (a >= *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pStrings) + 0x08))
     {
-        pObj->FUN_0096ad30(a + *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pObj) + 0x0e));
+        pStrings->FUN_0096ad30(a + *reinterpret_cast<unsigned short*>(reinterpret_cast<char*>(pStrings) + 0x0e));
     }
-    pObj->FUN_0096ae90(a, reinterpret_cast<const unsigned int*>(&r));
+    pStrings->FUN_0096ae90(a, reinterpret_cast<const unsigned int*>(&r));
 }
 
 struct FUN_00cb9c70_cls
@@ -163,6 +171,8 @@ bool NiBinaryExtraData::RegisterStreamables_00a89ae0(void* a)
 extern void __cdecl FUN_00a7b3b0();
 // @fnv 0x00a9af00
 // src: XBOX_PDB 0x00a9af00
+// pdb: NiBinaryExtraData::LinkObject | NiBinaryExtraData.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiBinaryExtraData_LinkObject()
 {
     FUN_00a7b3b0();
@@ -171,9 +181,12 @@ void __cdecl NiBinaryExtraData_LinkObject()
 #include <string.h>
 // Returns true when pkOther is non-null, has the same m_uiSize, and its m_pByteBuffer matches this one via memcmp.
 // @fnv 0x00a7f870
-bool NiBinaryExtraData::IsEqual(NiObject* object) const
+// pdb: NiBinaryExtraData::IsEqual | NiBinaryExtraData.obj | debug, upstream name already matches, high
+// pdb params: pObject
+// pdb locals: pExtra
+bool NiBinaryExtraData::IsEqual(NiObject* pObject) const
 {
-    const NiBinaryExtraData* pkOther = static_cast<NiBinaryExtraData*>(object);
+    const NiBinaryExtraData* pkOther = static_cast<NiBinaryExtraData*>(pObject);
     if (!pkOther)
         return false;
     if (m_uiSize != pkOther->m_uiSize)
@@ -188,6 +201,9 @@ extern void* __cdecl NiMalloc(unsigned int stSize);
 // Creates a new NiBinaryExtraData, copies member data, and duplicates the byte buffer when m_uiSize is non-zero.
 // @fnv 0x00a7f920
 // src: XBOX_PDB 0x00a7f920
+// pdb: NiBinaryExtraData::CreateClone | NiBinaryExtraData.obj | retail, vtable slot, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiExtraData* NiBinaryExtraData::CreateClone_00a7f920(CloningProcess& kCloning)
 {
     NiBinaryExtraData* pkClone = (NiBinaryExtraData*)NiBinaryExtraData_CreateObject();

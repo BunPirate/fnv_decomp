@@ -18,7 +18,7 @@ struct FUN_005a3790Class
 {
     bool TESForm_GetIgnoreFriendlyHits();
 };
-bool __cdecl Script_GetIgnoreFriendlyHitsConditionFunction(void* reference, void* b, void* c, double& result);
+bool __cdecl Script_GetIgnoreFriendlyHitsConditionFunction(void* apRefObject, void* apParam1, void* apParam2, double& afReturnValue);
 struct FUN_005a7840_Class
 {
     void ClearFlag(unsigned char bFlag);
@@ -73,13 +73,13 @@ struct BSSimpleListBase
 };
 struct FUN_005a7c00_class : public BSSimpleListBase
 {
-    char __thiscall TESRecipeComponent_Compare(BSSimpleListBase* other);
+    char __thiscall TESRecipeComponent_Compare(BSSimpleListBase* apCompare);
 };
 struct FUN_005a8e20_cls
 {
     int __thiscall ScriptLocals_GetActionObject(void* param, bool flag);
-    void __thiscall AttachScriptLocals(void* param);
-    char __thiscall ScriptLocals_CheckActionFlag(int param_2, int param_3);
+    void __thiscall AttachScriptLocals(void* apActionForm);
+    char __thiscall ScriptLocals_CheckActionFlag(int apActionForm, int aiFlag);
 };
 char __cdecl ConsumeByteAtE4();
 void ShowMessageBox_Callback();
@@ -243,7 +243,7 @@ struct FUN_005a7b00_Class
     unsigned int unk20;
     unsigned int m_24;
     void TESForm_CopyAllComponents(unsigned int id);
-    void InitializeFromRecord(unsigned int id);
+    void InitializeFromRecord(unsigned int apCopy);
 };
 extern "C" int __cdecl memcmp(const void* a, const void* b, unsigned int n);
 struct FUN_008ad910_rd;
@@ -255,7 +255,7 @@ class FUN_008ad910_ref
 class FUN_005e79a0_t
 {
   public:
-    bool TESForm_CompareAllComponents(TESForm* pkForm);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 class FUN_005a7b60_cls
 {
@@ -263,7 +263,7 @@ class FUN_005a7b60_cls
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C, unk20;
     unsigned char m_data;
 
-    bool TESRecipeCategory_Compare(TESForm* pkForm);
+    bool TESRecipeCategory_Compare(TESForm* apCompare);
 };
 void __cdecl operator delete(void*);
 struct DeletingObject
@@ -309,6 +309,7 @@ class FUN_005a7d40 : public FUN_00483630_holder, public TESFullName
     virtual ~FUN_005a7d40();
 };
 // @fnv 0x005a7d40
+// pdb: TESRecipe::~TESRecipe | TESRecipe.obj | debug, object-file gap fill, medium
 FUN_005a7d40::~FUN_005a7d40()
 {
     FUN_005a80a0();

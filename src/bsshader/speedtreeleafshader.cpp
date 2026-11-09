@@ -44,6 +44,7 @@ struct SpeedTreeLeafShaderColor
 };
 
 // @fnv 0x00bb2a00
+// pdb: SpeedTreeLeafShader::SpeedTreeLeafShader | SpeedTreeLeafShader.obj | retail, upstream name already matches, high
 SpeedTreeLeafShader::SpeedTreeLeafShader() : BSShader()
 {
     iShaderType = 9;
@@ -56,7 +57,10 @@ SpeedTreeLeafShader::SpeedTreeLeafShader() : BSShader()
 
 // Creates the vertex shader constant map if absent and registers the leaf shader constants, including a conditional one when DAT_011F941E is set.
 // @fnv 0x00bb2d10
-void SpeedTreeLeafShader::UpdateShaderConstants()
+// src: XBOX_RETAIL_PDB 0x00bb2d10
+// pdb: SpeedTreeLeafShader::CreateConstantMaps | SpeedTreeLeafShader.obj | retail, string-set bridge, high
+// pdb locals: iconstantPoint4Flags, idefinedMatrix4Flags, iconstantMatrix4Flags, iConstantPoint1Flags
+void SpeedTreeLeafShader::CreateConstantMaps()
 {
     if (m_spVertexConstantMap.m_pObject)
         return;
@@ -77,7 +81,7 @@ void SpeedTreeLeafShader::UpdateShaderConstants()
 
     m_spVertexConstantMap.m_pObject->SetConstant(DAT_010B8C34, 0x10000009, 0, 11, 6, DAT_01011584, 0x60, 4, DAT_01200618, false);
 
-    SpeedTreeLeafShaderConstantMapSetup::ConfigureShaderConstantMap(m_spVertexConstantMap.m_pObject, 0x11);
+    SpeedTreeLeafShaderConstantMapSetup::SpeedTreeShader_SetShaderConstants(m_spVertexConstantMap.m_pObject, 0x11);
 
     m_spVertexConstantMap.m_pObject->SetConstant(DAT_010B92D0, 0x10000009, 0, 0x22, 0x30, DAT_01011584, 0x300, 4, m_afShaderConstants, false);
 }
@@ -85,11 +89,13 @@ void SpeedTreeLeafShader::UpdateShaderConstants()
 struct FUN_00bb2bb0_holder
 {
     void FUN_00bb1c10();
-    void* DestroyIfFlagged(unsigned int);
+    void* SpeedTreeLeafShader_ScalarDtor(unsigned int);
 };
 void _delete(void*, unsigned int);
 // @fnv 0x00bb2bb0
-void* FUN_00bb2bb0_holder::DestroyIfFlagged(unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x00bb2bb0
+// pdb: SpeedTreeLeafShader::`scalar deleting destructor' | SpeedTreeLeafShader.obj | retail, object-file gap fill, high
+void* FUN_00bb2bb0_holder::SpeedTreeLeafShader_ScalarDtor(unsigned int flags)
 {
     FUN_00bb1c10();
     if (flags & 1)
@@ -247,11 +253,14 @@ inline void operator delete(void* p, FadeTag*)
 }
 struct FUN_00bb1d40_t
 {
-    void CreatePasses();
+    void SpeedTreeLeafShader_LoadStagesAndPasses();
 };
 
 // @fnv 0x00bb2c00
-SpeedTreeLeafShader* CreateSpeedTreeLeafShader()
+// src: XBOX_RETAIL_PDB 0x00bb2c00
+// pdb: SpeedTreeLeafShader::CreateShader | SpeedTreeLeafShader.obj | retail, call graph, high
+// pdb locals: spShaderDecl, eInput, pshader
+SpeedTreeLeafShader* SpeedTreeLeafShader_CreateShader()
 {
     NiD3DVertexDeclaration* pDecl = NiD3DVertexDeclaration::Create(DAT_011f9508, 4, 1);
     pDecl->SetEntry(0, 0, 0, 2, 0);
@@ -262,7 +271,7 @@ SpeedTreeLeafShader* CreateSpeedTreeLeafShader()
     SpeedTreeLeafShader* pLeafShader = ::new ((FadeTag*)0) SpeedTreeLeafShader;
     ((LeafV*)pLeafShader)->Init19();
     ((LeafV*)pLeafShader)->Init79();
-    ((FUN_00bb1d40_t*)pLeafShader)->CreatePasses();
+    ((FUN_00bb1d40_t*)pLeafShader)->SpeedTreeLeafShader_LoadStagesAndPasses();
     ((LeafV*)pLeafShader)->Init71();
     ((LeafV*)pLeafShader)->SetDecl(pDecl);
     return pLeafShader;
@@ -275,8 +284,9 @@ struct FUN_00bb2be0_shell : LeafV
 
 // @fnv 0x00bb2be0
 // src: XBOX_PDB 0x00bb2be0
+// pdb: SpeedTreeLeafShader::ReloadShaders | SpeedTreeLeafShader.obj | retail, upstream name already matches, high
 void FUN_00bb2be0_shell::SpeedTreeLeafShader_ReloadShaders()
 {
     this->Init79();
-    reinterpret_cast<FUN_00bb1d40_t*>(this)->CreatePasses();
+    reinterpret_cast<FUN_00bb1d40_t*>(this)->SpeedTreeLeafShader_LoadStagesAndPasses();
 }
